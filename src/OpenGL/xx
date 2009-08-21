@@ -1,3 +1,0 @@
-sed -i \
- -e 's/NomFichier/fileName/g' \
- `find -name "*.c" -o -name "*.h"`
