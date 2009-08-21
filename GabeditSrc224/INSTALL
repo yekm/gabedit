@@ -1,0 +1,41 @@
+
+INSTALL GABEDIT
+---------------
+
+Installation in unix/Linux system : 
+===================================
+
+    The 2.4.x version of GTK+ (or higher) is required for this version of Gabedit
+
+    For install gabedit from src files, execute following commands: 
+
+         gunzip  Gabeditxxyyzz.tar.gz 
+         tar  -xvf   Gabeditxxyyzz.tar 
+         cd  Gabeditxxyyzz 
+	 cp CONFIG.unix CONFIG
+         make 
+         ./gabedit
+
+         you can install (optional) Gabedit in /usr/local/bin directory, for this type :
+         cp ./gabedit   /usr/local/bin/.   (under root)
+         after installation you can execute gabedit from any directory for this type :
+	 gabedit 
+
+Installation of binary version of Gabedit in Windows(2000, XP, ...)  system : 
+=============================================================================
+     click to setupGabeditxxyyzz.exe
+     click to Gabedit.exe program 
+
+Compilation of Gabedit under Windows (2000, XP, ....) system : 
+==============================================================
+
+    The 2.4.x version of GTK+ (or higher) is required for this version of Gabedit
+
+    For install gabedit from src files, execute following commands: 
+
+         gunzip  Gabeditxxyyzz.tar.gz 
+         tar  -xvf   Gabeditxxyyzz.tar 
+         cd  Gabeditxxyyzz 
+	 copy CONFIG.win32 CONFIG
+	 mingw32-make
+         ./gabedit
