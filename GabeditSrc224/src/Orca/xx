@@ -1,9 +1,0 @@
-sed -i \
- -e 's/QChem/Orca/g' \
- `find -name "*.c" -o -name "*.h"`
-sed -i \
- -e 's/QCHEM/ORCA/g' \
- `find -name "*.c" -o -name "*.h"`
-sed -i \
- -e 's/qchem/orca/g' \
- `find -name "*.c" -o -name "*.h"`
