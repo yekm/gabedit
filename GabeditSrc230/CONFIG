@@ -1,0 +1,14 @@
+
+GTKLIB = `pkg-config gtk+-2.0 --libs` -lpangox-1.0
+GTKCFLAGS =  `pkg-config gtk+-2.0 --cflags` 
+OGLLIB=-L/usr/X11R6/lib -lGL -L/usr/X11R6/lib -lGLU
+OGLCFLAGS=-I/usr/X11R6/include
+GDKGL=gdkgl
+LIBPTHREAD    = -lpthread
+RM = rm -f
+MAKE = make
+WIN32LIB   = 
+X11LIB   = -lX11
+CC = gcc 
+COMMONCFLAGS = -Wall -O2 -DENABLE_DEPRECATED
+
