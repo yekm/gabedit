@@ -1,0 +1,13 @@
+/********************************************************************************/
+void read_qchem_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
+{
+ 	gchar *FileName;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+	gtk_widget_hide(GTK_WIDGET(SelecFile));
+	while( gtk_events_pending() ) gtk_main_iteration();
+
+	add_objects_for_new_grid();
+ 	read_qchem_orbitals(FileName);
+} 
