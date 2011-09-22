@@ -1,2 +1,0 @@
-sed -i \
- -e 's/ORCA/NWCHEM/g' `find -name "*.c" -o -name "*.h"`
