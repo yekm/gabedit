@@ -1,3 +1,0 @@
-sed -i -e 's/NWCHEM/PSICODE/g' `find -name "*.c" -o -name "*.h"`
-sed -i -e 's/NWChem/Psicode/g' `find -name "*.c" -o -name "*.h"`
-sed -i -e 's/nwchem/psicode/g' `find -name "*.c" -o -name "*.h"`
