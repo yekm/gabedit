@@ -1,6 +1,6 @@
 /* MenuToolBarGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -396,14 +396,14 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ReadMopacLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MOPACOUTLAST);}
 	else if(!strcmp(name,"ReadMopacAux")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MOPACAUX);}
 	else if(!strcmp(name,"ReadMopacScan")) 
-	{ 
  	  	file_chooser_open(read_geometries_conv_mopac_scan,"Read Geomtries From Mopac Scan Output file", GABEDIT_TYPEFILE_MOPAC,GABEDIT_TYPEWIN_GEOM);
-	}
+	else if(!strcmp(name,"ReadMopacIRC")) 
+ 	  	file_chooser_open(read_geometries_conv_mopac_irc,"Read Geomtries From Mopac IRC Output file", GABEDIT_TYPEFILE_MOPAC,GABEDIT_TYPEWIN_GEOM);
 	else if(!strcmp(name,"ReadMPQCInput")) { selc_all_input_file("Read Geometry from a MPQC input file");}
 	else if(!strcmp(name,"ReadMPQCFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MPQCOUTFIRST);}
 	else if(!strcmp(name,"ReadMPQCLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MPQCOUTLAST);}
-	else if(!strcmp(name,"ReadPCGamessFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_GAMESSFIRST); }
-	else if(!strcmp(name,"ReadPCGamessLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_GAMESSLAST); }
+	else if(!strcmp(name,"ReadFireFlyFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_GAMESSFIRST); }
+	else if(!strcmp(name,"ReadFireFlyLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_GAMESSLAST); }
 	else if(!strcmp(name,"ReadOrcaFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_ORCAOUTFIRST);}
 	else if(!strcmp(name,"ReadOrcaLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_ORCAOUTLAST);}
 	else if(!strcmp(name,"ReadQChemFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_QCHEMOUTFIRST);}
@@ -413,6 +413,12 @@ static void activate_action (GtkAction *action)
  	  file_chooser_open(read_geometries_conv_dalton,"Load Geom. Conv. From Dalton Output file", GABEDIT_TYPEFILE_DALTON,GABEDIT_TYPEWIN_GEOM);
 	else if(!strcmp(name,"ReadGeomConvGamess"))
  	  file_chooser_open(read_geometries_conv_gamess,"Load Geom. Conv. From Gamess Output file", GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_GEOM);
+	else if(!strcmp(name,"ReadGeomConvFireFly"))
+ 	  file_chooser_open(read_geometries_conv_gamess,"Load Geom. Conv. From FireFly Output file", GABEDIT_TYPEFILE_FIREFLY,GABEDIT_TYPEWIN_GEOM);
+	else if(!strcmp(name,"ReadGeomIRCGamess"))
+ 	  file_chooser_open(read_geometries_irc_gamess,"Load Geom. From Gamess IRC file", GABEDIT_TYPEFILE_GAMESSIRC,GABEDIT_TYPEWIN_GEOM);
+	else if(!strcmp(name,"ReadGeomIRCFireFly"))
+ 	  file_chooser_open(read_geometries_irc_gamess,"Load Geom. From FireFly IRC file", GABEDIT_TYPEFILE_GAMESSIRC,GABEDIT_TYPEWIN_GEOM);
 	else if(!strcmp(name,"ReadGeomConvGaussian"))
  	  file_chooser_open(read_geometries_conv_gaussian,"Load Geom. Conv. From Gaussian Output file", GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_GEOM);
 	else if(!strcmp(name,"ReadGeomConvMolpro"))
@@ -695,6 +701,11 @@ static void activate_action (GtkAction *action)
  		GtkWidget* chooser = file_chooser_save(save_geometry_png_file,"Save image in png file format",GABEDIT_TYPEFILE_PNG,GABEDIT_TYPEWIN_GEOM);
 		fit_windows_position(GeomDlg, chooser);
 	}
+	else if(!strcmp(name, "ScreenCaptureTIF"))
+	{
+ 		GtkWidget* chooser = file_chooser_save(save_geometry_png_file,"Save image in tif file format",GABEDIT_TYPEFILE_TIF,GABEDIT_TYPEWIN_GEOM);
+		fit_windows_position(GeomDlg, chooser);
+	}
 	else if(!strcmp(name, "ScreenCapturePS"))
 	{
  		GtkWidget* chooser = file_chooser_save(save_geometry_ps_file,"Save image in ps file format",GABEDIT_TYPEFILE_PS,GABEDIT_TYPEWIN_GEOM);
@@ -733,9 +744,13 @@ static void activate_action (GtkAction *action)
 	{
 		semiEmpiricalMolecularDynamicsConfoDlg();
 	}
-	else if(!strcmp(name, "SemiEmpiricalEnergyPCGamessAM1"))
+	else if(!strcmp(name, "SemiEmpiricalEnergyFireFlyAM1"))
 	{
-		semiEmpiricalDlg("AM1PCGamessEnergy");
+		semiEmpiricalDlg("AM1FireFlyEnergy");
+	}
+	else if(!strcmp(name, "SemiEmpiricalEnergyMopacPM6DH2"))
+	{
+		semiEmpiricalDlg("PM6DH2MopacEnergy");
 	}
 	else if(!strcmp(name, "SemiEmpiricalEnergyMopacPM6"))
 	{
@@ -745,13 +760,21 @@ static void activate_action (GtkAction *action)
 	{
 		semiEmpiricalDlg("AM1MopacEnergy");
 	}
-	else if(!strcmp(name, "SemiEmpiricalOptimisationPCGamessAM1"))
+	else if(!strcmp(name, "SemiEmpiricalOptimisationFireFlyAM1"))
 	{
-		semiEmpiricalDlg("AM1PCGamessOptimize");
+		semiEmpiricalDlg("AM1FireFlyOptimize");
+	}
+	else if(!strcmp(name, "SemiEmpiricalOptimisationMopacPM6DH2"))
+	{
+		semiEmpiricalDlg("PM6DH2MopacOptimize");
 	}
 	else if(!strcmp(name, "SemiEmpiricalOptimisationMopacPM6"))
 	{
 		semiEmpiricalDlg("PM6MopacOptimize");
+	}
+	else if(!strcmp(name, "SemiEmpiricalESPMopacPM6DH2"))
+	{
+		semiEmpiricalDlg("PM6DH2MopacESP");
 	}
 	else if(!strcmp(name, "SemiEmpiricalESPMopacPM6"))
 	{
@@ -764,6 +787,10 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "SemiEmpiricalESPMopac"))
 	{
 		semiEmpiricalDlg("MopacESP");
+	}
+	else if(!strcmp(name, "SemiEmpiricalScanMopacPM6DH2"))
+	{
+		semiEmpiricalDlg("MopacScanPM6DH2");
 	}
 	else if(!strcmp(name, "SemiEmpiricalScanMopacPM6"))
 	{
@@ -815,6 +842,10 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadGaussianZMat", GABEDIT_STOCK_GAUSSIAN, "_Gaussian Z-Matrix file", NULL, "Read a Gaussian Z-Matrix file", G_CALLBACK (activate_action) },
 	{"ReadMopacZMat", GABEDIT_STOCK_MOPAC, "_Mopac Z-Matrix file", NULL, "Read a Mopac Z-Matrix file", G_CALLBACK (activate_action) },
 
+	{"FireFly", GABEDIT_STOCK_FIREFLY, "_FireFly"},
+	{"ReadFireFlyFirst", GABEDIT_STOCK_FIREFLY, "F_irst geometry from a FireFly output file", NULL, "Read the first geometry from a FireFly output file", G_CALLBACK (activate_action) },
+	{"ReadFireFlyLast", GABEDIT_STOCK_FIREFLY, "L_ast geometry from a FireFly output file", NULL, "Read the last geometry from a FireFly output file", G_CALLBACK (activate_action) },
+
 	{"Dalton", GABEDIT_STOCK_DALTON, "_Dalton"},
 	{"ReadDaltonFirst", GABEDIT_STOCK_DALTON, "F_irst geometry from a Dalton output file", NULL, "Read the first geometry from a Dalton output file", G_CALLBACK (activate_action) },
 	{"ReadDaltonLast", GABEDIT_STOCK_DALTON, "L_ast geometry from a Dalton output file", NULL, "Read the last geometry from a Dalton output file", G_CALLBACK (activate_action) },
@@ -844,6 +875,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadMopacLast", GABEDIT_STOCK_MOPAC, "L_ast geometry from a Mopac output file", NULL, "Read the last geometry from a Mopac output file", G_CALLBACK (activate_action) },
 	{"ReadMopacAux", GABEDIT_STOCK_MOPAC, "L_ast geometry from a Mopac aux file", NULL, "Read the last geometry from a Mopac aux file", G_CALLBACK (activate_action) },
 	{"ReadMopacScan", GABEDIT_STOCK_MOPAC, "Geometries from a Mopac _scan output file", NULL, "Geometries from a Mopac scan output file", G_CALLBACK (activate_action) },
+	{"ReadMopacIRC", GABEDIT_STOCK_MOPAC, "Geometries from a Mopac _IRC output file", NULL, "Geometries from a Mopac IRC output file", G_CALLBACK (activate_action) },
 
 	{"MPQC", GABEDIT_STOCK_MPQC, "MP_QC"},
 	{"ReadMPQCInput", GABEDIT_STOCK_MPQC, "MP_QC Input file", NULL, "Read a MPQC Input file", G_CALLBACK (activate_action) },
@@ -855,10 +887,6 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadOrcaLast", GABEDIT_STOCK_ORCA, "L_ast geometry from a Orca output file", NULL, "Read the last geometry from a Orca output file", G_CALLBACK (activate_action) },
 
 
-	{"PCGamess", GABEDIT_STOCK_PCGAMESS, "_PCGamess"},
-	{"ReadPCGamessFirst", GABEDIT_STOCK_PCGAMESS, "F_irst geometry from a PCGamess output file", NULL, "Read the first geometry from a PCGamess output file", G_CALLBACK (activate_action) },
-	{"ReadPCGamessLast", GABEDIT_STOCK_PCGAMESS, "L_ast geometry from a PCGamess output file", NULL, "Read the last geometry from a PCGamess output file", G_CALLBACK (activate_action) },
-
 	{"QChem", GABEDIT_STOCK_QCHEM, "Q-_Chem"},
 	{"ReadQChemFirst", GABEDIT_STOCK_QCHEM, "F_irst geometry from a Q-Chem output file", NULL, "Read the first geometry from a Q-Chem output file", G_CALLBACK (activate_action) },
 	{"ReadQChemLast", GABEDIT_STOCK_QCHEM, "L_ast geometry from a Q-Chem output file", NULL, "Read the last geometry from a Q-Chem output file", G_CALLBACK (activate_action) },
@@ -868,6 +896,9 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadGeomConv", NULL, "Geometries _Convergence"},
 	{"ReadGeomConvDalton", GABEDIT_STOCK_DALTON, "from a _Dalton output file", NULL, "Read Geometries Convergence from a Dalton output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvGamess", GABEDIT_STOCK_GAMESS, "from a _Gamess output file", NULL, "Read Geometries Convergence from a Gamess output file", G_CALLBACK (activate_action) },
+	{"ReadGeomConvFireFly", GABEDIT_STOCK_FIREFLY, "from a _FireFly output file", NULL, "Read Geometries Convergence from a FireFly output file", G_CALLBACK (activate_action) },
+	{"ReadGeomIRCGamess", GABEDIT_STOCK_GAMESS, "from a _Gamess IRC file", NULL, "Read Geometries from a Gamess IRC file", G_CALLBACK (activate_action) },
+	{"ReadGeomIRCFireFly", GABEDIT_STOCK_FIREFLY, "from a _FireFly IRC file", NULL, "Read Geometries from a FireFly IRC file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvGaussian", GABEDIT_STOCK_GAUSSIAN, "from a _Gaussian output file", NULL, "Read Geometries Convergence from a Gaussian output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvMolpro", GABEDIT_STOCK_MOLPRO, "from a Mol_pro log file", NULL, "Read Geometries Convergence from a Molpro log file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvMopac", GABEDIT_STOCK_MOPAC, "from a _Mopac aux file", NULL, "Read Geometries Convergence from a Mopac aux file", G_CALLBACK (activate_action) },
@@ -1023,6 +1054,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ScreenCapturePPM", NULL, "_PPM format", NULL, "create a PPM file", G_CALLBACK (activate_action) },
 	{"ScreenCaptureBMP", NULL, "_BMP format", NULL, "create a BMP file", G_CALLBACK (activate_action) },
 	{"ScreenCapturePNG", NULL, "_PNG format", NULL, "create a PNG file", G_CALLBACK (activate_action) },
+	{"ScreenCaptureTIF", NULL, "_TIF format", NULL, "create a TIF file", G_CALLBACK (activate_action) },
 	{"ScreenCapturePS", NULL, "_PS format", NULL, "create a PS file", G_CALLBACK (activate_action) },
 	{"ScreenCaptureCilpBoard", NULL, "_Copy to clipboard", NULL, "copy to clipboard", G_CALLBACK (activate_action) },
 
@@ -1033,14 +1065,18 @@ static GtkActionEntry gtkActionEntries[] =
 	{"MolecularMechanicsDynamicsConfo", NULL, "Molecular _Dynamics Conformational search", NULL, "Molecular dynamics conformational search using the MM method", G_CALLBACK (activate_action) },
 
 	{"SemiEmpirical", NULL, "_Semi-empirical"},
-	{"SemiEmpiricalEnergyPCGamessAM1", NULL, "PCGamess AM1 _Energy", NULL, "compute the energy using the AM1 method from PCGamess", G_CALLBACK (activate_action) },
-	{"SemiEmpiricalOptimisationPCGamessAM1", NULL, "PCGamess AM1 _Optimization", NULL, "optimize the geometry using the AM1 method from PCGamess", G_CALLBACK (activate_action) },
+	{"SemiEmpiricalEnergyFireFlyAM1", NULL, "FireFly AM1 _Energy", NULL, "compute the energy using the AM1 method from FireFly", G_CALLBACK (activate_action) },
+	{"SemiEmpiricalOptimisationFireFlyAM1", NULL, "FireFly AM1 _Optimization", NULL, "optimize the geometry using the AM1 method from FireFly", G_CALLBACK (activate_action) },
 
 	{"SemiEmpiricalEnergyMopac", NULL, "Mopac _Energy", NULL, "compute the energy using Mopac", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalOptimisationMopac", NULL, "Mopac _Optimisation", NULL, "optimize the geometry using Mopac", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalESPMopac", NULL, "Mopac _ESP charges", NULL, "ESP Charge using Mopac", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalScanMopac", NULL, "Mopac _Reaction path", NULL, "Mopac Scan calculation", G_CALLBACK (activate_action) },
 
+	{"SemiEmpiricalEnergyMopacPM6DH2", NULL, "Mopac PM6DH2 _Energy", NULL, "compute the energy using the PM6-DH2 method from Mopac", G_CALLBACK (activate_action) },
+	{"SemiEmpiricalOptimisationMopacPM6DH2", NULL, "Mopac PM6-DH2 _Optimisation", NULL, "optimize the geometry using the PM6-DH2 method from Mopac", G_CALLBACK (activate_action) },
+	{"SemiEmpiricalESPMopacPM6DH2", NULL, "Mopac PM6-DH2 _ESP charges", NULL, "ESP Charge using the PM6-DH2 method from Mopac", G_CALLBACK (activate_action) },
+	{"SemiEmpiricalScanMopacPM6DH2", NULL, "Mopac PM6-DH2 _Reaction path", NULL, "Reaction path using the PM6-DH2 method from Mopac", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalEnergyMopacPM6", NULL, "Mopac PM6 _Energy", NULL, "compute the energy using the PM6 method from Mopac", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalOptimisationMopacPM6", NULL, "Mopac PM6 _Optimisation", NULL, "optimize the geometry using the PM6 method from Mopac", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalESPMopacPM6", NULL, "Mopac PM6 _ESP charges", NULL, "ESP Charge using the PM6 method from Mopac", G_CALLBACK (activate_action) },
@@ -1076,6 +1112,11 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"ReadPDB\" action=\"ReadPDB\" />\n"
 "      <menuitem name=\"ReadHyperchem\" action=\"ReadHyperchem\" />\n"
 "      <menuitem name=\"ReadMol\" action=\"ReadMol\" />\n"
+"      <separator name=\"sepMenuReadFireFly\" />\n"
+"      <menu name=\"FireFly\" action=\"FireFly\">\n"
+"        <menuitem name=\"ReadFireFlyFirst\" action=\"ReadFireFlyFirst\" />\n"
+"        <menuitem name=\"ReadFireFlyLast\" action=\"ReadFireFlyLast\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuReadDalton\" />\n"
 "      <menu name=\"Dalton\" action=\"Dalton\">\n"
 "        <menuitem name=\"ReadDaltonFirst\" action=\"ReadDaltonFirst\" />\n"
@@ -1112,6 +1153,7 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadMopacLast\" action=\"ReadMopacLast\" />\n"
 "        <menuitem name=\"ReadMopacAux\" action=\"ReadMopacAux\" />\n"
 "        <menuitem name=\"ReadMopacScan\" action=\"ReadMopacScan\" />\n"
+"        <menuitem name=\"ReadMopacIRC\" action=\"ReadMopacIRC\" />\n"
 "        <menuitem name=\"ReadMopacZMat\" action=\"ReadMopacZMat\" />\n"
 "      </menu>\n"
 "      <separator name=\"sepMenuReadMPQC\" />\n"
@@ -1125,11 +1167,6 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadOrcaFirst\" action=\"ReadOrcaFirst\" />\n"
 "        <menuitem name=\"ReadOrcaLast\" action=\"ReadOrcaLast\" />\n"
 "      </menu>\n"
-"      <separator name=\"sepMenuReadPCGamess\" />\n"
-"      <menu name=\"PCGamess\" action=\"PCGamess\">\n"
-"        <menuitem name=\"ReadPCGamessFirst\" action=\"ReadPCGamessFirst\" />\n"
-"        <menuitem name=\"ReadPCGamessLast\" action=\"ReadPCGamessLast\" />\n"
-"      </menu>\n"
 "      <separator name=\"sepMenuReadQChem\" />\n"
 "      <menu name=\"QChem\" action=\"QChem\">\n"
 "        <menuitem name=\"ReadQChemFirst\" action=\"ReadQChemFirst\" />\n"
@@ -1139,6 +1176,7 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"ReadUsingOpenBabel\" action=\"ReadUsingOpenBabel\" />\n"
 "      <separator name=\"sepMenuReadGeomConv\" />\n"
 "      <menu name=\"ReadGeomConv\" action=\"ReadGeomConv\">\n"
+"        <menuitem name=\"ReadGeomConvFireFly\" action=\"ReadGeomConvFireFly\" />\n"
 "        <menuitem name=\"ReadGeomConvDalton\" action=\"ReadGeomConvDalton\" />\n"
 "        <menuitem name=\"ReadGeomConvGamess\" action=\"ReadGeomConvGamess\" />\n"
 "        <menuitem name=\"ReadGeomConvGaussian\" action=\"ReadGeomConvGaussian\" />\n"
@@ -1150,6 +1188,8 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadGeomConvGabedit\" action=\"ReadGeomConvGabedit\" />\n"
 "        <menuitem name=\"ReadGeomConvMolden\" action=\"ReadGeomConvMolden\" />\n"
 "        <menuitem name=\"ReadGeomConvXYZ\" action=\"ReadGeomConvXYZ\" />\n"
+"        <menuitem name=\"ReadGeomIRCGamess\" action=\"ReadGeomIRCGamess\" />\n"
+"        <menuitem name=\"ReadGeomIRCFireFly\" action=\"ReadGeomIRCFireFly\" />\n"
 "      </menu>\n"
 "    </menu>\n"
 "      <menu name=\"Edit\" action=\"Edit\">\n"
@@ -1366,6 +1406,7 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"ScreenCapturePPM\" action=\"ScreenCapturePPM\" />\n"
 "      <menuitem name=\"ScreenCaptureBMP\" action=\"ScreenCaptureBMP\" />\n"
 "      <menuitem name=\"ScreenCapturePNG\" action=\"ScreenCapturePNG\" />\n"
+"      <menuitem name=\"ScreenCaptureTIF\" action=\"ScreenCaptureTIF\" />\n"
 "      <menuitem name=\"ScreenCapturePS\" action=\"ScreenCapturePS\" />\n"
 "      <menuitem name=\"ScreenCaptureCilpBoard\" action=\"ScreenCaptureCilpBoard\" />\n"
 "    </menu>\n"
@@ -1409,9 +1450,9 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"SemiEmpiricalEnergyOrca\" action=\"SemiEmpiricalEnergyOrca\" />\n"
 "      <menuitem name=\"SemiEmpiricalOptimisationOrca\" action=\"SemiEmpiricalOptimisationOrca\" />\n"
 
-"      <separator name=\"sepSemiEmpiricalPCGamess\" />\n"
-"      <menuitem name=\"SemiEmpiricalEnergyPCGamessAM1\" action=\"SemiEmpiricalEnergyPCGamessAM1\" />\n"
-"      <menuitem name=\"SemiEmpiricalOptimisationPCGamessAM1\" action=\"SemiEmpiricalOptimisationPCGamessAM1\" />\n"
+"      <separator name=\"sepSemiEmpiricalFireFly\" />\n"
+"      <menuitem name=\"SemiEmpiricalEnergyFireFlyAM1\" action=\"SemiEmpiricalEnergyFireFlyAM1\" />\n"
+"      <menuitem name=\"SemiEmpiricalOptimisationFireFlyAM1\" action=\"SemiEmpiricalOptimisationFireFlyAM1\" />\n"
 
 "      <separator name=\"sepSemiEmpiricalMD\" />\n"
 "      <menuitem name=\"SemiEmpiricalMD\" action=\"SemiEmpiricalMD\" />\n"

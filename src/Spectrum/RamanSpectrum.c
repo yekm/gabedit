@@ -1,6 +1,6 @@
 /* RamanSpectrum.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -717,7 +717,7 @@ void createRamanSpectrum(GtkWidget *parentWindow, GabEditTypeFile typeOfFile)
 	if(typeOfFile==GABEDIT_TYPEFILE_MOLPRO) read_molpro_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_ORCA) read_orca_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_GAMESS) read_gamess_file_dlg();
-	if(typeOfFile==GABEDIT_TYPEFILE_PCGAMESS) read_gamess_file_dlg();
+	if(typeOfFile==GABEDIT_TYPEFILE_FIREFLY) read_gamess_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_GAUSSIAN) read_gaussian_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_ADF) read_adf_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_MPQC) read_mpqc_file_dlg();

@@ -1,6 +1,6 @@
-/* PCGamess.c */
+/* FireFly.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -20,13 +20,13 @@ DEALINGS IN THE SOFTWARE.
 
 #include "../../Config.h"
 #include "../Common/Global.h"
-#include "../PCGamess/PCGamessTypes.h"
-#include "../PCGamess/PCGamessGlobal.h"
-#include "../PCGamess/PCGamessMolecule.h"
-#include "../PCGamess/PCGamessControl.h"
-#include "../PCGamess/PCGamessBasis.h"
-#include "../PCGamess/PCGamessGuess.h"
-#include "../PCGamess/PCGamessSCF.h"
+#include "../FireFly/FireFlyTypes.h"
+#include "../FireFly/FireFlyGlobal.h"
+#include "../FireFly/FireFlyMolecule.h"
+#include "../FireFly/FireFlyControl.h"
+#include "../FireFly/FireFlyBasis.h"
+#include "../FireFly/FireFlyGuess.h"
+#include "../FireFly/FireFlySCF.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Geometry/GeomGlobal.h"
 #include "../Geometry/InterfaceGeom.h"
@@ -45,38 +45,38 @@ static void setColors()
 	if(!first) return;
 	first = FALSE;
 
-	pcgamessColorFore.keyWord.red = 65535;
-	pcgamessColorFore.keyWord.green = 0;
-	pcgamessColorFore.keyWord.blue = 0;
+	fireflyColorFore.keyWord.red = 65535;
+	fireflyColorFore.keyWord.green = 0;
+	fireflyColorFore.keyWord.blue = 0;
 
-	pcgamessColorBack.keyWord.red = (gushort)(65535/1.2);
-	pcgamessColorBack.keyWord.green = (gushort)(65535/1.2);
-	pcgamessColorBack.keyWord.blue = (gushort)(65535/1.2);
+	fireflyColorBack.keyWord.red = (gushort)(65535/1.2);
+	fireflyColorBack.keyWord.green = (gushort)(65535/1.2);
+	fireflyColorBack.keyWord.blue = (gushort)(65535/1.2);
 
-	pcgamessColorFore.description.red = 0;
-	pcgamessColorFore.description.green = 65535;
-	pcgamessColorFore.description.blue = 65535;
+	fireflyColorFore.description.red = 0;
+	fireflyColorFore.description.green = 65535;
+	fireflyColorFore.description.blue = 65535;
 
-	pcgamessColorBack.description.red = (gushort)(65535/2.0);
-	pcgamessColorBack.description.green = (gushort)(65535/2.0);
-	pcgamessColorBack.description.blue = (gushort)(65535/2.0);
+	fireflyColorBack.description.red = (gushort)(65535/2.0);
+	fireflyColorBack.description.green = (gushort)(65535/2.0);
+	fireflyColorBack.description.blue = (gushort)(65535/2.0);
 
 }
 /************************************************************************************************************/
-void destroyWinsPCGamess(GtkWidget *win)
+void destroyWinsFireFly(GtkWidget *win)
 {
 	destroy(Wins,NULL);
 	Wins = NULL;
-	initPCGamessMoleculeButtons();
+	initFireFlyMoleculeButtons();
 	/*
-	freePCGamessFunctionals();
-	freePCGamessStdFunctionals();
-	freePCGamessMole();
-	freePCGamessGuessWaveFunction();
-	freePCGamessMolecule();
-	freePCGamessMpqc();
-	freePCGamessBasis();
-	freePCGamessOptimisation();
+	freeFireFlyFunctionals();
+	freeFireFlyStdFunctionals();
+	freeFireFlyMole();
+	freeFireFlyGuessWaveFunction();
+	freeFireFlyMolecule();
+	freeFireFlyMpqc();
+	freeFireFlyBasis();
+	freeFireFlyOptimisation();
 	*/
 }
 /************************************************************************************************************/
@@ -92,7 +92,7 @@ static void putTitleInTextEditor()
 	sprintf(buffer,"%c ================================================================\n",'!');
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
 
-	sprintf(buffer,"%c Input file for PCGamess\n",'!');
+	sprintf(buffer,"%c Input file for FireFly\n",'!');
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
 
 	sprintf(buffer,"%c ================================================================\n",'!');
@@ -116,23 +116,23 @@ static void putInfoInTextEditor(GtkWidget *button, gpointer data)
 	data_modify(TRUE);
 
 	putTitleInTextEditor();
-	putPCGamessControlInfoInTextEditor();
-	putPCGamessChargeAndSpinInfoInTextEditor();
+	putFireFlyControlInfoInTextEditor();
+	putFireFlyChargeAndSpinInfoInTextEditor();
 
-	if(!pcgamessSemiEmperical()) putPCGamessBasisInfoInTextEditor();
-	putPCGamessGuessInfoInTextEditor();
-	putPCGamessSCFInfoInTextEditor();
-	putPCGamessGeometryInfoInTextEditor();
+	if(!fireflySemiEmperical()) putFireFlyBasisInfoInTextEditor();
+	putFireFlyGuessInfoInTextEditor();
+	putFireFlySCFInfoInTextEditor();
+	putFireFlyGeometryInfoInTextEditor();
 	/*
-	putPCGamessBasisInfoInTextEditor();
-	putPCGamessGuessWaveFunctionInfoInTextEditor();
-	putPCGamessMoleInfoInTextEditor();
-	if(pcgamessMpqc.optimize) putPCGamessOptimisationInfoInTextEditor();
-	putPCGamessMpqcInfoInTextEditor();
+	putFireFlyBasisInfoInTextEditor();
+	putFireFlyGuessWaveFunctionInfoInTextEditor();
+	putFireFlyMoleInfoInTextEditor();
+	if(fireflyMpqc.optimize) putFireFlyOptimisationInfoInTextEditor();
+	putFireFlyMpqcInfoInTextEditor();
 	*/
 
-	iprogram = PROG_IS_PCGAMESS;
-	fileopen.command=g_strdup(NameCommandPCGamess);
+	iprogram = PROG_IS_FIREFLY;
+	fileopen.command=g_strdup(NameCommandFireFly);
 	gtk_notebook_set_current_page((GtkNotebook*)NoteBookText,0);
 }
 /*********************************************************************************************/
@@ -148,7 +148,7 @@ static GtkWidget* addHboxToTable(GtkWidget* table, gint i, gint j, gint ki, gint
 	return hbox;
 }
 /************************************************************************************************************/
-static void pcgamessInputFileWindow(gboolean newInputFile)
+static void fireflyInputFileWindow(gboolean newInputFile)
 {
 	GtkWidget *button;
 	GtkWidget *hbox = NULL;
@@ -158,20 +158,20 @@ static void pcgamessInputFileWindow(gboolean newInputFile)
 
 	newFile = newInputFile;
 
-	initPCGamessMolecule();
-	setPCGamessMolecule();
+	initFireFlyMolecule();
+	setFireFlyMolecule();
 	/*
-	initPCGamessMpqc();
-	initPCGamessMole();
-	initPCGamessFunctionals();
-	initPCGamessStdFunctionals();
-	initPCGamessGuessWaveFunction();
-	initPCGamessBasis();
-	initPCGamessOptimisation();
+	initFireFlyMpqc();
+	initFireFlyMole();
+	initFireFlyFunctionals();
+	initFireFlyStdFunctionals();
+	initFireFlyGuessWaveFunction();
+	initFireFlyBasis();
+	initFireFlyOptimisation();
 	*/
 
 
-	if(pcgamessMolecule.numberOfAtoms <1)
+	if(fireflyMolecule.numberOfAtoms <1)
 	{
 		Message(
 			"You must initially define your geometry.\n\n"
@@ -186,10 +186,10 @@ static void pcgamessInputFileWindow(gboolean newInputFile)
 	Wins= gtk_dialog_new ();
 	gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_NONE);
 	gtk_window_set_transient_for(GTK_WINDOW(Wins),GTK_WINDOW(Fenetre));
-	gtk_window_set_title(&GTK_DIALOG(Wins)->window,"PCGamess input");
+	gtk_window_set_title(&GTK_DIALOG(Wins)->window,"FireFly input");
     	gtk_window_set_modal (GTK_WINDOW (Wins), TRUE);
 
-	init_child(Wins, destroyWinsPCGamess," PCGamess input ");
+	init_child(Wins, destroyWinsFireFly," FireFly input ");
 	g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_childs,NULL);
 
 	gtk_widget_realize(Wins);
@@ -206,19 +206,19 @@ static void pcgamessInputFileWindow(gboolean newInputFile)
 
 	hbox =addHboxToTable(table, 0, 0, 1, 1);
 	hboxSymmetryChargeMultiplicity = hbox;
-	createPCGamessSymmetryFrame(Wins, hbox);
+	createFireFlySymmetryFrame(Wins, hbox);
 
 	hbox =addHboxToTable(table, 1, 0, 1, 2);
-	initPCGamessBasisFrame();
-	initPCGamessGuessFrame();
-	initPCGamessSCFFrame();
-	createPCGamessControlFrame(Wins, hbox);
-	createPCGamessBasisFrame(Wins, hbox);
-	createPCGamessChargeMultiplicityFrame(hboxSymmetryChargeMultiplicity);
+	initFireFlyBasisFrame();
+	initFireFlyGuessFrame();
+	initFireFlySCFFrame();
+	createFireFlyControlFrame(Wins, hbox);
+	createFireFlyBasisFrame(Wins, hbox);
+	createFireFlyChargeMultiplicityFrame(hboxSymmetryChargeMultiplicity);
 
 	hbox =addHboxToTable(table, 2, 0, 1, 2);
-	createPCGamessGuessFrame(Wins, hbox);
-	createPCGamessSCFFrame(Wins, hbox);
+	createFireFlyGuessFrame(Wins, hbox);
+	createFireFlySCFFrame(Wins, hbox);
 
 
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, FALSE, TRUE, 5);
@@ -230,15 +230,15 @@ static void pcgamessInputFileWindow(gboolean newInputFile)
 	
 
 	gtk_widget_show_all(Wins);
-	pcgamessWin = Wins;
+	fireflyWin = Wins;
 }
 /************************************************************************************************************/
-void newPCGamess()
+void newFireFly()
 {
-	pcgamessInputFileWindow(TRUE);
+	fireflyInputFileWindow(TRUE);
 }
 /************************************************************************************************************/
-void insertPCGamess()
+void insertFireFly()
 {
-	pcgamessInputFileWindow(FALSE);
+	fireflyInputFileWindow(FALSE);
 }

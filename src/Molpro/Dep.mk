@@ -1,40 +1,36 @@
-# DO NOT DELETE
-
-MInterfaceBasis.o: ../../Config.h
-MInterfaceBasis.o: ../Common/Global.h ../Files/GabeditFileChooser.h
-MInterfaceBasis.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
-MInterfaceBasis.o: ../Utils/AtomsProp.h ../Utils/Constants.h
-MInterfaceBasis.o: ../Gaussian/GaussGlobal.h ../Geometry/GeomGlobal.h
-MInterfaceBasis.o: ../Utils/Utils.h ../Molpro/MInterfaceGeom.h
-MInterfaceBasis.o: ../Molpro/MInterfaceBasis.h ../Molpro/MolproLib.h
-MInterfaceBasis.o: ../Molpro/MolproBasisLibrary.h
-MInterfaceComm.o: ../../Config.h
-MInterfaceComm.o: ../Common/Global.h ../Files/GabeditFileChooser.h
-MInterfaceComm.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
-MInterfaceComm.o: ../Utils/GabeditTextEdit.h ../Geometry/GeomGlobal.h
-MInterfaceComm.o: MInterfaceComm.h
-MInterfaceGene.o: ../../Config.h
-MInterfaceGene.o: ../Common/Global.h ../Files/GabeditFileChooser.h
-MInterfaceGene.o: ../Common/GabeditType.h MInterfaceGene.h
-MInterfaceGene.o: ../Utils/UtilsInterface.h
-MInterfaceGeom.o: ../../Config.h
-MInterfaceGeom.o: MInterfaceGeom.h ../Common/Global.h
-MInterfaceGeom.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
-MInterfaceGeom.o: ../Geometry/GeomGlobal.h ../Geometry/GeomXYZ.h
-MInterfaceGeom.o: ../Geometry/GeomZmatrix.h ../Gaussian/GaussGlobal.h
-MInterfaceGeom.o: ../Utils/UtilsInterface.h ../Geometry/InterfaceGeom.h
-Molpro.o: ../../Config.h ../Common/Global.h
-Molpro.o: ../Files/GabeditFileChooser.h
-Molpro.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
-Molpro.o: ../Utils/Constants.h MInterfaceGeom.h MInterfaceGene.h
-Molpro.o: MInterfaceBasis.h MInterfaceComm.h ../Geometry/GeomGlobal.h
-Molpro.o: ../Geometry/InterfaceGeom.h ../Utils/Utils.h ../Utils/AtomsProp.h
-Molpro.o: ../Utils/GabeditTextEdit.h ../../pixmaps/Next.xpm
-MolproBasisLibrary.o: ../../Config.h ../Utils/Constants.h ../Common/Global.h
-MolproBasisLibrary.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
-MolproBasisLibrary.o: ../Molpro/MolproLib.h ../Utils/Utils.h
-MolproBasisLibrary.o: ../Utils/UtilsInterface.h ../Utils/AtomsProp.h
-MolproBasisLibrary.o: ../Molpro/MolproBasisLibrary.h ../Common/StockIcons.h
-MolproLib.o: ../../Config.h
-MolproLib.o: ../Common/GabeditType.h
-MolproLib.o: ../Utils/Constants.h ../Utils/Utils.h ../Molpro/MolproLib.h
+MolproLib.o: MolproLib.c ../../Config.h ../Common/GabeditType.h \
+  ../Utils/Constants.h ../Utils/Utils.h ../Molpro/MolproLib.h
+MInterfaceBasis.o: MInterfaceBasis.c ../../Config.h ../Common/Global.h \
+  ../Common/../Files/GabeditFileChooser.h \
+  ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \
+  ../Utils/AtomsProp.h ../Utils/Constants.h ../Gaussian/GaussGlobal.h \
+  ../Geometry/GeomGlobal.h ../Utils/Utils.h ../Molpro/MInterfaceGeom.h \
+  ../Molpro/MInterfaceBasis.h ../Molpro/MolproLib.h \
+  ../Molpro/MolproBasisLibrary.h
+MInterfaceComm.o: MInterfaceComm.c ../../Config.h ../Common/Global.h \
+  ../Common/../Files/GabeditFileChooser.h \
+  ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \
+  ../Utils/GabeditTextEdit.h ../Geometry/GeomGlobal.h MInterfaceComm.h
+MInterfaceGene.o: MInterfaceGene.c ../../Config.h ../Common/Global.h \
+  ../Common/../Files/GabeditFileChooser.h \
+  ../Common/../Common/GabeditType.h MInterfaceGene.h \
+  ../Utils/UtilsInterface.h
+MInterfaceGeom.o: MInterfaceGeom.c ../../Config.h MInterfaceGeom.h \
+  ../Common/Global.h ../Common/../Files/GabeditFileChooser.h \
+  ../Common/../Common/GabeditType.h ../Geometry/GeomGlobal.h \
+  ../Geometry/GeomXYZ.h ../Geometry/GeomZmatrix.h \
+  ../Gaussian/GaussGlobal.h ../Utils/UtilsInterface.h \
+  ../Geometry/InterfaceGeom.h
+Molpro.o: Molpro.c ../../Config.h ../Common/Global.h \
+  ../Common/../Files/GabeditFileChooser.h \
+  ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \
+  ../Utils/Constants.h MInterfaceGeom.h MInterfaceGene.h \
+  MInterfaceBasis.h MInterfaceComm.h ../Geometry/GeomGlobal.h \
+  ../Geometry/InterfaceGeom.h ../Utils/Utils.h ../Utils/AtomsProp.h \
+  ../Utils/GabeditTextEdit.h ../../pixmaps/Next.xpm
+MolproBasisLibrary.o: MolproBasisLibrary.c ../../Config.h \
+  ../Utils/Constants.h ../Common/Global.h \
+  ../Common/../Files/GabeditFileChooser.h \
+  ../Common/../Common/GabeditType.h ../Molpro/MolproLib.h \
+  ../Utils/Utils.h ../Utils/UtilsInterface.h ../Utils/AtomsProp.h \
+  ../Molpro/MolproBasisLibrary.h ../Common/StockIcons.h

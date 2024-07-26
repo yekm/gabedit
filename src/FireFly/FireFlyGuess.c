@@ -1,6 +1,6 @@
-/* PCGamessGuess.c */
+/* FireFlyGuess.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -24,8 +24,8 @@ DEALINGS IN THE SOFTWARE.
 
 #include "../../Config.h"
 #include "../Common/Global.h"
-#include "../PCGamess/PCGamessTypes.h"
-#include "../PCGamess/PCGamessGlobal.h"
+#include "../FireFly/FireFlyTypes.h"
+#include "../FireFly/FireFlyGlobal.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/GabeditTextEdit.h"
@@ -41,47 +41,47 @@ static gchar* listGuessMethodReal[] = { "NONE", "GUESS=HCORE" };
 static guint numberOfGuessMethods = G_N_ELEMENTS (listGuessMethodView);
 static gchar selectedGuessMethod[BSIZE]="NONE";
 /*************************************************************************************************************/
-void initPCGamessGuessFrame()
+void initFireFlyGuessFrame()
 {
 	guessFrame = NULL;
 }
 /*************************************************************************************************************/
-void setSensitivePCGamessGuessFrame(gboolean sensitive)
+void setSensitiveFireFlyGuessFrame(gboolean sensitive)
 {
 	if(!guessFrame) return;
 	gtk_widget_set_sensitive(guessFrame, sensitive);
 }
 /*************************************************************************************************************/
-static void putPCGamessGuessOptionsInfoInTextEditor()
+static void putFireFlyGuessOptionsInfoInTextEditor()
 {
 	if(!GTK_TOGGLE_BUTTON (buttonPrintGuess)->active 
 	   && !GTK_TOGGLE_BUTTON (buttonRotate)->active) return;
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$GUESS",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$GUESS",-1);
 	if(GTK_TOGGLE_BUTTON (buttonPrintGuess)->active)
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " PRTMO=.TRUE.",-1);
 	if(GTK_TOGGLE_BUTTON (buttonRotate)->active)
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " MIX=.TRUE.",-1);
 
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 }
 /************************************************************************************************************/
-static void putPCGamessGuessMethodInfoInTextEditor()
+static void putFireFlyGuessMethodInfoInTextEditor()
 {
 	if( strcmp(selectedGuessMethod,"NONE")==0 ) return;
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$GUESS",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$GUESS",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, selectedGuessMethod,-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 }
 /*************************************************************************************************************/
-void putPCGamessGuessInfoInTextEditor()
+void putFireFlyGuessInfoInTextEditor()
 {
-	putPCGamessGuessMethodInfoInTextEditor();
-	putPCGamessGuessOptionsInfoInTextEditor();
+	putFireFlyGuessMethodInfoInTextEditor();
+	putFireFlyGuessOptionsInfoInTextEditor();
 
 }
 /************************************************************************************************************/
@@ -142,7 +142,7 @@ static GtkWidget *create_list_guessmethods()
 	return combobox;
 }
 /************************************************************************************************************/
-void createPCGamessGuessFrame(GtkWidget *win, GtkWidget *box)
+void createFireFlyGuessFrame(GtkWidget *win, GtkWidget *box)
 {
 	GtkWidget* frame;
 	GtkWidget* vboxFrame;

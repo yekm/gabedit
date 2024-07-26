@@ -1,6 +1,6 @@
 /* DrawGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -2189,6 +2189,10 @@ static gint set_key_press(GtkWidget* wid, GdkEventKey *event, gpointer data)
 	{
 		ControlKeyPressed = TRUE;
 	}
+	else if((event->keyval == GDK_Alt_L || event->keyval == GDK_Alt_R) )
+	{
+		ControlKeyPressed = TRUE;
+	}
 	else if((event->keyval == GDK_F || event->keyval == GDK_f) )
 	{
 		FKeyPressed = TRUE;
@@ -2245,6 +2249,8 @@ static gint set_key_release(GtkWidget* wid, GdkEventKey *event, gpointer data)
 	if((event->keyval == GDK_Shift_L || event->keyval == GDK_Shift_R) )
 		ShiftKeyPressed = FALSE;
 	else if((event->keyval == GDK_Control_L || event->keyval == GDK_Control_R) )
+		ControlKeyPressed = FALSE;
+	else if((event->keyval == GDK_Alt_L || event->keyval == GDK_Alt_R) )
 		ControlKeyPressed = FALSE;
 	else if((event->keyval == GDK_F || event->keyval == GDK_f) )
 		FKeyPressed = FALSE;
@@ -4697,7 +4703,7 @@ static void add_hydrogen_atoms_tpl(gint addToI, gint nA)
 	for(i=0;i<10;i++)
 		hAtoms[i] = g_malloc(sizeof(gchar)*100);
 	nH = getHydrogensFromPDBTpl(geometry[addToI].Residue,geometry[addToI].pdbType, hAtoms);
-	/* printf("%s %s nH=%d\n",geometry[addToI].Residue,geometry[addToI].pdbType,nH);*/
+	/*  printf("%s %s nH=%d\n",geometry[addToI].Residue,geometry[addToI].pdbType,nH);*/
 	nH -= nOldH;
 
 	/* if(nH>nV-nAll) nH = nV-nAll;*/

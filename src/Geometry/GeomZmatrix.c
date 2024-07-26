@@ -1,6 +1,6 @@
 /* GeomZmatrix.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -5381,6 +5381,138 @@ static void get_charge_and_multiplicity_from_mopac_output_file(FILE* fd)
 			if ( strstr(t,"SEXTET")) SpinMultiplicities[0] = 6;
 		}
 	}
+}
+/********************************************************************************/
+void read_Zmat_from_mopac_irc_output_file(gchar *FileName, gint numGeom)
+{
+	gchar *t;
+	gboolean OK;
+	gchar *AtomCoord[10];
+	FILE *fd;
+	guint taille=BSIZE;
+	guint i,l;
+
+	for(i=0;i<10;i++) AtomCoord[i]=g_malloc(taille*sizeof(gchar));
+	fd = FOpen(FileName, "r");
+	if(fd == NULL)
+	{
+		t = g_strdup_printf("Sorry\n I can not open \"%s\" file",FileName); 
+		MessageGeom(t," Error ",TRUE);
+		g_free(t);
+		return;
+	}
+	t=g_malloc(taille);
+	OK = TRUE;
+	i = 0;
+  	while(!feof(fd) )    
+  	{
+ 		if(!fgets(t, taille, fd))break;
+		if(
+			strstr(t,"POTENTIAL") && 
+			strstr(t,"LOST") &&
+			strstr(t,"TOTAL")
+		) 
+		{
+			i++;
+			if(i==numGeom)break;
+		}
+	}
+	if(i==0) OK = FALSE;
+  	while(!feof(fd) && OK )    
+  	{
+ 		if(!fgets(t, taille, fd))OK = FALSE;
+		if(strstr(t,"FINAL")&& strstr(t,"GEOMETRY")&& strstr(t,"OBTAINED")) 
+		{
+ 			if(!fgets(t, taille, fd))OK = FALSE;
+ 			if(!fgets(t, taille, fd))OK = FALSE;
+ 			if(!fgets(t, taille, fd))OK = FALSE;
+ 			if(!fgets(t, taille, fd))OK = FALSE;
+			break;
+		}
+	}
+	if(!OK ||1!=sscanf(t,"%s", AtomCoord[0]))
+	{
+		g_free(t);
+		t = g_strdup_printf("Sorry\n I can not read geometry from \"%s\" file",FileName); 
+		MessageGeom(t," Error ",TRUE);
+		g_free(t);
+		for(i=0;i<10;i++)
+			g_free(AtomCoord[i]);
+		freeGeom();
+		freeVariables();
+		fclose(fd);
+		return;
+		return;
+	}
+	freeGeom();
+	freeVariables();
+	NcentersZmat=0;
+	NcentersZmat++;
+	Geom=g_malloc(sizeof(GeomAtomDef));
+	set_center(AtomCoord);
+	
+	while(!feof(fd) )
+	{
+		if(!fgets(t,taille,fd))break;
+		if(feof(fd)) break;
+		if(this_is_a_backspace(t)) break;
+		if(1!=sscanf(t,"%s", AtomCoord[0])) break;
+		if(NcentersZmat==1)
+		{
+			if(3!=sscanf(t,"%s %s %s", AtomCoord[0],AtomCoord[1],AtomCoord[2])) break;
+			sprintf(AtomCoord[7],"%d", 1);
+		}
+		else
+		if( get_info_one_center(t,AtomCoord) == EOF) break;
+  		NcentersZmat++;
+		Geom=g_realloc(Geom,NcentersZmat*sizeof(GeomAtomDef));
+		set_center(AtomCoord);
+		i = NcentersZmat-1;
+		if(NcentersZmat>1 && atoi(AtomCoord[2])==1)trans_coord_Zmat('R',i,FALSE);
+		if(NcentersZmat>2 && atoi(AtomCoord[4])==1)trans_coord_Zmat('A',i,FALSE);
+		if(NcentersZmat>3 && atoi(AtomCoord[6])==1)trans_coord_Zmat('D',i,FALSE);
+        }
+	fseek(fd, 0L, SEEK_SET);
+	get_charge_and_multiplicity_from_mopac_output_file(fd);
+ 
+	fclose(fd);
+	for(i=0;i<10;i++)
+		g_free(AtomCoord[i]);
+	for (i=0;i<NcentersZmat;i++)
+	{
+		Geom[i].Symb[0]=toupper(Geom[i].Symb[0]);
+		l=strlen(Geom[i].Symb);
+		if (l==2) Geom[i].Symb[1]=tolower(Geom[i].Symb[1]);
+		if(l<3) t=g_strdup(Geom[i].Symb);
+		else
+		{
+			t[0]=Geom[i].Symb[0];
+			t[1]=Geom[i].Symb[1];
+		}
+		if(ThisIsNotAnAtom(t))
+		{	 	
+			MessageGeom("Sorry\n This is not a Zmatrix mopac file"," Error ",TRUE);
+			g_free(t);
+			freeGeom();
+			freeVariables();
+			return;
+		}
+	}
+	g_free(t);
+	if(Units==0)
+	for (i=1;i<NcentersZmat;i++)
+			Geom[i].R=ang_to_bohr(Geom[i].R);
+
+	MethodeGeom = GEOM_IS_ZMAT;
+	if(GeomIsOpen)
+	{
+     		create_geom_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
+   		clearList(list);
+		append_list_geom();
+		append_list_variables();
+	}
+	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomIsOpen && iprogram == PROG_IS_GAUSS) set_spin_of_electrons();
 }
 /********************************************************************************/
 void read_Zmat_from_mopac_scan_output_file(gchar *FileName, gint numGeom)

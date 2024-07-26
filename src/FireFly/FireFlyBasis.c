@@ -1,6 +1,6 @@
-/* PCGamessBasis.c */
+/* FireFlyBasis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -24,8 +24,8 @@ DEALINGS IN THE SOFTWARE.
 
 #include "../../Config.h"
 #include "../Common/Global.h"
-#include "../PCGamess/PCGamessTypes.h"
-#include "../PCGamess/PCGamessGlobal.h"
+#include "../FireFly/FireFlyTypes.h"
+#include "../FireFly/FireFlyGlobal.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/GabeditTextEdit.h"
@@ -82,33 +82,33 @@ static gchar* listBasisPolarReal[] = {  "NONE","POLAR=POPLE", "POLAR=POPN311","P
 static guint numberOfBasisPolar = G_N_ELEMENTS (listBasisPolarView);
 static gchar selectedBasisPolar[BSIZE]="NONE";
 /*************************************************************************************************************/
-void initPCGamessBasisFrame()
+void initFireFlyBasisFrame()
 {
 	basisFrame = NULL;
 }
 /*************************************************************************************************************/
-void setSensitivePCGamessBasisFrame(gboolean sensitive)
+void setSensitiveFireFlyBasisFrame(gboolean sensitive)
 {
 	if(!basisFrame) return;
 	gtk_widget_set_sensitive(basisFrame, sensitive);
 }
 /*************************************************************************************************************/
-static void putPCGamessBasisDiffuseFunctions()
+static void putFireFlyBasisDiffuseFunctions()
 {
 	if(!GTK_TOGGLE_BUTTON (buttonDiffuseL)->active 
 	   && !GTK_TOGGLE_BUTTON (buttonDiffuseS)->active) return;
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$BASIS",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$BASIS",-1);
 	if(GTK_TOGGLE_BUTTON (buttonDiffuseL)->active)
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " DIFFSP=.TRUE.",-1);
 	if(GTK_TOGGLE_BUTTON (buttonDiffuseS)->active)
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " DIFFS=.TRUE.",-1);
 
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 }
 /************************************************************************************************************/
-static void putPCGamessBasisPolInfoInTextEditor()
+static void putFireFlyBasisPolInfoInTextEditor()
 {
 	gchar* s=NULL;
 	if(
@@ -118,7 +118,7 @@ static void putPCGamessBasisPolInfoInTextEditor()
 	     && strcmp(selectedBasisPolar,"NONE")==0
 	 ) return;
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$BASIS",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$BASIS",-1);
 	s=selectedBasisDPol;
 	if(strcmp(s,"NONE")!=0)
 	{
@@ -144,55 +144,55 @@ static void putPCGamessBasisPolInfoInTextEditor()
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, s,-1);
 	}
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 }
 /*************************************************************************************************************/
-static void putPCGamessBasisSetInfoInTextEditor()
+static void putFireFlyBasisSetInfoInTextEditor()
 {
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$BASIS",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$BASIS",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, selectedBasisSet,-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 	if(strcmp(selectedBasisSet,"GBASIS=SBKJC")==0)
 	{
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$CONTRL",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$CONTRL",-1);
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ECP=SBKJC",-1);
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 	}
 	if(strcmp(selectedBasisSet,"GBASIS=HW")==0)
 	{
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$CONTRL",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$CONTRL",-1);
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ECP=HW",-1);
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 	}
 }
 /*************************************************************************************************************/
-static void putPCGamessBasisTypeInfoInTextEditor()
+static void putFireFlyBasisTypeInfoInTextEditor()
 {
 	if(strcmp(selectedBasisType,"NONE")==0)return;
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$CONTRL",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$CONTRL",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, selectedBasisType,-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 }
 /*************************************************************************************************************/
-void putPCGamessBasisInfoInTextEditor()
+void putFireFlyBasisInfoInTextEditor()
 {
-	putPCGamessBasisSetInfoInTextEditor();
-	putPCGamessBasisTypeInfoInTextEditor();
-	putPCGamessBasisPolInfoInTextEditor();
-	putPCGamessBasisDiffuseFunctions();
+	putFireFlyBasisSetInfoInTextEditor();
+	putFireFlyBasisTypeInfoInTextEditor();
+	putFireFlyBasisPolInfoInTextEditor();
+	putFireFlyBasisDiffuseFunctions();
 }
 /************************************************************************************************************/
-static void setPCGamessBasisType()
+static void setFireFlyBasisType()
 {
 	GtkTreeIter iter;
 
@@ -225,7 +225,7 @@ static void traitementBasisSet (GtkComboBox *combobox, gpointer d)
 	}
 	if(res) sprintf(selectedBasisSet,"%s",res);
 	else  sprintf(selectedBasisSet,"MINI");
-	setPCGamessBasisType();
+	setFireFlyBasisType();
 	
 	/* for(s=selectedBasisSet;*s != 0;s++) *s = toupper(*s);*/
 }
@@ -550,7 +550,7 @@ static GtkWidget *create_list_BasisPolar()
 	return combobox;
 }
 /************************************************************************************************************/
-void createPCGamessBasisFrame(GtkWidget *win, GtkWidget *box)
+void createFireFlyBasisFrame(GtkWidget *win, GtkWidget *box)
 {
 	GtkWidget* frame;
 	GtkWidget* vboxFrame;

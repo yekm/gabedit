@@ -1,6 +1,6 @@
 /* GGeomXYZ.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -101,6 +101,7 @@ static void get_position(guint i,gdouble Pos[]);
 gchar** getListMMTypes(gint* nlist);
 gchar** getListPDBTypes(gchar* residueName, gint* nlist);
 /********************************************************************************/
+static gboolean connected(guint i,guint j);
 static void DialogueAdd();
 static void DialogueEdit();
 static void DialogueDelete();
@@ -128,7 +129,135 @@ static gint get_layer(gchar* layer)
 	else if(strstr(layer,"Medium")) return MEDIUM_LAYER;
 	else return HIGH_LAYER;
 }
-/********************************************************************************/
+/*************************************************************************************/
+static guint get_number_of_electrons(guint type)
+{
+/* 
+   type = 1 : Medium and High
+   type = 2 : High
+   type = other : All
+*/
+   guint i;
+   guint Ne=0;
+   SAtomsProp Atom;
+   for(i=0;i<NcentersXYZ;i++)
+   {
+       Atom = prop_atom_get(GeomXYZ[i].Symb);
+       switch (type)
+       {
+      	case 1 : if(get_layer(GeomXYZ[i].Layer)==HIGH_LAYER ||  
+				 get_layer(GeomXYZ[i].Layer)==MEDIUM_LAYER) Ne += Atom.atomicNumber;
+		 break;
+       	case 2 : if(get_layer(GeomXYZ[i].Layer)==HIGH_LAYER) Ne += Atom.atomicNumber;
+		 break;
+       	default : Ne += Atom.atomicNumber;
+        }
+	g_free(Atom.name);
+	g_free(Atom.symbol);
+   }
+   return Ne;
+} 
+/************************************************************************************************************/
+static gint get_number_of_model_connections()
+{
+	gint i;
+	gint j;
+	gint nc = 0;
+	gint NC = NcentersXYZ;
+	if(NcentersXYZ<1) return 0;	
+    	for(i=0;i<NC;i++)
+	{
+		if(get_layer(GeomXYZ[i].Layer)==MEDIUM_LAYER || get_layer(GeomXYZ[i].Layer)==LOW_LAYER) continue;
+    		for(j=0;j<NC;j++)
+		{
+			gint nj = j;
+			if(i==j) continue;
+			if(get_layer(GeomXYZ[j].Layer)==MEDIUM_LAYER || get_layer(GeomXYZ[j].Layer)==LOW_LAYER) continue;
+			if(GeomXYZ[i].typeConnections[nj]>0) nc++;
+		}
+	}
+	return nc;
+}
+/************************************************************************************************************/
+static gint get_number_of_inter_connections()
+{
+	gint i;
+	gint j;
+	gint nc = 0;
+	gint NC = NcentersXYZ;
+    	for(i=0;i<NC;i++)
+	{
+		if(get_layer(GeomXYZ[i].Layer)==HIGH_LAYER || get_layer(GeomXYZ[i].Layer)==LOW_LAYER) continue;
+    		for(j=0;j<NC;j++)
+		{
+			gint nj = j;
+			if(i==j) continue;
+			if(get_layer(GeomXYZ[j].Layer)==HIGH_LAYER || get_layer(GeomXYZ[j].Layer)==LOW_LAYER) continue;
+			if(GeomXYZ[i].typeConnections[nj]>0) nc++;
+		}
+	}
+	return nc;
+}
+/************************************************************************************************************/
+static void reset_spin_of_electrons()
+{
+        gint i;
+        guint NumberElectrons[3];
+        guint SpinElectrons[3];
+	gint n = 1;
+	gint nL = 0;
+	gint nM = 0;
+	gint nH = 0;
+
+	if(NcentersXYZ<1) return;	
+
+        NumberElectrons[2]= get_number_of_electrons(2);
+        NumberElectrons[1]= get_number_of_electrons(1);
+        NumberElectrons[0]= get_number_of_electrons(0);
+
+
+        for(i=0;i<3;i++)
+		SpinElectrons[i]=0;
+    	for(i=0;i<NcentersXYZ;i++)
+	{
+		if(get_layer(GeomXYZ[i].Layer)==LOW_LAYER) nH =1;
+		if(get_layer(GeomXYZ[i].Layer)==MEDIUM_LAYER) nM =1;
+		if(get_layer(GeomXYZ[i].Layer)==HIGH_LAYER) nH =1;
+	}
+	n = nH + nM + nL;
+        if(n==3)
+	{
+        	NumberElectrons[2] += get_number_of_model_connections();
+        	NumberElectrons[1] += get_number_of_inter_connections();
+	}
+        if(n==2)
+	{
+        	NumberElectrons[1] += get_number_of_model_connections();
+	}
+
+        for(i=0;(guint)i<n;i++)
+        	if((NumberElectrons[i]-TotalCharges[i])%2==0)
+			SpinElectrons[i]=1;
+                else
+			SpinElectrons[i]=2;
+
+        for(i=0;(guint)i<n;i++)
+	{
+		if(SpinMultiplicities[i]%2 != SpinElectrons[i]%2)
+			SpinMultiplicities[i] = SpinElectrons[i];
+	}
+}
+/*****************************************************************************/
+static void reset_charges_multiplicities_XYZ()
+{
+	gint i;
+	if(Natoms<1) return;	
+	for(i=0;i<3;i++)
+		TotalCharges[i] = 0;
+	reset_spin_of_electrons();
+
+}
+/************************************************************************************************************/
 void compute_dipole_using_charges_of_xyz_geom()
 {
 	gdouble charge;
@@ -211,6 +340,7 @@ static void activate_action_xyz_geom (GtkAction *action)
 	else if(!strcmp(name, "Center")) OriginToCenter(); 
 	else if(!strcmp(name, "Sort")) sort_GeomXYZ(); 
 	else if(!strcmp(name, "ToZmat")) conversion_xyz_to_zmat(); 
+	else if(!strcmp(name, "ToZmatConn")) conversion_xyz_to_zmat_using_connections(); 
 }
 /*--------------------------------------------------------------------*/
 static GtkActionEntry gtkActionEntriesXYZGeom[] =
@@ -230,6 +360,7 @@ static GtkActionEntry gtkActionEntriesXYZGeom[] =
 	{"Center", NULL, "_Center", NULL, "Center", G_CALLBACK (activate_action_xyz_geom) },
 	{"Sort", NULL, "_Sort", NULL, "Sort", G_CALLBACK (activate_action_xyz_geom) },
 	{"ToZmat", NULL, "to _Zmat", NULL, "to _Zmat", G_CALLBACK (activate_action_xyz_geom) },
+	{"ToZmatConn", NULL, "to _Zmat using connections", NULL, "to _Zmat using conn.", G_CALLBACK (activate_action_xyz_geom) },
 };
 static guint numberOfGtkActionEntriesXYZGeom = G_N_ELEMENTS (gtkActionEntriesXYZGeom);
 /********************************************************************************/
@@ -261,6 +392,7 @@ static const gchar *uiMenuXYZGeomInfo =
 "    <menuitem name=\"Sort\" action=\"Sort\" />\n"
 "    <separator name=\"sepMenuPopZmat\" />\n"
 "    <menuitem name=\"ToZmat\" action=\"ToZmat\" />\n"
+"    <menuitem name=\"ToZmatConn\" action=\"ToZmatConn\" />\n"
 "  </popup>\n"
 ;
 /*******************************************************************************************************************************/
@@ -645,6 +777,20 @@ static void set_multiple_bonds()
 		g_free(Prop_i.symbol);
 	}
 	g_free(nBonds);
+}
+/*****************************************************************************/
+void reset_connections_XYZ()
+{
+	gint i,j;
+	for(i=0;i<NcentersXYZ;i++)
+	{
+		if(GeomXYZ[i].typeConnections) g_free(GeomXYZ[i].typeConnections);
+		GeomXYZ[i].typeConnections = g_malloc(NcentersXYZ*sizeof(gint));
+		for(j=0;j<NcentersXYZ;j++) GeomXYZ[i].typeConnections[j] = 0;
+		for(j=0;j<NcentersXYZ;j++) 
+			if(i!=j && connected(i,j)) GeomXYZ[i].typeConnections[j]=1;
+	}
+	set_multiple_bonds();
 }
 /*****************************************************************************/
 gboolean connecteds(guint i,guint j)
@@ -5575,6 +5721,139 @@ void read_geom_from_gamess_output_file(gchar *NomFichier, gint numgeometry)
 	if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
 }
 /********************************************************************************/
+void read_geom_from_gamess_irc_file(gchar *NomFichier, gint numgeometry)
+{
+	gchar *t;
+	gboolean OK;
+	gchar *AtomCoord[5];
+	FILE *fd;
+	guint taille=BSIZE;
+	guint i;
+	gint j=0;
+	gint l;
+	guint numgeom;
+	gchar dum[100];
+	gint uni=1;
+ 	long geomposok = 0;
+
+
+
+	for(i=0;i<5;i++) AtomCoord[i]=g_malloc(taille*sizeof(char));
+  
+	t=g_malloc(taille);
+#ifdef G_OS_WIN32 
+ 	fd = FOpen(NomFichier, "rb");
+#else
+	fd = FOpen(NomFichier, "r");
+#endif
+	if(fd ==NULL)
+	{
+		g_free(t);
+		t = g_strdup_printf("Sorry\nI can not open %s  file ",NomFichier);
+		MessageGeom(t," Error ",TRUE);
+		g_free(t);
+		return;
+	}
+	numgeom = 0;
+	do 
+	{
+		OK=FALSE;
+		while(!feof(fd)){
+			fgets(t,taille,fd);
+			if (strstr(t,"CARTESIAN COORDINATES (BOHR)"))
+			{
+ 				numgeom++;
+				uni=0;
+				if((gint)numgeom == numgeometry ) { OK = TRUE; break; }
+	  		}
+		}
+		if(!OK && (numgeom == 0) ){
+			g_free(t);
+			t = g_strdup_printf("Sorry\nI can not read %s  file ",NomFichier);
+			MessageGeom(t," Error ",TRUE);
+			g_free(t);
+			return;
+		}
+		if(!OK)break;
+
+		j=-1;
+		while(!feof(fd) )
+		{
+			gdouble rdum = 0;
+			fgets(t,taille,fd);
+			if ( !strcmp(t,"GRADIENT")) break;
+			if(2!=sscanf(t,"%s %lf",AtomCoord[0],&rdum)) break;
+			j++;
+
+			if(GeomXYZ==NULL) GeomXYZ=g_malloc(sizeof(GeomXYZAtomDef));
+			else GeomXYZ=g_realloc(GeomXYZ,(j+1)*sizeof(GeomXYZAtomDef));
+  			GeomXYZ[j].typeConnections = NULL;
+
+			sscanf(t,"%s %s %s %s %s",AtomCoord[0],dum, AtomCoord[1], AtomCoord[2],AtomCoord[3]);
+			{
+				gint k;
+				for(k=0;k<(gint)strlen(AtomCoord[0]);k++) if(isdigit(AtomCoord[0][k])) AtomCoord[0][k] = ' ';
+				delete_all_spaces(AtomCoord[0]);
+			}
+
+			AtomCoord[0][0]=toupper(AtomCoord[0][0]);
+			l=strlen(AtomCoord[0]);
+			if (l==2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+			GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
+			/* GeomXYZ[j].Symb=g_strdup(AtomCoord[0]);*/
+			GeomXYZ[j].Symb=get_symbol_using_z(atoi(dum));
+			GeomXYZ[j].mmType=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].pdbType=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].Residue=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].ResidueNumber=0;
+			if(Units != uni )
+			{
+				if(Units==1)
+				{
+				GeomXYZ[j].X=g_strdup(bohr_to_ang(AtomCoord[1]));
+				GeomXYZ[j].Y=g_strdup(bohr_to_ang(AtomCoord[2]));
+				GeomXYZ[j].Z=g_strdup(bohr_to_ang(AtomCoord[3]));
+				}
+				else
+				{
+				GeomXYZ[j].X=g_strdup(ang_to_bohr(AtomCoord[1]));
+				GeomXYZ[j].Y=g_strdup(ang_to_bohr(AtomCoord[2]));
+				GeomXYZ[j].Z=g_strdup(ang_to_bohr(AtomCoord[3]));
+				}
+			}
+			else
+			{
+				GeomXYZ[j].X=g_strdup(AtomCoord[1]);
+				GeomXYZ[j].Y=g_strdup(AtomCoord[2]);
+				GeomXYZ[j].Z=g_strdup(AtomCoord[3]);
+			}
+			GeomXYZ[j].Charge=g_strdup("0.0");
+			GeomXYZ[j].Layer=g_strdup(" ");
+		}
+
+		NcentersXYZ = j+1;
+		if(OK && numgeometry>=0) break;
+		if(numgeometry<0) geomposok = ftell(fd);
+	}while(!feof(fd));
+	if ( NcentersXYZ >0 )
+	{
+		reset_charges_multiplicities_XYZ();
+	}
+
+	fclose(fd);
+ 	calculMMTypes(FALSE);
+	g_free(t);
+	for(i=0;i<5;i++) g_free(AtomCoord[i]);
+	if(GeomIsOpen && MethodeGeom == GEOM_IS_XYZ)
+	{
+   		clearList(list);
+		append_list();
+	}
+	MethodeGeom = GEOM_IS_XYZ;
+	if(ZoneDessin != NULL) rafresh_drawing();
+	if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
+}
+/********************************************************************************/
 void read_first_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
 {
 	gchar *fileName;
@@ -5603,6 +5882,21 @@ void read_last_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
 		return ;
 	}
 	read_geom_from_gamess_output_file(fileName,-1);
+}
+/********************************************************************************/
+void read_last_irc_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+	gchar *fileName;
+
+ 	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(SelecFile);
+  
+	if ((!fileName) || (strcmp(fileName,"") == 0))
+	{
+		MessageGeom("Sorry\n No file selected"," Error ",TRUE);
+		return ;
+	}
+	read_geom_from_gamess_irc_file(fileName,-1);
 }
 /********************************************************************************/
 void read_geom_from_xyz_file(gchar *fileName, gint numGeom)
@@ -6992,6 +7286,147 @@ void read_geom_from_mopac_output_file(gchar *NomFichier, gint numgeometry)
 	 MethodeGeom = GEOM_IS_XYZ;
 	 if(ZoneDessin != NULL) rafresh_drawing();
 	 if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
+}
+/********************************************************************************/
+void read_XYZ_from_mopac_irc_output_file(gchar *FileName, gint numGeom)
+{
+	gchar *t;
+	gboolean OK;
+	gchar *AtomCoord[10];
+	FILE *fd;
+	guint taille=BSIZE;
+	guint i,l;
+	GeomXYZAtomDef* GeomXYZtemp=NULL;
+	gint Ncent = 0;
+	gint Nvar = 0;
+	VariablesXYZDef* VariablesXYZtemp=NULL;
+	gchar symb[20];
+	gchar type[20];
+	gchar charge[20];
+	gint k1;
+	gint j;
+
+	for(i=0;i<10;i++) AtomCoord[i]=g_malloc(taille*sizeof(gchar));
+	fd = FOpen(FileName, "r");
+	if(fd == NULL)
+	{
+		t = g_strdup_printf("Sorry\n I can not open \"%s\" file",FileName); 
+		MessageGeom(t," Error ",TRUE);
+		g_free(t);
+		return;
+	}
+	t=g_malloc(taille);
+	OK = TRUE;
+	i = 0;
+  	while(!feof(fd) )    
+  	{
+ 		if(!fgets(t, taille, fd))break;
+		if(
+			strstr(t,"POTENTIAL") && 
+			strstr(t,"LOST") &&
+			strstr(t,"TOTAL")
+		) 
+		{
+			i++;
+			if(i==numGeom)break;
+		}
+	}
+	if(i==0) OK = FALSE;
+  	while(!feof(fd) && OK )    
+  	{
+ 		if(!fgets(t, taille, fd))OK = FALSE;
+		if(
+		strstr(t,"ATOM")&&
+		strstr(t,"X")&&
+		strstr(t,"Y")&&
+		strstr(t,"Z")) break;
+	}
+	if(!OK)
+	{
+		g_free(t);
+		t = g_strdup_printf("Sorry\n I can not read geometry from \"%s\" file",FileName); 
+		MessageGeom(t," Error ",TRUE);
+		g_free(t);
+		return;
+	}
+	Ncent=0;
+	GeomXYZtemp = NULL;
+	
+	j=0;
+	while(!feof(fd) )
+	{
+		if(!fgets(t,taille,fd))break;
+		if(this_is_a_backspace(t)) break;
+                i = sscanf(t,"%d %s %s %s %s",
+				&k1,AtomCoord[0],
+				AtomCoord[1],AtomCoord[2],AtomCoord[3]);
+    		if( i== 5)
+                {
+                        Ncent = j+1;
+			GeomXYZtemp=g_realloc(GeomXYZtemp,Ncent*sizeof(GeomXYZAtomDef));
+    			AtomCoord[0][0]=toupper(AtomCoord[0][0]);
+    			l=strlen(AtomCoord[0]);
+      			if (l>=2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+
+    			GeomXYZtemp[j].Nentry=NUMBER_LIST_XYZ;
+			get_symb_type_charge(AtomCoord[0],symb,type,charge);
+			{
+				gint k;
+				for(k=0;k<(gint)strlen(symb);k++) if(isdigit(symb[k])) symb[k] = ' ';
+				delete_all_spaces(symb);
+			}
+
+    			GeomXYZtemp[j].Symb=g_strdup(symb);
+			GeomXYZtemp[j].mmType=g_strdup(type);
+			GeomXYZtemp[j].pdbType=g_strdup(type);
+			GeomXYZtemp[j].Charge=g_strdup(charge);
+
+    			GeomXYZtemp[j].Residue=g_strdup("DUM");
+    			GeomXYZtemp[j].ResidueNumber=0;
+    			GeomXYZtemp[j].X=g_strdup(AtomCoord[1]);
+    			GeomXYZtemp[j].Y=g_strdup(AtomCoord[2]);
+    			GeomXYZtemp[j].Z=g_strdup(AtomCoord[3]);
+    			GeomXYZtemp[j].Layer=g_strdup(" ");
+    			GeomXYZtemp[j].typeConnections = NULL;
+			j++;
+		}
+        }
+	fseek(fd, 0L, SEEK_SET);
+	if(j==0) OK = FALSE;
+	else get_charge_and_multiplicity_from_mopac_output_file(fd);
+	fclose(fd);
+
+	g_free(t);
+	for(i=0;i<5;i++) g_free(AtomCoord[i]);
+	if( !OK || Ncent <1 )
+	{
+		FreeGeomXYZ(GeomXYZtemp,VariablesXYZtemp,Ncent, Nvar);
+		MessageGeom("Sorry\n I can not read geometry in Mopac input file"," Error ",TRUE);
+		return;
+	}
+	if(GeomXYZ) freeGeomXYZ(GeomXYZ);
+	if(VariablesXYZ) freeVariablesXYZ(VariablesXYZ);
+	GeomXYZ = GeomXYZtemp;
+	NcentersXYZ = Ncent;
+	NVariablesXYZ = Nvar;
+	VariablesXYZ = VariablesXYZtemp;
+	MethodeGeom = GEOM_IS_XYZ;
+	calculMMTypes(FALSE);
+	if( Units== 0 ) GeomXYZ_Change_Unit(FALSE);
+	if(GeomIsOpen) create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
+
+	if(ZoneDessin != NULL) rafresh_drawing();
+	set_last_directory(FileName);
+}
+/********************************************************************************/
+void read_geom_from_mopac_irc_output_file(gchar *FileName, gint numGeom)
+{
+	if(zmat_mopac_irc_output_file(FileName))
+	{
+		read_Zmat_from_mopac_irc_output_file(FileName, numGeom);
+	}
+	else 
+		read_XYZ_from_mopac_irc_output_file(FileName, numGeom);
 }
 /********************************************************************************/
 void read_XYZ_from_mopac_scan_output_file(gchar *FileName, gint numGeom)
@@ -10307,6 +10742,7 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   gchar* patternsaux[] = {"*.aux","*",NULL};
   gchar* patternsgab[] = {"*.gab","*",NULL};
   gchar* patternsmol[] = {"*.mol","*",NULL};
+  gchar* patternsirc[] = {"*.irc","*",NULL};
 
 
   switch(itype){
@@ -10328,15 +10764,19 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
 	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a dalton output file", GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
-  case GABEDIT_TYPEFILEGEOM_PCGAMESSFIRST : 
+  case GABEDIT_TYPEFILEGEOM_FIREFLYFIRST : 
   case GABEDIT_TYPEFILEGEOM_GAMESSFIRST : 
 	   SelecFile = gabedit_file_chooser_new("Read the first geometry from a Gamess output file", GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternslog);
 	   break;
-  case GABEDIT_TYPEFILEGEOM_PCGAMESSLAST : 
+  case GABEDIT_TYPEFILEGEOM_FIREFLYLAST : 
   case GABEDIT_TYPEFILEGEOM_GAMESSLAST : 
 	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a Gamess output file", GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternslog);
+	   break;
+  case GABEDIT_TYPEFILEGEOM_GAMESSIRC : 
+	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a Gamess IRC file", GTK_FILE_CHOOSER_ACTION_OPEN);
+   	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsirc);
 	   break;
   case GABEDIT_TYPEFILEGEOM_GAUSSOUTFIRST : 
 	   SelecFile = gabedit_file_chooser_new("Read the first geometry from a gaussian output file", GTK_FILE_CHOOSER_ACTION_OPEN);
@@ -10424,7 +10864,7 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
 	   break;
   case GABEDIT_TYPEFILEGEOM_MOLDEN : return;
   case GABEDIT_TYPEFILEGEOM_DALTONIN : return;
-  case GABEDIT_TYPEFILEGEOM_PCGAMESSIN : return;
+  case GABEDIT_TYPEFILEGEOM_FIREFLYIN : return;
   case GABEDIT_TYPEFILEGEOM_GAMESSIN : return;
   case GABEDIT_TYPEFILEGEOM_GAUSSIN : return;
   case GABEDIT_TYPEFILEGEOM_MOLCASIN : return;
@@ -10459,12 +10899,14 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_dalton_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_DALTONLAST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_dalton_file), GTK_OBJECT(SelecFile)); break;
-  case GABEDIT_TYPEFILEGEOM_PCGAMESSFIRST :
+  case GABEDIT_TYPEFILEGEOM_FIREFLYFIRST :
   case GABEDIT_TYPEFILEGEOM_GAMESSFIRST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_gamess_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_GAMESSLAST :
-  case GABEDIT_TYPEFILEGEOM_PCGAMESSLAST :
+  case GABEDIT_TYPEFILEGEOM_FIREFLYLAST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_gamess_file), GTK_OBJECT(SelecFile)); break;
+  case GABEDIT_TYPEFILEGEOM_GAMESSIRC :
+	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_irc_gamess_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_GAUSSOUTFIRST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_gaussian_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_GAUSSOUTLAST :
@@ -10513,7 +10955,7 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   case GABEDIT_TYPEFILEGEOM_MOLDEN : 
   case GABEDIT_TYPEFILEGEOM_GAUSSIN : 
   case GABEDIT_TYPEFILEGEOM_DALTONIN : 
-  case GABEDIT_TYPEFILEGEOM_PCGAMESSIN : 
+  case GABEDIT_TYPEFILEGEOM_FIREFLYIN : 
   case GABEDIT_TYPEFILEGEOM_GAMESSIN : 
   case GABEDIT_TYPEFILEGEOM_MOLCASIN : 
   case GABEDIT_TYPEFILEGEOM_MOLPROIN : 

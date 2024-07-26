@@ -1,6 +1,6 @@
 /* UtilsInterface.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -21,13 +21,14 @@ DEALINGS IN THE SOFTWARE.
 #include "../../Config.h"
 #include <stdlib.h>
 #include <ctype.h>
+#include <unistd.h>
 
 #include "../Common/Global.h"
 #include "../Utils/Constants.h"
 #include "../Gaussian/GaussGlobal.h"
 #include "../Files/FileChooser.h"
 #include "../Gamess/Gamess.h"
-#include "../PCGamess/PCGamess.h"
+#include "../FireFly/FireFly.h"
 #include "../Molcas/Molcas.h"
 #include "../Molpro/Molpro.h"
 #include "../MPQC/MPQC.h"
@@ -1145,7 +1146,7 @@ void read_geom_in_gamess_input(gchar *fileName)
 	read_geom_from_gamess_output_file(logfile,1);
 }
 /**********************************************************************************/
-void read_geom_in_pcgamess_input(gchar *fileName)
+void read_geom_in_firefly_input(gchar *fileName)
 {
 	gchar* logfile;
 	gchar* t;
@@ -1286,7 +1287,7 @@ void get_doc(gchar *NomFichier)
 
 	if(iprogram == PROG_IS_MPQC) fileopen.command=g_strdup(NameCommandMPQC);
 	else if(iprogram == PROG_IS_GAMESS) fileopen.command=g_strdup(NameCommandGamess);
-	else if(iprogram == PROG_IS_PCGAMESS) fileopen.command=g_strdup(NameCommandPCGamess);
+	else if(iprogram == PROG_IS_FIREFLY) fileopen.command=g_strdup(NameCommandFireFly);
 	else if(iprogram == PROG_IS_GAUSS) fileopen.command=g_strdup(NameCommandGaussian);
 	else if(iprogram == PROG_IS_MOLCAS) fileopen.command=g_strdup(NameCommandMolcas);
 	else if(iprogram == PROG_IS_MOLPRO) fileopen.command=g_strdup(NameCommandMolpro);
@@ -1322,7 +1323,7 @@ void get_doc(gchar *NomFichier)
   		fileopen.moldenfile=g_strdup_printf("%s.log",fileopen.projectname);
 	}
 	else
-	if(iprogram == PROG_IS_PCGAMESS)
+	if(iprogram == PROG_IS_FIREFLY)
 	{
  		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
  		fileopen.outputfile=g_strdup_printf("%s.log",fileopen.projectname);
@@ -1392,7 +1393,7 @@ void get_doc(gchar *NomFichier)
 
 	if( iprogram == PROG_IS_GAUSS) read_geom_in_gauss_input(NomFichier);
 	else if( iprogram == PROG_IS_GAMESS) read_geom_in_gamess_input(NomFichier);
-	else if( iprogram == PROG_IS_PCGAMESS) read_geom_in_pcgamess_input(NomFichier);
+	else if( iprogram == PROG_IS_FIREFLY) read_geom_in_firefly_input(NomFichier);
 	else if( iprogram == PROG_IS_MOLPRO) read_geom_in_molpro_input(NomFichier);
 	else if( iprogram == PROG_IS_MPQC) read_geom_in_mpqc_input(NomFichier);
 	else if( iprogram == PROG_IS_ORCA) read_geom_in_orca_input(NomFichier);
@@ -1497,7 +1498,7 @@ void enreg_selec_doc(GabeditFileChooser *SelecteurFichier , gint response_id)
   
 	if(iprogram == PROG_IS_MPQC) fileopen.command=g_strdup(NameCommandMPQC);
 	else if(iprogram == PROG_IS_GAMESS) fileopen.command=g_strdup(NameCommandGamess);
-	else if(iprogram == PROG_IS_PCGAMESS) fileopen.command=g_strdup(NameCommandPCGamess);
+	else if(iprogram == PROG_IS_FIREFLY) fileopen.command=g_strdup(NameCommandFireFly);
 	else if(iprogram == PROG_IS_GAUSS) fileopen.command=g_strdup(NameCommandGaussian);
 	else if(iprogram == PROG_IS_MOLCAS) fileopen.command=g_strdup(NameCommandMolcas);
 	else if(iprogram == PROG_IS_MOLPRO) fileopen.command=g_strdup(NameCommandMolpro);
@@ -1512,7 +1513,7 @@ void enreg_selec_doc(GabeditFileChooser *SelecteurFichier , gint response_id)
 		if(iprogram==PROG_IS_GAMESS)
 		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
 		else
-		if(iprogram==PROG_IS_PCGAMESS)
+		if(iprogram==PROG_IS_FIREFLY)
 		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
 		else
 		if(iprogram==PROG_IS_QCHEM)
@@ -1563,7 +1564,7 @@ void enreg_selec_doc(GabeditFileChooser *SelecteurFichier , gint response_id)
  		fileopen.moldenfile = g_strdup_printf("%s.log",fileopen.projectname);
 	}
 	else
-	if(iprogram == PROG_IS_PCGAMESS)
+	if(iprogram == PROG_IS_FIREFLY)
 	{
 		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
 	 	fileopen.outputfile = g_strdup_printf("%s.log",fileopen.projectname);
@@ -1664,11 +1665,11 @@ void new_doc_molcas(GtkWidget* wid, gpointer data)
 	fileopen.command=g_strdup(NameCommandGamess);
 }
 /********************************************************************************/
- void new_doc_pcgamess(GtkWidget* wid, gpointer data)
+ void new_doc_firefly(GtkWidget* wid, gpointer data)
 {
- 	newPCGamess();
-	iprogram = PROG_IS_PCGAMESS;
-	fileopen.command=g_strdup(NameCommandPCGamess);
+ 	newFireFly();
+	iprogram = PROG_IS_FIREFLY;
+	fileopen.command=g_strdup(NameCommandFireFly);
 }
 /********************************************************************************/
  void new_doc_gauss(GtkWidget* wid, gpointer data)
@@ -1726,7 +1727,7 @@ static void show_about_new()
 	};
 
 	static const gchar *copyright =
-		"Copyright \xc2\xa9 2002-2009 Abdul-Rahman Allouche.\n"
+		"Copyright \xc2\xa9 2002-2010 Abdul-Rahman Allouche.\n"
 		"All rights reserved.\n";
 	
 	gchar *license =
@@ -1754,7 +1755,7 @@ static void show_about_new()
 
 	static const gchar *comments =
 		"Graphical User Interface to GAMESS-US, Gaussian, Molcas, Molpro, "
-		"MPQC, PCGamess and Q-Chem computational chemistry packages.";
+		"MPQC, FireFly and Q-Chem computational chemistry packages.";
 	
 	gchar *GABEDIT_VERSION =
 		g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
@@ -2386,7 +2387,7 @@ void new_mpqc(GtkWidget *widget, gchar *data)
  	}
 }
 /**********************************************************************************/
-void new_pcgamess(GtkWidget *widget, gchar *data)
+void new_firefly(GtkWidget *widget, gchar *data)
 {
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
@@ -2394,14 +2395,14 @@ void new_pcgamess(GtkWidget *widget, gchar *data)
 		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
 		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
 		t = g_strdup_printf(" %sYou want to continue?\n",t);
-		Continue_YesNo(new_doc_pcgamess, NULL,t);
+		Continue_YesNo(new_doc_firefly, NULL,t);
 		g_free(t);
         }
         else
         {
-		new_doc_pcgamess(NULL, NULL);
-		iprogram = PROG_IS_PCGAMESS;
-		fileopen.command=g_strdup(NameCommandPCGamess);
+		new_doc_firefly(NULL, NULL);
+		iprogram = PROG_IS_FIREFLY;
+		fileopen.command=g_strdup(NameCommandFireFly);
  	}
 }
 /**********************************************************************************/
@@ -2667,7 +2668,7 @@ void draw_density_orbitals_gamess_or_gauss_or_molcas_or_molpro(GtkWidget *wid,gp
 	g_free(FileName);
   }
   else
-  if( iprogram == PROG_IS_PCGAMESS)
+  if( iprogram == PROG_IS_FIREFLY)
   {
  	gchar** FileName = g_malloc(2*sizeof(gchar*));
  	FileName[0] = NULL;
@@ -2738,6 +2739,8 @@ void set_last_directory(G_CONST_RETURN gchar* FileName)
 	lastdirectory = g_strdup(localdir);
 	if(temp) g_free(temp);
 	if(localdir) g_free(localdir);
+	if(lastdirectory && gabedit_directory() && strcmp(lastdirectory,gabedit_directory())) 
+		chdir(lastdirectory);
 }
 /*********************************************************************/
 gchar* get_last_directory()

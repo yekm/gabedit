@@ -1,6 +1,6 @@
 /* GabeditXYPlot.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -3231,6 +3231,7 @@ static void activate_action (GtkAction *action)
 	if(!strcmp(name,"ScreenCaptureJPEG")) {  saveImageDlg(xyplot, "jpeg");}
 	if(!strcmp(name,"ScreenCapturePNG")) {  saveImageDlg(xyplot, "png");}
 	if(!strcmp(name,"ScreenCaptureTPNG")) {  saveImageDlg(xyplot, "tpng");}
+	if(!strcmp(name,"ScreenCaptureTIF")) {  saveImageDlg(xyplot, "tif");}
 	if(!strcmp(name,"ScreenCaptureClipBoard")) {  copyImageToClipBoard(xyplot); }
 	if(!strcmp(name,"ExportSVG")) {  exportImageDlg(xyplot, "svg");}
 	if(!strcmp(name,"ExportPDF")) {  exportImageDlg(xyplot, "pdf");}
@@ -3269,6 +3270,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ScreenCaptureJPEG", NULL, "_JPEG format", NULL, "JPEG format", G_CALLBACK (activate_action) },
 	{"ScreenCapturePNG", NULL, "_PNG format", NULL, "PNG format", G_CALLBACK (activate_action) },
 	{"ScreenCaptureTPNG", NULL, "_Transparent PNG format", NULL, "Transparent PNG format", G_CALLBACK (activate_action) },
+	{"ScreenCaptureTIF", NULL, "_TIF format", NULL, "TIF format", G_CALLBACK (activate_action) },
 	{"ScreenCaptureClipBoard", NULL, "_Copy to clipboard", NULL, "Copy to clipboard", G_CALLBACK (activate_action) },
 	{"Export", NULL, "_Export"},
 	{"ExportSVG", NULL, "Export _SVG format", NULL, "SVG format", G_CALLBACK (activate_action) },
@@ -3360,6 +3362,8 @@ static void add_data_to_actions(GtkUIManager *manager, GtkWidget   *xyplot)
 	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
 	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/ScreenCapture/ScreenCaptureTPNG");
 	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
+	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/ScreenCapture/ScreenCaptureTIF");
+	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
 	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/ScreenCapture/ScreenCaptureClipBoard");
 	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
 
@@ -3438,6 +3442,7 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"ScreenCaptureJPEG\" action=\"ScreenCaptureJPEG\" />\n"
 "      <menuitem name=\"ScreenCapturePNG\" action=\"ScreenCapturePNG\" />\n"
 "      <menuitem name=\"ScreenCaptureTPNG\" action=\"ScreenCaptureTPNG\" />\n"
+"      <menuitem name=\"ScreenCaptureTIF\" action=\"ScreenCaptureTIF\" />\n"
 "      <menuitem name=\"ScreenCaptureClipBoard\" action=\"ScreenCaptureClipBoard\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepExport\" />\n"
@@ -3459,6 +3464,7 @@ static const gchar *uiMenuInfo =
 "      <toolitem name=\"ScreenCaptureJPEG\" action=\"ScreenCaptureJPEG\" />\n"
 "      <toolitem name=\"ScreenCapturePNG\" action=\"ScreenCapturePNG\" />\n"
 "      <toolitem name=\"ScreenCaptureTPNG\" action=\"ScreenCaptureTPNG\" />\n"
+"      <toolitem name=\"ScreenCaptureTIF\" action=\"ScreenCaptureTIF\" />\n"
 "      <toolitem name=\"ScreenCaptureClipBoard\" action=\"ScreenCaptureClipBoard\" />\n"
 "  </toolbar>\n"
 ;
@@ -3752,6 +3758,15 @@ static gint gabedit_xyplot_key_press(GtkWidget* widget, GdkEventKey *event)
   		xyplot->shift_key_pressed = TRUE;
 	if((event->keyval == GDK_Control_L || event->keyval == GDK_Control_R) )
   		xyplot->control_key_pressed = TRUE;
+	if((event->keyval == GDK_Alt_L || event->keyval == GDK_Alt_L) )
+  		xyplot->control_key_pressed = TRUE;
+
+	if((event->keyval == GDK_c || event->keyval == GDK_C) )
+	{
+		if(xyplot->control_key_pressed) 
+			copyImageToClipBoard(widget);
+
+	}
 	return TRUE;
 }
 /********************************************************************************/
@@ -3767,6 +3782,8 @@ static gint gabedit_xyplot_key_release(GtkWidget* widget, GdkEventKey *event)
 	if((event->keyval == GDK_Shift_L || event->keyval == GDK_Shift_R) )
   		xyplot->shift_key_pressed = FALSE;
 	if((event->keyval == GDK_Control_L || event->keyval == GDK_Control_R) )
+  		xyplot->control_key_pressed = FALSE;
+	if((event->keyval == GDK_Alt_L || event->keyval == GDK_Alt_R) )
   		xyplot->control_key_pressed = FALSE;
 	return TRUE;
 }
@@ -5634,9 +5651,23 @@ void gabedit_xyplot_save(GabeditXYPlot *xyplot, gchar *fileName, gchar* type)
 		{
 			GtkClipboard * clipboard;
 			clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
-			gtk_clipboard_set_image(clipboard, pixbuf);
+			if(clipboard)
+			{
+				gtk_clipboard_clear(clipboard);
+				gtk_clipboard_set_image(clipboard, pixbuf);
+			}
 		}
-		else gdk_pixbuf_save(pixbuf, fileName, type, &error, NULL);
+		else 
+		{
+			if(type && strstr(type,"j") && strstr(type,"g") )
+			gdk_pixbuf_save(pixbuf, fileName, type, &error, "quality", "100", NULL);
+			else if(type && strstr(type,"png"))
+			gdk_pixbuf_save(pixbuf, fileName, type, &error, "compression", "5", NULL);
+			else if(type && (strstr(type,"tif") || strstr(type,"tiff")))
+			gdk_pixbuf_save(pixbuf, fileName, "tiff", &error, "compression", "1", NULL);
+			else
+			gdk_pixbuf_save(pixbuf, fileName, type, &error, NULL);
+		}
 	 	g_object_unref (pixbuf);
 	}
 }
@@ -6439,7 +6470,7 @@ void gabedit_xyplot_help()
 			"\t        Save all data at a txt file\n"
 			"\t        Remove all all\n"
 			"\t        change data (scale, shift, ...)\n"
-			"\t Screen capture : BMP, JPEG, PNG, Transparent PNG\n"
+			"\t Screen capture : BMP, JPEG, PNG, Transparent PNG, TIF\n"
 			"\t Export image : SVG, PS, EPS and PDF (this is a real export, not a capture)\n"
 			"\t Help : for obtain this window (You guessed :))\n"
 			"\t Close : very simple :)\n"

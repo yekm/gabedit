@@ -1,6 +1,6 @@
 /* SemiEmpiricalDlg.h */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -23,12 +23,12 @@ DEALINGS IN THE SOFTWARE.
 /* 
  * type =  
  *         "MopacEnergy", "MopacOptimize", "MopacESP",
- *         "AM1PCGamessEnergy", "AM1PCGamessOptimize", 
+ *         "AM1FireFlyEnergy", "AM1FireFlyOptimize", 
  *         "PM6MopacEnergy", "PM6MopacOptimize",
  *         "PM6MopacESP",
  *         "AM1MopacEnergy", "AM1MopacOptimize",
  *         "AM1MopacESP",
- *         "AM1PCGamessEnergy", "AM1PCGamessOptimize", 
+ *         "AM1FireFlyEnergy", "AM1FireFlyOptimize", 
 */
 void semiEmpiricalDlg(gchar* type);
 

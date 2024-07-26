@@ -1,6 +1,6 @@
 /* Orbitals.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -2329,7 +2329,7 @@ gboolean read_orbitals(gchar* fileName)
 {
 	GabEditTypeFile fileType = get_type_file(fileName);
 	if(fileType == GABEDIT_TYPEFILE_GAMESS) read_gamess_orbitals(fileName);
-	else if(fileType == GABEDIT_TYPEFILE_PCGAMESS) read_gamess_orbitals(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_FIREFLY) read_gamess_orbitals(fileName);
 	else if(fileType == GABEDIT_TYPEFILE_GAUSSIAN) read_gauss_orbitals(fileName);
 	else if(fileType == GABEDIT_TYPEFILE_MOLPRO) read_molpro_orbitals(fileName);
 	else if(fileType == GABEDIT_TYPEFILE_MOPAC) read_mopac_orbitals(fileName);

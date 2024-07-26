@@ -1,6 +1,6 @@
 /* ListeFiles.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -43,7 +43,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Molcas/MolcasVariables.h"
 #include "../Molcas/MolcasGateWay.h"
 #include "../../pixmaps/GamessMini.xpm"
-#include "../../pixmaps/PCGamessMini.xpm"
+#include "../../pixmaps/FireFlyMini.xpm"
 #include "../../pixmaps/Gaussian.xpm"
 #include "../../pixmaps/MolproMini.xpm"
 #include "../../pixmaps/MolcasMini.xpm"
@@ -63,7 +63,7 @@ static GdkPixbuf *gaussianPixbuf = NULL;
 static GdkPixbuf *molcasPixbuf = NULL;
 static GdkPixbuf *molproPixbuf = NULL;
 static GdkPixbuf *mpqcPixbuf = NULL;
-static GdkPixbuf *pcgamessPixbuf = NULL;
+static GdkPixbuf *fireflyPixbuf = NULL;
 static GdkPixbuf *orcaPixbuf = NULL;
 static GdkPixbuf *qchemPixbuf = NULL;
 static GdkPixbuf *mopacPixbuf = NULL;
@@ -119,7 +119,7 @@ static void set_pixbuf()
 	if(!qchemPixbuf) qchemPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) qchem_mini_xpm);
 	if(!mopacPixbuf) mopacPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) mopac_mini_xpm);
 	if(!gabeditPixbuf) gabeditPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) gabedit_mini_xpm);
-	if(!pcgamessPixbuf) pcgamessPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) pcgamess_mini_xpm);
+	if(!fireflyPixbuf) fireflyPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) firefly_mini_xpm);
 	if(!bookPixbuf) bookPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) book_close_xpm);
 	if(!pagePixbuf) pagePixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) page_xpm);
 }
@@ -255,7 +255,7 @@ static void set_fileopen(DataTree* data)
  		fileopen.logfile = g_strdup_printf("%s.aux",fileopen.projectname);
   		fileopen.moldenfile=g_strdup_printf("%s.out",fileopen.projectname);
 	}
-	else if(data->itype == PROG_IS_PCGAMESS)
+	else if(data->itype == PROG_IS_FIREFLY)
 	{
  		fileopen.outputfile = g_strdup_printf("%s.log",fileopen.projectname);
  		fileopen.logfile = g_strdup_printf("%s.log",fileopen.projectname);
@@ -644,7 +644,7 @@ static void create_set_dialogue_window()
 		|| data->itype == PROG_IS_QCHEM 
 		|| data->itype == PROG_IS_MOPAC 
 		|| data->itype == PROG_IS_GAMESS 
-		|| data->itype == PROG_IS_PCGAMESS 
+		|| data->itype == PROG_IS_FIREFLY 
 		)
 			add_label_table(Table,"Files ",1,0);
   		else
@@ -672,7 +672,7 @@ static void create_set_dialogue_window()
 			t = g_strdup_printf("%s, %s.out, %s.log, %s.molden",data->datafile,data->projectname,data->projectname,data->projectname);
 			break;
 
-			case PROG_IS_PCGAMESS :
+			case PROG_IS_FIREFLY :
 			t = g_strdup_printf("%s, %s.log",data->datafile,data->projectname);
 			break;
 
@@ -953,7 +953,7 @@ static void create_remote_frame_popup(GtkWidget *hbox,DataTree* data)
   LabelLeft[2] = g_strdup("Directory");
 
 
-  if(data->itype == PROG_IS_GAUSS || data->itype == PROG_IS_MOLCAS || data->itype == PROG_IS_MOLPRO || data->itype == PROG_IS_MPQC || data->itype == PROG_IS_GAMESS || data->itype == PROG_IS_PCGAMESS || data->itype == PROG_IS_QCHEM ||  data->itype == PROG_IS_MOPAC  || data->itype == PROG_IS_ORCA )
+  if(data->itype == PROG_IS_GAUSS || data->itype == PROG_IS_MOLCAS || data->itype == PROG_IS_MOLPRO || data->itype == PROG_IS_MPQC || data->itype == PROG_IS_GAMESS || data->itype == PROG_IS_FIREFLY || data->itype == PROG_IS_QCHEM ||  data->itype == PROG_IS_MOPAC  || data->itype == PROG_IS_ORCA )
   	LabelLeft[3] = g_strdup("Files");
   else
   	LabelLeft[3] = g_strdup("File");
@@ -1015,7 +1015,7 @@ static void create_remote_frame_popup(GtkWidget *hbox,DataTree* data)
 		t = g_strdup_printf("%s, %s.out, %s.log, %s.molden",data->datafile,data->projectname,data->projectname,data->projectname);
 		break;
 
-	case PROG_IS_PCGAMESS :
+	case PROG_IS_FIREFLY :
 		t = g_strdup_printf("%s, %s.log",data->datafile,data->projectname);
 		break;
 	case PROG_IS_ORCA : 
@@ -1073,7 +1073,7 @@ static void create_local_frame_popup(GtkWidget *hbox,DataTree* data)
   LabelLeft[0] = g_strdup("Host");
   LabelLeft[1] = g_strdup("Login");
   LabelLeft[2] = g_strdup("Directory");
-  if(data->itype == PROG_IS_GAUSS || data->itype == PROG_IS_MOLCAS ||data->itype == PROG_IS_MOLPRO || data->itype == PROG_IS_MPQC  || data->itype == PROG_IS_GAMESS || data->itype == PROG_IS_PCGAMESS || data->itype == PROG_IS_QCHEM || data->itype == PROG_IS_MOPAC || data->itype == PROG_IS_ORCA )
+  if(data->itype == PROG_IS_GAUSS || data->itype == PROG_IS_MOLCAS ||data->itype == PROG_IS_MOLPRO || data->itype == PROG_IS_MPQC  || data->itype == PROG_IS_GAMESS || data->itype == PROG_IS_FIREFLY || data->itype == PROG_IS_QCHEM || data->itype == PROG_IS_MOPAC || data->itype == PROG_IS_ORCA )
   	LabelLeft[3] = g_strdup("Files");
   else
   	LabelLeft[3] = g_strdup("File");
@@ -1121,7 +1121,7 @@ static void create_local_frame_popup(GtkWidget *hbox,DataTree* data)
 		t = g_strdup_printf("%s, %s.out, %s.log, %s.molden",data->datafile,data->projectname,data->projectname,data->projectname);
 		break;
 
-	case PROG_IS_PCGAMESS :
+	case PROG_IS_FIREFLY :
 		t = g_strdup_printf("%s, %s.log",data->datafile,data->projectname);
 		break;
 
@@ -1692,7 +1692,7 @@ static void get_doc_no_add_list(GtkWidget *wid, gpointer d)
 	if(iprogram == PROG_IS_MOLPRO ) read_geom_in_molpro_input(NomFichier);
 	else if(iprogram == PROG_IS_GAUSS) read_geom_in_gauss_input(NomFichier);
 	else if(iprogram == PROG_IS_GAMESS) read_geom_in_gamess_input(NomFichier);
-	else if(iprogram == PROG_IS_PCGAMESS) read_geom_in_gamess_input(NomFichier);
+	else if(iprogram == PROG_IS_FIREFLY) read_geom_in_gamess_input(NomFichier);
 	else if(iprogram == PROG_IS_MOLCAS)
 	{
 		setMolcasVariablesFromInputFile(NomFichier);
@@ -1722,7 +1722,7 @@ static void select_row(DataTree* data)
         case GABEDIT_TYPENODE_MOLCAS:
         case GABEDIT_TYPENODE_MOLPRO:
         case GABEDIT_TYPENODE_MPQC:
-        case GABEDIT_TYPENODE_PCGAMESS:
+        case GABEDIT_TYPENODE_FIREFLY:
         case GABEDIT_TYPENODE_ORCA:
         case GABEDIT_TYPENODE_QCHEM:
         case GABEDIT_TYPENODE_MOPAC:
@@ -1881,6 +1881,7 @@ static void tree_clear_all()
 	AllFiles = NULL;
 	Nfiles = 0;
 
+	noeud[GABEDIT_TYPENODE_FIREFLY]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"FireFly");
 	noeud[GABEDIT_TYPENODE_GAMESS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gamess");
 	noeud[GABEDIT_TYPENODE_GAUSSIAN]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gaussian");
 	noeud[GABEDIT_TYPENODE_MOLCAS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Molcas");
@@ -1888,7 +1889,6 @@ static void tree_clear_all()
 	noeud[GABEDIT_TYPENODE_MOPAC]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Mopac");
 	noeud[GABEDIT_TYPENODE_MPQC]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"MPQC");
 	noeud[GABEDIT_TYPENODE_ORCA]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"ORCA");
-	noeud[GABEDIT_TYPENODE_PCGAMESS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"PCGamess");
 	noeud[GABEDIT_TYPENODE_QCHEM]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Q-Chem");
 	noeud[GABEDIT_TYPENODE_GABEDIT]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gabedit");
 	noeud[GABEDIT_TYPENODE_XYZ]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"XYZ");
@@ -1995,6 +1995,7 @@ static void tree_clear_one(gint in)
 
 	tree_data_destroy_one_node (in);
 
+	noeud[GABEDIT_TYPENODE_FIREFLY]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"FireFly");
 	noeud[GABEDIT_TYPENODE_GAMESS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gamess");
 	noeud[GABEDIT_TYPENODE_GAUSSIAN]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gaussian");
 	noeud[GABEDIT_TYPENODE_MOLCAS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Molcas");
@@ -2002,7 +2003,6 @@ static void tree_clear_one(gint in)
 	noeud[GABEDIT_TYPENODE_MOPAC]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Mopac");
 	noeud[GABEDIT_TYPENODE_MPQC]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"MPQC");
 	noeud[GABEDIT_TYPENODE_ORCA]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"ORCA");
-	noeud[GABEDIT_TYPENODE_PCGAMESS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"PCGamess");
 	noeud[GABEDIT_TYPENODE_QCHEM]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Q-Chem");
 	noeud[GABEDIT_TYPENODE_GABEDIT]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gabedit");
 	noeud[GABEDIT_TYPENODE_XYZ]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"XYZ");
@@ -2066,6 +2066,7 @@ static GtkTreeIter *tree_clear(GtkTreeIter *parent,gint ifile)
 
     	tree_data_destroy (AllFiles[ifile]);
 
+	noeud[GABEDIT_TYPENODE_FIREFLY]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"FireFly");
 	noeud[GABEDIT_TYPENODE_GAMESS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gamess");
 	noeud[GABEDIT_TYPENODE_GAUSSIAN]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gaussian");
 	noeud[GABEDIT_TYPENODE_MOLCAS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Molcas");
@@ -2073,7 +2074,6 @@ static GtkTreeIter *tree_clear(GtkTreeIter *parent,gint ifile)
 	noeud[GABEDIT_TYPENODE_MOPAC]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Mopac");
 	noeud[GABEDIT_TYPENODE_MPQC]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"MPQC");
 	noeud[GABEDIT_TYPENODE_ORCA]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"ORCA");
-	noeud[GABEDIT_TYPENODE_PCGAMESS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"PCGamess");
 	noeud[GABEDIT_TYPENODE_QCHEM]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Q-Chem");
 	noeud[GABEDIT_TYPENODE_GABEDIT]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gabedit");
 	noeud[GABEDIT_TYPENODE_XYZ]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"XYZ");
@@ -2199,7 +2199,7 @@ static GtkTreeIter* CreeNoeud(GtkTreeView *treeView,gchar *text)
 	gtk_tree_store_append(store, node, NULL);
     	g_strup(t);
        	gtk_tree_store_set (store, node, LIST_NAME, t, -1);
-	if(strstr(t,"PCGAMESS")) gtk_tree_store_set (store, node, LIST_PIXBUF, pcgamessPixbuf, -1);
+	if(strstr(t,"FIREFLY")) gtk_tree_store_set (store, node, LIST_PIXBUF, fireflyPixbuf, -1);
 	else
 	if(strstr(t,"GAMESS")) gtk_tree_store_set (store, node, LIST_PIXBUF, gamessPixbuf, -1);
 	else
@@ -2378,7 +2378,8 @@ static void  create_window_list_to_clear()
   		"Molpro list",
   		"Mopac list",
   		"MPQC list",
-  		"PCGamess list",
+  		"Orca list",
+  		"FireFly list",
   		"Q-Chem list",
   		"Gabedit list",
   		"xyz list",
@@ -2537,6 +2538,7 @@ void ListeFiles(GtkWidget* vbox)
 
 	gtk_container_add(GTK_CONTAINER(Scr), treeViewProjects);
   
+	noeud[GABEDIT_TYPENODE_FIREFLY]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"FireFly");
 	noeud[GABEDIT_TYPENODE_GAMESS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gamess");
 	noeud[GABEDIT_TYPENODE_GAUSSIAN]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gaussian");
 	noeud[GABEDIT_TYPENODE_MOLCAS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Molcas");
@@ -2544,7 +2546,6 @@ void ListeFiles(GtkWidget* vbox)
 	noeud[GABEDIT_TYPENODE_MOPAC]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Mopac");
 	noeud[GABEDIT_TYPENODE_MPQC]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"MPQC");
 	noeud[GABEDIT_TYPENODE_ORCA]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"ORCA");
-	noeud[GABEDIT_TYPENODE_PCGAMESS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"PCGamess");
 	noeud[GABEDIT_TYPENODE_QCHEM]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Q-Chem");
 	noeud[GABEDIT_TYPENODE_GABEDIT]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gabedit");
 	noeud[GABEDIT_TYPENODE_XYZ]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"XYZ");

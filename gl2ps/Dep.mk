@@ -1,3 +1,1 @@
-# DO NOT DELETE
-
-gl2ps.o: gl2ps.h
+gl2ps.o: gl2ps.c gl2ps.h

@@ -1,6 +1,6 @@
 /* Help.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -43,7 +43,7 @@ void help_commands()
 	        "      However last parameter accepted by script must be the name\n"
 	        "      of data file(included the extension \n"
 	        "             .com for Gaussian, Molpro, Molcas and\n"
-	        "             .inp for Gamess, PCGamess and Q-Chem).\n"
+	        "             .inp for Gamess, FireFly and Q-Chem).\n"
 		 );
 	win = Message(temp," Info ",FALSE);
 	gtk_window_set_modal (GTK_WINDOW (win), TRUE);

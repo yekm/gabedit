@@ -1,6 +1,6 @@
 /* GamessRunControl.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -149,12 +149,38 @@ static gchar* calculWord(gchar* view)
 /*************************************************************************************************************/
 static void putGamessRunTypeInfoInTextEditor()
 {
+
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &gamessColorFore.keyWord, &gamessColorBack.keyWord, "$SYSTEM",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " MWORDS=20 ",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &gamessColorFore.keyWord, &gamessColorBack.keyWord, "$END\n",-1);
+
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, &gamessColorFore.keyWord, &gamessColorBack.keyWord, "$CONTRL",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " RUNTYP=",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, selectedRun,-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, &gamessColorFore.keyWord, &gamessColorBack.keyWord, "$END\n",-1);
+
+	if(!strcmp(selectedRun,"Optimize") || !strcmp(selectedRun,"Sadpoint"))
+	{
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &gamessColorFore.keyWord, &gamessColorBack.keyWord, "$STATPT",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "  OptTol=1e-5 NStep=500 ",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &gamessColorFore.keyWord, &gamessColorBack.keyWord, "$END\n",-1);
+	}
+	if(!strcmp(selectedRun,"IRC"))
+	{
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &gamessColorFore.keyWord, &gamessColorBack.keyWord, "$IRC",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "  NPOINT=10 ",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &gamessColorFore.keyWord, &gamessColorBack.keyWord, "$END\n",-1);
+	}
+	if(!strcmp(selectedRun,"Raman") || !strcmp(selectedRun,"Sadpoint") || !strcmp(selectedRun,"IRC"))
+	{
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &gamessColorFore.keyWord, &gamessColorBack.keyWord, 
+			"----> Put here the $HESS card.\n      You can obtain it from your old frequecncies calculation(.pun or .irc file)\n",-1);
+	}
 }
 /*************************************************************************************************************/
 static void putGamessSCFControlInfoInTextEditor()

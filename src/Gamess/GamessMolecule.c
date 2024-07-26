@@ -1,6 +1,6 @@
 /* GamessMolecule.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -419,9 +419,9 @@ static gint getRealNumberZmatVariables()
 	gint i;
         for(i=0;i<NcentersZmat;i++)
 	{
-        	if(Geom[i].Nentry>NUMBER_ENTRY_0 && test(Geom[i].R)) k++;
-        	if(Geom[i].Nentry>NUMBER_ENTRY_R && test(Geom[i].Angle)) k++;
-        	if(Geom[i].Nentry>NUMBER_ENTRY_ANGLE && test(Geom[i].Dihedral)) k++;
+        	if(Geom[i].Nentry>NUMBER_ENTRY_0 && !test(Geom[i].R)) k++;
+        	if(Geom[i].Nentry>NUMBER_ENTRY_R && !test(Geom[i].Angle)) k++;
+        	if(Geom[i].Nentry>NUMBER_ENTRY_ANGLE && !test(Geom[i].Dihedral)) k++;
 	}
 	return k;
 }
@@ -445,7 +445,7 @@ static void putGamessMoleculeZMatInTextEditor()
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, &gamessColorFore.keyWord, &gamessColorBack.keyWord, "$END\n",-1);
 
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &gamessColorFore.keyWord, &gamessColorBack.keyWord, "$ZMT\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &gamessColorFore.keyWord, &gamessColorBack.keyWord, "$ZMAT\n",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "   IZMAT(1)=\n   ",-1);
         for(i=0;i<NcentersZmat;i++)
 	{
@@ -755,6 +755,7 @@ static void putGamessMoleculeInTextEditor()
 			}
         	}
         	if(NVariables>0 && getRealNumberZmatVariables()>0)
+		{
         	for(i=0;i<NVariables;i++)
         	{
         		if(Variables[i].Used)
@@ -771,6 +772,7 @@ static void putGamessMoleculeInTextEditor()
         			gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,buffer,-1);
 			}
         	}
+		}
 	}
 	for (i=0;i<(gint)numberOfAtoms;i++) g_free( symbols[i]);
 	g_free( symbols);
@@ -1153,6 +1155,7 @@ static void setComboCharge(GtkWidget *comboCharge)
 	nlist = gamessMolecule.numberOfValenceElectrons*2-2+1;
 
 	if(nlist<1) return;
+	if(nlist==1) nlist++;
 	list = g_malloc(nlist*sizeof(gchar*));
 	if(!list) return;
 	for(i=0;i<nlist;i++)
@@ -1167,6 +1170,7 @@ static void setComboCharge(GtkWidget *comboCharge)
 		sprintf(list[i+1],"%d",-k);
 		k += 1;
 	}
+	if(nlist==2) sprintf(list[1],"%d",-1);
 
   	for(i=0;i<nlist;i++) glist = g_list_append(glist,list[i]);
 

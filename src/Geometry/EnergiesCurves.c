@@ -1,6 +1,6 @@
 /* EnergiesCurve.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -116,6 +116,7 @@ static void set_geom(GtkWidget *widget,gpointer data)
 	k = *ki;
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_DALTON) read_geom_conv_from_dalton_output_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_GAMESS) read_geom_conv_from_gamess_output_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
+	if(GeomConv->fileType == GABEDIT_TYPEFILE_GAMESSIRC) read_geom_from_gamess_irc_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_GAUSSIAN) read_geom_from_gaussian_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOLPRO) read_geom_from_molpro_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_QCHEM) read_geom_from_qchem_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
@@ -125,6 +126,7 @@ static void set_geom(GtkWidget *widget,gpointer data)
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MPQC) read_geom_from_mpqc_output_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOPAC) read_geom_from_mopac_aux_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOPAC_SCAN) read_geom_from_mopac_scan_output_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
+	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOPAC_IRC) read_geom_from_mopac_irc_output_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_XYZ) read_geom_from_xyz_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 
 }
@@ -662,7 +664,8 @@ GtkWidget *add_energies_curve( GtkWidget *WindowEnergies, DataGeomConv* GeomConv
         j++; 
 
 	k = g_malloc(sizeof(gint));
-	*k = 0;
+	*k = GeomConv->Npoint -1;
+	if(*k<0) *k = 0;
 
 	Frame = gtk_frame_new (GeomConv->TypeCalcul);
         gtk_frame_set_shadow_type( GTK_FRAME(Frame),GTK_SHADOW_ETCHED_OUT);
@@ -768,7 +771,6 @@ void create_energies_curves(DataGeomConv* GeomConv,gint N)
        
 	 if(!GeomConv)
 	 {
-		Message("Sorry\n This is a single point calculation file\n"," Error ",TRUE); 
 		return;
 	 }
 
@@ -783,7 +785,7 @@ void create_energies_curves(DataGeomConv* GeomConv,gint N)
           		Message("Sorry\n I can not read energies from your molpro log file\n"," Error ",TRUE);
 			break;
 		case GABEDIT_TYPEFILE_QCHEM :
-          		Message("Sorry\n I can not read energies from your q-chme output file\n"," Error ",TRUE);
+          		Message("Sorry\n I can not read energies from your q-chem output file\n"," Error ",TRUE);
 			break;
 		case GABEDIT_TYPEFILE_MOLDEN :
           		Message("Sorry\n I can not read energies from your molden file\n"," Error ",TRUE);

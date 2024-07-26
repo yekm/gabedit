@@ -14,13 +14,10 @@ compiling: $(OBJECTS)
 clean:
 	@$(RM) *.chk p *o gabedit *.com *.out *.log *.test test* *.cpp  *old *.ps .*swp *~ 
 
-include Dep.mk
 #make dependance
+SRCS = $(OBJECTS:%.o=%.c)
 dep :
-	-makedepend -f- *.[ch] 2>/dev/null \
-	| sed 's:/usr[^ ]*/include/[^ ]*h::g' \
-	| sed 's:/usr/include/.*::g' \
-	| sed 's:  *: :g; s: $$::' \
-	| grep -v '.*:$$' >Dep.mk
+	gcc -MM $(SRCS) > Dep.mk
 
+-include Dep.mk
 

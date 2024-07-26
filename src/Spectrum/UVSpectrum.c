@@ -1,6 +1,6 @@
 /* UVSpectrum.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -287,6 +287,71 @@ static void read_dalton_file_dlg()
 /********************************************************************************/
 static gboolean read_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
 {
+ 	gchar t[BSIZE];
+ 	gboolean OK;
+	gint numberOfStates = 0;
+	gdouble* energies = NULL;
+	gdouble* intensities = NULL;
+	gchar *FileName;
+	gchar** allreals = NULL;
+ 	FILE *fd;
+	gint k = 0;
+
+	if(response_id != GTK_RESPONSE_OK) return FALSE;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+
+ 	fd = FOpen(FileName, "r");
+	if(!fd) return FALSE;
+
+ 	do 
+ 	{
+ 		OK=FALSE;
+ 		while(!feof(fd))
+		{
+	  		fgets(t,BSIZE,fd);
+	 		if ( strstr( t,"EXCITATION") && strstr( t,"STATE") && strstr( t,"OSCILLATOR") )
+	  		{
+    				fgets(t,BSIZE,fd); /* second row of title */
+    				fgets(t,BSIZE,fd); /* ground state */
+				OK = TRUE;
+				numberOfStates = 0;
+				break;
+	  		}
+		}
+  		while(!feof(fd) )
+  		{
+    			fgets(t,BSIZE,fd);
+			if(this_is_a_backspace(t)) break;
+ 			allreals =gab_split (t);
+			k = 0;
+			while(allreals && allreals[k] && k<7) k++;
+			if(k==7)
+			{
+				numberOfStates++;
+				energies = g_realloc(energies, numberOfStates*sizeof(gdouble));
+				intensities = g_realloc(intensities, numberOfStates*sizeof(gdouble));
+				energies[numberOfStates-1] = atof(allreals[3]);
+				intensities[numberOfStates-1] = atof(allreals[7]);
+			}
+			g_strfreev(allreals);
+			allreals = NULL;
+		}
+ 	}while(!feof(fd));
+
+	if(numberOfStates>0)
+	{
+		createUVSpectrumWin(numberOfStates, energies, intensities);
+	}
+	else
+	{
+		messageErrorFreq(FileName);
+	}
+
+
+	if(energies) g_free(energies);
+	if(intensities) g_free(intensities);
+	fclose(fd);
+	return TRUE;
 	return FALSE;
 }
 /********************************************************************************/
@@ -300,7 +365,7 @@ static void read_gamess_file_dlg()
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
 /********************************************************************************/
-static gboolean read_pcgamess_file(GabeditFileChooser *SelecFile, gint response_id)
+static gboolean read_firefly_file(GabeditFileChooser *SelecFile, gint response_id)
 {
  	gchar t[BSIZE];
  	gboolean OK;
@@ -370,12 +435,12 @@ static gboolean read_pcgamess_file(GabeditFileChooser *SelecFile, gint response_
 	return FALSE;
 }
 /********************************************************************************/
-static void read_pcgamess_file_dlg()
+static void read_firefly_file_dlg()
 {
 	GtkWidget* filesel = 
- 	file_chooser_open(read_pcgamess_file,
-			"Read energies and intensities from a PCGamess output file",
-			GABEDIT_TYPEFILE_PCGAMESS,GABEDIT_TYPEWIN_OTHER);
+ 	file_chooser_open(read_firefly_file,
+			"Read energies and intensities from a FireFly output file",
+			GABEDIT_TYPEFILE_FIREFLY,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
@@ -885,7 +950,7 @@ void createUVSpectrum(GtkWidget *parentWindow, GabEditTypeFile typeOfFile)
 	if(typeOfFile==GABEDIT_TYPEFILE_ADF) read_adf_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_MPQC) read_mpqc_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_ORCA) read_orca_file_dlg();
-	if(typeOfFile==GABEDIT_TYPEFILE_PCGAMESS) read_pcgamess_file_dlg();
+	if(typeOfFile==GABEDIT_TYPEFILE_FIREFLY) read_firefly_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_QCHEM) read_qchem_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_TXT) read_sample_2columns_file_dlg();
 }

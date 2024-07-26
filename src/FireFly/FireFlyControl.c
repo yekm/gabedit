@@ -1,6 +1,6 @@
-/* PCGamessRunControl.c */
+/* FireFlyRunControl.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -24,12 +24,12 @@ DEALINGS IN THE SOFTWARE.
 
 #include "../../Config.h"
 #include "../Common/Global.h"
-#include "../PCGamess/PCGamessTypes.h"
-#include "../PCGamess/PCGamessGlobal.h"
-#include "../PCGamess/PCGamessMolecule.h"
-#include "../PCGamess/PCGamessBasis.h"
-#include "../PCGamess/PCGamessGuess.h"
-#include "../PCGamess/PCGamessSCF.h"
+#include "../FireFly/FireFlyTypes.h"
+#include "../FireFly/FireFlyGlobal.h"
+#include "../FireFly/FireFlyMolecule.h"
+#include "../FireFly/FireFlyBasis.h"
+#include "../FireFly/FireFlyGuess.h"
+#include "../FireFly/FireFlySCF.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/GabeditTextEdit.h"
@@ -41,7 +41,7 @@ static GtkWidget* comboSCF = NULL;
 static GtkWidget* comboCorrMethod = NULL;
 static GtkWidget* comboCorrType = NULL;
 static GtkWidget* buttonTD = NULL;
-static void setPCGamessCorrType();
+static void setFireFlyCorrType();
 /*************************************************************************************************************/
 static gchar* listRunView[] = {
         "Single Point Energy", "Equilibrium geometry", "Equilibrium geometry+Frequencies","Transition State", "Frequencies",
@@ -143,7 +143,7 @@ static gchar* listEXEReal[] = { "NORMAL", "CHECK", "DEBUG" };
 static guint numberOfEXE = G_N_ELEMENTS (listEXEView);
 static gchar selectedEXE[BSIZE]="NORMAL";
 /*************************************************************************************************************/
-gboolean pcgamessSemiEmperical()
+gboolean fireflySemiEmperical()
 {
 	if(
 		strcmp(selectedSCF,"MNDO")==0 ||
@@ -163,32 +163,52 @@ static gchar* calculWord(gchar* view)
 	return NULL;
 }
 /*************************************************************************************************************/
-static void putPCGamessRunTypeInfoInTextEditor()
+static void putFireFlyRunTypeInfoInTextEditor()
 {
+
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$CONTRL",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$SYSTEM",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " MWORDS=20 ",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
+
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$CONTRL",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " RUNTYP=",-1);
 	if(!strcmp(selectedRun,"OptimizeFreq"))
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "Optimize",-1);
 	else
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, selectedRun,-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 	if(!strcmp(selectedRun,"OptimizeFreq"))
 	{
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$STATPT",-1);
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "  HSSEND=.T. ",-1);
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$STATPT",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "  HSSEND=.T. OptTol=1e-5 NStep=500 ",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 	}
-	if(!strcmp(selectedRun,"Raman"))
+	if(!strcmp(selectedRun,"Optimize") || !strcmp(selectedRun,"Sadpoint"))
 	{
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, 
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$STATPT",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "  OptTol=1e-5 NStep=500 ",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
+	}
+	if(!strcmp(selectedRun,"IRC"))
+	{
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$IRC",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "  NPOINT=10 ",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
+	}
+	if(!strcmp(selectedRun,"Raman") || !strcmp(selectedRun,"Sadpoint") || !strcmp(selectedRun,"IRC"))
+	{
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, 
 			"----> Put here the $HESS card.\n      You can obtain it from your old frequecncies calculation(.pun or .irc file)\n",-1);
 	}
 }
 /*************************************************************************************************************/
-static void putPCGamessSCFControlInfoInTextEditor()
+static void putFireFlySCFControlInfoInTextEditor()
 {
   	G_CONST_RETURN gchar *entrytext;
 	gint maxit=20;
@@ -197,27 +217,27 @@ static void putPCGamessSCFControlInfoInTextEditor()
 	if(strcmp(selectedSCF,"MNDO")==0 || strcmp(selectedSCF,"AM1")==0 || strcmp(selectedSCF,"PM3")==0)
 	{
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$BASIS",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$BASIS",-1);
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " GBASIS=",-1);
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, selectedSCF,-1);
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
-		if(getPCGamessMultiplicity()!=1)
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
+		if(getFireFlyMultiplicity()!=1)
 		{
         		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$CONTRL",-1);
+        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$CONTRL",-1);
         		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " SCFTYP=ROHF ",-1);
-        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 		}
 	}
 	else
 	{
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$CONTRL",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$CONTRL",-1);
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " SCFTYP=",-1);
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, selectedSCF,-1);
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 	}
   	entrytext = gtk_entry_get_text(GTK_ENTRY(entrySCFIterations));
 	maxit=atoi(entrytext);
@@ -227,19 +247,19 @@ static void putPCGamessSCFControlInfoInTextEditor()
         	gchar buffer[BSIZE];
 		sprintf(buffer," MAXIT=%d ",maxit);
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$CONTRL",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$CONTRL",-1);
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 	}
 
 }
 /*************************************************************************************************************/
-static void putPCGamessCorrelationInfoInTextEditor()
+static void putFireFlyCorrelationInfoInTextEditor()
 {
 	if(strcmp(selectedCorrType,"NONE")==0)return;
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
 
-       	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$CONTRL",-1);
+       	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$CONTRL",-1);
 
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
 
@@ -260,70 +280,70 @@ static void putPCGamessCorrelationInfoInTextEditor()
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, selectedCorrMethod,-1);
 	}
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 }
 /*************************************************************************************************************/
-static void putPCGamessLocalizedInfoInTextEditor()
+static void putFireFlyLocalizedInfoInTextEditor()
 {
 	if(strcmp(selectedLocalized,"NONE")==0)return;
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$CONTRL",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$CONTRL",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " LOCAL=",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, selectedLocalized,-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 }
 /*************************************************************************************************************/
-static void putPCGamessEXEInfoInTextEditor()
+static void putFireFlyEXEInfoInTextEditor()
 {
 	if(strcmp(selectedEXE,"NORMAL")==0)return;
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$CONTRL",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$CONTRL",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " EXETYP=",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, selectedEXE,-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 }
 /*************************************************************************************************************/
-static void putPCGamessTDHFTDDFT()
+static void putFireFlyTDHFTDDFT()
 {
 	if(!buttonTD) return;
 	if(!GTK_TOGGLE_BUTTON (buttonTD)->active) return;
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$CONTRL",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$CONTRL",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " CITYP=",-1);
 	if(strcmp(selectedCorrType,"DFTTYP")==0)
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "TDDFT ",-1);
 	else
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "TDHF ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 	if(strcmp(selectedCorrType,"DFTTYP")==0)
 	{
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$TDDFT",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$TDDFT",-1);
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " NSTATE=3 ISTSYM=0 ISTATE=1 TDA=.f. ",-1);
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 	}
 	else
 	{
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$TDHF",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$TDHF",-1);
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " NSTATE=3 ISTSYM=0 ISTATE=1 ",-1);
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 	}
 }
 /*************************************************************************************************************/
-void putPCGamessControlInfoInTextEditor()
+void putFireFlyControlInfoInTextEditor()
 {
-	putPCGamessRunTypeInfoInTextEditor();
-	putPCGamessSCFControlInfoInTextEditor();
-	putPCGamessCorrelationInfoInTextEditor();
-	putPCGamessLocalizedInfoInTextEditor();
-	putPCGamessEXEInfoInTextEditor();
-	putPCGamessTDHFTDDFT();
+	putFireFlyRunTypeInfoInTextEditor();
+	putFireFlySCFControlInfoInTextEditor();
+	putFireFlyCorrelationInfoInTextEditor();
+	putFireFlyLocalizedInfoInTextEditor();
+	putFireFlyEXEInfoInTextEditor();
+	putFireFlyTDHFTDDFT();
 }
 /************************************************************************************************************/
-void setPCGamessTD(gboolean ok)
+void setFireFlyTD(gboolean ok)
 {
 	if(!buttonTD) return;
 	if(ok)
@@ -352,7 +372,7 @@ static void traitementRunType (GtkComboBox *combobox, gpointer d)
 	res = calculWord(data);
 	if(res) sprintf(selectedRun,"%s",res);
 	else  sprintf(selectedRun,"Energy");
-	setPCGamessCorrType();
+	setFireFlyCorrType();
 
 }
 /********************************************************************************************************/
@@ -391,7 +411,7 @@ static GtkWidget *create_list_runtype()
 	return combobox;
 }
 /************************************************************************************************************/
-void setPCGamessSCFMethod(gboolean okRHF)
+void setFireFlySCFMethod(gboolean okRHF)
 {
 	GtkTreeIter iter;
 	GtkTreeIter iter0;
@@ -444,11 +464,11 @@ static void traitementSCF (GtkComboBox *combobox, gpointer d)
 		else 
 			gtk_widget_set_sensitive(entrySCFIterations, TRUE);
 	}
-	sm = pcgamessSemiEmperical();
-	setSensitivePCGamessBasisFrame(!sm);
-	setSensitivePCGamessSCFFrame(!sm);
-	setSensitivePCGamessGuessFrame(!sm);
-	setPCGamessCorrType();
+	sm = fireflySemiEmperical();
+	setSensitiveFireFlyBasisFrame(!sm);
+	setSensitiveFireFlySCFFrame(!sm);
+	setSensitiveFireFlyGuessFrame(!sm);
+	setFireFlyCorrType();
 	/* for(s=selectedSCF;*s != 0;s++) *s = toupper(*s);*/
 }
 /********************************************************************************************************/
@@ -487,7 +507,7 @@ static GtkWidget *create_list_scf()
 	return combobox;
 }
 /************************************************************************************************************/
-static void setPCGamessCorrMethod()
+static void setFireFlyCorrMethod()
 {
 	GtkTreeIter iter;
 	GtkTreeIter iter0;
@@ -498,7 +518,7 @@ static void setPCGamessCorrMethod()
 		numberOfCorrMethods = numberOfMPn;
 		listCorrMethodsView = listMPnView;
 		listCorrMethodsReal = listMPnReal;
-		setPCGamessTD(FALSE);
+		setFireFlyTD(FALSE);
 	}
 	else
 	if(strcmp(selectedCorrType,"DFTTYP")==0)
@@ -506,7 +526,7 @@ static void setPCGamessCorrMethod()
 		numberOfCorrMethods = numberOfDFT;
 		listCorrMethodsView = listDFTView;
 		listCorrMethodsReal = listDFTReal;
-		setPCGamessTD(TRUE);
+		setFireFlyTD(TRUE);
 	}
 	else
 	if(strcmp(selectedCorrType,"CCTYP")==0)
@@ -520,7 +540,7 @@ static void setPCGamessCorrMethod()
 		numberOfCorrMethods = numberOfNone;
 		listCorrMethodsView = listNoneView;
 		listCorrMethodsReal = listNoneReal;
-		setPCGamessTD(TRUE);
+		setFireFlyTD(TRUE);
 	}
 	
 	if (comboCorrMethod && gtk_combo_box_get_active_iter (GTK_COMBO_BOX(comboCorrMethod), &iter))
@@ -539,12 +559,12 @@ static void setPCGamessCorrMethod()
 	}
 }
 /************************************************************************************************************/
-static void setPCGamessCorrType()
+static void setFireFlyCorrType()
 {
 	GtkTreeIter iter;
 	GtkTreeIter iter0;
 	gint i;
-	gboolean sm = pcgamessSemiEmperical();
+	gboolean sm = fireflySemiEmperical();
 
 	if (comboCorrType && GTK_IS_COMBO_BOX(comboCorrType))
 	{
@@ -586,7 +606,7 @@ static void setPCGamessCorrType()
 		}
 		gtk_combo_box_set_active_iter(GTK_COMBO_BOX (comboCorrType), &iter0);
 	}
-	setPCGamessCorrMethod();
+	setFireFlyCorrMethod();
 }
 /************************************************************************************************************/
 static void traitementCorrType (GtkComboBox *combobox, gpointer d)
@@ -609,7 +629,7 @@ static void traitementCorrType (GtkComboBox *combobox, gpointer d)
 	if(res) sprintf(selectedCorrType,"%s",res);
 	else  sprintf(selectedSCF,"NONE");
 
-	setPCGamessCorrMethod();
+	setFireFlyCorrMethod();
 }
 /********************************************************************************************************/
 static GtkWidget *create_list_corrtype()
@@ -816,7 +836,7 @@ static GtkWidget *create_list_exe()
 	return combobox;
 }
 /************************************************************************************************************/
-void createPCGamessControlFrame(GtkWidget *win, GtkWidget *box)
+void createFireFlyControlFrame(GtkWidget *win, GtkWidget *box)
 {
 	GtkWidget* frame;
 	GtkWidget* vboxFrame;
@@ -911,7 +931,7 @@ void createPCGamessControlFrame(GtkWidget *win, GtkWidget *box)
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
                   2,2);
-	setPCGamessCorrType();
+	setFireFlyCorrType();
 	/*------------------ Localized Type -----------------------------------------*/
 	l++;
 	c = 0; ncases=1;

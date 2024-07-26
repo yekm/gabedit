@@ -1,6 +1,6 @@
 /* Preferences.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -48,7 +48,7 @@ static GtkWidget *EntryMolpro = NULL;
 static GtkWidget *EntryMopac = NULL;
 static GtkWidget *EntryPovray = NULL;
 static GtkWidget *EntryMPQC = NULL;
-static GtkWidget *EntryPCGamess = NULL;
+static GtkWidget *EntryFireFly = NULL;
 static GtkWidget *EntryQChem = NULL;
 static GtkWidget *EntryOrca = NULL;
 
@@ -59,7 +59,7 @@ static GtkWidget *ComboMolpro = NULL;
 static GtkWidget *ComboMopac = NULL;
 static GtkWidget *ComboPovray = NULL;
 static GtkWidget *ComboMPQC = NULL;
-static GtkWidget *ComboPCGamess = NULL;
+static GtkWidget *ComboFireFly = NULL;
 static GtkWidget *ComboQChem = NULL;
 static GtkWidget *ComboOrca = NULL;
 
@@ -70,7 +70,7 @@ static GtkWidget *ButtonMolpro = NULL;
 static GtkWidget *ButtonMopac = NULL;
 static GtkWidget *ButtonPovray = NULL;
 static GtkWidget *ButtonMPQC = NULL;
-static GtkWidget *ButtonPCGamess = NULL;
+static GtkWidget *ButtonFireFly = NULL;
 static GtkWidget *ButtonQChem = NULL;
 static GtkWidget *ButtonOrca = NULL;
 
@@ -545,21 +545,21 @@ void  modify_molpro_command()
   	gtk_widget_set_sensitive(ButtonMolpro, TRUE);
 }
 /********************************************************************************/
-static void  remove_pcgamess_command()
+static void  remove_firefly_command()
 {
   G_CONST_RETURN gchar *strcom;
   GList *glist = NULL;
   gint i;
   gint inList = -1;
 
-  if(pcgamessCommands.numberOfCommands<2)
+  if(fireflyCommands.numberOfCommands<2)
 	  return;
 
-  strcom = gtk_entry_get_text (GTK_ENTRY (EntryPCGamess));
+  strcom = gtk_entry_get_text (GTK_ENTRY (EntryFireFly));
 
-  for(i=0;i<pcgamessCommands.numberOfCommands;i++)
+  for(i=0;i<fireflyCommands.numberOfCommands;i++)
   {
-	  if(strcmp(strcom,pcgamessCommands.commands[i])==0)
+	  if(strcmp(strcom,fireflyCommands.commands[i])==0)
 	  {
 		  inList = i;
 		  break;
@@ -567,64 +567,64 @@ static void  remove_pcgamess_command()
   }
   if(inList == -1)
 	  return;
-  for(i=inList;i<pcgamessCommands.numberOfCommands-1;i++)
-	  pcgamessCommands.commands[i] = pcgamessCommands.commands[i+1];
+  for(i=inList;i<fireflyCommands.numberOfCommands-1;i++)
+	  fireflyCommands.commands[i] = fireflyCommands.commands[i+1];
 
-  pcgamessCommands.numberOfCommands--;
-  pcgamessCommands.commands = g_realloc(
-		   pcgamessCommands.commands,
-		   pcgamessCommands.numberOfCommands*sizeof(gchar*));
+  fireflyCommands.numberOfCommands--;
+  fireflyCommands.commands = g_realloc(
+		   fireflyCommands.commands,
+		   fireflyCommands.numberOfCommands*sizeof(gchar*));
 
-  for(i=0;i<pcgamessCommands.numberOfCommands;i++)
-	glist = g_list_append(glist,pcgamessCommands.commands[i]);
+  for(i=0;i<fireflyCommands.numberOfCommands;i++)
+	glist = g_list_append(glist,fireflyCommands.commands[i]);
 
-  gtk_combo_box_entry_set_popdown_strings( ComboPCGamess, glist) ;
+  gtk_combo_box_entry_set_popdown_strings( ComboFireFly, glist) ;
 
   g_list_free(glist);
 
-  if(pcgamessCommands.numberOfCommands<2) gtk_widget_set_sensitive(ButtonPCGamess, FALSE);
-  else gtk_widget_set_sensitive(ButtonPCGamess, TRUE);
+  if(fireflyCommands.numberOfCommands<2) gtk_widget_set_sensitive(ButtonFireFly, FALSE);
+  else gtk_widget_set_sensitive(ButtonFireFly, TRUE);
 
-  NameCommandPCGamess = g_strdup(pcgamessCommands.commands[0]);
+  NameCommandFireFly = g_strdup(fireflyCommands.commands[0]);
 
-  str_delete_n(NameCommandPCGamess);
-  delete_last_spaces(NameCommandPCGamess);
-  delete_first_spaces(NameCommandPCGamess);
+  str_delete_n(NameCommandFireFly);
+  delete_last_spaces(NameCommandFireFly);
+  delete_first_spaces(NameCommandFireFly);
 }
 /********************************************************************************/
-void  modify_pcgamess_command()
+void  modify_firefly_command()
 {
   G_CONST_RETURN gchar *strcom;
   GList *glist = NULL;
   gint i;
 
-  strcom = gtk_entry_get_text (GTK_ENTRY (EntryPCGamess));
+  strcom = gtk_entry_get_text (GTK_ENTRY (EntryFireFly));
   if(strcmp(strcom,""))
-      NameCommandPCGamess = g_strdup(strcom);
+      NameCommandFireFly = g_strdup(strcom);
 
-  str_delete_n(NameCommandPCGamess);
-  delete_last_spaces(NameCommandPCGamess);
-  delete_first_spaces(NameCommandPCGamess);
+  str_delete_n(NameCommandFireFly);
+  delete_last_spaces(NameCommandFireFly);
+  delete_first_spaces(NameCommandFireFly);
 
-  for(i=0;i<pcgamessCommands.numberOfCommands;i++)
+  for(i=0;i<fireflyCommands.numberOfCommands;i++)
   {
-	  if(strcmp(NameCommandPCGamess,pcgamessCommands.commands[i])==0)
+	  if(strcmp(NameCommandFireFly,fireflyCommands.commands[i])==0)
 		  return;
   }
-  pcgamessCommands.numberOfCommands++;
-  pcgamessCommands.commands = g_realloc(
-		   pcgamessCommands.commands,
-		   pcgamessCommands.numberOfCommands*sizeof(gchar*));
-  pcgamessCommands.commands[pcgamessCommands.numberOfCommands-1] = g_strdup(NameCommandPCGamess);
+  fireflyCommands.numberOfCommands++;
+  fireflyCommands.commands = g_realloc(
+		   fireflyCommands.commands,
+		   fireflyCommands.numberOfCommands*sizeof(gchar*));
+  fireflyCommands.commands[fireflyCommands.numberOfCommands-1] = g_strdup(NameCommandFireFly);
 
-  for(i=pcgamessCommands.numberOfCommands-1;i>=0;i--)
-	glist = g_list_append(glist,pcgamessCommands.commands[i]);
+  for(i=fireflyCommands.numberOfCommands-1;i>=0;i--)
+	glist = g_list_append(glist,fireflyCommands.commands[i]);
 
-  gtk_combo_box_entry_set_popdown_strings( ComboPCGamess, glist) ;
+  gtk_combo_box_entry_set_popdown_strings( ComboFireFly, glist) ;
 
   g_list_free(glist);
-  if(pcgamessCommands.numberOfCommands<2) gtk_widget_set_sensitive(ButtonPCGamess, FALSE);
-  else gtk_widget_set_sensitive(ButtonPCGamess, TRUE);
+  if(fireflyCommands.numberOfCommands<2) gtk_widget_set_sensitive(ButtonFireFly, FALSE);
+  else gtk_widget_set_sensitive(ButtonFireFly, TRUE);
 }
 /********************************************************************************/
 static void  remove_mopac_command()
@@ -1749,7 +1749,7 @@ static void set_entry_orcaDir_selection(GtkWidget* entry)
 	gtk_widget_show(dirSelector);
 }
 /********************************************************************************/
-static void set_entry_pcgamessdir(GtkWidget* dirSelector, gint response_id)
+static void set_entry_fireflydir(GtkWidget* dirSelector, gint response_id)
 {
 	gchar* dirname = NULL;
 	gchar* t = NULL;
@@ -1761,23 +1761,23 @@ static void set_entry_pcgamessdir(GtkWidget* dirSelector, gint response_id)
 	entry = (GtkWidget*)(g_object_get_data(G_OBJECT(dirSelector),"EntryFile"));	
 	gtk_entry_set_text(GTK_ENTRY(entry),dirname);
 
-	if(pcgamessDirectory) g_free(pcgamessDirectory);
-	pcgamessDirectory = g_strdup(dirname);
-	t = g_strdup_printf("%s;%cPATH%c",pcgamessDirectory,'%','%');
+	if(fireflyDirectory) g_free(fireflyDirectory);
+	fireflyDirectory = g_strdup(dirname);
+	t = g_strdup_printf("%s;%cPATH%c",fireflyDirectory,'%','%');
 	g_setenv("PATH",t,TRUE);
 	g_free(t);
 }
 /********************************************************************************/
-static void set_entry_pcgamessDir_selection(GtkWidget* entry)
+static void set_entry_fireflyDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(set_entry_pcgamessdir, "Select PCGamess folder", GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selctionOfDir(set_entry_fireflydir, "Select FireFly folder", GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
 	g_object_set_data(G_OBJECT (dirSelector), "EntryFile", entry);
 
-	g_signal_connect (dirSelector, "response",  G_CALLBACK (set_entry_pcgamessdir), GTK_OBJECT(dirSelector));
+	g_signal_connect (dirSelector, "response",  G_CALLBACK (set_entry_fireflydir), GTK_OBJECT(dirSelector));
 	g_signal_connect (dirSelector, "response",  G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(dirSelector));
 
 	gtk_widget_show(dirSelector);
@@ -1894,7 +1894,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   GtkWidget *combo;
   GtkWidget *button;
 
-  frame = gtk_frame_new ("Commands for execute Gaussian, Molcas, Molpro, MPQC, PCGamess, Q-Chem or Babel");
+  frame = gtk_frame_new ("Commands for execute Gaussian, Molcas, Molpro, MPQC, FireFly, Q-Chem or Babel");
   gtk_widget_show (frame);
   gtk_box_pack_start (GTK_BOX (vbox), frame, expand, expand, 0);
   gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -2071,21 +2071,21 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new ("Command for execute PCGamess    : ");
+  label = gtk_label_new ("Command for execute FireFly    : ");
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
-  combo = create_combo_box_entry(pcgamessCommands.commands,pcgamessCommands.numberOfCommands,TRUE,-1,-1);
-  ComboPCGamess = combo;
-  EntryPCGamess =  GTK_BIN(combo)->child;
+  combo = create_combo_box_entry(fireflyCommands.commands,fireflyCommands.numberOfCommands,TRUE,-1,-1);
+  ComboFireFly = combo;
+  EntryFireFly =  GTK_BIN(combo)->child;
   gtk_box_pack_start (GTK_BOX (hbox), combo, TRUE, TRUE, 3);
-  gtk_entry_set_text (GTK_ENTRY (EntryPCGamess),NameCommandPCGamess);
-  g_signal_connect(G_OBJECT (EntryPCGamess), "activate", (GCallback)modify_pcgamess_command, NULL);
+  gtk_entry_set_text (GTK_ENTRY (EntryFireFly),NameCommandFireFly);
+  g_signal_connect(G_OBJECT (EntryFireFly), "activate", (GCallback)modify_firefly_command, NULL);
   button = create_button(Wins,"  Remove from list  ");
-  ButtonPCGamess = button;
+  ButtonFireFly = button;
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
-  if(pcgamessCommands.numberOfCommands<2)
+  if(fireflyCommands.numberOfCommands<2)
   	gtk_widget_set_sensitive(button, FALSE);
-  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(remove_pcgamess_command),NULL);
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(remove_firefly_command),NULL);
 
   button = create_button(Wins,"  Help  ");
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
@@ -2292,7 +2292,7 @@ void  create_orca_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 #endif
 #ifdef G_OS_WIN32
 /********************************************************************************/
-void  create_pcgamess_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
+void  create_firefly_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 {
   GtkWidget *frame;
   GtkWidget *button;
@@ -2310,24 +2310,24 @@ void  create_pcgamess_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 	GtkWidget* entry;
   	GtkWidget *table = gtk_table_new(1,3,FALSE);
 
-	if(!pcgamessDirectory) pcgamessDirectory = g_strdup_printf("%s",g_get_home_dir());
+	if(!fireflyDirectory) fireflyDirectory = g_strdup_printf("%s",g_get_home_dir());
 
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
-	add_label_table(table,"PCGamess directory                        : ",0,0);
+	add_label_table(table,"FireFly directory                        : ",0,0);
   	entry = gtk_entry_new ();
 	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
 	gtk_table_attach(GTK_TABLE(table),entry,1,1+1,0,0+1,
                   (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
                   (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
                   3,3);
-  	gtk_entry_set_text (GTK_ENTRY (entry),pcgamessDirectory);
+  	gtk_entry_set_text (GTK_ENTRY (entry),fireflyDirectory);
 	gtk_editable_set_editable((GtkEditable*)entry,FALSE);
 	gtk_widget_set_sensitive(entry, FALSE);
 	button = create_button_pixmap(Wins,open_xpm,NULL);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	g_signal_connect_swapped(GTK_OBJECT (button), "clicked",
-                                     G_CALLBACK(set_entry_pcgamessDir_selection),
+                                     G_CALLBACK(set_entry_fireflyDir_selection),
                                      GTK_OBJECT(entry));
 	add_widget_table(table,button,0,2);
   }
@@ -2683,7 +2683,7 @@ void AddPageOthers(GtkWidget *NoteBook)
 #ifdef G_OS_WIN32
   create_gamess_directory(Wins,vbox,FALSE);
   create_orca_directory(Wins,vbox,FALSE);
-  create_pcgamess_directory(Wins,vbox,FALSE);
+  create_firefly_directory(Wins,vbox,FALSE);
   create_mopac_directory(Wins,vbox,FALSE);
   create_gauss_directory(Wins,vbox,FALSE);
   create_povray_directory(Wins,vbox,FALSE);

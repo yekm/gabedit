@@ -1,6 +1,6 @@
 /* SemiEmpiricalMD.c  */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -895,7 +895,7 @@ static void initMD(SemiEmpiricalMD* seMD, gdouble temperature, gdouble stepSize,
 	}
 	if(fileNameTraj)
 	{
- 		seMD->fileTraj = fopen(fileNameTraj, "w");
+ 		seMD->fileTraj = FOpen(fileNameTraj, "w");
 		if(seMD->fileTraj != NULL)
 		{
 			fprintf(seMD->fileTraj,"[Gabedit Format]\n");
@@ -907,7 +907,7 @@ static void initMD(SemiEmpiricalMD* seMD, gdouble temperature, gdouble stepSize,
 	}
 	if(fileNameProp)
 	{
- 		seMD->fileProp = fopen(fileNameProp, "w");
+ 		seMD->fileProp = FOpen(fileNameProp, "w");
 	}
 
 	srand ( (unsigned)time (NULL));

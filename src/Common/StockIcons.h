@@ -46,7 +46,7 @@
 #define GABEDIT_STOCK_ADF		"gabedit-adf"
 #define GABEDIT_STOCK_DALTON		"gabedit-dalton"
 #define GABEDIT_STOCK_GAMESS		"gabedit-gamess"
-#define GABEDIT_STOCK_PCGAMESS		"gabedit-pcgamess"
+#define GABEDIT_STOCK_FIREFLY		"gabedit-firefly"
 #define GABEDIT_STOCK_MOVE_ATOM		"gabedit-move-atom"
 #define GABEDIT_STOCK_MPQC		"gabedit-mpqc"
 #define GABEDIT_STOCK_NEW		"gabedit-new"

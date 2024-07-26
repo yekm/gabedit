@@ -1,6 +1,6 @@
-/* PCGamessMolecule.c */
+/* FireFlyMolecule.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -23,9 +23,9 @@ DEALINGS IN THE SOFTWARE.
 
 #include "../../Config.h"
 #include "../Common/Global.h"
-#include "../PCGamess/PCGamessTypes.h"
-#include "../PCGamess/PCGamessGlobal.h"
-#include "../PCGamess/PCGamessControl.h"
+#include "../FireFly/FireFlyTypes.h"
+#include "../FireFly/FireFlyGlobal.h"
+#include "../FireFly/FireFlyControl.h"
 #include "../Geometry/GeomGlobal.h"
 #include "../Geometry/GeomConversion.h"
 #include "../Geometry/GeomXYZ.h"
@@ -57,59 +57,59 @@ static GtkWidget *buttonSymWithCalc = NULL;
 static gint totalCharge = 0;
 static gint spinMultiplicity=1;
 /************************************************************************************************************/
-gint getPCGamessMultiplicity()
+gint getFireFlyMultiplicity()
 {
 	return spinMultiplicity;
 }
 /************************************************************************************************************/
-void initPCGamessMoleculeButtons()
+void initFireFlyMoleculeButtons()
 {
 	labelSymmetry = NULL;
 	buttonTolerance = NULL;
 	buttonSymWithCalc = NULL;
 }
 /************************************************************************************************************/
-void initPCGamessMolecule()
+void initFireFlyMolecule()
 {
-	pcgamessMolecule.listOfAtoms = NULL;  
-	pcgamessMolecule.totalNumberOfElectrons = 0;
-	pcgamessMolecule.numberOfValenceElectrons = 0;
-	pcgamessMolecule.numberOfAtoms = 0;
-	pcgamessMolecule.groupSymmetry = NULL;
+	fireflyMolecule.listOfAtoms = NULL;  
+	fireflyMolecule.totalNumberOfElectrons = 0;
+	fireflyMolecule.numberOfValenceElectrons = 0;
+	fireflyMolecule.numberOfAtoms = 0;
+	fireflyMolecule.groupSymmetry = NULL;
 }
 /************************************************************************************************************/
-void freePCGamessMolecule()
+void freeFireFlyMolecule()
 {
 	static gboolean first = TRUE;
 
 	if(first)
 	{
-		initPCGamessMolecule();
+		initFireFlyMolecule();
 		first = FALSE;
 		return;
 	}
 
-	if(pcgamessMolecule.listOfAtoms) g_free(pcgamessMolecule.listOfAtoms);
-	if(pcgamessMolecule.groupSymmetry) g_free(pcgamessMolecule.groupSymmetry);
-	initPCGamessMolecule();
+	if(fireflyMolecule.listOfAtoms) g_free(fireflyMolecule.listOfAtoms);
+	if(fireflyMolecule.groupSymmetry) g_free(fireflyMolecule.groupSymmetry);
+	initFireFlyMolecule();
 }
 /************************************************************************************************************/
-static gint setPCGamessMoleculeFromSXYZ(gint nAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z)
+static gint setFireFlyMoleculeFromSXYZ(gint nAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z)
 {
 	gint n;
-	PCGamessAtom* atomList = NULL;
+	FireFlyAtom* atomList = NULL;
 
-	pcgamessMolecule.listOfAtoms = NULL;  
-	pcgamessMolecule.numberOfAtoms = 0;
+	fireflyMolecule.listOfAtoms = NULL;  
+	fireflyMolecule.numberOfAtoms = 0;
 	if(nAtoms<1) return 1;
 
-	pcgamessMolecule.listOfAtoms = (PCGamessAtom*)g_malloc(sizeof(PCGamessAtom)*(nAtoms));
-	if(pcgamessMolecule.listOfAtoms==NULL) return -1;
+	fireflyMolecule.listOfAtoms = (FireFlyAtom*)g_malloc(sizeof(FireFlyAtom)*(nAtoms));
+	if(fireflyMolecule.listOfAtoms==NULL) return -1;
 
-	pcgamessMolecule.numberOfAtoms = nAtoms;
+	fireflyMolecule.numberOfAtoms = nAtoms;
 
-	atomList = pcgamessMolecule.listOfAtoms;
-	for(n=0; n<pcgamessMolecule.numberOfAtoms; n++)
+	atomList = fireflyMolecule.listOfAtoms;
+	for(n=0; n<fireflyMolecule.numberOfAtoms; n++)
 	{
 		atomList->position[0]  = X[n];
 		atomList->position[1]  = Y[n];
@@ -144,22 +144,22 @@ static void setXYZFromGeomXYZ(gint i, gdouble* x, gdouble* y, gdouble *z)
          }
 }
 /************************************************************************************************************/
-static void setPCGamessFormatGroup(gchar* pointGroupSymbol, gchar* pcgamessName)
+static void setFireFlyFormatGroup(gchar* pointGroupSymbol, gchar* fireflyName)
 {
 	if(!pointGroupSymbol) return;
 	if(strlen(pointGroupSymbol)<2 || strcmp(pointGroupSymbol,"C1")==0)
 	{
-		sprintf(pcgamessName,"%s",pointGroupSymbol);
+		sprintf(fireflyName,"%s",pointGroupSymbol);
 		return;
 	}
 	if(strcmp(pointGroupSymbol,"Cinfv")==0)
 	{
-		sprintf(pcgamessName,"Cnv  4");
+		sprintf(fireflyName,"Cnv  4");
 		return;
 	}
 	if(strcmp(pointGroupSymbol,"Dinfh")==0)
 	{
-		sprintf(pcgamessName,"Dnh  4");
+		sprintf(fireflyName,"Dnh  4");
 		return;
 	}
 	if(isdigit(pointGroupSymbol[1]))
@@ -170,14 +170,14 @@ static void setPCGamessFormatGroup(gchar* pointGroupSymbol, gchar* pcgamessName)
 		if(pointGroupSymbol[0] !='S')
 		{
 			if(strlen(pointGroupSymbol)>2)
-			sprintf(pcgamessName,"%cn%c %d",pointGroupSymbol[0],pointGroupSymbol[2],n);
+			sprintf(fireflyName,"%cn%c %d",pointGroupSymbol[0],pointGroupSymbol[2],n);
 			else
-			sprintf(pcgamessName,"%cn %d",pointGroupSymbol[0],n);
+			sprintf(fireflyName,"%cn %d",pointGroupSymbol[0],n);
 		}
-		else sprintf(pcgamessName,"%c2n %d",pointGroupSymbol[0],n/2);
+		else sprintf(fireflyName,"%c2n %d",pointGroupSymbol[0],n/2);
 		return;
 	}
-	sprintf(pcgamessName,"%s",pointGroupSymbol);
+	sprintf(fireflyName,"%s",pointGroupSymbol);
 	return;
 }
 /************************************************************************************************************/
@@ -188,7 +188,7 @@ static gchar* computeGroupSymmetry()
 	gdouble* X = NULL;
 	gdouble* Y = NULL;
 	gdouble* Z = NULL;
-	gint numberOfAtoms = pcgamessMolecule.numberOfAtoms;
+	gint numberOfAtoms = fireflyMolecule.numberOfAtoms;
 	gchar pointGroupSymbol[BSIZE];
 	gchar message[BSIZE];
 	gint maximalOrder = 8;
@@ -210,10 +210,10 @@ static gchar* computeGroupSymmetry()
 
 	for(i=0; i<numberOfAtoms; i++)
 	{
-		symbols[i] = g_strdup(pcgamessMolecule.listOfAtoms[i].symbol);
-		X[i] = pcgamessMolecule.listOfAtoms[i].position[0];
-		Y[i] = pcgamessMolecule.listOfAtoms[i].position[1];
-		Z[i] = pcgamessMolecule.listOfAtoms[i].position[2];
+		symbols[i] = g_strdup(fireflyMolecule.listOfAtoms[i].symbol);
+		X[i] = fireflyMolecule.listOfAtoms[i].position[0];
+		Y[i] = fireflyMolecule.listOfAtoms[i].position[1];
+		Z[i] = fireflyMolecule.listOfAtoms[i].position[2];
 	}
 	sprintf(pointGroupSymbol,"NO");
 	computeSymmetry(principalAxisTolerance, FALSE, pointGroupSymbol,maximalOrder, TRUE, &numberOfAtoms,symbols, X, Y, Z, &positionTolerance, message);
@@ -227,7 +227,7 @@ static gchar* computeGroupSymmetry()
 	return g_strdup(pointGroupSymbol);
 }
 /************************************************************************************************************/
-static gboolean setPCGamessMoleculeFromGeomXYZ()
+static gboolean setFireFlyMoleculeFromGeomXYZ()
 {
 	gint i;
 	gchar** symbols = NULL;
@@ -249,18 +249,18 @@ static gboolean setPCGamessMoleculeFromGeomXYZ()
 	Z = (gdouble*)g_malloc(sizeof(gdouble)*(numberOfAtoms));
 	if(Z == NULL) return FALSE;
 
-	pcgamessMolecule.totalNumberOfElectrons = 0;
+	fireflyMolecule.totalNumberOfElectrons = 0;
 	for(i=0; i<numberOfAtoms; i++)
 	{
 		SAtomsProp prop = prop_atom_get(GeomXYZ[i].Symb);
 
 		symbols[i] = g_strdup(GeomXYZ[i].Symb);
 		setXYZFromGeomXYZ(i, &X[i] , &Y[i] , &Z[i]);
-		pcgamessMolecule.totalNumberOfElectrons += prop.atomicNumber;
+		fireflyMolecule.totalNumberOfElectrons += prop.atomicNumber;
 	}
-	pcgamessMolecule.numberOfValenceElectrons = pcgamessMolecule.totalNumberOfElectrons;
-	setPCGamessMoleculeFromSXYZ(numberOfAtoms, symbols, X, Y, Z);
-	pcgamessMolecule.groupSymmetry = computeGroupSymmetry();
+	fireflyMolecule.numberOfValenceElectrons = fireflyMolecule.totalNumberOfElectrons;
+	setFireFlyMoleculeFromSXYZ(numberOfAtoms, symbols, X, Y, Z);
+	fireflyMolecule.groupSymmetry = computeGroupSymmetry();
 
 	for (i=0;i<(gint)NcentersXYZ;i++) g_free( symbols[i]);
 	g_free( symbols);
@@ -270,27 +270,27 @@ static gboolean setPCGamessMoleculeFromGeomXYZ()
 	return TRUE;
 }
 /************************************************************************************************************/
-static gboolean setPCGamessMoleculeFromGeomZMatrix()
+static gboolean setFireFlyMoleculeFromGeomZMatrix()
 {
-	iprogram=PROG_IS_PCGAMESS;
+	iprogram=PROG_IS_FIREFLY;
 	if(!zmat_to_xyz()) return FALSE;
 	/*delete_dummy_atoms();*/
 	/* conversion_zmat_to_xyz();*/
-	return setPCGamessMoleculeFromGeomXYZ();
+	return setFireFlyMoleculeFromGeomXYZ();
 }
 /************************************************************************************************************/
-gboolean setPCGamessMolecule()
+gboolean setFireFlyMolecule()
 {
-	freePCGamessMolecule();
-	if(MethodeGeom==GEOM_IS_XYZ && setPCGamessMoleculeFromGeomXYZ()) return TRUE;
-	if(setPCGamessMoleculeFromGeomZMatrix()) return TRUE;
+	freeFireFlyMolecule();
+	if(MethodeGeom==GEOM_IS_XYZ && setFireFlyMoleculeFromGeomXYZ()) return TRUE;
+	if(setFireFlyMoleculeFromGeomZMatrix()) return TRUE;
 	return FALSE;
 }
 /************************************************************************************************************/
-void setPCGamessGeometryFromInputFile(gchar* fileName)
+void setFireFlyGeometryFromInputFile(gchar* fileName)
 {
 	read_XYZ_from_gamess_input_file(fileName);
-	setPCGamessMolecule();
+	setFireFlyMolecule();
 }
 /*************************************************************************************************************/
 /*
@@ -299,8 +299,8 @@ static gdouble getMinDistance()
 	gdouble d=0;
 	gint i;
 	gint k;
-	PCGamessAtom* atomList = pcgamessMolecule.listOfAtoms;
-	for(i=0; i<pcgamessMolecule.numberOfAtoms-1; i++)
+	FireFlyAtom* atomList = fireflyMolecule.listOfAtoms;
+	for(i=0; i<fireflyMolecule.numberOfAtoms-1; i++)
 	{
 		gdouble dd = 0;
 		for(k=0;k<3;k++) 
@@ -361,7 +361,7 @@ static gint getRealNumberXYZVariables()
 	return k;
 }
 /*************************************************************************************************************/
-static void putPCGamessMoleculeXYZFixedInTextEditor()
+static void putFireFlyMoleculeXYZFixedInTextEditor()
 {
         gchar buffer[BSIZE];
 	gint i,k,l;
@@ -375,7 +375,7 @@ static void putPCGamessMoleculeXYZFixedInTextEditor()
 	if(nrvar==0) return;
 
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$STATPT\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$STATPT\n",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "   IFREEZ(1)=",-1);
 
 	k = 0;
@@ -411,7 +411,7 @@ static void putPCGamessMoleculeXYZFixedInTextEditor()
 		}
 	}
 	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "\n ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 }
 /*************************************************************************************************************/
 static gint getRealNumberZmatVariables()
@@ -420,14 +420,14 @@ static gint getRealNumberZmatVariables()
 	gint i;
         for(i=0;i<NcentersZmat;i++)
 	{
-        	if(Geom[i].Nentry>NUMBER_ENTRY_0 && test(Geom[i].R)) k++;
-        	if(Geom[i].Nentry>NUMBER_ENTRY_R && test(Geom[i].Angle)) k++;
-        	if(Geom[i].Nentry>NUMBER_ENTRY_ANGLE && test(Geom[i].Dihedral)) k++;
+        	if(Geom[i].Nentry>NUMBER_ENTRY_0 && !test(Geom[i].R)) k++;
+        	if(Geom[i].Nentry>NUMBER_ENTRY_R && !test(Geom[i].Angle)) k++;
+        	if(Geom[i].Nentry>NUMBER_ENTRY_ANGLE && !test(Geom[i].Dihedral)) k++;
 	}
 	return k;
 }
 /*************************************************************************************************************/
-static void putPCGamessMoleculeZMatInTextEditor()
+static void putFireFlyMoleculeZMatInTextEditor()
 {
         gchar buffer[BSIZE];
 	gint i,k,l;
@@ -440,13 +440,13 @@ static void putPCGamessMoleculeZMatInTextEditor()
 	nrzvar = getRealNumberZmatVariables(); 
 
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$CONTRL",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$CONTRL",-1);
 	sprintf(buffer," COORD=ZMT NZVAR=%d ",nzvar);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$ZMT\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$ZMAT\n",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "   IZMAT(1)=\n   ",-1);
         for(i=0;i<NcentersZmat;i++)
 	{
@@ -483,10 +483,10 @@ static void putPCGamessMoleculeZMatInTextEditor()
 		}
 	}
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "\n ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 	if(nrzvar==nzvar) return;
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$STATPT\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$STATPT\n",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "   IFREEZ(1)=",-1);
 
 	k = 0;
@@ -541,7 +541,7 @@ static void putPCGamessMoleculeZMatInTextEditor()
 		}
 	}
 	 gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "\n ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 }
 /************************************************************************************************************/
 static void setEpsToZero(gint n, gdouble* X, gdouble* Y, gdouble* Z, gdouble eps)
@@ -615,7 +615,7 @@ static gboolean build_rotation_about_an_axis(gdouble* vect, gdouble angle, gint 
 	return TRUE;
 }
 /*************************************************************************************************************/
-static void putPCGamessMoleculeInTextEditor()
+static void putFireFlyMoleculeInTextEditor()
 {
         gchar buffer[BSIZE];
         gchar g[BSIZE];
@@ -624,7 +624,7 @@ static void putPCGamessMoleculeInTextEditor()
 	gdouble* X = NULL;
 	gdouble* Y = NULL;
 	gdouble* Z = NULL;
-	gint numberOfAtoms = pcgamessMolecule.numberOfAtoms;
+	gint numberOfAtoms = fireflyMolecule.numberOfAtoms;
 	gchar pointGroupSymbol[BSIZE];
 	gchar message[BSIZE];
 	gint maximalOrder = 8;
@@ -632,7 +632,7 @@ static void putPCGamessMoleculeInTextEditor()
 	gdouble positionTolerance = getTolerancePosition();
 	gint nrvar = 0;
 
-	if(pcgamessMolecule.numberOfAtoms<1) return;
+	if(fireflyMolecule.numberOfAtoms<1) return;
 	nrvar = getRealNumberXYZVariables();
 
 	symbols = (gchar**)g_malloc(sizeof(gchar*)*(numberOfAtoms));
@@ -646,21 +646,21 @@ static void putPCGamessMoleculeInTextEditor()
 	if(Z == NULL) return;
 	for(i=0; i<numberOfAtoms; i++)
 	{
-		symbols[i] = g_strdup(pcgamessMolecule.listOfAtoms[i].symbol);
-		X[i] = pcgamessMolecule.listOfAtoms[i].position[0];
-		Y[i] = pcgamessMolecule.listOfAtoms[i].position[1];
-		Z[i] = pcgamessMolecule.listOfAtoms[i].position[2];
+		symbols[i] = g_strdup(fireflyMolecule.listOfAtoms[i].symbol);
+		X[i] = fireflyMolecule.listOfAtoms[i].position[0];
+		Y[i] = fireflyMolecule.listOfAtoms[i].position[1];
+		Z[i] = fireflyMolecule.listOfAtoms[i].position[2];
 	}
 
 	if(MethodeGeom==GEOM_IS_XYZ && (nrvar== 3*NcentersXYZ || nrvar==0))
 	{
-		sprintf(pointGroupSymbol,pcgamessMolecule.groupSymmetry);
+		sprintf(pointGroupSymbol,fireflyMolecule.groupSymmetry);
 		computeSymmetry(principalAxisTolerance, FALSE, pointGroupSymbol,maximalOrder, TRUE, &numberOfAtoms,symbols, X, Y, Z, &positionTolerance, message);
 		/*
 		if(strlen(pointGroupSymbol)>1 && strcmp(pointGroupSymbol,"C1")!=0 && isdigit(pointGroupSymbol[1]))
 			setFirstAtomToXAxis(numberOfAtoms, X, Y, Z);
 			*/
-		setPCGamessFormatGroup(pcgamessMolecule.groupSymmetry,g);
+		setFireFlyFormatGroup(fireflyMolecule.groupSymmetry,g);
 	}
 	else
 	{
@@ -756,6 +756,7 @@ static void putPCGamessMoleculeInTextEditor()
 			}
         	}
         	if(NVariables>0 && getRealNumberZmatVariables()>0)
+		{
         	for(i=0;i<NVariables;i++)
         	{
         		if(Variables[i].Used)
@@ -772,6 +773,7 @@ static void putPCGamessMoleculeInTextEditor()
         			gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,buffer,-1);
 			}
         	}
+		}
 	}
 	for (i=0;i<(gint)numberOfAtoms;i++) g_free( symbols[i]);
 	g_free( symbols);
@@ -785,16 +787,16 @@ static void putNoSymmetryWithCalcul()
 {
 	if(!GTK_TOGGLE_BUTTON (buttonSymWithCalc)->active ) return;
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$CONTRL",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$CONTRL",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " NOSYM=1 ",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 }
 /************************************************************************************************************/
 static void putBeginGeometryInTextEditor()
 {
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$DATA\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$DATA\n",-1);
 }
 /************************************************************************************************************/
 static void putTitleGeometryInTextEditor()
@@ -808,19 +810,19 @@ static void putTitleGeometryInTextEditor()
 static void putEndGeometryInTextEditor()
 {
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL,  &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL,  &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 }
 /************************************************************************************************************/
-void putPCGamessGeometryInfoInTextEditor()
+void putFireFlyGeometryInfoInTextEditor()
 {
 	putNoSymmetryWithCalcul();
-	if(MethodeGeom!=GEOM_IS_XYZ) putPCGamessMoleculeZMatInTextEditor();
-	else putPCGamessMoleculeXYZFixedInTextEditor();
+	if(MethodeGeom!=GEOM_IS_XYZ) putFireFlyMoleculeZMatInTextEditor();
+	else putFireFlyMoleculeXYZFixedInTextEditor();
 
 	putBeginGeometryInTextEditor();
 	putTitleGeometryInTextEditor();
 
-	putPCGamessMoleculeInTextEditor();
+	putFireFlyMoleculeInTextEditor();
 	putEndGeometryInTextEditor();
 }
 /**************************************************************************************************************************************/
@@ -838,19 +840,19 @@ static void activateRadioButton(GtkWidget *button, gpointer data)
 	comboSymmetry = g_object_get_data(G_OBJECT (button), "ComboSymmetry");
 	if(type)
 	{
-		setPCGamessMolecule();
+		setFireFlyMolecule();
 
 		if( GTK_TOGGLE_BUTTON (button)->active && *type == FIXED)
 		{
-			if(pcgamessMolecule.groupSymmetry) g_free(pcgamessMolecule.groupSymmetry);
-			pcgamessMolecule.groupSymmetry = g_strdup("C1");
+			if(fireflyMolecule.groupSymmetry) g_free(fireflyMolecule.groupSymmetry);
+			fireflyMolecule.groupSymmetry = g_strdup("C1");
 			symReduction = FALSE;
 			if(GTK_IS_WIDGET(comboSymmetry))
 				gtk_widget_set_sensitive(comboSymmetry, TRUE);
 		}
 		if(GTK_TOGGLE_BUTTON (button)->active &&  *type == GABEDIT)
 		{
-			/* groupSymmetry define in setPCGamessMolecule */
+			/* groupSymmetry define in setFireFlyMolecule */
 			symReduction = TRUE;
 			if(GTK_IS_WIDGET(comboSymmetry))
 				gtk_widget_set_sensitive(comboSymmetry, FALSE);
@@ -862,7 +864,7 @@ static void activateRadioButton(GtkWidget *button, gpointer data)
 
 		if(GTK_TOGGLE_BUTTON (button)->active && label && symReduction)
 		{
-			sprintf(buffer,"%s group",pcgamessMolecule.groupSymmetry);
+			sprintf(buffer,"%s group",fireflyMolecule.groupSymmetry);
 			gtk_label_set_text(GTK_LABEL(label),buffer);
 		}
 	}
@@ -891,10 +893,10 @@ static void resetTolerance(GtkWidget *win)
 {
 	gchar buffer[BSIZE];
 
-	setPCGamessMolecule();
+	setFireFlyMolecule();
 	if(labelSymmetry)
 	{
-		sprintf(buffer,"%s group",pcgamessMolecule.groupSymmetry);
+		sprintf(buffer,"%s group",fireflyMolecule.groupSymmetry);
 		gtk_label_set_text(GTK_LABEL(labelSymmetry),buffer);
 	}
 }
@@ -902,7 +904,7 @@ static void resetTolerance(GtkWidget *win)
 static void activateToleranceButton(GtkWidget *button, gpointer data)
 {
 	if(!GTK_IS_WIDGET(button)) return;
-	createToleranceWindow(pcgamessWin, resetTolerance);
+	createToleranceWindow(fireflyWin, resetTolerance);
 }
 /********************************************************************************/
 static void setComboSymmetry(GtkWidget *comboSymmetry)
@@ -989,14 +991,14 @@ static void changedEntrySymmetry(GtkWidget *entry, gpointer data)
 
 	entryText = gtk_entry_get_text(GTK_ENTRY(entry));
 	if(strlen(entryText)<1)return;
-	if(pcgamessMolecule.groupSymmetry) g_free(pcgamessMolecule.groupSymmetry);
-	pcgamessMolecule.groupSymmetry = g_strdup(entryText);
+	if(fireflyMolecule.groupSymmetry) g_free(fireflyMolecule.groupSymmetry);
+	fireflyMolecule.groupSymmetry = g_strdup(entryText);
 
 	if(strstr(entryText,"C1")) symReduction = FALSE;
 	else symReduction = FALSE;
 }
 /************************************************************************************************************/
-void createPCGamessSymmetryFrame(GtkWidget *win, GtkWidget *box)
+void createFireFlySymmetryFrame(GtkWidget *win, GtkWidget *box)
 {
 	GtkWidget* button;
 	GtkWidget* buttonGabedit;
@@ -1026,8 +1028,8 @@ void createPCGamessSymmetryFrame(GtkWidget *win, GtkWidget *box)
 	gtk_widget_set_sensitive(entrySymmetry, FALSE);
 
 
-	if(pcgamessMolecule.groupSymmetry) g_free(pcgamessMolecule.groupSymmetry);
-	pcgamessMolecule.groupSymmetry = g_strdup("C1");
+	if(fireflyMolecule.groupSymmetry) g_free(fireflyMolecule.groupSymmetry);
+	fireflyMolecule.groupSymmetry = g_strdup("C1");
 
 	button = addRadioButtonToATable(table, NULL, "Detected by Gabedit", 0, 0, 1);
 	g_object_set_data(G_OBJECT (button), "Label",label);
@@ -1096,7 +1098,7 @@ static void setComboSpinMultiplicity(GtkWidget *comboSpinMultiplicity)
 	gchar** list = NULL;
 	gint k;
 	gint kinc;
-	gint ne = pcgamessMolecule.numberOfValenceElectrons - totalCharge;
+	gint ne = fireflyMolecule.numberOfValenceElectrons - totalCharge;
 
 	if(ne%2==0) nlist = ne/2+1;
 	else nlist = (ne+1)/2;
@@ -1151,9 +1153,10 @@ static void setComboCharge(GtkWidget *comboCharge)
 	gchar** list = NULL;
 	gint k;
 
-	nlist = pcgamessMolecule.numberOfValenceElectrons*2-2+1;
+	nlist = fireflyMolecule.numberOfValenceElectrons*2-2+1;
 
 	if(nlist<1) return;
+	if(nlist==1) nlist++;
 	list = g_malloc(nlist*sizeof(gchar*));
 	if(!list) return;
 	for(i=0;i<nlist;i++)
@@ -1168,6 +1171,7 @@ static void setComboCharge(GtkWidget *comboCharge)
 		sprintf(list[i+1],"%d",-k);
 		k += 1;
 	}
+	if(nlist==2) sprintf(list[1],"%d",-1);
 
   	for(i=0;i<nlist;i++) glist = g_list_append(glist,list[i]);
 
@@ -1194,17 +1198,17 @@ static void changedEntrySpinMultiplicity(GtkWidget *entry, gpointer data)
 	if(spinMultiplicity==1)
 	{
 		/* OK RHF*/
-		setPCGamessSCFMethod(TRUE);
+		setFireFlySCFMethod(TRUE);
 	}
 	else 
 	{
 		/* remove RHF from list*/
-		setPCGamessSCFMethod(FALSE);
+		setFireFlySCFMethod(FALSE);
 	}
 	if(spinMultiplicity!=1 && spinMultiplicity!=3)
-		setPCGamessTD(FALSE);
+		setFireFlyTD(FALSE);
 	else
-		setPCGamessTD(TRUE);
+		setFireFlyTD(TRUE);
 }
 /**********************************************************************/
 static void changedEntryCharge(GtkWidget *entry, gpointer data)
@@ -1228,7 +1232,7 @@ static void changedEntryCharge(GtkWidget *entry, gpointer data)
 
 	if(GTK_IS_WIDGET(labelNumberOfElectrons))
 	{
-		gint ne = pcgamessMolecule.numberOfValenceElectrons - totalCharge;
+		gint ne = fireflyMolecule.numberOfValenceElectrons - totalCharge;
 		gchar buffer[BSIZE];
 		sprintf(buffer, "Number of electrons = %d",ne);
 		gtk_label_set_text(GTK_LABEL(labelNumberOfElectrons),buffer);
@@ -1254,7 +1258,7 @@ static GtkWidget* addComboListToATable(GtkWidget* table,
 	return entry;
 }
 /***********************************************************************************************/
-static GtkWidget *addPCGamessChargeToTable(GtkWidget *table, gint i)
+static GtkWidget *addFireFlyChargeToTable(GtkWidget *table, gint i)
 {
 	GtkWidget* entryCharge = NULL;
 	GtkWidget* comboCharge = NULL;
@@ -1270,7 +1274,7 @@ static GtkWidget *addPCGamessChargeToTable(GtkWidget *table, gint i)
 	return comboCharge;
 }
 /***********************************************************************************************/
-static GtkWidget *addPCGamessSpinToTable(GtkWidget *table, gint i)
+static GtkWidget *addFireFlySpinToTable(GtkWidget *table, gint i)
 {
 	GtkWidget* entrySpinMultiplicity = NULL;
 	GtkWidget* comboSpinMultiplicity = NULL;
@@ -1306,7 +1310,7 @@ static GtkWidget *addLabelNumberOfElectronsToTable(GtkWidget *table, gint i, Gtk
 	return labelNumberOfElectrons;
 }
 /***********************************************************************************************/
-void createPCGamessChargeMultiplicityFrame(GtkWidget *box)
+void createFireFlyChargeMultiplicityFrame(GtkWidget *box)
 {
 	GtkWidget* frame;
 	GtkWidget* sep;
@@ -1334,9 +1338,9 @@ void createPCGamessChargeMultiplicityFrame(GtkWidget *box)
 	gtk_box_pack_start (GTK_BOX (vboxFrame), table, TRUE, TRUE, 0);
 
 	i = 0;
-	comboCharge = addPCGamessChargeToTable(table, i);
+	comboCharge = addFireFlyChargeToTable(table, i);
 	i = 1;
-	comboSpinMultiplicity = addPCGamessSpinToTable(table, i);
+	comboSpinMultiplicity = addFireFlySpinToTable(table, i);
 	i = 2;
 	sep = gtk_hseparator_new ();;
 	gtk_table_attach(GTK_TABLE(table),sep,0,0+3,i,i+1,
@@ -1353,7 +1357,7 @@ void createPCGamessChargeMultiplicityFrame(GtkWidget *box)
 	setComboSpinMultiplicity(comboSpinMultiplicity);
 	if(GTK_IS_WIDGET(labelNumberOfElectrons))
 	{
-		gint ne = pcgamessMolecule.numberOfValenceElectrons - totalCharge;
+		gint ne = fireflyMolecule.numberOfValenceElectrons - totalCharge;
 		gchar buffer[BSIZE];
 		sprintf(buffer, "Number of electrons = %d",ne);
 		gtk_label_set_text(GTK_LABEL(labelNumberOfElectrons),buffer);
@@ -1366,14 +1370,14 @@ void createPCGamessChargeMultiplicityFrame(GtkWidget *box)
 	*/
 }
 /************************************************************************************************************/
-void putPCGamessChargeAndSpinInfoInTextEditor()
+void putFireFlyChargeAndSpinInfoInTextEditor()
 {
 	gchar buffer[BSIZE];
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$CONTRL",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$CONTRL",-1);
 	sprintf(buffer," ICHARG=%d ",totalCharge);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
 	sprintf(buffer," MULT=%d ",spinMultiplicity);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 }

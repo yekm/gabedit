@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -24,6 +24,7 @@ void delete_dummy_atoms();
 gboolean zmat_to_xyz();
 void conversion_zmat_to_xyz();
 void conversion_xyz_to_zmat();
+void conversion_xyz_to_zmat_using_connections();
 
 #endif /* __GABEDIT_GEOMCONVERSION_H__ */
 

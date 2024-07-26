@@ -1,6 +1,6 @@
 /* Vibration.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -4455,7 +4455,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "ReadMPQC")) read_mpqc_file_dlg();
 	else if(!strcmp(name, "ReadADF")) read_adf_file_dlg();
 	else if(!strcmp(name, "ReadOrca")) read_orca_file_dlg();
-	else if(!strcmp(name, "ReadPCGamess")) read_gamess_file_dlg();
+	else if(!strcmp(name, "ReadFireFly")) read_gamess_file_dlg();
 	else if(!strcmp(name, "ReadQChem")) read_qchem_file_dlg();
 	else if(!strcmp(name, "ReadMolden")) read_molden_file_dlg();
 	else if(!strcmp(name, "RemoveSelectedMode")) remove_selected_mode();
@@ -4485,7 +4485,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadMPQC", GABEDIT_STOCK_MPQC, "Read a MP_QC output file", NULL, "Read a MPQC output file", G_CALLBACK (activate_action) },
 	{"ReadADF", GABEDIT_STOCK_ADF, "Read a _ADF output file", NULL, "Read a ADF output file", G_CALLBACK (activate_action) },
 	{"ReadOrca", GABEDIT_STOCK_ORCA, "Read a _Orca output file", NULL, "Read a Orca output file", G_CALLBACK (activate_action) },
-	{"ReadPCGamess", GABEDIT_STOCK_PCGAMESS, "Read a _PCGamess output file", NULL, "Read a PCGamess output file", G_CALLBACK (activate_action) },
+	{"ReadFireFly", GABEDIT_STOCK_FIREFLY, "Read a _FireFly output file", NULL, "Read a FireFly output file", G_CALLBACK (activate_action) },
 	{"ReadQChem", GABEDIT_STOCK_QCHEM, "Read a _Q-Chem output file", NULL, "Read a Q-Chem output file", G_CALLBACK (activate_action) },
 	{"ReadMolden", GABEDIT_STOCK_MOLDEN, "Read a Mol_den output file", NULL, "Read a Molden file", G_CALLBACK (activate_action) },
 	{"RemoveSelectedMode", GABEDIT_STOCK_CUT, "_Remove the selected mode", NULL, "Remove selected mode", G_CALLBACK (activate_action) },
@@ -4512,6 +4512,7 @@ static const gchar *uiMenuInfo =
 "    <menuitem name=\"ReadAuto\" action=\"ReadAuto\" />\n"
 "    <separator name=\"sepMenuAuto\" />\n"
 "    <menuitem name=\"ReadGabedit\" action=\"ReadGabedit\" />\n"
+"    <menuitem name=\"ReadFireFly\" action=\"ReadFireFly\" />\n"
 "    <menuitem name=\"ReadDalton\" action=\"ReadDalton\" />\n"
 "    <menuitem name=\"ReadGamess\" action=\"ReadGamess\" />\n"
 "    <menuitem name=\"ReadGaussian\" action=\"ReadGaussian\" />\n"
@@ -4520,7 +4521,6 @@ static const gchar *uiMenuInfo =
 "    <menuitem name=\"ReadMPQC\" action=\"ReadMPQC\" />\n"
 "    <menuitem name=\"ReadADF\" action=\"ReadADF\" />\n"
 "    <menuitem name=\"ReadOrca\" action=\"ReadOrca\" />\n"
-"    <menuitem name=\"ReadPCGamess\" action=\"ReadPCGamess\" />\n"
 "    <menuitem name=\"ReadQChem\" action=\"ReadQChem\" />\n"
 "    <menuitem name=\"ReadMolden\" action=\"ReadMolden\" />\n"
 "    <separator name=\"sepMenuPopRemove\" />\n"
@@ -4544,6 +4544,7 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadAuto\" action=\"ReadAuto\" />\n"
 "        <separator name=\"sepMenuAuto\" />\n"
 "        <menuitem name=\"ReadGabedit\" action=\"ReadGabedit\" />\n"
+"        <menuitem name=\"ReadFireFly\" action=\"ReadFireFly\" />\n"
 "        <menuitem name=\"ReadDalton\" action=\"ReadDalton\" />\n"
 "        <menuitem name=\"ReadGamess\" action=\"ReadGamess\" />\n"
 "        <menuitem name=\"ReadGaussian\" action=\"ReadGaussian\" />\n"
@@ -4552,7 +4553,6 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadMPQC\" action=\"ReadMPQC\" />\n"
 "        <menuitem name=\"ReadADF\" action=\"ReadADF\" />\n"
 "        <menuitem name=\"ReadOrca\" action=\"ReadOrca\" />\n"
-"        <menuitem name=\"ReadPCGamess\" action=\"ReadPCGamess\" />\n"
 "        <menuitem name=\"ReadQChem\" action=\"ReadQChem\" />\n"
 "        <menuitem name=\"ReadMolden\" action=\"ReadMolden\" />\n"
 "      </menu>\n"
@@ -4689,7 +4689,7 @@ void read_modes(GabeditFileChooser *selecFile, gint response_id)
 
 	fileType = get_type_file(fileName);
 	if(fileType == GABEDIT_TYPEFILE_GAMESS) read_gamess_file(selecFile, response_id);
-	else if(fileType == GABEDIT_TYPEFILE_PCGAMESS) read_gamess_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_FIREFLY) read_gamess_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_GAUSSIAN) read_gaussian_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_MOLPRO) read_molpro_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_MOPAC) read_mopac_aux_file(selecFile, response_id);

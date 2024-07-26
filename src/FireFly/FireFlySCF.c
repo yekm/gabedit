@@ -1,6 +1,6 @@
-/* PCGamessGuess.c */
+/* FireFlyGuess.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -24,8 +24,8 @@ DEALINGS IN THE SOFTWARE.
 
 #include "../../Config.h"
 #include "../Common/Global.h"
-#include "../PCGamess/PCGamessTypes.h"
-#include "../PCGamess/PCGamessGlobal.h"
+#include "../FireFly/FireFlyTypes.h"
+#include "../FireFly/FireFlyGlobal.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/GabeditTextEdit.h"
@@ -37,25 +37,25 @@ static GtkWidget *buttonChangeFock = NULL;
 static GtkWidget *buttonUHFNO = NULL;
 static GtkWidget *scfFrame = NULL;
 /*************************************************************************************************************/
-void initPCGamessSCFFrame()
+void initFireFlySCFFrame()
 {
 	scfFrame = NULL;
 }
 /*************************************************************************************************************/
-void setSensitivePCGamessSCFFrame(gboolean sensitive)
+void setSensitiveFireFlySCFFrame(gboolean sensitive)
 {
 	if(!scfFrame) return;
 	gtk_widget_set_sensitive(scfFrame, sensitive);
 }
 /*************************************************************************************************************/
-static void putPCGamessSCFOptionsInfoInTextEditor()
+static void putFireFlySCFOptionsInfoInTextEditor()
 {
 	if(!GTK_TOGGLE_BUTTON (buttonDirectSCF)->active 
 	   && !GTK_TOGGLE_BUTTON (buttonChangeFock)->active
 	   && !GTK_TOGGLE_BUTTON (buttonUHFNO)->active
 	   ) return;
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$SCF",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$SCF",-1);
 	if(GTK_TOGGLE_BUTTON (buttonDirectSCF)->active)
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " DIRSCF=.TRUE.",-1);
 	if(GTK_TOGGLE_BUTTON (buttonChangeFock)->active)
@@ -64,16 +64,16 @@ static void putPCGamessSCFOptionsInfoInTextEditor()
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " UHFNOS=.TRUE.",-1);
 
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, "$END\n",-1);
 }
 /************************************************************************************************************/
-void putPCGamessSCFInfoInTextEditor()
+void putFireFlySCFInfoInTextEditor()
 {
-	putPCGamessSCFOptionsInfoInTextEditor();
+	putFireFlySCFOptionsInfoInTextEditor();
 
 }
 /************************************************************************************************************/
-void createPCGamessSCFFrame(GtkWidget *win, GtkWidget *box)
+void createFireFlySCFFrame(GtkWidget *win, GtkWidget *box)
 {
 	GtkWidget* frame;
 	GtkWidget* vboxFrame;

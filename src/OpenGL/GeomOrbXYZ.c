@@ -1,6 +1,6 @@
 /* GeomOrbXYZ.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -3513,7 +3513,7 @@ gboolean gl_read_geom_any_file(gchar* fileName)
 	else if(fileType == GABEDIT_TYPEFILE_HIN) Ok = gl_read_hin_file(fileName);
 	else if(fileType == GABEDIT_TYPEFILE_DALTON) Ok = gl_read_dalton_file_geomi(fileName,-1);
 	else if(fileType == GABEDIT_TYPEFILE_GAMESS) Ok = gl_read_gamess_file_geomi(fileName,-1);
-	else if(fileType == GABEDIT_TYPEFILE_PCGAMESS) Ok = gl_read_gamess_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_FIREFLY) Ok = gl_read_gamess_file_geomi(fileName,-1);
 	else if(fileType == GABEDIT_TYPEFILE_GAUSSIAN) Ok = gl_read_gaussn_file_geomi(fileName,-1);
 	else if(fileType == GABEDIT_TYPEFILE_MOLCAS) Ok = gl_read_molcas_file_geomi(fileName,-1);
 	else if(fileType == GABEDIT_TYPEFILE_MOLPRO) Ok = gl_read_molpro_file_geomi(fileName,-1);
@@ -3526,7 +3526,7 @@ gboolean gl_read_geom_any_file(gchar* fileName)
 	else if(fileType == GABEDIT_TYPEFILE_MOLDEN) Ok = gl_read_molden_file_geom(fileName);
 	else if(
 		fileType ==  GABEDIT_TYPEFILE_ORCAINPUT||
-		fileType ==  GABEDIT_TYPEFILE_PCGAMESSINPUT||
+		fileType ==  GABEDIT_TYPEFILE_FIREFLYINPUT||
 		fileType ==  GABEDIT_TYPEFILE_GAMESSINPUT||
 		fileType ==  GABEDIT_TYPEFILE_QCHEMINPUT||
 		fileType ==  GABEDIT_TYPEFILE_MOPACINPUT||

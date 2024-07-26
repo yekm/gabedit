@@ -1,6 +1,6 @@
 /* UtilsOrb.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -295,7 +295,13 @@ gint get_type_file_orb(gchar *fileName)
 		if(strstr(t,"START OF MOPAC FILE"))
 			ktype = GABEDIT_TYPEFILE_MOPAC_AUX;
 	}
-
+	rewind(fd);
+	if( ktype == GABEDIT_TYPEFILE_UNKNOWN)
+	{
+		fgets(t,taille,fd);
+		if(strstr(t,"BEGIN IRC"))
+			ktype = GABEDIT_TYPEFILE_GAMESSIRC;
+	}
  	fclose(fd);
  	g_free(t);
  	if(ktype==GABEDIT_TYPEFILE_UNKNOWN)

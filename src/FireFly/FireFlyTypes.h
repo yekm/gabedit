@@ -2,67 +2,67 @@
 #ifndef __GABEDIT_GAMESSTYPES_H__
 #define __GABEDIT_GAMESSTYPES_H__
 
-typedef struct _PCGamessColorBack
+typedef struct _FireFlyColorBack
 {
 	GdkColor keyWord;
 	GdkColor description;
-}PCGamessColorBack;
+}FireFlyColorBack;
 
-typedef struct _PCGamessColorFore
+typedef struct _FireFlyColorFore
 {
 	GdkColor keyWord;
 	GdkColor description;
-}PCGamessColorFore;
+}FireFlyColorFore;
 
-typedef struct _PCGamessAtom
+typedef struct _FireFlyAtom
 {
 	gdouble position[3];
 	gchar* symbol;
-}PCGamessAtom;
+}FireFlyAtom;
 
-typedef struct _PCGamessMolecule
+typedef struct _FireFlyMolecule
 {
 	gint numberOfAtoms;
 	gint totalNumberOfElectrons;
 	gint numberOfValenceElectrons;
-	PCGamessAtom* listOfAtoms;
+	FireFlyAtom* listOfAtoms;
 	gchar* groupSymmetry;
-}PCGamessMolecule;
+}FireFlyMolecule;
 
-typedef struct _PCGamessBasis
+typedef struct _FireFlyBasis
 {
 	gchar* name;
 	gchar* molecule;
 	int numberOfBasisTypes;
 	gchar** basisNames;
-}PCGamessBasis;
+}FireFlyBasis;
 
 typedef enum
 {
  LSDAC = 0, PBEC, PW91C, P86C, NewP86C, VWN1LC, VWN1LCRPA, VWN2LC, VWN3LC, VWN4LC, VWN5LC, PW92LC, PZ81LC, LYPC,
  HFX, Xalpha, SlaterX, Becke88X, PBEX, PW86X, PW91X, mPW91_B88X, mPW91_PW91X,mPW91_mPW91X, G96X
-} PCGamessFunctionalType;
+} FireFlyFunctionalType;
 
 typedef enum
 {
  XALPHA = 0, HFS, HFB, HFG96, G96LYP, BLYP, SVWN1, SVWN1RPA, SVWN2, SVWN3, 
  SVWN4, SVWN5, SPZ81, SPW92, BPW91, BP86, B3LYP, B3PW91, B3P86, PBE, PW91,
  mPW_PW91_PW91, mPWPW91, mPW1PW91
-} PCGamessStdFunctionalType;
+} FireFlyStdFunctionalType;
 
-typedef struct _PCGamessFunctional
+typedef struct _FireFlyFunctional
 {
-	PCGamessFunctionalType type;
+	FireFlyFunctionalType type;
 	gchar* name;
 	gchar* comment;
-}PCGamessFunctional;
-typedef struct _PCGamessStdFunctional
+}FireFlyFunctional;
+typedef struct _FireFlyStdFunctional
 {
-	PCGamessStdFunctionalType type;
+	FireFlyStdFunctionalType type;
 	gchar* name;
 	gint n;
-	PCGamessFunctionalType* listOfTypes;
+	FireFlyFunctionalType* listOfTypes;
 	gdouble* coefficients;
-}PCGamessStdFunctional;
+}FireFlyStdFunctional;
 
 #endif /* __GABEDIT_GAMESSTYPES_H__ */

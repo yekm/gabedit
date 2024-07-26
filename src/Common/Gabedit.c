@@ -1,6 +1,6 @@
 /* Gabedit.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 #include <gdk/gdk.h>
 #include <glib.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "Global.h"
 #include "MenuToolBar.h"
@@ -98,6 +99,7 @@ int main(int argc, char *argv[])
   user_install_verify(splash_screen);
   set_default_styles();
   set_path();
+  chdir(g_get_home_dir());
   gtk_main();
  
   return 0;

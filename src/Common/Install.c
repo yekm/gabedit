@@ -1,6 +1,6 @@
 /* Install.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -114,7 +114,7 @@ static struct
   {
     FALSE, "commands",
     "The \"commands\" file is used to store commands\n"
-    "for execute Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC, Orca, PCGamess or Q-Chem program.\n"
+    "for execute Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC, Orca, FireFly or Q-Chem program.\n"
   },
   {
     FALSE, "network",
@@ -149,7 +149,7 @@ static struct
     FALSE, "molcasbasis",
     "GABEDIT uses this file for obtain the list of basis available in Molcas.\n"
     "Please note that this file contains the list of basis(only the names of basis)\n"
-    "supported by Molcas6.\n"
+    "supported by Molcas7.\n"
   },
   {
     FALSE, "mpqcBasis",
@@ -610,7 +610,7 @@ void user_install_dialog_create(UserInstallCallback callback)
                                 "Click \"Continue\" to enter the GABEDIT user installation.");
 
   add_label(GTK_BOX(page),
-            "Gabedit is a Graphical User Interface to Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC ,Orca, PCGamess and Q-Chem\n"
+            "Gabedit is a Graphical User Interface to Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC ,Orca, FireFly and Q-Chem\n"
             "computational chemistry packages.\n"
 	    "It can display a variety of calculation results including support for most major molecular file formats.\n"
 	    "The advanced 'Molecule Builder' allows to rapidly sketch in molecules and examine them in 3D\n"
@@ -635,7 +635,7 @@ void user_install_dialog_create(UserInstallCallback callback)
   gtk_widget_show(sep);
 
   add_label(GTK_BOX(page),
-		  "Copyright (c) 2002-2009 Abdul-Rahman Allouche.\n"
+		  "Copyright (c) 2002-2010 Abdul-Rahman Allouche.\n"
 		  "All rights reserved.\n"
 		  "\nGabedit is free.\n"
 		  ); 
@@ -791,7 +791,7 @@ void user_install_dialog_create(UserInstallCallback callback)
                                              "Click \"Continue\" to accept the settings above.");
 
   add_label(GTK_BOX(commands_network_page),
-            "To execute Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC, Orca, PCGamess and Q-Chem program, "
+            "To execute Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC, Orca, FireFly and Q-Chem program, "
             "GABEDIT needs to know commands system.\n"
             "GABEDIT needs to know network protocols.");
 
@@ -844,7 +844,7 @@ void user_install_dialog_create(UserInstallCallback callback)
                                              "Click \"Continue\" for next page.");
   add_label(GTK_BOX(molcas_basis_page),
             "GABEDIT uses this file for get the list of basis(only the names of basis)supported by molcas.\n"
-            "Please note that this file contains the list of basis supported by Molcas6.");
+            "Please note that this file contains the list of basis supported by Molcas7.");
 
   /*  Page 10  */
   page = mpqc_basis_page =

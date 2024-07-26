@@ -1,6 +1,6 @@
 /* MenuToolBar.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -150,7 +150,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"MopacInput")) new_mopac(NULL, NULL);
 	else if(!strcmp(name,"MPQCInput")) new_mpqc(NULL, NULL);
 	else if(!strcmp(name,"OrcaInput")) new_orca(NULL, NULL);
-	else if(!strcmp(name,"PCGamessInput")) new_pcgamess(NULL, NULL);
+	else if(!strcmp(name,"FireFlyInput")) new_firefly(NULL, NULL);
 	else if(!strcmp(name,"QChemInput")) new_qchem(NULL, NULL);
 	else if(!strcmp(name,"OtherInput")) new_other(NULL, NULL);
 	else if(!strcmp(name,"Open")) open_file(NULL, NULL);
@@ -199,7 +199,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ToolsIRSpectrumDalton")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_DALTON);}
 	else if(!strcmp(name,"ToolsIRSpectrumGamess")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_GAMESS);}
 	else if(!strcmp(name,"ToolsIRSpectrumOrca")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_ORCA);}
-	else if(!strcmp(name,"ToolsIRSpectrumPCGamess")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_PCGAMESS);}
+	else if(!strcmp(name,"ToolsIRSpectrumFireFly")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_FIREFLY);}
 	else if(!strcmp(name,"ToolsIRSpectrumGaussian")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_GAUSSIAN);}
 	else if(!strcmp(name,"ToolsIRSpectrumMolpro")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_MOLPRO);}
 	else if(!strcmp(name,"ToolsIRSpectrumQChem")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_QCHEM);}
@@ -210,12 +210,13 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ToolsRamanSpectrumGamess")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_GAMESS);}
 	else if(!strcmp(name,"ToolsRamanSpectrumGaussian")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_GAUSSIAN);}
 	else if(!strcmp(name,"ToolsRamanSpectrumOrca")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_ORCA);}
-	else if(!strcmp(name,"ToolsRamanSpectrumPCGamess")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_GAMESS);}
+	else if(!strcmp(name,"ToolsRamanSpectrumFireFly")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_GAMESS);}
 	else if(!strcmp(name,"ToolsRamanSpectrumMolden")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_MOLDEN);}
 	else if(!strcmp(name,"ToolsRamanSpectrumTxt")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_TXT);}
 	else if(!strcmp(name,"ToolsUVSpectrumGabedit")) { createUVSpectrum(Fenetre,GABEDIT_TYPEFILE_GABEDIT);}
+	else if(!strcmp(name,"ToolsUVSpectrumGamess")) { createUVSpectrum(Fenetre,GABEDIT_TYPEFILE_GAMESS);}
 	else if(!strcmp(name,"ToolsUVSpectrumGaussian")) { createUVSpectrum(Fenetre,GABEDIT_TYPEFILE_GAUSSIAN);}
-	else if(!strcmp(name,"ToolsUVSpectrumPCGamess")) { createUVSpectrum(Fenetre,GABEDIT_TYPEFILE_PCGAMESS);}
+	else if(!strcmp(name,"ToolsUVSpectrumFireFly")) { createUVSpectrum(Fenetre,GABEDIT_TYPEFILE_FIREFLY);}
 	else if(!strcmp(name,"ToolsUVSpectrumOrca")) { createUVSpectrum(Fenetre,GABEDIT_TYPEFILE_ORCA);}
 	else if(!strcmp(name,"ToolsUVSpectrumQChem")) { createUVSpectrum(Fenetre,GABEDIT_TYPEFILE_QCHEM);}
 	else if(!strcmp(name,"ToolsUVSpectrumTxt")) { createUVSpectrum(Fenetre,GABEDIT_TYPEFILE_TXT);}
@@ -254,7 +255,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"MopacInput", GABEDIT_STOCK_MOPAC, "_Mopac input", NULL, "New Mopac input file", G_CALLBACK (activate_action) },
 	{"MPQCInput", GABEDIT_STOCK_MPQC, "MP_QC input", NULL, "New MPQC input file", G_CALLBACK (activate_action) },
 	{"OrcaInput", GABEDIT_STOCK_ORCA, "_Orca input", NULL, "New Orca input file", G_CALLBACK (activate_action) },
-	{"PCGamessInput", GABEDIT_STOCK_PCGAMESS, "_PCGamess input", NULL, "New PCGamess input file", G_CALLBACK (activate_action) },
+	{"FireFlyInput", GABEDIT_STOCK_FIREFLY, "_FireFly input", NULL, "New FireFly input file", G_CALLBACK (activate_action) },
 	{"QChemInput", GABEDIT_STOCK_QCHEM, "Q-_Chem input", NULL, "New Q-Chem input file", G_CALLBACK (activate_action) },
 	{"OtherInput", NULL, "_Other", NULL, "New file", G_CALLBACK (activate_action) },
 	{"Open", GTK_STOCK_OPEN, "_Open", "<control>O", "open a file", G_CALLBACK (activate_action) },
@@ -318,7 +319,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ToolsIRSpectrumGaussian",  GABEDIT_STOCK_GAUSSIAN, "Read frequencies and intensities from a _Gaussian output file", NULL, "Gaussian", G_CALLBACK (activate_action) },
 	{"ToolsIRSpectrumMolpro",  GABEDIT_STOCK_MOLPRO, "Read frequencies and intensities from a _Molpro output file", NULL, "Molpro", G_CALLBACK (activate_action) },
 	{"ToolsIRSpectrumOrca",  GABEDIT_STOCK_ORCA, "Read frequencies and intensities from a _Orca output file", NULL, "Orca", G_CALLBACK (activate_action) },
-	{"ToolsIRSpectrumPCGamess",  GABEDIT_STOCK_PCGAMESS, "Read frequencies and intensities from a _PCGamess output file", NULL, "PCGamess", G_CALLBACK (activate_action) },
+	{"ToolsIRSpectrumFireFly",  GABEDIT_STOCK_FIREFLY, "Read frequencies and intensities from a _FireFly output file", NULL, "FireFly", G_CALLBACK (activate_action) },
 	{"ToolsIRSpectrumQChem",  GABEDIT_STOCK_QCHEM, "Read frequencies and intensities from a _Q-Chem output file", NULL, "QChem", G_CALLBACK (activate_action) },
 	{"ToolsIRSpectrumAdf",  GABEDIT_STOCK_ADF, "Read frequencies and intensities from a _ADF output file", NULL, "ADF", G_CALLBACK (activate_action) },
 	{"ToolsIRSpectrumMolden",  GABEDIT_STOCK_MOLDEN, "Read frequencies and intensities from a Mo_lden file", NULL, "Molden", G_CALLBACK (activate_action) },
@@ -329,13 +330,14 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ToolsRamanSpectrumGamess",  GABEDIT_STOCK_GAMESS, "Read frequencies and intensities from a Game_ss output file", NULL, "Gamess", G_CALLBACK (activate_action) },
 	{"ToolsRamanSpectrumGaussian",  GABEDIT_STOCK_GAUSSIAN, "Read frequencies and intensities from a _Gaussian output file", NULL, "Gaussian", G_CALLBACK (activate_action) },
 	{"ToolsRamanSpectrumOrca",  GABEDIT_STOCK_ORCA, "Read frequencies and intensities from a _Orca output file", NULL, "Orca", G_CALLBACK (activate_action) },
-	{"ToolsRamanSpectrumPCGamess",  GABEDIT_STOCK_PCGAMESS, "Read frequencies and intensities from a _PCGamess output file", NULL, "PCGamess", G_CALLBACK (activate_action) },
+	{"ToolsRamanSpectrumFireFly",  GABEDIT_STOCK_FIREFLY, "Read frequencies and intensities from a _FireFly output file", NULL, "FireFly", G_CALLBACK (activate_action) },
 	{"ToolsRamanSpectrumMolden",  GABEDIT_STOCK_MOLDEN, "Read frequencies and intensities from a Mo_lden file", NULL, "Molden", G_CALLBACK (activate_action) },
 	{"ToolsRamanSpectrumTxt",  NULL, "Read frequencies and intensities from an ASCII XY file(2 columns)", NULL, "Txt", G_CALLBACK (activate_action) },
 	{"ToolsUVSpectrum",  NULL, "_UV spectrum"},
 	{"ToolsUVSpectrumGabedit",  GABEDIT_STOCK_GABEDIT, "Read energies and intensities from a _Gabedit file", NULL, "Gabedit", G_CALLBACK (activate_action) },
+	{"ToolsUVSpectrumGamess",  GABEDIT_STOCK_GAMESS, "Read energies and intensities from a _Gamess output file", NULL, "Gamess", G_CALLBACK (activate_action) },
 	{"ToolsUVSpectrumGaussian",  GABEDIT_STOCK_GAUSSIAN, "Read energies and intensities from a _Gaussian output file", NULL, "Gaussian", G_CALLBACK (activate_action) },
-	{"ToolsUVSpectrumPCGamess",  GABEDIT_STOCK_PCGAMESS, "Read energies and intensities from a _PCGamess output file", NULL, "PCGamess", G_CALLBACK (activate_action) },
+	{"ToolsUVSpectrumFireFly",  GABEDIT_STOCK_FIREFLY, "Read energies and intensities from a _FireFly output file", NULL, "FireFly", G_CALLBACK (activate_action) },
 	{"ToolsUVSpectrumOrca",  GABEDIT_STOCK_ORCA, "Read energies and intensities from a Orca output file", NULL, "Orca", G_CALLBACK (activate_action) },
 	{"ToolsUVSpectrumQChem",  GABEDIT_STOCK_QCHEM, "Read energies and intensities from a Q_Chem output file", NULL, "QChem", G_CALLBACK (activate_action) },
 	{"ToolsUVSpectrumTxt",  NULL, "Read energies and intensities from an ASCII XY file(2 columns)", NULL, "Txt", G_CALLBACK (activate_action) },
@@ -410,7 +412,7 @@ static const gchar *uiInfo =
 "         <menuitem name=\"MopacInput\" action=\"MopacInput\" />\n"
 "         <menuitem name=\"MPQCInput\" action=\"MPQCInput\" />\n"
 "         <menuitem name=\"OrcaInput\" action=\"OrcaInput\" />\n"
-"         <menuitem name=\"PCGamessInput\" action=\"PCGamessInput\" />\n"
+"         <menuitem name=\"FireFlyInput\" action=\"FireFlyInput\" />\n"
 "         <menuitem name=\"QChemInput\" action=\"QChemInput\" />\n"
 "         <menuitem name=\"Other\" action=\"OtherInput\" />\n"
 "      </menu>\n"
@@ -494,7 +496,7 @@ static const gchar *uiInfo =
 "          <menuitem name=\"ToolsIRSpectrumGaussian\" action=\"ToolsIRSpectrumGaussian\" />\n"
 "          <menuitem name=\"ToolsIRSpectrumMolpro\" action=\"ToolsIRSpectrumMolpro\" />\n"
 "          <menuitem name=\"ToolsIRSpectrumOrca\" action=\"ToolsIRSpectrumOrca\" />\n"
-"          <menuitem name=\"ToolsIRSpectrumPCGamess\" action=\"ToolsIRSpectrumPCGamess\" />\n"
+"          <menuitem name=\"ToolsIRSpectrumFireFly\" action=\"ToolsIRSpectrumFireFly\" />\n"
 "          <menuitem name=\"ToolsIRSpectrumQChem\" action=\"ToolsIRSpectrumQChem\" />\n"
 "          <menuitem name=\"ToolsIRSpectrumAdf\" action=\"ToolsIRSpectrumAdf\" />\n"
 "          <menuitem name=\"ToolsIRSpectrumMolden\" action=\"ToolsIRSpectrumMolden\" />\n"
@@ -506,16 +508,17 @@ static const gchar *uiInfo =
 "          <menuitem name=\"ToolsRamanSpectrumGamess\" action=\"ToolsRamanSpectrumGamess\" />\n"
 "          <menuitem name=\"ToolsRamanSpectrumGaussian\" action=\"ToolsRamanSpectrumGaussian\" />\n"
 "          <menuitem name=\"ToolsRamanSpectrumOrca\" action=\"ToolsRamanSpectrumOrca\" />\n"
-"          <menuitem name=\"ToolsRamanSpectrumPCGamess\" action=\"ToolsRamanSpectrumPCGamess\" />\n"
+"          <menuitem name=\"ToolsRamanSpectrumFireFly\" action=\"ToolsRamanSpectrumFireFly\" />\n"
 "          <menuitem name=\"ToolsRamanSpectrumMolden\" action=\"ToolsRamanSpectrumMolden\" />\n"
 "          <menuitem name=\"ToolsRamanSpectrumTxt\" action=\"ToolsRamanSpectrumTxt\" />\n"
 "      </menu>\n"
 "      <separator name=\"sepUVSpectrum\" />\n"
 "      <menu name=\"ToolsUVSpectrum\" action=\"ToolsUVSpectrum\">\n"
 "          <menuitem name=\"ToolsUVSpectrumGabedit\" action=\"ToolsUVSpectrumGabedit\" />\n"
+"          <menuitem name=\"ToolsUVSpectrumGamess\" action=\"ToolsUVSpectrumGamess\" />\n"
 "          <menuitem name=\"ToolsUVSpectrumGaussian\" action=\"ToolsUVSpectrumGaussian\" />\n"
 "          <menuitem name=\"ToolsUVSpectrumOrca\" action=\"ToolsUVSpectrumOrca\" />\n"
-"          <menuitem name=\"ToolsUVSpectrumPCGamess\" action=\"ToolsUVSpectrumPCGamess\" />\n"
+"          <menuitem name=\"ToolsUVSpectrumFireFly\" action=\"ToolsUVSpectrumFireFly\" />\n"
 "          <menuitem name=\"ToolsUVSpectrumQChem\" action=\"ToolsUVSpectrumQChem\" />\n"
 "          <menuitem name=\"ToolsUVSpectrumTxt\" action=\"ToolsUVSpectrumTxt\" />\n"
 "      </menu>\n"
@@ -570,7 +573,7 @@ static const gchar *uiInfo =
 "      <toolitem name=\"MopacInput\" action=\"MopacInput\" />\n"
 "      <toolitem name=\"MPQCInput\" action=\"MPQCInput\" />\n"
 "      <toolitem name=\"OrcaInput\" action=\"OrcaInput\" />\n"
-"      <toolitem name=\"PCGamessInput\" action=\"PCGamessInput\" />\n"
+"      <toolitem name=\"FireFlyInput\" action=\"FireFlyInput\" />\n"
 "      <toolitem name=\"QChemInput\" action=\"QChemInput\" />\n"
 "      <toolitem name=\"_Include\" action=\"Include\" />\n"
 "      <toolitem name=\"_Open\" action=\"Open\" />\n"

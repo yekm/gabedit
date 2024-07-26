@@ -1,6 +1,6 @@
 /* ECDSpectrum.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -300,7 +300,7 @@ static void read_gamess_file_dlg()
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
 /********************************************************************************/
-static gboolean read_pcgamess_file(GabeditFileChooser *SelecFile, gint response_id)
+static gboolean read_firefly_file(GabeditFileChooser *SelecFile, gint response_id)
 {
  	gchar t[BSIZE];
  	gboolean OK;
@@ -370,12 +370,12 @@ static gboolean read_pcgamess_file(GabeditFileChooser *SelecFile, gint response_
 	return FALSE;
 }
 /********************************************************************************/
-static void read_pcgamess_file_dlg()
+static void read_firefly_file_dlg()
 {
 	GtkWidget* filesel = 
- 	file_chooser_open(read_pcgamess_file,
-			"Read energies and intensities from a PCGamess output file",
-			GABEDIT_TYPEFILE_PCGAMESS,GABEDIT_TYPEWIN_OTHER);
+ 	file_chooser_open(read_firefly_file,
+			"Read energies and intensities from a FireFly output file",
+			GABEDIT_TYPEFILE_FIREFLY,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
@@ -927,7 +927,7 @@ void createECDSpectrum(GtkWidget *parentWindow, GabEditTypeFile typeOfFile)
 	if(typeOfFile==GABEDIT_TYPEFILE_ADF) read_adf_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_MPQC) read_mpqc_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_ORCA) read_orca_file_dlg();
-	if(typeOfFile==GABEDIT_TYPEFILE_PCGAMESS) read_pcgamess_file_dlg();
+	if(typeOfFile==GABEDIT_TYPEFILE_FIREFLY) read_firefly_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_QCHEM) read_qchem_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_TXT) read_sample_2columns_file_dlg();
 }

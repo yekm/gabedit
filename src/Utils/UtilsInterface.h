@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -104,7 +104,7 @@ void new_molpro(GtkWidget *widget, gchar *data);
 void new_mopac(GtkWidget *widget, gchar *data);
 void new_mpqc(GtkWidget *widget, gchar *data);
 void new_gamess(GtkWidget *widget, gchar *data);
-void new_pcgamess(GtkWidget *widget, gchar *data);
+void new_firefly(GtkWidget *widget, gchar *data);
 void new_gauss(GtkWidget *widget, gchar *data);
 void new_orca(GtkWidget *widget, gchar *data);
 void new_qchem(GtkWidget *widget, gchar *data);

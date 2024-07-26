@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -16,12 +16,12 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 DEALINGS IN THE SOFTWARE.
 ************************************************************************************************************/
 
-#ifndef __GABEDIT_PCGAMESS_H__
-#define __GABEDIT_PCGAMESS_H__
+#ifndef __GABEDIT_FIREFLY_H__
+#define __GABEDIT_FIREFLY_H__
 
-void destroyWinsPCGamess(GtkWidget *win,gpointer data);
-void newPCGamess();
-void insertPCGamess();
+void destroyWinsFireFly(GtkWidget *win,gpointer data);
+void newFireFly();
+void insertFireFly();
 
-#endif /* __GABEDIT_PCGAMESS_H__ */
+#endif /* __GABEDIT_FIREFLY_H__ */
 

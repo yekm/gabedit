@@ -1,6 +1,6 @@
 /* MenuToolBarGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -184,10 +184,10 @@ static void activate_action (GtkAction *action)
  		file_chooser_open(gl_read_first_orca_file,"Read the first geometry in a Orca output file",GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name,"GeometryOrcaLast"))
  		file_chooser_open(gl_read_last_orca_file,"Read the last geometry in a Orca output file",GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_ORB);
-	else if(!strcmp(name,"GeometryPCGamessFirst"))
- 		file_chooser_open(gl_read_first_gamess_file,"Read the first geometry in a PCGamess output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
-	else if(!strcmp(name,"GeometryPCGamessLast"))
- 		file_chooser_open(gl_read_last_gamess_file,"Read the last geometry in a PCGamess output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name,"GeometryFireFlyFirst"))
+ 		file_chooser_open(gl_read_first_gamess_file,"Read the first geometry in a FireFly output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name,"GeometryFireFlyLast"))
+ 		file_chooser_open(gl_read_last_gamess_file,"Read the last geometry in a FireFly output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
 
 	else if(!strcmp(name ,"GeometryQChemFirst"))
  		file_chooser_open(gl_read_first_qchem_file,"Read the first geometry from a Q-Chem output file",GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_ORB);
@@ -210,8 +210,8 @@ static void activate_action (GtkAction *action)
  			file_chooser_open(read_orca_orbitals_sel,"Read Geometry and Orbitals from a Orca files",GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsOrca2mkl"))
  			file_chooser_open(read_orca_orbitals_sel_2mkl,"Read Geometry and Orbitals from a Orca files",GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_ORB);
-	else if(!strcmp(name , "OrbitalsPCGamess"))
- 			file_chooser_open(read_gamess_orbitals_sel,"Read Geometry and Orbitals from a PCGamess output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name , "OrbitalsFireFly"))
+ 			file_chooser_open(read_gamess_orbitals_sel,"Read Geometry and Orbitals from a FireFly output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsQChem"))
  			file_chooser_open(read_qchem_orbitals_sel,"Read Geometry and Orbitals from a Q-Chem output file",GABEDIT_TYPEFILE_QCHEM,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsMopac"))
@@ -668,6 +668,11 @@ static void activate_action (GtkAction *action)
  		GtkWidget* chooser = file_chooser_save(save_png_file,"Save image in png file format",GABEDIT_TYPEFILE_PNG,GABEDIT_TYPEWIN_ORB);
 		fit_windows_position(PrincipalWindow, chooser);
 	}
+	else if(!strcmp(name , "ScreenCaptureTIF"))
+	{
+ 		GtkWidget* chooser = file_chooser_save(save_png_file,"Save image in tif file format",GABEDIT_TYPEFILE_TIF,GABEDIT_TYPEWIN_ORB);
+		fit_windows_position(PrincipalWindow, chooser);
+	}
 	else if(!strcmp(name , "ScreenCapturePNGNoBackGround"))
 	{
  		GtkWidget* chooser = file_chooser_save(save_png_no_background_file,"Save image in png file format",GABEDIT_TYPEFILE_PNG,GABEDIT_TYPEWIN_ORB);
@@ -760,11 +765,11 @@ static GtkActionEntry gtkActionEntries[] =
 		NULL, "Read the first geometry from a Orca output file", G_CALLBACK (activate_action) },
 	{"GeometryOrcaLast", GABEDIT_STOCK_ORCA, "Read the _last geometry from a ORCA output log file", 
 		NULL, "Read the last geometry from a Orca output file", G_CALLBACK (activate_action) },
-	{"GeometryPCGamess",     GABEDIT_STOCK_PCGAMESS, "Geometry _PCGamess"},
-	{"GeometryPCGamessFirst", GABEDIT_STOCK_PCGAMESS, "Read the _first geometry from a PCGamess output log file", 
-		NULL, "Read the first geometry from a PCGamess output file", G_CALLBACK (activate_action) },
-	{"GeometryPCGamessLast", GABEDIT_STOCK_PCGAMESS, "Read the _last geometry from a PCGamess output log file", 
-		NULL, "Read the last geometry from a PCGamess output file", G_CALLBACK (activate_action) },
+	{"GeometryFireFly",     GABEDIT_STOCK_FIREFLY, "Geometry _FireFly"},
+	{"GeometryFireFlyFirst", GABEDIT_STOCK_FIREFLY, "Read the _first geometry from a FireFly output log file", 
+		NULL, "Read the first geometry from a FireFly output file", G_CALLBACK (activate_action) },
+	{"GeometryFireFlyLast", GABEDIT_STOCK_FIREFLY, "Read the _last geometry from a FireFly output log file", 
+		NULL, "Read the last geometry from a FireFly output file", G_CALLBACK (activate_action) },
 	{"GeometryQChem",     GABEDIT_STOCK_QCHEM, "Geometry Q-_Chem"},
 	{"GeometryQChemFirst", GABEDIT_STOCK_QCHEM, "Read the _first geometry from a Q-Chem output file", 
 		NULL, "Read the first geometry from a Q-Chem output file", G_CALLBACK (activate_action) },
@@ -791,8 +796,8 @@ static GtkActionEntry gtkActionEntries[] =
 		NULL, "Read geometry and orbitals from a Orca output files", G_CALLBACK (activate_action) },
 	{"OrbitalsOrca2mkl", GABEDIT_STOCK_ORCA, "Read geometry and orbitals from a _Orca files using orca_2mkl", 
 		NULL, "Read geometry and orbitals from a Orca output files", G_CALLBACK (activate_action) },
-	{"OrbitalsPCGamess", GABEDIT_STOCK_PCGAMESS, "Read geometry and orbitals from a _PCGamess output file", 
-		NULL, "Read geometry and orbitals from a PCGamess output file", G_CALLBACK (activate_action) },
+	{"OrbitalsFireFly", GABEDIT_STOCK_FIREFLY, "Read geometry and orbitals from a _FireFly output file", 
+		NULL, "Read geometry and orbitals from a FireFly output file", G_CALLBACK (activate_action) },
 	{"OrbitalsQChem", GABEDIT_STOCK_QCHEM, "Read geometry and orbitals from a Q-_Chem output file", 
 		NULL, "Read geometry and orbitals from a Q-Chem output file", G_CALLBACK (activate_action) },
 	{"OrbitalsMopac", GABEDIT_STOCK_MOPAC, "Read geometry and orbitals from a _Mopac aux file", 
@@ -965,6 +970,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ScreenCaptureBMP", NULL, "_BMP format", NULL, "save image in a BMP file", G_CALLBACK (activate_action) },
 	{"ScreenCapturePNG", NULL, "_PNG format", NULL, "save image in a PNG file", G_CALLBACK (activate_action) },
 	{"ScreenCapturePNGNoBackGround", NULL, "_PNG format(tansparent background)", NULL, "save image in a PNG file without background", G_CALLBACK (activate_action) },
+	{"ScreenCaptureTIF", NULL, "_TIF format", NULL, "save image in a tif file", G_CALLBACK (activate_action) },
 	{"ScreenCapturePS", NULL, "P_S format", NULL, "save image in a PS file", G_CALLBACK (activate_action) },
 	{"ScreenCaptureClipBoard", NULL, "_Copy to clipboard (Ctrl C or Alt C)", NULL, "copy to clipboard", G_CALLBACK (activate_action) },
 
@@ -1421,6 +1427,11 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"GeometryPDB\" action=\"GeometryPDB\" />\n"
 "      <menuitem name=\"GeometryHIN\" action=\"GeometryHIN\" />\n"
 "      <separator name=\"sepMenuXYZ\" />\n"
+"      <menu name=\"GeometryFireFly\" action=\"GeometryFireFly\">\n"
+"        <menuitem name=\"GeometryFireFlyFirst\" action=\"GeometryFireFlyFirst\" />\n"
+"        <menuitem name=\"GeometryFireFlyLast\" action=\"GeometryFireFlyLast\" />\n"
+"      </menu>\n"
+"      <separator name=\"sepMenuFireFlyGeom\" />\n"
 "      <menu name=\"GeometryDalton\" action=\"GeometryDalton\">\n"
 "        <menuitem name=\"GeometryDaltonFirst\" action=\"GeometryDaltonFirst\" />\n"
 "        <menuitem name=\"GeometryDaltonLast\" action=\"GeometryDaltonLast\" />\n"
@@ -1463,11 +1474,6 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"GeometryOrcaLast\" action=\"GeometryOrcaLast\" />\n"
 "      </menu>\n"
 "      <separator name=\"sepMenuOrcaGeom\" />\n"
-"      <menu name=\"GeometryPCGamess\" action=\"GeometryPCGamess\">\n"
-"        <menuitem name=\"GeometryPCGamessFirst\" action=\"GeometryPCGamessFirst\" />\n"
-"        <menuitem name=\"GeometryPCGamessLast\" action=\"GeometryPCGamessLast\" />\n"
-"      </menu>\n"
-"      <separator name=\"sepMenuPCGamessGeom\" />\n"
 "      <menu name=\"GeometryQChem\" action=\"GeometryQChem\">\n"
 "        <menuitem name=\"GeometryQChemFirst\" action=\"GeometryQChemFirst\" />\n"
 "        <menuitem name=\"GeometryQChemLast\" action=\"GeometryQChemLast\" />\n"
@@ -1484,13 +1490,13 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"OrbitalsAuto\" action=\"OrbitalsAuto\" />\n"
 "      <separator name=\"sepMenuOrbitalsAuto\" />\n"
 /*"      <menuitem name=\"OrbitalsDalton\" action=\"OrbitalsDalton\" />\n"*/
+"      <menuitem name=\"OrbitalsFireFly\" action=\"OrbitalsFireFly\" />\n"
 "      <menuitem name=\"OrbitalsGamess\" action=\"OrbitalsGamess\" />\n"
 "      <menuitem name=\"OrbitalsGaussian\" action=\"OrbitalsGaussian\" />\n"
 "      <menuitem name=\"OrbitalsMolpro\" action=\"OrbitalsMolpro\" />\n"
 "      <menuitem name=\"OrbitalsMopac\" action=\"OrbitalsMopac\" />\n"
 "      <menuitem name=\"OrbitalsOrca\" action=\"OrbitalsOrca\" />\n"
 "      <menuitem name=\"OrbitalsOrca2mkl\" action=\"OrbitalsOrca2mkl\" />\n"
-"      <menuitem name=\"OrbitalsPCGamess\" action=\"OrbitalsPCGamess\" />\n"
 "      <menuitem name=\"OrbitalsQChem\" action=\"OrbitalsQChem\" />\n"
 "      <menuitem name=\"OrbitalsGabeditRead\" action=\"OrbitalsGabeditRead\" />\n"
 "      <menuitem name=\"OrbitalsMolden\" action=\"OrbitalsMolden\" />\n"
@@ -1775,6 +1781,7 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ScreenCapturePNGNoBackGround\" action=\"ScreenCapturePNGNoBackGround\" />\n"
 "        <menuitem name=\"ScreenCaptureJPG\" action=\"ScreenCaptureJPG\" />\n"
 "        <menuitem name=\"ScreenCapturePPM\" action=\"ScreenCapturePPM\" />\n"
+"        <menuitem name=\"ScreenCaptureTIF\" action=\"ScreenCaptureTIF\" />\n"
 "        <menuitem name=\"ScreenCapturePS\" action=\"ScreenCapturePS\" />\n"
 "        <menuitem name=\"ScreenCaptureClipBoard\" action=\"ScreenCaptureClipBoard\" />\n"
 "    </menu>\n"

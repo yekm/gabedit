@@ -1,6 +1,6 @@
 /* SemiEmpiricalDlg.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -78,14 +78,14 @@ static  GtkWidget* buttonCreateGaussian = NULL ;
 static  GtkWidget* entryGaussianKeywords = NULL; 
 static  GtkWidget* buttonCreateMopac = NULL ;
 static  GtkWidget* entryMopacKeywords = NULL; 
-static  GtkWidget* buttonCreatePCGamess = NULL ;
-static  GtkWidget* entryPCGamessKeywords = NULL; 
+static  GtkWidget* buttonCreateFireFly = NULL ;
+static  GtkWidget* entryFireFlyKeywords = NULL; 
 static  GtkWidget* buttonPostNone = NULL ;
 static  GtkWidget* buttonPostOpt = NULL ;
 static  GtkWidget* buttonMopac = NULL ;
-static  GtkWidget* buttonPCGamess = NULL ;
+static  GtkWidget* buttonFireFly = NULL ;
 static  GtkWidget* entryMopacMethod = NULL;
-static  GtkWidget* entryPCGamessMethod = NULL;
+static  GtkWidget* entryFireFlyMethod = NULL;
 static  GtkWidget* entryMopacHamiltonian = NULL;
 static  GtkWidget* entryAddMopacKeywords = NULL;
 static  GtkWidget* entryOrcaHamiltonian = NULL;
@@ -123,7 +123,7 @@ static gboolean getEnergyMopac(gchar* fileNameOut, gdouble* energy)
 	gchar buffer[1024];
 	gchar* pdest = NULL;
 
- 	file = fopen(fileNameOut, "r");
+ 	file = FOpen(fileNameOut, "r");
 	if(!file) return FALSE;
 	 while(!feof(file))
 	 {
@@ -366,7 +366,7 @@ static gboolean runOneMopac(gchar* fileNamePrefix, gchar* keyWords)
 #else
 	fileNameSH = g_strdup_printf("%sMopacOne.bat",fileNamePrefix);
 #endif
- 	fileSH = fopen(fileNameSH, "w");
+ 	fileSH = FOpen(fileNameSH, "w");
 	if(!fileSH) return FALSE;
 #ifdef G_OS_WIN32
 	fprintf(fileSH,"@echo off\n");
@@ -376,7 +376,7 @@ static gboolean runOneMopac(gchar* fileNamePrefix, gchar* keyWords)
 	getMultiplicityName(spinMultiplicity, multiplicityStr);
 
 	fileNameIn = g_strdup_printf("%sOne.mop",fileNamePrefix);
- 	file = fopen(fileNameIn, "w");
+ 	file = FOpen(fileNameIn, "w");
 	if(!file) 
 	{
  		if(fileNameIn) g_free(fileNameIn);
@@ -410,12 +410,16 @@ static gboolean runOneMopac(gchar* fileNamePrefix, gchar* keyWords)
 	fclose(file);
 	{
 		gchar* str = NULL;
+		if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("Minimization by PM6-DH2/Mopac ... Please wait");
+		else
 		if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6")) str = g_strdup_printf("Minimization by PM6/Mopac ... Please wait");
 		else
 		if(strstr(keyWords,"XYZ") && strstr(keyWords,"AM1")) str = g_strdup_printf("Minimization by AM1/Mopac ... Please wait");
+		else if(strstr(keyWords,"ESP") && strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("ESP charges from PM6-DH2/Mopac ... Please wait");
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"PM6")) str = g_strdup_printf("ESP charges from PM6/Mopac ... Please wait");
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"AM1")) str = g_strdup_printf("ESP charges from AM1/Mopac ... Please wait");
 		else if(strstr(keyWords,"POINT")) str = g_strdup_printf("Reaction path by Mopac ... Please wait");
+		else if(strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("Computing of energy by PM6-DH2/Mopac .... Please wait");
 		else if(strstr(keyWords,"PM6")) str = g_strdup_printf("Computing of energy by PM6/Mopac .... Please wait");
 		else str = g_strdup_printf("Computing of energy by AM1/Mopac .... Please wait");
 		set_text_to_draw(str);
@@ -476,14 +480,14 @@ static gboolean runOneMopac(gchar* fileNamePrefix, gchar* keyWords)
 	return TRUE;
 }
 /*****************************************************************************/
-static gboolean getEnergyPCGamess(gchar* fileNameOut, gdouble* energy)
+static gboolean getEnergyFireFly(gchar* fileNameOut, gdouble* energy)
 {
 	FILE* file = NULL;
 	gchar buffer[1024];
 	gchar* pdest = NULL;
 	gboolean OK = FALSE;
 
- 	file = fopen(fileNameOut, "r");
+ 	file = FOpen(fileNameOut, "r");
 	if(!file) return FALSE;
 	 while(!feof(file))
 	 {
@@ -503,7 +507,7 @@ static gboolean getEnergyPCGamess(gchar* fileNameOut, gdouble* energy)
 	return OK;
 }
 /*****************************************************************************/
-static gboolean runOnePCGamess(gchar* fileNamePrefix, gchar* keyWords)
+static gboolean runOneFireFly(gchar* fileNamePrefix, gchar* keyWords)
 {
 	FILE* file = NULL;
 	FILE* fileSH = NULL;
@@ -524,17 +528,17 @@ static gboolean runOnePCGamess(gchar* fileNamePrefix, gchar* keyWords)
 #else
 	fileNameSH = g_strdup_printf("%sPCGOne.bat",fileNamePrefix);
 #endif
- 	fileSH = fopen(fileNameSH, "w");
+ 	fileSH = FOpen(fileNameSH, "w");
 	if(!fileSH) return FALSE;
 #ifdef G_OS_WIN32
 	fprintf(fileSH,"@echo off\n");
-	fprintf(fileSH,"set PATH=%cPATH%c;\"%s\"\n",c,c,pcgamessDirectory);
+	fprintf(fileSH,"set PATH=%cPATH%c;\"%s\"\n",c,c,fireflyDirectory);
 #endif
 
 	getMultiplicityName(spinMultiplicity, multiplicityStr);
 
 	fileNameIn = g_strdup_printf("%sOne.inp",fileNamePrefix);
- 	file = fopen(fileNameIn, "w");
+ 	file = FOpen(fileNameIn, "w");
 	if(!file) 
 	{
  		if(fileNameIn) g_free(fileNameIn);
@@ -543,7 +547,7 @@ static gboolean runOnePCGamess(gchar* fileNamePrefix, gchar* keyWords)
 		return FALSE;
 	}
 	fprintf(file,"! ======================================================\n");
-	fprintf(file,"!  Input file for PCGamess\n"); 
+	fprintf(file,"!  Input file for FireFly\n"); 
 	fprintf(file,"! ======================================================\n");
 	if(strstr(keyWords,"RUNTYP"))
 	{
@@ -569,6 +573,10 @@ static gboolean runOnePCGamess(gchar* fileNamePrefix, gchar* keyWords)
 		sscanf(strstr(keyWords,"GBASIS"),"%s",buffer);
 		fprintf(file," $BASIS %s $END\n",buffer);
 	}
+	if(!strstr(keyWords,"Optimize"))
+	{
+        	fprintf(file, " $STATPT OptTol=1e-4 NStep=500 $END\n");
+	}
 	fprintf(file," $DATA\n");
 	fprintf(file,"Molecule specification\n");
 	fprintf(file,"C1\n");
@@ -588,38 +596,41 @@ static gboolean runOnePCGamess(gchar* fileNamePrefix, gchar* keyWords)
 	fclose(file);
 	fileNameOut = g_strdup_printf("%sOne.out",fileNamePrefix);
 #ifndef G_OS_WIN32
-	if(!strcmp(NameCommandPCGamess,"pcgamess") || !strcmp(NameCommandPCGamess,"nohup pcgamess"))
+	if(!strcmp(NameCommandFireFly,"pcgamess") || !strcmp(NameCommandFireFly,"nohup pcgamess")||
+	!strcmp(NameCommandFireFly,"firefly") || !strcmp(NameCommandFireFly,"nohup firefly"))
 	{
 		fprintf(fileSH,"mkdir %stmp\n",fileNamePrefix);
 		fprintf(fileSH,"cd %stmp\n",fileNamePrefix);
 		fprintf(fileSH,"cp %s input\n",fileNameIn);
-		fprintf(fileSH,"%s -p -o %s\n",NameCommandPCGamess,fileNameOut);
+		fprintf(fileSH,"%s -p -o %s\n",NameCommandFireFly,fileNameOut);
 		fprintf(fileSH,"cd ..\n");
 		fprintf(fileSH,"rm PUNCH\n");
 		fprintf(fileSH,"/bin/rm -r  %stmp\n",fileNamePrefix);
 	}
 	else
-		fprintf(fileSH,"%s %s",NameCommandPCGamess,fileNameIn);
+		fprintf(fileSH,"%s %s",NameCommandFireFly,fileNameIn);
 #else
-	 if(!strcmp(NameCommandPCGamess,"pcgamess") )
+	 if(!strcmp(NameCommandFireFly,"pcgamess") ||
+	 !strcmp(NameCommandFireFly,"firefly") )
 	{
         	fprintf(fileSH,"mkdir \"%stmp\"\n",fileNamePrefix);
+		addUnitDisk(fileSH, fileNamePrefix);
 	 	fprintf(fileSH,"cd \"%stmp\"\n",fileNamePrefix);
          	fprintf(fileSH,"copy \"%s\" input\n",fileNameIn);
-         	fprintf(fileSH,"%s -p -o \"%s\"\n",NameCommandPCGamess,fileNameOut);
+         	fprintf(fileSH,"%s -p -o \"%s\"\n",NameCommandFireFly,fileNameOut);
 	 	fprintf(fileSH,"cd ..\n");
          	fprintf(fileSH,"del PUNCH 2> nul\n");
          	fprintf(fileSH,"del /Q  \"%stmp\"\n",fileNamePrefix);
          	fprintf(fileSH,"rmdir  \"%stmp\"\n",fileNamePrefix);
 	}
 	else
-		fprintf(fileSH,"%s %s",NameCommandPCGamess,fileNameIn);
+		fprintf(fileSH,"%s %s",NameCommandFireFly,fileNameIn);
 #endif
 	fclose(fileSH);
 	{
 		gchar* str = NULL;
-		if(strstr(keyWords,"Optimiz")) str = g_strdup_printf("Minimization by AM1/PCGamess ... Please wait");
-		else str = g_strdup_printf("Computing of energy by AM1/PCGamess .... Please wait");
+		if(strstr(keyWords,"Optimiz")) str = g_strdup_printf("Minimization by AM1/FireFly ... Please wait");
+		else str = g_strdup_printf("Computing of energy by AM1/FireFly .... Please wait");
 		set_text_to_draw(str);
 		if(str) g_free(str);
 		dessine();
@@ -633,11 +644,11 @@ static gboolean runOnePCGamess(gchar* fileNamePrefix, gchar* keyWords)
 	sprintf(buffer,"\"%s\"",fileNameSH);
 	system(buffer);
 #endif
-	if(getEnergyPCGamess(fileNameOut,&energy))
+	if(getEnergyFireFly(fileNameOut,&energy))
 	{
 		gchar* str = NULL;
 
-		str = g_strdup_printf("Energy by PCGamess = %f", energy);
+		str = g_strdup_printf("Energy by FireFly = %f", energy);
 		set_text_to_draw(str);
 		dessine();
     		while( gtk_events_pending() ) gtk_main_iteration();
@@ -649,7 +660,7 @@ static gboolean runOnePCGamess(gchar* fileNamePrefix, gchar* keyWords)
 		gchar* str = NULL;
 		str = g_strdup_printf(
 				"Sorry, I cannot read the output file :  %s"
-				" ; Check also the installation of PCGamess...",
+				" ; Check also the installation of FireFly...",
 				fileNameOut
 				);
 		set_text_to_draw(str);
@@ -675,7 +686,7 @@ static gboolean getEnergyOrca(gchar* fileNameOut, gdouble* energy)
 	gchar* pdest = NULL;
 	gchar* energyTag = "FINAL SINGLE POINT ENERGY";
 
- 	file = fopen(fileNameOut, "r");
+ 	file = FOpen(fileNameOut, "r");
 	if(!file) return FALSE;
 	 while(!feof(file))
 	 {
@@ -711,7 +722,7 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
 #else
 	fileNameSH = g_strdup_printf("%sOne.bat",fileNamePrefix);
 #endif
- 	fileSH = fopen(fileNameSH, "w");
+ 	fileSH = FOpen(fileNameSH, "w");
 	if(!fileSH) return FALSE;
 #ifdef G_OS_WIN32
 	fprintf(fileSH,"@echo off\n");
@@ -720,7 +731,7 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
 	getMultiplicityName(spinMultiplicity, multiplicityStr);
 
 	fileNameIn = g_strdup_printf("%sOne.inp",fileNamePrefix);
- 	file = fopen(fileNameIn, "w");
+ 	file = FOpen(fileNameIn, "w");
 	if(!file) 
 	{
  		if(fileNameIn) g_free(fileNameIn);
@@ -990,11 +1001,31 @@ static void runSemiEmpirical(GtkWidget* Win, gpointer data, gchar* type, gchar* 
 		change_of_center(NULL,NULL);
 	}
 
+	if(!strcmp(type,"PM6DH2MopacEnergy"))
+	{
+		gchar* fileNamePrefix = get_suffix_name_file(fileName);
+		if(runOneMopac(fileNamePrefix, "PM6-DH2 1SCF"))
+		{
+		}
+		if(fileNamePrefix) g_free(fileNamePrefix);
+	}
+	else
 	if(!strcmp(type,"PM6MopacEnergy"))
 	{
 		gchar* fileNamePrefix = get_suffix_name_file(fileName);
 		if(runOneMopac(fileNamePrefix, "PM6 1SCF"))
 		{
+		}
+		if(fileNamePrefix) g_free(fileNamePrefix);
+	}
+	else if(!strcmp(type,"PM6DH2MopacOptimize"))
+	{
+		gchar* fileNamePrefix = get_suffix_name_file(fileName);
+		if(runOneMopac(fileNamePrefix, "PM6-DH2 XYZ AUX"))
+		{
+			gchar* fileOut = g_strdup_printf("%sOne.aux",fileNamePrefix);
+			find_energy_mopac_aux(fileOut);
+			if(fileOut) g_free(fileOut);
 		}
 		if(fileNamePrefix) g_free(fileNamePrefix);
 	}
@@ -1005,6 +1036,17 @@ static void runSemiEmpirical(GtkWidget* Win, gpointer data, gchar* type, gchar* 
 		{
 			gchar* fileOut = g_strdup_printf("%sOne.aux",fileNamePrefix);
 			find_energy_mopac_aux(fileOut);
+			if(fileOut) g_free(fileOut);
+		}
+		if(fileNamePrefix) g_free(fileNamePrefix);
+	}
+	else if(!strcmp(type,"PM6DH2MopacESP"))
+	{
+		gchar* fileNamePrefix = get_suffix_name_file(fileName);
+		if(runOneMopac(fileNamePrefix, "PM6-DH2 1SCF ESP"))
+		{
+			gchar* fileOut = g_strdup_printf("%sOne.out",fileNamePrefix);
+			read_geom_from_mopac_output_file(fileOut, -1);
 			if(fileOut) g_free(fileOut);
 		}
 		if(fileNamePrefix) g_free(fileNamePrefix);
@@ -1110,18 +1152,18 @@ static void runSemiEmpirical(GtkWidget* Win, gpointer data, gchar* type, gchar* 
 		}
 		if(fileNamePrefix) g_free(fileNamePrefix);
 	}
-	else if(!strcmp(type,"AM1PCGamessEnergy"))
+	else if(!strcmp(type,"AM1FireFlyEnergy"))
 	{
 		gchar* fileNamePrefix = get_suffix_name_file(fileName);
-		if(runOnePCGamess(fileNamePrefix, "RUNTYP=Energy GBASIS=AM1"))
+		if(runOneFireFly(fileNamePrefix, "RUNTYP=Energy GBASIS=AM1"))
 		{
 		}
 		if(fileNamePrefix) g_free(fileNamePrefix);
 	}
-	else if(!strcmp(type,"AM1PCGamessOptimize"))
+	else if(!strcmp(type,"AM1FireFlyOptimize"))
 	{
 		gchar* fileNamePrefix = get_suffix_name_file(fileName);
-		if(runOnePCGamess(fileNamePrefix, "RUNTYP=Optimize GBASIS=AM1"))
+		if(runOneFireFly(fileNamePrefix, "RUNTYP=Optimize GBASIS=AM1"))
 		{
 			gchar* fileOut = g_strdup_printf("%sOne.out",fileNamePrefix);
 			find_energy_gamess_output_heat(fileOut);
@@ -1131,22 +1173,49 @@ static void runSemiEmpirical(GtkWidget* Win, gpointer data, gchar* type, gchar* 
 	}
 }
 /*****************************************************************************/
-static void runAM1PCGamessEnergy(GtkWidget* Win, gpointer data)
+static void runAM1FireFlyEnergy(GtkWidget* Win, gpointer data)
 {
 	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
 	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
 	TotalCharges[0] = totalCharge;
 	SpinMultiplicities[0] = spinMultiplicity;
-	runSemiEmpirical(Win, data, "AM1PCGamessEnergy",NULL);
+	runSemiEmpirical(Win, data, "AM1FireFlyEnergy",NULL);
 }
 /*****************************************************************************/
-static void runAM1PCGamessOptimize(GtkWidget* Win, gpointer data)
+static void runAM1FireFlyOptimize(GtkWidget* Win, gpointer data)
 {
 	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
 	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
 	TotalCharges[0] = totalCharge;
 	SpinMultiplicities[0] = spinMultiplicity;
-	runSemiEmpirical(Win, data, "AM1PCGamessOptimize",NULL);
+	runSemiEmpirical(Win, data, "AM1FireFlyOptimize",NULL);
+}
+/*****************************************************************************/
+static void runPM6DH2MopacEnergy(GtkWidget* Win, gpointer data)
+{
+	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
+	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
+	TotalCharges[0] = totalCharge;
+	SpinMultiplicities[0] = spinMultiplicity;
+	runSemiEmpirical(Win, data, "PM6DH2MopacEnergy",NULL);
+}
+/*****************************************************************************/
+static void runPM6DH2MopacOptimize(GtkWidget* Win, gpointer data)
+{
+	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
+	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
+	TotalCharges[0] = totalCharge;
+	SpinMultiplicities[0] = spinMultiplicity;
+	runSemiEmpirical(Win, data, "PM6DH2MopacOptimize",NULL);
+}
+/*****************************************************************************/
+static void runPM6DH2MopacESP(GtkWidget* Win, gpointer data)
+{
+	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
+	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
+	TotalCharges[0] = totalCharge;
+	SpinMultiplicities[0] = spinMultiplicity;
+	runSemiEmpirical(Win, data, "PM6DH2MopacESP",NULL);
 }
 /*****************************************************************************/
 static void runPM6MopacEnergy(GtkWidget* Win, gpointer data)
@@ -1941,7 +2010,7 @@ static void AddOptionsDlg(GtkWidget *NoteBook, GtkWidget *win,gchar* type)
                   1,1);
 	addMopacOptions(vbox, type);
 	}
-	else if(strstr(type,"MopacScanAM1") || strstr(type,"MopacScanPM6"))
+	else if(strstr(type,"MopacScanAM1") || strstr(type,"MopacScanPM6") || strstr(type,"MopacScanPM6DH2"))
 	{
 	i++;
 	j = 0;
@@ -2002,7 +2071,7 @@ static void AddOptionsDlg(GtkWidget *NoteBook, GtkWidget *win,gchar* type)
 	if(strstr(type,"AM1")) gtk_entry_set_text(GTK_ENTRY(entryFileName),"am1");
 	if(strstr(type,"PM6")) gtk_entry_set_text(GTK_ENTRY(entryFileName),"pm6");
 	else if(strstr(type,"Mopac")) gtk_entry_set_text(GTK_ENTRY(entryFileName),"mopacFile");
-	else if(strstr(type,"PCGamess")) gtk_entry_set_text(GTK_ENTRY(entryFileName),"pcgamessFile");
+	else if(strstr(type,"FireFly")) gtk_entry_set_text(GTK_ENTRY(entryFileName),"fireflyFile");
 	else if(strstr(type,"Orca")) gtk_entry_set_text(GTK_ENTRY(entryFileName),"orcaFile");
 	else gtk_entry_set_text(GTK_ENTRY(entryFileName),"myFile");
 	gtk_widget_set_size_request(GTK_WIDGET(entryFileName),(gint)(ScreenHeight*0.2),-1);
@@ -2018,8 +2087,8 @@ static GtkWidget *addMopacHamiltonianToTable(GtkWidget *table, gint i)
 {
 	GtkWidget* entryMopacHamiltonian = NULL;
 	GtkWidget* comboMopacHamiltonian = NULL;
-	gint nlistHamiltonian = 5;
-	gchar* listHamiltonian[] = {"PM6","AM1","RM1","PM3","MNDO"};
+	gint nlistHamiltonian = 6;
+	gchar* listHamiltonian[] = {"PM6","PM6-DH2","AM1","RM1","PM3","MNDO"};
 
 	add_label_table(table,"Model",(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
@@ -2187,10 +2256,16 @@ void semiEmpiricalDlg(gchar* type)
 	button = create_button(Win,"Ok");
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Win)->action_area), button, TRUE, TRUE, 0);
-	if(!strcmp(type,"AM1PCGamessEnergy"))
-		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runAM1PCGamessEnergy,GTK_OBJECT(Win));
-	else if(!strcmp(type,"AM1PCGamessOptimize"))
-		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runAM1PCGamessOptimize,GTK_OBJECT(Win));
+	if(!strcmp(type,"AM1FireFlyEnergy"))
+		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runAM1FireFlyEnergy,GTK_OBJECT(Win));
+	else if(!strcmp(type,"AM1FireFlyOptimize"))
+		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runAM1FireFlyOptimize,GTK_OBJECT(Win));
+	else if(!strcmp(type,"PM6DH2MopacEnergy"))
+		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runPM6DH2MopacEnergy,GTK_OBJECT(Win));
+	else if(!strcmp(type,"PM6DH2MopacOptimize"))
+		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runPM6DH2MopacOptimize,GTK_OBJECT(Win));
+	else if(!strcmp(type,"PM6DH2MopacESP"))
+		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runPM6DH2MopacESP,GTK_OBJECT(Win));
 	else if(!strcmp(type,"PM6MopacEnergy"))
 		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runPM6MopacEnergy,GTK_OBJECT(Win));
 	else if(!strcmp(type,"PM6MopacOptimize"))
@@ -2235,7 +2310,7 @@ static gboolean saveConfoGeometries(gint numberOfGeometries, SemiEmpiricalModel*
 	for(i=0;i<numberOfGeometries;i++) if(geometries[i]) nG++;
 	if(nG<1) return FALSE;
 
- 	file = fopen(fileNameGeom, "w");
+ 	file = FOpen(fileNameGeom, "w");
 
 	if(!file) return FALSE;
 
@@ -2324,7 +2399,7 @@ static gboolean runOneOptMopac(SemiEmpiricalModel* geom, gdouble* energy, gchar*
 #else
 	fileNameSH = g_strdup_printf("%sMopacOne.bat",fileNamePrefix);
 #endif
- 	fileSH = fopen(fileNameSH, "w");
+ 	fileSH = FOpen(fileNameSH, "w");
 	if(!fileSH) return FALSE;
 #ifdef G_OS_WIN32
 	fprintf(fileSH,"set PATH=%cPATH%c;\"%s\"\n",c,c,mopacDirectory);
@@ -2333,7 +2408,7 @@ static gboolean runOneOptMopac(SemiEmpiricalModel* geom, gdouble* energy, gchar*
 	getMultiplicityName(spinMultiplicity, multiplicityStr);
 
 	fileNameIn = g_strdup_printf("%sOne.mop",fileNamePrefix);
- 	file = fopen(fileNameIn, "w");
+ 	file = FOpen(fileNameIn, "w");
 	if(!file) 
 	{
  		if(fileNameIn) g_free(fileNameIn);
@@ -2366,11 +2441,15 @@ static gboolean runOneOptMopac(SemiEmpiricalModel* geom, gdouble* energy, gchar*
 	fclose(file);
 	{
 		gchar* str = NULL;
+		if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("Minimization by PM6-DH2/Mopac ... Please wait");
+		else
 		if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6")) str = g_strdup_printf("Minimization by PM6/Mopac ... Please wait");
 		else
 		if(strstr(keyWords,"XYZ") && strstr(keyWords,"AM1")) str = g_strdup_printf("Minimization by AM1/Mopac ... Please wait");
+		else if(strstr(keyWords,"ESP") && strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("ESP charges from PM6-DH2/Mopac ... Please wait");
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"PM6")) str = g_strdup_printf("ESP charges from PM6/Mopac ... Please wait");
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"AM1")) str = g_strdup_printf("ESP charges from AM1/Mopac ... Please wait");
+		else if(strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("Computing of energy by PM6-DH2/Mopac .... Please wait");
 		else if(strstr(keyWords,"PM6")) str = g_strdup_printf("Computing of energy by PM6/Mopac .... Please wait");
 		else str = g_strdup_printf("Computing of energy by AM1/Mopac .... Please wait");
 		set_text_to_draw(str);
@@ -2455,7 +2534,7 @@ static gboolean runMopacFiles(gint numberOfGeometries, SemiEmpiricalModel** geom
 
 }
 /*****************************************************************************/
-static gboolean runOneOptPCGamess(SemiEmpiricalModel* geom, gdouble* energy, gchar* fileNamePrefix, gchar* keyWords)
+static gboolean runOneOptFireFly(SemiEmpiricalModel* geom, gdouble* energy, gchar* fileNamePrefix, gchar* keyWords)
 {
 	FILE* file = NULL;
 	FILE* fileSH = NULL;
@@ -2477,16 +2556,16 @@ static gboolean runOneOptPCGamess(SemiEmpiricalModel* geom, gdouble* energy, gch
 #else
 	fileNameSH = g_strdup_printf("%sPCGOne.bat",fileNamePrefix);
 #endif
- 	fileSH = fopen(fileNameSH, "w");
+ 	fileSH = FOpen(fileNameSH, "w");
 	if(!fileSH) return FALSE;
 #ifdef G_OS_WIN32
-	fprintf(fileSH,"set PATH=%cPATH%c;\"%s\"\n",c,c,pcgamessDirectory);
+	fprintf(fileSH,"set PATH=%cPATH%c;\"%s\"\n",c,c,fireflyDirectory);
 #endif
 
 	getMultiplicityName(spinMultiplicity, multiplicityStr);
 
 	fileNameIn = g_strdup_printf("%sOne.inp",fileNamePrefix);
- 	file = fopen(fileNameIn, "w");
+ 	file = FOpen(fileNameIn, "w");
 	if(!file) 
 	{
  		if(fileNameIn) g_free(fileNameIn);
@@ -2495,7 +2574,7 @@ static gboolean runOneOptPCGamess(SemiEmpiricalModel* geom, gdouble* energy, gch
 		return FALSE;
 	}
 	fprintf(file,"! ======================================================\n");
-	fprintf(file,"!  Input file for PCGamess\n"); 
+	fprintf(file,"!  Input file for FireFly\n"); 
 	fprintf(file,"! ======================================================\n");
 	if(strstr(keyWords,"RUNTYP"))
 	{
@@ -2540,38 +2619,41 @@ static gboolean runOneOptPCGamess(SemiEmpiricalModel* geom, gdouble* energy, gch
 	fclose(file);
 	fileNameOut = g_strdup_printf("%sOne.out",fileNamePrefix);
 #ifndef G_OS_WIN32
-	if(!strcmp(NameCommandPCGamess,"pcgamess") || !strcmp(NameCommandPCGamess,"nohup pcgamess"))
+	if(!strcmp(NameCommandFireFly,"pcgamess") || !strcmp(NameCommandFireFly,"nohup pcgamess")||
+	!strcmp(NameCommandFireFly,"firefly") || !strcmp(NameCommandFireFly,"nohup firefly"))
 	{
 		fprintf(fileSH,"mkdir %stmp\n",fileNamePrefix);
 		fprintf(fileSH,"cd %stmp\n",fileNamePrefix);
 		fprintf(fileSH,"cp %s input\n",fileNameIn);
-		fprintf(fileSH,"%s -p -o %s\n",NameCommandPCGamess,fileNameOut);
+		fprintf(fileSH,"%s -p -o %s\n",NameCommandFireFly,fileNameOut);
 		fprintf(fileSH,"cd ..\n");
 		fprintf(fileSH,"rm PUNCH\n");
 		fprintf(fileSH,"/bin/rm -r  %stmp\n",fileNamePrefix);
 	}
 	else
-		fprintf(fileSH,"%s %s",NameCommandPCGamess,fileNameIn);
+		fprintf(fileSH,"%s %s",NameCommandFireFly,fileNameIn);
 #else
-	 if(!strcmp(NameCommandPCGamess,"pcgamess") )
+	 if(!strcmp(NameCommandFireFly,"pcgamess") ||
+	 !strcmp(NameCommandFireFly,"firefly") )
 	{
         	fprintf(fileSH,"mkdir \"%stmp\"\n",fileNamePrefix);
+		addUnitDisk(fileSH, fileNamePrefix);
 	 	fprintf(fileSH,"cd \"%stmp\"\n",fileNamePrefix);
          	fprintf(fileSH,"copy \"%s\" input\n",fileNameIn);
-         	fprintf(fileSH,"%s -p -o \"%s\"\n",NameCommandPCGamess,fileNameOut);
+         	fprintf(fileSH,"%s -p -o \"%s\"\n",NameCommandFireFly,fileNameOut);
 	 	fprintf(fileSH,"cd ..\n");
          	fprintf(fileSH,"del PUNCH\n");
          	fprintf(fileSH,"del /Q  \"%stmp\"\n",fileNamePrefix);
          	fprintf(fileSH,"rmdir  \"%stmp\"\n",fileNamePrefix);
 	}
 	else
-		fprintf(fileSH,"%s %s",NameCommandPCGamess,fileNameIn);
+		fprintf(fileSH,"%s %s",NameCommandFireFly,fileNameIn);
 #endif
 	fclose(fileSH);
 	{
 		gchar* str = NULL;
-		if(strstr(keyWords,"OPTIMIZE")) str = g_strdup_printf("Minimization by AM1/PCGamess ... Please wait");
-		else str = g_strdup_printf("Computing of energy by AM1/PCGamess .... Please wait");
+		if(strstr(keyWords,"OPTIMIZE")) str = g_strdup_printf("Minimization by AM1/FireFly ... Please wait");
+		else str = g_strdup_printf("Computing of energy by AM1/FireFly .... Please wait");
 		set_text_to_draw(str);
 		if(str) g_free(str);
 		dessine();
@@ -2585,12 +2667,12 @@ static gboolean runOneOptPCGamess(SemiEmpiricalModel* geom, gdouble* energy, gch
 	sprintf(buffer,"\"%s\"",fileNameSH);
 	system(buffer);
 #endif
-	if(getEnergyPCGamess(fileNameOut,energy))
+	if(getEnergyFireFly(fileNameOut,energy))
 	{
 		gchar* str = NULL;
 
 		read_geom_from_gamess_output_file(fileNameOut, -1);
-		str = g_strdup_printf("Energy by PCGamess = %f", *energy);
+		str = g_strdup_printf("Energy by FireFly = %f", *energy);
 		set_text_to_draw(str);
 		dessine();
     		while( gtk_events_pending() ) gtk_main_iteration();
@@ -2611,7 +2693,7 @@ static gboolean runOneOptPCGamess(SemiEmpiricalModel* geom, gdouble* energy, gch
 	return TRUE;
 }
 /*****************************************************************************/
-static gboolean runPCGamessFiles(gint numberOfGeometries, SemiEmpiricalModel** geometries, gdouble* energies, gchar* fileNamePrefix, gchar* keyWords)
+static gboolean runFireFlyFiles(gint numberOfGeometries, SemiEmpiricalModel** geometries, gdouble* energies, gchar* fileNamePrefix, gchar* keyWords)
 {
 	gint i;
 	gint nG = 0;
@@ -2622,11 +2704,11 @@ static gboolean runPCGamessFiles(gint numberOfGeometries, SemiEmpiricalModel** g
 		if(!geometries[i]) continue;
 		nG++;
 		if(str) g_free(str);
-		str = g_strdup_printf("Minimization by PCGamess of geometry n = %d... Please wait", i+1);
+		str = g_strdup_printf("Minimization by FireFly of geometry n = %d... Please wait", i+1);
 		set_text_to_draw(str);
 		dessine();
     		while( gtk_events_pending() ) gtk_main_iteration();
-		if(runOneOptPCGamess(geometries[i], &energies[i], fileNamePrefix, keyWords)) 
+		if(runOneOptFireFly(geometries[i], &energies[i], fileNamePrefix, keyWords)) 
 		{
 			freeMoleculeSE(&geometries[i]->molecule);
 			/*
@@ -2850,7 +2932,7 @@ static gboolean createMopacFiles(gint numberOfGeometries, SemiEmpiricalModel** g
 #else
 	fileNameSH = g_strdup_printf("%sMopac.bat",fileNamePrefix);
 #endif
- 	fileSH = fopen(fileNameSH, "w");
+ 	fileSH = FOpen(fileNameSH, "w");
 	if(!fileSH) return FALSE;
 #ifdef G_OS_WIN32
 	fprintf(fileSH,"set PATH=%cPATH%c;\"%s\"\n",c,c,mopacDirectory);
@@ -2863,7 +2945,7 @@ static gboolean createMopacFiles(gint numberOfGeometries, SemiEmpiricalModel** g
 		if(!geometries[i]) continue;
  		if(fileName) g_free(fileName);
 		fileName = g_strdup_printf("%s_%d.mop",fileNamePrefix,i+1);
- 		file = fopen(fileName, "w");
+ 		file = FOpen(fileName, "w");
 		if(!file) return FALSE;
 		fprintf(file,"* ===============================\n");
 		fprintf(file,"* Input file for Mopac\n");
@@ -2926,7 +3008,7 @@ static gboolean createGaussianFiles(gint numberOfGeometries, SemiEmpiricalModel*
 #else
 	fileNameSH = g_strdup_printf("%sGauss.bat",fileNamePrefix);
 #endif
- 	fileSH = fopen(fileNameSH, "w");
+ 	fileSH = FOpen(fileNameSH, "w");
 	if(!fileSH) return FALSE;
 
 
@@ -2935,7 +3017,7 @@ static gboolean createGaussianFiles(gint numberOfGeometries, SemiEmpiricalModel*
 		if(!geometries[i]) continue;
  		if(fileName) g_free(fileName);
 		fileName = g_strdup_printf("%s_%d.com",fileNamePrefix,i+1);
- 		file = fopen(fileName, "w");
+ 		file = FOpen(fileName, "w");
 		if(!file) return FALSE;
 		fprintf(file,"#P %s\n",keyWords);
 		fprintf(file,"#  Units(Ang,Deg)\n");
@@ -2971,7 +3053,7 @@ static gboolean createGaussianFiles(gint numberOfGeometries, SemiEmpiricalModel*
 
 }
 /*****************************************************************************/
-static gboolean createPCGamessFiles(gint numberOfGeometries, SemiEmpiricalModel** geometries, gdouble* energies, gchar* fileNamePrefix, gchar* keyWords)
+static gboolean createFireFlyFiles(gint numberOfGeometries, SemiEmpiricalModel** geometries, gdouble* energies, gchar* fileNamePrefix, gchar* keyWords)
 {
 	FILE* file = NULL;
 	FILE* fileSH = NULL;
@@ -2995,10 +3077,10 @@ static gboolean createPCGamessFiles(gint numberOfGeometries, SemiEmpiricalModel*
 #else
 	fileNameSH = g_strdup_printf("%sPCGam.bat",fileNamePrefix);
 #endif
- 	fileSH = fopen(fileNameSH, "w");
+ 	fileSH = FOpen(fileNameSH, "w");
 	if(!fileSH) return FALSE;
 #ifdef G_OS_WIN32
-	fprintf(fileSH,"set PATH=%cPATH%c;\"%s\"\n",c,c,pcgamessDirectory);
+	fprintf(fileSH,"set PATH=%cPATH%c;\"%s\"\n",c,c,fireflyDirectory);
 #endif
 
 
@@ -3008,10 +3090,10 @@ static gboolean createPCGamessFiles(gint numberOfGeometries, SemiEmpiricalModel*
 		if(!geometries[i]) continue;
  		if(fileName) g_free(fileName);
 		fileName = g_strdup_printf("%sP_%d.inp",fileNamePrefix,i+1);
- 		file = fopen(fileName, "w");
+ 		file = FOpen(fileName, "w");
 		if(!file) return FALSE;
 		fprintf(file,"! ======================================================\n");
-		fprintf(file,"!  Input file for PCGamess\n"); 
+		fprintf(file,"!  Input file for FireFly\n"); 
 		fprintf(file,"! ======================================================\n");
 		if(strstr(keyWords,"RUNTYP"))
 		{
@@ -3056,32 +3138,35 @@ static gboolean createPCGamessFiles(gint numberOfGeometries, SemiEmpiricalModel*
 		fclose(file);
 
 #ifndef G_OS_WIN32
-	 	if(!strcmp(NameCommandPCGamess,"pcgamess") || !strcmp(NameCommandPCGamess,"nohup pcgamess"))
+		if(!strcmp(NameCommandFireFly,"pcgamess") || !strcmp(NameCommandFireFly,"nohup pcgamess")||
+		!strcmp(NameCommandFireFly,"firefly") || !strcmp(NameCommandFireFly,"nohup firefly"))
 		{
 			fprintf(fileSH,"mkdir %stmp%d\n",fileNamePrefix,i+1);
 			fprintf(fileSH,"cd %stmp%d\n",fileNamePrefix,i+1);
 			fprintf(fileSH,"cp %s input\n",fileName);
-			fprintf(fileSH,"%s -p -o %sP_%d.log\n",NameCommandPCGamess,fileNamePrefix,i+1);
+			fprintf(fileSH,"%s -p -o %sP_%d.log\n",NameCommandFireFly,fileNamePrefix,i+1);
 			fprintf(fileSH,"cd ..\n");
 			fprintf(fileSH,"mv PUNCH  %sP_%d.pun\n",fileNamePrefix,i+1);
 			fprintf(fileSH,"/bin/rm -r  %stmp%d\n",fileNamePrefix,i+1);
 		}
 		else
-			fprintf(fileSH,"%s %s",NameCommandPCGamess,fileName);
+			fprintf(fileSH,"%s %s",NameCommandFireFly,fileName);
 #else
-	 	if(!strcmp(NameCommandPCGamess,"pcgamess") )
+	 	if(!strcmp(NameCommandFireFly,"pcgamess") ||
+	 	!strcmp(NameCommandFireFly,"firefly") )
 		{
          		fprintf(fileSH,"mkdir %stmp%d\n",fileNamePrefix,i+1);
+			addUnitDisk(fileSH, fileNamePrefix);
 	 		fprintf(fileSH,"cd %stmp%d\n",fileNamePrefix,i+1);
          		fprintf(fileSH,"copy %s input\n",fileName);
-         		fprintf(fileSH,"%s -p -o %sP_%d.log\n",NameCommandPCGamess,fileNamePrefix,i+1);
+         		fprintf(fileSH,"%s -p -o %sP_%d.log\n",NameCommandFireFly,fileNamePrefix,i+1);
 	 		fprintf(fileSH,"cd ..\n");
          		fprintf(fileSH,"move PUNCH  %sP_%d.pun\n",fileNamePrefix,i+1);
          		fprintf(fileSH,"del /Q  %stmp%d\n",fileNamePrefix,i+1);
          		fprintf(fileSH,"rmdir  %stmp%d\n",fileNamePrefix,i+1);
 		}
 		else
-			fprintf(fileSH,"%s %s",NameCommandPCGamess,fileName);
+			fprintf(fileSH,"%s %s",NameCommandFireFly,fileName);
 #endif
 	}
 	fclose(fileSH);
@@ -3116,7 +3201,7 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 	gchar* fileNameProp = NULL;
 	gchar* mopacKeywords = NULL;
 	gchar* gaussianKeywords = NULL;
-	gchar* pcgamessKeywords = NULL;
+	gchar* fireflyKeywords = NULL;
 	gdouble friction=40;
 	gdouble collide = 20;
 	MDThermostatType thermostat = NONE;
@@ -3124,7 +3209,7 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 	SemiEmpiricalModel** geometries = NULL; 
 	gdouble* energies = NULL;
 	gboolean optMopac = FALSE;
-	gboolean optPCGamess = FALSE;
+	gboolean optFireFly = FALSE;
 	gchar* program = NULL;
 	gchar* method = NULL;
 	gdouble tolEnergy = -1;
@@ -3150,8 +3235,8 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 	}
 	else
 	{
-		program = g_strdup("PCGamess");
-		method = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryPCGamessMethod)));
+		program = g_strdup("FireFly");
+		method = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryFireFlyMethod)));
 	}
 
 	updateFrequency = atoi(gtk_entry_get_text(GTK_ENTRY(entryMDRafresh)));
@@ -3192,7 +3277,7 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 	if(stepSize>5) stepSize = 5.0;
 
 	optMopac = GTK_TOGGLE_BUTTON (buttonPostOpt)->active && GTK_TOGGLE_BUTTON (buttonMopac)->active; 
-	optPCGamess = GTK_TOGGLE_BUTTON (buttonPostOpt)->active && GTK_TOGGLE_BUTTON (buttonPCGamess)->active; 
+	optFireFly = GTK_TOGGLE_BUTTON (buttonPostOpt)->active && GTK_TOGGLE_BUTTON (buttonFireFly)->active; 
 	/* number for geometries */
 	{
 		gchar* tmp = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryNumberOfGeom)));
@@ -3215,8 +3300,8 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 		gaussianKeywords = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryGaussianKeywords)));
 	if(GTK_TOGGLE_BUTTON (buttonCreateMopac)->active)
 		mopacKeywords = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryMopacKeywords)));
-	if(GTK_TOGGLE_BUTTON (buttonCreatePCGamess)->active)
-		pcgamessKeywords = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryPCGamessKeywords)));
+	if(GTK_TOGGLE_BUTTON (buttonCreateFireFly)->active)
+		fireflyKeywords = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryFireFlyKeywords)));
 
 	if(GTK_TOGGLE_BUTTON (buttonSaveTraj)->active)
 	{
@@ -3251,7 +3336,7 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 	if(!strcmp(program,"Mopac"))
 		seModel = createMopacModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName);
 	else
-		seModel = createPCGamessModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName);
+		seModel = createFireFlyModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName);
 	g_free(program);
 
 	if(StopCalcul)
@@ -3311,12 +3396,12 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 		if(fileNamePrefix) g_free(fileNamePrefix);
 		if(keys)g_free(keys);
 	}
-	/* minimazation by PCGamess AM1*/
-	if(optPCGamess && !StopCalcul)
+	/* minimazation by FireFly AM1*/
+	if(optFireFly && !StopCalcul)
 	{
 		gchar* fileNamePrefix = get_suffix_name_file(fileNameGeom);
 		gchar* keys=g_strdup_printf("RUNTYP=Optimize GBASIS=%s",method);
-		if(runPCGamessFiles(numberOfGeometries, geometries, energies, fileNamePrefix, keys))
+		if(runFireFlyFiles(numberOfGeometries, geometries, energies, fileNamePrefix, keys))
 		{
 			sortGeometries(numberOfGeometries, geometries, energies);
 			removeIdenticalGeometries(&numberOfGeometries, &geometries, &energies, tolEnergy, tolDistance);
@@ -3324,7 +3409,7 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 			{
 				read_gabedit_file_add_list(fileNameGeom);
 				strcat(message,fileNameGeom);
-				strcat(message,"\n\tGeometries after minimization by PCGamess");
+				strcat(message,"\n\tGeometries after minimization by FireFly");
 				strcat(message,"\n\tTo read this file : 'Read/Gabedit file'\n\n");
 			}
 
@@ -3333,7 +3418,7 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 		if(keys)g_free(keys);
 	}
 	g_free(method);
-	if(!optMopac && !optPCGamess && !StopCalcul)
+	if(!optMopac && !optFireFly && !StopCalcul)
 	{
 		/*  sort by energies */
 		sortGeometries(numberOfGeometries, geometries, energies);
@@ -3365,12 +3450,12 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 			strcat(message,"_*.com\n\tFiles for a post processing by Gaussian\n\n");
 			if(fileNamePrefix) g_free(fileNamePrefix);
 		}
-		if(pcgamessKeywords)
+		if(fireflyKeywords)
 		{
 			gchar* fileNamePrefix = get_suffix_name_file(fileNameGeom);
-			createPCGamessFiles(numberOfGeometries, geometries, energies, fileNamePrefix, pcgamessKeywords);
+			createFireFlyFiles(numberOfGeometries, geometries, energies, fileNamePrefix, fireflyKeywords);
 			strcat(message,fileNamePrefix);
-			strcat(message,"P_*.inp\n\tFiles for a post processing by PCGamess\n\n");
+			strcat(message,"P_*.inp\n\tFiles for a post processing by FireFly\n\n");
 			if(fileNamePrefix) g_free(fileNamePrefix);
 		}
 	}
@@ -3424,8 +3509,8 @@ static void semiEmpiricalMD(GtkWidget* Win, gpointer data)
 	}
 	else
 	{
-		program = g_strdup("PCGamess");
-		method = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryPCGamessMethod)));
+		program = g_strdup("FireFly");
+		method = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryFireFlyMethod)));
 	}
 	updateFrequency = atoi(gtk_entry_get_text(GTK_ENTRY(entryMDRafresh)));
 	if(updateFrequency<0) updateFrequency = 0;
@@ -3499,7 +3584,7 @@ static void semiEmpiricalMD(GtkWidget* Win, gpointer data)
 	if(!strcmp(program,"Mopac"))
 		seModel = createMopacModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName);
 	else
-		seModel = createPCGamessModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName);
+		seModel = createFireFlyModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName);
 	g_free(method);
 	g_free(program);
 
@@ -4034,7 +4119,7 @@ static void createInfoConfoFrame(GtkWidget *box)
 	"\nthe geometries are sorted by energy and are saved in a file."
 	"\nGabedit can also optimize these geometries, interactively."
 	"\nThe very similar molecular strcutures can be removed."
-	"\nGabedit can also creates input files for mopac, PCGamess or Gaussian for a post processing."
+	"\nGabedit can also creates input files for mopac, FireFly or Gaussian for a post processing."
 	"\n\n"
 	"If \"MD Trajectory via Verlet velocity Algorithm\" is selected :\n"
 	"        A molecular dynamic simulation is run using the Verlet velocity Algorithm.\n"
@@ -4238,13 +4323,13 @@ static void createPostProcessingFrame(GtkWidget *box)
 /*----------------------------------------------------------------------------------*/
 	i++;
 	j = 0;
-	buttonCreatePCGamess = gtk_check_button_new_with_label("Create PCGamess files.    Keywords "); 
-	gtk_table_attach(GTK_TABLE(table),buttonCreatePCGamess,
+	buttonCreateFireFly = gtk_check_button_new_with_label("Create FireFly files.    Keywords "); 
+	gtk_table_attach(GTK_TABLE(table),buttonCreateFireFly,
 			j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCreatePCGamess), FALSE);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCreateFireFly), FALSE);
 /*----------------------------------------------------------------------------------*/
 	j = 1;
 	label = gtk_label_new(":");
@@ -4254,9 +4339,9 @@ static void createPostProcessingFrame(GtkWidget *box)
                   1,1);
 /*----------------------------------------------------------------------------------*/
 	j = 2;
-	entryPCGamessKeywords = gtk_entry_new();
-	gtk_entry_set_text(GTK_ENTRY(entryPCGamessKeywords),"RUNTYP=Optimize    GBASIS=AM1");
-	gtk_table_attach(GTK_TABLE(table),entryPCGamessKeywords, j,j+4,i,i+1,
+	entryFireFlyKeywords = gtk_entry_new();
+	gtk_entry_set_text(GTK_ENTRY(entryFireFlyKeywords),"RUNTYP=Optimize    GBASIS=AM1");
+	gtk_table_attach(GTK_TABLE(table),entryFireFlyKeywords, j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
@@ -4318,16 +4403,16 @@ static void AddModelOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 1;
 	j = 0;
-	buttonPCGamess = gtk_radio_button_new_with_label(
+	buttonFireFly = gtk_radio_button_new_with_label(
 			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonMopac)),
-			"Use PCGamess with method");
-	gtk_table_attach(GTK_TABLE(table),buttonPCGamess,
+			"Use FireFly with method");
+	gtk_table_attach(GTK_TABLE(table),buttonFireFly,
 			j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonPCGamess), FALSE);
-	gtk_widget_show (buttonPCGamess);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonFireFly), FALSE);
+	gtk_widget_show (buttonFireFly);
 /*----------------------------------------------------------------------------------*/
 	i = 1;
 	j = 1;
@@ -4339,9 +4424,9 @@ static void AddModelOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 1;
 	j = 2;
-	entryPCGamessMethod = gtk_entry_new();
-	gtk_entry_set_text(GTK_ENTRY(entryPCGamessMethod),"AM1");
-	gtk_table_attach(GTK_TABLE(table),entryPCGamessMethod, j,j+1,i,i+1,
+	entryFireFlyMethod = gtk_entry_new();
+	gtk_entry_set_text(GTK_ENTRY(entryFireFlyMethod),"AM1");
+	gtk_table_attach(GTK_TABLE(table),entryFireFlyMethod, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
