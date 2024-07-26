@@ -1,6 +1,6 @@
 /* InterfaceGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -189,7 +189,7 @@ void create_geomXYZ_interface (GabEditTypeFileGeom readfile)
   GtkWidget *vbox;
   GtkWidget *hbox;
   GtkWidget *label;
-  GtkWidget *vseparator;
+  /*GtkWidget *vseparator;*/
   
   MethodeGeom = GEOM_IS_XYZ;
 
@@ -215,7 +215,8 @@ void create_geomXYZ_interface (GabEditTypeFileGeom readfile)
 
   create_geomXYZ_list(vbox,readfile);
 
-  vseparator = create_vseparator (hbox);
+  /* vseparator = create_vseparator (hbox);*/
+  create_vseparator (hbox);
   vbox = gtk_vbox_new (FALSE, 0);
   gtk_widget_show (vbox);
   gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 5);
@@ -234,7 +235,7 @@ void create_geom_interface (GabEditTypeFileGeom readfile)
   GtkWidget *vbox;
   GtkWidget *hbox;
   GtkWidget *label;
-  GtkWidget *vseparator;
+  /* GtkWidget *vseparator;*/
 
   MethodeGeom = GEOM_IS_ZMAT;
   if( HboxGeom != NULL) 
@@ -260,7 +261,8 @@ void create_geom_interface (GabEditTypeFileGeom readfile)
 
   create_geom_list(vbox,readfile);
 
-  vseparator = create_vseparator (hbox);
+  /* vseparator = create_vseparator (hbox);*/
+  create_vseparator (hbox);
 
   vbox = gtk_vbox_new (FALSE, 0);
   gtk_widget_show (vbox);

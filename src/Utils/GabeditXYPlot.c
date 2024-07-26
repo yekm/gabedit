@@ -1,6 +1,6 @@
 /* GabeditXYPlot.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -9027,7 +9027,7 @@ static gint gabedit_xyplot_motion_notify (GtkWidget *widget, GdkEventMotion *eve
   else if (xyplot->selected_objects_line_num>-1) 
   {
 	gint i = xyplot->selected_objects_line_num;
-	gdouble x1, y1, x2, y2;
+	gdouble x1=0, y1=0, x2=0, y2=0;
 	XYPlotObjectLine* objectLine = &GABEDIT_XYPLOT(xyplot)->objectsLine[i];
 	if(xyplot->selected_objects_line_type==0)
 	{
@@ -9333,6 +9333,15 @@ void gabedit_xyplot_set_autorange (GabeditXYPlot *xyplot, XYPlotData *data)
   xyplot_calculate_sizes(xyplot);
 
   gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+}
+/****************************************************************************************/
+void gabedit_xyplot_get_reflects (GabeditXYPlot *xyplot, gboolean* rx, gboolean* ry)
+{
+  g_return_if_fail (xyplot != NULL);
+  g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+  
+  if (rx!=NULL) *rx=xyplot->reflect_x;
+  if (ry!=NULL) *ry=xyplot->reflect_y;
 }
 /****************************************************************************************/
 void gabedit_xyplot_get_range (GabeditXYPlot *xyplot, gdouble *xmin, gdouble *xmax, gdouble *ymin, gdouble *ymax)
@@ -11146,4 +11155,67 @@ void gabedit_xyplot_set_data_point_color (GabeditXYPlot *xyplot, gdouble red, gd
 	xyplot_calculate_sizes(xyplot);
 
 	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+}
+/********************************************************************************/
+void gabedit_xyplot_add_new_data(GtkWidget* xyplot, gint numberOfPoints, gdouble* X,  gdouble* Y)
+{
+	add_new_data(xyplot, numberOfPoints, X,  Y);
+}
+/****************************************************************************************/
+void gabedit_xyplot_set_last_data_line_width (GabeditXYPlot *xyplot, gdouble line_width)
+{
+	g_return_if_fail (xyplot != NULL);
+	g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+
+	if(line_width<0) line_width = 0;
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+	XYPlotData *current_data; 
+	GList *current_node; 
+ 
+	if (xyplot->data_list ){
+		current_node=g_list_first(xyplot->data_list);
+		current_data=(XYPlotData*)current_node->data;  
+		for (; current_node!=NULL; current_node=current_node->next)
+		{
+        		current_data=(XYPlotData*)current_node->data;  
+		}
+		current_data->line_width = line_width;
+	}
+	xyplot_free_legends(xyplot);
+	xyplot_build_legends(xyplot);  
+	xyplot_calculate_sizes(xyplot);
+
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+}
+/****************************************************************************************/
+void gabedit_xyplot_set_last_data_point_size (GabeditXYPlot *xyplot, gdouble point_size)
+{
+	g_return_if_fail (xyplot != NULL);
+	g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+
+	if(point_size<0) point_size = 0;
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+	XYPlotData *current_data; 
+	GList *current_node; 
+ 
+	if (xyplot->data_list ){
+		current_node=g_list_first(xyplot->data_list);
+		current_data=(XYPlotData*)current_node->data;  
+		for (; current_node!=NULL; current_node=current_node->next)
+		{
+        		current_data=(XYPlotData*)current_node->data;  
+		}
+		current_data->point_size = point_size;
+		xyplot_build_points_data(GABEDIT_XYPLOT(xyplot), current_data);
+	}
+	xyplot_free_legends(xyplot);
+	xyplot_build_legends(xyplot);  
+	xyplot_calculate_sizes(xyplot);
+
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+}
+/****************************************************************************************/
+void gabedit_xyplot_add_object_text (GabeditXYPlot *xyplot, gdouble x, gdouble y, gdouble angle, G_CONST_RETURN gchar* str)
+{
+	add_object_text(GABEDIT_XYPLOT(xyplot),  x,  y,  angle, str);
 }

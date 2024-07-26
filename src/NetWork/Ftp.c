@@ -1,6 +1,6 @@
 /*Ftp.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -526,7 +526,7 @@ int tcpopen(char *host)
 #endif
 	if( !hostCheck(host) )
 		return -1;
-	if((s = initSocket(host))<0)
+	if((s = initSocket())<0)
 		return -1;
 
 	while (connect(s, (struct sockaddr *)&remote_addr, sizeof (remote_addr)) < 0)

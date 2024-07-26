@@ -1,6 +1,6 @@
 /* ListeFiles.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -42,6 +42,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/Status.h"
 #include "../Molcas/MolcasVariables.h"
 #include "../Molcas/MolcasGateWay.h"
+#include "../../pixmaps/DeMonMini.xpm"
 #include "../../pixmaps/GamessMini.xpm"
 #include "../../pixmaps/FireFlyMini.xpm"
 #include "../../pixmaps/Gaussian.xpm"
@@ -60,6 +61,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/StockIcons.h"
 #include "../Files/ListeFiles.h"
 
+static GdkPixbuf *demonPixbuf = NULL;
 static GdkPixbuf *gamessPixbuf = NULL;
 static GdkPixbuf *gaussianPixbuf = NULL;
 static GdkPixbuf *molcasPixbuf = NULL;
@@ -114,6 +116,7 @@ static void create_info_win();
 /********************************************************************************/
 static void set_pixbuf()
 {
+	if(!demonPixbuf) demonPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) demon_mini_xpm);
 	if(!gamessPixbuf) gamessPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) gamess_mini_xpm);
 	if(!gaussianPixbuf) gaussianPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) gaussian_xpm);
 	if(!molcasPixbuf) molcasPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) molcas_mini_xpm);
@@ -279,6 +282,12 @@ static void set_fileopen(DataTree* data)
  		fileopen.outputfile = g_strdup_printf("%s.log",fileopen.projectname);
  		fileopen.logfile = g_strdup_printf("%s.log",fileopen.projectname);
   		fileopen.moldenfile=g_strdup_printf("%s.log",fileopen.projectname);
+	}
+	else if(data->itype == PROG_IS_DEMON)
+	{
+ 		fileopen.outputfile = g_strdup_printf("%s.out",fileopen.projectname);
+ 		fileopen.logfile = g_strdup_printf("%s.out",fileopen.projectname);
+  		fileopen.moldenfile=g_strdup_printf("%s.out",fileopen.projectname);
 	}
 	else if(data->itype == PROG_IS_GAMESS)
 	{
@@ -665,6 +674,7 @@ static void create_set_dialogue_window()
 		|| data->itype == PROG_IS_PSICODE 
 		|| data->itype == PROG_IS_MOPAC 
 		|| data->itype == PROG_IS_GAMESS 
+		|| data->itype == PROG_IS_DEMON 
 		|| data->itype == PROG_IS_FIREFLY 
 		)
 			add_label_table(Table,_("Files "),1,0);
@@ -673,6 +683,10 @@ static void create_set_dialogue_window()
 
   		switch(data->itype)
   		{
+			case PROG_IS_DEMON :
+			t = g_strdup_printf("%s, %s.out",data->datafile,data->projectname);
+			break;
+
 			case PROG_IS_GAMESS :
 			t = g_strdup_printf("%s, %s.log",data->datafile,data->projectname);
 			break;
@@ -981,7 +995,18 @@ static void create_remote_frame_popup(GtkWidget *hbox,DataTree* data)
   LabelLeft[2] = g_strdup(_("Directory"));
 
 
-  if(data->itype == PROG_IS_GAUSS || data->itype == PROG_IS_MOLCAS || data->itype == PROG_IS_MOLPRO || data->itype == PROG_IS_MPQC || data->itype == PROG_IS_GAMESS || data->itype == PROG_IS_FIREFLY || data->itype == PROG_IS_QCHEM ||  data->itype == PROG_IS_NWCHEM ||  data->itype == PROG_IS_PSICODE  || data->itype == PROG_IS_MOPAC  || data->itype == PROG_IS_ORCA )
+  if(data->itype == PROG_IS_GAUSS 
+    || data->itype == PROG_IS_MOLCAS 
+    || data->itype == PROG_IS_MOLPRO 
+    || data->itype == PROG_IS_MPQC 
+    || data->itype == PROG_IS_GAMESS 
+    || data->itype == PROG_IS_FIREFLY 
+    || data->itype == PROG_IS_DEMON
+    || data->itype == PROG_IS_QCHEM 
+    ||  data->itype == PROG_IS_NWCHEM 
+    ||  data->itype == PROG_IS_PSICODE  
+    || data->itype == PROG_IS_MOPAC  
+    || data->itype == PROG_IS_ORCA )
   	LabelLeft[3] = g_strdup(_("Files"));
   else
   	LabelLeft[3] = g_strdup(_("File"));
@@ -1024,6 +1049,10 @@ static void create_remote_frame_popup(GtkWidget *hbox,DataTree* data)
   else
   switch(data->itype)
   {
+	case PROG_IS_DEMON :
+		t = g_strdup_printf("%s, %s.out",data->datafile,data->projectname);
+		break;
+
 	case PROG_IS_GAMESS :
 		t = g_strdup_printf("%s, %s.log",data->datafile,data->projectname);
 		break;
@@ -1110,7 +1139,18 @@ static void create_local_frame_popup(GtkWidget *hbox,DataTree* data)
   LabelLeft[0] = g_strdup(_("Host"));
   LabelLeft[1] = g_strdup(_("Login"));
   LabelLeft[2] = g_strdup(_("Directory"));
-  if(data->itype == PROG_IS_GAUSS || data->itype == PROG_IS_MOLCAS ||data->itype == PROG_IS_MOLPRO || data->itype == PROG_IS_MPQC  || data->itype == PROG_IS_GAMESS || data->itype == PROG_IS_FIREFLY || data->itype == PROG_IS_QCHEM || data->itype == PROG_IS_NWCHEM || data->itype == PROG_IS_PSICODE || data->itype == PROG_IS_MOPAC || data->itype == PROG_IS_ORCA )
+  if(data->itype == PROG_IS_GAUSS 
+    || data->itype == PROG_IS_MOLCAS 
+    || data->itype == PROG_IS_MOLPRO 
+    || data->itype == PROG_IS_MPQC  
+    || data->itype == PROG_IS_GAMESS 
+    || data->itype == PROG_IS_DEMON
+    || data->itype == PROG_IS_FIREFLY 
+    || data->itype == PROG_IS_QCHEM 
+    || data->itype == PROG_IS_NWCHEM 
+    || data->itype == PROG_IS_PSICODE 
+    || data->itype == PROG_IS_MOPAC 
+    || data->itype == PROG_IS_ORCA )
   	LabelLeft[3] = g_strdup(_("Files"));
   else
   	LabelLeft[3] = g_strdup(_("File"));
@@ -1139,6 +1179,10 @@ static void create_local_frame_popup(GtkWidget *hbox,DataTree* data)
 
   switch(data->itype)
   {
+	case PROG_IS_DEMON :
+		t = g_strdup_printf("%s, %s.out",data->datafile,data->projectname);
+		break;
+
 	case PROG_IS_GAMESS :
 		t = g_strdup_printf("%s, %s.log",data->datafile,data->projectname);
 		break;
@@ -1710,10 +1754,11 @@ static void get_doc_no_add_list(GtkWidget *wid, gpointer d)
 
 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0)) return ;
 
-	t=g_malloc(taille);
+	t=g_malloc(taille*sizeof(gchar));
 	fd = FOpen(NomFichier, "rb");
 	if(fd == NULL)
 	{
+		//fprintf(stderr,"\nSorry, I can not open file :\n %s\n",NomFichier);
  		g_free(t);
 		t = g_strdup_printf(_("\nSorry, I can not open file :\n %s\n"),NomFichier);
 		Message(t,"ERROR",TRUE);
@@ -1722,6 +1767,7 @@ static void get_doc_no_add_list(GtkWidget *wid, gpointer d)
 	}
 
 	iprogram = get_type_of_program(fd);
+	//fprintf(stderr,"\niprog=%d\n",iprogram);
 
 	nchar=gabedit_text_get_length(GABEDIT_TEXT(text));
 	gtk_notebook_set_current_page((GtkNotebook*)NoteBookText,0);
@@ -1742,6 +1788,7 @@ static void get_doc_no_add_list(GtkWidget *wid, gpointer d)
 
 	if(iprogram == PROG_IS_MOLPRO ) read_geom_in_molpro_input(NomFichier);
 	else if(iprogram == PROG_IS_GAUSS) read_geom_in_gauss_input(NomFichier);
+	else if(iprogram == PROG_IS_DEMON) read_geom_in_demon_input(NomFichier);// TO CHANGE
 	else if(iprogram == PROG_IS_GAMESS) read_geom_in_gamess_input(NomFichier);
 	else if(iprogram == PROG_IS_FIREFLY) read_geom_in_gamess_input(NomFichier);
 	else if(iprogram == PROG_IS_MOLCAS)
@@ -1772,6 +1819,7 @@ static void select_row(DataTree* data)
 
         switch(data->itype)
         {
+        case GABEDIT_TYPENODE_DEMON:
         case GABEDIT_TYPENODE_GAMESS:
         case GABEDIT_TYPENODE_GAUSSIAN:
         case GABEDIT_TYPENODE_MOLCAS:
@@ -1938,6 +1986,7 @@ static void tree_clear_all()
 	AllFiles = NULL;
 	Nfiles = 0;
 
+	noeud[GABEDIT_TYPENODE_DEMON]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"DeMon");
 	noeud[GABEDIT_TYPENODE_FIREFLY]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"FireFly");
 	noeud[GABEDIT_TYPENODE_GAMESS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gamess");
 	noeud[GABEDIT_TYPENODE_GAUSSIAN]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gaussian");
@@ -2054,6 +2103,7 @@ static void tree_clear_one(gint in)
 
 	tree_data_destroy_one_node (in);
 
+	noeud[GABEDIT_TYPENODE_DEMON]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"DeMon");
 	noeud[GABEDIT_TYPENODE_FIREFLY]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"FireFly");
 	noeud[GABEDIT_TYPENODE_GAMESS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gamess");
 	noeud[GABEDIT_TYPENODE_GAUSSIAN]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gaussian");
@@ -2127,6 +2177,7 @@ static GtkTreeIter *tree_clear(GtkTreeIter *parent,gint ifile)
 
     	tree_data_destroy (AllFiles[ifile]);
 
+	noeud[GABEDIT_TYPENODE_DEMON]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"DeMon");
 	noeud[GABEDIT_TYPENODE_FIREFLY]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"FireFly");
 	noeud[GABEDIT_TYPENODE_GAMESS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gamess");
 	noeud[GABEDIT_TYPENODE_GAUSSIAN]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gaussian");
@@ -2265,6 +2316,8 @@ static GtkTreeIter* CreeNoeud(GtkTreeView *treeView,gchar *text)
 	if(strstr(t,"FIREFLY")) gtk_tree_store_set (store, node, LIST_PIXBUF, fireflyPixbuf, -1);
 	else
 	if(strstr(t,"GAMESS")) gtk_tree_store_set (store, node, LIST_PIXBUF, gamessPixbuf, -1);
+	else
+	if(strstr(t,"DEMON")) gtk_tree_store_set (store, node, LIST_PIXBUF, demonPixbuf, -1);
 	else
 	if(strstr(t,"GAUSSIAN")) gtk_tree_store_set (store, node, LIST_PIXBUF, gaussianPixbuf, -1);
 	else
@@ -2439,6 +2492,7 @@ static void  create_window_list_to_clear()
   GtkWidget *button;
   gchar * title = N_("Clear list of projects");
   gchar *buttonlabel[NBNOD]={
+  		"deMon2k list",
   		"FireFly list",
   		"Gamess list",
   		"Gaussian list",
@@ -2457,7 +2511,7 @@ static void  create_window_list_to_clear()
   		"Tinker list",
   		"Gaussian z-matrix list",
   		"Mopac z-matrix list",
-  		"HypercChem (hin) list",
+  		"HyperChem (hin) list",
   		"Other files list",
   		};
   GtkWidget *ButtonSelAll;
@@ -2607,6 +2661,7 @@ void ListeFiles(GtkWidget* vbox)
 
 	gtk_container_add(GTK_CONTAINER(Scr), treeViewProjects);
   
+	noeud[GABEDIT_TYPENODE_DEMON]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"DeMon");
 	noeud[GABEDIT_TYPENODE_FIREFLY]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"FireFly");
 	noeud[GABEDIT_TYPENODE_GAMESS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gamess");
 	noeud[GABEDIT_TYPENODE_GAUSSIAN]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gaussian");

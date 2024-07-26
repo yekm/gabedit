@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -117,12 +117,14 @@ GtkStyle *set_bg_style(GtkWidget *wid,gushort red,gushort green,gushort blue);
 gint numb_of_string_by_row(gchar *str);
 gint numb_of_reals_by_row(gchar *str);
 gchar** gab_split(gchar *str);
+void gab_strfreev (char **str);
 void get_dipole_from_gamess_output_file(FILE* fd);
 void get_dipole_from_turbomole_output_file(FILE* fd);
 void get_dipole_from_gaussian_output_file(FILE* fd);
 void get_dipole_from_molpro_output_file(FILE* fd);
 void get_dipole_from_dalton_output_file(FILE* fd);
 void get_dipole_from_orca_output_file(FILE* fd);
+void get_dipole_from_vasp_output_file(FILE* fd);
 void get_dipole_from_nwchem_output_file(FILE* fd);
 void get_dipole_from_psicode_output_file(FILE* fd);
 void get_dipole_from_qchem_output_file(FILE* fd);
@@ -170,6 +172,55 @@ gdouble get_multipole_rank();
 void getCoefsGradient(gint nBoundary, gdouble xh, gdouble yh, gdouble zh, gdouble* fcx, gdouble* fcy, gdouble* fcz);
 void getCoefsLaplacian(gint nBoundary, gdouble xh, gdouble yh, gdouble zh, gdouble* fcx, gdouble* fcy, gdouble* fcz, gdouble* cc);
 void swapDouble(gdouble* a, gdouble* b);
+gdouble* newVectorDouble(gint n);
+void initVectorDouble(gdouble* v, gint n, gdouble val);
+void freeVectorDouble(gdouble** v);
+void printVectorDoubleCutOff(gdouble* C, gint n, gdouble cutoff);
+gdouble** newMatrixDouble(gint nrows, gint ncolumns);
+void freeMatrixDouble(gdouble*** M, gint nrows);
+void initMatrixDouble(gdouble** M, gint nrows, gint ncolumns, gdouble val);
+void symmetrizeMatrixDouble(gdouble** M, gint nrows, gint ncolumns, gdouble cutOff);
+void printMatrixDouble(gdouble** M, gint nrows, gint ncolumns);
+void printMatrixDoubleCutOff(gdouble** M, gint nrows, gint ncolumns, gdouble cutoff);
+gdouble*** newCubeDouble(gint nrows, gint ncolumns, gint nslices);
+void printCubeDouble(gdouble*** C, gint nrows, gint ncolumns, gint nslices);
+void printCubeDoubleCutOff(gdouble*** C, gint nrows, gint ncolumns, gint nslices, gdouble cutoff);
+void symmetrizeCubeDouble(gdouble*** C, gint nrows, gint ncolumns,  gint nslices, gdouble cutOff);
+void initCubeDouble(gdouble*** C, gint nrows, gint ncolumns, gint nslices, gdouble val);
+void freeCubeDouble(gdouble**** C, gint nrows, gint ncolumns);
+gdouble**** newQuarticDouble(gint nrows, gint ncolumns, gint nslices, gint nl);
+void printQuarticDouble(gdouble**** C, gint nrows, gint ncolumns, gint nslices, gint nl);
+void printQuarticDoubleCutOff(gdouble**** C, gint nrows, gint ncolumns, gint nslices, gint nl, gdouble cutoff);
+void initQuarticDouble(gdouble**** C, gint nrows, gint ncolumns, gint nslices, gint nl, gdouble val);
+void freeQuarticDouble(gdouble***** C, gint nrows, gint ncolumns, gint nl);
+void symmetrizeQuarticDouble(gdouble**** Q, gint nrows, gint ncolumns,  gint nslices, gint nq, gdouble cutOff);
+gint* newVectorInt(gint n);
+void initVectorInt(gint* v, gint n, gint val);
+void freeVectorInt(gint** v);
+gint** newMatrixInt(gint nrows, gint ncolumns);
+void initMatrixInt(gint** M, gint nrows, gint ncolumns, gint val);
+void freeMatrixInt(gint*** M, gint nrows);
+gint*** newCubeInt(gint nrows, gint ncolumns, gint nslices);
+void initCubeInt(gint*** C, gint nrows, gint ncolumns, gint nslices, gint val);
+void freeCubeInt(gint**** C, gint nrows, gint ncolumns);
+gint**** newQuarticInt(gint nrows, gint ncolumns, gint nslices, gint nl);
+void printQuarticInt(gint**** C, gint nrows, gint ncolumns, gint nslices, gint nl);
+void initQuarticInt(gint**** C, gint nrows, gint ncolumns, gint nslices, gint nl, gint val);
+void freeQuarticInt(gint***** C, gint nrows, gint ncolumns, gint nslices);
+gchar* mystrcasestr(const gchar *haystack, const gchar *needle);
+gboolean readOneReal(FILE* file, gchar* tag, gdouble*value);
+gboolean readOneRealFromAFile(gchar* namefile, gchar* tag, gdouble* value);
+gboolean readOneInt(FILE* file, gchar* tag, gint*value);
+gboolean readOneIntFromAFile(gchar* namefile, gchar* tag, gint* value);
+gboolean readOneBoolean(FILE* file, gchar* tag, gboolean*value);
+gboolean readOneBooleanFromAFile(gchar* namefile, gchar* tag, gboolean* value);
+gboolean readOneStringFromAFile(gchar* namefile, gchar* tag, gint* value);
+gboolean readOneString(FILE* file, gchar* tag, gchar**value);
+void strDeleten(gchar* str);
+void deleteLastSpaces(gchar* str);
+void deleteFirstSpaces(gchar* str);
+void deleteAllSpaces(gchar* str);
+gboolean goToStr(FILE* file, gchar* tag);
 
 #endif /* __GABEDIT_UTILS_H__ */
 

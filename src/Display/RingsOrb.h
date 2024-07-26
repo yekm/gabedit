@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -31,5 +31,6 @@ gint** getRings(gint ringSize, gint* nRings);
 void findAllRingsForOneAtom(gint numAtom);
 void IsoRingsAllGenLists(GLuint *myList, gint ringSizeMin, gint ringSizeMax);
 void IsoRingsAllShowLists(GLuint myList);
+void computeConformerType();
 #endif /* __GABEDIT_RINGSORB_H__ */
 

@@ -1,6 +1,6 @@
 /* OrbitalsOrca.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -456,7 +456,7 @@ static gint read_one_block_orbitals_in_orca_output_file(FILE* file, gint ncart, 
 	gdouble EnerOrb[NCOLS];
 	gdouble OccOrb[NCOLS];
 	gint n;
-	gint k;
+	/* gint k;*/
 	gint nReadOrb = 0;
 	gint nR = 0;
  	gchar sdum1[30];
@@ -510,7 +510,8 @@ static gint read_one_block_orbitals_in_orca_output_file(FILE* file, gint ncart, 
 		{
     			{ char* e = fgets(t,BSIZE,file);}
 			/*Debug("%s\n",t);*/
-			k = sscanf(t,"%s %s %lf %lf %lf %lf %lf %lf",sdum1,sdum2,
+			/* k = sscanf(t,"%s %s %lf %lf %lf %lf %lf %lf",sdum1,sdum2,*/
+			sscanf(t,"%s %s %lf %lf %lf %lf %lf %lf",sdum1,sdum2,
 					&CoefOrbitals[NumOrb[0]][i],
 					&CoefOrbitals[NumOrb[1]][i],
 					&CoefOrbitals[NumOrb[2]][i],

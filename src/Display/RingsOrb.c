@@ -1,6 +1,6 @@
 /* RingsOrb.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -30,6 +30,21 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/HydrogenBond.h"
 #include "../Display/RingsPov.h"
 #include "../Display/UtilsOrb.h"
+
+/************************************************************************/
+typedef struct 
+{
+	gchar name[10];
+	gdouble thetas[3];
+}ConformerTypes;
+
+typedef struct 
+{
+	gchar desc[1000];
+	gdouble thetas[3];
+	gdouble rms;
+}ConformerTypes2;
+
 
 /************************************************************************/
 static V4d color_r[7] = 
@@ -798,3 +813,402 @@ void IsoRingsAllShowLists(GLuint myList)
 	if (glIsList(myList) == GL_TRUE) glCallList(myList);
 
 }
+/********************************************************************************/
+static void vCross(gdouble* v1, gdouble* v2, gdouble* cross)
+{
+    cross[0] = (v1[1] * v2[2]) - (v1[2] * v2[1]);
+    cross[1] = (v1[2] * v2[0]) - (v1[0] * v2[2]);
+    cross[2] = (v1[0] * v2[1]) - (v1[1] * v2[0]);
+}
+static gdouble vLength(gdouble* v)
+{
+    return sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+}
+static gdouble vDot(gdouble* v1, gdouble* v2)
+{
+    return v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
+}
+static gdouble getOneRMS(ConformerTypes listConformers[], gint numConfos, gdouble thetas[], gint nMax)
+{
+	gdouble rms = 0;
+	gint i;
+	for(i=0;i<nMax;i++) 
+	{
+		rms += (thetas[i]-listConformers[numConfos].thetas[i])*(thetas[i]-listConformers[numConfos].thetas[i]);
+	}
+	rms /= nMax;
+	rms = sqrt(rms);
+	return rms;
+
+}
+static gint addListRMS(ConformerTypes listConformers[], gint nConfos, gint nAtoms, gint numAtoms[], ConformerTypes2 listRMS[], gint nOldRMS)
+{
+	gint nMax = nAtoms-3;
+	gdouble a[nMax][3];
+	gdouble r[nAtoms][3];
+	gdouble p[nAtoms][3];
+	gdouble q[nMax][3];
+	gdouble n[3];
+	gint i;
+	gdouble nLength = 1;
+	gdouble qLength = 1;
+	gint rmsIMin;
+	gdouble rmsMin;
+	gchar* tmp1 = g_malloc(200*sizeof(gchar));
+	gchar* tmp2 = g_malloc(200*sizeof(gchar));
+	gdouble thetas[nMax];
+	gint c;
+
+	
+	for(i=0;i<nMax;i++)
+	{
+		gint twoi=numAtoms[2*i];
+		gint twoip1=numAtoms[(2*(i+1))%nAtoms];
+		for(c=0;c<3;c++) a[i][c] = GeomOrb[twoip1].C[c]-GeomOrb[twoi].C[c];
+	}
+	for(i=0;i<nAtoms;i++)
+	{
+		gint ki=numAtoms[i];
+		gint kip1=numAtoms[(i+1)%nAtoms];
+		for(c=0;c<3;c++) r[i][c] = GeomOrb[kip1].C[c]-GeomOrb[ki].C[c];
+	}
+	for(i=1;i<nAtoms;i++) vCross(r[i-1],r[i], p[i]);
+	for(i=0;i<nMax;i++) vCross(a[i],p[2*i+1],q[i]);
+	vCross(a[1],a[0],n);
+	
+	nLength = vLength(n);
+	if(nLength>1e-10) nLength = 1/nLength;
+	for(i=0;i<nMax;i++) 
+	{
+		qLength = vLength(q[i]);
+		if(qLength>1e-10) qLength = 1/qLength;
+		thetas[i] = M_PI/2-acos(vDot(q[i],n)*qLength*nLength);
+		thetas[i] = thetas[i]/M_PI*180.0;
+		while(thetas[i]>=360) thetas[i] -= 360;
+		if(thetas[i]>180) thetas[i] = 180-thetas[i];
+	}
+	sprintf(tmp1,"%s"," ");
+	for(i=0;i<nAtoms;i++)
+	{
+		gint k = numAtoms[i];
+		if(nAtoms<10) sprintf(tmp2,"%s%s[%d] ",tmp1,GeomOrb[k].Symb,k+1);
+		else if(nAtoms<100) sprintf(tmp2,"%s%s[%2d] ",tmp1,GeomOrb[k].Symb,k+1);
+		else if(nAtoms<1000) sprintf(tmp2,"%s%s[%3d] ",tmp1,GeomOrb[k].Symb,k+1);
+		else sprintf(tmp2,"%s%s[%d] ",tmp1,GeomOrb[k].Symb,k+1);
+		sprintf(tmp1,"%s",tmp2);
+	}
+	/*
+	for(i=0;i<nMax;i++) 
+	{
+		sprintf(tmp2,"%sthetas[%d]=%f ",tmp1,i,thetas[i]);
+		sprintf(tmp1,"%s",tmp2);
+	}
+	printf("tmp2=%s\n",tmp2);
+	*/
+	for(i=0;i<nConfos;i++)
+	{
+		gdouble rms;
+		gint k;
+		rms = getOneRMS(listConformers, i, thetas, nMax);
+		sprintf(listRMS[nOldRMS+i].desc,"%s\t%-6s\t\tRMS=%0.6f",tmp2,listConformers[i].name, rms);
+		listRMS[nOldRMS+i].rms = rms;
+		for(k=0;k<nMax;k++) listRMS[nOldRMS+i].thetas[k] = thetas[k];
+	}
+	if(tmp1) g_free(tmp1);
+	if(tmp2) g_free(tmp2);
+	return nOldRMS+nConfos;
+}
+static void sortListRMS(ConformerTypes2 listRMS[], gint nRMS)
+{
+	gint i;
+        for(i=0;i<nRMS-1;i++)
+	{
+		gint k = i;
+		gint j;
+             	for(j=i+1;j<nRMS;j++) if(listRMS[k].rms>listRMS[j].rms) k = j;
+             	if(k!=i)
+             	{
+               		ConformerTypes2 t = listRMS[i];
+                   	listRMS[i] = listRMS[k];
+                   	listRMS[k] = t;
+             	}
+	}
+}
+static void printListRMS(ConformerTypes2 listRMS[], gint nRMS, gdouble cutOff)
+{
+	gint i;
+        for(i=0;i<nRMS;i++)
+	{
+		if(i==0 || listRMS[i].rms<cutOff) 
+		{
+			printf("%s                 Thetas = %0.6f %0.6f %0.6f\n", 
+			        listRMS[i].desc,            listRMS[i].thetas[0],listRMS[i].thetas[1],listRMS[i].thetas[2]);
+		}
+	}
+}
+/************************************************************************/
+static void showListRMS(ConformerTypes2 listRMS[], gint nRMS, gdouble cutOff, gchar* title)
+{
+	gchar* old;
+	gchar* result;
+	gint i;
+
+	result = g_strdup_printf("%s",
+	"===========================================================================\n"
+	"Type of conformation calculated using the method given in\n"
+	"Anthony D Hill and Peter J. Reilly J. Chem. Inf. Model, 47 (2007) 1031-1035\n"
+	"===========================================================================\n"
+	);
+        for(i=0;i<nRMS;i++)
+        {
+                if(i==0 || listRMS[i].rms<cutOff)
+                {
+			old = result;
+			 result = g_strdup_printf("%s%s\t\t\tThetas = %0.6f %0.6f %0.6f\n",
+                                                   old,listRMS[i].desc,   listRMS[i].thetas[0],listRMS[i].thetas[1],listRMS[i].thetas[2]);
+                         if(old) g_free(old);
+                }
+        }
+        if(result)
+        {
+                GtkWidget* message = MessageTxt(result,title);
+                gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidth*0.8),-1);
+                gtk_widget_set_size_request(message,(gint)(ScreenWidth*0.45),-1);
+                /* gtk_window_set_modal (GTK_WINDOW (message), TRUE);*/
+                gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));
+        }
+
+}
+/********************************************************************************/
+static void setPropForOneType(ConformerTypes* listConformers, gint i, gchar* name, gdouble t0, gdouble t1, gdouble t2)
+{
+        sprintf(listConformers[i].name,"%s",name);
+        listConformers[i].thetas[0] = t0;
+        listConformers[i].thetas[1] = t1;
+        listConformers[i].thetas[2] = t2;
+}
+static ConformerTypes* initListOfConformers(gint* pnTypes)
+{
+	gint nTypes = 100;
+	gint n = -1;
+	ConformerTypes* listConformes = g_malloc(nTypes*sizeof(ConformerTypes));
+	
+	n++; setPropForOneType(listConformes,n,"1C4", -35.260000, -35.260000, -35.260000);
+	n++; setPropForOneType(listConformes,n,"4C1", 35.260000, 35.260000, 35.260000);
+	n++; setPropForOneType(listConformes,n,"1,4B", -35.260000, 74.200000, -35.260000);
+	n++; setPropForOneType(listConformes,n,"B1,4", 35.260000, -74.200000, 35.260000);
+	n++; setPropForOneType(listConformes,n,"2,5B", 74.200000, -35.260000, -35.260000);
+	n++; setPropForOneType(listConformes,n,"B2,5", -74.200000, 35.260000, 35.260000);
+	n++; setPropForOneType(listConformes,n,"3,6B", -35.260000, -35.260000, 74.200000);
+	n++; setPropForOneType(listConformes,n,"B3,6", 35.260000, 35.260000, -74.200000);
+	n++; setPropForOneType(listConformes,n,"1H2", -42.160000, 9.070000, -17.830000);
+	n++; setPropForOneType(listConformes,n,"2H1", 42.160000, -9.070000, 17.830000);
+	n++; setPropForOneType(listConformes,n,"2H3", 42.160000, 17.830000, -9.060000);
+	n++; setPropForOneType(listConformes,n,"3H2", -42.160000, -17.830000, 9.060000);
+	n++; setPropForOneType(listConformes,n,"3H4", -17.830000, -42.160000, 9.070000);
+	n++; setPropForOneType(listConformes,n,"4H3", 17.830000, 42.160000, -9.070000);
+	n++; setPropForOneType(listConformes,n,"4H5", -9.070000, 42.160000, 17.830000);
+	n++; setPropForOneType(listConformes,n,"5H4", 9.070000, -42.160000, -17.830000);
+	n++; setPropForOneType(listConformes,n,"5H6", 9.070000, -17.830000, -42.160000);
+	n++; setPropForOneType(listConformes,n,"6H5", -9.070000, 17.830000, 42.160000);
+	n++; setPropForOneType(listConformes,n,"6H1", 17.830000, -9.070000, 42.160000);
+	n++; setPropForOneType(listConformes,n,"1H6", -17.830000, 9.070000, -42.160000);
+	n++; setPropForOneType(listConformes,n,"1S3", 0.000000, 50.840000, -50.840000);
+	n++; setPropForOneType(listConformes,n,"3S1", 0.000000, -50.840000, 50.840000);
+	n++; setPropForOneType(listConformes,n,"5S1", 50.840000, -50.840000, 0.000000);
+	n++; setPropForOneType(listConformes,n,"1S5", -50.840000, 50.840000, 0.000000);
+	n++; setPropForOneType(listConformes,n,"6S2", -50.840000, 0.000000, 50.840000);
+	n++; setPropForOneType(listConformes,n,"2S6", 50.840000, 0.000000, -50.840000);
+	n++; setPropForOneType(listConformes,n,"1E", -35.260000, 17.370000, -35.260000);
+	n++; setPropForOneType(listConformes,n,"E1", 35.260000, -17.370000, 35.260000);
+	n++; setPropForOneType(listConformes,n,"2E", 46.860000, 0.000000, 0.000000);
+	n++; setPropForOneType(listConformes,n,"E2", -46.860000, 0.000000, 0.000000);
+	n++; setPropForOneType(listConformes,n,"3E", -35.260000, -35.260000, 17.370000);
+	n++; setPropForOneType(listConformes,n,"E3", 35.260000, 35.260000, -17.370000);
+	n++; setPropForOneType(listConformes,n,"4E", 0.000000, 46.860000, 0.000000);
+	n++; setPropForOneType(listConformes,n,"E4", 0.000000, -46.860000, 0.000000);
+	n++; setPropForOneType(listConformes,n,"5E", 17.370000, -35.260000, -35.260000);
+	n++; setPropForOneType(listConformes,n,"E5", -17.370000, 35.260000, 35.260000);
+	n++; setPropForOneType(listConformes,n,"6E", 0.000000, 0.000000, 46.860000);
+	n++; setPropForOneType(listConformes,n,"E6", 0.000000, 0.000000, -46.860000);
+
+	*pnTypes = n;
+	listConformes = g_realloc(listConformes, nTypes*sizeof(ConformerTypes));
+	return listConformes;
+
+}
+static void permutationRight(gint numAtoms[], gint nAtoms)
+{
+	gint zero=numAtoms[nAtoms-1];
+	gint i;
+	for(i=nAtoms-1;i>=1;i--) numAtoms[i]=numAtoms[i-1];
+	numAtoms[0] = zero;
+}
+/*
+static void permutationLeft(gint numAtoms[], gint nAtoms)
+{
+	gint end=numAtoms[0];
+	gint i;
+	for(i=0;i<nAtoms-1;i++) numAtoms[i]=numAtoms[i+1];
+	numAtoms[nAtoms-1] = end;
+}
+*/
+static void permutationInvers(gint numAtoms[], gint nAtoms)
+{
+	gint i;
+	for(i=1;i<nAtoms/2;i++) 
+	{
+		gint t = numAtoms[i];
+		numAtoms[i]=numAtoms[nAtoms-i];
+		numAtoms[nAtoms-i] = t;
+		
+	}
+}
+static void setOAtEnd(gint numAtoms[], gint nAtoms)
+{
+	gint i;
+	gint k;
+	for(i=0;i<nAtoms;i++) 
+	{
+		k = numAtoms[nAtoms-1];
+                if(!strcmp(GeomOrb[k].Symb,"O")) break;
+		permutationRight(numAtoms, nAtoms);
+	}
+}
+static gboolean permutationSugar(gint numAtoms[], gint nAtoms)
+{
+	gint i;
+	gint nO = 0;
+	gint k;
+	gint numberOfConnections;
+	gint currentAtom;
+	gint nC;
+	//printf("nAtoms = %d\n",nAtoms);
+	for(i=0;i<nAtoms;i++) 
+	{
+		k = numAtoms[i];
+                if(!strcmp(GeomOrb[k].Symb,"O")) nO++;
+	}
+	if(nO==0) return FALSE;
+	//printf("nO = %d\n",nO);
+
+	setOAtEnd(numAtoms, nAtoms);
+	k = numAtoms[nAtoms-1];
+	if(strcmp(GeomOrb[k].Symb,"O")) return FALSE;
+	buildConnectionsForRings();
+	currentAtom = numAtoms[0];
+	numberOfConnections = connected[ currentAtom ][ 0 ];
+	nC = 0;
+	//printf("numberOfConnections = %d\n",numberOfConnections);
+        for (i = 1; i <= numberOfConnections; i++ )
+        {
+              k = connected[currentAtom][i];
+		//printf("k = %d\n",k);
+              if(!strcmp(GeomOrb[k].Symb,"C")) nC++;
+        }
+	//printf("nC = %d\n",nC);
+	if(nC<2) return TRUE;
+	permutationInvers(numAtoms,nAtoms);
+	setOAtEnd(numAtoms, nAtoms);
+	return TRUE;
+}
+/* Ref Anthony D Hill and Peter J. Reilly J. Chem. Inf. Model, 47 (2007) 1031-1035 */
+/********************************************************************************/
+void computeConformerType()
+{
+	
+	gint ringSizeMin = 6;
+	gint ringSizeMax = 6;
+	gint k;
+	gint nRings = 0;
+	gint ringSize = 0;
+	GList** rings = NULL;
+	GList* l = NULL;
+	gint n;
+	gboolean deleteNotPlaner = FALSE;
+	gint numAtoms[ringSizeMax];
+	gdouble thetas[ringSizeMax];
+	ConformerTypes* listConformers = NULL;
+	gint nConfos = 0;
+	gint i;
+	gdouble rms;
+
+	rings = findAllRings(&nRings, ringSizeMin, ringSizeMax, deleteNotPlaner);
+
+	if(!rings || nRings <1)
+	{
+		//messagesNumberOfRings(0, NULL);
+		return;
+	}
+	listConformers = initListOfConformers(&nConfos);
+
+	for(n=0;n<nRings;n++)
+	{
+		gint nRMS = 0;
+		/*
+		if(n>0) break;
+		printRings(1, &rings[n]);
+		*/
+
+		ringSize = ringsSize[n];
+		ConformerTypes2* listRMS=g_malloc(ringSize*2*nConfos*sizeof(ConformerTypes2));
+		//printf("Ring number %d\n",n+1);
+		i=0;
+		for(l = rings[n]; l != NULL; l = l->next)
+		{
+			k = GPOINTER_TO_INT(l->data);
+			//printf("%s[%d] ",GeomOrb[k].Symb,k+1);
+			numAtoms[i] = k; 
+			i++;
+		}
+		//printf("\n");
+		for(i=0;i<ringSize;i++)
+		{
+			nRMS = addListRMS(listConformers, nConfos, ringSize, numAtoms, listRMS, nRMS);
+			permutationRight(numAtoms, ringSize);
+			//printf("End addListRMS nRMS = %d\n",nRMS);
+		}
+		permutationInvers(numAtoms, ringSize);
+		for(i=0;i<ringSize;i++)
+		{
+			nRMS = addListRMS(listConformers, nConfos, ringSize, numAtoms, listRMS, nRMS);
+			permutationRight(numAtoms, ringSize);
+			//printf("End addListRMS nRMS = %d\n",nRMS);
+		}
+
+		sortListRMS(listRMS, nRMS);
+		//printf("End sortListRMS\n");
+		printListRMS(listRMS, nRMS, 20.0);// all rms<20
+		//printf("End printListRMS\n");
+		showListRMS(listRMS, nRMS, 20,"Result");
+		//printf("End showListRMS\n");
+
+		if(permutationSugar(numAtoms, ringSize))
+		{
+			nRMS = 0;
+			nRMS = addListRMS(listConformers, nConfos, ringSize, numAtoms, listRMS, nRMS);
+			sortListRMS(listRMS, nRMS);
+			showListRMS(listRMS, nRMS, 1e10,"Result for a saccharide");
+			gint i;
+                	printf("Saccharide detected : ");
+			for(i=0;i<ringSize;i++)
+        		{
+                		gint k = numAtoms[i];
+                		printf("%s[%d] ",GeomOrb[k].Symb,k+1);
+        		}
+                	printf("\n");
+		}
+		if(listRMS) g_free(listRMS);
+		nRMS = 0;
+	}
+	//messagesNumberOfRings(nRings, rings);
+
+	for(n=0;n<nRings;n++)
+		if(rings[n]) g_list_free(rings[n]);
+	if(rings) g_free(rings);
+	if(ringsSize) g_free(ringsSize);
+	if(listConformers) g_free(listConformers);
+	nConfos = 0;
+	ringsSize = NULL;
+}
+/********************************************************************************/

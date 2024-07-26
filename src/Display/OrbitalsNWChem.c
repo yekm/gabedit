@@ -1,6 +1,6 @@
 /* OrbitalsNWChem.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -468,7 +468,7 @@ static gboolean DefineNWChemBasisType(gchar** strbasis, gint nrows)
 	gint ne;
 	gboolean Ok;
 	gint jj;
-	gboolean newAtom  = TRUE;
+	/* gboolean newAtom  = TRUE;*/
 
 	if(Ntype<1) return FALSE;
 	if(nrows<1) return FALSE;
@@ -504,7 +504,7 @@ static gboolean DefineNWChemBasisType(gchar** strbasis, gint nrows)
 	nconts=-1;
 	Ok = TRUE;
 	nconts = 0;
-	newAtom  = TRUE;
+	/* newAtom  = TRUE;*/
 	for(k=0;k<nrows-1;k++)
 	{
 		if(strstr(strbasis[k],"----")) continue;
@@ -512,7 +512,7 @@ static gboolean DefineNWChemBasisType(gchar** strbasis, gint nrows)
 		sscanf(strbasis[k],"%s",t);
 		if(!this_is_a_backspace(strbasis[k]) &&!isdigit(t[0])) /* new atom */
 		{
-			newAtom = FALSE;
+			/* newAtom = FALSE;*/
                 	t[0] = toupper(t[0]);
                 	if (2==strlen(t)) t[1]=tolower(t[1]);
 			i=get_num_type_from_symbol(t);

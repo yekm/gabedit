@@ -1,6 +1,6 @@
 /* CaptureOrbitals.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -259,6 +259,7 @@ static void apply_capture_orbitals(GtkWidget *Win,gpointer data)
 	GtkWidget* numberButton = g_object_get_data (G_OBJECT (Win), "NumberButton");
 	GtkWidget* energyButton = g_object_get_data (G_OBJECT (Win), "EnergyButton");
 	GtkWidget* symmetryButton = g_object_get_data (G_OBJECT (Win), "SymmetryButton");
+	GtkWidget* occButton = g_object_get_data (G_OBJECT (Win), "OccButton");
 	GtkWidget* homoLumoButton = g_object_get_data (G_OBJECT (Win), "HomoLumoButton");
 	GtkWidget* entryPrefix=g_object_get_data (G_OBJECT (Win), "EntryPrefix");
 	GtkWidget* columnSpinButton = g_object_get_data (G_OBJECT (Win), "ColumnSpinButton");
@@ -266,6 +267,7 @@ static void apply_capture_orbitals(GtkWidget *Win,gpointer data)
 	gboolean showNumberButton = FALSE;
 	gboolean showEnergyButton = FALSE;
 	gboolean showSymmetryButton = FALSE;
+	gboolean showOccButton = FALSE;
 	gboolean showHomoLumoButton = FALSE;
 	gchar* prefix = NULL;
 	gdouble scale = 0.2;
@@ -415,6 +417,7 @@ static void apply_capture_orbitals(GtkWidget *Win,gpointer data)
 	if(GTK_IS_WIDGET(numberButton)) showNumberButton = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(numberButton));
 	if(GTK_IS_WIDGET(energyButton)) showEnergyButton = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(energyButton));
 	if(GTK_IS_WIDGET(symmetryButton)) showSymmetryButton = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(symmetryButton));
+	if(GTK_IS_WIDGET(occButton)) showOccButton = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(occButton));
 	if(GTK_IS_WIDGET(homoLumoButton)) showHomoLumoButton = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(homoLumoButton));
 	if(entryPrefix) prefix	= g_strdup(gtk_entry_get_text(GTK_ENTRY(entryPrefix))); 
 	scale = gtk_spin_button_get_value (GTK_SPIN_BUTTON(scaleSpinButton));
@@ -432,17 +435,20 @@ static void apply_capture_orbitals(GtkWidget *Win,gpointer data)
 		gchar* nLabel = NULL;
 		gchar* eLabel = NULL;
 		gchar* sLabel = NULL;
+		gchar* oLabel = NULL;
 		gchar* hLabel = NULL;
 		gchar* title = NULL;
 		 if(CancelCalcul) break;
 		fileName = g_strdup_printf("%sgabOrbAlpha_%d.png",dirName,numAlphaOrbs[i]);
 		if(prefix && strlen(prefix)>0) pLabel = g_strdup_printf("%s ",prefix);
 		else pLabel = g_strdup(" ");
-		if(showNumberButton) nLabel = g_strdup_printf("n=%d ",ii+1);
+		if(showNumberButton) nLabel = g_strdup_printf(" n=%d ",ii+1);
 		else nLabel =  g_strdup(" ");
-		if(showEnergyButton) eLabel = g_strdup_printf("E=%0.6e ",EnerAlphaOrbitals[ii]);
+		if(showEnergyButton) eLabel = g_strdup_printf(" E=%0.6e ",EnerAlphaOrbitals[ii]);
 		else eLabel =  g_strdup(" ");
-		if(showSymmetryButton) sLabel = g_strdup_printf("Sym=%s",SymAlphaOrbitals[ii]);
+		if(showOccButton) oLabel = g_strdup_printf(" Occ=%0.3f ",OccAlphaOrbitals[ii]);
+		else oLabel =  g_strdup(" ");
+		if(showSymmetryButton) sLabel = g_strdup_printf(" Sym=%s ",SymAlphaOrbitals[ii]);
 		else sLabel =  g_strdup(" ");
 		if(showHomoLumoButton) 
 		{
@@ -458,7 +464,7 @@ static void apply_capture_orbitals(GtkWidget *Win,gpointer data)
 		}
 		else hLabel =  g_strdup(" ");
 
-		title = g_strdup_printf("%s%s%s%s%s",pLabel,hLabel,nLabel,eLabel,sLabel);
+		title = g_strdup_printf("%s%s%s%s%s%s",pLabel,hLabel,nLabel,eLabel,oLabel,sLabel);
 
 		free_surfaces_all();
 		NumSelOrb = numAlphaOrbs[i];
@@ -474,6 +480,7 @@ static void apply_capture_orbitals(GtkWidget *Win,gpointer data)
 		g_free(nLabel);
 		g_free(eLabel);
 		g_free(sLabel);
+		g_free(oLabel);
 		g_free(hLabel);
 	}
 	iAlpha = i;
@@ -488,17 +495,20 @@ static void apply_capture_orbitals(GtkWidget *Win,gpointer data)
 		gchar* nLabel = NULL;
 		gchar* eLabel = NULL;
 		gchar* sLabel = NULL;
+		gchar* oLabel = NULL;
 		gchar* hLabel = NULL;
 		gchar* title = NULL;
 		 if(CancelCalcul) break;
 		fileName = g_strdup_printf("%sgabOrbBeta_%d.png",dirName,numBetaOrbs[i]);
 		if(prefix && strlen(prefix)>0) pLabel = g_strdup_printf("%s ",prefix);
 		else pLabel = g_strdup(" ");
-		if(showNumberButton) nLabel = g_strdup_printf("n=%d ",ii+1);
+		if(showNumberButton) nLabel = g_strdup_printf(" n=%d ",ii+1);
 		else nLabel =  g_strdup(" ");
-		if(showEnergyButton) eLabel = g_strdup_printf("E=%0.6e ",EnerBetaOrbitals[ii]);
+		if(showEnergyButton) eLabel = g_strdup_printf(" E=%0.6e ",EnerBetaOrbitals[ii]);
 		else eLabel =  g_strdup(" ");
-		if(showSymmetryButton) sLabel = g_strdup_printf("Sym=%s",SymBetaOrbitals[ii]);
+                if(showOccButton) oLabel = g_strdup_printf(" Occ=%0.3f ",OccBetaOrbitals[ii]);
+                else oLabel =  g_strdup(" ");
+		if(showSymmetryButton) sLabel = g_strdup_printf(" Sym=%s ",SymBetaOrbitals[ii]);
 		else sLabel =  g_strdup(" ");
 		if(showHomoLumoButton) 
 		{
@@ -514,7 +524,8 @@ static void apply_capture_orbitals(GtkWidget *Win,gpointer data)
 		}
 		else hLabel =  g_strdup(" ");
 
-		title = g_strdup_printf("%s%s%s%s%s",pLabel,hLabel,nLabel,eLabel,sLabel);
+		title = g_strdup_printf("%s%s%s%s%s%s",pLabel,hLabel,nLabel,eLabel,oLabel,sLabel);
+
 		free_surfaces_all();
 		NumSelOrb = numBetaOrbs[i];
 		Define_Grid();
@@ -529,6 +540,7 @@ static void apply_capture_orbitals(GtkWidget *Win,gpointer data)
 		g_free(nLabel);
 		g_free(eLabel);
 		g_free(sLabel);
+		g_free(oLabel);
 		g_free(hLabel);
 	}
 	iBeta = i;
@@ -590,7 +602,7 @@ static GtkWidget *create_folder_frame( GtkWidget *vboxall,gchar* title)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 2;
-	buttonDirSelector =  gtk_file_chooser_button_new(_("Select your folder"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	buttonDirSelector =  gabedit_dir_button();
 	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
 			j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND) ,
@@ -663,6 +675,7 @@ static GtkWidget *create_labels_frame( GtkWidget *vboxall,gchar* title)
 	GtkWidget *numberButton;
 	GtkWidget *energyButton;
 	GtkWidget *symmetryButton;
+	GtkWidget *occButton;
 	GtkWidget *homoLumoButton;
 	GtkWidget *label;
 	GtkWidget *entryPrefix;
@@ -673,7 +686,7 @@ static GtkWidget *create_labels_frame( GtkWidget *vboxall,gchar* title)
 	gtk_widget_show (frame);
 
 	vboxframe = create_vbox(frame);
-	table = gtk_table_new(1,7,FALSE);
+	table = gtk_table_new(1,8,FALSE);
 	gtk_container_add(GTK_CONTAINER(vboxframe),table);
 
 /*----------------------------------------------------------------------------------*/
@@ -703,6 +716,14 @@ static GtkWidget *create_labels_frame( GtkWidget *vboxall,gchar* title)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 3;
+	occButton  = gtk_check_button_new_with_label (_("Occ. #"));
+	gtk_table_attach(GTK_TABLE(table),occButton, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = 0;
+	j = 4;
 	homoLumoButton = gtk_check_button_new_with_label (_("Homo/Lumo number"));
 	gtk_table_attach(GTK_TABLE(table),homoLumoButton, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -710,7 +731,7 @@ static GtkWidget *create_labels_frame( GtkWidget *vboxall,gchar* title)
                   1,1);
 /*----------------------------------------------------------------------------------*/
 	i = 0;
-	j = 4;
+	j = 5;
 	label = gtk_label_new(_("prefix"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -718,7 +739,7 @@ static GtkWidget *create_labels_frame( GtkWidget *vboxall,gchar* title)
                   1,1);
 /*----------------------------------------------------------------------------------*/
 	i = 0;
-	j = 5;
+	j = 6;
 	label = gtk_label_new(":");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -726,7 +747,7 @@ static GtkWidget *create_labels_frame( GtkWidget *vboxall,gchar* title)
                   1,1);
 /*----------------------------------------------------------------------------------*/
 	i = 0;
-	j = 6;
+	j = 7;
 	entryPrefix =  gtk_entry_new();
 	gtk_entry_set_text(GTK_ENTRY(entryPrefix),"");
 	gtk_table_attach(GTK_TABLE(table),entryPrefix,
@@ -740,11 +761,13 @@ static GtkWidget *create_labels_frame( GtkWidget *vboxall,gchar* title)
 	g_object_set_data (G_OBJECT (frame), "NumberButton",numberButton);
 	g_object_set_data (G_OBJECT (frame), "EnergyButton",energyButton);
 	g_object_set_data (G_OBJECT (frame), "SymmetryButton",symmetryButton);
+	g_object_set_data (G_OBJECT (frame), "OccButton",occButton);
 	g_object_set_data (G_OBJECT (frame), "HomoLumoButton",homoLumoButton);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(numberButton), FALSE);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(numberButton), TRUE);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(energyButton), FALSE);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(symmetryButton), FALSE);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(homoLumoButton), TRUE);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(occButton), FALSE);
 
   	return frame;
 }
@@ -1038,6 +1061,7 @@ void capture_orbitals_dlg()
 	GtkWidget *numberButton;
 	GtkWidget *energyButton;
 	GtkWidget *symmetryButton;
+	GtkWidget *occButton;
 	GtkWidget *homoLumoButton;
 	GtkWidget *frameLabels;
 	GtkWidget *entryPrefix;
@@ -1091,11 +1115,13 @@ void capture_orbitals_dlg()
 	numberButton = g_object_get_data (G_OBJECT (frameLabels), "NumberButton");
 	energyButton = g_object_get_data (G_OBJECT (frameLabels), "EnergyButton");
 	symmetryButton = g_object_get_data (G_OBJECT (frameLabels), "SymmetryButton");
+	occButton = g_object_get_data (G_OBJECT (frameLabels), "OccButton");
 	homoLumoButton = g_object_get_data (G_OBJECT (frameLabels), "HomoLumoButton");
 	entryPrefix=g_object_get_data (G_OBJECT (frameLabels), "EntryPrefix");
 	g_object_set_data (G_OBJECT (Win), "NumberButton",numberButton);
 	g_object_set_data (G_OBJECT (Win), "EnergyButton",energyButton);
 	g_object_set_data (G_OBJECT (Win), "SymmetryButton",symmetryButton);
+	g_object_set_data (G_OBJECT (Win), "OccButton",occButton);
 	g_object_set_data (G_OBJECT (Win), "EntryPrefix",entryPrefix);
 	g_object_set_data (G_OBJECT (Win), "HomoLumoButton",homoLumoButton);
 

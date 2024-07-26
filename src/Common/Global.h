@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -30,6 +30,7 @@ DEALINGS IN THE SOFTWARE.
 
 #define NBNOD GABEDIT_TYPENODE_OTHER + 1
 
+#define PROG_IS_DEMON  GABEDIT_TYPENODE_DEMON
 #define PROG_IS_GAMESS  GABEDIT_TYPENODE_GAMESS
 #define PROG_IS_GAUSS  GABEDIT_TYPENODE_GAUSSIAN
 #define PROG_IS_MOLCAS GABEDIT_TYPENODE_MOLCAS
@@ -51,8 +52,8 @@ DEALINGS IN THE SOFTWARE.
 #define DATA_MOD_NO    0
 
 #define MAJOR_VERSION    2
-#define MINOR_VERSION    4
-#define MICRO_VERSION    8
+#define MINOR_VERSION    5
+#define MICRO_VERSION    0
 
 /**** Structures *********/
 typedef struct _FileOpen
@@ -157,6 +158,7 @@ typedef struct _CommandsBatch
   gchar *NameCommandFireFly;
   gchar *NameCommandQChem;
   gchar *NameCommandOrca;
+  gchar *NameCommandDeMon;
   gchar *NameCommandNWChem;
   gchar *NameCommandPsicode;
   gchar *NameCommandMopac;
@@ -182,11 +184,14 @@ typedef struct _CommandsBatch
   gchar* gamessDirectory;
   gchar* fireflyDirectory;
   gchar* orcaDirectory;
+  gchar* demonDirectory;
   gchar* nwchemDirectory;
   gchar* psicodeDirectory;
   gchar* mopacDirectory;
   gchar* gaussDirectory;
   gchar* povrayDirectory;
+  gchar* openbabelDirectory;
+  CommandsList demonCommands;
   CommandsList gamessCommands;
   CommandsList gaussianCommands;
   CommandsList molcasCommands;

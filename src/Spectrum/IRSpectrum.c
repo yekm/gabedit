@@ -1,6 +1,6 @@
 /* IRSpectrum.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -31,7 +31,8 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/Windows.h"
 #include "../Utils/GabeditXYPlot.h"
 #include "../Display/Vibration.h"
-#include "SpectrumWin.h"
+#include "../Spectrum/SpectrumWin.h"
+#include "../Spectrum/IGVPT2Spectrum.h"
 
 /********************************************************************************/
 static void check_microm_cmm1_toggled(GtkToggleButton *togglebutton, gpointer user_data)
@@ -89,13 +90,43 @@ static void check_microm_cmm1_toggled(GtkToggleButton *togglebutton, gpointer us
 
 }
 /********************************************************************************/
-static GtkWidget* createIRSpectrumWin(gint numberOfFrequencies, gdouble* frequencies, gdouble* intensities)
+static void reflectXY(GtkWidget *buttonReflect, gpointer user_data)
+{
+	GtkWidget* xyplot = NULL;
+	GList* data_list = NULL;
+	GList* current = NULL;
+	XYPlotWinData* data;
+	gboolean microm = FALSE;
+	gdouble xmax = 0;
+	gdouble ymax = 0;
+	gboolean rx;
+	gboolean ry;
+
+	if(!user_data || !G_IS_OBJECT(user_data)) return;
+
+	xyplot = GTK_WIDGET(user_data);
+	data_list = g_object_get_data(G_OBJECT (xyplot), "DataList");
+
+	if(!data_list) return;
+
+	gabedit_xyplot_get_reflects (GABEDIT_XYPLOT (xyplot),&rx, &ry);
+
+	gabedit_xyplot_reflect_x (GABEDIT_XYPLOT(xyplot), !rx);
+        gabedit_xyplot_reflect_y (GABEDIT_XYPLOT(xyplot), !ry);
+
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));
+
+}
+/********************************************************************************/
+GtkWidget* createIRSpectrumWin(gint numberOfFrequencies, gdouble* frequencies, gdouble* intensities)
 {
 	GtkWidget* window = spectrum_win_new_with_xy(_("IR spectrum"),  numberOfFrequencies, frequencies, intensities);
 	GtkWidget* hbox = g_object_get_data(G_OBJECT (window), "HBoxData");
+	GtkWidget* hbox2 = g_object_get_data(G_OBJECT (window), "HBoxData2");
 	GtkWidget* xyplot = g_object_get_data(G_OBJECT (window), "XYPLOT");
 	GtkWidget* check_microm_cmm1 = NULL;
 	GtkWidget* tmp_hbox = NULL;
+	GtkWidget* buttonReflect = NULL;
 
 	spectrum_win_relect_x(window, TRUE);
 	spectrum_win_relect_y(window, TRUE);
@@ -104,6 +135,7 @@ static GtkWidget* createIRSpectrumWin(gint numberOfFrequencies, gdouble* frequen
 	set_icone(window);
 
 	if(!hbox) return window;
+	if(!hbox2) return window;
 
 	tmp_hbox=gtk_hbox_new(FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(hbox), tmp_hbox, FALSE, FALSE, 30);
@@ -115,6 +147,16 @@ static GtkWidget* createIRSpectrumWin(gint numberOfFrequencies, gdouble* frequen
 
 	g_signal_connect(G_OBJECT(check_microm_cmm1), "toggled", G_CALLBACK(check_microm_cmm1_toggled), xyplot);
 	spectrum_win_set_xlabel(window, "cm<sup>-1</sup>");
+
+	tmp_hbox=gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox2), tmp_hbox, FALSE, FALSE, 30);
+	gtk_widget_show(tmp_hbox);
+
+	buttonReflect = create_button(window,_(" Reflect "));
+	gtk_box_pack_start(GTK_BOX(tmp_hbox), buttonReflect, FALSE, FALSE, 4);
+        g_signal_connect(G_OBJECT(buttonReflect), "clicked", G_CALLBACK(reflectXY), xyplot);
+	gtk_widget_show(buttonReflect);
+
 
 	return window;
 }
@@ -508,7 +550,6 @@ static gboolean read_gamess_file(GabeditFileChooser *SelecFile, gint response_id
  	gchar t[BSIZE];
  	gboolean OK;
 	gint i;
-	gint j;
 	gint nf;
 	gint nir;
 	gint nfMax = 5;
@@ -547,7 +588,6 @@ static gboolean read_gamess_file(GabeditFileChooser *SelecFile, gint response_id
 	}
 	for(i=0;i<nfMax*2;i++) sdum[i] = g_malloc(BSIZE*sizeof(gchar));
 
-	j = 0;
   	while(!feof(fd))
   	{
 		gint nfi=0;
@@ -646,7 +686,6 @@ static gboolean read_gamess_anharmonic_file(GabeditFileChooser *SelecFile, gint 
  	gchar sdum1[BSIZE];
  	gchar sdum2[BSIZE];
  	gchar sdum3[BSIZE];
- 	gboolean OK;
 	gint nf;
 	gint i;
 	gdouble freq[3] = {0,0,0};
@@ -666,7 +705,6 @@ static gboolean read_gamess_anharmonic_file(GabeditFileChooser *SelecFile, gint 
 
  	do 
  	{
- 		OK=FALSE;
  		while(!feof(fd))
 		{
     			if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}
@@ -674,7 +712,6 @@ static gboolean read_gamess_anharmonic_file(GabeditFileChooser *SelecFile, gint 
 	 		if ( strstr( t,"IR INTENSITIES ARE CALCULATED USING DIPOLE MOMENTS") )
 	  		{
     				if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}/* MODE   FREQUENCY, CM-1  INTENSITY, KM/MOL */
-				OK = TRUE;
 				numberOfFrequencies = 0;
 				break;
 	  		}
@@ -733,7 +770,6 @@ static gboolean read_gaussian_file(GabeditFileChooser *SelecFile, gint response_
  	gchar sdum1[BSIZE];
  	gchar sdum2[BSIZE];
  	gchar sdum3[BSIZE];
- 	gboolean OK;
 	gint nf;
 	gint i;
 	gdouble freq[3] = {0,0,0};
@@ -752,14 +788,12 @@ static gboolean read_gaussian_file(GabeditFileChooser *SelecFile, gint response_
 
  	do 
  	{
- 		OK=FALSE;
  		while(!feof(fd))
 		{
     			if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}
 	 		/* if ( strstr( t,"reduced masses") )*/
 	 		if ( strstr( t,"and normal coordinates:") )
 	  		{
-				OK = TRUE;
 				numberOfFrequencies = 0;
 				break;
 	  		}
@@ -824,7 +858,6 @@ static gboolean read_gaussian_anharmonic_file(GabeditFileChooser *SelecFile, gin
  	gchar sdum1[BSIZE];
  	gchar sdum2[BSIZE];
  	gchar sdum3[BSIZE];
- 	gboolean OK;
 	gint nf;
 	gint i;
 	gdouble freq[3] = {0,0,0};
@@ -844,14 +877,12 @@ static gboolean read_gaussian_anharmonic_file(GabeditFileChooser *SelecFile, gin
 
  	do 
  	{
- 		OK=FALSE;
  		while(!feof(fd))
 		{
     			if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}
 	 		/* if ( strstr( t,"reduced masses") )*/
 	 		if ( strstr( t,"Anharmonic Infrared Spectroscopy") )
 	  		{
-				OK = TRUE;
 				numberOfFrequencies = 0;
 				break;
 	  		}
@@ -1322,7 +1353,7 @@ static gboolean read_adf_file(GabeditFileChooser *SelecFile, gint response_id)
 	{
     		if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}
     		if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}
-		for(i=0;i<vibration.numberOfFrequences;i++)
+		for(i=0;i<vibration.numberOfFrequencies;i++)
 		{
     			if(!fgets(t,taille,fd)) break;
 			ne = sscanf(t,"%s %s %s %lf",sdum1,sdum2, sdum3,&intensities[i]);
@@ -1498,6 +1529,61 @@ static void read_sample_2columns_file_dlg()
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
 /********************************************************************************/
+static gboolean read_igvpt2_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+ 	gchar t[BSIZE];
+ 	gboolean OK = TRUE;
+	gint numberOfFrequencies = 0;
+	gdouble* frequencies = NULL;
+	gdouble* intensities = NULL;
+	gchar *fileName;
+	gdouble a;
+	gdouble b;
+	int ne = 0;
+	FILE* file;
+	gchar* result;
+	gchar* old;
+
+	if(response_id != GTK_RESPONSE_OK) return FALSE;
+ 	fileName = gabedit_file_chooser_get_current_file(SelecFile);
+ 	file = fopen(fileName, "r");
+	if(file)
+	{
+		gchar* t = g_malloc(BSIZE*sizeof(gchar));
+		result = g_strdup_printf("%s","");
+		while(!feof(file))
+        	{
+                	if(!fgets(t,BSIZE,file))break;
+			old = result;
+			result = g_strdup_printf("%s%s",old,t);
+                        if(old) g_free(old);
+        	}
+        	if(result)
+        	{
+                	GtkWidget* message = AnharmonicResultTxt(result,"iGVPT2 result");
+                	gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidth*0.8),-1);
+                	gtk_widget_set_size_request(message,(gint)(ScreenWidth*0.45),-1);
+                	/* gtk_window_set_modal (GTK_WINDOW (message), TRUE);*/
+                	/* gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));*/
+        	}
+		fclose(file);
+		g_free(t);
+	}
+
+
+	return OK;
+}
+/********************************************************************************/
+static void read_igvpt2_file_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_igvpt2_file,
+			_("Read frequencies and intensities from an iGVPT2 output file"),
+			GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_OTHER);
+
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+}
+/********************************************************************************/
 void createIRSpectrum(GtkWidget *parentWindow, GabEditTypeFile typeOfFile)
 {
 	if(typeOfFile==GABEDIT_TYPEFILE_GABEDIT) read_gabedit_file_dlg();
@@ -1516,11 +1602,12 @@ void createIRSpectrum(GtkWidget *parentWindow, GabEditTypeFile typeOfFile)
 	if(typeOfFile==GABEDIT_TYPEFILE_ADF) read_adf_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_MPQC) read_mpqc_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_TXT) read_sample_2columns_file_dlg();
+	if(typeOfFile==GABEDIT_TYPEFILE_IGVPT2) read_igvpt2_file_dlg();
 }
 /********************************************************************************/
 void createIRSpectrumFromVibration(GtkWidget *parentWindow, Vibration ibration)
 {
-	gint numberOfFrequencies = vibration.numberOfFrequences;
+	gint numberOfFrequencies = vibration.numberOfFrequencies;
 	gdouble* frequencies = NULL;
 	gdouble* intensities = NULL;
 	gint j;
@@ -1533,7 +1620,7 @@ void createIRSpectrumFromVibration(GtkWidget *parentWindow, Vibration ibration)
 	frequencies = g_malloc(numberOfFrequencies*sizeof(gdouble));
 	intensities = g_malloc(numberOfFrequencies*sizeof(gdouble));
 
-	for (j=0; j < vibration.numberOfFrequences; j++)
+	for (j=0; j < vibration.numberOfFrequencies; j++)
 	{
 		frequencies[j] = vibration.modes[j].frequence;
 		intensities[j] = vibration.modes[j].IRIntensity;

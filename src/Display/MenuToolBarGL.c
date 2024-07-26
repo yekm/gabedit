@@ -1,6 +1,6 @@
 /* MenuToolBarGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -192,6 +192,9 @@ static void activate_action (GtkAction *action)
  		file_chooser_open(gl_read_first_orca_file,_("Read the first geometry in a Orca output file"),GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name,"GeometryOrcaLast"))
  		file_chooser_open(gl_read_last_orca_file,_("Read the last geometry in a Orca output file"),GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name,"GeometryOrcaHessian"))
+ 		file_chooser_open(gl_read_hessian_orca_file,_("Read the geometry from a Orca hessian file"),GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_ORB);
+
 	else if(!strcmp(name,"GeometryFireFlyFirst"))
  		file_chooser_open(gl_read_first_gamess_file,_("Read the first geometry in a FireFly output file"),GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name,"GeometryFireFlyLast"))
@@ -742,6 +745,12 @@ static void activate_action (GtkAction *action)
 		delete_rings_all();
 		glarea_rafresh(GLArea);
 	}
+	else if(!strcmp(name , "ConformerType"))
+	{
+		build_rings(6);
+		computeConformerType();
+		glarea_rafresh(GLArea);
+	}
 	else if(!strcmp(name , "RenderOptimal")) set_optimal_view();
 	else if(!strcmp(name , "SetCamera")) set_camera();
 	else if(!strcmp(name , "SetLigthPositions")) set_light_positions(_("Set Light Positions"));
@@ -918,9 +927,11 @@ static GtkActionEntry gtkActionEntries[] =
 	{"GeometryMPQCLast", GABEDIT_STOCK_MPQC, N_("Read the _last geometry from a MPQC output file"), 
 		NULL, "Read the last geometry from a MPQC output file", G_CALLBACK (activate_action) },
 	{"GeometryOrca",     GABEDIT_STOCK_ORCA, N_("Geometry _Orca")},
-	{"GeometryOrcaFirst", GABEDIT_STOCK_ORCA, N_("Read the _first geometry from a Orca output log file"), 
+	{"GeometryOrcaFirst", GABEDIT_STOCK_ORCA, N_("Read the _first geometry from a Orca output file"), 
 		NULL, "Read the first geometry from a Orca output file", G_CALLBACK (activate_action) },
-	{"GeometryOrcaLast", GABEDIT_STOCK_ORCA, N_("Read the _last geometry from a ORCA output log file"), 
+	{"GeometryOrcaLast", GABEDIT_STOCK_ORCA, N_("Read the _last geometry from a ORCA output file"), 
+		NULL, "Read the last geometry from a Orca output file", G_CALLBACK (activate_action) },
+	{"GeometryOrcaHessian", GABEDIT_STOCK_ORCA, N_("Read the geometry from a _hessian a ORCA output file"), 
 		NULL, "Read the last geometry from a Orca output file", G_CALLBACK (activate_action) },
 	{"GeometryFireFly",     GABEDIT_STOCK_FIREFLY, N_("Geometry _FireFly")},
 	{"GeometryFireFlyFirst", GABEDIT_STOCK_FIREFLY, N_("Read the _first geometry from a FireFly output log file"), 
@@ -1137,6 +1148,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"Rings7", NULL, N_("Find and show he_ptagons"), NULL, "Find and show heptagons", G_CALLBACK (activate_action) },
 	{"Rings8", NULL, N_("Find and show _octagons"), NULL, "Find and show octagons", G_CALLBACK (activate_action) },
 	{"RingsDelete", NULL, N_("_delete all"), NULL, "delete all rings", G_CALLBACK (activate_action) },
+	{"ConformerType", NULL, N_("Find and show conformer Type with hexagones"), NULL, "Find and show conformer type", G_CALLBACK (activate_action) },
 	{"Render",     NULL, N_("_Render")},
 	{"RenderGeometry",     NULL, N_("_Geometry")},
 	{"RenderLabel",     NULL, N_("Labe_l")},
@@ -1232,9 +1244,10 @@ static void toggle_action (GtkAction *action)
 		ShowDipoleOrb = !ShowDipoleOrb;
 		glarea_rafresh(GLArea);
 	}
-	else if(!strcmp(name,"RenderCell"))
+	else if(!strcmp(name,"RenderBox"))
 	{
-		setShowCell (!getShowCell());
+		setShowBox (!getShowBox());
+		RebuildGeom = TRUE;
 		glarea_rafresh(GLArea);
 	}
 	else if(!strcmp(name,"ShowOnlyOneSurface"))
@@ -1358,7 +1371,7 @@ static GtkToggleActionEntry gtkActionToggleEntries[] =
 	{ "RenderLightOnOff1", NULL, N_("OnOff _1"), NULL, "On/Of the light number 1", G_CALLBACK (toggle_action), TRUE },
 	{ "RenderLightOnOff2", NULL, N_("OnOff _2"), NULL, "On/Of the light number 2", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderLightOnOff3", NULL, N_("OnOff _3"), NULL, "On/Of the light number 3", G_CALLBACK (toggle_action), FALSE },
-	{ "RenderCell", NULL, N_("Show _cell"), NULL, "Show cell", G_CALLBACK (toggle_action), FALSE },
+	{ "RenderBox", NULL, N_("Show _box"), NULL, "Show box", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderDipole", NULL, N_("Show _dipole"), NULL, "Show dipole", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderHydrogenAtoms", NULL, N_("Show _hydrogen atoms"), NULL, "Show hydrogen atoms", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderHydrogenBonds", NULL, N_("Show _hydrogen bonds"), NULL, "Show hydrogen bonds", G_CALLBACK (toggle_action), FALSE },
@@ -1688,6 +1701,7 @@ static const gchar *uiMenuInfo =
 "      <menu name=\"GeometryOrca\" action=\"GeometryOrca\">\n"
 "        <menuitem name=\"GeometryOrcaFirst\" action=\"GeometryOrcaFirst\" />\n"
 "        <menuitem name=\"GeometryOrcaLast\" action=\"GeometryOrcaLast\" />\n"
+"        <menuitem name=\"GeometryOrcaHessian\" action=\"GeometryOrcaHessian\" />\n"
 "      </menu>\n"
 "      <separator name=\"sepMenuNWChemGeom\" />\n"
 "      <menu name=\"GeometryNWChem\" action=\"GeometryNWChem\">\n"
@@ -1930,6 +1944,8 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"RingsRandumColors\" action=\"RingsRandumColors\" />\n"
 "        <separator name=\"sepMenuRingsDelete\" />\n"
 "        <menuitem name=\"RingsDelete\" action=\"RingsDelete\" />\n"
+"        <separator name=\"sepMenuConformerType\" />\n"
+"        <menuitem name=\"ConformerType\" action=\"ConformerType\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepMenuRender\" />\n"
 "    <menu name=\"Render\" action = \"Render\">\n"
@@ -1992,7 +2008,7 @@ static const gchar *uiMenuInfo =
 "           <menuitem name=\"RenderLabelsOrtho\" action=\"RenderLabelsOrtho\" />\n"
 "       </menu>\n"
 "       <separator name=\"sepMenuRenderDipole\" />\n"
-"      <menuitem name=\"RenderCell\" action=\"RenderCell\" />\n"
+"      <menuitem name=\"RenderBox\" action=\"RenderBox\" />\n"
 "      <menuitem name=\"RenderDipole\" action=\"RenderDipole\" />\n"
 "      <menuitem name=\"RenderHydrogenAtoms\" action=\"RenderHydrogenAtoms\" />\n"
 "      <menuitem name=\"RenderHydrogenBonds\" action=\"RenderHydrogenBonds\" />\n"
@@ -2121,7 +2137,7 @@ static void set_init_gtkActionToggleEntries()
 	gtkActionToggleEntries[1].is_active = TRUE; /* RenderLightOnOff1 */
 	gtkActionToggleEntries[2].is_active = FALSE; /* RenderLightOnOff2 */
 	gtkActionToggleEntries[3].is_active = FALSE; /* RenderLightOnOff3 */
-	gtkActionToggleEntries[4].is_active = getShowCell(); /* RenderCell */
+	gtkActionToggleEntries[4].is_active = getShowBox(); /* RenderBox */
 	gtkActionToggleEntries[5].is_active = ShowDipoleOrb; /* RenderDipole */
 	gtkActionToggleEntries[6].is_active = ShowHAtomOrb ; /* RenderHydrogenBonds */
 	gtkActionToggleEntries[7].is_active = ShowHBondOrb ; /* RenderHydrogenBonds */

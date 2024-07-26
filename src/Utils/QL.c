@@ -1,6 +1,6 @@
 /* QL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -26,6 +26,45 @@ DEALINGS IN THE SOFTWARE.
 /********************************************************************************/
 static void reductionToTridiagonal(gdouble **A, gint n, gdouble *D, gdouble *E);
 static gint diagonalisationOfATridiagonalMatrix(gdouble *D, gdouble *E, gint n, gdouble **V);
+/********************************************************************************/
+gint eigenQL(gint n, gdouble **M, gdouble *EVals, gdouble** V)
+{
+	gdouble** A;
+	gdouble* E;
+	gint ii;
+	gint success = 0;
+	gint i;
+	gint j;
+
+	if(n<1) return 0;
+	A = malloc(n*sizeof(gdouble*));
+	for(i=0;i<n;i++) A[i]=malloc(n*sizeof(gdouble));
+
+	for(i=0;i<n;i++)
+	for(j=0;j<=i;j++)
+	{
+		A[i][j] = M[i][j];
+	}
+	for(i=0;i<n;i++)
+  	for(j=i+1;j<n;j++)
+    		A[i][j] = A[j][i];
+
+	E=malloc(n*sizeof(gdouble));
+	reductionToTridiagonal(A, n, EVals, E);
+	/*
+	for(i=0;i<n;i++) prgintf("EVals[%d]=%f\n",i,EVals[i]);
+	*/
+	success = diagonalisationOfATridiagonalMatrix(EVals, E, n, A);
+	for(i=0;i<n;i++)
+	for(j=0;j<n;j++)
+		V[i][j] = A[i][j];
+
+	free(E);
+	for(i=0;i<n;i++) free(A[i]);
+	free(A);
+
+	return success;
+}
 /********************************************************************************/
 gint eigen(gdouble *M, gint n, gdouble *EVals, gdouble** V)
 {

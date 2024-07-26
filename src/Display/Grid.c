@@ -1,6 +1,6 @@
 /* Grid.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -2221,7 +2221,7 @@ Grid* compute_mep_grid_using_partial_charges_cube_grid(Grid* grid)
 	gdouble y;
 	gdouble z;
 	gdouble r;
-	gdouble temp;
+	/* gdouble temp;*/
 	gdouble PRECISION = 1e-13;
 	Grid* esp = NULL;
 	gdouble invR = 1.0;
@@ -2251,7 +2251,7 @@ Grid* compute_mep_grid_using_partial_charges_cube_grid(Grid* grid)
 
 				r = sqrt(x*x +  y*y + z*z+PRECISION);
 				invR = 1.0 /r;
-				temp = esp->point[i][j][k].C[3];
+				/* temp = esp->point[i][j][k].C[3];*/
 				x *= invR;
 				y *= invR;
 				z *= invR;
@@ -2303,7 +2303,7 @@ Grid* compute_mep_grid_using_partial_charges(gint N[], GridLimits limits)
 	gdouble y;
 	gdouble z;
 	gdouble r;
-	gdouble temp;
+	/* gdouble temp;*/
 	gdouble PRECISION = 1e-13;
 	Grid* esp = NULL;
 	gdouble invR = 1.0;
@@ -2329,7 +2329,7 @@ Grid* compute_mep_grid_using_partial_charges(gint N[], GridLimits limits)
 
 				r = sqrt(x*x +  y*y + z*z+PRECISION);
 				invR = 1.0 /r;
-				temp = esp->point[i][j][k].C[3];
+				/* temp = esp->point[i][j][k].C[3];*/
 				x *= invR;
 				y *= invR;
 				z *= invR;
@@ -2601,7 +2601,7 @@ Grid* solve_poisson_equation_from_density_grid(Grid* grid, PoissonSolverMethod p
 
 	if(Nx%2==0 || Ny%2==0 || Nz%2==0)
 	{
-		printf("The number of step should be odd\n");
+		printf("The number of steps should be odd\n");
 		return NULL;
 	}
 	xL = fabs(limits.MinMax[1][0]-limits.MinMax[0][0]);
@@ -3289,7 +3289,7 @@ gboolean compute_integrale_from_grid_all_space(Grid* grid, gdouble* pInteg)
 gboolean compute_integrale_from_grid_foranisovalue(Grid* grid, gboolean square, gdouble isovalue, gdouble* pInteg)
 {
 	gint k,l,m;
-	gdouble scale;
+	/* gdouble scale;*/
 	gdouble integ = 0;
 	gdouble dv = 0;
 	gdouble xx,yy,zz;
@@ -3297,7 +3297,7 @@ gboolean compute_integrale_from_grid_foranisovalue(Grid* grid, gboolean square, 
 	if(!grid) return FALSE;
 	if(CancelCalcul) return FALSE;
 
-	scale = (gdouble)1.01/grid->N[0];
+	/* scale = (gdouble)1.01/grid->N[0];*/
 	for(k=0;k<grid->N[0];k++)
 	{
 		for(l=0;l<grid->N[1];l++)

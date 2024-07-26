@@ -1,6 +1,6 @@
 /* PovrayGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -507,7 +507,7 @@ static gchar *get_pov_one_stick(gint i,gint j, GabEditBondType bondType)
      XYZRC Center1;
      XYZRC Center2;
      gint l;
-     gint k;
+     /* gint k;*/
      gdouble ep;
      gdouble poid1;
      gdouble poid2;
@@ -518,9 +518,9 @@ static gchar *get_pov_one_stick(gint i,gint j, GabEditBondType bondType)
 
      Center1 = get_prop_center(i, 1.0);
      Center2 = get_prop_center(j, 1.0);
-     k =get_num_min_rayonIJ(i,j);
  
      /*
+     k =get_num_min_rayonIJ(i,j);
      if(k==i) ep = Center1.C[3];
      else ep = Center2.C[3];
      */
@@ -1674,7 +1674,7 @@ static void exportPOVRay(GtkWidget* Win, gboolean runPovray)
 		if(dirName[strlen(dirName)-1] != G_DIR_SEPARATOR)
 		{
 			fileNamePOV = g_strdup_printf("%s%s%s.pov",dirName, G_DIR_SEPARATOR_S,tmp);
-			fileNameIMG = g_strdup_printf("%s%s%s.bmp",dirName, G_DIR_SEPARATOR_S,tmp);
+			fileNameIMG = g_strdup_printf("%s%s%s.png",dirName, G_DIR_SEPARATOR_S,tmp);
 #ifndef G_OS_WIN32
 			fileNameCMD = g_strdup_printf("%s%s%s.cmd",dirName, G_DIR_SEPARATOR_S,tmp);
 #else
@@ -1684,7 +1684,7 @@ static void exportPOVRay(GtkWidget* Win, gboolean runPovray)
 		else
 		{
 			fileNamePOV = g_strdup_printf("%s%s.pov",dirName, tmp);
-			fileNameIMG = g_strdup_printf("%s%s.bmp",dirName, tmp);
+			fileNameIMG = g_strdup_printf("%s%s.png",dirName, tmp);
 #ifndef G_OS_WIN32
 			fileNameCMD = g_strdup_printf("%s%s.cmd",dirName, tmp);
 #else
@@ -1782,7 +1782,8 @@ static void AddPOVRayLocationDlg(GtkWidget *box, GtkWidget *Win)
                   1,1);
 /*----------------------------------------------------------------------------------*/
 	j = 2;
-	buttonDirSelector =  gtk_file_chooser_button_new("Select your folder", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	buttonDirSelector =  gabedit_dir_button();
+	/* gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (buttonDirSelector), g_getenv("PWD"));*/
 	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeight*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
 			j,j+1,i,i+1,

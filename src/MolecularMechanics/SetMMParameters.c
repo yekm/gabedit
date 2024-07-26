@@ -1,6 +1,6 @@
 /* SetMMParameters.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -2451,7 +2451,7 @@ static void newPairWise(GtkWidget *win)
 			) ||			
 			(
 			number1 == amberParameters->pairWiseTerms[i].numbers[1] &&
-			number2 == amberParameters->pairWiseTerms[i].numbers[2] 
+			number2 == amberParameters->pairWiseTerms[i].numbers[0] 
 			) 
 			)
 		{
@@ -2554,7 +2554,7 @@ static void newHBond(GtkWidget *win)
 			) ||			
 			(
 			number1 == amberParameters->hydrogenBondedTerms[j].numbers[1] &&
-			number2 == amberParameters->hydrogenBondedTerms[j].numbers[2] 
+			number2 == amberParameters->hydrogenBondedTerms[j].numbers[0] 
 			) 
 			)
 		{
@@ -2860,7 +2860,7 @@ static void newBond(GtkWidget* w)
 			) ||			
 			(
 			number1 == amberParameters->bondStretchTerms[j].numbers[1] &&
-			number2 == amberParameters->bondStretchTerms[j].numbers[2] 
+			number2 == amberParameters->bondStretchTerms[j].numbers[0] 
 			) 
 			)
 		{

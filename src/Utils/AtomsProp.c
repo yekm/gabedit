@@ -1,6 +1,6 @@
 /* AtomsProp.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -37,7 +37,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Display/GLArea.h"
 #include "../Common/Windows.h"
 
-#define NATOMS 111
+#define NATOMS 112
 
 enum 
 {
@@ -192,6 +192,7 @@ gchar* get_symbol_using_z(gint z)
 {
 	guint i;
 	
+	if(z<0) return g_strdup("Tv"); /* for gaussian output file */
 	for(i=0;i<NATOMS;i++)
 	{
 		if(z == (gint)AtomsProp[i].atomicNumber)
@@ -273,11 +274,12 @@ SAtomsProp prop_atom_get(const gchar *Symb)
 	return temp;
 }
 /******************************************************************/
-gchar *symb_atom_get(guint Z)
+gchar *symb_atom_get(gint Z)
 {
 	guint i;
         gchar *symb;
        
+	if(Z<0) return g_strdup("Tv"); /* for gaussian output file */
         symb = g_strdup("X");
 	
 	for(i=0;i<NATOMS;i++)
@@ -467,6 +469,7 @@ void define_default_atoms_prop()
 	setPropForOneAtom("Meitnerium", "Mt", 109, 1.600000, 0.000000, 1.700000, 6, 268.000000, 0.000000, 0.920000, 0.000000, 0.150000);
 	setPropForOneAtom("Dummy", "Xx", 0, 0.000000, 0.000000, 0.000000, 0, 0.000000, 0.000000, 0.070000, 0.500000, 0.700000);
 	setPropForOneAtom("Dummy", "X", 0, 0.000000, 0.000000, 0.000000, 0, 0.000000, 0.000000, 0.070000, 0.500000, 0.700000);
+	setPropForOneAtom("Tv", "Tv", 112, 0.000000, 0.000000, 0.000000, 0, 1.000000, 0.000000, 0.070000, 0.500000, 0.700000);
 	addIsotopeToAtom("H", 1, 1,     1.007825032100,    99.98850000);
 	addIsotopeToAtom("H", 1, 2,     2.014101778000,     0.01150000);
 	addIsotopeToAtom("H", 1, 3,     3.016049267500,     0.00000000);

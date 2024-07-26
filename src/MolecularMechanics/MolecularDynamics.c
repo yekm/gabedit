@@ -1,6 +1,6 @@
 /* MolecularDynamics.c  */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -759,7 +759,7 @@ static void initMD(MolecularDynamics* molecularDynamics, gdouble temperature, gd
 	molecularDynamics->totalEnergy = 0;
 	molecularDynamics->kelvin = 0;
 	molecularDynamics->temperature = temperature;
-	molecularDynamics->thermostat = NOCONSTRAINTS;
+	molecularDynamics->thermostat = NONE;
 
 	molecularDynamics->integratorType = integratorType;
 	molecularDynamics->thermostat = thermostat;

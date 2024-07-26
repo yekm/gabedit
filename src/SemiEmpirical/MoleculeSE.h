@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -32,6 +32,7 @@ typedef struct _MoleculeSE
 	gint* connected2[2];
 	gint numberOf3Connections;
 	gint* connected3[3];
+	gdouble dipole[3];
 }MoleculeSE;
 
 MoleculeSE newMoleculeSE();
@@ -40,6 +41,17 @@ MoleculeSE createFromGeomXYZMoleculeSE(gint charge, gint spin, gboolean connecti
 void freeMoleculeSE(MoleculeSE* molecule);
 void redrawMoleculeSE(MoleculeSE* molecule,gchar* str);
 MoleculeSE copyMoleculeSE(MoleculeSE* m);
+gboolean saveMoleculeSEHIN(MoleculeSE* mol, char* fileName);
+gboolean saveMoleculeSEMol2(MoleculeSE* mol, char* fileName);
+void computeMoleculeSEDipole(MoleculeSE* mol);
+void readGeomMoleculeSEFromOpenBabelOutputFile(MoleculeSE* mol, char* fileName, int numgeometry);
+gboolean addGeometryMoleculeSEToGabedit(MoleculeSE* molecule,FILE* file);
+gboolean addMoleculeSEToFile(MoleculeSE* molecule,FILE* file);
+gboolean saveMoleculeSETypeSave(MoleculeSE* molecule, char* fileName, char* typeSave);
+gboolean saveMoleculeSE(MoleculeSE* molecule, char* fileName);
+gdouble getGradientNormMoleculeSE(MoleculeSE* molecule);
+void setConnectionsMoleculeSE(MoleculeSE* molecule);
+gboolean readGeometryFromGenericOutputFile(MoleculeSE* molecule, char* namefile);
 
 #endif /* __GABEDIT_MOLECULESE_H__ */
 

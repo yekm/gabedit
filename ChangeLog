@@ -1,3 +1,79 @@
+03 April 2017
+	Bug fixed for set center to origin
+	
+30 March 2017
+	The format of .hess and .out files of Orca4 are slightly different from them of Orca3. 
+	Gabedit can now read .hess and .out file of Orca4 (and Orca3)
+
+08 February 2017
+	Energy, geometry optimization, MD, MD Conformations search by an external (generic) program are
+	now supported. Gabedit creates an input file for the external program, this program compute energy, dipole, gradients or optimize the geometry.
+	This program must produce an output file supported by Gabedit.
+	The input file for the external program (or script) created by gabedit contains : 
+	First line is an integer : 0 for energy, 1 for gradients and 2 for optimization
+	Second line contains the text "Geometry"
+	third line number of atoms, charge and multiplicity of the molecule.
+	From forth line, symbol, mmtype, pdftype, esiduname, interger, charge, interger, integer, x y z and connectivities (xyz in Ang)
+	The external program must produce an output file with :
+	energy in atomic unit(au) in first line
+	dipole in au in the second line
+	gradients (in au) in next lines if gradients are required
+	Geometry in next lines if the geometry optimisation is required.
+	As examples, see :
+	The script runDFTBPGabedit (page web of gabedit) as an example 
+	The script runGamessPM3 is another example (page web of gabedit). 
+
+01 February 2017
+	Energy, geometry optimisation, MD, MD Conformations search by MMFF94, MMFF94s, UFF and Ghemical potentials are
+	now supported via openbabel. obgradient, obopt  programs and 2.3.2 folder parameters are needed and to be installed
+	in C:\OpenBabel under windows of $HOME/OpenBabel under unix (MacOS and Linux). The location of this folder
+	can be changed but the directory must be changed via Preferences/Other gabedit window.
+	OpenBabel directory can be download from Gabedit web page for each OS.
+
+24 January 2017
+	Compute the type of conformer for a saccharide (1C4, 4C1, ....)
+	Compute the anharmonic spectrum by QM/MMFF94 method using iGVPT2 program.
+	Read the harmonic and anharmonic spectra from an iGVPT2 output file.
+
+25 August 2016
+	DeMon2k is now supported by Gabedit. Gabedit can create input files, run demon and visualize the results using the molden file created by demon2k
+
+27 April 2016
+	Gabedit can now read the geometry from POSCAR and from vasprun.xml
+
+25 April 2016
+	Save geometry in POSCAR
+	Scale cell
+
+1 April 2016
+	Tools for VASP : 
+	Read dielectric function from a VASP xml file and compute optic properties Optic,
+	read data from vasprun.xml and plot DOS, pDOS and, Bands structures 
+
+8  September 2015
+	Gabedit can not read the hessian from .hess orca file. 
+	After reading of the hessian, Gabedit compute frequencies, modes and effective masses
+
+30 June 2015
+	Export in CChemI : update
+	Tv accepted (used by Gaussian and Mopac for periodic system)
+	Using Tv, Gabedit can generate other cells
+
+1  June 2015
+	QFF tools are implemented : Display/Vibration + main menu Tools/QFF
+
+11 march 2015
+	bug fixed : geometry in Display window if ECP used
+
+13 february 2015
+	read geometries (Opt or Dyn) from VASP OUTCAR file
+
+15 May 2014
+	Bug fixed to read dummy atom from molpro output file
+
+07 March 2014
+	Bug fixed to read the last geometry from mopac output file(no bug with the first geometry, no bugs if aux file)
+
 25 October 2013
 	new tool to remove half cube grid
 	remove implicit declaration warning

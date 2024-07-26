@@ -1,6 +1,6 @@
 /* MenuToolBarGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -48,6 +48,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/BuildRing.h"
 #include "../Geometry/BuildRoZPhi.h"
 #include "../Geometry/BuildPolyPeptide.h"
+#include "../Geometry/BuildPeriodic.h"
 #include "../Geometry/BuildPolySaccharide.h"
 #include "../Geometry/BuildPolyNucleicAcid.h"
 #include "../Geometry/BuildNanoTube.h"
@@ -108,7 +109,7 @@ static void select_atom()
 	guint i;
 	guint j;
         GtkStyle *button_style;
-        GtkStyle *style;
+        /* GtkStyle *style;*/
 
 	gchar*** Symb = get_periodic_table();
 
@@ -134,7 +135,8 @@ static void select_atom()
 		if(strcmp(Symb[j][i],"00"))
 		{
 			button = gtk_button_new_with_label(Symb[j][i]);
-			style=set_button_style(button_style,button,Symb[j][i]);
+			/* style=set_button_style(button_style,button,Symb[j][i]);*/
+			set_button_style(button_style,button,Symb[j][i]);
 			g_object_set_data(G_OBJECT(button), "WinTable", WinTable);
 			g_signal_connect(G_OBJECT(button), "clicked", (GCallback)set_atom,(gpointer )Symb[j][i]);
 			gtk_table_attach(GTK_TABLE(Table),button,j,j+1,i,i+1,
@@ -321,6 +323,7 @@ static void toggle_action (GtkAction *action)
 	else if(!strcmp(name,"RenderShad")) RenderShad(NULL, TRUE);
 #ifdef DRAWGEOMGL
 	else if(!strcmp(name,"RenderShowAxes")) RenderAxes(NULL, TRUE);
+	else if(!strcmp(name,"RenderShowBox")) RenderBox(NULL, TRUE);
 #endif
 	else if(!strcmp(name,"RenderShowDipole")) RenderDipole(NULL, TRUE);
 	else if(!strcmp(name,"RenderShowHydrogenBonds")) RenderHBonds(NULL, TRUE);
@@ -386,6 +389,7 @@ static GtkToggleActionEntry gtkActionToggleEntries[] =
 	{ "RenderShad", NULL, N_("_Shad"), NULL, "render shad", G_CALLBACK (toggle_action), FALSE },
 #ifdef DRAWGEOMGL
 	{ "RenderShowAxes", NULL, N_("Show _Axes"), NULL, "Show axes", G_CALLBACK (toggle_action), FALSE },
+	{ "RenderShowBox", NULL, N_("Show _Box"), NULL, "Show box", G_CALLBACK (toggle_action), FALSE },
 #endif
 	{ "RenderShowDipole", NULL, N_("Show _Dipole"), NULL, "Show dipole", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderShowHydrogenBonds", NULL, N_("Show _Hydrogen bonds"), NULL, "Show hydrogen bonds", G_CALLBACK (toggle_action), FALSE },
@@ -410,6 +414,7 @@ static void activate_action (GtkAction *action)
 	const gchar *name = gtk_action_get_name (action);
 	if(!strcmp(name,"ReadAuto")) read_geom_any_file_dlg();
 	if(!strcmp(name,"ReadXYZ")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_XYZ); }
+	else if(!strcmp(name,"ReadPOSCAR")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_VASPPOSCAR); }
 	else if(!strcmp(name,"ReadMol2")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MOL2); }
 	else if(!strcmp(name,"ReadTinker")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_TINKER); }
 	else if(!strcmp(name,"ReadPDB")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_PDB); }
@@ -450,6 +455,10 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ReadFireFlyLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_GAMESSLAST); }
 	else if(!strcmp(name,"ReadOrcaFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_ORCAOUTFIRST);}
 	else if(!strcmp(name,"ReadOrcaLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_ORCAOUTLAST);}
+	else if(!strcmp(name,"ReadVaspFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_VASPOUTFIRST);}
+	else if(!strcmp(name,"ReadVaspLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_VASPOUTLAST);}
+	else if(!strcmp(name,"ReadVaspXMLFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_VASPXMLFIRST);}
+	else if(!strcmp(name,"ReadVaspXMLLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_VASPXMLLAST);}
 	else if(!strcmp(name,"ReadNWChemFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_NWCHEMOUTFIRST);}
 	else if(!strcmp(name,"ReadNWChemLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_NWCHEMOUTLAST);}
 
@@ -478,6 +487,10 @@ static void activate_action (GtkAction *action)
    	  file_chooser_open(read_geometries_conv_mpqc,_("Load Geom. Conv. From MPQC output file"), GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_GEOM);
 	else if(!strcmp(name,"ReadGeomConvOrca"))
    	  file_chooser_open(read_geometries_conv_orca,_("Load Geom. Conv. From ORCA output file"), GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_GEOM);
+	else if(!strcmp(name,"ReadGeomConvVasp"))
+   	  file_chooser_open(read_geometries_conv_vasp_outcar,_("Load Geom. Conv. From VASP output file"), GABEDIT_TYPEFILE_VASPOUTCAR,GABEDIT_TYPEWIN_GEOM);
+	else if(!strcmp(name,"ReadGeomConvVaspXML"))
+   	  file_chooser_open(read_geometries_conv_vasp_xml,_("Load Geom. Conv. From VASP xml file"), GABEDIT_TYPEFILE_VASPXML,GABEDIT_TYPEWIN_GEOM);
 
 	else if(!strcmp(name,"ReadGeomConvNWChem"))
    	  file_chooser_open(read_geometries_conv_nwchem,_("Load Geom. Conv. From NWChem output file"), GABEDIT_TYPEFILE_NWCHEM,GABEDIT_TYPEWIN_GEOM);
@@ -632,15 +645,20 @@ static void activate_action (GtkAction *action)
 		create_GeomXYZ_from_draw_grometry();
  	  	file_chooser_save(save_geometry_xyz_file,_("Save geometry in xyz file"), GABEDIT_TYPEFILE_XYZ,GABEDIT_TYPEWIN_GEOM);
 	}
+	else if(!strcmp(name,"SaveAsPOSCAR"))
+	{
+		create_GeomXYZ_from_draw_grometry();
+ 	  	file_chooser_save(save_geometry_poscar_file,_("Save geometry in POSCAR file (for VASP)"), GABEDIT_TYPEFILE_VASPPOSCAR,GABEDIT_TYPEWIN_GEOM);
+	}
 	else if(!strcmp(name,"SaveAsGabedit"))
 	{
 		create_GeomXYZ_from_draw_grometry();
  	  	file_chooser_save(save_geometry_gabedit_file,_("Save geometry in Gabedit file"), GABEDIT_TYPEFILE_GABEDIT,GABEDIT_TYPEWIN_GEOM);
 	}
-	else if(!strcmp(name,"SaveAsLasCMD"))
+	else if(!strcmp(name,"SaveAsCChemI"))
 	{
 		create_GeomXYZ_from_draw_grometry();
- 	  	file_chooser_save(save_geometry_lascmd_file,_("Save geometry in LasCMD file"), GABEDIT_TYPEFILE_GAMESSINPUT,GABEDIT_TYPEWIN_GEOM);
+ 	  	file_chooser_save(save_geometry_cchemi_file,_("Save geometry in CChemI file"), GABEDIT_TYPEFILE_CCHEMI,GABEDIT_TYPEWIN_GEOM);
 	}
 	else if(!strcmp(name,"SaveAsMol2"))
 	{
@@ -699,6 +717,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"BuildRingMolecule")) build_ring_molecule_dlg();
 	else if(!strcmp(name,"BuildMoleculeWithSymmetry")) build_rozphi_molecule_dlg();
 	else if(!strcmp(name,"BuildPolyPeptide")) build_polypeptide_dlg();
+	else if(!strcmp(name,"BuildPeriodic")) build_periodic_dlg();
 	else if(!strcmp(name,"BuildPolyNucleicAcid")) build_polynucleicacid_dlg();
 	else if(!strcmp(name,"BuildPolySaccharide")) build_polysaccharide_dlg();
 	else if(!strcmp(name,"PersonalFragmentsNewGroup")) newGroupeDlg(NULL, 0, NULL);
@@ -747,6 +766,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "AddHydrogensTpl")) addHydrogensTpl();
 	else if(!strcmp(name, "AddOneHydrogen")) addOneHydrogen();
 	else if(!strcmp(name, "SetDipole")) set_dipole_dialog();
+	else if(!strcmp(name, "ScaleCell")) scale_cell_dialog();
 	else if(!strcmp(name, "SetDipoleFormCharges")) set_dipole_from_charges();
 	else if(!strcmp(name, "ComputeDipoleFormCharges")) compute_dipole_from_charges();
 	else if(!strcmp(name, "ComputeIsotopeDistribution")) createIstopeDistributionCalculationFromDrawGeom();
@@ -939,6 +959,23 @@ static void activate_action (GtkAction *action)
 	{
 		semiEmpiricalDlg("OrcaOptimize");
 	}
+	else if(!strcmp(name, "SemiEmpiricalEnergyOpenBabel"))
+	{
+		semiEmpiricalDlg("OpenBabelEnergy");
+	}
+	else if(!strcmp(name, "SemiEmpiricalOptimizationOpenBabel"))
+	{
+		semiEmpiricalDlg("OpenBabelOptimize");
+	}
+	else if(!strcmp(name, "SemiEmpiricalEnergyGeneric"))
+	{
+		semiEmpiricalDlg("GenericEnergy");
+	}
+	else if(!strcmp(name, "SemiEmpiricalOptimizationGeneric"))
+	{
+		semiEmpiricalDlg("GenericOptimize");
+	}
+
 
 	else if(!strcmp(name, "Close")) destroy_drawing_and_children(NULL, 0);
 }
@@ -955,6 +992,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadAIMAll", NULL, N_("_AIMAll file"), NULL, "Read a AIMAll file", G_CALLBACK (activate_action) },
 	{"ReadMol", NULL, N_("_Mol file"), NULL, "Read a Mol file", G_CALLBACK (activate_action) },
 	{"ReadGabedit", GABEDIT_STOCK_GABEDIT, N_("_Gabedit file"), NULL, "Read a Gabedit file", G_CALLBACK (activate_action) },
+	{"ReadPOSCAR", NULL, N_("_POSCAR file"), NULL, "Read a POSCAR file", G_CALLBACK (activate_action) },
 	{"ReadGaussianZMat", GABEDIT_STOCK_GAUSSIAN, N_("_Gaussian Z-Matrix file"), NULL, "Read a Gaussian Z-Matrix file", G_CALLBACK (activate_action) },
 	{"ReadMopacZMat", GABEDIT_STOCK_MOPAC, N_("_Mopac Z-Matrix file"), NULL, "Read a Mopac Z-Matrix file", G_CALLBACK (activate_action) },
 
@@ -1007,6 +1045,12 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadOrcaFirst", GABEDIT_STOCK_ORCA, N_("F_irst geometry from a Orca output file"), NULL, "Read the first geometry from a Orca output file", G_CALLBACK (activate_action) },
 	{"ReadOrcaLast", GABEDIT_STOCK_ORCA, N_("L_ast geometry from a Orca output file"), NULL, "Read the last geometry from a Orca output file", G_CALLBACK (activate_action) },
 
+	{"VASP", GABEDIT_STOCK_VASP, "_VASP"},
+	{"ReadVaspFirst", GABEDIT_STOCK_VASP, N_("F_irst geometry from a VASP output file"), NULL, "Read the first geometry from a VASP output file", G_CALLBACK (activate_action) },
+	{"ReadVaspLast", GABEDIT_STOCK_VASP, N_("L_ast geometry from a VASP output file"), NULL, "Read the last geometry from a VASP output file", G_CALLBACK (activate_action) },
+	{"ReadVaspXMLFirst", GABEDIT_STOCK_VASP, N_("F_irst geometry from a VASP xml file"), NULL, "Read the first geometry from a VASP xml file", G_CALLBACK (activate_action) },
+	{"ReadVaspXMLLast", GABEDIT_STOCK_VASP, N_("L_ast geometry from a VASP xml file"), NULL, "Read the last geometry from a VASP xml file", G_CALLBACK (activate_action) },
+
 
 	{"QChem", GABEDIT_STOCK_QCHEM, "Q-_Chem"},
 	{"ReadQChemFirst", GABEDIT_STOCK_QCHEM, N_("F_irst geometry from a Q-Chem output file"), NULL, "Read the first geometry from a Q-Chem output file", G_CALLBACK (activate_action) },
@@ -1033,6 +1077,8 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadGeomConvMopac", GABEDIT_STOCK_MOPAC, N_("from a _Mopac aux file"), NULL, "Read Geometries Convergence from a Mopac aux file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvMPQC", GABEDIT_STOCK_MPQC, N_("from a MP_QC output file"), NULL, "Read Geometries Convergence from a MPQC output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvOrca", GABEDIT_STOCK_ORCA, N_("from a _Orca output file"), NULL, "Read Geometries Convergence from a Orca output file", G_CALLBACK (activate_action) },
+	{"ReadGeomConvVasp", GABEDIT_STOCK_VASP, N_("from a _VASP output file"), NULL, "Read Geometries Convergence from a VASP output file", G_CALLBACK (activate_action) },
+	{"ReadGeomConvVaspXML", GABEDIT_STOCK_VASP, N_("from a _VASP xml file"), NULL, "Read Geometries Convergence from a VASP xml file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvNWChem", GABEDIT_STOCK_NWCHEM, N_("from a _NWChemoutput file"), NULL, "Read Geometries Convergence from a NWChem output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvPsicode", GABEDIT_STOCK_PSICODE, N_("from a _Psicodeoutput file"), NULL, "Read Geometries Convergence from a Psicode output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvQChem", GABEDIT_STOCK_QCHEM, N_("from a Q-_Chem output file"), NULL, "Read Geometries Convergence from a Q-Chem output file", G_CALLBACK (activate_action) },
@@ -1083,8 +1129,9 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SaveAsMol", NULL, N_("_Mol file"), NULL, "Save geometry in a Mol file", G_CALLBACK (activate_action) },
 	{"SaveAsTinker", NULL, N_("_Tinker file"), NULL, "Save geometry in a Tinker file", G_CALLBACK (activate_action) },
 	{"SaveAsPDB", GABEDIT_STOCK_PDB, N_("_pdb file"), NULL, "Save geometry in a pdb file", G_CALLBACK (activate_action) },
+	{"SaveAsPOSCAR", NULL, N_("_POSCAR file"), NULL, "Save geometry in a POSCAR file", G_CALLBACK (activate_action) },
 	{"SaveAsHyperchem", NULL, N_("_Hyperchem file"), NULL, "Save geometry in a Hyperchem file", G_CALLBACK (activate_action) },
-	{"SaveAsLasCMD", NULL, N_("_LasCMD file"), NULL, "Save geometry in a LasCMD file", G_CALLBACK (activate_action) },
+	{"SaveAsCChemI", NULL, N_("_CChemI file"), NULL, "Save geometry in a CChemI file", G_CALLBACK (activate_action) },
 	{"SaveAsMopacZMat", NULL, N_("_Mopac Zmatrix file"), NULL, "Save geometry in a Mopac Zmatrix file", G_CALLBACK (activate_action) },
 	{"SaveAsGaussianZMat", GABEDIT_STOCK_GAUSSIAN, N_("_Gaussian Zmatrix file"), NULL, "Save geometry in a Gaussian Zmatrix file", G_CALLBACK (activate_action) },
 	{"SaveUsingOpenBabel", GABEDIT_STOCK_OPEN_BABEL, N_("_Other format (using open babel)"), NULL, "Other format (using open babel)", G_CALLBACK (activate_action) },
@@ -1106,6 +1153,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"BuildRingMolecule", NULL, N_("_Ring Molecule"), NULL, "build a ring molecule", G_CALLBACK (activate_action) },
 	{"BuildMoleculeWithSymmetry", NULL, N_("_Molecule with a symmetry axis of rotation"), NULL, "build a molecule with a symmetry axis of rotation", G_CALLBACK (activate_action) },
 	{"BuildPolyPeptide", NULL, N_("Poly_Peptide"), NULL, "build a polypeptide", G_CALLBACK (activate_action) },
+	{"BuildPeriodic", NULL, N_("_Periodic"), NULL, "build  periodic ", G_CALLBACK (activate_action) },
 	{"BuildPolySaccharide", NULL, N_("Poly_Saccharide"), NULL, "build a Polysaccharide", G_CALLBACK (activate_action) },
 	{"BuildPolyNucleicAcid", NULL, N_("Poly_Nucleic Acid"), NULL, "build a polynucleic acid", G_CALLBACK (activate_action) },
 	{"BuildNanoTube", NULL, N_("Nano_tube"), NULL, "nanotube", G_CALLBACK (activate_action) },
@@ -1158,6 +1206,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SetChargeOfselectedAtoms", NULL, N_("Set the _Charge of selected atoms"), NULL, "Set the charge of selected atoms", G_CALLBACK (activate_action) },
 	{"scaleChargesOfSelectedAtoms", NULL, N_("scale the _Charge of selected atoms"), NULL, "scale the charge of selected atoms", G_CALLBACK (activate_action) },
 	{"SetDipole", NULL, N_("_Dipole"), NULL, "Set dipole", G_CALLBACK (activate_action) },
+	{"ScaleCell", NULL, N_("_Scale cell"), NULL, "Scale cell", G_CALLBACK (activate_action) },
 	{"SetDipoleFormCharges", NULL, N_("_Compute Dipole from charges"), NULL, "Compute dipole using charges", G_CALLBACK (activate_action) },
 	{"SetHydrogenBonds", NULL, N_("_Hydrogen bonds parameters"), NULL, "Set the hydrogen bonds parameters", G_CALLBACK (activate_action) },
 	{"SetPropertiesOfAtoms", NULL, N_("P_roperties of atoms"), NULL, "Set properties of atoms", G_CALLBACK (activate_action) },
@@ -1199,13 +1248,13 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ScreenCapturePS", NULL, N_("_PS format"), NULL, "create a PS file", G_CALLBACK (activate_action) },
 	{"ScreenCaptureCilpBoard", NULL, N_("_Copy to clipboard"), NULL, "copy to clipboard", G_CALLBACK (activate_action) },
 
-	{"MolecularMechanics", NULL, N_("_Molecular Mechanics")},
+	{"MolecularMechanics", NULL, N_("_Amber potential")},
 	{"MolecularMechanicsEnergy", NULL, N_("_Energy"), NULL, "compute the energy using the MM method", G_CALLBACK (activate_action) },
 	{"MolecularMechanicsOptimization", NULL, N_("_Optimization"), NULL, "optimize the geometry using the MM method", G_CALLBACK (activate_action) },
 	{"MolecularMechanicsDynamics", NULL, N_("Molecular _Dynamics"), NULL, "Molecular dynamics using the MM method", G_CALLBACK (activate_action) },
 	{"MolecularMechanicsDynamicsConfo", NULL, N_("Molecular _Dynamics Conformational search"), NULL, "Molecular dynamics conformational search using the MM method", G_CALLBACK (activate_action) },
 
-	{"SemiEmpirical", NULL, N_("_Semi-empirical")},
+	{"SemiEmpirical", NULL, N_("(Semi-)_empirical")},
 	{"SemiEmpiricalEnergyFireFlyAM1", NULL, N_("FireFly AM1 _Energy"), NULL, "compute the energy using the AM1 method from FireFly", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalOptimizationFireFlyAM1", NULL, N_("FireFly AM1 _Optimization"), NULL, "optimize the geometry using the AM1 method from FireFly", G_CALLBACK (activate_action) },
 
@@ -1231,8 +1280,16 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SemiEmpiricalOptimizationMopacAM1", NULL, N_("Mopac AM1 _Optimization"), NULL, "optimize the geometry using the AM1 method from Mopac", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalESPMopacAM1", NULL, N_("Mopac AM1 _ESP charges"), NULL, "ESP Charge using the AM1 method from Mopac", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalScanMopacAM1", NULL, N_("Mopac AM1 _Reaction path"), NULL, "Reaction path using the AM1 method from Mopac", G_CALLBACK (activate_action) },
+
 	{"SemiEmpiricalEnergyOrca", NULL, N_("Orca _Energy"), NULL, "compute the energy using Orca", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalOptimizationOrca", NULL, N_("Orca _Optimization"), NULL, "optimize the geometry using Orca", G_CALLBACK (activate_action) },
+
+	{"SemiEmpiricalEnergyOpenBabel", NULL, N_("OpenBabel _Energy"), NULL, "compute the energy using OpenBabel", G_CALLBACK (activate_action) },
+	{"SemiEmpiricalOptimizationOpenBabel", NULL, N_("OpenBabel _Optimization"), NULL, "optimize the geometry using OpenBabel", G_CALLBACK (activate_action) },
+
+	{"SemiEmpiricalEnergyGeneric", NULL, N_("Generic _Energy"), NULL, "compute the energy using your own program", G_CALLBACK (activate_action) },
+	{"SemiEmpiricalOptimizationGeneric", NULL, N_("Generic _Optimization"), NULL, "optimize the geometry using your own program", G_CALLBACK (activate_action) },
+
 	{"SemiEmpiricalMD", NULL, N_("Molecular _Dynamics"), NULL, "Molecular dynamics using a semi-empirical method", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalMDConfo", NULL, N_("Molecular _Dynamics Conformational search"), NULL, "Molecular dynamics conformational search using a semi-empirical  method", G_CALLBACK (activate_action) },
 
@@ -1258,6 +1315,7 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"ReadTinker\" action=\"ReadTinker\" />\n"
 "      <menuitem name=\"ReadPDB\" action=\"ReadPDB\" />\n"
 "      <menuitem name=\"ReadHyperchem\" action=\"ReadHyperchem\" />\n"
+"      <menuitem name=\"ReadPOSCAR\" action=\"ReadPOSCAR\" />\n"
 "      <menuitem name=\"ReadAIMAll\" action=\"ReadAIMAll\" />\n"
 "      <separator name=\"sepMenuReadFireFly\" />\n"
 "      <menu name=\"FireFly\" action=\"FireFly\">\n"
@@ -1315,6 +1373,15 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadOrcaFirst\" action=\"ReadOrcaFirst\" />\n"
 "        <menuitem name=\"ReadOrcaLast\" action=\"ReadOrcaLast\" />\n"
 "      </menu>\n"
+
+"      <separator name=\"sepMenuReadVasp\" />\n"
+"      <menu name=\"VASP\" action=\"VASP\">\n"
+"        <menuitem name=\"ReadVaspFirst\" action=\"ReadVaspFirst\" />\n"
+"        <menuitem name=\"ReadVaspLast\" action=\"ReadVaspLast\" />\n"
+"        <menuitem name=\"ReadVaspXMLFirst\" action=\"ReadVaspXMLFirst\" />\n"
+"        <menuitem name=\"ReadVaspXMLLast\" action=\"ReadVaspXMLLast\" />\n"
+"      </menu>\n"
+
 "      <separator name=\"sepMenuReadQChem\" />\n"
 "      <menu name=\"QChem\" action=\"QChem\">\n"
 "        <menuitem name=\"ReadQChemFirst\" action=\"ReadQChemFirst\" />\n"
@@ -1347,6 +1414,8 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadGeomConvMopac\" action=\"ReadGeomConvMopac\" />\n"
 "        <menuitem name=\"ReadGeomConvMPQC\" action=\"ReadGeomConvMPQC\" />\n"
 "        <menuitem name=\"ReadGeomConvOrca\" action=\"ReadGeomConvOrca\" />\n"
+"        <menuitem name=\"ReadGeomConvVasp\" action=\"ReadGeomConvVasp\" />\n"
+"        <menuitem name=\"ReadGeomConvVaspXML\" action=\"ReadGeomConvVaspXML\" />\n"
 "        <menuitem name=\"ReadGeomConvNWChem\" action=\"ReadGeomConvNWChem\" />\n"
 "        <menuitem name=\"ReadGeomConvPsicode\" action=\"ReadGeomConvPsicode\" />\n"
 "        <menuitem name=\"ReadGeomConvQChem\" action=\"ReadGeomConvQChem\" />\n"
@@ -1415,8 +1484,9 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"SaveAsMol\" action=\"SaveAsMol\" />\n"
 "        <menuitem name=\"SaveAsTinker\" action=\"SaveAsTinker\" />\n"
 "        <menuitem name=\"SaveAsPDB\" action=\"SaveAsPDB\" />\n"
+"        <menuitem name=\"SaveAsPOSCAR\" action=\"SaveAsPOSCAR\" />\n"
 "        <menuitem name=\"SaveAsHyperchem\" action=\"SaveAsHyperchem\" />\n"
-"        <menuitem name=\"SaveAsLasCMD\" action=\"SaveAsLasCMD\" />\n"
+"        <menuitem name=\"SaveAsCChemI\" action=\"SaveAsCChemI\" />\n"
 "        <separator name=\"sepMenuSaveAsZmat\" />\n"
 "        <menuitem name=\"SaveAsMopacZMat\" action=\"SaveAsMopacZMat\" />\n"
 "        <menuitem name=\"SaveAsGaussianZMat\" action=\"SaveAsGaussianZMat\" />\n"
@@ -1447,6 +1517,8 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"BuildPolySaccharide\" action=\"BuildPolySaccharide\" />\n"
 "        <separator name=\"sepBuildBuildNanoTube\" />\n"
 "        <menuitem name=\"BuildNanoTube\" action=\"BuildNanoTube\" />\n"
+"        <separator name=\"sepBuildPeriodic\" />\n"
+"        <menuitem name=\"BuildPeriodic\" action=\"BuildPeriodic\" />\n"
 "      </menu>\n"
 "    <separator name=\"sepMenuOperations\" />\n"
 "    <menu name=\"Operations\" action=\"Operations\">\n"
@@ -1506,6 +1578,7 @@ static const gchar *uiMenuInfo =
 "      <separator name=\"sepMenuShowDipole\" />\n"
 #ifdef DRAWGEOMGL
 "      <menuitem name=\"RenderShowAxes\" action=\"RenderShowAxes\" />\n"
+"      <menuitem name=\"RenderShowBox\" action=\"RenderShowBox\" />\n"
 #endif
 "      <menuitem name=\"RenderShowDipole\" action=\"RenderShowDipole\" />\n"
 "      <menuitem name=\"RenderShowHydrogenBonds\" action=\"RenderShowHydrogenBonds\" />\n"
@@ -1572,6 +1645,9 @@ static const gchar *uiMenuInfo =
 "      <separator name=\"sepMenuSetDipole\" />\n"
 "      <menuitem name=\"SetDipole\" action=\"SetDipole\" />\n"
 "      <menuitem name=\"SetDipoleFormCharges\" action=\"SetDipoleFormCharges\" />\n"
+
+"      <separator name=\"sepMenuScaleCell\" />\n"
+"      <menuitem name=\"ScaleCell\" action=\"ScaleCell\" />\n"
 "      <separator name=\"sepMenuSetHydrogenBonds\" />\n"
 "      <menuitem name=\"SetHydrogenBonds\" action=\"SetHydrogenBonds\" />\n"
 "      <separator name=\"sepMenuSetPropertiesOfAtoms\" />\n"
@@ -1647,6 +1723,14 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"SemiEmpiricalEnergyFireFlyAM1\" action=\"SemiEmpiricalEnergyFireFlyAM1\" />\n"
 "      <menuitem name=\"SemiEmpiricalOptimizationFireFlyAM1\" action=\"SemiEmpiricalOptimizationFireFlyAM1\" />\n"
 
+"      <separator name=\"sepSemiEmpiricalOpenBabel\" />\n"
+"      <menuitem name=\"SemiEmpiricalEnergyOpenBabel\" action=\"SemiEmpiricalEnergyOpenBabel\" />\n"
+"      <menuitem name=\"SemiEmpiricalOptimizationOpenBabel\" action=\"SemiEmpiricalOptimizationOpenBabel\" />\n"
+
+"      <separator name=\"sepSemiEmpiricalGeneric\" />\n"
+"      <menuitem name=\"SemiEmpiricalEnergyGeneric\" action=\"SemiEmpiricalEnergyGeneric\" />\n"
+"      <menuitem name=\"SemiEmpiricalOptimizationGeneric\" action=\"SemiEmpiricalOptimizationGeneric\" />\n"
+
 "      <separator name=\"sepSemiEmpiricalMD\" />\n"
 "      <menuitem name=\"SemiEmpiricalMD\" action=\"SemiEmpiricalMD\" />\n"
 "      <menuitem name=\"SemiEmpiricalMDConfo\" action=\"SemiEmpiricalMDConfo\" />\n"
@@ -1704,6 +1788,7 @@ static void set_init_gtkActionToggleEntries()
 	gtkActionToggleEntries[i++].is_active = shad_mode(); /* RenderShad */
 #ifdef DRAWGEOMGL
 	gtkActionToggleEntries[i++].is_active = testShowAxesGeom(); /* RenderShowAxes */
+	gtkActionToggleEntries[i++].is_active = testShowBoxGeom(); /* RenderShowBox */
 #endif
 	gtkActionToggleEntries[i++].is_active = dipole_mode(); /* RenderShowDipole */
 	gtkActionToggleEntries[i++].is_active = ShowHBonds; /* RenderShowHydrogenBonds */

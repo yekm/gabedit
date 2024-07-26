@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -2226,7 +2226,7 @@ static gboolean read_mpqc_file_geomi(gchar *fileName,gint numGeometry, Geometry*
 static gboolean read_mopac_aux_file_geomi(gchar *FileName, gint numgeometry, Geometry* geometry)
 {
  	gchar *t;
- 	gboolean OK;
+ 	/* gboolean OK;*/
  	gchar *AtomCoord[5];
  	FILE *file;
  	guint i;
@@ -2278,13 +2278,12 @@ static gboolean read_mopac_aux_file_geomi(gchar *FileName, gint numgeometry, Geo
 			geomposok = ftell(file);
 			if(numgeom == numgeometry )
 			{
-				OK = TRUE;
+				/* OK = TRUE;*/
 				break;
 			}
-			if(numgeometry<0)
-			{
-				OK = TRUE;
-			}
+			/*
+			if(numgeometry<0) { OK = TRUE; }
+			*/
 		}
 	 }
 	 if(numgeom == 0)

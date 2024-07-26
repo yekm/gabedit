@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -67,6 +67,7 @@ GtkWidget *create_vbox(GtkWidget *);
 GtkWidget *create_frame(GtkWidget *,GtkWidget *,gchar *);
 GtkWidget *create_text(GtkWidget *,GtkWidget *,gboolean );
 void  gtk_combo_box_entry_set_popdown_strings(GtkWidget* comboBoxEntry, GList *list);
+GtkWidget*  create_label_combo_in_table(GtkWidget *table,gchar *tlabel,gchar **tlist,gint nlist, gboolean edit,gint llen,gint elen, gint iligne);
 GtkWidget*  create_combo_box_entry(gchar **tlist,gint nlist, gboolean edit,gint llen,gint elen);
 GtkWidget *create_combo_box_entry_liste(GtkWidget* Window,GtkWidget* hbox,gchar *lname,gchar **liste,int n);
 void view_result();
@@ -91,6 +92,7 @@ void  cree_vboxs_list_text();
 void goto_end(GtkWidget *current,gpointer data);
 void goto_end_result(GtkWidget *win,gpointer data);
 void read_geom_in_gamess_input(gchar *);
+void read_geom_in_demon_input(gchar *);
 void read_geom_in_gauss_input(gchar *);
 void read_geom_in_molcas_input(gchar *);
 void read_geom_in_molpro_input(gchar *);
@@ -106,6 +108,7 @@ void new_molcas(GtkWidget *widget, gchar *data);
 void new_molpro(GtkWidget *widget, gchar *data);
 void new_mopac(GtkWidget *widget, gchar *data);
 void new_mpqc(GtkWidget *widget, gchar *data);
+void new_demon(GtkWidget *widget, gchar *data);
 void new_gamess(GtkWidget *widget, gchar *data);
 void new_firefly(GtkWidget *widget, gchar *data);
 void new_gauss(GtkWidget *widget, gchar *data);
@@ -130,6 +133,8 @@ void fit_windows_position(GtkWidget* parent, GtkWidget* child);
 void  create_opengl_frame(GtkWidget* Win,GtkWidget *vbox);
 void read_admp_build_dipole_dipole_autocorrelation_dlg();
 void read_dipole_build_dipole_dipole_autocorrelation_dlg();
+GtkWidget* gabedit_dir_button();
+void  add_cancel_ok_buttons(GtkWidget *Win, GtkWidget *vbox, GCallback myFunc);
 
 #endif /* __GABEDIT_UTILSINTERFACE_H__ */
 

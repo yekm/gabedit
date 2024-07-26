@@ -1,6 +1,6 @@
 /* SemiEmpirical.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -30,15 +30,19 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Constants.h"
 #include "../Geometry/Fragments.h"
 #include "../Geometry/DrawGeom.h"
-#include "AtomSE.h"
-#include "MoleculeSE.h"
-#include "SemiEmpiricalModel.h"
-#include "SemiEmpirical.h"
+#include "../SemiEmpirical/AtomSE.h"
+#include "../SemiEmpirical/MoleculeSE.h"
+#include "../SemiEmpirical/SemiEmpiricalModel.h"
+#include "../SemiEmpirical/SemiEmpirical.h"
 
 static void calculateGradientMopac(SemiEmpiricalModel* seModel);
 static void calculateEnergyMopac(SemiEmpiricalModel* seModel);
 static void calculateGradientFireFly(SemiEmpiricalModel* seModel);
 static void calculateEnergyFireFly(SemiEmpiricalModel* seModel);
+static void calculateGradientOpenBabel(SemiEmpiricalModel* seModel);
+static void calculateEnergyOpenBabel(SemiEmpiricalModel* seModel);
+static void calculateGradientGeneric(SemiEmpiricalModel* seModel);
+static void calculateEnergyGeneric(SemiEmpiricalModel* seModel);
 
 
 /****************************************************************/
@@ -590,3 +594,460 @@ SemiEmpiricalModel createFireFlyModel (GeomDef* geom,gint Natoms,gint charge, gi
 	return seModel;
 }
 /**********************************************************************/
+static gboolean getEnergyOpenBabel(gchar* fileNameOut, gdouble* energy)
+{
+        FILE* file = NULL;
+        char buffer[1024];
+        char* pdest = NULL;
+        //char* energyTag = "TOTAL ENERGY =";
+        char* energyTag = "FINAL ENERGY:";
+
+        file = fopen(fileNameOut, "r");
+        if(!file) return FALSE;
+         while(!feof(file))
+         {
+                if(!fgets(buffer,BSIZE,file))break;
+                pdest = strstr( buffer, energyTag);
+                if(pdest &&sscanf(pdest+strlen(energyTag)+1,"%lf",energy)==1)
+                {
+                        fclose(file);
+                        if(strstr(pdest,"kJ")) *energy /= KCALTOKJ;
+                        return TRUE;
+                }
+         }
+        fclose(file);
+        return FALSE;
+}
+/*****************************************************************************/
+static gboolean getGradientOpenBabel(gchar* fileNameOut, SemiEmpiricalModel *seModel)
+{
+	FILE* file = NULL;
+	char buffer[1024];
+	char* pdest = NULL;
+	//char* energyTag = "TOTAL ENERGY =";
+	char* energyTag = "FINAL ENERGY:";
+	char* gradTag = "Gradients:";
+	gboolean kj = FALSE;
+	double conv = 1.0;
+	int i;
+	MoleculeSE* mol = &seModel->molecule;
+
+ 	file = fopen(fileNameOut, "r");
+	if(!file) return FALSE;
+	 while(!feof(file))
+	 {
+		if(!fgets(buffer,BSIZE,file))break;
+		pdest = strstr( buffer, energyTag);
+		if(pdest &&sscanf(pdest+strlen(energyTag)+1,"%lf",&mol->energy)==1)
+		{
+			if(strstr(pdest,"kJ")) { kj = TRUE;}
+			break;
+		}
+	 }
+	 while(!feof(file))
+	 {
+		if(!fgets(buffer,BSIZE,file))break;
+		if(strstr(buffer, gradTag))
+		{
+			for(i=0;i<mol->nAtoms;i++)
+			{
+				if(!fgets(buffer,BSIZE,file))break;
+				//printf("%s\n",buffer);
+				if(sscanf(buffer,"%lf %lf %lf",
+					&mol->gradient[0][i],
+					&mol->gradient[1][i],
+					&mol->gradient[2][i]
+					)!=3) break;
+			}
+			break;
+		}
+	 }
+	if(kj) conv /= KCALTOKJ;
+	mol->energy *= conv;
+	for(i=0;i<mol->nAtoms;i++)
+	{
+		mol->gradient[0][i] *= conv;
+		mol->gradient[1][i] *= conv;
+		mol->gradient[2][i] *= conv;
+	}
+
+	fclose(file);
+	return FALSE;
+}
+/*****************************************************************************/
+static gchar* runOneOpenBabel(SemiEmpiricalModel* seModel, gchar* keyWords)
+{
+	FILE* fileSH = NULL;
+	char* fileNameIn = NULL;
+	char* fileNameOut = NULL;
+	char* fileNameSH = NULL;
+	char buffer[1024];
+	MoleculeSE* mol = &seModel->molecule;
+	char* NameCommandOpenBabel = "obgradient";
+	int rank = 0;
+#ifdef ENABLE_MPI
+	MPI_Comm_rank( MPI_COMM_WORLD,&rank);
+#endif
+#ifdef G_OS_WIN32
+	char c='%';
+#endif
+
+	if(mol->nAtoms<1) return fileNameOut;
+#ifndef G_OS_WIN32
+	fileNameSH = g_strdup_printf("%s%sOpenBabelOne%d.sh",seModel->workDir,G_DIR_SEPARATOR_S,rank);
+#else
+	fileNameSH = g_strdup_printf("%s%sOpenBabelOne%d.bat",seModel->workDir,G_DIR_SEPARATOR_S,rank);
+#endif
+ 	fileSH = fopen(fileNameSH, "w");
+	if(!fileSH) return FALSE;
+#ifdef G_OS_WIN32
+	fprintf(fileSH,"@echo off\n");
+#endif
+
+	fileNameIn = g_strdup_printf("%s%sOne%d.hin",seModel->workDir,G_DIR_SEPARATOR_S,rank);
+	fileNameOut = g_strdup_printf("%s%sOne%d.out",seModel->workDir,G_DIR_SEPARATOR_S,rank);
+
+	if(!saveMoleculeSEHIN(mol,fileNameIn))
+	{
+ 		if(fileNameIn) free(fileNameIn);
+ 		if(fileNameOut) free(fileNameOut);
+ 		if(fileNameSH) free(fileNameSH);
+		return FALSE;
+	}
+#ifndef G_OS_WIN32
+	if(keyWords)
+	{
+		fprintf(fileSH,"#!/bin/bash\n");
+		fprintf(fileSH,"export PATH=$PATH:%s\n",openbabelDirectory);
+		fprintf(fileSH,"export BABEL_DATADIR=%s\n",openbabelDirectory);
+		fprintf(fileSH,"%s %s %s > %s 2>/dev/null\n",NameCommandOpenBabel,keyWords,fileNameIn,fileNameOut);
+		fprintf(fileSH,"exit\n");
+	}
+	else
+		fprintf(fileSH,"%s %s >%s 2>/dev/null",NameCommandOpenBabel,fileNameIn, fileNameOut);
+#else
+	{
+		if(strstr(openbabelDirectory,"\"")) 
+		{
+			fprintf(fileSH,"set PATH=%s;%cPATH%c\n",openbabelDirectory,'%','%');
+			fprintf(fileSH,"set BABEL_DATADIR=%s\n",openbabelDirectory);
+		}
+		else 
+		{
+			fprintf(fileSH,"set PATH=\"%s\";%cPATH%c\n",openbabelDirectory,'%','%');
+			fprintf(fileSH,"set BABEL_DATADIR=%s\n",openbabelDirectory);
+		}
+
+		fprintf(fileSH,"%s %s %s > %s\n",NameCommandOpenBabel,keyWords,fileNameIn,fileNameOut);
+		fprintf(fileSH,"exit\n");
+	}
+#endif
+	fclose(fileSH);
+#ifndef G_OS_WIN32
+
+	/*
+	sprintf(buffer,"cat %s",fileNameSH);
+	system(buffer);
+	sprintf(buffer,"cat %s",fileNameIn);
+	system(buffer);
+	*/
+
+	sprintf(buffer,"chmod u+x %s",fileNameSH);
+	system(buffer);
+	system(fileNameSH);
+
+	/*
+	sprintf(buffer,"cat %s",fileNameOut);
+	system(buffer);
+	*/
+#else
+	sprintf(buffer,"\"%s\"",fileNameSH);
+	system(buffer);
+#endif
+	unlink(fileNameIn);
+	unlink(fileNameSH);
+ 	if(fileNameIn) free(fileNameIn);
+ 	if(fileNameSH) free(fileNameSH);
+	return fileNameOut;
+}
+/**********************************************************************/
+static SemiEmpiricalModel newOpenBabelModel(gchar* method, gchar* dirName, SemiEmpiricalModelConstraints constraints)
+{
+	SemiEmpiricalModel seModel = newSemiEmpiricalModel(method, dirName, constraints);
+
+	seModel.klass->calculateGradient = calculateGradientOpenBabel;
+	seModel.klass->calculateEnergy = calculateEnergyOpenBabel;
+
+	return seModel;
+}
+/**********************************************************************/
+static void calculateGradientOpenBabel(SemiEmpiricalModel* seModel)
+{
+        char* keyWords = NULL;
+        char* fileOut = NULL;
+        if(!seModel) return;
+        if(seModel->molecule.nAtoms<1) return;
+        if(!seModel->method) return;
+        keyWords = g_strdup_printf("-ff %s",seModel->method);
+        fileOut = runOneOpenBabel(seModel, keyWords);
+        if(fileOut)
+        {
+                getGradientOpenBabel(fileOut, seModel);
+                //getDipoleOpenBabel(fileOut, &seModel->molecule, seModel->molecule.dipole);
+                computeMoleculeSEDipole(&seModel->molecule);
+                free(fileOut);
+        }
+
+}
+/**********************************************************************/
+static void calculateEnergyOpenBabel(SemiEmpiricalModel* seModel)
+{
+        char* keyWords = NULL;
+        char* fileOut = NULL;
+        if(!seModel) return;
+        if(seModel->molecule.nAtoms<1) return;
+        if(!seModel->method) return;
+        keyWords = g_strdup_printf("%s ",seModel->method);
+        fileOut = runOneOpenBabel(seModel, keyWords);
+        if(fileOut)
+        {
+                getEnergyOpenBabel(fileOut, &seModel->molecule.energy);
+                //getDipoleOpenBabel(fileOut, &seModel->molecule, seModel->molecule.dipole);
+                computeMoleculeSEDipole(&seModel->molecule);
+                free(fileOut);
+        }
+
+
+}
+/**********************************************************************/
+SemiEmpiricalModel createOpenBabelModel (GeomDef* geom,gint Natoms,gint charge, gint spin, gchar* method, gchar* dirName, SemiEmpiricalModelConstraints constraints)
+{
+	SemiEmpiricalModel seModel = newOpenBabelModel(method,dirName, constraints);
+
+	seModel.molecule = createMoleculeSE(geom,Natoms, charge, spin,TRUE);
+	setRattleConstraintsParameters(&seModel);
+	
+	return seModel;
+}
+/**********************************************************************/
+static gboolean getDipoleGeneric(char* fileNameOut, double* dipole)
+{
+	FILE* file = NULL;
+	char buffer[1024];
+	int i;
+ 	file = fopen(fileNameOut, "r");
+	if(!file) return FALSE;
+	if(!fgets(buffer,BSIZE,file)) { fclose(file); return FALSE;}/* first line for energy in Hartree*/
+	if(!fgets(buffer,BSIZE,file)) { fclose(file); return FALSE;}/* dipole in au */
+	for(i=0;i<strlen(buffer);i++) if(buffer[i]=='D' || buffer[i]=='d') buffer[i] ='E';
+	if(sscanf(buffer,"%lf %lf %lf",&dipole[0],&dipole[1],&dipole[2])==3)
+	{
+		for(i=0;i<3;i++) dipole[i] *= AUTODEB;
+		fclose(file);
+		return TRUE;
+	}
+	fclose(file);
+	return FALSE;
+}
+/*****************************************************************************/
+static gboolean getEnergyGeneric(char* fileNameOut, double* energy)
+{
+	FILE* file = NULL;
+	char buffer[1024];
+	int i;
+ 	file = fopen(fileNameOut, "r");
+	if(!file) return FALSE;
+	if(!fgets(buffer,BSIZE,file)) { fclose(file); return FALSE;}/* first line for energy in Hartree*/
+
+	for(i=0;i<strlen(buffer);i++) if(buffer[i]=='D' || buffer[i]=='d') buffer[i] ='E';
+	if(sscanf(buffer,"%lf",energy)==1)
+	{
+		fclose(file);
+		*energy *= AUTOKCAL;
+		return TRUE;
+	}
+	fclose(file);
+	return FALSE;
+}
+/*****************************************************************************/
+gboolean getGradientGeneric(char* fileNameOut, SemiEmpiricalModel *seModel)
+{
+	FILE* file = NULL;
+	char buffer[1024];
+	gboolean Ok = FALSE;
+	int i;
+	int j;
+
+ 	file = fopen(fileNameOut, "r");
+	if(!file) return FALSE;
+	if(!fgets(buffer,BSIZE,file)) { fclose(file); return FALSE;}/* first line for energy in Hartree*/
+	if(!fgets(buffer,BSIZE,file)) { fclose(file); return FALSE;}/* dipole in au */
+	for(i=0;i<seModel->molecule.nAtoms;i++)
+	{
+		if(!fgets(buffer,BSIZE,file))break;
+		for(j=0;j<strlen(buffer);j++) if(buffer[j]=='D' || buffer[j]=='d') buffer[j] ='E';
+		if(sscanf(buffer,"%lf %lf %lf",
+					&seModel->molecule.gradient[0][i],
+					&seModel->molecule.gradient[1][i],
+					&seModel->molecule.gradient[2][i]
+					)!=3)
+		{
+			fclose(file);
+			return FALSE;
+		}
+		for(j=0;j<3;j++) seModel->molecule.gradient[j][i] *= AUTOKCAL/BOHR_TO_ANG;
+		for(j=0;j<3;j++) seModel->molecule.gradient[j][i] = - seModel->molecule.gradient[j][i];
+	}
+	Ok = TRUE;
+	fclose(file);
+	return Ok;
+}
+/*****************************************************************************/
+char* runOneGeneric(SemiEmpiricalModel* seModel, char* keyWords)
+{
+	FILE* file = NULL;
+	FILE* fileSH = NULL;
+	char* fileNameIn = NULL;
+	char* fileNameOut = NULL;
+	char* fileNameSH = NULL;
+	char buffer[1024];
+	MoleculeSE* mol = &seModel->molecule;
+	char* NameCommandGeneric = seModel->method;
+	int rank = 0;
+	int type = 0;
+#ifdef ENABLE_MPI
+	MPI_Comm_rank( MPI_COMM_WORLD,&rank);
+#endif
+#ifdef OS_WIN32
+	char c='%';
+#endif
+
+	if(mol->nAtoms<1) return fileNameOut;
+#ifndef OS_WIN32
+	fileNameSH = g_strdup_printf("%s%sGenericOne%d.sh",seModel->workDir,G_DIR_SEPARATOR_S,rank);
+#else
+	fileNameSH = g_strdup_printf("%s%sGenericOne%d.bat",seModel->workDir,G_DIR_SEPARATOR_S,rank);
+#endif
+ 	fileSH = fopen(fileNameSH, "w");
+	if(!fileSH) return FALSE;
+#ifdef OS_WIN32
+	fprintf(fileSH,"@echo off\n");
+#endif
+
+	fileNameIn = g_strdup_printf("%s%sOne%d.inp",seModel->workDir,G_DIR_SEPARATOR_S,rank);
+	fileNameOut = g_strdup_printf("%s%sOne%d.out",seModel->workDir,G_DIR_SEPARATOR_S,rank);
+
+ 	file = fopen(fileNameIn, "w");
+	if(!file) 
+	{
+ 		if(fileNameIn) free(fileNameIn);
+ 		if(fileNameOut) free(fileNameOut);
+ 		if(fileNameSH) free(fileNameSH);
+		return FALSE;
+	}
+	/*
+	fprintf(file,"# ======================================================\n");
+	fprintf(file,"#  Generic input file made in CChemI\n"); 
+	fprintf(file,"# ======================================================\n");
+	*/
+	if(strstr(keyWords,"ENGRAD")) type = 1;
+	fprintf(file,"%d\n",type);
+	addMoleculeSEToFile(mol,file);
+	fclose(file);
+
+#ifndef OS_WIN32
+	fprintf(fileSH,"%s %s %s",NameCommandGeneric,fileNameIn,fileNameOut);
+	fclose(fileSH);
+	sprintf(buffer,"chmod u+x %s",fileNameSH);
+	system(buffer);
+	system(fileNameSH);
+#else
+	fprintf(fileSH,"\"%s\" \"%s\" \"%s\"",NameCommandGeneric,fileNameIn,fileNameOut);
+	fclose(fileSH);
+	sprintf(buffer,"\"%s\"",fileNameSH);
+	system(buffer);
+#endif
+	unlink(fileNameIn);
+	unlink(fileNameSH);
+ 	if(fileNameIn) free(fileNameIn);
+ 	if(fileNameSH) free(fileNameSH);
+	return fileNameOut;
+}
+/**********************************************************************/
+static SemiEmpiricalModel newGenericModel(char* method, char* dirName, SemiEmpiricalModelConstraints constraints)
+{
+	/* method = nameCommand */
+	SemiEmpiricalModel seModel = newSemiEmpiricalModel(method, dirName, constraints);
+
+	seModel.klass->calculateGradient = calculateGradientGeneric;
+	seModel.klass->calculateEnergy = calculateEnergyGeneric;
+
+	return seModel;
+}
+/**********************************************************************/
+static void calculateGradientGeneric(SemiEmpiricalModel* seModel)
+{
+	int i;
+	int j;
+	MoleculeSE m = seModel->molecule;
+	char* keyWords = NULL;
+	char* fileOut = NULL;
+	if(!seModel) return;
+	if(seModel->molecule.nAtoms<1) return;
+	if(!seModel->method) return;
+	keyWords = g_strdup_printf("%s ENGRAD ",seModel->method);
+	fileOut = runOneGeneric(seModel, keyWords);
+
+	if(fileOut)
+	{
+		for(j=0;j<3;j++)
+			for( i=0; i<m.nAtoms;i++)
+				m.gradient[j][i] = 0.0;
+		if(!getGradientGeneric(fileOut, seModel))
+		{
+#ifdef OS_WIN32
+			char* comm = g_strdup_printf("type %s",fileOut);
+#else
+			char* comm = g_strdup_printf("cat %s",fileOut);
+#endif
+			printf(("Problem : I cannot caculate the Gradient... "));
+			printf(("Calculation Stopped "));
+			system(comm);
+			free(fileOut);
+			free(comm);
+			exit(1);
+			return;
+		}
+		getEnergyGeneric(fileOut, &seModel->molecule.energy);
+		getDipoleGeneric(fileOut, seModel->molecule.dipole);
+		free(fileOut);
+	}
+
+}
+/**********************************************************************/
+static void calculateEnergyGeneric(SemiEmpiricalModel* seModel)
+{
+	char* keyWords = NULL;
+	char* fileOut = NULL;
+	if(!seModel) return;
+	if(seModel->molecule.nAtoms<1) return;
+	if(!seModel->method) return;
+	keyWords = g_strdup_printf("%s ",seModel->method);
+	fileOut = runOneGeneric(seModel, keyWords);
+	if(fileOut)
+	{
+		getEnergyGeneric(fileOut, &seModel->molecule.energy);
+		getDipoleGeneric(fileOut, seModel->molecule.dipole);
+		free(fileOut);
+	}
+
+}
+/**********************************************************************/
+SemiEmpiricalModel createGenericModel (GeomDef* geom,gint Natoms,gint charge, gint spin, gchar* method, gchar* dirName, SemiEmpiricalModelConstraints constraints)
+{
+	SemiEmpiricalModel seModel = newGenericModel(method,dirName, constraints);
+	seModel.molecule = createMoleculeSE(geom,Natoms, charge, spin,TRUE);
+	setRattleConstraintsParameters(&seModel);
+	
+	return seModel;
+}

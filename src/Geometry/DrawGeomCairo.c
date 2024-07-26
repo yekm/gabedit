@@ -1,6 +1,6 @@
 /* DrawGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -177,6 +177,11 @@ static void stop_calcul(GtkWidget *wi, gpointer data);
 void delete_all_selected_atoms();
 static void reset_connections_between_selected_atoms();
 static void reset_connections_between_selected_and_notselected_atoms();
+/*********************************************************************************************/
+gboolean testShowBoxGeom()
+{
+        return FALSE;
+}
 /*********************************************************************************************/
 void getQuatGeom(gdouble q[])
 {
@@ -1858,6 +1863,7 @@ static void set_origin_to_point(gdouble center[])
 			geometry[n].Y -= center[1];
 			geometry[n].Z -= center[2];
 	}
+	for (n=0;n<3;n++) Orig[n] += center[n];
 }
 /********************************************************************************/
 void set_origin_to_center_of_fragment()
@@ -4555,7 +4561,8 @@ void SetOriginAtCenter(gpointer data, guint Operation,GtkWidget* wid)
 	Ddef = FALSE;
 	TransX = 0;
 	TransY = 0;
-	reset_origine_molecule_drawgeom();
+	//reset_origine_molecule_drawgeom();
+	for (i=0;i<3;i++) Orig[i] += C[i];
 	drawGeom();
 	set_statubar_pop_sel_atom();
 	return;
@@ -5032,28 +5039,52 @@ static void rotation_fragment_quat(gdouble m[4][4],gdouble C[])
 	gdouble A[3];
 	gdouble B[3];
 	guint i,j,k;
+	gdouble M[4][4];
+	gdouble O[3];
+
+	build_rotmatrix(M,Quat);
+	for (i=0;i<Natoms;i++)
+	{
+		A[0] = geometry[i].X;
+		A[1] = geometry[i].Y;
+		A[2] = geometry[i].Z;
+		for(j=0;j<3;j++)
+		{
+			B[j] = 0.0;
+			for(k=0;k<3;k++)
+				B[j] += M[k][j]*A[k];
+		}
+		geometry[i].X=B[0];
+		geometry[i].Y=B[1];
+		geometry[i].Z=B[2];
+	}
+	for(i=0;i<3;i++) O[i] = Orig[i];
+	for(j=0;j<3;j++)
+	{
+		B[j] = 0.0;
+		for(k=0;k<3;k++)
+			B[j] += M[k][j]*O[k];
+	}
+	for(i=0;i<3;i++) Orig[i] = B[i];
 
 	for (i=0;i<Natoms;i++)
 	{
-		A[0] = geometry[i].X-C[0];
-		A[1] = geometry[i].Y-C[1];
-		A[2] = geometry[i].Z-C[2];
 		if(if_selected(i))
 		{
+			A[0] = geometry[i].X-C[0];
+			A[1] = geometry[i].Y-C[1];
+			A[2] = geometry[i].Z-C[2];
 			for(j=0;j<3;j++)
 			{
 				B[j] = 0.0;
 				for(k=0;k<3;k++)
 					B[j] += m[k][j]*A[k];
 			}
+			geometry[i].X=C[0]+B[0];
+			geometry[i].Y=C[1]+B[1];
+			geometry[i].Z=C[2]+B[2];
 		}
-		else
-			for(k=0;k<3;k++)
-				B[k] = A[k];
 
-		geometry[i].X=C[0]+B[0];
-		geometry[i].Y=C[1]+B[1];
-		geometry[i].Z=C[2]+B[2];
 	}
 	Ddef = FALSE;
 	for (i=0;i<Natoms;i++)
@@ -5063,6 +5094,7 @@ static void rotation_fragment_quat(gdouble m[4][4],gdouble C[])
 		geometry0[i].Z=geometry[i].Z;
 	}
 	init_quat(Quat);
+
 
 	sort_with_zaxis();
 	define_coefs_pers();
@@ -6516,8 +6548,8 @@ void SetOperation (GtkWidget *widget, guint data)
 		case SCALESTICK : temp = g_strdup(_(" Press the Left mouse button and move your mouse for \"Scale Stick\". "));break;
 		case SCALEBALL  :  temp = g_strdup(_(" Press the Left mouse button and move your mouse for \"Scale Ball\". "));break;
 		case SCALEDIPOLE:  temp = g_strdup(_(" Press the Left mouse button and move your mouse for \"Scale Dipole\". "));break;
-		case SELECTOBJECTS :  temp = g_strdup(_("Pick an atom to select a residue, G key + pick an atom to select a group, Or F key + move your mouse to select a fragments. Use shift key for more selections."));break;
-		case SELECTFRAG :  temp = g_strdup(_(" Press the Left mouse button and move your mouse for \"select a fragments\".Use shift key for more selections. "));break;
+		case SELECTOBJECTS :  temp = g_strdup(_("Pick an atom to select a residue, G key + pick an atom to select a group, Or F key + move your mouse to select a fragment. Use shift key for more selections."));break;
+		case SELECTFRAG :  temp = g_strdup(_(" Press the Left mouse button and move your mouse for \"select a fragment\".Use shift key for more selections. "));break;
 		case SELECTRESIDUE :  temp = g_strdup(_("  Press the Left mouse button for pick an atom, all atoms for residue of this atom are selected(or unselected)."));break;
 		case DELETEFRAG :  temp = g_strdup(_(" Press the Left mouse button(for pick an atom or all selected atoms) and release for \"Delete selected atom(s)\". "));break;
 		case ROTLOCFRAG :  temp = g_strdup(_(" Press the Left mouse button and move your mouse for \"Rotatation of selected atom(s)[Local Rotation]\". "));break;

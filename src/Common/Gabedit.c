@@ -1,6 +1,6 @@
 /* Gabedit.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -92,6 +92,9 @@ int main(int argc, char *argv[])
 #else
   gtk_window_set_default_size (GTK_WINDOW(Fenetre), ScreenWidth, ScreenHeight-80);
 #endif
+  gtk_widget_set_size_request (GTK_WIDGET(Fenetre), 2*ScreenWidth/5, 2*ScreenHeight/5);
+  gtk_window_set_default_size (GTK_WINDOW(Fenetre), 2*ScreenWidth/5, 2*ScreenHeight/5);
+
   gtk_widget_realize(Fenetre);
   g_signal_connect(G_OBJECT(Fenetre), "delete_event",(GCallback)exit_all,NULL);
 

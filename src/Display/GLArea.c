@@ -1,6 +1,6 @@
 /* GLArea.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -105,7 +105,7 @@ static gboolean animatePlanesMapped = FALSE;
 static gdouble scaleBall = 1.0;
 static gdouble scaleStick = 1.0;
 static gboolean showOneSurface = TRUE;
-static gboolean showCell = FALSE;
+static gboolean showBox = TRUE;
 
 /*********************************************************************************************/
 static V4d BackColor[7] =
@@ -134,14 +134,14 @@ gboolean getShowOneSurface()
 	return showOneSurface;
 }
 /*********************************************************************************************/
-gboolean getShowCell()
+gboolean getShowBox()
 {
-	return showCell;
+	return showBox;
 }
 /*********************************************************************************************/
-void setShowCell(gboolean c)
+void setShowBox(gboolean c)
 {
-	showCell = c;
+	showBox = c;
 }
 /*********************************************************************************************/
 void setScaleBall(gdouble a)
@@ -802,7 +802,7 @@ static void redrawGeometry()
 	if (RebuildGeom || glIsList(GeomList) != GL_TRUE )
 	{
 		/* Debug("Re Gen Geom List\n");*/
-		GeomList = GeomGenList(GeomList, scaleBall, scaleStick);
+		GeomList = GeomGenList(GeomList, scaleBall, scaleStick, getShowBox());
 		GeomShowList(GeomList);
 		DipList = DipGenList(DipList);
 		DipShowList(DipList);
@@ -853,12 +853,12 @@ static void  redrawSurfaces()
 	}
 }
 /*****************************************************************************/
-static void  redrawCell()
+static void  redrawBox()
 {
-	GLuint cell = 0;
-	if(!showCell) return;
-	CellGenLists(&cell);
-	CellShowLists(cell);
+	GLuint box = 0;
+	if(!showBox) return;
+	BoxGenLists(&box);
+	BoxShowLists(box);
 }
 /*****************************************************************************/
 static void redrawContours()
@@ -1083,7 +1083,7 @@ gint redrawGL2PS()
 
 	redrawGeometry();
 	redrawSurfaces();
-	redrawCell();
+	redrawBox();
 	redrawContours();
 	redrawPlanesMapped();
 	if(get_show_symbols() || get_show_numbers() || get_show_charges()) showLabelSymbolsNumbersCharges();
@@ -1147,7 +1147,7 @@ static gint redraw(GtkWidget *widget, gpointer data)
 
 	redrawGeometry();
 	redrawSurfaces();
-	redrawCell();
+	redrawBox();
 	redrawContours();
 	redrawPlanesMapped();
 	if(get_show_symbols() || get_show_numbers() || get_show_charges()) showLabelSymbolsNumbersCharges();
@@ -1396,10 +1396,10 @@ static void rotationXYZ(GtkWidget *widget, GdkEventMotion *event,gint x, gint y,
 static void zoom(GtkWidget *widget, GdkEventMotion *event,gint x,gint y)
 {
   
-	gdouble width;
+	/* gdouble width;*/
 	gdouble height;
 
-	width  = widget->allocation.width;
+	/* width  = widget->allocation.width;*/
 	height = widget->allocation.height;
 
 	/* zooming drag */
@@ -1566,11 +1566,11 @@ gboolean NewGLArea(GtkWidget* vboxwin)
 	GtkWidget* vbox; 
 
 #define DIMAL 13
-	int k = 0;
+	/* int k = 0;*/
 	GdkGLConfig *glconfig;
 
-	k = 0;
 	/*
+	k = 0;
 	if(openGLOptions.alphaSize!=0)
 	{
 		attrlist[k++] = GDK_GL_ALPHA_SIZE;

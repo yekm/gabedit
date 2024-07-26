@@ -1,6 +1,6 @@
 /* GabeditXYPlot.h */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -246,6 +246,7 @@ void gabedit_xyplot_set_range_ymin (GabeditXYPlot *xyplot, gdouble ymin);
 void gabedit_xyplot_set_range_ymax (GabeditXYPlot *xyplot, gdouble ymax);
 void gabedit_xyplot_set_autorange (GabeditXYPlot *xyplot, XYPlotData *data);    
 void gabedit_xyplot_get_range (GabeditXYPlot *xyplot, gdouble *xmin, gdouble *xmax, gdouble *ymin, gdouble *ymax);
+void gabedit_xyplot_get_reflects (GabeditXYPlot *xyplot, gboolean* rx, gboolean* ry);
 gboolean gabedit_xyplot_get_point (GabeditXYPlot *xyplot, gint x, gint y, gdouble *xv, gdouble *yv);
 gboolean gabedit_xyplot_get_point_control (GabeditXYPlot *xyplot, gint x, gint y, gint width, gint height, gdouble angle, gdouble *xv, gdouble *yv);
 void gabedit_xyplot_set_ticks (GabeditXYPlot *xyplot, gint hmajor, gint hminor, gint vmajor, gint vminor, gint length);
@@ -295,6 +296,10 @@ void gabedit_xyplot_set_data_line_width (GabeditXYPlot *xyplot, gdouble line_wid
 void gabedit_xyplot_set_data_point_size (GabeditXYPlot *xyplot, gdouble point_size);
 void gabedit_xyplot_set_data_point_type (GabeditXYPlot *xyplot, gchar c);
 void gabedit_xyplot_set_data_point_color (GabeditXYPlot *xyplot, gdouble red, gdouble green, gdouble blue);
+void gabedit_xyplot_add_new_data(GtkWidget* xyplot, gint numberOfPoints, gdouble* X,  gdouble* Y);
+void gabedit_xyplot_set_last_data_line_width (GabeditXYPlot *xyplot, gdouble line_width);
+void gabedit_xyplot_set_last_data_point_size (GabeditXYPlot *xyplot, gdouble point_size);
+void gabedit_xyplot_add_object_text (GabeditXYPlot *xyplot, gdouble x, gdouble y, gdouble angle, G_CONST_RETURN gchar* str);
 
 G_END_DECLS
 

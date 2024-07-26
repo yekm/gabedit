@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -252,6 +252,7 @@ void RenderOrtep(GtkWidget *,gboolean);
 void RenderCartoon(GtkWidget *,gboolean);
 void RenderDipole(GtkWidget *,gboolean);
 void RenderAxes(GtkWidget *,gboolean);
+void RenderBox(GtkWidget *,gboolean);
 void RenderHBonds(GtkWidget *,gboolean);
 void RenderHAtoms(GtkWidget *,gboolean);
 void set_layer_of_selected_atoms(GabEditLayerType l);
@@ -307,6 +308,8 @@ void set_xyz_to_standard_orientation_all();
 void set_xyz_to_standard_orientation_selected_atoms();
 void set_xyz_to_standard_orientation_not_selected_atoms();
 void set_xyz_to_standard_orientation_selected_and_not_selected_atoms();
+gboolean testShowBoxGeom();
+
 
 #endif /* __GABEDIT_DRAWGEOMGL_H__ */
 

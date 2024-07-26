@@ -1,6 +1,6 @@
 /* GridCP.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -795,7 +795,7 @@ static GList* addSurroundingEqualPoints(GridCP* gridCP, gint current[3], GList* 
 static GList* assentTrajectory(GridCP* gridCP, gint current[3], gboolean ongrid)
 {
 	GList* listOfVisitedPoints = NULL;
-	Point5 ***points = NULL;
+	/*Point5 ***points = NULL;*/
 	gint next[3];
 	gdouble deltaR[3] = {0,0,0};
 	gint l;
@@ -805,7 +805,7 @@ static GList* assentTrajectory(GridCP* gridCP, gint current[3], gboolean ongrid)
 
 	if(!gridCP) return listOfVisitedPoints;
 	if(!gridCP->grid) return listOfVisitedPoints;
-	points = gridCP->grid->point;
+	/* points = gridCP->grid->point;*/
 
 	for(c=0;c<3;c++) if(grid->N[c]<1) return listOfVisitedPoints;
 

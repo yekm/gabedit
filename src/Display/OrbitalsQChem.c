@@ -1,6 +1,6 @@
 /* OrbitalsQChem.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -138,7 +138,7 @@ static gboolean read_geomorb_qchem_file_geom(gchar *FileName)
  		while(!feof(fd))
 		{
 			if(!fgets(t,taille,fd))break;
-			if ( strstr( t,"Atom         X            Y            Z"))
+			if ( strstr( t,"Atom") && strstr( t,"X") && strstr( t,"Y") && strstr( t,"Z"))
 			{
 	  			if(!fgets(t,taille,fd))break;
 				if(!strstr( t,"----------------------------------")) break;

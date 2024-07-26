@@ -1,6 +1,6 @@
 /* Utils.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -198,6 +198,11 @@ void free_psicode_commands()
 void free_orca_commands()
 {
 	free_commands_list(&orcaCommands);
+}
+/********************************************************************************/
+void free_demon_commands()
+{
+	free_commands_list(&demonCommands);
 }
 /********************************************************************************/
 void free_firefly_commands()
@@ -1030,7 +1035,21 @@ void create_commands_file()
 	}
 	fprintf(fd,"End\n");
 /*-----------------------------------------------------------------------------*/
-
+	fprintf(fd,"Begin DeMon\n");
+	str_delete_n(NameCommandDeMon);
+	delete_last_spaces(NameCommandDeMon);
+	delete_first_spaces(NameCommandDeMon);
+ 	fprintf(fd,"%s\n",NameCommandDeMon);
+ 	fprintf(fd,"%d\n",demonCommands.numberOfCommands);
+	for(i=0;i<demonCommands.numberOfCommands;i++)
+	{
+		str_delete_n(demonCommands.commands[i]);
+		delete_last_spaces(demonCommands.commands[i]);
+		delete_first_spaces(demonCommands.commands[i]);
+		fprintf(fd,"%s\n",demonCommands.commands[i]);
+	}
+	fprintf(fd,"End\n");
+/*-----------------------------------------------------------------------------*/
 	fprintf(fd,"Begin Gamess\n");
 	str_delete_n(NameCommandGamess);
 	delete_last_spaces(NameCommandGamess);
@@ -1224,6 +1243,13 @@ void create_commands_file()
 	fprintf(fd,"%s\n",babelCommand);
 	fprintf(fd,"End\n");
 
+	fprintf(fd,"Begin demonDir\n");
+	str_delete_n(demonDirectory);
+	delete_last_spaces(demonDirectory);
+	delete_first_spaces(demonDirectory);
+	fprintf(fd,"%s\n",demonDirectory);
+	fprintf(fd,"End\n");
+
 	fprintf(fd,"Begin GamessDir\n");
 	str_delete_n(gamessDirectory);
 	delete_last_spaces(gamessDirectory);
@@ -1280,6 +1306,14 @@ void create_commands_file()
 	fprintf(fd,"%s\n",povrayDirectory);
 	fprintf(fd,"End\n");
 
+	fprintf(fd,"Begin OpenBabelDir\n");
+	str_delete_n(openbabelDirectory);
+	delete_last_spaces(openbabelDirectory);
+	delete_first_spaces(openbabelDirectory);
+	fprintf(fd,"%s\n",openbabelDirectory);
+	fprintf(fd,"End\n");
+
+
 	fclose(fd);
 
 	g_free(commandsfile);
@@ -1325,6 +1359,7 @@ void create_opengl_file()
 	fd = FOpen(openglfile, "w");
 	if(fd !=NULL)
 	{
+		fprintf(fd,"%d\n",openGLOptions.activateText);
 		fprintf(fd,"%d\n",openGLOptions.rgba);
 		fprintf(fd,"%d\n",openGLOptions.doubleBuffer);
 		fprintf(fd,"%d\n",openGLOptions.alphaSize);
@@ -1354,6 +1389,7 @@ void read_opengl_file()
 	openglfile = g_strdup_printf("%s%sopengl",gabedit_directory(),G_DIR_SEPARATOR_S);
 
 	fd = fopen(openglfile, "rb");
+	openGLOptions.activateText = 1;
 	openGLOptions.rgba = 1;
 	openGLOptions.doubleBuffer = 1;
 	openGLOptions.alphaSize = 0;
@@ -1374,6 +1410,9 @@ void read_opengl_file()
 	{
  		guint taille = BBSIZE;
  		gchar t[BBSIZE];
+ 		if(fgets(t,taille,fd))
+			if(sscanf(t,"%d",&openGLOptions.activateText)!=1)
+				openGLOptions.activateText = 1;
  		if(fgets(t,taille,fd))
 			if(sscanf(t,"%d",&openGLOptions.rgba)!=1)
 				openGLOptions.rgba = 1;
@@ -1739,6 +1778,65 @@ void read_commands_file()
 		initialise_batch_commands();
 		return;
 	}
+/*-----------------------------------------------------------------------------*/
+ 	if(fgets(t,taille,fd))
+	if(!strstr(t,"Begin DeMon"))
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd))
+	{
+ 		NameCommandDeMon= g_strdup(t);
+		str_delete_n(NameCommandDeMon);
+		delete_last_spaces(NameCommandDeMon);
+		delete_first_spaces(NameCommandDeMon);
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd) && atoi(t)>0)
+	{
+		free_demon_commands();
+		demonCommands.numberOfCommands = atoi(t);
+		demonCommands.commands = g_malloc(demonCommands.numberOfCommands*sizeof(gchar*));
+		for(i=0;i<demonCommands.numberOfCommands;i++)
+			demonCommands.commands[i]  = g_strdup(" ");
+		for(i=0;i<demonCommands.numberOfCommands;i++)
+		{
+			if(!fgets(t,taille,fd) || strstr(t,"End"))
+			{
+				free_demon_commands();
+  				demonCommands.numberOfCommands = 1;
+  				demonCommands.numberOfDefaultCommand = 0;
+  				demonCommands.commands = g_malloc(sizeof(gchar*));
+  				demonCommands.commands[0] = g_strdup("default");
+
+				fclose(fd);
+				return;
+			}
+			else
+			{
+				demonCommands.commands[i] = g_strdup(t); 
+				str_delete_n(demonCommands.commands[i]);
+				delete_last_spaces(demonCommands.commands[i]);
+				delete_first_spaces(demonCommands.commands[i]);
+			}
+		}
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(!fgets(t,taille,fd)) /* End of DeMon */
+	{
+		fclose(fd);
+		return;
+	}
+/*-----------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------*/
  	if(fgets(t,taille,fd))
 	if(!strstr(t,"Begin Gamess"))
@@ -2462,6 +2560,38 @@ void read_commands_file()
 	}
 /*-----------------------------------------------------------------------------*/
  	if(fgets(t,taille,fd))
+	if(!strstr(t,"Begin OrcaDir"))
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd))
+	{
+ 		demonDirectory= g_strdup(t);
+		str_delete_n(demonDirectory);
+		delete_last_spaces(demonDirectory);
+		delete_first_spaces(demonDirectory);
+#ifdef G_OS_WIN32
+		{
+		gchar t[BBSIZE];
+		sprintf(t,"%s;%s",demonDirectory,g_getenv("PATH"));
+		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
+		}
+#endif
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(!fgets(t,taille,fd)) /* End of OrcaDir */
+	{
+		fclose(fd);
+		return;
+	}
+/*-----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*/
+ 	if(fgets(t,taille,fd))
 	if(!strstr(t,"Begin GamessDir"))
 	{
 		fclose(fd);
@@ -2701,6 +2831,37 @@ void read_commands_file()
 		fclose(fd);
 		return;
 	}
+/*-----------------------------------------------------------------------------*/
+ 	if(fgets(t,taille,fd))
+	if(!strstr(t,"Begin OpenBabelDir"))
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd))
+	{
+ 		openbabelDirectory= g_strdup(t);
+		str_delete_n(openbabelDirectory);
+		delete_last_spaces(openbabelDirectory);
+		delete_first_spaces(openbabelDirectory);
+#ifdef G_OS_WIN32
+		{
+			gchar t[BBSIZE];
+			sprintf(t,"%s;%s",openbabelDirectory,g_getenv("PATH"));
+			if(strlen(t)>1) g_setenv("PATH",t,TRUE);
+		}
+#endif
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(!fgets(t,taille,fd)) /* End of OpenBabelDir */
+	{
+		fclose(fd);
+		return;
+	}
  	fclose(fd);
  }
 }
@@ -2756,13 +2917,15 @@ void set_path()
 #ifdef G_OS_WIN32
 	{
 		gchar t[BBSIZE];
-		sprintf(t,"%s;%s;%s;%s;%s;%s;%s",
+		sprintf(t,"%s;%s;%s;%s;%s;%s;%s;%s;%s",
 		orcaDirectory,
 		fireflyDirectory,
 		mopacDirectory,
 		gaussDirectory,
+		demonDirectory,
 		pscpplinkDirectory,
 		povrayDirectory,
+		openbabelDirectory,
 		g_getenv("PATH"));
 		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
 	}
@@ -3016,10 +3179,10 @@ void initialise_fonts_style()
 	FontsStyleLabel.fontname=g_strdup("sans bold 12");
 	FontsStyleOther.fontname = g_strdup("sans 12");
 #else
-        FontsStyleData.fontname = g_strdup("courier 14");
-        FontsStyleResult.fontname = g_strdup("courier bold 12");
+        FontsStyleData.fontname = g_strdup("Sans 12");
+        FontsStyleResult.fontname = g_strdup("Sans 12");
 	FontsStyleOther.fontname = g_strdup("helvetica 12");
-	FontsStyleLabel.fontname=g_strdup("times bold 14");
+	FontsStyleLabel.fontname=g_strdup("courier bold 12");
 #endif
 
         FontsStyleData.BaseColor.red  = 65535;
@@ -3097,6 +3260,7 @@ void initialise_name_commands()
 {
 #ifdef G_OS_WIN32
 	gchar t[BBSIZE];
+	NameCommandDeMon=g_strdup("demon");
 	NameCommandGamess=g_strdup("submitGMS");
 	NameCommandGaussian=g_strdup("g03.exe");
 	NameCommandMolcas=g_strdup("molcas");
@@ -3110,6 +3274,7 @@ void initialise_name_commands()
 	NameCommandMopac=g_strdup("MOPAC2009");
 	NameCommandPovray=g_strdup("start /w pvengine /nr /exit /render +A0.3 -UV");
 #else
+	NameCommandDeMon=g_strdup("default");
 	NameCommandGamess=g_strdup("submitGMS");
 	NameCommandGaussian=g_strdup("nohup g03");
 	NameCommandMolcas=g_strdup("nohup molcas");
@@ -3126,7 +3291,7 @@ void initialise_name_commands()
 
 
 #ifdef G_OS_WIN32
-	babelCommand = g_strdup_printf("%s%sobabel.exe",g_get_current_dir(),G_DIR_SEPARATOR_S);
+	demonDirectory= g_strdup_printf("C:%sDeMon",G_DIR_SEPARATOR_S);
 	gamessDirectory= g_strdup_printf("C:%sWinGAMESS",G_DIR_SEPARATOR_S);
 	orcaDirectory= g_strdup_printf("C:%sORCA_DevCenter%sorca%sx86_exe%srelease%sOrca",G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
 	nwchemDirectory= g_strdup_printf("C:%sNWChem",G_DIR_SEPARATOR_S);
@@ -3134,11 +3299,13 @@ void initialise_name_commands()
 	fireflyDirectory= g_strdup_printf("C:%sFIREFLY",G_DIR_SEPARATOR_S);
 	mopacDirectory= g_strdup_printf("\"C:%sProgram Files%sMOPAC\"",G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
 	povrayDirectory= g_strdup_printf("\"C:%sProgram Files%sPovRay%sbin\"",G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+	openbabelDirectory= g_strdup_printf("C:%sOpenBabel",G_DIR_SEPARATOR_S);
+	babelCommand = g_strdup_printf("%s%sobabel.exe",openbabelDirectory,G_DIR_SEPARATOR_S);
 	gaussDirectory= g_strdup_printf("\"C:%sG03W\"",G_DIR_SEPARATOR_S);
-	sprintf(t,"%s;%s;%s;%s;%s;%s",orcaDirectory,fireflyDirectory,mopacDirectory,gaussDirectory,povrayDirectory,g_getenv("PATH"));
+	sprintf(t,"%s;%s;%s;%s;%s;%s;%s;%s",orcaDirectory,fireflyDirectory,mopacDirectory,gaussDirectory,demonDirectory,povrayDirectory,openbabelDirectory,g_getenv("PATH"));
 	g_setenv("PATH",t,TRUE);
 #else
-	babelCommand=g_strdup("babel");
+	demonDirectory= g_strdup_printf("%s%sDeMon",g_get_home_dir(),G_DIR_SEPARATOR_S);
 	gamessDirectory= g_strdup_printf("%s%sGamess",g_get_home_dir(),G_DIR_SEPARATOR_S);
 	orcaDirectory= g_strdup_printf("%s%sOrca",g_get_home_dir(),G_DIR_SEPARATOR_S);
 	nwchemDirectory= g_strdup_printf("%s%sNWChem",g_get_home_dir(),G_DIR_SEPARATOR_S);
@@ -3146,6 +3313,8 @@ void initialise_name_commands()
 	fireflyDirectory= g_strdup_printf("%s%sFireFly",g_get_home_dir(),G_DIR_SEPARATOR_S);
 	mopacDirectory= g_strdup_printf("/opt/mopac");
 	povrayDirectory= g_strdup_printf("/usr/local/bin");
+	openbabelDirectory= g_strdup_printf("%s%sOpenBabel",g_get_home_dir(),G_DIR_SEPARATOR_S);
+	babelCommand = g_strdup_printf("%s%sobabel.exe",openbabelDirectory,G_DIR_SEPARATOR_S);
 #endif
 }
 /*************************************************************************************/
@@ -3312,6 +3481,20 @@ void initialise_global_variables()
   orcaCommands.commands[1] = g_strdup("submitOrca 1:0:0");
 #ifdef G_OS_WIN32
   orcaCommands.commands[2] = g_strdup("orca");
+#endif
+
+/*---------------------------------------------------------------------*/
+	demonCommands.numberOfCommands = 2;
+#ifdef G_OS_WIN32
+      demonCommands.numberOfCommands = 3;
+#endif
+
+  demonCommands.numberOfDefaultCommand = 0;
+  demonCommands.commands = g_malloc(demonCommands.numberOfCommands*sizeof(gchar*));
+  demonCommands.commands[0] = g_strdup("default");
+  demonCommands.commands[1] = g_strdup("submitDeMon 1:0:0");
+#ifdef G_OS_WIN32
+  demonCommands.commands[2] = g_strdup("demon");
 #endif
 
 /*---------------------------------------------------------------------*/
@@ -3725,6 +3908,16 @@ gchar** gab_split(gchar *str)
 	return strsplit;
 }
 /********************************************************************************/
+void gab_strfreev (char **str)
+{
+        int i;
+        if (!str) return;
+
+        for (i = 0; str[i] != NULL; i++) free (str[i]);
+
+        free (str);
+}
+/********************************************************************************/
 void get_dipole_from_gamess_output_file(FILE* fd)
 {
  	guint taille=BBSIZE;
@@ -3964,6 +4157,17 @@ void get_dipole_from_orca_output_file(FILE* fd)
 	g_free(t);
 }
 /********************************************************************************/
+void get_dipole_from_vasp_output_file(FILE* fd)
+{
+ 	guint taille=BBSIZE;
+  	gchar *t = g_malloc(BBSIZE*sizeof(gchar));
+  	gchar* pdest;
+
+	init_dipole();
+
+	g_free(t);
+}
+/********************************************************************************/
 void get_dipole_from_nwchem_output_file(FILE* fd)
 {
  	guint taille=BBSIZE;
@@ -4200,7 +4404,7 @@ void delete_last_spaces(gchar* str)
 
 	if (!*str)
 		return;
-	for (s = str + strlen (str) - 1; s >= str && isspace ((guchar)*s); s--)
+	for (s = str + strlen (str) - 1; s >= str && isspace ((unsigned char)*s); s--)
 		*s = '\0';
 }
 /**********************************************/
@@ -4562,8 +4766,27 @@ gboolean test_type_program_qchem(FILE* file)
 	return FALSE;
 }
 /**********************************************************************************/
+gboolean test_type_program_demon(FILE* file)
+{
+	gchar t[BBSIZE];
+	guint taille=BBSIZE;
+	fseek(file, 0L, SEEK_SET);
+	while(!feof(file))
+	{
+		if(!fgets(t, taille, file)) return FALSE;
+		if(strstr(t,"!"))continue;
+		if(strstr(t,"DeMon")) return TRUE;
+	}
+	return FALSE;
+}
+/**********************************************************************************/
 gint get_type_of_program(FILE* file)
 {
+	if(test_type_program_demon(file))
+	{
+		fseek(file, 0L, SEEK_SET);
+		return PROG_IS_DEMON;
+	}
 	if(test_type_program_orca(file))
 	{
 		fseek(file, 0L, SEEK_SET);
@@ -4877,6 +5100,16 @@ GabEditTypeFile get_type_output_file(gchar* fileName)
 				ktype = GABEDIT_TYPEFILE_GAMESS;
 				break;
 			}
+			if(strstr(t,"PROGRAM deMon2k"))
+			{
+				ktype = GABEDIT_TYPEFILE_DEMON;
+				break;
+			}
+			if(strstr(t,"GAMESS VERSION") || strstr(t,"PC GAMESS"))
+			{
+				ktype = GABEDIT_TYPEFILE_GAMESS;
+				break;
+			}
 			if(strstr(t,"Welcome to Q-Chem"))
 			{
 				ktype = GABEDIT_TYPEFILE_QCHEM;
@@ -4898,6 +5131,11 @@ GabEditTypeFile get_type_output_file(gchar* fileName)
 				ktype = GABEDIT_TYPEFILE_GAUSSIAN;
 				break;
 			}
+			if(strstr( t, "[MOLDEN FORMAT]" ))
+			{ 
+				ktype = GABEDIT_TYPEFILE_MOLDEN;
+				break;
+			}
 		}
 	}
 	rewind(file);
@@ -4909,6 +5147,19 @@ GabEditTypeFile get_type_output_file(gchar* fileName)
 			if(strstr(t,"* O   R   C   A *"))
 			{
 				ktype = GABEDIT_TYPEFILE_ORCA;
+				break;
+			}
+		}
+	}
+	rewind(file);
+	if( ktype == GABEDIT_TYPEFILE_UNKNOWN)
+	{
+		while(!feof(file))
+		{
+    			if(!feof(file)) { char* e = fgets(t,taille,file);}
+			if(strstr(t,"VASP"))
+			{
+				ktype = GABEDIT_TYPEFILE_VASPOUTCAR;
 				break;
 			}
 		}
@@ -5518,3 +5769,798 @@ void swapDouble(gdouble* a, gdouble* b)
 	*a = *b;
 	*b = c;
 }
+/****************************************************************************************************************************/
+gdouble* newVectorDouble(gint n)
+{
+	gdouble* v = NULL; 
+	if(n<1) return v;
+	v = g_malloc(n*sizeof(gdouble));
+	return v;
+}
+/****************************************************************************************************************************/
+void initVectorDouble(gdouble* v, gint n, gdouble val)
+{
+	gint i;
+	if(!v) return;
+	for(i = 0;i<n; i++)  v[i] = val;
+}
+/****************************************************************************************************************************/
+void freeVectorDouble(gdouble** v)
+{
+	if(*v) g_free(*v);
+	*v= NULL;
+}
+/****************************************************************************************************************************/
+void printVectorDoubleCutOff(gdouble* C, gint n, gdouble cutoff)
+{
+	gint i;
+	if(!C) return;
+	for(i=0;i<n;i++) if(fabs(C[i])>=cutoff) printf("%d %20.10f\n",i+1,C[i]);
+}
+/****************************************************************************************************************************/
+gdouble** newMatrixDouble(gint nrows, gint ncolumns)
+{
+	
+	gdouble** M  = NULL;
+	if(nrows<1 || ncolumns<1) return M;
+	M  = g_malloc(nrows*sizeof(gdouble*));
+	gint i;
+	for(i = 0;i<nrows; i++) 
+		M[i] = g_malloc(ncolumns*sizeof(gdouble));
+	return M;
+}
+/****************************************************************************************************************************/
+void freeMatrixDouble(gdouble*** M, gint nrows)
+{
+	if(*M) 
+	{
+		gint i;
+		for(i = 0;i<nrows; i++) 
+			if((*M)[i])g_free((*M)[i]);
+	}
+	*M= NULL;
+}
+/****************************************************************************************************************************/
+void initMatrixDouble(gdouble** M, gint nrows, gint ncolumns, gdouble val)
+{
+	gint i,j;
+	if(!M) return;
+	for(i = 0;i<nrows; i++) 
+		for(j = 0;j<ncolumns; j++)  M[i][j]  = val;
+}
+/****************************************************************************************************************************/
+void symmetrizeMatrixDouble(gdouble** M, gint nrows, gint ncolumns, gdouble cutOff)
+{
+	gint i,j;
+	gdouble x,y;
+	if(!M) return;
+	for(i = 0;i<nrows; i++) 
+		for(j = 0;j<i; j++)  
+		{
+			if(j>ncolumns-1) continue;
+			x =  M[i][j];
+			y =  M[j][i];
+			if(fabs(x)>cutOff && fabs(y)>cutOff)  M[i][j] = M[j][i] = (x+y)/2;
+			else if(fabs(x)>cutOff)  M[i][j] = M[j][i] = x;
+			else if(fabs(y)>cutOff)  M[i][j] = M[j][i] = y;
+			else M[i][j]  = 0.0;
+		}
+}
+/****************************************************************************************************************************/
+void printMatrixDouble(gdouble** M, gint nrows, gint ncolumns)
+{
+	gint i,j;
+	for(i = 0;i<nrows; i++) 
+	{
+		for(j = 0;j<ncolumns; j++) 
+      			printf("%f ",M[i][j]);
+		printf("\n");
+	}
+}
+/****************************************************************************************************************************/
+void printMatrixDoubleCutOff(gdouble** M, gint nrows, gint ncolumns, gdouble cutoff)
+{
+	gint i,j;
+	for(i = 0;i<nrows; i++) 
+	{
+		for(j = 0;j<ncolumns; j++) 
+		if(fabs(M[i][j])>=cutoff)
+      			printf("%d %d %20.10f\n",i+1,j+1,M[i][j]);
+	}
+}
+/****************************************************************************************************************************/
+gdouble*** newCubeDouble(gint nrows, gint ncolumns, gint nslices)
+{
+	gdouble*** C  = NULL;
+	gint i,j;
+	if(nrows<1 || ncolumns<1 || nslices<1) return C;
+	C  = g_malloc(nrows*sizeof(gdouble**));
+	for(i = 0;i<nrows; i++) 
+	{
+		C[i] = g_malloc(ncolumns*sizeof(gdouble*));
+		for(j = 0;j<ncolumns; j++) 
+			C[i][j] = g_malloc(nslices*sizeof(gdouble));
+	}
+	return C;
+}
+/****************************************************************************************************************************/
+void printCubeDouble(gdouble*** C, gint nrows, gint ncolumns, gint nslices)
+{
+	gint i,j,k;
+	for(i = 0;i<nrows; i++) 
+	{
+		for(j = 0;j<ncolumns; j++) 
+		{
+			for(k = 0;k<nslices; k++) 
+      				printf("%f ",C[i][j][k]);
+			printf("\n");
+		}
+		printf("\n");
+	}
+}
+/****************************************************************************************************************************/
+void printCubeDoubleCutOff(gdouble*** C, gint nrows, gint ncolumns, gint nslices, gdouble cutoff)
+{
+	gint i,j,k;
+	for(i = 0;i<nrows; i++) 
+	{
+		for(j = 0;j<ncolumns; j++) 
+		{
+			for(k = 0;k<nslices; k++) 
+			if(fabs(C[i][j][k])>=cutoff)
+      				printf("%d %d %d %20.10f\n",i+1,j+1,k+1,C[i][j][k]);
+		}
+	}
+}
+/****************************************************************************************************************************/
+static void symmetrizeCubeDoubleIJ(gdouble*** C, gint nrows, gint ncolumns,  gint nslices, gdouble cutOff)
+{
+	gint i,j,k;
+	gdouble x,y;
+	for(i = 0;i<nrows; i++) 
+		for(j = 0;j<i; j++)  
+		{
+			if(j>ncolumns-1) continue;
+			for(k = 0;k<nslices; k++)  
+			{
+				x =  C[i][j][k];
+				y =  C[j][i][k];
+				if(fabs(x)>cutOff && fabs(y)>cutOff)  C[i][j][k] = C[j][i][k] = (x+y)/2;
+				else if(fabs(x)>cutOff)  C[i][j][k] = C[j][i][k] = x;
+				else if(fabs(y)>cutOff)  C[i][j][k] = C[j][i][k] = y;
+				else C[i][j][k]  = 0.0;
+			}
+		}
+}
+/****************************************************************************************************************************/
+static void symmetrizeCubeDoubleJK(gdouble*** C, gint nrows, gint ncolumns,  gint nslices, gdouble cutOff)
+{
+	gint i;
+	for(i=0;i<nrows;i++) symmetrizeMatrixDouble(C[i], ncolumns, nslices,  cutOff);
+}
+/****************************************************************************************************************************/
+void symmetrizeCubeDouble(gdouble*** C, gint nrows, gint ncolumns,  gint nslices, gdouble cutOff)
+{
+	symmetrizeCubeDoubleIJ(C, nrows, ncolumns,  nslices, cutOff);
+	symmetrizeCubeDoubleJK(C, nrows, ncolumns,  nslices, cutOff);
+	symmetrizeCubeDoubleIJ(C, nrows, ncolumns,  nslices, cutOff);
+}
+/****************************************************************************************************************************/
+void initCubeDouble(gdouble*** C, gint nrows, gint ncolumns, gint nslices, gdouble val)
+{
+	gint i,j,k;
+	if(!C) return;
+	for(i = 0;i<nrows; i++) 
+		for(j = 0;j<ncolumns; j++) 
+			for(k = 0;k<nslices; k++) C[i][j][k] = val;
+}
+/****************************************************************************************************************************/
+void freeCubeDouble(gdouble**** C, gint nrows, gint ncolumns)
+{
+	if(*C) 
+	{
+		gint i,j;
+		for(i = 0;i<nrows; i++) 
+		{
+			if((*C)[i])
+			for(j = 0;j<ncolumns; j++) 
+				if((*C)[i][j]) g_free((*C)[i][j]);
+	
+			if((*C)[i])g_free((*C)[i]);
+		}
+	}
+	*C= NULL;
+}
+/****************************************************************************************************************************/
+gdouble**** newQuarticDouble(gint nrows, gint ncolumns, gint nslices, gint nl)
+{
+	gdouble**** C  = NULL;
+	gint i,j,k;
+	if(nrows<1 || ncolumns<1 || nslices<1) return C;
+	C  = g_malloc(nrows*sizeof(gdouble***));
+	for(i = 0;i<nrows; i++) 
+	{
+		C[i] = g_malloc(ncolumns*sizeof(gdouble**));
+		for(j = 0;j<ncolumns; j++) 
+		{
+			C[i][j] = g_malloc(nslices*sizeof(gdouble*));
+			for(k = 0;k<nslices; k++) 
+			C[i][j][k] = g_malloc(nslices*sizeof(gdouble));
+		}
+	}
+	return C;
+}
+/****************************************************************************************************************************/
+void printQuarticDouble(gdouble**** C, gint nrows, gint ncolumns, gint nslices, gint nl)
+{
+	gint i,j,k,l;
+	for(i = 0;i<nrows; i++) 
+	{
+		for(j = 0;j<ncolumns; j++) 
+		{
+			for(k = 0;k<nslices; k++) 
+			{
+				for(l = 0;l<nl; l++) 
+      					printf("%f ",C[i][j][k][l]);
+				printf("\n");
+			}
+		}
+		printf("\n");
+	}
+}
+/****************************************************************************************************************************/
+void printQuarticDoubleCutOff(gdouble**** C, gint nrows, gint ncolumns, gint nslices, gint nl, gdouble cutoff)
+{
+	gint i,j,k,l;
+	for(i = 0;i<nrows; i++) 
+	{
+		for(j = 0;j<ncolumns; j++) 
+		{
+			for(k = 0;k<nslices; k++) 
+			{
+				for(l = 0;l<nl; l++) 
+				if(fabs(C[i][j][k][l])>=cutoff)
+      					printf("%d %d %d %d %20.10f\n",i+1,j+1,k+1,l+1,C[i][j][k][l]);
+			}
+		}
+	}
+}
+/****************************************************************************************************************************/
+void initQuarticDouble(gdouble**** C, gint nrows, gint ncolumns, gint nslices, gint nl, gdouble val)
+{
+	gint i,j,k,l;
+	if(!C) return;
+	for(i = 0;i<nrows; i++) 
+		for(j = 0;j<ncolumns; j++) 
+			for(k = 0;k<nslices; k++) 
+				for(l = 0;l<nl; l++) 
+					C[i][j][k][l] = val;
+}
+/****************************************************************************************************************************/
+void freeQuarticDouble(gdouble***** C, gint nrows, gint ncolumns, gint nl)
+{
+	if(*C) 
+	{
+		gint i,j,k;
+		for(i = 0;i<nrows; i++) 
+		{
+			if((*C)[i])
+			for(j = 0;j<ncolumns; j++) 
+			{
+				if((*C)[i][j])
+				{
+				for(k = 0;k<nl; k++) 
+					if((*C)[i][j][k]) g_free((*C)[i][j][k]);
+				if((*C)[i][j]) g_free((*C)[i][j]);
+				}
+			}
+			if((*C)[i])g_free((*C)[i]);
+		}
+		g_free(*C);
+	}
+	*C= NULL;
+}
+/****************************************************************************************************************************/
+static void symmetrizeQuarticDoubleIJ(gdouble**** Q, gint nrows, gint ncolumns,  gint nslices, gint nq, gdouble cutOff)
+{
+	gint i,j,k,l;
+	gdouble x,y;
+	for(i = 0;i<nrows; i++) 
+		for(j = 0;j<i; j++)  
+		{
+			if(j>ncolumns-1) continue;
+			for(k = 0;k<nslices; k++)  
+			for(l = 0;l<nq; l++)  
+			{
+				x =  Q[i][j][k][l];
+				y =  Q[j][i][k][l];
+				if(fabs(x)>cutOff && fabs(y)>cutOff)  Q[i][j][k][l] = Q[j][i][k][l] = (x+y)/2;
+				else if(fabs(x)>cutOff)  Q[i][j][k][l] = Q[j][i][k][l] = x;
+				else if(fabs(y)>cutOff)  Q[i][j][k][l] = Q[j][i][k][l] = y;
+				else Q[i][j][k][l]  = 0.0;
+			}
+		}
+}
+/****************************************************************************************************************************/
+static void symmetrizeQuarticDoubleJKL(gdouble**** Q, gint nrows, gint ncolumns,  gint nslices, gint nq, gdouble cutOff)
+{
+	gint i;
+	for(i=0;i<nrows;i++) symmetrizeCubeDouble(Q[i], ncolumns, nslices, nq,  cutOff);
+}
+/****************************************************************************************************************************/
+void symmetrizeQuarticDouble(gdouble**** Q, gint nrows, gint ncolumns,  gint nslices, gint nq, gdouble cutOff)
+{
+	symmetrizeQuarticDoubleIJ(Q, nrows, ncolumns,  nslices, nq, cutOff);
+	symmetrizeQuarticDoubleJKL(Q, nrows, ncolumns,  nslices, nq, cutOff);
+	symmetrizeQuarticDoubleIJ(Q, nrows, ncolumns,  nslices, nq, cutOff);
+}
+/****************************************************************************************************************************/
+gint* newVectorInt(gint n)
+{
+	gint* v = NULL;
+	if(n<1) return v;
+	v = g_malloc(n*sizeof(gint));
+	return v;
+}
+/****************************************************************************************************************************/
+void initVectorInt(gint* v, gint n, gint val)
+{
+	gint i;
+	if(!v) return;
+	for(i = 0;i<n; i++)  v[i] = val;
+}
+/****************************************************************************************************************************/
+void freeVectorInt(gint** v)
+{
+	if(*v) g_free(*v);
+	*v= NULL;
+}
+/****************************************************************************************************************************/
+gint** newMatrixInt(gint nrows, gint ncolumns)
+{
+	gint** M  = NULL;
+	if(nrows<1 || ncolumns<1) return M;
+	M  = g_malloc(nrows*sizeof(gint*));
+	gint i;
+	for(i = 0;i<nrows; i++) 
+		M[i] = g_malloc(ncolumns*sizeof(gint));
+	return M;
+}
+/****************************************************************************************************************************/
+void initMatrixInt(gint** M, gint nrows, gint ncolumns, gint val)
+{
+	gint i,j;
+	if(!M) return;
+	for(i = 0;i<nrows; i++) 
+		for(j = 0;j<ncolumns; j++)  M[i][j]  = val;
+}
+/****************************************************************************************************************************/
+void freeMatrixInt(gint*** M, gint nrows)
+{
+	if(*M) 
+	{
+		gint i;
+		for(i = 0;i<nrows; i++) 
+			if((*M)[i])g_free((*M)[i]);
+	}
+	*M= NULL;
+}
+/****************************************************************************************************************************/
+gint*** newCubeInt(gint nrows, gint ncolumns, gint nslices)
+{
+	gint*** C  = NULL;
+	gint i,j;
+	if(nrows<1 || ncolumns<1 || nslices<1) return C;
+	C  = g_malloc(nrows*sizeof(gint**));
+	for(i = 0;i<nrows; i++) 
+	{
+		C[i] = g_malloc(ncolumns*sizeof(gint*));
+		for(j = 0;j<ncolumns; j++) 
+			C[i][j] = g_malloc(nslices*sizeof(gint));
+	}
+	return C;
+}
+/****************************************************************************************************************************/
+void initCubeInt(gint*** C, gint nrows, gint ncolumns, gint nslices, gint val)
+{
+	gint i,j,k;
+	if(!C) return;
+	for(i = 0;i<nrows; i++) 
+		for(j = 0;j<ncolumns; j++) 
+			for(k = 0;k<nslices; k++) C[i][j][k] = val;
+}
+/****************************************************************************************************************************/
+void freeCubeInt(gint**** C, gint nrows, gint ncolumns)
+{
+	if(*C) 
+	{
+		gint i,j;
+		for(i = 0;i<nrows; i++) 
+		{
+			if((*C)[i])
+			for(j = 0;j<ncolumns; j++) 
+				if((*C)[i][j]) g_free((*C)[i][j]);
+	
+			if((*C)[i])g_free((*C)[i]);
+		}
+	}
+	*C= NULL;
+}
+/****************************************************************************************************************************/
+gint**** newQuarticInt(gint nrows, gint ncolumns, gint nslices, gint nl)
+{
+	gint**** C  = NULL;
+	gint i,j,k;
+	if(nrows<1 || ncolumns<1 || nslices<1) return C;
+	C  = g_malloc(nrows*sizeof(gint***));
+	for(i = 0;i<nrows; i++) 
+	{
+		C[i] = g_malloc(ncolumns*sizeof(gint**));
+		for(j = 0;j<ncolumns; j++) 
+		{
+			C[i][j] = g_malloc(nslices*sizeof(gint*));
+			for(k = 0;k<nslices; k++) 
+			C[i][j][k] = g_malloc(nslices*sizeof(gint));
+		}
+	}
+	return C;
+}
+/****************************************************************************************************************************/
+void printQuarticInt(gint**** C, gint nrows, gint ncolumns, gint nslices, gint nl)
+{
+	gint i,j,k,l;
+	for(i = 0;i<nrows; i++) 
+	{
+		for(j = 0;j<ncolumns; j++) 
+		{
+			for(k = 0;k<nslices; k++) 
+			{
+				for(l = 0;l<nl; l++) 
+      					printf("%d ",C[i][j][k][l]);
+				printf("\n");
+			}
+		}
+		printf("\n");
+	}
+}
+/****************************************************************************************************************************/
+void initQuarticInt(gint**** C, gint nrows, gint ncolumns, gint nslices, gint nl, gint val)
+{
+	gint i,j,k,l;
+	if(!C) return;
+	for(i = 0;i<nrows; i++) 
+		for(j = 0;j<ncolumns; j++) 
+			for(k = 0;k<nslices; k++) 
+				for(l = 0;l<nl; l++) 
+					C[i][j][k][l] = val;
+}
+/****************************************************************************************************************************/
+void freeQuarticInt(gint***** C, gint nrows, gint ncolumns, gint nslices)
+{
+	if(*C) 
+	{
+		gint i,j,k;
+		for(i = 0;i<nrows; i++) 
+		{
+			if((*C)[i])
+			for(j = 0;j<ncolumns; j++) 
+			{
+				if((*C)[i][j])
+				{
+				for(k = 0;k<nslices; k++) 
+					if((*C)[i][j][k]) g_free((*C)[i][j][k]);
+				if((*C)[i][j]) g_free((*C)[i][j]);
+				}
+			}
+			if((*C)[i])g_free((*C)[i]);
+		}
+		g_free(*C);
+	}
+	*C= NULL;
+}
+/****************************************************************************************************************************/
+gboolean readOneReal(FILE* file, gchar* tag, double*value)
+{
+	static gchar *t = NULL; 
+	gchar* TAG = NULL;
+	gchar* pos;
+	if(!tag) return FALSE;
+	if(!value) return FALSE;
+	if(t==NULL) t = g_malloc(BSIZE*sizeof(gchar));
+
+	TAG = strdup(tag);
+	uppercase(TAG);
+	rewind(file);
+
+	while(!feof(file))
+  	{
+    		if(!fgets(t,BSIZE, file)) break;
+		deleteFirstSpaces(t);
+		if(t[0]=='#') continue;
+		uppercase(t);
+		pos = strstr(t,TAG);
+		if(!pos) continue;
+		if(strstr(pos,"=")) 
+		{
+			pos = strstr(pos,"=")+1;
+		}
+		else pos += strlen(TAG)+1;
+		g_free(TAG);
+		if(1==sscanf(pos,"%lf",value)) return TRUE;
+		return FALSE;
+	}
+	g_free(TAG);
+	return FALSE;
+}
+/****************************************************************************************************************************/
+gboolean readOneRealFromAFile(gchar* namefile, gchar* tag, double* value)
+{
+	FILE* file = NULL;
+	gboolean res;
+
+	if(!namefile) return FALSE;
+
+	file = fopen(namefile, "rb");
+	res = readOneReal(file,tag,value);
+	fclose(file);
+	return res;
+}
+/****************************************************************************************************************************/
+gboolean readOneInt(FILE* file, gchar* tag, gint*value)
+{
+	static gchar *t = NULL; 
+	gchar* TAG = NULL;
+	gchar* pos;
+	if(!tag) return FALSE;
+	if(!value) return FALSE;
+	if(t==NULL) t = g_malloc(BSIZE*sizeof(gchar));
+
+	TAG = strdup(tag);
+	uppercase(TAG);
+	rewind(file);
+
+	while(!feof(file))
+  	{
+    		if(!fgets(t,BSIZE, file)) break;
+		deleteFirstSpaces(t);
+		if(t[0]=='#') continue;
+		uppercase(t);
+		pos = strstr(t,TAG);
+		if(!pos) continue;
+		if(strstr(pos,"=")) 
+		{
+			pos = strstr(pos,"=")+1;
+		}
+		else pos += strlen(TAG)+1;
+		g_free(TAG);
+		if(1==sscanf(pos,"%d",value)) return TRUE;
+		return FALSE;
+	}
+	g_free(TAG);
+	return FALSE;
+}
+/****************************************************************************************************************************/
+gboolean readOneIntFromAFile(gchar* namefile, gchar* tag, gint* value)
+{
+	FILE* file = NULL;
+	gboolean res;
+
+	if(!namefile) return FALSE;
+
+	file = fopen(namefile, "rb");
+	res = readOneInt(file,tag,value);
+	fclose(file);
+	return res;
+}
+/****************************************************************************************************************************/
+gboolean readOneBoolean(FILE* file, gchar* tag, gboolean*value)
+{
+	static gchar *t = NULL; 
+	gchar* TAG = NULL;
+	gchar* pos;
+	gchar tmp[100];
+	if(!tag) return FALSE;
+	if(!value) return FALSE;
+	if(t==NULL) t = g_malloc(BSIZE*sizeof(gchar));
+
+	TAG = strdup(tag);
+	uppercase(TAG);
+	rewind(file);
+
+	while(!feof(file))
+  	{
+    		if(!fgets(t,BSIZE, file)) break;
+		deleteFirstSpaces(t);
+		if(t[0]=='#') continue;
+		uppercase(t);
+		pos = strstr(t,TAG);
+		if(!pos) continue;
+		if(strstr(pos,"=")) 
+		{
+			pos = strstr(pos,"=")+1;
+		}
+		else pos += strlen(TAG)+1;
+		g_free(TAG);
+		if(1==sscanf(pos,"%s",tmp)) 
+		{
+			
+			if(!strcmp(tmp,"TRUE"))*value = TRUE;
+			else *value = FALSE;
+			return TRUE;
+		}
+		return FALSE;
+	}
+	g_free(TAG);
+	return FALSE;
+}
+/****************************************************************************************************************************/
+gboolean readOneBooleanFromAFile(gchar* namefile, gchar* tag, gboolean* value)
+{
+	FILE* file = NULL;
+	gboolean res;
+
+	if(!namefile) return FALSE;
+
+	file = fopen(namefile, "rb");
+	res = readOneBoolean(file,tag,value);
+	fclose(file);
+	return res;
+}
+/****************************************************************************************************************************/
+gboolean readOneStringFromAFile(gchar* namefile, gchar* tag, gint* value)
+{
+	FILE* file = NULL;
+	gboolean res;
+
+	if(!namefile) return FALSE;
+
+	file = fopen(namefile, "rb");
+	res = readOneInt(file,tag,value);
+	fclose(file);
+	return res;
+}
+/****************************************************************************************************************************/
+gboolean readOneString(FILE* file, gchar* tag, gchar**value)
+{
+	static gchar *t = NULL; 
+	static gchar *t2 = NULL; 
+	gchar* TAG = NULL;
+	gchar* pos;
+	if(!tag) return FALSE;
+	if(!value) return FALSE;
+	if(t==NULL) t = g_malloc(BSIZE*sizeof(gchar));
+	if(t2==NULL) t2 = g_malloc((BSIZE+2)*sizeof(gchar));
+
+	TAG = strdup(tag);
+	uppercase(TAG);
+	rewind(file);
+
+	while(!feof(file))
+  	{
+    		if(!fgets(t,BSIZE, file)) break;
+		deleteFirstSpaces(t);
+		if(t[0]=='#') continue;
+		sprintf(t2,"%s",t);
+		uppercase(t2);
+		pos = strstr(t2,TAG);
+		if(!pos) continue;
+		if(strstr(pos,"=")) 
+		{
+			pos = strstr(pos,"=")+1;
+		}
+		else pos += strlen(TAG)+1;
+		g_free(TAG);
+		if(strlen(pos)>0) 
+		{
+			gchar* p = t+(gint)(pos-t2);
+			if(*value) g_free(*value);
+			*value = strdup(p);
+			strDeleten(*value);
+			deleteFirstSpaces(*value);
+			deleteLastSpaces(*value);
+			return TRUE;
+		}
+		return FALSE;
+	}
+	g_free(TAG);
+	return FALSE;
+}
+/****************************************************************************************************************************/
+void strDeleten(gchar* str)
+{
+        gchar *s;
+
+        if(str == NULL)
+                return;
+
+        if (!*str)
+                return;
+        for (s = str + strlen (str) - 1; s >= str && ((unsigned char)*s)=='\n'; s--)
+                *s = '\0';
+}
+/****************************************************************************************************************************/
+void deleteLastSpaces(gchar* str)
+{
+	gchar *s;
+
+	if(str == NULL)
+		return;
+
+	if (!*str)
+		return;
+	for (s = str + strlen (str) - 1; s >= str && isspace ((unsigned char)*s); s--) *s = '\0';
+}
+/****************************************************************************************************************************/
+void deleteFirstSpaces(gchar* str)
+{
+	gchar *start;
+	gint i;
+	gint lenSpace = 0;
+
+	if(str == NULL)
+		return;
+	if (!*str)
+		return;
+
+	for (start = str; *start && isspace (*start); start++)lenSpace++;
+
+	for(i=0;i<(gint)(strlen(str)-lenSpace);i++)
+		str[i] = str[i+lenSpace];
+	str[strlen(str)-lenSpace] = '\0';
+}
+/****************************************************************************************************************************/
+void deleteAllSpaces(gchar* str)
+{
+	gint i;
+	gint j;
+	gboolean Ok = FALSE;
+
+	deleteLastSpaces(str);
+	deleteFirstSpaces(str);
+	while(!Ok)
+	{
+		Ok = TRUE;
+		for(i=0;i<(gint)strlen(str);i++)
+		{
+			if(isspace(str[i]))
+			{
+				Ok = FALSE;
+				for(j=i;j<(gint)strlen(str);j++)
+				{
+					str[j] = str[j+1];
+				}
+				break;
+			}
+		}
+	}
+}
+/****************************************************************************************************************************/
+gboolean goToStr(FILE* file, gchar* tag)
+{
+        static gchar *t = NULL;
+        gchar* TAG = NULL;
+        gchar* pos = NULL;
+        int i=0;
+        int ii,jj;
+        double v;
+        int** counter = NULL;
+        if(!tag) return FALSE;
+        if(t==NULL) t = g_malloc(BSIZE*sizeof(gchar));
+
+        TAG = strdup(tag);
+        uppercase(TAG);
+        rewind(file);
+
+        while(!feof(file))
+        {
+                if(!fgets(t,BSIZE, file)) break;
+                deleteFirstSpaces(t);
+                if(t[0]=='#') continue;
+                uppercase(t);
+                pos = strstr(t,TAG);
+                if(!pos) continue;
+                break;
+        }
+	return pos != NULL;
+}
+
