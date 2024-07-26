@@ -117,7 +117,7 @@ static struct
     FALSE, "commands",
     N_(
     "The \"commands\" file is used to store commands\n"
-    "for execute Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC, NWChem, NWChem, Orca, FireFly or Q-Chem program.\n"
+    "for execute Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC, NWChem, Orca, FireFly or Q-Chem program.\n"
     )
   },
   {
@@ -642,17 +642,11 @@ void user_install_dialog_create(UserInstallCallback callback)
 	    "Graphics can be exported to various formats, including animations\n"
 	    "\n"
 	    "Gabedit can creates input file for the computational chemistry packages(CCP) cited above.\n"
-	    "Gabedit can graphically display a variety of the CPP calculation results, including the following\n"
-	    "  - Molecular orbitals\n"
-	    "  - Surfaces from the electron density, electrostatic potential, NMR shielding density.....\n"
-	    "  - Contours (colorcoded), Planes colorcoded, Dipole. XYZ axes and the principal axes of the molecule.\n"
-	    "  - Animation of the normal modes corresponding to vibrational frequencies.\n"
-	    "  - Animation of the rotation of geometry, surfaces, contours, planes colorcoded.\n"
+	    "Gabedit can graphically display a variety of the CCP calculation results\n"
 	    "Gabedit can display UV-Vis, IR and Raman computed spectra.\n"
-	    "Gabedit can generate a povray file for geometry (including hydrogen's bond),\n"
-	    "surfaces (including colorcoded surfaces), contours, planes colorcoded.\n"
-	    "Gabedit can save picture in BMP, JPEG, PNG, PPM and PS format.\n"
-	    "Gabedit can generate automatically a series of pictures for animation(vibration, geometry convergence, ....).\n"
+	    "Gabedit can generate a povray file for geometry, surfaces, contours, planes colorcoded.\n"
+	    "Gabedit can save picture in BMP, JPEG, PNG, PPM, PDF and PS format.\n"
+	    "It can generate automatically a series of pictures for animation(vibration, geometry convergence, ....).\n"
 	    )
             );
 

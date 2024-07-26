@@ -1938,7 +1938,7 @@ void find_energy_nwchem_log(gchar* NomFichier)
 	FILE *fd;
         gint Ncalculs = 0;
   	static DataGeomConv* GeomConv =NULL;
-	gboolean Ok;
+	gboolean Ok = FALSE;
 
         
 	t=g_malloc(taille);
@@ -1965,7 +1965,7 @@ void find_energy_nwchem_log(gchar* NomFichier)
   			GeomConv[Ncalculs-1] = init_geom_nwchem_conv(NomFichier);
 		 }
 		pdest = NULL;
-		if(strstr( t,"Step   ") && !strstr(t,"Energy")) pdest = strstr( t,"Step   ");
+		if(strstr( t,"Step ") && !strstr(t,"Energy")) pdest = strstr( t,"Step ");
 
    		if( pdest != NULL  && Ncalculs>0)
 		{
@@ -2016,6 +2016,7 @@ void find_energy_nwchem_log(gchar* NomFichier)
 	}
     fclose(fd);
    
+    if(!Ok && Ncalculs>0 && GeomConv[Ncalculs-1].Npoint>0) GeomConv[Ncalculs-1].Npoint--;
     if( Ncalculs>0 && GeomConv[Ncalculs-1].Npoint == 0)
     {
 	GeomConv[Ncalculs-1] =  free_geom_conv(GeomConv[Ncalculs-1]);

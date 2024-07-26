@@ -15,7 +15,8 @@ NWChemMolecule.o: NWChemMolecule.c ../../Config.h ../Common/Global.h \
   ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Utils/Utils.h \
   ../Utils/UtilsInterface.h ../Utils/Constants.h \
   ../Utils/GabeditTextEdit.h ../Geometry/InterfaceGeom.h \
-  ../Common/Windows.h ../Utils/AtomsProp.h
+  ../Common/Windows.h ../Utils/AtomsProp.h ../Symmetry/MoleculeSymmetry.h \
+  ../Symmetry/MoleculeSymmetryInterface.h
 NWChemKeywords.o: NWChemKeywords.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../NWChem/NWChemTypes.h \

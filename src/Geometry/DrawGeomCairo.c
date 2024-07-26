@@ -10997,7 +10997,7 @@ void create_window_drawing()
 	StatusRotation = Status;
 	gtk_statusbar_pop(GTK_STATUSBAR(StatusRotation),idStatusRotation);
 	gtk_statusbar_push(GTK_STATUSBAR(StatusRotation),idStatusRotation,
-		_(" Press the Midle mouse button and move your mouse for a \"Rotation\". "));
+		_(" Press the Middle mouse button and move your mouse for a \"Rotation\". "));
 
 
 	/* Mode Status */

@@ -1806,7 +1806,7 @@ static void show_about_new()
 
 	static const gchar *comments =
 		"Graphical User Interface to FireFly, GAMESS-US, Gaussian, Molcas, Molpro, "
-		"OpenMopac, Orca, MPQC and Q-Chem computational chemistry packages.\n\n"
+		"OpenMopac, Orca, MPQC, NWChem and Q-Chem computational chemistry packages.\n\n"
 		"Please use the following citations in any report or publication :\n"
 		"A.R. ALLOUCHE, Gabedit - A graphical user interface for computational chemistry softwares,\n"
 	        "Journal of Computational Chemistry, 32, 174-182(2011)\n";

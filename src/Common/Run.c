@@ -1185,7 +1185,7 @@ static gboolean create_cmd_nwchem(G_CONST_RETURN gchar* command, gboolean local,
 #ifdef G_OS_WIN32
 		fprintf(fcmd,"del %s.db\n",fileopen.projectname);
 #else
-		fprintf(fcmd,"rm %s.db\n",fileopen.projectname);
+		fprintf(fcmd,"rm -f %s.db\n",fileopen.projectname);
 #endif
 		fprintf(fcmd,"%s %s > %s.out &\n",command,fileopen.datafile,fileopen.projectname);
 		fprintf(fcmd,"exit\n");

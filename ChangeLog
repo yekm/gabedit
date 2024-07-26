@@ -1,3 +1,7 @@
+15 September 2011 :
+	Bug fixed for reading orbitals from a ORCA output file
+	Bug fixed for drawing colorcoded planes (under windows OS)
+
 13 Jyly 2011 :
 	NWChem is now supported
 	Geometry and charges can be read from a aimall sum file
