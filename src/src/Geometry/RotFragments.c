@@ -1,6 +1,6 @@
 /* RotFragments.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -25,9 +25,10 @@ DEALINGS IN THE SOFTWARE.
 #include <math.h>
 #include "../Common/Global.h"
 #include "../Utils/Matrix3D.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Geometry/Fragments.h"
 #include "../Geometry/DrawGeom.h"
+#include "../Utils/AtomsProp.h"
 
 
 /*****************************************************************/
@@ -214,6 +215,46 @@ gdouble AngleAboutZAxis(gdouble* coord)
 
 /********************************************************************************/
 void SetBondDistance(GeomDef* geom,gint n1,gint n2,gfloat bondLength,gint list[],gint nlist)
+{
+	gdouble a1[]={geom[n1].X,geom[n1].Y,geom[n1].Z};
+	gdouble a2[]={geom[n2].X,geom[n2].Y,geom[n2].Z};
+	gdouble coord[3];
+	gint i;
+	gint atomNumber;
+	gdouble len = 0;
+
+	bondLength *= ANG_TO_BOHR;
+
+	for(i=0;i<3;i++)
+	 	coord[i] = a1[i] - a2[i];
+	for(i=0;i<3;i++)
+		len += coord[i]*coord[i];
+
+	if(len>1e-3)
+	{
+		len = 1-bondLength/sqrt(len);
+		for(i=0;i<3;i++)
+	 		coord[i] *=  len;
+	}
+	else
+		coord[0] -= bondLength;
+
+	for ( i = 0; i < nlist; i++ )
+	{
+		atomNumber = list[ i ];	
+		if ( ( atomNumber == n1 ) || ( atomNumber == n2 ) )
+			continue;
+		geom[atomNumber].X += coord[0];
+		geom[atomNumber].Y += coord[1];
+		geom[atomNumber].Z += coord[2];
+	} 
+	atomNumber = n2;	
+	geom[atomNumber].X += coord[0];
+	geom[atomNumber].Y += coord[1];
+	geom[atomNumber].Z += coord[2];
+}
+/********************************************************************************/
+void SetBondDistanceX(GeomDef* geom,gint n1,gint n2,gfloat bondLength,gint list[],gint nlist)
 {
 	gdouble a1[]={geom[n1].X,geom[n1].Y,geom[n1].Z};
 	gdouble a2[]={geom[n2].X,geom[n2].Y,geom[n2].Z};
@@ -520,4 +561,84 @@ void SetTorsion(gint Natoms,GeomDef *geometry, gint a1num, gint a2num, gint a3nu
 		g_free(pseudoAtom2[0]);
 		g_free(pseudoAtom2);
 
+}
+/*****************************************************************/
+void SetOposedBondeds(gint Natoms,GeomDef *geometry, gint ns, gint toBond,gint atomList[], gint numberOfElements )
+{
+		gint i;
+		gint j;
+		gint k;
+		GeomDef *tmpGeom = NULL;
+		gdouble V[3];
+		gdouble norm;
+
+        	if(!geometry[ns].typeConnections) return;
+		if(Natoms<2) return;
+
+		V[0] = V[1] = V[2] = 0;
+		for(j=0;j<Natoms;j++)
+		{
+			gboolean ok = FALSE;
+			for(k=0;k<numberOfElements;k++)
+			{
+				if(atomList[k]==j) 
+				{
+					ok = TRUE;
+					break;
+				}
+			}
+			if(ok) continue;
+
+        		if(geometry[ns].typeConnections[geometry[j].N-1]>0)
+			{
+				V[0]+=geometry[ns].X-geometry[j].X;
+				V[1]+=geometry[ns].Y-geometry[j].Y;
+				V[2]+=geometry[ns].Z-geometry[j].Z;
+			}
+		}
+		norm =  V[0]* V[0]+ V[1]* V[1]+V[2]* V[2];
+		if(norm<1e-8) return;
+		for(k=0;k<3;k++) V[k]/= sqrt(norm);
+		tmpGeom =g_malloc((Natoms+1)*sizeof(GeomDef));
+		for(i=0;i<Natoms;i++)
+		{
+			tmpGeom[i].X = geometry[i].X;
+			tmpGeom[i].Y = geometry[i].Y;
+			tmpGeom[i].Z = geometry[i].Z; 
+			tmpGeom[i].N = geometry[i].N; 
+        		tmpGeom[i].typeConnections = NULL;
+			tmpGeom[i].Prop = prop_atom_get(geometry[i].Prop.symbol);
+			tmpGeom[i].mmType = g_strdup(geometry[i].mmType);
+			tmpGeom[i].pdbType = g_strdup(geometry[i].pdbType);
+			tmpGeom[i].Layer = geometry[i].Layer;
+			tmpGeom[i].Variable = geometry[i].Variable;
+			tmpGeom[i].Residue = g_strdup(geometry[i].Residue);
+			tmpGeom[i].ResidueNumber = geometry[i].ResidueNumber;
+			tmpGeom[i].show = geometry[i].show;
+			tmpGeom[i].Charge = geometry[i].Charge;
+		}	 
+		/* pseudo atom */
+		i = Natoms;
+		tmpGeom[i].X = V[0]+geometry[ns].X;
+		tmpGeom[i].Y = V[1]+geometry[ns].Y;
+		tmpGeom[i].Z = V[2]+geometry[ns].Z;
+		tmpGeom[i].N = Natoms;
+        	tmpGeom[i].typeConnections = NULL;
+		tmpGeom[i].Prop = prop_atom_get("H");
+		tmpGeom[i].mmType = g_strdup("H");
+		tmpGeom[i].pdbType = g_strdup("H");
+		tmpGeom[i].Layer = geometry[i-1].Layer;
+		tmpGeom[i].Variable = geometry[i-1].Variable;
+		tmpGeom[i].Residue = g_strdup("H");
+		tmpGeom[i].ResidueNumber = geometry[i-1].ResidueNumber;
+		tmpGeom[i].show = geometry[i-1].show;
+		SetAngle(Natoms+1,tmpGeom,ns,Natoms, toBond,180.0,atomList, numberOfElements);
+		for(i=0;i<Natoms;i++)
+		{
+			geometry[i].X = tmpGeom[i].X;
+			geometry[i].Y = tmpGeom[i].Y;
+			geometry[i].Z = tmpGeom[i].Z;
+		}
+
+		Free_One_Geom(tmpGeom,Natoms+1);
 }

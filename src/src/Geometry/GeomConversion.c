@@ -1,6 +1,6 @@
 /* GeomConversion.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 #include <math.h>
 
 #include "../Common/Global.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Common/Help.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
@@ -459,6 +459,7 @@ gboolean zmat_to_xyz()
   GeomXYZtemp[i].Z = NULL; 
   GeomXYZtemp[i].Charge = NULL;
   GeomXYZtemp[i].Layer = NULL;
+  GeomXYZtemp[i].typeConnections = NULL;
   }
 
   /* Atom #1 */

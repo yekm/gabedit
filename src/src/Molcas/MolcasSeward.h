@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -19,15 +19,6 @@ DEALINGS IN THE SOFTWARE.
 #ifndef __GABEDIT_MOLCASSEWARD_H__
 #define __GABEDIT_MOLCASSEWARD_H__
 
-void initSewardButtons();
-void initMolcasMolecule();
-void freeMolcasMolecule();
-gboolean setMolcasMolecule();
-gint resetNumberOfValenceElectrons();
-void setMolcasGeometryFromInputFile(gchar* fileName);
-void createSymmetryFrame(GtkWidget *win, GtkWidget *box);
-void putSymmetryInTextEditor();
-void putMoleculeInTextEditor();
 void putSewardInfoInTextEditor();
 
 #endif /* __GABEDIT_MOLCASSEWARD_H__ */

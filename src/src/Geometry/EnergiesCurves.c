@@ -1,6 +1,6 @@
 /* EnergiesCurve.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -121,9 +121,10 @@ static void set_geom(GtkWidget *widget,gpointer data)
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOLPRO) read_geom_from_molpro_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_QCHEM) read_geom_from_qchem_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOLDEN) read_geom_from_molden_geom_conv_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
-	if(GeomConv->fileType == GABEDIT_TYPEFILE_GABEDIT) read_geom_from_molden_geom_conv_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
+	if(GeomConv->fileType == GABEDIT_TYPEFILE_GABEDIT) read_geom_from_gabedit_geom_conv_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MPQC) read_geom_from_mpqc_output_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOPAC) read_geom_from_mopac_aux_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
+	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOPAC_SCAN) read_geom_from_mopac_scan_output_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_XYZ) read_geom_from_xyz_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 
 }
@@ -158,7 +159,7 @@ static gint configure_event (GtkWidget *widget, GdkEventConfigure *event)
 	GdkGC *gc;
  	GdkPixmap *pixmap = NULL;
 
-	colormap=gdk_window_get_colormap(widget->window);
+	colormap=gdk_drawable_get_colormap(widget->window);
 	/*
 	couleur.red=(gushort)(0.85*65535);
 	couleur.green=(gushort)(0.85*65535);
@@ -168,12 +169,12 @@ static gint configure_event (GtkWidget *widget, GdkEventConfigure *event)
 	couleur.green=(gushort)(0);
 	couleur.blue=(gushort)(0);
 	
-	gdk_color_alloc(colormap,&couleur);
+        gdk_colormap_alloc_color(colormap, &couleur, FALSE, TRUE);
 /*
         pixmapold  = (GdkPixmap*)(g_object_get_data(G_OBJECT(widget),"Pixmap"));
         if (pixmapold)
         {
-                gdk_pixmap_unref(pixmapold);
+                g_object_unref(pixmapold);
         }
 */
 	gc = gdk_gc_new(widget->window);
@@ -185,14 +186,14 @@ static gint configure_event (GtkWidget *widget, GdkEventConfigure *event)
                           widget->allocation.height,
                           -1);
         g_object_set_data_full(G_OBJECT (widget), "Pixmap", pixmap,
-                                  (GtkDestroyNotify) gdk_pixmap_unref);  
+                                  (GDestroyNotify) g_object_unref);  
   	gdk_draw_rectangle (	pixmap,
                       		gc,
                       		TRUE,
                       		0, 0,
                       		widget->allocation.width,
                       		widget->allocation.height);
-  	gdk_gc_destroy(gc);
+  	g_object_unref(gc);
 
   	grille(widget,event);
   	DrawEnergies(widget,event);
@@ -203,7 +204,7 @@ static gint configure_event (GtkWidget *widget, GdkEventConfigure *event)
 static gint expose_event (GtkWidget *widget, GdkEventExpose *event)
 {
 	GdkPixmap *pixmap = (GdkPixmap*)(g_object_get_data(G_OBJECT(widget),"Pixmap")); 
-  	gdk_draw_pixmap(widget->window,
+  	gdk_draw_drawable(widget->window,
                   	widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
                   	pixmap,
                   	event->area.x, event->area.y,
@@ -228,19 +229,19 @@ void set_point(GtkWidget *widget, gint x,gint y, gint k)
         gint i;
 	
 
-	  gdk_draw_pixmap(widget->window,
+	  gdk_draw_drawable(widget->window,
                   widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
                   pixmap,
                   0,0,
                   0,0,
                   widget->allocation.width,widget->allocation.height);
 
-	colormap=gdk_window_get_colormap(widget->window);
+	colormap=gdk_drawable_get_colormap(widget->window);
 	gc = gdk_gc_new(widget->window);
 	couleur.red=0;
 	couleur.green=65535;
 	couleur.blue=0;
-	gdk_color_alloc(colormap,&couleur);
+        gdk_colormap_alloc_color(colormap, &couleur, FALSE, TRUE);
 	gdk_gc_set_foreground(gc,&couleur);
 	gdk_gc_set_line_attributes(gc,1,GDK_LINE_SOLID,GDK_CAP_BUTT,GDK_JOIN_MITER);
 	
@@ -264,7 +265,7 @@ void set_point(GtkWidget *widget, gint x,gint y, gint k)
 	gdk_draw_arc(widget->window,gc,FALSE,x-rayon,y-rayon,2*rayon,2*rayon,0,380*64);
          ki = (gint*)(g_object_get_data(G_OBJECT(widget),"Point"));  
          *ki = k;
-	gdk_gc_destroy(gc);
+	g_object_unref(gc);
 
 }
 /********************************************************************************************/
@@ -354,11 +355,11 @@ gboolean grille(GtkWidget *dessin,GdkEventConfigure *ev)
 	
 	GeomConv = (DataGeomConv*)(g_object_get_data(G_OBJECT(dessin),"Geometry"));
 	
-	colormap=gdk_window_get_colormap(dessin->window);
+	colormap=gdk_drawable_get_colormap(dessin->window);
 	couleur.red=65535;
 	couleur.green=0;
 	couleur.blue=0;
-	gdk_color_alloc(colormap,&couleur);
+        gdk_colormap_alloc_color(colormap, &couleur, FALSE, TRUE);
 	gc = gdk_gc_new(dessin->window);
 	gdk_gc_set_foreground(gc,&couleur);
 	
@@ -378,7 +379,7 @@ gboolean grille(GtkWidget *dessin,GdkEventConfigure *ev)
 	couleur.green=(gushort)(0.85*65535);
 	couleur.blue=(gushort)(0.85*65535);
 
-	gdk_color_alloc(colormap,&couleur);
+        gdk_colormap_alloc_color(colormap, &couleur, FALSE, TRUE);
 	gdk_gc_set_foreground(gc,&couleur);
 	
  	font_desc = pango_font_description_from_string ("times 12");
@@ -410,7 +411,7 @@ gboolean grille(GtkWidget *dessin,GdkEventConfigure *ev)
 		if(font_desc) pango_font_description_free (font_desc);
         }
 
-	gdk_gc_destroy(gc);
+	g_object_unref(gc);
 	return TRUE;
 	
 }
@@ -433,12 +434,12 @@ gboolean DrawEnergies(GtkWidget *dessin,GdkEventConfigure *ev)
 
 	get_coord_ecran(dessin,tabx,taby);
 
-	colormap=gdk_window_get_colormap(dessin->window);
+	colormap=gdk_drawable_get_colormap(dessin->window);
 	gc = gdk_gc_new(dessin->window);
 	couleur.red=0;
 	couleur.green=0;
 	couleur.blue=65535;
-	gdk_color_alloc(colormap,&couleur);
+        gdk_colormap_alloc_color(colormap, &couleur, FALSE, TRUE);
 	gdk_gc_set_foreground(gc,&couleur);
 	gdk_gc_set_line_attributes(gc,2,GDK_LINE_SOLID,GDK_CAP_PROJECTING,GDK_JOIN_MITER);
 	
@@ -451,12 +452,12 @@ gboolean DrawEnergies(GtkWidget *dessin,GdkEventConfigure *ev)
 	couleur.red=(gushort)(0.9*65535);
 	couleur.green=(gushort)(0.9*65535);
 	couleur.blue=(gushort)(0.9*65535);
-	gdk_color_alloc(colormap,&couleur);
+        gdk_colormap_alloc_color(colormap, &couleur, FALSE, TRUE);
 	gdk_gc_set_foreground(gc,&couleur);
 
 	for( i = 0;i<GeomConv->Npoint;i++)
 		gdk_draw_arc(pixmap,gc,TRUE,tabx[i]-rayon,taby[i]-rayon,2*rayon,2*rayon,0,380*64);
-	gdk_gc_destroy(gc);
+	g_object_unref(gc);
 	
         g_free(tabx);
         g_free(taby);
@@ -508,7 +509,7 @@ static GtkWidget*add_label(gchar *tlabel,GtkWidget *vbox)
         Frame = gtk_frame_new (tlabel);
         gtk_frame_set_shadow_type( GTK_FRAME(Frame),GTK_SHADOW_ETCHED_OUT);
         g_object_ref (Frame);
-        gtk_box_pack_start(GTK_BOX(vbox), Frame,FALSE,FALSE,2);
+        gtk_box_pack_start(GTK_BOX(vbox), Frame,FALSE,FALSE,0);
         gtk_widget_show (Frame);
  
         Label = gtk_label_new(" ");
@@ -599,10 +600,10 @@ GtkWidget *add_energies_curve( GtkWidget *WindowEnergies, DataGeomConv* GeomConv
                 Hbox = gtk_hbox_new (FALSE, 0);
                 g_object_ref (Hbox);
 		t = g_strdup_printf("Hbox%d",j);
-		g_object_set_data_full(G_OBJECT (Vbox), t, Hbox,(GtkDestroyNotify) g_object_unref);
+		g_object_set_data_full(G_OBJECT (Vbox), t, Hbox,(GDestroyNotify) g_object_unref);
 		g_free(t);
                 gtk_widget_show (Hbox);
-                gtk_box_pack_start(GTK_BOX(Vbox), Hbox,TRUE,TRUE,5);
+                gtk_box_pack_start(GTK_BOX(Vbox), Hbox,TRUE,TRUE,1);
  
         }
         j++; 
@@ -613,7 +614,7 @@ GtkWidget *add_energies_curve( GtkWidget *WindowEnergies, DataGeomConv* GeomConv
 	Frame = gtk_frame_new (GeomConv->TypeCalcul);
         gtk_frame_set_shadow_type( GTK_FRAME(Frame),GTK_SHADOW_ETCHED_OUT);
         g_object_ref (Frame);
-        gtk_box_pack_start(GTK_BOX(Hbox), Frame,TRUE,TRUE,10);
+        gtk_box_pack_start(GTK_BOX(Hbox), Frame,TRUE,TRUE,1);
         gtk_widget_show (Frame);
 
 	hbox = gtk_hbox_new (FALSE, 0);
@@ -635,21 +636,21 @@ GtkWidget *add_energies_curve( GtkWidget *WindowEnergies, DataGeomConv* GeomConv
                           dessin->allocation.height,
                           -1);
         g_object_set_data_full(G_OBJECT (dessin), "Pixmap", pixmap,
-                                  (GtkDestroyNotify) gdk_pixmap_unref);  
+                                  (GDestroyNotify) g_object_unref);  
 
 
 	Frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(Frame),GTK_SHADOW_ETCHED_OUT);
 	g_object_ref (Frame);
 	g_object_set_data_full(G_OBJECT (WindowEnergies), "Frame",
-							   Frame,(GtkDestroyNotify) g_object_unref);
+							   Frame,(GDestroyNotify) g_object_unref);
 	gtk_box_pack_start(GTK_BOX(hbox), Frame,FALSE,FALSE,2);
 	gtk_widget_show (Frame);
  
 	vbox = gtk_vbox_new (FALSE, 0);
 	g_object_ref (vbox);
 	g_object_set_data_full(G_OBJECT (Frame), "vbox", vbox,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
 	gtk_widget_show (vbox);
 	gtk_container_add(GTK_CONTAINER (Frame), vbox);
 
@@ -657,44 +658,44 @@ GtkWidget *add_energies_curve( GtkWidget *WindowEnergies, DataGeomConv* GeomConv
 
          Label = add_label(GeomConv->TypeData[0],vbox);
          g_object_set_data_full(G_OBJECT (dessin),GeomConv->TypeData[0], Label,
-                            (GtkDestroyNotify) g_object_unref);      
+                            (GDestroyNotify) g_object_unref);      
         if(GeomConv->Npoint > 1)
         {
 		for(i=1;i<GeomConv->Ntype ;i++)
 		{
 			Label = add_label(GeomConv->TypeData[i],vbox);
 			g_object_set_data_full(G_OBJECT (dessin), GeomConv->TypeData[i], Label,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
                 }
         }
 
 
 	button = create_button(WindowEnergies,"Close");
-	g_signal_connect_swapped(G_OBJECT(button),"clicked", (GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(WindowEnergies));
+	g_signal_connect_swapped(G_OBJECT(button),"clicked", (GCallback)gtk_widget_destroy,GTK_OBJECT(WindowEnergies));
 	gtk_box_pack_end(GTK_BOX(vbox), button,FALSE,FALSE,1);
   	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   	gtk_widget_grab_default(button);
 
 	/*
 	button = create_button(WindowEnergies,"Movie");
-	g_signal_connect_swapped(G_OBJECT(button),"clicked", (GtkSignalFunc)movie_geom,GTK_OBJECT(dessin));
+	g_signal_connect_swapped(G_OBJECT(button),"clicked", (GCallback)movie_geom,GTK_OBJECT(dessin));
 	gtk_box_pack_end(GTK_BOX(vbox), button,FALSE,FALSE,1);
   	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	*/
 
 	button = create_button(WindowEnergies,"Draw");
-	g_signal_connect_swapped(G_OBJECT(button),"clicked", (GtkSignalFunc)draw_geom,GTK_OBJECT(WindowEnergies));
+	g_signal_connect_swapped(G_OBJECT(button),"clicked", (GCallback)draw_geom,GTK_OBJECT(WindowEnergies));
 	gtk_box_pack_end(GTK_BOX(vbox), button,FALSE,FALSE,1);
   	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 
 	g_object_set_data(G_OBJECT (dessin), "Geometry", GeomConv);
 	
-	g_object_set_data_full(G_OBJECT (dessin), "Point", k, (GtkDestroyNotify) g_free);
+	g_object_set_data_full(G_OBJECT (dessin), "Point", k, (GDestroyNotify) g_free);
 	
-	g_signal_connect(G_OBJECT (dessin),"button_press_event", (GtkSignalFunc) button_press_event, NULL);
+	g_signal_connect(G_OBJECT (dessin),"button_press_event", (GCallback) button_press_event, NULL);
 
-	g_signal_connect(G_OBJECT(dessin),"expose_event", (GtkSignalFunc)expose_event,NULL);
-	g_signal_connect(G_OBJECT(dessin),"configure_event", (GtkSignalFunc)configure_event,NULL);
+	g_signal_connect(G_OBJECT(dessin),"expose_event", (GCallback)expose_event,NULL);
+	g_signal_connect(G_OBJECT(dessin),"configure_event", (GCallback)configure_event,NULL);
 	set_geom(dessin,NULL);
 					   
 	return dessin;
@@ -759,14 +760,14 @@ void create_energies_curves(DataGeomConv* GeomConv,gint N)
         GeomConvIsOpen = TRUE;
 	WindowEnergies = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	g_object_set_data(G_OBJECT (WindowEnergies), "PointerWidget",&WindowEnergies);
-	gtk_container_set_border_width(GTK_CONTAINER(WindowEnergies),8);
+	gtk_container_set_border_width(GTK_CONTAINER(WindowEnergies),0);
         t = g_strdup_printf("Geometry convergence from file : %s",GeomConv->GeomFile);
     	gtk_window_set_title(GTK_WINDOW(WindowEnergies),t);
         g_free(t);
 	g_signal_connect(G_OBJECT(WindowEnergies),"delete_event",
-					   (GtkSignalFunc)gtk_widget_destroy,NULL);
+					   (GCallback)gtk_widget_destroy,NULL);
 	g_signal_connect(G_OBJECT(WindowEnergies),"destroy",
-					   (GtkSignalFunc)destroy_widget_null,NULL);
+					   (GCallback)destroy_widget_null,NULL);
 		
 	Vbox = gtk_vbox_new (FALSE, 0);
 	g_object_ref (Vbox);
@@ -774,7 +775,7 @@ void create_energies_curves(DataGeomConv* GeomConv,gint N)
 	gtk_container_add(GTK_CONTAINER(WindowEnergies),Vbox);
 
          g_object_set_data_full(G_OBJECT (WindowEnergies), "Vbox",
-                                   Vbox,(GtkDestroyNotify) g_object_unref);
+                                   Vbox,(GDestroyNotify) g_object_unref);
 	
 	gtk_widget_realize (WindowEnergies);
 
@@ -788,6 +789,8 @@ void create_energies_curves(DataGeomConv* GeomConv,gint N)
 	}
 
         add_button_windows("Geom. Conv.",WindowEnergies);
+	gtk_window_set_transient_for(GTK_WINDOW(WindowEnergies),GTK_WINDOW(Fenetre));
+	gtk_window_move(GTK_WINDOW(WindowEnergies),(gint)(ScreenHeight*0.72),0);
 	gtk_widget_show_all(WindowEnergies);
         set_icone(WindowEnergies);
 

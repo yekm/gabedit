@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -142,6 +142,7 @@ void gabedit_save_image(GtkWidget* widget, gchar *fileName, gchar* type);
 G_CONST_RETURN gchar* get_open_babel_command();
 gchar** get_one_block_from_aux_mopac_file(FILE* file, gchar* blockName,  gint* n);
 gchar** free_one_string_table(gchar** table, gint n);
+gboolean zmat_mopac_scan_output_file(gchar *FileName);
 
 #endif /* __GABEDIT_UTILS_H__ */
 

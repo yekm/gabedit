@@ -1,6 +1,6 @@
 /* MolecularDynamics.c  */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/AtomsProp.h"
 #include "../Geometry/Fragments.h"
 #include "../Geometry/DrawGeom.h"
+#include "../Utils/Utils.h"
 #include "Atom.h"
 #include "Molecule.h"
 #include "ForceField.h"
@@ -36,6 +37,7 @@ static void initMD(MolecularDynamics* molecularDynamics, gdouble temperature, gd
 static void berendsen(MolecularDynamics* molecularDynamics);
 static void andersen(MolecularDynamics* molecularDynamics);
 static void rescaleVelocities(MolecularDynamics* molecularDynamics);
+static void computeEnergies(MolecularDynamics* molecularDynamics);
 static void applyOneStep(MolecularDynamics* molecularDynamics);
 static void applyVerlet(MolecularDynamics* molecularDynamics);
 static void applyBeeman(MolecularDynamics* molecularDynamics);
@@ -49,6 +51,238 @@ static gdouble getEKin(MolecularDynamics* molecularDynamics);
 static gdouble getKelvin(MolecularDynamics* molecularDynamics);
 static gdouble drandom();
 static gdouble normal();
+/**********************************************************************/
+ForceField**    runMolecularDynamicsConfo(
+		MolecularDynamics* molecularDynamics, ForceField* forceField, 
+		gint updateFrequency, 
+		gdouble heatTime, gdouble equiTime, gdouble runTime,
+		gdouble heatTemperature, gdouble equiTemperature, gdouble runTemperature,
+		gdouble stepSize,
+		MDIntegratorType integratorType,
+		MDThermostatType thermostat,
+		gdouble friction,
+		gdouble collide,
+		gint numberOfGeometries,
+		gchar* fileNameTraj,
+		gchar* fileNameProp
+		)
+{
+	gint i;
+	gint j;
+	gchar* str = NULL;
+        gdouble gradientNorm = 0;
+	gint numberOfHeatSteps = 0;
+	gint numberOfEquiSteps = 0;
+	gint numberOfRunSteps = 0;
+	gdouble currentTemp;
+	gint updateNumber = 0;
+	gint n0 = 0;
+	ForceField** geometries = NULL;
+	gint iSel = 0;
+	gint stepSel = 1;
+	/* 
+	 *  physical constants in SI units
+	 *   ------------------------------
+	 *      Kb = 1.380662 E-23 J/K
+	 *      Na = 6.022045 E23  1/mol
+	 *      e = 1.6021892 E-19 C
+	 *      eps = 8.85418782 E-12 F/m
+	 *                       
+	 *      1 Kcal = 4184.0 J
+	 *      1 amu = 1.6605655 E-27 Kg
+	 *      1 A = 1.0 E-10 m
+	 *                                       
+	 *       Internally, AKMA units are used:
+	 *                                        
+	 *       timeFactor = SQRT ( ( 1A )**2 * 1amu * Na  / 1Kcal )
+	 *       kBoltzmann = Na *Kb  / 1 Kcal
+	*/ 
+
+	/* printf("basname = %s\n",g_path_get_basename(fileNameTraj));*/
+
+	if(forceField->molecule.nAtoms<1) return NULL;
+	if(numberOfGeometries<2) return NULL;
+	geometries = g_malloc(numberOfGeometries*sizeof(ForceField*));
+	for(i=0;i<numberOfGeometries;i++) geometries[i] = NULL;
+
+	molecularDynamics->forceField = forceField;
+	molecularDynamics->numberOfAtoms = forceField->molecule.nAtoms;
+	molecularDynamics->updateFrequency = updateFrequency;
+
+	currentTemp = heatTemperature/2;
+	
+	numberOfHeatSteps = heatTime/stepSize*1000;
+	numberOfEquiSteps = equiTime/stepSize*1000;; 
+	numberOfRunSteps = runTime/stepSize*1000;; 
+
+
+	currentTemp = heatTemperature;
+	if(numberOfHeatSteps==0) currentTemp = equiTemperature; 
+	if(numberOfHeatSteps==0 && numberOfEquiSteps==0 ) currentTemp = runTemperature; 
+
+	initMD(molecularDynamics,currentTemp,stepSize,integratorType, thermostat, friction, collide, fileNameTraj, fileNameProp, numberOfRunSteps);
+	molecularDynamics->forceField->klass->calculateGradient(molecularDynamics->forceField);
+	computeEnergies(molecularDynamics);
+
+	iSel = -1;
+	{
+		if(str) g_free(str);
+		str = g_strdup_printf("Geometry selected Potential energy =  %0.4f", molecularDynamics->potentialEnergy);
+		redrawMolecule(&molecularDynamics->forceField->molecule,str);
+		iSel++;
+		geometries[iSel] = g_malloc(sizeof(ForceField));
+		*geometries[iSel] = copyForceField(molecularDynamics->forceField);
+		Waiting(1);
+	}
+
+	molecularDynamics->temperature = heatTemperature;
+	rescaleVelocities(molecularDynamics);
+
+	currentTemp = heatTemperature;
+	n0 = 0;
+	newProperties(molecularDynamics," ");
+	/*newProperties(molecularDynamics," ----> Heating");*/
+	for (i = 0; i < numberOfHeatSteps; i++ )
+	{
+		molecularDynamics->temperature = currentTemp;
+		applyOneStep(molecularDynamics);
+		currentTemp = heatTemperature + ( runTemperature - heatTemperature ) *
+				( ( gdouble )( i + 1 )/ numberOfHeatSteps );
+		molecularDynamics->temperature = currentTemp;
+		rescaleVelocities(molecularDynamics);
+		if(StopCalcul) break;
+		if (++updateNumber >= molecularDynamics->updateFrequency )
+		{
+			if(str) g_free(str);
+			str = g_strdup_printf("MD Heating: %0.2f fs, T = %0.2f K T(t) = %0.2f Kin = %0.4f Pot =  %0.4f Tot =  %0.4f", 
+					i*stepSize, currentTemp, 
+					molecularDynamics->kelvin, 
+					molecularDynamics->kineticEnergy,
+					molecularDynamics->potentialEnergy,
+					molecularDynamics->totalEnergy
+					);
+			redrawMolecule(&molecularDynamics->forceField->molecule,str);
+			updateNumber = 0;
+		}
+		saveProperties(molecularDynamics, n0+i+1, i+1," Heating");
+	}
+
+	currentTemp = equiTemperature;
+	molecularDynamics->temperature = currentTemp;
+	rescaleVelocities(molecularDynamics);
+	if(StopCalcul) numberOfEquiSteps =0;
+	if(StopCalcul) numberOfRunSteps =0;
+	updateNumber = molecularDynamics->updateFrequency;
+	n0 += numberOfHeatSteps;
+	/* newProperties(molecularDynamics," ----> Equilibrium");*/
+	for (i = 0; i < numberOfEquiSteps; i++ )
+	{
+		molecularDynamics->temperature = currentTemp;
+		applyOneStep(molecularDynamics);
+		molecularDynamics->temperature = currentTemp;
+		rescaleVelocities(molecularDynamics);
+		if(StopCalcul) break;
+		if (++updateNumber >= molecularDynamics->updateFrequency )
+		{
+			if(str) g_free(str);
+			str = g_strdup_printf("MD Equilibrium: %0.2f fs, T = %0.2f K  T(t) = %0.2f K Kin = %0.4f Pot =  %0.4f Tot =  %0.4f", 
+					i*stepSize, currentTemp, 
+					molecularDynamics->kelvin, 
+					molecularDynamics->kineticEnergy,
+					molecularDynamics->potentialEnergy,
+					molecularDynamics->totalEnergy
+					);
+			redrawMolecule(&molecularDynamics->forceField->molecule,str);
+			updateNumber = 0;
+		}
+		saveProperties(molecularDynamics, n0+i+1, i+1, " Equilibrium");
+	}
+	updateNumber = molecularDynamics->updateFrequency;
+
+	currentTemp = runTemperature;
+	molecularDynamics->temperature = currentTemp;
+	rescaleVelocities(molecularDynamics);
+	if(StopCalcul) numberOfRunSteps =0;
+	updateNumber = molecularDynamics->updateFrequency;
+	n0 += numberOfEquiSteps;
+	/* newProperties(molecularDynamics," ----> Runing");*/
+	if(str) g_free(str);
+	str = g_strdup_printf("Geometry selected Potential energy =  %0.4f", molecularDynamics->potentialEnergy);
+	redrawMolecule(&molecularDynamics->forceField->molecule,str);
+	if(numberOfGeometries>2) stepSel = numberOfRunSteps/(numberOfGeometries-1);
+	else stepSel = numberOfRunSteps;
+	/* printf("Isel = %d\n",stepSel);*/
+	for (i = 0; i < numberOfRunSteps; i++ )
+	{
+		molecularDynamics->temperature = currentTemp;
+		applyOneStep(molecularDynamics);
+		if(molecularDynamics->thermostat == ANDERSEN) andersen(molecularDynamics);
+		if(molecularDynamics->thermostat == BERENDSEN) berendsen(molecularDynamics);
+		if(StopCalcul) break;
+		if (++updateNumber >= molecularDynamics->updateFrequency )
+		{
+			if(str) g_free(str);
+			str = g_strdup_printf("MD Running: %0.2f fs, T = %0.2f K  T(t) = %0.2f K Kin = %0.4f Pot =  %0.4f Tot =  %0.4f", 
+					i*stepSize, currentTemp, 
+					molecularDynamics->kelvin, 
+					molecularDynamics->kineticEnergy,
+					molecularDynamics->potentialEnergy,
+					molecularDynamics->totalEnergy
+					);
+			redrawMolecule(&molecularDynamics->forceField->molecule,str);
+			updateNumber = 0;
+			saveTrajectory(molecularDynamics, i+1);
+		}
+		if((i+1)%stepSel==0 && (iSel+1)<numberOfGeometries)
+		{
+			if(str) g_free(str);
+			str = g_strdup_printf("Geometry selected Potential energy =  %0.4f", molecularDynamics->potentialEnergy);
+			redrawMolecule(&molecularDynamics->forceField->molecule,str);
+			iSel++;
+			geometries[iSel] = g_malloc(sizeof(ForceField));
+			*geometries[iSel] = copyForceField(molecularDynamics->forceField);
+			Waiting(1);
+		}
+		saveProperties(molecularDynamics, n0+i+1, i+1," Running");
+	}
+	if(iSel<numberOfGeometries-1)
+	{
+		if(str) g_free(str);
+		str = g_strdup_printf("Geometry selected Potential energy =  %0.4f", molecularDynamics->potentialEnergy);
+		redrawMolecule(&molecularDynamics->forceField->molecule,str);
+		iSel++;
+		geometries[iSel] = g_malloc(sizeof(ForceField));
+		*geometries[iSel] = copyForceField(molecularDynamics->forceField);
+		Waiting(1);
+	}
+
+	updateNumber = molecularDynamics->updateFrequency;
+	n0 += numberOfRunSteps;
+
+	molecularDynamics->forceField->klass->calculateGradient(molecularDynamics->forceField);
+        gradientNorm = 0;
+	for (i = 0; i < molecularDynamics->numberOfAtoms; i++)
+		for ( j = 0; j < 3; j++)
+                        gradientNorm += 
+				molecularDynamics->forceField->molecule.gradient[j][i] * 
+				molecularDynamics->forceField->molecule.gradient[j][i]; 
+
+        gradientNorm = sqrt( gradientNorm );
+	if(str) g_free(str);
+	str = g_strdup_printf("End of MD Simulation. Gradient = %f Ekin = %f (Kcal/mol) EPot =  %0.4f ETot =  %0.4f T(t) = %0.2f",
+			(gfloat)gradientNorm,
+			molecularDynamics->kineticEnergy,
+			molecularDynamics->potentialEnergy,
+			molecularDynamics->totalEnergy,
+			molecularDynamics->kelvin 
+			); 
+	redrawMolecule(&molecularDynamics->forceField->molecule,str);
+	g_free(str);
+	if(molecularDynamics->fileTraj)fclose(molecularDynamics->fileTraj);
+	if(molecularDynamics->fileProp)fclose(molecularDynamics->fileProp);
+	freeMolecularDynamics(molecularDynamics);
+	return geometries;
+}
 /**********************************************************************/
 void	runMolecularDynamics(
 		MolecularDynamics* molecularDynamics, ForceField* forceField, 
@@ -266,6 +500,215 @@ void	runMolecularDynamics(
 	freeMolecularDynamics(molecularDynamics);
 }
 /*********************************************************************************/
+static void removeTranslation(MolecularDynamics* molecularDynamics)
+{
+	gdouble vtot[3] = {0,0,0};
+	gint i;
+	gint j;
+	gdouble mass = 1.0;
+	gdouble totMass = 0.0;
+	for ( i = 0; i < molecularDynamics->numberOfAtoms; i++)
+	{
+		mass = molecularDynamics->forceField->molecule.atoms[i].prop.masse;
+		totMass += mass;
+		for ( j = 0; j < 3; j++)
+		{
+			vtot[j] += mass*molecularDynamics->velocity[i][j];
+		}
+	}
+
+	for ( j = 0; j < 3; j++)
+		vtot[j] /= totMass;
+
+	for ( i = 0; i < molecularDynamics->numberOfAtoms; i++)
+		for ( j = 0; j < 3; j++)
+			molecularDynamics->velocity[i][j] -= vtot[j];
+	/* check */
+	/*
+	for ( j = 0; j < 3; j++)
+		vtot[j] = 0;
+	for ( i = 0; i < molecularDynamics->numberOfAtoms; i++)
+	{
+		mass = molecularDynamics->forceField->molecule.atoms[i].prop.masse;
+		for ( j = 0; j < 3; j++)
+		{
+			vtot[j] += mass*molecularDynamics->velocity[i][j];
+		}
+	}
+	printf("Trans velocity = %f %f %f\n",vtot[0], vtot[1], vtot[2]);
+	*/
+}
+/**************************************************/
+static gboolean InverseTensor(gdouble mat[3][3],gdouble invmat[3][3])
+{
+	gdouble t4,t6,t8,t10,t12,t14,t17;
+	gdouble d = 0;
+
+	t4 = mat[0][0]*mat[1][1];     
+ 	t6 = mat[0][0]*mat[1][2];
+      	t8 = mat[0][1]*mat[1][0];
+      	t10 = mat[0][2]*mat[1][0];
+      	t12 = mat[0][1]*mat[2][0];
+      	t14 = mat[0][2]*mat[2][0];
+      	d =(t4*mat[2][2]-t6*mat[2][1]-t8*mat[2][2]+t10*mat[2][1]+t12*mat[1][2]-t14*mat[1][1]);
+	if(d == 0) 
+	{
+      		invmat[0][0] = 0;
+      		invmat[0][1] = 0;
+      		invmat[0][2] = 0;
+      		invmat[1][0] = 0;
+      		invmat[1][1] = 0;
+      		invmat[1][2] = 0;
+      		invmat[2][0] = 0;
+      		invmat[2][1] = 0;
+      		invmat[2][2] = 0;
+		return FALSE;
+	}
+      	t17 = 1/d;
+      	invmat[0][0] = (mat[1][1]*mat[2][2]-mat[1][2]*mat[2][1])*t17;
+      	invmat[0][1] = -(mat[0][1]*mat[2][2]-mat[0][2]*mat[2][1])*t17;
+      	invmat[0][2] = -(-mat[0][1]*mat[1][2]+mat[0][2]*mat[1][1])*t17;
+      	invmat[1][0] = -(mat[1][0]*mat[2][2]-mat[1][2]*mat[2][0])*t17;
+      	invmat[1][1] = (mat[0][0]*mat[2][2]-t14)*t17;
+      	invmat[1][2] = -(t6-t10)*t17;
+      	invmat[2][0] = -(-mat[1][0]*mat[2][1]+mat[1][1]*mat[2][0])*t17;
+      	invmat[2][1] = -(mat[0][0]*mat[2][1]-t12)*t17;
+      	invmat[2][2] = (t4-t8)*t17;
+
+	return TRUE;
+}
+/*********************************************************************************/
+static void removeRotation(MolecularDynamics* molecularDynamics)
+{
+	gdouble vtot[3] = {0,0,0};
+	gdouble cm[3] = {0,0,0};
+	gdouble L[3] = {0,0,0};
+	gint i;
+	gint j;
+	gint k;
+	gdouble mass = 1.0;
+	gdouble totMass = 0.0;
+	gdouble cdel[3];
+	gdouble vAng[3]={0,0,0};
+	gdouble tensor[3][3];
+	gdouble invTensor[3][3];
+        gdouble xx, xy,xz,yy,yz,zz;
+	/* find the center of mass coordinates  and total velocity*/
+	AtomMol* atoms = molecularDynamics->forceField->molecule.atoms;
+
+
+	for ( i = 0; i < molecularDynamics->numberOfAtoms; i++)
+	{
+		mass = molecularDynamics->forceField->molecule.atoms[i].prop.masse;
+		totMass += mass;
+		for ( j = 0; j < 3; j++)
+			cm[j] += mass*atoms[i].coordinates[j];
+		for ( j = 0; j < 3; j++)
+			vtot[j] += mass*molecularDynamics->velocity[i][j];
+	}
+
+
+	for ( j = 0; j < 3; j++)
+		cm[j] /= totMass;
+	for ( j = 0; j < 3; j++)
+		vtot[j] /= totMass;
+
+	/*   compute the angular momentum  */
+	for ( i = 0; i < molecularDynamics->numberOfAtoms; i++)
+	{
+		mass = molecularDynamics->forceField->molecule.atoms[i].prop.masse;
+		for ( j = 0; j < 3; j++)
+			L[j] += (
+				atoms[i].coordinates[(j+1)%3]*molecularDynamics->velocity[i][(j+2)%3]
+			      - atoms[i].coordinates[(j+2)%3]*molecularDynamics->velocity[i][(j+1)%3]
+			      )*mass;
+	}
+	for ( j = 0; j < 3; j++)
+		L[j] -= (
+			cm[(j+1)%3]*vtot[(j+2)%3]
+		      - cm[(j+2)%3]*vtot[(j+1)%3]
+			      )*totMass;
+
+	/* calculate and invert the inertia tensor */
+	for ( k = 0; k < 3; k++)
+	for ( j = 0; j < 3; j++)
+		tensor[k][j] = 0;
+	xx = 0;
+	yy = 0;
+	zz = 0;
+	xy = 0;
+	xz = 0;
+	yz = 0;
+	for ( i = 0; i < molecularDynamics->numberOfAtoms; i++)
+	{
+		mass = molecularDynamics->forceField->molecule.atoms[i].prop.masse;
+		for ( j = 0; j < 3; j++)
+			cdel[j] = atoms[i].coordinates[j]-cm[j];
+		xx +=  cdel[0]*cdel[0]*mass;
+		xy +=  cdel[0]*cdel[1]*mass;
+		xz +=  cdel[0]*cdel[2]*mass;
+		yy +=  cdel[1]*cdel[1]*mass;
+		yz +=  cdel[1]*cdel[2]*mass;
+		zz +=  cdel[2]*cdel[2]*mass;
+	}
+	tensor[0][0] = yy+zz;
+	tensor[1][0] = -xy;
+	tensor[2][0] = -xz;
+	tensor[0][1] = -xy;
+	tensor[1][1] = xx+zz;
+	tensor[2][1] = -yz;
+	tensor[0][2] = -xz;
+	tensor[1][2] = -yz;
+	tensor[2][2] = xx+yy;
+	if(InverseTensor(tensor,invTensor))
+	{
+		for ( j = 0; j < 3; j++)
+		{
+			vAng[j] = 0;
+			for ( k = 0; k < 3; k++)
+				vAng[j] += invTensor[j][k]*L[k];
+		}
+		/*  eliminate any rotation about the system center of mass */
+		for ( i = 0; i < molecularDynamics->numberOfAtoms; i++)
+		{
+			for ( j = 0; j < 3; j++)
+				cdel[j] = atoms[i].coordinates[j]-cm[j];
+			for ( j = 0; j < 3; j++)
+				molecularDynamics->velocity[i][j] += 
+					cdel[(j+1)%3]*vAng[(j+2)%3]-
+					cdel[(j+2)%3]*vAng[(j+1)%3];
+		}
+	}
+	/*   check  */
+	/*
+	for ( j = 0; j < 3; j++)
+		L[j] = 0;
+	for ( i = 0; i < molecularDynamics->numberOfAtoms; i++)
+	{
+		mass = molecularDynamics->forceField->molecule.atoms[i].prop.masse;
+		for ( j = 0; j < 3; j++)
+			L[j] += (
+				atoms[i].coordinates[(j+1)%3]*molecularDynamics->velocity[i][(j+2)%3]
+			      - atoms[i].coordinates[(j+2)%3]*molecularDynamics->velocity[i][(j+1)%3]
+			      )*mass;
+	}
+	for ( j = 0; j < 3; j++)
+	{
+		vAng[j] = 0;
+		for ( k = 0; k < 3; k++)
+			vAng[j] += invTensor[j][k]*L[k];
+	}
+	printf("Angular velocity = %f %f %f\n",vAng[0], vAng[1], vAng[2]);
+	*/
+
+}
+/*********************************************************************************/
+static void removeTranslationAndRotation(MolecularDynamics* molecularDynamics)
+{
+	removeTranslation(molecularDynamics);
+	removeRotation(molecularDynamics);
+}
+/*********************************************************************************/
 static void initSD(MolecularDynamics* molecularDynamics, gdouble friction)
 {
 	/* gdouble fsInAKMA = 1.0/sqrt(1e-10*1e-10*1.6605655e-27*6.022045e23/4184.0)/1e15;*/
@@ -301,7 +744,6 @@ static void initSD(MolecularDynamics* molecularDynamics, gdouble friction)
 /*********************************************************************************/
 static void initMD(MolecularDynamics* molecularDynamics, gdouble temperature, gdouble stepSize, MDIntegratorType integratorType, MDThermostatType thermostat, gdouble friction, gdouble collide, gchar* fileNameTraj, gchar* fileNameProp, gint numberOfRunSteps)
 {
-	gdouble C[3] = {0,0,0};
 	gint i;
 	gint j;
 	/* gdouble fsInAKMA = 1.0/sqrt(1e-10*1e-10*1.6605655e-27*6.022045e23/4184.0)/1e15;*/
@@ -386,14 +828,8 @@ static void initMD(MolecularDynamics* molecularDynamics, gdouble temperature, gd
 	{
 		gdouble speed = maxwel(molecularDynamics->forceField->molecule.atoms[i].prop.masse,temperature);
 		getRandVect(speed, molecularDynamics->velocity[i]);
-		for ( j = 0; j < 3; j++)
-			C[j] += molecularDynamics->velocity[i][j];
 	}
-	for ( j = 0; j < 3; j++)
-		C[j] /= molecularDynamics->numberOfAtoms;
-	for ( i = 0; i < molecularDynamics->numberOfAtoms; i++)
-		for ( j = 0; j < 3; j++)
-			molecularDynamics->velocity[i][j] -=C[j];
+	removeTranslationAndRotation(molecularDynamics);
 }
 /*********************************************************************************/
 static void rescaleVelocities(MolecularDynamics* molecularDynamics)
@@ -406,7 +842,6 @@ static void berendsen(MolecularDynamics* molecularDynamics)
 	gint i;
 	gint j;
 	static gdouble fsInAKMA = 0.020454828110640;
-	gdouble C[3] = {0,0,0};
 	gdouble ekin = 0;
 	gdouble kelvin = 0;
 	gint nfree = 3*molecularDynamics->numberOfAtoms -3;
@@ -434,17 +869,8 @@ static void berendsen(MolecularDynamics* molecularDynamics)
 	/* printf("temp = %f kelvin = %f scale = %f\n",molecularDynamics->temperature, kelvin, scale);*/
 	for ( i = 0; i < molecularDynamics->numberOfAtoms; i++)
 		for ( j = 0; j < 3; j++)
-		{
 			molecularDynamics->velocity[i][j] *= scale;
-			C[j] += molecularDynamics->velocity[i][j];
-		}
-	/* printf("C =  %f %f %f\n",C[0], C[1], C[2]);*/
-	for ( j = 0; j < 3; j++)
-			C[j] /= molecularDynamics->numberOfAtoms;
-	/* printf("C =  %f %f %f\n",C[0], C[1], C[2]);*/
-	for ( i = 0; i < molecularDynamics->numberOfAtoms; i++)
-		for ( j = 0; j < 3; j++)
-			molecularDynamics->velocity[i][j] -=C[j];
+	removeTranslationAndRotation(molecularDynamics);
 }
 /*********************************************************************************/
 static void andersen(MolecularDynamics* molecularDynamics)

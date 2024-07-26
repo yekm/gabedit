@@ -1,6 +1,6 @@
 /* StockIcons.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -40,12 +40,17 @@ DEALINGS IN THE SOFTWARE.
 #include "../../pixmaps/Geometry.xpm"
 #include "../../pixmaps/Help.xpm"
 #include "../../pixmaps/Hide.xpm"
+#include "../../pixmaps/AdjustH.xpm"
 #include "../../pixmaps/Home.xpm"
 #include "../../pixmaps/H.xpm"
 #include "../../pixmaps/Gabedit.xpm"
 #include "../../pixmaps/Info.xpm"
 #include "../../pixmaps/InsertAtom.xpm"
 #include "../../pixmaps/InsertFragment.xpm"
+#include "../../pixmaps/ChangeBond.xpm"
+#include "../../pixmaps/CutBond.xpm"
+#include "../../pixmaps/DeleteCut.xpm"
+#include "../../pixmaps/AddBond.xpm"
 #include "../../pixmaps/Insert.xpm"
 #include "../../pixmaps/Mesure.xpm"
 #include "../../pixmaps/Molcas.xpm"
@@ -100,6 +105,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../../pixmaps/Pdb.xpm"
 #include "../../pixmaps/O.xpm"
 #include "../../pixmaps/AtomToInsert.xpm"
+#include "../../pixmaps/Knot.xpm"
 #include "StockIcons.h"
 #include <gtk/gtk.h>
 
@@ -149,11 +155,16 @@ void gabedit_gtk_stock_init()
 	add_one_icon(icon_factory, GABEDIT_STOCK_GEOMETRY, geometry_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_HELP, help_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_HIDE, hide_xpm);
+	add_one_icon(icon_factory, GABEDIT_STOCK_ADJUST_H, adjust_h_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_HOME, home_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_H, H);
 	add_one_icon(icon_factory, GABEDIT_STOCK_GABEDIT, gabedit_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_INFO, info_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_INSERT_ATOM, insert_atom_xpm);
+	add_one_icon(icon_factory, GABEDIT_STOCK_CHANGE_BOND, change_bond_xpm);
+	add_one_icon(icon_factory, GABEDIT_STOCK_CUT_BOND, cut_bond_xpm);
+	add_one_icon(icon_factory, GABEDIT_STOCK_DELETE_CUT, delete_cut_xpm);
+	add_one_icon(icon_factory, GABEDIT_STOCK_ADD_BOND, add_bond_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_INSERT, insert_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MESURE, mesure_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOLCAS, molcas_xpm);
@@ -209,6 +220,7 @@ void gabedit_gtk_stock_init()
 	add_one_icon(icon_factory, GABEDIT_STOCK_PDB, pdb_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_O, o_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_ATOMTOINSERT, atomtoinsert_xpm);
+	add_one_icon(icon_factory, GABEDIT_STOCK_KNOT, knot_xpm);
 
 
 	g_object_unref(G_OBJECT(icon_factory));

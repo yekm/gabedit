@@ -4,7 +4,7 @@ Batch.o: ../../Config.h
 Batch.o: ../Common/Global.h
 Batch.o: ../Files/GabeditFileChooser.h
 Batch.o: ../Common/GabeditType.h ../Utils/Utils.h ../Utils/UtilsInterface.h
-Batch.o: ../Utils/Constantes.h ../Utils/GabeditTextEdit.h ../Common/Run.h
+Batch.o: ../Utils/Constants.h ../Utils/GabeditTextEdit.h ../Common/Run.h
 Batch.o: ../Common/Windows.h ../NetWork/Batch.h RemoteCommand.h
 FilesTransfer.o: ../../Config.h ../Common/Global.h
 FilesTransfer.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
@@ -17,7 +17,7 @@ Process.o: ../../Config.h
 Process.o: ../Common/Global.h
 Process.o: ../Files/GabeditFileChooser.h
 Process.o: ../Common/GabeditType.h ../Utils/Utils.h ../Utils/UtilsInterface.h
-Process.o: ../Utils/Constantes.h ../Utils/GabeditTextEdit.h ../Common/Run.h
+Process.o: ../Utils/Constants.h ../Utils/GabeditTextEdit.h ../Common/Run.h
 Process.o: ../Common/Windows.h ../NetWork/RemoteCommand.h
 Process.o: ../NetWork/Process.h
 RemoteCommand.o: ../../Config.h ../Common/Global.h

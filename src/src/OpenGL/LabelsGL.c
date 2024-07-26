@@ -1,6 +1,6 @@
 /* GLArea.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
 #include "../Utils/UtilsGL.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Geometry/GeomGlobal.h"
 #include "../OpenGL/AxisGL.h"
 #include "../OpenGL/PrincipalAxisGL.h"
@@ -99,29 +99,22 @@ void showLabelSymbolsNumbersCharges()
 	gchar bSymbol[10];
 	gchar bNumber[BSIZE];
 	gchar bCharge[10];
-	V4d Diffuse  = {0.8,0.8,0.8,0.8};
-	V4d Specular = {0.8,0.8,0.8,0.8 };
-	V4d Ambiant  = {0.8,0.8,0.8,0.8 };
+	V4d color  = {0.8,0.8,0.8,1.0 };
+
 
 	if(Ncenters<1) return;
 
-	Ambiant[0] = FontsStyleLabel.TextColor.red/65535.0; 
-	Ambiant[1] = FontsStyleLabel.TextColor.green/65535.0; 
-	Ambiant[2] = FontsStyleLabel.TextColor.blue/65535.0; 
-	for(i=0;i<3;i++)
-	{
-		Diffuse[i] = Ambiant[i];
-		Specular[i] = Ambiant[i];
-	}
-
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
 	if(strcmp(fontName,FontsStyleLabel.fontname)!=0)
 	{
 		init_labels_font();
 		glInitFonts();
 	}
+
+	color[0] = FontsStyleLabel.TextColor.red/65535.0; 
+	color[1] = FontsStyleLabel.TextColor.green/65535.0; 
+	color[2] = FontsStyleLabel.TextColor.blue/65535.0; 
+	glDisable ( GL_LIGHTING ) ;
+	glColor4fv(color);
 
 	for(i=0;i<(gint)Ncenters;i++)
 	{
@@ -141,6 +134,7 @@ void showLabelSymbolsNumbersCharges()
 			glPrintScale(GeomOrb[i].C[0], GeomOrb[i].C[1], GeomOrb[i].C[2], 1.1*GeomOrb[i].Prop.radii,buffer);
 		}
 	}
+	glEnable ( GL_LIGHTING ) ;
 }
 /*********************************************************************************************/
 gboolean get_show_distances()
@@ -161,29 +155,20 @@ void showLabelDistances()
 	gdouble distance;
 	gfloat tmp[3];
 	gchar buffer[BSIZE];
-	V4d Diffuse  = {1.0,1.0,1.0,0.8};
-	V4d Specular = {1.0,1.0,1.0,0.8 };
-	V4d Ambiant  = {1.0,1.0,1.0,0.8 };
+	V4d color  = {0.8,0.8,0.8,1.0 };
 
 	if(Ncenters<1) return;
-	Ambiant[0] = FontsStyleLabel.TextColor.red/65535.0; 
-	Ambiant[1] = FontsStyleLabel.TextColor.green/65535.0; 
-	Ambiant[2] = FontsStyleLabel.TextColor.blue/65535.0; 
-	for(i=0;i<3;i++)
-	{
-		Diffuse[i] = Ambiant[i];
-		Specular[i] = Ambiant[i];
-	}
+	color[0] = FontsStyleLabel.TextColor.red/65535.0; 
+	color[1] = FontsStyleLabel.TextColor.green/65535.0; 
+	color[2] = FontsStyleLabel.TextColor.blue/65535.0; 
 
-
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
 	if(strcmp(fontName,FontsStyleLabel.fontname)!=0)
 	{
 		init_labels_font();
 		glInitFonts();
 	}
+	glDisable ( GL_LIGHTING ) ;
+	glColor4fv(color);
 
 	for(i=0;i<(gint)Ncenters;i++)
 	for(j=i+1;j<(gint)Ncenters;j++)
@@ -207,6 +192,7 @@ void showLabelDistances()
 			glPrintScale(tmp[0], tmp[1], tmp[2], 1.1*r,buffer);
 		}
 	}
+	glEnable ( GL_LIGHTING ) ;
 }
 /*********************************************************************************************/
 gboolean get_show_dipole()
@@ -222,9 +208,7 @@ void set_show_dipole(gboolean ac)
 void showLabelDipole()
 {
 	gint i;
-	V4d Diffuse  = {0.8,0.8,0.8,0.8};
-	V4d Specular = {0.8,0.8,0.8,0.8 };
-	V4d Ambiant  = {0.8,0.8,0.8,0.8 };
+	V4d color  = {0.8,0.8,0.8,1.0 };
 	V3d Base1Pos  = {0.0f,0.0f,0.0f};
 	V3d Base2Pos  = {Dipole.Value[0],Dipole.Value[1],Dipole.Value[2]};
 	GLfloat radius = Dipole.radius;
@@ -240,23 +224,17 @@ void showLabelDipole()
 	if(!showDipole) return;
 	if(!ShowDipoleOrb) return;
 
-	Ambiant[0] = FontsStyleLabel.TextColor.red/65535.0; 
-	Ambiant[1] = FontsStyleLabel.TextColor.green/65535.0; 
-	Ambiant[2] = FontsStyleLabel.TextColor.blue/65535.0; 
-	for(i=0;i<3;i++)
-	{
-		Diffuse[i] = Ambiant[i];
-		Specular[i] = Ambiant[i];
-	}
+	color[0] = FontsStyleLabel.TextColor.red/65535.0; 
+	color[1] = FontsStyleLabel.TextColor.green/65535.0; 
+	color[2] = FontsStyleLabel.TextColor.blue/65535.0; 
 
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
 	if(strcmp(fontName,FontsStyleLabel.fontname)!=0)
 	{
 		init_labels_font();
 		glInitFonts();
 	}
+	glDisable ( GL_LIGHTING ) ;
+	glColor4fv(color);
 
 	if(radius<0.1) radius = 0.1;
 
@@ -282,6 +260,7 @@ void showLabelDipole()
 	/*	glPrint(Center[0], Center[1], Center[2], buffer); */
 		glPrintScale(Center[0], Center[1], Center[2], 1.1*radius,buffer);
 	}
+	glEnable ( GL_LIGHTING ) ;
 }
 /*********************************************************************************************/
 gboolean get_show_axes()
@@ -297,9 +276,7 @@ void set_show_axes(gboolean ac)
 void showLabelAxes()
 {
 	gint i;
-	V4d Diffuse  = {0.8,0.8,0.8,0.8};
-	V4d Specular = {0.8,0.8,0.8,0.8 };
-	V4d Ambiant  = {0.8,0.8,0.8,0.8 };
+	V4d color  = {0.8,0.8,0.8,1.0 };
 	gchar buffer[BSIZE];
 	gboolean show;
 	gboolean negative;
@@ -332,18 +309,10 @@ void showLabelAxes()
 	}
 	
 
-	Ambiant[0] = FontsStyleLabel.TextColor.red/65535.0; 
-	Ambiant[1] = FontsStyleLabel.TextColor.green/65535.0; 
-	Ambiant[2] = FontsStyleLabel.TextColor.blue/65535.0; 
-	for(i=0;i<3;i++)
-	{
-		Diffuse[i] = Ambiant[i];
-		Specular[i] = Ambiant[i];
-	}
+	color[0] = FontsStyleLabel.TextColor.red/65535.0; 
+	color[1] = FontsStyleLabel.TextColor.green/65535.0; 
+	color[2] = FontsStyleLabel.TextColor.blue/65535.0; 
 
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
 	if(strcmp(fontName,FontsStyleLabel.fontname)!=0)
 	{
 		init_labels_font();
@@ -351,6 +320,8 @@ void showLabelAxes()
 	}
 
 	if(radius<0.1) radius = 0.1;
+	glDisable ( GL_LIGHTING ) ;
+	glColor4fv(color);
 
 
 	if(ortho)
@@ -379,14 +350,13 @@ void showLabelAxes()
 		sprintf(buffer,"Z");
 		glPrintScale(vectorZ[0], vectorZ[1], vectorZ[2], 1.1*radius, buffer);
 	}
+	glEnable ( GL_LIGHTING ) ;
 }
 /*********************************************************************************************/
 void showLabelPrincipalAxes()
 {
 	gint i;
-	V4d Diffuse  = {0.8,0.8,0.8,0.8};
-	V4d Specular = {0.8,0.8,0.8,0.8 };
-	V4d Ambiant  = {0.8,0.8,0.8,0.8 };
+	V4d color  = {0.8,0.8,0.8,1.0 };
 	gchar buffer[BSIZE];
 	gboolean show;
 	gboolean negative;
@@ -423,18 +393,10 @@ void showLabelPrincipalAxes()
 	}
 	
 
-	Ambiant[0] = FontsStyleLabel.TextColor.red/65535.0; 
-	Ambiant[1] = FontsStyleLabel.TextColor.green/65535.0; 
-	Ambiant[2] = FontsStyleLabel.TextColor.blue/65535.0; 
-	for(i=0;i<3;i++)
-	{
-		Diffuse[i] = Ambiant[i];
-		Specular[i] = Ambiant[i];
-	}
+	color[0] = FontsStyleLabel.TextColor.red/65535.0; 
+	color[1] = FontsStyleLabel.TextColor.green/65535.0; 
+	color[2] = FontsStyleLabel.TextColor.blue/65535.0; 
 
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
 	if(strcmp(fontName,FontsStyleLabel.fontname)!=0)
 	{
 		init_labels_font();
@@ -442,6 +404,8 @@ void showLabelPrincipalAxes()
 	}
 
 	if(radius<0.1) radius = 0.1;
+	glDisable ( GL_LIGHTING ) ;
+	glColor4fv(color);
 
 
 	if(ortho)
@@ -470,13 +434,12 @@ void showLabelPrincipalAxes()
 		sprintf(buffer,"I=%0.3f",I[2]);
 		glPrintScale(v3[0], v3[1], v3[2], 1.1*radius, buffer);
 	}
+	glEnable ( GL_LIGHTING ) ;
 }
 /*********************************************************************************************/
 void showLabelTitle(gint width, gint height)
 {
-	V4d Diffuse = {0.0,0.0,0.0,0.0 };
-	V4d Specular = {0.0,0.0,0.0,0.0 };
-	V4d Ambiant  = {1.0,1.0,1.0,1.0 };
+	V4d color  = {0.8,0.8,0.8,1.0 };
 
 	if(Ncenters<1) return;
 	if(!strTitle) return;
@@ -490,20 +453,12 @@ void showLabelTitle(gint width, gint height)
 		colorTitle.blue = FontsStyleLabel.TextColor.blue; 
 		initColor = FALSE;
 	}
-	Ambiant[0] = colorTitle.red/65535.0; 
-	Ambiant[1] = colorTitle.green/65535.0; 
-	Ambiant[2] = colorTitle.blue/65535.0; 
-	/*
-	for(i=0;i<3;i++)
-	{
-		Diffuse[i] = Ambiant[i];
-		Specular[i] = Ambiant[i];
-	}
-	*/
+	color[0] = colorTitle.red/65535.0; 
+	color[1] = colorTitle.green/65535.0; 
+	color[2] = colorTitle.blue/65535.0; 
 
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
+	glDisable ( GL_LIGHTING ) ;
+	glColor4fv(color);
 	glInitFontsUsing(fontNameTitle);
 
 	glLoadIdentity();
@@ -520,6 +475,7 @@ void showLabelTitle(gint width, gint height)
 	
 	glPopMatrix();
 	glInitFonts();
+	glEnable ( GL_LIGHTING ) ;
 }
 /*********************************************************************************************/
 gchar* get_label_title()
@@ -793,19 +749,19 @@ void set_title_dlg()
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)apply_set_title_close,G_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_set_title_close,G_OBJECT(Win));
 
 	button = create_button(Win,"Apply");
 	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_show (button);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)apply_set_title,G_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_set_title,G_OBJECT(Win));
 
 	button = create_button(Win,"Cancel");
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child, G_OBJECT(Win));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)gtk_widget_destroy,G_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, G_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,G_OBJECT(Win));
 	gtk_widget_show (button);
 
 	gtk_widget_show_all (Win);

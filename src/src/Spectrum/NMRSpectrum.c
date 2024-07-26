@@ -1,6 +1,6 @@
 /* NMRSpectrum.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 #include <stdio.h>
 #include <gtk/gtk.h>
 #include "../Common/Global.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
 #include "../Utils/Jacobi.h"
@@ -86,7 +86,7 @@ static void file_chooser_set_filters(GtkFileChooser *fileChooser,gchar **pattern
 	if(filter0)gtk_file_chooser_set_filter (GTK_FILE_CHOOSER (fileChooser), filter0);
 }
 /********************************************************************************/
-static GtkWidget* new_file_chooser_open(GtkWidget* parentWindow, GtkSignalFunc *func, gchar* title, gchar** patternsfiles)
+static GtkWidget* new_file_chooser_open(GtkWidget* parentWindow, GCallback *func, gchar* title, gchar** patternsfiles)
 {
 	GtkWidget* filesel = NULL;
 	filesel = g_object_new (GTK_TYPE_FILE_CHOOSER_DIALOG, "action", GTK_FILE_CHOOSER_ACTION_OPEN, "file-system-backend", "gtk+", "select-multiple", FALSE, NULL);
@@ -104,7 +104,7 @@ static GtkWidget* new_file_chooser_open(GtkWidget* parentWindow, GtkSignalFunc *
 	return filesel;
 }
 /********************************************************************************/
-static GtkWidget* new_file_chooser_save(GtkWidget* parentWindow, GtkSignalFunc *func, gchar* title, gchar** patternsfiles)
+static GtkWidget* new_file_chooser_save(GtkWidget* parentWindow, GCallback *func, gchar* title, gchar** patternsfiles)
 {
 	GtkWidget* filesel = NULL;
 	filesel = g_object_new (GTK_TYPE_FILE_CHOOSER_DIALOG, "action", GTK_FILE_CHOOSER_ACTION_SAVE, "file-system-backend", "gtk+", "select-multiple", FALSE, NULL);
@@ -602,7 +602,7 @@ static void read_dlg(GtkWidget* window)
 
 	parentWindow = get_parent_window(GTK_WIDGET(window));
 	filesel= new_file_chooser_open(parentWindow, 
-			(GtkSignalFunc *)read_nmr_data, 
+			(GCallback *)read_nmr_data, 
 			"Read NMR Operating frequency, chemical shift and Spin-Spin coupling data", 
 			patternsfiles);
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -702,7 +702,7 @@ static void save_dlg(GtkWidget* window)
 
 	parentWindow = get_parent_window(GTK_WIDGET(window));
 	filesel= new_file_chooser_save(parentWindow, 
-			(GtkSignalFunc *)save_nmr_data, 
+			(GCallback *)save_nmr_data, 
 			"Save NMR data", 
 			patternsfiles);
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -839,18 +839,18 @@ static void addEntriesData(GtkWidget* window, GtkWidget* parent)
 
 	button = create_button(window,"Read");
 	gtk_table_attach(GTK_TABLE(table), button, nMax-2, nMax-1, nMax+1, nMax+2, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 1, 1);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(read_dlg),window);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(read_dlg),window);
 	gtk_widget_show_all (button);
 
 	button = create_button(window,"Save");
 	gtk_table_attach(GTK_TABLE(table), button, nMax-1, nMax, nMax+1, nMax+2, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 1, 1);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(save_dlg),window);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(save_dlg),window);
 	gtk_widget_show_all (button);
 
 
 	button = create_button(window,"Apply");
 	gtk_table_attach(GTK_TABLE(table), button, nMax, nMax+1, nMax+1, nMax+2, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 1, 1);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(apply),parent);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(apply),parent);
 	gtk_widget_show_all (button);
 
 	gtk_widget_show_all(vbox);
@@ -869,7 +869,7 @@ GtkWidget* new_parameters_window(GtkWidget* parent)
 	gtk_window_set_title (GTK_WINDOW (window), "Chemical shift & Spin-Spin coupling parameters");
 	gtk_window_set_transient_for(GTK_WINDOW (window), GTK_WINDOW(parent));
 	gtk_window_set_destroy_with_parent(GTK_WINDOW (window), TRUE);
-	g_signal_connect (GTK_OBJECT (window), "delete_event", GTK_SIGNAL_FUNC (gtk_window_iconify), NULL);
+	g_signal_connect (GTK_OBJECT (window), "delete_event", G_CALLBACK (gtk_window_iconify), NULL);
 	gtk_container_set_border_width (GTK_CONTAINER (window), 2);
 
 	frame=gtk_frame_new(NULL);
@@ -928,7 +928,7 @@ static void createNMRSpectrumWin(gint numberOfStates, gdouble* energies, gdouble
 		button = create_button(window,"Set parameters");
 		gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 2);
 		gtk_widget_show_all (button);
-		g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(gtk_window_present),parametersWindow);
+		g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_window_present),parametersWindow);
 		apply(window);
 	}
 	

@@ -1,6 +1,6 @@
 /* Batch.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/Global.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/GabeditTextEdit.h"
 #include "../Common/Run.h"
 #include "../Common/Windows.h"
@@ -334,7 +334,7 @@ static void create_kill_batch(GtkWidget*Win, gchar* rowPath)
 
   gtk_widget_realize(fp);
   init_child(fp,gtk_widget_destroy," Kill ");
-  g_signal_connect(G_OBJECT(fp),"delete_event",(GtkSignalFunc)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_childs,NULL);
 
   gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
   vboxall = create_vbox(fp);
@@ -357,7 +357,7 @@ static void create_kill_batch(GtkWidget*Win, gchar* rowPath)
   button = create_button(fp,"Cancel");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)destroy_childs,GTK_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,GTK_OBJECT(fp));
   gtk_widget_show (button);
 
   button = create_button(fp,"OK");
@@ -365,8 +365,8 @@ static void create_kill_batch(GtkWidget*Win, gchar* rowPath)
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
   gtk_widget_show (button);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)kill_batch,GTK_OBJECT(Win));
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)destroy_childs,GTK_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)kill_batch,GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,GTK_OBJECT(fp));
   
 
   gtk_widget_show_all(fp);
@@ -407,8 +407,6 @@ static GtkWidget* create_gtk_list_batch()
 	gint j;
 	GtkWidget* gtklist = NULL;
 	gint *Width = NULL;
-	GdkFont *font = NULL; 
-	PangoFontDescription *font_desc = pango_font_description_from_string (FontsStyleResult.fontname);
 	GtkListStore *store;
 	GtkTreeModel *model;
 	GtkCellRenderer *renderer;
@@ -436,8 +434,7 @@ static GtkWidget* create_gtk_list_batch()
 	gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (gtklist), TRUE);
 	gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (gtklist), TRUE);
 	gtk_tree_view_set_reorderable(GTK_TREE_VIEW (gtklist), TRUE);
-  	if(font_desc) font = gdk_font_from_description (font_desc);
-	for (j=0;j<NlistTitle;j++) Width[j] = (gint)(Width[j]*gdk_string_width (font,"WW"));
+	for (j=0;j<NlistTitle;j++) Width[j] = (gint)(Width[j]*8);
 
 	for (i=0;i<NlistTitle;i++)
 	{
@@ -573,7 +570,7 @@ static GtkWidget *create_batch_remote_frame( GtkWidget *vboxall,GtkWidget **entr
 	gtk_widget_show (combo);
 	entry[0] = GTK_BIN(combo)->child;
         g_object_set_data (G_OBJECT (entry[0]), "Combo",combo);
-        g_signal_connect(G_OBJECT(GTK_COMBO_BOX(combo)), "changed",GTK_SIGNAL_FUNC(changed_host),entry);
+        g_signal_connect(G_OBJECT(GTK_COMBO_BOX(combo)), "changed",G_CALLBACK(changed_host),entry);
 
 	i = 1;
 	add_label_table(Table,"Login ",(gushort)(i),0);
@@ -646,7 +643,7 @@ void create_batch_remote(gboolean all)
 
   gtk_widget_realize(fp);
   init_child(fp,gtk_widget_destroy," Remote Batch Jobs ");
-  g_signal_connect(G_OBJECT(fp),"delete_event",(GtkSignalFunc)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_childs,NULL);
 
   gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
   vboxall = create_vbox(fp);
@@ -674,7 +671,7 @@ void create_batch_remote(gboolean all)
   button = create_button(fp,"Cancel");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)destroy_childs,GTK_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,GTK_OBJECT(fp));
   gtk_widget_show (button);
 
   button = create_button(fp,"OK");
@@ -682,11 +679,11 @@ void create_batch_remote(gboolean all)
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
   gtk_widget_show (button);
-  g_signal_connect_swapped(G_OBJECT (EntryPassWord ), "activate", (GtkSignalFunc) gtk_button_clicked, GTK_OBJECT (button));
+  g_signal_connect_swapped(G_OBJECT (EntryPassWord ), "activate", (GCallback) gtk_button_clicked, GTK_OBJECT (button));
 
-  if(!all) g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(run_batch_remote_user),(gpointer)NULL);
-  else g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(run_batch_remote_all),(gpointer)NULL);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)destroy_childs,GTK_OBJECT(fp));
+  if(!all) g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(run_batch_remote_user),(gpointer)NULL);
+  else g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(run_batch_remote_all),(gpointer)NULL);
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,GTK_OBJECT(fp));
   
 
 
@@ -798,7 +795,7 @@ static GtkWidget* create_list_result_command(GtkWidget* gtklist,gchar* strerr,gc
 
   gtk_widget_realize(Win);
   init_child(Win,gtk_widget_destroy," List of Jobs ");
-  g_signal_connect(G_OBJECT(Win),"delete_event",(GtkSignalFunc)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)destroy_childs,NULL);
 
   gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
   vboxall = create_vbox(Win);
@@ -844,7 +841,7 @@ static GtkWidget* create_list_result_command(GtkWidget* gtklist,gchar* strerr,gc
   gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, FALSE, 5);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)destroy_win_user_batch,GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_win_user_batch,GTK_OBJECT(Win));
   gtk_widget_show (button);
   gtk_window_set_default_size (GTK_WINDOW(Win), 3*ScreenWidth/5, 3*ScreenHeight/5);
   if(Frame[0])

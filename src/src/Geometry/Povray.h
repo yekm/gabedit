@@ -2,7 +2,7 @@
 #ifndef __GABEDIT_POVRAY_H__
 #define __GABEDIT_POVRAY_H__
 
-void create_save_povray(GtkWidget* Win);
+void export_to_povray(gchar* fileName);
 
 #endif /* __GABEDIT_POVRAY_H__ */
 

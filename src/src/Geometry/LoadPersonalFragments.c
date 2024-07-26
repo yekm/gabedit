@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/Fragments.h"
 #include "../Geometry/PersonalFragments.h"
 #include "../Utils/Utils.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 /************************************************************/
 static void freeOneList(gchar** t, gint nl)
 {
@@ -201,7 +201,7 @@ static void loadOneFragment(PersonalFragments* personnalFragments, FILE* file,
 		f.Atoms[i].Residue = g_strdup(dump1);
 		f.Atoms[i].Symb = g_strdup(dump2);
 		f.Atoms[i].pdbType = g_strdup(dump3);
-		f.Atoms[i].mmType = g_strdup(dump3);
+		f.Atoms[i].mmType = g_strdup(dump4);
 		/*
 		printf("%s %s %s %f %f %f %f\n",
 				f.Atoms[i].Residue,

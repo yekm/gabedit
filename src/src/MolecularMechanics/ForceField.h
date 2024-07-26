@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -88,6 +88,7 @@ struct _ForceFieldClass
 
 ForceField newForceField();
 void freeForceField(ForceField* forceField);
+ForceField copyForceField(ForceField* forceField);
 
 #endif /* __GABEDIT_FORCEFIELD_H__ */
 

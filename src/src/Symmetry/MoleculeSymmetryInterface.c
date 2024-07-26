@@ -1,6 +1,6 @@
 /* MolSymInterface.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/Global.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/GabeditTextEdit.h"
 #include "../Common/Windows.h"
 #include "../Symmetry/MoleculeSymmetry.h"
@@ -85,15 +85,18 @@ static void putInfoAbelianGroup(GtkWidget* TextWid,
  	gabedit_text_insert (GABEDIT_TEXT(TextWid), NULL, NULL, NULL,t,-1);   
 
 	sprintf(t,"Generators : ");
-	for(i=0;i<nGenerators;i++) sprintf(t,"%s %s, ", t, generators[i]); sprintf(t,"%s\n",t);
+	for(i=0;i<nGenerators;i++) sprintf(t + strlen(t)," %s, ", generators[i]);
+	strcat(t,"\n");
  	gabedit_text_insert (GABEDIT_TEXT(TextWid), NULL, NULL, NULL,t,-1);   
 
 	sprintf(t,"Molcas     : ");
-	for(i=0;i<nMolcas;i++) sprintf(t,"%s %s, ", t, molcasGenerators[i]); sprintf(t,"%s\n",t);
+	for(i=0;i<nMolcas;i++) sprintf(t + strlen(t)," %s, ", molcasGenerators[i]);
+	strcat(t,"\n");
  	gabedit_text_insert (GABEDIT_TEXT(TextWid), NULL, NULL, NULL,t,-1);   
 
 	sprintf(t,"Elements   : ");
-	for(i=0;i<nElements;i++) sprintf(t,"%s %s, ", t, elements[i]); sprintf(t,"%s\n",t); 
+	for(i=0;i<nElements;i++) sprintf(t + strlen(t)," %s, ", elements[i]);
+	strcat(t,"\n");
  	gabedit_text_insert (GABEDIT_TEXT(TextWid), NULL, NULL, NULL,t,-1);   
 	sprintf(t,"-----------------------------------------------------------------------------------------\n\n");
  	gabedit_text_insert (GABEDIT_TEXT(TextWid), NULL, NULL, NULL,t,-1);   
@@ -197,8 +200,8 @@ void createGeometrySymmetryWindow(gint numberOfAtoms,
 	 gtk_window_set_modal (GTK_WINDOW (Dialogue), FALSE);
 	gtk_window_set_position(GTK_WINDOW(Dialogue),GTK_WIN_POS_CENTER);
 
-	g_signal_connect(G_OBJECT(Dialogue), "delete_event", (GtkSignalFunc)destroy_button_windows, NULL);
-	g_signal_connect(G_OBJECT(Dialogue), "delete_event", (GtkSignalFunc)gtk_widget_destroy, NULL);
+	g_signal_connect(G_OBJECT(Dialogue), "delete_event", (GCallback)destroy_button_windows, NULL);
+	g_signal_connect(G_OBJECT(Dialogue), "delete_event", (GCallback)gtk_widget_destroy, NULL);
 
 	TextWid = create_text_widget(GTK_WIDGET(GTK_DIALOG(Dialogue)->vbox),NULL,&frame);
 	gabedit_text_set_editable(GABEDIT_TEXT(TextWid), TRUE);
@@ -209,20 +212,20 @@ void createGeometrySymmetryWindow(gint numberOfAtoms,
 	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Dialogue)->action_area), Bouton, FALSE, TRUE, 5);	
 	GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(Bouton);
-	g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)destroy_button_windows, GTK_OBJECT(Dialogue));
-	g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)gtk_widget_destroy, GTK_OBJECT(Dialogue));
+	g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)destroy_button_windows, GTK_OBJECT(Dialogue));
+	g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(Dialogue));
 
 	add_button_windows(title,Dialogue);
 
 	if(strcmp(groupSymbol,"C1")!=0)
 	{
 		sprintf(message , "Group & Geometry with reduction of molecule to its basis set of atoms\n");
-		sprintf(message,"%s*************************************************************************\n\n",message);
+		strcat(message,"*************************************************************************\n\n");
 	}
 	else
 	{
 		sprintf(message , "Group & Geometry\n");
-		sprintf(message,"%s***********************\n\n",message);
+		strcat(message,"***********************\n\n");
 	}
 
 	putInfoInTextWidget(TextWid, groupSymbol,  principalAxisTolerance, eps, message);
@@ -234,7 +237,7 @@ void createGeometrySymmetryWindow(gint numberOfAtoms,
 		sprintf(groupSymbol,"NO");
 		err = computeSymmetry(principalAxisTolerance, FALSE, groupSymbol,maximalOrder, FALSE, &numberOfAtoms,symbolstmp, Xtmp, Ytmp, Ztmp, &eps, message);
 		sprintf(message,  "Group & Geometry\n");
-		sprintf(message,"%s***********************\n\n",message);
+		strcat(message,"***********************\n\n");
 		putInfoInTextWidget(TextWid, groupSymbol,  principalAxisTolerance, eps, message);
 		putGeometryInTextWidget(TextWid,numberOfAtoms, symbolstmp, Xtmp, Ytmp, Ztmp);
 	}
@@ -309,8 +312,8 @@ GtkWidget* createGeometryAbelianGroupWindow(gint numberOfAtoms,
 	 gtk_window_set_modal (GTK_WINDOW (Dialogue), FALSE);
 	gtk_window_set_position(GTK_WINDOW(Dialogue),GTK_WIN_POS_CENTER);
 
-	g_signal_connect(G_OBJECT(Dialogue), "delete_event", (GtkSignalFunc)destroy_button_windows, NULL);
-	g_signal_connect(G_OBJECT(Dialogue), "delete_event", (GtkSignalFunc)gtk_widget_destroy, NULL);
+	g_signal_connect(G_OBJECT(Dialogue), "delete_event", (GCallback)destroy_button_windows, NULL);
+	g_signal_connect(G_OBJECT(Dialogue), "delete_event", (GCallback)gtk_widget_destroy, NULL);
 
 	TextWid = create_text_widget(GTK_WIDGET(GTK_DIALOG(Dialogue)->vbox),NULL,&frame);
 	gabedit_text_set_editable(GABEDIT_TEXT(TextWid), TRUE);
@@ -321,20 +324,20 @@ GtkWidget* createGeometryAbelianGroupWindow(gint numberOfAtoms,
 	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Dialogue)->action_area), Bouton, FALSE, TRUE, 5);	
 	GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(Bouton);
-	g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)destroy_button_windows, GTK_OBJECT(Dialogue));
-	g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)gtk_widget_destroy, GTK_OBJECT(Dialogue));
+	g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)destroy_button_windows, GTK_OBJECT(Dialogue));
+	g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(Dialogue));
 
 	add_button_windows(title,Dialogue);
 
 	if(strcmp(pointGroupSymbol,"C1")!=0)
 	{
 		sprintf(message,  "Group & Geometry with reduction of molecule to its basis set of atoms\n");
-		sprintf(message,"%s**************************************************************************\n\n",message);
+		strcat(message,"**************************************************************************\n\n");
 	}
 	else
 	{
 		sprintf(message,  "Group & Geometry\n");
-		sprintf(message,"%s************************\n\n",message);
+		strcat(message,"************************\n\n");
 	}
 
 	putInfoInTextWidget(TextWid, pointGroupSymbol,  principalAxisTolerance, eps, message);
@@ -478,37 +481,37 @@ static void createTolerancePrincipalAxisFrame(GtkWidget *box)
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfTolerance[1]);
 	g_object_set_data(G_OBJECT (button), "Value",&tolerancePrincipalAxis[0]);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
-	g_signal_connect(G_OBJECT(button),"clicked", GTK_SIGNAL_FUNC(activateRadioButton),NULL);
+	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);
 	button = addRadioButtonToATable(table, button, "Very Coarser [0.3]", 1, 0, 2);
 	g_object_set_data(G_OBJECT (button), "Entry",entry);
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfTolerance[1]);
 	g_object_set_data(G_OBJECT (button), "Value",&tolerancePrincipalAxis[1]);
-	g_signal_connect(G_OBJECT(button),"clicked", GTK_SIGNAL_FUNC(activateRadioButton),NULL);
+	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);
 	button = addRadioButtonToATable(table, button, "Coarser [0.1]", 2, 0, 2);
 	g_object_set_data(G_OBJECT (button), "Entry",entry);
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfTolerance[1]);
 	g_object_set_data(G_OBJECT (button), "Value",&tolerancePrincipalAxis[2]);
-	g_signal_connect(G_OBJECT(button),"clicked", GTK_SIGNAL_FUNC(activateRadioButton),NULL);
+	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);
 	button = addRadioButtonToATable(table, button, "Medium [0.03]", 3, 0, 2);
 	g_object_set_data(G_OBJECT (button), "Entry",entry);
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfTolerance[1]);
 	g_object_set_data(G_OBJECT (button), "Value",&tolerancePrincipalAxis[3]);
-	g_signal_connect(G_OBJECT(button),"clicked", GTK_SIGNAL_FUNC(activateRadioButton),NULL);
+	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);
 	button = addRadioButtonToATable(table, button, "Fine [0.003]", 4, 0, 2);
 	g_object_set_data(G_OBJECT (button), "Entry",entry);
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfTolerance[1]);
 	g_object_set_data(G_OBJECT (button), "Value",&tolerancePrincipalAxis[4]);
-	g_signal_connect(G_OBJECT(button),"clicked", GTK_SIGNAL_FUNC(activateRadioButton),NULL);
+	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);
 	button = addRadioButtonToATable(table, button, "Other", 5, 0, 1);
 	g_object_set_data(G_OBJECT (button), "Entry",entry);
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfTolerance[1]);
 	g_object_set_data(G_OBJECT (button), "Value",&tolerancePrincipalAxis[5]);
-	g_signal_connect(G_OBJECT(button),"clicked", GTK_SIGNAL_FUNC(activateRadioButton),NULL);
+	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);
 	gtk_widget_set_size_request(GTK_WIDGET(entry),50,-1);
 	add_widget_table(table, entry,5,1);
 	gtk_widget_set_sensitive(entry, FALSE);
 	gtk_entry_set_text(GTK_ENTRY(entry),"0.01");
-	g_signal_connect(G_OBJECT(entry),"changed", GTK_SIGNAL_FUNC(activateEntry),button);
+	g_signal_connect(G_OBJECT(entry),"changed", G_CALLBACK(activateEntry),button);
 	tmpTolerancePrincipalAxisValue = 5e-3;
 }
 /**************************************************************************************************************************************/
@@ -535,38 +538,38 @@ static void createTolerancePositionFrame(GtkWidget *box)
 	g_object_set_data(G_OBJECT (button), "Entry",entry);
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfTolerance[0]);
 	g_object_set_data(G_OBJECT (button), "Value",&tolerancePosition[0]);
-	g_signal_connect(G_OBJECT(button),"clicked", GTK_SIGNAL_FUNC(activateRadioButton),NULL);
+	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
 	button = addRadioButtonToATable(table, button, "Very Coarser [0.3]", 1, 0, 2);
 	g_object_set_data(G_OBJECT (button), "Entry",entry);
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfTolerance[0]);
 	g_object_set_data(G_OBJECT (button), "Value",&tolerancePosition[1]);
-	g_signal_connect(G_OBJECT(button),"clicked", GTK_SIGNAL_FUNC(activateRadioButton),NULL);
+	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);
 	button = addRadioButtonToATable(table, button, "Coarser [0.1]", 2, 0, 2);
 	g_object_set_data(G_OBJECT (button), "Entry",entry);
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfTolerance[0]);
 	g_object_set_data(G_OBJECT (button), "Value",&tolerancePosition[2]);
-	g_signal_connect(G_OBJECT(button),"clicked", GTK_SIGNAL_FUNC(activateRadioButton),NULL);
+	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);
 	button = addRadioButtonToATable(table, button, "Medium [0.03]", 3, 0, 2);
 	g_object_set_data(G_OBJECT (button), "Entry",entry);
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfTolerance[0]);
 	g_object_set_data(G_OBJECT (button), "Value",&tolerancePosition[3]);
-	g_signal_connect(G_OBJECT(button),"clicked", GTK_SIGNAL_FUNC(activateRadioButton),NULL);
+	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);
 	button = addRadioButtonToATable(table, button, "Fine [0.003]", 4, 0, 2);
 	g_object_set_data(G_OBJECT (button), "Entry",entry);
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfTolerance[0]);
 	g_object_set_data(G_OBJECT (button), "Value",&tolerancePosition[4]);
-	g_signal_connect(G_OBJECT(button),"clicked", GTK_SIGNAL_FUNC(activateRadioButton),NULL);
+	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);
 	button = addRadioButtonToATable(table, button, "Other", 5, 0, 1);
 	g_object_set_data(G_OBJECT (button), "Entry",entry);
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfTolerance[0]);
 	g_object_set_data(G_OBJECT (button), "Value",&tolerancePosition[5]);
-	g_signal_connect(G_OBJECT(button),"clicked", GTK_SIGNAL_FUNC(activateRadioButton),NULL);
+	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);
 	gtk_widget_set_size_request(GTK_WIDGET(entry),50,-1);
 	add_widget_table(table, entry,5,1);
 	gtk_widget_set_sensitive(entry, FALSE);
 	gtk_entry_set_text(GTK_ENTRY(entry),"0.01");
-	g_signal_connect(G_OBJECT(entry),"changed", GTK_SIGNAL_FUNC(activateEntry),button);
+	g_signal_connect(G_OBJECT(entry),"changed", G_CALLBACK(activateEntry),button);
 	tmpTolerancePositionValue = -1.0;
 }
 /****************************************************************************************************/
@@ -587,8 +590,8 @@ void createToleranceWindow(GtkWidget* win, GabeditSignalFunc myFunc)
 	gtk_window_set_modal (GTK_WINDOW (dialogWindow), TRUE);
 	gtk_window_set_position(GTK_WINDOW(dialogWindow),GTK_WIN_POS_CENTER);
 
-	g_signal_connect(G_OBJECT(dialogWindow), "delete_event", (GtkSignalFunc)destroy_button_windows, NULL);
-	g_signal_connect(G_OBJECT(dialogWindow), "delete_event", (GtkSignalFunc)gtk_widget_destroy, NULL);
+	g_signal_connect(G_OBJECT(dialogWindow), "delete_event", (GCallback)destroy_button_windows, NULL);
+	g_signal_connect(G_OBJECT(dialogWindow), "delete_event", (GCallback)gtk_widget_destroy, NULL);
 
 	frame = gtk_frame_new (NULL);
 	gtk_widget_show (frame);
@@ -606,17 +609,17 @@ void createToleranceWindow(GtkWidget* win, GabeditSignalFunc myFunc)
 	button = create_button(dialogWindow,"Cancel");
 	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(dialogWindow)->action_area), button, FALSE, TRUE, 5);	
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GtkSignalFunc)destroy_button_windows, GTK_OBJECT(dialogWindow));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GtkSignalFunc)gtk_widget_destroy, GTK_OBJECT(dialogWindow));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)destroy_button_windows, GTK_OBJECT(dialogWindow));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(dialogWindow));
 
 	button = create_button(dialogWindow,"OK");
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(dialogWindow)->action_area), button, FALSE, TRUE, 5);	
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GtkSignalFunc)setToleranceParametersFromTmp, GTK_OBJECT(dialogWindow));
-	if(myFunc) g_signal_connect_swapped(G_OBJECT(button), "clicked", (GtkSignalFunc)myFunc, GTK_OBJECT(dialogWindow));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GtkSignalFunc)destroy_button_windows, GTK_OBJECT(dialogWindow));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GtkSignalFunc)gtk_widget_destroy, GTK_OBJECT(dialogWindow));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)setToleranceParametersFromTmp, GTK_OBJECT(dialogWindow));
+	if(myFunc) g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)myFunc, GTK_OBJECT(dialogWindow));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)destroy_button_windows, GTK_OBJECT(dialogWindow));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(dialogWindow));
 	
 	add_button_windows(title,dialogWindow);
 

@@ -1,6 +1,6 @@
 /* CaptureOrbitals.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -32,7 +32,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/TriangleDraw.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Files/FileChooser.h"
 #include "../Common/Windows.h"
 #include "../OpenGL/Vibration.h"
@@ -186,13 +186,13 @@ static void create_images_window (gint n, gint* numOrbs,gchar* prefix,gchar* tit
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)export_png_file_dlg,G_OBJECT(table));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)export_png_file_dlg,G_OBJECT(table));
 
 	button = create_button(window,"Screen capture JPEG");
 	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_show (button);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)export_jpeg_file_dlg,G_OBJECT(table));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)export_jpeg_file_dlg,G_OBJECT(table));
 
 	gtk_widget_show (window);
 }
@@ -1123,13 +1123,13 @@ void capture_orbitals_dlg()
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)apply_capture_orbitals,G_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_capture_orbitals,G_OBJECT(Win));
 
 	button = create_button(Win,"Cancel");
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child, G_OBJECT(Win));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)gtk_widget_destroy,G_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, G_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,G_OBJECT(Win));
 	gtk_widget_show (button);
 
   

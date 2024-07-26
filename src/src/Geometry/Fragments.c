@@ -1,6 +1,6 @@
 /* Fragments.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -28,11 +28,13 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/GabeditType.h"
 #include "../Geometry/Fragments.h"
 #include "../Utils/Utils.h"
+#include "../Utils/AtomsProp.h"
 #include "../MolecularMechanics/PDBTemplate.h"
 #include "../Geometry/DrawGeom.h"
 #include "../MolecularMechanics/CalculTypesAmber.h"
 
 #define ANG_TO_BOHR  1.0/0.52917726
+#define BOHR_TO_ANG  0.52917726
 
 /*****************************************************************/
 void FreeFragment(Fragment* F)
@@ -51,7 +53,7 @@ void FreeFragment(Fragment* F)
 	F->NAtoms = 0;
 	F->Atoms = NULL;
 }
-/*****************************************************************/
+/********************************************************************************/
 static void SetResidue(Fragment* Frag,gchar* name)
 {
 	gint i;
@@ -107,6 +109,8 @@ static void SetAtom(Atom* A,gchar* symb,gfloat x,gfloat y,gfloat z)
 	}
 	if(!strcmp(A->Symb,"Hh") || !strcmp(A->Symb,"Oh") )
 		A->Symb = g_strdup_printf("%c",toupper(symb[0]));
+	if(!strcmp(A->Symb,"Hw") || !strcmp(A->Symb,"Ow") )
+		A->Symb = g_strdup_printf("%c",toupper(symb[0]));
 
 	A->Coord[0] = (gdouble)x*(gdouble)ANG_TO_BOHR;
 	A->Coord[1] = (gdouble)y*(gdouble)ANG_TO_BOHR;
@@ -129,6 +133,123 @@ void CenterFrag(Fragment* F)
 	for(i=0;i<3;i++)
 	for(j=0;j<F->NAtoms;j++)
 		 F->Atoms[j].Coord[i] -= C[i]; 
+
+}
+/********************************************************************************/
+gint AddHToAtomPDB(Fragment* Frag, gchar* pdb)
+{
+	gint i;
+	gint j;
+	gint C = -1;
+	gint O = -1;
+	gdouble V[3] = {0,0,0};
+  	SAtomsProp* props = NULL;
+  	SAtomsProp propH;
+	gdouble d;
+	gdouble a;
+	gdouble norm;
+	gdouble rcut;
+
+	if(Frag->NAtoms<1) return -1;
+	for(i=0;i<Frag->NAtoms;i++)
+	{
+		if(Frag->Atoms[i].pdbType && !strcmp(Frag->Atoms[i].pdbType,pdb)) 
+		{
+			C = i;
+			break;
+		}
+	}
+	if(C==-1) return -1;
+  	props = g_malloc(Frag->NAtoms*sizeof(SAtomsProp));
+	for(i=0;i<Frag->NAtoms;i++)
+		props[i] = prop_atom_get(Frag->Atoms[i].Symb);
+	propH = prop_atom_get("H");
+
+	for(i=0;i<Frag->NAtoms;i++)
+	{
+		d = 0;
+		for(j=0;j<3;j++)
+		{
+			a = Frag->Atoms[C].Coord[j]-Frag->Atoms[i].Coord[j];
+			d += a*a;
+		}
+  		rcut = props[C].covalentRadii+props[i].covalentRadii;
+  		rcut = rcut* rcut;
+		if(d<=rcut)
+		{
+			norm = 0;
+			for(j=0;j<3;j++)
+			{
+				a = Frag->Atoms[C].Coord[j]-Frag->Atoms[i].Coord[j];
+				norm += a*a;
+			}
+			if(norm>1e-10) norm = 1/sqrt(norm);
+			for(j=0;j<3;j++)
+			{
+				a = Frag->Atoms[C].Coord[j]-Frag->Atoms[i].Coord[j];
+				V[j] += a*norm;
+			}
+		}
+	}
+	norm = 0;
+	for(j=0;j<3;j++) norm += V[j]*V[j];
+	if(norm<1e-10) 
+	{
+		for(j=0;j<3;j++) 
+			V[j] = rand()/(gdouble)RAND_MAX-0.5;
+		norm = 0;
+		for(j=0;j<3;j++) norm += V[j]*V[j];
+	}
+	if(norm>1e-10) norm = 1/sqrt(norm);
+	norm *=(props[C].covalentRadii+propH.covalentRadii)*0.5*BOHR_TO_ANG;
+	for(j=0;j<3;j++)
+		V[j] *= norm;
+	for(j=0;j<3;j++)
+		V[j] +=Frag->Atoms[C].Coord[j]*BOHR_TO_ANG;
+
+	Frag->NAtoms++;
+	Frag->Atoms = g_realloc(Frag->Atoms,Frag->NAtoms*sizeof(Atom));
+	i = Frag->NAtoms-1;
+	SetAtom(&Frag->Atoms[i],"H",
+			(gfloat)(V[0]),
+			(gfloat)(V[1]),
+			(gfloat)(V[2])
+			);
+	Frag->Atoms[i].Residue = g_strdup(Frag->Atoms[C].Residue);
+
+
+	if(props)
+	for(i=0;i<Frag->NAtoms-1;i++)
+	{
+		if(props[i].name) g_free(props[i].name);
+		if(props[i].symbol) g_free(props[i].symbol);
+	}
+	if(props) g_free(props);
+	if(propH.name) g_free(propH.name);
+	if(propH.symbol) g_free(propH.symbol);
+	Frag->atomToDelete = Frag->NAtoms-1;
+	Frag->atomToBondTo = C;
+	for(i=0;i<Frag->NAtoms;i++)
+	{
+		if(i==C) continue;
+		if(Frag->Atoms[i].Symb && !strcmp(Frag->Atoms[i].Symb,"H"))  continue;
+		d = 0;
+		for(j=0;j<3;j++)
+		{
+			a = Frag->Atoms[C].Coord[j]-Frag->Atoms[i].Coord[j];
+			d += a*a;
+		}
+  		rcut = props[C].covalentRadii+props[i].covalentRadii;
+  		rcut = rcut*rcut;
+		if(d<=rcut)
+		{
+			O = i;
+			if(Frag->Atoms[i].pdbType && !strcmp(Frag->Atoms[i].pdbType,"O"))  break;
+		}
+	}
+	Frag->angleAtom    = O;
+	return Frag->NAtoms-1;
+
 
 }
 /*****************************************************************/
@@ -277,7 +398,22 @@ Fragment GetFragment(gchar* Name)
 		F.angleAtom    = 1;
 		
 	}
-	else if ( ( !strcmp(Name, "Methyl" ) ) || ( !strcmp(Name, "Methane" ) ) )
+	else if ( ( !strcmp(Name, "Methyl" ) ) )
+	{
+		F.NAtoms =4;
+		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GMTL");
+        	SetAtom(&F.Atoms[ 0 ] ,  "C1", 0.0f, 0.0f, 0.0f );
+        	SetAtom(&F.Atoms[ 1 ] ,  "H11", 0.321f, 0.672f, -0.796f );
+        	SetAtom(&F.Atoms[ 2 ] ,  "H12", -0.988f, -0.458f, -0.039f );
+        	SetAtom(&F.Atoms[ 3 ] ,  "H13", 0.669f, -0.218f, 0.832f );
+		
+		F.atomToDelete = 3;
+		F.atomToBondTo = 0;
+		F.angleAtom    = 2;
+		
+	}
+	else if (( !strcmp(Name, "Methane" ) ) )
 	{
 		F.NAtoms =5;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
@@ -2174,10 +2310,10 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =3;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
-		sprintf(T,"GWAT");
-		SetAtom(&F.Atoms[ 0 ] , "O1", 0.000f, -0.388f, 0.000f );
-		SetAtom(&F.Atoms[ 1 ] , "H1", 0.751f, 0.194f, 0.000f );
-		SetAtom(&F.Atoms[ 2 ] , "H2", -0.751f, 0.194f, 0.000f );
+		sprintf(T,"HOH");
+		SetAtom(&F.Atoms[ 0 ] , "OW", 0.000f, -0.388f, 0.000f );
+		SetAtom(&F.Atoms[ 1 ] , "HW1", 0.751f, 0.194f, 0.000f );
+		SetAtom(&F.Atoms[ 2 ] , "HW2", -0.751f, 0.194f, 0.000f );
 		
 		F.atomToDelete = 2;
 		F.atomToBondTo = 0;
@@ -2311,9 +2447,9 @@ Fragment GetFragment(gchar* Name)
 		SetAtom(&F.Atoms[ 21 ] , "H",-1.557000f,3.583000f,0.645000f);
 		SetAtom(&F.Atoms[ 22 ] , "H",-0.027000f,4.428000f,0.329000f);
 		SetAtom(&F.Atoms[ 23 ] , "H",-1.020000f,3.851000f,-1.029000f);
-		F.atomToDelete =1;
-		F.atomToBondTo =2;
-		F.angleAtom    =3;
+		F.atomToDelete =15;
+		F.atomToBondTo =11;
+		F.angleAtom    =9;
 	}
 	else if ( !strcmp(Name, "Heroine" ) )
 	{
@@ -3721,8 +3857,8 @@ Fragment GetFragment(gchar* Name)
 		SetAtom(&F.Atoms[ 5 ] , "H",0.357233f,1.241081f,0.907472f);
 		SetAtom(&F.Atoms[ 6 ] , "H",0.357233f,1.241081f,-0.907472f);
 		F.atomToDelete =5;
-		F.atomToBondTo =2;
-		F.angleAtom    =1;
+		F.atomToBondTo =1;
+		F.angleAtom    =2;
 	}
 	else if ( !strcmp(Name, "Pyrazine" ) )
 	{

@@ -1,6 +1,6 @@
 /* GeomDraw */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
 #include "../Utils/Utils.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/HydrogenBond.h"
 #include "Sphere.h"
 #include "Cylinder.h"
@@ -31,7 +31,7 @@ DEALINGS IN THE SOFTWARE.
 #include "RingsOrb.h"
 
 /************************************************************************/
-void draw_space(int i)
+static void draw_space(int i, gdouble g)
 {
 	int k;
 	V4d Specular = {1.0f,1.0f,1.0f,1.0f};
@@ -45,11 +45,11 @@ void draw_space(int i)
 	for(k=0;k<3;k++) Ambiant[k] = Specular[k]*0.8;
 	for(k=0;k<3;k++) Specular[k] = 1.0;
 
-	Sphere_Draw_Color_Precision(GeomOrb[i].Prop.vanDerWaalsRadii,GeomOrb[i].C,Specular,Diffuse,Ambiant, (GLint)openGLOptions.numberOfSubdivisionsSphere*2);
+	Sphere_Draw_Color_Precision(GeomOrb[i].Prop.vanDerWaalsRadii*g,GeomOrb[i].C,Specular,Diffuse,Ambiant, (GLint)openGLOptions.numberOfSubdivisionsSphere*2);
 
 }
 /************************************************************************/
-void draw_ball(int i,GLfloat scal)
+static void draw_ball(int i,GLfloat scal)
 {
 	int k;
 	V4d Specular = {1.0f,1.0f,1.0f,1.0f};
@@ -69,7 +69,7 @@ void draw_ball(int i,GLfloat scal)
 
 }
 /************************************************************************/
-void draw_hbond(int i,int j,GLfloat scal)
+static void draw_hbond(int i,int j,GLfloat scal)
 {
 	
 	int k;
@@ -127,7 +127,7 @@ void draw_hbond(int i,int j,GLfloat scal)
      }
 }
 /************************************************************************/
-void draw_wireframe(int i,int j, int line)
+static void draw_wireframe(int i,int j, int line)
 {
 	
 	int k;
@@ -204,67 +204,7 @@ void draw_wireframe(int i,int j, int line)
 
 }
 /************************************************************************/
-/*
-void draw_bond(int i,int j,GLfloat scal)
-{
-	
-	int k;
-	GLfloat g;
-	V4d Specular1 = {1.0f,1.0f,1.0f,1.0f};
-	V4d Diffuse1  = {0.0f,0.0f,0.0f,1.0f};
-	V4d Ambiant1  = {0.0f,0.0f,0.0f,1.0f};
-	V4d Specular2 = {1.0f,1.0f,1.0f,1.0f};
-	V4d Diffuse2  = {0.0f,0.0f,0.0f,1.0f};
-	V4d Ambiant2  = {0.0f,0.0f,0.0f,1.0f};
-	GLfloat aspect = scal;
-	GLfloat p1;
-	GLfloat p2;
-	
-	if(GeomOrb[i].Prop.radii<GeomOrb[j].Prop.radii) g = GeomOrb[i].Prop.radii*aspect;
-	else g = GeomOrb[j].Prop.radii*aspect;
-	  
-	Specular1[0] = GeomOrb[i].Prop.color.red/(gfloat)65535;
-	Specular1[1] = GeomOrb[i].Prop.color.green/(gfloat)65535;
-	Specular1[2] = GeomOrb[i].Prop.color.blue/(gfloat)65535;
-
-	Specular2[0] = GeomOrb[j].Prop.color.red/(gfloat)65535;
-	Specular2[1] = GeomOrb[j].Prop.color.green/(gfloat)65535;
-	Specular2[2] = GeomOrb[j].Prop.color.blue/(gfloat)65535;
-
-	for(k=0;k<3;k++)
-	{
-		Diffuse1[k] = Specular1[k]*0.8;
-		Diffuse2[k] = Specular2[k]*0.8;
-	}
-	for(k=0;k<3;k++)
-	{
-		Ambiant1[k] = Specular1[k]*0.5;
-		Ambiant2[k] = Specular2[k]*0.5;
-	}
-
-	for(k=0;k<3;k++)
-	{
-		Ambiant1[k] = 0.1;
-		Ambiant2[k] = 0.1;
-	}
-	for(k=0;k<3;k++)
-	{
-		Specular1[k] = 0.8;
-		Specular2[k] = 0.8;
-	}
-
-	p1 = GeomOrb[i].Prop.covalentRadii+GeomOrb[i].Prop.radii;
-	p2 = GeomOrb[j].Prop.covalentRadii+GeomOrb[j].Prop.radii;
-
-	Cylinder_Draw_Color_Two(g,GeomOrb[i].C,GeomOrb[j].C,
-				Specular1,Diffuse1,Ambiant1,
-				Specular2,Diffuse2,Ambiant2,
-				p1,p2);
-
-}
-*/
-/************************************************************************/
-void draw_bond(int i,int j,GLfloat scal, GabEditBondType bondType)
+static void draw_bond(int i,int j,GLfloat scal, GabEditBondType bondType)
 {
 	
 	int k;
@@ -318,13 +258,18 @@ void draw_bond(int i,int j,GLfloat scal, GabEditBondType bondType)
 	p1 = GeomOrb[i].Prop.covalentRadii+GeomOrb[i].Prop.radii;
 	p2 = GeomOrb[j].Prop.covalentRadii+GeomOrb[j].Prop.radii;
 
-	if(bondType == GABEDIT_BONDTYPE_SINGLE)
+	if(      bondType == GABEDIT_BONDTYPE_SINGLE ||
+		( !ShowMultiBondsOrb && 
+		 (bondType == GABEDIT_BONDTYPE_DOUBLE || bondType == GABEDIT_BONDTYPE_TRIPLE)
+		 )
+	    )
 		Cylinder_Draw_Color_Two(g,GeomOrb[i].C,GeomOrb[j].C,
 				Specular1,Diffuse1,Ambiant1,
 				Specular2,Diffuse2,Ambiant2,
 				p1,p2);
+
 	else
-	if(bondType == GABEDIT_BONDTYPE_DOUBLE)
+	if(bondType == GABEDIT_BONDTYPE_DOUBLE && ShowMultiBondsOrb)
 	{
 	  	V3d vScal = {g/aspect*0.3,g/aspect*0.3,g/aspect*0.3};
 		V3d C1;
@@ -352,7 +297,7 @@ void draw_bond(int i,int j,GLfloat scal, GabEditBondType bondType)
 		Cylinder_Draw_Color_Two(g/2,C1,C2, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
 	}
 	else
-	if(bondType == GABEDIT_BONDTYPE_TRIPLE)
+	if(bondType == GABEDIT_BONDTYPE_TRIPLE && ShowMultiBondsOrb)
 	{
 	  	V3d vScal = {g/aspect*0.3,g/aspect*0.3,g/aspect*0.3};
 		V3d C1;
@@ -384,7 +329,7 @@ void draw_bond(int i,int j,GLfloat scal, GabEditBondType bondType)
 	}
 }
 /************************************************************************/
-gint GeomDrawBallStick()
+static gint GeomDrawBallStick(gdouble scaleBall, gdouble scaleStick)
 {
 	gint i;
 	gint j;
@@ -392,7 +337,7 @@ gint GeomDrawBallStick()
 	for(i = 0;i<Ncenters;i++) 
 	{
 		if(!ShowHAtomOrb && strcmp("H",GeomOrb[i].Symb)==0) continue;
-		draw_ball(i,1.0);
+		draw_ball(i,scaleBall);
 	}
 	for(list=BondsOrb;list!=NULL;list=list->next)
 	{
@@ -401,20 +346,20 @@ gint GeomDrawBallStick()
 		j = data->n2;
 		if(!ShowHAtomOrb && (strcmp("H",GeomOrb[i].Symb)==0 || strcmp("H",GeomOrb[j].Symb)==0)) continue;
 		if(data->bondType == GABEDIT_BONDTYPE_HYDROGEN)
-			draw_hbond(i,j,1.0/5.0);
+			draw_hbond(i,j,1.0/10.0*scaleStick);
 		else
-			draw_bond(i,j,1.0/3.0, data->bondType);
+			draw_bond(i,j,1.0/3.0*scaleStick, data->bondType);
 	}
   	return TRUE;
 }
 /************************************************************************/
-gint GeomDrawSpaceFill()
+static gint GeomDrawSpaceFill(gdouble scaleBall)
 {
 	int i;
 	  for(i = 0;i<Ncenters;i++)
 	  {
 		if(!ShowHAtomOrb && strcmp("H",GeomOrb[i].Symb)==0) continue;
-		draw_space(i);
+		draw_space(i,scaleBall);
 	  }
 
   return TRUE;
@@ -440,7 +385,7 @@ static void draw_ball_for_stick(int i, GLfloat g)
 
 }
 /************************************************************************/
-void draw_bond_for_stick(int i,int j,GLfloat g, GabEditBondType bondType)
+static void draw_bond_for_stick(int i,int j,GLfloat g, GabEditBondType bondType)
 {
 	
 	int k;
@@ -491,13 +436,17 @@ void draw_bond_for_stick(int i,int j,GLfloat g, GabEditBondType bondType)
 				Specular2,Diffuse2,Ambiant2,
 				p1,p2);
 
-	if(bondType == GABEDIT_BONDTYPE_SINGLE)
+	if(      bondType == GABEDIT_BONDTYPE_SINGLE ||
+		( !ShowMultiBondsOrb && 
+		 (bondType == GABEDIT_BONDTYPE_DOUBLE || bondType == GABEDIT_BONDTYPE_TRIPLE)
+		 )
+	    )
 		Cylinder_Draw_Color_Two(g,GeomOrb[i].C,GeomOrb[j].C,
 				Specular1,Diffuse1,Ambiant1,
 				Specular2,Diffuse2,Ambiant2,
 				p1,p2);
 	else
-	if(bondType == GABEDIT_BONDTYPE_DOUBLE)
+	if(bondType == GABEDIT_BONDTYPE_DOUBLE && ShowMultiBondsOrb)
 	{
 	  	V3d vScal = {g/aspect*0.35,g/aspect*0.35,g/aspect*0.35};
 		V3d C1;
@@ -525,7 +474,7 @@ void draw_bond_for_stick(int i,int j,GLfloat g, GabEditBondType bondType)
 		Cylinder_Draw_Color_Two(g/2,C1,C2, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
 	}
 	else
-	if(bondType == GABEDIT_BONDTYPE_TRIPLE)
+	if(bondType == GABEDIT_BONDTYPE_TRIPLE && ShowMultiBondsOrb)
 	{
 	  	V3d vScal = {g/aspect*0.35,g/aspect*0.35,g/aspect*0.35};
 		V3d C1;
@@ -558,7 +507,7 @@ void draw_bond_for_stick(int i,int j,GLfloat g, GabEditBondType bondType)
 
 }
 /************************************************************************/
-gint GeomDrawStick()
+static gint GeomDrawStick(gdouble scaleStick)
 {
 	int i;
 	int j;
@@ -567,7 +516,7 @@ gint GeomDrawStick()
 	for(i = 0;i<Ncenters;i++) 
 	{
 		if(!ShowHAtomOrb && strcmp("H",GeomOrb[i].Symb)==0) continue;
-		draw_ball_for_stick(i, g);
+		draw_ball_for_stick(i, g*scaleStick);
 	}
 
 	for(list=BondsOrb;list!=NULL;list=list->next)
@@ -577,14 +526,14 @@ gint GeomDrawStick()
 		j = data->n2;
 		if(!ShowHAtomOrb && (strcmp("H",GeomOrb[i].Symb)==0 || strcmp("H",GeomOrb[j].Symb)==0)) continue;
 		if(data->bondType == GABEDIT_BONDTYPE_HYDROGEN)
-			draw_hbond(i,j,0.15);
+			draw_hbond(i,j,0.07*scaleStick);
 		else
-			draw_bond_for_stick(i, j, g,  data->bondType);
+			draw_bond_for_stick(i, j, g*scaleStick,  data->bondType);
 	}
 	return TRUE;
 }
 /************************************************************************/
-gint GeomDrawWireFrame()
+static gint GeomDrawWireFrame(gdouble scaleBall)
 {
 	int i;
 	int j;
@@ -610,7 +559,7 @@ gint GeomDrawWireFrame()
 	for(i = 0;i<Ncenters;i++) 
 	{
 		if(!ShowHAtomOrb && strcmp("H",GeomOrb[i].Symb)==0) continue;
-		if(!Ok[i]) draw_ball(i,0.2);
+		if(!Ok[i]) draw_ball(i,0.2*scaleBall);
 	}
 	if(Ok) g_free(Ok);
 	glLineWidth(1);
@@ -618,27 +567,26 @@ gint GeomDrawWireFrame()
 	return TRUE;
 }
 /************************************************************************/
-gint GeomDraw()
+static gint GeomDraw(gdouble scaleBall, gdouble scaleStick)
 {
-	buildBondsOrb();
 	switch(TypeGeom)
 	{
-	case GABEDIT_TYPEGEOM_BALLSTICK : return GeomDrawBallStick();
-	case GABEDIT_TYPEGEOM_STICK : return GeomDrawStick();
-	case GABEDIT_TYPEGEOM_SPACE: return GeomDrawSpaceFill();
-	case GABEDIT_TYPEGEOM_WIREFRAME : return GeomDrawWireFrame();
-	default: return GeomDrawBallStick();
+	case GABEDIT_TYPEGEOM_BALLSTICK : return GeomDrawBallStick(scaleBall, scaleStick);
+	case GABEDIT_TYPEGEOM_STICK : return GeomDrawStick(scaleStick);
+	case GABEDIT_TYPEGEOM_SPACE: return GeomDrawSpaceFill(scaleBall);
+	case GABEDIT_TYPEGEOM_WIREFRAME : return GeomDrawWireFrame(scaleBall);
+	default: return GeomDrawBallStick(scaleBall, scaleStick);
 	}
   return FALSE;
 }
 /************************************************************************/
-GLuint GeomGenList(GLuint geomlist)
+GLuint GeomGenList(GLuint geomlist, gdouble scaleBall, gdouble scaleStick)
 {
 	if(!GeomOrb) return 0;
 	if (glIsList(geomlist) == GL_TRUE) glDeleteLists(geomlist,1);
 	geomlist = glGenLists(1);
 	glNewList(geomlist, GL_COMPILE);
-	GeomDraw();
+	GeomDraw(scaleBall, scaleStick);
 	glEndList();
 	return geomlist;
 }

@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -40,6 +40,10 @@ typedef struct _ColorMap
 }ColorMap;
 
 void colormap_free(ColorMap* colorMap);
+ColorMap*  new_colorMap_fromGrid_multicolor(Grid* grid);
+ColorMap*  new_colorMap_min_max_multicolor(gfloat minValue, gfloat maxValue);
+ColorMap*  new_colorMap_min_max_unicolor(gfloat minValue, gfloat maxValue, gfloat color[]);
+ColorMap*  new_colorMap_fromGrid_unicolor(Grid* grid, gfloat color[]);
 ColorMap*  new_colorMap_fromGrid(Grid* grid);
 ColorMap*  new_colorMap_min_max(gfloat minValue, gfloat maxValue);
 void  set_Color_From_colorMap(ColorMap* colorMap, gfloat color[], gfloat value);

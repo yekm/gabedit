@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -16,10 +16,25 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 DEALINGS IN THE SOFTWARE.
 ************************************************************************************************************/
 
-#ifndef __GABEDIT_POSTSCRIPT_H__
-#define __GABEDIT_POSTSCRIPT_H__
+#ifndef __GABEDIT_ATOMSE_H__
+#define __GABEDIT_ATOMSE_H__
 
-void create_save_postscript(GtkWidget *Win);
+typedef struct _AtomSE
+{
+	gdouble coordinates[3];
+	gdouble charge;
+	SAtomsProp prop;
+	gchar* mmType;
+	gchar* pdbType;
+	gchar* residueName;
+	gint residueNumber;
 
-#endif /* __GABEDIT_POSTSCRIPT_H__ */
+	gboolean show;
+	GabEditLayerType layer;
+}AtomSE;
+
+gdouble getAngleSE(AtomSE *a1,AtomSE* a2,AtomSE* a3);
+gdouble getTorsionSE(AtomSE* a1,AtomSE* a2,AtomSE* a3,AtomSE* a4);
+
+#endif /* __GABEDIT_ATOMSE_H__ */
 

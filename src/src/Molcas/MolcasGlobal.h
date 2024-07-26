@@ -5,6 +5,7 @@
 GtkWidget* molcasWin;
 MolcasMolecule molcasMolecule;
 MolcasOptimisation molcasOptimisation;
+MolcasSolvation molcasSolvation;
 MolcasScf molcasScf;
 MolcasGridIT molcasGridIT;
 MolcasColorFore molcasColorFore;

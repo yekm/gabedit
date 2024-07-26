@@ -113,12 +113,76 @@
    The user can change the coordinates of atoms directly from the list of atoms.
    The user can change bond, angles and dihedral in the Z-matrix editor of atoms directly from the list of atoms.
    Gabedit recalculate the bond, angle and diedral angle value considering the new atomic connectivity index.
-18 june  2008 :
+18 june 2008 :
    The user can set a title for the openGL window (Set/Title)
    Gabedit can create   slides for several orbitals by  one
    click(Orbitals/Slideshow).
-24 june  2008 :
+24 june 2008 :
    Under unix, the user can run gamess without any changes to the scripts of gamess.
-25 june  2008 :
-   Gabedit load the eps charges from a mopac output file(last geometry) if
-   these is available
+25 june 2008 :
+   Gabedit load the eps charges from a Mopac output file(last geometry) if one is available
+10 july 2008 :
+	A Molecular dynamics conformational search is implemented using a MM potential (Amber 99).
+	During the production stage Gabedit selects a number geometries.
+	At the end of the molecular dynamic simulation, each selected geometry is optimized. Finaly the geometries are sorted by energy and saved in a file.
+	The very similar geometries can be removed by Gabedit.
+	Gabedit can also optimize these geometries, interactively, using Mopac or PCGamess.
+	Gabedit can also creates input files for Mopac, PCGamess or Gaussian for a post processing.
+24 july 2008 :
+   Migration from GDK drawing functions to Cairo: Cross-device Rendering for Vector Graphics.
+   Cairo is now used for the XYplot gabedit widget(used by gabedit for draw spectrums).
+   Cairo is now used for the geometry drawing window.
+   Geometry can be exported in eps, ps, pdf or svg file.
+   The curves of XYplot window can be exported in eps, ps, pdf or svg file.
+   New tool for compute distance between 2 points on XYPlot window.
+   "Control+left button" can be used for do a zoom on XYPlot window. 
+2 november 2008 :
+   Increase speed of selection on the XYplot window.
+   The identical molecular structures are removed after a Molecular dynamics conformational search.
+11 november 2008 :
+   A Molecular dynamics conformational search is implemented using a PM6/MOPAC or AM1/PCGamess method.
+   One can optimize, calculate the ESP fit charges and energy by MOPAC or PCGamess by one click from the "Draw Geometry" window.
+30 november 2008 :
+  The background color of the Draw and Display windows  are saved at the end of session. 
+  They are restored in the  next session.
+  The .dat Gamess file is copied in the directory of the input file at the end of the run.
+  One can run guassian under windows (locally) without runWg03.bat file (but not tested. I have not gaussian under windows).
+10 december 2008 :
+  All deprecated Gdk, Gtk and pango functions has removed.
+  The stick&ball can be scaled in the Display window.
+  The user can change the order of atoms by changing the number of atom in the Geometry editor.
+  The bug during read of geometries from a molpro log file is fixed.
+14 Junary 2009 :
+  The bug for generation of Geometry with SYMMETRY for input file of Gamess or PCGamess has been fixed.
+  The bug for read geometrie during a MD Conformation search with PCGamess has fixed.
+18 Junary 2009 :
+  A bug is fixed : the beta orbitals from a MOPAC UHF calculation are normalized correctely.
+                   No problem with the old versions of Gabedit for the Alpha orbitals from MOPAC
+07 Febrary 2009 :
+  The user has complete control over the bonds displayed in a drawing.
+  The drawing of the molecule atom by atom have been simplified.
+  The drawing of the molecule fragment by fragment have been simplified.
+  Gabedit read connectivities from gabedit, hin, pdb, mol2 and mol files.
+17 Febrary 2009 :
+  The user can set the value of the distance, bond angle or dihedral angle in the Mesure notebook.
+  3 color map types are implemented for the opengl window.
+19 Febrary 2009 :
+  Undo / Redo have been implemented for the draw window.
+20 march 2009 :
+  Gabedit can read the normal modes from a molpro 2008 out file.
+  Gabedit can read the first and last geometries from a gaussian out file with a "nosymm" calculation.
+  The problem of connectivity after the change of number of center (in XYZ geometry editor) is corrected.
+2 april 2009 :
+  Gabedit can read the esp charges from Gaussian. Gabedit read the esp
+  charges. If they are not available, Gabedit read the natural charges. If they
+  are not available, Gabedit read the Mullekan charges.
+13 april 2009 :
+  New capping possibility for the polypeptide builder.
+  A undo is implemented for the polypeptide builder.
+18 may 2009 :
+  Gabedit can create a input file for the 7.4 version of molcas : xyz, zmat, Full symmetry, ....
+  Migration from m2msi to grid format for molcas
+  Bug fixed for computing of electronic density if orbitals (from molden file) not sorted by occupation number.
+26 may 2009 :
+  Implementation of reaction path calculation with openmopac
+  Translation and rotation are removed to begin of a MD simulation for a Maxwel-Bolzmann velocity distribution

@@ -1,6 +1,6 @@
 /* Install.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -412,7 +412,7 @@ static void user_install_continue_callback(GtkWidget *widget,
 		case 10:
 			user_install_mm_file_done();
 			gtk_widget_destroy(user_install_dialog);
-			gdk_gc_unref(white_gc);
+			g_object_unref(white_gc);
 			g_object_unref(title_style);
 			g_object_unref(page_style);
 
@@ -437,7 +437,7 @@ void create_buttons_dialog(GtkWidget* dialog,UserInstallCallback callback)
 
   button = create_button(dialog,"Cancel");
   gtk_box_pack_end (GTK_BOX(action_area), button, FALSE, TRUE, 0);
-  g_signal_connect_swapped(GTK_OBJECT(button), "clicked", GTK_SIGNAL_FUNC(user_install_cancel_callback),GTK_OBJECT(dialog));
+  g_signal_connect_swapped(GTK_OBJECT(button), "clicked", G_CALLBACK(user_install_cancel_callback),GTK_OBJECT(dialog));
 
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   cancel_button = button;
@@ -448,7 +448,7 @@ void create_buttons_dialog(GtkWidget* dialog,UserInstallCallback callback)
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
   continue_button = button;
-  g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)user_install_continue_callback,callback);
+  g_signal_connect(G_OBJECT(button), "clicked", (GCallback)user_install_continue_callback,callback);
   gtk_widget_show_all (button);
 
 }
@@ -482,8 +482,15 @@ void user_install_dialog_create(UserInstallCallback callback)
   page_style = gtk_style_copy(gtk_widget_get_default_style());
   colormap = gtk_widget_get_colormap(dialog);
 
-  gdk_color_black(colormap, &black_color);
-  gdk_color_white(colormap, &white_color);
+  black_color.red = 0;
+  black_color.green = 0;
+  black_color.blue = 0;
+  gdk_colormap_alloc_color (colormap, &black_color, FALSE, TRUE);
+
+  white_color.red = 65535;
+  white_color.green = 65535;
+  white_color.blue = 65535;
+  gdk_colormap_alloc_color (colormap, &white_color, FALSE, TRUE);
 
   page_style->fg[GTK_STATE_NORMAL]   = black_color;
   page_style->text[GTK_STATE_NORMAL] = black_color;
@@ -571,7 +578,7 @@ void user_install_dialog_create(UserInstallCallback callback)
   TITLE_STYLE(darea);
   gtk_widget_set_size_request(GTK_WIDGET(darea), 16, 16);
   g_signal_connect_after(G_OBJECT(darea), "expose_event",
-                           (GtkSignalFunc)user_install_corner_expose,
+                           (GCallback)user_install_corner_expose,
                            (gpointer)GTK_CORNER_TOP_LEFT);
   gtk_table_attach(GTK_TABLE(table), darea, 0,1, 0,1,
                    GTK_SHRINK, GTK_SHRINK, 0, 0);
@@ -581,7 +588,7 @@ void user_install_dialog_create(UserInstallCallback callback)
   TITLE_STYLE(darea);
   gtk_widget_set_size_request(GTK_WIDGET(darea), 16, 16);
   g_signal_connect_after(G_OBJECT(darea), "expose_event",
-                           (GtkSignalFunc)user_install_corner_expose,
+                           (GCallback)user_install_corner_expose,
                            (gpointer)GTK_CORNER_BOTTOM_LEFT);
   gtk_table_attach(GTK_TABLE(table), darea, 0,1, 2,3,
                    GTK_SHRINK, GTK_SHRINK, 0, 0);
@@ -628,7 +635,7 @@ void user_install_dialog_create(UserInstallCallback callback)
   gtk_widget_show(sep);
 
   add_label(GTK_BOX(page),
-		  "Copyright (c) 2002-2007 Abdul-Rahman Allouche.\n"
+		  "Copyright (c) 2002-2009 Abdul-Rahman Allouche.\n"
 		  "All rights reserved.\n"
 		  "\nGabedit is free.\n"
 		  ); 

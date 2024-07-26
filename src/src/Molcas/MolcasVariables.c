@@ -1,6 +1,6 @@
 /* MolcasVariables.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/GeomConversion.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/GabeditTextEdit.h"
 #include "../Symmetry/MoleculeSymmetry.h"
@@ -278,38 +278,38 @@ void createSystemVariablesFrame(GtkWidget *win, GtkWidget *box, GtkWidget *OkBut
 	entryMem = addComboListToATable(table, listMem, nlistMem, i, 1, 1);
 	gtk_widget_set_sensitive(entryMem, FALSE);
 	g_object_set_data(G_OBJECT (entryMem), "Type", &typeOfVariables[MOLCAS_TYPE_VARIABLE_MEM]);
-	g_signal_connect(G_OBJECT(entryMem),"changed", GTK_SIGNAL_FUNC(changedEntriesVariable),NULL);
+	g_signal_connect(G_OBJECT(entryMem),"changed", G_CALLBACK(changedEntriesVariable),NULL);
 
 	i = 1;
 	add_widget_table(table, labelDisk, i, 0);
 	entryDisk = addComboListToATable(table, listDisk, nlistDisk, i, 1, 1);
 	gtk_widget_set_sensitive(entryDisk, FALSE);
 	g_object_set_data(G_OBJECT (entryDisk), "Type",&typeOfVariables[MOLCAS_TYPE_VARIABLE_DISK]);
-	g_signal_connect(G_OBJECT(entryDisk),"changed", GTK_SIGNAL_FUNC(changedEntriesVariable),NULL);
+	g_signal_connect(G_OBJECT(entryDisk),"changed", G_CALLBACK(changedEntriesVariable),NULL);
 
 	i = 2;
 	add_widget_table(table, labelRamd, i, 0);
 	entryRamd = addComboListToATable(table, listRamd, nlistRamd, i, 1, 1);
 	gtk_widget_set_sensitive(entryRamd, FALSE);
 	g_object_set_data(G_OBJECT (entryRamd), "Type",&typeOfVariables[MOLCAS_TYPE_VARIABLE_RAMD]);
-	g_signal_connect(G_OBJECT(entryRamd),"changed", GTK_SIGNAL_FUNC(changedEntriesVariable),NULL);
+	g_signal_connect(G_OBJECT(entryRamd),"changed", G_CALLBACK(changedEntriesVariable),NULL);
 
 	i = 3;
 	add_widget_table(table, labelTrap, i, 0);
 	entryTrap = addComboListToATable(table, listTrap, nlistTrap, i, 1, 1);
 	gtk_widget_set_sensitive(entryTrap, FALSE);
 	g_object_set_data(G_OBJECT (entryTrap), "Type",&typeOfVariables[MOLCAS_TYPE_VARIABLE_TRAP]);
-	g_signal_connect(G_OBJECT(entryTrap),"changed", GTK_SIGNAL_FUNC(changedEntriesVariable),NULL);
+	g_signal_connect(G_OBJECT(entryTrap),"changed", G_CALLBACK(changedEntriesVariable),NULL);
 
 	i = 4;
 	add_widget_table(table, labelWorkDir, i, 0);
 	entryWorkDir = addComboListToATable(table, listWorkDir, nlistWorkDir, i, 1, 1);
 	gtk_widget_set_sensitive(entryWorkDir, FALSE);
 	g_object_set_data(G_OBJECT (entryWorkDir), "Type",&typeOfVariables[MOLCAS_TYPE_VARIABLE_WORKDIR]);
-	g_signal_connect(G_OBJECT(entryWorkDir),"changed", GTK_SIGNAL_FUNC(changedEntriesVariable),NULL);
+	g_signal_connect(G_OBJECT(entryWorkDir),"changed", G_CALLBACK(changedEntriesVariable),NULL);
 
 	if(OkButton)
-		g_signal_connect(G_OBJECT(OkButton), "clicked",GTK_SIGNAL_FUNC(copySystemVariablesParametersFromTmp),NULL);
+		g_signal_connect(G_OBJECT(OkButton), "clicked",G_CALLBACK(copySystemVariablesParametersFromTmp),NULL);
 }
 /************************************************************************************************************/
 void putVariablesInTextEditor()

@@ -1,6 +1,6 @@
 /* GabeditXYPlot.h */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -65,6 +65,10 @@ struct _GabeditXYPlot
   gdouble xmin, xmax, ymin, ymax; 
   
   GdkPixmap *plotting_area; 
+  GdkPixmap *old_area; 
+  cairo_t *cairo_widget; 
+  cairo_t *cairo_area; 
+  cairo_t *cairo_export; 
   GdkRectangle plotting_rect;
   guint x_legends_digits; 
   guint y_legends_digits; 
@@ -121,12 +125,16 @@ struct _GabeditXYPlot
   guint mouse_button; 
   
   gboolean mouse_zoom_enabled;
+  gboolean mouse_distance_enabled;
   
   guint mouse_zoom_button;
+  guint mouse_distance_button;
   
   GdkPoint zoom_point;
+  GdkPoint distance_point;
   
   GdkRectangle zoom_rect;
+  GdkRectangle distance_rect;
 
   gboolean mouse_displace_enabled;
   guint mouse_displace_button;
@@ -139,6 +147,9 @@ struct _GabeditXYPlot
   guint mouse_autorange_button;
   gint font_size;
   gboolean double_click;
+
+  gboolean shift_key_pressed;
+  gboolean control_key_pressed;
 };
 
 struct _GabeditXYPlotClass
@@ -155,7 +166,7 @@ void gabedit_xyplot_set_range_ymin (GabeditXYPlot *xyplot, gdouble ymin);
 void gabedit_xyplot_set_range_ymax (GabeditXYPlot *xyplot, gdouble ymax);
 void gabedit_xyplot_set_autorange (GabeditXYPlot *xyplot, XYPlotData *data);    
 void gabedit_xyplot_get_range (GabeditXYPlot *xyplot, gdouble *xmin, gdouble *xmax, gdouble *ymin, gdouble *ymax);
-void gabedit_xyplot_get_point (GabeditXYPlot *xyplot, guint x, guint y, gdouble *xv, gdouble *yv);
+gboolean gabedit_xyplot_get_point (GabeditXYPlot *xyplot, guint x, guint y, gdouble *xv, gdouble *yv);
 void gabedit_xyplot_set_ticks (GabeditXYPlot *xyplot, guint hmajor, guint hminor, guint vmajor, guint vminor);
 void gabedit_xyplot_set_ticks_hmajor (GabeditXYPlot *xyplot, guint hmajor);
 void gabedit_xyplot_set_ticks_hminor (GabeditXYPlot *xyplot, guint hminor);
@@ -173,6 +184,7 @@ void gabedit_xyplot_enable_grids (GabeditXYPlot *xyplot, GabeditXYPlotGrid grid,
 void gabedit_xyplot_add_data (GabeditXYPlot *xyplot, XYPlotData *data);
 void gabedit_xyplot_remove_data (GabeditXYPlot *xyplot, XYPlotData *data);
 void gabedit_xyplot_configure_mouse_zoom (GabeditXYPlot *xyplot, gboolean enabled, guint button);
+void gabedit_xyplot_configure_mouse_distance (GabeditXYPlot *xyplot, gboolean enabled, guint button);
 void gabedit_xyplot_configure_wheel_zoom (GabeditXYPlot *xyplot, gboolean enabled, gdouble factor);
 void gabedit_xyplot_configure_mouse_displace (GabeditXYPlot *xyplot, gboolean enabled, guint button);
 void gabedit_xyplot_configure_mouse_autorange (GabeditXYPlot *xyplot, gboolean enabled, guint button);
@@ -187,6 +199,7 @@ void gabedit_xyplot_set_font (GabeditXYPlot *xyplot, gchar* fontName);
 void gabedit_xyplot_set_x_label (GabeditXYPlot *xyplot, G_CONST_RETURN gchar* str);
 void gabedit_xyplot_set_y_label (GabeditXYPlot *xyplot, G_CONST_RETURN gchar* str);
 GtkWidget* gabedit_xyplot_new_window(gchar* title, GtkWidget*parent);
+void gabedit_xyplot_help();
 
 G_END_DECLS
 

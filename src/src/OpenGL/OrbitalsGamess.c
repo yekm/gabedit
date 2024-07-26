@@ -1,6 +1,6 @@
 /* OrbitalsGamess.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -22,7 +22,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/AtomsProp.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Geometry/GeomGlobal.h"
 #include "GeomDraw.h"
 #include "GLArea.h"
@@ -34,6 +34,7 @@ DEALINGS IN THE SOFTWARE.
 #include "Basis.h"
 #include "Orbitals.h"
 #include "GeomOrbXYZ.h"
+#include "BondsOrb.h"
 
 /********************************************************************************/
 typedef enum
@@ -219,6 +220,7 @@ static gint* read_geomorb_gamess_file_geom(gchar *FileName)
   		DefineType();
   		/* PrintGeomOrb();*/
 	}
+	buildBondsOrb();
 	RebuildGeom = FALSE;
 	return znuc;
 }
@@ -1287,6 +1289,7 @@ void read_gamess_orbitals(gchar* FileName)
 		GeomOrb[i].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[i].Symb);
 	}
   	/*DefineType();*/
+	buildBondsOrb();
 	RebuildGeom = TRUE;
 	reset_grid_limits();
 	init_atomic_orbitals();

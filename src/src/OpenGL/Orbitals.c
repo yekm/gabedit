@@ -1,6 +1,6 @@
 /* Orbitals.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -22,7 +22,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/AtomsProp.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "GeomDraw.h"
 #include "GLArea.h"
 #include "UtilsOrb.h"
@@ -667,7 +667,7 @@ void create_iso_orbitals()
   gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
 
   add_glarea_child(Win,"Iso surface ");
-  g_signal_connect(G_OBJECT(Win),"delete_event",(GtkSignalFunc)reset_new_surface,NULL);
+  g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)reset_new_surface,NULL);
 
   vboxall = create_vbox(Win);
   vboxwin = vboxall;
@@ -683,8 +683,8 @@ void create_iso_orbitals()
   button = create_button(Win,"Cancel");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child, GTK_OBJECT(Win));
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Win));
   gtk_widget_show (button);
 
   button = create_button(Win,"OK");
@@ -692,8 +692,8 @@ void create_iso_orbitals()
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
   gtk_widget_show (button);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)applyiso,GTK_OBJECT(Win));
-  g_signal_connect_swapped(G_OBJECT (Entry), "activate", (GtkSignalFunc) gtk_button_clicked, GTK_OBJECT (button));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)applyiso,GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT (Entry), "activate", (GCallback) gtk_button_clicked, GTK_OBJECT (button));
   
 
   /* Show all */
@@ -758,8 +758,8 @@ void create_list_orbitals()
   button = create_button(Win,"Cancel");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child, GTK_OBJECT(Win));
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Win));
   gtk_widget_show (button);
 
   button = create_button(Win,"OK");
@@ -767,9 +767,9 @@ void create_list_orbitals()
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
   gtk_widget_show (button);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)create_grid_orbitals,GTK_OBJECT(Win));
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child, GTK_OBJECT(Win));
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)create_grid_orbitals,GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Win));
 
   g_object_set_data(G_OBJECT (alphalist), "ButtonOk",button);
   g_object_set_data(G_OBJECT (betalist), "ButtonOk",button);
@@ -907,6 +907,8 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
 	gchar **SymOrbitals;
 	gchar* tmp = NULL;
 	gint NOcc = 0;
+	gint nReadOrb = 0;
+	gint nR = 0;
 	
  	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
  	{
@@ -995,7 +997,7 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
 					OccAlphaOrbitals[i] = 0.0;
 
 				NAlphaOcc = NOcc;
-				NAlphaOrb = NOrb;
+				NAlphaOrb = nReadOrb;
 				break;
 			case 2 : 
 				CoefBetaOrbitals = CoefOrbitals;
@@ -1009,7 +1011,7 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
 					OccBetaOrbitals[i] = 0.0;
 
 				NBetaOcc = NOcc;
-				NBetaOrb = NOrb;
+				NBetaOrb = nReadOrb;
 				break;
 			case 3 : 
 				CoefAlphaOrbitals = CoefOrbitals;
@@ -1027,8 +1029,8 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
 				SymBetaOrbitals = SymOrbitals;
 				NAlphaOcc = NOcc;
 				NBetaOcc = NOcc;
-				NAlphaOrb = NOrb;
-				NBetaOrb = NOrb;
+				NAlphaOrb = nReadOrb;
+				NBetaOrb = nReadOrb;
 				break;
 			case 4 : 
 				CoefAlphaOrbitals = CoefOrbitals;
@@ -1046,8 +1048,8 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
 				SymBetaOrbitals = SymOrbitals;
 				NAlphaOcc = NOcc;
 				NBetaOcc = NOcc;
-				NAlphaOrb = NOrb;
-				NBetaOrb = NOrb;
+				NAlphaOrb = nReadOrb;
+				NBetaOrb = nReadOrb;
 				break;
 			}
 			return TRUE;
@@ -1055,12 +1057,15 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
 
 		NOcc = 0;
   		ncart=NOrb/5;
-		for(n=0;n<ncart;n++)
+		nReadOrb = 0;
+		nR = 5;
+		for(n=0;n<ncart && nR==5;n++)
 		{
 	  		fgets(t,taille,fd);
-			sscanf(t,"%d %d %d %d %d",&NumOrb[0],&NumOrb[1],&NumOrb[2],&NumOrb[3],&NumOrb[4]);
-			for(i=0;i<5;i++)
-			   NumOrb[i]--;
+			nR = sscanf(t,"%d %d %d %d %d",&NumOrb[0],&NumOrb[1],&NumOrb[2],&NumOrb[3],&NumOrb[4]);
+			nReadOrb += nR;
+			for(i=0;i<nR;i++) NumOrb[i]--;
+			for(i=nR;i<5;i++) NumOrb[i]=NOrb-1;
 
 			if(itype<4)
 			{
@@ -1068,15 +1073,15 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
 			/* Debug("%d %d %d %d %d\n",NumOrb[0],NumOrb[1],NumOrb[2],NumOrb[3],NumOrb[4]);*/
 				sscanf(t,"%s %s %s %s %s",SymOrb[0],SymOrb[1],SymOrb[2],SymOrb[3],SymOrb[4]);
 			/* Debug("%s %s %s %s %s\n",SymOrb[0],SymOrb[1],SymOrb[2],SymOrb[3],SymOrb[4]);*/
-				for(i=0;i<5;i++)
+				for(i=0;i<nR;i++)
                 			if(strstr(SymOrb[i],"O"))
 						NOcc++;
-				for(i=0;i<5;i++)
+				for(i=0;i<nR;i++)
 			   		SymOrbitals[NumOrb[i]] = get_sym_orb(SymOrb[i]);
 			}
 			else
 			{
-				for(i=0;i<5;i++)
+				for(i=0;i<nR;i++)
 			   		SymOrbitals[NumOrb[i]] = g_strdup("UNK");
 			}
 
@@ -1085,11 +1090,11 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
 			sscanf(t,"%s %s %f %f %f %f %f",dump1,dump2,
 				&EnerOrb[0], &EnerOrb[1], &EnerOrb[2], &EnerOrb[3], &EnerOrb[4]);
 
-			for(i=0;i<5;i++)
+			for(i=0;i<nR;i++)
                         	EnerOrbitals[NumOrb[i]] = EnerOrb[i];
 			if(itype>3)
 			{
-				for(i=0;i<5;i++)
+				for(i=0;i<nR;i++)
                 			if(EnerOrb[i]>0)
 						NOcc++;
 			}
@@ -1103,15 +1108,21 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
 			}
 		}
 		/* Debug("End ncart\n"); */
-		
-		if(NOrb%5 !=0)
+		if(nR!=5)
 		{
+			for(i=nReadOrb;i<NOrb;i++)
+			   		SymOrbitals[i] = g_strdup("DELETE");
+		}
+		
+		if(NOrb%5 !=0 && nR==5)
+		{
+		  nReadOrb += NOrb%5;
 		  switch(NOrb%5)
 		  {
 			case 1:
 	  			fgets(t,taille,fd);
 				sscanf(t,"%d",&NumOrb[0]);
-				for(i=0;i<5;i++)
+				for(i=0;i<1;i++)
 					NumOrb[i]--;
 				if(itype<4)
 				{

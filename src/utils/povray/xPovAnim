@@ -24,7 +24,7 @@ ls gab?.pov gab??.pov | while read i
 do
 filename=${i%.pov}
 echo $filename ...
-povray +I$filename.pov +O$filename.bmp +W$width +H$width
+povray Antialias=on +I$filename.pov +O$filename.bmp +W$width +H$width
 done
 #convert -delay 10 -loop 1000 gab?.bmp gabedit.gif
 convert -delay $delay gab?.bmp gab??.bmp gabedit.gif

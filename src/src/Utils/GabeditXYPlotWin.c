@@ -1,6 +1,6 @@
 /* GabeditXYPlotWin.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -568,8 +568,10 @@ static gboolean xyplot_motion_notify_event(GtkWidget *xyplot, GdkEventMotion *ev
 	if (event->is_hint || (event->window != xyplot->window))
 		gdk_window_get_pointer (xyplot->window, &x, &y, NULL);
 
-	gabedit_xyplot_get_point(GABEDIT_XYPLOT(xyplot), x, y, &xv, &yv);
+	if(gabedit_xyplot_get_point(GABEDIT_XYPLOT(xyplot), x, y, &xv, &yv))
 	snprintf(str, 50, "Mouse position: %f, %f", xv, yv);
+	else
+	snprintf(str, " ");
 	context_id=gtk_statusbar_get_context_id (GTK_STATUSBAR(statusbar), "mouse position");
 	gtk_statusbar_push (GTK_STATUSBAR(statusbar), context_id, str);
     
@@ -998,7 +1000,7 @@ GtkWidget* gabedit_xyplotwin_new(gchar* title)
 	
 	gtk_window_set_title (GTK_WINDOW (window), title);
 	/*
-	gtk_signal_connect (GTK_OBJECT (window), "delete_event", GTK_SIGNAL_FUNC (gtk_widget_destroy), NULL);
+	gtk_signal_connect (GTK_OBJECT (window), "delete_event", G_CALLBACK (gtk_widget_destroy), NULL);
 	*/
 	gtk_container_set_border_width(GTK_CONTAINER (window), 10);
 	
@@ -1371,10 +1373,10 @@ GtkWidget* gabedit_xyplotwin_new(gchar* title)
 	g_signal_connect(G_OBJECT(toggle_v_major_grids), "toggled", G_CALLBACK(toggle_v_major_grids_toggled), xyplot);
 	g_signal_connect(G_OBJECT(toggle_v_minor_grids), "toggled", G_CALLBACK(toggle_v_minor_grids_toggled), xyplot);
 
-	g_signal_connect (G_OBJECT (entry_x_min), "activate", (GtkSignalFunc)activate_entry_xmin, xyplot);
-	g_signal_connect (G_OBJECT (entry_x_max), "activate", (GtkSignalFunc)activate_entry_xmax, xyplot);
-	g_signal_connect (G_OBJECT (entry_y_min), "activate", (GtkSignalFunc)activate_entry_ymin, xyplot);
-	g_signal_connect (G_OBJECT (entry_y_max), "activate", (GtkSignalFunc)activate_entry_ymax, xyplot);
+	g_signal_connect (G_OBJECT (entry_x_min), "activate", (GCallback)activate_entry_xmin, xyplot);
+	g_signal_connect (G_OBJECT (entry_x_max), "activate", (GCallback)activate_entry_xmax, xyplot);
+	g_signal_connect (G_OBJECT (entry_y_min), "activate", (GCallback)activate_entry_ymin, xyplot);
+	g_signal_connect (G_OBJECT (entry_y_max), "activate", (GCallback)activate_entry_ymax, xyplot);
 
 	g_signal_connect(G_OBJECT(toggle_show_left), "toggled", G_CALLBACK(toggle_show_left_toggled), xyplot);
 	g_signal_connect(G_OBJECT(toggle_show_right), "toggled", G_CALLBACK(toggle_show_right_toggled), xyplot);
@@ -1387,22 +1389,22 @@ GtkWidget* gabedit_xyplotwin_new(gchar* title)
 	g_signal_connect(G_OBJECT(spin_l_digits), "value-changed", G_CALLBACK(spin_l_digits_changed_value), xyplot);
 
 	g_object_set_data(G_OBJECT (buttonBMP), "ImageType", imageTypes[0]);
-	g_signal_connect (G_OBJECT (buttonBMP), "clicked", GTK_SIGNAL_FUNC(saveImageDlg), xyplot);
+	g_signal_connect (G_OBJECT (buttonBMP), "clicked", G_CALLBACK(saveImageDlg), xyplot);
 
 	g_object_set_data(G_OBJECT (buttonPNG), "ImageType", imageTypes[1]);
-	g_signal_connect (G_OBJECT (buttonPNG), "clicked", GTK_SIGNAL_FUNC(saveImageDlg), xyplot);
+	g_signal_connect (G_OBJECT (buttonPNG), "clicked", G_CALLBACK(saveImageDlg), xyplot);
 
 	g_object_set_data(G_OBJECT (buttonTPNG), "ImageType", imageTypes[2]);
-	g_signal_connect (G_OBJECT (buttonTPNG), "clicked", GTK_SIGNAL_FUNC(saveImageDlg), xyplot);
+	g_signal_connect (G_OBJECT (buttonTPNG), "clicked", G_CALLBACK(saveImageDlg), xyplot);
 
 	g_object_set_data(G_OBJECT (buttonJPEG), "ImageType", imageTypes[3]);
-	g_signal_connect (G_OBJECT (buttonJPEG), "clicked", GTK_SIGNAL_FUNC(saveImageDlg), xyplot);
+	g_signal_connect (G_OBJECT (buttonJPEG), "clicked", G_CALLBACK(saveImageDlg), xyplot);
 
 	g_signal_connect(G_OBJECT(toggle_no_convolution), "toggled", G_CALLBACK(toggle_no_convolution_toggled), xyplot);
 	g_signal_connect(G_OBJECT(toggle_lorentzian), "toggled", G_CALLBACK(toggle_lorentzian_toggled), xyplot);
 	g_signal_connect(G_OBJECT(toggle_gaussian), "toggled", G_CALLBACK(toggle_gaussian_toggled), xyplot);
-	g_signal_connect (G_OBJECT (entry_half_width), "activate", (GtkSignalFunc)activate_entry_half_width, xyplot);
-	g_signal_connect (G_OBJECT (entry_scale_x), "activate", (GtkSignalFunc)activate_entry_scale_x, xyplot);
+	g_signal_connect (G_OBJECT (entry_half_width), "activate", (GCallback)activate_entry_half_width, xyplot);
+	g_signal_connect (G_OBJECT (entry_scale_x), "activate", (GCallback)activate_entry_scale_x, xyplot);
 	g_signal_connect(G_OBJECT(toggle_show_peaks), "toggled", G_CALLBACK(toggle_show_peaks_toggled), xyplot);
 
 

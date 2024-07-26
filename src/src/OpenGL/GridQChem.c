@@ -1,6 +1,6 @@
 /* GridQChem.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -26,10 +26,11 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/AtomsProp.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "GLArea.h"
 #include "AtomicOrbitals.h"
 #include "Orbitals.h"
+#include "BondsOrb.h"
 
 typedef struct _DataRow
 {
@@ -336,6 +337,7 @@ static gboolean read_qchemout_file(gchar* filename)
 	}
 	if(Ok) init_atomic_orbitals();
 
+	buildBondsOrb();
 	RebuildGeom = TRUE;
 	glarea_rafresh(GLArea);
 
@@ -472,7 +474,7 @@ void create_window_list_grids(GtkWidget *w, gchar** gridsList,gint n, gchar* fil
 	button = create_button(fp,"Cancel");
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 5);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(fp));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(fp));
 	gtk_widget_show (button);
 
 	button = create_button(fp,"OK");
@@ -481,7 +483,7 @@ void create_window_list_grids(GtkWidget *w, gchar** gridsList,gint n, gchar* fil
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
 	g_object_set_data(G_OBJECT (button), "Window", fp);
-	g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(apply_read_grid),(gpointer)entry);
+	g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(apply_read_grid),(gpointer)entry);
   
 
 	/* Show all */

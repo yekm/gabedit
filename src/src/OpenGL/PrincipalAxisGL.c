@@ -1,6 +1,6 @@
 /* PrincipalAxisGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/GeomGlobal.h"
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
 #include "../Utils/Jacobi.h"
@@ -362,28 +362,28 @@ static void open_color_dlg_axis(GtkWidget *button,gpointer data)
 	gtk_window_set_transient_for(GTK_WINDOW(colorDlg),GTK_WINDOW(win));
         gtk_window_set_position(GTK_WINDOW(colorDlg),GTK_WIN_POS_CENTER);
   	gtk_window_set_modal (GTK_WINDOW (colorDlg), TRUE);
- 	g_signal_connect(G_OBJECT(colorDlg), "delete_event",(GtkSignalFunc)destroy_button_windows,NULL);
-  	g_signal_connect(G_OBJECT(colorDlg), "delete_event",GTK_SIGNAL_FUNC(gtk_widget_destroy),NULL);
+ 	g_signal_connect(G_OBJECT(colorDlg), "delete_event",(GCallback)destroy_button_windows,NULL);
+  	g_signal_connect(G_OBJECT(colorDlg), "delete_event",G_CALLBACK(gtk_widget_destroy),NULL);
 
   	g_object_set_data(G_OBJECT (colorDlg->colorsel), "Color", v);
   	gtk_widget_hide(colorDlg->help_button);
 	g_signal_connect_swapped(G_OBJECT(colorDlg->ok_button),"clicked",
-		(GtkSignalFunc)set_axis_color,GTK_OBJECT(colorDlg->colorsel));
+		(GCallback)set_axis_color,GTK_OBJECT(colorDlg->colorsel));
 
   	g_object_set_data(G_OBJECT (colorDlg->ok_button), "Color", v);
   	g_object_set_data(G_OBJECT (colorDlg->ok_button), "Button", button);
   	g_object_set_data(G_OBJECT (colorDlg->ok_button), "Style", style);
-	g_signal_connect(G_OBJECT(colorDlg->ok_button),"clicked", (GtkSignalFunc)set_axis_button_color,NULL);
+	g_signal_connect(G_OBJECT(colorDlg->ok_button),"clicked", (GCallback)set_axis_button_color,NULL);
 
   	g_signal_connect_swapped(G_OBJECT(colorDlg->ok_button), "clicked",
-		(GtkSignalFunc)destroy_button_windows,GTK_OBJECT(colorDlg));
+		(GCallback)destroy_button_windows,GTK_OBJECT(colorDlg));
 	g_signal_connect_swapped(G_OBJECT(colorDlg->ok_button),"clicked",
-		(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(colorDlg));
+		(GCallback)gtk_widget_destroy,GTK_OBJECT(colorDlg));
 
   	g_signal_connect_swapped(G_OBJECT(colorDlg->cancel_button), "clicked",
-		(GtkSignalFunc)destroy_button_windows,GTK_OBJECT(colorDlg));
+		(GCallback)destroy_button_windows,GTK_OBJECT(colorDlg));
 	g_signal_connect_swapped(G_OBJECT(colorDlg->cancel_button),"clicked",
-		(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(colorDlg));
+		(GCallback)gtk_widget_destroy,GTK_OBJECT(colorDlg));
 
   	add_button_windows(" Set Color ",GTK_WIDGET(colorDlg));
 	gtk_widget_show(GTK_WIDGET(colorDlg));
@@ -418,7 +418,7 @@ void set_principal_axisGL_dialog ()
   gtk_window_set_modal (GTK_WINDOW (fp), TRUE);
   gtk_window_set_transient_for(GTK_WINDOW(fp),GTK_WINDOW(PrincipalWindow));
 
-  g_signal_connect(G_OBJECT(fp),"delete_event",(GtkSignalFunc)gtk_widget_destroy,NULL);
+  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)gtk_widget_destroy,NULL);
 
   vboxall = create_vbox(fp);
   frame = gtk_frame_new (NULL);
@@ -428,7 +428,7 @@ void set_principal_axisGL_dialog ()
 
   vboxframe = create_vbox(frame);
   table = gtk_table_new(9,4,FALSE);
-  gtk_box_pack_start_defaults(GTK_BOX(vboxframe), table);
+  gtk_box_pack_start(GTK_BOX(vboxframe), table,TRUE,TRUE,0);
   for(i=0;i<5;i++)
   {
 	add_label_table(table,tlabel[i],(gushort)i,0);
@@ -488,7 +488,7 @@ void set_principal_axisGL_dialog ()
   g_object_set_data(G_OBJECT (button), "Style", style);
   g_object_set_data(G_OBJECT (button), "Win", fp);
   g_object_set_data(G_OBJECT (button), "Color", vFirst);
-  g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)open_color_dlg_axis, NULL);
+  g_signal_connect(G_OBJECT(button), "clicked", (GCallback)open_color_dlg_axis, NULL);
   sprintf(tmp," I = %0.6f",axis.inertia[0]);
   add_label_table(table,tmp,(gushort)i,3);
 
@@ -516,7 +516,7 @@ void set_principal_axisGL_dialog ()
   g_object_set_data(G_OBJECT (button), "Style", style);
   g_object_set_data(G_OBJECT (button), "Win", fp);
   g_object_set_data(G_OBJECT (button), "Color", vSecond);
-  g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)open_color_dlg_axis, NULL);
+  g_signal_connect(G_OBJECT(button), "clicked", (GCallback)open_color_dlg_axis, NULL);
   sprintf(tmp," I = %0.6f",axis.inertia[1]);
   add_label_table(table,tmp,(gushort)i,3);
 
@@ -544,7 +544,7 @@ void set_principal_axisGL_dialog ()
   g_object_set_data(G_OBJECT (button), "Style", style);
   g_object_set_data(G_OBJECT (button), "Win", fp);
   g_object_set_data(G_OBJECT (button), "Color", vThird);
-  g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)open_color_dlg_axis, NULL);
+  g_signal_connect(G_OBJECT(button), "clicked", (GCallback)open_color_dlg_axis, NULL);
   sprintf(tmp," I = %0.6f",axis.inertia[2]);
   add_label_table(table,tmp,(gushort)i,3);
 
@@ -557,7 +557,7 @@ void set_principal_axisGL_dialog ()
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  3,3);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), negative);
-  g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)set_negative, NULL);
+  g_signal_connect(G_OBJECT(button), "clicked", (GCallback)set_negative, NULL);
 
 
   hbox = create_hbox(vboxall);
@@ -567,8 +567,8 @@ void set_principal_axisGL_dialog ()
   g_object_set_data(G_OBJECT (button), "SecondColor", vSecond);
   g_object_set_data(G_OBJECT (button), "ThirdColor", vThird);
   g_object_set_data(G_OBJECT (button), "Negative", &negative);
-  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(set_axis),(gpointer)entrys);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(gtk_widget_destroy),GTK_OBJECT(fp));
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(set_axis),(gpointer)entrys);
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_widget_destroy),GTK_OBJECT(fp));
   gtk_widget_show (button);
 
   button = create_button(PrincipalWindow,"Apply");
@@ -577,12 +577,12 @@ void set_principal_axisGL_dialog ()
   g_object_set_data(G_OBJECT (button), "SecondColor", vSecond);
   g_object_set_data(G_OBJECT (button), "ThirdColor", vThird);
   g_object_set_data(G_OBJECT (button), "Negative", &negative);
-  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(set_axis),(gpointer)entrys);
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(set_axis),(gpointer)entrys);
   gtk_widget_show (button);
 
   button = create_button(PrincipalWindow,"Close");
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(gtk_widget_destroy),GTK_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_widget_destroy),GTK_OBJECT(fp));
 
   gtk_widget_show (button);
    

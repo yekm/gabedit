@@ -1,6 +1,6 @@
 /* GInterfaceBasis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -111,7 +111,7 @@ static void  c_basis_presents(gchar *ListAtoms)
   label = gtk_label_new (tlabel);
   g_object_ref (label);
   g_object_set_data_full (G_OBJECT (FrameBasis), "label", label,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (HboxBasis[2]), label, TRUE, TRUE, 2);
   g_free(tlabel);
@@ -509,14 +509,14 @@ static void DialogueEditC(GtkWidget *w,gpointer data)
   gtk_widget_realize(Dialogue);
 
   Bouton = create_button(Dialogue,"Cancel");
-  gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)gtk_widget_destroy, GTK_OBJECT(Dialogue));
+  gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 
   Bouton = create_button(Dialogue,"OK");
-  gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)EditBasisC, NULL);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)gtk_widget_destroy, GTK_OBJECT(Dialogue));
+  gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)EditBasisC, NULL);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Bouton);
 
@@ -671,14 +671,14 @@ static void DialogueEditT(GtkWidget *w,gpointer data)
   gtk_widget_realize(Dialogue);
 
   Bouton = create_button(Dialogue,"Cancel");
-  gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)gtk_widget_destroy, GTK_OBJECT(Dialogue));
+  gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 
   Bouton = create_button(Dialogue,"OK");
-  gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)EditBasisT, NULL);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)gtk_widget_destroy, GTK_OBJECT(Dialogue));
+  gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)EditBasisT, NULL);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Bouton);
 
@@ -766,7 +766,7 @@ void create_basis_type_list(GtkWidget *vbox)
   hbox = create_hbox_false(vbox);
 
   button = gtk_button_new_with_label ("Edit Basis");
-  g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)DialogueEditT,NULL);
+  g_signal_connect(G_OBJECT(button), "clicked", (GCallback)DialogueEditT,NULL);
   gtk_box_pack_start (GTK_BOX(hbox), button, TRUE, TRUE, 0);
 
   gtk_widget_show (button);
@@ -850,7 +850,7 @@ void create_basis_center_list(GtkWidget *vbox)
   hbox = create_hbox_false(vbox);
 
   button = gtk_button_new_with_label ("Edit Basis");
-  g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)DialogueEditC,NULL);
+  g_signal_connect(G_OBJECT(button), "clicked", (GCallback)DialogueEditC,NULL);
   gtk_box_pack_start (GTK_BOX(hbox), button, TRUE, TRUE, 0);
 
   gtk_widget_show (button);
@@ -870,21 +870,21 @@ void create_basis_interface (GtkWidget *window,GtkWidget *hbox)
   hbox = gtk_hbox_new (FALSE, 0);
   g_object_ref (hbox);
   g_object_set_data_full (G_OBJECT (Frame), "hbox", hbox,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (hbox);
   gtk_container_add (GTK_CONTAINER (Frame), hbox);
 
   vbox = gtk_vbox_new (FALSE, 0);
   g_object_ref (vbox);
   g_object_set_data_full (G_OBJECT (Frame), "vbox", vbox,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (vbox);
   gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 5);
 
   label = gtk_label_new (" Define basis by type of center ");
   g_object_ref (label);
   g_object_set_data_full (G_OBJECT (Frame), "label", label,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (vbox), label, TRUE, TRUE, 2);
 
@@ -896,14 +896,14 @@ void create_basis_interface (GtkWidget *window,GtkWidget *hbox)
   vbox = gtk_vbox_new (FALSE, 0);
   g_object_ref (vbox);
   g_object_set_data_full (G_OBJECT (Frame), "vbox", vbox,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (vbox);
   gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 5);
 
   label = gtk_label_new (" Define basis center by center (not recommended) ");
   g_object_ref (label);
   g_object_set_data_full (G_OBJECT (Frame), "label", label,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (vbox), label, TRUE, TRUE, 2);
 

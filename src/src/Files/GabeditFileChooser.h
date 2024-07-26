@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation dir (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -20,9 +20,9 @@ DEALINGS IN THE SOFTWARE.
 #define __GABEDIT_GABEDITFILECHOOSER_H__
 
 #define GABEDIT_TYPE_FILE_CHOOSER            (gtk_file_chooser_get_type())
-#define GABEDIT_FILE_CHOOSER(obj)            (GTK_CHECK_CAST ((obj), GABEDIT_TYPE_FILE_CHOOSER,GabeditFileChooser))
+#define GABEDIT_FILE_CHOOSER(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), GABEDIT_TYPE_FILE_CHOOSER,GabeditFileChooser))
 #define GABEDIT_FILE_CHOOSER_CLASS(klass)    (GTK_CHECK_CLASS_CAST ((klass), GABEDIT_TYPE_FILE_CHOOSER, GabeditFileChooser))
-#define GABEDIT_IS_FILE_CHOOSER(obj)         (GTK_CHECK_TYPE ((obj), GABEDIT_TYPE_FILE_CHOOSER))
+#define GABEDIT_IS_FILE_CHOOSER(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GABEDIT_TYPE_FILE_CHOOSER))
 #define GABEDIT_IS_FILE_CHOOSER_CLASS(klass) (GTK_CHECK_CLASS_TYPE ((klass), GABEDIT_TYPE_FILE_CHOOSER))
 #define GABEDIT_FILE_CHOOSER_GET_CLASS(obj)  (GTK_CHECK_GET_CLASS ((obj), GABEDIT_TYPE_FILE_CHOOSER, GabeditFileChooserClass))
 

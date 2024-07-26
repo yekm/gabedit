@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -21,7 +21,7 @@ DEALINGS IN THE SOFTWARE.
 #include "GlobalOrb.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/Utils.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/UtilsInterface.h"
 #include "../OpenGL/StatusOrb.h"
 #include "../OpenGL/GLArea.h"
@@ -37,6 +37,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/PovrayGL.h"
 #include "../OpenGL/Images.h"
 #include "../OpenGL/UtilsOrb.h"
+#include "../OpenGL/BondsOrb.h"
 #include "../../pixmaps/Open.xpm"
 
 static	GtkWidget *WinDlg = NULL;
@@ -237,7 +238,7 @@ static GtkWidget *addSpinToTable(GtkWidget *table, gint i)
 	comboSpinMultiplicity  = g_object_get_data(G_OBJECT (entrySpinMultiplicity), "Combo");
 	gtk_widget_set_sensitive(entrySpinMultiplicity, FALSE);
 
-	g_signal_connect(G_OBJECT(entrySpinMultiplicity),"changed", GTK_SIGNAL_FUNC(changedEntrySpinMultiplicity),NULL);
+	g_signal_connect(G_OBJECT(entrySpinMultiplicity),"changed", G_CALLBACK(changedEntrySpinMultiplicity),NULL);
 	return comboSpinMultiplicity;
 }
 /*************************************************************************************************************/
@@ -462,6 +463,7 @@ static gdouble* get_velocity_velocity_correlation_function(gint* N, gdouble*time
 	return Cvv;
 }
 /*************************************************************************************************************/
+/*
 static void compute_infrared_spectra(gdouble fmin, gdouble fmax, gdouble df)
 {
 	gint n = 0;
@@ -479,13 +481,14 @@ static void compute_infrared_spectra(gdouble fmin, gdouble fmax, gdouble df)
 		gdouble I = 0;
 		for(i=0;i<n;i++)
 		{
-			I += Cvv[i]*cos(2*PI*f*2.99792458e10*i*dt*1e-15)*dt;/*1e-15 */
+			I += Cvv[i]*cos(2*PI*f*2.99792458e10*i*dt*1e-15)*dt;
 		}
 		printf("%f %f\n",f,I);
 		fprintf(file,"%f %f\n",f,I);
 	}
 	fclose(file);
 }
+*/
 /*************************************************************************************************************/
 static void print_velocity_velocity_correlation_function(gchar* fileName)
 {
@@ -1061,6 +1064,293 @@ static gboolean read_gaussian_output(gchar* fileName)
   	rafreshList();
 	return TRUE;
 }
+/*************************************************************************************************************/
+static gboolean read_gamess_trj_first_geometry(gchar *FileName, GeometryMD* geometry)
+{
+ 	gchar *t;
+ 	gchar *pos;
+ 	FILE *file;
+ 	gint i;
+	gint nAtoms = 0;
+	AtomMD* listOfAtoms = NULL;
+
+  
+ 	file = FOpen(FileName, "rb");
+	t=g_malloc(BSIZE*sizeof(gchar));
+
+	if(!t) return FALSE;
+ 	while(!feof(file))
+	{
+  		if(!fgets(t,BSIZE,file))break;
+		if(strstr( t,"NAT="))
+		{
+			pos = strstr( t,"AT=")+3;
+			nAtoms = atoi(pos);
+			break;
+		}
+	}
+	if(nAtoms<1) 
+	{
+ 		fclose(file);
+		g_free(t);
+		return FALSE;
+	}
+    	listOfAtoms = g_malloc(nAtoms*sizeof(AtomMD));
+ 	while(!feof(file))
+	{
+  		if(!fgets(t,BSIZE,file))break;
+		if(strstr( t,"QM PARTICLE COORDINATES"))
+		{
+			for(i=0;i<nAtoms;i++)
+			{
+  				if(!fgets(t,BSIZE,file))break;
+				if(5!=sscanf(t,"%s %lf %f %f %f",
+				listOfAtoms[i].symbol,
+				&listOfAtoms[i].nuclearCharge,
+				&listOfAtoms[i].C[0],
+				&listOfAtoms[i].C[1],
+				&listOfAtoms[i].C[2]))break;
+				listOfAtoms[i].partialCharge = 0.0;
+				listOfAtoms[i].C[0] *= ANG_TO_BOHR;
+				listOfAtoms[i].C[1] *= ANG_TO_BOHR;
+				listOfAtoms[i].C[2] *= ANG_TO_BOHR;
+			}
+			if(i!=nAtoms)
+			{
+				g_free(listOfAtoms);
+				listOfAtoms = NULL;
+ 				fclose(file);
+				g_free(t);
+				return FALSE;
+			}
+			else 
+			{
+				geometry->listOfAtoms = listOfAtoms;
+				geometry->numberOfAtoms = nAtoms;
+			}
+			break;
+		}
+	}
+ 	fclose(file);
+ 	g_free(t);
+	return TRUE;
+}
+/*************************************************************************************************************/
+static gint get_number_of_geomtries_in_gamess_trj(gchar *fileName)
+{
+ 	gchar *t;
+ 	FILE *file;
+	gint nG = 0;
+  
+ 	file = FOpen(fileName, "rb");
+	if(!file) return 0;
+	t = g_malloc(BSIZE*sizeof(gchar));
+ 	while(!feof(file))
+	{
+  		if(!fgets(t,BSIZE,file))break;
+		if(strstr( t,"MD DATA PACKET")) nG++;
+	}
+	g_free(t);
+	fclose(file);
+	return nG;
+}
+/*************************************************************************************************************/
+static void scan_geomtries_position_in_gamess_trj(gchar *fileName)
+{
+ 	gchar *t;
+ 	FILE *file;
+	gint j;
+	long int pos = -1;
+
+	for(j=0;j<geometriesMD.numberOfGeometries;j++)
+		geometriesMD.geometries[j].filePos = -1;
+  
+ 	file = FOpen(fileName, "rb");
+	if(!file) return ;
+	t = g_malloc(BSIZE*sizeof(gchar));
+	j = 0;
+ 	while(!feof(file))
+	{
+		/* pos = ftell(file);*/
+  		if(!fgets(t,BSIZE,file))break;
+		if(strstr( t,"MD DATA PACKET"))
+		{ 
+			pos = ftell(file);
+			geometriesMD.geometries[j].filePos = pos; 
+			j++;
+		}
+	}
+	g_free(t);
+	fclose(file);
+}
+/*************************************************************************************************************/
+static gboolean read_MD_gamess_trj_file_step(gchar* fileName, gint step)
+{
+ 	gchar *t;
+ 	gchar *pos;
+	gint k = 0;
+ 	FILE *file;
+	gint j = step;
+	gint i = 0;
+	gboolean OK = FALSE;
+	AtomMD* listOfAtoms = NULL;
+
+	geometriesMD.geometries[j].time = 0.0;
+	geometriesMD.geometries[j].energy = 0.0;
+	geometriesMD.geometries[j].comments = g_strdup_printf("Step n %d",step);
+	geometriesMD.geometries[j].numberOfAtoms = geometriesMD.geometries[0].numberOfAtoms;
+	if(j!=0) geometriesMD.geometries[j].listOfAtoms = g_malloc(geometriesMD.geometries[j].numberOfAtoms*sizeof(AtomMD));
+	listOfAtoms = geometriesMD.geometries[j].listOfAtoms;
+	for(i=0;i<geometriesMD.geometries[j].numberOfAtoms;i++)
+	{
+		if(j!=0) sprintf(listOfAtoms[i].symbol,"%s",geometriesMD.geometries[0].listOfAtoms[i].symbol);
+		listOfAtoms[i].C[0] = 0;
+		listOfAtoms[i].C[1] = 0;
+		listOfAtoms[i].C[2] = 0;
+		listOfAtoms[i].V[0] = 0;
+		listOfAtoms[i].V[1] = 0;
+		listOfAtoms[i].V[2] = 0;
+		listOfAtoms[i].partialCharge = 0.0;
+		listOfAtoms[i].nuclearCharge = get_atomic_number_from_symbol(listOfAtoms[i].symbol);
+	}
+	
+	if(geometriesMD.geometries[j].filePos<0) return FALSE;
+  
+ 	file = FOpen(fileName, "rb");
+	if(!file) return FALSE;
+	t = g_malloc(BSIZE*sizeof(gchar));
+	OK = FALSE;
+	fseek(file, geometriesMD.geometries[j].filePos, SEEK_SET);
+	k = 0;
+ 	while(!feof(file))
+	{
+  		if(!fgets(t,BSIZE,file))break;
+		if(strstr( t,"MD DATA PACKET")) break;
+		if(strstr( t,"TTOTAL=") && strstr( t,"TOT. E="))
+		{
+			pos = strstr( t,"AL=")+3;
+			for(i=0;i<strlen(t);i++) if(t[i]=='D' || t[i]=='d') t[i] = 'e';
+			geometriesMD.geometries[j].time = atof(pos);
+			k++;
+		}
+		if(strstr( t,"TOT. E="))
+		{
+			pos = strstr( t,"E=")+2;
+			for(i=0;i<strlen(t);i++) if(t[i]=='D' || t[i]=='d') t[i] = 'e';
+			geometriesMD.geometries[j].energy = atof(pos);
+			k++;
+		}
+		if(strstr( t,"QM PARTICLE COORDINATES"))
+		{
+			gchar symb[10];
+			gfloat dum;
+			for(i=0;i<geometriesMD.geometries[j].numberOfAtoms;i++)
+			{
+  				if(!fgets(t,BSIZE,file))break;
+				if(5!=sscanf(t,"%s %f %f %f %f",symb,&dum,
+				&listOfAtoms[i].C[0],
+				&listOfAtoms[i].C[1],
+				&listOfAtoms[i].C[2]))break;
+				listOfAtoms[i].C[0] *= ANG_TO_BOHR;
+				listOfAtoms[i].C[1] *= ANG_TO_BOHR;
+				listOfAtoms[i].C[2] *= ANG_TO_BOHR;
+			}
+			if(i!=geometriesMD.geometries[j].numberOfAtoms) break;
+			k++;
+		}
+		if(strstr( t,"QM ATOM TRANS. VELOCITIES"))
+		{
+			for(i=0;i<geometriesMD.geometries[j].numberOfAtoms;i++)
+			{
+  				if(!fgets(t,BSIZE,file))break;
+				if(3!=sscanf(t,"%f %f %f",
+				&listOfAtoms[i].V[0],
+				&listOfAtoms[i].V[1],
+				&listOfAtoms[i].V[2]))break;
+			}
+			if(i!=geometriesMD.geometries[j].numberOfAtoms) break;
+			k++;
+		}
+		if(k==4) break;
+
+	}
+
+	g_free(t);
+	fclose(file);
+	if(k==4) return TRUE;
+	return FALSE;
+}
+/********************************************************************************/
+static gboolean read_gamess_trj(gchar* fileName)
+{
+	gint  j=0;
+	gchar *t = NULL;
+	gint nG = 0;
+        
+	t = get_name_file(fileName);
+	set_status_label_info("File Name",t);
+	g_free(t);
+	t = NULL;
+	set_status_label_info("File Type","Gaussian output");
+
+	nG=get_number_of_geomtries_in_gamess_trj(fileName);
+	if(nG<1) 
+	{
+		t = g_strdup_printf(" Error : I can not read %s file \n",fileName);
+		Message(t," Error ",TRUE);
+		g_free(t);
+		return FALSE;
+	}
+	geometriesMD.numberOfGeometries=nG;
+	geometriesMD.geometries = g_malloc(geometriesMD.numberOfGeometries*sizeof(GeometryMD));
+	geometriesMD.fileName = g_strdup(fileName);
+	geometriesMD.typeOfFile = GABEDIT_TYPEFILE_TRJ;
+
+	for(j=0;j<geometriesMD.numberOfGeometries;j++)
+	{
+		geometriesMD.geometries[j].numberOfAtoms = 0;
+		geometriesMD.geometries[j].time = 0;
+		geometriesMD.geometries[j].energy = 0;
+		geometriesMD.geometries[j].listOfAtoms = NULL;
+	}
+
+	if(!read_gamess_trj_first_geometry(fileName, &geometriesMD.geometries[0])) 
+	{
+		freeGeometryMD();
+		t = g_strdup_printf(" Error : I can not read the first geometry from %s file\n",fileName);
+		Message(t," Error ",TRUE);
+  		rafreshList();
+		return FALSE;
+	}
+	scan_geomtries_position_in_gamess_trj(fileName);
+	for(j=0;j<geometriesMD.numberOfGeometries;j++)
+		if(!read_MD_gamess_trj_file_step(fileName, j)) 
+		{
+			break;
+		}
+	if(j!=geometriesMD.numberOfGeometries) 
+	{
+		printf("j=%d\n",j);
+		if(j>1)
+		{
+			if(geometriesMD.geometries[j].listOfAtoms) g_free(geometriesMD.geometries[j].listOfAtoms);
+			if(geometriesMD.geometries[j].comments) g_free(geometriesMD.geometries[j].comments);
+			geometriesMD.numberOfGeometries--;
+			geometriesMD.geometries = g_realloc(geometriesMD.geometries,geometriesMD.numberOfGeometries*sizeof(GeometryMD));
+		}
+		else
+		{
+			freeGeometryMD();
+			t = g_strdup_printf(" Error : I can not read step number %d from %s file\n",j,fileName);
+			Message(t," Error ",TRUE);
+			g_free(t);
+  			rafreshList();
+			return FALSE;
+		}
+	}
+  	rafreshList();
+	return TRUE;
+}
 /********************************************************************************/
 static gboolean read_gabedit_MD_file(gchar *fileName)
 {
@@ -1213,6 +1503,25 @@ static void read_gaussian_file(GabeditFileChooser *SelecFile, gint response_id)
 
 }
 /********************************************************************************/
+static void read_gamess_trj_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+	gchar *FileName;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+	stopAnimation(NULL, NULL);
+
+	freeGeometryMD();
+  	rafreshList();
+	read_gamess_trj(FileName);
+	
+	/*
+	print_velocity_velocity_correlation_function("velocityAutoCorrelation.txt");
+	compute_infrared_spectra(0, 10000, 10);
+	*/
+
+}
+/********************************************************************************/
 static void read_gabedit_file_dlg()
 {
 	GtkWidget* filesel = 
@@ -1227,6 +1536,14 @@ static void read_gaussian_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_gaussian_file, "Read geometries from a Gaussian output file", GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_ORB);
+
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+}
+/********************************************************************************/
+static void read_gamess_trj_file_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_gamess_trj_file, "Read geometries from a Gamess trj file", GABEDIT_TYPEFILE_TRJ,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
@@ -1282,6 +1599,7 @@ static gboolean set_geometry(gint k)
 	Ncenters = nAtoms;
 	init_atomic_orbitals();
 	Dipole.def = FALSE;
+	buildBondsOrb();
 	RebuildGeom = TRUE;
 	glarea_rafresh(GLArea);
 
@@ -1349,7 +1667,7 @@ static void set_entry_inputGaussDir_selection(GtkWidget* entry)
 	GtkWidget *dirSelector;
 	dirSelector = selctionOfDir(set_entry_inputGaussDir, "Select folder for the input Gaussian files", GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
-  	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GtkSignalFunc)gtk_widget_destroy,NULL);
+  	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
 	g_object_set_data(G_OBJECT (dirSelector), "EntryFile", entry);
 
@@ -1392,7 +1710,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox,gboole
 	button = create_button_pixmap(Wins,open_xpm,NULL);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	g_signal_connect_swapped(GTK_OBJECT (button), "clicked",
-                                     GTK_SIGNAL_FUNC(set_entry_inputGaussDir_selection),
+                                     G_CALLBACK(set_entry_inputGaussDir_selection),
                                      GTK_OBJECT(entry));
 	add_widget_table(table,button,i,3);
 
@@ -1411,7 +1729,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox,gboole
 		g_object_set_data(G_OBJECT (GTK_BIN(comboCharge)->child), "ComboSpinMultiplicity", comboSpinMultiplicity);
 	setComboCharge(comboCharge);
 	setComboSpinMultiplicity(comboSpinMultiplicity);
-	g_signal_connect(G_OBJECT(GTK_BIN(comboCharge)->child),"changed", GTK_SIGNAL_FUNC(changedEntryCharge),NULL);
+	g_signal_connect(G_OBJECT(GTK_BIN(comboCharge)->child),"changed", G_CALLBACK(changedEntryCharge),NULL);
 
 	i = 4;
 	add_label_table(table," Keywords ",i,0);
@@ -1454,7 +1772,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox,gboole
 	return entry;
 }
 /********************************************************************************************************/
-void  add_cancel_ok_button(GtkWidget *Win,GtkWidget *vbox,GtkWidget *entry, GtkSignalFunc myFunc)
+void  add_cancel_ok_button(GtkWidget *Win,GtkWidget *vbox,GtkWidget *entry, GCallback myFunc)
 {
 	GtkWidget *hbox;
 	GtkWidget *button;
@@ -1465,8 +1783,8 @@ void  add_cancel_ok_button(GtkWidget *Win,GtkWidget *vbox,GtkWidget *entry, GtkS
 	button = create_button(Win,"Cancel");
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child, GTK_OBJECT(Win));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Win));
 	gtk_widget_show (button);
 
 	button = create_button(Win,"OK");
@@ -1474,9 +1792,9 @@ void  add_cancel_ok_button(GtkWidget *Win,GtkWidget *vbox,GtkWidget *entry, GtkS
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)myFunc,GTK_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)myFunc,GTK_OBJECT(Win));
 	if(entry)
-	g_signal_connect_swapped(G_OBJECT (entry), "activate", (GtkSignalFunc) gtk_button_clicked, GTK_OBJECT (button));
+	g_signal_connect_swapped(G_OBJECT (entry), "activate", (GCallback) gtk_button_clicked, GTK_OBJECT (button));
 
 	gtk_widget_show_all(vbox);
 }
@@ -1499,22 +1817,22 @@ static void create_gaussian_file_dlg(gboolean oneFile)
 	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
 
 	add_glarea_child(Win,"Input Gaussian");
-	g_signal_connect(G_OBJECT(Win),"delete_event",(GtkSignalFunc)delete_child,NULL);
+	g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)delete_child,NULL);
 
 	vboxall = create_vbox(Win);
 
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-	gtk_box_pack_start_defaults(GTK_BOX(vboxall), frame);
+	gtk_box_pack_start(GTK_BOX(vboxall), frame,TRUE,TRUE,0);
 	gtk_widget_show (frame);
   	vbox = gtk_vbox_new (FALSE, 0);
 	gtk_container_add (GTK_CONTAINER (frame), vbox);
 
   	gtk_widget_realize(Win);
 	entryKeywords = add_inputGauss_entrys(Win,vbox,TRUE);
-	if(oneFile) add_cancel_ok_button(Win,vbox,entryKeywords,(GtkSignalFunc)print_gaussian_geometries_link);
-	else add_cancel_ok_button(Win,vbox,entryKeywords,(GtkSignalFunc)print_gaussian_geometries);
+	if(oneFile) add_cancel_ok_button(Win,vbox,entryKeywords,(GCallback)print_gaussian_geometries_link);
+	else add_cancel_ok_button(Win,vbox,entryKeywords,(GCallback)print_gaussian_geometries);
 
 	/* Show all */
 	gtk_widget_show_all (Win);
@@ -1539,6 +1857,7 @@ static void stopAnimation(GtkWidget *win, gpointer data)
 	if(GTK_IS_WIDGET(WinDlg)) gtk_window_set_modal (GTK_WINDOW (WinDlg), FALSE);
 	while( gtk_events_pending() ) gtk_main_iteration();
 
+	buildBondsOrb();
 	RebuildGeom = TRUE;
 	Dipole.def = FALSE;
 	init_atomic_orbitals();
@@ -1810,13 +2129,13 @@ static void addEntrysButtons(GtkWidget* box)
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-	gtk_box_pack_start_defaults(GTK_BOX(box), frame);
+	gtk_box_pack_start(GTK_BOX(box), frame,TRUE,TRUE,0);
 	gtk_widget_show (frame);
 
 	vboxframe = create_vbox(frame);
 
   	table = gtk_table_new(5,3,FALSE);
-	gtk_box_pack_start_defaults(GTK_BOX(vboxframe), table);
+	gtk_box_pack_start(GTK_BOX(vboxframe), table,TRUE,TRUE,0);
 
 	i = 0;
 	add_label_table(table," Time step(s) ",(gushort)i,0);
@@ -1838,7 +2157,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  3,3);
 
   	table = gtk_table_new(2,3,FALSE);
-	gtk_box_pack_start_defaults(GTK_BOX(vboxframe), table);
+	gtk_box_pack_start(GTK_BOX(vboxframe), table,TRUE,TRUE,0);
 
 	i=0;
 	buttonCheckFilm = gtk_check_button_new_with_label ("Create a film");
@@ -1848,7 +2167,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  1,1);
-  	g_signal_connect (G_OBJECT(buttonCheckFilm), "toggled", GTK_SIGNAL_FUNC (filmSelected), NULL);  
+  	g_signal_connect (G_OBJECT(buttonCheckFilm), "toggled", G_CALLBACK (filmSelected), NULL);  
 
 	formatBox = create_list_of_formats();
 	gtk_table_attach(GTK_TABLE(table),formatBox,1,1+1,i,i+1,
@@ -1861,7 +2180,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  1,1);
-  	g_signal_connect(G_OBJECT(buttonDirFilm), "clicked",(GtkSignalFunc)set_directory,NULL);
+  	g_signal_connect(G_OBJECT(buttonDirFilm), "clicked",(GCallback)set_directory,NULL);
 	comboListFilm = formatBox;
 
 	if(GTK_IS_WIDGET(buttonDirFilm))  gtk_widget_set_sensitive(buttonDirFilm, FALSE);
@@ -1895,9 +2214,9 @@ static void addEntrysButtons(GtkWidget* box)
 		  3,3);
 	StopButton = Button;
 
-  	g_signal_connect(G_OBJECT(PlayButton), "clicked",(GtkSignalFunc)playAnimation,NULL);
-  	g_signal_connect(G_OBJECT(StopButton), "clicked",(GtkSignalFunc)stopAnimation,NULL);
-  	g_signal_connect_swapped(G_OBJECT (EntryVelocity), "activate", (GtkSignalFunc)reset_parameters, NULL);
+  	g_signal_connect(G_OBJECT(PlayButton), "clicked",(GCallback)playAnimation,NULL);
+  	g_signal_connect(G_OBJECT(StopButton), "clicked",(GCallback)stopAnimation,NULL);
+  	g_signal_connect_swapped(G_OBJECT (EntryVelocity), "activate", (GCallback)reset_parameters, NULL);
 }
 /********************************************************************************/
 static GtkTreeView* addList(GtkWidget *vbox, GtkUIManager *manager)
@@ -1951,7 +2270,7 @@ static GtkTreeView* addList(GtkWidget *vbox, GtkUIManager *manager)
 	gtk_tree_view_set_reorderable(treeView, TRUE);
 	set_base_style(GTK_WIDGET(treeView), 55000,55000,55000);
 	gtk_widget_show (GTK_WIDGET(treeView));
-  	g_signal_connect(G_OBJECT (treeView), "button_press_event", GTK_SIGNAL_FUNC(event_dispatcher), manager);      
+  	g_signal_connect(G_OBJECT (treeView), "button_press_event", G_CALLBACK(event_dispatcher), manager);      
 	return treeView;
 }
 /*****************************************************************************/
@@ -2123,6 +2442,7 @@ static void activate_action (GtkAction *action)
 	}
 	else if(!strcmp(name, "ReadGabedit")) read_gabedit_file_dlg();
 	else if(!strcmp(name, "ReadGaussian")) read_gaussian_file_dlg();
+	else if(!strcmp(name, "ReadGamess")) read_gamess_trj_file_dlg();
 	else if(!strcmp(name, "SaveGabedit")) save_gabedit_file_dlg();
 	else if(!strcmp(name, "SaveVelocityAutocorrelation")) save_velocity_autocorrelation_dlg();
 	else if(!strcmp(name, "CreateGaussInput")) create_gaussian_file_dlg(FALSE);
@@ -2140,6 +2460,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"Read",     NULL, "_Read"},
 	{"ReadGabedit", GABEDIT_STOCK_GABEDIT, "Read a G_abedit file", NULL, "Read a Gabedit file", G_CALLBACK (activate_action) },
 	{"ReadGaussian", GABEDIT_STOCK_GAUSSIAN, "Read a _Gaussian output file", NULL, "Read a Gaussian output file", G_CALLBACK (activate_action) },
+	{"ReadGamess", GABEDIT_STOCK_GAMESS, "Read a Games_s trj file", NULL, "Read a Gamess trj file", G_CALLBACK (activate_action) },
 	{"SaveGabedit", GABEDIT_STOCK_SAVE, "_Save", NULL, "Save", G_CALLBACK (activate_action) },
 	{"SaveVelocityAutocorrelation", GABEDIT_STOCK_SAVE, "_Save velocity-velocity autocorrelation function", NULL, "Save velocity-velocity autocorrelation function", G_CALLBACK (activate_action) },
 	{"CreateGaussInput", GABEDIT_STOCK_GAUSSIAN, "_Create a serie of single input file for Gaussian", NULL, "Save", G_CALLBACK (activate_action) },
@@ -2160,6 +2481,7 @@ static const gchar *uiMenuInfo =
 "    <separator name=\"sepMenuPopGabedit\" />\n"
 "    <menuitem name=\"ReadGabedit\" action=\"ReadGabedit\" />\n"
 "    <menuitem name=\"ReadGaussian\" action=\"ReadGaussian\" />\n"
+"    <menuitem name=\"ReadGamess\" action=\"ReadGamess\" />\n"
 "    <separator name=\"sepMenuPopSave\" />\n"
 "    <menuitem name=\"SaveGabedit\" action=\"SaveGabedit\" />\n"
 "    <separator name=\"sepMenuPopSaveVelocityAutocorrelation\" />\n"
@@ -2178,6 +2500,7 @@ static const gchar *uiMenuInfo =
 "      <menu name=\"Read\" action=\"Read\">\n"
 "        <menuitem name=\"ReadGabedit\" action=\"ReadGabedit\" />\n"
 "        <menuitem name=\"ReadGaussian\" action=\"ReadGaussian\" />\n"
+"        <menuitem name=\"ReadGamess\" action=\"ReadGamess\" />\n"
 "      </menu>\n"
 "      <separator name=\"sepMenuSave\" />\n"
 "      <menuitem name=\"SaveGabedit\" action=\"SaveGabedit\" />\n"
@@ -2268,7 +2591,7 @@ void geometriesMDDlg()
 	WinDlg = Win;
 
   	add_child(PrincipalWindow,Win,destroyAnimGeomConvDlg,"M.D.");
-  	g_signal_connect(G_OBJECT(Win),"delete_event",(GtkSignalFunc)delete_child,NULL);
+  	g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)delete_child,NULL);
 
 	vbox = gtk_vbox_new (FALSE, 0);
 	gtk_widget_show (vbox);

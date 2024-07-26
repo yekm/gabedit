@@ -1,6 +1,6 @@
 /* UtilsGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -117,6 +117,7 @@ gdk_gl_font_use_pango_font (const PangoFontDescription *font_desc,
 }
 #else
 /*********************************************************************************************/
+/*
 static char *
 gdk_gl_font_charset_for_locale (void)
 {
@@ -209,18 +210,6 @@ gdk_gl_font_use_pango_font_common (PangoFontMap               *font_map,
 
   return font;
 }
-
-/**
- * gdk_gl_font_use_pango_font:
- * @font_desc: a #PangoFontDescription describing the font to use.
- * @first: the index of the first glyph to be taken.
- * @count: the number of glyphs to be taken.
- * @list_base: the index of the first display list to be generated.
- *
- * Creates bitmap display lists from a #PangoFont.
- *
- * Return value: the #PangoFont used, or NULL if no font matched.
- **/
 static PangoFont *
 gdk_gl_font_use_pango_font (const PangoFontDescription *font_desc,
                             int                         first,
@@ -236,6 +225,86 @@ gdk_gl_font_use_pango_font (const PangoFontDescription *font_desc,
 
   return gdk_gl_font_use_pango_font_common (font_map, font_desc,
                                             first, count, list_base);
+}
+*/
+static gchar* get_xfontname_from_pangofontname (const gchar* pango_font_name)
+{
+	gchar name[100];/* times....*/
+	gchar type[100];/* italic...*/
+	gint size=0;
+	gint k;
+	gchar* x_font_name = NULL;
+	
+	g_return_val_if_fail (pango_font_name != NULL, NULL);
+	k=sscanf(pango_font_name,"%s %s %d",name,type,&size);
+	if(k!=3) 
+	{
+		k=sscanf(pango_font_name,"%s %d",name,&size);
+		if(k!=2) k=sscanf(pango_font_name,"%s",name);
+	}
+	if(k==3) x_font_name = g_strdup_printf("-*-%s-%s-*-*-*-%d-*-*-*-*-*-*-*",name,type,size);
+	if(k==2) x_font_name = g_strdup_printf("-*-%s-*-*-*-*-%d-*-*-*-*-*-*-*",name,size);
+	if(k==1) x_font_name = g_strdup_printf("-*-%s-*-*-*-*-*-*-*-*-*-*-*-*",name);
+	if(k<1) x_font_name = g_strdup_printf("-*-fixed-*-*-*-*-*-*-*-*-*-*-*-*");
+	if(x_font_name) g_strdown(x_font_name);
+	return x_font_name;
+
+}
+/* use xlsfonts for obtain supported fonts by X11 */
+static GLuint gdk_gl_font_use_pango_font2 (const gchar* font_name)
+{
+	
+	GLuint font_list_base;
+ 	XFontStruct *fontInfo=NULL;
+ 	Display *dpy = GDK_DISPLAY ();
+ 	unsigned int i, first, last, firstrow, lastrow;
+ 	int maxchars;
+ 	int firstbitmap;
+	gchar* x_font_name = NULL;
+ 	
+
+	g_return_val_if_fail (font_name != NULL, 0);
+	x_font_name = get_xfontname_from_pangofontname(font_name);
+
+	if(x_font_name) fontInfo = XLoadQueryFont (dpy, x_font_name);
+	if (fontInfo == NULL)
+	{
+		
+ 	    // try to load other fonts
+ 		fontInfo = XLoadQueryFont (dpy, "-*-fixed-*-*-*-*-18-*-*-*-*-*-*-*");
+		if(fontInfo == NULL) fontInfo = XLoadQueryFont (dpy, "-*-fixed-*-*-*-*-12-*-*-*-*-*-*-*");
+		if(fontInfo == NULL) fontInfo = XLoadQueryFont (dpy, "-*-fixed-*-*-*-*-10-*-*-*-*-*-*-*");
+		if(fontInfo == NULL) fontInfo = XLoadQueryFont (dpy, "-*-fixed-*-*-*-*-8-*-*-*-*-*-*-*");
+		if(fontInfo == NULL) fontInfo = XLoadQueryFont (dpy, "-*-fixed-*-*-*-*-*-*-*-*-*-*-*-*");
+ 	
+ 	    // any font will do !
+ 	    if (fontInfo == NULL) fontInfo = XLoadQueryFont(dpy, "-*-*-*-*-*-*-*-*-*-*-*-*-*-*");
+ 	
+ 	    if (fontInfo == NULL) return 0;
+	}
+ 	
+	first = (int)fontInfo->min_char_or_byte2;
+	last = (int)fontInfo->max_char_or_byte2;
+	firstrow = (int)fontInfo->min_byte1;
+	lastrow = (int)fontInfo->max_byte1;
+	/* How many chars in the charset */
+	maxchars = 256 * lastrow + last;
+	font_list_base = glGenLists(maxchars+1);
+	if (font_list_base == 0)
+	{
+ 	   return 0;
+	}
+ 	
+	/* Get offset to first char in the charset */
+	firstbitmap = 256 * firstrow + first;
+	/* for each row of chars, call glXUseXFont to build the bitmaps.  */
+ 	
+	for(i=firstrow; i<=lastrow; i++)
+	{
+		glXUseXFont(fontInfo->fid, firstbitmap, last-first+1, font_list_base+firstbitmap);
+		firstbitmap += 256;
+	}
+	return font_list_base;
 }
 #endif
 
@@ -335,10 +404,11 @@ void glInitFontsUsing(gchar* fontname)
 {
 	/*if (fontOffset >=0) return;*/
 
+#ifdef G_OS_WIN32
 	fontOffset = glGenLists(128);
 	if (fontOffset)
 	{ 
-		PangoFontDescription *pfd;
+		PangoFontDescription *pfd = NULL;
 		PangoFont *pangoFont = NULL;
 		PangoFontMetrics* metrics;
 		pfd = pango_font_description_from_string(fontname);
@@ -352,12 +422,17 @@ void glInitFontsUsing(gchar* fontname)
 			 	    +pango_font_metrics_get_descent(metrics);
 			charWidth  /= PANGO_SCALE;
 			charHeight /= PANGO_SCALE;
-			/* printf("width of a char = %d\n", charWidth );*/
 			pango_font_metrics_unref(metrics);
 		}
 
-		pango_font_description_free(pfd); 
+		if(pfd) pango_font_description_free(pfd); 
 	}
+#else
+
+	fontOffset = gdk_gl_font_use_pango_font2(fontname);
+	charWidth = 8;
+	charHeight = 8;
+#endif
 }
 /*********************************************************************************************/
 /* pango fonts for OpenGL  */

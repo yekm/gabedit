@@ -1,6 +1,6 @@
 /* Grid.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -19,7 +19,7 @@ DEALINGS IN THE SOFTWARE.
 
 
 #include "../../Config.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "GlobalOrb.h"
 #include "StatusOrb.h"
 #include "UtilsOrb.h"
@@ -198,10 +198,13 @@ gdouble get_value_electronic_density(gfloat x,gfloat y,gfloat z,gint dump)
 	{
 		
 		cgv = get_value_CBTF(x,y,z,i);
-		for(k1=0;k1<NAlphaOcc;k1++)
+		
+		for(k1=0;k1<NAlphaOrb;k1++)
+			if(OccAlphaOrbitals[k1]>1e-8)
 				PhiAlpha[k1] += CoefAlphaOrbitals[k1][i]*cgv;
 		
-		for(k2=0;k2<NBetaOcc;k2++)
+		for(k2=0;k2<NBetaOrb;k2++)
+			if(OccBetaOrbitals[k2]>1e-8)
 				PhiBeta[k2]  += CoefBetaOrbitals[k2][i]*cgv;
  	}
 	v1 = 0.0;
@@ -516,8 +519,6 @@ Grid* define_grid(gint N[],GridLimits limits)
 			grid = define_grid_point(N,limits,get_value_elf_savin);
 			break;
 		case GABEDIT_TYPEGRID_SAS :
-			grid = define_grid_point(N,limits,get_value_sas);
-			break;
 		case GABEDIT_TYPEGRID_SASMAP :
 			grid = define_grid_point(N,limits,get_value_sas);
 			break;
@@ -1096,6 +1097,7 @@ static gdouble get_grad_value_CBTF(gfloat x,gfloat y,gfloat z,gint i, gint id)
 	else return 0;
 }
 /*********************************************************************************/
+/*
 static gdouble get_grad_value_orbital(gfloat x,gfloat y,gfloat z,gint k, gint id)
 {
 	
@@ -1116,7 +1118,9 @@ static gdouble get_grad_value_orbital(gfloat x,gfloat y,gfloat z,gint k, gint id
 	}
 	return v;
 }
+*/
 /*********************************************************************************/
+/*
 static gdouble get_norm2_grad_value_orbital(gfloat x,gfloat y,gfloat z,gint k)
 {
 	gdouble vx = get_grad_value_orbital( x, y, z, k, 0);
@@ -1125,6 +1129,7 @@ static gdouble get_norm2_grad_value_orbital(gfloat x,gfloat y,gfloat z,gint k)
 
 	return vx*vx+vy*vy+vz*vz; 
 }
+*/
 /*********************************************************************************/
 /*
 static gfloat get_norm_grad_value_orbital(gfloat x,gfloat y,gfloat z,gint k)
@@ -1133,6 +1138,7 @@ static gfloat get_norm_grad_value_orbital(gfloat x,gfloat y,gfloat z,gint k)
 }
 */
 /*********************************************************************************/
+/*
 static gdouble get_grad_value_electronic_density(gfloat x,gfloat y,gfloat z,gint id)
 {
 	
@@ -1193,7 +1199,9 @@ static gdouble get_grad_value_electronic_density(gfloat x,gfloat y,gfloat z,gint
 	g_free(dPhiBeta);
 	return 2*(v1+v2);
 }
+*/
 /*********************************************************************************/
+/*
 static gdouble get_norm2_grad_value_electronic_density(gfloat x,gfloat y,gfloat z)
 {
 	gdouble vx = get_grad_value_electronic_density( x, y, z, 0);
@@ -1202,6 +1210,7 @@ static gdouble get_norm2_grad_value_electronic_density(gfloat x,gfloat y,gfloat 
 
 	return vx*vx+vy*vy+vz*vz; 
 }
+*/
 /*********************************************************************************/
 static gdouble get_value_elf_becke(gfloat x,gfloat y,gfloat z,gint dump)
 {

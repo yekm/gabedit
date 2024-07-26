@@ -1,6 +1,6 @@
 /*ContoursPov.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -200,7 +200,7 @@ static gint addOneContoursPovRay(FILE* file, Grid* plansgrid,gint Ncontours,gflo
 	Gap = GetGapVector(plansgrid,i0,i1,numplan,gap);
  	addPlanPovRay(file, plansgrid,i0,i1,numplan,Gap, Color);
 
-	Color[3] = 0.8;
+	Color[2] = 0.8;
 	for(i=0;i<Ncontours;i++)
 	{
 		set_Color_From_colorMap(colorMap, Color, values[i]);

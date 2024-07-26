@@ -1,6 +1,6 @@
 /* Molecule.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -81,6 +81,8 @@ void freeMolecule(Molecule* molecule)
 				g_free(molecule->atoms[i].mmType);
 			if(molecule->atoms[i].pdbType !=NULL )
 				g_free(molecule->atoms[i].pdbType);
+			if(molecule->atoms[i].typeConnections !=NULL )
+				g_free(molecule->atoms[i].typeConnections);
 		}
 
 		g_free(molecule->atoms);
@@ -164,12 +166,20 @@ void updatebondedMatrix(gint a1, gint a2)
 
 }
 /*****************************************************************************/
-gboolean isConnected2(AtomMol a1,AtomMol a2)
+gboolean isConnected2(Molecule* molecule,gint i,gint j)
 {
 	gdouble distance;
 	gdouble dij;
 	gint k;
+	AtomMol a1 = molecule->atoms[i];
+	AtomMol a2 = molecule->atoms[j];
 
+	if(molecule->atoms[i].typeConnections)
+	{
+		 	gint nj = molecule->atoms[j].N-1;
+			if(molecule->atoms[i].typeConnections[nj]>0) return TRUE;
+			else return FALSE;
+	}
 	distance = 0;
 	for (k=0;k<3;k++)
 	{
@@ -178,10 +188,8 @@ gboolean isConnected2(AtomMol a1,AtomMol a2)
 	}
 	distance = sqrt(distance)/BOHR_TO_ANG;
 
-	if(distance<(a1.prop.covalentRadii+a2.prop.covalentRadii))
-		return TRUE;
-  	else 
-		return FALSE;
+	if(distance<(a1.prop.covalentRadii+a2.prop.covalentRadii)) return TRUE;
+  	else return FALSE;
 }
 /*****************************************************************************/
 void set2Connections(Molecule* molecule)
@@ -199,7 +207,7 @@ void set2Connections(Molecule* molecule)
 	for(i=0;i<molecule->nAtoms-1;i++)
 		for(j=i+1;j<molecule->nAtoms;j++)
 	{
-		if(isConnected2(molecule->atoms[i],molecule->atoms[j]))
+		if(isConnected2(molecule,i,j))
 		{
 			molecule->connected2[0][k]= i;
 			molecule->connected2[1][k]= j;
@@ -299,11 +307,11 @@ void set3Connections(Molecule* molecule)
 		{
 			if(l!=i && l!=j)
 			{
-				if( isConnected2(molecule->atoms[i],molecule->atoms[l]))
+				if( isConnected2(molecule,i,l))
 					if( connect3(molecule,n,l,i,j))
 						n++;
 
-				if( isConnected2(molecule->atoms[j],molecule->atoms[l]))
+				if( isConnected2(molecule,j,l))
 					if( connect3(molecule,n,i,j,l))
 						n++;
 			}
@@ -406,10 +414,10 @@ void set4Connections(Molecule* molecule)
 			/* a refaire voir Set3Co */
 			if(l!=i && l!=j && l!= m)
 			{
-				if( isConnected2(molecule->atoms[i],molecule->atoms[l]) )
+				if( isConnected2(molecule,i,l))
 					if(connect4(molecule,n,l,i,j,m))
 						n++;
-				if( isConnected2(molecule->atoms[m],molecule->atoms[l]))
+				if( isConnected2(molecule,m,l))
 					if(connect4(molecule,n,i,j,m,l))
 						n++;
 			}
@@ -535,7 +543,6 @@ void setConnections(Molecule* molecule)
     	while( gtk_events_pending() )
         	gtk_main_iteration();
 	setNonBondedConnections(molecule);
-	/* printf("End Connection\n");*/
 
 	freeBondedMatrix(molecule);
 }
@@ -561,6 +568,19 @@ Molecule createMolecule(GeomDef* geom,gint natoms,gboolean connections)
 		molecule.atoms[i].residueNumber = geom[i].ResidueNumber;
 		molecule.atoms[i].layer = geom[i].Layer;
 		molecule.atoms[i].show = geom[i].show;
+		molecule.atoms[i].N = geom[i].N;
+	
+		molecule.atoms[i].typeConnections = NULL; 
+		if(geom[i].typeConnections)
+		{
+			gint j;
+			molecule.atoms[i].typeConnections = g_malloc(molecule.nAtoms*sizeof(gint));
+			for(j=0;j<molecule.nAtoms;j++)
+			{
+			 	gint nj = geom[j].N-1;
+				molecule.atoms[i].typeConnections[nj] = geom[i].typeConnections[nj];
+			}
+		}
 	}
 	if(connections)
 		setConnections(&molecule);
@@ -574,6 +594,7 @@ Molecule createMolecule(GeomDef* geom,gint natoms,gboolean connections)
 void redrawMolecule(Molecule* molecule,gchar* str)
 {
 	gint i;
+	gint j;
 	gdouble C[3] = {0.0,0.0,0.0};
 
 	Free_One_Geom(geometry0,Natoms);
@@ -600,7 +621,8 @@ void redrawMolecule(Molecule* molecule,gchar* str)
 		geometry0[i].show =  molecule->atoms[i].show;
 		geometry0[i].Layer =  molecule->atoms[i].layer;
 		geometry0[i].Variable = FALSE;
-		geometry0[i].N = i+1;
+		geometry0[i].N = molecule->atoms[i].N;
+		geometry0[i].typeConnections = NULL;
 
 		geometry[i].X = molecule->atoms[i].coordinates[0];
 		geometry[i].Y = molecule->atoms[i].coordinates[1];
@@ -614,7 +636,8 @@ void redrawMolecule(Molecule* molecule,gchar* str)
 		geometry[i].show =  molecule->atoms[i].show;
 		geometry[i].Layer =  molecule->atoms[i].layer;
 		geometry[i].Variable = FALSE;
-		geometry[i].N = i+1;
+		geometry[i].N = molecule->atoms[i].N;
+		geometry[i].typeConnections = NULL;
 
 		C[0] +=  geometry0[i].X;
 		C[1] +=  geometry0[i].Y;
@@ -646,12 +669,45 @@ void redrawMolecule(Molecule* molecule,gchar* str)
 		geometry[i].Y /=BOHR_TO_ANG;
 		geometry[i].Z /=BOHR_TO_ANG;
 	}
-	create_GeomXYZ_from_draw_grometry();
+
+	if(molecule->atoms[0].typeConnections)
+	{
+		for(i=0;i<(gint)Natoms;i++)
+		{
+			geometry[i].typeConnections = g_malloc(Natoms*sizeof(gint));
+			geometry0[i].typeConnections = g_malloc(Natoms*sizeof(gint));
+			if(molecule->atoms[i].typeConnections)
+			{
+				for(j=0;j<(gint)Natoms;j++)
+				{
+			 		gint nj = geometry[j].N-1;
+					geometry[i].typeConnections[nj] = molecule->atoms[i].typeConnections[nj];
+					geometry0[i].typeConnections[nj] = molecule->atoms[i].typeConnections[nj];
+				}
+			}
+			else
+			{
+				for(j=0;j<(gint)Natoms;j++)
+				{
+			 		gint nj = geometry[j].N-1;
+					geometry[i].typeConnections[nj] = 0;
+					geometry0[i].typeConnections[nj] = 0;
+				}
+			}
+		}
+		reset_hydrogen_bonds();
+	}
+	else
+	{
+		reset_all_connections();
+	}
 	unselect_all_atoms();
 	set_text_to_draw(str);
 	set_statubar_operation_str(str);
 	change_of_center(NULL,NULL);
-	reset_all_connections();
+
+	create_GeomXYZ_from_draw_grometry();
+	//set_connections_from_connected2(molecule->numberOf2Connections, molecule->connected2[0], molecule->connected2[1]);
 	dessine();
 
     	while( gtk_events_pending() )
@@ -659,3 +715,81 @@ void redrawMolecule(Molecule* molecule,gchar* str)
 
 }
 /********************************************************************************/
+Molecule copyMolecule(Molecule* m)
+{
+
+	gint i;
+	gint j;
+	gint k;
+	Molecule molecule = newMolecule();
+
+	molecule.energy = m->energy;
+	molecule.nAtoms = m->nAtoms;
+	if( molecule.nAtoms>0) molecule.atoms = g_malloc(molecule.nAtoms*sizeof(AtomMol));
+	for(i=0;i<molecule.nAtoms;i++)
+	{
+		molecule.atoms[i].prop = prop_atom_get(m->atoms[i].prop.symbol);
+		for(j=0;j<3;j++) molecule.atoms[i].coordinates[j] = m->atoms[i].coordinates[j];
+		molecule.atoms[i].charge = m->atoms[i].charge;
+		molecule.atoms[i].mmType = g_strdup(m->atoms[i].mmType);
+		molecule.atoms[i].pdbType = g_strdup(m->atoms[i].pdbType);
+		molecule.atoms[i].residueName = g_strdup(m->atoms[i].residueName);
+		molecule.atoms[i].residueNumber = m->atoms[i].residueNumber;
+		molecule.atoms[i].layer = m->atoms[i].layer;
+		molecule.atoms[i].show = m->atoms[i].show;
+		molecule.atoms[i].N = m->atoms[i].N;
+
+		molecule.atoms[i].typeConnections = NULL; 
+		if(m->atoms[i].typeConnections)
+		{
+			gint j;
+			molecule.atoms[i].typeConnections = g_malloc(molecule.nAtoms*sizeof(gint));
+			for(j=0;j<molecule.nAtoms;j++)
+				molecule.atoms[i].typeConnections[j] = m->atoms[i].typeConnections[j];
+		}
+	}
+
+	molecule.numberOf2Connections = m->numberOf2Connections;
+	k = molecule.numberOf2Connections;
+	if(k>0)
+	for(j=0;j<2;j++)
+	{
+		molecule.connected2[j] = g_malloc(k*sizeof(gint));
+		for(i=0;i<k;i++) molecule.connected2[j][i] = m->connected2[j][i];
+	}
+	molecule.numberOf3Connections = m->numberOf3Connections;
+	k = molecule.numberOf3Connections;
+	if(k>0)
+	for(j=0;j<3;j++)
+	{
+		molecule.connected3[j] = g_malloc(k*sizeof(gint));
+		for(i=0;i<k;i++) molecule.connected3[j][i] = m->connected3[j][i];
+	}
+	molecule.numberOf4Connections = m->numberOf4Connections;
+	k = molecule.numberOf4Connections;
+	if(k>0)
+	for(j=0;j<4;j++)
+	{
+		molecule.connected4[j] = g_malloc(k*sizeof(gint));
+		for(i=0;i<k;i++) molecule.connected4[j][i] = m->connected4[j][i];
+	}
+
+	molecule.numberOfNonBonded = m->numberOfNonBonded;
+	k = molecule.numberOfNonBonded;
+	if(k>0)
+	for(j=0;j<2;j++)
+	{
+		molecule.nonBonded[j] = g_malloc(k*sizeof(gint));
+		for(i=0;i<k;i++) molecule.nonBonded[j][i] = m->nonBonded[j][i];
+	}
+
+	if(molecule.nAtoms>0)
+	for(j=0;j<3;j++) /* x, y and z derivatives */
+	{
+		molecule.gradient[j] = g_malloc(molecule.nAtoms*sizeof(gdouble));
+		for(i=0;i<molecule.nAtoms;i++)
+		molecule.gradient[j][i] = m->gradient[j][i];
+	}
+
+	return molecule;
+}

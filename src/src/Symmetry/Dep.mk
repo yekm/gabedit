@@ -12,16 +12,16 @@ MoleculeSymmetry.o: ../Symmetry/PolyHedralOperators.h
 MoleculeSymmetry.o: ../Symmetry/SymmetryOperators.h
 MoleculeSymmetry.o: ../Symmetry/ReduceMolecule.h
 MoleculeSymmetry.o: ../Symmetry/GenerateMolecule.h ../Common/GabeditType.h
-MoleculeSymmetry.o: ../Utils/AtomsProp.h ../Utils/Constantes.h
+MoleculeSymmetry.o: ../Utils/AtomsProp.h ../Utils/Constants.h
 MoleculeSymmetryInterface.o: ../../Config.h
 MoleculeSymmetryInterface.o: ../Common/Global.h
 MoleculeSymmetryInterface.o: ../Files/GabeditFileChooser.h
 MoleculeSymmetryInterface.o: ../Common/GabeditType.h
 MoleculeSymmetryInterface.o: ../Utils/UtilsInterface.h ../Utils/Utils.h
-MoleculeSymmetryInterface.o: ../Utils/Constantes.h ../Utils/GabeditTextEdit.h
+MoleculeSymmetryInterface.o: ../Utils/Constants.h ../Utils/GabeditTextEdit.h
 MoleculeSymmetryInterface.o: ../Common/Windows.h
 MoleculeSymmetryInterface.o: ../Symmetry/MoleculeSymmetry.h
-PolyHedralOperators.o: ../../Config.h ../Utils/Constantes.h
+PolyHedralOperators.o: ../../Config.h ../Utils/Constants.h
 PolyHedralOperators.o: ../Symmetry/MoleculeSymmetryType.h
 PolyHedralOperators.o: ../Symmetry/MoleculeSymmetry.h
 PolyHedralOperators.o: ../Symmetry/PolyHedralOperators.h
@@ -29,7 +29,7 @@ PolyHedralOperators.o: ../Symmetry/SymmetryOperators.h
 PrincipalAxis.o: ../../Config.h ../Symmetry/MoleculeSymmetryType.h
 PrincipalAxis.o: ../Symmetry/MoleculeSymmetry.h
 PrincipalAxis.o: ../Symmetry/SymmetryOperators.h
-ReduceMolecule.o: ../../Config.h ../Utils/Constantes.h
+ReduceMolecule.o: ../../Config.h ../Utils/Constants.h
 ReduceMolecule.o: ../Symmetry/MoleculeSymmetryType.h
 ReduceMolecule.o: ../Symmetry/MoleculeSymmetry.h
 ReduceMolecule.o: ../Symmetry/SymmetryOperators.h
@@ -40,7 +40,7 @@ ReducePolyHedralMolecule.o: ../Symmetry/MoleculeSymmetry.h
 ReducePolyHedralMolecule.o: ../Symmetry/PolyHedralOperators.h
 ReducePolyHedralMolecule.o: ../Symmetry/ReducePolyHedralMolecule.h
 ReducePolyHedralMolecule.o: ../Symmetry/SymmetryOperators.h
-SymmetryOperators.o: ../../Config.h ../Utils/Constantes.h
+SymmetryOperators.o: ../../Config.h ../Utils/Constants.h
 SymmetryOperators.o: ../Symmetry/MoleculeSymmetryType.h
 SymmetryOperators.o: ../Symmetry/MoleculeSymmetry.h
 SymmetryOperators.o: ../Symmetry/SymmetryOperators.h

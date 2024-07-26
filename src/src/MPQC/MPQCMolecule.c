@@ -1,6 +1,6 @@
 /* MPQCMolecule.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -31,11 +31,10 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/DrawGeom.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/GabeditTextEdit.h"
 #include "../Geometry/InterfaceGeom.h"
 #include "../Common/Windows.h"
-#include "../Utils/Constantes.h"
 #include "../Utils/AtomsProp.h"
 #include "../Symmetry/MoleculeSymmetry.h"
 #include "../Symmetry/MoleculeSymmetryInterface.h"
@@ -474,7 +473,7 @@ void createMPQCSymmetryFrame(GtkWidget *win, GtkWidget *box)
 	g_object_set_data(G_OBJECT (button), "Label",label);
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfSymmetry[AUTO]);
 	g_object_set_data(G_OBJECT (button), "ComboSymmetry",comboSymmetry);
-	g_signal_connect(G_OBJECT(button),"clicked", GTK_SIGNAL_FUNC(activateRadioButton),NULL);
+	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
 	buttonAuto = button;
 
@@ -482,19 +481,19 @@ void createMPQCSymmetryFrame(GtkWidget *win, GtkWidget *box)
 	g_object_set_data(G_OBJECT (button), "Label",label);
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfSymmetry[GABEDIT]);
 	g_object_set_data(G_OBJECT (button), "ComboSymmetry",comboSymmetry);
-	g_signal_connect(G_OBJECT(button),"clicked", GTK_SIGNAL_FUNC(activateRadioButton),NULL);
+	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);
 	add_widget_table(table, label, 1, 1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), FALSE);
 
 	buttonTolerance = create_button(win,"Tolerance");
 	add_widget_table(table, buttonTolerance, 1, 2);
-	g_signal_connect(G_OBJECT(buttonTolerance),"clicked", GTK_SIGNAL_FUNC(activateToleranceButton),NULL);
+	g_signal_connect(G_OBJECT(buttonTolerance),"clicked", G_CALLBACK(activateToleranceButton),NULL);
 
 	labelSymmetry = label;
 	gtk_widget_set_sensitive(buttonTolerance, FALSE);
 
 	button = addRadioButtonToATable(table, button, "Fixed Symmetry", 2, 0,1);
-	g_signal_connect(G_OBJECT(entrySymmetry),"changed", GTK_SIGNAL_FUNC(changedEntrySymmetry),NULL);
+	g_signal_connect(G_OBJECT(entrySymmetry),"changed", G_CALLBACK(changedEntrySymmetry),NULL);
 	setComboSymmetry(comboSymmetry);
 	gtk_table_attach(GTK_TABLE(table),comboSymmetry,1,1+2,2,2+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
@@ -504,7 +503,7 @@ void createMPQCSymmetryFrame(GtkWidget *win, GtkWidget *box)
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfSymmetry[FIXED]);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), FALSE);
 	g_object_set_data(G_OBJECT (button), "ComboSymmetry",comboSymmetry);
-	g_signal_connect(G_OBJECT(button),"clicked", GTK_SIGNAL_FUNC(activateRadioButton),NULL);
+	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);
 	gtk_widget_set_sensitive(comboSymmetry, FALSE);
 
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonAuto), FALSE);

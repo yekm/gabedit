@@ -1,6 +1,6 @@
 /* BuildPolySaccharide.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -129,6 +129,7 @@ static void init_variables()
 			g_free(G[i].mmType);
 			g_free(G[i].pdbType);
 			g_free(G[i].Residue);
+			if(G[i].typeConnections) g_free(G[i].typeConnections);
 		}
 
 		if(G)
@@ -136,6 +137,10 @@ static void init_variables()
 	}
 	Nb=0;
 	G = NULL;
+	lastO  = -1;
+	lastO1 = -1;
+	lastC1 = -1;
+	lastHO1 = -1;
 	
 }
 /*****************************************************************************/
@@ -152,10 +157,10 @@ static void destroy_dlg(GtkWidget* Dlg,gpointer data)
 			g_free(G[i].mmType);
 			g_free(G[i].pdbType);
 			g_free(G[i].Residue);
+			if(G[i].typeConnections) g_free(G[i].typeConnections);
 		}
 
-		if(G)
-			g_free(G);
+		if(G) g_free(G);
 	}
 	Nb=0;
 	G = NULL;
@@ -163,9 +168,60 @@ static void destroy_dlg(GtkWidget* Dlg,gpointer data)
 	activate_rotation();
 }
 /*****************************************************************************/
+static gboolean test_connection(gint i,gint j)
+{
+	gdouble distance;
+	gdouble rcut;
+	gdouble x,y,z;
+	if(G[i].N == 0 || G[j].N == 0) return FALSE;
+	x = G[i].X-G[j].X;
+	y = G[i].Y-G[j].Y;
+	z = G[i].Z-G[j].Z;
+	distance = x*x+y*y+z*z;
+	rcut = G[i].Prop.covalentRadii+G[j].Prop.covalentRadii;
+	rcut = rcut* rcut;
+
+	if(distance<rcut) return TRUE;
+	else return FALSE;
+}
+/*****************************************************************************/
+static void set_connections(gint iBegin, gint lastF, gint newF)
+{
+	gint i;
+	gint j;
+
+	if(Nb<1) return;
+	if(!G) return;
+	if(iBegin<0) iBegin = 0;
+	for(i=0;i<iBegin;i++)
+	{
+		if(!G[i].typeConnections) continue;
+		G[i].typeConnections = g_realloc(G[i].typeConnections,Nb*sizeof(gint));
+		for(j=iBegin;j<Nb;j++) G[i].typeConnections[j] = 0;
+	}
+	for(i=iBegin;i<Nb;i++)
+	{
+		G[i].typeConnections = g_malloc(Nb*sizeof(gint));
+		for(j=0;j<Nb;j++) G[i].typeConnections[j] = 0;
+	}
+	for(i=iBegin;i<Nb;i++)
+	{
+		for(j=i+1;j<Nb;j++)
+		{
+			if(test_connection(i,j)) G[i].typeConnections[j]= 1;
+			G[j].typeConnections[i] = G[i].typeConnections[j];
+		}
+	}
+	if(lastF>-1 && newF>-1)
+	{
+		G[lastF].typeConnections[newF] = G[newF].typeConnections[lastF]=1;
+	}
+}
+/*****************************************************************************/
 static void define_geometry_to_draw()
 {
 	gint i;
+	gint j;
 	gdouble C[3]={0.0,0.0,0.0};
 
 	Free_One_Geom(geometry0,Natoms);
@@ -191,7 +247,8 @@ static void define_geometry_to_draw()
 			geometry0[Natoms].Residue = g_strdup(G[i].Residue);
 			geometry0[Natoms].ResidueNumber = G[i].ResidueNumber;
 			geometry0[Natoms].show = TRUE;
-			geometry0[Natoms].N = Natoms+1;
+			geometry0[Natoms].N = i+1;
+			geometry0[Natoms].typeConnections = NULL;
 			geometry0[Natoms].Layer = HIGH_LAYER;
 			geometry0[Natoms].Variable = FALSE;
 
@@ -205,7 +262,8 @@ static void define_geometry_to_draw()
 			geometry[Natoms].Residue = g_strdup(G[i].Residue);
 			geometry[Natoms].ResidueNumber = G[i].ResidueNumber;
 			geometry[Natoms].show = TRUE;
-			geometry[Natoms].N = Natoms+1;
+			geometry[Natoms].N = i+1;
+			geometry[Natoms].typeConnections = NULL;
 			geometry[Natoms].Layer = HIGH_LAYER;
 			geometry[Natoms].Variable = FALSE;
 			Natoms++;
@@ -235,6 +293,27 @@ static void define_geometry_to_draw()
 		geometry0 = g_realloc(geometry0,(Natoms)*sizeof(GeomDef));
 		geometry  = g_realloc(geometry,(Natoms)*sizeof(GeomDef));
 	}
+	for(i=0;i<(gint)Natoms;i++)
+	{
+		geometry[i].typeConnections = g_malloc(Natoms*sizeof(gint));
+		for(j=0;j<(gint)Natoms;j++) geometry[i].typeConnections[j] = 0;
+		geometry0[i].typeConnections = g_malloc(Natoms*sizeof(gint));
+		for(j=0;j<(gint)Natoms;j++) geometry0[i].typeConnections[j] = 0;
+	}
+	for(i=0;i<(gint)Natoms;i++)
+	{
+		gint iG = geometry[i].N-1;
+		for(j=i+1;j<(gint)Natoms;j++) 
+		{
+			gint jG = geometry[j].N-1;
+			geometry[i].typeConnections[j] = G[iG].typeConnections[jG];
+			geometry[j].typeConnections[i] = G[jG].typeConnections[iG];
+		}
+	}
+	for(i=0;i<(gint)Natoms;i++)
+		 geometry[i].N = geometry0[i].N = i+1;
+
+	copy_connections(geometry0,geometry,Natoms);
 
 }
 /********************************************************************************/
@@ -330,6 +409,7 @@ void add_fragment(GtkWidget* button)
 		G[j].pdbType=g_strdup(Frag.Atoms[i].pdbType);
 		G[j].Residue=g_strdup(Frag.Atoms[i].Residue);
 		G[j].ResidueNumber=lastFragNumber+1;
+		G[j].typeConnections = NULL;
 
 		G[j].Prop = prop_atom_get(Frag.Atoms[i].Symb);
 		G[j].N = j+1;
@@ -486,11 +566,13 @@ void add_fragment(GtkWidget* button)
 		G[lastHO1].N = 0;
 	}
 
+	set_connections(Nb-Frag.NAtoms,lastO1,connectTo);
 	define_geometry_to_draw();
 	define_good_factor();
 	create_GeomXYZ_from_draw_grometry();
 	unselect_all_atoms();
-	reset_all_connections();
+	reset_multiple_bonds();
+	reset_charges_multiplicities();
 	dessine();
 
 	lastO1 = O1;
@@ -776,7 +858,7 @@ static void add_buttons(GtkWidget *Dlg,GtkWidget* box)
 		g_object_set_data(G_OBJECT (button), "Dlg",Dlg);
 		style=set_button_style(button_style,button,"H");
 		g_signal_connect(G_OBJECT(button), "clicked",
-                            (GtkSignalFunc)build_polysaccharide,(gpointer )Symb[j][i]);
+                            (GCallback)build_polysaccharide,(gpointer )Symb[j][i]);
       	  /*
 	    gtk_widget_set_size_request (GTK_WIDGET(button), (ScreenWidth)*0.05, (ScreenHeight)*0.05);
 	  */
@@ -812,12 +894,12 @@ void build_polysaccharide_dlg()
   add_child(GeomDlg,Dlg,gtk_widget_destroy," Build PolySacc. mol. ");
 
 
-  g_signal_connect(G_OBJECT(Dlg),"delete_event",(GtkSignalFunc)destroy_dlg,NULL);
+  g_signal_connect(G_OBJECT(Dlg),"delete_event",(GCallback)destroy_dlg,NULL);
 
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-  gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(Dlg)->vbox), frame);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dlg)->vbox), frame,TRUE,TRUE,0);
   gtk_widget_show (frame);
 
   vboxframe = create_vbox(frame);
@@ -846,7 +928,7 @@ void build_polysaccharide_dlg()
   gtk_widget_realize(Dlg);
   Button = create_button(Dlg,"Close");
   gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Dlg)->action_area), Button, FALSE, TRUE, 5);  
-  g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GtkSignalFunc)destroy_dlg,GTK_OBJECT(Dlg));
+  g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)destroy_dlg,GTK_OBJECT(Dlg));
 
   GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Button);

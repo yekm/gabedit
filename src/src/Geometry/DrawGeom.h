@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -19,17 +19,25 @@ DEALINGS IN THE SOFTWARE.
 #ifndef __GABEDIT_DRAWGEOM_H__
 #define __GABEDIT_DRAWGEOM_H__
 
+#include "Fragments.h"
+
 typedef enum
 {
 ROTATION,ROTATIONZ,TRANSMOVIE,CENTER,
 SCALEGEOM,SCALESTICK,SCALEBALL,SCALEDIPOLE,
-SELECTFRAG,SELECTRESIDUE,DELETEFRAG,MOVEFRAG,ROTLOCFRAG,ROTZLOCFRAG,INSERTATOM,
+SELECTOBJECTS,
+SELECTFRAG,SELECTRESIDUE,
+DELETEOBJECTS, /* Frag or atom or bond */
+DELETEFRAG, MOVEFRAG,ROTLOCFRAG,ROTZLOCFRAG,
 ADDFRAGMENT,
+EDITOBJECTS, /* insert a atom(s) and or a bond, change a bond */
+ADDATOMSBOND,
+CHANGEBOND,CUTBOND,
 MESURE,SHOWMESURE,
 RENDERSTICK,RENDERBALL,
 LABELNO,LABELSYMB,LABELNUMB,LABELMMTYP,LABELPDBTYP,LABELLAYER,LABELSYMBNUMB,
 LABELCHARGE,LABELSYMBCHARGE,LABELNUMBCHARGE,LABELRESIDUES,LABELCOORDINATES,
-FXYZ,FMOL2,FTINKER,FPDB,FHIN,FGZMAT,FMZMAT,
+FXYZ,FMOL2,FTINKER,FPDB,FHIN,FGABEDIT,FGZMAT,FMZMAT,
 FDALTONIN,FDALTONFIRST,FDALTONLAST,
 FGAMESSIN,FGAMESSFIRST,FGAMESSLAST,
 FGAUSSIN,FGAUSSOUTFIRST,FGAUSSOUTLAST,
@@ -76,7 +84,14 @@ typedef struct _GeomDef
  gboolean ColorAlloc;
  GabEditLayerType Layer;
  gboolean Variable;
+ gint* typeConnections;
 }GeomDef;
+
+typedef struct _GeomDraw
+{
+	gint nAtoms;
+	GeomDef* atoms;
+}GeomDraw;
 
 typedef struct _CoordMaxMin
 {
@@ -108,10 +123,13 @@ guint Natoms;
 gint *NumFatoms;
 guint NFatoms;
 
-gdouble factor;
-gdouble factorstick;
-gdouble factorball;
-gdouble factordipole;
+void add_geometry_to_fifo();
+void get_geometry_from_fifo(gboolean toNext);
+gdouble get_factorstick();
+gdouble get_factorball();
+gdouble get_factordipole();
+gdouble get_factor();
+
 gint TransX;
 gint TransY;
 GtkWidget *GeomDlg;
@@ -138,6 +156,10 @@ gchar* AtomToInsert;
 gint NumSelAtoms[4];
 gboolean Ddef;
 
+void create_drawmolecule_file();
+void read_drawmolecule_file();
+GeomDef* copyGeometry(GeomDef* geom0);
+void freeGeometry(GeomDef* geom);
 gint get_connection_type(gint i, gint j);
 void SelectFixedVariableAtoms(gboolean variable);
 void SelectFirstResidue();
@@ -151,10 +173,10 @@ void setMMTypeOfselectedAtomsDlg();
 void setPDBTypeOfselectedAtomsDlg();
 void setChargeOfselectedAtomsDlg();
 void scaleChargesOfSelectedAtomsDlg();
-void addMaxHydrogensToSelectedAtoms();
-void addHydrogensToSelectedAtoms();
-void addOneHydrogenToSelectedAtoms();
-void addHydrogensToSelectedAtomsTpl();
+void addMaxHydrogens();
+void addHydrogens();
+void addOneHydrogen();
+void addHydrogensTpl();
 void set_fix_selected_atoms();
 void set_variable_selected_atoms();
 void messageAmberTypesDefine();
@@ -179,6 +201,8 @@ gboolean pers_mode();
 gboolean shad_mode();
 gboolean light_mode();
 gboolean cartoon_mode();
+gdouble get_frag_angle();
+void set_frag_angle(gdouble a);
 gboolean hbond_connections(gint i, gint j);
 gchar *get_distance(gint i,gint j);
 gchar *get_angle(gint i,gint j,gint l);
@@ -190,6 +214,10 @@ gboolean draw_lines_yes_no(guint i,guint j);
 guint get_num_min_rayonIJ(guint i,guint j);
 void SetRadioPopupMenu(gchar* button);
 void HideShowMesure(gboolean hiding);
+void AdjustHydrogensYesNo(gboolean adjust);
+gboolean getAdjustHydrogensYesNo();
+void RebuildConnectionsDuringEditionYesNo(gboolean rebuild);
+gboolean getRebuildConnectionsDuringEditionYesNo();
 void ActivateButtonOperation (GtkWidget *widget, guint data);
 void RenderStick();
 void RenderBallStick();
@@ -229,13 +257,12 @@ void add_a_fragment(GtkWidget*win, gchar* fragName);
 void addAFragment(gchar* fragName);
 void set_back_color_black();
 void open_color_dlg(GtkWidget *win,gpointer *DrawingArea);
-void to_postscript(GtkWidget *win, guint data);
 void set_HBonds_dialog_geom(GtkWidget *win, guint data);
 void set_povray_options_geom(GtkWidget *win, guint data);
-void to_povray(GtkWidget *win, guint data);
 void destroy_drawing_and_childs(GtkWidget *win,gpointer data);
 void SetOperation(GtkWidget *,guint);
 void set_dipole_from_charges();
+gdouble get_sum_charges();
 void compute_total_charge();
 void compute_charge_by_residue();
 void compute_charge_of_selected_atoms();
@@ -249,7 +276,17 @@ void show_hydrogen_atoms();
 void deleteSelectedAtoms();
 void deleteHydrogenAtoms();
 void define_geometry();
+void reset_multiple_bonds();
 void reset_all_connections();
+void resetConnections();
+void resetConnectionsBetweenSelectedAndNotSelectedAtoms();
+void resetConnectionsBetweenSelectedAtoms();
+void resetMultipleConnections();
+void reset_hydrogen_bonds();
+void export_geometry(gchar* fileName, gchar* fileType);
+void set_sensitive_stop_button(gboolean sens);
+void reset_charges_multiplicities();
+void copy_connections(GeomDef* geom0, GeomDef* geom, gint n);
 
 #endif /* __GABEDIT_DRAWGEOM_H__ */
 

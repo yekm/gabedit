@@ -1,6 +1,6 @@
 /* MoleculeSymmetry.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -30,7 +30,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Symmetry/GenerateMolecule.h"
 #include "../Common/GabeditType.h"
 #include "../Utils/AtomsProp.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,6 +42,29 @@ DEALINGS IN THE SOFTWARE.
 #define  C5X  0.6070619987
 #define  C5Z  0.7946544719
 
+#define  DEBUGSYM 0
+
+/************************************************************************************************************/
+static void printMolSymMolecules(MolSymMolecule* mol)
+{
+	gint i;
+	MolSymAtom *atomList;
+	gint deleted = mol->numberOfDifferentKindsOfAtoms;     /* tag for deleted atom */
+ 
+	atomList = mol->listOfAtoms;
+	
+	for (i=0;i<mol->numberOfAtoms;i++)
+	 {
+	        gint j = mol->listOfAtoms[i].type;
+		if(j!=deleted)
+		printf("%s %d %f %f %f\n",mol->symbol[j],atomList->type,
+			atomList->position[0],atomList->position[1], atomList->position[2]);
+		else
+		printf("%s %d %f %f %f\n","DE",atomList->type,
+			atomList->position[0],atomList->position[1], atomList->position[2]);
+		atomList++;
+	 }
+}
 /************************************************************************************************************/
 static gdouble getSmallestDistanceBetweenAtoms(MolSymMolecule* mol)
 {
@@ -270,7 +293,8 @@ static void getPointGroupSymbol(gint sym, gint nax, gchar* pgsym)
 
 	/* printf("sym = %d\n",sym);*/
 	*pgsym = 0;
-	if (sym & SYM_R) strcat(pgsym,"R3");
+	if (sym==0 && nax>0) sprintf(pgsym,"C%d",nax);
+	else if (sym & SYM_R) strcat(pgsym,"R3");
 	else if (sym & SYM_T) 
 	{
 		strcat(pgsym,"T");
@@ -290,7 +314,11 @@ static void getPointGroupSymbol(gint sym, gint nax, gchar* pgsym)
 	else if (sym & SYM_S)
 	{
 		sprintf(pgsym,"S%d",nax);
-		if (sym & SYM_V) sprintf(pgsym,"D%dd",nax);
+		if (sym & SYM_V) 
+		{
+			if(nax==4) sprintf(pgsym,"S%d",2*nax);
+			else sprintf(pgsym,"D%dd",nax);
+		}
 	}
 	else 
 	{
@@ -381,12 +409,19 @@ static gint determineSymmetry(MolSymMolecule* mol,int* nax, gint numberOfEquival
 		case 2:
 		qsort(mol->listOfAtoms,mol->numberOfAtoms,sizeof(MolSymAtom),compare2atoms);
 		*nax = determineOrderOfZAxis(mol, maximalOrder);
-		/* printf("nax = %d\n",*nax);*/
 		if (*nax == 0)   /* error */
 		{
 			sprintf(error,"Nonlinear molecule with symmetry Cinf! Try smaller precision for atom position\n"
 				"Current precision = %0.5f",mol->listOfAtoms[0].eps);
 			return 0;
+		}
+		if (*nax == 1)
+		{
+			if (testRotationReflection(mol,ROT2Y)==1)
+			{
+				rotateAroundXAxisToPlaceYAxisOntoZAxis(mol); 
+				*nax = determineOrderOfZAxis(mol, maximalOrder);
+			}
 		}
 		if (rotateAroundZaxes(mol,-2* *nax))
 		{
@@ -464,6 +499,7 @@ static void getSymmetryFromSymbol(gchar* syml,int* sym,int* nax, gchar* error)
 	if (strcmp(syml,"R3") == 0) { *sym = SYM_R; return;}
 	if (strcmp(syml,"DINFH") == 0) { *sym = SYM_H; *nax = 0; return;}
 	if (strcmp(syml,"CINFV") == 0) { *nax = 0; return; }
+	if (strcmp(syml,"D3D") == 0) { *nax = 3; *sym = (SYM_I | SYM_S | SYM_V); return; }
 	c2 = 0;
 	if (sscanf(syml,"%c%d%c",&c1,nax,&c2) < 2)
 	{
@@ -623,12 +659,13 @@ int computeSymmetry(
 	printf("message = %s\n",message);
 	*/
 
-	sprintf(pointGroupSymbol,"C1");
-	if(symf == 0)
+	if(symf == 0 && nax<2)
 	{
+		sprintf(pointGroupSymbol,"C1");
 		return 0;
 	}
 
+	/* printf("eps =%f\n",eps);*/
 	ret = setMolSymMolecule(&mol, nAtoms, symbols, X, Y, Z, eps);
 	/* printf("End set_mol\n");*/
 	if (ret != 0)
@@ -639,8 +676,8 @@ int computeSymmetry(
 	}
 
 	determinePrincipalAxis(&mol,centerOfGravity,&numberOfEquivalentAxes,inertialMoment,axes, principalAxisTolerance);  /* transform to principal axes */
-	/*
 	
+	if(DEBUGSYM){ 
 	printf("End principal\n");
 	printf("numberOfEquivalentAxes = %d\n", numberOfEquivalentAxes);
 	printf("Number of atoms:");
@@ -653,36 +690,53 @@ int computeSymmetry(
 	printf("Axis: %f %f %f\n",axes[0][0],axes[1][0],axes[2][0]);
 	printf("Axis: %f %f %f\n",axes[0][1],axes[1][1],axes[2][1]);
 	printf("Axis: %f %f %f\n",axes[0][2],axes[1][2],axes[2][2]);
-	*/
+	}
 
 	if (symf < 0 ) /* symmetry not fixed */
+	{
 		symmetry = determineSymmetry(&mol,&nax,numberOfEquivalentAxes, maximalOrder, principalAxisTolerance, message);
+		if(DEBUGSYM) printf("symf = %d symmetry = %d nax = %d\n",symf,symmetry,nax);
+	}
 	else
 	{
-		determineSymmetry(&mol,&nax,numberOfEquivalentAxes, maximalOrder, principalAxisTolerance, message);
-		symmetry = symf;
+		gchar ns[100];
+		gint naxOld = nax;
+		symmetry =determineSymmetry(&mol,&nax,numberOfEquivalentAxes, maximalOrder, principalAxisTolerance, message);
+		getPointGroupSymbol(symmetry, nax, ns);
+		g_strup(pointGroupSymbol);
+		g_strup(ns);
+		if(DEBUGSYM) printf("ns = %s gr = %s\n",ns,pointGroupSymbol);
+		if(DEBUGSYM) printf("symf = %d symmetry = %d nax = %d\n",symf,symmetry,nax);
+		if(strcmp(ns,pointGroupSymbol)!=0) 
+		{
+			nax = naxOld;
+			if(DEBUGSYM) printf("nax = %d\n",nax);
+
+			symmetry = symf;
+		}
 	}
 	
-	/*
-	printf("symmetry = %d\n",symmetry);
-	printf("End determineSymmetry symm = %d\n", symmetry);
-	printf("Mess = %s\n", message);
-	printf("nax = %d\n", nax);
-	*/
+
+	if(DEBUGSYM){ 
+		if(symmetry & SYM_H) printf("symmetry & SYM_H\n");
+		if(symmetry & SYM_V) printf("symmetry & SYM_V\n");
+		if(symmetry & SYM_D) printf("symmetry & SYM_D\n");
+		if(symmetry & SYM_S) printf("symmetry & SYM_S\n");
+		printf("symmetry = %d\n",symmetry);
+		printf("End determineSymmetry symm = %d\n", symmetry);
+		printf("Mess = %s\n", message);
+		printf("nax = %d\n", nax);
+	}
 
 
-	if(symmetry == 0)
+	if(symmetry == 0 && nax<2)
 	{
-		/*
-		printf("nax = %d\n",nax);
-		printf("numberOfEquivalentAxes = %d\n",numberOfEquivalentAxes);
-		printf("message = %s\n",message);
-		*/
 		*precision = mol.listOfAtoms[0].eps;
 		return -1;
 	}
 	/* printf("nAToms avant reduction %d\n", mol.numberOfAtoms);*/
 	if (redu) reduceMoleculeToItsBasisSetOfAtoms(&mol,symmetry,nax);
+	if(DEBUGSYM) printMolSymMolecules(&mol);
 	/* printf("End reduceMoleculeToItsBasisSetOfAtoms\n");*/
 	if ((symmetry & SYM_O) && !axz_3)           /* x,y,z axis C4 symmetry */
 	{

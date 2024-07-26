@@ -1,6 +1,6 @@
 /* GeomOrbXYZ.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Vector3d.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Transformation.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Geometry/GeomGlobal.h"
 #include "../Geometry/OpenBabel.h"
 #include "Sphere.h"
@@ -33,6 +33,7 @@ DEALINGS IN THE SOFTWARE.
 #include "GLArea.h"
 #include "StatusOrb.h"
 #include "AtomicOrbitals.h"
+#include "BondsOrb.h"
 
 #ifdef G_OS_WIN32
 #include <fcntl.h>
@@ -354,6 +355,7 @@ gboolean gl_read_molden_gabedit_geom_conv_file(gchar *fileName, gint geometryNum
  	if(Ncenters == 0 ) { if(GeomOrb) g_free(GeomOrb); }
  	else DefineType();
 
+	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info("Geometry","Ok");
@@ -447,6 +449,7 @@ gboolean gl_read_xyz_file_geomi(gchar *fileName,gint geometryNumber)
  	if(Ncenters == 0 ) { if(GeomOrb) g_free(GeomOrb); }
  	else DefineType();
 
+	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info("Geometry","Ok");
@@ -552,6 +555,7 @@ end:
  {
 	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
+	buildBondsOrb();
 	glarea_rafresh(GLArea);
 	reset_grid_limits();
 	init_atomic_orbitals();
@@ -759,6 +763,11 @@ gboolean gl_read_pdb_file(gchar* FileName)
 		GeomOrb[j].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[j].Symb);
 		j++;
 	}
+	if(j!=0)
+	{
+		Ncenters = j;
+		readBondsPDB(fd);
+	}
 	fclose(fd);
 
 	OK = FALSE;
@@ -784,6 +793,7 @@ gboolean gl_read_pdb_file(gchar* FileName)
 	{
 		RebuildGeom = TRUE;
 		if(this_is_a_new_geometry()) free_objects_all();
+		/* buildBondsOrb();*/
 		glarea_rafresh(GLArea);
 		reset_grid_limits();
 		init_atomic_orbitals();
@@ -820,8 +830,9 @@ static void read_hin_numbers_of_atoms(FILE* file, int* natoms, int* nresidues)
 	{
     		if(!fgets(t,taille,file)) break;
     		sscanf(t,"%s",dump);
-		if(!strcmp(dump,"atom")) (*natoms)++;
-		if(!strcmp(dump,"res")) (*nresidues)++;
+		g_strdup(dump);
+		if(!strcmp(dump,"ATOM")) (*natoms)++;
+		if(!strcmp(dump,"RES")) (*nresidues)++;
 	}
 }
 /*************************************************************************************/
@@ -834,9 +845,10 @@ static gboolean read_atom_hin_file(FILE* file,gchar* listFields[])
 
     	if(!fgets(t,taille,file)) return FALSE;
     	sscanf(t,"%s",dump);
-	if(strcmp(dump,"atom")!=0)
+	g_strdup(dump);
+	if(strcmp(dump,"ATOM")!=0)
 	{
-		if(strcmp(dump,"res")==0)
+		if(strcmp(dump,"RES")==0)
 		{
     			sscanf(t,"%s %s %s",dump,dump,listFields[1]);
 			sprintf(listFields[0],"Unknown");
@@ -945,7 +957,6 @@ gboolean gl_read_hin_file(gchar* FileName)
 		j++;
 		if(j>=natoms)break;
 	}
-	fclose(fd);
 	OK = TRUE;
 	if(natoms!=j) OK = FALSE;
 
@@ -957,18 +968,21 @@ gboolean gl_read_hin_file(gchar* FileName)
   			TypeGeom = GABEDIT_TYPEGEOM_WIREFRAME;
   			RebuildGeom = TRUE;
 		}
+		readBondsHIN(fd);
 	}
 	else
 	{
 		Ncenters = 0;
 		set_status_label_info("Geometry","Nothing");
 	}
+	fclose(fd);
 	g_free(t);
 	for(i=0;i<8;i++) g_free(listFields[i]);
 	if(OK)
 	{
 		RebuildGeom = TRUE;
 		if(this_is_a_new_geometry()) free_objects_all();
+		/* buildBondsOrb();*/
 		glarea_rafresh(GLArea);
 		reset_grid_limits();
 		init_atomic_orbitals();
@@ -1202,6 +1216,7 @@ gboolean gl_read_molden_or_gabedit_file_geom(gchar *FileName,gint type)
   		DefineType();
   		/* PrintGeomOrb();*/
 	}
+	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info("Geometry","Ok");
@@ -1337,6 +1352,7 @@ gboolean gl_read_molpro_file_geom_pos(gchar *FileName,long int pos)
   		/* PrintGeomOrb();*/
 	}
 	RebuildGeom = TRUE;
+	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info("Geometry","Ok");
@@ -1462,6 +1478,7 @@ gboolean gl_read_dalton_file_geomi(gchar *FileName,gint num)
   		/* PrintGeomOrb();*/
 	}
 	RebuildGeom = TRUE;
+	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info("Geometry","Ok");
@@ -1557,6 +1574,57 @@ void gl_get_natural_charges_from_gaussian_output_file(FILE* fd,gint N)
     			if(!feof(fd)) fgets(t,taille,fd);
 			else break;
 			if(!strstr(t,"-------------"))break;
+
+			for(i=0;i<N;i++)
+			{
+    				if(!feof(fd)) fgets(t,taille,fd);
+				else break;
+				if(sscanf(t,"%s %s %s",dump,dump,d)==3)
+				{
+					GeomOrb[i].partialCharge = atof(d);
+				}
+			}
+			break;
+		}
+		else
+		{
+          		pdest = strstr( t, "GradGradGrad" );
+			if(pdest)
+			{
+				ngrad++;
+			}
+			if(ngrad>2)
+				break;
+		}
+
+	}
+}
+/********************************************************************************/
+void gl_get_esp_charges_from_gaussian_output_file(FILE* fd,gint N)
+{
+ 	guint taille=BSIZE;
+  	gchar t[BSIZE];
+  	gchar dump[BSIZE];
+  	gchar d[BSIZE];
+  	gchar* pdest;
+	gint i;
+	gint ngrad=0;
+
+
+  	while(!feof(fd) )
+	{
+    		pdest = NULL;
+    		fgets(t,taille,fd);
+    		pdest = strstr( t, "Charges from ESP fit");
+		if(!pdest) /* Gaussian 03 */
+    			pdest = strstr( t, "harges from ESP");
+
+		if(pdest)
+		{
+    			if(!feof(fd)) fgets(t,taille,fd);
+			else break;
+    			if(!feof(fd)) fgets(t,taille,fd);
+			else break;
 
 			for(i=0;i<N;i++)
 			{
@@ -1762,6 +1830,7 @@ gboolean gl_read_gamess_file_geomi(gchar *FileName,gint num)
   		/* PrintGeomOrb();*/
 	}
 	RebuildGeom = TRUE;
+	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info("Geometry","Ok");
@@ -1958,6 +2027,7 @@ gboolean gl_read_mpqc_file_geomi(gchar *fileName,gint numGeometry)
  	if(Ncenters == 0 ) g_free(GeomOrb);
  	else DefineType();
 
+	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info("Geometry","Ok");
@@ -2081,6 +2151,7 @@ gboolean gl_read_molcas_file_geomi(gchar *FileName,gint num)
   		/* PrintGeomOrb();*/
 	}
 	RebuildGeom = TRUE;
+	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info("Geometry","Ok");
@@ -2211,6 +2282,7 @@ gboolean gl_read_molpro_file_geomi(gchar *FileName,gint num)
   		/* PrintGeomOrb();*/
 	}
 	RebuildGeom = TRUE;
+	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info("Geometry","Ok");
@@ -2303,6 +2375,8 @@ gboolean gl_read_gaussn_file_geomi_str(gchar *FileName,gint num,gchar* str)
 				gl_get_charges_from_gaussian_output_file(fd,j+1);
 				gl_get_natural_charges_from_gaussian_output_file(fd,j+1);
 				fseek(fd, geompos, SEEK_SET);
+				gl_get_esp_charges_from_gaussian_output_file(fd,j+1);
+				fseek(fd, geompos, SEEK_SET);
       				break;
     			}
     			j++;
@@ -2347,6 +2421,7 @@ gboolean gl_read_gaussn_file_geomi_str(gchar *FileName,gint num,gchar* str)
   		DefineType();
   		/* PrintGeomOrb();*/
 	}
+	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info("Geometry","Ok");
@@ -2581,6 +2656,7 @@ gboolean gl_read_mopac_output_file_geomi(gchar *fileName, gint numgeometry)
   		DefineType();
 
 	RebuildGeom = TRUE;
+	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info("Geometry","Ok");
@@ -2741,6 +2817,7 @@ gboolean gl_read_mopac_aux_file_geomi(gchar *fileName, gint numgeometry)
 	free_one_string_table(elements, nElements);
 	free_one_string_table(nuclearCharges, nNuclearCharges);
 	for(i=0;i<5;i++) g_free(AtomCoord[i]);
+	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info("Geometry","Ok");
@@ -2917,6 +2994,7 @@ gboolean gl_read_qchem_file_geomi(gchar *FileName,gint num)
 	{
   		DefineType();
 	}
+	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info("Geometry","Ok");

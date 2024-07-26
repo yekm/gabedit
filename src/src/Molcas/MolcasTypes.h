@@ -29,6 +29,12 @@ typedef struct _MolcasOptimisation
 	gint numberOfIterations;
 }MolcasOptimisation;
 
+typedef struct _MolcasSolvation
+{
+	gchar method[100];
+	gchar solvent[100];
+}MolcasSolvation;
+
 typedef struct _MolcasScf
 {
 	gchar title[1024];
@@ -76,7 +82,7 @@ typedef struct _MolcasColorFore
 	GdkColor program;
 	GdkColor shellCommand;
 	GdkColor internCommand;
-	GdkColor basis;
+	GdkColor subProgram;
 }MolcasColorFore;
 
 typedef struct _MolcasSystemVariables

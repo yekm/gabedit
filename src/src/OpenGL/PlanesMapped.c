@@ -1,6 +1,6 @@
 /* PlanesMapped.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -175,8 +175,8 @@ void create_maps(gchar* title,gint type)
   button = create_button(Win,"Cancel");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child, GTK_OBJECT(Win));
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Win));
   gtk_widget_show (button);
 
   button = create_button(Win,"OK");
@@ -184,7 +184,7 @@ void create_maps(gchar* title,gint type)
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
   gtk_widget_show (button);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)apply_maps,GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_maps,GTK_OBJECT(Win));
   
 
   gtk_widget_show_all (Win);
@@ -265,7 +265,7 @@ void create_maps_plane(gchar* title)
   gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
 
   add_child(PrincipalWindow,Win,destroyWin,"Plane Colorcoded.");
-  g_signal_connect(G_OBJECT(Win),"delete_event",(GtkSignalFunc)delete_child,NULL);
+  g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)delete_child,NULL);
 
   vboxall = create_vbox(Win);
   vboxwin = vboxall;
@@ -281,7 +281,7 @@ void create_maps_plane(gchar* title)
   button = create_button(Win,"Cancel");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child, GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
   gtk_widget_show (button);
 
   button = create_button(Win,"OK");
@@ -289,7 +289,7 @@ void create_maps_plane(gchar* title)
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
   gtk_widget_show (button);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)apply_maps_plane,GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_maps_plane,GTK_OBJECT(Win));
   
 
   /* Show all */

@@ -1,6 +1,6 @@
 /* GInterfaceRoute.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -178,14 +178,16 @@ static void set_spin_of_electrons_for_main()
 	}
 
         for(i=0;(guint)i<NMethodes;i++)
-        	if((NumberElectrons[i]-ChargeGauss[i])%2==0)
+        	if((NumberElectrons[i]-TotalCharges[i])%2==0)
 			SpinElectrons[i]=1;
                 else
 			SpinElectrons[i]=2;
 
         for(i=0;(guint)i<NMethodes;i++)
         {
-         	chaine = g_strdup_printf("%d",SpinElectrons[i]);
+		if(SpinMultiplicities[i]%2 != SpinElectrons[i]%2)
+			SpinMultiplicities[i] = SpinElectrons[i];
+         	chaine = g_strdup_printf("%d",SpinMultiplicities[i]);
 	 	if(EntryChargeSpin[2*i+1] && GTK_IS_ENTRY(EntryChargeSpin[2*i+1]))
 		{
          		gtk_entry_set_text(GTK_ENTRY(EntryChargeSpin[2*i+1]),chaine);
@@ -200,7 +202,7 @@ static void change_of_charge(GtkWidget *entry,gpointer d)
 
         Number = (gint*)d;
         entry_text = gtk_entry_get_text(GTK_ENTRY(entry));
-        ChargeGauss[*Number] = atoi(entry_text);
+        TotalCharges[*Number] = atoi(entry_text);
 	set_spin_of_electrons_for_main();
 
 }
@@ -208,12 +210,16 @@ static void change_of_charge(GtkWidget *entry,gpointer d)
 static void create_combo_charge(GtkWidget *hbox,gint Num,gchar *tlabel)
 {
   gchar *tlist[]={"0","1","-1","2","-2","3","-3","4","-4"};
+  gchar* t = NULL;
   gint *Number;
   Number = g_malloc(sizeof(gint));
   *Number = Num/2;
   EntryChargeSpin[Num] = create_label_combo(hbox,tlabel,tlist,9,TRUE,-1,(gint)(ScreenHeight*0.1));
-  g_signal_connect(G_OBJECT(EntryChargeSpin[Num]), "changed", GTK_SIGNAL_FUNC(change_of_charge), Number);
-  ChargeGauss[*Number] = 0;
+  g_signal_connect(G_OBJECT(EntryChargeSpin[Num]), "changed", G_CALLBACK(change_of_charge), Number);
+  t = g_strdup_printf("%d",TotalCharges[*Number]);
+  gtk_entry_set_text(GTK_ENTRY(EntryChargeSpin[Num]),t);
+  g_free(t);
+  /* TotalCharges[*Number] = 0;*/
 }
 /************************************************************************************************************/
 static void create_combo_spin(GtkWidget *hbox,gint Num,gchar *tlabel)
@@ -319,22 +325,23 @@ static void gene_polar(GtkWidget *b,gpointer data)
   if (strcmp(entrytext,"default") )
   {
   ipar=1;
-  sprintf(Tpolar,"%s(%s",Tpolar,entrytext);
+  /* sprintf(Tpolar,"%s(%s",Tpolar,entrytext);*/
+  sprintf(Tpolar+strlen(Tpolar),"(%s",entrytext);
   }
   entry=entryall[1];
   entrytext = gtk_entry_get_text(GTK_ENTRY(entry));
   if (strcmp(entrytext,"default") )
   {
   if(ipar)
-  sprintf(Tpolar,"%s,Step=%s",Tpolar,entrytext);
+  sprintf(Tpolar+strlen(Tpolar),",Step=%s",entrytext);
   else 
   {
   ipar=1;
-  sprintf(Tpolar,"%s(Step=%s",Tpolar,entrytext);
+  sprintf(Tpolar+strlen(Tpolar),"(Step=%s",entrytext);
   }
   }
   if(ipar)
-  sprintf(Tpolar,"%s) ",Tpolar);
+  strcat(Tpolar,") ");
 }
 /*****************************************************************************************/
 static void create_polar_option (GtkWidget* Wins)
@@ -360,13 +367,13 @@ static void create_polar_option (GtkWidget* Wins)
   gtk_window_set_modal (GTK_WINDOW (fp), TRUE);
 
   add_child(Wins,fp,gtk_widget_destroy,"  Dipole polar. ");
-  g_signal_connect(G_OBJECT(fp),"delete_event",(GtkSignalFunc)delete_child,NULL);
+  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)delete_child,NULL);
 
   vboxall = create_vbox(fp);
   frame = gtk_frame_new ("Dipole polarizabilities");
   g_object_ref (frame);
   g_object_set_data_full (G_OBJECT (fp), "frame", frame,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
@@ -392,14 +399,14 @@ static void create_polar_option (GtkWidget* Wins)
 
   button = create_button(fp,"Cancel");
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(delete_child),GTK_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(delete_child),GTK_OBJECT(fp));
   gtk_widget_show (button);
 
   button = create_button(fp,"OK");
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   gtk_widget_show (button);
-  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(gene_polar),(gpointer)entry);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(delete_child),GTK_OBJECT(fp));
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(gene_polar),(gpointer)entry);
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(delete_child),GTK_OBJECT(fp));
 
    
   gtk_widget_show_all(fp);
@@ -420,18 +427,18 @@ static void gene_scf(GtkWidget *b,gpointer data)
   if (strcmp(entrytext,"default") )
   {
   ipar=1;
-  sprintf(Tscf,"%s(%s",Tscf,entrytext);
+  sprintf(Tscf+strlen(Tscf),"(%s",entrytext);
   }
   entry=entryall[1];
   entrytext = gtk_entry_get_text(GTK_ENTRY(entry));
   if (strcmp(entrytext,"default") )
   {
   if(ipar)
-  sprintf(Tscf,"%s,Vshift=%s",Tscf,entrytext);
+  sprintf(Tscf+strlen(Tscf),",Vshift=%s",entrytext);
   else 
   {
   ipar=1;
-  sprintf(Tscf,"%s(Vshift=%s",Tscf,entrytext);
+  sprintf(Tscf+strlen(Tscf),"(Vshift=%s",entrytext);
   }
   }
   entry=entryall[2];
@@ -439,11 +446,11 @@ static void gene_scf(GtkWidget *b,gpointer data)
   if (strcmp(entrytext,"default") )
   {
   if(ipar)
-  sprintf(Tscf,"%s,MaxCycle=%s",Tscf,entrytext);
+  sprintf(Tscf+strlen(Tscf),",MaxCycle=%s",entrytext);
   else 
   {
   ipar=1;
-  sprintf(Tscf,"%s(MaxCycle=%s",Tscf,entrytext);
+  sprintf(Tscf+strlen(Tscf),"(MaxCycle=%s",entrytext);
   }
   }
   entry=entryall[3];
@@ -451,11 +458,11 @@ static void gene_scf(GtkWidget *b,gpointer data)
   if (strcmp(entrytext,"default") )
   {
   if(ipar)
-  sprintf(Tscf,"%s,MaxRot=%s",Tscf,entrytext);
+  sprintf(Tscf+strlen(Tscf),",MaxRot=%s",entrytext);
   else 
   {
   ipar=1;
-  sprintf(Tscf,"%s(MaxRot=%s",Tscf,entrytext);
+  sprintf(Tscf+strlen(Tscf),"(MaxRot=%s",entrytext);
   }
   }
   entry=entryall[4];
@@ -463,15 +470,15 @@ static void gene_scf(GtkWidget *b,gpointer data)
   if (strcmp(entrytext,"default") )
   {
   if(ipar)
-  sprintf(Tscf,"%s,Conver=%s",Tscf,entrytext);
+  sprintf(Tscf+strlen(Tscf),",Conver=%s",entrytext);
   else 
   {
   ipar=1;
-  sprintf(Tscf,"%s(Conver=%s",Tscf,entrytext);
+  sprintf(Tscf+strlen(Tscf),"(Conver=%s",entrytext);
   }
   }
   if(ipar)
-  sprintf(Tscf,"%s) ",Tscf);
+  strcat(Tscf,") ");
   else
   {
   	g_free(Tscf);
@@ -502,13 +509,13 @@ static void create_scf_option (GtkWidget* Wins)
   gtk_window_set_modal (GTK_WINDOW (fp), TRUE);
 
   add_child(Wins,fp,gtk_widget_destroy,"  Dipole polar. ");
-  g_signal_connect(G_OBJECT(fp),"delete_event",(GtkSignalFunc)delete_child,NULL);
+  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)delete_child,NULL);
 
   vboxall = create_vbox(fp);
   frame = gtk_frame_new ("SCF procedure");
   g_object_ref (frame);
   g_object_set_data_full (G_OBJECT (fp), "frame", frame,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
@@ -560,14 +567,14 @@ static void create_scf_option (GtkWidget* Wins)
 
   button = create_button(fp,"Cancel");
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(delete_child),GTK_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(delete_child),GTK_OBJECT(fp));
   gtk_widget_show (button);
 
   button = create_button(fp,"OK");
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   gtk_widget_show (button);
-  g_signal_connect(G_OBJECT(button), "clicked", GTK_SIGNAL_FUNC(gene_scf),(gpointer)entry);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(delete_child),GTK_OBJECT(fp));
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(gene_scf),(gpointer)entry);
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(delete_child),GTK_OBJECT(fp));
 
 
    
@@ -606,18 +613,18 @@ static void gene_freq(GtkWidget *b,gpointer data)
   if (!strcmp(entrytext,"Yes") )
   {
   ipar=1;
-  sprintf(Tfreq,"%s(VCD",Tfreq);
+  strcat(Tfreq,"(VCD");
   }
   entry=entryall[1];
   entrytext = gtk_entry_get_text(GTK_ENTRY(entry));
   if (!strcmp(entrytext,"Yes") )
   {
   if(ipar)
-  sprintf(Tfreq,"%s,Raman",Tfreq);
+  strcat(Tfreq,",Raman");
   else 
   {
   ipar=1;
-  sprintf(Tfreq,"%s(Raman",Tfreq);
+  strcat(Tfreq,"(Raman");
   }
   }
   entry=entryall[2];
@@ -625,11 +632,11 @@ static void gene_freq(GtkWidget *b,gpointer data)
   if (strcmp(entrytext,"default") )
   {
   if(ipar)
-  sprintf(Tfreq,"%s,%s",Tfreq,entrytext);
+  sprintf(Tfreq+strlen(Tfreq),",%s",entrytext);
   else 
   {
   ipar=1;
-  sprintf(Tfreq,"%s(%s",Tfreq,entrytext);
+  sprintf(Tfreq+strlen(Tfreq),"(%s",entrytext);
   }
   }
   entry=entryall[3];
@@ -637,15 +644,15 @@ static void gene_freq(GtkWidget *b,gpointer data)
   if (strcmp(entrytext,"default") )
   {
   if(ipar)
-  sprintf(Tfreq,"%s,Step=%s",Tfreq,entrytext);
+  sprintf(Tfreq+strlen(Tfreq),",Step=%s",entrytext);
   else 
   {
   ipar=1;
-  sprintf(Tfreq,"%s(Step=%s",Tfreq,entrytext);
+  sprintf(Tfreq+strlen(Tfreq),"(Step=%s",entrytext);
   }
   }
   if(ipar)
-  sprintf(Tfreq,"%s) ",Tfreq);
+  strcat(Tfreq,") ");
 }
 /*****************************************************************************************/
 static void create_freq_option ( GtkWidget *Wins)
@@ -672,13 +679,13 @@ static void create_freq_option ( GtkWidget *Wins)
   gtk_window_set_modal (GTK_WINDOW (fp), TRUE);
 
   add_child(Wins,fp,gtk_widget_destroy," Constants force ");
-  g_signal_connect(G_OBJECT(fp),"delete_event",(GtkSignalFunc)delete_child,NULL);
+  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)delete_child,NULL);
 
   vboxall = create_vbox(fp);
   frame = gtk_frame_new ("Force constants");
   g_object_ref (frame);
   g_object_set_data_full (G_OBJECT (fp), "frame", frame,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
@@ -715,14 +722,14 @@ static void create_freq_option ( GtkWidget *Wins)
 
   button = create_button(fp,"Cancel");
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(delete_child),GTK_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(delete_child),GTK_OBJECT(fp));
   gtk_widget_show (button);
 
   button = create_button(fp,"OK");
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   gtk_widget_show (button);
-  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(gene_freq),(gpointer)entry);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(delete_child),GTK_OBJECT(fp));
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(gene_freq),(gpointer)entry);
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(delete_child),GTK_OBJECT(fp));
 
    
   gtk_widget_show_all(fp);
@@ -741,7 +748,7 @@ void traite_button_general (GtkWidget *button, gpointer data)
 void connect_button(GtkWidget *Wins,GtkWidget *button,gchar *t)
 {
   g_object_set_data(G_OBJECT (button), "Window", Wins);
-  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(traite_button_general),(gpointer)t);
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(traite_button_general),(gpointer)t);
 }
 /*****************************************************************************************/
 void create_liste_general(GtkWidget*Wins,GtkWidget*win,GtkWidget *frame)
@@ -778,7 +785,7 @@ void create_liste_general(GtkWidget*Wins,GtkWidget*win,GtkWidget *frame)
   	gtk_widget_show (buttonOption);
 	if(GTK_IS_WIDGET(buttonOption)) gtk_widget_set_sensitive(buttonOption,FALSE);
   	connect_button(Wins,buttonOption,t);
-  	g_signal_connect(G_OBJECT(buttonCheck), "clicked",GTK_SIGNAL_FUNC(polar_activate),(gpointer)buttonOption);
+  	g_signal_connect(G_OBJECT(buttonCheck), "clicked",G_CALLBACK(polar_activate),(gpointer)buttonOption);
 	hseparator = gtk_hseparator_new ();
 
 	i++;
@@ -802,7 +809,7 @@ void create_liste_general(GtkWidget*Wins,GtkWidget*win,GtkWidget *frame)
   	gtk_widget_show (buttonOption);
 	if(GTK_IS_WIDGET(buttonOption)) gtk_widget_set_sensitive(buttonOption,FALSE);
   	connect_button(Wins,buttonOption,t);
-  	g_signal_connect(G_OBJECT(buttonCheck), "clicked",GTK_SIGNAL_FUNC(freq_activate),(gpointer)buttonOption);
+  	g_signal_connect(G_OBJECT(buttonCheck), "clicked",G_CALLBACK(freq_activate),(gpointer)buttonOption);
 	hseparator = gtk_hseparator_new ();
 
 	i++;
@@ -842,7 +849,7 @@ void create_liste_general(GtkWidget*Wins,GtkWidget*win,GtkWidget *frame)
   CheckButtons[0]=checkbutton;
   g_object_ref (checkbutton);
   g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbutton), TRUE);
   gtk_widget_show (checkbutton);
   gtk_box_pack_start (GTK_BOX (hbox), checkbutton, TRUE, TRUE, 0);
@@ -851,7 +858,7 @@ void create_liste_general(GtkWidget*Wins,GtkWidget*win,GtkWidget *frame)
   CheckButtons[1]=checkbutton;
   g_object_ref (checkbutton);
   g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbutton), TRUE);
   gtk_widget_show (checkbutton);
   gtk_box_pack_start (GTK_BOX (hbox), checkbutton, TRUE, TRUE, 0);
@@ -861,7 +868,7 @@ void create_liste_general(GtkWidget*Wins,GtkWidget*win,GtkWidget *frame)
   CheckButtons[2]=checkbutton;
   g_object_ref (checkbutton);
   g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (checkbutton);
   gtk_box_pack_start (GTK_BOX (hbox), checkbutton, TRUE, TRUE, 0);
 
@@ -869,7 +876,7 @@ void create_liste_general(GtkWidget*Wins,GtkWidget*win,GtkWidget *frame)
   CheckButtons[3]=checkbutton;
   g_object_ref (checkbutton);
   g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (checkbutton);
   gtk_box_pack_start (GTK_BOX (hbox), checkbutton, TRUE, TRUE, 0);
 
@@ -878,7 +885,7 @@ void create_liste_general(GtkWidget*Wins,GtkWidget*win,GtkWidget *frame)
   CheckButtons[4]=checkbutton;
   g_object_ref (checkbutton);
   g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbutton), TRUE);
   gtk_widget_show (checkbutton);
   gtk_box_pack_start (GTK_BOX (hbox), checkbutton, TRUE, TRUE, 0);
@@ -887,7 +894,7 @@ void create_liste_general(GtkWidget*Wins,GtkWidget*win,GtkWidget *frame)
   CheckButtons[5]=checkbutton;
   g_object_ref (checkbutton);
   g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbutton), TRUE);
   gtk_widget_show (checkbutton);
   gtk_box_pack_start (GTK_BOX (hbox), checkbutton, TRUE, TRUE, 0);
@@ -896,7 +903,7 @@ void create_liste_general(GtkWidget*Wins,GtkWidget*win,GtkWidget *frame)
   CheckButtons[6]=checkbutton;
   g_object_ref (checkbutton);
   g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (checkbutton);
   gtk_box_pack_start (GTK_BOX (vbox), checkbutton, FALSE, FALSE, 0);
 
@@ -904,7 +911,7 @@ void create_liste_general(GtkWidget*Wins,GtkWidget*win,GtkWidget *frame)
   CheckButtons[7]=checkbutton;
   g_object_ref (checkbutton);
   g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (checkbutton);
   gtk_box_pack_start (GTK_BOX (vbox), checkbutton, FALSE, FALSE, 0);
 
@@ -912,7 +919,7 @@ void create_liste_general(GtkWidget*Wins,GtkWidget*win,GtkWidget *frame)
   CheckButtons[8]=checkbutton;
   g_object_ref (checkbutton);
   g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (checkbutton);
   gtk_box_pack_start (GTK_BOX (vbox), checkbutton, FALSE, FALSE, 0);
 
@@ -1044,14 +1051,14 @@ GtkWidget *create_add_keyword (GtkWidget* win,GtkWidget *vbox,gchar *tlabel)
   label = gtk_label_new (tlabel);
   g_object_ref (label);
   g_object_set_data_full (G_OBJECT (win), "label", label,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
 
   entry = gtk_entry_new ();
   g_object_ref (entry);
   g_object_set_data_full (G_OBJECT (win), "entry", entry,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (entry);
   gtk_box_pack_start (GTK_BOX (hbox), entry, TRUE, TRUE, 0);
   

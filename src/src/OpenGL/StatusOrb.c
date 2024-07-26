@@ -1,6 +1,6 @@
 /* Status.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -249,7 +249,7 @@ GtkWidget *create_progress_bar_orb(GtkWidget *box)
 			1,1);
   	gtk_widget_show_all (button);
 	gtk_widget_set_sensitive(button, FALSE); 
-	g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)cancel_calcul,NULL);  
+	g_signal_connect(G_OBJECT(button), "clicked", (GCallback)cancel_calcul,NULL);  
 	tableProgressBar = table;
 
 	return pbar;

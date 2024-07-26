@@ -1,6 +1,6 @@
 /*HydrogenBond.c*/
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -256,7 +256,7 @@ static void addAnAtomDlg()
 	  button = gtk_button_new_with_label(Symb[j][i]);
           style=set_button_style(button_style,button,Symb[j][i]);
           g_signal_connect(G_OBJECT(button), "clicked",
-                            (GtkSignalFunc)addAtom,(gpointer )Symb[j][i]);
+                            (GCallback)addAtom,(gpointer )Symb[j][i]);
 	  g_object_set_data(G_OBJECT(button),"WinTable",winTable);
 	  gtk_table_attach(GTK_TABLE(table),button,j,j+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
@@ -508,7 +508,7 @@ void set_HBonds_dialog (GtkWidget* winParent)
 	gtk_window_set_modal (GTK_WINDOW (fp), TRUE);
 	gtk_window_set_transient_for(GTK_WINDOW(fp),GTK_WINDOW(winParent));
 
-	g_signal_connect(G_OBJECT(fp),"delete_event",(GtkSignalFunc)gtk_widget_destroy,NULL);
+	g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)gtk_widget_destroy,NULL);
 
 	vboxall = create_vbox(fp);
 	frame = gtk_frame_new (NULL);
@@ -518,7 +518,7 @@ void set_HBonds_dialog (GtkWidget* winParent)
 
 	vboxframe = create_vbox(frame);
 	table = gtk_table_new(10,3,FALSE);
-	gtk_box_pack_start_defaults(GTK_BOX(vboxframe), table);
+	gtk_box_pack_start(GTK_BOX(vboxframe), table,TRUE,TRUE,0);
 
 	for(i=0;i<4;i++)
 	{
@@ -572,18 +572,18 @@ void set_HBonds_dialog (GtkWidget* winParent)
 
 	button = create_button(winParent,"OK");
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-	g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(set_HBonds),(gpointer)entrys);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(gtk_widget_destroy),GTK_OBJECT(fp));
+	g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(set_HBonds),(gpointer)entrys);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_widget_destroy),GTK_OBJECT(fp));
 	gtk_widget_show (button);
 
 	button = create_button(winParent,"Apply");
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-	g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(set_HBonds),(gpointer)entrys);
+	g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(set_HBonds),(gpointer)entrys);
 	gtk_widget_show (button);
 
 	button = create_button(winParent,"Close");
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(gtk_widget_destroy),GTK_OBJECT(fp));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_widget_destroy),GTK_OBJECT(fp));
 
 	gtk_widget_show (button);
 	rafreshTreeView(treeViewOfAtoms);

@@ -1,6 +1,6 @@
 /* Windows.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -33,7 +33,7 @@ void create_frame_windows(GtkWidget *box)
   GtkWidget *hbox;
   frame = gtk_frame_new ("Windows");
   g_object_ref (frame);
-  g_object_set_data_full (G_OBJECT (Fenetre), "frame", frame, (GtkDestroyNotify) g_object_unref);
+  g_object_set_data_full (G_OBJECT (Fenetre), "frame", frame, (GDestroyNotify) g_object_unref);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
   gtk_box_pack_start (GTK_BOX (box), frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
@@ -84,7 +84,7 @@ GtkWidget *add_button_windows(gchar *title,GtkWidget *Win)
   gtk_widget_show (button);
   g_object_set_data(G_OBJECT (Win), "ButtonWins", button);  
   g_object_set_data(G_OBJECT (Win), "ButtonStr", g_strdup(title));  
-  g_signal_connect_swapped(G_OBJECT(button), "clicked", (GtkSignalFunc)show_windows, GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)show_windows, GTK_OBJECT(Win));
   window_add(title,Win);
   return button;
 }

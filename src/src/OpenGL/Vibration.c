@@ -1,6 +1,6 @@
 /* Vibration.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -22,7 +22,7 @@ DEALINGS IN THE SOFTWARE.
 #include "GlobalOrb.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/Utils.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/UtilsInterface.h"
 #include "../OpenGL/StatusOrb.h"
 #include "../OpenGL/GLArea.h"
@@ -39,6 +39,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/StockIcons.h"
 #include "../OpenGL/Images.h"
 #include "../OpenGL/PovrayGL.h"
+#include "../OpenGL/BondsOrb.h"
 
 static	GtkWidget *WinDlg = NULL;
 static	GtkWidget *EntryScal = NULL;
@@ -371,6 +372,7 @@ static gboolean read_gabedit_molden_geom(gchar *FileName)
 	GeomOrb = g_realloc(GeomOrb,Ncenters*sizeof(TypeGeomOrb));
 
 	RebuildGeom = TRUE;
+	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info("Geometry","Ok");
@@ -1093,6 +1095,7 @@ static gboolean read_molpro_geom(FILE*fd, gchar *FileName)
 		free_geometry();
 
 	RebuildGeom = TRUE;
+	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info("Geometry","Ok");
@@ -1141,6 +1144,7 @@ static gint read_molpro_modes_str(FILE* fd, gchar *FileName, gchar* str)
 			vibration.numberOfFrequences = j+nfMax;
 			return 2;
 		}
+		if(atof(t)==0) if(!fgets(t,taille,fd)) break;
     		if(!fgets(t,taille,fd)) break;
 		if(!strstr(t,"Wavenumbers")) break;
 		nf = sscanf(t,"%s %s %f %f %f %f %f", sdum1,sdum2, &freq[0],&freq[1],&freq[2],&freq[3],&freq[4]);
@@ -1373,6 +1377,7 @@ static gboolean read_dalton_geom(FILE* file, gchar *FileName)
  	if(Ncenters == 0 ) g_free(GeomOrb);
 
 	RebuildGeom = TRUE;
+	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info("Geometry","Ok");
@@ -1802,6 +1807,7 @@ static gboolean read_gamess_geom(FILE* file, gchar *FileName)
  	if(Ncenters == 0 ) g_free(GeomOrb);
 
 	RebuildGeom = TRUE;
+	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info("Geometry","Ok");
@@ -2236,6 +2242,7 @@ static gboolean read_adf_geom(FILE*fd, gchar *FileName)
 		free_geometry();
 
 	RebuildGeom = TRUE;
+	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info("Geometry","Ok");
@@ -3017,13 +3024,13 @@ static void addEntrysButtons(GtkWidget* box)
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-	gtk_box_pack_start_defaults(GTK_BOX(box), frame);
+	gtk_box_pack_start(GTK_BOX(box), frame,TRUE,TRUE,0);
 	gtk_widget_show (frame);
 
 	vboxframe = create_vbox(frame);
 
   	table = gtk_table_new(5,3,FALSE);
-	gtk_box_pack_start_defaults(GTK_BOX(vboxframe), table);
+	gtk_box_pack_start(GTK_BOX(vboxframe), table,TRUE,TRUE,0);
 
 	i=0;
 	add_label_table(table," Scale factor ",(gushort)i,0);
@@ -3081,7 +3088,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  3,3);
 
   	table = gtk_table_new(2,3,FALSE);
-	gtk_box_pack_start_defaults(GTK_BOX(vboxframe), table);
+	gtk_box_pack_start(GTK_BOX(vboxframe), table,TRUE,TRUE,0);
 
 	i=0;
 	buttonCheckFilm = gtk_check_button_new_with_label ("Create a film");
@@ -3091,7 +3098,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  1,1);
-  	g_signal_connect (G_OBJECT(buttonCheckFilm), "toggled", GTK_SIGNAL_FUNC (filmSelected), NULL);  
+  	g_signal_connect (G_OBJECT(buttonCheckFilm), "toggled", G_CALLBACK (filmSelected), NULL);  
 
 	formatBox = create_list_of_formats();
 	gtk_table_attach(GTK_TABLE(table),formatBox,1,1+1,i,i+1,
@@ -3104,7 +3111,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  1,1);
-  	g_signal_connect(G_OBJECT(buttonDirFilm), "clicked",(GtkSignalFunc)set_directory,NULL);
+  	g_signal_connect(G_OBJECT(buttonDirFilm), "clicked",(GCallback)set_directory,NULL);
 	comboListFilm = formatBox;
 
 	if(GTK_IS_WIDGET(buttonDirFilm))  gtk_widget_set_sensitive(buttonDirFilm, FALSE);
@@ -3137,11 +3144,11 @@ static void addEntrysButtons(GtkWidget* box)
 		  3,3);
 	StopButton = Button;
 
-  	g_signal_connect(G_OBJECT(PlayButton), "clicked",(GtkSignalFunc)play_vibration,NULL);
-  	g_signal_connect(G_OBJECT(StopButton), "clicked",(GtkSignalFunc)stop_vibration,NULL);
-  	g_signal_connect_swapped(G_OBJECT (EntryScal), "activate", (GtkSignalFunc)reset_parameters, NULL);
-  	g_signal_connect_swapped(G_OBJECT (EntryVelocity), "activate", (GtkSignalFunc)reset_parameters, NULL);
-  	g_signal_connect_swapped(G_OBJECT (EntryRadius), "activate", (GtkSignalFunc)reset_parameters, NULL);
+  	g_signal_connect(G_OBJECT(PlayButton), "clicked",(GCallback)play_vibration,NULL);
+  	g_signal_connect(G_OBJECT(StopButton), "clicked",(GCallback)stop_vibration,NULL);
+  	g_signal_connect_swapped(G_OBJECT (EntryScal), "activate", (GCallback)reset_parameters, NULL);
+  	g_signal_connect_swapped(G_OBJECT (EntryVelocity), "activate", (GCallback)reset_parameters, NULL);
+  	g_signal_connect_swapped(G_OBJECT (EntryRadius), "activate", (GCallback)reset_parameters, NULL);
 }
 /********************************************************************************/
 static GtkTreeView* addList(GtkWidget *vbox, GtkUIManager *manager)
@@ -3192,7 +3199,7 @@ static GtkTreeView* addList(GtkWidget *vbox, GtkUIManager *manager)
   
 	set_base_style(GTK_WIDGET(treeView), 55000,55000,55000);
 	gtk_widget_show (GTK_WIDGET(treeView));
-  	g_signal_connect(G_OBJECT (treeView), "button_press_event", GTK_SIGNAL_FUNC(event_dispatcher), manager);      
+  	g_signal_connect(G_OBJECT (treeView), "button_press_event", G_CALLBACK(event_dispatcher), manager);      
 	return treeView;
 }
 /*****************************************************************************/
@@ -3290,6 +3297,7 @@ static void animate_vibration()
 		}
 		init_atomic_orbitals();
 
+		buildBondsOrb();
 		RebuildGeom = TRUE;
 		glarea_rafresh(GLArea);
 		createImageFile();
@@ -3555,7 +3563,7 @@ void vibrationDlg()
 	WinDlg = Win;
 
   	add_child(PrincipalWindow,Win,destroyVibrationDlg,"Vibration");
-  	g_signal_connect(G_OBJECT(Win),"delete_event",(GtkSignalFunc)delete_child,NULL);
+  	g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)delete_child,NULL);
 
 	vbox = gtk_vbox_new (FALSE, 0);
 	gtk_widget_show (vbox);

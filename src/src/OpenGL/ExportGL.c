@@ -1,6 +1,6 @@
 /* ExportGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Transformation.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/HydrogenBond.h"
 #include "../OpenGL/GLArea.h"
 #include "../OpenGL/GeomDraw.h"
@@ -92,7 +92,7 @@ void export_scene(GtkWidget* Win,gchar* type)
 	gchar* fileName = g_strdup_printf("gabedit.%s",type);
 	gchar* filter = g_strdup_printf("*.%s",type);
 
-	GtkWidget* win = choose_file_to_create(title, GTK_SIGNAL_FUNC(export_file));
+	GtkWidget* win = choose_file_to_create(title, G_CALLBACK(export_file));
 	g_object_set_data(G_OBJECT (win), "Type",type);
 	gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(win), patternsfiles);
 	gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(win),filter);

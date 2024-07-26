@@ -1,6 +1,6 @@
 /* PreferencesOrb.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -160,7 +160,7 @@ void set_colors_surfaces(gchar* title)
   button = create_button(Win,"Cancel");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)destroy_selectors_window,GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_selectors_window,GTK_OBJECT(Win));
   gtk_widget_show_all (button);
 
   button = create_button(Win,"OK");
@@ -168,7 +168,7 @@ void set_colors_surfaces(gchar* title)
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
   gtk_widget_show_all (button);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)apply_colorselections,GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_colorselections,GTK_OBJECT(Win));
 
   /* Show all */
   gtk_widget_show (Win);
@@ -432,7 +432,7 @@ static GtkWidget* create_camera_frame(GtkWidget* Win,GtkWidget *vbox)
 	g_object_set_data(G_OBJECT (frame), "EntryZNear",EntryZNear);
 	g_object_set_data(G_OBJECT (frame), "EntryZFar",EntryZFar);
 	g_object_set_data(G_OBJECT (frame), "EntryZoom",EntryZoom);
-	g_signal_connect_swapped(G_OBJECT(buttonOptimal),"clicked",(GtkSignalFunc)set_camera_optimal,GTK_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(buttonOptimal),"clicked",(GCallback)set_camera_optimal,GTK_OBJECT(Win));
 
 /* ------------------------------------------------------------------*/
 	i = 0;
@@ -447,7 +447,7 @@ static GtkWidget* create_camera_frame(GtkWidget* Win,GtkWidget *vbox)
 	i = 1;
   	buttonNoPerspective = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonPerspective)), "No perspective"); 
 	add_widget_table(table,buttonNoPerspective,i,0);
-	g_signal_connect(G_OBJECT(buttonPerspective),"clicked",(GtkSignalFunc)set_sensitive_camera,NULL);
+	g_signal_connect(G_OBJECT(buttonPerspective),"clicked",(GCallback)set_sensitive_camera,NULL);
 	if(perspective)
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonPerspective), TRUE);
 	else
@@ -490,7 +490,7 @@ void set_camera()
 	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(PrincipalWindow));
 	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
 	add_child(PrincipalWindow,Win,gtk_widget_destroy,"Camera");
-	g_signal_connect(G_OBJECT(Win),"delete_event",(GtkSignalFunc)delete_child,NULL);
+	g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)delete_child,NULL);
 
 	vboxall = create_vbox(Win);
 	vboxwin = vboxall;
@@ -514,14 +514,14 @@ void set_camera()
 	button = create_button(Win,"Close");
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child, GTK_OBJECT(Win));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)gtk_widget_destroy, GTK_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy, GTK_OBJECT(Win));
 	gtk_widget_show (button);
 
 	button = create_button(Win,"Apply");
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)apply_camera, GTK_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_camera, GTK_OBJECT(Win));
 
 	button = create_button(Win,"OK");
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
@@ -529,9 +529,9 @@ void set_camera()
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
 
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)apply_camera, GTK_OBJECT(Win));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child, GTK_OBJECT(Win));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_camera, GTK_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Win));
 
 	gtk_widget_show_all (Win);
 }
@@ -570,7 +570,7 @@ void set_light_positions(gchar* title)
   button = create_button(Win,"Cancel");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)destroy_setlight_window, GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_setlight_window, GTK_OBJECT(Win));
   gtk_widget_show (button);
 
   button = create_button(Win,"OK");
@@ -578,7 +578,7 @@ void set_light_positions(gchar* title)
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
   gtk_widget_show (button);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)apply_ligth_positions,GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_ligth_positions,GTK_OBJECT(Win));
   
 
   /* Show all */
@@ -678,7 +678,7 @@ void  create_opengl_frame(GtkWidget* Win,GtkWidget *vbox)
 	add_widget_table(table,combo,i,2);
 	gtk_editable_set_editable((GtkEditable*)EntryCylinder,FALSE);
 	gtk_entry_set_text (GTK_ENTRY (EntryCylinder),g_strdup_printf("%d",openGLOptions.numberOfSubdivisionsCylindre));
-	g_signal_connect (G_OBJECT (EntryCylinder), "changed",(GtkSignalFunc)setNumberOfSubdivisions,typeEntry[0]);
+	g_signal_connect (G_OBJECT (EntryCylinder), "changed",(GCallback)setNumberOfSubdivisions,typeEntry[0]);
 /* ------------------------------------------------------------------*/
 	i = 1;
 	add_label_table(table," number Of Subdivisions for a Sphere ",i,0);
@@ -688,7 +688,7 @@ void  create_opengl_frame(GtkWidget* Win,GtkWidget *vbox)
 	add_widget_table(table,combo,i,2);
 	gtk_editable_set_editable((GtkEditable*)EntrySphere,FALSE);
 	gtk_entry_set_text (GTK_ENTRY (EntrySphere),g_strdup_printf("%d",openGLOptions.numberOfSubdivisionsSphere));
-	g_signal_connect (G_OBJECT (EntrySphere), "changed",(GtkSignalFunc)setNumberOfSubdivisions,typeEntry[1]);
+	g_signal_connect (G_OBJECT (EntrySphere), "changed",(GCallback)setNumberOfSubdivisions,typeEntry[1]);
 /* ------------------------------------------------------------------*/
 
 	buttonRGBA = gtk_check_button_new_with_label("RGBA" );
@@ -723,9 +723,9 @@ void  create_opengl_frame(GtkWidget* Win,GtkWidget *vbox)
 	else
   		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonDEPTHSIZE), FALSE);
 
-	g_signal_connect (G_OBJECT (buttonRGBA), "clicked", GTK_SIGNAL_FUNC(set_opengl), typeButton[0]);
-	g_signal_connect (G_OBJECT (buttonDOUBLEBUFFER), "clicked", GTK_SIGNAL_FUNC(set_opengl), typeButton[1]);
-	g_signal_connect (G_OBJECT (buttonALPHASIZE), "clicked", GTK_SIGNAL_FUNC(set_opengl), typeButton[2]);
-	g_signal_connect (G_OBJECT (buttonDEPTHSIZE), "clicked", GTK_SIGNAL_FUNC(set_opengl), typeButton[3]);
+	g_signal_connect (G_OBJECT (buttonRGBA), "clicked", G_CALLBACK(set_opengl), typeButton[0]);
+	g_signal_connect (G_OBJECT (buttonDOUBLEBUFFER), "clicked", G_CALLBACK(set_opengl), typeButton[1]);
+	g_signal_connect (G_OBJECT (buttonALPHASIZE), "clicked", G_CALLBACK(set_opengl), typeButton[2]);
+	g_signal_connect (G_OBJECT (buttonDEPTHSIZE), "clicked", G_CALLBACK(set_opengl), typeButton[3]);
 	gtk_widget_show_all(frame);
 }

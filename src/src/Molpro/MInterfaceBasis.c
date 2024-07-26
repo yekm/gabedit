@@ -1,6 +1,6 @@
 /* MInterfaceBasis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -28,7 +28,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/Global.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/AtomsProp.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Gaussian/GaussGlobal.h"
 #include "../Geometry/GeomGlobal.h"
 #include "../Utils/Utils.h"
@@ -952,29 +952,28 @@ static void DialogueDelete(GtkWidget *w)
 
   g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) g_object_unref);
+	  frame,(GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-   gtk_box_pack_start_defaults(
-         GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
+   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame,TRUE,TRUE,0);
 
   gtk_widget_show (frame);
 
   vboxframe = create_vbox(frame);
 
-  gtk_box_pack_start_defaults(GTK_BOX(vboxframe), Label);
+  gtk_box_pack_start(GTK_BOX(vboxframe), Label,TRUE,TRUE,0);
  
   gtk_widget_realize(Dialogue);
 
   Bouton = create_button(Dialogue,"No");
-  gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)gtk_widget_destroy, GTK_OBJECT(Dialogue));
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Bouton);
 
   Bouton = create_button(Dialogue,"Yes");
-  gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect(G_OBJECT(Bouton), "clicked",(GtkSignalFunc)DelAtomList, NULL);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GtkSignalFunc)gtk_widget_destroy, GTK_OBJECT(Dialogue));
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect(G_OBJECT(Bouton), "clicked",(GCallback)DelAtomList, NULL);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)gtk_widget_destroy, GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 
   gtk_widget_show_all(Dialogue);
@@ -1035,19 +1034,19 @@ static void DialogueAdd(GtkWidget *w,gpointer data)
   gtk_window_set_default_size (GTK_WINDOW(FenetreTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
 
   add_child(Wins,FenetreTable,gtk_widget_destroy," Selec. atom ");
-  g_signal_connect(G_OBJECT(FenetreTable),"delete_event",(GtkSignalFunc)delete_child,NULL);
+  g_signal_connect(G_OBJECT(FenetreTable),"delete_event",(GCallback)delete_child,NULL);
 
   button_style = gtk_widget_get_style(FenetreTable); 
 
   vbox = gtk_vbox_new (FALSE, 5);
   g_object_ref (vbox);
-  g_object_set_data_full(G_OBJECT (FenetreTable), "vbox", vbox,(GtkDestroyNotify) g_object_unref);
+  g_object_set_data_full(G_OBJECT (FenetreTable), "vbox", vbox,(GDestroyNotify) g_object_unref);
   gtk_container_add(GTK_CONTAINER(FenetreTable),vbox);
   
   hbox = gtk_hbox_new (FALSE, 0);
   g_object_ref (hbox);
   g_object_set_data_full(G_OBJECT (FenetreTable), "hbox", hbox,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (hbox);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, TRUE, TRUE, 0);
 
@@ -1057,7 +1056,7 @@ static void DialogueAdd(GtkWidget *w,gpointer data)
 
   g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (hbox), "frame",
-	  frame,(GtkDestroyNotify) g_object_unref);
+	  frame,(GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
   gtk_container_add(GTK_CONTAINER(hbox),frame);  
   gtk_widget_show (frame);
@@ -1073,8 +1072,8 @@ static void DialogueAdd(GtkWidget *w,gpointer data)
 	  {
 	  button = gtk_button_new_with_label(Symb[j][i]);
           style=set_button_style(button_style,button,Symb[j][i]);
-          g_signal_connect(G_OBJECT(button), "clicked",(GtkSignalFunc)SetAtom,(gpointer )Symb[j][i]);
-	  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(FenetreTable));
+          g_signal_connect(G_OBJECT(button), "clicked",(GCallback)SetAtom,(gpointer )Symb[j][i]);
+	  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(FenetreTable));
 
 	  gtk_table_attach(GTK_TABLE(Table),button,j,j+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
@@ -1088,7 +1087,7 @@ static void DialogueAdd(GtkWidget *w,gpointer data)
   gtk_widget_realize(FenetreTable);
   button = create_button(FenetreTable,"CANCEL");
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(FenetreTable));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(FenetreTable));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
   gtk_widget_show(button);
@@ -1105,13 +1104,13 @@ void ButtonBar(GtkWidget *BoiteV)
   hbox = gtk_hbox_new (FALSE, 0);
   g_object_ref (hbox);
   g_object_set_data_full(G_OBJECT (BoiteV), "hbox", hbox,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (hbox);
   gtk_box_pack_start (GTK_BOX (BoiteV), hbox, FALSE, FALSE, 5);
 
   button = gtk_button_new_with_label (" New Atom ");
 
-  g_signal_connect(G_OBJECT(button), "clicked",(GtkSignalFunc)DialogueAdd,Wins);
+  g_signal_connect(G_OBJECT(button), "clicked",(GCallback)DialogueAdd,Wins);
  
   gtk_box_pack_start (GTK_BOX(hbox), button, FALSE, FALSE, 5);
   gtk_widget_show (button);
@@ -1120,7 +1119,7 @@ void ButtonBar(GtkWidget *BoiteV)
   button = gtk_button_new_with_label (" Delete Atom ");
 
   g_signal_connect(G_OBJECT(button), "clicked",
-                            (GtkSignalFunc)DialogueDelete,NULL);
+                            (GCallback)DialogueDelete,NULL);
 
   gtk_box_pack_start (GTK_BOX(hbox), button, FALSE, FALSE, 5);
 

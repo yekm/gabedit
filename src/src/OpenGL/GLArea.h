@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -19,6 +19,13 @@ DEALINGS IN THE SOFTWARE.
 #ifndef __GABEDIT_GLAREA_H__
 #define __GABEDIT_GLAREA_H__
 
+void resetBeginNegative();
+gdouble getScaleBall();
+gdouble getScaleStick();
+void setScaleBall(gdouble a);
+void setScaleStick(gdouble a);
+gint getOptCol();
+void setOptCol(gint i);
 void build_rings(gint size);
 void delete_rings_all();
 gboolean get_show_symbols();

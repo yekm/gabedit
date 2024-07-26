@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -28,7 +28,7 @@ void choose_file_to_save();
 void choose_file_to_save_end();
 void Save_YesNo();
 void set_entry_selected_file(GtkWidget* hbox);
-GtkWidget* choose_file_to_create(gchar* title, GtkSignalFunc applyFunc);
+GtkWidget* choose_file_to_create(gchar* title, GCallback applyFunc);
 
 #endif /* __GABEDIT_FILECHOOSER_H__ */
 

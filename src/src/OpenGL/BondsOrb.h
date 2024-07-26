@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -35,5 +35,9 @@ struct _BondType
 };
 GList *BondsOrb;
 void buildBondsOrb();
+void buildMultipleBonds();
+void buildHBonds();
+void readBondsPDB(FILE* file);
+void readBondsHIN(FILE* file);
 #endif /* __GABEDIT_BONDS_H__ */
 

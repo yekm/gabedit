@@ -1,6 +1,6 @@
 /*ContoursDraw.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -310,13 +310,9 @@ GLuint ContoursPlanGenOneList(Grid* plansgrid,gint Ncontours,gfloat*values,gint 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	{
-		V4d Diffuse  = {0.7,0.7,0.7,0.8};
-		V4d Specular = {0.8,0.8,0.8,0.8 };
-		V4d Ambiant  = {1.0,1.0,1.0,0.8};
+		V4d Color  = {0.7,0.7,0.7,0.8};
 
-		glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-		glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
+		glDisable ( GL_LIGHTING ) ;
 		glMateriali(GL_FRONT_AND_BACK,GL_SHININESS,120);
 /*		
  *		glColor4f(0.7,0.7,0.7,0.8);
@@ -325,21 +321,18 @@ GLuint ContoursPlanGenOneList(Grid* plansgrid,gint Ncontours,gfloat*values,gint 
 */
  		PlanDraw(plansgrid,i0,i1,numplan,Gap);
 		/* glDisable(GL_COLOR_MATERIAL);*/
-		Diffuse[3] = 0.8;
-		Specular[3] = 0.8;
-		Ambiant[3] = 0.8;
 		glDisable(GL_BLEND);
 		glEnable(GL_LINE_SMOOTH); 
 		for(i=0;i<Ncontours;i++)
 		{
-			set_Color_From_colorMap(colorMap, Diffuse, values[i]);
+			set_Color_From_colorMap(colorMap, Color, values[i]);
 
-			glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
+			glColor4fv(Color);
 			contours = get_contours(plansgrid,values[i],i0,i1,numplan);
 			ContoursDraw(contours,Gap,values[i]);
 			contour_point_free(contours);				
 		}
+		glEnable ( GL_LIGHTING ) ;
 	}
 	if(TypeBlend == GABEDIT_BLEND_YES)
 	{

@@ -1,6 +1,6 @@
 /* MenuToolBarGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/GridCube.h"
 #include "../OpenGL/GridAdfOrbitals.h"
 #include "../OpenGL/GridAdfDensity.h"
-#include "../OpenGL/GridM2MSI.h"
+#include "../OpenGL/GridMolcas.h"
 #include "../OpenGL/GridQChem.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/UtilsInterface.h"
@@ -56,6 +56,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/RingsOrb.h"
 #include "../OpenGL/ContoursDraw.h"
 #include "../OpenGL/CaptureOrbitals.h"
+#include "../OpenGL/BondsOrb.h"
 #include "../Common/StockIcons.h"
 
 enum 
@@ -246,14 +247,10 @@ static void activate_action (GtkAction *action)
  		file_chooser_open(load_adf_file_orbitals,"Load orbitals from adf file",GABEDIT_TYPEFILE_CUBEADF,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadAdfDensity"))
  		file_chooser_open(load_adf_file_density,"Load density from adf file",GABEDIT_TYPEFILE_CUBEADF,GABEDIT_TYPEWIN_ORB);
-	else if(!strcmp(name , "CubeLoadMolcasM2MSIOrbitals"))
- 		file_chooser_open(load_m2msi_file_orbitals,"Load Orbitals from m2msi file",GABEDIT_TYPEFILE_CUBEM2MSI,GABEDIT_TYPEWIN_ORB);
-	else if(!strcmp(name , "CubeLoadMolcasM2MSIDensity"))
- 		file_chooser_open(load_m2msi_file_density,"Load density from m2msi file",GABEDIT_TYPEFILE_CUBEM2MSI,GABEDIT_TYPEWIN_ORB);
-	else if(!strcmp(name , "CubeLoadMolcasCubeOrbitals"))
- 		file_chooser_open(load_cube_gauss_orbitals_file,"Load Orbitals from molcas cube file",GABEDIT_TYPEFILE_CUBEMOLCAS,GABEDIT_TYPEWIN_ORB);
-	else if(!strcmp(name , "CubeLoadMolcasCubeDensity"))
- 		file_chooser_open(load_cube_gauss_density_file,"Load density from molcas cube file",GABEDIT_TYPEFILE_CUBEMOLCAS,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name , "CubeLoadMolcasGridOrbitals"))
+ 		file_chooser_open(load_molcasgrid_file_orbitals,"Load Orbitals from molcasgrid file",GABEDIT_TYPEFILE_MOLCASGRID,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name , "CubeLoadMolcasGridDensity"))
+ 		file_chooser_open(load_molcasgrid_file_density,"Load density from molcasgrid file",GABEDIT_TYPEFILE_MOLCASGRID,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadGabeditRead"))
  		file_chooser_open(load_cube_gabedit_file,"Load Gabedit cube file",GABEDIT_TYPEFILE_CUBEGABEDIT,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadQChem"))
@@ -525,6 +522,18 @@ static void activate_action (GtkAction *action)
 		compute_total_dipole();
 		glarea_rafresh(GLArea);
 	}
+	else if(!strcmp(name , "SetMultipleBonds"))
+	{
+		RebuildGeom = TRUE;
+		buildMultipleBonds();
+		glarea_rafresh(GLArea);
+	}
+	else if(!strcmp(name , "SetAllBonds"))
+	{
+		RebuildGeom = TRUE;
+		buildBondsOrb();
+		glarea_rafresh(GLArea);
+	}
 	else if(!strcmp(name , "SetPropertiesOfAtoms")) create_table_prop();
 	else if(!strcmp(name , "SetHydrogenBondsParameters"))
 	{
@@ -542,7 +551,9 @@ static void activate_action (GtkAction *action)
 		set_principal_axisGL_dialog();
 	}
 	else if(!strcmp(name , "SetPovrayBackGround")) createPovrayOptionsWindow(PrincipalWindow);
+	else if(!strcmp(name , "SetColorMap")) createColorMapOptionsWindow(PrincipalWindow);
 	else if(!strcmp(name , "SetTitle")) set_title_dlg();
+	else if(!strcmp(name , "SetScaleBallStick")) set_scale_ball_stick_dlg();
 	else if(!strcmp(name , "ScreenCaptureJPG"))
 	{
  		GtkWidget* chooser = file_chooser_save(save_jpeg_file,"Save image in jpg file format",GABEDIT_TYPEFILE_JPEG,GABEDIT_TYPEWIN_ORB);
@@ -680,7 +691,7 @@ static GtkActionEntry gtkActionEntries[] =
 		NULL, "Select an orbital", G_CALLBACK (activate_action) },
 	{"OrbitalsCapture", GABEDIT_STOCK_SELECT_ALL, "_Slideshow", 
 		NULL, "Slideshow", G_CALLBACK (activate_action) },
-	{"Cube",     NULL, "_Cube"},
+	{"Cube",     NULL, "_Cube&Grid"},
 
 	{"CubeLoadGaussian",     GABEDIT_STOCK_GAUSSIAN, "Load _Gaussian cube"},
 	{"CubeLoadGaussianOrbitals", NULL, "_Orbitals file", 
@@ -715,13 +726,8 @@ static GtkActionEntry gtkActionEntries[] =
 	{"CubeLoadAdfDensity", NULL, "_Density", NULL, "Read the density from a ADF tape 41 file", G_CALLBACK (activate_action) },
 
 	{"CubeLoadMolcas",     GABEDIT_STOCK_MOLCAS, "Load Mol_cas"},
-	{"CubeLoadMolcasM2MSI",     NULL, "_M2MSI ASCII file"},
-	{"CubeLoadMolcasM2MSIOrbitals", NULL, "_Orbitals", NULL, "Read the orbitals from a M2MSI ascii file", G_CALLBACK (activate_action) },
-	{"CubeLoadMolcasM2MSIDensity", NULL, "_Density", NULL, "Read the density from a M2MSI ascii file", G_CALLBACK (activate_action) },
-	{"CubeLoadMolcasCube",     NULL, "_Cube file"},
-	{"CubeLoadMolcasCubeOrbitals", NULL, "_Orbitals", NULL, "Read the orbitals from a molcas cube file", G_CALLBACK (activate_action) },
-	{"CubeLoadMolcasCubeDensity", NULL, "_Density", NULL, "Read the density from a molcas cube file", G_CALLBACK (activate_action) },
-
+	{"CubeLoadMolcasGridOrbitals", NULL, "_Orbitals", NULL, "Read the orbitals from a Grid ascii file", G_CALLBACK (activate_action) },
+	{"CubeLoadMolcasGridDensity", NULL, "_Density", NULL, "Read the density from a Grid ascii file", G_CALLBACK (activate_action) },
 	{"CubeLoadQChem", GABEDIT_STOCK_QCHEM, "Load _Q-Chem grid file", NULL, "Read a Q-Chem cube file", G_CALLBACK (activate_action) },
 	{"CubeLoadGabeditRead", GABEDIT_STOCK_GABEDIT, "Load G_abedit cube file", NULL, "Read a Gabedit cube file", G_CALLBACK (activate_action) },
 	{"CubeLoadGabeditSave", GABEDIT_STOCK_SAVE, "_Save", NULL, "Save in a Gabedit cube file", G_CALLBACK (activate_action) },
@@ -812,12 +818,16 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SetSurfaceColors", NULL, "_Surface colors", NULL, "set surface colors", G_CALLBACK (activate_action) },
 	{"SetDipole", NULL, "_Dipole", NULL, "set dipole", G_CALLBACK (activate_action) },
 	{"SetDipoleDensity", NULL, "_Compute Dipole from density", NULL, "Compute Dipole from density", G_CALLBACK (activate_action) },
+	{"SetAllBonds", NULL, "Compute all _bonds", NULL, "Compute all bonds", G_CALLBACK (activate_action) },
+	{"SetMultipleBonds", NULL, "Compute _multiple bonds", NULL, "Compute multiple bonds", G_CALLBACK (activate_action) },
 	{"SetPropertiesOfAtoms", NULL, "P_roperties of atoms", NULL, "set the properties of atoms", G_CALLBACK (activate_action) },
 	{"SetHydrogenBondsParameters", NULL, "_Hydrogen bonds parameters", NULL, "set the Hydrogen bonds parameters", G_CALLBACK (activate_action) },
 	{"SetXYZAxesProperties", NULL, "XYZ _Axes properties", NULL, "set the properties of the XYZ Axes", G_CALLBACK (activate_action) },
 	{"SetPrincipalAxesProperties", NULL, "_Principal Axes properties", NULL, "set the properties of the principal Axes", G_CALLBACK (activate_action) },
 	{"SetPovrayBackGround", NULL, "_Povray background", NULL, "set the background for the Povray file", G_CALLBACK (activate_action) },
+	{"SetColorMap", NULL, "Color _mappring", NULL, "set the color mapping options", G_CALLBACK (activate_action) },
 	{"SetTitle", NULL, "_Title", NULL, "Set title", G_CALLBACK (activate_action) },
+	{"SetScaleBallStick", NULL, "_Scale ball&stick", NULL, "Scale ball&stick", G_CALLBACK (activate_action) },
 	{"ScreenCapture",     NULL, "Screen Ca_pture"},
 	{"ScreenCaptureJPG", NULL, "_JPG format", NULL, "save image in a JPG file", G_CALLBACK (activate_action) },
 	{"ScreenCapturePPM", NULL, "_PPM format", NULL, "save image in a PPM file", G_CALLBACK (activate_action) },
@@ -881,13 +891,14 @@ static void toggle_action (GtkAction *action)
 		ShowDipoleOrb = !ShowDipoleOrb;
 		glarea_rafresh(GLArea);
 	}
-	else if(!strcmp(name,"RenderhydrogenBonds"))
+	else if(!strcmp(name,"RenderHydrogenBonds"))
 	{
 		ShowHBondOrb = !ShowHBondOrb;
+		buildHBonds();
 		RebuildGeom = TRUE;
 		glarea_rafresh(GLArea);
 	}
-	else if(!strcmp(name,"RenderhydrogenAtoms"))
+	else if(!strcmp(name,"RenderHydrogenAtoms"))
 	{
 		ShowHAtomOrb = !ShowHAtomOrb;
 		RebuildGeom = TRUE;
@@ -997,8 +1008,8 @@ static GtkToggleActionEntry gtkActionToggleEntries[] =
 	{ "RenderLightOnOff2", NULL, "OnOff _2", NULL, "On/Of the light number 2", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderLightOnOff3", NULL, "OnOff _3", NULL, "On/Of the light number 3", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderDipole", NULL, "Show _dipole", NULL, "Show dipole", G_CALLBACK (toggle_action), FALSE },
-	{ "RenderhydrogenAtoms", NULL, "Show _hydrogen atoms", NULL, "Show hydrogen atoms", G_CALLBACK (toggle_action), FALSE },
-	{ "RenderhydrogenBonds", NULL, "Show _hydrogen bonds", NULL, "Show hydrogen bonds", G_CALLBACK (toggle_action), FALSE },
+	{ "RenderHydrogenAtoms", NULL, "Show _hydrogen atoms", NULL, "Show hydrogen atoms", G_CALLBACK (toggle_action), FALSE },
+	{ "RenderHydrogenBonds", NULL, "Show _hydrogen bonds", NULL, "Show hydrogen bonds", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderMultiBonds", NULL, "Show double and triple _bonds", NULL, "Show double and triple bonds", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderXYZAxes", NULL, "Show XYZ _Axes", NULL, "Show XYZ Axes", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderPrincipalAxes", NULL, "Show the _principal Axes", NULL, "Show principal Axes", G_CALLBACK (toggle_action), FALSE },
@@ -1353,14 +1364,8 @@ static const gchar *uiMenuInfo =
 "      </menu>\n"
 "      <separator name=\"sepMenuCubeLoadMolcas\" />\n"
 "      <menu name=\"CubeLoadMolcas\" action = \"CubeLoadMolcas\">\n"
-"        <menu name=\"CubeLoadMolcasM2MSI\" action = \"CubeLoadMolcasM2MSI\">\n"
-"          <menuitem name=\"CubeLoadMolcasM2MSIOrbitals\" action=\"CubeLoadMolcasM2MSIOrbitals\" />\n"
-"          <menuitem name=\"CubeLoadMolcasM2MSIDensity\" action=\"CubeLoadMolcasM2MSIDensity\" />\n"
-"        </menu>\n"
-"        <menu name=\"CubeLoadMolcasCube\" action = \"CubeLoadMolcasCube\">\n"
-"          <menuitem name=\"CubeLoadMolcasCubeOrbitals\" action=\"CubeLoadMolcasCubeOrbitals\" />\n"
-"          <menuitem name=\"CubeLoadMolcasCubeDensity\" action=\"CubeLoadMolcasCubeDensity\" />\n"
-"        </menu>\n"
+"          <menuitem name=\"CubeLoadMolcasGridOrbitals\" action=\"CubeLoadMolcasGridOrbitals\" />\n"
+"          <menuitem name=\"CubeLoadMolcasGridDensity\" action=\"CubeLoadMolcasGridDensity\" />\n"
 "      </menu>\n"
 "    <separator name=\"sepMenuCubeLoadMolpro\" />\n"
 "      <menu name=\"CubeLoadMolpro\" action = \"CubeLoadMolpro\">\n"
@@ -1540,8 +1545,8 @@ static const gchar *uiMenuInfo =
 "       </menu>\n"
 "       <separator name=\"sepMenuRenderDipole\" />\n"
 "      <menuitem name=\"RenderDipole\" action=\"RenderDipole\" />\n"
-"      <menuitem name=\"RenderhydrogenAtoms\" action=\"RenderhydrogenAtoms\" />\n"
-"      <menuitem name=\"RenderhydrogenBonds\" action=\"RenderhydrogenBonds\" />\n"
+"      <menuitem name=\"RenderHydrogenAtoms\" action=\"RenderHydrogenAtoms\" />\n"
+"      <menuitem name=\"RenderHydrogenBonds\" action=\"RenderHydrogenBonds\" />\n"
 "      <menuitem name=\"RenderMultiBonds\" action=\"RenderMultiBonds\" />\n"
 "      <menuitem name=\"RenderXYZAxes\" action=\"RenderXYZAxes\" />\n"
 "      <menuitem name=\"RenderPrincipalAxes\" action=\"RenderPrincipalAxes\" />\n"
@@ -1556,6 +1561,9 @@ static const gchar *uiMenuInfo =
 "        <separator name=\"sepMenuSetDipole\" />\n"
 "        <menuitem name=\"SetDipole\" action=\"SetDipole\" />\n"
 "        <menuitem name=\"SetDipoleDensity\" action=\"SetDipoleDensity\" />\n"
+"        <separator name=\"sepMenuSetBonds\" />\n"
+"        <menuitem name=\"SetAllBonds\" action=\"SetAllBonds\" />\n"
+"        <menuitem name=\"SetMultipleBonds\" action=\"SetMultipleBonds\" />\n"
 "        <separator name=\"sepMenuSetPropOfAtoms\" />\n"
 "        <menuitem name=\"SetPropertiesOfAtoms\" action=\"SetPropertiesOfAtoms\" />\n"
 "        <separator name=\"sepMenuSetHBond\" />\n"
@@ -1565,8 +1573,12 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"SetPrincipalAxesProperties\" action=\"SetPrincipalAxesProperties\" />\n"
 "        <separator name=\"sepMenuSetPovRay\" />\n"
 "        <menuitem name=\"SetPovrayBackGround\" action=\"SetPovrayBackGround\" />\n"
+"        <separator name=\"sepMenuSetColorMap\" />\n"
+"        <menuitem name=\"SetColorMap\" action=\"SetColorMap\" />\n"
 "        <separator name=\"sepMenuSetTitle\" />\n"
 "        <menuitem name=\"SetTitle\" action=\"SetTitle\" />\n"
+"        <separator name=\"sepMenuSetScaleBallStick\" />\n"
+"        <menuitem name=\"SetScaleBallStick\" action=\"SetScaleBallStick\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepMenuOperation\" />\n"
 "    <menu name=\"Operation\" action = \"Operation\">\n"
@@ -1653,8 +1665,8 @@ static void set_init_gtkActionToggleEntries()
 	gtkActionToggleEntries[2].is_active = FALSE; /* RenderLightOnOff2 */
 	gtkActionToggleEntries[3].is_active = FALSE; /* RenderLightOnOff3 */
 	gtkActionToggleEntries[4].is_active = ShowDipoleOrb; /* RenderDipole */
-	gtkActionToggleEntries[5].is_active = ShowHAtomOrb ; /* RenderhydrogenBonds */
-	gtkActionToggleEntries[6].is_active = ShowHBondOrb ; /* RenderhydrogenBonds */
+	gtkActionToggleEntries[5].is_active = ShowHAtomOrb ; /* RenderHydrogenBonds */
+	gtkActionToggleEntries[6].is_active = ShowHBondOrb ; /* RenderHydrogenBonds */
 	gtkActionToggleEntries[7].is_active = ShowMultiBondsOrb ; /* RenderMultiBonds */
 	gtkActionToggleEntries[8].is_active = testShowAxis() ; /* RenderXYZAxes */
 	gtkActionToggleEntries[9].is_active = testShowPrincipalAxisGL() ; /* RenderPrincipalAxes */
@@ -1720,7 +1732,8 @@ void create_toolbar_and_popup_menu_GL(GtkWidget* box)
 	set_init_gtkActionToggleEntries();
 	gtk_action_group_add_toggle_actions (actionGroup, gtkActionToggleEntries, numberOfGtkActionToggleEntries, NULL);
 	gtk_action_group_add_radio_actions (actionGroup, rendereGeometryEntries, numberOfRenderGeometryEntries, GEOMETRY_STICK, G_CALLBACK (render_geometry_radio_action), NULL);
-	gtk_action_group_add_radio_actions (actionGroup, renderBackGroundEntries, numberOfBackGroundEntries, BACKGROUND_BLACK, G_CALLBACK (render_background_radio_action), NULL);
+	/* gtk_action_group_add_radio_actions (actionGroup, renderBackGroundEntries, numberOfBackGroundEntries, BACKGROUND_BLACK, G_CALLBACK (render_background_radio_action), NULL);*/
+	gtk_action_group_add_radio_actions (actionGroup, renderBackGroundEntries, numberOfBackGroundEntries, getOptCol(), G_CALLBACK (render_background_radio_action), NULL);
 	gtk_action_group_add_radio_actions (actionGroup, renderSurfaceTextureEntries, numberOfRenderSurfacetextureEntries, TEXTURE_NO, G_CALLBACK (render_surface_texture_radio_action), NULL);
 
 	gtk_action_group_add_radio_actions (actionGroup, renderSurfaceEntries, numberOfRenderSurfaceEntries, SURFACE_POSITIVENEGATIVE, G_CALLBACK (render_surface_radio_action), NULL);

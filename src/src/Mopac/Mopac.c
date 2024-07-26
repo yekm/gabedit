@@ -1,6 +1,6 @@
 /* Mopac.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -29,7 +29,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/InterfaceGeom.h"
 #include "../Utils/Utils.h"
 #include "../Utils/AtomsProp.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/GabeditTextEdit.h"
 
 static GtkWidget *Wins=NULL;
@@ -138,8 +138,9 @@ static void mopacInputFileWindow(gboolean newInputFile)
 	GtkWidget *button;
 	GtkWidget *hbox = NULL;
 	GtkWidget *hboxChargeMultiplicity = NULL;
+	GtkWidget* comboJobType = NULL;
 
-	GtkWidget *table = gtk_table_new(6,2,FALSE);
+	GtkWidget *table = gtk_table_new(4,3,FALSE);
 
 	newFile = newInputFile;
 
@@ -166,13 +167,13 @@ static void mopacInputFileWindow(gboolean newInputFile)
     	gtk_window_set_modal (GTK_WINDOW (Wins), TRUE);
 
 	init_child(Wins, destroyWinsMopac," Mopac input ");
-	g_signal_connect(G_OBJECT(Wins),"delete_event",(GtkSignalFunc)destroy_childs,NULL);
+	g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_childs,NULL);
 
 	gtk_widget_realize(Wins);
 
 	button = create_button(Wins,"CANCEL");
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, FALSE, TRUE, 5);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked", GTK_SIGNAL_FUNC( toCancelWin),GTK_OBJECT(Wins));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK( toCancelWin),GTK_OBJECT(Wins));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_show (button);
 
@@ -187,12 +188,18 @@ static void mopacInputFileWindow(gboolean newInputFile)
 	createMopacRemFrame(Wins, hbox);
 	createMopacChargeMultiplicityFrame(hboxChargeMultiplicity);
 
+	hbox =addHboxToTable(table, 2, 0, 1, 2);
+	createReactionPathFrame(hbox);
+	comboJobType = g_object_get_data(G_OBJECT (Wins), "ComboJobType");
+	if(comboJobType) g_object_set_data(G_OBJECT (comboJobType), "HboxReactionPath", hbox);
+	gtk_widget_set_sensitive(hbox, FALSE);
+
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, FALSE, TRUE, 5);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(putInfoInTextEditor),GTK_OBJECT(Wins));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(destroy_childs),GTK_OBJECT(Wins));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(putInfoInTextEditor),GTK_OBJECT(Wins));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_childs),GTK_OBJECT(Wins));
 	
 
 	gtk_widget_show_all(Wins);

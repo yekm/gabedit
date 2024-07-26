@@ -1,6 +1,6 @@
 /* Exit.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -93,6 +93,7 @@ static void ExitGabedit(GtkWidget *widget, gchar *data)
 
 	create_color_surfaces_file();
 	create_opengl_file();
+	create_drawmolecule_file();
 
 	save_axis_properties();
 	save_principal_axis_properties();
@@ -155,7 +156,7 @@ void ExitDlg(GtkWidget* w, gpointer data)
 	gtk_button_box_set_layout (GTK_BUTTON_BOX (GTK_DIALOG(Win)->action_area), GTK_BUTTONBOX_END);
 	gtk_box_set_homogeneous(GTK_BOX( GTK_DIALOG(Win)->action_area), TRUE);
 
-	g_signal_connect(G_OBJECT(Win),"delete_event",(GtkSignalFunc)gtk_widget_destroy,NULL);
+	g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)gtk_widget_destroy,NULL);
  
 	vbox = gtk_vbox_new (FALSE, 0);
 	gtk_widget_show (vbox);
@@ -163,7 +164,6 @@ void ExitDlg(GtkWidget* w, gpointer data)
 
 	gtk_widget_realize(Win);
 	label = create_label_with_pixmap(Win,"Are you sure you want to exit?","Question");  
-/*	gtk_box_pack_start_defaults(GTK_BOX(vbox), label);*/
 	gtk_box_pack_start (GTK_BOX(vbox), label, TRUE, TRUE, 5);
 
 	AddFrame(vbox);
@@ -172,13 +172,13 @@ void ExitDlg(GtkWidget* w, gpointer data)
 	button = create_button(Win,"No");
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Win)->action_area), button, TRUE, TRUE, 0);
-	g_signal_connect_swapped(GTK_OBJECT(button), "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy),GTK_OBJECT(Win));
+	g_signal_connect_swapped(GTK_OBJECT(button), "clicked", G_CALLBACK(gtk_widget_destroy),GTK_OBJECT(Win));
 	gtk_widget_show (button);
 
 	button = create_button(Win,"Yes");
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Win)->action_area), button, TRUE, TRUE, 0);
-	g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GtkSignalFunc)ExitGabedit,GTK_OBJECT(Win));
+	g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)ExitGabedit,GTK_OBJECT(Win));
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
 

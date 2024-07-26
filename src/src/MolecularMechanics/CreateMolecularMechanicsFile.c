@@ -1,6 +1,6 @@
 /* CreateMolecularMechanicsFile.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -707,7 +707,8 @@ gboolean createMMFile()
 	fprintf(fout,"End\n");
 	fprintf(fout,"%s\n",nonBondedTitle);
 	fprintf(fout,"18	  0.6000	  0.0157		Ferguson base pair geom.\n");
-	fprintf(fout,"26	  0.0000	  0.0000		OPLS Jorgensen, JACS,110,(1988),1657\n");
+	/* fprintf(fout,"26	  0.0000	  0.0000		OPLS Jorgensen, JACS,110,(1988),1657\n");*/
+	fprintf(fout,"26	  0.2000	  0.0200		OPLS Jorgensen, JACS,110,(1988),1657\n");
 	fprintf(fout,"27	  0.6000	  0.0157		W. Cornell CH3SH --> CH3OH FEP\n");
 	fprintf(fout,"19	  1.4870	  0.0157		OPLS\n");
 	fprintf(fout,"20	  1.3870	  0.0157		Veenstra et al JCC,8,(1992),963 \n");

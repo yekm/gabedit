@@ -1,6 +1,6 @@
 /* SplashScreen.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -226,7 +226,7 @@ static gint configure_event( GtkWidget *widget, GdkEventConfigure *event )
 	gint x;
 	gint y;
 	
-	if (pixmap) gdk_pixmap_unref(pixmap);
+	if (pixmap) g_object_unref(pixmap);
 
 	pixmap = gdk_pixmap_new(widget->window,
                           widget->allocation.width,
@@ -234,7 +234,7 @@ static gint configure_event( GtkWidget *widget, GdkEventConfigure *event )
                           -1);
 	
         color = *pcolor;
-	colormap  = gdk_window_get_colormap(widget->window);
+	colormap  = gdk_drawable_get_colormap(widget->window);
 
   	height = widget->allocation.height;
         vis = gdk_colormap_get_visual(colormap);
@@ -350,7 +350,7 @@ static gint expose_event(GtkWidget  *widget,GdkEventExpose *event )
 
   	pixmap = (GdkPixmap *)g_object_get_data(G_OBJECT(widget), "Pixmap");
 	if(pixmap)
-		gdk_draw_pixmap(widget->window,
+		gdk_draw_drawable(widget->window,
                   widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
                   pixmap,
                   event->area.x, event->area.y,
@@ -400,8 +400,8 @@ static void create_welcome_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   g_object_set_data(G_OBJECT(darea), "Color", color);
   g_object_set_data(G_OBJECT(darea), "LenTxt", lentxt);
 
-  g_signal_connect(G_OBJECT(darea),"configure_event",(GtkSignalFunc)configure_event,NULL);
-  g_signal_connect(G_OBJECT(darea),"expose_event",(GtkSignalFunc)expose_event,NULL);
+  g_signal_connect(G_OBJECT(darea),"configure_event",(GCallback)configure_event,NULL);
+  g_signal_connect(G_OBJECT(darea),"expose_event",(GCallback)expose_event,NULL);
  
 
  /* gtk_widget_show(darea);*/
@@ -448,8 +448,8 @@ static void create_name_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   g_object_set_data(G_OBJECT(darea), "Color", color);
   g_object_set_data(G_OBJECT(darea), "LenTxt", lentxt);
 
-  g_signal_connect(G_OBJECT(darea),"configure_event",(GtkSignalFunc)configure_event,NULL);
-  g_signal_connect(G_OBJECT(darea),"expose_event",(GtkSignalFunc)expose_event,NULL);
+  g_signal_connect(G_OBJECT(darea),"configure_event",(GCallback)configure_event,NULL);
+  g_signal_connect(G_OBJECT(darea),"expose_event",(GCallback)expose_event,NULL);
  
 
  /* gtk_widget_show(darea);*/
@@ -497,8 +497,8 @@ static void create_program_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   g_object_set_data(G_OBJECT(darea), "Color", color);
   g_object_set_data(G_OBJECT(darea), "LenTxt", lentxt);
 
-  g_signal_connect(G_OBJECT(darea),"configure_event",(GtkSignalFunc)configure_event,NULL);
-  g_signal_connect(G_OBJECT(darea),"expose_event",(GtkSignalFunc)expose_event,NULL);
+  g_signal_connect(G_OBJECT(darea),"configure_event",(GCallback)configure_event,NULL);
+  g_signal_connect(G_OBJECT(darea),"expose_event",(GCallback)expose_event,NULL);
  
 
  /* gtk_widget_show(darea);*/
@@ -547,8 +547,8 @@ static void create_gui_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   g_object_set_data(G_OBJECT(darea), "Color", color);
   g_object_set_data(G_OBJECT(darea), "LenTxt", lentxt);
 
-  g_signal_connect(G_OBJECT(darea),"configure_event",(GtkSignalFunc)configure_event,NULL);
-  g_signal_connect(G_OBJECT(darea),"expose_event",(GtkSignalFunc)expose_event,NULL);
+  g_signal_connect(G_OBJECT(darea),"configure_event",(GCallback)configure_event,NULL);
+  g_signal_connect(G_OBJECT(darea),"expose_event",(GCallback)expose_event,NULL);
  
 
  /* gtk_widget_show(darea);*/
@@ -575,9 +575,9 @@ static void create_splash_popupwin()
 
 	/*
 	g_signal_connect(G_OBJECT(MainFrame),"button_release_event",
-                GTK_SIGNAL_FUNC(splash_screen_cb),NULL);
+                G_CALLBACK(splash_screen_cb),NULL);
 	g_signal_connect(G_OBJECT(MainFrame),"key_press_event",
-                GTK_SIGNAL_FUNC(splash_screen_cb),NULL);
+                G_CALLBACK(splash_screen_cb),NULL);
 	*/
 	gtk_widget_realize(MainFrame);
 
@@ -617,7 +617,7 @@ static void create_copyright_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   gint width = 0;
   gint widthVersion = 0;
   gint heightVersion = 0;
-  gchar* txt = g_strdup("Copyright (c) 2002-2007 Abdul-Rahman Allouche.");
+  gchar* txt = g_strdup("Copyright (c) 2002-2009 Abdul-Rahman Allouche.");
   GdkPixmap *pixmap = NULL;
   GdkColor* color = g_malloc(sizeof(GdkColor));
   gchar* Version_S = g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
@@ -650,8 +650,8 @@ static void create_copyright_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   g_object_set_data(G_OBJECT(darea), "Color", color);
   g_object_set_data(G_OBJECT(darea), "LenTxt", lentxt);
 
-  g_signal_connect(G_OBJECT(darea),"configure_event",(GtkSignalFunc)configure_event,NULL);
-  g_signal_connect(G_OBJECT(darea),"expose_event",(GtkSignalFunc)expose_event,NULL);
+  g_signal_connect(G_OBJECT(darea),"configure_event",(GCallback)configure_event,NULL);
+  g_signal_connect(G_OBJECT(darea),"expose_event",(GCallback)expose_event,NULL);
  
 }
 /********************************************************************************/
@@ -668,8 +668,8 @@ void create_about_frame()
 
 	gtk_widget_add_events(MainFrame, GDK_BUTTON_PRESS_MASK| GDK_BUTTON_RELEASE_MASK| GDK_KEY_PRESS_MASK|GDK_KEY_RELEASE_MASK);
 
-	g_signal_connect(G_OBJECT(MainFrame),"button_release_event", GTK_SIGNAL_FUNC(gtk_widget_destroy),NULL);
-	g_signal_connect(G_OBJECT(MainFrame),"key_press_event", GTK_SIGNAL_FUNC(gtk_widget_destroy),NULL);
+	g_signal_connect(G_OBJECT(MainFrame),"button_release_event", G_CALLBACK(gtk_widget_destroy),NULL);
+	g_signal_connect(G_OBJECT(MainFrame),"key_press_event", G_CALLBACK(gtk_widget_destroy),NULL);
 
 	gtk_widget_realize(MainFrame);
 

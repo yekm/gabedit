@@ -1,6 +1,6 @@
 /* TextEdit.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -182,8 +182,8 @@ void find_text_win()
   gtk_window_set_transient_for(GTK_WINDOW(fp),GTK_WINDOW(Fenetre));
   gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
 
-  g_signal_connect(G_OBJECT(fp), "delete_event", (GtkSignalFunc)destroy_button_windows, NULL);
-  g_signal_connect(G_OBJECT(fp), "delete_event", (GtkSignalFunc)gtk_widget_destroy, NULL);
+  g_signal_connect(G_OBJECT(fp), "delete_event", (GCallback)destroy_button_windows, NULL);
+  g_signal_connect(G_OBJECT(fp), "delete_event", (GCallback)gtk_widget_destroy, NULL);
 
   vboxall = create_vbox(fp);
   frame = gtk_frame_new ("FIND");
@@ -215,26 +215,26 @@ void find_text_win()
   button = gtk_button_new_with_label ("All");
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   gtk_widget_show (button);
-  g_signal_connect(G_OBJECT(button), "clicked", GTK_SIGNAL_FUNC(find_text_all),(gpointer)entry);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(find_text_all),(gpointer)entry);
 
   button = gtk_button_new_with_label ("Forward");
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   gtk_widget_show (button);
-  g_signal_connect(G_OBJECT(button), "clicked", GTK_SIGNAL_FUNC(find_text_forward),(gpointer)entry);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(find_text_forward),(gpointer)entry);
 
   button = gtk_button_new_with_label ("Backward");
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   gtk_widget_show (button);
-  g_signal_connect(G_OBJECT(button), "clicked", GTK_SIGNAL_FUNC(find_text_backward),(gpointer)entry);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(find_text_backward),(gpointer)entry);
 
 
   button = gtk_button_new_with_label ("Close");
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button),"clicked",
-                       (GtkSignalFunc)destroy_button_windows,
+                       (GCallback)destroy_button_windows,
                        GTK_OBJECT(fp));
   g_signal_connect_swapped(G_OBJECT(button), "clicked",
-                     GTK_SIGNAL_FUNC(gtk_widget_destroy),GTK_OBJECT(fp));
+                     G_CALLBACK(gtk_widget_destroy),GTK_OBJECT(fp));
 
   gtk_widget_show (button);
    
@@ -308,7 +308,7 @@ void AjoutePageNotebook(char *label,GtkWidget **TextP)
 */
 
   g_object_ref (*TextP);
-  g_object_set_data_full (G_OBJECT (Frame), "text", *TextP, (GtkDestroyNotify) g_object_unref);
+  g_object_set_data_full (G_OBJECT (Frame), "text", *TextP, (GDestroyNotify) g_object_unref);
   gtk_widget_show (*TextP);
   gtk_container_add (GTK_CONTAINER (scrolledwindow), *TextP);
   g_object_set_data(G_OBJECT (*TextP), "LabelOnglet", LabelOnglet);
@@ -360,8 +360,8 @@ void cree_text_notebook()
 
   iedit=1;
   NoteBookText = gtk_notebook_new();
-  g_object_set_data_full (G_OBJECT (NoteBookText), "Fenetre", Fenetre, (GtkDestroyNotify) g_object_unref);
-  g_signal_connect(G_OBJECT(NoteBookText),"switch_page", (GtkSignalFunc)view_result_calcul,NULL);
+  g_object_set_data_full (G_OBJECT (NoteBookText), "Fenetre", Fenetre, (GDestroyNotify) g_object_unref);
+  g_signal_connect(G_OBJECT(NoteBookText),"switch_page", (GCallback)view_result_calcul,NULL);
 
   gtk_box_pack_start(GTK_BOX (vboxtexts), NoteBookText,TRUE, TRUE, 0);
   
@@ -380,7 +380,7 @@ void cree_text_notebook()
   {
 	GtkTextBuffer *buffer;
 	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
-	if(buffer) g_signal_connect(G_OBJECT(buffer),"changed", (GtkSignalFunc)set_imodif,NULL);
+	if(buffer) g_signal_connect(G_OBJECT(buffer),"changed", (GCallback)set_imodif,NULL);
   }
 }
 /*****************************************************************************************/

@@ -1,6 +1,6 @@
 /*Ftp.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -223,7 +223,7 @@ int ftp_command(char *fmt,...)
 	va_start(ap,fmt);
 	vsprintf(cmd_string, fmt, ap);
 	va_end(ap);
-	sprintf(cmd_string,"%s\r\n",cmd_string);
+	strcat(cmd_string,"\r\n");
  	SendMsg(cinput,cmd_string,strlen(cmd_string));
 	return get_reply() ;
 }

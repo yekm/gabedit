@@ -1,6 +1,6 @@
 /* ColorMap.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -21,7 +21,8 @@ DEALINGS IN THE SOFTWARE.
 #include "GlobalOrb.h"
 #include <gdk/gdkkeysyms.h>
 #include "../Utils/Utils.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/UtilsCairo.h"
+#include "../Utils/Constants.h"
 #include "ColorMap.h"
 #include "GLArea.h"
 
@@ -47,7 +48,7 @@ static void print_colorMap(ColorMap* colorMap)
 void colormap_free(ColorMap* colorMap)
 {
 	if(!colorMap) return;
-	if(colorMap->colorValue)
+	if(!colorMap->colorValue)
 	{
 
 		colorMap->numberOfColors = 0;
@@ -116,7 +117,7 @@ static void sort_colorMap(ColorMap* colorMap)
 	}
 }
 /******************************************************************************************************************************/
-ColorMap*  new_colorMap_min_max(gfloat minValue, gfloat maxValue)
+ColorMap*  new_colorMap_min_max_multicolor(gfloat minValue, gfloat maxValue)
 {
 	gint i;
 	gint j;
@@ -149,7 +150,7 @@ ColorMap*  new_colorMap_min_max(gfloat minValue, gfloat maxValue)
 	return colorMap;
 }
 /******************************************************************************************************************************/
-ColorMap*  new_colorMap_fromGrid(Grid* grid)
+ColorMap*  new_colorMap_fromGrid_multicolor(Grid* grid)
 {
 	gint i;
 	gint j;
@@ -211,52 +212,291 @@ ColorMap*  new_colorMap_fromGrid(Grid* grid)
 	/* print_colorMap(myColorMap);*/
 }
 /******************************************************************************************************************************/
-void  set_Color_From_colorMap(ColorMap* colorMap, gfloat color[], gfloat value)
+ColorMap*  new_colorMap_min_max_unicolor(gfloat minValue, gfloat maxValue, gfloat Color[])
 {
-	gint i = 0;
-	gint k = 0;
+	gfloat color[3];
+	ColorMap* colorMap;
+
+	gfloat max = color[0];
 	gint c;
-	if(colorMap->numberOfColors<1)
+
+	for(c=0;c<3;c++) color[c] = Color[c];
+	max = color[0];
+	if(max<color[1]) max = color[1];
+	if(max<color[2]) max = color[2];
+	if(max<1e-3)
 	{
-		for(c=0;c<3;c++)
-			color[c] = 0.5;
-		return;
-	}
-	if(value<colorMap->colorValue[i].value)
-	{
-		for(c=0;c<3;c++)
-			color[c] = colorMap->colorValue[i].color[c];
-		return;
-	}
-	i = colorMap->numberOfColors-1;
-	if(value>colorMap->colorValue[i].value)
-	{
-		for(c=0;c<3;c++)
-			color[c] = colorMap->colorValue[i].color[c];
-		return;
+		color[0] = 1.0;
+		color[1] = 1.0;
+		color[2] = 1.0;
+		max = 1.0;
 	}
 
-	for(i=1;i<colorMap->numberOfColors-1;i++)
-	{
-		if(fabs(colorMap->colorValue[i].value-value)<fabs(colorMap->colorValue[k].value-value))
-			k = i;
-	}
-	for(c=0;c<3;c++)
-		color[c] = colorMap->colorValue[k].color[c];
+	for(c=0;c<3;c++) color[c] /= max;
+	colorMap = g_malloc(sizeof(ColorMap));
+	*colorMap = new_colorMap(color, minValue);
+	color[0] = 0; color[1] = 0; color[2] = 0; 
+	add_to_colorMap(colorMap, color, maxValue );
+	sort_colorMap(colorMap);
+	return colorMap;
 }
 /******************************************************************************************************************************/
-void  reset_colorMap(GtkWidget* entry, gpointer data)
+ColorMap*  new_colorMap_fromGrid_unicolor(Grid* grid, gfloat Color[])
 {
 	gint i;
 	gint j;
 	gint k;
 	gfloat maxValue = 0;
 	gfloat minValue = 0;
-	gfloat h = 0;
-	gint ns = 4;
-	gint nc = 20;
-	gint n = nc *ns+1;
+	gboolean beg = TRUE;
 	gfloat color[3];
+	gfloat v;
+	ColorMap* colorMap;
+	gfloat max;
+	gint c;
+
+	if(!grid)return NULL;
+
+	for(i=0;i<grid->N[0];i++)
+	{
+		for(j=0;j<grid->N[1];j++)
+		{
+			for(k=0;k<grid->N[2];k++)
+			{
+				v = grid->point[i][j][k].C[4] ;
+				if(beg)
+				{
+					beg = FALSE;
+        				minValue =  v;
+        				maxValue =  v;
+				}
+                		else
+				{
+        				if(minValue > v) minValue =  v;
+        				if(maxValue < v) maxValue =  v;
+				}
+			}
+		}
+	}
+
+	for(c=0;c<3;c++) color[c] = Color[c];
+	max = color[0];
+	if(max<color[1]) max = color[1];
+	if(max<color[2]) max = color[2];
+	if(max<1e-3)
+	{
+		color[0] = 1.0;
+		color[1] = 1.0;
+		color[2] = 1.0;
+		max = 1;
+	}
+	for(c=0;c<3;c++) color[c] /= max;
+	colorMap = g_malloc(sizeof(ColorMap));
+	*colorMap = new_colorMap(color, minValue);
+	color[0] = 0; color[1] = 0; color[2] = 0; 
+	add_to_colorMap(colorMap, color, maxValue );
+	sort_colorMap(colorMap);
+	/*myColorMap = colorMap;*/
+	return colorMap;
+	/* print_colorMap(myColorMap);*/
+}
+/******************************************************************************************************************************/
+ColorMap*  new_colorMap_min_max_2colors(gfloat minValue, gfloat maxValue, gfloat Color1[], gfloat Color2[])
+{
+	gfloat color[3];
+	gfloat color1[3];
+	gfloat color2[3];
+	ColorMap* colorMap;
+	gint c;
+
+	gfloat max1;
+	gfloat max2;
+
+	for(c=0;c<3;c++) color1[c] = Color1[c];
+	for(c=0;c<3;c++) color2[c] = Color2[c];
+
+	max1 = color1[0];
+	if(max1<color1[1]) max1 = color1[1];
+	if(max1<color1[2]) max1 = color1[2];
+	if(max1<1e-3)
+	{
+		color1[0] = 1.0;
+		color1[1] = 1.0;
+		color1[2] = 1.0;
+		max1 = 1.0;
+	}
+	max2 = color2[0];
+	if(max2<color2[1]) max2 = color2[1];
+	if(max2<color2[2]) max2 = color2[2];
+	if(max2<1e-3)
+	{
+		color2[0] = 1.0;
+		color2[1] = 1.0;
+		color2[2] = 1.0;
+		max2 = 1.0;
+	}
+
+	color[0] = 0; color[1] = 0; color[2] = 0; 
+	for(c=0;c<3;c++) color1[c] /= max1;
+	for(c=0;c<3;c++) color2[c] /= max2;
+	colorMap = g_malloc(sizeof(ColorMap));
+	*colorMap = new_colorMap(color1, minValue);
+	add_to_colorMap(colorMap, color, minValue+(maxValue-minValue)/2 );
+	add_to_colorMap(colorMap, color2, maxValue );
+
+	sort_colorMap(colorMap);
+	return colorMap;
+}
+/******************************************************************************************************************************/
+ColorMap*  new_colorMap_fromGrid_2colors(Grid* grid, gfloat Color1[], gfloat Color2[])
+{
+	gint i;
+	gint j;
+	gint k;
+	gint c;
+	gfloat maxValue = 0;
+	gfloat minValue = 0;
+	gboolean beg = TRUE;
+	gfloat color[3];
+	gfloat color1[3];
+	gfloat color2[3];
+	gfloat v;
+	ColorMap* colorMap;
+	gfloat max1;
+	gfloat max2;
+
+	for(c=0;c<3;c++) color1[c] = Color1[c];
+	for(c=0;c<3;c++) color2[c] = Color2[c];
+
+	if(!grid)return NULL;
+
+	for(i=0;i<grid->N[0];i++)
+	{
+		for(j=0;j<grid->N[1];j++)
+		{
+			for(k=0;k<grid->N[2];k++)
+			{
+				v = grid->point[i][j][k].C[4] ;
+				if(beg)
+				{
+					beg = FALSE;
+        				minValue =  v;
+        				maxValue =  v;
+				}
+                		else
+				{
+        				if(minValue > v) minValue =  v;
+        				if(maxValue < v) maxValue =  v;
+				}
+			}
+		}
+	}
+	max1 = color1[0];
+	if(max1<color1[1]) max1 = color1[1];
+	if(max1<color1[2]) max1 = color1[2];
+	if(max1<1e-3)
+	{
+		color1[0] = 1.0;
+		color1[1] = 1.0;
+		color1[2] = 1.0;
+		max1 = 1.0;
+	}
+	max2 = color2[0];
+	if(max2<color2[1]) max2 = color2[1];
+	if(max2<color2[2]) max2 = color2[2];
+	if(max2<1e-3)
+	{
+		color2[0] = 1.0;
+		color2[1] = 1.0;
+		color2[2] = 1.0;
+		max2 = 1.0;
+	}
+
+	for(c=0;c<3;c++) color1[c] /= max1;
+	for(c=0;c<3;c++) color2[c] /= max2;
+	colorMap = g_malloc(sizeof(ColorMap));
+	*colorMap = new_colorMap(color1, minValue);
+	add_to_colorMap(colorMap, color, minValue+(maxValue-minValue)/2 );
+	add_to_colorMap(colorMap, color2, maxValue );
+	sort_colorMap(colorMap);
+	return colorMap;
+}
+/******************************************************************************************************************************/
+ColorMap*  new_colorMap_min_max(gfloat minValue, gfloat maxValue)
+{
+	if(colorMapType == 1) 
+		return new_colorMap_min_max_multicolor(minValue,maxValue);
+	else if(colorMapType == 2)
+		return new_colorMap_min_max_2colors(minValue,maxValue, colorMapColors[0], colorMapColors[1]);
+	else 
+		return new_colorMap_min_max_unicolor(minValue,maxValue, colorMapColors[2]);
+}
+/******************************************************************************************************************************/
+ColorMap*  new_colorMap_fromGrid(Grid* grid)
+{
+	if(colorMapType == 1) 
+		return new_colorMap_fromGrid_multicolor(grid);
+	else if(colorMapType == 2)
+		return new_colorMap_fromGrid_2colors(grid,colorMapColors[0], colorMapColors[1]);
+	else 
+		return new_colorMap_fromGrid_unicolor(grid,colorMapColors[2]);
+
+}
+/******************************************************************************************************************************/
+void  set_Color_From_colorMap(ColorMap* colorMap, gfloat color[], gfloat value)
+{
+	gint i = 0;
+	gint k = 0;
+	gint c;
+	gdouble l,l1,l2;
+	if(colorMap->numberOfColors<1)
+	{
+		for(c=0;c<3;c++)
+			color[c] = 0.5;
+		return;
+	}
+	if(value<=colorMap->colorValue[i].value)
+	{
+		for(c=0;c<3;c++)
+			color[c] = colorMap->colorValue[i].color[c];
+		return;
+	}
+	i = colorMap->numberOfColors-1;
+	if(value>=colorMap->colorValue[i].value)
+	{
+		for(c=0;c<3;c++)
+			color[c] = colorMap->colorValue[i].color[c];
+		return;
+	}
+
+	k = 0;
+	for(i=1;i<colorMap->numberOfColors-1;i++)
+	{
+		if(value>=colorMap->colorValue[i].value && value<=colorMap->colorValue[i+1].value)
+		{
+			k = i;
+			break;
+		}
+	}
+	l = colorMap->colorValue[k+1].value-colorMap->colorValue[k].value;
+	l1 = value-colorMap->colorValue[k].value;
+	l2 = l-l1;
+	if(l>0 && l1>=0 && l2>=0)
+	{
+		l1 = l1/l;
+		l2 = l2/l;
+		for(c=0;c<3;c++) 
+			color[c] = colorMap->colorValue[k].color[c]*l2+colorMap->colorValue[k+1].color[c]*l1;
+	}
+	else
+	for(c=0;c<3;c++)
+		color[c] = colorMap->colorValue[k].color[c];
+}
+/******************************************************************************************************************************/
+void  reset_colorMap(GtkWidget* entry, gpointer data)
+{
+	gfloat maxValue = 0;
+	gfloat minValue = 0;
 	G_CONST_RETURN gchar* tmp;
 	ColorMap* colorMap = g_object_get_data(G_OBJECT(entry),"ColorMap");
 	ColorMap* newColorMap = NULL;
@@ -281,25 +521,7 @@ void  reset_colorMap(GtkWidget* entry, gpointer data)
 		tmp  = gtk_entry_get_text(GTK_ENTRY(entry));
 		minValue = atof(tmp);
 	}
-
-	h = (maxValue-minValue)/(n-1) ;
-	color[0] = 1.0; color[1] = 0.0; color[2] = 0.0; 
-
-	newColorMap = g_malloc(sizeof(ColorMap));
-	*newColorMap = new_colorMap(color, minValue);
-	k = 1;
-	for(j=0;j<ns;j++)
-	for(i=0;i<nc;i++)
-	{
-		
-		if(j==0) color[1] += 1.0/nc;
-		if(j==1) color[0] -= 1.0/nc;
-		if(j==2) color[2] += 1.0/nc;
-		if(j==3) color[1] -= 1.0/nc;
-		add_to_colorMap(newColorMap, color, minValue +k*h);
-		k++;
-	}
-	sort_colorMap(newColorMap);
+	newColorMap = new_colorMap_min_max(minValue, maxValue);
 	colormap_free(colorMap);
 	g_free(colorMap);
 
@@ -325,7 +547,8 @@ static gint configure_event( GtkWidget *widget, GdkEventConfigure *event )
 	GdkColor tmpcolor;
 	GdkColormap *colormap   = NULL;
   	GdkPixmap *pixmap = (GdkPixmap *)g_object_get_data(G_OBJECT(widget), "Pixmap");
-  	GdkFont* font = (GdkFont *)g_object_get_data(G_OBJECT(widget), "Font");
+ 	PangoFontDescription *font_desc = pango_font_description_from_string ("helvetica bold 12");
+	cairo_t* cr = (cairo_t *)g_object_get_data(G_OBJECT(widget), "Cairo");
 	gboolean Ok = TRUE;
         GdkVisual* vis;
 	gchar t[BSIZE];
@@ -333,15 +556,15 @@ static gint configure_event( GtkWidget *widget, GdkEventConfigure *event )
 	GdkGC *gc = g_object_get_data(G_OBJECT(widget),"Gdkgc");
 
 	gint i;
-	gint k;
-	gint kOld;
 
-	
-	if (pixmap) gdk_pixmap_unref(pixmap);
+
+	if (pixmap) g_object_unref(pixmap);
+	if (cr) cairo_destroy (cr);
 
 	pixmap = gdk_pixmap_new(widget->window, widget->allocation.width, widget->allocation.height, -1);
+	cr = gdk_cairo_create (pixmap);
 	
-	colormap  = gdk_window_get_colormap(widget->window);
+	colormap  = gdk_drawable_get_colormap(widget->window);
 
   	height = widget->allocation.height;
         vis = gdk_colormap_get_visual(colormap);
@@ -357,13 +580,17 @@ static gint configure_event( GtkWidget *widget, GdkEventConfigure *event )
 	if(Ok)
 	{
 		
+		gdouble max  = myColorMap->colorValue[myColorMap->numberOfColors-1].value;
+		gdouble min  = myColorMap->colorValue[0].value;
   		for(i=0;i<widget->allocation.width;i++)
   		{
-			k = i/(gdouble)(widget->allocation.width)*myColorMap->numberOfColors;
+			gdouble v = i/(gdouble)(widget->allocation.width)*(max-min)+min;
+			gfloat color[3];
 
-    			tmpcolor.red   = (gushort)(myColorMap->colorValue[k].color[0]*65535);
-    			tmpcolor.green = (gushort)(myColorMap->colorValue[k].color[1]*65535);
-    			tmpcolor.blue  = (gushort)(myColorMap->colorValue[k].color[2]*65535);
+			set_Color_From_colorMap(myColorMap, color, v);
+			tmpcolor.red = (gushort)(color[0]*65535);
+			tmpcolor.green = (gushort)(color[1]*65535);
+			tmpcolor.blue = (gushort)(color[2]*65535);
 
 			gdk_colormap_alloc_color(colormap, &tmpcolor, FALSE, TRUE);
 			gdk_gc_set_foreground(gc,&tmpcolor);
@@ -371,30 +598,24 @@ static gint configure_event( GtkWidget *widget, GdkEventConfigure *event )
 			
   		}
 	
-		kOld = -1;
-  		for(i=0;i<widget->allocation.width;i++)
+  		for(i=widget->allocation.width/4;i<widget->allocation.width-widget->allocation.width/8;i+=widget->allocation.width/4)
   		{
-			k = i/(gdouble)(widget->allocation.width)*myColorMap->numberOfColors;
-			if(k%(myColorMap->numberOfColors/4)==0 && k>0 && k<myColorMap->numberOfColors-1 && k!=kOld)
+			gdouble v = i/(gdouble)(widget->allocation.width)*(max-min)+min;
 			{
 				gint x = i;
 				gint y = height-height/4;
-				gint lentxt=0;
 				
-				sprintf(t,"%0.3f",myColorMap->colorValue[k].value);
-
-				if(font) lentxt = gdk_string_width (font,t);
-				x = i-lentxt/2;
+				sprintf(t,"%0.3f",v);
 
 	 			color.red = 0; 
 	 			color.green = 0; 
 	 			color.blue = 0; 
-				gdk_color_alloc(colormap,&color);
+				gdk_colormap_alloc_color(colormap, &color,TRUE,TRUE);
 				gdk_gc_set_foreground(gc,&color);
 
 				gdk_gc_set_line_attributes(gc,0,GDK_LINE_SOLID,GDK_CAP_ROUND,GDK_JOIN_ROUND);
-				if(font) gdk_draw_string(pixmap,font,gc,x,y,t);
-				kOld = k;
+				if(font_desc) 
+					gabedit_cairo_string(cr, widget, font_desc, gc, x, y, t, TRUE,TRUE);
 			}
 		}
 	}
@@ -406,6 +627,8 @@ static gint configure_event( GtkWidget *widget, GdkEventConfigure *event )
   	}
 
   	g_object_set_data(G_OBJECT(widget), "Pixmap", pixmap);
+  	g_object_set_data(G_OBJECT(widget), "Cairo", cr);
+	if(font_desc) pango_font_description_free (font_desc);
   	return TRUE;
 }
 /********************************************************************************/   
@@ -418,7 +641,7 @@ static gint expose_event(GtkWidget  *widget,GdkEventExpose *event )
 
   	pixmap = (GdkPixmap *)g_object_get_data(G_OBJECT(widget), "Pixmap");
 	if(pixmap)
-		gdk_draw_pixmap(widget->window,
+		gdk_draw_drawable(widget->window,
                   widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
                   pixmap,
                   event->area.x, event->area.y,
@@ -431,11 +654,7 @@ static GtkWidget *add_drawing_area(GtkWidget *table, gint i)
 {
 	GtkWidget *darea;
 	GdkPixmap *pixmap = NULL;
-	GdkFont* font  = NULL;
- 	PangoFontDescription *font_desc = pango_font_description_from_string ("helvetica bold 12");
-
-  	if(font_desc) font = gdk_font_from_description (font_desc);
-
+	cairo_t* cr = NULL;
 
 	darea = gtk_drawing_area_new();
 	 gtk_widget_set_size_request(GTK_WIDGET(darea), 300, -1);
@@ -447,11 +666,12 @@ static GtkWidget *add_drawing_area(GtkWidget *table, gint i)
 			0,0);
 	gtk_widget_realize(darea);
 	pixmap = gdk_pixmap_new(darea->window,darea->allocation.width,darea->allocation.height,-1);
+	cr = gdk_cairo_create (pixmap);
 	g_object_set_data(G_OBJECT(darea), "Pixmap", pixmap);
-	g_object_set_data(G_OBJECT(darea), "Font", font);
+	g_object_set_data(G_OBJECT(darea), "Cairo", cr);
 
-	g_signal_connect(G_OBJECT(darea),"configure_event",(GtkSignalFunc)configure_event,NULL);
-	g_signal_connect(G_OBJECT(darea),"expose_event",(GtkSignalFunc)expose_event,NULL);
+	g_signal_connect(G_OBJECT(darea),"configure_event",(GCallback)configure_event,NULL);
+	g_signal_connect(G_OBJECT(darea),"expose_event",(GCallback)expose_event,NULL);
 	return darea;
 }
 /******************************************************************************************************************************/
@@ -535,8 +755,8 @@ GtkWidget* create_color_map_show(GtkWidget* box, ColorMap* colorMap, gchar* labe
 	g_object_set_data(G_OBJECT(entryRight),"OtherEntry", entryLeft);
 
 
-	g_signal_connect(G_OBJECT (entryLeft), "activate",(GtkSignalFunc)reset_colorMap, NULL);
-	g_signal_connect(G_OBJECT (entryRight), "activate",(GtkSignalFunc)reset_colorMap, GTK_OBJECT(entryLeft));
+	g_signal_connect(G_OBJECT (entryLeft), "activate",(GCallback)reset_colorMap, NULL);
+	g_signal_connect(G_OBJECT (entryRight), "activate",(GCallback)reset_colorMap, GTK_OBJECT(entryLeft));
 
 	return handlebox;
 }

@@ -1,6 +1,6 @@
 /* OrbitalsMopac.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -22,7 +22,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/AtomsProp.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Geometry/GeomGlobal.h"
 #include "GeomDraw.h"
 #include "GLArea.h"
@@ -34,6 +34,7 @@ DEALINGS IN THE SOFTWARE.
 #include "Basis.h"
 #include "Orbitals.h"
 #include "GeomOrbXYZ.h"
+#include "BondsOrb.h"
 
 /********************************************************************************/
 static gboolean read_geomorb_mopac_file_geom(gchar *fileName)
@@ -386,9 +387,9 @@ static gboolean normalize_orbitals(gchar* FileName, gfloat**CoefOrbitals)
 			for(l=0;l<=k;l++)
 			{
 				if(l!=k)
-					ovOM += 2*CoefOrbitals[i][k]*CoefAlphaOrbitals[i][l]*S[kk++];
+					ovOM += 2*CoefOrbitals[i][k]*CoefOrbitals[i][l]*S[kk++];
 				else
-					ovOM += CoefOrbitals[i][k]*CoefAlphaOrbitals[i][l]*S[kk++];
+					ovOM += CoefOrbitals[i][k]*CoefOrbitals[i][l]*S[kk++];
 			}
 		}
 		
@@ -724,6 +725,7 @@ void read_mopac_orbitals(gchar* FileName)
 
 	set_status_label_info("Mol. Orb.","Reading");
  	InitializeAll();
+	buildBondsOrb();
 	RebuildGeom = TRUE;
 	reset_grid_limits();
 	init_atomic_orbitals();

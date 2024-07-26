@@ -1,6 +1,6 @@
 /* Povray.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -75,7 +75,7 @@ static XYZRC get_prop_dipole(gint i)
 	PropCenter.C[0]=dipole[i][0];
 	PropCenter.C[1]=dipole[i][1];
 	PropCenter.C[2]=dipole[i][2];
-	PropCenter.C[3]=geometry[0].Prop.radii*factor/4*factorstick;
+	PropCenter.C[3]=geometry[0].Prop.radii*get_factor()/4*get_factorstick();
 
 	if(i<NDIVDIPOLE-1)
 	{
@@ -123,7 +123,7 @@ static gchar *get_ball(gint num, gfloat scale)
 		"\ttexture { finish { Dull } }\n"
 		"\tpigment { rgb<%14.6f,%14.6f,%14.6f> }\n}\n"
 		,
-		Center.C[0],Center.C[1],Center.C[2],Center.C[3]*factorball*scale,
+		Center.C[0],Center.C[1],Center.C[2],Center.C[3]*get_factorball()*scale,
 		Center.P.Colors[0], Center.P.Colors[1], Center.P.Colors[2]
 		);
      return temp;
@@ -231,12 +231,14 @@ static gchar *get_one_stick_for_ball(gint i,gint j)
      Center2 = get_prop_center(j);
      k =get_num_min_rayonIJ(i,j);
  
-     if(k==i) ep = Center1.C[3]*factorstick;
-     else ep = Center2.C[3]*factorstick;
+     if(k==i) ep = Center1.C[3]*get_factorstick();
+     else ep = Center2.C[3]*get_factorstick();
 
-     if(stick_mode()) ep =STICKSIZE*factorstick;
+     if(stick_mode()) ep =STICKSIZE*get_factorstick();
      else ep/=2;
 
+     if(geometry[i].Layer == LOW_LAYER || geometry[j].Layer == LOW_LAYER ) ep /= 6;
+     else if(geometry[i].Layer == MEDIUM_LAYER || geometry[j].Layer == MEDIUM_LAYER ) ep /= 2;
  
      poid1 = geometry[i].Prop.covalentRadii+geometry[i].Prop.radii;
      poid2 = geometry[j].Prop.covalentRadii+geometry[j].Prop.radii;
@@ -381,10 +383,10 @@ static gchar *get_one_stick(gint i,gint j)
      Center2 = get_prop_center(j);
      k =get_num_min_rayonIJ(i,j);
  
-     if(k==i) ep = Center1.C[3]*factorstick;
-     else ep = Center2.C[3]*factorstick;
+     if(k==i) ep = Center1.C[3]*get_factorstick();
+     else ep = Center2.C[3]*get_factorstick();
 
-     if(stick_mode()) ep =STICKSIZE*factorstick;
+     if(stick_mode()) ep =STICKSIZE*get_factorstick();
      else ep/=2;
 
  
@@ -559,8 +561,8 @@ static gchar *get_one_hbond(gint i,gint j)
      Center2 = get_prop_center(j);
      k =get_num_min_rayonIJ(i,j);
  
-     if(k==i) ep = Center1.C[3]*factorstick;
-     else ep = Center2.C[3]*factorstick;
+     if(k==i) ep = Center1.C[3]*get_factorstick();
+     else ep = Center2.C[3]*get_factorstick();
      if(stick_mode()) ep /=4;
      else ep /=2;
 
@@ -689,7 +691,9 @@ static gchar *get_atoms(gdouble scal)
 	for(i=0;i<(gint)Natoms;i++)
 	{
 		tempold = temp;
-		t =get_ball(i,scal);
+		if(geometry[i].Layer == MEDIUM_LAYER) t =get_ball(i,scal/2);
+		else if(geometry[i].Layer == LOW_LAYER) t =get_ball(i,scal/6);
+		else t =get_ball(i,scal);
 		if(tempold)
 		{
 			temp = g_strdup_printf("%s%s",tempold,t);
@@ -811,28 +815,15 @@ static gchar *get_dipole()
 }
 	
 /********************************************************************************/
-static void save_povray_file(GtkWidget *w,gpointer data)
+void export_to_povray(gchar* fileName)
 {
-  GtkWidget **entryall;
-  GtkWidget *entry;
-  G_CONST_RETURN gchar *entrytext;
-  gchar *NomFichier;
   gchar *temp;
   gfloat xmin;
   gfloat ymin;
   gfloat zmin;
   FILE *fd=NULL;
 
- if(!ZoneDessin)
- {
-   Message("Sorry I can not create pov-ray file \nbecause Geometry display windows is closed"," Error ",TRUE);
-   return;
- }
- entryall=(GtkWidget **)data;
- entry=entryall[0];
- entrytext = gtk_entry_get_text(GTK_ENTRY(entry));
- NomFichier = g_strdup_printf("%s.pov",get_suffix_name_file(entrytext));
- fd = FOpen(NomFichier, "w");
+ fd = FOpen(fileName, "w");
  if(fd)
  {
 	temp =get_epilogue();
@@ -883,64 +874,3 @@ static void save_povray_file(GtkWidget *w,gpointer data)
  }
 }
 /********************************************************************************/
-void create_save_povray(GtkWidget* Win)
-{
-  GtkWidget *fp;
-  GtkWidget *frame;
-  GtkWidget *vboxall;
-  GtkWidget *vboxframe;
-  GtkWidget *hbox;
-  GtkWidget *button;
-  GtkWidget **entry;
-  gchar      *labelt = g_strdup(" File  : ");
-  gchar      *liste=g_strdup("gabedit.pov");
-  gchar      *titre=g_strdup("Create a pov-ray file");
-  static gchar* patterns[] = {"*.pov","*",NULL};
-  entry=g_malloc(2*sizeof(GtkWidget *));
-
-  liste  = g_strdup_printf("%s%sgabedit.pov",get_last_directory(),G_DIR_SEPARATOR_S);
-  /* Fenetre principale */
-  fp = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_title(GTK_WINDOW(fp),titre);
-  gtk_window_set_position(GTK_WINDOW(fp),GTK_WIN_POS_CENTER);
-  gtk_window_set_transient_for(GTK_WINDOW(fp),GTK_WINDOW(Fenetre));
-
-  add_child(Win,fp,gtk_widget_destroy," Povray ");
-
-  g_signal_connect(G_OBJECT(fp),"delete_event",(GtkSignalFunc)delete_child,NULL);
-  g_signal_connect(G_OBJECT(fp),"delete_event",(GtkSignalFunc)gtk_widget_destroy,NULL);
-
-  gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
-  vboxall = create_vbox(fp);
-  frame = gtk_frame_new ("Location&Name of file");
-  g_object_ref (frame);
-  gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
-  gtk_container_add (GTK_CONTAINER (vboxall), frame);
-  gtk_widget_show (frame);
-
-  vboxframe = create_vbox(frame);
-
-  hbox = create_hbox_browser(Win,vboxframe,labelt,liste,patterns);
-  entry[0] = (GtkWidget*)(g_object_get_data(G_OBJECT(hbox),"Entry"));	
-
-  /* buttons */
-  hbox = create_hbox(vboxall);
-  gtk_widget_realize(fp);
-
-  button = create_button(fp,"Cancel");
-  gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button),"clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(fp));
-  gtk_widget_show (button);
-
-  button = create_button(fp,"OK");
-  gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  gtk_widget_show (button);
-  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(save_povray_file),(gpointer)entry);
-  g_signal_connect_swapped(G_OBJECT(button),"clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(fp));
-
-
-  g_free(labelt);
-  g_free(liste);
-   
-  gtk_widget_show_all(fp);
-}

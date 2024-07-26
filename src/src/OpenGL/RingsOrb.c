@@ -1,6 +1,6 @@
 /* RingsOrb.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Transformation.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/HydrogenBond.h"
 #include "../OpenGL/RingsPov.h"
 
@@ -233,7 +233,7 @@ void getCentreRing(gint i, gint j, gfloat C[])
 	gint* num  = NULL;
 	gint n;
 
-	for(c=0;c<4;c++) C[c] = 0;
+	for(c=0;c<3;c++) C[c] = 0;
 	n = 4;
 	if(inRing(j, i, n-1, TRUE) ) num = getRing();
 	if(!num)
@@ -684,7 +684,7 @@ static void messagesNumberOfRings(gint nRings, GList** rings)
 		if(i==0)
 		sprintf(buffer,"I found %d %s\n",nR[i], buffer1);
 		else
-		sprintf(buffer,"%s%s is %d\n",buffer, buffer1, nR[i]);
+		sprintf(buffer + strlen(buffer),"%s is %d\n", buffer1, nR[i]);
 	}
 	g_free(nR);
 	Message(buffer,"Info",TRUE);

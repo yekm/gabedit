@@ -1,6 +1,6 @@
 /* QChemBasis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -32,10 +32,10 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/DrawGeom.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Geometry/InterfaceGeom.h"
 #include "../Common/Windows.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/GabeditTextEdit.h"
 #include "../Symmetry/MoleculeSymmetry.h"
@@ -193,7 +193,7 @@ void addQChemBasisToTable(GtkWidget *table, gint i)
 	comboBasis  = g_object_get_data(G_OBJECT (entryBasis), "Combo");
 	gtk_widget_set_sensitive(entryBasis, FALSE);
 
-	g_signal_connect(G_OBJECT(entryBasis),"changed", GTK_SIGNAL_FUNC(changedEntryBasis),NULL);
+	g_signal_connect(G_OBJECT(entryBasis),"changed", G_CALLBACK(changedEntryBasis),NULL);
 	setComboBasis(comboBasis);
 }
 /***********************************************************************************************/
@@ -215,7 +215,7 @@ void addQChemBasisGuessToTable(GtkWidget *table, gint i, GtkWidget* comboGuess)
 	gtk_widget_set_sensitive(entryBasisGuess, FALSE);
 	if(comboGuess) g_object_set_data(G_OBJECT (comboGuess), "ComboGuessBasis", comboBasisGuess);
 
-	g_signal_connect(G_OBJECT(entryBasisGuess),"changed", GTK_SIGNAL_FUNC(changedEntryBasisGuess),NULL);
+	g_signal_connect(G_OBJECT(entryBasisGuess),"changed", G_CALLBACK(changedEntryBasisGuess),NULL);
 	setComboBasis(comboBasisGuess);
 }
 /***********************************************************************************************/
@@ -236,7 +236,7 @@ void addQChemAuxBasisToTable(GtkWidget *table, gint i, GtkWidget* comboCorrelati
 	gtk_widget_set_sensitive(entryAuxBasis, FALSE);
 	if(comboCorrelation) g_object_set_data(G_OBJECT (comboCorrelation), "ComboAuxBasis", comboAuxBasis);
 
-	g_signal_connect(G_OBJECT(entryAuxBasis),"changed", GTK_SIGNAL_FUNC(changedEntryAuxBasis),NULL);
+	g_signal_connect(G_OBJECT(entryAuxBasis),"changed", G_CALLBACK(changedEntryAuxBasis),NULL);
 	setComboBasisAux(comboAuxBasis);
 }
 /***********************************************************************************************/

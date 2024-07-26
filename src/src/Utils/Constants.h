@@ -1,6 +1,6 @@
 
-#ifndef __GABEDIT_CONSTANTES_H__
-#define __GABEDIT_CONSTANTES_H__
+#ifndef __GABEDIT_CONSTANTS_H__
+#define __GABEDIT_CONSTANTS_H__
 
 #define BSIZE 1024
 #define ANG_TO_BOHR  1.0/0.52917726
@@ -11,4 +11,4 @@
 #define DEG_TO_RAD   0.017453293 
 #define RAD_TO_DEG   57.29577951308232090712
 
-#endif /* __GABEDIT_CONSTANTES_H__ */
+#endif /* __GABEDIT_CONSTANTS_H__ */

@@ -1,6 +1,6 @@
 /* BuildNanoTube.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -28,7 +28,7 @@ DEALINGS IN THE SOFTWARE.
 
 #include "../Common/Global.h"
 #include "../Utils/Utils.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/AtomsProp.h"
 #include "../Geometry/GeomGlobal.h"
@@ -168,6 +168,7 @@ static void build_nanotube(GtkWidget *w,gpointer data)
 		GeomXYZ[i].Z=g_strdup_printf("%f",coord[2][i]);
 		GeomXYZ[i].Charge=g_strdup("0.0");
     		GeomXYZ[i].Layer=g_strdup(" ");
+    		GeomXYZ[i].typeConnections=NULL;
   	}
         MethodeGeom = GEOM_IS_XYZ;
 	for(i=0;i<4;i++)
@@ -196,13 +197,13 @@ void build_nanotube_dlg()
 
   add_child(GeomDlg,Dlg,gtk_widget_destroy," Build lin. mol. ");
 
-  g_signal_connect(G_OBJECT(Dlg),"delete_event",(GtkSignalFunc)delete_child,NULL);
-  g_signal_connect(G_OBJECT(Dlg),"delete_event",(GtkSignalFunc)gtk_widget_destroy,NULL);
+  g_signal_connect(G_OBJECT(Dlg),"delete_event",(GCallback)delete_child,NULL);
+  g_signal_connect(G_OBJECT(Dlg),"delete_event",(GCallback)gtk_widget_destroy,NULL);
 
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-  gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(Dlg)->vbox), frame);
+  gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dlg)->vbox), frame,TRUE,TRUE,0);
   gtk_widget_show (frame);
 
   vboxframe = create_vbox(frame);
@@ -265,15 +266,15 @@ void build_nanotube_dlg()
   gtk_widget_realize(Dlg);
   /* The "Cancel" button */
   Button = create_button(Dlg,"Cancel");
-  gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(Dlg)->action_area), Button);
-  g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(Dlg));
+  gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dlg)->action_area), Button,TRUE,TRUE,0);
+  g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)delete_child,GTK_OBJECT(Dlg));
   GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 
   /* The "OK" button */
   Button = create_button(Dlg,"OK");
-  gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(Dlg)->action_area), Button);
-  g_signal_connect(G_OBJECT(Button), "clicked",(GtkSignalFunc)build_nanotube,NULL);
-  g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(Dlg));
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dlg)->action_area), Button,TRUE,TRUE,0);
+  g_signal_connect(G_OBJECT(Button), "clicked",(GCallback)build_nanotube,NULL);
+  g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)delete_child,GTK_OBJECT(Dlg));
   GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Button);
     

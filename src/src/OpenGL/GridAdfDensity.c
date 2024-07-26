@@ -1,6 +1,6 @@
 /* GridAdf.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -25,10 +25,11 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/AtomsProp.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "GLArea.h"
 #include "AtomicOrbitals.h"
 #include "Orbitals.h"
+#include "BondsOrb.h"
 
 typedef struct _DataRow
 {
@@ -733,6 +734,7 @@ static void read_adf_file(gchar* filename)
 	if(Ncenters>0)
 	{
 		/*printf("C'est OK\n");*/
+		buildBondsOrb();
 		RebuildGeom = TRUE;
 		glarea_rafresh(GLArea);
 		init_atomic_orbitals();

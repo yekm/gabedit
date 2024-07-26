@@ -1,6 +1,6 @@
 /* FragmentsTree.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -20,7 +20,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../../Config.h"
 
 #include "../Common/Global.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Geometry/InterfaceGeom.h"
 #include "../Utils/Utils.h"
@@ -186,10 +186,31 @@ static void addAminoAcidsL(FragmentsList* fragList)
 {
 	static gchar *names[]={
 		"Ala","Cys","Gly","His","Met","Thr",
-		"Arg","Cyx","Hid","Ile","Phe","Tyr",
+		"Arg","Cyx","Cym","Hid","Ile","Phe","Tyr",
 		"Asn","Gln","Hie","Leu","Pro","Trp",
 		"Asp","Glu","Hip","Lys","Ser","Val",
+		"Ash", "Glh","Lyn","Roh",
 		"Ace","Nme"
+		"Cala","Ccys","Cgly","Chis","Cmet","Cthr",
+		"Carg","Ccyx","Ccym","Chid","Cile","Cphe","Ctyr",
+		"Casn","Cgln","Chie","Cleu","Cpro","Ctrp",
+		"Casp","Cglu","Chip","Clys","Cser","Cval",
+		"Cash", "Cglh","Clyn",
+		"Nala","Ncys","Ngly","Nhis","Nmet","Nthr",
+		"Narg","Ncyx","Ncym","Nhid","Nile","Nphe","Ntyr",
+		"Nasn","Ngln","Nhie","Nleu","Npro","Ntrp",
+		"Nasp","Nglu","Nhip","Nlys","Nser","Nval",
+		"Nash", "Nglh","Nlyn",
+		"Oala","Ocys","Ogly","Ohis","Omet","Othr",
+		"Oarg","Ocyx","Ocym","Ohid","Oile","Ophe","Otyr",
+		"Oasn","Ogln","Ohie","Oleu","Opro","Otrp",
+		"Oasp","Oglu","Ohip","Olys","Oser","Oval",
+		"Oash", "Oglh","Olyn",
+		"Hala","Hcys","Hgly","Hhis","Hmet","Hthr",
+		"Harg","Hcyx","Hcym","Hhid","Hile","Hphe","Htyr",
+		"Hasn","Hgln","Hhie","Hleu","Hpro","Htrp",
+		"Hasp","Hglu","Hhip","Hlys","Hser","Hval",
+		"Hash", "Hglh","Hlyn"
 		};
 
 	if(!fragList) return;
@@ -200,10 +221,31 @@ static void addAminoAcidsD(FragmentsList* fragList)
 {
 	static gchar *names[]={
 		"Ala","Cys","Gly","His","Met","Thr",
-		"Arg","Cyx","Hid","Ile","Phe","Tyr",
+		"Arg","Cyx","Cym","Hid","Ile","Phe","Tyr",
 		"Asn","Gln","Hie","Leu","Pro","Trp",
 		"Asp","Glu","Hip","Lys","Ser","Val",
+		"Ash", "Glh","Lyn","Roh",
 		"Ace","Nme"
+		"Cala","Ccys","Cgly","Chis","Cmet","Cthr",
+		"Carg","Ccyx","Ccym","Chid","Cile","Cphe","Ctyr",
+		"Casn","Cgln","Chie","Cleu","Cpro","Ctrp",
+		"Casp","Cglu","Chip","Clys","Cser","Cval",
+		"Cash", "Cglh","Clyn",
+		"Nala","Ncys","Ngly","Nhis","Nmet","Nthr",
+		"Narg","Ncyx","Ncym","Nhid","Nile","Nphe","Ntyr",
+		"Nasn","Ngln","Nhie","Nleu","Npro","Ntrp",
+		"Nasp","Nglu","Nhip","Nlys","Nser","Nval",
+		"Nash", "Nglh","Nlyn",
+		"Oala","Ocys","Ogly","Ohis","Omet","Othr",
+		"Oarg","Ocyx","Ocym","Ohid","Oile","Ophe","Otyr",
+		"Oasn","Ogln","Ohie","Oleu","Opro","Otrp",
+		"Oasp","Oglu","Ohip","Olys","Oser","Oval",
+		"Oash", "Oglh","Olyn",
+		"Hala","Hcys","Hgly","Hhis","Hmet","Hthr",
+		"Harg","Hcyx","Hcym","Hhid","Hile","Hphe","Htyr",
+		"Hasn","Hgln","Hhie","Hleu","Hpro","Htrp",
+		"Hasp","Hglu","Hhip","Hlys","Hser","Hval",
+		"Hash", "Hglh","Hlyn"
 		};
 
 	if(!fragList) return;
@@ -368,6 +410,7 @@ static DataFragTree* newDataFragTree(gint groupNumber, gint fragNumber)
 	return  dataTree;
 }
 /********************************************************************************/
+/*
 static void freeDataFragTree(GtkWidget* treeView)
 {
    	DataFragTree* data = NULL;
@@ -387,7 +430,9 @@ static void freeDataFragTree(GtkWidget* treeView)
 	}
 	g_free(pathString);
 }
+*/
 /********************************************************************************/
+/*
 static gboolean* getExpandInfo(GtkWidget* treeView)
 {
 	gint i;
@@ -425,7 +470,9 @@ static gboolean* getExpandInfo(GtkWidget* treeView)
 	g_free(pathString);
 	return expandeds;
 }
+*/
 /********************************************************************************/
+/*
 static void setExpandeds(GtkWidget* treeView, gboolean* expandeds, gchar* selected_row)
 {
 	gint i;
@@ -457,6 +504,7 @@ static void setExpandeds(GtkWidget* treeView, gboolean* expandeds, gchar* select
 			gtk_tree_path_free(path);
 	}
 }
+*/
 /*******************************************************************************************************/
 static void addFeuille(GtkWidget* treeView, GtkTreeIter *parent, gchar* fragName, gint groupNumber, gint fragNumber)
 {

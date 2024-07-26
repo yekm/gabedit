@@ -1,6 +1,6 @@
 /* AtomsProp.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #include <stdio.h>
 #include <ctype.h>
 #include "../Common/Global.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Geometry/Fragments.h"
@@ -441,25 +441,25 @@ static void open_color_dlg_atoms(GtkWidget *win,gpointer tdata)
 	gtk_window_set_transient_for(GTK_WINDOW(ColorDlg),GTK_WINDOW(data->Window));
         gtk_window_set_position(GTK_WINDOW(ColorDlg),GTK_WIN_POS_CENTER);
 	gtk_window_set_modal (GTK_WINDOW (ColorDlg), TRUE);
- 	g_signal_connect(G_OBJECT(ColorDlg), "delete_event",(GtkSignalFunc)destroy_button_windows,NULL);
-  	g_signal_connect(G_OBJECT(ColorDlg), "delete_event",GTK_SIGNAL_FUNC(gtk_widget_destroy),NULL);
+ 	g_signal_connect(G_OBJECT(ColorDlg), "delete_event",(GCallback)destroy_button_windows,NULL);
+  	g_signal_connect(G_OBJECT(ColorDlg), "delete_event",G_CALLBACK(gtk_widget_destroy),NULL);
 
   	gtk_widget_hide(ColorDlg->help_button);
 	g_signal_connect_swapped(G_OBJECT(ColorDlg->ok_button),"clicked",
-		(GtkSignalFunc)set_atom_color,GTK_OBJECT(ColorDlg->colorsel));
+		(GCallback)set_atom_color,GTK_OBJECT(ColorDlg->colorsel));
 
 	g_signal_connect(G_OBJECT(ColorDlg->ok_button),"clicked",
-		(GtkSignalFunc)set_button_color,tdata);
+		(GCallback)set_button_color,tdata);
 
   	g_signal_connect_swapped(G_OBJECT(ColorDlg->ok_button), "clicked",
-		(GtkSignalFunc)destroy_button_windows,GTK_OBJECT(ColorDlg));
+		(GCallback)destroy_button_windows,GTK_OBJECT(ColorDlg));
 	g_signal_connect_swapped(G_OBJECT(ColorDlg->ok_button),"clicked",
-		(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(ColorDlg));
+		(GCallback)gtk_widget_destroy,GTK_OBJECT(ColorDlg));
 
   	g_signal_connect_swapped(G_OBJECT(ColorDlg->cancel_button), "clicked",
-		(GtkSignalFunc)destroy_button_windows,GTK_OBJECT(ColorDlg));
+		(GCallback)destroy_button_windows,GTK_OBJECT(ColorDlg));
 	g_signal_connect_swapped(G_OBJECT(ColorDlg->cancel_button),"clicked",
-		(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(ColorDlg));
+		(GCallback)gtk_widget_destroy,GTK_OBJECT(ColorDlg));
 
   	add_button_windows(" Set Color ",GTK_WIDGET(ColorDlg));
 	gtk_widget_show(GTK_WIDGET(ColorDlg));
@@ -597,13 +597,13 @@ static void dialog_set_atom_prop(GtkWidget *w,gpointer data)
   gtk_window_set_position(GTK_WINDOW(Dialogue),GTK_WIN_POS_CENTER);
   gtk_window_set_transient_for(GTK_WINDOW(Dialogue),GTK_WINDOW(sdata->Window));
   gtk_window_set_modal (GTK_WINDOW (Dialogue), TRUE);
-  g_signal_connect(G_OBJECT(Dialogue), "delete_event",(GtkSignalFunc)destroy_button_windows,NULL);
-  g_signal_connect(G_OBJECT(Dialogue), "delete_event",GTK_SIGNAL_FUNC(gtk_widget_destroy),NULL);
+  g_signal_connect(G_OBJECT(Dialogue), "delete_event",(GCallback)destroy_button_windows,NULL);
+  g_signal_connect(G_OBJECT(Dialogue), "delete_event",G_CALLBACK(gtk_widget_destroy),NULL);
 
   frame = gtk_frame_new (sdata->Symb);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-  gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame,TRUE,TRUE,0);
 
   gtk_widget_show (frame);
 
@@ -611,7 +611,7 @@ static void dialog_set_atom_prop(GtkWidget *w,gpointer data)
 
   Table = gtk_table_new(7,4,FALSE);
 
-  gtk_box_pack_start_defaults(GTK_BOX(vboxframe), Table);
+  gtk_box_pack_start(GTK_BOX(vboxframe), Table,TRUE,TRUE,0);
 
   i = 0;
   Add_Label_Table(Table,"Name",i,0);
@@ -721,21 +721,21 @@ static void dialog_set_atom_prop(GtkWidget *w,gpointer data)
   tdata->Button =Bouton;
   tdata->Style =style;
   gtk_table_attach(GTK_TABLE(Table),Bouton,2,3,i,i+1, (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) , (GtkAttachOptions)(GTK_FILL | GTK_SHRINK), 1,1);
-  g_signal_connect(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)open_color_dlg_atoms, (gpointer)tdata);
+  g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)open_color_dlg_atoms, (gpointer)tdata);
 
   gtk_widget_realize(Dialogue);
 
   Bouton = create_button(Dialogue,"Cancel");
-  gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GtkSignalFunc)destroy_button_windows,GTK_OBJECT(Dialogue));
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(Dialogue));
+  gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)destroy_button_windows,GTK_OBJECT(Dialogue));
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 
   Bouton = create_button(Dialogue,"OK");
-  gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)set_atom_prop, sdata);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GtkSignalFunc)destroy_button_windows,GTK_OBJECT(Dialogue));
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(Dialogue));
+  gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)set_atom_prop, sdata);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)destroy_button_windows,GTK_OBJECT(Dialogue));
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Bouton);
     
@@ -824,7 +824,7 @@ void create_table_prop_in_window(GtkWidget *WinTable, GtkWidget *frame)
 			sdata[j][i]->Symb = g_strdup(Symb[j][i]);
 			sdata[j][i]->Button =button;
 			sdata[j][i]->Style =style;
-			g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)dialog_set_atom_prop,(gpointer )sdata[j][i]);
+			g_signal_connect(G_OBJECT(button), "clicked", (GCallback)dialog_set_atom_prop,(gpointer )sdata[j][i]);
 			gtk_table_attach(GTK_TABLE(Table),button,j,j+1,i,i+1, (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) , (GtkAttachOptions)(GTK_FILL | GTK_EXPAND), 1,1);
 		}
 	}
@@ -843,8 +843,8 @@ void create_table_prop()
   gtk_window_set_position(GTK_WINDOW(WinTable),GTK_WIN_POS_CENTER);
   gtk_window_set_default_size (GTK_WINDOW(WinTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
 
-  g_signal_connect(G_OBJECT(WinTable), "delete_event", (GtkSignalFunc)destroy_button_windows, NULL);
-  g_signal_connect(G_OBJECT(WinTable), "delete_event", (GtkSignalFunc)gtk_widget_destroy, NULL);
+  g_signal_connect(G_OBJECT(WinTable), "delete_event", (GCallback)destroy_button_windows, NULL);
+  g_signal_connect(G_OBJECT(WinTable), "delete_event", (GCallback)gtk_widget_destroy, NULL);
 
   vbox = gtk_vbox_new (FALSE, 2);
   gtk_container_add(GTK_CONTAINER(WinTable),vbox);
@@ -866,8 +866,8 @@ void create_table_prop()
   gtk_widget_realize(WinTable);
   button = create_button(WinTable,"CLOSE");
   gtk_box_pack_end (GTK_BOX (hbox), button, FALSE, FALSE, 2);
-  g_signal_connect_swapped(G_OBJECT(button),"clicked", (GtkSignalFunc)destroy_button_windows, GTK_OBJECT(WinTable));
-  g_signal_connect_swapped(G_OBJECT(button), "clicked", (GtkSignalFunc)gtk_widget_destroy, GTK_OBJECT(WinTable));
+  g_signal_connect_swapped(G_OBJECT(button),"clicked", (GCallback)destroy_button_windows, GTK_OBJECT(WinTable));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(WinTable));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
   gtk_widget_show(button);

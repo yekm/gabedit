@@ -1,6 +1,6 @@
 /* GLArea.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -28,7 +28,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/AtomsProp.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "UtilsOrb.h"
 #include "GeomOrbXYZ.h"
 #include "Basis.h"
@@ -97,6 +97,9 @@ static GLfloat Zoom = 45;
 static gboolean perspective = TRUE;
 static gboolean animateContours = FALSE;
 static gboolean animatePlanesMapped = FALSE;
+/*********************************************************************************************/
+static gdouble scaleBall = 1.0;
+static gdouble scaleStick = 1.0;
 
 /*********************************************************************************************/
 static V4d BackColor[7] =
@@ -109,6 +112,37 @@ static V4d BackColor[7] =
   {1.0, 0.5, 0.5, 0.0}, /* peach */
   {0.7, 0.7, 0.7, 0.0}, /* Grey  */
 };
+/*********************************************************************************************/
+gdouble getScaleBall()
+{
+	return scaleBall;
+}
+/*********************************************************************************************/
+gdouble getScaleStick()
+{
+	return scaleStick;
+}
+/*********************************************************************************************/
+void setScaleBall(gdouble a)
+{
+	scaleBall = fabs(a);
+}
+/*********************************************************************************************/
+void setScaleStick(gdouble a)
+{
+	scaleStick = fabs(a);
+}
+/*********************************************************************************************/
+gint getOptCol()
+{
+	return optcol;
+}
+/*********************************************************************************************/
+void setOptCol(gint i)
+{
+	optcol = i;
+	if(optcol<-1 || optcol>6) optcol = 0;
+}
 /*********************************************************************************************/
 void mYPerspective( GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar )
 {
@@ -607,6 +641,12 @@ static V4d Quat;
 static GLfloat BeginX = 0;
 static GLfloat BeginY = 0;
 /*********************************************************************************************/
+void resetBeginNegative()
+{
+	BeginX = -1;
+	BeginY = -1;
+}
+/*********************************************************************************************/
 void getQuat(gfloat q[])
 {
 	gint i;
@@ -701,7 +741,7 @@ static void redrawGeometry()
 	if (RebuildGeom || glIsList(GeomList) != GL_TRUE )
 	{
 		/* Debug("Re Gen Geom List\n");*/
-		GeomList = GeomGenList(GeomList);
+		GeomList = GeomGenList(GeomList, scaleBall, scaleStick);
 		GeomShowList(GeomList);
 		DipList = DipGenList(DipList);
 		DipShowList(DipList);
@@ -794,7 +834,7 @@ static void redrawContours()
 		if(gridPlaneForContours) g_free(gridPlaneForContours);
 		gridPlaneForContours = NULL;
 	}
-	if(reBuildFirstPlaneContours && nPlanesContours==1)
+	if(reBuildFirstPlaneContours && nPlanesContours==1 && BeginX == -1 )
 	{
 		deleteContoursPovRayFile();
 		if(gridPlaneForContours && reDrawContoursPlane)
@@ -851,7 +891,7 @@ static void redrawPlanesMapped()
 		if(gridPlaneForPlanesMapped) g_free(gridPlaneForPlanesMapped);
 		gridPlaneForPlanesMapped = NULL;
 	}
-	if(reBuildFirstPlaneMapped && nPlanesMapped==1)
+	if(reBuildFirstPlaneMapped && nPlanesMapped==1 && BeginX == -1 )
 	{
 		deletePlanesMappedPovRayFile();
 		if(gridPlaneForPlanesMapped&& reDrawPlaneMappedPlane)
@@ -1115,6 +1155,17 @@ static gint event_dispatcher(GtkWidget *DrawingArea, GdkEvent *event, gpointer d
 	return FALSE;
 }
 
+/******************************************************************************/
+gint glarea_button_release (GtkWidget *widget, GdkEventButton *event)
+{
+	if (event->button == 1 || event->button == 2)
+	{
+		resetBeginNegative();
+		redraw(widget,NULL);
+		return TRUE;
+	}
+	return FALSE;
+}
 /******************************************************************************/
 gint glarea_button_press(GtkWidget *widget, GdkEventButton *event)
 {
@@ -1422,7 +1473,7 @@ gboolean NewGLArea(GtkWidget* vboxwin)
 		}
   	}
 	/* Events for widget must be set before X Window is created */
-	g_signal_connect(G_OBJECT(GLArea), "expose_event", GTK_SIGNAL_FUNC(draw), NULL);
+	g_signal_connect(G_OBJECT(GLArea), "expose_event", G_CALLBACK(draw), NULL);
 	gtk_widget_set_events(GLArea,
 			GDK_EXPOSURE_MASK|
 			GDK_BUTTON_PRESS_MASK|
@@ -1434,8 +1485,8 @@ gboolean NewGLArea(GtkWidget* vboxwin)
 
 
   
-	g_signal_connect(G_OBJECT(GLArea), "realize", GTK_SIGNAL_FUNC(init), NULL);
-	g_signal_connect(G_OBJECT(GLArea), "configure_event", GTK_SIGNAL_FUNC(reshape), NULL);
+	g_signal_connect(G_OBJECT(GLArea), "realize", G_CALLBACK(init), NULL);
+	g_signal_connect(G_OBJECT(GLArea), "configure_event", G_CALLBACK(reshape), NULL);
 	gtk_widget_set_size_request(GTK_WIDGET(GLArea ),(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.2));
 		    
 	gtk_table_attach(GTK_TABLE(table),GLArea,1,2,0,1, (GtkAttachOptions)(GTK_FILL | GTK_EXPAND  ), (GtkAttachOptions)(GTK_FILL | GTK_EXPAND ), 0,0);
@@ -1450,9 +1501,10 @@ gboolean NewGLArea(GtkWidget* vboxwin)
 	g_free(info_str);
 	*/
 
-	g_signal_connect (G_OBJECT(GLArea), "button_press_event", GTK_SIGNAL_FUNC(glarea_button_press), NULL);
-	g_signal_connect_after(G_OBJECT(GLArea), "button_press_event", GTK_SIGNAL_FUNC(event_dispatcher), NULL);
-	g_signal_connect_after(G_OBJECT(GLArea), "motion_notify_event", GTK_SIGNAL_FUNC(glarea_motion_notify), NULL);
+	g_signal_connect (G_OBJECT(GLArea), "button_press_event", G_CALLBACK(glarea_button_press), NULL);
+	g_signal_connect_after(G_OBJECT(GLArea), "button_press_event", G_CALLBACK(event_dispatcher), NULL);
+	g_signal_connect_after(G_OBJECT(GLArea), "motion_notify_event", G_CALLBACK(glarea_motion_notify), NULL);
+	g_signal_connect (G_OBJECT(GLArea), "button_release_event", G_CALLBACK(glarea_button_release), NULL);
 
 	hboxtoolbar = gtk_hbox_new (FALSE, 0);
 	gtk_widget_show (hboxtoolbar);

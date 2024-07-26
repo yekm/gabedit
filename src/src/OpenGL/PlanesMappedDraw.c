@@ -1,6 +1,6 @@
 /*PlanesMappedDraw.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -233,6 +233,7 @@ static void drawAllRectangles(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloa
 	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
 	glMateriali(GL_FRONT_AND_BACK,GL_SHININESS,120);
+	glDisable ( GL_LIGHTING ) ;
 
 	for(i=0;i<plansgrid->N[i0]-1;i++)
 	for(j=0;j<plansgrid->N[i1]-1;j++)
@@ -292,9 +293,12 @@ static void drawAllRectangles(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloa
 
 	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glBegin(GL_POLYGON);
+
+
 	set_Color_From_colorMap(colorMap, Diffuse, plansgrid->point[ix][iy][iz].C[3]);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
+	glColor4fv(Diffuse);
 	x = plansgrid->point[ix][iy][iz].C[0] + Gap[0];
 	y = plansgrid->point[ix][iy][iz].C[1] + Gap[1];
 	z = plansgrid->point[ix][iy][iz].C[2] + Gap[2];
@@ -303,6 +307,7 @@ static void drawAllRectangles(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloa
 	set_Color_From_colorMap(colorMap, Diffuse, plansgrid->point[ix1][iy1][iz1].C[3]);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
+	glColor4fv(Diffuse);
 	x = plansgrid->point[ix1][iy1][iz1].C[0] + Gap[0];
 	y = plansgrid->point[ix1][iy1][iz1].C[1] + Gap[1];
 	z = plansgrid->point[ix1][iy1][iz1].C[2] + Gap[2];
@@ -310,6 +315,7 @@ static void drawAllRectangles(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloa
 	set_Color_From_colorMap(colorMap, Diffuse, plansgrid->point[ix2][iy2][iz2].C[3]);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
+	glColor4fv(Diffuse);
 	x = plansgrid->point[ix2][iy2][iz2].C[0] + Gap[0];
 	y = plansgrid->point[ix2][iy2][iz2].C[1] + Gap[1];
 	z = plansgrid->point[ix2][iy2][iz2].C[2] + Gap[2];
@@ -317,6 +323,7 @@ static void drawAllRectangles(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloa
 	set_Color_From_colorMap(colorMap, Diffuse, plansgrid->point[ix3][iy3][iz3].C[3]);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
+	glColor4fv(Diffuse);
 	x = plansgrid->point[ix3][iy3][iz3].C[0] + Gap[0];
 	y = plansgrid->point[ix3][iy3][iz3].C[1] + Gap[1];
 	z = plansgrid->point[ix3][iy3][iz3].C[2] + Gap[2];
@@ -324,6 +331,7 @@ static void drawAllRectangles(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloa
 	glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
 	glEnd();
 	}
+	glEnable ( GL_LIGHTING ) ;
 }
 /*********************************************************************************************************/
 GLuint PlanesMappedGenOneList(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloat gap)

@@ -1,6 +1,6 @@
 /* UtilsOrb.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -32,12 +32,13 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/TriangleDraw.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Common/Windows.h"
 #include "../OpenGL/Vibration.h"
 #include "../OpenGL/ContoursPov.h"
 #include "../OpenGL/PlanesMappedPov.h"
 #include "../OpenGL/GridCube.h"
+#include "../OpenGL/ColorMap.h"
 
 void CalculFfact();
 void CalculFact();
@@ -668,7 +669,7 @@ gint get_type_file(gchar *NomFichier)
 				ktype = GABEDIT_TYPEFILE_MOLPRO;
 				break;
 			}
-			if(strstr(t,"GAMESS VERSION"))
+			if(strstr(t,"GAMESS VERSION") || strstr(t,"PC GAMESS"))
 			{
 				ktype = GABEDIT_TYPEFILE_GAMESS;
 				break;
@@ -686,7 +687,7 @@ gint get_type_file(gchar *NomFichier)
 		while(!feof(fd))
 		{
 			fgets(t,taille,fd);
-			if(strstr(t,"GAMESS VERSION"))
+			if(strstr(t,"GAMESS"))
 			{
 				fgets(t,taille,fd);
 				if(strstr(t,"FROM IOWA STATE UNIVERSITY"))
@@ -1444,7 +1445,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 
 	for(i=0;i<3;i++)
 	for(j=0;j<6;j++)
-  		g_signal_connect(G_OBJECT(entries[i][j]), "changed",GTK_SIGNAL_FUNC(change_entry_value),entries[i][j]);
+  		g_signal_connect(G_OBJECT(entries[i][j]), "changed",G_CALLBACK(change_entry_value),entries[i][j]);
 
 	gtk_widget_show_all(frame);
 	g_object_set_data (G_OBJECT (frame), "Entries",&entries);
@@ -1508,8 +1509,8 @@ void create_grid(gchar* title)
 	button = create_button(Win,"Cancel");
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child, G_OBJECT(Win));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)gtk_widget_destroy,G_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, G_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,G_OBJECT(Win));
 	gtk_widget_show (button);
 
 	button = create_button(Win,"OK");
@@ -1517,7 +1518,7 @@ void create_grid(gchar* title)
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)applygrid,G_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)applygrid,G_OBJECT(Win));
   
 
 	gtk_widget_show_all (Win);
@@ -1665,6 +1666,16 @@ void initialise_global_orbitals_variables()
 	AOrb = NULL;
 	SAOrb = NULL;
 	solventRadius = 1.4;
+	colorMapColors[0][0] = 1;
+	colorMapColors[0][1] = 1;
+	colorMapColors[0][2] = 1;
+	colorMapColors[1][0] = 1;
+	colorMapColors[1][1] = 1;
+	colorMapColors[1][2] = 1;
+	colorMapColors[2][0] = 1;
+	colorMapColors[2][1] = 1;
+	colorMapColors[2][2] = 1;
+	colorMapType = 1;
 }
 /********************************************************************************/
 void close_window_orb(GtkWidget*win, gpointer data)
@@ -1710,13 +1721,13 @@ void add_glarea_child(GtkWidget* winchild,gchar* title)
   if(GLArea)
   {
   	add_child(PrincipalWindow,winchild,gtk_widget_destroy,title);
-  	g_signal_connect(G_OBJECT(winchild),"delete_event",(GtkSignalFunc)delete_child,NULL);
+  	g_signal_connect(G_OBJECT(winchild),"delete_event",(GCallback)delete_child,NULL);
   }
   else
   {
   	add_button_windows(title,winchild);
-  	g_signal_connect(G_OBJECT(winchild), "delete_event",(GtkSignalFunc)destroy_button_windows,NULL);
-  	g_signal_connect(G_OBJECT(winchild), "delete_event",GTK_SIGNAL_FUNC(gtk_widget_destroy),NULL);
+  	g_signal_connect(G_OBJECT(winchild), "delete_event",(GCallback)destroy_button_windows,NULL);
+  	g_signal_connect(G_OBJECT(winchild), "delete_event",G_CALLBACK(gtk_widget_destroy),NULL);
   }
 }
 /*************************************************************************************/
@@ -1792,6 +1803,12 @@ void create_opengl_file()
 		fprintf(fd,"%d\n",openGLOptions.depthSize);
 		fprintf(fd,"%d\n",openGLOptions.numberOfSubdivisionsCylindre);
 		fprintf(fd,"%d\n",openGLOptions.numberOfSubdivisionsSphere);
+		fprintf(fd,"%d\n",getOptCol());
+		fprintf(fd,"%f %f\n",getScaleBall(),getScaleStick());
+		fprintf(fd,"%d\n",colorMapType);
+		fprintf(fd,"%f %f %f\n",colorMapColors[0][0], colorMapColors[0][1],colorMapColors[0][2]);
+		fprintf(fd,"%f %f %f\n",colorMapColors[1][0], colorMapColors[1][1],colorMapColors[1][2]);
+		fprintf(fd,"%f %f %f\n",colorMapColors[2][0], colorMapColors[2][1],colorMapColors[2][2]);
 		fclose(fd);
 	}
 	g_free(openglfile);
@@ -1801,6 +1818,7 @@ void read_opengl_file()
 {
 	gchar *openglfile;
 	FILE *fd;
+	gint optcol = 0;
 
 	openglfile = g_strdup_printf("%s%sopengl",gabedit_directory(),G_DIR_SEPARATOR_S);
 
@@ -1833,6 +1851,47 @@ void read_opengl_file()
  		if(fgets(t,taille,fd))
 			if(sscanf(t,"%d",&openGLOptions.numberOfSubdivisionsSphere)!=1)
 				openGLOptions.numberOfSubdivisionsSphere = 10;
+ 		if(fgets(t,taille,fd))
+			if(sscanf(t,"%d",&optcol)!=1) optcol = 0;
+		setOptCol(optcol);
+ 		if(fgets(t,taille,fd))
+		{
+			gdouble b,s;
+			if(sscanf(t,"%lf %lf",&b,&s)==2)
+			{
+				setScaleBall(b);
+				setScaleStick(b);
+			}
+		}
+ 		if(fgets(t,taille,fd))
+			if(sscanf(t,"%d",&colorMapType)!=1) colorMapType =1;
+ 		if(fgets(t,taille,fd))
+		{
+			if(sscanf(t,"%f %f %f",&colorMapColors[0][0], &colorMapColors[0][1],&colorMapColors[0][2])!=3)
+			{
+				colorMapColors[0][0] = 1.0;
+				colorMapColors[0][1] = 1.0;
+				colorMapColors[0][2] = 1.0;
+			}
+		}
+ 		if(fgets(t,taille,fd))
+		{
+			if(sscanf(t,"%f %f %f",&colorMapColors[1][0], &colorMapColors[1][1],&colorMapColors[1][2])!=3)
+			{
+				colorMapColors[1][0] = 1.0;
+				colorMapColors[1][1] = 1.0;
+				colorMapColors[1][2] = 1.0;
+			}
+		}
+ 		if(fgets(t,taille,fd))
+		{
+			if(sscanf(t,"%f %f %f",&colorMapColors[2][0], &colorMapColors[2][1],&colorMapColors[2][2])!=3)
+			{
+				colorMapColors[2][0] = 1.0;
+				colorMapColors[2][1] = 1.0;
+				colorMapColors[2][2] = 1.0;
+			}
+		}
 
 		fclose(fd);
 	}
@@ -2222,7 +2281,7 @@ static GtkWidget *create_grid_sas_frame( GtkWidget *vboxall,gchar* title)
 
 	for(i=0;i<3;i++)
 	for(j=0;j<6;j++)
-  		g_signal_connect(G_OBJECT(entries[i][j]), "changed",GTK_SIGNAL_FUNC(change_entry_value),entries[i][j]);
+  		g_signal_connect(G_OBJECT(entries[i][j]), "changed",G_CALLBACK(change_entry_value),entries[i][j]);
 
 	gtk_widget_show_all(frame);
 	g_object_set_data (G_OBJECT (frame), "Entries",&entries);
@@ -2268,8 +2327,8 @@ void create_grid_sas(gchar* title)
 	button = create_button(Win,"Cancel");
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child, G_OBJECT(Win));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)gtk_widget_destroy,G_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, G_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,G_OBJECT(Win));
 	gtk_widget_show (button);
 
 	button = create_button(Win,"OK");
@@ -2277,8 +2336,439 @@ void create_grid_sas(gchar* title)
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)applygridsas,G_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)applygridsas,G_OBJECT(Win));
   
 
 	gtk_widget_show_all (Win);
+}
+/********************************************************************************/
+static void apply_set_scale_ball_stick(GtkWidget *Win,gpointer data)
+{
+	GtkWidget* entryBall = NULL;
+	GtkWidget* entryStick = NULL;
+	gdouble sBall = 1;
+	gdouble sStick = 1;
+
+	if(!GTK_IS_WIDGET(Win)) return;
+
+	entryBall = g_object_get_data (G_OBJECT (Win), "EntryBall");
+	entryStick = g_object_get_data (G_OBJECT (Win), "EntryStick");
+
+	if(entryBall) sBall = atof(gtk_entry_get_text(GTK_ENTRY(entryBall)));
+	if(entryStick) sStick = atof(gtk_entry_get_text(GTK_ENTRY(entryStick)));
+	RebuildGeom = TRUE;
+	setScaleBall(sBall);
+	setScaleStick(sStick);
+	glarea_rafresh(GLArea);
+}
+/********************************************************************************/
+static void apply_set_scale_ball_stick_close(GtkWidget *Win,gpointer data)
+{
+	apply_set_scale_ball_stick(Win,data);
+	delete_child(Win);
+}
+/********************************************************************************/
+static GtkWidget *add_entry_scale(GtkWidget *table, gchar* strLabel, gint il, gdouble val)
+{
+	gushort i;
+	gushort j;
+	GtkWidget *entry;
+	GtkWidget *label;
+
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 0;
+	label = gtk_label_new(strLabel);
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 2;
+	entry =  gtk_entry_new();
+	{
+		gchar* v = g_strdup_printf("%f",val);
+		if(v)gtk_entry_set_text(GTK_ENTRY(entry),v);
+		else gtk_entry_set_text(GTK_ENTRY(entry),"1.0");
+		if(v) g_free(v);
+	}
+
+	gtk_table_attach(GTK_TABLE(table),entry,
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+
+  	return entry;
+}
+/********************************************************************************/
+void set_scale_ball_stick_dlg()
+{
+	GtkWidget *Win;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	GtkWidget *hbox;
+	GtkWidget *table;
+	GtkWidget *vboxall;
+	GtkWidget *button;
+	GtkWidget *entryBall;
+	GtkWidget *entryStick;
+
+	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(Win),"Scale Ball&Stick");
+	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
+	gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
+	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
+
+	add_glarea_child(Win,"ScaleBallStick");
+
+	vboxall = create_vbox(Win);
+	frame = gtk_frame_new (NULL);
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+	gtk_container_add (GTK_CONTAINER (vboxall), frame);
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	table = gtk_table_new(2,3,FALSE);
+	gtk_container_add(GTK_CONTAINER(vboxframe),table);
+
+	entryBall = add_entry_scale(table, "Scale Ball", 0,getScaleBall());
+	g_object_set_data (G_OBJECT (Win), "EntryBall",entryBall);
+	entryStick = add_entry_scale(table, "Scale Stick", 1,getScaleStick());
+	g_object_set_data (G_OBJECT (Win), "EntryStick",entryStick);
+
+	hbox = create_hbox_false(vboxall);
+	gtk_widget_realize(Win);
+
+	button = create_button(Win,"OK");
+	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+	gtk_widget_show (button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_set_scale_ball_stick_close,G_OBJECT(Win));
+
+	button = create_button(Win,"Apply");
+	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_show (button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_set_scale_ball_stick,G_OBJECT(Win));
+
+	button = create_button(Win,"Cancel");
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, G_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,G_OBJECT(Win));
+	gtk_widget_show (button);
+
+	gtk_widget_show_all (Win);
+}
+/*********************************************************************************************************/
+static void resetGridColorMap()
+{
+	GtkWidget* handleBoxColorMapGrid = g_object_get_data(G_OBJECT(PrincipalWindow), "HandleboxColorMapGrid");
+
+	if(handleBoxColorMapGrid)
+	{
+		GtkWidget* entryLeft  = g_object_get_data(G_OBJECT(handleBoxColorMapGrid), "EntryLeft");
+		GtkWidget* entryRight = g_object_get_data(G_OBJECT(handleBoxColorMapGrid), "EntryRight");
+		GtkWidget* darea      = g_object_get_data(G_OBJECT(handleBoxColorMapGrid), "DrawingArea");
+		ColorMap* colorMap = g_object_get_data(G_OBJECT( handleBoxColorMapGrid),"ColorMap");
+		if(colorMap && entryLeft && entryRight && darea && colorMap->numberOfColors>0)
+		{
+			gdouble minValue = colorMap->colorValue[0].value;
+			gdouble maxValue = colorMap->colorValue[colorMap->numberOfColors-1].value;
+			ColorMap* newColorMap = new_colorMap_min_max(minValue, maxValue);
+			colormap_free(colorMap);
+			g_free(colorMap);
+			colorMap = newColorMap;
+			g_object_set_data(G_OBJECT(handleBoxColorMapGrid),"ColorMap", colorMap);
+			g_object_set_data(G_OBJECT(entryLeft),"ColorMap", colorMap);
+			g_object_set_data(G_OBJECT(entryRight),"ColorMap", colorMap);
+			g_object_set_data(G_OBJECT(darea),"ColorMap", colorMap);
+			color_map_refresh(handleBoxColorMapGrid);
+			if(GTK_WIDGET_VISIBLE(handleBoxColorMapGrid))
+			{
+				gtk_widget_hide(handleBoxColorMapGrid);
+				gtk_widget_show(handleBoxColorMapGrid);
+			}
+		}
+	}
+}
+/*********************************************************************************************************/
+static void resetPlanesMappedColorMap()
+{
+	GtkWidget* handleBoxColorMapPlanesMapped = g_object_get_data(G_OBJECT(PrincipalWindow), "HandleboxColorMapPlanesMapped");
+	if(handleBoxColorMapPlanesMapped)
+	{
+		GtkWidget* entryLeft  = g_object_get_data(G_OBJECT(handleBoxColorMapPlanesMapped), "EntryLeft");
+		GtkWidget* entryRight = g_object_get_data(G_OBJECT(handleBoxColorMapPlanesMapped), "EntryRight");
+		GtkWidget* darea      = g_object_get_data(G_OBJECT(handleBoxColorMapPlanesMapped), "DrawingArea");
+		ColorMap* colorMap = g_object_get_data(G_OBJECT( handleBoxColorMapPlanesMapped),"ColorMap");
+		if(colorMap && entryLeft && entryRight && darea && colorMap->numberOfColors>0)
+		{
+			gdouble minValue = colorMap->colorValue[0].value;
+			gdouble maxValue = colorMap->colorValue[colorMap->numberOfColors-1].value;
+			ColorMap* newColorMap = new_colorMap_min_max(minValue, maxValue);
+			colormap_free(colorMap);
+			g_free(colorMap);
+			colorMap = newColorMap;
+			g_object_set_data(G_OBJECT(handleBoxColorMapPlanesMapped),"ColorMap", colorMap);
+			g_object_set_data(G_OBJECT(entryLeft),"ColorMap", colorMap);
+			g_object_set_data(G_OBJECT(entryRight),"ColorMap", colorMap);
+			g_object_set_data(G_OBJECT(darea),"ColorMap", colorMap);
+			color_map_refresh(handleBoxColorMapPlanesMapped);
+			if(GTK_WIDGET_VISIBLE(handleBoxColorMapPlanesMapped))
+			{
+				gtk_widget_hide(handleBoxColorMapPlanesMapped);
+				gtk_widget_show(handleBoxColorMapPlanesMapped);
+			}
+
+		}
+	}
+}
+/*********************************************************************************************************/
+static void resetContoursColorMap()
+{
+	GtkWidget* handleBoxColorMapContours = g_object_get_data(G_OBJECT(PrincipalWindow), "HandleboxColorMapContours");
+
+	if(handleBoxColorMapContours)
+	{
+		GtkWidget* entryLeft  = g_object_get_data(G_OBJECT(handleBoxColorMapContours), "EntryLeft");
+		GtkWidget* entryRight = g_object_get_data(G_OBJECT(handleBoxColorMapContours), "EntryRight");
+		GtkWidget* darea      = g_object_get_data(G_OBJECT(handleBoxColorMapContours), "DrawingArea");
+		ColorMap* colorMap = g_object_get_data(G_OBJECT( handleBoxColorMapContours),"ColorMap");
+		if(colorMap && entryLeft && entryRight && darea && colorMap->numberOfColors>0)
+		{
+			gdouble minValue = colorMap->colorValue[0].value;
+			gdouble maxValue = colorMap->colorValue[colorMap->numberOfColors-1].value;
+			ColorMap* newColorMap = new_colorMap_min_max(minValue, maxValue);
+			colormap_free(colorMap);
+			g_free(colorMap);
+			colorMap = newColorMap;
+			g_object_set_data(G_OBJECT(handleBoxColorMapContours),"ColorMap", colorMap);
+			g_object_set_data(G_OBJECT(entryLeft),"ColorMap", colorMap);
+			g_object_set_data(G_OBJECT(entryRight),"ColorMap", colorMap);
+			g_object_set_data(G_OBJECT(darea),"ColorMap", colorMap);
+			color_map_refresh(handleBoxColorMapContours);
+			if(GTK_WIDGET_VISIBLE(handleBoxColorMapContours))
+			{
+				gtk_widget_hide(handleBoxColorMapContours);
+				gtk_widget_show(handleBoxColorMapContours);
+			}
+		}
+	}
+}
+/*********************************************************************************************************/
+static void resetAllColorMap()
+{
+	resetGridColorMap();
+	resetContoursColorMap();
+	resetPlanesMappedColorMap();
+	resetBeginNegative();
+	glarea_rafresh(GLArea);
+}
+/*********************************************************************************************************************/
+static void applyColorMapOptions(GtkWidget *dialogWindow, gpointer data)
+{
+	GtkWidget* buttonMultiColor;
+	GtkWidget* button2Colors;
+	GtkWidget* buttonUniColor;
+	GtkWidget* selectorUniColor;
+	GtkWidget* selector2Colors1;
+	GtkWidget* selector2Colors2;
+	 
+	if(!GTK_IS_WIDGET(dialogWindow)) return;
+	buttonMultiColor = g_object_get_data(G_OBJECT (dialogWindow), "ButtonMultiColor");
+	button2Colors = g_object_get_data(G_OBJECT (dialogWindow), "Button2Colors");
+	buttonUniColor = g_object_get_data(G_OBJECT (dialogWindow), "ButtonUniColor");
+	selectorUniColor = g_object_get_data(G_OBJECT (dialogWindow), "SelectorUniColor");
+	selector2Colors1 = g_object_get_data(G_OBJECT (dialogWindow), "Selector2Colors1");
+	selector2Colors2 = g_object_get_data(G_OBJECT (dialogWindow), "Selector2Colors2");
+
+	if(!buttonMultiColor) return;
+	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(buttonMultiColor)))
+	{
+
+		colorMapType = 1;
+	}
+	else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button2Colors)) && selector2Colors1 && selector2Colors2)
+	{
+		GdkColor color;
+		colorMapType = 2;
+		gtk_color_button_get_color (GTK_COLOR_BUTTON(selector2Colors1), &color);
+		colorMapColors[0][0] = color.red/65535.0;
+		colorMapColors[0][1] = color.green/65535.0;
+		colorMapColors[0][2] = color.blue/65535.0;
+		gtk_color_button_get_color (GTK_COLOR_BUTTON(selector2Colors2), &color);
+		colorMapColors[1][0] = color.red/65535.0;
+		colorMapColors[1][1] = color.green/65535.0;
+		colorMapColors[1][2] = color.blue/65535.0;
+
+	}
+	else if(selectorUniColor)
+	{
+		GdkColor color;
+		colorMapType = 3;
+		gtk_color_button_get_color (GTK_COLOR_BUTTON(selectorUniColor), &color);
+		colorMapColors[2][0] = color.red/65535.0;
+		colorMapColors[2][1] = color.green/65535.0;
+		colorMapColors[2][2] = color.blue/65535.0;
+	}
+	resetAllColorMap();
+}
+/*********************************************************************************************************************/
+static GtkWidget* addRadioButtonColorMapToATable(GtkWidget* table, GtkWidget* friendButton, gchar* label, gint i, gint j, gint k)
+{
+	GtkWidget *newButton;
+
+	if(friendButton)
+		newButton = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (friendButton)), label);
+	else
+		newButton = gtk_radio_button_new_with_label( NULL, label);
+
+	gtk_table_attach(GTK_TABLE(table),newButton,j,j+k,i,i+1,
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+                  3,3);
+
+	g_object_set_data(G_OBJECT (newButton), "Type",NULL);
+	return newButton;
+}
+/*********************************************************************************************************************/
+static void createColorMapOptionsFrame(GtkWidget* dialogWindow, GtkWidget *box)
+{
+	GtkWidget* button;
+	GtkWidget* frame;
+	GtkWidget* vboxFrame;
+	GtkWidget *table = gtk_table_new(3,3,TRUE);
+	gint i;
+	GtkWidget *selector;
+	GdkColor color;
+
+
+	color.red = 65535;
+	color.green = 65535;
+	color.blue = 65535;
+	frame = gtk_frame_new ("Color mapping type");
+	gtk_widget_show (frame);
+	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
+	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
+
+	vboxFrame = gtk_vbox_new (FALSE, 3);
+	gtk_widget_show (vboxFrame);
+	gtk_container_add (GTK_CONTAINER (frame), vboxFrame);
+
+	gtk_box_pack_start (GTK_BOX (vboxFrame), table, TRUE, TRUE, 0);
+
+	i = 0;
+	button =  NULL;
+	button = addRadioButtonColorMapToATable(table, button, "Multi color", i, 0,1);
+	if(colorMapType == 1) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
+	g_object_set_data(G_OBJECT (dialogWindow), "ButtonMultiColor",button);
+
+	i = 1;
+	button = addRadioButtonColorMapToATable(table, button, "2 colors", i, 0,1);
+	if(colorMapType == 2) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
+	g_object_set_data(G_OBJECT (dialogWindow), "Button2Colors",button);
+
+	color.red = (gushort)(colorMapColors[0][0]*65535);
+	color.green = (gushort)(colorMapColors[0][1]*65535);
+	color.blue = (gushort)(colorMapColors[0][2]*65535);
+	selector = gtk_color_button_new_with_color (&color);
+	gtk_table_attach(GTK_TABLE(table),selector,1,2,i,i+1,
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+                  3,3);
+	g_object_set_data(G_OBJECT (dialogWindow), "Selector2Colors1",selector);
+
+	color.red = (gushort)(colorMapColors[1][0]*65535);
+	color.green = (gushort)(colorMapColors[1][1]*65535);
+	color.blue = (gushort)(colorMapColors[1][2]*65535);
+	selector = gtk_color_button_new_with_color (&color);
+	gtk_table_attach(GTK_TABLE(table),selector,2,3,i,i+1,
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+                  3,3);
+	g_object_set_data(G_OBJECT (dialogWindow), "Selector2Colors2",selector);
+
+	i = 2;
+	button = addRadioButtonColorMapToATable(table, button, "Unicolor", i, 0,1);
+	if(colorMapType == 3) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
+
+	color.red = (gushort)(colorMapColors[2][0]*65535);
+	color.green = (gushort)(colorMapColors[2][1]*65535);
+	color.blue = (gushort)(colorMapColors[2][2]*65535);
+	selector = gtk_color_button_new_with_color (&color);
+	gtk_table_attach(GTK_TABLE(table),selector,1,2,i,i+1,
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+                  3,3);
+	g_object_set_data(G_OBJECT (dialogWindow), "SelectorUniColor",selector);
+	g_object_set_data(G_OBJECT (dialogWindow), "ButtonUniColor",button);
+
+}
+/****************************************************************************************************/
+void createColorMapOptionsWindow(GtkWidget* win)
+{
+	GtkWidget *dialogWindow = NULL;
+	GtkWidget *button;
+	GtkWidget *frame;
+	GtkWidget *hbox;
+	gchar title[BSIZE];
+	 
+	dialogWindow = gtk_dialog_new();
+	gtk_widget_realize(GTK_WIDGET(dialogWindow));
+	sprintf(title, "Color Mapping options");
+	gtk_window_set_title(GTK_WINDOW(dialogWindow),title);
+
+	gtk_window_set_modal (GTK_WINDOW (dialogWindow), TRUE);
+	gtk_window_set_position(GTK_WINDOW(dialogWindow),GTK_WIN_POS_CENTER);
+
+	g_signal_connect(G_OBJECT(dialogWindow), "delete_event", (GCallback)destroy_button_windows, NULL);
+	g_signal_connect(G_OBJECT(dialogWindow), "delete_event", (GCallback)gtk_widget_destroy, NULL);
+
+	frame = gtk_frame_new (NULL);
+	gtk_widget_show (frame);
+	gtk_box_pack_start (GTK_BOX (GTK_WIDGET(GTK_DIALOG(dialogWindow)->vbox)), frame, TRUE, TRUE, 3);
+
+	hbox = gtk_hbox_new (FALSE, 3);
+	gtk_widget_show (hbox);
+	gtk_container_add (GTK_CONTAINER (frame), hbox);
+
+	createColorMapOptionsFrame(dialogWindow,hbox);
+	gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(dialogWindow)->action_area), TRUE);
+
+	button = create_button(dialogWindow,"Close");
+	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(dialogWindow)->action_area), button, FALSE, TRUE, 5);	
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)destroy_button_windows, GTK_OBJECT(dialogWindow));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(dialogWindow));
+
+	button = create_button(dialogWindow,"Apply");
+	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(dialogWindow)->action_area), button, FALSE, TRUE, 5);	
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)applyColorMapOptions, GTK_OBJECT(dialogWindow));
+
+	button = create_button(dialogWindow,"OK");
+	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(dialogWindow)->action_area), button, FALSE, TRUE, 5);	
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)applyColorMapOptions, GTK_OBJECT(dialogWindow));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)destroy_button_windows, GTK_OBJECT(dialogWindow));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(dialogWindow));
+	
+
+	add_button_windows(title,dialogWindow);
+
+	gtk_widget_show_all(dialogWindow);
+	if(GTK_IS_WIDGET(win)) gtk_window_set_transient_for(GTK_WINDOW(dialogWindow),GTK_WINDOW(win));
 }

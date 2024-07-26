@@ -1,6 +1,6 @@
 /* MPQCFunctionals.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../MPQC/MPQCTypes.h"
 #include "../MPQC/MPQCGlobal.h"
 #include "../Utils/UtilsInterface.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 
 /************************************************************************************************************/
 void initMPQCFunctionals()
@@ -515,7 +515,7 @@ void createXCFunctionalsFrame(GtkWidget *box, gchar* title, gfloat* coefficients
 			add_widget_table(table, entry, (gushort)i, 2);
 			g_object_set_data(G_OBJECT (entry), "Value",&functionals[i].type);
 			g_object_set_data(G_OBJECT (entry), "Coefficients",coefficients);
-			g_signal_connect(G_OBJECT(entry),"changed", GTK_SIGNAL_FUNC(changedEntrySumDensityFunctional),NULL);
+			g_signal_connect(G_OBJECT(entry),"changed", G_CALLBACK(changedEntrySumDensityFunctional),NULL);
 		}
 	g_free(t);
 }
@@ -560,7 +560,7 @@ void mpqcSumDensityFunctionalWindow()
 	g_object_set_data(G_OBJECT (win), "Coefficients", coefficients);
 
 	init_child(win, destroyWindow," MPQC Sum. Dens. ");
-	g_signal_connect(G_OBJECT(win),"delete_event",(GtkSignalFunc)destroy_childs,NULL);
+	g_signal_connect(G_OBJECT(win),"delete_event",(GCallback)destroy_childs,NULL);
 
 	gtk_widget_realize(win);
 
@@ -577,12 +577,12 @@ void mpqcSumDensityFunctionalWindow()
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(setSumDensityFunctionals),GTK_OBJECT(win));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(destroy_childs),GTK_OBJECT(win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(setSumDensityFunctionals),GTK_OBJECT(win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_childs),GTK_OBJECT(win));
 
 	button = create_button(win,"Close");
   	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(win)->action_area), button, FALSE, TRUE, 5);  
-	g_signal_connect_swapped(G_OBJECT(button), "clicked", GTK_SIGNAL_FUNC(destroy_childs),GTK_OBJECT(win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK(destroy_childs),GTK_OBJECT(win));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_show (button);
 

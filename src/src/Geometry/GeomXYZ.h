@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -24,6 +24,8 @@ void set_variable_one_atom_in_GeomXYZ(gint i);
 void create_geomXYZ_list(GtkWidget *, GabEditTypeFileGeom readfile);
 void create_variablesXYZ_list(GtkWidget *,guint);
 void create_babel_read_dialogue();
+void read_gabedit_file_add_list(gchar *NomFichier);
+void read_gabedit_file_no_add_list(gchar *NomFichier);
 void read_XYZ_file_no_add_list(G_CONST_RETURN  gchar *);
 void read_mol2_tinker_file_no_add_list(gchar *NomFichier,gchar*type);
 void read_pdb_file_no_add_list(gchar *NomFichier);
@@ -43,6 +45,8 @@ void read_geom_from_mpqc_output_file(gchar *fileName, gint numGeometry);
 void read_geom_from_molpro_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_qchem_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_mopac_output_file(gchar *NomFichier, gint numgeometry);
+void read_XYZ_from_mopac_scan_output_file(gchar *FileName, gint numGeom);
+void read_geom_from_mopac_scan_output_file(gchar *FileName, gint numGeom);
 void read_geom_from_mopac_aux_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_xyz_file(gchar *fileName, gint numGeom);
 void read_XYZ_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile);
@@ -57,6 +61,7 @@ void save_geometry_mol2_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_tinker_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_pdb_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_hin_file(GabeditFileChooser *SelecFile, gint response_id);
+void save_geometry_gabedit_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_xyz_file_no_add_list(const gchar* FileName);
 gboolean connecteds(guint i,guint j);
 

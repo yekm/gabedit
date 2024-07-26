@@ -1,6 +1,6 @@
 /* UVSpectrum.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 #include <gtk/gtkwidget.h>
 #include <gtk/gtk.h>
 #include "../Common/Global.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
 #include "../Files/FileChooser.h"
@@ -638,7 +638,7 @@ static gboolean read_qchem_file_multiple(gchar* fileName, gint nTypes, gchar** l
 	button = create_button(window,"Cancel");
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 5);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(window));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(window));
 	gtk_widget_show_all (button);
 
 	button = create_button(window,"OK");
@@ -647,7 +647,7 @@ static gboolean read_qchem_file_multiple(gchar* fileName, gint nTypes, gchar** l
 	gtk_widget_grab_default(button);
 	gtk_widget_show_all (button);
 	g_object_set_data(G_OBJECT (button), "Window", window);
-	g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(apply_qchem),(gpointer)combo);
+	g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(apply_qchem),(gpointer)combo);
 
 	gtk_widget_show(window); 
 	return TRUE;

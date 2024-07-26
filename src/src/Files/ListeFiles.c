@@ -1,6 +1,6 @@
 /* ListeFiles.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -30,7 +30,7 @@ DEALINGS IN THE SOFTWARE.
 
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/GabeditTextEdit.h"
 #include "../Geometry/GeomGlobal.h"
 #include "../Geometry/GeomXYZ.h"
@@ -41,7 +41,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/Run.h"
 #include "../Common/Status.h"
 #include "../Molcas/MolcasVariables.h"
-#include "../Molcas/MolcasSeward.h"
+#include "../Molcas/MolcasGateWay.h"
 #include "../../pixmaps/GamessMini.xpm"
 #include "../../pixmaps/PCGamessMini.xpm"
 #include "../../pixmaps/Gaussian.xpm"
@@ -50,6 +50,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../../pixmaps/MPQCMini.xpm"
 #include "../../pixmaps/QChemMini.xpm"
 #include "../../pixmaps/MopacMini.xpm"
+#include "../../pixmaps/GabeditMini.xpm"
 #include "../../pixmaps/Book_close.xpm"
 #include "../../pixmaps/Page.xpm"
 
@@ -64,6 +65,7 @@ static GdkPixbuf *mpqcPixbuf = NULL;
 static GdkPixbuf *pcgamessPixbuf = NULL;
 static GdkPixbuf *qchemPixbuf = NULL;
 static GdkPixbuf *mopacPixbuf = NULL;
+static GdkPixbuf *gabeditPixbuf = NULL;
 static GdkPixbuf *bookPixbuf = NULL;
 static GdkPixbuf *pagePixbuf = NULL;
 
@@ -113,6 +115,7 @@ static void set_pixbuf()
 	if(!mpqcPixbuf) mpqcPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) mpqc_mini_xpm);
 	if(!qchemPixbuf) qchemPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) qchem_mini_xpm);
 	if(!mopacPixbuf) mopacPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) mopac_mini_xpm);
+	if(!gabeditPixbuf) gabeditPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) gabedit_mini_xpm);
 	if(!pcgamessPixbuf) pcgamessPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) pcgamess_mini_xpm);
 	if(!bookPixbuf) bookPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) book_close_xpm);
 	if(!pagePixbuf) pagePixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) page_xpm);
@@ -499,7 +502,7 @@ static void create_info_win()
 	vboxwin = create_vbox(fp);
         gtk_widget_realize(fp);
   	init_child(fp,gtk_widget_destroy," Prop. of project ");
-	g_signal_connect(G_OBJECT(fp),"delete_event",(GtkSignalFunc)destroy_childs,NULL);
+	g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_childs,NULL);
 
 	hbox = gtk_hbox_new(0,FALSE);
 	gtk_box_pack_start (GTK_BOX(vboxwin),hbox , TRUE, TRUE, 2);
@@ -515,7 +518,7 @@ static void create_info_win()
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)destroy_childs,GTK_OBJECT(fp));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,GTK_OBJECT(fp));
         gtk_widget_show_all(fp);
 }
 /********************************************************************************/
@@ -558,7 +561,7 @@ static void create_set_dialogue_window()
 
   	gtk_widget_realize(fp);
   	init_child(fp,gtk_widget_destroy," Prop. of project ");
-	g_signal_connect(G_OBJECT(fp),"delete_event",(GtkSignalFunc)destroy_childs,NULL);
+	g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_childs,NULL);
 
 	gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
 	vboxall = create_vbox(fp);
@@ -671,6 +674,7 @@ static void create_set_dialogue_window()
 			t = g_strdup_printf("%s, %s.out, %s.aux, %s.out",data->datafile,data->projectname,data->projectname,data->projectname);
 			break;
 
+			case GABEDIT_TYPENODE_GABEDIT :
 			case GABEDIT_TYPENODE_XYZ :
 			case GABEDIT_TYPENODE_MOL2 :
 			case GABEDIT_TYPENODE_TINKER :
@@ -785,7 +789,7 @@ static void create_set_dialogue_window()
 		gtk_widget_show (combo);
 		entrys[i] = GTK_BIN(combo)->child;
 		g_object_set_data(G_OBJECT (entrys[i]), "Combo",combo);
-		g_signal_connect(G_OBJECT(GTK_COMBO_BOX(combo)), "changed",GTK_SIGNAL_FUNC(changed_host),entrys);
+		g_signal_connect(G_OBJECT(GTK_COMBO_BOX(combo)), "changed",G_CALLBACK(changed_host),entrys);
 
 		i = 1;
 		add_label_table(Table,LabelLeft[i],(gushort)(i),0);
@@ -794,7 +798,7 @@ static void create_set_dialogue_window()
 		add_widget_table(Table,combo,(gushort)(i),2);
 		entrys[i] = GTK_BIN(combo)->child;
 		g_object_set_data(G_OBJECT (entrys[i]), "Combo",combo);
-		g_signal_connect(G_OBJECT(GTK_COMBO_BOX(combo)), "changed",GTK_SIGNAL_FUNC(changed_user),entrys);
+		g_signal_connect(G_OBJECT(GTK_COMBO_BOX(combo)), "changed",G_CALLBACK(changed_user),entrys);
 
 		i = 2;
 		label1PassWord = add_label_table(Table,LabelLeft[i],(gushort)(i),0);
@@ -836,12 +840,12 @@ static void create_set_dialogue_window()
 	g_object_set_data(G_OBJECT (ButtonFtpRsh), "EntryPassWord", entrys[2]);
 	g_object_set_data(G_OBJECT (ButtonFtpRsh), "Label1PassWord", label1PassWord);
 	g_object_set_data(G_OBJECT (ButtonFtpRsh), "Label2PassWord", label2PassWord);
-	g_signal_connect(G_OBJECT(ButtonFtpRsh), "clicked",GTK_SIGNAL_FUNC(set_password_visibility),ButtonFtpRsh);
+	g_signal_connect(G_OBJECT(ButtonFtpRsh), "clicked",G_CALLBACK(set_password_visibility),ButtonFtpRsh);
 
 	g_object_set_data(G_OBJECT (ButtonSsh), "EntryPassWord", entrys[2]);
 	g_object_set_data(G_OBJECT (ButtonSsh), "Label1PassWord", label1PassWord);
 	g_object_set_data(G_OBJECT (ButtonSsh), "Label2PassWord", label2PassWord);
-	g_signal_connect(G_OBJECT(ButtonSsh), "clicked",GTK_SIGNAL_FUNC(set_password_visibility),NULL);
+	g_signal_connect(G_OBJECT(ButtonSsh), "clicked",G_CALLBACK(set_password_visibility),NULL);
 	
 
 	/* OK and Cancel boutons box */
@@ -850,7 +854,7 @@ static void create_set_dialogue_window()
 	button = create_button(fp,"Cancel");
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)destroy_childs,GTK_OBJECT(fp));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,GTK_OBJECT(fp));
 	gtk_widget_show (button);
 
 	button = create_button(fp,"OK");
@@ -864,16 +868,16 @@ static void create_set_dialogue_window()
 	g_object_set_data(G_OBJECT(fp),"ButtonSsh",ButtonSsh);
 	g_object_set_data(G_OBJECT(fp),"ButtonFtpRsh",ButtonFtpRsh);
 
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(set_properties),(gpointer)fp);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)destroy_childs,GTK_OBJECT(fp));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(set_properties),(gpointer)fp);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,GTK_OBJECT(fp));
 
 
 	g_object_set_data(G_OBJECT(buttons[0]),"FrameRemote",FrameRemote);
 	g_object_set_data(G_OBJECT(buttons[1]),"FrameRemote",FrameRemote);
 	g_object_set_data(G_OBJECT(buttons[0]),"FrameNetWork",FrameNetWork);
 	g_object_set_data(G_OBJECT(buttons[1]),"FrameNetWork",FrameNetWork);
-	g_signal_connect(G_OBJECT(buttons[0]), "clicked",GTK_SIGNAL_FUNC(set_frame_remote_sensitive),NULL);
-	g_signal_connect(G_OBJECT(buttons[1]), "clicked",GTK_SIGNAL_FUNC(set_frame_remote_sensitive),frame);
+	g_signal_connect(G_OBJECT(buttons[0]), "clicked",G_CALLBACK(set_frame_remote_sensitive),NULL);
+	g_signal_connect(G_OBJECT(buttons[1]), "clicked",G_CALLBACK(set_frame_remote_sensitive),frame);
 #ifdef G_OS_WIN32
 	gtk_widget_set_sensitive(buttons[0], FALSE);
 #endif
@@ -1010,6 +1014,7 @@ static void create_remote_frame_popup(GtkWidget *hbox,DataTree* data)
 		t = g_strdup_printf("%s, %s.out, %s.aux",data->datafile,data->projectname,data->projectname);
 		break;
 
+	case GABEDIT_TYPENODE_GABEDIT :
 	case GABEDIT_TYPENODE_XYZ :
 	case GABEDIT_TYPENODE_MOL2 :
 	case GABEDIT_TYPENODE_TINKER :
@@ -1111,6 +1116,7 @@ static void create_local_frame_popup(GtkWidget *hbox,DataTree* data)
 	case PROG_IS_MOPAC : 
 		t = g_strdup_printf("%s, %s.out, %s.aux",data->datafile,data->projectname, data->projectname);
 		break;
+	case GABEDIT_TYPENODE_GABEDIT :
 	case GABEDIT_TYPENODE_XYZ :
 	case GABEDIT_TYPENODE_MOL2 :
 	case GABEDIT_TYPENODE_TINKER :
@@ -1162,9 +1168,9 @@ static void create_popupwin(DataTree* data)
                               GDK_KEY_PRESS_MASK);
 
         g_signal_connect(G_OBJECT(MainFrame),"button_release_event",
-                GTK_SIGNAL_FUNC(destroy_popup),NULL);
+                G_CALLBACK(destroy_popup),NULL);
         g_signal_connect(G_OBJECT(MainFrame),"key_press_event",
-                GTK_SIGNAL_FUNC(gtk_widget_destroy),NULL);
+                G_CALLBACK(gtk_widget_destroy),NULL);
         gtk_widget_realize(MainFrame);
 
         gtk_widget_show(hbox);
@@ -1710,6 +1716,13 @@ static void select_row(DataTree* data)
             	else
         		get_doc_no_add_list(NULL,data);
 		break;
+        case GABEDIT_TYPENODE_GABEDIT:
+				MethodeGeom = GEOM_IS_XYZ;
+				allname = g_strdup_printf("%s%s%s",data->localdir,G_DIR_SEPARATOR_S,data->datafile);
+  				read_gabedit_file_no_add_list(allname);
+				set_last_directory(allname);
+				g_free(allname);
+		break;
         case GABEDIT_TYPENODE_XYZ:
 				MethodeGeom = GEOM_IS_XYZ;
 				allname = g_strdup_printf("%s%s%s",data->localdir,G_DIR_SEPARATOR_S,data->datafile);
@@ -1854,6 +1867,7 @@ static void tree_clear_all()
 	noeud[GABEDIT_TYPENODE_MPQC]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"MPQC");
 	noeud[GABEDIT_TYPENODE_PCGAMESS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"PCGamess");
 	noeud[GABEDIT_TYPENODE_QCHEM]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Q-Chem");
+	noeud[GABEDIT_TYPENODE_GABEDIT]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gabedit");
 	noeud[GABEDIT_TYPENODE_XYZ]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"XYZ");
 	noeud[GABEDIT_TYPENODE_MOL2]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Mol2");
 	noeud[GABEDIT_TYPENODE_PDB]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"PDB");
@@ -1966,6 +1980,7 @@ static void tree_clear_one(gint in)
 	noeud[GABEDIT_TYPENODE_MPQC]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"MPQC");
 	noeud[GABEDIT_TYPENODE_PCGAMESS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"PCGamess");
 	noeud[GABEDIT_TYPENODE_QCHEM]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Q-Chem");
+	noeud[GABEDIT_TYPENODE_GABEDIT]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gabedit");
 	noeud[GABEDIT_TYPENODE_XYZ]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"XYZ");
 	noeud[GABEDIT_TYPENODE_MOL2]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Mol2");
 	noeud[GABEDIT_TYPENODE_PDB]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"PDB");
@@ -2035,6 +2050,7 @@ static GtkTreeIter *tree_clear(GtkTreeIter *parent,gint ifile)
 	noeud[GABEDIT_TYPENODE_MPQC]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"MPQC");
 	noeud[GABEDIT_TYPENODE_PCGAMESS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"PCGamess");
 	noeud[GABEDIT_TYPENODE_QCHEM]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Q-Chem");
+	noeud[GABEDIT_TYPENODE_GABEDIT]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gabedit");
 	noeud[GABEDIT_TYPENODE_XYZ]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"XYZ");
 	noeud[GABEDIT_TYPENODE_MOL2]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Mol2");
 	noeud[GABEDIT_TYPENODE_PDB]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"PDB");
@@ -2175,6 +2191,8 @@ static GtkTreeIter* CreeNoeud(GtkTreeView *treeView,gchar *text)
 	if(strstr(t,"MOPAC Z")) gtk_tree_store_set (store, node, LIST_PIXBUF, bookPixbuf, -1);
 	else
 	if(strstr(t,"MOPAC")) gtk_tree_store_set (store, node, LIST_PIXBUF, mopacPixbuf, -1);
+	else
+	if(strstr(t,"GABEDIT")) gtk_tree_store_set (store, node, LIST_PIXBUF, gabeditPixbuf, -1);
 	else
 		gtk_tree_store_set (store, node, LIST_PIXBUF, bookPixbuf, -1);
 
@@ -2335,6 +2353,7 @@ static void  create_window_list_to_clear()
   		"MPQC list",
   		"PCGamess list",
   		"Q-Chem list",
+  		"Gabedit list",
   		"xyz list",
   		"Mol2 list",
   		"Tinker list",
@@ -2356,8 +2375,8 @@ static void  create_window_list_to_clear()
   gtk_window_set_transient_for(GTK_WINDOW(Dialogue),GTK_WINDOW(Fenetre));
   gtk_window_set_position(GTK_WINDOW(Dialogue),GTK_WIN_POS_CENTER);
 
-  g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GtkSignalFunc)destroy_button_windows,NULL);
-  g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GtkSignalFunc)gtk_widget_destroy,NULL);
+  g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GCallback)destroy_button_windows,NULL);
+  g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GCallback)gtk_widget_destroy,NULL);
 
   frame = gtk_frame_new (title);
   gtk_widget_show (frame);
@@ -2390,25 +2409,25 @@ static void  create_window_list_to_clear()
   	gtk_widget_show (checkbutton[i]);
   	gtk_box_pack_start (GTK_BOX (vbox), checkbutton[i], FALSE, FALSE, 0);
   }
-  g_signal_connect(G_OBJECT(ButtonSelAll), "clicked",(GtkSignalFunc)select_all_buttons,NULL);
-  g_signal_connect(G_OBJECT(ButtonUnSelAll), "clicked",(GtkSignalFunc)unselect_all_buttons,NULL);
+  g_signal_connect(G_OBJECT(ButtonSelAll), "clicked",(GCallback)select_all_buttons,NULL);
+  g_signal_connect(G_OBJECT(ButtonUnSelAll), "clicked",(GCallback)unselect_all_buttons,NULL);
   gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(Dialogue)->action_area), FALSE);
 
   /* The CANCEL button */
   button = create_button(Dialogue,"Cancel");
   gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Dialogue)->action_area), button, FALSE, TRUE, 5);  
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)destroy_button_windows,GTK_OBJECT(Dialogue));
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(Dialogue));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_button_windows,GTK_OBJECT(Dialogue));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Dialogue));
 
     /* The OK button */
   button = create_button(Dialogue,"OK");
   gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Dialogue)->action_area), button, FALSE, TRUE, 5);  
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
-  g_signal_connect(G_OBJECT(button), "clicked",(GtkSignalFunc)to_clear_lists,NULL);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)destroy_button_windows,GTK_OBJECT(Dialogue));
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(Dialogue));
+  g_signal_connect(G_OBJECT(button), "clicked",(GCallback)to_clear_lists,NULL);
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_button_windows,GTK_OBJECT(Dialogue));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Dialogue));
 
 
   if(atoi(selectedRow)>-1)
@@ -2499,6 +2518,7 @@ void ListeFiles(GtkWidget* vbox)
 	noeud[GABEDIT_TYPENODE_MPQC]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"MPQC");
 	noeud[GABEDIT_TYPENODE_PCGAMESS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"PCGamess");
 	noeud[GABEDIT_TYPENODE_QCHEM]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Q-Chem");
+	noeud[GABEDIT_TYPENODE_GABEDIT]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gabedit");
 	noeud[GABEDIT_TYPENODE_XYZ]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"XYZ");
 	noeud[GABEDIT_TYPENODE_MOL2]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Mol2");
 	noeud[GABEDIT_TYPENODE_PDB]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"PDB");
@@ -2511,6 +2531,6 @@ void ListeFiles(GtkWidget* vbox)
 	add_liste_files();
 
 	manager = create_menu(Fenetre);
-	g_signal_connect(treeViewProjects, "button_press_event", GTK_SIGNAL_FUNC(event_dispatcher), manager);
+	g_signal_connect(treeViewProjects, "button_press_event", G_CALLBACK(event_dispatcher), manager);
 }
 /********************************************************************************/

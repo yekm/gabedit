@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -16,8 +16,8 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 DEALINGS IN THE SOFTWARE.
 ************************************************************************************************************/
 
-#ifndef __GABEDIT_RINGS_H__
-#define __GABEDIT_RINGS_H__
+#ifndef __GABEDIT_RINGSORB_H__
+#define __GABEDIT_RINGSORB_H__
 
 gboolean ringsGetRandumColors();
 void ringsSetRandumColors(gboolean ac);
@@ -31,5 +31,5 @@ gint** getRings(gint ringSize, gint* nRings);
 void findAllRingsForOneAtom(gint numAtom);
 void IsoRingsAllGenLists(GLuint *myList, gint ringSizeMin, gint ringSizeMax);
 void IsoRingsAllShowLists(GLuint myList);
-#endif /* __GABEDIT_RINGS_H__ */
+#endif /* __GABEDIT_RINGSORB_H__ */
 

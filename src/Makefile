@@ -17,6 +17,7 @@ NETWORK    = src/NetWork/*.o
 OPENGL     = src/OpenGL/*.o
 PCGAMESS   = src/PCGamess/*.o
 QCHEM      = src/QChem/*.o
+SEMIEMP    = src/SemiEmpirical/*.o
 UTILS      = src/Utils/*.o
 SYMMETRY   = src/Symmetry/*.o
 
@@ -24,24 +25,28 @@ SYMMETRY   = src/Symmetry/*.o
 OBJECTS = \
 	$(COMMON) $(CURVE) $(FILES) $(GAMESS) $(GAUSS) $(GEOM) $(MODELS) \
 	$(MOLCAS) $(MOLPRO) $(MOPAC) $(MPQC) $(MULTIGRID) $(NETWORK) \
-	$(OPENGL) $(PCGAMESS) $(QCHEM) $(UTILS) $(SYMMETRY)
+	$(OPENGL) $(PCGAMESS) $(QCHEM) $(SEMIEMP) $(UTILS) $(SYMMETRY)
 
 SUBDIRS = \
 	src/OpenGL src/Common src/Files src/Gaussian \
  	src/Geometry src/Spectrum src/MolecularMechanics src/Molpro src/Molcas \
 	src/MPQC src/Gamess src/QChem src/Mopac src/NetWork src/Utils \
-	src/Symmetry src/PCGamess src/MultiGrid
+	src/Symmetry src/PCGamess src/MultiGrid src/SemiEmpirical
 
 ifneq ($(external_gtkglarea),1)
 GTKGL     = gtkglarea/*.o
 OBJECTS  += $(GTKGL)
 SUBDIRS  += gtkglarea
+else
+OBJECTS  += -lgtkgl-2.0
 endif
 
 ifneq ($(external_gl2ps),1)
 GL2PS     = gl2ps/*.o
 OBJECTS  += $(GL2PS)
 SUBDIRS  += gl2ps
+else
+OBJECTS  += -lgl2ps
 endif
  
 TARGETS = all clean dep
@@ -66,3 +71,15 @@ clean:
 	@$(RM) pp
 	@$(RM) p.c
 	@$(RM) *.gab
+	@$(RM) *.inp
+	@$(RM) *.mop
+	@$(RM) *.log
+	@$(RM) *.out
+	@$(RM) *.pun
+	@$(RM) *.dat
+	@$(RM) *.arc
+	@$(RM) *.aux
+	@$(RM) *.cmd
+	@$(RM) *.chk
+	@$(RM) *.sh
+	@$(RM) pm6*.*

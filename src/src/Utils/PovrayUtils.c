@@ -1,6 +1,6 @@
 /* PovrayUtils.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/Global.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Common/Windows.h"
 
 typedef enum
@@ -99,7 +99,7 @@ static void createBackgroundFrame(GtkWidget *box)
 	{
 		button = addRadioButtonToATable(table, button, types[i], i, 0,2);
 		g_object_set_data(G_OBJECT (button), "Type",&typeOfBackground[i]);
-		g_signal_connect(G_OBJECT(button),"clicked", GTK_SIGNAL_FUNC(activateRadioButton),NULL);
+		g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);
 		if(backgroundType== typeOfBackground[i]) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
 	}
 	tmpBackgoundType = backgroundType;
@@ -121,8 +121,8 @@ void createPovrayOptionsWindow(GtkWidget* win)
 	gtk_window_set_modal (GTK_WINDOW (dialogWindow), TRUE);
 	gtk_window_set_position(GTK_WINDOW(dialogWindow),GTK_WIN_POS_CENTER);
 
-	g_signal_connect(G_OBJECT(dialogWindow), "delete_event", (GtkSignalFunc)destroy_button_windows, NULL);
-	g_signal_connect(G_OBJECT(dialogWindow), "delete_event", (GtkSignalFunc)gtk_widget_destroy, NULL);
+	g_signal_connect(G_OBJECT(dialogWindow), "delete_event", (GCallback)destroy_button_windows, NULL);
+	g_signal_connect(G_OBJECT(dialogWindow), "delete_event", (GCallback)gtk_widget_destroy, NULL);
 
 	frame = gtk_frame_new (NULL);
 	gtk_widget_show (frame);
@@ -138,16 +138,16 @@ void createPovrayOptionsWindow(GtkWidget* win)
 	button = create_button(dialogWindow,"Cancel");
 	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(dialogWindow)->action_area), button, FALSE, TRUE, 5);	
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GtkSignalFunc)destroy_button_windows, GTK_OBJECT(dialogWindow));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GtkSignalFunc)gtk_widget_destroy, GTK_OBJECT(dialogWindow));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)destroy_button_windows, GTK_OBJECT(dialogWindow));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(dialogWindow));
 
 	button = create_button(dialogWindow,"OK");
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(dialogWindow)->action_area), button, FALSE, TRUE, 5);	
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GtkSignalFunc)setPovrayOptionsFromTmp, GTK_OBJECT(dialogWindow));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GtkSignalFunc)destroy_button_windows, GTK_OBJECT(dialogWindow));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GtkSignalFunc)gtk_widget_destroy, GTK_OBJECT(dialogWindow));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)setPovrayOptionsFromTmp, GTK_OBJECT(dialogWindow));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)destroy_button_windows, GTK_OBJECT(dialogWindow));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(dialogWindow));
 	
 
 	add_button_windows(title,dialogWindow);

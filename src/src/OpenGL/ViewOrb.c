@@ -1,6 +1,6 @@
 /* ViewOrb.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -54,6 +54,7 @@ int view_orb(GtkWidget* Parent,int argc, char **argv)
 	}
 	/* initialisation */
 	initialise_global_orbitals_variables();
+	read_opengl_file();
 
 	/* Create new top level window. */
 	PrincipalWindow = gtk_window_new( GTK_WINDOW_TOPLEVEL);
@@ -61,7 +62,7 @@ int view_orb(GtkWidget* Parent,int argc, char **argv)
   	gtk_window_set_default_size (GTK_WINDOW(PrincipalWindow),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.69));
 	gtk_container_set_border_width(GTK_CONTAINER(PrincipalWindow), 1);
 	init_child(PrincipalWindow,gtk_widget_destroy," Draw Dens. Orb. ");
-	/* g_signal_connect(G_OBJECT(PrincipalWindow),"delete_event",(GtkSignalFunc)close_window_orb,NULL);*/
+	/* g_signal_connect(G_OBJECT(PrincipalWindow),"delete_event",(GCallback)close_window_orb,NULL);*/
 	g_signal_connect(G_OBJECT(PrincipalWindow), "delete-event",G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 	gtk_window_set_transient_for(GTK_WINDOW(PrincipalWindow),GTK_WINDOW(Parent));
 

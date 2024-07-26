@@ -1,6 +1,6 @@
 /* InterfaceGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -548,7 +548,7 @@ void edit_geometry()
   gtk_window_set_transient_for(GTK_WINDOW(Window),GTK_WINDOW(Fenetre));
   gtk_widget_realize (Window);
   init_child(Window,destroy_geometry," Geometry Editor ");
-  g_signal_connect(G_OBJECT(Window),"delete_event",(GtkSignalFunc)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(Window),"delete_event",(GCallback)destroy_childs,NULL);
 
   Frame = geominter->window;
   gtk_container_set_border_width (GTK_CONTAINER (Frame), 10);
@@ -568,7 +568,7 @@ void edit_geometry()
   gtk_widget_realize(Window);
   button = create_button(Window,"CLOSE");
   gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Window)->action_area), button, FALSE, TRUE , 5);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)destroy_childs,GTK_OBJECT(Window));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,GTK_OBJECT(Window));
 
  if(GeomXYZ != NULL && MethodeGeom == GEOM_IS_XYZ)
      create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);

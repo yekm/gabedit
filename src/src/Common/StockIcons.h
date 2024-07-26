@@ -25,12 +25,17 @@
 #define GABEDIT_STOCK_GEOMETRY		"gabedit-geometry"
 #define GABEDIT_STOCK_HELP		"gabedit-help"
 #define GABEDIT_STOCK_HIDE		"gabedit-hide"
+#define GABEDIT_STOCK_ADJUST_H		"gabedit-adjust-h"
 #define GABEDIT_STOCK_HOME		"gabedit-home"
 #define GABEDIT_STOCK_H			"gabedit-h"
 #define GABEDIT_STOCK_GABEDIT		"gabedit-gabedit"
 #define GABEDIT_STOCK_INFO		"gabedit-info"
 #define GABEDIT_STOCK_INSERT_ATOM	"gabedit-insert-atom"
 #define GABEDIT_STOCK_INSERT		"gabedit-insert"
+#define GABEDIT_STOCK_CHANGE_BOND	"gabedit-change-bond"
+#define GABEDIT_STOCK_CUT_BOND		"gabedit-cut-bond"
+#define GABEDIT_STOCK_DELETE_CUT	"gabedit-delete-cut"
+#define GABEDIT_STOCK_ADD_BOND		"gabedit-add-bond"
 #define GABEDIT_STOCK_MESURE		"gabedit-mesure"
 #define GABEDIT_STOCK_MOLCAS		"gabedit-molcas"
 #define GABEDIT_STOCK_MOLDEN		"gabedit-molden"
@@ -85,6 +90,7 @@
 #define GABEDIT_STOCK_PDB		"gabedit-pdb"
 #define GABEDIT_STOCK_O			"gabedit-o"
 #define GABEDIT_STOCK_ATOMTOINSERT	"gabedit-atomtoinsert"
+#define GABEDIT_STOCK_KNOT		"gabedit-knot"
 
 void gabedit_gtk_stock_init();
 

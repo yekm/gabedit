@@ -1,6 +1,6 @@
 /* QChemMolecule.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -33,11 +33,11 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/DrawGeom.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/GabeditTextEdit.h"
 #include "../Geometry/InterfaceGeom.h"
 #include "../Common/Windows.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/AtomsProp.h"
 
 /************************************************************************************************************/
@@ -191,6 +191,7 @@ void setQChemGeometryFromInputFile(gchar* fileName)
 	setQChemMolecule();
 }
 /*************************************************************************************************************/
+/*
 static gdouble getMinDistance()
 {
 	gdouble d=0;
@@ -213,7 +214,9 @@ static gdouble getMinDistance()
 
 	return d;
 }
+*/
 /*************************************************************************************************************/
+/*
 static void setFirstAtomToXAxis(gint numberOfAtoms, gdouble* X, gdouble* Y, gdouble*Z)
 {
 	gdouble d;
@@ -228,7 +231,6 @@ static void setFirstAtomToXAxis(gint numberOfAtoms, gdouble* X, gdouble* Y, gdou
 	d = sqrt(d);
 	if(positionTolerance<0) positionTolerance= getMinDistance()/50;
 
-	/* perform rotation */
 	s = -Y[0]/d;
 	c = +X[0]/d;
 
@@ -238,13 +240,13 @@ static void setFirstAtomToXAxis(gint numberOfAtoms, gdouble* X, gdouble* Y, gdou
 		 gdouble y = Y[i];
 		X[i] = c*x - s*y;
 		Y[i] = s*x + c*y;
-		/* if(fabs(X[i])<positionTolerance) X[i]=0.0;*/
 		if(fabs(Y[i])<positionTolerance) Y[i]=0.0;
 	 }
-	/* printf("tolerance position = %f\n",positionTolerance);*/
 
 }
+*/
 /*************************************************************************************************************/
+/*
 static gint getRealNumberXYZVariables()
 {
 	gint k=0;
@@ -257,6 +259,7 @@ static gint getRealNumberXYZVariables()
 	}
 	return k;
 }
+*/
 /*************************************************************************************************************/
 static void putQChemMoleculeInTextEditor()
 {
@@ -358,6 +361,7 @@ void putQChemMoleculeInfoInTextEditor()
 	putEndMoleculeInTextEditor();
 }
 /************************************************************************************************************/
+/*
 static GtkWidget* addRadioButtonToATable(GtkWidget* table, GtkWidget* friendButton, gchar* label, gint i, gint j, gint k)
 {
 	GtkWidget *newButton;
@@ -375,6 +379,18 @@ static GtkWidget* addRadioButtonToATable(GtkWidget* table, GtkWidget* friendButt
 	g_object_set_data(G_OBJECT (newButton), "Label",NULL);
 	g_object_set_data(G_OBJECT (newButton), "Type",NULL);
 	return newButton;
+}
+*/
+/********************************************************************************/
+static void setSpinMultiplicityComboSpinMultiplicity(GtkWidget *comboSpinMultiplicity, gint spin)
+{
+	GtkWidget *entry = NULL;
+	gchar* t = NULL;
+	if(!comboSpinMultiplicity) return;
+	entry = GTK_BIN (comboSpinMultiplicity)->child;
+	t = g_strdup_printf("%d",spin);
+	gtk_entry_set_text(GTK_ENTRY(entry),t);
+	g_free(t);
 }
 /************************************************************************************************************/
 static void setComboSpinMultiplicity(GtkWidget *comboSpinMultiplicity)
@@ -412,11 +428,24 @@ static void setComboSpinMultiplicity(GtkWidget *comboSpinMultiplicity)
 
   	gtk_combo_box_entry_set_popdown_strings( comboSpinMultiplicity, glist) ;
   	g_list_free(glist);
+	if( SpinMultiplicities[0]%2 == atoi(list[0])%2) setSpinMultiplicityComboSpinMultiplicity(comboSpinMultiplicity, SpinMultiplicities[0]);
+	else SpinMultiplicities[0] = atoi(list[0]);
 	if(list)
 	{
 		for(i=0;i<nlist;i++) if(list[i]) g_free(list[i]);
 		g_free(list);
 	}
+}
+/********************************************************************************/
+static void setChargeComboCharge(GtkWidget *comboCharge, gint charge)
+{
+	GtkWidget *entry = NULL;
+	gchar* t = NULL;
+	if(!comboCharge) return;
+	entry = GTK_BIN (comboCharge)->child;
+	t = g_strdup_printf("%d",charge);
+	gtk_entry_set_text(GTK_ENTRY(entry),t);
+	g_free(t);
 }
 /********************************************************************************/
 static void setComboCharge(GtkWidget *comboCharge)
@@ -454,6 +483,7 @@ static void setComboCharge(GtkWidget *comboCharge)
 		for(i=0;i<nlist;i++) if(list[i]) g_free(list[i]);
 		g_free(list);
 	}
+	setChargeComboCharge(comboCharge, totalCharge);
 }
 /**********************************************************************/
 static void changedEntrySpinMultiplicity(GtkWidget *entry, gpointer data)
@@ -490,6 +520,7 @@ static void changedEntryCharge(GtkWidget *entry, gpointer data)
 	if(strlen(entryText)<1)return;
 
 	totalCharge = atoi(entryText);
+	TotalCharges[0] = totalCharge;
 
 	comboSpinMultiplicity  = g_object_get_data(G_OBJECT (entry), "ComboSpinMultiplicity");
 	if(GTK_IS_WIDGET(comboSpinMultiplicity)) setComboSpinMultiplicity(comboSpinMultiplicity);
@@ -553,7 +584,7 @@ static GtkWidget *addQChemSpinToTable(GtkWidget *table, gint i)
 	comboSpinMultiplicity  = g_object_get_data(G_OBJECT (entrySpinMultiplicity), "Combo");
 	gtk_widget_set_sensitive(entrySpinMultiplicity, FALSE);
 
-	g_signal_connect(G_OBJECT(entrySpinMultiplicity),"changed", GTK_SIGNAL_FUNC(changedEntrySpinMultiplicity),NULL);
+	g_signal_connect(G_OBJECT(entrySpinMultiplicity),"changed", G_CALLBACK(changedEntrySpinMultiplicity),NULL);
 	return comboSpinMultiplicity;
 }
 /***********************************************************************************************/
@@ -572,7 +603,7 @@ static GtkWidget *addLabelNumberOfElectronsToTable(GtkWidget *table, gint i, Gtk
                   2,2);
 
 	g_object_set_data(G_OBJECT (entryCharge), "LabelNumberOfElectrons", labelNumberOfElectrons);
-	g_signal_connect(G_OBJECT(entryCharge),"changed", GTK_SIGNAL_FUNC(changedEntryCharge),NULL);
+	g_signal_connect(G_OBJECT(entryCharge),"changed", G_CALLBACK(changedEntryCharge),NULL);
 	return labelNumberOfElectrons;
 }
 /***********************************************************************************************/
@@ -587,8 +618,8 @@ void createQChemChargeMultiplicityFrame(GtkWidget *box)
 	GtkWidget *table = NULL;
 	gint i;
 
-	totalCharge = 0;
-	spinMultiplicity=1;
+	totalCharge = TotalCharges[0];
+	spinMultiplicity=SpinMultiplicities[0];
 
 	table = gtk_table_new(3,5,FALSE);
 

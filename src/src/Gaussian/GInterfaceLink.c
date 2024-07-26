@@ -1,6 +1,6 @@
 /* GInterfaceLink.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -84,12 +84,12 @@ static void c_one_entry (GtkWidget *bframe,gchar *titre,gchar *tlabel,gchar *mod
   gtk_window_set_modal (GTK_WINDOW (fp), TRUE);
 
   add_child(Wins,fp,gtk_widget_destroy,tlabel);
-  g_signal_connect(G_OBJECT(fp),"delete_event",(GtkSignalFunc)delete_child,NULL);
+  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)delete_child,NULL);
 
   vboxall = create_vbox(fp);
   frame = gtk_frame_new (titre);
   g_object_ref (frame);
-  g_object_set_data_full (G_OBJECT (fp), "frame", frame,(GtkDestroyNotify) g_object_unref);
+  g_object_set_data_full (G_OBJECT (fp), "frame", frame,(GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
@@ -98,13 +98,13 @@ static void c_one_entry (GtkWidget *bframe,gchar *titre,gchar *tlabel,gchar *mod
    hbox1 = create_hbox(vboxframe);
   label = gtk_label_new (tlabel);
   g_object_ref (label);
-  g_object_set_data_full (G_OBJECT (fp), "label", label,(GtkDestroyNotify) g_object_unref);
+  g_object_set_data_full (G_OBJECT (fp), "label", label,(GDestroyNotify) g_object_unref);
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (hbox1), label, TRUE, FALSE, 0);
 
   entry = gtk_entry_new ();
   g_object_ref (entry);
-  g_object_set_data_full (G_OBJECT (fp), "entry", entry,(GtkDestroyNotify) g_object_unref);
+  g_object_set_data_full (G_OBJECT (fp), "entry", entry,(GDestroyNotify) g_object_unref);
   gtk_widget_show (entry);
   gtk_box_pack_start (GTK_BOX (hbox1), entry, FALSE, TRUE, 0);
   gtk_entry_set_text(GTK_ENTRY(entry),set);
@@ -114,22 +114,22 @@ static void c_one_entry (GtkWidget *bframe,gchar *titre,gchar *tlabel,gchar *mod
 
   button = create_button(fp,"Cancel");
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(delete_child),GTK_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(delete_child),GTK_OBJECT(fp));
   gtk_widget_show (button);
 
   button = create_button(fp,"OK");
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   gtk_widget_show (button);
-  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(gene_one_entry1),(gpointer)mode);
-  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(gene_one_entry2),(gpointer)entry);
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(gene_one_entry1),(gpointer)mode);
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(gene_one_entry2),(gpointer)entry);
   if (!strcmp((char *)titre,"The checkpoint file") )
   {
-  	g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(gtk_widget_show),GTK_OBJECT(CheckButtons[7]));
-  	g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(gtk_widget_show),GTK_OBJECT(CheckButtons[8]));
+  	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_widget_show),GTK_OBJECT(CheckButtons[7]));
+  	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_widget_show),GTK_OBJECT(CheckButtons[8]));
   }
 
-  if(del) g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(gtk_widget_destroy),GTK_OBJECT(bframe));
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(delete_child),GTK_OBJECT(fp));
+  if(del) g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_widget_destroy),GTK_OBJECT(bframe));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(delete_child),GTK_OBJECT(fp));
    
   gtk_widget_show_all(fp);
 }
@@ -197,7 +197,7 @@ void create_button_link(GtkWidget *w,GtkWidget *Wins)
           {
 	  button = gtk_button_new_with_label(LabelButton[j][i]);
   	  g_object_set_data(G_OBJECT (button), "Window", Wins);
-          g_signal_connect(G_OBJECT(button), "clicked",(GtkSignalFunc)Traite_Link_Option,(gpointer )LabelButton[j][i]);
+          g_signal_connect(G_OBJECT(button), "clicked",(GCallback)Traite_Link_Option,(gpointer )LabelButton[j][i]);
 
 	  gtk_table_attach(GTK_TABLE(Table),button,j,j+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,

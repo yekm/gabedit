@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -21,7 +21,7 @@ DEALINGS IN THE SOFTWARE.
 #include "GlobalOrb.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/Utils.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/UtilsInterface.h"
 #include "../OpenGL/StatusOrb.h"
 #include "../OpenGL/GLArea.h"
@@ -37,6 +37,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/PovrayGL.h"
 #include "../OpenGL/Images.h"
 #include "../OpenGL/UtilsOrb.h"
+#include "../OpenGL/BondsOrb.h"
 #include "../../pixmaps/Open.xpm"
 
 static	GtkWidget *WinDlg = NULL;
@@ -237,7 +238,7 @@ static GtkWidget *addSpinToTable(GtkWidget *table, gint i)
 	comboSpinMultiplicity  = g_object_get_data(G_OBJECT (entrySpinMultiplicity), "Combo");
 	gtk_widget_set_sensitive(entrySpinMultiplicity, FALSE);
 
-	g_signal_connect(G_OBJECT(entrySpinMultiplicity),"changed", GTK_SIGNAL_FUNC(changedEntrySpinMultiplicity),NULL);
+	g_signal_connect(G_OBJECT(entrySpinMultiplicity),"changed", G_CALLBACK(changedEntrySpinMultiplicity),NULL);
 	return comboSpinMultiplicity;
 }
 /*************************************************************************************************************/
@@ -268,7 +269,8 @@ static void print_gaussian_geometries_link(GtkWidget* Win, gpointer data)
 	{
 		gint ne = 0;
 		if(g !=0) fprintf(file,"--Link1--\n");
-		fprintf(file,"%cChk=gabmg\n",p);
+		if(GTK_IS_WIDGET(buttonChkgauss)&& GTK_TOGGLE_BUTTON (buttonChkgauss)->active)
+			fprintf(file,"%cChk=gabmg\n",p);
 		fprintf(file,"# %s\n",supstr);
 		fprintf(file,"# Gfinput IOP(6/7=3) pop=full Test\n");
 		fprintf(file,"# Units(Ang,Deg)\n");
@@ -3552,6 +3554,7 @@ static gboolean set_geometry(gint k)
 	Ncenters = nAtoms;
 	init_atomic_orbitals();
 	Dipole.def = FALSE;
+	buildBondsOrb();
 	RebuildGeom = TRUE;
 	glarea_rafresh(GLArea);
 
@@ -3604,6 +3607,7 @@ static void stopAnimation(GtkWidget *win, gpointer data)
 	if(GTK_IS_WIDGET(WinDlg)) gtk_window_set_modal (GTK_WINDOW (WinDlg), FALSE);
 	while( gtk_events_pending() ) gtk_main_iteration();
 
+	buildBondsOrb();
 	RebuildGeom = TRUE;
 	Dipole.def = FALSE;
 	init_atomic_orbitals();
@@ -3887,13 +3891,13 @@ static void addEntrysButtons(GtkWidget* box)
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-	gtk_box_pack_start_defaults(GTK_BOX(box), frame);
+	gtk_box_pack_start(GTK_BOX(box), frame,TRUE,TRUE,0);
 	gtk_widget_show (frame);
 
 	vboxframe = create_vbox(frame);
 
   	table = gtk_table_new(5,3,FALSE);
-	gtk_box_pack_start_defaults(GTK_BOX(vboxframe), table);
+	gtk_box_pack_start(GTK_BOX(vboxframe), table,TRUE,TRUE,0);
 
 	i = 0;
 	add_label_table(table," Time step(s) ",(gushort)i,0);
@@ -3915,7 +3919,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  3,3);
 
   	table = gtk_table_new(2,3,FALSE);
-	gtk_box_pack_start_defaults(GTK_BOX(vboxframe), table);
+	gtk_box_pack_start(GTK_BOX(vboxframe), table,TRUE,TRUE,0);
 
 	i=0;
 	buttonCheckFilm = gtk_check_button_new_with_label ("Create a film");
@@ -3925,7 +3929,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  1,1);
-  	g_signal_connect (G_OBJECT(buttonCheckFilm), "toggled", GTK_SIGNAL_FUNC (filmSelected), NULL);  
+  	g_signal_connect (G_OBJECT(buttonCheckFilm), "toggled", G_CALLBACK (filmSelected), NULL);  
 
 	formatBox = create_list_of_formats();
 	gtk_table_attach(GTK_TABLE(table),formatBox,1,1+1,i,i+1,
@@ -3938,7 +3942,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  1,1);
-  	g_signal_connect(G_OBJECT(buttonDirFilm), "clicked",(GtkSignalFunc)set_directory,NULL);
+  	g_signal_connect(G_OBJECT(buttonDirFilm), "clicked",(GCallback)set_directory,NULL);
 	comboListFilm = formatBox;
 
 	if(GTK_IS_WIDGET(buttonDirFilm))  gtk_widget_set_sensitive(buttonDirFilm, FALSE);
@@ -3972,9 +3976,9 @@ static void addEntrysButtons(GtkWidget* box)
 		  3,3);
 	StopButton = Button;
 
-  	g_signal_connect(G_OBJECT(PlayButton), "clicked",(GtkSignalFunc)playAnimation,NULL);
-  	g_signal_connect(G_OBJECT(StopButton), "clicked",(GtkSignalFunc)stopAnimation,NULL);
-  	g_signal_connect_swapped(G_OBJECT (EntryVelocity), "activate", (GtkSignalFunc)reset_parameters, NULL);
+  	g_signal_connect(G_OBJECT(PlayButton), "clicked",(GCallback)playAnimation,NULL);
+  	g_signal_connect(G_OBJECT(StopButton), "clicked",(GCallback)stopAnimation,NULL);
+  	g_signal_connect_swapped(G_OBJECT (EntryVelocity), "activate", (GCallback)reset_parameters, NULL);
 }
 /********************************************************************************/
 static GtkTreeView* addList(GtkWidget *vbox, GtkUIManager *manager)
@@ -4028,7 +4032,7 @@ static GtkTreeView* addList(GtkWidget *vbox, GtkUIManager *manager)
 	gtk_tree_view_set_reorderable(treeView, TRUE);
 	set_base_style(GTK_WIDGET(treeView), 55000,55000,55000);
 	gtk_widget_show (GTK_WIDGET(treeView));
-  	g_signal_connect(G_OBJECT (treeView), "button_press_event", GTK_SIGNAL_FUNC(event_dispatcher), manager);      
+  	g_signal_connect(G_OBJECT (treeView), "button_press_event", G_CALLBACK(event_dispatcher), manager);      
 	return treeView;
 }
 /*****************************************************************************/
@@ -4182,7 +4186,7 @@ static void set_entry_inputGaussDir_selection(GtkWidget* entry)
 	GtkWidget *dirSelector;
 	dirSelector = selctionOfDir(set_entry_inputGaussDir, "Select folder for the input Gaussian files", GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
-  	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GtkSignalFunc)gtk_widget_destroy,NULL);
+  	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
 	g_object_set_data(G_OBJECT (dirSelector), "EntryFile", entry);
 
@@ -4225,7 +4229,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox,gboole
 	button = create_button_pixmap(Wins,open_xpm,NULL);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	g_signal_connect_swapped(GTK_OBJECT (button), "clicked",
-                                     GTK_SIGNAL_FUNC(set_entry_inputGaussDir_selection),
+                                     G_CALLBACK(set_entry_inputGaussDir_selection),
                                      GTK_OBJECT(entry));
 	add_widget_table(table,button,i,3);
 
@@ -4244,7 +4248,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox,gboole
 		g_object_set_data(G_OBJECT (GTK_BIN(comboCharge)->child), "ComboSpinMultiplicity", comboSpinMultiplicity);
 	setComboCharge(comboCharge);
 	setComboSpinMultiplicity(comboSpinMultiplicity);
-	g_signal_connect(G_OBJECT(GTK_BIN(comboCharge)->child),"changed", GTK_SIGNAL_FUNC(changedEntryCharge),NULL);
+	g_signal_connect(G_OBJECT(GTK_BIN(comboCharge)->child),"changed", G_CALLBACK(changedEntryCharge),NULL);
 
 	i = 4;
 	add_label_table(table," Keywords ",i,0);
@@ -4287,7 +4291,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox,gboole
 	return entry;
 }
 /********************************************************************************************************/
-static void  add_cancel_ok_button(GtkWidget *Win,GtkWidget *vbox,GtkWidget *entry, GtkSignalFunc myFunc)
+static void  add_cancel_ok_button(GtkWidget *Win,GtkWidget *vbox,GtkWidget *entry, GCallback myFunc)
 {
 	GtkWidget *hbox;
 	GtkWidget *button;
@@ -4298,8 +4302,8 @@ static void  add_cancel_ok_button(GtkWidget *Win,GtkWidget *vbox,GtkWidget *entr
 	button = create_button(Win,"Cancel");
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child, GTK_OBJECT(Win));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Win));
 	gtk_widget_show (button);
 
 	button = create_button(Win,"OK");
@@ -4307,9 +4311,9 @@ static void  add_cancel_ok_button(GtkWidget *Win,GtkWidget *vbox,GtkWidget *entr
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)myFunc,GTK_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)myFunc,GTK_OBJECT(Win));
 	if(entry)
-	g_signal_connect_swapped(G_OBJECT (entry), "activate", (GtkSignalFunc) gtk_button_clicked, GTK_OBJECT (button));
+	g_signal_connect_swapped(G_OBJECT (entry), "activate", (GCallback) gtk_button_clicked, GTK_OBJECT (button));
 
 	gtk_widget_show_all(vbox);
 }
@@ -4338,14 +4342,14 @@ static void create_gaussian_file_dlg(gboolean oneFile)
 	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
 
 	add_glarea_child(Win,"Input Gaussian");
-	g_signal_connect(G_OBJECT(Win),"delete_event",(GtkSignalFunc)delete_child,NULL);
+	g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)delete_child,NULL);
 
 	vboxall = create_vbox(Win);
 
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 2);
-	gtk_box_pack_start_defaults(GTK_BOX(vboxall), frame);
+	gtk_box_pack_start(GTK_BOX(vboxall), frame,TRUE,TRUE,0);
 	gtk_widget_show (frame);
   	vbox = gtk_vbox_new (FALSE, 0);
 	gtk_container_add (GTK_CONTAINER (frame), vbox);
@@ -4353,8 +4357,8 @@ static void create_gaussian_file_dlg(gboolean oneFile)
   	gtk_widget_realize(Win);
 	
 	entryKeywords = add_inputGauss_entrys(Win,vbox,TRUE);
-	if(oneFile) add_cancel_ok_button(Win,vbox,entryKeywords,(GtkSignalFunc)print_gaussian_geometries_link);
-	else add_cancel_ok_button(Win,vbox,entryKeywords,(GtkSignalFunc)print_gaussian_geometries);
+	if(oneFile) add_cancel_ok_button(Win,vbox,entryKeywords,(GCallback)print_gaussian_geometries_link);
+	else add_cancel_ok_button(Win,vbox,entryKeywords,(GCallback)print_gaussian_geometries);
 
 
 	/* Show all */
@@ -4583,7 +4587,7 @@ void geometryConvergenceDlg()
 	WinDlg = Win;
 
   	add_child(PrincipalWindow,Win,destroyAnimGeomConvDlg,"Mult. Geom.");
-  	g_signal_connect(G_OBJECT(Win),"delete_event",(GtkSignalFunc)delete_child,NULL);
+  	g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)delete_child,NULL);
 
 	vbox = gtk_vbox_new (FALSE, 0);
 	gtk_widget_show (vbox);

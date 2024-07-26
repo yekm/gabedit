@@ -1,6 +1,6 @@
 /* Utils.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 #include <time.h>
 
 #include "../Common/Global.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Geometry/GeomGlobal.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/UtilsInterface.h"
@@ -55,7 +55,7 @@ DEALINGS IN THE SOFTWARE.
 #endif /* G_OS_WIN32 */
 
 #define DebugFlag 0
-#define Debug1Flag 1
+#define Debug1Flag 0
 
 void create_color_surfaces_file();
 void read_color_surfaces_file();
@@ -1101,6 +1101,13 @@ void create_commands_file()
 	fprintf(fd,"%s\n",mopacDirectory);
 	fprintf(fd,"End\n");
 
+	fprintf(fd,"Begin GaussDir\n");
+	str_delete_n(gaussDirectory);
+	delete_last_spaces(gaussDirectory);
+	delete_first_spaces(gaussDirectory);
+	fprintf(fd,"%s\n",gaussDirectory);
+	fprintf(fd,"End\n");
+
 	fclose(fd);
 
 	g_free(commandsfile);
@@ -1135,6 +1142,7 @@ void create_ressource_file()
  save_axis_properties();
  save_principal_axis_properties();
  save_HBonds_properties();
+ create_drawmolecule_file();
 }
 /*************************************************************************************/
 void read_hosts_file()
@@ -1437,7 +1445,7 @@ void read_commands_file()
   				gamessCommands.numberOfCommands = 1;
   				gamessCommands.numberOfDefaultCommand = 0;
   				gamessCommands.commands = g_malloc(sizeof(gchar*));
-  				gamessCommands.commands[0] = g_strdup("nohup g98");
+  				gamessCommands.commands[0] = g_strdup("nohup g03");
 
 				fclose(fd);
 				return;
@@ -1495,7 +1503,7 @@ void read_commands_file()
   				gaussianCommands.numberOfCommands = 1;
   				gaussianCommands.numberOfDefaultCommand = 0;
   				gaussianCommands.commands = g_malloc(sizeof(gchar*));
-  				gaussianCommands.commands[0] = g_strdup("nohup g98");
+  				gaussianCommands.commands[0] = g_strdup("nohup g03");
 
 				fclose(fd);
 				return;
@@ -1553,7 +1561,7 @@ void read_commands_file()
   				molcasCommands.numberOfCommands = 1;
   				molcasCommands.numberOfDefaultCommand = 0;
   				molcasCommands.commands = g_malloc(sizeof(gchar*));
-  				molcasCommands.commands[0] = g_strdup("nohup g98");
+  				molcasCommands.commands[0] = g_strdup("nohup g03");
 
 				fclose(fd);
 				return;
@@ -1611,7 +1619,7 @@ void read_commands_file()
   				molproCommands.numberOfCommands = 1;
   				molproCommands.numberOfDefaultCommand = 0;
   				molproCommands.commands = g_malloc(sizeof(gchar*));
-  				molproCommands.commands[0] = g_strdup("nohup g98");
+  				molproCommands.commands[0] = g_strdup("nohup g03");
 
 				fclose(fd);
 				return;
@@ -1941,6 +1949,11 @@ void read_commands_file()
 		fclose(fd);
 		return;
 	}
+ 	if(!fgets(t,taille,fd)) /* End of PCGamessDir */
+	{
+		fclose(fd);
+		return;
+	}
 /*-----------------------------------------------------------------------------*/
  	if(fgets(t,taille,fd))
 	if(!strstr(t,"Begin MopacDir"))
@@ -1967,8 +1980,42 @@ void read_commands_file()
 		fclose(fd);
 		return;
 	}
- 	if(fgets(t,taille,fd) && atoi(t)>0)
-
+ 	if(!fgets(t,taille,fd)) /* End of MopacDir */
+	{
+		fclose(fd);
+		return;
+	}
+/*-----------------------------------------------------------------------------*/
+ 	if(fgets(t,taille,fd))
+	if(!strstr(t,"Begin GaussDir"))
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd))
+	{
+ 		gaussDirectory= g_strdup(t);
+		str_delete_n(gaussDirectory);
+		delete_last_spaces(gaussDirectory);
+		delete_first_spaces(gaussDirectory);
+#ifdef G_OS_WIN32
+		{
+		gchar t[BSIZE];
+		sprintf(t,"%s;%cPATH%c",gaussDirectory,'%','%');
+		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
+		}
+#endif
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(!fgets(t,taille,fd)) /* End of GaussDir */
+	{
+		fclose(fd);
+		return;
+	}
  	fclose(fd);
  }
 }
@@ -2024,9 +2071,10 @@ void set_path()
 #ifdef G_OS_WIN32
 	{
 		gchar t[BSIZE];
-		sprintf(t,"%s;%s;%s;%cPATH%c",
+		sprintf(t,"%s;%s;%s;%s;%cPATH%c",
 		pcgamessDirectory,
 		mopacDirectory,
+		gaussDirectory,
 		pscpplinkDirectory,
 		'%','%');
 		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
@@ -2052,6 +2100,7 @@ void read_ressource_file()
  read_axis_properties();
  read_principal_axis_properties();
  read_HBonds_properties();
+ read_drawmolecule_file();
 }
 /*************************************************************************************/
 gchar *ang_to_bohr(gchar *angstr)
@@ -2368,7 +2417,7 @@ void initialise_name_commands()
 #ifdef G_OS_WIN32
 	gchar t[BSIZE];
 	NameCommandGamess=g_strdup("submitGMS");
-	NameCommandGaussian=g_strdup("g98");
+	NameCommandGaussian=g_strdup("g03.exe");
 	NameCommandMolcas=g_strdup("molcas");
 	NameCommandMolpro=g_strdup("molpro");
 	NameCommandMPQC=g_strdup("mpqc");
@@ -2377,7 +2426,7 @@ void initialise_name_commands()
 	NameCommandMopac=g_strdup("MOPAC2007");
 #else
 	NameCommandGamess=g_strdup("submitGMS");
-	NameCommandGaussian=g_strdup("nohup g98");
+	NameCommandGaussian=g_strdup("nohup g03");
 	NameCommandMolcas=g_strdup("nohup molcas");
 	NameCommandMolpro=g_strdup("nohup molpro");
 	NameCommandMPQC=g_strdup("nohup mpqc");
@@ -2392,7 +2441,8 @@ void initialise_name_commands()
 	gamessDirectory= g_strdup_printf("C:%sWinGAMESS",G_DIR_SEPARATOR_S);
 	pcgamessDirectory= g_strdup_printf("C:%sPCGAMESS",G_DIR_SEPARATOR_S);
 	mopacDirectory= g_strdup_printf("\"C:%sProgram Files%sMOPAC\"",G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
-	sprintf(t,"%s;%s;%cPATH%c",pcgamessDirectory,mopacDirectory,'%','%');
+	gaussDirectory= g_strdup_printf("\"C:%sG03W\"",G_DIR_SEPARATOR_S);
+	sprintf(t,"%s;%s;%s;%cPATH%c",pcgamessDirectory,mopacDirectory,gaussDirectory,'%','%');
 	g_setenv("PATH",t,TRUE);
 #else
 	babelCommand=g_strdup("babel");
@@ -2446,11 +2496,20 @@ void initialise_batch_commands()
 /*************************************************************************************/
 void initialise_global_variables()
 {
+  gint i;
+  for(i=0;i<3;i++)
+  {
+ 	TotalCharges[i] = 0;
+  	SpinMultiplicities[i] = 1;
+  }
+
   ResultEntryPass = NULL;
   ZoneDessin = NULL;
   FrameWins = NULL;
   FrameList = NULL;
   Hpaned  = NULL;
+
+
   GeomXYZ = NULL;
   Geom = NULL;
   MesureIsHide = TRUE;
@@ -2500,10 +2559,10 @@ void initialise_global_variables()
 #endif
   gaussianCommands.numberOfDefaultCommand = 0;
   gaussianCommands.commands = g_malloc(gaussianCommands.numberOfCommands*sizeof(gchar*));
-  gaussianCommands.commands[0] = g_strdup("nohup g98");
+  gaussianCommands.commands[0] = g_strdup("nohup g03");
   gaussianCommands.commands[1] = g_strdup("submitGaussian 1:0:0");
 #ifdef G_OS_WIN32
-    gaussianCommands.commands[2] = g_strdup("g98");
+    gaussianCommands.commands[2] = g_strdup("g03.exe");
 #endif
 
 
@@ -3443,7 +3502,8 @@ gboolean test_type_program_molcas(FILE* file)
 	{
 		if(!fgets(t, taille, file)) return FALSE;
 		g_strup(t);
-		if( strstr(t, "&SEWARD") && strstr(t, "END") ) return TRUE;
+		if( strstr(t, "&SEWARD") ) return TRUE;
+		if( strstr(t, "&GATEWAY") ) return TRUE;
 	}
 	return FALSE;
 }
@@ -3653,7 +3713,7 @@ gchar** get_one_block_from_aux_mopac_file(FILE* file, gchar* blockName,  gint* n
 			{ 
 				long int geomposok = ftell(file);
 				if(!fgets(t,BSIZE,file))break;
-				if(t && !strstr(t,"# ")) fseek(file, geomposok, SEEK_SET);
+				if(!strstr(t,"# ")) fseek(file, geomposok, SEEK_SET);
 			}
 
 			elements = g_malloc(nElements*sizeof(gchar*));
@@ -3699,4 +3759,22 @@ gchar** free_one_string_table(gchar** table, gint n)
 		g_free(table);
 	}
 	return NULL;
+}
+/********************************************************************************/
+gboolean zmat_mopac_scan_output_file(gchar *FileName)
+{
+ 	guint taille=BSIZE;
+  	gchar t[BSIZE];
+ 	FILE* fd = FOpen(FileName, "r");
+
+	if(!fd) return FALSE;
+  	while(!feof(fd) )
+	{
+    		if(!fgets(t,taille,fd)) break;
+		if ( strstr(t,"ATOM  CHEMICAL   BOND LENGTH    BOND ANGLE    TWIST ANGLE"))
+		{
+			return TRUE;
+		}
+	}
+	return FALSE;
 }

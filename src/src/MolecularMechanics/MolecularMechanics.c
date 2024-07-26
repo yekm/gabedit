@@ -1,6 +1,6 @@
 /* MolecularMechanics.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/Global.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/Utils.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Geometry/Fragments.h"
 #include "../Geometry/DrawGeom.h"
 #include "Atom.h"
@@ -434,6 +434,51 @@ static gint getNumberDihedralParameters( AmberParameters* amberParameters,
 	a3Typet = a2Type;
 	a4Typet = a1Type;
 
+	/* Je cherche d'abord sans les -1 */
+	for(i=0;i<amberParameters->numberOfDihedralTerms;i++)
+	{
+
+		types[0] = a1Type;
+		types[1] = a2Type;
+		types[2] = a3Type;
+		types[3] = a4Type;
+
+		Ok = TRUE;
+		for(k=0;k<4;k++)
+		{
+			btype = (types[k] == amberParameters->dihedralAngleTerms[i].numbers[k]);
+			if(!btype)
+			{
+				Ok = FALSE;
+				break;
+			}
+		}
+		if(!Ok)
+		{
+			types[0] = a1Typet;
+			types[1] = a2Typet;
+			types[2] = a3Typet;
+			types[3] = a4Typet;
+			Ok = TRUE;
+			for(k=0;k<4;k++)
+			{
+				btype = (types[k] == amberParameters->dihedralAngleTerms[i].numbers[k]);
+				if(!btype)
+				{
+					Ok = FALSE;
+					break;
+				}
+			}
+		}
+
+			 
+		if(Ok)
+		{
+			*n =i;
+			return amberParameters->dihedralAngleTerms[i].nSomme;
+		}
+	}
+	/* Je cherche d'abord avec les -1 */
 	for(i=0;i<amberParameters->numberOfDihedralTerms;i++)
 	{
 
@@ -666,7 +711,7 @@ static void setDihedralParameters(AmberParameters* amberParameters,ForceField* f
 	/*  DIHEDRALDIM	8 */
 
 	for( i=0; i<DIHEDRALDIM;i++)
-		dihedralAngleTerms[i] =  g_malloc(m.numberOf4Connections*sizeof(gdouble)); 
+		dihedralAngleTerms[i] =  g_malloc(4*m.numberOf4Connections*sizeof(gdouble)); 
 
 	numberOfDihedralTerms = 0;
 
@@ -686,8 +731,7 @@ static void setDihedralParameters(AmberParameters* amberParameters,ForceField* f
 		a3Type = atomTypes[a3];
 		a4Type = atomTypes[a4];
 
-		dim = getNumberDihedralParameters(amberParameters,
-					a1Type, a2Type, a3Type, a4Type,&k);
+		dim = getNumberDihedralParameters(amberParameters, a1Type, a2Type, a3Type, a4Type,&k);
 		if(dim>0)
 		{
 			for(j=0;j<dim;j++)
@@ -706,11 +750,13 @@ static void setDihedralParameters(AmberParameters* amberParameters,ForceField* f
 					amberParameters->dihedralAngleTerms[k].n[j];
 
 				numberOfDihedralTerms++;
-				if(numberOfDihedralTerms>m.numberOf4Connections)
+				if(numberOfDihedralTerms>4*m.numberOf4Connections)
 				{
 					for( l=0; l<DIHEDRALDIM;l++)
+					{
 						dihedralAngleTerms[l] =  
 						g_realloc(dihedralAngleTerms[l],numberOfDihedralTerms*sizeof(gdouble)); 
+					}
 
 				}
 			}
@@ -720,7 +766,6 @@ static void setDihedralParameters(AmberParameters* amberParameters,ForceField* f
 	forceField-> numberOfDihedralTerms = numberOfDihedralTerms;
 	for( i=0; i<DIHEDRALDIM;i++)
        		forceField->dihedralAngleTerms[i] = dihedralAngleTerms[i]; 
-
 }
 /**********************************************************************/
 static void setImproperTorionParameters(AmberParameters* amberParameters, ForceField* forceField,gint* atomTypes)
@@ -1506,8 +1551,9 @@ static void calculateGradientDihedralAmber(ForceField* forceField)
 		cosine1 = 1.0;
 		sine1   = 0.0;
 
-		if (rtru <1e-10) 
-			rtru = 1e-10;
+		if (rtru <1e-10) rtru = 1e-10;
+		if (rt2 <1e-10) rt2 = 1e-10;
+		if (ru2 <1e-10) ru2 = 1e-10;
 
 		cosine1 = (xt*xu + yt*yu + zt*zu) / rtru;
 		sine1 = (rkjx*xtu + rkjy*ytu + rkjz*ztu) / (rkj*rtru);
@@ -2363,7 +2409,7 @@ static gdouble calculateEnergyTmpAmber(ForceField* forceField,Molecule* molecule
 }
 /**********************************************************************/
 ForceField createAmberModel
-(GeomDef* geom,gint Natoms,ForceFieldOptions forceFieldOptions)
+(GeomDef* geom, gint Natoms,ForceFieldOptions forceFieldOptions)
 {
 	ForceField forceField = newAmberModel();
 	

@@ -3,15 +3,15 @@
 AtomsProp.o: ../../Config.h
 AtomsProp.o: ../Common/Global.h
 AtomsProp.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
-AtomsProp.o: ../Utils/Constantes.h ../Utils/AtomsProp.h
+AtomsProp.o: ../Utils/Constants.h ../Utils/AtomsProp.h
 AtomsProp.o: ../Utils/UtilsInterface.h ../Geometry/Fragments.h
-AtomsProp.o: ../Geometry/DrawGeom.h ../Utils/Utils.h ../Geometry/GeomGlobal.h
-AtomsProp.o: ../OpenGL/GLArea.h ../Common/Windows.h
+AtomsProp.o: ../Geometry/DrawGeom.h ../Geometry/Fragments.h ../Utils/Utils.h
+AtomsProp.o: ../Geometry/GeomGlobal.h ../OpenGL/GLArea.h ../Common/Windows.h
 ConvUtils.o: ../../Config.h
 ConvUtils.o: ../Common/Global.h
 ConvUtils.o: ../Files/GabeditFileChooser.h
 ConvUtils.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
-ConvUtils.o: ../Utils/Utils.h ../Utils/Constantes.h
+ConvUtils.o: ../Utils/Utils.h ../Utils/Constants.h
 GabeditTextEdit.o: ../../Config.h ../Common/GabeditType.h
 GabeditXYPlot.o: GabeditXYPlot.h
 GabeditXYPlotWin.o: GabeditXYPlot.h GabeditXYPlotWin.h
@@ -22,20 +22,20 @@ HydrogenBond.o: ../Files/GabeditFileChooser.h
 HydrogenBond.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
 HydrogenBond.o: ../Utils/Utils.h ../Utils/AtomsProp.h
 HydrogenBond.o: ../Geometry/GeomGlobal.h ../Geometry/Fragments.h
-HydrogenBond.o: ../Geometry/DrawGeom.h ../Common/Windows.h ../OpenGL/GLArea.h
-HydrogenBond.o: ../Common/StockIcons.h
+HydrogenBond.o: ../Geometry/DrawGeom.h ../Geometry/Fragments.h
+HydrogenBond.o: ../Common/Windows.h ../OpenGL/GLArea.h ../Common/StockIcons.h
 Jacobi.o: ../../Config.h ../Common/Global.h
 Jacobi.o: ../Files/GabeditFileChooser.h
 Jacobi.o: ../Common/GabeditType.h
 Matrix3D.o: ../../Config.h
 Matrix3D.o: ../Common/Global.h
-Matrix3D.o: ../Files/GabeditFileChooser.h
-Matrix3D.o: ../Common/GabeditType.h ../Utils/Constantes.h
+Matrix3D.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
+Matrix3D.o: ../Utils/Constants.h
 PovrayUtils.o: ../../Config.h
 PovrayUtils.o: ../Common/Global.h
 PovrayUtils.o: ../Files/GabeditFileChooser.h
 PovrayUtils.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
-PovrayUtils.o: ../Utils/Utils.h ../Utils/Constantes.h ../Common/Windows.h
+PovrayUtils.o: ../Utils/Utils.h ../Utils/Constants.h ../Common/Windows.h
 Transformation.o: ../../Config.h
 Transformation.o: ../Common/Global.h
 Transformation.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
@@ -43,14 +43,15 @@ Transformation.o: Vector3d.h Transformation.h Utils.h
 Utils.o: ../../Config.h
 Utils.o: ../Common/Global.h
 Utils.o: ../Files/GabeditFileChooser.h
-Utils.o: ../Common/GabeditType.h ../Utils/Constantes.h
+Utils.o: ../Common/GabeditType.h ../Utils/Constants.h
 Utils.o: ../Geometry/GeomGlobal.h ../Utils/AtomsProp.h
 Utils.o: ../Utils/UtilsInterface.h ../Utils/Utils.h
 Utils.o: ../Utils/GabeditTextEdit.h ../Geometry/ResultsAnalise.h
 Utils.o: ../Geometry/EnergiesCurves.h ../Common/TextEdit.h
 Utils.o: ../Common/Preferences.h ../Common/Run.h ../OpenGL/GLArea.h
 Utils.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h
-Utils.o: ../Utils/HydrogenBond.h
+Utils.o: ../Geometry/Fragments.h ../Utils/HydrogenBond.h
+UtilsCairo.o: ../../Config.h
 UtilsGL.o: ../../Config.h
 UtilsGL.o: ../Common/Global.h
 UtilsGL.o: ../Files/GabeditFileChooser.h
@@ -59,7 +60,7 @@ UtilsGL.o: ../Utils/Transformation.h UtilsGL.h ../../gl2ps/gl2ps.h
 UtilsInterface.o: ../../Config.h
 UtilsInterface.o: ../Common/Global.h
 UtilsInterface.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
-UtilsInterface.o: ../Utils/Constantes.h ../Gaussian/GaussGlobal.h
+UtilsInterface.o: ../Utils/Constants.h ../Gaussian/GaussGlobal.h
 UtilsInterface.o: ../Files/FileChooser.h ../Gamess/Gamess.h
 UtilsInterface.o: ../PCGamess/PCGamess.h ../Molcas/Molcas.h
 UtilsInterface.o: ../Molpro/Molpro.h ../MPQC/MPQC.h ../QChem/QChem.h
@@ -71,19 +72,19 @@ UtilsInterface.o: ../Geometry/EnergiesCurves.h ../Common/Windows.h
 UtilsInterface.o: ../Files/ListeFiles.h ../Geometry/GeomXYZ.h
 UtilsInterface.o: ../Geometry/GeomZmatrix.h ../Common/SplashScreen.h
 UtilsInterface.o: ../OpenGL/ViewOrb.h ../Geometry/Fragments.h
-UtilsInterface.o: ../Geometry/DrawGeom.h ../Common/Exit.h
-UtilsInterface.o: ../Molcas/MolcasVariables.h ../Molcas/MolcasSeward.h
-UtilsInterface.o: ../../pixmaps/Ok.xpm ../../pixmaps/Cancel.xpm
-UtilsInterface.o: ../../pixmaps/Yes.xpm ../../pixmaps/No.xpm
-UtilsInterface.o: ../../pixmaps/SaveMini.xpm ../../pixmaps/Close.xpm
-UtilsInterface.o: ../../pixmaps/Apply.xpm ../../pixmaps/Question.xpm
-UtilsInterface.o: ../../pixmaps/Warning.xpm ../../pixmaps/Error.xpm
-UtilsInterface.o: ../../pixmaps/Info.xpm ../../pixmaps/A0p.xpm
-UtilsInterface.o: ../../pixmaps/A0d.xpm ../../pixmaps/Open.xpm
-UtilsInterface.o: ../../pixmaps/Gabedit.xpm ../../pixmaps/Print.xpm
-UtilsInterface.o: ../../pixmaps/Next.xpm ../../pixmaps/Stop.xpm
-UtilsInterface.o: ../../pixmaps/Play.xpm ../Common/StockIcons.h
+UtilsInterface.o: ../Geometry/DrawGeom.h ../Geometry/Fragments.h
+UtilsInterface.o: ../Common/Exit.h ../Molcas/MolcasVariables.h
+UtilsInterface.o: ../Molcas/MolcasGateWay.h ../../pixmaps/Ok.xpm
+UtilsInterface.o: ../../pixmaps/Cancel.xpm ../../pixmaps/Yes.xpm
+UtilsInterface.o: ../../pixmaps/No.xpm ../../pixmaps/SaveMini.xpm
+UtilsInterface.o: ../../pixmaps/Close.xpm ../../pixmaps/Apply.xpm
+UtilsInterface.o: ../../pixmaps/Question.xpm ../../pixmaps/Warning.xpm
+UtilsInterface.o: ../../pixmaps/Error.xpm ../../pixmaps/Info.xpm
+UtilsInterface.o: ../../pixmaps/A0p.xpm ../../pixmaps/A0d.xpm
+UtilsInterface.o: ../../pixmaps/Open.xpm ../../pixmaps/Gabedit.xpm
+UtilsInterface.o: ../../pixmaps/Print.xpm ../../pixmaps/Next.xpm
+UtilsInterface.o: ../../pixmaps/Stop.xpm ../../pixmaps/Play.xpm
+UtilsInterface.o: ../Common/StockIcons.h
 Vector3d.o: ../../Config.h
 Vector3d.o: ../Common/Global.h
-Vector3d.o: ../Files/GabeditFileChooser.h
-Vector3d.o: ../Common/GabeditType.h Vector3d.h
+Vector3d.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h Vector3d.h

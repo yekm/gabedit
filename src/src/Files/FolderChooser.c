@@ -1,6 +1,6 @@
 /* FolderChooser.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -30,7 +30,7 @@ DEALINGS IN THE SOFTWARE.
 GtkWidget* selctionOfDir(gpointer data, gchar* title, GabEditTypeWin typewin) 
 {
 	GtkWidget *folderChooser;
-	GtkSignalFunc *func = (GtkSignalFunc *)data;
+	GCallback *func = (GCallback *)data;
 	gchar* lastDir = get_last_directory();
 
 	if(title) folderChooser = gabedit_folder_chooser_new(title);
@@ -47,8 +47,8 @@ GtkWidget* selctionOfDir(gpointer data, gchar* title, GabEditTypeWin typewin)
 	else
 	{
   		add_button_windows(" Dir selector ",folderChooser);
-  		g_signal_connect(G_OBJECT(folderChooser), "delete_event",(GtkSignalFunc)destroy_button_windows,NULL);
-  		g_signal_connect(G_OBJECT(folderChooser), "delete_event",GTK_SIGNAL_FUNC(gtk_widget_destroy),NULL);
+  		g_signal_connect(G_OBJECT(folderChooser), "delete_event",(GCallback)destroy_button_windows,NULL);
+  		g_signal_connect(G_OBJECT(folderChooser), "delete_event",G_CALLBACK(gtk_widget_destroy),NULL);
 	}
 
 	g_signal_connect (folderChooser, "response", G_CALLBACK (func), NULL);

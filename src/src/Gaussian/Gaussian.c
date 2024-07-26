@@ -1,6 +1,6 @@
 /* Gaussian.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1101,7 +1101,7 @@ void insert_gaussian(gint itype)
   gtk_window_set_title(&GTK_DIALOG(Wins)->window,"Gaussian input");
 
   init_child(Wins,DestroyWinsGauss," Gauss input ");
-  g_signal_connect(G_OBJECT(Wins),"delete_event",(GtkSignalFunc)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_childs,NULL);
 
   NoteBook = gtk_notebook_new();
   gtk_box_pack_start(GTK_BOX (GTK_DIALOG(Wins)->vbox), NoteBook,FALSE, FALSE, 0);
@@ -1141,7 +1141,7 @@ void insert_gaussian(gint itype)
 
   button = create_button(Wins,"CANCEL");
   gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, FALSE, TRUE, 5);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(to_cancel_win),GTK_OBJECT(Wins));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(to_cancel_win),GTK_OBJECT(Wins));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_show (button);
 
@@ -1150,9 +1150,9 @@ void insert_gaussian(gint itype)
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
   gtk_widget_show (button);
-  g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)GetInfoAll,NULL);
-  g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)data_modify,NULL);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(destroy_childs),GTK_OBJECT(Wins));
+  g_signal_connect(G_OBJECT(button), "clicked", (GCallback)GetInfoAll,NULL);
+  g_signal_connect(G_OBJECT(button), "clicked", (GCallback)data_modify,NULL);
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_childs),GTK_OBJECT(Wins));
   
 
   gtk_widget_show_all(Wins);
@@ -1198,7 +1198,7 @@ void gauss(gint ioption)
 
 
 	init_child(Wins,DestroyWinsGauss," Gauss input ");
-	g_signal_connect(G_OBJECT(Wins),"delete_event",(GtkSignalFunc)destroy_childs,NULL);
+	g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_childs,NULL);
  
 	NoteBook = gtk_notebook_new();
 	gtk_box_pack_start(GTK_BOX (GTK_DIALOG(Wins)->vbox), NoteBook,TRUE, TRUE, 0);
@@ -1212,18 +1212,18 @@ void gauss(gint ioption)
 	button = create_button(Wins,"CANCEL");
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
-	g_signal_connect_swapped(G_OBJECT(button),"clicked",GTK_SIGNAL_FUNC(to_cancel_win),GTK_OBJECT(Wins));
+	g_signal_connect_swapped(G_OBJECT(button),"clicked",G_CALLBACK(to_cancel_win),GTK_OBJECT(Wins));
 	gtk_widget_show (button);
 
 	/* button = gtk_button_new ();*/
 	button = create_button(Wins,"OK");
-	//g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)GetInfoAll,NULL);
-	g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)putInfoAll,NULL);
+	//g_signal_connect(G_OBJECT(button), "clicked", (GCallback)GetInfoAll,NULL);
+	g_signal_connect(G_OBJECT(button), "clicked", (GCallback)putInfoAll,NULL);
 	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
-	/* g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)NewFrame,NULL);*/
+	/* g_signal_connect(G_OBJECT(button), "clicked", (GCallback)NewFrame,NULL);*/
 
 	gtk_widget_show_all(Wins);
 	if(iinsert != 0)

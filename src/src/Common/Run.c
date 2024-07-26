@@ -1,6 +1,6 @@
 /* Run.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -34,7 +34,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/Global.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/GabeditTextEdit.h"
 #include "../Common/Windows.h"
 #include "../Files/ListeFiles.h"
@@ -44,7 +44,9 @@ DEALINGS IN THE SOFTWARE.
 #include "../NetWork/FilesTransfer.h"
 #include "../Molcas/MolcasVariables.h"
 
+#ifdef G_OS_WIN32
 #include "../../pixmaps/Open.xpm"
+#endif
 
 static GtkWidget* ButtonLocal = NULL;
 static GtkWidget* ButtonRemote = NULL;
@@ -330,7 +332,7 @@ GtkWidget* create_text_result_command(GtkWidget* Text[],GtkWidget* Frame[],gchar
 
   gtk_widget_realize(Win);
   init_child(Win,gtk_widget_destroy," Run ");
-  g_signal_connect(G_OBJECT(Win),"delete_event",(GtkSignalFunc)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)destroy_childs,NULL);
 
   gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
   vboxall = create_vbox(Win);
@@ -360,7 +362,7 @@ GtkWidget* create_text_result_command(GtkWidget* Text[],GtkWidget* Frame[],gchar
   gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, FALSE, 5);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)destroy_childs,G_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,G_OBJECT(Win));
   gtk_widget_show (button);
   gtk_window_set_default_size (GTK_WINDOW(Win), 3*ScreenWidth/5, 3*ScreenHeight/5);
   gtk_widget_set_size_request(GTK_WIDGET(Text[0]),-1,1*ScreenHeight/5);
@@ -468,7 +470,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
 
 
 
-			sprintf(filename,"%s.geomConv.molden",fileopen.projectname);
+			sprintf(filename,"%s.geo.molden",fileopen.projectname);
   			get_file(fout,ferr,filename,fileopen.localdir,fileopen.remotedir,
   				fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
 			temp = g_strdup_printf("\nGet %s file from remote host :\n",filename);
@@ -477,7 +479,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
 			g_free(temp);
 			put_text_in_texts_widget(Text,fout,ferr);
 
-			sprintf(filename,"%s.frequence.molden",fileopen.projectname);
+			sprintf(filename,"%s.freq.molden",fileopen.projectname);
   			get_file(fout,ferr,filename,fileopen.localdir,fileopen.remotedir,
   				fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
 			temp = g_strdup_printf("\nGet %s file from remote host :\n",filename);
@@ -486,7 +488,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
 			g_free(temp);
 			put_text_in_texts_widget(Text,fout,ferr);
 
-			sprintf(filename,"%s.M2Msi",fileopen.projectname);
+			sprintf(filename,"%s.grid",fileopen.projectname);
   			get_file(fout,ferr,filename,fileopen.localdir,fileopen.remotedir,
   				fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
 			temp = g_strdup_printf("\nGet %s file from remote host :\n",filename);
@@ -509,7 +511,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
 			g_free(temp);
 			put_text_in_texts_widget(Text,fout,ferr);
 
-			sprintf(filename,"%s.M2Msi",fileopen.projectname);
+			sprintf(filename,"%s.grid",fileopen.projectname);
   			get_file(fout,ferr,filename,fileopen.localdir,fileopen.remotedir,
   				fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
 			temp = g_strdup_printf("\nGet %s file from remote host :\n",filename);
@@ -533,7 +535,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
 			g_free(temp);
 			put_text_in_texts_widget(Text,fout,ferr);
 
-			sprintf(filename,"%s.geomConv.molden",fileopen.projectname);
+			sprintf(filename,"%s.geo.molden",fileopen.projectname);
   			get_file(fout,ferr,filename,fileopen.localdir,fileopen.remotedir,
   				fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
 
@@ -544,7 +546,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
 			put_text_in_texts_widget(Text,fout,ferr);
 
 
-			sprintf(filename,"%s.frequence.molden",fileopen.projectname);
+			sprintf(filename,"%s.freq.molden",fileopen.projectname);
   			get_file(fout,ferr,filename,fileopen.localdir,fileopen.remotedir,
   				fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
 			temp = g_strdup_printf("\nGet %s file from remote host :\n",filename);
@@ -553,7 +555,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
 			g_free(temp);
 			put_text_in_texts_widget(Text,fout,ferr);
 
-			sprintf(filename,"%s.M2Msi",fileopen.projectname);
+			sprintf(filename,"%s.grid",fileopen.projectname);
   			get_file(fout,ferr,filename,fileopen.localdir,fileopen.remotedir,
   				fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
 			temp = g_strdup_printf("\nGet %s file from remote host :\n",filename);
@@ -1210,6 +1212,8 @@ static gboolean create_cmd_gamess(G_CONST_RETURN gchar* command, gboolean local,
 			fprintf(fcmd,"NNODES=1\n");
 			fprintf(fcmd,"sh -c './rungms $filename $VERNO $NNODES > $DEFAULTDIR/$filename.log' 2>err.log\n");
 			fprintf(fcmd,"cd $DEFAULTDIR\n");
+			fprintf(fcmd,"cp $TGAMESSUSDIR/$filename.dat $DEFAULTDIR/.\n");
+			fprintf(fcmd,"chmod -R u+w $TGAMESSUSDIR\n");
 			fprintf(fcmd,"/bin/rm -r $TGAMESSUSDIR\n");
 	}
 	else
@@ -1253,6 +1257,8 @@ static gboolean create_cmd_gamess(G_CONST_RETURN gchar* command, gboolean local,
 		 begin = strstr(gamessDirectory,":");
 		 if(begin) fprintf(fcmd,"%c:\n",gamessDirectory[0]);
 		 else fprintf(fcmd,"C:\n");
+		 fprintf(fcmd,"mkdir \"%s\\temp\"\n",gamessDirectory);
+		 fprintf(fcmd,"mkdir \"%s\\scratch\"\n",gamessDirectory);
 		 fprintf(fcmd,"cd \"%s\\temp\"\n",gamessDirectory);
 		 fprintf(fcmd,"del %s.*\n",fileopen.projectname);
 		 fprintf(fcmd,"cd \"%s\"\n",gamessDirectory);
@@ -1260,6 +1266,12 @@ static gboolean create_cmd_gamess(G_CONST_RETURN gchar* command, gboolean local,
 				 fileopen.localdir,fileopen.datafile,gamessDirectory,fileopen.projectname);
 		 fprintf(fcmd,"csh -f gabeditRunGms.csh %s %s %s > \"%s\\%s\" \n",
 				 fileopen.projectname, versionNumber, localhost,fileopen.localdir,fileopen.logfile);
+		 fprintf(fcmd,"copy \"%s\\temp\\%s.dat\" \"%s\\%s.dat\"\n",
+				 gamessDirectory,fileopen.projectname,
+				 fileopen.localdir,fileopen.projectname);
+		 fprintf(fcmd,"copy \"%s\\temp\\%s.dat\" \"%s\\%s.pun\"\n",
+				 gamessDirectory,fileopen.projectname,
+				 fileopen.localdir,fileopen.projectname);
 		 fprintf(fcmd,"echo Job %s.inp finished.\n",fileopen.projectname);
 	 }
 
@@ -1304,7 +1316,27 @@ static gboolean create_cmd_gaussian(G_CONST_RETURN gchar* command, gboolean loca
 	}
 
 	if(local)
+	{
+#ifdef G_OS_WIN32
+		fprintf(fcmd,"@echo off\n");
+		if(fileopen.localdir && 
+		strlen(fileopen.localdir)>2 &&
+		fileopen.localdir[1]==':'
+		)
+		fprintf(fcmd,"%c%c\n", fileopen.localdir[0],fileopen.localdir[1]);
+		else
+		if(fileopen.localdir && 
+		strlen(fileopen.localdir)>3 &&
+		fileopen.localdir[0]=='"' &&
+		fileopen.localdir[2]==':'
+		)
+		fprintf(fcmd,"%c%c\n", fileopen.localdir[1],fileopen.localdir[2]);
+		fprintf(fcmd,"cd \"%s\"\n", fileopen.localdir);
+#else
+
 		fprintf(fcmd,"cd %s\n", fileopen.localdir);
+#endif
+	}
 	else
 		fprintf(fcmd,"cd %s\n", fileopen.remotedir);
 
@@ -1319,8 +1351,20 @@ static gboolean create_cmd_gaussian(G_CONST_RETURN gchar* command, gboolean loca
 		 fprintf(fcmd,"exit\n");
 	 }
 	 else
+	 {
+		if(strstr(gaussDirectory,"\""))
+			fprintf(fcmd,"set PATH=%s;%cPATH%c\n",gaussDirectory,'%','%');
+		else
+			fprintf(fcmd,"set PATH=\"%s\";%cPATH%c\n",gaussDirectory,'%','%');
+		if(!strcmp(command,"g03.exe")||!strcmp(command,"g98.exe"))
+		{
+		    fprintf(fcmd,"set GAUSS_EXEDIR=%s\n",gaussDirectory);
+		    fprintf(fcmd,"del/Q %s 2>nul\n",fileopen.logfile);
+		    fprintf(fcmd,"%s%s%s %s %s\n",gaussDirectory,G_DIR_SEPARATOR_S,command,fileopen.datafile, fileopen.logfile);
+		}
+		else
 		 fprintf(fcmd,"%s %s \n",command,fileopen.datafile);
-
+	 }
 #endif
 	fclose(fcmd);
 #ifndef G_OS_WIN32
@@ -4011,6 +4055,7 @@ void run_program(GtkWidget *button,gpointer data)
 	gtk_notebook_set_current_page((GtkNotebook*)NoteBookText,0);
 }
 /********************************************************************************/
+/*
 static void set_entrys_folder(GtkWidget* selFolder)
 {
   GtkWidget *entry = (GtkWidget*)(g_object_get_data(G_OBJECT(selFolder),"EntryDirectory"));	
@@ -4019,7 +4064,9 @@ static void set_entrys_folder(GtkWidget* selFolder)
   gtk_entry_set_text(GTK_ENTRY(entry),dirname);
   set_last_directory(longfile);
 }
+*/
 /********************************************************************************/
+/*
 static void set_entry_directory_selection(GtkWidget* table)
 {
   GtkWidget *selFolder;
@@ -4028,7 +4075,7 @@ static void set_entry_directory_selection(GtkWidget* table)
 
   selFolder = gabedit_folder_chooser_new("Folder chooser");
   add_child(Win,selFolder,gtk_widget_destroy," Folder selection ");
-  g_signal_connect(G_OBJECT(selFolder),"delete_event",(GtkSignalFunc)delete_child,NULL);
+  g_signal_connect(G_OBJECT(selFolder),"delete_event",(GCallback)delete_child,NULL);
 
   g_object_set_data (G_OBJECT (selFolder), "EntryDirectory", entrydirectory);
 
@@ -4037,6 +4084,7 @@ static void set_entry_directory_selection(GtkWidget* table)
 
   gtk_widget_show(selFolder);
 }
+*/
 /********************************************************************************/
 static GtkWidget *create_hbox_browser_run(GtkWidget* Wins,GtkWidget* Table,
 							   gchar *LabelRight,gchar *LabelLeft,
@@ -4565,7 +4613,7 @@ GtkWidget *create_remote_frame( GtkWidget *vboxall,GtkWidget **entry)
   return frame;
 }
 /********************************************************************************/
-void create_run_dialogue_box(GtkWidget *w,gchar *type,GtkSignalFunc func)
+void create_run_dialogue_box(GtkWidget *w,gchar *type,GCallback func)
 {
   GtkWidget *fp;
   GtkWidget *sep;
@@ -4589,7 +4637,7 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GtkSignalFunc func)
 
   gtk_widget_realize(fp);
   init_child(fp,gtk_widget_destroy," Run ");
-  g_signal_connect(G_OBJECT(fp),"delete_event",(GtkSignalFunc)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_childs,NULL);
 
   gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
   vboxall = create_vbox(fp);
@@ -4635,7 +4683,7 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GtkSignalFunc func)
   button = create_button(fp,"Cancel");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 5);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)destroy_childs,G_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,G_OBJECT(fp));
   gtk_widget_show (button);
 
   button = create_button(fp,"OK");
@@ -4655,8 +4703,8 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GtkSignalFunc func)
  	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonSsh), FALSE);
 
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(func),(gpointer)entry);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)destroy_childs,G_OBJECT(fp));
-  g_signal_connect_swapped (G_OBJECT (entry[4]), "activate", (GtkSignalFunc) gtk_button_clicked, G_OBJECT (button));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,G_OBJECT(fp));
+  g_signal_connect_swapped (G_OBJECT (entry[4]), "activate", (GCallback) gtk_button_clicked, G_OBJECT (button));
   
   g_signal_connect(G_OBJECT(ButtonGamess), "clicked",G_CALLBACK(set_default_entrys),NULL);
   g_signal_connect(G_OBJECT(ButtonGauss), "clicked",G_CALLBACK(set_default_entrys),NULL);
@@ -4698,7 +4746,7 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GtkSignalFunc func)
   g_signal_connect(G_OBJECT(ButtonRemote), "clicked",G_CALLBACK(set_frame_remote_visibility),NULL);
   
 #ifdef G_OS_WIN32
-  if(iprogram == PROG_IS_GAMESS || iprogram == PROG_IS_PCGAMESS || iprogram == PROG_IS_MOPAC)
+  if(iprogram == PROG_IS_GAMESS || iprogram == PROG_IS_PCGAMESS || iprogram == PROG_IS_MOPAC||  iprogram == PROG_IS_GAUSS)
   {
   	if(fileopen.remotedir && !this_is_a_backspace(fileopen.remotedir))
 		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonRemote), TRUE);
@@ -4736,34 +4784,34 @@ void create_run ()
 	switch(iprogram)
 	{
 		case PROG_IS_GAMESS :
-		create_run_dialogue_box(NULL,"Gamess",(GtkSignalFunc)run_program);
+		create_run_dialogue_box(NULL,"Gamess",(GCallback)run_program);
 		break;
 
 		case PROG_IS_GAUSS :
-		create_run_dialogue_box(NULL,"Gaussian",(GtkSignalFunc)run_program);
+		create_run_dialogue_box(NULL,"Gaussian",(GCallback)run_program);
 		break;
 
 		case PROG_IS_MOLCAS :
-		create_run_dialogue_box(NULL,"Molcas",(GtkSignalFunc)run_program);
+		create_run_dialogue_box(NULL,"Molcas",(GCallback)run_program);
 		break;
 
 		case PROG_IS_MOLPRO :
-		create_run_dialogue_box(NULL,"Molpro",(GtkSignalFunc)run_program);
+		create_run_dialogue_box(NULL,"Molpro",(GCallback)run_program);
 		break;
 		case PROG_IS_MPQC :
-		create_run_dialogue_box(NULL,"MPQC",(GtkSignalFunc)run_program);
+		create_run_dialogue_box(NULL,"MPQC",(GCallback)run_program);
 		break;
 		case PROG_IS_PCGAMESS :
-		create_run_dialogue_box(NULL,"PCGamess",(GtkSignalFunc)run_program);
+		create_run_dialogue_box(NULL,"PCGamess",(GCallback)run_program);
 		break;
 		case PROG_IS_QCHEM :
-		create_run_dialogue_box(NULL,"Q-Chem",(GtkSignalFunc)run_program);
+		create_run_dialogue_box(NULL,"Q-Chem",(GCallback)run_program);
 		break;
 		case PROG_IS_MOPAC :
-		create_run_dialogue_box(NULL,"Mopac",(GtkSignalFunc)run_program);
+		create_run_dialogue_box(NULL,"Mopac",(GCallback)run_program);
 		break;
 	default :
-		create_run_dialogue_box(NULL,"Other",(GtkSignalFunc)run_program);
+		create_run_dialogue_box(NULL,"Other",(GCallback)run_program);
 	}
 }
 /********************************************************************************/

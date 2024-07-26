@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <gtk/gtk.h>
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 
 #include "ZlmMG.h"
 #include "MathFunctions.h"

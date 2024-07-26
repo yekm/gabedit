@@ -1,6 +1,6 @@
 /* Babel.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 #include <stdlib.h>
 #include <stdio.h>
 #include "../Common/Global.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
 #include "../Utils/GabeditTextEdit.h"
@@ -209,15 +209,7 @@ static GtkWidget *create_browser(GtkWidget* Wins,GtkWidget* vbox,gchar *deffile,
 	
 	if(deffile)
 	{
- 		GdkFont *font = NULL; 
- 		PangoFontDescription *font_desc = pango_font_description_from_string (FontsStyleResult.fontname);
-  		if(font_desc) font = gdk_font_from_description (font_desc);
 		gint len = strlen(deffile)*8;
-		if(font)
-		{
-  	 		len = strlen(deffile)*(gint)(gdk_string_width (font,"D") );
-			gdk_font_unref (font);
-		}
   		gtk_widget_set_size_request(GTK_WIDGET(Entry),len,32);
 		gtk_entry_set_text(GTK_ENTRY(Entry),deffile);
 	}
@@ -243,7 +235,7 @@ static GtkWidget *create_browser(GtkWidget* Wins,GtkWidget* vbox,gchar *deffile,
 	}
 	g_object_set_data (G_OBJECT (hbox), "Patterns",patterns);
 	gtk_widget_show_all(hbox);
-	g_signal_connect_swapped(G_OBJECT (button), "clicked",GTK_SIGNAL_FUNC(set_entry_selected_file),G_OBJECT(hbox));
+	g_signal_connect_swapped(G_OBJECT (button), "clicked",G_CALLBACK(set_entry_selected_file),G_OBJECT(hbox));
 	return hbox;
 }
 /*****************************************************************************************/
@@ -877,7 +869,7 @@ GtkWidget* create_babel_read_save_dialogue(gboolean read)
 	gtk_container_add (GTK_CONTAINER (frame), vboxall);
 
 	hbox = gtk_hbox_new (TRUE, 0);
-	gtk_box_pack_start_defaults( GTK_BOX(vboxall), hbox);
+	gtk_box_pack_start( GTK_BOX(vboxall), hbox,TRUE,TRUE,0);
 
 	if(read) frame = create_selector_frame(hbox, fp, TRUE, labelLeft, inputPatterns, inputFormatWithAuto, n);
 	else frame = create_selector_frame(hbox, fp, TRUE, labelLeft, outputPatterns, outputFormatWithAuto, n);

@@ -20,6 +20,7 @@
 #include "gtkglarea.h"
 #include <GL/gl.h>
 #include <stdarg.h>
+#include "../Config.h"
 
 static void gtk_gl_area_class_init    (GtkGLAreaClass *klass);
 static void gtk_gl_area_init          (GtkGLArea      *glarea);

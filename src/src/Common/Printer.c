@@ -1,6 +1,6 @@
 /* Printer.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -182,7 +182,7 @@ GtkWidget *create_orientation(GtkWidget* box)
   Entry = create_frame_with_list(box," Orientation ",liste,2);  
   gtk_widget_set_sensitive(Entry,FALSE); 
   g_signal_connect(G_OBJECT(Entry), "changed",
-                             GTK_SIGNAL_FUNC(change_of_chars),
+                             G_CALLBACK(change_of_chars),
                              NULL);
 
   return Entry;
@@ -207,7 +207,7 @@ GtkWidget *create_page_by_papier(GtkWidget* box)
 
   Entry = create_frame_with_list(box," pages by paper ",liste,2);  
   gtk_widget_set_sensitive(Entry,FALSE); 
-  g_signal_connect(G_OBJECT(Entry), "changed", GTK_SIGNAL_FUNC(change_of_chars), NULL);
+  g_signal_connect(G_OBJECT(Entry), "changed", G_CALLBACK(change_of_chars), NULL);
 
   return Entry;
 }
@@ -248,10 +248,10 @@ GtkWidget *create_print_in_file(GtkWidget* box)
    hbox = create_hbox_browser(Wins,vbox," File Name :","gabedit.ps",patterns);
    Entry = (GtkWidget*)(g_object_get_data(G_OBJECT(hbox),"Entry"));	
   g_signal_connect(G_OBJECT (ButtonYes), "clicked",
-                                     GTK_SIGNAL_FUNC(show_hbox_file),
+                                     G_CALLBACK(show_hbox_file),
                                      hbox);
   g_signal_connect(G_OBJECT (ButtonNo), "clicked",
-                                     GTK_SIGNAL_FUNC(hide_hbox_file),
+                                     G_CALLBACK(hide_hbox_file),
                                      hbox);
    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonNo), TRUE);
 
@@ -374,7 +374,7 @@ void create_print_page()
   gtk_widget_realize(Wins);
 
   init_child(Wins,gtk_widget_destroy," Print ");
-  g_signal_connect(G_OBJECT(Wins),"delete_event",(GtkSignalFunc)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_childs,NULL);
  
   Frame = create_frame(Wins,GTK_DIALOG(Wins)->vbox,NULL); 
   vbox = create_vbox(Frame);
@@ -394,11 +394,11 @@ void create_print_page()
   button = create_button(Wins,"Cancel");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
-  g_signal_connect_swapped(GTK_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(destroy_childs),GTK_OBJECT(Wins));
+  g_signal_connect_swapped(GTK_OBJECT(button), "clicked",G_CALLBACK(destroy_childs),GTK_OBJECT(Wins));
   gtk_widget_show (button);
 
   button = create_button(Wins,"Display");
-  g_signal_connect(G_OBJECT(button), "clicked", GTK_SIGNAL_FUNC(print_file),&button);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(print_file),&button);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
   gtk_widget_show (button);
@@ -407,8 +407,8 @@ void create_print_page()
   button = create_button(Wins,"Print");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", GTK_SIGNAL_FUNC(print_file),NULL);
-  g_signal_connect_swapped(GTK_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(destroy_childs),GTK_OBJECT(Wins));
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(print_file),NULL);
+  g_signal_connect_swapped(GTK_OBJECT(button), "clicked",G_CALLBACK(destroy_childs),GTK_OBJECT(Wins));
   gtk_widget_grab_default(button);
   gtk_widget_show (button);
 

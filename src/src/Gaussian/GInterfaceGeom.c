@@ -1,6 +1,6 @@
 /* GInterfaceGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -112,14 +112,16 @@ void set_spin_of_electrons()
 	}
 
         for(i=0;(guint)i<NMethodes;i++)
-        	if((NumberElectrons[i]-ChargeGauss[i])%2==0)
+        	if((NumberElectrons[i]-TotalCharges[i])%2==0)
 			SpinElectrons[i]=1;
                 else
 			SpinElectrons[i]=2;
 
         for(i=0;(guint)i<NMethodes;i++)
         {
-         	chaine = g_strdup_printf("%d",SpinElectrons[i]);
+		if(SpinMultiplicities[i]%2 != SpinElectrons[i]%2)
+			SpinMultiplicities[i] = SpinElectrons[i];
+         	chaine = g_strdup_printf("%d",SpinMultiplicities[i]);
 	 	if(EntryCS[2*i+1] && GTK_IS_ENTRY(EntryCS[2*i+1]))
 		{
          		gtk_entry_set_text(GTK_ENTRY(EntryCS[2*i+1]),chaine);
@@ -134,7 +136,7 @@ static void change_of_charge(GtkWidget *entry,gpointer d)
 
         Number = (gint*)d;
         entry_text = gtk_entry_get_text(GTK_ENTRY(entry));
-        ChargeGauss[*Number] = atoi(entry_text);
+        TotalCharges[*Number] = atoi(entry_text);
 	set_spin_of_electrons();
 
 }
@@ -146,8 +148,8 @@ static void create_combo_charge(GtkWidget *hbox,gint Num,gchar *tlabel)
   Number = g_malloc(sizeof(gint));
   *Number = Num/2;
   EntryCS[Num] = create_label_combo(hbox,tlabel,tlist,9,TRUE,-1,(gint)(ScreenHeight*0.1));
-  g_signal_connect(G_OBJECT(EntryCS[Num]), "changed", GTK_SIGNAL_FUNC(change_of_charge), Number);
-  ChargeGauss[*Number] = 0;
+  g_signal_connect(G_OBJECT(EntryCS[Num]), "changed", G_CALLBACK(change_of_charge), Number);
+  TotalCharges[*Number] = 0;
 }
 /************************************************************************************************************/
 static void create_combo_spin(GtkWidget *hbox,gint Num,gchar *tlabel)

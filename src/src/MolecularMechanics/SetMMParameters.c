@@ -1,6 +1,6 @@
 /* SetMMParameters.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -262,7 +262,7 @@ static void event_dispatcher(GtkWidget *widget, GdkEventButton *event, gpointer 
 static void newMenuToList(GtkWidget* list, GtkWidget* win)
 {
 	GtkUIManager *manager = newMenu(win);
-  	g_signal_connect(G_OBJECT (list), "button_press_event", GTK_SIGNAL_FUNC(event_dispatcher), manager);      
+  	g_signal_connect(G_OBJECT (list), "button_press_event", G_CALLBACK(event_dispatcher), manager);      
 }
 /********************************************************************************/
 static void setStyles()
@@ -348,9 +348,9 @@ static void SelectAtom(GtkWidget *w,gpointer entry0)
 	  button = gtk_button_new_with_label(Symb[j][i]);
           style=set_button_style(button_style,button,Symb[j][i]);
           g_signal_connect(G_OBJECT(button), "clicked",
-                            (GtkSignalFunc)setAtom,(gpointer )Symb[j][i]);
+                            (GCallback)setAtom,(gpointer )Symb[j][i]);
           g_signal_connect_swapped(GTK_OBJECT(button), "clicked",
-                            (GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(FenetreTable));
+                            (GCallback)gtk_widget_destroy,GTK_OBJECT(FenetreTable));
 	  gtk_table_attach(GTK_TABLE(Table),button,j,j+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -757,12 +757,12 @@ static void editnewPairWiseDlg(GabeditSignalFunc f,gchar* title,gboolean sensiti
 	gtk_window_set_transient_for(GTK_WINDOW(WinDlg),GTK_WINDOW(SetWinDlg));
 	gtk_window_set_modal(GTK_WINDOW(WinDlg),TRUE);
 
-	g_signal_connect(G_OBJECT(WinDlg),"delete_event",(GtkSignalFunc)gtk_widget_destroy,NULL);
+	g_signal_connect(G_OBJECT(WinDlg),"delete_event",(GCallback)gtk_widget_destroy,NULL);
 
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-	gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(WinDlg)->vbox), frame);
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->vbox), frame,TRUE,TRUE,0);
 	gtk_widget_show (frame);
 
 	vboxframe = create_vbox(frame);
@@ -1017,15 +1017,15 @@ static void editnewPairWiseDlg(GabeditSignalFunc f,gchar* title,gboolean sensiti
 	gtk_widget_realize(WinDlg);
 
 	Button = create_button(WinDlg,"Cancel");
-	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button);
-	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(WinDlg));
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
+	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 
 
 	Button = create_button(WinDlg,"OK");
-	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button);
-	g_signal_connect(G_OBJECT(Button), "clicked",(GtkSignalFunc)f,NULL);
-	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(WinDlg));
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
+	g_signal_connect(G_OBJECT(Button), "clicked",(GCallback)f,NULL);
+	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(Button);
 	  
@@ -1061,12 +1061,12 @@ static void editnewNonBondedDlg(GabeditSignalFunc f,gchar* title,gboolean sensit
 	gtk_window_set_transient_for(GTK_WINDOW(WinDlg),GTK_WINDOW(SetWinDlg));
 	gtk_window_set_modal(GTK_WINDOW(WinDlg),TRUE);
 
-	g_signal_connect(G_OBJECT(WinDlg),"delete_event",(GtkSignalFunc)gtk_widget_destroy,NULL);
+	g_signal_connect(G_OBJECT(WinDlg),"delete_event",(GCallback)gtk_widget_destroy,NULL);
 
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-	gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(WinDlg)->vbox), frame);
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->vbox), frame,TRUE,TRUE,0);
 	gtk_widget_show (frame);
 
 	vboxframe = create_vbox(frame);
@@ -1147,15 +1147,15 @@ static void editnewNonBondedDlg(GabeditSignalFunc f,gchar* title,gboolean sensit
 	gtk_widget_realize(WinDlg);
 
 	Button = create_button(WinDlg,"Cancel");
-	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button);
-	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(WinDlg));
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
+	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 
 
 	Button = create_button(WinDlg,"OK");
-	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button);
-	g_signal_connect(G_OBJECT(Button), "clicked",(GtkSignalFunc)f,NULL);
-	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(WinDlg));
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
+	g_signal_connect(G_OBJECT(Button), "clicked",(GCallback)f,NULL);
+	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(Button);
 	  
@@ -1251,12 +1251,12 @@ static void editnewHBondDlg(GabeditSignalFunc f,gchar* title,gboolean sensitive)
 	gtk_window_set_transient_for(GTK_WINDOW(WinDlg),GTK_WINDOW(SetWinDlg));
 	gtk_window_set_modal(GTK_WINDOW(WinDlg),TRUE);
 
-	g_signal_connect(G_OBJECT(WinDlg),"delete_event",(GtkSignalFunc)gtk_widget_destroy,NULL);
+	g_signal_connect(G_OBJECT(WinDlg),"delete_event",(GCallback)gtk_widget_destroy,NULL);
 
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-	gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(WinDlg)->vbox), frame);
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->vbox), frame,TRUE,TRUE,0);
 	gtk_widget_show (frame);
 
 	vboxframe = create_vbox(frame);
@@ -1345,16 +1345,16 @@ static void editnewHBondDlg(GabeditSignalFunc f,gchar* title,gboolean sensitive)
 	gtk_widget_realize(WinDlg);
 
 	Button = create_button(WinDlg,"Cancel");
-	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button);
-	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(WinDlg));
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
+	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 
 
 
 	Button = create_button(WinDlg,"OK");
-	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button);
-	g_signal_connect(G_OBJECT(Button), "clicked",(GtkSignalFunc)f,NULL);
-	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(WinDlg));
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
+	g_signal_connect(G_OBJECT(Button), "clicked",(GCallback)f,NULL);
+	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(Button);
 	  
@@ -1425,12 +1425,12 @@ static void editnewImproperDlg(GabeditSignalFunc f,gchar* title,gboolean sensiti
 	gtk_window_set_transient_for(GTK_WINDOW(WinDlg),GTK_WINDOW(SetWinDlg));
 	gtk_window_set_modal(GTK_WINDOW(WinDlg),TRUE);
 
-	g_signal_connect(G_OBJECT(WinDlg),"delete_event",(GtkSignalFunc)gtk_widget_destroy,NULL);
+	g_signal_connect(G_OBJECT(WinDlg),"delete_event",(GCallback)gtk_widget_destroy,NULL);
 
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-	gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(WinDlg)->vbox), frame);
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->vbox), frame,TRUE,TRUE,0);
 	gtk_widget_show (frame);
 
 	vboxframe = create_vbox(frame);
@@ -1562,15 +1562,15 @@ static void editnewImproperDlg(GabeditSignalFunc f,gchar* title,gboolean sensiti
 	gtk_widget_realize(WinDlg);
 
 	Button = create_button(WinDlg,"Cancel");
-	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button);
-	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(WinDlg));
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
+	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 
 
 	Button = create_button(WinDlg,"OK");
-	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button);
-	g_signal_connect(G_OBJECT(Button), "clicked",(GtkSignalFunc)f,NULL);
-	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(WinDlg));
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
+	g_signal_connect(G_OBJECT(Button), "clicked",(GCallback)f,NULL);
+	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(Button);
 	  
@@ -1668,12 +1668,12 @@ static void editnewTorsionDlg(GabeditSignalFunc f,gchar* title,gboolean sensitiv
 	gtk_window_set_transient_for(GTK_WINDOW(WinDlg),GTK_WINDOW(SetWinDlg));
 	gtk_window_set_modal(GTK_WINDOW(WinDlg),TRUE);
 
-	g_signal_connect(G_OBJECT(WinDlg),"delete_event",(GtkSignalFunc)gtk_widget_destroy,NULL);
+	g_signal_connect(G_OBJECT(WinDlg),"delete_event",(GCallback)gtk_widget_destroy,NULL);
 
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-	gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(WinDlg)->vbox), frame);
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->vbox), frame,TRUE,TRUE,0);
 	gtk_widget_show (frame);
 
 	vboxframe = create_vbox(frame);
@@ -1829,15 +1829,15 @@ static void editnewTorsionDlg(GabeditSignalFunc f,gchar* title,gboolean sensitiv
 	gtk_widget_realize(WinDlg);
 
 	Button = create_button(WinDlg,"Cancel");
-	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button);
-	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(WinDlg));
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
+	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 
 
 	Button = create_button(WinDlg,"OK");
-	gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button);
-	g_signal_connect(G_OBJECT(Button), "clicked",(GtkSignalFunc)f,NULL);
-	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(WinDlg));
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
+	g_signal_connect(G_OBJECT(Button), "clicked",(GCallback)f,NULL);
+	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(Button);
 	  
@@ -1916,12 +1916,12 @@ static void editnewBendDlg(GabeditSignalFunc f,gchar* title,gboolean sensitive)
 	gtk_window_set_transient_for(GTK_WINDOW(WinDlg),GTK_WINDOW(SetWinDlg));
 	gtk_window_set_modal(GTK_WINDOW(WinDlg),TRUE);
 
-	g_signal_connect(G_OBJECT(WinDlg),"delete_event",(GtkSignalFunc)gtk_widget_destroy,NULL);
+	g_signal_connect(G_OBJECT(WinDlg),"delete_event",(GCallback)gtk_widget_destroy,NULL);
 
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-	gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(WinDlg)->vbox), frame);
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->vbox), frame,TRUE,TRUE,0);
 	gtk_widget_show (frame);
 
 	vboxframe = create_vbox(frame);
@@ -2018,15 +2018,15 @@ static void editnewBendDlg(GabeditSignalFunc f,gchar* title,gboolean sensitive)
 	gtk_widget_realize(WinDlg);
 
 	Button = create_button(WinDlg,"Cancel");
-	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button);
-	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(WinDlg));
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
+	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 
 
 	Button = create_button(WinDlg,"OK");
-	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button);
-	g_signal_connect(G_OBJECT(Button), "clicked",(GtkSignalFunc)f,NULL);
-	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(WinDlg));
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
+	g_signal_connect(G_OBJECT(Button), "clicked",(GCallback)f,NULL);
+	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(Button);
 	  
@@ -2093,12 +2093,12 @@ static void editnewBondDlg(GabeditSignalFunc f,gchar* title,gboolean sensitive)
 	gtk_window_set_transient_for(GTK_WINDOW(WinDlg),GTK_WINDOW(SetWinDlg));
 	gtk_window_set_modal(GTK_WINDOW(WinDlg),TRUE);
 
-	g_signal_connect(G_OBJECT(WinDlg),"delete_event",(GtkSignalFunc)gtk_widget_destroy,NULL);
+	g_signal_connect(G_OBJECT(WinDlg),"delete_event",(GCallback)gtk_widget_destroy,NULL);
 
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-	gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(WinDlg)->vbox), frame);
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->vbox), frame,TRUE,TRUE,0);
 	gtk_widget_show (frame);
 
 	vboxframe = create_vbox(frame);
@@ -2187,14 +2187,14 @@ static void editnewBondDlg(GabeditSignalFunc f,gchar* title,gboolean sensitive)
 	gtk_widget_realize(WinDlg);
 
 	Button = create_button(WinDlg,"Cancel");
-	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button);
-	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(WinDlg));
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
+	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 
 	Button = create_button(WinDlg,"OK");
-	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button);
-	g_signal_connect(G_OBJECT(Button), "clicked",(GtkSignalFunc)f,NULL);
-	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(WinDlg));
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
+	g_signal_connect(G_OBJECT(Button), "clicked",(GCallback)f,NULL);
+	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(Button);
 	  
@@ -2299,12 +2299,12 @@ static void editnewTypeDlg(GabeditSignalFunc f,gchar* title)
 	gtk_window_set_transient_for(GTK_WINDOW(WinDlg),GTK_WINDOW(SetWinDlg));
 	gtk_window_set_modal(GTK_WINDOW(WinDlg),TRUE);
 
-	g_signal_connect(G_OBJECT(WinDlg),"delete_event",(GtkSignalFunc)gtk_widget_destroy,NULL);
+	g_signal_connect(G_OBJECT(WinDlg),"delete_event",(GCallback)gtk_widget_destroy,NULL);
 
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-	gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(WinDlg)->vbox), frame);
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->vbox), frame,TRUE,TRUE,0);
 	gtk_widget_show (frame);
 
 	vboxframe = create_vbox(frame);
@@ -2319,7 +2319,7 @@ static void editnewTypeDlg(GabeditSignalFunc f,gchar* title)
 
 	Button = gtk_button_new_with_label(" Modify ");
 	gtk_box_pack_start (GTK_BOX(hbox), Button, TRUE, TRUE, 5);
-	g_signal_connect(G_OBJECT(Button), "clicked", (GtkSignalFunc)SelectAtom,Entrys[E_S]);
+	g_signal_connect(G_OBJECT(Button), "clicked", (GCallback)SelectAtom,Entrys[E_S]);
 
 	hbox=create_hbox_false(vboxframe);
 	Entrys[E_T] = create_label_entry(hbox,typeTitles[0],(gint)(ScreenHeight*0.1),(gint)(ScreenHeight*0.15));
@@ -2368,14 +2368,14 @@ static void editnewTypeDlg(GabeditSignalFunc f,gchar* title)
 	gtk_widget_realize(WinDlg);
 
 	Button = create_button(WinDlg,"Cancel");
-	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button);
-	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(WinDlg));
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
+	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 
 	Button = create_button(WinDlg,"OK");
-	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button);
-	g_signal_connect(G_OBJECT(Button), "clicked",(GtkSignalFunc)f, NULL);
-	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(WinDlg));
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
+	g_signal_connect(G_OBJECT(Button), "clicked",(GCallback)f, NULL);
+	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(Button);
 	  
@@ -3621,7 +3621,7 @@ void setMMParamatersDlg()
 
 	SetWinDlg = Win;
 
-	g_signal_connect(G_OBJECT(Win),"delete_event",(GtkSignalFunc)gtk_widget_destroy,NULL);
+	g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)gtk_widget_destroy,NULL);
  
 	vbox = gtk_vbox_new (FALSE, 0);
 	gtk_widget_show (vbox);

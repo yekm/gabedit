@@ -1,6 +1,6 @@
 /* MPQCGuessWaveFunction.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -32,10 +32,9 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/DrawGeom.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Geometry/InterfaceGeom.h"
 #include "../Common/Windows.h"
-#include "../Utils/Constantes.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/GabeditTextEdit.h"
 #include "../Symmetry/MoleculeSymmetry.h"
@@ -349,7 +348,7 @@ static GtkWidget *addMPQCChargeToTable(GtkWidget *table, gint i)
 	labelNumberOfElectrons = add_label_table(table," ",(gushort)i,3);
 
 	g_object_set_data(G_OBJECT (entryCharge), "LabelNumberOfElectrons", labelNumberOfElectrons);
-	g_signal_connect(G_OBJECT(entryCharge),"changed", GTK_SIGNAL_FUNC(changedEntryCharge),NULL);
+	g_signal_connect(G_OBJECT(entryCharge),"changed", G_CALLBACK(changedEntryCharge),NULL);
 	setComboCharge(comboCharge);
 	return comboCharge;
 }
@@ -367,7 +366,7 @@ static GtkWidget *addMPQCSpinGuessToTable(GtkWidget *table, gint i)
 	comboSpinMultiplicity  = g_object_get_data(G_OBJECT (entrySpinMultiplicity), "Combo");
 	gtk_widget_set_sensitive(entrySpinMultiplicity, FALSE);
 
-	g_signal_connect(G_OBJECT(entrySpinMultiplicity),"changed", GTK_SIGNAL_FUNC(changedEntrySpinMultiplicity),NULL);
+	g_signal_connect(G_OBJECT(entrySpinMultiplicity),"changed", G_CALLBACK(changedEntrySpinMultiplicity),NULL);
 	setComboSpinMultiplicity(comboSpinMultiplicity);
 	return comboSpinMultiplicity;
 }
@@ -395,7 +394,7 @@ static void addMPQCMethodToTable(GtkWidget *table, gint i, GtkWidget *comboSpinM
 	g_object_set_data(G_OBJECT (entryMethod), "EntrySpinMultiplicity", entrySpinMultiplicity);
 	g_object_set_data(G_OBJECT (comboMethod), "EntrySpinMultiplicity", entrySpinMultiplicity);
 	g_object_set_data(G_OBJECT (entrySpinMultiplicity), "ComboMethod", comboMethod);
-	g_signal_connect(G_OBJECT(entryMethod),"changed", GTK_SIGNAL_FUNC(changedEntryMethod),NULL);
+	g_signal_connect(G_OBJECT(entryMethod),"changed", G_CALLBACK(changedEntryMethod),NULL);
 	setComboMethod(comboMethod);
 }
 /***********************************************************************************************/
@@ -467,7 +466,7 @@ void createMPQCGuess(GtkWidget *box)
 	addMPQCBasisGuessToTable(table,i);
 
 	g_object_set_data(G_OBJECT (checkButton), "VboxTable", vboxTable);
-	g_signal_connect(G_OBJECT(checkButton),"clicked", GTK_SIGNAL_FUNC(coreButtonClicked),NULL);
+	g_signal_connect(G_OBJECT(checkButton),"clicked", G_CALLBACK(coreButtonClicked),NULL);
 }
 /**************************************************************************************************************************************/
 static void putMPQCGuessWaveInTextEditor()

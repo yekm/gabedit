@@ -1,6 +1,6 @@
 /* MolcasScf.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/GeomConversion.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/GabeditTextEdit.h"
 #include "../Symmetry/MoleculeSymmetry.h"
@@ -45,7 +45,7 @@ static void initMolcasScf(MolcasScf* mScf)
 	sprintf(mScf->method,"HF");
 
 	mScf->typeOfOcupations = 0;
-	mScf->charge[0] = 0;
+	mScf->charge[0] = TotalCharges[0];
 	mScf->charge[1] = -1;
 
 	mScf->aufBau[0] = 0;
@@ -63,7 +63,7 @@ static void initMolcasScf(MolcasScf* mScf)
 	mScf->occupationOrbitalsBeta = NULL;
 
 
-	mScf->zSpin = 0;
+	mScf->zSpin = SpinMultiplicities[0]-1;
 
 	mScf->guessOrbitalsCore = FALSE;
 
@@ -135,7 +135,10 @@ static void copyScfParameters(MolcasScf* newCopy, MolcasScf* toCopy)
 /************************************************************************************************************/
 static void copyScfParametersFromTmp(GtkWidget *win, gpointer data)
 {
+
 	copyScfParameters(&molcasScf, &molcasScfTmp);
+	TotalCharges[0] = molcasScf.charge[0];
+	SpinMultiplicities[0] = molcasScf.zSpin+1;
 }
 /********************************************************************************/
 static void setComboZSpin(GtkWidget *comboZSpin, gboolean restricted)
@@ -202,6 +205,17 @@ static void setComboZSpin(GtkWidget *comboZSpin, gboolean restricted)
 	}
 }
 /********************************************************************************/
+static void setChargeComboCharge(GtkWidget *comboCharge, gint charge)
+{
+	GtkWidget *entry = NULL;
+	gchar* t = NULL;
+	if(!comboCharge) return;
+	entry = GTK_BIN (comboCharge)->child;
+	t = g_strdup_printf("%d",charge);
+	gtk_entry_set_text(GTK_ENTRY(entry),t);
+	g_free(t);
+}
+/********************************************************************************/
 static void setComboCharge(GtkWidget *comboCharge, gboolean restricted)
 {
 	GList *glist = NULL;
@@ -261,6 +275,7 @@ static void setComboCharge(GtkWidget *comboCharge, gboolean restricted)
 		for(i=0;i<nlist;i++) if(list[i]) g_free(list[i]);
 		g_free(list);
 	}
+	setChargeComboCharge(comboCharge, molcasScfTmp.charge[0]);
 }
 /**********************************************************************/
 static void changedEntryZSpin(GtkWidget *entry, gpointer data)
@@ -371,7 +386,10 @@ void activateScfEntryType()
 	if(entryType && GTK_IS_WIDGET(entryType))
 	{
 		gtk_entry_set_text(GTK_ENTRY(entryType)," ");
+		if(SpinMultiplicities[0]==1)
 		gtk_entry_set_text(GTK_ENTRY(entryType),"Restricted"); /* pour activer entryType */
+		else
+		gtk_entry_set_text(GTK_ENTRY(entryType),"UnRestricted"); /* pour activer entryType */
 	}
 }
 /***********************************************************************************************/
@@ -441,43 +459,44 @@ void createScfFrame(GtkWidget *win, GtkWidget *box, GtkWidget *OkButton)
 	comboZSpin  = g_object_get_data(G_OBJECT (entryZSpin), "Combo");
 	gtk_widget_set_sensitive(entryZSpin, FALSE);
 
-	g_signal_connect(G_OBJECT(entryType),"changed", GTK_SIGNAL_FUNC(changedEntryType),NULL);
+	g_signal_connect(G_OBJECT(entryType),"changed", G_CALLBACK(changedEntryType),NULL);
 	g_object_set_data(G_OBJECT (entryType), "Combo", comboCharge);
-	g_signal_connect(G_OBJECT(entryZSpin),"changed", GTK_SIGNAL_FUNC(changedEntryZSpin),NULL);
+	g_signal_connect(G_OBJECT(entryZSpin),"changed", G_CALLBACK(changedEntryZSpin),NULL);
 	g_object_set_data(G_OBJECT (entryCharge), "Combo", comboZSpin);
 	g_object_set_data(G_OBJECT (entryCharge), "Label", labelZSpin);
 	g_object_set_data(G_OBJECT (entryCharge), "LabelNumberOfElectrons", labelNumberOfElectrons);
-	g_signal_connect(G_OBJECT(entryCharge),"changed", GTK_SIGNAL_FUNC(changedEntryCharge),NULL);
-	g_signal_connect(G_OBJECT(entryMethod),"changed", GTK_SIGNAL_FUNC(changedEntryMethod),NULL);
+	g_signal_connect(G_OBJECT(entryCharge),"changed", G_CALLBACK(changedEntryCharge),NULL);
+	g_signal_connect(G_OBJECT(entryMethod),"changed", G_CALLBACK(changedEntryMethod),NULL);
+
 
 	gtk_entry_set_text(GTK_ENTRY(entryMethod),"HF");
 
 	activateScfEntryType();
 
+	molcasScfTmp.charge[0] = TotalCharges[0];
+	if(strcmp(molcasScfTmp.type,"Restricted")==0) setComboCharge(comboCharge, TRUE);
+	else setComboCharge(comboCharge, FALSE);
+
 	if(OkButton)
 	{
-		g_signal_connect(G_OBJECT(OkButton), "clicked",GTK_SIGNAL_FUNC(copyScfParametersFromTmp),NULL);
-		g_signal_connect(G_OBJECT(OkButton), "clicked",GTK_SIGNAL_FUNC(initScfEntryType),NULL);
+		g_signal_connect(G_OBJECT(OkButton), "clicked",G_CALLBACK(copyScfParametersFromTmp),NULL);
+		g_signal_connect(G_OBJECT(OkButton), "clicked",G_CALLBACK(initScfEntryType),NULL);
 	}
 }
 /************************************************************************************************************/
 static void putBeginScfInTextEditor()
 {
 
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.program, &molcasColorBack.program, "  &SCF &END\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.program, &molcasColorBack.program, " &SCF\n",-1);
 }
 /************************************************************************************************************/
 static void putTitleScfInTextEditor()
 {
-        gchar buffer[BSIZE];
-
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.program, NULL, "Title\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.subProgram, NULL, "Title=",-1);
 
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, molcasScf.title,-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "\n",-1);
 
-	sprintf(buffer,"*----------------------------------------------------------------\n");
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
 }
 /************************************************************************************************************/
 static void putMethodScfInTextEditor()
@@ -489,18 +508,16 @@ static void putMethodScfInTextEditor()
 	if(strcmp(molcasScf.type,"UnRestricted")==0)
 	{
 		sprintf(buffer,"UHF\n");
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL,  &molcasColorFore.program, NULL, buffer,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL,  &molcasColorFore.subProgram, NULL, buffer,-1);
 	}
 	
 	if(strcmp(molcasScf.method,"HF")!=0)
 	{
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL,  &molcasColorFore.program, NULL, "KSDFT\n",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL,  &molcasColorFore.subProgram, NULL, "KSDFT\n",-1);
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, molcasScf.method,-1);
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "\n",-1);
 	}
 
-	sprintf(buffer,"*----------------------------------------------------------------\n");
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
 
 }
 /************************************************************************************************************/
@@ -510,7 +527,7 @@ static void putChargeScfInTextEditor()
 
 	if(molcasScf.typeOfOcupations ==0 ) return;
 
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.program, NULL, "Charge\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.subProgram, NULL, "Charge=",-1);
 	if(molcasScf.charge[1]>0)
 		sprintf(buffer,"%d %d\n", molcasScf.charge[0], molcasScf.charge[1]);
 	else
@@ -518,8 +535,6 @@ static void putChargeScfInTextEditor()
 
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
 
-	sprintf(buffer,"*----------------------------------------------------------------\n");
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
 }
 /************************************************************************************************************/
 static void putZSpinScfInTextEditor()
@@ -528,13 +543,11 @@ static void putZSpinScfInTextEditor()
 
 	if(strcmp(molcasScf.type,"Restricted")==0) return;
 
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.program, NULL, "ZSpin\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.subProgram, NULL, "ZSpin=",-1);
 	sprintf(buffer,"%d\n", molcasScf.zSpin);
 
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
 
-	sprintf(buffer,"*----------------------------------------------------------------\n");
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
 }
 /************************************************************************************************************/
 static void putIterationsScfInTextEditor()
@@ -543,7 +556,7 @@ static void putIterationsScfInTextEditor()
 
 	if(molcasScf.numberOfNDDOIterations == 0 && molcasScf.numberOfRHFIterations == 0) return;
 
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.program, NULL, "Iterations\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.subProgram, NULL, "Iterations\n",-1);
 
 	sprintf(buffer,"* NDDO and RHF   iterations\n");
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
@@ -552,8 +565,6 @@ static void putIterationsScfInTextEditor()
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
 	
 
-	sprintf(buffer,"*----------------------------------------------------------------\n");
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
 }
 /************************************************************************************************************/
 static void putThresholdScfInTextEditor()
@@ -563,7 +574,7 @@ static void putThresholdScfInTextEditor()
 
 	for(i=0; i<4; i++) if(molcasScf.convergenceThresholds[i] <0) return;
 
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.program, NULL, "Threshold\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.subProgram, NULL, "Threshold\n",-1);
 
 	sprintf(buffer,"*   convergence   thresholds \n");
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
@@ -579,8 +590,6 @@ static void putThresholdScfInTextEditor()
 			);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
 
-	sprintf(buffer,"*----------------------------------------------------------------\n");
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
 }
 /************************************************************************************************************/
 static void putDiskScfInTextEditor()
@@ -590,7 +599,7 @@ static void putDiskScfInTextEditor()
 
 	if( molcasScf.diskSize[0] == 1 &&  molcasScf.diskSize[1] == 0) return;
 
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.program, NULL, "Disk\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.subProgram, NULL, "Disk\n",-1);
 
 	sprintf(buffer,"* 1 -> Semi-direct algorithm writing max 128k words (1MByte) to disk \n");
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
@@ -601,8 +610,6 @@ static void putDiskScfInTextEditor()
 	sprintf(buffer,"1   0\n");
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
 
-	sprintf(buffer,"*----------------------------------------------------------------\n");
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
 }
 /************************************************************************************************************/
 static void putIVOScfInTextEditor()
@@ -612,13 +619,11 @@ static void putIVOScfInTextEditor()
 	if(!molcasScf.ivo) return;
 	if(molcasOptimisation.numberOfIterations>0) return;
 
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.program, NULL, "Ivo\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.subProgram, NULL, "Ivo\n",-1);
 
 	sprintf(buffer,"* Improve the virtuals for MCSCF\n");
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
 
-	sprintf(buffer,"*----------------------------------------------------------------\n");
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
 }
 /************************************************************************************************************/
 static void putEndScfInTextEditor()
@@ -629,14 +634,17 @@ static void putEndScfInTextEditor()
 	*/
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.program, &molcasColorBack.program, "End of input\n\n",-1);
 
+	/* this action is done automatically - all grid & molden files are copied to submit directory.*/
+	/*
 	if(molcasOptimisation.numberOfIterations<1)
 	{
         	gchar buffer[BSIZE];
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "\n\n", -1);
 		sprintf(buffer,"! cp $Project.scf.molden   $MOLCAS_SUBMIT_PWD/$Project.scf.molden\n");
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.shellCommand, &molcasColorBack.shellCommand, buffer, -1);
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "\n\n", -1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "\n", -1);
 	}
+	*/
 }
 /************************************************************************************************************/
 void putScfInfoInTextEditor()

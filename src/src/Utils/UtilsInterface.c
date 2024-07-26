@@ -1,6 +1,6 @@
 /* UtilsInterface.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 #include <ctype.h>
 
 #include "../Common/Global.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Gaussian/GaussGlobal.h"
 #include "../Files/FileChooser.h"
 #include "../Gamess/Gamess.h"
@@ -51,7 +51,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/DrawGeom.h"
 #include "../Common/Exit.h"
 #include "../Molcas/MolcasVariables.h"
-#include "../Molcas/MolcasSeward.h"
+#include "../Molcas/MolcasGateWay.h"
 
 #include "../../pixmaps/Ok.xpm"
 #include "../../pixmaps/Cancel.xpm"
@@ -102,9 +102,9 @@ void create_popup_win(gchar* label)
                               GDK_KEY_PRESS_MASK);
 
         g_signal_connect(G_OBJECT(MainFrame),"button_press_event",
-                GTK_SIGNAL_FUNC(gtk_widget_destroy),NULL);
+                G_CALLBACK(gtk_widget_destroy),NULL);
         g_signal_connect(G_OBJECT(MainFrame),"key_press_event",
-                GTK_SIGNAL_FUNC(gtk_widget_destroy),NULL);
+                G_CALLBACK(gtk_widget_destroy),NULL);
         gtk_widget_realize(MainFrame);
 
 	Label = gtk_label_new(label);
@@ -133,7 +133,7 @@ void init_child(GtkWidget *widget, GabeditSignalFunc func,gchar *buttonlabel)
   g_object_set_data(G_OBJECT (widget), "Childs", childs);
   childs->nchilds = 1;
   childs->childs = g_malloc(sizeof(GtkWidget*));
-  childs->destroychilds = g_malloc(sizeof(GtkSignalFunc));
+  childs->destroychilds = g_malloc(sizeof(GCallback));
   childs->childs[0] = widget;
   g_object_set_data(G_OBJECT(childs->childs[0]),"Parent",widget);
   childs->destroychilds[0] = func;
@@ -146,7 +146,7 @@ void add_child(GtkWidget *widget,GtkWidget *childwidget,GabeditSignalFunc func,g
   WidgetChilds  *childs = (WidgetChilds  *)g_object_get_data(G_OBJECT(widget),"Childs");
   childs->nchilds++;
   childs->childs = g_realloc(childs->childs,childs->nchilds*sizeof(GtkWidget*));
-  childs->destroychilds = g_realloc(childs->destroychilds,childs->nchilds*sizeof(GtkSignalFunc));
+  childs->destroychilds = g_realloc(childs->destroychilds,childs->nchilds*sizeof(GCallback));
   childs->childs[childs->nchilds-1] = childwidget;
   g_object_set_data(G_OBJECT(childs->childs[childs->nchilds-1]),"Parent",widget);
   childs->destroychilds[childs->nchilds-1] = func;
@@ -187,7 +187,7 @@ void delete_child(GtkWidget *childwidget)
   	}
   	childs->nchilds--;
   	childs->childs = g_realloc(childs->childs,childs->nchilds*sizeof(GtkWidget*));
-  	childs->destroychilds = g_realloc(childs->destroychilds,childs->nchilds*sizeof(GtkSignalFunc));
+  	childs->destroychilds = g_realloc(childs->destroychilds,childs->nchilds*sizeof(GCallback));
   }
 }
 /********************************************************************************/
@@ -210,7 +210,7 @@ void delete_all_childs(GtkWidget *widget)
   }
   childs->nchilds = 1;
   childs->childs = g_realloc(childs->childs,childs->nchilds*sizeof(GtkWidget*));
-  childs->destroychilds = g_realloc(childs->destroychilds,childs->nchilds*sizeof(GtkSignalFunc));
+  childs->destroychilds = g_realloc(childs->destroychilds,childs->nchilds*sizeof(GCallback));
    
 }
 /********************************************************************************/
@@ -271,7 +271,7 @@ GtkWidget *create_pixmap(GtkWidget *widget, gchar **data)
                       widget->style->black_gc,
                       TRUE,
                       0, 0, width, height);    
-  colormap  = gdk_window_get_colormap(widget->window);
+  colormap  = gdk_drawable_get_colormap(widget->window);
   gdk_colormap_alloc_color(colormap,&Color,FALSE,TRUE);
   gdk_gc_set_foreground(gc,&Color);
   gdk_draw_rectangle (pixmap,
@@ -279,7 +279,7 @@ GtkWidget *create_pixmap(GtkWidget *widget, gchar **data)
                       TRUE,
                       1, 1, width-1, height-1);    
 
-  gdk_gc_destroy(gc);
+  g_object_unref(gc);
   return pixmap;
 }   
 /********************************************************************************/
@@ -295,7 +295,7 @@ GtkWidget *create_hbox_pixmap_color(GtkWidget *widget,gushort red,gushort green,
   gdk_pixmap = get_pixmap(widget,red,green,blue);
   gtk_pixmap = gtk_image_new_from_pixmap(gdk_pixmap, mask);
  
-  gdk_pixmap_unref(gdk_pixmap);
+  g_object_unref(gdk_pixmap);
  
  
   gtk_box_pack_start (GTK_BOX (hbox), gtk_pixmap, TRUE, TRUE, 1);
@@ -338,8 +338,8 @@ GtkWidget *create_radio_button_pixmap(GtkWidget *widget, gchar **data,gchar *str
   g_assert(gdk_pixmap != NULL);
   gtk_pixmap = gtk_image_new_from_pixmap(gdk_pixmap, mask);
  
-  gdk_pixmap_unref(gdk_pixmap);
-  gdk_pixmap_unref(mask);
+  g_object_unref(gdk_pixmap);
+  g_object_unref(mask);
  
   g_assert(gtk_pixmap != NULL);
 /*  gtk_widget_show(gtk_pixmap);*/
@@ -412,8 +412,8 @@ GtkWidget *create_label_pixmap(GtkWidget *widget, gchar **data,gchar *string)
   g_assert(gdk_pixmap != NULL);
   gtk_pixmap = gtk_image_new_from_pixmap(gdk_pixmap, mask);
  
-  gdk_pixmap_unref(gdk_pixmap);
-  gdk_pixmap_unref(mask);
+  g_object_unref(gdk_pixmap);
+  g_object_unref(mask);
  
   g_assert(gtk_pixmap != NULL);
  
@@ -446,8 +446,8 @@ GtkWidget *create_pixmap_label(GtkWidget *widget, gchar **data,gchar *string)
   g_assert(gdk_pixmap != NULL);
   gtk_pixmap = gtk_image_new_from_pixmap(gdk_pixmap, mask);
  
-  gdk_pixmap_unref(gdk_pixmap);
-  gdk_pixmap_unref(mask);
+  g_object_unref(gdk_pixmap);
+  g_object_unref(mask);
  
   g_assert(gtk_pixmap != NULL);
  
@@ -507,8 +507,8 @@ GtkWidget *create_button_pixmap(GtkWidget *widget, gchar **data,gchar *string)
   g_assert(gdk_pixmap != NULL);
   gtk_pixmap = gtk_image_new_from_pixmap(gdk_pixmap, mask);
  
-  gdk_pixmap_unref(gdk_pixmap);
-  gdk_pixmap_unref(mask);
+  g_object_unref(gdk_pixmap);
+  g_object_unref(mask);
  
   g_assert(gtk_pixmap != NULL);
  
@@ -616,13 +616,13 @@ GtkWidget* Message(char *message,char *titre,gboolean center)
    gtk_window_set_transient_for(GTK_WINDOW(DialogueMessage),GTK_WINDOW(Fenetre));
     gtk_window_set_position(GTK_WINDOW(DialogueMessage),GTK_WIN_POS_CENTER);
 
-   g_signal_connect(G_OBJECT(DialogueMessage), "delete_event", (GtkSignalFunc)destroy_button_windows, NULL);
-    g_signal_connect(G_OBJECT(DialogueMessage), "delete_event", (GtkSignalFunc)gtk_widget_destroy, NULL);
+   g_signal_connect(G_OBJECT(DialogueMessage), "delete_event", (GCallback)destroy_button_windows, NULL);
+    g_signal_connect(G_OBJECT(DialogueMessage), "delete_event", (GCallback)gtk_widget_destroy, NULL);
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
-   gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(DialogueMessage)->vbox), frame);
+   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(DialogueMessage)->vbox), frame,TRUE,TRUE,0);
 
   gtk_widget_show (frame);
 
@@ -631,7 +631,7 @@ GtkWidget* Message(char *message,char *titre,gboolean center)
     if(center)
     {
     	Label = create_label_with_pixmap(Fenetre,message,titre);
-    	gtk_box_pack_start_defaults(GTK_BOX(vboxframe), Label);
+    	gtk_box_pack_start(GTK_BOX(vboxframe), Label,TRUE,TRUE,0);
     }
     else
     {
@@ -652,10 +652,10 @@ GtkWidget* Message(char *message,char *titre,gboolean center)
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Bouton);
  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",
-                          (GtkSignalFunc)destroy_button_windows,
+                          (GCallback)destroy_button_windows,
                           GTK_OBJECT(DialogueMessage));
     g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",
-                          (GtkSignalFunc)gtk_widget_destroy,
+                          (GCallback)gtk_widget_destroy,
                           GTK_OBJECT(DialogueMessage));
 
     add_button_windows(titre,DialogueMessage);
@@ -720,22 +720,21 @@ void Cancel_YesNo(GtkWidget *widget, gpointer   data, GabeditSignalFunc func)
 
     g_signal_connect(G_OBJECT(DialogueMessage),
                        "delete_event",
-                       (GtkSignalFunc)gtk_widget_destroy,
+                       (GCallback)gtk_widget_destroy,
                        NULL);
     
 	frame = gtk_frame_new (NULL);
     gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
     g_object_ref (frame);
     g_object_set_data_full (G_OBJECT (DialogueMessage), "frame",
-	  frame,(GtkDestroyNotify) g_object_unref);
+	  frame,(GDestroyNotify) g_object_unref);
     gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-    gtk_box_pack_start_defaults(
-         GTK_BOX(GTK_DIALOG(DialogueMessage)->vbox), frame);
+    gtk_box_pack_start( GTK_BOX(GTK_DIALOG(DialogueMessage)->vbox), frame,TRUE,TRUE,0);
     gtk_widget_show (frame);
     vboxframe = create_vbox(frame);
 
     Label = gtk_label_new("Are you sure to \ncancel this window ?");
-    gtk_box_pack_start_defaults(GTK_BOX(vboxframe), Label);
+    gtk_box_pack_start(GTK_BOX(vboxframe), Label,TRUE,TRUE,0);
     gtk_label_set_justify(GTK_LABEL(Label),
                           GTK_JUSTIFY_CENTER);
     gtk_misc_set_padding(GTK_MISC(Label), 10, 10);
@@ -743,16 +742,16 @@ void Cancel_YesNo(GtkWidget *widget, gpointer   data, GabeditSignalFunc func)
     gtk_widget_realize(DialogueMessage);
 
     Bouton = create_button(DialogueMessage,"No");
-    gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(DialogueMessage)->action_area), Bouton);
-    g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)gtk_widget_destroy, GTK_OBJECT(DialogueMessage));
+    gtk_box_pack_start( GTK_BOX(GTK_DIALOG(DialogueMessage)->action_area), Bouton,TRUE,TRUE,0);
+    g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(DialogueMessage));
     GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
     gtk_widget_grab_default(Bouton);
 
     Bouton = create_button(DialogueMessage,"Yes");
-    gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(DialogueMessage)->action_area), Bouton);
+    gtk_box_pack_start( GTK_BOX(GTK_DIALOG(DialogueMessage)->action_area), Bouton,TRUE,TRUE,0);
     GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
-    g_signal_connect_swapped(G_OBJECT(Bouton),"clicked", (GtkSignalFunc)func, GTK_OBJECT(widget));
-    g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)gtk_widget_destroy, GTK_OBJECT(DialogueMessage));
+    g_signal_connect_swapped(G_OBJECT(Bouton),"clicked", (GCallback)func, GTK_OBJECT(widget));
+    g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(DialogueMessage));
 
 
     gtk_widget_show_all(DialogueMessage);
@@ -878,8 +877,14 @@ FilePosTypeGeom get_geometry_type_from_gauss_input_file(gchar *NomFichier)
 /* Charge and Spin */
  if(!feof(fd) )    
  {
- if(fgets(t, taille, fd))
-  	j.numline++;
+	 if(fgets(t, taille, fd)) j.numline++;
+	 sscanf(t,"%d %d %d %d %d %d",
+		  &TotalCharges[0],
+		  &SpinMultiplicities[0],
+		  &TotalCharges[1],
+		  &SpinMultiplicities[1],
+		  &TotalCharges[2],
+		  &SpinMultiplicities[2]);
  }
 /* First line of geometry */
   if(!feof(fd) )    
@@ -1597,7 +1602,7 @@ static void show_about_new()
 	};
 
 	static const gchar *copyright =
-		"Copyright \xc2\xa9 2002-2007 Abdul-Rahman Allouche.\n"
+		"Copyright \xc2\xa9 2002-2009 Abdul-Rahman Allouche.\n"
 		"All rights reserved.\n";
 	
 	gchar *license =
@@ -1719,7 +1724,7 @@ GtkWidget *create_text(GtkWidget *win,GtkWidget *frame,gboolean editable)
   scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
   g_object_ref (scrolledwindow);
   g_object_set_data_full (G_OBJECT (win), "scrolledwindow", scrolledwindow,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (scrolledwindow);
   gtk_container_add (GTK_CONTAINER (frame), scrolledwindow);
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
@@ -1727,7 +1732,7 @@ GtkWidget *create_text(GtkWidget *win,GtkWidget *frame,gboolean editable)
   Text = gabedit_text_new ();
   g_object_ref (Text);
   g_object_set_data_full (G_OBJECT (win), "Text", Text,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (Text);
   gtk_container_add (GTK_CONTAINER (scrolledwindow), Text);
   gabedit_text_set_editable (GABEDIT_TEXT (Text), editable);
@@ -1834,7 +1839,7 @@ GtkWidget *create_label_button(GtkWidget *win,GtkWidget *frame,GtkWidget* Vbox,
   label = gtk_label_new (tlabel);
   g_object_ref (label);
   g_object_set_data_full (G_OBJECT (win), "label", label,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 2);
 
@@ -1979,7 +1984,7 @@ GtkWidget * create_hseparator(GtkWidget *vbox)
 	GtkWidget *hseparator;
 	hseparator = gtk_hseparator_new ();
 	g_object_ref (hseparator);
-	g_object_set_data_full (G_OBJECT (vbox), "hseparator", hseparator, (GtkDestroyNotify) g_object_unref);
+	g_object_set_data_full (G_OBJECT (vbox), "hseparator", hseparator, (GDestroyNotify) g_object_unref);
 	gtk_widget_show (hseparator);
 	gtk_box_pack_start (GTK_BOX (vbox), hseparator, FALSE, FALSE, 1);
 	return hseparator;
@@ -1990,7 +1995,7 @@ GtkWidget * create_vseparator(GtkWidget *hbox)
 	GtkWidget *vseparator;
 	vseparator = gtk_vseparator_new ();
 	g_object_ref (vseparator);
-	g_object_set_data_full (G_OBJECT (hbox), "vseparator", vseparator, (GtkDestroyNotify) g_object_unref);
+	g_object_set_data_full (G_OBJECT (hbox), "vseparator", vseparator, (GDestroyNotify) g_object_unref);
 	gtk_widget_show (vseparator);
 	gtk_box_pack_start (GTK_BOX (hbox), vseparator, FALSE, FALSE, 1);
 	return vseparator;
@@ -2112,7 +2117,7 @@ GtkWidget *create_checkbutton(GtkWidget *win,GtkWidget *box,gchar *tlabel)
 	GtkWidget* checkbutton;
 	checkbutton = gtk_check_button_new_with_label (tlabel);
 	g_object_ref (checkbutton);
-	g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton, (GtkDestroyNotify) g_object_unref);
+	g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton, (GDestroyNotify) g_object_unref);
 	gtk_widget_show (checkbutton);
 	gtk_box_pack_start (GTK_BOX (box), checkbutton, FALSE, FALSE, 0);
 	return checkbutton;
@@ -2130,33 +2135,33 @@ GtkWidget *Continue_YesNo(void (*func)(GtkWidget*,gpointer data),gpointer data,g
 	gtk_window_set_modal (GTK_WINDOW (DialogueMessage), TRUE);
 
 
-	g_signal_connect(G_OBJECT(DialogueMessage), "delete_event", (GtkSignalFunc)gtk_widget_destroy, NULL);
+	g_signal_connect(G_OBJECT(DialogueMessage), "delete_event", (GCallback)gtk_widget_destroy, NULL);
     
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	g_object_ref (frame);
-	g_object_set_data_full (G_OBJECT (DialogueMessage), "frame", frame,(GtkDestroyNotify) g_object_unref);
+	g_object_set_data_full (G_OBJECT (DialogueMessage), "frame", frame,(GDestroyNotify) g_object_unref);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(DialogueMessage)->vbox), frame);
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(DialogueMessage)->vbox), frame,TRUE,TRUE,0);
 	gtk_widget_show (frame);
 	vboxframe = create_vbox(frame);
 	gtk_widget_realize(DialogueMessage);
 	Label = create_label_with_pixmap(DialogueMessage,message,"Question");  
-	gtk_box_pack_start_defaults(GTK_BOX(vboxframe), Label);
+	gtk_box_pack_start(GTK_BOX(vboxframe), Label,TRUE,TRUE,0);
     
 	gtk_widget_realize(DialogueMessage);
 
 	Bouton = create_button(DialogueMessage,"No");
-	gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(DialogueMessage)->action_area),Bouton);
-	g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)gtk_widget_destroy, GTK_OBJECT(DialogueMessage));
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(DialogueMessage)->action_area),Bouton,TRUE,TRUE,0);
+	g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(DialogueMessage));
 	GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(Bouton);
 
 	Bouton = create_button(DialogueMessage,"Yes");
-	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(DialogueMessage)->action_area), Bouton);
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(DialogueMessage)->action_area), Bouton,TRUE,TRUE,0);
 	GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
-	g_signal_connect(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)func,data);
-	g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)gtk_widget_destroy, GTK_OBJECT(DialogueMessage));
+	g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)func,data);
+	g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(DialogueMessage));
 
 
 	gtk_widget_show_all(DialogueMessage);
@@ -2372,15 +2377,8 @@ GtkWidget *create_hbox_browser(GtkWidget* Wins,GtkWidget* vbox,gchar *tlabel,gch
   gtk_box_pack_start(GTK_BOX(hbox), Entry,TRUE,TRUE,2);
   if(deffile)
   {
-  	PangoFontDescription *font_desc = pango_font_description_from_string (FontsStyleOther.fontname);
-	GdkFont* font = NULL;
   	gint len = strlen(deffile)*8;
-	if(font_desc) font = gdk_font_from_description (font_desc);
-	if(font)
-	{
-  	 	len = strlen(deffile)*(gint)(gdk_string_width (font,"D") );
-		gdk_font_unref (font);
-	}
+  	 len = strlen(deffile)*(gint)(8);
 
   	gtk_widget_set_size_request(GTK_WIDGET(Entry),len,32);
 	gtk_entry_set_text(GTK_ENTRY(Entry),deffile);
@@ -2390,7 +2388,7 @@ GtkWidget *create_hbox_browser(GtkWidget* Wins,GtkWidget* vbox,gchar *tlabel,gch
 
   /* The Button */
   button = create_button_pixmap(Wins,open_xpm,NULL);
-  g_signal_connect_swapped(G_OBJECT (button), "clicked",GTK_SIGNAL_FUNC(set_entry_selected_file),GTK_OBJECT(hbox));
+  g_signal_connect_swapped(G_OBJECT (button), "clicked",G_CALLBACK(set_entry_selected_file),GTK_OBJECT(hbox));
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 1);
   g_object_set_data(G_OBJECT (hbox), "Entry", Entry);
   g_object_set_data(G_OBJECT (hbox), "Button", button);
@@ -2620,23 +2618,23 @@ static void open_color_dlg_dipole(GtkWidget *button,gpointer data)
 	gtk_window_set_transient_for(GTK_WINDOW(colorDlg),GTK_WINDOW(win));
         gtk_window_set_position(GTK_WINDOW(colorDlg),GTK_WIN_POS_CENTER);
   	gtk_window_set_modal (GTK_WINDOW (colorDlg), TRUE);
- 	g_signal_connect(G_OBJECT(colorDlg), "delete_event",(GtkSignalFunc)destroy_button_windows,NULL);
-  	g_signal_connect(G_OBJECT(colorDlg), "delete_event",GTK_SIGNAL_FUNC(gtk_widget_destroy),NULL);
+ 	g_signal_connect(G_OBJECT(colorDlg), "delete_event",(GCallback)destroy_button_windows,NULL);
+  	g_signal_connect(G_OBJECT(colorDlg), "delete_event",G_CALLBACK(gtk_widget_destroy),NULL);
 
   	g_object_set_data(G_OBJECT (colorDlg->colorsel), "Color", color);
   	gtk_widget_hide(colorDlg->help_button);
-	g_signal_connect_swapped(G_OBJECT(colorDlg->ok_button),"clicked", (GtkSignalFunc)set_dipole_color,GTK_OBJECT(colorDlg->colorsel));
+	g_signal_connect_swapped(G_OBJECT(colorDlg->ok_button),"clicked", (GCallback)set_dipole_color,GTK_OBJECT(colorDlg->colorsel));
 
   	g_object_set_data(G_OBJECT (colorDlg->ok_button), "Color", color);
   	g_object_set_data(G_OBJECT (colorDlg->ok_button), "Button", button);
   	g_object_set_data(G_OBJECT (colorDlg->ok_button), "Style", style);
-	g_signal_connect(G_OBJECT(colorDlg->ok_button),"clicked", (GtkSignalFunc)set_dipole_button_color,NULL);
+	g_signal_connect(G_OBJECT(colorDlg->ok_button),"clicked", (GCallback)set_dipole_button_color,NULL);
 
-  	g_signal_connect_swapped(G_OBJECT(colorDlg->ok_button), "clicked", (GtkSignalFunc)destroy_button_windows,GTK_OBJECT(colorDlg));
-	g_signal_connect_swapped(G_OBJECT(colorDlg->ok_button),"clicked", (GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(colorDlg));
+  	g_signal_connect_swapped(G_OBJECT(colorDlg->ok_button), "clicked", (GCallback)destroy_button_windows,GTK_OBJECT(colorDlg));
+	g_signal_connect_swapped(G_OBJECT(colorDlg->ok_button),"clicked", (GCallback)gtk_widget_destroy,GTK_OBJECT(colorDlg));
 
-  	g_signal_connect_swapped(G_OBJECT(colorDlg->cancel_button), "clicked", (GtkSignalFunc)destroy_button_windows,GTK_OBJECT(colorDlg));
-	g_signal_connect_swapped(G_OBJECT(colorDlg->cancel_button),"clicked", (GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(colorDlg));
+  	g_signal_connect_swapped(G_OBJECT(colorDlg->cancel_button), "clicked", (GCallback)destroy_button_windows,GTK_OBJECT(colorDlg));
+	g_signal_connect_swapped(G_OBJECT(colorDlg->cancel_button),"clicked", (GCallback)gtk_widget_destroy,GTK_OBJECT(colorDlg));
 
   	add_button_windows(" Set Color ",GTK_WIDGET(colorDlg));
 	gtk_widget_show(GTK_WIDGET(colorDlg));
@@ -2667,7 +2665,7 @@ GtkWidget* set_dipole_dialog ()
   gtk_window_set_position(GTK_WINDOW(fp),GTK_WIN_POS_CENTER);
   gtk_window_set_modal (GTK_WINDOW (fp), TRUE);
 
-  g_signal_connect(G_OBJECT(fp),"delete_event",(GtkSignalFunc)gtk_widget_destroy,NULL);
+  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)gtk_widget_destroy,NULL);
 
   vboxall = create_vbox(fp);
   frame = gtk_frame_new ("Set Dipole(Debye)");
@@ -2733,26 +2731,26 @@ GtkWidget* set_dipole_dialog ()
   g_object_set_data(G_OBJECT (button), "Style", style);
   g_object_set_data(G_OBJECT (button), "Win", fp);
   g_object_set_data(G_OBJECT (button), "Color", &color);
-  g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)open_color_dlg_dipole, NULL);
+  g_signal_connect(G_OBJECT(button), "clicked", (GCallback)open_color_dlg_dipole, NULL);
 
   hbox = create_hbox(vboxall);
 
   button = create_button(Fenetre,"OK");
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_object_set_data(G_OBJECT (button), "Color", &color);
-  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(set_dipole),(gpointer)entrys);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(gtk_widget_destroy),GTK_OBJECT(fp));
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(set_dipole),(gpointer)entrys);
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_widget_destroy),GTK_OBJECT(fp));
   gtk_widget_show (button);
 
   button = create_button(Fenetre,"Apply");
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_object_set_data(G_OBJECT (button), "Color", &color);
-  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(set_dipole),(gpointer)entrys);
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(set_dipole),(gpointer)entrys);
   gtk_widget_show (button);
 
   button = create_button(Fenetre,"Close");
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(gtk_widget_destroy),GTK_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_widget_destroy),GTK_OBJECT(fp));
 
   gtk_widget_show (button);
    
@@ -2764,9 +2762,10 @@ void fit_windows_position(GtkWidget* parent, GtkWidget* child)
 {
 	gint wChild = 0, hChild = 0;
 	gint wParent=0, hParent=0;
-	gdk_window_get_size(parent->window,&wParent,&hParent);
+	gdk_drawable_get_size(parent->window,&wParent,&hParent);
 	gtk_window_move(GTK_WINDOW(parent),0,0);
-	gdk_window_get_size(child->window,&wChild,&hChild);
+	gdk_drawable_get_size(child->window,&wChild,&hChild);
 	if(wParent+wChild+10<ScreenWidth) gtk_window_move(GTK_WINDOW(child),wParent+10,0);
+	else if(wChild<ScreenWidth) gtk_window_move(GTK_WINDOW(child),ScreenWidth-wChild,0);
 }
 /********************************************************************************/

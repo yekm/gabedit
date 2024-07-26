@@ -1,6 +1,6 @@
-/* GridM2MSI.c */
+/* GridMolcas.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -26,10 +26,11 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/AtomsProp.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "GLArea.h"
 #include "AtomicOrbitals.h"
 #include "Orbitals.h"
+#include "BondsOrb.h"
 
 typedef struct _DataRow
 {
@@ -49,10 +50,10 @@ static	gfloat XYZ0[3]={0.0,0.0,0.0};
 static	gfloat    X[3]={0.0,0.0,0.0};
 static	gfloat    Y[3]={0.0,0.0,0.0};
 static	gfloat    Z[3]={0.0,0.0,0.0};
-static  gchar m2msiFileName[2048];
+static  gchar molcasgridFileName[2048];
 
 /**************************************************************/
-static void free_m2msi_orb()
+static void free_molcasgrid_orb()
 {
 	gint i;
 	if(numberOfOrbitals<1) return;
@@ -106,7 +107,7 @@ static gint advance_one_block(FILE* file)
 	return -1;
 }
 /********************************************************************************/
-static gboolean get_values_from_m2msi_file(FILE* file,gfloat V[], gint nMaxBlock, gint numGrid)
+static gboolean get_values_from_molcasgrid_file(FILE* file,gfloat V[], gint nMaxBlock, gint numGrid)
 {
 	gint k = 0;
 	gint kOld = 0;
@@ -122,7 +123,9 @@ static gboolean get_values_from_m2msi_file(FILE* file,gfloat V[], gint nMaxBlock
 		if(nG==numGrid)
 		{
 			kOld = k;
+			/* printf("numGrid=%d\n",numGrid);*/
 			k = read_one_block(file,V,  nMaxBlock, kOld);
+			/* printf("k=%d\n",k);*/
 			if(k>=nMaxBlock)break;
 		}
 		else
@@ -148,7 +151,7 @@ static gboolean set_position_label(FILE* file,gchar* label,gchar* buffer, gint l
 	return FALSE;
 }
 /********************************************************************************/
-static void get_grid_from_m2msi_file(FILE* file,gint numOfGrid)
+static void get_grid_from_molcasgrid_file(FILE* file,gint numOfGrid)
 {
 	gint i;
 	gint j;
@@ -177,18 +180,18 @@ static void get_grid_from_m2msi_file(FILE* file,gint numOfGrid)
 		grid = free_grid(grid);
 		return;
 	}
-	if(!get_values_from_m2msi_file(file,V, nMaxBlock, numOfGrid))
+	if(!get_values_from_molcasgrid_file(file,V, nMaxBlock, numOfGrid))
 	{
 		Message("Sorry, I can not read grid from this file","Error",TRUE);
 		grid = free_grid(grid);
 		return;
 	}
 	n = -1;
-	for(k=0;k<grid->N[2];k++)
+	for(i=0;i<grid->N[0];i++)
 	{
 	for(j=0;j<grid->N[1];j++)
 	{
-	for(i=0;i<grid->N[0];i++)
+	for(k=0;k<grid->N[2];k++)
 	{
 				x = XYZ0[0] + i*X[0] + j*X[1] +  k*X[2]; 
 				y = XYZ0[1] + i*Y[0] + j*Y[1] +  k*Y[2]; 
@@ -235,17 +238,17 @@ static void get_grid_from_m2msi_file(FILE* file,gint numOfGrid)
 /********************************************************************************/
 static void read_density(gint numOfGrid)
 {
-	FILE* file = FOpen(m2msiFileName, "rb");
+	FILE* file = FOpen(molcasgridFileName, "rb");
 	gchar buffer[BSIZE];
 	if(!file)
 	{
-		sprintf(buffer,"Sorry, i can not open \"%s\" file",m2msiFileName);
+		sprintf(buffer,"Sorry, i can not open \"%s\" file",molcasgridFileName);
 		grid = free_grid(grid);
 		Message(buffer,"Error",TRUE);
 		return;
 	}
 
-	get_grid_from_m2msi_file(file,numOfGrid);
+	get_grid_from_molcasgrid_file(file,numOfGrid);
 	
 	if(grid)
 	{
@@ -284,14 +287,14 @@ static void read_orbital(GtkWidget *Win,gpointer user_data)
 	DataRow* data = NULL;
 	GtkWidget* gtklist = GTK_WIDGET(user_data);
 	gchar buffer[BSIZE];
-	FILE* file = FOpen(m2msiFileName, "rb");
+	FILE* file = FOpen(molcasgridFileName, "rb");
 	GtkTreeIter node;
 	GtkTreeModel *model = NULL;
 	gchar pathString[100];
 
 	if(!file)
 	{
-		sprintf(buffer,"Sorry, i can not open \"%s\" file",m2msiFileName);
+		sprintf(buffer,"Sorry, i can not open \"%s\" file",molcasgridFileName);
 		grid = free_grid(grid);
 		Message(buffer,"Error",TRUE);
 		return;
@@ -306,7 +309,7 @@ static void read_orbital(GtkWidget *Win,gpointer user_data)
 
 	if(!data) return;
 
-	get_grid_from_m2msi_file(file,data->numGrid);
+	get_grid_from_molcasgrid_file(file,data->numGrid);
 	
 	if(grid)
 	{
@@ -429,7 +432,7 @@ static GtkWidget* create_gtk_list_orbitals()
 	return gtklist;
 }
 /********************************************************************************/
-static void create_list_m2msi_orbitals()
+static void create_list_molcasgrid_orbitals()
 {
   GtkWidget *Win;
   GtkWidget *frame;
@@ -483,8 +486,8 @@ static void create_list_m2msi_orbitals()
   button = create_button(Win,"Cancel");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child, GTK_OBJECT(Win));
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Win));
   gtk_widget_show (button);
 
   button = create_button(Win,"OK");
@@ -492,9 +495,9 @@ static void create_list_m2msi_orbitals()
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
   gtk_widget_show (button);
-  g_signal_connect(G_OBJECT(button), "clicked",(GtkSignalFunc)read_orbital,gtklist);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child, GTK_OBJECT(Win));
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(Win));
+  g_signal_connect(G_OBJECT(button), "clicked",(GCallback)read_orbital,gtklist);
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Win));
   g_object_set_data(G_OBJECT (gtklist), "ButtonOk",button);
 
 
@@ -550,7 +553,7 @@ static gboolean read_info_orbitals(FILE* file)
 		occupations[i] = 0;
 		energies[i] = 0;
 		numGridOfOrbitals[i] = 0;
-		labelsSymmetry[i] = g_strdup("Unknown");
+		labelsSymmetry[i] = g_strdup("DELETED");
 	}
 	fseek(file, 0L, SEEK_SET);
 	totalNumberOfGrids = read_one_integer(file,"N_of_Grids=",buffer,len);
@@ -561,7 +564,7 @@ static gboolean read_info_orbitals(FILE* file)
 	{
 		if(!fgets(buffer,len,file))
 		{
-			free_m2msi_orb();
+			free_molcasgrid_orb();
 			return FALSE;
 		}
 
@@ -585,11 +588,38 @@ static gboolean read_info_orbitals(FILE* file)
 			if(iGrid>=totalNumberOfGrids)break;
 		}
 	}
+	{
+		for(i=0;i<numberOfOrbitals;i++)
+		{
+			if(!strcmp(labelsSymmetry[i],"DELETED")) 
+			{
+				g_free(labelsSymmetry[i]); 
+				labelsSymmetry[i] = NULL;
+			}
+		}
+		for(i=0;i<numberOfOrbitals;i++)
+		{
+			if(labelsSymmetry[i]==NULL) break;
+		}
+		if(i==0)
+		{
+			printf("Number of orbitals = 0\n");
+			return FALSE;
+		}
+		if(i!=numberOfOrbitals)
+		{
+			numberOfOrbitals = i;
+			occupations = g_realloc(occupations, numberOfOrbitals*sizeof(gfloat));
+			energies = g_realloc(energies, numberOfOrbitals*sizeof(gfloat));
+			numGridOfOrbitals =  g_realloc(numGridOfOrbitals,numberOfOrbitals*sizeof(gint));
+			labelsSymmetry = g_realloc(labelsSymmetry,numberOfOrbitals*sizeof(gchar*));
+		}
+	}
 
 	return TRUE;
 }
 /************************************************************************************************************/
-static gboolean read_m2msi_grid_limits(FILE* file, gint N[],gfloat XYZ0[], gfloat X[], gfloat Y[],gfloat Z[])
+static gboolean read_molcasgrid_grid_limits(FILE* file, gint N[],gfloat XYZ0[], gfloat X[], gfloat Y[],gfloat Z[])
 {
 	gboolean Ok = TRUE;
 	gint len = BSIZE;
@@ -734,7 +764,7 @@ static gboolean read_m2msi_grid_limits(FILE* file, gint N[],gfloat XYZ0[], gfloa
 	return Ok;
 }
 /**************************************************************/
-static gboolean read_m2msi_geometry(FILE* file)
+static gboolean read_molcasgrid_geometry(FILE* file)
 {
 	gboolean Ok = TRUE;
 	gint len = BSIZE;
@@ -778,7 +808,7 @@ static gboolean read_m2msi_geometry(FILE* file)
 	return Ok;
 }
 /**************************************************************/
-static void read_m2msi_orbitals_file(gchar* filename)
+static void read_molcasgrid_orbitals_file(gchar* filename)
 {
 	FILE* file = FOpen(filename, "rb");
 	gchar* tmp;
@@ -797,10 +827,10 @@ static void read_m2msi_orbitals_file(gchar* filename)
 	tmp = get_name_file(filename);
 	set_status_label_info("File Name",tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","M2MSI Formatted file");
+	set_status_label_info("File Type","Molcas grid Formatted file");
 	Ncenters = 0;
 	
-	Ok = read_m2msi_geometry(file);
+	Ok = read_molcasgrid_geometry(file);
 	if(Ok)
 	{
 		init_atomic_orbitals();
@@ -808,7 +838,7 @@ static void read_m2msi_orbitals_file(gchar* filename)
 		if(Ok)
 		{
 			fseek(file, 0L, SEEK_SET);
-			Ok = read_m2msi_grid_limits(file, N, XYZ0, X, Y, Z);
+			Ok = read_molcasgrid_grid_limits(file, N, XYZ0, X, Y, Z);
 			if(!Ok)
 			{
 				free_data_all();
@@ -823,6 +853,7 @@ static void read_m2msi_orbitals_file(gchar* filename)
 		}
 	}
 
+	buildBondsOrb();
 	RebuildGeom = TRUE;
 	glarea_rafresh(GLArea);
 	if(Ok) init_atomic_orbitals();
@@ -838,7 +869,7 @@ static void read_m2msi_orbitals_file(gchar* filename)
 	fclose(file);
 }
 /**************************************************************/
-static void read_m2msi_density_file(gchar* filename)
+static void read_molcasgrid_density_file(gchar* filename)
 {
 	FILE* file = FOpen(filename, "rb");
 	gchar* tmp;
@@ -860,10 +891,10 @@ static void read_m2msi_density_file(gchar* filename)
 	tmp = get_name_file(filename);
 	set_status_label_info("File Name",tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","M2MSI Formatted file");
+	set_status_label_info("File Type","Molcas grid Formatted file");
 	Ncenters = 0;
 	/* read geometry */
-	Ok = read_m2msi_geometry(file);
+	Ok = read_molcasgrid_geometry(file);
 	if(Ok)
 	{
 		init_atomic_orbitals();
@@ -874,7 +905,7 @@ static void read_m2msi_density_file(gchar* filename)
 		if(totalNumberOfGrids>1)
 		{
 			fseek(file, 0L, SEEK_SET);
-			Ok = read_m2msi_grid_limits(file, N, XYZ0, X, Y, Z);
+			Ok = read_molcasgrid_grid_limits(file, N, XYZ0, X, Y, Z);
 			if(!Ok)
 			{
 				free_data_all();
@@ -901,6 +932,7 @@ static void read_m2msi_density_file(gchar* filename)
 		
 	}
 
+	buildBondsOrb();
 	RebuildGeom = TRUE;
 	glarea_rafresh(GLArea);
 	if(Ok) init_atomic_orbitals();
@@ -920,34 +952,34 @@ static void read_m2msi_density_file(gchar* filename)
 
 }
 /********************************************************************************/
-void load_m2msi_file_orbitals(GabeditFileChooser *SelecFile, gint response_id)
+void load_molcasgrid_file_orbitals(GabeditFileChooser *SelecFile, gint response_id)
 {
  	gchar *FileName;
 
 	if(response_id != GTK_RESPONSE_OK) return;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
-	sprintf(m2msiFileName,"%s",FileName);
+	sprintf(molcasgridFileName,"%s",FileName);
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
 	while( gtk_events_pending() )
 		gtk_main_iteration();
 
 	TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
-	read_m2msi_orbitals_file(FileName);
-	create_list_m2msi_orbitals();
+	read_molcasgrid_orbitals_file(FileName);
+	create_list_molcasgrid_orbitals();
 }
 /********************************************************************************/
-void load_m2msi_file_density(GabeditFileChooser *SelecFile, gint response_id)
+void load_molcasgrid_file_density(GabeditFileChooser *SelecFile, gint response_id)
 {
  	gchar *FileName;
 
 	if(response_id != GTK_RESPONSE_OK) return;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
-	sprintf(m2msiFileName,"%s",FileName);
+	sprintf(molcasgridFileName,"%s",FileName);
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
 	while( gtk_events_pending() )
 		gtk_main_iteration();
 
 	TypeGrid = GABEDIT_TYPEGRID_EDENSITY;
-	read_m2msi_density_file(FileName);
+	read_molcasgrid_density_file(FileName);
 }
 /********************************************************************************/

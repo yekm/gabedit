@@ -1,6 +1,6 @@
 /* ReducePolyHedralMolecule.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -89,10 +89,12 @@ void reduceForOctaedralSymmetry(MolSymMolecule *mol,gint sym)
 	removeAllPointsOnOneSideOfAPlane(mol, 0.577350269, 0.0, -0.816496581, eps);
 	removeAllPointsOnOneSideOfAPlane(mol, -0.816496581, 0.0, -0.577350269, eps); 
 
+	/*
 	if (sym & SYM_D)
 		removeAllPointsOnOneSideOfAPlane(mol,-0.866025404, 0.5, 0.0, -eps);
 	else
 		removeAllPointsOnOneSideOfAPlane(mol,0.408248290, 1.414213562, -0.577350269, eps);
+		*/
 }    
 /************************************************************************************************************/
 /* icosaedral symmetry */

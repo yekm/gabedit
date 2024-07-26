@@ -1,6 +1,6 @@
 /* PovrayGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Transformation.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/HydrogenBond.h"
 #include "../Utils/PovrayUtils.h"
 #include "../OpenGL/GLArea.h"
@@ -175,11 +175,23 @@ static gchar *get_pov_xyz_axes()
 	for(i=0;i<3;i++) originX[i] = origin[i];
 	for(i=0;i<3;i++) originY[i] = origin[i];
 	for(i=0;i<3;i++) originZ[i] = origin[i];
+
+
 	if(negative)
 	{
 		for(i=0;i<3;i++) originX[i] -=vectorX[i];
 		for(i=0;i<3;i++) originY[i] -=vectorY[i];
 		for(i=0;i<3;i++) originZ[i] -=vectorZ[i];
+
+		for(i=0;i<3;i++) vectorX[i] = originX[i]+2*vectorX[i];
+		for(i=0;i<3;i++) vectorY[i] = originY[i]+2*vectorY[i];
+		for(i=0;i<3;i++) vectorZ[i] = originZ[i]+2*vectorZ[i];
+	}
+	else
+	{
+		for(i=0;i<3;i++) vectorX[i] += originX[i];
+		for(i=0;i<3;i++) vectorY[i] += originY[i];
+		for(i=0;i<3;i++) vectorZ[i] += originZ[i];
 	}
 
 	temp = g_strdup_printf(
@@ -263,6 +275,16 @@ static gchar *get_pov_principal_axes()
 		for(i=0;i<3;i++) firstOrigin[i] -=firstVector[i];
 		for(i=0;i<3;i++) secondOrigin[i] -=secondVector[i];
 		for(i=0;i<3;i++) thirdOrigin[i] -=thirdVector[i];
+
+		for(i=0;i<3;i++) firstVector[i] = 2*firstVector[i]+firstOrigin[i];
+		for(i=0;i<3;i++) secondVector[i] = 2*secondVector[i]+secondOrigin[i];
+		for(i=0;i<3;i++) thirdVector[i] = 2*thirdVector[i]+thirdOrigin[i];
+	}
+	else
+	{
+		for(i=0;i<3;i++) firstVector[i] = firstVector[i]+firstOrigin[i];
+		for(i=0;i<3;i++) secondVector[i] = secondVector[i]+secondOrigin[i];
+		for(i=0;i<3;i++) thirdVector[i] = thirdVector[i]+thirdOrigin[i];
 	}
 
 	temp = g_strdup_printf(
@@ -392,6 +414,7 @@ static gchar *get_pov_one_stick(gint i,gint j, GabEditBondType bondType)
      else ep/=2;
      if(TypeGeom==GABEDIT_TYPEGEOM_WIREFRAME ) ep =STICKSIZE/2;
 
+     ep *=  getScaleStick();
  
      poid1 = GeomOrb[i].Prop.covalentRadii+GeomOrb[i].Prop.radii;
      poid2 = GeomOrb[j].Prop.covalentRadii+GeomOrb[j].Prop.radii;
@@ -818,8 +841,8 @@ static gchar *get_pov_camera()
 	gboolean perspective;
 	get_camera_values(&zn, &zf, &zo, &perspective);
 
-	position = zf/2;
-	f = position/2;
+	position = zf/3;
+	f = position/3;
 
      
 	temp = g_strdup_printf(
@@ -897,7 +920,7 @@ static gchar *get_pov_atoms()
 	{
 		if(!ShowHAtomOrb && strcmp("H",GeomOrb[i].Symb)==0) continue;
 		tempold = temp;
-		t =get_pov_ball(i,1.0);
+		t =get_pov_ball(i,1.0*getScaleBall());
 		if(tempold)
 		{
 			temp = g_strdup_printf("%s%s",tempold,t);
@@ -945,9 +968,9 @@ static gchar *get_pov_atoms_for_stick()
 		if(!ShowHAtomOrb && strcmp("H",GeomOrb[i].Symb)==0) continue;
 		tempold = temp;
 		if(TypeGeom==GABEDIT_TYPEGEOM_WIREFRAME)
-			t =get_pov_ball_for_stick(i,STICKSIZE/2);
+			t =get_pov_ball_for_stick(i,STICKSIZE/2*getScaleStick());
 		else
-			t =get_pov_ball_for_stick(i,STICKSIZE);
+			t =get_pov_ball_for_stick(i,STICKSIZE*getScaleStick());
 		if(tempold)
 		{
 			temp = g_strdup_printf("%s%s",tempold,t);
@@ -1011,7 +1034,7 @@ static gchar *get_pov_bonds()
      {
 		if(!ShowHAtomOrb && strcmp("H",GeomOrb[i].Symb)==0) continue;
 		tempold = temp;
-		t =get_pov_ball(i, 0.5);
+		t =get_pov_ball(i, 0.5*getScaleBall());
 		if(tempold)
 		{
 			temp = g_strdup_printf("%s%s",tempold,t);
@@ -1358,7 +1381,7 @@ void create_save_povray_orb(GtkWidget* Win)
 	gchar* fileName = g_strdup_printf("gabedit.pov");
 	gchar* filter = g_strdup_printf("*.pov");
 
-	GtkWidget* win = choose_file_to_create(title, GTK_SIGNAL_FUNC(save_povray_file));
+	GtkWidget* win = choose_file_to_create(title, G_CALLBACK(save_povray_file));
 	gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(win), patternsfiles);
 	gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(win),filter);
 	gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(win),fileName);

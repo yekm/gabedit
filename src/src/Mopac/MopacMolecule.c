@@ -1,6 +1,6 @@
 /* MopacMolecule.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -33,16 +33,34 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/DrawGeom.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/GabeditTextEdit.h"
 #include "../Geometry/InterfaceGeom.h"
 #include "../Common/Windows.h"
-#include "../Utils/Constantes.h"
 #include "../Utils/AtomsProp.h"
 
 /************************************************************************************************************/
 static gint totalCharge = 0;
 static gint spinMultiplicity=1;
+
+static gint numberOfPointsRP[2] = {10,10};
+static gdouble stepValueRP[2] = {0.1,0.1};
+static gchar typeRP[2][100] = {"Bond","Notting"};
+static gint atomRP[2] = {1,0};
+
+/************************************************************************************************************/
+void putMopacReactionPathInTextEditor()
+{
+	gchar buffer[BSIZE];
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL,  NULL, NULL, "1SCF ",-1);
+	sprintf(buffer,"STEP=%g POINT=%d ",stepValueRP[0],numberOfPointsRP[0]);
+	if(strcmp(typeRP[1],"Notting"))
+		sprintf(buffer,"STEP1=%g POINT1=%d STEP2=%g POINT2=%d",
+				stepValueRP[0],numberOfPointsRP[0],
+				stepValueRP[1],numberOfPointsRP[1]
+				);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL,  NULL, NULL, buffer,-1);
+}
 /************************************************************************************************************/
 gint getMopacMultiplicity()
 {
@@ -191,60 +209,6 @@ void setMopacGeometryFromInputFile(gchar* fileName)
 	setMopacMolecule();
 }
 /*************************************************************************************************************/
-static gdouble getMinDistance()
-{
-	gdouble d=0;
-	gint i;
-	gint k;
-	MopacAtom* atomList = mopacMolecule.listOfAtoms;
-	for(i=0; i<mopacMolecule.numberOfAtoms-1; i++)
-	{
-		gdouble dd = 0;
-		for(k=0;k<3;k++) 
-		{
-			gdouble xx = atomList->position[k]-atomList->position[k+1];
-			dd += xx*xx;
-		}
-		if(i==0) d = dd;
-		else if(d>dd) d= dd;
-		atomList++;
-	}
-	d = sqrt(d);
-
-	return d;
-}
-/*************************************************************************************************************/
-static void setFirstAtomToXAxis(gint numberOfAtoms, gdouble* X, gdouble* Y, gdouble*Z)
-{
-	gdouble d;
-	gdouble s;
-	gdouble c;
-	gint i;
-	gdouble positionTolerance = -1;
-
-	if(numberOfAtoms<1) return;
-	d = X[0]*X[0]+Y[0]*Y[0];
-	if(d<1e-10) return;
-	d = sqrt(d);
-	if(positionTolerance<0) positionTolerance= getMinDistance()/50;
-
-	/* perform rotation */
-	s = -Y[0]/d;
-	c = +X[0]/d;
-
-	for (i=0;i<numberOfAtoms;i++)
-	 {
-		 gdouble x = X[i];
-		 gdouble y = Y[i];
-		X[i] = c*x - s*y;
-		Y[i] = s*x + c*y;
-		/* if(fabs(X[i])<positionTolerance) X[i]=0.0;*/
-		if(fabs(Y[i])<positionTolerance) Y[i]=0.0;
-	 }
-	/* printf("tolerance position = %f\n",positionTolerance);*/
-
-}
-/*************************************************************************************************************/
 static gint getRealNumberXYZVariables()
 {
 	gint k=0;
@@ -311,8 +275,11 @@ static void putMopacMoleculeInTextEditor()
 	gint k2 = 0;
 	gint k3 = 0;
 	gint nvar = 0;
+	gint k;
+	gboolean RP = FALSE;
 
 	if(mopacMolecule.numberOfAtoms<1) return;
+	RP =!strcmp(getSeletedJobType(),"RP");
 	if(MethodeGeom==GEOM_IS_XYZ)
 		nvar  = getRealNumberXYZVariables();
 	else
@@ -325,6 +292,15 @@ static void putMopacMoleculeInTextEditor()
 			setValueVariableXYZ(GeomXYZ[i].Y, b2, &k2);
 			setValueVariableXYZ(GeomXYZ[i].Z, b3, &k3);
 			if(nvar==0) { k1 = 1; k2 = 1; k3 = 1;}
+			if(RP)
+			{
+				for(k=0;k<2;k++)
+				{
+					if(!strcmp(typeRP[k],"X") && i==atomRP[k]-1) k1 = -1;
+					if(!strcmp(typeRP[k],"Y") && i==atomRP[k]-1) k2 = -1;
+					if(!strcmp(typeRP[k],"Z") && i==atomRP[k]-1) k3 = -1;
+				}
+			}
 
 			sprintf(buffer,"%s  %s %d %s %d %s %d\n",GeomXYZ[i].Symb,
 					b1, k1,
@@ -346,6 +322,16 @@ static void putMopacMoleculeInTextEditor()
 				sprintf(con,"%s %s %s", Geom[i].NR, Geom[i].NAngle, Geom[i].NDihedral);
 				if(nvar==0) { k1 = 1; k2 = 1; k3 = 1;}
 
+				if(RP)
+				{
+					for(k=0;k<2;k++)
+					{
+						if(!strcmp(typeRP[k],"Bond") && i==atomRP[k]-1) k1 = -1;
+						if(!strcmp(typeRP[k],"Angle") && i==atomRP[k]-1) k2 = -1;
+						if(!strcmp(typeRP[k],"Dihedral") && i==atomRP[k]-1) k3 = -1;
+					}
+				}
+
 				sprintf(buffer,"%s  %s %d %s %d %s %d %s\n",
 						Geom[i].Symb,
 						b1, k1,
@@ -364,6 +350,14 @@ static void putMopacMoleculeInTextEditor()
 				sprintf(con,"%s %s %s", Geom[i].NR, Geom[i].NAngle, "0");
 
 				if(nvar==0) { k1 = 1; k2 = 1;}
+				if(RP)
+				{
+					for(k=0;k<2;k++)
+					{
+						if(!strcmp(typeRP[k],"Bond") && i==atomRP[k]-1) k1 = -1;
+						if(!strcmp(typeRP[k],"Angle") && i==atomRP[k]-1) k2 = -1;
+					}
+				}
 				sprintf(buffer,"%s  %s %d %s %d %s %d %s\n",
 						Geom[i].Symb,
 						b1, k1,
@@ -383,6 +377,10 @@ static void putMopacMoleculeInTextEditor()
 				sprintf(con,"%s %s %s", Geom[i].NR, "0", "0");
 
 				if(nvar==0) { k1 = 1;}
+				if(RP)
+				for(k=0;k<2;k++)
+					if(!strcmp(typeRP[k],"Bond") && i==atomRP[k]-1) k1 = -1;
+
 				sprintf(buffer,"%s  %s %d %s %d %s %d %s\n",
 						Geom[i].Symb,
 						b1, k1,
@@ -428,6 +426,9 @@ void putMopacChargeMultiplicityInTextEditor()
 	gchar buffer[BSIZE];
 	gchar mul[20];
 	getMultiplicityName(spinMultiplicity, mul);
+	if(spinMultiplicity>1)
+	sprintf(buffer,"UHF CHARGE=%d %s ",totalCharge,mul);
+	else
 	sprintf(buffer,"CHARGE=%d %s ",totalCharge,mul);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL,  NULL, NULL, buffer,-1);
 }
@@ -437,23 +438,15 @@ void putMopacMoleculeInfoInTextEditor()
 	putMopacMoleculeInTextEditor();
 }
 /************************************************************************************************************/
-static GtkWidget* addRadioButtonToATable(GtkWidget* table, GtkWidget* friendButton, gchar* label, gint i, gint j, gint k)
+static void setSpinMultiplicityComboSpinMultiplicity(GtkWidget *comboSpinMultiplicity, gint spin)
 {
-	GtkWidget *newButton;
-
-	if(friendButton)
-		newButton = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (friendButton)), label);
-	else
-		newButton = gtk_radio_button_new_with_label( NULL, label);
-
-	gtk_table_attach(GTK_TABLE(table),newButton,j,j+k,i,i+1,
-		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
-		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
-                  2,2);
-
-	g_object_set_data(G_OBJECT (newButton), "Label",NULL);
-	g_object_set_data(G_OBJECT (newButton), "Type",NULL);
-	return newButton;
+	GtkWidget *entry = NULL;
+	gchar* t = NULL;
+	if(!comboSpinMultiplicity) return;
+	entry = GTK_BIN (comboSpinMultiplicity)->child;
+	t = g_strdup_printf("%d",spin);
+	gtk_entry_set_text(GTK_ENTRY(entry),t);
+	g_free(t);
 }
 /************************************************************************************************************/
 static void setComboSpinMultiplicity(GtkWidget *comboSpinMultiplicity)
@@ -491,11 +484,24 @@ static void setComboSpinMultiplicity(GtkWidget *comboSpinMultiplicity)
 
   	gtk_combo_box_entry_set_popdown_strings( comboSpinMultiplicity, glist) ;
   	g_list_free(glist);
+	if( SpinMultiplicities[0]%2 == atoi(list[0])%2) setSpinMultiplicityComboSpinMultiplicity(comboSpinMultiplicity, SpinMultiplicities[0]);
+	else SpinMultiplicities[0] = atoi(list[0]);
 	if(list)
 	{
 		for(i=0;i<nlist;i++) if(list[i]) g_free(list[i]);
 		g_free(list);
 	}
+}
+/********************************************************************************/
+static void setChargeComboCharge(GtkWidget *comboCharge, gint charge)
+{
+	GtkWidget *entry = NULL;
+	gchar* t = NULL;
+	if(!comboCharge) return;
+	entry = GTK_BIN (comboCharge)->child;
+	t = g_strdup_printf("%d",charge);
+	gtk_entry_set_text(GTK_ENTRY(entry),t);
+	g_free(t);
 }
 /********************************************************************************/
 static void setComboCharge(GtkWidget *comboCharge)
@@ -533,6 +539,7 @@ static void setComboCharge(GtkWidget *comboCharge)
 		for(i=0;i<nlist;i++) if(list[i]) g_free(list[i]);
 		g_free(list);
 	}
+	setChargeComboCharge(comboCharge, totalCharge);
 }
 /**********************************************************************/
 static void changedEntrySpinMultiplicity(GtkWidget *entry, gpointer data)
@@ -567,6 +574,7 @@ static void changedEntryCharge(GtkWidget *entry, gpointer data)
 	if(strlen(entryText)<1)return;
 
 	totalCharge = atoi(entryText);
+	TotalCharges[0] = totalCharge;
 
 	comboSpinMultiplicity  = g_object_get_data(G_OBJECT (entry), "ComboSpinMultiplicity");
 	if(GTK_IS_WIDGET(comboSpinMultiplicity)) setComboSpinMultiplicity(comboSpinMultiplicity);
@@ -596,7 +604,7 @@ static GtkWidget* addComboListToATable(GtkWidget* table,
                   2,2);
 	entry = GTK_BIN (combo)->child;
 	g_object_set_data(G_OBJECT (entry), "Combo",combo);
-	gtk_widget_set_size_request(GTK_WIDGET(entry),(gint)(ScreenHeight*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(entry),(gint)(ScreenHeight*0.1),-1);
 
 	return entry;
 }
@@ -630,7 +638,7 @@ static GtkWidget *addMopacSpinToTable(GtkWidget *table, gint i)
 	comboSpinMultiplicity  = g_object_get_data(G_OBJECT (entrySpinMultiplicity), "Combo");
 	gtk_widget_set_sensitive(entrySpinMultiplicity, FALSE);
 
-	g_signal_connect(G_OBJECT(entrySpinMultiplicity),"changed", GTK_SIGNAL_FUNC(changedEntrySpinMultiplicity),NULL);
+	g_signal_connect(G_OBJECT(entrySpinMultiplicity),"changed", G_CALLBACK(changedEntrySpinMultiplicity),NULL);
 	return comboSpinMultiplicity;
 }
 /***********************************************************************************************/
@@ -649,7 +657,7 @@ static GtkWidget *addLabelNumberOfElectronsToTable(GtkWidget *table, gint i, Gtk
                   2,2);
 
 	g_object_set_data(G_OBJECT (entryCharge), "LabelNumberOfElectrons", labelNumberOfElectrons);
-	g_signal_connect(G_OBJECT(entryCharge),"changed", GTK_SIGNAL_FUNC(changedEntryCharge),NULL);
+	g_signal_connect(G_OBJECT(entryCharge),"changed", G_CALLBACK(changedEntryCharge),NULL);
 	return labelNumberOfElectrons;
 }
 /***********************************************************************************************/
@@ -664,8 +672,8 @@ void createMopacChargeMultiplicityFrame(GtkWidget *box)
 	GtkWidget *table = NULL;
 	gint i;
 
-	totalCharge = 0;
-	spinMultiplicity=1;
+	totalCharge = TotalCharges[0];
+	spinMultiplicity=SpinMultiplicities[0];
 
 	table = gtk_table_new(3,5,FALSE);
 
@@ -711,5 +719,364 @@ void createMopacChargeMultiplicityFrame(GtkWidget *box)
 	if(GTK_IS_WIDGET(comboMethod)) setComboMethod(comboMethod);
 	g_object_set_data(G_OBJECT (box), "EntryMethod", GTK_BIN(comboMethod)->child);
 	*/
+}
+/************************************************************************************************************/
+static void setComboReactionPathVariableType(GtkWidget *comboReactionPathVariableType, gboolean notting)
+{
+	GList *glist = NULL;
+	gint i;
+	gchar* listXYZ[] = {"Notting","X","Y","Z"};
+	gchar* listZMatrix[] = {"Notting","Bond","Angle","Dihedral"};
+	gchar** list = NULL;
+	gint iBegin = 0;
+	gint iEnd = 3;
+
+	if(!notting) iBegin = 1;
+	if(MethodeGeom==GEOM_IS_XYZ) list = listXYZ;
+	else list = listZMatrix;
+
+	if(MethodeGeom!=GEOM_IS_XYZ)
+	{
+		if(mopacMolecule.numberOfAtoms<=2) iEnd-=2;
+		else if(mopacMolecule.numberOfAtoms<=3) iEnd--;
+	}
+
+  	for(i=iBegin;i<=iEnd;i++) glist = g_list_append(glist,list[i]);
+
+  	gtk_combo_box_entry_set_popdown_strings( comboReactionPathVariableType, glist) ;
+  	g_list_free(glist);
+}
+/********************************************************************************/
+static void setComboReactionPathAtoms(GtkWidget *comboReactionPathAtoms)
+{
+	GList *glist = NULL;
+	gint i;
+	gint nlist;
+	gchar** list = NULL;
+	GtkWidget* entry = NULL;
+	gchar* typeRP   = NULL;
+	gint iEnd;
+
+	if(!comboReactionPathAtoms) return;
+	entry = GTK_BIN (comboReactionPathAtoms)->child;
+	if(!entry) return;
+	typeRP   = g_object_get_data(G_OBJECT (entry), "TypeRP");
+	if(!typeRP) return;
+
+	nlist = mopacMolecule.numberOfAtoms;
+	iEnd = nlist-1;
+	if(nlist<1) return;
+
+	list = g_malloc(nlist*sizeof(gchar*));
+	if(!list) return;
+	for(i=0;i<nlist;i++) list[i] = NULL;
+	if(!strcmp(typeRP,"X") || !strcmp(typeRP,"Y") || !strcmp(typeRP,"Z"))
+	{
+		iEnd = nlist-1;
+		for(i=0;i<=iEnd;i++)
+			list[i] = g_strdup_printf("%d",i+1);
+	}
+	else if(!strcmp(typeRP,"Bond"))
+	{
+		iEnd = nlist-2;
+		for(i=0;i<=iEnd;i++)
+		{
+			gint a = i+1;
+			gint b = atoi(Geom[a].NR)-1;
+			list[i] = g_strdup_printf("%d [%s%d-%s%d]",a+1,Geom[a].Symb,a+1,Geom[b].Symb,b+1);
+		}
+	}
+	else if(!strcmp(typeRP,"Angle"))
+	{
+		iEnd = nlist-3;
+		for(i=0;i<=iEnd;i++)
+		{
+			gint a = i+2;
+			gint b = atoi(Geom[a].NR)-1;
+			gint c = atoi(Geom[a].NAngle)-1;
+			list[i] = g_strdup_printf("%d [%s%d-%s%d-%s%d]",a+1, 
+					Geom[a].Symb,a+1,
+					Geom[b].Symb,b+1,
+					Geom[c].Symb,c+1);
+		}
+	}
+	else if(!strcmp(typeRP,"Dihedral"))
+	{
+		iEnd = nlist-4;
+		for(i=0;i<=iEnd;i++)
+		{
+			gint a = i+3;
+			gint b = atoi(Geom[a].NR)-1;
+			gint c = atoi(Geom[a].NAngle)-1;
+			gint d = atoi(Geom[a].NDihedral)-1;
+			list[i] = g_strdup_printf("%d [%s%d-%s%d-%s%d-%s%d]",a+1, 
+					Geom[a].Symb,a+1,
+					Geom[b].Symb,b+1,
+					Geom[c].Symb,c+1,
+					Geom[d].Symb,d+1
+					);
+		}
+	}
+	else 
+	{
+		iEnd = 0;
+		list[0] = g_strdup_printf(" ");
+	}
+
+  	for(i=0;i<=iEnd;i++) glist = g_list_append(glist,list[i]);
+
+  	gtk_combo_box_entry_set_popdown_strings( comboReactionPathAtoms, glist) ;
+  	g_list_free(glist);
+	if(list)
+	{
+		for(i=0;i<nlist;i++) if(list[i]) g_free(list[i]);
+		g_free(list);
+	}
+}
+/**********************************************************************/
+static void changedEntryReactionPathType(GtkWidget *entry, gpointer data)
+{
+	G_CONST_RETURN gchar* entryText = NULL;
+	gchar* typeRP;
+	GtkWidget* entryStep = NULL;
+	GtkWidget* entryNbPoints = NULL;
+	GtkWidget* comboAtoms = NULL;
+	 
+	if(!GTK_IS_WIDGET(entry)) return;
+
+	entryText = gtk_entry_get_text(GTK_ENTRY(entry));
+	if(strlen(entryText)<1)return;
+	typeRP   = g_object_get_data(G_OBJECT (entry), "TypeRP");
+	if(!typeRP) return;
+	sprintf(typeRP,"%s",entryText);
+	entryStep = g_object_get_data(G_OBJECT (entry), "EntryStep");
+	entryNbPoints =	g_object_get_data(G_OBJECT (entry), "EntryNbPoints");
+	if (!strcmp(typeRP,"X") || !strcmp(typeRP,"Y") || !strcmp(typeRP,"Z") || !strcmp(typeRP,"Bond"))
+	{
+		if(entryStep) gtk_entry_set_text(GTK_ENTRY(entryStep),"0.1");
+		if(entryNbPoints) gtk_entry_set_text(GTK_ENTRY(entryNbPoints),"20");
+	}
+	else
+	{
+		if(entryStep) gtk_entry_set_text(GTK_ENTRY(entryStep),"1.0");
+		if(entryNbPoints) gtk_entry_set_text(GTK_ENTRY(entryNbPoints),"360");
+	}
+	comboAtoms = g_object_get_data(G_OBJECT (entry), "ComboAtoms");
+	if(comboAtoms)setComboReactionPathAtoms(comboAtoms);
+}
+/**********************************************************************/
+static void changedEntryReactionPathAtoms(GtkWidget *entry, gpointer data)
+{
+	G_CONST_RETURN gchar* entryText = NULL;
+	gint* atomRP = NULL;
+	 
+	if(!GTK_IS_WIDGET(entry)) return;
+
+	entryText = gtk_entry_get_text(GTK_ENTRY(entry));
+	if(strlen(entryText)<1)return;
+	atomRP   = g_object_get_data(G_OBJECT (entry), "AtomRP");
+	if(!atomRP) return;
+	sscanf(entryText,"%d",atomRP);
+}
+/**********************************************************************/
+static void changedEntryReactionPathStep(GtkWidget *entry, gpointer data)
+{
+	G_CONST_RETURN gchar* entryText = NULL;
+	gdouble* stepValue = NULL;
+
+	 
+	if(!GTK_IS_WIDGET(entry)) return;
+
+	entryText = gtk_entry_get_text(GTK_ENTRY(entry));
+	if(strlen(entryText)<1)return;
+	stepValue = g_object_get_data(G_OBJECT (entry), "StepValueRP");
+	if(!stepValue) return;
+	*stepValue = atof(entryText);
+}
+/**********************************************************************/
+static void changedEntryReactionPathNbPoints(GtkWidget *entry, gpointer data)
+{
+	G_CONST_RETURN gchar* entryText = NULL;
+	gint* numberOfPoints = NULL;
+
+	 
+	if(!GTK_IS_WIDGET(entry)) return;
+
+	entryText = gtk_entry_get_text(GTK_ENTRY(entry));
+	if(strlen(entryText)<1)return;
+	if(atoi(entryText)<1) return;
+	numberOfPoints = g_object_get_data(G_OBJECT (entry), "NumberOfPointsRP");
+	if(!numberOfPoints) return;
+	*numberOfPoints = atoi(entryText);
+}
+/***********************************************************************************************/
+static GtkWidget *addMopacReactionPathVariableToTable(GtkWidget *table, gint i,gint j)
+{
+	GtkWidget* entry = NULL;
+	GtkWidget* combo = NULL;
+	gint nlist = 1;
+	gchar* list[] = {"Bond"};
+
+	entry = addComboListToATable(table, list, nlist, i, j, 1);
+	combo  = g_object_get_data(G_OBJECT (entry), "Combo");
+	gtk_widget_set_sensitive(entry, FALSE);
+	g_signal_connect(G_OBJECT(entry),"changed", G_CALLBACK(changedEntryReactionPathType),NULL);
+
+	return combo;
+}
+/***********************************************************************************************/
+static GtkWidget *addMopacReactionPathAtomsToTable(GtkWidget *table, gint i, gint j)
+{
+	GtkWidget* entry = NULL;
+	GtkWidget* combo = NULL;
+	gint nlist = 1;
+	gchar* list[] = {"1-2"};
+
+	entry = addComboListToATable(table, list, nlist, i, j, 1);
+	combo  = g_object_get_data(G_OBJECT (entry), "Combo");
+	gtk_widget_set_sensitive(entry, FALSE);
+
+	g_signal_connect(G_OBJECT(entry),"changed", G_CALLBACK(changedEntryReactionPathAtoms),NULL);
+	return combo;
+}
+/***********************************************************************************************/
+void createReactionPathFrame(GtkWidget *box)
+{
+	GtkWidget* frame;
+	GtkWidget* vboxFrame;
+	GtkWidget* label;
+	GtkWidget* comboVariableType[2] = {NULL,NULL}; /* X, Y, Z, R, Angle or Dihedral */
+	GtkWidget* comboAtoms[2] = {NULL,NULL}; /* n1-n2-n3-n4 (Symb1-Symb2-Symb3-Symb4)*/
+	GtkWidget* entryNbPoints[2] = {NULL,NULL};
+	GtkWidget* entryStep[2] = {NULL,NULL};
+	GtkWidget *table = NULL;
+	gint i;
+	gint j;
+	gint k;
+
+	table = gtk_table_new(3,5,FALSE);
+
+	sprintf(typeRP[1],"Notting");
+	if(MethodeGeom==GEOM_IS_XYZ) sprintf(typeRP[0],"X");
+	else sprintf(typeRP[0],"Bond");
+
+	numberOfPointsRP[0] = 10;
+	numberOfPointsRP[1] = 10;
+	stepValueRP[0] = 0.1;
+	stepValueRP[1] = 0.1;
+
+	frame = gtk_frame_new ("Reaction path");
+	gtk_widget_show (frame);
+	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
+	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
+
+	vboxFrame = gtk_vbox_new (FALSE, 3);
+	gtk_widget_show (vboxFrame);
+	gtk_container_add (GTK_CONTAINER (frame), vboxFrame);
+
+	gtk_box_pack_start (GTK_BOX (vboxFrame), table, TRUE, TRUE, 0);
+
+	i = 0; j = 1;
+	label = gtk_label_new("Type");
+	gtk_table_attach(GTK_TABLE(table),label,j,j+1,i,i+1,
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
+                  2,2);
+	i = 0; j = 2;
+	label = gtk_label_new("Atoms");
+	gtk_table_attach(GTK_TABLE(table),label,j,j+1,i,i+1,
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
+                  2,2);
+	i = 0; j = 3;
+	label = gtk_label_new("Nb points");
+	gtk_table_attach(GTK_TABLE(table),label,j,j+1,i,i+1,
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
+                  2,2);
+	i = 0; j = 4;
+	label = gtk_label_new("Step value");
+	gtk_table_attach(GTK_TABLE(table),label,j,j+1,i,i+1,
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
+                  2,2);
+
+	i = 1; 
+	j = 0;
+	label = gtk_label_new("First");
+	gtk_table_attach(GTK_TABLE(table),label,j,j+1,i,i+1,
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
+                  2,2);
+	j = 1;
+	comboVariableType[0] = addMopacReactionPathVariableToTable(table, i,j);
+	j = 2;
+	comboAtoms[0] = addMopacReactionPathAtomsToTable(table, i,j);
+	j = 3;
+	entryNbPoints[0] = gtk_entry_new ();
+	gtk_widget_set_size_request(GTK_WIDGET(entryNbPoints[0]),(gint)(ScreenHeight*0.1),-1);
+	gtk_table_attach(GTK_TABLE(table),entryNbPoints[0],j,j+1,i,i+1,
+		(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  2,2);
+	j = 4;
+	entryStep[0] = gtk_entry_new ();
+	gtk_widget_set_size_request(GTK_WIDGET(entryStep[0]),(gint)(ScreenHeight*0.1),-1);
+	gtk_table_attach(GTK_TABLE(table),entryStep[0],j,j+1,i,i+1,
+		(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  2,2);
+	i = 2; 
+	j = 0;
+	label = gtk_label_new("Second");
+	gtk_table_attach(GTK_TABLE(table),label,j,j+1,i,i+1,
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
+                  2,2);
+	j = 1;
+	comboVariableType[1] = addMopacReactionPathVariableToTable(table, i,j);
+	j = 2;
+	comboAtoms[1] = addMopacReactionPathAtomsToTable(table, i,j);
+	j = 3;
+	entryNbPoints[1] = gtk_entry_new ();
+	gtk_widget_set_size_request(GTK_WIDGET(entryNbPoints[1]),(gint)(ScreenHeight*0.1),-1);
+	gtk_table_attach(GTK_TABLE(table),entryNbPoints[1],j,j+1,i,i+1,
+		(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  2,2);
+	j = 4;
+	entryStep[1] = gtk_entry_new ();
+	gtk_widget_set_size_request(GTK_WIDGET(entryStep[1]),(gint)(ScreenHeight*0.1),-1);
+	gtk_table_attach(GTK_TABLE(table),entryStep[1],j,j+1,i,i+1,
+		(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  2,2);
+
+	for(k=0;k<2;k++) gtk_entry_set_text(GTK_ENTRY(entryStep[k]),"0.1");
+	for(k=0;k<2;k++) gtk_entry_set_text(GTK_ENTRY(entryNbPoints[k]),"20");
+	for(k=0;k<2;k++)
+	if(GTK_IS_COMBO_BOX(comboVariableType[k]))
+	{
+		g_object_set_data(G_OBJECT (GTK_BIN(comboVariableType[k])->child), "ComboAtoms", comboAtoms[k]);
+		g_object_set_data(G_OBJECT (GTK_BIN(comboVariableType[k])->child), "TypeRP", typeRP[k]);
+		g_object_set_data(G_OBJECT (GTK_BIN(comboVariableType[k])->child), "EntryStep", entryStep[k]);
+		g_object_set_data(G_OBJECT (GTK_BIN(comboVariableType[k])->child), "EntryNbPoints", entryNbPoints[k]);
+	}
+	for(k=0;k<2;k++)
+	if(GTK_IS_COMBO_BOX(comboAtoms[k]))
+	{
+		g_object_set_data(G_OBJECT (GTK_BIN(comboAtoms[k])->child), "EntryStep", entryStep[k]);
+		g_object_set_data(G_OBJECT (GTK_BIN(comboAtoms[k])->child), "EntryNbPoints", entryNbPoints[k]);
+		g_object_set_data(G_OBJECT (GTK_BIN(comboAtoms[k])->child), "AtomRP", &atomRP[k]);
+		g_object_set_data(G_OBJECT (GTK_BIN(comboAtoms[k])->child), "TypeRP", typeRP[k]);
+	}
+	for(k=0;k<2;k++) g_object_set_data(G_OBJECT (entryNbPoints[k]), "NumberOfPointsRP", &numberOfPointsRP[k]);
+	for(k=0;k<2;k++) g_object_set_data(G_OBJECT (entryStep[k]), "StepValueRP", &stepValueRP[k]);
+
+	for(k=0;k<2;k++) g_signal_connect(G_OBJECT(entryStep[k]),"changed", G_CALLBACK(changedEntryReactionPathStep),NULL);
+	for(k=0;k<2;k++) g_signal_connect(G_OBJECT(entryNbPoints[k]),"changed", G_CALLBACK(changedEntryReactionPathNbPoints),NULL);
+
+	for(k=0;k<2;k++) setComboReactionPathVariableType(comboVariableType[k],k>0);
+	for(k=0;k<2;k++) setComboReactionPathAtoms(comboAtoms[k]);
 }
 /************************************************************************************************************/

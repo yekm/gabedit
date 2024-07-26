@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -38,6 +38,7 @@ typedef struct _Fragment
 }Fragment;
 
 void FreeFragment(Fragment* F);
+gint AddHToAtomPDB(Fragment* F, gchar* pdb);
 Fragment GetFragment(gchar* Name);
 void CenterFrag(Fragment* F);
 

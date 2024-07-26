@@ -1,6 +1,6 @@
 /* ReduceMolecule.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -18,7 +18,7 @@ DEALINGS IN THE SOFTWARE.
 ************************************************************************************************************/
 #include "../../Config.h"
 #include <glib.h>
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Symmetry/MoleculeSymmetryType.h"
 #include "../Symmetry/MoleculeSymmetry.h"
 #include "../Symmetry/SymmetryOperators.h"
@@ -147,10 +147,8 @@ static void removeByRotation(MolSymMolecule* mol, gint nax, gint sym)
 
 	if(mol->numberOfAtoms >0) eps = mol->listOfAtoms[0].eps;
 
-	if (sym & SYM_V)
-		c = cos(PI/nax);
-	else
-		c = cos(2.0*PI/nax);
+	if (sym & SYM_V) c = cos(PI/nax);
+	else c = cos(2.0*PI/nax);
   
 	atomList = mol->listOfAtoms;
 
@@ -170,10 +168,8 @@ static void removeByRotation(MolSymMolecule* mol, gint nax, gint sym)
 				/* calculate cos of molecule turned a bit clockwise */
 				ca = atomList->position[0]/sqrt(rr);
 
-				if (sym & SYM_V)
-					ca += eps*atomList->position[1]/rr;
-				else
-					ca -= eps*atomList->position[1]/rr;
+				if (sym & SYM_V) ca += eps*atomList->position[1]/rr;
+				else ca -= eps*atomList->position[1]/rr;
 				if (ca < c)
 				{
 					atomList->type = deleted;
@@ -210,28 +206,29 @@ void reduceMoleculeToItsBasisSetOfAtoms(MolSymMolecule* mol, gint sym, gint nax)
 	if (sym & SYM_O)
 	{
 		reduceForOctaedralSymmetry(mol,sym);
+		setEpsToZero(mol);
 		return;
 	}
 	if (sym & SYM_T)
 	{
 		reduceForTetraedalSymmetry(mol,sym);
+		setEpsToZero(mol);
 		return;
 	}
 	if (sym & SYM_IC)
 	{
 		reduceForIcosaedralSymmetry(mol,sym);
+		setEpsToZero(mol);
 		return;
 	}
-	if (sym & SYM_H)
-		removeHalfSpace(mol,XY_PLANE);
-	else if (sym & SYM_I)
-		removeHalfSpace(mol,POINT_INV);
+	if (sym & SYM_H) removeHalfSpace(mol,XY_PLANE);
+	else if (sym & SYM_I) removeHalfSpace(mol,POINT_INV);
 
 	if (nax > 1)
 	{
 		removeByRotation(mol,nax,sym);
-		if (sym & SYM_D)
-			removeHalfSpace(mol,ROT2X);
+		if (sym & SYM_D) removeHalfSpace(mol,ROT2X);
+		if (sym & SYM_S) removeHalfSpace(mol,XY_PLANE);
 	}
 	setEpsToZero(mol);
 }

@@ -1,6 +1,6 @@
 /* GInterfaceMethodeBase.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -51,7 +51,7 @@ void  c_basis_presents(gchar *ListAtoms)
   label = gtk_label_new (tlabel);
   g_object_ref (label);
   g_object_set_data_full (G_OBJECT (FrameB[NM]), "label", label,
-                            (GtkDestroyNotify) g_object_unref);
+                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (HboxB[2][NM]), label, TRUE, TRUE, 2);
   g_free(tlabel);

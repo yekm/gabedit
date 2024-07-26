@@ -1,6 +1,5 @@
-/* GridM2MSI.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -17,11 +16,21 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 DEALINGS IN THE SOFTWARE.
 ************************************************************************************************************/
 
-#ifndef __GABEDIT_GRIDM2MSI_H__
-#define __GABEDIT_GRIDM2MSI_H__
+#ifndef __GABEDIT_MOLCASGATEWAY_H__
+#define __GABEDIT_MOLCASGATEWAY_H__
 
-void load_m2msi_file_orbitals(GabeditFileChooser *SelecFile, gint response_id);
-void load_m2msi_file_density(GabeditFileChooser *SelecFile, gint response_id);
+void initGateWayButtons();
+void initMolcasMolecule();
+void freeMolcasMolecule();
+gboolean setMolcasMolecule();
+gint resetNumberOfValenceElectrons();
+void setMolcasGeometryFromInputFile(gchar* fileName);
+void createSymmetryFrame(GtkWidget *win, GtkWidget *box);
+void putVariableConstantsZMatInTextEditor();
+void putSymmetryInTextEditor();
+void putMoleculeInTextEditor();
+void createSolvationFrame(GtkWidget *win, GtkWidget *box);
+void putGateWayInfoInTextEditor();
 
-#endif /* __GABEDIT_GRIDM2MSI_H__ */
+#endif /* __GABEDIT_MOLCASGATEWAY_H__ */
 

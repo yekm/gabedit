@@ -1,6 +1,6 @@
 /* GridPlans.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -569,8 +569,8 @@ void create_planeGrid_center_vector(gchar* type)
   button = create_button(Win,"Cancel");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child, GTK_OBJECT(Win));
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Win));
   gtk_widget_show (button);
 
   button = create_button(Win,"OK");
@@ -579,7 +579,7 @@ void create_planeGrid_center_vector(gchar* type)
   gtk_widget_grab_default(button);
   gtk_widget_show (button);
   g_object_set_data(G_OBJECT (Win), "Type",planeFor[itype]);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)apply_planegrid_center_vector,GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_planegrid_center_vector,GTK_OBJECT(Win));
 
 
   /* Show all */

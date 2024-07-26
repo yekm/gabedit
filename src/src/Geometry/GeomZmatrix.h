@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -27,6 +27,8 @@ void read_ZMatrix_mopac_file_no_add_list(gchar*FileName);
 void read_Zmat_from_gauss_input_file(gchar *, FilePosTypeGeom  );
 void read_Zmat_from_qchem_input_file(gchar *NomFichier);
 void read_Zmat_from_mopac_input_file(gchar *NomFichier);
+void read_Zmat_from_mopac_scan_output_file(gchar *FileName, gint numGeom);
+gint read_Zmat_from_molcas_input_file(gchar *fileName);
 void read_Zmat_from_molpro_input_file(gchar *, FilePosTypeGeom  );
 void freeGeom();
 void freeVariables();

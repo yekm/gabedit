@@ -1,6 +1,6 @@
 /* PreviewGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 #include <math.h>
 
 #include "../Common/Global.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Geometry/InterfaceGeom.h"
 #include "../Utils/Utils.h"
@@ -31,7 +31,6 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/AtomsProp.h"
 #include "../Geometry/GeomGlobal.h"
 #include "../Geometry/Mesure.h"
-#include "../Geometry/Postscript.h"
 #include "../Geometry/Povray.h"
 #include "../Common/Windows.h"
 #include "../Utils/Transformation.h"
@@ -54,6 +53,11 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/GabeditTextEdit.h"
 #include "../Geometry/MenuToolBarGeom.h"
 
+typedef enum
+{
+  GABEDIT_PREVIEW_OPERATION_ROTATION = 0,
+  GABEDIT_PREVIEW_OPERATION_SELECTION = 1,
+} GabEditPreviewOperation;
 /********************************************************************************/
 typedef struct _PrevGeom
 {
@@ -62,6 +66,7 @@ typedef struct _PrevGeom
 	gint Xi;
 	gint Yi;
 	gushort Rayon;
+	gint N;
 }PrevGeom;
 /********************************************************************************/
 typedef struct _PrevData
@@ -77,7 +82,47 @@ typedef struct _PrevData
 	GdkGC* gc;
 	GdkPixmap* pixmap;
 	gdouble zoom;
+ 	gint atomToDelete;
+ 	gint atomToBondTo;
+	gint angleAtom;
+	Fragment* frag;
+	GabEditPreviewOperation operation;
 }PrevData;
+/*****************************************************************************/
+static gdouble get_angle_preview(PrevGeom* geom, gint nAtoms, gint ni,gint nj,gint nl)
+{
+        gint k;
+        gint i=0;
+        gint j=0;
+        gint l=0;
+	gdouble A[3];
+	gdouble B[3];
+	gdouble normA = 0;
+	gdouble normB = 0;
+	gdouble norm = 0;
+	gdouble angle = 0;
+
+       for (k=0;k<nAtoms;k++) if(geom[k].N==ni) { i = k; break; }
+       for (k=0;k<nAtoms;k++) if(geom[k].N==nj) { j = k; break; }
+       for (k=0;k<nAtoms;k++) if(geom[k].N==nl) { l = k; break; }
+
+       for(k=0;k<3;k++) A[k]=geom[i].C[k]-geom[j].C[k];
+       for(k=0;k<3;k++) B[k]=geom[l].C[k]-geom[j].C[k];
+        
+       for(k=0;k<3;k++) normA += A[k]*A[k];
+       for(k=0;k<3;k++) normB += B[k]*B[k];
+       norm = normA*normB;
+ 
+	if(fabs(norm)<1e-14 ) return 0.0;
+	norm = 1/sqrt(norm);
+
+	for(k=0;k<3;k++) angle += A[k]*B[k]*norm;
+	if(angle<=-1) return 180.0;
+	if(angle>=1) return 0.0;
+
+        angle = acos(angle)/DEG_TO_RAD;
+	return angle;
+}
 /*****************************************************************************/
 static void init_prevData(PrevData* prevData)
 {
@@ -95,6 +140,11 @@ static void init_prevData(PrevData* prevData)
 	prevData->gc = NULL;
 	prevData->pixmap = NULL;
 	prevData->zoom = 1;
+	prevData->atomToDelete = -1;
+	prevData->atomToBondTo = -1;
+	prevData->angleAtom = -1;
+	prevData->operation = GABEDIT_PREVIEW_OPERATION_ROTATION;
+	prevData->frag = NULL;
 }
 /*****************************************************************************/
 static void free_connections(gint** connections, gint nAtoms)
@@ -120,10 +170,11 @@ static void free_prevData(PrevData* prevData)
 	}
 	if(prevData->geom) g_free(prevData->geom);
 	if(prevData->geom0) g_free(prevData->geom0);
-	if(prevData->pixmap) gdk_pixmap_unref(prevData->pixmap);
-	if(prevData->gc) gdk_gc_destroy(prevData->gc);
+	if(prevData->pixmap) g_object_unref(prevData->pixmap);
+	if(prevData->gc) g_object_unref(prevData->gc);
 	free_connections(prevData->connections,prevData->nAtoms);
 	init_prevData(prevData);
+	/* do not delete frag */
 }
 /*****************************************************************************/
 static void init_connections(GtkWidget* drawingArea)
@@ -397,7 +448,7 @@ static void define_good_factor(GtkWidget* drawingArea)
 
 	if((Y2-Y1)>(gint)Ymax)
 		factor *= fabs((gdouble)(Ymax-20)/(Y2-Y1));
-	prevData->zoom = factor;
+	prevData->zoom = factor/Cmax;
 }
 /*****************************************************************************/
 static void define_coord_ecran(GtkWidget* drawingArea)
@@ -427,7 +478,8 @@ static void define_coord_ecran(GtkWidget* drawingArea)
 	Ymax=drawingArea->allocation.height;
 	Rmax = Xmax;
 	if(Rmax<Ymax) Rmax = Ymax;
-	Cmax = get_cmax(nAtoms, geom);
+	/* Cmax = get_cmax(nAtoms, geom);*/ /* already in factor */
+	Cmax = 1.0;
 	
 	for (i = 0;i<nAtoms;i++)
 	{
@@ -468,7 +520,7 @@ static void draw_line(GtkWidget* drawingArea, gint x1,gint y1,gint x2,gint y2,Gd
 	gc = prevData->gc;
 	pixmap = prevData->pixmap;
 
-   	colormap  = gdk_window_get_colormap(ZoneDessin->window);
+   	colormap  = gdk_drawable_get_colormap(ZoneDessin->window);
 
          vis = gdk_colormap_get_visual(colormap);
         {
@@ -546,6 +598,27 @@ static void draw_line2(GtkWidget* drawingArea, gint epaisseur,guint i,guint j,gi
 	draw_line(drawingArea, x0,y0,x2,y2,color2,epaisseur,&vx,&vy,&ep,FALSE); 
 }
 /*****************************************************************************/
+static void draw_anneau(GtkWidget* drawingArea, gint x,gint y,gint rayon,GdkColor colori)
+{
+	GdkColormap *colormap;
+	PrevData* prevData = (PrevData*)g_object_get_data(G_OBJECT (drawingArea), "PrevData");
+	GdkGC* gc = NULL;
+	GdkPixmap* pixmap;
+
+	if(!prevData)return;
+
+	gc = prevData->gc;
+	pixmap = prevData->pixmap;
+
+        colormap  = gdk_drawable_get_colormap(drawingArea->window);
+
+        gdk_colormap_alloc_color(colormap,&colori,FALSE,TRUE);
+	gdk_gc_set_foreground(gc,&colori);
+	gdk_gc_set_line_attributes(gc,2,GDK_LINE_SOLID,GDK_CAP_ROUND,GDK_JOIN_ROUND);
+	gdk_gc_set_fill(gc,GDK_STIPPLED);
+	gdk_draw_arc(pixmap,gc,FALSE,x-rayon,y-rayon,2*rayon,2*rayon,0,380*64);
+}
+/*****************************************************************************/
 static void draw_cercle(GtkWidget* drawingArea, gint xi,gint yi,gint rayoni,GdkColor colori)
 {
 	GdkColormap *colormap;
@@ -565,7 +638,7 @@ static void draw_cercle(GtkWidget* drawingArea, gint xi,gint yi,gint rayoni,GdkC
         colorgray.green = (gushort)(colori.green*0.6); 
         colorgray.blue = (gushort)(colori.blue*0.6); 
 
-        colormap  = gdk_window_get_colormap(drawingArea->window);
+        colormap  = gdk_drawable_get_colormap(drawingArea->window);
         vis = gdk_colormap_get_visual(colormap);
        	if(vis->depth >15)
 	{
@@ -655,7 +728,7 @@ static void redraw(GtkWidget *drawingArea)
 {
 	PrevData* prevData = (PrevData*)g_object_get_data(G_OBJECT (drawingArea), "PrevData");
 	if(!prevData)return;
-	gdk_draw_pixmap(drawingArea->window,
+	gdk_draw_drawable(drawingArea->window,
                   drawingArea->style->fg_gc[GTK_WIDGET_STATE (drawingArea)],
                   prevData->pixmap,
                   0,0,
@@ -672,6 +745,9 @@ static gboolean draw_molecule( GtkWidget *drawingArea)
 	gint epaisseur;
 	GdkColor color1;
 	GdkColor color2;
+	GdkColor colorRed;
+	GdkColor colorGreen;
+	GdkColor colorBlue;
     	gushort rayon;
 	gboolean* FreeAtoms = NULL;
 	PrevData* prevData = (PrevData*)g_object_get_data(G_OBJECT (drawingArea), "PrevData");
@@ -691,6 +767,20 @@ static gboolean draw_molecule( GtkWidget *drawingArea)
 
 	for(i=0;i<prevData->nAtoms;i++)
 		FreeAtoms[i] = TRUE;
+	colorRed.red = 65535;
+	colorRed.green = 0;
+	colorRed.blue = 0;
+	colorRed.pixel  = 0;
+
+	colorGreen.red = 0;
+	colorGreen.green = 65535;
+	colorGreen.blue = 0;
+	colorGreen.pixel = 0;
+
+	colorBlue.red = 0;
+	colorBlue.green = 0;
+	colorBlue.blue = 65535;
+	colorBlue.pixel = 0;
 
 	pixmap_init(drawingArea);
 
@@ -763,10 +853,29 @@ static gboolean draw_molecule( GtkWidget *drawingArea)
 		}
 		if(FreeAtoms[i])
 		{
-        		rayon =(gushort)(geom[i].Rayon*factorball)/2;
+        		rayon =(gushort)(geom[i].Rayon)/2;
 			color1 = propi.color;  
 			draw_cercle(drawingArea, geom[i].Xi,geom[i].Yi,rayon,color1);
 		}
+		if(geom[i].N==prevData->atomToDelete)
+		{
+        		rayon =(gushort)(geom[i].Rayon)/4;
+			if(rayon<5) rayon = 5;
+			draw_anneau(drawingArea, geom[i].Xi,geom[i].Yi,rayon,colorRed);
+		}
+		if(geom[i].N==prevData->atomToBondTo)
+		{
+        		rayon =(gushort)(geom[i].Rayon)/4;
+			if(rayon<5) rayon = 5;
+			draw_anneau(drawingArea, geom[i].Xi,geom[i].Yi,rayon,colorGreen);
+		}
+		if(geom[i].N==prevData->angleAtom)
+		{
+        		rayon =(gushort)(geom[i].Rayon)/4;
+			if(rayon<5) rayon = 5;
+			draw_anneau(drawingArea, geom[i].Xi,geom[i].Yi,rayon,colorBlue);
+		}
+
         }
 	g_free(FreeAtoms);
 	redraw(drawingArea);
@@ -779,7 +888,7 @@ static gboolean configure_event( GtkWidget *drawingArea, GdkEventConfigure *even
 	PrevData* prevData = (PrevData*)g_object_get_data(G_OBJECT (drawingArea), "PrevData");
 	if(!prevData)return FALSE;
 	if(!prevData->gc) prevData->gc = gdk_gc_new(drawingArea->window);
-	if (prevData->pixmap) gdk_pixmap_unref(prevData->pixmap);
+	if (prevData->pixmap) g_object_unref(prevData->pixmap);
 	prevData->pixmap = gdk_pixmap_new(drawingArea->window, 
 			drawingArea->allocation.width, drawingArea->allocation.height, -1);
 	draw_molecule(drawingArea);
@@ -792,7 +901,7 @@ static gboolean expose_event( GtkWidget *widget, GdkEventExpose *event )
 	PrevData* prevData = (PrevData*)g_object_get_data(G_OBJECT (widget), "PrevData");
 	if(event->count >0) return FALSE;
 	if(!prevData)return FALSE;
-	gdk_draw_pixmap(widget->window,
+	gdk_draw_drawable(widget->window,
                   widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
                   prevData->pixmap,
                   event->area.x, event->area.y,
@@ -801,8 +910,86 @@ static gboolean expose_event( GtkWidget *widget, GdkEventExpose *event )
  
 	return FALSE;
 }                                                                               
+/*****************************************************************************/
+static gint atom_conneted_to(GtkWidget* drawingArea, gint i)
+{
+	PrevData* prevData = (PrevData*)g_object_get_data(G_OBJECT (drawingArea), "PrevData");
+	gint j;
+	if(!prevData) return -1;
+	if(!prevData->connections) return -1;
+	if(prevData->nAtoms<2) return -1;
+	for(j=0;j<prevData->nAtoms;j++)
+		if(prevData->connections[i][j]>0) return prevData->geom[j].N;
+	return -1;
+}
+/*****************************************************************************/
+static gint atom_noni_conneted_to(GtkWidget* drawingArea, gint i, gint k)
+{
+	PrevData* prevData = (PrevData*)g_object_get_data(G_OBJECT (drawingArea), "PrevData");
+	gint j;
+	gint l;
+	if(!prevData) return -1;
+	if(!prevData->connections) return -1;
+	if(prevData->nAtoms<3) return -1;
+	for(j=0;j<prevData->nAtoms;j++)
+	{
+		if(j==i) continue;
+		for(l=0;l<prevData->nAtoms;l++)
+			if(k==prevData->geom[l].N && ( prevData->connections[l][j]>0 || prevData->connections[j][l]>0)
+					&& prevData->geom[l].symbol[0] !='H') return prevData->geom[j].N;
+	}
+	for(j=0;j<prevData->nAtoms;j++)
+	{
+		if(j==i) continue;
+		for(l=0;l<prevData->nAtoms;l++)
+			if(k==prevData->geom[l].N && prevData->connections[l][j]>0) return prevData->geom[j].N;
+	}
+	return -1;
+}
+/*****************************************************************************/
+static gint number_of_atoms_conneted_to(GtkWidget* drawingArea, gint i)
+{
+	PrevData* prevData = (PrevData*)g_object_get_data(G_OBJECT (drawingArea), "PrevData");
+	gint nBonds = 0;
+	gint j;
+	if(!prevData) return 0;
+	if(!prevData->connections) return 0;
+	if(prevData->nAtoms<2) return 0;
+	if(i<0 || i>=prevData->nAtoms) return 0;
+	for(j=0;j<prevData->nAtoms;j++)
+		if(prevData->connections[i][j]>0) nBonds++;
+	return nBonds;
+}
+/*****************************************************************************/
+static gint get_atom_to_select(GtkWidget *drawingArea, gdouble xi, gdouble yi)
+{
+	gdouble xii,yii;
+	gint i;
+	gdouble d2 ;
+	gdouble d1 ;
+	PrevGeom* geom;
+	gint nAtoms;
+	PrevData* prevData = (PrevData*)g_object_get_data(G_OBJECT (drawingArea), "PrevData");
+
+	if(!prevData)return -1;
+
+	geom = prevData->geom;
+	nAtoms = prevData->nAtoms;
+
+	for(i=0;i<(gint)nAtoms;i++)
+	{
+		gdouble rayon;
+		xii = xi-geom[i].Xi;
+		yii = yi-geom[i].Yi;
+		d1 = xii*xii+yii*yii;
+		rayon = geom[i].Rayon;
+		d2 = d1-rayon*rayon;
+		if(d2<=0) return i;
+	}
+	return -1;
+}
 /********************************************************************************/   
-static gboolean event_dispatcher(GtkWidget *drawingArea, GdkEvent *event, gpointer Menu)
+static gboolean button_press(GtkWidget *drawingArea, GdkEvent *event, gpointer Menu)
 {
 	GdkEventButton *bevent;
 	PrevData* prevData = (PrevData*)g_object_get_data(G_OBJECT (drawingArea), "PrevData");
@@ -812,14 +999,74 @@ static gboolean event_dispatcher(GtkWidget *drawingArea, GdkEvent *event, gpoint
 	{
 		case GDK_BUTTON_PRESS:
 		{
+			gint i = -1;
 			bevent = (GdkEventButton *) event;
 			prevData->beginX = bevent->x;
 			prevData->beginY = bevent->y;
+			i =get_atom_to_select(drawingArea,bevent->x,bevent->y);
+			if(number_of_atoms_conneted_to(drawingArea,i)!=1) i=-1;
+			if(i>=0 && prevData->atomToDelete == prevData->geom[i].N)
+			{
+				prevData->atomToDelete = -1;
+				prevData->atomToBondTo = -1;
+				prevData->angleAtom = -1;
+				prevData->frag->atomToDelete = -1;
+				prevData->frag->atomToBondTo = -1;
+				prevData->frag->angleAtom=-1;
+				draw_molecule(drawingArea);
+			}
+			else if(i>=0)
+			{
+				prevData->operation = GABEDIT_PREVIEW_OPERATION_SELECTION;
+				prevData->atomToDelete = prevData->geom[i].N;
+				prevData->atomToBondTo = atom_conneted_to(drawingArea, i);
+				prevData->angleAtom = atom_noni_conneted_to(drawingArea, i,prevData->atomToBondTo);
+
+				if(prevData->frag && prevData->frag->NAtoms>0)
+				{
+					gint j = prevData->geom[i].N-1;
+					prevData->frag->atomToDelete = -1;
+					prevData->frag->atomToBondTo = -1;
+					prevData->frag->angleAtom = -1;
+					if(j<prevData->frag->NAtoms)
+					{
+						prevData->frag->atomToDelete = j;
+						j = atom_conneted_to(drawingArea, i)-1;
+						prevData->frag->atomToBondTo=j;
+						j = atom_noni_conneted_to(drawingArea, i,prevData->atomToBondTo)-1;
+						prevData->frag->angleAtom=j;
+					}
+				}
+				draw_molecule(drawingArea);
+			}
 			return TRUE;
 		}
 		default: break;
 	}
 	return FALSE;
+}
+/*****************************************************************************
+*  release_button
+******************************************************************************/
+gint release_button(GtkWidget *drawingArea, GdkEvent *event, gpointer pointer)
+{
+	GdkEventButton *bevent;
+	if(event->type == GDK_BUTTON_RELEASE)
+	{
+		bevent = (GdkEventButton *) event;
+		if (bevent->button == 3) return TRUE;
+		if (bevent->button == 2) return TRUE;
+		if (bevent->button == 1) 
+		{
+			PrevData* prevData = (PrevData*)g_object_get_data(G_OBJECT (drawingArea), "PrevData");
+			if(prevData) prevData->operation = GABEDIT_PREVIEW_OPERATION_ROTATION;
+		}
+
+	}
+	draw_molecule(drawingArea);
+
+	return TRUE;
+
 }
 /********************************************************************************/
 static gboolean RotationByMouse(GtkWidget *widget, GdkEventMotion *event)
@@ -882,7 +1129,7 @@ static gboolean ScaleByMouse(GtkWidget *drawingArea, gpointer data)
 	factor = prevData->zoom;
 
 	factor +=((bevent->y - prevData->beginY) / drawingArea->allocation.height) * 5;
-	if(factor<0.1) factor = 0.1;
+	if(factor<0.1) factor = 0.01;
 	if(factor>10) factor = 10;
 	prevData->zoom = factor;
 	draw_molecule(drawingArea);
@@ -917,7 +1164,42 @@ static gboolean motion_notify(GtkWidget *drawingArea, GdkEventMotion *event)
 
 	if (state & GDK_BUTTON1_MASK)
 	{
-		RotationByMouse(drawingArea,event);
+		PrevData* prevData = (PrevData*)g_object_get_data(G_OBJECT (drawingArea), "PrevData");
+		if(prevData && prevData->operation == GABEDIT_PREVIEW_OPERATION_ROTATION)
+			RotationByMouse(drawingArea,event);
+		else
+		if(
+			prevData && 
+			prevData->operation == GABEDIT_PREVIEW_OPERATION_SELECTION && 
+			prevData->atomToDelete>=0 && prevData->atomToBondTo>=0
+		)
+		{
+			gint i = -1;
+			GdkEventButton *bevent = (GdkEventButton *) event;
+			i =get_atom_to_select(drawingArea,bevent->x,bevent->y);
+			if(
+				i>=0 && 
+				i<prevData->nAtoms && 
+				prevData->geom[i].N != prevData->atomToDelete && 
+				prevData->geom[i].N != prevData->atomToBondTo
+			)
+			{
+				gdouble angle = get_angle_preview(prevData->geom, prevData->nAtoms, 
+						prevData->atomToDelete,
+						prevData->atomToBondTo,
+						prevData->geom[i].N
+						);
+				if(fabs(angle-180)>0.1 && prevData->frag && prevData->frag->NAtoms>0)
+				{
+					gint j = prevData->geom[i].N-1;
+					prevData->angleAtom = prevData->geom[i].N;
+					if(j<prevData->frag->NAtoms)
+						prevData->frag->angleAtom=j;
+				}
+				draw_molecule(drawingArea);
+			}
+		}
+
 	}
 	if (state & GDK_BUTTON2_MASK)
 	{
@@ -962,7 +1244,7 @@ GtkWidget* add_preview_geom(GtkWidget* box)
 	gtk_widget_show(drawingArea);
 	g_object_set_data(G_OBJECT (drawingArea), "PrevData", prevData);
 
-	g_signal_connect(G_OBJECT(drawingArea),"configure_event", (GtkSignalFunc)configure_event,NULL);
+	g_signal_connect(G_OBJECT(drawingArea),"configure_event", (GCallback)configure_event,NULL);
 
 	gtk_widget_set_events (drawingArea, GDK_EXPOSURE_MASK
 					| GDK_LEAVE_NOTIFY_MASK
@@ -973,11 +1255,12 @@ GtkWidget* add_preview_geom(GtkWidget* box)
 	gtk_widget_set_size_request (GTK_WIDGET(drawingArea), 100, 100);
 
 	/* Evenments */
-	g_signal_connect(G_OBJECT(drawingArea), "expose_event", (GtkSignalFunc)expose_event,NULL);
-	g_signal_connect(G_OBJECT(drawingArea), "button_press_event", GTK_SIGNAL_FUNC(event_dispatcher), NULL);
-	g_signal_connect(G_OBJECT(drawingArea), "motion_notify_event",GTK_SIGNAL_FUNC(motion_notify), NULL);
+	g_signal_connect(G_OBJECT(drawingArea), "expose_event", (GCallback)expose_event,NULL);
+	g_signal_connect(G_OBJECT(drawingArea), "button_press_event", G_CALLBACK(button_press), NULL);
+	g_signal_connect(G_OBJECT(drawingArea), "motion_notify_event",G_CALLBACK(motion_notify), NULL);
+	g_signal_connect(G_OBJECT(drawingArea), "button_release_event",G_CALLBACK(release_button), NULL);
 
-	g_signal_connect(G_OBJECT(drawingArea),"delete_event",(GtkSignalFunc)destroy_prev_geom,NULL);
+	g_signal_connect(G_OBJECT(drawingArea),"delete_event",(GCallback)destroy_prev_geom,NULL);
 	return drawingArea;
 }
 /*********************************************************************************/
@@ -997,7 +1280,21 @@ void add_frag_to_preview_geom(GtkWidget* drawingArea, Fragment* frag)
 	{
 		for(j=0;j<3;j++) prevData->geom[i].C[j] = frag->Atoms[i].Coord[j];
 		prevData->geom[i].symbol = g_strdup(frag->Atoms[i].Symb);
+		prevData->geom[i].N = i+1;
 	}
+	if(frag->atomToDelete>=0 && frag->atomToDelete<prevData->nAtoms) 
+		prevData->atomToDelete = prevData->geom[frag->atomToDelete].N;
+	else prevData->atomToDelete = -1;
+
+	if(frag->atomToBondTo>=0 && frag->atomToBondTo<prevData->nAtoms) 
+		prevData->atomToBondTo = prevData->geom[frag->atomToBondTo].N;
+	else prevData->atomToBondTo =-1;
+
+	if(frag->angleAtom>=0 && frag->angleAtom<prevData->nAtoms) 
+		prevData->angleAtom = prevData->geom[frag->angleAtom].N;
+	else prevData->angleAtom =-1;
+
+	prevData->frag = frag;
 	define_coord_ecran(drawingArea);
 	configure_event(drawingArea, NULL);
 	gtk_widget_hide_all(drawingArea);

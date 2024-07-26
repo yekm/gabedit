@@ -1,6 +1,6 @@
 /* MPQCOptimisation.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../MPQC/MPQCGlobal.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/GabeditTextEdit.h"
 typedef enum
 {
@@ -200,7 +200,7 @@ void createMPQCOptimisation(GtkWidget *box)
                   3,3);
 	buttonSinglePoint = button;
 	g_object_set_data(G_OBJECT (buttonSinglePoint), "Type", &buttonTypes[0]);
-	g_signal_connect(G_OBJECT(buttonSinglePoint),"clicked", GTK_SIGNAL_FUNC(activateRadioButton),NULL);
+	g_signal_connect(G_OBJECT(buttonSinglePoint),"clicked", G_CALLBACK(activateRadioButton),NULL);
 	i = 1;
 	button = gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (button)), "Optimisation");
 	gtk_table_attach(GTK_TABLE(table),button,0,0+1,i,i+1,
@@ -209,7 +209,7 @@ void createMPQCOptimisation(GtkWidget *box)
                   3,3);
 	buttonOptimisation = button;
 	g_object_set_data(G_OBJECT (buttonOptimisation), "Type", &buttonTypes[1]);
-	g_signal_connect(G_OBJECT(buttonOptimisation),"clicked", GTK_SIGNAL_FUNC(activateRadioButton),NULL);
+	g_signal_connect(G_OBJECT(buttonOptimisation),"clicked", G_CALLBACK(activateRadioButton),NULL);
 
 	button = gtk_check_button_new_with_label ("Transition state");
 	gtk_table_attach(GTK_TABLE(table),button,1,1+2,i,i+1,
@@ -218,14 +218,14 @@ void createMPQCOptimisation(GtkWidget *box)
                   3,3);
 	gtk_widget_set_sensitive(button, mpqcMpqc.optimize);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), FALSE);
-	g_signal_connect(G_OBJECT(button),"clicked", GTK_SIGNAL_FUNC(activateTransButton),NULL);
+	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateTransButton),NULL);
 	g_object_set_data(G_OBJECT (buttonOptimisation), "ButtonTransition", button);
 	g_object_set_data(G_OBJECT (buttonSinglePoint), "ButtonTransition", button);
 
 	i = 2;
 	comboMaxIterations = addMPQCMaxIterationsToTable(table, i, buttonSinglePoint, buttonOptimisation);
 	entryMaxIterations = GTK_BIN(comboMaxIterations)->child;
-	g_signal_connect(G_OBJECT(entryMaxIterations),"changed", GTK_SIGNAL_FUNC(changedEntryMaxIterations),NULL);
+	g_signal_connect(G_OBJECT(entryMaxIterations),"changed", G_CALLBACK(changedEntryMaxIterations),NULL);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonSinglePoint), !mpqcMpqc.optimize);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonOptimisation), mpqcMpqc.optimize);
 	g_object_set_data(G_OBJECT (box), "ButtonSinglePoint", buttonSinglePoint);

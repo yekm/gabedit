@@ -1,6 +1,6 @@
 /* MolcasGridIT.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/GeomConversion.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/GabeditTextEdit.h"
 #include "../Symmetry/MoleculeSymmetry.h"
@@ -55,30 +55,37 @@ static void copyGridITParameters(MolcasGridIT* newCopy, MolcasGridIT* toCopy)
 static void putBeginGridITInTextEditor()
 {
 
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.program, &molcasColorBack.program, "  &GRID_IT &END\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.program, &molcasColorBack.program, " &GRID_IT\n",-1);
 }
 /************************************************************************************************************/
 static void putAsciiInTextEditor()
 {
 	if(!molcasGridIT.ascii) return;
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.program, NULL, "ASCII\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.subProgram, NULL, "ASCII\n",-1);
 }
 /************************************************************************************************************/
 static void putAllInTextEditor()
 {
 	if(!molcasGridIT.all) return;
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.program, NULL, "ALL\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.subProgram, NULL, "ALL\n",-1);
 }
 /************************************************************************************************************/
 static void putEndGridITInTextEditor()
 {
 
         gchar buffer[BSIZE];
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.program, &molcasColorBack.program, "End of input\n\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.program, &molcasColorBack.program, "End of input\n",-1);
 
-	sprintf(buffer,"! cp $Project.M2Msi   $MOLCAS_SUBMIT_PWD/$Project.M2Msi\n");
+	/* this action is done automatically - all grid & molden files are copied to submit directory.*/
+	/*
+	sprintf(buffer,"! cp $Project.grid   $MOLCAS_SUBMIT_PWD/$Project.grid\n");
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.shellCommand, &molcasColorBack.shellCommand, buffer, -1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "\n\n", -1);
+	*/
+	sprintf(buffer,"* remove the first star in the next file for get the cube files\n");
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.shellCommand, &molcasColorBack.shellCommand, buffer, -1);
+	sprintf(buffer,"*! cp *.cub*   $MOLCAS_SUBMIT_PWD/.\n");
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.shellCommand, &molcasColorBack.shellCommand, buffer, -1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "\n", -1);
 }
 /************************************************************************************************************/
 void putGridITInfoInTextEditor()

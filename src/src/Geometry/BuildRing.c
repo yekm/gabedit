@@ -1,6 +1,6 @@
 /* BuildRing.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 #include <math.h>
 
 #include "../Common/Global.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/AtomsProp.h"
@@ -97,6 +97,7 @@ static void build_ring_molecule(GtkWidget *w,gpointer data)
 		GeomXYZ[j].Z=g_strdup("0.0");
     		GeomXYZ[j].Layer=g_strdup(" ");
 		GeomXYZ[j].Charge=g_strdup("0.0");
+		GeomXYZ[j].typeConnections=NULL;
   	}
         MethodeGeom = GEOM_IS_XYZ;
 
@@ -163,7 +164,7 @@ static void select_atom(GtkWidget *w,gpointer entry0)
 	  button = gtk_button_new_with_label(Symb[j][i]);
           style=set_button_style(button_style,button,Symb[j][i]);
           g_signal_connect(G_OBJECT(button), "clicked",
-                            (GtkSignalFunc)set_atom,(gpointer )Symb[j][i]);
+                            (GCallback)set_atom,(gpointer )Symb[j][i]);
 	  gtk_table_attach(GTK_TABLE(Table),button,j,j+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -198,18 +199,17 @@ void build_ring_molecule_dlg()
 
   add_child(GeomDlg,Dlg,gtk_widget_destroy," Build Ring mol. ");
 
-  g_signal_connect(G_OBJECT(Dlg),"delete_event",(GtkSignalFunc)delete_child,NULL);
-  g_signal_connect(G_OBJECT(Dlg),"delete_event",(GtkSignalFunc)gtk_widget_destroy,NULL);
+  g_signal_connect(G_OBJECT(Dlg),"delete_event",(GCallback)delete_child,NULL);
+  g_signal_connect(G_OBJECT(Dlg),"delete_event",(GCallback)gtk_widget_destroy,NULL);
 
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
   g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dlg), "frame",
-	  frame,(GtkDestroyNotify) g_object_unref);
+	  frame,(GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-   gtk_box_pack_start_defaults(
-         GTK_BOX(GTK_DIALOG(Dlg)->vbox), frame);
+   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dlg)->vbox), frame,TRUE,TRUE,0);
 
   gtk_widget_show (frame);
 
@@ -224,7 +224,7 @@ void build_ring_molecule_dlg()
 
   Button = gtk_button_new_with_label(" Set ");
   gtk_box_pack_start (GTK_BOX(hbox), Button, TRUE, TRUE, 5);
-  g_signal_connect(G_OBJECT(Button), "clicked", (GtkSignalFunc)select_atom,Entrys[0]);
+  g_signal_connect(G_OBJECT(Button), "clicked", (GCallback)select_atom,Entrys[0]);
 
   /* The Number of atoms Entry */
   tlist = g_malloc(nlist*sizeof(gchar*));
@@ -248,15 +248,15 @@ void build_ring_molecule_dlg()
   gtk_widget_realize(Dlg);
   /* The "Cancel" button */
   Button = create_button(Dlg,"Cancel");
-  gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(Dlg)->action_area), Button);
-  g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(Dlg));
+  gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dlg)->action_area), Button,TRUE,TRUE,0);
+  g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)delete_child,GTK_OBJECT(Dlg));
   GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 
   /* The "OK" button */
   Button = create_button(Dlg,"OK");
-  gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(Dlg)->action_area), Button);
-  g_signal_connect(G_OBJECT(Button), "clicked",(GtkSignalFunc)build_ring_molecule,NULL);
-  g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(Dlg));
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dlg)->action_area), Button,TRUE,TRUE,0);
+  g_signal_connect(G_OBJECT(Button), "clicked",(GCallback)build_ring_molecule,NULL);
+  g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)delete_child,GTK_OBJECT(Dlg));
   GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Button);
 

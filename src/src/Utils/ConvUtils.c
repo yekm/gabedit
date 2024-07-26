@@ -1,6 +1,6 @@
 /*ConvUtils.c*/
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/Global.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 static gdouble hbar = 6.62606891e-34/2/PI;/* PRL 1998 NIST */
 static gdouble e = 1.602176462e-19;
 static gdouble a0 = 0.5291772083e-10;
@@ -818,7 +818,7 @@ static GtkWidget* new_conversion_frame(GtkWidget* Dlg, GtkWidget *notebook, gcha
   	gtk_combo_box_set_active (GTK_COMBO_BOX (comboboxOutput), data->defaultOutput);
   	g_object_set_data(G_OBJECT (Dlg), "Data",data);
 
-	g_signal_connect(G_OBJECT(frame),"destroy",(GtkSignalFunc)free_data,NULL);
+	g_signal_connect(G_OBJECT(frame),"destroy",(GCallback)free_data,NULL);
 
 	return frame;
 }
@@ -857,7 +857,7 @@ void create_conversion_dlg()
 	gtk_window_set_default_size(GTK_WINDOW(Dlg), ScreenWidth*0.5, -1);
 
 
-	g_signal_connect(G_OBJECT(Dlg),"delete_event",(GtkSignalFunc)destroy_dlg,NULL);
+	g_signal_connect(G_OBJECT(Dlg),"delete_event",(GCallback)destroy_dlg,NULL);
 
 	notebook = gtk_notebook_new();
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dlg)->vbox), notebook,TRUE, TRUE, 10);
@@ -943,7 +943,7 @@ void create_conversion_dlg()
 	gtk_widget_realize(Dlg);
 	Button = create_button(Dlg,"Close");
 	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Dlg)->action_area), Button, FALSE, TRUE, 5);  
-	g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GtkSignalFunc)destroy_dlg,GTK_OBJECT(Dlg));
+	g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)destroy_dlg,GTK_OBJECT(Dlg));
 
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(Button);

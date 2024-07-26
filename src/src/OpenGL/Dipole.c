@@ -1,6 +1,6 @@
 /* Cylinder.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/GeomGlobal.h"
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
 #include "../Common/Windows.h"
@@ -126,13 +126,13 @@ static void create_dipole_window(gdouble DN[], gdouble DE[], gdouble D[], gdoubl
 	gtk_window_set_modal (GTK_WINDOW (Dialogue), TRUE);
 	gtk_window_set_position(GTK_WINDOW(Dialogue),GTK_WIN_POS_CENTER);
 
-	g_signal_connect(G_OBJECT(Dialogue), "delete_event", (GtkSignalFunc)destroy_button_windows, NULL);
-	g_signal_connect(G_OBJECT(Dialogue), "delete_event", (GtkSignalFunc)gtk_widget_destroy, NULL);
+	g_signal_connect(G_OBJECT(Dialogue), "delete_event", (GCallback)destroy_button_windows, NULL);
+	g_signal_connect(G_OBJECT(Dialogue), "delete_event", (GCallback)gtk_widget_destroy, NULL);
 
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-	gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame,TRUE,TRUE,0);
 
 	gtk_widget_show (frame);
 
@@ -145,8 +145,8 @@ static void create_dipole_window(gdouble DN[], gdouble DE[], gdouble D[], gdoubl
 	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Dialogue)->action_area), Button, FALSE, TRUE, 5);  
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(Button);
-	g_signal_connect_swapped(G_OBJECT(Button), "clicked", (GtkSignalFunc)destroy_button_windows, GTK_OBJECT(Dialogue));
-	g_signal_connect_swapped(G_OBJECT(Button), "clicked", (GtkSignalFunc)gtk_widget_destroy, GTK_OBJECT(Dialogue));
+	g_signal_connect_swapped(G_OBJECT(Button), "clicked", (GCallback)destroy_button_windows, GTK_OBJECT(Dialogue));
+	g_signal_connect_swapped(G_OBJECT(Button), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(Dialogue));
 
 	add_button_windows(title,Dialogue);
 	gtk_widget_show_all(Dialogue);

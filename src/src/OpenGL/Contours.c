@@ -1,6 +1,6 @@
 /* Contours.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -82,7 +82,7 @@ void set_contour_point(PointsContour** pointscontour,Grid* plansgrid,gfloat valu
 	gint j;
 	gint k;
 	gint c;
-	Point t[4];
+	Point5 t[4];
 	gfloat u1;
 	gfloat u2;
 	gfloat v1;
@@ -548,8 +548,8 @@ GtkWidget *create_contours_frame( GtkWidget *vboxall,gchar* title,gint type)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  3,3);
-  	g_signal_connect (G_OBJECT(linearButton), "toggled", GTK_SIGNAL_FUNC (linearSelected), NULL);  
-  	g_signal_connect (G_OBJECT(logButton), "toggled", GTK_SIGNAL_FUNC (logSelected), NULL);  
+  	g_signal_connect (G_OBJECT(linearButton), "toggled", G_CALLBACK (linearSelected), NULL);  
+  	g_signal_connect (G_OBJECT(logButton), "toggled", G_CALLBACK (logSelected), NULL);  
 
 	if(linear)
 	{
@@ -574,7 +574,7 @@ GtkWidget *create_contours_frame( GtkWidget *vboxall,gchar* title,gint type)
 	g_object_set_data(G_OBJECT (GTK_OBJECT(GTK_COMBO_BOX(combo))), "LabelMin",LabelMin);
 	g_object_set_data(G_OBJECT (GTK_OBJECT(GTK_COMBO_BOX(combo))), "LabelMax",LabelMax);
 	g_object_set_data(G_OBJECT (GTK_OBJECT(GTK_COMBO_BOX(combo))), "Type",&itype);
-	handel_id = g_signal_connect(G_OBJECT(GTK_COMBO_BOX(combo)), "changed",GTK_SIGNAL_FUNC(reset_limits_values),NULL);
+	handel_id = g_signal_connect(G_OBJECT(GTK_COMBO_BOX(combo)), "changed",G_CALLBACK(reset_limits_values),NULL);
 	g_object_set_data(G_OBJECT(Entrys[0]), "HandelId",&handel_id);
 	g_object_set_data(G_OBJECT(Entrys[0]), "ComboList",GTK_OBJECT(GTK_COMBO_BOX(combo)));
 	gtk_entry_set_text(GTK_ENTRY(Entrys[0]),listvalues[grid->N[type]/2]);
@@ -642,8 +642,8 @@ void create_contours(gchar* title,gint type)
   button = create_button(Win,"Cancel");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child, GTK_OBJECT(Win));
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)gtk_widget_destroy,GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Win));
   gtk_widget_show (button);
 
   button = create_button(Win,"OK");
@@ -651,7 +651,7 @@ void create_contours(gchar* title,gint type)
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
   gtk_widget_show (button);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)apply_contours,GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_contours,GTK_OBJECT(Win));
   
 
   /* Show all */
@@ -809,8 +809,8 @@ GtkWidget *create_contours_frame_plane( GtkWidget *vboxall,gchar* title)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  3,3);
-  	g_signal_connect (G_OBJECT(linearButton), "toggled", GTK_SIGNAL_FUNC (linearSelected), NULL);  
-  	g_signal_connect (G_OBJECT(logButton), "toggled", GTK_SIGNAL_FUNC (logSelected), NULL);  
+  	g_signal_connect (G_OBJECT(linearButton), "toggled", G_CALLBACK (linearSelected), NULL);  
+  	g_signal_connect (G_OBJECT(logButton), "toggled", G_CALLBACK (logSelected), NULL);  
 
 	if(linear)
 	{
@@ -869,7 +869,7 @@ void create_contours_plane(gchar* title)
 
   /* add_glarea_child(Win," Plan Contours ");*/
   add_child(PrincipalWindow,Win,destroyWin,"Plane Contours.");
-  g_signal_connect(G_OBJECT(Win),"delete_event",(GtkSignalFunc)delete_child,NULL);
+  g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)delete_child,NULL);
 
   vboxall = create_vbox(Win);
   vboxwin = vboxall;
@@ -885,7 +885,7 @@ void create_contours_plane(gchar* title)
   button = create_button(Win,"Cancel");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child, GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
   gtk_widget_show (button);
 
   button = create_button(Win,"OK");
@@ -893,7 +893,7 @@ void create_contours_plane(gchar* title)
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
   gtk_widget_show (button);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)apply_contours_plane,GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_contours_plane,GTK_OBJECT(Win));
   
 
   /* Show all */

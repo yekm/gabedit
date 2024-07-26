@@ -1,6 +1,6 @@
 /* SpectrumWin.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -90,8 +90,8 @@ static void build_data_xyplot_curve_noconv(XYPlotWinData* winData, XYPlotData* d
 	}
 	
 	for (loop=0; loop<dataCurve->size; loop++){
-		dataCurve->x[loop]=winData->x[loop]*winData->scaleX;
-		dataCurve->y[loop]=winData->y[loop]*winData->scaleX;
+		dataCurve->x[loop]=winData->x[loop]*winData->scaleX+winData->shiftX;
+		dataCurve->y[loop]=winData->y[loop]*winData->scaleY;
 	}
 	sprintf(dataCurve->point_str,"+");
 	dataCurve->point_size=point_size;
@@ -163,7 +163,7 @@ static void build_data_xyplot_curve_withconv(XYPlotWinData* winData, XYPlotData*
 		gint jmin = 0;
 		for (j=0; j < winData->size; j++)
 		{
-			gdouble center = (gdouble) winData->x[j]*winData->scaleX ;
+			gdouble center = (gdouble) winData->x[j]*winData->scaleX+winData->shiftX;
 			
 			d = fabs(xx - center);
 			if(d<dmin || j==0) 
@@ -175,15 +175,15 @@ static void build_data_xyplot_curve_withconv(XYPlotWinData* winData, XYPlotData*
 		dataCurve->x[dataCurve->size] = xx;
 		if(dmin<h0)
 		{
-			if(xx< winData->x[jmin]*winData->scaleX)
+			if(xx< winData->x[jmin]*winData->scaleX+winData->shiftX)
 			{
-				xx = (gdouble) winData->x[jmin]*winData->scaleX;
+				xx = (gdouble) winData->x[jmin]*winData->scaleX+winData->shiftX;
 				dataCurve->x[dataCurve->size] = xx;
 				xx += h0+1e-8;
 			}
 			else
 			{
-				xx = (gdouble) winData->x[jmin]*winData->scaleX;
+				xx = (gdouble) winData->x[jmin]*winData->scaleX+winData->shiftX;
 				dataCurve->x[dataCurve->size] = xx;
 				xx += h0+1e-8;
 			}
@@ -209,7 +209,7 @@ static void build_data_xyplot_curve_withconv(XYPlotWinData* winData, XYPlotData*
 		gdouble yy = 0.0;
 		for (j=0; j < winData->size; j++)
 		{
-			gdouble center = (gdouble) winData->x[j]*winData->scaleX ;
+			gdouble center = (gdouble) winData->x[j]*winData->scaleX+winData->shiftX;
 			gdouble rel_offset = (dataCurve->x[i] - center) / winData->halfWidth;
 			yy += winData->y[j]*lineshape(rel_offset)*winData->scaleY;
 		}
@@ -282,7 +282,7 @@ static void build_data_xyplot_peaks(XYPlotWinData* winData, XYPlotData* dataPeak
 	dataPeaks->y[dataPeaks->size-1]=0;
 	for (loop=0; loop<winData->size; loop++){
 		gint iold = loop*3+1;
-		gdouble xx = winData->x[loop]*winData->scaleX;
+		gdouble xx = winData->x[loop]*winData->scaleX+winData->shiftX;
 		dataPeaks->x[iold]=xx;
 		/* dataPeaks->y[iold]=winData->ymin;*/
 		dataPeaks->y[iold]=0;
@@ -375,6 +375,7 @@ static XYPlotWinData* get_win_data(GabeditXYPlot *xyplot, gint size, gdouble* x,
  	winData->convType = GABEDIT_CONV_TYPE_LORENTZ;
  	winData->scaleX = 1;
  	winData->scaleY = 1;
+ 	winData->shiftX = 0;
  	winData->ymaxToOne = FALSE;
 
 
@@ -607,8 +608,10 @@ static gboolean xyplot_motion_notify_event(GtkWidget *xyplot, GdkEventMotion *ev
 	if (event->is_hint || (event->window != xyplot->window))
 		gdk_window_get_pointer (xyplot->window, &x, &y, NULL);
 
-	gabedit_xyplot_get_point(GABEDIT_XYPLOT(xyplot), x, y, &xv, &yv);
+	if(gabedit_xyplot_get_point(GABEDIT_XYPLOT(xyplot), x, y, &xv, &yv))
 	snprintf(str, 50, "Mouse position: %f, %f", xv, yv);
+	else
+	sprintf(str, " ");
 	context_id=gtk_statusbar_get_context_id (GTK_STATUSBAR(statusbar), "mouse position");
 	gtk_statusbar_push (GTK_STATUSBAR(statusbar), context_id, str);
     
@@ -795,6 +798,39 @@ static void activate_entry_scale_y(GtkWidget *entry, gpointer user_data)
 	}
 	gtk_widget_queue_draw(GTK_WIDGET(xyplot));
 }
+/********************************************************************************/
+static void activate_entry_shift_x(GtkWidget *entry, gpointer user_data)
+{
+	G_CONST_RETURN gchar* t;
+	gdouble a;
+	GtkWidget* xyplot = NULL;
+	gdouble xmin;
+	gdouble ymin;
+	gdouble xmax;
+	gdouble ymax;
+	GList* data_list = NULL;
+	GList* current = NULL;
+	XYPlotWinData* data;
+
+
+	if(!user_data || !G_IS_OBJECT(user_data)) return;
+
+	xyplot = GTK_WIDGET(user_data);
+	t= gtk_entry_get_text(GTK_ENTRY(entry));
+	a = atof(t);
+	gabedit_xyplot_get_range (GABEDIT_XYPLOT(xyplot), &xmin, &xmax, &ymin, &ymax);
+
+	data_list = g_object_get_data(G_OBJECT (xyplot), "DataList");
+	if(!data_list) return;
+	current=g_list_first(data_list);
+	for(; current != NULL; current = current->next)
+	{
+		data = (XYPlotWinData*)current->data;
+		data->shiftX = a;
+		build_data_xyplot(data);
+	}
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));
+}
 /*************************************************************************************/
 static void gabedit_xyplot_autorange(GabeditXYPlot *xyplot)
 {
@@ -804,6 +840,7 @@ static void gabedit_xyplot_autorange(GabeditXYPlot *xyplot)
 	GtkWidget *entry_half_width = g_object_get_data(G_OBJECT (xyplot), "EntryHalfWidth");
 	GtkWidget *entry_scale_x = g_object_get_data(G_OBJECT (xyplot), "EntryScaleX");
 	GtkWidget *entry_scale_y = g_object_get_data(G_OBJECT (xyplot), "EntryScaleY");
+	GtkWidget *entry_shift_x = g_object_get_data(G_OBJECT (xyplot), "EntryShiftX");
 	GtkWidget*entry_x_min = g_object_get_data(G_OBJECT (xyplot), "EntryXMin");
 	GtkWidget*entry_x_max = g_object_get_data(G_OBJECT (xyplot), "EntryXMax");
 
@@ -838,6 +875,9 @@ static void gabedit_xyplot_autorange(GabeditXYPlot *xyplot)
 
 		sprintf(tmp,"%0.3f",data->scaleY);
 		gtk_entry_set_text(GTK_ENTRY(entry_scale_y),tmp);
+
+		sprintf(tmp,"%0.3f",data->shiftX);
+		gtk_entry_set_text(GTK_ENTRY(entry_shift_x),tmp);
 
 	}
 	gtk_widget_queue_draw(GTK_WIDGET(xyplot));
@@ -925,6 +965,7 @@ GtkWidget* spectrum_win_new(gchar* title)
 	GtkWidget *entry_half_width = NULL;
 	GtkWidget *entry_scale_x = NULL;
 	GtkWidget *entry_scale_y = NULL;
+	GtkWidget *entry_shift_x = NULL;
 	GtkWidget* hbox_data = NULL;
 	GtkWidget* first_hbox = NULL;
 
@@ -936,7 +977,7 @@ GtkWidget* spectrum_win_new(gchar* title)
 	gchar tmp[100];
 	
 	gtk_window_set_title (GTK_WINDOW (window), title);
-	gtk_signal_connect (GTK_OBJECT (window), "delete_event", GTK_SIGNAL_FUNC (destroy_spectrum_win), NULL);
+	gtk_signal_connect (GTK_OBJECT (window), "delete_event", G_CALLBACK (destroy_spectrum_win), NULL);
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	
 	table1=gtk_table_new(5, 3, FALSE);
@@ -1043,6 +1084,16 @@ GtkWidget* spectrum_win_new(gchar* title)
 	gtk_box_pack_start(GTK_BOX(hbox_data), entry_scale_y, FALSE, FALSE, 2);
 	gtk_widget_show(entry_scale_y);
 
+	tmp_label=gtk_label_new("Shift X : ");
+	gtk_box_pack_start(GTK_BOX(hbox_data), tmp_label, FALSE, FALSE, 2);
+	gtk_widget_show(tmp_label); 
+
+	entry_shift_x = gtk_entry_new();
+	gtk_widget_set_size_request(entry_shift_x,50,-1);
+	gtk_entry_set_text(GTK_ENTRY(entry_shift_x),"0.0");
+	gtk_box_pack_start(GTK_BOX(hbox_data), entry_shift_x, FALSE, FALSE, 2);
+	gtk_widget_show(entry_shift_x);
+
 
 	g_object_set_data(G_OBJECT (xyplot), "DataList", data_list);
 
@@ -1061,15 +1112,16 @@ GtkWidget* spectrum_win_new(gchar* title)
 	gabedit_xyplot_set_x_legends_digits(GABEDIT_XYPLOT(xyplot), 5);
 	gabedit_xyplot_set_y_legends_digits(GABEDIT_XYPLOT(xyplot), 5);
 
-	g_signal_connect (G_OBJECT (entry_x_min), "activate", (GtkSignalFunc)activate_entry_xmin, xyplot);
-	g_signal_connect (G_OBJECT (entry_x_max), "activate", (GtkSignalFunc)activate_entry_xmax, xyplot);
+	g_signal_connect (G_OBJECT (entry_x_min), "activate", (GCallback)activate_entry_xmin, xyplot);
+	g_signal_connect (G_OBJECT (entry_x_max), "activate", (GCallback)activate_entry_xmax, xyplot);
 
 	g_signal_connect(G_OBJECT(toggle_no_convolution), "toggled", G_CALLBACK(toggle_no_convolution_toggled), xyplot);
 	g_signal_connect(G_OBJECT(toggle_lorentzian), "toggled", G_CALLBACK(toggle_lorentzian_toggled), xyplot);
 	g_signal_connect(G_OBJECT(toggle_gaussian), "toggled", G_CALLBACK(toggle_gaussian_toggled), xyplot);
-	g_signal_connect (G_OBJECT (entry_half_width), "activate", (GtkSignalFunc)activate_entry_half_width, xyplot);
-	g_signal_connect (G_OBJECT (entry_scale_x), "activate", (GtkSignalFunc)activate_entry_scale_x, xyplot);
-	g_signal_connect (G_OBJECT (entry_scale_y), "activate", (GtkSignalFunc)activate_entry_scale_y, xyplot);
+	g_signal_connect (G_OBJECT (entry_half_width), "activate", (GCallback)activate_entry_half_width, xyplot);
+	g_signal_connect (G_OBJECT (entry_scale_x), "activate", (GCallback)activate_entry_scale_x, xyplot);
+	g_signal_connect (G_OBJECT (entry_scale_y), "activate", (GCallback)activate_entry_scale_y, xyplot);
+	g_signal_connect (G_OBJECT (entry_shift_x), "activate", (GCallback)activate_entry_shift_x, xyplot);
 	g_signal_connect(G_OBJECT(toggle_show_peaks), "toggled", G_CALLBACK(toggle_show_peaks_toggled), xyplot);
 
 	g_signal_connect(G_OBJECT(toggle_ymax_to_one), "toggled", G_CALLBACK(toggle_ymax_to_one_toggled), xyplot);
@@ -1086,6 +1138,7 @@ GtkWidget* spectrum_win_new(gchar* title)
 	g_object_set_data(G_OBJECT (xyplot), "EntryHalfWidth", entry_half_width);
 	g_object_set_data(G_OBJECT (xyplot), "EntryScaleX", entry_scale_x);
 	g_object_set_data(G_OBJECT (xyplot), "EntryScaleY", entry_scale_y);
+	g_object_set_data(G_OBJECT (xyplot), "EntryShiftX", entry_shift_x);
 	g_object_set_data(G_OBJECT (xyplot), "EntryXMin", entry_x_min);
 	g_object_set_data(G_OBJECT (xyplot), "EntryXMax", entry_x_max);
 	g_object_set_data(G_OBJECT (xyplot), "HBoxData", first_hbox);

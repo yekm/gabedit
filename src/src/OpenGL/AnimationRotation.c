@@ -1,6 +1,6 @@
 /* AnimationRotation.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -21,7 +21,7 @@ DEALINGS IN THE SOFTWARE.
 #include <stdlib.h>
 #include "GlobalOrb.h"
 #include "../Utils/Utils.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/UtilsInterface.h"
 #include "../OpenGL/StatusOrb.h"
 #include "../OpenGL/GLArea.h"
@@ -280,13 +280,13 @@ static void addEntrysButtons(GtkWidget* box)
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-	gtk_box_pack_start_defaults(GTK_BOX(box), frame);
+	gtk_box_pack_start(GTK_BOX(box), frame,TRUE,TRUE,0);
 	gtk_widget_show (frame);
 
 	vboxframe = create_vbox(frame);
 
   	table = gtk_table_new(11,3,FALSE);
-	gtk_box_pack_start_defaults(GTK_BOX(vboxframe), table);
+	gtk_box_pack_start(GTK_BOX(vboxframe), table,TRUE,TRUE,0);
 
 	i = 0;
 	buttonXAxis = gtk_radio_button_new_with_label( NULL,"Rotation about X axis" );
@@ -307,9 +307,9 @@ static void addEntrysButtons(GtkWidget* box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  3,3);
-  	g_signal_connect (G_OBJECT(buttonXAxis), "toggled", GTK_SIGNAL_FUNC (buttonAxisSelected), NULL);  
-  	g_signal_connect (G_OBJECT(buttonYAxis), "toggled", GTK_SIGNAL_FUNC (buttonAxisSelected), NULL);  
-  	g_signal_connect (G_OBJECT(buttonZAxis), "toggled", GTK_SIGNAL_FUNC (buttonAxisSelected), NULL);  
+  	g_signal_connect (G_OBJECT(buttonXAxis), "toggled", G_CALLBACK (buttonAxisSelected), NULL);  
+  	g_signal_connect (G_OBJECT(buttonYAxis), "toggled", G_CALLBACK (buttonAxisSelected), NULL);  
+  	g_signal_connect (G_OBJECT(buttonZAxis), "toggled", G_CALLBACK (buttonAxisSelected), NULL);  
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonYAxis), TRUE);
 
 	i++;
@@ -359,7 +359,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  1,1);
-  	g_signal_connect (G_OBJECT(buttonCheckFilm), "toggled", GTK_SIGNAL_FUNC (filmSelected), NULL);  
+  	g_signal_connect (G_OBJECT(buttonCheckFilm), "toggled", G_CALLBACK (filmSelected), NULL);  
 
 	formatBox = create_list_of_formats();
 	gtk_table_attach(GTK_TABLE(table),formatBox,1,1+1,i,i+1,
@@ -372,7 +372,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  1,1);
-  	g_signal_connect(G_OBJECT(buttonDirFilm), "clicked",(GtkSignalFunc)set_directory,NULL);
+  	g_signal_connect(G_OBJECT(buttonDirFilm), "clicked",(GCallback)set_directory,NULL);
 	comboListFilm = formatBox;
 
 	if(GTK_IS_WIDGET(buttonDirFilm))  gtk_widget_set_sensitive(buttonDirFilm, FALSE);
@@ -405,10 +405,10 @@ static void addEntrysButtons(GtkWidget* box)
 		  3,3);
 	StopButton = Button;
 
-  	g_signal_connect(G_OBJECT(PlayButton), "clicked",(GtkSignalFunc)play_animation,NULL);
-  	g_signal_connect(G_OBJECT(StopButton), "clicked",(GtkSignalFunc)stop_animation,NULL);
-  	g_signal_connect_swapped (G_OBJECT (EntryVelocity), "activate", (GtkSignalFunc)reset_parameters, NULL);
-  	g_signal_connect_swapped (G_OBJECT (EntryNRotation), "activate", (GtkSignalFunc)reset_parameters, NULL);
+  	g_signal_connect(G_OBJECT(PlayButton), "clicked",(GCallback)play_animation,NULL);
+  	g_signal_connect(G_OBJECT(StopButton), "clicked",(GCallback)stop_animation,NULL);
+  	g_signal_connect_swapped (G_OBJECT (EntryVelocity), "activate", (GCallback)reset_parameters, NULL);
+  	g_signal_connect_swapped (G_OBJECT (EntryNRotation), "activate", (GCallback)reset_parameters, NULL);
 }
 /*****************************************************************************/
 static gboolean createImagesFile()
@@ -522,7 +522,7 @@ void animationRotationDlg()
 	WinDlg = Win;
 
   	add_child(PrincipalWindow,Win,destroyAnimationDlg,"Anim. Rot.");
-  	g_signal_connect(G_OBJECT(Win),"delete_event",(GtkSignalFunc)delete_child,NULL);
+  	g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)delete_child,NULL);
 
 	vbox = gtk_vbox_new (FALSE, 0);
 	gtk_widget_show (vbox);

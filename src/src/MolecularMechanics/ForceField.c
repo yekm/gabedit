@@ -1,6 +1,6 @@
 /* ForceField.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -140,3 +140,96 @@ void freeForceField(ForceField* forceField)
 	forceField->numberOfPairWise = 0;
 }
 /*****************************************************************************/
+ForceField copyForceField(ForceField* f)
+{
+	gint i;
+	gint j;
+	gint k;
+	ForceField forceField = newForceField();
+
+	forceField.molecule = copyMolecule(&f->molecule);
+
+	/* already in newForceField */
+	/* forceField.klass = g_malloc(sizeof(ForceFieldClass));*/
+	forceField.klass->calculateGradient = f->klass->calculateGradient;
+	forceField.klass->calculateEnergy = f->klass->calculateEnergy;
+	forceField.klass->calculateEnergyTmp = f->klass->calculateEnergyTmp;
+
+
+	forceField.numberOfStretchTerms = f->numberOfStretchTerms;
+	forceField.numberOfBendTerms = f->numberOfBendTerms;
+	forceField.numberOfDihedralTerms = f->numberOfDihedralTerms;
+	forceField.numberOfImproperTorsionTerms = f->numberOfImproperTorsionTerms;
+	forceField.numberOfNonBonded = f->numberOfNonBonded;
+	forceField.numberOfHydrogenBonded = f->numberOfHydrogenBonded;
+
+	k = forceField.numberOfStretchTerms;
+	if(k>0)
+	for(i=0;i<STRETCHDIM;i++)
+	{
+		forceField.bondStretchTerms[i] = g_malloc(k*sizeof(gdouble));
+		for(j=0;j<k;j++) forceField.bondStretchTerms[i][j] = f->bondStretchTerms[i][j];
+	}
+
+	k = forceField.numberOfBendTerms;
+	if(k>0)
+	for(i=0;i<BENDDIM;i++)
+	{
+		forceField.angleBendTerms[i] = g_malloc(k*sizeof(gdouble));
+		for(j=0;j<k;j++) forceField.angleBendTerms[i][j] = f->angleBendTerms[i][j];
+	}
+
+
+	k = forceField.numberOfDihedralTerms;
+	if(k>0)
+	for(i=0;i<DIHEDRALDIM;i++)
+	{
+		forceField.dihedralAngleTerms[i] = g_malloc(k*sizeof(gdouble));
+		for(j=0;j<k;j++) forceField.dihedralAngleTerms[i][j] = f->dihedralAngleTerms[i][j];
+	}
+
+	k = forceField.numberOfImproperTorsionTerms;
+	if(k>0)
+	for(i=0;i<IMPROPERDIHEDRALDIM;i++)
+	{
+		forceField.improperTorsionTerms[i] = g_malloc(k*sizeof(gdouble));
+		for(j=0;j<k;j++) forceField.improperTorsionTerms[i][j] = f->improperTorsionTerms[i][j];
+	}
+
+	k = forceField.numberOfNonBonded;
+	if(k>0)
+	for(i=0;i<NONBONDEDDIM;i++)
+	{
+		forceField.nonBondedTerms[i] = g_malloc(k*sizeof(gdouble));
+		for(j=0;j<k;j++) forceField.nonBondedTerms[i][j] = f->nonBondedTerms[i][j];
+	}
+
+	k = forceField.numberOfHydrogenBonded;
+	if(k>0)
+	for(i=0;i<HYDROGENBONDEDDIM;i++)
+	{
+		forceField.hydrogenBondedTerms[i] = g_malloc(k*sizeof(gdouble));
+		for(j=0;j<k;j++) forceField.hydrogenBondedTerms[i][j] = f->hydrogenBondedTerms[i][j];
+	}
+
+	k = forceField.numberOfPairWise = f->numberOfPairWise;
+	if(k>0)
+	for(i=0;i<PAIRWISEDIM;i++)
+	{
+		forceField.pairWiseTerms[i] = g_malloc(k*sizeof(gdouble));
+		for(j=0;j<k;j++) forceField.pairWiseTerms[i][j] = f->pairWiseTerms[i][j];
+	}
+
+	forceField.options.type = f->options.type;
+	forceField.options.coulomb = f->options.coulomb;
+	forceField.options.hydrogenBonded = f->options.hydrogenBonded;
+	forceField.options.improperTorsion = f->options.improperTorsion;
+	forceField.options.vanderWals = f->options.vanderWals;
+	forceField.options.bondStretch = f->options.bondStretch;
+	forceField.options.angleBend = f->options.angleBend;
+	forceField.options.dihedralAngle = f->options.dihedralAngle;
+	forceField.options.nonBonded = f->options.nonBonded;
+
+	return forceField;
+
+}

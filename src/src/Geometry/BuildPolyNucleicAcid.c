@@ -1,6 +1,6 @@
 /* BuildPolyNucleicAcid.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 #include <math.h>
 
 #include "../Common/Global.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/AtomsProp.h"
@@ -879,6 +879,7 @@ static void defineGeometryToDraw()
 		geometry0[n].Variable = FALSE;
 
 		geometry0[n].N = n+1;
+		geometry0[n].typeConnections = NULL;
 
 		geometry[n].X = G[i].X;
 		geometry[n].Y = G[i].Y;
@@ -891,6 +892,7 @@ static void defineGeometryToDraw()
 		geometry[n].ResidueNumber = geometry0[n].ResidueNumber;
 		geometry[n].show = geometry0[n].show;
 		geometry[n].N = n+1;
+		geometry[n].typeConnections = NULL;
 		geometry[n].Layer = HIGH_LAYER;
 		geometry[n].Variable = FALSE;
 		C[0] +=  G[i].X;
@@ -1683,10 +1685,11 @@ static void buildNucleicAcid(GtkWidget *w,gpointer data)
 	if(Nb>0)
 	{
 		defineGeometryToDraw();
+		reset_all_connections();
 		define_good_factor();
 		create_GeomXYZ_from_draw_grometry();
 		unselect_all_atoms();
-		reset_all_connections();
+		reset_charges_multiplicities();
 		dessine();
 	}
 }
@@ -1943,8 +1946,8 @@ static void resetButtonCustom(GtkWidget* win, gpointer data)
 	Buttons[B_ALL] = button;
 	gtk_box_pack_start (GTK_BOX (hboxCustom), Buttons[B_ALL], TRUE, TRUE, 0);
 	gtk_widget_show (button);
-	g_signal_connect(G_OBJECT(button), "clicked",(GtkSignalFunc)resetFragList,tbuttons[B_ALL]);
-	g_signal_connect(G_OBJECT(button), "clicked",(GtkSignalFunc)buildNucleicAcid,tbuttons[B_ALL]);
+	g_signal_connect(G_OBJECT(button), "clicked",(GCallback)resetFragList,tbuttons[B_ALL]);
+	g_signal_connect(G_OBJECT(button), "clicked",(GCallback)buildNucleicAcid,tbuttons[B_ALL]);
 }
 /********************************************************************************/
 static GtkWidget*  newCombo(gchar **tlist,gint nlist, gboolean edit)
@@ -2089,7 +2092,7 @@ static void addGeneral(GtkWidget* Dlg,GtkWidget *box)
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
-	gtk_box_pack_start_defaults(GTK_BOX(box), frame);
+	gtk_box_pack_start(GTK_BOX(box), frame,TRUE,TRUE,0);
 	gtk_widget_show (frame);
 
 	vbox= create_vbox(frame);
@@ -2190,7 +2193,7 @@ static void addButtons(GtkWidget *Dlg,GtkWidget* box)
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
-	gtk_box_pack_start_defaults(GTK_BOX(box), frame);
+	gtk_box_pack_start(GTK_BOX(box), frame,TRUE,TRUE,0);
 	gtk_widget_show (frame);
 
 	vbox= create_vbox(frame);
@@ -2245,13 +2248,13 @@ static void addButtons(GtkWidget *Dlg,GtkWidget* box)
 
 	for(i=0;i<NBUTTONS;i++)
 	{
-		g_signal_connect(G_OBJECT(Buttons[i]), "clicked",(GtkSignalFunc)resetFragList,tbuttons[i]);
-		g_signal_connect(G_OBJECT(Buttons[i]), "clicked",(GtkSignalFunc)buildNucleicAcid,tbuttons[i]);
+		g_signal_connect(G_OBJECT(Buttons[i]), "clicked",(GCallback)resetFragList,tbuttons[i]);
+		g_signal_connect(G_OBJECT(Buttons[i]), "clicked",(GCallback)buildNucleicAcid,tbuttons[i]);
 	}
-	g_signal_connect(G_OBJECT(Buttons[B_AT]), "clicked",(GtkSignalFunc)resetZFormDNA,NULL);
-	g_signal_connect(G_OBJECT(Buttons[B_CG]), "clicked",(GtkSignalFunc)resetZFormDNA,NULL);
-	g_signal_connect(G_OBJECT(Buttons[B_GC]), "clicked",(GtkSignalFunc)resetZFormDNA,NULL);
-	g_signal_connect(G_OBJECT(Buttons[B_TA]), "clicked",(GtkSignalFunc)resetZFormDNA,NULL);
+	g_signal_connect(G_OBJECT(Buttons[B_AT]), "clicked",(GCallback)resetZFormDNA,NULL);
+	g_signal_connect(G_OBJECT(Buttons[B_CG]), "clicked",(GCallback)resetZFormDNA,NULL);
+	g_signal_connect(G_OBJECT(Buttons[B_GC]), "clicked",(GCallback)resetZFormDNA,NULL);
+	g_signal_connect(G_OBJECT(Buttons[B_TA]), "clicked",(GCallback)resetZFormDNA,NULL);
 
 #undef NLIGNES
 #undef NCOLONNS
@@ -2269,7 +2272,7 @@ static void addTorsionAngles(GtkWidget *Dlg,GtkWidget* box)
 	frame = gtk_frame_new ("Torsion Angles");
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 1);
-	gtk_box_pack_start_defaults(GTK_BOX(box), frame);
+	gtk_box_pack_start(GTK_BOX(box), frame,TRUE,TRUE,0);
 	gtk_widget_show (frame);
 
 	vbox= create_vbox(frame);
@@ -2321,7 +2324,7 @@ static void addTranslationalHelicalParameters(GtkWidget *Dlg,GtkWidget* box)
 	frame = gtk_frame_new ("Translational Helical Parameters");
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 1);
-	gtk_box_pack_start_defaults(GTK_BOX(box), frame);
+	gtk_box_pack_start(GTK_BOX(box), frame,TRUE,TRUE,0);
 	gtk_widget_show (frame);
 
 	vbox= create_vbox(frame);
@@ -2356,7 +2359,7 @@ static void addRotationalHelicalParameters(GtkWidget *Dlg,GtkWidget* box)
 	frame = gtk_frame_new ("Rotational Helical Parameters");
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 1);
-	gtk_box_pack_start_defaults(GTK_BOX(box), frame);
+	gtk_box_pack_start(GTK_BOX(box), frame,TRUE,TRUE,0);
 	gtk_widget_show (frame);
 
 	vbox= create_vbox(frame);
@@ -2443,7 +2446,7 @@ void build_polynucleicacid_dlg()
   gtk_window_set_transient_for(GTK_WINDOW(Dlg),GTK_WINDOW(GeomDlg));
 
   add_child(GeomDlg,Dlg,gtk_widget_destroy," Build PolyNuc");
-  g_signal_connect(G_OBJECT(Dlg),"delete_event",(GtkSignalFunc)destroyDlg,NULL);
+  g_signal_connect(G_OBJECT(Dlg),"delete_event",(GCallback)destroyDlg,NULL);
 
   NoteBook = gtk_notebook_new();
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dlg)->vbox), NoteBook,TRUE, TRUE, 0);
@@ -2452,31 +2455,31 @@ void build_polynucleicacid_dlg()
 
   AddNoteBookDlg(Dlg,NoteBook,"Parameters",addHelicalParametersTorsionAngles);
 
-  g_signal_connect_swapped(G_OBJECT(buttonDNA), "clicked",(GtkSignalFunc)resetSensitivitieButtons,NULL);
-  g_signal_connect_swapped(G_OBJECT(buttonDNA), "clicked",(GtkSignalFunc)resetFormList,NULL);
-  g_signal_connect_swapped(G_OBJECT(buttonDNA), "clicked",(GtkSignalFunc)resetTypeList,NULL);
+  g_signal_connect_swapped(G_OBJECT(buttonDNA), "clicked",(GCallback)resetSensitivitieButtons,NULL);
+  g_signal_connect_swapped(G_OBJECT(buttonDNA), "clicked",(GCallback)resetFormList,NULL);
+  g_signal_connect_swapped(G_OBJECT(buttonDNA), "clicked",(GCallback)resetTypeList,NULL);
 
-  g_signal_connect_swapped(G_OBJECT(buttonRNA), "clicked",(GtkSignalFunc)resetSensitivitieButtons,NULL);
-  g_signal_connect_swapped(G_OBJECT(buttonRNA), "clicked",(GtkSignalFunc)resetFormList,NULL);
-  g_signal_connect_swapped(G_OBJECT(buttonRNA), "clicked",(GtkSignalFunc)resetTypeList,NULL);
+  g_signal_connect_swapped(G_OBJECT(buttonRNA), "clicked",(GCallback)resetSensitivitieButtons,NULL);
+  g_signal_connect_swapped(G_OBJECT(buttonRNA), "clicked",(GCallback)resetFormList,NULL);
+  g_signal_connect_swapped(G_OBJECT(buttonRNA), "clicked",(GCallback)resetTypeList,NULL);
   resetSensitivitieButtons(NULL,NULL);
   resetFormList(NULL,NULL);
   resetSensitivitieEntrys(NULL,NULL);
-  g_signal_connect(G_OBJECT(GTK_BIN(comboForm)->child), "changed",GTK_SIGNAL_FUNC(resetSensitivitieEntrys),NULL);
-  g_signal_connect(G_OBJECT(GTK_BIN(comboForm)->child), "changed",GTK_SIGNAL_FUNC(resetValueEntrys),NULL);
-  g_signal_connect(G_OBJECT(GTK_BIN(comboForm)->child), "changed",GTK_SIGNAL_FUNC(resetSugarEntry),NULL);
+  g_signal_connect(G_OBJECT(GTK_BIN(comboForm)->child), "changed",G_CALLBACK(resetSensitivitieEntrys),NULL);
+  g_signal_connect(G_OBJECT(GTK_BIN(comboForm)->child), "changed",G_CALLBACK(resetValueEntrys),NULL);
+  g_signal_connect(G_OBJECT(GTK_BIN(comboForm)->child), "changed",G_CALLBACK(resetSugarEntry),NULL);
   resetValueEntrys(NULL, NULL);
   resetSugarEntry(NULL,NULL);
   resetButtonCustom(NULL,NULL);
-  g_signal_connect(G_OBJECT(GTK_BIN(comboLeftButton)->child), "changed",GTK_SIGNAL_FUNC(resetButtonCustom),NULL);
-  g_signal_connect(G_OBJECT(GTK_BIN(comboRightButton)->child), "changed",GTK_SIGNAL_FUNC(resetButtonCustom),NULL);
+  g_signal_connect(G_OBJECT(GTK_BIN(comboLeftButton)->child), "changed",G_CALLBACK(resetButtonCustom),NULL);
+  g_signal_connect(G_OBJECT(GTK_BIN(comboRightButton)->child), "changed",G_CALLBACK(resetButtonCustom),NULL);
   
   /* The "Close" button */
   gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(Dlg)->action_area), FALSE);
   gtk_widget_realize(Dlg);
   Button = create_button(Dlg,"Close");
   gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Dlg)->action_area), Button, FALSE, TRUE, 5);  
-  g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GtkSignalFunc)destroyDlg,GTK_OBJECT(Dlg));
+  g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)destroyDlg,GTK_OBJECT(Dlg));
 
   GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Button);

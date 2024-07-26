@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -76,6 +76,7 @@ typedef struct _GeomXYZAtomDef
  gchar *Y;
  gchar *Z;
  gchar *Layer;
+ gint* typeConnections;
 }GeomXYZAtomDef;
 
 typedef struct _DipoleDef
@@ -128,7 +129,8 @@ guint TypeGeomOpen;
 guint Units;
 guint NMethodes;
 gint NSA;
-guint ChargeGauss[3];
+gint TotalCharges[3];
+gint SpinMultiplicities[3];
 
 void set_spin_of_electrons();
 

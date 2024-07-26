@@ -1,6 +1,6 @@
 /* GeomZmatrix.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 #include <math.h>
 
 #include "../Common/Global.h"
-#include "../Utils/Constantes.h"
+#include "../Utils/Constants.h"
 #include "../Common/Help.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
@@ -2301,8 +2301,8 @@ void create_window_save_zmat()
 
   add_child(Win,fp,gtk_widget_destroy," Save Z-matrix ");
 
-  g_signal_connect(G_OBJECT(fp),"delete_event",(GtkSignalFunc)delete_child,NULL);
-  g_signal_connect(G_OBJECT(fp),"delete_event",(GtkSignalFunc)gtk_widget_destroy,NULL);
+  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)delete_child,NULL);
+  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)gtk_widget_destroy,NULL);
 
   gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
   vboxall = create_vbox(fp);
@@ -2342,8 +2342,8 @@ void create_window_save_zmat()
   hbox = create_hbox_browser(Win,vboxframe,labelt,liste,patterns);
   entry = (GtkWidget*)(g_object_get_data(G_OBJECT(hbox),"Entry"));
   create_hseparator(vboxframe); 
-  g_signal_connect(G_OBJECT(ButtonGZmat),"clicked",(GtkSignalFunc)reset_extended_gzmat_file,(gpointer)(entry));
-  g_signal_connect(G_OBJECT(ButtonMZmat),"clicked",(GtkSignalFunc)reset_extended_mzmat_file,(gpointer)(entry));
+  g_signal_connect(G_OBJECT(ButtonGZmat),"clicked",(GCallback)reset_extended_gzmat_file,(gpointer)(entry));
+  g_signal_connect(G_OBJECT(ButtonMZmat),"clicked",(GCallback)reset_extended_mzmat_file,(gpointer)(entry));
 
   g_object_set_data(G_OBJECT (fp), "ButtonGZmat",ButtonGZmat);
   g_object_set_data(G_OBJECT (fp), "ButtonMZmat",ButtonMZmat);
@@ -2358,7 +2358,7 @@ void create_window_save_zmat()
 
   button = create_button(fp,"Cancel");
   gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, FALSE, 3);
-  g_signal_connect_swapped(G_OBJECT(button),"clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button),"clicked",(GCallback)delete_child,GTK_OBJECT(fp));
   gtk_widget_show (button);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 
@@ -2367,8 +2367,8 @@ void create_window_save_zmat()
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
   gtk_widget_show (button);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(save_gmzmatrix_file),GTK_OBJECT(fp));
-  g_signal_connect_swapped(G_OBJECT(button),"clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(save_gmzmatrix_file),GTK_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button),"clicked",(GCallback)delete_child,GTK_OBJECT(fp));
 
   g_free(labelt);
   g_free(liste);
@@ -2598,7 +2598,7 @@ static void DialogueTransInVar()
   gtk_window_set_modal (GTK_WINDOW (Dialogue), TRUE);
 
   add_child(WindowGeom,Dialogue,gtk_widget_destroy," Question ");
-  g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GtkSignalFunc)delete_child,NULL);
+  g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GCallback)delete_child,NULL);
 
   gtk_widget_realize(Dialogue);
   
@@ -2608,27 +2608,26 @@ static void DialogueTransInVar()
 
   g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) g_object_unref);
+	  frame,(GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-   gtk_box_pack_start_defaults(
-         GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
+   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame,TRUE,TRUE,0);
 
   gtk_widget_show (frame);
 
   vboxframe = create_vbox(frame);
 
-  gtk_box_pack_start_defaults(GTK_BOX(vboxframe), Label);
+  gtk_box_pack_start(GTK_BOX(vboxframe), Label,TRUE,TRUE,0);
 
   Bouton = create_button(Dialogue,"No");
-  gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(Dialogue));
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Bouton);
  
   Bouton = create_button(Dialogue,"Yes");
-  gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)trans_allGeom_to_variables, NULL);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(Dialogue));
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)trans_allGeom_to_variables, NULL);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
     
 
@@ -2841,7 +2840,7 @@ static void DialogueTransInConst()
   gtk_window_set_modal (GTK_WINDOW (Dialogue), TRUE);
 
   add_child(WindowGeom,Dialogue,gtk_widget_destroy," Question ");
-  g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GtkSignalFunc)delete_child,NULL);
+  g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GCallback)delete_child,NULL);
 
   gtk_widget_realize(Dialogue);
   
@@ -2851,27 +2850,26 @@ static void DialogueTransInConst()
 
   g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) g_object_unref);
+	  frame,(GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-   gtk_box_pack_start_defaults(
-         GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
+   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame,TRUE,TRUE,0);
 
   gtk_widget_show (frame);
 
   vboxframe = create_vbox(frame);
 
-  gtk_box_pack_start_defaults(GTK_BOX(vboxframe), Label);
+  gtk_box_pack_start(GTK_BOX(vboxframe), Label,TRUE,TRUE,0);
 
   Bouton = create_button(Dialogue,"No");
-  gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(Dialogue));
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Bouton);
  
   Bouton = create_button(Dialogue,"Yes");
-  gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)trans_allVariables_to_Constants,NULL);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(Dialogue));
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)trans_allVariables_to_Constants,NULL);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
     
 
@@ -2974,7 +2972,7 @@ static void SelectAtom(GtkWidget *w,gpointer entry0)
 	  button = gtk_button_new_with_label(Symb[j][i]);
           style=set_button_style(button_style,button,Symb[j][i]);
           g_signal_connect(G_OBJECT(button), "clicked",
-                            (GtkSignalFunc)SetAtom,(gpointer )Symb[j][i]);
+                            (GCallback)SetAtom,(gpointer )Symb[j][i]);
 	  gtk_table_attach(GTK_TABLE(Table),button,j,j+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -3435,16 +3433,15 @@ static void DialogueAdd()
   gtk_window_set_transient_for(GTK_WINDOW(Dialogue),GTK_WINDOW(WindowGeom));
 
   add_child(WindowGeom,Dialogue,gtk_widget_destroy," New Center ");
-  g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GtkSignalFunc)delete_child,NULL);
+  g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GCallback)delete_child,NULL);
 
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
   g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) g_object_unref);
+	  frame,(GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-   gtk_box_pack_start_defaults(
-         GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
+   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame,TRUE,TRUE,0);
   gtk_widget_show (frame);
   vboxframe = create_vbox(frame);
 
@@ -3459,7 +3456,7 @@ static void DialogueAdd()
 
   Bouton = gtk_button_new_with_label(" Set ");
   gtk_box_pack_start (GTK_BOX(hbox), Bouton, TRUE, TRUE, 5);
-  g_signal_connect(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)SelectAtom,
+  g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)SelectAtom,
                      Entry[E_SYMBOL]);
   hbox=create_hbox_false(vboxframe);
   {
@@ -3577,14 +3574,14 @@ static void DialogueAdd()
   gtk_widget_realize(Dialogue);
 
   Bouton = create_button(Dialogue,"Cancel");
-  gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(Dialogue));
+  gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 
   Bouton = create_button(Dialogue,"OK");
-  gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)AddAtom, Entry[E_SYMBOL]);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)destroy_dialogue, GTK_OBJECT(Dialogue));
+  gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)AddAtom, Entry[E_SYMBOL]);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)destroy_dialogue, GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Bouton);
     
@@ -3648,16 +3645,15 @@ static void DialogueEdit()
   gtk_window_set_transient_for(GTK_WINDOW(Dialogue),GTK_WINDOW(WindowGeom));
 
   add_child(WindowGeom,Dialogue,gtk_widget_destroy," Edit Center ");
-  g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GtkSignalFunc)delete_child,NULL);
+  g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GCallback)delete_child,NULL);
 
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
   g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) g_object_unref);
+	  frame,(GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-   gtk_box_pack_start_defaults(
-         GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
+   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame,TRUE,TRUE,0);
   gtk_widget_show (frame);
   vboxframe = create_vbox(frame);
 
@@ -3669,7 +3665,7 @@ static void DialogueEdit()
 
   Bouton = gtk_button_new_with_label(" Set ");
   gtk_box_pack_start (GTK_BOX(hbox), Bouton, TRUE, TRUE, 5);
-  g_signal_connect(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)SelectAtom,
+  g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)SelectAtom,
                      Entry[E_SYMBOL]);
 
   hbox=create_hbox_false(vboxframe);
@@ -3777,14 +3773,14 @@ static void DialogueEdit()
   gtk_widget_realize(Dialogue);
 
   Bouton = create_button(Dialogue,"Cancel");
-  gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(Dialogue));
+  gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 
   Bouton = create_button(Dialogue,"OK");
-  gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)EditAtom, Entry[E_SYMBOL]);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)destroy_dialogue, GTK_OBJECT(Dialogue));
+  gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)EditAtom, Entry[E_SYMBOL]);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)destroy_dialogue, GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Bouton);
     
@@ -3815,17 +3811,16 @@ static void DialogueDelete()
   gtk_window_set_modal (GTK_WINDOW (Dialogue), TRUE);
 
   add_child(WindowGeom,Dialogue,gtk_widget_destroy," Question ");
-  g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GtkSignalFunc)delete_child,NULL);
+  g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GCallback)delete_child,NULL);
 
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
   g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) g_object_unref);
+	  frame,(GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-   gtk_box_pack_start_defaults(
-         GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
+   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame,TRUE,TRUE,0);
 
   gtk_widget_show (frame);
 
@@ -3834,18 +3829,18 @@ static void DialogueDelete()
   gtk_widget_realize(Dialogue);
   /* The Label */
   Label = create_label_with_pixmap(Dialogue,"\nAre you sure to delete \nthe last center? \n"," Question ");
-  gtk_box_pack_start_defaults(GTK_BOX(vboxframe), Label);
+  gtk_box_pack_start(GTK_BOX(vboxframe), Label,TRUE,TRUE,0);
 
   Bouton = create_button(Dialogue,"No");
-  gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(Dialogue));
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Bouton);
  
   Bouton = create_button(Dialogue,"Yes");
-  gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect(G_OBJECT(Bouton), "clicked",(GtkSignalFunc)DelAtom, NULL);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(Dialogue));
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect(G_OBJECT(Bouton), "clicked",(GCallback)DelAtom, NULL);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
     
 
@@ -3917,6 +3912,250 @@ void Geom_Change_Unit(gboolean toang)
                 break;
          }
   }
+}
+/********************************************************************************/
+static void deleteNumericChars(gchar *st)
+{
+        gint i;
+	gint l = strlen(st);
+	if(l>0) st[0] = toupper(st[0]);
+        for(i=1;i<l;i++) 
+		if(isdigit(st[i]))
+		{
+			st[i]='\0'; 
+			return;
+		}
+		else st[i] = tolower(st[i]);
+}
+/********************************************************************************/
+static void get_charge_and_multiplicity_from_molcas_input_file(FILE* fd)
+{
+ 	guint taille=BSIZE;
+  	gchar t[BSIZE];
+
+	TotalCharges[0] = 0;
+	SpinMultiplicities[0] =1;
+
+	fseek(fd, 0L, SEEK_SET);
+  	while(!feof(fd) )    
+  	{
+ 		if(!fgets(t, taille, fd)) return;
+		g_strup(t);
+		if ( strstr(t,"CHARGE") && strstr(t,"="))
+		{
+			gchar* p = strstr(t,"=")+1;
+			TotalCharges[0] = atoi(p);
+		}
+		if ( strstr(t,"ZSPIN") && strstr(t,"="))
+		{
+			gchar* p = strstr(t,"=")+1;
+			SpinMultiplicities[0] = atoi(p)+1;
+		}
+	}
+}
+/*************************************************************************************/
+gint read_Zmat_from_molcas_input_file(gchar *fileName)
+{
+	gboolean OK;
+	gchar *AtomCoord[7];
+	FILE *file;
+	gint i;
+	gint j;
+	GeomAtomDef* Geomtemp=NULL;
+	gint Ncent = 0;
+	gchar t[BSIZE];
+ 
+	file = FOpen(fileName, "r");
+	if(file == NULL)
+	{
+   		/*MessageGeom("Sorry\n No ZMatrix geometry available in this molcas input file"," Error ",TRUE);*/
+		gchar buffer[BSIZE];
+		sprintf(buffer,"Sorry, I cannot open %s file",fileName);
+   		MessageGeom(buffer," Error ",TRUE);
+		return -1;
+	}
+	/* search ZMAT */
+	OK=FALSE;
+	i = 0;
+	while(!feof(file))
+	{
+    		if(!fgets(t,BSIZE,file))break;
+		g_strup(t);
+		if(strstr(t,"ZMAT")) i++;
+		if(strstr(t,"END") && strstr(t,"BASIS"))
+		{
+			if(i>0) OK = TRUE;
+			break;
+		}
+
+	}
+	if(!OK)
+	{
+		gchar buffer[BSIZE];
+		sprintf(buffer,"Sorry, I cannot read the Z-Matrix from the  %s file",fileName);
+   		MessageGeom(buffer," Error ",TRUE);
+		return -1;
+	}
+
+	for(i=0;i<7;i++) AtomCoord[i]=g_malloc(BSIZE*sizeof(gchar));
+
+	Geomtemp=g_malloc(sizeof(GeomAtomDef));
+	/* First atom */
+	{
+    		fgets(t,BSIZE,file);
+        	i = sscanf(t,"%s",AtomCoord[0]);  
+    		if(  i == 1 )
+		{
+			deleteNumericChars(AtomCoord[0]);
+			Ncent ++;
+		 	Geomtemp=g_malloc(sizeof(GeomAtomDef));
+		 	Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_0;
+                 	Geomtemp[Ncent-1].Symb=g_strdup(AtomCoord[0]);
+                 	Geomtemp[Ncent-1].mmType=g_strdup(AtomCoord[0]);
+                 	Geomtemp[Ncent-1].pdbType=g_strdup(AtomCoord[0]);
+                 	Geomtemp[Ncent-1].Residue=g_strdup(" ");
+                 	Geomtemp[Ncent-1].ResidueNumber=0;
+                 	Geomtemp[Ncent-1].Charge=g_strdup("0.0"); 
+                 	Geomtemp[Ncent-1].Layer=g_strdup(" "); 
+		}
+		else
+		{
+			OK = FALSE;
+			Ncent--;
+		 	g_free(Geomtemp);
+			Geomtemp = NULL;
+		}
+	}
+	j=-1;
+	while( !feof(file)  && OK) 
+        {
+		j++;
+    		fgets(t,BSIZE,file);
+		g_strup(t);
+		if(strstr(t,"END") && strstr(t,"MATRIX")) break;
+		if(strstr(t,"VARIABLE")) break;
+		Ncent++;
+                Geomtemp=g_realloc(Geomtemp,Ncent*sizeof(GeomAtomDef)); 
+                Geomtemp[Ncent-1].Symb=NULL;
+                Geomtemp[Ncent-1].mmType=NULL;
+                Geomtemp[Ncent-1].pdbType=NULL;
+                Geomtemp[Ncent-1].NR=NULL;
+                Geomtemp[Ncent-1].R=NULL;
+                Geomtemp[Ncent-1].NAngle=NULL;
+                Geomtemp[Ncent-1].Angle=NULL;
+                Geomtemp[Ncent-1].NDihedral=NULL;
+                Geomtemp[Ncent-1].Dihedral=NULL;
+                Geomtemp[Ncent-1].Charge=NULL;
+                Geomtemp[Ncent-1].Layer=NULL;
+                switch(Ncent)
+		{
+			case 2 : 
+				i = sscanf(t,"%s %s %s ",AtomCoord[0],AtomCoord[1],AtomCoord[2]) ;
+				deleteNumericChars(AtomCoord[0]);
+				if(i == 3 && test(AtomCoord[2]))
+				{
+                        		Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_R;
+                        		Geomtemp[Ncent-1].Symb=g_strdup(AtomCoord[0]);
+                        		Geomtemp[Ncent-1].mmType=g_strdup(AtomCoord[0]);
+                        		Geomtemp[Ncent-1].pdbType=g_strdup(AtomCoord[0]);
+                        		Geomtemp[Ncent-1].Residue=g_strdup(" ");
+                 			Geomtemp[Ncent-1].ResidueNumber=0;
+                        		Geomtemp[Ncent-1].NR=g_strdup(AtomCoord[1]);
+                       			Geomtemp[Ncent-1].R=g_strdup(AtomCoord[2]);
+                        		Geomtemp[Ncent-1].Charge=g_strdup("0.0");
+                        		Geomtemp[Ncent-1].Layer=g_strdup(" ");
+				}
+				else 
+				{
+					Ncent--;
+                			Geomtemp=g_realloc(Geomtemp,Ncent*sizeof(GeomAtomDef)); 
+					OK = FALSE;
+				}
+				break;
+			case 3 :
+				 i = sscanf(
+					t,"%s %s %s %s %s",
+					AtomCoord[0],AtomCoord[1],AtomCoord[2],
+					AtomCoord[3],AtomCoord[4]
+					) ; 
+				deleteNumericChars(AtomCoord[0]);
+				if(i == 5 && test(AtomCoord[2]) && test(AtomCoord[4]))
+				{
+                        		Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_ANGLE;
+                        		Geomtemp[Ncent-1].Symb=g_strdup(AtomCoord[0]);
+                        		Geomtemp[Ncent-1].mmType=g_strdup(AtomCoord[0]);
+                        		Geomtemp[Ncent-1].pdbType=g_strdup(AtomCoord[0]);
+                        		Geomtemp[Ncent-1].Residue=g_strdup(" ");
+                 			Geomtemp[Ncent-1].ResidueNumber=0;
+                        		Geomtemp[Ncent-1].NR=g_strdup(AtomCoord[1]);
+                        		Geomtemp[Ncent-1].R=g_strdup(AtomCoord[2]);
+                        		Geomtemp[Ncent-1].NAngle=g_strdup(AtomCoord[3]);
+                        		Geomtemp[Ncent-1].Angle=g_strdup(AtomCoord[4]);
+                        		Geomtemp[Ncent-1].Charge=g_strdup("0.0"); 
+                        		Geomtemp[Ncent-1].Layer=g_strdup(" "); 
+				}
+				else 
+				{
+					Ncent--;
+                			Geomtemp=g_realloc(Geomtemp,Ncent*sizeof(GeomAtomDef)); 
+					OK = FALSE;
+				}
+				break;
+			default :
+				i = sscanf(
+					t,"%s %s %s %s %s %s %s ",
+					AtomCoord[0],AtomCoord[1],AtomCoord[2],AtomCoord[3],
+					AtomCoord[4],AtomCoord[5],AtomCoord[6]
+					);
+				deleteNumericChars(AtomCoord[0]);
+				if(i == 7 && test(AtomCoord[2]) && test(AtomCoord[4]) && test(AtomCoord[6]))
+				{
+					Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_DIHEDRAL;
+                        		Geomtemp[Ncent-1].Symb=g_strdup(AtomCoord[0]);
+                        		Geomtemp[Ncent-1].mmType=g_strdup(AtomCoord[0]);
+                        		Geomtemp[Ncent-1].pdbType=g_strdup(AtomCoord[0]);
+                        		Geomtemp[Ncent-1].Residue=g_strdup(" ");
+                 			Geomtemp[Ncent-1].ResidueNumber=0;
+                        		Geomtemp[Ncent-1].NR=g_strdup(AtomCoord[1]);
+                        		Geomtemp[Ncent-1].R=g_strdup(AtomCoord[2]);
+                        		Geomtemp[Ncent-1].NAngle=g_strdup(AtomCoord[3]);
+                        		Geomtemp[Ncent-1].Angle=g_strdup(AtomCoord[4]);
+                        		Geomtemp[Ncent-1].NDihedral=g_strdup(AtomCoord[5]);
+                        		Geomtemp[Ncent-1].Dihedral=g_strdup(AtomCoord[6]);
+                        		Geomtemp[Ncent-1].Charge=g_strdup("0.0");   
+                        		Geomtemp[Ncent-1].Layer=g_strdup(" ");   
+				}
+				else 
+				{
+					Ncent--;
+                			Geomtemp=g_realloc(Geomtemp,Ncent*sizeof(GeomAtomDef)); 
+					OK = FALSE;
+				}
+				
+		}
+	}
+
+	for(i=0;i<7;i++) g_free(AtomCoord[i]);
+	if( !OK || Ncent <1 )
+	{
+   		MessageGeom("Sorry\n I can not read geometry from you Molcas input file"," Error ",TRUE);
+   		return -1;
+	}
+	get_charge_and_multiplicity_from_molcas_input_file(file);
+	fclose(file);
+	if(Geom) freeGeom();
+	if(Variables) freeVariables();
+	Geom = Geomtemp;
+	NcentersZmat = Ncent;
+	NVariables = 0;
+	Variables = NULL;
+	MethodeGeom = GEOM_IS_ZMAT;
+	if(Units== 0 ) Geom_Change_Unit(FALSE);
+	if(GeomIsOpen) create_geom_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
+
+	if(ZoneDessin != NULL) rafresh_drawing();
+	set_last_directory(fileName);
+	return 0;
 }
 /*************************************************************************************/
 void read_Zmat_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile )
@@ -4679,6 +4918,40 @@ void read_Zmat_from_qchem_input_file(gchar *NomFichier)
 	rafresh_drawing();
  set_last_directory(NomFichier);
 }
+/********************************************************************************/
+static void get_charge_and_multiplicity_from_mopac_input_file(FILE* fd)
+{
+ 	guint taille=BSIZE;
+  	gchar t[BSIZE];
+	gint i;
+
+	TotalCharges[0] = 0;
+	SpinMultiplicities[0] =1;
+
+	fseek(fd, 0L, SEEK_SET);
+  	while(!feof(fd) )    
+  	{
+ 		if(!fgets(t, taille, fd)) return;
+		if(t[0] !='*') break;
+	}
+  	for(i=0;i<2;i++)
+	{
+		g_strup(t);
+		if ( strstr(t,"CHARGE") && strstr(t,"="))
+		{
+			gchar* tt = strstr(t,"CHARGE");
+			gchar* p = strstr(tt,"=")+1;
+			if(p) TotalCharges[0] = atoi(p);
+		}
+		if ( strstr(t,"SINGLET")) SpinMultiplicities[0] = 1;
+		if ( strstr(t,"DOUBLET")) SpinMultiplicities[0] = 2;
+		if ( strstr(t,"TRIPLET")) SpinMultiplicities[0] = 3;
+		if ( strstr(t,"QUARTET")) SpinMultiplicities[0] = 4;
+		if ( strstr(t,"QUINTET")) SpinMultiplicities[0] = 5;
+		if ( strstr(t,"SEXTET")) SpinMultiplicities[0] = 6;
+    		if(!fgets(t,taille,fd)) break;
+	}
+}
 /*************************************************************************************/
 void read_Zmat_from_mopac_input_file(gchar *FileName)
 {
@@ -4749,6 +5022,168 @@ void read_Zmat_from_mopac_input_file(gchar *FileName)
 		if(NcentersZmat>1 && atoi(AtomCoord[4])==1)trans_coord_Zmat('A',i,FALSE);
 		if(NcentersZmat>2 && atoi(AtomCoord[6])==1)trans_coord_Zmat('D',i,FALSE);
         }
+	fseek(fd, 0L, SEEK_SET);
+	get_charge_and_multiplicity_from_mopac_input_file(fd);
+ 
+	fclose(fd);
+	for(i=0;i<10;i++)
+		g_free(AtomCoord[i]);
+	for (i=0;i<NcentersZmat;i++)
+	{
+		Geom[i].Symb[0]=toupper(Geom[i].Symb[0]);
+		l=strlen(Geom[i].Symb);
+		if (l==2) Geom[i].Symb[1]=tolower(Geom[i].Symb[1]);
+		if(l<3) t=g_strdup(Geom[i].Symb);
+		else
+		{
+			t[0]=Geom[i].Symb[0];
+			t[1]=Geom[i].Symb[1];
+		}
+		if(ThisIsNotAnAtom(t))
+		{	 	
+			MessageGeom("Sorry\n This is not a Zmatrix mopac file"," Error ",TRUE);
+			g_free(t);
+			freeGeom();
+			freeVariables();
+			return;
+		}
+	}
+	g_free(t);
+	if(Units==0)
+	for (i=1;i<NcentersZmat;i++)
+			Geom[i].R=ang_to_bohr(Geom[i].R);
+
+	MethodeGeom = GEOM_IS_ZMAT;
+	if(GeomIsOpen)
+	{
+     		create_geom_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
+   		clearList(list);
+		append_list_geom();
+		append_list_variables();
+	}
+	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomIsOpen && iprogram == PROG_IS_GAUSS) set_spin_of_electrons();
+}
+/********************************************************************************/
+static void get_charge_and_multiplicity_from_mopac_output_file(FILE* fd)
+{
+ 	guint taille=BSIZE;
+  	gchar t[BSIZE];
+
+	TotalCharges[0] = 0;
+	SpinMultiplicities[0] =1;
+
+  	while(!feof(fd) )
+	{
+    		if(!fgets(t,taille,fd)) break;
+		if ( strstr(t,"CHARGE ON SYSTEM") && strstr(t,"="))
+		{
+			gchar* p = strstr(t,"=")+1;
+			TotalCharges[0] = atoi(p);
+		}
+		if ( strstr(t,"SPIN STATE DEFINED AS A"))
+		{
+			if ( strstr(t,"SINGLET")) SpinMultiplicities[0] = 1;
+			if ( strstr(t,"DOUBLET")) SpinMultiplicities[0] = 2;
+			if ( strstr(t,"TRIPLET")) SpinMultiplicities[0] = 3;
+			if ( strstr(t,"QUARTET")) SpinMultiplicities[0] = 4;
+			if ( strstr(t,"QUINTET")) SpinMultiplicities[0] = 5;
+			if ( strstr(t,"SEXTET")) SpinMultiplicities[0] = 6;
+		}
+	}
+}
+/********************************************************************************/
+void read_Zmat_from_mopac_scan_output_file(gchar *FileName, gint numGeom)
+{
+	gchar *t;
+	gboolean OK;
+	gchar *AtomCoord[10];
+	FILE *fd;
+	guint taille=BSIZE;
+	guint i,l;
+
+	for(i=0;i<10;i++) AtomCoord[i]=g_malloc(taille*sizeof(gchar));
+	fd = FOpen(FileName, "r");
+	if(fd == NULL)
+	{
+		t = g_strdup_printf("Sorry\n I can not open \"%s\" file",FileName); 
+		MessageGeom(t," Error ",TRUE);
+		g_free(t);
+		return;
+	}
+	t=g_malloc(taille);
+	OK = TRUE;
+	i = 0;
+  	while(!feof(fd) )    
+  	{
+ 		if(!fgets(t, taille, fd))break;
+		if(
+			strstr(t,"VARIABLE") && 
+			strstr(t,"FUNCTION")
+		) 
+		{
+			i++;
+			if(i==numGeom)break;
+		}
+	}
+	if(i==0) OK = FALSE;
+ 	if(OK && !fgets(t, taille, fd))OK = FALSE; /* Values */
+  	while(!feof(fd) && OK )    
+  	{
+ 		if(!fgets(t, taille, fd))OK = FALSE;
+		if(t[0] != '*') break; /* Keywords */
+	}
+	if(!fgets(t,taille,fd)) OK = FALSE;
+	if(!fgets(t,taille,fd)) OK = FALSE;
+	if(!OK)
+	{
+		g_free(t);
+		t = g_strdup_printf("Sorry\n I can not read geometry from \"%s\" file",FileName); 
+		MessageGeom(t," Error ",TRUE);
+		g_free(t);
+		return;
+	}
+	if(!fgets(t,taille,fd)) OK = FALSE;
+	if( !OK ||  1!=sscanf(t,"%s", AtomCoord[0]))
+	{
+		 MessageGeom("Sorry\n I can not read geometry from this file"," Error ",TRUE);
+ 		 g_free(t);
+		for(i=0;i<10;i++)
+			g_free(AtomCoord[i]);
+		freeGeom();
+		freeVariables();
+		fclose(fd);
+		return;
+	}
+	freeGeom();
+	freeVariables();
+	NcentersZmat=0;
+	NcentersZmat++;
+	Geom=g_malloc(sizeof(GeomAtomDef));
+	set_center(AtomCoord);
+	
+	while(!feof(fd) )
+	{
+		if(!fgets(t,taille,fd))break;
+		if(feof(fd)) break;
+		if(this_is_a_backspace(t)) break;
+		if(NcentersZmat==1)
+		{
+			if(3!=sscanf(t,"%s %s %s", AtomCoord[0],AtomCoord[1],AtomCoord[2])) break;
+			sprintf(AtomCoord[7],"%d", 1);
+		}
+		else
+		if( get_info_one_center(t,AtomCoord) == EOF) break;
+  		NcentersZmat++;
+		Geom=g_realloc(Geom,NcentersZmat*sizeof(GeomAtomDef));
+		set_center(AtomCoord);
+		i = NcentersZmat-1;
+		if(NcentersZmat>1 && atoi(AtomCoord[2])==1)trans_coord_Zmat('R',i,FALSE);
+		if(NcentersZmat>2 && atoi(AtomCoord[4])==1)trans_coord_Zmat('A',i,FALSE);
+		if(NcentersZmat>3 && atoi(AtomCoord[6])==1)trans_coord_Zmat('D',i,FALSE);
+        }
+	fseek(fd, 0L, SEEK_SET);
+	get_charge_and_multiplicity_from_mopac_output_file(fd);
  
 	fclose(fd);
 	for(i=0;i<10;i++)
@@ -5675,7 +6110,7 @@ void create_geom_list(GtkWidget *vbox, GabEditTypeFileGeom readfile)
 
 	if(Geom != NULL) put_geom_in_list();
 
-  	g_signal_connect(G_OBJECT (list), "button_press_event", GTK_SIGNAL_FUNC(event_dispatcher), manager);
+  	g_signal_connect(G_OBJECT (list), "button_press_event", G_CALLBACK(event_dispatcher), manager);
 }
 /********************************************************************************/
 static void DelVariable(GtkWidget *w,gpointer data)
@@ -5810,17 +6245,16 @@ static void DialogueDeleteV()
   gtk_window_set_modal (GTK_WINDOW (Dialogue), TRUE);
 
   add_child(WindowGeom,Dialogue,gtk_widget_destroy," Delete Variable ");
-  g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GtkSignalFunc)delete_child,NULL);
+  g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GCallback)delete_child,NULL);
 
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
   g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) g_object_unref);
+	  frame,(GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-   gtk_box_pack_start_defaults(
-         GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
+   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame,TRUE,TRUE,0);
 
   gtk_widget_show (frame);
 
@@ -5830,18 +6264,18 @@ static void DialogueDeleteV()
 
   message = g_strdup_printf("\n Are you sure to delete the variable\n %s\n?",Variables[LineSelectedV].Name);
   Label = create_label_with_pixmap(Dialogue,message," Question ");
-  gtk_box_pack_start_defaults(GTK_BOX(vboxframe), Label);
+  gtk_box_pack_start(GTK_BOX(vboxframe), Label,TRUE,TRUE,0);
 
   Bouton = create_button(Dialogue,"No");
-  gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(Dialogue));
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Bouton);
  
   Bouton = create_button(Dialogue,"Yes");
-  gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect(G_OBJECT(Bouton), "clicked",(GtkSignalFunc)DelVariable, NULL);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(Dialogue));
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect(G_OBJECT(Bouton), "clicked",(GCallback)DelVariable, NULL);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
     
 
@@ -5873,16 +6307,15 @@ static void DialogueEditV()
   gtk_window_set_transient_for(GTK_WINDOW(Dialogue),GTK_WINDOW(WindowGeom));
 
   add_child(WindowGeom,Dialogue,gtk_widget_destroy," Edit variable ");
-  g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GtkSignalFunc)delete_child,NULL);
+  g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GCallback)delete_child,NULL);
 
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
   g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) g_object_unref);
+	  frame,(GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-   gtk_box_pack_start_defaults(
-         GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
+   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame,TRUE,TRUE,0);
   gtk_widget_show (frame);
   vboxframe = create_vbox(frame);
 
@@ -5899,14 +6332,14 @@ static void DialogueEditV()
   gtk_widget_realize(Dialogue);
 
   Bouton = create_button(Dialogue,"Cancel");
-  gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(Dialogue));
+  gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 
   Bouton = create_button(Dialogue,"OK");
-  gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)EditVariable, NULL);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)destroy_dialogue, GTK_OBJECT(Dialogue));
+  gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)EditVariable, NULL);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)destroy_dialogue, GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Bouton);
     
@@ -5983,17 +6416,16 @@ static void DialogueAddV()
   gtk_window_set_transient_for(GTK_WINDOW(Dialogue),GTK_WINDOW(WindowGeom));
 
   add_child(WindowGeom,Dialogue,gtk_widget_destroy," New Variable ");
-  g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GtkSignalFunc)delete_child,NULL);
+  g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GCallback)delete_child,NULL);
 
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
   g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) g_object_unref);
+	  frame,(GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-   gtk_box_pack_start_defaults(
-         GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
+   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame,TRUE,TRUE,0);
 
   gtk_widget_show (frame);
 
@@ -6007,14 +6439,14 @@ static void DialogueAddV()
   gtk_widget_realize(Dialogue);
 
   Bouton = create_button(Dialogue,"Cancel");
-  gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(Dialogue));
+  gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 
   Bouton = create_button(Dialogue,"OK");
-  gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton);
-  g_signal_connect(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)AddVariable, NULL);
-  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GtkSignalFunc)destroy_dialogue, GTK_OBJECT(Dialogue));
+  gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
+  g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)AddVariable, NULL);
+  g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)destroy_dialogue, GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Bouton);
     

@@ -402,7 +402,7 @@ gdk_gl_pixmap_finalize(GObject *object)
 
   glFinish ();
   SelectObject ( pixmap->hdc, pixmap->hbitmap );
-  gdk_pixmap_unref ( pixmap->pixmap );
+  g_object_unref ( pixmap->pixmap );
 
   (* glcontext_parent_class->finalize)(object);
 }
