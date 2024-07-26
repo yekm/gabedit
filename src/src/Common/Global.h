@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -39,6 +39,7 @@ DEALINGS IN THE SOFTWARE.
 #define PROG_IS_FIREFLY  GABEDIT_TYPENODE_FIREFLY
 #define PROG_IS_QCHEM  GABEDIT_TYPENODE_QCHEM
 #define PROG_IS_NWCHEM  GABEDIT_TYPENODE_NWCHEM
+#define PROG_IS_PSICODE  GABEDIT_TYPENODE_PSICODE
 #define PROG_IS_MOPAC  GABEDIT_TYPENODE_MOPAC
 #define PROG_IS_OTHER -1
 
@@ -51,7 +52,7 @@ DEALINGS IN THE SOFTWARE.
 
 #define MAJOR_VERSION    2
 #define MINOR_VERSION    4
-#define MICRO_VERSION    0
+#define MICRO_VERSION    8
 
 /**** Structures *********/
 typedef struct _FileOpen
@@ -157,6 +158,7 @@ typedef struct _CommandsBatch
   gchar *NameCommandQChem;
   gchar *NameCommandOrca;
   gchar *NameCommandNWChem;
+  gchar *NameCommandPsicode;
   gchar *NameCommandMopac;
   gchar *NameCommandPovray;
   gint ScreenWidth;
@@ -181,6 +183,7 @@ typedef struct _CommandsBatch
   gchar* fireflyDirectory;
   gchar* orcaDirectory;
   gchar* nwchemDirectory;
+  gchar* psicodeDirectory;
   gchar* mopacDirectory;
   gchar* gaussDirectory;
   gchar* povrayDirectory;
@@ -191,6 +194,7 @@ typedef struct _CommandsBatch
   CommandsList mpqcCommands;
   CommandsList orcaCommands;
   CommandsList nwchemCommands;
+  CommandsList psicodeCommands;
   CommandsList fireflyCommands;
   CommandsList qchemCommands;
   CommandsList mopacCommands;

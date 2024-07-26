@@ -1,3 +1,90 @@
+25 October 2013
+	new tool to remove half cube grid
+	remove implicit declaration warning
+
+24 October 2013
+	new tool to compute the integral of the function on the grid
+
+30 September 2013
+	run orca from Draw geometry : bug fixe (new input format with orca, without params)
+
+19 August 2013
+	read fchk file with d,f,.. orbitals bug fixed (There was no bug for reading  from a .log file)
+	PM7 added to list of Mopac hamiltonian 
+
+24 July 2013
+	Gabedit can now calculate the lambda diagnostic for CT (see Peach et al. J. Chem. Phys. 128, 044118 (2008))
+
+18 July 2013
+	Gabedit can now symmetrize a molecule (see Largent, RJ, Polik, WF, Schmidt, JR, J. Comput Chem. 33 (2012) 1637-1642)
+
+08 July 2013
+	new parsers to read : 
+		UV-Visible spectrum from a Gamess unrestricted TDDFT calculation
+		Raman spectrum from a QChem output file
+		Anharmonic IR spectrum(VT2) from a Gaussian (D01) output file
+		Anharmonic IR spectrum(VSCF, VSCF-PT2) from a Gamess output file
+
+02 May 2013
+	bug fixed : analytical gradient for PairWize potential with OMP
+
+02 April 2013
+	bug fixed : set distance, angle, dihedral in DragGeomCairo bug fixed
+	bug fixed : analytical gradient for PairWize potential 
+
+05 March 2013
+	bug fixed : read geometries convergence with non scf method from a molpro log files
+	New DFT functionals in Gaussian interface
+
+16 September 2012
+	bug fixed : read personal fragment under windows
+
+14 September 2012
+	set molecule in the standard orientation
+	Align selected and not selected fragments
+
+05 September 2012
+	Bug fixed : reading of the number occuped beta orbitals from a fchk file.
+
+25 July 2012
+	Bug fixed : read orbitals with ECP from a GAMESS-US output file
+
+20 July 2012
+	Analysis of Spatial Extent in Charge-Transfer Excitations implemented (See Le Bahers et al., J. Chem. Theory Comput. 2011, 7, 2498–2506)
+
+19 July 2012
+	NCI (non-covalent interactions index) analysis implemented (see Johnson et al., J. Am. Chem. Soc. 132, 6498 (2010))
+	Dummy atom in an orca input file bug fixed
+	Read orbitals&Geometry from an orca  ouput file with a dummy atom, bug fixed
+	Insert a non-bonded atom in "Draw geometry window" bug fixed
+
+07 July 2012 :
+	Psi4 partially supported : input file, geometries, frequencies, UV Spectrum
+
+20 June 2012 :
+	Bug fixed : computing of double&triple bonds
+
+10 June 2012 :
+	Warning with -Wformat have been fixed
+
+29 March 2012 :
+	Several Filters (Gaussian, Blackman, Blackman-Harris,...) implemented in XYPlot window (not fully tested)
+
+08 Marsh 2012 :
+	read gamess geometries in Display window :  bug fixed
+
+02 Marsh 2012 :
+	NBO basis (file .31) : read any type of orbitals
+
+27 February 2012 :
+	NBO basis (file .31) : read geometry
+
+06 October 2011 :
+	Orca input file : constraint removed if no fixed atom.
+
+03 October 2011 :
+	Bug fixed for saving geometry in mol format
+
 15 September 2011 :
 	Bug fixed for reading orbitals from a ORCA output file
 	Bug fixed for drawing colorcoded planes (under windows OS)

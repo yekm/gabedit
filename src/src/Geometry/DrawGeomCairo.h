@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -187,6 +187,7 @@ void set_xyz_to_principal_axes_of_selected_atoms(gpointer data, guint Operation,
 void create_tolerance_window(GtkWidget*w, gpointer data);
 void get_abelian_orientation_with_reduction(GtkWidget*w, gpointer data);
 void get_standard_orientation_with_reduction(GtkWidget*w, gpointer data);
+void get_standard_orientation_with_symmetrization(GtkWidget*w, gpointer data);
 void setMMTypesCharges(gpointer data, guint Operation,GtkWidget* wid);
 GeomDef* Free_One_Geom(GeomDef* geom,gint N);
 void set_text_to_draw(gchar* str);
@@ -293,6 +294,7 @@ void copy_connections(GeomDef* geom0, GeomDef* geom, gint n);
 void set_optimal_geom_view();
 void getQuatGeom(gdouble q[]);
 void drawGeom();
+void getOptimalCiCj(gint i, gint j, gdouble* Ci, gdouble* Cj, gdouble* C0);
 
 #endif /* __GABEDIT_DRAWGEOMCAIRO_H__ */
 

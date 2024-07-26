@@ -1,6 +1,6 @@
 /* SemiEmpirical.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -59,7 +59,7 @@ static gboolean getEnergyMopac(gchar* fileNameOut, gdouble* energy)
 	gchar buffer[1024];
 	gchar* pdest = NULL;
 
- 	file = FOpen(fileNameOut, "r");
+ 	file = FOpen(fileNameOut, "rb");
 	if(!file) return FALSE;
 	 while(!feof(file))
 	 {
@@ -92,7 +92,7 @@ static gboolean getGradientMopac(gchar* fileNameOut, SemiEmpiricalModel *seModel
 	gint i;
 	gint j;
 
- 	file = FOpen(fileNameOut, "r");
+ 	file = FOpen(fileNameOut, "rb");
 	if(!file) return FALSE;
 	 while(!feof(file))
 	 {
@@ -216,13 +216,13 @@ static gchar* runOneMopac(SemiEmpiricalModel* seModel, gchar* keyWords)
 	fprintf(fileSH,"%s %s\n",NameCommandMopac,fileNameIn);
 	fclose(fileSH);
 	sprintf(buffer,"chmod u+x %s",fileNameSH);
-	system(buffer);
-	system(fileNameSH);
+	{int ierr = system(buffer);}
+	{ int ierr = system(fileNameSH);}
 #else
 	fprintf(fileSH,"\"%s\" \"%s\"\n",NameCommandMopac,fileNameIn);
 	fclose(fileSH);
 	sprintf(buffer,"\"%s\"",fileNameSH);
-	system(buffer);
+	{int ierr = system(buffer);}
 #endif
 
 	unlink(fileNameIn);
@@ -311,7 +311,7 @@ static gboolean getEnergyFireFly(gchar* fileNameOut, gdouble* energy)
 	gchar* pdest = NULL;
 	gboolean OK = FALSE;
 
- 	file = FOpen(fileNameOut, "r");
+ 	file = FOpen(fileNameOut, "rb");
 	if(!file) return FALSE;
 	 while(!feof(file))
 	 {
@@ -345,7 +345,7 @@ static gboolean getGradientFireFly(gchar* fileNameOut, SemiEmpiricalModel *seMod
 	gint i;
 	gint j;
 
- 	file = FOpen(fileNameOut, "r");
+ 	file = FOpen(fileNameOut, "rb");
 	if(!file) return FALSE;
 	 while(!feof(file))
 	 {
@@ -497,11 +497,11 @@ static gchar* runOneFireFly(SemiEmpiricalModel* seModel, gchar* keyWords)
 	fclose(fileSH);
 #ifndef G_OS_WIN32
 	sprintf(buffer,"chmod u+x %s",fileNameSH);
-	system(buffer);
-	system(fileNameSH);
+	{int ierr = system(buffer);}
+	{ int ierr = system(fileNameSH);}
 #else
 	sprintf(buffer,"\"%s\"",fileNameSH);
-	system(buffer);
+	{int ierr = system(buffer);}
 #endif
 	unlink(fileNameIn);
 	unlink(fileNameSH);
@@ -552,7 +552,7 @@ static void calculateGradientFireFly(SemiEmpiricalModel* seModel)
 			drawGeom();
 			gtk_widget_set_sensitive(StopButton, FALSE);
 			Waiting(1);
-			system(comm);
+			{int ierr = system(comm);}
 			g_free(fileOut);
 			g_free(comm);
 			return;

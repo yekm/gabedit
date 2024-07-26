@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1743,19 +1743,19 @@ static gboolean read_gaussian_file_geomi_str(gchar *FileName, gint num, gchar* s
  		OK=FALSE;
  		while(!feof(file))
 		{
-	  		fgets(t,BSIZE,file);
+    			{ char* e = fgets(t,BSIZE,file);}
 			pdest = strstr( t,str);
 			result = pdest - t ;
 	 		if ( result >0 )
 	  		{
-	  			fgets(t,BSIZE,file);
-	  			fgets(t,BSIZE,file);
-	  			fgets(t,BSIZE,file);
+    				{ char* e = fgets(t,BSIZE,file);}
+    				{ char* e = fgets(t,BSIZE,file);}
+    				{ char* e = fgets(t,BSIZE,file);}
 				pdest = strstr( t, "Type" );
 				result = pdest - t ;
 				if(result>0) itype=1;
 				else itype=0;
-	  			fgets(t,BSIZE,file);
+    				{ char* e = fgets(t,BSIZE,file);}
                 		numgeom++;
 				OK = TRUE;
 				break;
@@ -1773,7 +1773,7 @@ static gboolean read_gaussian_file_geomi_str(gchar *FileName, gint num, gchar* s
   		j=-1;
   		while(!feof(file) )
   		{
-    			fgets(t,BSIZE,file);
+    			{ char* e = fgets(t,BSIZE,file);}
     			pdest = strstr( t, "----------------------------------" );
     			result = pdest - t ;
     			if ( result >0 )
@@ -1879,7 +1879,7 @@ static void save_atom_pdb_file(FILE* file,
 		strncpy(localName, name, MAXNAME);
 	else
 		strcpy(localName, name);
-	g_strup(localName);
+	uppercase(localName);
 
 	if(strlen(atomType)>MAXATOMTYPE)
 	{
@@ -1912,7 +1912,7 @@ static void save_atom_pdb_file(FILE* file,
 			localResidueName[MAXRESIDUENAME] = '\0';
 		}
 	}
-	g_strup(localResidueName);
+	uppercase(localResidueName);
 
 	if(strlen(symbol)>MAXSYMBOL)
 		strncpy(localSymbol, symbol, MAXSYMBOL);
@@ -2924,7 +2924,7 @@ static gboolean set_geometry(gint k)
 	}
 	Ncenters = nAtoms;
 	init_atomic_orbitals();
-	Dipole.def = FALSE;
+	init_dipole();
 	buildBondsOrb();
 	RebuildGeom = TRUE;
 	glarea_rafresh(GLArea);
@@ -3199,7 +3199,7 @@ static void stopAnimation(GtkWidget *win, gpointer data)
 
 	buildBondsOrb();
 	RebuildGeom = TRUE;
-	Dipole.def = FALSE;
+	init_dipole();
 	init_atomic_orbitals();
 	free_iso_all();
 	if(this_is_an_object((GtkObject*)GLArea)) glarea_rafresh(GLArea);

@@ -1,6 +1,6 @@
 /* MenuToolBarGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -40,7 +40,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../SemiEmpirical/SemiEmpiricalDlg.h"
 #include "../Geometry/GeomXYZ.h"
 #include "../Geometry/GeomZmatrix.h"
-#include "../Geometry/Symmetry.h"
+#include "../Geometry/GeomSymmetry.h"
 #include "../Files/FileChooser.h"
 #include "../Geometry/ImagesGeom.h"
 #include "../Geometry/RotFragments.h"
@@ -144,6 +144,7 @@ static void select_atom()
 		}
 	}
  	
+  	gtk_window_set_transient_for(GTK_WINDOW(WinTable),GTK_WINDOW(GeomDlg));
 	gtk_widget_show_all(WinTable);
 }
 /*********************************************************************************************************************/
@@ -451,6 +452,9 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ReadOrcaLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_ORCAOUTLAST);}
 	else if(!strcmp(name,"ReadNWChemFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_NWCHEMOUTFIRST);}
 	else if(!strcmp(name,"ReadNWChemLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_NWCHEMOUTLAST);}
+
+	else if(!strcmp(name,"ReadPsicodeFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_PSICODEOUTFIRST);}
+	else if(!strcmp(name,"ReadPsicodeLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_PSICODEOUTLAST);}
 	else if(!strcmp(name,"ReadQChemFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_QCHEMOUTFIRST);}
 	else if(!strcmp(name,"ReadQChemLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_QCHEMOUTLAST);}
 	else if(!strcmp(name,"ReadUsingOpenBabel")) { create_babel_read_dialogue(); }
@@ -477,6 +481,9 @@ static void activate_action (GtkAction *action)
 
 	else if(!strcmp(name,"ReadGeomConvNWChem"))
    	  file_chooser_open(read_geometries_conv_nwchem,_("Load Geom. Conv. From NWChem output file"), GABEDIT_TYPEFILE_NWCHEM,GABEDIT_TYPEWIN_GEOM);
+
+	else if(!strcmp(name,"ReadGeomConvPsicode"))
+   	  file_chooser_open(read_geometries_conv_psicode,_("Load Geom. Conv. From Psicode output file"), GABEDIT_TYPEFILE_PSICODE,GABEDIT_TYPEWIN_GEOM);
 
 	else if(!strcmp(name,"ReadGeomConvQChem"))
    	  file_chooser_open(read_geometries_conv_qchem,_("Load Geom. Conv. From Q-Chem output file"), GABEDIT_TYPEFILE_QCHEM,GABEDIT_TYPEWIN_GEOM);
@@ -715,12 +722,15 @@ static void activate_action (GtkAction *action)
 
 	else if(!strcmp(name, "SymmetryRotationalConstantes")) create_symmetry_window( NULL, 0);
 	else if(!strcmp(name, "SymmetryGroupSymmetry")) get_standard_orientation_with_reduction(NULL, 0);
+	else if(!strcmp(name, "SymmetryGroupSymmetrize")) get_standard_orientation_with_symmetrization(NULL, 0);
 	else if(!strcmp(name, "SymmetryAbelianGroup")) get_abelian_orientation_with_reduction(NULL, 0);
 	else if(!strcmp(name, "SymmetrySetTolerance")) create_tolerance_window (NULL, 0);
 	else if(!strcmp(name, "SetOriginToCenterOfMolecule")) SetOriginAtCenter(NULL, 0, NULL);
 	else if(!strcmp(name, "SetOriginToCenterOfSelectedAtoms")) set_origin_to_center_of_fragment();
 	else if(!strcmp(name, "SetXYZToPAX")) set_xyz_to_principal_axes_of_selected_atoms(NULL,0, NULL);
 	else if(!strcmp(name, "SetXYZToPAZ")) set_xyz_to_principal_axes_of_selected_atoms(NULL,1, NULL);
+	else if(!strcmp(name, "SetXYZToStandardOrientaion")) set_xyz_to_standard_orientation_all();
+	else if(!strcmp(name, "SetXYZToStandardOrientaionSelectedAndNotSelected")) set_xyz_to_standard_orientation_selected_and_not_selected_atoms();
 	else if(!strcmp(name, "SetSelectedAtomsToHighLayer")) set_layer_of_selected_atoms(HIGH_LAYER);
 	else if(!strcmp(name, "SetSelectedAtomsToMediumLayer")) set_layer_of_selected_atoms(MEDIUM_LAYER);
 	else if(!strcmp(name, "SetSelectedAtomsToLowLayer")) set_layer_of_selected_atoms(LOW_LAYER);
@@ -1006,6 +1016,10 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadNWChemFirst", GABEDIT_STOCK_NWCHEM, N_("F_irst geometry from a NWChem output file"), NULL, "Read the first geometry from a NWChem output file", G_CALLBACK (activate_action) },
 	{"ReadNWChemLast", GABEDIT_STOCK_NWCHEM, N_("L_ast geometry from a NWChem output file"), NULL, "Read the last geometry from a NWChem output file", G_CALLBACK (activate_action) },
 
+	{"Psicode", GABEDIT_STOCK_PSICODE, "_Psicode"},
+	{"ReadPsicodeFirst", GABEDIT_STOCK_PSICODE, N_("F_irst geometry from a Psicode output file"), NULL, "Read the first geometry from a Psicode output file", G_CALLBACK (activate_action) },
+	{"ReadPsicodeLast", GABEDIT_STOCK_PSICODE, N_("L_ast geometry from a Psicode output file"), NULL, "Read the last geometry from a Psicode output file", G_CALLBACK (activate_action) },
+
 	{"ReadUsingOpenBabel", GABEDIT_STOCK_OPEN_BABEL, N_("_Other format (using open babel)"), NULL, "Other format (using open babel)", G_CALLBACK (activate_action) },
 
 	{"ReadGeomConv", NULL, N_("Geometries _Convergence")},
@@ -1020,6 +1034,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadGeomConvMPQC", GABEDIT_STOCK_MPQC, N_("from a MP_QC output file"), NULL, "Read Geometries Convergence from a MPQC output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvOrca", GABEDIT_STOCK_ORCA, N_("from a _Orca output file"), NULL, "Read Geometries Convergence from a Orca output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvNWChem", GABEDIT_STOCK_NWCHEM, N_("from a _NWChemoutput file"), NULL, "Read Geometries Convergence from a NWChem output file", G_CALLBACK (activate_action) },
+	{"ReadGeomConvPsicode", GABEDIT_STOCK_PSICODE, N_("from a _Psicodeoutput file"), NULL, "Read Geometries Convergence from a Psicode output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvQChem", GABEDIT_STOCK_QCHEM, N_("from a Q-_Chem output file"), NULL, "Read Geometries Convergence from a Q-Chem output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvGabedit", GABEDIT_STOCK_GABEDIT, N_("from a G_abedit file"), NULL, "Read Geometries Convergence from a Gabedit file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvMolden", GABEDIT_STOCK_MOLDEN, N_("from a Mol_den file"), NULL, "Read Geometries Convergence from a Molden file", G_CALLBACK (activate_action) },
@@ -1122,6 +1137,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SymmetryRotationalConstantes", NULL, N_("Rotational Constantes & Dipole at there principal axis"), NULL, "compute the rotational constantes &  the dipole at there principal axis", G_CALLBACK (activate_action) },
 	{"SymmetryGroupSymmetry", NULL, N_("_Group of symmetry & Geometry with reduce molecule to its basis set of atoms"), NULL, "compute the _Groupe symmetry and geometry with  reduce molecule to its basis set of atoms", G_CALLBACK (activate_action) },
 	{"SymmetryAbelianGroup", NULL, N_("_Abelian group & Geometry with  reduce molecule to its basis set of atoms"), NULL, "compute the _Abelian group and Geometry with reduce molecule to its basis set of atoms", G_CALLBACK (activate_action) },
+	{"SymmetryGroupSymmetrize", NULL, N_("_Symmetrize"), NULL, "compute the _Groupe symmetry and geometry with reduce symmetrization", G_CALLBACK (activate_action) },
 	{"SymmetrySetTolerance", NULL, N_("_Set tolerance parameters"), NULL, "Set tolerance parameters", G_CALLBACK (activate_action) },
 
 	{"Set", NULL, N_("_Set")},
@@ -1129,6 +1145,8 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SetOriginToCenterOfSelectedAtoms", NULL, N_("Set origin at Center of _selected atoms"), NULL, "Set origin at center of selected atoms", G_CALLBACK (activate_action) },
 	{"SetXYZToPAX", NULL, N_("Set XYZ axes to the principal axes of selected atoms (_X = min inertia)"), NULL, "Set XYZ axes to the principal axes of selected atoms (X = min inertia)", G_CALLBACK (activate_action) },
 	{"SetXYZToPAZ", NULL, N_("Set XYZ axes to the principal axes of selected atoms (_Z = min inertia)"), NULL, "Set XYZ axes to the principal axes of selected atoms (Z axis = min inertia)", G_CALLBACK (activate_action) },
+	{"SetXYZToStandardOrientaion", NULL, N_("Set XYZ axes to the standard orientation"), NULL, "Set XYZ axes to standard orientation", G_CALLBACK (activate_action) },
+	{"SetXYZToStandardOrientaionSelectedAndNotSelected", NULL, N_("Align seletecd and not selected fragments"), NULL, "Align 2 fragments", G_CALLBACK (activate_action) },
 	{"SetSelectedAtomsToHighLayer", NULL, N_("Set selected atoms to _Hight layer"), NULL, "Set selected atoms to Hight layer", G_CALLBACK (activate_action) },
 	{"SetSelectedAtomsToMediumLayer", NULL, N_("Set selected atoms to _Medium layer"), NULL, "Set selected atoms to Medium layer", G_CALLBACK (activate_action) },
 	{"SetSelectedAtomsToLowLayer", NULL, N_("Set selected atoms to _Low layer"), NULL, "Set selected atoms to Low layer", G_CALLBACK (activate_action) },
@@ -1307,6 +1325,11 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadNWChemFirst\" action=\"ReadNWChemFirst\" />\n"
 "        <menuitem name=\"ReadNWChemLast\" action=\"ReadNWChemLast\" />\n"
 "      </menu>\n"
+"      <separator name=\"sepMenuReadPsicode\" />\n"
+"      <menu name=\"Psicode\" action=\"Psicode\">\n"
+"        <menuitem name=\"ReadPsicodeFirst\" action=\"ReadPsicodeFirst\" />\n"
+"        <menuitem name=\"ReadPsicodeLast\" action=\"ReadPsicodeLast\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuReadTurbomole\" />\n"
 "      <menu name=\"Turbomole\" action=\"Turbomole\">\n"
 "        <menuitem name=\"ReadTurbomoleFirst\" action=\"ReadTurbomoleFirst\" />\n"
@@ -1325,6 +1348,7 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadGeomConvMPQC\" action=\"ReadGeomConvMPQC\" />\n"
 "        <menuitem name=\"ReadGeomConvOrca\" action=\"ReadGeomConvOrca\" />\n"
 "        <menuitem name=\"ReadGeomConvNWChem\" action=\"ReadGeomConvNWChem\" />\n"
+"        <menuitem name=\"ReadGeomConvPsicode\" action=\"ReadGeomConvPsicode\" />\n"
 "        <menuitem name=\"ReadGeomConvQChem\" action=\"ReadGeomConvQChem\" />\n"
 "        <menuitem name=\"ReadGeomConvGabedit\" action=\"ReadGeomConvGabedit\" />\n"
 "        <menuitem name=\"ReadGeomConvMolden\" action=\"ReadGeomConvMolden\" />\n"
@@ -1519,6 +1543,8 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"SymmetryRotationalConstantes\" action=\"SymmetryRotationalConstantes\" />\n"
 "      <menuitem name=\"SymmetryGroupSymmetry\" action=\"SymmetryGroupSymmetry\" />\n"
 "      <menuitem name=\"SymmetryAbelianGroup\" action=\"SymmetryAbelianGroup\" />\n"
+"      <separator name=\"sepMenuSymmetryGroupSymmetrize\" />\n"
+"      <menuitem name=\"SymmetryGroupSymmetrize\" action=\"SymmetryGroupSymmetrize\" />\n"
 "      <separator name=\"sepMenuSymmetrySetTolerance\" />\n"
 "      <menuitem name=\"SymmetrySetTolerance\" action=\"SymmetrySetTolerance\" />\n"
 "    </menu>\n"
@@ -1528,6 +1554,8 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"SetOriginToCenterOfSelectedAtoms\" action=\"SetOriginToCenterOfSelectedAtoms\" />\n"
 "      <menuitem name=\"SetXYZToPAX\" action=\"SetXYZToPAX\" />\n"
 "      <menuitem name=\"SetXYZToPAZ\" action=\"SetXYZToPAZ\" />\n"
+"      <menuitem name=\"SetXYZToStandardOrientaion\" action=\"SetXYZToStandardOrientaion\" />\n"
+"      <menuitem name=\"SetXYZToStandardOrientaionSelectedAndNotSelected\" action=\"SetXYZToStandardOrientaionSelectedAndNotSelected\" />\n"
 "      <separator name=\"sepMenuSetLayer\" />\n"
 "      <menuitem name=\"SetSelectedAtomsToHighLayer\" action=\"SetSelectedAtomsToHighLayer\" />\n"
 "      <menuitem name=\"SetSelectedAtomsToMediumLayer\" action=\"SetSelectedAtomsToMediumLayer\" />\n"
@@ -1835,6 +1863,8 @@ static void set_sensitive()
 	GtkWidget *origAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetOriginToCenterOfSelectedAtoms");
 	GtkWidget *pax = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetXYZToPAX");
 	GtkWidget *paz = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetXYZToPAZ");
+	GtkWidget *so = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetXYZToStandardOrientaion");
+	GtkWidget *sosns = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetXYZToStandardOrientaionSelectedAndNotSelected");
 
 	GtkWidget *layerHigh = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetSelectedAtomsToHighLayer");
 	GtkWidget *layerMedium = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetSelectedAtomsToMediumLayer");
@@ -1908,6 +1938,7 @@ static void set_sensitive()
   	if(Natoms<2) sensitive = FALSE;
 	if(GTK_IS_WIDGET(resetAllConnections)) gtk_widget_set_sensitive(resetAllConnections, sensitive);
 	if(GTK_IS_WIDGET(resetMultipleConnections)) gtk_widget_set_sensitive(resetMultipleConnections, sensitive);
+	if(GTK_IS_WIDGET(so)) gtk_widget_set_sensitive(so, sensitive);
 
 	if(NFatoms<2) sensitive = FALSE;
 	if(GTK_IS_WIDGET(pax)) gtk_widget_set_sensitive(pax, sensitive);
@@ -1921,6 +1952,7 @@ static void set_sensitive()
 	if(GTK_IS_WIDGET(layerHigh)) gtk_widget_set_sensitive(layerHigh, sensitive);
 	if(GTK_IS_WIDGET(invertSelection)) gtk_widget_set_sensitive(invertSelection, sensitive);
 	if(GTK_IS_WIDGET(unSelectAll)) gtk_widget_set_sensitive(unSelectAll, sensitive);
+	if(GTK_IS_WIDGET(sosns)) gtk_widget_set_sensitive(sosns, sensitive);
   	if(Natoms<2) sensitive = FALSE;
 	if(GTK_IS_WIDGET(layerMedium)) gtk_widget_set_sensitive(layerMedium, sensitive);
 	if(GTK_IS_WIDGET(layerLow)) gtk_widget_set_sensitive(layerLow, sensitive);

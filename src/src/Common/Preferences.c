@@ -1,6 +1,6 @@
 /* Preferences.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -56,6 +56,7 @@ static GtkWidget *EntryFireFly = NULL;
 static GtkWidget *EntryQChem = NULL;
 static GtkWidget *EntryOrca = NULL;
 static GtkWidget *EntryNWChem = NULL;
+static GtkWidget *EntryPsicode = NULL;
 
 static GtkWidget *ComboGamess = NULL;
 static GtkWidget *ComboGaussian = NULL;
@@ -68,6 +69,7 @@ static GtkWidget *ComboFireFly = NULL;
 static GtkWidget *ComboQChem = NULL;
 static GtkWidget *ComboOrca = NULL;
 static GtkWidget *ComboNWChem = NULL;
+static GtkWidget *ComboPsicode = NULL;
 
 static GtkWidget *ButtonGamess = NULL;
 static GtkWidget *ButtonGaussian = NULL;
@@ -80,6 +82,7 @@ static GtkWidget *ButtonFireFly = NULL;
 static GtkWidget *ButtonQChem = NULL;
 static GtkWidget *ButtonOrca = NULL;
 static GtkWidget *ButtonNWChem = NULL;
+static GtkWidget *ButtonPsicode = NULL;
 
 static GtkWidget *EntryBatchType = NULL;
 GtkWidget *selectors[3];
@@ -978,6 +981,92 @@ void  modify_nwchem_command()
   	gtk_widget_set_sensitive(ButtonNWChem, TRUE);
 }
 /********************************************************************************/
+static void  remove_psicode_command()
+{
+  G_CONST_RETURN gchar *strcom;
+  GList *glist = NULL;
+  gint i;
+  gint inList = -1;
+
+  if(psicodeCommands.numberOfCommands<2)
+	  return;
+
+  strcom = gtk_entry_get_text (GTK_ENTRY (EntryPsicode));
+
+  for(i=0;i<psicodeCommands.numberOfCommands;i++)
+  {
+	  if(strcmp(strcom,psicodeCommands.commands[i])==0)
+	  {
+		  inList = i;
+		  break;
+	  }
+  }
+  if(inList == -1)
+	  return;
+  for(i=inList;i<psicodeCommands.numberOfCommands-1;i++)
+	  psicodeCommands.commands[i] = psicodeCommands.commands[i+1];
+
+  psicodeCommands.numberOfCommands--;
+  psicodeCommands.commands = g_realloc(
+		   psicodeCommands.commands,
+		   psicodeCommands.numberOfCommands*sizeof(gchar*));
+
+  for(i=0;i<psicodeCommands.numberOfCommands;i++)
+	glist = g_list_append(glist,psicodeCommands.commands[i]);
+
+  gtk_combo_box_entry_set_popdown_strings( ComboPsicode, glist) ;
+
+  g_list_free(glist);
+
+  if(psicodeCommands.numberOfCommands<2)
+  	gtk_widget_set_sensitive(ButtonPsicode, FALSE);
+  else
+  	gtk_widget_set_sensitive(ButtonPsicode, TRUE);
+
+  NameCommandPsicode = g_strdup(psicodeCommands.commands[0]);
+
+  str_delete_n(NameCommandPsicode);
+  delete_last_spaces(NameCommandPsicode);
+  delete_first_spaces(NameCommandPsicode);
+}
+/********************************************************************************/
+void  modify_psicode_command()
+{
+  G_CONST_RETURN gchar *strcom;
+  GList *glist = NULL;
+  gint i;
+
+  strcom = gtk_entry_get_text (GTK_ENTRY (EntryPsicode));
+  if(strcmp(strcom,""))
+      NameCommandPsicode = g_strdup(strcom);
+
+  str_delete_n(NameCommandPsicode);
+  delete_last_spaces(NameCommandPsicode);
+  delete_first_spaces(NameCommandPsicode);
+
+  for(i=0;i<psicodeCommands.numberOfCommands;i++)
+  {
+	  if(strcmp(NameCommandPsicode,psicodeCommands.commands[i])==0)
+		  return;
+  }
+  psicodeCommands.numberOfCommands++;
+  psicodeCommands.commands = g_realloc(
+		   psicodeCommands.commands,
+		   psicodeCommands.numberOfCommands*sizeof(gchar*));
+  psicodeCommands.commands[psicodeCommands.numberOfCommands-1] = g_strdup(NameCommandPsicode);
+
+  for(i=psicodeCommands.numberOfCommands-1;i>=0;i--)
+	glist = g_list_append(glist,psicodeCommands.commands[i]);
+
+  gtk_combo_box_entry_set_popdown_strings( ComboPsicode, glist) ;
+
+  g_list_free(glist);
+  if(psicodeCommands.numberOfCommands<2)
+  	gtk_widget_set_sensitive(ButtonPsicode, FALSE);
+  else
+  	gtk_widget_set_sensitive(ButtonPsicode, TRUE);
+}
+/********************************************************************************/
 static void  remove_povray_command()
 {
   G_CONST_RETURN gchar *strcom;
@@ -1843,6 +1932,40 @@ static void set_entry_nwchemDir_selection(GtkWidget* entry)
 	gtk_widget_show(dirSelector);
 }
 /********************************************************************************/
+static void set_entry_psicodedir(GtkWidget* dirSelector, gint response_id)
+{
+	gchar* dirname = NULL;
+	gchar* t = NULL;
+	GtkWidget *entry;
+	if(response_id != GTK_RESPONSE_OK) return;
+	dirname = gabedit_folder_chooser_get_current_folder(GABEDIT_FOLDER_CHOOSER(dirSelector));
+
+
+	entry = (GtkWidget*)(g_object_get_data(G_OBJECT(dirSelector),"EntryFile"));	
+	gtk_entry_set_text(GTK_ENTRY(entry),dirname);
+
+	if(psicodeDirectory) g_free(psicodeDirectory);
+	psicodeDirectory = g_strdup(dirname);
+	t = g_strdup_printf("%s;%s",psicodeDirectory,g_getenv("PATH"));
+	g_setenv("PATH",t,TRUE);
+	g_free(t);
+}
+/********************************************************************************/
+static void set_entry_psicodeDir_selection(GtkWidget* entry)
+{
+	GtkWidget *dirSelector;
+	dirSelector = selctionOfDir(set_entry_psicodedir, _("Select Psicode folder"), GABEDIT_TYPEWIN_ORB); 
+  	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
+  	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
+
+	g_object_set_data(G_OBJECT (dirSelector), "EntryFile", entry);
+
+	g_signal_connect (dirSelector, "response",  G_CALLBACK (set_entry_psicodedir), GTK_OBJECT(dirSelector));
+	g_signal_connect (dirSelector, "response",  G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(dirSelector));
+
+	gtk_widget_show(dirSelector);
+}
+/********************************************************************************/
 static void set_entry_fireflydir(GtkWidget* dirSelector, gint response_id)
 {
 	gchar* dirname = NULL;
@@ -2162,8 +2285,8 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(help_commands),NULL);
 
   create_hseparator(vbox);
-  hbox = gtk_hbox_new (FALSE, 0);
 /* ------------------------------------------------------------------*/
+  hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
   label = gtk_label_new (_("Command for execute NWChem       : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
@@ -2180,6 +2303,30 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   if(nwchemCommands.numberOfCommands<2)
   	gtk_widget_set_sensitive(button, FALSE);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(remove_nwchem_command),NULL);
+
+  button = create_button(Wins,_("  Help  "));
+  gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(help_commands),NULL);
+
+  create_hseparator(vbox);
+/* ------------------------------------------------------------------*/
+  hbox = gtk_hbox_new (FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
+  label = gtk_label_new (_("Command for execute Psicode       : "));
+  gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
+
+  combo = create_combo_box_entry(psicodeCommands.commands,psicodeCommands.numberOfCommands,TRUE,-1,-1);
+  ComboPsicode = combo;
+  EntryPsicode =  GTK_BIN(combo)->child;
+  gtk_box_pack_start (GTK_BOX (hbox), combo, TRUE, TRUE, 3);
+  gtk_entry_set_text (GTK_ENTRY (EntryPsicode),NameCommandPsicode);
+  g_signal_connect(G_OBJECT (EntryPsicode), "activate", (GCallback)modify_psicode_command, NULL);
+  button = create_button(Wins,_("  Remove from list  "));
+  ButtonPsicode = button;
+  gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
+  if(psicodeCommands.numberOfCommands<2)
+  	gtk_widget_set_sensitive(button, FALSE);
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(remove_psicode_command),NULL);
 
   button = create_button(Wins,_("  Help  "));
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
@@ -2446,6 +2593,50 @@ void  create_nwchem_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	g_signal_connect_swapped(GTK_OBJECT (button), "clicked",
                                      G_CALLBACK(set_entry_nwchemDir_selection),
+                                     GTK_OBJECT(entry));
+	add_widget_table(table,button,0,2);
+  }
+  gtk_widget_show_all(frame);
+}
+#endif
+#ifdef G_OS_WIN32
+/********************************************************************************/
+void  create_psicode_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
+{
+  GtkWidget *frame;
+  GtkWidget *button;
+
+  frame = gtk_frame_new (NULL);
+  gtk_widget_show (frame);
+  gtk_box_pack_start (GTK_BOX (vbox), frame, expand, expand, 0);
+  gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
+
+  vbox = gtk_vbox_new (FALSE, 0);
+  gtk_container_add (GTK_CONTAINER (frame), vbox);
+
+
+  {
+	GtkWidget* entry;
+  	GtkWidget *table = gtk_table_new(1,3,FALSE);
+
+	if(!psicodeDirectory) psicodeDirectory = g_strdup_printf("%s",g_get_home_dir());
+
+	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
+
+	add_label_table(table,_("Psicode directory                        : "),0,0);
+  	entry = gtk_entry_new ();
+	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
+	gtk_table_attach(GTK_TABLE(table),entry,1,1+1,0,0+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+  	gtk_entry_set_text (GTK_ENTRY (entry),psicodeDirectory);
+	gtk_editable_set_editable((GtkEditable*)entry,FALSE);
+	gtk_widget_set_sensitive(entry, FALSE);
+	button = create_button_pixmap(Wins,open_xpm,NULL);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	g_signal_connect_swapped(GTK_OBJECT (button), "clicked",
+                                     G_CALLBACK(set_entry_psicodeDir_selection),
                                      GTK_OBJECT(entry));
 	add_widget_table(table,button,0,2);
   }
@@ -2846,6 +3037,7 @@ void AddPageOthers(GtkWidget *NoteBook)
   create_gamess_directory(Wins,vbox,FALSE);
   create_orca_directory(Wins,vbox,FALSE);
   create_nwchem_directory(Wins,vbox,FALSE);
+  create_psicode_directory(Wins,vbox,FALSE);
   create_firefly_directory(Wins,vbox,FALSE);
   create_mopac_directory(Wins,vbox,FALSE);
   create_gauss_directory(Wins,vbox,FALSE);

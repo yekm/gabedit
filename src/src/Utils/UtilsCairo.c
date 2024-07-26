@@ -1,6 +1,6 @@
 /* UtilsCairo.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -62,6 +62,10 @@ void gabedit_cairo_string(cairo_t* cr, GtkWidget* parent, PangoFontDescription *
 	}
 	switch(weight)
 	{
+		case PANGO_WEIGHT_THIN: 
+		case PANGO_WEIGHT_BOOK : 
+		case PANGO_WEIGHT_MEDIUM: 
+		case PANGO_WEIGHT_ULTRAHEAVY: 
 		case PANGO_WEIGHT_ULTRALIGHT: 
 		case PANGO_WEIGHT_LIGHT: 
 		case PANGO_WEIGHT_NORMAL: 

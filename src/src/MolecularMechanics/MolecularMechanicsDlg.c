@@ -1,6 +1,6 @@
 /* MolecularMechanicsDlg.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -20,6 +20,7 @@ DEALINGS IN THE SOFTWARE.
 
 #include <stdlib.h>
 #include <math.h>
+#include <glib.h>
 #include "../../Config.h"
 #include "../Common/Global.h"
 #include "../Utils/UtilsInterface.h"
@@ -214,7 +215,7 @@ static gboolean createMopacFiles(gint numberOfGeometries, ForceField** geometrie
 	{
 		gchar buffer[1024];
   		sprintf(buffer,"chmod u+x %s",fileNameSH);
-		system(buffer);
+		{int ierr = system(buffer);}
 	}
 #endif
  	if(fileName) g_free(fileName);
@@ -280,7 +281,7 @@ static gboolean createGaussianFiles(gint numberOfGeometries, ForceField** geomet
 	{
 		gchar buffer[1024];
   		sprintf(buffer,"chmod u+x %s",fileNameSH);
-		system(buffer);
+		{int ierr = system(buffer);}
 	}
 #endif
  	if(fileName) g_free(fileName);
@@ -320,7 +321,7 @@ static gboolean createFireFlyFiles(gint numberOfGeometries, ForceField** geometr
 #endif
 
 
-	g_strup(keyWords);
+	uppercase(keyWords);
 	for(i=0;i<numberOfGeometries;i++)
 	{
 		if(!geometries[i]) continue;
@@ -410,7 +411,7 @@ static gboolean createFireFlyFiles(gint numberOfGeometries, ForceField** geometr
 	{
 		gchar buffer[1024];
   		sprintf(buffer,"chmod u+x %s",fileNameSH);
-		system(buffer);
+		{int ierr = system(buffer);}
 	}
 #endif
  	if(fileName) g_free(fileName);
@@ -519,7 +520,7 @@ static gboolean getEnergyMopac(gchar* fileNameOut, gdouble* energy)
 	gchar buffer[1024];
 	gchar* pdest = NULL;
 
- 	file = fopen(fileNameOut, "r");
+ 	file = fopen(fileNameOut, "rb");
 	if(!file) return FALSE;
 	 while(!feof(file))
 	 {
@@ -603,13 +604,13 @@ static gboolean runOneMopac(ForceField* geometry, gdouble* energy, gchar* fileNa
 	fprintf(fileSH,"%s %s\n",NameCommandMopac,fileNameIn);
 	fclose(fileSH);
 	sprintf(buffer,"chmod u+x %s",fileNameSH);
-	system(buffer);
-	system(fileNameSH);
+	{int ierr = system(buffer);}
+	{int ierr = system(fileNameSH);}
 #else
 	fprintf(fileSH,"\"%s\" \"%s\"\n",NameCommandMopac,fileNameIn);
 	fclose(fileSH);
 	sprintf(buffer,"\"%s\"",fileNameSH);
-	system(buffer);
+	{int ierr = system(buffer);}
 #endif
 
 	fileNameOut = g_strdup_printf("%sOne.out",fileNamePrefix);
@@ -679,7 +680,7 @@ static gboolean getEnergyFireFly(gchar* fileNameOut, gdouble* energy)
 	gchar* pdest = NULL;
 	gboolean OK = FALSE;
 
- 	file = fopen(fileNameOut, "r");
+ 	file = fopen(fileNameOut, "rb");
 	if(!file) return FALSE;
 	 while(!feof(file))
 	 {
@@ -815,11 +816,11 @@ static gboolean runOneFireFly(ForceField* geometry, gdouble* energy, gchar* file
 	fclose(fileSH);
 #ifndef G_OS_WIN32
 	sprintf(buffer,"chmod u+x %s",fileNameSH);
-	system(buffer);
-	system(fileNameSH);
+	{int ierr = system(buffer);}
+	{int ierr = system(fileNameSH);}
 #else
 	sprintf(buffer,"\"%s\"",fileNameSH);
-	system(buffer);
+	{int ierr = system(buffer);}
 #endif
 	if(getEnergyFireFly(fileNameOut,energy))
 	{
@@ -1212,6 +1213,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 	{
 		gchar* dirName = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
 		gchar* tmp = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryFileNameGeom)));
+		if(!dirName) dirName = g_strdup(g_get_home_dir());
 		if(dirName[strlen(dirName)-1] != G_DIR_SEPARATOR)
 			fileNameGeom = g_strdup_printf("%s%s%s",dirName, G_DIR_SEPARATOR_S,tmp);
 		else

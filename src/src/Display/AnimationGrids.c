@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -448,7 +448,7 @@ static gboolean set_grid(gint k)
 	}
 	Ncenters = nAtoms;
 	if(nAtoms>0) init_atomic_orbitals();
-	Dipole.def = FALSE;
+	init_dipole();
 	buildBondsOrb();
 	RebuildGeom = TRUE;
 
@@ -481,7 +481,7 @@ static void stopAnimation(GtkWidget *win, gpointer data)
 
 	buildBondsOrb();
 	RebuildGeom = TRUE;
-	Dipole.def = FALSE;
+	init_dipole();
 	init_atomic_orbitals();
 	free_iso_all();
 	if(this_is_an_object((GtkObject*)GLArea)) glarea_rafresh(GLArea);

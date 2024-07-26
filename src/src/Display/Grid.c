@@ -1,6 +1,6 @@
 /* Grid.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -34,6 +34,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Zlm.h"
 #include "../Utils/MathFunctions.h"
 #include "../Utils/GTF.h"
+#include "../Utils/QL.h"
 
 /************************************************************************/
 static gdouble get_value_elf_becke(gdouble x,gdouble y,gdouble z,gint dump);
@@ -337,12 +338,13 @@ gboolean test_grid_all_positive(Grid* grid)
 	gint i;
 	gint j;
 	gint k;
+	gdouble PRECISION = 1e-8;
 	if(!grid) return FALSE;
 
 	for(i=0;i<grid->N[0];i++)
 		for(j=0;j<grid->N[1];j++)
 			for(k=0;k<grid->N[2];k++)
-				if(grid->point[i][j][k].C[3]<0 && fabs(grid->point[i][j][k].C[3])>1e-10) return FALSE;
+				if(grid->point[i][j][k].C[3]<0 && fabs(grid->point[i][j][k].C[3])>PRECISION) return FALSE;
 	return TRUE;
 }
 /**************************************************************/
@@ -494,7 +496,8 @@ Grid* define_grid_point_fed(gint N[],GridLimits limits,gint n)
 	for(i=0;i<3;i++)
 	{
 		firstPoint[i] = V0[i] + V1[i] + V2[i];
-		firstPoint[i] = originOfCube[i] - firstPoint[i]/2;
+		/* firstPoint[i] = originOfCube[i] - firstPoint[i]/2;*/
+		firstPoint[i] = limits.MinMax[0][i];
 	}
 	for(i=0;i<3;i++)
 	{
@@ -590,7 +593,8 @@ Grid* define_grid_point(gint N[],GridLimits limits,Func3d func)
 	for(i=0;i<3;i++)
 	{
 		firstPoint[i] = V0[i] + V1[i] + V2[i];
-		firstPoint[i] = originOfCube[i] - firstPoint[i]/2;
+		/*firstPoint[i] = originOfCube[i] - firstPoint[i]/2;*/
+		firstPoint[i] = limits.MinMax[0][i];
 	}
 	for(i=0;i<3;i++)
 	{
@@ -722,6 +726,8 @@ Grid* define_grid(gint N[],GridLimits limits)
 		case GABEDIT_TYPEGRID_MEP_EXACT :
 			grid = compute_mep_grid_exact(N,limits);
 			break;
+		case GABEDIT_TYPEGRID_NCI :
+			break;
 
 	}
 	/* printf("end dfine_grid\n");*/
@@ -801,7 +807,7 @@ Grid* define_grid_ELFSAVIN(gint N[],GridLimits limits)
 	g_free(t);
 	CancelCalcul = FALSE;
 	TypeGrid = GABEDIT_TYPEGRID_ELFSAVIN;
-	grid = define_grid_point(N,limits,get_value_elf_becke);
+	grid = define_grid_point(N,limits,get_value_elf_savin);
 	TypeGrid = TypeGridOld;
 	if(grid) set_status_label_info(_("Grid"),_("Ok"));
 	else set_status_label_info(_("Grid"),_("Nothing"));
@@ -994,88 +1000,7 @@ gboolean compute_coulomb_integrale_iijj(gint N[],GridLimits limits, gint typeOrb
 	return TRUE;
 }
 /*********************************************************************************/
-static void getCoefsLaplacian(gint nBoundary, gdouble xh, gdouble yh, gdouble zh,
-		gdouble* fcx, gdouble* fcy, gdouble* fcz, gdouble* cc)
-{
-	gdouble* coefs =  g_malloc((nBoundary+1)*sizeof(gdouble));
-	gdouble x2h = 1.0 / (xh * xh);
-	gdouble y2h = 1.0 / (yh * yh);
-	gdouble z2h = 1.0 / (zh * zh);
-	gint i;
-	
-	switch(nBoundary)
-	{
-		case 1:{
-				gdouble c[] = {-2.0, 1.0};
-				for(i=0;i<=nBoundary;i++)
-					coefs[i] = c[i];
-				break;
-			}
-		case 2:{
-				gdouble denom = 12.0;
-				gdouble c[] = {-30.0, 16.0, -1.0};
-				for(i=0;i<=nBoundary;i++)
-					coefs[i] = c[i]/denom;
-				break;
-			}
-		case 3:{
-				gdouble denom = 180.0;
-				gdouble c[] = {-490.0, 270.0,-27.0, 2.0};
-				for(i=0;i<=nBoundary;i++)
-					coefs[i] = c[i]/denom;
-				break;
-			}
-		case 4:{
-				gdouble denom = 5040.0;
-				gdouble c[] = {-14350.0, 8064.0, -1008.0, 128.0, -9.0};
-				for(i=0;i<=nBoundary;i++)
-					coefs[i] = c[i]/denom;
-				break;
-			}
-		case 5:{
-				gdouble denom = 25200.0;
-				gdouble c[] = {-73766.0, 42000.0, -6000.0, 1000.0, -125.0, 8.0};
-				for(i=0;i<=nBoundary;i++)
-					coefs[i] = c[i]/denom;
-				break;
-			}
-		case 6:{
-				gdouble denom = 831600.0;
-			 	gdouble c[] = {-2480478.0,1425600.0,-222750.0,44000.0,-7425.0,864.0,-50.0};
-				for(i=0;i<=nBoundary;i++)
-					coefs[i] = c[i]/denom;
-				break;
-			}
-		case 7:{
-				gdouble denom = 75675600.0;
-				gdouble c[] = {-228812298.0,132432300.0,-22072050.0,4904900.0,-1003275.0, 160524.0,-17150.0,900.0};
-				for(i=0;i<=nBoundary;i++)
-					coefs[i] = c[i]/denom;
-				break;
-			}
-		case 8:{
-				gdouble denom = 302702400.0;
-				gdouble c[] = {-924708642.0,538137600.0,-94174080.0,22830080.0,-5350800.0,1053696.0,-156800.0,15360.0,-735.0};
-				for(i=0;i<=nBoundary;i++)
-					coefs[i] = c[i]/denom;
-				break;
-			}
-	}
-
-	*cc = x2h + y2h + z2h;
-	*cc *= coefs[0];
-
-	for(i=1;i<=nBoundary;i++)
-	{
-		fcx[i] =  x2h * coefs[i];
-		fcy[i] =  y2h * coefs[i];
-		fcz[i] =  z2h * coefs[i];
-	}
-
-	g_free(coefs);
-}
-/*******************************************************************************************/
-static void reset_boundary(Grid* grid, gint nBoundary)
+void reset_boundary(Grid* grid, gint nBoundary)
 {
 	gint i;
 	gint j;
@@ -1247,89 +1172,6 @@ Grid* get_grid_laplacian(Grid* grid, gint nBoundary)
 	return lapGrid;
 }
 /*************************************************************************************/
-static void getCoefsGradient(gint nBoundary, gdouble xh, gdouble yh, gdouble zh,
-		gdouble* fcx, gdouble* fcy, gdouble* fcz, gdouble* cc)
-{
-	gdouble* coefs =  g_malloc((nBoundary+1)*sizeof(gdouble));
-	gdouble xxh = 1.0;
-	gdouble yyh = 1.0;
-	gdouble zzh = 1.0;
-	gint i;
-	
-	switch(nBoundary)
-	{
-		case 1:{
-				gdouble denom = 2.0;
-				gdouble c[] = {-1.0};
-				for(i=0;i<nBoundary;i++)
-					coefs[i] = c[i]/denom;
-				break;
-			}
-		case 2:{
-				gdouble denom =12.0;
-				gdouble c[] = { 1.0, -8.0};
-				for(i=0;i<nBoundary;i++)
-					coefs[i] = c[i]/denom;
-				break;
-			}
-		case 3:{
-				gdouble denom =60.0;
-				gdouble c[] = { -1.0, +9.0, -45.0};
-				for(i=0;i<nBoundary;i++)
-					coefs[i] = c[i]/denom;
-				break;
-			}
-		case 4:{
-				gdouble denom =840.0;
-				gdouble c[] = { 3.0, -32.0, +168.0, -672.0};
-				for(i=0;i<nBoundary;i++)
-					coefs[i] = c[i]/denom;
-				break;
-			}
-		case 5:{
-				gdouble denom =2520.0 ;
-				gdouble c[] = { -2.0, +25.0, -150.0,+600.0, -2100.0};
-				for(i=0;i<nBoundary;i++)
-					coefs[i] = c[i]/denom;
-				break;
-			}
-		case 6:{
-				gdouble denom =27720.0 ;
-				gdouble c[] = { 5.0, -72.0, +495.0, -2200.0, +7425.0, -23760.0};
-				for(i=0;i<nBoundary;i++)
-					coefs[i] = c[i]/denom;
-				break;
-			}
-		case 7:{
-				gdouble denom =360360.0;
-				gdouble c[] = { -15.0, +245.0, -1911.0, +9555.0, -35035.0, +105105.0, -315315.0};
-				for(i=0;i<nBoundary;i++)
-					coefs[i] = c[i]/denom;
-				break;
-			}
-		case 8:{
-				gdouble denom =720720.0;
-				gdouble c[] = { 7.0, -128.0, +1120.0, -6272.0, +25480.0, -81536.0, +224224.0, -640640.0};
-				for(i=0;i<nBoundary;i++)
-					coefs[i] = c[i]/denom;
-				break;
-			}
-	}
-
-	xxh = 1.0 / (xh);
-	yyh = 1.0 / (yh);
-	zzh = 1.0 / (zh);
-
-	for(i=0;i<nBoundary;i++)
-	{
-		fcx[i] =  xxh * coefs[i];
-		fcy[i] =  yyh * coefs[i];
-		fcz[i] =  zzh * coefs[i];
-	}
-
-	g_free(coefs);
-}
-/*************************************************************************************/
 Grid* get_grid_norm_gradient(Grid* grid, gint nBoundary)
 {
 	gint i;
@@ -1380,7 +1222,7 @@ Grid* get_grid_norm_gradient(Grid* grid, gint nBoundary)
 	fcx =  g_malloc((nBoundary)*sizeof(gdouble));
 	fcy =  g_malloc((nBoundary)*sizeof(gdouble));
 	fcz =  g_malloc((nBoundary)*sizeof(gdouble));
-	getCoefsGradient(nBoundary, xh, yh, zh,  fcx,  fcy, fcz, &cc);
+	getCoefsGradient(nBoundary, xh, yh, zh,  fcx,  fcy, fcz);
 
 	limits.MinMax[0][0] = grid->limits.MinMax[0][0];
 	limits.MinMax[1][0] = grid->limits.MinMax[1][0];
@@ -1460,6 +1302,147 @@ Grid* get_grid_norm_gradient(Grid* grid, gint nBoundary)
 	g_free(fcy);
 	g_free(fcz);
 	return gardGrid;
+}
+/*******************************************************************************************/
+Grid* get_grid_sign_lambda2_density(Grid* grid, gint nBoundary)
+{
+	gint i;
+	gint j;
+	gint k;
+	gint kn;
+	Grid* sl2Grid =  NULL;
+	gdouble xh, yh, zh;
+	gdouble a, b, c;
+	gint N[3] = {0,0,0};
+	gdouble* fcx =  NULL;
+	gdouble* fcy =  NULL;
+	gdouble* fcz =  NULL;
+	gdouble cc = 0;
+	GridLimits limits;
+	gdouble scale = 0;
+	gint n;
+	gboolean beg = TRUE;
+	gdouble gx, gy, gz;
+	gdouble PRECISION = 1.0e-60;
+	gdouble lambda2;
+	gdouble* lfcx =  NULL;
+	gdouble* lfcy =  NULL;
+	gdouble* lfcz =  NULL;
+	gdouble rho;
+	gdouble lcc;
+
+	if(grid==NULL) return NULL;
+	if(nBoundary<1) return NULL;
+	if(grid->N[0]<=2*nBoundary) return NULL;
+	if(grid->N[1]<=2*nBoundary) return NULL;
+	if(grid->N[2]<=2*nBoundary) return NULL;
+
+	for(n=0;n<3;n++) N[n] = grid->N[n];
+
+
+	i = 1; j = 0; k = 0;
+	a = grid->point[i][j][k].C[0]-grid->point[0][0][0].C[0];
+	b = grid->point[i][j][k].C[1]-grid->point[0][0][0].C[1];
+	c = grid->point[i][j][k].C[2]-grid->point[0][0][0].C[2];
+	xh = sqrt(a*a+b*b+c*c);
+
+	i = 0; j = 1; k = 0;
+	a = grid->point[i][j][k].C[0]-grid->point[0][0][0].C[0];
+	b = grid->point[i][j][k].C[1]-grid->point[0][0][0].C[1];
+	c = grid->point[i][j][k].C[2]-grid->point[0][0][0].C[2];
+	yh = sqrt(a*a+b*b+c*c);
+
+	i = 0; j = 0; k = 1;
+	a = grid->point[i][j][k].C[0]-grid->point[0][0][0].C[0];
+	b = grid->point[i][j][k].C[1]-grid->point[0][0][0].C[1];
+	c = grid->point[i][j][k].C[2]-grid->point[0][0][0].C[2];
+	zh = sqrt(a*a+b*b+c*c);
+
+	fcx =  g_malloc((nBoundary)*sizeof(gdouble));
+	fcy =  g_malloc((nBoundary)*sizeof(gdouble));
+	fcz =  g_malloc((nBoundary)*sizeof(gdouble));
+	getCoefsGradient(nBoundary, xh, yh, zh,  fcx,  fcy, fcz);
+
+	lfcx =  g_malloc((nBoundary+1)*sizeof(gdouble));
+	lfcy =  g_malloc((nBoundary+1)*sizeof(gdouble));
+	lfcz =  g_malloc((nBoundary+1)*sizeof(gdouble));
+	getCoefsLaplacian(nBoundary, xh, yh, zh,  lfcx,  lfcy, lfcz, &lcc);
+
+	limits.MinMax[0][0] = grid->limits.MinMax[0][0];
+	limits.MinMax[1][0] = grid->limits.MinMax[1][0];
+
+	limits.MinMax[0][1] = grid->limits.MinMax[0][1];
+	limits.MinMax[1][1] = grid->limits.MinMax[1][1];
+
+	limits.MinMax[0][2] = grid->limits.MinMax[0][2];
+	limits.MinMax[1][2] = grid->limits.MinMax[1][2];
+
+
+	sl2Grid = grid_point_alloc(N,limits);
+	
+	progress_orb(0,GABEDIT_PROGORB_COMPL2GRID,TRUE);
+	scale = (gdouble)1.01/sl2Grid->N[0];
+
+	for(i=0;i<grid->N[0];i++)
+	{
+		for(j=0;j<grid->N[1];j++)
+		{
+			for(k=0;k<grid->N[2];k++)
+			{
+				sl2Grid->point[i][j][k].C[0] = grid->point[i][j][k].C[0];
+				sl2Grid->point[i][j][k].C[1] = grid->point[i][j][k].C[1];
+				sl2Grid->point[i][j][k].C[2] = grid->point[i][j][k].C[2];
+				sl2Grid->point[i][j][k].C[3] = grid->point[i][j][k].C[3];
+			}
+		}
+	}
+ 
+	for(i=nBoundary;i<grid->N[0]-nBoundary;i++)
+	{
+		for(j=nBoundary;j<grid->N[1]-nBoundary;j++)
+		{
+			for(k=nBoundary;k<grid->N[2]-nBoundary;k++)
+			{
+				lambda2 = getLambda2(grid,i, j, k, fcx, fcy, fcz, lfcx, lfcy, lfcz, nBoundary);
+				if(lambda2<0) sl2Grid->point[i][j][k].C[3] = -sl2Grid->point[i][j][k].C[3]; 
+				if(beg)
+				{
+					beg = FALSE;
+        				sl2Grid->limits.MinMax[0][3] =  sl2Grid->point[i][j][k].C[3];
+        				sl2Grid->limits.MinMax[1][3] =  sl2Grid->point[i][j][k].C[3];
+				}
+                		else
+				{
+        				if(sl2Grid->limits.MinMax[0][3]>sl2Grid->point[i][j][k].C[3])
+        					sl2Grid->limits.MinMax[0][3] =  sl2Grid->point[i][j][k].C[3];
+        				if(sl2Grid->limits.MinMax[1][3]<sl2Grid->point[i][j][k].C[3])
+        					sl2Grid->limits.MinMax[1][3] =  sl2Grid->point[i][j][k].C[3];
+				}
+			}
+		}
+		if(CancelCalcul) 
+		{
+			progress_orb(0,GABEDIT_PROGORB_COMPL2GRID,TRUE);
+			break;
+		}
+		progress_orb(scale,GABEDIT_PROGORB_COMPL2GRID,FALSE);
+	}
+
+	if(CancelCalcul)
+	{
+		sl2Grid = free_grid(sl2Grid);
+	}
+	else
+	{
+		reset_boundary(sl2Grid, nBoundary);
+	}
+	g_free(fcx);
+	g_free(fcy);
+	g_free(fcz);
+	g_free(lfcx);
+	g_free(lfcy);
+	g_free(lfcz);
+	return sl2Grid;
 }
 /*********************************************************************************/
 static gdouble get_grad_value_STF(gdouble x,gdouble y,gdouble z,gint i,gint n,gint id)
@@ -2201,7 +2184,8 @@ static void define_xyz_grid(Grid*grid)
 	for(i=0;i<3;i++)
 	{
 		firstPoint[i] = V0[i] + V1[i] + V2[i];
-		firstPoint[i] = originOfCube[i] - firstPoint[i]/2;
+		/* firstPoint[i] = originOfCube[i] - firstPoint[i]/2;*/
+		firstPoint[i] = limits.MinMax[0][i];
 	}
 	for(i=0;i<3;i++)
 	{
@@ -2654,9 +2638,9 @@ Grid* solve_poisson_equation_from_density_grid(Grid* grid, PoissonSolverMethod p
 	/* solve poisson */
 	/*solveMGPoissonMG(ps, domain.maxLevel);*/
 	if(psMethod==GABEDIT_CG)
-		solveCGPoissonMG(ps, 200, 1e-6);
+		solveCGPoissonMG(ps, 2000, 1e-6);
 	else
-		solveMGPoissonMG3(ps, domain.maxLevel, 100, 1e-6, 0);
+		solveMGPoissonMG3(ps, domain.maxLevel, 1000, 1e-6, 0);
 	if(CancelCalcul)
 	{
 		destroyPoissonMG(ps); /* destroy of source and potential Grid */
@@ -2735,7 +2719,8 @@ Grid* compute_mep_grid_exact(gint N[],GridLimits limits)
 	for(i=0;i<3;i++)
 	{
 		firstPoint[i] = V0[i] + V1[i] + V2[i];
-		firstPoint[i] = originOfCube[i] - firstPoint[i]/2;
+		/* firstPoint[i] = originOfCube[i] - firstPoint[i]/2;*/
+		firstPoint[i] = limits.MinMax[0][i];
 	}
 	for(i=0;i<3;i++)
 	{
@@ -2751,7 +2736,7 @@ Grid* compute_mep_grid_exact(gint N[],GridLimits limits)
 #endif
 	scale = (gdouble)1.01/esp->N[0];
 #ifdef ENABLE_OMP
-//#pragma omp parallel for private(i)
+/*#pragma omp parallel for private(i)*/
 #endif
 	for(i=0;i<esp->N[0];i++)
 	{
@@ -2795,7 +2780,7 @@ Grid* compute_mep_grid_exact(gint N[],GridLimits limits)
 		}
 #ifndef G_OS_WIN32
 #ifdef ENABLE_OMP
-//#pragma omp critical
+/*#pragma omp critical*/
 #endif
 		g_free(XkXl);
 		progress_orb(scale,GABEDIT_PROGORB_COMPMEPGRID,FALSE);
@@ -3055,7 +3040,92 @@ gboolean compute_transition_matrix_numeric(gint N[],GridLimits limits, gint type
 	return TRUE;
 }
 /******************************************************************************************************************/
-gboolean compute_spatial_overlap_numeric(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
+gboolean compute_spatial_overlapij_numeric(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
+		gdouble* pInteg, gdouble* pNormi, gdouble* pNormj, gdouble* pOverlap)
+{
+	Grid *gridi = NULL;
+	Grid *gridj = NULL;
+	gint ki,li,mi;
+	gdouble scale;
+	gdouble normi = 0;
+	gdouble normj = 0;
+	gdouble overlap = 0;
+	gdouble xx,yy,zz;
+	gdouble dv = 0;
+
+	*pInteg = 0;
+	*pNormi = -1;
+	*pNormj = -1;
+	*pOverlap = -1;
+
+	gridi = define_grid_orb(N, limits, typeOrbi,  i);
+	if(!gridi) return FALSE;
+	gridj = 0;
+	gridj = define_grid_orb(N, limits, typeOrbj,  j);
+	if(!gridj) return FALSE;
+	set_status_label_info(_("Grid"),_("Comp. |phi_i*phi_j|"));
+	scale = (gdouble)1.01/gridi->N[0];
+	for(ki=0;ki<gridi->N[0];ki++)
+	{
+		for(li=0;li<gridi->N[1];li++)
+		{
+			for(mi=0;mi<gridi->N[2];mi++)
+			{
+				overlap +=  gridi->point[ki][li][mi].C[3]*gridj->point[ki][li][mi].C[3];
+				normi += gridi->point[ki][li][mi].C[3]*gridi->point[ki][li][mi].C[3];
+				normj += gridj->point[ki][li][mi].C[3]*gridj->point[ki][li][mi].C[3];
+				gridi->point[ki][li][mi].C[3] = fabs(gridi->point[ki][li][mi].C[3]* gridj->point[ki][li][mi].C[3]);
+			}
+		}
+		if(CancelCalcul) 
+		{
+			progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+			break;
+		}
+		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
+	}
+	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+	if(CancelCalcul) 
+	{
+		free_grid(gridi);
+		free_grid(gridj);
+		return FALSE;
+	}
+	set_status_label_info(_("Grid"),_("Computing of < |i| | |j| >."));
+	scale = (gdouble)1.01/gridi->N[0];
+	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+	for(ki=0;ki<gridi->N[0];ki++)
+	{
+		for(li=0;li<gridi->N[1];li++)
+		for(mi=0;mi<gridi->N[2];mi++)
+		{
+			*pInteg += gridi->point[ki][li][mi].C[3];
+		}
+		if(CancelCalcul) 
+		{
+			progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+			break;
+		}
+		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
+	}
+	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+	xx = gridi->point[1][0][0].C[0]-gridi->point[0][0][0].C[0];
+	yy = gridi->point[0][1][0].C[1]-gridi->point[0][0][0].C[1];
+	zz = gridi->point[0][0][1].C[2]-gridi->point[0][0][0].C[2];
+	dv = fabs(xx*yy*zz);
+	free_grid(gridi);
+	free_grid(gridj);
+	if(CancelCalcul) return FALSE;
+
+	*pInteg *= dv;
+	*pNormi = normi*dv;
+	*pNormj = normj*dv;
+	*pOverlap = overlap*dv;
+	
+	return TRUE;
+}
+/******************************************************************************************************************/
+gboolean compute_spatial_overlapiijj_numeric(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
 		gdouble* pInteg, gdouble* pNormi, gdouble* pNormj, gdouble* pOverlap)
 {
 	Grid *gridi = NULL;
@@ -3183,6 +3253,38 @@ gboolean compute_integrale_from_grid(Grid* grid, gboolean square, gdouble* pInte
 	
 	return TRUE;
 }
+/*************************************************************************************/
+gboolean compute_integrale_from_grid_all_space(Grid* grid, gdouble* pInteg)
+{
+	gint k,l,m;
+	gdouble integ = 0;
+	gdouble dv = 0;
+	gdouble xx,yy,zz;
+
+	if(!grid) return FALSE;
+	if(CancelCalcul) return FALSE;
+
+	for(k=0;k<grid->N[0];k++)
+	{
+		for(l=0;l<grid->N[1];l++)
+		{
+			for(m=0;m<grid->N[2];m++)
+			{
+				integ +=  grid->point[k][l][m].C[3];
+			}
+			if(CancelCalcul) return FALSE;
+		}
+	}
+	if(CancelCalcul) return FALSE;
+
+	xx = grid->point[1][0][0].C[0]-grid->point[0][0][0].C[0];
+	yy = grid->point[0][1][0].C[1]-grid->point[0][0][0].C[1];
+	zz = grid->point[0][0][1].C[2]-grid->point[0][0][0].C[2];
+	dv = fabs(xx*yy*zz);
+
+	*pInteg = integ*dv;
+	return TRUE;
+}
 /**************************************************************/
 gboolean compute_integrale_from_grid_foranisovalue(Grid* grid, gboolean square, gdouble isovalue, gdouble* pInteg)
 {
@@ -3261,5 +3363,220 @@ gboolean compute_isovalue_percent_from_grid(Grid* grid, gboolean square, gdouble
 	if(CancelCalcul) return FALSE;
 
 	*pIsovalue = iso;
+	return TRUE;
+}
+/*********************************************************************************************************************************/
+gdouble getLambda2(Grid* grid, gint i, gint j, gint k, gdouble* fcx, gdouble* fcy, gdouble* fcz, gdouble* lfcx, gdouble* lfcy, gdouble* lfcz, gint nBoundary)
+{
+	gint n,kn, nn, knn;
+	gdouble xx,yy,zz,xy,xz,yz,g;
+	gdouble tensor[6];
+	gdouble d[3];
+	static gdouble** eigv = NULL;
+	if(eigv==NULL)
+	{
+		eigv =  g_malloc(3*sizeof(gdouble*));
+		for(n=0 ; n<3 ; n++) eigv[n] =  g_malloc(3*sizeof(gdouble));
+	}
+	xx = lfcx[0]*grid->point[i][j][k].C[3];
+	yy = lfcy[0]*grid->point[i][j][k].C[3];
+	zz = lfcz[0]*grid->point[i][j][k].C[3];
+	for(n=1;n<=nBoundary;n++)
+	{
+		xx += lfcx[n] *(grid->point[i-n][j][k].C[3]+grid->point[i+n][j][k].C[3]);
+		yy += lfcy[n] *(grid->point[i][j-n][k].C[3]+grid->point[i][j+n][k].C[3]);
+		zz += lfcz[n] *(grid->point[i][j][k-n].C[3]+grid->point[i][j][k+n].C[3]);
+	}
+	/* extra-diagonal elements */
+	xy = 0;
+	xz = 0;
+	yz = 0;
+	for(n=-nBoundary, kn=0 ; kn<nBoundary ; n++, kn++)
+	{
+		/* compute grady rho at i+n*/
+		g = 0;
+		for(nn=-nBoundary, knn=0 ; knn<nBoundary ; nn++, knn++)
+			g += fcy[knn] * (grid->point[i+n][j+nn][k].C[3]-grid->point[i+n][j-nn][k].C[3]);
+		xy += fcx[kn] * g;
+		/* compute grady rho at i-n*/
+		g = 0;
+		for(nn=-nBoundary, knn=0 ; knn<nBoundary ; nn++, knn++)
+			g += fcy[knn] * (grid->point[i-n][j+nn][k].C[3]-grid->point[i-n][j-nn][k].C[3]);
+		xy += -fcx[kn] * g;
+
+		/* compute gradz rho at i+n*/
+		g = 0;
+		for(nn=-nBoundary, knn=0 ; knn<nBoundary ; nn++, knn++)
+			g += fcz[knn] * (grid->point[i+n][j][k+nn].C[3]-grid->point[i+n][j][k-nn].C[3]);
+		xz += fcx[kn] * g;
+		/* compute gradz rho at i-n*/
+		g = 0;
+		for(nn=-nBoundary, knn=0 ; knn<nBoundary ; nn++, knn++)
+			g += fcz[knn] * (grid->point[i-n][j][k+nn].C[3]-grid->point[i-n][j][k-nn].C[3]);
+		xz += -fcx[kn] * g;
+
+		/* compute gradz rho at j+n*/
+		g = 0;
+		for(nn=-nBoundary, knn=0 ; knn<nBoundary ; nn++, knn++)
+				g += fcz[knn] * (grid->point[i][j+n][k+nn].C[3]-grid->point[i][j+n][k-nn].C[3]);
+		yz += fcy[kn] * g;
+		/* compute gradz rho at j-n*/
+		g = 0;
+		for(nn=-nBoundary, knn=0 ; knn<nBoundary ; nn++, knn++)
+			g += fcz[knn] * (grid->point[i][j-n][k+nn].C[3]-grid->point[i][j-n][k-nn].C[3]);
+		yz += -fcy[kn] * g;
+	}
+			
+/*
+				xy = -xy;
+				xz = -xz;
+				yz = -yz;
+*/
+	tensor[0] = xx;
+	tensor[1] = xy;
+	tensor[2] = yy;
+	tensor[3] = xz;
+	tensor[4] = yz;
+	tensor[5] = zz;
+/*
+	printf("tensor\n");
+	printf("%0.12f\n",xx);
+	printf("%0.12f %0.12f\n",xy,yy);
+	printf("%0.12f %0.12f %0.12f\n",xz,yz,zz);
+*/
+	d[1] = 0;
+	if(eigen(tensor, 3, d, eigv))
+	{
+		if(d[0]>d[1]) swapDouble(&d[0],&d[1]);
+		if(d[0]>d[2]) swapDouble(&d[0],&d[2]);
+		if(d[1]>d[2]) swapDouble(&d[1],&d[2]);
+	}
+	return d[1];
+}
+/*******************************************************************************************/
+gboolean get_charge_transfer_centers(Grid* grid, gdouble* CN, gdouble* CP, gdouble *qn, gdouble* qp, gdouble* H)
+{
+	gint i;
+	gint j;
+	gint k;
+	gint c;
+	gdouble sp = 0;
+	gdouble sn = 0;
+	gdouble scale = 1;
+	gdouble xx,yy,zz,dv;
+	gdouble HP[3];
+	gdouble HN[3];
+	gdouble Dx;
+	gdouble norm = 0;
+	gdouble DCT[3];
+
+	*qp = 0;
+	*qn = 0;
+	for(c=0;c<3;c++) CP[c] = 0.0;
+	for(c=0;c<3;c++) CN[c] = 0.0;
+	
+	if(grid==NULL) return FALSE;
+	
+	progress_orb(0,GABEDIT_PROGORB_UNK,TRUE);
+	scale = (gdouble)1.01/grid->N[0];
+	xx = grid->point[1][0][0].C[0]-grid->point[0][0][0].C[0];
+	yy = grid->point[0][1][0].C[1]-grid->point[0][0][0].C[1];
+	zz = grid->point[0][0][1].C[2]-grid->point[0][0][0].C[2];
+	dv = fabs(xx*yy*zz);
+	for(i=0;i<grid->N[0];i++)
+	{
+		for(j=0;j<grid->N[1];j++)
+		{
+			for(k=0;k<grid->N[2];k++)
+			{
+				if(grid->point[i][j][k].C[3]>=0)
+				{
+					sp += grid->point[i][j][k].C[3];
+					for(c=0;c<3;c++) CP[c] += grid->point[i][j][k].C[3]*grid->point[i][j][k].C[c];
+				}
+				else
+				{
+					sn += grid->point[i][j][k].C[3];
+					for(c=0;c<3;c++) CN[c] += grid->point[i][j][k].C[3]*grid->point[i][j][k].C[c];
+				}
+			}
+		}
+		if(CancelCalcul) 
+		{
+			progress_orb(0,GABEDIT_PROGORB_UNK,TRUE);
+			break;
+		}
+		progress_orb(scale,GABEDIT_PROGORB_UNK,FALSE);
+	}
+	progress_orb(0,GABEDIT_PROGORB_UNK,TRUE);
+
+	if(CancelCalcul)
+	{
+		for(c=0;c<3;c++) CP[c] = 0.0;
+		for(c=0;c<3;c++) CN[c] = 0.0;
+		return FALSE;
+	}
+	if(fabs(sp)>1e-10) for(c=0;c<3;c++) CP[c] /= sp;
+	if(fabs(sn)>1e-10) for(c=0;c<3;c++) CN[c] /= sn;
+	*qp = sp*dv;
+	*qn = sn*dv;
+/* computing of Hindex */
+	/* Norm of DCT */
+	for(c=0;c<3;c++) DCT[c] = (CP[c]-CN[c]);
+	norm = 0;
+	for(c=0;c<3;c++) norm += DCT[c]*DCT[c];
+	norm = sqrt(norm);
+
+	/* nomalized vector along the DCT vector */
+	if(norm>0) for(c=0;c<3;c++) DCT[c] /=norm;
+
+	progress_orb(0,GABEDIT_PROGORB_UNK,TRUE);
+	for(c=0;c<3;c++) HP[c] = 0;
+	for(c=0;c<3;c++) HN[c] = 0;
+	for(i=0;i<grid->N[0];i++)
+	{
+		for(j=0;j<grid->N[1];j++)
+		{
+			for(k=0;k<grid->N[2];k++)
+			{
+				if(grid->point[i][j][k].C[3]>=0)
+				{
+					for(c=0;c<3;c++) HP[c] += grid->point[i][j][k].C[3]*(grid->point[i][j][k].C[c]-CP[c])*(grid->point[i][j][k].C[c]-CP[c])*DCT[c]*DCT[c];
+				}
+				else
+				{
+					for(c=0;c<3;c++) HN[c] += grid->point[i][j][k].C[3]*(grid->point[i][j][k].C[c]-CN[c])*(grid->point[i][j][k].C[c]-CN[c])*DCT[c]*DCT[c];
+				}
+			}
+		}
+		if(CancelCalcul) 
+		{
+			progress_orb(0,GABEDIT_PROGORB_UNK,TRUE);
+			break;
+		}
+		progress_orb(scale,GABEDIT_PROGORB_UNK,FALSE);
+	}
+	progress_orb(0,GABEDIT_PROGORB_UNK,TRUE);
+	if(CancelCalcul)
+	{
+		for(c=0;c<3;c++) CP[c] = 0.0;
+		for(c=0;c<3;c++) CN[c] = 0.0;
+		*H = 0;
+		*qp = 0;
+		*qn = 0;
+		return FALSE;
+	}
+	if(fabs(sp)>1e-10) for(c=0;c<3;c++) HP[c] /= sp;
+	if(fabs(sn)>1e-10) for(c=0;c<3;c++) HN[c] /= sn;
+
+	*H = 0;
+	norm = 0;
+	for(c=0;c<3;c++) norm += HP[c];
+	*H += sqrt(fabs(norm));
+	norm = 0;
+	for(c=0;c<3;c++) norm += HN[c];
+	*H += sqrt(fabs(norm));
+	*H /= 2;
+
 	return TRUE;
 }

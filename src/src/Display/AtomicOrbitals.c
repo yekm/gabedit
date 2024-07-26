@@ -1,6 +1,6 @@
 /* AtomicOrbitals.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -194,6 +194,7 @@ void init_atomic_orbitals()
 	AOAvailable = FALSE;
 	for(i=0;i<Ncenters;i++)
 	{
+		GeomOrb[i].NAOrb = 0;
 		GeomOrb[i].NAlphaOrb = 0;
 		GeomOrb[i].NBetaOrb = 0;
 		GeomOrb[i].CoefAlphaOrbitals = NULL;
@@ -303,7 +304,7 @@ gboolean read_atomic_orbitals_in_gabedit(gchar *fileName,gint itype)
  		OK=FALSE;
  		while(!feof(fd))
 		{
-	  		fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
           	pdest = strstr( t, "[AO]" );
 	 		if ( pdest != NULL )
 	  		{
@@ -326,7 +327,7 @@ gboolean read_atomic_orbitals_in_gabedit(gchar *fileName,gint itype)
     	}
 
 		n = -1;
-		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
 		while(!feof(fd))
 		{
 			gdouble e =0.0;
@@ -366,24 +367,24 @@ gboolean read_atomic_orbitals_in_gabedit(gchar *fileName,gint itype)
 					sscanf(begin,"%s",sym);
 				if( strstr(t,"Atom") != 0)
 					sscanf(begin,"%s",symb);
-				fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 				
 			}
 			if(!begincoef || feof(fd))
 				break;
 			if(!spin)
 			{
-				fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 				continue;
 			}
 			if(strstr(spin,"Alpha") && itype == 2)
 			{
-				fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 				continue;
 			}
 			if(strstr(spin,"Beta") && itype == 1)
 			{
-				fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 				continue;
 			}
 
@@ -409,7 +410,7 @@ gboolean read_atomic_orbitals_in_gabedit(gchar *fileName,gint itype)
 			while(!feof(fd) && atoi(t)!=0)
 			{
 				sscanf(t,"%d %lf",&idump,&CoefOrbitals[n][i]);
-	  			fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 				i++;
 			}
 			/* Debug("i  = %d\n",i);*/

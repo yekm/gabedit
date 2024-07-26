@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -124,10 +124,12 @@ void get_dipole_from_molpro_output_file(FILE* fd);
 void get_dipole_from_dalton_output_file(FILE* fd);
 void get_dipole_from_orca_output_file(FILE* fd);
 void get_dipole_from_nwchem_output_file(FILE* fd);
+void get_dipole_from_psicode_output_file(FILE* fd);
 void get_dipole_from_qchem_output_file(FILE* fd);
 void get_dipole_from_mopac_output_file(FILE* fd);
 void get_dipole_from_mopac_aux_file(FILE* fd);
 void set_dipole(GtkWidget* fp,gpointer data);
+void init_dipole();
 void read_commands_file();
 void read_network_file();
 void set_path();
@@ -162,9 +164,12 @@ gint* get_array_int_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* 
 gdouble* get_array_real_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* nElements);
 gchar** get_array_string_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* nElements);
 void getvScaleBond(gdouble r, gdouble Center1[], gdouble Center2[], gdouble vScal[]);
-void getPositionsRadiusBond3(gdouble r, gdouble Center1[], gdouble Center2[], gdouble C11[], gdouble C12[],  gdouble C21[],  gdouble C22[], gdouble C31[],  gdouble C32[], gdouble radius[], gint type);
-void getPositionsRadiusBond2(gdouble r, gdouble Center1[], gdouble Center2[], gdouble C11[], gdouble C12[],  gdouble C21[],  gdouble C22[], gdouble radius[], gint type);
+void getPositionsRadiusBond3(gdouble r, gdouble Orig[], gdouble Center1[], gdouble Center2[], gdouble C11[], gdouble C12[],  gdouble C21[],  gdouble C22[], gdouble C31[],  gdouble C32[], gdouble radius[], gint type);
+void getPositionsRadiusBond2(gdouble r, gdouble Orig[], gdouble Center1[], gdouble Center2[], gdouble C11[], gdouble C12[],  gdouble C21[],  gdouble C22[], gdouble radius[], gint type);
 gdouble get_multipole_rank();
+void getCoefsGradient(gint nBoundary, gdouble xh, gdouble yh, gdouble zh, gdouble* fcx, gdouble* fcy, gdouble* fcz);
+void getCoefsLaplacian(gint nBoundary, gdouble xh, gdouble yh, gdouble zh, gdouble* fcx, gdouble* fcy, gdouble* fcz, gdouble* cc);
+void swapDouble(gdouble* a, gdouble* b);
 
 #endif /* __GABEDIT_UTILS_H__ */
 

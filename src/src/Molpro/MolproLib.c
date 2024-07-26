@@ -1,6 +1,6 @@
 /* MolproLib.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -61,8 +61,8 @@ void get_basis_list(gchar* Symb,gchar* orb,gchar* outfile,gchar* errfile)
 	gchar* orbdown = g_strdup(orb);
 	gchar* orbup = g_strdup(orb);
 
-	g_strdown(orbdown);
-	g_strup(orbup);
+	lowercase(orbdown);
+	uppercase(orbup);
 
 	if(!fin)
 	{
@@ -80,7 +80,7 @@ void get_basis_list(gchar* Symb,gchar* orb,gchar* outfile,gchar* errfile)
         numorb2 = get_num_orb(orbdown);
 
 	/*	Debug("numorb1 = %d numorb2 = %d \n",numorb1,numorb2);*/
-	fgets(t,BSIZE,fin); /* number of atoms */
+    	{ char* e = fgets(t,BSIZE,fin);} /* number of atoms */
 	while(!feof(fin))
 	{
 		if(!fgets(t,BSIZE,fin))

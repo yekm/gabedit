@@ -1,6 +1,6 @@
 /* ReducePolyHedralMolecule.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -68,9 +68,7 @@ void reduceForTetraedalSymmetry(MolSymMolecule *mol,gint sym)
 	gdouble eps = 1e-3;
 
 	if(mol->numberOfAtoms >0) eps = mol->listOfAtoms[0].eps;
-	removeAllPointsOnOneSideOfAPlane(mol, 0.0, -1.0, 0., eps);
 	removeAllPointsOnOneSideOfAPlane(mol, 0.577350269,  0.0, -0.816496581, eps);
-	removeAllPointsOnOneSideOfAPlane(mol, 0.288675135, -0.5, -0.816496581, eps);
 
 	if (sym & SYM_D)
 		removeAllPointsOnOneSideOfAPlane(mol,-0.866025404, 0.5, 0.0,-eps);

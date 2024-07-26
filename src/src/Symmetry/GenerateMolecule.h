@@ -1,6 +1,6 @@
 /* GenerateMolecule.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -20,6 +20,9 @@ DEALINGS IN THE SOFTWARE.
 #define __GABEDIT_GENERATEMOLECULE_H__
 
 void generateMoleculeFromTheBasisSetOfAtoms(MolSymMolecule* mol, gint numberOfElements, gchar** elements);
+void generateForTetraedalSymmetry(MolSymMolecule *mol,gint sym, gdouble axes[3][3]);
+void generateForOctaedralSymmetry(MolSymMolecule *mol,gint sym, gdouble axes[3][3]);
+void generateForIcosaedralSymmetry(MolSymMolecule *mol,gint sym, gdouble axes[3][3]);
 
 #endif /* __GABEDIT_GENERATEMOLECULE_H__ */
 

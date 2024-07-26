@@ -1,6 +1,6 @@
 /* MenuToolBarGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -62,6 +62,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Display/IntegralOrbitals.h"
 #include "../Display/BondsOrb.h"
 #include "../Display/TriangleDraw.h"
+#include "../Display/NCI.h"
 #include "../Common/StockIcons.h"
 
 enum 
@@ -206,6 +207,14 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name ,"GeometryNWChemLast"))
  		file_chooser_open(gl_read_last_nwchem_file,_("Read the last geometry from a NWChem output file"),GABEDIT_TYPEFILE_NWCHEM,GABEDIT_TYPEWIN_ORB);
 
+	else if(!strcmp(name ,"GeometryPsicodeFirst"))
+ 		file_chooser_open(gl_read_first_psicode_file,_("Read the first geometry from a Psicode output file"),GABEDIT_TYPEFILE_PSICODE,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name ,"GeometryPsicodeLast"))
+ 		file_chooser_open(gl_read_last_psicode_file,_("Read the last geometry from a Psicode output file"),GABEDIT_TYPEFILE_PSICODE,GABEDIT_TYPEWIN_ORB);
+
+	else if(!strcmp(name ,"GeometryNBO"))
+ 		file_chooser_open(gl_read_nbo_file,_("Read the geometry from a NBO output file(.31)"),GABEDIT_TYPEFILE_NBO_BASIS,GABEDIT_TYPEWIN_ORB);
+
 	else if(!strcmp(name ,"GeometryGabedit"))
  		file_chooser_open(gl_read_gabedit_file,_("Read geometry from a gabedit file"),GABEDIT_TYPEFILE_GABEDIT,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryMolden"))
@@ -217,6 +226,8 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name , "OrbitalsDalton"))
  			file_chooser_open(read_dalton_orbitals_sel,"Read Geometry and Orbitals from a Dalton output file",GABEDIT_TYPEFILE_DALTON,GABEDIT_TYPEWIN_ORB);
 			*/
+	else if(!strcmp(name , "OrbitalsNBO"))
+ 			file_chooser_open(read_nbo_orbitals_sel,_("Read Geometry and Orbitals from a NBO output files (.31 and .xx)"),GABEDIT_TYPEFILE_NBO,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsGamess"))
  			file_chooser_open(read_gamess_orbitals_sel,_("Read Geometry and Orbitals from a Gamess output file"),GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsOrca"))
@@ -266,10 +277,20 @@ static void activate_action (GtkAction *action)
 			TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
 			transition_matrix_orbitals_dlg();
 	}
-	else if(!strcmp(name , "OrbitalsSpatialOverlap"))
+	else if(!strcmp(name , "OrbitalsSpatialOverlapIIJJ"))
 	{
 			TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
-			spatial_overlap_orbitals_dlg();
+			spatial_overlapiijj_orbitals_dlg();
+	}
+	else if(!strcmp(name , "OrbitalsSpatialOverlapIJ"))
+	{
+			TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
+			spatial_overlapij_orbitals_dlg();
+	}
+	else if(!strcmp(name , "OrbitalsLambdaDiagnostic"))
+	{
+			TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
+			lambda_diagnostic_dlg();
 	}
 	else if(!strcmp(name , "OrbitalsOverlap"))
 	{
@@ -349,6 +370,36 @@ static void activate_action (GtkAction *action)
 		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
 		else restriction_cube();
 	}
+	else if(!strcmp(name , "CubeCutLeft0"))
+	{
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
+		else applyCutLeft0(NULL,NULL);
+	}
+	else if(!strcmp(name , "CubeCutLeft1"))
+	{
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
+		else applyCutLeft1(NULL,NULL);
+	}
+	else if(!strcmp(name , "CubeCutLeft2"))
+	{
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
+		else applyCutLeft2(NULL,NULL);
+	}
+	else if(!strcmp(name , "CubeCutRight0"))
+	{
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
+		else applyCutRight0(NULL,NULL);
+	}
+	else if(!strcmp(name , "CubeCutRight1"))
+	{
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
+		else applyCutRight1(NULL,NULL);
+	}
+	else if(!strcmp(name , "CubeCutRight2"))
+	{
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
+		else applyCutRight2(NULL,NULL);
+	}
 	else if(!strcmp(name , "CubeAIMChargesNearGrid"))
 	{
 		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
@@ -363,6 +414,11 @@ static void activate_action (GtkAction *action)
 	{
 		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
 		else file_chooser_open(mapping_cube,"Color Mapping",GABEDIT_TYPEFILE_CUBEGABEDIT,GABEDIT_TYPEWIN_ORB);
+	}
+	else if(!strcmp(name , "ComputeIntegralSpace"))
+	{
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
+		else compute_integral_all_space();
 	}
 	else if(!strcmp(name , "DensityElectronic"))
 	{
@@ -574,6 +630,30 @@ static void activate_action (GtkAction *action)
 				create_iso_orbitals();
 			}
 	}
+	else if(!strcmp(name , "CubeSignLambda2Density")) 
+	{
+			Grid* sl2Grid = get_grid_sign_lambda2_density(grid,2);
+			if(sl2Grid)
+			{
+				free_grid(grid);
+				grid = sl2Grid;
+				TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
+				limits = grid->limits;
+				create_iso_orbitals();
+			}
+	}
+	else if(!strcmp(name , "NCISurface")) 
+	{
+			nci_surface_dlg("NCI Surface");
+	}
+	else if(!strcmp(name , "NCI2D")) 
+	{
+		nci2D_analysis_dlg("NCI 2D analysis");
+	}
+	else if(!strcmp(name , "NCIHelp")) 
+	{
+			help_nci();
+	}
 	else if(!strcmp(name , "ContoursFirst"))
 		create_contours(_("Contours in a plane perpendicular to first direction"),0);
 	else if(!strcmp(name , "ContoursSecond"))
@@ -676,6 +756,12 @@ static void activate_action (GtkAction *action)
 	{
 		RebuildGeom = TRUE;
 		compute_total_dipole();
+		glarea_rafresh(GLArea);
+	}
+	else if(!strcmp(name , "SetDipoleCT"))
+	{
+		compute_charge_transfer_dipole();
+		RebuildGeom = TRUE;
 		glarea_rafresh(GLArea);
 	}
 	else if(!strcmp(name , "SetMultipleBonds"))
@@ -846,6 +932,13 @@ static GtkActionEntry gtkActionEntries[] =
 		NULL, "Read the first geometry from a _NWChem output file", G_CALLBACK (activate_action) },
 	{"GeometryNWChemLast", GABEDIT_STOCK_NWCHEM, N_("Read the _last geometry from a _NWChem output file"), 
 		NULL, "Read the last geometry from a _NWChem output file", G_CALLBACK (activate_action) },
+	{"GeometryPsicode",     GABEDIT_STOCK_PSICODE, N_("Geometry _Psicode")},
+	{"GeometryPsicodeFirst", GABEDIT_STOCK_PSICODE, N_("Read the _first geometry from a Psicode output file"), 
+		NULL, "Read the first geometry from a _Psicode output file", G_CALLBACK (activate_action) },
+	{"GeometryPsicodeLast", GABEDIT_STOCK_PSICODE, N_("Read the _last geometry from a _Psicode output file"), 
+		NULL, "Read the last geometry from a _Psicode output file", G_CALLBACK (activate_action) },
+	{"GeometryNBO", GABEDIT_STOCK_NBO, N_("Read from a _NBO file (.31)"), 
+		NULL, "Read the geometry from a NBO file(.31)", G_CALLBACK (activate_action) },
 	{"GeometryQChem",     GABEDIT_STOCK_QCHEM, N_("Geometry Q-_Chem")},
 	{"GeometryQChemFirst", GABEDIT_STOCK_QCHEM, N_("Read the _first geometry from a Q-Chem output file"), 
 		NULL, "Read the first geometry from a Q-Chem output file", G_CALLBACK (activate_action) },
@@ -878,6 +971,8 @@ static GtkActionEntry gtkActionEntries[] =
 		NULL, "Read geometry and orbitals from a FireFly output file", G_CALLBACK (activate_action) },
 	{"OrbitalsNWChem", GABEDIT_STOCK_NWCHEM, N_("Read geometry and orbitals from a _NWChem output file"), 
 		NULL, "Read geometry and orbitals from a NWChem output file", G_CALLBACK (activate_action) },
+	{"OrbitalsNBO", GABEDIT_STOCK_NBO, N_("Read geometry and orbitals from a _NBO output file"), 
+		NULL, "Read geometry and orbitals from a NBO output file", G_CALLBACK (activate_action) },
 	{"OrbitalsQChem", GABEDIT_STOCK_QCHEM, N_("Read geometry and orbitals from a Q-_Chem output file"), 
 		NULL, "Read geometry and orbitals from a Q-Chem output file", G_CALLBACK (activate_action) },
 	{"OrbitalsMopac", GABEDIT_STOCK_MOPAC, N_("Read geometry and orbitals from a _Mopac aux file"), 
@@ -893,7 +988,9 @@ static GtkActionEntry gtkActionEntries[] =
 	{"OrbitalsCapture", GABEDIT_STOCK_SELECT_ALL, N_("_Slideshow"), NULL, "Slideshow", G_CALLBACK (activate_action) },
 	{"OrbitalsCoulomb", NULL, N_("_Coulomb integral"), NULL, "Coulomb", G_CALLBACK (activate_action) },
 	{"OrbitalsTransition", NULL, N_("_Transition matrix elements"), NULL, "TM", G_CALLBACK (activate_action) },
-	{"OrbitalsSpatialOverlap", NULL, N_("_Spatial overlap matrix"), NULL, "TM", G_CALLBACK (activate_action) },
+	{"OrbitalsSpatialOverlapIIJJ", NULL, N_("_Spatial overlap matrix <ii|jj> "), NULL, "TM", G_CALLBACK (activate_action) },
+	{"OrbitalsSpatialOverlapIJ", NULL, N_("_Spatial overlap matrix <|i| | |j| > "), NULL, "TM", G_CALLBACK (activate_action) },
+	{"OrbitalsLambdaDiagnostic", NULL, N_("_Lambda diagnostic "), NULL, "TM", G_CALLBACK (activate_action) },
 	{"OrbitalsOverlap", NULL, N_("Compute _overlap matrix"), NULL, "Overlap", G_CALLBACK (activate_action) },
 	{"MullikenCharges", NULL, N_("Compute _Mulliken charges"), NULL, "Mulliken", G_CALLBACK (activate_action) },
 	{"BondOrder", NULL, N_("Compute _Bond orders"), NULL, "Bond orders", G_CALLBACK (activate_action) },
@@ -940,13 +1037,22 @@ static GtkActionEntry gtkActionEntries[] =
 	{"CubeLoadGabeditSave", GABEDIT_STOCK_SAVE, N_("_Save"), NULL, "Save in a Gabedit cube file", G_CALLBACK (activate_action) },
 	{"CubeComputeLaplacian", NULL, N_("Compute _laplacian"), NULL, "Compute laplacian", G_CALLBACK (activate_action) },
 	{"CubeComputeNormGradient", NULL, N_("Compute the norm of the _gradient"), NULL, "Compute the norm of the _gradient", G_CALLBACK (activate_action) },
+	{"CubeSignLambda2Density", NULL, N_("Multiply by the sign of the _middle eigenvalue of hessian"), NULL, "Compute sign _lambda2 * grid", G_CALLBACK (activate_action) },
 	{"CubeSubtract", NULL, N_("Su_btract"), NULL, "Subtract", G_CALLBACK (activate_action) },
 	{"CubeScale", NULL, N_("Scal_e"), NULL, "Scale", G_CALLBACK (activate_action) },
 	{"CubeSquare", NULL, N_("S_quare"), NULL, "Square", G_CALLBACK (activate_action) },
 	{"CubeRestriction", NULL, N_("_Restriction"), NULL, "Restriction", G_CALLBACK (activate_action) },
+	{"CubeCut",     NULL, N_("Remove half space")},
+	{"CubeCutLeft0", NULL, N_("_left, direction 1"), NULL, "CubeCutLeft0", G_CALLBACK (activate_action) },
+	{"CubeCutLeft1", NULL, N_("_left, direction 2"), NULL, "CubeCutLeft1", G_CALLBACK (activate_action) },
+	{"CubeCutLeft2", NULL, N_("_left, direction 3"), NULL, "CubeCutLeft2", G_CALLBACK (activate_action) },
+	{"CubeCutRight0", NULL, N_("right, ditection _1"), NULL, "CubeCutRight0", G_CALLBACK (activate_action) },
+	{"CubeCutRight1", NULL, N_("right, ditection _2"), NULL, "CubeCutRight1", G_CALLBACK (activate_action) },
+	{"CubeCutRight2", NULL, N_("right, ditection _3"), NULL, "CubeCutRight2", G_CALLBACK (activate_action) },
 	{"CubeAIMChargesNearGrid", NULL, N_("AIM Charges[W. Tang et al J. Phys. Cond.. Matt. 21, 084204(09)]"), NULL, "AIM Charges", G_CALLBACK (activate_action) },
 	{"CubeAIMChargesOnGrid", NULL, N_("AIM Charges[OnGrid]"), NULL, "AIM Charges on grid", G_CALLBACK (activate_action) },
 	{"CubeColorMapping", NULL, N_("_Color Mapping"), NULL, "Color Mapping", G_CALLBACK (activate_action) },
+	{"ComputeIntegralSpace", NULL, N_("_Compute integral in all space"), NULL, "ComputeIntegralSpace", G_CALLBACK (activate_action) },
 
 	{"Density",     NULL, N_("_Density")},
 	{"DensityElectronic", NULL, N_("_Electronic"), NULL, "Compute and draw electronic density", G_CALLBACK (activate_action) },
@@ -963,6 +1069,11 @@ static GtkActionEntry gtkActionEntries[] =
 	{"FEDNucleophilic", NULL, N_("Compute Frontier MO _nucleophilic susceptibility"), NULL, "Compute Frontier MO nucleophilic susceptibility", G_CALLBACK (activate_action) },
 	{"FEDRadical", NULL, N_("Compute Frontier MO _radical susceptibility"), NULL, "Compute Frontier MO radical susceptibility", G_CALLBACK (activate_action) },
 	{"FEDSetAlpha", NULL, N_("Set the value of _alpha parameter"), NULL, "Set the value of _alpha parameter", G_CALLBACK (activate_action) },
+
+	{"NCI",     NULL, N_("_NCI")},
+	{"NCI2D", NULL, N_("_NCI 2D analysis"), NULL, "NCI 2D analysis", G_CALLBACK (activate_action) },
+	{"NCISurface", NULL, N_("Compute _NCI surface"), NULL, "Compute NCI from density grid", G_CALLBACK (activate_action) },
+	{"NCIHelp", NULL, N_("_Refs for non-covalent interactions (NCI) index analysis"), NULL, "help nci", G_CALLBACK (activate_action) },
 
 	{"SAS",     NULL, N_("_SAS")},
 	{"SASCompute", NULL, N_("_Solvent Accessible Surface"), NULL, "Compute and draw Solvent Accessible Surface", G_CALLBACK (activate_action) },
@@ -1042,6 +1153,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SetSurfaceColors", NULL, N_("_Surface colors"), NULL, "set surface colors", G_CALLBACK (activate_action) },
 	{"SetDipole", NULL, N_("_Dipole"), NULL, "set dipole", G_CALLBACK (activate_action) },
 	{"SetDipoleDensity", NULL, N_("_Compute Dipole from density"), NULL, "Compute Dipole from density", G_CALLBACK (activate_action) },
+	{"SetDipoleCT", NULL, N_("_Compute Charge transfert Dipole from density difference"), NULL, "Compute CT Dipole from density difference", G_CALLBACK (activate_action) },
 	{"SetAllBonds", NULL, N_("Compute all _bonds"), NULL, "Compute all bonds", G_CALLBACK (activate_action) },
 	{"SetMultipleBonds", NULL, N_("Compute _multiple bonds"), NULL, "Compute multiple bonds", G_CALLBACK (activate_action) },
 	{"SetPropertiesOfAtoms", NULL, N_("P_roperties of atoms"), NULL, "set the properties of atoms", G_CALLBACK (activate_action) },
@@ -1582,11 +1694,18 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"GeometryNWChemFirst\" action=\"GeometryNWChemFirst\" />\n"
 "        <menuitem name=\"GeometryNWChemLast\" action=\"GeometryNWChemLast\" />\n"
 "      </menu>\n"
+"      <separator name=\"sepMenuPsicodeGeom\" />\n"
+"      <menu name=\"GeometryPsicode\" action=\"GeometryPsicode\">\n"
+"        <menuitem name=\"GeometryPsicodeFirst\" action=\"GeometryPsicodeFirst\" />\n"
+"        <menuitem name=\"GeometryPsicodeLast\" action=\"GeometryPsicodeLast\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuOrcaGeom\" />\n"
 "      <menu name=\"GeometryQChem\" action=\"GeometryQChem\">\n"
 "        <menuitem name=\"GeometryQChemFirst\" action=\"GeometryQChemFirst\" />\n"
 "        <menuitem name=\"GeometryQChemLast\" action=\"GeometryQChemLast\" />\n"
 "      </menu>\n"
+"      <separator name=\"sepMenuNBO\" />\n"
+"      <menuitem name=\"GeometryNBO\" action=\"GeometryNBO\" />\n"
 "      <separator name=\"sepMenuQChemGeom\" />\n"
 "      <menuitem name=\"GeometryGabedit\" action=\"GeometryGabedit\" />\n"
 "      <separator name=\"sepMenuGabeditGeom\" />\n"
@@ -1608,6 +1727,7 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"OrbitalsOrca\" action=\"OrbitalsOrca\" />\n"
 "      <menuitem name=\"OrbitalsOrca2mkl\" action=\"OrbitalsOrca2mkl\" />\n"
 "      <menuitem name=\"OrbitalsNWChem\" action=\"OrbitalsNWChem\" />\n"
+"      <menuitem name=\"OrbitalsNBO\" action=\"OrbitalsNBO\" />\n"
 "      <menuitem name=\"OrbitalsQChem\" action=\"OrbitalsQChem\" />\n"
 "      <menuitem name=\"OrbitalsGabeditRead\" action=\"OrbitalsGabeditRead\" />\n"
 "      <menuitem name=\"OrbitalsMolden\" action=\"OrbitalsMolden\" />\n"
@@ -1620,7 +1740,9 @@ static const gchar *uiMenuInfo =
 "      <separator name=\"sepMenuGabeditOrbCoul\" />\n"
 "      <menuitem name=\"OrbitalsCoulomb\" action=\"OrbitalsCoulomb\" />\n"
 "      <menuitem name=\"OrbitalsTransition\" action=\"OrbitalsTransition\" />\n"
-"      <menuitem name=\"OrbitalsSpatialOverlap\" action=\"OrbitalsSpatialOverlap\" />\n"
+"      <menuitem name=\"OrbitalsSpatialOverlapIIJJ\" action=\"OrbitalsSpatialOverlapIIJJ\" />\n"
+"      <menuitem name=\"OrbitalsSpatialOverlapIJ\" action=\"OrbitalsSpatialOverlapIJ\" />\n"
+"      <menuitem name=\"OrbitalsLambdaDiagnostic\" action=\"OrbitalsLambdaDiagnostic\" />\n"
 "      <menuitem name=\"MullikenCharges\" action=\"MullikenCharges\" />\n"
 "      <menuitem name=\"BondOrder\" action=\"BondOrder\" />\n"
 /*
@@ -1672,6 +1794,8 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"CubeComputeLaplacian\" action=\"CubeComputeLaplacian\" />\n"
 "      <separator name=\"sepMenuCubeComputeNormGradient\" />\n"
 "      <menuitem name=\"CubeComputeNormGradient\" action=\"CubeComputeNormGradient\" />\n"
+"      <separator name=\"sepMenuCubeSignLambda2Density\" />\n"
+"      <menuitem name=\"CubeSignLambda2Density\" action=\"CubeSignLambda2Density\" />\n"
 "      <separator name=\"sepMenuCubeSub\" />\n"
 "      <menuitem name=\"CubeSubtract\" action=\"CubeSubtract\" />\n"
 "      <separator name=\"sepMenuCubeScale\" />\n"
@@ -1680,11 +1804,22 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"CubeSquare\" action=\"CubeSquare\" />\n"
 "      <separator name=\"sepMenuCubeRestriction\" />\n"
 "      <menuitem name=\"CubeRestriction\" action=\"CubeRestriction\" />\n"
+"      <separator name=\"sepMenuCubeCut\" />\n"
+"      <menu name=\"CubeCut\" action = \"CubeCut\">\n"
+"        <menuitem name=\"CubeCutLeft0\" action=\"CubeCutLeft0\" />\n"
+"        <menuitem name=\"CubeCutLeft1\" action=\"CubeCutLeft1\" />\n"
+"        <menuitem name=\"CubeCutLeft2\" action=\"CubeCutLeft2\" />\n"
+"        <menuitem name=\"CubeCutRight0\" action=\"CubeCutRight0\" />\n"
+"        <menuitem name=\"CubeCutRight1\" action=\"CubeCutRight1\" />\n"
+"        <menuitem name=\"CubeCutRight2\" action=\"CubeCutRight2\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuCubeAIMChargesNearGrid\" />\n"
 "      <menuitem name=\"CubeAIMChargesNearGrid\" action=\"CubeAIMChargesNearGrid\" />\n"
 "      <menuitem name=\"CubeAIMChargesOnGrid\" action=\"CubeAIMChargesOnGrid\" />\n"
 "      <separator name=\"sepMenuCubeColor\" />\n"
 "      <menuitem name=\"CubeColorMapping\" action=\"CubeColorMapping\" />\n"
+"      <separator name=\"sepMenuComputeIntegralSpace\" />\n"
+"      <menuitem name=\"ComputeIntegralSpace\" action=\"ComputeIntegralSpace\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepMenuDensity\" />\n"
 "    <menu name=\"Density\" action = \"Density\">\n"
@@ -1698,6 +1833,14 @@ static const gchar *uiMenuInfo =
 "    <menu name=\"ELF\" action = \"ELF\">\n"
 "        <menuitem name=\"ELFSavin\" action=\"ELFSavin\" />\n"
 "        <menuitem name=\"ELFBecke\" action=\"ELFBecke\" />\n"
+"    </menu>\n"
+
+"    <separator name=\"sepMenuNCI\" />\n"
+"    <menu name=\"NCI\" action = \"NCI\">\n"
+"        <menuitem name=\"NCI2D\" action=\"NCI2D\" />\n"
+"        <menuitem name=\"NCISurface\" action=\"NCISurface\" />\n"
+"         <separator name=\"sepMenuNCIHelp\" />\n"
+"        <menuitem name=\"NCIHelp\" action=\"NCIHelp\" />\n"
 "    </menu>\n"
 /*
 "        <menuitem name=\"ELFSavinAttractors\" action=\"ELFSavinAttractors\" />\n"
@@ -1867,6 +2010,7 @@ static const gchar *uiMenuInfo =
 "        <separator name=\"sepMenuSetDipole\" />\n"
 "        <menuitem name=\"SetDipole\" action=\"SetDipole\" />\n"
 "        <menuitem name=\"SetDipoleDensity\" action=\"SetDipoleDensity\" />\n"
+"        <menuitem name=\"SetDipoleCT\" action=\"SetDipoleCT\" />\n"
 "        <separator name=\"sepMenuSetBonds\" />\n"
 "        <menuitem name=\"SetAllBonds\" action=\"SetAllBonds\" />\n"
 "        <menuitem name=\"SetMultipleBonds\" action=\"SetMultipleBonds\" />\n"
@@ -2082,7 +2226,9 @@ static void set_sensitive_orbitals()
 	GtkWidget *orbCapture = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsCapture");
 	GtkWidget *orbCoulomb = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsCoulomb");
 	GtkWidget *orbTransition = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsTransition");
-	GtkWidget *orbSpatialOverlap = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsSpatialOverlap");
+	GtkWidget *orbSpatialOverlapiijj = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsSpatialOverlapIIJJ");
+	GtkWidget *orbSpatialOverlapij = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsSpatialOverlapIJ");
+	GtkWidget *orbLambdaDiagnostic = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsLambdaDiagnostic");
 	GtkWidget *mullikenCharges = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/MullikenCharges");
 	GtkWidget *bondorder = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/BondOrder");
 	/* GtkWidget *orbOverlap = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsOverlap");*/
@@ -2096,7 +2242,9 @@ static void set_sensitive_orbitals()
 	if(GTK_IS_WIDGET(mullikenCharges)) gtk_widget_set_sensitive(mullikenCharges, sensitive);
 	if(GTK_IS_WIDGET(bondorder)) gtk_widget_set_sensitive(bondorder, sensitive);
 	/* if(GTK_IS_WIDGET(orbOverlap)) gtk_widget_set_sensitive(orbOverlap, sensitive);*/
-	if(GTK_IS_WIDGET(orbSpatialOverlap)) gtk_widget_set_sensitive(orbSpatialOverlap, sensitive);
+	if(GTK_IS_WIDGET(orbSpatialOverlapiijj)) gtk_widget_set_sensitive(orbSpatialOverlapiijj, sensitive);
+	if(GTK_IS_WIDGET(orbSpatialOverlapij)) gtk_widget_set_sensitive(orbSpatialOverlapij, sensitive);
+	if(GTK_IS_WIDGET(orbLambdaDiagnostic)) gtk_widget_set_sensitive(orbLambdaDiagnostic, sensitive);
 }
 /*********************************************************************************************************************/
 static void set_sensitive_cube()
@@ -2106,11 +2254,14 @@ static void set_sensitive_cube()
 	GtkWidget *cubeScale = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeScale");
 	GtkWidget *cubeSquare = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeSquare");
 	GtkWidget *cubeRestriction = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeRestriction");
+	GtkWidget *cubeCut = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeCut");
 	GtkWidget *cubeAUMChargesNear = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeAIMChargesNearGrid");
 	GtkWidget *cubeAUMChargesOn = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeAIMChargesOnGrid");
 	GtkWidget *cubeColor = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeColorMapping");
+	GtkWidget *cubeIntegral = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/ComputeIntegralSpace");
 	GtkWidget *cubeComputeLap = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeComputeLaplacian");
 	GtkWidget *cubeComputeGard = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeComputeNormGradient");
+	GtkWidget *cubesl2Gard = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeSignLambda2Density");
 	gboolean sensitive = TRUE;
   	if(!grid) sensitive = FALSE;
 	if(GTK_IS_WIDGET(cubeSave)) gtk_widget_set_sensitive(cubeSave, sensitive);
@@ -2118,17 +2269,21 @@ static void set_sensitive_cube()
 	if(GTK_IS_WIDGET(cubeScale)) gtk_widget_set_sensitive(cubeScale, sensitive);
 	if(GTK_IS_WIDGET(cubeSquare)) gtk_widget_set_sensitive(cubeSquare, sensitive);
 	if(GTK_IS_WIDGET(cubeRestriction)) gtk_widget_set_sensitive(cubeRestriction, sensitive);
+	if(GTK_IS_WIDGET(cubeCut)) gtk_widget_set_sensitive(cubeCut, sensitive);
 	if(GTK_IS_WIDGET(cubeAUMChargesNear)) gtk_widget_set_sensitive(cubeAUMChargesNear, sensitive);
 	if(GTK_IS_WIDGET(cubeAUMChargesOn)) gtk_widget_set_sensitive(cubeAUMChargesOn, sensitive);
 	if(GTK_IS_WIDGET(cubeColor)) gtk_widget_set_sensitive(cubeColor, sensitive);
+	if(GTK_IS_WIDGET(cubeIntegral)) gtk_widget_set_sensitive(cubeIntegral, sensitive);
 	if(GTK_IS_WIDGET(cubeComputeLap)) gtk_widget_set_sensitive(cubeComputeLap, sensitive);
 	if(GTK_IS_WIDGET(cubeComputeGard)) gtk_widget_set_sensitive(cubeComputeGard, sensitive);
+	if(GTK_IS_WIDGET(cubesl2Gard)) gtk_widget_set_sensitive(cubesl2Gard, sensitive);
 }
 /*********************************************************************************************************************/
 static void set_sensitive_density()
 {
 	GtkWidget *density = gtk_ui_manager_get_widget (manager, "/MenuGL/Density");
 	GtkWidget *elf = gtk_ui_manager_get_widget (manager, "/MenuGL/ELF");
+	GtkWidget *nci = gtk_ui_manager_get_widget (manager, "/MenuGL/NCI");
 	GtkWidget *fed = gtk_ui_manager_get_widget (manager, "/MenuGL/Fukui");
 	GtkWidget *atomic = gtk_ui_manager_get_widget (manager, "/MenuGL/Density/DensityAtomics");
 	GtkWidget *bonds = gtk_ui_manager_get_widget (manager, "/MenuGL/Density/DensityBonds");
@@ -2161,6 +2316,7 @@ static void set_sensitive_density()
 		if(GTK_IS_WIDGET(sas)) gtk_widget_set_sensitive(sas, FALSE);
 		if(GTK_IS_WIDGET(density)) gtk_widget_set_sensitive(density, FALSE);
 		if(GTK_IS_WIDGET(elf)) gtk_widget_set_sensitive(elf, FALSE);
+		if(GTK_IS_WIDGET(nci)) gtk_widget_set_sensitive(nci, FALSE);
 		if(GTK_IS_WIDGET(fed)) gtk_widget_set_sensitive(fed, FALSE);
 		return;
 	}
@@ -2183,6 +2339,8 @@ static void set_sensitive_density()
 	}
 
 	if(GTK_IS_WIDGET(sas)) gtk_widget_set_sensitive(sas, TRUE);
+	if(GTK_IS_WIDGET(nci)) gtk_widget_set_sensitive(nci, FALSE);
+	if(grid && GTK_IS_WIDGET(nci)) gtk_widget_set_sensitive(nci, TRUE);
 	if(!GeomOrb || !CoefAlphaOrbitals)
 	{
 		if(GTK_IS_WIDGET(density)) gtk_widget_set_sensitive(density, FALSE);
@@ -2202,6 +2360,7 @@ static void set_sensitive_density()
 	}
 	if(GTK_IS_WIDGET(atomic)) gtk_widget_set_sensitive(atomic, TRUE);
 	if(GTK_IS_WIDGET(bonds)) gtk_widget_set_sensitive(bonds, TRUE);
+
 }
 /*********************************************************************************************************************/
 static void set_sensitive_contours()
@@ -2276,9 +2435,11 @@ static void set_sensitive_surfaces()
 static void set_sensitive_set()
 {
 	GtkWidget *computeDipole = gtk_ui_manager_get_widget (manager, "/MenuGL/Set/SetDipoleDensity");
+	GtkWidget *computeCTDipole = gtk_ui_manager_get_widget (manager, "/MenuGL/Set/SetDipoleCT");
 	gboolean sensitive = TRUE;
   	if(!grid) sensitive = FALSE;
 	if(GTK_IS_WIDGET(computeDipole)) gtk_widget_set_sensitive(computeDipole, sensitive);
+	if(GTK_IS_WIDGET(computeCTDipole)) gtk_widget_set_sensitive(computeCTDipole, sensitive);
 }
 /*********************************************************************************************************************/
 static void set_sensitive_export()

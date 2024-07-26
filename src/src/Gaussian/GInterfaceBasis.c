@@ -1,6 +1,6 @@
 /* GInterfaceBasis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -209,8 +209,10 @@ static void traite_basis (GtkComboBox *combobox, gpointer d)
 	else if (!strcmp((char *)data,"cc-pVTZ") ) { c_diffuse_aug(); c_basis_presents("H-He,B-Ne"); }
 	else if (!strcmp((char *)data,"cc-pVOZ") ) { c_diffuse_aug(); c_basis_presents("H-He,B-Ne"); }
 	else if (!strcmp((char *)data,"cc-pV5Z") ) { c_diffuse_aug(); c_basis_presents("H,B-Ne"); }
+/*
 	else if (!strcmp((char *)data,"ccl-pVDZ") ) { c_diffuse_aug(); c_basis_presents("Al-Ar"); }
 	else if (!strcmp((char *)data,"ccl-pVTZ") ) { c_diffuse_aug(); c_basis_presents("Al-Ar"); }
+*/
 	else if (!strcmp((char *)data,"cc-pV6Z") ) { c_diffuse_aug(); c_basis_presents("H,B-Ne"); }
 	else if (!strcmp((char *)data,"SDD") ) { c_basis_presents("All"); }
 	else if (!strcmp((char *)data,"SV") ) { c_basis_presents("H-Kr"); }
@@ -280,10 +282,12 @@ static GtkWidget *create_liste_basis(GtkWidget*win,GtkWidget *frame)
         gtk_tree_store_append (store, &iter, NULL);
         gtk_tree_store_set (store, &iter, 0, "cc-pV6Z", -1);
         gtk_tree_store_append (store, &iter, NULL);
+/*
         gtk_tree_store_set (store, &iter, 0, "ccl-pVDZ", -1);
         gtk_tree_store_append (store, &iter, NULL);
         gtk_tree_store_set (store, &iter, 0, "ccl-pVTZ", -1);
         gtk_tree_store_append (store, &iter, NULL);
+*/
         gtk_tree_store_set (store, &iter, 0, "SV", -1);
         gtk_tree_store_append (store, &iter, NULL);
         gtk_tree_store_set (store, &iter, 0, "SVP", -1);
@@ -536,7 +540,7 @@ static void eventDispatcherType(GtkWidget *widget, GdkEventButton *event, gpoint
 		{
 			model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
 			gtk_tree_selection_select_path  (gtk_tree_view_get_selection (GTK_TREE_VIEW (widget)), path);
-			sprintf(selectedRowForType ,gtk_tree_path_to_string(path));
+			sprintf(selectedRowForType ,"%s",gtk_tree_path_to_string(path));
 			gtk_tree_model_get_iter (model, &iter, path);
 			gtk_tree_path_free(path);
   			if (event->type == GDK_2BUTTON_PRESS && ((GdkEventButton *) event)->button == 1)
@@ -565,7 +569,7 @@ static void eventDispatcherCenter(GtkWidget *widget, GdkEventButton *event, gpoi
 		{
 			model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
 			gtk_tree_selection_select_path  (gtk_tree_view_get_selection (GTK_TREE_VIEW (widget)), path);
-			sprintf(selectedRowForCenter ,gtk_tree_path_to_string(path));
+			sprintf(selectedRowForCenter ,"%s",gtk_tree_path_to_string(path));
 			gtk_tree_model_get_iter (model, &iter, path);
 			gtk_tree_path_free(path);
   			if (event->type == GDK_2BUTTON_PRESS && ((GdkEventButton *) event)->button == 1)

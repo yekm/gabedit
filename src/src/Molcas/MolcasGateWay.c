@@ -1,6 +1,6 @@
 /* MolcasGateWay.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -431,7 +431,7 @@ static void setGeneratorsAndAbelianGroup(gchar* groupName,
 
 	int i;
 
-	for (i=0;i<*nMolcas; i++) g_strup(molcasGenerators[i]);
+	for (i=0;i<*nMolcas; i++) uppercase(molcasGenerators[i]);
 
 	if(*nMolcas == 0)
 	{
@@ -595,7 +595,7 @@ static gboolean setGeomXYZFromSXYZ(gint numberOfAtoms, gchar** symbols, gdouble*
  	if(GeomXYZ) freeGeomXYZ();
  	if(VariablesXYZ) freeVariablesXYZ(VariablesXYZ);
 
-	Dipole.def = FALSE;
+	init_dipole();
 	GeomXYZ=g_malloc(numberOfAtoms*sizeof(GeomXYZAtomDef));
 
 	for(i=0;i<numberOfAtoms;i++)
@@ -645,7 +645,7 @@ static gboolean setGeomXYZFromMolcasMolecule()
 
  	if(GeomXYZ) freeGeomXYZ();
  	if(VariablesXYZ) freeVariablesXYZ(VariablesXYZ);
-	Dipole.def = FALSE;
+	init_dipole();
 	GeomXYZ=g_malloc(molcasMolecule.numberOfAtoms*sizeof(GeomXYZAtomDef));
 	for(i=0;i<molcasMolecule.numberOfAtoms;i++)
 	{
@@ -702,7 +702,7 @@ static gint testMolcasGeometryAvailableInInputFile(gchar* fileName)
 	while(!feof(file))
 	{
 		if(!fgets(t, BSIZE, file)) break;
-		g_strup(t);
+		uppercase(t);
 		if( strstr(t, "&GATEWAY")) OkGateWayKeyWord = TRUE;
 		if( strstr(t, "&SEWARD")) OkGateWayKeyWord = TRUE;
 		if(OkGateWayKeyWord)
@@ -710,7 +710,7 @@ static gint testMolcasGeometryAvailableInInputFile(gchar* fileName)
 			while(!feof(file))
 			{
 				if(!fgets(t, BSIZE, file)) break;
-				g_strup(t);
+				uppercase(t);
 				if( strstr(t, "ZMAT"))
 				{
 					OkZMat = TRUE;
@@ -789,7 +789,7 @@ static gchar** getMolcasGeometryListOfAtomsFromInputFile(gchar* fileName,
 	while(!feof(file))
 	{
 		if(!fgets(t, BSIZE, file)) { Ok = FALSE; break;}
-		g_strup(t);
+		uppercase(t);
 		if( strstr(t, "&GATEWAY"))
 		{
 			OkGateWayKeyWord = TRUE;
@@ -806,7 +806,7 @@ static gchar** getMolcasGeometryListOfAtomsFromInputFile(gchar* fileName,
 			while(Ok && !feof(file) && ( ! (strstr(t,"END") && strstr(t,"OF") && strstr(t,"INPUT") && !strstr(t,"-")) ) )
 			{
 				if(!fgets(t, BSIZE, file)){Ok = FALSE; break;}
-				g_strup(t);
+				uppercase(t);
 				if(strstr(t, "SYMMETRY"))
 				{
 					if(!fgets(t, BSIZE, file)){ Ok = FALSE; break;}
@@ -824,7 +824,7 @@ static gchar** getMolcasGeometryListOfAtomsFromInputFile(gchar* fileName,
 					while(!feof(file))
 					{
 						if(!fgets(t, BSIZE, file)){ Ok = FALSE; break;}
-						g_strup(t);
+						uppercase(t);
 						if(strstr(t,"END") && strstr(t,"OF") && strstr(t,"BASIS")) break;
 
 						nAtoms++;
@@ -849,7 +849,7 @@ static gchar** getMolcasGeometryListOfAtomsFromInputFile(gchar* fileName,
 					for(i=0;i<n;i++)
 					{
 						if(!fgets(t, BSIZE, file)){ Ok = FALSE; break;}
-						g_strup(t);
+						uppercase(t);
 						if(strstr(t,"END") && strstr(t,"OF") && strstr(t,"COORD")) break;
 						nAtoms++;
 						listOfAtoms = g_realloc(listOfAtoms, nAtoms*sizeof(gchar*));
@@ -1011,7 +1011,7 @@ static void read_charge_and_multiplicity_from_molcas_input_file(gchar* fileName)
   	while(!feof(file) )    
   	{
  		if(!fgets(t, BSIZE, file)) return;
-		g_strup(t);
+		uppercase(t);
 		if ( strstr(t,"CHARGE") && strstr(t,"="))
 		{
 			gchar* p = strstr(t,"=")+1;
@@ -1163,7 +1163,7 @@ static gint getGroupSymmetry(gchar* fileName)
 	while(!feof(file))
 	{
 		if(!fgets(t, BSIZE, file)) break;
-		g_strup(t);
+		uppercase(t);
 		if( strstr(t, "GROUP=") && strstr(t, "FULL")) 
 		{
 			g = 0;
@@ -1176,7 +1176,7 @@ static gint getGroupSymmetry(gchar* fileName)
 		}
 		if( strstr(t, "GROUP")) 
 		{
-			fgets(t, BSIZE, file);
+    			{ char* e = fgets(t,BSIZE,file);}
 			if( strstr(t, "FULL")) 
 			{
 				g = 0;
@@ -1468,7 +1468,7 @@ static void putInfoInTextWidget(GtkWidget* textWid)
       	for (i=0;i<molcasMolecule.numberOfMolcasGenerators;i++)
 	{
 		sprintf(buffer,"%s ",molcasMolecule.molcasGenerators[i]);
-		g_strup(buffer);
+		uppercase(buffer);
         	gabedit_text_insert (GABEDIT_TEXT(textWid), NULL, NULL, NULL, buffer, -1);
 	}
         gabedit_text_insert (GABEDIT_TEXT(textWid), NULL, NULL, NULL, "\n",-1);
@@ -1657,7 +1657,7 @@ void putSymmetryInTextEditor()
       	for (i=0;i<molcasMolecule.numberOfMolcasGenerators;i++)
 	{
 		sprintf(buffer,"%s ",molcasMolecule.molcasGenerators[i]);
-		g_strup(buffer);
+		uppercase(buffer);
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer, -1);
 	}
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "\n",-1);

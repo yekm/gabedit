@@ -1,6 +1,6 @@
 /* FireFlyMolecule.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -216,7 +216,7 @@ static gchar* computeGroupSymmetry()
 		Z[i] = fireflyMolecule.listOfAtoms[i].position[2];
 	}
 	sprintf(pointGroupSymbol,"NO");
-	computeSymmetry(principalAxisTolerance, FALSE, pointGroupSymbol,maximalOrder, TRUE, &numberOfAtoms,symbols, X, Y, Z, &positionTolerance, message);
+	computeSymmetryOld(principalAxisTolerance, FALSE, pointGroupSymbol,maximalOrder, TRUE, &numberOfAtoms,symbols, X, Y, Z, &positionTolerance, message);
 
 
 	for (i=0;i<(gint)numberOfAtoms;i++) g_free( symbols[i]);
@@ -654,8 +654,8 @@ static void putFireFlyMoleculeInTextEditor()
 
 	if(MethodeGeom==GEOM_IS_XYZ && (nrvar== 3*NcentersXYZ || nrvar==0))
 	{
-		sprintf(pointGroupSymbol,fireflyMolecule.groupSymmetry);
-		computeSymmetry(principalAxisTolerance, FALSE, pointGroupSymbol,maximalOrder, TRUE, &numberOfAtoms,symbols, X, Y, Z, &positionTolerance, message);
+		sprintf(pointGroupSymbol,"%s",fireflyMolecule.groupSymmetry);
+		computeSymmetryOld(principalAxisTolerance, FALSE, pointGroupSymbol,maximalOrder, TRUE, &numberOfAtoms,symbols, X, Y, Z, &positionTolerance, message);
 		/*
 		if(strlen(pointGroupSymbol)>1 && strcmp(pointGroupSymbol,"C1")!=0 && isdigit(pointGroupSymbol[1]))
 			setFirstAtomToXAxis(numberOfAtoms, X, Y, Z);

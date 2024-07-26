@@ -2,7 +2,7 @@
 
 CC = gcc -mms-bitfields 
 GTKDIR = C:/GnuPrograms/gtk216
-GTKGLEXT = C:/GtkGLExt
+GTKGLEXT = C:/GnuPrograms/GtkGLExt
 #GTKLIB = `pkg-config gtk+-2.0 --libs`
 GTKLIB = -L$(GTKDIR)/lib -lintl -lgtk-win32-2.0 -lgdk-win32-2.0 -latk-1.0 -lgdk_pixbuf-2.0 -lpangowin32-1.0 -lgdi32 -lpango-1.0 -lgobject-2.0 -lgmodule-2.0 -lglib-2.0  -lcairo -lpangocairo-1.0 -L$(GTKGLEXT)/lib -lgdkglext-win32-1.0 -lgtkglext-win32-1.0 
 
@@ -29,7 +29,7 @@ endif
 #DRAWGEOMGL= 
 DRAWGEOMGL=-DDRAWGEOMGL
 
-COMMONCFLAGS = -Wall -O2 -DENABLE_DEPRECATED $(OMPCFLAGS) $(DRAWGEOMGL)
+COMMONCFLAGS = -Wall -O2 -DENABLE_DEPRECATED $(OMPCFLAGS) $(DRAWGEOMGL) -Wformat-security -Wno-unused-variable 
 
 
 

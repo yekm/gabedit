@@ -1,6 +1,6 @@
 /* OrbitalsOrca.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -73,7 +73,7 @@ void read_orca_orbitals_using_orca_2mkl(gchar* fileName)
 	set_status_label_info(_("File type"),"Orca");
 	set_status_label_info(_("Mol. Orb."),"Reading");
 
-	system(convertOrcaMolden);
+	{int ierr = system(convertOrcaMolden);}
 	g_free(convertOrcaMolden);
 
 	moldenFile = g_strdup_printf("%s.molden.input",fileNameBas);
@@ -212,7 +212,7 @@ static gboolean ReadOneOrcaBasis(gint i,gint j,char *t,gint *nsym)
 		
 	for(k=0;k<Type[i].Ao[j].N;k++)
 	{
-		fgets(t,BSIZE,forb);
+    		{ char* e = fgets(t,BSIZE,forb);}
 		for(n=0;n<(gint)strlen(t);n++)
 			if(t[n]=='D') t[n] = 'e';
 		/*Debug("t de One = %s\n",t);*/
@@ -398,7 +398,7 @@ static gboolean DefineOrcaBasisType(gchar *fileName)
      				j=-1;
 				while(!feof(forb))
      				{
-     					fgets(t,BSIZE,forb);
+    					{ char* e = fgets(t,BSIZE,forb);}
 						/* Debug("t = %s\n",t);*/
    					if(this_is_a_backspace(t) || strstr(t,"end")) break;
      					j++;
@@ -472,7 +472,7 @@ static gint read_one_block_orbitals_in_orca_output_file(FILE* file, gint ncart, 
 	/* Debug("ncar = %d nOrb = %d\n",ncart,NOrb);*/
 	for(n=0;n<ncart && nR==NCOLS;n++)
 	{
-		fgets(t,BSIZE,file);
+    		{ char* e = fgets(t,BSIZE,file);}
 		/* Debug("%s\n",t);*/
 		nR = sscanf(t,"%d %d %d %d %d %d",&NumOrb[0],&NumOrb[1],&NumOrb[2],&NumOrb[3],&NumOrb[4],&NumOrb[5]);
 		if(nR<0) nR = 0;
@@ -489,13 +489,13 @@ static gint read_one_block_orbitals_in_orca_output_file(FILE* file, gint ncart, 
 		for(i=0;i<nR;i++) SymOrbitals[NumOrb[i]] = g_strdup("UNK");
 
 			
-	  	fgets(t,BSIZE,file);
+    		{ char* e = fgets(t,BSIZE,file);}
 		/* Debug("%s\n",t); */
 		sscanf(t,"%lf %lf %lf %lf %lf %lf",
 			&EnerOrb[0], &EnerOrb[1], &EnerOrb[2], &EnerOrb[3], &EnerOrb[4], &EnerOrb[5]);
 		for(i=0;i<nR;i++) EnerOrbitals[NumOrb[i]] = EnerOrb[i];
 
-	  	fgets(t,BSIZE,file);
+    		{ char* e = fgets(t,BSIZE,file);}
 		/* Debug("%s\n",t); */
 		sscanf(t,"%lf %lf %lf %lf %lf %lf",
 			&OccOrb[0], &OccOrb[1], &OccOrb[2], &OccOrb[3], &OccOrb[4], &OccOrb[5]);
@@ -504,11 +504,11 @@ static gint read_one_block_orbitals_in_orca_output_file(FILE* file, gint ncart, 
 		for(i=0;i<nR;i++)
         		if(OccOrb[i]>0) (*nOcc)++;
 
-	  	fgets(t,BSIZE,file);
+    		{ char* e = fgets(t,BSIZE,file);}
 		/* Debug("%s\n",t);*/
 		for(i=0;i<NOrb;i++)
 		{
-	  		fgets(t,BSIZE,file);
+    			{ char* e = fgets(t,BSIZE,file);}
 			/*Debug("%s\n",t);*/
 			k = sscanf(t,"%s %s %lf %lf %lf %lf %lf %lf",sdum1,sdum2,
 					&CoefOrbitals[NumOrb[0]][i],
@@ -526,7 +526,7 @@ static gint read_one_block_orbitals_in_orca_output_file(FILE* file, gint ncart, 
 		}
 		
  	}
-	fgets(t,BSIZE,file);/* backe space line */
+    	{ char* e = fgets(t,BSIZE,file);} /* backe space line */
  	g_free(t);
  	for(i=0;i<NCOLS;i++) g_free(AtomCoord[i]);
 	return nReadOrb;

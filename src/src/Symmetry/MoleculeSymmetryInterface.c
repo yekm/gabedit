@@ -1,6 +1,6 @@
 /* MolSymInterface.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -23,12 +23,14 @@ DEALINGS IN THE SOFTWARE.
 #include <math.h>
 
 #include "../Common/Global.h"
+#include "../Utils/AtomsProp.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
 #include "../Utils/Constants.h"
 #include "../Utils/GabeditTextEdit.h"
 #include "../Common/Windows.h"
 #include "../Symmetry/MoleculeSymmetry.h"
+#include "../Symmetry/Symmetry.h"
 
 /* 0-> Position ; 1-> Principal axis */
 static gint typeOfTolerance[] = { 0,1};
@@ -185,11 +187,10 @@ void createGeometrySymmetryWindow(gint numberOfAtoms,
 	}
 
 	sprintf(groupSymbol,"NO");
-	err = computeSymmetry(principalAxisTolerance, FALSE, groupSymbol,maximalOrder, TRUE, &numberOfAtoms,symbols, X, Y, Z, &eps, message);
+	err = computeSymmetryOld(principalAxisTolerance, FALSE, groupSymbol,maximalOrder, TRUE, &numberOfAtoms,symbols, X, Y, Z, &eps, message);
 	if(err != 0)
 	{
 		Message(message,"Error",TRUE);
-		return;
 	}
 	 Dialogue = gtk_dialog_new();
 	 gtk_widget_realize(GTK_WIDGET(Dialogue));
@@ -235,7 +236,7 @@ void createGeometrySymmetryWindow(gint numberOfAtoms,
 	{
 		numberOfAtoms = ntmp;
 		sprintf(groupSymbol,_("NO"));
-		err = computeSymmetry(principalAxisTolerance, FALSE, groupSymbol,maximalOrder, FALSE, &numberOfAtoms,symbolstmp, Xtmp, Ytmp, Ztmp, &eps, message);
+		err = computeSymmetryOld(principalAxisTolerance, FALSE, groupSymbol,maximalOrder, FALSE, &numberOfAtoms,symbolstmp, Xtmp, Ytmp, Ztmp, &eps, message);
 		sprintf(message,  _("Group & Geometry\n"));
 		strcat(message,"***********************\n\n");
 		putInfoInTextWidget(TextWid, groupSymbol,  principalAxisTolerance, eps, message);
@@ -246,6 +247,21 @@ void createGeometrySymmetryWindow(gint numberOfAtoms,
 	 gtk_widget_show_all(Dialogue);
 	 g_free(title);
 
+
+	{
+		numberOfAtoms = ntmp;
+		gdouble* mass = g_malloc(numberOfAtoms*sizeof(gdouble));
+		gint i = 0;
+		for(i=0;i<numberOfAtoms;i++) { SAtomsProp prop = prop_atom_get(symbolstmp[i]); mass[i] =  prop.masse;}
+		SMolecule mol = newSMolecule();
+		mol.setMolecule(&mol,  numberOfAtoms, symbolstmp, mass, Xtmp, Ytmp, Ztmp);
+		Symmetry sym = newSymmetry(&mol, eps);
+		sym.findAllPointGroups(&sym);
+       		sym.printElementResults(&sym);
+		g_free(mass);
+		sym.getUniqueMolecule(&sym);
+		sym.getSymmetrizeMolecule(&sym);
+	}
 	for (i=0;i<ntmp;i++)
 		g_free(symbolstmp[i]);
 	g_free( symbolstmp);
@@ -644,3 +660,70 @@ gdouble getTolerancePrincipalAxis()
 	return tolerancePrincipalAxisValue;
 }
 /****************************************************************************************************************************/
+void buildStandardOrientationDlg(gint numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z)
+{
+	buildStandardOrientation(numberOfAtoms, symbols, X, Y, Z);
+}
+/****************************************************************************************************/
+void createGeometrySymmetrizationWindow(gint numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z, gchar* groupSymbol)
+{
+	 GtkWidget *Dialogue = NULL;
+	 GtkWidget *Bouton;
+	 GtkWidget *frame;
+	 GtkWidget *TextWid;
+	 gchar * title = NULL;
+	 gchar message[BSIZE];
+	 gint err;
+	 gint maximalOrder = 20;
+	 
+	 gdouble principalAxisTolerance = tolerancePrincipalAxisValue;
+	 gdouble eps = tolerancePositionValue;
+	 if(eps<0) eps = 0.1; 
+	 
+	 if(numberOfAtoms<1)
+	 {
+		 Message(_("Sorry Number of atoms is not positive"),_("Error"),TRUE);
+		 return;
+	 }
+	sprintf(groupSymbol,"NO");
+	err = computeSymmetrization(principalAxisTolerance, groupSymbol, maximalOrder, &numberOfAtoms, symbols, X, Y, Z,  &eps, message);
+	if(err != 0)
+	{
+		Message(message,"Error",TRUE);
+		return;
+	}
+	Dialogue = gtk_dialog_new();
+	gtk_widget_realize(GTK_WIDGET(Dialogue));
+	title = g_strdup(_("Group symmetry & Geometry"));
+	gtk_window_set_title(GTK_WINDOW(Dialogue),title);
+
+	gtk_window_set_modal (GTK_WINDOW (Dialogue), FALSE);
+	gtk_window_set_position(GTK_WINDOW(Dialogue),GTK_WIN_POS_CENTER);
+
+	g_signal_connect(G_OBJECT(Dialogue), "delete_event", (GCallback)destroy_button_windows, NULL);
+	g_signal_connect(G_OBJECT(Dialogue), "delete_event", (GCallback)gtk_widget_destroy, NULL);
+
+	TextWid = create_text_widget(GTK_WIDGET(GTK_DIALOG(Dialogue)->vbox),NULL,&frame);
+	gabedit_text_set_editable(GABEDIT_TEXT(TextWid), TRUE);
+
+	gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(Dialogue)->action_area), FALSE);
+	
+	Bouton = create_button(Dialogue,"OK");
+	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Dialogue)->action_area), Bouton, FALSE, TRUE, 5);	
+	GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(Bouton);
+	g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)destroy_button_windows, GTK_OBJECT(Dialogue));
+	g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(Dialogue));
+
+	add_button_windows(title,Dialogue);
+
+	sprintf(message , _("Group & Geometry after symmetrization\n"));
+	strcat(message,"*******************************************\n\n");
+
+	putInfoInTextWidget(TextWid, groupSymbol,  principalAxisTolerance, eps, message);
+	putGeometryInTextWidget(TextWid,numberOfAtoms, symbols, X, Y, Z);
+	gtk_window_set_default_size (GTK_WINDOW(Dialogue), ScreenWidth/3, ScreenHeight/3);
+	gtk_widget_show_all(Dialogue);
+	g_free(title);
+
+}

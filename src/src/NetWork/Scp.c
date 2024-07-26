@@ -1,6 +1,6 @@
 /* Scp.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -281,7 +281,7 @@ static void* clientThread (gpointer data)
 	pthread_setcancelstate(PTHREAD_CANCEL_ASYNCHRONOUS,NULL);
 
 	pthread_testcancel();
-	system(cmd);
+	{int ierr = system(cmd);}
 	pthread_testcancel();
 	endchild = 1;
 	pthread_exit((void*)0);

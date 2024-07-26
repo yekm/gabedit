@@ -1,6 +1,6 @@
 /* GeomDraw */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/UtilsGL.h"
 #include "../Utils/Constants.h"
 #include "../Utils/HydrogenBond.h"
+#include "../Utils/Utils.h"
 #include "BondsOrb.h"
 #include "RingsOrb.h"
 
@@ -288,6 +289,8 @@ static void draw_bond(int i,int j,GLdouble scal, GabEditBondType bondType)
 			v3d_normal(vScal);
 			v3d_scale(vScal, g/aspect*0.3);
 		}
+		else
+			 getvScaleBond(g/aspect*0.3*2, C1,C2, vScal);
 
 		for(k=0;k<3;k++) C1[k] = GeomOrb[i].C[k]-vScal[k];
 		for(k=0;k<3;k++) C2[k] = GeomOrb[j].C[k]-vScal[k];
@@ -316,6 +319,8 @@ static void draw_bond(int i,int j,GLdouble scal, GabEditBondType bondType)
 			v3d_normal(vScal);
 			v3d_scale(vScal, g/aspect*0.3*2);
 		}
+		else
+			 getvScaleBond(g/aspect*0.3*2*2, C1,C2, vScal);
 
 		for(k=0;k<3;k++) C1[k] = GeomOrb[i].C[k]-vScal[k];
 		for(k=0;k<3;k++) C2[k] = GeomOrb[j].C[k]-vScal[k];
@@ -464,6 +469,8 @@ static void draw_bond_for_stick(int i,int j,GLdouble g, GabEditBondType bondType
 			v3d_normal(vScal);
 			v3d_scale(vScal, g/aspect*0.35);
 		}
+		else
+			 getvScaleBond(g/aspect*0.35*2, C1,C2, vScal);
 
 		for(k=0;k<3;k++) C1[k] = GeomOrb[i].C[k];
 		for(k=0;k<3;k++) C2[k] = GeomOrb[j].C[k];
@@ -492,6 +499,8 @@ static void draw_bond_for_stick(int i,int j,GLdouble g, GabEditBondType bondType
 			v3d_normal(vScal);
 			v3d_scale(vScal, g/aspect*0.35);
 		}
+		else
+			 getvScaleBond(g/aspect*0.35*2, C1,C2, vScal);
 
 		for(k=0;k<3;k++) C1[k] = GeomOrb[i].C[k]-vScal[k];
 		for(k=0;k<3;k++) C2[k] = GeomOrb[j].C[k]-vScal[k];

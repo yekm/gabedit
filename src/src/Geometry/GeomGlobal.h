@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -78,14 +78,6 @@ typedef struct _GeomXYZAtomDef
  gchar *Layer;
  gint* typeConnections;
 }GeomXYZAtomDef;
-
-typedef struct _DipoleDef
-{
- gboolean def;
- gdouble Value[3];
- gdouble radius;
- gdouble color[3];
-}DipoleDef;
 
 typedef struct _GeomInter
 {

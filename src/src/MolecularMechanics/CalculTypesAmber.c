@@ -1,6 +1,6 @@
 /* CalculTypesAmber.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -637,6 +637,7 @@ static gchar* getAmberTypeOfAtom(Molecule* m, gint atomNumber)
 	}
 	else if ( !strcmp(geom[atomNumber].Prop.symbol,"C" ))
 	{
+		/* printf("sp = %d\n",sp(m, atomNumber ));*/
 		if ( sp(m, atomNumber ) == 2 )
 		{
 			if ( ( atomInRing( m, atomNumber, 5 ) ) && ( atomInRing( m, atomNumber, 6 ) ) )

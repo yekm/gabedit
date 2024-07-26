@@ -1,6 +1,6 @@
 /* ImagesGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -279,6 +279,7 @@ static gchar* save_ppm(gchar* fileName)
 	int height;
 	GLubyte *rgbbuf;
 	static gchar message[1024];
+	int ierr;
 
  	if ((!fileName) || (strcmp(fileName,"") == 0))
 	{
@@ -322,9 +323,9 @@ static gchar* save_ppm(gchar* fileName)
 	for(i=height-1; i>= 0; i--){
 	   for(j=0; j< width; j++){
 		k = 3*(j + i*width);
-		fwrite( &rgbbuf[k] ,sizeof(*rgbbuf), 1, file);
-		fwrite( &rgbbuf[k+1] ,sizeof(*rgbbuf), 1, file);
-		fwrite( &rgbbuf[k+2] ,sizeof(*rgbbuf), 1, file);
+		ierr = fwrite( &rgbbuf[k] ,sizeof(*rgbbuf), 1, file);
+		ierr = fwrite( &rgbbuf[k+1] ,sizeof(*rgbbuf), 1, file);
+		ierr = fwrite( &rgbbuf[k+2] ,sizeof(*rgbbuf), 1, file);
 	   }
 	}
 
@@ -426,6 +427,7 @@ static gchar* save_bmp(gchar* fileName)
   	GLubyte rgbtmp[3];
   	int pad;
 	static gchar message[1024];
+	int ierr;
 	char bmp_header[]=
 	{ 'B','M', 0,0,0,0, 0,0, 0,0, 54,0,0,0,
   	40,0,0,0, 0,0,0,0, 0,0,0,0, 1,0, 24,0, 0,0,0,0, 0,0,0,0,
@@ -475,7 +477,7 @@ static gchar* save_bmp(gchar* fileName)
   	WLSBL((int) height,bmp_header+22);
   	WLSBL((int) 3*width*height,bmp_header+34);
 
-  	fwrite(bmp_header,1,54,file);
+  	ierr = fwrite(bmp_header,1,54,file);
 
   	for (i=0;i<height;i++)
 	{
@@ -484,11 +486,11 @@ static gchar* save_bmp(gchar* fileName)
 			rgbtmp[0] = rgbbuf[(j+width*i)*3+2];
 			rgbtmp[1] = rgbbuf[(j+width*i)*3+1];
 			rgbtmp[2] = rgbbuf[(j+width*i)*3+0];
-			fwrite(rgbtmp,3,1,file);
+			ierr = fwrite(rgbtmp,3,1,file);
     		}
     	rgbtmp[0] = (char) 0;
     	for (j=0;j<pad;j++) 
-		fwrite(rgbtmp,1,1,file);
+		ierr = fwrite(rgbtmp,1,1,file);
   	}
 
   	fclose(file);

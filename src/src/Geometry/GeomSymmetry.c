@@ -1,6 +1,6 @@
-/* Symmetry.c */
+/* GeomSymmetry.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -255,7 +255,7 @@ static void set_dipole_to_principal_axis()
 		for(i=0;i<3;i++)
 		{
 			M += A[i]*A[i];
-			M0 += Dipole.Value[i]*Dipole.Value[i];
+			M0 += Dipole.value[i]*Dipole.value[i];
 		}
 		M = sqrt(M);
 		M0 = sqrt(M0);

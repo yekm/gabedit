@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -22,9 +22,11 @@ DEALINGS IN THE SOFTWARE.
 void coulomb_orbitals_dlg();
 void compute_overlap_matrix(gint typeOrb);
 void transition_matrix_orbitals_dlg();
-void spatial_overlap_orbitals_dlg();
+void spatial_overlapiijj_orbitals_dlg();
+void spatial_overlapij_orbitals_dlg();
 void compute_mulliken_charges();
 void compute_bondOrders();
+void lambda_diagnostic_dlg();
 
 #endif /* __GABEDIT_COULOMBORBITALS_H__ */
 

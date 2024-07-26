@@ -1,6 +1,6 @@
 /* DOSSpectrum.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -86,7 +86,7 @@ static gboolean read_gabedit_file(GabeditFileChooser *SelecFile, gint response_i
 	if(response_id != GTK_RESPONSE_OK) return FALSE;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
  	OK=FALSE;
 
   	while(!feof(fd))
@@ -166,7 +166,7 @@ static gboolean read_sample_1column_file(GabeditFileChooser *SelecFile, gint res
 	if(response_id != GTK_RESPONSE_OK) return FALSE;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
 	if(!fd) return FALSE;
 
  	while(!feof(fd))

@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -16,11 +16,26 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 DEALINGS IN THE SOFTWARE.
 ************************************************************************************************************/
 
-#ifndef __GABEDIT_SYMMETRY_H__
-#define __GABEDIT_SYMMETRY_H__
+#ifndef __GABEDIT_HASHMAPSATOMS_H__
+#define __GABEDIT_HASHMAPSATOMS_H__
 
-void create_symmetry_window(GtkWidget* w,guint data);
-void create_geometry_paxis_window(GtkWidget* w,guint data);
+#include "../Symmetry/SAtom.h"
 
-#endif /* __GABEDIT_SYMMETRY_H__ */
+typedef struct _HashMapSAtoms  HashMapSAtoms;
+
+struct _HashMapSAtoms
+{
+	GList* listOfAtoms;
+	GList* listOfIndex;
+	gint nAtoms;
+/* methods */
+	void (*put) (HashMapSAtoms* mol, gint index, SAtom* atom);
+	SAtom* (*get) (HashMapSAtoms* mol, gint index);
+	void (*clear) (HashMapSAtoms* mol);
+	gint (*size) (HashMapSAtoms* mol);
+};
+
+HashMapSAtoms newHashMapSAtoms();
+
+#endif /* __GABEDIT_HASHMAPSATOMS_H__ */
 

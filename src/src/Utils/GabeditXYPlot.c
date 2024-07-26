@@ -1,6 +1,6 @@
 /* GabeditXYPlot.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -105,6 +105,17 @@ static PangoLayout* get_pango_str(GabeditXYPlot *xyplot, G_CONST_RETURN gchar* t
 static void xyplot_curve_noconv(GabeditXYPlot *xyplot, gint numberOfPoints, gdouble* X,  gdouble* Y, GdkColor* color);
 
 /****************************************************************************************/
+static void uppercase(gchar *str)
+{
+  while( *str != '\0')
+  {
+    if (isalpha((gint)*str))
+      if (islower((gint)*str))
+        *str = toupper((gint)*str);
+    str ++;
+  }
+}
+/****************************************************************************************/
 static void build_linear_x(gdouble* x0, gdouble* y0, gint n, gdouble**X, gdouble** Y, gint N)
 {
 	
@@ -138,6 +149,7 @@ static void xyplot_message(gchar* message)
 	dialog = gtk_message_dialog_new_with_markup (NULL,
 		           GTK_DIALOG_DESTROY_WITH_PARENT,
 		           GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+			   "%s",
 			   message);
        	gtk_dialog_run (GTK_DIALOG (dialog));
        	gtk_widget_destroy (dialog);
@@ -2579,6 +2591,7 @@ static void build_fourier(GtkWidget* buttonDFT, gpointer user_data)
 		GtkComboBox *combo_correction = ( GtkComboBox*) g_object_get_data(G_OBJECT (xyplot), "ComboCorrection");
 		GtkTreeIter iter;
 		gchar* correction = NULL;
+		GtkToggleButton *normalize_button = ( GtkToggleButton*) g_object_get_data(G_OBJECT (xyplot), "NormalizeDFTButton");
 
   		g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
   		g_return_if_fail (GTK_IS_ENTRY (entry_scale));
@@ -2653,11 +2666,23 @@ static void build_fourier(GtkWidget* buttonDFT, gpointer user_data)
 			if(n>0) { X = g_realloc(X,n*sizeof(gdouble));  Y = g_realloc(Y,n*sizeof(gdouble));}
 			if(correction)
 			{
-				gdouble conv = 1/scale*47992.36961128;/* 10^15Hz->Kelvin*/
-				if(strstr(correction,"Classic")) for(i=0;i<n; i++)  Y[i] *= X[i]*(1-exp(-X[i]*conv/temperature));
-				else if(strstr(correction,"Kubo")) for(i=0;i<n; i++)  Y[i] *= X[i]*tanh(X[i]*conv/temperature/2);
-				else if(strstr(correction,"Harmonic")) for(i=0;i<n; i++)  Y[i] *= X[i]*(X[i]*conv/temperature);
-				else if(strstr(correction,"Schofield")) for(i=0;i<n; i++)  Y[i] *=  X[i]*(1-exp(-X[i]*conv/temperature))*exp(X[i]*conv/temperature/2);
+				/*gdouble conv = 1/scale*47992.36961128; 10^15Hz->Kelvin*/
+				gdouble conv = 1.43877505;/* cm-1=>Kelvin*/
+				gdouble fac = conv/temperature;
+				gdouble fac2 = fac/2;
+				if(strstr(correction,"Classic")) for(i=0;i<n; i++)  Y[i] *=  X[i]*(1-exp(-X[i]*fac));
+				else if(strstr(correction,"Kubo")) for(i=0;i<n; i++)  Y[i] *= X[i]*tanh(X[i]*fac2); 
+				else if(strstr(correction,"Harmonic")) for(i=0;i<n; i++)  Y[i] *=  X[i]*(X[i]*fac); 
+				else if(strstr(correction,"Schofield")) for(i=0;i<n; i++)  Y[i] *= X[i]*(1-exp(-X[i]*fac))*exp(X[i]*fac2);
+
+				if(gtk_toggle_button_get_active(normalize_button))
+				{
+					gdouble norm = 0;
+					for(i=0;i<n; i++)  norm+=Y[i];
+					if(norm==0) norm = 1;
+					norm = 1.0/norm;
+					for(i=0;i<n; i++)  Y[i] *=  norm;
+				}
 			}
 			
 
@@ -4126,6 +4151,7 @@ static void add_fourier_data_frame(GtkWidget* hbox, GtkWidget* xyplot, XYPlotDat
 	GtkWidget* entry_temperature = NULL;
 	GtkWidget* buttonDFT = NULL;
 	GtkWidget* combo = NULL;
+	GtkWidget* normalize_button = NULL;
 	gchar tmp[100];
 
 	frame=gtk_frame_new(_("Fourier transformation"));
@@ -4193,6 +4219,12 @@ static void add_fourier_data_frame(GtkWidget* hbox, GtkWidget* xyplot, XYPlotDat
 	gtk_box_pack_start(GTK_BOX(hbox_frame), entry_temperature, FALSE, FALSE, 2);
 	gtk_widget_show(entry_temperature);
 	g_object_set_data(G_OBJECT ( xyplot), "Entry_temperature", entry_temperature);
+
+	normalize_button = gtk_check_button_new_with_label (_("Normalize"));
+	gtk_box_pack_start(GTK_BOX(hbox_frame), normalize_button, FALSE, FALSE, 2);
+	gtk_widget_show(normalize_button); 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(normalize_button), TRUE);
+	g_object_set_data(G_OBJECT ( xyplot), "NormalizeDFTButton", normalize_button);
 
 
 	hbox_frame=gtk_hbox_new(FALSE, 0);
@@ -4449,7 +4481,7 @@ static void gabedit_xyplot_save_gabedit(GtkWidget* xyplot, gchar* fileName)
 		dialog = gtk_message_dialog_new_with_markup (NULL,
 		           GTK_DIALOG_DESTROY_WITH_PARENT,
 		           GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
-			   tmp);
+			   "%s",tmp);
        		gtk_dialog_run (GTK_DIALOG (dialog));
        		gtk_widget_destroy (dialog);
        		g_free(tmp);
@@ -4839,6 +4871,7 @@ static gboolean gabedit_xyplot_read_gabedit(GtkWidget* xyplot, gchar* fileName)
 		dialog = gtk_message_dialog_new_with_markup (NULL,
 		           GTK_DIALOG_DESTROY_WITH_PARENT,
 		           GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+			   "%s",
 			   tmp);
        		gtk_dialog_run (GTK_DIALOG (dialog));
        		gtk_widget_destroy (dialog);
@@ -4846,7 +4879,7 @@ static gboolean gabedit_xyplot_read_gabedit(GtkWidget* xyplot, gchar* fileName)
 		return FALSE;
 	}
     	if(!fgets(t,BSIZE,file)) return FALSE;
-	g_strup(t);
+	uppercase(t);
 	if(!strstr(t,"[GABEDIT FORMAT]"))
 	{
 		xyplot_message(_("This is not a Gabedit file\n"));
@@ -5259,7 +5292,7 @@ static void combo_point_style_changed_value (GtkComboBox *combobox, gpointer use
 		if(!d) return;
 		if(data)
 		{
-			sprintf(data->point_str,d);
+			sprintf(data->point_str,"%s",d);
 			xyplot_build_points_data(GABEDIT_XYPLOT(xyplot), data);
 		}
 		else
@@ -5269,7 +5302,7 @@ static void combo_point_style_changed_value (GtkComboBox *combobox, gpointer use
 			for (; current_node!=NULL; current_node=current_node->next)
 			{
 				data=(XYPlotData*)current_node->data;  
-				sprintf(data->point_str,d);
+				sprintf(data->point_str,"%s",d);
 				xyplot_build_points_data(GABEDIT_XYPLOT(xyplot), data);
 			}
 		}
@@ -5326,7 +5359,9 @@ static GtkWidget *add_point_types_combo(GtkWidget *hbox, XYPlotData* data)
 		"<span>&#9670;</span>", "<span>&#9674;</span>",
 		"<span>&#8226;</span>",
 		"<span><b>&#9788;</b></span>",
-		"<span>&#9651;</span>", "<span>&#9650;</span>"};
+		"<span>&#9651;</span>", "<span>&#9650;</span>",
+		"."
+		};
 	gint n = G_N_ELEMENTS (list);
 
 	store = gtk_tree_store_new (1,G_TYPE_STRING);
@@ -5519,6 +5554,227 @@ static void activate_entry_shift_y(GtkEntry *entry, gpointer user_data)
 		gtk_editable_set_position(GTK_EDITABLE(entry),3);
 		gtk_widget_queue_draw(GTK_WIDGET(xyplot));
 	}
+}
+/****************************************************************************************/
+static void build_filter(GtkWidget* buttonFilter, gpointer user_data)
+{
+	if(user_data && G_IS_OBJECT(user_data))
+	{
+		gdouble sigma = 10.0;
+		G_CONST_RETURN gchar* t;
+		GtkWidget* xyplot = GTK_WIDGET(user_data);
+		XYPlotData* data = g_object_get_data(G_OBJECT (xyplot), "CurentData");
+		GtkWidget* parentWindow = ( GtkWidget*) g_object_get_data(G_OBJECT (buttonFilter), "ParentWindow");
+		GtkWidget* entry_sigma = ( GtkWidget*) g_object_get_data(G_OBJECT (xyplot), "EntrySigma");
+		GtkWidget* popup = NULL;
+		GtkComboBox *combo_filter = ( GtkComboBox*) g_object_get_data(G_OBJECT (xyplot), "ComboFilter");
+		GtkTreeIter iter;
+		gchar* filter = NULL;
+
+  		g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+  		g_return_if_fail (GTK_IS_ENTRY (entry_sigma));
+
+		if(parentWindow) gtk_widget_hide (GTK_WIDGET(parentWindow));
+        	while(gtk_events_pending()) gtk_main_iteration();
+		popup = create_popup_win(_("Please wait"));
+
+		if (gtk_combo_box_get_active_iter (combo_filter, &iter))
+		{
+			GtkTreeModel* model = gtk_combo_box_get_model(combo_filter);
+			gtk_tree_model_get (model, &iter, 0, &filter, -1);
+		}
+		if(filter && strstr(filter,"Gaussian")) 
+		{
+			t= gtk_entry_get_text(GTK_ENTRY(entry_sigma));
+			sigma = atof(t);
+			if(sigma==0) sigma = 1;
+			sigma *=0.5;
+		}
+		if(data && data->size>2 &&  data->x &&  data->y)
+		{
+			gdouble* X = g_malloc(data->size*sizeof(gdouble)); 
+			gdouble* Y = g_malloc(data->size*sizeof(gdouble)); 
+			gint i;
+		        GtkWidget* window = NULL;
+        		GtkWidget* xyplot = NULL;
+			gint N = data->size;
+			gdouble xmin;
+			gdouble xmax;
+			gdouble* x = NULL;
+			gdouble* y = NULL;
+			gdouble xm = 0.0;
+
+			x = data->x;
+			y = data->y;
+			xmin = x[0];
+			xmax = x[0];
+			for(i=0;i<N; i++) 
+			{
+         			X[i] = x[i];
+         			Y[i] = y[i];
+				if(xmin>x[i]) xmin = x[i];
+				if(xmax<x[i]) xmax = x[i];
+   			}
+			xmax = (xmax-xmin);
+			xm = xmax/2;
+			if(filter)
+			{
+				gint n = 3;
+				gdouble alpha = 0.16;
+				gdouble a[5] = {(1-alpha)/2,0.5,alpha/2,0.0,0.0};/* Blackman coefs */
+				for(i=0;i<N; i++)  X[i] = (X[i]-xmin-xm)/xmax;
+				if(strstr(filter,"Nuttall")&& !strstr(filter,"-"))
+				{
+					a[0] =  0.355768;
+					a[1] =  0.487396;
+					a[2] =  0.144232;
+					a[3] =  0.012604;
+					n = 4;
+				}
+				if(strstr(filter,"Blackman–Harris"))
+				{
+					a[0] = 0.35875 ;
+					a[1] = 0.48829 ;
+					a[2] = 0.14128 ;
+					a[3] = 0.01168 ;
+					n = 4;
+				}
+				if(strstr(filter,"Blackman–Nuttall"))
+				{
+					a[0] =  0.3635819;
+					a[1] =  0.4891775;
+					a[2] =  0.1365995;
+					a[3] =  0.0106411;
+					n = 4;
+				}
+				if(strstr(filter,"Flat-Top"))
+				{
+					a[0] =  1.0;
+					a[1] =  1.93;
+					a[2] =  1.29;
+					a[3] =  0.388;
+					a[4] =  0.032;
+					n = 5;
+				}
+				if(strstr(filter,"Gaussian")) for(i=0;i<N; i++)  Y[i] = Y[i]*exp(-X[i]*X[i]*sigma);
+				else
+				{
+				/*	gdouble norm = 0;*/
+				     for(i=0;i<N; i++)  
+				     {
+					gdouble c = a[0];
+					gdouble b = X[i];
+					gint j;
+				        for(j=1;j<n; j++)  c += a[j]*cos(2*M_PI*b*j);
+					Y[i] = Y[i]*c;
+					/* norm+= c;*/
+				     }
+					/* printf("norm = %lf\n",norm);*/
+				}
+				for(i=0;i<N; i++)  X[i] = X[i]*xmax+xmin+xm;
+			}
+			
+			window = gabedit_xyplot_new_window(_("Filter"),NULL);
+			xyplot = g_object_get_data(G_OBJECT (window), "XYPLOT");
+			xyplot_curve_noconv(GABEDIT_XYPLOT(xyplot), N, X,  Y, NULL);
+			gabedit_xyplot_set_range_xmin (GABEDIT_XYPLOT(xyplot), 0.0);
+			gabedit_xyplot_set_x_label (GABEDIT_XYPLOT(xyplot), " ");
+		}
+		if(parentWindow) gtk_object_destroy (GTK_OBJECT(parentWindow));
+		if(popup) gtk_object_destroy(GTK_OBJECT(popup));
+	}
+}
+/********************************************************************************************************/
+static GtkWidget *add_combo_filter(GtkWidget *hbox)
+{
+        GtkTreeIter iter;
+        GtkTreeStore *store;
+	GtkTreeModel *model;
+	GtkWidget *combobox;
+	GtkCellRenderer *renderer;
+
+	store = gtk_tree_store_new (1,G_TYPE_STRING);
+
+        gtk_tree_store_append (store, &iter, NULL);
+        gtk_tree_store_set (store, &iter, 0, "Gaussian : exp(-0.5 sigma (t/tmax)^2)", -1);
+        gtk_tree_store_append (store, &iter, NULL);
+        gtk_tree_store_set (store, &iter, 0, "Blackman", -1);
+        gtk_tree_store_append (store, &iter, NULL);
+        gtk_tree_store_set (store, &iter, 0, "Nuttall", -1);
+        gtk_tree_store_append (store, &iter, NULL);
+        gtk_tree_store_set (store, &iter, 0, "Blackman–Harris", -1);
+        gtk_tree_store_append (store, &iter, NULL);
+        gtk_tree_store_set (store, &iter, 0, "Blackman–Nuttall", -1);
+        gtk_tree_store_append (store, &iter, NULL);
+        gtk_tree_store_set (store, &iter, 0, "Flat-Top", -1);
+
+        model = GTK_TREE_MODEL (store);
+	combobox = gtk_combo_box_new_with_model (model);
+	g_object_unref (model);
+	gtk_box_pack_start (GTK_BOX (hbox), combobox, TRUE, TRUE, 1);
+	renderer = gtk_cell_renderer_text_new ();
+	gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (combobox), renderer, TRUE);
+	gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (combobox), renderer, "text", 0, NULL);
+
+	return combobox;
+}
+/********************************************************************************/
+static void add_filter_data_frame(GtkWidget* hbox, GtkWidget* xyplot, XYPlotData *data, GtkWidget* parentWindow)
+{
+	GtkWidget* frame = NULL;
+	GtkWidget* vbox_frame = NULL;
+	GtkWidget* hbox_frame = NULL;
+	GtkWidget* label = NULL;
+	GtkWidget* entry_sigma = NULL;
+	GtkWidget* buttonFilter = NULL;
+	GtkWidget* combo = NULL;
+	gchar tmp[100];
+
+	frame=gtk_frame_new(_("Filter"));
+	gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, TRUE, 2);
+	gtk_widget_show(frame);
+
+	vbox_frame=gtk_vbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(frame), vbox_frame);
+	gtk_widget_show(vbox_frame);
+
+	hbox_frame=gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox_frame), hbox_frame, FALSE, FALSE, 2);
+	gtk_widget_show(hbox_frame);
+
+	label=gtk_label_new(_("Type :"));
+	gtk_box_pack_start(GTK_BOX(hbox_frame), label, TRUE, FALSE, 2);
+	gtk_widget_show(label); 
+
+	combo = add_combo_filter(hbox_frame);
+	gtk_combo_box_set_active (GTK_COMBO_BOX (combo), 0);
+	gtk_widget_show(combo); 
+	g_object_set_data(G_OBJECT (xyplot), "ComboFilter", combo);
+
+	/* g_signal_connect(G_OBJECT(combo), "changed", G_CALLBACK(NULL), xyplot);*/
+
+	label=gtk_label_new(_("Sigma : "));
+	gtk_box_pack_start(GTK_BOX(hbox_frame), label, FALSE, FALSE, 2);
+	gtk_widget_show(label); 
+	g_object_set_data(G_OBJECT ( xyplot), "LabelSigma", label);
+
+	entry_sigma = gtk_entry_new();
+	gtk_widget_set_size_request(entry_sigma,80,-1);
+	sprintf(tmp,"%0.2f",10.0);
+	gtk_entry_set_text(GTK_ENTRY(entry_sigma),tmp);
+	gtk_box_pack_start(GTK_BOX(hbox_frame), entry_sigma, FALSE, FALSE, 2);
+	gtk_widget_show(entry_sigma);
+	g_object_set_data(G_OBJECT ( xyplot), "EntrySigma", entry_sigma);
+
+	buttonFilter = gtk_button_new_with_label (_("Apply"));
+	gtk_box_pack_start(GTK_BOX(hbox_frame), buttonFilter, TRUE, TRUE, 4);
+	gtk_widget_show (buttonFilter);
+
+	g_object_set_data(G_OBJECT ( xyplot), "CurentData", data);
+	g_object_set_data(G_OBJECT (buttonFilter), "ParentWindow", parentWindow);
+
+        g_signal_connect(G_OBJECT(buttonFilter), "clicked", G_CALLBACK(build_filter), xyplot);
+
 }
 /****************************************************************************************/
 static void set_data_dialog(GabeditXYPlot* xyplot, XYPlotData* data)
@@ -5764,6 +6020,11 @@ static void set_data_dialog(GabeditXYPlot* xyplot, XYPlotData* data)
 	add_cut_data_frame(hbox, GTK_WIDGET(xyplot), data);
 
 	add_x_linear_data_frame(hbox, GTK_WIDGET(xyplot), data);
+
+	hbox=gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox_window), hbox, TRUE, FALSE, 2);
+	gtk_widget_show(hbox);
+	add_filter_data_frame(hbox, GTK_WIDGET(xyplot), data, window);
 
 	hbox=gtk_hbox_new(FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox_window), hbox, TRUE, FALSE, 2);
@@ -8713,6 +8974,7 @@ static gint gabedit_xyplot_button_release (GtkWidget *widget, GdkEventButton *ev
 	dialog = gtk_message_dialog_new_with_markup (NULL,
 		           GTK_DIALOG_DESTROY_WITH_PARENT,
 		           GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+			   "%s",
 			   tmp);
        gtk_dialog_run (GTK_DIALOG (dialog));
        gtk_widget_destroy (dialog);
@@ -9750,7 +10012,7 @@ static void writeBMP(GabeditXYPlot *xyplot, gchar *fileName)
   	WLSBL((int) height,bmp_header+22);
   	WLSBL((int) 3*width*height,bmp_header+34);
 
-  	fwrite(bmp_header,1,54,file);
+  	{int it = fwrite(bmp_header,1,54,file);}
 
   	for (i=0;i<height;i++)
 	{
@@ -9759,11 +10021,11 @@ static void writeBMP(GabeditXYPlot *xyplot, gchar *fileName)
 			rgbtmp[0] = rgbbuf[(j+width*i)*3+2];
 			rgbtmp[1] = rgbbuf[(j+width*i)*3+1];
 			rgbtmp[2] = rgbbuf[(j+width*i)*3+0];
-			fwrite(rgbtmp,3,1,file);
+			{int it = fwrite(rgbtmp,3,1,file);}
     		}
     	rgbtmp[0] = (char) 0;
     	for (j=0;j<pad;j++) 
-		fwrite(rgbtmp,1,1,file);
+		{int it = fwrite(rgbtmp,1,1,file);}
   	}
 
   	fclose(file);
@@ -10777,4 +11039,111 @@ void gabedit_xyplot_help()
 	gtk_widget_show_all(dialog);
        gtk_window_set_modal (GTK_WINDOW (dialog), TRUE);
        g_free(tmp);
+}
+/****************************************************************************************/
+void gabedit_xyplot_set_data_line_width (GabeditXYPlot *xyplot, gdouble line_width)
+{
+	g_return_if_fail (xyplot != NULL);
+	g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+
+	if(line_width<0) line_width = 0;
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+	XYPlotData *current_data; 
+	GList *current_node; 
+ 
+	if (xyplot->data_list ){
+		current_node=g_list_first(xyplot->data_list);
+		current_data=(XYPlotData*)current_node->data;  
+		for (; current_node!=NULL; current_node=current_node->next)
+		{
+        		current_data=(XYPlotData*)current_node->data;  
+			current_data->line_width = line_width;
+		}
+	}
+	xyplot_free_legends(xyplot);
+	xyplot_build_legends(xyplot);  
+	xyplot_calculate_sizes(xyplot);
+
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+}
+/****************************************************************************************/
+void gabedit_xyplot_set_data_point_size (GabeditXYPlot *xyplot, gdouble point_size)
+{
+	g_return_if_fail (xyplot != NULL);
+	g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+
+	if(point_size<0) point_size = 0;
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+	XYPlotData *current_data; 
+	GList *current_node; 
+ 
+	if (xyplot->data_list ){
+		current_node=g_list_first(xyplot->data_list);
+		current_data=(XYPlotData*)current_node->data;  
+		for (; current_node!=NULL; current_node=current_node->next)
+		{
+        		current_data=(XYPlotData*)current_node->data;  
+			current_data->point_size = point_size;
+			xyplot_build_points_data(GABEDIT_XYPLOT(xyplot), current_data);
+		}
+	}
+	xyplot_free_legends(xyplot);
+	xyplot_build_legends(xyplot);  
+	xyplot_calculate_sizes(xyplot);
+
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+}
+/****************************************************************************************/
+void gabedit_xyplot_set_data_point_type (GabeditXYPlot *xyplot, gchar c)
+{
+	g_return_if_fail (xyplot != NULL);
+	g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+	XYPlotData *current_data; 
+	GList *current_node; 
+ 
+	if (xyplot->data_list ){
+		current_node=g_list_first(xyplot->data_list);
+		current_data=(XYPlotData*)current_node->data;  
+		for (; current_node!=NULL; current_node=current_node->next)
+		{
+        		current_data=(XYPlotData*)current_node->data;  
+			sprintf(current_data->point_str,"%c",c);
+			xyplot_build_points_data(GABEDIT_XYPLOT(xyplot), current_data);
+		}
+	}
+	xyplot_free_legends(xyplot);
+	xyplot_build_legends(xyplot);  
+	xyplot_calculate_sizes(xyplot);
+
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+}
+/****************************************************************************************/
+void gabedit_xyplot_set_data_point_color (GabeditXYPlot *xyplot, gdouble red, gdouble green, gdouble blue)
+{
+	g_return_if_fail (xyplot != NULL);
+	g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+	XYPlotData *current_data; 
+	GList *current_node; 
+ 
+	if (xyplot->data_list ){
+		current_node=g_list_first(xyplot->data_list);
+		current_data=(XYPlotData*)current_node->data;  
+		for (; current_node!=NULL; current_node=current_node->next)
+		{
+        		current_data=(XYPlotData*)current_node->data;  
+			current_data->point_color.red = SCALE2(red);
+			current_data->point_color.green = SCALE2(green);
+			current_data->point_color.blue = SCALE2(blue);
+			xyplot_build_points_data(GABEDIT_XYPLOT(xyplot), current_data);
+		}
+	}
+	xyplot_free_legends(xyplot);
+	xyplot_build_legends(xyplot);  
+	xyplot_calculate_sizes(xyplot);
+
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
 }

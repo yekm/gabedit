@@ -1,6 +1,6 @@
 /* Orbitals.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -42,6 +42,7 @@ DEALINGS IN THE SOFTWARE.
 #include "OrbitalsNWChem.h"
 #include "OrbitalsMopac.h"
 #include "OrbitalsOrca.h"
+#include "OrbitalsNBO.h"
 
 #define WIDTHSCR 0.56
 
@@ -376,6 +377,7 @@ void applygrid(GtkWidget *Win,gpointer data)
 		for(j=0;j<2;j++)
 			limits.MinMax[j][i] =limitstmp.MinMax[j][i]; 
 	}
+	/* for(i=0;i<3;i++) printf("%f %f %d\n",limits.MinMax[0][i], limits.MinMax[1][i], NumPoints[i]); */
 
 
 	delete_child(Win);
@@ -912,6 +914,7 @@ static void getiso(GtkWidget *button,gpointer data)
 		|| TypeGrid == GABEDIT_TYPEGRID_FEDELECTROPHILIC
 		|| TypeGrid == GABEDIT_TYPEGRID_FEDNUCLEOPHILIC
 		|| TypeGrid == GABEDIT_TYPEGRID_FEDRADICAL
+		|| TypeGrid == GABEDIT_TYPEGRID_EDENSITY
 	) square = FALSE;
 
 	if(!compute_isovalue_percent_from_grid(grid, square, percent, precision, &isovalue)) return;
@@ -955,6 +958,7 @@ GtkWidget *create_iso_frame( GtkWidget *vboxall,gchar* title)
 	if(TypeGrid == GABEDIT_TYPEGRID_FEDELECTROPHILIC) v *= 3;
 	if(TypeGrid == GABEDIT_TYPEGRID_FEDNUCLEOPHILIC) v *= 3;
 	if(TypeGrid == GABEDIT_TYPEGRID_FEDRADICAL) v *= 3;
+	if(TypeGrid == GABEDIT_TYPEGRID_NCI) v = 0.1;
 		
 	strlabels[2][2] = g_strdup_printf("%lf",v);
 
@@ -1366,7 +1370,7 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *fileName,gint itype)
  		OK=FALSE;
  		while(!feof(fd))
 		{
-	  		fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 			switch(itype)
 			{
 			case 1 :
@@ -1490,7 +1494,7 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *fileName,gint itype)
 		nR = 5;
 		for(n=0;n<ncart && nR==5;n++)
 		{
-	  		fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 			nR = sscanf(t,"%d %d %d %d %d",&NumOrb[0],&NumOrb[1],&NumOrb[2],&NumOrb[3],&NumOrb[4]);
 			nReadOrb += nR;
 			for(i=0;i<nR;i++) NumOrb[i]--;
@@ -1499,7 +1503,7 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *fileName,gint itype)
 
 			if(itype<4)
 			{
-	  			fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 			/* Debug("%d %d %d %d %d\n",NumOrb[0],NumOrb[1],NumOrb[2],NumOrb[3],NumOrb[4]);*/
 				sscanf(t,"%s %s %s %s %s",SymOrb[0],SymOrb[1],SymOrb[2],SymOrb[3],SymOrb[4]);
 			/* Debug("%s %s %s %s %s\n",SymOrb[0],SymOrb[1],SymOrb[2],SymOrb[3],SymOrb[4]);*/
@@ -1516,7 +1520,7 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *fileName,gint itype)
 			}
 
 			
-	  		fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 			sscanf(t,"%s %s %lf %lf %lf %lf %lf",dump1,dump2,
 				&EnerOrb[0], &EnerOrb[1], &EnerOrb[2], &EnerOrb[3], &EnerOrb[4]);
 
@@ -1531,7 +1535,7 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *fileName,gint itype)
 
 			for(i=0;i<NOrb;i++)
 			{
-	  			fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 				tmp = t + 20;
 				k = sscanf(tmp,"%lf %lf %lf %lf %lf",&CoefOrbitals[NumOrb[0]][i],&CoefOrbitals[NumOrb[1]][i],
 				&CoefOrbitals[NumOrb[2]][i],&CoefOrbitals[NumOrb[3]][i],&CoefOrbitals[NumOrb[4]][i]);
@@ -1605,7 +1609,7 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *fileName,gint itype)
 				else
 				{
 					for(i=0;i<2;i++)
-						SymOrbitals[NumOrb[i]] = g_strup("UNK");
+						SymOrbitals[NumOrb[i]] = g_utf8_strup("UNK");
 				}
 
 	  			fgets(t,taille,fd);
@@ -1643,7 +1647,7 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *fileName,gint itype)
 				else
 				{
 					for(i=0;i<3;i++)
-						SymOrbitals[NumOrb[i]] = g_strup("UNK");
+						SymOrbitals[NumOrb[i]] = g_utf8_strup("UNK");
 				}
 
 	  			fgets(t,taille,fd);
@@ -1771,7 +1775,7 @@ gboolean read_orbitals_in_gabedit_or_molden_file(gchar *fileName,gint itype)
  		OK=FALSE;
  		while(!feof(fd))
 		{
-	  		fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
           		pdest = strstr( t, "[MO]" );
 	 		if ( pdest != NULL )
 	  		{
@@ -1810,7 +1814,7 @@ gboolean read_orbitals_in_gabedit_or_molden_file(gchar *fileName,gint itype)
 			sym[0] = '\0';
 			while(!feof(fd) && !begincoef)
 			{
-	  			fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 				if( this_is_a_backspace(t))
 				{
 					begincoef = FALSE;
@@ -1844,7 +1848,7 @@ gboolean read_orbitals_in_gabedit_or_molden_file(gchar *fileName,gint itype)
 			sscanf(t,"%d %lf",&idump,&CoefOrbitals[n][0]);
 			for(i=1;i<NAOrb;i++)
 			{
-	  			fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 				sscanf(t,"%d %lf",&idump,&CoefOrbitals[n][i]);
 			}
 			if(n == NOrb-1) OK = FALSE;
@@ -2010,6 +2014,7 @@ gboolean read_orbitals_from_fchk_gaussian_file(gchar* fileName)
 	}
 	nAOcc = get_one_int_from_fchk_gaussian_file(file,"Number of alpha electrons ");
 	nBOcc = get_one_int_from_fchk_gaussian_file(file,"Number of beta electrons ");
+/* printf("nBOcc=%d\n",nBOcc);*/
 	nBasis = get_one_int_from_fchk_gaussian_file(file,"Number of basis functions  ");
 	if(nBasis<1)
 	{
@@ -2082,35 +2087,35 @@ gboolean read_orbitals_from_fchk_gaussian_file(gchar* fileName)
 			EnerBetaOrbitals = EnerAlphaOrbitals;
 			OccBetaOrbitals = OccAlphaOrbitals;
 			SymBetaOrbitals = SymAlphaOrbitals;
-			NBetaOcc = nBOcc;
+			NBetaOcc = nAOcc;
 			NBetaOrb = nA;
 		}
 	}
 	if(coefsBeta && energiesBeta && nB>0 && nB<=nBasis)
 	{
 		EnerBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
-		for(i=0;i<nA;i++) EnerBetaOrbitals[i] = energiesBeta[i];
-		for(i=nA;i<NOrb;i++) EnerBetaOrbitals[i] = 0.0;
+		for(i=0;i<nB;i++) EnerBetaOrbitals[i] = energiesBeta[i];
+		for(i=nB;i<NOrb;i++) EnerBetaOrbitals[i] = 0.0;
 
 		CoefBetaOrbitals = CreateTable2(NOrb);
 
 		k = 0;
-		for(i=0;i<nA;i++) 
-		for(ib=0;ib<nA;ib++) 
+		for(i=0;i<nB;i++) 
+		for(ib=0;ib<nB;ib++) 
 			CoefBetaOrbitals[i][ib] = coefsBeta[k++];
-		for(i=nA;i<NOrb;i++)
-		for(ib=0;ib<nA;ib++) 
+		for(i=nB;i<NOrb;i++)
+		for(ib=0;ib<nB;ib++) 
 			CoefBetaOrbitals[i][ib] = 0;
 
 		SymBetaOrbitals = g_malloc(NOrb*sizeof(gchar*));
-		for(i=0;i<nA;i++) SymBetaOrbitals[i] = g_strdup("UNK");
-		for(i=nA;i<NOrb;i++) SymBetaOrbitals[i] = g_strdup("DELETE");
+		for(i=0;i<nB;i++) SymBetaOrbitals[i] = g_strdup("UNK");
+		for(i=nB;i<NOrb;i++) SymBetaOrbitals[i] = g_strdup("DELETE");
 
 		OccBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
-		for(i=0;i<nAOcc;i++) OccBetaOrbitals[i] = 1.0;
-		for(i=nAOcc;i<NOrb;i++) OccBetaOrbitals[i] = 0.0;
-		NBetaOcc = nAOcc;
-		NBetaOrb = nA;
+		for(i=0;i<nBOcc;i++) OccBetaOrbitals[i] = 1.0;
+		for(i=nBOcc;i<NOrb;i++) OccBetaOrbitals[i] = 0.0;
+		NBetaOcc = nBOcc;/* bug fixed 03 Sep 2012 */
+		NBetaOrb = nB;
 		if(!energiesAlpha && !coefsAlpha && nA == 0 && nBOcc==nAOcc)
 		{
 			CoefAlphaOrbitals = CoefBetaOrbitals;
@@ -2435,6 +2440,20 @@ void read_gamess_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
 	add_objects_for_new_grid();
  	read_gamess_orbitals(FileName);
 } 
+/********************************************************************************/
+void read_nbo_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
+{
+ 	gchar *FileName;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+	gtk_widget_hide(GTK_WIDGET(SelecFile));
+	while( gtk_events_pending() ) gtk_main_iteration();
+
+	add_objects_for_new_grid();
+ 	read_nbo_orbitals(FileName);
+} 
+/********************************************************************************/
 /********************************************************************************/
 void read_orca_orbitals_sel_2mkl(GabeditFileChooser *SelecFile, gint response_id)
 {

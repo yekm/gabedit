@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -34,6 +34,7 @@ void read_XYZ_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile 
 void read_XYZ_from_gamess_input_file(gchar *NomFichier );
 void read_XYZ_from_mpqc_input_file(gchar *NomFichier );
 void read_XYZ_from_nwchem_input_file(gchar *NomFichier );
+void read_XYZ_from_psicode_input_file(gchar *NomFichier );
 void read_XYZ_from_orca_input_file(gchar *NomFichier );
 void read_XYZ_from_qchem_input_file(gchar *NomFichier );
 void read_XYZ_from_mopac_input_file(gchar *NomFichier );
@@ -47,6 +48,7 @@ void read_geom_from_mpqc_output_file(gchar *fileName, gint numGeometry);
 void read_geom_from_molpro_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_orca_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_nwchem_file(gchar *NomFichier, gint numgeometry);
+void read_geom_from_psicode_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_qchem_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_mopac_output_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_gamess_irc_file(gchar *NomFichier, gint numgeometry);
@@ -93,7 +95,9 @@ void read_last_molpro_file(GabeditFileChooser *SelecFile , gint response_id);
 void read_first_orca_file(GabeditFileChooser *SelecFile , gint response_id);
 void read_last_orca_file(GabeditFileChooser *SelecFile , gint response_id);
 void read_first_nwchem_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_first_psicode_file(GabeditFileChooser *SelecFile , gint response_id);
 void read_last_nwchem_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_last_psicode_file(GabeditFileChooser *SelecFile , gint response_id);
 void read_first_qchem_file(GabeditFileChooser *SelecFile , gint response_id);
 void read_last_qchem_file(GabeditFileChooser *SelecFile , gint response_id);
 void read_first_mopac_output_file(GabeditFileChooser *SelecFile , gint response_id);

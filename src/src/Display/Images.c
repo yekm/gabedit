@@ -1,6 +1,6 @@
 /* Images.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -31,68 +31,6 @@ static void snapshot_pixbuf_free (guchar   *pixels, gpointer  data)
 	g_free (pixels);
 }
 /**************************************************************************/
-/*
-static GdkPixbuf  *get_pixbuf_gl(guchar* colorTrans)
-{       
-	gint width;
-	gint height;
-      	gint stride;
-	GdkPixbuf  *pixbuf = NULL;
-	GdkPixbuf  *tmp = NULL;
-	GdkPixbuf  *tmp2 = NULL;
-	guchar *data;
-	GLint viewport[4];
-
-	glGetIntegerv(GL_VIEWPORT, viewport);
-  	width  = viewport[2];
-  	height = viewport[3];
-
-#ifdef G_OS_WIN32 
-	stride = width*3;
-
-	data = g_malloc0 (sizeof (guchar) * stride * height);
-  	//glReadBuffer(GL_BACK);
-  	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,data);
-	tmp = gdk_pixbuf_new_from_data (data, GDK_COLORSPACE_RGB, FALSE, 
-                                      8, width, height, stride, snapshot_pixbuf_free,
-                                      NULL);
-#else
-	stride = width*4;
-
-	data = g_malloc0 (sizeof (guchar) * stride * height);
-  	glReadBuffer(GL_FRONT);
-  	glReadPixels(0,0,width,height,GL_RGBA,GL_UNSIGNED_BYTE,data);
-	tmp = gdk_pixbuf_new_from_data (data, GDK_COLORSPACE_RGB, TRUE, 
-                                      8, width, height, stride, snapshot_pixbuf_free,
-                                      NULL);
-#endif
-
-	if(tmp)
-	{
-		tmp2 = gdk_pixbuf_flip (tmp, TRUE); 
-		g_object_unref (tmp);
-	}
-
-	if(tmp2)
-	{
-		pixbuf = gdk_pixbuf_rotate_simple (tmp2, GDK_PIXBUF_ROTATE_UPSIDEDOWN);
-		g_object_unref (tmp2);
-	}
-
-	if(colorTrans)
-	{
-		tmp = gdk_pixbuf_add_alpha(pixbuf, TRUE, colorTrans[0], colorTrans[1], colorTrans[2]);
-		if(tmp!=pixbuf)
-		{
- 			g_object_unref (pixbuf);
-			pixbuf = tmp;
-		}
-	}
-	
-	return pixbuf;
-}
-*/
-
 /**************************************************************************/
 static GdkPixbuf  *get_pixbuf_gl(guchar* colorTrans)
 {       
@@ -320,10 +258,11 @@ static gchar* save_ppm(gchar* fileName)
 
 	for(i=height-1; i>= 0; i--){
 	   for(j=0; j< width; j++){
+		int ierr;
 		k = 3*(j + i*width);
-		fwrite( &rgbbuf[k] ,sizeof(*rgbbuf), 1, file);
-		fwrite( &rgbbuf[k+1] ,sizeof(*rgbbuf), 1, file);
-		fwrite( &rgbbuf[k+2] ,sizeof(*rgbbuf), 1, file);
+		ierr = fwrite( &rgbbuf[k] ,sizeof(*rgbbuf), 1, file);
+		ierr = fwrite( &rgbbuf[k+1] ,sizeof(*rgbbuf), 1, file);
+		ierr = fwrite( &rgbbuf[k+2] ,sizeof(*rgbbuf), 1, file);
 	   }
 	}
 
@@ -369,6 +308,7 @@ static void WLSBL(int val,char* arr)
 /**************************************************************************/
 static gchar* save_bmp(gchar* fileName)
 {       
+	int ierr;
 	FILE *file;
 	int i;
 	int j;
@@ -427,7 +367,7 @@ static gchar* save_bmp(gchar* fileName)
   	WLSBL((int) height,bmp_header+22);
   	WLSBL((int) 3*width*height,bmp_header+34);
 
-  	fwrite(bmp_header,1,54,file);
+  	ierr = fwrite(bmp_header,1,54,file);
 
   	for (i=0;i<height;i++)
 	{
@@ -436,11 +376,11 @@ static gchar* save_bmp(gchar* fileName)
 			rgbtmp[0] = rgbbuf[(j+width*i)*3+2];
 			rgbtmp[1] = rgbbuf[(j+width*i)*3+1];
 			rgbtmp[2] = rgbbuf[(j+width*i)*3+0];
-			fwrite(rgbtmp,3,1,file);
+			ierr = fwrite(rgbtmp,3,1,file);
     		}
     	rgbtmp[0] = (char) 0;
     	for (j=0;j<pad;j++) 
-		fwrite(rgbtmp,1,1,file);
+		ierr = fwrite(rgbtmp,1,1,file);
   	}
 
   	fclose(file);

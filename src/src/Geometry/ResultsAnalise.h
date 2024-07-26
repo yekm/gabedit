@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -44,6 +44,7 @@ void read_geometries_conv_mopac_irc(GabeditFileChooser *SelecFile, gint response
 void read_geometries_conv_orca(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_qchem(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_nwchem(GabeditFileChooser *SelecFile, gint response_id);
+void read_geometries_conv_psicode(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_gabedit(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_molden(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_mpqc(GabeditFileChooser *SelecFile, gint response_id);

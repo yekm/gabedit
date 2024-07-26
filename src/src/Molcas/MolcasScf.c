@@ -1,6 +1,6 @@
 /* MolcasScf.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -88,9 +88,9 @@ static void copyScfParameters(MolcasScf* newCopy, MolcasScf* toCopy)
 {
 	gint i;
 
-	sprintf( newCopy->title, toCopy->title);
-	sprintf( newCopy->type, toCopy->type);
-	sprintf( newCopy->method, toCopy->method);
+	sprintf( newCopy->title,"%s", toCopy->title);
+	sprintf( newCopy->type, "%s", toCopy->type);
+	sprintf( newCopy->method, "%s", toCopy->method);
 
 	newCopy->typeOfOcupations = toCopy->typeOfOcupations;
 
@@ -338,7 +338,7 @@ static void changedEntryType(GtkWidget *entry, gpointer data)
 	entryText = gtk_entry_get_text(GTK_ENTRY(entry));
 	if(strlen(entryText)<1)return;
 
-	sprintf(molcasScfTmp.type,entryText);
+	sprintf(molcasScfTmp.type, "%s", entryText);
 	comboCharge  = g_object_get_data(G_OBJECT (entry), "Combo");
 	if(!GTK_IS_WIDGET(comboCharge)) return;
 	if(strcmp(molcasScfTmp.type,"Restricted")==0) setComboCharge(comboCharge, TRUE);
@@ -355,7 +355,7 @@ static void changedEntryMethod(GtkWidget *entry, gpointer data)
 	entryText = gtk_entry_get_text(GTK_ENTRY(entry));
 	if(strlen(entryText)<1)return;
 
-	sprintf(molcasScfTmp.method,entryText);
+	sprintf(molcasScfTmp.method,"%s", entryText);
 }
 /*********************************************************************************************/
 static GtkWidget* addComboListToATable(GtkWidget* table,

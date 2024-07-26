@@ -1,6 +1,6 @@
 /* SplashScreen.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -312,6 +312,7 @@ static gint configure_event( GtkWidget *widget, GdkEventConfigure *event )
 
 	if(strstr(txt,"Gabedit"))
 	{
+		gdouble t;
         	gchar* Version_S = g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
 		gint width = 0;
 		gint dum = 0;
@@ -324,6 +325,18 @@ static gint configure_event( GtkWidget *widget, GdkEventConfigure *event )
     		tmpcolor.red = 20000;
 		tmpcolor.green = 10000;
 		tmpcolor.blue = 20000;
+   		if(!gdk_color_parse("sky blue",&tmpcolor))
+		{
+    		tmpcolor.red = 65000;
+		tmpcolor.green = 10000;
+		tmpcolor.blue = 65000;
+		}
+		t = 0.1 + 0.25;
+		t = 0.5;
+    		tmpcolor.red = (gushort)(tmpcolor.red*t);
+		tmpcolor.green = (gushort)(tmpcolor.green*t);
+		tmpcolor.blue = (gushort)(tmpcolor.blue*t);
+
 		gdk_colormap_alloc_color(colormap, &tmpcolor, FALSE, TRUE);
 		gdk_gc_set_foreground(gc,&tmpcolor);
 		gdk_draw_arc(pixmap, gc, TRUE,x,0, width, widget->allocation.height, 0, 360*64);
@@ -376,7 +389,8 @@ static void create_welcome_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   PangoFontDescription *font_desc = pango_font_description_from_string ("sans bold 20");
 
 /*   if(!gdk_color_parse("royal blue",color))*/
-  if(!gdk_color_parse("dark orange",color))
+   if(!gdk_color_parse("sky blue",color))
+/*  if(!gdk_color_parse("dark orange",color))*/
   { 
 	 	color->red = 40000; 
 	  	color->green = 40000; 
@@ -424,7 +438,8 @@ static void create_name_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   PangoFontDescription *font_desc = pango_font_description_from_string ("sans bold 16");
 
 /*   if(!gdk_color_parse("royal blue",color))*/
-  if(!gdk_color_parse("dark orange",color))
+   if(!gdk_color_parse("sky blue",color))
+/*  if(!gdk_color_parse("dark orange",color))*/
   { 
 	 	color->red = 40000; 
 	  	color->green = 40000; 
@@ -472,7 +487,8 @@ static void create_program_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   PangoFontDescription *font_desc = pango_font_description_from_string ("sans bold 50");
 
 /*   if(!gdk_color_parse("royal blue",color))*/
-  if(!gdk_color_parse("dark orange",color))
+   if(!gdk_color_parse("sky blue",color))
+/*  if(!gdk_color_parse("dark orange",color))*/
   { 
 	 	color->red = 40000; 
 	  	color->green = 40000; 
@@ -523,7 +539,8 @@ static void create_gui_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   PangoFontDescription *font_desc = pango_font_description_from_string ("sans bold 16");
 
 /*   if(!gdk_color_parse("royal blue",color))*/
-  if(!gdk_color_parse("dark orange",color))
+   if(!gdk_color_parse("sky blue",color))
+/*  if(!gdk_color_parse("dark orange",color))*/
   { 
 	 	color->red = 40000; 
 	  	color->green = 40000; 
@@ -611,7 +628,7 @@ static void create_copyright_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   gint width = 0;
   gint widthVersion = 0;
   gint heightVersion = 0;
-  gchar* txt = g_strdup("Copyright (c) 2002-2011 Abdul-Rahman Allouche.");
+  gchar* txt = g_strdup("Copyright (c) 2002-2013 Abdul-Rahman Allouche.");
   GdkPixmap *pixmap = NULL;
   GdkColor* color = g_malloc(sizeof(GdkColor));
   gchar* Version_S = g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
@@ -619,7 +636,9 @@ static void create_copyright_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   PangoFontDescription *font_desc = pango_font_description_from_string ("sans bold 16");
 
 /*  if(!gdk_color_parse("dark orange",color))*/
-  if(!gdk_color_parse("black",color))
+/*   if(!gdk_color_parse("royal blue",color))*/
+   if(!gdk_color_parse("sky blue",color))
+/*  if(!gdk_color_parse("black",color))*/
   { 
 	 	color->red = 40000; 
 	  	color->green = 40000; 

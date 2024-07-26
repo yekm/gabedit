@@ -25,7 +25,7 @@ ifeq ($(enable_omp),1)
 OMPLIB=-L/usr/lib -lgomp
 OMPCFLAGS=-DENABLE_OMP -fopenmp
 endif
-COMMONCFLAGS = -Wall -O2 -DENABLE_DEPRECATED $(OMPCFLAGS)
+COMMONCFLAGS = -Wall -O2 -DENABLE_DEPRECATED $(OMPCFLAGS) -Wformat-security -Wno-unused-variable 
 
 
 

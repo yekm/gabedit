@@ -1,6 +1,6 @@
 /* CreatePersonalMMFile.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -195,12 +195,13 @@ static void saveParametersAtomTypes(FILE* file,AmberParameters* amberParameters)
 
 	for(i=0;i<amberParameters->numberOfTypes;i++)
 	{
-		fprintf(file,"%s\t%s\t%d\t%6.3f\t%6.3f\n",
+		fprintf(file,"%s\t%s\t%d\t%6.3f\t%6.3f\t%s\n",
 			amberParameters->atomTypes[i].name,
 			amberParameters->atomTypes[i].symbol,
 			amberParameters->atomTypes[i].number+1,
 			amberParameters->atomTypes[i].masse,
-			amberParameters->atomTypes[i].polarisability
+			amberParameters->atomTypes[i].polarisability,
+			amberParameters->atomTypes[i].description
 			);
 	}
 

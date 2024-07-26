@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -132,8 +132,8 @@ void get_molpro_basis_list(gchar* Symb,gchar* orb,gchar* outfile,gchar* errfile)
 	gint atomNumber = -1;
 	gint i;
 
-	g_strdown(orbdown);
-	g_strup(orbup);
+	lowercase(orbdown);
+	uppercase(orbup);
 
 	if(molproBasis.numberOfAtoms<1)
 	{
@@ -346,7 +346,7 @@ static void eventDispatcher(GtkWidget *widget, GdkEventButton *event, gpointer u
 		{
 			model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
 			gtk_tree_selection_select_path  (gtk_tree_view_get_selection (GTK_TREE_VIEW (widget)), path);
-			sprintf(selectedRow ,gtk_tree_path_to_string(path));
+			sprintf(selectedRow ,"%s",gtk_tree_path_to_string(path));
 			gtk_tree_model_get_iter (model, &iter, path);
 			gtk_tree_path_free(path);
   			if (event->type == GDK_BUTTON_PRESS && ((GdkEventButton *) event)->button == 3)
@@ -1212,7 +1212,7 @@ void loadMolproBasis()
 		printf(_("Sorry the molprobasis is corrupted.\nPlease reinstall gabedit\n"));
 		return;
 	}
-	fgets(t,BSIZE,file); /* number of atoms */
+    	{ char* e = fgets(t,BSIZE,file);} /* number of atoms */
 	point = strstr(t,"=");
 	if(!point)
 	{

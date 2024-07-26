@@ -1,6 +1,6 @@
 /* Measure.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -702,7 +702,6 @@ static void activate_dihedral_entry(GtkWidget* entry, gchar* data)
 		g_free(oldA);
 		return;
 	}
-//HERE
         if (GTK_TOGGLE_BUTTON (MoveGroupButton)->active) 
 	{
         	if (GTK_TOGGLE_BUTTON (Move23Button)->active) 

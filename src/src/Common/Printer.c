@@ -1,6 +1,6 @@
 /* Printer.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -50,7 +50,7 @@ void change_of_chars(GtkWidget* w,gpointer data)
  gchar *sheets;
 
   orientation = g_strdup(gtk_entry_get_text(GTK_ENTRY(entrys.Orientation))); 
-  g_strdown(orientation);
+  lowercase(orientation);
   sheets = g_strdup(gtk_entry_get_text(GTK_ENTRY(entrys.NbSheets))); 
   if (strstr((gchar *)orientation,_("landscape")) && strstr((gchar *)sheets,"1") )
   		gtk_entry_set_text(GTK_ENTRY(entrys.Format),"140");
@@ -83,7 +83,7 @@ void print_file(GtkWidget* w,gpointer data)
  if (!strcmp((gchar *)ProgName,"a2ps") )
  {
   	orientation = g_strdup(gtk_entry_get_text(GTK_ENTRY(entrys.Orientation))); 
-  	g_strdown(orientation);
+  	lowercase(orientation);
   	format = gtk_entry_get_text(GTK_ENTRY(entrys.Format)); 
   	sheets = gtk_entry_get_text(GTK_ENTRY(entrys.NbSheets)); 
 

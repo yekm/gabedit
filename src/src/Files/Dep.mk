@@ -20,10 +20,11 @@ ListeFiles.o: ListeFiles.c ../../Config.h ../Common/Global.h \
   ../../pixmaps/GamessMini.xpm ../../pixmaps/FireFlyMini.xpm \
   ../../pixmaps/Gaussian.xpm ../../pixmaps/MolproMini.xpm \
   ../../pixmaps/MolcasMini.xpm ../../pixmaps/MPQCMini.xpm \
-  ../../pixmaps/NWChemMini.xpm ../../pixmaps/OrcaMini.xpm \
-  ../../pixmaps/QChemMini.xpm ../../pixmaps/MopacMini.xpm \
-  ../../pixmaps/GabeditMini.xpm ../../pixmaps/Book_close.xpm \
-  ../../pixmaps/Page.xpm ../Common/StockIcons.h ../Files/ListeFiles.h
+  ../../pixmaps/NWChemMini.xpm ../../pixmaps/PsicodeMini.xpm \
+  ../../pixmaps/OrcaMini.xpm ../../pixmaps/QChemMini.xpm \
+  ../../pixmaps/MopacMini.xpm ../../pixmaps/GabeditMini.xpm \
+  ../../pixmaps/Book_close.xpm ../../pixmaps/Page.xpm \
+  ../Common/StockIcons.h ../Files/ListeFiles.h
 GabeditFolderChooser.o: GabeditFolderChooser.c ../../Config.h \
   GabeditFolderChooser.h
 GabeditFileChooser.o: GabeditFileChooser.c ../../Config.h \

@@ -1,6 +1,6 @@
 /* BuildRing.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -71,7 +71,7 @@ static void build_ring_molecule(GtkWidget *w,gpointer data)
 	Ro = sqrt(2*(1-cos(angle) )); 
 	Ro = Distance/Ro; 
 
-	Dipole.def = FALSE;
+	init_dipole();
  	if(GeomXYZ)
    		freeGeomXYZ();
  	if(VariablesXYZ)

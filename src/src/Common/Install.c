@@ -1,6 +1,6 @@
 /* Install.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -117,7 +117,7 @@ static struct
     FALSE, "commands",
     N_(
     "The \"commands\" file is used to store commands\n"
-    "for execute Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC, NWChem, Orca, FireFly or Q-Chem program.\n"
+    "for execute FireFly, Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC, NWChem, Orca, Psicode or Q-Chem program.\n"
     )
   },
   {
@@ -635,7 +635,7 @@ void user_install_dialog_create(UserInstallCallback callback)
 
   add_label(GTK_BOX(page),
             _(
-            "Gabedit is a Graphical User Interface to Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC , NWChem, Orca, FireFly and Q-Chem\n"
+            "Gabedit is a Graphical User Interface to FireFly, Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC , NWChem, Orca, Psicode and Q-Chem\n"
             "computational chemistry packages.\n"
 	    "It can display a variety of calculation results including support for most major molecular file formats.\n"
 	    "The advanced 'Molecule Builder' allows to rapidly sketch in molecules and examine them in 3D\n"
@@ -656,7 +656,7 @@ void user_install_dialog_create(UserInstallCallback callback)
 
   add_label(GTK_BOX(page),
 		  _(
-		  "Copyright (c) 2002-2011 Abdul-Rahman Allouche.\n"
+		  "Copyright (c) 2002-2013 Abdul-Rahman Allouche.\n"
 		  "All rights reserved.\n"
 		  "\nGabedit is free.\n"
 		  )
@@ -819,7 +819,7 @@ void user_install_dialog_create(UserInstallCallback callback)
 
   add_label(GTK_BOX(commands_network_page),
 	    _(
-            "To execute Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC, NWChem, Orca, FireFly and Q-Chem program, "
+            "To execute FireFly, Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC, NWChem, Orca, Psicode and Q-Chem program, "
             "GABEDIT needs to know commands system.\n"
             "GABEDIT needs to know network protocols.\n"
   	    "You can change them after installation (Settings/Preferences)."

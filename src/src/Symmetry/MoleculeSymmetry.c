@@ -1,6 +1,6 @@
 /* MoleculeSymmetry.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -32,6 +32,8 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/GabeditType.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/Constants.h"
+#include "../Utils/Utils.h"
+#include "../Symmetry/Symmetry.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,14 +45,36 @@ DEALINGS IN THE SOFTWARE.
 #define  C5X  0.6070619987
 #define  C5Z  0.7946544719
 
-#define  DEBUGSYM 0
+/************************************************************************************************************/
+static gint freeAMolecule(MolSymMolecule* mol)
+{
+
+        gint i;
+        if(mol->numberOfAtoms>0 && mol->listOfAtoms) g_free(mol->listOfAtoms);
+        mol->listOfAtoms = NULL;
+        mol->numberOfAtoms = 0;
+        if(mol->numberOfDifferentKindsOfAtoms>0 && mol->symbol)
+        {
+                for(i=0;i<mol->numberOfDifferentKindsOfAtoms;i++)
+                        if( mol->symbol[i]) g_free(mol->symbol[i]);
+                g_free(mol->symbol);
+        }
+        mol->symbol = NULL;
+        if(mol->numberOfDifferentKindsOfAtoms>0 && mol->numberOfAtomsOfEachType) g_free(mol->numberOfAtomsOfEachType);
+        mol->numberOfAtomsOfEachType = 0;
+        if(mol->numberOfDifferentKindsOfAtoms>0 && mol->masse) g_free(mol->masse);
+        mol->masse = 0;
+        mol->numberOfDifferentKindsOfAtoms = 0;
+        return 0;
+}
 
 /************************************************************************************************************/
+/*
 static void printMolSymMolecules(MolSymMolecule* mol)
 {
 	gint i;
 	MolSymAtom *atomList;
-	gint deleted = mol->numberOfDifferentKindsOfAtoms;     /* tag for deleted atom */
+	gint deleted = mol->numberOfDifferentKindsOfAtoms;     // tag for deleted atom 
  
 	atomList = mol->listOfAtoms;
 	
@@ -66,6 +90,7 @@ static void printMolSymMolecules(MolSymMolecule* mol)
 		atomList++;
 	 }
 }
+*/
 /************************************************************************************************************/
 static gdouble getSmallestDistanceBetweenAtoms(MolSymMolecule* mol)
 {
@@ -106,7 +131,7 @@ void setGeneratorsAbelianGroup(gchar* groupName,
 
 	gchar group[BSIZE];
 	sprintf(group,"%s",groupName);
-	g_strup(group);
+	uppercase(group);
 
 	if(!strcmp(group,"D2H"))
 	{
@@ -221,28 +246,18 @@ void setGeneratorsAbelianGroup(gchar* groupName,
 		*nMolcas = 0;
 		*nElements = 0;
 	}
-	/*
-	{
-	gint i;
-	printf("group Name : %s\n", groupName);
-	printf("Generators : "); for(i=0;i<*nGenerators;i++) printf("%s, ",generators[i]); printf("\n");
-	printf("Molcas     : "); for(i=0;i<*nMolcas;i++) printf("%s, ",molcasGenerators[i]); printf("\n");
-	printf("Elements   : "); for(i=0;i<*nElements;i++) printf("%s, ",elements[i]); printf("\n");
-	}
-	*/
 }
 /************************************************************************************************************/
 static void getAbelianGroupSymbol(MolSymMolecule* mol, gchar* groupName)
 {
 	gint nax = 0;
-	gint ix = 0;
 	gint iz = 0;
 	gint iy = 0;
+	gint ix = 0;
 	gint ixy = 0;
 	gint ixz = 0;
 	gint ixyz = 0;
 
-	/* qsort(mol->listOfAtoms,mol->numberOfAtoms,sizeof(MolSymAtom),compare2atoms);*/
 	nax = determineOrderOfZAxis(mol, 12);
 
 	ixy = testRotationReflection(mol,XY_PLANE);
@@ -252,16 +267,6 @@ static void getAbelianGroupSymbol(MolSymMolecule* mol, gchar* groupName)
 	iy =  testRotationReflection(mol,ROT2X);
 
 	if(nax%2==0) iz = 1;
-	/*
-	printf("\n\n");
-	if(nax%2==0) printf("(C2z)\n");
-	if(ix) printf("(C2x)\n");
-	if(iy) printf("(C2y)\n");
-	if(ixy) printf("Sigma\n");
-	if(ixz) printf("Sigma v\n");
-	if(ixyz) printf("i\n");
-	sprintf(groupName," ");
-	*/
 	if(ixyz)
 	{
 		if(iz && iy) sprintf(groupName,"D2h");
@@ -292,7 +297,6 @@ static void getAbelianGroup(MolSymMolecule* mol,
 static void getPointGroupSymbol(gint sym, gint nax, gchar* pgsym)
 {
 
-	/* printf("sym = %d\n",sym);*/
 	*pgsym = 0;
 	if (sym==0 && nax>0) sprintf(pgsym,"C%d",nax);
 	else if (sym & SYM_R) strcat(pgsym,"R3");
@@ -442,8 +446,6 @@ static gint determineSymmetry(MolSymMolecule* mol,int* nax, gint numberOfEquival
 			symmetry |= SYM_H;
 			symmetry &=~SYM_V;
 		} 
-		/* printf("nax final = %d\n",*nax);*/
-		/* printf("symm = %d\n",symmetry);*/
 		break;
 		case 3:
 		*nax = searchForC3Axes(mol, error);
@@ -543,7 +545,6 @@ static void getSymmetryFromSymbol(gchar* syml,int* sym,int* nax, gchar* error)
 		*sym = 0;
 		*nax = 1;
 	}
-	/* printf("sym = %d\n",*sym);*/
 }
 /************************************************************************************************************/
 static gint setMolSymMolecule(MolSymMolecule* mol, gint nAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z, gdouble eps)
@@ -606,7 +607,6 @@ static gint setMolSymMolecule(MolSymMolecule* mol, gint nAtoms, gchar** symbols,
 	for(n=0; n<mol->numberOfAtoms; n++)
 	{
 		atomList->eps  = eps;
-		/* printf("%s %f %f %f %f\n", mol->symbol[atomList->type],atomList->position[0],  atomList->position[1],  atomList->position[2], atomList->eps);*/
 		atomList++;
 	}
 
@@ -628,174 +628,6 @@ gint pointGroupSymbol;	  		if not NO ->  symmetry fixed manually (modified if po
 OUPUT
 gchar* message;      			Error Message 
 */
-/************************************************************************************************************/
-int computeSymmetry(
-		gdouble principalAxisTolerance, gboolean axz_3, gchar* pointGroupSymbol,
-		gint maximalOrder, gboolean redu,
-	       	gint* numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z,  gdouble* precision, gchar* message)
-{
-	/* gdouble eps = -1.0;*/
-	gdouble eps = *precision;
-	MolSymMolecule mol;
-	gdouble centerOfGravity[3]; 
-	gint numberOfEquivalentAxes;
-	gdouble inertialMoment[3];
-	gdouble axes[3][3];
-	gdouble ax1[3],ax2[3];
-	gint ret;
-	gint nax = 0; /* order of z axis */
-	gint symmetry;
-	gint symf = -1;
-	gchar* syml = pointGroupSymbol;
-	gint i;
-	gint nAtoms = *numberOfAtoms;
-
-	sprintf(message,"C1 Group");
-
-	if(strcmp(syml,"NO")!=0) getSymmetryFromSymbol(syml,&symf,&nax, message);
-	
-	/*
-	printf("symf = %d\n",symf);
-	printf("nax = %d\n",nax);
-	printf("message = %s\n",message);
-	*/
-
-	if(symf == 0 && nax<2)
-	{
-		sprintf(pointGroupSymbol,"C1");
-		return 0;
-	}
-
-	/* printf("eps =%f\n",eps);*/
-	ret = setMolSymMolecule(&mol, nAtoms, symbols, X, Y, Z, eps);
-	/* printf("End set_mol\n");*/
-	if (ret != 0)
-	{
-
-		sprintf(message,_("Not enough memory for molecule"));
-		return ret;
-	}
-
-	determinePrincipalAxis(&mol,centerOfGravity,&numberOfEquivalentAxes,inertialMoment,axes, principalAxisTolerance);  /* transform to principal axes */
-	
-	if(DEBUGSYM){ 
-	printf("End principal\n");
-	printf("numberOfEquivalentAxes = %d\n", numberOfEquivalentAxes);
-	printf("Number of atoms:");
-        for (i=0;i<mol.numberOfDifferentKindsOfAtoms;i++)
-	            printf("%.2s  %d\t",mol.symbol[i],mol.numberOfAtomsOfEachType[i]);
-	                                                                                                                        
-	printf("\nCenter of gravity: %f %f %f\n\n",centerOfGravity[0],centerOfGravity[1],centerOfGravity[2]);
-	printf("\nInertial moments: %f %f %f\n\n",inertialMoment[0],inertialMoment[1],inertialMoment[2]);
-                                                                                                                          
-	printf("Axis: %f %f %f\n",axes[0][0],axes[1][0],axes[2][0]);
-	printf("Axis: %f %f %f\n",axes[0][1],axes[1][1],axes[2][1]);
-	printf("Axis: %f %f %f\n",axes[0][2],axes[1][2],axes[2][2]);
-	}
-
-	if (symf < 0 ) /* symmetry not fixed */
-	{
-		symmetry = determineSymmetry(&mol,&nax,numberOfEquivalentAxes, maximalOrder, principalAxisTolerance, message);
-		if(DEBUGSYM) printf("symf = %d symmetry = %d nax = %d\n",symf,symmetry,nax);
-	}
-	else
-	{
-		gchar ns[100];
-		gint naxOld = nax;
-		symmetry =determineSymmetry(&mol,&nax,numberOfEquivalentAxes, maximalOrder, principalAxisTolerance, message);
-		getPointGroupSymbol(symmetry, nax, ns);
-		g_strup(pointGroupSymbol);
-		g_strup(ns);
-		if(DEBUGSYM) printf("ns = %s gr = %s\n",ns,pointGroupSymbol);
-		if(DEBUGSYM) printf("symf = %d symmetry = %d nax = %d\n",symf,symmetry,nax);
-		if(strcmp(ns,pointGroupSymbol)!=0) 
-		{
-			nax = naxOld;
-			if(DEBUGSYM) printf("nax = %d\n",nax);
-
-			symmetry = symf;
-		}
-	}
-	
-
-	if(DEBUGSYM){ 
-		if(symmetry & SYM_H) printf("symmetry & SYM_H\n");
-		if(symmetry & SYM_V) printf("symmetry & SYM_V\n");
-		if(symmetry & SYM_D) printf("symmetry & SYM_D\n");
-		if(symmetry & SYM_S) printf("symmetry & SYM_S\n");
-		printf("symmetry = %d\n",symmetry);
-		printf("End determineSymmetry symm = %d\n", symmetry);
-		printf("Mess = %s\n", message);
-		printf("nax = %d\n", nax);
-	}
-
-
-	if(symmetry == 0 && nax<2)
-	{
-		*precision = mol.listOfAtoms[0].eps;
-		return -1;
-	}
-	/* printf("nAToms avant reduction %d\n", mol.numberOfAtoms);*/
-	if (redu) reduceMoleculeToItsBasisSetOfAtoms(&mol,symmetry,nax);
-	if(DEBUGSYM) printMolSymMolecules(&mol);
-	/* printf("End reduceMoleculeToItsBasisSetOfAtoms\n");*/
-	if ((symmetry & SYM_O) && !axz_3)           /* x,y,z axis C4 symmetry */
-	{
-		ax1[0] = sqrt(2./3.);
-		ax1[1] = 0.0;
-		ax1[2] = sqrt(1./3.);
-		ax2[0] = sqrt(1./6.);
-		ax2[1] = sqrt(1./2.);
-		ax2[2] =-sqrt(1./3.);
-      
-		rotateMoleculeToPlaceFirstPointOnZAxisAndSecondOnXZPlane(&mol,ax1,ax2);                 
-		qsort(mol.listOfAtoms,mol.numberOfAtoms, sizeof(MolSymAtom),compare2atomsUsingCenterOfGravity);
-		nax = 4;
-	}
-
-	if ((symmetry & SYM_IC) && ! axz_3)      /* z axis C5 symmetry */
-	{
-		ax1[0] = C5X;
-		ax1[1] = 0.0;
-		ax1[2] = C5Z;
-		ax2[0] = 0.0;
-		ax2[1] = 0.0;
-		ax2[2] = 1.0;
-      
-		rotateMoleculeToPlaceFirstPointOnZAxisAndSecondOnXZPlane(&mol,ax1,ax2);                 
-		qsort(mol.listOfAtoms,mol.numberOfAtoms, sizeof(MolSymAtom),compare2atomsUsingCenterOfGravity);
-		nax = 5;
-	}
-	getPointGroupSymbol(symmetry,nax, pointGroupSymbol);
-
-	/*
-	printf("Group %s\n",pointGroupSymbol);
-	printf("nAToms %d\n", mol.numberOfAtoms);
-	*/
-
-      	for (i=0;i < mol.numberOfAtoms;i++)
-	{ 
-		sprintf(symbols[i],mol.symbol[mol.listOfAtoms[i].type]);
-		X[i] = mol.listOfAtoms[i].position[0];
-		Y[i] = mol.listOfAtoms[i].position[1];
-		Z[i] = mol.listOfAtoms[i].position[2];
-		/* printf("%s %f %f %f\n",symbols[i],X[i], Y[i], Z[i]);*/
-	}
-	*numberOfAtoms = mol.numberOfAtoms;
-	*precision = mol.listOfAtoms[0].eps;
-
-
-	if(mol.listOfAtoms) g_free(mol.listOfAtoms);
-	if(mol.symbol)
-	{
-		for(i=0; i<mol.numberOfAtoms; i++) if(mol.symbol[i]) g_free(mol.symbol[i]);
-		g_free(mol.symbol);
-	}
-	if(mol.numberOfAtomsOfEachType) g_free(mol.numberOfAtomsOfEachType);
-	if(mol.masse) g_free(mol.masse);
-	return 0;
-}
-
 /************************************************************************************************************/
 /*
  INPUT 
@@ -851,7 +683,6 @@ int computeAbelianGroup(
 	sprintf(pointGroupSymbol,"C1");
 	sprintf(abelianPointGroupSymbol,"C1");
 	ret = setMolSymMolecule(&mol, nAtoms, symbols, X, Y, Z, eps);
-	/* printf("End set_mol\n");*/
 	if (ret != 0)
 	{
 
@@ -859,38 +690,12 @@ int computeAbelianGroup(
 		return ret;
 	}
 
-	determinePrincipalAxis(&mol,centerOfGravity,&numberOfEquivalentAxes,inertialMoment,axes, principalAxisTolerance);  /* transform to principal axes */
-	/*
-	
-	printf("End principal\n");
-	printf("numberOfEquivalentAxes = %d\n", numberOfEquivalentAxes);
-	printf("Number of atoms:");
-        for (i=0;i<mol.numberOfDifferentKindsOfAtoms;i++)
-	            printf("%.2s  %d\t",mol.symbol[i],mol.numberOfAtomsOfEachType[i]);
-	                                                                                                                        
-	printf("\nCenter of gravity: %f %f %f\n\n",centerOfGravity[0],centerOfGravity[1],centerOfGravity[2]);
-	printf("\nInertial moments: %f %f %f\n\n",inertialMoment[0],inertialMoment[1],inertialMoment[2]);
-                                                                                                                          
-	printf("Axis: %f %f %f\n",axes[0][0],axes[1][0],axes[2][0]);
-	printf("Axis: %f %f %f\n",axes[0][1],axes[1][1],axes[2][1]);
-	printf("Axis: %f %f %f\n",axes[0][2],axes[1][2],axes[2][2]);
-	*/
+	determinePrincipalAxis(&mol,centerOfGravity,&numberOfEquivalentAxes,inertialMoment,axes, principalAxisTolerance,TRUE);  /* transform to principal axes */
 
 	symmetry = determineSymmetry(&mol,&nax,numberOfEquivalentAxes, maximalOrder, principalAxisTolerance, message);
 	
-	/*
-	printf("End determineSymmetry symm = %d\n", symmetry);
-	printf("Mess = %s\n", message);
-	printf("nax = %d\n", nax);
-	*/
-
 	if(symmetry == 0)
 	{
-		/*
-		printf("nax = %d\n",nax);
-		printf("numberOfEquivalentAxes = %d\n",numberOfEquivalentAxes);
-		printf("message = %s\n",message);
-		*/
 		*precision = mol.listOfAtoms[0].eps;
 		*nGenerators = 0;
 	       	*nMolcas = 0;
@@ -899,37 +704,23 @@ int computeAbelianGroup(
 	}
 	getPointGroupSymbol(symmetry,nax, pointGroupSymbol);
 	getAbelianGroup(&mol, abelianPointGroupSymbol, nGenerators, generators, nMolcas, molcasGenerators, nElements, elements, NULL);
-	/* printf("nAToms avant reduction %d\n", mol.numberOfAtoms);*/
 	if (redu)
 	{
 		sprintf(buffer,"%s",abelianPointGroupSymbol);
 		getSymmetryFromSymbol(buffer,&symmetry,&nax, message);
 		reduceMoleculeToItsBasisSetOfAtoms(&mol,symmetry,nax);
 	}
-	/*
-	printf("Group %s\n",pointGroupSymbol);
-	printf("nAToms %d\n", mol.numberOfAtoms);
-	*/
       	for (i=0;i < mol.numberOfAtoms;i++)
 	{ 
-		sprintf(symbols[i],mol.symbol[mol.listOfAtoms[i].type]);
+		sprintf(symbols[i],"%s",mol.symbol[mol.listOfAtoms[i].type]);
 		X[i] = mol.listOfAtoms[i].position[0];
 		Y[i] = mol.listOfAtoms[i].position[1];
 		Z[i] = mol.listOfAtoms[i].position[2];
-		/* printf("%s %f %f %f\n",symbols[i],X[i], Y[i], Z[i]);*/
 	}
 	*numberOfAtoms = mol.numberOfAtoms;
 	*precision = mol.listOfAtoms[0].eps;
 
-
-	if(mol.listOfAtoms) g_free(mol.listOfAtoms);
-	if(mol.symbol)
-	{
-		for(i=0; i<mol.numberOfAtoms; i++) if(mol.symbol[i]) g_free(mol.symbol[i]);
-		g_free(mol.symbol);
-	}
-	if(mol.numberOfAtomsOfEachType) g_free(mol.numberOfAtomsOfEachType);
-	if(mol.masse) g_free(mol.masse);
+	freeAMolecule(&mol);
 	return 0;
 }
 /************************************************************************************************************/
@@ -1006,3 +797,279 @@ int generateMoleculeUsingAbelianGroup(
 	return 0;
 }
 /************************************************************************************************************/
+void buildStandardOrientation(gint numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z)
+{
+	gdouble eps = -1.0;
+	MolSymMolecule mol;
+	gdouble centerOfGravity[3]; 
+	gint numberOfEquivalentAxes;
+	gdouble inertialMoment[3];
+	gdouble axes[3][3];
+	gint ret;
+	gint i;
+	gdouble principalAxisTolerance = 0.001;
+	gdouble x,y,z,m,mtot;
+	MolSymAtom *atomList;
+
+	ret = setMolSymMolecule(&mol, numberOfAtoms, symbols, X, Y, Z, eps);
+	if (ret != 0) return;
+
+	determinePrincipalAxis(&mol,centerOfGravity,&numberOfEquivalentAxes,inertialMoment,axes, principalAxisTolerance,FALSE);  /* transform to principal axes */
+
+
+	atomList = mol.listOfAtoms;
+	x = y = z =0.0;
+	mtot = 0;
+	for (i=0;i<mol.numberOfAtoms;i++)	  /* center of gravity and total mass */
+	{
+		/* m = sqrt(prime[atomList->type]);*/
+		m = fabs(mol.masse[atomList->type]);
+		x += m*atomList->position[0];
+		y += m*atomList->position[1];
+		z += m*atomList->position[2];
+		mtot += m;
+		atomList++;
+	  }
+	centerOfGravity[0] = x/mtot;
+	centerOfGravity[1] = y/mtot;
+	centerOfGravity[2] = z/mtot;
+
+      	for (i=0;i < mol.numberOfAtoms;i++)
+	{ 
+		X[i] = mol.listOfAtoms[i].position[0]-centerOfGravity[0];
+		Y[i] = mol.listOfAtoms[i].position[1]-centerOfGravity[1];
+		Z[i] = mol.listOfAtoms[i].position[2]-centerOfGravity[2];
+	}
+
+	freeAMolecule(&mol);
+
+	
+}
+/*
+ INPUT 
+gdouble principalAxisTolerance;	  	tolerance for principal axis classification
+gboolean axz_3;  			 O and I symmetry: z-axis of C3 type ?
+gint maximalOrder;	 		maximal order for z-axis
+gboolean redu;    			reduction to symmetry base
+
+INPUT OUPUT
+gint* numberOfAtoms;   			number of atoms (modified if reduction)
+gchar** symbols;			symbol of atoms;
+gdouble *X,*Y,*Z;  			positions of atoms; (modified)
+gint pointGroupSymbol;	  		if not NO ->  symmetry fixed manually (modified if pointGroupSymbol="NO")
+
+OUPUT
+gchar* message;      			Error Message 
+*/
+/************************************************************************************************************/
+int computeSymmetryOld(
+		gdouble principalAxisTolerance, gboolean axz_3, gchar* pointGroupSymbol,
+		gint maximalOrder, gboolean redu,
+	       	gint* numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z,  gdouble* precision, gchar* message)
+{
+	gdouble eps = *precision;
+	MolSymMolecule mol;
+	gdouble centerOfGravity[3]; 
+	gint numberOfEquivalentAxes;
+	gdouble inertialMoment[3];
+	gdouble axes[3][3];
+	gdouble ax1[3],ax2[3];
+	gint ret;
+	gint nax = 0; /* order of z axis */
+	gint symmetry;
+	gint symf = -1;
+	gchar* syml = pointGroupSymbol;
+	gint i;
+	gint nAtoms = *numberOfAtoms;
+
+	sprintf(message,"C1 Group");
+
+	if(strcmp(syml,"NO")!=0) getSymmetryFromSymbol(syml,&symf,&nax, message);
+	
+	if(symf == 0 && nax<2)
+	{
+		sprintf(pointGroupSymbol,"C1");
+		return 0;
+	}
+
+	ret = setMolSymMolecule(&mol, nAtoms, symbols, X, Y, Z, eps);
+	if (ret != 0)
+	{
+
+		sprintf(message,_("Not enough memory for molecule"));
+		return ret;
+	}
+
+	determinePrincipalAxis(&mol,centerOfGravity,&numberOfEquivalentAxes,inertialMoment,axes, principalAxisTolerance, TRUE);  /* transform to principal axes */
+	
+	if (symf < 0 ) /* symmetry not fixed */
+	{
+		symmetry = determineSymmetry(&mol,&nax,numberOfEquivalentAxes, maximalOrder, principalAxisTolerance, message);
+	}
+	else
+	{
+		gchar ns[100];
+		gint naxOld = nax;
+		symmetry =determineSymmetry(&mol,&nax,numberOfEquivalentAxes, maximalOrder, principalAxisTolerance, message);
+		getPointGroupSymbol(symmetry, nax, ns);
+		uppercase(pointGroupSymbol);
+		uppercase(ns);
+		if(strcmp(ns,pointGroupSymbol)!=0) 
+		{
+			nax = naxOld;
+
+			symmetry = symf;
+		}
+	}
+	
+
+
+
+	if(symmetry == 0 && nax<2)
+	{
+		*precision = mol.listOfAtoms[0].eps;
+		return -1;
+	}
+	if (redu) reduceMoleculeToItsBasisSetOfAtoms(&mol,symmetry,nax);
+	if ((symmetry & SYM_O) && !axz_3)           /* x,y,z axis C4 symmetry */
+	{
+		ax1[0] = sqrt(2./3.);
+		ax1[1] = 0.0;
+		ax1[2] = sqrt(1./3.);
+		ax2[0] = sqrt(1./6.);
+		ax2[1] = sqrt(1./2.);
+		ax2[2] =-sqrt(1./3.);
+      
+		rotateMoleculeToPlaceFirstPointOnZAxisAndSecondOnXZPlane(&mol,ax1,ax2);                 
+		qsort(mol.listOfAtoms,mol.numberOfAtoms, sizeof(MolSymAtom),compare2atomsUsingCenterOfGravity);
+		nax = 4;
+	}
+
+	if ((symmetry & SYM_IC) && ! axz_3)      /* z axis C5 symmetry */
+	{
+		ax1[0] = C5X;
+		ax1[1] = 0.0;
+		ax1[2] = C5Z;
+		ax2[0] = 0.0;
+		ax2[1] = 0.0;
+		ax2[2] = 1.0;
+      
+		rotateMoleculeToPlaceFirstPointOnZAxisAndSecondOnXZPlane(&mol,ax1,ax2);                 
+		qsort(mol.listOfAtoms,mol.numberOfAtoms, sizeof(MolSymAtom),compare2atomsUsingCenterOfGravity);
+		nax = 5;
+	}
+	getPointGroupSymbol(symmetry,nax, pointGroupSymbol);
+
+
+      	for (i=0;i < mol.numberOfAtoms;i++)
+	{ 
+		sprintf(symbols[i],"%s",mol.symbol[mol.listOfAtoms[i].type]);
+		X[i] = mol.listOfAtoms[i].position[0];
+		Y[i] = mol.listOfAtoms[i].position[1];
+		Z[i] = mol.listOfAtoms[i].position[2];
+	}
+	*numberOfAtoms = mol.numberOfAtoms;
+	*precision = mol.listOfAtoms[0].eps;
+
+	freeAMolecule(&mol);
+	return 0;
+}
+/************************************************************************************************************/
+int computeSymmetry(
+		gdouble principalAxisTolerance, gchar* pointGroupSymbol,
+		gint maximalOrder, gboolean redu,
+	       	gint* numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z,  gdouble* precision, gchar* message)
+{
+	gdouble eps = *precision;
+	gint nAtoms = *numberOfAtoms;
+	gdouble* mass = NULL;
+	gint i = 0;
+	SMolecule mol = newSMolecule();
+	Symmetry sym;
+	SMolecule* pmol = NULL;
+
+	if(eps<=0) eps = 0.1;
+	sprintf(message,"C1 Group");
+	if(nAtoms<1) return 1;
+	mass = g_malloc(nAtoms*sizeof(gdouble));
+	for(i=0;i<nAtoms;i++) { SAtomsProp prop = prop_atom_get(symbols[i]); mass[i] =  prop.masse;}
+	mol.setMolecule(&mol,  nAtoms, symbols, mass, X, Y, Z);
+	sym = newSymmetry(&mol, eps);
+	sym.setMaxDegree(&sym,maximalOrder);
+	sym.setMomentTolerance(&sym,principalAxisTolerance);
+	sym.findAllPointGroups(&sym);
+	sprintf(pointGroupSymbol,"%s",sym.findSinglePointGroup(&sym));
+	printf("group=%s\n",pointGroupSymbol);
+       	sym.printElementResults(&sym);
+	g_free(mass);
+	sym.getUniqueMolecule(&sym);
+
+	if(!strcmp(pointGroupSymbol,"C1")) return 0;
+
+	if (redu) sym.getUniqueMolecule(&sym);
+
+	pmol = &sym.molecule;
+      	for (i=0;i < pmol->size(pmol);i++)
+	{ 
+		SAtom* atom = pmol->get(pmol,i);
+		Point3D pos = atom->getPosition(atom);
+		X[i] = pos.x;
+		Y[i] = pos.y;
+		Z[i] = pos.z;
+	}
+	*numberOfAtoms = pmol->size(pmol);
+	sym.free(&sym);
+	mol.free(&mol);
+
+	return 0;
+}
+/************************************************************************************************************/
+int computeSymmetrization(
+		gdouble principalAxisTolerance, gchar* pointGroupSymbol, gint maximalOrder,
+	       	gint* numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z,  gdouble* precision, gchar* message)
+{
+	gdouble eps = *precision;
+	gint nAtoms = *numberOfAtoms;
+	gdouble* mass = NULL;
+	gint i = 0;
+	SMolecule mol = newSMolecule();
+	Symmetry sym;
+	gchar* gn;
+	if(eps<=0) eps = 0.1;
+
+	sprintf(message,"C1 Group");
+	if(nAtoms<1) return 1;
+	mass = g_malloc(nAtoms*sizeof(gdouble));
+	for(i=0;i<nAtoms;i++) { SAtomsProp prop = prop_atom_get(symbols[i]); mass[i] =  prop.masse;}
+	mol.setMolecule(&mol,  nAtoms, symbols, mass, X, Y, Z);
+	sym = newSymmetry(&mol, eps);
+	sym.setMaxDegree(&sym,maximalOrder);
+	sym.setMomentTolerance(&sym,principalAxisTolerance);
+	sym.findAllPointGroups(&sym);
+	gn =sym.getGroupName(&sym);
+	sprintf(pointGroupSymbol,"%s",gn);
+	g_free(gn);
+	if(!strcmp(pointGroupSymbol,"C1")) return 0;
+       	sym.printElementResults(&sym);
+       	sym.printPointGroupResults(&sym);
+	g_free(mass);
+
+	mol.free(&mol);
+	mol = sym.getSymmetrizeMolecule(&sym);
+
+	if(mol.size(&mol)==nAtoms)
+      	for (i=0;i < mol.size(&mol);i++)
+	{ 
+		SAtom* atom = mol.get(&mol,i);
+		Point3D pos = atom->getPosition(atom);
+		X[i] = pos.x;
+		Y[i] = pos.y;
+		Z[i] = pos.z;
+		if(symbols && symbols[i]) g_free(symbols[i]);
+		symbols[i] = g_strdup(atom->getSymbol(atom));
+	}
+	sym.free(&sym);
+	mol.free(&mol);
+
+	return 0;
+}

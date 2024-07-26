@@ -1,6 +1,6 @@
 /* GLArea.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -204,8 +204,9 @@ void showLabelDipole()
 {
 	gint i;
 	V4d color  = {0.8,0.8,0.8,1.0 };
-	V3d Base1Pos  = {0.0f,0.0f,0.0f};
-	V3d Base2Pos  = {Dipole.Value[0],Dipole.Value[1],Dipole.Value[2]};
+	V3d Base1Pos  = {Dipole.origin[0],Dipole.origin[1],Dipole.origin[2]};
+	V3d Base2Pos  = {Dipole.origin[0]+Dipole.value[0],Dipole.origin[1]+Dipole.value[1],Dipole.origin[2]+Dipole.value[2]};
+
 	GLdouble radius = Dipole.radius;
 	V3d Center;
 	GLdouble p1=90;
@@ -229,9 +230,9 @@ void showLabelDipole()
 
 	if(radius<0.1) radius = 0.1;
 
-	Base2Pos[0] *= scal;
-	Base2Pos[1] *= scal;
-	Base2Pos[2] *= scal;
+	Base2Pos[0] = Base1Pos[0]+Dipole.value[0]*scal;
+	Base2Pos[1] = Base1Pos[1]+Dipole.value[1]*scal;
+	Base2Pos[2] = Base1Pos[2]+Dipole.value[2]*scal;
 
 	Center[0] = (Base1Pos[0]*p2 + Base2Pos[0]*p1)/p;
 	Center[1] = (Base1Pos[1]*p2 + Base2Pos[1]*p1)/p;
@@ -239,7 +240,7 @@ void showLabelDipole()
 
 	module = 0;
 	for(i=0;i<3;i++)
-		module += Dipole.Value[i]*Dipole.Value[i];
+		module += Dipole.value[i]*Dipole.value[i];
 	module = sqrt(module);
 	module *= AUTODEB;
 	sprintf(buffer,"%0.3f D",module);
@@ -504,7 +505,7 @@ static void apply_set_title(GtkWidget *Win,gpointer data)
 	yValue = gtk_spin_button_get_value (GTK_SPIN_BUTTON(ySpinButton));
 	if(xValue>=0 && xValue<=100) xTitle = xValue;
 	if(yValue>=0 && yValue<=100) yTitle = yValue;
-	if(fontStr) sprintf(fontNameTitle,fontStr);
+	if(fontStr) sprintf(fontNameTitle,"%s",fontStr);
 	if(str && strlen(str)>1)
 	{
 		if(strTitle) g_free(strTitle);

@@ -1,6 +1,6 @@
 /* AtomsProp.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -112,7 +112,7 @@ gboolean read_atoms_prop()
  FILE *fd;
  
  atomspropfile = g_strdup_printf("%s/atomsprop",gabedit_directory());
- fd = FOpen(atomspropfile, "r");  
+ fd = FOpen(atomspropfile, "rb");  
 
  t=g_malloc(taille);
 
@@ -122,7 +122,7 @@ gboolean read_atoms_prop()
   while(!feof(fd) && (i<NATOMS-1))
   {
     i++;
-    fgets(t,taille,fd);
+    if(!feof(fd)) { char* e = fgets(t,taille,fd);}
     AtomsProp[i].name= g_malloc(30);
     AtomsProp[i].symbol= g_malloc(3);
     sscanf(t,"%s %s %d %lf %lf %lf %lf %d %lf %lf %hu %hu %hu %d",
@@ -143,7 +143,7 @@ gboolean read_atoms_prop()
         );
  	for(j=0;j<AtomsProp[i].nIsotopes;j++)
 	{
-    		fgets(t,taille,fd);
+    		if(!feof(fd)) { char* e = fgets(t,taille,fd);}
     		sscanf(t,"%d %lf %lf", &AtomsProp[i].iMass[j], &AtomsProp[i].rMass[j], &AtomsProp[i].abundances[j]);
 	}
   }

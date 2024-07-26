@@ -1,6 +1,6 @@
 /*HydrogenBond.c*/
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -94,7 +94,7 @@ void read_HBonds_properties()
 	initHBonds();
 	hbondsfile = g_strdup_printf("%s%shbonds",gabedit_directory(),G_DIR_SEPARATOR_S);
 
-	file = FOpen(hbondsfile, "r");
+	file = FOpen(hbondsfile, "rb");
 	if(!file) return;
 
  	n = fscanf(file,"%lf\n",&minDistance);

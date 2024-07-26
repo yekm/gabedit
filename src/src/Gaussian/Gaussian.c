@@ -1,6 +1,6 @@
 /* Gaussian.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -72,16 +72,16 @@ static void GetLink1()
  gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"--Link1--\n",-1);
 
  t1=gabedit_text_get_chars(text,0,-1);
- g_strup(t1);
+ uppercase(t1);
 
  t= g_strdup("%Chk=");  
- g_strup(t); 
+ uppercase(t); 
  DestOrig = strstr( t1,t);
  DestStrLink = NULL;
  if(StrLink != NULL)
  {
   	t2= g_strdup(StrLink);  
- 	g_strup(t2); 
+ 	uppercase(t2); 
  	DestStrLink = strstr( t2,t);
  }
  if(DestStrLink == NULL)
@@ -440,6 +440,9 @@ static gchar *get_info_method(gint im)
         {
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryMethods[1][im]));
         	temp=g_strdup_printf("%s%s",temp,entrytext);
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryMethods[2][im]));
+  		if (!strcmp(entrytext,"LC-"))
+        		temp=g_strdup_printf("%s%s",entrytext,temp);
         }
         else
   	if (!strcmp(Methodes[im],_("MP Methods")) )
@@ -769,11 +772,11 @@ static void GetInfoXYZ( )
 	SAtomsProp prop;
 	gboolean medium = geometry_with_medium_layer();
 	gboolean lower = geometry_with_lower_layer();
-	gboolean redundant = FALSE;
+	gboolean redundant = TRUE;
   	G_CONST_RETURN gchar *entrytext =  NULL;
 
   	if(Types && strcmp(Types,_("Single Point"))) entrytext =  gtk_entry_get_text(GTK_ENTRY(EntryTypes[0]));
-	if(entrytext && strstr(entrytext,"Redundant")) redundant = TRUE;
+	if(entrytext && !strstr(entrytext,"Redundant") && !strstr(entrytext,"Default") && !strstr(entrytext,"default")) redundant = FALSE;
 
 	if(iframe==1) GetChargesAndMultiplicitiesFromMain( );
 	else GetChargesAndMultiplicities( );
@@ -945,9 +948,9 @@ void GetInfoUnits()
  Destdiez = NULL;
 
  t = g_strdup("Units");
- g_strup(t);
+ uppercase(t);
  t1= g_strdup(Tompon);  
- g_strup(t1); 
+ uppercase(t1); 
  Destdiez = strstr( t1,t);
 
  if(Destdiez != NULL)

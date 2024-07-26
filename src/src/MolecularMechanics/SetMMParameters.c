@@ -1,6 +1,6 @@
 /* SetMMParameters.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -33,7 +33,7 @@ DEALINGS IN THE SOFTWARE.
 #include "MolecularMechanics.h"
 #include "../Common/StockIcons.h"
 
-#define NENTRYS 20
+#define NENTRYS 21
 typedef enum
 {
   E_S=0,
@@ -56,7 +56,7 @@ typedef enum
   E_C6  =17,
   E_C8  =18,
   E_C10 =19,
-
+  E_DESC = 20,
 } SetEntryType;
 typedef enum
 {
@@ -72,7 +72,7 @@ typedef enum
 
 static gint Factor = 7; 
 
-#define lengthListsType			4
+#define lengthListsType			5
 #define lengthListsBond			4
 #define lengthListsBend			5
 #define lengthListsTorsion		8
@@ -81,8 +81,8 @@ static gint Factor = 7;
 #define lengthListsNonBonded		3
 #define lengthListsPairWise		8
 
-static gchar *typeTitles[]={ "Type", "Symbol", "Masse", "Polarisability" };
-static gint typeWidths[]={8,8,10,10}; 
+static gchar *typeTitles[]={ "Type", "Symbol", "Masse", "Polarisability","Description" };
+static gint typeWidths[]={8,8,10,10,10}; 
 
 static gchar *bondTitles[]={ "Type1", "Type2", "Force", "Equilibrium Distance" };
 static gint bondWidths[]  ={8,8,15,15}; 
@@ -240,7 +240,7 @@ static void event_dispatcher(GtkWidget *widget, GdkEventButton *event, gpointer 
 			gint nList = gtk_notebook_get_current_page(GTK_NOTEBOOK(NoteBook));
 			model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
 			gtk_tree_selection_select_path  (gtk_tree_view_get_selection (GTK_TREE_VIEW (widget)), path);
-			sprintf(rowSelectedLists[nList] ,gtk_tree_path_to_string(path));
+			sprintf(rowSelectedLists[nList] ,"%s",gtk_tree_path_to_string(path));
 			gtk_tree_model_get_iter (model, &iter, path);
 			gtk_tree_path_free(path);
 			if (event->type == GDK_2BUTTON_PRESS) editDlg(NULL, NULL);
@@ -712,6 +712,7 @@ static void rafreshListTypes(gint nn)
 		texts[1] = g_strdup(amberParameters->atomTypes[i].symbol);
 		texts[2] = g_strdup_printf("%f",amberParameters->atomTypes[i].masse);
 		texts[3] = g_strdup_printf("%f",amberParameters->atomTypes[i].polarisability);
+		texts[4] = g_strdup(amberParameters->atomTypes[i].description);
 		gtk_list_store_append(store, &iter);
 		for(k=0;k<lengthListsType;k++)
 		{
@@ -2228,6 +2229,7 @@ static void editType(GtkWidget* w)
 	G_CONST_RETURN gchar *symbol = gtk_entry_get_text(GTK_ENTRY(Entrys[E_S]));
 	gdouble masse = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_M])));
 	gdouble pol	 = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_P])));
+	G_CONST_RETURN gchar* desc = (gtk_entry_get_text(GTK_ENTRY(Entrys[E_DESC])));
 	gint i = atoi(rowSelectedLists[MMNUMBERTYPE]);
 
 	if(i<0)
@@ -2236,6 +2238,7 @@ static void editType(GtkWidget* w)
 	amberParameters->atomTypes[i].symbol = g_strdup(symbol);
 	amberParameters->atomTypes[i].masse = masse;
 	amberParameters->atomTypes[i].polarisability = pol;
+	amberParameters->atomTypes[i].description = g_strdup(desc);
 	rafreshListTypes(i);
 }
 /********************************************************************************/
@@ -2245,6 +2248,7 @@ static void newType(GtkWidget* w)
 	G_CONST_RETURN gchar *name = gtk_entry_get_text(GTK_ENTRY(Entrys[E_T]));
 	gdouble masse = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_M])));
 	gdouble pol	 = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_P])));
+	G_CONST_RETURN gchar* desc = (gtk_entry_get_text(GTK_ENTRY(Entrys[E_DESC])));
 	gint i = atoi(rowSelectedLists[MMNUMBERTYPE]);
 	gint j;
 	gint number = 0;
@@ -2277,6 +2281,7 @@ static void newType(GtkWidget* w)
 	amberParameters->atomTypes[i].number = number+1;
 	amberParameters->atomTypes[i].masse = masse;
 	amberParameters->atomTypes[i].polarisability = pol;
+	amberParameters->atomTypes[i].description = g_strdup(desc);
 	rafreshListTypes(i);
 }
 /********************************************************************************/
@@ -2312,10 +2317,8 @@ static void editnewTypeDlg(GabeditSignalFunc f,gchar* title)
 	hbox=create_hbox_false(vboxframe);
 
 	Entrys[E_S] = create_label_entry(hbox,typeTitles[1],(gint)(ScreenHeight*0.1),(gint)(ScreenHeight*0.15));
-	if(Nc>=0)
-	gtk_entry_set_text(GTK_ENTRY(Entrys[E_S]),amberParameters->atomTypes[Nc].symbol);
-	else
-		gtk_entry_set_text(GTK_ENTRY(Entrys[E_S]),"C");
+	if(Nc>=0) gtk_entry_set_text(GTK_ENTRY(Entrys[E_S]),amberParameters->atomTypes[Nc].symbol);
+	else gtk_entry_set_text(GTK_ENTRY(Entrys[E_S]),"C");
 	gtk_editable_set_editable((GtkEditable*) Entrys[E_S],FALSE);
 
 	Button = gtk_button_new_with_label(" Modify ");
@@ -2324,11 +2327,8 @@ static void editnewTypeDlg(GabeditSignalFunc f,gchar* title)
 
 	hbox=create_hbox_false(vboxframe);
 	Entrys[E_T] = create_label_entry(hbox,typeTitles[0],(gint)(ScreenHeight*0.1),(gint)(ScreenHeight*0.15));
-	if(Nc>=0)
-	gtk_entry_set_text(GTK_ENTRY(Entrys[E_T]),amberParameters->atomTypes[Nc].name);
-	else
-	gtk_entry_set_text(GTK_ENTRY(Entrys[E_T])," ");
-
+	if(Nc>=0) gtk_entry_set_text(GTK_ENTRY(Entrys[E_T]),amberParameters->atomTypes[Nc].name);
+	else gtk_entry_set_text(GTK_ENTRY(Entrys[E_T])," ");
 	gtk_editable_set_editable((GtkEditable*) Entrys[E_T],FALSE);
 
 	tlist=g_malloc(2*sizeof(char*));
@@ -2362,6 +2362,12 @@ static void editnewTypeDlg(GabeditSignalFunc f,gchar* title)
 
 	for(i=0;i<nlist;i++)
 		g_free(tlist[i]);
+
+	hbox=create_hbox_false(vboxframe);
+	Entrys[E_DESC] = create_label_entry(hbox,typeTitles[4],(gint)(ScreenHeight*0.1),(gint)(ScreenHeight*0.15));
+	if(Nc>=0) gtk_entry_set_text(GTK_ENTRY(Entrys[E_DESC]),amberParameters->atomTypes[Nc].description);
+	else gtk_entry_set_text(GTK_ENTRY(Entrys[E_DESC])," ");
+	gtk_editable_set_editable((GtkEditable*) Entrys[E_DESC],TRUE);
 	
 	g_free(tlist);
 

@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -54,6 +54,7 @@ gdouble thirdDirection[3];
 gdouble originOfCube[3];
 Grid* get_grid_laplacian(Grid* grid, gint nBoundary);
 Grid* get_grid_norm_gradient(Grid* grid, gint nBoundary);
+Grid* get_grid_sign_lambda2_density(Grid* grid, gint nBoundary);
 Grid* compute_mep_grid_using_multipol_from_density_grid(Grid* grid, gint lmax);
 gdouble** compute_multipol_from_grid(Grid* grid, gint lmax, gdouble xOff, gdouble yOff, gdouble zOff);
 Grid* compute_mep_grid_using_multipol_from_orbitals(gint N[],GridLimits limits, gint lmax);
@@ -72,12 +73,18 @@ Grid* define_grid_FED(gint N[],GridLimits limits, gint n);
 Grid* compute_fed_grid_using_cube_grid(Grid* grid, gint n);
 gboolean compute_transition_matrix_numeric(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
 gdouble* pInteg, gdouble* pNormi, gdouble* pNormj, gdouble* pOverlap);
-gboolean compute_spatial_overlap_numeric(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
+gboolean compute_spatial_overlapiijj_numeric(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
+		gdouble* pInteg, gdouble* pNormi, gdouble* pNormj, gdouble* pOverlap);
+gboolean compute_spatial_overlapij_numeric(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
 		gdouble* pInteg, gdouble* pNormi, gdouble* pNormj, gdouble* pOverlap);
 gboolean compute_isovalue_percent_from_grid(Grid* grid, gboolean square, gdouble percent, gdouble precision, gdouble* pIsovalue);
 Grid* copyGrid(Grid* grid);
 Grid* compute_mep_grid_exact(gint N[],GridLimits limits);
 Grid* compute_mep_grid_using_orbitals(gint N[],GridLimits limits);
+void reset_boundary(Grid* grid, gint nBoundary);
+gdouble getLambda2(Grid* grid, gint i, gint j, gint k, gdouble* fcx, gdouble* fcy, gdouble* fcz, gdouble* lfcx, gdouble* lfcy, gdouble* lfcz, gint nBoundary);
+gboolean get_charge_transfer_centers(Grid* grid, gdouble* CN, gdouble* CP, gdouble *qn, gdouble* qp, gdouble* H);
+gboolean compute_integrale_from_grid_all_space(Grid* grid, gdouble* pInteg);
 
 #endif /* __GABEDIT_GRID_H__ */
 

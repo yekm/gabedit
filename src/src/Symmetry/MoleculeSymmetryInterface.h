@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -19,12 +19,14 @@ DEALINGS IN THE SOFTWARE.
 #define __GABEDIT_MOLECULESYMMETRYINTERFACE_H__
 
 void createGeometrySymmetryWindow(gint numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z, gchar* groupeSymbol);
+void createGeometrySymmetrizationWindow(gint numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z, gchar* groupeSymbol);
 GtkWidget* createGeometryAbelianGroupWindow(gint numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z, gchar* pointGroupSymbol, 
 		gchar* abelianPointGroupSymbol);
 void createToleranceWindow(GtkWidget* win, GabeditSignalFunc myFunc);
 void getToleranceValues(gdouble* tolerancePosition , gdouble* tolerancePrincipalAxis);
 gdouble getTolerancePosition();
 gdouble getTolerancePrincipalAxis();
+void buildStandardOrientationDlg(gint numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z);
 
 #endif /* __GABEDIT_MOLECULESYMMETRYINTERFACE_H__ */
 

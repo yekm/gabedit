@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -192,6 +192,7 @@ void set_xyz_to_principal_axes_of_selected_atoms(gpointer data, guint Operation,
 void create_tolerance_window(GtkWidget*w, gpointer data);
 void get_abelian_orientation_with_reduction(GtkWidget*w, gpointer data);
 void get_standard_orientation_with_reduction(GtkWidget*w, gpointer data);
+void get_standard_orientation_with_symmetrization(GtkWidget*w, gpointer data);
 void setMMTypesCharges(gpointer data, guint Operation,GtkWidget* wid);
 GeomDef* Free_One_Geom(GeomDef* geom,gint N);
 void set_text_to_draw(gchar* str);
@@ -301,6 +302,11 @@ void set_optimal_geom_view();
 void getQuatGeom(gdouble q[]);
 void redrawGeomGL2PS();
 void drawGeom();
+void getOptimalCiCj(gint i, gint j, gdouble* Ci, gdouble* Cj, gdouble* C0);
+void set_xyz_to_standard_orientation_all();
+void set_xyz_to_standard_orientation_selected_atoms();
+void set_xyz_to_standard_orientation_not_selected_atoms();
+void set_xyz_to_standard_orientation_selected_and_not_selected_atoms();
 
 #endif /* __GABEDIT_DRAWGEOMGL_H__ */
 

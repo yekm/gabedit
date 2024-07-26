@@ -1,6 +1,6 @@
 /* OrcaBasis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1155,7 +1155,8 @@ GtkWidget* addOrcaBasisToTable(GtkWidget *table, gint i)
 	add_label_table(table,":",(gushort)i,1);
 	entryBasis = addComboListToATable(table, listBasis, nlistBasis, i, 2, 1);
 	comboBasis  = g_object_get_data(G_OBJECT (entryBasis), "Combo");
-	gtk_widget_set_sensitive(entryBasis, FALSE);
+	gtk_widget_set_sensitive(entryBasis, TRUE);
+	gtk_editable_set_editable(GTK_EDITABLE(entryBasis),FALSE);
 
 	g_signal_connect(G_OBJECT(entryBasis),"changed", G_CALLBACK(changedEntryBasis),NULL);
 	return comboBasis;
@@ -1175,7 +1176,8 @@ void addOrcaAuxBasisToTable(GtkWidget *table, gint i, GtkWidget* comboMethod, Gt
 	if(comboExcited) g_object_set_data(G_OBJECT (comboExcited), "LabelAuxBasis2", label);
 	entryAuxBasis = addComboListToATable(table, listAuxBasisView, numberOfAuxBasis, i, 2, 1);
 	comboAuxBasis  = g_object_get_data(G_OBJECT (entryAuxBasis), "Combo");
-	gtk_widget_set_sensitive(entryAuxBasis, FALSE);
+	gtk_widget_set_sensitive(entryAuxBasis, TRUE);
+	gtk_editable_set_editable(GTK_EDITABLE(entryAuxBasis),FALSE);
 	if(comboMethod) g_object_set_data(G_OBJECT (comboMethod), "ComboAuxBasis", comboAuxBasis);
 	if(comboExcited) g_object_set_data(G_OBJECT (comboExcited), "ComboAuxBasis", comboAuxBasis);
 

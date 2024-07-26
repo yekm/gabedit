@@ -1,6 +1,6 @@
 /* DrawGeomGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -47,7 +47,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Transformation.h"
 #include "../Geometry/GeomXYZ.h"
 #include "../Geometry/GeomZmatrix.h"
-#include "../Geometry/Symmetry.h"
+#include "../Geometry/GeomSymmetry.h"
 #include "../Files/FileChooser.h"
 #include "../Geometry/ImagesGeom.h"
 #include "../Geometry/Fragments.h"
@@ -62,6 +62,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../MolecularMechanics/PDBTemplate.h"
 #include "../MolecularMechanics/CalculTypesAmber.h"
 #include "../Symmetry/MoleculeSymmetryInterface.h"
+#include "../Symmetry/MoleculeSymmetry.h"
 #include "../Utils/Jacobi.h"
 #include "../Utils/Vector3d.h"
 #include "../Utils/GabeditTextEdit.h"
@@ -751,6 +752,24 @@ static void glGetWorldCoordinates(gdouble x, gdouble y, gdouble *w)
 	glDepthMask(GL_TRUE);
 	glDepthRange(0.0f,1.0f);
 	glReadPixels( (GLint)x, (GLint)(winY), 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ );
+	if(fabs(winZ-1)<1e-10 && Natoms>1)
+	{
+		GLdouble View2D[3];
+		gdouble mindist = -1;
+		gdouble xii,yii,d1;
+		for(i=Natoms-1;i>=0;i--)
+		{
+			gluProject(geometry[i].X, geometry[i].Y, geometry[i].Z,mvmatrix, projmatrix, viewport, &View2D[0], &View2D[1], &View2D[2]);
+			xii = View2D[0]-winX;
+			yii = View2D[1]-winY;
+			d1 = xii*xii+yii*yii;
+			if(mindist<0 || mindist>d1)
+			{
+				mindist = d1;
+				winZ = View2D[2];
+			}
+		}
+	}
 	gluUnProject( winX, winY, winZ, mvmatrix, projmatrix, viewport, &r[0], &r[1], &r[2]);
 	for(i=0;i<3;i++) w[i] = r[i];
 }
@@ -1131,7 +1150,7 @@ void read_drawmolecule_file()
 	factor_stick_default(NULL,NULL);
 	factor_ball_default(NULL,NULL);
 
-	fd = fopen(drawMolecule, "r");
+	fd = fopen(drawMolecule, "rb");
 	if(fd !=NULL)
 	{
  		guint taille = BSIZE;
@@ -1837,6 +1856,27 @@ static void setMultipleBonds()
 			 }
 		}
 	}
+// sort atoms nBonds min at first
+	for(i=0;i<(gint)Natoms-1;i++)
+	{
+		gint k = i;
+		for(j=i+1;j<(gint)Natoms;j++)
+			if(nBonds[j]<nBonds[k])  k = j;
+		if(k!=i)
+		{
+			gint t = num[i];
+			num[i] = num[k];
+			num[k] = t;
+			t = nBonds[i];
+			nBonds[i] = nBonds[k];
+			nBonds[k] = t;
+		}
+	}
+/*
+	for(i=0;i<(gint)Natoms;i++)
+		printf("%s[%d] %d\n",geometry[num[i]].Prop.symbol, geometry[num[i]].N,nBonds[i]);
+*/
+
 	for(i=0;i<(gint)Natoms;i++)
 	{
 		ni = geometry[num[i]].N-1;
@@ -1855,6 +1895,10 @@ static void setMultipleBonds()
 			}
 		}
 	}
+/*
+	for(i=0;i<(gint)Natoms;i++)
+		printf("=====>%s[%d] %d\n",geometry[num[i]].Prop.symbol, geometry[num[i]].N,nBonds[i]);
+*/
 	for(i=0;i<(gint)Natoms;i++)
 	{
 		ni = geometry[num[i]].N-1;
@@ -1873,6 +1917,10 @@ static void setMultipleBonds()
 			}
 		}
 	}
+/*
+	for(i=0;i<(gint)Natoms;i++)
+		printf("33=====>%s[%d] %d\n",geometry[num[i]].Prop.symbol, geometry[num[i]].N,nBonds[i]);
+*/
 	g_free(nBonds);
 	g_free(num);
 }
@@ -2695,6 +2743,180 @@ static int compute_fragment_principal_axes(gdouble axis1[], gdouble axis2[], gdo
 	return nFrag;
 }
 /********************************************************************************/
+static void rotate_slected_atoms_minimize_rmsd()
+{
+	gint i,j;
+
+	gint nA = 0;
+	const gint N = 8;
+        gdouble d[8];
+        gdouble w[8][3] = {
+                {1,1,1},
+                {-1,1,1},
+                {1,-1,1},
+                {1,1,-1},
+                {-1,-1,1},
+                {-1,1,-1},
+                {1,-1,-1},
+                {-1,-1,-1}
+        };
+        gdouble x, y, z;
+	gint* numA = NULL;
+	gint* numB = NULL;
+	gint iA, iB;
+
+	if(Natoms<1) return;
+
+	j = 0;
+	for(i = 0;i<Natoms;i++)
+		if(if_selected(i)) nA++;
+
+	if(nA != Natoms - nA || nA == 0) return;
+	numA = g_malloc(nA*sizeof(gint));
+	numB = g_malloc(nA*sizeof(gint));
+        for (i=0;i<nA;i++) numA[i] = -1;
+        for (i=0;i<nA;i++) numB[i] = -1;
+
+	iA = iB = 0;
+	for(i = 0;i<Natoms;i++)
+		if(if_selected(i)) numA[iA++] = i;
+		else numB[iB++] = i;
+
+	for(i = 0;i<nA;i++)
+	if(strcmp(geometry[numA[i]].Prop.symbol, geometry[numB[i]].Prop.symbol))
+	{
+		g_free(numA);
+		g_free(numB);
+		return;
+	}
+
+        for (j=0;j<N;j++) d[j] = 0;
+        for (i=0;i<nA;i++)
+        {
+                for (j=0;j<N;j++)
+                {
+                x = geometry[numA[i]].X - w[j][0]*geometry[numB[i]].X;
+                y = geometry[numA[i]].Y - w[j][1]*geometry[numB[i]].Y;
+                z = geometry[numA[i]].Z - w[j][2]*geometry[numB[i]].Z;
+                d[j] += x*x + y*y + z*z;
+                }
+        }
+        double dmin = d[0];
+	int jmin = 0;
+        for (j=1;j<N;j++) if(dmin>d[j]) {dmin=d[j]; jmin = j;}
+        for (i=0;i<nA;i++)
+	{
+                geometry[numB[i]].X *=  w[jmin][0];
+                geometry[numB[i]].Y *=  w[jmin][1];
+                geometry[numB[i]].Z *=  w[jmin][2];
+
+                geometry0[numB[i]].X *=  w[jmin][0];
+                geometry0[numB[i]].Y *=  w[jmin][1];
+                geometry0[numB[i]].Z *=  w[jmin][2];
+	}
+
+
+	RebuildGeom = TRUE;
+}
+/********************************************************************************/
+/* type = 0 all atoms, type = 1 selected atoms, type = 2 not selected atoms */
+static void set_xyz_to_standard_orientation(gint type)
+{
+	gint i,j;
+
+	gdouble* X;
+	gdouble* Y;
+	gdouble* Z;
+	gchar** symbols;
+	gint nA = 0;
+
+	if(Natoms<1) return;
+
+	X = g_malloc(Natoms*sizeof(gdouble));
+	Y = g_malloc(Natoms*sizeof(gdouble));
+	Z = g_malloc(Natoms*sizeof(gdouble));
+	symbols = g_malloc(Natoms*sizeof(gchar*));
+	for(i = 0;i<Natoms;i++) symbols[i] = NULL;
+
+	j = 0;
+	for(i = 0;i<Natoms;i++)
+	{
+		if(type == 0 || (type==1 && if_selected(i))  || (type==2 && !if_selected(i)))
+		{
+			X[j] = geometry[i].X;
+			Y[j] = geometry[i].Y;
+			Z[j] = geometry[i].Z;
+			symbols[j] = g_strdup(geometry[i].Prop.symbol);
+			j++;
+		}
+	}
+
+	buildStandardOrientation(j, symbols, X, Y, Z);
+
+	j = 0;
+	for(i = 0;i<Natoms;i++)
+	{
+		if(type == 0 || (type==1 && if_selected(i))  || (type==2 && !if_selected(i)))
+		{
+			geometry0[i].X = X[j];
+			geometry0[i].Y = Y[j];
+			geometry0[i].Z = Z[j];
+
+			geometry[i].X = X[j];
+			geometry[i].Y = Y[j];
+			geometry[i].Z = Z[j];
+			j++;
+		}
+	}
+
+	if(symbols) for(i = 0;i<Natoms;i++) if(symbols[i]) g_free(symbols[i]);
+	if(symbols) g_free(symbols);
+	
+	if(X) g_free(X);
+	if(Y) g_free(Y);
+	if(Z) g_free(Z);
+
+	RebuildGeom = TRUE;
+}
+/********************************************************************************/
+void set_xyz_to_standard_orientation_all()
+{
+	set_xyz_to_standard_orientation(0);
+	create_GeomXYZ_from_draw_grometry();
+	init_quat(Quat);
+	RebuildGeom = TRUE;
+	drawGeom();
+}
+/********************************************************************************/
+void set_xyz_to_standard_orientation_selected_atoms()
+{
+	set_xyz_to_standard_orientation(1);
+	create_GeomXYZ_from_draw_grometry();
+	init_quat(Quat);
+	RebuildGeom = TRUE;
+	drawGeom();
+}
+/********************************************************************************/
+void set_xyz_to_standard_orientation_not_selected_atoms()
+{
+	set_xyz_to_standard_orientation(2);
+	create_GeomXYZ_from_draw_grometry();
+	init_quat(Quat);
+	RebuildGeom = TRUE;
+	drawGeom();
+}
+/********************************************************************************/
+void set_xyz_to_standard_orientation_selected_and_not_selected_atoms()
+{
+	set_xyz_to_standard_orientation(1);
+	set_xyz_to_standard_orientation(2);
+	rotate_slected_atoms_minimize_rmsd();
+	create_GeomXYZ_from_draw_grometry();
+	init_quat(Quat);
+	RebuildGeom = TRUE;
+	drawGeom();
+}
+/********************************************************************************/
 void set_xyz_to_principal_axes_of_selected_atoms(gpointer data, guint Operation,GtkWidget* wid)
 {
 	gdouble axis1[3] = {1,0,0};
@@ -2797,6 +3019,73 @@ void get_standard_orientation_with_reduction(GtkWidget*w, gpointer data)
 
 	for (i=0;i<(gint)Natoms;i++)
 		g_free( symbols[i]);
+	g_free( symbols);
+	g_free(X);
+	g_free(Y);
+	g_free(Z);
+	return;
+}
+/********************************************************************************/
+void get_standard_orientation_with_symmetrization(GtkWidget*w, gpointer data)
+{
+	gchar** symbols = NULL;
+	gdouble* X = NULL;
+	gdouble* Y = NULL;
+	gdouble* Z = NULL;
+	gint i;
+	gint numberOfAtoms = Natoms;
+	gchar groupeSymbol[BSIZE];
+
+	if(Natoms<1)
+	{
+		 Message(_("Sorry, the number of atoms is not positive"),_("Error"),TRUE);
+		return;
+	}
+	symbols = (gchar**)g_malloc(sizeof(gchar*)*(Natoms));
+	if(symbols == NULL) return;
+
+	X = (gdouble*)g_malloc(sizeof(gdouble)*(Natoms));
+	if(X == NULL) return;
+	Y = (gdouble*)g_malloc(sizeof(gdouble)*(Natoms));
+	if(Y == NULL) return;
+	Z = (gdouble*)g_malloc(sizeof(gdouble)*(Natoms));
+	if(Z == NULL) return;
+
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		symbols[i] = g_strdup(geometry0[i].Prop.symbol);
+		X[i] = geometry0[i].X*BOHR_TO_ANG;
+		Y[i] = geometry0[i].Y*BOHR_TO_ANG;
+		Z[i] = geometry0[i].Z*BOHR_TO_ANG;
+	}
+	createGeometrySymmetrizationWindow(numberOfAtoms,symbols,X, Y, Z, groupeSymbol);
+
+// reset geometry0
+	for(i = 0;i<numberOfAtoms;i++)
+	{
+		g_free(geometry0[i].Prop.symbol);
+		geometry0[i].Prop = prop_atom_get(symbols[i]);
+		geometry0[i].mmType = g_strdup(symbols[i]);
+		geometry0[i].pdbType = g_strdup(symbols[i]);
+		geometry0[i].Residue = g_strdup(symbols[i]);
+		geometry0[i].Charge = 0.0;
+		geometry0[i].X = X[i]/BOHR_TO_ANG;
+		geometry0[i].Y = Y[i]/BOHR_TO_ANG;
+		geometry0[i].Z = Z[i]/BOHR_TO_ANG;
+
+		g_free(geometry[i].Prop.symbol);
+		geometry[i].Prop = prop_atom_get(symbols[i]);
+		geometry[i].mmType = g_strdup(symbols[i]);
+		geometry[i].pdbType = g_strdup(symbols[i]);
+		geometry[i].Residue = g_strdup(symbols[i]);
+		geometry[i].Charge = 0.0;
+		geometry[i].X = geometry0[i].X;
+		geometry[i].Y = geometry0[i].Y;
+		geometry[i].Z = geometry0[i].Z;
+	}
+	resetConnections();
+	create_GeomXYZ_from_draw_grometry();
+	for (i=0;i<(gint)Natoms;i++) g_free( symbols[i]);
 	g_free( symbols);
 	g_free(X);
 	g_free(Y);
@@ -5894,6 +6183,7 @@ gint set_selected_second_atom_bond(GdkEventButton *bevent)
 	{
 		gdouble rayon = get_rayon_selection(i);
 		if(geometry[i].N==geometry[NumSelectedAtom].N) continue;
+		if(geometry[i].N==NumBatoms[0]) continue;
 		xa = w[0]-geometry[i].X;
 		ya = w[1]-geometry[i].Y;
 		za = w[2]-geometry[i].Z;
@@ -5904,7 +6194,63 @@ gint set_selected_second_atom_bond(GdkEventButton *bevent)
 			break;
 		}
 	}
-	if(nb>0)
+	if(nb<=0 &&NumPointedAtom>=0 && Natoms>1)
+	{
+		/* NumPointedAtom could be on top of an atom, Search it */
+		gdouble rb = 0;
+		gdouble rmin = 1000;
+		if(NumPointedAtom>=0) rb = get_rayon_selection(Natoms-1);
+		for(i=Natoms-2;i>=0;i--)
+		{
+			gchar *dist = NULL;
+			gdouble d = 0;
+			gdouble rcut = 0.0;
+			if(geometry[i].N==geometry[NumSelectedAtom].N) continue;
+			if(i == NumPointedAtom) continue;
+			if(geometry[i].N==NumBatoms[0]) continue;
+			dist = get_distance(geometry[i].N, geometry[Natoms-1].N);
+			if(dist) rcut = get_rayon_selection(i)+rb;
+			if(dist)  d = atof(dist) / BOHR_TO_ANG;
+			if(d<rmin) rmin = d;
+			if(dist && d<rcut)
+			{
+				nb = (gint) geometry[i].N;
+				break;
+			}
+		}
+/*
+		gdouble rmin = 1000;
+		gdouble rb = get_rayon_selection(Natoms-1);
+		GLdouble View2D[3];
+		gdouble mindist = -1;
+		gint imin = -1;
+		gdouble winX, winY, winZ;
+		gdouble xii,yii,d1;
+		i = Natoms-1;
+		gluProject(geometry[i].X, geometry[i].Y, geometry[i].Z,mvmatrix, projmatrix, viewport, &winX, &winY, &winZ);
+		for(i=Natoms-2;i>=0;i--)
+		{
+			gluProject(geometry[i].X, geometry[i].Y, geometry[i].Z,mvmatrix, projmatrix, viewport, &View2D[0], &View2D[1], &View2D[2]);
+			xii = View2D[0]-winX;
+			yii = View2D[1]-winY;
+			d1 = xii*xii+yii*yii;
+			if(mindist<0 || mindist>d1)
+			{
+				mindist = d1;
+				imin = i;
+			}
+		}
+		i =imin;
+		gluProject(geometry[i].X, geometry[i].Y, geometry[i].Z,mvmatrix, projmatrix, viewport, &View2D[0], &View2D[1], &View2D[2]);
+		printf("imin = %d mindis = %f winz = %f  winz2 = %f \n",imin,sqrt(mindist),winZ, View2D[2] );
+		if(imin>0 && sqrt(mindist)<get_rayon_selection(imin)+rb)
+		{
+			nb = (gint) geometry[imin].N;
+		}
+*/
+	}
+	if(nb>0 && nb !=  NumBatoms[0])
+	//if(nb>0)
 	{
 		NBatoms = 2;
 		NumBatoms[1] = nb;
@@ -6102,6 +6448,7 @@ gint get_atom_to_select(GdkEventButton *bevent, gdouble f)
 		d1 = xii*xii+yii*yii+zii*zii;
 		rayon = f*get_rayon_selection(i);
 		d2 = d1-rayon*rayon;
+		/* printf("i=%d, d1 = %f , d2 = %f\n",i,d1,d2);*/
 		if(d2<0) return i;
 	}
 	return -1;
@@ -6389,6 +6736,14 @@ gint button_release(GtkWidget *DrawingArea, GdkEvent *event, gpointer Menu)
 	case SELECTRESIDUE : SetOperation(NULL,SELECTOBJECTS);  break;
 	case SELECTFRAG : SetOperation(NULL,SELECTOBJECTS);  break;
 	case ADDATOMSBOND :
+/*
+		printf("NBatoms=%d NumBatoms=%d %d\n",NBatoms, NumBatoms[0], NumBatoms[1]);
+		if(NBatoms==2 && NumBatoms[0]>0 &&  NumBatoms[1]>0 && NumBatoms[0]==NumBatoms[1])
+		{
+			delete_one_atom(NumSelectedAtom);
+		}
+		else 
+*/
 		if(NBatoms==2 && NumBatoms[0]>0 &&  NumBatoms[1]>0 && NumBatoms[0]!=NumBatoms[1])
 		{
 			delete_one_atom(NumSelectedAtom);
@@ -6400,10 +6755,22 @@ gint button_release(GtkWidget *DrawingArea, GdkEvent *event, gpointer Menu)
 			delete_one_atom(NumSelectedAtom);
 			if( NumBatoms[0] != NumBatoms[1]) add_bond();
 		}
-		else if(NumBatoms[0]>0)
+		else if(NumBatoms[0]>0 && NumSelectedAtom>-1)
 		{
-			gint res = get_atom_to_select((GdkEventButton *)event,scaleAnneau*1.2);
-			if(res != -1)
+			gchar *dist = get_distance(geometry[NumSelectedAtom].N,NumBatoms[0]);
+			gdouble d = 0;
+			gdouble rcut = get_rayon_selection(NumSelectedAtom)+get_rayon_selection(get_indice(NumBatoms[0]));
+			if(dist)  d = atof(dist) / BOHR_TO_ANG;
+/*
+			printf("distance = %f\n",d);
+			printf("rcut = %f\n",rcut);
+			printf("NumSelectedatom = %d\n",NumSelectedAtom);
+			printf("Numbatom = %d\n",get_indice(NumBatoms[0]));
+*/
+
+
+			//if(res != -1)
+			if(dist && d<rcut)
 			{
 				delete_one_atom(NumSelectedAtom);
 				replace_atom(get_indice(NumBatoms[0]));
@@ -6850,6 +7217,7 @@ static gint redraw(GtkWidget *widget)
     	glLoadIdentity();
 	addFog();
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	glClearDepth(1.0);
 	set_background_color();
 
 	mYPerspective(45,(GLdouble)widget->allocation.width/(GLdouble)widget->allocation.height,1,100);
@@ -7261,13 +7629,13 @@ void set_dipole_from_charges()
 	NumSelectedAtom = -1;
 	unselect_all_atoms();
 	Dipole.def = TRUE;
-	for(i=0;i<3;i++)
-		Dipole.Value[i] = 0.0;
+	for(i=0;i<3;i++) Dipole.value[i] = 0.0;
+	for(i=0;i<3;i++) Dipole.origin[i] = 0.0;
 	for(j=0;j<(gint)Natoms;j++)
 	{
-		Dipole.Value[0] += geometry0[j].X*geometry0[j].Charge;
-		Dipole.Value[1] += geometry0[j].Y*geometry0[j].Charge;
-		Dipole.Value[2] += geometry0[j].Z*geometry0[j].Charge;
+		Dipole.value[0] += geometry0[j].X*geometry0[j].Charge;
+		Dipole.value[1] += geometry0[j].Y*geometry0[j].Charge;
+		Dipole.value[2] += geometry0[j].Z*geometry0[j].Charge;
 
 	}	
 	drawGeom();
@@ -8101,11 +8469,15 @@ static gint insert_atom(GdkEventButton *bevent)
 	glGetWorldCoordinates(x,y,w);
 	X = w[0];
 	Y = w[1];
+	Z = w[2];
   
 	if(Natoms==0) geometry[Natoms].Prop = prop_atom_get(AtomToInsert);
 
+/*
 	if(Natoms>0 && NumProcheAtom>-1) Z = geometry[NumProcheAtom].Z;
 	else Z = 0.0;
+*/
+	//if(Natoms==0) Z = 0;
 
 	geometry[Natoms].X=X;
 	geometry[Natoms].Y=Y;
@@ -9342,8 +9714,9 @@ void draw_label_dipole()
         gdouble P[3];
 	gchar* t= NULL;
 	gdouble d = 0.0;
-	V3d Base1Pos  = {0.0f,0.0f,0.0f};
-	V3d Base2Pos  = {Dipole.Value[0],Dipole.Value[1],Dipole.Value[2]};
+	V3d Base1Pos  = {Dipole.origin[0],Dipole.origin[1],Dipole.origin[2]};
+	V3d Base2Pos  = {Dipole.origin[0]+Dipole.value[0],Dipole.origin[1]+Dipole.value[1],Dipole.origin[2]+Dipole.value[2]};
+
 	GLdouble scal = 2*factordipole;
 	gint i;
 	GLdouble radius = Dipole.radius;
@@ -9351,8 +9724,8 @@ void draw_label_dipole()
 
 	for(i=0;i<3;i++)
 	{
-		d += Dipole.Value[i]*Dipole.Value[i];
-		P[i]=(Base2Pos[i]*scal+Base1Pos[i])/2;
+		d += Dipole.value[i]*Dipole.value[i];
+		P[i]=(Dipole.value[i]*scal+Base1Pos[i]+Base1Pos[i])/2;
 	}
 	t = g_strdup_printf("%0.3f D",sqrt(d)*AUTODEB);
 
@@ -9582,6 +9955,79 @@ static void draw_ball(gdouble X, gdouble Y, gdouble Z, GLdouble radii, GdkColor*
 
 }
 /************************************************************************/
+void getOptimalCiCj(gint i, gint j, gdouble* Ci, gdouble* Cj, gdouble* C0)
+{
+	C0[0] = 0;
+	C0[1] = 0;
+	C0[2] = 0;
+
+	Ci[0] = geometry[i].X;
+	Ci[1] = geometry[i].Y;
+	Ci[2] = geometry[i].Z;
+
+	Cj[0] = geometry[j].X;
+	Cj[1] = geometry[j].Y;
+	Cj[2] = geometry[j].Z;
+
+/* serach a one none hydrogen atom connected to i or j atoms */
+	if(geometry[i].typeConnections)
+	{
+		gint l;
+		gint nl;
+		for(l=0, nl = geometry[l].N-1;l<Natoms;l++, nl = geometry[l].N-1)
+			if(l != j && l != i &&  geometry[i].typeConnections[nl]>0 && strcmp(geometry[l].Prop.symbol,"H"))
+			{
+				C0[0] = geometry[l].X;
+				C0[1] = geometry[l].Y;
+				C0[2] = geometry[l].Z;
+				/* printf("---%s\n",geometry[l].Prop.symbol);*/
+				return;
+			}
+	}
+	if(geometry[j].typeConnections)
+	{
+		gint l;
+		gint nl;
+		for(l=0, nl = geometry[l].N-1;l<Natoms;l++, nl = geometry[l].N-1)
+			if(l != j && l != i &&  geometry[j].typeConnections[nl]>0  && strcmp(geometry[l].Prop.symbol,"H"))
+			{
+				C0[0] = geometry[l].X;
+				C0[1] = geometry[l].Y;
+				C0[2] = geometry[l].Z;
+				/* printf("--%s\n",geometry[l].Prop.symbol);*/
+				return;
+			}
+	}
+	if(geometry[i].typeConnections)
+	{
+		gint l;
+		gint nl;
+		for(l=0, nl = geometry[l].N-1;l<Natoms;l++, nl = geometry[l].N-1)
+			if(l != j && l != i &&  geometry[i].typeConnections[nl]>0)
+			{
+				C0[0] = geometry[l].X;
+				C0[1] = geometry[l].Y;
+				C0[2] = geometry[l].Z;
+				/* printf("%s\n",geometry[l].Prop.symbol);*/
+				return;
+			}
+	}
+	if(geometry[j].typeConnections)
+	{
+		gint l;
+		gint nl;
+		for(l=0, nl = geometry[l].N-1;l<Natoms;l++, nl = geometry[l].N-1)
+			if(l != j && l != i &&  geometry[j].typeConnections[nl]>0)
+			{
+				C0[0] = geometry[l].X;
+				C0[1] = geometry[l].Y;
+				C0[2] = geometry[l].Z;
+				/* printf("%s\n",geometry[l].Prop.symbol);*/
+				return;
+			}
+	}
+}
+/************************************************************************/
 static void draw_hbond(int i,int j,GLdouble scal)
 {
 	
@@ -9717,22 +10163,32 @@ static void draw_bond(int i,int j,GLdouble scal, gint connectionType)
 	else
 	if(bondType == GABEDIT_BONDTYPE_DOUBLE && showMultipleBonds)
 	{
+		/* printf("Double bond\n");*/
 		gdouble r = g/aspect;
 		gdouble C11[3];
 		gdouble C12[3];
 		gdouble C21[3];
 		gdouble C22[3];
 		gdouble rs[3];
+		gdouble C0[3];
 		gint type = 1;
 		if(TypeGeom== GABEDIT_TYPEGEOM_STICK) type = 0;
 		else if(geometry[i].Layer == LOW_LAYER || geometry[j].Layer == LOW_LAYER) type = 0;
-		getPositionsRadiusBond2(r, Ci, Cj, C11, C12,  C21,  C22, rs, type);
+		getOptimalCiCj(i, j, Ci, Cj,C0);
+		getPositionsRadiusBond2(r, C0, Ci, Cj, C11, C12,  C21,  C22, rs, type);
+		/*
+		printf("1 C11 = %f %f %f\n",C11[0],C11[1],C11[2]);
+		printf("1 C21 = %f %f %f\n",C21[0],C21[1],C21[2]);
+		printf("2 C12 = %f %f %f\n",C12[0],C12[1],C12[2]);
+		printf("2 C22 = %f %f %f\n",C22[0],C22[1],C22[2]);
+		*/
 		Cylinder_Draw_Color_Two(rs[0],C11,C12, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
 		Cylinder_Draw_Color_Two(rs[1],C21,C22, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
 	}
 	else
 	if(bondType == GABEDIT_BONDTYPE_TRIPLE && showMultipleBonds)
 	{
+		V3d C0;
 		gdouble r = g/aspect;
 		gdouble C11[3];
 		gdouble C12[3];
@@ -9743,7 +10199,8 @@ static void draw_bond(int i,int j,GLdouble scal, gint connectionType)
 		gdouble rs[3];
 		gint type = 1;
 		if(TypeGeom== GABEDIT_TYPEGEOM_STICK) type = 0;
-		getPositionsRadiusBond3(r, Ci, Cj, C11, C12,  C21,  C22, C31, C32, rs, type);
+		getOptimalCiCj(i, j, Ci, Cj,C0);
+		getPositionsRadiusBond3(r, C0, Ci, Cj, C11, C12,  C21,  C22, C31, C32, rs, type);
 		Cylinder_Draw_Color_Two(rs[0],C11,C12, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
 		Cylinder_Draw_Color_Two(rs[1],C21,C22, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
 		Cylinder_Draw_Color_Two(rs[2],C31,C32, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
@@ -9878,6 +10335,11 @@ static void gl_build_geometry()
 			}
 		}
         }
+/*
+	for(i=0;i<Natoms;i++)
+		for(j=i+1, nj = geometry[j].N-1;j<Natoms;j++, nj = geometry[j].N-1)
+			printf("%s[%d]-%s[%d] %d\n", geometry[i].Prop.symbol, geometry[i].N, geometry[j].Prop.symbol, geometry[j].N, geometry[i].typeConnections[nj]);
+*/
 }
 /*****************************************************************************/
 static void gl_build_selection()
@@ -10043,8 +10505,8 @@ static void gl_build_dipole()
 	V4d Specular = {1.0f,1.0f,1.0f,1.0f};
 	V4d Diffuse  = {0.0f,0.0f,1.0f,1.0f};
 	V4d Ambiant  = {0.0f,0.0f,0.1f,1.0f};
-	V3d Base1Pos  = {0.0f,0.0f,0.0f};
-	V3d Base2Pos  = {Dipole.Value[0],Dipole.Value[1],Dipole.Value[2]};
+	V3d Base1Pos  = {Dipole.origin[0],Dipole.origin[1],Dipole.origin[2]};
+	V3d Base2Pos  = {Dipole.origin[0]+Dipole.value[0],Dipole.origin[1]+Dipole.value[1],Dipole.origin[2]+Dipole.value[2]};
 	GLdouble radius = Dipole.radius;
 	V3d Center;
 	GLdouble scal = 2*factordipole;
@@ -10067,13 +10529,14 @@ static void gl_build_dipole()
 	lengt = v3d_length(Direction);
 	if(radius<0.1) radius = 0.1;
 
+	Base2Pos[0] = Base1Pos[0] + Direction[0]*scal;
+	Base2Pos[1] = Base1Pos[1] + Direction[1]*scal;
+	Base2Pos[2] = Base1Pos[2] + Direction[2]*scal;
+
 	Direction[0] /= lengt;
 	Direction[1] /= lengt;
 	Direction[2] /= lengt;
 
-	Base2Pos[0] *= scal;
-	Base2Pos[1] *= scal;
-	Base2Pos[2] *= scal;
 
 	Center[0] = Base2Pos[0];
 	Center[1] = Base2Pos[1];

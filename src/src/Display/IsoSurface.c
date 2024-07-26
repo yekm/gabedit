@@ -1,6 +1,6 @@
 /* IsoSurface.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 #include "StatusOrb.h"
 #include "../Utils/Utils.h"
 
+#define PRECISION 1e-10
 /******************************************************************************************************************************/
 gdouble Norme(Vertex *Vect)
 {
@@ -42,11 +43,11 @@ gdouble InterpVal(gdouble val1,gdouble val2,gdouble valc1,gdouble valc2,gdouble 
 {
 	gdouble factor;
 	
-	if(fabs(isolevel-val1)<1e-6)
+	if(fabs(isolevel-val1)<PRECISION)
 		return valc1;
-	if(fabs(isolevel-val2)<1e-6)
+	if(fabs(isolevel-val2)<PRECISION)
 		return valc2;
-	if(fabs(val1-val2)<1e-6)
+	if(fabs(val1-val2)<PRECISION)
 		return valc1;
 	factor =(isolevel-val1)/(val2-val1);
 		return valc1 + factor *(valc2-valc1);
@@ -154,21 +155,21 @@ void Interpolate(gint i,gint j,gint k,gint ip,gint jp,gint kp,gdouble isolevel,G
 	gdouble val2 = grid->point[ip][jp][kp].C[3];
 	gdouble coef;
 
-	if( fabs(isolevel-val1)<1e-6 )
+	if( fabs(isolevel-val1)<PRECISION)
 	{
 		for(c=0;c<3;c++)
 			vertex->C[c] = grid->point[i][j][k].C[c];
 		if(mapping) vertex->C[3] = grid->point[i][j][k].C[4];
 		return;
 	}
-	if( fabs(isolevel-val2)<1e-6 )
+	if( fabs(isolevel-val2)<PRECISION)
 	{
 		for(c=0;c<3;c++)
 			vertex->C[c] = grid->point[ip][jp][kp].C[c];
 		if(mapping) vertex->C[3] = grid->point[ip][jp][kp].C[4];
 		return;
 	}
-	if( fabs(val1-val2)<1e-6 )
+	if( fabs(val1-val2)<PRECISION)
 	{
 		for(c=0;c<3;c++)
 			vertex->C[c] = grid->point[i][j][k].C[c];

@@ -1,6 +1,6 @@
 /* PDBTemplate.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -192,7 +192,7 @@ static gint getHydrogens(gint residueNumber, gchar* pdbType, gchar** hAtoms)
 			{
 				if(!typeTemplates[k].pdbType) break;
 				if(typeTemplates[k].pdbType[0]!='H') break;
-				sprintf(hAtoms[nH],typeTemplates[k].pdbType);
+				sprintf(hAtoms[nH],"%s",typeTemplates[k].pdbType);
 				nH++;
 				if(nH>10) break;
 			}

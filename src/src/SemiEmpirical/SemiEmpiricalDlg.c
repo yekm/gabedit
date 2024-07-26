@@ -1,6 +1,6 @@
 /* SemiEmpiricalDlg.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -127,7 +127,7 @@ static gboolean getEnergyMopac(gchar* fileNameOut, gdouble* energy)
 	gchar buffer[1024];
 	gchar* pdest = NULL;
 
- 	file = FOpen(fileNameOut, "r");
+ 	file = FOpen(fileNameOut, "rb");
 	if(!file) return FALSE;
 	 while(!feof(file))
 	 {
@@ -414,7 +414,8 @@ static gboolean runOneMopac(gchar* fileNamePrefix, gchar* keyWords)
 	fclose(file);
 	{
 		gchar* str = NULL;
-		if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("Minimization by PM6-DH2/Mopac ... Please wait");
+		if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM7")) str = g_strdup_printf("Minimization by PM7/Mopac ... Please wait");
+		else if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("Minimization by PM6-DH2/Mopac ... Please wait");
 		else if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6-DH+")) str = g_strdup_printf("Minimization by PM6-DH+/Mopac ... Please wait");
 		else if(strstr(keyWords,"SPARKLE") && strstr(keyWords,"PM6")) str = g_strdup_printf("Minimization by Sparkle/PM6/Mopac ... Please wait");
 		else if(strstr(keyWords,"SPARKLE") && strstr(keyWords,"AM1")) str = g_strdup_printf("Minimization by Sparkle/AM1/Mopac ... Please wait");
@@ -425,10 +426,12 @@ static gboolean runOneMopac(gchar* fileNamePrefix, gchar* keyWords)
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"PM6-DH+")) str = g_strdup_printf("ESP charges from PM6-DH+/Mopac ... Please wait");
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"PM6")) str = g_strdup_printf("ESP charges from PM6/Mopac ... Please wait");
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"AM1")) str = g_strdup_printf("ESP charges from AM1/Mopac ... Please wait");
+		else if(strstr(keyWords,"ESP") && strstr(keyWords,"PM7")) str = g_strdup_printf("ESP charges from PM7/Mopac ... Please wait");
 		else if(strstr(keyWords,"POINT")) str = g_strdup_printf("Reaction path by Mopac ... Please wait");
 		else if(strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("Computing of energy by PM6-DH2/Mopac .... Please wait");
 		else if(strstr(keyWords,"PM6-DH+")) str = g_strdup_printf("Computing of energy by PM6-DH+/Mopac .... Please wait");
 		else if(strstr(keyWords,"PM6")) str = g_strdup_printf("Computing of energy by PM6/Mopac .... Please wait");
+		else if(strstr(keyWords,"PM7")) str = g_strdup_printf("Computing of energy by PM7/Mopac .... Please wait");
 		else str = g_strdup_printf("Computing of energy by AM1/Mopac .... Please wait");
 		set_text_to_draw(str);
 		if(str) g_free(str);
@@ -439,13 +442,13 @@ static gboolean runOneMopac(gchar* fileNamePrefix, gchar* keyWords)
 	fprintf(fileSH,"%s %s\n",NameCommandMopac,fileNameIn);
 	fclose(fileSH);
 	sprintf(buffer,"chmod u+x %s",fileNameSH);
-	system(buffer);
-	system(fileNameSH);
+	{int ierr= system(buffer);}
+	{int ierr = system(fileNameSH);}
 #else
 	fprintf(fileSH,"\"%s\" \"%s\"\n",NameCommandMopac,fileNameIn);
 	fclose(fileSH);
 	sprintf(buffer,"\"%s\"",fileNameSH);
-	system(buffer);
+	{int ierr= system(buffer);}
 #endif
 
 	fileNameOut = g_strdup_printf("%sOne.out",fileNamePrefix);
@@ -497,7 +500,7 @@ static gboolean getEnergyFireFly(gchar* fileNameOut, gdouble* energy)
 	gchar* pdest = NULL;
 	gboolean OK = FALSE;
 
- 	file = FOpen(fileNameOut, "r");
+ 	file = FOpen(fileNameOut, "rb");
 	if(!file) return FALSE;
 	 while(!feof(file))
 	 {
@@ -684,11 +687,11 @@ static gboolean runOneFireFly(gchar* fileNamePrefix, gchar* keyWords)
 	}
 #ifndef G_OS_WIN32
 	sprintf(buffer,"chmod u+x %s",fileNameSH);
-	system(buffer);
-	system(fileNameSH);
+	{int ierr= system(buffer);}
+	{int ierr = system(fileNameSH);}
 #else
 	sprintf(buffer,"\"%s\"",fileNameSH);
-	system(buffer);
+	{int ierr= system(buffer);}
 #endif
 	if(getEnergyFireFly(fileNameOut,&energy))
 	{
@@ -734,7 +737,7 @@ static gboolean getEnergyOrca(gchar* fileNameOut, gdouble* energy)
 	gchar* pdest = NULL;
 	gchar* energyTag = "FINAL SINGLE POINT ENERGY";
 
- 	file = FOpen(fileNameOut, "r");
+ 	file = FOpen(fileNameOut, "rb");
 	if(!file) return FALSE;
 	 while(!feof(file))
 	 {
@@ -800,11 +803,14 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
 			gchar Y[100];
 			gchar Z[100];
 			sprintf(X,"%s",GeomXYZ[i].X);
-  			if(!test(GeomXYZ[i].X)) sprintf(X,"{%s}",GeomXYZ[i].X);
+  			/* if(!test(GeomXYZ[i].X)) sprintf(X,"{%s}",GeomXYZ[i].X);*/
+  			if(!test(GeomXYZ[i].X)) sprintf(X," %lf ", get_value_variableXYZ(GeomXYZ[i].X));
 			sprintf(Y,"%s",GeomXYZ[i].Y);
-  			if(!test(GeomXYZ[i].Y)) sprintf(Y,"{%s}",GeomXYZ[i].Y);
+  			/* if(!test(GeomXYZ[i].Y)) sprintf(Y,"{%s}",GeomXYZ[i].Y);*/
+  			if(!test(GeomXYZ[i].Y)) sprintf(Y," %lf ", get_value_variableXYZ(GeomXYZ[i].Y));
 			sprintf(Z,"%s",GeomXYZ[i].Z);
-  			if(!test(GeomXYZ[i].Z)) sprintf(Z,"{%s}",GeomXYZ[i].Z);
+  			/* if(!test(GeomXYZ[i].Z)) sprintf(Z,"{%s}",GeomXYZ[i].Z);*/
+  			if(!test(GeomXYZ[i].Z)) sprintf(Z," %lf ", get_value_variableXYZ(GeomXYZ[i].Z));
 
 			fprintf(file," %s  %s %s %s\n",GeomXYZ[i].Symb, X,Y,Z);
 		}
@@ -815,11 +821,12 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
         	{
         		if(VariablesXYZ[i].Used)
 			{
-				fprintf(file,"%cparams \n",'%');
+				/* fprintf(file,"%cparams \n",'%');*/
 				nV++;
 				break;
 			}
         	}
+		/*
         	for(i=0;i<NVariablesXYZ;i++)
         	{
         		if(VariablesXYZ[i].Used)
@@ -828,6 +835,7 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
 			}
         	}
 		if(nV>0) fprintf(file," end #params\n");
+		*/
 		if(nV>0) 
 		{
 			fprintf(file,"%cgeom Constraints\n",'%');
@@ -835,7 +843,7 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
 			{
   				if(!test(GeomXYZ[i].X) || !test(GeomXYZ[i].Y) || !test(GeomXYZ[i].Z)) 
 				{
-					fprintf(file,"  C {%d} C\n",i);
+					fprintf(file,"  {C %d C}\n",i);
 				}
 			}
 			fprintf(file," end #Constraints\n");
@@ -854,17 +862,21 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
 				gchar A[100];
 				gchar D[100];
 				sprintf(R,"%s",Geom[i].R);
-  				if(!test(Geom[i].R)) sprintf(R,"{%s}",Geom[i].R);
+  				/* if(!test(Geom[i].R)) sprintf(R,"{%s}",Geom[i].R);*/
+  				if(!test(Geom[i].R)) sprintf(R," %lf ",get_value_variableZmat(Geom[i].R));
 				sprintf(A,"%s",Geom[i].Angle);
-  				if(!test(Geom[i].Angle)) sprintf(A,"{%s}",Geom[i].Angle);
+  				/* if(!test(Geom[i].Angle)) sprintf(A,"{%s}",Geom[i].Angle);*/
+  				if(!test(Geom[i].Angle)) sprintf(A," %lf ",get_value_variableZmat(Geom[i].Angle));
 				sprintf(D,"%s",Geom[i].Dihedral);
-  				if(!test(Geom[i].Dihedral)) sprintf(D,"{%s}",Geom[i].Dihedral);
+  				/* if(!test(Geom[i].Dihedral)) sprintf(D,"{%s}",Geom[i].Dihedral);*/
+  				if(!test(Geom[i].Dihedral)) sprintf(D," %lf ",get_value_variableZmat(Geom[i].Dihedral));
 
-				fprintf(file," %s  %s %s %s %s %s %s\n",
+				fprintf(file," %s %s %s %s %s %s %s\n",
 						Geom[i].Symb,
-						Geom[i].NR,R,
-						Geom[i].NAngle,A,
-						Geom[i].NDihedral,D);
+						Geom[i].NR,
+						Geom[i].NAngle,
+						Geom[i].NDihedral,
+						R,A,D);
 			}
 			else
         		if(Geom[i].Nentry>NUMBER_ENTRY_R)
@@ -872,31 +884,49 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
 				gchar R[100];
 				gchar A[100];
 				sprintf(R,"%s",Geom[i].R);
-  				if(!test(Geom[i].R)) sprintf(R,"{%s}",Geom[i].R);
+  				/* if(!test(Geom[i].R)) sprintf(R,"{%s}",Geom[i].R);*/
+  				if(!test(Geom[i].R)) sprintf(R," %lf ",get_value_variableZmat(Geom[i].R));
 				sprintf(A,"%s",Geom[i].Angle);
-  				if(!test(Geom[i].Angle)) sprintf(A,"{%s}",Geom[i].Angle);
+  				/* if(!test(Geom[i].Angle)) sprintf(A,"{%s}",Geom[i].Angle);*/
+  				if(!test(Geom[i].Angle)) sprintf(A," %lf ",get_value_variableZmat(Geom[i].Angle));
+				/*
 				fprintf(file," %s  %s %s %s %s\n",
 						Geom[i].Symb,
 						Geom[i].NR,R,
 						Geom[i].NAngle,A
 						);
+				*/
+				fprintf(file," %s %s %s %s %s %s %s\n",
+						Geom[i].Symb,
+						Geom[i].NR,
+						Geom[i].NAngle,
+						"0",
+						R,A,"0.0");
 			}
 			else
         		if(Geom[i].Nentry>NUMBER_ENTRY_0)
 			{
 				gchar R[100];
 				sprintf(R,"%s",Geom[i].R);
-  				if(!test(Geom[i].R)) sprintf(R,"{%s}",Geom[i].R);
-				fprintf(file," %s  %s %s\n",
+  				if(!test(Geom[i].R)) sprintf(R," %lf ",get_value_variableZmat(Geom[i].R));
+  				/* if(!test(Geom[i].R)) sprintf(R,"{%s}",Geom[i].R);*/
+				/* fprintf(file," %s  %s %s\n", Geom[i].Symb, Geom[i].NR,R);*/
+				fprintf(file," %s %s %s %s %s %s %s\n",
 						Geom[i].Symb,
-						Geom[i].NR,R
-						);
+						Geom[i].NR,
+						"0",
+						"0",
+						R,"0.0","0.0");
 			}
 			else
 			{
-				fprintf(file," %s \n",
-						Geom[i].Symb
-						);
+				//fprintf(file," %s \n", Geom[i].Symb);
+				fprintf(file," %s %s %s %s %s %s %s\n",
+						Geom[i].Symb,
+						"0",
+						"0",
+						"0",
+						"0.0","0.0","0.0");
 			}
         	}
 		fprintf(file,"*\n");
@@ -906,11 +936,12 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
         	{
         		if(Variables[i].Used)
 			{
-				fprintf(file,"%cparams \n",'%');
+				/* fprintf(file,"%cparams \n",'%');*/
 				nV++;
 				break;
 			}
         	}
+		/*
         	for(i=0;i<NVariables;i++)
         	{
         		if(Variables[i].Used)
@@ -920,6 +951,7 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
         	}
 		if(nV>0)
         		fprintf(file," end #params\n");
+		*/
 		if(nV>0) 
 		{
 			fprintf(file,"%cgeom Constraints\n",'%');
@@ -927,17 +959,17 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
 			{
   				if(Geom[i].Nentry>=NUMBER_ENTRY_R && !test(Geom[i].R)) 
 				{
-					fprintf(file,"  B {%d %d} C\n",atoi(Geom[i].NR)-1,i);
+					fprintf(file,"  {B %d %d C}\n",atoi(Geom[i].NR)-1,i);
 				}
   				if(Geom[i].Nentry>=NUMBER_ENTRY_ANGLE && !test(Geom[i].Angle)) 
 				{
-					fprintf(file,"  A {%d %d %d} C\n",
+					fprintf(file,"  {A %d %d %d C}\n",
 							atoi(Geom[i].NAngle)-1,
 							atoi(Geom[i].NR)-1,i);
 				}
   				if(Geom[i].Nentry>NUMBER_ENTRY_ANGLE && !test(Geom[i].Dihedral)) 
 				{
-					fprintf(file,"  D {%d %d %d %d} C\n",
+					fprintf(file,"  {D %d %d %d %d C}\n",
 							atoi(Geom[i].NDihedral)-1, 
 							atoi(Geom[i].NAngle)-1,
 							atoi(Geom[i].NR)-1,i);
@@ -982,11 +1014,11 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
 	}
 #ifndef G_OS_WIN32
 	sprintf(buffer,"chmod u+x %s",fileNameSH);
-	system(buffer);
-	system(fileNameSH);
+	{int ierr= system(buffer);}
+	{int ierr = system(fileNameSH);}
 #else
 	sprintf(buffer,"\"%s\"",fileNameSH);
-	system(buffer);
+	{int ierr= system(buffer);}
 #endif
 	if(getEnergyOrca(fileNameOut,&energy))
 	{
@@ -1076,6 +1108,15 @@ static void runSemiEmpirical(GtkWidget* Win, gpointer data, gchar* type, gchar* 
 		}
 		if(fileNamePrefix) g_free(fileNamePrefix);
 	}
+	else
+	if(!strcmp(type,"PM7MopacEnergy"))
+	{
+		gchar* fileNamePrefix = get_suffix_name_file(fileName);
+		if(runOneMopac(fileNamePrefix, "PM7 1SCF"))
+		{
+		}
+		if(fileNamePrefix) g_free(fileNamePrefix);
+	}
 	else if(!strcmp(type,"PM6DH2MopacOptimize"))
 	{
 		gchar* fileNamePrefix = get_suffix_name_file(fileName);
@@ -1109,6 +1150,17 @@ static void runSemiEmpirical(GtkWidget* Win, gpointer data, gchar* type, gchar* 
 		}
 		if(fileNamePrefix) g_free(fileNamePrefix);
 	}
+	else if(!strcmp(type,"PM7MopacOptimize"))
+	{
+		gchar* fileNamePrefix = get_suffix_name_file(fileName);
+		if(runOneMopac(fileNamePrefix, "PM7 XYZ AUX"))
+		{
+			gchar* fileOut = g_strdup_printf("%sOne.aux",fileNamePrefix);
+			find_energy_mopac_aux(fileOut);
+			if(fileOut) g_free(fileOut);
+		}
+		if(fileNamePrefix) g_free(fileNamePrefix);
+	}
 	else if(!strcmp(type,"PM6DH2MopacESP"))
 	{
 		gchar* fileNamePrefix = get_suffix_name_file(fileName);
@@ -1135,6 +1187,17 @@ static void runSemiEmpirical(GtkWidget* Win, gpointer data, gchar* type, gchar* 
 	{
 		gchar* fileNamePrefix = get_suffix_name_file(fileName);
 		if(runOneMopac(fileNamePrefix, "PM6 1SCF ESP"))
+		{
+			gchar* fileOut = g_strdup_printf("%sOne.out",fileNamePrefix);
+			read_geom_from_mopac_output_file(fileOut, -1);
+			if(fileOut) g_free(fileOut);
+		}
+		if(fileNamePrefix) g_free(fileNamePrefix);
+	}
+	else if(!strcmp(type,"PM7MopacESP"))
+	{
+		gchar* fileNamePrefix = get_suffix_name_file(fileName);
+		if(runOneMopac(fileNamePrefix, "PM7 1SCF ESP"))
 		{
 			gchar* fileOut = g_strdup_printf("%sOne.out",fileNamePrefix);
 			read_geom_from_mopac_output_file(fileOut, -1);
@@ -1361,6 +1424,33 @@ static void runPM6MopacESP(GtkWidget* Win, gpointer data)
 	TotalCharges[0] = totalCharge;
 	SpinMultiplicities[0] = spinMultiplicity;
 	runSemiEmpirical(Win, data, "PM6MopacESP",NULL);
+}
+/*****************************************************************************/
+static void runPM7MopacEnergy(GtkWidget* Win, gpointer data)
+{
+	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
+	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
+	TotalCharges[0] = totalCharge;
+	SpinMultiplicities[0] = spinMultiplicity;
+	runSemiEmpirical(Win, data, "PM7MopacEnergy",NULL);
+}
+/*****************************************************************************/
+static void runPM7MopacOptimize(GtkWidget* Win, gpointer data)
+{
+	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
+	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
+	TotalCharges[0] = totalCharge;
+	SpinMultiplicities[0] = spinMultiplicity;
+	runSemiEmpirical(Win, data, "PM7MopacOptimize",NULL);
+}
+/*****************************************************************************/
+static void runPM7MopacESP(GtkWidget* Win, gpointer data)
+{
+	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
+	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
+	TotalCharges[0] = totalCharge;
+	SpinMultiplicities[0] = spinMultiplicity;
+	runSemiEmpirical(Win, data, "PM7MopacESP",NULL);
 }
 /*****************************************************************************/
 static void runAM1MopacEnergy(GtkWidget* Win, gpointer data)
@@ -2140,7 +2230,7 @@ static void AddOptionsDlg(GtkWidget *NoteBook, GtkWidget *win,gchar* type)
 		addMopacSparkleOptions(vbox, type);
 	}
 	else
-	if(strstr(type,"Mopac") && !strstr(type,"PM6") && !strstr(type,"AM1"))
+	if(strstr(type,"Mopac") && !strstr(type,"PM6") && !strstr(type,"AM1") && !strstr(type,"PM7"))
 	{
 		i++;
 		j = 0;
@@ -2152,7 +2242,7 @@ static void AddOptionsDlg(GtkWidget *NoteBook, GtkWidget *win,gchar* type)
                   1,1);
 		addMopacOptions(vbox, type);
 	}
-	else if(strstr(type,"MopacScanAM1") || strstr(type,"MopacScanPM6") || strstr(type,"MopacScanPM6DH2") || strstr(type,"MopacScanPM6DH+") )
+	else if(strstr(type,"MopacScanAM1") || strstr(type,"MopacScanPM6") || strstr(type,"MopacScanPM6DH2") || strstr(type,"MopacScanPM6DH+") || strstr(type,"MopacScanPM7") )
 	{
 		i++;
 		j = 0;
@@ -2212,6 +2302,7 @@ static void AddOptionsDlg(GtkWidget *NoteBook, GtkWidget *win,gchar* type)
 	entryFileName = gtk_entry_new();
 	if(strstr(type,"AM1")) gtk_entry_set_text(GTK_ENTRY(entryFileName),"am1");
 	if(strstr(type,"PM6")) gtk_entry_set_text(GTK_ENTRY(entryFileName),"pm6");
+	if(strstr(type,"PM7")) gtk_entry_set_text(GTK_ENTRY(entryFileName),"pm7");
 	else if(strstr(type,"Mopac")) gtk_entry_set_text(GTK_ENTRY(entryFileName),"mopacFile");
 	else if(strstr(type,"FireFly")) gtk_entry_set_text(GTK_ENTRY(entryFileName),"fireflyFile");
 	else if(strstr(type,"Orca")) gtk_entry_set_text(GTK_ENTRY(entryFileName),"orcaFile");
@@ -2229,8 +2320,8 @@ static GtkWidget *addMopacHamiltonianToTable(GtkWidget *table, gint i)
 {
 	GtkWidget* entryMopacHamiltonian = NULL;
 	GtkWidget* comboMopacHamiltonian = NULL;
-	gint nlistHamiltonian = 6;
-	gchar* listHamiltonian[] = {"PM6","PM6-DH+","PM6-DH2","AM1","RM1","PM3","MNDO"};
+	gint nlistHamiltonian = 7;
+	gchar* listHamiltonian[] = {"PM7","PM6","PM6-DH+","PM6-DH2","AM1","RM1","PM3","MNDO"};
 
 	add_label_table(table,_("Model"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
@@ -2298,8 +2389,8 @@ static GtkWidget *addMopacHamiltonianSparkleToTable(GtkWidget *table, gint i)
 {
 	GtkWidget* entryMopacHamiltonianSparkle = NULL;
 	GtkWidget* comboMopacHamiltonianSparkle = NULL;
-	gint nlistHamiltonianSparkle = 3;
-	gchar* listHamiltonianSparkle[] = {"AM1","PM6","PM3"};
+	gint nlistHamiltonianSparkle = 4;
+	gchar* listHamiltonianSparkle[] = {"AM1","PM7","PM6","PM3"};
 
 	add_label_table(table,_("Model"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
@@ -2482,12 +2573,21 @@ void semiEmpiricalDlg(gchar* type)
 		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runPM6DHpMopacOptimize,GTK_OBJECT(Win));
 	else if(!strcmp(type,"PM6DH+MopacESP"))
 		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runPM6DHpMopacESP,GTK_OBJECT(Win));
+
 	else if(!strcmp(type,"PM6MopacEnergy"))
 		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runPM6MopacEnergy,GTK_OBJECT(Win));
 	else if(!strcmp(type,"PM6MopacOptimize"))
 		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runPM6MopacOptimize,GTK_OBJECT(Win));
 	else if(!strcmp(type,"PM6MopacESP"))
 		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runPM6MopacESP,GTK_OBJECT(Win));
+
+	else if(!strcmp(type,"PM7MopacEnergy"))
+		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runPM7MopacEnergy,GTK_OBJECT(Win));
+	else if(!strcmp(type,"PM7MopacOptimize"))
+		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runPM7MopacOptimize,GTK_OBJECT(Win));
+	else if(!strcmp(type,"PM7MopacESP"))
+		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runPM7MopacESP,GTK_OBJECT(Win));
+
 	else if(!strcmp(type,"AM1MopacEnergy"))
 		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runAM1MopacEnergy,GTK_OBJECT(Win));
 	else if(!strcmp(type,"AM1MopacOptimize"))
@@ -2687,7 +2787,8 @@ static gboolean runOneOptMopac(SemiEmpiricalModel* geom, gdouble* energy, gchar*
 	fclose(file);
 	{
 		gchar* str = NULL;
-		if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("Minimization by PM6-DH2/Mopac ... Please wait");
+		if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM7")) str = g_strdup_printf("Minimization by PM7/Mopac ... Please wait");
+		else if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("Minimization by PM6-DH2/Mopac ... Please wait");
 		else if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6-DH+")) str = g_strdup_printf("Minimization by PM6-DH+/Mopac ... Please wait");
 		else if(strstr(keyWords,"SPARKLE") && strstr(keyWords,"PM6")) str = g_strdup_printf("Minimization by Sparkle/PM6/Mopac ... Please wait");
 		else if(strstr(keyWords,"SPARKLE") && strstr(keyWords,"AM1")) str = g_strdup_printf("Minimization by Sparkle/AM1/Mopac ... Please wait");
@@ -2697,10 +2798,12 @@ static gboolean runOneOptMopac(SemiEmpiricalModel* geom, gdouble* energy, gchar*
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("ESP charges from PM6-DH2/Mopac ... Please wait");
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"PM6-DH+")) str = g_strdup_printf("ESP charges from PM6-DH+/Mopac ... Please wait");
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"PM6")) str = g_strdup_printf("ESP charges from PM6/Mopac ... Please wait");
+		else if(strstr(keyWords,"ESP") && strstr(keyWords,"PM7")) str = g_strdup_printf("ESP charges from PM7/Mopac ... Please wait");
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"AM1")) str = g_strdup_printf("ESP charges from AM1/Mopac ... Please wait");
 		else if(strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("Computing of energy by PM6-DH2/Mopac .... Please wait");
 		else if(strstr(keyWords,"PM6-DH+")) str = g_strdup_printf("Computing of energy by PM6-DH+/Mopac .... Please wait");
 		else if(strstr(keyWords,"PM6")) str = g_strdup_printf("Computing of energy by PM6/Mopac .... Please wait");
+		else if(strstr(keyWords,"PM7")) str = g_strdup_printf("Computing of energy by PM7/Mopac .... Please wait");
 		else str = g_strdup_printf("Computing of energy by AM1/Mopac .... Please wait");
 		set_text_to_draw(str);
 		if(str) g_free(str);
@@ -2711,13 +2814,13 @@ static gboolean runOneOptMopac(SemiEmpiricalModel* geom, gdouble* energy, gchar*
 	fprintf(fileSH,"%s %s\n",NameCommandMopac,fileNameIn);
 	fclose(fileSH);
 	sprintf(buffer,"chmod u+x %s",fileNameSH);
-	system(buffer);
-	system(fileNameSH);
+	{int ierr= system(buffer);}
+	{int ierr = system(fileNameSH);}
 #else
 	fprintf(fileSH,"\"%s\" \"%s\"\n",NameCommandMopac,fileNameIn);
 	fclose(fileSH);
 	sprintf(buffer,"\"%s\"",fileNameSH);
-	system(buffer);
+	{int ierr= system(buffer);}
 #endif
 
 	fileNameOut = g_strdup_printf("%sOne.out",fileNamePrefix);
@@ -2911,11 +3014,11 @@ static gboolean runOneOptFireFly(SemiEmpiricalModel* geom, gdouble* energy, gcha
 	}
 #ifndef G_OS_WIN32
 	sprintf(buffer,"chmod u+x %s",fileNameSH);
-	system(buffer);
-	system(fileNameSH);
+	{int ierr= system(buffer);}
+	{int ierr = system(fileNameSH);}
 #else
 	sprintf(buffer,"\"%s\"",fileNameSH);
-	system(buffer);
+	{int ierr= system(buffer);}
 #endif
 	if(getEnergyFireFly(fileNameOut,energy))
 	{
@@ -3228,7 +3331,7 @@ static gboolean createMopacFiles(gint numberOfGeometries, SemiEmpiricalModel** g
 	{
 		gchar buffer[1024];
   		sprintf(buffer,"chmod u+x %s",fileNameSH);
-		system(buffer);
+		{int ierr= system(buffer);}
 	}
 #endif
  	if(fileName) g_free(fileName);
@@ -3294,7 +3397,7 @@ static gboolean createGaussianFiles(gint numberOfGeometries, SemiEmpiricalModel*
 	{
 		gchar buffer[1024];
   		sprintf(buffer,"chmod u+x %s",fileNameSH);
-		system(buffer);
+		{int ierr= system(buffer);}
 	}
 #endif
  	if(fileName) g_free(fileName);
@@ -3334,7 +3437,7 @@ static gboolean createFireFlyFiles(gint numberOfGeometries, SemiEmpiricalModel**
 #endif
 
 
-	g_strup(keyWords);
+	uppercase(keyWords);
 	for(i=0;i<numberOfGeometries;i++)
 	{
 		if(!geometries[i]) continue;
@@ -3424,7 +3527,7 @@ static gboolean createFireFlyFiles(gint numberOfGeometries, SemiEmpiricalModel**
 	{
 		gchar buffer[1024];
   		sprintf(buffer,"chmod u+x %s",fileNameSH);
-		system(buffer);
+		{int ierr= system(buffer);}
 	}
 #endif
  	if(fileName) g_free(fileName);
@@ -3635,7 +3738,7 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 	}
 	set_sensitive_stop_button( FALSE);
 	set_text_to_draw(" ");
-	/* minimazation by mopac PM6*/
+	/* minimazation by mopac*/
 	if(optMopac && !StopCalcul)
 	{
 		gchar* fileNamePrefix = get_suffix_name_file(fileNameGeom);
@@ -4611,7 +4714,7 @@ static void createPostProcessingFrame(GtkWidget *box)
 /*----------------------------------------------------------------------------------*/
 	j = 2;
 	entryMopacKeywords = gtk_entry_new();
-	gtk_entry_set_text(GTK_ENTRY(entryMopacKeywords),"PM6 XYZ AUX");
+	gtk_entry_set_text(GTK_ENTRY(entryMopacKeywords),"PM7 XYZ AUX");
 	gtk_table_attach(GTK_TABLE(table),entryMopacKeywords, j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -4717,7 +4820,7 @@ static void AddModelOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 	i = 0;
 	j = 2;
 	entryMopacMethod = gtk_entry_new();
-	gtk_entry_set_text(GTK_ENTRY(entryMopacMethod),"PM6");
+	gtk_entry_set_text(GTK_ENTRY(entryMopacMethod),"PM7");
 	gtk_table_attach(GTK_TABLE(table),entryMopacMethod, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),

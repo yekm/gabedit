@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -57,6 +57,7 @@ void new_doc_orca();
 void new_doc_qchem();
 void insert_doc_gauss();
 gchar* get_license();
+void new_psicode(GtkWidget *widget, gchar *data);
 void show_about();
 void show_version();
 void show_homepage();
@@ -95,6 +96,7 @@ void read_geom_in_molcas_input(gchar *);
 void read_geom_in_molpro_input(gchar *);
 void read_geom_in_mpqc_input(gchar *);
 void read_geom_in_nwchem_input(gchar *);
+void read_geom_in_psicode_input(gchar *);
 void read_geom_in_orca_input(gchar *);
 void read_geom_in_qchem_input(gchar *);
 void read_geom_in_mopac_input(gchar *);
@@ -127,6 +129,7 @@ gchar* get_last_directory();
 void fit_windows_position(GtkWidget* parent, GtkWidget* child);
 void  create_opengl_frame(GtkWidget* Win,GtkWidget *vbox);
 void read_admp_build_dipole_dipole_autocorrelation_dlg();
+void read_dipole_build_dipole_dipole_autocorrelation_dlg();
 
 #endif /* __GABEDIT_UTILSINTERFACE_H__ */
 

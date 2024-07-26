@@ -1,6 +1,6 @@
 /* OrbitalsMolpro.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -589,7 +589,7 @@ OneBasis* read_basis_from_a_molpro_output_file(gchar *FileName,gint* nbasis,long
  	t=g_malloc(taille);
  	while(!feof(fd))
 	{
-		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
 		n++;
 		if(n==pos)
 		{
@@ -603,14 +603,14 @@ OneBasis* read_basis_from_a_molpro_output_file(gchar *FileName,gint* nbasis,long
   		Message(_("Sorry I can read basis in this file\n"),_("Error"),TRUE);
   		return NULL;
 	}
-	fgets(t,taille,fd);
-	fgets(t,taille,fd);
-	fgets(t,taille,fd);
+    	{ char* e = fgets(t,taille,fd);}
+    	{ char* e = fgets(t,taille,fd);}
+    	{ char* e = fgets(t,taille,fd);}
 
 	strbasis=g_malloc(sizeof(gchar*));
  	while(!feof(fd))
 	{
-		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
 		if(this_is_a_backspace(t))
 			break;
 		nrows++;
@@ -879,7 +879,7 @@ long int read_orbitals_from_a_molpro_output_file(gchar *FileName,TypeOrbitalsByS
  	t=g_malloc(taille);
  	while(!feof(fd))
 	{
-		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
 		n++;
 		if(n==pos)
 		{
@@ -904,14 +904,14 @@ long int read_orbitals_from_a_molpro_output_file(gchar *FileName,TypeOrbitalsByS
 
  	while(!feof(fd))
 	{
-		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
 		n++;
 		if(strstr(t,"Coefficients"))
                 {
 			break;
 		}
 															                        }  
-	fgets(t,taille,fd);
+    	{ char* e = fgets(t,taille,fd);}
 	n++;
 
 	strorb=g_malloc(sizeof(gchar*));
@@ -921,7 +921,7 @@ long int read_orbitals_from_a_molpro_output_file(gchar *FileName,TypeOrbitalsByS
 		nrows=0;
 		while(!feof(fd))
 		{
-			fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 			n++;
 			if(this_is_a_backspace(t))
 				break;
@@ -931,7 +931,8 @@ long int read_orbitals_from_a_molpro_output_file(gchar *FileName,TypeOrbitalsByS
 			  	strstr(t,"Natural orbitals saved") || 
 				strstr(t,"ELECTRON ORBITALS FOR NEGATIVE SPIN") ||
 			  	strstr(t,"EXPECTATION VALUE OF S") || 
-			  	strstr(t,"EXTRA SYMMETRY") 
+			  	strstr(t,"EXTRA SYMMETRY") ||
+			  	strstr(t,"RECORD") 
 			)
 			{
 				/* Debug("t = \n",t); */
@@ -943,7 +944,7 @@ long int read_orbitals_from_a_molpro_output_file(gchar *FileName,TypeOrbitalsByS
 			break;
 		while(!feof(fd))
 		{
-			fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 			n++;
 			if(
 				strstr(t,"********") || 
@@ -951,7 +952,8 @@ long int read_orbitals_from_a_molpro_output_file(gchar *FileName,TypeOrbitalsByS
 			  	strstr(t,"Natural orbitals saved") || 
 				strstr(t,"ELECTRON ORBITALS FOR NEGATIVE SPIN") ||
 			  	strstr(t,"EXPECTATION VALUE OF S") || 
-			  	strstr(t,"EXTRA SYMMETRY") 
+			  	strstr(t,"EXTRA SYMMETRY") ||
+			  	strstr(t,"RECORD") 
 			)
 			{
 				/* Debug("t = \n",t); */
@@ -1186,7 +1188,7 @@ TypeFileListOrb* scan_orbs_in_molpro_output_file(gchar* FileName,gint *norbtype)
  	}
 
 	pos++;
-	fgets(t,taille,fd);
+    	{ char* e = fgets(t,taille,fd);}
  	while(!feof(fd))
 	{
 
@@ -1205,7 +1207,7 @@ TypeFileListOrb* scan_orbs_in_molpro_output_file(gchar* FileName,gint *norbtype)
 			onelistorb.norbtype = 0;
 			onelistorb.geompos = pos;
 			pos++;
-			fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 			/* Debug("New Geometry\n");*/
  			while(!feof(fd) && !strstr(t, "ATOMIC COORDINATES" ))
 			{
@@ -1216,7 +1218,7 @@ TypeFileListOrb* scan_orbs_in_molpro_output_file(gchar* FileName,gint *norbtype)
 					onelistorb.norbtype = 0;
 					/* Debug("\tBasis OK\n");*/
 					pos++;
-					fgets(t,taille,fd);
+    					{ char* e = fgets(t,taille,fd);}
  					while(!feof(fd) && !strstr(t, "ATOMIC COORDINATES"))
 					{
 						if(strstr(t, "PROGRAM *" ))
@@ -1227,7 +1229,7 @@ TypeFileListOrb* scan_orbs_in_molpro_output_file(gchar* FileName,gint *norbtype)
 							sscanf(t,"%s %s %s",dump,dump,tmp);
 							/* Debug("\t\tProgram : %s\n",tmp);*/
 							pos++;
-							fgets(t,taille,fd);
+    							{ char* e = fgets(t,taille,fd);}
  							while(!feof(fd) && !strstr(t,"PROGRAM *") && !strstr(t, "ATOMIC COORDINATES"))
 							{
 								if(strstr(t, "ELECTRON ORBITALS" ) && !strstr(t, "NEGATIVE"))
@@ -1328,13 +1330,13 @@ TypeFileListOrb* scan_orbs_in_molpro_output_file(gchar* FileName,gint *norbtype)
 									break;
 								}
 								pos++;
-								fgets(t,taille,fd);
+    								{ char* e = fgets(t,taille,fd);}
 							}/* End while */
 						}/* End if */
 						if(!strstr(t,"PROGRAM *") && !strstr(t, "ATOMIC COORDINATES"))
 						{
 							pos++;
-							fgets(t,taille,fd);
+    							{ char* e = fgets(t,taille,fd);}
 						}
 					}/* End while */
 					break;
@@ -1342,7 +1344,7 @@ TypeFileListOrb* scan_orbs_in_molpro_output_file(gchar* FileName,gint *norbtype)
 				if(!strstr(t, "ATOMIC COORDINATES"))
 				{
 					pos++;
-					fgets(t,taille,fd);
+    					{ char* e = fgets(t,taille,fd);}
 				}
 			}/* End while */
 			
@@ -1373,7 +1375,7 @@ TypeFileListOrb* scan_orbs_in_molpro_output_file(gchar* FileName,gint *norbtype)
 		if(!strstr(t, "ATOMIC COORDINATES"))
 		{
 			pos++;
-			fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 		}
         }/* End while */
 	fclose(fd);

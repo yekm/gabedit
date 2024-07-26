@@ -110,7 +110,8 @@ StockIcons.o: StockIcons.c ../../pixmaps/A0d.xpm ../../pixmaps/A0p.xpm \
   ../../pixmaps/Orca.xpm ../../pixmaps/QChem.xpm ../../pixmaps/Mopac.xpm \
   ../../pixmaps/Adf.xpm ../../pixmaps/Dalton.xpm ../../pixmaps/Gamess.xpm \
   ../../pixmaps/FireFly.xpm ../../pixmaps/MoveAtom.xpm \
-  ../../pixmaps/MPQC.xpm ../../pixmaps/NWChem.xpm ../../pixmaps/New.xpm \
+  ../../pixmaps/MPQC.xpm ../../pixmaps/NWChem.xpm \
+  ../../pixmaps/Psicode.xpm ../../pixmaps/NBO.xpm ../../pixmaps/New.xpm \
   ../../pixmaps/Next.xpm ../../pixmaps/No.xpm ../../pixmaps/Ok.xpm \
   ../../pixmaps/OpenBabel.xpm ../../pixmaps/Open.xpm \
   ../../pixmaps/Orbitals.xpm ../../pixmaps/Ortho.xpm \

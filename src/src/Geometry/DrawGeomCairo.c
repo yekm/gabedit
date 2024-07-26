@@ -1,6 +1,6 @@
 /* DrawGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -41,7 +41,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Transformation.h"
 #include "../Geometry/GeomXYZ.h"
 #include "../Geometry/GeomZmatrix.h"
-#include "../Geometry/Symmetry.h"
+#include "../Geometry/GeomSymmetry.h"
 #include "../Files/FileChooser.h"
 #include "../Geometry/ImagesGeom.h"
 #include "../Geometry/Fragments.h"
@@ -539,7 +539,7 @@ void read_drawmolecule_file()
 	factor_stick_default(NULL,NULL);
 	factor_ball_default(NULL,NULL);
 
-	fd = fopen(drawMolecule, "r");
+	fd = fopen(drawMolecule, "rb");
 	if(fd !=NULL)
 	{
  		guint taille = BSIZE;
@@ -1234,6 +1234,22 @@ static void setMultipleBonds()
 				 nBonds[i] += 1;
 				 nBonds[j] += 1;
 			 }
+		}
+	}
+// sort atoms nBonds min at first
+	for(i=0;i<(gint)Natoms-1;i++)
+	{
+		gint k = i;
+		for(j=i+1;j<(gint)Natoms;j++)
+			if(nBonds[j]<nBonds[k])  k = j;
+		if(k!=i)
+		{
+			gint t = num[i];
+			num[i] = num[k];
+			num[k] = t;
+			t = nBonds[i];
+			nBonds[i] = nBonds[k];
+			nBonds[k] = t;
 		}
 	}
 	for(i=0;i<(gint)Natoms;i++)
@@ -2086,6 +2102,179 @@ static int compute_fragment_principal_axes(gdouble axis1[], gdouble axis2[], gdo
 	return nFrag;
 }
 /********************************************************************************/
+static void rotate_slected_atoms_minimize_rmsd()
+{
+	gint i,j;
+
+	gint nA = 0;
+	const gint N = 8;
+        gdouble d[8];
+        gdouble w[8][3] = {
+                {1,1,1},
+                {-1,1,1},
+                {1,-1,1},
+                {1,1,-1},
+                {-1,-1,1},
+                {-1,1,-1},
+                {1,-1,-1},
+                {-1,-1,-1}
+        };
+        gdouble x, y, z;
+	gint* numA = NULL;
+	gint* numB = NULL;
+	gint iA, iB;
+
+	if(Natoms<1) return;
+
+	j = 0;
+	for(i = 0;i<Natoms;i++)
+		if(if_selected(i)) nA++;
+
+	if(nA != Natoms - nA || nA == 0) return;
+	numA = g_malloc(nA*sizeof(gint));
+	numB = g_malloc(nA*sizeof(gint));
+        for (i=0;i<nA;i++) numA[i] = -1;
+        for (i=0;i<nA;i++) numB[i] = -1;
+
+	iA = iB = 0;
+	for(i = 0;i<Natoms;i++)
+		if(if_selected(i)) numA[iA++] = i;
+		else numB[iB++] = i;
+
+	for(i = 0;i<nA;i++)
+	if(strcmp(geometry[numA[i]].Prop.symbol, geometry[numB[i]].Prop.symbol))
+	{
+		g_free(numA);
+		g_free(numB);
+		return;
+	}
+
+        for (j=0;j<N;j++) d[j] = 0;
+        for (i=0;i<nA;i++)
+        {
+                for (j=0;j<N;j++)
+                {
+                x = geometry[numA[i]].X - w[j][0]*geometry[numB[i]].X;
+                y = geometry[numA[i]].Y - w[j][1]*geometry[numB[i]].Y;
+                z = geometry[numA[i]].Z - w[j][2]*geometry[numB[i]].Z;
+                d[j] += x*x + y*y + z*z;
+                }
+        }
+        double dmin = d[0];
+	int jmin = 0;
+        for (j=1;j<N;j++) if(dmin>d[j]) {dmin=d[j]; jmin = j;}
+        for (i=0;i<nA;i++)
+	{
+                geometry[numB[i]].X *=  w[jmin][0];
+                geometry[numB[i]].Y *=  w[jmin][1];
+                geometry[numB[i]].Z *=  w[jmin][2];
+
+                geometry0[numB[i]].X *=  w[jmin][0];
+                geometry0[numB[i]].Y *=  w[jmin][1];
+                geometry0[numB[i]].Z *=  w[jmin][2];
+	}
+
+
+	RebuildGeom = TRUE;
+}
+/********************************************************************************/
+/* type = 0 all atoms, type = 1 selected atoms, type = 2 not selected atoms */
+static void set_xyz_to_standard_orientation(gint type)
+{
+	gint i,j;
+
+	gdouble* X;
+	gdouble* Y;
+	gdouble* Z;
+	gchar** symbols;
+
+	if(Natoms<1) return;
+
+	X = g_malloc(Natoms*sizeof(gdouble));
+	Y = g_malloc(Natoms*sizeof(gdouble));
+	Z = g_malloc(Natoms*sizeof(gdouble));
+	symbols = g_malloc(Natoms*sizeof(gchar*));
+	for(i = 0;i<Natoms;i++) symbols[i] = NULL;
+
+	j = 0;
+	for(i = 0;i<Natoms;i++)
+	{
+		if(type == 0 || (type==1 && if_selected(i))  || (type==2 && !if_selected(i)))
+		{
+			X[j] = geometry[i].X;
+			Y[j] = geometry[i].Y;
+			Z[j] = geometry[i].Z;
+			symbols[j] = g_strdup(geometry[i].Prop.symbol);
+			j++;
+		}
+	}
+
+	buildStandardOrientationDlg(j, symbols, X, Y, Z);
+
+	j = 0;
+	for(i = 0;i<Natoms;i++)
+	{
+		if(type == 0 || (type==1 && if_selected(i))  || (type==2 && !if_selected(i)))
+		{
+			geometry0[i].X = X[j];
+			geometry0[i].Y = Y[j];
+			geometry0[i].Z = Z[j];
+
+			geometry[i].X = X[j];
+			geometry[i].Y = Y[j];
+			geometry[i].Z = Z[j];
+			j++;
+		}
+	}
+
+	if(symbols) for(i = 0;i<Natoms;i++) if(symbols[i]) g_free(symbols[i]);
+	if(symbols) g_free(symbols);
+	
+	if(X) g_free(X);
+	if(Y) g_free(Y);
+	if(Z) g_free(Z);
+
+	RebuildGeom = TRUE;
+}
+/********************************************************************************/
+void set_xyz_to_standard_orientation_all()
+{
+	set_xyz_to_standard_orientation(0);
+	create_GeomXYZ_from_draw_grometry();
+	init_quat(Quat);
+	RebuildGeom = TRUE;
+	drawGeom();
+}
+/********************************************************************************/
+void set_xyz_to_standard_orientation_selected_atoms()
+{
+	set_xyz_to_standard_orientation(1);
+	create_GeomXYZ_from_draw_grometry();
+	init_quat(Quat);
+	RebuildGeom = TRUE;
+	drawGeom();
+}
+/********************************************************************************/
+void set_xyz_to_standard_orientation_not_selected_atoms()
+{
+	set_xyz_to_standard_orientation(2);
+	create_GeomXYZ_from_draw_grometry();
+	init_quat(Quat);
+	RebuildGeom = TRUE;
+	drawGeom();
+}
+/********************************************************************************/
+void set_xyz_to_standard_orientation_selected_and_not_selected_atoms()
+{
+	set_xyz_to_standard_orientation(1);
+	set_xyz_to_standard_orientation(2);
+	rotate_slected_atoms_minimize_rmsd();
+	create_GeomXYZ_from_draw_grometry();
+	init_quat(Quat);
+	RebuildGeom = TRUE;
+	drawGeom();
+}
+/********************************************************************************/
 void set_xyz_to_principal_axes_of_selected_atoms(gpointer data, guint Operation,GtkWidget* wid)
 {
 	gdouble axis1[3] = {1,0,0};
@@ -2184,6 +2373,75 @@ void get_standard_orientation_with_reduction(GtkWidget*w, gpointer data)
 		Z[i] = geometry0[i].Z*BOHR_TO_ANG;
 	}
 	createGeometrySymmetryWindow(numberOfAtoms,symbols,X, Y, Z, groupeSymbol);
+
+	for (i=0;i<(gint)Natoms;i++)
+		g_free( symbols[i]);
+	g_free( symbols);
+	g_free(X);
+	g_free(Y);
+	g_free(Z);
+	return;
+}
+/********************************************************************************/
+void get_standard_orientation_with_symmetrization(GtkWidget*w, gpointer data)
+{
+	gchar** symbols = NULL;
+	gdouble* X = NULL;
+	gdouble* Y = NULL;
+	gdouble* Z = NULL;
+	gint i;
+	gint numberOfAtoms = Natoms;
+	gchar groupeSymbol[BSIZE];
+
+	if(Natoms<1)
+	{
+		 Message(_("Sorry, the number of atoms is not positive"),_("Error"),TRUE);
+		return;
+	}
+	symbols = (gchar**)g_malloc(sizeof(gchar*)*(Natoms));
+	if(symbols == NULL) return;
+
+	X = (gdouble*)g_malloc(sizeof(gdouble)*(Natoms));
+	if(X == NULL) return;
+	Y = (gdouble*)g_malloc(sizeof(gdouble)*(Natoms));
+	if(Y == NULL) return;
+	Z = (gdouble*)g_malloc(sizeof(gdouble)*(Natoms));
+	if(Z == NULL) return;
+
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		symbols[i] = g_strdup(geometry0[i].Prop.symbol);
+		X[i] = geometry0[i].X*BOHR_TO_ANG;
+		Y[i] = geometry0[i].Y*BOHR_TO_ANG;
+		Z[i] = geometry0[i].Z*BOHR_TO_ANG;
+	}
+	createGeometrySymmetrizationWindow(numberOfAtoms,symbols,X, Y, Z, groupeSymbol);
+
+// reset geometry0
+	for(i = 0;i<numberOfAtoms;i++)
+	{
+		g_free(geometry0[i].Prop.symbol);
+		geometry0[i].Prop = prop_atom_get(symbols[i]);
+		geometry0[i].mmType = g_strdup(symbols[i]);
+		geometry0[i].pdbType = g_strdup(symbols[i]);
+		geometry0[i].Residue = g_strdup(symbols[i]);
+		geometry0[i].Charge = 0.0;
+		geometry0[i].X = X[i]/BOHR_TO_ANG;
+		geometry0[i].Y = Y[i]/BOHR_TO_ANG;
+		geometry0[i].Z = Z[i]/BOHR_TO_ANG;
+
+		g_free(geometry[i].Prop.symbol);
+		geometry[i].Prop = prop_atom_get(symbols[i]);
+		geometry[i].mmType = g_strdup(symbols[i]);
+		geometry[i].pdbType = g_strdup(symbols[i]);
+		geometry[i].Residue = g_strdup(symbols[i]);
+		geometry[i].Charge = 0.0;
+		geometry[i].X = geometry0[i].X;
+		geometry[i].Y = geometry0[i].Y;
+		geometry[i].Z = geometry0[i].Z;
+	}
+	resetConnections();
+	create_GeomXYZ_from_draw_grometry();
 
 	for (i=0;i<(gint)Natoms;i++)
 		g_free( symbols[i]);
@@ -6470,12 +6728,12 @@ void set_dipole_from_charges()
 	unselect_all_atoms();
 	Dipole.def = TRUE;
 	for(i=0;i<3;i++)
-		Dipole.Value[i] = 0.0;
+		Dipole.value[i] = 0.0;
 	for(j=0;j<(gint)Natoms;j++)
 	{
-		Dipole.Value[0] += geometry0[j].X*geometry0[j].Charge;
-		Dipole.Value[1] += geometry0[j].Y*geometry0[j].Charge;
-		Dipole.Value[2] += geometry0[j].Z*geometry0[j].Charge;
+		Dipole.value[0] += geometry0[j].X*geometry0[j].Charge;
+		Dipole.value[1] += geometry0[j].Y*geometry0[j].Charge;
+		Dipole.value[2] += geometry0[j].Z*geometry0[j].Charge;
 
 	}	
 	define_geometry();
@@ -8941,7 +9199,7 @@ void define_geometry()
 	Ddef = Dipole.def;
 	if(Ddef)
 	{
-		gdouble step[3] ={Dipole.Value[0]/(NDIVDIPOLE-1),Dipole.Value[1]/(NDIVDIPOLE-1),Dipole.Value[2]/(NDIVDIPOLE-1)};
+		gdouble step[3] ={Dipole.value[0]/(NDIVDIPOLE-1),Dipole.value[1]/(NDIVDIPOLE-1),Dipole.value[2]/(NDIVDIPOLE-1)};
 		dipole[0][0] = -X0[0];
 		dipole[0][1] = -X0[1];
 		dipole[0][2] = -X0[2];
@@ -9711,6 +9969,79 @@ void draw_arc(gint xi,gint yi,gint rayoni,gdouble angle1, gdouble angle2, gdoubl
 	}
 	*/
 }
+/************************************************************************/
+void getOptimalCiCj(gint i, gint j, gdouble* Ci, gdouble* Cj, gdouble* C0)
+{
+	C0[0] = 0;
+	C0[1] = 0;
+	C0[2] = 0;
+
+	Ci[0] = geometry[i].X;
+	Ci[1] = geometry[i].Y;
+	Ci[2] = geometry[i].Z;
+
+	Cj[0] = geometry[j].X;
+	Cj[1] = geometry[j].Y;
+	Cj[2] = geometry[j].Z;
+
+/* serach a one none hydrogen atom connected to i or j atoms */
+	if(geometry[i].typeConnections)
+	{
+		gint l;
+		gint nl;
+		for(l=0, nl = geometry[l].N-1;l<Natoms;l++, nl = geometry[l].N-1)
+			if(l != j && l != i &&  geometry[i].typeConnections[nl]>0 && strcmp(geometry[l].Prop.symbol,"H"))
+			{
+				C0[0] = geometry[l].X;
+				C0[1] = geometry[l].Y;
+				C0[2] = geometry[l].Z;
+				/* printf("---%s\n",geometry[l].Prop.symbol);*/
+				return;
+			}
+	}
+	if(geometry[j].typeConnections)
+	{
+		gint l;
+		gint nl;
+		for(l=0, nl = geometry[l].N-1;l<Natoms;l++, nl = geometry[l].N-1)
+			if(l != j && l != i &&  geometry[j].typeConnections[nl]>0  && strcmp(geometry[l].Prop.symbol,"H"))
+			{
+				C0[0] = geometry[l].X;
+				C0[1] = geometry[l].Y;
+				C0[2] = geometry[l].Z;
+				/* printf("--%s\n",geometry[l].Prop.symbol);*/
+				return;
+			}
+	}
+	if(geometry[i].typeConnections)
+	{
+		gint l;
+		gint nl;
+		for(l=0, nl = geometry[l].N-1;l<Natoms;l++, nl = geometry[l].N-1)
+			if(l != j && l != i &&  geometry[i].typeConnections[nl]>0)
+			{
+				C0[0] = geometry[l].X;
+				C0[1] = geometry[l].Y;
+				C0[2] = geometry[l].Z;
+				/* printf("%s\n",geometry[l].Prop.symbol);*/
+				return;
+			}
+	}
+	if(geometry[j].typeConnections)
+	{
+		gint l;
+		gint nl;
+		for(l=0, nl = geometry[l].N-1;l<Natoms;l++, nl = geometry[l].N-1)
+			if(l != j && l != i &&  geometry[j].typeConnections[nl]>0)
+			{
+				C0[0] = geometry[l].X;
+				C0[1] = geometry[l].Y;
+				C0[2] = geometry[l].Z;
+				/* printf("%s\n",geometry[l].Prop.symbol);*/
+				return;
+			}
+	}
+}
 /*****************************************************************************/
 void draw_ball(gint xi,gint yi,gint rayoni,GdkColor colori)
 {
@@ -10364,7 +10695,7 @@ void draw_dipole(gint x0,gint y0)
  	PangoFontDescription *font_desc = pango_font_description_from_string (FontsStyleLabel.fontname);
 
 	for(i=0;i<3;i++)
-		d += Dipole.Value[i]*Dipole.Value[i];
+		d += Dipole.value[i]*Dipole.value[i];
 
 	t = g_strdup_printf("%0.3f D",sqrt(d)*AUTODEB);
 
@@ -10479,10 +10810,31 @@ void rafresh_drawing()
 	drawGeom();
 	change_of_center(NULL,NULL);
 }
+/********************************************************************************/
+static void copyCoordinates2to1(GeomDef *geom1, GeomDef *geom2)
+{
+	gint i;
+	if(!geom1) return;
+	if(!geom2) return;
+	for (i=0;i<Natoms;i++)
+	{
+		geom1[i].X = geom2[i].X;
+		geom1[i].Y = geom2[i].Y;
+		geom1[i].Z = geom2[i].Z;
+	}
+}
 /******************************************************************************/
 void rafresh_window_geom()
 {
-     rafresh_drawing();
+         if(GeomDrawingArea != NULL)
+         {
+                RebuildGeom = TRUE;
+                copyCoordinates2to1(geometry, geometry0);
+                redraw(GeomDrawingArea);
+         }
+	drawGeom();
+
+     /* rafresh_drawing();*/
 }
 /*****************************************************************************/
 void multi_geometry_by_factor(gdouble fa0)

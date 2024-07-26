@@ -1,6 +1,6 @@
 /* GabeditContoursPlot.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -114,12 +114,24 @@ static void set_theme_dialog(GtkWidget* widget);
 static PangoLayout* get_pango_str(GabeditContoursPlot *contoursplot, G_CONST_RETURN gchar* txt);
 
 /****************************************************************************************/
+static void uppercase(gchar *str)
+{
+  while( *str != '\0')
+  {
+    if (isalpha((gint)*str))
+      if (islower((gint)*str))
+        *str = toupper((gint)*str);
+    str ++;
+  }
+}
+/****************************************************************************************/
 static void contoursplot_message(gchar* message)
 {
 	GtkWidget* dialog = NULL;
 	dialog = gtk_message_dialog_new_with_markup (NULL,
 		           GTK_DIALOG_DESTROY_WITH_PARENT,
 		           GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+			   "%s",
 			   message);
        	gtk_dialog_run (GTK_DIALOG (dialog));
        	gtk_widget_destroy (dialog);
@@ -1496,11 +1508,13 @@ static void Message(gchar* message, gchar* title)
 	dialog = gtk_message_dialog_new_with_markup (NULL,
                  GTK_DIALOG_DESTROY_WITH_PARENT,
 		GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+	        "%s",
 		message);
 	else
 	dialog = gtk_message_dialog_new_with_markup (NULL,
                  GTK_DIALOG_DESTROY_WITH_PARENT,
 		GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+			   "%s",
 		message);
 
 	if(dialog)
@@ -2962,6 +2976,7 @@ static gboolean read_data(GtkFileChooser *filesel, gint response_id)
 		dialog = gtk_message_dialog_new_with_markup (NULL,
 		           GTK_DIALOG_DESTROY_WITH_PARENT,
 		           GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+			   "%s",
 			   tmp);
        		gtk_dialog_run (GTK_DIALOG (dialog));
        		gtk_widget_destroy (dialog);
@@ -2983,6 +2998,7 @@ static gboolean read_data(GtkFileChooser *filesel, gint response_id)
 		dialog = gtk_message_dialog_new_with_markup (NULL,
 		           GTK_DIALOG_DESTROY_WITH_PARENT,
 		           GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+			   "%s",
 			   tmp);
        		gtk_dialog_run (GTK_DIALOG (dialog));
        		gtk_widget_destroy (dialog);
@@ -2997,6 +3013,7 @@ static gboolean read_data(GtkFileChooser *filesel, gint response_id)
 		dialog = gtk_message_dialog_new_with_markup (NULL,
 		           GTK_DIALOG_DESTROY_WITH_PARENT,
 		           GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+			   "%s",
 			   tmp);
        		gtk_dialog_run (GTK_DIALOG (dialog));
        		gtk_widget_destroy (dialog);
@@ -4803,7 +4820,7 @@ static gboolean gabedit_contoursplot_read_gabedit(GtkWidget* contoursplot, gchar
  	FILE* file = fopen(fileName, "rb");
 	if(!file) return FALSE;
     	if(!fgets(t,BSIZE,file)) return FALSE;
-	g_strup(t);
+	uppercase(t);
 	if(!strstr(t,"[GABEDIT FORMAT]"))
 	{
 		contoursplot_message(_("This is not a Gabedit file\n"));
@@ -5220,7 +5237,7 @@ static void combo_point_style_changed_value (GtkComboBox *combobox, gpointer use
 		if(!d) return;
 		if(contour)
 		{
-			sprintf(contour->point_str,d);
+			sprintf(contour->point_str,"%s",d);
 			contoursplot_build_points_contour(GABEDIT_ContoursPLOT(contoursplot), contour);
 		}
 		gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
@@ -9355,6 +9372,7 @@ static gint gabedit_contoursplot_button_release (GtkWidget *widget, GdkEventButt
 	dialog = gtk_message_dialog_new_with_markup (NULL,
 		           GTK_DIALOG_DESTROY_WITH_PARENT,
 		           GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+			   "%s",
 			   tmp);
        gtk_dialog_run (GTK_DIALOG (dialog));
        gtk_widget_destroy (dialog);
@@ -10375,7 +10393,7 @@ static void writeBMP(GabeditContoursPlot *contoursplot, gchar *fileName)
   	WLSBL((int) height,bmp_header+22);
   	WLSBL((int) 3*width*height,bmp_header+34);
 
-  	fwrite(bmp_header,1,54,file);
+  	{int it = fwrite(bmp_header,1,54,file);}
 
   	for (i=0;i<height;i++)
 	{
@@ -10384,11 +10402,11 @@ static void writeBMP(GabeditContoursPlot *contoursplot, gchar *fileName)
 			rgbtmp[0] = rgbbuf[(j+width*i)*3+2];
 			rgbtmp[1] = rgbbuf[(j+width*i)*3+1];
 			rgbtmp[2] = rgbbuf[(j+width*i)*3+0];
-			fwrite(rgbtmp,3,1,file);
+			{int it = fwrite(rgbtmp,3,1,file);}
     		}
     	rgbtmp[0] = (char) 0;
     	for (j=0;j<pad;j++) 
-		fwrite(rgbtmp,1,1,file);
+		{ int it = fwrite(rgbtmp,1,1,file);}
   	}
 
   	fclose(file);

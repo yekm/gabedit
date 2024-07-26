@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -68,7 +68,7 @@ static void eventDispatcher(GtkWidget *widget, GdkEventButton *event, gpointer u
 		{
 			model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
 			gtk_tree_selection_select_path  (gtk_tree_view_get_selection (GTK_TREE_VIEW (widget)), path);
-			sprintf(selectedRow ,gtk_tree_path_to_string(path));
+			sprintf(selectedRow ,"%s",gtk_tree_path_to_string(path));
 			gtk_tree_model_get_iter (model, &iter, path);
 			gtk_tree_path_free(path);
 			/* printf("%s\n",selectedRow);*/

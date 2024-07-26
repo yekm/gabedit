@@ -1,6 +1,6 @@
 /* OrbitalsMopac.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -713,12 +713,15 @@ static gdouble overlapOM(gdouble* Ci, gdouble* Cj, gdouble* S)
 	return ovOM;
 }
 /********************************************************************************/
+/*
 static void addScaleVect(gint n, gdouble* Ci, gdouble* Cj, gdouble s)
 {
 	gint k;
 	for(k=0;k<n;k++) Ci[k] += Cj[k]*s;
 }
+*/
 /********************************************************************************/
+/*
 static gboolean orthonormalize_orbitals_schmidt(gchar* FileName, gdouble**CoefOrbitals, gint nb, gint ne)
 {
 	gint nn;
@@ -729,7 +732,6 @@ static gboolean orthonormalize_orbitals_schmidt(gchar* FileName, gdouble**CoefOr
 	gdouble PRECISION = 1e-10;
 	gdouble r;
 	gint j;
-	/* printf("nn=%d N = %d\n",nn,N);*/
 	if(nn != N) return FALSE;
 	for(i=nb;i<ne;i++) 
 	{
@@ -750,8 +752,6 @@ static gboolean orthonormalize_orbitals_schmidt(gchar* FileName, gdouble**CoefOr
 		r = 1/r;
 		for(k=0;k<NOrb;k++) CoefOrbitals[i][k] *= r;
 	}
-	/* Check */
-	/*
 	{
 		for(i=0;i<NOrb;i++) 
 		{
@@ -764,10 +764,10 @@ static gboolean orthonormalize_orbitals_schmidt(gchar* FileName, gdouble**CoefOr
 	
 		
 	}
-	*/
 	if(S) g_free(S);
 	return TRUE;
 }
+*/
 /********************************************************************************/
 static gboolean orthonormalize_orbitals_diag(gchar* FileName, gdouble**CoefOrbitals, gint nb, gint ne)
 {
@@ -968,7 +968,6 @@ static gboolean orthonormalize_orbitals_diag(gchar* FileName, gdouble**CoefOrbit
 /********************************************************************************/
 static gboolean orthonormalize_orbitals(gchar* FileName, gdouble**CoefOrbitals, gint nb, gint ne)
 {
-	//return orthonormalize_orbitals_schmidt(FileName, CoefOrbitals, no);
 	return orthonormalize_orbitals_diag(FileName, CoefOrbitals, nb, ne);
 }
 /********************************************************************************/
