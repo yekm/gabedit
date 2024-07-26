@@ -878,9 +878,9 @@ GtkWidget *create_iso_frame( GtkWidget *vboxall,gchar* title)
 	if(TypeGrid == GABEDIT_TYPEGRID_SAS) v = 0;
 	if(TypeGrid == GABEDIT_TYPEGRID_ELFSAVIN) v = 0.8;
 	if(TypeGrid == GABEDIT_TYPEGRID_ELFBECKE) v = 0.8;
-	if(TypeGrid == GABEDIT_TYPEGRID_FEDELECTROPHILIC) v = 0.8;
-	if(TypeGrid == GABEDIT_TYPEGRID_FEDNUCLEOPHILIC) v = 0.8;
-	if(TypeGrid == GABEDIT_TYPEGRID_FEDRADICAL) v = 0.8;
+	if(TypeGrid == GABEDIT_TYPEGRID_FEDELECTROPHILIC) v *= 3;
+	if(TypeGrid == GABEDIT_TYPEGRID_FEDNUCLEOPHILIC) v *= 3;
+	if(TypeGrid == GABEDIT_TYPEGRID_FEDRADICAL) v *= 3;
 		
 	strlabels[2][2] = g_strdup_printf("%lf",v);
 

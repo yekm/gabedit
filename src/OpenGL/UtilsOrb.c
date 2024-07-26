@@ -1614,6 +1614,16 @@ void read_opengl_file()
 	openGLOptions.depthSize = 0;
 	openGLOptions.numberOfSubdivisionsCylindre = 10; 
 	openGLOptions.numberOfSubdivisionsSphere = 15; 
+	colorMapType =1;
+	colorMapColors[0][0] = 1;
+	colorMapColors[0][1] = 1;
+	colorMapColors[0][2] = 1;
+	colorMapColors[1][0] = 1;
+	colorMapColors[1][1] = 1;
+	colorMapColors[1][2] = 1;
+	colorMapColors[2][0] = 1;
+	colorMapColors[2][1] = 1;
+	colorMapColors[2][2] = 1;
 	if(fd !=NULL)
 	{
  		guint taille = BSIZE;

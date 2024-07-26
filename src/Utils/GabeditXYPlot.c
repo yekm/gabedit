@@ -6328,7 +6328,9 @@ static void build_data_xyplot_curve_withconv(GabeditXYPlot *xyplot, gint numberO
 		if(X[i]>xmax) xmax = X[i];
 	}
 
-        xx = xmin-10*halfWidth;
+        xmin -= 10*halfWidth;
+        xmax += 10*halfWidth;
+        xx = xmin;
         h0 = halfWidth/10;
 	n = (gint)((xmax-xmin)/h0+0.5)+numberOfPoints;
 	if(n>0) data->x = (gdouble*)g_malloc(sizeof(gdouble)*n);

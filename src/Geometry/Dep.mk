@@ -83,6 +83,8 @@ DrawGeom.o: ../Symmetry/MoleculeSymmetryInterface.h ../Utils/Jacobi.h
 DrawGeom.o: ../Utils/Vector3d.h ../Utils/GabeditTextEdit.h
 DrawGeom.o: ../Utils/UtilsCairo.h ../Geometry/MenuToolBarGeom.h
 DrawGeom.o: ../Geometry/PreviewGeom.h ../Geometry/FragmentsSelector.h
+DrawGeom.o: ../IsotopeDistribution/IsotopeDistributionCalculatorDlg.h
+DrawGeom.o: ../IsotopeDistribution/IsotopeDistributionCalculator.h
 DrawGeom.o: Fragments.h
 EnergiesCurves.o: ../../Config.h
 EnergiesCurves.o: ../Common/Global.h
@@ -187,9 +189,10 @@ InterfaceGeom.o: ../Common/Global.h ../Files/GabeditFileChooser.h
 InterfaceGeom.o: ../Common/GabeditType.h ../Geometry/InterfaceGeom.h
 InterfaceGeom.o: ../Gaussian/GaussGlobal.h ../Geometry/GeomGlobal.h
 InterfaceGeom.o: ../Geometry/GeomXYZ.h ../Geometry/GeomZmatrix.h
-InterfaceGeom.o: ../Utils/UtilsInterface.h ../Utils/AtomsProp.h
+InterfaceGeom.o: ../Geometry/ResultsAnalise.h ../Utils/UtilsInterface.h
+InterfaceGeom.o: ../Utils/Utils.h ../Utils/AtomsProp.h
 InterfaceGeom.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h Fragments.h
-InterfaceGeom.o: ../Common/Windows.h
+InterfaceGeom.o: ../Common/Windows.h ../Files/FileChooser.h
 LoadPersonalFragments.o: ../../Config.h
 LoadPersonalFragments.o: ../Common/Global.h
 LoadPersonalFragments.o: ../Files/GabeditFileChooser.h

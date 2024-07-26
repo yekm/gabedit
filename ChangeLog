@@ -221,3 +221,5 @@
    Computing of the electrophilic, nucleophilic and radical susceptibilities for a molecule.
 11 November 2009 :
    the n,p, f and l keys can be used for selecting a geometry on the "Geom.Conv" window.
+17 November 2009 :
+   Bug fixed for the nucleophilic and radical susceptibilities calculation.

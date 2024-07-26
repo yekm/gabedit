@@ -36,6 +36,7 @@ DEALINGS IN THE SOFTWARE.
 
 /********************************************************************************/
 static gdouble GTFstarGTF(GTF* p,GTF* q);
+static gdouble GTFstarGTFstarGTF(GTF* left,GTF* midle, GTF* right);
 static gdouble f(gint i,gint l,gint m,gdouble A,gdouble B);
 static gdouble Theta(int i,int r,int l1,int l2, gdouble A, gdouble B, gdouble g);
 static gdouble B(int i,int ip,int r, int rp, int u, gdouble PQ, gdouble d, gdouble T1,gdouble T2);
@@ -135,7 +136,7 @@ static gdouble* getFTable(int mMax, gdouble t)
 	return Fmt;
 }
 /**********************************************/
-gdouble GTFstarGTF(GTF* left,GTF* right)
+static gdouble GTFstarGTF(GTF* left,GTF* right)
 {
 	int i,j;
 	gdouble sum[3];
@@ -165,6 +166,61 @@ gdouble GTFstarGTF(GTF* left,GTF* right)
 		{
 			sum[j] +=f(2*i,left->l[j],right->l[j],PA[j],PB[j])*doubleFactorial(2*i-1)/(dpn(2.0,i)*dpn(gama,i));
 	 	}
+	}
+	return  c*sum[0]*sum[1]*sum[2];
+}
+/**********************************************/
+static gdouble GTFstarGTFstarGTF(GTF* left,GTF* midle, GTF* right)
+{
+	/*  A = left; B = right; C = midle */
+	gdouble sum[3];
+	gdouble t;
+	gdouble PA[3];
+	gdouble PB[3];
+	gdouble P[3];
+	gdouble QP[3];
+	gdouble QC[3];
+	gdouble gama1=left->Ex+right->Ex;
+	gdouble gama=gama1+midle->Ex;
+	gdouble R2AB=0.0;
+	gdouble R2PC=0.0;
+	gdouble c = 0;
+	gint iAB;
+	gint i,j;
+
+	for(j=0;j<3;j++)
+	{
+		t=(left->Ex*left->C[j]+right->Ex*right->C[j])/gama1;
+		P[j]=t;
+		PA[j]=left->C[j]-t;
+		PB[j]=right->C[j]-t;
+		R2AB += (left->C[j]-right->C[j])*(left->C[j]-right->C[j]);
+	}
+	for(j=0;j<3;j++)
+	{
+		t=(gama1*P[j]+midle->Ex*midle->C[j])/gama;
+		QP[j]=P[j]-t;
+		QC[j]=midle->C[j]-t;
+		R2PC += (P[j]-midle->C[j])*(P[j]-midle->C[j]);
+	}
+	c = (PI/gama)*sqrt(PI/gama)*exp(-left->Ex*right->Ex/gama1*R2AB)*exp(-gama1*midle->Ex/gama*R2PC);
+	/* if(fabs(c)<1e-10) return 0;*/
+
+
+	for(j=0;j<3;j++)
+	{
+		sum[j]=0.0;
+		for(iAB=0;iAB<=(left->l[j]+right->l[j]);iAB++)
+		{
+			gdouble fiAB = f(iAB,left->l[j],right->l[j],PA[j],PB[j]);
+			for(i=0;i<=(iAB+midle->l[j])/2;i++)
+			{
+				sum[j] +=
+				fiAB*
+				f(2*i,iAB,midle->l[j],QP[j],QC[j])*
+				doubleFactorial(2*i-1)/(dpn(2.0,i)*dpn(gama,i));
+	 		}
+		}
 	}
 	return  c*sum[0]*sum[1]*sum[2];
 }
@@ -200,6 +256,25 @@ void normaliseGTF(GTF*p)
 gdouble overlapGTF(GTF* p,GTF* q)
 {
 	return p->Coef*q->Coef*GTFstarGTF(p,q);
+}
+/********************************************************************************/
+gdouble overlap3GTF(GTF* p,GTF* q, GTF* r)
+{
+	return p->Coef*q->Coef*r->Coef*GTFstarGTFstarGTF(p,q,r);
+}
+/********************************************************************************/
+gdouble GTFxyzGTF(GTF* p,GTF* q, gint ix, gint iy, gint iz)
+{
+	GTF m;
+	m.Coef = 1.0;
+	m.l[0] = ix;
+	m.l[1] = iy;
+	m.l[2] = iz;
+	m.Ex = 0.0;
+	m.C[0] = 0.0;
+	m.C[1] = 0.0;
+	m.C[2] = 0.0;
+	return overlap3GTF(p,&m,q);
 }
 /********************************************************************************/
 gdouble kineticGTF(GTF* left, GTF* right)
@@ -599,6 +674,43 @@ gdouble overlapCGTF(CGTF* left, CGTF* right)
 	for(n=0;n<left->numberOfFunctions;n++)
 		for(np=0;np<right->numberOfFunctions;np++)
 			sum += overlapGTF(&(left->Gtf[n]),&(right->Gtf[np]));
+
+	return sum;
+}
+/********************************************************************************************/
+gdouble overlap3CGTF(CGTF* left, CGTF* midle, CGTF* right)
+{
+	gdouble sum=0.0;
+	gint n;
+	gint np;
+	gint ns;
+
+	for(n=0;n<left->numberOfFunctions;n++)
+	for(np=0;np<midle->numberOfFunctions;np++)
+	for(ns=0;ns<right->numberOfFunctions;ns++)
+			sum += overlap3GTF(&(left->Gtf[n]),&(midle->Gtf[np]), &(right->Gtf[ns]));
+
+	return sum;
+}
+/********************************************************************************************/
+gdouble CGTFxyzCGTF(CGTF* left, CGTF* right, gint ix, gint iy, gint iz)
+{
+	gdouble sum=0.0;
+	gint n;
+	gint ns;
+	GTF m;
+	m.Coef = 1.0;
+	m.l[0] = ix;
+	m.l[1] = iy;
+	m.l[2] = iz;
+	m.Ex = 0.0;
+	m.C[0] = 0.0;
+	m.C[1] = 0.0;
+	m.C[2] = 0.0;
+
+	for(n=0;n<left->numberOfFunctions;n++)
+	for(ns=0;ns<right->numberOfFunctions;ns++)
+			sum += overlap3GTF(&(left->Gtf[n]),&m, &(right->Gtf[ns]));
 
 	return sum;
 }

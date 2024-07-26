@@ -885,7 +885,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"EditResetConnectionsBetweenSelectedAndNotSelectedAtoms", GABEDIT_STOCK_ADD_BOND, "_Reset connections between selected and not selected atoms", NULL, "Reset connections between selected and not selected atoms", G_CALLBACK (activate_action) },
 	{"EditResetConnectionsBetweenSelectedAtoms", GABEDIT_STOCK_ADD_BOND, "_Reset connections between selected atoms", NULL, "Reset connections between selected atoms", G_CALLBACK (activate_action) },
 
-	{"EditCopySelectedAtoms", GABEDIT_STOCK_COPY, "_Copy&Past selected atoms", NULL, "Copy&Past selected atoms", G_CALLBACK (activate_action) },
+	{"EditCopySelectedAtoms", GABEDIT_STOCK_COPY, "_Copy&Paste selected atoms", NULL, "Copy&Paste selected atoms", G_CALLBACK (activate_action) },
 	{"EditDeleteHydrogenAtoms", GABEDIT_STOCK_CUT, "_Remove hydrogen atoms", NULL, "Remove hydrogen atoms", G_CALLBACK (activate_action) },
 	{"EditDeleteSelectedAtoms", GABEDIT_STOCK_CUT, "Remove selected atoms", NULL, "Remove selected atoms", G_CALLBACK (activate_action) },
 	{"EditMoveCenterOfSelectedAtomsToOrigin", GABEDIT_STOCK_MOVE_ATOM, "Move the center of selected atoms to origin", NULL, "Move selected atoms to origin", G_CALLBACK (activate_action) },
@@ -1029,8 +1029,8 @@ static GtkActionEntry gtkActionEntries[] =
 	{"MolecularMechanics", NULL, "_Molecular Mechanics"},
 	{"MolecularMechanicsEnergy", NULL, "_Energy", NULL, "compute the energy using the MM method", G_CALLBACK (activate_action) },
 	{"MolecularMechanicsOptimization", NULL, "_Optimization", NULL, "optimize the geometry using the MM method", G_CALLBACK (activate_action) },
-	{"MolecularMechanicsDynamics", NULL, "Molcecular _Dynamics", NULL, "Molcecular dynamics using the MM method", G_CALLBACK (activate_action) },
-	{"MolecularMechanicsDynamicsConfo", NULL, "Molcecular _Dynamics Conformational search", NULL, "Molcecular dynamics conformational search using the MM method", G_CALLBACK (activate_action) },
+	{"MolecularMechanicsDynamics", NULL, "Molecular _Dynamics", NULL, "Molecular dynamics using the MM method", G_CALLBACK (activate_action) },
+	{"MolecularMechanicsDynamicsConfo", NULL, "Molecular _Dynamics Conformational search", NULL, "Molecular dynamics conformational search using the MM method", G_CALLBACK (activate_action) },
 
 	{"SemiEmpirical", NULL, "_Semi-empirical"},
 	{"SemiEmpiricalEnergyPCGamessAM1", NULL, "PCGamess AM1 _Energy", NULL, "compute the energy using the AM1 method from PCGamess", G_CALLBACK (activate_action) },
@@ -1051,8 +1051,8 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SemiEmpiricalScanMopacAM1", NULL, "Mopac AM1 _Reaction path", NULL, "Reaction path using the AM1 method from Mopac", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalEnergyOrca", NULL, "Orca _Energy", NULL, "compute the energy using Orca", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalOptimisationOrca", NULL, "Orca _Optimisation", NULL, "optimize the geometry using Orca", G_CALLBACK (activate_action) },
-	{"SemiEmpiricalMD", NULL, "Molcecular _Dynamics", NULL, "Molcecular dynamics using a semi-empirical method", G_CALLBACK (activate_action) },
-	{"SemiEmpiricalMDConfo", NULL, "Molcecular _Dynamics Conformational search", NULL, "Molcecular dynamics conformational search using a semi-empirical  method", G_CALLBACK (activate_action) },
+	{"SemiEmpiricalMD", NULL, "Molecular _Dynamics", NULL, "Molecular dynamics using a semi-empirical method", G_CALLBACK (activate_action) },
+	{"SemiEmpiricalMDConfo", NULL, "Molecular _Dynamics Conformational search", NULL, "Molecular dynamics conformational search using a semi-empirical  method", G_CALLBACK (activate_action) },
 
 
 	{"View", NULL, "_View"},

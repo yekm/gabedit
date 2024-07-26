@@ -429,6 +429,7 @@ Grid* define_grid_point_fed(gint N[],GridLimits limits,gint n)
 	gdouble eHOMO = get_energy_homo();
 	gdouble eLUMO = get_energy_lumo();
 	gdouble alpha = alphaFED*AUTOEV;
+	/* gdouble alpha = alphaFED;*/
 
 	if(eHOMO>1e8) return NULL;
 	if(eLUMO>1e8 && n!=0) return NULL;
@@ -454,6 +455,7 @@ Grid* define_grid_point_fed(gint N[],GridLimits limits,gint n)
 	
 	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 	scale = (gdouble)1.01/grid->N[0];
+	/* printf("Alpha = %f, n = %d eH = %f eL = %f\n",alpha,n,eHOMO, eLUMO);*/
  
 	for(i=0;i<grid->N[0];i++)
 	{
@@ -1557,12 +1559,11 @@ static gdouble get_value_fed(gdouble x,gdouble y,gdouble z,gdouble alpha, gint n
 	for(i=0;i<NAOrb;i++)
 	{
 		cgv = get_value_CBTF(x,y,z,i);
-		for(k1=0;k1<NAlphaOrb;k1++) if(OccAlphaOrbitals[k1]>1e-8) PhiAlpha[k1] += CoefAlphaOrbitals[k1][i]*cgv;
-		
-		for(k2=0;k2<NBetaOrb;k2++) if(OccBetaOrbitals[k2]>1e-8) PhiBeta[k2]  += CoefBetaOrbitals[k2][i]*cgv;
+		for(k1=0;k1<NAlphaOrb;k1++) PhiAlpha[k1] += CoefAlphaOrbitals[k1][i]*cgv;
+		for(k2=0;k2<NBetaOrb;k2++) PhiBeta[k2]  += CoefBetaOrbitals[k2][i]*cgv;
  	}
-	for(k1=0;k1<NAlphaOrb;k1++) if(OccAlphaOrbitals[k1]>1e-8) PhiAlpha[k1] = PhiAlpha[k1] * PhiAlpha[k1] ; 
-	for(k2=0;k2<NBetaOrb;k2++) if(OccBetaOrbitals[k2]>1e-8) PhiBeta[k2]  = PhiBeta[k2]  * PhiBeta[k2]  ; 
+	for(k1=0;k1<NAlphaOrb;k1++) PhiAlpha[k1] = PhiAlpha[k1] * PhiAlpha[k1] ; 
+	for(k2=0;k2<NBetaOrb;k2++) PhiBeta[k2]  = PhiBeta[k2]  * PhiBeta[k2]  ; 
 
 	if(n!=2) 
 	for(k1=0;k1<NAlphaOrb;k1++)
@@ -1584,19 +1585,19 @@ static gdouble get_value_fed(gdouble x,gdouble y,gdouble z,gdouble alpha, gint n
 	}
 	if(n!=0) 
 	for(k1=0;k1<NAlphaOrb;k1++)
-	if(OccAlphaOrbitals[k1]>1e-8)
+	if(fabs(1-OccAlphaOrbitals[k1])>1e-8)
 	{
 			de = exp(alpha*(eLUMO-EnerAlphaOrbitals[k1]));
-			d = OccAlphaOrbitals[k1]*de;
+			d = (1-OccAlphaOrbitals[k1])*de;
 			s2_1 += d*PhiAlpha[k1];
 			s2_2 += d;
 	}
 	if(n!=0) 
 	for(k1=0;k1<NBetaOrb;k1++)
-	if(OccBetaOrbitals[k1]>1e-8)
+	if(fabs(1-OccBetaOrbitals[k1])>1e-8)
 	{
 			de = exp(alpha*(eLUMO-EnerBetaOrbitals[k1]));
-			d = OccBetaOrbitals[k1]*de;
+			d = (1-OccBetaOrbitals[k1])*de;
 			s2_1 += d*PhiBeta[k1];
 			s2_2 += d;
 	}
@@ -1633,13 +1634,15 @@ static gdouble get_energy_lumo()
 	if(NAlphaOrb<1) return 1e10;
 	e =EnerAlphaOrbitals[0];
 	for(k=0;k<NAlphaOrb;k++) 
-	if(begin || (OccAlphaOrbitals[k]<1e-8 && EnerAlphaOrbitals[k]<e)) 
+	if(OccAlphaOrbitals[k]<1e-8) 
+	if(begin || EnerAlphaOrbitals[k]<e) 
 	{
 		e =EnerAlphaOrbitals[k];
 		begin = FALSE;
 	}
 	for(k=0;k<NBetaOrb;k++) 
-	if(begin || (OccBetaOrbitals[k]<1e-8 && EnerBetaOrbitals[k]<e)) 
+	if(OccBetaOrbitals[k]<1e-8) 
+	if(begin || EnerBetaOrbitals[k]<e) 
 	{
 		e =EnerBetaOrbitals[k];
 		begin = FALSE;
@@ -2611,6 +2614,100 @@ gboolean compute_coulomb_integrale_iijj_poisson(gint N[],GridLimits limits, gint
 
 	*pInteg = integ*dv;
 	*pNorm = norm*dv;
+	*pNormj = normj*dv;
+	*pOverlap = overlap*dv;
+	
+	return TRUE;
+}
+/******************************************************************************************************************/
+gboolean compute_transition_matrix_numeric(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
+		gdouble* pInteg, gdouble* pNormi, gdouble* pNormj, gdouble* pOverlap)
+{
+	Grid *gridi = NULL;
+	Grid *gridj = NULL;
+	gint ki,li,mi;
+	gdouble scal;
+	gdouble normi = 0;
+	gdouble normj = 0;
+	gdouble overlap = 0;
+	gdouble xx,yy,zz;
+	gdouble dv = 0;
+
+	pInteg[0] = 0;
+	pInteg[1] = 0;
+	pInteg[2] = 0;
+	*pNormi = -1;
+	*pNormj = -1;
+	*pOverlap = -1;
+
+	gridi = define_grid_orb(N, limits, typeOrbi,  i);
+	if(!gridi) return FALSE;
+	gridj = 0;
+	gridj = define_grid_orb(N, limits, typeOrbj,  j);
+	if(!gridj) return FALSE;
+	set_status_label_info("Grid","Comp. phi_i*phi_j");
+	scal = (gdouble)1.01/gridi->N[0];
+	for(ki=0;ki<gridi->N[0];ki++)
+	{
+		for(li=0;li<gridi->N[1];li++)
+		{
+			for(mi=0;mi<gridi->N[2];mi++)
+			{
+				overlap +=  gridi->point[ki][li][mi].C[3]*gridj->point[ki][li][mi].C[3];
+				normi += gridi->point[ki][li][mi].C[3]*gridi->point[ki][li][mi].C[3];
+				normj += gridj->point[ki][li][mi].C[3]*gridj->point[ki][li][mi].C[3];
+				gridi->point[ki][li][mi].C[3] = gridi->point[ki][li][mi].C[3]* gridj->point[ki][li][mi].C[3];
+			}
+		}
+		if(CancelCalcul) 
+		{
+			progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+			break;
+		}
+		progress_orb(scal,GABEDIT_PROGORB_COMPGRID,FALSE);
+	}
+	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+	if(CancelCalcul) 
+	{
+		free_grid(gridi);
+		free_grid(gridj);
+		return FALSE;
+	}
+	set_status_label_info("Grid","Computing of <i|vec r|j>.");
+	scal = (gdouble)1.01/gridi->N[0];
+	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+	for(ki=0;ki<gridi->N[0];ki++)
+	{
+		for(li=0;li<gridi->N[1];li++)
+		for(mi=0;mi<gridi->N[2];mi++)
+		{
+			xx = gridi->point[ki][li][mi].C[0];
+		    	yy = gridi->point[ki][li][mi].C[1];
+		    	zz = gridi->point[ki][li][mi].C[2];
+			pInteg[0] += xx*gridi->point[ki][li][mi].C[3];
+			pInteg[1] += yy*gridi->point[ki][li][mi].C[3];
+			pInteg[2] += zz*gridi->point[ki][li][mi].C[3];
+		}
+		if(CancelCalcul) 
+		{
+			progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+			break;
+		}
+		progress_orb(scal,GABEDIT_PROGORB_COMPGRID,FALSE);
+	}
+	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+	xx = gridi->point[1][0][0].C[0]-gridi->point[0][0][0].C[0];
+	yy = gridi->point[0][1][0].C[1]-gridi->point[0][0][0].C[1];
+	zz = gridi->point[0][0][1].C[2]-gridi->point[0][0][0].C[2];
+	dv = fabs(xx*yy*zz);
+	free_grid(gridi);
+	free_grid(gridj);
+	if(CancelCalcul) return FALSE;
+
+	pInteg[0] *= dv;
+	pInteg[1] *= dv;
+	pInteg[2] *= dv;
+	*pNormi = normi*dv;
 	*pNormj = normj*dv;
 	*pOverlap = overlap*dv;
 	

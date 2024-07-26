@@ -1602,7 +1602,7 @@ static GtkActionEntry gtkActionEntriesZMatVariables[] =
 	{"New", GABEDIT_STOCK_NEW, "_New", NULL, "New", G_CALLBACK (activate_action_zmat_variables) },
 	{"Delete", GABEDIT_STOCK_CUT, "_Delete", NULL, "Delete", G_CALLBACK (activate_action_zmat_variables) },
 	{"All", NULL, "<=_All", NULL, "<=All", G_CALLBACK (activate_action_zmat_variables) },
-	{"One", NULL, "<=_On", NULL, "<=One", G_CALLBACK (activate_action_zmat_variables) },
+	{"One", NULL, "<=_One", NULL, "<=One", G_CALLBACK (activate_action_zmat_variables) },
 };
 static guint numberOfGtkActionEntriesZMatVariables = G_N_ELEMENTS (gtkActionEntriesZMatVariables);
 /********************************************************************************/

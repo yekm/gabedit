@@ -70,6 +70,8 @@ Grid* define_grid_ELFBECKE(gint N[],GridLimits limits);
 Grid* define_grid_ELFSAVIN(gint N[],GridLimits limits);
 Grid* define_grid_FED(gint N[],GridLimits limits, gint n);
 Grid* compute_fed_grid_using_cube_grid(Grid* grid, gint n);
+gboolean compute_transition_matrix_numeric(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
+		gdouble* pInteg, gdouble* pNormi, gdouble* pNormj, gdouble* pOverlap);
 
 #endif /* __GABEDIT_GRID_H__ */
 
