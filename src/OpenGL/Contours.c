@@ -59,6 +59,7 @@ void contour_point_free(Contours contours)
 	gint i;
 	gint j;
   	
+	if(!contours.pointscontour) return;
 	for(i=0;i<contours.N[0];i++)
 	{
 
@@ -67,7 +68,8 @@ void contour_point_free(Contours contours)
 			for( j = 0; j<contours.N[1];j++)
 			{
 				/* printf("N = %d \n",contours.pointscontour[i][j].N);*/
-				if(contours.pointscontour[i][j].N>0 && contours.pointscontour[i][j].point) g_free(contours.pointscontour[i][j].point);
+				if(contours.pointscontour[i][j].N>0 && contours.pointscontour[i][j].point) 
+					g_free(contours.pointscontour[i][j].point);
 			}
 			g_free(contours.pointscontour[i]);
 		}
@@ -218,7 +220,7 @@ void set_contour_point(PointsContour** pointscontour,Grid* plansgrid,gdouble val
 			pointscontour[i][j].point = NULL;
 			if(pointscontour[i][j].N>0)
 			{
-				pointscontour[i][j].point = g_malloc(pointscontour[i][j].N*sizeof(Point));
+				pointscontour[i][j].point = g_malloc(pointscontour[i][j].N*sizeof(Point5));
 				for(k=0;k<pointscontour[i][j].N;k++)
 				{
 					for(c=0;c<4;c++)
@@ -283,6 +285,7 @@ void apply_contours(GtkWidget *Win,gpointer data)
 		case 1 : i0 = 0;i1 = 2;break; /* plane XZ */
 		case 2 : i0 = 0;i1 = 1;break; /* plane XY */
 	}
+	/* Debug("N = %d\n",N);*/
 
 	values = g_malloc(N*sizeof(gdouble));
 
@@ -297,12 +300,14 @@ void apply_contours(GtkWidget *Win,gpointer data)
 		step = (1.0)/(N-1);
 		for(i=0;i<N;i++) values[i] = min+(max-min)*log(step*i*(e-1)+1);
 	}
+	/* Debug("Begin set_contours_values\n");*/
 	set_contours_values(N, values, i0, i1, numplane, gap);
+	/* Debug("End set_contours_values\n");*/
 	
 	g_signal_handler_disconnect(G_OBJECT(Combo), handel_id);
 
   	delete_child(Win);
-  	/*gtk_widget_destroy(Win);*/
+  	/* gtk_widget_destroy(Win);*/
 }
 /********************************************************************************/
 static void reset_limits_values(GtkWidget *Win,gpointer data)

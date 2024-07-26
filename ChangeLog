@@ -207,3 +207,8 @@
   Compute the <ii|1/r12|jj> coulomb integral, analytically with GTF and numerically with GTF and STF.
 3 September 2009 :
   Copy images to clipboard.
+13 September 2009 :
+  Computing of AIM charges [See W. Tang et al J. Phys. Cond.. Matt. 21, 084204(09)]
+19 October 2009 :
+   Bug fixed for reading beta orbitals form orca output file.
+

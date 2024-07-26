@@ -847,10 +847,12 @@ static void redrawContours()
 
 		if(newPlaneGridForContours)
 		{
-			/* Debug("Begin Contourlist calculation\n");*/
-			/* Debug("GridPlans = %d\n",gridPlaneForContours);*/
-			/* Debug("numberOfContours = %d\n",numberOfContours);*/
-			/* Debug("values = %d\n",values);*/
+			/*
+			Debug("Begin Contourlist calculation\n");
+			Debug("GridPlans = %d\n",gridPlaneForContours);
+			Debug("numberOfContours = %d\n",numberOfContours);
+			Debug("values = %d\n",values);
+			*/
 	   		contoursLists[nPlanesContours-1]= ContoursGenLists(contoursLists[nPlanesContours-1],gridPlaneForContours,numberOfContours,values,i0Contours,i1Contours,numPlaneContours,gapContours);
 			addContoursPovRay(gridPlaneForContours,numberOfContours,values,i0Contours,i1Contours,numPlaneContours,gapContours);
 			/* Debug("End Contourlist calculation\n");*/

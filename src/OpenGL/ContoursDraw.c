@@ -290,12 +290,12 @@ GLuint ContoursPlanGenOneList(Grid* plansgrid,gint Ncontours,gdouble*values,gint
 	gdouble *Gap;
 	ColorMap* colorMap = get_colorMap_contours();
 
-	if(!plansgrid)
-		return 0;
+	if(!plansgrid) return 0;
+
 	Gap = GetGapVector(plansgrid,i0,i1,numplan,gap);
 
-/*	Debug("Gap  = %lf %lf %lf \n",Gap[0],Gap[1],Gap[2]);*/
-    contourslist = glGenLists(1);
+	/* Debug("Gap  = %lf %lf %lf \n",Gap[0],Gap[1],Gap[2]);*/
+	contourslist = glGenLists(1);
 	glNewList(contourslist, GL_COMPILE);
 
 	glLineWidth(1);
@@ -326,11 +326,15 @@ GLuint ContoursPlanGenOneList(Grid* plansgrid,gint Ncontours,gdouble*values,gint
 		for(i=0;i<Ncontours;i++)
 		{
 			set_Color_From_colorMap(colorMap, Color, values[i]);
+			/* printf("i = %d vale = %f\n",i,values[i]);*/
 
 			glColor4dv(Color);
 			contours = get_contours(plansgrid,values[i],i0,i1,numplan);
+			/* printf("End get_contours\n");*/
 			ContoursDraw(contours,Gap,values[i]);
+			/* printf("End ContoursDraw\n");*/
 			contour_point_free(contours);				
+			/* printf("End contour_point_free\n");*/
 		}
 		glEnable ( GL_LIGHTING ) ;
 	}

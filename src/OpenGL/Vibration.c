@@ -2873,14 +2873,14 @@ static gboolean read_gaussian_file_frequencies(gchar *FileName)
 					sscanf(t,"%s %s %s %lf %lf %lf", sdum1,sdum2, sdum3, &RamanIntensity[0],&RamanIntensity[1],&RamanIntensity[2]);
 					break;
 				}
-				if(strstr(t,"Atom AN")) break;
+				if(strstr(t,"Atom ") && strstr(t," AN")) break;
 			}
 
-			if(!strstr(t,"Atom AN"))
+			if(!(strstr(t,"Atom ") && strstr(t," AN")))
 			while(!feof(fd))
 			{
     				fgets(t,taille,fd);
-				if(strstr(t,"Atom AN")) break;
+				if(strstr(t,"Atom ") && strstr(t," AN")) break;
 			}
 			nfOld = vibration.numberOfFrequences;
   			vibration.numberOfFrequences += nf;

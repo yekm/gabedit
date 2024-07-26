@@ -604,9 +604,10 @@ static gint configure_event( GtkWidget *widget, GdkEventConfigure *event )
 			{
 				gint x = i;
 				gint y = height-height/4;
-				
-				sprintf(t,"%0.3f",v);
 
+				if(fabs(v)>1e-3) sprintf(t,"%0.3f",v);
+				else sprintf(t,"%0.3e",v);
+				
 	 			color.red = 0; 
 	 			color.green = 0; 
 	 			color.blue = 0; 

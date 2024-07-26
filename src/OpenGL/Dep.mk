@@ -306,18 +306,6 @@ GridCP.o: ../Utils/Constants.h ../Utils/GabeditTextEdit.h ../Common/Windows.h
 GridCP.o: ../OpenGL/GLArea.h ../OpenGL/AtomicOrbitals.h ../OpenGL/Orbitals.h
 GridCP.o: ../OpenGL/ColorMap.h ../OpenGL/GeomOrbXYZ.h ../OpenGL/BondsOrb.h
 GridCP.o: ../OpenGL/GridCP.h
-GridCPOld.o: ../../Config.h ../OpenGL/GlobalOrb.h
-GridCPOld.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
-GridCPOld.o: ../../gtkglarea/gdkgl.h ../../gl2ps/gl2ps.h
-GridCPOld.o: Grid.h
-GridCPOld.o: ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h
-GridCPOld.o: ../MultiGrid/DomainMG.h ../MultiGrid/TypesMG.h IsoSurface.h
-GridCPOld.o: ../Common/GabeditType.h ../OpenGL/StatusOrb.h
-GridCPOld.o: ../OpenGL/UtilsOrb.h ../Utils/Utils.h ../Utils/UtilsInterface.h
-GridCPOld.o: ../Utils/AtomsProp.h ../Utils/Constants.h ../OpenGL/GLArea.h
-GridCPOld.o: ../OpenGL/AtomicOrbitals.h ../OpenGL/Orbitals.h
-GridCPOld.o: ../OpenGL/ColorMap.h ../OpenGL/GeomOrbXYZ.h ../OpenGL/BondsOrb.h
-GridCPOld.o: ../OpenGL/GridCP.h
 GridCube.o: ../../Config.h ../OpenGL/GlobalOrb.h
 GridCube.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
 GridCube.o: ../../gtkglarea/gdkgl.h ../../gl2ps/gl2ps.h

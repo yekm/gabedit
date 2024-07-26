@@ -471,8 +471,10 @@ static gint read_one_block_orbitals_in_orca_output_file(FILE* file, gint ncart, 
 	for(n=0;n<ncart && nR==NCOLS;n++)
 	{
 		fgets(t,BSIZE,file);
-		/* Debug("%s\n",t); */
+		/* Debug("%s\n",t);*/
 		nR = sscanf(t,"%d %d %d %d %d %d",&NumOrb[0],&NumOrb[1],&NumOrb[2],&NumOrb[3],&NumOrb[4],&NumOrb[5]);
+		if(nR<0) nR = 0;
+		/* Debug("nR = %d\n",nR);*/
 		for(i=nR;i<NCOLS;i++) NumOrb[i]=NOrb-1;
 		for(i=0;i<nR;i++) 
 		if(NumOrb[i]<0 || NumOrb[i]>NOrb-1) 
@@ -480,7 +482,7 @@ static gint read_one_block_orbitals_in_orca_output_file(FILE* file, gint ncart, 
 			nR=0;
 			break;
 		}
-		if(nR==0) break;
+		if(nR<=0) break;
 
 		for(i=0;i<nR;i++) SymOrbitals[NumOrb[i]] = g_strdup("UNK");
 
@@ -505,7 +507,7 @@ static gint read_one_block_orbitals_in_orca_output_file(FILE* file, gint ncart, 
 		for(i=0;i<NOrb;i++)
 		{
 	  		fgets(t,BSIZE,file);
-			/* Debug("%s\n",t);*/
+			/*Debug("%s\n",t);*/
 			k = sscanf(t,"%s %s %lf %lf %lf %lf %lf %lf",sdum1,sdum2,
 					&CoefOrbitals[NumOrb[0]][i],
 					&CoefOrbitals[NumOrb[1]][i],
@@ -522,6 +524,7 @@ static gint read_one_block_orbitals_in_orca_output_file(FILE* file, gint ncart, 
 		}
 		
  	}
+	fgets(t,BSIZE,file);/* backe space line */
  	g_free(t);
  	for(i=0;i<NCOLS;i++) g_free(AtomCoord[i]);
 	return nReadOrb;
@@ -581,6 +584,7 @@ static gboolean read_last_orbitals_in_orca_output_file(gchar *fileName)
 		fclose(file);
   		return FALSE;
 	}
+	
 	fseek(file, pos, SEEK_SET);
   
 	CoefOrbitals = CreateTable2(NOrb);
@@ -608,7 +612,9 @@ static gboolean read_last_orbitals_in_orca_output_file(gchar *fileName)
 		EnerOrbitals = g_malloc(NOrb*sizeof(gdouble));
 		OccOrbitals = g_malloc(NOrb*sizeof(gdouble));
 		SymOrbitals = g_malloc(NOrb*sizeof(gchar*));
+		/* Debug("Begin Beta read_one_block_orbitals_in_orca_output_file \n");*/
 		nReadOrb =  read_one_block_orbitals_in_orca_output_file(file, ncart, CoefOrbitals, EnerOrbitals, SymOrbitals, OccOrbitals,&NOcc);
+		/* Debug("nRead Beta = %d\n",nReadOrb);*/
 		if(nReadOrb>0)
 		{
 			CoefBetaOrbitals = CoefOrbitals;
@@ -729,6 +735,7 @@ void read_orca_orbitals_from_output_file(gchar* fileName)
 
 	Ok =  read_last_orbitals_in_orca_output_file(fileName);
 
+	/* Debug("End read_last_orbitals_in_orca_output_file\n");*/
 	if(Ok)
 	{
 		/*
