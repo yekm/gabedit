@@ -1,6 +1,6 @@
 /* GeomZmatrix.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -4045,7 +4045,7 @@ gint read_Zmat_from_molcas_input_file(gchar *fileName)
 	gint Ncent = 0;
 	gchar t[BSIZE];
  
-	file = FOpen(fileName, "r");
+	file = FOpen(fileName, "rb");
 	if(file == NULL)
 	{
 		gchar buffer[BSIZE];
@@ -4081,7 +4081,7 @@ gint read_Zmat_from_molcas_input_file(gchar *fileName)
 	Geomtemp=g_malloc(sizeof(GeomAtomDef));
 	/* First atom */
 	{
-    		fgets(t,BSIZE,file);
+    		{ char* e = fgets(t,BSIZE,file);}
         	i = sscanf(t,"%s",AtomCoord[0]);  
     		if(  i == 1 )
 		{
@@ -4109,7 +4109,7 @@ gint read_Zmat_from_molcas_input_file(gchar *fileName)
 	while( !feof(file)  && OK) 
         {
 		j++;
-    		fgets(t,BSIZE,file);
+    		{ char* e = fgets(t,BSIZE,file);}
 		g_strup(t);
 		if(strstr(t,"END") && strstr(t,"MATRIX")) break;
 		if(strstr(t,"VARIABLE")) break;
@@ -4263,17 +4263,17 @@ void read_Zmat_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFil
 
  t=g_malloc(taille);
 /* Read Geomery */
- fd = FOpen(NomFichier, "r");
+ fd = FOpen(NomFichier, "rb");
  OK=TRUE;
  if(fd!=NULL)
  {
 	for(i=0;(gint)i<InfoFile.numline;i++)
-       		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
 	Geomtemp=g_malloc(sizeof(GeomAtomDef));
-  	fgets(t,taille,fd); /* Ligne de commentaires*/
+    	{ char* e = fgets(t,taille,fd);} /* Ligne de commentaires*/
 
 	Kvar = 0;
-  	fgets(t,taille,fd);
+    	{ char* e = fgets(t,taille,fd);}
         if(t[0] == '}')
         {
          	OK = FALSE;
@@ -4307,7 +4307,7 @@ void read_Zmat_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFil
 	while( !feof(fd)  && OK) 
         {
 		j++;
-    		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
         	if(t[0] == '}')
 			break;
 		Ncent++;
@@ -4445,14 +4445,14 @@ void read_Zmat_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFil
  if(OK && Uvar )
  {
 	Nvar  = 0;
- 	fd = FOpen(NomFichier, "r");
+ 	fd = FOpen(NomFichier, "rb");
  	if(fd!=NULL)
  	{
                	t2= g_strdup("Variables");
                	g_strup(t2);
 		while( !feof(fd) )
 		{
-       			fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
                 	t1 = g_strdup(t);
                		g_strup(t1);
 			t3 = strstr(t1,t2);
@@ -4463,7 +4463,7 @@ void read_Zmat_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFil
 		g_free(t2);
 		while( !feof(fd) )
 		{
-       			fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
                 	i = sscanf(t,"%s %s %s",AtomCoord[0],AtomCoord[1],AtomCoord[2]);
     			if( i != EOF && i == 3)
                 	{
@@ -4541,14 +4541,14 @@ void read_Zmat_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
  
 
  t=g_malloc(taille);
- fd = FOpen(NomFichier, "r");
+ fd = FOpen(NomFichier, "rb");
  OK=TRUE;
  if(fd!=NULL)
  {
 	for(i=0;(gint)i<InfoFile.numline-1;i++)
-       		fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 
-  	fgets(t,taille,fd);
+    	{ char* e = fgets(t,taille,fd);}
   	i = sscanf(t,"%s",AtomCoord[0]);
         if(i != 1)
 		OK = FALSE;
@@ -4572,7 +4572,7 @@ void read_Zmat_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
   	while(!feof(fd) && OK )
   	{
     		j++;
-    		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
                 if(t[0] == '\n')
 			break;
                 for(i=0;i<strlen(t);i++)
@@ -4685,7 +4685,7 @@ void read_Zmat_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
   Nvar=0;
   while(!feof(fd) && Uvar && OK )
   {
-  	fgets(t,taille,fd);
+    	{ char* e = fgets(t,taille,fd);}
         OK=TRUE;
         for(i=0;i<strlen(t)-1;i++)
  		if ( (int)t[i] != (int)' ' )
@@ -4774,7 +4774,7 @@ void read_Zmat_from_nwchem_input_file(gchar *NomFichier)
  
  	if ( strcmp(NomFichier,"") == 0 ) return;
 
-	file = FOpen(NomFichier, "r");
+	file = FOpen(NomFichier, "rb");
 	OK=TRUE;
  	if(file==NULL)
 	{
@@ -4807,7 +4807,7 @@ void read_Zmat_from_nwchem_input_file(gchar *NomFichier)
   	Ncent = 0;
   	while(!feof(file) && OK )
   	{
-    		fgets(t,taille,file);
+    		{ char* e = fgets(t,taille,file);}
                 for(i=0;i<(gint)strlen(t);i++) if(t[i] != ' ') break;
                 if(i<=(gint)strlen(t) && t[i] == '*') break;
 		for(k=0;k<(gint)strlen(t);k++) if(t[k]=='{' || t[k]=='}') t[k] = ' ';
@@ -4966,7 +4966,7 @@ void read_Zmat_from_nwchem_input_file(gchar *NomFichier)
 			}
 		}
 		if(strstr(t,"END")) break;
-  		fgets(t,taille,file);
+    		{ char* e = fgets(t,taille,file);}
   	}
 /* end while variables */
 	fclose(file);
@@ -5021,7 +5021,7 @@ void read_Zmat_from_orca_input_file(gchar *NomFichier)
  
  	if ( strcmp(NomFichier,"") == 0 ) return;
 
-	file = FOpen(NomFichier, "r");
+	file = FOpen(NomFichier, "rb");
 	OK=TRUE;
  	if(file==NULL)
 	{
@@ -5054,7 +5054,7 @@ void read_Zmat_from_orca_input_file(gchar *NomFichier)
   	Ncent = 0;
   	while(!feof(file) && OK )
   	{
-    		fgets(t,taille,file);
+    		{ char* e = fgets(t,taille,file);}
                 for(i=0;i<(gint)strlen(t);i++) if(t[i] != ' ') break;
                 if(i<=(gint)strlen(t) && t[i] == '*') break;
 		for(k=0;k<(gint)strlen(t);k++) if(t[k]=='{' || t[k]=='}') t[k] = ' ';
@@ -5213,7 +5213,7 @@ void read_Zmat_from_orca_input_file(gchar *NomFichier)
 			}
 		}
 		if(strstr(t,"END")) break;
-  		fgets(t,taille,file);
+    		{ char* e = fgets(t,taille,file);}
   	}
 /* end while variables */
 	fclose(file);
@@ -5271,7 +5271,7 @@ void read_Zmat_from_qchem_input_file(gchar *NomFichier)
  
 
  t=g_malloc(taille);
- fd = FOpen(NomFichier, "r");
+ fd = FOpen(NomFichier, "rb");
  OK=TRUE;
  if(fd!=NULL)
  { 
@@ -5285,12 +5285,12 @@ void read_Zmat_from_qchem_input_file(gchar *NomFichier)
 		g_strup(t);
 		if(strstr(t,"$MOLECULE"))
 		{
-	 		fgets(t,taille,fd); /* charge and spin */
+    			{ char* e = fgets(t,taille,fd);} /* charge and spin */
 			OK = TRUE;
 			break;
 		}
 	 }
-	 if(OK) fgets(t,taille,fd);
+	 if(OK) { char* e = fgets(t,taille,fd);}
   	i = sscanf(t,"%s",AtomCoord[0]);
         if(i != 1)
 		OK = FALSE;
@@ -5314,7 +5314,7 @@ void read_Zmat_from_qchem_input_file(gchar *NomFichier)
   	while(!feof(fd) && OK )
   	{
     		j++;
-    		fgets(t,taille,fd);
+	 	{ char* e = fgets(t,taille,fd);}
 		if(strstr(t,"$end")) break;
                 if(t[0] == '\n') break;
                 for(i=0;i<strlen(t);i++)
@@ -5427,7 +5427,7 @@ void read_Zmat_from_qchem_input_file(gchar *NomFichier)
   Nvar=0;
   while(!feof(fd) && Uvar && OK )
   {
-  	fgets(t,taille,fd);
+	 { char* e = fgets(t,taille,fd);}
         OK=TRUE;
 	if(strstr(t,"$end")) break;
         for(i=0;i<strlen(t)-1;i++)
@@ -5537,7 +5537,7 @@ void read_Zmat_from_mopac_input_file(gchar *FileName)
 
 	for(i=0;i<10;i++)
 		AtomCoord[i]=g_malloc(taille*sizeof(gchar));
-	fd = FOpen(FileName, "r");
+	fd = FOpen(FileName, "rb");
 	if(fd == NULL)
 	{
 		t = g_strdup_printf(_("Sorry\n I can not open \"%s\" file"),FileName); 
@@ -5583,7 +5583,7 @@ void read_Zmat_from_mopac_input_file(gchar *FileName)
 	
 	while(!feof(fd) )
 	{
-		fgets(t,taille,fd);
+	 	{ char* e = fgets(t,taille,fd);}
 		if(feof(fd)) break;
 		if(this_is_a_backspace(t)) break;
 		if( get_info_one_center(t,AtomCoord) == EOF) break;
@@ -5676,7 +5676,7 @@ void read_Zmat_from_mopac_irc_output_file(gchar *FileName, gint numGeom)
 	guint i,l;
 
 	for(i=0;i<10;i++) AtomCoord[i]=g_malloc(taille*sizeof(gchar));
-	fd = FOpen(FileName, "r");
+	fd = FOpen(FileName, "rb");
 	if(fd == NULL)
 	{
 		t = g_strdup_printf(_("Sorry\n I can not open \"%s\" file"),FileName); 
@@ -5808,7 +5808,7 @@ void read_Zmat_from_mopac_scan_output_file(gchar *FileName, gint numGeom)
 	guint i,l;
 
 	for(i=0;i<10;i++) AtomCoord[i]=g_malloc(taille*sizeof(gchar));
-	fd = FOpen(FileName, "r");
+	fd = FOpen(FileName, "rb");
 	if(fd == NULL)
 	{
 		t = g_strdup_printf(_("Sorry\n I can not open \"%s\" file"),FileName); 
@@ -5943,10 +5943,10 @@ void read_Zmat_from_mopac_scan_output_file(gchar *FileName, gint numGeom)
 	AtomCoord[i]=g_malloc(taille*sizeof(gchar));
 
  t=g_malloc(taille);
- fd = FOpen(NomFichier, "r");
+ fd = FOpen(NomFichier, "rb");
  if(fd!=NULL)
  {
-  fgets(t,taille,fd);
+  { char* e = fgets(t,taille,fd);}
   sscanf(t,"%s",AtomCoord[0]);
  if ( strcmp(NomFichier,"") == 0 )
 	return;
@@ -5968,7 +5968,7 @@ void read_Zmat_from_mopac_scan_output_file(gchar *FileName, gint numGeom)
  }
   while(!feof(fd) )
   {
-  fgets(t,taille,fd);
+   { char* e = fgets(t,taille,fd);}
   sscanf(t,"%s",AtomCoord[0]);
         OK=TRUE;
         for(i=0;i<strlen(t)-1;i++)
@@ -6071,7 +6071,7 @@ void read_Zmat_from_mopac_scan_output_file(gchar *FileName, gint numGeom)
   NVariables=0;
   while(!feof(fd) )
   {
-  	fgets(t,taille,fd);
+   	{ char* e = fgets(t,taille,fd);}
         OK=TRUE;
         for(i=0;i<strlen(t)-1;i++)
  		if ( (int)t[i] != (int)' ' )
@@ -6180,11 +6180,11 @@ void read_ZMatrix_file(GabeditFileChooser *SelecteurFichier, gint response_id)
  }
 
  t=g_malloc(taille);
- fd = FOpen(NomFichier, "r");
+ fd = FOpen(NomFichier, "rb");
  NcentersZmat=0;
  if(fd!=NULL)
  {
-  fgets(t,taille,fd);
+   { char* e = fgets(t,taille,fd);}
   sscanf(t,"%s",AtomCoord[0]);
  if ( strcmp(NomFichier,"") == 0 )
 	return;
@@ -6203,7 +6203,7 @@ void read_ZMatrix_file(GabeditFileChooser *SelecteurFichier, gint response_id)
  }
   while(!feof(fd) )
   {
-  fgets(t,taille,fd);
+  { char* e = fgets(t,taille,fd);}
   sscanf(t,"%s",AtomCoord[0]);
         OK=TRUE;
         for(i=0;i<strlen(t)-1;i++)
@@ -6307,7 +6307,7 @@ void read_ZMatrix_file(GabeditFileChooser *SelecteurFichier, gint response_id)
   NVariables=0;
   while(!feof(fd) )
   {
-  	fgets(t,taille,fd);
+  	{ char* e = fgets(t,taille,fd);}
         OK=TRUE;
         for(i=0;i<strlen(t)-1;i++)
  		if ( (int)t[i] != (int)' ' )
@@ -6525,7 +6525,7 @@ void read_ZMatrix_mopac_file_no_add_list(gchar*FileName)
 
 	for(i=0;i<10;i++)
 		AtomCoord[i]=g_malloc(taille*sizeof(gchar));
-	fd = FOpen(FileName, "r");
+	fd = FOpen(FileName, "rb");
 	if(fd == NULL)
 	{
 		t = g_strdup_printf(_("Sorry\n I can not open \"%s\" file"),FileName); 
@@ -6537,7 +6537,7 @@ void read_ZMatrix_mopac_file_no_add_list(gchar*FileName)
 	OK = TRUE;
 	for(i=0;i<4;i++)
 	{
-		fgets(t,taille,fd);
+  		{ char* e = fgets(t,taille,fd);}
 		if(feof(fd))
 		{
 			OK = FALSE;
@@ -6570,7 +6570,7 @@ void read_ZMatrix_mopac_file_no_add_list(gchar*FileName)
 	
 	while(!feof(fd) )
 	{
-		fgets(t,taille,fd);
+  		{ char* e = fgets(t,taille,fd);}
 		if(feof(fd))
 			break;
 		if(this_is_a_backspace(t))

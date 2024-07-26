@@ -1,6 +1,6 @@
 /* Gabedit.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
 
   GtkWidget* vboxp;
   gchar* poDir = NULL;
+  gint ierr;
 
   srand((unsigned int)time(NULL));
   /*
@@ -118,7 +119,7 @@ int main(int argc, char *argv[])
   user_install_verify(splash_screen);
   set_default_styles();
   set_path();
-  chdir(g_get_home_dir());
+  ierr = chdir(g_get_home_dir());
   gtk_main();
   /* gdk_threads_leave ();*/
  

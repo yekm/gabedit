@@ -1,6 +1,6 @@
 /* Babel.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -230,7 +230,7 @@ static GtkWidget *create_browser(GtkWidget* Wins,GtkWidget* vbox,gchar *deffile,
 		gchar* p = g_strdup(patterns[0]);
 		g_free(patterns[0]);
 		patterns[0] = g_malloc(100*sizeof(gchar));
-		sprintf(patterns[0],p);
+		sprintf(patterns[0],"%s",p);
 		g_free(p);
 	}
 	g_object_set_data (G_OBJECT (hbox), "Patterns",patterns);
@@ -376,7 +376,7 @@ static void changed_file_name(GtkWidget *wid,gpointer data)
 		delete_last_spaces(fileName);
 		delete_first_spaces(fileName);
 		str_delete_n(fileName);
-		if(strlen(fileName)>0) file = FOpen(fileName, "r");
+		if(strlen(fileName)>0) file = FOpen(fileName, "rb");
 	}
 
 	if(file)

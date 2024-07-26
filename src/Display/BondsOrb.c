@@ -1,6 +1,6 @@
 /* BondsOrb.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -182,6 +182,29 @@ void buildMultipleBonds()
 		if(data->bondType == GABEDIT_BONDTYPE_TRIPLE) k = 3;
 		if(i>=0 && i<Ncenters ) nBonds[i]  += k;
 		if(j>=0 && j<Ncenters ) nBonds[j]  += k;
+	}
+	for(list=BondsOrb;list!=NULL;list=list->next)
+	{
+		BondType* data=(BondType*)list->data;
+		GList* list2;
+		gint i = data->n1;
+		gint j = data->n2;
+		gint ij=0;
+
+		if(i>=0 && i<Ncenters  && j>=0 && j<Ncenters) ij = nBonds[i]+ nBonds[j];
+
+		for(list2=list->next;list2!=NULL;list2=list2->next)
+		{
+			BondType* data2=(BondType*)list2->data;
+			gint i = data2->n1;
+			gint j = data2->n2;
+			if(i>=0 && i<Ncenters  && j>=0 && j<Ncenters && nBonds[i]+ nBonds[j]<ij)
+			{
+				BondType* t = list->data;
+				list->data = list2->data;
+				list2->data = t;
+			}
+		}
 	}
 	for(list=BondsOrb;list!=NULL;list=list->next)
 	{

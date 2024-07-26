@@ -1,6 +1,6 @@
 /* SurfacesPov.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -402,7 +402,7 @@ void addLastSurface()
 	gchar* fileName = g_strdup_printf("%s%stmp%spovraySurfaces.pov",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
 	gchar* fileNameLast = g_strdup_printf("%s%stmp%spovrayLastSurface.pov",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
 	FILE* fileSurfaces = fopen(fileName,"a");
-	FILE* fileLastSurface = fopen(fileNameLast,"r");
+	FILE* fileLastSurface = fopen(fileNameLast,"rb");
 	gchar* t = g_malloc(BSIZE*sizeof(gchar));
 
 	g_free(fileName);

@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -139,6 +139,8 @@ typedef enum
   GABEDIT_TYPEFILE_CUBEDX,
   GABEDIT_TYPEFILE_TRJ,
   GABEDIT_TYPEFILE_TXT,
+  GABEDIT_TYPEFILE_NBO_BASIS,
+  GABEDIT_TYPEFILE_NBO,
   GABEDIT_TYPEFILE_UNKNOWN,
 } GabEditTypeFile;
 

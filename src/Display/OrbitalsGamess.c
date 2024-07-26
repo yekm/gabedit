@@ -1,6 +1,6 @@
 /* OrbitalsGamess.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -162,7 +162,7 @@ static gint* read_geomorb_gamess_file_geom(gchar *FileName)
 	tmp = get_name_file(FileName);
 	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info(_("File type"),"Dalton");
+	set_status_label_info(_("File type"),"Gamess");
  	numgeom =1;
  	do 
  	{
@@ -173,7 +173,7 @@ static gint* read_geomorb_gamess_file_geom(gchar *FileName)
 			if(!fgets(t,taille,fd))break;
 			if ( strstr(t,"COORDINATES (BOHR)"))
 			{
-	  			fgets(t,taille,fd);
+    				if(!feof(fd)) { char* e = fgets(t,taille,fd);}
  				numgeom++;
                 		OK = TRUE;
 				uni = 0;
@@ -181,8 +181,8 @@ static gint* read_geomorb_gamess_file_geom(gchar *FileName)
 	  		}
 			if ( strstr(t,"COORDINATES OF ALL ATOMS ARE (ANGS)"))
 			{
-	  			fgets(t,taille,fd);
-	  			fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
+    				{ char* e = fgets(t,taille,fd);}
  				numgeom++;
 				uni=1;
 				OK = TRUE;
@@ -205,7 +205,7 @@ static gint* read_geomorb_gamess_file_geom(gchar *FileName)
   		j=-1;
   		while(!feof(fd) )
   		{
-			fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 			if ( !strcmp(t,"\n"))
 			{
 				break;
@@ -452,12 +452,12 @@ static gchar** read_basis_from_a_gamess_output_file(gchar *FileName, gint* nrs)
   		Message(_("Sorry I can read basis from this file\n"),_("Error"),TRUE);
   		return NULL;
 	}
-	fgets(t,taille,fd);
+    	{ char* e = fgets(t,taille,fd);}
 
 	strbasis=g_malloc(sizeof(gchar*));
  	while(!feof(fd))
 	{
-		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
 		if(strstr(t,"TOTAL NUMBER OF")) break;
 		nrows++;
 		strbasis = g_realloc(strbasis,nrows*sizeof(gchar*));
@@ -576,7 +576,7 @@ static gboolean DefineGamessBasisType(gchar** strbasis, gint nrows)
 	}
 	for(k=0;k<Ncenters;k++)
 	{
-		sprintf(sym,GeomOrb[k].Symb);
+		sprintf(sym,"%s",GeomOrb[k].Symb);
 		i = GeomOrb[k].NumType;
 		/* printf("numType = %d\n",k);*/
      		Type[i].Symb=g_strdup(sym);
@@ -711,11 +711,40 @@ static gboolean DefineGamessBasisType(gchar** strbasis, gint nrows)
     	return TRUE;
 }
 /********************************************************************************/
+static gint get_number_of_ecp_core_electrons(gchar* FileName)
+{
+ 	gchar *t;
+ 	FILE *file;
+	gint ne = 0;
+
+ 	if ((!FileName) || (strcmp(FileName,"") == 0)) return;
+
+ 	t=g_malloc(BSIZE*sizeof(gchar));
+ 	file = FOpen(FileName, "rb");
+ 	if(file ==NULL) return;
+
+	while(!feof(file))
+	{
+		if(!fgets(t,BSIZE,file))break;
+		if(strstr(t,"ECP") && strstr(t,"REMOVES") &&strstr(t,"CORE") &&strstr(t,"ELECTRONS"))
+		{
+			gchar* equal=strstr(t,"REMOVES");
+			if(equal) ne=atoi(equal+strlen("REMOVES"));
+			break;
+		}
+
+	}
+	if(t!=NULL) g_free(t);
+	if(file) fclose(file);
+	return ne;
+}
+/********************************************************************************/
 static void get_number_of_occuped_orbitals(gchar* FileName, gint* nAlpha, gint* nBeta)
 {
  	gchar *t;
  	FILE *file;
 	gchar *tag=NULL;
+	gint necore = 0;
 
 	*nAlpha=-1;
 	*nBeta=-1;
@@ -742,6 +771,11 @@ static void get_number_of_occuped_orbitals(gchar* FileName, gint* nAlpha, gint* 
 	if(tag!=NULL) g_free(tag);
 	if(t!=NULL) g_free(t);
 	if(file) fclose(file);
+	necore = get_number_of_ecp_core_electrons(FileName);
+	*nAlpha -= necore/2;
+	*nBeta -= necore/2;
+	if(*nAlpha<0) *nAlpha= 0;
+	if(*nBeta<0) *nBeta= 0;
 }
 /********************************************************************************/
 static GabEditOrbLocalType get_local_orbital_type(gchar *fileName)
@@ -845,9 +879,10 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *fileName,GabEditOrbType
 					break;
 				case GABEDIT_ORBTYPE_EIGENVECTORS: 
           				pdest = strstr( t, titlesOrb[itype] ); 
+					if(pdest)
 					{
-						gchar dump1[50];
-						gchar dump2[50];
+						gchar dump1[BSIZE];
+						gchar dump2[BSIZE];
 						gint k = sscanf(t,"%s %s",dump1,dump2);
 						if(k!=1 || strcmp(dump1,titlesOrb[itype])!=0) pdest=NULL;
 					}
@@ -984,7 +1019,7 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *fileName,GabEditOrbType
 	  				if(!fgets(t,taille,fd))break;
 					if(strstr(t,titlesOrb[GABEDIT_ORBTYPE_BOYS]))
 					{
-	  					fgets(t,taille,fd);
+    						{ char* e = fgets(t,taille,fd);}
 						break;
 					}
 				}
@@ -996,7 +1031,7 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *fileName,GabEditOrbType
 	  				if(!fgets(t,taille,fd))break;
 					if(strstr(t,titlesOrb[GABEDIT_ORBTYPE_EDMISTON]))
 					{
-	  					fgets(t,taille,fd);
+    						{ char* e = fgets(t,taille,fd);}
 						break;
 					}
 				}
@@ -1008,18 +1043,18 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *fileName,GabEditOrbType
 	  				if(!fgets(t,taille,fd))break;
 					if(strstr(t,titlesOrb[GABEDIT_ORBTYPE_PIPEK]))
 					{
-	  					fgets(t,taille,fd);
+    						{ char* e = fgets(t,taille,fd);}
 						break;
 					}
 				}
 				break;
 			case GABEDIT_ORBTYPE_ALPHA :
 			case GABEDIT_ORBTYPE_BETA :
-	  			fgets(t,taille,fd);
-	  			fgets(t,taille,fd);
-	  			fgets(t,taille,fd);
-	  			fgets(t,taille,fd);
-	  			fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
+    				{ char* e = fgets(t,taille,fd);}
+    				{ char* e = fgets(t,taille,fd);}
+    				{ char* e = fgets(t,taille,fd);}
+    				{ char* e = fgets(t,taille,fd);}
 				break;
 			case GABEDIT_ORBTYPE_MOLECULAR: 
 			case GABEDIT_ORBTYPE_MCSCF: 
@@ -1038,7 +1073,7 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *fileName,GabEditOrbType
 			case GABEDIT_ORBTYPE_BOYS: 
 			case GABEDIT_ORBTYPE_EDMISTON: 
 			case GABEDIT_ORBTYPE_PIPEK: 
-	  			fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 		}
 
   		ncart=NOrb/5;
@@ -1059,13 +1094,12 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *fileName,GabEditOrbType
 				break;
 			}
 
-			
-	  		fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 			k2 = sscanf(t,"%lf %lf %lf %lf %lf", &EnerOrb[0], &EnerOrb[1], &EnerOrb[2], &EnerOrb[3], &EnerOrb[4]);
 			for(i=0;i<k2;i++) EnerOrbitals[NumOrb[i]] = EnerOrb[i];
 			if(k2>0)
 			{
-	  			fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 				/* Debug("%d %d %d %d %d\n",NumOrb[0],NumOrb[1],NumOrb[2],NumOrb[3],NumOrb[4]);*/
 				k3 = sscanf(t,"%s %s %s %s %s",SymOrb[0],SymOrb[1],SymOrb[2],SymOrb[3],SymOrb[4]);
 				/* Debug("%s %s %s %s %s\n",SymOrb[0],SymOrb[1],SymOrb[2],SymOrb[3],SymOrb[4]);*/
@@ -1101,12 +1135,12 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *fileName,GabEditOrbType
 			}
 			for(i=0;i<NOrb;i++)
 			{
-	  			fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 				tmp = t + 17;
 				k = sscanf(tmp,"%s %s %s %s %s",dum[0], dum[1], dum[2], dum[3], dum[4]);
 				for(j=0;j<k;j++) CoefOrbitals[NumOrb[j]][i]=atof(dum[j]);
 			}
-	  		fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 			no+=k3;
 			if(k3<5)break;
 		}
@@ -1273,11 +1307,9 @@ void read_gamess_orbitals(gchar* FileName)
  	DefineNOccs();
 
 	get_number_of_occuped_orbitals(FileName, &nAlpha, &nBeta);
-	/*
 	printf("Number of ALPHA occ = %d\n",nAlpha);
 	printf("Number of BETA  occ = %d\n",nBeta);
 	printf("NOrb = %d\n",NOrb);
-	*/
 
 	 typeLocal = get_local_orbital_type(FileName);
 	if(typeLocal!=GABEDIT_ORBLOCALTYPE_UNKNOWN)

@@ -1,6 +1,6 @@
 /* GLArea.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -504,7 +504,7 @@ static void apply_set_title(GtkWidget *Win,gpointer data)
 	yValue = gtk_spin_button_get_value (GTK_SPIN_BUTTON(ySpinButton));
 	if(xValue>=0 && xValue<=100) xTitle = xValue;
 	if(yValue>=0 && yValue<=100) yTitle = yValue;
-	if(fontStr) sprintf(fontNameTitle,fontStr);
+	if(fontStr) sprintf(fontNameTitle,"%s",fontStr);
 	if(str && strlen(str)>1)
 	{
 		if(strTitle) g_free(strTitle);

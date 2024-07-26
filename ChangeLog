@@ -1,3 +1,27 @@
+20 June 2012 :
+	Bug fixed : computing of double&triple bonds
+
+10 June 2012 :
+	Warning with -Wformat have been fixed
+
+29 March 2012 :
+	Filter (Gaussian, Blackman, Blackman-Harris,...) in GabexitXYPlot window (not fully tested)
+
+08 Marsh 2012 :
+	read gamess geometries in Display window :  bug fixed
+
+02 Marsh 2012 :
+	NBO basis (file .31) : read any type of orbitals
+
+27 February 2012 :
+	NBO basis (file .31) : read geometry
+
+06 October 2011 :
+	Orca input file : constraint removed if no fixed atom.
+
+03 October 2011 :
+	Bug fixed for saving geometry in mol format
+
 15 September 2011 :
 	Bug fixed for reading orbitals from a ORCA output file
 	Bug fixed for drawing colorcoded planes (under windows OS)

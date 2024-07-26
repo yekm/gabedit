@@ -1,6 +1,6 @@
 /* UtilsInterface.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -810,7 +810,7 @@ FilePosTypeGeom get_geometry_type_from_molpro_input_file(gchar *NomFichier)
  j.numline=0;
  j.units=0;
  t=g_malloc(taille);
- fd = FOpen(NomFichier, "r");
+ fd = FOpen(NomFichier, "rb");
  if(fd!=NULL)
  {
  	k= 0;
@@ -869,7 +869,7 @@ FilePosTypeGeom get_geometry_type_from_gauss_input_file(gchar *NomFichier)
  j.numline=0;
  j.units=1;
  t=g_malloc(taille);
- fd = FOpen(NomFichier, "r");
+ fd = FOpen(NomFichier, "rb");
  if(fd!=NULL)
  {
 /* Commands lines */
@@ -981,7 +981,7 @@ FilePosTypeGeom get_geometry_type_from_nwchem_input_file(gchar *NomFichier)
  j.numline=0;
  j.units=1;
  t=g_malloc(taille);
- fd = FOpen(NomFichier, "r");
+ fd = FOpen(NomFichier, "rb");
  if(fd==NULL) return j;
  while(!feof(fd) )    
  {
@@ -1014,7 +1014,7 @@ FilePosTypeGeom get_geometry_type_from_orca_input_file(gchar *NomFichier)
  j.numline=0;
  j.units=1;
  t=g_malloc(taille);
- fd = FOpen(NomFichier, "r");
+ fd = FOpen(NomFichier, "rb");
  if(fd==NULL) return j;
  while(!feof(fd) )    
  {
@@ -1050,7 +1050,7 @@ FilePosTypeGeom get_geometry_type_from_qchem_input_file(gchar *NomFichier)
  j.numline=0;
  j.units=1;
  t=g_malloc(taille);
- fd = FOpen(NomFichier, "r");
+ fd = FOpen(NomFichier, "rb");
  if(fd!=NULL)
  {
  while(!feof(fd) )    
@@ -1109,7 +1109,7 @@ FilePosTypeGeom get_geometry_type_from_mopac_input_file(gchar *NomFichier)
  j.numline=0;
  j.units=1;
  t=g_malloc(taille);
- fd = FOpen(NomFichier, "r");
+ fd = FOpen(NomFichier, "rb");
  if(fd!=NULL)
  {
   	while(!feof(fd) )    
@@ -1118,9 +1118,9 @@ FilePosTypeGeom get_geometry_type_from_mopac_input_file(gchar *NomFichier)
   		j.numline++;
 		if(t[0] !='*') break;
 	}
- 	fgets(t, taille, fd);
+    	if(!feof(fd)) { char* e = fgets(t,taille,fd);}
   	j.numline++;
- 	fgets(t, taille, fd);
+    	if(!feof(fd)) { char* e = fgets(t,taille,fd);}
   	j.numline++;
 /* First line of geometry */
   if(!feof(fd) )    
@@ -1157,12 +1157,12 @@ void read_geom_in_gamess_input(gchar *fileName)
 	FILE* file;
 	t = get_suffix_name_file(fileName);
 	logfile = g_strdup_printf("%s.log",t);
-	file = FOpen(logfile, "r");
+	file = FOpen(logfile, "rb");
 	if(!file)
 	{
 		if(logfile) g_free(logfile);
 		logfile = g_strdup_printf("%s.out",t);
-		file = FOpen(logfile, "r");
+		file = FOpen(logfile, "rb");
 		if(!file) return;
 	}
 	fclose(file);
@@ -1176,12 +1176,12 @@ void read_geom_in_firefly_input(gchar *fileName)
 	FILE* file;
 	t = get_suffix_name_file(fileName);
 	logfile = g_strdup_printf("%s.log",t);
-	file = FOpen(logfile, "r");
+	file = FOpen(logfile, "rb");
 	if(!file)
 	{
 		if(logfile) g_free(logfile);
 		logfile = g_strdup_printf("%s.out",t);
-		file = FOpen(logfile, "r");
+		file = FOpen(logfile, "rb");
 		if(!file) return;
 	}
 	fclose(file);
@@ -1287,7 +1287,7 @@ void get_doc(gchar *NomFichier)
 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0)) return ;
  
 	t=g_malloc(taille);
-	fd = FOpen(NomFichier, "r");
+	fd = FOpen(NomFichier, "rb");
 	if(fd==NULL)
 	{
 		g_free(t);
@@ -1478,7 +1478,7 @@ void get_doc(gchar *NomFichier)
 
  
  t=g_malloc(taille);
- fd = FOpen(NomFichier, "r");
+ fd = FOpen(NomFichier, "rb");
  if(fd!=NULL)
  {
   while(1)
@@ -1778,7 +1778,7 @@ static void show_about_new()
 	};
 
 	static const gchar *copyright =
-		"Copyright \xc2\xa9 2002-2011 Abdul-Rahman Allouche.\n"
+		"Copyright \xc2\xa9 2002-2012 Abdul-Rahman Allouche.\n"
 		"All rights reserved.\n";
 	
 	gchar *license =
@@ -1862,7 +1862,7 @@ void show_homepage(GtkWidget *w,gpointer data)
 		if (system(Command)<0)
 		{
 			gchar* Command = "konqueror http://gabedit.sourceforge.net/ &";
-			system(Command);
+			{int ierr = system(Command);}
 		}
 	}
 #endif
@@ -2143,7 +2143,7 @@ void get_result()
 	gabedit_text_forward_delete(GABEDIT_TEXT(textresult),nchar);
  
 	t = g_strdup_printf("%s%s%s",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.outputfile);
-	fd = FOpen(t, "r");
+	fd = FOpen(t, "rb");
 	g_free(t);
 	t=g_malloc(taille*sizeof(char));
 	if(fd!=NULL)
@@ -2856,7 +2856,7 @@ void set_last_directory(G_CONST_RETURN gchar* FileName)
 	if(temp) g_free(temp);
 	if(localdir) g_free(localdir);
 	if(lastdirectory && gabedit_directory() && strcmp(lastdirectory,gabedit_directory())) 
-		chdir(lastdirectory);
+		{int it = chdir(lastdirectory);}
 }
 /*********************************************************************/
 gchar* get_last_directory()
@@ -3221,6 +3221,164 @@ void read_admp_build_dipole_dipole_autocorrelation_dlg()
  	file_chooser_open(read_admp_dipole_dipole_file,
 			_("Read the ADMP Gaussian output file to do a dipole_dipole autocorrelation function"),
 			GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_OTHER);
+	GtkWidget* entryN = gtk_entry_new();
+	GtkWidget* hbox = gtk_hbox_new(FALSE,1);
+	GtkWidget* hsep1 = gtk_hseparator_new();
+	GtkWidget* hsep2 = gtk_hseparator_new();
+	GtkWidget* labelN = gtk_label_new(_("     Number of step to remove : "));
+
+	gtk_entry_set_text(GTK_ENTRY(entryN),"0");
+
+	gtk_box_pack_start (GTK_BOX (hbox), labelN, FALSE, FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (hbox), entryN, FALSE, FALSE, 0);
+
+	gtk_box_pack_start (GTK_BOX (GTK_DIALOG(filesel)->vbox), hsep1, FALSE, FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (GTK_DIALOG(filesel)->vbox), hbox, FALSE, FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (GTK_DIALOG(filesel)->vbox), hsep2, FALSE, FALSE, 0);
+	gtk_widget_show_all(hsep1);
+	gtk_widget_show_all(hsep2);
+	gtk_widget_show_all(hbox);
+
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+	gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filesel),TRUE);
+	g_object_set_data (G_OBJECT (filesel), "EntryN",entryN);
+}
+/*************************************************************************************/
+static gdouble** readOneTxtFile(gchar* fileName, gint n0, gint* nP, gdouble* dt)
+{
+	gint nPoints = 0;
+	gdouble** Dipole= NULL;
+	FILE* file;
+	gchar t[BSIZE];
+	gdouble d[4];
+	gint i;
+	gint k;
+	double t0 = 0;
+	file = fopen(fileName,"rb");
+	if(!file) printf("I cannot open '%s'\n",fileName);
+	if(!file) return 0;
+	k = 0;
+	*nP = 0;
+	*dt = 0;
+	while(!feof(file))
+	{
+		if(!fgets(t,BSIZE,file))break;
+		if(sscanf(t,"%lf%lf%lf%lf",&d[0],&d[1],&d[2],&d[3])!=4)break;
+		nPoints++;
+	}
+	rewind(file);
+	if(nPoints == 0 || nPoints<n0) { return NULL;}
+	Dipole =   malloc(nPoints*sizeof(gdouble*));
+        for(k=0;k<nPoints;k++) Dipole[k] = malloc(3*sizeof(gdouble));
+	k = 0;
+	*dt = 0;
+	while(!feof(file))
+	{
+		if(!fgets(t,BSIZE,file))break;
+		if(sscanf(t,"%lf%lf%lf%lf",&d[0],&d[1],&d[2],&d[3])!=4)break;
+		if(k>=n0) for(i=0;i<3;i++) Dipole[k-n0][i] = d[i+1];
+		*dt = d[0];
+		if(k==0) t0 = d[0];
+		k++;
+		if(k==nPoints) break;
+	}
+	*dt = (*dt-t0)/nPoints;
+	fclose(file);
+	*nP = nPoints-n0;
+	return Dipole;
+}
+/********************************************************************************/
+static gboolean read_dipole_text_file(GabeditFileChooser *filesel, gint response_id)
+{
+	gchar* fileName = NULL;
+	GtkWidget* entryN = NULL;
+	gint n0      = 1;
+	gdouble* X = NULL;
+	gdouble* Y = NULL;
+	gdouble* Ytmp = NULL;
+	gdouble** Dipole = NULL;
+	gdouble dt;
+	gint M = 0;
+	gint MC = 0;
+	gint k;
+	GtkWidget* xyplot;
+	GtkWidget* window;
+	GSList* lists = NULL;
+	GSList* cur = NULL;
+	gint nf = 0;
+	if(response_id != GTK_RESPONSE_OK) return FALSE;
+
+	lists = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(filesel));
+	
+	entryN = g_object_get_data (G_OBJECT (filesel), "EntryN");
+	if(!entryN) return FALSE;
+	n0     = atoi(gtk_entry_get_text(GTK_ENTRY(entryN)));
+	if(n0<0) n0 = 0;
+
+	create_popup_win(_("Please wait"));
+	cur = lists;
+	nf = 0;
+	while(cur != NULL)
+	{
+		fileName = (gchar*)(cur->data);
+		nf++;
+		if(cur==lists)
+		{
+			Dipole = readOneTxtFile(fileName, n0, &M, &dt);
+			if(M<2) 
+			{
+    				Message(_("Error\n The number of steps <2 !\n"),_("Error"),TRUE);
+				return FALSE;
+			}
+			X = g_malloc(M*sizeof(gdouble));
+			Y = g_malloc(M*sizeof(gdouble));
+			for(k=0;k<M;k++) X[k] = dt*k;
+			MC = doAutoCorr(Dipole, Y, M);
+			for(k=0;k<M;k++) g_free(Dipole[k]);
+			g_free(Dipole);
+		}
+		else  
+		{
+			gint m = 0;
+			gint mc = 0;
+			gdouble dt0;
+			Dipole = readOneTxtFile(fileName, n0, &m, &dt0);
+	
+			if(m!=M || M<2) 
+			{
+    				Message(_("Error\n The number of steps is not same in all files\n"),_("Error"),TRUE);
+				return FALSE;
+			}
+
+			Ytmp = g_malloc(m*sizeof(gdouble));
+			mc = doAutoCorr(Dipole, Ytmp, m);
+			for(k=0;k<M;k++) g_free(Dipole[k]);
+			g_free(Dipole);
+			for(k=0;k<MC;k++) Y[k] += Ytmp[k];
+			g_free(Ytmp);
+		}
+
+		cur = cur->next;
+	}
+	if(nf>0) for(k=0;k<MC;k++) Y[k] /= nf;
+
+
+	window = gabedit_xyplot_new_window(_("Dipole-Dipole autocorrelation"),NULL);
+	xyplot = g_object_get_data(G_OBJECT (window), "XYPLOT");
+	gabedit_xyplot_add_data_conv(GABEDIT_XYPLOT(xyplot),MC, X,  Y, 1.0, GABEDIT_XYPLOT_CONV_NONE,NULL);
+	gabedit_xyplot_set_range_xmin (GABEDIT_XYPLOT(xyplot), 0.0);
+	g_free(X); 
+	g_free(Y);
+
+	return TRUE;
+}
+/********************************************************************************/
+void read_dipole_build_dipole_dipole_autocorrelation_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_dipole_text_file,
+			_("Read dipole from an ascii file(fs,au,au,au) to do a dipole_dipole autocorrelation function"),
+			GABEDIT_TYPEFILE_TXT,GABEDIT_TYPEWIN_OTHER);
 	GtkWidget* entryN = gtk_entry_new();
 	GtkWidget* hbox = gtk_hbox_new(FALSE,1);
 	GtkWidget* hsep1 = gtk_hseparator_new();

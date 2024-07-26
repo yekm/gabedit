@@ -1,6 +1,6 @@
 /*PlanesMappedPov.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -199,24 +199,24 @@ static void addPlanPovRay(FILE* file, Grid* plansgrid,gint i0,gint i1,gint numPl
 	for(i=0;i<3;i++) C1[i] = plansgrid->point[ix][iy][iz].C[i] + Gap[i];
 	for(i=0;i<3;i++) C2[i] = plansgrid->point[ix1][iy1][iz1].C[i] + Gap[i];
 	temp = get_pov_cylingre(C1,C2,Color, 1.0);
-	fprintf(file,temp);
+	fprintf(file,"%s",temp);
 	g_free(temp);
 
 	for(i=0;i<3;i++) C1[i] = C2[i];
 	for(i=0;i<3;i++) C2[i] = plansgrid->point[ix2][iy2][iz2].C[i] + Gap[i];
 	temp = get_pov_cylingre(C1,C2,Color, 1.0);
-	fprintf(file,temp);
+	fprintf(file,"%s",temp);
 	g_free(temp);
 
 	for(i=0;i<3;i++) C1[i] = C2[i];
 	for(i=0;i<3;i++) C2[i] = plansgrid->point[ix3][iy3][iz3].C[i] + Gap[i];
 	temp = get_pov_cylingre(C1,C2,Color, 1.0);
-	fprintf(file,temp);
+	fprintf(file,"%s",temp);
 	g_free(temp);
 
 	for(i=0;i<3;i++) C1[i] = plansgrid->point[ix][iy][iz].C[i] + Gap[i];
 	temp = get_pov_cylingre(C1,C2,Color, 1.0);
-	fprintf(file,temp);
+	fprintf(file,"%s",temp);
 	g_free(temp);
 
 
@@ -417,7 +417,7 @@ static void AddOnePlaneMappedPovRay(FILE* file, Grid* plansgrid, gint i0, gint i
 	for(k=0;k<3;k++) C4[k] = plansgrid->point[ix3][iy3][iz3].C[k] + Gap[k];
 
 	temp = get_pov_mesh2(C1, C2, C3, C4, N1, N2, N3, N4, color1,  color2, color3, color4);
-	fprintf(file,temp);
+	fprintf(file,"%s",temp);
 	g_free(temp);
 	}
 	g_free(Gap);

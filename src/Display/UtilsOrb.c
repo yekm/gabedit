@@ -1,6 +1,6 @@
 /* UtilsOrb.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -40,6 +40,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Display/GridCube.h"
 #include "../Display/GridCP.h"
 #include "../Display/ColorMap.h"
+#include "../Display/LabelsGL.h"
 
 /**********************************************/
 static gint getOptimalN(gint nG)
@@ -217,7 +218,7 @@ gint get_type_file_orb(gchar *fileName)
 		return ktype;
 	}
 	rewind(fd);
-	fgets(t,taille,fd);
+    	{ char* e = fgets(t,taille,fd);}
 	g_strup(t);
         if(strstr(t, "ENTERING" ))
 		ktype = GABEDIT_TYPEFILE_GAUSSIAN;
@@ -237,7 +238,7 @@ gint get_type_file_orb(gchar *fileName)
 	{
 		while(!feof(fd))
 		{
-			fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 			if(strstr(t,"PROGRAM SYSTEM MOLPRO"))
 			{
 				ktype = GABEDIT_TYPEFILE_MOLPRO;
@@ -271,7 +272,7 @@ gint get_type_file_orb(gchar *fileName)
 	{
 		while(!feof(fd))
 		{
-			fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 			if(strstr(t,"* O   R   C   A *"))
 			{
 				ktype = GABEDIT_TYPEFILE_ORCA;
@@ -284,10 +285,10 @@ gint get_type_file_orb(gchar *fileName)
 	{
 		while(!feof(fd))
 		{
-			fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 			if(strstr(t,"GAMESS"))
 			{
-				fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 				if(strstr(t,"FROM IOWA STATE UNIVERSITY"))
 				ktype = GABEDIT_TYPEFILE_GAMESS;
 				break;
@@ -297,16 +298,31 @@ gint get_type_file_orb(gchar *fileName)
 	rewind(fd);
 	if( ktype == GABEDIT_TYPEFILE_UNKNOWN)
 	{
-		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
 		if(strstr(t,"START OF MOPAC FILE"))
 			ktype = GABEDIT_TYPEFILE_MOPAC_AUX;
 	}
 	rewind(fd);
 	if( ktype == GABEDIT_TYPEFILE_UNKNOWN)
 	{
-		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
 		if(strstr(t,"BEGIN IRC"))
 			ktype = GABEDIT_TYPEFILE_GAMESSIRC;
+	}
+	rewind(fd);
+	if( ktype == GABEDIT_TYPEFILE_UNKNOWN)
+	{
+		while(!feof(fd))
+		{
+    			{ char* e = fgets(t,taille,fd);}
+			if(strstr(t,"in the AO basis:"))
+			{
+    				{ char* e = fgets(t,taille,fd);}
+				if(strstr(t,"------------------"))
+				ktype = GABEDIT_TYPEFILE_NBO;
+				break;
+			}
+		}
 	}
  	fclose(fd);
  	g_free(t);
@@ -347,7 +363,7 @@ gint get_type_basis_in_gamess_file(gchar *fileName)
 	ktype = 0;
 	while(!feof(fd))
 	{
-		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
         	if(strstr( t, "ISPHER="))
 		{
 			gchar t1[50];
@@ -391,7 +407,7 @@ gint get_type_basis_in_gaussian_file(gchar *fileName)
 	ktype = 0;
 	while(!feof(fd))
 	{
-		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
         	if(strstr( t, "(5D, 7F)"))
 		{
 			ktype = 1;
@@ -442,7 +458,7 @@ gint get_type_basis_in_nwchem_file(gchar *fileName)
 	ktype = 0;
 	while(!feof(fd))
 	{
-		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
         	if(strstr( t, "ao basis") && strstr( t, "spherical")) {ktype=1;break;}
         	if(strstr( t, "ao basis") && strstr( t, "cart")) {ktype=0;break;}
 	}
@@ -481,7 +497,7 @@ gint get_type_basis_in_qchem_file(gchar *fileName)
 	ktype = 0;
 	while(!feof(fd))
 	{
-		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
         	if(strstr( t, "  d 1 ")) ks++;
         	if(strstr( t, "  f 1 ")) ks++;
         	if(strstr( t, "  g 1 ")) ks++;
@@ -531,7 +547,7 @@ gint get_type_basis_in_gabedit_file(gchar *fileName)
   		return ktype;
  	}
 	ktype = -1;
-	fgets(t,taille,fd);
+    	{ char* e = fgets(t,taille,fd);}
 	g_strup(t);
 	if(strstr( t, "[GABEDIT FORMAT]"))
 	{
@@ -571,14 +587,14 @@ gint get_type_basis_in_molden_file(gchar *fileName)
   		return ktype;
  	}
 	ktype = -1;
-	fgets(t,taille,fd);
+    	{ char* e = fgets(t,taille,fd);}
 	g_strup(t);
 	if(strstr( t, "[MOLDEN FORMAT]"))
 	{
 		ktype = 0;
 		while(!feof(fd))
 		{
-			fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 			g_strup(t);
 			if(strstr( t, "[5D"))
 			{
@@ -727,6 +743,7 @@ void free_data_all()
         free_iso_all();
         free_orbitals();
         free_geometry();
+	set_label_title("",0,0);
 }  
 /********************************************************************************/
 static void change_entry_value(GtkWidget *Entry, gpointer data)
@@ -1599,11 +1616,11 @@ void read_color_surfaces_file()
 	fd = fopen(colorsurface, "rb");
 	if(fd)
 	{
-		fgets(t,len,fd);
+    		{ char* e = fgets(t,BSIZE,fd);}
 		n = atoi(t);
 		for(i=0;i<n;i++)
 		{
-			fgets(t,len,fd);
+    			{ char* e = fgets(t,len,fd);}
 			sscanf(t,"%lf %lf %lf %lf",&v[0],&v[1],&v[2],&v[3]);
 			set_color_surface(i,v);
 		}

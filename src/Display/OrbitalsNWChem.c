@@ -1,6 +1,6 @@
 /* OrbitalsNWChem.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -492,7 +492,7 @@ static gboolean DefineNWChemBasisType(gchar** strbasis, gint nrows)
 	}
 	for(k=0;k<Ncenters;k++)
 	{
-		sprintf(sym,GeomOrb[k].Symb);
+		sprintf(sym,"%s",GeomOrb[k].Symb);
 		i = GeomOrb[k].NumType;
 		/* printf("numType = %d\n",k);*/
      		Type[i].Symb=g_strdup(sym);
@@ -852,7 +852,7 @@ static gboolean read_last_orbitals_in_nwchem_file(gchar *fileName,GabEditOrbType
 	  				if(!fgets(t,BSIZE,fd))break;
 					if(strstr(t,titlesOrb[GABEDIT_ORBTYPE_BOYS]))
 					{
-	  					fgets(t,BSIZE,fd);
+    						{ char* e = fgets(t,BSIZE,fd);}
 						break;
 					}
 				}
@@ -864,7 +864,7 @@ static gboolean read_last_orbitals_in_nwchem_file(gchar *fileName,GabEditOrbType
 	  				if(!fgets(t,BSIZE,fd))break;
 					if(strstr(t,titlesOrb[GABEDIT_ORBTYPE_EDMISTON]))
 					{
-	  					fgets(t,BSIZE,fd);
+    						{ char* e = fgets(t,BSIZE,fd);}
 						break;
 					}
 				}
@@ -876,7 +876,7 @@ static gboolean read_last_orbitals_in_nwchem_file(gchar *fileName,GabEditOrbType
 	  				if(!fgets(t,BSIZE,fd))break;
 					if(strstr(t,titlesOrb[GABEDIT_ORBTYPE_PIPEK]))
 					{
-	  					fgets(t,BSIZE,fd);
+    						{ char* e = fgets(t,BSIZE,fd);}
 						break;
 					}
 				}
@@ -884,8 +884,8 @@ static gboolean read_last_orbitals_in_nwchem_file(gchar *fileName,GabEditOrbType
 			case GABEDIT_ORBTYPE_ALPHA :
 			case GABEDIT_ORBTYPE_BETA :
 			case GABEDIT_ORBTYPE_RESTRICTED: 
-	  			fgets(t,BSIZE,fd);
-	  			fgets(t,BSIZE,fd);
+    				{ char* e = fgets(t,BSIZE,fd);}
+    				{ char* e = fgets(t,BSIZE,fd);}
 				break;
 			case GABEDIT_ORBTYPE_MCSCF: 
 			case GABEDIT_ORBTYPE_EIGENVECTORS: 
@@ -893,7 +893,7 @@ static gboolean read_last_orbitals_in_nwchem_file(gchar *fileName,GabEditOrbType
 			case GABEDIT_ORBTYPE_BOYS: 
 			case GABEDIT_ORBTYPE_EDMISTON: 
 			case GABEDIT_ORBTYPE_PIPEK: 
-	  			fgets(t,BSIZE,fd);
+    				{ char* e = fgets(t,BSIZE,fd);}
 		}
 	/*
 	printf("NOrb=%d\n",NOrb);

@@ -1,6 +1,6 @@
 /* DrawGeomGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1131,7 +1131,7 @@ void read_drawmolecule_file()
 	factor_stick_default(NULL,NULL);
 	factor_ball_default(NULL,NULL);
 
-	fd = fopen(drawMolecule, "r");
+	fd = fopen(drawMolecule, "rb");
 	if(fd !=NULL)
 	{
  		guint taille = BSIZE;
@@ -1837,6 +1837,27 @@ static void setMultipleBonds()
 			 }
 		}
 	}
+// sort atoms nBonds min at first
+	for(i=0;i<(gint)Natoms-1;i++)
+	{
+		gint k = i;
+		for(j=i+1;j<(gint)Natoms;j++)
+			if(nBonds[j]<nBonds[k])  k = j;
+		if(k!=i)
+		{
+			gint t = num[i];
+			num[i] = num[k];
+			num[k] = t;
+			t = nBonds[i];
+			nBonds[i] = nBonds[k];
+			nBonds[k] = t;
+		}
+	}
+/*
+	for(i=0;i<(gint)Natoms;i++)
+		printf("%s[%d] %d\n",geometry[num[i]].Prop.symbol, geometry[num[i]].N,nBonds[i]);
+*/
+
 	for(i=0;i<(gint)Natoms;i++)
 	{
 		ni = geometry[num[i]].N-1;
@@ -1855,6 +1876,10 @@ static void setMultipleBonds()
 			}
 		}
 	}
+/*
+	for(i=0;i<(gint)Natoms;i++)
+		printf("=====>%s[%d] %d\n",geometry[num[i]].Prop.symbol, geometry[num[i]].N,nBonds[i]);
+*/
 	for(i=0;i<(gint)Natoms;i++)
 	{
 		ni = geometry[num[i]].N-1;
@@ -1873,6 +1898,10 @@ static void setMultipleBonds()
 			}
 		}
 	}
+/*
+	for(i=0;i<(gint)Natoms;i++)
+		printf("33=====>%s[%d] %d\n",geometry[num[i]].Prop.symbol, geometry[num[i]].N,nBonds[i]);
+*/
 	g_free(nBonds);
 	g_free(num);
 }
@@ -9582,6 +9611,79 @@ static void draw_ball(gdouble X, gdouble Y, gdouble Z, GLdouble radii, GdkColor*
 
 }
 /************************************************************************/
+void getOptimalCiCj(gint i, gint j, gdouble* Ci, gdouble* Cj, gdouble* C0)
+{
+	C0[0] = 0;
+	C0[1] = 0;
+	C0[2] = 0;
+
+	Ci[0] = geometry[i].X;
+	Ci[1] = geometry[i].Y;
+	Ci[2] = geometry[i].Z;
+
+	Cj[0] = geometry[j].X;
+	Cj[1] = geometry[j].Y;
+	Cj[2] = geometry[j].Z;
+
+/* serach a one none hydrogen atom connected to i or j atoms */
+	if(geometry[i].typeConnections)
+	{
+		gint l;
+		gint nl;
+		for(l=0, nl = geometry[l].N-1;l<Natoms;l++, nl = geometry[l].N-1)
+			if(l != j && l != i &&  geometry[i].typeConnections[nl]>0 && strcmp(geometry[l].Prop.symbol,"H"))
+			{
+				C0[0] = geometry[l].X;
+				C0[1] = geometry[l].Y;
+				C0[2] = geometry[l].Z;
+				/* printf("---%s\n",geometry[l].Prop.symbol);*/
+				return;
+			}
+	}
+	if(geometry[j].typeConnections)
+	{
+		gint l;
+		gint nl;
+		for(l=0, nl = geometry[l].N-1;l<Natoms;l++, nl = geometry[l].N-1)
+			if(l != j && l != i &&  geometry[j].typeConnections[nl]>0  && strcmp(geometry[l].Prop.symbol,"H"))
+			{
+				C0[0] = geometry[l].X;
+				C0[1] = geometry[l].Y;
+				C0[2] = geometry[l].Z;
+				/* printf("--%s\n",geometry[l].Prop.symbol);*/
+				return;
+			}
+	}
+	if(geometry[i].typeConnections)
+	{
+		gint l;
+		gint nl;
+		for(l=0, nl = geometry[l].N-1;l<Natoms;l++, nl = geometry[l].N-1)
+			if(l != j && l != i &&  geometry[i].typeConnections[nl]>0)
+			{
+				C0[0] = geometry[l].X;
+				C0[1] = geometry[l].Y;
+				C0[2] = geometry[l].Z;
+				/* printf("%s\n",geometry[l].Prop.symbol);*/
+				return;
+			}
+	}
+	if(geometry[j].typeConnections)
+	{
+		gint l;
+		gint nl;
+		for(l=0, nl = geometry[l].N-1;l<Natoms;l++, nl = geometry[l].N-1)
+			if(l != j && l != i &&  geometry[j].typeConnections[nl]>0)
+			{
+				C0[0] = geometry[l].X;
+				C0[1] = geometry[l].Y;
+				C0[2] = geometry[l].Z;
+				/* printf("%s\n",geometry[l].Prop.symbol);*/
+				return;
+			}
+	}
+}
+/************************************************************************/
 static void draw_hbond(int i,int j,GLdouble scal)
 {
 	
@@ -9717,22 +9819,32 @@ static void draw_bond(int i,int j,GLdouble scal, gint connectionType)
 	else
 	if(bondType == GABEDIT_BONDTYPE_DOUBLE && showMultipleBonds)
 	{
+		/* printf("Double bond\n");*/
 		gdouble r = g/aspect;
 		gdouble C11[3];
 		gdouble C12[3];
 		gdouble C21[3];
 		gdouble C22[3];
 		gdouble rs[3];
+		gdouble C0[3];
 		gint type = 1;
 		if(TypeGeom== GABEDIT_TYPEGEOM_STICK) type = 0;
 		else if(geometry[i].Layer == LOW_LAYER || geometry[j].Layer == LOW_LAYER) type = 0;
-		getPositionsRadiusBond2(r, Ci, Cj, C11, C12,  C21,  C22, rs, type);
+		getOptimalCiCj(i, j, Ci, Cj,C0);
+		getPositionsRadiusBond2(r, C0, Ci, Cj, C11, C12,  C21,  C22, rs, type);
+		/*
+		printf("1 C11 = %f %f %f\n",C11[0],C11[1],C11[2]);
+		printf("1 C21 = %f %f %f\n",C21[0],C21[1],C21[2]);
+		printf("2 C12 = %f %f %f\n",C12[0],C12[1],C12[2]);
+		printf("2 C22 = %f %f %f\n",C22[0],C22[1],C22[2]);
+		*/
 		Cylinder_Draw_Color_Two(rs[0],C11,C12, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
 		Cylinder_Draw_Color_Two(rs[1],C21,C22, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
 	}
 	else
 	if(bondType == GABEDIT_BONDTYPE_TRIPLE && showMultipleBonds)
 	{
+		V3d C0;
 		gdouble r = g/aspect;
 		gdouble C11[3];
 		gdouble C12[3];
@@ -9743,7 +9855,8 @@ static void draw_bond(int i,int j,GLdouble scal, gint connectionType)
 		gdouble rs[3];
 		gint type = 1;
 		if(TypeGeom== GABEDIT_TYPEGEOM_STICK) type = 0;
-		getPositionsRadiusBond3(r, Ci, Cj, C11, C12,  C21,  C22, C31, C32, rs, type);
+		getOptimalCiCj(i, j, Ci, Cj,C0);
+		getPositionsRadiusBond3(r, C0, Ci, Cj, C11, C12,  C21,  C22, C31, C32, rs, type);
 		Cylinder_Draw_Color_Two(rs[0],C11,C12, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
 		Cylinder_Draw_Color_Two(rs[1],C21,C22, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
 		Cylinder_Draw_Color_Two(rs[2],C31,C32, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
@@ -9878,6 +9991,11 @@ static void gl_build_geometry()
 			}
 		}
         }
+/*
+	for(i=0;i<Natoms;i++)
+		for(j=i+1, nj = geometry[j].N-1;j<Natoms;j++, nj = geometry[j].N-1)
+			printf("%s[%d]-%s[%d] %d\n", geometry[i].Prop.symbol, geometry[i].N, geometry[j].Prop.symbol, geometry[j].N, geometry[i].typeConnections[nj]);
+*/
 }
 /*****************************************************************************/
 static void gl_build_selection()

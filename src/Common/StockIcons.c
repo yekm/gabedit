@@ -1,6 +1,6 @@
 /* StockIcons.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -66,6 +66,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../../pixmaps/MoveAtom.xpm"
 #include "../../pixmaps/MPQC.xpm"
 #include "../../pixmaps/NWChem.xpm"
+#include "../../pixmaps/NBO.xpm"
 #include "../../pixmaps/New.xpm"
 #include "../../pixmaps/Next.xpm"
 #include "../../pixmaps/No.xpm"
@@ -179,6 +180,7 @@ void gabedit_gtk_stock_init()
 	add_one_icon(icon_factory, GABEDIT_STOCK_DALTON, dalton_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_GAMESS, gamess_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_NWCHEM, nwchem_xpm);
+	add_one_icon(icon_factory, GABEDIT_STOCK_NBO, nbo_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_FIREFLY, firefly_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOVE_ATOM, move_atom_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MPQC, mpqc_xpm);

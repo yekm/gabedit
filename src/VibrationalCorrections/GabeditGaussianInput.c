@@ -1,6 +1,6 @@
 /* Vibration.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -753,7 +753,7 @@ gint getNumberOfFrequences(gchar* fileName)
 	FILE* file;
  	gint nf = 0;
 
- 	file = FOpen(fileName, "r"); 
+ 	file = FOpen(fileName, "rb"); 
         if(!file) return -1;
 	while(!feof(file))
 	{
@@ -778,7 +778,7 @@ static gboolean readFrequencesMassDelta(gchar* fileName, VibCorrections* vibCorr
 	gdouble d = 0;
 	
 
- 	file = FOpen(fileName, "r"); 
+ 	file = FOpen(fileName, "rb"); 
         if(!file) return -1;
 	while(!feof(file))
 	{
@@ -826,7 +826,7 @@ static gboolean readEnergies(gchar* fileName, VibCorrections* vibCorrections)
 	gint nAll = 0;
 	
 
- 	file = FOpen(fileName, "r"); 
+ 	file = FOpen(fileName, "rb"); 
         if(!file) return FALSE;
 	while(!feof(file))
 	{
@@ -1027,7 +1027,7 @@ static gboolean readShieldingTensors(gchar* fileName,VibCorrections* vibCorrecti
 	gint t;
 
 	if(nAtoms<1) return FALSE;
- 	file = FOpen(fileName, "r"); 
+ 	file = FOpen(fileName, "rb"); 
         if(!file) return FALSE;
     	sigmas0=g_malloc(nAtoms*sizeof(VibCorrectionsSigma));
     	sigmasP=g_malloc(nAtoms*sizeof(VibCorrectionsSigma));
@@ -1169,7 +1169,7 @@ static gboolean readSpinSpins(gchar* fileName,VibCorrections* vibCorrections)
 	gint t;
 
 	if(nAtoms<1) return FALSE;
- 	file = FOpen(fileName, "r"); 
+ 	file = FOpen(fileName, "rb"); 
         if(!file) return FALSE;
     	spinspins0=g_malloc(nAtoms*sizeof(gdouble*));
 	for(i=0;i<nAtoms;i++) spinspins0[i]=g_malloc(nAtoms*sizeof(gdouble));

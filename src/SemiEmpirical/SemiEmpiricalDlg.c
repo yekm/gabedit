@@ -1,6 +1,6 @@
 /* SemiEmpiricalDlg.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -127,7 +127,7 @@ static gboolean getEnergyMopac(gchar* fileNameOut, gdouble* energy)
 	gchar buffer[1024];
 	gchar* pdest = NULL;
 
- 	file = FOpen(fileNameOut, "r");
+ 	file = FOpen(fileNameOut, "rb");
 	if(!file) return FALSE;
 	 while(!feof(file))
 	 {
@@ -439,13 +439,13 @@ static gboolean runOneMopac(gchar* fileNamePrefix, gchar* keyWords)
 	fprintf(fileSH,"%s %s\n",NameCommandMopac,fileNameIn);
 	fclose(fileSH);
 	sprintf(buffer,"chmod u+x %s",fileNameSH);
-	system(buffer);
-	system(fileNameSH);
+	{int ierr= system(buffer);}
+	{int ierr = system(fileNameSH);}
 #else
 	fprintf(fileSH,"\"%s\" \"%s\"\n",NameCommandMopac,fileNameIn);
 	fclose(fileSH);
 	sprintf(buffer,"\"%s\"",fileNameSH);
-	system(buffer);
+	{int ierr= system(buffer);}
 #endif
 
 	fileNameOut = g_strdup_printf("%sOne.out",fileNamePrefix);
@@ -497,7 +497,7 @@ static gboolean getEnergyFireFly(gchar* fileNameOut, gdouble* energy)
 	gchar* pdest = NULL;
 	gboolean OK = FALSE;
 
- 	file = FOpen(fileNameOut, "r");
+ 	file = FOpen(fileNameOut, "rb");
 	if(!file) return FALSE;
 	 while(!feof(file))
 	 {
@@ -684,11 +684,11 @@ static gboolean runOneFireFly(gchar* fileNamePrefix, gchar* keyWords)
 	}
 #ifndef G_OS_WIN32
 	sprintf(buffer,"chmod u+x %s",fileNameSH);
-	system(buffer);
-	system(fileNameSH);
+	{int ierr= system(buffer);}
+	{int ierr = system(fileNameSH);}
 #else
 	sprintf(buffer,"\"%s\"",fileNameSH);
-	system(buffer);
+	{int ierr= system(buffer);}
 #endif
 	if(getEnergyFireFly(fileNameOut,&energy))
 	{
@@ -734,7 +734,7 @@ static gboolean getEnergyOrca(gchar* fileNameOut, gdouble* energy)
 	gchar* pdest = NULL;
 	gchar* energyTag = "FINAL SINGLE POINT ENERGY";
 
- 	file = FOpen(fileNameOut, "r");
+ 	file = FOpen(fileNameOut, "rb");
 	if(!file) return FALSE;
 	 while(!feof(file))
 	 {
@@ -982,11 +982,11 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
 	}
 #ifndef G_OS_WIN32
 	sprintf(buffer,"chmod u+x %s",fileNameSH);
-	system(buffer);
-	system(fileNameSH);
+	{int ierr= system(buffer);}
+	{int ierr = system(fileNameSH);}
 #else
 	sprintf(buffer,"\"%s\"",fileNameSH);
-	system(buffer);
+	{int ierr= system(buffer);}
 #endif
 	if(getEnergyOrca(fileNameOut,&energy))
 	{
@@ -2711,13 +2711,13 @@ static gboolean runOneOptMopac(SemiEmpiricalModel* geom, gdouble* energy, gchar*
 	fprintf(fileSH,"%s %s\n",NameCommandMopac,fileNameIn);
 	fclose(fileSH);
 	sprintf(buffer,"chmod u+x %s",fileNameSH);
-	system(buffer);
-	system(fileNameSH);
+	{int ierr= system(buffer);}
+	{int ierr = system(fileNameSH);}
 #else
 	fprintf(fileSH,"\"%s\" \"%s\"\n",NameCommandMopac,fileNameIn);
 	fclose(fileSH);
 	sprintf(buffer,"\"%s\"",fileNameSH);
-	system(buffer);
+	{int ierr= system(buffer);}
 #endif
 
 	fileNameOut = g_strdup_printf("%sOne.out",fileNamePrefix);
@@ -2911,11 +2911,11 @@ static gboolean runOneOptFireFly(SemiEmpiricalModel* geom, gdouble* energy, gcha
 	}
 #ifndef G_OS_WIN32
 	sprintf(buffer,"chmod u+x %s",fileNameSH);
-	system(buffer);
-	system(fileNameSH);
+	{int ierr= system(buffer);}
+	{int ierr = system(fileNameSH);}
 #else
 	sprintf(buffer,"\"%s\"",fileNameSH);
-	system(buffer);
+	{int ierr= system(buffer);}
 #endif
 	if(getEnergyFireFly(fileNameOut,energy))
 	{
@@ -3228,7 +3228,7 @@ static gboolean createMopacFiles(gint numberOfGeometries, SemiEmpiricalModel** g
 	{
 		gchar buffer[1024];
   		sprintf(buffer,"chmod u+x %s",fileNameSH);
-		system(buffer);
+		{int ierr= system(buffer);}
 	}
 #endif
  	if(fileName) g_free(fileName);
@@ -3294,7 +3294,7 @@ static gboolean createGaussianFiles(gint numberOfGeometries, SemiEmpiricalModel*
 	{
 		gchar buffer[1024];
   		sprintf(buffer,"chmod u+x %s",fileNameSH);
-		system(buffer);
+		{int ierr= system(buffer);}
 	}
 #endif
  	if(fileName) g_free(fileName);
@@ -3424,7 +3424,7 @@ static gboolean createFireFlyFiles(gint numberOfGeometries, SemiEmpiricalModel**
 	{
 		gchar buffer[1024];
   		sprintf(buffer,"chmod u+x %s",fileNameSH);
-		system(buffer);
+		{int ierr= system(buffer);}
 	}
 #endif
  	if(fileName) g_free(fileName);

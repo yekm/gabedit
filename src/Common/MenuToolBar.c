@@ -1,6 +1,6 @@
 /* MenuToolBar.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -238,6 +238,7 @@ static void activate_action (GtkAction *action)
 
 	else if(!strcmp(name,"ToolsVibCorrectionsGaussian")) {read_vibcorrection_gaussian_file_dlg(); }
 	else if(!strcmp(name,"ToolsAutoCorrelationGaussian")) {read_admp_build_dipole_dipole_autocorrelation_dlg(); }
+	else if(!strcmp(name,"ToolsAutoCorrelationDipole")) {read_dipole_build_dipole_dipole_autocorrelation_dlg(); }
 	else if(!strcmp(name,"ToolsIsotopeDistribution")) { compute_distribution_dlg(Fenetre, NULL); }
 
 	else if(!strcmp(name,"RunAbinitio")) {create_run();}
@@ -367,9 +368,10 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ToolsNMR2SpectrumTxt",  NULL, N_("Read NMR frequencies and intensities from an ASCII XY file(2 columns)"), NULL, "Txt", G_CALLBACK (activate_action) },
 
 	{"ToolsVibCorrections",  NULL, N_("Ro_vibrational corrections")},
-	{"ToolsVibCorrectionsGaussian",  NULL, N_("Read Gaussian output file for compute the ro-vibrational corrections"), NULL, "Gaussian", G_CALLBACK (activate_action) },
+	{"ToolsVibCorrectionsGaussian",  NULL, N_("Read Gaussian output file to compute the ro-vibrational corrections"), NULL, "Gaussian", G_CALLBACK (activate_action) },
 	{"ToolsAutoCorrelation",  NULL, N_("_Auto correlation")},
-	{"ToolsAutoCorrelationGaussian",  NULL, N_("Read Gaussian output file for compute the dipole-dipole auto correlation function"), NULL, "Gaussian", G_CALLBACK (activate_action) },
+	{"ToolsAutoCorrelationGaussian",  NULL, N_("Read Gaussian output file to compute the dipole-dipole auto correlation function"), NULL, "Gaussian", G_CALLBACK (activate_action) },
+	{"ToolsAutoCorrelationDipole",  NULL, N_("Read an assci text file (4 cols: time(fs),mux,muy,muz) to compute the dipole-dipole auto correlation function"), NULL, "TXT", G_CALLBACK (activate_action) },
 	{"ToolsIsotopeDistribution",  NULL, N_("Compute the isotope distribution for a molecule"), NULL, "Isotope distribution", G_CALLBACK (activate_action) },
 
 	{"Run",  NULL, N_("_Run")},
@@ -566,6 +568,7 @@ static const gchar *uiInfo =
 "      <separator name=\"sepAutoCorrelation\" />\n"
 "      <menu name=\"ToolsAutoCorrelation\" action=\"ToolsAutoCorrelation\">\n"
 "          <menuitem name=\"ToolsAutoCorrelationGaussian\" action=\"ToolsAutoCorrelationGaussian\" />\n"
+"          <menuitem name=\"ToolsAutoCorrelationDipole\" action=\"ToolsAutoCorrelationDipole\" />\n"
 "      </menu>\n"
 "    </menu>\n"
 "    <menu name=\"Run\" action=\"Run\">\n"

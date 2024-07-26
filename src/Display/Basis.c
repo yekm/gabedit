@@ -1,6 +1,6 @@
 /* Basis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -59,7 +59,7 @@ gint ReadCommandLines()
 	return 0;
   while(!feof(forb))
   {
-   fgets(t,taille,forb);
+    { char* e = fgets(t,taille,forb);}
    if(!strcmp(t," ") ||  !strcmp(t,"\n") )
         return 1; 
    if( t[0] != '#' )
@@ -161,7 +161,7 @@ gboolean ReadOneBasis(gint i,gint j,char *t,gint *nsym)
 		
 	for(k=0;k<Type[i].Ao[j].N;k++)
 	{
-		fgets(t,taille,forb);
+    		{ char* e = fgets(t,taille,forb);}
 		for(n=0;n<(gint)strlen(t);n++)
 			if(t[n]=='D') t[n] = 'e';
 		/*Debug("t de One = %s\n",t);*/
@@ -271,7 +271,7 @@ gboolean DefineBasisType(gchar *fileName)
 	ok = FALSE;
 	while(!feof(forb))
 	{
-		fgets(t,taille,forb);
+    		{ char* e = fgets(t,taille,forb);}
 		pdest = strstr(t,"asis set"); /* Basis for g98 and basis for g03 */
 		if(pdest != NULL)
 		{
@@ -306,7 +306,7 @@ gboolean DefineBasisType(gchar *fileName)
 			Type[i].Ao = NULL;
 		while(!feof(forb))
 		{
-			fgets(t,taille,forb);
+    			{ char* e = fgets(t,taille,forb);}
      			if(!strcmp(t,"\n") || !strcmp(t," ") )
      			{
 				g_free(sym);
@@ -339,7 +339,7 @@ gboolean DefineBasisType(gchar *fileName)
      					j=-1;
 					while(!feof(forb))
      					{
-     						fgets(t,taille,forb);
+    						{ char* e = fgets(t,taille,forb);}
      						if(!strcmp(t,"\n") || t[1]=='*') break;
      						j++;
         					Type[i].Norb=j+1;
@@ -426,7 +426,7 @@ static gint getNumberOfBasisCenters(gchar *fileName, gchar* title)
 	ok = FALSE;
 	while(!feof(forb))
 	{
-		fgets(t,BSIZE,forb);
+    		{ char* e = fgets(t,BSIZE,forb);}
 		if(strstr(t,title) != NULL)
 		{
 			ok = TRUE;
@@ -442,7 +442,7 @@ static gint getNumberOfBasisCenters(gchar *fileName, gchar* title)
 	nAtoms = 0;
 	while(!feof(forb))
 	{
-		fgets(t,BSIZE,forb);
+    		{ char* e = fgets(t,BSIZE,forb);}
 		if(this_is_a_backspace(t) || strstr(t,"[")) break;
 
 		/* printf("tt = %s\n",t);*/
@@ -452,7 +452,7 @@ static gint getNumberOfBasisCenters(gchar *fileName, gchar* title)
 			nAtoms++;
 			while(!feof(forb))
      			{
-     				fgets(t,BSIZE,forb);
+    				{ char* e = fgets(t,BSIZE,forb);}
      				if(this_is_a_backspace(t) || strstr(t,"[")) break;
      			}
 		}
@@ -498,7 +498,7 @@ gboolean DefineGabeditMoldenBasisType(gchar *fileName,gchar* title)
 	ok = FALSE;
 	while(!feof(forb))
 	{
-		fgets(t,taille,forb);
+    		{ char* e = fgets(t,taille,forb);}
 		pdest = strstr(t,title);
 		if(pdest != NULL)
 		{
@@ -539,7 +539,7 @@ gboolean DefineGabeditMoldenBasisType(gchar *fileName,gchar* title)
 		while(!feof(forb))
 		{
 			if(strstr(t,"[")) break;
-			fgets(t,taille,forb);
+    			{ char* e = fgets(t,taille,forb);}
 			/* Debug("tav = %s\n",t);*/
 			if(this_is_a_backspace(t) || strstr(t,"["))
      			{
@@ -577,7 +577,7 @@ gboolean DefineGabeditMoldenBasisType(gchar *fileName,gchar* title)
      					j=-1;
 					while(!feof(forb))
      					{
-     						fgets(t,taille,forb);
+    						{ char* e = fgets(t,taille,forb);}
 						/* Debug("t = %s\n",t);*/
      						if(this_is_a_backspace(t) || strstr(t,"["))
 				 		{
@@ -696,7 +696,7 @@ void PrintAllBasis()
 			 default :Debug("%s%d",XYZ[j],AOrb[k].Gtf[n].l[j]);
 			 }
 		 }
-			Debug("\t%9.6f %9.6f ",AOrb[k].Gtf[n].Ex,AOrb[k].Gtf[n].Coef);
+			Debug("\t%9.6f %9.6f \tC=%9.6f %9.6f %9.6f",AOrb[k].Gtf[n].Ex,AOrb[k].Gtf[n].Coef, AOrb[k].Gtf[n].C[0],AOrb[k].Gtf[n].C[1],AOrb[k].Gtf[n].C[2]);
 			Debug("\n");
 	 }
 	 Debug("\n");
@@ -714,6 +714,15 @@ void NormaliseAllBasis()
  for(k=0;k<NAOrb;k++)
 		 normaliseCGTF(&AOrb[k]);
 }
+/**********************************************/
+void NormaliseAllNoRadBasis()
+{
+ gint k;
+
+ for(k=0;k<NAOrb;k++)
+		 normaliseCGTF(&AOrb[k]);
+}
+/**********************************************/
 /**********************************************/
 void DefineAtomicNumOrb()
 {

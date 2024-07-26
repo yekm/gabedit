@@ -62,7 +62,7 @@ all: gabedit
 gabedit: $(SUBDIRS)
 	$(MKDIR) tmp
 	cp $(OBJECTS) tmp
-	$(CC) $(LDFLAGS) tmp/*.o -o gabedit $(GLTOPS) $(X11LIB) $(GTKLIB) $(OGLLIB) $(JPEGLIB) $(LIBPTHREAD) $(WIN32LIB) $(OMPLIB) -g
+	$(CC) $(LDFLAGS) tmp/*.o -o gabedit $(GLTOPS) $(X11LIB) $(GTKLIB) $(OGLLIB) $(JPEGLIB) $(LIBPTHREAD) $(WIN32LIB) $(OMPLIB) -g -lm
 	@$(RMTMP) > ptmp
 	rmdir tmp
 	@$(RM) ptmp

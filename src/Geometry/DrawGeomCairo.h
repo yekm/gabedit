@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -293,6 +293,7 @@ void copy_connections(GeomDef* geom0, GeomDef* geom, gint n);
 void set_optimal_geom_view();
 void getQuatGeom(gdouble q[]);
 void drawGeom();
+void getOptimalCiCj(gint i, gint j, gdouble* Ci, gdouble* Cj, gdouble* C0);
 
 #endif /* __GABEDIT_DRAWGEOMCAIRO_H__ */
 

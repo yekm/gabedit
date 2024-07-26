@@ -1,6 +1,6 @@
 /* Utils.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -286,7 +286,7 @@ void filegets(gchar *temp,FILE* fd)
  	gint k = 0;
  	gint i;
  
- 	fgets(t,taille,fd);
+    	if(!feof(fd)) { char* e = fgets(t,taille,fd);}
 	for(i=0;i<taille;i++)
  	{
   		if(t[i] =='\n')
@@ -506,7 +506,7 @@ gchar* cat_file(gchar* namefile,gboolean tabulation)
 
  t=g_malloc(BBSIZE*sizeof(gchar));
 
- fd = FOpen(namefile, "r");
+ fd = FOpen(namefile, "rb");
  if(fd)
  {
   	while(!feof(fd))
@@ -561,11 +561,11 @@ gchar *run_command(gchar *command)
  gint taille = BBSIZE;
 
  temp = g_strdup_printf("sh -c '%s >%s 2>%s'",command,outfile,errfile);
- system(temp);
+ {int it = system(temp);}
 
  t=g_malloc(taille);
 
- fd = FOpen(errfile, "r");
+ fd = FOpen(errfile, "rb");
  if(fd)
  {
   	while(!feof(fd))
@@ -587,7 +587,7 @@ gchar *run_command(gchar *command)
  else
    terr = NULL;
 
- fd = FOpen(outfile, "r");
+ fd = FOpen(outfile, "rb");
  if(fd)
  {
 	unlink (outfile);
@@ -1326,7 +1326,7 @@ void read_opengl_file()
 
 	openglfile = g_strdup_printf("%s%sopengl",gabedit_directory(),G_DIR_SEPARATOR_S);
 
-	fd = fopen(openglfile, "r");
+	fd = fopen(openglfile, "rb");
 	openGLOptions.rgba = 1;
 	openGLOptions.doubleBuffer = 1;
 	openGLOptions.alphaSize = 0;
@@ -1449,22 +1449,25 @@ void read_hosts_file()
 
  hostsfile = g_strdup_printf("%s%shosts",gabedit_directory(),G_DIR_SEPARATOR_S);
 
- fd = FOpen(hostsfile, "r");
+ fd = FOpen(hostsfile, "rb");
  if(fd)
  {
-	fgets(t,len,fd);recenthosts.nhosts = atoi(t);
+    	if(!feof(fd)) { char* e = fgets(t,len,fd);}
+	recenthosts.nhosts = atoi(t);
 	recenthosts.hosts = g_malloc(recenthosts.nhosts*sizeof(Host));
 	for(i=0;i<recenthosts.nhosts;i++)
 	{
 		filegets(t,fd);recenthosts.hosts[i].hostname = g_strdup(t);
-		fgets(t,len,fd);recenthosts.hosts[i].nusers = atoi(t);
+    		if(!feof(fd)) { char* e = fgets(t,len,fd);}
+		recenthosts.hosts[i].nusers = atoi(t);
 		recenthosts.hosts[i].users = g_malloc(recenthosts.hosts[i].nusers*sizeof(User));
 		for(j=0;j<recenthosts.hosts[i].nusers;j++)
 		{
 			filegets(t,fd);
 				recenthosts.hosts[i].users[j].username = g_strdup(t);
 				recenthosts.hosts[i].users[j].password = NULL;
-			fgets(t,len,fd);recenthosts.hosts[i].users[j].ndirs = atoi(t);
+    			if(!feof(fd)) { char* e = fgets(t,len,fd);}
+			recenthosts.hosts[i].users[j].ndirs = atoi(t);
 			recenthosts.hosts[i].users[j].dirs = g_malloc(recenthosts.hosts[i].users[j].ndirs*sizeof(gchar*));
 			for(k=0;k<recenthosts.hosts[i].users[j].ndirs;k++)
 			{
@@ -1488,7 +1491,7 @@ void read_fonts_in_file(FILE *fd,FontsStyle* fontsstyle)
 
 	t = g_malloc0(taille*sizeof(gchar));
 	temp = g_malloc0(taille*sizeof(gchar));
-	fgets(t,taille,fd);
+    	if(!feof(fd)) { char* e = fgets(t,taille,fd);}
  
 	k = 0;
 	for(i=0;i<(gint)taille;i++)
@@ -1503,13 +1506,19 @@ void read_fonts_in_file(FILE *fd,FontsStyle* fontsstyle)
 
 	fontsstyle->fontname= g_strdup(temp);
 
-	fgets(t,taille,fd);fontsstyle->BaseColor.red =(gushort) atoi(t);
-	fgets(t,taille,fd);fontsstyle->BaseColor.green =(gushort)  atoi(t);
-	fgets(t,taille,fd);fontsstyle->BaseColor.blue = (gushort) atoi(t);
+    	if(!feof(fd)) { char* e = fgets(t,taille,fd);}
+	fontsstyle->BaseColor.red =(gushort) atoi(t);
+    	if(!feof(fd)) { char* e = fgets(t,taille,fd);}
+	fontsstyle->BaseColor.green =(gushort)  atoi(t);
+    	if(!feof(fd)) { char* e = fgets(t,taille,fd);}
+	fontsstyle->BaseColor.blue = (gushort) atoi(t);
  
-	fgets(t,taille,fd);fontsstyle->TextColor.red = (gushort) atoi(t);
-	fgets(t,taille,fd);fontsstyle->TextColor.green = (gushort) atoi(t);
-	fgets(t,taille,fd);fontsstyle->TextColor.blue = (gushort) atoi(t);                                                                                          
+    	if(!feof(fd)) { char* e = fgets(t,taille,fd);}
+	fontsstyle->TextColor.red = (gushort) atoi(t);
+    	if(!feof(fd)) { char* e = fgets(t,taille,fd);}
+	fontsstyle->TextColor.green = (gushort) atoi(t);
+    	if(!feof(fd)) { char* e = fgets(t,taille,fd);}
+	fontsstyle->TextColor.blue = (gushort) atoi(t);                                                                                          
 	g_free(t);
 	g_free(temp);
 }
@@ -1521,7 +1530,7 @@ void read_fonts_file()
 
  fontsfile = g_strdup_printf("%s%sfonts",gabedit_directory(),G_DIR_SEPARATOR_S);
 
- fd = FOpen(fontsfile, "r");
+ fd = FOpen(fontsfile, "rb");
  if(fd !=NULL)
  {
  	read_fonts_in_file(fd,&FontsStyleData);
@@ -1597,7 +1606,7 @@ void read_commands_file()
 
  commandsfile = g_strdup_printf("%s%scommands",gabedit_directory(),G_DIR_SEPARATOR_S);
 
- fd = FOpen(commandsfile, "r");
+ fd = FOpen(commandsfile, "rb");
  if(fd !=NULL)
  {
 
@@ -2586,7 +2595,7 @@ void read_network_file()
 
  networkfile = g_strdup_printf("%s%snetwork",gabedit_directory(),G_DIR_SEPARATOR_S);
 
- fd = FOpen(networkfile, "r");
+ fd = FOpen(networkfile, "rb");
  if(fd !=NULL)
  {
  	guint taille = BBSIZE;
@@ -2864,40 +2873,31 @@ void lowercase(gchar *str)
     str ++;
   }
 }
+#ifdef G_OS_WIN32
+PangoFontDescription *reset_fonts(gchar* fname)
+{
+	if(FontsStyleOther.fontname) g_free(FontsStyleOther.fontname);
+	FontsStyleOther.fontname = g_strdup(fname);
+       	if(FontsStyleData.fontname)g_free(FontsStyleData.fontname);
+       	FontsStyleData.fontname = g_strdup(fname);
+       	if(FontsStyleResult.fontname) g_free(FontsStyleResult.fontname);
+       	FontsStyleResult.fontname = g_strdup(fname);
+  	return pango_font_description_from_string (fname);
+}
+#endif
 /*************************************************************************************/
 void initialise_fonts_style()
 {
 #ifdef G_OS_WIN32
-        FontsStyleData.fontname = g_strdup("courier 12");
-        FontsStyleResult.fontname = g_strdup("courier 12");
-	FontsStyleOther.fontname = g_strdup("sans 12");
-	{
-  		PangoFontDescription *font_desc;
-  		font_desc = pango_font_description_from_string (FontsStyleOther.fontname);
-		if(!font_desc)
-		{
-			g_free(FontsStyleOther.fontname);
-			FontsStyleOther.fontname = g_strdup("sans 12");
-  			font_desc = pango_font_description_from_string (FontsStyleOther.fontname);
-			if(!font_desc)
-			{
-				g_free(FontsStyleOther.fontname );
-				FontsStyleOther.fontname = g_strdup("helvetica 12");
-			}
-			/*
-			else
-			pango_font_description_free (font_desc);
-			*/
-			
-		}
-		/*
-		else
-		pango_font_description_free (font_desc);
-		*/
-	}
-
+        FontsStyleData.fontname = NULL;
+        FontsStyleResult.fontname = NULL;
+	FontsStyleOther.fontname = NULL;
+	/*if(!reset_fonts("courier 12"))*/
+	if(!reset_fonts("monospace 12"))
+	if(!reset_fonts("sans 12"))
+	reset_fonts("helvetica 12");
 	FontsStyleLabel.fontname=g_strdup("sans bold 12");
-
+	FontsStyleOther.fontname = g_strdup("sans 12");
 #else
         FontsStyleData.fontname = g_strdup("courier 14");
         FontsStyleResult.fontname = g_strdup("courier bold 12");
@@ -3682,13 +3682,13 @@ void get_dipole_from_gaussian_output_file(FILE* fd)
 	{
     		pdest = NULL;
 		Dipole.def = FALSE;
-    		fgets(t,taille,fd);
+    		if(!feof(fd)) { char* e = fgets(t,taille,fd);}
     		pdest = strstr( t, "Dipole moment (Debye)");
 
 		if(strstr( t, "Dipole moment") && strstr( t, "Debye")) /* field-independent basis */
 		{
     		if(!feof(fd))
-			fgets(t,taille,fd);
+    			if(!feof(fd)) { char* e = fgets(t,taille,fd);}
 		else
 			break;
 		Dipole.def = TRUE;
@@ -3734,7 +3734,7 @@ void get_dipole_from_molpro_output_file(FILE* fd)
   	while(!feof(fd) )
 	{
     		t1 = NULL;
-    		fgets(t,taille,fd);
+    		if(!feof(fd)) { char* e = fgets(t,taille,fd);}
     		t1 = strstr( t, "DIPOLE MOMENTS:");
 
 		if(t1)
@@ -3818,7 +3818,7 @@ void get_dipole_from_orca_output_file(FILE* fd)
 	{
     		pdest = NULL;
 		Dipole.def = FALSE;
-    		fgets(t,taille,fd);
+    		if(!feof(fd)) { char* e = fgets(t,taille,fd);}
     		pdest = strstr( t, "Total Dipole Moment");
 
 		if(pdest && strstr( t,":"))
@@ -3844,7 +3844,7 @@ void get_dipole_from_nwchem_output_file(FILE* fd)
 	{
     		pdest = NULL;
 		Dipole.def = FALSE;
-    		fgets(t,taille,fd);
+    		if(!feof(fd)) { char* e = fgets(t,taille,fd);}
     		pdest = strstr( t, "Nuclear Dipole moment");
 		if(pdest)
 		{
@@ -3882,12 +3882,12 @@ void get_dipole_from_qchem_output_file(FILE* fd)
 	{
     		pdest = NULL;
 		Dipole.def = FALSE;
-    		fgets(t,taille,fd);
+    		if(!feof(fd)) { char* e = fgets(t,taille,fd);}
     		pdest = strstr( t, "Dipole Moment (Debye)");
 
 		if(pdest)
 		{
-    		if(!feof(fd)) fgets(t,taille,fd);
+    		if(!feof(fd)) { char* e = fgets(t,taille,fd);}
 		else break;
 		Dipole.def = TRUE;
     		pdest = strstr( t, "X")+2;
@@ -3927,7 +3927,7 @@ void get_dipole_from_mopac_output_file(FILE* fd)
 	{
     		pdest = NULL;
 		Dipole.def = FALSE;
-    		fgets(t,taille,fd);
+    		if(!feof(fd)) { char* e = fgets(t,taille,fd);}
     		pdest = strstr( t, "DIPOLE           X         Y         Z");
 
 		if(pdest)
@@ -3957,7 +3957,7 @@ void get_dipole_from_mopac_aux_file(FILE* fd)
 	{
     		pdest = NULL;
 		Dipole.def = FALSE;
-    		fgets(t,BBSIZE,fd);
+    		if(!feof(fd)) { char* e = fgets(t,BBSIZE,fd);}
     		pdest = strstr( t, "DIPOLE:DEBYE=");
 
 		if(pdest)
@@ -4573,7 +4573,7 @@ gboolean zmat_mopac_irc_output_file(gchar *FileName)
 {
  	guint taille=BBSIZE;
   	gchar t[BBSIZE];
- 	FILE* fd = FOpen(FileName, "r");
+ 	FILE* fd = FOpen(FileName, "rb");
 
 	if(!fd) return FALSE;
   	while(!feof(fd) )
@@ -4591,7 +4591,7 @@ gboolean zmat_mopac_scan_output_file(gchar *FileName)
 {
  	guint taille=BBSIZE;
   	gchar t[BBSIZE];
- 	FILE* fd = FOpen(FileName, "r");
+ 	FILE* fd = FOpen(FileName, "rb");
 
 	if(!fd) return FALSE;
   	while(!feof(fd) )
@@ -4649,7 +4649,7 @@ GabEditTypeFile get_type_output_file(gchar* fileName)
  	t=g_malloc(taille*sizeof(gchar));
 
 	rewind(file);
-	fgets(t,taille,file);
+    	if(!feof(file)) { char* e = fgets(t,taille,file);}
 	g_strup(t);
         if(strstr(t, "ENTERING" )) ktype = GABEDIT_TYPEFILE_GAUSSIAN;
 	else if(strstr( t, "[MOLDEN FORMAT]" )) ktype = GABEDIT_TYPEFILE_MOLDEN;
@@ -4660,7 +4660,7 @@ GabEditTypeFile get_type_output_file(gchar* fileName)
 	{
 		while(!feof(file))
 		{
-			fgets(t,taille,file);
+    			if(!feof(file)) { char* e = fgets(t,taille,file);}
 			if(strstr(t,"PROGRAM SYSTEM MOLPRO"))
 			{
 				ktype = GABEDIT_TYPEFILE_MOLPRO;
@@ -4699,7 +4699,7 @@ GabEditTypeFile get_type_output_file(gchar* fileName)
 	{
 		while(!feof(file))
 		{
-			fgets(t,taille,file);
+    			if(!feof(file)) { char* e = fgets(t,taille,file);}
 			if(strstr(t,"* O   R   C   A *"))
 			{
 				ktype = GABEDIT_TYPEFILE_ORCA;
@@ -4712,10 +4712,10 @@ GabEditTypeFile get_type_output_file(gchar* fileName)
 	{
 		while(!feof(file))
 		{
-			fgets(t,taille,file);
+    			if(!feof(file)) { char* e = fgets(t,taille,file);}
 			if(strstr(t,"GAMESS"))
 			{
-				fgets(t,taille,file);
+    				if(!feof(file)) { char* e = fgets(t,taille,file);}
 				if(strstr(t,"FROM IOWA STATE UNIVERSITY"))
 				ktype = GABEDIT_TYPEFILE_GAMESS;
 				break;
@@ -4725,7 +4725,7 @@ GabEditTypeFile get_type_output_file(gchar* fileName)
 	rewind(file);
 	if( ktype == GABEDIT_TYPEFILE_UNKNOWN)
 	{
-		fgets(t,taille,file);
+    		if(!feof(file)) { char* e = fgets(t,taille,file);}
 		if(strstr(t,"START OF MOPAC FILE"))
 			ktype = GABEDIT_TYPEFILE_MOPAC_AUX;
 	}
@@ -5055,13 +5055,30 @@ void getvScaleBond(gdouble r, gdouble Center1[], gdouble Center2[], gdouble vSca
 		v3d_normal(vScal);
 		v3d_scale(vScal, r*0.5);
 	}
+	else
+	{
+        	gdouble d = 0;
+		gint j,k;
+		/* printf("Warning vScal in getvScaleBond/Utils.c = 0\n");*/
+		v3d_normal(sub);
+/*      find an orthogonal vector to CC1-CC2 */
+		k = 0;
+        	for(j=1;j<3;j++) if(fabs(sub[k])>fabs(sub[j])) k = j;
+        	for(j=0;j<3;j++) vScal[j] = -sub[k] * sub[j];
+        	vScal[k] += 1.0;
+		v3d_normal(vScal);
+		v3d_scale(vScal, r*0.5);
+	}
 }
 /*************************************************************************************/
-void getPositionsRadiusBond3(gdouble r, gdouble Ci[], gdouble Cj[], gdouble C11[], gdouble C12[],  gdouble C21[],  gdouble C22[], gdouble C31[],  gdouble C32[], gdouble radius[], gint type)
+void getPositionsRadiusBond3(gdouble r, gdouble Orig[], gdouble Ci[], gdouble Cj[], gdouble C11[], gdouble C12[],  gdouble C21[],  gdouble C22[], gdouble C31[],  gdouble C32[], gdouble radius[], gint type)
 {
 	gdouble s = 1.8;
 	V3d vScal;
 	gint k;
+
+	for(k=0;k<3;k++) Ci[k] -= Orig[k];
+	for(k=0;k<3;k++) Cj[k] -= Orig[k];
 
 	getvScaleBond(r, Ci, Cj, vScal);
 	if(type==0)
@@ -5073,7 +5090,7 @@ void getPositionsRadiusBond3(gdouble r, gdouble Ci[], gdouble Cj[], gdouble C11[
 	}
 	else
 	{
-		s = 2;
+		s = 2.8;
 		radius[0] = r/2;
 		radius[1] = r/2;
 		radius[2] = r/2;
@@ -5085,15 +5102,25 @@ void getPositionsRadiusBond3(gdouble r, gdouble Ci[], gdouble Cj[], gdouble C11[
 	for(k=0;k<3;k++) C31[k] = Ci[k]+s*vScal[k];
 	for(k=0;k<3;k++) C32[k] = Cj[k]+s*vScal[k];
 
+	for(k=0;k<3;k++) Ci[k] += Orig[k];
+	for(k=0;k<3;k++) Cj[k] += Orig[k];
+	for(k=0;k<3;k++) C11[k] += Orig[k]; 
+	for(k=0;k<3;k++) C12[k] += Orig[k]; 
+	for(k=0;k<3;k++) C21[k] += Orig[k]; 
+	for(k=0;k<3;k++) C22[k] += Orig[k]; 
+	for(k=0;k<3;k++) C31[k] += Orig[k]; 
+	for(k=0;k<3;k++) C32[k] += Orig[k]; 
 }
 /*************************************************************************************/
-void getPositionsRadiusBond2(gdouble r, gdouble Ci[], gdouble Cj[], gdouble C11[], gdouble C12[],  gdouble C21[],  gdouble C22[], gdouble radius[], gint type)
+void getPositionsRadiusBond2(gdouble r, gdouble Orig[], gdouble Ci[], gdouble Cj[], gdouble C11[], gdouble C12[],  gdouble C21[],  gdouble C22[], gdouble radius[], gint type)
 {
 /* type=0=>stick, type=1=>ball&stick */
 	gdouble s = 1.5;
 	V3d vScal;
 	gint k;
 
+	for(k=0;k<3;k++) Ci[k] -= Orig[k];
+	for(k=0;k<3;k++) Cj[k] -= Orig[k];
 	getvScaleBond(r, Ci, Cj, vScal);
 		
 	radius[2] = 0;
@@ -5117,4 +5144,10 @@ void getPositionsRadiusBond2(gdouble r, gdouble Ci[], gdouble Cj[], gdouble C11[
 		for(k=0;k<3;k++) C21[k] = Ci[k]+s*vScal[k];
 		for(k=0;k<3;k++) C22[k] = Cj[k]+s*vScal[k];
 	}
+	for(k=0;k<3;k++) Ci[k] += Orig[k];
+	for(k=0;k<3;k++) Cj[k] += Orig[k];
+	for(k=0;k<3;k++) C11[k] += Orig[k]; 
+	for(k=0;k<3;k++) C12[k] += Orig[k]; 
+	for(k=0;k<3;k++) C21[k] += Orig[k]; 
+	for(k=0;k<3;k++) C22[k] += Orig[k]; 
 }

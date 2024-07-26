@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -162,8 +162,8 @@ gint* get_array_int_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* 
 gdouble* get_array_real_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* nElements);
 gchar** get_array_string_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* nElements);
 void getvScaleBond(gdouble r, gdouble Center1[], gdouble Center2[], gdouble vScal[]);
-void getPositionsRadiusBond3(gdouble r, gdouble Center1[], gdouble Center2[], gdouble C11[], gdouble C12[],  gdouble C21[],  gdouble C22[], gdouble C31[],  gdouble C32[], gdouble radius[], gint type);
-void getPositionsRadiusBond2(gdouble r, gdouble Center1[], gdouble Center2[], gdouble C11[], gdouble C12[],  gdouble C21[],  gdouble C22[], gdouble radius[], gint type);
+void getPositionsRadiusBond3(gdouble r, gdouble Orig[], gdouble Center1[], gdouble Center2[], gdouble C11[], gdouble C12[],  gdouble C21[],  gdouble C22[], gdouble C31[],  gdouble C32[], gdouble radius[], gint type);
+void getPositionsRadiusBond2(gdouble r, gdouble Orig[], gdouble Center1[], gdouble Center2[], gdouble C11[], gdouble C12[],  gdouble C21[],  gdouble C22[], gdouble radius[], gint type);
 gdouble get_multipole_rank();
 
 #endif /* __GABEDIT_UTILS_H__ */

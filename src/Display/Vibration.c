@@ -1,6 +1,6 @@
 /* Vibration.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1307,7 +1307,7 @@ static gboolean read_gabedit_molden_geom(gchar *FileName)
  	OK=FALSE;
  	while(fd && !feof(fd))
 	{
-		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
 	 	if ( strstr( t,"[FR-COORD]") )
 	  	{
 			OK = TRUE;
@@ -1333,7 +1333,7 @@ static gboolean read_gabedit_molden_geom(gchar *FileName)
 	j = 0;
   	while(!feof(fd) && OK )
   	{
-    		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
 		if(strstr(t,"[")) break;
 		if(this_is_a_backspace(t)) break;
 		ne = sscanf(t,"%s %lf %lf %lf",sdum,&GeomOrb[j].C[0],&GeomOrb[j].C[1],&GeomOrb[j].C[2]);
@@ -1383,7 +1383,7 @@ static gboolean read_gabedit_molden_frequencies(gchar *FileName)
  	OK=FALSE;
  	while(fd && !feof(fd))
 	{
-		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
 	 	if ( strstr( t,"[FREQ]") )
 	  	{
 			OK = TRUE;
@@ -1483,7 +1483,7 @@ static gboolean read_gabedit_molden_modes(gchar *FileName)
  	OK=FALSE;
  	while(fd && !feof(fd))
 	{
-		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
 	 	if ( strstr( t,"[FR-NORM-COORD]") )
 	  	{
 			OK = TRUE;
@@ -2072,7 +2072,7 @@ static gboolean read_molpro_geom(FILE*fd, gchar *FileName)
  	OK=FALSE;
  	while(!feof(fd))
 	{
-		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
 	 	if ( strstr( t,"FREQUENCIES * CALCULATION OF NORMAL MODES") )
 	  	{
 			OK = TRUE;
@@ -2092,12 +2092,12 @@ static gboolean read_molpro_geom(FILE*fd, gchar *FileName)
 		OK = FALSE;
  		while(!feof(fd))
 		{
-			fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 			
 			/* printf("t=%s\n",t);*/
 	 		if ( strstr( t,"Nr  Atom") )
 	  		{
-				fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 				OK = TRUE;
 				break;
 	  		}
@@ -2122,7 +2122,7 @@ static gboolean read_molpro_geom(FILE*fd, gchar *FileName)
 	j = 0;
   	while(!feof(fd) && OK )
   	{
-    		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
 		if(this_is_a_backspace(t))
 			break;
 		ne = sscanf(t,"%s %s %s %lf %lf %lf",
@@ -2183,7 +2183,7 @@ static gint read_molpro_modes_str(FILE* fd, gchar *FileName, gchar* str)
  	OK=FALSE;
  	while(!feof(fd))
 	{
-		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
 	 	if ( strstr( t,str) )
 	  	{
 			OK = TRUE;
@@ -2378,8 +2378,8 @@ static gboolean read_dalton_geom(FILE* file, gchar *FileName)
 			if ( strstr(t,"Vibrational Frequencies") || strstr(t,"Vibrational frequencies")) break;
 			if ( strstr(t,"geometry (au)"))
 			{
-	  			fgets(t,taille,file);
-	  			fgets(t,taille,file);
+    				{ char* e = fgets(t,taille,file);}
+    				{ char* e = fgets(t,taille,file);}
  				numgeom++;
                 		OK = TRUE;
 	  			break;
@@ -2401,7 +2401,7 @@ static gboolean read_dalton_geom(FILE* file, gchar *FileName)
   		j=-1;
   		while(!feof(file) )
   		{
-			fgets(t,taille,file);
+    			{ char* e = fgets(t,taille,file);}
 			if ( !strcmp(t,"\n"))
 			{
 				/* get_dipole_from_dalton_output_file(file);*/
@@ -2814,7 +2814,7 @@ static gboolean read_gamess_geom(FILE* file, gchar *FileName)
 			if ( strstr(t,"FREQUENCIES IN") && strstr(t,"IR INTENSITIES IN")) break;
 			if ( strstr(t,"COORDINATES (BOHR)"))
 			{
-	  			fgets(t,taille,file);
+    				{ char* e = fgets(t,taille,file);}
  				numgeom++;
                 		OK = TRUE;
 	  			break;
@@ -2836,7 +2836,7 @@ static gboolean read_gamess_geom(FILE* file, gchar *FileName)
   		j=-1;
   		while(!feof(file) )
   		{
-			fgets(t,taille,file);
+    			{ char* e = fgets(t,taille,file);}
 			if ( !strcmp(t,"\n"))
 			{
 				/* get_dipole_from_gamess_output_file(file);*/
@@ -3122,7 +3122,7 @@ static gboolean read_gaussian_file_frequencies(gchar *FileName)
  		OK=FALSE;
  		while(!feof(fd))
 		{
-	  		fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 	 		/* if ( strstr( t,"reduced masses") )*/
 	 		if ( strstr( t,"and normal coordinates:") )
 	  		{
@@ -3132,7 +3132,7 @@ static gboolean read_gaussian_file_frequencies(gchar *FileName)
 		}
   		while(!feof(fd) )
   		{
-    			fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 			if(this_is_a_backspace(t)) break;
 			nf = sscanf(t,"%d %d %d",&idum,&idum,&idum);
 			if(nf<0 || nf>3)
@@ -3147,7 +3147,7 @@ static gboolean read_gaussian_file_frequencies(gchar *FileName)
 			sscanf(t,"%s %s %lf %lf %lf", sdum1,sdum2, &freq[0],&freq[1],&freq[2]);
 			while(!feof(fd))
 			{
-    				fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 				if(strstr(t,"Red."))
 				{
 					changeDInE(t); 
@@ -3157,7 +3157,7 @@ static gboolean read_gaussian_file_frequencies(gchar *FileName)
 			}
 			while(!feof(fd))
 			{
-    				fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 				if(strstr(t,"IR Inten"))
 				{
 					changeDInE(t); 
@@ -3167,7 +3167,7 @@ static gboolean read_gaussian_file_frequencies(gchar *FileName)
 			}
 			while(!feof(fd))
 			{
-    				fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 				if(strstr(t,"Raman"))
 				{
 					changeDInE(t); 
@@ -3180,7 +3180,7 @@ static gboolean read_gaussian_file_frequencies(gchar *FileName)
 			if(!(strstr(t,"Atom ") && strstr(t," AN")))
 			while(!feof(fd))
 			{
-    				fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 				if(strstr(t,"Atom ") && strstr(t," AN")) break;
 			}
 			nfOld = vibration.numberOfFrequences;
@@ -3348,7 +3348,7 @@ static gboolean read_adf_geom(FILE*fd, gchar *FileName)
  	OK=FALSE;
  	while(!feof(fd))
 	{
-		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
 	 	if ( strstr( t,"*  F R E Q U E N C I E S  *") )
 	  	{
 			OK = TRUE;
@@ -3361,7 +3361,7 @@ static gboolean read_adf_geom(FILE*fd, gchar *FileName)
 		OK = FALSE;
  		while(!feof(fd))
 		{
-			fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 	 		if ( strstr( t,"Atomic Masses") )
 			{
 				OK = FALSE;
@@ -3380,7 +3380,7 @@ static gboolean read_adf_geom(FILE*fd, gchar *FileName)
 		OK = FALSE;
  		while(!feof(fd))
 		{
-			fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 	 		if ( strstr( t,"-----------------------") )
 	  		{
 				OK = TRUE;
@@ -3408,7 +3408,7 @@ static gboolean read_adf_geom(FILE*fd, gchar *FileName)
 	j = 0;
   	while(!feof(fd) && OK )
   	{
-    		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
 		if(this_is_a_backspace(t)) break;
 		if(strstr(t,"---------------------")) break;
 
@@ -3471,7 +3471,7 @@ static gboolean read_adf_modes(FILE* fd, gchar *FileName)
  	OK=FALSE;
  	while(!feof(fd))
 	{
-		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
 		/* printf("%s",t);*/
 	 	if ( strstr( t,"Vibrations and Normal Modes") )
 	  	{
@@ -3502,8 +3502,8 @@ static gboolean read_adf_modes(FILE* fd, gchar *FileName)
 
   	while(!feof(fd))
   	{
-		fgets(t,taille,fd);
-		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
+    		{ char* e = fgets(t,taille,fd);}
 		if(!fgets(t,taille,fd))
 		{
 			gchar buffer[BSIZE];
@@ -3560,7 +3560,7 @@ static gboolean read_adf_modes(FILE* fd, gchar *FileName)
 	OK = FALSE;
  	while(!feof(fd))
 	{
-		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
 	 	if ( strstr( t,"Frequency") && strstr( t,"Dipole Strength") )
 	  	{
 			OK = TRUE;
@@ -3569,8 +3569,8 @@ static gboolean read_adf_modes(FILE* fd, gchar *FileName)
 	}
 	if(OK)
 	{
-    		fgets(t,taille,fd);
-    		fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
+    		{ char* e = fgets(t,taille,fd);}
 		for(i=0;i<vibration.numberOfFrequences;i++)
 		{
     			if(!fgets(t,taille,fd)) break;
@@ -3790,7 +3790,7 @@ static gboolean read_qchem_file_frequencies(gchar *FileName)
  		OK=FALSE;
  		while(!feof(fd))
 		{
-	  		fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 	 		if (strstr( t,"VIBRATIONAL ANALYSIS") ) OK = TRUE;
 	 		if (strstr( t,"Mode:") && OK ){ OK = TRUE; break;}
 		}
@@ -3813,7 +3813,7 @@ static gboolean read_qchem_file_frequencies(gchar *FileName)
 			sscanf(t,"%s %lf %lf %lf", sdum1, &freq[0],&freq[1],&freq[2]);
 			while(!feof(fd))
 			{
-    				fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 				if(strstr(t,"Red."))
 				{
 					sscanf(t,"%s %s %lf %lf %lf", sdum1,sdum2, &mass[0],&mass[1],&mass[2]);
@@ -3822,7 +3822,7 @@ static gboolean read_qchem_file_frequencies(gchar *FileName)
 			}
 			while(!feof(fd))
 			{
-    				fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 				if(strstr(t,"IR Intens:"))
 				{
 					sscanf(t,"%s %s %lf %lf %lf", sdum1,sdum2, &IRIntensity[0],&IRIntensity[1],&IRIntensity[2]);
@@ -3835,7 +3835,7 @@ static gboolean read_qchem_file_frequencies(gchar *FileName)
 			if(!strstr(t,"X      Y      Z"))
 			while(!feof(fd))
 			{
-    				fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 				if(strstr(t,"X      Y      Z")) break;
 			}
 			nfOld = vibration.numberOfFrequences;
@@ -3963,15 +3963,15 @@ static gboolean read_nwchem_file_frequencies(gchar *FileName)
 		gint ns = 0;
  		while(!feof(fd))
 		{
-	  		fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 	 		if (strstr( t,"NWChem Nuclear Hessian and Frequency Analysis") ) ns++;
 	 		if (strstr( t,"via the Eckart algorithm") ) ns++;
 	 		if (strstr( t,"NORMAL MODE EIGENVECTORS IN CARTESIAN COORDINATES") && ns>=2 )
 			{
-	  			fgets(t,taille,fd);
-	  			fgets(t,taille,fd);
-	  			fgets(t,taille,fd);
-	  			fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
+    				{ char* e = fgets(t,taille,fd);}
+    				{ char* e = fgets(t,taille,fd);}
+    				{ char* e = fgets(t,taille,fd);}
 				OK = TRUE; 
 				break;
 			}
@@ -4120,7 +4120,7 @@ static gboolean read_orca_file_frequencies(gchar *FileName)
  		OK=FALSE;
  		while(!feof(fd))
 		{
-	  		fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 	 		if (strstr( t,"VIBRATIONAL FREQUENCIES") ) OK = TRUE;
 	 		if (strstr( t,":") && OK ){ OK = TRUE; break;}
 		}
@@ -4144,7 +4144,7 @@ static gboolean read_orca_file_frequencies(gchar *FileName)
  		OK=FALSE;
  		while(!feof(fd))
 		{
-	  		fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 	 		if (strstr( t,"NORMAL MODES") ) OK = TRUE;
 	 		if (sscanf(t,"%d",&k)==1 && OK ){ OK = TRUE; break;}
 		}
@@ -4183,12 +4183,12 @@ static gboolean read_orca_file_frequencies(gchar *FileName)
  		OK=FALSE;
  		while(!feof(fd))
 		{
-	  		fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 	 		if (strstr( t,"IR SPECTRUM") ) OK = TRUE;
 	 		if (strstr( t,"TX")  && strstr( t,"TY") && strstr( t,"TZ") && OK ){ OK = TRUE; break;}
 		}
 		if(!OK) {continue;}
-	  	fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
   		while(!feof(fd) )
   		{
 			if(!fgets(t,taille,fd)) break;
@@ -4201,12 +4201,12 @@ static gboolean read_orca_file_frequencies(gchar *FileName)
  		OK=FALSE;
  		while(!feof(fd))
 		{
-	  		fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 	 		if (strstr( t,"RAMAN SPECTRUM") ) OK = TRUE;
 	 		if (strstr( t,"Activity")  && strstr( t,"Depolarization") && OK ){ OK = TRUE; break;}
 		}
 		if(!OK) {continue;}
-	  	fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
   		while(!feof(fd) )
   		{
 			if(!fgets(t,taille,fd)) break;

@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1295,12 +1295,12 @@ static gboolean read_dalton_file_geomi(gchar *FileName, gint num, Geometry* geom
  		OK=FALSE;
  		while(!feof(file))
 		{
-			fgets(t,BSIZE,file);
+			{char* e = fgets(t,BSIZE,file);}
 			/* if (strstr(t,"Next geometry"))*/
 			if(strstr(t,"Next geometry") || strstr(t,"Final geometry"))
 			{
-	  			fgets(t,BSIZE,file);
-	  			fgets(t,BSIZE,file);
+				{char* e = fgets(t,BSIZE,file);}
+				{char* e = fgets(t,BSIZE,file);}
  				numgeom++;
                 		OK = TRUE;
 	  			break;
@@ -1319,7 +1319,7 @@ static gboolean read_dalton_file_geomi(gchar *FileName, gint num, Geometry* geom
   		j=-1;
   		while(!feof(file) )
   		{
-			fgets(t,BSIZE,file);
+			{char* e = fgets(t,BSIZE,file);}
 			if (!strcmp(t,"\n"))
 			{
 				break;
@@ -1391,20 +1391,19 @@ static gboolean read_gamess_file_geomi(gchar *FileName, gint num, Geometry* geom
   		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
   		return FALSE;
  	}
- 	t=g_malloc(BSIZE);
+ 	t=g_malloc(BSIZE*sizeof(gchar));
  	for(i=0;i<5;i++) AtomCoord[i]=g_malloc(BSIZE*sizeof(char));
-
  	numgeom =1;
  	do 
  	{
  		OK=FALSE;
  		while(!feof(file))
 		{
-			fgets(t,BSIZE,file);
+			{char* e = fgets(t,BSIZE,file);}
 			if(strstr(t,"COORDINATES OF ALL ATOMS ARE (ANGS)"))
 			{
-	  			fgets(t,BSIZE,file);
-	  			fgets(t,BSIZE,file);
+				{char* e = fgets(t,BSIZE,file);}
+				{char* e = fgets(t,BSIZE,file);}
  				numgeom++;
                 		OK = TRUE;
 	  			break;
@@ -1423,8 +1422,8 @@ static gboolean read_gamess_file_geomi(gchar *FileName, gint num, Geometry* geom
   		j=-1;
   		while(!feof(file) )
   		{
-			fgets(t,BSIZE,file);
-			if (!strcmp(t,"\n"))
+			{char* e = fgets(t,BSIZE,file);}
+			if (this_is_a_backspace(t))
 			{
 				break;
 			}
@@ -1432,6 +1431,7 @@ static gboolean read_gamess_file_geomi(gchar *FileName, gint num, Geometry* geom
     			if(listOfAtoms == NULL) listOfAtoms = g_malloc(sizeof(Atom));
     			else listOfAtoms = g_realloc(listOfAtoms, (j+1)*sizeof(Atom));
 
+			/* printf("t=%s\n",t);*/
 			sscanf(t,"%s %s %s %s %s",AtomCoord[0],dum, AtomCoord[1], AtomCoord[2],AtomCoord[3]);
 
 			for(i=0;i<(gint)strlen(AtomCoord[0]);i++) if(isdigit(AtomCoord[0][i])) AtomCoord[0][i] = ' ';
@@ -1503,7 +1503,9 @@ static gboolean read_gamess_output(gchar* fileName)
 	while(!feof(file))
 	{
 		if(!fgets(t,BSIZE,file)) break;
-		pdest = strstr( t,"NSERCH=   ");
+		/* pdest = strstr( t,"NSERCH=   ");*/
+		pdest = strstr( t,"1NSERCH=");
+		if( pdest == NULL) pdest = strstr( t,"POINT NSERCH=");
    		if( pdest != NULL )
 		{
 			OK = TRUE;
@@ -1600,12 +1602,15 @@ static gboolean read_gamess_output(gchar* fileName)
 	g_free(maxGrad);
 	g_free(rmsGrad);
 	g_free(tmp);
+
 	if(geometryConvergence.numberOfGeometries>0)
 	{
 		gint i;
 		geometryConvergence.geometries = g_malloc(geometryConvergence.numberOfGeometries*sizeof(Geometry));
 		for(i=0;i<geometryConvergence.numberOfGeometries;i++)
+		{
 			if(!read_gamess_file_geomi(fileName,geometryConvergence.numGeometry[i], &geometryConvergence.geometries[i])) break;
+		}
 		if(i!=geometryConvergence.numberOfGeometries)
 		{
 			freeGeometryConvergence();
@@ -1651,7 +1656,7 @@ static gboolean read_gamess_irc_file_geomi(gchar *FileName, gint num, Geometry* 
  		OK=FALSE;
  		while(!feof(file))
 		{
-			fgets(t,BSIZE,file);
+			{char* e = fgets(t,BSIZE,file);}
 			if(strstr(t,"CARTESIAN COORDINATES (BOHR)"))
 			{
  				numgeom++;
@@ -1845,19 +1850,20 @@ static gboolean read_gaussian_file_geomi_str(gchar *FileName, gint num, gchar* s
  		OK=FALSE;
  		while(!feof(file))
 		{
-	  		fgets(t,BSIZE,file);
+			{char* e = fgets(t,BSIZE,file);}
 			pdest = strstr( t,str);
 			result = pdest - t ;
 	 		if ( result >0 )
 	  		{
-	  			fgets(t,BSIZE,file);
-	  			fgets(t,BSIZE,file);
-	  			fgets(t,BSIZE,file);
+				{char* e = fgets(t,BSIZE,file);}
+				{char* e = fgets(t,BSIZE,file);}
+				{char* e = fgets(t,BSIZE,file);}
+
 				pdest = strstr( t, "Type" );
 				result = pdest - t ;
 				if(result>0) itype=1;
 				else itype=0;
-	  			fgets(t,BSIZE,file);
+				{char* e = fgets(t,BSIZE,file);}
                 		numgeom++;
 				OK = TRUE;
 				break;
@@ -1875,7 +1881,7 @@ static gboolean read_gaussian_file_geomi_str(gchar *FileName, gint num, gchar* s
   		j=-1;
   		while(!feof(file) )
   		{
-    			fgets(t,BSIZE,file);
+			{char* e = fgets(t,BSIZE,file);}
     			pdest = strstr( t, "----------------------------------" );
     			result = pdest - t ;
     			if ( result >0 )
@@ -1985,13 +1991,13 @@ static gboolean read_molpro_file_geomi(gchar *FileName, gint num, Geometry* geom
  		OK=FALSE;
  		while(!feof(file))
 		{
-			fgets(t,BSIZE,file);
+			{char* e = fgets(t,BSIZE,file);}
 			if ( !strcmp(t," ATOMIC COORDINATES\n"))
 			{
-	  			fgets(t,BSIZE,file);
-	  			fgets(t,BSIZE,file);
+				{char* e = fgets(t,BSIZE,file);}
+				{char* e = fgets(t,BSIZE,file);}
 				if(strstr(t,"Q_EFF"))continue;
-	  			fgets(t,BSIZE,file);
+				{char* e = fgets(t,BSIZE,file);}
  				numgeom++;
                 		OK = TRUE;
 	  			break;
@@ -2010,7 +2016,7 @@ static gboolean read_molpro_file_geomi(gchar *FileName, gint num, Geometry* geom
   		j=-1;
   		while(!feof(file) )
   		{
-			fgets(t,BSIZE,file);
+			{char* e = fgets(t,BSIZE,file);}
 			if ( !strcmp(t,"\n"))
 			{
 				break;
@@ -2296,7 +2302,7 @@ static gboolean read_mopac_aux_file_geomi(gchar *FileName, gint numgeometry, Geo
     		else listOfAtoms = g_realloc(listOfAtoms, (j+1)*sizeof(Atom));
 
 		sscanf(t,"%s %s %s",AtomCoord[1],AtomCoord[2],AtomCoord[3]);
-		if(j<nElements) sprintf(AtomCoord[0],elements[j]);
+		if(j<nElements) sprintf(AtomCoord[0],"%s",elements[j]);
 		else sprintf(AtomCoord[0],"X");
 		AtomCoord[0][0]=toupper(AtomCoord[0][0]);
 		l=strlen(AtomCoord[0]); 
@@ -2398,7 +2404,7 @@ static gboolean read_qchem_file_geomi(gchar *FileName, gint num, Geometry* geome
   		j=-1;
   		while(!feof(file) )
   		{
-			fgets(t,BSIZE,file);
+			{char* e = fgets(t,BSIZE,file);}
 			if ( strstr( t, "----------------------------------------"))
 			{
 				break;
@@ -2867,7 +2873,7 @@ static gint get_number_geoms_gabedit(gchar* fileName)
 	gint nLabels = 0;
 	gchar* pdest = NULL;
         
- 	file = FOpen(fileName, "r"); 
+ 	file = FOpen(fileName, "rb"); 
         if(!file) return -1;
 	while(!feof(file))
 	{
@@ -3246,13 +3252,13 @@ static gboolean read_gaussian_output(gchar* fileName)
 				break;
 			}
 			k = geometryConvergence.numberOfGeometries-1;
-		 	fgets(t,BSIZE,file);
+			{char* e = fgets(t,BSIZE,file);}
                  	sscanf(t,"%s %s %lf", temp,temp,&geometryConvergence.maxForce[k]);
-		 	fgets(t,BSIZE,file);
+			{char* e = fgets(t,BSIZE,file);}
                  	sscanf(t,"%s %s %lf", temp,temp,&geometryConvergence.rmsForce[k]);
-		 	fgets(t,BSIZE,file);
+			{char* e = fgets(t,BSIZE,file);}
                  	sscanf(t,"%s %s %lf", temp,temp,&geometryConvergence.maxStep[k]);
-		 	fgets(t,BSIZE,file);
+			{char* e = fgets(t,BSIZE,file);}
                  	sscanf(t,"%s %s %lf", temp,temp,&geometryConvergence.rmsStep[k]);
 		}
 	}

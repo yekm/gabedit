@@ -1,6 +1,6 @@
 /* Run.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1057,7 +1057,7 @@ static gboolean create_cmd_firefly(G_CONST_RETURN gchar* command, gboolean local
 	fclose(fcmd);
 #ifndef G_OS_WIN32
   	sprintf(buffer,"chmod u+x %s",cmdall);
-	system(buffer);
+	{ int i = system(buffer);}
 #endif
 	if(commandStr) g_free(commandStr);
 	return TRUE;
@@ -1125,7 +1125,7 @@ static gboolean create_cmd_orca(G_CONST_RETURN gchar* command, gboolean local, g
 	fclose(fcmd);
 #ifndef G_OS_WIN32
   	sprintf(buffer,"chmod u+x %s",cmdall);
-	system(buffer);
+	{ int i = system(buffer);}
 #endif
 	if(commandStr) g_free(commandStr);
 	return TRUE;
@@ -1198,7 +1198,7 @@ static gboolean create_cmd_nwchem(G_CONST_RETURN gchar* command, gboolean local,
 	fclose(fcmd);
 #ifndef G_OS_WIN32
   	sprintf(buffer,"chmod u+x %s",cmdall);
-	system(buffer);
+	{ int i = system(buffer);}
 #endif
 	if(commandStr) g_free(commandStr);
 	return TRUE;
@@ -1296,7 +1296,7 @@ static gboolean create_cmd_qchem(G_CONST_RETURN gchar* command, gboolean local, 
 	fclose(fcmd);
 #ifndef G_OS_WIN32
   	sprintf(buffer,"chmod u+x %s",cmdall);
-	system(buffer);
+	{ int i = system(buffer);}
 #endif
 	if(commandStr) g_free(commandStr);
 	return TRUE;
@@ -1373,7 +1373,7 @@ static gboolean create_cmd_mopac(G_CONST_RETURN gchar* command, gboolean local, 
 	fclose(fcmd);
 #ifndef G_OS_WIN32
   	sprintf(buffer,"chmod u+x %s",cmdall);
-	system(buffer);
+	{ int i = system(buffer);}
 #endif
 	if(commandStr) g_free(commandStr);
 	return TRUE;
@@ -1557,7 +1557,7 @@ static gboolean create_cmd_gamess(G_CONST_RETURN gchar* command, gboolean local,
 	fclose(fcmd);
 #ifndef G_OS_WIN32
   	sprintf(buffer,"chmod u+x %s",cmdall);
-	system(buffer);
+	{ int i = system(buffer);}
 #endif
 	return TRUE;
 }
@@ -1647,7 +1647,7 @@ static gboolean create_cmd_gaussian(G_CONST_RETURN gchar* command, gboolean loca
 	fclose(fcmd);
 #ifndef G_OS_WIN32
   	sprintf(buffer,"chmod u+x %s",cmdall);
-	system(buffer);
+	{ int i = system(buffer);}
 #endif
 	return TRUE;
 }
@@ -1735,7 +1735,7 @@ static gboolean create_cmd_molcas(G_CONST_RETURN gchar* command, gboolean local,
 	fclose(fcmd);
 
   	sprintf(buffer,"chmod u+x %s",cmdall);
-	system(buffer);
+	{ int i = system(buffer);}
 #else
 	if(!local)
 	{
@@ -1888,7 +1888,7 @@ static gboolean create_cmd_molpro(G_CONST_RETURN gchar* command, gboolean local,
 	fprintf(fcmd,"exit\n");
 	fclose(fcmd);
   	sprintf(buffer,"chmod u+x %s",cmdall);
-	system(buffer);
+	{ int i = system(buffer);}
 #else
 	if(!local)
 	{
@@ -1963,7 +1963,7 @@ static gboolean create_cmd_mpqc(G_CONST_RETURN gchar* command, gboolean local, g
 	fclose(fcmd);
 #ifndef G_OS_WIN32
   	sprintf(buffer,"chmod u+x %s",cmdall);
-	system(buffer);
+	{ int i = system(buffer);}
 #endif
 	return TRUE;
 }
@@ -2007,7 +2007,7 @@ static gboolean create_cmd_other(G_CONST_RETURN gchar* command, gboolean local, 
 	fprintf(fcmd,"exit\n");
 	fclose(fcmd);
   	sprintf(buffer,"chmod u+x %s",cmdall);
-	system(buffer);
+	{ int i = system(buffer);}
 #else
 	if(!local)
 	{

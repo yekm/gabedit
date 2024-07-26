@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -47,6 +47,7 @@ void gl_read_first_mopac_aux_file(GabeditFileChooser *SelecFile, gint response_i
 void gl_read_last_mopac_aux_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_first_nwchem_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_last_nwchem_file(GabeditFileChooser *SelecFile, gint response_id);
+void gl_read_nbo_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_first_qchem_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_last_qchem_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_first_orca_file(GabeditFileChooser *SelecFile, gint response_id);

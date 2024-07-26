@@ -1,6 +1,6 @@
 /* MoleculeSymmetry.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -775,7 +775,7 @@ int computeSymmetry(
 
       	for (i=0;i < mol.numberOfAtoms;i++)
 	{ 
-		sprintf(symbols[i],mol.symbol[mol.listOfAtoms[i].type]);
+		sprintf(symbols[i],"%s",mol.symbol[mol.listOfAtoms[i].type]);
 		X[i] = mol.listOfAtoms[i].position[0];
 		Y[i] = mol.listOfAtoms[i].position[1];
 		Z[i] = mol.listOfAtoms[i].position[2];
@@ -912,7 +912,7 @@ int computeAbelianGroup(
 	*/
       	for (i=0;i < mol.numberOfAtoms;i++)
 	{ 
-		sprintf(symbols[i],mol.symbol[mol.listOfAtoms[i].type]);
+		sprintf(symbols[i],"%s",mol.symbol[mol.listOfAtoms[i].type]);
 		X[i] = mol.listOfAtoms[i].position[0];
 		Y[i] = mol.listOfAtoms[i].position[1];
 		Z[i] = mol.listOfAtoms[i].position[2];

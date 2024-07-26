@@ -1,6 +1,6 @@
 /* Povray.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -323,6 +323,7 @@ static gchar *get_pov_one_stick_for_ball(gint i,gint j)
      if(nc==3)
      {
 	gchar* t;
+/*
   	V3d vScal = {ep*0.5,ep*0.5,ep*0.5};
 	gdouble C1[3];
 	gdouble C2[3];
@@ -375,6 +376,48 @@ static gchar *get_pov_one_stick_for_ball(gint i,gint j)
       	g_free(temp1);
       	g_free(temp2);
       	g_free(t);
+*/
+		V3d C0;
+		gdouble r = ep;
+		gdouble C11[3];
+		gdouble C12[3];
+		gdouble C21[3];
+		gdouble C22[3];
+		gdouble C31[3];
+		gdouble C32[3];
+		gdouble C[3];
+		gdouble rs[3];
+		gdouble Ci[3];
+		gdouble Cj[3];
+		gint type = 1;
+		if(geometry[i].Layer == LOW_LAYER || geometry[j].Layer == LOW_LAYER) type = 0;
+		getOptimalCiCj(i, j, Ci, Cj,C0);
+		getPositionsRadiusBond3(r, C0, Ci, Cj, C11, C12,  C21,  C22, C31, C32, rs, type);
+
+     		for(l=0;l<3;l++) C[l] =(C11[l]*poid2+C12[l]*poid1)/poid;
+      		temp1 = get_pov_cylingre(C11,C,Center1.P.Colors,rs[0]);
+      		temp2 = get_pov_cylingre(C,C12,Center2.P.Colors,rs[0]);
+      		temp = g_strdup_printf("%s%s",temp1,temp2);
+      		g_free(temp1);
+      		g_free(temp2);
+
+     		for(l=0;l<3;l++) C[l] =(C21[l]*poid2+C22[l]*poid1)/poid;
+      		temp1 = get_pov_cylingre(C21,C,Center1.P.Colors,rs[1]);
+      		temp2 = get_pov_cylingre(C,C22,Center2.P.Colors,rs[1]);
+		t = temp;
+      		temp = g_strdup_printf("%s%s%s",t,temp1,temp2);
+      		g_free(temp1);
+      		g_free(temp2);
+      		g_free(t);
+
+     		for(l=0;l<3;l++) C[l] =(C31[l]*poid2+C32[l]*poid1)/poid;
+      		temp1 = get_pov_cylingre(C31,C,Center1.P.Colors,rs[2]);
+      		temp2 = get_pov_cylingre(C,C32,Center2.P.Colors,rs[2]);
+		t = temp;
+      		temp = g_strdup_printf("%s%s%s",t,temp1,temp2);
+      		g_free(temp1);
+      		g_free(temp2);
+      		g_free(t);
 
      }
      else
@@ -387,10 +430,13 @@ static gchar *get_pov_one_stick_for_ball(gint i,gint j)
 	gdouble C21[3];
 	gdouble C22[3];
 	gdouble C[3];
+	V3d C0;
 	gdouble rs[3];
 	gint type = 1;
 	if(geometry[i].Layer == LOW_LAYER || geometry[j].Layer == LOW_LAYER) type = 0;
-	getPositionsRadiusBond2(r, Center1.C, Center2.C, C11, C12,  C21,  C22, rs, type);
+
+	getOptimalCiCj(i, j, Center1.C, Center2.C, C0);
+	getPositionsRadiusBond2(r, C0, Center1.C, Center2.C, C11, C12,  C21,  C22, rs, type);
 
      	for(l=0;l<3;l++) C[l] =(C11[l]*poid2+C12[l]*poid1)/poid;
       	temp1 = get_pov_cylingre(C11,C,Center1.P.Colors,rs[0]);
@@ -454,6 +500,7 @@ static gchar *get_pov_one_stick(gint i,gint j)
      if(nc==3)
      {
 	gchar* t;
+/*
   	V3d vScal = {ep,ep,ep};
 	gdouble C1[3];
 	gdouble C2[3];
@@ -521,6 +568,47 @@ static gchar *get_pov_one_stick(gint i,gint j)
       	g_free(temp1);
       	g_free(temp2);
       	g_free(t);
+*/
+		V3d C0;
+		gdouble r = ep;
+		gdouble C11[3];
+		gdouble C12[3];
+		gdouble C21[3];
+		gdouble C22[3];
+		gdouble C31[3];
+		gdouble C32[3];
+		gdouble C[3];
+		gdouble rs[3];
+		gdouble Ci[3];
+		gdouble Cj[3];
+		gint type = 0;
+		getOptimalCiCj(i, j, Ci, Cj,C0);
+		getPositionsRadiusBond3(r, C0, Ci, Cj, C11, C12,  C21,  C22, C31, C32, rs, type);
+
+     		for(l=0;l<3;l++) C[l] =(C11[l]*poid2+C12[l]*poid1)/poid;
+      		temp1 = get_pov_cylingre(C11,C,Center1.P.Colors,rs[0]);
+      		temp2 = get_pov_cylingre(C,C12,Center2.P.Colors,rs[0]);
+      		temp = g_strdup_printf("%s%s",temp1,temp2);
+      		g_free(temp1);
+      		g_free(temp2);
+
+     		for(l=0;l<3;l++) C[l] =(C21[l]*poid2+C22[l]*poid1)/poid;
+      		temp1 = get_pov_cylingre(C21,C,Center1.P.Colors,rs[1]);
+      		temp2 = get_pov_cylingre(C,C22,Center2.P.Colors,rs[1]);
+		t = temp;
+      		temp = g_strdup_printf("%s%s%s",t,temp1,temp2);
+      		g_free(temp1);
+      		g_free(temp2);
+      		g_free(t);
+
+     		for(l=0;l<3;l++) C[l] =(C31[l]*poid2+C32[l]*poid1)/poid;
+      		temp1 = get_pov_cylingre(C31,C,Center1.P.Colors,rs[2]);
+      		temp2 = get_pov_cylingre(C,C32,Center2.P.Colors,rs[2]);
+		t = temp;
+      		temp = g_strdup_printf("%s%s%s",t,temp1,temp2);
+      		g_free(temp1);
+      		g_free(temp2);
+      		g_free(t);
 
      }
      else
@@ -535,7 +623,9 @@ static gchar *get_pov_one_stick(gint i,gint j)
 	gdouble C[3];
 	gdouble rs[3];
 	gint type = 0;
-	getPositionsRadiusBond2(r, Center1.C, Center2.C, C11, C12,  C21,  C22, rs, type);
+	V3d C0;
+	getOptimalCiCj(i, j, Center1.C, Center2.C, C0);
+	getPositionsRadiusBond2(r, C0, Center1.C, Center2.C, C11, C12,  C21,  C22, rs, type);
 
      	for(l=0;l<3;l++) C[l] =(C11[l]*poid2+C12[l]*poid1)/poid;
       	temp1 = get_pov_cylingre(C11,C,Center1.P.Colors,rs[0]);
@@ -1043,7 +1133,7 @@ static gboolean create_cmd_pov(G_CONST_RETURN gchar* command, gchar* fileNameCMD
 	{
 		gchar buffer[BSIZE];
   		sprintf(buffer,"chmod u+x %s",fileNameCMD);
-		system(buffer);
+		{int ierr = system(buffer);}
 	}
 #endif
 	if(commandStr) g_free(commandStr);
@@ -1116,7 +1206,7 @@ static void exportPOVRay(GtkWidget* Win, gboolean runPovray)
 					}
 					gtk_widget_hide(Win);
 					while( gtk_events_pending() ) gtk_main_iteration();
-					system(fileNameCMD);
+					{int ierr = system(fileNameCMD);}
 					create_images_window (parent,fileNameIMG, width, height);
 				}
 				else

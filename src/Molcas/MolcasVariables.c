@@ -1,6 +1,6 @@
 /* MolcasVariables.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -101,7 +101,7 @@ gboolean molcasTrap()
 /************************************************************************************************************/
 void molcasWorkDir(gchar* workDir)
 {
-	sprintf(workDir,molcasSystemVariables.workDir);
+	sprintf(workDir,"%s", molcasSystemVariables.workDir);
 }
 /************************************************************************************************************/
 static void initMolcasSystemVariables(MolcasSystemVariables* mSystemVariables)
@@ -121,11 +121,11 @@ static void initMolcasSystemVariablesTmp()
 static void copySystemVariablesParameters(MolcasSystemVariables* newCopy, MolcasSystemVariables* toCopy)
 {
 
-	sprintf( newCopy->mem, toCopy->mem);
-	sprintf( newCopy->disk, toCopy->disk);
-	sprintf( newCopy->ramd, toCopy->ramd);
-	sprintf( newCopy->trap, toCopy->trap);
-	sprintf( newCopy->workDir, toCopy->workDir);
+	sprintf( newCopy->mem, "%s", toCopy->mem);
+	sprintf( newCopy->disk, "%s", toCopy->disk);
+	sprintf( newCopy->ramd, "%s",toCopy->ramd);
+	sprintf( newCopy->trap, "%s",toCopy->trap);
+	sprintf( newCopy->workDir, "%s",toCopy->workDir);
 }
 /************************************************************************************************************/
 static void copySystemVariablesParametersFromTmp(GtkWidget *win, gpointer data)
@@ -159,7 +159,7 @@ static void changedEntriesVariable(GtkWidget *entry, gpointer data)
 			}
 
 			if(strstr(entrytext,_("Default")) || strstr(entrytext,_("largest possible")) || atof(entrytext) != 0)
-				sprintf(molcasSystemVariablesTmp.mem,entrytext);
+				sprintf(molcasSystemVariablesTmp.mem,"%s",entrytext);
 
 			break;
 		case MOLCAS_TYPE_VARIABLE_DISK :
@@ -173,7 +173,7 @@ static void changedEntriesVariable(GtkWidget *entry, gpointer data)
 			}
 
 			if(strstr(entrytext,_("Default")) || strstr(entrytext,_("Limited to 2 GBytes")) || atof(entrytext) != 0)
-				sprintf(molcasSystemVariablesTmp.disk, entrytext);
+				sprintf(molcasSystemVariablesTmp.disk, "%s", entrytext);
 			break;
 		case MOLCAS_TYPE_VARIABLE_RAMD :
 			if(strstr(entrytext,_("Default")))
@@ -185,11 +185,11 @@ static void changedEntriesVariable(GtkWidget *entry, gpointer data)
 				gtk_widget_set_sensitive(entry, TRUE);
 			}
 			if(strstr(entrytext,_("Default")) || atof(entrytext) != 0)
-			sprintf(molcasSystemVariablesTmp.ramd, entrytext);
+			sprintf(molcasSystemVariablesTmp.ramd, "%s",entrytext);
 			break;
 		case MOLCAS_TYPE_VARIABLE_TRAP :
 			gtk_widget_set_sensitive(entry, FALSE);
-			sprintf(molcasSystemVariablesTmp.trap, entrytext);
+			sprintf(molcasSystemVariablesTmp.trap, "%s",entrytext);
 			break;
 		case MOLCAS_TYPE_VARIABLE_WORKDIR :
 			if(strstr(entrytext,_("Default")))
@@ -200,7 +200,7 @@ static void changedEntriesVariable(GtkWidget *entry, gpointer data)
 			{
 				gtk_widget_set_sensitive(entry, TRUE);
 			}
-			sprintf(molcasSystemVariablesTmp.workDir, entrytext);
+			sprintf(molcasSystemVariablesTmp.workDir, "%s",entrytext);
 			break;
 	}
 }

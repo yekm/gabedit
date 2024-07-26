@@ -1,6 +1,6 @@
 /* Grid.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -2654,9 +2654,9 @@ Grid* solve_poisson_equation_from_density_grid(Grid* grid, PoissonSolverMethod p
 	/* solve poisson */
 	/*solveMGPoissonMG(ps, domain.maxLevel);*/
 	if(psMethod==GABEDIT_CG)
-		solveCGPoissonMG(ps, 200, 1e-6);
+		solveCGPoissonMG(ps, 2000, 1e-6);
 	else
-		solveMGPoissonMG3(ps, domain.maxLevel, 100, 1e-6, 0);
+		solveMGPoissonMG3(ps, domain.maxLevel, 1000, 1e-6, 0);
 	if(CancelCalcul)
 	{
 		destroyPoissonMG(ps); /* destroy of source and potential Grid */

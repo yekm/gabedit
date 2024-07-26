@@ -1,6 +1,6 @@
 /* DrawGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -539,7 +539,7 @@ void read_drawmolecule_file()
 	factor_stick_default(NULL,NULL);
 	factor_ball_default(NULL,NULL);
 
-	fd = fopen(drawMolecule, "r");
+	fd = fopen(drawMolecule, "rb");
 	if(fd !=NULL)
 	{
  		guint taille = BSIZE;
@@ -1234,6 +1234,22 @@ static void setMultipleBonds()
 				 nBonds[i] += 1;
 				 nBonds[j] += 1;
 			 }
+		}
+	}
+// sort atoms nBonds min at first
+	for(i=0;i<(gint)Natoms-1;i++)
+	{
+		gint k = i;
+		for(j=i+1;j<(gint)Natoms;j++)
+			if(nBonds[j]<nBonds[k])  k = j;
+		if(k!=i)
+		{
+			gint t = num[i];
+			num[i] = num[k];
+			num[k] = t;
+			t = nBonds[i];
+			nBonds[i] = nBonds[k];
+			nBonds[k] = t;
 		}
 	}
 	for(i=0;i<(gint)Natoms;i++)
@@ -9710,6 +9726,79 @@ void draw_arc(gint xi,gint yi,gint rayoni,gdouble angle1, gdouble angle2, gdoubl
 		if(crExport) gabedit_cairo_arc(crExport, GeomDrawingArea, gc, x, y,rayon,angle1, angle2,scale1, scale2);
 	}
 	*/
+}
+/************************************************************************/
+void getOptimalCiCj(gint i, gint j, gdouble* Ci, gdouble* Cj, gdouble* C0)
+{
+	C0[0] = 0;
+	C0[1] = 0;
+	C0[2] = 0;
+
+	Ci[0] = geometry[i].X;
+	Ci[1] = geometry[i].Y;
+	Ci[2] = geometry[i].Z;
+
+	Cj[0] = geometry[j].X;
+	Cj[1] = geometry[j].Y;
+	Cj[2] = geometry[j].Z;
+
+/* serach a one none hydrogen atom connected to i or j atoms */
+	if(geometry[i].typeConnections)
+	{
+		gint l;
+		gint nl;
+		for(l=0, nl = geometry[l].N-1;l<Natoms;l++, nl = geometry[l].N-1)
+			if(l != j && l != i &&  geometry[i].typeConnections[nl]>0 && strcmp(geometry[l].Prop.symbol,"H"))
+			{
+				C0[0] = geometry[l].X;
+				C0[1] = geometry[l].Y;
+				C0[2] = geometry[l].Z;
+				/* printf("---%s\n",geometry[l].Prop.symbol);*/
+				return;
+			}
+	}
+	if(geometry[j].typeConnections)
+	{
+		gint l;
+		gint nl;
+		for(l=0, nl = geometry[l].N-1;l<Natoms;l++, nl = geometry[l].N-1)
+			if(l != j && l != i &&  geometry[j].typeConnections[nl]>0  && strcmp(geometry[l].Prop.symbol,"H"))
+			{
+				C0[0] = geometry[l].X;
+				C0[1] = geometry[l].Y;
+				C0[2] = geometry[l].Z;
+				/* printf("--%s\n",geometry[l].Prop.symbol);*/
+				return;
+			}
+	}
+	if(geometry[i].typeConnections)
+	{
+		gint l;
+		gint nl;
+		for(l=0, nl = geometry[l].N-1;l<Natoms;l++, nl = geometry[l].N-1)
+			if(l != j && l != i &&  geometry[i].typeConnections[nl]>0)
+			{
+				C0[0] = geometry[l].X;
+				C0[1] = geometry[l].Y;
+				C0[2] = geometry[l].Z;
+				/* printf("%s\n",geometry[l].Prop.symbol);*/
+				return;
+			}
+	}
+	if(geometry[j].typeConnections)
+	{
+		gint l;
+		gint nl;
+		for(l=0, nl = geometry[l].N-1;l<Natoms;l++, nl = geometry[l].N-1)
+			if(l != j && l != i &&  geometry[j].typeConnections[nl]>0)
+			{
+				C0[0] = geometry[l].X;
+				C0[1] = geometry[l].Y;
+				C0[2] = geometry[l].Z;
+				/* printf("%s\n",geometry[l].Prop.symbol);*/
+				return;
+			}
+	}
 }
 /*****************************************************************************/
 void draw_ball(gint xi,gint yi,gint rayoni,GdkColor colori)

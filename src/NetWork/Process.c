@@ -1,6 +1,6 @@
 /* Process.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -755,7 +755,7 @@ static void eventDispatcher(GtkWidget *widget, GdkEventButton *event, gpointer u
 		{
 			model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
 			gtk_tree_selection_select_path  (gtk_tree_view_get_selection (GTK_TREE_VIEW (widget)), path);
-			sprintf(selectedRow ,gtk_tree_path_to_string(path));
+			sprintf(selectedRow ,"%s",gtk_tree_path_to_string(path));
 			gtk_tree_model_get_iter (model, &iter, path);
 			gtk_tree_path_free(path);
   			if (event->type == GDK_2BUTTON_PRESS && ((GdkEventButton *) event)->button == 1)
@@ -1017,7 +1017,7 @@ static void get_list_from_file(gchar* namefile)
 	unlink (namefile);
 #else
  	dump = g_strdup_printf("rm %s",namefile);
-	system(dump);
+	{int ierre = system(dump);}
 	g_free(dump);
 
 #endif

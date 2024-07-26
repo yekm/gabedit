@@ -1,6 +1,6 @@
 /* MInterfaceBasis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -644,7 +644,7 @@ gchar* get_error_message()
 	unlink (errfile);
 #else
  	dump = g_strdup_printf("rm %s&",errfile);
-	system(dump);
+ 	{int ierr = system(dump);}
 	g_free(dump);
 #endif
 
@@ -672,7 +672,7 @@ gint create_one_liste (GtkWidget *widget, gpointer data,gboolean fromfile)
  	if(!fromfile)
 	{
  		temp = g_strdup_printf("sh -c 'libmol -e %s -t %s>%s 2>%s'",basetot->Name,(gchar*)data,outfile,errfile);
- 		system(temp);
+ 		{int ierr = system(temp);}
  	}
  	else
  	{
@@ -711,7 +711,7 @@ gint create_one_liste (GtkWidget *widget, gpointer data,gboolean fromfile)
 		if(temp)
      		g_free(temp);
      	temp = g_strdup_printf("rm %s",outfile);
-		system(temp);
+ 		{int ierr = system(temp);}
 #endif
  	}
 

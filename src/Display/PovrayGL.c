@@ -1,6 +1,6 @@
 /* PovrayGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -569,6 +569,9 @@ static gchar *get_pov_one_stick(gint i,gint j, GabEditBondType bondType)
 		v3d_normal(vScal);
 		v3d_scale(vScal, ep*1.5);
 	}
+	else
+		 getvScaleBond(ep*1.5*2, C10,C20, vScal);
+
 	for(l=0;l<3;l++) C1[l] = Center1.C[l];
 	for(l=0;l<3;l++) C2[l] = Center2.C[l];
      	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
@@ -610,6 +613,9 @@ static gchar *get_pov_one_stick(gint i,gint j, GabEditBondType bondType)
 		v3d_normal(vScal);
 		v3d_scale(vScal, ep*1.5);
 	}
+	else
+		 getvScaleBond(ep*1.5*2, C10,C20, vScal);
+
 	for(l=0;l<3;l++) C1[l] = Center1.C[l]-vScal[l];
 	for(l=0;l<3;l++) C2[l] = Center2.C[l]-vScal[l];
      	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
@@ -661,6 +667,9 @@ static gchar *get_pov_one_stick(gint i,gint j, GabEditBondType bondType)
 		v3d_normal(vScal);
 		v3d_scale(vScal, ep*0.5);
 	}
+	else
+		 getvScaleBond(ep*0.5*2, C10,C20, vScal);
+
 	for(l=0;l<3;l++) C1[l] = Center1.C[l]-vScal[l];
 	for(l=0;l<3;l++) C2[l] = Center2.C[l]-vScal[l];
      	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
@@ -702,6 +711,9 @@ static gchar *get_pov_one_stick(gint i,gint j, GabEditBondType bondType)
 		v3d_normal(vScal);
 		v3d_scale(vScal, ep*0.5*2);
 	}
+	else
+		 getvScaleBond(ep*0.5*2*2, C10,C20, vScal);
+
 	for(l=0;l<3;l++) C1[l] = Center1.C[l]-vScal[l];
 	for(l=0;l<3;l++) C2[l] = Center2.C[l]-vScal[l];
      	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
@@ -1214,8 +1226,8 @@ static void save_pov_surfaces(FILE* file)
 {
 	gchar* fileName = g_strdup_printf("%s%stmp%spovraySurfaces.pov",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
 	gchar* fileNameLast = g_strdup_printf("%s%stmp%spovrayLastSurface.pov",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
-	FILE* fileSurfaces = fopen(fileName,"r");
-	FILE* fileLastSurface = fopen(fileNameLast,"r");
+	FILE* fileSurfaces = fopen(fileName,"rb");
+	FILE* fileLastSurface = fopen(fileNameLast,"rb");
 	gchar* t = g_malloc(BSIZE*sizeof(gchar));
 
 	g_free(fileName);
@@ -1249,7 +1261,7 @@ static void save_pov_surfaces(FILE* file)
 static void save_pov_contours(FILE* file)
 {
 	gchar* fileName = g_strdup_printf("%s%stmp%spovrayContours.pov",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
-	FILE* fileContours = fopen(fileName,"r");
+	FILE* fileContours = fopen(fileName,"rb");
 	gchar* t = g_malloc(BSIZE*sizeof(gchar));
 
 	g_free(fileName);
@@ -1269,7 +1281,7 @@ static void save_pov_contours(FILE* file)
 static void save_pov_planes_mapped(FILE* file)
 {
 	gchar* fileName = g_strdup_printf("%s%stmp%spovrayPlanesMapped.pov",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
-	FILE* filePlanesMapped = fopen(fileName,"r");
+	FILE* filePlanesMapped = fopen(fileName,"rb");
 	gchar* t = g_malloc(BSIZE*sizeof(gchar));
 
 	g_free(fileName);
@@ -1289,7 +1301,7 @@ static void save_pov_planes_mapped(FILE* file)
 static void save_pov_rings(FILE* file)
 {
 	gchar* fileName = g_strdup_printf("%s%stmp%spovrayRings.pov",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
-	FILE* fileRings = fopen(fileName,"r");
+	FILE* fileRings = fopen(fileName,"rb");
 	gchar* t = g_malloc(BSIZE*sizeof(gchar));
 
 	g_free(fileName);
@@ -1634,7 +1646,7 @@ static gboolean create_cmd_pov(G_CONST_RETURN gchar* command, gchar* fileNameCMD
 	{
 		gchar buffer[BSIZE];
   		sprintf(buffer,"chmod u+x %s",fileNameCMD);
-		system(buffer);
+		{int ierr = system(buffer);}
 	}
 #endif
 	if(commandStr) g_free(commandStr);
@@ -1707,7 +1719,7 @@ static void exportPOVRay(GtkWidget* Win, gboolean runPovray)
 					}
 					gtk_widget_hide(Win);
 					while( gtk_events_pending() ) gtk_main_iteration();
-					system(fileNameCMD);
+					{ int ierr = system(fileNameCMD);}
 					create_images_window (parent,fileNameIMG, width, height);
 				}
 				else

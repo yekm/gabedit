@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -49,7 +49,7 @@ static gchar** getOneList(FILE* file,gint* nl, gchar* str, gboolean reading)
 
 	*nl = 0;
 	fseek(file, 0L, SEEK_SET);
-	fgets(dump,len,file);
+    	{ char* e = fgets(dump,len,file);}
 	while(!feof(file))
 	{
 		if(fgets(dump,len,file))
@@ -241,7 +241,7 @@ PersonalFragments* loadAllPersonalFragments(gchar* filename)
 	FILE* file;
 	PersonalFragments* personnalFragments;
 
-	file = FOpen(filename,"r");
+	file = FOpen(filename,"rb");
 
 	if(file == NULL)
 		return NULL;

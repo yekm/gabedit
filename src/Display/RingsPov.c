@@ -1,6 +1,6 @@
 /*RingsPov.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -148,7 +148,7 @@ void AddRingsPovRay(GList** rings, gint nRings, gint* ringsSize, V4d colors[])
 		}
 
 		temp = get_pov_polygon(rings[i], ringsSize[i], color);
-		fprintf(file,temp);
+		fprintf(file,"%s",temp);
 		g_free(temp);
 	}
 	fclose(file);

@@ -1,6 +1,6 @@
 /* GInterfaceBasis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -536,7 +536,7 @@ static void eventDispatcherType(GtkWidget *widget, GdkEventButton *event, gpoint
 		{
 			model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
 			gtk_tree_selection_select_path  (gtk_tree_view_get_selection (GTK_TREE_VIEW (widget)), path);
-			sprintf(selectedRowForType ,gtk_tree_path_to_string(path));
+			sprintf(selectedRowForType ,"%s",gtk_tree_path_to_string(path));
 			gtk_tree_model_get_iter (model, &iter, path);
 			gtk_tree_path_free(path);
   			if (event->type == GDK_2BUTTON_PRESS && ((GdkEventButton *) event)->button == 1)
@@ -565,7 +565,7 @@ static void eventDispatcherCenter(GtkWidget *widget, GdkEventButton *event, gpoi
 		{
 			model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
 			gtk_tree_selection_select_path  (gtk_tree_view_get_selection (GTK_TREE_VIEW (widget)), path);
-			sprintf(selectedRowForCenter ,gtk_tree_path_to_string(path));
+			sprintf(selectedRowForCenter ,"%s",gtk_tree_path_to_string(path));
 			gtk_tree_model_get_iter (model, &iter, path);
 			gtk_tree_path_free(path);
   			if (event->type == GDK_2BUTTON_PRESS && ((GdkEventButton *) event)->button == 1)

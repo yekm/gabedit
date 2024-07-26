@@ -1,6 +1,6 @@
 /* ListeFiles.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1576,7 +1576,7 @@ static void get_one_line(FILE* fd,gchar st[])
 	static gint taille = BSIZE;
 	gchar t[BSIZE];
 
-	fgets(t,taille,fd);
+    	{ char* e = fgets(t,taille,fd);}
 	strcpy(st,t);
 	str_delete_n(st);
 }
@@ -1603,10 +1603,14 @@ static void add_liste_files()
 	GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(treeViewProjects));
 	GtkTreeIter iter;
         
+#ifdef G_OS_WIN32
  	fd = FOpen(outfile, "r");
+#else
+ 	fd = FOpen(outfile, "rb");
+#endif
         if(fd)
 	{
-		fgets(t,BSIZE,fd);
+    		{ char* e = fgets(t,BSIZE,fd);}
 		Nf = atoi(t);
 		Nfiles = 0;
 		if(Nf>0)
@@ -1620,7 +1624,7 @@ static void add_liste_files()
 				remoteuser[0] = '\0';
 				remotedir[0] = '\0';
 
-				fgets(t,taille,fd);
+    				{ char* e = fgets(t,BSIZE,fd);}
 				sscanf(t,"%d",&itype);
 				get_one_line(fd,projectname);
 				get_one_line(fd,datafile);
@@ -1629,7 +1633,7 @@ static void add_liste_files()
 				get_one_line(fd,remoteuser);
 				get_one_line(fd,remotedir);
 				get_one_line(fd,command);
-				fgets(t,taille,fd);
+    				{ char* e = fgets(t,BSIZE,fd);}
 				sscanf(t,"%d",&iNet);
 				if(iNet==0) netWorkProtocol = GABEDIT_NETWORK_FTP_RSH;
 				else netWorkProtocol = GABEDIT_NETWORK_SSH;
@@ -1683,7 +1687,7 @@ static void get_doc_no_add_list(GtkWidget *wid, gpointer d)
 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0)) return ;
 
 	t=g_malloc(taille);
-	fd = FOpen(NomFichier, "r");
+	fd = FOpen(NomFichier, "rb");
 	if(fd == NULL)
 	{
  		g_free(t);
@@ -1841,7 +1845,7 @@ static void event_dispatcher(GtkWidget *widget, GdkEventButton *event, gpointer 
 		{
 			model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
 			gtk_tree_selection_select_path  (gtk_tree_view_get_selection (GTK_TREE_VIEW (widget)), path);
-			sprintf(selectedRow ,gtk_tree_path_to_string(path));
+			sprintf(selectedRow ,"%s", gtk_tree_path_to_string(path));
 			gtk_tree_model_get_iter (model, &iter, path);
 			gtk_tree_path_free(path);
         		if (event->type == GDK_2BUTTON_PRESS &&  ((GdkEventButton *) event)->button == 1)

@@ -1,6 +1,6 @@
 /* OrbitalsQChem.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -163,7 +163,7 @@ static gboolean read_geomorb_qchem_file_geom(gchar *FileName)
   		j=-1;
   		while(!feof(fd) )
   		{
-			fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
     			if (strstr( t, "----------------------------------" ))
     			{
 				geompos = ftell(fd);
@@ -594,7 +594,7 @@ static gboolean DefineQChemBasisType(gchar** strbasis, gint nrows)
 	}
 	for(k=0;k<Ncenters;k++)
 	{
-		sprintf(sym,GeomOrb[k].Symb);
+		sprintf(sym,"%s",GeomOrb[k].Symb);
 		i = GeomOrb[k].NumType;
 		/* printf("numType = %d\n",k);*/
      		Type[i].Symb=g_strdup(sym);
@@ -758,7 +758,7 @@ static void get_number_of_occuped_orbitals(gchar* FileName, gint* nAlpha, gint* 
 		if(file) fclose(file);
 		return;
 	}
-	fgets(t,BSIZE,file);/* --- */
+    	{ char* e = fgets(t,BSIZE,file);}
 		
 	while(!feof(file))
 	{
@@ -1010,7 +1010,7 @@ static gboolean read_last_orbitals_in_qchem_file(gchar *fileName,GabEditOrbType 
 	  				if(!fgets(t,taille,fd))break;
 					if(strstr(t,titlesOrb[GABEDIT_ORBTYPE_BOYS]))
 					{
-	  					fgets(t,taille,fd);
+    						{ char* e = fgets(t,taille,fd);}
 						break;
 					}
 				}
@@ -1022,7 +1022,7 @@ static gboolean read_last_orbitals_in_qchem_file(gchar *fileName,GabEditOrbType 
 	  				if(!fgets(t,taille,fd))break;
 					if(strstr(t,titlesOrb[GABEDIT_ORBTYPE_EDMISTON]))
 					{
-	  					fgets(t,taille,fd);
+    						{ char* e = fgets(t,taille,fd);}
 						break;
 					}
 				}
@@ -1034,7 +1034,7 @@ static gboolean read_last_orbitals_in_qchem_file(gchar *fileName,GabEditOrbType 
 	  				if(!fgets(t,taille,fd))break;
 					if(strstr(t,titlesOrb[GABEDIT_ORBTYPE_PIPEK]))
 					{
-	  					fgets(t,taille,fd);
+    						{ char* e = fgets(t,taille,fd);}
 						break;
 					}
 				}
@@ -1049,7 +1049,7 @@ static gboolean read_last_orbitals_in_qchem_file(gchar *fileName,GabEditOrbType 
 			case GABEDIT_ORBTYPE_BOYS: 
 			case GABEDIT_ORBTYPE_EDMISTON: 
 			case GABEDIT_ORBTYPE_PIPEK: 
-	  			fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 		}
 
   		ncart=NOrb/NO;
@@ -1104,7 +1104,7 @@ static gboolean read_last_orbitals_in_qchem_file(gchar *fileName,GabEditOrbType 
 			}
 			for(i=0;i<NOrb;i++)
 			{
-	  			fgets(t,taille,fd);
+    				{ char* e = fgets(t,taille,fd);}
 				tmp = t + 19;
 				k = sscanf(tmp,"%s %s %s %s %s %s",dum[0], dum[1], dum[2], dum[3], dum[4], dum[5]);
 				for(j=0;j<k;j++) CoefOrbitals[NumOrb[j]][i]=atof(dum[j]);

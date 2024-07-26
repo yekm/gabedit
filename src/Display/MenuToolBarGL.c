@@ -1,6 +1,6 @@
 /* MenuToolBarGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -206,6 +206,9 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name ,"GeometryNWChemLast"))
  		file_chooser_open(gl_read_last_nwchem_file,_("Read the last geometry from a NWChem output file"),GABEDIT_TYPEFILE_NWCHEM,GABEDIT_TYPEWIN_ORB);
 
+	else if(!strcmp(name ,"GeometryNBO"))
+ 		file_chooser_open(gl_read_nbo_file,_("Read the geometry from a NBO output file(.31)"),GABEDIT_TYPEFILE_NBO_BASIS,GABEDIT_TYPEWIN_ORB);
+
 	else if(!strcmp(name ,"GeometryGabedit"))
  		file_chooser_open(gl_read_gabedit_file,_("Read geometry from a gabedit file"),GABEDIT_TYPEFILE_GABEDIT,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryMolden"))
@@ -217,6 +220,8 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name , "OrbitalsDalton"))
  			file_chooser_open(read_dalton_orbitals_sel,"Read Geometry and Orbitals from a Dalton output file",GABEDIT_TYPEFILE_DALTON,GABEDIT_TYPEWIN_ORB);
 			*/
+	else if(!strcmp(name , "OrbitalsNBO"))
+ 			file_chooser_open(read_nbo_orbitals_sel,_("Read Geometry and Orbitals from a NBO output files (.31 and .xx)"),GABEDIT_TYPEFILE_NBO,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsGamess"))
  			file_chooser_open(read_gamess_orbitals_sel,_("Read Geometry and Orbitals from a Gamess output file"),GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsOrca"))
@@ -846,6 +851,8 @@ static GtkActionEntry gtkActionEntries[] =
 		NULL, "Read the first geometry from a _NWChem output file", G_CALLBACK (activate_action) },
 	{"GeometryNWChemLast", GABEDIT_STOCK_NWCHEM, N_("Read the _last geometry from a _NWChem output file"), 
 		NULL, "Read the last geometry from a _NWChem output file", G_CALLBACK (activate_action) },
+	{"GeometryNBO", GABEDIT_STOCK_NBO, N_("Read from a _NBO file (.31)"), 
+		NULL, "Read the geometry from a NBO file(.31)", G_CALLBACK (activate_action) },
 	{"GeometryQChem",     GABEDIT_STOCK_QCHEM, N_("Geometry Q-_Chem")},
 	{"GeometryQChemFirst", GABEDIT_STOCK_QCHEM, N_("Read the _first geometry from a Q-Chem output file"), 
 		NULL, "Read the first geometry from a Q-Chem output file", G_CALLBACK (activate_action) },
@@ -878,6 +885,8 @@ static GtkActionEntry gtkActionEntries[] =
 		NULL, "Read geometry and orbitals from a FireFly output file", G_CALLBACK (activate_action) },
 	{"OrbitalsNWChem", GABEDIT_STOCK_NWCHEM, N_("Read geometry and orbitals from a _NWChem output file"), 
 		NULL, "Read geometry and orbitals from a NWChem output file", G_CALLBACK (activate_action) },
+	{"OrbitalsNBO", GABEDIT_STOCK_NBO, N_("Read geometry and orbitals from a _NBO output file"), 
+		NULL, "Read geometry and orbitals from a NBO output file", G_CALLBACK (activate_action) },
 	{"OrbitalsQChem", GABEDIT_STOCK_QCHEM, N_("Read geometry and orbitals from a Q-_Chem output file"), 
 		NULL, "Read geometry and orbitals from a Q-Chem output file", G_CALLBACK (activate_action) },
 	{"OrbitalsMopac", GABEDIT_STOCK_MOPAC, N_("Read geometry and orbitals from a _Mopac aux file"), 
@@ -1587,6 +1596,8 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"GeometryQChemFirst\" action=\"GeometryQChemFirst\" />\n"
 "        <menuitem name=\"GeometryQChemLast\" action=\"GeometryQChemLast\" />\n"
 "      </menu>\n"
+"      <separator name=\"sepMenuNBO\" />\n"
+"      <menuitem name=\"GeometryNBO\" action=\"GeometryNBO\" />\n"
 "      <separator name=\"sepMenuQChemGeom\" />\n"
 "      <menuitem name=\"GeometryGabedit\" action=\"GeometryGabedit\" />\n"
 "      <separator name=\"sepMenuGabeditGeom\" />\n"
@@ -1608,6 +1619,7 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"OrbitalsOrca\" action=\"OrbitalsOrca\" />\n"
 "      <menuitem name=\"OrbitalsOrca2mkl\" action=\"OrbitalsOrca2mkl\" />\n"
 "      <menuitem name=\"OrbitalsNWChem\" action=\"OrbitalsNWChem\" />\n"
+"      <menuitem name=\"OrbitalsNBO\" action=\"OrbitalsNBO\" />\n"
 "      <menuitem name=\"OrbitalsQChem\" action=\"OrbitalsQChem\" />\n"
 "      <menuitem name=\"OrbitalsGabeditRead\" action=\"OrbitalsGabeditRead\" />\n"
 "      <menuitem name=\"OrbitalsMolden\" action=\"OrbitalsMolden\" />\n"

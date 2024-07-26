@@ -1,6 +1,6 @@
 /* NMRSpectrum.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1321,10 +1321,10 @@ static gboolean read_nmr_data(GtkFileChooser *filesel, gint response_id)
  	fileName = gtk_file_chooser_get_filename(filesel);
 	window = g_object_get_data(G_OBJECT (filesel), "Window");
 
- 	file = FOpen(fileName, "r");
+ 	file = FOpen(fileName, "rb");
 	if(!file) return FALSE;
 	nGroups  = -1;
-	fgets(tmp,BSIZE,file);
+    	{ char* e = fgets(tmp,BSIZE,file);}
 	if(!strstr(tmp,"[Gabedit Format")) return FALSE;
 	while(!feof(file))
 	{
@@ -1352,13 +1352,13 @@ static gboolean read_nmr_data(GtkFileChooser *filesel, gint response_id)
 	chemichalShifts = g_malloc(nGroups*sizeof(gdouble));
 	JCouplings = g_malloc(nGroups*sizeof(gdouble*));
 
-	fscanf(file,"%lf",&operatingFrequency);
+	{int it = fscanf(file,"%lf",&operatingFrequency);}
 	for(i=0;i<nGroups;i++)
 	{
-		fscanf(file,"%lf %d",&chemichalShifts[i], &numberOfSpins[i]);
+		{int it = fscanf(file,"%lf %d",&chemichalShifts[i], &numberOfSpins[i]);}
 		JCouplings[i] =  g_malloc(nGroups*sizeof(gdouble));
 		for(j=0;j<i;j++)
-			fscanf(file,"%lf",&JCouplings[i][j]);
+			{int it = fscanf(file,"%lf",&JCouplings[i][j]);}
 	}
 
 	entries = g_object_get_data(G_OBJECT (window), "Entries");
@@ -1769,7 +1769,7 @@ static gboolean read_sample_2columns_file(GabeditFileChooser *SelecFile, gint re
 	if(response_id != GTK_RESPONSE_OK) return FALSE;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
 	if(!fd) return FALSE;
 
  	while(!feof(fd))

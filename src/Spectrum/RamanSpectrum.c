@@ -1,6 +1,6 @@
 /* RamanSpectrum.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -150,7 +150,7 @@ static gboolean read_gabedit_molden_file(GabeditFileChooser *SelecFile, gint res
 	if(response_id != GTK_RESPONSE_OK) return FALSE;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
  	OK=FALSE;
 
   	while(!feof(fd))
@@ -309,7 +309,7 @@ static gboolean read_dalton_file(GabeditFileChooser *SelecFile, gint response_id
 	if(response_id != GTK_RESPONSE_OK) return FALSE;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
 	read_dalton_modes_MOLHES(fd, FileName);
 	fclose(fd);
 	return TRUE;
@@ -347,7 +347,7 @@ static gboolean read_gamess_file(GabeditFileChooser *SelecFile, gint response_id
 	if(response_id != GTK_RESPONSE_OK) return FALSE;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
 
  	OK=FALSE;
  	while(!feof(fd))
@@ -482,7 +482,7 @@ static gboolean read_gaussian_file(GabeditFileChooser *SelecFile, gint response_
 	if(response_id != GTK_RESPONSE_OK) return FALSE;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
 	if(!fd) return FALSE;
 
  	do 
@@ -490,7 +490,7 @@ static gboolean read_gaussian_file(GabeditFileChooser *SelecFile, gint response_
  		OK=FALSE;
  		while(!feof(fd))
 		{
-	  		fgets(t,BSIZE,fd);
+    			if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}
 	 		/* if ( strstr( t,"reduced masses") )*/
 	 		if ( strstr( t,"and normal coordinates:") )
 	  		{
@@ -501,7 +501,7 @@ static gboolean read_gaussian_file(GabeditFileChooser *SelecFile, gint response_
 		}
   		while(!feof(fd) )
   		{
-    			fgets(t,BSIZE,fd);
+    			if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}
 			if(!strstr(t,"Frequencies --"))continue;
 			if(this_is_a_backspace(t)) break;
 			nf = sscanf(t,"%s %s %lf %lf %lf", sdum1,sdum2, &freq[0],&freq[1],&freq[2]);
@@ -509,7 +509,7 @@ static gboolean read_gaussian_file(GabeditFileChooser *SelecFile, gint response_
 			if(nf<=0 || nf>3) break;
 			while(!feof(fd))
 			{
-    				fgets(t,BSIZE,fd);
+    				if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}
 				if(strstr(t,"Raman"))
 				{
 					sscanf(t,"%s %s %s %lf %lf %lf", sdum1,sdum2, sdum3, &RamanIntensity[0],&RamanIntensity[1],&RamanIntensity[2]);
@@ -587,7 +587,7 @@ static gboolean read_orca_file(GabeditFileChooser *SelecFile, gint response_id)
 	if(response_id != GTK_RESPONSE_OK) return FALSE;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
 	if(!fd) return FALSE;
 
  	do 
@@ -595,7 +595,7 @@ static gboolean read_orca_file(GabeditFileChooser *SelecFile, gint response_id)
  		OK=FALSE;
  		while(!feof(fd))
 		{
-	  		fgets(t,taille,fd);
+    			if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}
 	 		if (strstr( t,"RAMAN SPECTRUM") ) OK = TRUE;
 	 		if (strstr( t,"Activity")  && strstr( t,"Depolarization") && OK ){ OK = TRUE; break;}
 		}
@@ -605,7 +605,7 @@ static gboolean read_orca_file(GabeditFileChooser *SelecFile, gint response_id)
 		if(intensities) g_free(intensities);
 		frequencies = NULL;
 		intensities = NULL;
-	  	fgets(t,taille,fd);
+    		if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}
   		while(!feof(fd) )
   		{
 			if(!fgets(t,taille,fd)) break;
@@ -665,7 +665,7 @@ static gboolean read_sample_2columns_file(GabeditFileChooser *SelecFile, gint re
 	if(response_id != GTK_RESPONSE_OK) return FALSE;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
 	if(!fd) return FALSE;
 
  	while(!feof(fd))

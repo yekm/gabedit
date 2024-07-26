@@ -1,6 +1,6 @@
 /* UVSpectrum.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -152,7 +152,7 @@ static gboolean read_gabedit_molden_file(GabeditFileChooser *SelecFile, gint res
 	if(response_id != GTK_RESPONSE_OK) return FALSE;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
  	OK=FALSE;
 
   	while(!feof(fd))
@@ -269,7 +269,7 @@ static gboolean read_dalton_file(GabeditFileChooser *SelecFile, gint response_id
 	if(response_id != GTK_RESPONSE_OK) return FALSE;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
 	read_dalton_modes_MOLHES(fd, FileName);
 	fclose(fd);
 	return TRUE;
@@ -300,7 +300,7 @@ static gboolean read_gamess_file(GabeditFileChooser *SelecFile, gint response_id
 	if(response_id != GTK_RESPONSE_OK) return FALSE;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
 	if(!fd) return FALSE;
 
  	do 
@@ -308,11 +308,11 @@ static gboolean read_gamess_file(GabeditFileChooser *SelecFile, gint response_id
  		OK=FALSE;
  		while(!feof(fd))
 		{
-	  		fgets(t,BSIZE,fd);
+    			{ char* e = fgets(t,BSIZE,fd);}
 	 		if ( strstr( t,"EXCITATION") && strstr( t,"STATE") && strstr( t,"OSCILLATOR") )
 	  		{
-    				fgets(t,BSIZE,fd); /* second row of title */
-    				fgets(t,BSIZE,fd); /* ground state */
+    				{ char* e = fgets(t,BSIZE,fd);} /* second row of title */
+    				{ char* e = fgets(t,BSIZE,fd);} /* ground state */
 				OK = TRUE;
 				numberOfStates = 0;
 				break;
@@ -320,7 +320,7 @@ static gboolean read_gamess_file(GabeditFileChooser *SelecFile, gint response_id
 		}
   		while(!feof(fd) )
   		{
-    			fgets(t,BSIZE,fd);
+    			{ char* e = fgets(t,BSIZE,fd);}
 			if(this_is_a_backspace(t)) break;
  			allreals =gab_split (t);
 			k = 0;
@@ -380,7 +380,7 @@ static gboolean read_firefly_file(GabeditFileChooser *SelecFile, gint response_i
 	if(response_id != GTK_RESPONSE_OK) return FALSE;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
 	if(!fd) return FALSE;
 
  	do 
@@ -388,11 +388,11 @@ static gboolean read_firefly_file(GabeditFileChooser *SelecFile, gint response_i
  		OK=FALSE;
  		while(!feof(fd))
 		{
-	  		fgets(t,BSIZE,fd);
+    			{ char* e = fgets(t,BSIZE,fd);}
 	 		if ( strstr( t," EXCITATION ENERGIES") )
 	  		{
-    				fgets(t,BSIZE,fd);
-    				fgets(t,BSIZE,fd);
+    				{ char* e = fgets(t,BSIZE,fd);}
+    				{ char* e = fgets(t,BSIZE,fd);}
 				OK = TRUE;
 				numberOfStates = 0;
 				break;
@@ -400,7 +400,7 @@ static gboolean read_firefly_file(GabeditFileChooser *SelecFile, gint response_i
 		}
   		while(!feof(fd) )
   		{
-    			fgets(t,BSIZE,fd);
+    			{ char* e = fgets(t,BSIZE,fd);}
 			if(this_is_a_backspace(t)) break;
  			allreals =gab_split (t);
 			k = 0;
@@ -458,7 +458,7 @@ static gboolean read_gaussian_file(GabeditFileChooser *SelecFile, gint response_
 	if(response_id != GTK_RESPONSE_OK) return FALSE;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
 	if(!fd) return FALSE;
 
  	do 
@@ -466,7 +466,7 @@ static gboolean read_gaussian_file(GabeditFileChooser *SelecFile, gint response_
  		OK=FALSE;
  		while(!feof(fd))
 		{
-	  		fgets(t,BSIZE,fd);
+    			{ char* e = fgets(t,BSIZE,fd);}
 	 		/* if ( strstr( t,"reduced masses") )*/
 	 		if ( strstr( t,"Excitation energies and oscillator strengths:") )
 	  		{
@@ -477,7 +477,7 @@ static gboolean read_gaussian_file(GabeditFileChooser *SelecFile, gint response_
 		}
   		while(!feof(fd) )
   		{
-    			fgets(t,BSIZE,fd);
+    			{ char* e = fgets(t,BSIZE,fd);}
 			if(strstr(t,"Excited State")&& strstr(t,"eV"))
 			{
 				char* egal = strstr(t,"eV")-10;
@@ -528,7 +528,7 @@ static gboolean read_qchem_file_str(gchar *fileName, gchar* strType)
 
 	if(!fileName) return FALSE;
 
- 	fd = FOpen(fileName, "r");
+ 	fd = FOpen(fileName, "rb");
 	if(!fd) return FALSE;
 
  	do 
@@ -536,7 +536,7 @@ static gboolean read_qchem_file_str(gchar *fileName, gchar* strType)
  		OK=FALSE;
  		while(!feof(fd))
 		{
-	  		fgets(t,BSIZE,fd);
+    			{ char* e = fgets(t,BSIZE,fd);}
 	 		if ( strstr( t,strType))
 	  		{
 				OK = TRUE;
@@ -734,7 +734,7 @@ static gboolean read_qchem_file(GabeditFileChooser *SelecFile, gint response_id)
  	fileName = gabedit_file_chooser_get_current_file(SelecFile);
 
 
- 	fd = FOpen(fileName, "r");
+ 	fd = FOpen(fileName, "rb");
 	if(!fd) return FALSE;
 	while(!feof(fd))
 	{
@@ -802,7 +802,7 @@ static gboolean read_orca_file(GabeditFileChooser *SelecFile, gint response_id)
 	if(response_id != GTK_RESPONSE_OK) return FALSE;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
 	if(!fd) return FALSE;
 
  	do 
@@ -810,7 +810,7 @@ static gboolean read_orca_file(GabeditFileChooser *SelecFile, gint response_id)
  		OK=FALSE;
  		while(!feof(fd))
 		{
-	  		fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 	 		if (strstr( t,"ABSORPTION SPECTRUM VIA TRANSITION ELECTRIC DIPOLE MOMENTS") ) OK = TRUE;
 	 		if (strstr( t,"TX")  && strstr( t,"TY") && strstr( t,"TZ") && OK ){ OK = TRUE; break;}
 		}
@@ -820,8 +820,8 @@ static gboolean read_orca_file(GabeditFileChooser *SelecFile, gint response_id)
 		if(intensities) g_free(intensities);
 		energies = NULL;
 		intensities = NULL;
-	  	fgets(t,taille,fd);
-	  	fgets(t,taille,fd);
+    		{ char* e = fgets(t,taille,fd);}
+    		{ char* e = fgets(t,taille,fd);}
   		while(!feof(fd) )
   		{
 			if(!fgets(t,taille,fd)) break;
@@ -884,7 +884,7 @@ static gboolean read_nwchem_tddft_file(GabeditFileChooser *SelecFile, gint respo
 	if(response_id != GTK_RESPONSE_OK) return FALSE;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
 	if(!fd) return FALSE;
 
  	do 
@@ -892,7 +892,7 @@ static gboolean read_nwchem_tddft_file(GabeditFileChooser *SelecFile, gint respo
  		OK=FALSE;
  		while(!feof(fd))
 		{
-	  		fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 	 		if (strstr( t,"NWChem TDDFT Module") ) {OK = TRUE; break;}
 		}
 		if(!OK) break;
@@ -966,7 +966,7 @@ static gboolean read_nwchem_eom_file(GabeditFileChooser *SelecFile, gint respons
 	if(response_id != GTK_RESPONSE_OK) return FALSE;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
 	if(!fd) return FALSE;
 
  	do 
@@ -974,7 +974,7 @@ static gboolean read_nwchem_eom_file(GabeditFileChooser *SelecFile, gint respons
  		OK=FALSE;
  		while(!feof(fd))
 		{
-	  		fgets(t,taille,fd);
+    			{ char* e = fgets(t,taille,fd);}
 	 		if (strstr( t,"Dim. of EOMCC iter. space") ) {OK = TRUE; break;}
 		}
 		if(!OK) break;
@@ -1037,7 +1037,7 @@ static gboolean read_nwchem_file(GabeditFileChooser *SelecFile, gint response_id
 	if(!read_nwchem_tddft_file(SelecFile, response_id)&& !read_nwchem_eom_file(SelecFile, response_id))
 	{
  		gchar* FileName = gabedit_file_chooser_get_current_file(SelecFile);
- 		FILE* fd = FOpen(FileName, "r");
+ 		FILE* fd = FOpen(FileName, "rb");
 		if(!fd)
 		{
 			gchar buffer[BSIZE];
@@ -1096,7 +1096,7 @@ static gboolean read_sample_2columns_file(GabeditFileChooser *SelecFile, gint re
 	if(response_id != GTK_RESPONSE_OK) return FALSE;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
 	if(!fd) return FALSE;
 
  	while(!feof(fd))

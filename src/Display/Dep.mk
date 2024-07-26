@@ -131,6 +131,14 @@ OrbitalsMopac.o: OrbitalsMopac.c ../../Config.h GlobalOrb.h \
   ../Utils/QL.h ../Utils/MathFunctions.h ../Utils/Zlm.h \
   ../Geometry/GeomGlobal.h GeomDraw.h GLArea.h UtilsOrb.h Basis.h \
   GeomOrbXYZ.h AtomicOrbitals.h StatusOrb.h Orbitals.h BondsOrb.h
+OrbitalsNBO.o: OrbitalsNBO.c ../../Config.h GlobalOrb.h \
+  ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
+  ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
+  ../MultiGrid/TypesMG.h IsoSurface.h ../Common/GabeditType.h \
+  ../Utils/AtomsProp.h ../Utils/UtilsInterface.h ../Utils/Utils.h \
+  ../Utils/Zlm.h ../Utils/../Common/GabeditType.h ../Utils/Constants.h \
+  ../Geometry/GeomGlobal.h GeomDraw.h GLArea.h UtilsOrb.h Basis.h \
+  GeomOrbXYZ.h AtomicOrbitals.h StatusOrb.h Orbitals.h BondsOrb.h
 Orbitals.o: Orbitals.c ../../Config.h GlobalOrb.h \
   ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
   ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
