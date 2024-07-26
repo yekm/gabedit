@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #include <glib/gi18n.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <locale.h>
 
 #include "Global.h"
 #include "MenuToolBar.h"
