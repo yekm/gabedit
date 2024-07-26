@@ -76,7 +76,7 @@ void destroyWinsGamess(GtkWidget *win)
 	freeGamessMolecule();
 	freeGamessMpqc();
 	freeGamessBasis();
-	freeGamessOptimisation();
+	freeGamessOptimization();
 	*/
 }
 /************************************************************************************************************/
@@ -123,13 +123,6 @@ static void putInfoInTextEditor(GtkWidget *button, gpointer data)
 	putGamessGuessInfoInTextEditor();
 	putGamessSCFInfoInTextEditor();
 	putGamessGeometryInfoInTextEditor();
-	/*
-	putGamessBasisInfoInTextEditor();
-	putGamessGuessWaveFunctionInfoInTextEditor();
-	putGamessMoleInfoInTextEditor();
-	if(gamessMpqc.optimize) putGamessOptimisationInfoInTextEditor();
-	putGamessMpqcInfoInTextEditor();
-	*/
 
 	iprogram = PROG_IS_GAMESS;
 	fileopen.command=g_strdup(NameCommandGamess);
@@ -160,24 +153,15 @@ static void gamessInputFileWindow(gboolean newInputFile)
 
 	initGamessMolecule();
 	setGamessMolecule();
-	/*
-	initGamessMpqc();
-	initGamessMole();
-	initGamessFunctionals();
-	initGamessStdFunctionals();
-	initGamessGuessWaveFunction();
-	initGamessBasis();
-	initGamessOptimisation();
-	*/
-
 
 	if(gamessMolecule.numberOfAtoms <1)
 	{
 		Message(
+			_(
 			"You must initially define your geometry.\n\n"
 			"From the principal Menu select : Geometry/Draw\n"
-			"and draw (or read) your molecule.",
-			"Error",TRUE);
+			"and draw (or read) your molecule."),
+			_("Error"),TRUE);
 		return;
 	}
 
@@ -186,21 +170,21 @@ static void gamessInputFileWindow(gboolean newInputFile)
 	Wins= gtk_dialog_new ();
 	gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_NONE);
 	gtk_window_set_transient_for(GTK_WINDOW(Wins),GTK_WINDOW(Fenetre));
-	gtk_window_set_title(&GTK_DIALOG(Wins)->window,"Gamess input");
+	gtk_window_set_title(&GTK_DIALOG(Wins)->window,_("Gamess input"));
     	gtk_window_set_modal (GTK_WINDOW (Wins), TRUE);
 
-	init_child(Wins, destroyWinsGamess," Gamess input ");
+	init_child(Wins, destroyWinsGamess,_(" Gamess input "));
 	g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_children,NULL);
 
 	gtk_widget_realize(Wins);
 
-	button = create_button(Wins,"CANCEL");
+	button = create_button(Wins,_("Cancel"));
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, FALSE, TRUE, 5);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK( toCancelWin),GTK_OBJECT(Wins));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_show (button);
 
-	button = create_button(Wins,"OK");
+	button = create_button(Wins,_("OK"));
 
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->vbox), table, FALSE, TRUE, 5);
 

@@ -29,7 +29,7 @@ void help_commands()
 	gchar temp[BSIZE];
 	GtkWidget* win;
 	sprintf(temp,
-		"     * For add a command to the list:\n"
+		_("     * For add a command to the list:\n"
 	        "       Type the new command and enter. \n"
 		"       This command becomes the default command.\n\n"
 		"     * For change the default command:\n"
@@ -44,8 +44,9 @@ void help_commands()
 	        "      of data file(included the extension \n"
 	        "             .com for Gaussian, Molpro, Molcas and\n"
 	        "             .inp for Gamess, FireFly and Q-Chem).\n"
+		)
 		 );
-	win = Message(temp," Info ",FALSE);
+	win = Message(temp,_(" Info "),FALSE);
 	gtk_window_set_modal (GTK_WINDOW (win), TRUE);
 }
 /***************************************************************************/
@@ -54,7 +55,7 @@ void help_ftp_rsh()
 	gchar temp[BSIZE];
 	GtkWidget* win;
 	sprintf(temp,
-		"     To be able to use this protocol:\n\n"
+		_("     To be able to use this protocol:\n\n"
 		"     *  the server must support rsh \n"
 		"     *  on the remot host\n"
 		"        - edit .rhosts file and add the line: \n"
@@ -63,8 +64,9 @@ void help_ftp_rsh()
 		"        - excecute the orders \n"
 		"             chmod a-wx .rhosts\n"
 		"             chmod u+rw .rhosts\n"
+		)
 		 );
-	win = Message(temp," Info ",FALSE);
+	win = Message(temp,_(" Info "),FALSE);
 	gtk_window_set_modal (GTK_WINDOW (win), TRUE);
 }
 #ifdef G_OS_WIN32
@@ -74,12 +76,13 @@ void help_ssh()
 	gchar temp[2048];
 	GtkWidget* win;
 	sprintf(temp,
-		"     To be able to use ssh protocol:\n\n"
+		_("     To be able to use ssh protocol:\n\n"
 		"     *  the server must support ssh protocol.\n\n"
 		"     *  on the local host,the pscp and plink programs  must installed\n"
 		"        the 2 programes are livred with Gabedit\n"
 		"        but you can download the programs from \n"
 		"        http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html\n"
+		)
 		);
 	win = Message(temp," Info ",FALSE);
 	gtk_window_set_modal (GTK_WINDOW (win), TRUE);
@@ -91,24 +94,13 @@ void help_ssh()
 	gchar temp[2048];
 	GtkWidget* win;
 	sprintf(temp,
-		"     To be able to use ssh protocol:\n\n"
+		_("     To be able to use ssh protocol:\n\n"
 		"     *  the server must support ssh protocol.\n\n"
 		"     *  the local host must support ssh protocol.\n\n"
 		"     *  on the local host, excecute the orders:\n"
 		"           ssh-keygen -t rsa (for create id_rsa ans id_rsa.pub files)\n"
 		"           ssh-keygen -t dsa (for create id_dsa ans id_dsa.pub files)\n"
 		"              for the 2 ordres : you must create the codes without passphrase.\n\n"
-		/*
-		"           copy id_rsa, id_rsa.pub, id_dsa, id_dsa.pub files at .ssh directory.\n\n"
-		"           edit config file(at .ssh directory) and add the lines :\n"
-		"              Host localhostname\n"
-		"                   IdentityFile  yourHomeDirectory/.ssh/id_rsa\n"
-		"                   IdentityFile2 yourHomeDirectory/.ssh/id_dsa\n"
-		"              Host remothostname\n"
-		"                   IdentityFile  yourHomeDirectory/.ssh/id_rsa\n"
-		"                   IdentityFile2 yourHomeDirectory/.ssh/id_dsa\n"
-		"           and save this file.\n\n"
-		*/
 		"           copy id_rsa.pub, id_dsa.pub files at HOME directory at REMOT host.\n"
 		"           (example scp id_*.pub remotlogin@remotehost:.)\n\n"
 		"     *  on the remot host, excecute the orders:\n"
@@ -116,8 +108,9 @@ void help_ssh()
 		"          cat id_dsa.pub >> .ssh/authorized_keys2\n"
 		"          chmod go-w .ssh/authorized_keys\n"
 		"          chmod go-w .ssh/authorized_keys2\n"
+		)
 		);
-	win = Message(temp," Info ",FALSE);
+	win = Message(temp,_(" Info "),FALSE);
 	gtk_window_set_modal (GTK_WINDOW (win), TRUE);
 }
 #endif /* G_OS_WIN32 */
@@ -125,13 +118,16 @@ void help_ssh()
 void help_variables_buttons()
 {
  gchar *temp;
- temp=       g_strdup("               In this frame you have 6 buttons :\n\n");
- temp=g_strdup_printf("%sNew : For create a new variable\n",temp);
- temp=g_strdup_printf("%sEdit : For modify the selected variable\n",temp);
- temp=g_strdup_printf("%sDelete : For delete the selected variable\n",temp);
- temp=g_strdup_printf("%s<= All : For tansform all variables in constants\n",temp);
- temp=g_strdup_printf("%s<= One : For tansform the selected variable in constant\n",temp);
- temp=g_strdup_printf("%sHelp : For view this window\n",temp);
+ temp=       g_strdup_printf(
+	_("               In this frame you have 6 buttons :\n\n"
+ 	"New : For create a new variable\n"
+ 	"Edit : For modify the selected variable\n"
+ 	"Delete : For delete the selected variable\n"
+ 	"<= All : For tansform all variables in constants\n"
+ 	"<= One : For tansform the selected variable in constant\n"
+ 	"Help : For view this window\n"
+	)
+		 );
  
  Message(temp," Info ",FALSE);
  g_free(temp);
@@ -140,15 +136,18 @@ void help_variables_buttons()
 void help_geometry_buttons()
 {
  gchar *temp;
- temp=       g_strdup("               In this frame you have 8 buttons :\n\n");
- temp=g_strdup_printf("%sNew : For create a new center\n",temp);
- temp=g_strdup_printf("%sEdit : For modify a selected center\n",temp);
- temp=g_strdup_printf("%sDelete Last\b: For delete the last center\n",temp);
- temp=g_strdup_printf("%sDraw : For draw your geometry\n",temp);
- temp=g_strdup_printf("%sSave in file : For save your geometry in file\n",temp);
- temp=g_strdup_printf("%sAll => : For tansform  all contants in variables\n",temp);
- temp=g_strdup_printf("%sOne => : For tansform the contants of selected center in variables\n",temp);
- temp=g_strdup_printf("%sHelp : For view this window\n",temp);
+ temp=       g_strdup_printf(
+		 _("               In this frame you have 8 buttons :\n\n"
+		 "New : For create a new center\n"
+		 "Edit : For modify a selected center\n"
+		 "Delete Last  : For delete the last center\n"
+		 "Draw : For draw your geometry\n"
+		 "Save in file : For save your geometry in file\n"
+		 "All => : For tansform  all contants in variables\n"
+		 "One => : For tansform the contants of selected center in variables\n"
+		 "Help : For view this window\n"
+		 )
+		 );
  
  Message(temp," Info ",FALSE);
  g_free(temp);
@@ -158,7 +157,7 @@ gchar* messagePovray()
 {
 #ifndef G_OS_WIN32
 		gchar* t = g_strdup_printf(
-		"You can create an animated file using gab*.pov files. For this  :\n"
+		_("You can create an animated file using gab*.pov files. For this  :\n"
         "    You must initially create files gab*.bmp using gab*.pov files. For example :\n"
 		"           povray +Igab1.pov +Ogab1.bmp +W900 +H900\n"
 		"           povray +Igab2.pov +Ogab2.bmp +W900 +H900\n"
@@ -172,12 +171,13 @@ gchar* messagePovray()
 	    "            povray is a free software. You can download this(for any system) from http://www.povray.org\n"
 		"            convert is a free software. You can download this(for any system) from http://www.imagemagick.org\n"
 		"           (in Linux convert is probably installed)\n\n"
-				);
+		)
+		);
 
 		return t;
 #else
 		gchar* t = g_strdup_printf(
-		"You can create an animated file using gab*.pov files. For this  :\n"
+		_("You can create an animated file using gab*.pov files. For this  :\n"
         "    You must initially create files gab*.bmp using gab*.pov files.\n"
 		"           run povray\n"
 		"           in toolbar select '[320x240, AA 0.3]'\n"
@@ -191,7 +191,8 @@ gchar* messagePovray()
 	    
 		"            convert is a free software. You can download this(for any system) from http://www.imagemagick.org\n"
 	    "            povray is a free software. You can download this(for any system) from http://www.povray.org\n\n"
-				);
+	    )
+	);
 
 		return t;
 
@@ -203,21 +204,23 @@ gchar* messageBMP()
 {
 #ifndef G_OS_WIN32
 		gchar* t = g_strdup(
-		" You can create an animated file using convert software :\n"
+		_(" You can create an animated file using convert software :\n"
 		"     convert -delay 10 -loop 1000 gab*.bmp imageAnim.gif (for a gif animated file)\n"
 		"     or\n"
 		"     convert -delay 10 -loop 1000 gab*.bmp imageAnim.mng (for a png animated file)\n\n"
 	    "convert is a free software. You can download this(for any system) from http://www.imagemagick.org\n"
 		"(in Linux convert is probably installed)\n\n"
+		)
 		);
 		return t;
 #else
 		gchar* t = g_strdup(
-		"You can create an animated file using convert software, for this :\n"
+		_("You can create an animated file using convert software, for this :\n"
 		"     copy 'xAmin.bat' from Gabedit directory in directory of gab*.bmp files\n"
 		"     or\n"
 		"     click to xAnim.bat\n\n"
 	    "convert is a free software. You can download this(for any system) from http://www.imagemagick.org\n\n"
+	    )
 		);
 		return t;
 
@@ -228,21 +231,23 @@ gchar* messagePPM()
 {
 #ifndef G_OS_WIN32
 		gchar* t = g_strdup(
-		" You can create an animated file using convert software :\n"
+		_(" You can create an animated file using convert software :\n"
 		"     convert -delay 10 -loop 1000 gab*.ppm imageAnim.gif (for a gif animated file)\n"
 		"     or\n"
 		"     convert -delay 10 -loop 1000 gab*.ppm imageAnim.mng (for a png animated file)\n\n"
 	    "convert is a free software. You can download this(for any system) from http://www.imagemagick.org\n"
 		"(in Linux convert is probably installed)\n\n"
+		)
 		);
 		return t;
 #else
 		gchar* t = g_strdup(
-		"You can create an animated file using convert software, for this :\n"
+		_("You can create an animated file using convert software, for this :\n"
 		"     copy 'xAminPPM.bat' from Gabedit directory in directory of gab*.ppm files\n"
 		"     or\n"
 		"     click to xAnimPPM.bat\n\n"
 	    "convert is a free software. You can download this(for any system) from http://www.imagemagick.org\n\n"
+	    )
 		);
 		return t;
 #endif
@@ -252,12 +257,12 @@ gchar* messageAnimatedImage(gchar* format)
 {
 	if(strcmp(format,"pov")==0) return messagePovray();
 	gchar* t = g_strdup_printf(
-	" You can create an animated file using convert software :\n"
+	_(" You can create an animated file using convert software :\n"
 	"     convert -delay 10 -loop 1000 gab*.%s imageAnim.gif (for a gif animated file)\n"
 	"     or\n"
 	"     convert -delay 10 -loop 1000 gab*.%s imageAnim.mng (for a png animated file)\n\n"
         "convert is a free software. You can download this(for any system) from http://www.imagemagick.org\n"
-	"(in Linux convert is probably installed)\n\n",
+	"(in Linux convert is probably installed)\n\n"),
 	format, format
 	);
 	return t;

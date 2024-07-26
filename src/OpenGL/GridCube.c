@@ -253,7 +253,7 @@ static void applyScale(GtkWidget *Win,gpointer data)
 	if(this_is_a_real(temp)) factor = atof(temp);
 	else
 	{
-		GtkWidget* message =Message("Error : your value is not a float ","Error",TRUE);
+		GtkWidget* message =Message(_("Error : your value is not a float "),_("Error"),TRUE);
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		if(temp) g_free(temp);
 		return;
@@ -280,17 +280,17 @@ void create_scale_dlg()
 
 	if(!grid )
 	{
-		if( !CancelCalcul) Message("Sorry, Grid is not defined ","Error",TRUE);
+		if( !CancelCalcul) Message(_("Sorry, Grid is not defined "),_("Error"),TRUE);
 		return;
 	}
 	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(Win),"Scale grid");
+	gtk_window_set_title(GTK_WINDOW(Win),_("Scale grid"));
 	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
 	gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
 	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(PrincipalWindow));
 	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
 
-	add_glarea_child(Win,"Scale grid");
+	add_glarea_child(Win,_("Scale grid"));
 
 	vboxall = create_vbox(Win);
 	vboxwin = vboxall;
@@ -302,7 +302,7 @@ void create_scale_dlg()
 	vboxframe = create_vbox(frame);
 	table = gtk_table_new(1,3,FALSE);
 	gtk_container_add(GTK_CONTAINER(vboxframe),table);
-	add_label_table(table,"Factor",0,0);
+	add_label_table(table,_("Factor"),0,0);
 	add_label_table(table,":",0,1);
 
 	entry= gtk_entry_new ();
@@ -316,14 +316,14 @@ void create_scale_dlg()
 	hbox = create_hbox_false(vboxwin);
 	gtk_widget_realize(Win);
 
-	button = create_button(Win,"Cancel");
+	button = create_button(Win,_("Cancel"));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Win));
 	gtk_widget_show (button);
 
-	button = create_button(Win,"OK");
+	button = create_button(Win,_("OK"));
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
@@ -354,60 +354,60 @@ void subtract_cube_file(gchar* filename)
 
 	if(!file)
 	{
-		sprintf(t,"Sorry, I can not open %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not open %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		return ;
 	}
 
 	if(!fgets(t,len,file))  /* Title */   
 	{
-		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		fclose(file);
 		return ;
 	}
 	if(!fgets(t,len,file))  /* Type */   
 	{
-		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		fclose(file);
 		return;
 	}
 	if(!fgets(t,len,file))  /* NAtoms, X-Origin, Y-Origin, Z-Origin */   
 	{
-		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		fclose(file);
 		return;
 	}
 	if(sscanf(t,"%d %lf %lf %lf",&Natoms,&XYZ0[0],&XYZ0[1],&XYZ0[2])!=4)
 	{
-		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		fclose(file);
 		return;
 	};
 	Natoms = abs(Natoms);
 	if(Natoms != Ncenters)
-		Message("The number of atoms in cube file is not equal to default value","Warning",TRUE);
+		Message(_("The number of atoms in cube file is not equal to default value"),_("Warning"),TRUE);
 	for(i=0;i<3;i++)
 		if(fabs(XYZ0[i]-grid->point[0][0][0].C[i])>1e-6) 
 		{
-			Message("Sorry, probleme with origin of cube","Error",TRUE);
+			Message(_("Sorry, probleme with origin of cube"),_("Error"),TRUE);
 			fclose(file);
 			return;
 		}
 	if(!fgets(t,len,file))  /* Nx, X0,Y0,Z0 */   
 	{
-		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		fclose(file);
 		return;
 	}
 	if(sscanf(t,"%d %lf %lf %lf",&N[0],&X[0],&Y[0],&Z[0])!=4)
 	{
-		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		fclose(file);
 		return;
 	};
@@ -416,26 +416,26 @@ void subtract_cube_file(gchar* filename)
 	zh = grid->point[0][0][1].C[0]-grid->point[0][0][0].C[0];
 	if(N[0] != grid->N[0])
 	{
-		Message("Sorry, problem with number of points at x direction","Error",TRUE);
+		Message(_("Sorry, problem with number of points at x direction"),_("Error"),TRUE);
 		return;
 	}
 	if(fabs(xh-X[0])>1e-6 || fabs(yh-Y[0])>1e-6 || fabs(zh-Z[0])>1e-6)
 	{
-		Message("Sorry, problem with X vecteor","Error",TRUE);
+		Message(_("Sorry, problem with X vecteor"),_("Error"),TRUE);
 		return;
 	}
 
 	if(!fgets(t,len,file))  /* Ny, X1,Y1,Z1 */   
 	{
-		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		fclose(file);
 		return;
 	}
 	if(sscanf(t,"%d %lf %lf %lf",&N[1],&X[1],&Y[1],&Z[1])!=4)
 	{
-		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		fclose(file);
 		return;
 	};
@@ -444,25 +444,25 @@ void subtract_cube_file(gchar* filename)
 	zh = grid->point[0][0][1].C[1]-grid->point[0][0][0].C[1];
 	if(N[1] != grid->N[1])
 	{
-		Message("Sorry, problem with number of points at y direction","Error",TRUE);
+		Message(_("Sorry, problem with number of points at y direction"),_("Error"),TRUE);
 		return;
 	}
 	if(fabs(xh-X[1])>1e-6 || fabs(yh-Y[1])>1e-6 || fabs(zh-Z[1])>1e-6)
 	{
-		Message("Sorry, problem with Y vecteor","Error",TRUE);
+		Message(_("Sorry, problem with Y vecteor"),_("Error"),TRUE);
 		return;
 	}
 	if(!fgets(t,len,file))  /* Nz, X2, Y2,Z2 */   
 	{
-		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		fclose(file);
 		return;
 	}
 	if(sscanf(t,"%d %lf %lf %lf",&N[2],&X[2],&Y[2],&Z[2])!=4)
 	{
-		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		fclose(file);
 		return;
 	};
@@ -471,12 +471,12 @@ void subtract_cube_file(gchar* filename)
 	zh = grid->point[0][0][1].C[2]-grid->point[0][0][0].C[2];
 	if(N[1] != grid->N[1])
 	{
-		Message("Sorry, problem with number of points at z direction","Error",TRUE);
+		Message(_("Sorry, problem with number of points at z direction"),_("Error"),TRUE);
 		return;
 	}
 	if(fabs(xh-X[2])>1e-6 || fabs(yh-Y[2])>1e-6 || fabs(zh-Z[2])>1e-6)
 	{
-		Message("Sorry, problem with Z vecteor","Error",TRUE);
+		Message(_("Sorry, problem with Z vecteor"),_("Error"),TRUE);
 		return;
 	}
 	j=-1;
@@ -485,8 +485,8 @@ void subtract_cube_file(gchar* filename)
 		j++;
 		if(!fgets(t,len,file))
 		{
-			sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-			Message(t,"Error",TRUE);
+			sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+			Message(t,_("Error"),TRUE);
 			return;
 		}
 		/* printf("%s\n",t);*/
@@ -495,8 +495,8 @@ void subtract_cube_file(gchar* filename)
 	tmpGrid = get_grid_from_gauss_molpro_cube_file(0,file,1,1,N,XYZ0,X,Y,Z);
 	if(!tmpGrid)
 	{
-		sprintf(t,"Sorry, tmpGrid=NULL I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		return;
 	}
 
@@ -614,60 +614,60 @@ void read_mapping_cube_file(gchar* filename)
 
 	if(!file)
 	{
-		sprintf(t,"Sorry, I can not open %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not open %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		return ;
 	}
 
 	if(!fgets(t,len,file))  /* Title */   
 	{
-		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		fclose(file);
 		return ;
 	}
 	if(!fgets(t,len,file))  /* Type */   
 	{
-		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		fclose(file);
 		return;
 	}
 	if(!fgets(t,len,file))  /* NAtoms, X-Origin, Y-Origin, Z-Origin */   
 	{
-		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		fclose(file);
 		return;
 	}
 	if(sscanf(t,"%d %lf %lf %lf",&Natoms,&XYZ0[0],&XYZ0[1],&XYZ0[2])!=4)
 	{
-		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		fclose(file);
 		return;
 	};
 	Natoms = abs(Natoms);
 	if(Natoms != Ncenters)
-		Message("The number of atoms in cube file is not equal to default value","Warning",TRUE);
+		Message(_("The number of atoms in cube file is not equal to default value"),_("Warning"),TRUE);
 	for(i=0;i<3;i++)
 		if(fabs(XYZ0[i]-grid->point[0][0][0].C[i])>1e-6) 
 		{
-			Message("Sorry, probleme with origin of cube","Error",TRUE);
+			Message(_("Sorry, probleme with origin of cube"),_("Error"),TRUE);
 			fclose(file);
 			return;
 		}
 	if(!fgets(t,len,file))  /* Nx, X0,Y0,Z0 */   
 	{
-		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		fclose(file);
 		return;
 	}
 	if(sscanf(t,"%d %lf %lf %lf",&N[0],&X[0],&Y[0],&Z[0])!=4)
 	{
-		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		fclose(file);
 		return;
 	};
@@ -676,26 +676,26 @@ void read_mapping_cube_file(gchar* filename)
 	zh = grid->point[0][0][1].C[0]-grid->point[0][0][0].C[0];
 	if(N[0] != grid->N[0])
 	{
-		Message("Sorry, problem with number of points at x direction","Error",TRUE);
+		Message(_("Sorry, problem with number of points at x direction"),_("Error"),TRUE);
 		return;
 	}
 	if(fabs(xh-X[0])>1e-6 || fabs(yh-Y[0])>1e-6 || fabs(zh-Z[0])>1e-6)
 	{
-		Message("Sorry, problem with X vecteor","Error",TRUE);
+		Message(_("Sorry, problem with X vecteor"),_("Error"),TRUE);
 		return;
 	}
 
 	if(!fgets(t,len,file))  /* Ny, X1,Y1,Z1 */   
 	{
-		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		fclose(file);
 		return;
 	}
 	if(sscanf(t,"%d %lf %lf %lf",&N[1],&X[1],&Y[1],&Z[1])!=4)
 	{
-		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		fclose(file);
 		return;
 	};
@@ -704,25 +704,25 @@ void read_mapping_cube_file(gchar* filename)
 	zh = grid->point[0][0][1].C[1]-grid->point[0][0][0].C[1];
 	if(N[1] != grid->N[1])
 	{
-		Message("Sorry, problem with number of points at y direction","Error",TRUE);
+		Message(_("Sorry, problem with number of points at y direction"),_("Error"),TRUE);
 		return;
 	}
 	if(fabs(xh-X[1])>1e-6 || fabs(yh-Y[1])>1e-6 || fabs(zh-Z[1])>1e-6)
 	{
-		Message("Sorry, problem with Y vecteor","Error",TRUE);
+		Message(_("Sorry, problem with Y vecteor"),_("Error"),TRUE);
 		return;
 	}
 	if(!fgets(t,len,file))  /* Nz, X2, Y2,Z2 */   
 	{
-		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		fclose(file);
 		return;
 	}
 	if(sscanf(t,"%d %lf %lf %lf",&N[2],&X[2],&Y[2],&Z[2])!=4)
 	{
-		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		fclose(file);
 		return;
 	};
@@ -731,12 +731,12 @@ void read_mapping_cube_file(gchar* filename)
 	zh = grid->point[0][0][1].C[2]-grid->point[0][0][0].C[2];
 	if(N[1] != grid->N[1])
 	{
-		Message("Sorry, problem with number of points at z direction","Error",TRUE);
+		Message(_("Sorry, problem with number of points at z direction"),_("Error"),TRUE);
 		return;
 	}
 	if(fabs(xh-X[2])>1e-6 || fabs(yh-Y[2])>1e-6 || fabs(zh-Z[2])>1e-6)
 	{
-		Message("Sorry, problem with Z vecteor","Error",TRUE);
+		Message(_("Sorry, problem with Z vecteor"),_("Error"),TRUE);
 		return;
 	}
 	j=-1;
@@ -745,8 +745,8 @@ void read_mapping_cube_file(gchar* filename)
 		j++;
 		if(!fgets(t,len,file))
 		{
-			sprintf(t,"Sorry, I can not  read cube from %s file",filename);
-			Message(t,"Error",TRUE);
+			sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+			Message(t,_("Error"),TRUE);
 			return;
 		}
 		/* printf("%s\n",t);*/
@@ -756,8 +756,8 @@ void read_mapping_cube_file(gchar* filename)
 	fclose(file);
 	if(!tmpGrid)
 	{
-		sprintf(t,"Sorry, tmpGrid=NULL I can not  read cube from %s file",filename);
-		Message(t,"Error",TRUE);
+		sprintf(t,_("Sorry, I can not read cube from %s file"),filename);
+		Message(t,_("Error"),TRUE);
 		return;
 	}
 
@@ -791,7 +791,7 @@ void save_grid_gabedit_cube_file(gchar* filename)
 	zh = grid->point[0][0][1].C[2]-grid->point[0][0][0].C[2];
 	fprintf(file,"%d %lf %lf %lf\n",grid->N[2],xh, yh, zh);
 
-	set_status_label_info("Geometry","Writing...");
+	set_status_label_info(_("Geometry"),_("Writing..."));
 
 	progress_orb(0,GABEDIT_PROGORB_SAVEGEOM,TRUE);
 	scal = (gdouble)1.01/Ncenters;
@@ -802,12 +802,12 @@ void save_grid_gabedit_cube_file(gchar* filename)
 		progress_orb(scal,GABEDIT_PROGORB_SAVEGEOM,FALSE);
 		fprintf(file,"%d %lf %lf %lf %lf\n",(gint)GeomOrb[j].Prop.atomicNumber,dum,GeomOrb[j].C[0],GeomOrb[j].C[1],GeomOrb[j].C[2]);
 	}
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
 
 	progress_orb(0,GABEDIT_PROGORB_SAVEGRID,TRUE);
 	scal = (gdouble)1.01/grid->N[0];
  
-	set_status_label_info("Grid","Writing...");
+	set_status_label_info(_("Grid"),_("Writing..."));
 	for(i=0;i<grid->N[0];i++)
 	{
 		for(j=0;j<grid->N[1];j++)
@@ -828,7 +828,7 @@ void save_grid_gabedit_cube_file(gchar* filename)
 		progress_orb(scal,GABEDIT_PROGORB_SAVEGRID,FALSE);
 	}
 	progress_orb(0,GABEDIT_PROGORB_SAVEGRID,TRUE);
-	set_status_label_info("Grid","Ok");
+	set_status_label_info(_("Grid"),_("Ok"));
 	CancelCalcul = FALSE;
 	fclose(file);
 }
@@ -894,7 +894,7 @@ gboolean get_values_from_gauss_molpro_cube_density_file(FILE* file,gint numblock
 	{
 		if(!fgets(t,len,file))  /* Nx, X0,X1,X2 */   
 		{
-			Message("I can not read cube from this file\n","Error",TRUE);
+			Message(_("I can not read cube from this file\n"),_("Error"),TRUE);
 			g_free(tmpV);
 			return FALSE;
 		}
@@ -933,7 +933,7 @@ gboolean get_values_from_gauss_molpro_cube_orbitals_file(FILE* file,gint numorb,
 	{
 		if(!fgets(t,len,file))  /* Nx, X0,X1,X2 */   
 		{
-			Message("I can not read cube from this file\n","Error",TRUE);
+			Message(_("I can not read cube from this file\n"),_("Error"),TRUE);
 			g_free(tmpV);
 			return FALSE;
 		}
@@ -946,7 +946,7 @@ gboolean get_values_from_gauss_molpro_cube_orbitals_file(FILE* file,gint numorb,
 			if(k+5>=n-1)
 	                        break;
 			/* Debug("Error t =%s ",t);*/
-			Message("I can not read cube from this file\n","Error",TRUE);
+			Message(_("I can not read cube from this file\n"),_("Error"),TRUE);
 			g_free(tmpV);
 			return FALSE;
 		}
@@ -1081,7 +1081,7 @@ gboolean read_geometry_from_gauss_cube_file(FILE* file,gint Natoms)
 	Ncenters = Natoms;
 	GeomOrb=g_malloc(Ncenters*sizeof(TypeGeomOrb));
 
-	set_status_label_info("Geometry","Reading");
+	set_status_label_info(_("Geometry"),_("Reading"));
 
 	progress_orb(0,GABEDIT_PROGORB_READGEOM,TRUE);
 	scal = (gdouble)1.01/Ncenters;
@@ -1128,12 +1128,12 @@ gboolean read_geometry_from_gauss_cube_file(FILE* file,gint Natoms)
 		if(this_is_a_new_geometry()) free_objects_all();
 		glarea_rafresh(GLArea);
 		init_atomic_orbitals();
-		set_status_label_info("Geometry","Ok");
+		set_status_label_info(_("Geometry"),_("Ok"));
 	}
 	else
 	{
 		free_data_all();
-		set_status_label_info("Geometry","Nothing");
+		set_status_label_info(_("Geometry"),_("Nothing"));
 	}
 	return OK;
 }
@@ -1144,37 +1144,37 @@ gboolean read_grid_limits_from_gauss_cube_file(FILE* file,gint N[],gdouble X[3],
 	gchar t[BSIZE];
 	if(!fgets(t,len,file))  /* Nx, X0,Y0,Z0 */   
 	{
-		Message("I can not read cube from this file\n","Error",TRUE);
+		Message(_("I can not read cube from this file\n"),_("Error"),TRUE);
 		fclose(file);
 		return FALSE;
 	}
 	if(sscanf(t,"%d %lf %lf %lf",&N[0],&X[0],&Y[0],&Z[0])!=4)
 	{
-		Message("I can not read cube from this file\n","Error",TRUE);
+		Message(_("I can not read cube from this file\n"),_("Error"),TRUE);
 		fclose(file);
 		return FALSE;
 	};
 	if(!fgets(t,len,file))  /* Ny, X1,Y1,Z1 */   
 	{
-		Message("I can not read cube from this file\n","Error",TRUE);
+		Message(_("I can not read cube from this file\n"),_("Error"),TRUE);
 		fclose(file);
 		return FALSE;
 	}
 	if(sscanf(t,"%d %lf %lf %lf",&N[1],&X[1],&Y[1],&Z[1])!=4)
 	{
-		Message("I can not read cube from this file\n","Error",TRUE);
+		Message(_("I can not read cube from this file\n"),_("Error"),TRUE);
 		fclose(file);
 		return FALSE;
 	};
 	if(!fgets(t,len,file))  /* Nz, X2, Y2,Z2 */   
 	{
-		Message("I can not read cube from this file\n","Error",TRUE);
+		Message(_("I can not read cube from this file\n"),_("Error"),TRUE);
 		fclose(file);
 		return FALSE;
 	}
 	if(sscanf(t,"%d %lf %lf %lf",&N[2],&X[2],&Y[2],&Z[2])!=4)
 	{
-		Message("I can not read cube from this file\n","Error",TRUE);
+		Message(_("I can not read cube from this file\n"),_("Error"),TRUE);
 		fclose(file);
 		return FALSE;
 	};
@@ -1194,7 +1194,7 @@ gint* read_numorbs_from_gauss_cube_file(FILE* file)
 
 	if(!fgets(t,len,file)) 
 	{
-		Message("I can not read cube from this file\n","Error",TRUE);
+		Message(_("I can not read cube from this file\n"),_("Error"),TRUE);
 		return NULL;
 	}
  	allints =gab_split (t);
@@ -1224,7 +1224,7 @@ gint* read_numorbs_from_gauss_cube_file(FILE* file)
 	{
 		if(!fgets(t,len,file)) 
 		{
-			Message("I can not read cube from this file\n","Error",TRUE);
+			Message(_("I can not read cube from this file\n"),_("Error"),TRUE);
 			return NULL;
 		}
 		/* Debug("t =%s\n",t);*/
@@ -1253,8 +1253,8 @@ static GtkWidget *create_orbitals_number_frame( GtkWidget *vboxall,GtkWidget **e
   gushort i;
   GtkWidget *Table;
 
-  LabelLeft[0] = g_strdup("Total number of orbitals");
-  LabelLeft[1] = g_strdup("Orbital number");
+  LabelLeft[0] = g_strdup(_("Total number of orbitals"));
+  LabelLeft[1] = g_strdup(_("Orbital number"));
 
   tlistnum  = g_malloc(norbs*sizeof(gchar*));
   for(i=0;i<norbs;i++)
@@ -1262,7 +1262,7 @@ static GtkWidget *create_orbitals_number_frame( GtkWidget *vboxall,GtkWidget **e
 	  tlistnum[i] = g_strdup_printf("%d",i+1);
   }
 
-  frame = gtk_frame_new ("Selection of orbital number");
+  frame = gtk_frame_new (_("Selection of orbital number"));
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
@@ -1293,7 +1293,7 @@ static GtkWidget *create_orbitals_number_frame( GtkWidget *vboxall,GtkWidget **e
   	return frame;
 }
 /**************************************************************************/
-void read_gauss_molpro_cube_orbitals_file(gchar* filename,gint numorb,gint Norbs,gint typefile)
+gboolean read_gauss_molpro_cube_orbitals_file(gchar* filename,gint numorb,gint Norbs,gint typefile, gboolean showisowin)
 {
 	FILE* file = FOpen(filename, "rb");
 	gchar* tmp;
@@ -1312,50 +1312,50 @@ void read_gauss_molpro_cube_orbitals_file(gchar* filename,gint numorb,gint Norbs
 	/* Debug("Filename  = %s\n",filename);*/
 	if(!file)
 	{
-		Message("I can not open file\n","Error",TRUE);
-		return ;
+		Message(_("I can not open file\n"),_("Error"),TRUE);
+		return FALSE;
 	}
 
 	free_data_all();
 	tmp = get_name_file(filename);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File Name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Gaussian Cube");
+	set_status_label_info(_("File type"),"Gaussian Cube");
 
 	if(!fgets(t,len,file))  /* Title */   
 	{
-		Message("I can not read cube from this file\n","Error",TRUE);
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
+		Message(_("I can not read cube from this file\n"),_("Error"),TRUE);
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
 		fclose(file);
-		return ;
+		return FALSE;
 	}
 	/* Debug("t = %s\n",t);*/
 	if(!fgets(t,len,file))  /* Type */   
 	{
-		Message("I can not read cube from this file\n","Error",TRUE);
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
+		Message(_("I can not read cube from this file\n"),_("Error"),TRUE);
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
 		fclose(file);
-		return;
+		return FALSE;
 	}
 	/* Debug("t = %s\n",t);*/
 	if(!fgets(t,len,file))  /* NAtoms, X-Origin, Y-Origin, Z-Origin */   
 	{
-		Message("I can not read cube from this file\n","Error",TRUE);
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
+		Message(_("I can not read cube from this file\n"),_("Error"),TRUE);
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
 		fclose(file);
-		return;
+		return FALSE;
 	}
 	/* Debug("t = %s\n",t);*/
 	if(sscanf(t,"%d %lf %lf %lf",&Natoms,&XYZ0[0],&XYZ0[1],&XYZ0[2])!=4)
 	{
-		Message("I can not read cube from this file\n","Error",TRUE);
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
+		Message(_("I can not read cube from this file\n"),_("Error"),TRUE);
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
 		fclose(file);
-		return;
+		return FALSE;
 	};
 	if(Natoms<0)
 		type = 0;
@@ -1367,17 +1367,17 @@ void read_gauss_molpro_cube_orbitals_file(gchar* filename,gint numorb,gint Norbs
 	/* Debug("read limits %s\n");*/
 	if(!read_grid_limits_from_gauss_cube_file(file,N,X,Y,Z))
 	{
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		return;
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		return FALSE;
 	}
 
 	/* Debug("read geometry %s\n");*/
 	if(!read_geometry_from_gauss_cube_file(file,Natoms))
 	{
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		return;
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		return FALSE;
 	}
 	/* Debug("Natoms = %d\n",Natoms);*/
 	/* Debug("X = %lf %lf %lf \n",X[0],X[1],X[2]);*/
@@ -1398,14 +1398,12 @@ void read_gauss_molpro_cube_orbitals_file(gchar* filename,gint numorb,gint Norbs
 	if(numorb>norbs)
 		numorb = norbs;
 	set_status_label_info("Grid","Reading...");
-	if(typefile==0)
-		grid = get_grid_from_gauss_molpro_cube_file(0,file,numorb,norbs,N,XYZ0,X,Y,Z);
-	else
-		grid = get_grid_from_gauss_molpro_cube_file(1,file,numorb,norbs,N,XYZ0,X,Y,Z);
+	if(typefile==0) grid = get_grid_from_gauss_molpro_cube_file(0,file,numorb,norbs,N,XYZ0,X,Y,Z);
+	else grid = get_grid_from_gauss_molpro_cube_file(1,file,numorb,norbs,N,XYZ0,X,Y,Z);
 	if(grid)
 	{
         	limits = grid->limits;
-		create_iso_orbitals();
+		if(showisowin) create_iso_orbitals();
 		set_status_label_info("Grid","Ok");
 	}
 	else
@@ -1415,6 +1413,7 @@ void read_gauss_molpro_cube_orbitals_file(gchar* filename,gint numorb,gint Norbs
 	}
 
 	fclose(file);
+	return (grid!=NULL);
 }
 /********************************************************************************/
 static void apply_read_orb(GtkWidget *button,gpointer data)
@@ -1435,14 +1434,14 @@ static void apply_read_orb(GtkWidget *button,gpointer data)
 	numorb = atoi(t);
 	if(numorb>*Norbs || numorb<=0)
 	{
-		Message("Error detected in gabedit\ni Please contat the author for this bug","Error",TRUE);
+		Message(_("Error detected in gabedit\n Please contat the author for this bug"),_("Error"),TRUE);
 		g_free(FileName);
 		g_free(Norbs);
   		delete_child(Win);
 		return;
 	}
   	delete_child(Win);
-	read_gauss_molpro_cube_orbitals_file(FileName,numorb,*Norbs,*TypeFile);
+	read_gauss_molpro_cube_orbitals_file(FileName,numorb,*Norbs,*TypeFile,TRUE);
 	g_free(FileName);
 	g_free(Norbs);
 	g_free(TypeFile);
@@ -1462,7 +1461,7 @@ static void create_window_list_orbitals_numbers(GtkWidget *w,gint norbs,gchar* f
   GtkWidget *hbox;
   GtkWidget *button;
   GtkWidget **entry;
-  gchar *title = "Orbitals available ";
+  gchar *title = _("Orbitals available ");
   gint* Norbs=g_malloc(sizeof(gint));
   gint* TypeFile=g_malloc(sizeof(gint));
   gchar* FileName = g_strdup(filename);
@@ -1507,13 +1506,13 @@ static void create_window_list_orbitals_numbers(GtkWidget *w,gint norbs,gchar* f
   hbox = create_hbox(vboxwin);
   gtk_widget_realize(fp);
 
-  button = create_button(fp,"Cancel");
+  button = create_button(fp,_("Cancel"));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 5);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(fp));
   gtk_widget_show (button);
 
-  button = create_button(fp,"OK");
+  button = create_button(fp,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 5);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
@@ -1548,18 +1547,18 @@ void read_gauss_molpro_cube_file(GabEditTypeCube typefile,gchar* filename)
 	
 	if(!file)
 	{
-		Message("I can not open file\n","Error",TRUE);
+		Message(_("I can not open file\n"),_("Error"),TRUE);
 		return ;
 	}
 
 	free_data_all();
 	tmp = get_name_file(filename);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File Name"),tmp);
 	g_free(tmp);
 	switch(typefile)
 	{
   		case GABEDIT_CUBE_GABEDIT : 
-				set_status_label_info("File Type","Gabedit Cube");
+				set_status_label_info(_("File type"),"Gabedit Cube");
 				break;
   		case GABEDIT_CUBE_GAUSS_ORB : 
   		case GABEDIT_CUBE_GAUSS_DEN : 
@@ -1567,7 +1566,7 @@ void read_gauss_molpro_cube_file(GabEditTypeCube typefile,gchar* filename)
   		case GABEDIT_CUBE_GAUSS_LAP : 
   		case GABEDIT_CUBE_GAUSS_NGRAD : 
   		case GABEDIT_CUBE_GAUSS_POT : 
-				set_status_label_info("File Type","Gaussian Cube");
+				set_status_label_info(_("File type"),"Gaussian Cube");
 				break;
   		case GABEDIT_CUBE_MOLPRO_ORB1 : 
   		case GABEDIT_CUBE_MOLPRO_ORBN : 
@@ -1575,42 +1574,42 @@ void read_gauss_molpro_cube_file(GabEditTypeCube typefile,gchar* filename)
   		case GABEDIT_CUBE_MOLPRO_DEN_GRAD : 
   		case GABEDIT_CUBE_MOLPRO_LAPDEN : 
 		case GABEDIT_CUBE_MOLPRO_LAPLAP :
-				set_status_label_info("File Type","Molpro Cube");
+				set_status_label_info(_("File type"),"Molpro Cube");
 				break;
 	}
 
 	if(!fgets(t,len,file))  /* Title */   
 	{
-		Message("I can not read cube from this file\n","Error",TRUE);
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
+		Message(_("I can not read cube from this file\n"),_("Error"),TRUE);
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
 		fclose(file);
 		return ;
 	}
 	/* Debug("t = %s\n",t);*/
 	if(!fgets(t,len,file))  /* Type */   
 	{
-		Message("I can not read cube from this file\n","Error",TRUE);
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
+		Message(_("I can not read cube from this file\n"),_("Error"),TRUE);
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
 		fclose(file);
 		return;
 	}
 	/* Debug("t = %s\n",t);*/
 	if(!fgets(t,len,file))  /* NAtoms, X-Origin, Y-Origin, Z-Origin */   
 	{
-		Message("I can not read cube from this file\n","Error",TRUE);
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
+		Message(_("I can not read cube from this file\n"),_("Error"),TRUE);
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
 		fclose(file);
 		return;
 	}
 	/* Debug("t = %s\n",t);*/
 	if(sscanf(t,"%d %lf %lf %lf",&Natoms,&XYZ0[0],&XYZ0[1],&XYZ0[2])!=4)
 	{
-		Message("I can not read cube from this file\n","Error",TRUE);
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
+		Message(_("I can not read cube from this file\n"),_("Error"),TRUE);
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
 		fclose(file);
 		return;
 	};
@@ -1624,16 +1623,16 @@ void read_gauss_molpro_cube_file(GabEditTypeCube typefile,gchar* filename)
 	/* Debug("read limits %s\n");*/
 	if(!read_grid_limits_from_gauss_cube_file(file,N,X,Y,Z))
 	{
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
 		return;
 	}
 
 	/* Debug("read geometry %s\n");*/
 	if(!read_geometry_from_gauss_cube_file(file,Natoms))
 	{
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
 		return;
 	}
 	/* Debug("Natoms = %d\n",Natoms);*/
@@ -1645,7 +1644,7 @@ void read_gauss_molpro_cube_file(GabEditTypeCube typefile,gchar* filename)
 		if(typefile !=  GABEDIT_CUBE_GAUSS_ORB)
 		{
 			TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
-			Message("Warning : This file is a orbitals cube file\nI read The first orbital\n","Warning",TRUE);
+			Message(_("Warning : This file is a orbitals cube file\nI read The first orbital\n"),_("Warning"),TRUE);
 		}
 
 		numorbs = read_numorbs_from_gauss_cube_file(file);
@@ -1674,14 +1673,14 @@ void read_gauss_molpro_cube_file(GabEditTypeCube typefile,gchar* filename)
 		{
 			grid = NULL;
 			if(!CancelCalcul)
-				Message("Sorry this is not a orbitals molpro cube file\n","Error",TRUE);
+				Message(_("Sorry this is not a orbitals molpro cube file\n"),_("Error"),TRUE);
 			CancelCalcul = FALSE;
 
 		}
 		else
 		if(norbs==1)
 		{
-			Message("One orbital detected in this file\n","Warning",TRUE);
+			Message(_("One orbital detected in this file\n"),_("Warning"),TRUE);
 			set_status_label_info("Grid","Reading...");
 			grid = get_grid_from_gauss_molpro_cube_file(0,file,norbs,norbs,N,XYZ0,X,Y,Z);
 		}
@@ -1701,7 +1700,7 @@ void read_gauss_molpro_cube_file(GabEditTypeCube typefile,gchar* filename)
 		switch(typefile)
 		{
 			case GABEDIT_CUBE_GAUSS_ORB:
-				Message("Error : This file is not a orbitals cube file\n","Error",TRUE);
+				Message(_("Error : This file is not a orbitals cube file\n"),_("Error"),TRUE);
 				grid = NULL;
 				break;
 			case GABEDIT_CUBE_GAUSS_DEN:
@@ -1958,7 +1957,7 @@ void subtract_cube(GabeditFileChooser *SelecFile, gint response_id)
  	gchar *FileName;
 	if(!grid)
 	{
-		Message("Sorry, you have not a default grid","Error",TRUE);
+		Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
 		return;
 	}
 
@@ -1977,7 +1976,7 @@ void mapping_cube(GabeditFileChooser *SelecFile, gint response_id)
  	gchar *FileName;
 	if(!grid)
 	{
-		Message("Sorry, you have not a default grid","Error",TRUE);
+		Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
 		return;
 	}
 
@@ -1997,7 +1996,7 @@ void save_cube_gabedit_file(GabeditFileChooser *SelecFile, gint response_id)
  	gchar *FileName;
 	if(!grid)
 	{
-		Message("Sorry, you have not a default grid","Error",TRUE);
+		Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
 		return;
 	}
 
@@ -2045,7 +2044,7 @@ void mapping_with_mep_from_charges()
 
 	if(s<1e-6) 
 	{
-		Message("Sorry, All partial charges are null\n","Error",TRUE);
+		Message(_("Sorry, All partial charges are null\n"),_("Error"),TRUE);
 		return;
 	}
 
@@ -2072,4 +2071,222 @@ void mapping_with_fed(gint n)
 	if(!mep) return;
 	mapping_cube_by_an_other_cube(mep);
 	free_grid(mep);
+}
+/********************************************************************************/
+static Grid* get_grid_from_dx_file(FILE* file, gint N[], gdouble XYZ0[3],gdouble X[3],gdouble Y[3],gdouble Z[3])
+{
+	Grid* grid;
+	gint i;
+	gint j;
+	gint k;
+	gdouble x;
+	gdouble y;
+	gdouble z;
+	gdouble v;
+    	gboolean beg = TRUE;
+	gdouble scal;
+	GridLimits limits;
+	gboolean Ok = FALSE;
+	gchar t[BSIZE];
+	gint len = BSIZE;
+
+	while(!Ok)
+	{
+		if(!fgets(t,len,file)) return NULL;
+		if(strstr(t,"class array"))
+		{
+			Ok = TRUE;
+			break;
+		}
+	}
+	if(!Ok) return NULL;
+
+  	for(i=0;i<3;i++)
+   		limits.MinMax[0][i] = XYZ0[i];
+
+	limits.MinMax[1][0] = XYZ0[0] + (N[0]-1)*X[0] + (N[1]-1)*X[1] +  (N[2]-1)*X[2];
+	limits.MinMax[1][1] = XYZ0[1] + (N[0]-1)*Y[0] + (N[1]-1)*Y[1] +  (N[2]-1)*Y[2];
+	limits.MinMax[1][2] = XYZ0[2] + (N[0]-1)*Z[0] + (N[1]-1)*Z[1] +  (N[2]-1)*Z[2];
+
+	grid = grid_point_alloc(N,limits);
+
+	progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
+	scal = (gdouble)1.01/grid->N[0];
+ 
+	for(i=0;i<grid->N[0];i++)
+	{
+		for(j=0;j<grid->N[1];j++)
+		{
+			for(k=0;k<grid->N[2];k++)
+			{
+				while(!feof(file))
+				{
+				   if(fgets(t,len,file)) 
+					   if(1==sscanf(t,"%lf", &v))break;
+				}
+				x = XYZ0[0] + i*X[0] + j*X[1] +  k*X[2]; 
+				y = XYZ0[1] + i*Y[0] + j*Y[1] +  k*Y[2]; 
+				z = XYZ0[2] + i*Z[0] + j*Z[1] +  k*Z[2]; 
+
+				grid->point[i][j][k].C[0] = x;
+				grid->point[i][j][k].C[1] = y;
+				grid->point[i][j][k].C[2] = z;
+				grid->point[i][j][k].C[3] = v;
+				if(beg)
+				{
+					beg = FALSE;
+        				grid->limits.MinMax[0][3] =  v;
+        				grid->limits.MinMax[1][3] =  v;
+				}
+                		else
+				{
+        				if(grid->limits.MinMax[0][3]>v)
+        					grid->limits.MinMax[0][3] =  v;
+        				if(grid->limits.MinMax[1][3]<v)
+        					grid->limits.MinMax[1][3] =  v;
+				}
+			}
+		}
+		if(CancelCalcul) 
+		{
+			progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
+			break;
+		}
+
+		progress_orb(scal,GABEDIT_PROGORB_READGRID,FALSE);
+	}
+
+	if(CancelCalcul)
+	{
+		grid = free_grid(grid);
+	}
+	progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
+	return grid;
+}
+/**************************************************************/
+gboolean read_dx_grid_file(gchar* filename, gboolean showisowin)
+{
+	FILE* file = FOpen(filename, "rb");
+	gchar* tmp;
+	gint len = BSIZE;
+	gchar t[BSIZE];
+	gdouble XYZ0[3];
+	gint N[3];
+	gdouble X[3];
+	gdouble Y[3];
+	gdouble Z[3];
+	gboolean Ok = FALSE;
+	gchar* p;
+	gchar dum[100];
+
+	CancelCalcul = FALSE;
+	
+	if(!file)
+	{
+		Message(_("I can not open file\n"),_("Error"),TRUE);
+		return FALSE;
+	}
+
+	free_data_all();
+	tmp = get_name_file(filename);
+	set_status_label_info(_("File Name"),tmp);
+	g_free(tmp);
+	set_status_label_info(_("File type"),"dx grid");
+
+	while(!Ok)
+	{
+		if(!fgets(t,len,file))
+		{
+			Message(_("I can not read grid from this file\n"),_("Error"),TRUE);
+			set_status_label_info(_("File name"),_("Nothing"));
+			set_status_label_info(_("File type"),_("Nothing"));
+			fclose(file);
+			return FALSE;
+		}
+		if(strstr(t,"gridpositions counts"))
+		{
+			Ok = TRUE;
+			break;
+		}
+	}
+	if(!Ok)
+	{
+		Message(_("I can not read grid from this file\n"),_("Error"),TRUE);
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		fclose(file);
+		return FALSE;
+	}
+	p = strstr(t,"gridpositions counts")+strlen("gridpositions counts");
+
+	if(3!=sscanf(p,"%d %d %d",&N[0], &N[1], &N[2]))
+	{
+		Message(_("I can not read cube from this file\n"),_("Error"),TRUE);
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		fclose(file);
+		return FALSE;
+	}
+	if(!fgets(t,len,file) || sscanf(t,"%s %lf %lf %lf",dum,&XYZ0[0],&XYZ0[1],&XYZ0[2])!=4)
+	{
+		Message(_("I can not read grid from this file\n"),_("Error"),TRUE);
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		fclose(file);
+		return FALSE;
+	}
+	if(!fgets(t,len,file) || sscanf(t,"%s %lf %lf %lf",dum,&X[0],&X[1],&X[2])!=4)
+	{
+		Message(_("I can not read grid from this file\n"),_("Error"),TRUE);
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		fclose(file);
+		return FALSE;
+	}
+	if(!fgets(t,len,file) || sscanf(t,"%s %lf %lf %lf",dum,&Y[0],&Y[1],&Y[2])!=4)
+	{
+		Message(_("I can not read grid from this file\n"),_("Error"),TRUE);
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		fclose(file);
+		return FALSE;
+	}
+	if(!fgets(t,len,file) || sscanf(t,"%s %lf %lf %lf",dum,&Z[0],&Z[1],&Z[2])!=4)
+	{
+		Message(_("I can not read grid from this file\n"),_("Error"),TRUE);
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		fclose(file);
+		return FALSE;
+	}
+
+	grid = get_grid_from_dx_file(file,N,XYZ0,X,Y,Z);
+	if(grid)
+	{
+        	limits = grid->limits;
+		if(showisowin) create_iso_orbitals();
+		set_status_label_info("Grid","Ok");
+	}
+	else
+	{
+		set_status_label_info("Grid","Nothing");
+		CancelCalcul = FALSE;
+	}
+
+	fclose(file);
+	return (grid!=NULL);
+}
+/********************************************************************************/
+void load_dx_grid_file(GabeditFileChooser *selFile, gint response_id)
+{
+ 	gchar *fileName;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(selFile);
+	gtk_widget_hide(GTK_WIDGET(selFile));
+	while( gtk_events_pending() ) gtk_main_iteration();
+
+	TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
+	add_objects_for_new_grid();
+	read_dx_grid_file(fileName,TRUE);
 }

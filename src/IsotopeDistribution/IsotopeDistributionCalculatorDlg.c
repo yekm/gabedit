@@ -105,14 +105,10 @@ static void addPeaksFromList(GtkWidget* list)
 	gint n = 0;
 	gdouble* X = NULL;
 	gdouble* Y = NULL;
-	GdkColor color;
 	GtkWidget* xyplot = getPointsFromList(list, &X, &Y, &n);
 
 	if(!xyplot) return;
-	color.red = 0;
-	color.green = 0;
-	color.blue = 0;
-	gabedit_xyplot_add_data_peaks(GABEDIT_XYPLOT(xyplot), n, X,  Y, color);
+	gabedit_xyplot_add_data_peaks(GABEDIT_XYPLOT(xyplot), n, X,  Y, NULL);
 	gabedit_xyplot_set_range_ymin (GABEDIT_XYPLOT(xyplot), 0);
 	gabedit_xyplot_set_range_ymax (GABEDIT_XYPLOT(xyplot), 100);
 
@@ -155,7 +151,7 @@ static void addConvFromList(GtkWidget* list)
 	color.red = 65000;
 	color.green = 0;
 	color.blue = 0;
-	gabedit_xyplot_add_data_conv(GABEDIT_XYPLOT(xyplot), n, X,  Y, halfWidth, convType, color);
+	gabedit_xyplot_add_data_conv(GABEDIT_XYPLOT(xyplot), n, X,  Y, halfWidth, convType, &color);
 	gabedit_xyplot_set_range_ymin (GABEDIT_XYPLOT(xyplot), 0);
 	gabedit_xyplot_set_range_ymax (GABEDIT_XYPLOT(xyplot), 100);
 	if(X)
@@ -338,7 +334,7 @@ static GtkWidget* create_peaks_list(GtkWidget *vbox, GList* peaks)
 	guint Factor=7;
 	guint widall=0;
 #define  NC 3
-	gchar *titres[NC]={ "Mass", "Frac. Abund.", "Rel. Abund.(%)"};
+	gchar *titres[NC]={ N_("Mass"), N_("Frac. Abund."), N_("Rel. Abund.(%)")};
 	gint width[NC]={14,12,12}; 
   
 	for(i=0;(gint)i<NC;i++) widall+=width[i];
@@ -465,7 +461,7 @@ static void calculate_spectrum(GtkWidget* calculateButton, gpointer data)
 		{
 			gchar* t = NULL;
 			if(info) gabedit_text_insert (GABEDIT_TEXT(textWidget), NULL, NULL, NULL,info,-1);
-			t = g_strdup_printf("Sum of frac. abund -1 = \n  %0.8e\n",
+			t = g_strdup_printf(_("Sum of frac. abund -1 = \n  %0.8e\n"),
 			get_sum_abundance_from_list(newPeaks)-1);
 			gabedit_text_insert (GABEDIT_TEXT(textWidget), NULL, NULL, NULL,t,-1);
 			g_free(t);
@@ -517,7 +513,7 @@ void compute_distribution_dlg(GtkWidget* winParent, gchar* formula)
 	GtkWidget *toggleLorentzian;
 	GtkWidget *toggleGaussian;
 
-	gchar* tlabel[]={"Chemical formula","Mass precision (Da)","Abondance precision (%)"};
+	gchar* tlabel[]={N_("Chemical formula"),N_("Mass precision (Da)"),N_("Abondance precision (%)")};
 	GtkWidget** entrys = g_malloc(5*sizeof(GtkWidget*));
 	gint i;
 	GtkWidget* table;
@@ -533,7 +529,7 @@ void compute_distribution_dlg(GtkWidget* winParent, gchar* formula)
 
 	winDlg = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	/* gtk_window_set_modal(GTK_WINDOW(winDlg),TRUE);*/
-	gtk_window_set_title(GTK_WINDOW(winDlg),"Isotope distribution calculation");
+	gtk_window_set_title(GTK_WINDOW(winDlg),_("Isotope distribution calculation"));
 	gtk_container_set_border_width (GTK_CONTAINER (winDlg), 5);
 
 	gtk_window_set_position(GTK_WINDOW(winDlg),GTK_WIN_POS_CENTER);
@@ -550,7 +546,7 @@ void compute_distribution_dlg(GtkWidget* winParent, gchar* formula)
 	vboxRight = gtk_hbox_new(0,FALSE);
 	gtk_box_pack_start (GTK_BOX (hboxall), vboxRight, TRUE, TRUE, 0);
 
-	frame = gtk_frame_new ("Input");
+	frame = gtk_frame_new (_("Input"));
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
 	gtk_container_add (GTK_CONTAINER (vboxLeft), frame);
 	gtk_widget_show (frame);
@@ -591,7 +587,7 @@ void compute_distribution_dlg(GtkWidget* winParent, gchar* formula)
 		  1,1);
 
 	i = 4;
-	button = create_button(winParent,"Calculate");
+	button = create_button(winParent,_("Calculate"));
 	gtk_table_attach(GTK_TABLE(table),button,0,0+2,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -600,7 +596,7 @@ void compute_distribution_dlg(GtkWidget* winParent, gchar* formula)
 	gtk_widget_show (button);
 	calculateButton = button;
 
-	button = create_button(winParent,"Cancel");
+	button = create_button(winParent,_("Cancel"));
 	gtk_table_attach(GTK_TABLE(table),button,2,2+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -614,7 +610,7 @@ void compute_distribution_dlg(GtkWidget* winParent, gchar* formula)
 	gtk_widget_set_sensitive(button,FALSE);
 
 
-	frame = gtk_frame_new ("Output");
+	frame = gtk_frame_new (_("Output"));
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
 	gtk_container_add (GTK_CONTAINER (vboxLeft), frame);
 	gtk_widget_show (frame);
@@ -647,7 +643,7 @@ void compute_distribution_dlg(GtkWidget* winParent, gchar* formula)
 	treeViewPeaks = create_peaks_list(hbox, NULL);
 
 	i = 2;
-	button = create_button(winParent,"Clear");
+	button = create_button(winParent,_("Clear"));
 	gtk_table_attach(GTK_TABLE(table),button,0,0+3,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -657,7 +653,7 @@ void compute_distribution_dlg(GtkWidget* winParent, gchar* formula)
 	gtk_widget_show (button);
 	clearButton = button;
 
-	button = create_button(winParent,"Close");
+	button = create_button(winParent,_("Close"));
 	gtk_table_attach(GTK_TABLE(table),button,3,3+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_SHRINK) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_SHRINK),
@@ -674,7 +670,7 @@ void compute_distribution_dlg(GtkWidget* winParent, gchar* formula)
 
 
 	i=4;
-	add_label_table(table,"Charge",(gushort)i,0);
+	add_label_table(table,_("Charge"),(gushort)i,0);
 	add_label_table(table," : ",(gushort)i,1); 
 	entrys[3] = gtk_entry_new ();
 	gtk_entry_set_text(GTK_ENTRY(entrys[3]),"1.0");
@@ -684,7 +680,7 @@ void compute_distribution_dlg(GtkWidget* winParent, gchar* formula)
 	  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  1,1);
 
-	button = create_button(winParent,"Add peaks");
+	button = create_button(winParent,_("Add peaks"));
 	gtk_table_attach(GTK_TABLE(table),button,3,3+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -694,7 +690,7 @@ void compute_distribution_dlg(GtkWidget* winParent, gchar* formula)
 	addPeaksButton = button;
 
 	i=5;
-	add_label_table(table,"Half-Width",(gushort)i,0);
+	add_label_table(table,_("Half-Width"),(gushort)i,0);
 	add_label_table(table," : ",(gushort)i,1); 
 	entrys[4] = gtk_entry_new ();
 
@@ -706,7 +702,7 @@ void compute_distribution_dlg(GtkWidget* winParent, gchar* formula)
 	  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  1,1);
 
-	button = create_button(winParent,"Add convoluted curve");
+	button = create_button(winParent,_("Add convoluted curve"));
 	gtk_table_attach(GTK_TABLE(table),button,3,3+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -716,14 +712,14 @@ void compute_distribution_dlg(GtkWidget* winParent, gchar* formula)
 	addConvolutionButton = button;
 
 	i = 6;
-	toggleLorentzian = gtk_radio_button_new_with_label( NULL,"Lorentzian lineshape" );
+	toggleLorentzian = gtk_radio_button_new_with_label( NULL,_("Lorentzian lineshape") );
 	gtk_table_attach(GTK_TABLE(table),toggleLorentzian,0,0+3,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  1,1);
 	gtk_widget_show(toggleLorentzian); 
 
-	toggleGaussian = gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (toggleLorentzian)),"Gaussian lineshape" );
+	toggleGaussian = gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (toggleLorentzian)),_("Gaussian lineshape") );
 	gtk_table_attach(GTK_TABLE(table),toggleGaussian,3,3+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),

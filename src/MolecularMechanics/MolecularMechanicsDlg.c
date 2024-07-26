@@ -1050,7 +1050,7 @@ static void createPostProcessingFiles(gint numberOfGeometries, ForceField** geom
 		gchar* fileNamePrefix = get_suffix_name_file(fileNameGeom);
 		createMopacFiles(numberOfGeometries, geometries, energies, fileNamePrefix, mopacKeywords);
 		strcat(message,fileNamePrefix);
-		strcat(message,"_*.mop\n\tFiles for a post processing by Mopac\n\n");
+		strcat(message,_("_*.mop\n\tFiles for a post processing by Mopac\n\n"));
 		if(fileNamePrefix) g_free(fileNamePrefix);
 	}
 	if(!StopCalcul && gaussianKeywords)
@@ -1058,7 +1058,7 @@ static void createPostProcessingFiles(gint numberOfGeometries, ForceField** geom
 		gchar* fileNamePrefix = get_suffix_name_file(fileNameGeom);
 		createGaussianFiles(numberOfGeometries, geometries, energies, fileNamePrefix, gaussianKeywords);
 		strcat(message,fileNamePrefix);
-		strcat(message,"_*.com\n\tFiles for a post processing by Gaussian\n\n");
+		strcat(message,_("_*.com\n\tFiles for a post processing by Gaussian\n\n"));
 		if(fileNamePrefix) g_free(fileNamePrefix);
 	}
 	if(!StopCalcul && fireflyKeywords)
@@ -1066,7 +1066,7 @@ static void createPostProcessingFiles(gint numberOfGeometries, ForceField** geom
 		gchar* fileNamePrefix = get_suffix_name_file(fileNameGeom);
 		createFireFlyFiles(numberOfGeometries, geometries, energies, fileNamePrefix, fireflyKeywords);
 		strcat(message,fileNamePrefix);
-		strcat(message,"P_*.inp\n\tFiles for a post processing by FireFly\n\n");
+		strcat(message,_("P_*.inp\n\tFiles for a post processing by FireFly\n\n"));
 		if(fileNamePrefix) g_free(fileNamePrefix);
 	}
 }
@@ -1303,7 +1303,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 	if(StopCalcul)
 	{
 		set_text_to_draw(" ");
-		set_statubar_operation_str("Calcul Canceled ");
+		set_statubar_operation_str(_("Calculation canceled"));
 		dessine();
 		set_sensitive_stop_button( FALSE);
 		return;
@@ -1320,6 +1320,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 	geometries = runMolecularDynamicsConfo(&molecularDynamics, &forceField,
 		updateFrequency, heatTime, equiTime, runTime, heatTemp, equiTemp, runTemp, stepSize, 
 		integrator, thermostat, friction, collide, numberOfGeometries, fileNameTraj, fileNameProp);
+
 	freeForceField(&forceField);
 	if(!StopCalcul && geometries && numberOfGeometries>0)
 		energies = g_malloc(numberOfGeometries*sizeof(gdouble));
@@ -1342,7 +1343,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 		if(StopCalcul)
 		{
 			set_text_to_draw(" ");
-			set_statubar_operation_str("Calcul Canceled ");
+			set_statubar_operation_str(_("Calculation canceled"));
 			dessine();
 			set_sensitive_stop_button( FALSE);
 			break;
@@ -1354,7 +1355,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 			if(StopCalcul)
 			{
 				set_text_to_draw(" ");
-				set_statubar_operation_str("Calcul canceled");
+				set_statubar_operation_str(_("Calculation canceled"));
 				dessine();
 			}
 			set_sensitive_stop_button( FALSE);
@@ -1371,7 +1372,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 			if(StopCalcul)
 			{
 				set_text_to_draw(" ");
-				set_statubar_operation_str("Calcul canceled");
+				set_statubar_operation_str(_("Calculation canceled"));
 				dessine();
 			}
 			set_sensitive_stop_button( FALSE);
@@ -1391,7 +1392,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 			if(StopCalcul)
 			{
 				set_text_to_draw(" ");
-				set_statubar_operation_str("Calcul canceled");
+				set_statubar_operation_str(_("Calculation canceled"));
 				dessine();
 			}
 			set_sensitive_stop_button( FALSE);
@@ -1401,7 +1402,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 		}
 		set_text_to_draw(" ");
 	}
-	else
+	else if(!StopCalcul)
 	{
 		for(i=0;i<numberOfGeometries;i++)
 		{
@@ -1416,7 +1417,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 	if(StopCalcul)
 	{
 		set_text_to_draw(" ");
-		set_statubar_operation_str("Calcul canceled");
+		set_statubar_operation_str(_("Calculation canceled"));
 		dessine();
 	}
 	set_sensitive_stop_button( FALSE);
@@ -1433,8 +1434,8 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 		createPostProcessingFiles(numberOfGeometries, geometries,energies,fileNameGeom, mopacKeywords, gaussianKeywords, fireflyKeywords, message);
 		if(!StopCalcul) read_gabedit_file_add_list(fileNameGeom);
 		strcat(message,fileNameGeom);
-		strcat(message,"\n\tGeometries selected and optimized using your MM potentials");
-		strcat(message,"\n\tTo read this file : 'Read/Gabedit file'\n\n");
+		strcat(message,_("\n\tGeometries selected and optimized using your MM potentials"));
+		strcat(message,_("\n\tTo read this file : 'Read/Gabedit file'\n\n"));
 	}
 	/* minimazation by mopac PM6*/
 	if(!StopCalcul && optPM6Mopac)
@@ -1450,8 +1451,8 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 				createPostProcessingFiles(numberOfGeometries, geometries,energies,fileNameGeomMop, mopacKeywords, gaussianKeywords, fireflyKeywords, message);
 				read_gabedit_file_add_list(fileNameGeomMop);
 				strcat(message,fileNameGeomMop);
-				strcat(message,"\n\tGeometries after minimization by PM6/Mopac");
-				strcat(message,"\n\tTo read this file : 'Read/Gabedit file'\n\n");
+				strcat(message,_("\n\tGeometries after minimization by PM6/Mopac"));
+				strcat(message,_("\n\tTo read this file : 'Read/Gabedit file'\n\n"));
 			}
 
 			g_free(fileNameGeomMop);
@@ -1472,8 +1473,8 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 				createPostProcessingFiles(numberOfGeometries, geometries,energies,fileNameGeomMop, mopacKeywords, gaussianKeywords, fireflyKeywords, message);
 				read_gabedit_file_add_list(fileNameGeomMop);
 				strcat(message,fileNameGeomMop);
-				strcat(message,"\n\tGeometries after minimization by AM1/Mopac");
-				strcat(message,"\n\tTo read this file : 'Read/Gabedit file'\n\n");
+				strcat(message,_("\n\tGeometries after minimization by AM1/Mopac"));
+				strcat(message,_("\n\tTo read this file : 'Read/Gabedit file'\n\n"));
 			}
 
 			g_free(fileNameGeomMop);
@@ -1494,8 +1495,8 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 				createPostProcessingFiles(numberOfGeometries, geometries,energies,fileNameGeomFireFly, mopacKeywords, gaussianKeywords, fireflyKeywords, message);
 				read_gabedit_file_add_list(fileNameGeomFireFly);
 				strcat(message,fileNameGeomFireFly);
-				strcat(message,"\n\tGeometries after minimization by FireFly");
-				strcat(message,"\n\tTo read this file : 'Read/Gabedit file'\n\n");
+				strcat(message,_("\n\tGeometries after minimization by FireFly"));
+				strcat(message,_("\n\tTo read this file : 'Read/Gabedit file'\n\n"));
 			}
 
 			g_free(fileNameGeomFireFly);
@@ -1510,7 +1511,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 		g_free(geometries);
 	}
 	if(energies) g_free(energies);
-	if(strlen(message)>20 && !StopCalcul ) Message(message,"Info",TRUE);
+	if(strlen(message)>20 && !StopCalcul ) Message(message,_("Info"),TRUE);
 
 }
 /*****************************************************************************/
@@ -1644,7 +1645,7 @@ static void amberMolecularDynamics(GtkWidget* Win, gpointer data)
 	if(StopCalcul)
 	{
 		set_text_to_draw(" ");
-		set_statubar_operation_str("Calcul Canceled ");
+		set_statubar_operation_str(_("Calculation canceled"));
 		dessine();
 		set_sensitive_stop_button( FALSE);
 		return;
@@ -1665,7 +1666,7 @@ static void amberMolecularDynamics(GtkWidget* Win, gpointer data)
 	if(StopCalcul)
 	{
 		set_text_to_draw(" ");
-		set_statubar_operation_str("Calcul canceled");
+		set_statubar_operation_str(_("Calculation canceled"));
 		dessine();
 	}
 	set_sensitive_stop_button( FALSE);
@@ -3356,7 +3357,7 @@ static void amberMinimize(GtkWidget* Win, gpointer data)
 	if(StopCalcul)
 	{
 		set_text_to_draw(" ");
-		set_statubar_operation_str("Calcul Canceled ");
+		set_statubar_operation_str(_("Calculation canceled"));
 		dessine();
 		set_sensitive_stop_button( FALSE);
 		return;
@@ -3370,7 +3371,7 @@ static void amberMinimize(GtkWidget* Win, gpointer data)
 		if(StopCalcul)
 		{
 			set_text_to_draw(" ");
-			set_statubar_operation_str("Calcul canceled");
+			set_statubar_operation_str(_("Calculation canceled"));
 			dessine();
 		}
 		set_sensitive_stop_button( FALSE);
@@ -3384,7 +3385,7 @@ static void amberMinimize(GtkWidget* Win, gpointer data)
 		if(StopCalcul)
 		{
 			set_text_to_draw(" ");
-			set_statubar_operation_str("Calcul canceled");
+			set_statubar_operation_str(_("Calculation canceled"));
 			dessine();
 		}
 		set_sensitive_stop_button( FALSE);
@@ -3402,7 +3403,7 @@ static void amberMinimize(GtkWidget* Win, gpointer data)
 		if(StopCalcul)
 		{
 			set_text_to_draw(" ");
-			set_statubar_operation_str("Calcul canceled");
+			set_statubar_operation_str(_("Calculation canceled"));
 			dessine();
 		}
 		set_sensitive_stop_button( FALSE);
@@ -3455,7 +3456,7 @@ void amberEnergyCalculation(GtkWidget* Win, gpointer data)
 	if(StopCalcul)
 	{
 		set_text_to_draw(" ");
-		set_statubar_operation_str("Calcul canceled");
+		set_statubar_operation_str(_("Calculation canceled"));
 		dessine();
 		set_sensitive_stop_button( FALSE);
 		return;
@@ -3470,7 +3471,7 @@ void amberEnergyCalculation(GtkWidget* Win, gpointer data)
 			forceField.molecule.gradient[j][i]
 			*forceField.molecule.gradient[j][i]; 
 
-	str = g_strdup_printf("Gradient Norm  = %f energy = %f(KCal/mol)",
+	str = g_strdup_printf(_("Gradient Norm  = %f energy = %f(KCal/mol)"),
 		sqrt(gradientNorm),forceField.molecule.energy); 
 
 	set_text_to_draw(str);
@@ -3574,8 +3575,8 @@ static void AddGradientOptionsDlg(GtkWidget *NoteBook)
 	frame = gtk_frame_new(NULL);
 	gtk_container_set_border_width(GTK_CONTAINER(frame), 5);
 
-	LabelOnglet = gtk_label_new("Gradient");
-	LabelMenu = gtk_label_new("Gradient");
+	LabelOnglet = gtk_label_new(_("Gradient"));
+	LabelMenu = gtk_label_new(_("Gradient"));
 	gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook),
 			  frame,LabelOnglet, LabelMenu);
 	g_object_set_data (G_OBJECT (frame), "frame", frame);

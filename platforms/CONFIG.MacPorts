@@ -9,6 +9,6 @@ RM = rm -f
 MAKE = make
 WIN32LIB   = 
 X11LIB   = -lX11
-CC = gcc 
+CC = gcc -I/usr/X11/include
 COMMONCFLAGS = -Wall -O2
 

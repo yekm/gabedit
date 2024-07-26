@@ -21,7 +21,6 @@ DEALINGS IN THE SOFTWARE.
 #include <stdio.h>
 #include <string.h>
 #include <gdk/gdkkeysyms.h>
-#include <gtk/gtk.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include "../Common/Global.h"
@@ -70,13 +69,13 @@ static void read_ressource_files(GtkWidget* MainFrame,GtkWidget* ProgressBar)
 
 	set_statubar_str(" ");
 	define_default_atoms_prop();
-	set_statubar_str("Load atom properties.....");
+	set_statubar_str(_("Load atom properties....."));
 
 	if(!read_atoms_prop())
 	{
 		Waiting(step*t[i]);
 		progress( ProgressBar,t[i]);
- 		set_statubar_str("I can not load atom properties from file, define default values.....");
+ 		set_statubar_str(_("I can not load atom properties from file, define default values....."));
  		define_default_atoms_prop();
 	}
 	else
@@ -86,51 +85,51 @@ static void read_ressource_files(GtkWidget* MainFrame,GtkWidget* ProgressBar)
 	}
 
 	i++;
-	set_statubar_str("Load default commands from \"commands\" file.....");
+	set_statubar_str(_("Load default commands from \"commands\" file....."));
 	read_commands_file();
 	Waiting(step*t[i]);
 	progress( ProgressBar,t[i]);
 
 	i++;
-	set_statubar_str("Load recent fonts styles.....");
+	set_statubar_str(_("Load recent fonts styles....."));
 	read_fonts_file();
 	Waiting(step*t[i]);
 	progress( ProgressBar,t[i]);
 
 	i++;
-	set_statubar_str("Load recent hosts list.....");
+	set_statubar_str(_("Load recent hosts list....."));
 	read_hosts_file();
 	Waiting(step*t[i]);
 	progress( ProgressBar,t[i]);
 
 	i++;
-	set_statubar_str("Load recent surfaces colors.....");
+	set_statubar_str(_("Load recent surfaces colors....."));
 	read_color_surfaces_file();
 	Waiting(step*t[i]);
 	progress( ProgressBar,t[i]);
 
 	i++;
-	set_statubar_str("Load list of recent projects.....");
+	set_statubar_str(_("Load list of recent projects....."));
 	Waiting(step*t[i]);
 	progress( ProgressBar,t[i]);
 
 	i++;
-	set_statubar_str("Load Molecular mechanics parameters.....");
+	set_statubar_str(_("Load Molecular mechanics parameters....."));
 	loadAmberParameters();
 	LoadPDBTpl();	
 	Waiting(step*t[i]);
 	progress( ProgressBar,t[i]);
 
-	set_statubar_str("Load Personal Fragments.....");
+	set_statubar_str(_("Load Personal Fragments....."));
 	loadPersonalFragments(NULL);
 
-	set_statubar_str("Load the list of the bases supported by Molpro......");
+	set_statubar_str(_("Load the list of the bases supported by Molpro......"));
 	loadMolproBasis();
 
-	set_statubar_str("Load the list of the bases supported by Molcas......");
+	set_statubar_str(_("Load the list of the bases supported by Molcas......"));
 	loadMolcasBasis();
 
-	set_statubar_str("Load the list of the bases supported by MPQC......");
+	set_statubar_str(_("Load the list of the bases supported by MPQC......"));
 	loadMPQCBasis();
 
 	set_statubar_str("   ");
@@ -286,7 +285,7 @@ static gint configure_event( GtkWidget *widget, GdkEventConfigure *event )
 		gabedit_draw_string(widget, pixmap, font_desc, widget->style->white_gc , x,y, txt, FALSE, FALSE);
 	}
 	else
-	if(strstr(txt,"Graphical"))
+	if(strstr(txt,_("Graphical")))
 	{
 		x = 6;
 		y = 10;
@@ -369,7 +368,7 @@ static void create_welcome_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   gint width = 0;
   gint widthVersion = 0;
   gint heightVersion = 0;
-  gchar* txt = g_strdup("       Welcome to :");
+  gchar* txt = g_strdup(_("       Welcome to :"));
   GdkPixmap *pixmap = NULL;
   GdkColor* color = g_malloc(sizeof(GdkColor));
   gchar* Version_S = g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
@@ -417,7 +416,7 @@ static void create_name_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   gint width = 0;
   gint widthVersion = 0;
   gint heightVersion = 0;
-  gchar* txt = g_strdup("Abdul-Rahman Allouche presents : ");
+  gchar* txt = g_strdup(_("Abdul-Rahman Allouche presents : "));
   GdkPixmap *pixmap = NULL;
   GdkColor* color = g_malloc(sizeof(GdkColor));
   gchar* Version_S = g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
@@ -516,7 +515,7 @@ static void create_gui_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   gint heightVersion = 0;
   /* gchar* txt = g_strdup("The Graphical User Interface for Gamess, Gaussian, Molcas, Molpro, MPQC, PG Gamess and Q-Chem ab initio programs");
    */
-  gchar* txt = g_strdup("The Graphical User Interface for computational chemistry packages");
+  gchar* txt = g_strdup(_("The Graphical User Interface for computational chemistry packages"));
   GdkPixmap *pixmap = NULL;
   GdkColor* color = g_malloc(sizeof(GdkColor));
   gchar* Version_S = g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
@@ -575,16 +574,9 @@ static void create_splash_popupwin()
                               GDK_BUTTON_RELEASE_MASK|
                               GDK_KEY_PRESS_MASK);
 
-	/*
-	g_signal_connect(G_OBJECT(MainFrame),"button_release_event",
-                G_CALLBACK(splash_screen_cb),NULL);
-	g_signal_connect(G_OBJECT(MainFrame),"key_press_event",
-                G_CALLBACK(splash_screen_cb),NULL);
-	*/
 	gtk_widget_realize(MainFrame);
 
 	gc = gdk_gc_new(MainFrame->window);
-/*	gtk_widget_show(vbox);*/
 	gtk_container_add (GTK_CONTAINER (MainFrame), vbox);
 	
 	/* create_name_frame_popup(vbox,MainFrame);*/

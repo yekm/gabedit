@@ -4,3 +4,4 @@
 #define GDK_DISABLE_DEPRECATED
 #define PANGO_DISABLE_DEPRECATED
 #endif
+#define GETTEXT_PACKAGE "gabedit"

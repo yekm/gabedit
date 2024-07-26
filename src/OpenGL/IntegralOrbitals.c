@@ -92,7 +92,7 @@ gdouble compute_spatial_overlap_analytic(gint typeOrbi, gint i, gint typeOrbj, g
 	ccj = g_malloc(N*sizeof(gdouble));
 
 
-	sprintf(tmp,"Computing of <%d %d|delta(ri,rj)| %d %d>.... Please wait",i+1,i+1,j+1,j+1);
+	sprintf(tmp,_("Computing of <%d %d|delta(ri,rj)| %d %d>.... Please wait"),i+1,i+1,j+1,j+1);
 	setTextInProgress(tmp);
 
 	kk = 0;
@@ -366,12 +366,12 @@ gdouble get_coulomb_analytic(gint typeOrbi, gint i, gint typeOrbj, gint j, gdoub
 
 	if(N<1)return -1.0;
 
-	setTextInProgress("Creation of T1 and T2 tables... Please wait");
+	setTextInProgress(_("Creation of T1 and T2 tables... Please wait"));
 	Ttables = createTTables(AOrb, NAOrb, 1e-9);
 	if(!Ttables) return -1.0;
 
 
-	sprintf(tmp,"Computing of <%d %d|1/r12| %d %d>.... Please wait",i+1,i+1,j+1,j+1);
+	sprintf(tmp,_("Computing of <%d %d|1/r12| %d %d>.... Please wait"),i+1,i+1,j+1,j+1);
 
 	if(typeOrbi == 2) CoefI = CoefBetaOrbitals;
 	if(typeOrbj == 2) CoefJ = CoefBetaOrbitals;
@@ -392,7 +392,7 @@ gdouble get_coulomb_analytic(gint typeOrbi, gint i, gint typeOrbj, gint j, gdoub
 	if(delta<1) delta = 1;
 	pos = delta;
 	/* printf("delta = %ld\n",delta);*/
-	progress_orb_txt(0,"Computing of 2 centers Coulomb integrals... Please wait",TRUE);
+	progress_orb_txt(0,_("Computing of 2 centers Coulomb integrals... Please wait"),TRUE);
 
 	/* For do a Schwarz screening */
 	for(kk=0;kk<N;kk++)
@@ -439,7 +439,7 @@ gdouble get_coulomb_analytic(gint typeOrbi, gint i, gint typeOrbj, gint j, gdoub
 			nComp++;
 		}
 	}
-	sprintf(tmp,"# of all ERI = %ld, # of computed ERI = %ld",nAll, nComp);
+	sprintf(tmp,_("# of all ERI = %ld, # of computed ERI = %ld"),nAll, nComp);
 	freeTTables(NAOrb,Ttables);
 	progress_orb_txt(0,tmp,TRUE);
 	g_free(p);
@@ -563,7 +563,7 @@ static void apply_coulomb_orbitals(GtkWidget *Win,gpointer data)
 			}
 			else
 			{
-				GtkWidget* message = Message("Error : one entry is not a float ","Error",TRUE);
+				GtkWidget* message = Message(_("Error : an entry is not a float "),_("Error"),TRUE);
   				gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 				return;
 			}
@@ -573,7 +573,7 @@ static void apply_coulomb_orbitals(GtkWidget *Win,gpointer data)
 		NumPointstmp[i] = atoi(temp);
 		if(NumPointstmp[i] <=2)
 		{
-			GtkWidget* message = Message("Error : The number of points should be > 2. ","Error",TRUE);
+			GtkWidget* message = Message(_("Error : The number of points should be > 2. "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -584,7 +584,7 @@ static void apply_coulomb_orbitals(GtkWidget *Win,gpointer data)
 	{
 		if( limitstmp.MinMax[0][i]> limitstmp.MinMax[1][i])
 		{
-			GtkWidget* message = Message("Error :  The minimal value should be smaller than the maximal value ","Error",TRUE);
+			GtkWidget* message = Message(_("Error :  The minimal value should be smaller than the maximal value "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -609,7 +609,7 @@ static void apply_coulomb_orbitals(GtkWidget *Win,gpointer data)
 			}
 			else
 			{
-				GtkWidget* message = Message("Error : one entry is not a float ","Error",TRUE);
+				GtkWidget* message = Message(_("Error : an entry is not a float "),_("Error"),TRUE);
   				gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 				return;
 			}
@@ -624,7 +624,7 @@ static void apply_coulomb_orbitals(GtkWidget *Win,gpointer data)
 			norm += V[i][j]*V[i][j];
 		if(fabs(norm)<1e-8)
 		{
-			GtkWidget* message = Message("Error : the norm is equal to 0 ","Error",TRUE);
+			GtkWidget* message = Message(_("Error : the norm is equal to 0 "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -650,7 +650,7 @@ static void apply_coulomb_orbitals(GtkWidget *Win,gpointer data)
 	numBetaOrbs = get_num_of_selected_orbitals(betaList, &nBeta);
 	if(nAlpha+nBeta<1)
 	{
-		GtkWidget* message = Message("Error : You should select at last one orbital","Error",TRUE);
+		GtkWidget* message = Message(_("Error : You should select at last one orbital"),_("Error"),TRUE);
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		return;
 	}
@@ -689,7 +689,7 @@ static void apply_coulomb_orbitals(GtkWidget *Win,gpointer data)
 			}
 			else
 			{
-				setTextInProgress("Analytic computing of coulomb integral");
+				setTextInProgress(_("Analytic computing of coulomb integral"));
 				integ = get_coulomb_analytic(typeOrb, i, typeOrb,  i, schwarzCutOff);
 				normi = get_overlap_analytic(typeOrb, i, typeOrb, i);
 				result = g_strdup_printf(
@@ -734,7 +734,7 @@ static void apply_coulomb_orbitals(GtkWidget *Win,gpointer data)
 			}
 			else if(!numeric)
 			{
-				setTextInProgress("Analytic computing of coulomb integral");
+				setTextInProgress(_("Analytic computing of coulomb integral"));
 				integ = get_coulomb_analytic(typeOrbi, ii, typeOrbj,  jj, schwarzCutOff);
 				normi = get_overlap_analytic(typeOrbi, ii, typeOrbi, ii);
 				normj = get_overlap_analytic(typeOrbj, jj, typeOrbj, jj);
@@ -795,7 +795,7 @@ static void apply_coulomb_orbitals(GtkWidget *Win,gpointer data)
 			}
 			else if(!numeric)
 			{
-				setTextInProgress("Analytic computing of coulomb integral");
+				setTextInProgress(_("Analytic computing of coulomb integral"));
 				integ = get_coulomb_analytic(typeOrbi, ii, typeOrbj,  jj, schwarzCutOff);
 				normi = get_overlap_analytic(typeOrbi, ii, typeOrbi, ii);
 				normj = get_overlap_analytic(typeOrbj, jj, typeOrbj, jj);
@@ -856,7 +856,7 @@ static void apply_coulomb_orbitals(GtkWidget *Win,gpointer data)
 			}
 			else if(!numeric)
 			{
-				setTextInProgress("Analytic computing of coulomb integral");
+				setTextInProgress(_("Analytic computing of coulomb integral"));
 				integ = get_coulomb_analytic(typeOrbi, ii, typeOrbj,  jj, schwarzCutOff);
 				normi = get_overlap_analytic(typeOrbi, ii, typeOrbi, ii);
 				normj = get_overlap_analytic(typeOrbj, jj, typeOrbj, jj);
@@ -890,7 +890,7 @@ static void apply_coulomb_orbitals(GtkWidget *Win,gpointer data)
 
 	if(result && !CancelCalcul)
 	{
-		GtkWidget* message = MessageTxt(result,"Result");
+		GtkWidget* message = MessageTxt(result,_("Result"));
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));
 	}
@@ -1026,7 +1026,7 @@ static GtkWidget* new_alpha_list(GtkWidget *hboxall)
 
 	gtklist = new_gtk_list_orbitals(N,Energies,Occ,sym,&widall);
 	g_object_set_data(G_OBJECT (gtklist), "Type",&type);
-  	frame = gtk_frame_new ("Alpha Orbitals");
+  	frame = gtk_frame_new (_("Alpha Orbitals"));
   	gtk_container_set_border_width (GTK_CONTAINER (frame), 1);
   	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_box_pack_start (GTK_BOX (hboxall), frame, TRUE, TRUE, 0);
@@ -1080,7 +1080,7 @@ static GtkWidget* new_beta_list(GtkWidget *hboxall)
 
 	gtklist = new_gtk_list_orbitals(N,Energies,Occ,sym,&widall);
 	g_object_set_data(G_OBJECT (gtklist), "Type",&type);
-  	frame = gtk_frame_new ("Beta Orbitals");
+  	frame = gtk_frame_new (_("Beta Orbitals"));
   	gtk_container_set_border_width (GTK_CONTAINER (frame), 1);
   	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_box_pack_start (GTK_BOX (hboxall), frame, TRUE, TRUE, 0);     
@@ -1133,24 +1133,24 @@ void coulomb_orbitals_dlg()
 
 	if(!GeomOrb)
 	{
-		Message("Sorry, Please load a file before\n","Error",TRUE);
+		Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!CoefAlphaOrbitals)
 	{
-		Message("Sorry, Please load the MO before\n","Error",TRUE);
+		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!AOrb && !SAOrb)
 	{
-		Message("Sorry, Please load the MO before\n","Error",TRUE);
+		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
 		return;
 	}
 
 	if(!AOAvailable &&(TypeGrid == GABEDIT_TYPEGRID_DDENSITY || TypeGrid == GABEDIT_TYPEGRID_ADENSITY))
 	{
-		Message("Sorry, No atomic orbitals available.\nPlease use a gabedit file for load : \n"
-		  "Geometry, Molecular and Atomic Orbitals\n","Error",TRUE);
+		Message(_("Sorry, No atomic orbitals available.\nPlease use a gabedit file for load : \n"
+		  "Geometry, Molecular and Atomic Orbitals\n"),_("Error"),TRUE);
 		return;
 	}
 	
@@ -1181,7 +1181,7 @@ void coulomb_orbitals_dlg()
 
 	gtk_box_pack_start (GTK_BOX (vboxall), gtk_hseparator_new(), TRUE, TRUE, 5); 
 
-	frameMethod = gtk_frame_new("Method");
+	frameMethod = gtk_frame_new(_("Method"));
 	gtk_box_pack_start (GTK_BOX (vboxall), frameMethod, TRUE, TRUE, 2);
   	vbox = create_vbox(frameMethod);
 	gtk_widget_show_all (vbox);
@@ -1191,7 +1191,7 @@ void coulomb_orbitals_dlg()
 	gtk_widget_show (table);
 
 	numericButton = gtk_check_button_new_with_label (
-			"Numerical computing of the Coulomb integral (Large box is recommended)");
+			_("Numerical computing of the Coulomb integral (Large box is recommended)"));
 	gtk_table_attach(GTK_TABLE(table),numericButton,0,0+2,0,0+1,
                   (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
                   (GtkAttachOptions)(GTK_FILL | GTK_SHRINK),
@@ -1199,7 +1199,7 @@ void coulomb_orbitals_dlg()
 	g_signal_connect(G_OBJECT(numericButton), "clicked",(GCallback)numeriButtonClicked,NULL);
 	g_object_set_data (G_OBJECT (Win), "NumericButton",numericButton);
 
-	label = gtk_label_new("    Schwarz cutoff : ");
+	label = gtk_label_new(_("    Schwarz cutoff : "));
 	gtk_table_attach(GTK_TABLE(table),label,0,0+1,1,1+1,
                   (GtkAttachOptions)(GTK_FILL | GTK_SHRINK),
                   (GtkAttachOptions)(GTK_FILL | GTK_SHRINK),
@@ -1232,14 +1232,14 @@ void coulomb_orbitals_dlg()
 	hbox = create_hbox_false(vboxwin);
 	gtk_widget_realize(Win);
 
-	button = create_button(Win,"OK");
+	button = create_button(Win,_("OK"));
 	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_coulomb_orbitals,G_OBJECT(Win));
 
-	button = create_button(Win,"Cancel");
+	button = create_button(Win,_("Cancel"));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, G_OBJECT(Win));
@@ -1281,24 +1281,24 @@ void compute_overlap_matrix(gint typeOrb)
 
 	if(NAOrb<1)
 	{
-		GtkWidget* message = Message("Error : You should read orbitals","Error",TRUE);
+		GtkWidget* message = Message(_("Error : You should read orbitals"),_("Error"),TRUE);
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		return;
 	}
 	if(!AOrb && !SAOrb)
 	{
-		GtkWidget* message = Message("Sorry, Please load the MO before\n","Error",TRUE);
+		GtkWidget* message = Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		return;
 	}
 	if(!AOrb && SAOrb)
 	{
-		GtkWidget* message = Message("Sorry, That does not work with Slater basis set\n","Error",TRUE);
+		GtkWidget* message = Message(_("Sorry, That does not work with Slater basis set\n"),_("Error"),TRUE);
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		return;
 	}
 	destroy_win_list();
-	sprintf(str,"Computing of overlap matrix between orbitals... Please wait");
+	sprintf(str,_("Computing of overlap matrix between orbitals... Please wait"));
 	setTextInProgress(str);
 
 	scal = 0.01;
@@ -1355,7 +1355,7 @@ void compute_overlap_matrix(gint typeOrb)
 	if(typeOrb == 1) sprintf(result," Alpha overlap matrix\n");
 	else sprintf(result," Beta overlap matrix\n");
 
-	setTextInProgress("Preparation of text to show... Please wait");
+	setTextInProgress(_("Preparation of text to show... Please wait"));
 	for(i=0;i<NAOrb;i++)
 	for(j=0;j<=i;j++)
 	{
@@ -1368,7 +1368,7 @@ void compute_overlap_matrix(gint typeOrb)
 	progress_orb_txt(0," ",TRUE);
 	if(result && !CancelCalcul)
 	{
-		GtkWidget* message = MessageTxt(result,"Overlap matrix");
+		GtkWidget* message = MessageTxt(result,_("Overlap matrix"));
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));
 	}
@@ -1409,7 +1409,7 @@ gchar* compute_transition_matrix(gint N[],GridLimits limits, gint typeOrbi, gint
 	}
 	else if(!numeric)
 	{
-		setTextInProgress("Analytic computing of coulomb integral");
+		setTextInProgress(_("Analytic computing of coulomb integral"));
 		compute_transition_matrix_analytic(typeOrbi, ii, typeOrbj,  jj, integ);
 		*pNormi = get_overlap_analytic(typeOrbi, ii, typeOrbi, ii);
 		*pNormj = get_overlap_analytic(typeOrbj, jj, typeOrbj, jj);
@@ -1491,7 +1491,7 @@ static void apply_transition_matrix(GtkWidget *Win,gpointer data)
 			}
 			else
 			{
-				GtkWidget* message = Message("Error : one entry is not a float ","Error",TRUE);
+				GtkWidget* message = Message(_("Error : an entry is not a float "),_("Error"),TRUE);
   				gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 				return;
 			}
@@ -1501,7 +1501,7 @@ static void apply_transition_matrix(GtkWidget *Win,gpointer data)
 		NumPointstmp[i] = atoi(temp);
 		if(NumPointstmp[i] <=2)
 		{
-			GtkWidget* message = Message("Error : The number of points should be > 2. ","Error",TRUE);
+			GtkWidget* message = Message(_("Error : The number of points should be > 2. "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -1512,7 +1512,7 @@ static void apply_transition_matrix(GtkWidget *Win,gpointer data)
 	{
 		if( limitstmp.MinMax[0][i]> limitstmp.MinMax[1][i])
 		{
-			GtkWidget* message = Message("Error :  The minimal value should be smaller than the maximal value ","Error",TRUE);
+			GtkWidget* message = Message(_("Error :  The minimal value should be smaller than the maximal value "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -1537,7 +1537,7 @@ static void apply_transition_matrix(GtkWidget *Win,gpointer data)
 			}
 			else
 			{
-				GtkWidget* message = Message("Error : one entry is not a float ","Error",TRUE);
+				GtkWidget* message = Message(_("Error : an entry is not a float "),_("Error"),TRUE);
   				gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 				return;
 			}
@@ -1552,7 +1552,7 @@ static void apply_transition_matrix(GtkWidget *Win,gpointer data)
 			norm += V[i][j]*V[i][j];
 		if(fabs(norm)<1e-8)
 		{
-			GtkWidget* message = Message("Error : the norm is equal to 0 ","Error",TRUE);
+			GtkWidget* message = Message(_("Error : the norm is equal to 0 "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -1578,7 +1578,7 @@ static void apply_transition_matrix(GtkWidget *Win,gpointer data)
 	numBetaOrbs = get_num_of_selected_orbitals(betaList, &nBeta);
 	if(nAlpha+nBeta<1)
 	{
-		GtkWidget* message = Message("Error : You should select at last one orbital","Error",TRUE);
+		GtkWidget* message = Message(_("Error : You should select at last one orbital"),_("Error"),TRUE);
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		return;
 	}
@@ -1690,7 +1690,7 @@ static void apply_transition_matrix(GtkWidget *Win,gpointer data)
 
 	if(result && !CancelCalcul)
 	{
-		GtkWidget* message = MessageTxt(result,"Result");
+		GtkWidget* message = MessageTxt(result,_("Result"));
 		gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidth*0.8),-1);
 		gtk_widget_set_size_request(message,(gint)(ScreenWidth*0.45),-1);
   		/* gtk_window_set_modal (GTK_WINDOW (message), TRUE);*/
@@ -1732,24 +1732,24 @@ void transition_matrix_orbitals_dlg()
 
 	if(!GeomOrb)
 	{
-		Message("Sorry, Please load a file before\n","Error",TRUE);
+		Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!CoefAlphaOrbitals)
 	{
-		Message("Sorry, Please load the MO before\n","Error",TRUE);
+		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!AOrb && !SAOrb)
 	{
-		Message("Sorry, Please load the MO before\n","Error",TRUE);
+		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
 		return;
 	}
 
 	if(!AOAvailable &&(TypeGrid == GABEDIT_TYPEGRID_DDENSITY || TypeGrid == GABEDIT_TYPEGRID_ADENSITY))
 	{
-		Message("Sorry, No atomic orbitals available.\nPlease use a gabedit file for load : \n"
-		  "Geometry, Molecular and Atomic Orbitals\n","Error",TRUE);
+		Message(_("Sorry, No atomic orbitals available.\nPlease use a gabedit file for load : \n"
+		  "Geometry, Molecular and Atomic Orbitals\n"),_("Error"),TRUE);
 		return;
 	}
 	
@@ -1780,7 +1780,7 @@ void transition_matrix_orbitals_dlg()
 
 	gtk_box_pack_start (GTK_BOX (vboxall), gtk_hseparator_new(), TRUE, TRUE, 5); 
 
-	frameMethod = gtk_frame_new("Method");
+	frameMethod = gtk_frame_new(_("Method"));
 	gtk_box_pack_start (GTK_BOX (vboxall), frameMethod, TRUE, TRUE, 2);
   	vbox = create_vbox(frameMethod);
 	gtk_widget_show_all (vbox);
@@ -1790,7 +1790,7 @@ void transition_matrix_orbitals_dlg()
 	gtk_widget_show (table);
 
 	numericButton = gtk_check_button_new_with_label (
-			"Numerical computing (Large box is recommended)");
+			_("Numerical computing (Large box is recommended)"));
 	gtk_table_attach(GTK_TABLE(table),numericButton,0,0+2,0,0+1,
                   (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
                   (GtkAttachOptions)(GTK_FILL | GTK_SHRINK),
@@ -1814,14 +1814,14 @@ void transition_matrix_orbitals_dlg()
 	hbox = create_hbox_false(vboxwin);
 	gtk_widget_realize(Win);
 
-	button = create_button(Win,"OK");
+	button = create_button(Win,_("OK"));
 	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_transition_matrix,G_OBJECT(Win));
 
-	button = create_button(Win,"Cancel");
+	button = create_button(Win,_("Cancel"));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, G_OBJECT(Win));
@@ -1865,7 +1865,7 @@ gchar* compute_spatial_overlap(gint N[],GridLimits limits, gint typeOrbi, gint i
 	}
 	else if(!numeric)
 	{
-		setTextInProgress("Analytic computing of spatial overlap <ii|delta(ri,rj)|jj> integral");
+		setTextInProgress(_("Analytic computing of spatial overlap <ii|delta(ri,rj)|jj> integral"));
 		*integ = compute_spatial_overlap_analytic(typeOrbi, ii, typeOrbj, jj,schwarzCutOff);
 		if(CancelCalcul) return tmp;
 		*pNormi = get_overlap_analytic(typeOrbi, ii, typeOrbi, ii);
@@ -1955,7 +1955,7 @@ static void apply_spatial_overlap(GtkWidget *Win,gpointer data)
 			}
 			else
 			{
-				GtkWidget* message = Message("Error : one entry is not a float ","Error",TRUE);
+				GtkWidget* message = Message(_("Error : an entry is not a float "),_("Error"),TRUE);
   				gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 				return;
 			}
@@ -1965,7 +1965,7 @@ static void apply_spatial_overlap(GtkWidget *Win,gpointer data)
 		NumPointstmp[i] = atoi(temp);
 		if(NumPointstmp[i] <=2)
 		{
-			GtkWidget* message = Message("Error : The number of points should be > 2. ","Error",TRUE);
+			GtkWidget* message = Message(_("Error : The number of points should be > 2. "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -1976,7 +1976,7 @@ static void apply_spatial_overlap(GtkWidget *Win,gpointer data)
 	{
 		if( limitstmp.MinMax[0][i]> limitstmp.MinMax[1][i])
 		{
-			GtkWidget* message = Message("Error :  The minimal value should be smaller than the maximal value ","Error",TRUE);
+			GtkWidget* message = Message(_("Error :  The minimal value should be smaller than the maximal value "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -2001,7 +2001,7 @@ static void apply_spatial_overlap(GtkWidget *Win,gpointer data)
 			}
 			else
 			{
-				GtkWidget* message = Message("Error : one entry is not a float ","Error",TRUE);
+				GtkWidget* message = Message(_("Error : an entry is not a float "),_("Error"),TRUE);
   				gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 				return;
 			}
@@ -2016,7 +2016,7 @@ static void apply_spatial_overlap(GtkWidget *Win,gpointer data)
 			norm += V[i][j]*V[i][j];
 		if(fabs(norm)<1e-8)
 		{
-			GtkWidget* message = Message("Error : the norm is equal to 0 ","Error",TRUE);
+			GtkWidget* message = Message(_("Error : the norm is equal to 0 "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -2042,7 +2042,7 @@ static void apply_spatial_overlap(GtkWidget *Win,gpointer data)
 	numBetaOrbs = get_num_of_selected_orbitals(betaList, &nBeta);
 	if(nAlpha+nBeta<1)
 	{
-		GtkWidget* message = Message("Error : You should select at last one orbital","Error",TRUE);
+		GtkWidget* message = Message(_("Error : You should select at last one orbital"),_("Error"),TRUE);
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		return;
 	}
@@ -2154,7 +2154,7 @@ static void apply_spatial_overlap(GtkWidget *Win,gpointer data)
 
 	if(result && !CancelCalcul)
 	{
-		GtkWidget* message = MessageTxt(result,"Result");
+		GtkWidget* message = MessageTxt(result,_("Result"));
 		gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidth*0.8),-1);
 		gtk_widget_set_size_request(message,(gint)(ScreenWidth*0.45),-1);
   		/* gtk_window_set_modal (GTK_WINDOW (message), TRUE);*/
@@ -2197,24 +2197,24 @@ void spatial_overlap_orbitals_dlg()
 
 	if(!GeomOrb)
 	{
-		Message("Sorry, Please load a file before\n","Error",TRUE);
+		Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!CoefAlphaOrbitals)
 	{
-		Message("Sorry, Please load the MO before\n","Error",TRUE);
+		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!AOrb && !SAOrb)
 	{
-		Message("Sorry, Please load the MO before\n","Error",TRUE);
+		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
 		return;
 	}
 
 	if(!AOAvailable &&(TypeGrid == GABEDIT_TYPEGRID_DDENSITY || TypeGrid == GABEDIT_TYPEGRID_ADENSITY))
 	{
-		Message("Sorry, No atomic orbitals available.\nPlease use a gabedit file for load : \n"
-		  "Geometry, Molecular and Atomic Orbitals\n","Error",TRUE);
+		Message(_("Sorry, No atomic orbitals available.\nPlease use a gabedit file for load : \n"
+		  "Geometry, Molecular and Atomic Orbitals\n"),_("Error"),TRUE);
 		return;
 	}
 	
@@ -2245,7 +2245,7 @@ void spatial_overlap_orbitals_dlg()
 
 	gtk_box_pack_start (GTK_BOX (vboxall), gtk_hseparator_new(), TRUE, TRUE, 5); 
 
-	frameMethod = gtk_frame_new("Method");
+	frameMethod = gtk_frame_new(_("Method"));
 	gtk_box_pack_start (GTK_BOX (vboxall), frameMethod, TRUE, TRUE, 2);
   	vbox = create_vbox(frameMethod);
 	gtk_widget_show_all (vbox);
@@ -2255,7 +2255,7 @@ void spatial_overlap_orbitals_dlg()
 	gtk_widget_show (table);
 
 	numericButton = gtk_check_button_new_with_label (
-			"Numerical computing (Large box is recommended)");
+			_("Numerical computing (Large box is recommended)"));
 	gtk_table_attach(GTK_TABLE(table),numericButton,0,0+2,0,0+1,
                   (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
                   (GtkAttachOptions)(GTK_FILL | GTK_SHRINK),
@@ -2263,7 +2263,7 @@ void spatial_overlap_orbitals_dlg()
 	g_signal_connect(G_OBJECT(numericButton), "clicked",(GCallback)numeriButtonClicked,NULL);
 	g_object_set_data (G_OBJECT (Win), "NumericButton",numericButton);
 
-	label = gtk_label_new("    Schwarz cutoff : ");
+	label = gtk_label_new(_("    Schwarz cutoff : "));
 	gtk_table_attach(GTK_TABLE(table),label,0,0+1,1,1+1,
                   (GtkAttachOptions)(GTK_FILL | GTK_SHRINK),
                   (GtkAttachOptions)(GTK_FILL | GTK_SHRINK),
@@ -2295,14 +2295,14 @@ void spatial_overlap_orbitals_dlg()
 	hbox = create_hbox_false(vboxwin);
 	gtk_widget_realize(Win);
 
-	button = create_button(Win,"OK");
+	button = create_button(Win,_("OK"));
 	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_spatial_overlap,G_OBJECT(Win));
 
-	button = create_button(Win,"Cancel");
+	button = create_button(Win,_("Cancel"));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, G_OBJECT(Win));

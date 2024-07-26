@@ -632,7 +632,7 @@ static GtkWidget *addMopacSpinToTable(GtkWidget *table, gint i)
 	gint nlistspinMultiplicity = 1;
 	gchar* listspinMultiplicity[] = {"0"};
 
-	add_label_table(table,"Spin multiplicity",(gushort)i,0);
+	add_label_table(table,_("Spin multiplicity"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entrySpinMultiplicity = addComboListToATable(table, listspinMultiplicity, nlistspinMultiplicity, i, 2, 1);
 	comboSpinMultiplicity  = g_object_get_data(G_OBJECT (entrySpinMultiplicity), "Combo");
@@ -677,7 +677,7 @@ void createMopacChargeMultiplicityFrame(GtkWidget *box)
 
 	table = gtk_table_new(3,5,FALSE);
 
-	frame = gtk_frame_new ("Charge & Multiplicty");
+	frame = gtk_frame_new (_("Charge & Multiplicty"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -710,7 +710,7 @@ void createMopacChargeMultiplicityFrame(GtkWidget *box)
 	{
 		gint ne = mopacMolecule.numberOfValenceElectrons - totalCharge;
 		gchar buffer[BSIZE];
-		sprintf(buffer, "Number of electrons = %d",ne);
+		sprintf(buffer, _("Number of electrons = %d"),ne);
 		gtk_label_set_text(GTK_LABEL(labelNumberOfElectrons),buffer);
 	}
 
@@ -965,7 +965,7 @@ void createReactionPathFrame(GtkWidget *box)
 	stepValueRP[0] = 0.1;
 	stepValueRP[1] = 0.1;
 
-	frame = gtk_frame_new ("Reaction path");
+	frame = gtk_frame_new (_("Reaction path"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -977,25 +977,25 @@ void createReactionPathFrame(GtkWidget *box)
 	gtk_box_pack_start (GTK_BOX (vboxFrame), table, TRUE, TRUE, 0);
 
 	i = 0; j = 1;
-	label = gtk_label_new("Type");
+	label = gtk_label_new(_("Type"));
 	gtk_table_attach(GTK_TABLE(table),label,j,j+1,i,i+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
                   2,2);
 	i = 0; j = 2;
-	label = gtk_label_new("Atoms");
+	label = gtk_label_new(_("Atoms"));
 	gtk_table_attach(GTK_TABLE(table),label,j,j+1,i,i+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
                   2,2);
 	i = 0; j = 3;
-	label = gtk_label_new("Nb points");
+	label = gtk_label_new(_("Nb points"));
 	gtk_table_attach(GTK_TABLE(table),label,j,j+1,i,i+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
                   2,2);
 	i = 0; j = 4;
-	label = gtk_label_new("Step value");
+	label = gtk_label_new(_("Step value"));
 	gtk_table_attach(GTK_TABLE(table),label,j,j+1,i,i+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
@@ -1003,7 +1003,7 @@ void createReactionPathFrame(GtkWidget *box)
 
 	i = 1; 
 	j = 0;
-	label = gtk_label_new("First");
+	label = gtk_label_new(_("First"));
 	gtk_table_attach(GTK_TABLE(table),label,j,j+1,i,i+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
@@ -1028,7 +1028,7 @@ void createReactionPathFrame(GtkWidget *box)
                   2,2);
 	i = 2; 
 	j = 0;
-	label = gtk_label_new("Second");
+	label = gtk_label_new(_("Second"));
 	gtk_table_attach(GTK_TABLE(table),label,j,j+1,i,i+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),

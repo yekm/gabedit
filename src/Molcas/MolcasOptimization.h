@@ -16,14 +16,14 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 DEALINGS IN THE SOFTWARE.
 ************************************************************************************************************/
 
-#ifndef __GABEDIT_MOLCASOPTIMISATION_H__
-#define __GABEDIT_MOLCASOPTIMISATION_H__
+#ifndef __GABEDIT_MOLCASOPTIMIZATION_H__
+#define __GABEDIT_MOLCASOPTIMIZATION_H__
 
-void freeMolcasOptimisation();
-void createOptimisationFrame(GtkWidget *win, GtkWidget *box);
-void putBeginOptimisationInTextEditor();
-void putEndOptimisationInTextEditor();
-void putOptimisationInfoInTextEditor();
+void freeMolcasOptimization();
+void createOptimizationFrame(GtkWidget *win, GtkWidget *box);
+void putBeginOptimizationInTextEditor();
+void putEndOptimizationInTextEditor();
+void putOptimizationInfoInTextEditor();
 
-#endif /* __GABEDIT_MOLCASOPTIMISATION_H__ */
+#endif /* __GABEDIT_MOLCASOPTIMIZATION_H__ */
 

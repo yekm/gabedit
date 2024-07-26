@@ -40,104 +40,104 @@ void initMPQCFunctionals()
 
 	functionals[LSDAC].type = LSDAC;
 	functionals[LSDAC].name = g_strdup("LSDACFunctional");
-	functionals[LSDAC].comment = g_strdup("Nothing");
+	functionals[LSDAC].comment = g_strdup(_("Nothing"));
 
 	functionals[PBEC].type = PBEC;
 	functionals[PBEC].name = g_strdup("PBECFunctional");
-	functionals[PBEC].comment = g_strdup("Perdew-Burke-Ernzerhof (PBE) correlation functional.");
+	functionals[PBEC].comment = g_strdup(_("Perdew-Burke-Ernzerhof (PBE) correlation functional."));
 
 	functionals[PW91C].type = PW91C;
 	functionals[PW91C].name = g_strdup("PW91CFunctional");
-	functionals[PW91C].comment = g_strdup("Perdew-Wang 1991 correlation functional");
+	functionals[PW91C].comment = g_strdup(_("Perdew-Wang 1991 correlation functional"));
 
 	functionals[P86C].type = P86C;
 	functionals[P86C].name = g_strdup("P86CFunctional");
-	functionals[P86C].comment = g_strdup("Perdew 1986 (P86) correlation functional");
+	functionals[P86C].comment = g_strdup(_("Perdew 1986 (P86) correlation functional"));
 
 	functionals[NewP86C].type = NewP86C;
 	functionals[NewP86C].name = g_strdup("P86CFunctional");
-	functionals[NewP86C].comment = g_strdup("Perdew 1986 (P86) correlation functional");
+	functionals[NewP86C].comment = g_strdup(_("Perdew 1986 (P86) correlation functional"));
 
 
 	functionals[VWN1LC].type = VWN1LC;
 	functionals[VWN1LC].name = g_strdup("VWN1LCFunctional");
-	functionals[VWN1LC].comment = g_strdup("VWN1 local correlation term (from Vosko, Wilk, and Nusair)");
+	functionals[VWN1LC].comment = g_strdup(_("VWN1 local correlation term (from Vosko, Wilk, and Nusair)"));
 
 	functionals[VWN1LCRPA].type = VWN1LCRPA;
 	functionals[VWN1LCRPA].name = g_strdup("VWN1LCFunctional(RPA)");
-	functionals[VWN1LCRPA].comment = g_strdup("VWN1(RPA) local correlation term (from Vosko, Wilk, and Nusair)");
+	functionals[VWN1LCRPA].comment = g_strdup(_("VWN1(RPA) local correlation term (from Vosko, Wilk, and Nusair)"));
 
 	functionals[VWN2LC].type = VWN2LC;
 	functionals[VWN2LC].name = g_strdup("VWN2LCFunctional");
-	functionals[VWN2LC].comment = g_strdup("VWN2 local correlation term (from Vosko, Wilk, and Nusair)");
+	functionals[VWN2LC].comment = g_strdup(_("VWN2 local correlation term (from Vosko, Wilk, and Nusair)"));
 
 	functionals[VWN3LC].type = VWN3LC;
 	functionals[VWN3LC].name = g_strdup("VWN3LCFunctional");
-	functionals[VWN3LC].comment = g_strdup("VWN3 local correlation term (from Vosko, Wilk, and Nusair)");
+	functionals[VWN3LC].comment = g_strdup(_("VWN3 local correlation term (from Vosko, Wilk, and Nusair)"));
 
 	functionals[VWN4LC].type = VWN4LC;
 	functionals[VWN4LC].name = g_strdup("VWN4LCFunctional");
-	functionals[VWN4LC].comment = g_strdup("VWN4 local correlation term (from Vosko, Wilk, and Nusair)");
+	functionals[VWN4LC].comment = g_strdup(_("VWN4 local correlation term (from Vosko, Wilk, and Nusair)"));
 
 	functionals[VWN5LC].type = VWN5LC;
 	functionals[VWN5LC].name = g_strdup("VWN5LCFunctional");
-	functionals[VWN5LC].comment = g_strdup("VWN5 local correlation term (from Vosko, Wilk, and Nusair)");
+	functionals[VWN5LC].comment = g_strdup(_("VWN5 local correlation term (from Vosko, Wilk, and Nusair)"));
 
 	functionals[PW92LC].type = PW92LC ;
 	functionals[PW92LC].name = g_strdup("PW92LCFunctional");
-	functionals[PW92LC].comment = g_strdup("PW92 local (LSDA) correlation term");
+	functionals[PW92LC].comment = g_strdup(_("PW92 local (LSDA) correlation term"));
 
 	functionals[PZ81LC].type =PZ81LC ;
 	functionals[PZ81LC].name = g_strdup("PZ81LCFunctional");
-	functionals[PZ81LC].comment = g_strdup("PZ81 local (LSDA) correlation functional");
+	functionals[PZ81LC].comment = g_strdup(_("PZ81 local (LSDA) correlation functional"));
 
 	functionals[LYPC].type = LYPC;
 	functionals[LYPC].name = g_strdup("LYPCFunctional");
-	functionals[LYPC].comment = g_strdup("Lee, Yang, and Parr correlation functional");
+	functionals[LYPC].comment = g_strdup(_("Lee, Yang, and Parr correlation functional"));
 
 	functionals[HFX].type = HFX;
 	functionals[HFX].name = g_strdup("HFX(HF Exchange)");
-	functionals[HFX].comment = g_strdup("Hartree-Fock Exchange");
+	functionals[HFX].comment = g_strdup(_("Hartree-Fock Exchange"));
 
 	functionals[Xalpha].type = Xalpha;
 	functionals[Xalpha].name = g_strdup("XalphaFunctional");
-	functionals[Xalpha].comment = g_strdup("Xalpha exchange functional");
+	functionals[Xalpha].comment = g_strdup(_("Xalpha exchange functional"));
 
 	functionals[SlaterX].type = SlaterX ;
 	functionals[SlaterX].name = g_strdup("SlaterXFunctional");
-	functionals[SlaterX].comment = g_strdup("Slater Exchange term");
+	functionals[SlaterX].comment = g_strdup(_("Slater Exchange term"));
 
 	functionals[Becke88X].type = Becke88X ;
 	functionals[Becke88X].name = g_strdup("Becke88XFunctional");
-	functionals[Becke88X].comment = g_strdup("Becke's 1988 exchange functional");
+	functionals[Becke88X].comment = g_strdup(_("Becke's 1988 exchange functional"));
 
 	functionals[PBEX].type = PBEX;
 	functionals[PBEX].name = g_strdup("PBEXFunctional");
-	functionals[PBEX].comment = g_strdup("Perdew-Burke-Ernzerhof (PBE) exchange functional");
+	functionals[PBEX].comment = g_strdup(_("Perdew-Burke-Ernzerhof (PBE) exchange functional"));
 
 	functionals[PW86X].type = PW86X;
 	functionals[PW86X].name = g_strdup("PW86XFunctional");
-	functionals[PW86X].comment = g_strdup("Perdew-Wang 1986 (PW86) Exchange functiona");
+	functionals[PW86X].comment = g_strdup(_("Perdew-Wang 1986 (PW86) Exchange functiona"));
 
 	functionals[PW91X].type = PW91X ;
 	functionals[PW91X].name = g_strdup("PW91XFunctional");
-	functionals[PW91X].comment = g_strdup("Perdew-Wang 1991 exchange functional");
+	functionals[PW91X].comment = g_strdup(_("Perdew-Wang 1991 exchange functional"));
 
 	functionals[mPW91_B88X].type = mPW91_B88X ;
 	functionals[mPW91_B88X].name = g_strdup("mPW91XFunctional(B88)");
-	functionals[mPW91_B88X].comment = g_strdup("modified 1991 Perdew-Wang exchange functional");
+	functionals[mPW91_B88X].comment = g_strdup(_("modified 1991 Perdew-Wang exchange functional"));
 
 	functionals[mPW91_PW91X].type =  mPW91_PW91X;
 	functionals[mPW91_PW91X].name = g_strdup("mPW91XFunctional(PW91)");
-	functionals[mPW91_PW91X].comment = g_strdup("modified 1991 Perdew-Wang exchange functional");
+	functionals[mPW91_PW91X].comment = g_strdup(_("modified 1991 Perdew-Wang exchange functional"));
 
 	functionals[mPW91_mPW91X].type =  mPW91_mPW91X;
 	functionals[mPW91_mPW91X].name = g_strdup("mPW91XFunctional(mPW91)");
-	functionals[mPW91_mPW91X].comment = g_strdup("modified 1991 Perdew-Wang exchange functional");
+	functionals[mPW91_mPW91X].comment = g_strdup(_("modified 1991 Perdew-Wang exchange functional"));
 
 	functionals[G96X].type = G96X;
 	functionals[G96X].name = g_strdup("G96XFunctional");
-	functionals[G96X].comment = g_strdup("Gill 1996 (G96) exchange functional");
+	functionals[G96X].comment = g_strdup(_("Gill 1996 (G96) exchange functional"));
 }
 /************************************************************************************************************/
 void freeMPQCFunctionals()
@@ -497,8 +497,8 @@ void createXCFunctionalsFrame(GtkWidget *box, gchar* title, gdouble* coefficient
 	t = g_malloc(BSIZE*sizeof(gchar));
 	for(i=0;i<n;i++)
 		if(
-			(strstr(functionals[i].name,"X") && strstr(title,"Exchange"))
-		      || (strstr(functionals[i].name,"C") && strstr(title,"Correlation"))
+			(strstr(functionals[i].name,"X") && strstr(title,_("Exchange")))
+		      || (strstr(functionals[i].name,"C") && strstr(title,_("Correlation")))
 		  )
 		{
 			if(strstr(functionals[i].name,"LSDAC")) continue;
@@ -555,11 +555,11 @@ void mpqcSumDensityFunctionalWindow()
 	win= gtk_dialog_new ();
 	gtk_window_set_position(GTK_WINDOW(win),GTK_WIN_POS_CENTER);
 	gtk_window_set_transient_for(GTK_WINDOW(win),GTK_WINDOW(Fenetre));
-	gtk_window_set_title(&GTK_DIALOG(win)->window,"MPQC Sum Density functionals");
+	gtk_window_set_title(&GTK_DIALOG(win)->window,_("MPQC Sum Density functionals"));
     	gtk_window_set_modal (GTK_WINDOW (win), TRUE);
 	g_object_set_data(G_OBJECT (win), "Coefficients", coefficients);
 
-	init_child(win, destroyWindow," MPQC Sum. Dens. ");
+	init_child(win, destroyWindow,_(" MPQC Sum. Dens. "));
 	g_signal_connect(G_OBJECT(win),"delete_event",(GCallback)destroy_children,NULL);
 
 	gtk_widget_realize(win);
@@ -567,12 +567,12 @@ void mpqcSumDensityFunctionalWindow()
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(win)->vbox), table, FALSE, TRUE, 5);
 
 	hbox =addHboxToTable(table, 0, 0, 1, 1);
-	createXCFunctionalsFrame(hbox,"Exchange functionals", coefficients);
+	createXCFunctionalsFrame(hbox,_("Exchange functionals"), coefficients);
 
 	hbox =addHboxToTable(table, 0, 1, 1, 1);
-	createXCFunctionalsFrame(hbox,"Correlation functionals", coefficients);
+	createXCFunctionalsFrame(hbox,_("Correlation functionals"), coefficients);
 
-	button = create_button(win,"OK");
+	button = create_button(win,_("OK"));
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(win)->action_area), button, FALSE, TRUE, 5);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
@@ -580,7 +580,7 @@ void mpqcSumDensityFunctionalWindow()
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(setSumDensityFunctionals),GTK_OBJECT(win));
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_children),GTK_OBJECT(win));
 
-	button = create_button(win,"Close");
+	button = create_button(win,_("Close"));
   	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(win)->action_area), button, FALSE, TRUE, 5);  
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK(destroy_children),GTK_OBJECT(win));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);

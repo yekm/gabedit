@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 #include <stdlib.h>
 #include <ctype.h>
 #include <gtk/gtk.h>
+#include <glib/gi18n.h>
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
 #include "../Utils/Constants.h"
@@ -208,7 +209,7 @@ void setBoundaryEwaldPoissonMG(PoissonMG* ps)
 	gdouble v = -domain.cellVolume/4/PI;
 	static gdouble PRECISION = 1e-12;
 
-	printf("Set boundaries using ewald sum\n");
+	printf(_("Set boundaries using ewald sum\n"));
 	setOperationGridMG(ps->potential,GABEDIT_BOUNDARY);
 	initGridMG(ps->potential , 0.0);
 	setOperationGridMG(ps->potential,GABEDIT_ALL);
@@ -332,7 +333,7 @@ void setBoundaryMultipolPoissonMG(PoissonMG* ps)
 
 
 
-	printf("Set boundaries using multipol approximation\n");
+	printf(_("Set boundaries using multipol approximation\n"));
 
 	setOperationGridMG(ps->potential,GABEDIT_BOUNDARY);
 	initGridMG(ps->potential,0.0);
@@ -364,7 +365,7 @@ void setBoundaryMultipolPoissonMG(PoissonMG* ps)
 					}
 				}
 			}
-	printf("Total charge = %f\n",Q[0][0]*sqrt(4*PI));
+	printf(_("Total charge = %f\n"),Q[0][0]*sqrt(4*PI));
 	for( l=0; l<=lmax; l++)
 		for( m=-l; m<=l; m++)
 		{
@@ -704,7 +705,7 @@ void solveCGPoissonMG(PoissonMG* ps, int max, gdouble acc)
 		rms = residualNormPoissonMG(ps);
 		/* printf("Solve Poisson by CG i = %d RMS = %f\n",i,rms);*/
 		progress_orb(scale,GABEDIT_PROGORB_COMPMEPGRID,FALSE);
-		sprintf(tmp,"MEP : Poisson by CG, rms = %f",rms);
+		sprintf(tmp,_("MEP : Poisson by CG, rms = %f"),rms);
 		setTextInProgress(tmp);
 		if(CancelCalcul) 
 		{
@@ -853,7 +854,7 @@ void solveMGPoissonMG3(PoissonMG* ps, int levelMax, int nIter, gdouble acc, int 
 		printf("-------------------------------------------\n");
 	}
 	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
-	setTextInProgress("Solve Poisson equation by MultiGrid method, please wait");
+	setTextInProgress(_("Solve Poisson equation by MultiGrid method, please wait"));
 	scale = (gdouble)1.01/nIter;
 
 
@@ -866,12 +867,12 @@ void solveMGPoissonMG3(PoissonMG* ps, int levelMax, int nIter, gdouble acc, int 
 		if(rms>0 && rms<acc)
 		{
 			if(verbose>=4) printf("Number of iterations = %d\n",i+1);
-			sprintf(tmp,"MEP : Convergence after %d iterations",i+1);
+			sprintf(tmp,_("MEP : Convergence after %d iterations"),i+1);
 			setTextInProgress(tmp);
 			break;
 		}
 		progress_orb(scale,GABEDIT_PROGORB_COMPMEPGRID,FALSE);
-		sprintf(tmp,"MEP : Poisson by MultiGrid, rms = %f",rms);
+		sprintf(tmp,_("MEP : Poisson by MultiGrid, rms = %f"),rms);
 		setTextInProgress(tmp);
 		if(CancelCalcul) 
 		{
@@ -885,7 +886,7 @@ void solveMGPoissonMG3(PoissonMG* ps, int levelMax, int nIter, gdouble acc, int 
 /*********************************************************/
 void solveSmootherPoissonMG2(PoissonMG* ps, int max, int nf)
 {
-	printf("Je suis dans solveSmoother---------------\n");
+	printf("In solveSmoother---------------\n");
 	gint n = max/nf;
 	gint i;
 

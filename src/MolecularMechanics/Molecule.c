@@ -511,14 +511,14 @@ void setConnections(Molecule* molecule)
 	createBondedMatrix(molecule);
 
 	/* printf("Set Connection\n");*/
-	set_text_to_draw("Establishing connectivity : 2 connections...");
-	set_statubar_operation_str("Establishing connectivity : 2 connections...");
+	set_text_to_draw(_("Establishing connectivity : 2 connections..."));
+	set_statubar_operation_str(_("Establishing connectivity : 2 connections..."));
 	dessine();
     	while( gtk_events_pending() )
         	gtk_main_iteration();
 	set2Connections(molecule);
-	set_text_to_draw("Establishing connectivity : 3 connections...");
-	set_statubar_operation_str("Establishing connectivity : 3 connections...");
+	set_text_to_draw(_("Establishing connectivity : 3 connections..."));
+	set_statubar_operation_str(_("Establishing connectivity : 3 connections..."));
 
 	dessine();
 	if(StopCalcul)
@@ -526,8 +526,8 @@ void setConnections(Molecule* molecule)
     	while( gtk_events_pending() )
         	gtk_main_iteration();
 	set3Connections(molecule);
-	set_text_to_draw("Establishing connectivity : 4 connections...");
-	set_statubar_operation_str("Establishing connectivity : 4 connections...");
+	set_text_to_draw(_("Establishing connectivity : 4 connections..."));
+	set_statubar_operation_str(_("Establishing connectivity : 4 connections..."));
 	dessine();
 	if(StopCalcul)
 		return;
@@ -535,8 +535,8 @@ void setConnections(Molecule* molecule)
         	gtk_main_iteration();
 	set4Connections(molecule);
 
-	set_text_to_draw("Establishing connectivity : non bonded ...");
-	set_statubar_operation_str("Establishing connectivity : non bonded ...");
+	set_text_to_draw(_("Establishing connectivity : non bonded ..."));
+	set_statubar_operation_str(_("Establishing connectivity : non bonded ..."));
 	dessine();
 	if(StopCalcul)
 		return;

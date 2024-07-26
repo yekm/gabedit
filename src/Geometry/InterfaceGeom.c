@@ -58,7 +58,7 @@ void read_mopac_input_file(GabeditFileChooser *gabeditFileChooser, gint response
  	fileName = gabedit_file_chooser_get_current_file(gabeditFileChooser);
 	if ((!fileName) || (strcmp(fileName,"") == 0))
 	{
-		Message("Sorry\n No file slected"," Warning ",TRUE);
+		Message(_("Sorry\n No file selected"),_("Warning"),TRUE);
 		return ;
 	}
 	read_geom_in_mopac_input(fileName);
@@ -72,7 +72,7 @@ void read_mpqc_input_file(GabeditFileChooser *gabeditFileChooser, gint response_
  	fileName = gabedit_file_chooser_get_current_file(gabeditFileChooser);
 	if ((!fileName) || (strcmp(fileName,"") == 0))
 	{
-		Message("Sorry\n No file slected"," Warning ",TRUE);
+		Message(_("Sorry\n No file selected"),_("Warning"),TRUE);
 		return ;
 	}
 	read_geom_in_mpqc_input(fileName);
@@ -86,7 +86,7 @@ void read_gauss_input_file(GabeditFileChooser *gabeditFileChooser, gint response
 	NomFichier = gabedit_file_chooser_get_current_file(gabeditFileChooser);
 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
 	{
-		Message("Sorry\n No file slected"," Warning ",TRUE);
+		Message(_("Sorry\n No file selected"),_("Warning"),TRUE);
 		return ;
 	}
 	
@@ -101,7 +101,7 @@ void read_molcas_input_file(GabeditFileChooser *gabeditFileChooser, gint respons
 	NomFichier = gabedit_file_chooser_get_current_file(gabeditFileChooser);
 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
 	{
-		Message("Sorry\n No file slected"," Warning ",TRUE);
+		Message(_("Sorry\n No file selected"),_("Warning"),TRUE);
 		return ;
 	}
 	read_geom_in_molcas_input(NomFichier);
@@ -115,7 +115,7 @@ void read_molpro_input_file(GabeditFileChooser *gabeditFileChooser, gint respons
 	NomFichier = gabedit_file_chooser_get_current_file(gabeditFileChooser);
 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
 	{
-		Message("Sorry\n No file slected"," Warning ",TRUE);
+		Message(_("Sorry\n No file selected"),_("Warning"),TRUE);
 		return ;
 	}
 	read_geom_in_molpro_input(NomFichier);
@@ -135,7 +135,7 @@ void selc_all_input_file(gchar *data)
 	else gtk_window_set_transient_for(GTK_WINDOW(gabeditFileChooser),GTK_WINDOW(Fenetre));
 	gtk_window_set_modal (GTK_WINDOW (gabeditFileChooser), TRUE);
 	gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(gabeditFileChooser),patternsfiles);
-	if( !strcmp(data,"Read Geometry from a Mopac input file") )
+	if( !strcmp(data,_("Read Geometry from a Mopac input file")) )
 	{
 		temp = g_strdup_printf("%s.mop",fileopen.projectname);
 		gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.mop");
@@ -166,16 +166,16 @@ void selc_all_input_file(gchar *data)
 		}
 	}
 
-	if( !strcmp(data,"Read Geometry from a Gaussian input file") )
+	if( !strcmp(data,_("Read Geometry from a Gaussian input file")) )
   		g_signal_connect (gabeditFileChooser, "response",  G_CALLBACK (read_gauss_input_file), GTK_OBJECT(gabeditFileChooser));
 	else
-	if( !strcmp(data,"Read Geometry from a Molcas input file") )
+	if( !strcmp(data,_("Read Geometry from a Molcas input file")) )
 		g_signal_connect (gabeditFileChooser, "response",  G_CALLBACK (read_molcas_input_file), GTK_OBJECT(gabeditFileChooser));
   	else
-	if( !strcmp(data,"Read Geometry from a Mopac input file") )
+	if( !strcmp(data,_("Read Geometry from a Mopac input file")) )
 		g_signal_connect (gabeditFileChooser, "response",  G_CALLBACK (read_mopac_input_file), GTK_OBJECT(gabeditFileChooser));
   	else
-	if( !strcmp(data,"Read Geometry from a MPQC input file") )
+	if( !strcmp(data,_("Read Geometry from a MPQC input file")) )
 		g_signal_connect (gabeditFileChooser, "response",  G_CALLBACK (read_mpqc_input_file), GTK_OBJECT(gabeditFileChooser));
 	else
 		g_signal_connect (gabeditFileChooser, "response",  G_CALLBACK (read_molpro_input_file), GTK_OBJECT(gabeditFileChooser));
@@ -209,7 +209,7 @@ void create_geomXYZ_interface (GabEditTypeFileGeom readfile)
   gtk_widget_show (vbox);
 
 
-  label = gtk_label_new (" XYZ Editor  ");
+  label = gtk_label_new (_(" XYZ Editor  "));
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 2);
 
@@ -220,7 +220,7 @@ void create_geomXYZ_interface (GabEditTypeFileGeom readfile)
   gtk_widget_show (vbox);
   gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 5);
 
-  label = gtk_label_new (" VARIABLES Editor ");
+  label = gtk_label_new (_(" VARIABLES Editor "));
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 2);
   create_variablesXYZ_list(vbox,readfile);
@@ -254,7 +254,7 @@ void create_geom_interface (GabEditTypeFileGeom readfile)
   gtk_widget_show (vbox);
   gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 5);
 
-  label = gtk_label_new (" Z-MATRIX Editor ");
+  label = gtk_label_new (_(" Z-MATRIX Editor "));
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 2);
 
@@ -266,7 +266,7 @@ void create_geom_interface (GabEditTypeFileGeom readfile)
   gtk_widget_show (vbox);
   gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 5);
 
-  label = gtk_label_new (" VARIABLES Editor ");
+  label = gtk_label_new (_(" VARIABLES Editor "));
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 2);
 
@@ -285,79 +285,79 @@ static void traite_geom(GtkComboBox *combobox, gpointer d)
 		gtk_tree_model_get (model, &iter, 0, &data, -1);
 	}
 	if(!data) return;
-	if (!strcmp((char*)data, "New Z-Matrix geometry"))
+	if (!strcmp((char*)data, _("New Z-Matrix geometry")))
 	create_geom_interface (GABEDIT_TYPEFILEGEOM_NEW);
 	else
-	if (!strcmp((char*)data, "Read Geometry from a Gaussian Z-Matrix file"))
+	if (!strcmp((char*)data, _("Read Geometry from a Gaussian Z-Matrix file")))
 	create_geom_interface (GABEDIT_TYPEFILEGEOM_GAUSSIAN_ZMATRIX);
 	else
-	if (!strcmp((char*)data, "Read Geometry from a Mopac Z-Matrix file"))
+	if (!strcmp((char*)data, _("Read Geometry from a Mopac Z-Matrix file")))
 	create_geom_interface (GABEDIT_TYPEFILEGEOM_MOPAC_ZMATRIX);
 	else
-	if (!strcmp((char*)data, "New XYZ geometry"))
+	if (!strcmp((char*)data, _("New XYZ geometry")))
 	create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_NEW);
 	else
-	if (!strcmp((char*)data, "Read Geometry from a XYZ file"))
+	if (!strcmp((char*)data, _("Read Geometry from a XYZ file")))
 	create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_XYZ);
 	else
-	if (!strcmp((char*)data, "Read Geometry from a MOL2 file"))
+	if (!strcmp((char*)data, _("Read Geometry from a MOL2 file")))
 	create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_MOL2);
 	else
-	if (!strcmp((char*)data, "Read Geometry from a Tinker file"))
+	if (!strcmp((char*)data, _("Read Geometry from a Tinker file")))
 	create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_TINKER);
 	else
-	if (!strcmp((char*)data, "Read Geometry from a PDB file"))
+	if (!strcmp((char*)data, _("Read Geometry from a PDB file")))
 	create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_PDB);
 	else
-	if (!strcmp((char*)data, "Read Geometry from a Hyperchem file"))
+	if (!strcmp((char*)data, _("Read Geometry from a Hyperchem file")))
 	create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_HIN);
 	else
-	if (!strcmp((char*)data, "Read the first geometry from a Dalton output file"))
+	if (!strcmp((char*)data, _("Read the first geometry from a Dalton output file")))
 	create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_DALTONFIRST);
 	else
-	if (!strcmp((char*)data, "Read the last geometry from a Dalton output file"))
+	if (!strcmp((char*)data, _("Read the last geometry from a Dalton output file")))
 	create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_DALTONLAST);
 	else
-	if (!strcmp((char*)data, "Read the first geometry from a Molcas output file"))
+	if (!strcmp((char*)data, _("Read the first geometry from a Molcas output file")))
 	create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_MOLCASOUTFIRST);
 	else
-	if (!strcmp((char*)data, "Read the last geometry from a Molcas output file"))
+	if (!strcmp((char*)data, _("Read the last geometry from a Molcas output file")))
 	create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_MOLCASOUTLAST);
 	else
-	if (!strcmp((char*)data, "Read the first geometry from a Molpro output file"))
+	if (!strcmp((char*)data, _("Read the first geometry from a Molpro output file")))
 	create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_MOLPROOUTFIRST);
 	else
-	if (!strcmp((char*)data, "Read the last geometry from a Molpro output file"))
+	if (!strcmp((char*)data, _("Read the last geometry from a Molpro output file")))
 	create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_MOLPROOUTLAST);
 	else
-	if (!strcmp((char*)data, "Read the first geometry from a MPQC output file"))
+	if (!strcmp((char*)data, _("Read the first geometry from a MPQC output file")))
 	create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_MPQCOUTFIRST);
 	else
-	if (!strcmp((char*)data, "Read the last geometry from a MPQC output file"))
+	if (!strcmp((char*)data, _("Read the last geometry from a MPQC output file")))
 	create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_MPQCOUTLAST);
 	else
-	if (!strcmp((char*)data, "Read the first geometry from a Gaussian output file"))
+	if (!strcmp((char*)data, _("Read the first geometry from a Gaussian output file")))
 	create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_GAUSSOUTFIRST);
 	else
-	if (!strcmp((char*)data, "Read the last geometry from a Gaussian output file"))
+	if (!strcmp((char*)data, _("Read the last geometry from a Gaussian output file")))
 	create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_GAUSSOUTLAST);
 	else
-	if (!strcmp((char*)data, "Read Geometry from a Gaussian input file"))
+	if (!strcmp((char*)data, _("Read Geometry from a Gaussian input file")))
 	{
 		selc_all_input_file(data);
 	}
 	else
-	if (!strcmp((char*)data, "Read Geometry from a Molpro input file"))
+	if (!strcmp((char*)data, _("Read Geometry from a Molpro input file")))
 	{
 		selc_all_input_file(data);
 	}
 	else
-	if (!strcmp((char*)data, "Read Geometry from a MPQC input file"))
+	if (!strcmp((char*)data, _("Read Geometry from a MPQC input file")))
 	{
 		selc_all_input_file(data);
 	}
 	else
-	if (!strcmp((char*)data, "Read Geometry from a Molcas input file"))
+	if (!strcmp((char*)data, _("Read Geometry from a Molcas input file")))
 	{
 		selc_all_input_file(data);
 	}
@@ -390,11 +390,11 @@ GtkWidget *create_geom(GtkWidget*win,GtkWidget *frame)
 
 	store = gtk_tree_store_new (1,G_TYPE_STRING);
         gtk_tree_store_append (store, &iter, NULL);
-        gtk_tree_store_set (store, &iter, 0, "Select a option", -1);
+        gtk_tree_store_set (store, &iter, 0, _("Select a option"), -1);
         gtk_tree_store_append (store, &iter, NULL);
-        gtk_tree_store_set (store, &iter, 0, "New Z-Matrix geometry", -1);
+        gtk_tree_store_set (store, &iter, 0, _("New Z-Matrix geometry"), -1);
         gtk_tree_store_append (store, &iter, NULL);
-        gtk_tree_store_set (store, &iter, 0, "New XYZ geometry", -1);
+        gtk_tree_store_set (store, &iter, 0, _("New XYZ geometry"), -1);
 
 	/* separator */
 	/* only with 2.6.x
@@ -403,29 +403,18 @@ GtkWidget *create_geom(GtkWidget*win,GtkWidget *frame)
 	*/
 
         gtk_tree_store_append (store, &iter, NULL);
-        gtk_tree_store_set (store, &iter, 0, "Read Geometry from a XYZ file", -1);
+        gtk_tree_store_set (store, &iter, 0, _("Read Geometry from a XYZ file"), -1);
         gtk_tree_store_append (store, &iter, NULL);
-        gtk_tree_store_set (store, &iter, 0, "Read Geometry from a MOL2 file", -1);
+        gtk_tree_store_set (store, &iter, 0, _("Read Geometry from a MOL2 file"), -1);
         gtk_tree_store_append (store, &iter, NULL);
-        gtk_tree_store_set (store, &iter, 0, "Read Geometry from a Tinker file", -1);
+        gtk_tree_store_set (store, &iter, 0, _("Read Geometry from a Tinker file"), -1);
         gtk_tree_store_append (store, &iter, NULL);
-        gtk_tree_store_set (store, &iter, 0, "Read Geometry from a PDB file", -1);
+        gtk_tree_store_set (store, &iter, 0, _("Read Geometry from a PDB file"), -1);
         gtk_tree_store_append (store, &iter, NULL);
-        gtk_tree_store_set (store, &iter, 0, "Read Geometry from a Hyperchem file", -1);
-        gtk_tree_store_append (store, &iter, NULL);
-
-        gtk_tree_store_set (store, &iter, 0, "Read Geometry from a Gaussian Z-Matrix file", -1);
+        gtk_tree_store_set (store, &iter, 0, _("Read Geometry from a Hyperchem file"), -1);
         gtk_tree_store_append (store, &iter, NULL);
 
-	/* separator */
-	/* only with 2.6.x
-        gtk_tree_store_append (store, &iter, NULL);
-	gtk_tree_store_set (store, &iter, 0, NULL, -1);
-	*/
-
-        gtk_tree_store_set (store, &iter, 0, "Read the first geometry from a Dalton output file", -1);
-        gtk_tree_store_append (store, &iter, NULL);
-        gtk_tree_store_set (store, &iter, 0, "Read the last geometry from a Dalton output file", -1);
+        gtk_tree_store_set (store, &iter, 0, _("Read Geometry from a Gaussian Z-Matrix file"), -1);
         gtk_tree_store_append (store, &iter, NULL);
 
 	/* separator */
@@ -434,11 +423,9 @@ GtkWidget *create_geom(GtkWidget*win,GtkWidget *frame)
 	gtk_tree_store_set (store, &iter, 0, NULL, -1);
 	*/
 
-        gtk_tree_store_set (store, &iter, 0, "Read Geometry from a Gaussian input file", -1);
+        gtk_tree_store_set (store, &iter, 0, _("Read the first geometry from a Dalton output file"), -1);
         gtk_tree_store_append (store, &iter, NULL);
-        gtk_tree_store_set (store, &iter, 0, "Read the first geometry from a Gaussian output file", -1);
-        gtk_tree_store_append (store, &iter, NULL);
-        gtk_tree_store_set (store, &iter, 0, "Read the last geometry from a Gaussian output file", -1);
+        gtk_tree_store_set (store, &iter, 0, _("Read the last geometry from a Dalton output file"), -1);
         gtk_tree_store_append (store, &iter, NULL);
 
 	/* separator */
@@ -447,24 +434,11 @@ GtkWidget *create_geom(GtkWidget*win,GtkWidget *frame)
 	gtk_tree_store_set (store, &iter, 0, NULL, -1);
 	*/
 
-        gtk_tree_store_set (store, &iter, 0, "Read Geometry from a Molcas input file", -1);
+        gtk_tree_store_set (store, &iter, 0, _("Read Geometry from a Gaussian input file"), -1);
         gtk_tree_store_append (store, &iter, NULL);
-        gtk_tree_store_set (store, &iter, 0, "Read the first geometry from a Molcas output file", -1);
+        gtk_tree_store_set (store, &iter, 0, _("Read the first geometry from a Gaussian output file"), -1);
         gtk_tree_store_append (store, &iter, NULL);
-        gtk_tree_store_set (store, &iter, 0, "Read the last geometry from a Molcas output file", -1);
-        gtk_tree_store_append (store, &iter, NULL);
-
-	/* separator */
-	/* only with 2.6.x
-        gtk_tree_store_append (store, &iter, NULL);
-	gtk_tree_store_set (store, &iter, 0, NULL, -1);
-	*/
-
-        gtk_tree_store_set (store, &iter, 0, "Read Geometry from a Molpro input file", -1);
-        gtk_tree_store_append (store, &iter, NULL);
-        gtk_tree_store_set (store, &iter, 0, "Read the first geometry from a Molpro output file", -1);
-        gtk_tree_store_append (store, &iter, NULL);
-        gtk_tree_store_set (store, &iter, 0, "Read the last geometry from a Molpro output file", -1);
+        gtk_tree_store_set (store, &iter, 0, _("Read the last geometry from a Gaussian output file"), -1);
         gtk_tree_store_append (store, &iter, NULL);
 
 	/* separator */
@@ -473,11 +447,37 @@ GtkWidget *create_geom(GtkWidget*win,GtkWidget *frame)
 	gtk_tree_store_set (store, &iter, 0, NULL, -1);
 	*/
 
-        gtk_tree_store_set (store, &iter, 0, "Read Geometry from a MPQC input file", -1);
+        gtk_tree_store_set (store, &iter, 0, _("Read Geometry from a Molcas input file"), -1);
         gtk_tree_store_append (store, &iter, NULL);
-        gtk_tree_store_set (store, &iter, 0, "Read the first geometry from a MPQC output file", -1);
+        gtk_tree_store_set (store, &iter, 0, _("Read the first geometry from a Molcas output file"), -1);
         gtk_tree_store_append (store, &iter, NULL);
-        gtk_tree_store_set (store, &iter, 0, "Read the last geometry from a MPQC output file", -1);
+        gtk_tree_store_set (store, &iter, 0, _("Read the last geometry from a Molcas output file"), -1);
+        gtk_tree_store_append (store, &iter, NULL);
+
+	/* separator */
+	/* only with 2.6.x
+        gtk_tree_store_append (store, &iter, NULL);
+	gtk_tree_store_set (store, &iter, 0, NULL, -1);
+	*/
+
+        gtk_tree_store_set (store, &iter, 0, _("Read Geometry from a Molpro input file"), -1);
+        gtk_tree_store_append (store, &iter, NULL);
+        gtk_tree_store_set (store, &iter, 0, _("Read the first geometry from a Molpro output file"), -1);
+        gtk_tree_store_append (store, &iter, NULL);
+        gtk_tree_store_set (store, &iter, 0, _("Read the last geometry from a Molpro output file"), -1);
+        gtk_tree_store_append (store, &iter, NULL);
+
+	/* separator */
+	/* only with 2.6.x
+        gtk_tree_store_append (store, &iter, NULL);
+	gtk_tree_store_set (store, &iter, 0, NULL, -1);
+	*/
+
+        gtk_tree_store_set (store, &iter, 0, _("Read Geometry from a MPQC input file"), -1);
+        gtk_tree_store_append (store, &iter, NULL);
+        gtk_tree_store_set (store, &iter, 0, _("Read the first geometry from a MPQC output file"), -1);
+        gtk_tree_store_append (store, &iter, NULL);
+        gtk_tree_store_set (store, &iter, 0, _("Read the last geometry from a MPQC output file"), -1);
 
         model = GTK_TREE_MODEL (store);
 	combobox = gtk_combo_box_new_with_model (model);
@@ -492,7 +492,7 @@ GtkWidget *create_geom(GtkWidget*win,GtkWidget *frame)
 
   	gtk_box_pack_start (GTK_BOX (hbox), combobox, TRUE, TRUE, 10);
 
-	create_units_option(hbox,"  Units : ");
+	create_units_option(hbox,_("  Units : "));
 
 	hseparator = gtk_hseparator_new ();
 	gtk_widget_show (hseparator);
@@ -547,10 +547,10 @@ void edit_geometry()
   geom_is_open();
 
   Window= gtk_dialog_new ();
-  gtk_window_set_title(&GTK_DIALOG(Window)->window,"Geometry Editor");
+  gtk_window_set_title(&GTK_DIALOG(Window)->window,_("Geometry Editor"));
   gtk_window_set_transient_for(GTK_WINDOW(Window),GTK_WINDOW(Fenetre));
   gtk_widget_realize (Window);
-  init_child(Window,destroy_geometry," Geometry Editor ");
+  init_child(Window,destroy_geometry,_(" Geometry Editor "));
   g_signal_connect(G_OBJECT(Window),"delete_event",(GCallback)destroy_children,NULL);
 
   Frame = geominter->window;
@@ -561,15 +561,15 @@ void edit_geometry()
   gtk_container_add(GTK_CONTAINER(Frame), BoiteV);
 
   hbox =create_hbox_false(BoiteV);
-  FrameType = create_frame(Frame,hbox,"TYPE");
+  FrameType = create_frame(Frame,hbox,_("TYPE"));
   
   combobox = create_geom(FrameGeom,FrameType);
   geominter->vbox=BoiteV;
-  geominter->frametitle=g_strdup("GEOMETRY");
+  geominter->frametitle=g_strdup(_("GEOMETRY"));
 
   gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(Window)->action_area), FALSE);
   gtk_widget_realize(Window);
-  button = create_button(Window,"CLOSE");
+  button = create_button(Window,_("Close"));
   gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Window)->action_area), button, FALSE, TRUE , 5);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,GTK_OBJECT(Window));
 
@@ -593,8 +593,8 @@ static void traite_units_option(GtkComboBox *combobox, gpointer d)
 		gtk_tree_model_get (model, &iter, 0, &data, -1);
 	}
 	if(!data) return;
-	if (!strcmp((char*)data, "Angstrom")) Units = 1;
-	else if (!strcmp((char*)data, "Bohr")) Units = 0;
+	if (!strcmp((char*)data, _("Angstrom"))) Units = 1;
+	else if (!strcmp((char*)data, _("Bohr"))) Units = 0;
 
 	if(ZoneDessin != NULL && OldUnits != Units) rafresh_drawing();
 }
@@ -617,16 +617,16 @@ void create_units_option(GtkWidget *hbox,gchar *tlabel)
 	if(Units == 1 )
 	{
         	gtk_tree_store_append (store, &iter, NULL);
-        	gtk_tree_store_set (store, &iter, 0, "Angstrom", -1);
+        	gtk_tree_store_set (store, &iter, 0, _("Angstrom"), -1);
         	gtk_tree_store_append (store, &iter, NULL);
-        	gtk_tree_store_set (store, &iter, 0, "Bohr", -1);
+        	gtk_tree_store_set (store, &iter, 0, _("Bohr"), -1);
 	}
 	else
 	{
         	gtk_tree_store_append (store, &iter, NULL);
-        	gtk_tree_store_set (store, &iter, 0, "Bohr", -1);
+        	gtk_tree_store_set (store, &iter, 0, _("Bohr"), -1);
         	gtk_tree_store_append (store, &iter, NULL);
-        	gtk_tree_store_set (store, &iter, 0, "Angstrom", -1);
+        	gtk_tree_store_set (store, &iter, 0, _("Angstrom"), -1);
 	}
 
 
@@ -680,17 +680,18 @@ static void read_file(GabeditFileChooser *selecFile, gint response_id)
 	else if(fileType == GABEDIT_TYPEFILE_MOPACINPUT) read_mopac_input_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_MPQCINPUT) read_mpqc_input_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_GAMESSIRC) read_geometries_irc_gamess(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_GAUSSIAN_FCHK) read_fchk_gaussian_file(selecFile, response_id);
 	else 
 	{
 		Message(
-			"Sorry, I cannot read this file\n"
-			," Error ",TRUE);
+			_("Sorry, I cannot read this file\n")
+			,_("Error"),TRUE);
 	}
 }
 /********************************************************************************/
 void read_geom_any_file_dlg()
 {
 	GtkWidget* filesel = 
- 	file_chooser_open(read_file, "Read geometries", GABEDIT_TYPEFILE_UNKNOWN,GABEDIT_TYPEWIN_ORB);
+ 	file_chooser_open(read_file, _("Read geometries"), GABEDIT_TYPEFILE_UNKNOWN,GABEDIT_TYPEWIN_ORB);
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }

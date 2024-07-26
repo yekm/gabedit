@@ -573,7 +573,7 @@ OneBasis* read_basis_from_a_molpro_output_file(gchar *FileName,gint* nbasis,long
 	
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry No file slected\n","Error",TRUE);
+		Message(_("Sorry No file selected\n"),_("Error"),TRUE);
     		return NULL;
  	}
 
@@ -581,8 +581,8 @@ OneBasis* read_basis_from_a_molpro_output_file(gchar *FileName,gint* nbasis,long
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
   		return NULL;
  	}
 
@@ -600,7 +600,7 @@ OneBasis* read_basis_from_a_molpro_output_file(gchar *FileName,gint* nbasis,long
 	if(!OK)
 	{
 		g_free(t);
-  		Message("Sorry I can read basis in this file\n","Error",TRUE);
+  		Message(_("Sorry I can read basis in this file\n"),_("Error"),TRUE);
   		return NULL;
 	}
 	fgets(t,taille,fd);
@@ -621,7 +621,7 @@ OneBasis* read_basis_from_a_molpro_output_file(gchar *FileName,gint* nbasis,long
 	{
 		g_free(t);
 		g_free(strbasis);
-  		Message("Sorry I can read basis in this file\n","Error",TRUE);
+  		Message(_("Sorry I can read basis in this file\n"),_("Error"),TRUE);
   		return NULL;
 	}
 	/*
@@ -861,18 +861,18 @@ long int read_orbitals_from_a_molpro_output_file(gchar *FileName,TypeOrbitalsByS
 	/* Debug("pos = %ld\n",pos);*/
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry No file slected\n","Error",TRUE);
+		Message(_("Sorry No file selected\n"),_("Error"),TRUE);
     		return n;
  	}
 
-	set_status_label_info("Mol. Orb.","Reading");
+	set_status_label_info(_("Mol. Orb."),_("Reading"));
 
  	fd = FOpen(FileName, "rb");
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
   		return n;
  	}
 
@@ -891,7 +891,7 @@ long int read_orbitals_from_a_molpro_output_file(gchar *FileName,TypeOrbitalsByS
 	if(!OK)
 	{
 		g_free(t);
-  		Message("Sorry I can read basis in this file\n","Error",TRUE);
+  		Message(_("Sorry I can read basis in this file\n"),_("Error"),TRUE);
   		return n;
 	}
 	*maxsym = 0;
@@ -1171,15 +1171,15 @@ TypeFileListOrb* scan_orbs_in_molpro_output_file(gchar* FileName,gint *norbtype)
 
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry No file slected\n","Error",TRUE);
+		Message(_("Sorry No file selected\n"),_("Error"),TRUE);
     		return NULL;
  	}
 
  	fd = FOpen(FileName, "rb");
  	if(fd ==NULL)
  	{
-		gchar* t = g_strdup_printf("Sorry I can not open \"%s\" file\n",FileName);
-  		Message(t,"Error",TRUE);
+		gchar* t = g_strdup_printf(_("Sorry I can not open \"%s\" file\n"),FileName);
+  		Message(t,_("Error"),TRUE);
 		g_free(t);
   		return NULL;
  	}
@@ -1521,7 +1521,7 @@ void apply_orbs(GtkWidget *button,gpointer data)
 	numorb = atoi(t)-1;
 	if(numorb>norbtype-1 || numorb<0)
 	{
-		Message("Error detected in gabedit\ni Please contat the author for this bug","Error",TRUE);
+		Message(_("Error detected in gabedit\ni Please contat the author for this bug"),_("Error"),TRUE);
   		delete_child(Win);
 		return;
 	}
@@ -1588,7 +1588,7 @@ void apply_orbs(GtkWidget *button,gpointer data)
 
 			if(NAlphaOrb>0 || NBetaOrb>0)
 			{
-				set_status_label_info("Mol. Orb.","Ok");
+				set_status_label_info(_("Mol. Orb."),"Ok");
 				if(NAlphaOrb>0)
 				{
 					TypeSelOrb = 1;
@@ -1603,9 +1603,9 @@ void apply_orbs(GtkWidget *button,gpointer data)
 			}
 			else
 			{
-				set_status_label_info("File Name","Nothing");
-				set_status_label_info("File Type","Nothing");
-				set_status_label_info("Mol. Orb.","Nothing");
+				set_status_label_info(_("File name"),_("Nothing"));
+				set_status_label_info(_("File type"),_("Nothing"));
+				set_status_label_info(_("Mol. Orb."),_("Nothing"));
 			}
 		}
 	}
@@ -1640,7 +1640,7 @@ GtkWidget *create_orbitals_list_frame( GtkWidget *vboxall,GtkWidget **entry,Type
 	  tlistgeom[i] = g_strdup_printf("%d",i+1);
   }
 
-  frame = gtk_frame_new ("Selection of type of orbitals");
+  frame = gtk_frame_new (_("Selection of type of orbitals"));
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
@@ -1701,7 +1701,7 @@ void create_window_list_orbitals(GtkWidget *w,TypeFileListOrb* listorb,gint norb
   GtkWidget *hbox;
   GtkWidget *button;
   GtkWidget **entry;
-  gchar *title = g_strdup_printf("Orbitals available ");
+  gchar *title = g_strdup_printf(_("Orbitals available "));
 
   entry=g_malloc(2*sizeof(GtkWidget *));
 
@@ -1738,13 +1738,13 @@ void create_window_list_orbitals(GtkWidget *w,TypeFileListOrb* listorb,gint norb
   hbox = create_hbox(vboxwin);
   gtk_widget_realize(fp);
 
-  button = create_button(fp,"Cancel");
+  button = create_button(fp,_("Cancel"));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 5);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(fp));
   gtk_widget_show (button);
 
-  button = create_button(fp,"OK");
+  button = create_button(fp,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 5);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
@@ -1763,9 +1763,9 @@ void read_molpro_orbitals(gchar* FileName)
 	TypeFileListOrb* listorb = NULL;
 	gchar* filename = g_strdup(FileName);
 
-	set_status_label_info("File Name",FileName);
-	set_status_label_info("File Type","Molpro");
-	set_status_label_info("Mol. Orb.","Nothing");
+	set_status_label_info(_("File name"),FileName);
+	set_status_label_info(_("File type"),"Molpro");
+	set_status_label_info(_("Mol. Orb."),_("Nothing"));
 
  	InitializeAll();
 
@@ -1774,15 +1774,15 @@ void read_molpro_orbitals(gchar* FileName)
 		create_window_list_orbitals(NULL,listorb,norbtype,filename);
 	else
 	{
-		gchar* t = g_strdup_printf("Sorry,\nI can not read atomic basis and/or molecular orbitals from\n \"%s\"\n file\n"
+		gchar* t = g_strdup_printf(_("Sorry,\nI can not read atomic basis and/or molecular orbitals from\n \"%s\"\n file\n"
 					   "\nFor display density and/or molecular orbitals read from molpro output file,\n"
 					   "the following keywords are required:\n"
 					   "Gprint, basis;\nGprint, orbital;\n"
 					   "After a hf or multi calculation :  Printorb, 1000;\n"
 					   "After a ci calculation :  NATORB, 2001.2 , PRINT=1000;\n"
-					   "\n",
+					   "\n"),
 						filename);
-		Message(t,"Error",TRUE);
+		Message(t,_("Error"),TRUE);
 		g_free(t);
 	}
 

@@ -21,7 +21,6 @@ DEALINGS IN THE SOFTWARE.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <gtk/gtk.h>
 
 #include "Global.h"
 #include "../Utils/UtilsInterface.h"
@@ -53,13 +52,13 @@ void change_of_chars(GtkWidget* w,gpointer data)
   orientation = g_strdup(gtk_entry_get_text(GTK_ENTRY(entrys.Orientation))); 
   g_strdown(orientation);
   sheets = g_strdup(gtk_entry_get_text(GTK_ENTRY(entrys.NbSheets))); 
-  if (strstr((gchar *)orientation,"landscape") && strstr((gchar *)sheets,"1") )
+  if (strstr((gchar *)orientation,_("landscape")) && strstr((gchar *)sheets,"1") )
   		gtk_entry_set_text(GTK_ENTRY(entrys.Format),"140");
-  if (strstr((gchar *)orientation,"landscape") && strstr((gchar *)sheets,"2") )
+  if (strstr((gchar *)orientation,_("landscape")) && strstr((gchar *)sheets,"2") )
   		gtk_entry_set_text(GTK_ENTRY(entrys.Format),"80");
-  if ( !strstr((gchar *)orientation,"landscape") && strstr((gchar *)sheets,"1") )
+  if ( !strstr((gchar *)orientation,_("landscape")) && strstr((gchar *)sheets,"1") )
   		gtk_entry_set_text(GTK_ENTRY(entrys.Format),"100");
-  if ( !strstr((gchar *)orientation,"landscape") && strstr((gchar *)sheets,"2") )
+  if ( !strstr((gchar *)orientation,_("landscape")) && strstr((gchar *)sheets,"2") )
   		gtk_entry_set_text(GTK_ENTRY(entrys.Format),"80");
   if(orientation) g_free(orientation);
   if(sheets) g_free(sheets);
@@ -100,12 +99,12 @@ void print_file(GtkWidget* w,gpointer data)
   	}
   	else
   	{
-   		if (strstr((gchar *)printname,"Default") )
+   		if (strstr((gchar *)printname,_("Default")) )
 			t = g_strdup("   ");
 		else
 			t = g_strdup_printf("-P%s",printname);
   	}
-        if (strstr((gchar *)orientation,"landscape") && strstr((gchar *)sheets,"1") )
+        if (strstr((gchar *)orientation,_("landscape")) && strstr((gchar *)sheets,"1") )
    		command = g_strdup_printf("a2ps -%s  --chars-per-line=%s -n%s --%s %s %s",sheets,format,nbcopies,orientation,t,filename);
         else
    		command = g_strdup_printf("a2ps -%s --chars-per-line=%s -n%s --%s %s %s",sheets,format,nbcopies,orientation,t,filename);
@@ -123,7 +122,7 @@ void print_file(GtkWidget* w,gpointer data)
  }
  else
  {
-   if (strstr((gchar *)printname,"Default") )
+   if (strstr((gchar *)printname,_("Default")) )
    	command = g_strdup_printf("lpr -#%s %s",nbcopies,filename);
    else
    	command = g_strdup_printf("lpr -P%s -#%s %s",printname,nbcopies,filename);
@@ -133,7 +132,7 @@ void print_file(GtkWidget* w,gpointer data)
    {
 	printf("t=%s",t);
 	if(!this_is_a_backspace(t))
-  		Message(t,"Info",TRUE);
+  		Message(t,_("Info"),TRUE);
   	g_free(t);
    }
    g_free(command);
@@ -150,11 +149,11 @@ GtkWidget *file_to_print(GtkWidget* box)
 	  			"*.gzmt","*.zmt","*.log","*.out","*",NULL};
   gchar *filename  = g_strdup_printf("%s%s%s",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.datafile);
 
-  Frame = create_frame(Wins,box,"File to print"); 
+  Frame = create_frame(Wins,box,_("File to print")); 
   vbox = create_vbox(Frame);
   hbox = create_hbox(vbox);
 
-  hbox = create_hbox_browser(Wins,vbox,"File Name :",filename,patterns);
+  hbox = create_hbox_browser(Wins,vbox,_("File Name :"),filename,patterns);
   Entry = (GtkWidget*)(g_object_get_data(G_OBJECT(hbox),"Entry"));	
 
   g_free(filename);
@@ -177,9 +176,9 @@ GtkWidget *create_frame_with_list(GtkWidget* box,gchar *title,gchar **liste,gint
 GtkWidget *create_orientation(GtkWidget* box)
 {
   GtkWidget *Entry;
-  gchar *liste[2] = {"Portrait","Landscape"};
+  gchar *liste[2] = {N_("Portrait"),N_("Landscape")};
 
-  Entry = create_frame_with_list(box," Orientation ",liste,2);  
+  Entry = create_frame_with_list(box,_(" Orientation "),liste,2);  
   gtk_widget_set_sensitive(Entry,FALSE); 
   g_signal_connect(G_OBJECT(Entry), "changed",
                              G_CALLBACK(change_of_chars),
@@ -193,7 +192,7 @@ GtkWidget *create_format(GtkWidget* box)
   GtkWidget *Entry;
   gchar *liste[9] = {"70","80","90","100","110","120","130","140","150"};
 
-  Entry = create_frame_with_list(box," chars by line ",liste,9);  
+  Entry = create_frame_with_list(box,_(" chars by line "),liste,9);  
   gtk_widget_set_sensitive(Entry,FALSE); 
   gtk_entry_set_text(GTK_ENTRY(Entry),"100");
 
@@ -205,7 +204,7 @@ GtkWidget *create_page_by_papier(GtkWidget* box)
   GtkWidget *Entry;
   gchar *liste[2] = {"1","2"};
 
-  Entry = create_frame_with_list(box," pages by paper ",liste,2);  
+  Entry = create_frame_with_list(box,_(" pages by paper "),liste,2);  
   gtk_widget_set_sensitive(Entry,FALSE); 
   g_signal_connect(G_OBJECT(Entry), "changed", G_CALLBACK(change_of_chars), NULL);
 
@@ -232,11 +231,11 @@ GtkWidget *create_print_in_file(GtkWidget* box)
   GtkWidget *vbox;
   static gchar* patterns[] = {"*.ps *.eps","*.ps","*.eps","*",NULL};
 
-  Frame = create_frame(Wins,box,"Print in file"); 
+  Frame = create_frame(Wins,box,_("Print in file")); 
   vbox = create_vbox(Frame);
   hbox = create_hbox(vbox);
 
-  ButtonYes = gtk_radio_button_new_with_label( NULL,"Yes" );
+  ButtonYes = gtk_radio_button_new_with_label( NULL,_("Yes"));
   gtk_box_pack_start (GTK_BOX (hbox), ButtonYes, TRUE, TRUE, 0);
   gtk_widget_show (ButtonYes);
 
@@ -245,7 +244,7 @@ GtkWidget *create_print_in_file(GtkWidget* box)
                        "No"); 
    gtk_box_pack_start (GTK_BOX (hbox), ButtonNo, TRUE, TRUE, 0);
    gtk_widget_show (ButtonNo);
-   hbox = create_hbox_browser(Wins,vbox," File Name :","gabedit.ps",patterns);
+   hbox = create_hbox_browser(Wins,vbox,_(" File Name :"),"gabedit.ps",patterns);
    Entry = (GtkWidget*)(g_object_get_data(G_OBJECT(hbox),"Entry"));	
   g_signal_connect(G_OBJECT (ButtonYes), "clicked",
                                      G_CALLBACK(show_hbox_file),
@@ -290,7 +289,7 @@ static void traite_option(GtkComboBox *combobox, gpointer d)
 
 	if (!strcmp((gchar *)data,"a2ps") )
 	{
-		if(!FrameOptions) create_frame_options_a2ps("a2ps options");
+		if(!FrameOptions) create_frame_options_a2ps(_("a2ps options"));
 		else
 		gtk_widget_set_sensitive(FrameOptions, TRUE);
 		gtk_widget_set_sensitive(ButtonDisplay, TRUE);
@@ -340,9 +339,9 @@ GtkWidget *create_prog_frame(GtkWidget* box)
 GtkWidget *create_name_print_frame(GtkWidget* box)
 {
   GtkWidget *Entry;
-  gchar *liste[3] = {"Default","lp0","lp1"};
+  gchar *liste[3] = {N_("Default"),"lp0","lp1"};
 
-  Entry = create_frame_with_list(box," Printer Name ",liste,3);
+  Entry = create_frame_with_list(box,_(" Printer Name "),liste,3);
 
   return Entry;
 }
@@ -352,7 +351,7 @@ GtkWidget *create_number_of_copies(GtkWidget* box)
   GtkWidget *Entry;
   gchar *liste[10] = {"1","2","3","4","5","6","7","8","9","10"};
 
-  Entry = create_frame_with_list(box," Number of copies ",liste,10);  
+  Entry = create_frame_with_list(box,_(" Number of copies "),liste,10);  
   gtk_widget_set_sensitive(Entry,FALSE); 
 
   return Entry;
@@ -366,14 +365,22 @@ void create_print_page()
   GtkWidget *vbox;
   GtkWidget *combobox;
 
+  /*
+  Wins =  gtk_print_unix_dialog_new("Gabedit : Print",Fenetre);
+  gtk_widget_show(Wins);
+  return;
+  */
+
+
+
   ProgName = g_strdup("a2ps");
   Wins= gtk_dialog_new ();
   gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER);
   gtk_window_set_transient_for(GTK_WINDOW(Wins),GTK_WINDOW(Fenetre));
-  gtk_window_set_title(&GTK_DIALOG(Wins)->window,"Gabedit : Print");
+  gtk_window_set_title(&GTK_DIALOG(Wins)->window,_("Gabedit : Print"));
   gtk_widget_realize(Wins);
 
-  init_child(Wins,gtk_widget_destroy," Print ");
+  init_child(Wins,gtk_widget_destroy,_(" Print "));
   g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_children,NULL);
  
   Frame = create_frame(Wins,GTK_DIALOG(Wins)->vbox,NULL); 
@@ -391,20 +398,20 @@ void create_print_page()
   VboxOptions = GTK_DIALOG(Wins)->vbox;
   FrameOptions = NULL;
 
-  button = create_button(Wins,"Cancel");
+  button = create_button(Wins,_("Cancel"));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
   g_signal_connect_swapped(GTK_OBJECT(button), "clicked",G_CALLBACK(destroy_children),GTK_OBJECT(Wins));
   gtk_widget_show (button);
 
-  button = create_button(Wins,"Display");
+  button = create_button(Wins,_("Display"));
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(print_file),&button);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
   gtk_widget_show (button);
   ButtonDisplay = button;
 
-  button = create_button(Wins,"Print");
+  button = create_button(Wins,_("Print"));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(print_file),NULL);
@@ -413,7 +420,7 @@ void create_print_page()
   gtk_widget_show (button);
 
   gtk_widget_show_all(Wins);
-  create_frame_options_a2ps("a2ps options");
+  create_frame_options_a2ps(_("a2ps options"));
   gtk_combo_box_set_active (GTK_COMBO_BOX (combobox), 0);
 }
 /********************************************************************************/
@@ -447,13 +454,13 @@ void create_print_page()
 
 	if(!temp)
 	{
-		Message("Error, No text to print\n","Error",TRUE);
+		Message(_("Error, No text to print\n"),_("Error"),TRUE);
 		return;
 	}
 	nchar =  gabedit_text_get_length(GABEDIT_TEXT(TextWid));
 	if(nchar<1)
 	{
-		Message("Error, No text to print\n","Error",TRUE);
+		Message(_("Error, No text to print\n"),_("Error"),TRUE);
 		return;
 	}
 	next = temp;
@@ -522,26 +529,26 @@ void create_print_page()
 
 				EndDoc (pd.hDC);
 
-				szMessage = g_strdup_printf("Printed.%d charaters\n",nchar);
+				szMessage = g_strdup_printf(_("Printed.%d charaters\n"),nchar);
 			}
 			else
 			{
-				szMessage = g_strdup("Could not start document.");
+				szMessage = g_strdup(_("Could not start document."));
 			}
 		}
 		else
 		{
-			szMessage = g_strdup("Could not create device context.");
+			szMessage = g_strdup(_("Could not create device context."));
 		}
 	}
 	else
 	{
-		szMessage = g_strdup("Canceled or printer could not be setup.");
+		szMessage = g_strdup(_("Canceled or printer could not be setup."));
 	}
 	g_free(temp);
 	if (szMessage)
 	{
-		Message(szMessage, "Info",TRUE);
+		Message(szMessage, _("Info"),TRUE);
 		g_free(szMessage);
 	}
 

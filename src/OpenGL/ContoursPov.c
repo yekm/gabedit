@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 #include <unistd.h>
 #include "../OpenGL/ContoursDraw.h"
 #include "../OpenGL/ColorMap.h"
+#include "../OpenGL/TriangleDraw.h"
 /********************************************************************************/
 static gchar *get_pov_cylingre(gdouble C1[],gdouble C2[],gdouble Colors[], gdouble coef)
 {
@@ -193,17 +194,26 @@ static gint addOneContoursPovRay(FILE* file, Grid* plansgrid,gint Ncontours,gdou
 	Contours contours;
 	gint i;
 	gdouble *Gap;
-	gdouble Color[3] = {0.7,0.7,0.7};
+	V4d Color = {0.7,0.7,0.7};
 	ColorMap* colorMap = get_colorMap_contours();
 
 	if(!plansgrid) return 1;
 	Gap = GetGapVector(plansgrid,i0,i1,numplan,gap);
- 	addPlanPovRay(file, plansgrid,i0,i1,numplan,Gap, Color);
 
-	Color[2] = 0.8;
+
+	if(Ncontours==1 && values[0]>0) get_color_surface(0,Color);
+	if(Ncontours==1 && values[0]<0) get_color_surface(1,Color);
+	if(Ncontours==1 && values[0]==0) get_color_surface(2,Color);
+
+	if(Ncontours>1) 
+	{
+		addPlanPovRay(file, plansgrid,i0,i1,numplan,Gap, Color);
+		Color[2] = 0.8;
+	}
+
 	for(i=0;i<Ncontours;i++)
 	{
-		set_Color_From_colorMap(colorMap, Color, values[i]);
+		if(Ncontours>1) set_Color_From_colorMap(colorMap, Color, values[i]);
 		contours = get_contours(plansgrid,values[i],i0,i1,numplan);
 		AddContoursPovRay(file,contours,Gap,Color);
 		contour_point_free(contours);

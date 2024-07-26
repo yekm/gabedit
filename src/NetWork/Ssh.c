@@ -129,7 +129,7 @@ void ssh (char *fout,char *ferr,const char* cmd,
 	if(!threadHnd)
 	{
 			FILE* FileErr = FOpen(ferr,"w");
-			fprintf(FileErr,"Cannot start client thread...\n");
+			fprintf(FileErr,_("Cannot start client thread...\n"));
 			fclose(FileErr);
 			goto end;
 	}

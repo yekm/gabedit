@@ -43,7 +43,7 @@ static GtkWidget* comboCorrType = NULL;
 static void setGamessCorrType();
 /*************************************************************************************************************/
 static gchar* listRunView[] = {
-        "Single Point Energy", "Equilibrium geometry", "Transition State", "Frequencies",
+        N_("Single Point Energy"), N_("Equilibrium geometry"), N_("Transition State"), N_("Frequencies"),
         "Gradient", "Trudge", "IRC", "VSCF", "DRC", "GlobOp", "OptFMO", "GradExtr",
         "Surface", "Drop", "Raman", "NMR", "Morokuma", "Transitn", "FField", "TDHF", "MakeFP"
 };
@@ -60,47 +60,47 @@ static gchar* listSCFReal[] = { "RHF", "UHF", "ROHF", "GVB", "MCSCF", "MNDO", "A
 static guint numberOfSCF = G_N_ELEMENTS (listSCFView);
 static gchar selectedSCF[BSIZE]="RHF";
 /*************************************************************************************************************/
-static gchar* listCorrTypeView[] = { "None", "Density Functional Theory", "MP2", "Coupled-Cluster"};
+static gchar* listCorrTypeView[] = { N_("None"), N_("Density Functional Theory"), N_("MP2"), N_("Coupled-Cluster")};
 static gchar* listCorrTypeReal[] = { "NONE", "DFTTYP", "MPLEVL=2","CCTYP"};
 static guint numberOfCorrType = G_N_ELEMENTS (listCorrTypeView);
 static gchar selectedCorrType[BSIZE]="NONE";
 /*************************************************************************************************************/
-static gchar* listNoneView[] = { "None"};
+static gchar* listNoneView[] = { N_("None")};
 static gchar* listNoneReal[] = { "NONE"};
 static guint numberOfNone = G_N_ELEMENTS (listNoneView);
 
-static gchar* listMP2View[] = { "MP2"};
+static gchar* listMP2View[] = { N_("MP2")};
 static gchar* listMP2Real[] = { "MP2"};
 static guint numberOfMP2 = G_N_ELEMENTS (listMP2View);
 
 static gchar* listDFTView[] = { 
-	"B3LYP",
-	"BHHLYP (HF and BECKE exchange + LYP Correlation)",
+	N_("B3LYP"),
+	N_("BHHLYP (HF and BECKE exchange + LYP Correlation)"),
 
-	"BLYP (Becke exchange + LYP Correlation)", 
-	"BVWN (Becke exchange + VWN5 Correlation)", 
-	"BOP (Becke exchange + OP Correlation)", 
+	N_("BLYP (Becke exchange + LYP Correlation)"), 
+	N_("BVWN (Becke exchange + VWN5 Correlation)"), 
+	N_("BOP (Becke exchange + OP Correlation)"), 
 
-	"GLYP (GILL exchange + LYP Correlation)", 
-	"GVWN (GILL exchange + VWN5 Correlation)", 
-	"GOP (GILL exchange + OP Correlation)", 
+	N_("GLYP (GILL exchange + LYP Correlation)"), 
+	N_("GVWN (GILL exchange + VWN5 Correlation)"), 
+	N_("GOP (GILL exchange + OP Correlation)"), 
 
-	"PBELYP (PBE exchange + LYP Correlation)", 
-	"PBEVWN (PBE exchange + VWN5 Correlation)", 
-	"PBEOP (PBE exchange + OP Correlation)", 
+	N_("PBELYP (PBE exchange + LYP Correlation)"), 
+	N_("PBEVWN (PBE exchange + VWN5 Correlation)"), 
+	N_("PBEOP (PBE exchange + OP Correlation)"), 
 
-	"SLYP (Slater exchange + LYP Correlation)", 
-	"SVWN (Slater exchange + VWN5 Correlation)",
-	"SOP (Slater exchange + OP Correlation)", 
+	N_("SLYP (Slater exchange + LYP Correlation)"), 
+	N_("SVWN (Slater exchange + VWN5 Correlation)"),
+	N_("SOP (Slater exchange + OP Correlation)"), 
 
-	"SLATER (Exchange)", 
-	"BECKE 1988 (Exchange)",
-	"GILL  1996 (Exchange)", 
-	"PBE (Exchange only)",
+	N_("SLATER (Exchange)"), 
+	N_("BECKE 1988 (Exchange)"),
+	N_("GILL  1996 (Exchange)"), 
+	N_("PBE (Exchange only)"),
 
-	"VWN (VWN5 Correlation)", 
-	"LYP (Correlation)",
-	"OP (Correlation)"
+	N_("VWN (VWN5 Correlation)"), 
+	N_("LYP (Correlation)"),
+	N_("OP (Correlation)")
 };
 static gchar* listDFTReal[] = {
 	"B3LYP", "BHHLYP", "BLYP", "BVWN", "BOP", "GLYP", "GVWN", "GOP", "PBELYP", "PBEVWN", "PBEOP", 
@@ -117,12 +117,12 @@ static gchar** listCorrMethodsView = NULL;
 static gchar** listCorrMethodsReal = NULL;
 static gchar selectedCorrMethod[BSIZE]="NONE";
 /*************************************************************************************************************/
-static gchar* listLocalizedView[] = { "None", "Foster-Boys", "Edmiston-Ruedenberg","Pipek-Mezey"};
+static gchar* listLocalizedView[] = { N_("None"), "Foster-Boys", "Edmiston-Ruedenberg","Pipek-Mezey"};
 static gchar* listLocalizedReal[] = { "NONE", "BOYS", "RUEDNBRG","POP" };
 static guint numberOfLocalized = G_N_ELEMENTS (listLocalizedView);
 static gchar selectedLocalized[BSIZE]="NONE";
 /*************************************************************************************************************/
-static gchar* listEXEView[] = { "Normal Run", "Check", "Debug"};
+static gchar* listEXEView[] = { N_("Normal Run"), N_("Check"), N_("Debug")};
 static gchar* listEXEReal[] = { "NORMAL", "CHECK", "DEBUG" };
 static guint numberOfEXE = G_N_ELEMENTS (listEXEView);
 static gchar selectedEXE[BSIZE]="NORMAL";
@@ -179,7 +179,7 @@ static void putGamessRunTypeInfoInTextEditor()
 	if(!strcmp(selectedRun,"Raman") || !strcmp(selectedRun,"Sadpoint") || !strcmp(selectedRun,"IRC"))
 	{
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &gamessColorFore.keyWord, &gamessColorBack.keyWord, 
-			"----> Put here the $HESS card.\n      You can obtain it from your old frequecncies calculation(.pun or .irc file)\n",-1);
+			_("----> Put here the $HESS card.\n      You can obtain it from your old frequecncies calculation(.pun or .irc file)\n"),-1);
 	}
 }
 /*************************************************************************************************************/
@@ -782,7 +782,7 @@ void createGamessControlFrame(GtkWidget *win, GtkWidget *box)
 	listCorrMethodsView = listNoneView;
 	listCorrMethodsReal = listNoneReal;
 
-	frame = gtk_frame_new ("Control");
+	frame = gtk_frame_new (_("Control"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -795,7 +795,7 @@ void createGamessControlFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Run Type -----------------------------------------*/
 	l=0; 
 	c = 0; ncases=1;
-	add_label_table(table,"Run Type",l,c);
+	add_label_table(table,_("Run Type"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_runtype();
@@ -807,7 +807,7 @@ void createGamessControlFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ SCF Type -----------------------------------------*/
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"SCF Type",l,c);
+	add_label_table(table,_("SCF Type"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_scf();
@@ -820,7 +820,7 @@ void createGamessControlFrame(GtkWidget *win, GtkWidget *box)
 
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"Max # SCF iterations",l,c);
+	add_label_table(table,_("Max # SCF iterations"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	entrySCFIterations = gtk_entry_new ();
@@ -834,7 +834,7 @@ void createGamessControlFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Correlation Type -----------------------------------------*/
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"Correlation Type",l,c);
+	add_label_table(table,_("Correlation Type"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_corrtype();
@@ -847,7 +847,7 @@ void createGamessControlFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Correlation Method -----------------------------------------*/
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"Correlation Method",l,c);
+	add_label_table(table,_("Correlation Method"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_corrmethod();
@@ -861,7 +861,7 @@ void createGamessControlFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Localized Type -----------------------------------------*/
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"Localized Type",l,c);
+	add_label_table(table,_("Localized Type"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_localized();
@@ -882,7 +882,7 @@ void createGamessControlFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ EXE Type -----------------------------------------*/
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"EXE Type",l,c);
+	add_label_table(table,_("EXE Type"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_exe();

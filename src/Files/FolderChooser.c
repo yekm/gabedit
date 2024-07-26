@@ -36,7 +36,7 @@ GtkWidget* selctionOfDir(gpointer data, gchar* title, GabEditTypeWin typewin)
 	gchar* lastDir = get_last_directory();
 
 	if(title) folderChooser = gabedit_folder_chooser_new(title);
-	else folderChooser = gabedit_folder_chooser_new("Select a folder");
+	else folderChooser = gabedit_folder_chooser_new(_("Select a folder"));
 
 	if(lastDir)
 	{
@@ -44,11 +44,11 @@ GtkWidget* selctionOfDir(gpointer data, gchar* title, GabEditTypeWin typewin)
 	}
   	if(typewin==GABEDIT_TYPEWIN_ORB)
 	{
-  		add_glarea_child(folderChooser,"Dir selector");
+  		add_glarea_child(folderChooser,_("Dir selector"));
 	}
 	else
 	{
-  		add_button_windows(" Dir selector ",folderChooser);
+  		add_button_windows(_(" Dir selector "),folderChooser);
   		g_signal_connect(G_OBJECT(folderChooser), "delete_event",(GCallback)destroy_button_windows,NULL);
   		g_signal_connect(G_OBJECT(folderChooser), "delete_event",G_CALLBACK(gtk_widget_destroy),NULL);
 	}

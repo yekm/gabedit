@@ -44,7 +44,8 @@ static GtkWidget* buttonTD = NULL;
 static void setFireFlyCorrType();
 /*************************************************************************************************************/
 static gchar* listRunView[] = {
-        "Single Point Energy", "Equilibrium geometry", "Equilibrium geometry+Frequencies","Transition State", "Frequencies",
+        N_("Single Point Energy"), N_("Equilibrium geometry"), N_("Equilibrium geometry+Frequencies"),
+	N_("Transition State"), N_("Frequencies"),
         "Raman","Gradient", "Trudge", "IRC", "VSCF", "DRC", "GlobOp", "OptFMO", "GradExtr",
         "Surface", "Drop", "Morokuma", "Transitn", "FField", "TDHF"
 };
@@ -65,55 +66,55 @@ static gchar selectedSCF[BSIZE]="RHF";
 static gchar* listCorrTypeView[] = { "None", "Density Functional Theory", "MPn", "Coupled-Cluster"};
 static gchar* listCorrTypeReal[] = { "NONE", "DFTTYP", "MPN","CCTYP"};
 */
-static gchar* listCorrTypeView[] = { "None", "Density Functional Theory", "MPn"};
+static gchar* listCorrTypeView[] = { N_("None"), N_("Density Functional Theory"), N_("MPn")};
 static gchar* listCorrTypeReal[] = { "NONE", "DFTTYP", "MPN"};
 static guint numberOfCorrType = G_N_ELEMENTS (listCorrTypeView);
 static gchar selectedCorrType[BSIZE]="NONE";
 /*************************************************************************************************************/
-static gchar* listNoneView[] = { "None"};
+static gchar* listNoneView[] = { N_("None")};
 static gchar* listNoneReal[] = { "NONE"};
 static guint numberOfNone = G_N_ELEMENTS (listNoneView);
 
-static gchar* listMPnView[] = { "MP2","MP3","MP4"};
+static gchar* listMPnView[] = { N_("MP2"),N_("MP3"),N_("MP4")};
 static gchar* listMPnReal[] = { "MP2","MP3","MP4"};
 static guint numberOfMPn = G_N_ELEMENTS (listMPnView);
 
 static gchar* listDFTView[] = { 
-	"B3LYP1 : B3LYP GAUSSIAN, using VWN1 correlation",
-	"Staler",
-	"LSDA",
-	"B88 : Becke 1988 Exchange", 
-	"XPW91 : Perdew-Wang 1991 Exchange", 
-	"GILL96 : Gill 1996 exchange", 
-	"XPBE96 : Perdew-Burke-Ernzerhof 1996 exchange", 
-	"OPTX : Handy-Cohen 2001 OPTX exchange", 
-	"VWN1RPA : HF exchange, VWN1 correlation", 
-	"VWN5 : HF exchange, VWN5 correlation", 
-	"PW91LDA : HF exchange, PW91 LDA correlation", 
-	"LYP : HF exchange, LYP correlation", 
-	"CPBE96 : HF exchange, PBE+PW91 correlation",
-	"CPW91 : HF exchange, PW91 correlation",
-	"SLYP : Slater exchange, LYP correlation",
-	"BLYP : B88 exchange, LYP correlation", 
-	"GLYP : Gill 1996 exchange,  LYP correlation", 
-	"XLYP : Xu and Goddard III, LYP correlation",
-	"OLYP : OPTX exchange, LYP correlation",
-	"SVWN1RPA : Slater exchange, VWN1 correlation",
-	"BVWN1RPA : Becke 1988 exchange, VWN1 correlation",
-	"SVWN5 : Slater exchange, VWN5 correlation",
-	"BVWN5 : Becke 1988 exchange, VWN5 correlation",
-	"PBE96 : PBE exchange, PBE + PW91 correlation",
-	"PBEPW91 : PBE exchange, PW91 correlation",
-	"PW91 : PW91 exchange, PW91 correlation",
-	"B3LYP1 : B3LYP of GAUSSIAN, using VWN1 correlation",
-	"B3LYP5 : B3LYP of GAMESS (US), using VWN5 correlation",
-	"X3LYP : Xu and Goddard III + HF exchange, VWN1 + LYP",
-	"O3LYP1 : Slater + OPTX + HF exchange, VWN1 + LYP correlation",
-	"O3LYP5 : Slater + OPTX + HF exchange, VWN5 + LYP correlation",
-	"BHHLYP : Becke 1988 + HF exchange, LYP correlation",
-	"PBE0 : PBE + HF exchange, PBE + PW91 correlation",
-	"PBE1PW91 : PBE + HF exchange, PW91 correlation",
-	"B3PW91 : Slater + Becke 1988 + HF exchange, PW91 correlation",
+	N_("B3LYP1 : B3LYP GAUSSIAN, using VWN1 correlation"),
+	N_("Staler"),
+	N_("LSDA"),
+	N_("B88 : Becke 1988 Exchange"), 
+	N_("XPW91 : Perdew-Wang 1991 Exchange"), 
+	N_("GILL96 : Gill 1996 exchange"), 
+	N_("XPBE96 : Perdew-Burke-Ernzerhof 1996 exchange"), 
+	N_("OPTX : Handy-Cohen 2001 OPTX exchange"), 
+	N_("VWN1RPA : HF exchange, VWN1 correlation"), 
+	N_("VWN5 : HF exchange, VWN5 correlation"), 
+	N_("PW91LDA : HF exchange, PW91 LDA correlation"), 
+	N_("LYP : HF exchange, LYP correlation"), 
+	N_("CPBE96 : HF exchange, PBE+PW91 correlation"),
+	N_("CPW91 : HF exchange, PW91 correlation"),
+	N_("SLYP : Slater exchange, LYP correlation"),
+	N_("BLYP : B88 exchange, LYP correlation"), 
+	N_("GLYP : Gill 1996 exchange,  LYP correlation"), 
+	N_("XLYP : Xu and Goddard III, LYP correlation"),
+	N_("OLYP : OPTX exchange, LYP correlation"),
+	N_("SVWN1RPA : Slater exchange, VWN1 correlation"),
+	N_("BVWN1RPA : Becke 1988 exchange, VWN1 correlation"),
+	N_("SVWN5 : Slater exchange, VWN5 correlation"),
+	N_("BVWN5 : Becke 1988 exchange, VWN5 correlation"),
+	N_("PBE96 : PBE exchange, PBE + PW91 correlation"),
+	N_("PBEPW91 : PBE exchange, PW91 correlation"),
+	N_("PW91 : PW91 exchange, PW91 correlation"),
+	N_("B3LYP1 : B3LYP of GAUSSIAN, using VWN1 correlation"),
+	N_("B3LYP5 : B3LYP of GAMESS (US), using VWN5 correlation"),
+	N_("X3LYP : Xu and Goddard III + HF exchange, VWN1 + LYP"),
+	N_("O3LYP1 : Slater + OPTX + HF exchange, VWN1 + LYP correlation"),
+	N_("O3LYP5 : Slater + OPTX + HF exchange, VWN5 + LYP correlation"),
+	N_("BHHLYP : Becke 1988 + HF exchange, LYP correlation"),
+	N_("PBE0 : PBE + HF exchange, PBE + PW91 correlation"),
+	N_("PBE1PW91 : PBE + HF exchange, PW91 correlation"),
+	N_("B3PW91 : Slater + Becke 1988 + HF exchange, PW91 correlation"),
 };
 static gchar* listDFTReal[] = {
 	"B3LYP1", "Staler", "LSDA", "B88", "XPW91", "GILL96", "XPBE96", 
@@ -138,7 +139,7 @@ static gchar* listLocalizedReal[] = { "NONE", "BOYS", "RUEDNBRG","POP" };
 static guint numberOfLocalized = G_N_ELEMENTS (listLocalizedView);
 static gchar selectedLocalized[BSIZE]="NONE";
 /*************************************************************************************************************/
-static gchar* listEXEView[] = { "Normal Run", "Check", "Debug"};
+static gchar* listEXEView[] = { N_("Normal Run"), N_("Check"), N_("Debug")};
 static gchar* listEXEReal[] = { "NORMAL", "CHECK", "DEBUG" };
 static guint numberOfEXE = G_N_ELEMENTS (listEXEView);
 static gchar selectedEXE[BSIZE]="NORMAL";
@@ -204,7 +205,7 @@ static void putFireFlyRunTypeInfoInTextEditor()
 	if(!strcmp(selectedRun,"Raman") || !strcmp(selectedRun,"Sadpoint") || !strcmp(selectedRun,"IRC"))
 	{
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &fireflyColorFore.keyWord, &fireflyColorBack.keyWord, 
-			"----> Put here the $HESS card.\n      You can obtain it from your old frequecncies calculation(.pun or .irc file)\n",-1);
+			_("----> Put here the $HESS card.\n      You can obtain it from your old frequecncies calculation(.pun or .irc file)\n"),-1);
 	}
 }
 /*************************************************************************************************************/
@@ -856,7 +857,7 @@ void createFireFlyControlFrame(GtkWidget *win, GtkWidget *box)
 	listCorrMethodsView = listNoneView;
 	listCorrMethodsReal = listNoneReal;
 
-	frame = gtk_frame_new ("Control");
+	frame = gtk_frame_new (_("Control"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -869,7 +870,7 @@ void createFireFlyControlFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Run Type -----------------------------------------*/
 	l=0; 
 	c = 0; ncases=1;
-	add_label_table(table,"Run Type",l,c);
+	add_label_table(table,_("Run Type"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_runtype();
@@ -881,7 +882,7 @@ void createFireFlyControlFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ SCF Type -----------------------------------------*/
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"SCF Type",l,c);
+	add_label_table(table,_("SCF Type"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_scf();
@@ -894,7 +895,7 @@ void createFireFlyControlFrame(GtkWidget *win, GtkWidget *box)
 
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"Max # SCF iterations",l,c);
+	add_label_table(table,_("Max # SCF iterations"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	entrySCFIterations = gtk_entry_new ();
@@ -908,7 +909,7 @@ void createFireFlyControlFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Correlation Type -----------------------------------------*/
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"Correlation Type",l,c);
+	add_label_table(table,_("Correlation Type"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_corrtype();
@@ -921,7 +922,7 @@ void createFireFlyControlFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Correlation Method -----------------------------------------*/
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"Correlation Method",l,c);
+	add_label_table(table,_("Correlation Method"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_corrmethod();
@@ -935,7 +936,7 @@ void createFireFlyControlFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Localized Type -----------------------------------------*/
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"Localized Type",l,c);
+	add_label_table(table,_("Localized Type"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_localized();
@@ -956,11 +957,11 @@ void createFireFlyControlFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ TDHF/TDDFT -----------------------------------------*/
 	l++; 
 	c = 0; ncases=1;
-	add_label_table(table,"Exited States",l,c);
+	add_label_table(table,_("Exited States"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	c = 2; ncases=1;
-	buttonTD = gtk_check_button_new_with_label ("TDHF/TDDFT");
+	buttonTD = gtk_check_button_new_with_label (_("TDHF/TDDFT"));
 	gtk_table_attach(GTK_TABLE(table),buttonTD,c,c+ncases,l,l+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
@@ -977,7 +978,7 @@ void createFireFlyControlFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ EXE Type -----------------------------------------*/
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"EXE Type",l,c);
+	add_label_table(table,_("EXE Type"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_exe();

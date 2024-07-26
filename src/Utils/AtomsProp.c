@@ -253,7 +253,7 @@ SAtomsProp prop_atom_get(const gchar *Symb)
 		}
 
 	}
-	printf("Warning : Sorry , Your atom %s is not defined\n",Symb);
+	printf(_("Warning : Sorry , Your atom %s is not defined\n"),Symb);
         i=0;
 	temp.name   = g_strdup(AtomsProp[i].name);
 	temp.symbol   = g_strdup(AtomsProp[i].symbol);
@@ -897,7 +897,7 @@ static void set_atom_prop(GtkWidget *w,gpointer data)
   temp = gtk_entry_get_text(GTK_ENTRY(EntryProp[DISPLAY_RADII]));
   if(!test(temp))
   {
-	GtkWidget* mess = Message("ERROR : the entry text is not a number","Warning",TRUE);
+	GtkWidget* mess = Message(_("ERROR : the entry text is not a number"),_("Warning"),TRUE);
   	gtk_window_set_transient_for(GTK_WINDOW(mess),GTK_WINDOW(sdata->Window));
 	return;
   }
@@ -906,7 +906,7 @@ static void set_atom_prop(GtkWidget *w,gpointer data)
   temp = gtk_entry_get_text(GTK_ENTRY(EntryProp[COVALENT_RADII]));
   if(!test(temp))
   {
-	GtkWidget* mess = Message("ERROR : the entry text is not a number","Warning",TRUE);
+	GtkWidget* mess = Message(_("ERROR : the entry text is not a number"),_("Warning"),TRUE);
   	gtk_window_set_transient_for(GTK_WINDOW(mess),GTK_WINDOW(sdata->Window));
 	return;
   }
@@ -915,7 +915,7 @@ static void set_atom_prop(GtkWidget *w,gpointer data)
   temp = gtk_entry_get_text(GTK_ENTRY(EntryProp[VANDERWALS_RADII]));
   if(!test(temp))
   {
-	GtkWidget* mess = Message("ERROR : the entry text is not a number","Warning",TRUE);
+	GtkWidget* mess = Message(_("ERROR : the entry text is not a number"),_("Warning"),TRUE);
   	gtk_window_set_transient_for(GTK_WINDOW(mess),GTK_WINDOW(sdata->Window));
 	return;
   }
@@ -924,7 +924,7 @@ static void set_atom_prop(GtkWidget *w,gpointer data)
   temp = gtk_entry_get_text(GTK_ENTRY(EntryProp[MAXIMUM_BOND_VALENCE]));
   if(!test(temp))
   {
-	GtkWidget* mess = Message("ERROR : the entry text is not a number","Warning",TRUE);
+	GtkWidget* mess = Message(_("ERROR : the entry text is not a number"),_("Warning"),TRUE);
   	gtk_window_set_transient_for(GTK_WINDOW(mess),GTK_WINDOW(sdata->Window));
 	return;
   }
@@ -933,7 +933,7 @@ static void set_atom_prop(GtkWidget *w,gpointer data)
   temp = gtk_entry_get_text(GTK_ENTRY(EntryProp[MASSE]));
   if(!test(temp))
   {
-	GtkWidget* mess = Message("ERROR : the entry text is not a number","Warning",TRUE);
+	GtkWidget* mess = Message(_("ERROR : the entry text is not a number"),_("Warning"),TRUE);
   	gtk_window_set_transient_for(GTK_WINDOW(mess),GTK_WINDOW(sdata->Window));
 	return;
   }
@@ -942,7 +942,7 @@ static void set_atom_prop(GtkWidget *w,gpointer data)
   temp = gtk_entry_get_text(GTK_ENTRY(EntryProp[ELECTRONEGATIVITY]));
   if(!test(temp))
   {
-	GtkWidget* mess = Message("ERROR : the entry text is not a number","Warning",TRUE);
+	GtkWidget* mess = Message(_("ERROR : the entry text is not a number"),_("Warning"),TRUE);
   	gtk_window_set_transient_for(GTK_WINDOW(mess),GTK_WINDOW(sdata->Window));
 	return;
   }
@@ -983,7 +983,7 @@ static void set_atom_prop(GtkWidget *w,gpointer data)
 	 	AtomsProp[i].nIsotopes = niso;
 		if(fabs(sabond-100)>1e-3)
 		{
-			GtkWidget* mess = Message("Warning : sum of abundances is not equal to 100!\n Reset the mass to 0 for remove an isotope  ","Warning",TRUE);
+			GtkWidget* mess = Message(_("Warning : sum of abundances is not equal to 100!\n Reset the mass to 0 for remove an isotope  "),_("Warning"),TRUE);
   			gtk_window_set_transient_for(GTK_WINDOW(mess),GTK_WINDOW(sdata->Window));
 		}
 
@@ -1177,7 +1177,7 @@ static void dialog_set_atom_prop(GtkWidget *w,gpointer data)
   GtkWidget *Table;
   SAtomsProp Prop;
   gchar *temp;
-  gchar *tlabel[]={"Display radius", "Covalent radii", "Van der Waals radius", "Maximum bond valence", "Masse" , "Electronegativity"};
+  gchar *tlabel[]={"Display radius", "Covalent radii", "Van der Waals radius", "Maximum bond valence", "Mass" , "Electronegativity"};
   SData *sdata ;
   SData *tdata ;
   GtkStyle *style;
@@ -1213,17 +1213,17 @@ static void dialog_set_atom_prop(GtkWidget *w,gpointer data)
   gtk_box_pack_start(GTK_BOX(vboxframe), Table,TRUE,TRUE,0);
 
   i = 0;
-  Add_Label_Table(Table,"Name",i,0);
+  Add_Label_Table(Table,_("Name"),i,0);
   Add_Label_Table(Table,":",i,1);
   Add_Label_Table(Table,Prop.name,i,2);
 
   i++;
-  Add_Label_Table(Table,"Symbol",i,0);
+  Add_Label_Table(Table,_("Symbol"),i,0);
   Add_Label_Table(Table,":",i,1);
   Add_Label_Table(Table,sdata->Symb,i,2);
 
   i++;
-  Add_Label_Table(Table,"Atomic Number",i,0);
+  Add_Label_Table(Table,_("Atomic Number"),i,0);
   Add_Label_Table(Table,":",i,1);
   temp = g_strdup_printf("%d",Prop.atomicNumber);
   Add_Label_Table(Table,temp,i,2);
@@ -1237,7 +1237,7 @@ static void dialog_set_atom_prop(GtkWidget *w,gpointer data)
   gtk_table_attach(GTK_TABLE(Table),EntryProp[DISPLAY_RADII],2,3,i,i+1, (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) , (GtkAttachOptions)(GTK_FILL | GTK_SHRINK), 1,1);
   temp = g_strdup_printf("%f",Prop.radii*BOHR_TO_ANG);
   gtk_entry_set_text(GTK_ENTRY(EntryProp[DISPLAY_RADII]),temp);
-  Add_Label_Table(Table,"Angstroms",i,3);
+  Add_Label_Table(Table,_("Angstroms"),i,3);
 
   /* Covalent radii */
   i++;
@@ -1248,7 +1248,7 @@ static void dialog_set_atom_prop(GtkWidget *w,gpointer data)
   gtk_table_attach(GTK_TABLE(Table),EntryProp[COVALENT_RADII],2,3,i,i+1, (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) , (GtkAttachOptions)(GTK_FILL | GTK_SHRINK), 1,1);
   temp = g_strdup_printf("%f",Prop.covalentRadii*BOHR_TO_ANG);
   gtk_entry_set_text(GTK_ENTRY(EntryProp[COVALENT_RADII]),temp);
-  Add_Label_Table(Table,"Angstroms",i,3);
+  Add_Label_Table(Table,_("Angstroms"),i,3);
 
   /* Van der Waals radius */
   i++;
@@ -1259,7 +1259,7 @@ static void dialog_set_atom_prop(GtkWidget *w,gpointer data)
   gtk_table_attach(GTK_TABLE(Table),EntryProp[VANDERWALS_RADII],2,3,i,i+1, (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) , (GtkAttachOptions)(GTK_FILL | GTK_SHRINK), 1,1);
   temp = g_strdup_printf("%f",Prop.vanDerWaalsRadii*BOHR_TO_ANG);
   gtk_entry_set_text(GTK_ENTRY(EntryProp[VANDERWALS_RADII]),temp);
-  Add_Label_Table(Table,"Angstroms",i,3);
+  Add_Label_Table(Table,_("Angstroms"),i,3);
 
   /* Maximum bond valence */
   i++;
@@ -1298,10 +1298,10 @@ static void dialog_set_atom_prop(GtkWidget *w,gpointer data)
   Add_Label_Table(Table,"eV",i,3);
 
   i++;
-  Add_Label_Table(Table,"Atom Color",i,0);
+  Add_Label_Table(Table,_("Atom Color"),i,0);
   Add_Label_Table(Table,":",i,1);
 
-  Bouton = gtk_button_new_with_label("Set Color");
+  Bouton = gtk_button_new_with_label(_("Set Color"));
   style=set_button_style(sdata->Style,Bouton,sdata->Symb);
   tdata=g_malloc(sizeof(SData));
   tdata->Window = Dialogue;
@@ -1311,7 +1311,7 @@ static void dialog_set_atom_prop(GtkWidget *w,gpointer data)
   gtk_table_attach(GTK_TABLE(Table),Bouton,2,3,i,i+1, (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) , (GtkAttachOptions)(GTK_FILL | GTK_SHRINK), 1,1);
   g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)open_color_dlg_atoms, (gpointer)tdata);
 
-  /* Masse */
+  /* Mass */
   i++;
   Add_Label_Table(Table,tlabel[MASSE],i,0);
   Add_Label_Table(Table,":",i,1);
@@ -1325,13 +1325,13 @@ static void dialog_set_atom_prop(GtkWidget *w,gpointer data)
 
   gtk_widget_realize(Dialogue);
 
-  Bouton = create_button(Dialogue,"Cancel");
+  Bouton = create_button(Dialogue,_("Cancel"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)destroy_button_windows,GTK_OBJECT(Dialogue));
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 
-  Bouton = create_button(Dialogue,"OK");
+  Bouton = create_button(Dialogue,_("OK"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)set_atom_prop, sdata);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)destroy_button_windows,GTK_OBJECT(Dialogue));
@@ -1339,7 +1339,7 @@ static void dialog_set_atom_prop(GtkWidget *w,gpointer data)
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Bouton);
     
-  add_button_windows(" Set properties ",Dialogue);
+  add_button_windows(_(" Set properties "),Dialogue);
   gtk_widget_show_all(Dialogue);
   g_free(temp);
 }
@@ -1439,7 +1439,7 @@ void create_table_prop()
    GtkWidget* button;
 
   WinTable = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_title(GTK_WINDOW(WinTable),"Select your atom");
+  gtk_window_set_title(GTK_WINDOW(WinTable),_("Select your atom"));
   gtk_window_set_position(GTK_WINDOW(WinTable),GTK_WIN_POS_CENTER);
   gtk_window_set_default_size (GTK_WINDOW(WinTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
 
@@ -1464,7 +1464,7 @@ void create_table_prop()
   gtk_widget_show (hbox);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 2);
   gtk_widget_realize(WinTable);
-  button = create_button(WinTable,"CLOSE");
+  button = create_button(WinTable,_("Close"));
   gtk_box_pack_end (GTK_BOX (hbox), button, FALSE, FALSE, 2);
   g_signal_connect_swapped(G_OBJECT(button),"clicked", (GCallback)destroy_button_windows, GTK_OBJECT(WinTable));
   g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(WinTable));
@@ -1472,7 +1472,7 @@ void create_table_prop()
   gtk_widget_grab_default(button);
   gtk_widget_show(button);
   
-  add_button_windows(" Properties ",WinTable);
+  add_button_windows(_(" Properties "),WinTable);
 
   gtk_widget_show_all(WinTable);
 }

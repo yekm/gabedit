@@ -249,7 +249,7 @@ static GtkWidget* create_label_frame(GtkWidget *box, gchar* rowPath)
   g_free(title);
   g_free(rowbatch);
 
-  frame = gtk_frame_new ("Jobs to kill");
+  frame = gtk_frame_new (_("Jobs to kill"));
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_box_pack_start (GTK_BOX( box), frame, TRUE, TRUE, 3);
   gtk_widget_show (frame);
@@ -323,7 +323,7 @@ static void create_kill_batch(GtkWidget*Win, gchar* rowPath)
   GtkWidget *vboxwin;
   GtkWidget *hbox;
   GtkWidget *button;
-  gchar *title = g_strdup_printf("Kill a jobs");
+  gchar *title = g_strdup_printf(_("Kill a jobs"));
 
   /* Principal Window */
   fp = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -333,7 +333,7 @@ static void create_kill_batch(GtkWidget*Win, gchar* rowPath)
   gtk_window_set_modal (GTK_WINDOW (fp), TRUE);
 
   gtk_widget_realize(fp);
-  init_child(fp,gtk_widget_destroy," Kill ");
+  init_child(fp,gtk_widget_destroy,_(" Kill "));
   g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_children,NULL);
 
   gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
@@ -354,13 +354,13 @@ static void create_kill_batch(GtkWidget*Win, gchar* rowPath)
   hbox = create_hbox(vboxwin);
   gtk_widget_realize(fp);
 
-  button = create_button(fp,"Cancel");
+  button = create_button(fp,_("Cancel"));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,GTK_OBJECT(fp));
   gtk_widget_show (button);
 
-  button = create_button(fp,"OK");
+  button = create_button(fp,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
@@ -550,7 +550,7 @@ static GtkWidget *create_batch_remote_frame( GtkWidget *vboxall,GtkWidget **entr
   		tlistuser[0] = g_strdup("login");
   }
 
-  frame = gtk_frame_new ("Remote host");
+  frame = gtk_frame_new (_("Remote host"));
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
@@ -560,7 +560,7 @@ static GtkWidget *create_batch_remote_frame( GtkWidget *vboxall,GtkWidget **entr
   gtk_container_add(GTK_CONTAINER(vboxframe),Table);
 
 	i = 0;
-	add_label_table(Table,"Host name ",(gushort)(i),0);
+	add_label_table(Table,_("Host name "),(gushort)(i),0);
 	add_label_table(Table," : ",(gushort)(i),1);
 	combo = create_combo_box_entry(tlisthost,nlisthost,TRUE,-1,-1);
 	gtk_table_attach(GTK_TABLE(Table),combo,2,3,i,i+1,
@@ -573,7 +573,7 @@ static GtkWidget *create_batch_remote_frame( GtkWidget *vboxall,GtkWidget **entr
         g_signal_connect(G_OBJECT(GTK_COMBO_BOX(combo)), "changed",G_CALLBACK(changed_host),entry);
 
 	i = 1;
-	add_label_table(Table,"Login ",(gushort)(i),0);
+	add_label_table(Table,_("Login "),(gushort)(i),0);
 	add_label_table(Table," : ",(gushort)(i),1);
 	combo = create_combo_box_entry(tlistuser,nlistuser,TRUE,-1,-1);
 	gtk_table_attach(GTK_TABLE(Table),combo,2,3,i,i+1,
@@ -589,7 +589,7 @@ static GtkWidget *create_batch_remote_frame( GtkWidget *vboxall,GtkWidget **entr
 	if(defaultNetWorkProtocol==GABEDIT_NETWORK_SSH)
 	{
 #ifdef G_OS_WIN32
-		add_label_table(Table,"Password ",(gushort)(i),0);
+		add_label_table(Table,_("Password "),(gushort)(i),0);
 		add_label_table(Table," : ",(gushort)(i),1);
 		entry[i] = gtk_entry_new ();
 		gtk_entry_set_visibility(GTK_ENTRY (entry[i]),FALSE);
@@ -630,7 +630,7 @@ void create_batch_remote(gboolean all)
   GtkWidget *hbox;
   GtkWidget *button;
   GtkWidget **entry;
-  gchar *title = g_strdup_printf("Batch Jobs at remote host ");
+  gchar *title = g_strdup_printf(_("Batch Jobs at remote host "));
 
   entry=g_malloc(3*sizeof(GtkWidget *));
 
@@ -642,7 +642,7 @@ void create_batch_remote(gboolean all)
   gtk_window_set_modal (GTK_WINDOW (fp), TRUE);
 
   gtk_widget_realize(fp);
-  init_child(fp,gtk_widget_destroy," Remote Batch Jobs ");
+  init_child(fp,gtk_widget_destroy,_(" Remote Batch Jobs "));
   g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_children,NULL);
 
   gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
@@ -668,13 +668,13 @@ void create_batch_remote(gboolean all)
   hbox = create_hbox(vboxwin);
   gtk_widget_realize(fp);
 
-  button = create_button(fp,"Cancel");
+  button = create_button(fp,_("Cancel"));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,GTK_OBJECT(fp));
   gtk_widget_show (button);
 
-  button = create_button(fp,"OK");
+  button = create_button(fp,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
@@ -714,7 +714,7 @@ void run_batch_all(gboolean remote)
 #ifdef G_OS_WIN32
 	if(!remote)
 	{
-		Message("Sorry, This option is available for unix system only","Error",TRUE);
+		Message(_("Sorry, This option is available for unix system only"),_("Error"),TRUE);
 		g_free(fout);
 		g_free(ferr);
 		return;
@@ -726,7 +726,7 @@ void run_batch_all(gboolean remote)
   		remoteuser = gtk_entry_get_text(GTK_ENTRY(EntryLogin));
 		remotepassword = gtk_entry_get_text(GTK_ENTRY(EntryPassWord));
   		command = g_strdup_printf(NameCommandBatchAll);
-  		title = g_strdup_printf("All Jobs in %s host ",remotehost);
+  		title = g_strdup_printf(_("All Jobs in %s host "),remotehost);
   		/*rsh (fout,ferr,command, remoteuser,remotehost);*/
 		remote_command (fout,ferr,command,remotehost,remoteuser,remotepassword);
 		g_free(command);
@@ -735,7 +735,7 @@ void run_batch_all(gboolean remote)
 	else
 	{
 		command = g_strdup(NameCommandBatchAll);
-  		title = g_strdup_printf("All Jobs in local host ");
+  		title = g_strdup_printf(_("All Jobs in local host "));
   		run_local_command(fout,ferr,command,FALSE);
   		g_free(command);
 	}
@@ -794,7 +794,7 @@ static GtkWidget* create_list_result_command(GtkWidget* gtklist,gchar* strerr,gc
   gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
 
   gtk_widget_realize(Win);
-  init_child(Win,gtk_widget_destroy," List of Jobs ");
+  init_child(Win,gtk_widget_destroy,_(" List of Jobs "));
   g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)destroy_children,NULL);
 
   gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
@@ -811,7 +811,7 @@ static GtkWidget* create_list_result_command(GtkWidget* gtklist,gchar* strerr,gc
   Frame[0] = NULL;
   if(gtklist)
   {
-  	frame = gtk_frame_new ("Output");
+  	frame = gtk_frame_new (_("Output"));
   	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
   	gtk_container_add(GTK_CONTAINER(vboxall),frame);
@@ -828,7 +828,7 @@ static GtkWidget* create_list_result_command(GtkWidget* gtklist,gchar* strerr,gc
 	Frame[0] = frame;
   }
 
-  Text = create_text_widget(vboxall,"Error",&Frame[1]);
+  Text = create_text_widget(vboxall,_("Error"),&Frame[1]);
   set_font (Text,FontsStyleResult.fontname);
   set_base_style(Text,FontsStyleResult.BaseColor.red ,FontsStyleResult.BaseColor.green ,FontsStyleResult.BaseColor.blue);
   set_text_style(Text,FontsStyleResult.TextColor.red ,0,0);
@@ -837,7 +837,7 @@ static GtkWidget* create_list_result_command(GtkWidget* gtklist,gchar* strerr,gc
   gtk_box_pack_start (GTK_BOX(vboxwin), hbox, FALSE, FALSE, 5);
   gtk_box_set_homogeneous(GTK_BOX(hbox), FALSE);
   gtk_widget_realize(Win);
-  button = create_button(Win,"OK");
+  button = create_button(Win,_("OK"));
   gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, FALSE, 5);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
@@ -870,7 +870,7 @@ void run_batch_user(gboolean remote,gchar *remoteuser,gchar *remotehost,gchar *r
 #ifdef G_OS_WIN32
 	if(!remote)
 	{
-		Message("Sorry, This option is available for unix system only","Error",TRUE);
+		Message(_("Sorry, This option is available for unix system only"),_("Error"),TRUE);
 		g_free(fout);
 		g_free(ferr);
 		return;
@@ -881,7 +881,7 @@ void run_batch_user(gboolean remote,gchar *remoteuser,gchar *remotehost,gchar *r
 #endif /* G_OS_WIN32 */
   	if(!localuser && !remote)
   	{
-		Message("Sorry, I can not obtain user name","Error",TRUE);
+		Message(_("Sorry, I can not obtain user name"),_("Error"),TRUE);
 		g_free(fout);
 		g_free(ferr);
 		return;
@@ -916,8 +916,7 @@ void run_batch_user(gboolean remote,gchar *remoteuser,gchar *remotehost,gchar *r
 		remote_command (fout,ferr,command,remotehost,remoteuser,remotepassword);
 		g_free(command);
   		add_host(remotehost,remoteuser,"","tmp");
-  		title = g_strdup_printf("Process in host : \"%s\" ;  for user : \"%s\" ",
-				remotehost,remoteuser);
+  		title = g_strdup_printf(_("Process in host : \"%s\" ;  for user : \"%s\" "), remotehost,remoteuser);
 	}
 	else
 	{
@@ -929,11 +928,9 @@ void run_batch_user(gboolean remote,gchar *remoteuser,gchar *remotehost,gchar *r
 
   		run_local_command(fout,ferr,command,FALSE);
   		g_free(command);
-  		title = g_strdup_printf("Jobs in host : \"%s\" ;  for user : \"%s\" ",
-				localhost,localuser);
+  		title = g_strdup_printf(_("Jobs in host : \"%s\" ;  for user : \"%s\" "), localhost,localuser);
 	}
-	if(WinUserBatch)
-		destroy_children(WinUserBatch);
+	if(WinUserBatch) destroy_children(WinUserBatch);
 
   	get_list_from_file(fout);
   	gtklist = create_gtk_list_batch();

@@ -1,4 +1,4 @@
-OBJECTS = MPQC.o MPQCMolecule.o MPQCMole.o MPQCGuessWaveFunction.o MPQCMpqc.o MPQCBasis.o MPQCLib.o MPQCBasisLibrary.o MPQCFunctionals.o MPQCOptimisation.o MPQCProperties.o
+OBJECTS = MPQC.o MPQCMolecule.o MPQCMole.o MPQCGuessWaveFunction.o MPQCMpqc.o MPQCBasis.o MPQCLib.o MPQCBasisLibrary.o MPQCFunctionals.o MPQCOptimization.o MPQCProperties.o
 
 include ../../CONFIG
 CFLAGS =  $(COMMONCFLAGS) $(GTKCFLAGS)

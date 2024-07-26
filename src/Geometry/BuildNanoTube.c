@@ -190,12 +190,12 @@ void build_nanotube_dlg()
   gint i = 0;
   
   Dlg = gtk_dialog_new();
-  gtk_window_set_title(GTK_WINDOW(Dlg),"Build Natotube molecule");
+  gtk_window_set_title(GTK_WINDOW(Dlg),_("Build Natotube molecule"));
   gtk_window_set_position(GTK_WINDOW(Dlg),GTK_WIN_POS_CENTER);
   gtk_window_set_transient_for(GTK_WINDOW(Dlg),GTK_WINDOW(GeomDlg));
 
 
-  add_child(GeomDlg,Dlg,gtk_widget_destroy," Build lin. mol. ");
+  add_child(GeomDlg,Dlg,gtk_widget_destroy,_(" Build lin. mol. "));
 
   g_signal_connect(G_OBJECT(Dlg),"delete_event",(GCallback)delete_child,NULL);
   g_signal_connect(G_OBJECT(Dlg),"delete_event",(GCallback)gtk_widget_destroy,NULL);
@@ -212,7 +212,7 @@ void build_nanotube_dlg()
    gtk_box_pack_start (GTK_BOX (vboxframe), table, TRUE, TRUE, 3);
 
    i = 0;
-   label = gtk_label_new("Chirality");
+   label = gtk_label_new(_("Chirality"));
    gtk_table_attach(GTK_TABLE(table),label,0,1,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
    label = gtk_label_new(":");
    gtk_table_attach(GTK_TABLE(table),label,1,2,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
@@ -235,11 +235,11 @@ void build_nanotube_dlg()
    label = gtk_label_new(")");
    gtk_table_attach(GTK_TABLE(table),label,6,7,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 
-   label = gtk_label_new(" see PRB,47,5485");
+   label = gtk_label_new(_(" see PRB,47,5485"));
    gtk_table_attach(GTK_TABLE(table),label,7,8,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 
    i = 1;
-   label = gtk_label_new("C-C bond length");
+   label = gtk_label_new(_("C-C bond length"));
    gtk_table_attach(GTK_TABLE(table),label,0,1,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
    label = gtk_label_new(":");
    gtk_table_attach(GTK_TABLE(table),label,1,2,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
@@ -249,11 +249,11 @@ void build_nanotube_dlg()
    gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"1.422");
    gtk_table_attach(GTK_TABLE(table),Entrys[2],2,7,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 
-   label = gtk_label_new("Angstroms");
+   label = gtk_label_new(_("Angstroms"));
    gtk_table_attach(GTK_TABLE(table),label,7,8,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 
    i = 2;
-   label = gtk_label_new("Number of translational unit cells");
+   label = gtk_label_new(_("Number of translational unit cells"));
    gtk_table_attach(GTK_TABLE(table),label,0,1,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
    label = gtk_label_new(":");
    gtk_table_attach(GTK_TABLE(table),label,1,2,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
@@ -265,25 +265,23 @@ void build_nanotube_dlg()
 
   gtk_widget_realize(Dlg);
   /* The "Cancel" button */
-  Button = create_button(Dlg,"Cancel");
+  Button = create_button(Dlg,_("Cancel"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dlg)->action_area), Button,TRUE,TRUE,0);
   g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)delete_child,GTK_OBJECT(Dlg));
   GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 
   /* The "OK" button */
-  Button = create_button(Dlg,"OK");
+  Button = create_button(Dlg,_("OK"));
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dlg)->action_area), Button,TRUE,TRUE,0);
   g_signal_connect(G_OBJECT(Button), "clicked",(GCallback)build_nanotube,NULL);
   g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)delete_child,GTK_OBJECT(Dlg));
   GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Button);
     
-
   gtk_widget_show_all(GTK_DIALOG(Dlg)->vbox);
   gtk_widget_show_all(GTK_DIALOG(Dlg)->action_area);
   gtk_widget_show_now(Dlg);
 
   fit_windows_position(GeomDlg, Dlg);
-
 }
 

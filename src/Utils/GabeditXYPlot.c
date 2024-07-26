@@ -17,6 +17,7 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 DEALINGS IN THE SOFTWARE.
 ************************************************************************************************************/
 
+#define GETTEXT_PACKAGE "gabedit"
 #include <stdlib.h>
 #include <ctype.h>
 #include <math.h>
@@ -25,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
+#include <glib/gi18n.h>
 #include <cairo-pdf.h>
 #include <cairo-ps.h>
 #include <cairo-svg.h>
@@ -78,6 +80,7 @@ static void xyplot_show_left_legends (GabeditXYPlot *xyplot, gboolean show);
 static void xyplot_show_right_legends (GabeditXYPlot *xyplot, gboolean show);
 static void xyplot_show_top_legends (GabeditXYPlot *xyplot, gboolean show);
 static void xyplot_show_bottom_legends (GabeditXYPlot *xyplot, gboolean show);
+static void xyplot_show_rectangle_legends (GabeditXYPlot *xyplot, gboolean show);
 static void xyplot_reflect_x (GabeditXYPlot *xyplot, gboolean enable);
 static void xyplot_reflect_y (GabeditXYPlot *xyplot, gboolean enable);
 static void saveAsGabeditDlg(GtkWidget* xyplot);
@@ -92,8 +95,8 @@ static void gabedit_xyplot_cairo_layout(cairo_t* cr, gdouble x, gdouble y, Pango
 static GtkWidgetClass *parent_class = NULL; /* TO DELETE */
 /****************************************************************************************/
 static void xyplot_calculate_sizes (GabeditXYPlot *xyplot);
-static void value2pixel(GabeditXYPlot *xyplot, gdouble xv, gdouble yv, guint *x, guint *y);
-static void pixel2value(GabeditXYPlot *xyplot, guint xp, guint yp, gdouble *x, gdouble *y);
+static void value2pixel(GabeditXYPlot *xyplot, gdouble xv, gdouble yv, gint *x, gint *y);
+static void pixel2value(GabeditXYPlot *xyplot, gint xp, gint yp, gdouble *x, gdouble *y);
 static void xyplot_calculate_legends_sizes(GabeditXYPlot *xyplot);
 static void xyplot_build_legends(GabeditXYPlot *xyplot);
 static void xyplot_free_legends(GabeditXYPlot *xyplot);
@@ -130,6 +133,27 @@ static void calc_arrow_vertexes(
 	*y2 = end_y + arrow_lenght * sin(angle + arrow_degrees);
 }
 
+/**********************************************************************************/
+static void gabedit_xyplot_cairo_image(cairo_t* cr, GtkWidget *widget, gint x, gint y, gint w, gint h, cairo_surface_t *image)
+{
+	gint ow = 1;
+	gint oh = 1;
+	if(!image) return;
+	if(x<0||y<0) return;
+	/* printf("x = %d y = %d w = %d h = %d\n",x,y,w,h);*/
+	ow = cairo_image_surface_get_width (image);
+	oh = cairo_image_surface_get_height (image);
+
+	cairo_save (cr); 
+
+	cairo_translate (cr, x,y);
+	cairo_scale (cr, (gdouble)w/ow, (gdouble)h/oh);
+	cairo_set_source_surface (cr, image, 0, 0);
+	cairo_paint (cr);
+
+	cairo_stroke (cr);
+	cairo_restore (cr); 
+}
 /**********************************************************************************/
 static void gabedit_xyplot_cairo_string(cairo_t* cr, GtkWidget *widget, GdkGC* gc, gint x, gint y, G_CONST_RETURN gchar* str, gboolean centerX, gboolean centerY, gdouble angle)
 {
@@ -286,60 +310,6 @@ static void gabedit_xyplot_cairo_rectangle(cairo_t *cr,  GtkWidget* widget, GdkG
 	cairo_stroke (cr);
 	cairo_restore (cr); 
 }
-/*****************************************************************************/
-/*
-static void gabedit_xyplot_cairo_cercle(cairo_t *cr,  GtkWidget* widget, GdkGC* gc,
-		gint xc,gint yc,gint rayon)
-{
-	GdkGCValues values;
-	GdkColor color;
-	double r,g,b;
-	GdkColormap *colormap;
-	if(!cr) return;
-	if(!gc) return;
-	cairo_save (cr); 
-	gdk_gc_get_values(gc, &values);
-
-	switch(values.cap_style)
-	{
-		case GDK_CAP_NOT_LAST:
-			cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT); break;
-		case GDK_CAP_BUTT:
-			cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT); break;
-		case GDK_CAP_ROUND:
-			cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND); break;
-		case GDK_CAP_PROJECTING:
-			cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE); break;
-		default:
-			cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT); break;
-
-	}
-	switch(values.join_style)
-	{
-		case GDK_JOIN_MITER:
-			cairo_set_line_join (cr, CAIRO_LINE_JOIN_MITER);break;
-		case GDK_JOIN_ROUND :
-			cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);break;
-		case GDK_JOIN_BEVEL :
-			cairo_set_line_join (cr, CAIRO_LINE_JOIN_BEVEL);break;
-		default:
-			cairo_set_line_join (cr, CAIRO_LINE_JOIN_MITER);break;
-	}
-   	colormap  = gdk_window_get_colormap(widget->window);
-        gdk_colormap_query_color(colormap, values.foreground.pixel,&color);
-	r = SCALE(color.red);
-	g = SCALE(color.green);
-	b = SCALE(color.blue);
-	cairo_set_source_rgba (cr, r, g, b, 1.0);
-	if(values.line_width<1) values.line_width = 1;
-
-	cairo_set_line_width (cr, values.line_width);
-	cairo_arc (cr, xc, yc, rayon, 0, 2 * M_PI);
-	if(values.fill==GDK_SOLID) cairo_fill (cr);
-	cairo_stroke (cr);
-	cairo_restore (cr); 
-}
-*/
 /**********************************************************************************/
 static void gabedit_xyplot_cairo_layout(cairo_t* cr, gdouble x, gdouble y, PangoLayout *layout, gboolean centerX, gboolean centerY, gdouble angle) 
 {
@@ -358,6 +328,13 @@ static void gabedit_xyplot_cairo_layout(cairo_t* cr, gdouble x, gdouble y, Pango
 	pango_cairo_show_layout(cr,layout);
 	cairo_stroke (cr);
 	cairo_restore (cr); 
+}
+/****************************************************************************************/
+static void xyplot_cairo_image(GabeditXYPlot *xyplot, cairo_t* cr, GtkWidget *widget, gint x, gint y, gint w, gint h, cairo_surface_t *image)
+{
+	gabedit_xyplot_cairo_image(cr,  widget, x, y, w, h, image);
+	if(xyplot->cairo_export)
+		gabedit_xyplot_cairo_image(xyplot->cairo_export,  widget, x, y, w, h, image);
 }
 /****************************************************************************************/
 static void xyplot_cairo_string(GabeditXYPlot *xyplot, cairo_t* cr, GtkWidget* widget, GdkGC* gc, gint x, gint y, G_CONST_RETURN gchar* str, gboolean centerX, gboolean centerY, gdouble angle)
@@ -469,6 +446,18 @@ static void destroy_xyplot_window(GtkWidget* xyplot)
 	if(parentWindow) gtk_object_destroy (GTK_OBJECT(parentWindow));
 }
 /****************************************************************************************/
+static GdkColor get_fore_color(GabeditXYPlot *xyplot)
+{
+	GdkGCValues values;
+	GdkColormap *colormap;
+	GdkColor color;
+
+	gdk_gc_get_values(xyplot->fore_gc, &values);
+   	colormap  = gdk_window_get_colormap(GTK_WIDGET(xyplot)->window);
+        gdk_colormap_query_color(colormap, values.foreground.pixel,&color);
+	return color;
+}
+/****************************************************************************************/
 static void destroy_data_dialog(GtkWidget* win, GdkEvent  *event, gpointer user_data)
 {
   	gtk_object_destroy (GTK_OBJECT(win));
@@ -495,7 +484,7 @@ static void remove_all_data_dlg(GtkWidget* xyplot)
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_QUESTION,
 			GTK_BUTTONS_YES_NO,
-		       "Are you sure to remove all data ?"
+		       _("Are you sure to remove all data ?")
 			);
 	gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_NO);
 	g_signal_connect_swapped(dialog, "response", G_CALLBACK (remove_all_data), xyplot);
@@ -566,9 +555,15 @@ static void add_new_data(GtkWidget* xyplot, gint numberOfPoints, gdouble* X,  gd
 	{
 		gint loop;
 		XYPlotData *data = g_malloc(sizeof(XYPlotData));
-		guint red = rand()%60000;
-		guint green = rand()%60000;
-		guint blue = rand()%60000;
+		gint red = 0;
+		gint green = 0;
+		gint blue = 0;
+		GdkColor c = get_fore_color(GABEDIT_XYPLOT(xyplot));
+
+		red = c.red;
+		green = c.green;
+		blue = c.blue;
+
 		data->size=numberOfPoints;
 		data->x = g_malloc(numberOfPoints*sizeof(gdouble)); 
 		data->y = g_malloc(numberOfPoints*sizeof(gdouble)); 
@@ -603,11 +598,16 @@ static void add_new_data_peaks(GtkWidget* xyplot, gint numberOfPoints, gdouble* 
 	{
 		gint loop;
 		XYPlotData *data = g_malloc(sizeof(XYPlotData));
-		guint red = rand()%60000;
-		guint green = rand()%60000;
-		guint blue = rand()%60000;
 		gdouble xmin = 0;
 		gdouble xmax = 0;
+		gint red = 0;
+		gint green = 0;
+		gint blue = 0;
+		GdkColor c = get_fore_color(GABEDIT_XYPLOT(xyplot));
+
+		red = c.red;
+		green = c.green;
+		blue = c.blue;
 
 		data->size=3*numberOfPoints+2;
 		data->x = g_malloc(data->size*sizeof(gdouble)); 
@@ -664,7 +664,7 @@ static void set_object_text_pixels(GabeditXYPlot *xyplot, XYPlotObjectText* obje
 	pango_layout_get_size(objectText->pango, &objectText->width, &objectText->height);
 	objectText->width/=PANGO_SCALE;
 	objectText->height/=PANGO_SCALE;
-	objectText->yi -= objectText->height/2;
+	/* objectText->yi -= objectText->height/2;*/
 	objectText->xi += xyplot->plotting_rect.x;
 	objectText->yi += xyplot->plotting_rect.y;
 }
@@ -699,17 +699,18 @@ static void set_object_text_pango(GabeditXYPlot *xyplot, XYPlotObjectText* objec
   	objectText->pango = get_pango_str(xyplot, objectText->str);
 }
 /****************************************************************************************/
-static void set_object_text(GabeditXYPlot *xyplot, XYPlotObjectText* objectText, gdouble x, gdouble y, G_CONST_RETURN gchar* str)
+static void set_object_text(GabeditXYPlot *xyplot, XYPlotObjectText* objectText, gdouble x, gdouble y, gdouble angle, G_CONST_RETURN gchar* str)
 {
 	if(!str) return;
 	objectText->x = x;
 	objectText->y = y;
+	objectText->angle = angle;
 	objectText->str = g_strdup(str);
 	set_object_text_pango(xyplot, objectText);
 	set_object_text_pixels(xyplot, objectText);
 }
 /****************************************************************************************/
-static void add_object_text(GabeditXYPlot *xyplot, gdouble x, gdouble y, G_CONST_RETURN gchar* str)
+static void add_object_text(GabeditXYPlot *xyplot, gdouble x, gdouble y, gdouble angle, G_CONST_RETURN gchar* str)
 {
 	gint i;
 	if(!str) return;
@@ -717,7 +718,7 @@ static void add_object_text(GabeditXYPlot *xyplot, gdouble x, gdouble y, G_CONST
 	if(xyplot->nObjectsText==1) xyplot->objectsText = g_malloc(sizeof(XYPlotObjectText));
 	else xyplot->objectsText = g_realloc(xyplot->objectsText,xyplot->nObjectsText*sizeof(XYPlotObjectText));
 	i = xyplot->nObjectsText-1;
-	set_object_text(xyplot, &xyplot->objectsText[i],  x,  y, str);
+	set_object_text(xyplot, &xyplot->objectsText[i],  x,  y, angle , str);
 }
 /****************************************************************************************/
 static void reset_object_text_pixels(GabeditXYPlot *xyplot)
@@ -736,18 +737,52 @@ static void reset_object_text_pango(GabeditXYPlot *xyplot)
 		set_object_text_pango(xyplot, &xyplot->objectsText[i]);
 }
 /****************************************************************************************/
-static gint get_object_text_num(GabeditXYPlot *xyplot, guint xi, guint yi)
+static gint get_object_text_num(GabeditXYPlot *xyplot, gint xi, gint yi)
 {
 	gint i;
+	gint x,y;
 	if(!xyplot) return -1;
+
 	for(i=0;i<xyplot->nObjectsText;i++)
 	{
-		if(xi>=xyplot->objectsText[i].xi && yi>=xyplot->objectsText[i].yi
-		&& xi<=xyplot->objectsText[i].xi+xyplot->objectsText[i].width 
-		&& yi<=xyplot->objectsText[i].yi+xyplot->objectsText[i].height)
+		gdouble cosa = cos(xyplot->objectsText[i].angle);
+		gdouble sina = sin(xyplot->objectsText[i].angle);
+		gdouble xx = xi-xyplot->objectsText[i].xi;
+		gdouble yy = yi-xyplot->objectsText[i].yi;
+		x = xyplot->objectsText[i].xi+xx*cosa-yy*sina;
+		y = xyplot->objectsText[i].yi+xx*sina+yy*cosa;
+		if(x>=xyplot->objectsText[i].xi && y>=xyplot->objectsText[i].yi
+		&& x<=xyplot->objectsText[i].xi+xyplot->objectsText[i].width 
+		&& y<=xyplot->objectsText[i].yi+xyplot->objectsText[i].height)
 			return i;
 	}
 	return -1;
+}
+/****************************************************************************************/
+static void delete_object_text(GtkWidget *widget, gint i)
+{
+	gint j;
+	GabeditXYPlot *xyplot = NULL;
+	if(!widget) return;
+	if(!GTK_IS_WIDGET(widget)) return;
+	xyplot = GABEDIT_XYPLOT(widget);
+	if(i<0||i>=xyplot->nObjectsText) return;
+	if(xyplot->objectsText[i].str) g_free(xyplot->objectsText[i].str);
+	if(xyplot->objectsText[i].pango) g_object_unref(G_OBJECT(xyplot->objectsText[i].pango));
+	for(j=i;j<xyplot->nObjectsText-1;j++)
+		xyplot->objectsText[j] = xyplot->objectsText[j+1];
+	xyplot->nObjectsText--;
+	if(xyplot->nObjectsText<1) 
+	{
+		xyplot->nObjectsText = 0;
+		if(xyplot->objectsText) g_free(xyplot->objectsText);
+		xyplot->objectsText = NULL;
+	}
+	else
+	{
+		xyplot->objectsText = g_realloc(xyplot->objectsText,xyplot->nObjectsText*sizeof(XYPlotObjectText));
+	}
+
 }
 /****************************************************************************************/
 static void delete_objects_text(GtkWidget *widget)
@@ -770,18 +805,28 @@ static void delete_objects_text(GtkWidget *widget)
 /********************************************************************************/
 static void activate_entry_object_text(GtkWidget *entry, gpointer user_data)
 {
-	G_CONST_RETURN gchar* t;
+	G_CONST_RETURN gchar* tlabel;
+	G_CONST_RETURN gchar* tangle;
 	GtkWidget* xyplot = NULL;
 	GtkWidget* window = NULL;
+	GtkWidget* entry_label = NULL;
+	GtkWidget* entry_angle = NULL;
 	XYPlotObjectText* objectText = NULL;
 
 
+	if(!entry) return;
 	if(!GTK_IS_WIDGET(entry)) return;
 	if(!user_data || !G_IS_OBJECT(user_data)) return;
 
 	xyplot = GTK_WIDGET(user_data);
-	t= gtk_entry_get_text(GTK_ENTRY(entry));
-	if(!entry) return;
+	entry_label = g_object_get_data(G_OBJECT(entry),"EntryLabel");
+	entry_angle = g_object_get_data(G_OBJECT(entry),"EntryAngle");
+
+	if(!GTK_IS_WIDGET(entry_label)) return;
+	if(!GTK_IS_WIDGET(entry_angle)) return;
+
+	tlabel= gtk_entry_get_text(GTK_ENTRY(entry_label));
+	tangle= gtk_entry_get_text(GTK_ENTRY(entry_angle));
 	window = g_object_get_data(G_OBJECT(entry),"Window");
 	objectText = g_object_get_data(G_OBJECT(entry),"ObjectText");
 	/* t is destroyed with window */
@@ -792,14 +837,18 @@ static void activate_entry_object_text(GtkWidget *entry, gpointer user_data)
 	}
 	if(!objectText->str)
 	{
-		add_object_text(GABEDIT_XYPLOT(xyplot), objectText->x, objectText->y, t);
+		gdouble angle = 0;
+		if(tangle && strlen(tangle)>0) angle = atof(tangle)/180.0*M_PI;
+		add_object_text(GABEDIT_XYPLOT(xyplot), objectText->x, objectText->y, angle, tlabel);
 		g_free(objectText);
 	}
 	else
 	{
+		gdouble angle = 0;
+		if(tangle && strlen(tangle)>0) angle = atof(tangle)/180.0*M_PI;
 		if(objectText->str) g_free(objectText->str);
 		if(objectText->pango) g_object_unref(G_OBJECT(objectText->pango));
-		set_object_text(GABEDIT_XYPLOT(xyplot), objectText,  objectText->x, objectText->y, t);
+		set_object_text(GABEDIT_XYPLOT(xyplot), objectText,  objectText->x, objectText->y, angle, tlabel);
 	}
 	if(window)gtk_widget_destroy(window);
 	gtk_widget_queue_draw(GTK_WIDGET(xyplot));
@@ -814,6 +863,7 @@ static void add_set_object_text_dialog(GtkWidget* xyplot, gint i, gdouble x, gdo
 	GtkWidget* vbox_frame = NULL;
 	GtkWidget* label = NULL;
 	GtkWidget* entry_label = NULL;
+	GtkWidget* entry_angle = NULL;
 	XYPlotObjectText* objectText = NULL;
 
 	if(i>-1 && i<GABEDIT_XYPLOT(xyplot)->nObjectsText)
@@ -829,7 +879,7 @@ static void add_set_object_text_dialog(GtkWidget* xyplot, gint i, gdouble x, gdo
 		objectText->pango = NULL;
 	}
 
-	gtk_window_set_title (GTK_WINDOW (window), "Set label");
+	gtk_window_set_title (GTK_WINDOW (window), _("Set label"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -851,7 +901,7 @@ static void add_set_object_text_dialog(GtkWidget* xyplot, gint i, gdouble x, gdo
 	gtk_box_pack_start(GTK_BOX(vbox_frame), hbox, FALSE, FALSE, 2);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("Label : ");
+	label=gtk_label_new(_("Label : "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -861,12 +911,15 @@ static void add_set_object_text_dialog(GtkWidget* xyplot, gint i, gdouble x, gdo
 	{
 		gtk_entry_set_text(GTK_ENTRY(entry_label),GABEDIT_XYPLOT(xyplot)->objectsText[i].str);
 	}
+	else 
+		gtk_entry_set_text(GTK_ENTRY(entry_label),"<span foreground='blue' font_desc='20'>Blue text</span> is <i>cool</i>!");
 	gtk_box_pack_start(GTK_BOX(hbox), entry_label, TRUE, TRUE, 2);
 	gtk_widget_show(entry_label); 
 	
 	g_object_set_data(G_OBJECT(entry_label),"ObjectText", objectText);
 
 	label=gtk_label_new(
+			_(
 			"You can use the Pango Text Attribute Markup Language\n"
 			"Example : <span foreground='blue' font_desc='Sans 20'>Blue text</span> is <i>cool</i>!\n"
 			"\nFor insert a special character : control shift u + code UTF8\n"
@@ -875,6 +928,7 @@ static void add_set_object_text_dialog(GtkWidget* xyplot, gint i, gdouble x, gdo
 			" control shift u + 03B2 for beta (greek)\n"
 			" control shift u + 03A3 for cap Sigma (greek)\n"
 			" See http://www.utf8-chartable.de\n"
+			)
 			);
 	gtk_widget_show(label); 
 	gtk_box_pack_start(GTK_BOX(vbox_frame), label, FALSE, FALSE, 2);
@@ -882,6 +936,33 @@ static void add_set_object_text_dialog(GtkWidget* xyplot, gint i, gdouble x, gdo
 
 	g_object_set_data(G_OBJECT(entry_label),"Window", window);
 	g_signal_connect (G_OBJECT (entry_label), "activate", (GCallback)activate_entry_object_text, xyplot);
+
+	hbox=gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox_frame), hbox, FALSE, FALSE, 2);
+	gtk_widget_show(hbox);
+
+	label=gtk_label_new(_("Angle : "));
+	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 2);
+	gtk_widget_show(label); 
+
+	entry_angle = gtk_entry_new();
+	if(i>-1 && i<GABEDIT_XYPLOT(xyplot)->nObjectsText)
+	{
+		gchar* tmp = g_strdup_printf("%f", GABEDIT_XYPLOT(xyplot)->objectsText[i].angle/M_PI*180.0);
+		gtk_entry_set_text(GTK_ENTRY(entry_angle),tmp);
+		g_free(tmp);
+	}
+	else gtk_entry_set_text(GTK_ENTRY(entry_angle),"0.0");
+	gtk_box_pack_start(GTK_BOX(hbox), entry_angle, TRUE, TRUE, 2);
+	gtk_widget_show(entry_angle); 
+	
+	g_object_set_data(G_OBJECT(entry_angle),"ObjectText", objectText);
+	g_object_set_data(G_OBJECT(entry_angle),"Window", window);
+	g_object_set_data(G_OBJECT(entry_angle),"EntryLabel", entry_label);
+	g_object_set_data(G_OBJECT(entry_angle),"EntryAngle", entry_angle);
+	g_object_set_data(G_OBJECT(entry_label),"EntryLabel", entry_label);
+	g_object_set_data(G_OBJECT(entry_label),"EntryAngle", entry_angle);
+	g_signal_connect (G_OBJECT (entry_angle), "activate", (GCallback)activate_entry_object_text, xyplot);
 
 	parentWindow = get_parent_window(GTK_WIDGET(xyplot));
 	if(parentWindow)
@@ -914,8 +995,8 @@ static void set_object_line_pixels(GabeditXYPlot *xyplot, XYPlotObjectLine* obje
 static void set_object_line(GabeditXYPlot *xyplot, XYPlotObjectLine* objectLine, 
 		gdouble x1, gdouble y1, 
 		gdouble x2, gdouble y2,
-  		guint width,
-  		guint arrow_size,
+  		gint width,
+  		gint arrow_size,
   		GdkColor color,
   		GdkLineStyle style
 		)
@@ -937,8 +1018,8 @@ static void add_object_line(GabeditXYPlot *xyplot,
 		gdouble x2, gdouble y2
 		)
 {
-  	guint width = 1;
-  	guint arrow_size = 0;
+  	gint width = 1;
+  	gint arrow_size = 0;
   	GdkColor color;
   	GdkLineStyle style = GDK_LINE_SOLID;
 	gint i;
@@ -980,7 +1061,7 @@ static void reset_object_line_pixels(GabeditXYPlot *xyplot)
 		set_object_line_pixels(xyplot, &xyplot->objectsLine[i]);
 }
 /****************************************************************************************/
-static gint get_object_line_num(GabeditXYPlot *xyplot, guint xi, guint yi)
+static gint get_object_line_num(GabeditXYPlot *xyplot, gint xi, gint yi)
 {
 	gint i;
 	if(!xyplot) return -1;
@@ -992,6 +1073,30 @@ static gint get_object_line_num(GabeditXYPlot *xyplot, guint xi, guint yi)
 		if(d<5 || d<xyplot->objectsLine[i].width) return i;
 	}
 	return -1;
+}
+/****************************************************************************************/
+static void delete_object_line(GtkWidget *widget, gint i)
+{
+	gint j;
+	GabeditXYPlot *xyplot = NULL;
+	if(!widget) return;
+	if(!GTK_IS_WIDGET(widget)) return;
+	xyplot = GABEDIT_XYPLOT(widget);
+	if(i<0||i>=xyplot->nObjectsLine) return;
+	for(j=i;j<xyplot->nObjectsLine-1;j++)
+		xyplot->objectsLine[j] = xyplot->objectsLine[j+1];
+	xyplot->nObjectsLine--;
+	if(xyplot->nObjectsLine<1) 
+	{
+		xyplot->nObjectsLine = 0;
+		if(xyplot->objectsLine) g_free(xyplot->objectsLine);
+		xyplot->objectsLine = NULL;
+	}
+	else
+	{
+		xyplot->objectsLine = g_realloc(xyplot->objectsLine,xyplot->nObjectsLine*sizeof(XYPlotObjectLine));
+	}
+
 }
 /****************************************************************************************/
 static void delete_objects_line(GtkWidget *widget)
@@ -1161,7 +1266,7 @@ static void set_object_line_dialog(GabeditXYPlot* xyplot, gint i)
 	else return;
 	line_style =  objectLine->style;
 
-	gtk_window_set_title (GTK_WINDOW (window), "Set line options");
+	gtk_window_set_title (GTK_WINDOW (window), _("Set line options"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -1183,7 +1288,7 @@ static void set_object_line_dialog(GabeditXYPlot* xyplot, gint i)
 	gtk_container_add(GTK_CONTAINER(frame), hbox);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("Line width :");
+	label=gtk_label_new(_("Line width :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -1195,7 +1300,7 @@ static void set_object_line_dialog(GabeditXYPlot* xyplot, gint i)
 	gtk_widget_show(spin);
 	g_object_set_data(G_OBJECT (window), "SpinLineWidth", spin);
 
-	label=gtk_label_new("Line type :");
+	label=gtk_label_new(_("Line type :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -1211,7 +1316,7 @@ static void set_object_line_dialog(GabeditXYPlot* xyplot, gint i)
 	gtk_widget_show(combo); 
 	g_object_set_data(G_OBJECT (window), "ComboLineType", combo);
 
-	label=gtk_label_new("Line color :");
+	label=gtk_label_new(_("Line color :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -1220,7 +1325,7 @@ static void set_object_line_dialog(GabeditXYPlot* xyplot, gint i)
 	gtk_widget_show(button);
 	g_object_set_data(G_OBJECT (window), "ColorButton", button);
 
-	label=gtk_label_new("arrow size :");
+	label=gtk_label_new(_("Arrow size :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -1255,6 +1360,399 @@ static void set_object_line_dialog(GabeditXYPlot* xyplot, gint i)
 	/* list_utf8();*/
 	
 
+}
+/**************************************************************************************************/
+static void set_object_image_relative(GabeditXYPlot *xyplot, XYPlotObjectImage* objectImage)
+{
+	gdouble f = (gdouble)GTK_WIDGET(xyplot)->allocation.width;
+  	gint xi=objectImage->xi-xyplot->plotting_rect.x;
+  	gint yi=xyplot->plotting_rect.y+xyplot->plotting_rect.height-objectImage->yi; 
+	if(f>(gdouble)GTK_WIDGET(xyplot)->allocation.height) f = (gdouble)GTK_WIDGET(xyplot)->allocation.height;
+	objectImage->width = (gdouble)objectImage->widthi/f;
+	objectImage->height = (gdouble)objectImage->heighti/f;
+	/*
+	objectImage->x = (gdouble)objectImage->xi/f;
+	objectImage->y = (gdouble)objectImage->yi/f;
+	*/
+        pixel2value(xyplot, xi, yi, &objectImage->x, &objectImage->y);
+	/* printf("xy = %f %f\n",objectImage->x, objectImage->y);*/
+}
+/**************************************************************************************************/
+static void set_object_image_pixels(GabeditXYPlot *xyplot, XYPlotObjectImage* objectImage)
+{
+	gint xi,yi;
+	gdouble f = (gdouble)GTK_WIDGET(xyplot)->allocation.width;
+	if(f>(gdouble)GTK_WIDGET(xyplot)->allocation.height) f = (gdouble)GTK_WIDGET(xyplot)->allocation.height;
+	objectImage->widthi = (gint)(objectImage->width*f);
+	objectImage->heighti = (gint)(objectImage->height*f);
+	/*
+	objectImage->xi = (gint)(objectImage->x*f);
+	objectImage->yi = (gint)(objectImage->y*f);
+	*/
+
+       	value2pixel(xyplot, objectImage->x, objectImage->y, &xi, &yi);
+       	objectImage->xi = xi;
+	objectImage->yi = yi;
+	objectImage->yi=xyplot->plotting_rect.height-objectImage->yi;
+	objectImage->xi += xyplot->plotting_rect.x;
+	objectImage->yi += xyplot->plotting_rect.y;
+}
+/****************************************************************************************/
+static void set_object_image(GabeditXYPlot *xyplot, XYPlotObjectImage* objectImage, gint xi, gint yi, gint w, gint h)
+{
+	objectImage->xi = xi;
+	objectImage->yi = yi;
+	objectImage->widthi = w;
+	objectImage->heighti = h;
+	set_object_image_relative(xyplot, objectImage);
+}
+/**************************************************************************/
+static cairo_surface_t* get_image_from_clipboard()
+{       
+	cairo_surface_t *surface = NULL;
+	GtkClipboard * clipboard = NULL;
+	GdkPixbuf * pixbuf = NULL;
+
+	clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+	if(!clipboard) return NULL;
+	pixbuf = gtk_clipboard_wait_for_image(clipboard);
+
+	if(pixbuf)
+	{
+		gint width;
+                gint height;
+		gint stride;
+		gint x,y;
+		gint nChannels;
+		guchar *p, *pixels;
+      		gint red, green, blue;
+      		gfloat alpha;
+
+		if (!gdk_pixbuf_get_has_alpha (pixbuf))
+      		{
+            		GdkPixbuf* newPixbuf = gdk_pixbuf_add_alpha (pixbuf, FALSE, 255, 255, 255);
+			if (newPixbuf != pixbuf)
+			{
+				g_object_unref(pixbuf);
+				pixbuf = newPixbuf;
+			}
+		}
+		width = gdk_pixbuf_get_width (pixbuf);
+                height = gdk_pixbuf_get_height (pixbuf);
+		stride = gdk_pixbuf_get_rowstride(pixbuf);
+		nChannels = gdk_pixbuf_get_n_channels (pixbuf);
+		pixels = gdk_pixbuf_get_pixels (pixbuf);
+			
+		for (y = 0; y < height; y++)
+      		{
+            		for (x = 0; x < width; x++)
+            		{
+                  		p = pixels + y * stride + x * nChannels;
+                  		alpha = (gfloat) p[3] / 255;
+                  		red = p[0] * alpha;
+                  		green = p[1] * alpha;
+                  		blue = p[2] * alpha;
+                  		p[0] = blue;
+                  		p[1] = green;
+                  		p[2] = red;
+            		}
+      		}
+
+		surface = cairo_image_surface_create_for_data(
+					pixels,
+					CAIRO_FORMAT_ARGB32,
+                                       	width,
+                                       	height,
+                                       	stride);
+		/*g_object_unref(pixbuf);*/
+	}
+	return surface;
+}
+/**************************************************************************************************/
+static XYPlotObjectImage get_object_image(GabeditXYPlot *xyplot, gint xi, gint yi, G_CONST_RETURN gchar* fileName)
+{
+	gint w;
+	gint h;
+	gint nw;
+	gint nh;
+	gdouble fw = 1;
+	gdouble fh = 1;
+	gdouble f = 1;
+	XYPlotObjectImage objectImage;
+	objectImage.widthi=0;
+	objectImage.heighti=0;
+	objectImage.xi=xi;
+	objectImage.yi=yi;
+	if(fileName) objectImage.fileName = g_strdup(fileName);
+	else objectImage.fileName = NULL;
+	objectImage.image=NULL;
+	if(fileName) 
+	{
+		objectImage.image = cairo_image_surface_create_from_png (objectImage.fileName);
+	}
+	else
+	{
+		objectImage.image = get_image_from_clipboard();
+	}
+        if(!objectImage.image) return objectImage;
+        w = cairo_image_surface_get_width (objectImage.image);
+	h = cairo_image_surface_get_height (objectImage.image);
+
+	nw = xyplot->plotting_rect.width-xi;
+	nh = xyplot->plotting_rect.height-yi;
+	if(nw<w && nw>0) fw = nw/(gdouble)w;
+	if(nh<h&&nh>0) fh = nh/(gdouble)h;
+	f = fw;
+	if(f>fh) f = fh;
+
+	objectImage.widthi = (gint)(w*f);
+	objectImage.heighti = (gint)(h*f);
+	set_object_image_relative(xyplot, &objectImage);
+
+	/* printf("w = %d h = %d\n",w, h);*/
+	return objectImage;
+}
+/****************************************************************************************/
+static void add_object_image(GabeditXYPlot *xyplot, gint xi, gint yi, gint width, gint height, G_CONST_RETURN gchar* fileName)
+{
+	XYPlotObjectImage objectImage = get_object_image(xyplot, xi, yi, fileName);
+	if(!objectImage.image) return;
+	xyplot->nObjectsImage++;
+	if(xyplot->nObjectsImage==1) xyplot->objectsImage = g_malloc(sizeof(XYPlotObjectImage));
+	else xyplot->objectsImage = g_realloc(xyplot->objectsImage,xyplot->nObjectsImage*sizeof(XYPlotObjectImage));
+	if(width>0 && height>0)
+	{
+		objectImage.widthi=width;
+		objectImage.heighti=height;
+	}
+	xyplot->objectsImage[xyplot->nObjectsImage-1] = objectImage;
+}
+/****************************************************************************************/
+static gint get_object_image_num(GabeditXYPlot *xyplot, gint xi, gint yi)
+{
+	gint i;
+	if(!xyplot) return -1;
+	for(i=0;i<xyplot->nObjectsImage;i++)
+	{
+		if(xi>=(gint)xyplot->objectsImage[i].xi && yi>=xyplot->objectsImage[i].yi
+		&& xi<=xyplot->objectsImage[i].xi+xyplot->objectsImage[i].widthi 
+		&& yi<=xyplot->objectsImage[i].yi+xyplot->objectsImage[i].heighti)
+			return i;
+	}
+	return -1;
+}
+/****************************************************************************************/
+static void delete_object_image(GtkWidget *widget, gint i)
+{
+	gint j;
+	GabeditXYPlot *xyplot = NULL;
+	if(!widget) return;
+	if(!GTK_IS_WIDGET(widget)) return;
+	xyplot = GABEDIT_XYPLOT(widget);
+	if(i<0||i>=xyplot->nObjectsImage) return;
+	if(xyplot->objectsImage[i].fileName) g_free(xyplot->objectsImage[i].fileName);
+	if(xyplot->objectsImage[i].image) cairo_surface_destroy (xyplot->objectsImage[i].image);
+	for(j=i;j<xyplot->nObjectsImage-1;j++)
+		xyplot->objectsImage[j] = xyplot->objectsImage[j+1];
+	xyplot->nObjectsImage--;
+	if(xyplot->nObjectsImage<1) 
+	{
+		xyplot->nObjectsImage = 0;
+		if(xyplot->objectsImage) g_free(xyplot->objectsImage);
+		xyplot->objectsImage = NULL;
+	}
+	else
+	{
+		xyplot->objectsImage = g_realloc(xyplot->objectsImage,xyplot->nObjectsImage*sizeof(XYPlotObjectImage));
+	}
+
+}
+/****************************************************************************************/
+static void delete_objects_image(GtkWidget *widget)
+{
+	GabeditXYPlot *xyplot = NULL;
+	gint i;
+	if(!widget) return;
+	if(!GTK_IS_WIDGET(widget)) return;
+	xyplot = GABEDIT_XYPLOT(widget);
+	for(i=0;i<xyplot->nObjectsImage;i++)
+	{
+		if(xyplot->objectsImage[i].fileName) g_free(xyplot->objectsImage[i].fileName);
+		if(xyplot->objectsImage[i].image) cairo_surface_destroy (xyplot->objectsImage[i].image);
+	}
+	xyplot->nObjectsImage = 0;
+	if(xyplot->objectsImage) g_free(xyplot->objectsImage);
+	xyplot->objectsImage = NULL;
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));
+}
+/********************************************************************************/
+static gboolean read_image_png(GtkFileChooser *filesel, gint response_id)
+{
+	gchar *fileName;
+	GtkWidget* xyplot = NULL;
+	XYPlotObjectImage* objectImage = NULL;
+
+	if(response_id != GTK_RESPONSE_OK) return FALSE;
+ 	fileName = gtk_file_chooser_get_filename(filesel);
+	xyplot = g_object_get_data(G_OBJECT (filesel), "XYPLOT");
+	objectImage = g_object_get_data(G_OBJECT(filesel),"ObjectImage");
+	if(objectImage && !objectImage->image)
+	{
+		add_object_image(GABEDIT_XYPLOT(xyplot), objectImage->xi, objectImage->yi, -1, -1, fileName);
+		g_free(objectImage);
+	}
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));
+	return TRUE;
+
+}
+/********************************************************************************/
+static void activate_entry_object_image(GtkWidget *entry, gpointer user_data)
+{
+	G_CONST_RETURN gchar* t;
+	GtkWidget* xyplot = NULL;
+	GtkWidget* window = NULL;
+	XYPlotObjectImage* objectImage = NULL;
+
+
+	if(!GTK_IS_WIDGET(entry)) return;
+	if(!user_data || !G_IS_OBJECT(user_data)) return;
+
+	xyplot = GTK_WIDGET(user_data);
+	t= gtk_entry_get_text(GTK_ENTRY(entry));
+	if(!entry) return;
+	window = g_object_get_data(G_OBJECT(entry),"Window");
+	objectImage = g_object_get_data(G_OBJECT(entry),"ObjectImage");
+	/* t is destroyed with window */
+	if(!objectImage) 
+	{
+		if(window)gtk_widget_destroy(window);
+		return;
+	}
+	else
+	{
+		objectImage->widthi =(gint)(fabs(atof(t))*cairo_image_surface_get_width (objectImage->image));
+		objectImage->heighti =(gint)(fabs(atof(t))*cairo_image_surface_get_height (objectImage->image));
+	}
+	if(window)gtk_widget_destroy(window);
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));
+}
+/********************************************************************************/
+static void add_set_object_image_dialog(GtkWidget* xyplot, gint i, gint xi, gint yi)
+{
+	GtkWidget* parentWindow = NULL;
+	gchar* patternsfiles[] = {"*.png","*",NULL}; 
+	GtkWidget* filesel= NULL;
+	XYPlotObjectImage* objectImage = NULL;
+
+	if(i>-1 && i<GABEDIT_XYPLOT(xyplot)->nObjectsImage)
+	{
+		GtkWidget* window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+		GtkWidget* frame = NULL;
+		GtkWidget* hbox = NULL;
+		GtkWidget* vbox_frame = NULL;
+		GtkWidget* label = NULL;
+		GtkWidget* entry_label = NULL;
+
+		objectImage = &GABEDIT_XYPLOT(xyplot)->objectsImage[i];
+
+		gtk_window_set_title (GTK_WINDOW (window), _("Scale image"));
+		gtk_container_set_border_width (GTK_CONTAINER (window), 10);
+		gtk_window_set_modal (GTK_WINDOW (window), TRUE);
+
+		g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(gtk_widget_destroy), (gpointer)xyplot);
+	
+		hbox=gtk_hbox_new(FALSE, 0);
+		gtk_container_add(GTK_CONTAINER(window), hbox);
+		gtk_widget_show(hbox);
+
+		frame=gtk_frame_new(NULL);
+		gtk_container_add(GTK_CONTAINER(hbox), frame);
+		gtk_widget_show(frame);
+
+		vbox_frame=gtk_vbox_new(FALSE, 0);
+		gtk_container_add(GTK_CONTAINER(frame), vbox_frame);
+		gtk_widget_show(vbox_frame);
+
+		hbox=gtk_hbox_new(FALSE, 0);
+		gtk_box_pack_start(GTK_BOX(vbox_frame), hbox, FALSE, FALSE, 2);
+		gtk_widget_show(hbox);
+
+		label=gtk_label_new(_("Factor (new size/orginal size) : "));
+		gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 2);
+		gtk_widget_show(label); 
+
+		entry_label = gtk_entry_new();
+		/* gtk_widget_set_size_request(entry_label,100,-1);*/
+
+		gtk_entry_set_text(GTK_ENTRY(entry_label),"0.5");
+
+		gtk_box_pack_start(GTK_BOX(hbox), entry_label, TRUE, TRUE, 2);
+		gtk_widget_show(entry_label); 
+	
+		g_object_set_data(G_OBJECT(entry_label),"ObjectImage", objectImage);
+
+		g_object_set_data(G_OBJECT(entry_label),"Window", window);
+		g_signal_connect (G_OBJECT (entry_label), "activate", (GCallback)activate_entry_object_image, xyplot);
+
+		parentWindow = get_parent_window(GTK_WIDGET(xyplot));
+		if(parentWindow)
+		{
+			gtk_window_set_transient_for(GTK_WINDOW(window),GTK_WINDOW(parentWindow));
+		}
+		gtk_widget_show(window); 
+	}
+	else if(i==-1)
+	{
+		objectImage = g_malloc(sizeof(XYPlotObjectImage));
+		objectImage->xi = xi;
+		objectImage->yi = yi;
+		objectImage->fileName = NULL;
+		objectImage->image = NULL;
+		parentWindow = get_parent_window(GTK_WIDGET(xyplot));
+		filesel= new_file_chooser_open(parentWindow, 
+				(GCallback *)read_image_png, 
+				_("Read image from a png file"), 
+				patternsfiles);
+		gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+		g_object_set_data(G_OBJECT (filesel), "XYPLOT", xyplot);
+		g_object_set_data(G_OBJECT(filesel),"ObjectImage", objectImage);
+	}
+	else
+		add_object_image(GABEDIT_XYPLOT(xyplot), xi, yi, -1, -1, NULL);
+
+}
+/****************************************************************************************/
+static void reset_object_image_pixels(GabeditXYPlot *xyplot)
+{
+	gint i;
+	if(!xyplot) return;
+	for(i=0;i<xyplot->nObjectsImage;i++)
+		set_object_image_pixels(xyplot, &xyplot->objectsImage[i]);
+}
+/****************************************************************************************/
+/*
+static void reset_object_image_relative(GabeditXYPlot *xyplot)
+{
+	gint i;
+	if(!xyplot) return;
+	for(i=0;i<xyplot->nObjectsImage;i++)
+		set_object_image_relative(xyplot, &xyplot->objectsImage[i]);
+}
+*/
+/****************************************************************************************/
+static void insert_objects_image_from_clipboard(GtkWidget *widget)
+{
+	if(!widget) return;
+	if(!GTK_IS_WIDGET(widget)) return;
+	add_object_image(GABEDIT_XYPLOT(widget), 0, 0, -1, -1, NULL);
+        gtk_widget_queue_draw(widget);
+}
+/****************************************************************************************/
+static void begin_insert_objects_image(GtkWidget *widget)
+{
+	if(!widget) return;
+	if(!GTK_IS_WIDGET(widget)) return;
+	GABEDIT_XYPLOT(widget)->i_key_pressed = TRUE;
 }
 /********************************************************************************/
 static gchar** my_strsplit(gchar *str)
@@ -1398,7 +1896,7 @@ static gboolean read_data_xy1yncolumns(GtkFileChooser *filesel, gint response_id
 				GTK_DIALOG_DESTROY_WITH_PARENT,
 				GTK_MESSAGE_ERROR,
 				GTK_BUTTONS_CLOSE,
-			       "Error reading file '%s'",
+			       _("Error reading file '%s'"),
 				fileName);
 		gtk_dialog_run (GTK_DIALOG (dialog));
 		gtk_widget_destroy (dialog);
@@ -1421,7 +1919,7 @@ static void read_data_xy1yncolumns_dlg(GtkWidget* xyplot, gboolean doPeaks)
 	parentWindow = get_parent_window(GTK_WIDGET(xyplot));
 	filesel= new_file_chooser_open(parentWindow, 
 			(GCallback *)read_data_xy1yncolumns, 
-			"Read data from an ASCII X.Y1..Yn file(x, y1, y2,...,yn)", 
+			_("Read data from an ASCII X.Y1..Yn file(x, y1, y2,...,yn)"), 
 			patternsfiles);
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 	g_object_set_data(G_OBJECT (filesel), "XYPLOT", xyplot);
@@ -1499,7 +1997,7 @@ static gboolean read_data_2columns(GtkFileChooser *filesel, gint response_id)
 				GTK_DIALOG_DESTROY_WITH_PARENT,
 				GTK_MESSAGE_ERROR,
 				GTK_BUTTONS_CLOSE,
-			       "Error reading file '%s'",
+			       _("Error reading file '%s'"),
 				fileName);
 		gtk_dialog_run (GTK_DIALOG (dialog));
 		gtk_widget_destroy (dialog);
@@ -1521,7 +2019,7 @@ static void read_data_2columns_dlg(GtkWidget* xyplot, gboolean doPeaks)
 	parentWindow = get_parent_window(GTK_WIDGET(xyplot));
 	filesel= new_file_chooser_open(parentWindow, 
 			(GCallback *)read_data_2columns, 
-			"Read data from an ASCII XY file(2 columns)", 
+			_("Read data from an ASCII XY file(2 columns)"), 
 			patternsfiles);
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 	g_object_set_data(G_OBJECT (filesel), "XYPLOT", xyplot);
@@ -1677,7 +2175,7 @@ static gboolean read_data_jdx_xypoints(FILE* fd, GtkWidget*xyplot, gdouble scale
 				GTK_DIALOG_DESTROY_WITH_PARENT,
 				GTK_MESSAGE_ERROR,
 				GTK_BUTTONS_CLOSE,
-			       "Error reading file '%s'",
+			       _("Error reading file '%s'"),
 				fileName);
 		gtk_dialog_run (GTK_DIALOG (dialog));
 		gtk_widget_destroy (dialog);
@@ -1746,7 +2244,7 @@ static gboolean read_data_jdx_xydata(FILE* fd, GtkWidget*xyplot , gdouble scaleX
 				GTK_DIALOG_DESTROY_WITH_PARENT,
 				GTK_MESSAGE_ERROR,
 				GTK_BUTTONS_CLOSE,
-			       "Error reading file '%s'",
+			       _("Error reading file '%s'"),
 				fileName);
 		gtk_dialog_run (GTK_DIALOG (dialog));
 		gtk_widget_destroy (dialog);
@@ -1819,7 +2317,7 @@ static gboolean read_data_jdx_xytable(FILE* fd, GtkWidget*xyplot , gdouble scale
 				GTK_DIALOG_DESTROY_WITH_PARENT,
 				GTK_MESSAGE_ERROR,
 				GTK_BUTTONS_CLOSE,
-			       "Error reading file '%s'",
+			       _("Error reading file '%s'"),
 				fileName);
 		gtk_dialog_run (GTK_DIALOG (dialog));
 		gtk_widget_destroy (dialog);
@@ -1859,7 +2357,7 @@ static gboolean read_data_jdx(GtkFileChooser *filesel, gint response_id)
 				GTK_DIALOG_DESTROY_WITH_PARENT,
 				GTK_MESSAGE_ERROR,
 				GTK_BUTTONS_CLOSE,
-			       "Error reading file '%s', The type of data in this file is unknown",
+			       _("Error reading file '%s', The type of data in this file is unknown"),
 				fileName);
 		gtk_dialog_run (GTK_DIALOG (dialog));
 		gtk_widget_destroy (dialog);
@@ -1878,7 +2376,7 @@ static void read_data_jdx_dlg(GtkWidget* xyplot)
 	parentWindow = get_parent_window(GTK_WIDGET(xyplot));
 	filesel= new_file_chooser_open(parentWindow, 
 			(GCallback *)read_data_jdx, 
-			"Read data from a jdx file", 
+			_("Read data from a jdx file"),
 			patternsfiles);
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 	g_object_set_data(G_OBJECT (filesel), "XYPLOT", xyplot);
@@ -1970,7 +2468,7 @@ static gboolean read_data_jMRUI(GtkFileChooser *filesel, gint response_id)
 				GTK_DIALOG_DESTROY_WITH_PARENT,
 				GTK_MESSAGE_ERROR,
 				GTK_BUTTONS_CLOSE,
-			       "Error reading file '%s'",
+			       _("Error reading file '%s'"),
 				fileName);
 		gtk_dialog_run (GTK_DIALOG (dialog));
 		gtk_widget_destroy (dialog);
@@ -2006,7 +2504,7 @@ static void read_data_jMRUI_dlg(GtkWidget* xyplot)
 	parentWindow = get_parent_window(GTK_WIDGET(xyplot));
 	filesel= new_file_chooser_open(parentWindow, 
 			(GCallback *)read_data_jMRUI, 
-			"Read data from a jMRUI Text file", 
+			_("Read data from a jMRUI Text file"), 
 			patternsfiles);
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 	g_object_set_data(G_OBJECT (filesel), "XYPLOT", xyplot);
@@ -2030,7 +2528,7 @@ static void save_data_2columns_dlg(GtkWidget* buttonSave, GtkWidget* xyplot)
 	parentWindow = get_parent_window(GTK_WIDGET(xyplot));
 	filesel= new_file_chooser_save(parentWindow, 
 			(GCallback *)save_data_2columns, 
-			"Save data in an ASCII XY file(2 columns)", 
+			_("Save data in an ASCII XY file(2 columns)"), 
 			patternsfiles);
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 	data = g_object_get_data(G_OBJECT (buttonSave), "CurentData");
@@ -2051,7 +2549,7 @@ static void save_all_data_2columns_dlg(GtkWidget* xyplot)
 	parentWindow = get_parent_window(GTK_WIDGET(xyplot));
 	filesel= new_file_chooser_save(parentWindow, 
 			(GCallback *)save_all_data_2columns, 
-			"Save all data in an ASCII XY file(2 columns)", 
+			_("Save all data in an ASCII XY file(2 columns)"), 
 			patternsfiles);
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 	g_object_set_data(G_OBJECT (filesel), "DataList", GABEDIT_XYPLOT(xyplot)->data_list);
@@ -2087,7 +2585,7 @@ static void remove_data_dlg(GtkWidget* buttonRemove, GtkWidget* xyplot)
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_QUESTION,
 			GTK_BUTTONS_YES_NO,
-		       "Are you sure to delete this data ?"
+		       _("Are you sure to delete this data ?")
 			);
 	gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_NO);
 	g_signal_connect_swapped(dialog, "response", G_CALLBACK (remove_data), buttonRemove);
@@ -2114,7 +2612,7 @@ static void add_font_size_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	GtkWidget* hbox_frame = NULL;
 	GtkWidget* spin_font_size = NULL;
 
-	frame=gtk_frame_new("Font size");
+	frame=gtk_frame_new(_("Font size"));
 	gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -2140,7 +2638,7 @@ static void set_font_size_dialog(GtkWidget* xyplot)
 	GtkWidget* hbox = NULL;
 	GtkWidget* parentWindow = NULL;
 
-	gtk_window_set_title (GTK_WINDOW (window), "Set font size");
+	gtk_window_set_title (GTK_WINDOW (window), _("Set font size"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -2187,7 +2685,7 @@ static void add_digits_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	GtkWidget* x_spin_digits = NULL;
 	GtkWidget* y_spin_digits = NULL;
 
-	frame=gtk_frame_new("Digits");
+	frame=gtk_frame_new(_("Digits"));
 	gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -2199,7 +2697,7 @@ static void add_digits_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	gtk_container_add(GTK_CONTAINER(hbox_frame), hbox);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new(" X ");
+	label=gtk_label_new(_(" X "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -2207,7 +2705,7 @@ static void add_digits_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	gtk_box_pack_start(GTK_BOX(hbox), x_spin_digits, TRUE, FALSE, 2);
 	gtk_widget_show(x_spin_digits);
 
-	label=gtk_label_new(" Y ");
+	label=gtk_label_new(_(" Y "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -2229,7 +2727,7 @@ static void set_digits_dialog(GtkWidget* xyplot)
 	GtkWidget* hbox = NULL;
 	GtkWidget* parentWindow = NULL;
 
-	gtk_window_set_title (GTK_WINDOW (window), "Set digits");
+	gtk_window_set_title (GTK_WINDOW (window), _("Set digits"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -2283,7 +2781,7 @@ static void add_labels_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	GtkWidget* entry_x_label = NULL;
 	GtkWidget* entry_y_label = NULL;
 
-	frame=gtk_frame_new("Labels");
+	frame=gtk_frame_new(_("Labels"));
 	gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -2291,7 +2789,7 @@ static void add_labels_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	gtk_container_add(GTK_CONTAINER(frame), hbox_frame);
 	gtk_widget_show(hbox_frame);
 
-	label=gtk_label_new("X : ");
+	label=gtk_label_new(_("X : "));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -2304,7 +2802,7 @@ static void add_labels_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	gtk_box_pack_start(GTK_BOX(hbox_frame), entry_x_label, FALSE, FALSE, 2);
 	gtk_widget_show(entry_x_label);
 
-	label=gtk_label_new("Y : ");
+	label=gtk_label_new(_("Y : "));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -2327,7 +2825,7 @@ static void set_labels_dialog(GtkWidget* xyplot)
 	GtkWidget* parentWindow = NULL;
 	GtkWidget* hbox = NULL;
 
-	gtk_window_set_title (GTK_WINDOW (window), "Set labels");
+	gtk_window_set_title (GTK_WINDOW (window), _("Set labels"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -2471,7 +2969,7 @@ static void add_ranges_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	GtkWidget* entry_y_max = NULL;
 	gchar tmp[100];
 
-	frame=gtk_frame_new("Ranges");
+	frame=gtk_frame_new(_("Ranges"));
 	gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -2479,7 +2977,7 @@ static void add_ranges_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	gtk_container_add(GTK_CONTAINER(frame), hbox_frame);
 	gtk_widget_show(hbox_frame);
 
-	label=gtk_label_new("X Min: ");
+	label=gtk_label_new(_("X Min: "));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -2490,7 +2988,7 @@ static void add_ranges_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	gtk_box_pack_start(GTK_BOX(hbox_frame), entry_x_min, TRUE, FALSE, 2);
 	gtk_widget_show(entry_x_min);
 
-	label=gtk_label_new("X Max: ");
+	label=gtk_label_new(_("X Max: "));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -2501,7 +2999,7 @@ static void add_ranges_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	gtk_box_pack_start(GTK_BOX(hbox_frame), entry_x_max, TRUE, FALSE, 2);
 	gtk_widget_show(entry_x_max);
 
-	label=gtk_label_new("Y Min: ");
+	label=gtk_label_new(_("Y Min: "));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -2512,7 +3010,7 @@ static void add_ranges_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	gtk_box_pack_start(GTK_BOX(hbox_frame), entry_y_min, TRUE, FALSE, 2);
 	gtk_widget_show(entry_y_min);
 
-	label=gtk_label_new("Y Max: ");
+	label=gtk_label_new(_("Y Max: "));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -2535,7 +3033,7 @@ static void set_ranges_dialog(GtkWidget* xyplot)
 	GtkWidget* parentWindow = NULL;
 	GtkWidget* hbox = NULL;
 
-	gtk_window_set_title (GTK_WINDOW (window), "Set ranges");
+	gtk_window_set_title (GTK_WINDOW (window), _("Set ranges"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -2612,7 +3110,7 @@ static void add_ticks_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	GtkWidget* spin_vminor = NULL;
 	GtkWidget* spin_length = NULL;
 
-	frame=gtk_frame_new("Ticks");
+	frame=gtk_frame_new(_("Ticks"));
 	gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -2624,7 +3122,7 @@ static void add_ticks_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	gtk_container_add(GTK_CONTAINER(hbox_frame), hbox);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("X Major: ");
+	label=gtk_label_new(_("X Major: "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -2636,7 +3134,7 @@ static void add_ticks_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	gtk_container_add(GTK_CONTAINER(hbox_frame), hbox);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("Y Major: ");
+	label=gtk_label_new(_("Y Major: "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -2648,7 +3146,7 @@ static void add_ticks_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	gtk_container_add(GTK_CONTAINER(hbox_frame), hbox);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("X Minor: ");
+	label=gtk_label_new(_("X Minor: "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -2660,7 +3158,7 @@ static void add_ticks_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	gtk_container_add(GTK_CONTAINER(hbox_frame), hbox);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("Y Minor: ");
+	label=gtk_label_new(_("Y Minor: "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -2672,7 +3170,7 @@ static void add_ticks_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	gtk_container_add(GTK_CONTAINER(hbox_frame), hbox);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("Length: ");
+	label=gtk_label_new(_("Length: "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -2699,7 +3197,7 @@ static void set_ticks_dialog(GtkWidget* xyplot)
 	GtkWidget* hbox = NULL;
 	GtkWidget* parentWindow = NULL;
 
-	gtk_window_set_title (GTK_WINDOW (window), "Set ticks");
+	gtk_window_set_title (GTK_WINDOW (window), _("Set ticks"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -2710,6 +3208,146 @@ static void set_ticks_dialog(GtkWidget* xyplot)
 	gtk_widget_show(hbox);
 
 	add_ticks_frame(hbox, xyplot);
+
+
+	parentWindow = get_parent_window(GTK_WIDGET(xyplot));
+	if(parentWindow)
+	{
+		gtk_window_set_transient_for(GTK_WINDOW(window),GTK_WINDOW(parentWindow));
+	}
+	gtk_widget_show(window); 
+}
+/****************************************************************************************/
+static void spin_right_margins_changed_value(GtkSpinButton *spinbutton, gpointer user_data)
+{
+	if(user_data && G_IS_OBJECT(user_data))
+	{
+	GtkWidget* xyplot = GTK_WIDGET(user_data);
+	gabedit_xyplot_set_margins_right(GABEDIT_XYPLOT(xyplot), gtk_spin_button_get_value(spinbutton));	
+	}
+}
+/****************************************************************************************/
+static void spin_left_margins_changed_value(GtkSpinButton *spinbutton, gpointer user_data)
+{
+	if(user_data && G_IS_OBJECT(user_data))
+	{
+	GtkWidget* xyplot = GTK_WIDGET(user_data);
+	gabedit_xyplot_set_margins_left(GABEDIT_XYPLOT(xyplot), gtk_spin_button_get_value(spinbutton));
+	}
+}
+/****************************************************************************************/
+static void spin_bottom_margins_changed_value(GtkSpinButton *spinbutton, gpointer user_data)
+{
+	if(user_data && G_IS_OBJECT(user_data))
+	{
+	GtkWidget* xyplot = GTK_WIDGET(user_data);
+	gabedit_xyplot_set_margins_bottom(GABEDIT_XYPLOT(xyplot), gtk_spin_button_get_value(spinbutton));
+	}
+}
+/****************************************************************************************/
+static void spin_top_margins_changed_value(GtkSpinButton *spinbutton, gpointer user_data)
+{
+	if(user_data && G_IS_OBJECT(user_data))
+	{
+	GtkWidget* xyplot = GTK_WIDGET(user_data);
+	gabedit_xyplot_set_margins_top(GABEDIT_XYPLOT(xyplot), gtk_spin_button_get_value(spinbutton));	
+	}
+}
+/****************************************************************************************/
+static void add_margins_frame(GtkWidget* hbox, GtkWidget* xyplot)
+{
+	GtkWidget* frame = NULL;
+	GtkWidget* hbox_frame = NULL;
+	GtkWidget* label = NULL;
+	GtkWidget* spin_left_margins = NULL;
+	GtkWidget* spin_right_margins = NULL;
+	GtkWidget* spin_top_margins = NULL;
+	GtkWidget* spin_bottom_margins = NULL;
+
+	frame=gtk_frame_new(_("Margins"));
+	gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 2);
+	gtk_widget_show(frame);
+
+	hbox_frame=gtk_hbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(frame), hbox_frame);
+	gtk_widget_show(hbox_frame);
+
+	hbox=gtk_hbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(hbox_frame), hbox);
+	gtk_widget_show(hbox);
+
+	label=gtk_label_new(_("Left: "));
+	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
+	gtk_widget_show(label); 
+	
+	spin_left_margins=gtk_spin_button_new_with_range(0, 30, 1);
+	gtk_box_pack_start(GTK_BOX(hbox), spin_left_margins, TRUE, FALSE, 2);
+	gtk_widget_show(spin_left_margins);
+
+	hbox=gtk_hbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(hbox_frame), hbox);
+	gtk_widget_show(hbox);
+
+	label=gtk_label_new(_("Top: "));
+	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
+	gtk_widget_show(label); 
+	
+	spin_top_margins=gtk_spin_button_new_with_range(0, 30, 1);
+	gtk_box_pack_start(GTK_BOX(hbox), spin_top_margins, TRUE, FALSE, 2);
+	gtk_widget_show(spin_top_margins);
+
+	hbox=gtk_hbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(hbox_frame), hbox);
+	gtk_widget_show(hbox);
+
+	label=gtk_label_new(_("Right: "));
+	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
+	gtk_widget_show(label); 
+	
+	spin_right_margins=gtk_spin_button_new_with_range(0, 30, 1);
+	gtk_box_pack_start(GTK_BOX(hbox), spin_right_margins, TRUE, FALSE, 2);
+	gtk_widget_show(spin_right_margins);
+
+	hbox=gtk_hbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(hbox_frame), hbox);
+	gtk_widget_show(hbox);
+
+	label=gtk_label_new(_("Bottom: "));
+	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
+	gtk_widget_show(label); 
+	
+	spin_bottom_margins=gtk_spin_button_new_with_range(0, 30, 1);
+	gtk_box_pack_start(GTK_BOX(hbox), spin_bottom_margins, TRUE, FALSE, 2);
+	gtk_widget_show(spin_bottom_margins);
+
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin_left_margins), GABEDIT_XYPLOT(xyplot)->left_margins);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin_right_margins), GABEDIT_XYPLOT(xyplot)->right_margins);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin_top_margins), GABEDIT_XYPLOT(xyplot)->top_margins);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin_bottom_margins), GABEDIT_XYPLOT(xyplot)->bottom_margins);
+
+	g_signal_connect(G_OBJECT(spin_left_margins), "value-changed", G_CALLBACK(spin_left_margins_changed_value), xyplot);
+	g_signal_connect(G_OBJECT(spin_right_margins), "value-changed", G_CALLBACK(spin_right_margins_changed_value), xyplot);
+	g_signal_connect(G_OBJECT(spin_top_margins), "value-changed", G_CALLBACK(spin_top_margins_changed_value), xyplot);
+	g_signal_connect(G_OBJECT(spin_bottom_margins), "value-changed", G_CALLBACK(spin_bottom_margins_changed_value), xyplot);
+}
+/****************************************************************************************/
+static void set_margins_dialog(GtkWidget* xyplot)
+{
+	GtkWidget* window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	GtkWidget* hbox = NULL;
+	GtkWidget* parentWindow = NULL;
+
+	gtk_window_set_title (GTK_WINDOW (window), _("Set margins"));
+	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
+	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
+
+	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(gtk_widget_destroy), (gpointer)xyplot);
+	
+	hbox=gtk_hbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(window), hbox);
+	gtk_widget_show(hbox);
+
+	add_margins_frame(hbox, xyplot);
 
 
 	parentWindow = get_parent_window(GTK_WIDGET(xyplot));
@@ -2745,7 +3383,7 @@ static void add_reflexion_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	GtkWidget* reflect_x_button;
 	GtkWidget* reflect_y_button;
 
-	frame=gtk_frame_new("Axes");
+	frame=gtk_frame_new(_("Axes"));
 	gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -2753,11 +3391,11 @@ static void add_reflexion_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	gtk_container_add(GTK_CONTAINER(frame), hbox_frame);
 	gtk_widget_show(hbox_frame);
 
-	reflect_x_button = gtk_check_button_new_with_label ("Reflect X");
+	reflect_x_button = gtk_check_button_new_with_label (_("Reflect X"));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), reflect_x_button, FALSE, FALSE, 2);
 	gtk_widget_show(reflect_x_button); 
 
-	reflect_y_button = gtk_check_button_new_with_label ("Reflect Y");
+	reflect_y_button = gtk_check_button_new_with_label (_("Reflect Y"));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), reflect_y_button, FALSE, FALSE, 2);
 	gtk_widget_show(reflect_y_button); 
 
@@ -2804,6 +3442,15 @@ static void show_bottom_toggled(GtkToggleButton *togglebutton, gpointer user_dat
 	}
 }
 /****************************************************************************************/
+static void show_rectangle_toggled(GtkToggleButton *togglebutton, gpointer user_data)
+{
+	if(user_data && G_IS_OBJECT(user_data))
+	{
+	GtkWidget* xyplot = GTK_WIDGET(user_data);
+	gabedit_xyplot_show_rectangle_legends (GABEDIT_XYPLOT(xyplot), gtk_toggle_button_get_active(togglebutton));
+	}
+}
+/****************************************************************************************/
 static void add_legends_frame(GtkWidget* hbox, GtkWidget* xyplot)
 {
 	GtkWidget* frame = NULL;
@@ -2812,8 +3459,9 @@ static void add_legends_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	GtkWidget* show_right;
 	GtkWidget* show_top;
 	GtkWidget* show_bottom;
+	GtkWidget* show_rectangle;
 
-	frame=gtk_frame_new("Legends");
+	frame=gtk_frame_new(_("Legends"));
 	gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -2821,31 +3469,37 @@ static void add_legends_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	gtk_container_add(GTK_CONTAINER(frame), hbox_frame);
 	gtk_widget_show(hbox_frame);
 
-	show_left = gtk_check_button_new_with_label ("Left");
+	show_left = gtk_check_button_new_with_label (_("Left"));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), show_left, FALSE, FALSE, 2);
 	gtk_widget_show(show_left); 
 
-	show_right = gtk_check_button_new_with_label ("Right");
+	show_right = gtk_check_button_new_with_label (_("Right"));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), show_right, FALSE, FALSE, 2);
 	gtk_widget_show(show_right); 
 
-	show_top = gtk_check_button_new_with_label ("Top");
+	show_top = gtk_check_button_new_with_label (_("Top"));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), show_top, FALSE, FALSE, 2);
 	gtk_widget_show(show_top); 
 
-	show_bottom = gtk_check_button_new_with_label ("Bottom");
+	show_bottom = gtk_check_button_new_with_label (_("Bottom"));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), show_bottom, FALSE, FALSE, 2);
 	gtk_widget_show(show_bottom); 
+
+	show_rectangle = gtk_check_button_new_with_label (_("Rectangle"));
+	gtk_box_pack_start(GTK_BOX(hbox_frame), show_rectangle, FALSE, FALSE, 2);
+	gtk_widget_show(show_rectangle); 
 
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(show_left), GABEDIT_XYPLOT(xyplot)->show_left_legends);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(show_right), GABEDIT_XYPLOT(xyplot)->show_right_legends);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(show_top), GABEDIT_XYPLOT(xyplot)->show_top_legends);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(show_bottom), GABEDIT_XYPLOT(xyplot)->show_bottom_legends);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(show_rectangle), GABEDIT_XYPLOT(xyplot)->show_rectangle_legends);
 	
 	g_signal_connect (G_OBJECT (show_left), "toggled", (GCallback)show_left_toggled, xyplot);
 	g_signal_connect (G_OBJECT (show_right), "toggled", (GCallback)show_right_toggled, xyplot);
 	g_signal_connect (G_OBJECT (show_top), "toggled", (GCallback)show_top_toggled, xyplot);
 	g_signal_connect (G_OBJECT (show_bottom), "toggled", (GCallback)show_bottom_toggled, xyplot);
+	g_signal_connect (G_OBJECT (show_rectangle), "toggled", (GCallback)show_rectangle_toggled, xyplot);
 }
 /****************************************************************************************/
 static void h_major_grids_toggled(GtkToggleButton *togglebutton, gpointer user_data)
@@ -2893,7 +3547,7 @@ static void add_grid_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	GtkWidget* v_major;
 	GtkWidget* v_minor;
 
-	frame=gtk_frame_new("Grid");
+	frame=gtk_frame_new(_("Grid"));
 	gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -2901,19 +3555,19 @@ static void add_grid_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	gtk_container_add(GTK_CONTAINER(frame), hbox_frame);
 	gtk_widget_show(hbox_frame);
 
-	h_major = gtk_check_button_new_with_label ("H major");
+	h_major = gtk_check_button_new_with_label (_("H major"));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), h_major, FALSE, FALSE, 2);
 	gtk_widget_show(h_major); 
 
-	v_major = gtk_check_button_new_with_label ("V major");
+	v_major = gtk_check_button_new_with_label (_("V major"));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), v_major, FALSE, FALSE, 2);
 	gtk_widget_show(v_major); 
 
-	h_minor = gtk_check_button_new_with_label ("H minor");
+	h_minor = gtk_check_button_new_with_label (_("H minor"));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), h_minor, FALSE, FALSE, 2);
 	gtk_widget_show(h_minor); 
 
-	v_minor = gtk_check_button_new_with_label ("V minor");
+	v_minor = gtk_check_button_new_with_label (_("V minor"));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), v_minor, FALSE, FALSE, 2);
 	gtk_widget_show(v_minor); 
 
@@ -2935,7 +3589,7 @@ static void set_all_dialog(GtkWidget* xyplot)
 	GtkWidget* hbox = NULL;
 	GtkWidget* vbox = NULL;
 
-	gtk_window_set_title (GTK_WINDOW (window), "Set");
+	gtk_window_set_title (GTK_WINDOW (window), _("Set"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -2952,6 +3606,11 @@ static void set_all_dialog(GtkWidget* xyplot)
 
 	hbox=gtk_hbox_new(FALSE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 1);
+	add_margins_frame(hbox, xyplot);
+	gtk_widget_show(hbox); 
+
+	hbox=gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 1);
 	add_labels_frame(hbox, xyplot);
 	add_font_size_frame(hbox, xyplot);
 	add_digits_frame(hbox, xyplot);
@@ -2961,6 +3620,7 @@ static void set_all_dialog(GtkWidget* xyplot)
 	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 1);
 	add_ticks_frame(hbox, xyplot);
 	gtk_widget_show(hbox); 
+
 
 	hbox=gtk_hbox_new(FALSE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 1);
@@ -3005,11 +3665,75 @@ static void gabedit_xyplot_save_gabedit_texts(GabeditXYPlot *xyplot, FILE* file)
 	fprintf(file,"texts %d\n", xyplot->nObjectsText);
 	for(i=0;i<xyplot->nObjectsText;i++)
 	{
-		fprintf(file,"%lf %lf\n", 
+		fprintf(file,"%lf %lf %lf\n", 
 				xyplot->objectsText[i].x, 
-				xyplot->objectsText[i].y
+				xyplot->objectsText[i].y,
+				xyplot->objectsText[i].angle
 		       ); 
 		fprintf(file,"%s\n", xyplot->objectsText[i].str);
+	}
+}
+/*************************************************************************************/
+static gchar *get_suffix_name_file(const gchar* allname)
+{
+	gchar *filename= g_path_get_basename(allname);
+	gchar *dirname= g_path_get_dirname(allname);
+	gchar *temp= g_strdup(filename);
+	gint len=strlen(filename);
+	gint i;
+	gchar* name = NULL;
+
+	if(!allname || strlen(allname)<1) return g_strdup("error");
+	filename= g_path_get_basename(allname);
+	dirname= g_path_get_dirname(allname);
+	temp= g_strdup(filename);
+	len=strlen(filename);
+
+	for(i=len;i>0;i--)
+	if(temp[i]=='.')
+	{
+		temp[i] = '\0';
+		break;
+	}
+	name = g_strdup_printf("%s%s%s",dirname,G_DIR_SEPARATOR_S,temp);
+	if(temp) g_free(temp);
+	if(dirname) g_free(dirname);
+	if(filename) g_free(filename);
+
+	if(strcmp(name,".")==0) name = g_strdup(g_get_current_dir());
+   
+	return name;
+}
+/*************************************************************************************/
+static gchar *get_filename_png(const gchar* allname, gint i)
+{
+	gchar *bas = get_suffix_name_file(allname);
+	if(bas)
+	{
+		gchar* fn = g_strdup_printf("%s_%d.png",bas,i);
+		g_free(bas);
+		return fn;
+	}
+	return g_strdup_printf("%d.png",i);
+}
+/****************************************************************************************/
+static void gabedit_xyplot_save_gabedit_images(GabeditXYPlot *xyplot, FILE* file, gchar* fileName)
+{
+	gint i;
+	gchar *fn;
+	fprintf(file,"images %d\n", xyplot->nObjectsImage);
+	for(i=0;i<xyplot->nObjectsImage;i++)
+	{
+		fprintf(file,"%lf %lf %lf %lf\n", 
+				xyplot->objectsImage[i].x, 
+				xyplot->objectsImage[i].y,
+				xyplot->objectsImage[i].width,
+				xyplot->objectsImage[i].height
+		       ); 
+		fn = get_filename_png(fileName, i);
+		fprintf(file,"%s\n", fn);
+		cairo_surface_write_to_png (xyplot->objectsImage[i].image,fn);
+		g_free(fn);
 	}
 }
 /****************************************************************************************/
@@ -3031,8 +3755,9 @@ static void gabedit_xyplot_save_gabedit_parameters(GabeditXYPlot *xyplot, FILE* 
 			(gint)backColor.red, (gint)backColor.green,(gint)backColor.blue);
 	fprintf(file,"digits %d %d\n", xyplot->x_legends_digits,  xyplot->y_legends_digits);
 	fprintf(file,"ticks %d %d %d %d %d\n",  xyplot->length_ticks,  xyplot->hmajor_ticks, xyplot->hminor_ticks,  xyplot->vmajor_ticks, xyplot->vminor_ticks);
+	fprintf(file,"margins %d %d %d %d\n",  xyplot->left_margins,  xyplot->top_margins, xyplot->right_margins,  xyplot->bottom_margins);
 	fprintf(file,"grid %d %d %d %d\n", xyplot->hmajor_grid, xyplot->hminor_grid, xyplot->vmajor_grid, xyplot->vminor_grid); 
-	fprintf(file,"legends %d %d %d %d\n", xyplot->show_left_legends, xyplot->show_right_legends, xyplot->show_top_legends, xyplot->show_bottom_legends);
+	fprintf(file,"legends %d %d %d %d %d\n", xyplot->show_left_legends, xyplot->show_right_legends, xyplot->show_top_legends, xyplot->show_bottom_legends,xyplot->show_rectangle_legends);
 	fprintf(file,"axes %d %d\n",  xyplot->reflect_x, xyplot->reflect_y);
 	fprintf(file,"fonts %d\n", xyplot->font_size);
 	fprintf(file,"minmax %lf %lf %lf %lf\n",  xyplot->xmin, xyplot->xmax, xyplot->ymin, xyplot->ymax);
@@ -3093,7 +3818,7 @@ static void gabedit_xyplot_save_gabedit(GtkWidget* xyplot, gchar* fileName)
 	if(!file) 
 	{
 		GtkWidget* dialog = NULL;
-		gchar* tmp = g_strdup_printf("Sorry, I cannot open %s file",fileName);
+		gchar* tmp = g_strdup_printf(_("Sorry, I cannot open %s file"),fileName);
 		dialog = gtk_message_dialog_new_with_markup (NULL,
 		           GTK_DIALOG_DESTROY_WITH_PARENT,
 		           GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
@@ -3108,6 +3833,7 @@ static void gabedit_xyplot_save_gabedit(GtkWidget* xyplot, gchar* fileName)
 	gabedit_xyplot_save_gabedit_parameters(GABEDIT_XYPLOT(xyplot), file);
 	gabedit_xyplot_save_gabedit_texts(GABEDIT_XYPLOT(xyplot), file);
 	gabedit_xyplot_save_gabedit_lines(GABEDIT_XYPLOT(xyplot), file);
+	gabedit_xyplot_save_gabedit_images(GABEDIT_XYPLOT(xyplot), file,fileName);
 	gabedit_xyplot_save_gabedit_datas(GABEDIT_XYPLOT(xyplot), file);
 	fclose(file);
 }
@@ -3130,7 +3856,7 @@ static void saveAsGabeditDlg(GtkWidget* xyplot)
 	GtkWidget *parentWindow;
 
 	dialog = g_object_new (GTK_TYPE_FILE_CHOOSER_DIALOG, "action", GTK_FILE_CHOOSER_ACTION_SAVE, "file-system-backend", "gtk+", "select-multiple", FALSE, NULL);
-	gtk_window_set_title (GTK_WINDOW (dialog), "Save as Gabedit format");
+	gtk_window_set_title (GTK_WINDOW (dialog), _("Save as Gabedit format"));
 	gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_OK, NULL);
 	filter = gtk_file_filter_new ();
 	
@@ -3230,12 +3956,14 @@ static gboolean gabedit_xyplot_read_gabedit_texts(GabeditXYPlot *xyplot, FILE* f
 			xyplot->objectsText = NULL;
 		       	return FALSE;
 		}
-		sscanf(t,"%lf %lf", &xyplot->objectsText[i].x, &xyplot->objectsText[i].y); 
+		sscanf(t,"%lf %lf %lf", &xyplot->objectsText[i].x, &xyplot->objectsText[i].y,&xyplot->objectsText[i].angle); 
     		if(fgets(t,BSIZE,file))
 		{
 			gint j;
 			for(j=0;j<strlen(t);j++) if(t[j]=='\n') t[j] = ' ';
+			for(j=0;j<strlen(t);j++) if(t[j]=='\r') t[j] = ' ';
 			xyplot->objectsText[i].str= g_strdup(t);
+			for(j=strlen(t);j>=0;j--)   if(t[j]==' ') t[j] = '\0';
 		}
 		else xyplot->objectsText[i].str = g_strdup(" ");
 	}
@@ -3244,6 +3972,75 @@ static gboolean gabedit_xyplot_read_gabedit_texts(GabeditXYPlot *xyplot, FILE* f
 		set_object_text_pango(xyplot, &xyplot->objectsText[i]);
 		set_object_text_pixels(xyplot, &xyplot->objectsText[i]);
 	}
+	return TRUE;
+}
+/****************************************************************************************/
+static gboolean gabedit_xyplot_read_gabedit_images(GabeditXYPlot *xyplot, FILE* file)
+{
+	gint i;
+	gchar t[BSIZE];
+	gchar tmp[BSIZE];
+	if(xyplot->objectsImage)
+	{
+		for(i=0;i<xyplot->nObjectsImage;i++)
+		{
+			if(xyplot->objectsImage[i].fileName) g_free(xyplot->objectsImage[i].fileName);
+			if(xyplot->objectsImage[i].image) cairo_surface_destroy (xyplot->objectsImage[i].image);
+		}
+		g_free(xyplot->objectsImage);
+		xyplot->objectsImage = NULL;
+		xyplot->nObjectsImage = 0;
+	}
+    	if(!fgets(t,BSIZE,file)) return FALSE;
+	sscanf(t,"%s %d\n", tmp, &xyplot->nObjectsImage);
+	if(xyplot->nObjectsImage>0)
+	{
+		xyplot->objectsImage = g_malloc(xyplot->nObjectsImage*sizeof(XYPlotObjectImage));
+		for(i=0;i<xyplot->nObjectsImage;i++) xyplot->objectsImage[i].fileName = NULL;
+		for(i=0;i<xyplot->nObjectsImage;i++) xyplot->objectsImage[i].image = NULL;
+	}
+	for(i=0;i<xyplot->nObjectsImage;i++)
+	{
+		gdouble x,y,w,h;
+    		if(!fgets(t,BSIZE,file))
+		{
+			for(i=0;i<xyplot->nObjectsImage;i++) 
+				if(xyplot->objectsImage[i].fileName) g_free(xyplot->objectsImage[i].fileName);
+			xyplot->nObjectsImage= 0;
+			g_free(xyplot->objectsImage);
+			xyplot->objectsImage = NULL;
+		       	return FALSE;
+		}
+		sscanf(t,"%lf %lf %lf %lf", &x, &y, &w, &h);
+		xyplot->objectsImage[i].x = x;
+		xyplot->objectsImage[i].y = y;
+		xyplot->objectsImage[i].width = w;
+		xyplot->objectsImage[i].height = h;
+    		if(fgets(t,BSIZE,file))
+		{
+			gint j;
+			gint len;
+			len = strlen(t);
+			for(j=0;j<strlen(t);j++) 
+			{
+				if(t[j]=='\n') t[j] = ' ';
+				if(t[j]=='\r') t[j] = ' ';
+			}
+			len = strlen(t);
+			for(j=len;j>=0;j--)   if(t[j]==' ') t[j] = '\0';
+			xyplot->objectsImage[i].fileName= g_strdup(t);
+		}
+		else xyplot->objectsImage[i].fileName = g_strdup(" ");
+	}
+	for(i=0;i<xyplot->nObjectsImage;i++)
+	{
+		xyplot->objectsImage[i].image = cairo_image_surface_create_from_png (xyplot->objectsImage[i].fileName);
+		if(!xyplot->objectsImage[i].image)
+		{
+			printf("I cannot read %s png file\n",xyplot->objectsImage[i].fileName);
+		}
+	}
+	reset_object_image_pixels(xyplot);
 	return TRUE;
 }
 /****************************************************************************************/
@@ -3272,17 +4069,20 @@ static gboolean gabedit_xyplot_read_gabedit_parameters(GabeditXYPlot *xyplot, FI
     	if(!fgets(t,BSIZE,file)) return FALSE;
 	sscanf(t,"%s %d %d %d %d %d",  tmp, &xyplot->length_ticks,  &xyplot->hmajor_ticks, &xyplot->hminor_ticks,  &xyplot->vmajor_ticks, &xyplot->vminor_ticks);
     	if(!fgets(t,BSIZE,file)) return FALSE;
+	sscanf(t,"%s %d %d %d %d",  tmp, &xyplot->left_margins,  &xyplot->top_margins, &xyplot->right_margins,  &xyplot->bottom_margins);
+    	if(!fgets(t,BSIZE,file)) return FALSE;
 	sscanf(t,"%s %d %d %d %d", tmp, &xyplot->hmajor_grid, &xyplot->hminor_grid, &xyplot->vmajor_grid, &xyplot->vminor_grid); 
 	gabedit_xyplot_enable_grids (GABEDIT_XYPLOT(xyplot), GABEDIT_XYPLOT_HMAJOR_GRID, xyplot->hmajor_grid);
 	gabedit_xyplot_enable_grids (GABEDIT_XYPLOT(xyplot), GABEDIT_XYPLOT_HMINOR_GRID, xyplot->hminor_grid);
 	gabedit_xyplot_enable_grids (GABEDIT_XYPLOT(xyplot), GABEDIT_XYPLOT_VMAJOR_GRID, xyplot->vmajor_grid); 
 	gabedit_xyplot_enable_grids (GABEDIT_XYPLOT(xyplot), GABEDIT_XYPLOT_VMINOR_GRID, xyplot->vminor_grid);
     	if(!fgets(t,BSIZE,file)) return FALSE;
-	sscanf(t,"%s %d %d %d %d", tmp, &xyplot->show_left_legends, &xyplot->show_right_legends, &xyplot->show_top_legends, &xyplot->show_bottom_legends);
+	sscanf(t,"%s %d %d %d %d %d", tmp, &xyplot->show_left_legends, &xyplot->show_right_legends, &xyplot->show_top_legends, &xyplot->show_bottom_legends,&xyplot->show_rectangle_legends);
 	gabedit_xyplot_show_left_legends (GABEDIT_XYPLOT(xyplot), xyplot->show_left_legends);
 	gabedit_xyplot_show_right_legends (GABEDIT_XYPLOT(xyplot), xyplot->show_right_legends);
 	gabedit_xyplot_show_top_legends (GABEDIT_XYPLOT(xyplot), xyplot->show_top_legends);
 	gabedit_xyplot_show_bottom_legends (GABEDIT_XYPLOT(xyplot), xyplot->show_bottom_legends);
+	gabedit_xyplot_show_rectangle_legends (GABEDIT_XYPLOT(xyplot), xyplot->show_rectangle_legends);
     	if(!fgets(t,BSIZE,file)) return FALSE;
 	sscanf(t,"%s %d %d",  tmp, &xyplot->reflect_x, &xyplot->reflect_y);
 	gabedit_xyplot_reflect_x (GABEDIT_XYPLOT(xyplot), xyplot->reflect_x);
@@ -3302,7 +4102,8 @@ static gboolean gabedit_xyplot_read_gabedit_parameters(GabeditXYPlot *xyplot, FI
 	{
 		gint j;
     		if(!fgets(t,BSIZE,file)) return FALSE;
-		for(j=0;j<strlen(t);j++) if(t[j]=='\n') t[j] = ' ';
+		for(j=0;j<strlen(t);j++) if(t[j]=='\n') t[j] = '\0';
+		for(j=0;j<strlen(t);j++) if(t[j]=='\r') t[j] = '\0';
 		xyplot->h_label_str = g_strdup(t);
 	}
     	if(!fgets(t,BSIZE,file)) return FALSE;
@@ -3311,7 +4112,8 @@ static gboolean gabedit_xyplot_read_gabedit_parameters(GabeditXYPlot *xyplot, FI
 	{
 		gint j;
     		if(!fgets(t,BSIZE,file)) return FALSE;
-		for(j=0;j<strlen(t);j++) if(t[j]=='\n') t[j] = ' ';
+		for(j=0;j<strlen(t);j++) if(t[j]=='\n') t[j] = '\0';
+		for(j=0;j<strlen(t);j++) if(t[j]=='\r') t[j] = '\0';
 		xyplot->v_label_str = g_strdup(t);
 	}
 	xyplot_build_legends(xyplot);
@@ -3406,7 +4208,7 @@ static gboolean gabedit_xyplot_read_gabedit(GtkWidget* xyplot, gchar* fileName)
 	if(!file) 
 	{
 		GtkWidget* dialog = NULL;
-		gchar* tmp = g_strdup_printf("Sorry, I cannot open %s file",fileName);
+		gchar* tmp = g_strdup_printf(_("Sorry, I cannot open %s file"),fileName);
 		dialog = gtk_message_dialog_new_with_markup (NULL,
 		           GTK_DIALOG_DESTROY_WITH_PARENT,
 		           GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
@@ -3420,7 +4222,7 @@ static gboolean gabedit_xyplot_read_gabedit(GtkWidget* xyplot, gchar* fileName)
 	g_strup(t);
 	if(!strstr(t,"[GABEDIT FORMAT]"))
 	{
-		xyplot_message("This is not a Gabedit file\n");
+		xyplot_message(_("This is not a Gabedit file\n"));
 		fclose(file);
 		return FALSE;
 	}
@@ -3436,12 +4238,13 @@ static gboolean gabedit_xyplot_read_gabedit(GtkWidget* xyplot, gchar* fileName)
 			gabedit_xyplot_read_gabedit_parameters(GABEDIT_XYPLOT(xyplot), file);
 			gabedit_xyplot_read_gabedit_texts(GABEDIT_XYPLOT(xyplot), file);
 			gabedit_xyplot_read_gabedit_lines(GABEDIT_XYPLOT(xyplot), file);
+			gabedit_xyplot_read_gabedit_images(GABEDIT_XYPLOT(xyplot), file);
 			gabedit_xyplot_read_gabedit_datas(GABEDIT_XYPLOT(xyplot), file);
 			fclose(file);
 			return TRUE;
 		}
 	}
-	xyplot_message("I can not read the XYPlot data\n");
+	xyplot_message(_("I can not read the XYPlot data\n"));
 	fclose(file);
 	return FALSE;
 }
@@ -3465,7 +4268,7 @@ static void readAGabeditDlg(GtkWidget* xyplot)
 	GtkWidget *parentWindow;
 
 	dialog = g_object_new (GTK_TYPE_FILE_CHOOSER_DIALOG, "action", GTK_FILE_CHOOSER_ACTION_OPEN, "file-system-backend", "gtk+", "select-multiple", FALSE, NULL);
-	gtk_window_set_title (GTK_WINDOW (dialog), "Read a Gabedit file");
+	gtk_window_set_title (GTK_WINDOW (dialog), _("Read a Gabedit file"));
 	gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_OK, NULL);
 
 	filter = gtk_file_filter_new ();
@@ -3539,7 +4342,7 @@ static void saveImageDlg(GtkWidget* xyplot, gchar* type)
 	GtkWidget *parentWindow;
 
 	dialog = g_object_new (GTK_TYPE_FILE_CHOOSER_DIALOG, "action", GTK_FILE_CHOOSER_ACTION_SAVE, "file-system-backend", "gtk+", "select-multiple", FALSE, NULL);
-	gtk_window_set_title (GTK_WINDOW (dialog), "Save XY plot");
+	gtk_window_set_title (GTK_WINDOW (dialog), _("Save XY plot"));
 	gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_OK, NULL);
 	filter = gtk_file_filter_new ();
 	
@@ -3670,7 +4473,7 @@ static void exportImageDlg(GtkWidget* xyplot, gchar* type)
 	GtkWidget *parentWindow;
 
 	dialog = g_object_new (GTK_TYPE_FILE_CHOOSER_DIALOG, "action", GTK_FILE_CHOOSER_ACTION_SAVE, "file-system-backend", "gtk+", "select-multiple", FALSE, NULL);
-	gtk_window_set_title (GTK_WINDOW (dialog), "Export XY plot");
+	gtk_window_set_title (GTK_WINDOW (dialog), _("Export XY plot"));
 	gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_OK, NULL);
 	filter = gtk_file_filter_new ();
 	
@@ -3897,7 +4700,7 @@ static GtkWidget *add_point_types_combo(GtkWidget *hbox, XYPlotData* data)
 		"<span>&#8226;</span>",
 		"<span><b>&#9788;</b></span>",
 		"<span>&#9651;</span>", "<span>&#9650;</span>"};
-	guint n = G_N_ELEMENTS (list);
+	gint n = G_N_ELEMENTS (list);
 
 	store = gtk_tree_store_new (1,G_TYPE_STRING);
 
@@ -4115,7 +4918,7 @@ static void set_data_dialog(GabeditXYPlot* xyplot, XYPlotData* data)
 	GtkWidget* entry_shift_x = NULL;
 	GtkWidget* entry_shift_y = NULL;
 
-	gtk_window_set_title (GTK_WINDOW (window), "Set data options");
+	gtk_window_set_title (GTK_WINDOW (window), _("Set data options"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -4129,7 +4932,7 @@ static void set_data_dialog(GabeditXYPlot* xyplot, XYPlotData* data)
 	gtk_box_pack_start(GTK_BOX(vbox_window), hbox1, TRUE, FALSE, 2);
 	gtk_widget_show(hbox1);
 
-	frame = gtk_frame_new("Set line type");
+	frame = gtk_frame_new(_("Set line type"));
 	gtk_box_pack_start(GTK_BOX(hbox1), frame, TRUE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -4137,7 +4940,7 @@ static void set_data_dialog(GabeditXYPlot* xyplot, XYPlotData* data)
 	gtk_container_add(GTK_CONTAINER(frame), hbox);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("Line width :");
+	label=gtk_label_new(_("Line width :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -4147,7 +4950,7 @@ static void set_data_dialog(GabeditXYPlot* xyplot, XYPlotData* data)
 	gtk_widget_show(spin);
 	g_object_set_data(G_OBJECT (window), "SpinLineWidth", spin);
 
-	label=gtk_label_new("Line type :");
+	label=gtk_label_new(_("Line type :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4159,7 +4962,7 @@ static void set_data_dialog(GabeditXYPlot* xyplot, XYPlotData* data)
 	gtk_widget_show(combo); 
 	g_object_set_data(G_OBJECT (window), "ComboLineType", combo);
 
-	label=gtk_label_new("Line color :");
+	label=gtk_label_new(_("Line color :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4168,7 +4971,7 @@ static void set_data_dialog(GabeditXYPlot* xyplot, XYPlotData* data)
 	gtk_widget_show(button);
 	g_object_set_data(G_OBJECT (window), "ColorButton", button);
 
-	frame = gtk_frame_new("Set point type");
+	frame = gtk_frame_new(_("Set point type"));
 	gtk_box_pack_start(GTK_BOX(vbox_window), frame, TRUE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -4176,7 +4979,7 @@ static void set_data_dialog(GabeditXYPlot* xyplot, XYPlotData* data)
 	gtk_container_add(GTK_CONTAINER(frame), hbox);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("point size :");
+	label=gtk_label_new(_("Point size :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -4186,7 +4989,7 @@ static void set_data_dialog(GabeditXYPlot* xyplot, XYPlotData* data)
 	gtk_widget_show(spin_point);
 	g_object_set_data(G_OBJECT (window), "SpinPointWidth", spin_point);
 
-	label=gtk_label_new("Point type :");
+	label=gtk_label_new(_("Point type :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4194,7 +4997,7 @@ static void set_data_dialog(GabeditXYPlot* xyplot, XYPlotData* data)
 	gtk_widget_show(combo_point); 
 	g_object_set_data(G_OBJECT (window), "ComboPointType", combo_point);
 
-	label=gtk_label_new("Point color :");
+	label=gtk_label_new(_("Point color :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4213,7 +5016,7 @@ static void set_data_dialog(GabeditXYPlot* xyplot, XYPlotData* data)
 	gtk_widget_show(hbox);
 
 
-	label=gtk_label_new("Scale X : ");
+	label=gtk_label_new(_("Scale X : "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4223,7 +5026,7 @@ static void set_data_dialog(GabeditXYPlot* xyplot, XYPlotData* data)
 	gtk_box_pack_start(GTK_BOX(hbox), entry_scale_x, FALSE, FALSE, 2);
 	gtk_widget_show(entry_scale_x);
 
-	label=gtk_label_new("Scale Y : ");
+	label=gtk_label_new(_("Scale Y : "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4233,7 +5036,7 @@ static void set_data_dialog(GabeditXYPlot* xyplot, XYPlotData* data)
 	gtk_box_pack_start(GTK_BOX(hbox), entry_scale_y, FALSE, FALSE, 2);
 	gtk_widget_show(entry_scale_y);
 
-	label=gtk_label_new("Shift X : ");
+	label=gtk_label_new(_("Shift X : "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4243,7 +5046,7 @@ static void set_data_dialog(GabeditXYPlot* xyplot, XYPlotData* data)
 	gtk_box_pack_start(GTK_BOX(hbox), entry_shift_x, FALSE, FALSE, 2);
 	gtk_widget_show(entry_shift_x);
 
-	label=gtk_label_new("Shift Y : ");
+	label=gtk_label_new(_("Shift Y : "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4262,20 +5065,20 @@ static void set_data_dialog(GabeditXYPlot* xyplot, XYPlotData* data)
 	gtk_container_add(GTK_CONTAINER(frame), hbox);
 	gtk_widget_show(hbox);
 
-	buttonAutoRanges = gtk_button_new_with_label ("Auto ranges");
+	buttonAutoRanges = gtk_button_new_with_label (_("Auto ranges"));
 	gtk_box_pack_start(GTK_BOX(hbox), buttonAutoRanges, TRUE, TRUE, 4);
 	gtk_widget_show (buttonAutoRanges);
 
-	buttonAutoRangesAll = gtk_button_new_with_label ("Auto ranges all");
+	buttonAutoRangesAll = gtk_button_new_with_label (_("Auto ranges all"));
 	gtk_box_pack_start(GTK_BOX(hbox), buttonAutoRangesAll, TRUE, TRUE, 4);
 	gtk_widget_show (buttonAutoRangesAll);
 
 
-	buttonSave = gtk_button_new_with_label ("Save");
+	buttonSave = gtk_button_new_with_label (_("Save"));
 	gtk_box_pack_start(GTK_BOX(hbox), buttonSave, TRUE, TRUE, 4);
 	gtk_widget_show (buttonSave);
 
-	buttonRemove = gtk_button_new_with_label ("Remove");
+	buttonRemove = gtk_button_new_with_label (_("Remove"));
 	gtk_box_pack_start(GTK_BOX(hbox), buttonRemove, TRUE, TRUE, 4);
 	gtk_widget_show (buttonRemove);
 
@@ -4362,7 +5165,7 @@ static void set_all_data_dlg(GtkWidget* xyplot)
 	data=(XYPlotData*)current_node->data;  
 	if(!data) return;
 
-	gtk_window_set_title (GTK_WINDOW (window), "Set all data");
+	gtk_window_set_title (GTK_WINDOW (window), _("Set all data"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -4376,7 +5179,7 @@ static void set_all_data_dlg(GtkWidget* xyplot)
 	gtk_box_pack_start(GTK_BOX(vbox_window), hbox1, TRUE, FALSE, 2);
 	gtk_widget_show(hbox1);
 
-	frame = gtk_frame_new("Set line type");
+	frame = gtk_frame_new(_("Set line type"));
 	gtk_box_pack_start(GTK_BOX(hbox1), frame, TRUE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -4384,7 +5187,7 @@ static void set_all_data_dlg(GtkWidget* xyplot)
 	gtk_container_add(GTK_CONTAINER(frame), hbox);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("Line width :");
+	label=gtk_label_new(_("Line width :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -4394,7 +5197,7 @@ static void set_all_data_dlg(GtkWidget* xyplot)
 	gtk_widget_show(spin);
 	g_object_set_data(G_OBJECT (window), "SpinLineWidth", spin);
 
-	label=gtk_label_new("Line type :");
+	label=gtk_label_new(_("Line type :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4406,7 +5209,7 @@ static void set_all_data_dlg(GtkWidget* xyplot)
 	gtk_widget_show(combo); 
 	g_object_set_data(G_OBJECT (window), "ComboLineType", combo);
 
-	label=gtk_label_new("Line color :");
+	label=gtk_label_new(_("Line color :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4415,7 +5218,7 @@ static void set_all_data_dlg(GtkWidget* xyplot)
 	gtk_widget_show(button);
 	g_object_set_data(G_OBJECT (window), "ColorButton", button);
 
-	frame = gtk_frame_new("Set point type");
+	frame = gtk_frame_new(_("Set point type"));
 	gtk_box_pack_start(GTK_BOX(vbox_window), frame, TRUE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -4423,7 +5226,7 @@ static void set_all_data_dlg(GtkWidget* xyplot)
 	gtk_container_add(GTK_CONTAINER(frame), hbox);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("point size :");
+	label=gtk_label_new(_("Point size :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -4433,7 +5236,7 @@ static void set_all_data_dlg(GtkWidget* xyplot)
 	gtk_widget_show(spin_point);
 	g_object_set_data(G_OBJECT (window), "SpinPointWidth", spin_point);
 
-	label=gtk_label_new("Point type :");
+	label=gtk_label_new(_("Point type :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4441,7 +5244,7 @@ static void set_all_data_dlg(GtkWidget* xyplot)
 	gtk_widget_show(combo_point); 
 	g_object_set_data(G_OBJECT (window), "ComboPointType", combo_point);
 
-	label=gtk_label_new("Point color :");
+	label=gtk_label_new(_("Point color :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4460,7 +5263,7 @@ static void set_all_data_dlg(GtkWidget* xyplot)
 	gtk_widget_show(hbox);
 
 
-	label=gtk_label_new("Scale X : ");
+	label=gtk_label_new(_("Scale X : "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4470,7 +5273,7 @@ static void set_all_data_dlg(GtkWidget* xyplot)
 	gtk_box_pack_start(GTK_BOX(hbox), entry_scale_x, FALSE, FALSE, 2);
 	gtk_widget_show(entry_scale_x);
 
-	label=gtk_label_new("Scale Y : ");
+	label=gtk_label_new(_("Scale Y : "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4480,7 +5283,7 @@ static void set_all_data_dlg(GtkWidget* xyplot)
 	gtk_box_pack_start(GTK_BOX(hbox), entry_scale_y, FALSE, FALSE, 2);
 	gtk_widget_show(entry_scale_y);
 
-	label=gtk_label_new("Shift X : ");
+	label=gtk_label_new(_("Shift X : "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4490,7 +5293,7 @@ static void set_all_data_dlg(GtkWidget* xyplot)
 	gtk_box_pack_start(GTK_BOX(hbox), entry_shift_x, FALSE, FALSE, 2);
 	gtk_widget_show(entry_shift_x);
 
-	label=gtk_label_new("Shift Y : ");
+	label=gtk_label_new(_("Shift Y : "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4509,7 +5312,7 @@ static void set_all_data_dlg(GtkWidget* xyplot)
 	gtk_container_add(GTK_CONTAINER(frame), hbox);
 	gtk_widget_show(hbox);
 
-	buttonAutoRangesAll = gtk_button_new_with_label ("Auto ranges all");
+	buttonAutoRangesAll = gtk_button_new_with_label (_("Auto ranges all"));
 	gtk_box_pack_start(GTK_BOX(hbox), buttonAutoRangesAll, TRUE, TRUE, 4);
 	gtk_widget_show (buttonAutoRangesAll);
 
@@ -4576,6 +5379,8 @@ static void toggle_action (GtkAction *action)
 		xyplot_show_top_legends (GABEDIT_XYPLOT(xyplot), enable);
 	else if(!strcmp(name,"LegendShowBottom"))
 		xyplot_show_bottom_legends (GABEDIT_XYPLOT(xyplot), enable);
+	else if(!strcmp(name,"LegendShowRectangle"))
+		xyplot_show_rectangle_legends (GABEDIT_XYPLOT(xyplot), enable);
 	else if(!strcmp(name,"DirectionReflectX"))
 		xyplot_reflect_x (GABEDIT_XYPLOT(xyplot), enable);
 	else if(!strcmp(name,"DirectionReflectY"))
@@ -4584,16 +5389,17 @@ static void toggle_action (GtkAction *action)
 /*--------------------------------------------------------------------------------------------------------------------*/
 static GtkToggleActionEntry gtkActionToggleEntries[] =
 {
-	{ "HGridShowMajor", NULL, "show _H major", NULL, "show H major", G_CALLBACK (toggle_action), TRUE },
-	{ "HGridShowMinor", NULL, "show _H minor", NULL, "show H minor", G_CALLBACK (toggle_action), FALSE },
-	{ "VGridShowMajor", NULL, "show _V major", NULL, "show V major", G_CALLBACK (toggle_action), TRUE },
-	{ "VGridShowMinor", NULL, "show _V minor", NULL, "show V minor", G_CALLBACK (toggle_action), FALSE },
-	{ "LegendShowLeft", NULL, "show _left", NULL, "show left", G_CALLBACK (toggle_action), TRUE },
-	{ "LegendShowRight", NULL, "show _right", NULL, "show right", G_CALLBACK (toggle_action), TRUE },
-	{ "LegendShowTop", NULL, "show _top", NULL, "show top", G_CALLBACK (toggle_action), TRUE },
-	{ "LegendShowBottom", NULL, "show _bottom", NULL, "show bottom", G_CALLBACK (toggle_action), TRUE },
-	{ "DirectionReflectX", NULL, "_X reflect", NULL, "X reflect", G_CALLBACK (toggle_action), FALSE },
-	{ "DirectionReflectY", NULL, "_Y reflect", NULL, "Y reflect", G_CALLBACK (toggle_action), FALSE },
+	{ "HGridShowMajor", NULL, N_("show _H major"), NULL, "show H major", G_CALLBACK (toggle_action), TRUE },
+	{ "HGridShowMinor", NULL, N_("show _H minor"), NULL, "show H minor", G_CALLBACK (toggle_action), FALSE },
+	{ "VGridShowMajor", NULL, N_("show _V major"), NULL, "show V major", G_CALLBACK (toggle_action), TRUE },
+	{ "VGridShowMinor", NULL, N_("show _V minor"), NULL, "show V minor", G_CALLBACK (toggle_action), FALSE },
+	{ "LegendShowLeft", NULL, N_("show _left"), NULL, "show left", G_CALLBACK (toggle_action), TRUE },
+	{ "LegendShowRight", NULL, N_("show _right"), NULL, "show right", G_CALLBACK (toggle_action), TRUE },
+	{ "LegendShowTop", NULL, N_("show _top"), NULL, "show top", G_CALLBACK (toggle_action), TRUE },
+	{ "LegendShowBottom", NULL, N_("show _bottom"), NULL, "show bottom", G_CALLBACK (toggle_action), TRUE },
+	{ "LegendShowRectangle", NULL, N_("show _rectangle"), NULL, "show rectangle", G_CALLBACK (toggle_action), TRUE },
+	{ "DirectionReflectX", NULL, N_("_X reflect"), NULL, "X reflect", G_CALLBACK (toggle_action), FALSE },
+	{ "DirectionReflectY", NULL, N_("_Y reflect"), NULL, "Y reflect", G_CALLBACK (toggle_action), FALSE },
 };
 /*--------------------------------------------------------------------------------------------------------------------*/
 static void init_toggle_entries (GtkWidget* xyplot)
@@ -4606,17 +5412,19 @@ static void init_toggle_entries (GtkWidget* xyplot)
 	xyplot_show_right_legends (GABEDIT_XYPLOT(xyplot), gtkActionToggleEntries[5].is_active);
 	xyplot_show_top_legends (GABEDIT_XYPLOT(xyplot), gtkActionToggleEntries[6].is_active);
 	xyplot_show_bottom_legends (GABEDIT_XYPLOT(xyplot), gtkActionToggleEntries[7].is_active);
+	xyplot_show_rectangle_legends (GABEDIT_XYPLOT(xyplot), gtkActionToggleEntries[8].is_active);
 
-	xyplot_reflect_x (GABEDIT_XYPLOT(xyplot), gtkActionToggleEntries[8].is_active);
-	xyplot_reflect_y (GABEDIT_XYPLOT(xyplot), gtkActionToggleEntries[9].is_active);
+	xyplot_reflect_x (GABEDIT_XYPLOT(xyplot), gtkActionToggleEntries[9].is_active);
+	xyplot_reflect_y (GABEDIT_XYPLOT(xyplot), gtkActionToggleEntries[10].is_active);
 }
-static guint numberOfGtkActionToggleEntries = G_N_ELEMENTS (gtkActionToggleEntries);
+static gint numberOfGtkActionToggleEntries = G_N_ELEMENTS (gtkActionToggleEntries);
 /*********************************************************************************************************************/
 static void activate_action (GtkAction *action)
 {
 	const gchar *name = gtk_action_get_name (action);
 	GtkWidget* xyplot = g_object_get_data(G_OBJECT (action), "XYPLOT");
 	if(!strcmp(name,"SetTicks")) { set_ticks_dialog(xyplot); }
+	if(!strcmp(name,"SetMargins")) { set_margins_dialog(xyplot); }
 	if(!strcmp(name,"SetRanges")) { set_ranges_dialog(xyplot); }
 	if(!strcmp(name,"SetLabels")) { set_labels_dialog(xyplot); }
 	if(!strcmp(name,"SetDigits")) { set_digits_dialog(xyplot); }
@@ -4633,10 +5441,13 @@ static void activate_action (GtkAction *action)
 	if(!strcmp(name,"DataRemoveAll")) { remove_all_data_dlg(xyplot); }
 	if(!strcmp(name,"DataChangeAll")) { set_all_data_dlg(xyplot); }
 	if(!strcmp(name,"ObjectsInsertText")) { begin_insert_objects_text(xyplot); }
+	if(!strcmp(name,"ObjectsInsertImage")) { begin_insert_objects_image(xyplot); }
+	if(!strcmp(name,"ObjectsInsertImageClip")) { insert_objects_image_from_clipboard(xyplot);}
 	if(!strcmp(name,"ThemesPublication")) { set_theme_publication(xyplot); }
 	if(!strcmp(name,"ThemesGreenBlack")) { set_theme_green_black(xyplot); }
 	if(!strcmp(name,"ThemesOther")) { set_theme_dialog(xyplot); }
 	if(!strcmp(name,"ObjectsDeleteTexts")) { delete_objects_text(xyplot); }
+	if(!strcmp(name,"ObjectsDeleteImage")) { delete_objects_image(xyplot); }
 	if(!strcmp(name,"ObjectsInsertLine")) { begin_insert_objects_line(xyplot); }
 	if(!strcmp(name,"ObjectsDeleteLines")) { delete_objects_line(xyplot); }
 	if(!strcmp(name,"ScreenCaptureBMP")) {  saveImageDlg(xyplot, "bmp");}
@@ -4657,63 +5468,70 @@ static void activate_action (GtkAction *action)
 /*--------------------------------------------------------------------*/
 static GtkActionEntry gtkActionEntries[] =
 {
-	{"Set", NULL, "_Set"},
-	{"SetTicks", NULL, "_Ticks", NULL, "Ticks", G_CALLBACK (activate_action) },
-	{"SetRanges", NULL, "_Ranges", NULL, "Ranges", G_CALLBACK (activate_action) },
-	{"SetLabels", NULL, "_Labels", NULL, "Labels", G_CALLBACK (activate_action) },
-	{"SetDigits", NULL, "_Digits", NULL, "Digits", G_CALLBACK (activate_action) },
-	{"SetFontSize", NULL, "_Font size", NULL, "Font size", G_CALLBACK (activate_action) },
-	{"SetAll", NULL, "_All", NULL, "All", G_CALLBACK (activate_action) },
-	{"SetAutoRanges", NULL, "_Auto ranges", NULL, "Auto ranges", G_CALLBACK (activate_action) },
-	{"Render", NULL, "_Render"},
-	{"RenderGrid", NULL, "_Grid"},
-	{"RenderLegends", NULL, "_Legends"},
-	{"RenderDirections", NULL, "_Directions"},
-	{"Data", NULL, "_Data"},
-	{"DataAdd", NULL, "_Add Data"},
-	{"DataRead2Columns", NULL, "_Read data from an ASCII XY file(2 columns)", NULL, "Read data from an ASCII XY file(2 columns)", G_CALLBACK (activate_action) },
-	{"DataReadXY1YnColumns", NULL, "_Read data from an ASCII X.Y1..Yn file(x, y1, y2,...,yn)", NULL, "Read data from an ASCII XY file(2 columns)", G_CALLBACK (activate_action) },
-	{"DataReadJDX", NULL, "_Read data from a JDX file", NULL, "Read data from a JDX file", G_CALLBACK (activate_action) },
-	{"DataReadJMRUI", NULL, "_Read data from a jMRUI text file", NULL, "Read data from a jMRUI text file", G_CALLBACK (activate_action) },
-	{"DataRead2ColumnsPeaks", NULL, "_Read data from an ASCII XY file(2 columns) and draw peaks", NULL, "Read data from an ASCII XY file(2 columns) and draw peaks", G_CALLBACK (activate_action) },
-	{"DataReadXY1YnColumnsPeaks", NULL, "_Read data from an ASCII X.Y1..Yn file(x, y1, y2,...,yn) and draw peaks", NULL, "Read data from an ASCII XY file(2 columns) and draw peaks", G_CALLBACK (activate_action) },
-	{"DataSaveAll", NULL, "_Save all data in an ascii XY file(2columns)", NULL, "Save all data in an ascii file(2columns)", G_CALLBACK (activate_action) },
-	{"DataRemoveAll", NULL, "_Remove all data", NULL, "Remove all data", G_CALLBACK (activate_action) },
-	{"DataChangeAll", NULL, "_Change all", NULL, "change all", G_CALLBACK (activate_action) },
-	{"Objects", NULL, "_Objects"},
-	{"ObjectsInsertText", NULL, "Insert a _text(Click in window)", NULL, "Insert a text", G_CALLBACK (activate_action) },
-	{"ObjectsDeleteTexts", NULL, "Delete all _texts", NULL, "Delete all texts", G_CALLBACK (activate_action) },
-	{"ObjectsInsertLine", NULL, "Insert a _line(Click in window and move)", NULL, "Insert a line", G_CALLBACK (activate_action) },
-	{"ObjectsDeleteLines", NULL, "Delete all _lines", NULL, "Delete all lines", G_CALLBACK (activate_action) },
-	{"Themes", NULL, "_Themes"},
-	{"ThemesPublication", NULL, "_Publication", NULL, "Publication", G_CALLBACK (activate_action) },
-	{"ThemesGreenBlack", NULL, "_Green&black", NULL, "Green&black", G_CALLBACK (activate_action) },
-	{"ThemesOther", NULL, "_Other", NULL, "Other", G_CALLBACK (activate_action) },
-	{"ScreenCapture", NULL, "_Screen Capture"},
-	{"ScreenCaptureBMP", NULL, "_BMP format", NULL, "BMP format", G_CALLBACK (activate_action) },
-	{"ScreenCaptureJPEG", NULL, "_JPEG format", NULL, "JPEG format", G_CALLBACK (activate_action) },
-	{"ScreenCapturePNG", NULL, "_PNG format", NULL, "PNG format", G_CALLBACK (activate_action) },
-	{"ScreenCaptureTPNG", NULL, "_Transparent PNG format", NULL, "Transparent PNG format", G_CALLBACK (activate_action) },
-	{"ScreenCaptureTIF", NULL, "_TIF format", NULL, "TIF format", G_CALLBACK (activate_action) },
-	{"ScreenCaptureClipBoard", NULL, "_Copy to clipboard", NULL, "Copy to clipboard", G_CALLBACK (activate_action) },
-	{"Export", NULL, "_Export"},
-	{"ExportSVG", NULL, "Export _SVG format", NULL, "SVG format", G_CALLBACK (activate_action) },
-	{"ExportPDF", NULL, "Export p_df format", NULL, "PDF format", G_CALLBACK (activate_action) },
-	{"ExportPS", NULL, "Export _postscript format", NULL, "PS format", G_CALLBACK (activate_action) },
-	{"ExportEPS", NULL, "Export _Encapsuled postscript format", NULL, "EPS format", G_CALLBACK (activate_action) },
-	{"Read", GTK_STOCK_OPEN, "_Read", NULL, "Read", G_CALLBACK (activate_action) },
-	{"Save", GTK_STOCK_SAVE, "_Save", NULL, "Save", G_CALLBACK (activate_action) },
-	{"Help", GTK_STOCK_HELP, "_Help", NULL, "Help", G_CALLBACK (activate_action) },
-	{"Close", GTK_STOCK_CLOSE, "_Close", NULL, "Close", G_CALLBACK (activate_action) },
+	{"Set", NULL, N_("_Set")},
+	{"SetTicks", NULL, N_("_Ticks"), NULL, "Ticks", G_CALLBACK (activate_action) },
+	{"SetMargins", NULL, N_("_Margins"), NULL, "Margins", G_CALLBACK (activate_action) },
+	{"SetRanges", NULL, N_("_Ranges"), NULL, "Ranges", G_CALLBACK (activate_action) },
+	{"SetLabels", NULL, N_("_Labels"), NULL, "Labels", G_CALLBACK (activate_action) },
+	{"SetDigits", NULL, N_("_Digits"), NULL, "Digits", G_CALLBACK (activate_action) },
+	{"SetFontSize", NULL, N_("_Font size"), NULL, "Font size", G_CALLBACK (activate_action) },
+	{"SetAll", NULL, N_("_All"), NULL, "All", G_CALLBACK (activate_action) },
+	{"SetAutoRanges", NULL, N_("_Auto ranges"), NULL, "Auto ranges", G_CALLBACK (activate_action) },
+	{"Render", NULL, N_("_Render")},
+	{"RenderGrid", NULL, N_("_Grid")},
+	{"RenderLegends", NULL, N_("_Legends")},
+	{"RenderDirections", NULL, N_("_Directions")},
+	{"Data", NULL, N_("_Data")},
+	{"DataAdd", NULL, N_("_Add Data")},
+	{"DataRead2Columns", NULL, N_("_Read data from an ASCII XY file(2 columns)"), NULL, "Read data from an ASCII XY file(2 columns)", G_CALLBACK (activate_action) },
+	{"DataReadXY1YnColumns", NULL, N_("_Read data from an ASCII X.Y1..Yn file(x, y1, y2,...,yn)"), NULL, "Read data from an ASCII XY file(2 columns)", G_CALLBACK (activate_action) },
+	{"DataReadJDX", NULL, N_("_Read data from a JDX file"), NULL, "Read data from a JDX file", G_CALLBACK (activate_action) },
+	{"DataReadJMRUI", NULL, N_("_Read data from a jMRUI text file"), NULL, "Read data from a jMRUI text file", G_CALLBACK (activate_action) },
+	{"DataRead2ColumnsPeaks", NULL, N_("_Read data from an ASCII XY file(2 columns) and draw peaks"), NULL, "Read data from an ASCII XY file(2 columns) and draw peaks", G_CALLBACK (activate_action) },
+	{"DataReadXY1YnColumnsPeaks", NULL, N_("_Read data from an ASCII X.Y1..Yn file(x, y1, y2,...,yn) and draw peaks"), NULL, "Read data from an ASCII XY file(2 columns) and draw peaks", G_CALLBACK (activate_action) },
+	{"DataSaveAll", NULL, N_("_Save all data in an ascii XY file(2columns)"), NULL, "Save all data in an ascii file(2columns)", G_CALLBACK (activate_action) },
+	{"DataRemoveAll", NULL, N_("_Remove all data"), NULL, "Remove all data", G_CALLBACK (activate_action) },
+	{"DataChangeAll", NULL, N_("_Change all"), NULL, "change all", G_CALLBACK (activate_action) },
+	{"Objects", NULL, N_("_Objects")},
+	{"ObjectsInsertText", NULL, N_("Insert a _text(Click in window)"), NULL, "Insert a text", G_CALLBACK (activate_action) },
+	{"ObjectsDeleteTexts", NULL, N_("Delete all _texts"), NULL, "Delete all texts", G_CALLBACK (activate_action) },
+	{"ObjectsInsertLine", NULL, N_("Insert a _line(Click in window and move)"), NULL, "Insert a line", G_CALLBACK (activate_action) },
+	{"ObjectsDeleteLines", NULL, N_("Delete all _lines"), NULL, "Delete all lines", G_CALLBACK (activate_action) },
+	{"ObjectsInsertImage", NULL, N_("Insert an _image from a png file(Click in window)"), NULL, "Insert an image", G_CALLBACK (activate_action) },
+	{"ObjectsInsertImageClip", NULL, N_("Insert an _image from clipboard"), NULL, "Insert an image", G_CALLBACK (activate_action) },
+	{"ObjectsDeleteImage", NULL, N_("Delete all _images"), NULL, "Delete all images", G_CALLBACK (activate_action) },
+	{"Themes", NULL, N_("_Themes")},
+	{"ThemesPublication", NULL, N_("_Publication"), NULL, "Publication", G_CALLBACK (activate_action) },
+	{"ThemesGreenBlack", NULL, N_("_Green&black"), NULL, "Green&black", G_CALLBACK (activate_action) },
+	{"ThemesOther", NULL, N_("_Other"), NULL, "Other", G_CALLBACK (activate_action) },
+	{"ScreenCapture", NULL, N_("_Screen Capture")},
+	{"ScreenCaptureBMP", NULL, N_("_BMP format"), NULL, "BMP format", G_CALLBACK (activate_action) },
+	{"ScreenCaptureJPEG", NULL, N_("_JPEG format"), NULL, "JPEG format", G_CALLBACK (activate_action) },
+	{"ScreenCapturePNG", NULL, N_("_PNG format"), NULL, "PNG format", G_CALLBACK (activate_action) },
+	{"ScreenCaptureTPNG", NULL, N_("_Transparent PNG format"), NULL, "Transparent PNG format", G_CALLBACK (activate_action) },
+	{"ScreenCaptureTIF", NULL, N_("_TIF format"), NULL, "TIF format", G_CALLBACK (activate_action) },
+	{"ScreenCaptureClipBoard", NULL, N_("_Copy to clipboard"), NULL, "Copy to clipboard", G_CALLBACK (activate_action) },
+	{"Export", NULL, N_("_Export")},
+	{"ExportSVG", NULL, N_("Export _SVG format"), NULL, "SVG format", G_CALLBACK (activate_action) },
+	{"ExportPDF", NULL, N_("Export p_df format"), NULL, "PDF format", G_CALLBACK (activate_action) },
+	{"ExportPS", NULL, N_("Export _postscript format"), NULL, "PS format", G_CALLBACK (activate_action) },
+	{"ExportEPS", NULL, N_("Export _Encapsuled postscript format"), NULL, "EPS format", G_CALLBACK (activate_action) },
+	{"Read", GTK_STOCK_OPEN, N_("_Read"), NULL, "Read", G_CALLBACK (activate_action) },
+	{"Save", GTK_STOCK_SAVE, N_("_Save"), NULL, "Save", G_CALLBACK (activate_action) },
+	{"Help", GTK_STOCK_HELP, N_("_Help"), NULL, "Help", G_CALLBACK (activate_action) },
+	{"Close", GTK_STOCK_CLOSE, N_("_Close"), NULL, "Close", G_CALLBACK (activate_action) },
 };
 
 
-static guint numberOfGtkActionEntries = G_N_ELEMENTS (gtkActionEntries);
+static gint numberOfGtkActionEntries = G_N_ELEMENTS (gtkActionEntries);
 /********************************************************************************/
 static void add_data_to_actions(GtkUIManager *manager, GtkWidget   *xyplot)
 {
 	GtkAction* action = NULL;
 	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Set/SetTicks");
+	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
+
+	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Set/SetMargins");
 	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
 
 	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Set/SetRanges");
@@ -4751,6 +5569,8 @@ static void add_data_to_actions(GtkUIManager *manager, GtkWidget   *xyplot)
 	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
 	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Render/RenderLegends/LegendShowBottom");
 	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
+	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Render/RenderLegends/LegendShowRectangle");
+	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
 	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Render/RenderDirections/DirectionReflectX");
 	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
 	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Render/RenderDirections/DirectionReflectY");
@@ -4787,6 +5607,15 @@ static void add_data_to_actions(GtkUIManager *manager, GtkWidget   *xyplot)
 	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
 
 	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Objects/ObjectsInsertText");
+	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
+
+	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Objects/ObjectsInsertImage");
+	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
+
+	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Objects/ObjectsInsertImageClip");
+	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
+
+	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Objects/ObjectsDeleteImage");
 	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
 
 	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Themes/ThemesPublication");
@@ -4847,6 +5676,7 @@ static const gchar *uiMenuInfo =
 "    <separator name=\"sepMenuPopSet\" />\n"
 "    <menu name=\"Set\" action=\"Set\">\n"
 "      <menuitem name=\"SetTicks\" action=\"SetTicks\" />\n"
+"      <menuitem name=\"SetMargins\" action=\"SetMargins\" />\n"
 "      <menuitem name=\"SetRanges\" action=\"SetRanges\" />\n"
 "      <menuitem name=\"SetLabels\" action=\"SetLabels\" />\n"
 "      <menuitem name=\"SetDigits\" action=\"SetDigits\" />\n"
@@ -4868,6 +5698,7 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"LegendShowRight\" action=\"LegendShowRight\" />\n"
 "        <menuitem name=\"LegendShowTop\" action=\"LegendShowTop\" />\n"
 "        <menuitem name=\"LegendShowBottom\" action=\"LegendShowBottom\" />\n"
+"        <menuitem name=\"LegendShowRectangle\" action=\"LegendShowRectangle\" />\n"
 "      </menu>\n"
 "      <menu name=\"RenderDirections\" action=\"RenderDirections\">\n"
 "        <menuitem name=\"DirectionReflectX\" action=\"DirectionReflectX\" />\n"
@@ -4898,6 +5729,9 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"ObjectsDeleteTexts\" action=\"ObjectsDeleteTexts\" />\n"
 "      <menuitem name=\"ObjectsInsertLine\" action=\"ObjectsInsertLine\" />\n"
 "      <menuitem name=\"ObjectsDeleteLines\" action=\"ObjectsDeleteLines\" />\n"
+"      <menuitem name=\"ObjectsInsertImage\" action=\"ObjectsInsertImage\" />\n"
+"      <menuitem name=\"ObjectsInsertImageClip\" action=\"ObjectsInsertImageClip\" />\n"
+"      <menuitem name=\"ObjectsDeleteImage\" action=\"ObjectsDeleteImage\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepThemes\" />\n"
 "    <menu name=\"Themes\" action=\"Themes\">\n"
@@ -4933,6 +5767,7 @@ static const gchar *uiMenuInfo =
 "  </popup>\n"
 "  <toolbar action=\"ToolbarXYPlot\">\n"
 "      <toolitem name=\"SetTicks\" action=\"SetTicks\" />\n"
+"      <toolitem name=\"SetMargins\" action=\"SetMargins\" />\n"
 "      <toolitem name=\"SetRanges\" action=\"SetRanges\" />\n"
 "      <toolitem name=\"ScreenCaptureBMP\" action=\"ScreenCaptureBMP\" />\n"
 "      <toolitem name=\"ScreenCaptureJPEG\" action=\"ScreenCaptureJPEG\" />\n"
@@ -4979,6 +5814,7 @@ static void add_toolbar_and_popup_menu(GtkWidget* parent, GtkWidget* box)
   	g_signal_connect_swapped (parent, "destroy", G_CALLBACK (g_object_unref), merge);
 
 	actionGroup = gtk_action_group_new ("GabeditXYPlotActions");
+	gtk_action_group_set_translation_domain(actionGroup,GETTEXT_PACKAGE);
 	gtk_action_group_add_actions (actionGroup, gtkActionEntries, numberOfGtkActionEntries, NULL);
 	gtk_action_group_add_toggle_actions (actionGroup, gtkActionToggleEntries, numberOfGtkActionToggleEntries, NULL);
   	gtk_ui_manager_insert_action_group (merge, actionGroup, 0);
@@ -4986,7 +5822,7 @@ static void add_toolbar_and_popup_menu(GtkWidget* parent, GtkWidget* box)
 	if(box) g_signal_connect (merge, "add_widget", G_CALLBACK (add_widget), box);
 	if (!gtk_ui_manager_add_ui_from_string (merge, uiMenuInfo, -1, &error))
 	{
-		g_message ("building menus of xyplot failed: %s", error->message);
+		g_message (_("building menus of xyplot failed: %s"), error->message);
 		g_error_free (error);
 	}
 	g_object_set_data(G_OBJECT (parent), "Manager", merge);
@@ -5062,6 +5898,11 @@ static void gabedit_xyplot_init (GabeditXYPlot *xyplot)
   xyplot->vmajor_ticks=11;
   xyplot->vminor_ticks=3;
   xyplot->length_ticks=3;
+
+  xyplot->left_margins =0;
+  xyplot->top_margins =0;
+  xyplot->right_margins =0;
+  xyplot->bottom_margins =0;
   
   xyplot->hmajor_grid=TRUE;
   xyplot->hminor_grid=TRUE;
@@ -5072,6 +5913,7 @@ static void gabedit_xyplot_init (GabeditXYPlot *xyplot)
   xyplot->show_right_legends = FALSE;
   xyplot->show_top_legends = FALSE;
   xyplot->show_bottom_legends  = TRUE;
+  xyplot->show_rectangle_legends  = TRUE;
 
   xyplot->reflect_x  = FALSE;
   xyplot->reflect_y  = FALSE;
@@ -5112,10 +5954,18 @@ static void gabedit_xyplot_init (GabeditXYPlot *xyplot)
   xyplot->l_key_pressed = FALSE;
   xyplot->selected_objects_line_num = -1;
   xyplot->selected_objects_line_type = -1;
+
+  xyplot->nObjectsImage = 0;
+  xyplot->objectsImage = NULL;
+  xyplot->i_key_pressed = FALSE;
+  xyplot->selected_objects_image_num = -1;
+
   xyplot->object_begin_point.x=-1;
   xyplot->object_begin_point.y=-1;
   xyplot->object_end_point.x=-1;
   xyplot->object_end_point.y=-1;
+
+  xyplot->r_key_pressed = FALSE;
 }
 /****************************************************************************************/
 GtkWidget* gabedit_xyplot_new ()
@@ -5284,10 +6134,23 @@ static gint gabedit_xyplot_key_press(GtkWidget* widget, GdkEventKey *event)
 			copyImageToClipBoard(widget);
 
 	}
+	if((event->keyval == GDK_v || event->keyval == GDK_V) )
+	{
+		if(xyplot->control_key_pressed) 
+		{
+			add_object_image(xyplot, 0, 0, -1, -1, NULL);
+    			gtk_widget_queue_draw(widget);
+		}
+	}
+
 	if((event->keyval == GDK_t || event->keyval == GDK_T) )
   		xyplot->t_key_pressed = TRUE;
 	if((event->keyval == GDK_l || event->keyval == GDK_L) )
   		xyplot->l_key_pressed = TRUE;
+	if((event->keyval == GDK_i || event->keyval == GDK_I) )
+  		xyplot->i_key_pressed = TRUE;
+	if((event->keyval == GDK_r || event->keyval == GDK_R) )
+  		xyplot->r_key_pressed = TRUE;
 	return TRUE;
 }
 /********************************************************************************/
@@ -5310,6 +6173,8 @@ static gint gabedit_xyplot_key_release(GtkWidget* widget, GdkEventKey *event)
   		xyplot->t_key_pressed = FALSE;
 	if((event->keyval == GDK_l || event->keyval == GDK_L) )
   		xyplot->l_key_pressed = FALSE;
+	if((event->keyval == GDK_r || event->keyval == GDK_R) )
+  		xyplot->r_key_pressed = FALSE;
 	return TRUE;
 }
 /****************************************************************************************/
@@ -5659,7 +6524,7 @@ static void set_theme_dialog(GtkWidget* widget)
         gdk_colormap_query_color(colormap, gc_values.foreground.pixel,&foreColor);
 	line_width=gc_values.line_width;
 
-	gtk_window_set_title (GTK_WINDOW (window), "Set theme");
+	gtk_window_set_title (GTK_WINDOW (window), _("Set theme"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -5681,7 +6546,7 @@ static void set_theme_dialog(GtkWidget* widget)
 	gtk_container_add(GTK_CONTAINER(frame), hbox);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("Line width :");
+	label=gtk_label_new(_("Line width :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -5691,7 +6556,7 @@ static void set_theme_dialog(GtkWidget* widget)
 	gtk_widget_show(spin);
 	g_object_set_data(G_OBJECT (window), "SpinLineWidth", spin);
 
-	label=gtk_label_new("Background color :");
+	label=gtk_label_new(_("Background color :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	button = gtk_color_button_new_with_color (&backColor);
@@ -5700,7 +6565,7 @@ static void set_theme_dialog(GtkWidget* widget)
 	g_object_set_data(G_OBJECT (window), "BackColorButton", button);
 	buttonBack = button;
 
-	label=gtk_label_new("Foreground color :");
+	label=gtk_label_new(_("Foreground color :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	button = gtk_color_button_new_with_color (&foreColor);
@@ -5755,7 +6620,7 @@ static void gabedit_xyplot_size_allocate (GtkWidget *widget, GtkAllocation *allo
 static void draw_points(GtkWidget *widget, GabeditXYPlot *xyplot, XYPlotData* data)
 {
 	gint i;
-	guint x, y;
+	gint x, y;
 	GdkRectangle rect;
 
 	if ( data->point_size<1 ) return;
@@ -5809,7 +6674,7 @@ static void draw_lines(GtkWidget *widget, GabeditXYPlot *xyplot, XYPlotData* dat
 	    */
 	{
 		l = i;
-		value2pixel(xyplot, data->x[i], data->y[i], (guint *)&points[1].x, (guint *)&points[1].y);
+		value2pixel(xyplot, data->x[i], data->y[i], (gint *)&points[1].x, (gint *)&points[1].y);
 		points[1].y=xyplot->plotting_rect.height-points[1].y;                   
 		if(begin)
 		{
@@ -5878,25 +6743,56 @@ static void draw_object_line_gdk(GtkWidget *widget, GabeditXYPlot *xyplot)
 		&x2, &y2
 		);
 		gdk_draw_line(widget->window, xyplot->lines_gc,
-			(guint)x1,
-			(guint)y1,
+			(gint)x1,
+			(gint)y1,
 			xyplot->object_end_point.x,
 			xyplot->object_end_point.y
 		     );
 		gdk_draw_line(widget->window, xyplot->lines_gc,
-			(guint)x2,
-			(guint)y2,
+			(gint)x2,
+			(gint)y2,
 			xyplot->object_end_point.x,
 			xyplot->object_end_point.y
 		     );
 	}
 }
 /****************************************************************************************/
+static void get_rotated_rectangle(
+		gint x, gint y, gint w, gint h, gdouble angle,
+		gint* x1, gint* y1, 
+		gint* x2, gint* y2, 
+		gint* x3, gint* y3, 
+		gint* x4, gint* y4) 
+{
+	gdouble a = -angle;
+	gdouble cosa = cos(a); 
+	gdouble sina = sin(a); 
+	*x1 = x; *y1 = y; 
+	*x2 = (gint)(x+w*cosa); *y2 = (gint)(y+w*sina); 
+	*x3 = x+(gint)(w*cosa-h*sina); *y3 = (gint)(y+w*sina+h*cosa); 
+	*x4 = (gint)(x-h*sina); *y4 = (gint)(y+h*cosa); 
+}
+/*****************************************************************************************************************/
+static void draw_rotated_rectangle(GtkWidget *widget, GabeditXYPlot* xyplot,
+		gint x, gint y, gint w, gint h, gdouble angle)
+{
+	static GdkPoint* points = NULL;
+	if(!points) points = g_malloc(4*sizeof(GdkPoint));
+	get_rotated_rectangle( x, y, w, h, angle,
+		&points[0].x, &points[0].y,
+		&points[1].x, &points[1].y,
+		&points[2].x, &points[2].y,
+		&points[3].x, &points[3].y);
+	gdk_draw_polygon(widget->window, xyplot->fore_gc, FALSE, points, 4);
+}
+/****************************************************************************************/
 static void draw_selected_objects_text_rectangle(GtkWidget *widget, GabeditXYPlot *xyplot)
 {
 	gint i = xyplot->selected_objects_text_num;
+	gdouble angle = 0;
 	if(i<0 || i>=xyplot->nObjectsText) return;
 	if (xyplot->mouse_zoom_enabled && xyplot->mouse_button == xyplot->mouse_zoom_button) return;
+	/*
 	gdk_draw_rectangle(widget->window,
 			xyplot->fore_gc,
 			FALSE,
@@ -5904,6 +6800,28 @@ static void draw_selected_objects_text_rectangle(GtkWidget *widget, GabeditXYPlo
 			xyplot->objectsText[i].yi,
 			xyplot->objectsText[i].width,
 			xyplot->objectsText[i].height);
+			*/
+	angle = xyplot->objectsText[i].angle;
+	draw_rotated_rectangle(widget, xyplot,
+			xyplot->objectsText[i].xi,
+			xyplot->objectsText[i].yi,
+			xyplot->objectsText[i].width,
+			xyplot->objectsText[i].height,
+			angle);
+}
+/****************************************************************************************/
+static void draw_selected_objects_image_rectangle(GtkWidget *widget, GabeditXYPlot *xyplot)
+{
+	gint i = xyplot->selected_objects_image_num;
+	if(i<0 || i>=xyplot->nObjectsImage) return;
+	if (xyplot->mouse_zoom_enabled && xyplot->mouse_button == xyplot->mouse_zoom_button) return;
+	gdk_draw_rectangle(widget->window,
+			xyplot->fore_gc,
+			FALSE,
+			xyplot->objectsImage[i].xi,
+			xyplot->objectsImage[i].yi,
+			xyplot->objectsImage[i].widthi,
+			xyplot->objectsImage[i].heighti);
 }
 /****************************************************************************************/
 static void draw_distance_line(GtkWidget *widget, GabeditXYPlot *xyplot)
@@ -6200,6 +7118,7 @@ static void draw_objects_text(GtkWidget *widget, GabeditXYPlot *xyplot)
 	for (i=0; i < xyplot->nObjectsText; i++)  
 	if(xyplot->objectsText[i].pango)
 	{
+		/*
     		if ( 
 		!(
 		(xyplot->objectsText[i].xi > xyplot->plotting_rect.x) && 
@@ -6208,10 +7127,11 @@ static void draw_objects_text(GtkWidget *widget, GabeditXYPlot *xyplot)
          	(xyplot->objectsText[i].yi < (xyplot->plotting_rect.y + xyplot->plotting_rect.height)) 
 		)
 		) continue;
+		*/
 		xyplot_cairo_layout(xyplot, xyplot->cairo_widget,  
                         xyplot->objectsText[i].xi,
                         xyplot->objectsText[i].yi,
-			xyplot->objectsText[i].pango,FALSE,FALSE,0);
+			xyplot->objectsText[i].pango,FALSE,FALSE,-xyplot->objectsText[i].angle);
 	}
 }
 /****************************************************************************************/
@@ -6220,6 +7140,7 @@ static void draw_objects_line(GtkWidget *widget, GabeditXYPlot *xyplot)
 	gint i;
 	for (i=0; i < xyplot->nObjectsLine; i++)  
 	{
+		/*
     		if ( 
 		!(
 		(xyplot->objectsLine[i].x1i > xyplot->plotting_rect.x) && 
@@ -6236,6 +7157,7 @@ static void draw_objects_line(GtkWidget *widget, GabeditXYPlot *xyplot)
          	(xyplot->objectsLine[i].y2i < (xyplot->plotting_rect.y + xyplot->plotting_rect.height)) 
 		)
 		) continue;
+		*/
 		/* HERE change gc vlaues */
 		gdouble x1, x2, y1, y2;
 		gdk_gc_set_rgb_fg_color (xyplot->lines_gc, &xyplot->objectsLine[i].color);
@@ -6262,16 +7184,39 @@ static void draw_objects_line(GtkWidget *widget, GabeditXYPlot *xyplot)
 		);
         	xyplot_cairo_line(xyplot, xyplot->cairo_widget, widget, 
 			xyplot->lines_gc,
-			(guint)x1,
-			(guint)y1,
+			(gint)x1,
+			(gint)y1,
 			xyplot->objectsLine[i].x2i,
 			xyplot->objectsLine[i].y2i);
         	xyplot_cairo_line(xyplot, xyplot->cairo_widget, widget, 
 			xyplot->lines_gc,
-			(guint)x2,
-			(guint)y2,
+			(gint)x2,
+			(gint)y2,
 			xyplot->objectsLine[i].x2i,
 			xyplot->objectsLine[i].y2i);
+	}
+}
+/****************************************************************************************/
+static void draw_objects_image(GtkWidget *widget, GabeditXYPlot *xyplot)
+{
+	gint i;
+	for (i=0; i < xyplot->nObjectsImage; i++)  
+	if(xyplot->objectsImage[i].image)
+	{
+		/*
+    		if ( 
+		!(
+		(xyplot->objectsImage[i].xi > xyplot->plotting_rect.x) && 
+         	(xyplot->objectsImage[i].xi < (xyplot->plotting_rect.x + xyplot->plotting_rect.width)) && 
+         	(xyplot->objectsImage[i].yi > xyplot->plotting_rect.y) && 
+         	(xyplot->objectsImage[i].yi < (xyplot->plotting_rect.y + xyplot->plotting_rect.height)) 
+		)
+		) continue;
+		*/
+		xyplot_cairo_image(xyplot, xyplot->cairo_widget, widget, 
+				xyplot->objectsImage[i].xi , xyplot->objectsImage[i].yi, 
+				xyplot->objectsImage[i].widthi, xyplot->objectsImage[i].heighti, 
+				xyplot->objectsImage[i].image);
 	}
 }
 /****************************************************************************************/
@@ -6311,13 +7256,52 @@ static void clean_borders(GtkWidget *widget, GabeditXYPlot *xyplot)
 /****************************************************************************************/
 static void draw_borders(GtkWidget *widget, GabeditXYPlot *xyplot)
 {
-	xyplot_cairo_rectangle(xyplot, xyplot->cairo_widget,  widget,
+	gboolean rectangle = xyplot->show_rectangle_legends;
+	if(rectangle)
+	xyplot_cairo_rectangle(
+			xyplot, xyplot->cairo_widget,  widget,
 	                xyplot->fore_gc,
 			FALSE,
 			xyplot->plotting_rect.x,
 			xyplot->plotting_rect.y,
 			xyplot->plotting_rect.width,
 			xyplot->plotting_rect.height);
+	else
+	{
+  		if(xyplot->show_left_legends)
+		{
+			gdouble x1 = xyplot->plotting_rect.x;
+			gdouble y1 = xyplot->plotting_rect.y;
+			gdouble x2 = xyplot->plotting_rect.x;
+			gdouble y2 = xyplot->plotting_rect.y+xyplot->plotting_rect.height;
+			xyplot_cairo_line( xyplot, xyplot->cairo_widget,  widget, xyplot->fore_gc, x1, y1, x2, y2);
+		}
+		if(xyplot->show_right_legends)
+		{
+			gdouble x1 = xyplot->plotting_rect.x+xyplot->plotting_rect.width;
+			gdouble y1 = xyplot->plotting_rect.y;
+			gdouble x2 = xyplot->plotting_rect.x+xyplot->plotting_rect.width;
+			gdouble y2 = xyplot->plotting_rect.y+xyplot->plotting_rect.height;
+			xyplot_cairo_line( xyplot, xyplot->cairo_widget,  widget, xyplot->fore_gc, x1, y1, x2, y2);
+		}
+		if(xyplot->show_top_legends)
+		{
+			gdouble x1 = xyplot->plotting_rect.x;
+			gdouble y1 = xyplot->plotting_rect.y;
+			gdouble x2 = xyplot->plotting_rect.x+xyplot->plotting_rect.width;
+			gdouble y2 = xyplot->plotting_rect.y;
+			xyplot_cairo_line( xyplot, xyplot->cairo_widget,  widget, xyplot->fore_gc, x1, y1, x2, y2);
+		}
+		if(xyplot->show_bottom_legends)
+		{
+			gdouble x1 = xyplot->plotting_rect.x;
+			gdouble y1 = xyplot->plotting_rect.y+xyplot->plotting_rect.height;
+			gdouble x2 = xyplot->plotting_rect.x+xyplot->plotting_rect.width;
+			gdouble y2 = xyplot->plotting_rect.y+xyplot->plotting_rect.height;
+			xyplot_cairo_line( xyplot, xyplot->cairo_widget,  widget, xyplot->fore_gc, x1, y1, x2, y2);
+		}
+
+	}
 }
 /****************************************************************************************/
 static void draw_background(GtkWidget *widget, GabeditXYPlot *xyplot)
@@ -6482,6 +7466,24 @@ static gint gabedit_xyplot_expose (GtkWidget *widget, GdkEventExpose *event)
 		draw_selected_objects_text_rectangle(widget, xyplot);
 		return TRUE;
 	}
+	if (xyplot->selected_objects_image_num>-1)
+	{
+		gint width;
+		gint height;
+		gdk_drawable_get_size(xyplot->old_area, &width, &height);
+		gdk_draw_drawable (widget->window, 
+		xyplot->back_gc, 
+		xyplot->old_area, 
+		0, 
+		0, 
+		0, 
+		0, 
+		width, 
+		height
+		);
+		draw_selected_objects_image_rectangle(widget, xyplot);
+		return TRUE;
+	}
 	if (xyplot->object_begin_point.x>-1)
 	{
 		gint width;
@@ -6524,17 +7526,19 @@ static gint gabedit_xyplot_expose (GtkWidget *widget, GdkEventExpose *event)
 	clean_borders(widget, xyplot);/* for export */
 	draw_borders(widget, xyplot);
 
+
 	draw_hminor_ticks(widget, xyplot);
 	draw_hmajor_ticks_and_xlegends(widget, xyplot);
 	draw_vminor_ticks(widget, xyplot);
 	draw_vmajor_ticks_and_ylegends(widget, xyplot);
+
 	draw_plotting_area(widget, xyplot);
 
  
 	/* draw_zoom_rectangle(widget, xyplot);*/
 	/* draw_distance_line(widget, xyplot);*/
         
-	
+	draw_objects_image(widget, xyplot);
 	draw_objects_line(widget, xyplot);
 	draw_objects_text(widget, xyplot);
 
@@ -6611,13 +7615,13 @@ static gint gabedit_xyplot_double_click (GtkWidget *widget, GdkEventButton *even
 {
   	XYPlotData *data; 
 	GList* current = NULL;
-	guint x;
-	guint y;
+	gint x;
+	gint y;
 	gboolean OK = FALSE;
 	GabeditXYPlot *xyplot = NULL;
 	gint loop;
-	guint xOld;
-	guint yOld;
+	gint xOld;
+	gint yOld;
 	gint i = 0;
 
   	xyplot=GABEDIT_XYPLOT(widget);
@@ -6640,6 +7644,18 @@ static gint gabedit_xyplot_double_click (GtkWidget *widget, GdkEventButton *even
 		xyplot->object_end_point.x = -1;
 		xyplot->object_end_point.y = -1;
 		set_object_line_dialog(xyplot, i);
+		return TRUE;
+	}
+	/* test on objects image */
+	i = get_object_image_num(xyplot, event->x, event->y);
+	if(i>-1 && i<xyplot->nObjectsImage)
+	{
+		xyplot->selected_objects_image_num = -1;
+		xyplot->object_begin_point.x = -1;
+		xyplot->object_begin_point.y = -1;
+		xyplot->object_end_point.x = -1;
+		xyplot->object_end_point.y = -1;
+		add_set_object_image_dialog(GTK_WIDGET(xyplot), i, 0,0);
 		return TRUE;
 	}
     	if ( 
@@ -6701,7 +7717,7 @@ static gboolean popuo_menu(GtkWidget* widget, guint button, guint32 time)
 	}
 	else 
 	{
-		g_message ("popup menu of xyplot failed");
+		g_message (_("popup menu of xyplot failed"));
 	}
 	return FALSE;
 }
@@ -6758,11 +7774,38 @@ static gint gabedit_xyplot_button_press (GtkWidget *widget, GdkEventButton *even
       xyplot->move_point.x=event->x;
       xyplot->move_point.y=event->y;
   } 
-  if (!xyplot->shift_key_pressed && ! xyplot->control_key_pressed && event->button != xyplot->mouse_zoom_button)
+  if (xyplot->r_key_pressed && !xyplot->control_key_pressed){
+	  	gint i;
+		xyplot->r_key_pressed = FALSE;
+		i = get_object_text_num(xyplot, event->x, event->y);
+		if(i>-1) delete_object_text(GTK_WIDGET(xyplot), i);
+		else
+		{
+			i = get_object_line_num(xyplot, event->x, event->y);
+			if(i>-1) delete_object_line(GTK_WIDGET(xyplot), i);
+			else
+			{
+				i = get_object_image_num(xyplot, event->x, event->y);
+				if(i>-1) delete_object_image(GTK_WIDGET(xyplot), i);
+			}
+		}
+	}
+  if (
+	 !xyplot->t_key_pressed && 
+	 !xyplot->l_key_pressed && 
+	 !xyplot->i_key_pressed && 
+	 !xyplot->shift_key_pressed && 
+	 !xyplot->control_key_pressed && 
+	 event->button != xyplot->mouse_zoom_button
+   )
+
+	  /*
     if ( (event->x > xyplot->plotting_rect.x) && 
          (event->x < (xyplot->plotting_rect.x + xyplot->plotting_rect.width)) && 
          (event->y > xyplot->plotting_rect.y) && 
-         (event->y < (xyplot->plotting_rect.y + xyplot->plotting_rect.height)) ){
+         (event->y < (xyplot->plotting_rect.y + xyplot->plotting_rect.height)) )
+	 */
+    {
 
 	gdouble X, Y;
 	gchar txt[BSIZE];
@@ -6820,13 +7863,46 @@ static gint gabedit_xyplot_button_press (GtkWidget *widget, GdkEventButton *even
 		}
 		
 	}
+	if(xyplot->selected_objects_text_num<0 && xyplot->selected_objects_line_num<0)
+	{
+		i = get_object_image_num(xyplot, event->x, event->y);
+		if(i>-1 && i<xyplot->nObjectsImage) xyplot->selected_objects_image_num = i;
+		else xyplot->selected_objects_image_num = -1;
+		if(xyplot->selected_objects_image_num>-1) 
+		{
+			gdouble xx = -event->x+xyplot->objectsImage[i].xi+xyplot->objectsImage[i].widthi;
+			gdouble yy = -event->y+xyplot->objectsImage[i].yi+xyplot->objectsImage[i].heighti;
+			if(xx*xx+yy*yy<
+			(xyplot->objectsImage[i].widthi*xyplot->objectsImage[i].widthi+
+			xyplot->objectsImage[i].heighti*xyplot->objectsImage[i].heighti)/100
+			)
+			{
+      				xyplot->object_begin_point.x=-1;
+      				xyplot->object_begin_point.y=-1;
+      				xyplot->object_end_point.x=(gint)fabs(xx);
+      				xyplot->object_end_point.y=(gint)fabs(yy);
+			}
+			else
+			{
+      				xyplot->object_begin_point.x=event->x-xyplot->objectsImage[i].xi;
+      				xyplot->object_begin_point.y=event->y-xyplot->objectsImage[i].yi;
+      				xyplot->object_end_point.x=-1;
+      				xyplot->object_end_point.y=-1;
+			}
+			set_old_area(widget, xyplot);
+    			gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+		}
+	}
 
   } 
   if (xyplot->t_key_pressed && !xyplot->control_key_pressed)
+	  /*
     if ( (event->x > xyplot->plotting_rect.x) && 
          (event->x < (xyplot->plotting_rect.x + xyplot->plotting_rect.width)) && 
          (event->y > xyplot->plotting_rect.y) && 
-         (event->y < (xyplot->plotting_rect.y + xyplot->plotting_rect.height)) ){
+         (event->y < (xyplot->plotting_rect.y + xyplot->plotting_rect.height)) )
+	 */
+    {
 
 	gdouble X, Y;
 
@@ -6838,10 +7914,13 @@ static gint gabedit_xyplot_button_press (GtkWidget *widget, GdkEventButton *even
 
   } 
   if (xyplot->l_key_pressed && !xyplot->control_key_pressed)
+	  /*
     if ( (event->x > xyplot->plotting_rect.x) && 
          (event->x < (xyplot->plotting_rect.x + xyplot->plotting_rect.width)) && 
          (event->y > xyplot->plotting_rect.y) && 
-         (event->y < (xyplot->plotting_rect.y + xyplot->plotting_rect.height)) ){
+         (event->y < (xyplot->plotting_rect.y + xyplot->plotting_rect.height)) )
+	 */
+    {
 
 	set_old_area(widget, xyplot);
 	xyplot->l_key_pressed = FALSE;
@@ -6851,7 +7930,17 @@ static gint gabedit_xyplot_button_press (GtkWidget *widget, GdkEventButton *even
       	xyplot->object_end_point.y=-1;
 
   } 
-
+  if (xyplot->i_key_pressed && !xyplot->control_key_pressed)
+	  /*
+    if ( (event->x > xyplot->plotting_rect.x) && 
+         (event->x < (xyplot->plotting_rect.x + xyplot->plotting_rect.width)) && 
+         (event->y > xyplot->plotting_rect.y) && 
+         (event->y < (xyplot->plotting_rect.y + xyplot->plotting_rect.height)) )
+	 */
+    {
+		xyplot->i_key_pressed = FALSE;
+		add_set_object_image_dialog(GTK_WIDGET(xyplot), -1, event->x, event->y);
+	}
   if ( xyplot->mouse_autorange_enabled && 
       (event->button == xyplot->mouse_autorange_button) )
     gabedit_xyplot_set_autorange(xyplot, NULL);
@@ -6874,6 +7963,15 @@ static gint gabedit_xyplot_button_release (GtkWidget *widget, GdkEventButton *ev
   xyplot = GABEDIT_XYPLOT (widget);
 
   xyplot->selected_objects_text_num=-1;
+
+   if (xyplot->selected_objects_image_num>-1)
+   {
+	xyplot->object_begin_point.x=-1;
+	xyplot->object_begin_point.y=-1;
+	xyplot->object_end_point.x=-1;
+	xyplot->object_end_point.y=-1;
+  	xyplot->selected_objects_image_num=-1;
+   }
    if (xyplot->selected_objects_line_num>-1)
    {
 	xyplot->object_begin_point.x=-1;
@@ -6982,7 +8080,7 @@ static gint gabedit_xyplot_button_release (GtkWidget *widget, GdkEventButton *ev
 static gint gabedit_xyplot_motion_notify (GtkWidget *widget, GdkEventMotion *event)
 {
   GabeditXYPlot *xyplot;
-  guint x, y;
+  gint x, y;
   gdouble px, py, mx, my;
   
   g_return_val_if_fail (widget != NULL, FALSE);
@@ -7001,8 +8099,8 @@ static gint gabedit_xyplot_motion_notify (GtkWidget *widget, GdkEventMotion *eve
   {
 	gint i = xyplot->selected_objects_text_num;
 	XYPlotObjectText* objectText = &GABEDIT_XYPLOT(xyplot)->objectsText[i];
-	gabedit_xyplot_get_point (xyplot, x, y, &mx, &my);
-	set_object_text(xyplot, objectText,  mx,my, objectText->str);
+	gabedit_xyplot_get_point_control (xyplot, x, y, objectText->width, objectText->height, objectText->angle, &mx, &my);
+	set_object_text(xyplot, objectText,  mx,my, objectText->angle, objectText->str);
 	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
   }
   else if (xyplot->selected_objects_line_num>-1) 
@@ -7014,15 +8112,19 @@ static gint gabedit_xyplot_motion_notify (GtkWidget *widget, GdkEventMotion *eve
 	{
       		xyplot->object_end_point.x=x;
       		xyplot->object_end_point.y=y;
-		gabedit_xyplot_get_point (xyplot, xyplot->object_begin_point.x, xyplot->object_begin_point.y, &x1, &y1);
-		gabedit_xyplot_get_point (xyplot, xyplot->object_end_point.x, xyplot->object_end_point.y, &x2, &y2);
+		gabedit_xyplot_get_point_control (xyplot, xyplot->object_begin_point.x, xyplot->object_begin_point.y, 
+				objectLine->width,objectLine->width, 0,  &x1, &y1);
+		gabedit_xyplot_get_point_control (xyplot, xyplot->object_end_point.x, xyplot->object_end_point.y, 
+				objectLine->width,objectLine->width, 0, &x2, &y2);
 	}
 	else if(xyplot->selected_objects_line_type==1)
 	{
       		xyplot->object_begin_point.x=x;
       		xyplot->object_begin_point.y=y;
-		gabedit_xyplot_get_point (xyplot, xyplot->object_begin_point.x, xyplot->object_begin_point.y, &x1, &y1);
-		gabedit_xyplot_get_point (xyplot, xyplot->object_end_point.x, xyplot->object_end_point.y, &x2, &y2);
+		gabedit_xyplot_get_point_control (xyplot, xyplot->object_begin_point.x, xyplot->object_begin_point.y, 
+				objectLine->width,objectLine->width, 0, &x1, &y1);
+		gabedit_xyplot_get_point_control (xyplot, xyplot->object_end_point.x, xyplot->object_end_point.y, 
+				objectLine->width,objectLine->width, 0, &x2, &y2);
 	}
 	set_object_line(xyplot, objectLine, 
 		x1, y1, 
@@ -7032,6 +8134,39 @@ static gint gabedit_xyplot_motion_notify (GtkWidget *widget, GdkEventMotion *eve
   		objectLine->color,
   		objectLine->style
 		);
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+  }
+  else if (xyplot->selected_objects_image_num>-1) 
+  {
+	gint i = xyplot->selected_objects_image_num;
+	XYPlotObjectImage* objectImage = &GABEDIT_XYPLOT(xyplot)->objectsImage[i];
+	if(xyplot->object_begin_point.x>0)
+	{
+		gint dx,dy;
+		x -= xyplot->object_begin_point.x;
+		y -= xyplot->object_begin_point.y;
+		if(x<0) x = 0;
+		if(y<0) y = 0;
+		dx = x+objectImage->widthi-widget->allocation.width;
+		if(dx>0) x-=dx;
+		dy = y+objectImage->heighti-widget->allocation.height;
+		if(dy>0) y-=dy;
+		set_object_image(xyplot, objectImage,  x, y, objectImage->widthi, objectImage->heighti);
+	}
+	if(xyplot->object_end_point.x>0)
+	{
+		gint w,h;
+		x += xyplot->object_end_point.x;
+		y += xyplot->object_end_point.y;
+		if(x<objectImage->xi) x = objectImage->xi+20;
+		if(y<objectImage->yi) y = objectImage->yi+20;
+		if(x>widget->allocation.width) x = widget->allocation.width;
+		if(y>widget->allocation.height) y = widget->allocation.height;
+		w = (gint)(x-objectImage->xi);
+		h = (gint)(y-objectImage->yi);
+		set_object_image(xyplot, objectImage,  objectImage->xi, objectImage->yi, w, h);
+	}
+
 	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
   }
   else if (xyplot->object_begin_point.x>-1)
@@ -7206,7 +8341,7 @@ void gabedit_xyplot_set_range_ymax (GabeditXYPlot *xyplot, gdouble ymax)
 /****************************************************************************************/
 void gabedit_xyplot_set_autorange (GabeditXYPlot *xyplot, XYPlotData *data)
 {
-  guint loop, loop2;
+  gint loop, loop2;
   gdouble xmax, xmin, ymax, ymin;
   gdouble dx, dy; 
   XYPlotData *current_data; 
@@ -7294,11 +8429,12 @@ void gabedit_xyplot_get_range (GabeditXYPlot *xyplot, gdouble *xmin, gdouble *xm
     *ymin=xyplot->ymin;
 }
 /****************************************************************************************/
-gboolean gabedit_xyplot_get_point (GabeditXYPlot *xyplot, guint x, guint y, gdouble *xv, gdouble *yv)
+gboolean gabedit_xyplot_get_point (GabeditXYPlot *xyplot, gint x, gint y, gdouble *xv, gdouble *yv)
 {
   g_return_val_if_fail (xyplot != NULL, FALSE);
   g_return_val_if_fail (GABEDIT_IS_XYPLOT (xyplot),FALSE);
   
+  /*
   if ((x < xyplot->plotting_rect.x) || 
       (x > (xyplot->plotting_rect.x + xyplot->plotting_rect.width)) || 
       (y < xyplot->plotting_rect.y) || 
@@ -7306,6 +8442,7 @@ gboolean gabedit_xyplot_get_point (GabeditXYPlot *xyplot, guint x, guint y, gdou
     *xv=*yv=0;
     return FALSE;
   }
+  */
   
   x=x-xyplot->plotting_rect.x;
   y=xyplot->plotting_rect.y+xyplot->plotting_rect.height-y; 
@@ -7314,7 +8451,98 @@ gboolean gabedit_xyplot_get_point (GabeditXYPlot *xyplot, guint x, guint y, gdou
   return TRUE;
 }
 /****************************************************************************************/
-void gabedit_xyplot_set_ticks (GabeditXYPlot *xyplot, guint hmajor, guint hminor, guint vmajor, guint vminor, guint length)
+gboolean gabedit_xyplot_get_point_control(GabeditXYPlot *xyplot, gint x, gint y, gint width, gint height, gdouble angle, gdouble *xv, gdouble *yv )
+{
+	gdouble xa, ya;
+	gdouble xmin,xmax,ymin,ymax;
+	gint a[4],b[4];
+	gint i;
+	gint ixmin,ixmax,iymin,iymax;
+	gdouble alpha = angle;
+	gdouble l;
+	gint lcos;
+	gint lsin;
+	gint wcos;
+	gint wsin;
+	gint hcos;
+	gint hsin;
+	GtkWidget *widget = GTK_WIDGET(xyplot);
+
+
+	g_return_val_if_fail (xyplot != NULL, FALSE);
+	g_return_val_if_fail (GABEDIT_IS_XYPLOT (xyplot),FALSE);
+	if(width>0) alpha -= atan((gdouble)height/width);
+	l = sqrt(width*width+height*height);
+	lcos = (gint)(l*cos(alpha));
+	lsin = (gint)(l*sin(alpha));
+	wcos = (gint)(width*cos(angle));
+	wsin = (gint)(width*sin(angle));
+	hcos = (gint)(height*cos(angle-M_PI/2));
+	hsin = (gint)(height*sin(angle-M_PI/2));
+
+	ixmin = 0;
+	if(ixmin<-lcos) ixmin = -lcos;
+	if(ixmin<-wcos) ixmin = -wcos;
+	if(ixmin<-hcos) ixmin = -hcos;
+
+	iymin = 0;
+	if(iymin<lsin) iymin = lsin;
+	if(iymin<wsin) iymin = wsin;
+	if(iymin<hsin) iymin = hsin;
+
+	ixmax = 0;
+	if(ixmax<lcos) ixmax = lcos;
+	if(ixmax<wcos) ixmax = wcos;
+	if(ixmax<hcos) ixmax = hcos;
+	ixmax = widget->allocation.width-ixmax;
+
+	iymax = 0;
+	if(iymax<-lsin) iymax = -lsin;
+	if(iymax<-wsin) iymax = -wsin;
+	if(iymax<-hsin) iymax = -hsin;
+	iymax = widget->allocation.height-iymax;
+
+	/* printf("iminmax = %d %d %d %d\n",ixmin,ixmax,iymin,iymax);*/
+	a[0] = ixmin;
+	a[1] = ixmax;
+	a[2] = ixmax;
+	a[3] = ixmin;
+	b[0] = iymin;
+	b[1] = iymin;
+	b[2] = iymax;
+	b[3] = iymax;
+
+	gabedit_xyplot_get_point (xyplot, x, y, xv, yv);
+	xmin = xmax = *xv;
+	ymin = ymax = *yv;
+	for(i=0;i<4;i++)
+	{
+		gabedit_xyplot_get_point (xyplot, a[i], b[i], &xa, &ya);
+		if(i==0)
+		{
+			xmin = xa;
+			xmax = xa;
+			ymin = ya;
+			ymax = ya;
+		}
+		else
+		{
+			if(xmin>xa) xmin = xa;
+			if(ymin>ya) ymin = ya;
+			if(xmax<xa) xmax = xa;
+			if(ymax<ya) ymax = ya;
+		}
+	}
+	/* printf("xmax ymax = %f %f\n",xmax,ymax);*/
+
+	if(*xv<xmin) *xv = xmin;
+	if(*yv<ymin) *yv = ymin;
+	if(*xv>xmax) *xv = xmax;
+	if(*yv>ymax) *yv = ymax;
+	return TRUE;
+}
+/****************************************************************************************/
+void gabedit_xyplot_set_ticks (GabeditXYPlot *xyplot, gint hmajor, gint hminor, gint vmajor, gint vminor, gint length)
 {
   g_return_if_fail (xyplot != NULL);
   g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
@@ -7332,7 +8560,7 @@ void gabedit_xyplot_set_ticks (GabeditXYPlot *xyplot, guint hmajor, guint hminor
   gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
 }
 /****************************************************************************************/
-void gabedit_xyplot_set_ticks_hmajor (GabeditXYPlot *xyplot, guint hmajor)
+void gabedit_xyplot_set_ticks_hmajor (GabeditXYPlot *xyplot, gint hmajor)
 {
   g_return_if_fail (xyplot != NULL);
   g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
@@ -7346,7 +8574,7 @@ void gabedit_xyplot_set_ticks_hmajor (GabeditXYPlot *xyplot, guint hmajor)
   gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
 }
 /****************************************************************************************/
-void gabedit_xyplot_set_ticks_hminor (GabeditXYPlot *xyplot, guint hminor)
+void gabedit_xyplot_set_ticks_hminor (GabeditXYPlot *xyplot, gint hminor)
 {
   g_return_if_fail (xyplot != NULL);
   g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
@@ -7360,7 +8588,7 @@ void gabedit_xyplot_set_ticks_hminor (GabeditXYPlot *xyplot, guint hminor)
   gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
 }
 /****************************************************************************************/
-void gabedit_xyplot_set_ticks_vmajor (GabeditXYPlot *xyplot, guint vmajor)
+void gabedit_xyplot_set_ticks_vmajor (GabeditXYPlot *xyplot, gint vmajor)
 {
   g_return_if_fail (xyplot != NULL);
   g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
@@ -7374,7 +8602,7 @@ void gabedit_xyplot_set_ticks_vmajor (GabeditXYPlot *xyplot, guint vmajor)
   gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
 }
 /****************************************************************************************/
-void gabedit_xyplot_set_ticks_vminor (GabeditXYPlot *xyplot, guint vminor)
+void gabedit_xyplot_set_ticks_vminor (GabeditXYPlot *xyplot, gint vminor)
 {
   g_return_if_fail (xyplot != NULL);
   g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
@@ -7388,7 +8616,7 @@ void gabedit_xyplot_set_ticks_vminor (GabeditXYPlot *xyplot, guint vminor)
   gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
 }
 /****************************************************************************************/
-void gabedit_xyplot_set_ticks_length(GabeditXYPlot *xyplot, guint length)
+void gabedit_xyplot_set_ticks_length(GabeditXYPlot *xyplot, gint length)
 {
   g_return_if_fail (xyplot != NULL);
   g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
@@ -7402,7 +8630,7 @@ void gabedit_xyplot_set_ticks_length(GabeditXYPlot *xyplot, guint length)
   gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
 }
 /****************************************************************************************/
-void gabedit_xyplot_get_ticks (GabeditXYPlot *xyplot, guint *hmajor, guint *hminor, guint *vmajor, guint *vminor, guint* length)
+void gabedit_xyplot_get_ticks (GabeditXYPlot *xyplot, gint *hmajor, gint *hminor, gint *vmajor, gint *vminor, gint* length)
 {
   g_return_if_fail (xyplot != NULL);
   g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
@@ -7419,7 +8647,63 @@ void gabedit_xyplot_get_ticks (GabeditXYPlot *xyplot, guint *hmajor, guint *hmin
     *length=xyplot->length_ticks;
 }
 /****************************************************************************************/
-void gabedit_xyplot_set_x_legends_digits (GabeditXYPlot *xyplot, guint digits)
+void gabedit_xyplot_set_margins_left (GabeditXYPlot *xyplot, gint left)
+{
+  g_return_if_fail (xyplot != NULL);
+  g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+  
+  xyplot_free_legends(xyplot);
+
+  xyplot->left_margins=left;
+    
+  xyplot_build_legends(xyplot);
+  xyplot_calculate_sizes(xyplot);
+  gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+}
+/****************************************************************************************/
+void gabedit_xyplot_set_margins_right (GabeditXYPlot *xyplot, gint right)
+{
+  g_return_if_fail (xyplot != NULL);
+  g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+  
+  xyplot_free_legends(xyplot);
+
+  xyplot->right_margins=right;
+    
+  xyplot_build_legends(xyplot);
+  xyplot_calculate_sizes(xyplot);
+  gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+}
+/****************************************************************************************/
+void gabedit_xyplot_set_margins_top (GabeditXYPlot *xyplot, gint top)
+{
+  g_return_if_fail (xyplot != NULL);
+  g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+  
+  xyplot_free_legends(xyplot);
+
+  xyplot->top_margins=top;
+    
+  xyplot_build_legends(xyplot);
+  xyplot_calculate_sizes(xyplot);
+  gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+}
+/****************************************************************************************/
+void gabedit_xyplot_set_margins_bottom (GabeditXYPlot *xyplot, gint bottom)
+{
+  g_return_if_fail (xyplot != NULL);
+  g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+  
+  xyplot_free_legends(xyplot);
+
+  xyplot->bottom_margins=bottom;
+    
+  xyplot_build_legends(xyplot);
+  xyplot_calculate_sizes(xyplot);
+  gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+}
+/****************************************************************************************/
+void gabedit_xyplot_set_x_legends_digits (GabeditXYPlot *xyplot, gint digits)
 {
   g_return_if_fail (xyplot != NULL);
   g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
@@ -7436,7 +8720,7 @@ void gabedit_xyplot_set_x_legends_digits (GabeditXYPlot *xyplot, guint digits)
   }
 }
 /****************************************************************************************/
-void gabedit_xyplot_set_y_legends_digits (GabeditXYPlot *xyplot, guint digits)
+void gabedit_xyplot_set_y_legends_digits (GabeditXYPlot *xyplot, gint digits)
 {
   g_return_if_fail (xyplot != NULL);
   g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
@@ -7453,7 +8737,7 @@ void gabedit_xyplot_set_y_legends_digits (GabeditXYPlot *xyplot, guint digits)
   }
 }
 /****************************************************************************************/
-guint gabedit_xyplot_get_x_legends_digits (GabeditXYPlot *xyplot)
+gint gabedit_xyplot_get_x_legends_digits (GabeditXYPlot *xyplot)
 {
   g_return_val_if_fail (xyplot != NULL, 0);
   g_return_val_if_fail (GABEDIT_IS_XYPLOT (xyplot), 0);
@@ -7461,7 +8745,7 @@ guint gabedit_xyplot_get_x_legends_digits (GabeditXYPlot *xyplot)
   return(xyplot->x_legends_digits);
 }
 /****************************************************************************************/
-guint gabedit_xyplot_get_y_legends_digits (GabeditXYPlot *xyplot)
+gint gabedit_xyplot_get_y_legends_digits (GabeditXYPlot *xyplot)
 {
   g_return_val_if_fail (xyplot != NULL, 0);
   g_return_val_if_fail (GABEDIT_IS_XYPLOT (xyplot), 0);
@@ -7621,7 +8905,7 @@ void gabedit_xyplot_remove_data(GabeditXYPlot *xyplot, XYPlotData *data)
 }
 
 /****************************************************************************************/
-void gabedit_xyplot_configure_mouse_zoom(GabeditXYPlot *xyplot, gboolean enabled, guint button)
+void gabedit_xyplot_configure_mouse_zoom(GabeditXYPlot *xyplot, gboolean enabled, gint button)
 {
   g_return_if_fail (xyplot != NULL);
   g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
@@ -7630,7 +8914,7 @@ void gabedit_xyplot_configure_mouse_zoom(GabeditXYPlot *xyplot, gboolean enabled
   xyplot->mouse_zoom_button=button;
 }
 /****************************************************************************************/
-void gabedit_xyplot_configure_mouse_distance(GabeditXYPlot *xyplot, gboolean enabled, guint button)
+void gabedit_xyplot_configure_mouse_distance(GabeditXYPlot *xyplot, gboolean enabled, gint button)
 {
   g_return_if_fail (xyplot != NULL);
   g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
@@ -7648,7 +8932,7 @@ void gabedit_xyplot_configure_wheel_zoom(GabeditXYPlot *xyplot, gboolean enabled
   xyplot->wheel_zoom_factor=factor;
 }
 /****************************************************************************************/
-void gabedit_xyplot_configure_mouse_displace(GabeditXYPlot *xyplot, gboolean enabled, guint button)
+void gabedit_xyplot_configure_mouse_displace(GabeditXYPlot *xyplot, gboolean enabled, gint button)
 {
   g_return_if_fail (xyplot != NULL);
   g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
@@ -7657,7 +8941,7 @@ void gabedit_xyplot_configure_mouse_displace(GabeditXYPlot *xyplot, gboolean ena
   xyplot->mouse_displace_button=button;
 }
 /****************************************************************************************/
-void gabedit_xyplot_configure_mouse_autorange(GabeditXYPlot *xyplot, gboolean enabled, guint button)
+void gabedit_xyplot_configure_mouse_autorange(GabeditXYPlot *xyplot, gboolean enabled, gint button)
 {
   g_return_if_fail (xyplot != NULL);
   g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
@@ -7670,13 +8954,13 @@ static guchar *get_rgb_image(GtkWidget* drawable)
 {
 	gdouble fac=255.0/65535.0;
 	GdkColormap *colormap;
-  	guint height;
-  	guint width;
-	guint32 pixel;
+  	gint height;
+  	gint width;
+	gint32 pixel;
   	GdkImage* image = NULL;
 	GdkVisual *v;
-	guint8 component;
-	guint k=0;
+	gint8 component;
+	gint k=0;
 	gint x;
 	gint y;
 	gint i;
@@ -7841,6 +9125,17 @@ static void writeTransparentPNG(GabeditXYPlot *xyplot, gchar *fileName)
 	{
 		GdkPixbuf  *pixbufNew = NULL;
 		guchar color[3] = {255, 255, 255};
+		GdkColor c;
+		GdkGCValues gc_values;
+
+		GdkColormap *colormap;
+   		colormap  = gdk_window_get_colormap(widget->window);
+		gdk_gc_get_values(xyplot->back_gc, &gc_values);
+        	gdk_colormap_query_color(colormap, gc_values.foreground.pixel,&c);
+
+		color[0] = (guchar)(SCALE(c.red)*255);
+		color[1] = (guchar)(SCALE(c.green)*255);
+		color[2] = (guchar)(SCALE(c.blue)*255);
 
 		pixbufNew = gdk_pixbuf_add_alpha(pixbuf, TRUE, color[0], color[1], color[2]);
 		if(pixbufNew) gdk_pixbuf_save(pixbufNew, fileName, "png", &error, NULL);
@@ -7920,6 +9215,11 @@ static void xyplot_calculate_sizes (GabeditXYPlot *xyplot)
   if(xyplot->show_top_legends) top = xyplot->length_ticks*2+1.5*((gdouble)xyplot->x_legends_height)+1.0*((gdouble)xyplot->h_label_height);
   if(xyplot->show_bottom_legends) bottom = xyplot->length_ticks*2+1.5*((gdouble)xyplot->x_legends_height)+1.0*((gdouble)xyplot->h_label_height);
 
+  left += (gint)(xyplot->left_margins/100.0*widget->allocation.width);
+  right += (gint)(xyplot->right_margins/100.0*widget->allocation.width);
+  top += (gint)(xyplot->top_margins/100.0*widget->allocation.height);
+  bottom += (gint)(xyplot->bottom_margins/100.0*widget->allocation.height);
+
   xyplot->plotting_rect.x = left;
   xyplot->plotting_rect.y = top;
   
@@ -7952,9 +9252,10 @@ static void xyplot_calculate_sizes (GabeditXYPlot *xyplot)
   }
   reset_object_text_pixels(xyplot);
   reset_object_line_pixels(xyplot);
+  reset_object_image_pixels(xyplot);
 }
 /****************************************************************************************/
-static void value2pixel(GabeditXYPlot *xyplot, gdouble xv, gdouble yv, guint *x, guint *y)
+static void value2pixel(GabeditXYPlot *xyplot, gdouble xv, gdouble yv, gint *x, gint *y)
 {
   g_return_if_fail (xyplot != NULL);
   g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
@@ -7966,7 +9267,7 @@ static void value2pixel(GabeditXYPlot *xyplot, gdouble xv, gdouble yv, guint *x,
   if(xyplot->reflect_y) *y = xyplot->plotting_rect.height - *y;
 }
 /****************************************************************************************/
-static void pixel2value(GabeditXYPlot *xyplot, guint xp, guint yp, gdouble *x, gdouble *y)
+static void pixel2value(GabeditXYPlot *xyplot, gint xp, gint yp, gdouble *x, gdouble *y)
 {
   g_return_if_fail (xyplot != NULL);
   g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
@@ -8176,6 +9477,7 @@ static void xyplot_reflect_x (GabeditXYPlot *xyplot, gboolean reflection)
   xyplot->reflect_x = reflection;
   reset_object_text_pixels(xyplot);
   reset_object_line_pixels(xyplot);
+  reset_object_image_pixels(xyplot);
   gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
 }
 /****************************************************************************************/
@@ -8197,6 +9499,7 @@ static void xyplot_reflect_y (GabeditXYPlot *xyplot, gboolean reflection)
   xyplot->reflect_y = reflection;
   reset_object_text_pixels(xyplot);
   reset_object_line_pixels(xyplot);
+  reset_object_image_pixels(xyplot);
   gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
 }
 /****************************************************************************************/
@@ -8289,6 +9592,27 @@ void gabedit_xyplot_show_bottom_legends (GabeditXYPlot *xyplot, gboolean enable)
 {
 	GtkUIManager *manager = g_object_get_data(G_OBJECT (xyplot), "Manager");
 	GtkAction* action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Render/RenderLegends/LegendShowBottom");
+	if(action) gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action),enable);
+}
+/****************************************************************************************/
+static void xyplot_show_rectangle_legends (GabeditXYPlot *xyplot, gboolean show)
+{
+  g_return_if_fail (xyplot != NULL);
+  g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+  
+  if(xyplot->show_rectangle_legends == show) return; 
+
+  xyplot->show_rectangle_legends = show; 
+  xyplot_build_legends(xyplot);
+  xyplot_calculate_legends_sizes(xyplot);
+  xyplot_calculate_sizes(xyplot);
+  gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+}
+/****************************************************************************************/
+void gabedit_xyplot_show_rectangle_legends (GabeditXYPlot *xyplot, gboolean enable)
+{
+	GtkUIManager *manager = g_object_get_data(G_OBJECT (xyplot), "Manager");
+	GtkAction* action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Render/RenderLegends/LegendShowRectangle");
 	if(action) gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action),enable);
 }
 /****************************************************************************************/
@@ -8443,7 +9767,7 @@ GtkWidget* gabedit_xyplot_new_window(gchar* title, GtkWidget*parent)
 	return window;
 }
 /****************************************************************************************/
-void gabedit_xyplot_add_data_peaks(GabeditXYPlot *xyplot, gint numberOfPoints, gdouble* X,  gdouble* Y, GdkColor color)
+void gabedit_xyplot_add_data_peaks(GabeditXYPlot *xyplot, gint numberOfPoints, gdouble* X,  gdouble* Y, GdkColor* color)
 {
 	g_return_if_fail (xyplot != NULL);
 	g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
@@ -8453,11 +9777,25 @@ void gabedit_xyplot_add_data_peaks(GabeditXYPlot *xyplot, gint numberOfPoints, g
 	{
 		gint loop;
 		XYPlotData *data = g_malloc(sizeof(XYPlotData));
-		guint red = (color.red);
-		guint green = (color.green);
-		guint blue = (color.blue);
+		gint red = 0;
+		gint green = 0;
+		gint blue = 0;
 		gdouble xmin = 0;
 		gdouble xmax = 0;
+
+		if(color)
+		{
+			red = (color->red);
+			green = (color->green);
+			blue = (color->blue);
+		}
+		else
+		{
+			GdkColor c = get_fore_color(xyplot);
+			red = c.red;
+			green = c.green;
+			blue = c.blue;
+		}
 
 		data->size=3*numberOfPoints+2;
 		data->x = g_malloc(data->size*sizeof(gdouble)); 
@@ -8493,12 +9831,12 @@ void gabedit_xyplot_add_data_peaks(GabeditXYPlot *xyplot, gint numberOfPoints, g
 
 		data->point_size=0;
 		data->line_width=2;
-		data->point_color.red=red; 
-		data->point_color.green=green; 
+		data->point_color.red=green; 
+		data->point_color.green=red; 
 		data->point_color.blue=blue; 
 
-		data->line_color.red=green;
-		data->line_color.green=red;
+		data->line_color.red=red;
+		data->line_color.green=green;
 		data->line_color.blue=blue;
 		data->line_style=GDK_LINE_SOLID;
 		gabedit_xyplot_add_data (GABEDIT_XYPLOT(xyplot), data);
@@ -8506,13 +9844,27 @@ void gabedit_xyplot_add_data_peaks(GabeditXYPlot *xyplot, gint numberOfPoints, g
 	}
 }
 /****************************************************************************************/
-static void xyplot_curve_noconv(GabeditXYPlot *xyplot, gint numberOfPoints, gdouble* X,  gdouble* Y, GdkColor color)
+static void xyplot_curve_noconv(GabeditXYPlot *xyplot, gint numberOfPoints, gdouble* X,  gdouble* Y, GdkColor* color)
 {
 	gint loop;
-	guint red = (color.red);
-	guint green = (color.green);
-	guint blue = (color.blue);
+	gint red = 0;
+	gint green = 0;
+	gint blue = 0;
 	XYPlotData *data = g_malloc(sizeof(XYPlotData));
+
+	if(color)
+	{
+		red = (color->red);
+		green = (color->green);
+		blue = (color->blue);
+	}
+	else
+	{
+		GdkColor c = get_fore_color(xyplot);
+		red = c.red;
+		green = c.green;
+		blue = c.blue;
+	}
 	
 	data->size=numberOfPoints;
 	if(data->size>0)
@@ -8553,19 +9905,33 @@ static gdouble gaussianLineshape(gdouble rel_offset)
   return exp(nln2 * rel_offset * rel_offset);
 }
 /****************************************************************************************/
-static void build_data_xyplot_curve_withconv(GabeditXYPlot *xyplot, gint numberOfPoints, gdouble* X,  gdouble* Y, gdouble halfWidth, gdouble (*lineshape)(gdouble), GdkColor color)
+static void build_data_xyplot_curve_withconv(GabeditXYPlot *xyplot, gint numberOfPoints, gdouble* X,  gdouble* Y, gdouble halfWidth, gdouble (*lineshape)(gdouble), GdkColor* color)
 {
 	gint i;
 	gint j;
 	gint n = 0;
         gdouble xx ;
         gdouble h0 = halfWidth/20;
-	guint red = (color.red);
-	guint green = (color.green);
-	guint blue = (color.blue);
+	gint red = 0;
+	gint green = 0;
+	gint blue = 0;
 	XYPlotData *data = g_malloc(sizeof(XYPlotData));
 	gdouble xmin = 0;
 	gdouble xmax = 0;
+
+	if(color)
+	{
+		red = (color->red);
+		green = (color->green);
+		blue = (color->blue);
+	}
+	else
+	{
+		GdkColor c = get_fore_color(xyplot);
+		red = c.red;
+		green = c.green;
+		blue = c.blue;
+	}
 	
 	data->size=0;
 	data->point_size=0;
@@ -8663,7 +10029,7 @@ static void build_data_xyplot_curve_withconv(GabeditXYPlot *xyplot, gint numberO
 	gabedit_xyplot_set_autorange(GABEDIT_XYPLOT(xyplot), NULL);
 }
 /****************************************************************************************/
-void gabedit_xyplot_add_data_conv(GabeditXYPlot *xyplot, gint numberOfPoints, gdouble* X,  gdouble* Y, gdouble halfWidth,GabeditXYPlotConvType convType, GdkColor color)
+void gabedit_xyplot_add_data_conv(GabeditXYPlot *xyplot, gint numberOfPoints, gdouble* X,  gdouble* Y, gdouble halfWidth,GabeditXYPlotConvType convType, GdkColor* color)
 {
 	switch(convType)
 	{
@@ -8687,33 +10053,42 @@ void gabedit_xyplot_help()
 	GtkWidget* hbox;
 
 	gchar* tmp = g_strdup_printf(
+			_(
 			"Mouse buttons and Keys :\n"
 			"\t Right button : popup menu\n"
 			"\t Middle button : zoom\n"
 			"\t Left button + Control key : zoom\n"
 			"\t Left button + t key : insert a text\n"
 			"\t Left button + l key : insert a line (arrow)\n"
+			"\t Left button + i key : insert an image from a png file\n"
+			"\t Left button + r key : remove selected image/text/line\n"
+			"\t Ctrl + V (Alt + V) : insert an image from clipboard\n"
 			"\t Left button + Shift key : compute distance between 2 points\n"
 			"\t Left button, double click : select a data to change\n"
+			"\t Left button clicked on bottom right corner + move : change the width/height for an image\n"
 			"\n\n"
 			"Popup menu :\n"
-			"\t Set : ticks, ranges, X and Y labels, digits, font size, auto ranges\n"
+			"\t Set : ticks, margins, ranges, X and Y labels, digits, font size, auto ranges\n"
 			"\t Render : grids, directions, legends\n"
 			"\t Data : read data from multiple format(txt 2 or more, JDX, jMRUI)\n"
 			"\t        A backspace ligne in a txt file is interpreted as a beginning new data\n"
 			"\t        Save all data at a txt file\n"
 			"\t        Remove all all\n"
 			"\t        change data (scale, shift, ...)\n"
+			"\t Objects : for insert/delete texts, lines or images\n"
 			"\t Screen capture : BMP, JPEG, PNG, Transparent PNG, TIF\n"
 			"\t Export image : SVG, PS, EPS and PDF (this is a real export, not a capture)\n"
+			"\t Read : read all (parameters, data, texts, lines, images) from a Gabedit file\n"
+			"\t Save : save all (parameters, data, texts, lines, images) in Gabedit file\n"
 			"\t Help : for obtain this window (You guessed :))\n"
 			"\t Close : very simple :)\n"
+			)
 			);
 
 	dialog = gtk_dialog_new();
 	gtk_widget_realize(GTK_WIDGET(dialog));
 
-	gtk_window_set_title(GTK_WINDOW(dialog),"Help");
+	gtk_window_set_title(GTK_WINDOW(dialog),_("Help"));
 	g_signal_connect(G_OBJECT(dialog), "delete_event", (GCallback)gtk_widget_destroy, NULL);
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);

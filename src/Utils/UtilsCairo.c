@@ -228,6 +228,58 @@ void gabedit_cairo_line(cairo_t *cr,  GtkWidget* parent, GdkGC* gc, gdouble x1,g
 	cairo_restore (cr); /* stack-pen-size */
 }
 /*****************************************************************************/
+void gabedit_cairo_arc(cairo_t *cr,  GtkWidget* parent, GdkGC* gc,
+		gint xc,gint yc,gint rayon, gdouble angle1, gdouble angle2, gdouble scale1, gdouble scale2)
+{
+	GdkGCValues values;
+	GdkColor color;
+	double r,g,b;
+	GdkColormap *colormap;
+	if(!cr) return;
+	if(!gc) return;
+	cairo_save (cr); /* stack-pen-size */
+	cairo_translate(cr,xc,yc);
+	cairo_scale(cr,scale1,scale2);
+	gdk_gc_get_values(gc, &values);
+
+	switch(values.cap_style)
+	{
+		case GDK_CAP_NOT_LAST:
+			cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT); break;
+		case GDK_CAP_BUTT:
+			cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT); break;
+		case GDK_CAP_ROUND:
+			cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND); break;
+		case GDK_CAP_PROJECTING:
+			cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE); break;
+		default:
+			cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT); break;
+
+	}
+	switch(values.join_style)
+	{
+		case GDK_JOIN_MITER:
+			cairo_set_line_join (cr, CAIRO_LINE_JOIN_MITER);break;
+		case GDK_JOIN_ROUND :
+			cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);break;
+		case GDK_JOIN_BEVEL :
+			cairo_set_line_join (cr, CAIRO_LINE_JOIN_BEVEL);break;
+		default:
+			cairo_set_line_join (cr, CAIRO_LINE_JOIN_MITER);break;
+	}
+   	colormap  = gdk_drawable_get_colormap(parent->window);
+        gdk_colormap_query_color(colormap, values.foreground.pixel,&color);
+	r = SCALE(color.red);
+	g = SCALE(color.green);
+	b = SCALE(color.blue);
+	cairo_set_source_rgba (cr, r, g, b, 1.0);
+	cairo_set_line_width (cr, values.line_width);
+	cairo_arc (cr, 0, 0, rayon, angle1, angle2);
+	/*if(values.fill==GDK_SOLID) cairo_fill (cr);*/
+	cairo_stroke (cr);
+	cairo_restore (cr); /* stack-pen-size */
+}
+/*****************************************************************************/
 void gabedit_cairo_cercle(cairo_t *cr,  GtkWidget* parent, GdkGC* gc,
 		gint xc,gint yc,gint rayon)
 {

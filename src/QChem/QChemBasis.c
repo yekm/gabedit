@@ -84,14 +84,14 @@ static void setComboBasisAux(GtkWidget *comboBasis)
 		atom++;
 	}
 	if(atomsList) basisList = getQChemBasisListOfAtoms(atomsList,message);
-	if(!basisList) basisList = g_list_append(basisList, "Sorry, I can not obtain one type of bases for all atoms of your molecule");
+	if(!basisList) basisList = g_list_append(basisList, _("Sorry, I can not obtain one type of bases for all atoms of your molecule"));
 	g_list_free(atomsList);
 
 	l = basisList;
 	while( l )
 	{
 		if(strstr(l->data,"rimp")) basisListAux = g_list_append(basisListAux,l->data);
-		if(strstr(l->data,"Sorry")) basisListAux = g_list_append(basisListAux,l->data);
+		if(strstr(l->data,_("Sorry"))) basisListAux = g_list_append(basisListAux,l->data);
 		l = l->next;
 	}
 
@@ -115,7 +115,7 @@ static void setComboBasis(GtkWidget *comboBasis)
 		atom++;
 	}
 	if(atomsList) basisList = getQChemBasisListOfAtoms(atomsList,message);
-	if(!basisList) basisList = g_list_append(basisList, "Sorry, I can not obtain one type of bases for all atoms of your molecule");
+	if(!basisList) basisList = g_list_append(basisList, _("Sorry, I can not obtain one type of bases for all atoms of your molecule"));
 	g_list_free(atomsList);
 
   	gtk_combo_box_entry_set_popdown_strings( comboBasis, basisList);
@@ -187,7 +187,7 @@ void addQChemBasisToTable(GtkWidget *table, gint i)
 	gchar* listBasis[] = {" "};
 
 
-	add_label_table(table,"Basis",(gushort)i,0);
+	add_label_table(table,_("Basis"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entryBasis = addComboListToATable(table, listBasis, nlistBasis, i, 2, 1);
 	comboBasis  = g_object_get_data(G_OBJECT (entryBasis), "Combo");
@@ -206,7 +206,7 @@ void addQChemBasisGuessToTable(GtkWidget *table, gint i, GtkWidget* comboGuess)
 	gint nlistBasis = 1;
 	gchar* listBasis[] = {" "};
 
-	label = add_label_table(table,"Basis",(gushort)i,0);
+	label = add_label_table(table,_("Basis"),(gushort)i,0);
 	if(comboGuess) g_object_set_data(G_OBJECT (comboGuess), "LabelGuessBasis1", label);
 	label = add_label_table(table,":",(gushort)i,1);
 	if(comboGuess) g_object_set_data(G_OBJECT (comboGuess), "LabelGuessBasis2", label);
@@ -227,7 +227,7 @@ void addQChemAuxBasisToTable(GtkWidget *table, gint i, GtkWidget* comboCorrelati
 	gint nlistAuxBasis = 1;
 	gchar* listAuxBasis[] = {" "};
 
-	label = add_label_table(table,"Auxiliary basis",(gushort)i,0);
+	label = add_label_table(table,_("Auxiliary basis"),(gushort)i,0);
 	if(comboCorrelation) g_object_set_data(G_OBJECT (comboCorrelation), "LabelAuxBasis1", label);
 	label = add_label_table(table,":",(gushort)i,1);
 	if(comboCorrelation) g_object_set_data(G_OBJECT (comboCorrelation), "LabelAuxBasis2", label);

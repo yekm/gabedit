@@ -36,7 +36,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/DrawGeom.h"
 #include "../Common/Windows.h"
 
-#define STICKSIZE 0.15
+#define STICKSIZE 0.1
 #define PRECISON_CYLINDER 0.001
 
 typedef struct _RGB
@@ -243,10 +243,17 @@ static gchar *get_pov_one_stick_for_ball(gint i,gint j)
 
      Center1 = get_prop_center(i);
      Center2 = get_prop_center(j);
-     k =get_num_min_rayonIJ(i,j);
  
-     if(k==i) ep = Center1.C[3]*get_factorstick();
-     else ep = Center2.C[3]*get_factorstick();
+     if(
+	    geometry[i].Layer == LOW_LAYER || geometry[j].Layer == LOW_LAYER 
+	 || geometry[i].Layer == MEDIUM_LAYER || geometry[j].Layer == MEDIUM_LAYER 
+       )
+     {
+     	k =get_num_min_rayonIJ(i,j);
+     	if(k==i) ep = Center1.C[3]*get_factorstick();
+     	else ep = Center2.C[3]*get_factorstick();
+     }
+     else ep =STICKSIZE*5*get_factorstick();
 
      if(stick_mode()) ep =STICKSIZE*get_factorstick();
      else ep/=2;
@@ -257,6 +264,8 @@ static gchar *get_pov_one_stick_for_ball(gint i,gint j)
      poid1 = geometry[i].Prop.covalentRadii+geometry[i].Prop.radii;
      poid2 = geometry[j].Prop.covalentRadii+geometry[j].Prop.radii;
      poid = poid1 + poid2 ;
+     if(nc==2 && ep<STICKSIZE/3) ep = STICKSIZE/3;
+     if(nc==3 && ep<STICKSIZE/2) ep = STICKSIZE/2;
 
      if(nc==3)
      {
@@ -906,7 +915,7 @@ static gchar* export_to_povray(gchar* fileName)
      	if(Natoms<1)
 	{
 		fclose(fd);
-	 	message = g_strdup_printf("\nSorry, The number of atoms should be >0\n");
+	 	message = g_strdup_printf(_("\nSorry, The number of atoms should be >0\n"));
 		return message;
 	}
 	if( !stick_mode())
@@ -917,7 +926,7 @@ static gchar* export_to_povray(gchar* fileName)
 	}
 	else
 	{
-		temp = get_pov_atoms_for_stick(1.0); 
+		temp = get_pov_atoms_for_stick(get_factorstick()); 
 		fprintf(fd,"%s",temp);
 		g_free(temp);
 	}
@@ -935,7 +944,7 @@ static gchar* export_to_povray(gchar* fileName)
  }
  else
  {
-	 message = g_strdup_printf("\nSorry, I cannot create the %s file\n",fileName);
+	 message = g_strdup_printf(_("\nSorry, I cannot create the %s file\n"),fileName);
  }
 	return message;
 }
@@ -997,7 +1006,7 @@ static gboolean create_cmd_pov(G_CONST_RETURN gchar* command, gchar* fileNameCMD
   	fcmd = FOpen(fileNameCMD, "w");
 	if(!fcmd)
 	{
-  		Message("\nI can not create cmd file\n ","Error",TRUE);   
+  		Message(_("\nI can not create cmd file\n "),_("Error"),TRUE);   
 		return FALSE;
 	}
 #ifndef G_OS_WIN32
@@ -1070,7 +1079,7 @@ static void exportPOVRay(GtkWidget* Win, gboolean runPovray)
 		gchar* message = export_to_povray(fileNamePOV);
 		if(message)
 		{
-    			GtkWidget *m = Message(message,"Error",TRUE);
+    			GtkWidget *m = Message(message,_("Error"),TRUE);
 			gtk_window_set_modal (GTK_WINDOW (m), TRUE);
 		}
 		else
@@ -1095,19 +1104,20 @@ static void exportPOVRay(GtkWidget* Win, gboolean runPovray)
 				else
 				{
 					gchar* t = g_strdup_printf(
+						_(
 						"\n2 files was created :\n"
 						" -\"%s\" a povray input file\n"
-						" -\"%s\" a batch file for run povray\n",
-						fileNamePOV,fileNameCMD);
-					GtkWidget* winDlg = Message(t,"Info",TRUE);
+						" -\"%s\" a batch file for run povray\n")
+						,fileNamePOV,fileNameCMD);
+					GtkWidget* winDlg = Message(t,_("Info"),TRUE);
 					gtk_window_set_modal (GTK_WINDOW (winDlg), TRUE);
 					g_free(t);
 				}
 			}
 			else
 			{
-				gchar* t = g_strdup_printf("\nSorry, I cannot create the %s file\n",fileNameCMD);
-				GtkWidget* winDlg = Message(t,"Info",TRUE);
+				gchar* t = g_strdup_printf(_("\nSorry, I cannot create the %s file\n"),fileNameCMD);
+				GtkWidget* winDlg = Message(t,_("Info"),TRUE);
 				gtk_window_set_modal (GTK_WINDOW (winDlg), TRUE);
 				g_free(t);
 			}

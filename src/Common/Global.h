@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <glib.h>
+#include <glib/gi18n.h>
 #include "../Files/GabeditFileChooser.h"
 #include "../Common/GabeditType.h"
 
@@ -49,7 +50,7 @@ DEALINGS IN THE SOFTWARE.
 
 #define MAJOR_VERSION    2
 #define MINOR_VERSION    2
-#define MICRO_VERSION    12
+#define MICRO_VERSION    13
 
 /**** Structures *********/
 typedef struct _FileOpen

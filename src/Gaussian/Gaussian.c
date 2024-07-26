@@ -30,7 +30,6 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/GeomXYZ.h"
 #include "../Geometry/InterfaceGeom.h"
 #include "../Utils/AtomsProp.h"
-/* #include "../../pixmaps/Next.xpm" */
 #include "GaussGlobal.h"
 #include "GInterfaceRoute.h"
 #include "GInterfaceGeom.h"
@@ -110,13 +109,9 @@ static void GetLink1()
  	}
  }
 	
- /* TO DO */
- if(t)
- 	g_free(t);
- if(t1)
- 	g_free(t1);
- if(t2)
- 	g_free(t2);
+ if(t) g_free(t);
+ if(t1) g_free(t1);
+ if(t2) g_free(t2);
 
 }
 /*******************************************************************/
@@ -153,13 +148,13 @@ static void GetInfoBasisLower()
           if(!chang)
           {
             for (i=0;i<NSymbTypes;i++)
-              if( strcmp(BasisT[i].BasisName,"None")  ) 
+              if( strcmp(BasisT[i].BasisName,_("None"))  ) 
               	if( !strcmp(BasisT[i].Layer,"Low") ) 
 			GetInfoBasisT(i);
           }
           else
            for (i=0;i<NSymbCenters;i++)
-              		if( strcmp(BasisC[i].BasisName,"None") )
+              		if( strcmp(BasisC[i].BasisName,_("None")) )
               			if( !strcmp(BasisC[i].Layer,"Low") ) 
 					GetInfoBasisC(i);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"\n",-1);
@@ -181,13 +176,13 @@ static void GetInfoBasisMedium()
           if(!chang)
           {
             for (i=0;i<NSymbTypes;i++)
-              	if( strcmp(BasisT[i].BasisName,"None")  ) 
+              	if( strcmp(BasisT[i].BasisName,_("None"))  ) 
               		if( !strcmp(BasisT[i].Layer,"Medium") ) 
 				GetInfoBasisT(i);
           }
 	  else
            for (i=0;i<NSymbCenters;i++)
-              		if( strcmp(BasisC[i].BasisName,"None") )
+              		if( strcmp(BasisC[i].BasisName,_("None")) )
               			if( !strcmp(BasisC[i].Layer,"Medium") ) 
 					GetInfoBasisC(i);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"\n",-1);
@@ -205,17 +200,19 @@ static void GetInfoBasisHight()
 				chang=TRUE; 
 				break; 
 			}
+              printf("coucou\n");
+              printf("%s\n",BasisC[0].BasisName);
 
           if(!chang)
           {
             for (i=0;i<NSymbTypes;i++)
-              if( strcmp(BasisT[i].BasisName,"None")  ) 
+              if( strcmp(BasisT[i].BasisName,_("None"))  ) 
               	if( !strcmp(BasisT[i].Layer,"High") || !strcmp(BasisT[i].Layer," ")) 
 			GetInfoBasisT(i);
           }
 	  else
            for (i=0;i<NSymbCenters;i++)
-              		if( strcmp(BasisC[i].BasisName,"None") )
+              		if( strcmp(BasisC[i].BasisName,_("None")) )
               			if( !strcmp(BasisC[i].Layer,"High") || !strcmp(BasisC[i].Layer," ") ) 
 					GetInfoBasisC(i);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"\n",-1);
@@ -230,42 +227,41 @@ static void GetInfoBasis( )
 		if(Methodes[i] !=NULL)
 			nMethodes++;
 
+              printf("nMethodes = %d\n",nMethodes);
         if(nMethodes<2)
 	{
-		if(strcmp(Methodes[0],"Semi-Empirical Methods") && strcmp(Methodes[0],"Molecular Mechanics Methods"))
+		if(strcmp(Methodes[0],_("Semi-Empirical Methods")) && strcmp(Methodes[0],_("Molecular Mechanics Methods")))
 	 		GetInfoBasisHight();
 	}
        else
         if(nMethodes<3)
         {  
-		if(strcmp(Methodes[2],"Semi-Empirical Methods") && strcmp(Methodes[2],"Molecular Mechanics Methods"))
+		if(strcmp(Methodes[2],_("Semi-Empirical Methods")) && strcmp(Methodes[2],_("Molecular Mechanics Methods")))
          		if(Basis[2] !=NULL && !strcmp(Basis[2],"GEN") ) GetInfoBasisLower();
-		if(strcmp(Methodes[1],"Semi-Empirical Methods") && strcmp(Methodes[1],"Molecular Mechanics Methods"))
+		if(strcmp(Methodes[1],_("Semi-Empirical Methods")) && strcmp(Methodes[1],_("Molecular Mechanics Methods")))
          		if(Basis[1] !=NULL && !strcmp(Basis[1],"GEN") ) GetInfoBasisMedium();
-		if(strcmp(Methodes[0],"Semi-Empirical Methods") && strcmp(Methodes[0],"Molecular Mechanics Methods"))
+		if(strcmp(Methodes[0],_("Semi-Empirical Methods")) && strcmp(Methodes[0],_("Molecular Mechanics Methods")))
          		if(Basis[0] !=NULL && !strcmp(Basis[0],"GEN") ) GetInfoBasisHight();
-		if(strcmp(Methodes[2],"Semi-Empirical Methods") && strcmp(Methodes[2],"Molecular Mechanics Methods"))
+		if(strcmp(Methodes[2],_("Semi-Empirical Methods")) && strcmp(Methodes[2],_("Molecular Mechanics Methods")))
          		if(Basis[2] !=NULL && !strcmp(Basis[2],"GEN") ) GetInfoBasisLower();
-		if(strcmp(Methodes[1],"Semi-Empirical Methods") && strcmp(Methodes[1],"Molecular Mechanics Methods"))
+		if(strcmp(Methodes[1],_("Semi-Empirical Methods")) && strcmp(Methodes[1],_("Molecular Mechanics Methods")))
          		if(Basis[1] !=NULL && !strcmp(Basis[1],"GEN") ) GetInfoBasisMedium();
         }
        else
        {
-		if(strcmp(Methodes[2],"Semi-Empirical Methods") && strcmp(Methodes[2],"Molecular Mechanics Methods"))
+		if(strcmp(Methodes[2],_("Semi-Empirical Methods")) && strcmp(Methodes[2],_("Molecular Mechanics Methods")))
          		if(Basis[2] !=NULL && !strcmp(Basis[2],"GEN") ) GetInfoBasisLower();
-		if(strcmp(Methodes[1],"Semi-Empirical Methods") && strcmp(Methodes[1],"Molecular Mechanics Methods"))
+		if(strcmp(Methodes[1],_("Semi-Empirical Methods")) && strcmp(Methodes[1],_("Molecular Mechanics Methods")))
          		if(Basis[1] !=NULL && !strcmp(Basis[1],"GEN") ) GetInfoBasisMedium();
-		if(strcmp(Methodes[0],"Semi-Empirical Methods") && strcmp(Methodes[0],"Molecular Mechanics Methods"))
+		if(strcmp(Methodes[0],_("Semi-Empirical Methods")) && strcmp(Methodes[0],_("Molecular Mechanics Methods")))
          		if(Basis[0] !=NULL && !strcmp(Basis[0],"GEN") ) GetInfoBasisHight();
-		if(strcmp(Methodes[2],"Semi-Empirical Methods") && strcmp(Methodes[2],"Molecular Mechanics Methods"))
+		if(strcmp(Methodes[2],_("Semi-Empirical Methods")) && strcmp(Methodes[2],_("Molecular Mechanics Methods")))
          		if(Basis[2] !=NULL && !strcmp(Basis[2],"GEN") ) GetInfoBasisLower();
-		if(strcmp(Methodes[1],"Semi-Empirical Methods") && strcmp(Methodes[1],"Molecular Mechanics Methods"))
+		if(strcmp(Methodes[1],_("Semi-Empirical Methods")) && strcmp(Methodes[1],_("Molecular Mechanics Methods")))
          		if(Basis[1] !=NULL && !strcmp(Basis[1],"GEN") ) GetInfoBasisMedium();
-		if(strcmp(Methodes[2],"Semi-Empirical Methods") && strcmp(Methodes[2],"Molecular Mechanics Methods"))
+		if(strcmp(Methodes[2],_("Semi-Empirical Methods")) && strcmp(Methodes[2],_("Molecular Mechanics Methods")))
          		if(Basis[2] !=NULL && !strcmp(Basis[2],"GEN") ) GetInfoBasisLower();
        }
-
-
 }      
 /*******************************************************************/
 static gboolean TestButtonActive(GtkWidget *button)
@@ -354,9 +350,9 @@ static void GetInfoPFS(  )
 {
 	gboolean okTimeDependent = FALSE;
 	if( TtimeDependent!=NULL)
-  	if (!strcmp(Methodes[0],"Density Functional Methods")
-			|| !strcmp(Methodes[0],"Hartree Fock") 
-			|| !strcmp(Methodes[0],"Hybrid Functional Methods")
+  	if (!strcmp(Methodes[0],_("Density Functional Methods"))
+			|| !strcmp(Methodes[0],_("Hartree Fock")) 
+			|| !strcmp(Methodes[0],_("Hybrid Functional Methods"))
 	  )
 		okTimeDependent = TRUE;
 
@@ -410,15 +406,15 @@ static gchar *get_info_basis(gint im)
         if(EntryBasis[0][im]!=NULL)
         {
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryBasis[0][im]));
-  		if (strcmp(entrytext,"No") ) temp=g_strdup_printf("%s%s",temp,entrytext);
+  		if (strcmp(entrytext,_("No")) ) temp=g_strdup_printf("%s%s",temp,entrytext);
         }
   	if (Modify) temp = g_strdup_printf("%sG",temp);
         if(EntryBasis[1][im]!=NULL)
         {
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryBasis[1][im]));
-  		if (strcmp(entrytext,"No") )
+  		if (strcmp(entrytext,_("No")) )
         	{
-  			if (strcmp(entrytext,"Yes") ) temp=g_strdup_printf("%s%s",temp,entrytext);
+  			if (strcmp(entrytext,_("Yes")) ) temp=g_strdup_printf("%s%s",temp,entrytext);
                 	else temp=g_strdup_printf("AUG-%s",temp);
         	}
         }
@@ -440,37 +436,37 @@ static gchar *get_info_method(gint im)
 
   	if (strcmp(temp,tmp[0])) Modify=TRUE;
 
-  	if (!strcmp(Methodes[im],"Density Functional Methods") )
+  	if (!strcmp(Methodes[im],_("Density Functional Methods")) )
         {
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryMethods[1][im]));
         	temp=g_strdup_printf("%s%s",temp,entrytext);
         }
         else
-  	if (!strcmp(Methodes[im],"MP Methods") )
+  	if (!strcmp(Methodes[im],_("MP Methods")) )
         {
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryMethods[1][im]));
         	temp=g_strdup_printf("%s(%s",temp,entrytext);
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryMethods[2][im]));
-  		if (strcmp(entrytext,"default") )
+  		if (strcmp(entrytext,_("default")) )
         	temp=g_strdup_printf("%s,%s",temp,entrytext);
         	temp=g_strdup_printf("%s)",temp);
         }
         else
-  	if (!strcmp(Methodes[im],"Excited States") )
+  	if (!strcmp(Methodes[im],_("Excited States")) )
         {
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryMethods[1][im]));
 		temp=g_strdup_printf("%s(%s",temp,entrytext);
 
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryMethods[2][im]));
-  		if (strcmp(entrytext,"default") )
+  		if (strcmp(entrytext,_("default")) )
         		temp=g_strdup_printf("%s,Nstates=%s",temp,entrytext);
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryMethods[3][im]));
-  		if (strcmp(entrytext,"default") )
+  		if (strcmp(entrytext,_("default")) )
         		temp=g_strdup_printf("%s,Root=%s",temp,entrytext);
         	temp=g_strdup_printf("%s)",temp);
         }
         else
-  	if (!strcmp(Methodes[im],"CASSCF Method") )
+  	if (!strcmp(Methodes[im],_("CASSCF Method")) )
         {
         	temp=g_strdup("CASSCF");
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryMethods[0][im]));
@@ -478,21 +474,21 @@ static gchar *get_info_method(gint im)
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryMethods[1][im]));
         	temp=g_strdup_printf("%s,%s",temp,entrytext);
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryMethods[2][im]));
-  		if (strcmp(entrytext,"No") )
+  		if (strcmp(entrytext,_("No")) )
         		AddMP2=TRUE;
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryMethods[3][im]));
-  		if (strcmp(entrytext,"No") )
+  		if (strcmp(entrytext,_("No")) )
         		temp=g_strdup_printf("%s,Spin",temp);
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryMethods[4][im]));
-  		if (strcmp(entrytext,"No") )
+  		if (strcmp(entrytext,_("No")) )
  			AddConical=TRUE;
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryMethods[5][im]));
-  		if (strcmp(entrytext,"default") )
+  		if (strcmp(entrytext,_("default")) )
         		temp=g_strdup_printf("%s,Nroot=%s",temp,entrytext);
         	temp=g_strdup_printf("%s)",temp);
         }
         else
-  	if (!strcmp(Methodes[im],"CI Methods") )
+  	if (!strcmp(Methodes[im],_("CI Methods")) )
         {
         	temp=g_strdup(tmp[0]);
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryMethods[1][im]));
@@ -559,7 +555,7 @@ static void GetInfoMB(  )
         }
 
         temp=get_info_method(0);
-	if(strcmp(Methodes[0],"Semi-Empirical Methods") && strcmp(Methodes[0],"Molecular Mechanics Methods"))
+	if(strcmp(Methodes[0],_("Semi-Empirical Methods")) && strcmp(Methodes[0],_("Molecular Mechanics Methods")))
 	{
         	if (Basis[0]!=NULL) AddWithBasis(temp, get_info_basis(0));
 		else gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,temp,-1);
@@ -570,7 +566,7 @@ static void GetInfoMB(  )
         {
             	temp=get_info_method(1);
         	gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,":",-1);
-		if(strcmp(Methodes[1],"Semi-Empirical Methods") && strcmp(Methodes[1],"Molecular Mechanics Methods"))
+		if(strcmp(Methodes[1],_("Semi-Empirical Methods")) && strcmp(Methodes[1],_("Molecular Mechanics Methods")))
 		{
         		if (Basis[1]!=NULL) AddWithBasis(temp, get_info_basis(1));
 			else gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,temp,-1);
@@ -582,7 +578,7 @@ static void GetInfoMB(  )
         {
             	temp=get_info_method(2);
         	gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,":",-1);
-		if(strcmp(Methodes[2],"Semi-Empirical Methods") && strcmp(Methodes[2],"Molecular Mechanics Methods"))
+		if(strcmp(Methodes[2],_("Semi-Empirical Methods")) && strcmp(Methodes[2],_("Molecular Mechanics Methods")))
 		{
         		if (Basis[2]!=NULL) AddWithBasis(temp, get_info_basis(2));
 			else gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,temp,-1);
@@ -599,7 +595,7 @@ static void GetInfoType()
        	gchar *temp;
   	G_CONST_RETURN gchar *entrytext;
 
-        if(Types==NULL || !strcmp(Types,"Single Point") )
+        if(Types==NULL || !strcmp(Types,_("Single Point")) )
         return;
         if(AddConical)
 	{
@@ -608,23 +604,23 @@ static void GetInfoType()
 	}
 
   	entrytext = gtk_entry_get_text(GTK_ENTRY(EntryTypes[0]));
-	if(strcmp(entrytext,"default")) temp=g_strdup_printf("Opt(%s",entrytext);
+	if(strcmp(entrytext,_("default"))) temp=g_strdup_printf("Opt(%s",entrytext);
 	else temp=g_strdup_printf("Opt(");
 
   	entrytext = gtk_entry_get_text(GTK_ENTRY(EntryTypes[1]));
-        if( strcmp(entrytext,"default") ) temp=g_strdup_printf("%s,%s",temp,entrytext);
+        if( strcmp(entrytext,_("default")) ) temp=g_strdup_printf("%s,%s",temp,entrytext);
 
   	entrytext = gtk_entry_get_text(GTK_ENTRY(EntryTypes[2]));
-        if( strcmp(entrytext,"default") ) temp=g_strdup_printf("%s,MaxCycle=%s",temp,entrytext);
+        if( strcmp(entrytext,_("default")) ) temp=g_strdup_printf("%s,MaxCycle=%s",temp,entrytext);
 
   	entrytext = gtk_entry_get_text(GTK_ENTRY(EntryTypes[3]));
-        if( strcmp(entrytext,"default") ) temp=g_strdup_printf("%s,StepSize=%s",temp,entrytext);
+        if( strcmp(entrytext,_("default")) ) temp=g_strdup_printf("%s,StepSize=%s",temp,entrytext);
 
   	entrytext = gtk_entry_get_text(GTK_ENTRY(EntryTypes[4]));
-        if( strcmp(entrytext,"No") ) temp=g_strdup_printf("%s,Saddle=%s",temp,entrytext);
+        if( strcmp(entrytext,_("No")) ) temp=g_strdup_printf("%s,Saddle=%s",temp,entrytext);
 
   	entrytext = gtk_entry_get_text(GTK_ENTRY(EntryTypes[5]));
-        if( strcmp(entrytext,"No") ) temp=g_strdup_printf("%s,TS, noeigentest",temp);
+        if( strcmp(entrytext,_("No")) ) temp=g_strdup_printf("%s,TS, noeigentest",temp);
 
         temp=g_strdup_printf("%s) ",temp);
 	if(strstr(temp,"Opt()")) temp=g_strdup_printf("Opt ");
@@ -634,76 +630,6 @@ static void GetInfoType()
        	gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,temp,-1);
 
 }
-/*******************************************************************/
-/*
-static void NewFrame( GtkWidget *widget, gpointer   data )
-{
-	gboolean OK=FALSE;
-	gint i;
-           iframe++;
-          switch(iframe)
-         {
-          case 2: 
-		OK=FALSE;
-                i=iframe;
-                if(GeomIsOpen && TypeGeomOpen !=0 )
-                {
-                      if(WindowGeom)
-			gtk_widget_destroy(WindowGeom);
-                }
-                WindowGeom = Wins;
-		GAjoutePageGeom(NoteBook); 
-                iframe = i; 
-                TypeGeomOpen = 2;
-		for(i=0;i<NMETHODS;i++)
-			if(Basis[i]!=NULL && !strcmp(Basis[i],"GEN") )
-				OK=TRUE;
-		if(!OK) 
-                {
-			gtk_widget_destroy(hboxb);
-			hboxb=gtk_hbox_new(TRUE,2);
- 			create_label_hbox(hboxb,"FINISH",-1);
-			gtk_container_add (GTK_CONTAINER (widget), hboxb);
-                        gtk_widget_show_all(widget);
-                }
-                OK=TRUE;
-                  break;
-          case 3: 
-		OK=FALSE;
-		for(i=0;i<NMETHODS;i++)
-			if(Basis[i]!=NULL && !strcmp(Basis[i],"GEN") )
-				OK=TRUE;
-		if(OK) 
-                {
-			GAjoutePageBasis(NoteBook); 
-			gtk_widget_destroy(hboxb);
-			hboxb=gtk_hbox_new(TRUE,2);
- 			create_label_hbox(hboxb,"FINISH",-1);
-			gtk_container_add (GTK_CONTAINER (widget), hboxb);
-                        gtk_widget_show_all(widget);
-                }
-		else
-			iframe--;
-                if(TypeGeomOpen == 2)
-                {
- 		     geom_is_not_open();
-                     TypeGeomOpen = 0;
-                     WindowGeom = NULL;
-                }
-                break;
-         }
-       if(!OK) {
-        destroy_children(Wins);
-	iedit=1;
-	return;
-	}
-       delete_all_children(Wins);
-       gtk_widget_set_size_request(Wins,-1,-1);
-       gtk_widget_show_all(Wins);  
-       gtk_notebook_set_current_page((GtkNotebook*)NoteBook,1);
-       gtk_notebook_remove_page((GtkNotebook *)NoteBook,0);
-}
-*/
 /*******************************************************************/
 void SaveGauss( GtkWidget *widget, gpointer   data )
 {
@@ -818,7 +744,7 @@ static void GetInfoZMatrix( )
         {
         	if(Variables[i].Used)
 		{
-        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"Variables :\n",-1);
+        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,_("Variables :\n"),-1);
 			break;
 		}
         }
@@ -846,7 +772,7 @@ static void GetInfoXYZ( )
 	gboolean redundant = FALSE;
   	G_CONST_RETURN gchar *entrytext =  NULL;
 
-  	if(Types) entrytext =  gtk_entry_get_text(GTK_ENTRY(EntryTypes[0]));
+  	if(Types && strcmp(Types,_("Single Point"))) entrytext =  gtk_entry_get_text(GTK_ENTRY(EntryTypes[0]));
 	if(entrytext && strstr(entrytext,"Redundant")) redundant = TRUE;
 
 	if(iframe==1) GetChargesAndMultiplicitiesFromMain( );
@@ -931,7 +857,6 @@ static void GetInfoXYZ( )
 
   		if (strcmp(GeomXYZ[i].Layer," ") && (medium||lower) )
 		{
-			/* if(strstr(GeomXYZ[i].Layer,"Hi") || GeomXYZ[i].Symb[0]=='H')*/
 			if(strstr(GeomXYZ[i].Layer,"Hi"))
   				line=g_strdup_printf("%s\t %s\n",line,GeomXYZ[i].Layer);
 			else
@@ -985,7 +910,7 @@ static void GetInfoXYZ( )
         {
         	if(VariablesXYZ[i].Used)
 		{
-        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"Variables :\n",-1);
+        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,_("Variables :\n"),-1);
 			break;
 		}
         }
@@ -1077,6 +1002,7 @@ void GetInfoUnits()
 /*******************************************************************/
 void GetInfoAll( GtkWidget *widget, gpointer   data )
 {
+	printf("iframe = %d\n",iframe);
 	if(iframe==1)
 	{
 		if(iinsert != 0)
@@ -1160,13 +1086,11 @@ void insert_gaussian(gint itype)
 
   fileopen.command=g_strdup(NameCommandGaussian);
   Wins= gtk_dialog_new ();
-  /* gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER_ALWAYS);*/
-  /* gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER_ON_PARENT);*/
   gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_NONE);
   gtk_window_set_transient_for(GTK_WINDOW(Wins),GTK_WINDOW(Fenetre));
-  gtk_window_set_title(&GTK_DIALOG(Wins)->window,"Gaussian input");
+  gtk_window_set_title(&GTK_DIALOG(Wins)->window,_("Gaussian input"));
 
-  init_child(Wins,DestroyWinsGauss," Gauss input ");
+  init_child(Wins,DestroyWinsGauss,_(" Gauss input "));
   g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_children,NULL);
 
   NoteBook = gtk_notebook_new();
@@ -1180,7 +1104,6 @@ void insert_gaussian(gint itype)
                 {
                       if(WindowGeom)
 			gtk_widget_destroy(WindowGeom);
-                   /* iframe est modifie dans destroy() */
                 }
                 WindowGeom = Wins;
 		GAjoutePageGeom(NoteBook); 
@@ -1205,7 +1128,7 @@ void insert_gaussian(gint itype)
   
   gtk_widget_realize(Wins);
 
-  button = create_button(Wins,"CANCEL");
+  button = create_button(Wins,"Cancel");
   gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, FALSE, TRUE, 5);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(to_cancel_win),GTK_OBJECT(Wins));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
@@ -1237,10 +1160,11 @@ void gauss(gint ioption)
 	) 
 	{
 		Message(
+			_(
 			"You must initially define your geometry.\n\n"
 			"From the principal Menu select : Geometry/Draw\n"
-			"and draw (or read) your molecule.",
-			"Error",TRUE);
+			"and draw (or read) your molecule."),
+			_("Error"),TRUE);
 		return;
 	}
 
@@ -1256,14 +1180,12 @@ void gauss(gint ioption)
 	gtk_notebook_set_current_page((GtkNotebook*)NoteBookText,0);
 
 	Wins= gtk_dialog_new ();
-	/* gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER_ALWAYS);*/
-	/* gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER_ON_PARENT);*/
 	gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_NONE);
 	gtk_window_set_transient_for(GTK_WINDOW(Wins),GTK_WINDOW(Fenetre));
-	gtk_window_set_title(&GTK_DIALOG(Wins)->window,"Gaussian input");
+	gtk_window_set_title(&GTK_DIALOG(Wins)->window,_("Gaussian input"));
 
 
-	init_child(Wins,DestroyWinsGauss," Gauss input ");
+	init_child(Wins,DestroyWinsGauss,_(" Gauss input "));
 	g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_children,NULL);
  
 	NoteBook = gtk_notebook_new();
@@ -1275,20 +1197,18 @@ void gauss(gint ioption)
 	gtk_widget_realize(Wins);
 	gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(Wins)->action_area), TRUE); 
 
-	button = create_button(Wins,"CANCEL");
+	button = create_button(Wins,_("Cancel"));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
 	g_signal_connect_swapped(G_OBJECT(button),"clicked",G_CALLBACK(to_cancel_win),GTK_OBJECT(Wins));
 	gtk_widget_show (button);
 
-	/* button = gtk_button_new ();*/
-	button = create_button(Wins,"OK");
+	button = create_button(Wins,_("OK"));
 	g_signal_connect(G_OBJECT(button), "clicked", (GCallback)putInfoAll,NULL);
 	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
-	/* g_signal_connect(G_OBJECT(button), "clicked", (GCallback)NewFrame,NULL);*/
 
 	gtk_widget_show_all(Wins);
 	if(iinsert != 0)

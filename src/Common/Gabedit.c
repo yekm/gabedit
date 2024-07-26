@@ -22,6 +22,7 @@ DEALINGS IN THE SOFTWARE.
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <glib.h>
+#include <glib/gi18n.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -37,7 +38,6 @@ DEALINGS IN THE SOFTWARE.
 #include "../Files/ListeFiles.h"
 #include "Windows.h"
 #include "StockIcons.h"
-#include <locale.h>
 
 GtkWidget *hseparator;
 
@@ -45,6 +45,7 @@ int main(int argc, char *argv[])
 {
 
   GtkWidget* vboxp;
+  gchar* poDir = NULL;
 
   srand((unsigned int)time(NULL));
   /*
@@ -55,6 +56,15 @@ int main(int argc, char *argv[])
   g_setenv("LANG","en_US",TRUE);
   g_setenv("GDM_LANG","en_US",TRUE);
   */
+   /* setlocale(LC_ALL,"");*/
+   setlocale(LC_ALL,"C");
+   poDir = g_build_filename (g_get_current_dir(),"locale",NULL);
+   bindtextdomain (GETTEXT_PACKAGE, poDir);
+   /* printf("poDir = %s\n",poDir);*/
+   g_free (poDir);
+   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+   textdomain (GETTEXT_PACKAGE);
+
   gtk_init(&argc, &argv);
   setlocale(LC_NUMERIC,"C");
   gabedit_gtk_stock_init();

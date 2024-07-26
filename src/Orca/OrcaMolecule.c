@@ -633,7 +633,7 @@ static GtkWidget *addOrcaChargeToTable(GtkWidget *table, gint i)
 	gint nlistCharge = 1;
 	gchar* listCharge[] = {"0"};
 
-	add_label_table(table,"Charge",(gushort)i,0);
+	add_label_table(table,_("Charge"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entryCharge = addComboListToATable(table, listCharge, nlistCharge, i, 2, 1);
 	comboCharge  = g_object_get_data(G_OBJECT (entryCharge), "Combo");
@@ -649,7 +649,7 @@ static GtkWidget *addOrcaSpinToTable(GtkWidget *table, gint i)
 	gint nlistspinMultiplicity = 1;
 	gchar* listspinMultiplicity[] = {"0"};
 
-	add_label_table(table,"Spin multiplicity",(gushort)i,0);
+	add_label_table(table,_("Spin multiplicity"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entrySpinMultiplicity = addComboListToATable(table, listspinMultiplicity, nlistspinMultiplicity, i, 2, 1);
 	comboSpinMultiplicity  = g_object_get_data(G_OBJECT (entrySpinMultiplicity), "Combo");
@@ -694,7 +694,7 @@ void createOrcaChargeMultiplicityFrame(GtkWidget *box)
 
 	table = gtk_table_new(3,5,FALSE);
 
-	frame = gtk_frame_new ("Charge & Multiplicty");
+	frame = gtk_frame_new (_("Charge & Multiplicty"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);

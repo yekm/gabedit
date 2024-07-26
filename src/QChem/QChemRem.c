@@ -618,7 +618,7 @@ void createQChemRemFrame(GtkWidget *win, GtkWidget *box)
 	listCorrelationMethodsReal = listCorrelationHybridMethodsReal;
 	numberOfCorrelationMethods = numberOfCorrelationHybridMethods;
 
-	frame = gtk_frame_new ("Job Specification:");
+	frame = gtk_frame_new (_("Job Specification:"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -631,7 +631,7 @@ void createQChemRemFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Job Type -----------------------------------------*/
 	l=0; 
 	c = 0; ncases=1;
-	add_label_table(table,"Job Type",l,c);
+	add_label_table(table,_("Job Type"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_jobtype();
@@ -643,7 +643,7 @@ void createQChemRemFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ SCF Type -----------------------------------------*/
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"SCF Type",l,c);
+	add_label_table(table,_("SCF Type"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_scf();
@@ -656,7 +656,7 @@ void createQChemRemFrame(GtkWidget *win, GtkWidget *box)
 
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"Max # SCF iterations",l,c);
+	add_label_table(table,_("Max # SCF iterations"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	entrySCFIterations = gtk_entry_new ();
@@ -670,7 +670,7 @@ void createQChemRemFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Exchange Type -----------------------------------------*/
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"Exchange Type",l,c);
+	add_label_table(table,_("Exchange Type"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_exchange_methods();
@@ -683,7 +683,7 @@ void createQChemRemFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Correlation Method -----------------------------------------*/
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"Correlation Method",l,c);
+	add_label_table(table,_("Correlation Method"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_correlation_methods();

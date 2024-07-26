@@ -191,8 +191,8 @@ void computeNMRSpectrumOldMethod(
 	if(nSpins>NMAXGROUP+2)
 	{
 		gchar tmp[BSIZE];
-		sprintf(tmp,"Sorry\nThe number of spins is larger than %d.\n", NMAXGROUP+2);
-    		Message(tmp," Warning ",TRUE);
+		sprintf(tmp,_("Sorry\nThe number of spins is larger than %d.\n"), NMAXGROUP+2);
+    		Message(tmp,_("Warning"),TRUE);
 		return;
 	}
 	if(nCoup<1) return;
@@ -872,8 +872,8 @@ void computeNMRSpectrumByBlock(
 	if(nSpins>NMAXGROUP+2)
 	{
 		gchar tmp[BSIZE];
-		sprintf(tmp,"Sorry\nThe number of spins is larger than %d.\n", NMAXGROUP+2);
-    		Message(tmp," Warning ",TRUE);
+		sprintf(tmp,_("Sorry\nThe number of spins is larger than %d.\n"), NMAXGROUP+2);
+    		Message(tmp,_("Warning"),TRUE);
 		return;
 	}
 	if(nCoup<1) return;
@@ -912,8 +912,8 @@ void computeNMRSpectrumByBlock(
 	if(!gintensities)
 	{
 		gchar tmp[BSIZE];
-		sprintf(tmp,"Sorry\n Not enough memory : nBasis  = %d sizeTrans = %d\n", nBasis,sizeTrans);
-    		Message(tmp," Warning ",TRUE);
+		sprintf(tmp,_("Sorry\n Not enough memory : nBasis  = %d sizeTrans = %d\n"), nBasis,sizeTrans);
+    		Message(tmp,_("Warning"),TRUE);
 		return;
 	}
 	lfs  = malloc(sizeMax*sizeMax*sizeof(gint));
@@ -1097,8 +1097,8 @@ void computeNMRSpectrumWeaklyCoupled(
 	if(nSpins>NMAXGROUP+2)
 	{
 		gchar tmp[BSIZE];
-		sprintf(tmp,"Sorry\nThe number of spins is larger than %d.\n", NMAXGROUP+2);
-    		Message(tmp," Warning ",TRUE);
+		sprintf(tmp,_("Sorry\nThe number of spins is larger than %d.\n"), NMAXGROUP+2);
+    		Message(tmp,_("Warning"),TRUE);
 		return;
 	}
 	if(nCoup<1) return;
@@ -1126,8 +1126,8 @@ void computeNMRSpectrumWeaklyCoupled(
 	if(!gintensities)
 	{
 		gchar tmp[BSIZE];
-		sprintf(tmp,"Sorry\n Not enough memory : nBasis  = %d sizeTrans = %d\n", nBasis,sizeTrans);
-    		Message(tmp," Warning ",TRUE);
+		sprintf(tmp,_("Sorry\n Not enough memory : nBasis  = %d sizeTrans = %d\n"), nBasis,sizeTrans);
+    		Message(tmp,_("Warning"),TRUE);
 		return;
 	}
 	ifreqSpec = 0;
@@ -1244,7 +1244,7 @@ void testComputeNMRSpectrum()
 	gint n;
 	gint i;
 
-	printf("Je suis dans testComputeNMRSpectrum\n");
+	/* printf("Je suis dans testComputeNMRSpectrum\n");*/
 	numberOfSpins [0] = 1;
 	numberOfSpins [1] = 1;
 	numberOfSpins [2] = 1;
@@ -1402,7 +1402,7 @@ static void read_dlg(GtkWidget* window)
 	parentWindow = get_parent_window(GTK_WIDGET(window));
 	filesel= new_file_chooser_open(parentWindow, 
 			(GCallback *)read_nmr_data, 
-			"Read NMR Operating frequency, chemical shift and Spin-Spin coupling data", 
+			_("Read NMR Operating frequency, chemical shift and Spin-Spin coupling data"), 
 			patternsfiles);
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 	g_object_set_data(G_OBJECT (filesel), "Window", window);
@@ -1502,7 +1502,7 @@ static void save_dlg(GtkWidget* window)
 	parentWindow = get_parent_window(GTK_WIDGET(window));
 	filesel= new_file_chooser_save(parentWindow, 
 			(GCallback *)save_nmr_data, 
-			"Save NMR data", 
+			_("Save NMR data"), 
 			patternsfiles);
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 	g_object_set_data(G_OBJECT (filesel), "Window", window);
@@ -1602,11 +1602,11 @@ static void addEntriesData(GtkWidget* window, GtkWidget* parent)
 	gtk_widget_show(table);
 
 	i = 0;
-	label=gtk_label_new("shift(ppm)");
+	label=gtk_label_new(_("shift(ppm)"));
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, i, i+1, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
-	label=gtk_label_new("# spins");
+	label=gtk_label_new(_("# spins"));
 	gtk_table_attach(GTK_TABLE(table), label, 1, 2, i, i+1, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
-	label=gtk_label_new("Coupling Constants(Hz)");
+	label=gtk_label_new(_("Coupling Constants(Hz)"));
 	gtk_table_attach(GTK_TABLE(table), label, 2, nMax, i, i+1, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
 
 	entries = g_malloc(nMax*sizeof(GtkWidget**));
@@ -1629,25 +1629,25 @@ static void addEntriesData(GtkWidget* window, GtkWidget* parent)
 	gtk_entry_set_text(GTK_ENTRY(entries[1][2]),"10.0");
 
 
-	label=gtk_label_new("Operating Frequency : ");
+	label=gtk_label_new(_("Operating Frequency : "));
 	gtk_table_attach(GTK_TABLE(table), label, 0, 2, nMax+1, nMax+2, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
 	entryFrequency = gtk_entry_new();
 	gtk_entry_set_text(GTK_ENTRY(entryFrequency),"300.0");
 	gtk_widget_set_size_request(entryFrequency,50,-1);
 	gtk_table_attach(GTK_TABLE(table), entryFrequency, 2, 2+1, nMax+1, nMax+2, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
 
-	button = create_button(window,"Read");
+	button = create_button(window,_("Read"));
 	gtk_table_attach(GTK_TABLE(table), button, nMax-2, nMax-1, nMax+1, nMax+2, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 1, 1);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(read_dlg),window);
 	gtk_widget_show_all (button);
 
-	button = create_button(window,"Save");
+	button = create_button(window,_("Save"));
 	gtk_table_attach(GTK_TABLE(table), button, nMax-1, nMax, nMax+1, nMax+2, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 1, 1);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(save_dlg),window);
 	gtk_widget_show_all (button);
 
 
-	button = create_button(window,"Apply");
+	button = create_button(window,_("Apply"));
 	gtk_table_attach(GTK_TABLE(table), button, nMax, nMax+1, nMax+1, nMax+2, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 1, 1);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(apply),parent);
 	gtk_widget_show_all (button);
@@ -1665,7 +1665,7 @@ GtkWidget* new_parameters_window(GtkWidget* parent)
 	GtkWidget* vbox = NULL;
 	GtkWidget *frame = NULL;
 	
-	gtk_window_set_title (GTK_WINDOW (window), "Chemical shift & Spin-Spin coupling parameters");
+	gtk_window_set_title (GTK_WINDOW (window), _("Chemical shift & Spin-Spin coupling parameters"));
 	gtk_window_set_transient_for(GTK_WINDOW (window), GTK_WINDOW(parent));
 	gtk_window_set_destroy_with_parent(GTK_WINDOW (window), TRUE);
 	g_signal_connect (GTK_OBJECT (window), "delete_event", G_CALLBACK (gtk_window_iconify), NULL);
@@ -1697,9 +1697,9 @@ static void createNMRSpectrumWin(gint numberOfStates, gdouble* energies, gdouble
 	GtkWidget* parametersWindow = NULL;
 
 	if(numberOfStates>0)
-		window = spectrum_win_new_with_xy("NMR spectrum",  numberOfStates, energies, intensities);
+		window = spectrum_win_new_with_xy(_("NMR spectrum"),  numberOfStates, energies, intensities);
 	else
-		window = spectrum_win_new("NMR spectrum");
+		window = spectrum_win_new(_("NMR spectrum"));
 	hbox = g_object_get_data(G_OBJECT (window), "HBoxData");
 	xyplot = g_object_get_data(G_OBJECT (window), "XYPLOT");
 
@@ -1718,13 +1718,13 @@ static void createNMRSpectrumWin(gint numberOfStates, gdouble* energies, gdouble
 	set_icone(window);
 
 
-	spectrum_win_set_xlabel(window, "Frequency(ppm)");
-	spectrum_win_set_ylabel(window, "Intensity");
+	spectrum_win_set_xlabel(window, _("Frequency(ppm)"));
+	spectrum_win_set_ylabel(window, _("Intensity"));
 	
 	parametersWindow = new_parameters_window(window);
 	if(showButtonParams)
 	{
-		button = create_button(window,"Set parameters");
+		button = create_button(window,_("Set parameters"));
 		gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 2);
 		gtk_widget_show_all (button);
 		g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_window_present),parametersWindow);
@@ -1744,8 +1744,8 @@ void createNMRSpectrum(GtkWidget *parentWindow, GabEditTypeFile typeOfFile)
 static void messageErrorFreq(gchar* fileName)
 {
 	gchar buffer[BSIZE];
-	sprintf(buffer,"Sorry, I can not read energies from '%s' file\n",fileName);
-  	Message(buffer,"Error",TRUE);
+	sprintf(buffer,_("Sorry, I can not read energies from '%s' file\n"),fileName);
+  	Message(buffer,_("Error"),TRUE);
 }
 /********************************************************************************/
 static gboolean read_sample_2columns_file(GabeditFileChooser *SelecFile, gint response_id)
@@ -1802,7 +1802,7 @@ static void read_sample_2columns_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_sample_2columns_file,
-			"Read energies and intensities from a sample file(2columns : first = Energy(eV), second = intensity)",
+			_("Read energies and intensities from a sample file(2columns : first = Energy(eV), second = intensity)"),
 			GABEDIT_TYPEFILE_TXT,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);

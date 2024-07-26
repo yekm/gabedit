@@ -71,8 +71,8 @@ static void get_grid_from_qchem_file(gchar* fileName, gint numOfGrid)
 	CancelCalcul = FALSE;
 	if(!file)
 	{
-		sprintf(buffer,"I can not open %s file\n",fileName);
-		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("I can not open %s file\n"),fileName);
+		Message(buffer,_("Error"),TRUE);
 		return;
 	}
 
@@ -91,7 +91,7 @@ static void get_grid_from_qchem_file(gchar* fileName, gint numOfGrid)
 	}
 	if(!Ok) 
 	{
-		Message("Sorry, I can not read grid from this file","Error",TRUE);
+		Message(_("Sorry, I can not read grid from this file"),_("Error"),TRUE);
 		grid = free_grid(grid);
 		return;
 	}
@@ -105,13 +105,13 @@ static void get_grid_from_qchem_file(gchar* fileName, gint numOfGrid)
 	{
 				if(!fgets(buffer,len,file))
 				{
-					Message("Sorry, I can not read grid from this file","Error",TRUE);
+					Message(_("Sorry, I can not read grid from this file"),_("Error"),TRUE);
 					grid = free_grid(grid);
 					return;
 				}
 				if( 3 != sscanf(buffer,"%lf %lf %lf",&x, &y, &z) ) 
 				{
-					Message("Sorry, I can not read grid from this file","Error",TRUE);
+					Message(_("Sorry, I can not read grid from this file"),_("Error"),TRUE);
 					grid = free_grid(grid);
 					return;
 				}
@@ -170,8 +170,8 @@ static gchar** get_list_of_grids(gchar* fileName, gint *nE)
 	CancelCalcul = FALSE;
 	if(!file)
 	{
-		sprintf(buffer,"I can not open %s file\n, I read list of grids from this file",fileName);
-		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("I can not open %s file\n, I read list of grids from this file"),fileName);
+		Message(buffer,_("Error"),TRUE);
 		return NULL;
 	}
 	while(!feof(file))
@@ -306,23 +306,23 @@ static gboolean read_qchemout_file(gchar* filename)
 	CancelCalcul = FALSE;
 	if(!file)
 	{
-		sprintf(buffer,"I can not open %s file\n, I read geometry and grid limits from this file",filename);
-		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("I can not open %s file\n, I read geometry and grid limits from this file"),filename);
+		Message(buffer,_("Error"),TRUE);
 		return FALSE;
 	}
 
 	free_data_all();
 	tmp = get_name_file(filename);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","QChem output file");
+	set_status_label_info(_("File type"),_("QChem output file"));
 	Ncenters = 0;
 	/* read geometry */
 	Ok = read_qchem_geometry(file);
 	if(!Ok)
 	{
-		sprintf(buffer,"I can not read geometry from %s file",filename);
-		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("I can not read geometry from %s file"),filename);
+		Message(buffer,_("Error"),TRUE);
 		fclose(file);
 		return FALSE;
 	}
@@ -330,8 +330,8 @@ static gboolean read_qchemout_file(gchar* filename)
 	if(Ok) Ok = read_qchem_grid_limits(file);
 	if(!Ok)
 	{
-		sprintf(buffer,"I can not read grid limits from %s file",filename);
-		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("I can not read grid limits from %s file"),filename);
+		Message(buffer,_("Error"),TRUE);
 		fclose(file);
 		return FALSE;
 	}
@@ -341,7 +341,7 @@ static gboolean read_qchemout_file(gchar* filename)
 	RebuildGeom = TRUE;
 	glarea_rafresh(GLArea);
 
-	if(Ncenters>0) set_status_label_info("Geometry","Ok");
+	if(Ncenters>0) set_status_label_info(_("Geometry"),_("Ok"));
 	/*printf("N = %d %d %d\n",N[0],N[1],N[2]);*/
 
 	CancelCalcul = FALSE;
@@ -358,7 +358,7 @@ GtkWidget *create_grids_list_frame( GtkWidget *vboxall,gchar** gridsList,gint n,
 	GtkWidget *entry;
 	GtkWidget *table;
 
-	frame = gtk_frame_new ("Selection your grid");
+	frame = gtk_frame_new (_("Selection your grid"));
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
 	gtk_container_add (GTK_CONTAINER (vboxall), frame);
 	gtk_widget_show (frame);
@@ -367,7 +367,7 @@ GtkWidget *create_grids_list_frame( GtkWidget *vboxall,gchar** gridsList,gint n,
 	table = gtk_table_new(1,3,FALSE);
 	gtk_container_add(GTK_CONTAINER(vboxframe),table);
 
-	add_label_table(table," Grid Name ",0,0);
+	add_label_table(table,_(" Grid Name "),0,0);
 	add_label_table(table,":",0,1);
 	combo = create_combo_box_entry(gridsList,n,TRUE,-1,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,4,0,1,
@@ -424,11 +424,11 @@ static void apply_read_grid(GtkWidget *button,gpointer data)
 		{
         		limits = grid->limits;
 			create_iso_orbitals();
-			set_status_label_info("Grid","Ok");
+			set_status_label_info(_("Grid"),_("Ok"));
 		}
 		else
 		{
-			set_status_label_info("Grid","Nothing");
+			set_status_label_info(_("Grid"),_("Nothing"));
 			CancelCalcul = FALSE;
 		}
 	}
@@ -447,7 +447,7 @@ void create_window_list_grids(GtkWidget *w, gchar** gridsList,gint n, gchar* fil
 
 	/* Principal Window */
 	fp = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(fp),"Grids available");
+	gtk_window_set_title(GTK_WINDOW(fp),_("Grids available"));
 	gtk_window_set_position(GTK_WINDOW(fp),GTK_WIN_POS_CENTER);
 	gtk_window_set_transient_for(GTK_WINDOW(fp),GTK_WINDOW(PrincipalWindow));
 	gtk_window_set_modal (GTK_WINDOW (fp), TRUE);
@@ -502,11 +502,11 @@ static gboolean read_qchemgrid_file(gchar* fileName)
 		{
         		limits = grid->limits;
 			create_iso_orbitals();
-			set_status_label_info("Grid","Ok");
+			set_status_label_info(_("Grid"),_("Ok"));
 		}
 		else
 		{
-			set_status_label_info("Grid","Nothing");
+			set_status_label_info(_("Grid"),_("Nothing"));
 			CancelCalcul = FALSE;
 		}
 	}

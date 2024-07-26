@@ -100,8 +100,8 @@ static long clientThread ()
 	{
 		FILE* FileErr = FOpen(ferrGlobal,"w");
 		FILE* FileOut = FOpen(foutGlobal,"w");
-		fprintf(FileErr,"Sorry, I Cannot get file at remot host...\n");
-		fprintf(FileOut,"Sorry, I Cannot get file at remot host...\n");
+		fprintf(FileErr,_("Sorry, I Cannot get file at remot host...\n"));
+		fprintf(FileOut,_("Sorry, I Cannot get file at remot host...\n"));
 		fclose(FileErr);
 		fclose(FileOut);
 		return 1;
@@ -134,7 +134,7 @@ int run_scp(gchar* fout,gchar* ferr,char* cmd, gchar* message)
 	if(!threadHnd)
 	{
 			FILE* FileErr = FOpen(ferr,"w");
-			fprintf(FileErr,"Cannot start client thread...\n");
+			fprintf(FileErr,_("Cannot start client thread...\n"));
 			fclose(FileErr);
 			hide_progress_connection();
 			progress_connection(0," ",TRUE);
@@ -157,7 +157,7 @@ int run_scp(gchar* fout,gchar* ferr,char* cmd, gchar* message)
                 		gtk_main_iteration();
 			if(stopDownLoad)
 			{
-				fprintf(FileOut,"Download Stopped\n");
+				fprintf(FileOut,_("Download Stopped\n"));
 				break;
 			}
 		}
@@ -189,7 +189,7 @@ int scp_put_file(gchar* fout,gchar* ferr,
 	if(!unixFile)
 	{
 			FILE* FileErr = FOpen(ferr,"w");
-			fprintf(FileErr,"Sorry, I Cannot put file at remot host...\n");
+			fprintf(FileErr,_("Sorry, I Cannot put file at remot host...\n"));
 			fclose(FileErr);
 			g_free(winFile);
 			return 1;
@@ -209,7 +209,7 @@ int scp_put_file(gchar* fout,gchar* ferr,
 	if(system(cmdGlobal)!=0)
 	{
 			FILE* FileErr = FOpen(ferr,"w");
-			fprintf(FileErr,"Sorry, I Cannot put %s file at remot host...\n",filename);
+			fprintf(FileErr,_("Sorry, I Cannot put %s file at remot host...\n"),filename);
 			fclose(FileErr);
 			unlink(unixFile);
 			g_free(unixFile);
@@ -233,7 +233,7 @@ int scp_get_file(gchar* fout,gchar* ferr,
 	foutGlobal = g_strdup(fout);
 	ferrGlobal = g_strdup(ferr);
 
-	message = g_strdup_printf( "Get \"%s/%s\" file from \"%s\" host...",
+	message = g_strdup_printf( _("Get \"%s/%s\" file from \"%s\" host..."),
 					remotedir,filename,hostname
 				);
 
@@ -310,7 +310,7 @@ int run_scp(gchar* fout,gchar* ferr,char* cmd,char* message)
 	if(ret)
 	{
 		FILE* FileErr = FOpen(ferr,"w");
-		fprintf(FileErr,"Cannot start client thread...\n");
+		fprintf(FileErr,_("Cannot start client thread...\n"));
 		fclose(FileErr);
 		return 0;
 	}
@@ -326,7 +326,7 @@ int run_scp(gchar* fout,gchar* ferr,char* cmd,char* message)
 		{
 			if(pthread_cancel(threadId)!=0)
 			{
-				progress_connection(0,"Sorry I can not stop download",FALSE);
+				progress_connection(0,_("Sorry I can not stop download"),FALSE);
 			}
 			else
 			{
@@ -340,7 +340,7 @@ int run_scp(gchar* fout,gchar* ferr,char* cmd,char* message)
 					/*printf("pid child = %d\n",pidchild);*/
 				}
 				pidchild =-1;
-				fprintf(FileOut,"Download Stopped\n");
+				fprintf(FileOut,_("Download Stopped\n"));
 				break;
 			}
 		}
@@ -373,7 +373,7 @@ int scp_put_file(char* fout,char* ferr,
 	gchar *command;
 	gchar* message;
 
-	message = g_strdup_printf( "Put %s/%s file at %s host...",
+	message = g_strdup_printf( _("Put %s/%s file at %s host..."),
 					remotedir,filename,hostname
 				);
 
@@ -409,7 +409,7 @@ int scp_get_file(char* fout,char* ferr,
 	gchar *command;
 	gchar* message;
 
-	message = g_strdup_printf( "Get \"%s/%s\" file from \"%s\" host...",
+	message = g_strdup_printf( _("Get \"%s/%s\" file from \"%s\" host..."),
 					remotedir,filename,hostname
 				);
 

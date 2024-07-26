@@ -95,7 +95,7 @@ static void c_restrictexcitation(GtkWidget *bframe,guint del)
   GtkWidget *hbox2;
   GtkWidget *button;
   gchar *liste[3];
-  gchar *titre="Restriction of classes of excitations";
+  gchar *titre=_("Restriction of classes of excitations");
 
   int nliste = 3;
   liste[0]=g_strdup("NOPAIR");
@@ -117,9 +117,6 @@ static void c_restrictexcitation(GtkWidget *bframe,guint del)
 
   vboxall = create_vbox(fp);
   frame = gtk_frame_new (titre);
-  g_object_ref (frame);
-  g_object_set_data_full(G_OBJECT (fp), "frame", frame,
-                            (GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
@@ -131,12 +128,12 @@ static void c_restrictexcitation(GtkWidget *bframe,guint del)
   hbox2 = create_hbox(vboxall);
   gtk_widget_realize(Window);
 
-  button = create_button(Window,"Cancel");
+  button = create_button(Window,_("Cancel"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(delete_child),GTK_OBJECT(fp));
   gtk_widget_show (button);
 
-  button = create_button(Window,"OK");
+  button = create_button(Window,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   gtk_widget_show (button);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(gene_entry),(gpointer)entry);
@@ -159,7 +156,7 @@ static void c_type_orb(GtkWidget *bframe,guint del)
   GtkWidget *button;
   gchar *liste[3];
   int nliste = 3;
-  gchar *titre="Type of orbital to save";
+  gchar *titre=_("Type of orbital to save");
 
   liste[0]=g_strdup("NatOrb");
   liste[1]=g_strdup("CanOrb");
@@ -180,26 +177,23 @@ static void c_type_orb(GtkWidget *bframe,guint del)
 
   vboxall = create_vbox(fp);
   frame = gtk_frame_new (titre);
-  g_object_ref (frame);
-  g_object_set_data_full(G_OBJECT (fp), "frame", frame,
-                            (GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
 
   vboxframe = create_vbox(frame);
   hbox1 = create_hbox(vboxframe);
-  entry= create_combo_box_entry_liste(Window,hbox1," Type of robital :",liste,nliste);
+  entry= create_combo_box_entry_liste(Window,hbox1,_(" Type of robital :"),liste,nliste);
   
   hbox2 = create_hbox(vboxall);
   gtk_widget_realize(Window);
 
-  button = create_button(Window,"Cancel");
+  button = create_button(Window,_("Cancel"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(delete_child),GTK_OBJECT(fp));
   gtk_widget_show (button);
 
-  button = create_button(Window,"OK");
+  button = create_button(Window,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   gtk_widget_show (button);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(gene_entry),(gpointer)entry);
@@ -222,7 +216,7 @@ static void c_ref(GtkWidget *bframe,guint del)
   GtkWidget *button;
   gchar *liste[8];
   int nliste = 8;
-  gchar *titre ="Additional reference symmetries";
+  gchar *titre =_("Additional reference symmetries");
   liste[0]=g_strdup("1");
   liste[1]=g_strdup("2");
   liste[2]=g_strdup("3");
@@ -246,26 +240,23 @@ static void c_ref(GtkWidget *bframe,guint del)
 
   vboxall = create_vbox(fp);
   frame = gtk_frame_new (titre);
-  g_object_ref (frame);
-  g_object_set_data_full(G_OBJECT (fp), "frame", frame,
-                            (GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
 
   vboxframe = create_vbox(frame);
   hbox1 = create_hbox(vboxframe);
-  entry= create_combo_box_entry_liste(Window,hbox1,"Additional reference symmetries  :",liste,nliste);
+  entry= create_combo_box_entry_liste(Window,hbox1,_("Additional reference symmetries  :"),liste,nliste);
   
   hbox2 = create_hbox(vboxall);
   gtk_widget_realize(Window);
 
-  button = create_button(Window,"Cancel");
+  button = create_button(Window,_("Cancel"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(delete_child),GTK_OBJECT(fp));
   gtk_widget_show (button);
 
-  button = create_button(Window,"OK");
+  button = create_button(Window,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   gtk_widget_show (button);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(gene_ref),(gpointer)entry);
@@ -288,7 +279,7 @@ static void c_nstate(GtkWidget *bframe,guint del)
   GtkWidget *button;
   gchar *liste[5];
   int nliste = 5;
-  gchar *titre = "Number of states";
+  gchar *titre = _("Number of states");
 
  
   liste[0]=g_strdup("1");
@@ -311,26 +302,23 @@ static void c_nstate(GtkWidget *bframe,guint del)
 
   vboxall = create_vbox(fp);
   frame = gtk_frame_new (titre);
-  g_object_ref (frame);
-  g_object_set_data_full(G_OBJECT (fp), "frame", frame,
-                            (GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
 
   vboxframe = create_vbox(frame);
   hbox1 = create_hbox(vboxframe);
-  entry= create_combo_box_entry_liste(Window,hbox1," Number of states :",liste,nliste);
+  entry= create_combo_box_entry_liste(Window,hbox1,_(" Number of states :"),liste,nliste);
   
   hbox2 = create_hbox(vboxall);
   gtk_widget_realize(Window);
 
-  button = create_button(Window,"Cancel");
+  button = create_button(Window,_("Cancel"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(delete_child),GTK_OBJECT(fp));
   gtk_widget_show (button);
 
-  button = create_button(Window,"OK");
+  button = create_button(Window,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   gtk_widget_show (button);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(gene_nstate),(gpointer)entry);
@@ -352,7 +340,7 @@ static void c_initial_guess (GtkWidget *bframe)
   GtkWidget *hbox2;
   GtkWidget *button;
   gchar *liste[2];
-  gchar *titre ="Initial orbital guess";
+  gchar *titre =_("Initial orbital guess");
 
   int nliste = 2;
   liste[0]=g_strdup("H0");
@@ -372,26 +360,23 @@ static void c_initial_guess (GtkWidget *bframe)
 
   vboxall = create_vbox(fp);
   frame = gtk_frame_new (titre);
-  g_object_ref (frame);
-  g_object_set_data_full(G_OBJECT (fp), "frame", frame,
-                            (GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
 
   vboxframe = create_vbox(frame);
   hbox1 = create_hbox(vboxframe);
-  entry= create_combo_box_entry_liste(Window,hbox1," The type of the initial orbital guess :",liste,nliste);
+  entry= create_combo_box_entry_liste(Window,hbox1,_(" The type of the initial orbital guess :"),liste,nliste);
   
   hbox2 = create_hbox(vboxall);
   gtk_widget_realize(Window);
 
-  button = create_button(Window,"Cancel");
+  button = create_button(Window,_("Cancel"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(delete_child),GTK_OBJECT(fp));
   gtk_widget_show (button);
 
-  button = create_button(Window,"OK");
+  button = create_button(Window,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   gtk_widget_show (button);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(gene_guess),(gpointer)entry);
@@ -493,9 +478,6 @@ static void c_one_entry (GtkWidget *bframe,gchar *titre,gchar *mode,gchar *set,g
 
   vboxall = create_vbox(fp);
   frame = gtk_frame_new (titre);
-  g_object_ref (frame);
-  g_object_set_data_full(G_OBJECT (fp), "frame", frame,
-                            (GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
@@ -503,16 +485,10 @@ static void c_one_entry (GtkWidget *bframe,gchar *titre,gchar *mode,gchar *set,g
   vboxframe = create_vbox(frame);
    hbox1 = create_hbox(vboxframe);
   label = gtk_label_new (titre);
-  g_object_ref (label);
-  g_object_set_data_full(G_OBJECT (fp), "label", label,
-                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (hbox1), label, TRUE, FALSE, 0);
 
   entry = gtk_entry_new ();
-  g_object_ref (entry);
-  g_object_set_data_full(G_OBJECT (fp), "entry", entry,
-                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (entry);
   gtk_box_pack_start (GTK_BOX (hbox1), entry, FALSE, TRUE, 0);
   gtk_entry_set_text(GTK_ENTRY(entry),set);
@@ -520,12 +496,12 @@ static void c_one_entry (GtkWidget *bframe,gchar *titre,gchar *mode,gchar *set,g
   hbox2 = create_hbox(vboxall);
   gtk_widget_realize(Window);
 
-  button = create_button(Window,"Cancel");
+  button = create_button(Window,_("Cancel"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(delete_child),GTK_OBJECT(fp));
   gtk_widget_show (button);
 
-  button = create_button(Window,"OK");
+  button = create_button(Window,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   gtk_widget_show (button);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(gene_one_entry1),(gpointer)mode);
@@ -553,8 +529,8 @@ static void c_SS_orb (GtkWidget *bframe,gchar *titre,gchar *mode)
   entry=g_malloc(2*sizeof(GtkWidget *));
   for (i=0;i<2;i++)
         labelt[i]=g_malloc(100);
-  sprintf(labelt[0],"Number of file : ");
-  sprintf(labelt[1],"Number of record : ");
+  sprintf(labelt[0],_("File number : "));
+  sprintf(labelt[1],_("Record number: "));
   /* Fenetre principale */
   fp = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_modal(GTK_WINDOW(fp),TRUE);
@@ -571,9 +547,6 @@ static void c_SS_orb (GtkWidget *bframe,gchar *titre,gchar *mode)
 
   vboxall = create_vbox(fp);
   frame = gtk_frame_new (titre);
-  g_object_ref (frame);
-  g_object_set_data_full(G_OBJECT (fp), "frame", frame,
-                            (GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
@@ -583,16 +556,10 @@ static void c_SS_orb (GtkWidget *bframe,gchar *titre,gchar *mode)
   {
     hbox1 = create_hbox(vboxframe);
   label = gtk_label_new (labelt[i]);
-  g_object_ref (label);
-  g_object_set_data_full(G_OBJECT (fp), "label", label,
-                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (hbox1), label, TRUE, FALSE, 0);
 
   entry[i] = gtk_entry_new ();
-  g_object_ref (entry[i]);
-  g_object_set_data_full(G_OBJECT (fp), "entryi", entry[i],
-                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (entry[i]);
   gtk_box_pack_start (GTK_BOX (hbox1), entry[i], FALSE, TRUE, 0);
   }
@@ -600,12 +567,12 @@ static void c_SS_orb (GtkWidget *bframe,gchar *titre,gchar *mode)
   hbox2 = create_hbox(vboxall);
   gtk_widget_realize(fp);
 
-  button = create_button(fp,"Cancel");
+  button = create_button(fp,_("Cancel"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(delete_child),GTK_OBJECT(fp));
   gtk_widget_show (button);
 
-  button = create_button(fp,"OK");
+  button = create_button(fp,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   gtk_widget_show (button);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(gene_S_orb_mode),(gpointer)mode);
@@ -637,7 +604,7 @@ static void c_orb (GtkWidget *bframe,gchar *titre,gchar *mode)
   for (i=0;i<8;i++)
   {
         Sym[i]=g_malloc(100);
-  	sprintf(Sym[i],"In symmetry number %d : ",i+1);
+  	sprintf(Sym[i],_("In symmetry number %d : "),i+1);
   }
   /* Fenetre principale */
   fp = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -654,9 +621,6 @@ static void c_orb (GtkWidget *bframe,gchar *titre,gchar *mode)
 
   vboxall = create_vbox(fp);
   frame = gtk_frame_new (titre);
-  g_object_ref (frame);
-  g_object_set_data_full(G_OBJECT (fp), "frame", frame,
-                            (GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
@@ -666,16 +630,10 @@ static void c_orb (GtkWidget *bframe,gchar *titre,gchar *mode)
   {
     hbox1 = create_hbox(vboxframe);
   label = gtk_label_new (Sym[i]);
-  g_object_ref (label);
-  g_object_set_data_full(G_OBJECT (fp), "label", label,
-                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (hbox1), label, TRUE, FALSE, 0);
 
   entry[i] = gtk_entry_new ();
-  g_object_ref (entry[i]);
-  g_object_set_data_full(G_OBJECT (fp), "entryi", entry[i],
-                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (entry[i]);
   gtk_box_pack_start (GTK_BOX (hbox1), entry[i], FALSE, TRUE, 0);
   }
@@ -683,12 +641,12 @@ static void c_orb (GtkWidget *bframe,gchar *titre,gchar *mode)
   hbox2 = create_hbox(vboxall);
   gtk_widget_realize(fp);
 
-  button = create_button(fp,"Cancel");
+  button = create_button(fp,_("Cancel"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(delete_child),GTK_OBJECT(fp));
   gtk_widget_show (button);
 
-  button = create_button(fp,"OK");
+  button = create_button(fp,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   gtk_widget_show (button);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(gene_orb_mode),(gpointer)mode);
@@ -736,7 +694,7 @@ static void cw_wave (GtkWidget *bframe,guint del)
   int nlistespin = 7;
   gchar *listeirre[8];
   int nlisteiree = 8;
-  gchar *titre="Wave function symmetry";
+  gchar *titre=_("Wave function symmetry");
 
   entry=g_malloc(3*sizeof(GtkWidget*));
   listene[0]=g_strdup_printf("%d",Nelectrons);
@@ -782,30 +740,27 @@ static void cw_wave (GtkWidget *bframe,guint del)
 
   vboxall = create_vbox(fp);
   frame = gtk_frame_new (titre);
-  g_object_ref (frame);
-  g_object_set_data_full(G_OBJECT (fp), "frame", frame,
-                            (GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
 
   vboxframe = create_vbox(frame);
   hbox1 = create_hbox(vboxframe);
-  entry[0]= create_combo_box_entry_liste(Window,hbox1,"Number of electrons :",listene,nlistene);
+  entry[0]= create_combo_box_entry_liste(Window,hbox1,_("Number of electrons :"),listene,nlistene);
   hbox1 = create_hbox(vboxframe);
-  entry[1]= create_combo_box_entry_liste(Window,hbox1,"Number of the irreducible representation :",listeirre,nlisteiree);
+  entry[1]= create_combo_box_entry_liste(Window,hbox1,_("Number of the irreducible representation :"),listeirre,nlisteiree);
   hbox1 = create_hbox(vboxframe);
-  entry[2]= create_combo_box_entry_liste(Window,hbox1,"2*Spin :",listespin,nlistespin);
+  entry[2]= create_combo_box_entry_liste(Window,hbox1,_("2*Spin :"),listespin,nlistespin);
   
   hbox2 = create_hbox(vboxall);
   gtk_widget_realize(fp);
 
-  button = create_button(fp,"Cancel");
+  button = create_button(fp,_("Cancel"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(delete_child),GTK_OBJECT(fp));
   gtk_widget_show (button);
 
-  button = create_button(fp,"OK");
+  button = create_button(fp,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   gtk_widget_show (button);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(gene_wf),(gpointer)entry);
@@ -820,36 +775,36 @@ static void Traite_ci_Option(GtkWidget *bframe,gpointer data)
 {
  char *temp;
  temp=g_malloc(100);
-  if (!strcmp((char *)data,"Defining the state symmetry") )
+  if (!strcmp((char *)data,_("Defining the state symmetry")) )
    cw_wave(bframe,1);
   else
-  if (!strcmp((char *)data,"Defining the occupied orbitals") )
-   c_orb(bframe,"Defining the occupied orbitals","Occ");
+  if (!strcmp((char *)data,_("Defining the occupied orbitals")) )
+   c_orb(bframe,_("Defining the occupied orbitals"),"Occ");
   else
-  if (!strcmp((char *)data,"Defining the closed-shell orbitals") )
-   c_orb(bframe,"Defining the closed-shell orbitals","Closed");
+  if (!strcmp((char *)data,_("Defining the closed-shell orbitals")) )
+   c_orb(bframe,_("Defining the closed-shell orbitals"),"Closed");
   else
-  if (!strcmp((char *)data,"Defining the Frozen-core orbitals") )
-   c_orb(bframe,"Defining the Frozen-core orbitals","Core");
+  if (!strcmp((char *)data,_("Defining the Frozen-core orbitals")) )
+   c_orb(bframe,_("Defining the Frozen-core orbitals"),"Core");
   else
-  if (!strcmp((char *)data,"Saving the natural orbitals") )
-   c_SS_orb(bframe,"Saving the natural orbital","Natorb");
+  if (!strcmp((char *)data,_("Saving the natural orbitals")) )
+   c_SS_orb(bframe,_("Saving the natural orbital"),"Natorb");
   else
-  if (!strcmp((char *)data,"Defining the number of states in the present symmetry") )
+  if (!strcmp((char *)data,_("Defining the number of states in the present symmetry")) )
    c_nstate(bframe,1);
   else
-  if (!strcmp((char *)data,"Defining the orbitals") )
-   c_SS_orb(bframe,"Defining the orbitals","Orbit");
+  if (!strcmp((char *)data,_("Defining the orbitals")) )
+   c_SS_orb(bframe,_("Defining the orbitals"),"Orbit");
   else
-  if (!strcmp((char *)data,"Additional reference symmetries") )
+  if (!strcmp((char *)data,_("Additional reference symmetries")) )
      c_ref(bframe,0);
   else
-  if (!strcmp((char *)data,"Restriction of classes of excitations") )
+  if (!strcmp((char *)data,_("Restriction of classes of excitations")) )
   c_restrictexcitation(bframe,1);
   else 
   {
-  sprintf(temp,"Sorry, the button of \"%s\" is not active",(char*)data);
-   Message(temp," Warning ",TRUE);
+  sprintf(temp,_("Sorry, the button of \"%s\" is not active"),(char*)data);
+   Message(temp,_("Warning"),TRUE);
    gtk_widget_hide(bframe);
   }
  g_free(temp);
@@ -859,36 +814,36 @@ static void Traite_multi_Option(GtkWidget *bframe,gpointer data)
 {
  char *temp;
  temp=g_malloc(100);
-  if (!strcmp((char *)data,"Defining the state symmetry") )
+  if (!strcmp((char *)data,_("Defining the state symmetry")) )
    cw_wave(bframe,0);
   else
-  if (!strcmp((char *)data,"Defining the occupied orbitals") )
-   c_orb(bframe,"Defining the occupied orbitals","Occ");
+  if (!strcmp((char *)data,_("Defining the occupied orbitals")) )
+   c_orb(bframe,_("Defining the occupied orbitals"),"Occ");
   else
-  if (!strcmp((char *)data,"Defining the closed-shell orbitals") )
-   c_orb(bframe,"Defining the closed-shell orbitals","Closed");
+  if (!strcmp((char *)data,_("Defining the closed-shell orbitals")) )
+   c_orb(bframe,_("Defining the closed-shell orbitals"),"Closed");
   else
-  if (!strcmp((char *)data,"Defining the Frozen-core orbitals") )
-   c_orb(bframe,"Defining the Frozen-core orbitals","Core");
+  if (!strcmp((char *)data,_("Defining the Frozen-core orbitals")) )
+   c_orb(bframe,_("Defining the Frozen-core orbitals"),"Core");
   else
-  if (!strcmp((char *)data,"Saving the final orbitals") )
-   c_SS_orb(bframe,"Saving the final orbital","Orbital");
+  if (!strcmp((char *)data,_("Saving the final orbitals")) )
+   c_SS_orb(bframe,_("Saving the final orbital"),"Orbital");
   else
-  if (!strcmp((char *)data,"Defining the starting guess") )
-   c_SS_orb(bframe,"Defining the starting guess","Start");
+  if (!strcmp((char *)data,_("Defining the starting guess")) )
+   c_SS_orb(bframe,_("Defining the starting guess"),"Start");
   else
-  if (!strcmp((char *)data,"Defining the number of states in the present symmetry") )
+  if (!strcmp((char *)data,_("Defining the number of states in the present symmetry")) )
    c_nstate(bframe,0);
   else
-  if (!strcmp((char *)data,"Specifying weights in state-averaged calculations") )
-   c_one_entry(bframe,"Specifying weights in state-averaged calculations ","Weights","1,1,1,1",0);
+  if (!strcmp((char *)data,_("Specifying weights in state-averaged calculations")) )
+   c_one_entry(bframe,_("Specifying weights in state-averaged calculations "),"Weights","1,1,1,1",0);
   else
-  if (!strcmp((char *)data,"Type of orbitals to save") )
+  if (!strcmp((char *)data,_("Type of orbitals to save")) )
      c_type_orb(bframe,1);
   else 
   {
-  sprintf(temp,"Sorry, the button of \"%s\" is not active",(char*)data);
-   Message(temp," Warning ",TRUE);
+  sprintf(temp,_("Sorry, the button of \"%s\" is not active"),(char*)data);
+   Message(temp,_("Warning"),TRUE);
    gtk_widget_hide(bframe);
   }
  g_free(temp);
@@ -897,30 +852,30 @@ static void Traite_hf_Option(GtkWidget *bframe,gpointer data)
 {
  char *temp;
  temp=g_malloc(100);
-  if (!strcmp((char *)data,"Defining the wavefunction") )
+  if (!strcmp((char *)data,_("Defining the wavefunction")) )
    cw_wave(bframe,1);
   else
-  if (!strcmp((char *)data,"Specifying closed-shell orbitals") )
-   c_orb(bframe,"Specifying closed-shell orbitals","Closed");
+  if (!strcmp((char *)data,_("Specifying closed-shell orbitals")) )
+   c_orb(bframe,_("Specifying closed-shell orbitals"),"Closed");
   else
-  if (!strcmp((char *)data,"Defining the number of occupied orbitals in each symmetry") )
-   c_orb(bframe,"Defining the number of occupied orbitals in each symmetry","Occ");
+  if (!strcmp((char *)data,_("Defining the number of occupied orbitals in each symmetry")) )
+   c_orb(bframe,_("Defining the number of occupied orbitals in each symmetry"),"Occ");
   else
-  if (!strcmp((char *)data,"Saving the final orbital") )
-   c_SS_orb(bframe,"Saving the final orbital","Save");
+  if (!strcmp((char *)data,_("Saving the final orbital")) )
+   c_SS_orb(bframe,_("Saving the final orbital"),"Save");
   else
-  if (!strcmp((char *)data,"Starting with previous orbitals") )
-   c_SS_orb(bframe,"Starting with previous orbitals","Start");
+  if (!strcmp((char *)data,_("Starting with previous orbitals")) )
+   c_SS_orb(bframe,_("Starting with previous orbitals"),"Start");
   else
-  if (!strcmp((char *)data,"Starting with a previous density matrix") )
-   c_SS_orb(bframe,"Starting with a previous density matrix","DENSITY");
+  if (!strcmp((char *)data,_("Starting with a previous density matrix")) )
+   c_SS_orb(bframe,_("Starting with a previous density matrix"),"DENSITY");
   else
-  if (!strcmp((char *)data,"Initial orbital guess") )
+  if (!strcmp((char *)data,_("Initial orbital guess")) )
    c_initial_guess(bframe);
   else 
   {
-  sprintf(temp,"Sorry, the button of \"%s\" is not active",(char*)data);
-   Message(temp," Warning ",TRUE);
+  sprintf(temp,_("Sorry, the button of \"%s\" is not active"),(char*)data);
+   Message(temp,_("Warning"),TRUE);
    gtk_widget_hide(bframe);
   }
  g_free(temp);
@@ -935,12 +890,12 @@ static void button_fcioption(GtkWidget *w)
         guint ColonneT=2; 
         guint LigneT=3; 
 	char *LabelButton[2][3]={
-        {"Defining the orbitals",
-         "Defining the closed-shell orbitals",
-         "Defining the state symmetry",
+        {_("Defining the orbitals"),
+         _("Defining the closed-shell orbitals"),
+         _("Defining the state symmetry"),
         },
-        {"Defining the occupied orbitals",
-         "Defining the Frozen-core orbitals",
+        {_("Defining the occupied orbitals"),
+         _("Defining the Frozen-core orbitals"),
          "00"
          }
 	};
@@ -979,18 +934,18 @@ static void button_cioption(GtkWidget *w)
         guint ColonneT=2; 
         guint LigneT=6; 
 	char *LabelButton[2][6]={
-        {"Defining the occupied orbitals",
-         "Defining the closed-shell orbitals",
-         "Defining the state symmetry",
-         "Additional reference symmetries",
+        {_("Defining the occupied orbitals"),
+         _("Defining the closed-shell orbitals"),
+         _("Defining the state symmetry"),
+         _("Additional reference symmetries"),
          "00",
          "00"
         },
-        {"Defining the Frozen-core orbitals",
-         "Defining the orbitals",
-         "Defining the number of states in the present symmetry",
-         "Restriction of classes of excitations",
-         "Saving the natural orbitals",
+        {_("Defining the Frozen-core orbitals"),
+         _("Defining the orbitals"),
+         _("Defining the number of states in the present symmetry"),
+         _("Restriction of classes of excitations"),
+         _("Saving the natural orbitals"),
          "00"
          }
 	};
@@ -1029,18 +984,18 @@ static void button_multioption(GtkWidget *w)
         guint ColonneT=2; 
         guint LigneT=6; 
 	char *LabelButton[2][6]={
-        {"Defining the occupied orbitals",
-         "Defining the closed-shell orbitals",
-         "Defining the state symmetry",
+        {_("Defining the occupied orbitals"),
+         _("Defining the closed-shell orbitals"),
+         _("Defining the state symmetry"),
          "00",
-         "Type of orbitals to save",
+         _("Type of orbitals to save"),
          "00"
         },
-        {"Defining the Frozen-core orbitals",
-         "Defining the starting guess",
-         "Defining the number of states in the present symmetry",
-         "Specifying weights in state-averaged calculations",
-         "Saving the final orbitals",
+        {_("Defining the Frozen-core orbitals"),
+         _("Defining the starting guess"),
+         _("Defining the number of states in the present symmetry"),
+         _("Specifying weights in state-averaged calculations"),
+         _("Saving the final orbitals"),
          "00"
          }
 	};
@@ -1079,13 +1034,13 @@ static void button_hfoption(GtkWidget *w)
         guint ColonneT=2; 
         guint LigneT=4; 
 	char *LabelButton[2][4]={
-                {"Defining the wavefunction",
-                 "Specifying closed-shell orbitals",
-                 "Starting with previous orbitals",
-                 "Starting with a previous density matrix"},
-                {"Defining the number of occupied orbitals in each symmetry",
-                 "Saving the final orbital",
-                 "Initial orbital guess",
+                {_("Defining the wavefunction"),
+                 _("Specifying closed-shell orbitals"),
+                 _("Starting with previous orbitals"),
+                 _("Starting with a previous density matrix")},
+                {_("Defining the number of occupied orbitals in each symmetry"),
+                 _("Saving the final orbital"),
+                 _("Initial orbital guess"),
                  "00" }
 		};
 
@@ -1119,9 +1074,6 @@ void create_frame_option (gchar *titre)
   GtkWidget *frame;
 
   frame = gtk_frame_new (titre);
-  g_object_ref (frame);
-  g_object_set_data_full(G_OBJECT (Window), "frame", frame,
-                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (frame);
   gtk_box_pack_start (GTK_BOX (VboxOption), frame, TRUE, TRUE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
@@ -1138,13 +1090,13 @@ static void command_select(GtkComboBox *combobox, gpointer d)
 		gtk_tree_model_get (model, &iter, 0, &data, -1);
 	}
 	if(FrameShow !=NULL) gtk_widget_destroy(FrameShow);
-	if (!strcmp((char *)data,"hf") ) { create_frame_option("HF Options"); button_hfoption(FrameShow); }
-	else if (!strcmp((char *)data,"uhf") ) { create_frame_option("UHF Options"); button_hfoption(FrameShow); }
-	else if (!strcmp((char *)data,"multi") ) { create_frame_option("Multi Options"); button_multioption(FrameShow); }
-	else if (!strcmp((char *)data,"ci") ) { create_frame_option("CI Options"); button_cioption(FrameShow); }
-	else if (!strcmp((char *)data,"fci") ) { create_frame_option("FCI Options"); button_fcioption(FrameShow); }
+	if (!strcmp((char *)data,"hf") ) { create_frame_option(_("HF Options")); button_hfoption(FrameShow); }
+	else if (!strcmp((char *)data,"uhf") ) { create_frame_option(_("UHF Options")); button_hfoption(FrameShow); }
+	else if (!strcmp((char *)data,"multi") ) { create_frame_option(_("Multi Options")); button_multioption(FrameShow); }
+	else if (!strcmp((char *)data,"ci") ) { create_frame_option(_("CI Options")); button_cioption(FrameShow); }
+	else if (!strcmp((char *)data,"fci") ) { create_frame_option(_("FCI Options")); button_fcioption(FrameShow); }
  
-	if (strcmp((char *)data,"Please select the type of calculation") )
+	if (strcmp((char *)data,_("Please select the type of calculation")) )
 	{
 		gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, (char *)data,-1);
 		gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, ";\n",-1);
@@ -1169,7 +1121,7 @@ static GtkWidget *CreateListeComm(GtkWidget* BoiteVP)
 
 	store = gtk_tree_store_new (1,G_TYPE_STRING);
         gtk_tree_store_append (store, &iter, NULL);
-        gtk_tree_store_set (store, &iter, 0, "Please select the type of calculation", -1);
+        gtk_tree_store_set (store, &iter, 0, _("Please select the type of calculation"), -1);
         gtk_tree_store_append (store, &iter, NULL);
         gtk_tree_store_set (store, &iter, 0, "hf", -1);
         gtk_tree_store_append (store, &iter, NULL);
@@ -1246,8 +1198,8 @@ void AjoutePageComm(GtkWidget* Win,GtkWidget *NoteBook,CommS *comm)
   gtk_widget_set_size_request(GTK_WIDGET(Frame), 600, 400);
   gtk_container_set_border_width(GTK_CONTAINER(Frame), 10);
 
-  LabelOnglet = gtk_label_new("Commands");
-  LabelMenu = gtk_label_new("Gene");
+  LabelOnglet = gtk_label_new(_("Commands"));
+  LabelMenu = gtk_label_new(_("Commands"));
   gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook),Frame,LabelOnglet, LabelMenu);
 
   window1 = Frame;
@@ -1260,24 +1212,17 @@ void AjoutePageComm(GtkWidget* Win,GtkWidget *NoteBook,CommS *comm)
   combobox = CreateListeComm(vbox1);
   FrameShow=NULL;
 
-  frame2 = gtk_frame_new ("View all commands generated by gabedit");
-  g_object_ref (frame2);
-  g_object_set_data_full(G_OBJECT (window1), "frame2", frame2,(GDestroyNotify) g_object_unref);
+  frame2 = gtk_frame_new (_("View all commands generated by gabedit"));
   gtk_widget_show (frame2);
   gtk_box_pack_start (GTK_BOX (vbox1), frame2, TRUE, TRUE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame2), 5);
 
   scrolledwindow2 = gtk_scrolled_window_new (NULL, NULL);
-  g_object_ref (scrolledwindow2);
-  g_object_set_data_full(G_OBJECT (window1), "scrolledwindow2", scrolledwindow2,
-                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (scrolledwindow2);
   gtk_container_add (GTK_CONTAINER (frame2), scrolledwindow2);
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow2), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
 
   text2 = gabedit_text_new ();
-  g_object_ref (text2);
-  g_object_set_data_full(G_OBJECT (window1), "text2", text2,(GDestroyNotify) g_object_unref);
   gtk_widget_show (text2);
   gtk_container_add (GTK_CONTAINER (scrolledwindow2), text2);
   gabedit_text_set_editable (GABEDIT_TEXT (text2), FALSE);

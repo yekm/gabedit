@@ -103,7 +103,7 @@ static gdouble F(int n,gdouble t)
 	}
 	if(n+i>=MAXFACT)
 	{
-		printf("Divergence in F, Ionic integrals");
+		printf(_("Divergence in F, Ionic integrals"));
 		exit(1);
 	}
 	T *=et;
@@ -741,7 +741,7 @@ void normaliseCGTF(CGTF* left)
 	else
 	{
 
-		printf("a Contacted Gaussian Type function is nul");
+		printf(_("A Contacted Gaussian Type function is nul"));
 		exit(1);
 	}
 }

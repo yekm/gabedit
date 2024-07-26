@@ -220,7 +220,7 @@ static GtkWidget *addChargeToTable(GtkWidget *table, gint i)
 	gint nlistCharge = 1;
 	gchar* listCharge[] = {"0"};
 
-	add_label_table(table,"Charge",(gushort)i,0);
+	add_label_table(table,_("Charge"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entryCharge = addComboListToATable(table, listCharge, nlistCharge, i, 2, 1);
 	comboCharge  = g_object_get_data(G_OBJECT (entryCharge), "Combo");
@@ -236,7 +236,7 @@ static GtkWidget *addSpinToTable(GtkWidget *table, gint i)
 	gint nlistspinMultiplicity = 1;
 	gchar* listspinMultiplicity[] = {"0"};
 
-	add_label_table(table,"Spin multiplicity",(gushort)i,0);
+	add_label_table(table,_("Spin multiplicity"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entrySpinMultiplicity = addComboListToATable(table, listspinMultiplicity, nlistspinMultiplicity, i, 2, 1);
 	comboSpinMultiplicity  = g_object_get_data(G_OBJECT (entrySpinMultiplicity), "Combo");
@@ -416,8 +416,8 @@ static void print_gaussian_correction_vibration_geometries_link(GtkWidget* Win, 
  	file = fopen(fileName, "w");
 	if(!file)
 	{
-		gchar* t = g_strdup_printf("Sorry\n I can not create %s file",fileName); 
-		Message(t,"Error",TRUE);
+		gchar* t = g_strdup_printf(_("Sorry\n I can not create %s file"),fileName); 
+		Message(t,_("Error"),TRUE);
 		if(fileName) g_free(fileName);
 		if(t)g_free(t);
 		return;
@@ -475,8 +475,8 @@ static void print_gaussian_correction_vibration_geometries_link(GtkWidget* Win, 
 	if(fileNameBas) g_free(fileNameBas);
 	gtk_widget_destroy(Win);
 	{
-		gchar* t = g_strdup_printf("The %s file was created",fileName); 
-		Message(t,"Error",TRUE);
+		gchar* t = g_strdup_printf(_("The %s file was created"),fileName); 
+		Message(t,_("Error"),TRUE);
 		if(t)g_free(t);
 	}
 }
@@ -503,7 +503,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 0;
-	add_label_table(table,"Working Folder",(gushort)i,(gushort)j);
+	add_label_table(table,_("Working Folder"),(gushort)i,(gushort)j);
 	j = 1;
 	label = gtk_label_new(":");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -511,7 +511,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 	j = 2;
-	buttonDirSelector =  gtk_file_chooser_button_new("Select your folder", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	buttonDirSelector =  gtk_file_chooser_button_new(_("Select your folder"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
 	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeight*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
 			j,j+4,i,i+1,
@@ -522,7 +522,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox)
 /*----------------------------------------------------------------------------------*/
 	i++;
 	j = 0;
-	add_label_table(table,"File name",(gushort)i,(gushort)j);
+	add_label_table(table,_("File name"),(gushort)i,(gushort)j);
 	j = 1;
 	label = gtk_label_new(":");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -541,7 +541,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox)
 /*----------------------------------------------------------------------------------*/
 	i++;
 	j = 0;
-	add_label_table(table,"Step",(gushort)i,(gushort)j);
+	add_label_table(table,_("Step"),(gushort)i,(gushort)j);
 	j = 1;
 	label = gtk_label_new(":");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -578,7 +578,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox)
 	g_signal_connect(G_OBJECT(GTK_BIN(comboCharge)->child),"changed", G_CALLBACK(changedEntryCharge),NULL);
 /*----------------------------------------------------------------------------------*/
 	i++;
-	add_label_table(table," Energy keywords ",i,0);
+	add_label_table(table,_(" Energy keywords "),i,0);
 	add_label_table(table,":",i,1);
   	entry = gtk_entry_new ();
 	g_object_set_data(G_OBJECT(Wins), "EntryEnergyKeywords", entry);
@@ -592,7 +592,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox)
 	gtk_widget_set_sensitive(entry, TRUE);
 /*----------------------------------------------------------------------------------*/
 	i++;
-	add_label_table(table," Prop. keywords ",i,0);
+	add_label_table(table,_(" Prop. keywords "),i,0);
 	add_label_table(table,":",i,1);
   	entry = gtk_entry_new ();
 	g_object_set_data(G_OBJECT(Wins), "EntryPropKeywords", entry);
@@ -615,7 +615,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox)
 
 
 	i++;
-	buttonChkgauss = gtk_check_button_new_with_label ("check file");
+	buttonChkgauss = gtk_check_button_new_with_label (_("check file"));
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonChkgauss), FALSE);
 	gtk_table_attach(GTK_TABLE(table),buttonChkgauss,0,0+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -643,14 +643,14 @@ static void  add_cancel_ok_button(GtkWidget *Win,GtkWidget *vbox,GtkWidget *entr
 	hbox = create_hbox_false(vbox);
 	gtk_widget_realize(Win);
 
-	button = create_button(Win,"Cancel");
+	button = create_button(Win,_("Cancel"));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Win));
 	gtk_widget_show (button);
 
-	button = create_button(Win,"OK");
+	button = create_button(Win,_("OK"));
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
@@ -672,8 +672,8 @@ static void create_gaussian_correction_vibration_file_dlg()
 
 	if(vibration.numberOfFrequences<1) 
 	{
-		gchar* t = g_strdup_printf("Sorry\n You should read the geometries befor"); 
-		Message(t,"Error",TRUE);
+		gchar* t = g_strdup_printf(_("Sorry\n You should read the geometries befor")); 
+		Message(t,_("Error"),TRUE);
 		return;
 	}
 
@@ -874,8 +874,8 @@ static gboolean save_vibration_gabedit_format(gchar *FileName)
 	if(fd == NULL)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I  can not create '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I  can not create '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 		return FALSE;
 	}
 	fprintf(fd,"[Gabedit Format]\n");
@@ -1013,10 +1013,10 @@ static gboolean read_gabedit_molden_geom(gchar *FileName)
 	Dipole.def = FALSE;
 
 	tmp = get_name_file(FileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Gabedit/Molden");
-	set_status_label_info("Geometry","Reading");
+	set_status_label_info(_("File type"),"Gabedit/Molden");
+	set_status_label_info(_("Geometry"),"Reading");
 
  	fd = FOpen(FileName, "rb");
  	OK=FALSE;
@@ -1037,11 +1037,11 @@ static gboolean read_gabedit_molden_geom(gchar *FileName)
 	else
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not read '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Geometry","Nothing");
+		sprintf(buffer,_("Sorry, I can not read '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Geometry"),_("Nothing"));
 		if(fd) fclose(fd);
 		return FALSE;
 	}
@@ -1057,8 +1057,8 @@ static gboolean read_gabedit_molden_geom(gchar *FileName)
 			gchar buffer[BSIZE];
 			Ncenters = j;
 			free_geometry();
-			sprintf(buffer,"Sorry, I can not read geometry from '%s' file\n",FileName);
-  			Message(buffer,"Error",TRUE);
+			sprintf(buffer,_("Sorry, I can not read geometry from '%s' file\n"),FileName);
+  			Message(buffer,_("Error"),TRUE);
 			fclose(fd);
 			return FALSE;
 		}
@@ -1078,7 +1078,7 @@ static gboolean read_gabedit_molden_geom(gchar *FileName)
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
 	glarea_rafresh(GLArea);
 
 	return TRUE;
@@ -1124,8 +1124,8 @@ static gboolean read_gabedit_molden_frequencies(gchar *FileName)
 		if(ne != 1)
 		{
 			gchar buffer[BSIZE];
-			sprintf(buffer,"Sorry, I can not read frequencies from '%s' file\n",FileName);
-  			Message(buffer,"Error",TRUE);
+			sprintf(buffer,_("Sorry, I can not read frequencies from '%s' file\n"),FileName);
+  			Message(buffer,_("Error"),TRUE);
 
 			free_vibration();
 			fclose(fd);
@@ -1230,8 +1230,8 @@ static gboolean read_gabedit_molden_modes(gchar *FileName)
 			if(ne != 3)
 			{
 				gchar buffer[BSIZE];
-				sprintf(buffer,"Sorry, I can not read Modes from '%s' file\n",FileName);
-  				Message(buffer,"Error",TRUE);
+				sprintf(buffer,_("Sorry, I can not read Modes from '%s' file\n"),FileName);
+  				Message(buffer,_("Error"),TRUE);
 
 				free_vibration();
 				fclose(fd);
@@ -1244,8 +1244,8 @@ static gboolean read_gabedit_molden_modes(gchar *FileName)
 	if(vibration.numberOfFrequences!=j)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not read Modes from '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not read Modes from '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 		free_vibration();
 		fclose(fd);
 		return FALSE;
@@ -1370,8 +1370,8 @@ static gboolean read_mpqc_modes(FILE* fd, gchar *FileName)
 		gchar buffer[BSIZE];
 		free_vibration();
 		rafreshList();
-		sprintf(buffer,"Sorry, I can not read the frequencies from '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not read the frequencies from '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 		return FALSE;
 	}
 
@@ -1497,11 +1497,13 @@ static gboolean read_mpqc_modes(FILE* fd, gchar *FileName)
 		free_vibration();
 		rafreshList();
 		sprintf(buffer,
+			_(
 			"Sorry, I can not read the normal modes from '%s' file\n"
 			"  Set debug = 1 in freq<MolecularFrequencies> object for obtain the normal modes from MPQC\n"
+			)
 			,
 			FileName);
-  		Message(buffer,"Error",TRUE);
+  		Message(buffer,_("Error"),TRUE);
 		return FALSE;
 	}
 	vibration.numberOfFrequences = j+1;
@@ -1536,8 +1538,8 @@ static gboolean read_mopac_aux_modes(FILE* fd, gchar *FileName)
 		free_one_string_table(freqs, nFreqs);
 		free_vibration();
 		rafreshList();
-		sprintf(buffer,"Sorry, I can not read the frequencies from '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not read the frequencies from '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 		return FALSE;
 	}
 	fseek(fd, 0, SEEK_SET);
@@ -1586,8 +1588,8 @@ static gboolean read_mopac_aux_modes(FILE* fd, gchar *FileName)
 		free_one_string_table(modes, nModes);
 		free_vibration();
 		rafreshList();
-		sprintf(buffer,"Sorry, I can not read the modes of frequencies from '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not read the modes of frequencies from '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 		return FALSE;
 	}
 
@@ -1641,8 +1643,8 @@ static void read_mopac_aux_file(GabeditFileChooser *SelecFile, gint response_id)
 	if(!file)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 		return;
 	}
  	if(gl_read_mopac_aux_file_geomi(FileName,-1))
@@ -1692,8 +1694,8 @@ static void read_mpqc_file(GabeditFileChooser *SelecFile, gint response_id)
 	if(!file)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 		return;
 	}
  	if(gl_read_mpqc_file_geomi(FileName,-1))
@@ -1774,10 +1776,10 @@ static gboolean read_molpro_geom(FILE*fd, gchar *FileName)
 	Dipole.def = FALSE;
 
 	tmp = get_name_file(FileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Molpro");
-	set_status_label_info("Geometry","Reading");
+	set_status_label_info(_("File type"),"Molpro");
+	set_status_label_info(_("Geometry"),"Reading");
 
  	OK=FALSE;
  	while(!feof(fd))
@@ -1821,12 +1823,12 @@ static gboolean read_molpro_geom(FILE*fd, gchar *FileName)
 	else
 	{
 		gchar buffer[BSIZE];
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Geometry","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Geometry"),_("Nothing"));
 
-		sprintf(buffer,"Sorry, I can not read Geometry from '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not read Geometry from '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 		return FALSE;
 	}
 	j = 0;
@@ -1845,8 +1847,8 @@ static gboolean read_molpro_geom(FILE*fd, gchar *FileName)
 			Ncenters = j;
 			free_geometry();
 
-			sprintf(buffer,"Sorry, I can not read geometry from  '%s' file\n",FileName);
-  			Message(buffer,"Error",TRUE);
+			sprintf(buffer,_("Sorry, I can not read geometry from  '%s' file\n"),FileName);
+  			Message(buffer,_("Error"),TRUE);
 
 			return FALSE;
 		}
@@ -1865,7 +1867,7 @@ static gboolean read_molpro_geom(FILE*fd, gchar *FileName)
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
 	glarea_rafresh(GLArea);
 
 	return TRUE;
@@ -1984,8 +1986,8 @@ static gboolean read_molpro_modes(FILE* fd, gchar *FileName)
 	{
 			gchar buffer[BSIZE];
 			free_vibration();
-			sprintf(buffer,"Sorry, I can not read the frequencies from '%s' file\n",FileName);
-  			Message(buffer,"Error",TRUE);
+			sprintf(buffer,_("Sorry, I can not read the frequencies from '%s' file\n"),FileName);
+  			Message(buffer,_("Error"),TRUE);
 			return FALSE;
 	}
 
@@ -2006,8 +2008,8 @@ static void read_molpro_file(GabeditFileChooser *SelecFile, gint response_id)
 	if(!file)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 		return;
 	}
 
@@ -2073,13 +2075,13 @@ static gboolean read_dalton_geom(FILE* file, gchar *FileName)
 
 	free_geometry();
 	tmp = get_name_file(FileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Dalton");
+	set_status_label_info(_("File type"),"Dalton");
  	numgeom =1;
  	do 
  	{
-		set_status_label_info("Geometry","Reading");
+		set_status_label_info(_("Geometry"),"Reading");
  		OK=FALSE;
  		while(!feof(file))
 		{
@@ -2096,13 +2098,13 @@ static gboolean read_dalton_geom(FILE* file, gchar *FileName)
         	}
  		if(!OK && (numgeom == 1) )
 		{
-  			GtkWidget* w = Message("Sorry\nI can not read geometry from this file","Error",TRUE);
+  			GtkWidget* w = Message(_("Sorry\nI can not read geometry from this file"),_("Error"),TRUE);
 			gtk_window_set_modal (GTK_WINDOW (w), TRUE);
  			g_free(t);
  			for(i=0;i<5;i++) g_free(AtomCoord[i]);
-			set_status_label_info("File Name","Nothing");
-			set_status_label_info("File Type","Nothing");
-			set_status_label_info("Geometry","Nothing");
+			set_status_label_info(_("File name"),_("Nothing"));
+			set_status_label_info(_("File type"),_("Nothing"));
+			set_status_label_info(_("Geometry"),_("Nothing"));
 			return FALSE;
     		}
  		if(!OK)break;
@@ -2148,7 +2150,7 @@ static gboolean read_dalton_geom(FILE* file, gchar *FileName)
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
 	return TRUE;
 }
 /********************************************************************************/
@@ -2507,13 +2509,13 @@ static gboolean read_gamess_geom(FILE* file, gchar *FileName)
   	Dipole.def = FALSE;
 	free_geometry();
 	tmp = get_name_file(FileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Dalton");
+	set_status_label_info(_("File type"),"Dalton");
  	numgeom =1;
  	do 
  	{
-		set_status_label_info("Geometry","Reading");
+		set_status_label_info(_("Geometry"),"Reading");
  		OK=FALSE;
  		while(!feof(file))
 		{
@@ -2529,13 +2531,13 @@ static gboolean read_gamess_geom(FILE* file, gchar *FileName)
         	}
  		if(!OK && (numgeom == 1) )
 		{
-  			GtkWidget* w = Message("Sorry\nI can not read geometry from this file","Error",TRUE);
+  			GtkWidget* w = Message(_("Sorry\nI can not read geometry from this file"),_("Error"),TRUE);
 			gtk_window_set_modal (GTK_WINDOW (w), TRUE);
  			g_free(t);
  			for(i=0;i<5;i++) g_free(AtomCoord[i]);
-			set_status_label_info("File Name","Nothing");
-			set_status_label_info("File Type","Nothing");
-			set_status_label_info("Geometry","Nothing");
+			set_status_label_info(_("File name"),_("Nothing"));
+			set_status_label_info(_("File type"),_("Nothing"));
+			set_status_label_info(_("Geometry"),_("Nothing"));
 			return FALSE;
     		}
  		if(!OK)break;
@@ -2580,7 +2582,7 @@ static gboolean read_gamess_geom(FILE* file, gchar *FileName)
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
 
 	return TRUE;
 }
@@ -2933,11 +2935,97 @@ static gboolean read_gaussian_file_frequencies(gchar *FileName)
 	{
 		GtkWidget* w = NULL;
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not read frequencies from '%s' file\n",FileName);
-  		w = Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not read frequencies from '%s' file\n"),FileName);
+  		w = Message(buffer,_("Error"),TRUE);
 		gtk_window_set_modal (GTK_WINDOW (w), TRUE);
 		return FALSE;
 	}
+
+	return TRUE;
+}
+/********************************************************************************/
+static gboolean read_fchk_gaussian_file_frequencies(gchar *fileName)
+{
+ 	FILE *file;
+	gint nf;
+	gdouble* vibE2 = NULL;
+	gdouble* vibNM = NULL;
+	gint idxFreq = 0;
+	gint idxMass = 0;
+	gint idxIR = 0;
+	gint idxRaman = 0;
+	gint i,j,k;
+	gint n;
+
+ 	file = FOpen(fileName, "rb");
+	if(!file) return FALSE;
+	nf = get_one_int_from_fchk_gaussian_file(file,"Number of Normal Modes ");
+	if(nf<1)
+	{
+		Message(_("Sorry\nNo normal modes in this file : Use the Freq(SaveNM) option in your input file"),_("Error"),TRUE);
+		fclose(file);
+		return FALSE;
+	}
+	rewind(file);
+	vibE2 = get_array_real_from_fchk_gaussian_file(file, "Vib-E2 ", &n);
+	/* nf frequencies, nf Red. masses , nf Frc consts, nf IR Inten  , nf Raman Activ, nf Depolar (P), nf Depolar (U) */
+	if(!vibE2 || n < 5*nf)
+	{
+		Message(_("Sorry\nI can not the frequencies from this file"),_("Error"),TRUE);
+		if(vibE2) g_free(vibE2);
+		fclose(file);
+		return FALSE;
+	}
+	rewind(file);
+	vibNM = get_array_real_from_fchk_gaussian_file(file, "Vib-Modes ", &n);
+	if(!vibNM || n != nf*Ncenters*3)
+	{
+		Message(_("Sorry\nI can not the normal modes from this file"),_("Error"),TRUE);
+		printf("n = %d nf*Ncent*3 = %d\n",n, nf*Ncenters*3);
+		if(vibE2) g_free(vibE2);
+		if(vibNM) g_free(vibNM);
+		fclose(file);
+		return FALSE;
+	}
+	fclose(file);
+	idxMass = nf;
+	idxIR = 3*nf;
+	idxRaman = 4*nf;
+
+	Dipole.def = FALSE;
+	free_vibration();
+	vibration.numberOfAtoms = Ncenters;
+	vibration.geometry = g_malloc(Ncenters*sizeof(VibrationGeom));
+	for(j=0;j<Ncenters;j++)
+	{
+		vibration.geometry[j].symbol = g_strdup(GeomOrb[j].Symb);
+    		vibration.geometry[j].coordinates[0] = GeomOrb[j].C[0];
+    		vibration.geometry[j].coordinates[1] = GeomOrb[j].C[1];
+    		vibration.geometry[j].coordinates[2] = GeomOrb[j].C[2];
+    		vibration.geometry[j].partialCharge = GeomOrb[j].partialCharge;
+    		vibration.geometry[j].nuclearCharge = GeomOrb[j].nuclearCharge;
+	}
+  	vibration.numberOfFrequences = nf;
+	vibration.modes = g_malloc(nf*sizeof(VibrationMode));
+	for(k=0;k<nf;k++)
+	{
+		vibration.modes[k].frequence = vibE2[idxFreq+k];
+		vibration.modes[k].IRIntensity = vibE2[idxIR+k];
+		vibration.modes[k].effectiveMass = vibE2[idxMass+k]; 
+		vibration.modes[k].RamanIntensity = vibE2[idxRaman+k];
+		vibration.modes[k].symmetry = g_strdup("UNK");
+		for(i=0;i<3;i++)
+		{
+			vibration.modes[k].vectors[i]= g_malloc(vibration.numberOfAtoms*sizeof(gdouble));
+			for(j=0;j<vibration.numberOfAtoms;j++)
+			{
+				vibration.modes[k].vectors[i][j] = vibNM[k*vibration.numberOfAtoms*3+3*j+i];
+			}
+		}
+	}
+	if(vibE2) g_free(vibE2);
+	if(vibNM) g_free(vibNM);
+	rafreshList();
 
 	return TRUE;
 }
@@ -2958,10 +3046,10 @@ static gboolean read_adf_geom(FILE*fd, gchar *FileName)
 	Dipole.def = FALSE;
 
 	tmp = get_name_file(FileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","ADF");
-	set_status_label_info("Geometry","Reading");
+	set_status_label_info(_("File type"),"ADF");
+	set_status_label_info(_("Geometry"),"Reading");
 
  	OK=FALSE;
  	while(!feof(fd))
@@ -3015,12 +3103,12 @@ static gboolean read_adf_geom(FILE*fd, gchar *FileName)
 	else
 	{
 		gchar buffer[BSIZE];
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Geometry","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Geometry"),_("Nothing"));
 
-		sprintf(buffer,"Sorry, I can not read Geometry from '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not read Geometry from '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 		return FALSE;
 	}
 	j = 0;
@@ -3040,8 +3128,8 @@ static gboolean read_adf_geom(FILE*fd, gchar *FileName)
 			Ncenters = j;
 			free_geometry();
 
-			sprintf(buffer,"Sorry, I can not read geometry from  '%s' file\n",FileName);
-  			Message(buffer,"Error",TRUE);
+			sprintf(buffer,_("Sorry, I can not read geometry from  '%s' file\n"),FileName);
+  			Message(buffer,_("Error"),TRUE);
 
 			return FALSE;
 		}
@@ -3060,7 +3148,7 @@ static gboolean read_adf_geom(FILE*fd, gchar *FileName)
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
 	glarea_rafresh(GLArea);
 
 	return TRUE;
@@ -3109,8 +3197,8 @@ static gboolean read_adf_modes(FILE* fd, gchar *FileName)
 	{
 		gchar buffer[BSIZE];
 		free_vibration();
-		sprintf(buffer,"Sorry, I can not read the frequencies from '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not read the frequencies from '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 		return FALSE;
 	}
 
@@ -3127,8 +3215,8 @@ static gboolean read_adf_modes(FILE* fd, gchar *FileName)
 			gchar buffer[BSIZE];
 			vibration.numberOfFrequences = j+nfMax;
 			free_vibration();
-			sprintf(buffer,"Sorry, I can not read the frequencies from '%s' file\n",FileName);
-  			Message(buffer,"Error",TRUE);
+			sprintf(buffer,_("Sorry, I can not read the frequencies from '%s' file\n"),FileName);
+  			Message(buffer,_("Error"),TRUE);
 			return FALSE;
 		}
 
@@ -3166,8 +3254,8 @@ static gboolean read_adf_modes(FILE* fd, gchar *FileName)
 				gchar buffer[BSIZE];
 				vibration.numberOfFrequences = j+nfMax;
 				free_vibration();
-				sprintf(buffer,"Sorry, I can not read Modes from '%s' file\n",FileName);
-  				Message(buffer,"Error",TRUE);
+				sprintf(buffer,_("Sorry, I can not read Modes from '%s' file\n"),FileName);
+  				Message(buffer,_("Error"),TRUE);
 				return FALSE;
 			}
 		}
@@ -3214,8 +3302,8 @@ static void read_adf_file(GabeditFileChooser *SelecFile, gint response_id)
 	if(!file)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 		return;
 	}
 
@@ -3251,7 +3339,7 @@ static void read_dalton_file(GabeditFileChooser *SelecFile, gint response_id)
 
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No file slected","Error",TRUE);
+		Message(_("Sorry\n No file selected"),_("Error"),TRUE);
     		return ;
  	}
 
@@ -3260,8 +3348,8 @@ static void read_dalton_file(GabeditFileChooser *SelecFile, gint response_id)
 	if(!file)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 		return;
 	}
 
@@ -3277,8 +3365,8 @@ static void read_dalton_file(GabeditFileChooser *SelecFile, gint response_id)
 		{
 			gchar buffer[BSIZE];
 			free_vibration();
-			sprintf(buffer,"Sorry, I can not read the frequencies from '%s' file\n",FileName);
-  			Message(buffer,"Error",TRUE);
+			sprintf(buffer,_("Sorry, I can not read the frequencies from '%s' file\n"),FileName);
+  			Message(buffer,_("Error"),TRUE);
 		}
 		rafreshList();
 	}
@@ -3295,7 +3383,7 @@ static void read_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
 
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No file slected","Error",TRUE);
+		Message(_("Sorry\n No file selected"),_("Error"),TRUE);
     		return ;
  	}
 
@@ -3304,8 +3392,8 @@ static void read_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
 	if(!file)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 		return;
 	}
 
@@ -3321,8 +3409,8 @@ static void read_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
 		{
 			gchar buffer[BSIZE];
 			free_vibration();
-			sprintf(buffer,"Sorry, I can not read the frequencies from '%s' file\n",FileName);
-  			Message(buffer,"Error",TRUE);
+			sprintf(buffer,_("Sorry, I can not read the frequencies from '%s' file\n"),FileName);
+  			Message(buffer,_("Error"),TRUE);
 		}
 		rafreshList();
 	}
@@ -3340,6 +3428,19 @@ static void read_gaussian_file(GabeditFileChooser *SelecFile, gint response_id)
 
  	gl_read_last_gauss_file(SelecFile, response_id);
 	read_gaussian_file_frequencies(FileName);
+}
+/********************************************************************************/
+static void read_fchk_gaussian_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+	gchar *FileName;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+
+	stop_vibration(NULL, NULL);
+
+ 	gl_read_fchk_gauss_file(SelecFile, response_id);
+	if(Ncenters>0) read_fchk_gaussian_file_frequencies(FileName);
 }
 /********************************************************************************/
 static gboolean read_qchem_file_frequencies(gchar *FileName)
@@ -3490,8 +3591,8 @@ static gboolean read_qchem_file_frequencies(gchar *FileName)
 	{
 		GtkWidget* w = NULL;
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not read frequencies from '%s' file\n",FileName);
-  		w = Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not read frequencies from '%s' file\n"),FileName);
+  		w = Message(buffer,_("Error"),TRUE);
 		gtk_window_set_modal (GTK_WINDOW (w), TRUE);
 		return FALSE;
 	}
@@ -3675,8 +3776,8 @@ static gboolean read_orca_file_frequencies(gchar *FileName)
 		vibration.numberOfFrequences = Ncenters*3;
 		free_vibration();
 
-		sprintf(buffer,"Sorry, I can not read frequencies from '%s' file\n",FileName);
-  		w = Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not read frequencies from '%s' file\n"),FileName);
+  		w = Message(buffer,_("Error"),TRUE);
 		gtk_window_set_modal (GTK_WINDOW (w), TRUE);
 		rafreshList();
 		return FALSE;
@@ -3724,6 +3825,16 @@ static void read_gaussian_file_dlg()
  	file_chooser_open(read_gaussian_file,
 			"Read last geometry and frequencies from a Gaussian output file",
 			GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_ORB);
+
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+}
+/********************************************************************************/
+static void read_fchk_gaussian_file_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_fchk_gaussian_file,
+			"Read geometry and frequencies from a Gaussian fchk file",
+			GABEDIT_TYPEFILE_GAUSSIAN_FCHK,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
@@ -3979,8 +4090,8 @@ static void showMessageEnd()
 {
 	gchar* format =get_format_image_from_option();
 	gchar* message = messageAnimatedImage(format);
-	gchar* t = g_strdup_printf("\nA series of gab*.%s files was created in \"%s\" directeory.\n\n\n%s" , format, get_last_directory(),message);
-	GtkWidget* winDlg = Message(t,"Info",TRUE);
+	gchar* t = g_strdup_printf(_("\nA series of gab*.%s files was created in \"%s\" directeory.\n\n\n%s") , format, get_last_directory(),message);
+	GtkWidget* winDlg = Message(t,_("Info"),TRUE);
 	g_free(message);
 	gtk_window_set_modal (GTK_WINDOW (winDlg), TRUE);
 	g_free(t);
@@ -4064,7 +4175,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_box_pack_start(GTK_BOX(vboxframe), table,TRUE,TRUE,0);
 
 	i=0;
-	add_label_table(table," Scale factor ",(gushort)i,0);
+	add_label_table(table,_(" Scale factor "),(gushort)i,0);
 	add_label_table(table," : ",(gushort)i,1); 
 	EntryScal = gtk_entry_new();
 	gtk_table_attach(GTK_TABLE(table),EntryScal,2,2+1,i,i+1,
@@ -4076,7 +4187,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_entry_set_text(GTK_ENTRY(EntryScal),t);
 
 	i++;
-	add_label_table(table," Threshold(Bohr) ",(gushort)i,0);
+	add_label_table(table,_(" Threshold(Bohr) "),(gushort)i,0);
 	add_label_table(table," : ",(gushort)i,1); 
 	EntryThreshold = gtk_entry_new();
 	gtk_table_attach(GTK_TABLE(table),EntryThreshold,2,2+1,i,i+1,
@@ -4088,7 +4199,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_entry_set_text(GTK_ENTRY(EntryThreshold),t);
 
 	i++;
-	add_label_table(table," Time step(s) ",(gushort)i,0);
+	add_label_table(table,_(" Time step(s) "),(gushort)i,0);
 	add_label_table(table," : ",(gushort)i,1); 
 	EntryVelocity = gtk_entry_new();
 	gtk_table_attach(GTK_TABLE(table),EntryVelocity,2,2+1,i,i+1,
@@ -4100,7 +4211,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_entry_set_text(GTK_ENTRY(EntryVelocity),t);
 
 	i++;
-	add_label_table(table," Arrow radius ",(gushort)i,0);
+	add_label_table(table,_(" Arrow radius "),(gushort)i,0);
 	add_label_table(table," : ",(gushort)i,1); 
 	EntryRadius = gtk_entry_new();
 	gtk_table_attach(GTK_TABLE(table),EntryRadius,2,2+1,i,i+1,
@@ -4112,7 +4223,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_entry_set_text(GTK_ENTRY(EntryRadius),t);
 
 	i++;
-	LabelNSteps = add_label_table(table," Steps by cycle ",(gushort)i,0);
+	LabelNSteps = add_label_table(table,_(" Steps by cycle "),(gushort)i,0);
 	add_label_table(table," : ",(gushort)i,1); 
 	EntryNSteps = gtk_entry_new();
 	gtk_table_attach(GTK_TABLE(table),EntryNSteps,2,2+1,i,i+1,
@@ -4134,7 +4245,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_box_pack_start(GTK_BOX(vboxframe), table,TRUE,TRUE,0);
 
 	i=0;
-	buttonCheckFilm = gtk_check_button_new_with_label ("Create a film");
+	buttonCheckFilm = gtk_check_button_new_with_label (_("Create a film"));
 	createFilm = FALSE;
 	numFileFilm = 0;
 	gtk_table_attach(GTK_TABLE(table),buttonCheckFilm,0,1,i,i+1,
@@ -4265,7 +4376,7 @@ static gboolean createImageFile()
 	if(!strcmp(formatFilm,"JPEG")) message = new_jpeg(get_last_directory(), ++numFileFilm);
 	if(!strcmp(formatFilm,"PNG")) message = new_png(get_last_directory(), ++numFileFilm);
 	if(!strcmp(formatFilm,"Povray")) message = new_pov(get_last_directory(), ++numFileFilm);
-	if(!strcmp(formatFilm,"PNG transparent")) message = new_png_nobackground(get_last_directory(), ++numFileFilm);
+	if(!strcmp(formatFilm,"PNG transparent")) message = new_png_without_background(get_last_directory(), ++numFileFilm);
 
 	if(message == NULL) setTextInProgress(t);
 	else
@@ -4273,7 +4384,7 @@ static gboolean createImageFile()
     		GtkWidget* m;
 		createFilm = FALSE;
 		numFileFilm = 0;
-    		m = Message(message,"Error",TRUE);
+    		m = Message(message,_("Error"),TRUE);
 		gtk_window_set_modal (GTK_WINDOW (m), TRUE);
 	}
 	g_free(t);
@@ -4385,6 +4496,7 @@ static void help_supported_format()
 	gchar temp[BSIZE];
 	GtkWidget* win;
 	sprintf(temp,
+		_(
 		" You can read frequencies and normal modes from :\n"
 	        "     * a Gabedit input file.\n"
 	        "     * a Gaussian (g98 and g03) output file.\n"
@@ -4392,6 +4504,7 @@ static void help_supported_format()
 	        "     * a MPQC output file.\n"
 	        "     * a ADF output file. Only the 2004 version of ADF is supported\n"
 	        "     * a Molden input file.\n"
+		)
 		 );
 	win = Message(temp," Info ",FALSE);
 	gtk_window_set_modal (GTK_WINDOW (win), TRUE);
@@ -4402,6 +4515,7 @@ static void help_animated_file()
 	gchar* temp = NULL;
 	GtkWidget* win;
 	temp = g_strdup(
+		_(
 		" For create an animated file :\n"
 		" ============================\n"
 	        "   1) Read frequencies and normal modes from a Gaussian, Molpro, Gabedit, Molden, ADF or MPQC output file.\n"
@@ -4418,6 +4532,7 @@ static void help_animated_file()
 	        "            You can use the xPovAnim script (from utils/povray directory) for create the gif animated file from gab*.pov files.\n\n"
 	        "            convert is a free software. You can download this(for any system) from http://www.imagemagick.org\n"
 	        "            povray is a free software. You can download this(for any system) from http://www.povray.org\n\n"
+		)
 		 );
 	win = Message(temp," Info ",FALSE);
 	gtk_window_set_modal (GTK_WINDOW (win), TRUE);
@@ -4450,6 +4565,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "ReadDalton")) read_dalton_file_dlg();
 	else if(!strcmp(name, "ReadGamess")) read_gamess_file_dlg();
 	else if(!strcmp(name, "ReadGaussian")) read_gaussian_file_dlg();
+	else if(!strcmp(name, "ReadGaussianFChk")) read_fchk_gaussian_file_dlg();
 	else if(!strcmp(name, "ReadMolpro")) read_molpro_file_dlg();
 	else if(!strcmp(name, "ReadMopacAux")) read_mopac_aux_file_dlg();
 	else if(!strcmp(name, "ReadMPQC")) read_mpqc_file_dlg();
@@ -4480,6 +4596,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadDalton", GABEDIT_STOCK_DALTON, "Read a _Dalton output file", NULL, "Read a Dalton output file", G_CALLBACK (activate_action) },
 	{"ReadGamess", GABEDIT_STOCK_GAMESS, "Read a _Gamess output file", NULL, "Read a Gamess output file", G_CALLBACK (activate_action) },
 	{"ReadGaussian", GABEDIT_STOCK_GAUSSIAN, "Read a _Gaussian output file", NULL, "Read a Gaussian output file", G_CALLBACK (activate_action) },
+	{"ReadGaussianFChk", GABEDIT_STOCK_GAUSSIAN, "Read a _Gaussian fchk file", NULL, "Read a Gaussian fchk file", G_CALLBACK (activate_action) },
 	{"ReadMolpro", GABEDIT_STOCK_MOLPRO, "Read a Mol_pro output file", NULL, "Read Molpro output file", G_CALLBACK (activate_action) },
 	{"ReadMopacAux", GABEDIT_STOCK_MOPAC, "Read a _Mopac aux file", NULL, "Read Mopac aux file", G_CALLBACK (activate_action) },
 	{"ReadMPQC", GABEDIT_STOCK_MPQC, "Read a MP_QC output file", NULL, "Read a MPQC output file", G_CALLBACK (activate_action) },
@@ -4516,6 +4633,7 @@ static const gchar *uiMenuInfo =
 "    <menuitem name=\"ReadDalton\" action=\"ReadDalton\" />\n"
 "    <menuitem name=\"ReadGamess\" action=\"ReadGamess\" />\n"
 "    <menuitem name=\"ReadGaussian\" action=\"ReadGaussian\" />\n"
+"    <menuitem name=\"ReadGaussianFChk\" action=\"ReadGaussianFChk\" />\n"
 "    <menuitem name=\"ReadMolpro\" action=\"ReadMolpro\" />\n"
 "    <menuitem name=\"ReadMopacAux\" action=\"ReadMopacAux\" />\n"
 "    <menuitem name=\"ReadMPQC\" action=\"ReadMPQC\" />\n"
@@ -4606,6 +4724,7 @@ static GtkUIManager *create_menu(GtkWidget* box)
   	g_signal_connect_swapped (PrincipalWindow, "destroy", G_CALLBACK (g_object_unref), manager);
 
 	actionGroup = gtk_action_group_new ("GabeditVibrationActions");
+	gtk_action_group_set_translation_domain(actionGroup,GETTEXT_PACKAGE);
 	gtk_action_group_add_actions (actionGroup, gtkActionEntries, numberOfGtkActionEntries, NULL);
 
   	gtk_ui_manager_insert_action_group (manager, actionGroup, 0);
@@ -4614,7 +4733,7 @@ static GtkUIManager *create_menu(GtkWidget* box)
   	gtk_window_add_accel_group (GTK_WINDOW (PrincipalWindow), gtk_ui_manager_get_accel_group (manager));
 	if (!gtk_ui_manager_add_ui_from_string (manager, uiMenuInfo, -1, &error))
 	{
-		g_message ("building menus failed: %s", error->message);
+		g_message (_("building menus failed: %s"), error->message);
 		g_error_free (error);
 	}
 	if(GTK_IS_UI_MANAGER(manager))
@@ -4701,7 +4820,7 @@ void read_modes(GabeditFileChooser *selecFile, gint response_id)
 	else if(fileType == GABEDIT_TYPEFILE_UNKNOWN) 
 	{
 		Message(
-			"Sorry, I cannot find the type of your file\n"
+			_("Sorry, I cannot find the type of your file\n")
 			," Error ",TRUE);
 	}
 }

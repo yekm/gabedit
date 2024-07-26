@@ -43,6 +43,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/Vibration.h"
 #include "../OpenGL/AnimationRotation.h"
 #include "../OpenGL/AnimationGeomConv.h"
+#include "../OpenGL/AnimationGrids.h"
 #include "../OpenGL/AnimationMD.h"
 #include "../OpenGL/AnimationContours.h"
 #include "../OpenGL/AnimationPlanesMapped.h"
@@ -140,95 +141,99 @@ static void activate_action (GtkAction *action)
 	/* const gchar *typename = G_OBJECT_TYPE_NAME (action);*/
 
 	if(!strcmp(name,"GeometryAuto"))
-		file_chooser_open(gl_read_geom_any_file_sel,"Read geometry",GABEDIT_TYPEFILE_UNKNOWN,GABEDIT_TYPEWIN_ORB);
+		file_chooser_open(gl_read_geom_any_file_sel,_("Read geometry"),GABEDIT_TYPEFILE_UNKNOWN,GABEDIT_TYPEWIN_ORB);
 	if(!strcmp(name,"GeometryXYZ"))
-		file_chooser_open(gl_read_xyz_file_sel,"Read a xyz file",GABEDIT_TYPEFILE_XYZ,GABEDIT_TYPEWIN_ORB);
+		file_chooser_open(gl_read_xyz_file_sel,_("Read a xyz file"),GABEDIT_TYPEFILE_XYZ,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name,"GeometryPDB"))
-		file_chooser_open(gl_read_pdb_file_sel,"Read a pdb file",GABEDIT_TYPEFILE_PDB,GABEDIT_TYPEWIN_ORB);
+		file_chooser_open(gl_read_pdb_file_sel,_("Read a pdb file"),GABEDIT_TYPEFILE_PDB,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name,"GeometryHIN"))
-		file_chooser_open(gl_read_hin_file_sel,"Read a hyperchem file",GABEDIT_TYPEFILE_HIN,GABEDIT_TYPEWIN_ORB);
+		file_chooser_open(gl_read_hin_file_sel,_("Read a hyperchem file"),GABEDIT_TYPEFILE_HIN,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name,"GeometryOpenBabel"))
 		gl_create_babel_read_dialogue();
 	else if(!strcmp(name,"GeometryDaltonFirst"))
- 		file_chooser_open(gl_read_first_dalton_file,"Read the first geometry in a Dalton output file",GABEDIT_TYPEFILE_DALTON,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_first_dalton_file,_("Read the first geometry in a Dalton output file"),GABEDIT_TYPEFILE_DALTON,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name,"GeometryDaltonLast"))
- 		file_chooser_open(gl_read_last_dalton_file,"Read the last geometry in a Dalton output file",GABEDIT_TYPEFILE_DALTON,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_last_dalton_file,_("Read the last geometry in a Dalton output file"),GABEDIT_TYPEFILE_DALTON,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name,"GeometryGamessFirst"))
- 		file_chooser_open(gl_read_first_gamess_file,"Read the first geometry in a Gamess output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_first_gamess_file,_("Read the first geometry in a Gamess output file"),GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name,"GeometryGamessLast"))
- 		file_chooser_open(gl_read_last_gamess_file,"Read the last geometry in a Gamess output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_last_gamess_file,_("Read the last geometry in a Gamess output file"),GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name,"GeometryGaussianFirst"))
- 		file_chooser_open(gl_read_first_gauss_file,"Read the first geometry in a Gaussian output file",GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_first_gauss_file,_("Read the first geometry in a Gaussian output file"),GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryGaussianLast"))
- 		file_chooser_open(gl_read_last_gauss_file,"Read the last geometry in a Gaussian output file",GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_last_gauss_file,_("Read the last geometry in a Gaussian output file"),GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name ,"GeometryGaussianFChk"))
+ 		file_chooser_open(gl_read_fchk_gauss_file,_("Read the geometry in a Gaussian fchk file"),GABEDIT_TYPEFILE_GAUSSIAN_FCHK,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryMolcasFirst"))
- 		file_chooser_open(gl_read_first_molcas_file,"Read the first geometry in a Molcas output file",GABEDIT_TYPEFILE_MOLCAS,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_first_molcas_file,_("Read the first geometry in a Molcas output file"),GABEDIT_TYPEFILE_MOLCAS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryMolcasLast"))
- 		file_chooser_open(gl_read_last_molcas_file,"Read the last geometry in a Molcas output file",GABEDIT_TYPEFILE_MOLCAS,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_last_molcas_file,_("Read the last geometry in a Molcas output file"),GABEDIT_TYPEFILE_MOLCAS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryMolproFirst"))
- 		file_chooser_open(gl_read_first_molpro_file,"Read the first geometry in a Molpro output file",GABEDIT_TYPEFILE_MOLPRO,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_first_molpro_file,_("Read the first geometry in a Molpro output file"),GABEDIT_TYPEFILE_MOLPRO,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryMolproLast"))
- 		file_chooser_open(gl_read_last_molpro_file,"Read the last geometry in a Molpro output file",GABEDIT_TYPEFILE_MOLPRO,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_last_molpro_file,_("Read the last geometry in a Molpro output file"),GABEDIT_TYPEFILE_MOLPRO,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryMopacOutFirst"))
- 		file_chooser_open(gl_read_first_mopac_output_file,"Read the first geometry from a Mopac output file",GABEDIT_TYPEFILE_MOPAC,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_first_mopac_output_file,_("Read the first geometry from a Mopac output file"),GABEDIT_TYPEFILE_MOPAC,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryMopacOutLast"))
- 		file_chooser_open(gl_read_last_mopac_output_file,"Read the last geometry from a Mopac output file",GABEDIT_TYPEFILE_MOPAC,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_last_mopac_output_file,_("Read the last geometry from a Mopac output file"),GABEDIT_TYPEFILE_MOPAC,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryMopacAuxFirst"))
- 		file_chooser_open(gl_read_first_mopac_aux_file,"Read the first geometry from a Mopac aux file",GABEDIT_TYPEFILE_MOPAC_AUX,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_first_mopac_aux_file,_("Read the first geometry from a Mopac aux file"),GABEDIT_TYPEFILE_MOPAC_AUX,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryMopacAuxLast"))
- 		file_chooser_open(gl_read_last_mopac_aux_file,"Read the last geometry from a Mopac aux file",GABEDIT_TYPEFILE_MOPAC_AUX,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_last_mopac_aux_file,_("Read the last geometry from a Mopac aux file"),GABEDIT_TYPEFILE_MOPAC_AUX,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryMPQCFirst"))
- 		file_chooser_open(gl_read_first_mpqc_file,"Read the first geometry from a MPQC output file",GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_first_mpqc_file,_("Read the first geometry from a MPQC output file"),GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryMPQCLast"))
- 		file_chooser_open(gl_read_last_mpqc_file,"Read the last geometry from a MPQC output file",GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_last_mpqc_file,_("Read the last geometry from a MPQC output file"),GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name,"GeometryOrcaFirst"))
- 		file_chooser_open(gl_read_first_orca_file,"Read the first geometry in a Orca output file",GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_first_orca_file,_("Read the first geometry in a Orca output file"),GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name,"GeometryOrcaLast"))
- 		file_chooser_open(gl_read_last_orca_file,"Read the last geometry in a Orca output file",GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_last_orca_file,_("Read the last geometry in a Orca output file"),GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name,"GeometryFireFlyFirst"))
- 		file_chooser_open(gl_read_first_gamess_file,"Read the first geometry in a FireFly output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_first_gamess_file,_("Read the first geometry in a FireFly output file"),GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name,"GeometryFireFlyLast"))
- 		file_chooser_open(gl_read_last_gamess_file,"Read the last geometry in a FireFly output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_last_gamess_file,_("Read the last geometry in a FireFly output file"),GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
 
 	else if(!strcmp(name ,"GeometryQChemFirst"))
- 		file_chooser_open(gl_read_first_qchem_file,"Read the first geometry from a Q-Chem output file",GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_first_qchem_file,_("Read the first geometry from a Q-Chem output file"),GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryQChemLast"))
- 		file_chooser_open(gl_read_last_qchem_file,"Read the last geometry from a Q-Chem output file",GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_last_qchem_file,_("Read the last geometry from a Q-Chem output file"),GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryGabedit"))
- 		file_chooser_open(gl_read_gabedit_file,"Read geometry from a gabedit file",GABEDIT_TYPEFILE_GABEDIT,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_gabedit_file,_("Read geometry from a gabedit file"),GABEDIT_TYPEFILE_GABEDIT,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryMolden"))
- 		file_chooser_open(gl_read_molden_file,"Read geometry from a molden file",GABEDIT_TYPEFILE_MOLDEN,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(gl_read_molden_file,_("Read geometry from a molden file"),GABEDIT_TYPEFILE_MOLDEN,GABEDIT_TYPEWIN_ORB);
 
 	else if(!strcmp(name , "OrbitalsAuto"))
- 			file_chooser_open(read_orbitals_sel,"Read Geometry and Orbitals(Auto)",GABEDIT_TYPEFILE_UNKNOWN,GABEDIT_TYPEWIN_ORB);
+ 			file_chooser_open(read_orbitals_sel,_("Read Geometry and Orbitals(Auto)"),GABEDIT_TYPEFILE_UNKNOWN,GABEDIT_TYPEWIN_ORB);
 	/*
 	else if(!strcmp(name , "OrbitalsDalton"))
  			file_chooser_open(read_dalton_orbitals_sel,"Read Geometry and Orbitals from a Dalton output file",GABEDIT_TYPEFILE_DALTON,GABEDIT_TYPEWIN_ORB);
 			*/
 	else if(!strcmp(name , "OrbitalsGamess"))
- 			file_chooser_open(read_gamess_orbitals_sel,"Read Geometry and Orbitals from a Gamess output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
+ 			file_chooser_open(read_gamess_orbitals_sel,_("Read Geometry and Orbitals from a Gamess output file"),GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsOrca"))
- 			file_chooser_open(read_orca_orbitals_sel,"Read Geometry and Orbitals from a Orca files",GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_ORB);
+ 			file_chooser_open(read_orca_orbitals_sel,_("Read Geometry and Orbitals from a Orca files"),GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsOrca2mkl"))
- 			file_chooser_open(read_orca_orbitals_sel_2mkl,"Read Geometry and Orbitals from a Orca files",GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_ORB);
+ 			file_chooser_open(read_orca_orbitals_sel_2mkl,_("Read Geometry and Orbitals from a Orca files"),GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsFireFly"))
- 			file_chooser_open(read_gamess_orbitals_sel,"Read Geometry and Orbitals from a FireFly output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
+ 			file_chooser_open(read_gamess_orbitals_sel,_("Read Geometry and Orbitals from a FireFly output file"),GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsQChem"))
- 			file_chooser_open(read_qchem_orbitals_sel,"Read Geometry and Orbitals from a Q-Chem output file",GABEDIT_TYPEFILE_QCHEM,GABEDIT_TYPEWIN_ORB);
+ 			file_chooser_open(read_qchem_orbitals_sel,_("Read Geometry and Orbitals from a Q-Chem output file"),GABEDIT_TYPEFILE_QCHEM,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsMopac"))
- 			file_chooser_open(read_mopac_orbitals_sel,"Read Geometry and Orbitals from a Mopac output file",GABEDIT_TYPEFILE_MOPAC_AUX,GABEDIT_TYPEWIN_ORB);
+ 			file_chooser_open(read_mopac_orbitals_sel,_("Read Geometry and Orbitals from a Mopac output file"),GABEDIT_TYPEFILE_MOPAC_AUX,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsGaussian"))
- 			file_chooser_open(read_gauss_orbitals_sel,"Read Geometry and Orbitals from a Gaussian output file",GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_ORB);
+ 			file_chooser_open(read_gauss_orbitals_sel,_("Read Geometry and Orbitals from a Gaussian output file"),GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name , "OrbitalsGaussianFChk"))
+ 			file_chooser_open(read_fchk_gauss_orbitals_sel,_("Read Geometry and Orbitals from a Gaussian fchk file"),GABEDIT_TYPEFILE_GAUSSIAN_FCHK,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsMolpro"))
- 			file_chooser_open(read_molpro_orbitals_sel,"Read Geometry and Orbitals from a Molpro output file",GABEDIT_TYPEFILE_MOLPRO,GABEDIT_TYPEWIN_ORB);
+ 			file_chooser_open(read_molpro_orbitals_sel,_("Read Geometry and Orbitals from a Molpro output file"),GABEDIT_TYPEFILE_MOLPRO,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsGabeditRead"))
- 			file_chooser_open(read_gabedit_orbitals_sel,"Read Geometry and Orbitals from a Gabedit file",GABEDIT_TYPEFILE_GABEDIT,GABEDIT_TYPEWIN_ORB);
+ 			file_chooser_open(read_gabedit_orbitals_sel,_("Read Geometry and Orbitals from a Gabedit file"),GABEDIT_TYPEFILE_GABEDIT,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsMolden"))
- 			file_chooser_open(read_molden_orbitals_sel,"Read Geometry and Orbitals from a Molden file",GABEDIT_TYPEFILE_MOLDEN,GABEDIT_TYPEWIN_ORB);
+ 			file_chooser_open(read_molden_orbitals_sel,_("Read Geometry and Orbitals from a Molden file"),GABEDIT_TYPEFILE_MOLDEN,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsGabeditSave"))
 	{
-		if(Type) file_chooser_save(save_gabedit_orbitals_sel,"Save Geometry and Orbitals in a Gabedit file",GABEDIT_TYPEFILE_GABEDIT,GABEDIT_TYPEWIN_ORB);
-		else Message("Sorry, I cannot save this type of orbitals \n(probably these are molpro or mopac orbitals)","Error",TRUE);
+		if(Type) file_chooser_save(save_gabedit_orbitals_sel,_("Save Geometry and Orbitals in a Gabedit file"),GABEDIT_TYPEFILE_GABEDIT,GABEDIT_TYPEWIN_ORB);
+		else Message(_("Sorry, I cannot save this type of orbitals \n(probably these are molpro or mopac orbitals)"),_("Error"),TRUE);
 	}
 	else if(!strcmp(name , "OrbitalsSelection"))
 	{
@@ -261,110 +266,112 @@ static void activate_action (GtkAction *action)
 			 compute_overlap_matrix(1);
 	}
 	else if(!strcmp(name , "CubeLoadGaussianOrbitals" ))
- 		file_chooser_open(load_cube_gauss_orbitals_file,"Load Gaussian orbitals cube file",GABEDIT_TYPEFILE_CUBEGAUSS,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(load_cube_gauss_orbitals_file,_("Load Gaussian orbitals cube file"),GABEDIT_TYPEFILE_CUBEGAUSS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadGaussianDensity"))
- 		file_chooser_open(load_cube_gauss_density_file,"Load Gaussian density cube file",GABEDIT_TYPEFILE_CUBEGAUSS,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(load_cube_gauss_density_file,_("Load Gaussian density cube file"),GABEDIT_TYPEFILE_CUBEGAUSS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadGaussianDensityGradient"))
- 		file_chooser_open(load_cube_gauss_gradient_file,"Load Gaussian gradient cube file",GABEDIT_TYPEFILE_CUBEGAUSS,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(load_cube_gauss_gradient_file,_("Load Gaussian gradient cube file"),GABEDIT_TYPEFILE_CUBEGAUSS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadGaussianLaplacian" ))
- 		file_chooser_open(load_cube_gauss_laplacian_file,"Load Gaussian laplacian cube file",GABEDIT_TYPEFILE_CUBEGAUSS,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(load_cube_gauss_laplacian_file,_("Load Gaussian laplacian cube file"),GABEDIT_TYPEFILE_CUBEGAUSS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadGaussianNormGradient"))
- 		file_chooser_open(load_cube_gauss_normgrad_file,"Load Gaussian norm gradient cube file",GABEDIT_TYPEFILE_CUBEGAUSS,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(load_cube_gauss_normgrad_file,_("Load Gaussian norm gradient cube file"),GABEDIT_TYPEFILE_CUBEGAUSS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadGaussianPotential"))
- 		file_chooser_open(load_cube_gauss_potential_file,"Load Gaussian potential cube file",GABEDIT_TYPEFILE_CUBEGAUSS,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(load_cube_gauss_potential_file,_("Load Gaussian potential cube file"),GABEDIT_TYPEFILE_CUBEGAUSS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadMolproOrbitalsOne"))
- 		file_chooser_open(load_cube_molpro_orbital_file,"Load Molpro one orbital cube file",GABEDIT_TYPEFILE_CUBEMOLPRO,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(load_cube_molpro_orbital_file,_("Load Molpro one orbital cube file"),GABEDIT_TYPEFILE_CUBEMOLPRO,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadMolproOrbitalsSeveral")) 
- 		file_chooser_open(load_cube_molpro_orbitals_file,"Load Molpro several orbitals cube file",GABEDIT_TYPEFILE_CUBEMOLPRO,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(load_cube_molpro_orbitals_file,_("Load Molpro several orbitals cube file"),GABEDIT_TYPEFILE_CUBEMOLPRO,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadMolproDensityOne"))
- 		file_chooser_open(load_cube_molpro_density_file,"Load Molpro density cube file",GABEDIT_TYPEFILE_CUBEMOLPRO,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(load_cube_molpro_density_file,_("Load Molpro density cube file"),GABEDIT_TYPEFILE_CUBEMOLPRO,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadMolproDensityGradient"))
- 		file_chooser_open(load_cube_molpro_density_gradient_file,"Load Molpro gradient cube file",GABEDIT_TYPEFILE_CUBEMOLPRO,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(load_cube_molpro_density_gradient_file,_("Load Molpro gradient cube file"),GABEDIT_TYPEFILE_CUBEMOLPRO,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadMolproDensityGradientLaplacianDensity"))
- 		file_chooser_open(load_cube_molpro_laplacian_density_file,"Load density from Molpro laplacian cube file",GABEDIT_TYPEFILE_CUBEMOLPRO,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(load_cube_molpro_laplacian_density_file,_("Load density from Molpro laplacian cube file"),GABEDIT_TYPEFILE_CUBEMOLPRO,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadMolproDensityGradientLaplacianLaplacian"))
- 		file_chooser_open(load_cube_molpro_laplacian_laplacian_file,"Load Molpro laplacian cube file",GABEDIT_TYPEFILE_CUBEMOLPRO,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(load_cube_molpro_laplacian_laplacian_file,_("Load Molpro laplacian cube file"),GABEDIT_TYPEFILE_CUBEMOLPRO,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadAdfOrbitals"))
- 		file_chooser_open(load_adf_file_orbitals,"Load orbitals from adf file",GABEDIT_TYPEFILE_CUBEADF,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(load_adf_file_orbitals,_("Load orbitals from adf file"),GABEDIT_TYPEFILE_CUBEADF,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadAdfDensity"))
- 		file_chooser_open(load_adf_file_density,"Load density from adf file",GABEDIT_TYPEFILE_CUBEADF,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(load_adf_file_density,_("Load density from adf file"),GABEDIT_TYPEFILE_CUBEADF,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadMolcasGridOrbitals"))
- 		file_chooser_open(load_molcasgrid_file_orbitals,"Load Orbitals from molcasgrid file",GABEDIT_TYPEFILE_MOLCASGRID,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(load_molcasgrid_file_orbitals,_("Load Orbitals from molcasgrid file"),GABEDIT_TYPEFILE_MOLCASGRID,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadMolcasGridDensity"))
- 		file_chooser_open(load_molcasgrid_file_density,"Load density from molcasgrid file",GABEDIT_TYPEFILE_MOLCASGRID,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(load_molcasgrid_file_density,_("Load density from molcasgrid file"),GABEDIT_TYPEFILE_MOLCASGRID,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadGabeditRead"))
- 		file_chooser_open(load_cube_gabedit_file,"Load Gabedit cube file",GABEDIT_TYPEFILE_CUBEGABEDIT,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(load_cube_gabedit_file,_("Load Gabedit cube file"),GABEDIT_TYPEFILE_CUBEGABEDIT,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name , "CubeLoadDXRead"))
+ 		file_chooser_open(load_dx_grid_file,_("Load DX grid file"),GABEDIT_TYPEFILE_CUBEDX,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadQChem"))
- 		file_chooser_open(load_qchemgrid_file,"Load Q-Chem Grid file",GABEDIT_TYPEFILE_CUBEQCHEM,GABEDIT_TYPEWIN_ORB);
+ 		file_chooser_open(load_qchemgrid_file,_("Load Q-Chem Grid file"),GABEDIT_TYPEFILE_CUBEQCHEM,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadGabeditSave"))
 	{
-		if(!grid) Message("Sorry, you have not a default grid","Error",TRUE);
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
 		else file_chooser_save(save_cube_gabedit_file,"Save density",GABEDIT_TYPEFILE_CUBEGABEDIT,GABEDIT_TYPEWIN_ORB);
 	}
 	else if(!strcmp(name , "CubeSubtract"))
 	{
-		if(!grid) Message("Sorry, you have not a default grid","Error",TRUE);
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
 		else file_chooser_open(subtract_cube,"Subtract",GABEDIT_TYPEFILE_CUBEGABEDIT,GABEDIT_TYPEWIN_ORB);
 	}
 	else if(!strcmp(name , "CubeScale"))
 	{
-		if(!grid) Message("Sorry, you have not a default grid","Error",TRUE);
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
 		else create_scale_dlg();
 	}
 	else if(!strcmp(name , "CubeSquare"))
 	{
-		if(!grid) Message("Sorry, you have not a default grid","Error",TRUE);
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
 		else square_cube();
 	}
 	else if(!strcmp(name , "CubeRestriction"))
 	{
-		if(!grid) Message("Sorry, you have not a default grid","Error",TRUE);
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
 		else restriction_cube();
 	}
 	else if(!strcmp(name , "CubeAIMChargesNearGrid"))
 	{
-		if(!grid) Message("Sorry, you have not a default grid","Error",TRUE);
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
 		else computeAIMCharges(grid, FALSE);
 	}
 	else if(!strcmp(name , "CubeAIMChargesOnGrid"))
 	{
-		if(!grid) Message("Sorry, you have not a default grid","Error",TRUE);
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
 		else computeAIMCharges(grid, TRUE);
 	}
 	else if(!strcmp(name , "CubeColorMapping"))
 	{
-		if(!grid) Message("Sorry, you have not a default grid","Error",TRUE);
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
 		else file_chooser_open(mapping_cube,"Color Mapping",GABEDIT_TYPEFILE_CUBEGABEDIT,GABEDIT_TYPEWIN_ORB);
 	}
 	else if(!strcmp(name , "DensityElectronic"))
 	{
 		TypeGrid = GABEDIT_TYPEGRID_EDENSITY;
-		create_grid("Calculation of molecular electronic density grid");
+		create_grid(_("Calculation of molecular electronic density grid"));
 	}
 	else if(!strcmp(name , "DensityBonds"))
 	{
 		TypeGrid = GABEDIT_TYPEGRID_DDENSITY;
-		create_grid("Calculation of (molecular - atomic) density grid");
+		create_grid(_("Calculation of (molecular - atomic) density grid"));
 	}
 	else if(!strcmp(name , "DensitySpin"))
 	{
 		TypeGrid = GABEDIT_TYPEGRID_SDENSITY;
-		create_grid("Calculation of molecular electronic spin density grid");
+		create_grid(_("Calculation of molecular electronic spin density grid"));
 	}
 	else if(!strcmp(name , "DensityAtomics")) 
 	{
 			TypeGrid = GABEDIT_TYPEGRID_ADENSITY;
-			create_grid("Calculation of atomic electronic density grid");
+			create_grid(_("Calculation of atomic electronic density grid"));
 	}
 	else if(!strcmp(name , "ELFBecke"))
 	{
 		TypeGrid = GABEDIT_TYPEGRID_ELFBECKE;
-		create_grid("Calculation of Becke ELF");
+		create_grid(_("Calculation of Becke ELF"));
 	}
 	else if(!strcmp(name , "ELFSavin"))
 	{
 		TypeGrid = GABEDIT_TYPEGRID_ELFSAVIN;
-		create_grid("Calculation of Savin ELF");
+		create_grid(_("Calculation of Savin ELF"));
 	}
 	else if(!strcmp(name , "ELFSavinAttractors"))
 	{
@@ -374,17 +381,17 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name , "FEDElectrophilic"))
 	{
 		TypeGrid = GABEDIT_TYPEGRID_FEDELECTROPHILIC;
-		create_grid("Calculation of FED Electrophilic susceptibility");
+		create_grid(_("Calculation of FED Electrophilic susceptibility"));
 	}
 	else if(!strcmp(name , "FEDNucleophilic"))
 	{
 		TypeGrid = GABEDIT_TYPEGRID_FEDNUCLEOPHILIC;
-		create_grid("Calculation of FED Nucleophilic susceptibility");
+		create_grid(_("Calculation of FED Nucleophilic susceptibility"));
 	}
 	else if(!strcmp(name , "FEDRadical"))
 	{
 		TypeGrid = GABEDIT_TYPEGRID_FEDRADICAL;
-		create_grid("Calculation of FED Radical susceptibility");
+		create_grid(_("Calculation of FED Radical susceptibility"));
 	}
 	else if(!strcmp(name , "FEDSetAlpha"))
 	{
@@ -393,36 +400,36 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name , "SASCompute"))
 	{
 		TypeGrid = GABEDIT_TYPEGRID_SAS;
-		create_grid_sas("Compute Solvent Accessible Surface");
+		create_grid_sas(_("Compute Solvent Accessible Surface"));
 	}
 	else if(!strcmp(name , "SASMappCompute"))
 	{
 		TypeGrid = GABEDIT_TYPEGRID_SASMAP;
-		create_grid_sas("Compute Solvent Accessible Surface");
+		create_grid_sas(_("Compute Solvent Accessible Surface"));
 	}
 	else if(!strcmp(name , "MEPOrbitalsMultipol"))
 	{
 		TypeGrid = GABEDIT_TYPEGRID_MEP_MULTIPOL;
 		CancelCalcul = FALSE;
-		create_grid("Calculation of MEP using Molecular Orbitals");
+		create_grid(_("Calculation of MEP using Molecular Orbitals"));
 	}
 	else if(!strcmp(name , "MEPOrbitalsCG"))
 	{
 		TypeGrid = GABEDIT_TYPEGRID_MEP_CG;
 		CancelCalcul = FALSE;
-		create_grid("Calculation of MEP from Molecular Orbitals/Poisson by Congugate Gradient");
+		create_grid(_("Calculation of MEP from Molecular Orbitals/Poisson by Congugate Gradient"));
 	}
 	else if(!strcmp(name , "MEPOrbitalsMG"))
 	{
 		TypeGrid = GABEDIT_TYPEGRID_MEP_MG;
 		CancelCalcul = FALSE;
-		create_grid("Calculation of MEP from Molecular Orbitals/Poisson by Multigrid");
+		create_grid(_("Calculation of MEP from Molecular Orbitals/Poisson by Multigrid"));
 	}
 	else if(!strcmp(name , "MEPFromCharges"))
 	{
 		TypeGrid = GABEDIT_TYPEGRID_MEP_CHARGES;
 		CancelCalcul = FALSE;
-		create_grid("Calculation of MEP from partial charges of atoms");
+		create_grid(_("Calculation of MEP from partial charges of atoms"));
 	}
 	else if(!strcmp(name , "MEPGridMultipol"))
 	{
@@ -523,15 +530,19 @@ static void activate_action (GtkAction *action)
 			}
 	}
 	else if(!strcmp(name , "ContoursFirst"))
-		create_contours("Contours in a plane perpendicular to first direction",0);
+		create_contours(_("Contours in a plane perpendicular to first direction"),0);
 	else if(!strcmp(name , "ContoursSecond"))
-		create_contours("Contours in a plane perpendicular to second direction",1);
+		create_contours(_("Contours in a plane perpendicular to second direction"),1);
 	else if(!strcmp(name , "ContoursThird"))
-		create_contours("Contours in a plane perpendicular to third direction",2);
+		create_contours(_("Contours in a plane perpendicular to third direction"),2);
 	else if(!strcmp(name , "ContoursOther"))
 	{
 	  	create_planeGrid_center_vector("Contours");
 		glarea_rafresh(GLArea);
+	}
+	else if(!strcmp(name , "ContoursIsoSurface"))
+	{
+		create_contours_isosurface();
 	}
 	else if(!strcmp(name , "ContoursDelete"))
 	{
@@ -539,11 +550,11 @@ static void activate_action (GtkAction *action)
 		glarea_rafresh(GLArea);
 	}
 	else if(!strcmp(name , "PlanesColorCodedFirst"))
-		create_maps("Plane perpendicular to first direction",0);
+		create_maps(_("Plane perpendicular to first direction"),0);
 	else if(!strcmp(name , "PlanesColorCodedSecond"))
-		create_maps("Plane perpendicular to second direction",1);
+		create_maps(_("Plane perpendicular to second direction"),1);
 	else if(!strcmp(name , "PlanesColorCodedThird"))
-		create_maps("Plane perpendicular to third direction",2);
+		create_maps(_("Plane perpendicular to third direction"),2);
 	else if(!strcmp(name , "PlanesColorCodedOther"))
 	{
 	  	create_planeGrid_center_vector("Maps");
@@ -608,8 +619,8 @@ static void activate_action (GtkAction *action)
 	}
 	else if(!strcmp(name , "RenderOptimal")) set_optimal_view();
 	else if(!strcmp(name , "SetCamera")) set_camera();
-	else if(!strcmp(name , "SetLigthPositions")) set_light_positions("Set Light Positions");
-	else if(!strcmp(name , "SetSurfaceColors")) set_colors_surfaces("Set Surface Colors");
+	else if(!strcmp(name , "SetLigthPositions")) set_light_positions(_("Set Light Positions"));
+	else if(!strcmp(name , "SetSurfaceColors")) set_colors_surfaces(_("Set Surface Colors"));
 	else if(!strcmp(name , "SetDipole"))
 	{
 		GtkWidget* win = set_dipole_dialog();
@@ -657,42 +668,46 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name , "SetScaleBallStick")) set_scale_ball_stick_dlg();
 	else if(!strcmp(name , "ScreenCaptureJPG"))
 	{
- 		GtkWidget* chooser = file_chooser_save(save_jpeg_file,"Save image in jpg file format",GABEDIT_TYPEFILE_JPEG,GABEDIT_TYPEWIN_ORB);
+ 		GtkWidget* chooser = file_chooser_save(save_jpeg_file,_("Save image in jpg file format"),GABEDIT_TYPEFILE_JPEG,GABEDIT_TYPEWIN_ORB);
 		fit_windows_position(PrincipalWindow, chooser);
 	}
 	else if(!strcmp(name , "ScreenCapturePPM"))
 	{
- 		GtkWidget* chooser = file_chooser_save(save_ppm_file,"Save image in ppm file format",GABEDIT_TYPEFILE_PPM,GABEDIT_TYPEWIN_ORB);
+ 		GtkWidget* chooser = file_chooser_save(save_ppm_file,_("Save image in ppm file format"),GABEDIT_TYPEFILE_PPM,GABEDIT_TYPEWIN_ORB);
 		fit_windows_position(PrincipalWindow, chooser);
 	}
 	else if(!strcmp(name , "ScreenCaptureBMP"))
 	{
- 		GtkWidget* chooser = file_chooser_save(save_bmp_file,"Save image in bmp file format",GABEDIT_TYPEFILE_BMP,GABEDIT_TYPEWIN_ORB);
+ 		GtkWidget* chooser = file_chooser_save(save_bmp_file,_("Save image in bmp file format"),GABEDIT_TYPEFILE_BMP,GABEDIT_TYPEWIN_ORB);
 		fit_windows_position(PrincipalWindow, chooser);
 	}
 	else if(!strcmp(name , "ScreenCapturePNG"))
 	{
- 		GtkWidget* chooser = file_chooser_save(save_png_file,"Save image in png file format",GABEDIT_TYPEFILE_PNG,GABEDIT_TYPEWIN_ORB);
+ 		GtkWidget* chooser = file_chooser_save(save_png_file,_("Save image in png file format"),GABEDIT_TYPEFILE_PNG,GABEDIT_TYPEWIN_ORB);
 		fit_windows_position(PrincipalWindow, chooser);
 	}
 	else if(!strcmp(name , "ScreenCaptureTIF"))
 	{
- 		GtkWidget* chooser = file_chooser_save(save_png_file,"Save image in tif file format",GABEDIT_TYPEFILE_TIF,GABEDIT_TYPEWIN_ORB);
+ 		GtkWidget* chooser = file_chooser_save(save_png_file,_("Save image in tif file format"),GABEDIT_TYPEFILE_TIF,GABEDIT_TYPEWIN_ORB);
 		fit_windows_position(PrincipalWindow, chooser);
 	}
-	else if(!strcmp(name , "ScreenCapturePNGNoBackGround"))
+	else if(!strcmp(name , "ScreenCapturePNGWithoutBackGround"))
 	{
- 		GtkWidget* chooser = file_chooser_save(save_png_no_background_file,"Save image in png file format",GABEDIT_TYPEFILE_PNG,GABEDIT_TYPEWIN_ORB);
+ 		GtkWidget* chooser = file_chooser_save(save_png_without_background_file,_("Save image in png file format"),GABEDIT_TYPEFILE_PNG,GABEDIT_TYPEWIN_ORB);
 		fit_windows_position(PrincipalWindow, chooser);
 	}
 	else if(!strcmp(name , "ScreenCapturePS"))
 	{
- 		GtkWidget* chooser = file_chooser_save(save_ps_file,"Save image in ps file format",GABEDIT_TYPEFILE_PS,GABEDIT_TYPEWIN_ORB);
+ 		GtkWidget* chooser = file_chooser_save(save_ps_file,_("Save image in ps file format"),GABEDIT_TYPEFILE_PS,GABEDIT_TYPEWIN_ORB);
 		fit_windows_position(PrincipalWindow, chooser);
 	}
 	else if(!strcmp(name , "ScreenCaptureClipBoard"))
 	{
 		copy_to_clipboard();
+	}
+	else if(!strcmp(name , "ScreenCaptureClipBoardWithoutBackground"))
+	{
+		copy_to_clipboard_without_background();
 	}
 	else if(!strcmp(name , "ExportPovray")) 
 	{
@@ -705,6 +720,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name , "ExportSVG")) export_scene(PrincipalWindow,"svg");
 	else if(!strcmp(name , "AnimationVibration")) vibrationDlg();
 	else if(!strcmp(name , "AnimationGeometryConvergence")) geometryConvergenceDlg();
+	else if(!strcmp(name , "AnimationGrids")) animationGridsDlg();
 	else if(!strcmp(name , "AnimationMD")) geometriesMDDlg();
 	else if(!strcmp(name , "AnimationRotation")) animationRotationDlg();
 	else if(!strcmp(name , "AnimationContours")) animationContoursDlg();
@@ -722,286 +738,294 @@ static void activate_action (GtkAction *action)
 /*********************************************************************************************************************/
 static GtkActionEntry gtkActionEntries[] =
 {
-	{"Geometry",     NULL, "_Geometry"},
-	{"GeometryAuto", NULL, "Read (Auto)", NULL, "Read the geometry from file", G_CALLBACK (activate_action) },
-	{"GeometryXYZ", NULL, "Read the geometry from a _xyz file", NULL, "Read the geometry from a xyz file", G_CALLBACK (activate_action) },
-	{"GeometryPDB", GABEDIT_STOCK_PDB, "Read the geometry from a _pdb file", NULL, "Read the geometry from a pdb file", G_CALLBACK (activate_action) },
-	{"GeometryHIN", NULL, "Read the geometry from a _hyperchem file", NULL, "Read the geometry from a hyperchem file", G_CALLBACK (activate_action) },
-	{"GeometryOpenBabel", GABEDIT_STOCK_OPEN_BABEL, "Other format (using Open _Babel)", NULL, "Other format (using Open _Babel)", G_CALLBACK (activate_action) },
-	{"GeometryDalton",     GABEDIT_STOCK_DALTON, "Geometry _Dalton"},
-	{"GeometryDaltonFirst", GABEDIT_STOCK_DALTON, "Read the _first geometry from a Dalton output log file", 
+	{"Geometry",     NULL, N_("_Geometry")},
+	{"GeometryAuto", NULL, N_("Read (Auto)"), NULL, "Read the geometry from file", G_CALLBACK (activate_action) },
+	{"GeometryXYZ", NULL, N_("Read the geometry from a _xyz file"), NULL, "Read the geometry from a xyz file", G_CALLBACK (activate_action) },
+	{"GeometryPDB", GABEDIT_STOCK_PDB, N_("Read the geometry from a _pdb file"), NULL, "Read the geometry from a pdb file", G_CALLBACK (activate_action) },
+	{"GeometryHIN", NULL, N_("Read the geometry from a _hyperchem file"), NULL, "Read the geometry from a hyperchem file", G_CALLBACK (activate_action) },
+	{"GeometryOpenBabel", GABEDIT_STOCK_OPEN_BABEL, N_("Other format (using Open _Babel)"), NULL, "Other format (using Open _Babel)", G_CALLBACK (activate_action) },
+	{"GeometryDalton",     GABEDIT_STOCK_DALTON, N_("Geometry _Dalton")},
+	{"GeometryDaltonFirst", GABEDIT_STOCK_DALTON, N_("Read the _first geometry from a Dalton output log file"), 
 		NULL, "Read the first geometry from a Dalton output file", G_CALLBACK (activate_action) },
-	{"GeometryDaltonLast", GABEDIT_STOCK_DALTON, "Read the _last geometry from a Dalton output log file", 
+	{"GeometryDaltonLast", GABEDIT_STOCK_DALTON, N_("Read the _last geometry from a Dalton output log file"), 
 		NULL, "Read the last geometry from a Dalton output file", G_CALLBACK (activate_action) },
-	{"GeometryGamess",     GABEDIT_STOCK_GAMESS, "Geometry Ga_mess"},
-	{"GeometryGamessFirst", GABEDIT_STOCK_GAMESS, "Read the _first geometry from a Gamess output log file", 
+	{"GeometryGamess",     GABEDIT_STOCK_GAMESS, N_("Geometry Ga_mess")},
+	{"GeometryGamessFirst", GABEDIT_STOCK_GAMESS, N_("Read the _first geometry from a Gamess output log file"), 
 		NULL, "Read the first geometry from a Gamess output file", G_CALLBACK (activate_action) },
-	{"GeometryGamessLast", GABEDIT_STOCK_GAMESS, "Read the _last geometry from a Gamess output log file", 
+	{"GeometryGamessLast", GABEDIT_STOCK_GAMESS, N_("Read the _last geometry from a Gamess output log file"), 
 		NULL, "Read the last geometry from a Gamess output file", G_CALLBACK (activate_action) },
-	{"GeometryGaussian",     GABEDIT_STOCK_GAUSSIAN, "Geometry _Gaussian"},
-	{"GeometryGaussianFirst", GABEDIT_STOCK_GAUSSIAN, "Read the _first geometry from a gaussian log file", 
+	{"GeometryGaussian",     GABEDIT_STOCK_GAUSSIAN, N_("Geometry _Gaussian")},
+	{"GeometryGaussianFirst", GABEDIT_STOCK_GAUSSIAN, N_("Read the _first geometry from a gaussian log file"), 
 		NULL, "Read the first geometry from a gaussian log file", G_CALLBACK (activate_action) },
-	{"GeometryGaussianLast", GABEDIT_STOCK_GAUSSIAN, "Read the _last geometry from a gaussian file", 
+	{"GeometryGaussianLast", GABEDIT_STOCK_GAUSSIAN, N_("Read the _last geometry from a gaussian file"), 
 		NULL, "Read the last geometry from a gaussian log file", G_CALLBACK (activate_action) },
-	{"GeometryMolcas",     GABEDIT_STOCK_MOLCAS, "Geometry Mol_cas"},
-	{"GeometryMolcasFirst", GABEDIT_STOCK_MOLCAS, "Read the _first geometry from a molcas output file", 
+	{"GeometryGaussianFChk", GABEDIT_STOCK_GAUSSIAN, N_("Read the geometry from a gaussian fchk file"), 
+		NULL, "Read the geometry from a gaussian fchk file", G_CALLBACK (activate_action) },
+	{"GeometryMolcas",     GABEDIT_STOCK_MOLCAS, N_("Geometry Mol_cas")},
+	{"GeometryMolcasFirst", GABEDIT_STOCK_MOLCAS, N_("Read the _first geometry from a molcas output file"), 
 		NULL, "Read the first geometry from a molcas output file", G_CALLBACK (activate_action) },
-	{"GeometryMolcasLast", GABEDIT_STOCK_MOLCAS, "Read the _last geometry from a molcas output file", 
+	{"GeometryMolcasLast", GABEDIT_STOCK_MOLCAS, N_("Read the _last geometry from a molcas output file"), 
 		NULL, "Read the last geometry from a molcas output file", G_CALLBACK (activate_action) },
-	{"GeometryMolpro",     GABEDIT_STOCK_MOLPRO, "Geometry Mol_pro"},
-	{"GeometryMolproFirst", GABEDIT_STOCK_MOLPRO, "Read the _first geometry from a molpro output file", 
+	{"GeometryMolpro",     GABEDIT_STOCK_MOLPRO, N_("Geometry Mol_pro")},
+	{"GeometryMolproFirst", GABEDIT_STOCK_MOLPRO, N_("Read the _first geometry from a molpro output file"), 
 		NULL, "Read the first geometry from a molpro output file", G_CALLBACK (activate_action) },
-	{"GeometryMolproLast", GABEDIT_STOCK_MOLPRO, "Read the _last geometry from a molpro output file", 
+	{"GeometryMolproLast", GABEDIT_STOCK_MOLPRO, N_("Read the _last geometry from a molpro output file"), 
 		NULL, "Read the last geometry from a molpro output file", G_CALLBACK (activate_action) },
-	{"GeometryMopac",     GABEDIT_STOCK_MOPAC, "Geometry _Mopac"},
-	{"GeometryMopacOutFirst", GABEDIT_STOCK_MOPAC, "Read the _first geometry from a Mopac output file", 
+	{"GeometryMopac",     GABEDIT_STOCK_MOPAC, N_("Geometry _Mopac")},
+	{"GeometryMopacOutFirst", GABEDIT_STOCK_MOPAC, N_("Read the _first geometry from a Mopac output file"), 
 		NULL, "Read the first geometry from a Mopac output file", G_CALLBACK (activate_action) },
-	{"GeometryMopacOutLast", GABEDIT_STOCK_MOPAC, "Read the _last geometry from a Mopac output file", 
+	{"GeometryMopacOutLast", GABEDIT_STOCK_MOPAC, N_("Read the _last geometry from a Mopac output file"), 
 		NULL, "Read the last geometry from a Mopac-Chem output file", G_CALLBACK (activate_action) },
-	{"GeometryMopacAuxFirst", GABEDIT_STOCK_MOPAC, "Read the _first geometry from a Mopac aux file", 
+	{"GeometryMopacAuxFirst", GABEDIT_STOCK_MOPAC, N_("Read the _first geometry from a Mopac aux file"), 
 		NULL, "Read the first geometry from a Mopac aux file", G_CALLBACK (activate_action) },
-	{"GeometryMopacAuxLast", GABEDIT_STOCK_MOPAC, "Read the _last geometry from a Mopac aux file", 
+	{"GeometryMopacAuxLast", GABEDIT_STOCK_MOPAC, N_("Read the _last geometry from a Mopac aux file"), 
 		NULL, "Read the last geometry from a Mopac-Chem aux file", G_CALLBACK (activate_action) },
-	{"GeometryMPQC",     GABEDIT_STOCK_MPQC, "Geometry MP_QC"},
-	{"GeometryMPQCFirst", GABEDIT_STOCK_MPQC, "Read the _first geometry from a MPQC output file", 
+	{"GeometryMPQC",     GABEDIT_STOCK_MPQC, N_("Geometry MP_QC")},
+	{"GeometryMPQCFirst", GABEDIT_STOCK_MPQC, N_("Read the _first geometry from a MPQC output file"), 
 		NULL, "Read the first geometry from a MPQC output file", G_CALLBACK (activate_action) },
-	{"GeometryMPQCLast", GABEDIT_STOCK_MPQC, "Read the _last geometry from a MPQC output file", 
+	{"GeometryMPQCLast", GABEDIT_STOCK_MPQC, N_("Read the _last geometry from a MPQC output file"), 
 		NULL, "Read the last geometry from a MPQC output file", G_CALLBACK (activate_action) },
-	{"GeometryOrca",     GABEDIT_STOCK_ORCA, "Geometry _Orca"},
-	{"GeometryOrcaFirst", GABEDIT_STOCK_ORCA, "Read the _first geometry from a Orca output log file", 
+	{"GeometryOrca",     GABEDIT_STOCK_ORCA, N_("Geometry _Orca")},
+	{"GeometryOrcaFirst", GABEDIT_STOCK_ORCA, N_("Read the _first geometry from a Orca output log file"), 
 		NULL, "Read the first geometry from a Orca output file", G_CALLBACK (activate_action) },
-	{"GeometryOrcaLast", GABEDIT_STOCK_ORCA, "Read the _last geometry from a ORCA output log file", 
+	{"GeometryOrcaLast", GABEDIT_STOCK_ORCA, N_("Read the _last geometry from a ORCA output log file"), 
 		NULL, "Read the last geometry from a Orca output file", G_CALLBACK (activate_action) },
-	{"GeometryFireFly",     GABEDIT_STOCK_FIREFLY, "Geometry _FireFly"},
-	{"GeometryFireFlyFirst", GABEDIT_STOCK_FIREFLY, "Read the _first geometry from a FireFly output log file", 
+	{"GeometryFireFly",     GABEDIT_STOCK_FIREFLY, N_("Geometry _FireFly")},
+	{"GeometryFireFlyFirst", GABEDIT_STOCK_FIREFLY, N_("Read the _first geometry from a FireFly output log file"), 
 		NULL, "Read the first geometry from a FireFly output file", G_CALLBACK (activate_action) },
-	{"GeometryFireFlyLast", GABEDIT_STOCK_FIREFLY, "Read the _last geometry from a FireFly output log file", 
+	{"GeometryFireFlyLast", GABEDIT_STOCK_FIREFLY, N_("Read the _last geometry from a FireFly output log file"), 
 		NULL, "Read the last geometry from a FireFly output file", G_CALLBACK (activate_action) },
-	{"GeometryQChem",     GABEDIT_STOCK_QCHEM, "Geometry Q-_Chem"},
-	{"GeometryQChemFirst", GABEDIT_STOCK_QCHEM, "Read the _first geometry from a Q-Chem output file", 
+	{"GeometryQChem",     GABEDIT_STOCK_QCHEM, N_("Geometry Q-_Chem")},
+	{"GeometryQChemFirst", GABEDIT_STOCK_QCHEM, N_("Read the _first geometry from a Q-Chem output file"), 
 		NULL, "Read the first geometry from a Q-Chem output file", G_CALLBACK (activate_action) },
-	{"GeometryQChemLast", GABEDIT_STOCK_QCHEM, "Read the _last geometry from a Q-Chem output file", 
+	{"GeometryQChemLast", GABEDIT_STOCK_QCHEM, N_("Read the _last geometry from a Q-Chem output file"), 
 		NULL, "Read the last geometry from a Q-Chem output file", G_CALLBACK (activate_action) },
-	{"GeometryGabedit", GABEDIT_STOCK_GABEDIT, "Read from a G_abedit file", 
+	{"GeometryGabedit", GABEDIT_STOCK_GABEDIT, N_("Read from a G_abedit file"), 
 		NULL, "Read the geometry from a Gabedit file", G_CALLBACK (activate_action) },
-	{"GeometryMolden", GABEDIT_STOCK_MOLDEN, "Read from a Mol_den file", 
+	{"GeometryMolden", GABEDIT_STOCK_MOLDEN, N_("Read from a Mol_den file"), 
 		NULL, "Read the from a Molden file", G_CALLBACK (activate_action) },
-	{"Orbitals",     NULL, "_Orbitals"},
-	{"OrbitalsAuto", NULL, "Read geometry and orbitals (_Auto)", 
+	{"Orbitals",     NULL, N_("_Orbitals")},
+	{"OrbitalsAuto", NULL, N_("Read geometry and orbitals (_Auto)"), 
 		NULL, "Read geometry and orbitals from a Gamess output file", G_CALLBACK (activate_action) },
 	/*
 	{"OrbitalsDalton", GABEDIT_STOCK_DALTON, "Read geometry and orbitals from a _Dalton output file", 
 		NULL, "Read geometry and orbitals from a Dalton output file", G_CALLBACK (activate_action) },
 		*/
-	{"OrbitalsGamess", GABEDIT_STOCK_GAMESS, "Read geometry and orbitals from a _Gamess output file", 
+	{"OrbitalsGamess", GABEDIT_STOCK_GAMESS, N_("Read geometry and orbitals from a _Gamess output file"), 
 		NULL, "Read geometry and orbitals from a Gamess output file", G_CALLBACK (activate_action) },
-	{"OrbitalsGaussian", GABEDIT_STOCK_GAUSSIAN, "Read geometry and orbitals from a _Gaussian log file", 
+	{"OrbitalsGaussian", GABEDIT_STOCK_GAUSSIAN, N_("Read geometry and orbitals from a _Gaussian log file"), 
 		NULL, "Read geometry and orbitals from a Gaussian log file", G_CALLBACK (activate_action) },
-	{"OrbitalsMolpro", GABEDIT_STOCK_MOLPRO, "Read geometry and orbitals from a Mol_pro output file", 
+	{"OrbitalsGaussianFChk", GABEDIT_STOCK_GAUSSIAN, N_("Read geometry and orbitals from a _Gaussian fchk file"), 
+		NULL, "Read geometry and orbitals from a Gaussian fchk file", G_CALLBACK (activate_action) },
+	{"OrbitalsMolpro", GABEDIT_STOCK_MOLPRO, N_("Read geometry and orbitals from a Mol_pro output file"), 
 		NULL, "Read geometry and orbitals from a Molpro output file", G_CALLBACK (activate_action) },
-	{"OrbitalsOrca", GABEDIT_STOCK_ORCA, "Read geometry and orbitals from a _Orca output file", 
+	{"OrbitalsOrca", GABEDIT_STOCK_ORCA, N_("Read geometry and orbitals from a _Orca output file"), 
 		NULL, "Read geometry and orbitals from a Orca output files", G_CALLBACK (activate_action) },
-	{"OrbitalsOrca2mkl", GABEDIT_STOCK_ORCA, "Read geometry and orbitals from a _Orca files using orca_2mkl", 
+	{"OrbitalsOrca2mkl", GABEDIT_STOCK_ORCA, N_("Read geometry and orbitals from a _Orca files using orca_2mkl"), 
 		NULL, "Read geometry and orbitals from a Orca output files", G_CALLBACK (activate_action) },
-	{"OrbitalsFireFly", GABEDIT_STOCK_FIREFLY, "Read geometry and orbitals from a _FireFly output file", 
+	{"OrbitalsFireFly", GABEDIT_STOCK_FIREFLY, N_("Read geometry and orbitals from a _FireFly output file"), 
 		NULL, "Read geometry and orbitals from a FireFly output file", G_CALLBACK (activate_action) },
-	{"OrbitalsQChem", GABEDIT_STOCK_QCHEM, "Read geometry and orbitals from a Q-_Chem output file", 
+	{"OrbitalsQChem", GABEDIT_STOCK_QCHEM, N_("Read geometry and orbitals from a Q-_Chem output file"), 
 		NULL, "Read geometry and orbitals from a Q-Chem output file", G_CALLBACK (activate_action) },
-	{"OrbitalsMopac", GABEDIT_STOCK_MOPAC, "Read geometry and orbitals from a _Mopac aux file", 
+	{"OrbitalsMopac", GABEDIT_STOCK_MOPAC, N_("Read geometry and orbitals from a _Mopac aux file"), 
 		NULL, "Read geometry and orbitals from a Mopac aux file", G_CALLBACK (activate_action) },
-	{"OrbitalsGabeditRead", GABEDIT_STOCK_GABEDIT, "Read geometry and orbitals from a G_abedit file", 
+	{"OrbitalsGabeditRead", GABEDIT_STOCK_GABEDIT, N_("Read geometry and orbitals from a G_abedit file"), 
 		NULL, "Read geometry and orbitals from a Gabedit file", G_CALLBACK (activate_action) },
-	{"OrbitalsMolden", GABEDIT_STOCK_MOLDEN, "Read geometry and orbitals from a Mol_den file", 
+	{"OrbitalsMolden", GABEDIT_STOCK_MOLDEN, N_("Read geometry and orbitals from a Mol_den file"), 
 		NULL, "Read geometry and orbitals from a Molden file", G_CALLBACK (activate_action) },
-	{"OrbitalsGabeditSave", GABEDIT_STOCK_SAVE, "Save in a G_abedit file", 
+	{"OrbitalsGabeditSave", GABEDIT_STOCK_SAVE, N_("Save in a G_abedit file"), 
 		NULL, "Save in Gabedit file", G_CALLBACK (activate_action) },
-	{"OrbitalsSelection", GABEDIT_STOCK_SELECT_ALL, "_Selection", 
+	{"OrbitalsSelection", GABEDIT_STOCK_SELECT_ALL, N_("_Selection"), 
 		NULL, "Select an orbital", G_CALLBACK (activate_action) },
-	{"OrbitalsCapture", GABEDIT_STOCK_SELECT_ALL, "_Slideshow", NULL, "Slideshow", G_CALLBACK (activate_action) },
-	{"OrbitalsCoulomb", NULL, "_Coulomb integral", NULL, "Coulomb", G_CALLBACK (activate_action) },
-	{"OrbitalsTransition", NULL, "_Transition matrix elements", NULL, "TM", G_CALLBACK (activate_action) },
-	{"OrbitalsSpatialOverlap", NULL, "_Spatial overlap matrix", NULL, "TM", G_CALLBACK (activate_action) },
-	{"OrbitalsOverlap", NULL, "Compute _overlap matrix", NULL, "Overlap", G_CALLBACK (activate_action) },
-	{"Cube",     NULL, "_Cube&Grid"},
+	{"OrbitalsCapture", GABEDIT_STOCK_SELECT_ALL, N_("_Slideshow"), NULL, "Slideshow", G_CALLBACK (activate_action) },
+	{"OrbitalsCoulomb", NULL, N_("_Coulomb integral"), NULL, "Coulomb", G_CALLBACK (activate_action) },
+	{"OrbitalsTransition", NULL, N_("_Transition matrix elements"), NULL, "TM", G_CALLBACK (activate_action) },
+	{"OrbitalsSpatialOverlap", NULL, N_("_Spatial overlap matrix"), NULL, "TM", G_CALLBACK (activate_action) },
+	{"OrbitalsOverlap", NULL, N_("Compute _overlap matrix"), NULL, "Overlap", G_CALLBACK (activate_action) },
+	{"Cube",     NULL, N_("_Cube&Grid")},
 
-	{"CubeLoadGaussian",     GABEDIT_STOCK_GAUSSIAN, "Load _Gaussian cube"},
-	{"CubeLoadGaussianOrbitals", NULL, "_Orbitals file", 
+	{"CubeLoadGaussian",  GABEDIT_STOCK_GAUSSIAN, N_("Load _Gaussian cube")},
+	{"CubeLoadGaussianOrbitals", NULL, N_("_Orbitals file"), 
 		NULL, "Read cube from a Gaussian cube orbitals file", G_CALLBACK (activate_action) },
-	{"CubeLoadGaussianDensity", NULL, "_Density only file", 
+	{"CubeLoadGaussianDensity", NULL, N_("_Density only file"), 
 		NULL, "Read a Gaussian cube file contain density only", G_CALLBACK (activate_action) },
-	{"CubeLoadGaussianDensityGradient", NULL, "Density and _Gradient file", 
+	{"CubeLoadGaussianDensityGradient", NULL, N_("Density and _Gradient file"), 
 		NULL, "Read a Gaussian cube file contain density and gradient", G_CALLBACK (activate_action) },
-	{"CubeLoadGaussianLaplacian", NULL, "_Laplacian file", 
+	{"CubeLoadGaussianLaplacian", NULL, N_("_Laplacian file"), 
 		NULL, "Read a Gaussian cube file contain laplacian", G_CALLBACK (activate_action) },
-	{"CubeLoadGaussianNormGradient", NULL, "_Norm gradient file", 
+	{"CubeLoadGaussianNormGradient", NULL, N_("_Norm gradient file"), 
 		NULL, "Read a Gaussian cube file contain the norm of gradient", G_CALLBACK (activate_action) },
-	{"CubeLoadGaussianPotential", NULL, "_Potential file", 
+	{"CubeLoadGaussianPotential", NULL, N_("_Potential file"), 
 		NULL, "Read a Gaussian cube file contain a potential", G_CALLBACK (activate_action) },
-	{"CubeLoadMolpro",     GABEDIT_STOCK_MOLPRO, "Load Mol_pro cube"},
-	{"CubeLoadMolproOrbitals",     NULL, "Load Molpro cube _orbitals"},
-	{"CubeLoadMolproOrbitalsOne", NULL, "_One Orbitale", 
+	{"CubeLoadMolpro",     GABEDIT_STOCK_MOLPRO, N_("Load Mol_pro cube")},
+	{"CubeLoadMolproOrbitals",     NULL, N_("Load Molpro cube _orbitals")},
+	{"CubeLoadMolproOrbitalsOne", NULL, N_("_One Orbitale"), 
 		NULL, "Read a Molpro cube file contain one orbital", G_CALLBACK (activate_action) },
-	{"CubeLoadMolproOrbitalsSeveral", NULL, "_Several Orbitales", 
-		NULL, "Read a Molpro cube file contain several orbitales", G_CALLBACK (activate_action) },
-	{"CubeLoadMolproDensityOne", NULL, "Contain the _Density only", 
+	{"CubeLoadMolproOrbitalsSeveral", NULL, N_("_Several Orbitals"), 
+		NULL, "Read a Molpro cube file contain several orbitals", G_CALLBACK (activate_action) },
+	{"CubeLoadMolproDensityOne", NULL, N_("Contain the _Density only"), 
 		NULL, "Read a Molpro cube file contain the density", G_CALLBACK (activate_action) },
-	{"CubeLoadMolproDensityGradient", NULL, "Contain the Density and the _Gradient", 
+	{"CubeLoadMolproDensityGradient", NULL, N_("Contain the Density and the _Gradient"), 
 		NULL, "Read a Molpro cube file contain the density and the gradient of density", G_CALLBACK (activate_action) },
-	{"CubeLoadMolproDensityGradientLaplacian",  NULL, "Density , Gradient and _Laplacian file"},
-	{"CubeLoadMolproDensityGradientLaplacianDensity", NULL, "Load _Density", 
+	{"CubeLoadMolproDensityGradientLaplacian",  NULL, N_("Density , Gradient and _Laplacian file")},
+	{"CubeLoadMolproDensityGradientLaplacianDensity", NULL, N_("Load _Density"),
 		NULL, "Read the density from a Molpro cube file contain density, gradient and laplacian", G_CALLBACK (activate_action) },
-	{"CubeLoadMolproDensityGradientLaplacianLaplacian", NULL, "Load _Laplacian", 
+	{"CubeLoadMolproDensityGradientLaplacianLaplacian", NULL, N_("Load _Laplacian"), 
 		NULL, "Read the laplacian from a Molpro cube file contain density, gradient and laplacian", G_CALLBACK (activate_action) },
-	{"CubeLoadAdf",     GABEDIT_STOCK_ADF, "Load _Adf tape 41"},
-	{"CubeLoadAdfOrbitals", NULL, "_Orbitals", NULL, "Read the orbitals from a ADF tape 41 file", G_CALLBACK (activate_action) },
-	{"CubeLoadAdfDensity", NULL, "_Density", NULL, "Read the density from a ADF tape 41 file", G_CALLBACK (activate_action) },
+	{"CubeLoadAdf",     GABEDIT_STOCK_ADF, N_("Load _Adf tape 41")},
+	{"CubeLoadAdfOrbitals", NULL, N_("_Orbitals"), NULL, "Read the orbitals from a ADF tape 41 file", G_CALLBACK (activate_action) },
+	{"CubeLoadAdfDensity", NULL, N_("_Density"), NULL, "Read the density from a ADF tape 41 file", G_CALLBACK (activate_action) },
 
-	{"CubeLoadMolcas",     GABEDIT_STOCK_MOLCAS, "Load Mol_cas"},
-	{"CubeLoadMolcasGridOrbitals", NULL, "_Orbitals", NULL, "Read the orbitals from a Grid ascii file", G_CALLBACK (activate_action) },
-	{"CubeLoadMolcasGridDensity", NULL, "_Density", NULL, "Read the density from a Grid ascii file", G_CALLBACK (activate_action) },
-	{"CubeLoadQChem", GABEDIT_STOCK_QCHEM, "Load _Q-Chem grid file", NULL, "Read a Q-Chem cube file", G_CALLBACK (activate_action) },
-	{"CubeLoadGabeditRead", GABEDIT_STOCK_GABEDIT, "Load G_abedit cube file", NULL, "Read a Gabedit cube file", G_CALLBACK (activate_action) },
-	{"CubeLoadGabeditSave", GABEDIT_STOCK_SAVE, "_Save", NULL, "Save in a Gabedit cube file", G_CALLBACK (activate_action) },
-	{"CubeComputeLaplacian", NULL, "Compute _laplacian", NULL, "Compute laplacian", G_CALLBACK (activate_action) },
-	{"CubeComputeNormGradient", NULL, "Compute the norm of the _gradient", NULL, "Compute the norm of the _gradient", G_CALLBACK (activate_action) },
-	{"CubeSubtract", NULL, "Su_btract", NULL, "Subtract", G_CALLBACK (activate_action) },
-	{"CubeScale", NULL, "Scal_e", NULL, "Scale", G_CALLBACK (activate_action) },
-	{"CubeSquare", NULL, "S_quare", NULL, "Square", G_CALLBACK (activate_action) },
-	{"CubeRestriction", NULL, "_Restriction", NULL, "Restriction", G_CALLBACK (activate_action) },
-	{"CubeAIMChargesNearGrid", NULL, "AIM Charges[W. Tang et al J. Phys. Cond.. Matt. 21, 084204(09)]", NULL, "AIM Charges", G_CALLBACK (activate_action) },
-	{"CubeAIMChargesOnGrid", NULL, "AIM Charges[OnGrid]", NULL, "AIM Charges on grid", G_CALLBACK (activate_action) },
-	{"CubeColorMapping", NULL, "_Color Mapping", NULL, "Color Mapping", G_CALLBACK (activate_action) },
+	{"CubeLoadMolcas",     GABEDIT_STOCK_MOLCAS, N_("Load Mol_cas")},
+	{"CubeLoadMolcasGridOrbitals", NULL, N_("_Orbitals"), NULL, "Read the orbitals from a Grid ascii file", G_CALLBACK (activate_action) },
+	{"CubeLoadMolcasGridDensity", NULL, N_("_Density"), NULL, "Read the density from a Grid ascii file", G_CALLBACK (activate_action) },
+	{"CubeLoadQChem", GABEDIT_STOCK_QCHEM, N_("Load _Q-Chem grid file"), NULL, "Read a Q-Chem cube file", G_CALLBACK (activate_action) },
+	{"CubeLoadDXRead",NULL, N_("Load _DX cube file"), NULL, "Read a DX grid file", G_CALLBACK (activate_action) },
+	{"CubeLoadGabeditRead", GABEDIT_STOCK_GABEDIT, N_("Load G_abedit cube file"), NULL, "Read a Gabedit cube file", G_CALLBACK (activate_action) },
+	{"CubeLoadGabeditSave", GABEDIT_STOCK_SAVE, N_("_Save"), NULL, "Save in a Gabedit cube file", G_CALLBACK (activate_action) },
+	{"CubeComputeLaplacian", NULL, N_("Compute _laplacian"), NULL, "Compute laplacian", G_CALLBACK (activate_action) },
+	{"CubeComputeNormGradient", NULL, N_("Compute the norm of the _gradient"), NULL, "Compute the norm of the _gradient", G_CALLBACK (activate_action) },
+	{"CubeSubtract", NULL, N_("Su_btract"), NULL, "Subtract", G_CALLBACK (activate_action) },
+	{"CubeScale", NULL, N_("Scal_e"), NULL, "Scale", G_CALLBACK (activate_action) },
+	{"CubeSquare", NULL, N_("S_quare"), NULL, "Square", G_CALLBACK (activate_action) },
+	{"CubeRestriction", NULL, N_("_Restriction"), NULL, "Restriction", G_CALLBACK (activate_action) },
+	{"CubeAIMChargesNearGrid", NULL, N_("AIM Charges[W. Tang et al J. Phys. Cond.. Matt. 21, 084204(09)]"), NULL, "AIM Charges", G_CALLBACK (activate_action) },
+	{"CubeAIMChargesOnGrid", NULL, N_("AIM Charges[OnGrid]"), NULL, "AIM Charges on grid", G_CALLBACK (activate_action) },
+	{"CubeColorMapping", NULL, N_("_Color Mapping"), NULL, "Color Mapping", G_CALLBACK (activate_action) },
 
-	{"Density",     NULL, "_Density"},
-	{"DensityElectronic", NULL, "_Electronic", NULL, "Compute and draw electronic density", G_CALLBACK (activate_action) },
-	{"DensityBonds", NULL, "_Bonds", NULL, "Compute and draw bonds (electronic-atomics)", G_CALLBACK (activate_action) },
-	{"DensitySpin", NULL, "_Spin", NULL, "Compute and draw spin density", G_CALLBACK (activate_action) },
-	{"DensityAtomics", NULL, "_Atomic", NULL, "Compute and draw electronic density of atoms", G_CALLBACK (activate_action) },
+	{"Density",     NULL, N_("_Density")},
+	{"DensityElectronic", NULL, N_("_Electronic"), NULL, "Compute and draw electronic density", G_CALLBACK (activate_action) },
+	{"DensityBonds", NULL, N_("_Bonds"), NULL, "Compute and draw bonds (electronic-atomics)", G_CALLBACK (activate_action) },
+	{"DensitySpin", NULL, N_("_Spin"), NULL, "Compute and draw spin density", G_CALLBACK (activate_action) },
+	{"DensityAtomics", NULL, N_("_Atomic"), NULL, "Compute and draw electronic density of atoms", G_CALLBACK (activate_action) },
 
-	{"ELF",     NULL, "_ELF"},
-	{"ELFBecke", NULL, "Compute _Becke Electron Localization Function[see JCP,92(1990)5397]", NULL, "Compute Becke Electron Localization Function", G_CALLBACK (activate_action) },
-	{"ELFSavin", NULL, "Compute _Savin Electron Localization Function[see Can.J.Chem.,74(1996)1088]", NULL, "Compute Savin Electron Localization Function", G_CALLBACK (activate_action) },
-	{"ELFSavinAttractors", NULL, "Compute _Savin ELF + Attractors", NULL, "Compute Savin ELF+Attractors", G_CALLBACK (activate_action) },
-	{"Fukui",     NULL, "_Fukui"},
-	{"FEDElectrophilic", NULL, "Compute Frontier MO _electrophilic susceptibility", NULL, "Compute Frontier MO electrophilic susceptibility", G_CALLBACK (activate_action) },
-	{"FEDNucleophilic", NULL, "Compute Frontier MO _nucleophilic susceptibility", NULL, "Compute Frontier MO nucleophilic susceptibility", G_CALLBACK (activate_action) },
-	{"FEDRadical", NULL, "Compute Frontier MO _radical susceptibility", NULL, "Compute Frontier MO radical susceptibility", G_CALLBACK (activate_action) },
-	{"FEDSetAlpha", NULL, "Set the value of _alpha parameter", NULL, "Set the value of _alpha parameter", G_CALLBACK (activate_action) },
+	{"ELF",     NULL, N_("_ELF")},
+	{"ELFBecke", NULL, N_("Compute _Becke Electron Localization Function[see JCP,92(1990)5397]"), NULL, "Compute Becke Electron Localization Function", G_CALLBACK (activate_action) },
+	{"ELFSavin", NULL, N_("Compute _Savin Electron Localization Function[see Can.J.Chem.,74(1996)1088]"), NULL, "Compute Savin Electron Localization Function", G_CALLBACK (activate_action) },
+	{"ELFSavinAttractors", NULL, N_("Compute _Savin ELF + Attractors"), NULL, "Compute Savin ELF+Attractors", G_CALLBACK (activate_action) },
+	{"Fukui",     NULL, N_("_Fukui")},
+	{"FEDElectrophilic", NULL, N_("Compute Frontier MO _electrophilic susceptibility"), NULL, "Compute Frontier MO electrophilic susceptibility", G_CALLBACK (activate_action) },
+	{"FEDNucleophilic", NULL, N_("Compute Frontier MO _nucleophilic susceptibility"), NULL, "Compute Frontier MO nucleophilic susceptibility", G_CALLBACK (activate_action) },
+	{"FEDRadical", NULL, N_("Compute Frontier MO _radical susceptibility"), NULL, "Compute Frontier MO radical susceptibility", G_CALLBACK (activate_action) },
+	{"FEDSetAlpha", NULL, N_("Set the value of _alpha parameter"), NULL, "Set the value of _alpha parameter", G_CALLBACK (activate_action) },
 
-	{"SAS",     NULL, "_SAS"},
-	{"SASCompute", NULL, "_Solvent Accessible Surface", NULL, "Compute and draw Solvent Accessible Surface", G_CALLBACK (activate_action) },
-	{"SASMappCompute", NULL, "Solvent Accessible Surface _mapped by MEP from charges", NULL, "Compute and draw Solvent Accessible Surface  mapped by MEP from charges", G_CALLBACK (activate_action) },
-	{"MEP",     NULL, "_MEP"},
-	{"MEPMapping",     NULL, "_Mapped the current grid"},
-	{"MEPOrbitals",     NULL, "Using _Molecular Orbitals"},
-	{"MEPGrid",     NULL, "Using Current _Grid"},
+	{"SAS",     NULL, N_("_SAS")},
+	{"SASCompute", NULL, N_("_Solvent Accessible Surface"), NULL, "Compute and draw Solvent Accessible Surface", G_CALLBACK (activate_action) },
+	{"SASMappCompute", NULL, N_("Solvent Accessible Surface _mapped by MEP from charges"), NULL, "Compute and draw Solvent Accessible Surface  mapped by MEP from charges", G_CALLBACK (activate_action) },
+	{"MEP",     NULL, N_("_MEP")},
+	{"MEPMapping",     NULL, N_("_Mapped the current grid")},
+	{"MEPOrbitals",     NULL, N_("Using _Molecular Orbitals")},
+	{"MEPGrid",     NULL, N_("Using Current _Grid")},
 
-	{"MEPMappingMG", NULL, "MEP by solving Poisson Equation using _Multigrid method", NULL, "MEP by solving Poisson Equation using Multigrid method", G_CALLBACK (activate_action) },
-	{"MEPMappingCG", NULL, "MEP by solving Poisson Equation using _Congugate Gradient method", NULL, "MEP by solving Poisson Equation using Congugate Gradient method", G_CALLBACK (activate_action) },
-	{"MEPMappingMultipol", NULL, "MEP using Multipole", NULL, "MEP using Multipole", G_CALLBACK (activate_action) },
-	{"MEPMappingCharges", NULL, "MEP using partial charges", NULL, "MEP using partial charges", G_CALLBACK (activate_action) },
-	{"FEDElectrophilicMapping", NULL, "Mapping by the _electrophilic susceptibility", NULL, "Mapping by the _electrophilic susceptibility", G_CALLBACK (activate_action) },
-	{"FEDNucleophilicMapping", NULL, "Mapping by the _nucleophilic susceptibility", NULL, "Mapping by the _nucleophilic susceptibility", G_CALLBACK (activate_action) },
-	{"FEDRadicalMapping", NULL, "Mapping by the _radical susceptibility", NULL, "Mapping by the _radical susceptibility", G_CALLBACK (activate_action) },
+	{"MEPMappingMG", NULL, N_("MEP by solving Poisson Equation using _Multigrid method"), NULL, "MEP by solving Poisson Equation using Multigrid method", G_CALLBACK (activate_action) },
+	{"MEPMappingCG", NULL, N_("MEP by solving Poisson Equation using _Congugate Gradient method"), NULL, "MEP by solving Poisson Equation using Congugate Gradient method", G_CALLBACK (activate_action) },
+	{"MEPMappingMultipol", NULL, N_("MEP using Multipole"), NULL, "MEP using Multipole", G_CALLBACK (activate_action) },
+	{"MEPMappingCharges", NULL, N_("MEP using partial charges"), NULL, "MEP using partial charges", G_CALLBACK (activate_action) },
+	{"FEDElectrophilicMapping", NULL, N_("Mapping by the _electrophilic susceptibility"), NULL, "Mapping by the _electrophilic susceptibility", G_CALLBACK (activate_action) },
+	{"FEDNucleophilicMapping", NULL, N_("Mapping by the _nucleophilic susceptibility"), NULL, "Mapping by the _nucleophilic susceptibility", G_CALLBACK (activate_action) },
+	{"FEDRadicalMapping", NULL, N_("Mapping by the _radical susceptibility"), NULL, "Mapping by the _radical susceptibility", G_CALLBACK (activate_action) },
 
-	{"MEPOrbitalsMG", NULL, "MEP by solving Poisson Equation using _Multigrid method", NULL, "MEP by solving Poisson Equation using Multigrid method", G_CALLBACK (activate_action) },
-	{"MEPOrbitalsCG", NULL, "MEP by solving Poisson Equation using _Congugate Gradient method", NULL, "MEP by solving Poisson Equation using Congugate Gradient method", G_CALLBACK (activate_action) },
-	{"MEPOrbitalsMultipol", NULL, "MEP using Multipole", NULL, "MEP using Multipole", G_CALLBACK (activate_action) },
+	{"MEPOrbitalsMG", NULL, N_("MEP by solving Poisson Equation using _Multigrid method"), NULL, "MEP by solving Poisson Equation using Multigrid method", G_CALLBACK (activate_action) },
+	{"MEPOrbitalsCG", NULL, N_("MEP by solving Poisson Equation using _Congugate Gradient method"), NULL, "MEP by solving Poisson Equation using Congugate Gradient method", G_CALLBACK (activate_action) },
+	{"MEPOrbitalsMultipol", NULL, N_("MEP using Multipole"), NULL, "MEP using Multipole", G_CALLBACK (activate_action) },
 
-	{"MEPGridMG", NULL, "MEP by solving Poisson Equation using _Multigrid method", NULL, "MEP by solving Poisson Equation using Multigrid method", G_CALLBACK (activate_action) },
-	{"MEPGridCG", NULL, "MEP by solving Poisson Equation using _Congugate Gradient method", NULL, "MEP by solving Poisson Equation using Congugate Gradient method", G_CALLBACK (activate_action) },
-	{"MEPGridMultipol", NULL, "MEP using Multipole", NULL, "MEP using Multipole", G_CALLBACK (activate_action) },
-	{"MEPFromCharges", NULL, "MEP using partial _charges", NULL, "MEP using partial charges", G_CALLBACK (activate_action) },
+	{"MEPGridMG", NULL, N_("MEP by solving Poisson Equation using _Multigrid method"), NULL, "MEP by solving Poisson Equation using Multigrid method", G_CALLBACK (activate_action) },
+	{"MEPGridCG", NULL, N_("MEP by solving Poisson Equation using _Congugate Gradient method"), NULL, "MEP by solving Poisson Equation using Congugate Gradient method", G_CALLBACK (activate_action) },
+	{"MEPGridMultipol", NULL, N_("MEP using Multipole"), NULL, "MEP using Multipole", G_CALLBACK (activate_action) },
+	{"MEPFromCharges", NULL, N_("MEP using partial _charges"), NULL, "MEP using partial charges", G_CALLBACK (activate_action) },
 
-	{"Contours",     NULL, "Co_ntours"},
-	{"ContoursFirst", NULL, "plane perpendicular to the _first direction", 
+	{"Contours",     NULL, N_("Co_ntours")},
+	{"ContoursFirst", NULL, N_("plane perpendicular to the _first direction"), 
 		NULL, "contours in a plane perpendicular to first direction", G_CALLBACK (activate_action) },
-	{"ContoursSecond", NULL, "plane perpendicular to the _second direction", 
+	{"ContoursSecond", NULL, N_("plane perpendicular to the _second direction"), 
 		NULL, "contours in a plane perpendicular to second direction", G_CALLBACK (activate_action) },
-	{"ContoursThird", NULL, "plane perpendicular to the _third direction", 
+	{"ContoursThird", NULL, N_("plane perpendicular to the _third direction"),
 		NULL, "contours in a plane perpendicular to the third direction", G_CALLBACK (activate_action) },
-	{"ContoursOther", NULL, "_Others plane", NULL, "contours in a any other plane", G_CALLBACK (activate_action) },
-	{"ContoursDelete", NULL, "_Delete all", NULL, "delete all contours", G_CALLBACK (activate_action) },
+	{"ContoursOther", NULL, N_("_Others plane"), NULL, "contours in a any other plane", G_CALLBACK (activate_action) },
+	{"ContoursIsoSurface", NULL, N_("Iso _surface as contours"), NULL, "Iso-surface as contours", G_CALLBACK (activate_action) },
+	{"ContoursDelete", NULL, N_("_Delete all"), NULL, "delete all contours", G_CALLBACK (activate_action) },
 
-	{"PlanesColorCoded",     NULL, "_Planes colorcoded"},
-	{"PlanesColorCodedFirst", NULL, "plane perpendicular to the _first direction", 
+	{"PlanesColorCoded",     NULL, N_("_Planes colorcoded")},
+	{"PlanesColorCodedFirst", NULL, N_("plane perpendicular to the _first direction"),
 		NULL, "Color-coded plane, plane perpendicular to first direction", G_CALLBACK (activate_action) },
-	{"PlanesColorCodedSecond", NULL, "plane perpendicular to the _second direction", 
+	{"PlanesColorCodedSecond", NULL, N_("plane perpendicular to the _second direction"),
 		NULL, "Color-coded plane, plane perpendicular to second direction", G_CALLBACK (activate_action) },
-	{"PlanesColorCodedThird", NULL, "plane perpendicular to the _third direction", 
+	{"PlanesColorCodedThird", NULL, N_("plane perpendicular to the _third direction"),
 		NULL, "Color-coded plane, plane perpendicular to third direction", G_CALLBACK (activate_action) },
-	{"PlanesColorCodedOther", NULL, "_Other plane", 
+	{"PlanesColorCodedOther", NULL, N_("_Other plane"), 
 		NULL, "any other Color-coded plane", G_CALLBACK (activate_action) },
-	{"PlanesColorCodedDelete", NULL, "_Delete all", 
+	{"PlanesColorCodedDelete", NULL, N_("_Delete all"), 
 		NULL, "delete all color-coded planes", G_CALLBACK (activate_action) },
-	{"Surfaces",     NULL, "_Surfaces"},
-	{"SurfacesResetIsovalue", NULL, "re_set isovalue", NULL, "re_set the isovalue for the last surface", G_CALLBACK (activate_action) },
-	{"SurfacesNew", NULL, "_new", NULL, "new surface", G_CALLBACK (activate_action) },
-	{"SurfacesDelete", NULL, "_delete all", NULL, "delete all surfaces", G_CALLBACK (activate_action) },
-	{"Rings",     NULL, "_Rings"},
-	{"Rings3", NULL, "Find and show _triangles", NULL, "Find and show triangles", G_CALLBACK (activate_action) },
-	{"Rings4", NULL, "Find and show _squares & rectangles", NULL, "Find and show squares & rectangles", G_CALLBACK (activate_action) },
-	{"Rings5", NULL, "Find and show _pentagons", NULL, "Find and show pentagons", G_CALLBACK (activate_action) },
-	{"Rings6", NULL, "Find and show he_xagons", NULL, "Find and show hexagons", G_CALLBACK (activate_action) },
-	{"Rings7", NULL, "Find and show he_ptagons", NULL, "Find and show heptagons", G_CALLBACK (activate_action) },
-	{"Rings8", NULL, "Find and show _octagons", NULL, "Find and show octagons", G_CALLBACK (activate_action) },
-	{"RingsDelete", NULL, "_delete all", NULL, "delete all rings", G_CALLBACK (activate_action) },
-	{"Render",     NULL, "_Render"},
-	{"RenderGeometry",     NULL, "_Geometry"},
-	{"RenderLabel",     NULL, "Labe_l"},
-	{"RenderSurface",     NULL, "_Surface"},
-	{"RenderSurfacePositive",     NULL, "_Positive surface"},
-	{"RenderSurfaceNegative",     NULL, "_Negative surface"},
-	{"RenderBackGround",     NULL, "_BackGround"},
-	{"RenderLight",     NULL, "_Light"},
-	{"RenderOptimal", GABEDIT_STOCK_O, "_Optimal", NULL, "Optimal camera", G_CALLBACK (activate_action) },
-	{"Set",     NULL, "_Set"},
-	{"Operation",     NULL, "_Operation"},
-	{"SetCamera", GABEDIT_STOCK_CAMERA, "_Camera", NULL, "set the camera", G_CALLBACK (activate_action) },
-	{"SetLigthPositions", NULL, "_Ligth positions", NULL, "set Ligth positions", G_CALLBACK (activate_action) },
-	{"SetSurfaceColors", NULL, "_Surface colors", NULL, "set surface colors", G_CALLBACK (activate_action) },
-	{"SetDipole", NULL, "_Dipole", NULL, "set dipole", G_CALLBACK (activate_action) },
-	{"SetDipoleDensity", NULL, "_Compute Dipole from density", NULL, "Compute Dipole from density", G_CALLBACK (activate_action) },
-	{"SetAllBonds", NULL, "Compute all _bonds", NULL, "Compute all bonds", G_CALLBACK (activate_action) },
-	{"SetMultipleBonds", NULL, "Compute _multiple bonds", NULL, "Compute multiple bonds", G_CALLBACK (activate_action) },
-	{"SetPropertiesOfAtoms", NULL, "P_roperties of atoms", NULL, "set the properties of atoms", G_CALLBACK (activate_action) },
-	{"SetHydrogenBondsParameters", NULL, "_Hydrogen bonds parameters", NULL, "set the Hydrogen bonds parameters", G_CALLBACK (activate_action) },
-	{"SetXYZAxesProperties", NULL, "XYZ _Axes properties", NULL, "set the properties of the XYZ Axes", G_CALLBACK (activate_action) },
-	{"SetPrincipalAxesProperties", NULL, "_Principal Axes properties", NULL, "set the properties of the principal Axes", G_CALLBACK (activate_action) },
-	{"SetPovrayBackGround", NULL, "_Povray background", NULL, "set the background for the Povray file", G_CALLBACK (activate_action) },
-	{"SetColorMap", NULL, "Color _mapping", NULL, "set the color mapping options", G_CALLBACK (activate_action) },
-	{"SetTitle", NULL, "_Title", NULL, "Set title", G_CALLBACK (activate_action) },
-	{"SetScaleBallStick", NULL, "_Scale ball&stick", NULL, "Scale ball&stick", G_CALLBACK (activate_action) },
-	{"SetOpacity", NULL, "_Opacity", NULL, "Set opacity", G_CALLBACK (activate_action) },
-	{"ScreenCapture",     NULL, "Screen Ca_pture"},
-	{"ScreenCaptureJPG", NULL, "_JPG format", NULL, "save image in a JPG file", G_CALLBACK (activate_action) },
-	{"ScreenCapturePPM", NULL, "_PPM format", NULL, "save image in a PPM file", G_CALLBACK (activate_action) },
-	{"ScreenCaptureBMP", NULL, "_BMP format", NULL, "save image in a BMP file", G_CALLBACK (activate_action) },
-	{"ScreenCapturePNG", NULL, "_PNG format", NULL, "save image in a PNG file", G_CALLBACK (activate_action) },
-	{"ScreenCapturePNGNoBackGround", NULL, "_PNG format(tansparent background)", NULL, "save image in a PNG file without background", G_CALLBACK (activate_action) },
-	{"ScreenCaptureTIF", NULL, "_TIF format", NULL, "save image in a tif file", G_CALLBACK (activate_action) },
-	{"ScreenCapturePS", NULL, "P_S format", NULL, "save image in a PS file", G_CALLBACK (activate_action) },
-	{"ScreenCaptureClipBoard", NULL, "_Copy to clipboard (Ctrl C or Alt C)", NULL, "copy to clipboard", G_CALLBACK (activate_action) },
+	{"Surfaces",     NULL, N_("_Surfaces")},
+	{"SurfacesResetIsovalue", NULL, N_("re_set isovalue"), NULL, "re_set the isovalue for the last surface", G_CALLBACK (activate_action) },
+	{"SurfacesNew", NULL, N_("_new"), NULL, "new surface", G_CALLBACK (activate_action) },
+	{"SurfacesDelete", NULL, N_("_delete all"), NULL, "delete all surfaces", G_CALLBACK (activate_action) },
+	{"Rings",     NULL, N_("_Rings")},
+	{"Rings3", NULL, N_("Find and show _triangles"), NULL, "Find and show triangles", G_CALLBACK (activate_action) },
+	{"Rings4", NULL, N_("Find and show _squares & rectangles"), NULL, "Find and show squares & rectangles", G_CALLBACK (activate_action) },
+	{"Rings5", NULL, N_("Find and show _pentagons"), NULL, "Find and show pentagons", G_CALLBACK (activate_action) },
+	{"Rings6", NULL, N_("Find and show he_xagons"), NULL, "Find and show hexagons", G_CALLBACK (activate_action) },
+	{"Rings7", NULL, N_("Find and show he_ptagons"), NULL, "Find and show heptagons", G_CALLBACK (activate_action) },
+	{"Rings8", NULL, N_("Find and show _octagons"), NULL, "Find and show octagons", G_CALLBACK (activate_action) },
+	{"RingsDelete", NULL, N_("_delete all"), NULL, "delete all rings", G_CALLBACK (activate_action) },
+	{"Render",     NULL, N_("_Render")},
+	{"RenderGeometry",     NULL, N_("_Geometry")},
+	{"RenderLabel",     NULL, N_("Labe_l")},
+	{"RenderSurface",     NULL, N_("_Surface")},
+	{"RenderSurfacePositive",     NULL, N_("_Positive surface")},
+	{"RenderSurfaceNegative",     NULL, N_("_Negative surface")},
+	{"RenderBackGround",     NULL, N_("_BackGround")},
+	{"RenderLight",     NULL, N_("_Light")},
+	{"RenderOptimal", GABEDIT_STOCK_O, N_("_Optimal"), NULL, "Optimal camera", G_CALLBACK (activate_action) },
+	{"Set",     NULL, N_("_Set")},
+	{"Operation",     NULL, N_("_Operation")},
+	{"SetCamera", GABEDIT_STOCK_CAMERA, N_("_Camera"), NULL, "set the camera", G_CALLBACK (activate_action) },
+	{"SetLigthPositions", NULL, N_("_Ligth positions"), NULL, "set Ligth positions", G_CALLBACK (activate_action) },
+	{"SetSurfaceColors", NULL, N_("_Surface colors"), NULL, "set surface colors", G_CALLBACK (activate_action) },
+	{"SetDipole", NULL, N_("_Dipole"), NULL, "set dipole", G_CALLBACK (activate_action) },
+	{"SetDipoleDensity", NULL, N_("_Compute Dipole from density"), NULL, "Compute Dipole from density", G_CALLBACK (activate_action) },
+	{"SetAllBonds", NULL, N_("Compute all _bonds"), NULL, "Compute all bonds", G_CALLBACK (activate_action) },
+	{"SetMultipleBonds", NULL, N_("Compute _multiple bonds"), NULL, "Compute multiple bonds", G_CALLBACK (activate_action) },
+	{"SetPropertiesOfAtoms", NULL, N_("P_roperties of atoms"), NULL, "set the properties of atoms", G_CALLBACK (activate_action) },
+	{"SetHydrogenBondsParameters", NULL, N_("_Hydrogen bonds parameters"), NULL, "set the Hydrogen bonds parameters", G_CALLBACK (activate_action) },
+	{"SetXYZAxesProperties", NULL, N_("XYZ _Axes properties"), NULL, "set the properties of the XYZ Axes", G_CALLBACK (activate_action) },
+	{"SetPrincipalAxesProperties", NULL, N_("_Principal Axes properties"), NULL, "set the properties of the principal Axes", G_CALLBACK (activate_action) },
+	{"SetPovrayBackGround", NULL, N_("_Povray background"), NULL, "set the background for the Povray file", G_CALLBACK (activate_action) },
+	{"SetColorMap", NULL, N_("Color _mapping"), NULL, "set the color mapping options", G_CALLBACK (activate_action) },
+	{"SetTitle", NULL, "_Title", NULL, N_("Set title"), G_CALLBACK (activate_action) },
+	{"SetScaleBallStick", NULL, N_("_Scale ball&stick"), NULL, "Scale ball&stick", G_CALLBACK (activate_action) },
+	{"SetOpacity", NULL, N_("_Opacity"), NULL, "Set opacity", G_CALLBACK (activate_action) },
+	{"ScreenCapture",     NULL, N_("Screen Ca_pture")},
+	{"ScreenCaptureJPG", NULL, N_("_JPG format"), NULL, "save image in a JPG file", G_CALLBACK (activate_action) },
+	{"ScreenCapturePPM", NULL, N_("_PPM format"), NULL, "save image in a PPM file", G_CALLBACK (activate_action) },
+	{"ScreenCaptureBMP", NULL, N_("_BMP format"), NULL, "save image in a BMP file", G_CALLBACK (activate_action) },
+	{"ScreenCapturePNG", NULL, N_("_PNG format"), NULL, "save image in a PNG file", G_CALLBACK (activate_action) },
+	{"ScreenCapturePNGWithoutBackGround", NULL, N_("_PNG format(tansparent background)"), NULL, "save image in a PNG file without background", G_CALLBACK (activate_action) },
+	{"ScreenCaptureTIF", NULL, N_("_TIF format"), NULL, "save image in a tif file", G_CALLBACK (activate_action) },
+	{"ScreenCapturePS", NULL, N_("P_S format"), NULL, "save image in a PS file", G_CALLBACK (activate_action) },
+	{"ScreenCaptureClipBoard", NULL, N_("_Copy to clipboard (Ctrl C or Alt C)"), NULL, "copy to clipboard", G_CALLBACK (activate_action) },
+	{"ScreenCaptureClipBoardWithoutBackground", NULL, N_("Copy to _clipboard (Without background)"), NULL, "copy to clipboard", G_CALLBACK (activate_action) },
 
-	{"Export",     NULL, "_Export"},
-	{"ExportPovray", NULL, "_Povray", NULL, "export in a povray file", G_CALLBACK (activate_action) },
-	{"ExportEPS", NULL, "_EPS", NULL, "export in a eps file", G_CALLBACK (activate_action) },
-	{"ExportPS", NULL, "_PS", NULL, "export in a ps file", G_CALLBACK (activate_action) },
-	{"ExportPDF", NULL, "_PDF", NULL, "export in a pdf file", G_CALLBACK (activate_action) },
-	{"ExportSVG", NULL, "_SVG", NULL, "export in a svg file", G_CALLBACK (activate_action) },
+	{"Export",     NULL, N_("_Export")},
+	{"ExportPovray", NULL, N_("_Povray"), NULL, "export in a povray file", G_CALLBACK (activate_action) },
+	{"ExportEPS", NULL, N_("_EPS"), NULL, "export in a eps file", G_CALLBACK (activate_action) },
+	{"ExportPS", NULL, N_("_PS"), NULL, "export in a ps file", G_CALLBACK (activate_action) },
+	{"ExportPDF", NULL, N_("_PDF"), NULL, "export in a pdf file", G_CALLBACK (activate_action) },
+	{"ExportSVG", NULL, N_("_SVG"), NULL, "export in a svg file", G_CALLBACK (activate_action) },
 
-	{"Animation",     NULL, "_Animation"},
-	{"AnimationVibration", NULL, "_Vibration", NULL, "Vibration", G_CALLBACK (activate_action) },
-	{"AnimationGeometryConvergence", NULL, "_several geometries (Convergence/IRC)", NULL, "several geometries (Convergence/IRC)", G_CALLBACK (activate_action) },
-	{"AnimationMD", NULL, "_Molecular dynamics trajectory", NULL, "Molecular dynamics trajectory", G_CALLBACK (activate_action) },
-	{"AnimationRotation", NULL, "_Rotation", NULL, "Animation of the rotation", G_CALLBACK (activate_action) },
-	{"AnimationContours", NULL, "_Contours", NULL, "Animation of the contours", G_CALLBACK (activate_action) },
-	{"AnimationPlanesColorcoded", NULL, "_Planes colorcoded", NULL, "Animation of the color-coded planes", G_CALLBACK (activate_action) },
-	{"AnimationIsosurface", NULL, "_Isosurface", NULL, "Animation of the surfaces", G_CALLBACK (activate_action) },
+	{"Animation",     NULL, N_("_Animation")},
+	{"AnimationVibration", NULL, N_("_Vibration"), NULL, "Vibration", G_CALLBACK (activate_action) },
+	{"AnimationGeometryConvergence", NULL, N_("_several geometries (Convergence/IRC)"), NULL, "several geometries (Convergence/IRC)", G_CALLBACK (activate_action) },
+	{"AnimationGrids", NULL, N_("_several grids"), NULL, "several grids", G_CALLBACK (activate_action) },
+	{"AnimationMD", NULL, N_("_Molecular dynamics trajectory"), NULL, "Molecular dynamics trajectory", G_CALLBACK (activate_action) },
+	{"AnimationRotation", NULL, N_("_Rotation"), NULL, "Animation of the rotation", G_CALLBACK (activate_action) },
+	{"AnimationContours", NULL, N_("_Contours"), NULL, "Animation of the contours", G_CALLBACK (activate_action) },
+	{"AnimationPlanesColorcoded", NULL, N_("_Planes colorcoded"), NULL, "Animation of the color-coded planes", G_CALLBACK (activate_action) },
+	{"AnimationIsosurface", NULL, N_("_Isosurface"), NULL, "Animation of the surfaces", G_CALLBACK (activate_action) },
 
-	{"View",     NULL, "_View"},
+	{"View",     NULL, N_("_View")},
 
-	{"Close", GABEDIT_STOCK_CLOSE, "_Close", NULL, "Close this window", G_CALLBACK (activate_action) },
+	{"Close", GABEDIT_STOCK_CLOSE, N_("_Close"), NULL, "Close this window", G_CALLBACK (activate_action) },
 
 };
 static guint numberOfGtkActionEntries = G_N_ELEMENTS (gtkActionEntries);
@@ -1152,34 +1176,34 @@ static void toggle_action (GtkAction *action)
 		set_dotted_negative_contours(dotted);
 	}
 }
-
+/*********************************************************************************************************************/
 static GtkToggleActionEntry gtkActionToggleEntries[] =
 {
-	{ "RenderSurfaceTransparency", NULL, "_Transparency", NULL, "render transparency", G_CALLBACK (toggle_action), FALSE },
-	{ "RenderLightOnOff1", NULL, "OnOff _1", NULL, "On/Of the light number 1", G_CALLBACK (toggle_action), TRUE },
-	{ "RenderLightOnOff2", NULL, "OnOff _2", NULL, "On/Of the light number 2", G_CALLBACK (toggle_action), FALSE },
-	{ "RenderLightOnOff3", NULL, "OnOff _3", NULL, "On/Of the light number 3", G_CALLBACK (toggle_action), FALSE },
-	{ "RenderDipole", NULL, "Show _dipole", NULL, "Show dipole", G_CALLBACK (toggle_action), FALSE },
-	{ "RenderHydrogenAtoms", NULL, "Show _hydrogen atoms", NULL, "Show hydrogen atoms", G_CALLBACK (toggle_action), FALSE },
-	{ "RenderHydrogenBonds", NULL, "Show _hydrogen bonds", NULL, "Show hydrogen bonds", G_CALLBACK (toggle_action), FALSE },
-	{ "RenderMultiBonds", NULL, "Show double and triple _bonds", NULL, "Show double and triple bonds", G_CALLBACK (toggle_action), FALSE },
-	{ "RenderXYZAxes", NULL, "Show XYZ _Axes", NULL, "Show XYZ Axes", G_CALLBACK (toggle_action), FALSE },
-	{ "RenderPrincipalAxes", NULL, "Show the _principal Axes", NULL, "Show principal Axes", G_CALLBACK (toggle_action), FALSE },
-	{ "RenderPerspective", GABEDIT_STOCK_PERSPECTIVE, "Perspective", NULL, "Perspective/Orthographic", G_CALLBACK (toggle_action), TRUE},
-	{ "ShowToolBar", NULL, "_Show toolbar", NULL, "show toolbar", G_CALLBACK (toggle_action), TRUE },
-	{ "ShowStatusHandleBox", NULL, "_show status handlebox", NULL, "show status handlebox", G_CALLBACK (toggle_action), TRUE},
-	{ "ShowProgressBar", NULL, "_show progress bar", NULL, "show progress bar", G_CALLBACK (toggle_action), TRUE},
-	{ "RenderLabelSymbols", NULL, "show symbo_ls", NULL, "show symbols", G_CALLBACK (toggle_action), TRUE},
-	{ "RenderLabelNumbers", NULL, "show _numbers", NULL, "show numbers", G_CALLBACK (toggle_action), TRUE},
-	{ "RenderLabelCharges", NULL, "show _charges", NULL, "show charges", G_CALLBACK (toggle_action), TRUE},
-	{ "RenderLabelDistances", NULL, "show _distances", NULL, "show distances", G_CALLBACK (toggle_action), TRUE},
-	{ "RenderLabelDipole", NULL, "show _dipole value", NULL, "show dipole value", G_CALLBACK (toggle_action), TRUE},
-	{ "RenderLabelAxes", NULL, "show _axis labels", NULL, "show axis labels", G_CALLBACK (toggle_action), TRUE},
-	{ "RenderLabelsOrtho", NULL, "_orthographic labels", NULL, "orthographic labels", G_CALLBACK (toggle_action), TRUE},
-	{ "RingsDeleteNotPlaner", NULL, "Show ring with not co-_planer atoms", NULL, "Show ring with not co-planer atoms", G_CALLBACK (toggle_action), TRUE},
-	{ "RingsRandumColors", NULL, "_randum colors", NULL, "randum colors", G_CALLBACK (toggle_action), TRUE},
-	{ "ContoursNegativeDotted", NULL, "_dotted contours for negative values", NULL, "dotted contours for negative values", G_CALLBACK (toggle_action), FALSE},
-	{ "ShowOnlyOneSurface", NULL, "Show only _one surface", NULL, "Show one surface", G_CALLBACK (toggle_action), FALSE },
+	{ "RenderSurfaceTransparency", NULL, N_("_Transparency"), NULL, "render transparency", G_CALLBACK (toggle_action), FALSE },
+	{ "RenderLightOnOff1", NULL, N_("OnOff _1"), NULL, "On/Of the light number 1", G_CALLBACK (toggle_action), TRUE },
+	{ "RenderLightOnOff2", NULL, N_("OnOff _2"), NULL, "On/Of the light number 2", G_CALLBACK (toggle_action), FALSE },
+	{ "RenderLightOnOff3", NULL, N_("OnOff _3"), NULL, "On/Of the light number 3", G_CALLBACK (toggle_action), FALSE },
+	{ "RenderDipole", NULL, N_("Show _dipole"), NULL, "Show dipole", G_CALLBACK (toggle_action), FALSE },
+	{ "RenderHydrogenAtoms", NULL, N_("Show _hydrogen atoms"), NULL, "Show hydrogen atoms", G_CALLBACK (toggle_action), FALSE },
+	{ "RenderHydrogenBonds", NULL, N_("Show _hydrogen bonds"), NULL, "Show hydrogen bonds", G_CALLBACK (toggle_action), FALSE },
+	{ "RenderMultiBonds", NULL, N_("Show double and triple _bonds"), NULL, "Show double and triple bonds", G_CALLBACK (toggle_action), FALSE },
+	{ "RenderXYZAxes", NULL, N_("Show XYZ _Axes"), NULL, "Show XYZ Axes", G_CALLBACK (toggle_action), FALSE },
+	{ "RenderPrincipalAxes", NULL, N_("Show the _principal Axes"), NULL, "Show principal Axes", G_CALLBACK (toggle_action), FALSE },
+	{ "RenderPerspective", GABEDIT_STOCK_PERSPECTIVE, N_("Perspective"), NULL, "Perspective/Orthographic", G_CALLBACK (toggle_action), TRUE},
+	{ "ShowToolBar", NULL, N_("_Show toolbar"), NULL, "show toolbar", G_CALLBACK (toggle_action), TRUE },
+	{ "ShowStatusHandleBox", NULL, N_("_show status handlebox"), NULL, "show status handlebox", G_CALLBACK (toggle_action), TRUE},
+	{ "ShowProgressBar", NULL, N_("_show progress bar"), NULL, "show progress bar", G_CALLBACK (toggle_action), TRUE},
+	{ "RenderLabelSymbols", NULL, N_("show symbo_ls"), NULL, "show symbols", G_CALLBACK (toggle_action), TRUE},
+	{ "RenderLabelNumbers", NULL, N_("show _numbers"), NULL, "show numbers", G_CALLBACK (toggle_action), TRUE},
+	{ "RenderLabelCharges", NULL, N_("show _charges"), NULL, "show charges", G_CALLBACK (toggle_action), TRUE},
+	{ "RenderLabelDistances", NULL, N_("show _distances"), NULL, "show distances", G_CALLBACK (toggle_action), TRUE},
+	{ "RenderLabelDipole", NULL, N_("show _dipole value"), NULL, "show dipole value", G_CALLBACK (toggle_action), TRUE},
+	{ "RenderLabelAxes", NULL, N_("show _axis labels"), NULL, "show axis labels", G_CALLBACK (toggle_action), TRUE},
+	{ "RenderLabelsOrtho", NULL, N_("_orthographic labels"), NULL, "orthographic labels", G_CALLBACK (toggle_action), TRUE},
+	{ "RingsDeleteNotPlaner", NULL, N_("Show ring with not co-_planer atoms"), NULL, "Show ring with not co-planer atoms", G_CALLBACK (toggle_action), TRUE},
+	{ "RingsRandumColors", NULL, N_("_randum colors"), NULL, "randum colors", G_CALLBACK (toggle_action), TRUE},
+	{ "ContoursNegativeDotted", NULL, N_("_dotted contours for negative values"), NULL, "dotted contours for negative values", G_CALLBACK (toggle_action), FALSE},
+	{ "ShowOnlyOneSurface", NULL, N_("Show only _one surface"), NULL, "Show one surface", G_CALLBACK (toggle_action), FALSE },
 };
 
 static guint numberOfGtkActionToggleEntries = G_N_ELEMENTS (gtkActionToggleEntries);
@@ -1229,12 +1253,13 @@ static void render_geometry_radio_action (GtkAction *action)
 			break;
 	}
 }
+/*********************************************************************************************************************/
 static GtkRadioActionEntry rendereGeometryEntries[] = {
-  { "RenderGeometryStick", GABEDIT_STOCK_RENDER_STICK, "_Stick", NULL, "render stick", GEOMETRY_STICK },
-  { "RenderGeometryWireFrame", GABEDIT_STOCK_RENDER_WIREFRAME, "_WireFrame", NULL, "render wireframe", GEOMETRY_WIREFRAME },
-  { "RenderGeometryBallAndStick", GABEDIT_STOCK_RENDER_BALL_STICK, "_Ball&Stick", NULL, "render Ball&Stick", GEOMETRY_BALLSTICK },
-  { "RenderGeometrySpaceFill", NULL, "Space_Fill", NULL, "render Space Fill", GEOMETRY_SPACEFILL },
-  { "RenderGeometryNothing", NULL, "_Nothing", NULL, "hide geometry", GEOMETRY_NO },
+  { "RenderGeometryStick", GABEDIT_STOCK_RENDER_STICK, N_("_Stick"), NULL, "render stick", GEOMETRY_STICK },
+  { "RenderGeometryWireFrame", GABEDIT_STOCK_RENDER_WIREFRAME, N_("_WireFrame"), NULL, "render wireframe", GEOMETRY_WIREFRAME },
+  { "RenderGeometryBallAndStick", GABEDIT_STOCK_RENDER_BALL_STICK, N_("_Ball&Stick"), NULL, "render Ball&Stick", GEOMETRY_BALLSTICK },
+  { "RenderGeometrySpaceFill", NULL, N_("Space_Fill"), NULL, "render Space Fill", GEOMETRY_SPACEFILL },
+  { "RenderGeometryNothing", NULL, N_("_Nothing"), NULL, "hide geometry", GEOMETRY_NO },
 };
 static guint numberOfRenderGeometryEntries = G_N_ELEMENTS (rendereGeometryEntries);
 /*********************************************************************************************************************/
@@ -1243,6 +1268,7 @@ enum
 	SURFACE_POSITIVE_FILL,
 	SURFACE_POSITIVE_WIREFRAME
 };
+/*********************************************************************************************************************/
 static void render_surface_positive_radio_action (GtkAction *action)
 {
 	gint value = gtk_radio_action_get_current_value (GTK_RADIO_ACTION (action));
@@ -1260,9 +1286,10 @@ static void render_surface_positive_radio_action (GtkAction *action)
  			break;
 	}
 }
+/*********************************************************************************************************************/
 static GtkRadioActionEntry renderSurfacePositiveEntries[] = {
-  { "RenderSurfacePositiveFill", NULL, "_Fill", NULL, "render fill the positive surface", SURFACE_POSITIVE_FILL },
-  { "RenderSurfacePositiveWireFrame", NULL, "_WireFrame", NULL, "render wireframe the positive surface", SURFACE_POSITIVE_WIREFRAME },
+  { "RenderSurfacePositiveFill", NULL, N_("_Fill"), NULL, "render fill the positive surface", SURFACE_POSITIVE_FILL },
+  { "RenderSurfacePositiveWireFrame", NULL, N_("_WireFrame"), NULL, "render wireframe the positive surface", SURFACE_POSITIVE_WIREFRAME },
 };
 static guint numberOfRenderSurfacePositiveEntrie = G_N_ELEMENTS (renderSurfacePositiveEntries);
 /*********************************************************************************************************************/
@@ -1289,8 +1316,8 @@ static void render_surface_negative_radio_action (GtkAction *action)
 	}
 }
 static GtkRadioActionEntry renderSurfaceNegativeEntries[] = {
-  { "RenderSurfaceNegariveFill", NULL, "_Fill", NULL, "render fill the negative surface", SURFACE_NEGATIVE_FILL },
-  { "RenderSurfaceNegativeWireFrame", NULL, "_WireFrame", NULL, "render wireframe the negative surface", SURFACE_NEGATIVE_WIREFRAME },
+  { "RenderSurfaceNegariveFill", NULL, N_("_Fill"), NULL, "render fill the negative surface", SURFACE_NEGATIVE_FILL },
+  { "RenderSurfaceNegativeWireFrame", NULL, N_("_WireFrame"), NULL, "render wireframe the negative surface", SURFACE_NEGATIVE_WIREFRAME },
 };
 static guint numberOfRenderSurfaceNegativeEntries = G_N_ELEMENTS (renderSurfaceNegativeEntries);
 /*********************************************************************************************************************/
@@ -1325,10 +1352,10 @@ static void render_surface_radio_action (GtkAction *action)
 	}
 }
 static GtkRadioActionEntry renderSurfaceEntries[] = {
-  { "RenderSurfacePositiveNegativeShow", NULL, "Positive_&Neg_ative", NULL, "show the Positive&Neg_ative surfaces", SURFACE_POSITIVENEGATIVE },
-  { "RenderSurfacePositiveShow", NULL, "_Positive", NULL, "show the Positive surface", SURFACE_POSITIVE },
-  { "RenderSurfaceNegativeShow", NULL, "_Negative", NULL, "show the Neg_ative surfaces", SURFACE_NEGATIVE },
-  { "RenderSurfaceNothingShow", NULL, "N_othing", NULL, "hide surfaces", SURFACE_NO },
+  { "RenderSurfacePositiveNegativeShow", NULL, N_("Positive_&Neg_ative"), NULL, "show the Positive&Neg_ative surfaces", SURFACE_POSITIVENEGATIVE },
+  { "RenderSurfacePositiveShow", NULL, N_("_Positive"), NULL, "show the Positive surface", SURFACE_POSITIVE },
+  { "RenderSurfaceNegativeShow", NULL, N_("_Negative"), NULL, "show the Neg_ative surfaces", SURFACE_NEGATIVE },
+  { "RenderSurfaceNothingShow", NULL, N_("N_othing"), NULL, "hide surfaces", SURFACE_NO },
 };
 static guint numberOfRenderSurfaceEntries = G_N_ELEMENTS (renderSurfaceEntries);
 /*********************************************************************************************************************/
@@ -1367,10 +1394,10 @@ static void render_surface_texture_radio_action (GtkAction *action)
 	}
 }
 static GtkRadioActionEntry renderSurfaceTextureEntries[] = {
-  { "RenderSurfaceTextureNothing", NULL, "_No Texture", NULL, "No Texture", TEXTURE_NO },
-  { "RenderSurfaceTexture1", NULL, "Texture _1", NULL, "Texture number 1", TEXTURE_1 },
-  { "RenderSurfaceTexture2", NULL, "Texture _2", NULL, "Texture number 2", TEXTURE_2 },
-  { "RenderSurfaceTexture3", NULL, "Texture _3", NULL, "Texture number 3", TEXTURE_3 },
+  { "RenderSurfaceTextureNothing", NULL, N_("_No Texture"), NULL, "No Texture", TEXTURE_NO },
+  { "RenderSurfaceTexture1", NULL, N_("Texture _1"), NULL, "Texture number 1", TEXTURE_1 },
+  { "RenderSurfaceTexture2", NULL, N_("Texture _2"), NULL, "Texture number 2", TEXTURE_2 },
+  { "RenderSurfaceTexture3", NULL, N_("Texture _3"), NULL, "Texture number 3", TEXTURE_3 },
 };
 static guint numberOfRenderSurfacetextureEntries = G_N_ELEMENTS (renderSurfaceTextureEntries);
 /*********************************************************************************************************************/
@@ -1384,18 +1411,20 @@ static void render_background_radio_action (GtkAction *action)
 	{
 		if( value==BACKGROUND_CHECKER) set_background_optcolor(-1);
 		else set_background_optcolor(value-BACKGROUND_BLACK);
+		while( gtk_events_pending() ) gtk_main_iteration();
+		glarea_rafresh(GLArea);
 		glarea_rafresh(GLArea);
 	}
 }
 static GtkRadioActionEntry renderBackGroundEntries[] = {
-  { "RenderBackGroundBlack", NULL, "_Black", NULL, "Black background", BACKGROUND_BLACK },
-  { "RenderBackGroundWhite", NULL, "_White", NULL, "White background", BACKGROUND_WHITE },
-  { "RenderBackGroundRed", NULL, "_Red", NULL, "Red background", BACKGROUND_RED1 },
-  { "RenderBackGroundGreen", NULL, "_Green", NULL, "Green background", BACKGROUND_GREEN1 },
-  { "RenderBackGroundBlue", NULL, "_Blue", NULL, "Blue background", BACKGROUND_BLUE1 },
-  { "RenderBackGroundPeach", NULL, "_Peach", NULL, "Peach background", BACKGROUND_PEACH },
-  { "RenderBackGroundGray", NULL, "_Gray", NULL, "Gray background", BACKGROUND_GRAY },
-  { "RenderBackGroundCheckerAndSky", NULL, "_Checker&sky", NULL, "Checker&sky", BACKGROUND_CHECKER },
+  { "RenderBackGroundBlack", NULL, N_("_Black"), NULL, "Black background", BACKGROUND_BLACK },
+  { "RenderBackGroundWhite", NULL, N_("_White"), NULL, "White background", BACKGROUND_WHITE },
+  { "RenderBackGroundRed", NULL, N_("_Red"), NULL, "Red background", BACKGROUND_RED1 },
+  { "RenderBackGroundGreen", NULL, N_("_Green"), NULL, "Green background", BACKGROUND_GREEN1 },
+  { "RenderBackGroundBlue", NULL, N_("_Blue"), NULL, "Blue background", BACKGROUND_BLUE1 },
+  { "RenderBackGroundPeach", NULL, N_("_Peach"), NULL, "Peach background", BACKGROUND_PEACH },
+  { "RenderBackGroundGray", NULL, N_("_Gray"), NULL, "Gray background", BACKGROUND_GRAY },
+  { "RenderBackGroundCheckerAndSky", NULL, N_("_Checker&sky"), NULL, "Checker&sky", BACKGROUND_CHECKER },
 };
 static guint numberOfBackGroundEntries = G_N_ELEMENTS (renderBackGroundEntries);
 /*********************************************************************************************************************/
@@ -1415,12 +1444,12 @@ static void render_operation_radio_action (GtkAction *action)
 				set_operation_type(value-OPERATION_ROTATION_FREE);
 }
 static GtkRadioActionEntry operationEntries[] = {
-  { "OperationRotationFree", GABEDIT_STOCK_ROTATION, "_Free rotation", "<control>R", "Free rotation", OPERATION_ROTATION_FREE },
-  { "OperationRotationX", GABEDIT_STOCK_ROTATION_X, "Rotation about _X axis", "<control>X", "Rotation about X axis", OPERATION_ROTATION_X },
-  { "OperationRotationY", GABEDIT_STOCK_ROTATION_Y, "Rotation about _Y axis", "<control>Y", "Rotation about Y axis", OPERATION_ROTATION_Y },
-  { "OperationRotationZ", GABEDIT_STOCK_ROTATION_Z, "Rotation about _Z axis", "<control>Z", "Rotation about Z axis", OPERATION_ROTATION_Z },
-  { "OperationZoom", GABEDIT_STOCK_ZOOM, "Z_oom", "<control>o", "Zoom axis", OPERATION_ZOOM },
-  { "OperationTranslation", GABEDIT_STOCK_TRANSLATE, "_Translation", "<control>T", "Translation", OPERATION_TRANSLATION },
+  { "OperationRotationFree", GABEDIT_STOCK_ROTATION, N_("_Free rotation"), "<control>R", "Free rotation", OPERATION_ROTATION_FREE },
+  { "OperationRotationX", GABEDIT_STOCK_ROTATION_X, N_("Rotation about _X axis"), "<control>X", "Rotation about X axis", OPERATION_ROTATION_X },
+  { "OperationRotationY", GABEDIT_STOCK_ROTATION_Y, N_("Rotation about _Y axis"), "<control>Y", "Rotation about Y axis", OPERATION_ROTATION_Y },
+  { "OperationRotationZ", GABEDIT_STOCK_ROTATION_Z, N_("Rotation about _Z axis"), "<control>Z", "Rotation about Z axis", OPERATION_ROTATION_Z },
+  { "OperationZoom", GABEDIT_STOCK_ZOOM, N_("Z_oom"), "<control>o", "Zoom axis", OPERATION_ZOOM },
+  { "OperationTranslation", GABEDIT_STOCK_TRANSLATE, N_("_Translation"), "<control>T", "Translation", OPERATION_TRANSLATION },
 };
 static guint numberOfOperationEntries = G_N_ELEMENTS (operationEntries);
 /*********************************************************************************************************************/
@@ -1454,6 +1483,7 @@ static const gchar *uiMenuInfo =
 "      <menu name=\"GeometryGaussian\" action=\"GeometryGaussian\">\n"
 "        <menuitem name=\"GeometryGaussianFirst\" action=\"GeometryGaussianFirst\" />\n"
 "        <menuitem name=\"GeometryGaussianLast\" action=\"GeometryGaussianLast\" />\n"
+"        <menuitem name=\"GeometryGaussianFChk\" action=\"GeometryGaussianFChk\" />\n"
 "      </menu>\n"
 "      <separator name=\"sepMenuGaussianGeom\" />\n"
 "      <menu name=\"GeometryMolcas\" action=\"GeometryMolcas\">\n"
@@ -1502,6 +1532,7 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"OrbitalsFireFly\" action=\"OrbitalsFireFly\" />\n"
 "      <menuitem name=\"OrbitalsGamess\" action=\"OrbitalsGamess\" />\n"
 "      <menuitem name=\"OrbitalsGaussian\" action=\"OrbitalsGaussian\" />\n"
+"      <menuitem name=\"OrbitalsGaussianFChk\" action=\"OrbitalsGaussianFChk\" />\n"
 "      <menuitem name=\"OrbitalsMolpro\" action=\"OrbitalsMolpro\" />\n"
 "      <menuitem name=\"OrbitalsMopac\" action=\"OrbitalsMopac\" />\n"
 "      <menuitem name=\"OrbitalsOrca\" action=\"OrbitalsOrca\" />\n"
@@ -1558,6 +1589,8 @@ static const gchar *uiMenuInfo =
 "      </menu>\n"
 "      <separator name=\"sepMenuCubeLoadQChem\" />\n"
 "      <menuitem name=\"CubeLoadQChem\" action=\"CubeLoadQChem\" />\n"
+"      <separator name=\"sepMenuCubeLoadDXRead\" />\n"
+"      <menuitem name=\"CubeLoadDXRead\" action=\"CubeLoadDXRead\" />\n"
 "      <separator name=\"sepMenuCubeLoadGabeditRead\" />\n"
 "      <menuitem name=\"CubeLoadGabeditRead\" action=\"CubeLoadGabeditRead\" />\n"
 "      <separator name=\"sepMenuCubeLoadGabeditSave\" />\n"
@@ -1642,6 +1675,7 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ContoursSecond\" action=\"ContoursSecond\" />\n"
 "        <menuitem name=\"ContoursThird\" action=\"ContoursThird\" />\n"
 "        <menuitem name=\"ContoursOther\" action=\"ContoursOther\" />\n"
+"        <menuitem name=\"ContoursIsoSurface\" action=\"ContoursIsoSurface\" />\n"
 "        <separator name=\"sepMenuContoursNegativeDotted\" />\n"
 "        <menuitem name=\"ContoursNegativeDotted\" action=\"ContoursNegativeDotted\" />\n"
 "        <separator name=\"sepMenuContoursDelete\" />\n"
@@ -1790,12 +1824,13 @@ static const gchar *uiMenuInfo =
 "    <menu name=\"ScreenCapture\" action = \"ScreenCapture\">\n"
 "        <menuitem name=\"ScreenCaptureBMP\" action=\"ScreenCaptureBMP\" />\n"
 "        <menuitem name=\"ScreenCapturePNG\" action=\"ScreenCapturePNG\" />\n"
-"        <menuitem name=\"ScreenCapturePNGNoBackGround\" action=\"ScreenCapturePNGNoBackGround\" />\n"
+"        <menuitem name=\"ScreenCapturePNGWithoutBackGround\" action=\"ScreenCapturePNGWithoutBackGround\" />\n"
 "        <menuitem name=\"ScreenCaptureJPG\" action=\"ScreenCaptureJPG\" />\n"
 "        <menuitem name=\"ScreenCapturePPM\" action=\"ScreenCapturePPM\" />\n"
 "        <menuitem name=\"ScreenCaptureTIF\" action=\"ScreenCaptureTIF\" />\n"
 "        <menuitem name=\"ScreenCapturePS\" action=\"ScreenCapturePS\" />\n"
 "        <menuitem name=\"ScreenCaptureClipBoard\" action=\"ScreenCaptureClipBoard\" />\n"
+"        <menuitem name=\"ScreenCaptureClipBoardWithoutBackground\" action=\"ScreenCaptureClipBoardWithoutBackground\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepMenuExport\" />\n"
 "    <menu name=\"Export\" action = \"Export\">\n"
@@ -1820,6 +1855,8 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"AnimationPlanesColorcoded\" action=\"AnimationPlanesColorcoded\" />\n"
 "        <separator name=\"sepMenuAnimationIsoSurface\" />\n"
 "        <menuitem name=\"AnimationIsosurface\" action=\"AnimationIsosurface\" />\n"
+"        <separator name=\"sepMenuAnimationGrids\" />\n"
+"        <menuitem name=\"AnimationGrids\" action=\"AnimationGrids\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepMenuView\" />\n"
 "    <menu name=\"View\" action = \"View\">\n"
@@ -1926,13 +1963,19 @@ void create_toolbar_and_popup_menu_GL(GtkWidget* box)
   	g_signal_connect_swapped (PrincipalWindow, "destroy", G_CALLBACK (g_object_unref), merge);
 
 	actionGroup = gtk_action_group_new ("GabeditPopupMenuGLActions");
+	gtk_action_group_set_translation_domain(actionGroup,GETTEXT_PACKAGE);
 	gtk_action_group_add_actions (actionGroup, gtkActionEntries, numberOfGtkActionEntries, NULL);
 
 	set_init_gtkActionToggleEntries();
 	gtk_action_group_add_toggle_actions (actionGroup, gtkActionToggleEntries, numberOfGtkActionToggleEntries, NULL);
 	gtk_action_group_add_radio_actions (actionGroup, rendereGeometryEntries, numberOfRenderGeometryEntries, GEOMETRY_STICK, G_CALLBACK (render_geometry_radio_action), NULL);
 	/* gtk_action_group_add_radio_actions (actionGroup, renderBackGroundEntries, numberOfBackGroundEntries, BACKGROUND_BLACK, G_CALLBACK (render_background_radio_action), NULL);*/
-	gtk_action_group_add_radio_actions (actionGroup, renderBackGroundEntries, numberOfBackGroundEntries, getOptCol(), G_CALLBACK (render_background_radio_action), NULL);
+	if(getOptCol()>=0)
+	gtk_action_group_add_radio_actions (actionGroup, renderBackGroundEntries, numberOfBackGroundEntries, 
+			getOptCol(), G_CALLBACK (render_background_radio_action), NULL);
+	else
+	gtk_action_group_add_radio_actions (actionGroup, renderBackGroundEntries, numberOfBackGroundEntries, 
+			BACKGROUND_CHECKER, G_CALLBACK (render_background_radio_action), NULL);
 	gtk_action_group_add_radio_actions (actionGroup, renderSurfaceTextureEntries, numberOfRenderSurfacetextureEntries, TEXTURE_NO, G_CALLBACK (render_surface_texture_radio_action), NULL);
 
 	gtk_action_group_add_radio_actions (actionGroup, renderSurfaceEntries, numberOfRenderSurfaceEntries, SURFACE_POSITIVENEGATIVE, G_CALLBACK (render_surface_radio_action), NULL);
@@ -1948,7 +1991,7 @@ void create_toolbar_and_popup_menu_GL(GtkWidget* box)
   	gtk_window_add_accel_group (GTK_WINDOW (PrincipalWindow), gtk_ui_manager_get_accel_group (merge));
 	if (!gtk_ui_manager_add_ui_from_string (merge, uiMenuInfo, -1, &error))
 	{
-		g_message ("building menus failed: %s", error->message);
+		g_message (_("building menus failed: %s"), error->message);
 		g_error_free (error);
 	}
 	manager = merge;
@@ -2083,6 +2126,7 @@ static void set_sensitive_contours()
 	GtkWidget *contours2 = gtk_ui_manager_get_widget (manager, "/MenuGL/Contours/ContoursSecond");
 	GtkWidget *contours3 = gtk_ui_manager_get_widget (manager, "/MenuGL/Contours/ContoursThird");
 	GtkWidget *contoursOther = gtk_ui_manager_get_widget (manager, "/MenuGL/Contours/ContoursOther");
+	GtkWidget *contoursIsoSurface = gtk_ui_manager_get_widget (manager, "/MenuGL/Contours/ContoursIsoSurface");
 	gboolean s = TRUE;
 
 	if(!GeomOrb)
@@ -2096,6 +2140,7 @@ static void set_sensitive_contours()
 	if(GTK_IS_WIDGET(contours1)) gtk_widget_set_sensitive(contours1, s);
 	if(GTK_IS_WIDGET(contours2)) gtk_widget_set_sensitive(contours2, s);
 	if(GTK_IS_WIDGET(contours3)) gtk_widget_set_sensitive(contours3, s);
+	if(GTK_IS_WIDGET(contoursIsoSurface)) gtk_widget_set_sensitive(contoursIsoSurface, s);
 
 	if(!GeomOrb || !CoefAlphaOrbitals)
 	{
@@ -2187,11 +2232,13 @@ static void set_sensitive_png_background()
 {
 	guchar color[3];
 	gint numCol = get_background_color(color);
-	GtkWidget *pngTrans = gtk_ui_manager_get_widget (manager, "/MenuGL/ScreenCapture/ScreenCapturePNGNoBackGround");
+	GtkWidget *pngTrans = gtk_ui_manager_get_widget (manager, "/MenuGL/ScreenCapture/ScreenCapturePNGWithoutBackGround");
+	GtkWidget *clipTrans = gtk_ui_manager_get_widget (manager, "/MenuGL/ScreenCapture/ScreenCaptureClipBoardWithoutBackground");
 	gboolean sensitive = TRUE;
 
 	if(numCol<0) sensitive = FALSE;
 	if(GTK_IS_WIDGET(pngTrans)) gtk_widget_set_sensitive(pngTrans, sensitive);
+	if(GTK_IS_WIDGET(clipTrans)) gtk_widget_set_sensitive(clipTrans, sensitive);
 }
 /*********************************************************************************************************************/
 gboolean popuo_menu_GL(guint button, guint32 time)
@@ -2213,7 +2260,7 @@ gboolean popuo_menu_GL(guint button, guint32 time)
 		gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, button, time);
 		return TRUE;
 	}
-	else printf("Erreur menu n'est pas un menu\n");
+	else printf(_("Error : I cannot show the menu!\n"));
 	return FALSE;
 }
 /*********************************************************************************************************************/
@@ -2229,7 +2276,5 @@ void rafresh_perspective_button()
 		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), perspective);
 
 	}
-	else
-		printf("C'est une autre widget\n");
 }
 /*********************************************************************************************************************/

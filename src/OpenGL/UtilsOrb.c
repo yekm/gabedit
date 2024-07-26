@@ -88,6 +88,7 @@ void InitializeAll()
  	EnerAlphaOrbitals = NULL;
 	TypeSelOrb = 1; 
 	NumSelOrb = -1;
+	free_objects_all();
 }
 /**********************************************/
 gdouble** CreateTable2(gint N)
@@ -221,11 +222,19 @@ gint get_type_file_orb(gchar *fileName)
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),fileName);
+  		Message(buffer,_("Error"),TRUE);
  		g_free(t);
   		return ktype;
  	}
+	if(0<get_one_int_from_fchk_gaussian_file(fd,"Number of atoms "))
+	{
+		ktype = GABEDIT_TYPEFILE_GAUSSIAN_FCHK;
+ 		g_free(t);
+		fclose(fd);
+		return ktype;
+	}
+	rewind(fd);
 	fgets(t,taille,fd);
 	g_strup(t);
         if(strstr(t, "ENTERING" ))
@@ -311,8 +320,8 @@ gint get_type_file_orb(gchar *fileName)
  	if(ktype==GABEDIT_TYPEFILE_UNKNOWN)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry,  I can not determine the type of '%s' file\n",fileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry,  I can not determine the type of '%s' file\n"),fileName);
+  		Message(buffer,_("Error"),TRUE);
  	}
 	return ktype;
         
@@ -336,8 +345,8 @@ gint get_type_basis_in_gamess_file(gchar *fileName)
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),fileName);
+  		Message(buffer,_("Error"),TRUE);
 
  		g_free(t);
   		return ktype;
@@ -380,8 +389,8 @@ gint get_type_basis_in_gaussian_file(gchar *fileName)
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),fileName);
+  		Message(buffer,_("Error"),TRUE);
 
  		g_free(t);
   		return ktype;
@@ -433,8 +442,8 @@ gint get_type_basis_in_qchem_file(gchar *fileName)
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),fileName);
+  		Message(buffer,_("Error"),TRUE);
 
  		g_free(t);
   		return ktype;
@@ -486,8 +495,8 @@ gint get_type_basis_in_gabedit_file(gchar *fileName)
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),fileName);
+  		Message(buffer,_("Error"),TRUE);
  		g_free(t);
   		return ktype;
  	}
@@ -526,8 +535,8 @@ gint get_type_basis_in_molden_file(gchar *fileName)
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),fileName);
+  		Message(buffer,_("Error"),TRUE);
  		g_free(t);
   		return ktype;
  	}
@@ -885,22 +894,22 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	/* first line , titles */
 	i = 0; j = 0;
 	j++;
-	add_label_at_table(Table, "Vx",(gushort)i,(gushort)j,GTK_JUSTIFY_CENTER);
+	add_label_at_table(Table, _("Vx"),(gushort)i,(gushort)j,GTK_JUSTIFY_CENTER);
 	j++;
-	add_label_at_table(Table, "Vy",(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
+	add_label_at_table(Table, _("Vy"),(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
 	j++;
-	add_label_at_table(Table, "Vz",(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
+	add_label_at_table(Table, _("Vz"),(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
 	j++;
-	add_label_at_table(Table, "Minimum",(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
+	add_label_at_table(Table, _("Minimum"),(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
 	j++;
-	add_label_at_table(Table, "Maximum",(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
+	add_label_at_table(Table, _("Maximum"),(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
 	j++;
-	add_label_at_table(Table, "Number of points",(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
+	add_label_at_table(Table, _("Number of points"),(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
 
 	/* First direction */
 	j = 0;
 	i++;
-	add_label_at_table(Table, "First direction ",(gushort)i,(gushort)j,GTK_JUSTIFY_LEFT);
+	add_label_at_table(Table, _("First direction "),(gushort)i,(gushort)j,GTK_JUSTIFY_LEFT);
 
 	j++;
 	entries[i-1][j-1] = gtk_entry_new ();
@@ -945,7 +954,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	/* Second direction */
 	j = 0;
 	i++;
-	add_label_at_table(Table, "Second direction ",(gushort)i,(gushort)j,GTK_JUSTIFY_LEFT);
+	add_label_at_table(Table, _("Second direction "),(gushort)i,(gushort)j,GTK_JUSTIFY_LEFT);
 
 	j++;
 	entries[i-1][j-1] = gtk_entry_new ();
@@ -991,7 +1000,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	/* Third direction */
 	j = 0;
 	i++;
-	add_label_at_table(Table, "Third direction ",(gushort)i,(gushort)j,GTK_JUSTIFY_LEFT);
+	add_label_at_table(Table, _("Third direction "),(gushort)i,(gushort)j,GTK_JUSTIFY_LEFT);
 
 	j++;
 	entries[i-1][j-1] = gtk_entry_new ();
@@ -1066,25 +1075,25 @@ void create_grid(gchar* title)
 
 	if(!GeomOrb)
 	{
-		Message("Sorry, Please load a file before\n","Error",TRUE);
+		Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!CoefAlphaOrbitals && TypeGrid != GABEDIT_TYPEGRID_MEP_CHARGES)
 	{
-		Message("Sorry, Please load the MO before\n","Error",TRUE);
+		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
 		return;
 	}
 	if(TypeGrid == GABEDIT_TYPEGRID_MEP_CHARGES)
 	{
 		gdouble s= GetSumAbsCharges();
-		if(s<1e-6) Message("Sorry, All partial charges are null\n","Error",TRUE);
+		if(s<1e-6) Message(_("Sorry, All partial charges are null\n"),_("Error"),TRUE);
 		return;
 	}
 
 	if(!AOAvailable &&(TypeGrid == GABEDIT_TYPEGRID_DDENSITY || TypeGrid == GABEDIT_TYPEGRID_ADENSITY))
 	{
-		Message("Sorry, No atomic orbitals available.\nPlease use a gabedit file for load : \n"
-		  "Geometry, Molecular and Atomic Orbitals\n","Error",TRUE);
+		Message(_("Sorry, No atomic orbitals available.\nPlease use a gabedit file for load : \n"
+		  "Geometry, Molecular and Atomic Orbitals\n"),_("Error"),TRUE);
 		return;
 	}
 	
@@ -1099,7 +1108,7 @@ void create_grid(gchar* title)
 
 	vboxall = create_vbox(Win);
 	vboxwin = vboxall;
-	frame = create_grid_frame(vboxall,"Box & Grid");
+	frame = create_grid_frame(vboxall,_("Box & Grid"));
 	entries = (GtkWidget**) g_object_get_data (G_OBJECT (frame), "Entries");
 	g_object_set_data (G_OBJECT (Win), "Entries",entries);
    
@@ -1107,14 +1116,14 @@ void create_grid(gchar* title)
 	hbox = create_hbox_false(vboxwin);
 	gtk_widget_realize(Win);
 
-	button = create_button(Win,"Cancel");
+	button = create_button(Win,_("Cancel"));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, G_OBJECT(Win));
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,G_OBJECT(Win));
 	gtk_widget_show (button);
 
-	button = create_button(Win,"OK");
+	button = create_button(Win,_("OK"));
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
@@ -1171,7 +1180,7 @@ void applyelfdens(GtkWidget *Win,gpointer data)
 			}
 			else
 			{
-				GtkWidget* message = Message("Error : one entry is not a float ","Error",TRUE);
+				GtkWidget* message = Message(_("Error : one entry is not a float "),_("Error"),TRUE);
   				gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 				return;
 			}
@@ -1181,7 +1190,7 @@ void applyelfdens(GtkWidget *Win,gpointer data)
 		NumPointstmp[i] = atoi(temp);
 		if(NumPointstmp[i] <=2)
 		{
-			GtkWidget* message = Message("Error : The number of points should be > 2. ","Error",TRUE);
+			GtkWidget* message = Message(_("Error : The number of points should be > 2. "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -1192,7 +1201,7 @@ void applyelfdens(GtkWidget *Win,gpointer data)
 	{
 		if( limitstmp.MinMax[0][i]> limitstmp.MinMax[1][i])
 		{
-			GtkWidget* message = Message("Error :  The minimal value should be smaller than the maximal value ","Error",TRUE);
+			GtkWidget* message = Message(_("Error :  The minimal value should be smaller than the maximal value "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -1217,7 +1226,7 @@ void applyelfdens(GtkWidget *Win,gpointer data)
 			}
 			else
 			{
-				GtkWidget* message = Message("Error : one entry is not a float ","Error",TRUE);
+				GtkWidget* message = Message(_("Error : one entry is not a float "),_("Error"),TRUE);
   				gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 				return;
 			}
@@ -1232,7 +1241,7 @@ void applyelfdens(GtkWidget *Win,gpointer data)
 			norm += V[i][j]*V[i][j];
 		if(fabs(norm)<1e-8)
 		{
-			GtkWidget* message = Message("Error : the norm is equal to 0 ","Error",TRUE);
+			GtkWidget* message = Message(_("Error : the norm is equal to 0 "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -1280,30 +1289,30 @@ void create_grid_ELF_Dens_analyze(gboolean ongrid)
 
 	if(!GeomOrb)
 	{
-		Message("Sorry, Please load a file before\n","Error",TRUE);
+		Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!CoefAlphaOrbitals && TypeGrid != GABEDIT_TYPEGRID_MEP_CHARGES)
 	{
-		Message("Sorry, Please load the MO before\n","Error",TRUE);
+		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
 		return;
 	}
 	if(TypeGrid == GABEDIT_TYPEGRID_MEP_CHARGES)
 	{
 		gdouble s= GetSumAbsCharges();
-		if(s<1e-6) Message("Sorry, All partial charges are null\n","Error",TRUE);
+		if(s<1e-6) Message(_("Sorry, All partial charges are null\n"),_("Error"),TRUE);
 		return;
 	}
 
 	if(!AOAvailable &&(TypeGrid == GABEDIT_TYPEGRID_DDENSITY || TypeGrid == GABEDIT_TYPEGRID_ADENSITY))
 	{
-		Message("Sorry, No atomic orbitals available.\nPlease use a gabedit file for load : \n"
-		  "Geometry, Molecular and Atomic Orbitals\n","Error",TRUE);
+		Message(_("Sorry, No atomic orbitals available.\nPlease use a gabedit file for load : \n"
+		  "Geometry, Molecular and Atomic Orbitals\n"),_("Error"),TRUE);
 		return;
 	}
 	
 	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(Win),"ELF Attractors");
+	gtk_window_set_title(GTK_WINDOW(Win),_("ELF Attractors"));
 	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
 	gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
 	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(PrincipalWindow));
@@ -1313,7 +1322,7 @@ void create_grid_ELF_Dens_analyze(gboolean ongrid)
 
 	vboxall = create_vbox(Win);
 	vboxwin = vboxall;
-	frame = create_grid_frame(vboxall,"Box & Grid");
+	frame = create_grid_frame(vboxall,_("Box & Grid"));
 	entries = (GtkWidget**) g_object_get_data (G_OBJECT (frame), "Entries");
 	g_object_set_data (G_OBJECT (Win), "Entries",entries);
 	g_object_set_data (G_OBJECT (Win), "OnGrid",GINT_TO_POINTER(ongrid));
@@ -1322,14 +1331,14 @@ void create_grid_ELF_Dens_analyze(gboolean ongrid)
 	hbox = create_hbox_false(vboxwin);
 	gtk_widget_realize(Win);
 
-	button = create_button(Win,"Cancel");
+	button = create_button(Win,_("Cancel"));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, G_OBJECT(Win));
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,G_OBJECT(Win));
 	gtk_widget_show (button);
 
-	button = create_button(Win,"OK");
+	button = create_button(Win,_("OK"));
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
@@ -1372,7 +1381,7 @@ gint get_number_of_point(GtkWidget* Entry)
 	}
 	if(t && !this_is_a_integer(t))
 	{
-		GtkWidget* win = Message("Error : The number of points should be integer. ","Error",TRUE);
+		GtkWidget* win = Message(_("Error : The number of points should be integer. "),_("Error"),TRUE);
   		gtk_window_set_modal (GTK_WINDOW (win), TRUE);
 		g_free(t);
 		return -1;
@@ -1381,7 +1390,7 @@ gint get_number_of_point(GtkWidget* Entry)
 	N = atoi(temp);
 	if(N<=0)
 	{
-		GtkWidget* win = Message("Error : The number of points should be positive. ","Error",TRUE);
+		GtkWidget* win = Message(_("Error : The number of points should be positive. "),_("Error"),TRUE);
   		gtk_window_set_modal (GTK_WINDOW (win), TRUE);
 		return -1;
 	}
@@ -1401,13 +1410,13 @@ gboolean get_a_float(GtkWidget* Entry,gdouble* value, gchar* errorMessage)
 	}
 	else
 	{
-		GtkWidget* win = Message(errorMessage,"Error",TRUE);
+		GtkWidget* win = Message(errorMessage,_("Error"),TRUE);
   		gtk_window_set_modal (GTK_WINDOW (win), TRUE);
 		return FALSE;
 	}
 	if(t && !this_is_a_real(t))
 	{
-		GtkWidget* win = Message(errorMessage,"Error",TRUE);
+		GtkWidget* win = Message(errorMessage,_("Error"),TRUE);
 		g_free(t);
   		gtk_window_set_modal (GTK_WINDOW (win), TRUE);
 		return FALSE;
@@ -1759,7 +1768,7 @@ static void applygridsas(GtkWidget *Win,gpointer data)
 			}
 			else
 			{
-				GtkWidget* message = Message("Error : one entry is not a float ","Error",TRUE);
+				GtkWidget* message = Message(_("Error : one entry is not a float "),_("Error"),TRUE);
   				gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 				return;
 			}
@@ -1769,7 +1778,7 @@ static void applygridsas(GtkWidget *Win,gpointer data)
 		NumPointstmp[i] = atoi(temp);
 		if(NumPointstmp[i] <=2)
 		{
-			GtkWidget* message = Message("Error : The number of points should be > 2. ","Error",TRUE);
+			GtkWidget* message = Message(_("Error : The number of points should be > 2. "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -1791,7 +1800,7 @@ static void applygridsas(GtkWidget *Win,gpointer data)
 		}
 		else
 		{
-			GtkWidget* message = Message("Error : The solvent radius should be a float ","Error",TRUE);
+			GtkWidget* message = Message(_("Error : The solvent radius should be a float "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -1802,7 +1811,7 @@ static void applygridsas(GtkWidget *Win,gpointer data)
 	{
 		if( limitstmp.MinMax[0][i]> limitstmp.MinMax[1][i])
 		{
-			GtkWidget* message = Message("Error :  The minimal value should be smaller than the maximal value ","Error",TRUE);
+			GtkWidget* message = Message(_("Error :  The minimal value should be smaller than the maximal value "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -1827,7 +1836,7 @@ static void applygridsas(GtkWidget *Win,gpointer data)
 			}
 			else
 			{
-				GtkWidget* message = Message("Error : one entry is not a float ","Error",TRUE);
+				GtkWidget* message = Message(_("Error : one entry is not a float "),_("Error"),TRUE);
   				gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 				return;
 			}
@@ -1842,7 +1851,7 @@ static void applygridsas(GtkWidget *Win,gpointer data)
 			norm += V[i][j]*V[i][j];
 		if(fabs(norm)<1e-8)
 		{
-			GtkWidget* message = Message("Error : the norm is equal to 0 ","Error",TRUE);
+			GtkWidget* message = Message(_("Error : the norm is equal to 0 "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -1911,22 +1920,22 @@ static GtkWidget *create_grid_sas_frame( GtkWidget *vboxall,gchar* title)
 	/* first line , titles */
 	i = 0; j = 0;
 	j++;
-	add_label_at_table(Table, "Vx",(gushort)i,(gushort)j,GTK_JUSTIFY_CENTER);
+	add_label_at_table(Table, _("Vx"),(gushort)i,(gushort)j,GTK_JUSTIFY_CENTER);
 	j++;
-	add_label_at_table(Table, "Vy",(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
+	add_label_at_table(Table, _("Vy"),(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
 	j++;
-	add_label_at_table(Table, "Vz",(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
+	add_label_at_table(Table, _("Vz"),(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
 	j++;
-	add_label_at_table(Table, "Minimum",(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
+	add_label_at_table(Table, _("Minimum"),(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
 	j++;
-	add_label_at_table(Table, "Maximum",(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
+	add_label_at_table(Table, _("Maximum"),(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
 	j++;
-	add_label_at_table(Table, "Number of points",(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
+	add_label_at_table(Table, _("Number of points"),(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
 
 	/* First direction */
 	j = 0;
 	i++;
-	add_label_at_table(Table, "First direction ",(gushort)i,(gushort)j,GTK_JUSTIFY_LEFT);
+	add_label_at_table(Table, _("First direction "),(gushort)i,(gushort)j,GTK_JUSTIFY_LEFT);
 
 	j++;
 	entries[i-1][j-1] = gtk_entry_new ();
@@ -1971,7 +1980,7 @@ static GtkWidget *create_grid_sas_frame( GtkWidget *vboxall,gchar* title)
 	/* Second direction */
 	j = 0;
 	i++;
-	add_label_at_table(Table, "Second direction ",(gushort)i,(gushort)j,GTK_JUSTIFY_LEFT);
+	add_label_at_table(Table, _("Second direction "),(gushort)i,(gushort)j,GTK_JUSTIFY_LEFT);
 
 	j++;
 	entries[i-1][j-1] = gtk_entry_new ();
@@ -2017,7 +2026,7 @@ static GtkWidget *create_grid_sas_frame( GtkWidget *vboxall,gchar* title)
 	/* Third direction */
 	j = 0;
 	i++;
-	add_label_at_table(Table, "Third direction ",(gushort)i,(gushort)j,GTK_JUSTIFY_LEFT);
+	add_label_at_table(Table, _("Third direction "),(gushort)i,(gushort)j,GTK_JUSTIFY_LEFT);
 
 	j++;
 	entries[i-1][j-1] = gtk_entry_new ();
@@ -2117,7 +2126,7 @@ void create_grid_sas(gchar* title)
 
 	if(!GeomOrb)
 	{
-		Message("Sorry, Please load a file before\n","Error",TRUE);
+		Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
 		return;
 	}
 	
@@ -2132,7 +2141,7 @@ void create_grid_sas(gchar* title)
 
 	vboxall = create_vbox(Win);
 	vboxwin = vboxall;
-	frame = create_grid_sas_frame(vboxall,"Box & Grid & Solvent radius");
+	frame = create_grid_sas_frame(vboxall,_("Box & Grid & Solvent radius"));
 	entries = (GtkWidget**) g_object_get_data (G_OBJECT (frame), "Entries");
 	g_object_set_data (G_OBJECT (Win), "Entries",entries);
    
@@ -2140,14 +2149,14 @@ void create_grid_sas(gchar* title)
 	hbox = create_hbox_false(vboxwin);
 	gtk_widget_realize(Win);
 
-	button = create_button(Win,"Cancel");
+	button = create_button(Win,_("Cancel"));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, G_OBJECT(Win));
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,G_OBJECT(Win));
 	gtk_widget_show (button);
 
-	button = create_button(Win,"OK");
+	button = create_button(Win,_("OK"));
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
@@ -2240,7 +2249,7 @@ void set_scale_ball_stick_dlg()
 	GtkWidget *entryStick;
 
 	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(Win),"Scale Ball&Stick");
+	gtk_window_set_title(GTK_WINDOW(Win),_("Scale Ball&Stick"));
 	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
 	gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
 	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
@@ -2257,28 +2266,28 @@ void set_scale_ball_stick_dlg()
 	table = gtk_table_new(2,3,FALSE);
 	gtk_container_add(GTK_CONTAINER(vboxframe),table);
 
-	entryBall = add_entry_scale(table, "Scale Ball", 0,getScaleBall());
+	entryBall = add_entry_scale(table, _("Scale Ball"), 0,getScaleBall());
 	g_object_set_data (G_OBJECT (Win), "EntryBall",entryBall);
-	entryStick = add_entry_scale(table, "Scale Stick", 1,getScaleStick());
+	entryStick = add_entry_scale(table, _("Scale Stick"), 1,getScaleStick());
 	g_object_set_data (G_OBJECT (Win), "EntryStick",entryStick);
 
 	hbox = create_hbox_false(vboxall);
 	gtk_widget_realize(Win);
 
-	button = create_button(Win,"OK");
+	button = create_button(Win,_("OK"));
 	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_set_scale_ball_stick_close,G_OBJECT(Win));
 
-	button = create_button(Win,"Apply");
+	button = create_button(Win,_("Apply"));
 	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_show (button);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_set_scale_ball_stick,G_OBJECT(Win));
 
-	button = create_button(Win,"Cancel");
+	button = create_button(Win,_("Cancel"));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, G_OBJECT(Win));
@@ -2474,7 +2483,7 @@ static void createColorMapOptionsFrame(GtkWidget* dialogWindow, GtkWidget *box)
 	color.red = 65535;
 	color.green = 65535;
 	color.blue = 65535;
-	frame = gtk_frame_new ("Color mapping type");
+	frame = gtk_frame_new (_("Color mapping type"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -2487,12 +2496,12 @@ static void createColorMapOptionsFrame(GtkWidget* dialogWindow, GtkWidget *box)
 
 	i = 0;
 	button =  NULL;
-	button = addRadioButtonColorMapToATable(table, button, "Multi color", i, 0,1);
+	button = addRadioButtonColorMapToATable(table, button, _("Multi color"), i, 0,1);
 	if(colorMapType == 1) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
 	g_object_set_data(G_OBJECT (dialogWindow), "ButtonMultiColor",button);
 
 	i = 1;
-	button = addRadioButtonColorMapToATable(table, button, "2 colors", i, 0,1);
+	button = addRadioButtonColorMapToATable(table, button, _("2 colors"), i, 0,1);
 	if(colorMapType == 2) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
 	g_object_set_data(G_OBJECT (dialogWindow), "Button2Colors",button);
 
@@ -2517,7 +2526,7 @@ static void createColorMapOptionsFrame(GtkWidget* dialogWindow, GtkWidget *box)
 	g_object_set_data(G_OBJECT (dialogWindow), "Selector2Colors2",selector);
 
 	i = 2;
-	button = addRadioButtonColorMapToATable(table, button, "Unicolor", i, 0,1);
+	button = addRadioButtonColorMapToATable(table, button, _("Unicolor"), i, 0,1);
 	if(colorMapType == 3) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
 
 	color.red = (gushort)(colorMapColors[2][0]*65535);
@@ -2543,7 +2552,7 @@ void createColorMapOptionsWindow(GtkWidget* win)
 	 
 	dialogWindow = gtk_dialog_new();
 	gtk_widget_realize(GTK_WIDGET(dialogWindow));
-	sprintf(title, "Color Mapping options");
+	sprintf(title, _("Color Mapping options"));
 	gtk_window_set_title(GTK_WINDOW(dialogWindow),title);
 
 	gtk_window_set_modal (GTK_WINDOW (dialogWindow), TRUE);
@@ -2563,18 +2572,18 @@ void createColorMapOptionsWindow(GtkWidget* win)
 	createColorMapOptionsFrame(dialogWindow,hbox);
 	gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(dialogWindow)->action_area), TRUE);
 
-	button = create_button(dialogWindow,"Close");
+	button = create_button(dialogWindow,_("Close"));
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(dialogWindow)->action_area), button, FALSE, TRUE, 5);	
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)destroy_button_windows, GTK_OBJECT(dialogWindow));
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(dialogWindow));
 
-	button = create_button(dialogWindow,"Apply");
+	button = create_button(dialogWindow,_("Apply"));
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(dialogWindow)->action_area), button, FALSE, TRUE, 5);	
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)applyColorMapOptions, GTK_OBJECT(dialogWindow));
 
-	button = create_button(dialogWindow,"OK");
+	button = create_button(dialogWindow,_("OK"));
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(dialogWindow)->action_area), button, FALSE, TRUE, 5);	
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
@@ -2614,7 +2623,7 @@ static void set_alphaFED(GtkWidget *button,gpointer data)
 	}
 	else
 	{
-		GtkWidget* message = Message("Error : alpha should be a real between 0 and 100 ","Error",TRUE);
+		GtkWidget* message = Message(_("Error : alpha should be a real between 0 and 100 "),_("Error"),TRUE);
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		if(dump) g_free(dump);
 		gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(Win));
@@ -2654,7 +2663,7 @@ GtkWidget* set_alphaFED_dialog ()
 
 	fp = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_modal(GTK_WINDOW(fp),TRUE);
-	gtk_window_set_title(GTK_WINDOW(fp),"Set alpha for FED calculation");
+	gtk_window_set_title(GTK_WINDOW(fp),_("Set alpha for FED calculation"));
 	gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
 
 	gtk_window_set_position(GTK_WINDOW(fp),GTK_WIN_POS_CENTER);
@@ -2692,13 +2701,13 @@ GtkWidget* set_alphaFED_dialog ()
 
 	hbox = create_hbox(vboxall);
 
-	button = create_button(PrincipalWindow,"OK");
+	button = create_button(PrincipalWindow,_("OK"));
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
 	g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(set_alphaFED),(gpointer)entry);
 	g_object_set_data (G_OBJECT (button), "Win", fp);
 	gtk_widget_show (button);
 
-	button = create_button(PrincipalWindow,"Cancel");
+	button = create_button(PrincipalWindow,_("Cancel"));
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_widget_destroy),GTK_OBJECT(fp));
 

@@ -121,7 +121,7 @@ void	runQuasiNewton(QuasiNewton* quasiNewton)
 					forceField->molecule.gradient[j][i]
 					*forceField->molecule.gradient[j][i]; 
 
-			sprintf(str,"Gradient = %f energy = %f ",sqrt(gradientNorm),energy); 
+			sprintf(str,_("Gradient = %f energy = %f "),sqrt(gradientNorm),energy); 
 			redrawMolecule(&forceField->molecule,str);
 			updateNumber = 0;
 		}
@@ -136,7 +136,7 @@ void	runQuasiNewton(QuasiNewton* quasiNewton)
 			forceField->molecule.gradient[j][i]
 			*forceField->molecule.gradient[j][i]; 
 
-	sprintf(str,"Gradient = %f energy = %f ",sqrt(gradientNorm),energy); 
+	sprintf(str,_("Gradient = %f energy = %f "),sqrt(gradientNorm),energy); 
 	redrawMolecule(&forceField->molecule,str);
 	g_free(diag);
 	g_free(x);
@@ -422,7 +422,7 @@ void mcsrch ( gint n , gdouble x[] , gdouble f , gdouble g[] ,
 
 		if ( dginit >= 0 )
 		{
-			printf( "The search direction is not a descent direction." );
+			printf(_("The search direction is not a descent direction."));
 			return;
 		}
 
@@ -763,14 +763,16 @@ static gint lbfgs(
 		if ( n <= 0 || m <= 0 )
 		{
 			iflag[0]= -3;
-			printf("Improper input parameters  (n or m are not positive.)" );
+			printf(_("Improper input parameters  (n or m are not positive.)") );
 		}
 
 		if ( gtol <= 0.0001 )
 		{
 			printf(
+				_(
 				"lbfgs: gtol is less than or equal to 0.0001."
 				"It has been reset to 0.9."
+				)
 			      );
 			gtol= 0.9;
 		}
@@ -786,8 +788,10 @@ static gint lbfgs(
 				{
 					iflag[0]=-2;
 					printf(
+						_(
 						"The %d-th diagonal element of the inverse"
-						" hessian approximation is not positive.",i
+						" hessian approximation is not positive.")
+						,i
 					      );
 				}
 			}
@@ -850,10 +854,11 @@ static gint lbfgs(
 						{
 							iflag[0]=-2;
 							printf(
+							_(
 							"The %d-th diagonal element"
 							" of the inverse hessian approximation"
-							" is not positive.",
-							i);
+							" is not positive.")
+							, i);
 						}
 					}
 				}
@@ -919,11 +924,12 @@ static gint lbfgs(
 		{
 			iflag[0]=-1;
 			printf(
+			_(
 			"Line search failed. See documentation of routine mcsrch.\n"
 			" Error return of line search: info = %d Possible causes:\n"
-			" function or gradient are incorrect, or incorrect tolerances.\n",
-			info[0]
-			);
+			" function or gradient are incorrect, or incorrect tolerances.\n"
+			)
+			,info[0]);
 			return 0;
 		}
 

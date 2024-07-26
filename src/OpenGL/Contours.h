@@ -33,6 +33,7 @@ void contour_point_free(Contours contours);
 Contours get_contours(Grid* plansgrid,gdouble value,gint i0,gint i1,gint numplan);
 void create_contours(gchar* title,gint type);
 void create_contours_plane(gchar* title);
+void create_contours_isosurface();
 
 #endif /* __GABEDIT_CONTOURS_H__ */
 

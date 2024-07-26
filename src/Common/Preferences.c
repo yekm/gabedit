@@ -1001,7 +1001,7 @@ void set_font_other (gchar *fontname)
 	else
 	{
 		gchar* temp= NULL;
-                temp = g_strdup_printf("Unknown font,\n%s\nPlease select a other\n",fontname);
+                temp = g_strdup_printf(N_("Unknown font,\n%s\nPlease select a other\n"),fontname);
 		Message(temp,"ERROR",TRUE);
 		g_free(temp);
 	}
@@ -1066,12 +1066,12 @@ static void open_font_dlg(GtkWidget *button,gpointer tdata)
 {
 
 	GtkFontSelectionDialog *FontDlg;
-	FontDlg = (GtkFontSelectionDialog *)gtk_font_selection_dialog_new("Font selection");
+	FontDlg = (GtkFontSelectionDialog *)gtk_font_selection_dialog_new(_("Font selection"));
         gtk_window_set_position(GTK_WINDOW(FontDlg),GTK_WIN_POS_CENTER);
 
 	if(!instal)
 	{
-		add_child(Wins, GTK_WIDGET(FontDlg), gtk_widget_destroy, " Font selction ");
+		add_child(Wins, GTK_WIDGET(FontDlg), gtk_widget_destroy, _(" Font selction "));
 		g_signal_connect(G_OBJECT(FontDlg),"delete_event",(GCallback)delete_child,NULL);
 	}
 	else
@@ -1158,7 +1158,7 @@ static void open_color_dlg(GtkWidget *button,gpointer tcolor)
 {
 
 	GtkColorSelectionDialog *ColorDlg;
-	ColorDlg = (GtkColorSelectionDialog *)gtk_color_selection_dialog_new("Set Atom Color");
+	ColorDlg = (GtkColorSelectionDialog *)gtk_color_selection_dialog_new(_("Set Atom Color"));
 	if(tcolor)
 	{
 		GdkColor* color = (GdkColor*)tcolor;
@@ -1168,7 +1168,7 @@ static void open_color_dlg(GtkWidget *button,gpointer tcolor)
 
 	if(!instal)
 	{
-		add_child(Wins,GTK_WIDGET(ColorDlg),gtk_widget_destroy," Set Color ");
+		add_child(Wins,GTK_WIDGET(ColorDlg),gtk_widget_destroy,_(" Set Color "));
 		g_signal_connect(G_OBJECT(ColorDlg),"delete_event",(GCallback)delete_child,NULL);
 	}
 	else
@@ -1245,7 +1245,7 @@ void add_frame_label(GtkWidget *hboxall)
   vbox = create_vbox(frame);
   gtk_container_add(GTK_CONTAINER(vbox),table);
 
-  add_label_table(table," Default font          ",0,0);
+  add_label_table(table,_(" Default font          "),0,0);
   add_label_table(table," : ",0,1);
 
   hboxbutton = gtk_hbox_new (TRUE, 0);
@@ -1263,7 +1263,7 @@ void add_frame_label(GtkWidget *hboxall)
   type = g_strdup_printf("%s",tlabel);
   g_object_set_data(G_OBJECT (button), "Type", type);                                                                                    
 
-  add_label_table(table," Foreground color ",1,0);
+  add_label_table(table,_(" Foreground color "),1,0);
   add_label_table(table," : ",1,1);
 
   hboxbutton = gtk_hbox_new (FALSE, 0);
@@ -1275,45 +1275,6 @@ void add_frame_label(GtkWidget *hboxall)
   g_object_set_data(G_OBJECT (button), "Type", type);
 
 }
-/********************************************************************************/
-/*
-void add_frame_other(GtkWidget *hboxall)
-{
-  GtkWidget *vbox;
-  GtkWidget *frame;
-  GtkWidget *button;
-  GtkWidget *label;
-  GtkWidget *hboxbutton;
-  gchar *type;
-  gchar *tfont;
-  gchar *tlabel = g_strdup("Other");
-  GtkWidget *table = gtk_table_new(1,3,FALSE);
-
-
-  frame = create_frame(Wins,hboxall,tlabel); 
-  vbox = create_vbox(frame);
-  gtk_container_add(GTK_CONTAINER(vbox),table);
-
-  add_label_table(table," Default font          ",0,0);
-  add_label_table(table," : ",0,1);
-
-  hboxbutton = gtk_hbox_new (TRUE, 0);
-  gtk_widget_set_size_request(GTK_WIDGET(hboxbutton), -1,  (gint)(ScreenHeight/50));
-
-  tfont = g_strdup(FontsStyleOther.fontname);
-  label = gtk_label_new(tfont);
-  button = gtk_button_new();
-  gtk_container_add(GTK_CONTAINER(hboxbutton),label);
-  gtk_container_add(GTK_CONTAINER(button),hboxbutton);
-  g_object_set_data(G_OBJECT (button), "Hbox", hboxbutton);
-
-  add_widget_table(table,button,0,2);
-  g_signal_connect(G_OBJECT(button), "clicked",(GCallback)open_font_dlg,(gpointer)tfont);
-  type = g_strdup_printf("%s",tlabel);
-  g_object_set_data(G_OBJECT (button), "Type", type);                                                                                    
-
-}
-*/
 /********************************************************************************/
 void add_frame_data_result(GtkWidget *hboxall,gchar *tlabel)
 {
@@ -1352,7 +1313,7 @@ void add_frame_data_result(GtkWidget *hboxall,gchar *tlabel)
   g_object_set_data(G_OBJECT (button), "Type", type);
                                                                                     
 
-  add_label_table(table," Background color ",1,0);
+  add_label_table(table,_(" Background color "),1,0);
   add_label_table(table," : ",1,1);
   if(strstr(tlabel,"Data"))
   {
@@ -1370,7 +1331,7 @@ void add_frame_data_result(GtkWidget *hboxall,gchar *tlabel)
   type = g_strdup_printf("%s_Back",tlabel);
   g_object_set_data(G_OBJECT (button), "Type", type);
 
-  add_label_table(table," Foreground color ",2,0);
+  add_label_table(table,_(" Foreground color "),2,0);
   add_label_table(table," : ",2,1);
 
   if(strstr(tlabel,"Data"))
@@ -1400,11 +1361,11 @@ void  create_font_color(GtkWidget *Wins,GtkWidget *Frame)
 
   hboxall = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hboxall, FALSE, FALSE, 1);
-  add_frame_data_result(hboxall," Data ");
+  add_frame_data_result(hboxall,_(" Data "));
 
   hboxall = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hboxall, FALSE, FALSE, 1);
-  add_frame_data_result(hboxall," Result ");
+  add_frame_data_result(hboxall,_(" Result "));
 
   hboxall = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hboxall, FALSE, FALSE, 1);
@@ -1431,11 +1392,11 @@ void  create_font_color_in_box(GtkWidget *Win,GtkWidget *Box)
 
   hboxall = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hboxall, FALSE, FALSE, 1);
-  add_frame_data_result(hboxall," Data ");
+  add_frame_data_result(hboxall,_(" Data "));
 
   hboxall = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hboxall, FALSE, FALSE, 1);
-  add_frame_data_result(hboxall," Result ");
+  add_frame_data_result(hboxall,_(" Result "));
 
   hboxall = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hboxall, FALSE, FALSE, 1);
@@ -1572,7 +1533,7 @@ void  create_batch_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   gint i;
 
 
-  frame = gtk_frame_new ("Batch Commands");
+  frame = gtk_frame_new (_("Batch Commands"));
   gtk_widget_show (frame);
   gtk_box_pack_start (GTK_BOX (vbox), frame, expand, expand, 0);
   gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -1584,7 +1545,7 @@ void  create_batch_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 
 /* ------------------------------------------------------------------*/
   i = 0;
-  add_label_table(table," Batch Type ",(gushort)i,0);
+  add_label_table(table,_(" Batch Type "),(gushort)i,0);
   add_label_table(table," : ",(gushort)i,1);
 
   combo = create_combo_box_entry(batchCommands.types,batchCommands.numberOfTypes,TRUE,-1,-1);
@@ -1594,7 +1555,7 @@ void  create_batch_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   gtk_entry_set_text (GTK_ENTRY (EntryBatchType),NameTypeBatch);
 /* ------------------------------------------------------------------*/
   i = 1;
-  add_label_table(table," Command for list of all Job ",(gushort)i,0);
+  add_label_table(table,_(" Command for list of all Job "),(gushort)i,0);
   add_label_table(table," : ",(gushort)i,1);
   entry = gtk_entry_new();
   add_widget_table(table,entry,(gushort)i,2);
@@ -1605,7 +1566,7 @@ void  create_batch_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   g_signal_connect(G_OBJECT (entry), "changed", (GCallback)modify_batch_command,EntryBatchType);
 /* ------------------------------------------------------------------*/
   i = 2;
-  add_label_table(table," Command for list of user Job ",(gushort)i,0);
+  add_label_table(table,N_(" Command for list of user Job "),(gushort)i,0);
   add_label_table(table," : ",(gushort)i,1);
   entry = gtk_entry_new();
   add_widget_table(table,entry,(gushort)i,2);
@@ -1616,7 +1577,7 @@ void  create_batch_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   g_signal_connect(G_OBJECT (entry), "changed", (GCallback)modify_batch_command,EntryBatchType);
 /* ------------------------------------------------------------------*/
   i = 3;
-  add_label_table(table," Command for kill a Job ",(gushort)i,0);
+  add_label_table(table,_(" Command for kill a Job "),(gushort)i,0);
   add_label_table(table," : ",(gushort)i,1);
   entry = gtk_entry_new();
   add_widget_table(table,entry,(gushort)i,2);
@@ -1627,7 +1588,7 @@ void  create_batch_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   g_signal_connect(G_OBJECT (entry), "changed", (GCallback)modify_batch_command,EntryBatchType);
 /* ------------------------------------------------------------------*/
   i = 4;
-  add_label_table(table," Title for Job id ",(gushort)i,0);
+  add_label_table(table,_(" Title for Job id "),(gushort)i,0);
   add_label_table(table," : ",(gushort)i,1);
   entry = gtk_entry_new();
   add_widget_table(table,entry,(gushort)i,2);
@@ -1670,7 +1631,7 @@ static void set_entry_babel_selction(GtkWidget* entry)
 {
   GtkWidget *SelFile;
 
-  SelFile = gabedit_file_chooser_new("File chooser", GTK_FILE_CHOOSER_ACTION_OPEN);
+  SelFile = gabedit_file_chooser_new(_("File chooser"), GTK_FILE_CHOOSER_ACTION_OPEN);
   gtk_window_set_modal (GTK_WINDOW (SelFile), TRUE);
   gabedit_file_chooser_hide_hidden(GABEDIT_FILE_CHOOSER(SelFile));
   g_signal_connect(G_OBJECT(SelFile),"delete_event", (GCallback)gtk_widget_destroy,NULL);
@@ -1703,7 +1664,7 @@ static void set_entry_gamessdir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_gamessDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(set_entry_gamessdir, "Select Gamess folder", GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selctionOfDir(set_entry_gamessdir, _("Select Gamess folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -1737,7 +1698,7 @@ static void set_entry_orcadir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_orcaDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(set_entry_orcadir, "Select Orca folder", GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selctionOfDir(set_entry_orcadir, _("Select Orca folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -1771,7 +1732,7 @@ static void set_entry_fireflydir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_fireflyDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(set_entry_fireflydir, "Select FireFly folder", GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selctionOfDir(set_entry_fireflydir, _("Select FireFly folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -1805,7 +1766,7 @@ static void set_entry_mopacdir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_mopacDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(set_entry_mopacdir, "Select Mopac folder", GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selctionOfDir(set_entry_mopacdir, _("Select Mopac folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -1839,7 +1800,7 @@ static void set_entry_povraydir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_povrayDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(set_entry_povraydir, "Select PovRay folder", GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selctionOfDir(set_entry_povraydir, _("Select PovRay folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -1873,7 +1834,7 @@ static void set_entry_gaussdir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_gaussDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(set_entry_gaussdir, "Select Gaussian folder", GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selctionOfDir(set_entry_gaussdir, _("Select Gaussian folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -1894,7 +1855,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   GtkWidget *combo;
   GtkWidget *button;
 
-  frame = gtk_frame_new ("Commands for execute Gaussian, Molcas, Molpro, MPQC, FireFly, Q-Chem or Babel");
+  frame = gtk_frame_new (_("Commands for execute Gaussian, Molcas, Molpro, MPQC, FireFly, Q-Chem or Babel"));
   gtk_widget_show (frame);
   gtk_box_pack_start (GTK_BOX (vbox), frame, expand, expand, 0);
   gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -1906,7 +1867,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new ("Command for execute Gamess : ");
+  label = gtk_label_new (_("Command for execute Gamess : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(gamessCommands.commands,gamessCommands.numberOfCommands,TRUE,-1,-1);
@@ -1918,14 +1879,14 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 			(GCallback)modify_gamess_command,
 			NULL);
 
-  button = create_button(Wins,"  Remove from list  ");
+  button = create_button(Wins,_("  Remove from list  "));
   ButtonGamess = button;
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   if(gamessCommands.numberOfCommands<2)
   	gtk_widget_set_sensitive(button, FALSE);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(remove_gamess_command),NULL);
 
-  button = create_button(Wins,"  Help  ");
+  button = create_button(Wins,_("  Help  "));
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(help_commands),NULL);
 /* ------------------------------------------------------------------*/
@@ -1936,7 +1897,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new ("Command for execute Gaussian : ");
+  label = gtk_label_new (_("Command for execute Gaussian : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(gaussianCommands.commands,gaussianCommands.numberOfCommands,TRUE,-1,-1);
@@ -1948,13 +1909,13 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 			(GCallback)modify_gaussian_command,
 			NULL);
 
-  button = create_button(Wins,"  Remove from list  ");
+  button = create_button(Wins,_("  Remove from list  "));
   ButtonGaussian = button;
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   if(gaussianCommands.numberOfCommands<2) gtk_widget_set_sensitive(button, FALSE);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(remove_gaussian_command),NULL);
 
-  button = create_button(Wins,"  Help  ");
+  button = create_button(Wins,_("  Help  "));
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(help_commands),NULL);
 /* ------------------------------------------------------------------*/
@@ -1964,7 +1925,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new ("Command for execute Molpro    : ");
+  label = gtk_label_new (_("Command for execute Molpro    : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(molproCommands.commands,molproCommands.numberOfCommands,TRUE,-1,-1);
@@ -1975,14 +1936,14 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   g_signal_connect(G_OBJECT (EntryMolpro), "activate",
 			(GCallback)modify_molpro_command,
 			NULL);
-  button = create_button(Wins,"  Remove from list  ");
+  button = create_button(Wins,_("  Remove from list  "));
   ButtonMolpro = button;
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   if(molproCommands.numberOfCommands<2)
   	gtk_widget_set_sensitive(button, FALSE);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(remove_molpro_command),NULL);
 
-  button = create_button(Wins,"  Help  ");
+  button = create_button(Wins,_("  Help  "));
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(help_commands),NULL);
 /* ------------------------------------------------------------------*/
@@ -1992,7 +1953,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new ("Command for execute Molcas    : ");
+  label = gtk_label_new (_("Command for execute Molcas    : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(molcasCommands.commands,molcasCommands.numberOfCommands,TRUE,-1,-1);
@@ -2003,14 +1964,14 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   g_signal_connect(G_OBJECT (EntryMolcas), "activate",
 			(GCallback)modify_molcas_command,
 			NULL);
-  button = create_button(Wins,"  Remove from list  ");
+  button = create_button(Wins,_("  Remove from list  "));
   ButtonMolcas = button;
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   if(molcasCommands.numberOfCommands<2)
   	gtk_widget_set_sensitive(button, FALSE);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(remove_molcas_command),NULL);
 
-  button = create_button(Wins,"  Help  ");
+  button = create_button(Wins,_("  Help  "));
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(help_commands),NULL);
 /* ------------------------------------------------------------------*/
@@ -2020,7 +1981,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new ("Command for execute MPQC    : ");
+  label = gtk_label_new (_("Command for execute MPQC    : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(mpqcCommands.commands,mpqcCommands.numberOfCommands,TRUE,-1,-1);
@@ -2031,14 +1992,14 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   g_signal_connect(G_OBJECT (EntryMPQC), "activate",
 			(GCallback)modify_mpqc_command,
 			NULL);
-  button = create_button(Wins,"  Remove from list  ");
+  button = create_button(Wins,_("  Remove from list  "));
   ButtonMPQC = button;
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   if(mpqcCommands.numberOfCommands<2)
   	gtk_widget_set_sensitive(button, FALSE);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(remove_mpqc_command),NULL);
 
-  button = create_button(Wins,"  Help  ");
+  button = create_button(Wins,_("  Help  "));
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(help_commands),NULL);
 
@@ -2047,7 +2008,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new ("Command for execute Orca       : ");
+  label = gtk_label_new (_("Command for execute Orca       : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(orcaCommands.commands,orcaCommands.numberOfCommands,TRUE,-1,-1);
@@ -2056,14 +2017,14 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   gtk_box_pack_start (GTK_BOX (hbox), combo, TRUE, TRUE, 3);
   gtk_entry_set_text (GTK_ENTRY (EntryOrca),NameCommandOrca);
   g_signal_connect(G_OBJECT (EntryOrca), "activate", (GCallback)modify_orca_command, NULL);
-  button = create_button(Wins,"  Remove from list  ");
+  button = create_button(Wins,_("  Remove from list  "));
   ButtonOrca = button;
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   if(orcaCommands.numberOfCommands<2)
   	gtk_widget_set_sensitive(button, FALSE);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(remove_orca_command),NULL);
 
-  button = create_button(Wins,"  Help  ");
+  button = create_button(Wins,_("  Help  "));
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(help_commands),NULL);
 
@@ -2071,7 +2032,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new ("Command for execute FireFly    : ");
+  label = gtk_label_new (_("Command for execute FireFly    : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(fireflyCommands.commands,fireflyCommands.numberOfCommands,TRUE,-1,-1);
@@ -2080,14 +2041,14 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   gtk_box_pack_start (GTK_BOX (hbox), combo, TRUE, TRUE, 3);
   gtk_entry_set_text (GTK_ENTRY (EntryFireFly),NameCommandFireFly);
   g_signal_connect(G_OBJECT (EntryFireFly), "activate", (GCallback)modify_firefly_command, NULL);
-  button = create_button(Wins,"  Remove from list  ");
+  button = create_button(Wins,_("  Remove from list  "));
   ButtonFireFly = button;
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   if(fireflyCommands.numberOfCommands<2)
   	gtk_widget_set_sensitive(button, FALSE);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(remove_firefly_command),NULL);
 
-  button = create_button(Wins,"  Help  ");
+  button = create_button(Wins,_("  Help  "));
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(help_commands),NULL);
 /* ------------------------------------------------------------------*/
@@ -2095,7 +2056,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new ("Command for execute Q-Chem    : ");
+  label = gtk_label_new (_("Command for execute Q-Chem    : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(qchemCommands.commands,qchemCommands.numberOfCommands,TRUE,-1,-1);
@@ -2104,14 +2065,14 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   gtk_box_pack_start (GTK_BOX (hbox), combo, TRUE, TRUE, 3);
   gtk_entry_set_text (GTK_ENTRY (EntryQChem),NameCommandQChem);
   g_signal_connect(G_OBJECT (EntryQChem), "activate", (GCallback)modify_qchem_command, NULL);
-  button = create_button(Wins,"  Remove from list  ");
+  button = create_button(Wins,_("  Remove from list  "));
   ButtonQChem = button;
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   if(qchemCommands.numberOfCommands<2)
   	gtk_widget_set_sensitive(button, FALSE);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(remove_qchem_command),NULL);
 
-  button = create_button(Wins,"  Help  ");
+  button = create_button(Wins,_("  Help  "));
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(help_commands),NULL);
 /* ------------------------------------------------------------------*/
@@ -2119,7 +2080,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new ("Command for execute Mopac    : ");
+  label = gtk_label_new (_("Command for execute Mopac    : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(mopacCommands.commands,mopacCommands.numberOfCommands,TRUE,-1,-1);
@@ -2128,14 +2089,14 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   gtk_box_pack_start (GTK_BOX (hbox), combo, TRUE, TRUE, 3);
   gtk_entry_set_text (GTK_ENTRY (EntryMopac),NameCommandMopac);
   g_signal_connect(G_OBJECT (EntryMopac), "activate", (GCallback)modify_mopac_command, NULL);
-  button = create_button(Wins,"  Remove from list  ");
+  button = create_button(Wins,_("  Remove from list  "));
   ButtonMopac = button;
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   if(mopacCommands.numberOfCommands<2)
   	gtk_widget_set_sensitive(button, FALSE);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(remove_mopac_command),NULL);
 
-  button = create_button(Wins,"  Help  ");
+  button = create_button(Wins,_("  Help  "));
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(help_commands),NULL);
 /* ------------------------------------------------------------------*/
@@ -2143,7 +2104,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new ("Command for execute Povray    : ");
+  label = gtk_label_new (_("Command for execute Povray    : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(povrayCommands.commands,povrayCommands.numberOfCommands,TRUE,-1,-1);
@@ -2152,14 +2113,14 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   gtk_box_pack_start (GTK_BOX (hbox), combo, TRUE, TRUE, 3);
   gtk_entry_set_text (GTK_ENTRY (EntryPovray),NameCommandPovray);
   g_signal_connect(G_OBJECT (EntryPovray), "activate", (GCallback)modify_povray_command, NULL);
-  button = create_button(Wins,"  Remove from list  ");
+  button = create_button(Wins,_("  Remove from list  "));
   ButtonPovray = button;
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   if(povrayCommands.numberOfCommands<2)
   	gtk_widget_set_sensitive(button, FALSE);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(remove_povray_command),NULL);
 
-  button = create_button(Wins,"  Help  ");
+  button = create_button(Wins,_("  Help  "));
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(help_commands),NULL);
 /* ------------------------------------------------------------------*/
@@ -2176,7 +2137,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
-	add_label_table(table,"Command for Open Babel         : ",0,0);
+	add_label_table(table,_("Command for Open Babel         : "),0,0);
   	entry = gtk_entry_new ();
 	entrybabel = entry;
 	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
@@ -2226,7 +2187,7 @@ void  create_gamess_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
-	add_label_table(table,"Gamess directory                        : ",0,0);
+	add_label_table(table,_("Gamess directory                        : "),0,0);
   	entry = gtk_entry_new ();
 	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
 	gtk_table_attach(GTK_TABLE(table),entry,1,1+1,0,0+1,
@@ -2270,7 +2231,7 @@ void  create_orca_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
-	add_label_table(table,"Orca directory                        : ",0,0);
+	add_label_table(table,_("Orca directory                        : "),0,0);
   	entry = gtk_entry_new ();
 	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
 	gtk_table_attach(GTK_TABLE(table),entry,1,1+1,0,0+1,
@@ -2314,7 +2275,7 @@ void  create_firefly_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
-	add_label_table(table,"FireFly directory                        : ",0,0);
+	add_label_table(table,_("FireFly directory                        : "),0,0);
   	entry = gtk_entry_new ();
 	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
 	gtk_table_attach(GTK_TABLE(table),entry,1,1+1,0,0+1,
@@ -2358,7 +2319,7 @@ void  create_mopac_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
-	add_label_table(table,"Mopac directory                         : ",0,0);
+	add_label_table(table,_("Mopac directory                         : "),0,0);
   	entry = gtk_entry_new ();
 	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
 	gtk_table_attach(GTK_TABLE(table),entry,1,1+1,0,0+1,
@@ -2400,7 +2361,7 @@ void  create_povray_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
-	add_label_table(table,"PovRay directory                         : ",0,0);
+	add_label_table(table,_("PovRay directory                         : "),0,0);
   	entry = gtk_entry_new ();
 	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
 	gtk_table_attach(GTK_TABLE(table),entry,1,1+1,0,0+1,
@@ -2442,7 +2403,7 @@ void  create_gauss_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
-	add_label_table(table,"Gaussian directory                      : ",0,0);
+	add_label_table(table,_("Gaussian directory                      : "),0,0);
   	entry = gtk_entry_new ();
 	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
 	gtk_table_attach(GTK_TABLE(table),entry,1,1+1,0,0+1,
@@ -2471,8 +2432,8 @@ void AddPageColorSurf(GtkWidget *NoteBook)
   
   Frame= gtk_frame_new(NULL);
   gtk_container_set_border_width(GTK_CONTAINER(Frame), 10);
-  LabelOnglet = gtk_label_new(" Surface colors ");
-  LabelMenu = gtk_label_new("   Surface colors  ");
+  LabelOnglet = gtk_label_new(_(" Surface colors "));
+  LabelMenu = gtk_label_new(_("   Surface colors  "));
   gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook),
                                 Frame,
                                 LabelOnglet, LabelMenu);
@@ -2498,8 +2459,8 @@ void AddPageFont(GtkWidget *NoteBook)
   
   Frame= gtk_frame_new(NULL);
   gtk_container_set_border_width(GTK_CONTAINER(Frame), 10);
-  LabelOnglet = gtk_label_new(" Fonts/Colors ");
-  LabelMenu = gtk_label_new(" Fonts/Colors ");
+  LabelOnglet = gtk_label_new(_(" Fonts/Colors "));
+  LabelMenu = gtk_label_new(_(" Fonts/Colors "));
   gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook),
                                 Frame,
                                 LabelOnglet, LabelMenu);
@@ -2516,8 +2477,8 @@ void AddPageProp(GtkWidget *NoteBook)
   Frame= gtk_frame_new(NULL);
   gtk_container_set_border_width(GTK_CONTAINER(Frame), 10);
   gtk_widget_set_size_request(GTK_WIDGET(Frame), (gint)(ScreenHeight*0.6),  (gint)(ScreenHeight*0.3));
-  LabelOnglet = gtk_label_new(" Properties of atoms ");
-  LabelMenu = gtk_label_new(" Properties of atoms ");
+  LabelOnglet = gtk_label_new(_(" Properties of atoms "));
+  LabelMenu = gtk_label_new(_(" Properties of atoms "));
   gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook),
                                 Frame,
                                 LabelOnglet, LabelMenu);
@@ -2551,7 +2512,7 @@ static void set_entry_pscpplinkdir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_pscpplinkDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(set_entry_pscpplinkdir, "Select pscp & plink folder", GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selctionOfDir(set_entry_pscpplinkdir, _("Select pscp & plink folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -2585,7 +2546,7 @@ void  create_pscpplink_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand
 
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
-	add_label_table(table,"pscp & plink directory                    : ",0,0);
+	add_label_table(table,_("pscp & plink directory                    : "),0,0);
   	entry = gtk_entry_new ();
 	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
 	gtk_table_attach(GTK_TABLE(table),entry,1,1+1,0,0+1,
@@ -2614,10 +2575,10 @@ void  create_network_protocols(GtkWidget* Win,GtkWidget *vbox,gboolean expand)
   GtkWidget *button;
   GtkWidget *vboxframe;
   GtkWidget *table = gtk_table_new(2,2,TRUE);
-  gchar ftprsh[] = "FTP and Rsh protocols";
-  gchar ssh[]    = "ssh protocol            ";
+  gchar ftprsh[] = N_("FTP and Rsh protocols");
+  gchar ssh[]    = N_("ssh protocol            ");
 
-  frame = gtk_frame_new ("Default NetWork protocol");
+  frame = gtk_frame_new (_("Default NetWork protocol"));
   gtk_widget_show (frame);
   gtk_box_pack_start (GTK_BOX (vbox), frame, expand, expand, 0);
   gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -2653,7 +2614,7 @@ void  create_network_protocols(GtkWidget* Win,GtkWidget *vbox,gboolean expand)
 
   g_signal_connect(G_OBJECT (ButtonSsh), "clicked", G_CALLBACK(set_network), ButtonSsh);
   g_signal_connect(G_OBJECT (ButtonFtpRsh), "clicked", G_CALLBACK(set_network), NULL);
-  button = create_button(Win,"  Help  ");
+  button = create_button(Win,_("  Help  "));
   add_widget_table(table,button,1,1);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(help_ssh),NULL);
 
@@ -2673,8 +2634,8 @@ void AddPageOthers(GtkWidget *NoteBook)
   Frame= gtk_frame_new(NULL);
   gtk_container_set_border_width(GTK_CONTAINER(Frame), 10);
   /* gtk_widget_set_size_request(GTK_WIDGET(Frame), (gint)(ScreenHeight*0.6),  (gint)(ScreenHeight*0.3));*/
-  LabelOnglet = gtk_label_new(" Others ");
-  LabelMenu = gtk_label_new(" Others ");
+  LabelOnglet = gtk_label_new(_(" Others "));
+  LabelMenu = gtk_label_new(_(" Others "));
   gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook), Frame, LabelOnglet, LabelMenu);
   vbox = gtk_vbox_new (FALSE, 0);
   gtk_widget_show (vbox);
@@ -2703,8 +2664,8 @@ void AddPageCommands(GtkWidget *NoteBook)
   Frame= gtk_frame_new(NULL);
   gtk_container_set_border_width(GTK_CONTAINER(Frame), 10);
   /* gtk_widget_set_size_request(GTK_WIDGET(Frame), (gint)(ScreenHeight*0.6),  (gint)(ScreenHeight*0.3));*/
-  LabelOnglet = gtk_label_new(" Commands ");
-  LabelMenu = gtk_label_new(" Commands ");
+  LabelOnglet = gtk_label_new(_(" Commands "));
+  LabelMenu = gtk_label_new(_(" Commands "));
   gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook),
                                 Frame,
                                 LabelOnglet, LabelMenu);
@@ -2726,8 +2687,8 @@ void AddPageBatch(GtkWidget *NoteBook)
   Frame= gtk_frame_new(NULL);
   gtk_container_set_border_width(GTK_CONTAINER(Frame), 10);
   /* gtk_widget_set_size_request(GTK_WIDGET(Frame), (gint)(ScreenHeight*0.6),  (gint)(ScreenHeight*0.3));*/
-  LabelOnglet = gtk_label_new(" Batch ");
-  LabelMenu = gtk_label_new(" Batch ");
+  LabelOnglet = gtk_label_new(_(" Batch "));
+  LabelMenu = gtk_label_new(_(" Batch "));
   gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook),
                                 Frame,
                                 LabelOnglet, LabelMenu);
@@ -2749,8 +2710,8 @@ void AddPageNetWork(GtkWidget *NoteBook)
   Frame= gtk_frame_new(NULL);
   gtk_container_set_border_width(GTK_CONTAINER(Frame), 10);
   /* gtk_widget_set_size_request(GTK_WIDGET(Frame), (gint)(ScreenHeight*0.6),  (gint)(ScreenHeight*0.3));*/
-  LabelOnglet = gtk_label_new(" NetWork ");
-  LabelMenu = gtk_label_new(" NetWork ");
+  LabelOnglet = gtk_label_new(_(" NetWork "));
+  LabelMenu = gtk_label_new(_(" NetWork "));
   gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook),
                                 Frame,
                                 LabelOnglet, LabelMenu);
@@ -2789,10 +2750,10 @@ void create_preferences()
 /*  gtk_window_set_modal (GTK_WINDOW (Wins), TRUE);*/
 
   /* Connection des signaux "delete" et "destroy" */
-  init_child(Wins,gtk_widget_destroy," Preferences ");
+  init_child(Wins,gtk_widget_destroy,_("Preferences "));
   g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_preferences_window,NULL);
 
-  gtk_window_set_title(&GTK_DIALOG(Wins)->window,"Preferences");
+  gtk_window_set_title(&GTK_DIALOG(Wins)->window,_("Preferences"));
  
   /* NoteBook Options */
   NoteBook = gtk_notebook_new();
@@ -2818,7 +2779,7 @@ void create_preferences()
   g_signal_connect_swapped(GTK_OBJECT(button), "clicked",(GCallback)destroy_preferences_window,GTK_OBJECT(Wins));
   gtk_widget_show_all (button);
 
-  button = create_button(Wins,"Save&Apply&Close");
+  button = create_button(Wins,_("Save&Apply&Close"));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(apply_all),NULL);
@@ -2827,7 +2788,7 @@ void create_preferences()
   gtk_widget_grab_default(button);
   gtk_widget_show_all (button);
 
-  button = create_button(Wins,"Apply&Close");
+  button = create_button(Wins,_("Apply&Close"));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(apply_all),NULL);
@@ -2835,7 +2796,7 @@ void create_preferences()
   gtk_widget_grab_default(button);
   gtk_widget_show_all (button);
 
-  button = create_button(Wins,"Apply");
+  button = create_button(Wins,_("Apply"));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(apply_all),NULL);

@@ -154,7 +154,7 @@ ForceField**    runMolecularDynamicsConfo(
 		if (++updateNumber >= molecularDynamics->updateFrequency )
 		{
 			if(str) g_free(str);
-			str = g_strdup_printf("MD Heating: %0.2f fs, T = %0.2f K T(t) = %0.2f Kin = %0.4f Pot =  %0.4f Tot =  %0.4f", 
+			str = g_strdup_printf(_("MD Heating: %0.2f fs, T = %0.2f K T(t) = %0.2f Kin = %0.4f Pot =  %0.4f Tot =  %0.4f"), 
 					i*stepSize, currentTemp, 
 					molecularDynamics->kelvin, 
 					molecularDynamics->kineticEnergy,
@@ -185,7 +185,7 @@ ForceField**    runMolecularDynamicsConfo(
 		if (++updateNumber >= molecularDynamics->updateFrequency )
 		{
 			if(str) g_free(str);
-			str = g_strdup_printf("MD Equilibrium: %0.2f fs, T = %0.2f K  T(t) = %0.2f K Kin = %0.4f Pot =  %0.4f Tot =  %0.4f", 
+			str = g_strdup_printf(_("MD Equilibrium: %0.2f fs, T = %0.2f K  T(t) = %0.2f K Kin = %0.4f Pot =  %0.4f Tot =  %0.4f"), 
 					i*stepSize, currentTemp, 
 					molecularDynamics->kelvin, 
 					molecularDynamics->kineticEnergy,
@@ -207,7 +207,7 @@ ForceField**    runMolecularDynamicsConfo(
 	n0 += numberOfEquiSteps;
 	/* newProperties(molecularDynamics," ----> Runing");*/
 	if(str) g_free(str);
-	str = g_strdup_printf("Geometry selected Potential energy =  %0.4f", molecularDynamics->potentialEnergy);
+	str = g_strdup_printf(_("Geometry selected Potential energy =  %0.4f"), molecularDynamics->potentialEnergy);
 	redrawMolecule(&molecularDynamics->forceField->molecule,str);
 	if(numberOfGeometries>2) stepSel = numberOfRunSteps/(numberOfGeometries-1);
 	else stepSel = numberOfRunSteps;
@@ -222,7 +222,7 @@ ForceField**    runMolecularDynamicsConfo(
 		if (++updateNumber >= molecularDynamics->updateFrequency )
 		{
 			if(str) g_free(str);
-			str = g_strdup_printf("MD Running: %0.2f fs, T = %0.2f K  T(t) = %0.2f K Kin = %0.4f Pot =  %0.4f Tot =  %0.4f", 
+			str = g_strdup_printf(_("MD Running: %0.2f fs, T = %0.2f K  T(t) = %0.2f K Kin = %0.4f Pot =  %0.4f Tot =  %0.4f"), 
 					i*stepSize, currentTemp, 
 					molecularDynamics->kelvin, 
 					molecularDynamics->kineticEnergy,
@@ -236,7 +236,7 @@ ForceField**    runMolecularDynamicsConfo(
 		if((i+1)%stepSel==0 && (iSel+1)<numberOfGeometries)
 		{
 			if(str) g_free(str);
-			str = g_strdup_printf("Geometry selected Potential energy =  %0.4f", molecularDynamics->potentialEnergy);
+			str = g_strdup_printf(_("Geometry selected Potential energy =  %0.4f"), molecularDynamics->potentialEnergy);
 			redrawMolecule(&molecularDynamics->forceField->molecule,str);
 			iSel++;
 			geometries[iSel] = g_malloc(sizeof(ForceField));
@@ -248,7 +248,7 @@ ForceField**    runMolecularDynamicsConfo(
 	if(iSel<numberOfGeometries-1)
 	{
 		if(str) g_free(str);
-		str = g_strdup_printf("Geometry selected Potential energy =  %0.4f", molecularDynamics->potentialEnergy);
+		str = g_strdup_printf(_("Geometry selected Potential energy =  %0.4f"), molecularDynamics->potentialEnergy);
 		redrawMolecule(&molecularDynamics->forceField->molecule,str);
 		iSel++;
 		geometries[iSel] = g_malloc(sizeof(ForceField));
@@ -269,7 +269,7 @@ ForceField**    runMolecularDynamicsConfo(
 
         gradientNorm = sqrt( gradientNorm );
 	if(str) g_free(str);
-	str = g_strdup_printf("End of MD Simulation. Gradient = %f Ekin = %f (Kcal/mol) EPot =  %0.4f ETot =  %0.4f T(t) = %0.2f",
+	str = g_strdup_printf(_("End of MD Simulation. Gradient = %f Ekin = %f (Kcal/mol) EPot =  %0.4f ETot =  %0.4f T(t) = %0.2f"),
 			(gdouble)gradientNorm,
 			molecularDynamics->kineticEnergy,
 			molecularDynamics->potentialEnergy,
@@ -370,7 +370,7 @@ void	runMolecularDynamics(
 		if (++updateNumber >= molecularDynamics->updateFrequency )
 		{
 			if(str) g_free(str);
-			str = g_strdup_printf("MD Heating: %0.2f fs, T = %0.2f K T(t) = %0.2f Kin = %0.4f Pot =  %0.4f Tot =  %0.4f", 
+			str = g_strdup_printf(_("MD Heating: %0.2f fs, T = %0.2f K T(t) = %0.2f Kin = %0.4f Pot =  %0.4f Tot =  %0.4f"), 
 					i*stepSize, currentTemp, 
 					molecularDynamics->kelvin, 
 					molecularDynamics->kineticEnergy,
@@ -402,7 +402,7 @@ void	runMolecularDynamics(
 		if (++updateNumber >= molecularDynamics->updateFrequency )
 		{
 			if(str) g_free(str);
-			str = g_strdup_printf("MD Equilibrium: %0.2f fs, T = %0.2f K  T(t) = %0.2f K Kin = %0.4f Pot =  %0.4f Tot =  %0.4f", 
+			str = g_strdup_printf(_("MD Equilibrium: %0.2f fs, T = %0.2f K  T(t) = %0.2f K Kin = %0.4f Pot =  %0.4f Tot =  %0.4f"), 
 					i*stepSize, currentTemp, 
 					molecularDynamics->kelvin, 
 					molecularDynamics->kineticEnergy,
@@ -434,7 +434,7 @@ void	runMolecularDynamics(
 		if (++updateNumber >= molecularDynamics->updateFrequency )
 		{
 			if(str) g_free(str);
-			str = g_strdup_printf("MD Running: %0.2f fs, T = %0.2f K  T(t) = %0.2f K Kin = %0.4f Pot =  %0.4f Tot =  %0.4f", 
+			str = g_strdup_printf(_("MD Running: %0.2f fs, T = %0.2f K  T(t) = %0.2f K Kin = %0.4f Pot =  %0.4f Tot =  %0.4f"), 
 					i*stepSize, currentTemp, 
 					molecularDynamics->kelvin, 
 					molecularDynamics->kineticEnergy,
@@ -464,7 +464,7 @@ void	runMolecularDynamics(
 		if (++updateNumber >= molecularDynamics->updateFrequency )
 		{
 			if(str) g_free(str);
-			str = g_strdup_printf("MD Cooling: %0.2f fs, T = %0.2f K T(t) = %0.2f K Kin = %0.4f Pot =  %0.4f Tot =  %0.4f", 
+			str = g_strdup_printf(_("MD Cooling: %0.2f fs, T = %0.2f K T(t) = %0.2f K Kin = %0.4f Pot =  %0.4f Tot =  %0.4f"), 
 					i*stepSize, currentTemp, 
 					molecularDynamics->kelvin, 
 					molecularDynamics->kineticEnergy,
@@ -486,7 +486,7 @@ void	runMolecularDynamics(
 
         gradientNorm = sqrt( gradientNorm );
 	if(str) g_free(str);
-	str = g_strdup_printf("End of MD Simulation. Gradient = %f Ekin = %f (Kcal/mol) EPot =  %0.4f ETot =  %0.4f T(t) = %0.2f",
+	str = g_strdup_printf(_("End of MD Simulation. Gradient = %f Ekin = %f (Kcal/mol) EPot =  %0.4f ETot =  %0.4f T(t) = %0.2f"),
 			(gdouble)gradientNorm,
 			molecularDynamics->kineticEnergy,
 			molecularDynamics->potentialEnergy,
@@ -1031,7 +1031,7 @@ static void applyRattleFirstPortion(MolecularDynamics* molecularDynamics)
 	}while(!done && nIter<maxIter);
 	if(nIter>=maxIter && deltaMax>tolerance*10)
 	{
-		printf("Rattle first portion : Warning, distance constraints not satisfied\n");
+		printf(_("Rattle first portion : Warning, distance constraints not satisfied\n"));
 		/*
 		for (i = 0; i < molecularDynamics->numberOfAtoms; i++)
 		{
@@ -1142,7 +1142,7 @@ static void applyRattleSecondPortion(MolecularDynamics* molecularDynamics)
 	}while(!done && nIter<maxIter);
 	if(nIter>=maxIter && deltaMax>tolerance*10)
 	{
-		printf("Rattle second portion : Warning, velocity constraints not satisfied\n");
+		printf(_("Rattle second portion : Warning, velocity constraints not satisfied\n"));
 		for (i = 0; i < molecularDynamics->forceField->numberOfRattleConstraintsTerms; i++)
 		{
 			a1 = (gint)molecularDynamics->forceField->rattleConstraintsTerms[0][i];

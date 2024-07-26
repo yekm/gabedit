@@ -672,8 +672,8 @@ static void setRattleConstraintsParameters(ForceField* forceField)
 	for( i=0; i<RATTLEDIM;i++)
        		forceField->rattleConstraintsTerms[i] = rattleConstraintsTerms[i]; 
 
-	printf("number Of RattleConstraintsTerms = %d\n", forceField->numberOfRattleConstraintsTerms);
-	printf("number free degrees = %d\n", 3*m->nAtoms-6-forceField->numberOfRattleConstraintsTerms);
+	printf(_("number Of RattleConstraintsTerms = %d\n"), forceField->numberOfRattleConstraintsTerms);
+	printf(_("number free degrees = %d\n"), 3*m->nAtoms-6-forceField->numberOfRattleConstraintsTerms);
 	/*
 	for ( i = 0; i < forceField->numberOfRattleConstraintsTerms; i++)
 	{
@@ -720,7 +720,7 @@ static void setStretchParameters(AmberParameters* amberParameters,ForceField* fo
 		{
 			gchar l1 = m->atoms[a1].mmType[0];
 			gchar l2 = m->atoms[a2].mmType[0];
-			printf( "**** couldn't find stretch parameters for %s-%s(%d-%d) ", 
+			printf( _("**** couldn't find stretch parameters for %s-%s(%d-%d) "), 
 				m->atoms[a1].mmType,m->atoms[a2].mmType,a1Type, a2Type);
 
 			forceConstant = 310;
@@ -752,7 +752,7 @@ static void setStretchParameters(AmberParameters* amberParameters,ForceField* fo
 			{
 				forceConstant = 0;
 			}
-			printf( "-> I set  force to %f and equilibrium distance to %f\n",
+			printf( _("-> I set  force to %f and equilibrium distance to %f\n"),
 					forceConstant,equilibriumDistance);
 
 		}
@@ -802,7 +802,7 @@ static void setBendParameters(AmberParameters* amberParameters,ForceField* force
 			gchar l1 = m->atoms[a1].mmType[0];
 			gchar l2 = m->atoms[a2].mmType[0];
 			gchar l3 = m->atoms[a3].mmType[0];
-			printf( "**** couldn't find bend parameters for %s-%s-%s ",
+			printf(_("**** couldn't find bend parameters for %s-%s-%s "),
 			m->atoms[a1].mmType,m->atoms[a2].mmType,m->atoms[a3].mmType);
 			forceConstant = 60.0;
 			equilibriumAngle = 115.0;
@@ -821,8 +821,7 @@ static void setBendParameters(AmberParameters* amberParameters,ForceField* force
 			{
 				forceConstant = 0;
 			}
-			printf( "-> I set force to %f and equilibrium angle to %f\n",
-					forceConstant, equilibriumAngle);
+			printf(_("-> I set force to %f and equilibrium angle to %f\n"), forceConstant, equilibriumAngle);
 		}
 
 		angleBendTerms[0][i] = a1;
@@ -1063,7 +1062,7 @@ static void setNonBondedParameters(AmberParameters* amberParameters, ForceField*
 		if ( !useHydrogenBonded || !canHydrogenBond(amberParameters, a1Type, a2Type ) )
 		{ 
 			if ( ! ( getNonBondedParameters(amberParameters, a1Type, &equilibriumDistance, &epsilon ) ) )
-				printf( "**** couldn't find non bonded parameters for %s \n",m->atoms[a1].mmType);
+				printf(_("**** couldn't find non bonded parameters for %s \n"),m->atoms[a1].mmType);
 		
 			epsilonProduct = sqrt(fabs(epsilon));
 			ri = equilibriumDistance;
@@ -1199,7 +1198,7 @@ static void setPairWiseParameters(AmberParameters* amberParameters, ForceField* 
 		a2Type = atomTypes[a2];
 
 		if ( ! ( getPairWiseParameters(amberParameters, a1Type,a2Type,&a, &beta,&c6,&c8, &c10,&b) ) )
-				printf( "**** couldn't find pair wise parameters for %s-%s\n",
+				printf( _("**** couldn't find pair wise parameters for %s-%s\n"),
 					m->atoms[a1].mmType, m->atoms[a2].mmType);
 		
 			pairWiseTerms[0][numberOfPairWise] = a1;
@@ -2542,8 +2541,8 @@ ForceField createAmberModel
 	
 	forceField.options = forceFieldOptions;
 
-	set_text_to_draw("Setting of Parameters ...");
-	set_statubar_operation_str("Setting of Parameters ...");
+	set_text_to_draw(_("Setting of Parameters ..."));
+	set_statubar_operation_str(_("Setting of Parameters ..."));
 	dessine();
     	while( gtk_events_pending() )
         	gtk_main_iteration();
@@ -2574,8 +2573,8 @@ ForceField createPairWiseModel
 	forceField.options.hydrogenBonded = FALSE;
 
 
-	set_text_to_draw("Setting of Parameters ...");
-	set_statubar_operation_str("Setting of Parameters ...");
+	set_text_to_draw(_("Setting of Parameters ..."));
+	set_statubar_operation_str(_("Setting of Parameters ..."));
 	dessine();
     	while( gtk_events_pending() )
         	gtk_main_iteration();

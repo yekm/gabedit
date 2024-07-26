@@ -100,7 +100,7 @@ void Sphere_Draw_From_List(GLuint sphere,V3d position)
 	if (glIsList(sphere) == GL_TRUE) 
 		glCallList(sphere);
 	else
-		printf("Erreur de list\n");
+		printf("list error Sphere.c file\n");
 
 	
 	glPopMatrix();

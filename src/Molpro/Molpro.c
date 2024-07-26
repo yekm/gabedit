@@ -96,20 +96,20 @@ static void GetInfoGth()
                 "1.d-5","1.d-4","0.05","99"
   		};
   gchar *CommOp[14]={
-  		"Numerical zero", 
-                "Threshold for one-electron integrals",
-                "Threshold for the neglect of two-electron integrals",
-                "Threshold for test of prefactor in TWOINT",
-                "Threshold for orbital localization",
-                "Threshold for reordering of orbital after localization",
-                "Convergence threshold for energy",
-                "Convergence threshold for orbital gradient in MCSCF",
-                "Convergence threshold for step length in MCSCF orbital optimization",
-                "Convergence threshold for orbital optimization in the SCF program",
-                "Convergence threshold for CI coefficients in MCSCF and reference vector in CI",
-                "Convergence threshold for coefficients in CI and CCSD",
-                "Threshold for printing CI coefficients",
-                "Threshold for punching CI coefficients"
+  		_("Numerical zero"), 
+                _("Threshold for one-electron integrals"),
+                _("Threshold for the neglect of two-electron integrals"),
+                _("Threshold for test of prefactor in TWOINT"),
+                _("Threshold for orbital localization"),
+                _("Threshold for reordering of orbital after localization"),
+                _("Convergence threshold for energy"),
+                _("Convergence threshold for orbital gradient in MCSCF"),
+                _("Convergence threshold for step length in MCSCF orbital optimization"),
+                _("Convergence threshold for orbital optimization in the SCF program"),
+                _("Convergence threshold for CI coefficients in MCSCF and reference vector in CI"),
+                _("Convergence threshold for coefficients in CI and CCSD"),
+                _("Threshold for printing CI coefficients"),
+                _("Threshold for punching CI coefficients")
   		};
         G_CONST_RETURN gchar *chaine[14];
 
@@ -150,20 +150,20 @@ static void insert_gprint_option(gchar *Type,gchar *Commentaire)
 static void GetInfoGprint()
 {
   gchar *tGP[14]={
-  		"Print basis information ",
-  		"Print CI vector in MCSCF",
-  		"Print reference CSFs and their coefficients in CI ",
-  		"Print detailed I/O information ",
-  		"Print orbitals in SCF and MCSCF ",
-  		"Print bond angle information",
-  		"Print information for singles in CI, CCSD ",
-		"Print bond distances ",
-		"Print p-space configurations",
-		"Print variables each time they are set or changed ",
-		"Print information for pairs in CI, CCSD ",
-		"Print microiterations in MCSCF and CI",
-		"Print detailed CPU information ",
-                "Print pair list in CI, CCSD"
+  		_("Print basis information "),
+  		_("Print CI vector in MCSCF"),
+  		_("Print reference CSFs and their coefficients in CI "),
+  		_("Print detailed I/O information "),
+  		_("Print orbitals in SCF and MCSCF "),
+  		_("Print bond angle information"),
+  		_("Print information for singles in CI, CCSD "),
+		_("Print bond distances "),
+		_("Print p-space configurations"),
+		_("Print variables each time they are set or changed "),
+		_("Print information for pairs in CI, CCSD "),
+		_("Print microiterations in MCSCF and CI"),
+		_("Print detailed CPU information "),
+                _("Print pair list in CI, CCSD")
   		};
 
 
@@ -361,14 +361,14 @@ static void GetInfoXYZ(const gchar *SymEntry, const gchar *OptEntry)
         chaine=g_strdup("geometry={");
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, chaine,-1);
         chaine=g_strdup(SymEntry);
-        if (strcmp(chaine,"default") )
+        if (strcmp(chaine,_("default")) )
           {
            gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, chaine,-1);
            gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, ";",-1);
           }
 
         chaine=g_strdup(OptEntry);
-        if (strcmp(chaine,"none") )
+        if (strcmp(chaine,_("none")) )
           {
            gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, chaine,-1);
            gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, ";",-1);
@@ -457,14 +457,14 @@ static void GetInfoZmatrix(const gchar *SymEntry, const gchar *OptEntry)
         chaine=g_strdup("geometry={");
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, chaine,-1);
 		chaine=g_strdup(SymEntry);
-        if (strcmp(chaine,"default") )
+        if (strcmp(chaine,_("default")) )
           {
            gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, chaine,-1);
            gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, ";",-1);
           }
 
         chaine=g_strdup(OptEntry);
-        if (strcmp(chaine,"none") )
+        if (strcmp(chaine,_("none")) )
           {
            gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, chaine,-1);
            gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, ";",-1);
@@ -660,9 +660,9 @@ void insert_molpro(gint itype)
   /* gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER_ALWAYS);*/
   gtk_window_set_position(GTK_WINDOW(Wins), GTK_WIN_POS_CENTER_ON_PARENT);
   gtk_window_set_transient_for(GTK_WINDOW(Wins),GTK_WINDOW(Fenetre));
-  gtk_window_set_title(&GTK_DIALOG(Wins)->window,"molpro input");
+  gtk_window_set_title(&GTK_DIALOG(Wins)->window,_("molpro input"));
 
-  init_child(Wins,DestroyWinsMolpro," Molpro input ");
+  init_child(Wins,DestroyWinsMolpro,_(" Molpro input "));
   g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_children,NULL);
 
  
@@ -700,13 +700,13 @@ void insert_molpro(gint itype)
   
   gtk_widget_realize(Wins);
 
-  button = create_button(Wins,"CANCEL");
+  button = create_button(Wins,_("Cancel"));
   gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, FALSE, TRUE, 5);
   g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK( to_cancel_win),GTK_OBJECT(Wins));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_show (button);
 
-  button = create_button(Wins,"OK");
+  button = create_button(Wins,_("OK"));
   gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, FALSE, TRUE, 5);  
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
@@ -734,9 +734,9 @@ void molpro()
   Wins= gtk_dialog_new ();
   gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER);
   gtk_window_set_transient_for(GTK_WINDOW(Wins),GTK_WINDOW(Fenetre));
-  gtk_window_set_title(&GTK_DIALOG(Wins)->window,"molpro input");
+  gtk_window_set_title(&GTK_DIALOG(Wins)->window,_("molpro input"));
 
-  init_child(Wins,DestroyWinsMolpro," Molpro input ");
+  init_child(Wins,DestroyWinsMolpro,_(" Molpro input "));
   g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_children,NULL);
  
   NoteBook = gtk_notebook_new();
@@ -747,7 +747,7 @@ void molpro()
 
   gtk_widget_realize(Wins);
 
-  button = create_button(Wins,"CANCEL");
+  button = create_button(Wins,_("Cancel"));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
   g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK( to_cancel_win),GTK_OBJECT(Wins));
@@ -764,7 +764,7 @@ void molpro()
 
   button = gtk_button_new();
   hboxb=gtk_hbox_new(TRUE,2);
-  gtk_container_add (GTK_CONTAINER (hboxb),  create_label_pixmap(Wins,next_xpm,"NEXT"));
+  gtk_container_add (GTK_CONTAINER (hboxb),  create_label_pixmap(Wins,next_xpm,"Next"));
   gtk_container_add (GTK_CONTAINER (button), hboxb);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);

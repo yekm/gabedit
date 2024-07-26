@@ -5,8 +5,10 @@
 
 GTKLIB = `pkg-config gtk+-2.0 --libs` -lpangox-1.0
 GTKCFLAGS =  `pkg-config gtk+-2.0 --cflags` 
-OGLLIB=-L/usr/X11R6/lib -lGL -L/usr/X11R6/lib -lGLU
-OGLCFLAGS=-I/usr/X11R6/include
+#OGLLIB=-L/usr/X11R6/lib -lGL -L/usr/X11R6/lib -lGLU
+OGLLIB=-L/usr/lib -lGL -L/usr/lib -lGLU
+#OGLCFLAGS=-I/usr/X11R6/include
+OGLCFLAGS=-I/usr/include
 GDKGL=gdkgl
 LIBPTHREAD    = -lpthread
 RM = rm -f

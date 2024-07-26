@@ -465,16 +465,16 @@ GtkWidget *create_label_with_pixmap(GtkWidget *Win,gchar *string,gchar *type)
 {
     GtkWidget *hbox;
     GtkWidget *Label;
-    if( strstr(type,"Question") )
+    if( strstr(type,_("Question")) )
     	hbox = create_pixmap_label(Win,question_xpm,string);
     else
-    if( strstr(type,"Warning") )
+    if( strstr(type,_("Warning")) )
     	hbox = create_pixmap_label(Win,warning_xpm,string);
     else
-    if( strstr(type,"Error") )
+    if( strstr(type,_("Error")))
     	hbox = create_pixmap_label(Win,error_xpm,string);
     else
-    if( strstr(type,"Info") )
+    if( strstr(type,_("Info")) )
     	hbox = create_pixmap_label(Win,info_xpm,string);
     else
     {
@@ -539,47 +539,35 @@ void exit_all(GtkWidget *widget, gchar *data)
 GtkWidget *create_button(GtkWidget *Win,gchar *string)
 {
     GtkWidget *button;
-    if( strstr(string,"OK") )
-    	button = create_button_pixmap(Win,ok_xpm,"  OK   ");
+    if( strstr(string,_("OK")) )
+    	button = create_button_pixmap(Win,ok_xpm,_("OK"));
     else
-    if(strstr(string,"Cancel") )
-    	button = create_button_pixmap(Win,cancel_xpm," Cancel ");
+    if(strstr(string,_("Cancel")) )
+    	button = create_button_pixmap(Win,cancel_xpm,_("Cancel"));
     else
-    if(strstr(string,"CANCEL") )
-    	button = create_button_pixmap(Win,cancel_xpm," CANCEL ");
+    if(strstr(string,_("Yes")) )
+    	button = create_button_pixmap(Win,yes_xpm,_("Yes"));
     else
-    if(strstr(string,"Yes") )
-    	button = create_button_pixmap(Win,yes_xpm,"Yes");
+    if(strstr(string,_("No")) )
+    	button = create_button_pixmap(Win,no_xpm,_("No"));
     else
-    if(strstr(string,"No") )
-    	button = create_button_pixmap(Win,no_xpm," No ");
+    if(strstr(string,_("Save&Apply&Close")) )
+    	button = create_button_pixmap(Win,savemini_xpm,_("Save&Apply&Close"));
     else
-    if(strstr(string,"SAVE&CLOSE") )
-    	button = create_button_pixmap(Win,savemini_xpm," SAVE & CLOSE ");
+    if(strstr(string,_("Save&Close")) )
+    	button = create_button_pixmap(Win,savemini_xpm,_("Save&Close"));
     else
-    if(strstr(string,"Save&Apply&Close") )
-    	button = create_button_pixmap(Win,savemini_xpm," Save&Apply&Close ");
+    if(strstr(string,_("Apply&Close")) )
+    	button = create_button_pixmap(Win,apply_xpm,_("Apply&Close"));
     else
-    if(strstr(string,"Save&Close") )
-    	button = create_button_pixmap(Win,savemini_xpm," Save & Close ");
+    if(strstr(string,_("Save")) )
+    	button = create_button_pixmap(Win,savemini_xpm,_("Save"));
     else
-    if(strstr(string,"Apply&Close") )
-    	button = create_button_pixmap(Win,apply_xpm," Apply&Close ");
+    if(strstr(string,_("Close")) )
+    	button = create_button_pixmap(Win,close_xpm,_("Close"));
     else
-    if(strstr(string,"Save") )
-    	button = create_button_pixmap(Win,savemini_xpm," Save ");
-    else
-    if(strstr(string,"SAVE") )
-    	button = create_button_pixmap(Win,savemini_xpm," SAVE ");
-    else
-    if(strstr(string,"CLOSE") )
-    	button = create_button_pixmap(Win,close_xpm," CLOSE ");
-    else
-    if(strstr(string,"Close") )
-    	button = create_button_pixmap(Win,close_xpm," Close ");
-    else
-    if(strstr(string,"Apply") )
-    	button = create_button_pixmap(Win,apply_xpm," Apply ");
+    if(strstr(string,_("Apply")) )
+    	button = create_button_pixmap(Win,apply_xpm,_("Apply"));
     else
     if(strstr(string," *a0 ") )
 		button = create_button_pixmap(Win,a0p_xpm,NULL);
@@ -587,17 +575,17 @@ GtkWidget *create_button(GtkWidget *Win,gchar *string)
     if(strstr(string," /a0 ") )
 		button = create_button_pixmap(Win,a0d_xpm,NULL);
     else
-    if(strstr(string,"Print") )
-    	button = create_button_pixmap(Win,print_xpm," Print ");
+    if(strstr(string,_("Print")) )
+    	button = create_button_pixmap(Win,print_xpm,_("Print"));
     else
-    if(strstr(string,"Stop") )
-    	button = create_button_pixmap(Win,stop_xpm," Stop ");
+    if(strstr(string,_("Stop")) )
+    	button = create_button_pixmap(Win,stop_xpm,_("Stop"));
     else
-    if(strstr(string,"Play") )
-    	button = create_button_pixmap(Win,play_xpm," Play ");
+    if(strstr(string,_("Play")) )
+    	button = create_button_pixmap(Win,play_xpm,_("Play"));
     else
-    if(strstr(string,"Next")||strstr(string,"NEXT") )
-    	button = create_button_pixmap(Win,next_xpm," NEXT ");
+    if(strstr(string,_("Next")) )
+    	button = create_button_pixmap(Win,next_xpm,_("Next"));
     else
     	button = gtk_button_new_with_label(string);
 
@@ -649,7 +637,7 @@ GtkWidget* Message(char *message,char *titre,gboolean center)
     
     gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(DialogueMessage)->action_area), FALSE);
   
-  Bouton = create_button(DialogueMessage,"OK");
+  Bouton = create_button(DialogueMessage,_("OK"));
   gtk_box_pack_end (GTK_BOX( GTK_DIALOG(DialogueMessage)->action_area), Bouton, FALSE, TRUE, 5);  
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Bouton);
@@ -697,7 +685,7 @@ GtkWidget* MessageTxt(gchar *message,gchar *title)
 
 	gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(dlgWin)->action_area), FALSE);
   
-	button = create_button(dlgWin,"OK");
+	button = create_button(dlgWin,_("OK"));
 	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(dlgWin)->action_area), button, FALSE, TRUE, 5);  
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
@@ -762,7 +750,7 @@ void Cancel_YesNo(GtkWidget *widget, gpointer   data, GabeditSignalFunc func)
 	GtkWidget *frame, *vboxframe;
     DialogueMessage = gtk_dialog_new();
 	gtk_window_set_position(GTK_WINDOW(DialogueMessage),GTK_WIN_POS_CENTER);
-    gtk_window_set_title(GTK_WINDOW(DialogueMessage)," Warning ");
+    gtk_window_set_title(GTK_WINDOW(DialogueMessage),_("Warning"));
     gtk_window_set_modal (GTK_WINDOW (DialogueMessage), TRUE);
 
     g_signal_connect(G_OBJECT(DialogueMessage),
@@ -780,7 +768,7 @@ void Cancel_YesNo(GtkWidget *widget, gpointer   data, GabeditSignalFunc func)
     gtk_widget_show (frame);
     vboxframe = create_vbox(frame);
 
-    Label = gtk_label_new("Are you sure to \ncancel this window ?");
+    Label = gtk_label_new(_("Are you sure to \ncancel this window ?"));
     gtk_box_pack_start(GTK_BOX(vboxframe), Label,TRUE,TRUE,0);
     gtk_label_set_justify(GTK_LABEL(Label),
                           GTK_JUSTIFY_CENTER);
@@ -788,13 +776,13 @@ void Cancel_YesNo(GtkWidget *widget, gpointer   data, GabeditSignalFunc func)
     
     gtk_widget_realize(DialogueMessage);
 
-    Bouton = create_button(DialogueMessage,"No");
+    Bouton = create_button(DialogueMessage,_("No"));
     gtk_box_pack_start( GTK_BOX(GTK_DIALOG(DialogueMessage)->action_area), Bouton,TRUE,TRUE,0);
     g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(DialogueMessage));
     GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
     gtk_widget_grab_default(Bouton);
 
-    Bouton = create_button(DialogueMessage,"Yes");
+    Bouton = create_button(DialogueMessage,_("Yes"));
     gtk_box_pack_start( GTK_BOX(GTK_DIALOG(DialogueMessage)->action_area), Bouton,TRUE,TRUE,0);
     GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
     g_signal_connect_swapped(G_OBJECT(Bouton),"clicked", (GCallback)func, GTK_OBJECT(widget));
@@ -1180,7 +1168,7 @@ void read_geom_in_gauss_input(gchar *NameFile)
  	if( j.geomtyp == GEOM_IS_ZMAT)
 		read_Zmat_from_gauss_input_file(NameFile,j);
         else
-    		Message("Sorry\nI can not read gemetry in gaussian input file\n"," Warning ",TRUE);
+    		Message(_("Sorry\nI can not read gemetry in gaussian input file\n"),_("Warning"),TRUE);
 }
 /**********************************************************************************/
 void read_geom_in_molcas_input(gchar *NameFile)
@@ -1199,7 +1187,7 @@ void read_geom_in_molpro_input(gchar *NameFile)
  	if( j.geomtyp == GEOM_IS_ZMAT)
 		read_Zmat_from_molpro_input_file(NameFile,j);
         else
-    		Message("Sorry\nI can not read gemetry in molpro input file\n"," Warning ",TRUE);
+    		Message(_("Sorry\nI can not read gemetry in molpro input file\n"),_("Warning"),TRUE);
 }
 /**********************************************************************************/
 void read_geom_in_orca_input(gchar *NameFile)
@@ -1212,7 +1200,7 @@ void read_geom_in_orca_input(gchar *NameFile)
  	if( j.geomtyp == GEOM_IS_ZMAT)
 		read_Zmat_from_orca_input_file(NameFile);
         else
-    		Message("Sorry\nI can not read gemetry in Q-Chem input file\n"," Warning ",TRUE);
+    		Message(_("Sorry\nI can not read gemetry in Q-Chem input file\n"),_("Warning"),TRUE);
 }
 /**********************************************************************************/
 void read_geom_in_qchem_input(gchar *NameFile)
@@ -1225,7 +1213,7 @@ void read_geom_in_qchem_input(gchar *NameFile)
  	if( j.geomtyp == GEOM_IS_ZMAT)
 		read_Zmat_from_qchem_input_file(NameFile);
         else
-    		Message("Sorry\nI can not read gemetry in Q-Chem input file\n"," Warning ",TRUE);
+    		Message(_("Sorry\nI can not read gemetry in Q-Chem input file\n"),_("Warning"),TRUE);
 }
 /**********************************************************************************/
 void read_geom_in_mopac_input(gchar *NameFile)
@@ -1238,7 +1226,7 @@ void read_geom_in_mopac_input(gchar *NameFile)
  	if( j.geomtyp == GEOM_IS_ZMAT)
 		read_Zmat_from_mopac_input_file(NameFile);
         else
-    		Message("Sorry\nI can not read gemetry in Mopac input file\n"," Warning ",TRUE);
+    		Message(_("Sorry\nI can not read gemetry in Mopac input file\n"),_("Warning"),TRUE);
 }
 /**********************************************************************************/
 void get_doc(gchar *NomFichier)
@@ -1255,8 +1243,8 @@ void get_doc(gchar *NomFichier)
 	if(fd==NULL)
 	{
 		g_free(t);
-		t = g_strdup_printf("Sorry, I can not open\n %s\n file",NomFichier);
-		Message(t,"Error",TRUE);
+		t = g_strdup_printf(_("Sorry, I can not open\n %s\n file"),NomFichier);
+		Message(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	}
@@ -1472,7 +1460,7 @@ static gboolean enreg_doc(gchar *NomFichier)
 	fd = FOpen(NomFichier, "wb");
 	if(fd == NULL)
 	{
-		Message("Sorry, I can not save file","Error",TRUE);
+		Message(_("Sorry, I can not save file"),_("Error"),TRUE);
 		return FALSE;
 	}
 	temp=gabedit_text_get_chars(text,0,-1);
@@ -1754,8 +1742,12 @@ static void show_about_new()
 			);
 
 	static const gchar *comments =
-		"Graphical User Interface to GAMESS-US, Gaussian, Molcas, Molpro, "
-		"MPQC, FireFly and Q-Chem computational chemistry packages.";
+		"Graphical User Interface to FireFly, GAMESS-US, Gaussian, Molcas, Molpro, "
+		"OpenMopac, Orca, MPQC and Q-Chem computational chemistry packages.\n\n"
+		"Please use the following citations in any report or publication :\n"
+		"A.R. Allouche, Journal of Computational Chemistry....,.... (2010)\n"
+		"DOI 10.1002/jcc.21600\n"
+		;
 	
 	gchar *GABEDIT_VERSION =
 		g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
@@ -1789,7 +1781,7 @@ void show_version()
 {
  gchar* Version_S = g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
  gchar *temp=g_strdup_printf("\n Version %s \n\n Abdul-Rahman ALLOUCHE\n",Version_S);
- Message(temp," Version ",TRUE);
+ Message(temp,_("Version"),TRUE);
  g_free(Version_S);
  g_free(temp);
 }
@@ -1816,8 +1808,8 @@ void show_homepage(GtkWidget *w,gpointer data)
 /********************************************************************************/
 void desole(void)
 {
- char *temp="Sorry , this option is not active";
- Message(temp," Warning ",TRUE);
+ char *temp=_("Sorry , this option is not active");
+ Message(temp,_("Warning"),TRUE);
 }
 /********************************************************************************/
  void change_insert(void)
@@ -2214,18 +2206,18 @@ void show_forbidden_characters()
     	'`','\'','.','"',':',';'};
 	guint All=36;
 	guint i;
-	temp = g_strdup("Sorry the name of varibale is not valid !\n\n");
-	temp = g_strdup_printf("%s The first caractere can not be one of : \n",temp);
+	temp = g_strdup(_("Sorry the name of varibale is not valid !\n\n"));
+	temp = g_strdup_printf(_("%s The first character can not be one of : \n"),temp);
 	for(i=0;i<10;i++)
 		temp = g_strdup_printf("%s %c",temp,Forbidden[i]);
 	temp = g_strdup_printf("%s \n\n",temp);
-	temp = g_strdup_printf("%s Do not use the following characters :\n",temp);
+	temp = g_strdup_printf(_("%s Do not use the following characters :\n"),temp);
 	for(i=11;i<All;i++)
 	{
 		temp = g_strdup_printf("%s %c ",temp,Forbidden[i]);
 		if(i%10 == 0) temp = g_strdup_printf("%s \n",temp);
 	}
-	Message(temp," Error ",TRUE);
+	Message(temp,_("Error"),TRUE);
 	g_free(temp);
 }
 /********************************************************************************/
@@ -2272,7 +2264,7 @@ GtkWidget *Continue_YesNo(void (*func)(GtkWidget*,gpointer data),gpointer data,g
 	GtkWidget *frame, *vboxframe;
 	DialogueMessage = gtk_dialog_new();
 	gtk_window_set_position(GTK_WINDOW(DialogueMessage),GTK_WIN_POS_CENTER);
-	gtk_window_set_title(GTK_WINDOW(DialogueMessage)," Warning ");
+	gtk_window_set_title(GTK_WINDOW(DialogueMessage),_("Warning"));
 	gtk_window_set_transient_for(GTK_WINDOW(DialogueMessage),GTK_WINDOW(Fenetre));
 	gtk_window_set_modal (GTK_WINDOW (DialogueMessage), TRUE);
 
@@ -2288,18 +2280,18 @@ GtkWidget *Continue_YesNo(void (*func)(GtkWidget*,gpointer data),gpointer data,g
 	gtk_widget_show (frame);
 	vboxframe = create_vbox(frame);
 	gtk_widget_realize(DialogueMessage);
-	Label = create_label_with_pixmap(DialogueMessage,message,"Question");  
+	Label = create_label_with_pixmap(DialogueMessage,message,_("Question"));  
 	gtk_box_pack_start(GTK_BOX(vboxframe), Label,TRUE,TRUE,0);
     
 	gtk_widget_realize(DialogueMessage);
 
-	Bouton = create_button(DialogueMessage,"No");
+	Bouton = create_button(DialogueMessage,_("No"));
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(DialogueMessage)->action_area),Bouton,TRUE,TRUE,0);
 	g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(DialogueMessage));
 	GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(Bouton);
 
-	Bouton = create_button(DialogueMessage,"Yes");
+	Bouton = create_button(DialogueMessage,_("Yes"));
 	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(DialogueMessage)->action_area), Bouton,TRUE,TRUE,0);
 	GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 	g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)func,data);
@@ -2315,9 +2307,9 @@ void open_file(GtkWidget *widget, gchar *data)
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
         {
-		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
-		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
-		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
 		Continue_YesNo(charge_doc, NULL,t);
 		g_free(t);
         }
@@ -2334,11 +2326,11 @@ void new_molcas(GtkWidget *widget, gchar *data)
 	gchar t1[BSIZE];
  	if(imodif == DATA_MOD_YES)
         {
-		sprintf(t,"\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
+		sprintf(t,_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
 		sprintf(t1,"%s",t);
-		sprintf(t," %sIf you continue, you lose what you have changed.\n\n",t1);
+		sprintf(t,_(" %sIf you continue, you lose what you have changed.\n\n"),t1);
 		sprintf(t1,"%s",t);
-		sprintf(t," %sYou want to continue?\n",t1);
+		sprintf(t,_(" %sYou want to continue?\n"),t1);
 		Continue_YesNo(new_doc_molcas, NULL,t);
         }
         else
@@ -2354,9 +2346,9 @@ void new_molpro(GtkWidget *widget, gchar *data)
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
         {
-		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
-		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
-		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
 		Continue_YesNo(new_doc_molpro, NULL,t);
 		g_free(t);
         }
@@ -2373,9 +2365,9 @@ void new_mpqc(GtkWidget *widget, gchar *data)
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
         {
-		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
-		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
-		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
 		Continue_YesNo(new_doc_mpqc, NULL,t);
 		g_free(t);
         }
@@ -2392,9 +2384,9 @@ void new_firefly(GtkWidget *widget, gchar *data)
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
         {
-		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
-		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
-		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
 		Continue_YesNo(new_doc_firefly, NULL,t);
 		g_free(t);
         }
@@ -2411,9 +2403,9 @@ void new_gamess(GtkWidget *widget, gchar *data)
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
         {
-		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
-		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
-		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
 		Continue_YesNo(new_doc_gamess, NULL,t);
 		g_free(t);
         }
@@ -2430,9 +2422,9 @@ void new_gauss(GtkWidget *widget, gchar *data)
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
         {
-		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
-		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
-		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
 		Continue_YesNo(new_doc_gauss, NULL,t);
 		g_free(t);
         }
@@ -2449,9 +2441,9 @@ void new_orca(GtkWidget *widget, gchar *data)
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
         {
-		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
-		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
-		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
 		Continue_YesNo(new_doc_orca, NULL,t);
 		g_free(t);
         }
@@ -2468,9 +2460,9 @@ void new_qchem(GtkWidget *widget, gchar *data)
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
         {
-		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
-		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
-		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
 		Continue_YesNo(new_doc_qchem, NULL,t);
 		g_free(t);
         }
@@ -2487,9 +2479,9 @@ void new_mopac(GtkWidget *widget, gchar *data)
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
         {
-		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
-		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
-		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
 		Continue_YesNo(new_doc_mopac, NULL,t);
 		g_free(t);
         }
@@ -2501,15 +2493,14 @@ void new_mopac(GtkWidget *widget, gchar *data)
  	}
 }
 /**********************************************************************************/
-/**********************************************************************************/
  void new_other(GtkWidget *widget, gchar *data)
 {
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
         {
-		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
-		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
-		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
 		Continue_YesNo(new_doc_other, NULL,t);
 		g_free(t);
         }
@@ -2775,7 +2766,7 @@ static void open_color_dlg_dipole(GtkWidget *button,gpointer data)
   	GtkWidget *win = g_object_get_data(G_OBJECT (button), "Win");
 	GdkColor* color = g_object_get_data(G_OBJECT (button), "Color");;
 
-	colorDlg = (GtkColorSelectionDialog *)gtk_color_selection_dialog_new("Set Dipole Color");
+	colorDlg = (GtkColorSelectionDialog *)gtk_color_selection_dialog_new(_("Set Dipole Color"));
 	gtk_color_selection_set_current_color (GTK_COLOR_SELECTION (colorDlg->colorsel), color);
 	gtk_color_selection_set_current_color (GTK_COLOR_SELECTION (colorDlg->colorsel), color);
 	gtk_window_set_transient_for(GTK_WINDOW(colorDlg),GTK_WINDOW(win));
@@ -2799,7 +2790,7 @@ static void open_color_dlg_dipole(GtkWidget *button,gpointer data)
   	g_signal_connect_swapped(G_OBJECT(colorDlg->cancel_button), "clicked", (GCallback)destroy_button_windows,GTK_OBJECT(colorDlg));
 	g_signal_connect_swapped(G_OBJECT(colorDlg->cancel_button),"clicked", (GCallback)gtk_widget_destroy,GTK_OBJECT(colorDlg));
 
-  	add_button_windows(" Set Color ",GTK_WIDGET(colorDlg));
+  	add_button_windows(_(" Set Color "),GTK_WIDGET(colorDlg));
 	gtk_widget_show(GTK_WIDGET(colorDlg));
 
 }
@@ -2822,7 +2813,7 @@ GtkWidget* set_dipole_dialog ()
   /* principal Window */
   fp = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_modal(GTK_WINDOW(fp),TRUE);
-  gtk_window_set_title(GTK_WINDOW(fp),"Set Dipole");
+  gtk_window_set_title(GTK_WINDOW(fp),_("Set Dipole"));
   gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
 
   gtk_window_set_position(GTK_WINDOW(fp),GTK_WIN_POS_CENTER);
@@ -2831,7 +2822,7 @@ GtkWidget* set_dipole_dialog ()
   g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)gtk_widget_destroy,NULL);
 
   vboxall = create_vbox(fp);
-  frame = gtk_frame_new ("Set Dipole(Debye)");
+  frame = gtk_frame_new (_("Set Dipole(Debye)"));
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
@@ -2875,7 +2866,7 @@ GtkWidget* set_dipole_dialog ()
   gtk_widget_show (hbox);
   gtk_box_pack_start (GTK_BOX (vboxframe), hbox, FALSE, FALSE, 1);
 
-  label = gtk_label_new ("Color : ");
+  label = gtk_label_new (_("Color : "));
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, FALSE, 0);
   style = gtk_widget_get_style(fp);
@@ -2898,20 +2889,20 @@ GtkWidget* set_dipole_dialog ()
 
   hbox = create_hbox(vboxall);
 
-  button = create_button(Fenetre,"OK");
+  button = create_button(Fenetre,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_object_set_data(G_OBJECT (button), "Color", &color);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(set_dipole),(gpointer)entrys);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_widget_destroy),GTK_OBJECT(fp));
   gtk_widget_show (button);
 
-  button = create_button(Fenetre,"Apply");
+  button = create_button(Fenetre,_("Apply"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_object_set_data(G_OBJECT (button), "Color", &color);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(set_dipole),(gpointer)entrys);
   gtk_widget_show (button);
 
-  button = create_button(Fenetre,"Close");
+  button = create_button(Fenetre,_("Close"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_widget_destroy),GTK_OBJECT(fp));
 

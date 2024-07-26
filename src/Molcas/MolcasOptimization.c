@@ -1,4 +1,4 @@
-/* MolcasOptimisation.c */
+/* MolcasOptimization.c */
 /**********************************************************************************************************
 Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
@@ -35,22 +35,22 @@ DEALINGS IN THE SOFTWARE.
 static gint typeOfCalcul[] = { 0,1};
 
 /************************************************************************************************************/
-void initMolcasOptimisation()
+void initMolcasOptimization()
 {
-	molcasOptimisation.numberOfIterations = 0;  
+	molcasOptimization.numberOfIterations = 0;  
 }
 /************************************************************************************************************/
-void freeMolcasOptimisation()
+void freeMolcasOptimization()
 {
 	static gboolean first = TRUE;
 
 	if(first)
 	{
-		initMolcasOptimisation();
+		initMolcasOptimization();
 		first = FALSE;
 		return;
 	}
-	molcasOptimisation.numberOfIterations = 0;
+	molcasOptimization.numberOfIterations = 0;
 }
 /**************************************************************************************************************************************/
 static void activateRadioButton(GtkWidget *button, gpointer data)
@@ -71,13 +71,13 @@ static void activateRadioButton(GtkWidget *button, gpointer data)
 		{
 			if(entryIteration) gtk_widget_set_sensitive(entryIteration, FALSE);
 			if(labelIteration) gtk_widget_set_sensitive(labelIteration, FALSE);
-			molcasOptimisation.numberOfIterations = 0;
+			molcasOptimization.numberOfIterations = 0;
 		}
 		if(*type == typeOfCalcul[1])
 		{
 			if(entryIteration) gtk_widget_set_sensitive(entryIteration, TRUE);
 			if(labelIteration) gtk_widget_set_sensitive(labelIteration, TRUE);
-			molcasOptimisation.numberOfIterations = 15;
+			molcasOptimization.numberOfIterations = 15;
 		}
 	}
 }
@@ -100,17 +100,17 @@ static void changedEntryMaxIterations(GtkWidget *entry, gpointer data)
 	{
 	
 		if(atoi(tmp)>0)
-			molcasOptimisation.numberOfIterations = atoi(tmp);
+			molcasOptimization.numberOfIterations = atoi(tmp);
 		else
 		{
-			molcasOptimisation.numberOfIterations = 15;
+			molcasOptimization.numberOfIterations = 15;
 			gtk_entry_set_text(GTK_ENTRY(entry),"15");
 		}
 	
 	}
 	else
 	{
-		molcasOptimisation.numberOfIterations = 15;
+		molcasOptimization.numberOfIterations = 15;
 		gtk_entry_set_text(GTK_ENTRY(entry),"15");
 	}
 	g_free(tmp);
@@ -135,18 +135,18 @@ static GtkWidget* addRadioButtonToATable(GtkWidget* table, GtkWidget* friendButt
 	return newButton;
 }
 /**************************************************************************************************************************************/
-void createOptimisationFrame(GtkWidget *win, GtkWidget *box)
+void createOptimizationFrame(GtkWidget *win, GtkWidget *box)
 {
 	GtkWidget* button;
 	GtkWidget* frame;
 	GtkWidget* vboxFrame;
 	GtkWidget *table = gtk_table_new(2,2,FALSE);
 	GtkWidget* entryIteration = gtk_entry_new();
-	GtkWidget* label = gtk_label_new("Number of iterations : ");
+	GtkWidget* label = gtk_label_new(_("Number of iterations : "));
 
 
 
-	frame = gtk_frame_new ("Type of caclul");
+	frame = gtk_frame_new (_("Type of caclul"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -157,14 +157,14 @@ void createOptimisationFrame(GtkWidget *win, GtkWidget *box)
 
 	gtk_box_pack_start (GTK_BOX (vboxFrame), table, TRUE, TRUE, 0);
 
-	button = addRadioButtonToATable(table, NULL, "Single point", 0, 0,1);
+	button = addRadioButtonToATable(table, NULL, _("Single point"), 0, 0,1);
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfCalcul[0]);
 	g_object_set_data(G_OBJECT (button), "EntryIteration",entryIteration);
 	g_object_set_data(G_OBJECT (button), "LabelIteration",label);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
 	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);
 
-	button = addRadioButtonToATable(table, button, "Optimisation of geometry", 1, 0, 1);
+	button = addRadioButtonToATable(table, button, _("Optimization of geometry"), 1, 0, 1);
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfCalcul[1]);
 	g_object_set_data(G_OBJECT (button), "EntryIteration",entryIteration);
 	g_object_set_data(G_OBJECT (button), "LabelIteration",label);
@@ -179,20 +179,20 @@ void createOptimisationFrame(GtkWidget *win, GtkWidget *box)
 	gtk_widget_set_sensitive(entryIteration, FALSE);
 	gtk_widget_set_sensitive(label, FALSE);
 
-	molcasOptimisation.numberOfIterations = 0;  
+	molcasOptimization.numberOfIterations = 0;  
 }
 /************************************************************************************************************/
-void putBeginOptimisationInTextEditor()
+void putBeginOptimizationInTextEditor()
 {
         gchar buffer[BSIZE];
 
-	if(molcasOptimisation.numberOfIterations<1) return;
+	if(molcasOptimization.numberOfIterations<1) return;
 
 	/*
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.internCommand, &molcasColorBack.internCommand, ">>> Set output override\n",-1);
 	*/
 
-	sprintf(buffer,">>> Set maxiter %d\n",molcasOptimisation.numberOfIterations);
+	sprintf(buffer,">>> Set maxiter %d\n",molcasOptimization.numberOfIterations);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.internCommand, &molcasColorBack.internCommand, buffer, -1);
 
 	sprintf(buffer,">>> Do while\n");
@@ -201,11 +201,11 @@ void putBeginOptimisationInTextEditor()
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "\n",-1);
 }
 /************************************************************************************************************/
-void putEndOptimisationInTextEditor()
+void putEndOptimizationInTextEditor()
 {
 	/* gchar buffer[BSIZE];*/
 
-	if(molcasOptimisation.numberOfIterations<1) return;
+	if(molcasOptimization.numberOfIterations<1) return;
 
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.program, &molcasColorBack.program, " &ALASKA &END\n",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.program, &molcasColorBack.program, "End Of Input\n\n",-1);
@@ -232,9 +232,9 @@ void putEndOptimisationInTextEditor()
 
 }
 /************************************************************************************************************/
-void putOptimisationInfoInTextEditor()
+void putOptimizationInfoInTextEditor()
 {
-	putBeginOptimisationInTextEditor();
-	putEndOptimisationInTextEditor();
+	putBeginOptimizationInTextEditor();
+	putEndOptimizationInTextEditor();
 }
 /************************************************************************************************************/

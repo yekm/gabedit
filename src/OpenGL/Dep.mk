@@ -41,7 +41,7 @@ TriangleDraw.o: TriangleDraw.c ../../Config.h GlobalOrb.h \
   ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
   ../MultiGrid/TypesMG.h IsoSurface.h ../Common/GabeditType.h Textures.h \
   ../Utils/Vector3d.h ../Utils/Transformation.h ../OpenGL/ColorMap.h \
-  ../OpenGL/UtilsOrb.h
+  ../OpenGL/UtilsOrb.h ../OpenGL/GLArea.h ../Utils/UtilsInterface.h
 UtilsOrb.o: UtilsOrb.c ../../Config.h ../OpenGL/GlobalOrb.h \
   ../OpenGL/../Files/GabeditFileChooser.h \
   ../OpenGL/../../gtkglarea/gtkglarea.h ../OpenGL/../../gtkglarea/gdkgl.h \
@@ -52,9 +52,10 @@ UtilsOrb.o: UtilsOrb.c ../../Config.h ../OpenGL/GlobalOrb.h \
   ../Utils/Vector3d.h ../OpenGL/GLArea.h ../OpenGL/Orbitals.h \
   ../OpenGL/OrbitalsMolpro.h ../OpenGL/OrbitalsGamess.h \
   ../OpenGL/OrbitalsQChem.h ../OpenGL/GeomOrbXYZ.h ../OpenGL/BondsOrb.h \
-  ../OpenGL/UtilsOrb.h ../OpenGL/TriangleDraw.h ../Utils/Utils.h \
-  ../Utils/UtilsInterface.h ../Utils/Constants.h ../Common/Windows.h \
-  ../OpenGL/Vibration.h ../OpenGL/ContoursPov.h \
+  ../OpenGL/UtilsOrb.h ../OpenGL/TriangleDraw.h \
+  ../OpenGL/../Utils/Vector3d.h ../OpenGL/../Utils/Transformation.h \
+  ../Utils/Utils.h ../Utils/UtilsInterface.h ../Utils/Constants.h \
+  ../Common/Windows.h ../OpenGL/Vibration.h ../OpenGL/ContoursPov.h \
   ../OpenGL/PlanesMappedPov.h ../OpenGL/GridCube.h ../OpenGL/GridCP.h \
   ../OpenGL/ColorMap.h
 Basis.o: Basis.c ../../Config.h GlobalOrb.h ../Files/GabeditFileChooser.h \
@@ -212,8 +213,9 @@ PreferencesOrb.o: PreferencesOrb.c ../../Config.h ../OpenGL/GlobalOrb.h \
   ../OpenGL/../MultiGrid/DomainMG.h ../OpenGL/../MultiGrid/TypesMG.h \
   ../OpenGL/IsoSurface.h ../OpenGL/../Common/GabeditType.h \
   ../OpenGL/GLArea.h ../OpenGL/Orbitals.h ../OpenGL/UtilsOrb.h \
-  ../Utils/Vector3d.h ../OpenGL/TriangleDraw.h ../Utils/UtilsInterface.h \
-  ../Common/Windows.h ../OpenGL/MenuToolBarGL.h
+  ../Utils/Vector3d.h ../OpenGL/TriangleDraw.h \
+  ../OpenGL/../Utils/Vector3d.h ../OpenGL/../Utils/Transformation.h \
+  ../Utils/UtilsInterface.h ../Common/Windows.h ../OpenGL/MenuToolBarGL.h
 GridCube.o: GridCube.c ../../Config.h ../OpenGL/GlobalOrb.h \
   ../OpenGL/../Files/GabeditFileChooser.h \
   ../OpenGL/../../gtkglarea/gtkglarea.h ../OpenGL/../../gtkglarea/gdkgl.h \
@@ -335,7 +337,8 @@ AnimationIsoSurface.o: AnimationIsoSurface.c ../../Config.h GlobalOrb.h \
   ../Utils/Utils.h ../Utils/Constants.h ../Utils/UtilsInterface.h \
   ../Utils/Vector3d.h ../Utils/Transformation.h ../OpenGL/StatusOrb.h \
   ../OpenGL/GLArea.h ../OpenGL/AnimationIsoSurface.h ../OpenGL/ColorMap.h \
-  ../OpenGL/TriangleDraw.h ../Files/FolderChooser.h \
+  ../OpenGL/TriangleDraw.h ../OpenGL/../Utils/Vector3d.h \
+  ../OpenGL/../Utils/Transformation.h ../Files/FolderChooser.h \
   ../Files/GabeditFolderChooser.h ../Common/Help.h ../OpenGL/Images.h \
   ../OpenGL/PovrayGL.h
 AnimationContours.o: AnimationContours.c ../../Config.h GlobalOrb.h \
@@ -346,7 +349,8 @@ AnimationContours.o: AnimationContours.c ../../Config.h GlobalOrb.h \
   ../Utils/Utils.h ../Utils/Constants.h ../Utils/UtilsInterface.h \
   ../Utils/Vector3d.h ../Utils/Transformation.h ../OpenGL/StatusOrb.h \
   ../OpenGL/GLArea.h ../OpenGL/AnimationContours.h ../OpenGL/ColorMap.h \
-  ../OpenGL/TriangleDraw.h ../Files/FolderChooser.h \
+  ../OpenGL/TriangleDraw.h ../OpenGL/../Utils/Vector3d.h \
+  ../OpenGL/../Utils/Transformation.h ../Files/FolderChooser.h \
   ../Files/GabeditFolderChooser.h ../Common/Help.h ../OpenGL/PovrayGL.h \
   ../OpenGL/Images.h
 AnimationPlanesMapped.o: AnimationPlanesMapped.c ../../Config.h \
@@ -357,9 +361,10 @@ AnimationPlanesMapped.o: AnimationPlanesMapped.c ../../Config.h \
   ../Utils/Utils.h ../Utils/Constants.h ../Utils/UtilsInterface.h \
   ../Utils/Vector3d.h ../Utils/Transformation.h ../OpenGL/StatusOrb.h \
   ../OpenGL/GLArea.h ../OpenGL/AnimationPlanesMapped.h \
-  ../OpenGL/ColorMap.h ../OpenGL/TriangleDraw.h ../Files/FolderChooser.h \
-  ../Files/GabeditFolderChooser.h ../Common/Help.h ../OpenGL/Images.h \
-  ../OpenGL/PovrayGL.h
+  ../OpenGL/ColorMap.h ../OpenGL/TriangleDraw.h \
+  ../OpenGL/../Utils/Vector3d.h ../OpenGL/../Utils/Transformation.h \
+  ../Files/FolderChooser.h ../Files/GabeditFolderChooser.h \
+  ../Common/Help.h ../OpenGL/Images.h ../OpenGL/PovrayGL.h
 AnimationGeomConv.o: AnimationGeomConv.c ../../Config.h GlobalOrb.h \
   ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h \
   ../../gtkglarea/gdkgl.h ../../gl2ps/gl2ps.h Grid.h \
@@ -399,9 +404,10 @@ PovrayGL.o: PovrayGL.c ../../Config.h ../Common/Global.h \
   ../Utils/Vector3d.h ../Utils/Transformation.h ../Utils/Utils.h \
   ../Utils/UtilsInterface.h ../Utils/Constants.h ../Utils/HydrogenBond.h \
   ../Utils/PovrayUtils.h ../OpenGL/GLArea.h ../OpenGL/GeomDraw.h \
-  ../OpenGL/TriangleDraw.h ../OpenGL/AxisGL.h ../OpenGL/PrincipalAxisGL.h \
-  ../OpenGL/ColorMap.h ../OpenGL/BondsOrb.h ../OpenGL/RingsOrb.h \
-  ../OpenGL/Vibration.h
+  ../OpenGL/TriangleDraw.h ../OpenGL/../Utils/Vector3d.h \
+  ../OpenGL/../Utils/Transformation.h ../OpenGL/AxisGL.h \
+  ../OpenGL/PrincipalAxisGL.h ../OpenGL/ColorMap.h ../OpenGL/BondsOrb.h \
+  ../OpenGL/RingsOrb.h ../OpenGL/Vibration.h
 ContoursPov.o: ContoursPov.c ../../Config.h GlobalOrb.h \
   ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h \
   ../../gtkglarea/gdkgl.h ../../gl2ps/gl2ps.h Grid.h \
@@ -443,8 +449,9 @@ SurfacesPov.o: SurfacesPov.c ../../Config.h GlobalOrb.h \
   ../Geometry/GeomGlobal.h ../Utils/Vector3d.h ../Utils/Transformation.h \
   ../Utils/Utils.h ../Utils/UtilsInterface.h ../Utils/Constants.h \
   ../Utils/HydrogenBond.h ../Utils/PovrayUtils.h ../OpenGL/GLArea.h \
-  ../OpenGL/GeomDraw.h ../OpenGL/TriangleDraw.h ../OpenGL/AxisGL.h \
-  ../OpenGL/PrincipalAxisGL.h ../OpenGL/ColorMap.h
+  ../OpenGL/GeomDraw.h ../OpenGL/TriangleDraw.h \
+  ../OpenGL/../Utils/Vector3d.h ../OpenGL/../Utils/Transformation.h \
+  ../OpenGL/AxisGL.h ../OpenGL/PrincipalAxisGL.h ../OpenGL/ColorMap.h
 RingsPov.o: RingsPov.c ../../Config.h GlobalOrb.h \
   ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h \
   ../../gtkglarea/gdkgl.h ../../gl2ps/gl2ps.h Grid.h \
@@ -472,7 +479,9 @@ MenuToolBarGL.o: MenuToolBarGL.c ../../Config.h GlobalOrb.h \
   ../OpenGL/PovrayGL.h ../OpenGL/ExportGL.h ../OpenGL/StatusOrb.h \
   ../OpenGL/LabelsGL.h ../OpenGL/RingsOrb.h ../OpenGL/ContoursDraw.h \
   ../OpenGL/CaptureOrbitals.h ../OpenGL/IntegralOrbitals.h \
-  ../OpenGL/BondsOrb.h ../Common/StockIcons.h
+  ../OpenGL/BondsOrb.h ../OpenGL/TriangleDraw.h \
+  ../OpenGL/../Utils/Vector3d.h ../OpenGL/../Utils/Transformation.h \
+  ../Common/StockIcons.h
 LabelsGL.o: LabelsGL.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h GlobalOrb.h \
@@ -500,9 +509,10 @@ ExportGL.o: ExportGL.c ../../Config.h GlobalOrb.h \
   ../Geometry/GeomGlobal.h ../Files/FileChooser.h ../Utils/Vector3d.h \
   ../Utils/Transformation.h ../Utils/Utils.h ../Utils/UtilsInterface.h \
   ../Utils/Constants.h ../Utils/HydrogenBond.h ../OpenGL/GLArea.h \
-  ../OpenGL/GeomDraw.h ../OpenGL/TriangleDraw.h ../OpenGL/AxisGL.h \
-  ../OpenGL/PrincipalAxisGL.h ../OpenGL/ColorMap.h ../OpenGL/BondsOrb.h \
-  ../OpenGL/RingsOrb.h
+  ../OpenGL/GeomDraw.h ../OpenGL/TriangleDraw.h \
+  ../OpenGL/../Utils/Vector3d.h ../OpenGL/../Utils/Transformation.h \
+  ../OpenGL/AxisGL.h ../OpenGL/PrincipalAxisGL.h ../OpenGL/ColorMap.h \
+  ../OpenGL/BondsOrb.h ../OpenGL/RingsOrb.h
 CaptureOrbitals.o: CaptureOrbitals.c ../../Config.h ../OpenGL/GlobalOrb.h \
   ../OpenGL/../Files/GabeditFileChooser.h \
   ../OpenGL/../../gtkglarea/gtkglarea.h ../OpenGL/../../gtkglarea/gdkgl.h \
@@ -513,10 +523,12 @@ CaptureOrbitals.o: CaptureOrbitals.c ../../Config.h ../OpenGL/GlobalOrb.h \
   ../Utils/Vector3d.h ../OpenGL/GLArea.h ../OpenGL/Orbitals.h \
   ../OpenGL/OrbitalsMolpro.h ../OpenGL/OrbitalsGamess.h \
   ../OpenGL/OrbitalsQChem.h ../OpenGL/GeomOrbXYZ.h ../OpenGL/BondsOrb.h \
-  ../OpenGL/UtilsOrb.h ../OpenGL/TriangleDraw.h ../Utils/Utils.h \
-  ../Utils/UtilsInterface.h ../Utils/Constants.h ../Files/FileChooser.h \
-  ../Common/Windows.h ../OpenGL/Vibration.h ../OpenGL/ContoursPov.h \
-  ../OpenGL/PlanesMappedPov.h ../OpenGL/LabelsGL.h
+  ../OpenGL/UtilsOrb.h ../OpenGL/TriangleDraw.h \
+  ../OpenGL/../Utils/Vector3d.h ../OpenGL/../Utils/Transformation.h \
+  ../Utils/Utils.h ../Utils/UtilsInterface.h ../Utils/Constants.h \
+  ../Files/FileChooser.h ../Common/Windows.h ../OpenGL/Vibration.h \
+  ../OpenGL/ContoursPov.h ../OpenGL/PlanesMappedPov.h \
+  ../OpenGL/LabelsGL.h
 IntegralOrbitals.o: IntegralOrbitals.c ../../Config.h \
   ../OpenGL/GlobalOrb.h ../OpenGL/../Files/GabeditFileChooser.h \
   ../OpenGL/../../gtkglarea/gtkglarea.h ../OpenGL/../../gtkglarea/gdkgl.h \
@@ -528,9 +540,10 @@ IntegralOrbitals.o: IntegralOrbitals.c ../../Config.h \
   ../OpenGL/GLArea.h ../OpenGL/Orbitals.h ../OpenGL/OrbitalsMolpro.h \
   ../OpenGL/OrbitalsGamess.h ../OpenGL/OrbitalsQChem.h \
   ../OpenGL/GeomOrbXYZ.h ../OpenGL/BondsOrb.h ../OpenGL/UtilsOrb.h \
-  ../OpenGL/TriangleDraw.h ../Utils/Utils.h ../Utils/UtilsInterface.h \
-  ../Utils/Constants.h ../Files/FileChooser.h ../Common/Windows.h \
-  ../OpenGL/Vibration.h ../OpenGL/ContoursPov.h \
+  ../OpenGL/TriangleDraw.h ../OpenGL/../Utils/Vector3d.h \
+  ../OpenGL/../Utils/Transformation.h ../Utils/Utils.h \
+  ../Utils/UtilsInterface.h ../Utils/Constants.h ../Files/FileChooser.h \
+  ../Common/Windows.h ../OpenGL/Vibration.h ../OpenGL/ContoursPov.h \
   ../OpenGL/PlanesMappedPov.h ../OpenGL/LabelsGL.h ../OpenGL/StatusOrb.h
 GridCP.o: GridCP.c ../../Config.h ../OpenGL/GlobalOrb.h \
   ../OpenGL/../Files/GabeditFileChooser.h \

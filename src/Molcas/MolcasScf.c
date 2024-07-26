@@ -323,7 +323,7 @@ static void changedEntryCharge(GtkWidget *entry, gpointer data)
 	{
 		gint ne = molcasMolecule.numberOfValenceElectrons - molcasScfTmp.charge[0];
 		gchar buffer[BSIZE];
-		sprintf(buffer, "Number Of Electrons = %d",ne);
+		sprintf(buffer, _("Number Of Electrons = %d"),ne);
 		gtk_label_set_text(GTK_LABEL(labelNumberOfElectrons),buffer);
 	}
 }
@@ -399,8 +399,8 @@ void createScfFrame(GtkWidget *win, GtkWidget *box, GtkWidget *OkButton)
 	GtkWidget* vboxFrame;
 	GtkWidget *table = gtk_table_new(3,4,FALSE);
 	GtkWidget* entryMethod = NULL;
-	GtkWidget* labelTypes = gtk_label_new("Type : ");
-	GtkWidget* labelMethods = gtk_label_new("Method : ");
+	GtkWidget* labelTypes = gtk_label_new(_("Type : "));
+	GtkWidget* labelMethods = gtk_label_new(_("Method : "));
 	gint nlistTypes = 2;
 	gchar* listTypes[] = {"Restricted", "UnRestricted"};
 	gint nlistMethods = 14;
@@ -409,7 +409,7 @@ void createScfFrame(GtkWidget *win, GtkWidget *box, GtkWidget *OkButton)
 	};
 	GtkWidget* entryCharge = NULL;
 	GtkWidget* comboCharge = NULL;
-	GtkWidget* labelCharge = gtk_label_new("Charge : ");
+	GtkWidget* labelCharge = gtk_label_new(_("Charge : "));
 	gint nlistCharge = 1;
 	gchar* listCharge[] = {"0"};
 
@@ -417,14 +417,14 @@ void createScfFrame(GtkWidget *win, GtkWidget *box, GtkWidget *OkButton)
 
 	GtkWidget* entryZSpin = NULL;
 	GtkWidget* comboZSpin = NULL;
-	GtkWidget* labelZSpin = gtk_label_new("2* Z Spin : ");
+	GtkWidget* labelZSpin = gtk_label_new(_("2* Z Spin : "));
 	gint nlistZSpin = 1;
 	gchar* listZSpin[] = {"0"};
 
 	initMolcasScfTmp();
 	initMolcasScf(&molcasScf);
 
-	frame = gtk_frame_new ("SCF Program");
+	frame = gtk_frame_new (_("SCF Program"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -617,7 +617,7 @@ static void putIVOScfInTextEditor()
         gchar buffer[BSIZE];
 
 	if(!molcasScf.ivo) return;
-	if(molcasOptimisation.numberOfIterations>0) return;
+	if(molcasOptimization.numberOfIterations>0) return;
 
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.subProgram, NULL, "Ivo\n",-1);
 
@@ -636,7 +636,7 @@ static void putEndScfInTextEditor()
 
 	/* this action is done automatically - all grid & molden files are copied to submit directory.*/
 	/*
-	if(molcasOptimisation.numberOfIterations<1)
+	if(molcasOptimization.numberOfIterations<1)
 	{
         	gchar buffer[BSIZE];
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "\n\n", -1);

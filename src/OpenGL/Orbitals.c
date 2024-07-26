@@ -209,7 +209,7 @@ void free_orbitals()
 		}
 		CoefBetaOrbitals = NULL;
 	}
-	set_status_label_info("Mol. Orb.","Nothing");
+	set_status_label_info(_("Mol. Orb."),_("Nothing"));
 	NOrb = 0;
 	NAOrb = 0;
 }
@@ -226,22 +226,22 @@ static void applyiso(GtkWidget *Win,gpointer data)
 	if(this_is_a_real(temp)) isovalue = atof(temp);
 	else
 	{
-		GtkWidget* message =Message("Error : one entry is not a float ","Error",TRUE);
+		GtkWidget* message =Message(_("Error : one entry is not a float "),_("Error"),TRUE);
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		return;
 	}
 	if(fabs(isovalue)>fabs(limits.MinMax[1][3]) && fabs(isovalue)>fabs(limits.MinMax[0][3]))
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Error : The isovalue  value should between %lf and %lf",fabs(limits.MinMax[1][3]),fabs(limits.MinMax[0][3]));
-		GtkWidget* message = Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Error : The isovalue  value should between %lf and %lf"),fabs(limits.MinMax[1][3]),fabs(limits.MinMax[0][3]));
+		GtkWidget* message = Message(buffer,_("Error"),TRUE);
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		return;
 	}
 	/*
 	if(isovalue<limits.MinMax[0][3])
 	{
-		GtkWidget* message = Message("Error :  The minimal value should be smaller than the minimal value ","Error",TRUE);
+		GtkWidget* message = Message("Error :  The minimal value should be smaller than the minimal value ",_("Error"),TRUE);
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		return;
 	}
@@ -296,7 +296,7 @@ void applygrid(GtkWidget *Win,gpointer data)
 			}
 			else
 			{
-				GtkWidget* message = Message("Error : one entry is not a float ","Error",TRUE);
+				GtkWidget* message = Message(_("Error : one entry is not a float "),_("Error"),TRUE);
   				gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 				return;
 			}
@@ -306,7 +306,7 @@ void applygrid(GtkWidget *Win,gpointer data)
 		NumPointstmp[i] = atoi(temp);
 		if(NumPointstmp[i] <=2)
 		{
-			GtkWidget* message = Message("Error : The number of points should be > 2. ","Error",TRUE);
+			GtkWidget* message = Message(_("Error : The number of points should be > 2. "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -317,7 +317,7 @@ void applygrid(GtkWidget *Win,gpointer data)
 	{
 		if( limitstmp.MinMax[0][i]> limitstmp.MinMax[1][i])
 		{
-			GtkWidget* message = Message("Error :  The minimal value should be smaller than the maximal value ","Error",TRUE);
+			GtkWidget* message = Message(_("Error :  The minimal value should be smaller than the maximal value "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -342,7 +342,7 @@ void applygrid(GtkWidget *Win,gpointer data)
 			}
 			else
 			{
-				GtkWidget* message = Message("Error : one entry is not a float ","Error",TRUE);
+				GtkWidget* message = Message(_("Error : one entry is not a float "),_("Error"),TRUE);
   				gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 				return;
 			}
@@ -357,7 +357,7 @@ void applygrid(GtkWidget *Win,gpointer data)
 			norm += V[i][j]*V[i][j];
 		if(fabs(norm)<1e-8)
 		{
-			GtkWidget* message = Message("Error : the norm is equal to 0 ","Error",TRUE);
+			GtkWidget* message = Message(_("Error : the norm is equal to 0 "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -431,7 +431,7 @@ static void cut_ceof_orbitals_win(GtkWidget* parentWin)
 
 
 	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(Win),"Cutoff molecular orbitals coefficients");
+	gtk_window_set_title(GTK_WINDOW(Win),_("Cutoff molecular orbitals coefficients"));
 	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
 	gtk_container_set_border_width (GTK_CONTAINER (Win), 2);
 	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(PrincipalWindow));
@@ -465,14 +465,14 @@ static void cut_ceof_orbitals_win(GtkWidget* parentWin)
 	hbox = create_hbox_false(vboxwin);
 	gtk_widget_realize(Win);
 
-	button = create_button(Win,"Cancel");
+	button = create_button(Win,_("Cancel"));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Win));
 	gtk_widget_show (button);
 
-	button = create_button(Win,"OK");
+	button = create_button(Win,_("OK"));
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
@@ -894,7 +894,7 @@ static void getiso(GtkWidget *button,gpointer data)
 	if(this_is_a_real(temp)) percent = fabs(atof(temp));
 	else
 	{
-		GtkWidget* message =Message("Error : one entry is not a float ","Error",TRUE);
+		GtkWidget* message =Message(_("Error : one entry is not a float "),_("Error"),TRUE);
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		if(temp) g_free(temp);
 		return;
@@ -932,9 +932,9 @@ GtkWidget *create_iso_frame( GtkWidget *vboxall,gchar* title)
 #define NCOLUMNS  3
 	gchar      *strlabels[NLIGNES][NCOLUMNS];
 	
-	strlabels[0][0] = g_strdup(" Min ");
-	strlabels[1][0] = g_strdup(" Max ");
-	strlabels[2][0] = g_strdup(" Value ");
+	strlabels[0][0] = g_strdup(_(" Min "));
+	strlabels[1][0] = g_strdup(_(" Max "));
+	strlabels[2][0] = g_strdup(_(" Value "));
 	strlabels[0][1] = g_strdup(" : ");
 	strlabels[1][1] = g_strdup(" : ");
 	strlabels[2][1] = g_strdup(" : ");
@@ -1001,6 +1001,8 @@ GtkWidget *create_iso_frame( GtkWidget *vboxall,gchar* title)
   	g_signal_connect(G_OBJECT(button), "clicked",(GCallback)getiso,GTK_OBJECT(Entry));
   
   	return frame;
+#undef NLIGNES
+#undef NCOLUMNS
 }
 /********************************************************************************/
 static void reset_new_surface()
@@ -1022,12 +1024,12 @@ void create_iso_orbitals()
   if(!grid )
   {
 	  if( !CancelCalcul)
-	  	Message("Grid not defined ","Error",TRUE);
+	  	Message(_("Grid not defined "),_("Error"),TRUE);
 	  return;
   }
   /* Principal Window */
   Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_title(GTK_WINDOW(Win),"Calculations of isosurfaces for an orbital");
+  gtk_window_set_title(GTK_WINDOW(Win),_("Calculations of isosurfaces for an orbital"));
   gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
   gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
   gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(PrincipalWindow));
@@ -1038,7 +1040,7 @@ void create_iso_orbitals()
 
   vboxall = create_vbox(Win);
   vboxwin = vboxall;
-  frame = create_iso_frame(vboxall,"Iso-Value");
+  frame = create_iso_frame(vboxall,_("Iso-Value"));
   Entry = (GtkWidget*) g_object_get_data(G_OBJECT (frame), "Entry");
   g_object_set_data(G_OBJECT (Win), "Entry",Entry);
    
@@ -1047,14 +1049,14 @@ void create_iso_orbitals()
   hbox = create_hbox_false(vboxwin);
   gtk_widget_realize(Win);
 
-  button = create_button(Win,"Cancel");
+  button = create_button(Win,_("Cancel"));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Win));
   gtk_widget_show (button);
 
-  button = create_button(Win,"OK");
+  button = create_button(Win,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
@@ -1114,7 +1116,7 @@ void create_list_orbitals()
 
   if(NAOrb<1)
   {
-	  Message("Sorry, Please load a file before\n","Error",TRUE);
+	  Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
 	  return;
   }
 
@@ -1122,7 +1124,7 @@ void create_list_orbitals()
 
   /* Principal Window */
   Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_title(GTK_WINDOW(Win),"Orbitals");
+  gtk_window_set_title(GTK_WINDOW(Win),_("Orbitals"));
   gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
   gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
   gtk_window_set_default_size (GTK_WINDOW(Win),-1,(gint)(ScreenHeight*0.69));
@@ -1156,33 +1158,33 @@ void create_list_orbitals()
   hbox = create_hbox_false(vboxwin);
   gtk_widget_realize(Win);
 
-  button = create_button(Win,"Close");
+  button = create_button(Win,_("Close"));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 2);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroyWinsList, GTK_OBJECT(Win));
   gtk_widget_show (button);
 
-  button = create_button(Win,"Cut MO Coef.");
+  button = create_button(Win,_("Cut MO Coef."));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 2);
   gtk_widget_show (button);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)cut_ceof_orbitals_win,GTK_OBJECT(Win));
 
-  button = create_button(Win,"DOS Alpha");
+  button = create_button(Win,_("DOS Alpha"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 2);
   gtk_widget_show (button);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)create_alpha_dos,GTK_OBJECT(Win));
 
-  button = create_button(Win,"DOS Beta");
+  button = create_button(Win,_("DOS Beta"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 2);
   gtk_widget_show (button);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)create_beta_dos,GTK_OBJECT(Win));
 
-  button = create_button(Win,"DOS All");
+  button = create_button(Win,_("DOS All"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 2);
   gtk_widget_show (button);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)create_all_dos,GTK_OBJECT(Win));
 
-  button = create_button(Win,"OK");
+  button = create_button(Win,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 2);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
@@ -1230,7 +1232,7 @@ gchar* get_sym_orb(gchar *allstr)
 			gint i;
 			gchar *sym;
 			if(l<=0)
-				return g_strdup("Unknown");
+				return g_strdup(_("Unknown"));
 			sym = g_malloc(l*sizeof(gchar));
 			for(i=0;i<l-1;i++)
 				sym[i] = begin[i+1];
@@ -1238,10 +1240,10 @@ gchar* get_sym_orb(gchar *allstr)
 			return sym;
 		}
 		else
-			return g_strdup("Unknown");
+			return g_strdup(_("Unknown"));
 	}
 	else 
-		return g_strdup("Unknown");
+		return g_strdup(_("Unknown"));
 
 }
 /********************************************************************************/
@@ -1291,8 +1293,8 @@ static void save_gabedit_orbitals(gchar* FileName)
 	if(file == NULL)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not create '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not create '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 		return;
 	}
 	if(sphericalBasis)
@@ -1334,7 +1336,7 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *fileName,gint itype)
 	
  	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
-		Message("Sorry No file slected\n","Error",TRUE);
+		Message(_("Sorry No file selected\n"),_("Error"),TRUE);
     		return FALSE;
  	}
 
@@ -1343,8 +1345,8 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *fileName,gint itype)
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),fileName);
+  		Message(buffer,_("Error"),TRUE);
   		return FALSE;
  	}
  	for(i=0;i<5;i++)
@@ -1388,8 +1390,8 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *fileName,gint itype)
 			if(itype==2 || itype==4)
 			{
 				gchar buffer[BSIZE];
-				sprintf(buffer,"Sorry,  I can not read orbitals from '%s' file\n",fileName);
-  				Message(buffer,"Error",TRUE);
+				sprintf(buffer,_("Sorry,  I can not read orbitals from '%s' file\n"),fileName);
+  				Message(buffer,_("Error"),TRUE);
 			}
 			FreeTable2(CoefOrbitals,NOrb);
 			g_free(EnerOrbitals);
@@ -1735,7 +1737,7 @@ gboolean read_orbitals_in_gabedit_or_molden_file(gchar *fileName,gint itype)
 	
  	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
-		Message("Sorry No file slected\n","Error",TRUE);
+		Message(_("Sorry No file selected\n"),_("Error"),TRUE);
     		return FALSE;
  	}
 
@@ -1744,8 +1746,8 @@ gboolean read_orbitals_in_gabedit_or_molden_file(gchar *fileName,gint itype)
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),fileName);
+  		Message(buffer,_("Error"),TRUE);
   		return FALSE;
  	}
 
@@ -1777,8 +1779,8 @@ gboolean read_orbitals_in_gabedit_or_molden_file(gchar *fileName,gint itype)
  		if(!OK && (numorb == 1) )
 		{
 			gchar buffer[BSIZE];
-			sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
-  			Message(buffer,"Error",TRUE);
+			sprintf(buffer,_("Sorry, I can not open '%s' file\n"),fileName);
+  			Message(buffer,_("Error"),TRUE);
 			FreeTable2(CoefOrbitals,NOrb);
 			g_free(EnerOrbitals);
 			g_free(SymOrbitals);
@@ -1829,7 +1831,7 @@ gboolean read_orbitals_in_gabedit_or_molden_file(gchar *fileName,gint itype)
 			n++;
 			EnerOrbitals[n] = e;
 			if(sym[0] != '\0') SymOrbitals[n] = g_strdup(sym);
-			else SymOrbitals[n] = g_strdup("Unknown");
+			else SymOrbitals[n] = g_strdup(_("Unknown"));
 
 			OccOrbitals[n] = o;
 
@@ -1906,33 +1908,33 @@ void read_gauss_orbitals(gchar* FileName)
 	if(typefile != GABEDIT_TYPEFILE_GAUSSIAN)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not read this format in '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not read this format in '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 		return ;
 	}
 	free_data_all();
 	t = get_name_file(FileName);
-	set_status_label_info("File Name",t);
+	set_status_label_info(_("File name"),t);
 	g_free(t);
-	set_status_label_info("File Type","Gaussian");
-	set_status_label_info("Mol. Orb.","Reading");
+	set_status_label_info(_("File type"),"Gaussian");
+	set_status_label_info(_("Mol. Orb."),_("Reading"));
 	
 	free_orbitals();	
  	if(!gl_read_gaussn_file_geomi(FileName,-1))
 	{
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Mol. Orb.","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
 		return;
 	}
 
-	set_status_label_info("Mol. Orb.","Reading");
+	set_status_label_info(_("Mol. Orb."),_("Reading"));
  	InitializeAll();
  	if(!DefineBasisType(FileName))
 	{
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Mol. Orb.","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
 		return;
 	}
 
@@ -1969,18 +1971,217 @@ void read_gauss_orbitals(gchar* FileName)
 	if(Ok)
 	{
 		/* PrintAllOrb(CoefAlphaOrbitals);*/
-		set_status_label_info("Mol. Orb.","Ok");
+		set_status_label_info(_("Mol. Orb."),_("Ok"));
 		glarea_rafresh(GLArea); /* for geometry*/
 		NumSelOrb = NAlphaOcc-1;
 		create_list_orbitals();
 	}
 	else
 	{
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Mol. Orb.","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
 	}
 
+} 
+/********************************************************************************/
+gboolean read_orbitals_from_fchk_gaussian_file(gchar* fileName)
+{
+	FILE* file;
+	file = FOpen(fileName, "rb");
+	gdouble* coefsAlpha = NULL;
+	gdouble* coefsBeta = NULL;
+	gdouble* energiesAlpha = NULL;
+	gdouble* energiesBeta = NULL;
+	gint nA = 0;
+	gint nAOcc = 0;
+	gint nB = 0;
+	gint nBOcc = 0;
+	gint nBasis;
+	gint n,i,k,ib;
+	if(file ==NULL)
+	{
+  		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
+  		return FALSE;
+	}
+	nAOcc = get_one_int_from_fchk_gaussian_file(file,"Number of alpha electrons ");
+	nBOcc = get_one_int_from_fchk_gaussian_file(file,"Number of beta electrons ");
+	nBasis = get_one_int_from_fchk_gaussian_file(file,"Number of basis functions  ");
+	if(nBasis<1)
+	{
+  		Message(_("Sorry\nI can not read the number of basis functions"),_("Error"),TRUE);
+		fclose(file);
+  		return FALSE;
+	}
+	energiesAlpha = get_array_real_from_fchk_gaussian_file(file, "Alpha Orbital Energies ", &nA);
+	if(energiesAlpha)
+	{
+		coefsAlpha = get_array_real_from_fchk_gaussian_file(file, "Alpha MO coefficients ", &n);
+		if(!coefsAlpha || n!=nBasis*nA)
+		{
+  			Message(_("Sorry\nI can not read the alpha MO coefficients"),_("Error"),TRUE);
+			if(energiesAlpha) g_free(energiesAlpha);
+			if(coefsAlpha) g_free(coefsAlpha);
+			fclose(file);
+  			return FALSE;
+		}
+	}
+	else rewind(file);
+	energiesBeta = get_array_real_from_fchk_gaussian_file(file, "Beta Orbital Energies ", &nB);
+	if(energiesBeta)
+	{
+		coefsBeta = get_array_real_from_fchk_gaussian_file(file, "Beta MO coefficients ", &n);
+		if(!coefsBeta || n!=nBasis*nB)
+		{
+  			Message(_("Sorry\nI can not read the alpha MO coefficients"),_("Error"),TRUE);
+			if(energiesBeta) g_free(energiesBeta);
+			if(coefsBeta) g_free(coefsBeta);
+			fclose(file);
+  			return FALSE;
+		}
+	}
+	fclose(file);
+	NAlphaOcc = 0;
+	NAlphaOrb = 0;
+	NBetaOcc = 0;
+	NBetaOrb = 0;
+	NTotOcc = NOrb;
+
+	if(coefsAlpha && energiesAlpha && nA>0 && nA<=nBasis)
+	{
+		EnerAlphaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+		for(i=0;i<nA;i++) EnerAlphaOrbitals[i] = energiesAlpha[i];
+		for(i=nA;i<NOrb;i++) EnerAlphaOrbitals[i] = 0.0;
+
+		CoefAlphaOrbitals = CreateTable2(NOrb);
+
+		k = 0;
+		for(i=0;i<nA;i++) 
+		for(ib=0;ib<nA;ib++) 
+			CoefAlphaOrbitals[i][ib] = coefsAlpha[k++];
+		for(i=nA;i<NOrb;i++)
+		for(ib=0;ib<nA;ib++) 
+			CoefAlphaOrbitals[i][ib] = 0;
+
+		SymAlphaOrbitals = g_malloc(NOrb*sizeof(gchar*));
+		for(i=0;i<nA;i++) SymAlphaOrbitals[i] = g_strdup("UNK");
+		for(i=nA;i<NOrb;i++) SymAlphaOrbitals[i] = g_strdup("DELETE");
+
+		OccAlphaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+		for(i=0;i<nAOcc;i++) OccAlphaOrbitals[i] = 1.0;
+		for(i=nAOcc;i<NOrb;i++) OccAlphaOrbitals[i] = 0.0;
+		NAlphaOcc = nAOcc;
+		NAlphaOrb = nA;
+		if(!energiesBeta && !coefsBeta && nB == 0 && nBOcc==nAOcc)
+		{
+			CoefBetaOrbitals = CoefAlphaOrbitals;
+			EnerBetaOrbitals = EnerAlphaOrbitals;
+			OccBetaOrbitals = OccAlphaOrbitals;
+			SymBetaOrbitals = SymAlphaOrbitals;
+			NBetaOcc = nBOcc;
+			NBetaOrb = nA;
+		}
+	}
+	if(coefsBeta && energiesBeta && nB>0 && nB<=nBasis)
+	{
+		EnerBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+		for(i=0;i<nA;i++) EnerBetaOrbitals[i] = energiesBeta[i];
+		for(i=nA;i<NOrb;i++) EnerBetaOrbitals[i] = 0.0;
+
+		CoefBetaOrbitals = CreateTable2(NOrb);
+
+		k = 0;
+		for(i=0;i<nA;i++) 
+		for(ib=0;ib<nA;ib++) 
+			CoefBetaOrbitals[i][ib] = coefsBeta[k++];
+		for(i=nA;i<NOrb;i++)
+		for(ib=0;ib<nA;ib++) 
+			CoefBetaOrbitals[i][ib] = 0;
+
+		SymBetaOrbitals = g_malloc(NOrb*sizeof(gchar*));
+		for(i=0;i<nA;i++) SymBetaOrbitals[i] = g_strdup("UNK");
+		for(i=nA;i<NOrb;i++) SymBetaOrbitals[i] = g_strdup("DELETE");
+
+		OccBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+		for(i=0;i<nAOcc;i++) OccBetaOrbitals[i] = 1.0;
+		for(i=nAOcc;i<NOrb;i++) OccBetaOrbitals[i] = 0.0;
+		NBetaOcc = nAOcc;
+		NBetaOrb = nA;
+		if(!energiesAlpha && !coefsAlpha && nA == 0 && nBOcc==nAOcc)
+		{
+			CoefAlphaOrbitals = CoefBetaOrbitals;
+			EnerAlphaOrbitals = EnerBetaOrbitals;
+			OccAlphaOrbitals = OccBetaOrbitals;
+			SymAlphaOrbitals = SymBetaOrbitals;
+			NAlphaOcc = nAOcc;
+			NAlphaOrb = nB;
+		}
+	}
+	if(energiesAlpha) g_free(energiesAlpha);
+	if(coefsAlpha) g_free(coefsAlpha);
+	if(energiesBeta) g_free(energiesBeta);
+	if(coefsBeta) g_free(coefsBeta);
+	NTotOcc = NOrb;
+	return TRUE;
+}
+/********************************************************************************/
+void read_fchk_gauss_orbitals(gchar* fileName)
+{
+	gint typefile;
+	gchar *t = NULL;
+
+
+	typefile =get_type_file_orb(fileName);
+	if(typefile==GABEDIT_TYPEFILE_UNKNOWN) return;
+	if(typefile != GABEDIT_TYPEFILE_GAUSSIAN_FCHK)
+	{
+		gchar buffer[BSIZE];
+		sprintf(buffer,_("Sorry, I can not read this format in '%s' file\n"),fileName);
+  		Message(buffer,_("Error"),TRUE);
+		return ;
+	}
+	free_data_all();
+	t = get_name_file(fileName);
+	set_status_label_info(_("File name"),t);
+	g_free(t);
+	set_status_label_info(_("File type"),"Gaussian fchk");
+	set_status_label_info(_("Mol. Orb."),_("Reading"));
+	
+	free_orbitals();	
+ 	if(!gl_read_fchk_gaussn_file_geom(fileName))
+	{
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
+		return;
+	}
+
+	set_status_label_info(_("Mol. Orb."),_("Reading"));
+ 	InitializeAll();
+ 	if(!readBasisFromGaussianFChk(fileName))
+	{
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
+		return;
+	}
+
+	sphericalBasis = TRUE; /* Can be also cart or mixed */
+ 	NormaliseAllBasis();
+	if(read_orbitals_from_fchk_gaussian_file(fileName))
+	{
+		/* PrintAllOrb(CoefAlphaOrbitals);*/
+		set_status_label_info(_("Mol. Orb."),_("Ok"));
+		glarea_rafresh(GLArea); /* for geometry*/
+		NumSelOrb = NAlphaOcc-1;
+		create_list_orbitals();
+	}
+	else
+	{
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
+	}
 } 
 /********************************************************************************/
 void read_gabedit_orbitals(gchar* FileName)
@@ -1999,29 +2200,29 @@ void read_gabedit_orbitals(gchar* FileName)
 
 	if(typefile != GABEDIT_TYPEFILE_GABEDIT)
 	{
-		Message("Sorry, This file is not in Gabedit Format\n","Error",TRUE);
+		Message(_("Sorry, This file is not in Gabedit Format\n"),_("Error"),TRUE);
 		return ;
 	}
 	free_data_all();
 	t = get_name_file(FileName);
-	set_status_label_info("File Name",t);
+	set_status_label_info(_("File name"),t);
 	g_free(t);
-	set_status_label_info("File Type","Gabedit");
-	set_status_label_info("Mol. Orb.","Reading");
+	set_status_label_info(_("File type"),"Gabedit");
+	set_status_label_info(_("Mol. Orb."),_("Reading"));
 	free_orbitals();	
  	if(!gl_read_gabedit_file_geom(FileName))
 	{
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Mol. Orb.","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
 		return;
 	}
  	InitializeAll();
  	if(!DefineGabeditBasisType(FileName))
 	{
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Mol. Orb.","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
 		return;
 	}
 	
@@ -2069,16 +2270,16 @@ void read_gabedit_orbitals(gchar* FileName)
 	if(OkAlpha || OkBeta)
 	{
 		read_gabedit_atomic_orbitals(FileName);
-		set_status_label_info("Mol. Orb.","Ok");
+		set_status_label_info(_("Mol. Orb."),_("Ok"));
 		glarea_rafresh(GLArea); /* for geometry*/
 		NumSelOrb = NAlphaOcc-1;
 		create_list_orbitals();
 	}
 	else
 	{
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Mol. Orb.","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
 	}
 	DefineType();
 }
@@ -2098,31 +2299,31 @@ void read_molden_orbitals(gchar* FileName)
 		return;
 	if(typefile != GABEDIT_TYPEFILE_MOLDEN)
 	{
-		Message("Sorry, This file is not in Molden Format\n","Error",TRUE);
+		Message(_("Sorry, This file is not in Molden Format\n"),_("Error"),TRUE);
 		return ;
 	}
 	free_data_all();
 	t = get_name_file(FileName);
-	set_status_label_info("File Name",t);
+	set_status_label_info(_("File name"),t);
 	g_free(t);
-	set_status_label_info("File Type","Molden");
-	set_status_label_info("Mol. Orb.","Reading");
+	set_status_label_info(_("File type"),"Molden");
+	set_status_label_info(_("Mol. Orb."),_("Reading"));
 
 	free_orbitals();	
  	if(!gl_read_molden_file_geom(FileName))
 	{
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Mol. Orb.","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
 		return;
 	}
 
  	InitializeAll();
  	if(!DefineMoldenBasisType(FileName))
 	{
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Mol. Orb.","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
 		return;
 	}
 	/*
@@ -2189,7 +2390,7 @@ void read_molden_orbitals(gchar* FileName)
 		PrintAllOrb(CoefAlphaOrbitals);
 		Debug("End Orb\n");
 		*/
-		set_status_label_info("Mol. Orb.","Ok");
+		set_status_label_info(_("Mol. Orb."),_("Ok"));
 		glarea_rafresh(GLArea); /* for geometry */
 		NumSelOrb = NAlphaOcc-1;
 		/* Debug("NumSelOrb = %d\n",NumSelOrb);*/
@@ -2197,9 +2398,9 @@ void read_molden_orbitals(gchar* FileName)
 	}
 	else
 	{
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Mol. Orb.","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
 	}
 	DefineType();
 
@@ -2297,6 +2498,19 @@ void read_gauss_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
  	read_gauss_orbitals(FileName);
 } 
 /********************************************************************************/
+void read_fchk_gauss_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
+{
+ 	gchar *FileName;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+	gtk_widget_hide(GTK_WIDGET(SelecFile));
+	while( gtk_events_pending() ) gtk_main_iteration();
+
+	add_objects_for_new_grid();
+ 	read_fchk_gauss_orbitals(FileName);
+} 
+/********************************************************************************/
 void read_molpro_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
 {
  	gchar *FileName;
@@ -2360,6 +2574,7 @@ gboolean read_orbitals(gchar* fileName)
 	if(fileType == GABEDIT_TYPEFILE_GAMESS) read_gamess_orbitals(fileName);
 	else if(fileType == GABEDIT_TYPEFILE_FIREFLY) read_gamess_orbitals(fileName);
 	else if(fileType == GABEDIT_TYPEFILE_GAUSSIAN) read_gauss_orbitals(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_GAUSSIAN_FCHK) read_fchk_gauss_orbitals(fileName);
 	else if(fileType == GABEDIT_TYPEFILE_MOLPRO) read_molpro_orbitals(fileName);
 	else if(fileType == GABEDIT_TYPEFILE_MOPAC) read_mopac_orbitals(fileName);
 	else if(fileType == GABEDIT_TYPEFILE_MOPAC_AUX) read_mopac_orbitals(fileName);
@@ -2370,7 +2585,7 @@ gboolean read_orbitals(gchar* fileName)
 	else if(fileType == GABEDIT_TYPEFILE_UNKNOWN) 
 	{
 		Message(
-			"Sorry, I cannot find the type of your file\n"
+			_("Sorry, I cannot find the type of your file\n")
 			," Error ",TRUE);
 		return FALSE;
 	}

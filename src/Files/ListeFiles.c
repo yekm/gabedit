@@ -153,11 +153,11 @@ static void activate_action (GtkAction *action)
 /*--------------------------------------------------------------------*/
 static GtkActionEntry gtkActionEntries[] =
 {
-	{"Info", GABEDIT_STOCK_INFO, "_Info", NULL, "Info", G_CALLBACK (activate_action) },
-	{"Cut", GABEDIT_STOCK_CUT, "_Cut", NULL, "Cut", G_CALLBACK (activate_action) },
-	{"Set", NULL, "_Set", NULL, "Set", G_CALLBACK (activate_action) },
-	{"ClearNodes", NULL, "Clear _nodes", NULL, "Clear nodes", G_CALLBACK (activate_action) },
-	{"Save", GABEDIT_STOCK_SAVE, "_Save list of projects", NULL, "Save list of projects", G_CALLBACK (activate_action) },
+	{"Info", GABEDIT_STOCK_INFO, N_("_Info"), NULL, "Info", G_CALLBACK (activate_action) },
+	{"Cut", GABEDIT_STOCK_CUT, N_("_Cut"), NULL, "Cut", G_CALLBACK (activate_action) },
+	{"Set", NULL, "_Set", NULL, N_("Set"), G_CALLBACK (activate_action) },
+	{"ClearNodes", NULL, N_("Clear _nodes"), NULL, "Clear nodes", G_CALLBACK (activate_action) },
+	{"Save", GABEDIT_STOCK_SAVE, N_("_Save list of projects"), NULL, "Save list of projects", G_CALLBACK (activate_action) },
 };
 static guint numberOfGtkActionEntries = G_N_ELEMENTS (gtkActionEntries);
 /********************************************************************************/
@@ -186,6 +186,7 @@ static GtkUIManager *create_menu(GtkWidget* win)
   	g_signal_connect_swapped (win, "destroy", G_CALLBACK (g_object_unref), manager);
 
 	actionGroup = gtk_action_group_new ("GabeditListOfProject");
+	gtk_action_group_set_translation_domain(actionGroup,GETTEXT_PACKAGE);
 	gtk_action_group_add_actions (actionGroup, gtkActionEntries, numberOfGtkActionEntries, NULL);
 
   	gtk_ui_manager_insert_action_group (manager, actionGroup, 0);
@@ -488,7 +489,7 @@ static void changed_host(GtkWidget *combo,gpointer data)
 /********************************************************************************/
 static void create_info_win()
 {
-	gchar *title = g_strdup_printf("Properties of project");
+	gchar *title = g_strdup_printf(_("Properties of project"));
 	GtkWidget *fp;
 	GtkWidget *vboxwin;
 	GtkWidget *hbox = NULL;
@@ -510,7 +511,7 @@ static void create_info_win()
 
 	vboxwin = create_vbox(fp);
         gtk_widget_realize(fp);
-  	init_child(fp,gtk_widget_destroy," Prop. of project ");
+  	init_child(fp,gtk_widget_destroy,_(" Prop. of project "));
 	g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_children,NULL);
 
 	hbox = gtk_hbox_new(0,FALSE);
@@ -543,7 +544,7 @@ static void create_set_dialogue_window()
 	GtkWidget **buttons;
 	GtkWidget *FrameRemote = NULL;
 	GtkWidget *FrameNetWork = NULL;
-	gchar *title = g_strdup_printf("Set properties of project");
+	gchar *title = g_strdup_printf(_("Set properties of project"));
 	GtkWidget *ButtonFtpRsh;
 	GtkWidget *ButtonSsh;
 	GtkWidget *label1PassWord;
@@ -569,7 +570,7 @@ static void create_set_dialogue_window()
   	gtk_window_set_transient_for(GTK_WINDOW(fp),GTK_WINDOW(Fenetre));
 
   	gtk_widget_realize(fp);
-  	init_child(fp,gtk_widget_destroy," Prop. of project ");
+  	init_child(fp,gtk_widget_destroy,_(" Prop. of project "));
 	g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_children,NULL);
 
 	gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
@@ -591,7 +592,7 @@ static void create_set_dialogue_window()
 		GtkWidget *Table;
 		GtkWidget *vboxframe;
 
-		frame = gtk_frame_new ("Server");
+		frame = gtk_frame_new (_("Server"));
 		gtk_container_set_border_width (GTK_CONTAINER (frame), 2);
 		gtk_box_pack_start (GTK_BOX( hbox), frame, TRUE, TRUE, 2);
 		gtk_widget_show (frame);
@@ -603,7 +604,7 @@ static void create_set_dialogue_window()
 		Table = gtk_table_new(1,2,TRUE);
 		gtk_container_add(GTK_CONTAINER(vboxframe),Table);
 
-		buttons[0]  = gtk_radio_button_new_with_label( NULL,"Local" );
+		buttons[0]  = gtk_radio_button_new_with_label( NULL,_("Local"));
 
 		gtk_table_attach(GTK_TABLE(Table), buttons[0] ,0,1,0,1,
                   (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
@@ -624,7 +625,7 @@ static void create_set_dialogue_window()
 		gchar* t = NULL;
 
 
-  		frame = gtk_frame_new ("Local");
+  		frame = gtk_frame_new (_("Local"));
   		gtk_container_set_border_width (GTK_CONTAINER (frame), 2);
   		gtk_container_add (GTK_CONTAINER (vboxall), frame);
   		gtk_widget_show (frame);
@@ -633,7 +634,7 @@ static void create_set_dialogue_window()
   		Table = gtk_table_new(2,3,FALSE);
   		gtk_container_add(GTK_CONTAINER(vboxframe),Table);
 
-		add_label_table(Table,"Local Directory ",0,0);
+		add_label_table(Table,_("Local Directory "),0,0);
 		add_label_table(Table,":",0,1);
 		add_label_table(Table,data->localdir,0,2);
 
@@ -646,9 +647,9 @@ static void create_set_dialogue_window()
 		|| data->itype == PROG_IS_GAMESS 
 		|| data->itype == PROG_IS_FIREFLY 
 		)
-			add_label_table(Table,"Files ",1,0);
+			add_label_table(Table,_("Files "),1,0);
   		else
-			add_label_table(Table,"File ",1,0);
+			add_label_table(Table,_("File "),1,0);
 
   		switch(data->itype)
   		{
@@ -712,10 +713,10 @@ static void create_set_dialogue_window()
 		GtkWidget *frame;
 		GtkWidget *vboxframe;
 		GtkWidget *table = gtk_table_new(1,2,FALSE);
-		gchar ftprsh[] = "FTP and rsh protocols";
-		gchar ssh[]    = "ssh/scp protocols    ";
+		gchar ftprsh[] = N_("FTP and rsh protocols");
+		gchar ssh[]    = N_("ssh/scp protocols    ");
 
-		frame = gtk_frame_new ("NetWork protocols");
+		frame = gtk_frame_new (_("NetWork protocols"));
 		gtk_widget_show (frame);
 		gtk_box_pack_start (GTK_BOX (vboxall), frame, TRUE, TRUE, 0);
 
@@ -776,12 +777,12 @@ static void create_set_dialogue_window()
 			tlistdir[0] = g_strdup("");
 		}
 
-		LabelLeft[0] = g_strdup("Host name");
-		LabelLeft[1] = g_strdup("Login");
-		LabelLeft[2] = g_strdup("Password");
-		LabelLeft[3] = g_strdup("Working Directory");
+		LabelLeft[0] = g_strdup(_("Host name"));
+		LabelLeft[1] = g_strdup(_("Login"));
+		LabelLeft[2] = g_strdup(_("Password"));
+		LabelLeft[3] = g_strdup(_("Working Directory"));
 
-		frame = gtk_frame_new ("Remote host");
+		frame = gtk_frame_new (_("Remote host"));
 		FrameRemote = frame;
 		gtk_container_set_border_width (GTK_CONTAINER (frame), 2);
 		gtk_container_add (GTK_CONTAINER (vboxall), frame);
@@ -864,7 +865,7 @@ static void create_set_dialogue_window()
 	/* OK and Cancel boutons box */
 	hbox = create_hbox(vboxwin);
 
-	button = create_button(fp,"Cancel");
+	button = create_button(fp,_("Cancel"));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,GTK_OBJECT(fp));
@@ -948,17 +949,17 @@ static void create_remote_frame_popup(GtkWidget *hbox,DataTree* data)
   GtkWidget *Table;
   gchar* t = NULL;
 
-  LabelLeft[0] = g_strdup("Host");
-  LabelLeft[1] = g_strdup("Login");
-  LabelLeft[2] = g_strdup("Directory");
+  LabelLeft[0] = g_strdup(_("Host"));
+  LabelLeft[1] = g_strdup(_("Login"));
+  LabelLeft[2] = g_strdup(_("Directory"));
 
 
   if(data->itype == PROG_IS_GAUSS || data->itype == PROG_IS_MOLCAS || data->itype == PROG_IS_MOLPRO || data->itype == PROG_IS_MPQC || data->itype == PROG_IS_GAMESS || data->itype == PROG_IS_FIREFLY || data->itype == PROG_IS_QCHEM ||  data->itype == PROG_IS_MOPAC  || data->itype == PROG_IS_ORCA )
-  	LabelLeft[3] = g_strdup("Files");
+  	LabelLeft[3] = g_strdup(_("Files"));
   else
-  	LabelLeft[3] = g_strdup("File");
+  	LabelLeft[3] = g_strdup(_("File"));
 
-  frame = gtk_frame_new ("Remote");
+  frame = gtk_frame_new (_("Remote"));
   gtk_container_set_border_width (GTK_CONTAINER (frame), 2);
   gtk_box_pack_start (GTK_BOX(hbox),frame, TRUE, TRUE, 1);
   gtk_widget_show (frame);
@@ -980,8 +981,8 @@ static void create_remote_frame_popup(GtkWidget *hbox,DataTree* data)
   else
   {
   	gchar* tmp = NULL;
-  	if(data->netWorkProtocol== GABEDIT_NETWORK_FTP_RSH) tmp = g_strdup_printf("%s  [Using rsh/ftp Protocol]", data->remoteuser);
-  	else tmp = g_strdup_printf("%s  [Using ssh Protocol]",data->remoteuser);
+  	if(data->netWorkProtocol== GABEDIT_NETWORK_FTP_RSH) tmp = g_strdup_printf(_("%s  [Using rsh/ftp Protocol]"), data->remoteuser);
+  	else tmp = g_strdup_printf(_("%s  [Using ssh Protocol]"),data->remoteuser);
   	add_label_table(Table,tmp,1,2);
 	g_free(tmp);
 
@@ -1070,15 +1071,15 @@ static void create_local_frame_popup(GtkWidget *hbox,DataTree* data)
 	winsockCheck(stderr);
 #endif
   gethostname(localhost,100);
-  LabelLeft[0] = g_strdup("Host");
-  LabelLeft[1] = g_strdup("Login");
-  LabelLeft[2] = g_strdup("Directory");
+  LabelLeft[0] = g_strdup(_("Host"));
+  LabelLeft[1] = g_strdup(_("Login"));
+  LabelLeft[2] = g_strdup(_("Directory"));
   if(data->itype == PROG_IS_GAUSS || data->itype == PROG_IS_MOLCAS ||data->itype == PROG_IS_MOLPRO || data->itype == PROG_IS_MPQC  || data->itype == PROG_IS_GAMESS || data->itype == PROG_IS_FIREFLY || data->itype == PROG_IS_QCHEM || data->itype == PROG_IS_MOPAC || data->itype == PROG_IS_ORCA )
-  	LabelLeft[3] = g_strdup("Files");
+  	LabelLeft[3] = g_strdup(_("Files"));
   else
-  	LabelLeft[3] = g_strdup("File");
+  	LabelLeft[3] = g_strdup(_("File"));
 
-  frame = gtk_frame_new ("Local");
+  frame = gtk_frame_new (_("Local"));
   gtk_container_set_border_width (GTK_CONTAINER (frame), 2);
   gtk_box_pack_start (GTK_BOX(hbox),frame, TRUE, TRUE, 1);
   gtk_widget_show (frame);
@@ -1218,11 +1219,11 @@ static void create_remote_frame(GtkWidget *hbox)
   gushort i;
   GtkWidget *Table;
 
-  LabelLeft[0] = g_strdup("Host");
-  LabelLeft[1] = g_strdup("Login");
-  LabelLeft[2] = g_strdup("Directory");
+  LabelLeft[0] = g_strdup(_("Host"));
+  LabelLeft[1] = g_strdup(_("Login"));
+  LabelLeft[2] = g_strdup(_("Directory"));
 
-  frame = gtk_frame_new ("Remote");
+  frame = gtk_frame_new (_("Remote"));
   gtk_container_set_border_width (GTK_CONTAINER (frame), 2);
   gtk_box_pack_start (GTK_BOX(hbox),frame, TRUE, TRUE, 1);
   gtk_widget_show (frame);
@@ -1290,7 +1291,7 @@ static void AddNotebookPage(GtkWidget* NoteBook,char *label,GtkWidget **TextP)
 
   LabelOnglet = gtk_label_new(label);
   gtk_widget_show(LabelOnglet);
-  if(strstr(label,"Output"))
+  if(strstr(label,_("Output")))
   {
 	  GtkStyle* style = gtk_style_copy( gtk_widget_get_default_style ()); 
 	  /*
@@ -1308,7 +1309,7 @@ static void AddNotebookPage(GtkWidget* NoteBook,char *label,GtkWidget **TextP)
   	  g_object_set_data(G_OBJECT (Fenetre), "LabelOngletOutput", LabelOnglet);
   }
   else
-  if(strstr(label,"Error"))
+  if(strstr(label,_("Error")))
   {
 	  /*
 	  PangoFontDescription *font_desc = pango_font_description_from_string (FontsStyleLabel.fontname);
@@ -1330,7 +1331,7 @@ static void AddNotebookPage(GtkWidget* NoteBook,char *label,GtkWidget **TextP)
 
   scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
   gtk_widget_show (scrolledwindow);
-  if(strstr(label,"Output"))
+  if(strstr(label,_("Output")))
   {
   	  gtk_box_pack_start (GTK_BOX(vboxframe),scrolledwindow, TRUE, TRUE, 1);
   	  create_status_progress_connection_bar(vboxframe);
@@ -1361,11 +1362,11 @@ static void create_local_frame(GtkWidget *hbox)
 	winsockCheck(stderr);
 #endif
   gethostname(localhost,100);
-  LabelLeft[0] = g_strdup("Host");
-  LabelLeft[1] = g_strdup("Login");
-  LabelLeft[2] = g_strdup("Directory");
+  LabelLeft[0] = g_strdup(_("Host"));
+  LabelLeft[1] = g_strdup(_("Login"));
+  LabelLeft[2] = g_strdup(_("Directory"));
 
-  frame = gtk_frame_new ("Local");
+  frame = gtk_frame_new (_("Local"));
   gtk_container_set_border_width (GTK_CONTAINER (frame), 2);
   gtk_box_pack_start (GTK_BOX(hbox),frame, TRUE, TRUE, 1);
   gtk_widget_show (frame);
@@ -1429,15 +1430,15 @@ void cree_files_out_err_notebook(GtkWidget* box)
   gtk_widget_show(NoteBook);
   gtk_box_pack_start(GTK_BOX (box), NoteBook,FALSE, TRUE, 0);
 
-  AddNotebookPageFiles(NoteBook," Location ");
+  AddNotebookPageFiles(NoteBook,_(" Location "));
   
-  AddNotebookPage(NoteBook," Output ",&TextOutput);
+  AddNotebookPage(NoteBook,_(" Output "),&TextOutput);
   gabedit_text_set_editable (GABEDIT_TEXT (TextOutput), FALSE);
   set_font (TextOutput,FontsStyleResult.fontname);
   set_base_style(TextOutput,FontsStyleResult.BaseColor.red ,FontsStyleResult.BaseColor.green ,FontsStyleResult.BaseColor.blue);
   set_text_style(TextOutput,FontsStyleResult.TextColor.red ,FontsStyleResult.TextColor.green ,FontsStyleResult.TextColor.blue);
 
-  AddNotebookPage(NoteBook," Error ",&TextError);
+  AddNotebookPage(NoteBook,_(" Error "),&TextError);
   gabedit_text_set_editable (GABEDIT_TEXT (TextError), FALSE);
   set_font (TextError,FontsStyleResult.fontname);
   set_base_style(TextError,FontsStyleResult.BaseColor.red ,FontsStyleResult.BaseColor.green ,FontsStyleResult.BaseColor.blue);
@@ -1665,7 +1666,7 @@ static void get_doc_no_add_list(GtkWidget *wid, gpointer d)
 	if(fd == NULL)
 	{
  		g_free(t);
-		t = g_strdup_printf("\nSorry, I can not open file :\n %s\n",NomFichier);
+		t = g_strdup_printf(_("\nSorry, I can not open file :\n %s\n"),NomFichier);
 		Message(t,"ERROR",TRUE);
 		g_free(t);
 		return;
@@ -1729,9 +1730,9 @@ static void select_row(DataTree* data)
         case NBNOD-1:
  	        if(imodif == DATA_MOD_YES)
             	{
-				t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
-				t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
-				t = g_strdup_printf(" %sYou want to continue?\n",t);
+				t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+				t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+				t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
 				Continue_YesNo(get_doc_no_add_list, data,t);
 				g_free(t);
             	}
@@ -2370,7 +2371,7 @@ static void  create_window_list_to_clear()
   GtkWidget *hbox;
   GtkWidget *Dialogue;
   GtkWidget *button;
-  gchar * title = "Clear list of projects";
+  gchar * title = N_("Clear list of projects");
   gchar *buttonlabel[NBNOD]={
   		"Gamess list",
   		"Gaussian list",
@@ -2420,13 +2421,13 @@ static void  create_window_list_to_clear()
    gtk_widget_show (hbox);
    gtk_box_pack_start (GTK_BOX (vbox), hbox, TRUE, TRUE, 0);
 
-   ButtonUnSelAll = gtk_radio_button_new_with_label( NULL," Unselect all" );
+   ButtonUnSelAll = gtk_radio_button_new_with_label( NULL,_(" Unselect all") );
    gtk_box_pack_end (GTK_BOX (hbox), ButtonUnSelAll, TRUE, TRUE, 0);
    gtk_widget_show (ButtonUnSelAll);
 
    ButtonSelAll = gtk_radio_button_new_with_label(
                        gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonUnSelAll)),
-                       "Select all "); 
+                       _("Select all ")); 
    gtk_box_pack_start (GTK_BOX (hbox), ButtonSelAll, TRUE, TRUE, 0);
    gtk_widget_show (ButtonSelAll);
    create_hseparator(vbox);
@@ -2442,7 +2443,7 @@ static void  create_window_list_to_clear()
   gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(Dialogue)->action_area), FALSE);
 
   /* The CANCEL button */
-  button = create_button(Dialogue,"Cancel");
+  button = create_button(Dialogue,_("Cancel"));
   gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Dialogue)->action_area), button, FALSE, TRUE, 5);  
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_button_windows,GTK_OBJECT(Dialogue));
@@ -2522,7 +2523,7 @@ void ListeFiles(GtkWidget* vbox)
 	gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (treeViewProjects), TRUE);
 
 	column = gtk_tree_view_column_new ();
-	gtk_tree_view_column_set_title (column, "Recent Projects");
+	gtk_tree_view_column_set_title (column, _("Recent Projects"));
 	gtk_tree_view_column_set_reorderable(column, TRUE);
 
 	renderer = gtk_cell_renderer_pixbuf_new ();

@@ -24,10 +24,10 @@ typedef struct _MolcasMolecule
 	gchar** basis;
 }MolcasMolecule;
 
-typedef struct _MolcasOptimisation
+typedef struct _MolcasOptimization
 {
 	gint numberOfIterations;
-}MolcasOptimisation;
+}MolcasOptimization;
 
 typedef struct _MolcasSolvation
 {

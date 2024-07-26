@@ -364,7 +364,7 @@ static GtkWidget *create_process_remote_frame( GtkWidget *vboxall,GtkWidget **en
   		tlistuser[0] = g_strdup("login");
   }
 
-  frame = gtk_frame_new ("Remote host");
+  frame = gtk_frame_new (_("Remote host"));
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
@@ -374,7 +374,7 @@ static GtkWidget *create_process_remote_frame( GtkWidget *vboxall,GtkWidget **en
   gtk_container_add(GTK_CONTAINER(vboxframe),Table);
 
 	i = 0;
-	add_label_table(Table,"Host name ",(gushort)(i),0);
+	add_label_table(Table,_("Host name "),(gushort)(i),0);
 	add_label_table(Table," : ",(gushort)(i),1);
 	combo = create_combo_box_entry(tlisthost,nlisthost,TRUE,-1,-1);
 	gtk_table_attach(GTK_TABLE(Table),combo,2,3,i,i+1,
@@ -387,7 +387,7 @@ static GtkWidget *create_process_remote_frame( GtkWidget *vboxall,GtkWidget **en
         g_signal_connect(G_OBJECT(GTK_COMBO_BOX(combo)), "changed",G_CALLBACK(changed_host),entry);
 
 	i = 1;
-	add_label_table(Table,"Login ",(gushort)(i),0);
+	add_label_table(Table,_("Login "),(gushort)(i),0);
 	add_label_table(Table," : ",(gushort)(i),1);
 	combo = create_combo_box_entry(tlistuser,nlistuser,TRUE,-1,-1);
 	gtk_table_attach(GTK_TABLE(Table),combo,2,3,i,i+1,
@@ -401,7 +401,7 @@ static GtkWidget *create_process_remote_frame( GtkWidget *vboxall,GtkWidget **en
 	if(fileopen.netWorkProtocol==GABEDIT_NETWORK_SSH)
 	{
 #ifdef G_OS_WIN32
-		add_label_table(Table,"Password ",(gushort)(i),0);
+		add_label_table(Table,_("Password "),(gushort)(i),0);
 		add_label_table(Table," : ",(gushort)(i),1);
 		entry[i] = gtk_entry_new ();
 		gtk_entry_set_visibility(GTK_ENTRY (entry[i]),FALSE);
@@ -444,7 +444,7 @@ void create_process_remote(gboolean all)
   GtkWidget *hbox;
   GtkWidget *button;
   GtkWidget **entry;
-  gchar *title = g_strdup_printf("Process in remote host ");
+  gchar *title = g_strdup_printf(_("Process in remote host "));
 
   entry=g_malloc(3*sizeof(GtkWidget *));
 
@@ -455,7 +455,7 @@ void create_process_remote(gboolean all)
   gtk_window_set_transient_for(GTK_WINDOW(fp),GTK_WINDOW(Fenetre));
 
   gtk_widget_realize(fp);
-  init_child(fp,gtk_widget_destroy," Remote Process ");
+  init_child(fp,gtk_widget_destroy,_(" Remote Process "));
   g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_children,NULL);
 
   gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
@@ -481,13 +481,13 @@ void create_process_remote(gboolean all)
   hbox = create_hbox(vboxwin);
   gtk_widget_realize(fp);
 
-  button = create_button(fp,"Cancel");
+  button = create_button(fp,_("Cancel"));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,GTK_OBJECT(fp));
   gtk_widget_show (button);
 
-  button = create_button(fp,"OK");
+  button = create_button(fp,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
@@ -511,7 +511,7 @@ static GtkWidget* create_children_frame(GtkWidget *box,gint row)
  
   str = get_string_all_children(row);
 
-  frame = gtk_frame_new ("Children Process");
+  frame = gtk_frame_new (_("Children Process"));
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_box_pack_start (GTK_BOX( box), frame, TRUE, TRUE, 3);
   gtk_widget_show (frame);
@@ -541,7 +541,7 @@ static GtkWidget* create_label_frame(GtkWidget *box,gint row)
   g_free(title);
   g_free(rowprocess);
 
-  frame = gtk_frame_new ("Process to kill");
+  frame = gtk_frame_new (_("Process to kill"));
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_box_pack_start (GTK_BOX( box), frame, TRUE, TRUE, 3);
   gtk_widget_show (frame);
@@ -594,7 +594,7 @@ static void kill_process(GtkWidget *Win,gpointer data)
 				}
   				if(t)
   				{
- 					Message(t,"Info",TRUE);
+ 					Message(t,_("Info"),TRUE);
 					g_free(t);
 				}
 				g_free(command);
@@ -624,7 +624,7 @@ static void kill_process(GtkWidget *Win,gpointer data)
   	if(t)
   	{
 		if(!GTK_TOGGLE_BUTTON (KillAllButton)->active)
-			Message(t,"Error",TRUE);
+			Message(t,_("Error"),TRUE);
 		g_free(t);
   	}
 
@@ -645,7 +645,7 @@ static GtkWidget* create_options_frame(GtkWidget *hbox)
   GtkWidget *button3;
  
 
-  frame = gtk_frame_new ("Options");
+  frame = gtk_frame_new (_("Options"));
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_box_pack_start (GTK_BOX( hbox), frame, TRUE, TRUE, 3);
   gtk_widget_show (frame);
@@ -661,7 +661,7 @@ static GtkWidget* create_options_frame(GtkWidget *hbox)
                        gtk_radio_button_get_group (GTK_RADIO_BUTTON (button1)),
                        "kill -KILL "); 
   add_widget_table(Table,button2,0,1);
-  button3 = gtk_check_button_new_with_label("Kill all children process " );
+  button3 = gtk_check_button_new_with_label(_("Kill all children process "));
   add_widget_table(Table,button3,1,0);
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button2), TRUE);
@@ -682,7 +682,7 @@ static void create_kill_process(GtkWidget*Win,gint row)
   GtkWidget *vboxwin;
   GtkWidget *hbox;
   GtkWidget *button;
-  gchar *title = g_strdup_printf("Kill a process");
+  gchar *title = g_strdup_printf(_("Kill a process"));
 
   /* Principal Window */
   fp = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -691,7 +691,7 @@ static void create_kill_process(GtkWidget*Win,gint row)
   gtk_window_set_transient_for(GTK_WINDOW(fp),GTK_WINDOW(Fenetre));
 
   gtk_widget_realize(fp);
-  init_child(fp,gtk_widget_destroy," Kill ");
+  init_child(fp,gtk_widget_destroy,_(" Kill "));
   g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_children,NULL);
 
   gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
@@ -719,13 +719,13 @@ static void create_kill_process(GtkWidget*Win,gint row)
   hbox = create_hbox(vboxwin);
   gtk_widget_realize(fp);
 
-  button = create_button(fp,"Cancel");
+  button = create_button(fp,_("Cancel"));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,GTK_OBJECT(fp));
   gtk_widget_show (button);
 
-  button = create_button(fp,"OK");
+  button = create_button(fp,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
@@ -1045,7 +1045,7 @@ static GtkWidget* create_list_result_command(GtkWidget* gtklist,gchar* strerr,gc
 
   gtk_widget_realize(Win);
 
-  init_child(Win,gtk_widget_destroy," List of process ");
+  init_child(Win,gtk_widget_destroy,_(" List of process "));
 
   
   g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)destroy_children,NULL);
@@ -1068,7 +1068,7 @@ static GtkWidget* create_list_result_command(GtkWidget* gtklist,gchar* strerr,gc
 
   if(gtklist)
   {
-  	frame = gtk_frame_new ("Output");
+  	frame = gtk_frame_new (_("Output"));
   	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
   	gtk_container_add(GTK_CONTAINER(vboxall),frame);
@@ -1088,7 +1088,7 @@ static GtkWidget* create_list_result_command(GtkWidget* gtklist,gchar* strerr,gc
   Text = NULL;
   if(strerr)
   {
-  Text = create_text_widget(vboxall,"Error",&Frame[1]);
+  Text = create_text_widget(vboxall,_("Error"),&Frame[1]);
   set_font (Text,FontsStyleResult.fontname);
   set_base_style(Text,FontsStyleResult.BaseColor.red ,FontsStyleResult.BaseColor.green ,FontsStyleResult.BaseColor.blue);
   set_text_style(Text,FontsStyleResult.TextColor.red ,0,0);
@@ -1100,7 +1100,7 @@ static GtkWidget* create_list_result_command(GtkWidget* gtklist,gchar* strerr,gc
   gtk_box_pack_start (GTK_BOX(vboxwin), hbox, FALSE, FALSE, 5);
   gtk_box_set_homogeneous(GTK_BOX(hbox), FALSE);
   gtk_widget_realize(Win);
-  button = create_button(Win,"OK");
+  button = create_button(Win,_("OK"));
   gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, FALSE, 5);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
@@ -1142,7 +1142,7 @@ void run_process_all(gboolean remote)
 #ifdef G_OS_WIN32
 	if(!remote)
 	{
-		Message("Sorry, This option is available for unix system only","Error",TRUE);
+		Message(_("Sorry, This option is available for unix system only"),_("Error"),TRUE);
 		g_free(fout);
 		g_free(ferr);
 		return;
@@ -1154,7 +1154,7 @@ void run_process_all(gboolean remote)
   		remoteuser = gtk_entry_get_text(GTK_ENTRY(EntryLogin));
 		remotepassword = gtk_entry_get_text(GTK_ENTRY(EntryPassWord));
   		command = g_strdup_printf("ps -lef");
-  		title = g_strdup_printf("All process in %s host ",remotehost);
+  		title = g_strdup_printf(_("All process in %s host "),remotehost);
   		/*rsh (fout,ferr,command, remoteuser,remotehost);*/
 		remote_command (fout,ferr,command,remotehost,remoteuser,remotepassword);
 		g_free(command);
@@ -1163,7 +1163,7 @@ void run_process_all(gboolean remote)
 	else
 	{
 		command = g_strdup("ps -lef");
-  		title = g_strdup_printf("All process in local host ");
+  		title = g_strdup_printf(_("All process in local host "));
   		run_local_command(fout,ferr,command,FALSE);
   		g_free(command);
 	}
@@ -1216,7 +1216,7 @@ void run_process_user(gboolean remote,gchar *remoteuser,gchar *remotehost,gchar 
 #ifdef G_OS_WIN32
 	if(!remote)
 	{
-		Message("Sorry, This option is available for unix system only","Error",TRUE);
+		Message(_("Sorry, This option is available for unix system only"),_("Error"),TRUE);
 		g_free(fout);
 		g_free(ferr);
 		return;
@@ -1227,7 +1227,7 @@ void run_process_user(gboolean remote,gchar *remoteuser,gchar *remotehost,gchar 
 #endif /* G_OS_WIN32 */
   	if(!localuser && !remote)
   	{
-		Message("Sorry, I can not obtain user name","Error",TRUE);
+		Message(_("Sorry, I can not obtain user name"),_("Error"),TRUE);
 		g_free(fout);
 		g_free(ferr);
 		return;
@@ -1261,14 +1261,14 @@ void run_process_user(gboolean remote,gchar *remoteuser,gchar *remotehost,gchar 
 		remote_command (fout,ferr,command,remotehost,remoteuser,remotepassword);
 		g_free(command);
   		add_host(remotehost,remoteuser,"","tmp");
-  		title = g_strdup_printf("Process in host : \"%s\" ;  for user : \"%s\" ",remotehost,remoteuser);
+  		title = g_strdup_printf(_("Process in host : \"%s\" ;  for user : \"%s\" "),remotehost,remoteuser);
 	}
 	else
 	{
   		command = g_strdup_printf("ps -lfu %s",localuser);
   		run_local_command(fout,ferr,command,FALSE);
   		g_free(command);
-  		title = g_strdup_printf("Process in host : \"%s\" ;  for user : \"%s\" ",localhost,localuser);
+  		title = g_strdup_printf(_("Process in host : \"%s\" ;  for user : \"%s\" "),localhost,localuser);
 	}
 	if(WinUserProcess)
 		destroy_children(WinUserProcess);

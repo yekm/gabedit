@@ -248,135 +248,135 @@ static void activate_action (GtkAction *action)
 /*********************************************************************************************************************/
 static GtkActionEntry gtkActionEntries[] =
 {
-	{"File",     NULL, "_File"},
-	{"FileNew",  GTK_STOCK_NEW, "_New"},
-	{"GamessInput", GABEDIT_STOCK_GAMESS, "_Gamess input", NULL, "New Gamess input file", G_CALLBACK (activate_action) },
-	{"GaussianInput", GABEDIT_STOCK_GAUSSIAN, "_Gaussian input", NULL, "New Gaussian input file", G_CALLBACK (activate_action) },
-	{"MolcasInput", GABEDIT_STOCK_MOLCAS, "Mol_cas input", NULL, "New Molcas input file", G_CALLBACK (activate_action) },
-	{"MolproInput", GABEDIT_STOCK_MOLPRO, "Mol_pro input", NULL, "New Molpro input file", G_CALLBACK (activate_action) },
-	{"MopacInput", GABEDIT_STOCK_MOPAC, "_Mopac input", NULL, "New Mopac input file", G_CALLBACK (activate_action) },
-	{"MPQCInput", GABEDIT_STOCK_MPQC, "MP_QC input", NULL, "New MPQC input file", G_CALLBACK (activate_action) },
-	{"OrcaInput", GABEDIT_STOCK_ORCA, "_Orca input", NULL, "New Orca input file", G_CALLBACK (activate_action) },
-	{"FireFlyInput", GABEDIT_STOCK_FIREFLY, "_FireFly input", NULL, "New FireFly input file", G_CALLBACK (activate_action) },
-	{"QChemInput", GABEDIT_STOCK_QCHEM, "Q-_Chem input", NULL, "New Q-Chem input file", G_CALLBACK (activate_action) },
-	{"OtherInput", NULL, "_Other", NULL, "New file", G_CALLBACK (activate_action) },
-	{"Open", GTK_STOCK_OPEN, "_Open", "<control>O", "open a file", G_CALLBACK (activate_action) },
-	{"Save", GTK_STOCK_SAVE, "_Save", "<control>S", "Save", G_CALLBACK (activate_action) },
-	{"SaveAs", GTK_STOCK_SAVE_AS, "Save _as", "<control>s", "Save as", G_CALLBACK (activate_action) },
-	{"Include", GABEDIT_STOCK_INSERT, "_Include", "<control>I", "Include a file", G_CALLBACK (activate_action) },
-	{"Print", GTK_STOCK_PRINT, "_Print", "<control>P", "Print", G_CALLBACK (activate_action) },
-	{"Exit", GTK_STOCK_QUIT, "E_xit", "<control>Q", "Exit", G_CALLBACK (activate_action) },
+	{"File",     NULL, N_("_File")},
+	{"FileNew",  GTK_STOCK_NEW, N_("_New")},
+	{"GamessInput", GABEDIT_STOCK_GAMESS, N_("_Gamess input"), NULL, "New Gamess input file", G_CALLBACK (activate_action) },
+	{"GaussianInput", GABEDIT_STOCK_GAUSSIAN, N_("_Gaussian input"), NULL, "New Gaussian input file", G_CALLBACK (activate_action) },
+	{"MolcasInput", GABEDIT_STOCK_MOLCAS, N_("Mol_cas input"), NULL, "New Molcas input file", G_CALLBACK (activate_action) },
+	{"MolproInput", GABEDIT_STOCK_MOLPRO, N_("Mol_pro input"), NULL, "New Molpro input file", G_CALLBACK (activate_action) },
+	{"MopacInput", GABEDIT_STOCK_MOPAC, N_("_Mopac input"), NULL, "New Mopac input file", G_CALLBACK (activate_action) },
+	{"MPQCInput", GABEDIT_STOCK_MPQC, N_("MP_QC input"), NULL, "New MPQC input file", G_CALLBACK (activate_action) },
+	{"OrcaInput", GABEDIT_STOCK_ORCA, N_("_Orca input"), NULL, "New Orca input file", G_CALLBACK (activate_action) },
+	{"FireFlyInput", GABEDIT_STOCK_FIREFLY, N_("_FireFly input"), NULL, "New FireFly input file", G_CALLBACK (activate_action) },
+	{"QChemInput", GABEDIT_STOCK_QCHEM, N_("Q-_Chem input"), NULL, "New Q-Chem input file", G_CALLBACK (activate_action) },
+	{"OtherInput", NULL, N_("_Other"), NULL, "Other", G_CALLBACK (activate_action) },
+	{"Open", GTK_STOCK_OPEN, N_("_Open"), "<control>O", "open a file", G_CALLBACK (activate_action) },
+	{"Save", GTK_STOCK_SAVE, N_("_Save"), "<control>S", "Save", G_CALLBACK (activate_action) },
+	{"SaveAs", GTK_STOCK_SAVE_AS, N_("Save _as"), "<control>s", "Save as", G_CALLBACK (activate_action) },
+	{"Include", GABEDIT_STOCK_INSERT, N_("_Include"), "<control>I", "Include a file", G_CALLBACK (activate_action) },
+	{"Print", GTK_STOCK_PRINT, N_("_Print"), "<control>P", "Print", G_CALLBACK (activate_action) },
+	{"Exit", GTK_STOCK_QUIT, N_("E_xit"), "<control>Q", "Exit", G_CALLBACK (activate_action) },
 	{"Edit",  NULL, "_Edit"},
-	{"Cut", GTK_STOCK_CUT, "C_ut", "<control>X", "Cut the selected text to the clipboard", G_CALLBACK (activate_action) },
-	{"Copy", GTK_STOCK_COPY, "_Copy", "<control>C", "Copy the selected text to the clipboard", G_CALLBACK (activate_action) },
-	{"Paste", GTK_STOCK_PASTE, "_Paste", "<control>V", "Paste the text from the clipboard", G_CALLBACK (activate_action) },
-	{"Find", GTK_STOCK_FIND, "_Find", "<control>F", "Find a string", G_CALLBACK (activate_action) },
-	{"SelectAll",  GABEDIT_STOCK_SELECT_ALL, "Select _all", "<control>A", "Select All", G_CALLBACK (activate_action) },
+	{"Cut", GTK_STOCK_CUT, N_("C_ut"), "<control>X", "Cut the selected text to the clipboard", G_CALLBACK (activate_action) },
+	{"Copy", GTK_STOCK_COPY, N_("_Copy"), "<control>C", "Copy the selected text to the clipboard", G_CALLBACK (activate_action) },
+	{"Paste", GTK_STOCK_PASTE, N_("_Paste"), "<control>V", "Paste the text from the clipboard", G_CALLBACK (activate_action) },
+	{"Find", GTK_STOCK_FIND, N_("_Find"), "<control>F", "Find a string", G_CALLBACK (activate_action) },
+	{"SelectAll",  GABEDIT_STOCK_SELECT_ALL, N_("Select _all"), "<control>A", "Select All", G_CALLBACK (activate_action) },
 
-	{"Insert",  NULL, "_Insert"},
-	{"InsertGaussian",  GABEDIT_STOCK_GAUSSIAN, "_Gaussian"},
-	{"InsertMolcas",  GABEDIT_STOCK_MOLCAS, "Mol_cas"},
-	{"InsertMolpro",  GABEDIT_STOCK_MOLPRO, "Mol_pro"},
-	{"InsertGaussianMultiStep", NULL, "_Add Input File(Multi-Step Job)", NULL, "Add Input File(Multi-Step Job)", G_CALLBACK (activate_action) },
-	{"InsertGaussianGeometry", NULL, "G_eometry", NULL, "Insert Gaussian geometry", G_CALLBACK (activate_action) },
-	{"InsertMolproGeneral", NULL, "_General", NULL, "Insert Molpro general", G_CALLBACK (activate_action) },
-	{"InsertMolproGeometry", NULL, "G_eometry", NULL, "Insert Molpro geometry", G_CALLBACK (activate_action) },
-	{"InsertMolproBasis", NULL, "_Basis", NULL, "Insert Molpro basis", G_CALLBACK (activate_action) },
-	{"InsertMolproCommands", NULL, "_Commands", NULL, "Insert Molpro commands", G_CALLBACK (activate_action) },
-	{"InsertMolcasAddToFile", NULL, "_Add to file", NULL, "Insert Molcas add to file", G_CALLBACK (activate_action) },
+	{"Insert",  NULL, N_("_Insert")},
+	{"InsertGaussian",  GABEDIT_STOCK_GAUSSIAN, N_("_Gaussian")},
+	{"InsertMolcas",  GABEDIT_STOCK_MOLCAS, N_("Mol_cas")},
+	{"InsertMolpro",  GABEDIT_STOCK_MOLPRO, N_("Mol_pro")},
+	{"InsertGaussianMultiStep", NULL, N_("_Add Input File(Multi-Step Job)"), NULL, "Add Input File(Multi-Step Job)", G_CALLBACK (activate_action) },
+	{"InsertGaussianGeometry", NULL, N_("G_eometry"), NULL, "Insert Gaussian geometry", G_CALLBACK (activate_action) },
+	{"InsertMolproGeneral", NULL, N_("_General"), NULL, "Insert Molpro general", G_CALLBACK (activate_action) },
+	{"InsertMolproGeometry", NULL, N_("G_eometry"), NULL, "Insert Molpro geometry", G_CALLBACK (activate_action) },
+	{"InsertMolproBasis", NULL, N_("_Basis"), NULL, "Insert Molpro basis", G_CALLBACK (activate_action) },
+	{"InsertMolproCommands", NULL, N_("_Commands"), NULL, "Insert Molpro commands", G_CALLBACK (activate_action) },
+	{"InsertMolcasAddToFile", NULL, N_("_Add to file"), NULL, "Insert Molcas add to file", G_CALLBACK (activate_action) },
 
-	{"View",  NULL, "_View"},
+	{"View",  NULL, N_("_View")},
 
-	{"Geometry",  NULL, "_Geometry"},
-	{"GeometryMolpro", GABEDIT_STOCK_MOLPRO, "Mol_pro", NULL, "Edit Molpro geometry", G_CALLBACK (activate_action) },
-	{"GeometryGaussian", GABEDIT_STOCK_GAUSSIAN, "_Gaussian", NULL, "Edit Gaussian geometry", G_CALLBACK (activate_action) },
-	{"GeometryEdit", NULL, "_Edit", NULL, "Edit geometry", G_CALLBACK (activate_action) },
-	{"GeometryDraw", GABEDIT_STOCK_GEOMETRY, "_Draw", NULL, "Draw geometry", G_CALLBACK (activate_action) },
+	{"Geometry",  NULL, N_("_Geometry")},
+	{"GeometryMolpro", GABEDIT_STOCK_MOLPRO, N_("Mol_pro"), NULL, "Edit Molpro geometry", G_CALLBACK (activate_action) },
+	{"GeometryGaussian", GABEDIT_STOCK_GAUSSIAN, N_("_Gaussian"), NULL, "Edit Gaussian geometry", G_CALLBACK (activate_action) },
+	{"GeometryEdit", NULL, N_("_Edit"), NULL, "Edit geometry", G_CALLBACK (activate_action) },
+	{"GeometryDraw", GABEDIT_STOCK_GEOMETRY, N_("_Draw"), NULL, "Draw geometry", G_CALLBACK (activate_action) },
 
-	{"DisplayDensity", GABEDIT_STOCK_ORBITALS, "_Display", NULL, "Display Geometry/Orbitals/Density/Vibration", G_CALLBACK (activate_action) },
+	{"DisplayDensity", GABEDIT_STOCK_ORBITALS, N_("_Display"), NULL, "Display Geometry/Orbitals/Density/Vibration", G_CALLBACK (activate_action) },
 
-	{"Tools",  NULL, "_Tools"},
-	{"ToolsProcess",  NULL, "_Process"},
-	{"ToolsProcessLocal",  NULL, "_Local"},
-	{"ToolsUnitConversion", GABEDIT_STOCK_CONVERT_UNIT, "Unit _conversion utility", NULL, "Unit conversion utility", G_CALLBACK (activate_action) },
-	{"ToolsProcessLocalAll", NULL, "_All local process", NULL, "All local process", G_CALLBACK (activate_action) },
-	{"ToolsProcessLocalUser", NULL, "_User local process", NULL, "User local process", G_CALLBACK (activate_action) },
-	{"ToolsProcessRemote",  NULL, "_Remote"},
-	{"ToolsProcessRemoteAll", NULL, "_All remote process", NULL, "All remote process", G_CALLBACK (activate_action) },
-	{"ToolsProcessRemoteUser", NULL, "_User remote process", NULL, "User remote process", G_CALLBACK (activate_action) },
-	{"ToolsBatch",  NULL, "_Batch"},
-	{"ToolsBatchLocal",  NULL, "_Local"},
-	{"ToolsBatchLocalAll", NULL, "_All local batch jobs", NULL, "All local batch jobs", G_CALLBACK (activate_action) },
-	{"ToolsBatchLocalUser", NULL, "_User local batch jobs", NULL, "User local batch jobs", G_CALLBACK (activate_action) },
-	{"ToolsBatchRemote",  NULL, "_Remote"},
-	{"ToolsBatchRemoteAll", NULL, "_All remote batch jobs", NULL, "All remote batch jobs", G_CALLBACK (activate_action) },
-	{"ToolsBatchRemoteUser", NULL, "_User remote batch jobs", NULL, "User remote batch jobs", G_CALLBACK (activate_action) },
-	{"ToolsOpenBabel",  GABEDIT_STOCK_OPEN_BABEL, "Open B_abel", NULL, "Open babel", G_CALLBACK (activate_action) },
-	{"ToolsContoursPlot",  GABEDIT_STOCK_GABEDIT, "Contours plotter", NULL, "ContoursPlotter", G_CALLBACK (activate_action) },
-	{"ToolsXYPlot",  GABEDIT_STOCK_GABEDIT, "XY plotter", NULL, "XYPlotter", G_CALLBACK (activate_action) },
+	{"Tools",  NULL, N_("_Tools")},
+	{"ToolsProcess",  NULL, N_("_Process")},
+	{"ToolsProcessLocal",  NULL, N_("_Local")},
+	{"ToolsUnitConversion", GABEDIT_STOCK_CONVERT_UNIT, N_("Unit _conversion utility"), NULL, "Unit conversion utility", G_CALLBACK (activate_action) },
+	{"ToolsProcessLocalAll", NULL, N_("_All local process"), NULL, "All local process", G_CALLBACK (activate_action) },
+	{"ToolsProcessLocalUser", NULL, N_("_User local process"), NULL, "User local process", G_CALLBACK (activate_action) },
+	{"ToolsProcessRemote",  NULL, N_("_Remote")},
+	{"ToolsProcessRemoteAll", NULL, N_("_All remote process"), NULL, "All remote process", G_CALLBACK (activate_action) },
+	{"ToolsProcessRemoteUser", NULL, N_("_User remote process"), NULL, "User remote process", G_CALLBACK (activate_action) },
+	{"ToolsBatch",  NULL, N_("_Batch")},
+	{"ToolsBatchLocal",  NULL, N_("_Local")},
+	{"ToolsBatchLocalAll", NULL, N_("_All local batch jobs"), NULL, "All local batch jobs", G_CALLBACK (activate_action) },
+	{"ToolsBatchLocalUser", NULL, N_("_User local batch jobs"), NULL, "User local batch jobs", G_CALLBACK (activate_action) },
+	{"ToolsBatchRemote",  NULL, N_("_Remote")},
+	{"ToolsBatchRemoteAll", NULL, N_("_All remote batch jobs"), NULL, "All remote batch jobs", G_CALLBACK (activate_action) },
+	{"ToolsBatchRemoteUser", NULL, N_("_User remote batch jobs"), NULL, "User remote batch jobs", G_CALLBACK (activate_action) },
+	{"ToolsOpenBabel",  GABEDIT_STOCK_OPEN_BABEL, N_("Open B_abel"), NULL, "Open babel", G_CALLBACK (activate_action) },
+	{"ToolsContoursPlot",  GABEDIT_STOCK_GABEDIT, N_("Contours plotter"), NULL, "ContoursPlotter", G_CALLBACK (activate_action) },
+	{"ToolsXYPlot",  GABEDIT_STOCK_GABEDIT, N_("XY plotter"), NULL, "XYPlotter", G_CALLBACK (activate_action) },
 	{"ToolsIRSpectrum",  NULL, "_IR spectrum"},
 
-	{"ToolsIRSpectrumGabedit",  GABEDIT_STOCK_GABEDIT, "Read frequencies and intensities from a _Gabedit file", NULL, "Gabedit", G_CALLBACK (activate_action) },
-	{"ToolsIRSpectrumDalton",  GABEDIT_STOCK_DALTON, "Read frequencies and intensities from a _Dalton output file", NULL, "Dalton", G_CALLBACK (activate_action) },
-	{"ToolsIRSpectrumGamess",  GABEDIT_STOCK_GAMESS, "Read frequencies and intensities from a _Gamess output file", NULL, "Gamess", G_CALLBACK (activate_action) },
-	{"ToolsIRSpectrumGaussian",  GABEDIT_STOCK_GAUSSIAN, "Read frequencies and intensities from a _Gaussian output file", NULL, "Gaussian", G_CALLBACK (activate_action) },
-	{"ToolsIRSpectrumMolpro",  GABEDIT_STOCK_MOLPRO, "Read frequencies and intensities from a _Molpro output file", NULL, "Molpro", G_CALLBACK (activate_action) },
-	{"ToolsIRSpectrumOrca",  GABEDIT_STOCK_ORCA, "Read frequencies and intensities from a _Orca output file", NULL, "Orca", G_CALLBACK (activate_action) },
-	{"ToolsIRSpectrumFireFly",  GABEDIT_STOCK_FIREFLY, "Read frequencies and intensities from a _FireFly output file", NULL, "FireFly", G_CALLBACK (activate_action) },
-	{"ToolsIRSpectrumQChem",  GABEDIT_STOCK_QCHEM, "Read frequencies and intensities from a _Q-Chem output file", NULL, "QChem", G_CALLBACK (activate_action) },
-	{"ToolsIRSpectrumAdf",  GABEDIT_STOCK_ADF, "Read frequencies and intensities from a _ADF output file", NULL, "ADF", G_CALLBACK (activate_action) },
-	{"ToolsIRSpectrumMolden",  GABEDIT_STOCK_MOLDEN, "Read frequencies and intensities from a Mo_lden file", NULL, "Molden", G_CALLBACK (activate_action) },
-	{"ToolsIRSpectrumTxt",  NULL, "Read frequencies and intensities from an ASCII XY file(2 columns)", NULL, "Txt", G_CALLBACK (activate_action) },
-	{"ToolsRamanSpectrum",  NULL, "_Raman spectrum"},
+	{"ToolsIRSpectrumGabedit",  GABEDIT_STOCK_GABEDIT, N_("Read frequencies and intensities from a _Gabedit file"), NULL, "Gabedit", G_CALLBACK (activate_action) },
+	{"ToolsIRSpectrumDalton",  GABEDIT_STOCK_DALTON, N_("Read frequencies and intensities from a _Dalton output file"), NULL, "Dalton", G_CALLBACK (activate_action) },
+	{"ToolsIRSpectrumGamess",  GABEDIT_STOCK_GAMESS, N_("Read frequencies and intensities from a _Gamess output file"), NULL, "Gamess", G_CALLBACK (activate_action) },
+	{"ToolsIRSpectrumGaussian",  GABEDIT_STOCK_GAUSSIAN, N_("Read frequencies and intensities from a _Gaussian output file"), NULL, "Gaussian", G_CALLBACK (activate_action) },
+	{"ToolsIRSpectrumMolpro",  GABEDIT_STOCK_MOLPRO, N_("Read frequencies and intensities from a _Molpro output file"), NULL, "Molpro", G_CALLBACK (activate_action) },
+	{"ToolsIRSpectrumOrca",  GABEDIT_STOCK_ORCA, N_("Read frequencies and intensities from a _Orca output file"), NULL, "Orca", G_CALLBACK (activate_action) },
+	{"ToolsIRSpectrumFireFly",  GABEDIT_STOCK_FIREFLY, N_("Read frequencies and intensities from a _FireFly output file"), NULL, "FireFly", G_CALLBACK (activate_action) },
+	{"ToolsIRSpectrumQChem",  GABEDIT_STOCK_QCHEM, N_("Read frequencies and intensities from a _Q-Chem output file"), NULL, "QChem", G_CALLBACK (activate_action) },
+	{"ToolsIRSpectrumAdf",  GABEDIT_STOCK_ADF, N_("Read frequencies and intensities from a _ADF output file"), NULL, "ADF", G_CALLBACK (activate_action) },
+	{"ToolsIRSpectrumMolden",  GABEDIT_STOCK_MOLDEN, N_("Read frequencies and intensities from a Mo_lden file"), NULL, "Molden", G_CALLBACK (activate_action) },
+	{"ToolsIRSpectrumTxt",  NULL, N_("Read frequencies and intensities from an ASCII XY file(2 columns)"), NULL, "Txt", G_CALLBACK (activate_action) },
+	{"ToolsRamanSpectrum",  NULL, N_("_Raman spectrum")},
 
-	{"ToolsRamanSpectrumGabedit",  GABEDIT_STOCK_GABEDIT, "Read frequencies and intensities from a _Gabedit file", NULL, "Gabedit", G_CALLBACK (activate_action) },
-	{"ToolsRamanSpectrumGamess",  GABEDIT_STOCK_GAMESS, "Read frequencies and intensities from a Game_ss output file", NULL, "Gamess", G_CALLBACK (activate_action) },
-	{"ToolsRamanSpectrumGaussian",  GABEDIT_STOCK_GAUSSIAN, "Read frequencies and intensities from a _Gaussian output file", NULL, "Gaussian", G_CALLBACK (activate_action) },
-	{"ToolsRamanSpectrumOrca",  GABEDIT_STOCK_ORCA, "Read frequencies and intensities from a _Orca output file", NULL, "Orca", G_CALLBACK (activate_action) },
-	{"ToolsRamanSpectrumFireFly",  GABEDIT_STOCK_FIREFLY, "Read frequencies and intensities from a _FireFly output file", NULL, "FireFly", G_CALLBACK (activate_action) },
-	{"ToolsRamanSpectrumMolden",  GABEDIT_STOCK_MOLDEN, "Read frequencies and intensities from a Mo_lden file", NULL, "Molden", G_CALLBACK (activate_action) },
-	{"ToolsRamanSpectrumTxt",  NULL, "Read frequencies and intensities from an ASCII XY file(2 columns)", NULL, "Txt", G_CALLBACK (activate_action) },
+	{"ToolsRamanSpectrumGabedit",  GABEDIT_STOCK_GABEDIT, N_("Read frequencies and intensities from a _Gabedit file"), NULL, "Gabedit", G_CALLBACK (activate_action) },
+	{"ToolsRamanSpectrumGamess",  GABEDIT_STOCK_GAMESS, N_("Read frequencies and intensities from a Game_ss output file"), NULL, "Gamess", G_CALLBACK (activate_action) },
+	{"ToolsRamanSpectrumGaussian",  GABEDIT_STOCK_GAUSSIAN, N_("Read frequencies and intensities from a _Gaussian output file"), NULL, "Gaussian", G_CALLBACK (activate_action) },
+	{"ToolsRamanSpectrumOrca",  GABEDIT_STOCK_ORCA, N_("Read frequencies and intensities from a _Orca output file"), NULL, "Orca", G_CALLBACK (activate_action) },
+	{"ToolsRamanSpectrumFireFly",  GABEDIT_STOCK_FIREFLY, N_("Read frequencies and intensities from a _FireFly output file"), NULL, "FireFly", G_CALLBACK (activate_action) },
+	{"ToolsRamanSpectrumMolden",  GABEDIT_STOCK_MOLDEN, N_("Read frequencies and intensities from a Mo_lden file"), NULL, "Molden", G_CALLBACK (activate_action) },
+	{"ToolsRamanSpectrumTxt",  NULL, N_("Read frequencies and intensities from an ASCII XY file(2 columns)"), NULL, "Txt", G_CALLBACK (activate_action) },
 	{"ToolsUVSpectrum",  NULL, "_UV spectrum"},
-	{"ToolsUVSpectrumGabedit",  GABEDIT_STOCK_GABEDIT, "Read energies and intensities from a _Gabedit file", NULL, "Gabedit", G_CALLBACK (activate_action) },
-	{"ToolsUVSpectrumGamess",  GABEDIT_STOCK_GAMESS, "Read energies and intensities from a _Gamess output file", NULL, "Gamess", G_CALLBACK (activate_action) },
-	{"ToolsUVSpectrumGaussian",  GABEDIT_STOCK_GAUSSIAN, "Read energies and intensities from a _Gaussian output file", NULL, "Gaussian", G_CALLBACK (activate_action) },
-	{"ToolsUVSpectrumFireFly",  GABEDIT_STOCK_FIREFLY, "Read energies and intensities from a _FireFly output file", NULL, "FireFly", G_CALLBACK (activate_action) },
-	{"ToolsUVSpectrumOrca",  GABEDIT_STOCK_ORCA, "Read energies and intensities from a Orca output file", NULL, "Orca", G_CALLBACK (activate_action) },
-	{"ToolsUVSpectrumQChem",  GABEDIT_STOCK_QCHEM, "Read energies and intensities from a Q_Chem output file", NULL, "QChem", G_CALLBACK (activate_action) },
-	{"ToolsUVSpectrumTxt",  NULL, "Read energies and intensities from an ASCII XY file(2 columns)", NULL, "Txt", G_CALLBACK (activate_action) },
+	{"ToolsUVSpectrumGabedit",  GABEDIT_STOCK_GABEDIT, N_("Read energies and intensities from a _Gabedit file"), NULL, "Gabedit", G_CALLBACK (activate_action) },
+	{"ToolsUVSpectrumGamess",  GABEDIT_STOCK_GAMESS, N_("Read energies and intensities from a _Gamess output file"), NULL, "Gamess", G_CALLBACK (activate_action) },
+	{"ToolsUVSpectrumGaussian",  GABEDIT_STOCK_GAUSSIAN, N_("Read energies and intensities from a _Gaussian output file"), NULL, "Gaussian", G_CALLBACK (activate_action) },
+	{"ToolsUVSpectrumFireFly",  GABEDIT_STOCK_FIREFLY, N_("Read energies and intensities from a _FireFly output file"), NULL, "FireFly", G_CALLBACK (activate_action) },
+	{"ToolsUVSpectrumOrca",  GABEDIT_STOCK_ORCA, N_("Read energies and intensities from a Orca output file"), NULL, "Orca", G_CALLBACK (activate_action) },
+	{"ToolsUVSpectrumQChem",  GABEDIT_STOCK_QCHEM, N_("Read energies and intensities from a Q_Chem output file"), NULL, "QChem", G_CALLBACK (activate_action) },
+	{"ToolsUVSpectrumTxt",  NULL, N_("Read energies and intensities from an ASCII XY file(2 columns)"), NULL, "Txt", G_CALLBACK (activate_action) },
 
-	{"ToolsECDSpectrum",  NULL, "_ECD spectrum"},
-	{"ToolsECDSpectrumGabedit",  GABEDIT_STOCK_GABEDIT, "Read energies and intensities from a _Gabedit file", NULL, "Gabedit", G_CALLBACK (activate_action) },
-	{"ToolsECDSpectrumGaussian",  GABEDIT_STOCK_GAUSSIAN, "Read energies and intensities from a _Gaussian output file", NULL, "Gaussian", G_CALLBACK (activate_action) },
-	{"ToolsECDSpectrumOrca",  GABEDIT_STOCK_ORCA, "Read energies and intensities from a _Orca output file", NULL, "Orca", G_CALLBACK (activate_action) },
-	{"ToolsECDSpectrumTxt",  NULL, "Read energies and intensities from an ASCII XY file(2 columns)", NULL, "Txt", G_CALLBACK (activate_action) },
+	{"ToolsECDSpectrum",  NULL, N_("_ECD spectrum")},
+	{"ToolsECDSpectrumGabedit",  GABEDIT_STOCK_GABEDIT, N_("Read energies and intensities from a _Gabedit file"), NULL, "Gabedit", G_CALLBACK (activate_action) },
+	{"ToolsECDSpectrumGaussian",  GABEDIT_STOCK_GAUSSIAN, N_("Read energies and intensities from a _Gaussian output file"), NULL, "Gaussian", G_CALLBACK (activate_action) },
+	{"ToolsECDSpectrumOrca",  GABEDIT_STOCK_ORCA, N_("Read energies and intensities from a _Orca output file"), NULL, "Orca", G_CALLBACK (activate_action) },
+	{"ToolsECDSpectrumTxt",  NULL, N_("Read energies and intensities from an ASCII XY file(2 columns)"), NULL, "Txt", G_CALLBACK (activate_action) },
 
-	{"ToolsNMRSpectrum",  NULL, "_NMR spectrum"},
-	{"ToolsNMRSpectrumTxt",  NULL, "NMR Spin-Spin Splitting Simulation", NULL, "Txt", G_CALLBACK (activate_action) },
-	{"ToolsNMR2SpectrumTxt",  NULL, "Read NMR frequencies and intensities from an ASCII XY file(2 columns)", NULL, "Txt", G_CALLBACK (activate_action) },
+	{"ToolsNMRSpectrum",  NULL, N_("_NMR spectrum")},
+	{"ToolsNMRSpectrumTxt",  NULL, N_("NMR Spin-Spin Splitting Simulation"), NULL, "Txt", G_CALLBACK (activate_action) },
+	{"ToolsNMR2SpectrumTxt",  NULL, N_("Read NMR frequencies and intensities from an ASCII XY file(2 columns)"), NULL, "Txt", G_CALLBACK (activate_action) },
 
-	{"ToolsVibCorrections",  NULL, "Ro_vibrational corrections"},
-	{"ToolsVibCorrectionsGaussian",  NULL, "Read Gaussian output file for compute the ro-vibrational corrections", NULL, "Gaussian", G_CALLBACK (activate_action) },
-	{"ToolsIsotopeDistribution",  NULL, "Compute the isotope distribution for a molecule", NULL, "Isotope distribution", G_CALLBACK (activate_action) },
+	{"ToolsVibCorrections",  NULL, N_("Ro_vibrational corrections")},
+	{"ToolsVibCorrectionsGaussian",  NULL, N_("Read Gaussian output file for compute the ro-vibrational corrections"), NULL, "Gaussian", G_CALLBACK (activate_action) },
+	{"ToolsIsotopeDistribution",  NULL, N_("Compute the isotope distribution for a molecule"), NULL, "Isotope distribution", G_CALLBACK (activate_action) },
 
-	{"Run",  NULL, "_Run"},
-	{"RunAbinitio", GTK_STOCK_EXECUTE, "_Run a abtinio program",  "<control>R", "Run a abtinio program", G_CALLBACK (activate_action) },
-	{"RunViewResult", NULL, "_View result of calculation", NULL, "View result of calculation", G_CALLBACK (activate_action) },
+	{"Run",  NULL, N_("_Run")},
+	{"RunAbinitio", GTK_STOCK_EXECUTE, N_("_Run a Computation Chemistry program"),  "<control>R", "Run a program", G_CALLBACK (activate_action) },
+	{"RunViewResult", NULL, N_("_View result of calculation"), NULL, "View result of calculation", G_CALLBACK (activate_action) },
 
-	{"Settings",  NULL, "_Settings"},
-	{"SettingsMolecularMechanicsParameters", NULL, "_Molecular Mechanics Parameters", NULL, "Set Molecular Mechanics Parameters", G_CALLBACK (activate_action) },
-	{"SettingsPDBTemplate", NULL, "_PDB Template", NULL, "Set PDB Template", G_CALLBACK (activate_action) },
-	{"SettingsBasis",  NULL, "_Basis"},
-	{"SettingsBasisMolcas", GABEDIT_STOCK_MOLCAS, "Mol_cas", NULL, "Set molcas basis list", G_CALLBACK (activate_action) },
-	{"SettingsBasisMolpro", GABEDIT_STOCK_MOLPRO, "Mol_pro", NULL, "Set molpro basis list", G_CALLBACK (activate_action) },
-	{"SettingsBasisMPQC", GABEDIT_STOCK_MPQC, "MP_QC", NULL, "Set MPQC basis list", G_CALLBACK (activate_action) },
-	{"SettingsPreferences", GTK_STOCK_PREFERENCES, "P_references", NULL, "Set preference parameters", G_CALLBACK (activate_action) },
+	{"Settings",  NULL, N_("_Settings")},
+	{"SettingsMolecularMechanicsParameters", NULL, N_("_Molecular Mechanics Parameters"), NULL, "Set Molecular Mechanics Parameters", G_CALLBACK (activate_action) },
+	{"SettingsPDBTemplate", NULL, N_("_PDB Template"), NULL, "Set PDB Template", G_CALLBACK (activate_action) },
+	{"SettingsBasis",  NULL, N_("_Basis")},
+	{"SettingsBasisMolcas", GABEDIT_STOCK_MOLCAS, N_("Mol_cas"), NULL, "Set molcas basis list", G_CALLBACK (activate_action) },
+	{"SettingsBasisMolpro", GABEDIT_STOCK_MOLPRO, N_("Mol_pro"), NULL, "Set molpro basis list", G_CALLBACK (activate_action) },
+	{"SettingsBasisMPQC", GABEDIT_STOCK_MPQC, N_("MP_QC"), NULL, "Set MPQC basis list", G_CALLBACK (activate_action) },
+	{"SettingsPreferences", GTK_STOCK_PREFERENCES, N_("P_references"), NULL, "Set preference parameters", G_CALLBACK (activate_action) },
 
-	{"Window",  NULL, "_Window", NULL, NULL, G_CALLBACK (activate_action)},
+	{"Window",  NULL, N_("_Window"), NULL, NULL, G_CALLBACK (activate_action)},
 
-	{"Help",  NULL, "_Help"},
-	{"HelpAbout", GTK_STOCK_ABOUT, "_About...", NULL, "About...", G_CALLBACK (activate_action) },
-	{"HelpVersion", NULL, "_Version...", NULL, "Version...", G_CALLBACK (activate_action) },
+	{"Help",  NULL, N_("_Help")},
+	{"HelpAbout", GTK_STOCK_ABOUT, N_("_About..."), NULL, "About...", G_CALLBACK (activate_action) },
+	{"HelpVersion", NULL, N_("_Version..."), NULL, "Version...", G_CALLBACK (activate_action) },
 };
 static guint numberOfGtkActionEntries = G_N_ELEMENTS (gtkActionEntries);
 /*********************************************************************************************************************/
@@ -393,10 +393,10 @@ static void toggle_action (GtkAction *action)
 static GtkToggleActionEntry gtkActionToggleEntries[] =
 {
 
-	{ "ViewWindowsFrame", NULL, "Show _Windows frame", NULL, "Show windows frame", G_CALLBACK (toggle_action), FALSE },
-	{ "ViewProjectsList", NULL, "Show _Projects List", NULL, "Show projects List", G_CALLBACK (toggle_action), TRUE },
-	{ "ViewToolbar", NULL, "Show toolbar", NULL, "Show toolbar", G_CALLBACK (toggle_action), TRUE},
-	{ "ViewMiniIcons", NULL, "Mini icons", NULL, "Mini icons", G_CALLBACK (toggle_action), TRUE}
+	{ "ViewWindowsFrame", NULL, N_("Show _Windows frame"), NULL, "Show windows frame", G_CALLBACK (toggle_action), FALSE },
+	{ "ViewProjectsList", NULL, N_("Show _Projects List"), NULL, "Show projects List", G_CALLBACK (toggle_action), TRUE },
+	{ "ViewToolbar", NULL, N_("Show toolbar"), NULL, "Show toolbar", G_CALLBACK (toggle_action), TRUE},
+	{ "ViewMiniIcons", NULL, N_("Mini icons"), NULL, "Mini icons", G_CALLBACK (toggle_action), TRUE}
 };
 
 static guint numberOfGtkActionToggleEntries = G_N_ELEMENTS (gtkActionToggleEntries);
@@ -406,8 +406,8 @@ static guint numberOfGtkActionToggleEntries = G_N_ELEMENTS (gtkActionToggleEntri
  * a subset of the Bonobo UI XML format, and uses GMarkup for parsing */
 static const gchar *uiInfo =
 "  <menubar>\n"
-"    <menu name=\"_File\" action=\"File\">\n"
-"      <menu name=\"_New\" action=\"FileNew\">\n"
+"    <menu name=\"File\" action=\"File\">\n"
+"      <menu name=\"New\" action=\"FileNew\">\n"
 "         <menuitem name=\"GamessInput\" action=\"GamessInput\" />\n"
 "         <menuitem name=\"GaussianInput\" action=\"GaussianInput\" />\n"
 "         <menuitem name=\"MolcasInput\" action=\"MolcasInput\" />\n"
@@ -419,14 +419,14 @@ static const gchar *uiInfo =
 "         <menuitem name=\"QChemInput\" action=\"QChemInput\" />\n"
 "         <menuitem name=\"Other\" action=\"OtherInput\" />\n"
 "      </menu>\n"
-"      <menuitem name=\"_Open\" action=\"Open\" />\n"
-"      <menuitem name=\"_Save\" action=\"Save\" />\n"
-"      <menuitem name=\"Save _as\" action=\"SaveAs\" />\n"
-"      <menuitem name=\"_Include\" action=\"Include\" />\n"
+"      <menuitem name=\"Open\" action=\"Open\" />\n"
+"      <menuitem name=\"Save\" action=\"Save\" />\n"
+"      <menuitem name=\"SaveAs\" action=\"SaveAs\" />\n"
+"      <menuitem name=\"Include\" action=\"Include\" />\n"
 "      <separator name=\"sepMenuPrint\" />\n"
-"      <menuitem name=\"_Print\" action=\"Print\" />\n"
+"      <menuitem name=\"Print\" action=\"Print\" />\n"
 "      <separator name=\"sepMenuExit\" />\n"
-"      <menuitem name=\"_Exit\" action=\"Exit\" />\n"
+"      <menuitem name=\"Exit\" action=\"Exit\" />\n"
 "    </menu>\n"
 "    <menu name=\"_Edit\" action=\"Edit\">\n"
 "      <menuitem name=\"C_ut\" action=\"Cut\" />\n"
@@ -451,43 +451,43 @@ static const gchar *uiInfo =
 "        <menuitem name=\"_Commands\" action=\"InsertMolproCommands\" />\n"
 "      </menu>\n"
 "    </menu>\n"
-"    <menu name=\"_View\" action=\"View\">\n"
-"      <menuitem name=\"_Windows frame\" action=\"ViewWindowsFrame\" />\n"
-"      <menuitem name=\"_Projects List\" action=\"ViewProjectsList\" />\n"
-"      <menuitem name=\"_ToolBar\" action=\"ViewToolbar\" />\n"
-"      <menuitem name=\"_ToolBar\" action=\"ViewMiniIcons\" />\n"
+"    <menu name=\"View\" action=\"View\">\n"
+"      <menuitem name=\"ViewWindowsFrame frame\" action=\"ViewWindowsFrame\" />\n"
+"      <menuitem name=\"ViewProjectsList\" action=\"ViewProjectsList\" />\n"
+"      <menuitem name=\"ViewToolbar\" action=\"ViewToolbar\" />\n"
+"      <menuitem name=\"ViewMiniIcons\" action=\"ViewMiniIcons\" />\n"
 "      <separator name=\"sepMenuIcons\" />\n"
 "    </menu>\n"
 "    <menu name=\"_Geometry\" action=\"Geometry\">\n"
-"      <menuitem name=\"_Gaussian\" action=\"GeometryGaussian\" />\n"
-"      <menuitem name=\"Mol_pro\" action=\"GeometryMolpro\" />\n"
-"      <menuitem name=\"_Edit\" action=\"GeometryEdit\" />\n"
-"      <menuitem name=\"_Draw\" action=\"GeometryDraw\" />\n"
+"      <menuitem name=\"GeometryGaussian\" action=\"GeometryGaussian\" />\n"
+"      <menuitem name=\"GeometryMolpro\" action=\"GeometryMolpro\" />\n"
+"      <menuitem name=\"GeometryEdit\" action=\"GeometryEdit\" />\n"
+"      <menuitem name=\"GeometryDraw\" action=\"GeometryDraw\" />\n"
 "    </menu>\n"
-"    <menu name=\"_Tools\" action=\"Tools\">\n"
-"      <menu name=\"_Process\" action=\"ToolsProcess\">\n"
-"        <menu name=\"_Local\" action=\"ToolsProcessLocal\">\n"
-"          <menuitem name=\"All local process\" action=\"ToolsProcessLocalAll\" />\n"
-"          <menuitem name=\"User local process\" action=\"ToolsProcessLocalUser\" />\n"
+"    <menu name=\"Tools\" action=\"Tools\">\n"
+"      <menu name=\"ToolsProcess\" action=\"ToolsProcess\">\n"
+"        <menu name=\"ToolsProcessLocal\" action=\"ToolsProcessLocal\">\n"
+"          <menuitem name=\"ToolsProcessLocalAll\" action=\"ToolsProcessLocalAll\" />\n"
+"          <menuitem name=\"ToolsProcessLocalUser\" action=\"ToolsProcessLocalUser\" />\n"
 "        </menu>\n"
-"        <menu name=\"_Remote\" action=\"ToolsProcessRemote\">\n"
-"          <menuitem name=\"All remote process\" action=\"ToolsProcessRemoteAll\" />\n"
-"          <menuitem name=\"User remote process\" action=\"ToolsProcessRemoteUser\" />\n"
-"        </menu>\n"
-"      </menu>\n"
-"      <menu name=\"_Batch\" action=\"ToolsBatch\">\n"
-"        <menu name=\"_Local\" action=\"ToolsBatchLocal\">\n"
-"          <menuitem name=\"All local batch\" action=\"ToolsBatchLocalAll\" />\n"
-"          <menuitem name=\"User local batch\" action=\"ToolsBatchLocalUser\" />\n"
-"        </menu>\n"
-"        <menu name=\"_Remote\" action=\"ToolsBatchRemote\">\n"
-"          <menuitem name=\"All remote batch\" action=\"ToolsBatchRemoteAll\" />\n"
-"          <menuitem name=\"User remote batch\" action=\"ToolsBatchRemoteUser\" />\n"
+"        <menu name=\"ToolsProcessRemote\" action=\"ToolsProcessRemote\">\n"
+"          <menuitem name=\"ToolsProcessRemoteAll\" action=\"ToolsProcessRemoteAll\" />\n"
+"          <menuitem name=\"ToolsProcessRemoteUser\" action=\"ToolsProcessRemoteUser\" />\n"
 "        </menu>\n"
 "      </menu>\n"
-"      <menuitem name=\"Open B_abel\" action=\"ToolsOpenBabel\" />\n"
+"      <menu name=\"ToolsBatch\" action=\"ToolsBatch\">\n"
+"        <menu name=\"ToolsBatchLocal\" action=\"ToolsBatchLocal\">\n"
+"          <menuitem name=\"ToolsBatchLocalAll\" action=\"ToolsBatchLocalAll\" />\n"
+"          <menuitem name=\"ToolsBatchLocalUser\" action=\"ToolsBatchLocalUser\" />\n"
+"        </menu>\n"
+"        <menu name=\"ToolsBatchRemote\" action=\"ToolsBatchRemote\">\n"
+"          <menuitem name=\"ToolsBatchRemoteAll\" action=\"ToolsBatchRemoteAll\" />\n"
+"          <menuitem name=\"ToolsBatchRemoteUser\" action=\"ToolsBatchRemoteUser\" />\n"
+"        </menu>\n"
+"      </menu>\n"
+"      <menuitem name=\"ToolsOpenBabel\" action=\"ToolsOpenBabel\" />\n"
 "      <separator name=\"sepUnitConv\" />\n"
-"      <menuitem name=\"Unit conversion\" action=\"ToolsUnitConversion\" />\n"
+"      <menuitem name=\"ToolsUnitConversion\" action=\"ToolsUnitConversion\" />\n"
 "      <separator name=\"sepXYPlot\" />\n"
 "      <menuitem name=\"ToolsXYPlot\" action=\"ToolsXYPlot\" />\n"
 "      <separator name=\"sepContoursPlot\" />\n"
@@ -546,28 +546,28 @@ static const gchar *uiInfo =
 "          <menuitem name=\"ToolsVibCorrectionsGaussian\" action=\"ToolsVibCorrectionsGaussian\" />\n"
 "      </menu>\n"
 "    </menu>\n"
-"    <menu name=\"_Run\" action=\"Run\">\n"
-"      <menuitem name=\"_Run a abtinio program\" action=\"RunAbinitio\" />\n"
-"      <menuitem name=\"_View result of calculation\" action=\"RunViewResult\" />\n"
+"    <menu name=\"Run\" action=\"Run\">\n"
+"      <menuitem name=\"RunAbinitio\" action=\"RunAbinitio\" />\n"
+"      <menuitem name=\"RunViewResult\" action=\"RunViewResult\" />\n"
 "    </menu>\n"
-"    <menu name=\"_Settings\" action=\"Settings\">\n"
-"      <menuitem name=\"_Molecular Mechanics Parameters\" action=\"SettingsMolecularMechanicsParameters\" />\n"
-"      <menuitem name=\"_PDB Template\" action=\"SettingsPDBTemplate\" />\n"
+"    <menu name=\"Settings\" action=\"Settings\">\n"
+"      <menuitem name=\"SettingsMolecularMechanicsParameters\" action=\"SettingsMolecularMechanicsParameters\" />\n"
+"      <menuitem name=\"SettingsPDBTemplate\" action=\"SettingsPDBTemplate\" />\n"
 "      <separator name=\"sepMenuBasis\" />\n"
-"      <menu name=\"_Basis\" action=\"SettingsBasis\">\n"
-"         <menuitem name=\"Mol_pro\" action=\"SettingsBasisMolpro\" />\n"
-"         <menuitem name=\"Mol_cas\" action=\"SettingsBasisMolcas\" />\n"
-"         <menuitem name=\"MP_QC\" action=\"SettingsBasisMPQC\" />\n"
+"      <menu name=\"SettingsBasis\" action=\"SettingsBasis\">\n"
+"         <menuitem name=\"SettingsBasisMolpro\" action=\"SettingsBasisMolpro\" />\n"
+"         <menuitem name=\"SettingsBasisMolcas\" action=\"SettingsBasisMolcas\" />\n"
+"         <menuitem name=\"SettingsBasisMPQC\" action=\"SettingsBasisMPQC\" />\n"
 "      </menu>\n"
 "      <separator name=\"sepMenuPreferences\" />\n"
-"      <menuitem name=\"P_references\" action=\"SettingsPreferences\" />\n"
+"      <menuitem name=\"SettingsPreferences\" action=\"SettingsPreferences\" />\n"
 "    </menu>\n"
-"    <menu name=\"_Window\" action=\"Window\">\n"
+"    <menu name=\"Window\" action=\"Window\">\n"
 "      <separator name=\"sepMenuWin\" />\n"
 "    </menu>\n"
-"    <menu name=\"_Help\" action=\"Help\" position=\"bot\">\n"
-"      <menuitem name=\"_About...\" action=\"HelpAbout\" />\n"
-"      <menuitem name=\"_Version...\" action=\"HelpVersion\" />\n"
+"    <menu name=\"Help\" action=\"Help\" position=\"bot\">\n"
+"      <menuitem name=\"HelpAbout\" action=\"HelpAbout\" />\n"
+"      <menuitem name=\"HelpVersion\" action=\"HelpVersion\" />\n"
 "    </menu>\n"
 "  </menubar>\n"
 "  <toolbar action=\"Toolbar\">\n"
@@ -580,31 +580,31 @@ static const gchar *uiInfo =
 "      <toolitem name=\"OrcaInput\" action=\"OrcaInput\" />\n"
 "      <toolitem name=\"FireFlyInput\" action=\"FireFlyInput\" />\n"
 "      <toolitem name=\"QChemInput\" action=\"QChemInput\" />\n"
-"      <toolitem name=\"_Include\" action=\"Include\" />\n"
-"      <toolitem name=\"_Open\" action=\"Open\" />\n"
-"      <toolitem name=\"_Save\" action=\"Save\" />\n"
-"      <toolitem name=\"Save _as\" action=\"SaveAs\" />\n"
-"      <toolitem name=\"_Print\" action=\"Print\" />\n"
+"      <toolitem name=\"Include\" action=\"Include\" />\n"
+"      <toolitem name=\"Open\" action=\"Open\" />\n"
+"      <toolitem name=\"Save\" action=\"Save\" />\n"
+"      <toolitem name=\"SaveAs\" action=\"SaveAs\" />\n"
+"      <toolitem name=\"Print\" action=\"Print\" />\n"
 "      <separator name=\"sepToolBarCut\" />\n"
-"      <toolitem name=\"C_ut\" action=\"Cut\" />\n"
-"      <toolitem name=\"_Copy\" action=\"Copy\" />\n"
-"      <toolitem name=\"_Paste\" action=\"Paste\" />\n"
-"      <toolitem name=\"_Find\" action=\"Find\" />\n"
-"      <toolitem name=\"_Select All\" action=\"SelectAll\" />\n"
+"      <toolitem name=\"Cut\" action=\"Cut\" />\n"
+"      <toolitem name=\"Copy\" action=\"Copy\" />\n"
+"      <toolitem name=\"Paste\" action=\"Paste\" />\n"
+"      <toolitem name=\"Find\" action=\"Find\" />\n"
+"      <toolitem name=\"SelectAll\" action=\"SelectAll\" />\n"
 "      <separator name=\"sepToolBarRun\" />\n"
-"      <toolitem name=\"_Run a abtinio program\" action=\"RunAbinitio\" />\n"
+"      <toolitem name=\"RunAbinitio\" action=\"RunAbinitio\" />\n"
 "      <separator name=\"sepToolBarGeom\" />\n"
-"      <toolitem name=\"_Draw Geometry\" action=\"GeometryDraw\" />\n"
-"      <toolitem name=\"_Display\" action=\"DisplayDensity\" />\n"
+"      <toolitem name=\"GeometryDraw\" action=\"GeometryDraw\" />\n"
+"      <toolitem name=\"DisplayDensity\" action=\"DisplayDensity\" />\n"
 "      <separator name=\"sepToolBarBabel\" />\n"
 /*
 "      <toolitem name=\"Open B_abel\" action=\"ToolsOpenBabel\" />\n"
 */
-"      <toolitem name=\"Unit _conversion utility\" action=\"ToolsUnitConversion\" />\n"
+"      <toolitem name=\"ToolsUnitConversion\" action=\"ToolsUnitConversion\" />\n"
 "      <separator name=\"sepToolBarExit\" />\n"
-"      <toolitem name=\"_Exit\" action=\"Exit\" />\n"
+"      <toolitem name=\"Exit\" action=\"Exit\" />\n"
 "      <separator name=\"sepToolBarAbout\" />\n"
-"      <toolitem name=\"_About...\" action=\"HelpAbout\" />\n"
+"      <toolitem name=\"HelpAbout\" action=\"HelpAbout\" />\n"
 "  </toolbar>\n"
 ;
 
@@ -647,6 +647,7 @@ void add_menu_toolbar()
   	g_signal_connect_swapped (Fenetre, "destroy", G_CALLBACK (g_object_unref), merge);
 
 	actionGroup = gtk_action_group_new ("GabeditActions");
+	gtk_action_group_set_translation_domain(actionGroup,GETTEXT_PACKAGE);
 	gtk_action_group_add_actions (actionGroup, gtkActionEntries, numberOfGtkActionEntries, NULL);
 	gtk_action_group_add_toggle_actions (actionGroup, gtkActionToggleEntries, numberOfGtkActionToggleEntries, NULL);
   	gtk_ui_manager_insert_action_group (merge, actionGroup, 0);
@@ -658,7 +659,7 @@ void add_menu_toolbar()
   	gtk_window_add_accel_group (GTK_WINDOW (Fenetre), gtk_ui_manager_get_accel_group (merge));
 	if (!gtk_ui_manager_add_ui_from_string (merge, uiInfo, -1, &error))
 	{
-		g_message ("building menus failed: %s", error->message);
+		g_message (_("building menus failed: %s"), error->message);
 		g_error_free (error);
 	}
 	manager = merge;
@@ -698,6 +699,7 @@ void window_add(gchar *str,GtkWidget* Win)
 	if(!dag)
 	{
 		dag = gtk_action_group_new ("WindowActions");
+		gtk_action_group_set_translation_domain(dag,GETTEXT_PACKAGE);
 		gtk_ui_manager_insert_action_group (manager, dag, 0);
 	}
 	listOfActions =   gtk_action_group_list_actions(dag);

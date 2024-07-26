@@ -22,6 +22,7 @@ DEALINGS IN THE SOFTWARE.
 #include <string.h>
 #include <stdio.h>
 #include <gtk/gtk.h>
+#include <glib/gi18n.h>
 #include "../Common/GabeditType.h"
 #include "../Utils/Utils.h"
 #include "../Utils/Constants.h"
@@ -67,7 +68,7 @@ void getMolcasBasisList(gchar* Symb, gchar* outfile, gchar* errfile)
 	}
 	if(!fin)
 	{
-		fprintf(ferr,"Sorry the molcasbasis is corrupted.\nPlease reinstall gabedit\n");
+		fprintf(ferr,_("Sorry the molcasbasis is corrupted.\nPlease reinstall gabedit\n"));
 		fclose(ferr);
 		fclose(fout);
 		
@@ -111,7 +112,7 @@ void getMolcasBasisList(gchar* Symb, gchar* outfile, gchar* errfile)
 		}
 	}
 	if(nbas<1) 
-		fprintf(ferr,"Sorry the molcasbasis is corrupted.\nPlease reinstall gabedit\n");
+		fprintf(ferr,_("Sorry the molcasbasis is corrupted.\nPlease reinstall gabedit\n"));
 	else
 	{
 		for(j=0; j<nbas; j++)

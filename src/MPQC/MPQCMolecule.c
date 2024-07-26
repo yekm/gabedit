@@ -451,7 +451,7 @@ void createMPQCSymmetryFrame(GtkWidget *win, GtkWidget *box)
 	static TypeOfSymmetryButton typeOfSymmetry[] = { AUTO,GABEDIT, FIXED};
 	gchar* list[] = {"C1"};
 
-	frame = gtk_frame_new ("Symmetry");
+	frame = gtk_frame_new (_("Symmetry"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -469,7 +469,7 @@ void createMPQCSymmetryFrame(GtkWidget *win, GtkWidget *box)
 
 	if(mpqcMolecule.groupSymmetry) g_free(mpqcMolecule.groupSymmetry);
 	mpqcMolecule.groupSymmetry = g_strdup("auto");
-	button = addRadioButtonToATable(table, NULL, "Auto detection by MPQC", 0, 0, 2);
+	button = addRadioButtonToATable(table, NULL, _("Auto detection by MPQC"), 0, 0, 2);
 	g_object_set_data(G_OBJECT (button), "Label",label);
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfSymmetry[AUTO]);
 	g_object_set_data(G_OBJECT (button), "ComboSymmetry",comboSymmetry);
@@ -477,7 +477,7 @@ void createMPQCSymmetryFrame(GtkWidget *win, GtkWidget *box)
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
 	buttonAuto = button;
 
-	button = addRadioButtonToATable(table, button, "Detected by Gabedit", 1, 0, 1);
+	button = addRadioButtonToATable(table, button, _("Detected by Gabedit"), 1, 0, 1);
 	g_object_set_data(G_OBJECT (button), "Label",label);
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfSymmetry[GABEDIT]);
 	g_object_set_data(G_OBJECT (button), "ComboSymmetry",comboSymmetry);
@@ -485,14 +485,14 @@ void createMPQCSymmetryFrame(GtkWidget *win, GtkWidget *box)
 	add_widget_table(table, label, 1, 1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), FALSE);
 
-	buttonTolerance = create_button(win,"Tolerance");
+	buttonTolerance = create_button(win,_("Tolerance"));
 	add_widget_table(table, buttonTolerance, 1, 2);
 	g_signal_connect(G_OBJECT(buttonTolerance),"clicked", G_CALLBACK(activateToleranceButton),NULL);
 
 	labelSymmetry = label;
 	gtk_widget_set_sensitive(buttonTolerance, FALSE);
 
-	button = addRadioButtonToATable(table, button, "Fixed Symmetry", 2, 0,1);
+	button = addRadioButtonToATable(table, button, _("Fixed Symmetry"), 2, 0,1);
 	g_signal_connect(G_OBJECT(entrySymmetry),"changed", G_CALLBACK(changedEntrySymmetry),NULL);
 	setComboSymmetry(comboSymmetry);
 	gtk_table_attach(GTK_TABLE(table),comboSymmetry,1,1+2,2,2+1,

@@ -93,7 +93,7 @@ static void reset_last_directory(GtkWidget *dirSelector, gpointer data)
 static void set_directory(GtkWidget *win, gpointer data)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(reset_last_directory, "Set folder", GABEDIT_TYPEWIN_ORB);
+	dirSelector = selctionOfDir(reset_last_directory, _("Set folder"), GABEDIT_TYPEWIN_ORB);
 	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
 	gtk_window_set_transient_for(GTK_WINDOW(dirSelector),GTK_WINDOW(PrincipalWindow));
 	gtk_window_set_transient_for(GTK_WINDOW(dirSelector),GTK_WINDOW(WinDlg));
@@ -197,8 +197,8 @@ static void showMessageEnd()
 {
 	gchar* format =get_format_image_from_option();
 	gchar* message = messageAnimatedImage(format);
-	gchar* t = g_strdup_printf("\nA series of gab*.%s files was created in \"%s\" directeory.\n\n\n%s" , format, get_last_directory(),message);
-	GtkWidget* winDlg = Message(t,"Info",TRUE);
+	gchar* t = g_strdup_printf(_("\nA series of gab*.%s files was created in \"%s\" directeory.\n\n\n%s") , format, get_last_directory(),message);
+	GtkWidget* winDlg = Message(t,_("Info"),TRUE);
 	g_free(message);
 	gtk_window_set_modal (GTK_WINDOW (winDlg), TRUE);
 	g_free(t);
@@ -289,20 +289,20 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_box_pack_start(GTK_BOX(vboxframe), table,TRUE,TRUE,0);
 
 	i = 0;
-	buttonXAxis = gtk_radio_button_new_with_label( NULL,"Rotation about X axis" );
+	buttonXAxis = gtk_radio_button_new_with_label( NULL,_("Rotation about X axis"));
 	gtk_table_attach(GTK_TABLE(table),buttonXAxis,0,3,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  3,3);
 
 	i++;
-	buttonYAxis = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonXAxis)), "Rotation about Y axis "); 
+	buttonYAxis = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonXAxis)), _("Rotation about Y axis ")); 
 	gtk_table_attach(GTK_TABLE(table),buttonYAxis,0,3,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  3,3);
 	i++;
-	buttonZAxis = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonXAxis)), "Rotation about Z axis "); 
+	buttonZAxis = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonXAxis)), _("Rotation about Z axis ")); 
 	gtk_table_attach(GTK_TABLE(table),buttonZAxis,0,3,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -321,7 +321,7 @@ static void addEntrysButtons(GtkWidget* box)
 
 
 	i++;
-	add_label_table(table," Time step(s) ",(gushort)i,0);
+	add_label_table(table,_(" Time step(s) "),(gushort)i,0);
 	add_label_table(table," : ",(gushort)i,1); 
 	EntryVelocity = gtk_entry_new();
 	gtk_table_attach(GTK_TABLE(table),EntryVelocity,2,2+1,i,i+1,
@@ -333,7 +333,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_entry_set_text(GTK_ENTRY(EntryVelocity),t);
 
 	i++;
-	LabelNRotation = add_label_table(table," Number of Rotation by cycle",(gushort)i,0);
+	LabelNRotation = add_label_table(table,_(" Number of Rotation by cycle"),(gushort)i,0);
 	add_label_table(table," : ",(gushort)i,1); 
 	EntryNRotation = gtk_entry_new();
 	gtk_table_attach(GTK_TABLE(table),EntryNRotation,2,2+1,i,i+1,
@@ -352,7 +352,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  3,3);
 
 	i++;
-	buttonCheckFilm = gtk_check_button_new_with_label ("Create a film");
+	buttonCheckFilm = gtk_check_button_new_with_label (_("Create a film"));
 	createFilm = FALSE;
 	numFileFilm = 0;
 	gtk_table_attach(GTK_TABLE(table),buttonCheckFilm,0,1,i,i+1,
@@ -367,7 +367,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  1,1);
 
-	buttonDirFilm = create_button(WinDlg,"Folder");
+	buttonDirFilm = create_button(WinDlg,_("Folder"));
 	gtk_table_attach(GTK_TABLE(table),buttonDirFilm,2,2+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -391,14 +391,14 @@ static void addEntrysButtons(GtkWidget* box)
   	table = gtk_table_new(1,2,TRUE);
 	gtk_box_pack_start (GTK_BOX (vboxframe), table, TRUE, TRUE, 0);
 	i=0;
-	Button = create_button(WinDlg,"Play");
+	Button = create_button(WinDlg,_("Play"));
 	gtk_table_attach(GTK_TABLE(table),Button,0,0+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  3,3);
 	PlayButton = Button;
 
-	Button = create_button(WinDlg,"Stop");
+	Button = create_button(WinDlg,_("Stop"));
 	gtk_table_attach(GTK_TABLE(table),Button,1,1+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -422,14 +422,14 @@ static gboolean createImagesFile()
 		return FALSE;
 	}
 	format =get_format_image_from_option();
-	t = g_strdup_printf("The %s%sgab%d.%s file was created", get_last_directory(),G_DIR_SEPARATOR_S,numFileFilm, format);
+	t = g_strdup_printf(_("The %s%sgab%d.%s file was created"), get_last_directory(),G_DIR_SEPARATOR_S,numFileFilm, format);
 
 	if(!strcmp(formatFilm,"BMP")) message = new_bmp(get_last_directory(), ++numFileFilm);
 	if(!strcmp(formatFilm,"PPM")) message = new_ppm(get_last_directory(), ++numFileFilm);
 	if(!strcmp(formatFilm,"JPEG")) message = new_jpeg(get_last_directory(), ++numFileFilm);
 	if(!strcmp(formatFilm,"PNG")) message = new_png(get_last_directory(), ++numFileFilm);
 	if(!strcmp(formatFilm,"Povray")) message = new_pov(get_last_directory(), ++numFileFilm);
-	if(!strcmp(formatFilm,"PNG transparent")) message = new_png_nobackground(get_last_directory(), ++numFileFilm);
+	if(!strcmp(formatFilm,"PNG transparent")) message = new_png_without_background(get_last_directory(), ++numFileFilm);
 
 	if(message == NULL) setTextInProgress(t);
 	else
@@ -437,7 +437,7 @@ static gboolean createImagesFile()
     		GtkWidget* m;
 		createFilm = FALSE;
 		numFileFilm = 0;
-    		m = Message(message,"Error",TRUE);
+    		m = Message(message,_("Error"),TRUE);
 		gtk_window_set_modal (GTK_WINDOW (m), TRUE);
 	}
 	g_free(t);
@@ -508,7 +508,7 @@ void animationRotationDlg()
 	if(WinDlg) return;
 	if(Ncenters <1 ) 
 	{
-		Message("Sorry, the number of atoms can not <1","Error",TRUE);
+		Message(_("Sorry, the number of atoms can not <1"),_("Error"),TRUE);
 		return;
 	}
 
@@ -516,7 +516,7 @@ void animationRotationDlg()
 	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
 	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(parentWindow));
 	/* gtk_window_set_default_size (GTK_WINDOW(Win),-1,(gint)(ScreenHeight*0.69));*/
-	gtk_window_set_title(GTK_WINDOW(Win),"rotation animation");
+	gtk_window_set_title(GTK_WINDOW(Win),_("Rotation animation"));
 	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
 
 	WinDlg = Win;

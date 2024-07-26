@@ -156,7 +156,7 @@ static void Minimize(SteepestDescent* steepestDescent)
 		if ( steepestDescent->updateNumber++ >= steepestDescent->updateFrequency )
 		{
 			g_free(str);
-			str = g_strdup_printf("Gradient = %f ",(gdouble)steepestDescent->gradientNorm); 
+			str = g_strdup_printf(_("Gradient = %f "),(gdouble)steepestDescent->gradientNorm); 
 			redrawMolecule(&steepestDescent->forceField->molecule,str);
 			steepestDescent->updateNumber = 0;
 		}
@@ -174,7 +174,7 @@ static void Minimize(SteepestDescent* steepestDescent)
         energy = steepestDescent->forceField->klass->calculateEnergyTmp(
 		      steepestDescent->forceField,&steepestDescent->forceField->molecule);
 	g_free(str);
-	str = g_strdup_printf("Gradient = %f  Energy = %f (Kcal/mol)",
+	str = g_strdup_printf(_("Gradient = %f  Energy = %f (Kcal/mol)"),
 			(gdouble)steepestDescent->gradientNorm,(gdouble)energy); 
 
 	redrawMolecule(&steepestDescent->forceField->molecule,str);

@@ -148,32 +148,6 @@ static void set_entry_distance(GtkWidget *w,gpointer data)
   g_free(P.symbol);
 }
 /********************************************************************************/
-/*
-static void set_distance_entry (GtkWidget *w,gpointer data)
-{
-	gchar* t;
-	gdouble Distance;
-	gdouble Ro; 
-	gint Nc;
-	gdouble angle;
-	t = gtk_entry_get_text(GTK_ENTRY(Entrys[3]));
-	Ro = atof(t);
-
-	t = gtk_entry_get_text(GTK_ENTRY(Entrys[1]));
-	Nc = atoi(t);
-
-	if(Nc<1)
-		return;
-	angle = (360.0/Nc)*DEG_TO_RAD;
-
-	Distance = Ro *sqrt(2*(1-cos(angle) )); 
-	t = g_strdup_printf("%f",Distance);
-	gtk_entry_set_text(GTK_ENTRY(Entrys[2]),t);
-	g_free(t);
-	
-}
-*/
-/********************************************************************************/
 static void set_ro_entry (GtkWidget *w,gpointer data)
 {
 	G_CONST_RETURN gchar* t0;
@@ -224,7 +198,7 @@ static void select_atom(GtkWidget *w,gpointer entry0)
   
   WinTable = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_modal(GTK_WINDOW(WinTable),TRUE);
-  gtk_window_set_title(GTK_WINDOW(WinTable),"Select your atom");
+  gtk_window_set_title(GTK_WINDOW(WinTable),_("Select your atom"));
   gtk_window_set_default_size (GTK_WINDOW(WinTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
 
   frame = gtk_frame_new (NULL);
@@ -273,12 +247,12 @@ void build_rozphi_molecule_dlg()
   GtkWidget *Label;
   gint nligne = 6;
   gchar* tlabel[]={
-	"Atom",
-	"Number of atoms",
-	"Distance between atoms(Ang)",
-	"Distance betwenn an atom to center of Fragment(Ang)",
-	"Z of plan of Fragment(Ang)",
-	"Angle betwenn X axis and the first atom of Fragment(Deg.)"
+	N_("Atom"),
+	N_("Number of atoms"),
+	N_("Distance between atoms(Ang)"),
+	N_("Distance betwenn an atom to center of Fragment(Ang)"),
+	N_("Z of plan of Fragment(Ang)"),
+	N_("Angle betwenn X axis and the first atom of Fragment(Deg.)")
 	};
   gchar* tentry[]={
 	"C",
@@ -293,13 +267,13 @@ void build_rozphi_molecule_dlg()
 
   First = TRUE;
   Dlg = gtk_dialog_new();
-  gtk_window_set_title(GTK_WINDOW(Dlg),"Build a molecule with an axis symmetry");
+  gtk_window_set_title(GTK_WINDOW(Dlg),_("Build a molecule with an axis symmetry"));
   gtk_window_set_position(GTK_WINDOW(Dlg),GTK_WIN_POS_CENTER);
   gtk_window_set_modal (GTK_WINDOW (Dlg), TRUE);
   gtk_window_set_transient_for(GTK_WINDOW(Dlg),GTK_WINDOW(GeomDlg));
 
 
-  add_child(GeomDlg,Dlg,gtk_widget_destroy," Build sym. mol. ");
+  add_child(GeomDlg,Dlg,gtk_widget_destroy,_(" Build sym. mol. "));
 
   g_signal_connect(G_OBJECT(Dlg),"delete_event",(GCallback)delete_child,NULL);
   g_signal_connect(G_OBJECT(Dlg),"delete_event",(GCallback)gtk_widget_destroy,NULL);
@@ -338,7 +312,7 @@ void build_rozphi_molecule_dlg()
 	  gtk_entry_set_text(GTK_ENTRY(Entrys[i]),tentry[i]);
 
   }
-  Button = gtk_button_new_with_label(" Set ");
+  Button = gtk_button_new_with_label(_(" Set "));
   g_signal_connect(G_OBJECT(Button), "clicked", (GCallback)select_atom,Entrys[0]);
   gtk_table_attach(GTK_TABLE(Table),Button,3,4,0,1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
@@ -354,7 +328,7 @@ void build_rozphi_molecule_dlg()
   gtk_entry_set_text(GTK_ENTRY(Entrys[2]),t);
   g_free(t);
 
-  Button = gtk_button_new_with_label("  Insert  ");
+  Button = gtk_button_new_with_label(_("  Insert  "));
   g_signal_connect(G_OBJECT(Button), "clicked", (GCallback)build_rozphi_molecule,NULL);
   gtk_table_attach(GTK_TABLE(Table),Button,3,4,2,4,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
@@ -366,7 +340,7 @@ void build_rozphi_molecule_dlg()
   /* The "Close" button */
   gtk_widget_realize(Dlg);
   gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(Dlg)->action_area), FALSE);
-  Button = create_button(Dlg,"Close");
+  Button = create_button(Dlg,_("Close"));
   gtk_box_pack_end (GTK_BOX(GTK_DIALOG(Dlg)->action_area), Button, FALSE, TRUE, 5);  
   g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)delete_child,GTK_OBJECT(Dlg));
   GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);

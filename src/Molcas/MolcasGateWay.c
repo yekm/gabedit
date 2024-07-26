@@ -381,7 +381,7 @@ static gboolean setMolcasMoleculeFromGeomXYZ()
 
 	if(groupSymmetry==1) molcasMolecule.groupSymbol = g_strdup(abelianPointGroupSymbol);
 	else if(groupSymmetry==2) molcasMolecule.groupSymbol = g_strdup("Full");
-	else molcasMolecule.groupSymbol = g_strdup("Sorry, No Symmetry");
+	else molcasMolecule.groupSymbol = g_strdup(_("Sorry, No Symmetry"));
 
 	molcasMolecule.numberOfMolcasGenerators = nMolcas;
 	for(i=0; i<nMolcas; i++)
@@ -1201,8 +1201,8 @@ void setMolcasGeometryFromInputFile(gchar* fileName)
 	if(available<1)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not read geometry from %s file",fileName);
-		Message(buffer,"Warning",TRUE);
+		sprintf(buffer,_("Sorry, I can not read geometry from %s file"),fileName);
+		Message(buffer,_("Warning"),TRUE);
 		return;
 	}
 	if(available==2) /* ZMatrix */
@@ -1387,7 +1387,7 @@ void createSolvationFrame(GtkWidget *win, GtkWidget *box)
 	entrySolvent = addComboListToATable(table, listSolvents, nlistSolvents, 0, 2, 1);
 	add_widget_table(table, buttonConductor, 0, 3);
 
-	button = addRadioButtonToATable(table, NULL, "Nothing", 0, 0,1);
+	button = addRadioButtonToATable(table, NULL, _("Nothing"), 0, 0,1);
 	g_object_set_data(G_OBJECT (button), "Type",types[0]);
 	g_object_set_data(G_OBJECT (button), "EntrySolvent",entrySolvent);
 	g_object_set_data(G_OBJECT (button), "ButtonConductor",buttonConductor);
@@ -1441,29 +1441,29 @@ static void putInfoInTextWidget(GtkWidget* textWid)
 	/* if(molcasMolecule.numberOfMolcasGenerators<1) return;*/
 	if(molcasMolecule.numberOfAtoms<1) return;
 
-	sprintf(buffer,"Group symbol = %s\n",molcasMolecule.groupSymbol);
+	sprintf(buffer,_("Group symbol = %s\n"),molcasMolecule.groupSymbol);
         gabedit_text_insert (GABEDIT_TEXT(textWid), NULL, NULL, NULL, buffer, -1);
 
-	sprintf(buffer,"Tolerance for principal axis classification : %0.5f\n",principalAxisTolerance);
+	sprintf(buffer,_("Tolerance for principal axis classification : %0.5f\n"),principalAxisTolerance);
  	gabedit_text_insert (GABEDIT_TEXT(textWid), NULL, NULL, NULL,buffer,-1);   
 
 
 	if(positionTolerance<0)
-		sprintf(buffer,"Precision for atom position : Min distance between atoms\n\n");
+		sprintf(buffer,_("Precision for atom position : Min distance between atoms\n\n"));
 	else
-		sprintf(buffer,"Precision for atom position : %0.5f\n\n",positionTolerance);
+		sprintf(buffer,_("Precision for atom position : %0.5f\n\n"),positionTolerance);
 
  	gabedit_text_insert (GABEDIT_TEXT(textWid), NULL, NULL, NULL, buffer,-1);   
 
-	sprintf(buffer,"Total number of electrons : %d\n\n",molcasMolecule.totalNumberOfElectrons);
+	sprintf(buffer,_("Total number of electrons : %d\n\n"),molcasMolecule.totalNumberOfElectrons);
  	gabedit_text_insert (GABEDIT_TEXT(textWid), NULL, NULL, NULL,buffer,-1);   
 
 	sprintf(buffer,"================================================================\n");
         gabedit_text_insert (GABEDIT_TEXT(textWid), NULL, NULL, NULL, buffer,-1);
 
-        gabedit_text_insert (GABEDIT_TEXT(textWid), NULL, &molcasColorFore.subProgram, NULL, "Generators : ",-1);
+        gabedit_text_insert (GABEDIT_TEXT(textWid), NULL, &molcasColorFore.subProgram, NULL, _("Generators : "),-1);
 	if(molcasMolecule.numberOfMolcasGenerators==0)
-        	gabedit_text_insert (GABEDIT_TEXT(textWid), NULL, NULL, NULL, "Nothing", -1);
+        	gabedit_text_insert (GABEDIT_TEXT(textWid), NULL, NULL, NULL, _("Nothing"), -1);
 	
       	for (i=0;i<molcasMolecule.numberOfMolcasGenerators;i++)
 	{
@@ -1480,16 +1480,16 @@ static void putInfoInTextWidget(GtkWidget* textWid)
       	for (i=0;i<molcasMolecule.numberOfDifferentKindsOfAtoms;i++)
 	{
 
-		sprintf(buffer,"Type n %d\n",i+1);
+		sprintf(buffer,_("Type n %d\n"),i+1);
         	gabedit_text_insert (GABEDIT_TEXT(textWid), NULL, NULL, NULL, buffer, -1);
-		sprintf(buffer,"Basis = %s\n",molcasMolecule.basis[i]);
+		sprintf(buffer,_("Basis = %s\n"),molcasMolecule.basis[i]);
         	gabedit_text_insert (GABEDIT_TEXT(textWid), NULL, NULL, NULL, buffer, -1);
 
-		sprintf(buffer,"Number of atoms (without reduction ) for %s = %d \n",
+		sprintf(buffer,_("Number of atoms (without reduction ) for %s = %d \n"),
 				molcasMolecule.symbol[i], 
 				molcasMolecule.numberOfAtomsOfEachTypeForAllAtoms[i]);
         	gabedit_text_insert (GABEDIT_TEXT(textWid), NULL, NULL, NULL, buffer, -1);
-		sprintf(buffer,"Number of atoms (with reduction ) for %s = %d \n",
+		sprintf(buffer,_("Number of atoms (with reduction ) for %s = %d \n"),
 				molcasMolecule.symbol[i], 
 				molcasMolecule.numberOfAtomsOfEachType[i]);
         	gabedit_text_insert (GABEDIT_TEXT(textWid), NULL, NULL, NULL, buffer, -1);
@@ -1533,12 +1533,12 @@ static void createViewInfoAbelianGroupWindow(GtkWidget* win, gpointer data)
 	 
 	if(molcasMolecule.numberOfAtoms<1)
 	{
-		 Message("Sorry Number of atoms is not positive","Error",TRUE);
+		 Message(_("Sorry Number of atoms is not positive"),_("Error"),TRUE);
 		 return;
 	}
 	Dialogue = gtk_dialog_new();
 	gtk_widget_realize(GTK_WIDGET(Dialogue));
-	title = g_strdup("Point group, abelian point group & Geometry with reduction (using abelian group)");
+	title = g_strdup(_("Point group, abelian point group & Geometry with reduction (using abelian group)"));
 			
 	gtk_window_set_title(GTK_WINDOW(Dialogue),title);
 
@@ -1577,12 +1577,12 @@ void createSymmetryFrame(GtkWidget *win, GtkWidget *box)
 	GtkWidget* frame;
 	GtkWidget* vboxFrame;
 	GtkWidget* label = gtk_label_new(" ");
-	GtkWidget* label0 = gtk_label_new("Find maximum");
-	GtkWidget* label2 = gtk_label_new("C1   group");
+	GtkWidget* label0 = gtk_label_new(_("Find maximum"));
+	GtkWidget* label2 = gtk_label_new(_("C1   group"));
 	GtkWidget *table = gtk_table_new(4,3,FALSE);
 	gint i=0;
 
-	frame = gtk_frame_new ("Geometry& basis");
+	frame = gtk_frame_new (_("Geometry& basis"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -1594,7 +1594,7 @@ void createSymmetryFrame(GtkWidget *win, GtkWidget *box)
 	gtk_box_pack_start (GTK_BOX (vboxFrame), table, TRUE, TRUE, 0);
 
 	i = 0;
-	button = addRadioButtonToATable(table, NULL, "Full symmetry", i, 0,1);
+	button = addRadioButtonToATable(table, NULL, _("Full symmetry"), i, 0,1);
 	add_widget_table(table, label0, i, 1);
 	g_object_set_data(G_OBJECT (button), "Label",label);
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfSymmetry[0]);
@@ -1603,20 +1603,20 @@ void createSymmetryFrame(GtkWidget *win, GtkWidget *box)
 
 
 	i = 1;
-	button = addRadioButtonToATable(table, button, "Fixed symmetry", i, 0, 1);
+	button = addRadioButtonToATable(table, button, _("Fixed symmetry"), i, 0, 1);
 	add_widget_table(table, label, i, 1);
 	g_object_set_data(G_OBJECT (button), "Label",label);
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfSymmetry[1]);
 	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), typeOfSymmetry[1]==groupSymmetry);
 
-	buttonTolerance = create_button(win," Tolerance ");
+	buttonTolerance = create_button(win,_(" Tolerance "));
 	add_widget_table(table, buttonTolerance, i, 2);
 	g_signal_connect(G_OBJECT(buttonTolerance),"clicked", G_CALLBACK(activateToleranceButton),NULL);
 	gtk_widget_set_sensitive(buttonTolerance, FALSE);
 
 	i = 2;
-	button = addRadioButtonToATable(table, button, "Without symmetry", i, 0,1);
+	button = addRadioButtonToATable(table, button, _("Without symmetry"), i, 0,1);
 	add_widget_table(table, label2, i, 1);
 	g_object_set_data(G_OBJECT (button), "Label",label);
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfSymmetry[2]);
@@ -1624,14 +1624,14 @@ void createSymmetryFrame(GtkWidget *win, GtkWidget *box)
 	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);
 
 	i = 3;
-	buttonView = create_button(win," Show result ");
+	buttonView = create_button(win,_(" Show result "));
 	gtk_table_attach(GTK_TABLE(table),buttonView,1,1+2,i,i+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
                   3,3);
 	/* add_widget_table(table, buttonView, 2, 2);*/
 	g_signal_connect_swapped(G_OBJECT(buttonView),"clicked", G_CALLBACK(createViewInfoAbelianGroupWindow),GTK_OBJECT(win));
-	buttonBasis = create_button(win," Set Basis ");
+	buttonBasis = create_button(win,_(" Set Basis "));
 	add_widget_table(table, buttonBasis, i, 0);
 	g_signal_connect_swapped(G_OBJECT(buttonBasis),"clicked", G_CALLBACK(createBasisWindow),GTK_OBJECT(win));
 

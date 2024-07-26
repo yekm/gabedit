@@ -599,7 +599,7 @@ void createProcessWin32(char* myChildProcess)
 	si.cb = sizeof(si);
 	ZeroMemory( &pi, sizeof(pi) );
 
-	printf("Command = %s\n",myChildProcess);
+	printf(_("Command = %s\n"),myChildProcess);
 	/* Start the child process. */
 	if( !CreateProcess( NULL,   /* No module name (use command line). */
 		TEXT(myChildProcess), /* Command line. */
@@ -614,8 +614,8 @@ void createProcessWin32(char* myChildProcess)
                         ) 
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"CreateProcess failed (%d)",(int)GetLastError());
-        	Message(buffer, "Error", TRUE);
+		sprintf(buffer,_("CreateProcess failed (%d)"),(int)GetLastError());
+        	Message(buffer, _("Error"), TRUE);
 		return;
     }
 
@@ -4421,6 +4421,7 @@ GabEditTypeFile get_type_file(gchar* filename)
 	if( !strcmp(ext,"IRC")) return GABEDIT_TYPEFILE_GAMESSIRC;
 	if( !strcmp(ext,"CUBE") &&  !strcmp(filename,"CUBE")) return GABEDIT_TYPEFILE_CUBEMOLPRO;
 	if( !strcmp(ext,"CUBE")) return GABEDIT_TYPEFILE_CUBEGAUSS;
+	if( !strcmp(ext,"FCHK")) return GABEDIT_TYPEFILE_GAUSSIAN_FCHK;
 
 	return GABEDIT_TYPEFILE_UNKNOWN;
 }
@@ -4446,4 +4447,148 @@ gchar * mystrcasestr(G_CONST_RETURN gchar *haystack, G_CONST_RETURN gchar *needl
 		}
 	}
 	return 0;
+}
+/****************************************************************************/
+gint get_one_int_from_fchk_gaussian_file(FILE* file, gchar* blockName)
+{
+	gint ipos = 47;
+	gchar t[BSIZE];
+	 while(!feof(file))
+	 {
+		if(!fgets(t,BSIZE,file))break;
+		if(strstr( t, blockName))
+		{
+			if(strlen(t)>ipos+1) return atoi(t+ipos);
+			return -1;
+		}
+	 }
+	 return -1;
+}
+/****************************************************************************/
+gdouble get_one_real_from_fchk_gaussian_file(FILE* file, gchar* blockName)
+{
+	gint ipos = 47;
+	gchar t[BSIZE];
+	 while(!feof(file))
+	 {
+		if(!fgets(t,BSIZE,file))break;
+		if(strstr( t, blockName))
+		{
+			if(strlen(t)>ipos+1) return atof(t+ipos);
+			return -1;
+		}
+	 }
+	 return -1;
+}
+/****************************************************************************/
+gint* get_array_int_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* nElements)
+{
+	gint ipos = 43;
+	gint i;
+	gchar t[BSIZE];
+	gint* elements = NULL;
+	*nElements = 0;
+	 while(!feof(file))
+	 {
+		if(!fgets(t,BSIZE,file))break;
+		if(strstr( t, blockName))
+		{
+			if(!(strstr( t, blockName) && strstr(t,"N=") && strlen(strstr(t,"N="))>2)) return elements;
+			if(strlen(t)>ipos+1 && t[ipos]!='I') return elements;
+			*nElements = atof(strstr(t,"N=")+2);
+			if(*nElements<1) return elements;
+			elements = g_malloc(*nElements*sizeof(gint));
+			for(i=0;i<*nElements;i++)
+			{
+				if(1!=fscanf(file,"%d",&elements[i])) break;
+			}
+			if(i!=*nElements)
+			{
+				*nElements = 0;
+				g_free(elements);
+				return NULL;
+			}
+			return elements;
+		}
+	 }
+	 return elements;
+}
+/****************************************************************************/
+gdouble* get_array_real_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* nElements)
+{
+	gint ipos = 43;
+	gint i;
+	gchar t[BSIZE];
+	gdouble* elements = NULL;
+
+	*nElements = 0;
+	 while(!feof(file))
+	 {
+		if(!fgets(t,BSIZE,file))break;
+		if(strstr( t, blockName))
+		{
+			if(!(strstr( t, blockName) && strstr(t,"N=") && strlen(strstr(t,"N="))>2)) return elements;
+			if(strlen(t)>ipos+1 && t[ipos]!='R') return elements;
+			*nElements = atof(strstr(t,"N=")+2);
+			if(*nElements<1) return elements;
+			elements = g_malloc(*nElements*sizeof(gdouble));
+			for(i=0;i<*nElements;i++)
+				if(1!=fscanf(file,"%lf",&elements[i])) break;
+			if(i!=*nElements)
+			{
+				*nElements = 0;
+				g_free(elements);
+				return NULL;
+			}
+			return elements;
+		}
+	 }
+	 return elements;
+}
+/****************************************************************************/
+gchar** get_array_string_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* nElements)
+{
+	gint ipos = 43;
+	gint i;
+	gchar t[BSIZE];
+	gchar** elements = NULL;
+	gchar type = ' ';
+
+	*nElements = 0;
+	 while(!feof(file))
+	 {
+		if(!fgets(t,BSIZE,file))break;
+		if(strstr( t, blockName))
+		{
+			if(!(strstr( t, blockName) && strstr(t,"N=") && strlen(strstr(t,"N="))>2)) return elements;
+			if(strlen(t)>ipos+1 && t[ipos]=='C') type = 'C';
+			if(strlen(t)>ipos+1 && t[ipos]=='H') type = 'H';
+			if(type!='C' && type!='H') return elements;
+			*nElements = atof(strstr(t,"N=")+2);
+			if(*nElements<1) return elements;
+			elements = g_malloc(*nElements*sizeof(gchar*));
+			for(i=0;i<*nElements;i++) elements[i] = NULL;
+			if(type=='C')
+			for(i=0;i<*nElements;i++)
+			{
+				if(1!=fscanf(file,"%12s",t)) break;
+				elements[i] = g_strdup(t);
+			}
+			else
+			for(i=0;i<*nElements;i++)
+			{
+				if(1!=fscanf(file,"%8s",t)) break;
+				elements[i] = g_strdup(t);
+			}
+			
+			if(i!=*nElements)
+			{
+				*nElements = 0;
+				g_free(elements);
+				return NULL;
+			}
+			return elements;
+		}
+	 }
+	 return elements;
 }

@@ -156,7 +156,7 @@ void createGamessGuessFrame(GtkWidget *win, GtkWidget *box)
 	buttonPrintGuess = NULL;
 	buttonRotate = NULL;
 
-	frame = gtk_frame_new ("Mo Guess");
+	frame = gtk_frame_new (_("Mo Guess"));
 	guessFrame = frame;
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
@@ -170,7 +170,7 @@ void createGamessGuessFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Guess Method -----------------------------------------*/
 	l=0; 
 	c = 0; ncases=1;
-	add_label_table(table,"Initial Guess",l,c);
+	add_label_table(table,_("Initial Guess"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_guessmethods();
@@ -190,7 +190,7 @@ void createGamessGuessFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Print Orbs L ------------*/
 	l++; 
 	c = 0; ncases=3;
-	buttonPrintGuess = gtk_check_button_new_with_label ("Print the initial Guess");
+	buttonPrintGuess = gtk_check_button_new_with_label (_("Print the initial Guess"));
 	gtk_table_attach(GTK_TABLE(table),buttonPrintGuess,c,c+ncases,l,l+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
@@ -199,7 +199,7 @@ void createGamessGuessFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Mix ------------*/
 	l++; 
 	c = 0; ncases=3;
-	buttonRotate = gtk_check_button_new_with_label ("Rotate alpha and beta orbitals");
+	buttonRotate = gtk_check_button_new_with_label (_("Rotate alpha and beta orbitals"));
 	gtk_table_attach(GTK_TABLE(table),buttonRotate,c,c+ncases,l,l+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),

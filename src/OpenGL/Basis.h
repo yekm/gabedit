@@ -34,6 +34,7 @@ void NormaliseAllBasis();
 void DefineCartBasis();
 void DefineSphericalBasis();
 void DefineAtomicNumOrb();
+gboolean readBasisFromGaussianFChk(gchar *fileName);
 
 #endif /* __GABEDIT_BASIS_H__ */
 

@@ -148,7 +148,7 @@ void createOrcaGuessFrame(GtkWidget *win, GtkWidget *box)
 	gint ncases=1;
 	GtkWidget *table = gtk_table_new(4,3,FALSE);
 
-	frame = gtk_frame_new ("Mo Guess");
+	frame = gtk_frame_new (_("Mo Guess"));
 	guessFrame = frame;
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
@@ -162,7 +162,7 @@ void createOrcaGuessFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Guess Method -----------------------------------------*/
 	l=0; 
 	c = 0; ncases=1;
-	add_label_table(table,"Initial Guess",l,c);
+	add_label_table(table,_("Initial Guess"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_guessmethods();

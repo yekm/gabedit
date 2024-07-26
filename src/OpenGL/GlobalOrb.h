@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #include <ctype.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
+#include <glib/gi18n.h>
 #include "../Files/GabeditFileChooser.h"
 #include "../../gtkglarea/gtkglarea.h"
 #include "../../gl2ps/gl2ps.h"

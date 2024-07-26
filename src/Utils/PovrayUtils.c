@@ -36,7 +36,7 @@ typedef enum
   BALCK,
   WHITE
 } TypeOfBackground;
-static gchar* types[] = {"sky & water", "sky & cheker", "room",  "black", "white" };
+static gchar* types[] = {N_("sky & water"), N_("sky & cheker"), N_("room"),  N_("black"), N_("white") };
 static gint typeOfBackground[] = {SKY_WATER, SKY_CHEKER, ROOM, BALCK, WHITE };
 static gint backgroundType = BALCK;
 static gint tmpBackgoundType = BALCK;
@@ -83,7 +83,7 @@ void createPOVBackgroundFrame(GtkWidget *box)
 	GtkWidget *table = gtk_table_new(5,2,TRUE);
 	gint i;
 
-	frame = gtk_frame_new ("Type of background");
+	frame = gtk_frame_new (_("Type of background"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -115,7 +115,7 @@ void createPovrayOptionsWindow(GtkWidget* win)
 	 
 	dialogWindow = gtk_dialog_new();
 	gtk_widget_realize(GTK_WIDGET(dialogWindow));
-	sprintf(title, "Povray options");
+	sprintf(title, _("Povray options"));
 	gtk_window_set_title(GTK_WINDOW(dialogWindow),title);
 
 	gtk_window_set_modal (GTK_WINDOW (dialogWindow), TRUE);

@@ -1,4 +1,4 @@
-/* MPQCOptimisation.c */
+/* MPQCOptimization.c */
 /**********************************************************************************************************
 Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
@@ -33,50 +33,50 @@ typedef enum
 	SINGLEPOINT, OPTIMIZE
 }ButtonTypes;
 /************************************************************************************************************/
-void initMPQCOptimisation()
+void initMPQCOptimization()
 {
-	mpqcOptimisation.method = g_strdup("QNewtonOpt"); /* EFCOpt for trans*/
-	mpqcOptimisation.transitionState = FALSE;
-	mpqcOptimisation.modeFollowing = FALSE;
-	mpqcOptimisation.maxIterations = 20;
-	mpqcOptimisation.updateMethod = g_strdup("BFGSUpdate"); /* PowellUpdate */
-	mpqcOptimisation.function = g_strdup("$:mole");
-	mpqcOptimisation.energy = g_strdup("$:mole");
-	mpqcOptimisation.cartesian = TRUE;
+	mpqcOptimization.method = g_strdup("QNewtonOpt"); /* EFCOpt for trans*/
+	mpqcOptimization.transitionState = FALSE;
+	mpqcOptimization.modeFollowing = FALSE;
+	mpqcOptimization.maxIterations = 20;
+	mpqcOptimization.updateMethod = g_strdup("BFGSUpdate"); /* PowellUpdate */
+	mpqcOptimization.function = g_strdup("$:mole");
+	mpqcOptimization.energy = g_strdup("$:mole");
+	mpqcOptimization.cartesian = TRUE;
 }
 /************************************************************************************************************/
-void freeMPQCOptimisation()
+void freeMPQCOptimization()
 {
-	if(mpqcOptimisation.method ) g_free(mpqcOptimisation.method);
-	if(mpqcOptimisation.updateMethod) g_free(mpqcOptimisation.updateMethod);
-	if(mpqcOptimisation.function) g_free(mpqcOptimisation.function);
-	if(mpqcOptimisation.energy) g_free(mpqcOptimisation.energy);
-	mpqcOptimisation.method = NULL;
-	mpqcOptimisation.updateMethod = NULL;
-	mpqcOptimisation.function = NULL;
-	mpqcOptimisation.energy = NULL;
+	if(mpqcOptimization.method ) g_free(mpqcOptimization.method);
+	if(mpqcOptimization.updateMethod) g_free(mpqcOptimization.updateMethod);
+	if(mpqcOptimization.function) g_free(mpqcOptimization.function);
+	if(mpqcOptimization.energy) g_free(mpqcOptimization.energy);
+	mpqcOptimization.method = NULL;
+	mpqcOptimization.updateMethod = NULL;
+	mpqcOptimization.function = NULL;
+	mpqcOptimization.energy = NULL;
 }
 /*********************************************************************************************************/
 static void activateTransButton(GtkWidget *button, gpointer data)
 {
 	if(!GTK_IS_WIDGET(button)) return;
 
-	if(mpqcOptimisation.method) g_free(mpqcOptimisation.method);
-	if(mpqcOptimisation.updateMethod) g_free(mpqcOptimisation.updateMethod);
+	if(mpqcOptimization.method) g_free(mpqcOptimization.method);
+	if(mpqcOptimization.updateMethod) g_free(mpqcOptimization.updateMethod);
 
 	if(GTK_TOGGLE_BUTTON (button)->active)
 	{
-		mpqcOptimisation.transitionState = TRUE;
-		mpqcOptimisation.modeFollowing = TRUE;
-		mpqcOptimisation.method = g_strdup("EFCOpt");
-		mpqcOptimisation.updateMethod = g_strdup("PowellUpdate");
+		mpqcOptimization.transitionState = TRUE;
+		mpqcOptimization.modeFollowing = TRUE;
+		mpqcOptimization.method = g_strdup("EFCOpt");
+		mpqcOptimization.updateMethod = g_strdup("PowellUpdate");
 	}
 	else
 	{
-		mpqcOptimisation.transitionState = FALSE;
-		mpqcOptimisation.modeFollowing = FALSE;
-		mpqcOptimisation.method = g_strdup("QNewtonOpt"); 
-		mpqcOptimisation.updateMethod = g_strdup("BFGSUpdate");
+		mpqcOptimization.transitionState = FALSE;
+		mpqcOptimization.modeFollowing = FALSE;
+		mpqcOptimization.method = g_strdup("QNewtonOpt"); 
+		mpqcOptimization.updateMethod = g_strdup("BFGSUpdate");
 	}
 
 }
@@ -114,10 +114,10 @@ static void changedEntryMaxIterations(GtkWidget *entry, gpointer data)
 	if(strlen(entryText)<1)return;
 
 	if(atoi(entryText)>0)
-		mpqcOptimisation.maxIterations = atoi(entryText);
+		mpqcOptimization.maxIterations = atoi(entryText);
 	else
 	{
-		mpqcOptimisation.maxIterations = 10;
+		mpqcOptimization.maxIterations = 10;
 		gtk_entry_set_text(GTK_ENTRY(entry),"10");
 	}
 }
@@ -140,7 +140,7 @@ static GtkWidget* addComboListToATable(GtkWidget* table,
 	return entry;
 }
 /***********************************************************************************************/
-static GtkWidget *addMPQCMaxIterationsToTable(GtkWidget *table, gint i,GtkWidget *buttonSinglePoint,GtkWidget *buttonOptimisation)
+static GtkWidget *addMPQCMaxIterationsToTable(GtkWidget *table, gint i,GtkWidget *buttonSinglePoint,GtkWidget *buttonOptimization)
 {
 	GtkWidget* entryMaxIterations = NULL;
 	GtkWidget* comboMaxIterations = NULL;
@@ -149,7 +149,7 @@ static GtkWidget *addMPQCMaxIterationsToTable(GtkWidget *table, gint i,GtkWidget
 	GtkWidget *labelMaxIterations1 = NULL;
 	GtkWidget *labelMaxIterations2 = NULL;
 
-	labelMaxIterations1 = add_label_table(table,"   Max iterations",(gushort)i,0);
+	labelMaxIterations1 = add_label_table(table,_("   Max iterations"),(gushort)i,0);
 	labelMaxIterations2 = add_label_table(table,":",(gushort)i,1);
 	entryMaxIterations = addComboListToATable(table, listMaxIterations, nlistMaxIterations, i, 2, 1);
 	comboMaxIterations  = g_object_get_data(G_OBJECT (entryMaxIterations), "Combo");
@@ -157,16 +157,16 @@ static GtkWidget *addMPQCMaxIterationsToTable(GtkWidget *table, gint i,GtkWidget
 	g_object_set_data(G_OBJECT (buttonSinglePoint), "LabelMaxIterations1", labelMaxIterations1);
 	g_object_set_data(G_OBJECT (buttonSinglePoint), "LabelMaxIterations2", labelMaxIterations2);
 	g_object_set_data(G_OBJECT (buttonSinglePoint), "ComboMaxIterations", comboMaxIterations);
-	g_object_set_data(G_OBJECT (buttonOptimisation), "LabelMaxIterations1", labelMaxIterations1);
-	g_object_set_data(G_OBJECT (buttonOptimisation), "LabelMaxIterations2", labelMaxIterations2);
-	g_object_set_data(G_OBJECT (buttonOptimisation), "ComboMaxIterations", comboMaxIterations);
+	g_object_set_data(G_OBJECT (buttonOptimization), "LabelMaxIterations1", labelMaxIterations1);
+	g_object_set_data(G_OBJECT (buttonOptimization), "LabelMaxIterations2", labelMaxIterations2);
+	g_object_set_data(G_OBJECT (buttonOptimization), "ComboMaxIterations", comboMaxIterations);
 	gtk_widget_set_sensitive(labelMaxIterations1, mpqcMpqc.optimize);
 	gtk_widget_set_sensitive(labelMaxIterations2, mpqcMpqc.optimize);
 	gtk_widget_set_sensitive(comboMaxIterations, mpqcMpqc.optimize);
 	return comboMaxIterations;
 }
 /***********************************************************************************************/
-void createMPQCOptimisation(GtkWidget *box)
+void createMPQCOptimization(GtkWidget *box)
 {
 	GtkWidget* frame;
 	GtkWidget* vboxFrame;
@@ -175,13 +175,13 @@ void createMPQCOptimisation(GtkWidget *box)
 	GtkWidget *table = NULL;
 	gint i;
 	GtkWidget *buttonSinglePoint = NULL;
-	GtkWidget *buttonOptimisation = NULL;
+	GtkWidget *buttonOptimization = NULL;
 	GtkWidget *button = NULL;
 	static ButtonTypes buttonTypes[] = {SINGLEPOINT, OPTIMIZE};
 
 	table = gtk_table_new(3,3,FALSE);
 
-	frame = gtk_frame_new ("Type of calcul");
+	frame = gtk_frame_new (_("Type of calcul"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -193,7 +193,7 @@ void createMPQCOptimisation(GtkWidget *box)
 	gtk_box_pack_start (GTK_BOX (vboxFrame), table, TRUE, TRUE, 0);
 
 	i = 0;
-	button = gtk_radio_button_new_with_label(NULL, "Single point");
+	button = gtk_radio_button_new_with_label(NULL, _("Single point"));
 	gtk_table_attach(GTK_TABLE(table),button,0,0+1,i,i+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
@@ -202,16 +202,16 @@ void createMPQCOptimisation(GtkWidget *box)
 	g_object_set_data(G_OBJECT (buttonSinglePoint), "Type", &buttonTypes[0]);
 	g_signal_connect(G_OBJECT(buttonSinglePoint),"clicked", G_CALLBACK(activateRadioButton),NULL);
 	i = 1;
-	button = gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (button)), "Optimisation");
+	button = gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (button)), _("Optimization"));
 	gtk_table_attach(GTK_TABLE(table),button,0,0+1,i,i+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
                   3,3);
-	buttonOptimisation = button;
-	g_object_set_data(G_OBJECT (buttonOptimisation), "Type", &buttonTypes[1]);
-	g_signal_connect(G_OBJECT(buttonOptimisation),"clicked", G_CALLBACK(activateRadioButton),NULL);
+	buttonOptimization = button;
+	g_object_set_data(G_OBJECT (buttonOptimization), "Type", &buttonTypes[1]);
+	g_signal_connect(G_OBJECT(buttonOptimization),"clicked", G_CALLBACK(activateRadioButton),NULL);
 
-	button = gtk_check_button_new_with_label ("Transition state");
+	button = gtk_check_button_new_with_label (_("Transition state"));
 	gtk_table_attach(GTK_TABLE(table),button,1,1+2,i,i+1,
 		(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -219,57 +219,57 @@ void createMPQCOptimisation(GtkWidget *box)
 	gtk_widget_set_sensitive(button, mpqcMpqc.optimize);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), FALSE);
 	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateTransButton),NULL);
-	g_object_set_data(G_OBJECT (buttonOptimisation), "ButtonTransition", button);
+	g_object_set_data(G_OBJECT (buttonOptimization), "ButtonTransition", button);
 	g_object_set_data(G_OBJECT (buttonSinglePoint), "ButtonTransition", button);
 
 	i = 2;
-	comboMaxIterations = addMPQCMaxIterationsToTable(table, i, buttonSinglePoint, buttonOptimisation);
+	comboMaxIterations = addMPQCMaxIterationsToTable(table, i, buttonSinglePoint, buttonOptimization);
 	entryMaxIterations = GTK_BIN(comboMaxIterations)->child;
 	g_signal_connect(G_OBJECT(entryMaxIterations),"changed", G_CALLBACK(changedEntryMaxIterations),NULL);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonSinglePoint), !mpqcMpqc.optimize);
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonOptimisation), mpqcMpqc.optimize);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonOptimization), mpqcMpqc.optimize);
 	g_object_set_data(G_OBJECT (box), "ButtonSinglePoint", buttonSinglePoint);
-	g_object_set_data(G_OBJECT (box), "ButtonOptimisation", buttonOptimisation);
+	g_object_set_data(G_OBJECT (box), "ButtonOptimization", buttonOptimization);
 
 }
 /************************************************************************************************************/
 /************************************************************************************************************/
-static void putMPQCOptimisationInTextEditor()
+static void putMPQCOptimizationInTextEditor()
 {
         gchar buffer[BSIZE];
 
 	sprintf(buffer,"%c Optimizer object for the molecular geometry\n",'%');
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer, -1);
 
-	sprintf(buffer,"opt<%s>: (\n", mpqcOptimisation.method);
+	sprintf(buffer,"opt<%s>: (\n", mpqcOptimization.method);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, &mpqcColorFore.keyWord, &mpqcColorBack.keyWord, buffer, -1);
-	sprintf(buffer,"\tfunction = %s\n", mpqcOptimisation.function);
+	sprintf(buffer,"\tfunction = %s\n", mpqcOptimization.function);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer, -1);
 
-	if(mpqcOptimisation.transitionState)
+	if(mpqcOptimization.transitionState)
 	{
 		sprintf(buffer,"\ttransition_state = yes\n");
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer, -1);
 	}
-	if(mpqcOptimisation.modeFollowing)
+	if(mpqcOptimization.modeFollowing)
 	{
 		sprintf(buffer,"\tmode_following = yes\n");
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer, -1);
 	}
-	sprintf(buffer,"\tmax_iterations = %d\n",mpqcOptimisation.maxIterations);
+	sprintf(buffer,"\tmax_iterations = %d\n",mpqcOptimization.maxIterations);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer, -1);
 
-	sprintf(buffer,"update<%s>: ()\n",mpqcOptimisation.updateMethod);
+	sprintf(buffer,"update<%s>: ()\n",mpqcOptimization.updateMethod);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"\t", -1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, &mpqcColorFore.keyWord, &mpqcColorBack.keyWord, buffer, -1);
 
 	sprintf(buffer,"convergence<MolEnergyConvergence>: (\n");
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"\t", -1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, &mpqcColorFore.keyWord, &mpqcColorBack.keyWord, buffer, -1);
-	sprintf(buffer,"\t\tenergy = %s\n", mpqcOptimisation.energy);
+	sprintf(buffer,"\t\tenergy = %s\n", mpqcOptimization.energy);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer, -1);
 
-	if(mpqcOptimisation.cartesian) sprintf(buffer,"\t\tcartesian = yes\n");
+	if(mpqcOptimization.cartesian) sprintf(buffer,"\t\tcartesian = yes\n");
 	else sprintf(buffer,"\t\tcartesian = no\n");
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer, -1);
 
@@ -284,7 +284,7 @@ static void putMPQCOptimisationInTextEditor()
 }
 /**************************************************************************************************************************************/
 /************************************************************************************************************/
-void putMPQCOptimisationInfoInTextEditor()
+void putMPQCOptimizationInfoInTextEditor()
 {
-	putMPQCOptimisationInTextEditor();
+	putMPQCOptimizationInTextEditor();
 }

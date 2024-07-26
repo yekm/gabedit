@@ -153,6 +153,11 @@ GabEditTypeFile get_type_output_file(gchar* fileName);
 GabEditTypeFile get_type_input_file(gchar* fileName);
 GabEditTypeFile get_type_file(gchar* filename);
 gchar * mystrcasestr(G_CONST_RETURN gchar *haystack, G_CONST_RETURN gchar *needle);
+gint get_one_int_from_fchk_gaussian_file(FILE* file, gchar* blockName);
+gdouble get_one_real_from_fchk_gaussian_file(FILE* file, gchar* blockName);
+gint* get_array_int_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* nElements);
+gdouble* get_array_real_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* nElements);
+gchar** get_array_string_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* nElements);
 
 #endif /* __GABEDIT_UTILS_H__ */
 

@@ -118,6 +118,34 @@ static gboolean getGradientMopac(gchar* fileNameOut, SemiEmpiricalModel *seModel
 			Ok = TRUE;
 			break;
 	 	}
+		pdest = strstr( buffer, "Cartesian Gradients"); /* MOZYME Keyword */
+		if(pdest) 
+		{
+			gchar td[100];
+			gint d;
+			if(!fgets(buffer,BSIZE,file))break; /*Atom       X  ....*/
+			if(!fgets(buffer,BSIZE,file))break; /* backspace */
+			for(i=0;i<seModel->molecule.nAtoms;i++)
+			{
+				if(!fgets(buffer,BSIZE,file)) /* 1  O    0.000   -4.566    0.027  */
+				{
+					fclose(file);
+					return FALSE;
+				}
+				if(sscanf(buffer,"%d %s %lf %lf %lf",&d, td, 
+						&seModel->molecule.gradient[0][i],
+						&seModel->molecule.gradient[1][i],
+						&seModel->molecule.gradient[2][i]
+					 )
+						!=5)
+					{
+						fclose(file);
+						return FALSE;
+					}
+			}
+			Ok = TRUE;
+			break;
+	 	}
 	 }
 	fclose(file);
 	return Ok;
@@ -237,8 +265,8 @@ static void calculateGradientMopac(SemiEmpiricalModel* seModel)
 		if(!getGradientMopac(fileOut, seModel))
 		{
 			StopCalcul=TRUE;
-			set_text_to_draw("Problem : I cannot caculate the Gradient... ");
-			set_statubar_operation_str("Calcul Stopped ");
+			set_text_to_draw(_("Problem : I cannot caculate the Gradient... "));
+			set_statubar_operation_str(_("Calculation Stopped "));
 			dessine();
 			gtk_widget_set_sensitive(StopButton, FALSE);
 			Waiting(1);
@@ -520,8 +548,8 @@ static void calculateGradientFireFly(SemiEmpiricalModel* seModel)
 			gchar* comm = g_strdup_printf("cat %s",fileOut);
 #endif
 			StopCalcul=TRUE;
-			set_text_to_draw("Problem : I cannot caculate the Gradient... ");
-			set_statubar_operation_str("Calcul Stopped ");
+			set_text_to_draw(_("Problem : I cannot caculate the Gradient... "));
+			set_statubar_operation_str(_("Calculation Stopped "));
 			dessine();
 			gtk_widget_set_sensitive(StopButton, FALSE);
 			Waiting(1);

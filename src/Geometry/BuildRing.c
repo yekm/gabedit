@@ -142,7 +142,7 @@ static void select_atom(GtkWidget *w,gpointer entry0)
   
   FenetreTable = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_modal(GTK_WINDOW(FenetreTable),TRUE);
-  gtk_window_set_title(GTK_WINDOW(FenetreTable),"Select your atom");
+  gtk_window_set_title(GTK_WINDOW(FenetreTable),_("Select your atom"));
   gtk_window_set_default_size (GTK_WINDOW(FenetreTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
 
   frame = gtk_frame_new (NULL);
@@ -192,22 +192,18 @@ void build_ring_molecule_dlg()
   SAtomsProp P = prop_atom_get(Symb);
   
   Dlg = gtk_dialog_new();
-  gtk_window_set_title(GTK_WINDOW(Dlg),"Build Ring molecule");
+  gtk_window_set_title(GTK_WINDOW(Dlg),_("Build Ring molecule"));
   gtk_window_set_position(GTK_WINDOW(Dlg),GTK_WIN_POS_CENTER);
   gtk_window_set_transient_for(GTK_WINDOW(Dlg),GTK_WINDOW(GeomDlg));
 
 
-  add_child(GeomDlg,Dlg,gtk_widget_destroy," Build Ring mol. ");
+  add_child(GeomDlg,Dlg,gtk_widget_destroy,_(" Build Ring mol. "));
 
   g_signal_connect(G_OBJECT(Dlg),"delete_event",(GCallback)delete_child,NULL);
   g_signal_connect(G_OBJECT(Dlg),"delete_event",(GCallback)gtk_widget_destroy,NULL);
 
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
-
-  g_object_ref (frame);
-  g_object_set_data_full(G_OBJECT (Dlg), "frame",
-	  frame,(GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
    gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dlg)->vbox), frame,TRUE,TRUE,0);
 
@@ -218,11 +214,11 @@ void build_ring_molecule_dlg()
 
   /* The Atom Entry */
   hbox=create_hbox_false(vboxframe);
-  Entrys[0] = create_label_entry(hbox,"Atom                       : ",(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.15));
+  Entrys[0] = create_label_entry(hbox,_("Atom                       : "),(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.15));
   gtk_entry_set_text(GTK_ENTRY(Entrys[0]),Symb);
   gtk_editable_set_editable((GtkEditable*) Entrys[0],FALSE);
 
-  Button = gtk_button_new_with_label(" Set ");
+  Button = gtk_button_new_with_label(_(" Set "));
   gtk_box_pack_start (GTK_BOX(hbox), Button, TRUE, TRUE, 5);
   g_signal_connect(G_OBJECT(Button), "clicked", (GCallback)select_atom,Entrys[0]);
 
@@ -231,7 +227,7 @@ void build_ring_molecule_dlg()
   for(i=0;i<nlist;i++)
 	  tlist[i] = g_strdup_printf("%d",i+3);
   hbox=create_hbox_false(vboxframe);
-  Entrys[1] = create_label_combo(hbox,"Number of atoms            : ",tlist,nlist,TRUE,(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.15));
+  Entrys[1] = create_label_combo(hbox,_("Number of atoms            : "),tlist,nlist,TRUE,(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.15));
 
   for(i=0;i<nlist;i++)
 	  g_free(tlist[i]);
@@ -240,20 +236,20 @@ void build_ring_molecule_dlg()
   /* The Distance between atoms */
   hbox = create_hbox_false(vboxframe);
   t = g_strdup_printf("%f",0.95*(P.covalentRadii+P.covalentRadii)*BOHR_TO_ANG);
-  Entrys[2] = create_label_entry(hbox,"Distance between atoms(Ang) : ",(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.15));
+  Entrys[2] = create_label_entry(hbox,_("Distance between atoms(Ang) : "),(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.15));
   gtk_entry_set_text(GTK_ENTRY(Entrys[2]),t);
   g_free(t);
 
 
   gtk_widget_realize(Dlg);
   /* The "Cancel" button */
-  Button = create_button(Dlg,"Cancel");
+  Button = create_button(Dlg,_("Cancel"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dlg)->action_area), Button,TRUE,TRUE,0);
   g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)delete_child,GTK_OBJECT(Dlg));
   GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 
   /* The "OK" button */
-  Button = create_button(Dlg,"OK");
+  Button = create_button(Dlg,_("OK"));
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dlg)->action_area), Button,TRUE,TRUE,0);
   g_signal_connect(G_OBJECT(Button), "clicked",(GCallback)build_ring_molecule,NULL);
   g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)delete_child,GTK_OBJECT(Dlg));

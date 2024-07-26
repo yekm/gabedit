@@ -28,7 +28,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../MPQC/MPQCMpqc.h"
 #include "../MPQC/MPQCBasis.h"
 #include "../MPQC/MPQCFunctionals.h"
-#include "../MPQC/MPQCOptimisation.h"
+#include "../MPQC/MPQCOptimization.h"
 #include "../MPQC/MPQCProperties.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Geometry/GeomGlobal.h"
@@ -78,7 +78,7 @@ void destroyWinsMPQC(GtkWidget *win)
 	freeMPQCMolecule();
 	freeMPQCMpqc();
 	freeMPQCBasis();
-	freeMPQCOptimisation();
+	freeMPQCOptimization();
 }
 /************************************************************************************************************/
 static void toCancelWin(GtkWidget* win,gpointer data)
@@ -123,7 +123,7 @@ static void putInfoInTextEditor(GtkWidget *button, gpointer data)
 	putMPQCBasisInfoInTextEditor();
 	putMPQCGuessWaveFunctionInfoInTextEditor();
 	putMPQCMoleInfoInTextEditor();
-	if(mpqcMpqc.optimize) putMPQCOptimisationInfoInTextEditor();
+	if(mpqcMpqc.optimize) putMPQCOptimizationInfoInTextEditor();
 	putMPQCMpqcInfoInTextEditor();
 
 	iprogram = PROG_IS_MPQC;
@@ -150,7 +150,7 @@ static void mpqcInputFileWindow(gboolean newInputFile)
 	GtkWidget *table = gtk_table_new(6,2,FALSE);
 	GtkWidget *entryMethod = NULL;
 	GtkWidget *buttonSinglePoint;
-	GtkWidget *buttonOptimisation;
+	GtkWidget *buttonOptimization;
 
 	fileopen.command=g_strdup(NameCommandMPQC);
 	newFile = newInputFile;
@@ -161,17 +161,18 @@ static void mpqcInputFileWindow(gboolean newInputFile)
 	initMPQCGuessWaveFunction();
 	initMPQCMolecule();
 	initMPQCBasis();
-	initMPQCOptimisation();
+	initMPQCOptimization();
 	setMPQCMolecule();
 
 
 	if(mpqcMolecule.numberOfAtoms <1)
 	{
 		Message(
+			_(
 			"You must initially define your geometry.\n\n"
 			"From the principal Menu select : Geometry/Draw\n"
-			"and draw (or read) your molecule.",
-			"Error",TRUE);
+			"and draw (or read) your molecule.")
+			,_("Error"),TRUE);
 		return;
 	}
 
@@ -180,15 +181,15 @@ static void mpqcInputFileWindow(gboolean newInputFile)
 	Wins= gtk_dialog_new ();
 	gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER);
 	gtk_window_set_transient_for(GTK_WINDOW(Wins),GTK_WINDOW(Fenetre));
-	gtk_window_set_title(&GTK_DIALOG(Wins)->window,"MPQC input");
+	gtk_window_set_title(&GTK_DIALOG(Wins)->window,_("MPQC input"));
     	gtk_window_set_modal (GTK_WINDOW (Wins), TRUE);
 
-	init_child(Wins, destroyWinsMPQC," MPQC input ");
+	init_child(Wins, destroyWinsMPQC,_(" MPQC input "));
 	g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_children,NULL);
 
 	gtk_widget_realize(Wins);
 
-	button = create_button(Wins,"CANCEL");
+	button = create_button(Wins,_("Cancel"));
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, FALSE, TRUE, 5);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK( toCancelWin),GTK_OBJECT(Wins));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
@@ -210,11 +211,11 @@ static void mpqcInputFileWindow(gboolean newInputFile)
 	createMPQCGuess(hbox);
 
 	hbox =addHboxToTable(table, 0, 1, 1, 1);
-	createMPQCOptimisation(hbox);
+	createMPQCOptimization(hbox);
 	buttonSinglePoint =  g_object_get_data(G_OBJECT (hbox), "ButtonSinglePoint");
-	buttonOptimisation =  g_object_get_data(G_OBJECT (hbox), "ButtonOptimisation");
+	buttonOptimization =  g_object_get_data(G_OBJECT (hbox), "ButtonOptimization");
 	g_object_set_data(G_OBJECT (entryMethod),"ButtonSinglePoint", buttonSinglePoint);
-	g_object_set_data(G_OBJECT (entryMethod), "ButtonOptimisation", buttonOptimisation);
+	g_object_set_data(G_OBJECT (entryMethod), "ButtonOptimization", buttonOptimization);
 	hbox =addHboxToTable(table, 4, 0, 1, 2);
 	createMPQCProperties(hbox);
 

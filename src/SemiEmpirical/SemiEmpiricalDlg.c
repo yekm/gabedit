@@ -466,8 +466,10 @@ static gboolean runOneMopac(gchar* fileNamePrefix, gchar* keyWords)
 		{
 		gchar* str = NULL;
 		str = g_strdup_printf(
+				_(
 				"Sorry, I cannot read the output file : %s "
-				" ; Check also the installation of Mopac...",
+				" ; Check also the installation of Mopac..."
+				),
 				fileNameOut
 				);
 		set_text_to_draw(str);
@@ -702,8 +704,10 @@ static gboolean runOneFireFly(gchar* fileNamePrefix, gchar* keyWords)
 	{
 		gchar* str = NULL;
 		str = g_strdup_printf(
+				_(
 				"Sorry, I cannot read the output file :  %s"
-				" ; Check also the installation of FireFly...",
+				" ; Check also the installation of FireFly...")
+				,
 				fileNameOut
 				);
 		set_text_to_draw(str);
@@ -998,8 +1002,10 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
 	{
 		gchar* str = NULL;
 		str = g_strdup_printf(
+				_(
 				"Sorry, I cannot read the output file :  %s"
-				" ; Check also the installation of Orca...",
+				" ; Check also the installation of Orca..."
+				),
 				fileNameOut
 				);
 		set_text_to_draw(str);
@@ -1589,7 +1595,7 @@ static GtkWidget *addChargeOfMoleculeToTable(GtkWidget *table, gint i)
 	gint nlistCharge = 1;
 	gchar* listCharge[] = {"0"};
 
-	add_label_table(table,"Charge",(gushort)i,0);
+	add_label_table(table,_("Charge"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entryCharge = addComboListToATable(table, listCharge, nlistCharge, i, 2, 1);
 	comboCharge  = g_object_get_data(G_OBJECT (entryCharge), "Combo");
@@ -1606,7 +1612,7 @@ static GtkWidget *addSpinOfMoleculeToTable(GtkWidget *table, gint i)
 	gint nlistspinMultiplicity = 1;
 	gchar* listspinMultiplicity[] = {"0"};
 
-	add_label_table(table,"Spin multiplicity",(gushort)i,0);
+	add_label_table(table,_("Spin multiplicity"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entrySpinMultiplicity = addComboListToATable(table, listspinMultiplicity, nlistspinMultiplicity, i, 2, 1);
 	comboSpinMultiplicity  = g_object_get_data(G_OBJECT (entrySpinMultiplicity), "Combo");
@@ -1629,7 +1635,7 @@ static void addChargeSpin(GtkWidget *box)
 
 	table = gtk_table_new(2,5,FALSE);
 
-	frame = gtk_frame_new ("Charge & Multiplicity");
+	frame = gtk_frame_new (_("Charge & Multiplicity"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -1900,7 +1906,7 @@ static void createReactionPathFrame(GtkWidget *box)
 	stepValueRP[0] = 0.1;
 	stepValueRP[1] = 0.1;
 
-	frame = gtk_frame_new ("Reaction path");
+	frame = gtk_frame_new (_("Reaction path"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -1912,25 +1918,25 @@ static void createReactionPathFrame(GtkWidget *box)
 	gtk_box_pack_start (GTK_BOX (vboxFrame), table, TRUE, TRUE, 0);
 
 	i = 0; j = 1;
-	label = gtk_label_new("Type");
+	label = gtk_label_new(_("Type"));
 	gtk_table_attach(GTK_TABLE(table),label,j,j+1,i,i+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
                   2,2);
 	i = 0; j = 2;
-	label = gtk_label_new("Atoms");
+	label = gtk_label_new(_("Atoms"));
 	gtk_table_attach(GTK_TABLE(table),label,j,j+1,i,i+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
                   2,2);
 	i = 0; j = 3;
-	label = gtk_label_new("Nb points");
+	label = gtk_label_new(_("Nb points"));
 	gtk_table_attach(GTK_TABLE(table),label,j,j+1,i,i+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
                   2,2);
 	i = 0; j = 4;
-	label = gtk_label_new("Step value");
+	label = gtk_label_new(_("Step value"));
 	gtk_table_attach(GTK_TABLE(table),label,j,j+1,i,i+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
@@ -1938,7 +1944,7 @@ static void createReactionPathFrame(GtkWidget *box)
 
 	i = 1; 
 	j = 0;
-	label = gtk_label_new("First");
+	label = gtk_label_new(_("First"));
 	gtk_table_attach(GTK_TABLE(table),label,j,j+1,i,i+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
@@ -1963,7 +1969,7 @@ static void createReactionPathFrame(GtkWidget *box)
                   2,2);
 	i = 2; 
 	j = 0;
-	label = gtk_label_new("Second");
+	label = gtk_label_new(_("Second"));
 	gtk_table_attach(GTK_TABLE(table),label,j,j+1,i,i+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
@@ -2030,8 +2036,8 @@ static void AddOptionsDlg(GtkWidget *NoteBook, GtkWidget *win,gchar* type)
 	frame = gtk_frame_new(NULL);
 	gtk_container_set_border_width(GTK_CONTAINER(frame), 5);
 
-	LabelOnglet = gtk_label_new("General");
-	LabelMenu = gtk_label_new("General");
+	LabelOnglet = gtk_label_new(_("General"));
+	LabelMenu = gtk_label_new(_("General"));
 	gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook), frame,LabelOnglet, LabelMenu);
 	g_object_set_data (G_OBJECT (frame), "frame", frame);
 
@@ -2115,7 +2121,7 @@ static void AddOptionsDlg(GtkWidget *NoteBook, GtkWidget *win,gchar* type)
 /*----------------------------------------------------------------------------------*/
 	i++;
 	j = 0;
-	add_label_table(table,"Working Folder",(gushort)i,(gushort)j);
+	add_label_table(table,_("Working Folder"),(gushort)i,(gushort)j);
 /*----------------------------------------------------------------------------------*/
 	j = 1;
 	label = gtk_label_new(":");
@@ -2125,7 +2131,7 @@ static void AddOptionsDlg(GtkWidget *NoteBook, GtkWidget *win,gchar* type)
                   1,1);
 /*----------------------------------------------------------------------------------*/
 	j = 2;
-	buttonDirSelector =  gtk_file_chooser_button_new("Select your folder", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	buttonDirSelector =  gtk_file_chooser_button_new(_("Select your folder"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
 	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeight*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
 			j,j+4,i,i+1,
@@ -2135,7 +2141,7 @@ static void AddOptionsDlg(GtkWidget *NoteBook, GtkWidget *win,gchar* type)
 /*----------------------------------------------------------------------------------*/
 	i++;
 	j = 0;
-	add_label_table(table,"File name",(gushort)i,(gushort)j);
+	add_label_table(table,_("File name"),(gushort)i,(gushort)j);
 /*----------------------------------------------------------------------------------*/
 	j = 1;
 	label = gtk_label_new(":");
@@ -2168,7 +2174,7 @@ static GtkWidget *addMopacHamiltonianToTable(GtkWidget *table, gint i)
 	gint nlistHamiltonian = 6;
 	gchar* listHamiltonian[] = {"PM6","PM6-DH2","AM1","RM1","PM3","MNDO"};
 
-	add_label_table(table,"Model",(gushort)i,0);
+	add_label_table(table,_("Model"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entryMopacHamiltonian = addComboListToATable(table, listHamiltonian, nlistHamiltonian, i, 2, 1);
 	comboMopacHamiltonian  = g_object_get_data(G_OBJECT (entryMopacHamiltonian), "Combo");
@@ -2206,7 +2212,7 @@ static void addMopacOptions(GtkWidget *box, gchar* type)
 /*----------------------------------------------------------------------------------*/
 	i++;
 	j = 0;
-	add_label_table(table,"Additional keywords",(gushort)i,(gushort)j);
+	add_label_table(table,_("Additional keywords"),(gushort)i,(gushort)j);
 /*----------------------------------------------------------------------------------*/
 	j = 1;
 	label = gtk_label_new(":");
@@ -2237,7 +2243,7 @@ static GtkWidget *addMopacHamiltonianSparkleToTable(GtkWidget *table, gint i)
 	gint nlistHamiltonianSparkle = 3;
 	gchar* listHamiltonianSparkle[] = {"AM1","PM6","PM3"};
 
-	add_label_table(table,"Model",(gushort)i,0);
+	add_label_table(table,_("Model"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entryMopacHamiltonianSparkle = addComboListToATable(table, listHamiltonianSparkle, nlistHamiltonianSparkle, i, 2, 1);
 	comboMopacHamiltonianSparkle  = g_object_get_data(G_OBJECT (entryMopacHamiltonianSparkle), "Combo");
@@ -2274,7 +2280,7 @@ static void addMopacSparkleOptions(GtkWidget *box, gchar* type)
 /*----------------------------------------------------------------------------------*/
 	i++;
 	j = 0;
-	add_label_table(table,"Additional keywords",(gushort)i,(gushort)j);
+	add_label_table(table,_("Additional keywords"),(gushort)i,(gushort)j);
 /*----------------------------------------------------------------------------------*/
 	j = 1;
 	label = gtk_label_new(":");
@@ -2305,7 +2311,7 @@ static GtkWidget *addOrcaHamiltonianToTable(GtkWidget *table, gint i)
 	gint nlistHamiltonian = 2;
 	gchar* listHamiltonian[] = {"PM3","AM1"};
 
-	add_label_table(table,"Model",(gushort)i,0);
+	add_label_table(table,_("Model"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entryOrcaHamiltonian = addComboListToATable(table, listHamiltonian, nlistHamiltonian, i, 2, 1);
 	comboOrcaHamiltonian  = g_object_get_data(G_OBJECT (entryOrcaHamiltonian), "Combo");
@@ -2343,7 +2349,7 @@ static void addOrcaOptions(GtkWidget *box, gchar* type)
 /*----------------------------------------------------------------------------------*/
 	i++;
 	j = 0;
-	add_label_table(table,"Additional keywords",(gushort)i,(gushort)j);
+	add_label_table(table,_("Additional keywords"),(gushort)i,(gushort)j);
 /*----------------------------------------------------------------------------------*/
 	j = 1;
 	label = gtk_label_new(":");
@@ -2377,7 +2383,7 @@ void semiEmpiricalDlg(gchar* type)
 	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(parentWindow));
 	if(type) 
 	{
-		gchar* title = g_strdup_printf("Semi-empirical calculation/%s",type);
+		gchar* title = g_strdup_printf(_("Semi-empirical calculation/%s"),type);
 		gtk_window_set_title(&GTK_DIALOG(Win)->window,title);
 		g_free(title);
 	}
@@ -3499,7 +3505,7 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 	if(StopCalcul)
 	{
 		set_text_to_draw(" ");
-		set_statubar_operation_str("Calcul Canceled ");
+		set_statubar_operation_str(_("Calculation Canceled "));
 		dessine();
 		set_sensitive_stop_button( FALSE);
 		return;
@@ -3528,7 +3534,7 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 	if(StopCalcul)
 	{
 		set_text_to_draw(" ");
-		set_statubar_operation_str("Calcul canceled");
+		set_statubar_operation_str(_("Calculation canceled"));
 		dessine();
 	}
 	set_sensitive_stop_button( FALSE);
@@ -3546,8 +3552,8 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 			{
 				read_gabedit_file_add_list(fileNameGeom);
 				strcat(message,fileNameGeom);
-				strcat(message,"\n\tGeometries after minimization by Mopac");
-				strcat(message,"\n\tTo read this file : 'Read/Gabedit file'\n\n");
+				strcat(message,_("\n\tGeometries after minimization by Mopac"));
+				strcat(message,_("\n\tTo read this file : 'Read/Gabedit file'\n\n"));
 			}
 		}
 		if(fileNamePrefix) g_free(fileNamePrefix);
@@ -3566,8 +3572,8 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 			{
 				read_gabedit_file_add_list(fileNameGeom);
 				strcat(message,fileNameGeom);
-				strcat(message,"\n\tGeometries after minimization by FireFly");
-				strcat(message,"\n\tTo read this file : 'Read/Gabedit file'\n\n");
+				strcat(message,_("\n\tGeometries after minimization by FireFly"));
+				strcat(message,_("\n\tTo read this file : 'Read/Gabedit file'\n\n"));
 			}
 
 		}
@@ -3585,8 +3591,8 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 		{
 			read_gabedit_file_add_list(fileNameGeom);
 			strcat(message,fileNameGeom);
-			strcat(message,"\n\tGeometries selected and optimized using your Semi-emperical potentials");
-			strcat(message,"\n\tTo read this file : 'Read/Gabedit file'\n\n");
+			strcat(message,_("\n\tGeometries selected and optimized using your Semi-emperical potentials"));
+			strcat(message,_("\n\tTo read this file : 'Read/Gabedit file'\n\n"));
 		}
 	}
 	if(numberOfGeometries>0 && geometries && !StopCalcul)
@@ -3596,7 +3602,7 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 			gchar* fileNamePrefix = get_suffix_name_file(fileNameGeom);
 			createMopacFiles(numberOfGeometries, geometries, energies, fileNamePrefix, mopacKeywords);
 			strcat(message,fileNamePrefix);
-			strcat(message,"_*.mop\n\tFiles for a post processing by Mopac\n\n");
+			strcat(message,_("_*.mop\n\tFiles for a post processing by Mopac\n\n"));
 			if(fileNamePrefix) g_free(fileNamePrefix);
 		}
 		if(gaussianKeywords)
@@ -3604,7 +3610,7 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 			gchar* fileNamePrefix = get_suffix_name_file(fileNameGeom);
 			createGaussianFiles(numberOfGeometries, geometries, energies, fileNamePrefix, gaussianKeywords);
 			strcat(message,fileNamePrefix);
-			strcat(message,"_*.com\n\tFiles for a post processing by Gaussian\n\n");
+			strcat(message,_("_*.com\n\tFiles for a post processing by Gaussian\n\n"));
 			if(fileNamePrefix) g_free(fileNamePrefix);
 		}
 		if(fireflyKeywords)
@@ -3612,18 +3618,19 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 			gchar* fileNamePrefix = get_suffix_name_file(fileNameGeom);
 			createFireFlyFiles(numberOfGeometries, geometries, energies, fileNamePrefix, fireflyKeywords);
 			strcat(message,fileNamePrefix);
-			strcat(message,"P_*.inp\n\tFiles for a post processing by FireFly\n\n");
+			strcat(message,_("P_*.inp\n\tFiles for a post processing by FireFly\n\n"));
 			if(fileNamePrefix) g_free(fileNamePrefix);
 		}
 	}
 	if(geometries)
 	{
+		if(!StopCalcul)
 		for(i=0;i<numberOfGeometries;i++)
 			if(geometries[i]) freeSemiEmpiricalModel(geometries[i]);
 		g_free(geometries);
 	}
 	if(energies) g_free(energies);
-	if(strlen(message)>20) Message(message,"Info",TRUE);
+	if(strlen(message)>20) Message(message,_("Info"),TRUE);
 	if(fileNameGeom)g_free(fileNameGeom);
 
 }
@@ -3755,7 +3762,7 @@ static void semiEmpiricalMD(GtkWidget* Win, gpointer data)
 	if(StopCalcul)
 	{
 		set_text_to_draw(" ");
-		set_statubar_operation_str("Calcul Canceled ");
+		set_statubar_operation_str(_("Calculation Canceled "));
 		dessine();
 		set_sensitive_stop_button( FALSE);
 		return;
@@ -3776,7 +3783,7 @@ static void semiEmpiricalMD(GtkWidget* Win, gpointer data)
 	if(StopCalcul)
 	{
 		set_text_to_draw(" ");
-		set_statubar_operation_str("Calcul canceled");
+		set_statubar_operation_str(_("Calculation Canceled "));
 		dessine();
 	}
 	set_sensitive_stop_button(FALSE);
@@ -3801,8 +3808,8 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 	frame = gtk_frame_new(NULL);
 	gtk_container_set_border_width(GTK_CONTAINER(frame), 5);
 
-	LabelOnglet = gtk_label_new("Molecular Dynamics Options");
-	LabelMenu = gtk_label_new("Molecular Dynamics Options");
+	LabelOnglet = gtk_label_new(_("Molecular Dynamics Options"));
+	LabelMenu = gtk_label_new(_("Molecular Dynamics Options"));
 	gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook), frame,LabelOnglet, LabelMenu);
 	g_object_set_data (G_OBJECT (frame), "frame", frame);
 
@@ -3816,7 +3823,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 2;
-	label = gtk_label_new("Heating");
+	label = gtk_label_new(_("Heating"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -3824,7 +3831,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 3;
-	label = gtk_label_new("Equilibrium");
+	label = gtk_label_new(_("Equilibrium"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -3832,7 +3839,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 4;
-	label = gtk_label_new("Production");
+	label = gtk_label_new(_("Production"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -3840,7 +3847,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 5;
-	label = gtk_label_new("Cooling");
+	label = gtk_label_new(_("Cooling"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -3848,7 +3855,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 1;
 	j = 0;
-	label = gtk_label_new("Time (ps)");
+	label = gtk_label_new(_("Time (ps)"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -3904,7 +3911,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 2;
 	j = 0;
-	label = gtk_label_new("Temperature (K)");
+	label = gtk_label_new(_("Temperature (K)"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -3962,7 +3969,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 3;
 	j = 0;
-	label = gtk_label_new("Step size (fs)");
+	label = gtk_label_new(_("Step size (fs)"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -3988,7 +3995,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 4;
 	j = 0;
-	label = gtk_label_new("Screen Rafresh after");
+	label = gtk_label_new(_("Screen Rafresh after"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -4014,7 +4021,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 4;
 	j = 3;
-	label = gtk_label_new("steps");
+	label = gtk_label_new(_("steps"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -4022,7 +4029,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 5;
 	j = 0;
-	label = gtk_label_new("Collide(ps^-1)");
+	label = gtk_label_new(_("Collide(ps^-1)"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -4048,7 +4055,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 6;
 	j = 0;
-	label = gtk_label_new("Friction(ps^-1)");
+	label = gtk_label_new(_("Friction(ps^-1)"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -4113,7 +4120,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 8;
 	j = 0;
-	buttonMDOptions[VERLET]= gtk_radio_button_new_with_label( NULL, "MD Trajectory via Verlet velocity Algorithm"); 
+	buttonMDOptions[VERLET]= gtk_radio_button_new_with_label( NULL, _("MD Trajectory via Verlet velocity Algorithm")); 
 	gtk_table_attach(GTK_TABLE(table),buttonMDOptions[VERLET],
 			j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -4123,7 +4130,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 9;
 	j = 0;
-	buttonMDOptions[BEEMAN]= gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonMDOptions[VERLET])), "MD Trajectory via Modified Beeman Algorithm"); 
+	buttonMDOptions[BEEMAN]= gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonMDOptions[VERLET])), _("MD Trajectory via Modified Beeman Algorithm")); 
 	gtk_table_attach(GTK_TABLE(table),buttonMDOptions[BEEMAN],
 			j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -4133,7 +4140,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 10;
 	j = 0;
-	buttonMDOptions[STOCHASTIC]= gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonMDOptions[VERLET])), "Stochastic Dynamics via Verlet velocity Algorithm"); 
+	buttonMDOptions[STOCHASTIC]= gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonMDOptions[VERLET])), _("Stochastic Dynamics via Verlet velocity Algorithm")); 
 	gtk_table_attach(GTK_TABLE(table),buttonMDOptions[STOCHASTIC],
 			j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -4151,7 +4158,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 12;
 	j = 0;
-	buttonConstraintsOptions[NOCONSTRAINTS]= gtk_radio_button_new_with_label( NULL, "No constraints"); 
+	buttonConstraintsOptions[NOCONSTRAINTS]= gtk_radio_button_new_with_label( NULL, _("No constraints")); 
 	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[NOCONSTRAINTS],
 			j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -4162,7 +4169,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 	i = 13;
 	j = 0;
 	buttonConstraintsOptions[BONDSCONSTRAINTS]= gtk_radio_button_new_with_label(
-			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS])), "Bond constraints"); 
+			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS])), _("Bond constraints")); 
 	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[BONDSCONSTRAINTS],
 			j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -4173,7 +4180,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 	i = 14;
 	j = 0;
 	buttonConstraintsOptions[BONDSANGLESCONSTRAINTS]= gtk_radio_button_new_with_label(
-			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS])), "Bond & Angle constraints"); 
+			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS])), _("Bond & Angle constraints")); 
 	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[BONDSANGLESCONSTRAINTS],
 			j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -4191,7 +4198,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 16;
 	j = 0;
-	buttonSaveTraj = gtk_check_button_new_with_label("Save Trajectory in "); 
+	buttonSaveTraj = gtk_check_button_new_with_label(_("Save Trajectory in ")); 
 	gtk_table_attach(GTK_TABLE(table),buttonSaveTraj,
 			j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -4219,7 +4226,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 17;
 	j = 0;
-	buttonSaveProp = gtk_check_button_new_with_label("Save Properties in "); 
+	buttonSaveProp = gtk_check_button_new_with_label(_("Save Properties in ")); 
 	gtk_table_attach(GTK_TABLE(table),buttonSaveProp,
 			j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -4247,7 +4254,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 18;
 	j = 0;
-	label = gtk_label_new("Folder");
+	label = gtk_label_new(_("Folder"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -4285,6 +4292,7 @@ static void createInfoMDFrame(GtkWidget *box)
 	gtk_widget_show (hboxFrame);
 	gtk_container_add (GTK_CONTAINER (frame), hboxFrame);
 	label = gtk_label_new(
+	_(
 	"If \"MD Trajectory via Verlet velocity Algorithm\" is selected :\n"
 	"        A molecular dynamic simulation is run using the Verlet velocity Algorithm.\n"
 	"        During the production step, the user can select the Andersen or Berendsen thermostat which is then applied.\n"
@@ -4298,6 +4306,7 @@ static void createInfoMDFrame(GtkWidget *box)
 	"If \"Stochastic Dynamics via Verlet velocity Algorithm\" is selected :\n"
 	"        A stochastic dynamic simulation is run using Verlet velocity Algorithm.\n"
 	"        The velocities are scaled (Berendsen method)during the Heating, Equilibrium and Cooling steps.\n"
+	)
 	);
 	gtk_label_set_justify(GTK_LABEL(label),GTK_JUSTIFY_LEFT);
 	gtk_widget_show (label);
@@ -4318,6 +4327,7 @@ static void createInfoConfoFrame(GtkWidget *box)
 	gtk_widget_show (hboxFrame);
 	gtk_container_add (GTK_CONTAINER (frame), hboxFrame);
 	label = gtk_label_new(
+	_(
 	"During the production step, Gabedit selects a number geometries"
 	"\nAt the end of the molecular dynamic simulation,"
 	"\nthe geometries are sorted by energy and are saved in a file."
@@ -4338,6 +4348,7 @@ static void createInfoConfoFrame(GtkWidget *box)
 	"If \"Stochastic Dynamics via Verlet velocity Algorithm\" is selected :\n"
 	"        A stochastic dynamic simulation is run using Verlet velocity Algorithm.\n"
 	"        The velocities are scaled (Berendsen method)during the Heating, Equilibrium and Cooling steps.\n"
+	)
 	);
 	gtk_label_set_justify(GTK_LABEL(label),GTK_JUSTIFY_LEFT);
 	gtk_widget_show (label);
@@ -4359,7 +4370,7 @@ static void createPostProcessingFrame(GtkWidget *box)
 
 	table = gtk_table_new(10,5,FALSE);
 
-	frame = gtk_frame_new ("Post Processing");
+	frame = gtk_frame_new (_("Post Processing"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -4373,7 +4384,7 @@ static void createPostProcessingFrame(GtkWidget *box)
 	j = 0;
 	buttonPostOpt = gtk_radio_button_new_with_label(
 			NULL,
-			"Minimization of selected geometries");
+			_("Minimization of selected geometries"));
 	gtk_table_attach(GTK_TABLE(table),buttonPostOpt,
 			j,j+6,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -4386,7 +4397,7 @@ static void createPostProcessingFrame(GtkWidget *box)
 	j = 0;
 	buttonPostNone =gtk_radio_button_new_with_label( 
 			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonPostOpt)),
-			"No minimization of selected geometries"); 
+			_("No minimization of selected geometries")); 
 	gtk_table_attach(GTK_TABLE(table),buttonPostNone,
 			j,j+6,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -4406,7 +4417,7 @@ static void createPostProcessingFrame(GtkWidget *box)
 /*----------------------------------------------------------------------------------*/
 	i++;
 	j = 0;
-	label = gtk_label_new("Remove identical molecular structures");
+	label = gtk_label_new(_("Remove identical molecular structures"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+6,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -4414,7 +4425,7 @@ static void createPostProcessingFrame(GtkWidget *box)
 /*----------------------------------------------------------------------------------*/
 	i++;
 	j = 0;
-	buttonTolerance[TOLE] = gtk_check_button_new_with_label("Energy tolerance(KCal/mol)"); 
+	buttonTolerance[TOLE] = gtk_check_button_new_with_label(_("Energy tolerance(KCal/mol)")); 
 	gtk_table_attach(GTK_TABLE(table),buttonTolerance[TOLE],
 			j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -4441,7 +4452,7 @@ static void createPostProcessingFrame(GtkWidget *box)
 /*----------------------------------------------------------------------------------*/
 	i++;
 	j = 0;
-	buttonTolerance[TOLD] = gtk_check_button_new_with_label("Distance tolerance(Angstrom)"); 
+	buttonTolerance[TOLD] = gtk_check_button_new_with_label(_("Distance tolerance(Angstrom)")); 
 	gtk_table_attach(GTK_TABLE(table),buttonTolerance[TOLD],
 			j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -4476,7 +4487,7 @@ static void createPostProcessingFrame(GtkWidget *box)
 /*----------------------------------------------------------------------------------*/
 	i++;
 	j = 0;
-	buttonCreateMopac = gtk_check_button_new_with_label("Create Mopac files.          Keywords "); 
+	buttonCreateMopac = gtk_check_button_new_with_label(_("Create Mopac files.          Keywords ")); 
 	gtk_table_attach(GTK_TABLE(table),buttonCreateMopac,
 			j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -4501,7 +4512,7 @@ static void createPostProcessingFrame(GtkWidget *box)
 /*----------------------------------------------------------------------------------*/
 	i++;
 	j = 0;
-	buttonCreateGaussian = gtk_check_button_new_with_label("Create Gaussian files.     Keywords "); 
+	buttonCreateGaussian = gtk_check_button_new_with_label(_("Create Gaussian files.     Keywords ")); 
 	gtk_table_attach(GTK_TABLE(table),buttonCreateGaussian,
 			j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -4527,7 +4538,7 @@ static void createPostProcessingFrame(GtkWidget *box)
 /*----------------------------------------------------------------------------------*/
 	i++;
 	j = 0;
-	buttonCreateFireFly = gtk_check_button_new_with_label("Create FireFly files.    Keywords "); 
+	buttonCreateFireFly = gtk_check_button_new_with_label(_("Create FireFly files.    Keywords ")); 
 	gtk_table_attach(GTK_TABLE(table),buttonCreateFireFly,
 			j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -4565,8 +4576,8 @@ static void AddModelOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 	frame = gtk_frame_new(NULL);
 	gtk_container_set_border_width(GTK_CONTAINER(frame), 5);
 
-	LabelOnglet = gtk_label_new("Model");
-	LabelMenu = gtk_label_new("Model");
+	LabelOnglet = gtk_label_new(_("Model"));
+	LabelMenu = gtk_label_new(_("Model"));
 	gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook), frame,LabelOnglet, LabelMenu);
 	g_object_set_data (G_OBJECT (frame), "frame", frame);
 
@@ -4579,7 +4590,7 @@ static void AddModelOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 0;
-	buttonMopac = gtk_radio_button_new_with_label( NULL,"Use Mopac with method");
+	buttonMopac = gtk_radio_button_new_with_label( NULL,_("Use Mopac with method"));
 	gtk_table_attach(GTK_TABLE(table),buttonMopac,
 			j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -4609,7 +4620,7 @@ static void AddModelOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 	j = 0;
 	buttonFireFly = gtk_radio_button_new_with_label(
 			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonMopac)),
-			"Use FireFly with method");
+			_("Use FireFly with method"));
 	gtk_table_attach(GTK_TABLE(table),buttonFireFly,
 			j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -4657,8 +4668,8 @@ static void AddInfoConfo(GtkWidget *NoteBook, GtkWidget *win)
 	frame = gtk_frame_new(NULL);
 	gtk_container_set_border_width(GTK_CONTAINER(frame), 5);
 
-	LabelOnglet = gtk_label_new("Info");
-	LabelMenu = gtk_label_new("Info");
+	LabelOnglet = gtk_label_new(_("Info"));
+	LabelMenu = gtk_label_new(_("Info"));
 	gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook), frame,LabelOnglet, LabelMenu);
 	g_object_set_data (G_OBJECT (frame), "frame", frame);
 
@@ -4677,8 +4688,8 @@ static void AddInfoMD(GtkWidget *NoteBook, GtkWidget *win)
 	frame = gtk_frame_new(NULL);
 	gtk_container_set_border_width(GTK_CONTAINER(frame), 5);
 
-	LabelOnglet = gtk_label_new("Info");
-	LabelMenu = gtk_label_new("Info");
+	LabelOnglet = gtk_label_new(_("Info"));
+	LabelMenu = gtk_label_new(_("Info"));
 	gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook), frame,LabelOnglet, LabelMenu);
 	g_object_set_data (G_OBJECT (frame), "frame", frame);
 
@@ -4701,8 +4712,8 @@ static void AddGeneralConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 	frame = gtk_frame_new(NULL);
 	gtk_container_set_border_width(GTK_CONTAINER(frame), 5);
 
-	LabelOnglet = gtk_label_new("General");
-	LabelMenu = gtk_label_new("General");
+	LabelOnglet = gtk_label_new(_("General"));
+	LabelMenu = gtk_label_new(_("General"));
 	gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook), frame,LabelOnglet, LabelMenu);
 	g_object_set_data (G_OBJECT (frame), "frame", frame);
 
@@ -4715,7 +4726,7 @@ static void AddGeneralConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 0;
-	add_label_table(table,"Number of selected geometries",(gushort)i,(gushort)j);
+	add_label_table(table,_("Number of selected geometries"),(gushort)i,(gushort)j);
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 1;
@@ -4738,7 +4749,7 @@ static void AddGeneralConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 1;
 	j = 0;
-	add_label_table(table,"Geometries saved in File",(gushort)i,(gushort)j);
+	add_label_table(table,_("Geometries saved in File"),(gushort)i,(gushort)j);
 /*----------------------------------------------------------------------------------*/
 	i = 1;
 	j = 1;
@@ -4760,7 +4771,7 @@ static void AddGeneralConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 2;
 	j = 0;
-	add_label_table(table,"Folder",(gushort)i,(gushort)j);
+	add_label_table(table,_("Folder"),(gushort)i,(gushort)j);
 /*----------------------------------------------------------------------------------*/
 	i = 2;
 	j = 1;
@@ -4807,8 +4818,8 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 	frame = gtk_frame_new(NULL);
 	gtk_container_set_border_width(GTK_CONTAINER(frame), 5);
 
-	LabelOnglet = gtk_label_new("Molecular Dynamics");
-	LabelMenu = gtk_label_new("Molecular Dynamics");
+	LabelOnglet = gtk_label_new(_("Molecular Dynamics"));
+	LabelMenu = gtk_label_new(_("Molecular Dynamics"));
 	gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook), frame,LabelOnglet, LabelMenu);
 	g_object_set_data (G_OBJECT (frame), "frame", frame);
 
@@ -4822,7 +4833,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 2;
-	label = gtk_label_new("Heating");
+	label = gtk_label_new(_("Heating"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -4830,7 +4841,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 3;
-	label = gtk_label_new("Equilibrium");
+	label = gtk_label_new(_("Equilibrium"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -4838,7 +4849,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 4;
-	label = gtk_label_new("Production");
+	label = gtk_label_new(_("Production"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -4846,7 +4857,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 1;
 	j = 0;
-	label = gtk_label_new("Time (ps)");
+	label = gtk_label_new(_("Time (ps)"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -4892,7 +4903,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 2;
 	j = 0;
-	label = gtk_label_new("Temperature (K)");
+	label = gtk_label_new(_("Temperature (K)"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -4940,7 +4951,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 3;
 	j = 0;
-	label = gtk_label_new("Step size (fs)");
+	label = gtk_label_new(_("Step size (fs)"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -4966,7 +4977,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 4;
 	j = 0;
-	label = gtk_label_new("Screen Rafresh after");
+	label = gtk_label_new(_("Screen Rafresh after"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -4992,7 +5003,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 4;
 	j = 3;
-	label = gtk_label_new("steps");
+	label = gtk_label_new(_("steps"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -5000,7 +5011,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 5;
 	j = 0;
-	label = gtk_label_new("Collide(ps^-1)");
+	label = gtk_label_new(_("Collide(ps^-1)"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -5026,7 +5037,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 6;
 	j = 0;
-	label = gtk_label_new("Friction(ps^-1)");
+	label = gtk_label_new(_("Friction(ps^-1)"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -5091,7 +5102,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 8;
 	j = 0;
-	buttonMDOptions[VERLET]= gtk_radio_button_new_with_label( NULL, "MD Trajectory via Verlet velocity Algorithm"); 
+	buttonMDOptions[VERLET]= gtk_radio_button_new_with_label( NULL, _("MD Trajectory via Verlet velocity Algorithm")); 
 	gtk_table_attach(GTK_TABLE(table),buttonMDOptions[VERLET],
 			j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -5101,7 +5112,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 9;
 	j = 0;
-	buttonMDOptions[BEEMAN]= gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonMDOptions[VERLET])), "MD Trajectory via Modified Beeman Algorithm"); 
+	buttonMDOptions[BEEMAN]= gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonMDOptions[VERLET])), _("MD Trajectory via Modified Beeman Algorithm")); 
 	gtk_table_attach(GTK_TABLE(table),buttonMDOptions[BEEMAN],
 			j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -5111,7 +5122,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 10;
 	j = 0;
-	buttonMDOptions[STOCHASTIC]= gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonMDOptions[VERLET])), "Stochastic Dynamics via Verlet velocity Algorithm"); 
+	buttonMDOptions[STOCHASTIC]= gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonMDOptions[VERLET])), _("Stochastic Dynamics via Verlet velocity Algorithm")); 
 	gtk_table_attach(GTK_TABLE(table),buttonMDOptions[STOCHASTIC],
 			j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -5129,7 +5140,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 12;
 	j = 0;
-	buttonConstraintsOptions[NOCONSTRAINTS]= gtk_radio_button_new_with_label( NULL, "No constraints"); 
+	buttonConstraintsOptions[NOCONSTRAINTS]= gtk_radio_button_new_with_label( NULL, _("No constraints")); 
 	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[NOCONSTRAINTS],
 			j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -5140,7 +5151,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 	i = 13;
 	j = 0;
 	buttonConstraintsOptions[BONDSCONSTRAINTS]= gtk_radio_button_new_with_label(
-			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS])), "Bond constraints"); 
+			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS])), _("Bond constraints")); 
 	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[BONDSCONSTRAINTS],
 			j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -5151,7 +5162,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 	i = 14;
 	j = 0;
 	buttonConstraintsOptions[BONDSANGLESCONSTRAINTS]= gtk_radio_button_new_with_label(
-			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS])), "Bond & Angle constraints"); 
+			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS])), _("Bond & Angle constraints")); 
 	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[BONDSANGLESCONSTRAINTS],
 			j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -5169,7 +5180,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 16;
 	j = 0;
-	buttonSaveTraj = gtk_check_button_new_with_label("Save Trajectory in "); 
+	buttonSaveTraj = gtk_check_button_new_with_label(_("Save Trajectory in ")); 
 	gtk_table_attach(GTK_TABLE(table),buttonSaveTraj,
 			j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -5197,7 +5208,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 17;
 	j = 0;
-	buttonSaveProp = gtk_check_button_new_with_label("Save Properties in "); 
+	buttonSaveProp = gtk_check_button_new_with_label(_("Save Properties in ")); 
 	gtk_table_attach(GTK_TABLE(table),buttonSaveProp,
 			j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,

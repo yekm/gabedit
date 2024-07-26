@@ -17,6 +17,7 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 DEALINGS IN THE SOFTWARE.
 ************************************************************************************************************/
 
+#define GETTEXT_PACKAGE "gabedit"
 #include <stdlib.h>
 #include <ctype.h>
 #include <math.h>
@@ -25,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
+#include <glib/gi18n.h>
 #include <cairo-pdf.h>
 #include <cairo-ps.h>
 #include <cairo-svg.h>
@@ -53,6 +55,7 @@ static void gabedit_contoursplot_cairo_rectangle(cairo_t* cr, GtkWidget *widget,
 /* static void gabedit_contoursplot_cairo_cercle(cairo_t* cr, GtkWidget *widget, GdkGC* gc, gint xc,gint yc,gint rayon);*/
 
 static void contoursplot_cairo_string(GabeditContoursPlot *contoursplot, cairo_t* cr, GtkWidget* widget, GdkGC* gc, gint x, gint y, G_CONST_RETURN gchar* str, gboolean centerX, gboolean centerY, gdouble angle);
+static void contoursplot_cairo_image(GabeditContoursPlot *contoursplot, cairo_t* cr, GtkWidget *widget, gint x, gint y, gint w, gint h, cairo_surface_t *image);
 static void contoursplot_cairo_line(GabeditContoursPlot *contoursplot, cairo_t* cr, GtkWidget* widget, GdkGC* gc, gdouble x1,gdouble y1,gdouble x2,gdouble y2);
 static void contoursplot_cairo_lines(GabeditContoursPlot *contoursplot, cairo_t* cr, GtkWidget* widget, GdkGC* gc, GdkPoint* points, gint size);
 static void contoursplot_cairo_rectangle(GabeditContoursPlot *contoursplot, cairo_t* cr, GtkWidget* widget, GdkGC* gc, gboolean fill, gdouble x1,gdouble y1,gdouble w,gdouble h);
@@ -86,13 +89,15 @@ static void contoursplot_show_top_legends (GabeditContoursPlot *contoursplot, gb
 static void contoursplot_show_bottom_legends (GabeditContoursPlot *contoursplot, gboolean show);
 static void contoursplot_reflect_x (GabeditContoursPlot *contoursplot, gboolean enable);
 static void contoursplot_reflect_y (GabeditContoursPlot *contoursplot, gboolean enable);
+static gint gabedit_contoursplot_draw (GtkWidget *widget);
+static void set_old_area(GtkWidget *widget, GabeditContoursPlot *contoursplot);
 
 /****************************************************************************************/
 static GtkWidgetClass *parent_class = NULL; /* TO DELETE */
 /****************************************************************************************/
 static void contoursplot_calculate_sizes (GabeditContoursPlot *contoursplot);
-static void value2pixel(GabeditContoursPlot *contoursplot, gdouble xv, gdouble yv, guint *x, guint *y);
-static void pixel2value(GabeditContoursPlot *contoursplot, guint xp, guint yp, gdouble *x, gdouble *y);
+static void value2pixel(GabeditContoursPlot *contoursplot, gdouble xv, gdouble yv, gint *x, gint *y);
+static void pixel2value(GabeditContoursPlot *contoursplot, gint xp, gint yp, gdouble *x, gdouble *y);
 static void contoursplot_calculate_legends_sizes(GabeditContoursPlot *contoursplot);
 static void contoursplot_build_legends(GabeditContoursPlot *contoursplot);
 static void contoursplot_free_legends(GabeditContoursPlot *contoursplot);
@@ -362,6 +367,27 @@ static void  set_Color_From_colorMap(ColorMap* colorMap, gdouble color[], gdoubl
 		color[c] = colorMap->colorValue[k].color[c];
 }
 /**********************************************************************************/
+static void gabedit_contoursplot_cairo_image(cairo_t* cr, GtkWidget *widget, gint x, gint y, gint w, gint h, cairo_surface_t *image)
+{
+	gint ow = 1;
+	gint oh = 1;
+	if(!image) return;
+	if(x<0||y<0) return;
+	/* printf("x = %d y = %d w = %d h = %d\n",x,y,w,h);*/
+	ow = cairo_image_surface_get_width (image);
+	oh = cairo_image_surface_get_height (image);
+
+	cairo_save (cr); 
+
+	cairo_translate (cr, x,y);
+	cairo_scale (cr, (gdouble)w/ow, (gdouble)h/oh);
+	cairo_set_source_surface (cr, image, 0, 0);
+	cairo_paint (cr);
+
+	cairo_stroke (cr);
+	cairo_restore (cr); 
+}
+/**********************************************************************************/
 static void gabedit_contoursplot_cairo_string(cairo_t* cr, GtkWidget *widget, GdkGC* gc, gint x, gint y, G_CONST_RETURN gchar* str, gboolean centerX, gboolean centerY, gdouble angle)
 {
 	PangoLayout* pango = get_pango_str(GABEDIT_ContoursPLOT(widget), str);
@@ -591,6 +617,13 @@ static void gabedit_contoursplot_cairo_layout(cairo_t* cr, gdouble x, gdouble y,
 	cairo_restore (cr); 
 }
 /****************************************************************************************/
+static void contoursplot_cairo_image(GabeditContoursPlot *contoursplot, cairo_t* cr, GtkWidget *widget, gint x, gint y, gint w, gint h, cairo_surface_t *image)
+{
+	gabedit_contoursplot_cairo_image(cr,  widget, x, y, w, h, image);
+	if(contoursplot->cairo_export)
+		gabedit_contoursplot_cairo_image(contoursplot->cairo_export,  widget, x, y, w, h, image);
+}
+/****************************************************************************************/
 static void contoursplot_cairo_string(GabeditContoursPlot *contoursplot, cairo_t* cr, GtkWidget* widget, GdkGC* gc, gint x, gint y, G_CONST_RETURN gchar* str, gboolean centerX, gboolean centerY, gdouble angle)
 {
 
@@ -726,7 +759,7 @@ static void remove_all_data_dlg(GtkWidget* contoursplot)
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_QUESTION,
 			GTK_BUTTONS_YES_NO,
-		       "Are you sure to remove all data ?"
+		       _("Are you sure to remove all data ?")
 			);
 	gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_NO);
 	g_signal_connect_swapped(dialog, "response", G_CALLBACK (remove_all_data), contoursplot);
@@ -1043,9 +1076,9 @@ ContourData get_contour_point(GtkWidget* contoursplot, ContoursPlotData *data, g
 	gint xsize,ysize;
 	gdouble* zValues;
 	ContourData contour;
-	guint red = rand()%60000;
-	guint green = rand()%60000;
-	guint blue = rand()%60000;
+	gint red = rand()%60000;
+	gint green = rand()%60000;
+	gint blue = rand()%60000;
 	gdouble color[3];
 
 	contour.value = value;
@@ -1413,7 +1446,7 @@ static gboolean testascii(char c)
 /*************************************************************************************/
 static gboolean this_is_a_real(gchar *t)
 {
-	guint i;
+	gint i;
 	for(i=0;i<strlen(t);i++)
 		if(!testascii(t[i]) ) return FALSE;
 	if(t[0] =='e' || t[0] =='E' ) return FALSE;
@@ -1548,14 +1581,14 @@ static void apply_contours(GtkWidget *window,gpointer data)
 	N = atoi(temp);
 	if(N<=0)
 	{
-		Message("Error : The number of points should be a positive integer. ","Error");
+		Message(_("Error : The number of points should be a positive integer. "),_("Error"));
 		return;
 	}
-        if(!get_a_float(entryMin,&min, "Error : The minimal value should be float." )) return;
-        if(!get_a_float(entryMax,&max,"Error : The maximal value should be float.")) return;
+        if(!get_a_float(entryMin,&min,_("Error : The minimal value should be float.") )) return;
+        if(!get_a_float(entryMax,&max,_("Error : The maximal value should be float."))) return;
 	if( max<=min)
 	{
-		Message("Error :  The minimal value should be smaller than the maximal value ","Error");
+		Message(_("Error :  The minimal value should be smaller than the maximal value "),_("Error"));
 		return;
 	}
 
@@ -1627,7 +1660,7 @@ static GtkWidget *create_contours_frame(GtkWidget* contoursplot, GtkWidget *wind
 
 	i = 0;
 	j = 0;
-	add_label_at_table(Table," Numbre of contours ",i,j,GTK_JUSTIFY_LEFT);
+	add_label_at_table(Table,_(" Numbre of contours "),i,j,GTK_JUSTIFY_LEFT);
 	j++;
 	add_label_at_table(Table," : ",i,j,GTK_JUSTIFY_LEFT);
 	j++;
@@ -1637,7 +1670,7 @@ static GtkWidget *create_contours_frame(GtkWidget* contoursplot, GtkWidget *wind
 
 	i = 1;
 	j = 0;
-	LabelMin = add_label_at_table(Table," Min iso-value ",i,j,GTK_JUSTIFY_LEFT);
+	LabelMin = add_label_at_table(Table,_(" Min iso-value "),i,j,GTK_JUSTIFY_LEFT);
 	j++;
 	add_label_at_table(Table," : ",i,j,GTK_JUSTIFY_LEFT);
 	j++;
@@ -1648,7 +1681,7 @@ static GtkWidget *create_contours_frame(GtkWidget* contoursplot, GtkWidget *wind
 
 	i = 2;
 	j = 0;
-	LabelMax = add_label_at_table(Table," Max iso-value ",i,j,GTK_JUSTIFY_LEFT);
+	LabelMax = add_label_at_table(Table,_(" Max iso-value "),i,j,GTK_JUSTIFY_LEFT);
 	j++;
 	add_label_at_table(Table," : ",i,j,GTK_JUSTIFY_LEFT);
 	j++;
@@ -1666,9 +1699,9 @@ static GtkWidget *create_contours_frame(GtkWidget* contoursplot, GtkWidget *wind
                   3,3);
 
 	i=5;
-	linearButton = gtk_radio_button_new_with_label( NULL,"Linear scale");
+	linearButton = gtk_radio_button_new_with_label( NULL,_("Linear scale"));
 	add_widget_table(Table, linearButton,i,0);
-	logButton = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (linearButton)), "logarithmic scale"); 
+	logButton = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (linearButton)), _("logarithmic scale")); 
 	gtk_table_attach(GTK_TABLE(Table), logButton,1,3,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -1699,13 +1732,13 @@ static void create_contours(GtkWidget* contoursplot, ContoursPlotData* data)
   	g_return_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot));
 	if(GABEDIT_ContoursPLOT(contoursplot)->data_list == NULL)
 	{
-		Message("No data available :\n You should read a file","Error");
+		Message(_("No data available :\n You should read a file"),_("Error"));
 		return;
 	}
   	g_return_if_fail (GABEDIT_ContoursPLOT(contoursplot)->data_list != NULL);
 
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(window),"Create contours");
+	gtk_window_set_title(GTK_WINDOW(window),_("Create contours"));
 	gtk_window_set_position(GTK_WINDOW(window),GTK_WIN_POS_CENTER);
 	gtk_container_set_border_width (GTK_CONTAINER (window), 5);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
@@ -1716,7 +1749,7 @@ static void create_contours(GtkWidget* contoursplot, ContoursPlotData* data)
 	gtk_container_add (GTK_CONTAINER (window), vboxall);
 	vboxwin = vboxall;
 
-	frame = create_contours_frame(contoursplot, window,vboxall,"Contours", data);
+	frame = create_contours_frame(contoursplot, window,vboxall,_("Contours"), data);
 	g_object_set_data(G_OBJECT (window), "ContoursPlot",contoursplot);
 
 	/* buttons box */
@@ -1808,7 +1841,7 @@ static void set_object_text_pixels(GabeditContoursPlot *contoursplot, ContoursPl
 	pango_layout_get_size(objectText->pango, &objectText->width, &objectText->height);
 	objectText->width/=PANGO_SCALE;
 	objectText->height/=PANGO_SCALE;
-	objectText->yi -= objectText->height/2;
+	/* objectText->yi -= objectText->height/2;*/
 	objectText->xi += contoursplot->plotting_rect.x;
 	objectText->yi += contoursplot->plotting_rect.y;
 }
@@ -1843,17 +1876,18 @@ static void set_object_text_pango(GabeditContoursPlot *contoursplot, ContoursPlo
   	objectText->pango = get_pango_str(contoursplot, objectText->str);
 }
 /****************************************************************************************/
-static void set_object_text(GabeditContoursPlot *contoursplot, ContoursPlotObjectText* objectText, gdouble x, gdouble y, G_CONST_RETURN gchar* str)
+static void set_object_text(GabeditContoursPlot *contoursplot, ContoursPlotObjectText* objectText, gdouble x, gdouble y, gdouble angle, G_CONST_RETURN gchar* str)
 {
 	if(!str) return;
 	objectText->x = x;
 	objectText->y = y;
+	objectText->angle = angle;
 	objectText->str = g_strdup(str);
 	set_object_text_pango(contoursplot, objectText);
 	set_object_text_pixels(contoursplot, objectText);
 }
 /****************************************************************************************/
-static void add_object_text(GabeditContoursPlot *contoursplot, gdouble x, gdouble y, G_CONST_RETURN gchar* str)
+static void add_object_text(GabeditContoursPlot *contoursplot, gdouble x, gdouble y, gdouble angle, G_CONST_RETURN gchar* str)
 {
 	gint i;
 	if(!str) return;
@@ -1861,7 +1895,7 @@ static void add_object_text(GabeditContoursPlot *contoursplot, gdouble x, gdoubl
 	if(contoursplot->nObjectsText==1) contoursplot->objectsText = g_malloc(sizeof(ContoursPlotObjectText));
 	else contoursplot->objectsText = g_realloc(contoursplot->objectsText,contoursplot->nObjectsText*sizeof(ContoursPlotObjectText));
 	i = contoursplot->nObjectsText-1;
-	set_object_text(contoursplot, &contoursplot->objectsText[i],  x,  y, str);
+	set_object_text(contoursplot, &contoursplot->objectsText[i],  x,  y, angle, str);
 }
 /****************************************************************************************/
 static void reset_object_text_pixels(GabeditContoursPlot *contoursplot)
@@ -1880,18 +1914,51 @@ static void reset_object_text_pango(GabeditContoursPlot *contoursplot)
 		set_object_text_pango(contoursplot, &contoursplot->objectsText[i]);
 }
 /****************************************************************************************/
-static gint get_object_text_num(GabeditContoursPlot *contoursplot, guint xi, guint yi)
+static gint get_object_text_num(GabeditContoursPlot *contoursplot, gint xi, gint yi)
 {
 	gint i;
+	gint x,y;
 	if(!contoursplot) return -1;
 	for(i=0;i<contoursplot->nObjectsText;i++)
 	{
-		if(xi>=contoursplot->objectsText[i].xi && yi>=contoursplot->objectsText[i].yi
-		&& xi<=contoursplot->objectsText[i].xi+contoursplot->objectsText[i].width 
-		&& yi<=contoursplot->objectsText[i].yi+contoursplot->objectsText[i].height)
+		gdouble cosa = cos(contoursplot->objectsText[i].angle);
+		gdouble sina = sin(contoursplot->objectsText[i].angle);
+		gdouble xx = xi-contoursplot->objectsText[i].xi;
+		gdouble yy = yi-contoursplot->objectsText[i].yi;
+		x = contoursplot->objectsText[i].xi+xx*cosa-yy*sina;
+		y = contoursplot->objectsText[i].yi+xx*sina+yy*cosa;
+		if(x>=contoursplot->objectsText[i].xi && y>=contoursplot->objectsText[i].yi
+		&& x<=contoursplot->objectsText[i].xi+contoursplot->objectsText[i].width 
+		&& y<=contoursplot->objectsText[i].yi+contoursplot->objectsText[i].height)
 			return i;
 	}
 	return -1;
+}
+/****************************************************************************************/
+static void delete_object_text(GtkWidget *widget, gint i)
+{
+	gint j;
+	GabeditContoursPlot *contoursplot = NULL;
+	if(!widget) return;
+	if(!GTK_IS_WIDGET(widget)) return;
+	contoursplot = GABEDIT_ContoursPLOT(widget);
+	if(i<0||i>=contoursplot->nObjectsText) return;
+	if(contoursplot->objectsText[i].str) g_free(contoursplot->objectsText[i].str);
+	if(contoursplot->objectsText[i].pango) g_object_unref(G_OBJECT(contoursplot->objectsText[i].pango));
+	for(j=i;j<contoursplot->nObjectsText-1;j++)
+		contoursplot->objectsText[j] = contoursplot->objectsText[j+1];
+	contoursplot->nObjectsText--;
+	if(contoursplot->nObjectsText<1) 
+	{
+		contoursplot->nObjectsText = 0;
+		if(contoursplot->objectsText) g_free(contoursplot->objectsText);
+		contoursplot->objectsText = NULL;
+	}
+	else
+	{
+		contoursplot->objectsText = g_realloc(contoursplot->objectsText,contoursplot->nObjectsText*sizeof(ContoursPlotObjectText));
+	}
+
 }
 /****************************************************************************************/
 static void delete_objects_text(GtkWidget *widget)
@@ -1914,20 +1981,31 @@ static void delete_objects_text(GtkWidget *widget)
 /********************************************************************************/
 static void activate_entry_object_text(GtkWidget *entry, gpointer user_data)
 {
-	G_CONST_RETURN gchar* t;
+	G_CONST_RETURN gchar* tlabel;
+	G_CONST_RETURN gchar* tangle;
 	GtkWidget* contoursplot = NULL;
 	GtkWidget* window = NULL;
+	GtkWidget* entry_label = NULL;
+	GtkWidget* entry_angle = NULL;
 	ContoursPlotObjectText* objectText = NULL;
 
 
+	if(!entry) return;
 	if(!GTK_IS_WIDGET(entry)) return;
 	if(!user_data || !G_IS_OBJECT(user_data)) return;
 
 	contoursplot = GTK_WIDGET(user_data);
-	t= gtk_entry_get_text(GTK_ENTRY(entry));
-	if(!entry) return;
+	entry_label = g_object_get_data(G_OBJECT(entry),"EntryLabel");
+	entry_angle = g_object_get_data(G_OBJECT(entry),"EntryAngle");
+
+	if(!GTK_IS_WIDGET(entry_label)) return;
+	if(!GTK_IS_WIDGET(entry_angle)) return;
+
+	tlabel= gtk_entry_get_text(GTK_ENTRY(entry_label));
+	tangle= gtk_entry_get_text(GTK_ENTRY(entry_angle));
 	window = g_object_get_data(G_OBJECT(entry),"Window");
 	objectText = g_object_get_data(G_OBJECT(entry),"ObjectText");
+	/* t is destroyed with window */
 	if(!objectText) 
 	{
 		if(window)gtk_widget_destroy(window);
@@ -1935,14 +2013,18 @@ static void activate_entry_object_text(GtkWidget *entry, gpointer user_data)
 	}
 	if(!objectText->str)
 	{
-		add_object_text(GABEDIT_ContoursPLOT(contoursplot), objectText->x, objectText->y, t);
+		gdouble angle = 0;
+		if(tangle && strlen(tangle)>0) angle = atof(tangle)/180.0*M_PI;
+		add_object_text(GABEDIT_ContoursPLOT(contoursplot), objectText->x, objectText->y, angle, tlabel);
 		g_free(objectText);
 	}
 	else
 	{
+		gdouble angle = 0;
+		if(tangle && strlen(tangle)>0) angle = atof(tangle)/180.0*M_PI;
 		if(objectText->str) g_free(objectText->str);
 		if(objectText->pango) g_object_unref(G_OBJECT(objectText->pango));
-		set_object_text(GABEDIT_ContoursPLOT(contoursplot), objectText,  objectText->x, objectText->y, t);
+		set_object_text(GABEDIT_ContoursPLOT(contoursplot), objectText,  objectText->x, objectText->y, angle, tlabel);
 	}
 	if(window)gtk_widget_destroy(window);
 	gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
@@ -1957,6 +2039,7 @@ static void add_set_object_text_dialog(GtkWidget* contoursplot, gint i, gdouble 
 	GtkWidget* vbox_frame = NULL;
 	GtkWidget* label = NULL;
 	GtkWidget* entry_label = NULL;
+	GtkWidget* entry_angle = NULL;
 	ContoursPlotObjectText* objectText = NULL;
 
 	if(i>-1 && i<GABEDIT_ContoursPLOT(contoursplot)->nObjectsText)
@@ -1972,7 +2055,7 @@ static void add_set_object_text_dialog(GtkWidget* contoursplot, gint i, gdouble 
 		objectText->pango = NULL;
 	}
 
-	gtk_window_set_title (GTK_WINDOW (window), "Set label");
+	gtk_window_set_title (GTK_WINDOW (window), _("Set label"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -1994,7 +2077,7 @@ static void add_set_object_text_dialog(GtkWidget* contoursplot, gint i, gdouble 
 	gtk_box_pack_start(GTK_BOX(vbox_frame), hbox, FALSE, FALSE, 2);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("Label : ");
+	label=gtk_label_new(_("Label : "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -2004,12 +2087,15 @@ static void add_set_object_text_dialog(GtkWidget* contoursplot, gint i, gdouble 
 	{
 		gtk_entry_set_text(GTK_ENTRY(entry_label),GABEDIT_ContoursPLOT(contoursplot)->objectsText[i].str);
 	}
+	else 
+		gtk_entry_set_text(GTK_ENTRY(entry_label),"<span foreground='blue' font_desc='20'>Blue text</span> is <i>cool</i>!");
 	gtk_box_pack_start(GTK_BOX(hbox), entry_label, TRUE, TRUE, 2);
 	gtk_widget_show(entry_label); 
 	
 	g_object_set_data(G_OBJECT(entry_label),"ObjectText", objectText);
 
 	label=gtk_label_new(
+			_(
 			"You can use the Pango Text Attribute Markup Language\n"
 			"Example : <span foreground='blue' font_desc='Sans 20'>Blue text</span> is <i>cool</i>!\n"
 			"\nFor insert a special character : control shift u + code UTF8\n"
@@ -2018,6 +2104,7 @@ static void add_set_object_text_dialog(GtkWidget* contoursplot, gint i, gdouble 
 			" control shift u + 03B2 for beta (greek)\n"
 			" control shift u + 03A3 for cap Sigma (greek)\n"
 			" See http://www.utf8-chartable.de\n"
+			)
 			);
 	gtk_widget_show(label); 
 	gtk_box_pack_start(GTK_BOX(vbox_frame), label, FALSE, FALSE, 2);
@@ -2025,6 +2112,33 @@ static void add_set_object_text_dialog(GtkWidget* contoursplot, gint i, gdouble 
 
 	g_object_set_data(G_OBJECT(entry_label),"Window", window);
 	g_signal_connect (G_OBJECT (entry_label), "activate", (GCallback)activate_entry_object_text, contoursplot);
+
+	hbox=gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox_frame), hbox, FALSE, FALSE, 2);
+	gtk_widget_show(hbox);
+
+	label=gtk_label_new(_("Angle : "));
+	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 2);
+	gtk_widget_show(label); 
+
+	entry_angle = gtk_entry_new();
+	if(i>-1 && i<GABEDIT_ContoursPLOT(contoursplot)->nObjectsText)
+	{
+		gchar* tmp = g_strdup_printf("%f", GABEDIT_ContoursPLOT(contoursplot)->objectsText[i].angle/M_PI*180.0);
+		gtk_entry_set_text(GTK_ENTRY(entry_angle),tmp);
+		g_free(tmp);
+	}
+	else gtk_entry_set_text(GTK_ENTRY(entry_angle),"0.0");
+	gtk_box_pack_start(GTK_BOX(hbox), entry_angle, TRUE, TRUE, 2);
+	gtk_widget_show(entry_angle); 
+	
+	g_object_set_data(G_OBJECT(entry_angle),"ObjectText", objectText);
+	g_object_set_data(G_OBJECT(entry_angle),"Window", window);
+	g_object_set_data(G_OBJECT(entry_angle),"EntryLabel", entry_label);
+	g_object_set_data(G_OBJECT(entry_angle),"EntryAngle", entry_angle);
+	g_object_set_data(G_OBJECT(entry_label),"EntryLabel", entry_label);
+	g_object_set_data(G_OBJECT(entry_label),"EntryAngle", entry_angle);
+	g_signal_connect (G_OBJECT (entry_angle), "activate", (GCallback)activate_entry_object_text, contoursplot);
 
 	parentWindow = get_parent_window(GTK_WIDGET(contoursplot));
 	if(parentWindow)
@@ -2057,8 +2171,8 @@ static void set_object_line_pixels(GabeditContoursPlot *contoursplot, ContoursPl
 static void set_object_line(GabeditContoursPlot *contoursplot, ContoursPlotObjectLine* objectLine, 
 		gdouble x1, gdouble y1, 
 		gdouble x2, gdouble y2,
-  		guint width,
-  		guint arrow_size,
+  		gint width,
+  		gint arrow_size,
   		GdkColor color,
   		GdkLineStyle style
 		)
@@ -2080,8 +2194,8 @@ static void add_object_line(GabeditContoursPlot *contoursplot,
 		gdouble x2, gdouble y2
 		)
 {
-  	guint width = 1;
-  	guint arrow_size = 0;
+  	gint width = 1;
+  	gint arrow_size = 0;
   	GdkColor color;
   	GdkLineStyle style = GDK_LINE_SOLID;
 	gint i;
@@ -2123,7 +2237,7 @@ static void reset_object_line_pixels(GabeditContoursPlot *contoursplot)
 		set_object_line_pixels(contoursplot, &contoursplot->objectsLine[i]);
 }
 /****************************************************************************************/
-static gint get_object_line_num(GabeditContoursPlot *contoursplot, guint xi, guint yi)
+static gint get_object_line_num(GabeditContoursPlot *contoursplot, gint xi, gint yi)
 {
 	gint i;
 	if(!contoursplot) return -1;
@@ -2135,6 +2249,30 @@ static gint get_object_line_num(GabeditContoursPlot *contoursplot, guint xi, gui
 		if(d<5 || d<contoursplot->objectsLine[i].width) return i;
 	}
 	return -1;
+}
+/****************************************************************************************/
+static void delete_object_line(GtkWidget *widget, gint i)
+{
+	gint j;
+	GabeditContoursPlot *contoursplot = NULL;
+	if(!widget) return;
+	if(!GTK_IS_WIDGET(widget)) return;
+	contoursplot = GABEDIT_ContoursPLOT(widget);
+	if(i<0||i>=contoursplot->nObjectsLine) return;
+	for(j=i;j<contoursplot->nObjectsLine-1;j++)
+		contoursplot->objectsLine[j] = contoursplot->objectsLine[j+1];
+	contoursplot->nObjectsLine--;
+	if(contoursplot->nObjectsLine<1) 
+	{
+		contoursplot->nObjectsLine = 0;
+		if(contoursplot->objectsLine) g_free(contoursplot->objectsLine);
+		contoursplot->objectsLine = NULL;
+	}
+	else
+	{
+		contoursplot->objectsLine = g_realloc(contoursplot->objectsLine,contoursplot->nObjectsLine*sizeof(ContoursPlotObjectLine));
+	}
+
 }
 /****************************************************************************************/
 static void delete_objects_line(GtkWidget *widget)
@@ -2304,7 +2442,7 @@ static void set_object_line_dialog(GabeditContoursPlot* contoursplot, gint i)
 	else return;
 	line_style =  objectLine->style;
 
-	gtk_window_set_title (GTK_WINDOW (window), "Set line options");
+	gtk_window_set_title (GTK_WINDOW (window), _("Set line options"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -2326,7 +2464,7 @@ static void set_object_line_dialog(GabeditContoursPlot* contoursplot, gint i)
 	gtk_container_add(GTK_CONTAINER(frame), hbox);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("Line width :");
+	label=gtk_label_new(_("Line width :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -2338,7 +2476,7 @@ static void set_object_line_dialog(GabeditContoursPlot* contoursplot, gint i)
 	gtk_widget_show(spin);
 	g_object_set_data(G_OBJECT (window), "SpinLineWidth", spin);
 
-	label=gtk_label_new("Line type :");
+	label=gtk_label_new(_("Line type :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -2354,7 +2492,7 @@ static void set_object_line_dialog(GabeditContoursPlot* contoursplot, gint i)
 	gtk_widget_show(combo); 
 	g_object_set_data(G_OBJECT (window), "ComboLineType", combo);
 
-	label=gtk_label_new("Line color :");
+	label=gtk_label_new(_("Line color :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -2363,7 +2501,7 @@ static void set_object_line_dialog(GabeditContoursPlot* contoursplot, gint i)
 	gtk_widget_show(button);
 	g_object_set_data(G_OBJECT (window), "ColorButton", button);
 
-	label=gtk_label_new("arrow size :");
+	label=gtk_label_new(_("Arrow size :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -2399,6 +2537,399 @@ static void set_object_line_dialog(GabeditContoursPlot* contoursplot, gint i)
 	
 
 }
+/**************************************************************************************************/
+static void set_object_image_relative(GabeditContoursPlot *contoursplotplot, ContoursPlotObjectImage* objectImage)
+{
+	gdouble f = (gdouble)GTK_WIDGET(contoursplotplot)->allocation.width;
+  	gint xi=objectImage->xi-contoursplotplot->plotting_rect.x;
+  	gint yi=contoursplotplot->plotting_rect.y+contoursplotplot->plotting_rect.height-objectImage->yi; 
+	if(f>(gdouble)GTK_WIDGET(contoursplotplot)->allocation.height) f = (gdouble)GTK_WIDGET(contoursplotplot)->allocation.height;
+	objectImage->width = (gdouble)objectImage->widthi/f;
+	objectImage->height = (gdouble)objectImage->heighti/f;
+	/*
+	objectImage->x = (gdouble)objectImage->xi/f;
+	objectImage->y = (gdouble)objectImage->yi/f;
+	*/
+        pixel2value(contoursplotplot, xi, yi, &objectImage->x, &objectImage->y);
+	/* printf("contoursplot = %f %f\n",objectImage->x, objectImage->y);*/
+}
+/**************************************************************************************************/
+static void set_object_image_pixels(GabeditContoursPlot *contoursplotplot, ContoursPlotObjectImage* objectImage)
+{
+	gint xi,yi;
+	gdouble f = (gdouble)GTK_WIDGET(contoursplotplot)->allocation.width;
+	if(f>(gdouble)GTK_WIDGET(contoursplotplot)->allocation.height) f = (gdouble)GTK_WIDGET(contoursplotplot)->allocation.height;
+	objectImage->widthi = (gint)(objectImage->width*f);
+	objectImage->heighti = (gint)(objectImage->height*f);
+	/*
+	objectImage->xi = (gint)(objectImage->x*f);
+	objectImage->yi = (gint)(objectImage->y*f);
+	*/
+
+       	value2pixel(contoursplotplot, objectImage->x, objectImage->y, &xi, &yi);
+       	objectImage->xi = xi;
+	objectImage->yi = yi;
+	objectImage->yi=contoursplotplot->plotting_rect.height-objectImage->yi;
+	objectImage->xi += contoursplotplot->plotting_rect.x;
+	objectImage->yi += contoursplotplot->plotting_rect.y;
+}
+/****************************************************************************************/
+static void set_object_image(GabeditContoursPlot *contoursplotplot, ContoursPlotObjectImage* objectImage, gint xi, gint yi, gint w, gint h)
+{
+	objectImage->xi = xi;
+	objectImage->yi = yi;
+	objectImage->widthi = w;
+	objectImage->heighti = h;
+	set_object_image_relative(contoursplotplot, objectImage);
+}
+/**************************************************************************/
+static cairo_surface_t* get_image_from_clipboard()
+{       
+	cairo_surface_t *surface = NULL;
+	GtkClipboard * clipboard = NULL;
+	GdkPixbuf * pixbuf = NULL;
+
+	clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+	if(!clipboard) return NULL;
+	pixbuf = gtk_clipboard_wait_for_image(clipboard);
+
+	if(pixbuf)
+	{
+		gint width;
+                gint height;
+		gint stride;
+		gint x,y;
+		gint nChannels;
+		guchar *p, *pixels;
+      		gint red, green, blue;
+      		gfloat alpha;
+
+		if (!gdk_pixbuf_get_has_alpha (pixbuf))
+      		{
+            		GdkPixbuf* newPixbuf = gdk_pixbuf_add_alpha (pixbuf, FALSE, 255, 255, 255);
+			if (newPixbuf != pixbuf)
+			{
+				g_object_unref(pixbuf);
+				pixbuf = newPixbuf;
+			}
+		}
+		width = gdk_pixbuf_get_width (pixbuf);
+                height = gdk_pixbuf_get_height (pixbuf);
+		stride = gdk_pixbuf_get_rowstride(pixbuf);
+		nChannels = gdk_pixbuf_get_n_channels (pixbuf);
+		pixels = gdk_pixbuf_get_pixels (pixbuf);
+			
+		for (y = 0; y < height; y++)
+      		{
+            		for (x = 0; x < width; x++)
+            		{
+                  		p = pixels + y * stride + x * nChannels;
+                  		alpha = (gfloat) p[3] / 255;
+                  		red = p[0] * alpha;
+                  		green = p[1] * alpha;
+                  		blue = p[2] * alpha;
+                  		p[0] = blue;
+                  		p[1] = green;
+                  		p[2] = red;
+            		}
+      		}
+
+		surface = cairo_image_surface_create_for_data(
+					pixels,
+					CAIRO_FORMAT_ARGB32,
+                                       	width,
+                                       	height,
+                                       	stride);
+		/*g_object_unref(pixbuf);*/
+	}
+	return surface;
+}
+/**************************************************************************************************/
+static ContoursPlotObjectImage get_object_image(GabeditContoursPlot *contoursplotplot, gint xi, gint yi, G_CONST_RETURN gchar* fileName)
+{
+	gint w;
+	gint h;
+	gint nw;
+	gint nh;
+	gdouble fw = 1;
+	gdouble fh = 1;
+	gdouble f = 1;
+	ContoursPlotObjectImage objectImage;
+	objectImage.widthi=0;
+	objectImage.heighti=0;
+	objectImage.xi=xi;
+	objectImage.yi=yi;
+	if(fileName) objectImage.fileName = g_strdup(fileName);
+	else objectImage.fileName = NULL;
+	objectImage.image=NULL;
+	if(fileName) 
+	{
+		objectImage.image = cairo_image_surface_create_from_png (objectImage.fileName);
+	}
+	else
+	{
+		objectImage.image = get_image_from_clipboard();
+	}
+        if(!objectImage.image) return objectImage;
+        w = cairo_image_surface_get_width (objectImage.image);
+	h = cairo_image_surface_get_height (objectImage.image);
+
+	nw = contoursplotplot->plotting_rect.width-xi;
+	nh = contoursplotplot->plotting_rect.height-yi;
+	if(nw<w && nw>0) fw = nw/(gdouble)w;
+	if(nh<h&&nh>0) fh = nh/(gdouble)h;
+	f = fw;
+	if(f>fh) f = fh;
+
+	objectImage.widthi = (gint)(w*f);
+	objectImage.heighti = (gint)(h*f);
+	set_object_image_relative(contoursplotplot, &objectImage);
+
+	/* printf("w = %d h = %d\n",w, h);*/
+	return objectImage;
+}
+/****************************************************************************************/
+static void add_object_image(GabeditContoursPlot *contoursplotplot, gint xi, gint yi, gint width, gint height, G_CONST_RETURN gchar* fileName)
+{
+	ContoursPlotObjectImage objectImage = get_object_image(contoursplotplot, xi, yi, fileName);
+	if(!objectImage.image) return;
+	contoursplotplot->nObjectsImage++;
+	if(contoursplotplot->nObjectsImage==1) contoursplotplot->objectsImage = g_malloc(sizeof(ContoursPlotObjectImage));
+	else contoursplotplot->objectsImage = g_realloc(contoursplotplot->objectsImage,contoursplotplot->nObjectsImage*sizeof(ContoursPlotObjectImage));
+	if(width>0 && height>0)
+	{
+		objectImage.widthi=width;
+		objectImage.heighti=height;
+	}
+	contoursplotplot->objectsImage[contoursplotplot->nObjectsImage-1] = objectImage;
+}
+/****************************************************************************************/
+static gint get_object_image_num(GabeditContoursPlot *contoursplotplot, gint xi, gint yi)
+{
+	gint i;
+	if(!contoursplotplot) return -1;
+	for(i=0;i<contoursplotplot->nObjectsImage;i++)
+	{
+		if(xi>=(gint)contoursplotplot->objectsImage[i].xi && yi>=contoursplotplot->objectsImage[i].yi
+		&& xi<=contoursplotplot->objectsImage[i].xi+contoursplotplot->objectsImage[i].widthi 
+		&& yi<=contoursplotplot->objectsImage[i].yi+contoursplotplot->objectsImage[i].heighti)
+			return i;
+	}
+	return -1;
+}
+/****************************************************************************************/
+static void delete_object_image(GtkWidget *widget, gint i)
+{
+	gint j;
+	GabeditContoursPlot *contoursplotplot = NULL;
+	if(!widget) return;
+	if(!GTK_IS_WIDGET(widget)) return;
+	contoursplotplot = GABEDIT_ContoursPLOT(widget);
+	if(i<0||i>=contoursplotplot->nObjectsImage) return;
+	if(contoursplotplot->objectsImage[i].fileName) g_free(contoursplotplot->objectsImage[i].fileName);
+	if(contoursplotplot->objectsImage[i].image) cairo_surface_destroy (contoursplotplot->objectsImage[i].image);
+	for(j=i;j<contoursplotplot->nObjectsImage-1;j++)
+		contoursplotplot->objectsImage[j] = contoursplotplot->objectsImage[j+1];
+	contoursplotplot->nObjectsImage--;
+	if(contoursplotplot->nObjectsImage<1) 
+	{
+		contoursplotplot->nObjectsImage = 0;
+		if(contoursplotplot->objectsImage) g_free(contoursplotplot->objectsImage);
+		contoursplotplot->objectsImage = NULL;
+	}
+	else
+	{
+		contoursplotplot->objectsImage = g_realloc(contoursplotplot->objectsImage,contoursplotplot->nObjectsImage*sizeof(ContoursPlotObjectImage));
+	}
+
+}
+/****************************************************************************************/
+static void delete_objects_image(GtkWidget *widget)
+{
+	GabeditContoursPlot *contoursplotplot = NULL;
+	gint i;
+	if(!widget) return;
+	if(!GTK_IS_WIDGET(widget)) return;
+	contoursplotplot = GABEDIT_ContoursPLOT(widget);
+	for(i=0;i<contoursplotplot->nObjectsImage;i++)
+	{
+		if(contoursplotplot->objectsImage[i].fileName) g_free(contoursplotplot->objectsImage[i].fileName);
+		if(contoursplotplot->objectsImage[i].image) cairo_surface_destroy (contoursplotplot->objectsImage[i].image);
+	}
+	contoursplotplot->nObjectsImage = 0;
+	if(contoursplotplot->objectsImage) g_free(contoursplotplot->objectsImage);
+	contoursplotplot->objectsImage = NULL;
+	gtk_widget_queue_draw(GTK_WIDGET(contoursplotplot));
+}
+/********************************************************************************/
+static gboolean read_image_png(GtkFileChooser *filesel, gint response_id)
+{
+	gchar *fileName;
+	GtkWidget* contoursplotplot = NULL;
+	ContoursPlotObjectImage* objectImage = NULL;
+
+	if(response_id != GTK_RESPONSE_OK) return FALSE;
+ 	fileName = gtk_file_chooser_get_filename(filesel);
+	contoursplotplot = g_object_get_data(G_OBJECT (filesel), "ContoursPLOT");
+	objectImage = g_object_get_data(G_OBJECT(filesel),"ObjectImage");
+	if(objectImage && !objectImage->image)
+	{
+		add_object_image(GABEDIT_ContoursPLOT(contoursplotplot), objectImage->xi, objectImage->yi, -1, -1, fileName);
+		g_free(objectImage);
+	}
+	gtk_widget_queue_draw(GTK_WIDGET(contoursplotplot));
+	return TRUE;
+
+}
+/********************************************************************************/
+static void activate_entry_object_image(GtkWidget *entry, gpointer user_data)
+{
+	G_CONST_RETURN gchar* t;
+	GtkWidget* contoursplotplot = NULL;
+	GtkWidget* window = NULL;
+	ContoursPlotObjectImage* objectImage = NULL;
+
+
+	if(!GTK_IS_WIDGET(entry)) return;
+	if(!user_data || !G_IS_OBJECT(user_data)) return;
+
+	contoursplotplot = GTK_WIDGET(user_data);
+	t= gtk_entry_get_text(GTK_ENTRY(entry));
+	if(!entry) return;
+	window = g_object_get_data(G_OBJECT(entry),"Window");
+	objectImage = g_object_get_data(G_OBJECT(entry),"ObjectImage");
+	/* t is destroyed with window */
+	if(!objectImage) 
+	{
+		if(window)gtk_widget_destroy(window);
+		return;
+	}
+	else
+	{
+		objectImage->widthi =(gint)(fabs(atof(t))*cairo_image_surface_get_width (objectImage->image));
+		objectImage->heighti =(gint)(fabs(atof(t))*cairo_image_surface_get_height (objectImage->image));
+	}
+	if(window)gtk_widget_destroy(window);
+	gtk_widget_queue_draw(GTK_WIDGET(contoursplotplot));
+}
+/********************************************************************************/
+static void add_set_object_image_dialog(GtkWidget* contoursplotplot, gint i, gint xi, gint yi)
+{
+	GtkWidget* parentWindow = NULL;
+	gchar* patternsfiles[] = {"*.png","*",NULL}; 
+	GtkWidget* filesel= NULL;
+	ContoursPlotObjectImage* objectImage = NULL;
+
+	if(i>-1 && i<GABEDIT_ContoursPLOT(contoursplotplot)->nObjectsImage)
+	{
+		GtkWidget* window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+		GtkWidget* frame = NULL;
+		GtkWidget* hbox = NULL;
+		GtkWidget* vbox_frame = NULL;
+		GtkWidget* label = NULL;
+		GtkWidget* entry_label = NULL;
+
+		objectImage = &GABEDIT_ContoursPLOT(contoursplotplot)->objectsImage[i];
+
+		gtk_window_set_title (GTK_WINDOW (window), _("Scale image"));
+		gtk_container_set_border_width (GTK_CONTAINER (window), 10);
+		gtk_window_set_modal (GTK_WINDOW (window), TRUE);
+
+		g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(gtk_widget_destroy), (gpointer)contoursplotplot);
+	
+		hbox=gtk_hbox_new(FALSE, 0);
+		gtk_container_add(GTK_CONTAINER(window), hbox);
+		gtk_widget_show(hbox);
+
+		frame=gtk_frame_new(NULL);
+		gtk_container_add(GTK_CONTAINER(hbox), frame);
+		gtk_widget_show(frame);
+
+		vbox_frame=gtk_vbox_new(FALSE, 0);
+		gtk_container_add(GTK_CONTAINER(frame), vbox_frame);
+		gtk_widget_show(vbox_frame);
+
+		hbox=gtk_hbox_new(FALSE, 0);
+		gtk_box_pack_start(GTK_BOX(vbox_frame), hbox, FALSE, FALSE, 2);
+		gtk_widget_show(hbox);
+
+		label=gtk_label_new(_("Factor (new size/orginal size) : "));
+		gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 2);
+		gtk_widget_show(label); 
+
+		entry_label = gtk_entry_new();
+		/* gtk_widget_set_size_request(entry_label,100,-1);*/
+
+		gtk_entry_set_text(GTK_ENTRY(entry_label),"0.5");
+
+		gtk_box_pack_start(GTK_BOX(hbox), entry_label, TRUE, TRUE, 2);
+		gtk_widget_show(entry_label); 
+	
+		g_object_set_data(G_OBJECT(entry_label),"ObjectImage", objectImage);
+
+		g_object_set_data(G_OBJECT(entry_label),"Window", window);
+		g_signal_connect (G_OBJECT (entry_label), "activate", (GCallback)activate_entry_object_image, contoursplotplot);
+
+		parentWindow = get_parent_window(GTK_WIDGET(contoursplotplot));
+		if(parentWindow)
+		{
+			gtk_window_set_transient_for(GTK_WINDOW(window),GTK_WINDOW(parentWindow));
+		}
+		gtk_widget_show(window); 
+	}
+	else if(i==-1)
+	{
+		objectImage = g_malloc(sizeof(ContoursPlotObjectImage));
+		objectImage->xi = xi;
+		objectImage->yi = yi;
+		objectImage->fileName = NULL;
+		objectImage->image = NULL;
+		parentWindow = get_parent_window(GTK_WIDGET(contoursplotplot));
+		filesel= new_file_chooser_open(parentWindow, 
+				(GCallback *)read_image_png, 
+				_("Read image from a png file"), 
+				patternsfiles);
+		gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+		g_object_set_data(G_OBJECT (filesel), "ContoursPLOT", contoursplotplot);
+		g_object_set_data(G_OBJECT(filesel),"ObjectImage", objectImage);
+	}
+	else
+		add_object_image(GABEDIT_ContoursPLOT(contoursplotplot), xi, yi, -1, -1, NULL);
+
+}
+/****************************************************************************************/
+static void reset_object_image_pixels(GabeditContoursPlot *contoursplotplot)
+{
+	gint i;
+	if(!contoursplotplot) return;
+	for(i=0;i<contoursplotplot->nObjectsImage;i++)
+		set_object_image_pixels(contoursplotplot, &contoursplotplot->objectsImage[i]);
+}
+/****************************************************************************************/
+/*
+static void reset_object_image_relative(GabeditContoursPlot *contoursplotplot)
+{
+	gint i;
+	if(!contoursplotplot) return;
+	for(i=0;i<contoursplotplot->nObjectsImage;i++)
+		set_object_image_relative(contoursplotplot, &contoursplotplot->objectsImage[i]);
+}
+*/
+/****************************************************************************************/
+static void insert_objects_image_from_clipboard(GtkWidget *widget)
+{
+	if(!widget) return;
+	if(!GTK_IS_WIDGET(widget)) return;
+	add_object_image(GABEDIT_ContoursPLOT(widget), 0, 0, -1, -1, NULL);
+        gtk_widget_queue_draw(widget);
+}
+/****************************************************************************************/
+static void begin_insert_objects_image(GtkWidget *widget)
+{
+	if(!widget) return;
+	if(!GTK_IS_WIDGET(widget)) return;
+	GABEDIT_ContoursPLOT(widget)->i_key_pressed = TRUE;
+}
 /********************************************************************************/
 static gboolean read_data(GtkFileChooser *filesel, gint response_id)
 {
@@ -2425,7 +2956,7 @@ static gboolean read_data(GtkFileChooser *filesel, gint response_id)
 	if(!fd)
 	{
 		GtkWidget* dialog = NULL;
-		gchar* tmp = g_strdup_printf("Sorry, I cannot open %s file",fileName);
+		gchar* tmp = g_strdup_printf(_("Sorry, I cannot open %s file"),fileName);
 		dialog = gtk_message_dialog_new_with_markup (NULL,
 		           GTK_DIALOG_DESTROY_WITH_PARENT,
 		           GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
@@ -2443,7 +2974,33 @@ static gboolean read_data(GtkFileChooser *filesel, gint response_id)
 		}
 	}
 	size = xsize*ysize;
+	if(size<1)
+	{
+		GtkWidget* dialog = NULL;
+		gchar* tmp = g_strdup_printf(_("Sorry, I cannot read %s file"),fileName);
+		dialog = gtk_message_dialog_new_with_markup (NULL,
+		           GTK_DIALOG_DESTROY_WITH_PARENT,
+		           GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+			   tmp);
+       		gtk_dialog_run (GTK_DIALOG (dialog));
+       		gtk_widget_destroy (dialog);
+       		g_free(tmp);
+		return FALSE;
+	}
 	if(OK) zValues = g_malloc(size*sizeof(gdouble));
+	if(!zValues)
+	{
+		GtkWidget* dialog = NULL;
+		gchar* tmp = g_strdup_printf(_("Sorry, I cannot read %s file"),fileName);
+		dialog = gtk_message_dialog_new_with_markup (NULL,
+		           GTK_DIALOG_DESTROY_WITH_PARENT,
+		           GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+			   tmp);
+       		gtk_dialog_run (GTK_DIALOG (dialog));
+       		gtk_widget_destroy (dialog);
+       		g_free(tmp);
+		return FALSE;
+	}
 	for(i=0;OK && i<xsize*ysize;i++)
 		if(1!=fscanf(fd,"%lf",&zValues[i])) OK = FALSE;
 
@@ -2456,7 +3013,7 @@ static gboolean read_data(GtkFileChooser *filesel, gint response_id)
 				GTK_DIALOG_DESTROY_WITH_PARENT,
 				GTK_MESSAGE_ERROR,
 				GTK_BUTTONS_CLOSE,
-			       "Error reading file '%s'",
+			       _("Error reading file '%s'"),
 				fileName);
 		gtk_dialog_run (GTK_DIALOG (dialog));
 		gtk_widget_destroy (dialog);
@@ -2491,7 +3048,7 @@ static void read_data_dlg(GtkWidget* contoursplot)
 	parentWindow = get_parent_window(GTK_WIDGET(contoursplot));
 	filesel= new_file_chooser_open(parentWindow, 
 			(GCallback *)read_data, 
-			"Read data from an ASCII grid file(xsize, xmin, xmax, ysize, ymin, ymax, Zvalues)", 
+			_("Read data from an ASCII grid file(xsize, xmin, xmax, ysize, ymin, ymax, Zvalues)"), 
 			patternsfiles);
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 	g_object_set_data(G_OBJECT (filesel), "ContoursPLOT", contoursplot);
@@ -2538,7 +3095,7 @@ static void save_data_dlg(GtkWidget* buttonSave, GtkWidget* contoursplot)
 	parentWindow = get_parent_window(GTK_WIDGET(contoursplot));
 	filesel= new_file_chooser_save(parentWindow, 
 			(GCallback *)save_data, 
-			"Save data in an ASCII grid file(xsize, xmin, xmax, ysize, ymin, ymax, Zvalues)", 
+			_("Save data in an ASCII grid file(xsize, xmin, xmax, ysize, ymin, ymax, Zvalues)"), 
 			patternsfiles);
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 	data = g_object_get_data(G_OBJECT (buttonSave), "CurentData");
@@ -2575,7 +3132,7 @@ static void remove_data_dlg(GtkWidget* buttonRemove, GtkWidget* contoursplot)
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_QUESTION,
 			GTK_BUTTONS_YES_NO,
-		       "Are you sure to delete this data ?"
+		       _("Are you sure to delete this data ?")
 			);
 	gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_NO);
 	g_signal_connect_swapped(dialog, "response", G_CALLBACK (remove_data), buttonRemove);
@@ -2602,7 +3159,7 @@ static void add_font_size_frame(GtkWidget* hbox, GtkWidget* contoursplot)
 	GtkWidget* hbox_frame = NULL;
 	GtkWidget* spin_font_size = NULL;
 
-	frame=gtk_frame_new("Font size");
+	frame=gtk_frame_new(_("Font size"));
 	gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -2628,7 +3185,7 @@ static void set_font_size_dialog(GtkWidget* contoursplot)
 	GtkWidget* hbox = NULL;
 	GtkWidget* parentWindow = NULL;
 
-	gtk_window_set_title (GTK_WINDOW (window), "Set font size");
+	gtk_window_set_title (GTK_WINDOW (window), _("Set font size"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -2675,7 +3232,7 @@ static void add_digits_frame(GtkWidget* hbox, GtkWidget* contoursplot)
 	GtkWidget* x_spin_digits = NULL;
 	GtkWidget* y_spin_digits = NULL;
 
-	frame=gtk_frame_new("Digits");
+	frame=gtk_frame_new(_("Digits"));
 	gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -2717,7 +3274,7 @@ static void set_digits_dialog(GtkWidget* contoursplot)
 	GtkWidget* hbox = NULL;
 	GtkWidget* parentWindow = NULL;
 
-	gtk_window_set_title (GTK_WINDOW (window), "Set digits");
+	gtk_window_set_title (GTK_WINDOW (window), _("Set digits"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -2771,7 +3328,7 @@ static void add_labels_frame(GtkWidget* hbox, GtkWidget* contoursplot)
 	GtkWidget* entry_x_label = NULL;
 	GtkWidget* entry_y_label = NULL;
 
-	frame=gtk_frame_new("Labels");
+	frame=gtk_frame_new(_("Labels"));
 	gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -2815,7 +3372,7 @@ static void set_labels_dialog(GtkWidget* contoursplot)
 	GtkWidget* parentWindow = NULL;
 	GtkWidget* hbox = NULL;
 
-	gtk_window_set_title (GTK_WINDOW (window), "Set labels");
+	gtk_window_set_title (GTK_WINDOW (window), _("Set labels"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -2959,7 +3516,7 @@ static void add_ranges_frame(GtkWidget* hbox, GtkWidget* contoursplot)
 	GtkWidget* entry_y_max = NULL;
 	gchar tmp[100];
 
-	frame=gtk_frame_new("Ranges");
+	frame=gtk_frame_new(_("Ranges"));
 	gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -2967,7 +3524,7 @@ static void add_ranges_frame(GtkWidget* hbox, GtkWidget* contoursplot)
 	gtk_container_add(GTK_CONTAINER(frame), hbox_frame);
 	gtk_widget_show(hbox_frame);
 
-	label=gtk_label_new("X Min: ");
+	label=gtk_label_new(_("X Min: "));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -2978,7 +3535,7 @@ static void add_ranges_frame(GtkWidget* hbox, GtkWidget* contoursplot)
 	gtk_box_pack_start(GTK_BOX(hbox_frame), entry_x_min, TRUE, FALSE, 2);
 	gtk_widget_show(entry_x_min);
 
-	label=gtk_label_new("X Max: ");
+	label=gtk_label_new(_("X Max: "));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -2989,7 +3546,7 @@ static void add_ranges_frame(GtkWidget* hbox, GtkWidget* contoursplot)
 	gtk_box_pack_start(GTK_BOX(hbox_frame), entry_x_max, TRUE, FALSE, 2);
 	gtk_widget_show(entry_x_max);
 
-	label=gtk_label_new("Y Min: ");
+	label=gtk_label_new(_("Y Min: "));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -3000,7 +3557,7 @@ static void add_ranges_frame(GtkWidget* hbox, GtkWidget* contoursplot)
 	gtk_box_pack_start(GTK_BOX(hbox_frame), entry_y_min, TRUE, FALSE, 2);
 	gtk_widget_show(entry_y_min);
 
-	label=gtk_label_new("Y Max: ");
+	label=gtk_label_new(_("Y Max: "));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -3023,7 +3580,7 @@ static void set_ranges_dialog(GtkWidget* contoursplot)
 	GtkWidget* parentWindow = NULL;
 	GtkWidget* hbox = NULL;
 
-	gtk_window_set_title (GTK_WINDOW (window), "Set ranges");
+	gtk_window_set_title (GTK_WINDOW (window), _("Set ranges"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -3100,7 +3657,7 @@ static void add_ticks_frame(GtkWidget* hbox, GtkWidget* contoursplot)
 	GtkWidget* spin_vminor = NULL;
 	GtkWidget* spin_length = NULL;
 
-	frame=gtk_frame_new("Ticks");
+	frame=gtk_frame_new(_("Ticks"));
 	gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -3112,7 +3669,7 @@ static void add_ticks_frame(GtkWidget* hbox, GtkWidget* contoursplot)
 	gtk_container_add(GTK_CONTAINER(hbox_frame), hbox);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("X Major: ");
+	label=gtk_label_new(_("X Major: "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -3124,7 +3681,7 @@ static void add_ticks_frame(GtkWidget* hbox, GtkWidget* contoursplot)
 	gtk_container_add(GTK_CONTAINER(hbox_frame), hbox);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("Y Major: ");
+	label=gtk_label_new(_("Y Major: "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -3136,7 +3693,7 @@ static void add_ticks_frame(GtkWidget* hbox, GtkWidget* contoursplot)
 	gtk_container_add(GTK_CONTAINER(hbox_frame), hbox);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("X Minor: ");
+	label=gtk_label_new(_("X Minor: "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -3148,7 +3705,7 @@ static void add_ticks_frame(GtkWidget* hbox, GtkWidget* contoursplot)
 	gtk_container_add(GTK_CONTAINER(hbox_frame), hbox);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("Y Minor: ");
+	label=gtk_label_new(_("Y Minor: "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -3160,7 +3717,7 @@ static void add_ticks_frame(GtkWidget* hbox, GtkWidget* contoursplot)
 	gtk_container_add(GTK_CONTAINER(hbox_frame), hbox);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("Length: ");
+	label=gtk_label_new(_("Length: "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -3187,7 +3744,7 @@ static void set_ticks_dialog(GtkWidget* contoursplot)
 	GtkWidget* hbox = NULL;
 	GtkWidget* parentWindow = NULL;
 
-	gtk_window_set_title (GTK_WINDOW (window), "Set ticks");
+	gtk_window_set_title (GTK_WINDOW (window), _("Set ticks"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -3198,6 +3755,146 @@ static void set_ticks_dialog(GtkWidget* contoursplot)
 	gtk_widget_show(hbox);
 
 	add_ticks_frame(hbox, contoursplot);
+
+
+	parentWindow = get_parent_window(GTK_WIDGET(contoursplot));
+	if(parentWindow)
+	{
+		gtk_window_set_transient_for(GTK_WINDOW(window),GTK_WINDOW(parentWindow));
+	}
+	gtk_widget_show(window); 
+}
+/****************************************************************************************/
+static void spin_right_margins_changed_value(GtkSpinButton *spinbutton, gpointer user_data)
+{
+	if(user_data && G_IS_OBJECT(user_data))
+	{
+	GtkWidget* contoursplot = GTK_WIDGET(user_data);
+	gabedit_contoursplot_set_margins_right(GABEDIT_ContoursPLOT(contoursplot), gtk_spin_button_get_value(spinbutton));	
+	}
+}
+/****************************************************************************************/
+static void spin_left_margins_changed_value(GtkSpinButton *spinbutton, gpointer user_data)
+{
+	if(user_data && G_IS_OBJECT(user_data))
+	{
+	GtkWidget* contoursplot = GTK_WIDGET(user_data);
+	gabedit_contoursplot_set_margins_left(GABEDIT_ContoursPLOT(contoursplot), gtk_spin_button_get_value(spinbutton));
+	}
+}
+/****************************************************************************************/
+static void spin_bottom_margins_changed_value(GtkSpinButton *spinbutton, gpointer user_data)
+{
+	if(user_data && G_IS_OBJECT(user_data))
+	{
+	GtkWidget* contoursplot = GTK_WIDGET(user_data);
+	gabedit_contoursplot_set_margins_bottom(GABEDIT_ContoursPLOT(contoursplot), gtk_spin_button_get_value(spinbutton));
+	}
+}
+/****************************************************************************************/
+static void spin_top_margins_changed_value(GtkSpinButton *spinbutton, gpointer user_data)
+{
+	if(user_data && G_IS_OBJECT(user_data))
+	{
+	GtkWidget* contoursplot = GTK_WIDGET(user_data);
+	gabedit_contoursplot_set_margins_top(GABEDIT_ContoursPLOT(contoursplot), gtk_spin_button_get_value(spinbutton));	
+	}
+}
+/****************************************************************************************/
+static void add_margins_frame(GtkWidget* hbox, GtkWidget* contoursplot)
+{
+	GtkWidget* frame = NULL;
+	GtkWidget* hbox_frame = NULL;
+	GtkWidget* label = NULL;
+	GtkWidget* spin_left_margins = NULL;
+	GtkWidget* spin_right_margins = NULL;
+	GtkWidget* spin_top_margins = NULL;
+	GtkWidget* spin_bottom_margins = NULL;
+
+	frame=gtk_frame_new(_("Margins"));
+	gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 2);
+	gtk_widget_show(frame);
+
+	hbox_frame=gtk_hbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(frame), hbox_frame);
+	gtk_widget_show(hbox_frame);
+
+	hbox=gtk_hbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(hbox_frame), hbox);
+	gtk_widget_show(hbox);
+
+	label=gtk_label_new(_("Left: "));
+	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
+	gtk_widget_show(label); 
+	
+	spin_left_margins=gtk_spin_button_new_with_range(0, 30, 1);
+	gtk_box_pack_start(GTK_BOX(hbox), spin_left_margins, TRUE, FALSE, 2);
+	gtk_widget_show(spin_left_margins);
+
+	hbox=gtk_hbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(hbox_frame), hbox);
+	gtk_widget_show(hbox);
+
+	label=gtk_label_new(_("Top: "));
+	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
+	gtk_widget_show(label); 
+	
+	spin_top_margins=gtk_spin_button_new_with_range(0, 30, 1);
+	gtk_box_pack_start(GTK_BOX(hbox), spin_top_margins, TRUE, FALSE, 2);
+	gtk_widget_show(spin_top_margins);
+
+	hbox=gtk_hbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(hbox_frame), hbox);
+	gtk_widget_show(hbox);
+
+	label=gtk_label_new(_("Right: "));
+	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
+	gtk_widget_show(label); 
+	
+	spin_right_margins=gtk_spin_button_new_with_range(0, 30, 1);
+	gtk_box_pack_start(GTK_BOX(hbox), spin_right_margins, TRUE, FALSE, 2);
+	gtk_widget_show(spin_right_margins);
+
+	hbox=gtk_hbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(hbox_frame), hbox);
+	gtk_widget_show(hbox);
+
+	label=gtk_label_new(_("Bottom: "));
+	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
+	gtk_widget_show(label); 
+	
+	spin_bottom_margins=gtk_spin_button_new_with_range(0, 30, 1);
+	gtk_box_pack_start(GTK_BOX(hbox), spin_bottom_margins, TRUE, FALSE, 2);
+	gtk_widget_show(spin_bottom_margins);
+
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin_left_margins), GABEDIT_ContoursPLOT(contoursplot)->left_margins);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin_right_margins), GABEDIT_ContoursPLOT(contoursplot)->right_margins);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin_top_margins), GABEDIT_ContoursPLOT(contoursplot)->top_margins);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin_bottom_margins), GABEDIT_ContoursPLOT(contoursplot)->bottom_margins);
+
+	g_signal_connect(G_OBJECT(spin_left_margins), "value-changed", G_CALLBACK(spin_left_margins_changed_value), contoursplot);
+	g_signal_connect(G_OBJECT(spin_right_margins), "value-changed", G_CALLBACK(spin_right_margins_changed_value), contoursplot);
+	g_signal_connect(G_OBJECT(spin_top_margins), "value-changed", G_CALLBACK(spin_top_margins_changed_value), contoursplot);
+	g_signal_connect(G_OBJECT(spin_bottom_margins), "value-changed", G_CALLBACK(spin_bottom_margins_changed_value), contoursplot);
+}
+/****************************************************************************************/
+static void set_margins_dialog(GtkWidget* contoursplot)
+{
+	GtkWidget* window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	GtkWidget* hbox = NULL;
+	GtkWidget* parentWindow = NULL;
+
+	gtk_window_set_title (GTK_WINDOW (window), _("Set margins"));
+	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
+	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
+
+	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(gtk_widget_destroy), (gpointer)contoursplot);
+	
+	hbox=gtk_hbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(window), hbox);
+	gtk_widget_show(hbox);
+
+	add_margins_frame(hbox, contoursplot);
 
 
 	parentWindow = get_parent_window(GTK_WIDGET(contoursplot));
@@ -3233,7 +3930,7 @@ static void add_reflexion_frame(GtkWidget* hbox, GtkWidget* contoursplot)
 	GtkWidget* reflect_x_button;
 	GtkWidget* reflect_y_button;
 
-	frame=gtk_frame_new("Axes");
+	frame=gtk_frame_new(_("Axes"));
 	gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -3241,11 +3938,11 @@ static void add_reflexion_frame(GtkWidget* hbox, GtkWidget* contoursplot)
 	gtk_container_add(GTK_CONTAINER(frame), hbox_frame);
 	gtk_widget_show(hbox_frame);
 
-	reflect_x_button = gtk_check_button_new_with_label ("Reflect X");
+	reflect_x_button = gtk_check_button_new_with_label (_("Reflect X"));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), reflect_x_button, FALSE, FALSE, 2);
 	gtk_widget_show(reflect_x_button); 
 
-	reflect_y_button = gtk_check_button_new_with_label ("Reflect Y");
+	reflect_y_button = gtk_check_button_new_with_label (_("Reflect Y"));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), reflect_y_button, FALSE, FALSE, 2);
 	gtk_widget_show(reflect_y_button); 
 
@@ -3309,19 +4006,19 @@ static void add_legends_frame(GtkWidget* hbox, GtkWidget* contoursplot)
 	gtk_container_add(GTK_CONTAINER(frame), hbox_frame);
 	gtk_widget_show(hbox_frame);
 
-	show_left = gtk_check_button_new_with_label ("Left");
+	show_left = gtk_check_button_new_with_label (_("Left"));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), show_left, FALSE, FALSE, 2);
 	gtk_widget_show(show_left); 
 
-	show_right = gtk_check_button_new_with_label ("Right");
+	show_right = gtk_check_button_new_with_label (_("Right"));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), show_right, FALSE, FALSE, 2);
 	gtk_widget_show(show_right); 
 
-	show_top = gtk_check_button_new_with_label ("Top");
+	show_top = gtk_check_button_new_with_label (_("Top"));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), show_top, FALSE, FALSE, 2);
 	gtk_widget_show(show_top); 
 
-	show_bottom = gtk_check_button_new_with_label ("Bottom");
+	show_bottom = gtk_check_button_new_with_label (_("Bottom"));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), show_bottom, FALSE, FALSE, 2);
 	gtk_widget_show(show_bottom); 
 
@@ -3381,7 +4078,7 @@ static void add_grid_frame(GtkWidget* hbox, GtkWidget* contoursplot)
 	GtkWidget* v_major;
 	GtkWidget* v_minor;
 
-	frame=gtk_frame_new("Grid");
+	frame=gtk_frame_new(_("Grid"));
 	gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -3389,19 +4086,19 @@ static void add_grid_frame(GtkWidget* hbox, GtkWidget* contoursplot)
 	gtk_container_add(GTK_CONTAINER(frame), hbox_frame);
 	gtk_widget_show(hbox_frame);
 
-	h_major = gtk_check_button_new_with_label ("H major");
+	h_major = gtk_check_button_new_with_label (_("H major"));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), h_major, FALSE, FALSE, 2);
 	gtk_widget_show(h_major); 
 
-	v_major = gtk_check_button_new_with_label ("V major");
+	v_major = gtk_check_button_new_with_label (_("V major"));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), v_major, FALSE, FALSE, 2);
 	gtk_widget_show(v_major); 
 
-	h_minor = gtk_check_button_new_with_label ("H minor");
+	h_minor = gtk_check_button_new_with_label (_("H minor"));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), h_minor, FALSE, FALSE, 2);
 	gtk_widget_show(h_minor); 
 
-	v_minor = gtk_check_button_new_with_label ("V minor");
+	v_minor = gtk_check_button_new_with_label (_("V minor"));
 	gtk_box_pack_start(GTK_BOX(hbox_frame), v_minor, FALSE, FALSE, 2);
 	gtk_widget_show(v_minor); 
 
@@ -3423,7 +4120,7 @@ static void set_all_dialog(GtkWidget* contoursplot)
 	GtkWidget* hbox = NULL;
 	GtkWidget* vbox = NULL;
 
-	gtk_window_set_title (GTK_WINDOW (window), "Set");
+	gtk_window_set_title (GTK_WINDOW (window), _("Set"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -3436,6 +4133,11 @@ static void set_all_dialog(GtkWidget* contoursplot)
 	hbox=gtk_hbox_new(FALSE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 1);
 	add_ranges_frame(hbox, contoursplot);
+	gtk_widget_show(hbox); 
+
+	hbox=gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 1);
+	add_margins_frame(hbox, contoursplot);
 	gtk_widget_show(hbox); 
 
 	hbox=gtk_hbox_new(FALSE, 0);
@@ -3493,11 +4195,75 @@ static void gabedit_contoursplot_save_gabedit_texts(GabeditContoursPlot *contour
 	fprintf(file,"texts %d\n", contoursplot->nObjectsText);
 	for(i=0;i<contoursplot->nObjectsText;i++)
 	{
-		fprintf(file,"%lf %lf\n", 
+		fprintf(file,"%lf %lf %lf\n", 
 				contoursplot->objectsText[i].x, 
-				contoursplot->objectsText[i].y
+				contoursplot->objectsText[i].y,
+				contoursplot->objectsText[i].angle
 		       ); 
 		fprintf(file,"%s\n", contoursplot->objectsText[i].str);
+	}
+}
+/*************************************************************************************/
+static gchar *get_suffix_name_file(const gchar* allname)
+{
+	gchar *filename= g_path_get_basename(allname);
+	gchar *dirname= g_path_get_dirname(allname);
+	gchar *temp= g_strdup(filename);
+	gint len=strlen(filename);
+	gint i;
+	gchar* name = NULL;
+
+	if(!allname || strlen(allname)<1) return g_strdup("error");
+	filename= g_path_get_basename(allname);
+	dirname= g_path_get_dirname(allname);
+	temp= g_strdup(filename);
+	len=strlen(filename);
+
+	for(i=len;i>0;i--)
+	if(temp[i]=='.')
+	{
+		temp[i] = '\0';
+		break;
+	}
+	name = g_strdup_printf("%s%s%s",dirname,G_DIR_SEPARATOR_S,temp);
+	if(temp) g_free(temp);
+	if(dirname) g_free(dirname);
+	if(filename) g_free(filename);
+
+	if(strcmp(name,".")==0) name = g_strdup(g_get_current_dir());
+   
+	return name;
+}
+/*************************************************************************************/
+static gchar *get_filename_png(const gchar* allname, gint i)
+{
+	gchar *bas = get_suffix_name_file(allname);
+	if(bas)
+	{
+		gchar* fn = g_strdup_printf("%s_%d.png",bas,i);
+		g_free(bas);
+		return fn;
+	}
+	return g_strdup_printf("%d.png",i);
+}
+/****************************************************************************************/
+static void gabedit_contoursplot_save_gabedit_images(GabeditContoursPlot *contoursplot, FILE* file, gchar* fileName)
+{
+	gint i;
+	gchar *fn;
+	fprintf(file,"images %d\n", contoursplot->nObjectsImage);
+	for(i=0;i<contoursplot->nObjectsImage;i++)
+	{
+		fprintf(file,"%lf %lf %lf %lf\n", 
+				contoursplot->objectsImage[i].x, 
+				contoursplot->objectsImage[i].y,
+				contoursplot->objectsImage[i].width,
+				contoursplot->objectsImage[i].height
+		       ); 
+		fn = get_filename_png(fileName, i);
+		fprintf(file,"%s\n", fn);
+		cairo_surface_write_to_png (contoursplot->objectsImage[i].image,fn);
+		g_free(fn);
 	}
 }
 /****************************************************************************************/
@@ -3519,6 +4285,7 @@ static void gabedit_contoursplot_save_gabedit_parameters(GabeditContoursPlot *co
 			(gint)backColor.red, (gint)backColor.green,(gint)backColor.blue);
 	fprintf(file,"digits %d %d\n", contoursplot->x_legends_digits,  contoursplot->y_legends_digits);
 	fprintf(file,"ticks %d %d %d %d %d\n",  contoursplot->length_ticks,  contoursplot->hmajor_ticks, contoursplot->hminor_ticks,  contoursplot->vmajor_ticks, contoursplot->vminor_ticks);
+	fprintf(file,"margins %d %d %d %d\n",  contoursplot->left_margins,  contoursplot->top_margins, contoursplot->right_margins,  contoursplot->bottom_margins);
 	fprintf(file,"grid %d %d %d %d\n", contoursplot->hmajor_grid, contoursplot->hminor_grid, contoursplot->vmajor_grid, contoursplot->vminor_grid); 
 	fprintf(file,"legends %d %d %d %d\n", contoursplot->show_left_legends, contoursplot->show_right_legends, contoursplot->show_top_legends, contoursplot->show_bottom_legends);
 	fprintf(file,"axes %d %d\n",  contoursplot->reflect_x, contoursplot->reflect_y);
@@ -3601,6 +4368,7 @@ static void gabedit_contoursplot_save_gabedit(GtkWidget* contoursplot, gchar* fi
 	gabedit_contoursplot_save_gabedit_parameters(GABEDIT_ContoursPLOT(contoursplot), file);
 	gabedit_contoursplot_save_gabedit_texts(GABEDIT_ContoursPLOT(contoursplot), file);
 	gabedit_contoursplot_save_gabedit_lines(GABEDIT_ContoursPLOT(contoursplot), file);
+	gabedit_contoursplot_save_gabedit_images(GABEDIT_ContoursPLOT(contoursplot), file,fileName);
 	gabedit_contoursplot_save_gabedit_datas(GABEDIT_ContoursPLOT(contoursplot), file);
 	fclose(file);
 }
@@ -3723,7 +4491,7 @@ static gboolean gabedit_contoursplot_read_gabedit_texts(GabeditContoursPlot *con
 			contoursplot->objectsText = NULL;
 		       	return FALSE;
 		}
-		sscanf(t,"%lf %lf", &contoursplot->objectsText[i].x, &contoursplot->objectsText[i].y); 
+		sscanf(t,"%lf %lf %lf", &contoursplot->objectsText[i].x, &contoursplot->objectsText[i].y, &contoursplot->objectsText[i].angle); 
     		if(fgets(t,BSIZE,file))
 		{
 			gint j;
@@ -3737,6 +4505,75 @@ static gboolean gabedit_contoursplot_read_gabedit_texts(GabeditContoursPlot *con
 		set_object_text_pango(contoursplot, &contoursplot->objectsText[i]);
 		set_object_text_pixels(contoursplot, &contoursplot->objectsText[i]);
 	}
+	return TRUE;
+}
+/****************************************************************************************/
+static gboolean gabedit_contoursplot_read_gabedit_images(GabeditContoursPlot *contoursplot, FILE* file)
+{
+	gint i;
+	gchar t[BSIZE];
+	gchar tmp[BSIZE];
+	if(contoursplot->objectsImage)
+	{
+		for(i=0;i<contoursplot->nObjectsImage;i++)
+		{
+			if(contoursplot->objectsImage[i].fileName) g_free(contoursplot->objectsImage[i].fileName);
+			if(contoursplot->objectsImage[i].image) cairo_surface_destroy (contoursplot->objectsImage[i].image);
+		}
+		g_free(contoursplot->objectsImage);
+		contoursplot->objectsImage = NULL;
+		contoursplot->nObjectsImage = 0;
+	}
+    	if(!fgets(t,BSIZE,file)) return FALSE;
+	sscanf(t,"%s %d\n", tmp, &contoursplot->nObjectsImage);
+	if(contoursplot->nObjectsImage>0)
+	{
+		contoursplot->objectsImage = g_malloc(contoursplot->nObjectsImage*sizeof(ContoursPlotObjectImage));
+		for(i=0;i<contoursplot->nObjectsImage;i++) contoursplot->objectsImage[i].fileName = NULL;
+		for(i=0;i<contoursplot->nObjectsImage;i++) contoursplot->objectsImage[i].image = NULL;
+	}
+	for(i=0;i<contoursplot->nObjectsImage;i++)
+	{
+		gdouble x,y,w,h;
+    		if(!fgets(t,BSIZE,file))
+		{
+			for(i=0;i<contoursplot->nObjectsImage;i++) 
+				if(contoursplot->objectsImage[i].fileName) g_free(contoursplot->objectsImage[i].fileName);
+			contoursplot->nObjectsImage= 0;
+			g_free(contoursplot->objectsImage);
+			contoursplot->objectsImage = NULL;
+		       	return FALSE;
+		}
+		sscanf(t,"%lf %lf %lf %lf", &x, &y, &w, &h);
+		contoursplot->objectsImage[i].x = x;
+		contoursplot->objectsImage[i].y = y;
+		contoursplot->objectsImage[i].width = w;
+		contoursplot->objectsImage[i].height = h;
+    		if(fgets(t,BSIZE,file))
+		{
+			gint j;
+			gint len;
+			len = strlen(t);
+			for(j=0;j<strlen(t);j++) 
+			{
+				if(t[j]=='\n') t[j] = ' ';
+				if(t[j]=='\r') t[j] = ' ';
+			}
+			len = strlen(t);
+			for(j=len;j>=0;j--)   if(t[j]==' ') t[j] = '\0';
+			contoursplot->objectsImage[i].fileName= g_strdup(t);
+		}
+		else contoursplot->objectsImage[i].fileName = g_strdup(" ");
+	}
+	for(i=0;i<contoursplot->nObjectsImage;i++)
+	{
+		contoursplot->objectsImage[i].image = cairo_image_surface_create_from_png (contoursplot->objectsImage[i].fileName);
+		if(!contoursplot->objectsImage[i].image)
+		{
+			printf("I cannot read %s png file\n",contoursplot->objectsImage[i].fileName);
+		}
+	}
+	reset_object_image_pixels(contoursplot);
 	return TRUE;
 }
 /****************************************************************************************/
@@ -3764,6 +4601,8 @@ static gboolean gabedit_contoursplot_read_gabedit_parameters(GabeditContoursPlot
 	sscanf(t,"%s %d %d", tmp, &contoursplot->x_legends_digits,  &contoursplot->y_legends_digits);
     	if(!fgets(t,BSIZE,file)) return FALSE;
 	sscanf(t,"%s %d %d %d %d %d",  tmp, &contoursplot->length_ticks,  &contoursplot->hmajor_ticks, &contoursplot->hminor_ticks,  &contoursplot->vmajor_ticks, &contoursplot->vminor_ticks);
+    	if(!fgets(t,BSIZE,file)) return FALSE;
+	sscanf(t,"%s %d %d %d %d",  tmp, &contoursplot->left_margins,  &contoursplot->top_margins, &contoursplot->right_margins,  &contoursplot->bottom_margins);
     	if(!fgets(t,BSIZE,file)) return FALSE;
 	sscanf(t,"%s %d %d %d %d", tmp, &contoursplot->hmajor_grid, &contoursplot->hminor_grid, &contoursplot->vmajor_grid, &contoursplot->vminor_grid); 
 	gabedit_contoursplot_enable_grids (GABEDIT_ContoursPLOT(contoursplot), GABEDIT_ContoursPLOT_HMAJOR_GRID, contoursplot->hmajor_grid);
@@ -3965,7 +4804,7 @@ static gboolean gabedit_contoursplot_read_gabedit(GtkWidget* contoursplot, gchar
 	g_strup(t);
 	if(!strstr(t,"[GABEDIT FORMAT]"))
 	{
-		contoursplot_message("This is not a Gabedit file\n");
+		contoursplot_message(_("This is not a Gabedit file\n"));
 		fclose(file);
 		return FALSE;
 	}
@@ -3990,13 +4829,14 @@ static gboolean gabedit_contoursplot_read_gabedit(GtkWidget* contoursplot, gchar
 			gabedit_contoursplot_read_gabedit_parameters(GABEDIT_ContoursPLOT(contoursplot), file);
 			gabedit_contoursplot_read_gabedit_texts(GABEDIT_ContoursPLOT(contoursplot), file);
 			gabedit_contoursplot_read_gabedit_lines(GABEDIT_ContoursPLOT(contoursplot), file);
+			gabedit_contoursplot_read_gabedit_images(GABEDIT_ContoursPLOT(contoursplot), file);
 			gabedit_contoursplot_read_gabedit_datas(GABEDIT_ContoursPLOT(contoursplot), file);
 			reset_color_map(contoursplot, NULL);
 			fclose(file);
 			return TRUE;
 		}
 	}
-	contoursplot_message("I can not read the ContoursPlot data\n");
+	contoursplot_message(_("I can not read the ContoursPlot data\n"));
 	fclose(file);
 	return FALSE;
 }
@@ -4094,7 +4934,7 @@ static void saveImageDlg(GtkWidget* contoursplot, gchar* type)
 	GtkWidget *parentWindow;
 
 	dialog = g_object_new (GTK_TYPE_FILE_CHOOSER_DIALOG, "action", GTK_FILE_CHOOSER_ACTION_SAVE, "file-system-backend", "gtk+", "select-multiple", FALSE, NULL);
-	gtk_window_set_title (GTK_WINDOW (dialog), "Save Contours plot");
+	gtk_window_set_title (GTK_WINDOW (dialog), _("Save Contours plot"));
 	gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_OK, NULL);
 	filter = gtk_file_filter_new ();
 	
@@ -4123,13 +4963,6 @@ static void saveImageDlg(GtkWidget* contoursplot, gchar* type)
 	gtk_widget_show(dialog);
 }
 /*****************************************************************************/
-static void force_expose(GtkWidget* widget)
-{
-	gtk_widget_hide(widget);
-	gtk_widget_show(widget);
-	while( gtk_events_pending() ) gtk_main_iteration();
-}
-/*****************************************************************************/
 static void gabedit_contoursplot_export(GabeditContoursPlot *contoursplot, gchar* fileName, gchar* fileType)
 {
 	GtkWidget* widget = NULL;
@@ -4144,7 +4977,7 @@ static void gabedit_contoursplot_export(GabeditContoursPlot *contoursplot, gchar
 		cairo_surface_t *surface;
 		surface = cairo_pdf_surface_create(fileName, widget->allocation.width, widget->allocation.height);
 		contoursplot->cairo_export = cairo_create(surface);
-		force_expose(widget);
+		gabedit_contoursplot_draw (widget);
 		cairo_show_page(contoursplot->cairo_export);
 		cairo_surface_destroy(surface);
 		cairo_destroy(contoursplot->cairo_export);
@@ -4158,7 +4991,7 @@ static void gabedit_contoursplot_export(GabeditContoursPlot *contoursplot, gchar
 		cairo_surface_t *surface;
 		surface = cairo_ps_surface_create(fileName, widget->allocation.width, widget->allocation.height);
 		contoursplot->cairo_export = cairo_create(surface);
-		force_expose(widget);
+		gabedit_contoursplot_draw (widget);
 		cairo_show_page(contoursplot->cairo_export);
 		cairo_surface_destroy(surface);
 		cairo_destroy(contoursplot->cairo_export);
@@ -4173,7 +5006,7 @@ static void gabedit_contoursplot_export(GabeditContoursPlot *contoursplot, gchar
 		surface = cairo_ps_surface_create(fileName, widget->allocation.width, widget->allocation.height);
 		cairo_ps_surface_set_eps(surface, TRUE);
 		contoursplot->cairo_export = cairo_create(surface);
-		force_expose(widget);
+		gabedit_contoursplot_draw (widget);
 		cairo_show_page(contoursplot->cairo_export);
 		cairo_surface_destroy(surface);
 		cairo_destroy(contoursplot->cairo_export);
@@ -4187,7 +5020,7 @@ static void gabedit_contoursplot_export(GabeditContoursPlot *contoursplot, gchar
 		cairo_surface_t *surface;
 		surface = cairo_svg_surface_create(fileName, widget->allocation.width, widget->allocation.height);
 		contoursplot->cairo_export = cairo_create(surface);
-		force_expose(widget);
+		gabedit_contoursplot_draw (widget);
 		cairo_show_page(contoursplot->cairo_export);
 		cairo_surface_destroy(surface);
 		cairo_destroy(contoursplot->cairo_export);
@@ -4225,7 +5058,7 @@ static void exportImageDlg(GtkWidget* contoursplot, gchar* type)
 	GtkWidget *parentWindow;
 
 	dialog = g_object_new (GTK_TYPE_FILE_CHOOSER_DIALOG, "action", GTK_FILE_CHOOSER_ACTION_SAVE, "file-system-backend", "gtk+", "select-multiple", FALSE, NULL);
-	gtk_window_set_title (GTK_WINDOW (dialog), "Export Contours plot");
+	gtk_window_set_title (GTK_WINDOW (dialog), _("Export Contours plot"));
 	gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_OK, NULL);
 	filter = gtk_file_filter_new ();
 	
@@ -4431,7 +5264,7 @@ static GtkWidget *add_point_types_combo(GtkWidget *hbox, ContourData* contour)
 		"<span>&#8226;</span>",
 		"<span><b>&#9788;</b></span>",
 		"<span>&#9651;</span>", "<span>&#9650;</span>"};
-	guint n = G_N_ELEMENTS (list);
+	gint n = G_N_ELEMENTS (list);
 
 	store = gtk_tree_store_new (1,G_TYPE_STRING);
 
@@ -4775,7 +5608,7 @@ static void add_contour_data_dialog(GtkWidget* window, GtkWidget* vbox_window,
 	gtk_box_pack_start(GTK_BOX(vbox_window), hbox1, TRUE, FALSE, 2);
 	gtk_widget_show(hbox1);
 
-	frame = gtk_frame_new("Set line type");
+	frame = gtk_frame_new(_("Set line type"));
 	gtk_box_pack_start(GTK_BOX(hbox1), frame, TRUE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -4783,7 +5616,7 @@ static void add_contour_data_dialog(GtkWidget* window, GtkWidget* vbox_window,
 	gtk_container_add(GTK_CONTAINER(frame), hbox);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("Line width :");
+	label=gtk_label_new(_("Line width :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -4793,7 +5626,7 @@ static void add_contour_data_dialog(GtkWidget* window, GtkWidget* vbox_window,
 	gtk_widget_show(spin);
 	g_object_set_data(G_OBJECT (window), "SpinLineWidth", spin);
 
-	label=gtk_label_new("Line type :");
+	label=gtk_label_new(_("Line type :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4805,7 +5638,7 @@ static void add_contour_data_dialog(GtkWidget* window, GtkWidget* vbox_window,
 	gtk_widget_show(combo); 
 	g_object_set_data(G_OBJECT (window), "ComboLineType", combo);
 
-	label=gtk_label_new("Line color :");
+	label=gtk_label_new(_("Line color :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4814,7 +5647,7 @@ static void add_contour_data_dialog(GtkWidget* window, GtkWidget* vbox_window,
 	gtk_widget_show(button);
 	g_object_set_data(G_OBJECT (window), "ColorButton", button);
 
-	frame = gtk_frame_new("Set point type");
+	frame = gtk_frame_new(_("Set point type"));
 	gtk_box_pack_start(GTK_BOX(vbox_window), frame, TRUE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -4822,7 +5655,7 @@ static void add_contour_data_dialog(GtkWidget* window, GtkWidget* vbox_window,
 	gtk_container_add(GTK_CONTAINER(frame), hbox);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("point size :");
+	label=gtk_label_new(_("Point size :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -4832,7 +5665,7 @@ static void add_contour_data_dialog(GtkWidget* window, GtkWidget* vbox_window,
 	gtk_widget_show(spin_point);
 	g_object_set_data(G_OBJECT (window), "SpinPointWidth", spin_point);
 
-	label=gtk_label_new("Point type :");
+	label=gtk_label_new(_("Point type :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4840,7 +5673,7 @@ static void add_contour_data_dialog(GtkWidget* window, GtkWidget* vbox_window,
 	gtk_widget_show(combo_point); 
 	g_object_set_data(G_OBJECT (window), "ComboPointType", combo_point);
 
-	label=gtk_label_new("Point color :");
+	label=gtk_label_new(_("Point color :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4849,7 +5682,7 @@ static void add_contour_data_dialog(GtkWidget* window, GtkWidget* vbox_window,
 	gtk_widget_show(button_point);
 	g_object_set_data(G_OBJECT (window), "ColorButton", button_point);
 
-	frame = gtk_frame_new("Set label");
+	frame = gtk_frame_new(_("Set label"));
 	gtk_box_pack_start(GTK_BOX(vbox_window), frame, TRUE, FALSE, 2);
 	gtk_widget_show(frame);
 
@@ -4862,7 +5695,7 @@ static void add_contour_data_dialog(GtkWidget* window, GtkWidget* vbox_window,
 
 	i = 0;
 	j = 0;
-	add_label_at_table(table," Label ",i,j,GTK_JUSTIFY_LEFT);
+	add_label_at_table(table,_(" Label "),i,j,GTK_JUSTIFY_LEFT);
 	j++;
 	add_label_at_table(table," : ",i,j,GTK_JUSTIFY_LEFT);
 	j++;
@@ -4874,7 +5707,7 @@ static void add_contour_data_dialog(GtkWidget* window, GtkWidget* vbox_window,
 
 	i = 1;
 	j = 0;
-	add_label_at_table(table," X label ",i,j,GTK_JUSTIFY_LEFT);
+	add_label_at_table(table,_(" X label "),i,j,GTK_JUSTIFY_LEFT);
 	j++;
 	add_label_at_table(table," : ",i,j,GTK_JUSTIFY_LEFT);
 	j++;
@@ -4885,7 +5718,7 @@ static void add_contour_data_dialog(GtkWidget* window, GtkWidget* vbox_window,
 
 	i = 2;
 	j = 0;
-	add_label_at_table(table," X label ",i,j,GTK_JUSTIFY_LEFT);
+	add_label_at_table(table,_(" X label "),i,j,GTK_JUSTIFY_LEFT);
 	j++;
 	add_label_at_table(table," : ",i,j,GTK_JUSTIFY_LEFT);
 	j++;
@@ -4949,7 +5782,7 @@ static void set_data_dialog(GabeditContoursPlot* contoursplot, ContoursPlotData*
 	GtkWidget* entry_shift_y = NULL;
 	GtkWidget* entry_shift_z = NULL;
 
-	gtk_window_set_title (GTK_WINDOW (window), "Set data options");
+	gtk_window_set_title (GTK_WINDOW (window), _("Set data options"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -4973,7 +5806,7 @@ static void set_data_dialog(GabeditContoursPlot* contoursplot, ContoursPlotData*
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, FALSE, 2);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("Scale X : ");
+	label=gtk_label_new(_("Scale X : "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4983,7 +5816,7 @@ static void set_data_dialog(GabeditContoursPlot* contoursplot, ContoursPlotData*
 	gtk_box_pack_start(GTK_BOX(hbox), entry_scale_x, FALSE, FALSE, 2);
 	gtk_widget_show(entry_scale_x);
 
-	label=gtk_label_new("Scale Y : ");
+	label=gtk_label_new(_("Scale Y : "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -4993,7 +5826,7 @@ static void set_data_dialog(GabeditContoursPlot* contoursplot, ContoursPlotData*
 	gtk_box_pack_start(GTK_BOX(hbox), entry_scale_y, FALSE, FALSE, 2);
 	gtk_widget_show(entry_scale_y);
 
-	label=gtk_label_new("Scale Z : ");
+	label=gtk_label_new(_("Scale Z : "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -5007,7 +5840,7 @@ static void set_data_dialog(GabeditContoursPlot* contoursplot, ContoursPlotData*
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, FALSE, 2);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("Shift  X : ");
+	label=gtk_label_new(_("Shift  X : "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -5017,7 +5850,7 @@ static void set_data_dialog(GabeditContoursPlot* contoursplot, ContoursPlotData*
 	gtk_box_pack_start(GTK_BOX(hbox), entry_shift_x, FALSE, FALSE, 2);
 	gtk_widget_show(entry_shift_x);
 
-	label=gtk_label_new("Shift  Y : ");
+	label=gtk_label_new(_("Shift  Y : "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -5028,7 +5861,7 @@ static void set_data_dialog(GabeditContoursPlot* contoursplot, ContoursPlotData*
 	gtk_box_pack_start(GTK_BOX(hbox), entry_shift_y, FALSE, FALSE, 2);
 	gtk_widget_show(entry_shift_y);
 
-	label=gtk_label_new("Shift  Z : ");
+	label=gtk_label_new(_("Shift  Z : "));
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 2);
 	gtk_widget_show(label); 
 
@@ -5046,20 +5879,20 @@ static void set_data_dialog(GabeditContoursPlot* contoursplot, ContoursPlotData*
 	gtk_container_add(GTK_CONTAINER(frame), hbox);
 	gtk_widget_show(hbox);
 
-	buttonAutoRanges = gtk_button_new_with_label ("Auto ranges");
+	buttonAutoRanges = gtk_button_new_with_label (_("Auto ranges"));
 	gtk_box_pack_start(GTK_BOX(hbox), buttonAutoRanges, TRUE, TRUE, 4);
 	gtk_widget_show (buttonAutoRanges);
 
-	buttonAutoRangesAll = gtk_button_new_with_label ("Auto ranges all");
+	buttonAutoRangesAll = gtk_button_new_with_label (_("Auto ranges all"));
 	gtk_box_pack_start(GTK_BOX(hbox), buttonAutoRangesAll, TRUE, TRUE, 4);
 	gtk_widget_show (buttonAutoRangesAll);
 
 
-	buttonSave = gtk_button_new_with_label ("Save");
+	buttonSave = gtk_button_new_with_label (_("Save"));
 	gtk_box_pack_start(GTK_BOX(hbox), buttonSave, TRUE, TRUE, 4);
 	gtk_widget_show (buttonSave);
 
-	buttonRemove = gtk_button_new_with_label ("Remove");
+	buttonRemove = gtk_button_new_with_label (_("Remove"));
 	gtk_box_pack_start(GTK_BOX(hbox), buttonRemove, TRUE, TRUE, 4);
 	gtk_widget_show (buttonRemove);
 
@@ -5134,14 +5967,14 @@ static void applyColorMapOptions(GtkWidget *dialogWindow, gpointer data)
 	N = atoi(temp);
 	if(N<=0)
 	{
-		Message("Error : The number of labels should be a positive integer. ","Error");
+		Message(_("Error : The number of labels should be a positive integer. "),_("Error"));
 		return;
 	}
-        if(!get_a_float(entryMin,&min, "Error : The minimal value should be float." )) return;
-        if(!get_a_float(entryMax,&max,"Error : The maximal value should be float.")) return;
+        if(!get_a_float(entryMin,&min,_("Error : The minimal value should be float."))) return;
+        if(!get_a_float(entryMax,&max,_("Error : The maximal value should be float."))) return;
 	if( max<=min)
 	{
-		Message("Error :  The minimal value should be smaller than the maximal value ","Error");
+		Message(_("Error :  The minimal value should be smaller than the maximal value "),_("Error"));
 		return;
 	}
 
@@ -5214,7 +6047,7 @@ static void createColorMapOptionsFrame(GtkWidget* dialogWindow, GtkWidget *box)
 	color.red = 65535;
 	color.green = 65535;
 	color.blue = 65535;
-	frame = gtk_frame_new ("Color mapping type");
+	frame = gtk_frame_new (_("Color mapping type"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -5227,12 +6060,12 @@ static void createColorMapOptionsFrame(GtkWidget* dialogWindow, GtkWidget *box)
 
 	i = 0;
 	button =  NULL;
-	button = addRadioButtonColorMapToATable(table, button, "Multi color", i, 0,1);
+	button = addRadioButtonColorMapToATable(table, button, _("Multi color"), i, 0,1);
 	if(contoursplot->colorsMap.type == 1) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
 	g_object_set_data(G_OBJECT (dialogWindow), "ButtonMultiColor",button);
 
 	i = 1;
-	button = addRadioButtonColorMapToATable(table, button, "2 colors", i, 0,1);
+	button = addRadioButtonColorMapToATable(table, button, _("2 colors"), i, 0,1);
 	if(contoursplot->colorsMap.type == 2) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
 	g_object_set_data(G_OBJECT (dialogWindow), "Button2Colors",button);
 
@@ -5257,7 +6090,7 @@ static void createColorMapOptionsFrame(GtkWidget* dialogWindow, GtkWidget *box)
 	g_object_set_data(G_OBJECT (dialogWindow), "Selector2Colors2",selector);
 
 	i = 2;
-	button = addRadioButtonColorMapToATable(table, button, "Unicolor", i, 0,1);
+	button = addRadioButtonColorMapToATable(table, button, _("Unicolor"), i, 0,1);
 	if(contoursplot->colorsMap.type == 3) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
 
 	color.red = (gushort)(contoursplot->colorsMap.colors[2][0]*65535);
@@ -5299,7 +6132,7 @@ static void createColorMapOptionsWindow(GtkWidget* contoursplot)
 	 
 	dialogWindow = gtk_dialog_new();
 	gtk_widget_realize(GTK_WIDGET(dialogWindow));
-	sprintf(t, "Color Mapping options");
+	sprintf(t, _("Color Mapping options"));
 	gtk_window_set_title(GTK_WINDOW(dialogWindow),t);
 
 	gtk_window_set_modal (GTK_WINDOW (dialogWindow), TRUE);
@@ -5331,7 +6164,7 @@ static void createColorMapOptionsWindow(GtkWidget* contoursplot)
 
 	i = 0;
 	j = 0;
-	add_label_at_table(table," Min iso-value ",i,j,GTK_JUSTIFY_LEFT);
+	add_label_at_table(table,_(" Min iso-value "),i,j,GTK_JUSTIFY_LEFT);
 	j++;
 	add_label_at_table(table," : ",i,j,GTK_JUSTIFY_LEFT);
 	j++;
@@ -5342,7 +6175,7 @@ static void createColorMapOptionsWindow(GtkWidget* contoursplot)
 
 	i = 1;
 	j = 0;
-	add_label_at_table(table," Max iso-value ",i,j,GTK_JUSTIFY_LEFT);
+	add_label_at_table(table,_(" Max iso-value "),i,j,GTK_JUSTIFY_LEFT);
 	j++;
 	add_label_at_table(table," : ",i,j,GTK_JUSTIFY_LEFT);
 	j++;
@@ -5353,7 +6186,7 @@ static void createColorMapOptionsWindow(GtkWidget* contoursplot)
 
 	i = 2;
 	j = 0;
-	add_label_at_table(table," # of labels ",i,j,GTK_JUSTIFY_LEFT);
+	add_label_at_table(table,_(" # of labels "),i,j,GTK_JUSTIFY_LEFT);
 	j++;
 	add_label_at_table(table," : ",i,j,GTK_JUSTIFY_LEFT);
 	j++;
@@ -5427,19 +6260,19 @@ static void toggle_action (GtkAction *action)
 /*--------------------------------------------------------------------------------------------------------------------*/
 static GtkToggleActionEntry gtkActionToggleEntries[] =
 {
-	{ "HGridShowMajor", NULL, "show _H major", NULL, "show H major", G_CALLBACK (toggle_action), TRUE },
-	{ "HGridShowMinor", NULL, "show _H minor", NULL, "show H minor", G_CALLBACK (toggle_action), FALSE },
-	{ "VGridShowMajor", NULL, "show _V major", NULL, "show V major", G_CALLBACK (toggle_action), TRUE },
-	{ "VGridShowMinor", NULL, "show _V minor", NULL, "show V minor", G_CALLBACK (toggle_action), FALSE },
-	{ "LegendShowLeft", NULL, "show _left", NULL, "show left", G_CALLBACK (toggle_action), TRUE },
-	{ "LegendShowRight", NULL, "show _right", NULL, "show right", G_CALLBACK (toggle_action), TRUE },
-	{ "LegendShowTop", NULL, "show _top", NULL, "show top", G_CALLBACK (toggle_action), TRUE },
-	{ "LegendShowBottom", NULL, "show _bottom", NULL, "show bottom", G_CALLBACK (toggle_action), TRUE },
-	{ "DirectionReflectX", NULL, "_X reflect", NULL, "X reflect", G_CALLBACK (toggle_action), FALSE },
-	{ "DirectionReflectY", NULL, "_Y reflect", NULL, "Y reflect", G_CALLBACK (toggle_action), FALSE },
-	{ "ShowColorMap", NULL, "show _colormap", NULL, "show colormap", G_CALLBACK (toggle_action), FALSE },
-	{ "ShowLabelContours", NULL, "show _label contours", NULL, "show label contours", G_CALLBACK (toggle_action), FALSE },
-	{ "DashedNegativeContours", NULL, "dashed negative contours", NULL, "dashed negative contours", G_CALLBACK (toggle_action), FALSE },
+	{ "HGridShowMajor", NULL, N_("show _H major"), NULL, "show H major", G_CALLBACK (toggle_action), TRUE },
+	{ "HGridShowMinor", NULL, N_("show _H minor"), NULL, "show H minor", G_CALLBACK (toggle_action), FALSE },
+	{ "VGridShowMajor", NULL, N_("show _V major"), NULL, "show V major", G_CALLBACK (toggle_action), TRUE },
+	{ "VGridShowMinor", NULL, N_("show _V minor"), NULL, "show V minor", G_CALLBACK (toggle_action), FALSE },
+	{ "LegendShowLeft", NULL, N_("show _left"), NULL, "show left", G_CALLBACK (toggle_action), TRUE },
+	{ "LegendShowRight", NULL, N_("show _right"), NULL, "show right", G_CALLBACK (toggle_action), TRUE },
+	{ "LegendShowTop", NULL, N_("show _top"), NULL, "show top", G_CALLBACK (toggle_action), TRUE },
+	{ "LegendShowBottom", NULL, N_("show _bottom"), NULL, "show bottom", G_CALLBACK (toggle_action), TRUE },
+	{ "DirectionReflectX", NULL, N_("_X reflect"), NULL, "X reflect", G_CALLBACK (toggle_action), FALSE },
+	{ "DirectionReflectY", NULL, N_("_Y reflect"), NULL, "Y reflect", G_CALLBACK (toggle_action), FALSE },
+	{ "ShowColorMap", NULL, N_("show _colormap"), NULL, "show colormap", G_CALLBACK (toggle_action), FALSE },
+	{ "ShowLabelContours", NULL, N_("show _label contours"), NULL, "show label contours", G_CALLBACK (toggle_action), FALSE },
+	{ "DashedNegativeContours", NULL, N_("dashed negative contours"), NULL, "dashed negative contours", G_CALLBACK (toggle_action), FALSE },
 };
 /*--------------------------------------------------------------------------------------------------------------------*/
 static void init_toggle_entries (GtkWidget* contoursplot)
@@ -5459,13 +6292,14 @@ static void init_toggle_entries (GtkWidget* contoursplot)
 	contoursplot_show_label_contours (GABEDIT_ContoursPLOT(contoursplot), gtkActionToggleEntries[11].is_active);
 	contoursplot_dashed_negative_contours (GABEDIT_ContoursPLOT(contoursplot), gtkActionToggleEntries[12].is_active);
 }
-static guint numberOfGtkActionToggleEntries = G_N_ELEMENTS (gtkActionToggleEntries);
+static gint numberOfGtkActionToggleEntries = G_N_ELEMENTS (gtkActionToggleEntries);
 /*********************************************************************************************************************/
 static void activate_action (GtkAction *action)
 {
 	const gchar *name = gtk_action_get_name (action);
 	GtkWidget* contoursplot = g_object_get_data(G_OBJECT (action), "ContoursPLOT");
 	if(!strcmp(name,"SetTicks")) { set_ticks_dialog(contoursplot); }
+	if(!strcmp(name,"SetMargins")) { set_margins_dialog(contoursplot); }
 	if(!strcmp(name,"SetRanges")) { set_ranges_dialog(contoursplot); }
 	if(!strcmp(name,"SetLabels")) { set_labels_dialog(contoursplot); }
 	if(!strcmp(name,"SetDigits")) { set_digits_dialog(contoursplot); }
@@ -5483,6 +6317,9 @@ static void activate_action (GtkAction *action)
 	if(!strcmp(name,"ObjectsDeleteTexts")) { delete_objects_text(contoursplot); }
 	if(!strcmp(name,"ObjectsInsertLine")) { begin_insert_objects_line(contoursplot); }
 	if(!strcmp(name,"ObjectsDeleteLines")) { delete_objects_line(contoursplot); }
+	if(!strcmp(name,"ObjectsInsertImage")) { begin_insert_objects_image(contoursplot); }
+	if(!strcmp(name,"ObjectsInsertImageClip")) { insert_objects_image_from_clipboard(contoursplot); }
+	if(!strcmp(name,"ObjectsDeleteImages")) { delete_objects_image(contoursplot); }
 	if(!strcmp(name,"ThemesPublication")) { set_theme_publication(contoursplot); }
 	if(!strcmp(name,"ThemesGreenBlack")) { set_theme_green_black(contoursplot); }
 	if(!strcmp(name,"ThemesOther")) { set_theme_dialog(contoursplot); }
@@ -5504,66 +6341,73 @@ static void activate_action (GtkAction *action)
 /*--------------------------------------------------------------------*/
 static GtkActionEntry gtkActionEntries[] =
 {
-	{"Set", NULL, "_Set"},
-	{"SetTicks", NULL, "_Ticks", NULL, "Ticks", G_CALLBACK (activate_action) },
-	{"SetRanges", NULL, "_Ranges", NULL, "Ranges", G_CALLBACK (activate_action) },
-	{"SetLabels", NULL, "_Labels", NULL, "Labels", G_CALLBACK (activate_action) },
-	{"SetDigits", NULL, "_Digits", NULL, "Digits", G_CALLBACK (activate_action) },
-	{"SetFontSize", NULL, "_Font size", NULL, "Font size", G_CALLBACK (activate_action) },
-	{"SetAutoRanges", NULL, "_Auto ranges", NULL, "Auto ranges", G_CALLBACK (activate_action) },
-	{"Render", NULL, "_Render"},
-	{"RenderGrid", NULL, "_Grid"},
-	{"RenderLegends", NULL, "_Legends"},
-	{"RenderDirections", NULL, "_Directions"},
-	{"Data", NULL, "_Data"},
-	{"DataRead", NULL, "_Read data from an ASCII grid file", NULL, "Read data from an ASCII grid file", G_CALLBACK (activate_action) },
-	{"DataSaveAll", NULL, "_Save all data in an ascii grid file", NULL, "Save all data in an ascii file", G_CALLBACK (activate_action) },
-	{"DataRemoveAll", NULL, "_Remove all data", NULL, "Remove all data", G_CALLBACK (activate_action) },
+	{"Set", NULL, N_("_Set")},
+	{"SetTicks", NULL, N_("_Ticks"), NULL, "Ticks", G_CALLBACK (activate_action) },
+	{"SetMargins", NULL, N_("_Margins"), NULL, "Margins", G_CALLBACK (activate_action) },
+	{"SetRanges", NULL, N_("_Ranges"), NULL, "Ranges", G_CALLBACK (activate_action) },
+	{"SetLabels", NULL, N_("_Labels"), NULL, "Labels", G_CALLBACK (activate_action) },
+	{"SetDigits", NULL, N_("_Digits"), NULL, "Digits", G_CALLBACK (activate_action) },
+	{"SetFontSize", NULL, N_("_Font size"), NULL, "Font size", G_CALLBACK (activate_action) },
+	{"SetAutoRanges", NULL, N_("_Auto ranges"), NULL, "Auto ranges", G_CALLBACK (activate_action) },
+	{"Render", NULL, N_("_Render")},
+	{"RenderGrid", NULL, N_("_Grid")},
+	{"RenderLegends", NULL, N_("_Legends")},
+	{"RenderDirections", NULL, N_("_Directions")},
+	{"Data", NULL, N_("_Data")},
+	{"DataRead", NULL, N_("_Read data from an ASCII grid file"), NULL, "Read data from an ASCII grid file", G_CALLBACK (activate_action) },
+	{"DataSaveAll", NULL, N_("_Save all data in an ascii grid file"), NULL, "Save all data in an ascii file", G_CALLBACK (activate_action) },
+	{"DataRemoveAll", NULL, N_("_Remove all data"), NULL, "Remove all data", G_CALLBACK (activate_action) },
 
-	{"Contours", NULL, "_Contours"},
-	{"ContoursSet", NULL, "_Set contours values", NULL, "Set contours values", G_CALLBACK (activate_action) },
-	{"ContoursBuildLabelPositions", NULL, "Reset _label positions", NULL, "Reset label positions", G_CALLBACK (activate_action) },
-	{"ContoursDelete", NULL, "_Delete all", NULL, "Delete all", G_CALLBACK (activate_action) },
+	{"Contours", NULL, N_("_Contours")},
+	{"ContoursSet", NULL, N_("_Set contours values"), NULL, "Set contours values", G_CALLBACK (activate_action) },
+	{"ContoursBuildLabelPositions", NULL, N_("Reset _label positions"), NULL, "Reset label positions", G_CALLBACK (activate_action) },
+	{"ContoursDelete", NULL, N_("_Delete all"), NULL, "Delete all", G_CALLBACK (activate_action) },
 
-	{"ColorMap", NULL, "Color_Map"},
-	{"ColorMapSet", NULL, "_Set colors map", NULL, "Set colors map", G_CALLBACK (activate_action) },
+	{"ColorMap", NULL, N_("Color_Map")},
+	{"ColorMapSet", NULL, N_("_Set colors map"), NULL, "Set colors map", G_CALLBACK (activate_action) },
 
-	{"Objects", NULL, "_Objects"},
-	{"ObjectsInsertText", NULL, "Insert a _text(Click in window)", NULL, "Insert a text", G_CALLBACK (activate_action) },
-	{"ObjectsDeleteTexts", NULL, "Delete all _texts", NULL, "Delete all texts", G_CALLBACK (activate_action) },
-	{"ObjectsInsertLine", NULL, "Insert a _line(Click in window and move)", NULL, "Insert a line", G_CALLBACK (activate_action) },
-	{"ObjectsDeleteLines", NULL, "Delete all _lines", NULL, "Delete all lines", G_CALLBACK (activate_action) },
+	{"Objects", NULL, N_("_Objects")},
+	{"ObjectsInsertText", NULL, N_("Insert a _text(Click in window)"), NULL, "Insert a text", G_CALLBACK (activate_action) },
+	{"ObjectsDeleteTexts", NULL, N_("Delete all _texts"), NULL, "Delete all texts", G_CALLBACK (activate_action) },
+	{"ObjectsInsertLine", NULL, N_("Insert a _line(Click in window and move)"), NULL, "Insert a line", G_CALLBACK (activate_action) },
+	{"ObjectsDeleteLines", NULL, N_("Delete all _lines"), NULL, "Delete all lines", G_CALLBACK (activate_action) },
+	{"ObjectsInsertImage", NULL, N_("Insert an _image(Click in window)"), NULL, "Insert an image", G_CALLBACK (activate_action) },
+	{"ObjectsInsertImageClip", NULL, N_("Insert an _image from clipboard"), NULL, "Insert an image", G_CALLBACK (activate_action) },
+	{"ObjectsDeleteImages", NULL, N_("Delete all _images"), NULL, "Delete all images", G_CALLBACK (activate_action) },
 
-	{"Themes", NULL, "_Themes"},
-	{"ThemesPublication", NULL, "_Publication", NULL, "Publication", G_CALLBACK (activate_action) },
-	{"ThemesGreenBlack", NULL, "_Green&black", NULL, "Green&black", G_CALLBACK (activate_action) },
-	{"ThemesOther", NULL, "_Other", NULL, "Other", G_CALLBACK (activate_action) },
+	{"Themes", NULL, N_("_Themes")},
+	{"ThemesPublication", NULL, N_("_Publication"), NULL, "Publication", G_CALLBACK (activate_action) },
+	{"ThemesGreenBlack", NULL, N_("_Green&black"), NULL, "Green&black", G_CALLBACK (activate_action) },
+	{"ThemesOther", NULL, N_("_Other"), NULL, "Other", G_CALLBACK (activate_action) },
 
-	{"ScreenCapture", NULL, "_Screen Capture"},
-	{"ScreenCaptureBMP", NULL, "_BMP format", NULL, "BMP format", G_CALLBACK (activate_action) },
-	{"ScreenCaptureJPEG", NULL, "_JPEG format", NULL, "JPEG format", G_CALLBACK (activate_action) },
-	{"ScreenCapturePNG", NULL, "_PNG format", NULL, "PNG format", G_CALLBACK (activate_action) },
-	{"ScreenCaptureTPNG", NULL, "_Transparent PNG format", NULL, "Transparent PNG format", G_CALLBACK (activate_action) },
-	{"ScreenCaptureTIF", NULL, "_TIF format", NULL, "TIF format", G_CALLBACK (activate_action) },
-	{"ScreenCaptureClipBoard", NULL, "_Copy to clipboard", NULL, "Copy to clipboard", G_CALLBACK (activate_action) },
+	{"ScreenCapture", NULL, N_("_Screen Capture")},
+	{"ScreenCaptureBMP", NULL, N_("_BMP format"), NULL, "BMP format", G_CALLBACK (activate_action) },
+	{"ScreenCaptureJPEG", NULL, N_("_JPEG format"), NULL, "JPEG format", G_CALLBACK (activate_action) },
+	{"ScreenCapturePNG", NULL, N_("_PNG format"), NULL, "PNG format", G_CALLBACK (activate_action) },
+	{"ScreenCaptureTPNG", NULL, N_("_Transparent PNG format"), NULL, "Transparent PNG format", G_CALLBACK (activate_action) },
+	{"ScreenCaptureTIF", NULL, N_("_TIF format"), NULL, "TIF format", G_CALLBACK (activate_action) },
+	{"ScreenCaptureClipBoard", NULL, N_("_Copy to clipboard"), NULL, "Copy to clipboard", G_CALLBACK (activate_action) },
 	{"Export", NULL, "_Export"},
-	{"ExportSVG", NULL, "Export _SVG format", NULL, "SVG format", G_CALLBACK (activate_action) },
-	{"ExportPDF", NULL, "Export p_df format", NULL, "PDF format", G_CALLBACK (activate_action) },
-	{"ExportPS", NULL, "Export _postscript format", NULL, "PS format", G_CALLBACK (activate_action) },
-	{"ExportEPS", NULL, "Export _Encapsuled postscript format", NULL, "EPS format", G_CALLBACK (activate_action) },
-	{"Read", GTK_STOCK_OPEN, "_Read", NULL, "Read", G_CALLBACK (activate_action) },
-	{"Save", GTK_STOCK_SAVE, "_Save", NULL, "Save", G_CALLBACK (activate_action) },
-	{"Help", GTK_STOCK_HELP, "_Help", NULL, "Help", G_CALLBACK (activate_action) },
-	{"Close", GTK_STOCK_CLOSE, "_Close", NULL, "Close", G_CALLBACK (activate_action) },
+	{"ExportSVG", NULL, N_("Export _SVG format"), NULL, "SVG format", G_CALLBACK (activate_action) },
+	{"ExportPDF", NULL, N_("Export p_df format"), NULL, "PDF format", G_CALLBACK (activate_action) },
+	{"ExportPS", NULL, N_("Export _postscript format"), NULL, "PS format", G_CALLBACK (activate_action) },
+	{"ExportEPS", NULL, N_("Export _Encapsuled postscript format"), NULL, "EPS format", G_CALLBACK (activate_action) },
+	{"Read", GTK_STOCK_OPEN, N_("_Read"), NULL, "Read", G_CALLBACK (activate_action) },
+	{"Save", GTK_STOCK_SAVE, N_("_Save"), NULL, "Save", G_CALLBACK (activate_action) },
+	{"Help", GTK_STOCK_HELP, N_("_Help"), NULL, "Help", G_CALLBACK (activate_action) },
+	{"Close", GTK_STOCK_CLOSE, N_("_Close"), NULL, "Close", G_CALLBACK (activate_action) },
 };
 
 
-static guint numberOfGtkActionEntries = G_N_ELEMENTS (gtkActionEntries);
+static gint numberOfGtkActionEntries = G_N_ELEMENTS (gtkActionEntries);
 /********************************************************************************/
 static void add_data_to_actions(GtkUIManager *manager, GtkWidget   *contoursplot)
 {
 	GtkAction* action = NULL;
 	action = gtk_ui_manager_get_action (manager, "/MenuContoursPlot/Set/SetTicks");
+	if(action) g_object_set_data(G_OBJECT (action), "ContoursPLOT", contoursplot);
+
+	action = gtk_ui_manager_get_action (manager, "/MenuContoursPlot/Set/Margins");
 	if(action) g_object_set_data(G_OBJECT (action), "ContoursPLOT", contoursplot);
 
 	action = gtk_ui_manager_get_action (manager, "/MenuContoursPlot/Set/SetRanges");
@@ -5644,6 +6488,15 @@ static void add_data_to_actions(GtkUIManager *manager, GtkWidget   *contoursplot
 	action = gtk_ui_manager_get_action (manager, "/MenuContoursPlot/Objects/ObjectsInsertLine");
 	if(action) g_object_set_data(G_OBJECT (action), "ContoursPLOT", contoursplot);
 
+	action = gtk_ui_manager_get_action (manager, "/MenuContoursPlot/Objects/ObjectsInsertImage");
+	if(action) g_object_set_data(G_OBJECT (action), "ContoursPLOT", contoursplot);
+
+	action = gtk_ui_manager_get_action (manager, "/MenuContoursPlot/Objects/ObjectsInsertImageClip");
+	if(action) g_object_set_data(G_OBJECT (action), "ContoursPLOT", contoursplot);
+
+	action = gtk_ui_manager_get_action (manager, "/MenuContoursPlot/Objects/ObjectsDeleteImages");
+	if(action) g_object_set_data(G_OBJECT (action), "ContoursPLOT", contoursplot);
+
 	action = gtk_ui_manager_get_action (manager, "/MenuContoursPlot/Themes/ThemesPublication");
 	if(action) g_object_set_data(G_OBJECT (action), "ContoursPLOT", contoursplot);
 	action = gtk_ui_manager_get_action (manager, "/MenuContoursPlot/Themes/ThemesGreenBlack");
@@ -5697,6 +6550,7 @@ static const gchar *uiMenuInfo =
 "    <separator name=\"sepMenuPopSet\" />\n"
 "    <menu name=\"Set\" action=\"Set\">\n"
 "      <menuitem name=\"SetTicks\" action=\"SetTicks\" />\n"
+"      <menuitem name=\"SetMargins\" action=\"SetMargins\" />\n"
 "      <menuitem name=\"SetRanges\" action=\"SetRanges\" />\n"
 "      <menuitem name=\"SetLabels\" action=\"SetLabels\" />\n"
 "      <menuitem name=\"SetDigits\" action=\"SetDigits\" />\n"
@@ -5751,6 +6605,9 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"ObjectsDeleteTexts\" action=\"ObjectsDeleteTexts\" />\n"
 "      <menuitem name=\"ObjectsInsertLine\" action=\"ObjectsInsertLine\" />\n"
 "      <menuitem name=\"ObjectsDeleteLines\" action=\"ObjectsDeleteLines\" />\n"
+"      <menuitem name=\"ObjectsInsertImage\" action=\"ObjectsInsertImage\" />\n"
+"      <menuitem name=\"ObjectsInsertImageClip\" action=\"ObjectsInsertImageClip\" />\n"
+"      <menuitem name=\"ObjectsDeleteImages\" action=\"ObjectsDeleteImages\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepThemes\" />\n"
 "    <menu name=\"Themes\" action=\"Themes\">\n"
@@ -5785,6 +6642,7 @@ static const gchar *uiMenuInfo =
 "  </popup>\n"
 "  <toolbar action=\"ToolbarContoursPlot\">\n"
 "      <toolitem name=\"SetTicks\" action=\"SetTicks\" />\n"
+"      <toolitem name=\"SetMargins\" action=\"SetMargins\" />\n"
 "      <toolitem name=\"SetRanges\" action=\"SetRanges\" />\n"
 "      <toolitem name=\"ContoursSet\" action=\"ContoursSet\" />\n"
 "      <toolitem name=\"ColorMapSet\" action=\"ColorMapSet\" />\n"
@@ -5833,6 +6691,7 @@ static void add_toolbar_and_popup_menu(GtkWidget* parent, GtkWidget* box)
   	g_signal_connect_swapped (parent, "destroy", G_CALLBACK (g_object_unref), merge);
 
 	actionGroup = gtk_action_group_new ("GabeditContoursPlotActions");
+	gtk_action_group_set_translation_domain(actionGroup,GETTEXT_PACKAGE);
 	gtk_action_group_add_actions (actionGroup, gtkActionEntries, numberOfGtkActionEntries, NULL);
 	gtk_action_group_add_toggle_actions (actionGroup, gtkActionToggleEntries, numberOfGtkActionToggleEntries, NULL);
   	gtk_ui_manager_insert_action_group (merge, actionGroup, 0);
@@ -5840,7 +6699,7 @@ static void add_toolbar_and_popup_menu(GtkWidget* parent, GtkWidget* box)
 	if(box) g_signal_connect (merge, "add_widget", G_CALLBACK (add_widget), box);
 	if (!gtk_ui_manager_add_ui_from_string (merge, uiMenuInfo, -1, &error))
 	{
-		g_message ("building menus of contoursplot failed: %s", error->message);
+		g_message (_("building menus of contoursplot failed: %s"), error->message);
 		g_error_free (error);
 	}
 	g_object_set_data(G_OBJECT (parent), "Manager", merge);
@@ -5918,6 +6777,11 @@ static void gabedit_contoursplot_init (GabeditContoursPlot *contoursplot)
   contoursplot->xmax=1.0;
   contoursplot->ymin=-1.0;
   contoursplot->ymax=1.0;
+
+  contoursplot->left_margins =0;
+  contoursplot->top_margins =0;
+  contoursplot->right_margins =0;
+  contoursplot->bottom_margins =0;
     
   contoursplot->x_legends_digits=8;
   contoursplot->y_legends_digits=8;
@@ -5985,12 +6849,20 @@ static void gabedit_contoursplot_init (GabeditContoursPlot *contoursplot)
   contoursplot->nObjectsLine = 0;
   contoursplot->objectsLine = NULL;
   contoursplot->l_key_pressed = FALSE;
+
+  contoursplot->nObjectsLine = 0;
+  contoursplot->objectsLine = NULL;
+  contoursplot->l_key_pressed = FALSE;
+  contoursplot->selected_objects_image_num = -1;
+
+
   contoursplot->selected_objects_line_num = -1;
   contoursplot->selected_objects_line_type = -1;
   contoursplot->object_begin_point.x=-1;
   contoursplot->object_begin_point.y=-1;
   contoursplot->object_end_point.x=-1;
   contoursplot->object_end_point.y=-1;
+  contoursplot->r_key_pressed = FALSE;
 }
 /****************************************************************************************/
 GtkWidget* gabedit_contoursplot_new ()
@@ -6147,10 +7019,23 @@ static gint gabedit_contoursplot_key_press(GtkWidget* widget, GdkEventKey *event
 			copyImageToClipBoard(widget);
 
 	}
+	if((event->keyval == GDK_v || event->keyval == GDK_V) )
+	{
+		if(contoursplot->control_key_pressed) 
+		{
+			add_object_image(contoursplot, 0, 0, -1, -1, NULL);
+    			gtk_widget_queue_draw(widget);
+		}
+	}
+
 	if((event->keyval == GDK_t || event->keyval == GDK_T) )
   		contoursplot->t_key_pressed = TRUE;
 	if((event->keyval == GDK_l || event->keyval == GDK_L) )
   		contoursplot->l_key_pressed = TRUE;
+	if((event->keyval == GDK_i || event->keyval == GDK_I) )
+  		contoursplot->i_key_pressed = TRUE;
+	if((event->keyval == GDK_r || event->keyval == GDK_R) )
+  		contoursplot->r_key_pressed = TRUE;
 	return TRUE;
 }
 /********************************************************************************/
@@ -6175,6 +7060,10 @@ static gint gabedit_contoursplot_key_release(GtkWidget* widget, GdkEventKey *eve
   		contoursplot->t_key_pressed = FALSE;
 	if((event->keyval == GDK_l || event->keyval == GDK_L) )
   		contoursplot->l_key_pressed = FALSE;
+	if((event->keyval == GDK_i || event->keyval == GDK_I) )
+  		contoursplot->i_key_pressed = FALSE;
+	if((event->keyval == GDK_r || event->keyval == GDK_R) )
+  		contoursplot->r_key_pressed = FALSE;
 	return TRUE;
 }
 /****************************************************************************************/
@@ -6529,7 +7418,7 @@ static void set_theme_dialog(GtkWidget* widget)
         gdk_colormap_query_color(colormap, gc_values.foreground.pixel,&foreColor);
 	line_width=gc_values.line_width;
 
-	gtk_window_set_title (GTK_WINDOW (window), "Set theme");
+	gtk_window_set_title (GTK_WINDOW (window), _("Set theme"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -6551,7 +7440,7 @@ static void set_theme_dialog(GtkWidget* widget)
 	gtk_container_add(GTK_CONTAINER(frame), hbox);
 	gtk_widget_show(hbox);
 
-	label=gtk_label_new("Line width :");
+	label=gtk_label_new(_("Line width :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	
@@ -6561,7 +7450,7 @@ static void set_theme_dialog(GtkWidget* widget)
 	gtk_widget_show(spin);
 	g_object_set_data(G_OBJECT (window), "SpinLineWidth", spin);
 
-	label=gtk_label_new("Background color :");
+	label=gtk_label_new(_("Background color :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	button = gtk_color_button_new_with_color (&backColor);
@@ -6570,7 +7459,7 @@ static void set_theme_dialog(GtkWidget* widget)
 	g_object_set_data(G_OBJECT (window), "BackColorButton", button);
 	buttonBack = button;
 
-	label=gtk_label_new("Foreground color :");
+	label=gtk_label_new(_("Foreground color :"));
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
 	gtk_widget_show(label); 
 	button = gtk_color_button_new_with_color (&foreColor);
@@ -6625,7 +7514,7 @@ static void gabedit_contoursplot_size_allocate (GtkWidget *widget, GtkAllocation
 static void draw_points(GtkWidget *widget, GabeditContoursPlot *contoursplot, ContoursPlotData* data)
 {
 	gint i;
-	guint x, y;
+	gint x, y;
 	GdkRectangle rect;
 	int n;
 
@@ -6653,49 +7542,108 @@ static void draw_points(GtkWidget *widget, GabeditContoursPlot *contoursplot, Co
 	}
 }
 /****************************************************************************************/
-static void draw_rectangle_gradient(GabeditContoursPlot *contoursplot, gint x1, gint y1, gint x2, gint y2, gdouble col1[], gdouble col2[])
+static void draw_rectangle_gradient(GabeditContoursPlot *contoursplot, cairo_t* cr, gint x1, gint y1, gint x2, gint y2, gdouble c1[], gdouble c2[], gboolean vertical, gdouble alpha)
 {
 	cairo_pattern_t *pat;
-	cairo_t* cr =contoursplot->cairo_area;
 	gint w = 0;
 	gint h = 0;
+	gdouble col1[3];
+	gdouble col2[3];
+	gint k;
 
-	if(x2<x1)
+	for(k=0;k<3;k++) col1[k] = c1[k];
+	for(k=0;k<3;k++) col2[k] = c2[k];
+
+	if(vertical)
 	{
-		gint t = x1;
-		x1 = x2;
-		x2 = t;
-	}
-	if(y2<y1)
-	{
-		gint k;
-		gint t = y1;
-		y1 = y2;
-		y2 = t;
-		for(k=0;k<3;k++)
+		if(x2<x1)
 		{
-			gdouble t = col1[k];
-			col1[k] = col2[k];
-			col2[k] = t;
+			gint t = x1;
+			x1 = x2;
+			x2 = t;
+		}
+		if(y2<y1)
+		{
+			gint t = y1;
+			y1 = y2;
+			y2 = t;
+			for(k=0;k<3;k++)
+			{
+				gdouble t = col1[k];
+				col1[k] = col2[k];
+				col2[k] = t;
+			}
+		}
+	}
+	else
+	{
+		if(y2<y1)
+		{
+			gint t = y1;
+			y1 = y2;
+			y2 = t;
+		}
+		if(x2<x1)
+		{
+			gint t = x1;
+			x1 = x2;
+			x2 = t;
+			for(k=0;k<3;k++)
+			{
+				gdouble t = col1[k];
+				col1[k] = col2[k];
+				col2[k] = t;
+			}
 		}
 	}
 	w = x2-x1;
 	h = y2-y1;
 
+	/*
 	printf("x1 = %d x2 = %d y1 = %d y2 = %d\n",x1,x2,y1,y2);
 	printf("Col1 %f %f %f\n",col1[0], col1[1], col1[2]);
 	printf("Col2 %f %f %f\n",col2[0], col2[1], col2[2]);
-	pat = cairo_pattern_create_linear (x1,y1, x1,y2);
-	cairo_pattern_add_color_stop_rgba (pat, 0.1, col1[0], col1[1], col1[2], 0);
-	cairo_pattern_add_color_stop_rgba (pat, 0.5, col2[0], col2[1], col2[2], 0);
+	*/
+	if(vertical) pat = cairo_pattern_create_linear (x1,y1, x1,y2);
+	else pat = cairo_pattern_create_linear (x1,y1, x2,y1);
+	cairo_pattern_add_color_stop_rgba (pat, 0, col1[0], col1[1], col1[2],alpha);
+	cairo_pattern_add_color_stop_rgba (pat, 1, col2[0], col2[1], col2[2],alpha);
 
 	cairo_rectangle(cr, x1, y1, w, h);
 	cairo_set_source(cr, pat);
 	cairo_fill(cr);
-
 	cairo_stroke (cr);
-	cairo_restore (cr); /* stack-pen-size */
+
+	if(contoursplot->cairo_export)
+	{
+		cairo_t* cr =contoursplot->cairo_export;
+		cairo_rectangle(cr, x1, y1, w, h);
+		cairo_set_source(cr, pat);
+		cairo_fill(cr);
+		cairo_stroke (cr);
+	}
+	/*
+	cairo_restore (cr);
+	*/
 	cairo_pattern_destroy (pat);
+}
+/****************************************************************************************/
+static void draw_rectangle_bilinear(GabeditContoursPlot *contoursplot, 
+		gint x1, gint y1, 
+		gint x2, gint y2, 
+		gdouble c1[], gdouble c2[], 
+		gdouble c3[], gdouble c4[]
+		)
+{
+	/* x1, y1 : c1
+	 * x1, y2 : c2
+	 * x2, y2 : c3
+	 * x2, y1 : c4
+	 */
+	draw_rectangle_gradient(contoursplot, contoursplot->cairo_area, x1, y1, x2, y2, c1, c2, FALSE, 1.0);
+	draw_rectangle_gradient(contoursplot, contoursplot->cairo_area, x1, y1, x2, y2, c2, c3, TRUE, 0.5);
+	draw_rectangle_gradient(contoursplot, contoursplot->cairo_area, x1, y1, x2, y2, c3, c4, FALSE, 0.5);
+	draw_rectangle_gradient(contoursplot, contoursplot->cairo_area, x1, y1, x2, y2, c1, c4, TRUE, 0.5);
 }
 /****************************************************************************************/
 static void draw_lines(GtkWidget *widget, GabeditContoursPlot *contoursplot, ContoursPlotData* data)
@@ -6717,11 +7665,11 @@ static void draw_lines(GtkWidget *widget, GabeditContoursPlot *contoursplot, Con
 			if(data->contours[n].line_width<1) continue;
 		if(data->contours[n].index[i] != data->contours[n].index[i+1]) continue;
 		value2pixel(contoursplot, data->contours[n].x[i], data->contours[n].y[i], 
-				(guint *)&points[0].x, (guint *)&points[0].y);
+				(gint *)&points[0].x, (gint *)&points[0].y);
 		points[0].y=contoursplot->plotting_rect.height-points[0].y;                   
 
 		value2pixel(contoursplot, data->contours[n].x[i+1], data->contours[n].y[i+1], 
-				(guint *)&points[1].x, (guint *)&points[1].y);
+				(gint *)&points[1].x, (gint *)&points[1].y);
 		points[1].y=contoursplot->plotting_rect.height-points[1].y;                   
 		contoursplot_cairo_lines(contoursplot, contoursplot->cairo_area,  widget, contoursplot->data_gc, points, 2);
 		}
@@ -6779,25 +7727,56 @@ static void draw_object_line_gdk(GtkWidget *widget, GabeditContoursPlot *contour
 		&x2, &y2
 		);
 		gdk_draw_line(widget->window, contoursplot->lines_gc,
-			(guint)x1,
-			(guint)y1,
+			(gint)x1,
+			(gint)y1,
 			contoursplot->object_end_point.x,
 			contoursplot->object_end_point.y
 		     );
 		gdk_draw_line(widget->window, contoursplot->lines_gc,
-			(guint)x2,
-			(guint)y2,
+			(gint)x2,
+			(gint)y2,
 			contoursplot->object_end_point.x,
 			contoursplot->object_end_point.y
 		     );
 	}
 }
 /****************************************************************************************/
+static void get_rotated_rectangle(
+		gint x, gint y, gint w, gint h, gdouble angle,
+		gint* x1, gint* y1, 
+		gint* x2, gint* y2, 
+		gint* x3, gint* y3, 
+		gint* x4, gint* y4) 
+{
+	gdouble a = -angle;
+	gdouble cosa = cos(a); 
+	gdouble sina = sin(a); 
+	*x1 = x; *y1 = y; 
+	*x2 = (gint)(x+w*cosa); *y2 = (gint)(y+w*sina); 
+	*x3 = x+(gint)(w*cosa-h*sina); *y3 = (gint)(y+w*sina+h*cosa); 
+	*x4 = (gint)(x-h*sina); *y4 = (gint)(y+h*cosa); 
+}
+/*****************************************************************************************************************/
+static void draw_rotated_rectangle(GtkWidget *widget, GabeditContoursPlot* contoursplot,
+		gint x, gint y, gint w, gint h, gdouble angle)
+{
+	static GdkPoint* points = NULL;
+	if(!points) points = g_malloc(4*sizeof(GdkPoint));
+	get_rotated_rectangle( x, y, w, h, angle,
+		&points[0].x, &points[0].y,
+		&points[1].x, &points[1].y,
+		&points[2].x, &points[2].y,
+		&points[3].x, &points[3].y);
+	gdk_draw_polygon(widget->window, contoursplot->fore_gc, FALSE, points, 4);
+}
+/****************************************************************************************/
 static void draw_selected_objects_text_rectangle(GtkWidget *widget, GabeditContoursPlot *contoursplot)
 {
 	gint i = contoursplot->selected_objects_text_num;
+	gdouble angle = 0;
 	if(i<0 || i>=contoursplot->nObjectsText) return;
 	if (contoursplot->mouse_zoom_enabled && contoursplot->mouse_button == contoursplot->mouse_zoom_button) return;
+	/*
 	gdk_draw_rectangle(widget->window,
 			contoursplot->fore_gc,
 			FALSE,
@@ -6805,6 +7784,14 @@ static void draw_selected_objects_text_rectangle(GtkWidget *widget, GabeditConto
 			contoursplot->objectsText[i].yi,
 			contoursplot->objectsText[i].width,
 			contoursplot->objectsText[i].height);
+			*/
+	angle = contoursplot->objectsText[i].angle;
+	draw_rotated_rectangle(widget, contoursplot,
+			contoursplot->objectsText[i].xi,
+			contoursplot->objectsText[i].yi,
+			contoursplot->objectsText[i].width,
+			contoursplot->objectsText[i].height,
+			angle);
 }
 /****************************************************************************************/
 static void draw_colormap(GtkWidget *widget, GabeditContoursPlot *contoursplot)
@@ -6813,7 +7800,7 @@ static void draw_colormap(GtkWidget *widget, GabeditContoursPlot *contoursplot)
 	GdkRectangle rect;
 	gint xlabel = 0;
 	gint xlines = 0;
-	gdouble dx = 0;
+	gdouble dy = 0;
 	gint ll = 1;
 	ColorMap* colorMap;
 	GdkColor color;
@@ -6846,8 +7833,8 @@ static void draw_colormap(GtkWidget *widget, GabeditContoursPlot *contoursplot)
 	}
 	xlines = xlabel - 2 -ll;
 
-	if(contoursplot->colormap_nlegends<2) dx = 0;
-	else dx = contoursplot->colormap_height/(gdouble)(contoursplot->colormap_nlegends-1);
+	if(contoursplot->colormap_nlegends<2) dy = 0;
+	else dy = contoursplot->colormap_height/(gdouble)(contoursplot->colormap_nlegends-1);
 
     	vmin = colorMap->colorValue[0].value;
     	dv = (colorMap->colorValue[colorMap->numberOfColors-1].value-colorMap->colorValue[0].value)/(contoursplot->colormap_nlegends-1);
@@ -6858,7 +7845,7 @@ static void draw_colormap(GtkWidget *widget, GabeditContoursPlot *contoursplot)
 		contoursplot_cairo_string(contoursplot, contoursplot->cairo_widget, widget, 
 			contoursplot->fore_gc,
                        xlabel,
-		       contoursplot->plotting_rect.y+contoursplot->plotting_rect.height-i*dx,
+		       contoursplot->plotting_rect.y+contoursplot->plotting_rect.height-i*dy,
 				contoursplot->colormap_legends_str[i], FALSE, TRUE,0);
 
       		value = vmin + dv*i;
@@ -6869,29 +7856,43 @@ static void draw_colormap(GtkWidget *widget, GabeditContoursPlot *contoursplot)
 		gdk_gc_set_rgb_fg_color (contoursplot->data_gc, &color);
 		gdk_gc_set_line_attributes (contoursplot->data_gc, 2, GDK_LINE_SOLID, GDK_CAP_ROUND, GDK_JOIN_MITER);
 		contoursplot_cairo_line(contoursplot, contoursplot->cairo_widget, GTK_WIDGET(contoursplot), contoursplot->data_gc, 
-                       		xlines, contoursplot->plotting_rect.y+contoursplot->plotting_rect.height-i*dx,
-                       		xlines+ll, contoursplot->plotting_rect.y+contoursplot->plotting_rect.height-i*dx
+                       		xlines, contoursplot->plotting_rect.y+contoursplot->plotting_rect.height-i*dy,
+                       		xlines+ll, contoursplot->plotting_rect.y+contoursplot->plotting_rect.height-i*dy
 				);
 		if(i==0)
 		{
 			int k;
 			for(k=0;k<3;k++) col1[k] = C[k];
 			x1 = xlines;
-		        y1 = contoursplot->plotting_rect.y+contoursplot->plotting_rect.height-i*dx;
+		        y1 = contoursplot->plotting_rect.y+contoursplot->plotting_rect.height-i*dy;
 		}
 		else
 		{
 			int k;
 			for(k=0;k<3;k++) col2[k] = C[k];
 			x2 = xlines+ll;
-		        y2 = contoursplot->plotting_rect.y+contoursplot->plotting_rect.height-i*dx;
+		        y2 = contoursplot->plotting_rect.y+contoursplot->plotting_rect.height-i*dy;
 			/* that not works */
-			/* draw_rectangle_gradient(contoursplot, x1, y1, x2, y2, col1, col2);*/
+			draw_rectangle_gradient(contoursplot, contoursplot->cairo_widget, x1, y1, x2, y2, col1, col2,TRUE,1.0);
 			for(k=0;k<3;k++) col1[k] = col2[k];
 			x1 = xlines;
 			y1 = y2;
 		}
 	}
+}
+/****************************************************************************************/
+static void draw_selected_objects_image_rectangle(GtkWidget *widget, GabeditContoursPlot *contoursplot)
+{
+	gint i = contoursplot->selected_objects_image_num;
+	if(i<0 || i>=contoursplot->nObjectsImage) return;
+	if (contoursplot->mouse_zoom_enabled && contoursplot->mouse_button == contoursplot->mouse_zoom_button) return;
+	gdk_draw_rectangle(widget->window,
+			contoursplot->fore_gc,
+			FALSE,
+			contoursplot->objectsImage[i].xi,
+			contoursplot->objectsImage[i].yi,
+			contoursplot->objectsImage[i].widthi,
+			contoursplot->objectsImage[i].heighti);
 }
 /****************************************************************************************/
 static void draw_distance_line(GtkWidget *widget, GabeditContoursPlot *contoursplot)
@@ -7192,6 +8193,7 @@ static void draw_objects_text(GtkWidget *widget, GabeditContoursPlot *contourspl
 	for (i=0; i < contoursplot->nObjectsText; i++)  
 	if(contoursplot->objectsText[i].pango)
 	{
+		/*
     		if ( 
 		!(
 		(contoursplot->objectsText[i].xi > contoursplot->plotting_rect.x) && 
@@ -7200,10 +8202,11 @@ static void draw_objects_text(GtkWidget *widget, GabeditContoursPlot *contourspl
          	(contoursplot->objectsText[i].yi < (contoursplot->plotting_rect.y + contoursplot->plotting_rect.height)) 
 		)
 		) continue;
+		*/
 		contoursplot_cairo_layout(contoursplot, contoursplot->cairo_widget,  
                         contoursplot->objectsText[i].xi,
                         contoursplot->objectsText[i].yi,
-			contoursplot->objectsText[i].pango,FALSE,FALSE,0);
+			contoursplot->objectsText[i].pango,FALSE,FALSE,-contoursplot->objectsText[i].angle);
 	}
 }
 /****************************************************************************************/
@@ -7212,6 +8215,7 @@ static void draw_objects_line(GtkWidget *widget, GabeditContoursPlot *contourspl
 	gint i;
 	for (i=0; i < contoursplot->nObjectsLine; i++)  
 	{
+		/*
     		if ( 
 		!(
 		(contoursplot->objectsLine[i].x1i > contoursplot->plotting_rect.x) && 
@@ -7228,6 +8232,7 @@ static void draw_objects_line(GtkWidget *widget, GabeditContoursPlot *contourspl
          	(contoursplot->objectsLine[i].y2i < (contoursplot->plotting_rect.y + contoursplot->plotting_rect.height)) 
 		)
 		) continue;
+		*/
 		/* HERE change gc vlaues */
 		gdouble x1, x2, y1, y2;
 		gdk_gc_set_rgb_fg_color (contoursplot->lines_gc, &contoursplot->objectsLine[i].color);
@@ -7254,16 +8259,39 @@ static void draw_objects_line(GtkWidget *widget, GabeditContoursPlot *contourspl
 		);
         	contoursplot_cairo_line(contoursplot, contoursplot->cairo_widget, widget, 
 			contoursplot->lines_gc,
-			(guint)x1,
-			(guint)y1,
+			(gint)x1,
+			(gint)y1,
 			contoursplot->objectsLine[i].x2i,
 			contoursplot->objectsLine[i].y2i);
         	contoursplot_cairo_line(contoursplot, contoursplot->cairo_widget, widget, 
 			contoursplot->lines_gc,
-			(guint)x2,
-			(guint)y2,
+			(gint)x2,
+			(gint)y2,
 			contoursplot->objectsLine[i].x2i,
 			contoursplot->objectsLine[i].y2i);
+	}
+}
+/****************************************************************************************/
+static void draw_objects_image(GtkWidget *widget, GabeditContoursPlot *contoursplot)
+{
+	gint i;
+	for (i=0; i < contoursplot->nObjectsImage; i++)  
+	if(contoursplot->objectsImage[i].image)
+	{
+		/*
+    		if ( 
+		!(
+		(contoursplot->objectsImage[i].xi > contoursplot->plotting_rect.x) && 
+         	(contoursplot->objectsImage[i].xi < (contoursplot->plotting_rect.x + contoursplot->plotting_rect.width)) && 
+         	(contoursplot->objectsImage[i].yi > contoursplot->plotting_rect.y) && 
+         	(contoursplot->objectsImage[i].yi < (contoursplot->plotting_rect.y + contoursplot->plotting_rect.height)) 
+		)
+		) continue;
+		*/
+		contoursplot_cairo_image(contoursplot, contoursplot->cairo_widget, widget, 
+				contoursplot->objectsImage[i].xi , contoursplot->objectsImage[i].yi, 
+				contoursplot->objectsImage[i].widthi, contoursplot->objectsImage[i].heighti, 
+				contoursplot->objectsImage[i].image);
 	}
 }
 /****************************************************************************************/
@@ -7356,7 +8384,7 @@ static void draw_label_contours(GtkWidget *widget, GabeditContoursPlot *contours
 {
 	gint n;
 	GList *current_node;
-	guint x,y;
+	gint x,y;
 	PangoLayout* pango = NULL;
 	ContoursPlotData *data = NULL;
 	gint width;
@@ -7394,6 +8422,74 @@ static void draw_label_contours(GtkWidget *widget, GabeditContoursPlot *contours
 		}
 	}
 }
+/**************************************************************/
+static void draw_plan_color_coded(GtkWidget* contoursplot, ContoursPlotData *data)
+{
+	gint i;
+	gint j;
+	gint k;
+	gdouble v1,v2,v3,v4;
+	gint ix1=0,iy1=0;
+	gint ix2=0,iy2=0;
+	gdouble x1,x2,y1,y2;
+	gdouble dx, dy;
+	gdouble xmin,xmax,ymin,ymax;
+	gint xsize,ysize;
+	gdouble* zValues;
+	gdouble c1[3];
+	gdouble c2[3];
+	gdouble c3[3];
+	gdouble c4[3];
+	gint x1p;
+	gint y1p;
+	gint x2p;
+	gint y2p;
+
+	xmin = data->xmin;
+	xmax = data->xmax;
+	ymin = data->ymin;
+	ymax = data->ymax;
+	xsize = data->xsize;
+	ysize = data->ysize;
+	dx = (xmax-xmin)/(xsize-1);
+	dy = (ymax-ymin)/(ysize-1);
+	zValues = data->zValues;
+
+	for( i = 0; i<xsize-1;i++)
+	{
+		for( j = 0; j<ysize-1;j++)
+		{
+			ix1 = i;
+			iy1 = j;
+			ix2 = i+1;
+			iy2 = j+1;
+        
+			v1 = zValues[ix1*ysize+iy1],
+			v2 = zValues[ix1*ysize+iy2];
+			v3 = zValues[ix2*ysize+iy2];
+			v4 = zValues[ix2*ysize+iy1];
+			for(k=0;k<3;k++) c1[k] = rand()/(gdouble)RAND_MAX;
+			for(k=0;k<3;k++) c2[k] = rand()/(gdouble)RAND_MAX;
+			for(k=0;k<3;k++) c3[k] = rand()/(gdouble)RAND_MAX;
+			for(k=0;k<3;k++) c4[k] = rand()/(gdouble)RAND_MAX;
+
+			if(GABEDIT_ContoursPLOT(contoursplot)->colorsMap.colorMap)
+			{
+				set_Color_From_colorMap(GABEDIT_ContoursPLOT(contoursplot)->colorsMap.colorMap, c1, v1);
+				set_Color_From_colorMap(GABEDIT_ContoursPLOT(contoursplot)->colorsMap.colorMap, c2, v2);
+				set_Color_From_colorMap(GABEDIT_ContoursPLOT(contoursplot)->colorsMap.colorMap, c3, v3);
+				set_Color_From_colorMap(GABEDIT_ContoursPLOT(contoursplot)->colorsMap.colorMap, c4, v4);
+			}
+			x1 = xmin+dx*i;
+			y1 = ymin+dy*j;
+			x2 = xmin+dx*(i+1);
+			y2 = ymin+dy*(j+1);
+			value2pixel(GABEDIT_ContoursPLOT(contoursplot), x1, y1, &x1p, &y1p);
+			value2pixel(GABEDIT_ContoursPLOT(contoursplot), x2, y2, &x2p, &y2p);
+			draw_rectangle_bilinear(GABEDIT_ContoursPLOT(contoursplot), x1p, y1p, x2p, y2p, c1, c2, c3, c4);
+		}
+	}
+}
 /****************************************************************************************/
 static void draw_data(GtkWidget *widget, GabeditContoursPlot *contoursplot)
 {
@@ -7404,6 +8500,7 @@ static void draw_data(GtkWidget *widget, GabeditContoursPlot *contoursplot)
 	for(current=g_list_first(contoursplot->data_list); current!=NULL; current=current->next)
 	{
 		data=(ContoursPlotData*)current->data;
+		/* draw_plan_color_coded(widget, data);*/
 		draw_lines(widget, contoursplot, data);
 		draw_points(widget, contoursplot, data);
 		if(contoursplot->show_label_contours) 
@@ -7454,15 +8551,66 @@ static void draw_plotting_area(GtkWidget *widget, GabeditContoursPlot *contoursp
 
 }
 /****************************************************************************************/
+static gint gabedit_contoursplot_draw (GtkWidget *widget)
+{
+	GabeditContoursPlot *contoursplot;
+
+	g_return_val_if_fail (widget != NULL, FALSE);
+	g_return_val_if_fail (GTK_IS_WIDGET(widget), FALSE);
+	if(!widget->window) return FALSE;
+	if(!GDK_IS_DRAWABLE (widget->window)) return FALSE;
+	g_return_val_if_fail (GABEDIT_IS_ContoursPLOT (widget), FALSE);
+
+	contoursplot=GABEDIT_ContoursPLOT(widget);
+	if(!contoursplot->h_legends_str) return FALSE;
+
+	if (contoursplot->cairo_widget)
+	{
+    		cairo_destroy (contoursplot->cairo_widget);
+    		contoursplot->cairo_widget = gdk_cairo_create (widget->window);
+	}
+	if (contoursplot->cairo_area)
+	{
+    		cairo_destroy (contoursplot->cairo_area);
+    		contoursplot->cairo_area = gdk_cairo_create (contoursplot->plotting_area);
+	}
+
+	draw_background(widget, contoursplot);
+	draw_hminor_grid(widget, contoursplot);
+	draw_hmajor_grid(widget, contoursplot);
+	draw_vminor_grid(widget, contoursplot);
+	draw_vmajor_grid(widget, contoursplot);
+
+	draw_data(widget, contoursplot);
+
+	clean_borders(widget, contoursplot);/* for export */
+	draw_borders(widget, contoursplot);
+
+	draw_hminor_ticks(widget, contoursplot);
+	draw_hmajor_ticks_and_xlegends(widget, contoursplot);
+	draw_vminor_ticks(widget, contoursplot);
+	draw_vmajor_ticks_and_ylegends(widget, contoursplot);
+
+	draw_plotting_area(widget, contoursplot);
+ 
+	draw_colormap(widget, contoursplot);
+	draw_objects_image(widget, contoursplot);
+	draw_objects_line(widget, contoursplot);
+	draw_objects_text(widget, contoursplot);
+  	set_old_area(widget, contoursplot);
+
+	return 0;
+}
+/****************************************************************************************/
 static gint gabedit_contoursplot_expose (GtkWidget *widget, GdkEventExpose *event)
 {
 	GabeditContoursPlot *contoursplot;
 
 	g_return_val_if_fail (widget != NULL, FALSE);
 	g_return_val_if_fail (GABEDIT_IS_ContoursPLOT (widget), FALSE);
-	g_return_val_if_fail (event != NULL, FALSE);
+	/* g_return_val_if_fail (event != NULL, FALSE);*/
 
-	if (event->count > 0) return FALSE;
+	if (event && event->count > 0) return FALSE;
 	contoursplot=GABEDIT_ContoursPLOT(widget);
 
 	if (contoursplot->mouse_zoom_enabled && contoursplot->mouse_button == contoursplot->mouse_zoom_button)
@@ -7519,6 +8667,24 @@ static gint gabedit_contoursplot_expose (GtkWidget *widget, GdkEventExpose *even
 		draw_selected_objects_text_rectangle(widget, contoursplot);
 		return TRUE;
 	}
+	if (contoursplot->selected_objects_image_num>-1)
+	{
+		gint width;
+		gint height;
+		gdk_drawable_get_size(contoursplot->old_area, &width, &height);
+		gdk_draw_drawable (widget->window, 
+		contoursplot->back_gc, 
+		contoursplot->old_area, 
+		0, 
+		0, 
+		0, 
+		0, 
+		width, 
+		height
+		);
+		draw_selected_objects_image_rectangle(widget, contoursplot);
+		return TRUE;
+	}
 	if (contoursplot->object_begin_point.x>-1)
 	{
 		gint width;
@@ -7537,43 +8703,7 @@ static gint gabedit_contoursplot_expose (GtkWidget *widget, GdkEventExpose *even
 		draw_object_line_gdk(widget, contoursplot);
 		return TRUE;
 	}
-    
-	if (contoursplot->cairo_widget)
-	{
-    		cairo_destroy (contoursplot->cairo_widget);
-    		contoursplot->cairo_widget = gdk_cairo_create (widget->window);
-	}
-	if (contoursplot->cairo_area)
-	{
-    		cairo_destroy (contoursplot->cairo_area);
-    		contoursplot->cairo_area = gdk_cairo_create (contoursplot->plotting_area);
-	}
-
-	draw_background(widget, contoursplot);
-	draw_hminor_grid(widget, contoursplot);
-	draw_hmajor_grid(widget, contoursplot);
-	draw_vminor_grid(widget, contoursplot);
-	draw_vmajor_grid(widget, contoursplot);
-
-	draw_data(widget, contoursplot);
-
-	clean_borders(widget, contoursplot);/* for export */
-	draw_borders(widget, contoursplot);
-
-	draw_hminor_ticks(widget, contoursplot);
-	draw_hmajor_ticks_and_xlegends(widget, contoursplot);
-	draw_vminor_ticks(widget, contoursplot);
-	draw_vmajor_ticks_and_ylegends(widget, contoursplot);
-
-	draw_plotting_area(widget, contoursplot);
- 
-	/* draw_zoom_rectangle(widget, contoursplot);*/
-	/* draw_distance_line(widget, contoursplot);*/
-
-	draw_colormap(widget, contoursplot);
-	draw_objects_line(widget, contoursplot);
-	draw_objects_text(widget, contoursplot);
-
+	gabedit_contoursplot_draw (widget);
 	return 0;
 }
 /****************************************************************************************/
@@ -7648,13 +8778,13 @@ static gint gabedit_contoursplot_double_click (GtkWidget *widget, GdkEventButton
   	ContoursPlotData *data = NULL; 
   	ContourData *contour = NULL; 
 	GList* current = NULL;
-	guint x;
-	guint y;
+	gint x;
+	gint y;
 	gboolean OK = FALSE;
 	GabeditContoursPlot *contoursplot = NULL;
 	gint loop;
-	guint xOld;
-	guint yOld;
+	gint xOld;
+	gint yOld;
 	gint n;
 	gint indexOld = -1;
 	gint index;
@@ -7680,6 +8810,18 @@ static gint gabedit_contoursplot_double_click (GtkWidget *widget, GdkEventButton
 		contoursplot->object_end_point.x = -1;
 		contoursplot->object_end_point.y = -1;
 		set_object_line_dialog(contoursplot, i);
+		return TRUE;
+	}
+	/* test on objects image */
+	i = get_object_image_num(contoursplot, event->x, event->y);
+	if(i>-1 && i<contoursplot->nObjectsImage)
+	{
+		contoursplot->selected_objects_image_num = -1;
+		contoursplot->object_begin_point.x = -1;
+		contoursplot->object_begin_point.y = -1;
+		contoursplot->object_end_point.x = -1;
+		contoursplot->object_end_point.y = -1;
+		add_set_object_image_dialog(GTK_WIDGET(contoursplot), i, 0,0);
 		return TRUE;
 	}
     	if ( 
@@ -7746,7 +8888,7 @@ static gboolean popuo_menu(GtkWidget* widget, guint button, guint32 time)
 	}
 	else 
 	{
-		g_message ("popup menu of contoursplot failed");
+		g_message (_("popup menu of contoursplot failed"));
 	}
 	return FALSE;
 }
@@ -7779,7 +8921,7 @@ static gint gabedit_contoursplot_button_press (GtkWidget *widget, GdkEventButton
     
       contoursplot->zoom_point.x=event->x;
       contoursplot->zoom_point.y=event->y;
-	set_old_area(widget, contoursplot);
+	//set_old_area(widget, contoursplot);
   }
   if (contoursplot->mouse_distance_enabled && (event->button == contoursplot->mouse_distance_button && contoursplot->shift_key_pressed ) )
     if ( (event->x > contoursplot->plotting_rect.x) && 
@@ -7790,7 +8932,7 @@ static gint gabedit_contoursplot_button_press (GtkWidget *widget, GdkEventButton
     
       contoursplot->distance_point.x=event->x;
       contoursplot->distance_point.y=event->y;
-	set_old_area(widget, contoursplot);
+	//set_old_area(widget, contoursplot);
   }
 
   if (contoursplot->mouse_displace_enabled && (event->button == contoursplot->mouse_displace_button))
@@ -7803,11 +8945,36 @@ static gint gabedit_contoursplot_button_press (GtkWidget *widget, GdkEventButton
       contoursplot->move_point.x=event->x;
       contoursplot->move_point.y=event->y;
   } 
-  if (!contoursplot->shift_key_pressed && ! contoursplot->control_key_pressed && event->button != contoursplot->mouse_zoom_button)
+  if (contoursplot->r_key_pressed && !contoursplot->control_key_pressed){
+	  	gint i;
+		contoursplot->r_key_pressed = FALSE;
+		i = get_object_text_num(contoursplot, event->x, event->y);
+		if(i>-1) delete_object_text(GTK_WIDGET(contoursplot), i);
+		else
+		{
+			i = get_object_line_num(contoursplot, event->x, event->y);
+			if(i>-1) delete_object_line(GTK_WIDGET(contoursplot), i);
+			else
+			{
+				i = get_object_image_num(contoursplot, event->x, event->y);
+				if(i>-1) delete_object_image(GTK_WIDGET(contoursplot), i);
+			}
+		}
+	}
+  if (
+	!contoursplot->t_key_pressed && 
+	!contoursplot->l_key_pressed && 
+	!contoursplot->i_key_pressed && 
+	!contoursplot->shift_key_pressed && 
+	!contoursplot->control_key_pressed && 
+	event->button != contoursplot->mouse_zoom_button)
+	  /*
     if ( (event->x > contoursplot->plotting_rect.x) && 
          (event->x < (contoursplot->plotting_rect.x + contoursplot->plotting_rect.width)) && 
          (event->y > contoursplot->plotting_rect.y) && 
-         (event->y < (contoursplot->plotting_rect.y + contoursplot->plotting_rect.height)) ){
+         (event->y < (contoursplot->plotting_rect.y + contoursplot->plotting_rect.height)) )
+	 */
+    {
 
 	gdouble X, Y;
 	gchar txt[BSIZE];
@@ -7817,7 +8984,11 @@ static gint gabedit_contoursplot_button_press (GtkWidget *widget, GdkEventButton
 
 	sprintf(txt,"%s"," ");
 	if(gp && !contoursplot->d_key_pressed) sprintf(txt,"(%f ; %f)",X,Y);
-	else if(gp && contoursplot->d_key_pressed)
+	else if(gp && contoursplot->d_key_pressed && 
+             	(event->x > contoursplot->plotting_rect.x) && 
+         	(event->x < (contoursplot->plotting_rect.x + contoursplot->plotting_rect.width)) && 
+         	(event->y > contoursplot->plotting_rect.y) && 
+         	(event->y < (contoursplot->plotting_rect.y + contoursplot->plotting_rect.height)) )
 	{
 		gdouble z = 0;
 		gdouble dzdx = 0;
@@ -7962,8 +9133,8 @@ static gint gabedit_contoursplot_button_press (GtkWidget *widget, GdkEventButton
 	else contoursplot->selected_objects_text_num = -1;
 	if(contoursplot->selected_objects_text_num>-1) 
 	{
-		set_old_area(widget, contoursplot);
-    		gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+		//set_old_area(widget, contoursplot);
+    		gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 	}
 	if(contoursplot->selected_objects_text_num<0)
 	{
@@ -7985,18 +9156,51 @@ static gint gabedit_contoursplot_button_press (GtkWidget *widget, GdkEventButton
 			xx = event->x-contoursplot->objectsLine[i].x2i;
 			yy = event->y-contoursplot->objectsLine[i].y2i;
 			if(d<xx*xx+yy*yy) contoursplot->selected_objects_line_type = 1;
+			//set_old_area(widget, contoursplot);
+    			gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
+		}
+		
+	}
+	if(contoursplot->selected_objects_text_num<0 && contoursplot->selected_objects_line_num<0)
+	{
+		i = get_object_image_num(contoursplot, event->x, event->y);
+		if(i>-1 && i<contoursplot->nObjectsImage) contoursplot->selected_objects_image_num = i;
+		else contoursplot->selected_objects_image_num = -1;
+		if(contoursplot->selected_objects_image_num>-1) 
+		{
+			gdouble xx = -event->x+contoursplot->objectsImage[i].xi+contoursplot->objectsImage[i].widthi;
+			gdouble yy = -event->y+contoursplot->objectsImage[i].yi+contoursplot->objectsImage[i].heighti;
+			if(xx*xx+yy*yy<
+			(contoursplot->objectsImage[i].widthi*contoursplot->objectsImage[i].widthi+
+			contoursplot->objectsImage[i].heighti*contoursplot->objectsImage[i].heighti)/100
+			)
+			{
+      				contoursplot->object_begin_point.x=-1;
+      				contoursplot->object_begin_point.y=-1;
+      				contoursplot->object_end_point.x=(gint)fabs(xx);
+      				contoursplot->object_end_point.y=(gint)fabs(yy);
+			}
+			else
+			{
+      				contoursplot->object_begin_point.x=event->x-contoursplot->objectsImage[i].xi;
+      				contoursplot->object_begin_point.y=event->y-contoursplot->objectsImage[i].yi;
+      				contoursplot->object_end_point.x=-1;
+      				contoursplot->object_end_point.y=-1;
+			}
 			set_old_area(widget, contoursplot);
     			gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
 		}
-		
 	}
 
   } 
   if (contoursplot->t_key_pressed && !contoursplot->control_key_pressed)
+	  /*
     if ( (event->x > contoursplot->plotting_rect.x) && 
          (event->x < (contoursplot->plotting_rect.x + contoursplot->plotting_rect.width)) && 
          (event->y > contoursplot->plotting_rect.y) && 
-         (event->y < (contoursplot->plotting_rect.y + contoursplot->plotting_rect.height)) ){
+         (event->y < (contoursplot->plotting_rect.y + contoursplot->plotting_rect.height)) )
+	 */
+	 {
 
 	gdouble X, Y;
 
@@ -8008,12 +9212,15 @@ static gint gabedit_contoursplot_button_press (GtkWidget *widget, GdkEventButton
 
   } 
   if (contoursplot->l_key_pressed && !contoursplot->control_key_pressed)
+	  /*
     if ( (event->x > contoursplot->plotting_rect.x) && 
          (event->x < (contoursplot->plotting_rect.x + contoursplot->plotting_rect.width)) && 
          (event->y > contoursplot->plotting_rect.y) && 
-         (event->y < (contoursplot->plotting_rect.y + contoursplot->plotting_rect.height)) ){
+         (event->y < (contoursplot->plotting_rect.y + contoursplot->plotting_rect.height)) )
+	 */
+    {
 
-	set_old_area(widget, contoursplot);
+	//set_old_area(widget, contoursplot);
 	contoursplot->l_key_pressed = FALSE;
       	contoursplot->object_begin_point.x=event->x;
       	contoursplot->object_begin_point.y=event->y;
@@ -8021,6 +9228,17 @@ static gint gabedit_contoursplot_button_press (GtkWidget *widget, GdkEventButton
       	contoursplot->object_end_point.y=-1;
 
   } 
+  if (contoursplot->i_key_pressed && !contoursplot->control_key_pressed)
+	  /*
+    if ( (event->x > contoursplot->plotting_rect.x) && 
+         (event->x < (contoursplot->plotting_rect.x + contoursplot->plotting_rect.width)) && 
+         (event->y > contoursplot->plotting_rect.y) && 
+         (event->y < (contoursplot->plotting_rect.y + contoursplot->plotting_rect.height)) )
+	 */
+    {
+		contoursplot->i_key_pressed = FALSE;
+		add_set_object_image_dialog(GTK_WIDGET(contoursplot), -1, event->x, event->y);
+	}
 
 
   if ( contoursplot->mouse_autorange_enabled && 
@@ -8045,6 +9263,14 @@ static gint gabedit_contoursplot_button_release (GtkWidget *widget, GdkEventButt
   contoursplot = GABEDIT_ContoursPLOT (widget);
 
   contoursplot->selected_objects_text_num=-1;
+   if (contoursplot->selected_objects_image_num>-1)
+   {
+	contoursplot->object_begin_point.x=-1;
+	contoursplot->object_begin_point.y=-1;
+	contoursplot->object_end_point.x=-1;
+	contoursplot->object_end_point.y=-1;
+  	contoursplot->selected_objects_image_num=-1;
+   }
    if (contoursplot->selected_objects_line_num>-1)
    {
 	contoursplot->object_begin_point.x=-1;
@@ -8136,11 +9362,11 @@ static gint gabedit_contoursplot_button_release (GtkWidget *widget, GdkEventButt
   
     /* gabedit_contoursplot_set_range(contoursplot, xmin, xmax, ymin, ymax);*/
     
-    gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+    gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
     contoursplot->mouse_button=0;
   }
    else
-    gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+    gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 
   if (contoursplot->mouse_displace_enabled && 
       (event->button == contoursplot->mouse_displace_button) && 
@@ -8154,7 +9380,7 @@ static gint gabedit_contoursplot_button_release (GtkWidget *widget, GdkEventButt
 static gint gabedit_contoursplot_motion_notify (GtkWidget *widget, GdkEventMotion *event)
 {
   GabeditContoursPlot *contoursplot;
-  guint x, y;
+  gint x, y;
   gdouble px, py, mx, my;
   
   g_return_val_if_fail (widget != NULL, FALSE);
@@ -8173,9 +9399,9 @@ static gint gabedit_contoursplot_motion_notify (GtkWidget *widget, GdkEventMotio
   {
 	gint i = contoursplot->selected_objects_text_num;
 	ContoursPlotObjectText* objectText = &GABEDIT_ContoursPLOT(contoursplot)->objectsText[i];
-	gabedit_contoursplot_get_point (contoursplot, x, y, &mx, &my);
-	set_object_text(contoursplot, objectText,  mx,my, objectText->str);
-	gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+	gabedit_contoursplot_get_point_control (contoursplot, x, y, objectText->width, objectText->height, objectText->angle, &mx, &my);
+	set_object_text(contoursplot, objectText,  mx,my, objectText->angle, objectText->str);
+	gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
   }
   else if (contoursplot->selected_objects_line_num>-1) 
   {
@@ -8186,15 +9412,15 @@ static gint gabedit_contoursplot_motion_notify (GtkWidget *widget, GdkEventMotio
 	{
       		contoursplot->object_end_point.x=x;
       		contoursplot->object_end_point.y=y;
-		gabedit_contoursplot_get_point (contoursplot, contoursplot->object_begin_point.x, contoursplot->object_begin_point.y, &x1, &y1);
-		gabedit_contoursplot_get_point (contoursplot, contoursplot->object_end_point.x, contoursplot->object_end_point.y, &x2, &y2);
+		gabedit_contoursplot_get_point_control (contoursplot, contoursplot->object_begin_point.x, contoursplot->object_begin_point.y,  objectLine->width,objectLine->width, 0, &x1, &y1);
+		gabedit_contoursplot_get_point_control (contoursplot, contoursplot->object_end_point.x, contoursplot->object_end_point.y,  objectLine->width,objectLine->width, 0, &x2, &y2);
 	}
 	else if(contoursplot->selected_objects_line_type==1)
 	{
       		contoursplot->object_begin_point.x=x;
       		contoursplot->object_begin_point.y=y;
-		gabedit_contoursplot_get_point (contoursplot, contoursplot->object_begin_point.x, contoursplot->object_begin_point.y, &x1, &y1);
-		gabedit_contoursplot_get_point (contoursplot, contoursplot->object_end_point.x, contoursplot->object_end_point.y, &x2, &y2);
+		gabedit_contoursplot_get_point_control (contoursplot, contoursplot->object_begin_point.x, contoursplot->object_begin_point.y,  objectLine->width,objectLine->width, 0, &x1, &y1);
+		gabedit_contoursplot_get_point_control (contoursplot, contoursplot->object_end_point.x, contoursplot->object_end_point.y,  objectLine->width,objectLine->width, 0, &x2, &y2);
 	}
 	set_object_line(contoursplot, objectLine, 
 		x1, y1, 
@@ -8204,13 +9430,46 @@ static gint gabedit_contoursplot_motion_notify (GtkWidget *widget, GdkEventMotio
   		objectLine->color,
   		objectLine->style
 		);
+	gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
+  }
+  else if (contoursplot->selected_objects_image_num>-1) 
+  {
+	gint i = contoursplot->selected_objects_image_num;
+	ContoursPlotObjectImage* objectImage = &GABEDIT_ContoursPLOT(contoursplot)->objectsImage[i];
+	if(contoursplot->object_begin_point.x>0)
+	{
+		gint dx,dy;
+		x -= contoursplot->object_begin_point.x;
+		y -= contoursplot->object_begin_point.y;
+		if(x<0) x = 0;
+		if(y<0) y = 0;
+		dx = x+objectImage->widthi-widget->allocation.width;
+		if(dx>0) x-=dx;
+		dy = y+objectImage->heighti-widget->allocation.height;
+		if(dy>0) y-=dy;
+		set_object_image(contoursplot, objectImage,  x, y, objectImage->widthi, objectImage->heighti);
+	}
+	if(contoursplot->object_end_point.x>0)
+	{
+		gint w,h;
+		x += contoursplot->object_end_point.x;
+		y += contoursplot->object_end_point.y;
+		if(x<objectImage->xi) x = objectImage->xi+20;
+		if(y<objectImage->yi) y = objectImage->yi+20;
+		if(x>widget->allocation.width) x = widget->allocation.width;
+		if(y>widget->allocation.height) y = widget->allocation.height;
+		w = (gint)(x-objectImage->xi);
+		h = (gint)(y-objectImage->yi);
+		set_object_image(contoursplot, objectImage,  objectImage->xi, objectImage->yi, w, h);
+	}
+
 	gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
   }
   else if (contoursplot->object_begin_point.x>-1)
   {
       	contoursplot->object_end_point.x=x;
       	contoursplot->object_end_point.y=y;
-	gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+	gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
   }
 
   /* Zoom */
@@ -8244,7 +9503,7 @@ static gint gabedit_contoursplot_motion_notify (GtkWidget *widget, GdkEventMotio
       contoursplot->zoom_rect.height=contoursplot->zoom_point.y-y;
     }
     
-    gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+    gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
   }
 /* distance between 2 points */
   if (contoursplot->mouse_distance_enabled && 
@@ -8267,7 +9526,7 @@ static gint gabedit_contoursplot_motion_notify (GtkWidget *widget, GdkEventMotio
       contoursplot->distance_rect.y=contoursplot->distance_point.y;
       contoursplot->distance_rect.height=y-contoursplot->distance_point.y;
     
-    gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+    gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
   }
 
   if (contoursplot->mouse_displace_enabled && (contoursplot->mouse_button==contoursplot->mouse_displace_button))
@@ -8332,7 +9591,7 @@ static void gabedit_contoursplot_style_set (GtkWidget *widget, GtkStyle *previou
   
   contoursplot_calculate_legends_sizes(contoursplot);
   contoursplot_calculate_sizes(contoursplot);
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
 void gabedit_contoursplot_set_range (GabeditContoursPlot *contoursplot, gdouble xmin, gdouble xmax, gdouble ymin, gdouble ymax)
@@ -8353,7 +9612,7 @@ void gabedit_contoursplot_set_range (GabeditContoursPlot *contoursplot, gdouble 
   contoursplot_free_legends(contoursplot);
   contoursplot_build_legends(contoursplot);
   contoursplot_calculate_sizes(contoursplot);
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
 void gabedit_contoursplot_set_range_xmin (GabeditContoursPlot *contoursplot, gdouble xmin)
@@ -8435,7 +9694,7 @@ void gabedit_contoursplot_set_autorange (GabeditContoursPlot *contoursplot, Cont
   contoursplot_build_legends(contoursplot);  
   contoursplot_calculate_sizes(contoursplot);
 
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
 void gabedit_contoursplot_get_range (GabeditContoursPlot *contoursplot, gdouble *xmin, gdouble *xmax, gdouble *ymin, gdouble *ymax)
@@ -8453,11 +9712,12 @@ void gabedit_contoursplot_get_range (GabeditContoursPlot *contoursplot, gdouble 
     *ymin=contoursplot->ymin;
 }
 /****************************************************************************************/
-gboolean gabedit_contoursplot_get_point (GabeditContoursPlot *contoursplot, guint x, guint y, gdouble *xv, gdouble *yv)
+gboolean gabedit_contoursplot_get_point (GabeditContoursPlot *contoursplot, gint x, gint y, gdouble *xv, gdouble *yv)
 {
   g_return_val_if_fail (contoursplot != NULL, FALSE);
   g_return_val_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot),FALSE);
   
+  /*
   if ((x < contoursplot->plotting_rect.x) || 
       (x > (contoursplot->plotting_rect.x + contoursplot->plotting_rect.width)) || 
       (y < contoursplot->plotting_rect.y) || 
@@ -8465,6 +9725,7 @@ gboolean gabedit_contoursplot_get_point (GabeditContoursPlot *contoursplot, guin
     *xv=*yv=0;
     return FALSE;
   }
+  */
   
   x=x-contoursplot->plotting_rect.x;
   y=contoursplot->plotting_rect.y+contoursplot->plotting_rect.height-y; 
@@ -8473,7 +9734,98 @@ gboolean gabedit_contoursplot_get_point (GabeditContoursPlot *contoursplot, guin
   return TRUE;
 }
 /****************************************************************************************/
-void gabedit_contoursplot_set_ticks (GabeditContoursPlot *contoursplot, guint hmajor, guint hminor, guint vmajor, guint vminor, guint length)
+gboolean gabedit_contoursplot_get_point_control(GabeditContoursPlot *contoursplot, gint x, gint y, gint width, gint height, gdouble angle, gdouble *xv, gdouble *yv )
+{
+	gdouble xa, ya;
+	gdouble xmin,xmax,ymin,ymax;
+	gint a[4],b[4];
+	gint i;
+	gint ixmin,ixmax,iymin,iymax;
+	gdouble alpha = angle;
+	gdouble l;
+	gint lcos;
+	gint lsin;
+	gint wcos;
+	gint wsin;
+	gint hcos;
+	gint hsin;
+	GtkWidget *widget = GTK_WIDGET(contoursplot);
+
+
+	g_return_val_if_fail (contoursplot != NULL, FALSE);
+	g_return_val_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot),FALSE);
+	if(width>0) alpha -= atan((gdouble)height/width);
+	l = sqrt(width*width+height*height);
+	lcos = (gint)(l*cos(alpha));
+	lsin = (gint)(l*sin(alpha));
+	wcos = (gint)(width*cos(angle));
+	wsin = (gint)(width*sin(angle));
+	hcos = (gint)(height*cos(angle-M_PI/2));
+	hsin = (gint)(height*sin(angle-M_PI/2));
+
+	ixmin = 0;
+	if(ixmin<-lcos) ixmin = -lcos;
+	if(ixmin<-wcos) ixmin = -wcos;
+	if(ixmin<-hcos) ixmin = -hcos;
+
+	iymin = 0;
+	if(iymin<lsin) iymin = lsin;
+	if(iymin<wsin) iymin = wsin;
+	if(iymin<hsin) iymin = hsin;
+
+	ixmax = 0;
+	if(ixmax<lcos) ixmax = lcos;
+	if(ixmax<wcos) ixmax = wcos;
+	if(ixmax<hcos) ixmax = hcos;
+	ixmax = widget->allocation.width-ixmax;
+
+	iymax = 0;
+	if(iymax<-lsin) iymax = -lsin;
+	if(iymax<-wsin) iymax = -wsin;
+	if(iymax<-hsin) iymax = -hsin;
+	iymax = widget->allocation.height-iymax;
+
+	/* printf("iminmax = %d %d %d %d\n",ixmin,ixmax,iymin,iymax);*/
+	a[0] = ixmin;
+	a[1] = ixmax;
+	a[2] = ixmax;
+	a[3] = ixmin;
+	b[0] = iymin;
+	b[1] = iymin;
+	b[2] = iymax;
+	b[3] = iymax;
+
+	gabedit_contoursplot_get_point (contoursplot, x, y, xv, yv);
+	xmin = xmax = *xv;
+	ymin = ymax = *yv;
+	for(i=0;i<4;i++)
+	{
+		gabedit_contoursplot_get_point (contoursplot, a[i], b[i], &xa, &ya);
+		if(i==0)
+		{
+			xmin = xa;
+			xmax = xa;
+			ymin = ya;
+			ymax = ya;
+		}
+		else
+		{
+			if(xmin>xa) xmin = xa;
+			if(ymin>ya) ymin = ya;
+			if(xmax<xa) xmax = xa;
+			if(ymax<ya) ymax = ya;
+		}
+	}
+	/* printf("xmax ymax = %f %f\n",xmax,ymax);*/
+
+	if(*xv<xmin) *xv = xmin;
+	if(*yv<ymin) *yv = ymin;
+	if(*xv>xmax) *xv = xmax;
+	if(*yv>ymax) *yv = ymax;
+	return TRUE;
+}
+/****************************************************************************************/
+void gabedit_contoursplot_set_ticks (GabeditContoursPlot *contoursplot, gint hmajor, gint hminor, gint vmajor, gint vminor, gint length)
 {
   g_return_if_fail (contoursplot != NULL);
   g_return_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot));
@@ -8488,10 +9840,10 @@ void gabedit_contoursplot_set_ticks (GabeditContoursPlot *contoursplot, guint hm
     
   contoursplot_build_legends(contoursplot);
   contoursplot_calculate_sizes(contoursplot);
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
-void gabedit_contoursplot_set_ticks_hmajor (GabeditContoursPlot *contoursplot, guint hmajor)
+void gabedit_contoursplot_set_ticks_hmajor (GabeditContoursPlot *contoursplot, gint hmajor)
 {
   g_return_if_fail (contoursplot != NULL);
   g_return_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot));
@@ -8502,10 +9854,10 @@ void gabedit_contoursplot_set_ticks_hmajor (GabeditContoursPlot *contoursplot, g
     
   contoursplot_build_legends(contoursplot);
   contoursplot_calculate_sizes(contoursplot);
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
-void gabedit_contoursplot_set_ticks_hminor (GabeditContoursPlot *contoursplot, guint hminor)
+void gabedit_contoursplot_set_ticks_hminor (GabeditContoursPlot *contoursplot, gint hminor)
 {
   g_return_if_fail (contoursplot != NULL);
   g_return_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot));
@@ -8516,10 +9868,10 @@ void gabedit_contoursplot_set_ticks_hminor (GabeditContoursPlot *contoursplot, g
     
   contoursplot_build_legends(contoursplot);
   contoursplot_calculate_sizes(contoursplot);
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
-void gabedit_contoursplot_set_ticks_vmajor (GabeditContoursPlot *contoursplot, guint vmajor)
+void gabedit_contoursplot_set_ticks_vmajor (GabeditContoursPlot *contoursplot, gint vmajor)
 {
   g_return_if_fail (contoursplot != NULL);
   g_return_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot));
@@ -8530,10 +9882,10 @@ void gabedit_contoursplot_set_ticks_vmajor (GabeditContoursPlot *contoursplot, g
     
   contoursplot_build_legends(contoursplot);
   contoursplot_calculate_sizes(contoursplot);
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
-void gabedit_contoursplot_set_ticks_vminor (GabeditContoursPlot *contoursplot, guint vminor)
+void gabedit_contoursplot_set_ticks_vminor (GabeditContoursPlot *contoursplot, gint vminor)
 {
   g_return_if_fail (contoursplot != NULL);
   g_return_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot));
@@ -8544,10 +9896,10 @@ void gabedit_contoursplot_set_ticks_vminor (GabeditContoursPlot *contoursplot, g
     
   contoursplot_build_legends(contoursplot);
   contoursplot_calculate_sizes(contoursplot);
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
-void gabedit_contoursplot_set_ticks_length (GabeditContoursPlot *contoursplot, guint length)
+void gabedit_contoursplot_set_ticks_length (GabeditContoursPlot *contoursplot, gint length)
 {
   g_return_if_fail (contoursplot != NULL);
   g_return_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot));
@@ -8558,10 +9910,10 @@ void gabedit_contoursplot_set_ticks_length (GabeditContoursPlot *contoursplot, g
     
   contoursplot_build_legends(contoursplot);
   contoursplot_calculate_sizes(contoursplot);
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
-void gabedit_contoursplot_get_ticks (GabeditContoursPlot *contoursplot, guint *hmajor, guint *hminor, guint *vmajor, guint *vminor, guint* length)
+void gabedit_contoursplot_get_ticks (GabeditContoursPlot *contoursplot, gint *hmajor, gint *hminor, gint *vmajor, gint *vminor, gint* length)
 {
   g_return_if_fail (contoursplot != NULL);
   g_return_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot));
@@ -8578,7 +9930,63 @@ void gabedit_contoursplot_get_ticks (GabeditContoursPlot *contoursplot, guint *h
     *length=contoursplot->length_ticks;
 }
 /****************************************************************************************/
-void gabedit_contoursplot_set_x_legends_digits (GabeditContoursPlot *contoursplot, guint digits)
+void gabedit_contoursplot_set_margins_left (GabeditContoursPlot *contoursplot, gint left)
+{
+  g_return_if_fail (contoursplot != NULL);
+  g_return_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot));
+  
+  contoursplot_free_legends(contoursplot);
+
+  contoursplot->left_margins=left;
+    
+  contoursplot_build_legends(contoursplot);
+  contoursplot_calculate_sizes(contoursplot);
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+}
+/****************************************************************************************/
+void gabedit_contoursplot_set_margins_right (GabeditContoursPlot *contoursplot, gint right)
+{
+  g_return_if_fail (contoursplot != NULL);
+  g_return_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot));
+  
+  contoursplot_free_legends(contoursplot);
+
+  contoursplot->right_margins=right;
+    
+  contoursplot_build_legends(contoursplot);
+  contoursplot_calculate_sizes(contoursplot);
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+}
+/****************************************************************************************/
+void gabedit_contoursplot_set_margins_top (GabeditContoursPlot *contoursplot, gint top)
+{
+  g_return_if_fail (contoursplot != NULL);
+  g_return_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot));
+  
+  contoursplot_free_legends(contoursplot);
+
+  contoursplot->top_margins=top;
+    
+  contoursplot_build_legends(contoursplot);
+  contoursplot_calculate_sizes(contoursplot);
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+}
+/****************************************************************************************/
+void gabedit_contoursplot_set_margins_bottom (GabeditContoursPlot *contoursplot, gint bottom)
+{
+  g_return_if_fail (contoursplot != NULL);
+  g_return_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot));
+  
+  contoursplot_free_legends(contoursplot);
+
+  contoursplot->bottom_margins=bottom;
+    
+  contoursplot_build_legends(contoursplot);
+  contoursplot_calculate_sizes(contoursplot);
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+}
+/****************************************************************************************/
+void gabedit_contoursplot_set_x_legends_digits (GabeditContoursPlot *contoursplot, gint digits)
 {
   g_return_if_fail (contoursplot != NULL);
   g_return_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot));
@@ -8591,11 +9999,11 @@ void gabedit_contoursplot_set_x_legends_digits (GabeditContoursPlot *contoursplo
     contoursplot_build_legends(contoursplot);
     contoursplot_calculate_legends_sizes(contoursplot);
     contoursplot_calculate_sizes(contoursplot);
-    gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+    gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
   }
 }
 /****************************************************************************************/
-void gabedit_contoursplot_set_y_legends_digits (GabeditContoursPlot *contoursplot, guint digits)
+void gabedit_contoursplot_set_y_legends_digits (GabeditContoursPlot *contoursplot, gint digits)
 {
   g_return_if_fail (contoursplot != NULL);
   g_return_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot));
@@ -8608,11 +10016,11 @@ void gabedit_contoursplot_set_y_legends_digits (GabeditContoursPlot *contoursplo
     contoursplot_build_legends(contoursplot);
     contoursplot_calculate_legends_sizes(contoursplot);
     contoursplot_calculate_sizes(contoursplot);
-    gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+    gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
   }
 }
 /****************************************************************************************/
-guint gabedit_contoursplot_get_x_legends_digits (GabeditContoursPlot *contoursplot)
+gint gabedit_contoursplot_get_x_legends_digits (GabeditContoursPlot *contoursplot)
 {
   g_return_val_if_fail (contoursplot != NULL, 0);
   g_return_val_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot), 0);
@@ -8620,7 +10028,7 @@ guint gabedit_contoursplot_get_x_legends_digits (GabeditContoursPlot *contourspl
   return(contoursplot->x_legends_digits);
 }
 /****************************************************************************************/
-guint gabedit_contoursplot_get_y_legends_digits (GabeditContoursPlot *contoursplot)
+gint gabedit_contoursplot_get_y_legends_digits (GabeditContoursPlot *contoursplot)
 {
   g_return_val_if_fail (contoursplot != NULL, 0);
   g_return_val_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot), 0);
@@ -8635,7 +10043,7 @@ void gabedit_contoursplot_set_background_color (GabeditContoursPlot *contoursplo
 
   gdk_gc_set_rgb_fg_color(contoursplot->back_gc, &color);
 
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
 void gabedit_contoursplot_set_grids_attributes (GabeditContoursPlot *contoursplot, 
@@ -8669,7 +10077,7 @@ void gabedit_contoursplot_set_grids_attributes (GabeditContoursPlot *contoursplo
   gdk_gc_set_rgb_fg_color(gc, &color);
   gdk_gc_set_line_attributes(gc, line_width, line_style, 0 ,0);
   
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
 void gabedit_contoursplot_get_grids_attributes (GabeditContoursPlot *contoursplot, 
@@ -8734,7 +10142,7 @@ static void contoursplot_enable_grids (GabeditContoursPlot *contoursplot, Gabedi
   }
   
   contoursplot_calculate_sizes(contoursplot);
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
 void gabedit_contoursplot_enable_grids (GabeditContoursPlot *contoursplot, GabeditContoursPlotGrid grid, gboolean enable)
@@ -8780,7 +10188,7 @@ void gabedit_contoursplot_remove_data(GabeditContoursPlot *contoursplot, Contour
 }
 
 /****************************************************************************************/
-void gabedit_contoursplot_configure_mouse_zoom(GabeditContoursPlot *contoursplot, gboolean enabled, guint button)
+void gabedit_contoursplot_configure_mouse_zoom(GabeditContoursPlot *contoursplot, gboolean enabled, gint button)
 {
   g_return_if_fail (contoursplot != NULL);
   g_return_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot));
@@ -8789,7 +10197,7 @@ void gabedit_contoursplot_configure_mouse_zoom(GabeditContoursPlot *contoursplot
   contoursplot->mouse_zoom_button=button;
 }
 /****************************************************************************************/
-void gabedit_contoursplot_configure_mouse_distance(GabeditContoursPlot *contoursplot, gboolean enabled, guint button)
+void gabedit_contoursplot_configure_mouse_distance(GabeditContoursPlot *contoursplot, gboolean enabled, gint button)
 {
   g_return_if_fail (contoursplot != NULL);
   g_return_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot));
@@ -8807,7 +10215,7 @@ void gabedit_contoursplot_configure_wheel_zoom(GabeditContoursPlot *contoursplot
   contoursplot->wheel_zoom_factor=factor;
 }
 /****************************************************************************************/
-void gabedit_contoursplot_configure_mouse_displace(GabeditContoursPlot *contoursplot, gboolean enabled, guint button)
+void gabedit_contoursplot_configure_mouse_displace(GabeditContoursPlot *contoursplot, gboolean enabled, gint button)
 {
   g_return_if_fail (contoursplot != NULL);
   g_return_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot));
@@ -8816,7 +10224,7 @@ void gabedit_contoursplot_configure_mouse_displace(GabeditContoursPlot *contours
   contoursplot->mouse_displace_button=button;
 }
 /****************************************************************************************/
-void gabedit_contoursplot_configure_mouse_autorange(GabeditContoursPlot *contoursplot, gboolean enabled, guint button)
+void gabedit_contoursplot_configure_mouse_autorange(GabeditContoursPlot *contoursplot, gboolean enabled, gint button)
 {
   g_return_if_fail (contoursplot != NULL);
   g_return_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot));
@@ -8829,13 +10237,13 @@ static guchar *get_rgb_image(GtkWidget* drawable)
 {
 	gdouble fac=255.0/65535.0;
 	GdkColormap *colormap;
-  	guint height;
-  	guint width;
-	guint32 pixel;
+  	gint height;
+  	gint width;
+	gint32 pixel;
   	GdkImage* image = NULL;
 	GdkVisual *v;
-	guint8 component;
-	guint k=0;
+	gint8 component;
+	gint k=0;
 	gint x;
 	gint y;
 	gint i;
@@ -9000,6 +10408,18 @@ static void writeTransparentPNG(GabeditContoursPlot *contoursplot, gchar *fileNa
 	{
 		GdkPixbuf  *pixbufNew = NULL;
 		guchar color[3] = {255, 255, 255};
+		GdkColor c;
+		GdkGCValues gc_values;
+
+		GdkColormap *colormap;
+   		colormap  = gdk_window_get_colormap(widget->window);
+		gdk_gc_get_values(contoursplot->back_gc, &gc_values);
+        	gdk_colormap_query_color(colormap, gc_values.foreground.pixel,&c);
+
+		color[0] = (guchar)(SCALE(c.red)*255);
+		color[1] = (guchar)(SCALE(c.green)*255);
+		color[2] = (guchar)(SCALE(c.blue)*255);
+
 
 		pixbufNew = gdk_pixbuf_add_alpha(pixbuf, TRUE, color[0], color[1], color[2]);
 		if(pixbufNew) gdk_pixbuf_save(pixbufNew, fileName, "png", &error, NULL);
@@ -9081,6 +10501,11 @@ static void contoursplot_calculate_sizes (GabeditContoursPlot *contoursplot)
   if(contoursplot->show_colormap) right += (gdouble)contoursplot->colormap_width;
   if (contoursplot->v_label && !contoursplot->show_left_legends && contoursplot->show_right_legends) right += contoursplot->v_label_height;
 
+  left += (gint)(contoursplot->left_margins/100.0*widget->allocation.width);
+  right += (gint)(contoursplot->right_margins/100.0*widget->allocation.width);
+  top += (gint)(contoursplot->top_margins/100.0*widget->allocation.height);
+  bottom += (gint)(contoursplot->bottom_margins/100.0*widget->allocation.height);
+
   contoursplot->plotting_rect.x = left;
   contoursplot->plotting_rect.y = top;
   
@@ -9116,7 +10541,7 @@ static void contoursplot_calculate_sizes (GabeditContoursPlot *contoursplot)
   reset_object_line_pixels(contoursplot);
 }
 /****************************************************************************************/
-static void value2pixel(GabeditContoursPlot *contoursplot, gdouble xv, gdouble yv, guint *x, guint *y)
+static void value2pixel(GabeditContoursPlot *contoursplot, gdouble xv, gdouble yv, gint *x, gint *y)
 {
   g_return_if_fail (contoursplot != NULL);
   g_return_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot));
@@ -9128,7 +10553,7 @@ static void value2pixel(GabeditContoursPlot *contoursplot, gdouble xv, gdouble y
   if(contoursplot->reflect_y) *y = contoursplot->plotting_rect.height - *y;
 }
 /****************************************************************************************/
-static void pixel2value(GabeditContoursPlot *contoursplot, guint xp, guint yp, gdouble *x, gdouble *y)
+static void pixel2value(GabeditContoursPlot *contoursplot, gint xp, gint yp, gdouble *x, gdouble *y)
 {
   g_return_if_fail (contoursplot != NULL);
   g_return_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot));
@@ -9349,7 +10774,7 @@ static void contoursplot_reflect_x (GabeditContoursPlot *contoursplot, gboolean 
   contoursplot->reflect_x = reflection;
   reset_object_text_pixels(contoursplot);
   reset_object_line_pixels(contoursplot);
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
 void gabedit_contoursplot_reflect_x (GabeditContoursPlot *contoursplot, gboolean enable)
@@ -9369,7 +10794,7 @@ static void contoursplot_reflect_y (GabeditContoursPlot *contoursplot, gboolean 
   contoursplot->reflect_y = reflection;
   reset_object_text_pixels(contoursplot);
   reset_object_line_pixels(contoursplot);
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
 void gabedit_contoursplot_reflect_y (GabeditContoursPlot *contoursplot, gboolean enable)
@@ -9388,7 +10813,7 @@ static void contoursplot_show_label_contours (GabeditContoursPlot *contoursplot,
 
   contoursplot->show_label_contours = show; 
 
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
 static void contoursplot_build_position_label_contours (GabeditContoursPlot *contoursplot)
@@ -9397,7 +10822,7 @@ static void contoursplot_build_position_label_contours (GabeditContoursPlot *con
   g_return_if_fail (GABEDIT_IS_ContoursPLOT (contoursplot));
   
   reset_label_contours(GTK_WIDGET(contoursplot), NULL);
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
 static void contoursplot_show_colormap (GabeditContoursPlot *contoursplot, gboolean show)
@@ -9411,7 +10836,7 @@ static void contoursplot_show_colormap (GabeditContoursPlot *contoursplot, gbool
   contoursplot_build_colormap_legends(contoursplot);
   contoursplot_calculate_colormap_sizes(contoursplot);
   contoursplot_calculate_sizes(contoursplot);
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
 static void contoursplot_dashed_negative_contours (GabeditContoursPlot *contoursplot, gboolean dashed)
@@ -9423,7 +10848,7 @@ static void contoursplot_dashed_negative_contours (GabeditContoursPlot *contours
 
   contoursplot->dashed_negative_contours = dashed;
   reset_contour_lines_styles(GTK_WIDGET(contoursplot), NULL);
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
 static void contoursplot_show_left_legends (GabeditContoursPlot *contoursplot, gboolean show)
@@ -9437,7 +10862,7 @@ static void contoursplot_show_left_legends (GabeditContoursPlot *contoursplot, g
   contoursplot_build_legends(contoursplot);
   contoursplot_calculate_legends_sizes(contoursplot);
   contoursplot_calculate_sizes(contoursplot);
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
 void gabedit_contoursplot_show_left_legends (GabeditContoursPlot *contoursplot, gboolean enable)
@@ -9458,7 +10883,7 @@ static void contoursplot_show_right_legends (GabeditContoursPlot *contoursplot, 
   contoursplot_build_legends(contoursplot);
   contoursplot_calculate_legends_sizes(contoursplot);
   contoursplot_calculate_sizes(contoursplot);
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
 void gabedit_contoursplot_show_right_legends (GabeditContoursPlot *contoursplot, gboolean enable)
@@ -9479,7 +10904,7 @@ static void contoursplot_show_top_legends (GabeditContoursPlot *contoursplot, gb
   contoursplot_build_legends(contoursplot);
   contoursplot_calculate_legends_sizes(contoursplot);
   contoursplot_calculate_sizes(contoursplot);
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
 void gabedit_contoursplot_show_top_legends (GabeditContoursPlot *contoursplot, gboolean enable)
@@ -9500,7 +10925,7 @@ static void contoursplot_show_bottom_legends (GabeditContoursPlot *contoursplot,
   contoursplot_build_legends(contoursplot);
   contoursplot_calculate_legends_sizes(contoursplot);
   contoursplot_calculate_sizes(contoursplot);
-  gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+   gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
 void gabedit_contoursplot_show_bottom_legends (GabeditContoursPlot *contoursplot, gboolean enable)
@@ -9526,7 +10951,7 @@ void gabedit_contoursplot_set_font (GabeditContoursPlot *contoursplot, gchar* fo
   		contoursplot_build_legends(contoursplot);
   		contoursplot_calculate_legends_sizes(contoursplot);
   		contoursplot_calculate_sizes(contoursplot);
-		gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+		gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 	}
 }
 /****************************************************************************************/
@@ -9550,7 +10975,7 @@ void gabedit_contoursplot_set_x_label (GabeditContoursPlot *contoursplot, G_CONS
   	contoursplot_build_legends(contoursplot);
   	contoursplot_calculate_legends_sizes(contoursplot);
   	contoursplot_calculate_sizes(contoursplot);
-	gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+	gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
 void gabedit_contoursplot_set_y_label (GabeditContoursPlot *contoursplot, G_CONST_RETURN gchar* str)
@@ -9571,7 +10996,7 @@ void gabedit_contoursplot_set_y_label (GabeditContoursPlot *contoursplot, G_CONS
   	contoursplot_build_legends(contoursplot);
   	contoursplot_calculate_legends_sizes(contoursplot);
   	contoursplot_calculate_sizes(contoursplot);
-	gtk_widget_queue_draw(GTK_WIDGET(contoursplot));  
+	gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 }
 /****************************************************************************************/
 static gboolean contoursplot_motion_notify_event(GtkWidget *contoursplot, GdkEventMotion *event, gpointer user_data)
@@ -9667,6 +11092,7 @@ void gabedit_contoursplot_help()
 	GtkWidget* hbox;
 
 	gchar* tmp = g_strdup_printf(
+			_(
 			"Mouse buttons and Keys :\n"
 			"\t Right button : popup menu\n"
 			"\t Middle button : zoom\n"
@@ -9675,26 +11101,32 @@ void gabedit_contoursplot_help()
 			"\t d key : compute f and its dervivatives, using a bicubic interpolation\n"
 			"\t Left button + t key : insert a text\n"
 			"\t Left button + l key : insert a line (arrow)\n"
+			"\t Left button + i key : insert an image (arrow)\n"
+			"\t Left button + r key : remove selected image/text/line\n"
 			"\t Left button, double click : select a data to change\n"
 			"\n\n"
 			"Popup menu :\n"
-			"\t Set : ticks, ranges, X and Y labels, digits, font size, auto ranges\n"
+			"\t Set : ticks, margins, ranges, X and Y labels, digits, font size, auto ranges\n"
 			"\t Render : grids, directions, legends, colormap\n"
 			"\t Data : read data from a grid ASCII file (txt)\n"
 			"\t        Save all data at a txt file\n"
 			"\t        Remove all all\n"
 			"\t Contours : set values or delete contours\n"
 			"\t ColorMap : set colormap\n"
+			"\t Objects : for insert/delete texts, lines or images\n"
 			"\t Screen capture : BMP, JPEG, PNG, Transparent PNG, TIF\n"
 			"\t Export image : SVG, PS, EPS and PDF (this is a real export, not a capture)\n"
+			"\t Read : read all (parameters, data, texts, lines, images) from a Gabedit file\n"
+			"\t Save : save all (parameters, data, texts, lines, images) in Gabedit file\n"
 			"\t Help : for obtain this window (You guessed :))\n"
 			"\t Close : very simple :)\n"
+			)
 			);
 
 	dialog = gtk_dialog_new();
 	gtk_widget_realize(GTK_WIDGET(dialog));
 
-	gtk_window_set_title(GTK_WINDOW(dialog),"Help");
+	gtk_window_set_title(GTK_WINDOW(dialog),_("Help"));
 	g_signal_connect(G_OBJECT(dialog), "delete_event", (GCallback)gtk_widget_destroy, NULL);
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);

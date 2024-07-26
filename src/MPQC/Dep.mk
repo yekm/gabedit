@@ -3,7 +3,7 @@ MPQC.o: MPQC.c ../../Config.h ../Common/Global.h \
   ../Common/../Common/GabeditType.h ../MPQC/MPQCTypes.h \
   ../MPQC/MPQCGlobal.h ../MPQC/MPQCMolecule.h ../MPQC/MPQCMole.h \
   ../MPQC/MPQCGuessWaveFunction.h ../MPQC/MPQCMpqc.h ../MPQC/MPQCBasis.h \
-  ../MPQC/MPQCFunctionals.h ../MPQC/MPQCOptimisation.h \
+  ../MPQC/MPQCFunctionals.h ../MPQC/MPQCOptimization.h \
   ../MPQC/MPQCProperties.h ../Utils/UtilsInterface.h \
   ../Geometry/GeomGlobal.h ../Geometry/InterfaceGeom.h ../Utils/Utils.h \
   ../Utils/AtomsProp.h ../Utils/Constants.h ../Utils/GabeditTextEdit.h
@@ -68,7 +68,7 @@ MPQCFunctionals.o: MPQCFunctionals.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../MPQC/MPQCTypes.h \
   ../MPQC/MPQCGlobal.h ../Utils/UtilsInterface.h ../Utils/Constants.h
-MPQCOptimisation.o: MPQCOptimisation.c ../../Config.h ../Common/Global.h \
+MPQCOptimization.o: MPQCOptimization.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../MPQC/MPQCTypes.h \
   ../MPQC/MPQCGlobal.h ../Utils/Utils.h ../Utils/UtilsInterface.h \

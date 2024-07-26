@@ -448,7 +448,7 @@ void set_opacity_dlg()
 	GtkWidget *button;
 
 	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(Win),"Set opacity");
+	gtk_window_set_title(GTK_WINDOW(Win),_("Set opacity"));
 	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
 	gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
 	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
@@ -465,27 +465,27 @@ void set_opacity_dlg()
 	table = gtk_table_new(5,3,FALSE);
 	gtk_container_add(GTK_CONTAINER(vboxframe),table);
 
-	opacitySpinButton = add_spin_button( table, "Opacity coefficient : ", 1);
+	opacitySpinButton = add_spin_button( table, _("Opacity coefficient : "), 1);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(opacitySpinButton),(gint)(alpha*100));
 	g_object_set_data (G_OBJECT (Win), "OpacitySpinButton",opacitySpinButton);
 
 	hbox = create_hbox_false(vboxall);
 	gtk_widget_realize(Win);
 
-	button = create_button(Win,"OK");
+	button = create_button(Win,_("OK"));
 	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_set_opacity_close,G_OBJECT(Win));
 
-	button = create_button(Win,"Apply");
+	button = create_button(Win,_("Apply"));
 	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_show (button);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_set_opacity,G_OBJECT(Win));
 
-	button = create_button(Win,"Cancel");
+	button = create_button(Win,_("Cancel"));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, G_OBJECT(Win));

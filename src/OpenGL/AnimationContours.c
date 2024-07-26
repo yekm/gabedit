@@ -131,7 +131,7 @@ static void reset_last_directory(GtkWidget *dirSelector, gpointer data)
 static void set_directory(GtkWidget *win, gpointer data)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(reset_last_directory, "Set folder", GABEDIT_TYPEWIN_ORB);
+	dirSelector = selctionOfDir(reset_last_directory, _("Set folder"), GABEDIT_TYPEWIN_ORB);
 	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
 	gtk_window_set_transient_for(GTK_WINDOW(dirSelector),GTK_WINDOW(PrincipalWindow));
 	gtk_window_set_transient_for(GTK_WINDOW(dirSelector),GTK_WINDOW(WinDlg));
@@ -503,8 +503,8 @@ static void showMessageEnd()
 {
 	gchar* format =get_format_image_from_option();
 	gchar* message = messageAnimatedImage(format);
-	gchar* t = g_strdup_printf("\nA series of gab*.%s files was created in \"%s\" directeory.\n\n\n%s" , format, get_last_directory(),message);
-	GtkWidget* winDlg = Message(t,"Info",TRUE);
+	gchar* t = g_strdup_printf(_("\nA series of gab*.%s files was created in \"%s\" directeory.\n\n\n%s"), format, get_last_directory(),message);
+	GtkWidget* winDlg = Message(t,_("Info"),TRUE);
 	g_free(message);
 	gtk_window_set_modal (GTK_WINDOW (winDlg), TRUE);
 	g_free(t);
@@ -590,7 +590,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_box_pack_start(GTK_BOX(vboxframe), table,TRUE,TRUE,0);
 
 	i = 0;
-	LabelMinIso = add_label_table(table," Min isovalue ",(gushort)i,0);
+	LabelMinIso = add_label_table(table,_(" Min isovalue "),(gushort)i,0);
 	add_label_table(table," : ",(gushort)i,1); 
 	EntryMinIsoValue = gtk_entry_new();
 	gtk_table_attach(GTK_TABLE(table),EntryMinIsoValue,2,2+1,i,i+1,
@@ -602,7 +602,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_entry_set_text(GTK_ENTRY(EntryMinIsoValue),t);
 
 	i++;
-	LabelMaxIso = add_label_table(table," Max isovalue ",(gushort)i,0);
+	LabelMaxIso = add_label_table(table,_(" Max isovalue "),(gushort)i,0);
 	add_label_table(table," : ",(gushort)i,1); 
 	EntryMaxIsoValue = gtk_entry_new();
 	gtk_table_attach(GTK_TABLE(table),EntryMaxIsoValue,2,2+1,i,i+1,
@@ -614,7 +614,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_entry_set_text(GTK_ENTRY(EntryMaxIsoValue),t);
 
 	i++;
-	add_label_table(table," Time step(s) ",(gushort)i,0);
+	add_label_table(table,_(" Time step(s) "),(gushort)i,0);
 	add_label_table(table," : ",(gushort)i,1); 
 	EntryVelocity = gtk_entry_new();
 	gtk_table_attach(GTK_TABLE(table),EntryVelocity,2,2+1,i,i+1,
@@ -626,7 +626,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_entry_set_text(GTK_ENTRY(EntryVelocity),t);
 
 	i++;
-	LabelNContours = add_label_table(table," Number of Contours ",(gushort)i,0);
+	LabelNContours = add_label_table(table,_(" Number of Contours "),(gushort)i,0);
 	add_label_table(table," : ",(gushort)i,1); 
 	EntryNContours = gtk_entry_new();
 	gtk_table_attach(GTK_TABLE(table),EntryNContours,2,2+1,i,i+1,
@@ -638,10 +638,10 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_entry_set_text(GTK_ENTRY(EntryNContours),t);
 
 	i++;
-	linearButton = gtk_radio_button_new_with_label( NULL,"Linear scale");
+	linearButton = gtk_radio_button_new_with_label( NULL,_("Linear scale"));
 	add_widget_table(table, linearButton,(gushort)i,0);
-	logButton = gtk_radio_button_new_with_label( NULL,"logarithm scale");
-	logButton = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (linearButton)), "logarithmic scale"); 
+	/* logButton = gtk_radio_button_new_with_label( NULL,_("logarithm scale"));*/
+	logButton = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (linearButton)), _("logarithmic scale")); 
 	gtk_table_attach(GTK_TABLE(table), logButton,1,3,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -741,14 +741,14 @@ static gboolean createImagesFile()
 		return FALSE;
 	}
 	format =get_format_image_from_option();
-	t = g_strdup_printf("The %s%sgab%d.%s file was created", get_last_directory(),G_DIR_SEPARATOR_S,numFileFilm, format);
+	t = g_strdup_printf(_("The %s%sgab%d.%s file was created"), get_last_directory(),G_DIR_SEPARATOR_S,numFileFilm, format);
 
 	if(!strcmp(formatFilm,"BMP")) message = new_bmp(get_last_directory(), ++numFileFilm);
 	if(!strcmp(formatFilm,"PPM")) message = new_ppm(get_last_directory(), ++numFileFilm);
 	if(!strcmp(formatFilm,"JPEG")) message = new_jpeg(get_last_directory(), ++numFileFilm);
 	if(!strcmp(formatFilm,"PNG")) message = new_png(get_last_directory(), ++numFileFilm);
 	if(!strcmp(formatFilm,"Povray")) message = new_pov(get_last_directory(), ++numFileFilm);
-	if(!strcmp(formatFilm,"PNG transparent")) message = new_png_nobackground(get_last_directory(), ++numFileFilm);
+	if(!strcmp(formatFilm,"PNG transparent")) message = new_png_without_background(get_last_directory(), ++numFileFilm);
 
 	if(message == NULL) setTextInProgress(t);
 	else
@@ -756,7 +756,7 @@ static gboolean createImagesFile()
     		GtkWidget* m;
 		createFilm = FALSE;
 		numFileFilm = 0;
-    		m = Message(message,"Error",TRUE);
+    		m = Message(message,_("Error"),TRUE);
 		gtk_window_set_modal (GTK_WINDOW (m), TRUE);
 	}
 	g_free(t);
@@ -869,7 +869,7 @@ void animationContoursDlg()
 		return;
 	if(!grid )
 	{
-		if( !CancelCalcul) Message("Sorry, Grid not define ","Error",TRUE);
+		if( !CancelCalcul) Message(_("Sorry, Grid not define "),_("Error"),TRUE);
 	  	return;
 	}
 	initAnimationDlg();
@@ -877,7 +877,7 @@ void animationContoursDlg()
 	Win= gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
 	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(parentWindow));
-	gtk_window_set_title(GTK_WINDOW(Win),"contours animation");
+	gtk_window_set_title(GTK_WINDOW(Win),_("contours animation"));
 	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
 
 	WinDlg = Win;

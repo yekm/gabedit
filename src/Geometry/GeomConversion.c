@@ -372,14 +372,6 @@ void insert_dummy_atoms_gxyz()
     if(k!=-1)
     {
 	    A = get_X_position(k,k+1);
-	    /*
-	    Debug("dummy atom to insert between %d %d \n",k,k+1);
-    	    Debug("Atom %d Atom %d Dummy Atom \n",k,k+1);
-	    for(j=0;j<3;j++)
-	    {
-		    Debug("%f %f %f\n",gxyz[k].P.C[j],gxyz[k+1].P.C[j],A.C[j]);
-	    }
-	    */
 	    insert_dummy_atom_gxyz(k,A);
 	    Ok = TRUE;
 	    break;
@@ -760,7 +752,7 @@ void conversion_zmat_to_xyz()
 {
 	if(!zmat_to_xyz())
 	{
-		printf("I cannot convert the zmat to xyz\n");
+		printf(_("I cannot convert the zmat to xyz\n"));
 		return;
 	}
 	delete_dummy_atoms();
@@ -905,7 +897,7 @@ void conversion_xyz_to_zmat()
 {
 	if(!xyz_to_zmat())
 	{
-		Message("Sorry\nConversion is not possible","Warning",TRUE);
+		Message(_("Sorry\nConversion is not possible"),_("Warning"),TRUE);
 		return;
 	}
  	MethodeGeom = GEOM_IS_ZMAT;
@@ -1178,11 +1170,6 @@ static gint add_level_ring(gint* levels, GList** lists, gint nLevels)
 			gxyz[i].typeConnections[j]= 1;
 			gxyz[j].typeConnections[i]= 1;
 			if(!numRing) continue;
-			/* printf(" Detected ring, ring size = %d\n",ringSize+1);
-  			for (k = 0; k <=ringSize; k++) 
-				printf(" %d  ",numRing[k]);
-			printf("\n");
-			*/
 
 			parent = -1;
   			for (k = 0; k <=ringSize; k++) 
@@ -1278,17 +1265,6 @@ static gint build_grand_parents(gint* levels, GList** lists, gint nLevels)
 		p = get_parent(lists[lj]);
 		if(!p) continue;
 		lists[i]->data = p->data;
-		/*
-		gp = lists[i];
-		p = gp->next;
-  		for (l = p->next;l !=NULL; l=l->next)
-		{
-			k = l->data; 
-			if(fabs(get_angle_xyz( (gint)l->data,(gint)p->data,(gint)gp->data))<1e-6)
-			{
-			}
-		}
-		*/
 	}
 	return 0;
 }
@@ -1327,7 +1303,7 @@ static gint build_levels(gint* levels, GList** lists)
 		nAll += n;
 		if(n==0)
 		{
-			printf("Sorry I cannot compute the levels of groupes\n");
+			printf(_("Sorry I cannot compute the levels of groupes\n"));
 			return 0;
 		}
 		nLevels++; 
@@ -1674,7 +1650,7 @@ void conversion_xyz_to_zmat_using_connections()
 {
 	if(!xyz_to_zmat_using_connections())
 	{
-		Message("Sorry\nConversion is not possible","Warning",TRUE);
+		Message(_("Sorry\nConversion is not possible"),_("Warning"),TRUE);
 		return;
 	}
  	MethodeGeom = GEOM_IS_ZMAT;

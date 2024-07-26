@@ -57,8 +57,8 @@ void read_orca_orbitals_using_orca_2mkl(gchar* fileName)
 	if(!fileNameBas || strlen(fileNameBas)<1)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer, "Sorry, I can not read orbitals from the orca file\n");
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer, _("Sorry, I can not read orbitals from the orca file\n"));
+  		Message(buffer,_("Error"),TRUE);
 		return;
 	}
 #ifdef G_OS_WIN32
@@ -68,10 +68,10 @@ void read_orca_orbitals_using_orca_2mkl(gchar* fileName)
 #endif
 
 	t = get_name_file(fileName);
-	set_status_label_info("File Name",t);
+	set_status_label_info(_("File name"),t);
 	g_free(t);
-	set_status_label_info("File Type","Orca");
-	set_status_label_info("Mol. Orb.","Reading");
+	set_status_label_info(_("File type"),"Orca");
+	set_status_label_info(_("Mol. Orb."),"Reading");
 
 	system(convertOrcaMolden);
 	g_free(convertOrcaMolden);
@@ -81,8 +81,8 @@ void read_orca_orbitals_using_orca_2mkl(gchar* fileName)
 	if(file == NULL)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer, "Sorry, I cannot create the molden file using orca_2mkl");
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer, _("Sorry, I cannot create the molden file using orca_2mkl"));
+  		Message(buffer,_("Error"),TRUE);
 		return;
 	}
 	fclose(file);
@@ -319,7 +319,7 @@ static gboolean DefineOrcaBasisType(gchar *fileName)
 
  	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
-		Message("Sorry\n No file selected","Error",TRUE);
+		Message(_("Sorry\n No file selected"),_("Error"),TRUE);
     		return FALSE;
  	}
 
@@ -327,8 +327,8 @@ static gboolean DefineOrcaBasisType(gchar *fileName)
  	if(forb == NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),fileName);
+  		Message(buffer,_("Error"),TRUE);
   		return FALSE;
  	}
 	ok = FALSE;
@@ -357,8 +357,8 @@ static gboolean DefineOrcaBasisType(gchar *fileName)
 	if(!ok)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry\nI can not read basis from '%s' file\n",fileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry\nI can not read basis from '%s' file\n"),fileName);
+  		Message(buffer,_("Error"),TRUE);
   		return FALSE;
 	}
 
@@ -434,8 +434,8 @@ static gboolean DefineOrcaBasisType(gchar *fileName)
 	if(Type[i].Ao == NULL)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not read '%s' file, problem with basis set\n",fileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not read '%s' file, problem with basis set\n"),fileName);
+  		Message(buffer,_("Error"),TRUE);
 		if(numAtoms) g_free(numAtoms);
 		return FALSE;
 	}
@@ -548,7 +548,7 @@ static gboolean read_last_orbitals_in_orca_output_file(gchar *fileName)
 	
  	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
-		Message("Sorry No file slected\n","Error",TRUE);
+		Message(_("Sorry No file selected\n"),_("Error"),TRUE);
     		return FALSE;
  	}
 
@@ -557,8 +557,8 @@ static gboolean read_last_orbitals_in_orca_output_file(gchar *fileName)
  	if(file ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),fileName);
+  		Message(buffer,_("Error"),TRUE);
   		return FALSE;
  	}
 	OK = FALSE;
@@ -579,8 +579,8 @@ static gboolean read_last_orbitals_in_orca_output_file(gchar *fileName)
 	if(!OK)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not read the orbitals from '%s' file\n",fileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not read the orbitals from '%s' file\n"),fileName);
+  		Message(buffer,_("Error"),TRUE);
 		fclose(file);
   		return FALSE;
 	}
@@ -689,31 +689,31 @@ void read_orca_orbitals_from_output_file(gchar* fileName)
 	if(typefile==GABEDIT_TYPEFILE_UNKNOWN) return;
 	if(typefile != GABEDIT_TYPEFILE_ORCA)
 	{
-		Message("Sorry, This file is not in Orca output file\n","Error",TRUE);
+		Message(_("Sorry, This file is not in Orca output file\n"),_("Error"),TRUE);
 		return ;
 	}
 	free_data_all();
 	t = get_name_file(fileName);
-	set_status_label_info("File Name",t);
+	set_status_label_info(_("File name"),t);
 	g_free(t);
-	set_status_label_info("File Type","Orca");
-	set_status_label_info("Mol. Orb.","Reading");
+	set_status_label_info(_("File type"),"Orca");
+	set_status_label_info(_("Mol. Orb."),"Reading");
 
 	free_orbitals();	
  	if(!gl_read_orca_file_geomi(fileName,-1))
 	{
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Mol. Orb.","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
 		return;
 	}
 
  	InitializeAll();
  	if(!DefineOrcaBasisType(fileName))
 	{
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Mol. Orb.","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
 		return;
 	}
  	/* Debug("End define Basis Type NAOrb = %d \n",NAOrb);*/
@@ -744,7 +744,7 @@ void read_orca_orbitals_from_output_file(gchar* fileName)
 		PrintAllOrb(CoefBetaOrbitals);
 		Debug("End PrintAllOrb Beta\n");
 		*/
-		set_status_label_info("Mol. Orb.","Ok");
+		set_status_label_info(_("Mol. Orb."),_("Ok"));
 		glarea_rafresh(GLArea); /* for geometry */
 		NumSelOrb = NAlphaOcc-1;
 		/*
@@ -756,9 +756,9 @@ void read_orca_orbitals_from_output_file(gchar* fileName)
 	}
 	else
 	{
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Mol. Orb.","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
 	}
 
 }

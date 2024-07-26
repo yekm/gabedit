@@ -109,7 +109,7 @@ static gdouble* read_basis_zeta_from_a_mopac_output_file(gchar *FileName, gint* 
 	
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry No file slected\n","Error",TRUE);
+		Message(_("Sorry No file selected\n"),_("Error"),TRUE);
     		return NULL;
  	}
 
@@ -117,8 +117,8 @@ static gdouble* read_basis_zeta_from_a_mopac_output_file(gchar *FileName, gint* 
  	if(file ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
   		return NULL;
  	}
 	str = get_one_block_from_aux_mopac_file(file, "AO_ZETA[",  nrs);
@@ -150,7 +150,7 @@ static gdouble* read_overlap_matrix_from_a_mopac_output_file_comp(gchar *FileNam
 	
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry No file slected\n","Error",TRUE);
+		Message(_("Sorry No file selected\n"),_("Error"),TRUE);
     		return NULL;
  	}
 
@@ -158,8 +158,8 @@ static gdouble* read_overlap_matrix_from_a_mopac_output_file_comp(gchar *FileNam
  	if(file ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
   		return NULL;
  	}
 	strIndices = get_one_block_from_aux_mopac_file(file, "OVERLAP_INDICES[",  &ni);
@@ -212,7 +212,7 @@ static gdouble* read_overlap_matrix_from_a_mopac_output_file_nocomp(gchar *FileN
 	
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry No file slected\n","Error",TRUE);
+		Message(_("Sorry No file selected\n"),_("Error"),TRUE);
     		return NULL;
  	}
 
@@ -220,8 +220,8 @@ static gdouble* read_overlap_matrix_from_a_mopac_output_file_nocomp(gchar *FileN
  	if(file ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
   		return NULL;
  	}
 	str = get_one_block_from_aux_mopac_file(file, "OVERLAP_MATRIX[",  nrs);
@@ -255,7 +255,7 @@ static gint* read_basis_atompqn_from_a_mopac_output_file(gchar *FileName, gint* 
 	
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry No file slected\n","Error",TRUE);
+		Message(_("Sorry No file selected\n"),_("Error"),TRUE);
     		return NULL;
  	}
 
@@ -263,8 +263,8 @@ static gint* read_basis_atompqn_from_a_mopac_output_file(gchar *FileName, gint* 
  	if(file ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
   		return NULL;
  	}
 	str = get_one_block_from_aux_mopac_file(file, "ATOM_PQN[",  nrs);
@@ -290,7 +290,7 @@ static gint* read_basis_atomnums_from_a_mopac_output_file(gchar *FileName, gint*
 	
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry No file slected\n","Error",TRUE);
+		Message(_("Sorry No file selected\n"),_("Error"),TRUE);
     		return NULL;
  	}
 
@@ -298,8 +298,8 @@ static gint* read_basis_atomnums_from_a_mopac_output_file(gchar *FileName, gint*
  	if(file ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
   		return NULL;
  	}
 	str = get_one_block_from_aux_mopac_file(file, "AO_ATOMINDEX[",  nrs);
@@ -323,7 +323,7 @@ static gchar** read_basis_types_from_a_mopac_output_file(gchar *FileName, gint* 
 	
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry No file slected\n","Error",TRUE);
+		Message(_("Sorry No file selected\n"),_("Error"),TRUE);
     		return NULL;
  	}
 
@@ -331,8 +331,8 @@ static gchar** read_basis_types_from_a_mopac_output_file(gchar *FileName, gint* 
  	if(file ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
   		return NULL;
  	}
 	strbasis = get_one_block_from_aux_mopac_file(file, "ATOM_SYMTYPE[",  nrs);
@@ -1190,17 +1190,17 @@ void read_mopac_orbitals(gchar* FileName)
 	if(typefile != GABEDIT_TYPEFILE_MOPAC_AUX)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not read this format from '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not read this format from '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 		return ;
 	}
 
 	free_data_all();
 	t = get_name_file(FileName);
-	set_status_label_info("File Name",t);
+	set_status_label_info(_("File name"),t);
 	g_free(t);
-	set_status_label_info("File Type","Mopac");
-	set_status_label_info("Mol. Orb.","Reading");
+	set_status_label_info(_("File type"),"Mopac");
+	set_status_label_info(_("Mol. Orb."),"Reading");
 	
 	free_orbitals();	
 
@@ -1208,9 +1208,9 @@ void read_mopac_orbitals(gchar* FileName)
  	if(!Ok)
 	{
 		free_geometry();
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Mol. Orb.","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
 		return;
 	}
 	if(Type) g_free(Type);
@@ -1227,9 +1227,9 @@ void read_mopac_orbitals(gchar* FileName)
 			for(i=0;i<Ncenters;i++) GeomOrb[i].Prop = prop_atom_get("H");
 			free_geometry();
 		}
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Mol. Orb.","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
 		free_one_string_table(strbasis,nrs);
 		if(nums) g_free(nums);
 		if(zetas) g_free(zetas);
@@ -1237,13 +1237,13 @@ void read_mopac_orbitals(gchar* FileName)
 		return;
 	}
 
-	set_status_label_info("Mol. Orb.","Reading");
+	set_status_label_info(_("Mol. Orb."),"Reading");
  	InitializeAll();
 	buildBondsOrb();
 	RebuildGeom = TRUE;
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
 	glarea_rafresh(GLArea); /* for geometry*/
 
 
@@ -1276,7 +1276,7 @@ void read_mopac_orbitals(gchar* FileName)
 	if(Ok)
 	{
 		/*PrintAllOrb(CoefAlphaOrbitals);*/
-		set_status_label_info("Mol. Orb.","Ok");
+		set_status_label_info(_("Mol. Orb."),_("Ok"));
 		glarea_rafresh(GLArea); /* for geometry*/
 		NumSelOrb = 0;
 		for(i=0;i<NOrb;i++) 
@@ -1298,11 +1298,11 @@ void read_mopac_orbitals(gchar* FileName)
 	{
 		gchar buffer[BSIZE];
 		free_orbitals();	
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Mol. Orb.","Nothing");
-		sprintf(buffer,"Sorry, I can not read the orbitals from '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
+		sprintf(buffer,_("Sorry, I can not read the orbitals from '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 	}
 
 } 

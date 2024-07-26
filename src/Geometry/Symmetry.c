@@ -373,11 +373,11 @@ static void create_frame_rotation(GtkWidget *Dialogue,GtkWidget *vboxframe)
   guint i;
   guint j;
   gchar* textlabel[5][5] = { 
-				{" "," ","  Axis n 1 ","  Axis n 2  ","  Axis n 3  "},
+				{" "," ",N_("  Axis n 1 "),N_("  Axis n 2  "),N_("  Axis n 3  ")},
 				{"I(uam 12C)",":"," "," "," "},
 				{"K(cm-1)",":"," "," "," "},
 				{"K(Ghz)",":"," "," "," "},
-				{"Masse ","=","  ","uam(12C)"," "}
+				{N_("Mass "),"=","  ","uam(12C)"," "}
 			};
   j = 4;
   textlabel[j][2] = g_strdup_printf("%.8f  ",Masse);
@@ -398,7 +398,7 @@ static void create_frame_rotation(GtkWidget *Dialogue,GtkWidget *vboxframe)
   	else
 	textlabel[j][i] = g_strdup_printf("%8s  "," ");
 
-  Frame = create_frame(Dialogue,vboxframe,"Inertie Moment/Rotational Constants");  
+  Frame = create_frame(Dialogue,vboxframe,_("Inertie Moment/Rotational Constants"));  
   vbox = create_vbox(Frame);
   Table = gtk_table_new(5,5,FALSE);
   gtk_container_add(GTK_CONTAINER(vbox),Table);
@@ -438,9 +438,9 @@ static void create_frame_dipole(GtkWidget *Dialogue,GtkWidget *vboxframe)
   guint j;
   gdouble Module;
   gchar* textlabel[3][6] = { 
-				{" "," ","  Axis n 1 ","  Axis n 2  ","  Axis n 3  "," Module "},
-				{"Dipole(au)",":"," "," "," "," "},
-				{"Dipole(Debye)",":"," "," "," "," "},
+				{" "," ",N_("  Axis n 1 "),N_("  Axis n 2  "),N_("  Axis n 3  "),N_(" Module ")},
+				{N_("Dipole(au)"),":"," "," "," "," "},
+				{N_("Dipole(Debye)"),":"," "," "," "," "},
 			};
   Module = sqrt(D[0]*D[0] +  D[1]*D[1] + D[2]*D[2]) ;
   j = 1;
@@ -453,7 +453,7 @@ static void create_frame_dipole(GtkWidget *Dialogue,GtkWidget *vboxframe)
 	textlabel[j][i] = g_strdup_printf("%.8f  ",AUTODEB*D[i-2]);
   textlabel[j][5] = g_strdup_printf("%.8f  ",AUTODEB*Module);
 
-  Frame = create_frame(Dialogue,vboxframe,"Dipole at principal axis");  
+  Frame = create_frame(Dialogue,vboxframe,_("Dipole at principal axis"));  
   vbox = create_vbox(Frame);
   Table = gtk_table_new(3,5,FALSE);
   gtk_container_add(GTK_CONTAINER(vbox),Table);
@@ -490,16 +490,16 @@ void create_symmetry_window(GtkWidget* w,guint data)
 
     if(Natoms<1)
     {
-	    Message("Sorry Number of atoms is not positive","Error",TRUE);
+	    Message(N_("Sorry Number of atoms is not positive"),N_("Error"),TRUE);
 	    return;
     }
     set_axis_inertie_rot();
     Dialogue = gtk_dialog_new();
     gtk_widget_realize(GTK_WIDGET(Dialogue));
     if(Ddef)
-    	title = g_strdup("Rotational constants & Dipole");
+    	title = g_strdup(N_("Rotational constants & Dipole"));
     else
-    	title = g_strdup("Rotational constants");
+    	title = g_strdup(N_("Rotational constants"));
 			
     gtk_window_set_title(GTK_WINDOW(Dialogue),title);
 
@@ -545,14 +545,14 @@ void create_geometry_paxis_window(GtkWidget* w,guint data)
 
     if(Natoms<1)
     {
-	    Message("Sorry Number of atoms is not positive","Error",TRUE);
+	    Message(_("Sorry Number of atoms is not positive"),_("Error"),TRUE);
 	    return;
     }
     set_axis_inertie_rot();
     set_geom_principal_axis();
     Dialogue = gtk_dialog_new();
     gtk_widget_realize(GTK_WIDGET(Dialogue));
-    title = g_strdup("Geometry at principal axis");
+    title = g_strdup(_("Geometry at principal axis"));
 			
     gtk_window_set_title(GTK_WINDOW(Dialogue),title);
 

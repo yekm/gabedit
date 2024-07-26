@@ -592,7 +592,7 @@ Grid* define_grid_point(gint N[],GridLimits limits,Func3d func)
 Grid* define_grid(gint N[],GridLimits limits)
 {
 	Grid *grid = NULL;
-	set_status_label_info("Grid","Computing");
+	set_status_label_info(_("Grid"),_("Computing"));
 	CancelCalcul = FALSE;
 	switch(TypeGrid)
 	{
@@ -645,9 +645,9 @@ Grid* define_grid(gint N[],GridLimits limits)
 
 	}
 	if(grid)
-		set_status_label_info("Grid","Ok");
+		set_status_label_info(_("Grid"),_("Ok"));
 	else
-		set_status_label_info("Grid","Nothing");
+		set_status_label_info(_("Grid"),_("Nothing"));
 	return grid;
 }
 /*********************************************************************************/
@@ -661,15 +661,15 @@ Grid* define_grid_electronic_density(gint N[],GridLimits limits)
 {
 	Grid *grid = NULL;
 	GabEditTypeGrid TypeGridOld = TypeGrid;
-	gchar* t = g_strdup_printf("Computing Grid for electronic density");
-	set_status_label_info("Grid",t);
+	gchar* t = g_strdup_printf(_("Computing Grid for electronic density"));
+	set_status_label_info(_("Grid"),t);
 	g_free(t);
 	CancelCalcul = FALSE;
 	TypeGrid = GABEDIT_TYPEGRID_EDENSITY;
 	grid = define_grid_point(N,limits,get_value_electronic_density);
 	TypeGrid = TypeGridOld;
-	if(grid) set_status_label_info("Grid","Ok");
-	else set_status_label_info("Grid","Nothing");
+	if(grid) set_status_label_info(_("Grid"),_("Ok"));
+	else set_status_label_info(_("Grid"),_("Nothing"));
 	return grid;
 }
 /**************************************************************/
@@ -678,10 +678,10 @@ Grid* define_grid_FED(gint N[],GridLimits limits, gint n)
 	Grid *grid = NULL;
 	GabEditTypeGrid TypeGridOld = TypeGrid;
 	gchar* t = NULL;
-	if(n==0) t = g_strdup_printf("Computing FED Grid for a electrophilic reaction");
-	else if(n==2) t = g_strdup_printf("Computing FED Grid for a nucleophilic reaction");
-	else t = g_strdup_printf("Computing FED Grid for a radical reaction");
-	set_status_label_info("Grid",t);
+	if(n==0) t = g_strdup_printf(_("Computing FED Grid for a electrophilic reaction"));
+	else if(n==2) t = g_strdup_printf(_("Computing FED Grid for a nucleophilic reaction"));
+	else t = g_strdup_printf(_("Computing FED Grid for a radical reaction"));
+	set_status_label_info(_("Grid"),t);
 	g_free(t);
 	CancelCalcul = FALSE;
 	if(n==0) TypeGrid = GABEDIT_TYPEGRID_FEDELECTROPHILIC;
@@ -689,8 +689,8 @@ Grid* define_grid_FED(gint N[],GridLimits limits, gint n)
 	else TypeGrid = GABEDIT_TYPEGRID_FEDRADICAL;
 	grid = define_grid_point_fed(N,limits,n);
 	TypeGrid = TypeGridOld;
-	if(grid) set_status_label_info("Grid","Ok");
-	else set_status_label_info("Grid","Nothing");
+	if(grid) set_status_label_info(_("Grid"),_("Ok"));
+	else set_status_label_info(_("Grid"),_("Nothing"));
 	return grid;
 }
 /**************************************************************/
@@ -698,15 +698,15 @@ Grid* define_grid_ELFBECKE(gint N[],GridLimits limits)
 {
 	Grid *grid = NULL;
 	GabEditTypeGrid TypeGridOld = TypeGrid;
-	gchar* t = g_strdup_printf("Computing Grid for ELF(Becke)");
-	set_status_label_info("Grid",t);
+	gchar* t = g_strdup_printf(_("Computing Grid for ELF(Becke)"));
+	set_status_label_info(_("Grid"),t);
 	g_free(t);
 	CancelCalcul = FALSE;
 	TypeGrid = GABEDIT_TYPEGRID_ELFBECKE;
 	grid = define_grid_point(N,limits,get_value_elf_becke);
 	TypeGrid = TypeGridOld;
-	if(grid) set_status_label_info("Grid","Ok");
-	else set_status_label_info("Grid","Nothing");
+	if(grid) set_status_label_info(_("Grid"),_("Ok"));
+	else set_status_label_info(_("Grid"),_("Nothing"));
 	return grid;
 }
 /**************************************************************/
@@ -714,15 +714,15 @@ Grid* define_grid_ELFSAVIN(gint N[],GridLimits limits)
 {
 	Grid *grid = NULL;
 	GabEditTypeGrid TypeGridOld = TypeGrid;
-	gchar* t = g_strdup_printf("Computing Grid for ELF(Savin)");
-	set_status_label_info("Grid",t);
+	gchar* t = g_strdup_printf(_("Computing Grid for ELF(Savin)"));
+	set_status_label_info(_("Grid"),t);
 	g_free(t);
 	CancelCalcul = FALSE;
 	TypeGrid = GABEDIT_TYPEGRID_ELFSAVIN;
 	grid = define_grid_point(N,limits,get_value_elf_becke);
 	TypeGrid = TypeGridOld;
-	if(grid) set_status_label_info("Grid","Ok");
-	else set_status_label_info("Grid","Nothing");
+	if(grid) set_status_label_info(_("Grid"),_("Ok"));
+	else set_status_label_info(_("Grid"),_("Nothing"));
 	return grid;
 }
 /**************************************************************/
@@ -732,8 +732,8 @@ Grid* define_grid_orb(gint N[],GridLimits limits, gint typeOrb, gint i)
 	GabEditTypeGrid TypeGridOld = TypeGrid;
 	gint TypeSelOrbOld = TypeSelOrb;
 	gint NumSelOrbOld = NumSelOrb;
-	gchar* t = g_strdup_printf("Computing Grid for orb # %d",i);
-	set_status_label_info("Grid",t);
+	gchar* t = g_strdup_printf(_("Computing Grid for orb # %d"),i);
+	set_status_label_info(_("Grid"),t);
 	g_free(t);
 	CancelCalcul = FALSE;
 	TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
@@ -743,8 +743,8 @@ Grid* define_grid_orb(gint N[],GridLimits limits, gint typeOrb, gint i)
 	TypeGrid = TypeGridOld;
 	TypeSelOrb = TypeSelOrbOld;
 	NumSelOrb = NumSelOrbOld;
-	if(grid) set_status_label_info("Grid","Ok");
-	else set_status_label_info("Grid","Nothing");
+	if(grid) set_status_label_info(_("Grid"),_("Ok"));
+	else set_status_label_info(_("Grid"),_("Nothing"));
 	return grid;
 }
 /**************************************************************/
@@ -775,7 +775,7 @@ gboolean compute_coulomb_integrale_iijj(gint N[],GridLimits limits, gint typeOrb
 	gridj = 0;
 	gridj = define_grid_orb(N, limits, typeOrbj,  j);
 	if(!gridj) return FALSE;
-	set_status_label_info("Grid","Comp. phi_i^2 and phi_j^2");
+	set_status_label_info(_("Grid"),_("Comp. phi_i^2 and phi_j^2"));
 	scal = (gdouble)1.01/gridi->N[0];
 	for(ki=0;ki<gridi->N[0];ki++)
 	{
@@ -804,7 +804,7 @@ gboolean compute_coulomb_integrale_iijj(gint N[],GridLimits limits, gint typeOrb
 		free_grid(gridj);
 		return FALSE;
 	}
-	set_status_label_info("Grid","Computing of Coulomb int.");
+	set_status_label_info(_("Grid"),_("Computing of Coulomb int."));
 	scal = (gdouble)1.01/gridi->N[0];
 	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 	for(ki=0;ki<gridi->N[0];ki++)
@@ -2264,7 +2264,7 @@ Grid* compute_mep_grid_using_multipol_from_density_grid(Grid* grid, gint lmax)
 
 	if(!test_grid_all_positive(grid))
 	{
-		Message("Sorry\n The current grid is not a grid for electronic density","Error",TRUE);
+		Message(_("Sorry\n The current grid is not a grid for electronic density"),_("Error"),TRUE);
 		return NULL;
 	}
 
@@ -2386,7 +2386,7 @@ Grid* compute_mep_grid_using_multipol_from_orbitals(gint N[],GridLimits limits, 
 	eGrid = define_grid_point(N,limits,get_value_electronic_density);
 	esp = compute_mep_grid_using_multipol_from_density_grid(eGrid, lmax);
 	eGrid=free_grid(eGrid);
-	set_status_label_info("Grid"," ");
+	set_status_label_info(_("Grid")," ");
 	return esp;
 }
 /*********************************************************************************/
@@ -2410,7 +2410,7 @@ Grid* solve_poisson_equation_from_density_grid(Grid* grid, PoissonSolverMethod p
 
 	if(!test_grid_all_positive(grid))
 	{
-		Message("Sorry\n The current grid is not a grid for electronic density","Error",TRUE);
+		Message(_("Sorry\n The current grid is not a grid for electronic density"),_("Error"),TRUE);
 		return NULL;
 	}
 
@@ -2437,7 +2437,7 @@ Grid* solve_poisson_equation_from_density_grid(Grid* grid, PoissonSolverMethod p
 	potential = getNewGridMGUsingDomain(&domain);
 
 	progress_orb(0,GABEDIT_PROGORB_COMPMEPGRID,TRUE);
-	setTextInProgress("Compute of the source grid for the Poisson equation");
+	setTextInProgress(_("Compute of the source grid for the Poisson equation"));
 	for(i=0;i<grid->N[0];i++)
 		for(j=0;j<grid->N[1];j++)
 			for(k=0;k<grid->N[2];k++)
@@ -2445,9 +2445,9 @@ Grid* solve_poisson_equation_from_density_grid(Grid* grid, PoissonSolverMethod p
 				setValGridMG(source,i,j,k,grid->point[i][j][k].C[3]*fourPI);
 			}
 	ps = getPoissonMG(potential, source);
-	setTextInProgress("Set boundary values from multipole ");
+	setTextInProgress(_("Set boundary values from multipole "));
 	tradesBoundaryPoissonMG(ps);
-	setTextInProgress("Solve the Poisson equation");
+	setTextInProgress(_("Solve the Poisson equation"));
 	/* solve poisson */
 	/*solveMGPoissonMG(ps, domain.maxLevel);*/
 	if(psMethod==GABEDIT_CG)
@@ -2461,7 +2461,7 @@ Grid* solve_poisson_equation_from_density_grid(Grid* grid, PoissonSolverMethod p
 		return NULL;
 	}
 	progress_orb(0,GABEDIT_PROGORB_COMPMEPGRID,TRUE);
-	setTextInProgress("End the rsolution of the Poisson equation");
+	setTextInProgress(_("End the rsolution of the Poisson equation"));
 	/*smootherPoissonMG(ps,100);*/
 
 	esp = copyGrid(grid);
@@ -2501,7 +2501,7 @@ Grid* solve_poisson_equation_from_orbitals(gint N[],GridLimits limits, PoissonSo
 	if(!eGrid) return NULL;
 	esp = solve_poisson_equation_from_density_grid(eGrid, psMethod);
 	eGrid=free_grid(eGrid);
-	set_status_label_info("Grid"," ");
+	set_status_label_info(_("Grid")," ");
 	return esp;
 }
 /**************************************************************/
@@ -2534,7 +2534,7 @@ gboolean compute_coulomb_integrale_iijj_poisson(gint N[],GridLimits limits, gint
 	else gridj = define_grid_orb(N, limits, typeOrbj,  j);
 	if(!gridj) return FALSE;
 	if(CancelCalcul) return FALSE;
-	set_status_label_info("Grid","Comp. phi_i^2 and phi_j^2");
+	set_status_label_info(_("Grid"),_("Comp. phi_i^2 and phi_j^2"));
 	scal = (gdouble)1.01/gridi->N[0];
 	for(k=0;k<gridi->N[0];k++)
 	{
@@ -2564,7 +2564,7 @@ gboolean compute_coulomb_integrale_iijj_poisson(gint N[],GridLimits limits, gint
 		return FALSE;
 	}
 
-	set_status_label_info("Grid","Computing of Coulomb int.");
+	set_status_label_info(_("Grid"),_("Computing of Coulomb int."));
 	potential = solve_poisson_equation_from_density_grid(gridi, GABEDIT_MG);
 	if(CancelCalcul || !potential) 
 	{
@@ -2645,7 +2645,7 @@ gboolean compute_transition_matrix_numeric(gint N[],GridLimits limits, gint type
 	gridj = 0;
 	gridj = define_grid_orb(N, limits, typeOrbj,  j);
 	if(!gridj) return FALSE;
-	set_status_label_info("Grid","Comp. phi_i*phi_j");
+	set_status_label_info(_("Grid"),_("Comp. phi_i*phi_j"));
 	scal = (gdouble)1.01/gridi->N[0];
 	for(ki=0;ki<gridi->N[0];ki++)
 	{
@@ -2673,7 +2673,7 @@ gboolean compute_transition_matrix_numeric(gint N[],GridLimits limits, gint type
 		free_grid(gridj);
 		return FALSE;
 	}
-	set_status_label_info("Grid","Computing of <i|vec r|j>.");
+	set_status_label_info(_("Grid"),_("Computing of <i|vec r|j>."));
 	scal = (gdouble)1.01/gridi->N[0];
 	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 	for(ki=0;ki<gridi->N[0];ki++)
@@ -2737,7 +2737,7 @@ gboolean compute_spatial_overlap_numeric(gint N[],GridLimits limits, gint typeOr
 	gridj = 0;
 	gridj = define_grid_orb(N, limits, typeOrbj,  j);
 	if(!gridj) return FALSE;
-	set_status_label_info("Grid","Comp. phi_i*phi_j");
+	set_status_label_info(_("Grid"),_("Comp. phi_i*phi_j"));
 	scal = (gdouble)1.01/gridi->N[0];
 	for(ki=0;ki<gridi->N[0];ki++)
 	{
@@ -2765,7 +2765,7 @@ gboolean compute_spatial_overlap_numeric(gint N[],GridLimits limits, gint typeOr
 		free_grid(gridj);
 		return FALSE;
 	}
-	set_status_label_info("Grid","Computing of <i|vec r|j>.");
+	set_status_label_info(_("Grid"),_("Computing of <i|vec r|j>."));
 	scal = (gdouble)1.01/gridi->N[0];
 	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 	for(ki=0;ki<gridi->N[0];ki++)
@@ -2810,8 +2810,8 @@ gboolean compute_integrale_from_grid(Grid* grid, gboolean square, gdouble* pInte
 	if(!grid) return FALSE;
 	if(CancelCalcul) return FALSE;
 
-	if(square) set_status_label_info("Grid","Comp. integ f^2(x,y,z) dv from grid");
-	else set_status_label_info("Grid","Comp. integ f(,xy,z) dv from grid");
+	if(square) set_status_label_info(_("Grid"),_("Comp. integ f^2(x,y,z) dv from grid"));
+	else set_status_label_info(_("Grid"),_("Comp. integ f(,xy,z) dv from grid"));
 	scal = (gdouble)1.01/grid->N[0];
 	for(k=0;k<grid->N[0];k++)
 	{
@@ -2899,8 +2899,8 @@ gboolean compute_isovalue_percent_from_grid(Grid* grid, gboolean square, gdouble
 	/* printf("integAll = %f\n",integAll);*/
 	if(integAll<1e-10) return FALSE;
 
-	if(square) set_status_label_info("Grid","Comp. integ f^2(x,y,z) dv from grid");
-	else set_status_label_info("Grid","Comp. integ f(,xy,z) dv from grid");
+	if(square) set_status_label_info(_("Grid"),_("Comp. integ f^2(x,y,z) dv from grid"));
+	else set_status_label_info(_("Grid"),_("Comp. integ f(,xy,z) dv from grid"));
 
         isoMax = fabs(limits.MinMax[1][3]);
 	/*
@@ -2910,8 +2910,8 @@ gboolean compute_isovalue_percent_from_grid(Grid* grid, gboolean square, gdouble
 	while(fabs(isoMax-isoMin)>precision)
 	{
 		iso = (isoMax+isoMin)/2;
-		sprintf(tmp,"Computing integrale for isovalue = %f, (IsoMax-IsoMin) = %f, precision = %f",iso, fabs(isoMax-isoMin),precision);
-		set_status_label_info("Grid",tmp);
+		sprintf(tmp,_("Computing integrale for isovalue = %f, (IsoMax-IsoMin) = %f, precision = %f"),iso, fabs(isoMax-isoMin),precision);
+		set_status_label_info(_("Grid"),tmp);
 		if(!compute_integrale_from_grid_foranisovalue(grid, square, iso, &integ)) return FALSE;
 		/* printf("iso = %f %%=%f\n",iso,integ/integAll*100);*/
 		if(integ/integAll*100<percent) isoMax = iso;

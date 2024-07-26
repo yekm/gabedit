@@ -33,6 +33,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/UtilsInterface.h"
 #include "../Geometry/InterfaceGeom.h"
 
+/************************************************************************************************************/
 void AjoutePageGeom(GtkWidget *NoteBook,GeomS *geom)
 {
   GtkWidget *hbox;
@@ -67,8 +68,8 @@ void AjoutePageGeom(GtkWidget *NoteBook,GeomS *geom)
 
 
 
-  LabelOnglet = gtk_label_new("Geometry");
-  LabelMenu = gtk_label_new("Geometry");
+  LabelOnglet = gtk_label_new(_("Geometry"));
+  LabelMenu = gtk_label_new(_("Geometry"));
   gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook),
                                 Frame,
                                 LabelOnglet, LabelMenu);
@@ -79,14 +80,11 @@ void AjoutePageGeom(GtkWidget *NoteBook,GeomS *geom)
   window1=Frame;
   vbox1 = BoiteV;
   hbox1 = gtk_hbox_new (FALSE, 0);
-  g_object_ref (hbox1);
-  g_object_set_data_full(G_OBJECT (window1), "hbox1", hbox1,
-                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (hbox1);
   gtk_box_pack_start (GTK_BOX (vbox1), hbox1, FALSE, FALSE, 0);
 
 
-  label2 = gtk_label_new (" Symmetry : ");
+  label2 = gtk_label_new (_(" Symmetry : "));
   gtk_widget_show (label2);
   gtk_box_pack_start (GTK_BOX (hbox1), label2, FALSE, FALSE, 0);
 
@@ -94,7 +92,7 @@ void AjoutePageGeom(GtkWidget *NoteBook,GeomS *geom)
   gtk_widget_set_size_request(GTK_WIDGET(combo2),100,-1);
   gtk_widget_show (combo2);
   gtk_box_pack_start (GTK_BOX (hbox1), combo2, FALSE, FALSE, 0);
-  combo2_items = g_list_append (combo2_items, "default");
+  combo2_items = g_list_append (combo2_items, _("default"));
   combo2_items = g_list_append (combo2_items, "NOSYM");
   combo2_items = g_list_append (combo2_items, "Z");
   combo2_items = g_list_append (combo2_items, "XY");
@@ -107,27 +105,18 @@ void AjoutePageGeom(GtkWidget *NoteBook,GeomS *geom)
   g_list_free (combo2_items);
 
   combo_entry2 = GTK_BIN (combo2)->child;
-  g_object_ref (combo_entry2);
-  g_object_set_data_full(G_OBJECT (window1), "combo_entry2", combo_entry2,
-                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (combo_entry2);
 
 
-  label3 = gtk_label_new ("         Options :    ");
-  g_object_ref (label3);
-  g_object_set_data_full(G_OBJECT (window1), "label3", label3,
-                            (GDestroyNotify) g_object_unref);
+  label3 = gtk_label_new (_("         Options :    "));
   gtk_widget_show (label3);
   gtk_box_pack_start (GTK_BOX (hbox1), label3, FALSE, FALSE, 0);
 
   combo3 = gtk_combo_box_entry_new_text ();
-  g_object_ref (combo3);
-  g_object_set_data_full(G_OBJECT (window1), "combo3", combo3,
-                            (GDestroyNotify) g_object_unref);
   gtk_widget_set_size_request(GTK_WIDGET(combo3),100,-1);
   gtk_widget_show (combo3);
   gtk_box_pack_start (GTK_BOX (hbox1), combo3, FALSE, FALSE, 0);
-  combo3_items = g_list_append (combo3_items, "none");
+  combo3_items = g_list_append (combo3_items, _("none"));
   combo3_items = g_list_append (combo3_items, "MASS");
   combo3_items = g_list_append (combo3_items, "CHARGE");
   combo3_items = g_list_append (combo3_items, "NOORIENT");
@@ -138,30 +127,19 @@ void AjoutePageGeom(GtkWidget *NoteBook,GeomS *geom)
   g_list_free (combo3_items);
 
   combo_entry3 = GTK_BIN (combo3)->child;
-  g_object_ref (combo_entry3);
-  g_object_set_data_full(G_OBJECT (window1), "combo_entry3", combo_entry3,
-                            (GDestroyNotify) g_object_unref);
-
   gtk_widget_show (combo_entry3);
 
-/*
-  create_units_option(hbox1,"     Default unit : ");
-*/
-
   hseparator2 = gtk_hseparator_new ();
-  g_object_ref (hseparator2);
-  g_object_set_data_full(G_OBJECT (BoiteV), "hseparator2", hseparator2,
-                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (hseparator2);
   gtk_box_pack_start (GTK_BOX (BoiteV), hseparator2, FALSE, FALSE, 0);
 
   hbox =create_hbox_false(BoiteV);
-  FrameType = create_frame(window1,hbox,"TYPE");
+  FrameType = create_frame(window1,hbox,_("TYPE"));
   
   combobox = create_geom(window1,FrameType);
 
   geominter->vbox=BoiteV;
-  geominter->frametitle=g_strdup("GEOMETRY");
+  geominter->frametitle=g_strdup(_("GEOMETRY"));
 
    geom->Symentry=combo_entry2;
    geom->Optentry=combo_entry3;

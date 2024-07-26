@@ -308,7 +308,7 @@ static void changedEntryCharge(GtkWidget *entry, gpointer data)
 	{
 		gint ne = mpqcMolecule.numberOfValenceElectrons - mpqcGuessWaveFunction.totalCharge;
 		gchar buffer[BSIZE];
-		sprintf(buffer, "Number of electrons = %d",ne);
+		sprintf(buffer, _("Number of electrons = %d"),ne);
 		gtk_label_set_text(GTK_LABEL(labelNumberOfElectrons),buffer);
 	}
 }
@@ -360,7 +360,7 @@ static GtkWidget *addMPQCSpinGuessToTable(GtkWidget *table, gint i)
 	gint nlistspinMultiplicity = 1;
 	gchar* listspinMultiplicity[] = {"0"};
 
-	add_label_table(table,"Spin multiplicity",(gushort)i,0);
+	add_label_table(table,_("Spin multiplicity"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entrySpinMultiplicity = addComboListToATable(table, listspinMultiplicity, nlistspinMultiplicity, i, 2, 1);
 	comboSpinMultiplicity  = g_object_get_data(G_OBJECT (entrySpinMultiplicity), "Combo");
@@ -382,7 +382,7 @@ static void addMPQCMethodToTable(GtkWidget *table, gint i, GtkWidget *comboSpinM
 
 	entrySpinMultiplicity  = GTK_BIN (comboSpinMultiplicity)->child;
 
-	add_label_table(table, "Method",(gushort) i, 0);
+	add_label_table(table, _("Method"),(gushort) i, 0);
 	add_label_table(table, ":",(gushort) i, 1);
 	entryMethod = addComboListToATable(table, listMethod, nlistMethod, i, 2, 1);
 	comboMethod  = g_object_get_data(G_OBJECT (entryMethod), "Combo");
@@ -432,7 +432,7 @@ void createMPQCGuess(GtkWidget *box)
 
 	table = gtk_table_new(5,4,FALSE);
 
-	frame = gtk_frame_new ("Parameters for computing the guess wave function");
+	frame = gtk_frame_new (_("Parameters for computing the guess wave function"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -444,7 +444,7 @@ void createMPQCGuess(GtkWidget *box)
 	hboxButton = gtk_hbox_new(TRUE, 5);
 	gtk_box_pack_start (GTK_BOX (vboxFrame), hboxButton, FALSE, FALSE, 5);
 
-	checkButton = gtk_check_button_new_with_label ("Starting from core Hamiltonian guess.");
+	checkButton = gtk_check_button_new_with_label (_("Starting from core Hamiltonian guess."));
 	gtk_box_pack_start (GTK_BOX (hboxButton), checkButton, TRUE, TRUE, 5);
 
 	vboxTable = gtk_vbox_new (FALSE, 3);

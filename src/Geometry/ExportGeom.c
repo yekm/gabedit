@@ -45,7 +45,7 @@ static void export_geometry_file(GabeditFileChooser *SelecFile, gint response_id
  	fileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     		return ;
  	}
 	export_geometry(fileName, type);

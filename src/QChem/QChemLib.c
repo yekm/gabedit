@@ -22,6 +22,7 @@ DEALINGS IN THE SOFTWARE.
 #include <string.h>
 #include <stdio.h>
 #include <gtk/gtk.h>
+#include <glib/gi18n.h>
 #include "../Common/GabeditType.h"
 #include "../Utils/Utils.h"
 #include "../Utils/Constants.h"
@@ -48,7 +49,7 @@ GList* getQChemBasisList(gchar* Symb, gchar* message)
 	}
 	if(!fin)
 	{
-		sprintf(message,"Sorry the qchemBasis is corrupted.\nPlease reinstall gabedit\n");
+		sprintf(message,_("Sorry the qchemBasis is corrupted.\nPlease reinstall gabedit\n"));
 		return NULL;
 	}
   
@@ -74,7 +75,7 @@ GList* getQChemBasisList(gchar* Symb, gchar* message)
 					nbas = 0;
 		       			g_list_free(glist);
 					glist = NULL;
-					sprintf(message,"Sorry the qchemBasis is corrupted.\nPlease reinstall gabedit\n");
+					sprintf(message,_("Sorry the qchemBasis is corrupted.\nPlease reinstall gabedit\n"));
 					break;
 				}
 				for(k=0;k<(gint)strlen(basisName);k++) if (t[k]=='#') t[k] = ' ';
@@ -122,7 +123,7 @@ GList* getQChemBasisListOfAtoms(GList* atomsList, gchar* message)
 	}
 	if(!fin)
 	{
-		sprintf(message,"Sorry the qchemBasis is corrupted.\nPlease reinstall gabedit\n");
+		sprintf(message,_("Sorry the qchemBasis is corrupted.\nPlease reinstall gabedit\n"));
 		return NULL;
 	}
 
@@ -175,7 +176,7 @@ GList* getQChemBasisListOfAtoms(GList* atomsList, gchar* message)
 				{
 					nbas = -1;
 					basisList = NULL;
-					sprintf(message,"Sorry the qchemBasis is corrupted.\nPlease reinstall gabedit\n");
+					sprintf(message,_("Sorry the qchemBasis is corrupted.\nPlease reinstall gabedit\n"));
 					break;
 				}
 				if(first)

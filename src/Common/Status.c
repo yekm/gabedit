@@ -98,7 +98,7 @@ static GtkWidget *create_progress_bar(GtkWidget *box)
 			1,1);
 
 
-  	button = gtk_button_new_with_label(" Cancel ");
+  	button = gtk_button_new_with_label(_(" Cancel "));
 	ButtonCancel = button;
   	gtk_widget_show_all (button);
 	gtk_table_attach(GTK_TABLE(table),button,2,3,0,1,

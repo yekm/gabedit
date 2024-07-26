@@ -413,7 +413,7 @@ void createMopacRemFrame(GtkWidget *win, GtkWidget *box)
 
 	comboethod = NULL;
 
-	frame = gtk_frame_new ("Job Specification:");
+	frame = gtk_frame_new (_("Job Specification:"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -426,7 +426,7 @@ void createMopacRemFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Job Type -----------------------------------------*/
 	l=0; 
 	c = 0; ncases=1;
-	add_label_table(table,"Job Type",l,c);
+	add_label_table(table,_("Job Type"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_jobtype();
@@ -439,7 +439,7 @@ void createMopacRemFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Hamiltonian Type -----------------------------------------*/
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"Hamiltonian",l,c);
+	add_label_table(table,_("Hamiltonian"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_hamiltonian_methods();
@@ -451,7 +451,7 @@ void createMopacRemFrame(GtkWidget *win, GtkWidget *box)
                   2,2);
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"Solvent",l,c);
+	add_label_table(table,_("Solvent"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_solventtype();

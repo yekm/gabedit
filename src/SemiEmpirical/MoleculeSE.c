@@ -336,14 +336,14 @@ static void setConnections(MoleculeSE* molecule)
 	createBondedMatrix(molecule);
 
 	/* printf("Set Connection\n");*/
-	set_text_to_draw("Establishing connectivity : 2 connections...");
-	set_statubar_operation_str("Establishing connectivity : 2 connections...");
+	set_text_to_draw(_("Establishing connectivity : 2 connections..."));
+	set_statubar_operation_str(_("Establishing connectivity : 2 connections..."));
 	dessine();
     	while( gtk_events_pending() )
         	gtk_main_iteration();
 	set2Connections(molecule);
-	set_text_to_draw("Establishing connectivity : 3 connections...");
-	set_statubar_operation_str("Establishing connectivity : 3 connections...");
+	set_text_to_draw(_("Establishing connectivity : 3 connections..."));
+	set_statubar_operation_str(_("Establishing connectivity : 3 connections..."));
 
 	dessine();
 	if(StopCalcul) return;

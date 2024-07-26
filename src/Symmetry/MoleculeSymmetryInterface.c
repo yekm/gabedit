@@ -57,13 +57,13 @@ static void putInfoInTextWidget(GtkWidget* TextWid,
 
  	gabedit_text_insert (GABEDIT_TEXT(TextWid), NULL, NULL, NULL,message,-1);   
 
-	sprintf(t,"Tolerance for principal axis classification : %0.5f\n",principalAxisTolerance);
+	sprintf(t,_("Tolerance for principal axis classification : %0.5f\n"),principalAxisTolerance);
  	gabedit_text_insert (GABEDIT_TEXT(TextWid), NULL, NULL, NULL,t,-1);   
 
-	sprintf(t,"Precision for atom position : %0.5f\n\n",eps);
+	sprintf(t,_("Precision for atom position : %0.5f\n\n"),eps);
  	gabedit_text_insert (GABEDIT_TEXT(TextWid), NULL, NULL, NULL,t,-1);   
 
-	sprintf(t,"Group Symmetry : %s\n",groupSymbol);
+	sprintf(t,_("Group Symmetry : %s\n"),groupSymbol);
  	gabedit_text_insert (GABEDIT_TEXT(TextWid), NULL, NULL, NULL,t,-1);   
 	sprintf(t,"-----------------------------------------------------------------------------------------\n\n");
  	gabedit_text_insert (GABEDIT_TEXT(TextWid), NULL, NULL, NULL,t,-1);   
@@ -81,10 +81,10 @@ static void putInfoAbelianGroup(GtkWidget* TextWid,
 	gchar  t[BSIZE];
 	gint i;
 
-	sprintf(t,"Abelian Group Name : %s\n\n",groupName);
+	sprintf(t,_("Abelian Group Name : %s\n\n"),groupName);
  	gabedit_text_insert (GABEDIT_TEXT(TextWid), NULL, NULL, NULL,t,-1);   
 
-	sprintf(t,"Generators : ");
+	sprintf(t,_("Generators : "));
 	for(i=0;i<nGenerators;i++) sprintf(t + strlen(t)," %s, ", generators[i]);
 	strcat(t,"\n");
  	gabedit_text_insert (GABEDIT_TEXT(TextWid), NULL, NULL, NULL,t,-1);   
@@ -94,7 +94,7 @@ static void putInfoAbelianGroup(GtkWidget* TextWid,
 	strcat(t,"\n");
  	gabedit_text_insert (GABEDIT_TEXT(TextWid), NULL, NULL, NULL,t,-1);   
 
-	sprintf(t,"Elements   : ");
+	sprintf(t,_("Elements   : "));
 	for(i=0;i<nElements;i++) sprintf(t + strlen(t)," %s, ", elements[i]);
 	strcat(t,"\n");
  	gabedit_text_insert (GABEDIT_TEXT(TextWid), NULL, NULL, NULL,t,-1);   
@@ -118,9 +118,9 @@ static void putGeometryInTextWidget(GtkWidget* TextWid, gint numberOfAtoms, gcha
 	green.blue = 0;
 
 
-	sprintf(t,"%d is the number of atoms\n",numberOfAtoms);
+	sprintf(t,_("%d is the number of atoms\n"),numberOfAtoms);
  	gabedit_text_insert (GABEDIT_TEXT(TextWid), NULL, NULL, NULL,t,-1);   
-	sprintf(t," Positions are in Ang\n");
+	sprintf(t,_(" Positions are in Ang\n"));
  	gabedit_text_insert (GABEDIT_TEXT(TextWid), NULL, NULL, NULL,t,-1);   
 
 	for(n=0;n<numberOfAtoms;n++)
@@ -164,7 +164,7 @@ void createGeometrySymmetryWindow(gint numberOfAtoms,
 	 
 	 if(numberOfAtoms<1)
 	 {
-		 Message("Sorry Number of atoms is not positive","Error",TRUE);
+		 Message(_("Sorry Number of atoms is not positive"),_("Error"),TRUE);
 		 return;
 	 }
 	symbolstmp = (gchar**)g_malloc(sizeof(gchar*)*(ntmp));
@@ -193,7 +193,7 @@ void createGeometrySymmetryWindow(gint numberOfAtoms,
 	}
 	 Dialogue = gtk_dialog_new();
 	 gtk_widget_realize(GTK_WIDGET(Dialogue));
-	 title = g_strdup("Group symmetry & Geometry with standard orientation");
+	 title = g_strdup(_("Group symmetry & Geometry with standard orientation"));
 			
 	 gtk_window_set_title(GTK_WINDOW(Dialogue),title);
 
@@ -219,12 +219,12 @@ void createGeometrySymmetryWindow(gint numberOfAtoms,
 
 	if(strcmp(groupSymbol,"C1")!=0)
 	{
-		sprintf(message , "Group & Geometry with reduction of molecule to its basis set of atoms\n");
+		sprintf(message , _("Group & Geometry with reduction of molecule to its basis set of atoms\n"));
 		strcat(message,"*************************************************************************\n\n");
 	}
 	else
 	{
-		sprintf(message , "Group & Geometry\n");
+		sprintf(message , _("Group & Geometry\n"));
 		strcat(message,"***********************\n\n");
 	}
 
@@ -234,9 +234,9 @@ void createGeometrySymmetryWindow(gint numberOfAtoms,
 	if(strcmp(groupSymbol,"C1")!=0)
 	{
 		numberOfAtoms = ntmp;
-		sprintf(groupSymbol,"NO");
+		sprintf(groupSymbol,_("NO"));
 		err = computeSymmetry(principalAxisTolerance, FALSE, groupSymbol,maximalOrder, FALSE, &numberOfAtoms,symbolstmp, Xtmp, Ytmp, Ztmp, &eps, message);
-		sprintf(message,  "Group & Geometry\n");
+		sprintf(message,  _("Group & Geometry\n"));
 		strcat(message,"***********************\n\n");
 		putInfoInTextWidget(TextWid, groupSymbol,  principalAxisTolerance, eps, message);
 		putGeometryInTextWidget(TextWid,numberOfAtoms, symbolstmp, Xtmp, Ytmp, Ztmp);
@@ -279,7 +279,7 @@ GtkWidget* createGeometryAbelianGroupWindow(gint numberOfAtoms,
 	 
 	 if(numberOfAtoms<1)
 	 {
-		 Message("Sorry Number of atoms is not positive","Error",TRUE);
+		 Message(_("Sorry Number of atoms is not positive"),_("Error"),TRUE);
 		 return NULL;
 	 }
 	for(i=0;i<3;i++)
@@ -300,12 +300,12 @@ GtkWidget* createGeometryAbelianGroupWindow(gint numberOfAtoms,
 		&eps, message);
 	if(err != 0)
 	{
-		Message(message,"Error",TRUE);
+		Message(message,_("Error"),TRUE);
 		return NULL;
 	}
 	 Dialogue = gtk_dialog_new();
 	 gtk_widget_realize(GTK_WIDGET(Dialogue));
-	 title = g_strdup("Point group, abelian point group & Geometry with reduction (using abelian group)");
+	 title = g_strdup(_("Point group, abelian point group & Geometry with reduction (using abelian group)"));
 			
 	 gtk_window_set_title(GTK_WINDOW(Dialogue),title);
 
@@ -331,12 +331,12 @@ GtkWidget* createGeometryAbelianGroupWindow(gint numberOfAtoms,
 
 	if(strcmp(pointGroupSymbol,"C1")!=0)
 	{
-		sprintf(message,  "Group & Geometry with reduction of molecule to its basis set of atoms\n");
+		sprintf(message,  _("Group & Geometry with reduction of molecule to its basis set of atoms\n"));
 		strcat(message,"**************************************************************************\n\n");
 	}
 	else
 	{
-		sprintf(message,  "Group & Geometry\n");
+		sprintf(message,  _("Group & Geometry\n"));
 		strcat(message,"************************\n\n");
 	}
 
@@ -465,7 +465,7 @@ static void createTolerancePrincipalAxisFrame(GtkWidget *box)
 	GtkWidget* entry = gtk_entry_new();
 	GtkWidget *table = gtk_table_new(6,2,TRUE);
 
-	frame = gtk_frame_new ("Tolerance for principal axis");
+	frame = gtk_frame_new (_("Tolerance for principal axis"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -523,7 +523,7 @@ static void createTolerancePositionFrame(GtkWidget *box)
 	GtkWidget* entry =  gtk_entry_new();
 	GtkWidget *table = gtk_table_new(6,2,TRUE);
 
-	frame = gtk_frame_new ("Tolerance for atom positions");
+	frame = gtk_frame_new (_("Tolerance for atom positions"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -583,7 +583,7 @@ void createToleranceWindow(GtkWidget* win, GabeditSignalFunc myFunc)
 	 
 	dialogWindow = gtk_dialog_new();
 	gtk_widget_realize(GTK_WIDGET(dialogWindow));
-	sprintf(title, "Tolerance for computing the point group");
+	sprintf(title, _("Tolerance for computing the point group"));
 			
 	gtk_window_set_title(GTK_WINDOW(dialogWindow),title);
 

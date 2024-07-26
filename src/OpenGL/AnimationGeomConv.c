@@ -216,7 +216,7 @@ static GtkWidget *addChargeToTable(GtkWidget *table, gint i)
 	gint nlistCharge = 1;
 	gchar* listCharge[] = {"0"};
 
-	add_label_table(table,"Charge",(gushort)i,0);
+	add_label_table(table,_("Charge"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entryCharge = addComboListToATable(table, listCharge, nlistCharge, i, 2, 1);
 	comboCharge  = g_object_get_data(G_OBJECT (entryCharge), "Combo");
@@ -232,7 +232,7 @@ static GtkWidget *addSpinToTable(GtkWidget *table, gint i)
 	gint nlistspinMultiplicity = 1;
 	gchar* listspinMultiplicity[] = {"0"};
 
-	add_label_table(table,"Spin multiplicity",(gushort)i,0);
+	add_label_table(table,_("Spin multiplicity"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entrySpinMultiplicity = addComboListToATable(table, listspinMultiplicity, nlistspinMultiplicity, i, 2, 1);
 	comboSpinMultiplicity  = g_object_get_data(G_OBJECT (entrySpinMultiplicity), "Combo");
@@ -260,8 +260,8 @@ static void print_gaussian_geometries_link(GtkWidget* Win, gpointer data)
  	file = fopen(fileName, "w");
 	if(!file)
 	{
-		gchar* t = g_strdup_printf("Sorry\n I can not create %s file",fileName); 
-		Message(t,"Error",TRUE);
+		gchar* t = g_strdup_printf(_("Sorry\n I can not create %s file"),fileName); 
+		Message(t,_("Error"),TRUE);
 		if(fileName) g_free(fileName);
 		if(t)g_free(t);
 		return;
@@ -322,8 +322,8 @@ static void print_gaussian_geometries_link(GtkWidget* Win, gpointer data)
 	fclose(file);
 	gtk_widget_destroy(Win);
 	{
-		gchar* t = g_strdup_printf("The %s file was created",fileName); 
-		Message(t,"Error",TRUE);
+		gchar* t = g_strdup_printf(_("The %s file was created"),fileName); 
+		Message(t,_("Error"),TRUE);
 		if(t)g_free(t);
 	}
 }
@@ -467,16 +467,18 @@ static void print_gaussian_geometries(GtkWidget* Win, gpointer data)
 	if(entry) supstr = gtk_entry_get_text(GTK_ENTRY(entry));
 	if(supstr)
 	{
-		gchar* t = g_strdup_printf("In %s directory, the gabmg_*, rungabmg.sh and \nrungabmg.bat files were created.\n"
+		gchar* t = g_strdup_printf(
+				_(
+				"In %s directory, the gabmg_*, rungabmg.sh and \nrungabmg.bat files were created.\n"
 				"\ngabmg_* is input files for gaussian. \n"
 				"rungabmg.bat is a batch file for run gaussian with gabmg_* input files\n"
-				"rungabmg.sh is a script for run gaussian with gabmg_* input files",
-				inputGaussDirectory); 
+				"rungabmg.sh is a script for run gaussian with gabmg_* input files"
+				), inputGaussDirectory); 
 		for(g = 0;g<geometryConvergence.numberOfGeometries;g++)
 			print_gaussian_one_geometry(g,supstr);
 		print_gaussian_script_run();
 		print_gaussian_script_run_bat();
-		Message(t,"Error",TRUE);
+		Message(t,_("Error"),TRUE);
 		if(t)g_free(t);
 	}
 	gtk_widget_destroy(Win);
@@ -494,8 +496,8 @@ static gboolean print_mobcal_geometries(gchar* fileName)
  	file = fopen(fileNameData, "w");
 	if(!file)
 	{
-		gchar* t = g_strdup_printf("Sorry\n I can not create %s file",fileNameData); 
-		Message(t,"Error",TRUE);
+		gchar* t = g_strdup_printf(_("Sorry\n I can not create %s file"),fileNameData); 
+		Message(t,_("Error"),TRUE);
 		if(fileNameData) g_free(fileNameData);
 		if(t)g_free(t);
 		return FALSE;
@@ -539,8 +541,8 @@ static void print_mobcal_run(gchar* fileName)
  	file = fopen(newFile, "w");
 	if(!file)
 	{
-		gchar* t = g_strdup_printf("Sorry\n I can not create %s file",newFile); 
-		Message(t,"Error",TRUE);
+		gchar* t = g_strdup_printf(_("Sorry\n I can not create %s file"),newFile); 
+		Message(t,_("Error"),TRUE);
 		if(t)g_free(t);
 		if(suff) g_free(suff);
 		if(fileNameData) g_free(fileNameData);
@@ -583,7 +585,7 @@ static void reset_last_directory(GtkWidget *dirSelector, gpointer data)
 static void set_directory(GtkWidget *win, gpointer data)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(reset_last_directory, "Set folder", GABEDIT_TYPEWIN_ORB);
+	dirSelector = selctionOfDir(reset_last_directory, _("Set folder"), GABEDIT_TYPEWIN_ORB);
 	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
 	gtk_window_set_transient_for(GTK_WINDOW(dirSelector),GTK_WINDOW(PrincipalWindow));
 	gtk_window_set_transient_for(GTK_WINDOW(dirSelector),GTK_WINDOW(WinDlg));
@@ -715,8 +717,8 @@ static gboolean read_molden_gabedit_file_geomi(gchar *fileName, gint geometryNum
 
 	if(file ==NULL)
 	{
-		t = g_strdup_printf("Sorry\nI can not open %s  file ",fileName);
-		Message(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\nI can not open %s  file "),fileName);
+		Message(t,_("Error"),TRUE);
 		g_free(t);
 		return FALSE;
 	}
@@ -732,11 +734,11 @@ static gboolean read_molden_gabedit_file_geomi(gchar *fileName, gint geometryNum
 		if(pdest && strstr(t,"ZMAT"))
 		{
 			if(type == GABEDIT_TYPEFILE_MOLDEN)
-				sprintf(t,"Sorry\nMolden file with ZMAT coordinate is not supported by Gabedit");
+				sprintf(t,_("Sorry\nMolden file with ZMAT coordinate is not supported by Gabedit"));
 			if(type == GABEDIT_TYPEFILE_GABEDIT)
-				sprintf(t,"Sorry\nGabedit file with ZMAT coordinate is not supported by Gabedit");
+				sprintf(t,_("Sorry\nGabedit file with ZMAT coordinate is not supported by Gabedit"));
 
-			Message(t," Error ",TRUE);
+			Message(t,_("Error"),TRUE);
 			g_free(t);
 			return FALSE;
 		}	
@@ -822,14 +824,14 @@ static gboolean read_dalton_file_geomi(gchar *FileName, gint num, Geometry* geom
   
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No file slected","Error",TRUE);
+		Message(_("Sorry\n No file selected"),_("Error"),TRUE);
     		return FALSE ;
  	}
 
  	file = FOpen(FileName, "rb");
  	if(file ==NULL)
  	{
-  		Message("Sorry\nI can not open this file","Error",TRUE);
+  		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
   		return FALSE;
  	}
  	t=g_malloc(BSIZE);
@@ -854,7 +856,7 @@ static gboolean read_dalton_file_geomi(gchar *FileName, gint num, Geometry* geom
         	}
  		if(!OK && (numgeom == 1) )
 		{
-  			Message("Sorry\nI can not read geometry in this file","Error",TRUE);
+  			Message(_("Sorry\nI can not read geometry in this file"),_("Error"),TRUE);
  			fclose(file);
  			g_free(t);
  			for(i=0;i<5;i++) g_free(AtomCoord[i]);
@@ -926,14 +928,14 @@ static gboolean read_gamess_file_geomi(gchar *FileName, gint num, Geometry* geom
   
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No file slected","Error",TRUE);
+		Message(_("Sorry\n No file selected"),_("Error"),TRUE);
     		return FALSE ;
  	}
 
  	file = FOpen(FileName, "rb");
  	if(file ==NULL)
  	{
-  		Message("Sorry\nI can not open this file","Error",TRUE);
+  		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
   		return FALSE;
  	}
  	t=g_malloc(BSIZE);
@@ -957,7 +959,7 @@ static gboolean read_gamess_file_geomi(gchar *FileName, gint num, Geometry* geom
         	}
  		if(!OK && (numgeom == 1) )
 		{
-  			Message("Sorry\nI can not read geometry in this file","Error",TRUE);
+  			Message(_("Sorry\nI can not read geometry in this file"),_("Error"),TRUE);
  			fclose(file);
  			g_free(t);
  			for(i=0;i<5;i++) g_free(AtomCoord[i]);
@@ -1025,15 +1027,15 @@ static gboolean read_gamess_output(gchar* fileName)
 	gboolean OK;
         
 	temp = get_name_file(fileName);
-	set_status_label_info("File Name",temp);
+	set_status_label_info(_("File name"),temp);
 	g_free(temp);
-	set_status_label_info("File Type","Gamess");
+	set_status_label_info(_("File type"),"Gamess");
 
  	file = FOpen(fileName, "rb"); 
         if(!file)
 	{
-		t = g_strdup_printf(" Error : I can not open file %s\n",fileName);
-		Message(t," Error ",TRUE);
+		t = g_strdup_printf(_(" Error : I can not open file %s\n"),fileName);
+		Message(t,_("Error"),TRUE);
 		if(t) g_free(t);
 		return FALSE;
 	}
@@ -1133,8 +1135,8 @@ static gboolean read_gamess_output(gchar* fileName)
 	if(!OK)
 	{
 		freeGeometryConvergence();
-		sprintf(t,"Sorry\nI can not read energy or convergence parameters from %s file ",fileName);
-		Message(t," Error ",TRUE);
+		sprintf(t,_("Sorry\nI can not read energy or convergence parameters from %s file "),fileName);
+		Message(t,_("Error"),TRUE);
 		OK = FALSE;
 	 }
 
@@ -1176,14 +1178,14 @@ static gboolean read_gamess_irc_file_geomi(gchar *FileName, gint num, Geometry* 
   
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No file slected","Error",TRUE);
+		Message(_("Sorry\n No file selected"),_("Error"),TRUE);
     		return FALSE ;
  	}
 
  	file = FOpen(FileName, "rb");
  	if(file ==NULL)
  	{
-  		Message("Sorry\nI can not open this file","Error",TRUE);
+  		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
   		return FALSE;
  	}
  	t=g_malloc(BSIZE);
@@ -1205,7 +1207,7 @@ static gboolean read_gamess_irc_file_geomi(gchar *FileName, gint num, Geometry* 
         	}
  		if(!OK && (numgeom == 1) )
 		{
-  			Message("Sorry\nI can not read geometry in this file","Error",TRUE);
+  			Message(_("Sorry\nI can not read geometry in this file"),_("Error"),TRUE);
  			fclose(file);
  			g_free(t);
  			for(i=0;i<5;i++) g_free(AtomCoord[i]);
@@ -1270,15 +1272,15 @@ static gboolean read_gamess_irc(gchar* fileName)
 	gboolean OK;
         
 	temp = get_name_file(fileName);
-	set_status_label_info("File Name",temp);
+	set_status_label_info(_("File name"),temp);
 	g_free(temp);
-	set_status_label_info("File Type","Gamess");
+	set_status_label_info(_("File type"),"Gamess");
 
  	file = FOpen(fileName, "rb"); 
         if(!file)
 	{
-		t = g_strdup_printf(" Error : I can not open file %s\n",fileName);
-		Message(t," Error ",TRUE);
+		t = g_strdup_printf(_(" Error : I can not open file %s\n"),fileName);
+		Message(t,_("Error"),TRUE);
 		if(t) g_free(t);
 		return FALSE;
 	}
@@ -1335,8 +1337,8 @@ static gboolean read_gamess_irc(gchar* fileName)
 	if(!OK)
 	{
 		freeGeometryConvergence();
-		sprintf(t,"Sorry\nI can not read energy from %s file ",fileName);
-		Message(t," Error ",TRUE);
+		sprintf(t,_("Sorry\nI can not read energy from %s file "),fileName);
+		Message(t,_("Error"),TRUE);
 		OK = FALSE;
 	 }
 
@@ -1468,13 +1470,13 @@ static gboolean read_gaussian_file_geomi(gchar *FileName, gint num, Geometry* ge
 	FILE* file;
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No file slected","Error",TRUE);
+		Message(_("Sorry\n No file selected"),_("Error"),TRUE);
     		return FALSE;
  	}
  	file = FOpen(FileName, "rb");
  	if(file ==NULL)
  	{
-  		Message("Sorry\nI can not open this file","Error",TRUE);
+  		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
   		return FALSE;
  	}
 	fclose(file);
@@ -1485,7 +1487,7 @@ static gboolean read_gaussian_file_geomi(gchar *FileName, gint num, Geometry* ge
 	/* for calculation with nosym option */
 	if(!read_gaussian_file_geomi_str(FileName,num,"Z-Matrix orientation:", geometry))
 	{
-  		Message("Sorry\nI can not read geometry in this file","Error",TRUE);
+  		Message(_("Sorry\nI can not read geometry in this file"),_("Error"),TRUE);
 		return FALSE;
 	}
 	return TRUE;
@@ -1508,14 +1510,14 @@ static gboolean read_molpro_file_geomi(gchar *FileName, gint num, Geometry* geom
   
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No file slected","Error",TRUE);
+		Message(_("Sorry\n No file selected"),_("Error"),TRUE);
     		return FALSE ;
  	}
 
  	file = FOpen(FileName, "rb");
  	if(file ==NULL)
  	{
-  		Message("Sorry\nI can not open this file","Error",TRUE);
+  		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
   		return FALSE;
  	}
  	t=g_malloc(BSIZE);
@@ -1541,7 +1543,7 @@ static gboolean read_molpro_file_geomi(gchar *FileName, gint num, Geometry* geom
         	}
  		if(!OK && (numgeom == 1) )
 		{
-  			Message("Sorry\nI can not read geometry in this file","Error",TRUE);
+  			Message(_("Sorry\nI can not read geometry in this file"),_("Error"),TRUE);
  			fclose(file);
  			g_free(t);
  			for(i=0;i<5;i++) g_free(AtomCoord[i]);
@@ -1615,7 +1617,7 @@ static gboolean read_mpqc_file_geomi(gchar *fileName,gint numGeometry, Geometry*
 
  	if(file ==NULL)
  	{
-  		Message("Sorry\nI can not open this file","Error",TRUE);
+  		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
   		return FALSE;
  	}
 
@@ -1660,8 +1662,8 @@ static gboolean read_mpqc_file_geomi(gchar *fileName,gint numGeometry, Geometry*
 		if(!OK && (numGeom == 0) )
 		{
 	 		g_free(t);
-	 		t = g_strdup_printf("Sorry\nI can read Geometry from %s  file ",fileName);
-	 		Message(t," Error ",TRUE);
+	 		t = g_strdup_printf(_("Sorry\nI can read Geometry from %s  file "),fileName);
+	 		Message(t,_("Error"),TRUE);
 	 		g_free(t);
 			for(i=0;i<5;i++) g_free(AtomCoord[i]);
 	 		return FALSE;
@@ -1678,8 +1680,8 @@ static gboolean read_mpqc_file_geomi(gchar *fileName,gint numGeometry, Geometry*
 		if(!OK)
 		{
 	 		g_free(t);
-	 		t = g_strdup_printf("Sorry\nI can read Geometry from %s  file ",fileName);
-	 		Message(t," Error ",TRUE);
+	 		t = g_strdup_printf(_("Sorry\nI can read Geometry from %s  file "),fileName);
+	 		Message(t,_("Error"),TRUE);
 	 		g_free(t);
 			for(i=0;i<5;i++) g_free(AtomCoord[i]);
 	 		return FALSE;
@@ -1762,20 +1764,20 @@ static gboolean read_mopac_aux_file_geomi(gchar *FileName, gint numgeometry, Geo
   
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No file slected","Error",TRUE);
+		Message(_("Sorry\n No file selected"),_("Error"),TRUE);
     		return FALSE ;
  	}
 
  	file = FOpen(FileName, "rb");
  	if(file ==NULL)
  	{
-  		Message("Sorry\nI can not open this file","Error",TRUE);
+  		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
   		return FALSE;
  	}
 	elements = get_one_block_from_aux_mopac_file(file, "ATOM_EL[",  &nElements);
 	if(!elements)
 	{
-  		Message("Sorry\nI can not read the symbol of atoms from this file","Error",TRUE);
+  		Message(_("Sorry\nI can not read the symbol of atoms from this file"),_("Error"),TRUE);
 		fclose(file);
   		return FALSE;
 	}
@@ -1810,8 +1812,8 @@ static gboolean read_mopac_aux_file_geomi(gchar *FileName, gint numgeometry, Geo
 	 {
 		free_one_string_table(elements, nElements);
 		g_free(t);
-		t = g_strdup_printf("Sorry\nI can not read geometry in	%s file ",FileName);
-		Message(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\nI can not read geometry in %s file "),FileName);
+		Message(t,_("Error"),TRUE);
 		g_free(t);
 		return FALSE;
 	  }
@@ -1892,14 +1894,14 @@ static gboolean read_qchem_file_geomi(gchar *FileName, gint num, Geometry* geome
   
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No file slected","Error",TRUE);
+		Message(_("Sorry\n No file selected"),_("Error"),TRUE);
     		return FALSE ;
  	}
 
  	file = FOpen(FileName, "rb");
  	if(file ==NULL)
  	{
-  		Message("Sorry\nI can not open this file","Error",TRUE);
+  		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
   		return FALSE;
  	}
  	t=g_malloc(BSIZE);
@@ -1927,7 +1929,7 @@ static gboolean read_qchem_file_geomi(gchar *FileName, gint num, Geometry* geome
         	}
  		if(!OK && (numgeom == 1) )
 		{
-  			Message("Sorry\nI can not read geometry in this file","Error",TRUE);
+  			Message(_("Sorry\nI can not read geometry in this file"),_("Error"),TRUE);
  			fclose(file);
  			g_free(t);
  			for(i=0;i<5;i++) g_free(AtomCoord[i]);
@@ -1998,8 +2000,8 @@ static gboolean read_xyz_file_geomi(gchar *fileName, gint geometryNumber, Geomet
 
 	if(file ==NULL)
 	{
-		t = g_strdup_printf("Sorry\nI can not open %s  file ",fileName);
-		Message(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\nI can not open %s file "),fileName);
+		Message(t,_("Error"),TRUE);
 		g_free(t);
 		return FALSE;
 	}
@@ -2078,8 +2080,8 @@ static gboolean save_geometry_convergence_gabedit_format(gchar *FileName)
 	if(file == NULL)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I  can not create '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I  can not create '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 		return FALSE;
 	}
 	fprintf(file,"[Gabedit Format]\n");
@@ -2296,17 +2298,17 @@ static gboolean read_gabedit_molden_geom_conv(gchar *fileName, GabEditTypeFile t
 	gint numgeom = 0;
 
 	tmp = get_name_file(fileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	if(type== GABEDIT_TYPEFILE_GABEDIT) set_status_label_info("File Type","Gabedit");
-	if(type== GABEDIT_TYPEFILE_MOLDEN) set_status_label_info("File Type","Molden");
+	if(type== GABEDIT_TYPEFILE_GABEDIT) set_status_label_info(_("File type"),"Gabedit");
+	if(type== GABEDIT_TYPEFILE_MOLDEN) set_status_label_info(_("File type"),"Molden");
 
  	file = FOpen(fileName, "rb");
 	t = g_malloc(BSIZE*sizeof(gchar));
 	if(file ==NULL)
 	{
-		sprintf(t,"Sorry\nI can not open %s  file ",fileName);
-		Message(t," Error ",TRUE);
+		sprintf(t,_("Sorry\nI can not open %s file "),fileName);
+		Message(t,_("Error"),TRUE);
 		g_free(t);
 		return FALSE;
 	}
@@ -2319,9 +2321,9 @@ static gboolean read_gabedit_molden_geom_conv(gchar *fileName, GabEditTypeFile t
 		pdest = strstr( t, "[GEOMETRIES]");
 		if(pdest && strstr(t,"ZMAT"))
 		{
-			if(type == GABEDIT_TYPEFILE_MOLDEN) sprintf(t,"Sorry\nMolden file with ZMAT coordinate is not supported by Gabedit");
-			if(type == GABEDIT_TYPEFILE_GABEDIT) sprintf(t,"Sorry\nGabedit file with ZMAT coordinate is not supported by Gabedit");
-			Message(t," Error ",TRUE);
+			if(type == GABEDIT_TYPEFILE_MOLDEN) sprintf(t,_("Sorry\nMolden file with ZMAT coordinate is not supported by Gabedit"));
+			if(type == GABEDIT_TYPEFILE_GABEDIT) sprintf(t,_("Sorry\nGabedit file with ZMAT coordinate is not supported by Gabedit"));
+			Message(t,_("Error"),TRUE);
 			return FALSE;
 		}	
  		if (pdest)
@@ -2370,8 +2372,8 @@ static gboolean read_gabedit_molden_geom_conv(gchar *fileName, GabEditTypeFile t
 		if(!geometryConvergence.energy)
 		{
 			freeGeometryConvergence();
-			sprintf(t,"Sorry\nI can not read energy from %s file ",fileName);
-			Message(t," Error ",TRUE);
+			sprintf(t,_("Sorry\nI can not read energy from %s file "),fileName);
+			Message(t,_("Error"),TRUE);
 			OK = FALSE;
 		}
 	}
@@ -2451,16 +2453,16 @@ static gint read_gabedit_geoms_file(gchar* fileName)
 	gint ienergy = -1;
 
 	tmp = get_name_file(fileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Gabedit");
+	set_status_label_info(_("File type"),"Gabedit");
 
  	fd = FOpen(fileName, "rb");
 	t = g_malloc(BSIZE*sizeof(gchar));
 	if(fd ==NULL)
 	{
-		sprintf(t,"Sorry\nI can not open %s  file ",fileName);
-		Message(t," Error ",TRUE);
+		sprintf(t,_("Sorry\nI can not open %s file "),fileName);
+		Message(t,_("Error"),TRUE);
 		g_free(t);
 		return FALSE;
 	}
@@ -2573,15 +2575,15 @@ static gboolean read_dalton_output(gchar* fileName)
 	gboolean OK;
         
 	temp = get_name_file(fileName);
-	set_status_label_info("File Name",temp);
+	set_status_label_info(_("File name"),temp);
 	g_free(temp);
-	set_status_label_info("File Type","Dalton");
+	set_status_label_info(_("File type"),"Dalton");
 
  	file = FOpen(fileName, "rb"); 
         if(!file)
 	{
-		t = g_strdup_printf(" Error : I can not open file %s\n",fileName);
-		Message(t," Error ",TRUE);
+		t = g_strdup_printf(_(" Error : I can not open file %s\n"),fileName);
+		Message(t,_("Error"),TRUE);
 		if(t) g_free(t);
 		return FALSE;
 	}
@@ -2672,8 +2674,8 @@ static gboolean read_dalton_output(gchar* fileName)
 	if(!OK)
 	{
 		freeGeometryConvergence();
-		sprintf(t,"Sorry\nI can not read energy or convergence parameters from %s file ",fileName);
-		Message(t," Error ",TRUE);
+		sprintf(t,_("Sorry\nI can not read energy or convergence parameters from %s file "),fileName);
+		Message(t,_("Error"),TRUE);
 		OK = FALSE;
 	 }
 
@@ -2709,15 +2711,15 @@ static gboolean read_gaussian_output(gchar* fileName)
 	gboolean OK;
         
 	temp = get_name_file(fileName);
-	set_status_label_info("File Name",temp);
+	set_status_label_info(_("File name"),temp);
 	g_free(temp);
-	set_status_label_info("File Type","Gaussian output");
+	set_status_label_info(_("File type"),"Gaussian output");
 
  	file = FOpen(fileName, "rb"); 
         if(!file)
 	{
-		t = g_strdup_printf(" Error : I can not open file %s\n",fileName);
-		Message(t," Error ",TRUE);
+		t = g_strdup_printf(_(" Error : I can not open file %s\n"),fileName);
+		Message(t,_("Error"),TRUE);
 		if(t) g_free(t);
 		return FALSE;
 	}
@@ -2795,8 +2797,8 @@ static gboolean read_gaussian_output(gchar* fileName)
 	if(!OK)
 	{
 		freeGeometryConvergence();
-		sprintf(t,"Sorry\nI can not read energy or convergence parameters from %s file ",fileName);
-		Message(t," Error ",TRUE);
+		sprintf(t,_("Sorry\nI can not read energy or convergence parameters from %s file "),fileName);
+		Message(t,_("Error"),TRUE);
 		OK = FALSE;
 	 }
 	if(nSF<nE)
@@ -2817,8 +2819,8 @@ static gboolean read_gaussian_output(gchar* fileName)
 		else
 		{
 			freeGeometryConvergence();
-			sprintf(t,"Sorry\nI can not read energy or convergence parameters from %s file ",fileName);
-			Message(t," Error ",TRUE);
+			sprintf(t,_("Sorry\nI can not read energy or convergence parameters from %s file "),fileName);
+			Message(t,_("Error"),TRUE);
 			OK = FALSE;
 		}
 
@@ -2855,15 +2857,15 @@ static gboolean read_molpro_log(gchar* fileName)
 	gboolean OK;
         
 	temp = get_name_file(fileName);
-	set_status_label_info("File Name",temp);
+	set_status_label_info(_("File name"),temp);
 	g_free(temp);
-	set_status_label_info("File Type","Molpro log");
+	set_status_label_info(_("File type"),"Molpro log");
 
  	file = FOpen(fileName, "rb"); 
         if(!file)
 	{
-		t = g_strdup_printf(" Error : I can not open file %s\n",fileName);
-		Message(t," Error ",TRUE);
+		t = g_strdup_printf(_(" Error : I can not open file %s\n"),fileName);
+		Message(t,_("Error"),TRUE);
 		if(t) g_free(t);
 		return FALSE;
 	}
@@ -2939,8 +2941,8 @@ static gboolean read_molpro_log(gchar* fileName)
 	if(!OK)
 	{
 		freeGeometryConvergence();
-		sprintf(t,"Sorry\nI can not read energy or convergence parameters from %s file ",fileName);
-		Message(t," Error ",TRUE);
+		sprintf(t,_("Sorry\nI can not read energy or convergence parameters from %s file "),fileName);
+		Message(t,_("Error"),TRUE);
 		OK = FALSE;
 	 }
 	if(nSF<nE)
@@ -2958,8 +2960,8 @@ static gboolean read_molpro_log(gchar* fileName)
 		else
 		{
 			freeGeometryConvergence();
-			sprintf(t,"Sorry\nI can not read energy or convergence parameters from %s file ",fileName);
-			Message(t," Error ",TRUE);
+			sprintf(t,_("Sorry\nI can not read energy or convergence parameters from %s file "),fileName);
+			Message(t,_("Error"),TRUE);
 			OK = FALSE;
 		}
 
@@ -2999,15 +3001,15 @@ static gboolean read_mpqc_output(gchar* fileName)
 	gboolean mp2;
         
 	temp = get_name_file(fileName);
-	set_status_label_info("File Name",temp);
+	set_status_label_info(_("File name"),temp);
 	g_free(temp);
-	set_status_label_info("File Type","MPQC output");
+	set_status_label_info(_("File type"),"MPQC output");
 
  	file = FOpen(fileName, "rb"); 
         if(!file)
 	{
-		t = g_strdup_printf(" Error : I can not open file %s\n",fileName);
-		Message(t," Error ",TRUE);
+		t = g_strdup_printf(_(" Error : I can not open file %s\n"),fileName);
+		Message(t,_("Error"),TRUE);
 		if(t) g_free(t);
 		return FALSE;
 	}
@@ -3088,8 +3090,8 @@ static gboolean read_mpqc_output(gchar* fileName)
 	if(!OK)
 	{
 		freeGeometryConvergence();
-		sprintf(t,"Sorry\nI can not read energy or convergence parameters from %s file ",fileName);
-		Message(t," Error ",TRUE);
+		sprintf(t,_("Sorry\nI can not read energy or convergence parameters from %s file "),fileName);
+		Message(t,_("Error"),TRUE);
 		OK = FALSE;
 	 }
 	if(nSF<nE)
@@ -3107,8 +3109,8 @@ static gboolean read_mpqc_output(gchar* fileName)
 		else
 		{
 			freeGeometryConvergence();
-			sprintf(t,"Sorry\nI can not read energy or convergence parameters from %s file ",fileName);
-			Message(t," Error ",TRUE);
+			sprintf(t,_("Sorry\nI can not read energy or convergence parameters from %s file "),fileName);
+			Message(t,_("Error"),TRUE);
 			OK = FALSE;
 		}
 
@@ -3143,15 +3145,15 @@ static gboolean read_mopac_aux(gchar* fileName)
 	gboolean OK;
         
 	temp = get_name_file(fileName);
-	set_status_label_info("File Name",temp);
+	set_status_label_info(_("File name"),temp);
 	g_free(temp);
-	set_status_label_info("File Type","Mopac aux");
+	set_status_label_info(_("File type"),"Mopac aux");
 
  	file = FOpen(fileName, "rb"); 
         if(!file)
 	{
-		t = g_strdup_printf(" Error : I can not open file %s\n",fileName);
-		Message(t," Error ",TRUE);
+		t = g_strdup_printf(_(" Error : I can not open file %s\n"),fileName);
+		Message(t,_("Error"),TRUE);
 		if(t) g_free(t);
 		return FALSE;
 	}
@@ -3178,8 +3180,8 @@ static gboolean read_mopac_aux(gchar* fileName)
 	}
         if(!OK)
 	{
-		t = g_strdup_printf(" Error : No Geometry optimization in %s file\n",fileName);
-		Message(t," Error ",TRUE);
+		t = g_strdup_printf(_(" Error : No Geometry optimization in %s file\n"),fileName);
+		Message(t,_("Error"),TRUE);
 		if(t) g_free(t);
 		return FALSE;
 	}
@@ -3253,8 +3255,8 @@ static gboolean read_mopac_aux(gchar* fileName)
 	if(!OK)
 	{
 		freeGeometryConvergence();
-		sprintf(t,"Sorry\nI can not read energy or convergence parameters from %s file ",fileName);
-		Message(t," Error ",TRUE);
+		sprintf(t,_("Sorry\nI can not read energy or convergence parameters from %s file "),fileName);
+		Message(t,_("Error"),TRUE);
 		OK = FALSE;
 	 }
 	fclose(file);
@@ -3290,15 +3292,15 @@ static gboolean read_qchem_output(gchar* fileName)
 	gint nSF = 0;
         
 	temp = get_name_file(fileName);
-	set_status_label_info("File Name",temp);
+	set_status_label_info(_("File name"),temp);
 	g_free(temp);
-	set_status_label_info("File Type","Q-Chem out");
+	set_status_label_info(_("File type"),"Q-Chem out");
 
  	file = FOpen(fileName, "rb"); 
         if(!file)
 	{
-		t = g_strdup_printf(" Error : I can not open file %s\n",fileName);
-		Message(t," Error ",TRUE);
+		t = g_strdup_printf(_(" Error : I can not open file %s\n"),fileName);
+		Message(t,_("Error"),TRUE);
 		if(t) g_free(t);
 		return FALSE;
 	}
@@ -3377,8 +3379,8 @@ static gboolean read_qchem_output(gchar* fileName)
 	if(!OK)
 	{
 		freeGeometryConvergence();
-		sprintf(t,"Sorry\nI can not read energy or convergence parameters from %s file ",fileName);
-		Message(t," Error ",TRUE);
+		sprintf(t,_("Sorry\nI can not read energy or convergence parameters from %s file "),fileName);
+		Message(t,_("Error"),TRUE);
 		OK = FALSE;
 	 }
 	if(nSF<nE)
@@ -3396,8 +3398,8 @@ static gboolean read_qchem_output(gchar* fileName)
 		else
 		{
 			freeGeometryConvergence();
-			sprintf(t,"Sorry\nI can not read energy or convergence parameters from %s file ",fileName);
-			Message(t," Error ",TRUE);
+			sprintf(t,_("Sorry\nI can not read energy or convergence parameters from %s file "),fileName);
+			Message(t,_("Error"),TRUE);
 			OK = FALSE;
 		}
 
@@ -3439,15 +3441,15 @@ static gboolean read_xyz_multi(gchar* fileName)
 	gchar** comments = NULL;
         
 	t = get_name_file(fileName);
-	set_status_label_info("File Name",t);
+	set_status_label_info(_("File name"),t);
 	if(t) g_free(t);
-	set_status_label_info("File Type","XYZ");
+	set_status_label_info(_("File type"),"XYZ");
 
  	file = FOpen(fileName, "rb"); 
         if(!file)
 	{
-		t = g_strdup_printf(" Error : I can not open file %s\n",fileName);
-		Message(t," Error ",TRUE);
+		t = g_strdup_printf(_(" Error : I can not open file %s\n"),fileName);
+		Message(t,_("Error"),TRUE);
 		if(t) g_free(t);
 		return FALSE;
 	}
@@ -3490,8 +3492,8 @@ static gboolean read_xyz_multi(gchar* fileName)
 	}
 	else
 	{
-		sprintf(t,"Sorry\nI can not read geometries from %s file ",fileName);
-		Message(t," Error ",TRUE);
+		sprintf(t,_("Sorry\nI can not read geometries from %s file "),fileName);
+		Message(t,_("Error"),TRUE);
 		OK = FALSE;
 		if(comments) g_free(comments);
 	 }
@@ -3895,9 +3897,8 @@ static void read_file(GabeditFileChooser *selecFile, gint response_id)
 	else if(fileType == GABEDIT_TYPEFILE_QCHEM) read_qchem_file(selecFile, response_id);
 	else 
 	{
-		Message(
-			"Sorry, I cannot find the type of your file\n"
-			," Error ",TRUE);
+		Message( _("Sorry, I cannot find the type of your file\n")
+			,_("Error"),TRUE);
 	}
 }
 /********************************************************************************/
@@ -3905,7 +3906,7 @@ static void read_gabedit_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_gabedit_file,
-			"Read geometries from a Gabedit file",
+			_("Read geometries from a Gabedit file"),
 			GABEDIT_TYPEFILE_GABEDIT,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -3914,7 +3915,7 @@ static void read_gabedit_file_dlg()
 static void read_molden_file_dlg()
 {
 	GtkWidget* filesel = 
- 	file_chooser_open(read_molden_file, "Read geometries from a Molden file", GABEDIT_TYPEFILE_MOLDEN,GABEDIT_TYPEWIN_ORB);
+ 	file_chooser_open(read_molden_file, _("Read geometries from a Molden file"), GABEDIT_TYPEFILE_MOLDEN,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
@@ -3922,7 +3923,7 @@ static void read_molden_file_dlg()
 static void read_dalton_file_dlg()
 {
 	GtkWidget* filesel = 
- 	file_chooser_open(read_dalton_file, "Read geometries from a Dalton output file", GABEDIT_TYPEFILE_DALTON,GABEDIT_TYPEWIN_ORB);
+ 	file_chooser_open(read_dalton_file, _("Read geometries from a Dalton output file"), GABEDIT_TYPEFILE_DALTON,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
@@ -3930,7 +3931,7 @@ static void read_dalton_file_dlg()
 static void read_gamess_file_dlg()
 {
 	GtkWidget* filesel = 
- 	file_chooser_open(read_gamess_file, "Read geometries from a Gamess output file", GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
+ 	file_chooser_open(read_gamess_file, _("Read geometries from a Gamess output file"), GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
@@ -3938,7 +3939,7 @@ static void read_gamess_file_dlg()
 static void read_gamess_irc_file_dlg()
 {
 	GtkWidget* filesel = 
- 	file_chooser_open(read_gamess_irc_file, "Read geometries from a Gamess IRC file", GABEDIT_TYPEFILE_GAMESSIRC,GABEDIT_TYPEWIN_ORB);
+ 	file_chooser_open(read_gamess_irc_file, _("Read geometries from a Gamess IRC file"), GABEDIT_TYPEFILE_GAMESSIRC,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
@@ -3946,7 +3947,7 @@ static void read_gamess_irc_file_dlg()
 static void read_gaussian_file_dlg()
 {
 	GtkWidget* filesel = 
- 	file_chooser_open(read_gaussian_file, "Read geometries from a Gaussian output file", GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_ORB);
+ 	file_chooser_open(read_gaussian_file, _("Read geometries from a Gaussian output file"), GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
@@ -3954,7 +3955,7 @@ static void read_gaussian_file_dlg()
 static void read_molpro_file_dlg()
 {
 	GtkWidget* filesel = 
- 	file_chooser_open(read_molpro_file, "Read geometries from a Molpro log file", GABEDIT_TYPEFILE_MOLPRO_LOG,GABEDIT_TYPEWIN_ORB);
+ 	file_chooser_open(read_molpro_file, _("Read geometries from a Molpro log file"), GABEDIT_TYPEFILE_MOLPRO_LOG,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
@@ -3962,7 +3963,7 @@ static void read_molpro_file_dlg()
 static void read_mpqc_file_dlg()
 {
 	GtkWidget* filesel = 
- 	file_chooser_open(read_mpqc_file, "Read geometries from a MPQC output file", GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_ORB);
+ 	file_chooser_open(read_mpqc_file, _("Read geometries from a MPQC output file"), GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
@@ -3970,7 +3971,7 @@ static void read_mpqc_file_dlg()
 static void read_mopac_file_dlg()
 {
 	GtkWidget* filesel = 
- 	file_chooser_open(read_mopac_file, "Read geometries from a Mopac aux file", GABEDIT_TYPEFILE_MOPAC_AUX,GABEDIT_TYPEWIN_ORB);
+ 	file_chooser_open(read_mopac_file, _("Read geometries from a Mopac aux file"), GABEDIT_TYPEFILE_MOPAC_AUX,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
@@ -3978,7 +3979,7 @@ static void read_mopac_file_dlg()
 static void read_qchem_file_dlg()
 {
 	GtkWidget* filesel = 
- 	file_chooser_open(read_qchem_file, "Read geometries from a Q-Chem output file", GABEDIT_TYPEFILE_QCHEM,GABEDIT_TYPEWIN_ORB);
+ 	file_chooser_open(read_qchem_file, _("Read geometries from a Q-Chem output file"), GABEDIT_TYPEFILE_QCHEM,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
@@ -3986,7 +3987,7 @@ static void read_qchem_file_dlg()
 static void read_xyz_file_dlg()
 {
 	GtkWidget* filesel = 
- 	file_chooser_open(read_xyz_file, "Read geometries from a XYZ file", GABEDIT_TYPEFILE_XYZ,GABEDIT_TYPEWIN_ORB);
+ 	file_chooser_open(read_xyz_file, _("Read geometries from a XYZ file"), GABEDIT_TYPEFILE_XYZ,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
@@ -3994,7 +3995,7 @@ static void read_xyz_file_dlg()
 static void read_hin_multiple_files_dlg()
 {
 	GtkWidget* filesel = 
- 	file_chooser_open(read_hin_files, "Read geometries from a multiple hyperchem files", GABEDIT_TYPEFILE_HIN,GABEDIT_TYPEWIN_ORB);
+ 	file_chooser_open(read_hin_files, _("Read geometries from a multiple hyperchem files"), GABEDIT_TYPEFILE_HIN,GABEDIT_TYPEWIN_ORB);
 	
 	gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filesel),TRUE);
 
@@ -4004,7 +4005,7 @@ static void read_hin_multiple_files_dlg()
 static void read_file_dlg()
 {
 	GtkWidget* filesel = 
- 	file_chooser_open(read_file, "Read geometries from a file", GABEDIT_TYPEFILE_UNKNOWN,GABEDIT_TYPEWIN_ORB);
+ 	file_chooser_open(read_file, _("Read geometries from a file"), GABEDIT_TYPEFILE_UNKNOWN,GABEDIT_TYPEWIN_ORB);
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
 /********************************************************************************/
@@ -4075,7 +4076,7 @@ static void save_gabedit_file_dlg()
 		return;
 	}
  	filesel = file_chooser_save(save_gabedit_file,
-			"Save geometry convergences in gabedit file format",
+			_("Save geometry convergences in gabedit file format"),
 			GABEDIT_TYPEFILE_GABEDIT,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -4089,7 +4090,7 @@ static void save_mobcal_file_dlg()
 		return;
 	}
  	filesel = file_chooser_save(save_mobcal_file,
-			"Save geometries in a mobcal input file",
+			_("Save geometries in a mobcal input file"),
 			GABEDIT_TYPEFILE_MOBCAL,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -4322,9 +4323,9 @@ static void showMessageEnd()
 	gchar* format =get_format_image_from_option();
 	gchar* message = messageAnimatedImage(format);
 	gchar* t = g_strdup_printf(
-			"\nA series of gab*.%s files was created in \"%s\" directeory.\n\n\n%s" 
+			_("\nA series of gab*.%s files was created in \"%s\" directeory.\n\n\n%s")
 			, format, get_last_directory(),message);
-	GtkWidget* winDlg = Message(t,"Info",TRUE);
+	GtkWidget* winDlg = Message(t,_("Info"),TRUE);
 	g_free(message);
 	gtk_window_set_modal (GTK_WINDOW (winDlg), TRUE);
 	g_free(t);
@@ -4408,7 +4409,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_box_pack_start(GTK_BOX(vboxframe), table,TRUE,TRUE,0);
 
 	i = 0;
-	add_label_table(table," Time step(s) ",(gushort)i,0);
+	add_label_table(table,_(" Time step(s) "),(gushort)i,0);
 	add_label_table(table," : ",(gushort)i,1); 
 	EntryVelocity = gtk_entry_new();
 	gtk_table_attach(GTK_TABLE(table),EntryVelocity,2,2+1,i,i+1,
@@ -4430,7 +4431,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_box_pack_start(GTK_BOX(vboxframe), table,TRUE,TRUE,0);
 
 	i=0;
-	buttonCheckFilm = gtk_check_button_new_with_label ("Create a film");
+	buttonCheckFilm = gtk_check_button_new_with_label (_("Create a film"));
 	createFilm = FALSE;
 	numFileFilm = 0;
 	gtk_table_attach(GTK_TABLE(table),buttonCheckFilm,0,1,i,i+1,
@@ -4445,7 +4446,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  1,1);
 
-	buttonDirFilm = create_button(WinDlg,"Folder");
+	buttonDirFilm = create_button(WinDlg,_("Folder"));
 	gtk_table_attach(GTK_TABLE(table),buttonDirFilm,2,2+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -4470,14 +4471,14 @@ static void addEntrysButtons(GtkWidget* box)
   	table = gtk_table_new(1,2,TRUE);
 	gtk_box_pack_start (GTK_BOX (vboxframe), table, TRUE, TRUE, 0);
 	i=0;
-	Button = create_button(WinDlg,"Play");
+	Button = create_button(WinDlg,_("Play"));
 	gtk_table_attach(GTK_TABLE(table),Button,0,0+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  3,3);
 	PlayButton = Button;
 
-	Button = create_button(WinDlg,"Stop");
+	Button = create_button(WinDlg,_("Stop"));
 	gtk_table_attach(GTK_TABLE(table),Button,1,1+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -4555,14 +4556,14 @@ static gboolean createImagesFile()
 		return FALSE;
 	}
 	format =get_format_image_from_option();
-	t = g_strdup_printf("The %s%sgab%d.%s file was created", get_last_directory(),G_DIR_SEPARATOR_S,numFileFilm, format);
+	t = g_strdup_printf(_("The %s%sgab%d.%s file was created"), get_last_directory(),G_DIR_SEPARATOR_S,numFileFilm, format);
 
 	if(!strcmp(formatFilm,"BMP")) message = new_bmp(get_last_directory(), ++numFileFilm);
 	if(!strcmp(formatFilm,"PPM")) message = new_ppm(get_last_directory(), ++numFileFilm);
 	if(!strcmp(formatFilm,"JPEG")) message = new_jpeg(get_last_directory(), ++numFileFilm);
 	if(!strcmp(formatFilm,"PNG")) message = new_png(get_last_directory(), ++numFileFilm);
 	if(!strcmp(formatFilm,"Povray")) message = new_pov(get_last_directory(), ++numFileFilm);
-	if(!strcmp(formatFilm,"PNG transparent")) message = new_png_nobackground(get_last_directory(), ++numFileFilm);
+	if(!strcmp(formatFilm,"PNG transparent")) message = new_png_without_background(get_last_directory(), ++numFileFilm);
 
 	if(message == NULL) setTextInProgress(t);
 	else
@@ -4570,7 +4571,7 @@ static gboolean createImagesFile()
     		GtkWidget* m;
 		createFilm = FALSE;
 		numFileFilm = 0;
-    		m = Message(message,"Error",TRUE);
+    		m = Message(message,_("Error"),TRUE);
 		gtk_window_set_modal (GTK_WINDOW (m), TRUE);
 	}
 	g_free(t);
@@ -4660,6 +4661,7 @@ static void help_supported_format()
 	gchar temp[BSIZE];
 	GtkWidget* win;
 	sprintf(temp,
+		_(
 		" You can read more geometries from :\n"
 	        "     * a Gabedit input file.\n"
 	        "     * a Dalton output file.\n"
@@ -4674,6 +4676,7 @@ static void help_supported_format()
 	        "     * a Molden input file.\n"
 	        "     * a XYZ file.\n"
 	        "     * multiple Hyperchem files.\n"
+		)
 		 );
 	win = Message(temp," Info ",FALSE);
 	gtk_window_set_modal (GTK_WINDOW (win), TRUE);
@@ -4728,7 +4731,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox,gboole
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
 	i = 0;
-	add_label_table(table," Directory ",i,0);
+	add_label_table(table,_(" Directory "),i,0);
 	add_label_table(table,":",i,1);
   	entry = gtk_entry_new ();
 	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
@@ -4764,7 +4767,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox,gboole
 	g_signal_connect(G_OBJECT(GTK_BIN(comboCharge)->child),"changed", G_CALLBACK(changedEntryCharge),NULL);
 
 	i = 4;
-	add_label_table(table," Keywords ",i,0);
+	add_label_table(table,_(" Keywords "),i,0);
 	add_label_table(table,":",i,1);
   	entry = gtk_entry_new ();
 	g_object_set_data(G_OBJECT(Wins), "EntryKeywords", entry);
@@ -4786,7 +4789,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox,gboole
 
 
 	i = 6;
-	buttonChkgauss = gtk_check_button_new_with_label ("check file");
+	buttonChkgauss = gtk_check_button_new_with_label (_("check file"));
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonChkgauss), FALSE);
 	gtk_table_attach(GTK_TABLE(table),buttonChkgauss,0,0+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -4812,14 +4815,14 @@ static void  add_cancel_ok_button(GtkWidget *Win,GtkWidget *vbox,GtkWidget *entr
 	hbox = create_hbox_false(vbox);
 	gtk_widget_realize(Win);
 
-	button = create_button(Win,"Cancel");
+	button = create_button(Win,_("Cancel"));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Win));
 	gtk_widget_show (button);
 
-	button = create_button(Win,"OK");
+	button = create_button(Win,_("OK"));
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
@@ -4841,8 +4844,8 @@ static void create_gaussian_file_dlg(gboolean oneFile)
 
 	if(geometryConvergence.numberOfGeometries<1) 
 	{
-		gchar* t = g_strdup_printf("Sorry\n You should read the geometries befor"); 
-		Message(t,"Error",TRUE);
+		gchar* t = g_strdup_printf(_("Sorry\n You should read the geometries befor")); 
+		Message(t,_("Error"),TRUE);
 		return;
 	}
 
@@ -4883,6 +4886,7 @@ static void help_animated_file()
 	GtkWidget* win;
 	gchar* temp = NULL;
 	temp = g_strdup(
+		_(
 		" For create an animated file :\n"
 		" ============================\n"
 	        "   1) Read geometries from a Dalton, Gaussian, Molpro, Gabedit, Molden, MPQC or from XYZ file.\n"
@@ -4899,8 +4903,9 @@ static void help_animated_file()
 	        "            You can use the xPovAnim script (from utils/povray directory) for create the gif animated file from gab*.pov files.\n\n"
 	        "            convert is a free software. You can download this(for any system) from http://www.imagemagick.org\n"
 	        "            povray is a free software. You can download this(for any system) from http://www.povray.org\n\n"
+		)
 		 );
-	win = Message(temp," Info ",FALSE);
+	win = Message(temp,_("Info"),FALSE);
 	gtk_window_set_modal (GTK_WINDOW (win), TRUE);
 	g_free(temp);
 }
@@ -4946,32 +4951,32 @@ static void activate_action (GtkAction *action)
 /*--------------------------------------------------------------------*/
 static GtkActionEntry gtkActionEntries[] =
 {
-	{"File",     NULL, "_File", NULL, NULL, G_CALLBACK (activate_action)},
-	{"Read",     NULL, "_Read"},
-	{"ReadAuto", NULL, "Read a file(Auto)", NULL, "Read a file", G_CALLBACK (activate_action) },
-	{"ReadGabedit", GABEDIT_STOCK_GABEDIT, "Read a G_abedit file", NULL, "Read a Gabedit file", G_CALLBACK (activate_action) },
-	{"ReadDalton", GABEDIT_STOCK_DALTON, "Read a _Dalton output file", NULL, "Read a Dalton output file", G_CALLBACK (activate_action) },
-	{"ReadGamess", GABEDIT_STOCK_GAMESS, "Read a _Gamess output file", NULL, "Read a Gamess output file", G_CALLBACK (activate_action) },
-	{"ReadGamessIRC", GABEDIT_STOCK_GAMESS, "Read a _Gamess IRC file", NULL, "Read a Gamess IRC file", G_CALLBACK (activate_action) },
-	{"ReadFireFlyIRC", GABEDIT_STOCK_FIREFLY, "Read a _FireFly IRC file", NULL, "Read a FireFly IRC file", G_CALLBACK (activate_action) },
-	{"ReadGaussian", GABEDIT_STOCK_GAUSSIAN, "Read a _Gaussian output file", NULL, "Read a Gaussian output file", G_CALLBACK (activate_action) },
-	{"ReadMolpro", GABEDIT_STOCK_MOLPRO, "Read a Mol_pro output file", NULL, "Read Molpro output file", G_CALLBACK (activate_action) },
-	{"ReadMopac", GABEDIT_STOCK_MOPAC, "Read a _Mopac aux file", NULL, "Read a Mopac aux file", G_CALLBACK (activate_action) },
-	{"ReadMPQC", GABEDIT_STOCK_MPQC, "Read a MP_QC output file", NULL, "Read a MPQC output file", G_CALLBACK (activate_action) },
-	{"ReadFireFly", GABEDIT_STOCK_FIREFLY, "Read a _FireFly output file", NULL, "Read a FireFly output file", G_CALLBACK (activate_action) },
-	{"ReadQChem", GABEDIT_STOCK_QCHEM, "Read a Q-_Chem output file", NULL, "Read a Q-Chem output file", G_CALLBACK (activate_action) },
-	{"ReadMolden", GABEDIT_STOCK_MOLDEN, "Read a Mol_den output file", NULL, "Read a Molden file", G_CALLBACK (activate_action) },
-	{"CreateGaussInput", GABEDIT_STOCK_GAUSSIAN, "_Create multiple input file for Gaussian", NULL, "Save", G_CALLBACK (activate_action) },
-	{"CreateGaussInputLink", GABEDIT_STOCK_GAUSSIAN, "_Create single input file for Gaussian with more geometries", NULL, "Save", G_CALLBACK (activate_action) },
-	{"ReadXYZ", NULL, "Read a _xyz file", NULL, "Read a xyz file", G_CALLBACK (activate_action) },
-	{"ReadHIN", NULL, "Read a _Hyperchem files", NULL, "Read a hyperchem files", G_CALLBACK (activate_action) },
-	{"SaveGabedit", GABEDIT_STOCK_SAVE, "_Save in Gabedit format", NULL, "Save", G_CALLBACK (activate_action) },
-	{"SaveMobcal", GABEDIT_STOCK_SAVE, "_Save in Mobcal format", NULL, "Save in mobcal format", G_CALLBACK (activate_action) },
-	{"DeleteGeometry", GABEDIT_STOCK_CUT, "_Delete selected geometry", NULL, "Delete selected geometry", G_CALLBACK (activate_action) },
-	{"Close", GABEDIT_STOCK_CLOSE, "_Close", NULL, "Close", G_CALLBACK (activate_action) },
-	{"Help",     NULL, "_Help"},
-	{"HelpSupportedFormat", NULL, "_Supported format...", NULL, "Supported format...", G_CALLBACK (activate_action) },
-	{"HelpAnimation", NULL, "Creation of an _animated file...", NULL, "Creation of an animated file...", G_CALLBACK (activate_action) },
+	{"File",     NULL, N_("_File"), NULL, NULL, G_CALLBACK (activate_action)},
+	{"Read",     NULL, N_("_Read")},
+	{"ReadAuto", NULL, N_("Read a file(Auto)"), NULL, "Read a file", G_CALLBACK (activate_action) },
+	{"ReadGabedit", GABEDIT_STOCK_GABEDIT, N_("Read a G_abedit file"), NULL, "Read a Gabedit file", G_CALLBACK (activate_action) },
+	{"ReadDalton", GABEDIT_STOCK_DALTON, N_("Read a _Dalton output file"), NULL, "Read a Dalton output file", G_CALLBACK (activate_action) },
+	{"ReadGamess", GABEDIT_STOCK_GAMESS, N_("Read a _Gamess output file"), NULL, "Read a Gamess output file", G_CALLBACK (activate_action) },
+	{"ReadGamessIRC", GABEDIT_STOCK_GAMESS, N_("Read a _Gamess IRC file"), NULL, "Read a Gamess IRC file", G_CALLBACK (activate_action) },
+	{"ReadFireFlyIRC", GABEDIT_STOCK_FIREFLY, N_("Read a _FireFly IRC file"), NULL, "Read a FireFly IRC file", G_CALLBACK (activate_action) },
+	{"ReadGaussian", GABEDIT_STOCK_GAUSSIAN, N_("Read a _Gaussian output file"), NULL, "Read a Gaussian output file", G_CALLBACK (activate_action) },
+	{"ReadMolpro", GABEDIT_STOCK_MOLPRO, N_("Read a Mol_pro output file"), NULL, "Read Molpro output file", G_CALLBACK (activate_action) },
+	{"ReadMopac", GABEDIT_STOCK_MOPAC, N_("Read a _Mopac aux file"), NULL, "Read a Mopac aux file", G_CALLBACK (activate_action) },
+	{"ReadMPQC", GABEDIT_STOCK_MPQC, N_("Read a MP_QC output file"), NULL, "Read a MPQC output file", G_CALLBACK (activate_action) },
+	{"ReadFireFly", GABEDIT_STOCK_FIREFLY, N_("Read a _FireFly output file"), NULL, "Read a FireFly output file", G_CALLBACK (activate_action) },
+	{"ReadQChem", GABEDIT_STOCK_QCHEM, N_("Read a Q-_Chem output file"), NULL, "Read a Q-Chem output file", G_CALLBACK (activate_action) },
+	{"ReadMolden", GABEDIT_STOCK_MOLDEN, N_("Read a Mol_den output file"), NULL, "Read a Molden file", G_CALLBACK (activate_action) },
+	{"CreateGaussInput", GABEDIT_STOCK_GAUSSIAN, N_("_Create multiple input file for Gaussian"), NULL, "Save", G_CALLBACK (activate_action) },
+	{"CreateGaussInputLink", GABEDIT_STOCK_GAUSSIAN, N_("_Create single input file for Gaussian with more geometries"), NULL, "Save", G_CALLBACK (activate_action) },
+	{"ReadXYZ", NULL, N_("Read a _xyz file"), NULL, "Read a xyz file", G_CALLBACK (activate_action) },
+	{"ReadHIN", NULL, N_("Read a _Hyperchem files"), NULL, "Read a hyperchem files", G_CALLBACK (activate_action) },
+	{"SaveGabedit", GABEDIT_STOCK_SAVE, N_("_Save in Gabedit format"), NULL, "Save", G_CALLBACK (activate_action) },
+	{"SaveMobcal", GABEDIT_STOCK_SAVE, N_("_Save in Mobcal format"), NULL, "Save in mobcal format", G_CALLBACK (activate_action) },
+	{"DeleteGeometry", GABEDIT_STOCK_CUT, N_("_Delete selected geometry"), NULL, "Delete selected geometry", G_CALLBACK (activate_action) },
+	{"Close", GABEDIT_STOCK_CLOSE, N_("_Close"), NULL, "Close", G_CALLBACK (activate_action) },
+	{"Help",     NULL, N_("_Help")},
+	{"HelpSupportedFormat", NULL, N_("_Supported format..."), NULL, "Supported format...", G_CALLBACK (activate_action) },
+	{"HelpAnimation", NULL, N_("Creation of an _animated file..."), NULL, "Creation of an animated file...", G_CALLBACK (activate_action) },
 };
 static guint numberOfGtkActionEntries = G_N_ELEMENTS (gtkActionEntries);
 /********************************************************************************/
@@ -5071,6 +5076,7 @@ static GtkUIManager *create_menu(GtkWidget* box)
   	g_signal_connect_swapped (PrincipalWindow, "destroy", G_CALLBACK (g_object_unref), manager);
 
 	actionGroup = gtk_action_group_new ("GabeditAnimationGeomConvActions");
+	gtk_action_group_set_translation_domain(actionGroup,GETTEXT_PACKAGE);
 	gtk_action_group_add_actions (actionGroup, gtkActionEntries, numberOfGtkActionEntries, NULL);
 
   	gtk_ui_manager_insert_action_group (manager, actionGroup, 0);
@@ -5079,7 +5085,7 @@ static GtkUIManager *create_menu(GtkWidget* box)
   	gtk_window_add_accel_group (GTK_WINDOW (PrincipalWindow), gtk_ui_manager_get_accel_group (manager));
 	if (!gtk_ui_manager_add_ui_from_string (manager, uiMenuInfo, -1, &error))
 	{
-		g_message ("building menus failed: %s", error->message);
+		g_message (_("building menus failed: %s"), error->message);
 		g_error_free (error);
 	}
 	if(GTK_IS_UI_MANAGER(manager))

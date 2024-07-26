@@ -106,65 +106,89 @@ static struct
 {
   {
     FALSE, "atomsprop",
-    "The \"atomsprop\" file is used to store atoms properties\n"
+    N_(
+       "The \"atomsprop\" file is used to store atoms properties\n"
        "that affect GABEDIT's default atoms properties behavior.\n"
        "You can configured this file with \n"
        "Setting/Preferences in Gabedit menu."
+     )
   },
   {
     FALSE, "commands",
+    N_(
     "The \"commands\" file is used to store commands\n"
     "for execute Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC, Orca, FireFly or Q-Chem program.\n"
+    )
   },
   {
     FALSE, "network",
+    N_(
     "The \"network\" file is used to store network\n"
     "protocols : ftp, rsh or ssh.\n"
+    )
   },
   {
     FALSE, "fonts",
+    N_(
     "The \"fonts\" file is used to store fonts style\n"
+    )
   },
   {
     FALSE, "listfile",
+    N_(
     "GABEDIT save the recent files.\n"
     "We save only 20 recent files by type.\n"
+    )
   },
   {
     FALSE, "hosts",
+    N_(
     "GABEDIT save the recent remote hosts information.\n"
     "We save only 20 recent remote host.\n"
+    )
   },
   {
     FALSE, "colorsurfaces",
+    N_(
     "The \"colorsurfaces\" file is used to store color surfaces(Density, Orbitals,...).\n"
+    )
   },
   {
     FALSE, "molprobasis",
+    N_(
     "GABEDIT uses this file if libmol program is not installed at your local host.\n"
     "Please note that this file contains the list of basis(only the names of basis)\n"
     "supported by molpro2002.6.\n"
+    )
   },
   {
     FALSE, "molcasbasis",
+    N_(
     "GABEDIT uses this file for obtain the list of basis available in Molcas.\n"
     "Please note that this file contains the list of basis(only the names of basis)\n"
     "supported by Molcas7.\n"
+    )
   },
   {
     FALSE, "mpqcBasis",
+    N_(
     "GABEDIT uses this file for obtain the list of basis available in MPQC.\n"
     "Please note that this file contains the list of basis(only the names of basis)\n"
     "supported by MPQC2.2.2\n"
+    )
   },
   {
     FALSE, "MolecularMechanics.prm",
+    N_(
     "GABEDIT uses this file for load Molecular mechanics parameters/\n"
+    )
   },
   {
     TRUE, "tmp",
+    N_(
     "This subdirectory is used by the GABEDIT to store\n"
     "tempory files."
+    )
   }
 };
 
@@ -362,8 +386,8 @@ static void user_install_continue_callback(GtkWidget *widget,
 			gtk_widget_set_sensitive(continue_button, FALSE);
 			gtk_widget_set_sensitive(cancel_button, FALSE);
 			gtk_label_set_text(GTK_LABEL(footer_label),
-							 "Please wait while your personal\n"
-							 "GABEDIT directory is being created...");
+							 _("Please wait while your personal\n"
+							 "GABEDIT directory is being created..."));
 
 			while (gtk_events_pending())
 					gtk_main_iteration();
@@ -435,7 +459,7 @@ void create_buttons_dialog(GtkWidget* dialog,UserInstallCallback callback)
 
 
 
-  button = create_button(dialog,"Cancel");
+  button = create_button(dialog,_("Cancel"));
   gtk_box_pack_end (GTK_BOX(action_area), button, FALSE, TRUE, 0);
   g_signal_connect_swapped(GTK_OBJECT(button), "clicked", G_CALLBACK(user_install_cancel_callback),GTK_OBJECT(dialog));
 
@@ -443,7 +467,7 @@ void create_buttons_dialog(GtkWidget* dialog,UserInstallCallback callback)
   cancel_button = button;
   gtk_widget_show_all (button);
 
-  button = create_button(dialog," Continue ");
+  button = create_button(dialog,_(" Continue "));
   gtk_box_pack_end (GTK_BOX(action_area), button, FALSE, TRUE, 0);  
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
@@ -469,7 +493,7 @@ void user_install_dialog_create(UserInstallCallback callback)
 
   dialog = user_install_dialog = gtk_dialog_new ();
   gtk_window_set_position(GTK_WINDOW(dialog),GTK_WIN_POS_CENTER);
-  gtk_window_set_title(&GTK_DIALOG(dialog)->window,"Gabedit User Installation");
+  gtk_window_set_title(&GTK_DIALOG(dialog)->window,_("Gabedit User Installation"));
 
   gtk_widget_realize (dialog);
   set_icone(GTK_WIDGET(dialog));
@@ -607,9 +631,10 @@ void user_install_dialog_create(UserInstallCallback callback)
   g_free(Version_S);
   page = user_install_notebook_append_page(GTK_NOTEBOOK(notebook),
 				temp,
-                                "Click \"Continue\" to enter the GABEDIT user installation.");
+                                _("Click \"Continue\" to enter the GABEDIT user installation."));
 
   add_label(GTK_BOX(page),
+            _(
             "Gabedit is a Graphical User Interface to Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC ,Orca, FireFly and Q-Chem\n"
             "computational chemistry packages.\n"
 	    "It can display a variety of calculation results including support for most major molecular file formats.\n"
@@ -628,6 +653,7 @@ void user_install_dialog_create(UserInstallCallback callback)
 	    "surfaces (including colorcoded surfaces), contours, planes colorcoded.\n"
 	    "Gabedit can save picture in BMP, JPEG, PNG, PPM and PS format.\n"
 	    "Gabedit can generate automatically a series of pictures for animation(vibration, geometry convergence, ....).\n"
+	    )
             );
 
   sep = gtk_hseparator_new();
@@ -635,9 +661,11 @@ void user_install_dialog_create(UserInstallCallback callback)
   gtk_widget_show(sep);
 
   add_label(GTK_BOX(page),
+		  _(
 		  "Copyright (c) 2002-2010 Abdul-Rahman Allouche.\n"
 		  "All rights reserved.\n"
 		  "\nGabedit is free.\n"
+		  )
 		  ); 
 
   /*  Page 2  */
@@ -664,9 +692,11 @@ void user_install_dialog_create(UserInstallCallback callback)
     set_pixbuf();
 
     page = user_install_notebook_append_page(GTK_NOTEBOOK(notebook),
-                                             "Personal GABEDIT Directory",
+		    			    _("Personal GABEDIT Directory"),
+					    _(
                                              "Click \"Continue\" to create "
-                                             "your personal GABEDIT directory.");
+                                             "your personal GABEDIT directory.")
+					    );
 
     hbox = gtk_hbox_new(FALSE, 8);
     gtk_box_pack_start(GTK_BOX(page), hbox, FALSE, FALSE, 0);
@@ -700,15 +730,18 @@ void user_install_dialog_create(UserInstallCallback callback)
     gtk_box_pack_start(GTK_BOX(hbox), vbox, TRUE, TRUE, 0);
     gtk_widget_show(vbox);
 
-    str = g_strdup_printf("For a proper GABEDIT installation, a subdirectory named\n"
-                            "%s needs to be created.", gabedit_directory());
+    str = g_strdup_printf(_("For a proper GABEDIT installation, a subdirectory named\n"
+                            "%s needs to be created."), gabedit_directory());
     add_label(GTK_BOX(vbox), str);
     g_free(str);
 
     add_label(GTK_BOX(vbox),
+		    _(
               "This subdirectory will contain a number of important files.\n"
                 "Click on one of the files or subdirectories in the tree\n"
-                "to get more information about the selected item.");
+                "to get more information about the selected item."
+		    )
+	);
 
     notebook2 = gtk_notebook_new();
     gtk_container_set_border_width(GTK_CONTAINER(notebook2), 8);
@@ -771,15 +804,15 @@ void user_install_dialog_create(UserInstallCallback callback)
 
   /*  Page 3  */
   page = log_page = user_install_notebook_append_page(GTK_NOTEBOOK(notebook),
-                                             "Creation of Directories",
+                                             _("Creation of Directories"),
                                              NULL);
 
   /*  Page 4  */
   page = prop_page = user_install_notebook_append_page(GTK_NOTEBOOK(notebook),
-                                             "GABEDIT Atoms Properties",
-                                             "Click \"Continue\" to accept the settings above.");
+                                             _("GABEDIT Atoms Properties"),
+                                             _("Click \"Continue\" to accept the settings above."));
 
-  add_label(GTK_BOX(page),"Setting for atoms properties.");
+  add_label(GTK_BOX(page),_("Setting for atoms properties."));
 
   sep = gtk_hseparator_new();
   gtk_box_pack_start(GTK_BOX(page), sep, FALSE, FALSE, 2);
@@ -787,13 +820,16 @@ void user_install_dialog_create(UserInstallCallback callback)
 
   /*  Page 5  */
   page = commands_network_page = user_install_notebook_append_page(GTK_NOTEBOOK(notebook),
-                                             "GABEDIT Commands/Network",
-                                             "Click \"Continue\" to accept the settings above.");
+                                             _("GABEDIT Commands/Network"),
+                                             _("Click \"Continue\" to accept the settings above."));
 
   add_label(GTK_BOX(commands_network_page),
+	    _(
             "To execute Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC, Orca, FireFly and Q-Chem program, "
             "GABEDIT needs to know commands system.\n"
-            "GABEDIT needs to know network protocols.");
+            "GABEDIT needs to know network protocols."
+	    )
+	    );
 
   sep = gtk_hseparator_new();
   gtk_box_pack_start(GTK_BOX(page), sep, FALSE, FALSE, 2);
@@ -802,12 +838,15 @@ void user_install_dialog_create(UserInstallCallback callback)
   /*  Page 6  */
   page = fontscolors_page =
            user_install_notebook_append_page(GTK_NOTEBOOK(notebook),
-                                             "GABEDIT Fonts/Colors setting",
-                                             "Click \"Continue\" to accept the settings above.");
+                                             _("GABEDIT Fonts/Colors setting"),
+                                             _("Click \"Continue\" to accept the settings above."));
 
   add_label(GTK_BOX(fontscolors_page),
+	    _(
             "Setting for Text Font and Text Colors, "
-            "GABEDIT needs to know the defaults Fonts/Colors for Data and Result editors.");
+            "GABEDIT needs to know the defaults Fonts/Colors for Data and Result editors."
+	    )
+	    );
 
   sep = gtk_hseparator_new();
   gtk_box_pack_start(GTK_BOX(page), sep, FALSE, FALSE, 2);
@@ -816,12 +855,14 @@ void user_install_dialog_create(UserInstallCallback callback)
   /*  Page 7  */
   page = colorsurfaces_page =
            user_install_notebook_append_page(GTK_NOTEBOOK(notebook),
-                                             "GABEDIT Color Surfaces setting",
-                                             "Click \"Continue\" to accept the settings above.");
+                                             _("GABEDIT Color Surfaces setting"),
+                                             _("Click \"Continue\" to accept the settings above."));
 
   add_label(GTK_BOX(colorsurfaces_page),
-            "Setting for color surfaces, "
-            "GABEDIT needs to know the defaults Color for surfaces(density,Orbitals,....).");
+            _("Setting for color surfaces, "
+            "GABEDIT needs to know the defaults Color for surfaces(density,Orbitals,....)."
+	    )
+	    );
 
   sep = gtk_hseparator_new();
   gtk_box_pack_start(GTK_BOX(page), sep, FALSE, FALSE, 2);
@@ -830,43 +871,52 @@ void user_install_dialog_create(UserInstallCallback callback)
   /*  Page 8  */
   page = molpro_basis_page =
            user_install_notebook_append_page(GTK_NOTEBOOK(notebook),
-                                             "GABEDIT creation of molpro basis list file",
-                                             "Click \"Continue\" for next page.");
+                                             _("GABEDIT creation of molpro basis list file"),
+                                             _("Click \"Continue\" for next page."));
   add_label(GTK_BOX(molpro_basis_page),
+		  _(
             "If the libmol program (delivered with molpro) is not installed on your local host,\n"
             "GABEDIT uses this file for get the list of basis(only the names of basis)supported by molpro.\n"
-            "Please note that this file contains the list of basis supported by molpro2002.6.");
+            "Please note that this file contains the list of basis supported by molpro2002.6."
+	    )
+	  );
 
   /*  Page 9  */
   page = molcas_basis_page =
            user_install_notebook_append_page(GTK_NOTEBOOK(notebook),
-                                             "GABEDIT creation of molcas basis list file",
-                                             "Click \"Continue\" for next page.");
+                                             _("GABEDIT creation of molcas basis list file"),
+                                             _("Click \"Continue\" for next page."));
   add_label(GTK_BOX(molcas_basis_page),
+		  _(
             "GABEDIT uses this file for get the list of basis(only the names of basis)supported by molcas.\n"
-            "Please note that this file contains the list of basis supported by Molcas7.");
+            "Please note that this file contains the list of basis supported by Molcas7."
+	    )
+		  );
 
   /*  Page 10  */
   page = mpqc_basis_page =
            user_install_notebook_append_page(GTK_NOTEBOOK(notebook),
-                                             "GABEDIT creation of mpqc basis list file",
-                                             "Click \"Continue\" for next page.");
+                                             _("GABEDIT creation of mpqc basis list file"),
+                                             _("Click \"Continue\" for next page."));
   add_label(GTK_BOX(mpqc_basis_page),
+		  _(
             "GABEDIT uses this file for get the list of basis(only the names of basis)supported by MPQC.\n"
-            "Please note that this file contains the list of basis supported by MPQC2.2.2.");
+            "Please note that this file contains the list of basis supported by MPQC2.2.2."
+	    )
+	 );
 
 
     /*  Page 11  */
   page = mm_file_page =
   user_install_notebook_append_page(GTK_NOTEBOOK(notebook),
-                                     "GABEDIT creation of Molecular Mechanics file",
-                                     "Click \"Continue\" to start GABEDIT.");
+                                     _("GABEDIT creation of Molecular Mechanics file"),
+                                     _("Click \"Continue\" to start GABEDIT."));
   add_label(GTK_BOX(mm_file_page),
-            "Gabedit use this file for load molecular mechanics parameters ");
+            _("Gabedit use this file for load molecular mechanics parameters "));
 
   /*  EEK page  */
   page = user_install_notebook_append_page(GTK_NOTEBOOK(notebook),
-                                           "Aborting Installation...",
+                                           _("Aborting Installation..."),
                                            NULL);
 
   user_install_notebook_set_current_page(GTK_NOTEBOOK(notebook), 0);
@@ -955,15 +1005,18 @@ static gboolean user_install_run()
 		gtk_widget_show(table);
 
 		add_label(GTK_BOX(log_page),
+		_(
             "Did you notice any error messages in the lines above?\n"
             "If not, installation was successful!,  "
-            "Otherwise, quit and investigate the possible reason...");
+            "Otherwise, quit and investigate the possible reason..."
+	    )
+	    );
 
 		buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (log_text));
 		gtk_text_buffer_set_text (buffer, str, -1);
 
 		g_object_set_data(G_OBJECT(log_page), "footer",
-                     "Click \"Continue\" to complete GABEDIT installation.");
+                     _("Click \"Continue\" to complete GABEDIT installation."));
 		if(str);
 		g_free(str);
 
@@ -972,7 +1025,7 @@ static gboolean user_install_run()
 	else
 	{
 		add_label(GTK_BOX(log_page),
-              "Installation failed.  Contact system administrator.");
+              _("Installation failed.  Contact system administrator."));
 		return FALSE;
 	}
 #else /* G_OS_32 */
@@ -1007,15 +1060,18 @@ static gboolean user_install_run()
 		gtk_widget_show(table);
 
 		add_label(GTK_BOX(log_page),
+		_(
             "Did you notice any error messages in the lines above?\n"
             "If not, installation was successful!,  "
-            "Otherwise, quit and investigate the possible reason...");
+            "Otherwise, quit and investigate the possible reason..."
+	    )
+		);
 
 		buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (log_text));
 		gtk_text_buffer_set_text (buffer, str, -1);
 
 		g_object_set_data(G_OBJECT(log_page), "footer",
-                     "Click \"Continue\" to complete GABEDIT installation.");
+                     _("Click \"Continue\" to complete GABEDIT installation."));
 		g_free(str);
 
 		return TRUE;
@@ -1023,7 +1079,7 @@ static gboolean user_install_run()
 	else
 	{
 		add_label(GTK_BOX(log_page),
-              "Installation failed.  Contact system administrator.");
+              _("Installation failed.  Contact system administrator."));
 		return FALSE;
 	}
 #endif /* G_OS_32 */

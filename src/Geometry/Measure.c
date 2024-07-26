@@ -740,7 +740,7 @@ void create_frame_distances_angles_dihedral(GtkWidget *Dialogue,GtkWidget *vboxf
   gtk_container_add(GTK_CONTAINER(vbox),Table);
 
   i = 0;
-  add_label_table_expand(Table, "Distances (Angstroms)", 0, 2, i, i+1);
+  add_label_table_expand(Table, _("Distances (Angstroms)"), 0, 2, i, i+1);
 
   iBegin = 1;
   for(i=0;i<6;i++)
@@ -761,7 +761,7 @@ void create_frame_distances_angles_dihedral(GtkWidget *Dialogue,GtkWidget *vboxf
   hseparator = gtk_hseparator_new ();
   gtk_table_attach(GTK_TABLE(Table),hseparator,0,3,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL|GTK_EXPAND),3,3);
   i = 8;
-  add_label_table_expand(Table, "Angles (Degrees)", 0, 2, i, i+1);
+  add_label_table_expand(Table, _("Angles (Degrees)"), 0, 2, i, i+1);
 
   iBegin = 9;
   for(i=0;i<2;i++)
@@ -783,7 +783,7 @@ void create_frame_distances_angles_dihedral(GtkWidget *Dialogue,GtkWidget *vboxf
   hseparator = gtk_hseparator_new ();
   gtk_table_attach(GTK_TABLE(Table),hseparator,0,3,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),3,3);
   i = 13;
-  add_label_table_expand(Table, "Dihedral (Degrees)", 0, 2, i, i+1);
+  add_label_table_expand(Table, _("Dihedral (Degrees)"), 0, 2, i, i+1);
 
   iBegin = 14;
   LabelDihedral = add_label_table(Table," ",iBegin,0);
@@ -803,7 +803,7 @@ void create_frame_distances_angles_dihedral(GtkWidget *Dialogue,GtkWidget *vboxf
   hseparator = gtk_hseparator_new ();
   gtk_table_attach(GTK_TABLE(Table),hseparator,0,3,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),3,3);
   i = 16;
-  MoveGroupButton = gtk_check_button_new_with_label ("Move group");
+  MoveGroupButton = gtk_check_button_new_with_label (_("Move group"));
   gtk_widget_show (MoveGroupButton);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (MoveGroupButton), TRUE);
   gtk_table_attach(GTK_TABLE(Table),MoveGroupButton,0,1,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),3,3);
@@ -814,7 +814,7 @@ void create_frame_averaged(GtkWidget *Dialogue,GtkWidget *hbox)
   GtkWidget *FrameAveraged;
   GtkWidget *Table;
   GtkWidget *vbox;
-  FrameAveraged = create_frame(Dialogue,hbox,"Averaged distance (Angstroms)");  
+  FrameAveraged = create_frame(Dialogue,hbox,_("Averaged distance (Angstroms)"));  
   vbox = create_vbox(FrameAveraged);
   Table = gtk_table_new(1,1,FALSE);
   gtk_container_add(GTK_CONTAINER(vbox),Table);

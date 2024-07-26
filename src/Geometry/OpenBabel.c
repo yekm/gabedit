@@ -578,7 +578,7 @@ void create_babel_dialogue()
 	GtkWidget *buttonHDelete;
 	GtkWidget *buttonCenter;
 	gchar title[]="Babel";
-	gchar  *labelLeft[2]={"File Type", "File Name"};
+	gchar  *labelLeft[2]={N_("File Type"), N_("File Name")};
 	gint height = ScreenHeight;
 	gint i;
 	GtkWidget *frameInput;
@@ -635,7 +635,7 @@ void create_babel_dialogue()
 	gtk_box_pack_start (GTK_BOX(vbox1), table, TRUE, TRUE, 1);
 
 	hbox = gtk_hbox_new (TRUE, 0);
-	frame = create_a_frame(hbox, fp, "Input File",labelLeft, inputPatterns, inputFormat, nListInput);
+	frame = create_a_frame(hbox, fp, _("Input File"),labelLeft, inputPatterns, inputFormat, nListInput);
 	inputEntry = g_object_get_data (G_OBJECT (frame), "EntryFileName");
 	inputEntryCombo = g_object_get_data (G_OBJECT (frame), "EntryCombo");
 	inputTextEditor = g_object_get_data (G_OBJECT (frame), "TextEditor");
@@ -654,14 +654,14 @@ void create_babel_dialogue()
                   (GtkAttachOptions)(GTK_SHRINK),
                   1,1);
 
-	button = gtk_button_new_with_label("Convert");
+	button = gtk_button_new_with_label(_("Convert"));
 	i = 0;
 	gtk_table_attach(GTK_TABLE(tableButtons),button,0,1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL) ,
                   (GtkAttachOptions)(GTK_SHRINK),
                   1,1);
 
-	buttonCenter = gtk_check_button_new_with_label("Center  " );
+	buttonCenter = gtk_check_button_new_with_label(_("Center  ") );
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCenter), FALSE);
 	i=1;
 	gtk_table_attach(GTK_TABLE(tableButtons),buttonCenter,0,1,i,i+1,
@@ -669,19 +669,19 @@ void create_babel_dialogue()
                   (GtkAttachOptions)(GTK_SHRINK),
                   1,1);
 
-	buttonH = gtk_check_button_new_with_label("H atoms" );
+	buttonH = gtk_check_button_new_with_label(_("H atoms"));
 	i=2;
 	gtk_table_attach(GTK_TABLE(tableButtons),buttonH,0,1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL) ,
                   (GtkAttachOptions)(GTK_SHRINK),
                   1,1);
-	buttonHAdd = gtk_radio_button_new_with_label( NULL,"Add    " );
+	buttonHAdd = gtk_radio_button_new_with_label( NULL,_("Add    ") );
 	i=3;
 	gtk_table_attach(GTK_TABLE(tableButtons),buttonHAdd,0,1,i,i+1,
                   (GtkAttachOptions)(GTK_SHRINK),
                   (GtkAttachOptions)(GTK_SHRINK),
                   1,1);
-	buttonHDelete = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonHAdd)), "Delete"); 
+	buttonHDelete = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonHAdd)), _("Delete")); 
 	i=4;
 	gtk_table_attach(GTK_TABLE(tableButtons),buttonHDelete,0,1,i,i+1,
                   (GtkAttachOptions)(GTK_SHRINK),
@@ -706,7 +706,7 @@ void create_babel_dialogue()
 	gtk_widget_show (button);
 
 	hbox = gtk_hbox_new (TRUE, 0);
-	frame = create_a_frame(hbox, fp, "Outpout File",labelLeft, outputPatterns, outputFormat, nListOutput);
+	frame = create_a_frame(hbox, fp, _("Outpout File"),labelLeft, outputPatterns, outputFormat, nListOutput);
 	outputEntry = g_object_get_data (G_OBJECT (frame), "EntryFileName");
 	outputEntryCombo = g_object_get_data (G_OBJECT (frame), "EntryCombo");
 	outputTextEditor = g_object_get_data (G_OBJECT (frame), "TextEditor");
@@ -842,16 +842,16 @@ GtkWidget* create_babel_read_save_dialogue(gboolean read)
 
 
 	fp = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	if(read) gtk_window_set_title(GTK_WINDOW(fp),"Read geometry (using Open Babel)");
-	else gtk_window_set_title(GTK_WINDOW(fp),"Save geometry (using Open Babel)");
+	if(read) gtk_window_set_title(GTK_WINDOW(fp),_("Read geometry (using Open Babel)"));
+	else gtk_window_set_title(GTK_WINDOW(fp),_("Save geometry (using Open Babel)"));
 
 	gtk_window_set_transient_for(GTK_WINDOW(fp),GTK_WINDOW(Fenetre));
     	gtk_window_set_modal (GTK_WINDOW (fp), TRUE);
 	gtk_window_set_position(GTK_WINDOW(fp),GTK_WIN_POS_CENTER);
 
 	gtk_widget_realize(fp);
-	if(read) init_child(fp, gtk_widget_destroy, " Read geometry with Open Babel ");
-	else init_child(fp, gtk_widget_destroy, " Save geometry using  Open Babel ");
+	if(read) init_child(fp, gtk_widget_destroy, _(" Read geometry with Open Babel "));
+	else init_child(fp, gtk_widget_destroy, _(" Save geometry using  Open Babel "));
 
 	g_signal_connect(G_OBJECT(fp),"delete_event",G_CALLBACK(destroy_children),NULL);
 

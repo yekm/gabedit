@@ -1,12 +1,22 @@
+08 Jun 2010 :
+	   Text with rotation in XYPlot and ContoursPlot windows.
+	   One can add margins in XYPlot and ContoursPlot windows.
+	   One can add images (from file or clipboard) in the ContoursPlot window.
+06 Jun 2010 :
+	   Read orbitals, geometry and normal modes from a fchk Gaussian file.
+	   Read grid from a openDX file.
+	   One can add images (from file or clipboard) in the XYPlot window.
+	   Bug fixed : screen capture of opengl window in png and tif files format.
+
 05 May 2010 :
 	   Read orbitals from the new mopac aux file format (including the compressed format).
 	   New themes for the XYPlot and ContourPlot windows.
 	   
 01 May 2010 :
-	   One can add texts (and change it) in the XYPlot and ControusPlot windows.
-	   One can add lines (and change it) in the XYPlot and ControusPlot windows.
-	   Save all data in a Gabedit file format on the XYPlot and ContousPlot windows
-	   Read data from a Gabedit file format on the XYPlot and ContousPlot windows
+	   One can add texts (and change it) in the XYPlot and ContoursPlot windows.
+	   One can add lines (and change it) in the XYPlot and ContoursPlot windows.
+	   Save all data in a Gabedit file format on the XYPlot and ContoursPlot windows
+	   Read data from a Gabedit file format on the XYPlot and ContoursPlot windows
 	   The legend options can be changed by a double click on the legends
 
 28 April 2010 :

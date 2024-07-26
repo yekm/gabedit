@@ -1142,6 +1142,7 @@ gint redraw(GtkWidget *widget, gpointer data)
 	glFlush();
 	gtk_gl_area_swap_buffers(GTK_GL_AREA(widget));
 	createImagesFiles();
+	/* gtk_widget_queue_draw(PrincipalWindow);*/
 
 	return TRUE;
 }

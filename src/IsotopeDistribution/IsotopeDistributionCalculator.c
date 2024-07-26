@@ -258,7 +258,7 @@ static GList* compute_peaks(gint nElements, ElementData* elements, gdouble massP
 	peaks = add_peak(NULL, is);
 	if(!peaks) 
 	{
-		if(*error) *error = g_strdup("No enough memory");
+		if(*error) *error = g_strdup(_("No enough memory"));
 		return peaks;
 	}
 	frequenceUpdate = 100*nElements;
@@ -272,7 +272,7 @@ static GList* compute_peaks(gint nElements, ElementData* elements, gdouble massP
 			if(!is)
 			{ 
 				free_isotope_distribution(peaks); 
-				if(*error) *error = g_strdup("No enough memory");
+				if(*error) *error = g_strdup(_("No enough memory"));
 				return NULL;
 			}
 			for(iIter=peaks; iIter != NULL; iIter = iIter->next)
@@ -283,7 +283,7 @@ static GList* compute_peaks(gint nElements, ElementData* elements, gdouble massP
 					if(!is)
 					{ 
 						free_isotope_distribution(peaks); 
-						if(*error) *error = g_strdup("No enough memory");
+						if(*error) *error = g_strdup(_("No enough memory"));
 						return NULL;
 					}
 					is->mass = ((IsotopeData*)(iIter->data))->mass + elements[i].isotopes[k].mass;
@@ -311,7 +311,7 @@ static GList* compute_peaks(gint nElements, ElementData* elements, gdouble massP
 	{
 		free_isotope_distribution(peaks); 
 		peaks = NULL;
-		if(*error) *error = g_strdup("Calcul canceled");
+		if(*error) *error = g_strdup(_("Calculation canceled"));
 	}
 	return peaks;
 }
@@ -323,7 +323,7 @@ GList* compute_isotope_distribution(gint nElements, gint* nAtoms, gchar** symbol
 	if(*error) *error = NULL;
 	if(nElements<1) 
 	{
-		if(error) *error = g_strdup("Number of elements can not been <1 !");
+		if(error) *error = g_strdup(_("Number of elements can not been <1 !"));
 		return peaks;
 	}
 	elements = get_elements(nElements, nAtoms, symbols);
@@ -355,10 +355,10 @@ static gchar* parse_formula(gchar* formula, gchar*** symbolsP, gint* nElementsP,
 	*nAtomsP = NULL;
 
 	/* printf("formula=%s\n",formula );*/
-	if(!formula) return g_strdup("Formula not valid");
-	if(strlen(formula)<1) return g_strdup("Formula not valid");
-	if(islower(*formula)) return g_strdup("The first character of your formula is a lower case !");
-	if(isdigit(*formula)) return g_strdup("The first character of your formula is a digit !");
+	if(!formula) return g_strdup(_("Formula not valid"));
+	if(strlen(formula)<1) return g_strdup(_("Formula not valid"));
+	if(islower(*formula)) return g_strdup(_("The first character of your formula is a lower case !"));
+	if(isdigit(*formula)) return g_strdup(_("The first character of your formula is a digit !"));
 
 	l =strlen(formula);
 	listSymbols = g_malloc((2*l+1)*sizeof(gchar));
@@ -435,7 +435,7 @@ static gchar* parse_formula(gchar* formula, gchar*** symbolsP, gint* nElementsP,
 	{
 		free_one_string_table(symbols, i);
 		free_one_string_table(nA, j);
-		return g_strdup("Your formula is not valid !");
+		return g_strdup(_("Your formula is not valid !"));
 	}
 	nElements = ns;
 	for(i=0;i<nElements;i++)
@@ -443,7 +443,7 @@ static gchar* parse_formula(gchar* formula, gchar*** symbolsP, gint* nElementsP,
 		/*printf("symbol=%s#\n",symbols[i]);*/
 		if(!test_atom_define(symbols[i]))
 		{
-			gchar* mess = g_strdup_printf("%s is not a known atom for Gabedit !",symbols[i]);
+			gchar* mess = g_strdup_printf(_("%s is not a known atom for Gabedit !"),symbols[i]);
 			free_one_string_table(symbols, i);
 			free_one_string_table(nA, j);
 			return mess;

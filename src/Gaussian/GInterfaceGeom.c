@@ -181,8 +181,8 @@ void GAjoutePageGeom(GtkWidget *NoteBook)
   Frame = geominter->window;
   gtk_container_set_border_width(GTK_CONTAINER(Frame), 10);
 
-  LabelOnglet = gtk_label_new("Molecular Specifications");
-  LabelMenu = gtk_label_new("Molecular Specifications");
+  LabelOnglet = gtk_label_new(_("Molecular Specifications"));
+  LabelMenu = gtk_label_new(_("Molecular Specifications"));
   gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook),
                                 Frame,
                                 LabelOnglet, LabelMenu);
@@ -198,34 +198,34 @@ void GAjoutePageGeom(GtkWidget *NoteBook)
 
   if(Methodes[1]!=NULL || Methodes[2]!=NULL )
   {
-  	create_label_hbox(hbox,"Charge of    ",-1);
-  	create_combo_charge(hbox,0,"Real system : ");
-  	create_label_hbox(hbox2,"2*Spin+1 of ",-1);
-  	create_combo_spin(hbox2,1,"Real system : ");
+  	create_label_hbox(hbox,_("Charge of    "),-1);
+  	create_combo_charge(hbox,0,_("Real system : "));
+  	create_label_hbox(hbox2,_("2*Spin+1 of "),-1);
+  	create_combo_spin(hbox2,1,_("Real system : "));
         NMethodes++;
   }
   else
   {
-  	create_label_hbox(hbox,"Charge of   ",-1);
-  	create_combo_charge(hbox,0,"system : ");
-  	create_label_hbox(hbox,"2*Spin+1 of ",-1);
-  	create_combo_spin(hbox,1,"system : ");
+  	create_label_hbox(hbox,_("Charge of   "),-1);
+  	create_combo_charge(hbox,0,_("system : "));
+  	create_label_hbox(hbox,_("2*Spin+1 of "),-1);
+  	create_combo_spin(hbox,1,_("system : "));
         NMethodes++;
   }
   if(Methodes[1]!=NULL && Methodes[2]!=NULL )
   {
-  	create_combo_charge(hbox,2,"Intermediate system : ");
-  	create_combo_spin(hbox2,3,"Intermediate system : ");
+  	create_combo_charge(hbox,2,_("Intermediate system : "));
+  	create_combo_spin(hbox2,3,_("Intermediate system : "));
   	NMethodes++;
-  	create_combo_charge(hbox,4,"Model system : ");
-  	create_combo_spin(hbox2,5,"Model system : ");
+  	create_combo_charge(hbox,4,_("Model system : "));
+  	create_combo_spin(hbox2,5,_("Model system : "));
   	NMethodes++;
   }
   else
   if(Methodes[1]!=NULL || Methodes[2]!=NULL )
   {
-  	create_combo_charge(hbox,2,"Model system : ");
-  	create_combo_spin(hbox2,3,"Model system : ");
+  	create_combo_charge(hbox,2,_("Model system : "));
+  	create_combo_spin(hbox2,3,_("Model system : "));
   	NMethodes++;
   }
 
@@ -233,11 +233,11 @@ void GAjoutePageGeom(GtkWidget *NoteBook)
   {
   create_hseparator(vbox);
   hbox =create_hbox_false(vbox);
-  FrameType = create_frame(window1,hbox,"TYPE");
+  FrameType = create_frame(window1,hbox,_("TYPE"));
   combobox = create_geom(window1,FrameType);
 
   geominter->vbox=vbox;
-  geominter->frametitle=g_strdup("GEOMETRY");
+  geominter->frametitle=g_strdup(_("GEOMETRY"));
 
  if(GeomXYZ != NULL && MethodeGeom == GEOM_IS_XYZ )
      create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);

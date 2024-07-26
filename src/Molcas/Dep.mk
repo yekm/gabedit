@@ -2,7 +2,7 @@ Molcas.o: Molcas.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Molcas/MolcasTypes.h \
   ../Molcas/MolcasGlobal.h ../Molcas/MolcasVariables.h \
-  ../Molcas/MolcasOptimisation.h ../Molcas/MolcasGateWay.h \
+  ../Molcas/MolcasOptimization.h ../Molcas/MolcasGateWay.h \
   ../Molcas/MolcasSeward.h ../Molcas/MolcasScf.h ../Molcas/MolcasGridIT.h \
   ../Utils/UtilsInterface.h ../Geometry/GeomGlobal.h \
   ../Geometry/InterfaceGeom.h ../Utils/Utils.h ../Utils/AtomsProp.h \
@@ -42,7 +42,7 @@ MolcasGridIT.o: MolcasGridIT.c ../../Config.h ../Common/Global.h \
   ../Geometry/GeomConversion.h ../Utils/Utils.h ../Utils/UtilsInterface.h \
   ../Utils/Constants.h ../Utils/AtomsProp.h ../Utils/GabeditTextEdit.h \
   ../Symmetry/MoleculeSymmetry.h ../Symmetry/MoleculeSymmetryInterface.h
-MolcasOptimisation.o: MolcasOptimisation.c ../../Config.h \
+MolcasOptimization.o: MolcasOptimization.c ../../Config.h \
   ../Common/Global.h ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Molcas/MolcasTypes.h \
   ../Molcas/MolcasGlobal.h ../Molcas/MolcasGateWay.h ../Utils/Utils.h \
@@ -67,7 +67,7 @@ MolcasBasis.o: MolcasBasis.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Molcas/MolcasTypes.h \
   ../Molcas/MolcasGlobal.h ../Molcas/MolcasVariables.h \
-  ../Molcas/MolcasOptimisation.h ../Molcas/MolcasGateWay.h \
+  ../Molcas/MolcasOptimization.h ../Molcas/MolcasGateWay.h \
   ../Molcas/MolcasScf.h ../Molcas/MolcasLib.h ../Molcas/MolcasBasis.h \
   ../Utils/UtilsInterface.h ../Geometry/GeomGlobal.h \
   ../Geometry/InterfaceGeom.h ../Utils/Utils.h ../Utils/AtomsProp.h \

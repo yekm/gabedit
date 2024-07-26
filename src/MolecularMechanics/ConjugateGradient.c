@@ -187,7 +187,7 @@ static void fletcherReeves(ConjugateGradient* conjugateGradient)
 		if ( conjugateGradient->updateNumber >= conjugateGradient->updateFrequency )
 		{
 			g_free(str);
-			str = g_strdup_printf("gradient = %f ",sqrt(gradientDotGradient)); 
+			str = g_strdup_printf(_("gradient = %f "),sqrt(gradientDotGradient)); 
 			redrawMolecule(&conjugateGradient->forceField->molecule,str);
 			conjugateGradient->updateNumber = 0;
 		}
@@ -210,7 +210,7 @@ static void fletcherReeves(ConjugateGradient* conjugateGradient)
 		(conjugateGradient->forceField, &conjugateGradient->forceField->molecule );
 
 	g_free(str);
-	str = g_strdup_printf("Gradient = %f  Energy = %f (Kcal/mol) ",
+	str = g_strdup_printf(_("Gradient = %f  Energy = %f (Kcal/mol) "),
 			(gdouble)conjugateGradient->gradientNorm,(gdouble)energy); 
 
 	redrawMolecule(&conjugateGradient->forceField->molecule,str);
@@ -311,7 +311,7 @@ static void polakRibiere(ConjugateGradient* conjugateGradient)
 		(conjugateGradient->forceField, &conjugateGradient->forceField->molecule );
 
 	g_free(str);
-	str = g_strdup_printf("Gradient = %f  Energy = %f (Kcal/mol) ",
+	str = g_strdup_printf(_("Gradient = %f  Energy = %f (Kcal/mol) "),
 			(gdouble)conjugateGradient->gradientNorm,(gdouble)energy); 
 	redrawMolecule(&conjugateGradient->forceField->molecule,str);
 	g_free(str);
@@ -397,7 +397,7 @@ static void hestenesStiefel(ConjugateGradient* conjugateGradient)
 		if ( conjugateGradient->updateNumber >= conjugateGradient->updateFrequency )
 		{
 			g_free(str);
-			str = g_strdup_printf("gradient = %f ",sqrt(gradientDotGradient)); 
+			str = g_strdup_printf(_("gradient = %f "),sqrt(gradientDotGradient)); 
 			redrawMolecule(&conjugateGradient->forceField->molecule,str);
 			conjugateGradient->updateNumber = 0;
 		}
@@ -417,7 +417,7 @@ static void hestenesStiefel(ConjugateGradient* conjugateGradient)
 		(conjugateGradient->forceField, &conjugateGradient->forceField->molecule );
 
 	g_free(str);
-	str = g_strdup_printf("Gradient = %f  Energy = %f (Kcal/mol) ",
+	str = g_strdup_printf(_("Gradient = %f  Energy = %f (Kcal/mol) "),
 			(gdouble)conjugateGradient->gradientNorm,(gdouble)energy); 
 	redrawMolecule(&conjugateGradient->forceField->molecule,str);
 	g_free(str);
@@ -494,7 +494,7 @@ static void wolfPowell(ConjugateGradient* conjugateGradient)
 		if ( conjugateGradient->updateNumber >= conjugateGradient->updateFrequency )
 		{
 			g_free(str);
-			str = g_strdup_printf("gradient = %f ",sqrt(gradientDotGradient)); 
+			str = g_strdup_printf(_("gradient = %f "),sqrt(gradientDotGradient)); 
 			redrawMolecule(&conjugateGradient->forceField->molecule,str);
 			conjugateGradient->updateNumber = 0;
 		}
@@ -514,7 +514,7 @@ static void wolfPowell(ConjugateGradient* conjugateGradient)
 		(conjugateGradient->forceField, &conjugateGradient->forceField->molecule );
 
 	g_free(str);
-	str = g_strdup_printf("Gradient = %f  Energy = %f (Kcal/mol) ",
+	str = g_strdup_printf(_("Gradient = %f  Energy = %f (Kcal/mol) "),
 			(gdouble)conjugateGradient->gradientNorm,(gdouble)energy); 
 	redrawMolecule(&conjugateGradient->forceField->molecule,str);
 	g_free(str);

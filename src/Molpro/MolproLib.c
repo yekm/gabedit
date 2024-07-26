@@ -22,6 +22,7 @@ DEALINGS IN THE SOFTWARE.
 #include <string.h>
 #include <stdio.h>
 #include <gtk/gtk.h>
+#include <glib/gi18n.h>
 #include "../Common/GabeditType.h"
 #include "../Utils/Constants.h"
 #include "../Utils/Utils.h"
@@ -70,7 +71,7 @@ void get_basis_list(gchar* Symb,gchar* orb,gchar* outfile,gchar* errfile)
 	}
 	if(!fin)
 	{
-		fprintf(ferr,"Sorry the molprobasis is corrupted.\nPlease reinstall gabedit\n");
+		fprintf(ferr,_("Sorry the molprobasis is corrupted.\nPlease reinstall gabedit\n"));
 		fclose(ferr);
 		fclose(fout);
 		return;

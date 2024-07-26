@@ -203,8 +203,8 @@ static void addGroupe(GtkWidget* win, gpointer d)
 
 	if(numGroupe(groupName)!=-1)
 	{
-		gchar* t = g_strdup_printf("Sorry, I can not add this group\n%s is available.",groupName);
-		GtkWidget* w = Message(t,"Error",TRUE);
+		gchar* t = g_strdup_printf(_("Sorry, I can not add this group\n%s is available."),groupName);
+		GtkWidget* w = Message(t,_("Error"),TRUE);
 		gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   		gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(win));
 		g_free(groupName);
@@ -244,7 +244,7 @@ void newGroupeDlg(gpointer data, guint Operation,GtkWidget* wid)
 
 	
 	WinDlg = gtk_dialog_new();
-	gtk_window_set_title(GTK_WINDOW(WinDlg),"New Groupe");
+	gtk_window_set_title(GTK_WINDOW(WinDlg),_("New Group"));
 	gtk_window_set_position(GTK_WINDOW(WinDlg),GTK_WIN_POS_CENTER);
 	gtk_window_set_transient_for(GTK_WINDOW(WinDlg),GTK_WINDOW(GeomDlg));
 	gtk_window_set_modal(GTK_WINDOW(WinDlg),TRUE);
@@ -260,17 +260,17 @@ void newGroupeDlg(gpointer data, guint Operation,GtkWidget* wid)
 	vboxframe = create_vbox(frame);
 	hbox=create_hbox_false(vboxframe);
 
-	Entrys[E_GROUPE] = create_label_entry(hbox,"Groupe Name : ",
+	Entrys[E_GROUPE] = create_label_entry(hbox,_("Group Name : "),
 		  (gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
 
 	gtk_widget_realize(WinDlg);
 
-	Button = create_button(WinDlg,"Cancel");
+	Button = create_button(WinDlg,_("Cancel"));
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
 	g_signal_connect_swapped(G_OBJECT(Button), "clicked", (GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 
-	Button = create_button(WinDlg,"OK");
+	Button = create_button(WinDlg,_("OK"));
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
 	g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)addGroupe,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
@@ -370,15 +370,15 @@ void deleteGroupeDlg(gpointer data, guint Operation,GtkWidget* wid)
 	tlist=getListGroupes(&n);
 	if(n<1)
 	{
-		gchar* t = g_strdup("Sorry, no group to delete.");
-		GtkWidget* w = Message(t,"Error",TRUE);
+		gchar* t = g_strdup(_("Sorry, no group to delete."));
+		GtkWidget* w = Message(t,_("Error"),TRUE);
 		gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   		gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(GeomDlg));
 		g_free(t);
 		return;
 	}
 	WinDlg = gtk_dialog_new();
-	gtk_window_set_title(GTK_WINDOW(WinDlg),"Delete a Groupe");
+	gtk_window_set_title(GTK_WINDOW(WinDlg),_("Delete a Group"));
 	gtk_window_set_position(GTK_WINDOW(WinDlg),GTK_WIN_POS_CENTER);
 	gtk_window_set_transient_for(GTK_WINDOW(WinDlg),GTK_WINDOW(GeomDlg));
 	gtk_window_set_modal(GTK_WINDOW(WinDlg),TRUE);
@@ -395,7 +395,7 @@ void deleteGroupeDlg(gpointer data, guint Operation,GtkWidget* wid)
 
 
 	hbox=create_hbox_false(vboxframe);
-	Entrys[E_GROUPE] = create_label_combo(hbox,"Groupe to delete  : ",tlist,n,
+	Entrys[E_GROUPE] = create_label_combo(hbox,_("Group to delete  : "),tlist,n,
 			TRUE,(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
 	gtk_editable_set_editable((GtkEditable*) Entrys[E_GROUPE],FALSE);
 
@@ -404,12 +404,12 @@ void deleteGroupeDlg(gpointer data, guint Operation,GtkWidget* wid)
 
 	gtk_widget_realize(WinDlg);
 
-	Button = create_button(WinDlg,"Cancel");
+	Button = create_button(WinDlg,_("Cancel"));
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
 	g_signal_connect_swapped(G_OBJECT(Button), "clicked", (GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 
-	Button = create_button(WinDlg,"OK");
+	Button = create_button(WinDlg,_("OK"));
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
 	g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)deleteOneGroupe,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
@@ -463,8 +463,8 @@ static void addFragment(GtkWidget* win, gpointer data)
 		if(itobondto==itodelete)
 		{
 			gchar* t = 
-				g_strdup("Sorry, number of atom to delete can not = number of atom to bond to.");
-			GtkWidget* w = Message(t,"Error",TRUE);
+				g_strdup(_("Sorry, number of atom to delete can not = number of atom to bond to."));
+			GtkWidget* w = Message(t,_("Error"),TRUE);
 			gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   			gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(win));
 			g_free(t);
@@ -473,8 +473,8 @@ static void addFragment(GtkWidget* win, gpointer data)
 		if(iangle==itodelete)
 		{
 			gchar* t = 
-				g_strdup("Sorry, number of atom to delete can not = number of atom used for set angle.");
-			GtkWidget* w = Message(t,"Error",TRUE);
+				g_strdup(_("Sorry, number of atom to delete can not = number of atom used for set angle."));
+			GtkWidget* w = Message(t,_("Error"),TRUE);
 			gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   			gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(win));
 			g_free(t);
@@ -485,8 +485,8 @@ static void addFragment(GtkWidget* win, gpointer data)
 			if(itobondto==iangle)
 			{
 				gchar* t = 
-				g_strdup("Sorry, number of atom to bond to can not =  number of atom used for set angle.");
-				GtkWidget* w = Message(t,"Error",TRUE);
+				g_strdup(_("Sorry, number of atom to bond to can not =  number of atom used for set angle."));
+				GtkWidget* w = Message(t,_("Error"),TRUE);
 				gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   				gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(win));
 				g_free(t);
@@ -585,8 +585,8 @@ void addFragmentDlg(gpointer data, guint Operation,GtkWidget* wid)
 	groups = getListGroupes(&ng);
 	if(ng<1)
 	{
-		gchar* t = g_strdup("Sorry, no group available.");
-		GtkWidget* w = Message(t,"Error",TRUE);
+		gchar* t = g_strdup(_("Sorry, no group available."));
+		GtkWidget* w = Message(t,_("Error"),TRUE);
 		gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   		gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(GeomDlg));
 		g_free(t);
@@ -595,8 +595,8 @@ void addFragmentDlg(gpointer data, guint Operation,GtkWidget* wid)
 
 	if(Natoms<1)
 	{
-		gchar* t = g_strdup("Sorry, number of atoms = 0.");
-		GtkWidget* w = Message(t,"Error",TRUE);
+		gchar* t = g_strdup(_("Sorry, number of atoms = 0."));
+		GtkWidget* w = Message(t,_("Error"),TRUE);
 		gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   		gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(GeomDlg));
 		g_free(t);
@@ -604,7 +604,7 @@ void addFragmentDlg(gpointer data, guint Operation,GtkWidget* wid)
 	}
 	
 	WinDlg = gtk_dialog_new();
-	gtk_window_set_title(GTK_WINDOW(WinDlg),"New Fragment");
+	gtk_window_set_title(GTK_WINDOW(WinDlg),_("New Fragment"));
 	gtk_window_set_position(GTK_WINDOW(WinDlg),GTK_WIN_POS_CENTER);
 	gtk_window_set_transient_for(GTK_WINDOW(WinDlg),GTK_WINDOW(GeomDlg));
 	gtk_window_set_modal(GTK_WINDOW(WinDlg),TRUE);
@@ -623,7 +623,7 @@ void addFragmentDlg(gpointer data, guint Operation,GtkWidget* wid)
 	gtk_container_add(GTK_CONTAINER(vboxframe),table);
 
 	i=0;
-	add_label_table(table," Groupe Name ",(gushort)i,0); 
+	add_label_table(table,_(" Group Name "),(gushort)i,0); 
 	add_label_table(table," : ",(gushort)i,1); 
 	combo = create_combo_box_entry(groups,ng,FALSE,-1,-1);
 	add_widget_table(table,combo,(gushort)i,2);
@@ -631,7 +631,7 @@ void addFragmentDlg(gpointer data, guint Operation,GtkWidget* wid)
 	gtk_editable_set_editable((GtkEditable*) Entrys[E_GROUPE],FALSE);
 
 	i=1;
-	add_label_table(table," Fragment Name ",(gushort)i,0); 
+	add_label_table(table,_(" Fragment Name "),(gushort)i,0); 
 	add_label_table(table," : ",(gushort)i,1); 
 	Entrys[E_FRAGMENT] = gtk_entry_new();
 	add_widget_table(table,Entrys[E_FRAGMENT],(gushort)i,2);
@@ -639,7 +639,7 @@ void addFragmentDlg(gpointer data, guint Operation,GtkWidget* wid)
 	numbers=getListNumbers(&nn);
 
 	i=2;
-	add_label_table(table," Number of atoms to delete ",(gushort)i,0); 
+	add_label_table(table,_(" Number of atoms to delete "),(gushort)i,0); 
 	add_label_table(table," : ",(gushort)i,1); 
 	combo = create_combo_box_entry(numbers,nn,FALSE,-1,-1);
 	Entrys[E_TODELETE] = GTK_BIN (combo)->child;
@@ -647,7 +647,7 @@ void addFragmentDlg(gpointer data, guint Operation,GtkWidget* wid)
 	gtk_editable_set_editable((GtkEditable*) Entrys[E_TODELETE],FALSE);
 
 	i=3;
-	add_label_table(table," Number of atoms to bond to ",(gushort)i,0); 
+	add_label_table(table,_(" Number of atoms to bond to "),(gushort)i,0); 
 	add_label_table(table," : ",(gushort)i,1); 
 	combo = create_combo_box_entry(numbers,nn,FALSE,-1,-1);
 	Entrys[E_TOBONDTO] = GTK_BIN (combo)->child;
@@ -655,7 +655,7 @@ void addFragmentDlg(gpointer data, guint Operation,GtkWidget* wid)
 	gtk_editable_set_editable((GtkEditable*) Entrys[E_TOBONDTO],FALSE);
 
 	i=4;
-	add_label_table(table," Number of atoms for set angle ",(gushort)i,0); 
+	add_label_table(table,_(" Number of atoms for set angle "),(gushort)i,0); 
 	add_label_table(table," : ",(gushort)i,1); 
 	combo = create_combo_box_entry(numbers,nn,FALSE,-1,-1);
 	Entrys[E_ANGLE] = GTK_BIN (combo)->child;
@@ -673,12 +673,12 @@ void addFragmentDlg(gpointer data, guint Operation,GtkWidget* wid)
   
 	gtk_widget_realize(WinDlg);
 
-	Button = create_button(WinDlg,"Cancel");
+	Button = create_button(WinDlg,_("Cancel"));
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
 	g_signal_connect_swapped(G_OBJECT(Button), "clicked", (GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 
-	Button = create_button(WinDlg,"OK");
+	Button = create_button(WinDlg,_("OK"));
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
 	g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)addFragment,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
@@ -798,8 +798,8 @@ void deleteFragmentDlg(gpointer data, guint Operation,GtkWidget* wid)
 	groups = getListGroupes(&ng);
 	if(ng<1)
 	{
-		gchar* t = g_strdup("Sorry, no group available.");
-		GtkWidget* w = Message(t,"Error",TRUE);
+		gchar* t = g_strdup(_("Sorry, no group available."));
+		GtkWidget* w = Message(t,_("Error"),TRUE);
 		gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   		gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(GeomDlg));
 		g_free(t);
@@ -811,8 +811,8 @@ void deleteFragmentDlg(gpointer data, guint Operation,GtkWidget* wid)
 	groups = getListGroupesWithFragments(&ng);
 	if(ng==0)
 	{
-		gchar* t = g_strdup("Sorry, no fragment available.");
-		GtkWidget* w = Message(t,"Error",TRUE);
+		gchar* t = g_strdup(_("Sorry, no fragment available."));
+		GtkWidget* w = Message(t,_("Error"),TRUE);
 		gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   		gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(GeomDlg));
 		g_free(t);
@@ -821,7 +821,7 @@ void deleteFragmentDlg(gpointer data, guint Operation,GtkWidget* wid)
 	fragments = getListFragments(&nf,groups[0]);
 	
 	WinDlg = gtk_dialog_new();
-	gtk_window_set_title(GTK_WINDOW(WinDlg),"Remove a Fragment");
+	gtk_window_set_title(GTK_WINDOW(WinDlg),_("Remove a Fragment"));
 	gtk_window_set_position(GTK_WINDOW(WinDlg),GTK_WIN_POS_CENTER);
 	gtk_window_set_transient_for(GTK_WINDOW(WinDlg),GTK_WINDOW(GeomDlg));
 	gtk_window_set_modal(GTK_WINDOW(WinDlg),TRUE);
@@ -837,13 +837,13 @@ void deleteFragmentDlg(gpointer data, guint Operation,GtkWidget* wid)
 	vboxframe = create_vbox(frame);
 
 	hbox=create_hbox_false(vboxframe);
-	Entrys[E_GROUPE] = create_label_combo(hbox,"Groupe Name  : ",groups,ng,
+	Entrys[E_GROUPE] = create_label_combo(hbox,_("Group Name  : "),groups,ng,
 			TRUE,(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
 	gtk_editable_set_editable((GtkEditable*) Entrys[E_GROUPE],FALSE);
 
 	hbox=create_hbox_false(vboxframe);
 
-  	label = gtk_label_new("Fragment to delete : ");
+  	label = gtk_label_new(_("Fragment to delete : "));
 	gtk_widget_set_size_request(GTK_WIDGET(label),(gint)(ScreenHeight*labelWidth),-1);
 	gtk_box_pack_start (GTK_BOX(hbox), label, TRUE, TRUE, 1);
 
@@ -866,12 +866,12 @@ void deleteFragmentDlg(gpointer data, guint Operation,GtkWidget* wid)
 
 	gtk_widget_realize(WinDlg);
 
-	Button = create_button(WinDlg,"Cancel");
+	Button = create_button(WinDlg,_("Cancel"));
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
 	g_signal_connect_swapped(G_OBJECT(Button), "clicked", (GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 
-	Button = create_button(WinDlg,"OK");
+	Button = create_button(WinDlg,_("OK"));
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
 	g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)deleteOneFragment,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
@@ -983,8 +983,8 @@ void savePersonalFragments(GtkWidget* win)
 
 	if(!saveAllPersonalFragments(personnalFragments,filename) && win)
 	{
-		gchar* t = g_strdup_printf("Sorry, I can not create \"%s\" file",filename);
-		GtkWidget* w = Message(t,"Error",TRUE);
+		gchar* t = g_strdup_printf(_("Sorry, I can not create \"%s\" file"),filename);
+		GtkWidget* w = Message(t,_("Error"),TRUE);
 		gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   		gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(win));
 		g_free(t);
@@ -1001,8 +1001,8 @@ void loadPersonalFragments(GtkWidget* win)
 	personnalFragments = loadAllPersonalFragments(filename);
 	if(!personnalFragments && win)
 	{
-		gchar* t = g_strdup_printf("Sorry, I can not read \"%s\" file",filename);
-		GtkWidget* w = Message(t,"Error",TRUE);
+		gchar* t = g_strdup_printf(_("Sorry, I can not read \"%s\" file"),filename);
+		GtkWidget* w = Message(t,_("Error"),TRUE);
 		gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   		gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(win));
 		g_free(t);

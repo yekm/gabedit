@@ -110,7 +110,7 @@ static void computeGrad(GridCP* gridCP)
 	grid = gridCP->grid;
 	if(!grid) return;
 	points = grid->point;
-	progress_orb_txt(0,"Computing of gradient on each point..., Please wait",TRUE);
+	progress_orb_txt(0,_("Computing of gradient on each point..., Please wait"),TRUE);
 	for(i=0;i< grid->N[0] ;i++)
 	{
 		i1 = i+1;
@@ -243,7 +243,7 @@ static void initGridCP(GridCP* gridCP, Grid* grid, Grid* gridAux)
 		for(c=0;c<3;c++) 
 		if(grid->N[c] != gridAux->N[c]) 
 		{
-			printf("The Cube of the 2 grids should be equals\n");
+			printf(_("The Cube of the 2 grids should be equals\n"));
 			return;
 		}
 	}
@@ -803,7 +803,7 @@ static void assignGridCP(GridCP* gridCP, gboolean ongrid)
 	Point5 ***points = NULL;
 	GList* listOfVisitedPoints = NULL;
 	gint numberOfCriticalPoints = 0;
-	gchar* str ="Assignation of points to volumes... Please wait";
+	gchar* str =_("Assignation of points to volumes... Please wait");
 	gdouble scal;
 	gint current[3];
 
@@ -993,7 +993,7 @@ static void assignPointsZero(GridCP* gridCP)
 	gint i,j,k;
 	gdouble scal;
 	Grid* grid = gridCP->grid;
-	gchar* str = "Assignation of points with f = 0..., Please wait";
+	gchar* str = _("Assignation of points with f = 0..., Please wait");
 	gdouble dx, dy, dz;
 	gdouble r;
 
@@ -1150,7 +1150,7 @@ static GtkWidget* showResultDlg(gchar *message,gchar *title,GridCP* gridCP)
 
 	gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(dlgWin)->action_area), FALSE);
   
-	button = create_button(dlgWin,"Partial charges of molecule <= AIM charges");
+	button = create_button(dlgWin,_("Partial charges of molecule <= AIM charges"));
 	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(dlgWin)->action_area), button, FALSE, TRUE, 5);  
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
@@ -1181,7 +1181,7 @@ static void showGridCP(GridCP* gridCP)
 	gdouble sum = 0;
 	Point5*** points = gridCP->grid->point;
 
-	result = addToResult(result, "Geometry (Ang)\n");
+	result = addToResult(result, _("Geometry (Ang)\n"));
 	result = addToResult(result, "==============\n");
 	for(j=0; j<(gint)Ncenters; j++)
 	{
@@ -1204,9 +1204,11 @@ static void showGridCP(GridCP* gridCP)
 	yy = points[0][n1-1][0].C[1]-points[0][0][0].C[1];
 	zz = points[0][0][n2-1].C[2]-points[0][0][0].C[2];
 	tmp = g_strdup_printf(
+			_(
 			"Grid point density (Ang^-1) on the first direction(>10 is recommended) = %lf\n"
 			"density of the grid(Ang^-1) on the second direction(>10 is recommended) = %lf\n"
-			"density of the grid(Ang^-1) on the third direction(>10 is recommended) = %lf\n",
+			"density of the grid(Ang^-1) on the third direction(>10 is recommended) = %lf\n"
+			),
 			n0/(xx*BOHR_TO_ANG),
 			n1/(yy*BOHR_TO_ANG),
 			n2/(zz*BOHR_TO_ANG)
@@ -1236,7 +1238,7 @@ static void showGridCP(GridCP* gridCP)
 
 	sum *= gridCP->dv;
 	tmp = g_strdup_printf(
-			"sum of values on the 6 faces of the cube(should be near to 0) = %lf \n",
+			_("sum of values on the 6 faces of the cube(should be near to 0) = %lf \n"),
 			sum
 			);
 	result = addToResult(result, tmp);
@@ -1245,7 +1247,7 @@ static void showGridCP(GridCP* gridCP)
 	result = addToResult(result, "---------------------------------------------------------------------\n");
         if(gridCP->criticalPoints) 
 	{
-		tmp = g_strdup_printf("%14s %14s %28s %10s %10s %s\n", " ","Position(Ang)"," ","Nearest at."," AIM Charge ", "Old charge (read from CCP output file)");
+		tmp = g_strdup_printf("%14s %14s %28s %10s %10s %s\n", " ",_("Position(Ang)")," ",_("Nearest at."),_(" AIM Charge "), _("Old charge (read from CCP output file)"));
 		result = addToResult(result, tmp);
 		if(tmp) g_free(tmp);
 	}
@@ -1287,12 +1289,12 @@ static void showGridCP(GridCP* gridCP)
 
 		if(data->volume/gridCP->dv<=8) continue;
 		nc++;
-		tmp = g_strdup_printf("Attracteur number %d\n",nc);
+		tmp = g_strdup_printf(_("Attracteur number %d\n"),nc);
 		result = addToResult(result, tmp);
 		if(tmp) g_free(tmp);
 		result = addToResult(result,"====================\n");
 
-		tmp = g_strdup_printf("Position(Ang) = %lf %lf %lf\n",
+		tmp = g_strdup_printf(_("Position(Ang) = %lf %lf %lf\n"),
 				gridCP->grid->point[i][j][k].C[0]*BOHR_TO_ANG,
 				gridCP->grid->point[i][j][k].C[1]*BOHR_TO_ANG,
 				gridCP->grid->point[i][j][k].C[2]*BOHR_TO_ANG);
@@ -1303,45 +1305,45 @@ static void showGridCP(GridCP* gridCP)
 		result = addToResult(result, tmp);
 		if(tmp) g_free(tmp);
 
-		tmp = g_strdup_printf("Nearest atom  = %s[%d]\n",
+		tmp = g_strdup_printf(_("Nearest atom  = %s[%d]\n"),
 				GeomOrb[c].Prop.symbol,
 				c+1);
 		result = addToResult(result, tmp);
 		if(tmp) g_free(tmp);
 
-		tmp = g_strdup_printf("Number of electrons in the volume of this attractor  = %lf\n", data->integral);
+		tmp = g_strdup_printf(_("Number of electrons in the volume of this attractor  = %lf\n"), data->integral);
 		result = addToResult(result, tmp);
 		if(tmp) g_free(tmp);
-		tmp = g_strdup_printf("Nuclear charge of the nearest atom = %lf\n",data->nuclearCharge);
+		tmp = g_strdup_printf(_("Nuclear charge of the nearest atom = %lf\n"),data->nuclearCharge);
 		result = addToResult(result, tmp);
 		if(tmp) g_free(tmp);
-		tmp = g_strdup_printf("Charge in the volume of this attractor  = %lf\n", 
+		tmp = g_strdup_printf(_("Charge in the volume of this attractor  = %lf\n"), 
 				data->nuclearCharge-data->integral);
 		result = addToResult(result, tmp);
 		if(tmp) g_free(tmp);
-		tmp = g_strdup_printf("# of points in this volume  = %d\n", (gint)(data->volume/gridCP->dv));
+		tmp = g_strdup_printf(_("# of points in this volume  = %d\n"), (gint)(data->volume/gridCP->dv));
 		result = addToResult(result, tmp);
 		if(tmp) g_free(tmp);
 	}
 	result = addToResult(result, "---------------------------------------------------------------------\n");
-	tmp = g_strdup_printf("Total number of electrons = %lf\n", gridCP->integral);
+	tmp = g_strdup_printf(_("Total number of electrons = %lf\n"), gridCP->integral);
 	result = addToResult(result, tmp);
 	if(tmp) g_free(tmp);
-	tmp = g_strdup_printf("Total nuclear charges = %lf\n",gridCP->nuclearCharge);
+	tmp = g_strdup_printf(_("Total nuclear charges = %lf\n"),gridCP->nuclearCharge);
 	result = addToResult(result, tmp);
 	if(tmp) g_free(tmp);
-	tmp = g_strdup_printf("Total charge = %lf\n", gridCP->nuclearCharge-gridCP->integral);
+	tmp = g_strdup_printf(_("Total charge = %lf\n"), gridCP->nuclearCharge-gridCP->integral);
 	result = addToResult(result, tmp);
 	if(tmp) g_free(tmp);
 	result = addToResult(result, "---------------------------------------------------------------------\n");
 
 	if(result && !CancelCalcul)
 	{
-		showResultDlg(result,"AIM charges",gridCP);
+		showResultDlg(result,_("AIM charges"),gridCP);
 	}
 	else if(!result && !CancelCalcul)
 	{
-		GtkWidget* message = MessageTxt("Oups a problem....","Attractors");
+		GtkWidget* message = MessageTxt(_("Oups a problem...."),_("Attractors"));
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));
 	}
@@ -1389,7 +1391,7 @@ void computeCharges(GridCP* gridCP)
 	gint nc = 0;
 	gint nc2 = 0;
 	gdouble scal=0;
-	gchar* str = "Computing of charges..., Please wait";
+	gchar* str = _("Computing of charges..., Please wait");
 	gdouble* integ = NULL;
 	gdouble* volume = NULL;
 
@@ -1462,7 +1464,7 @@ void computeAIMCharges(Grid* grid, gboolean ongrid)
 
 	if(!test_grid_all_positive(grid))
 	{
-		Message("Sorry\n The current grid is not a grid for electronic density!!!","Error",TRUE);
+		Message(_("Sorry\n The current grid is not a grid for electronic density!!!"),_("Error"),TRUE);
 		return;
 	}
 
@@ -1500,7 +1502,7 @@ void computeELFEletrons(GridCP* gridCP)
 
 	computeNumCenters(gridCP);
 
-	progress_orb_txt(0,"Computing of the number of electrons at each attractor..., Please wait",TRUE);
+	progress_orb_txt(0,_("Computing of the number of electrons at each attractor..., Please wait"),TRUE);
 	for(list=criticalPoint;list!=NULL;list=list->next)
 	{
 		CriticalPoint* data=(CriticalPoint*)list->data;
@@ -1544,7 +1546,7 @@ static void showELFGridCP(GridCP* gridCP)
 	gdouble sum = 0;
 	Point5*** points = gridCP->gridAux->point;
 
-	result = addToResult(result, "Geometry (Ang)\n");
+	result = addToResult(result, _("Geometry (Ang)\n"));
 	result = addToResult(result, "==============\n");
 	for(j=0; j<(gint)Ncenters; j++)
 	{
@@ -1567,9 +1569,11 @@ static void showELFGridCP(GridCP* gridCP)
 	yy = points[0][n1-1][0].C[1]-points[0][0][0].C[1];
 	zz = points[0][0][n2-1].C[2]-points[0][0][0].C[2];
 	tmp = g_strdup_printf(
+			_(
 			"Grid point density (Ang^-1) on the first direction(>10 is recommended) = %lf\n"
 			"density of the grid(Ang^-1) on the second direction(>10 is recommended) = %lf\n"
-			"density of the grid(Ang^-1) on the third direction(>10 is recommended) = %lf\n",
+			"density of the grid(Ang^-1) on the third direction(>10 is recommended) = %lf\n"
+			),
 			n0/(xx*BOHR_TO_ANG),
 			n1/(yy*BOHR_TO_ANG),
 			n2/(zz*BOHR_TO_ANG)
@@ -1599,7 +1603,7 @@ static void showELFGridCP(GridCP* gridCP)
 
 	sum *= gridCP->dv;
 	tmp = g_strdup_printf(
-			"sum of values on the 6 faces of the cube(should be near to 0) = %lf \n",
+			_("sum of values on the 6 faces of the cube(should be near to 0) = %lf \n"),
 			sum
 			);
 	result = addToResult(result, tmp);
@@ -1608,7 +1612,7 @@ static void showELFGridCP(GridCP* gridCP)
 	result = addToResult(result, "---------------------------------------------------------------------\n");
         if(gridCP->criticalPoints) 
 	{
-		tmp = g_strdup_printf("%14s %14s %28s %10s %10s\n", " ","Position(Ang)"," ","Nearest at."," # electrons");
+		tmp = g_strdup_printf("%14s %14s %28s %10s %10s\n", " ",_("Position(Ang)")," ",_("Nearest at."),_(" # electrons"));
 		result = addToResult(result, tmp);
 		if(tmp) g_free(tmp);
 	}
@@ -1647,12 +1651,12 @@ static void showELFGridCP(GridCP* gridCP)
 
 		if(data->volume/gridCP->dv<=8) continue;
 		nc++;
-		tmp = g_strdup_printf("Attracteur number %d\n",nc);
+		tmp = g_strdup_printf(_("Attracteur number %d\n"),nc);
 		result = addToResult(result, tmp);
 		if(tmp) g_free(tmp);
 		result = addToResult(result,"====================\n");
 
-		tmp = g_strdup_printf("Position(Ang) = %lf %lf %lf\n",
+		tmp = g_strdup_printf(_("Position(Ang) = %lf %lf %lf\n"),
 				gridCP->grid->point[i][j][k].C[0]*BOHR_TO_ANG,
 				gridCP->grid->point[i][j][k].C[1]*BOHR_TO_ANG,
 				gridCP->grid->point[i][j][k].C[2]*BOHR_TO_ANG);
@@ -1663,36 +1667,36 @@ static void showELFGridCP(GridCP* gridCP)
 		result = addToResult(result, tmp);
 		if(tmp) g_free(tmp);
 
-		tmp = g_strdup_printf("Nearest atom  = %s[%d]\n",
+		tmp = g_strdup_printf(_("Nearest atom  = %s[%d]\n"),
 				GeomOrb[c].Prop.symbol,
 				c+1);
 		result = addToResult(result, tmp);
 		if(tmp) g_free(tmp);
 
-		tmp = g_strdup_printf("Number of electrons in the volume of this attractor  = %lf\n", data->integral);
+		tmp = g_strdup_printf(_("Number of electrons in the volume of this attractor  = %lf\n"), data->integral);
 		result = addToResult(result, tmp);
 		if(tmp) g_free(tmp);
-		tmp = g_strdup_printf("Nuclear charge of the nearest atom = %lf\n",data->nuclearCharge);
+		tmp = g_strdup_printf(_("Nuclear charge of the nearest atom = %lf\n"),data->nuclearCharge);
 		result = addToResult(result, tmp);
 		if(tmp) g_free(tmp);
-		tmp = g_strdup_printf("# of points in this volume  = %d\n", (gint)(data->volume/gridCP->dv));
+		tmp = g_strdup_printf(_("# of points in this volume  = %d\n"), (gint)(data->volume/gridCP->dv));
 		result = addToResult(result, tmp);
 		if(tmp) g_free(tmp);
 	}
 	result = addToResult(result, "---------------------------------------------------------------------\n");
-	tmp = g_strdup_printf("Total number of electrons = %lf\n", gridCP->integral);
+	tmp = g_strdup_printf(_("Total number of electrons = %lf\n"), gridCP->integral);
 	result = addToResult(result, tmp);
 	result = addToResult(result, "---------------------------------------------------------------------\n");
 
 	if(result && !CancelCalcul)
 	{
-		GtkWidget* message = MessageTxt(result,"ELF analysis");
+		GtkWidget* message = MessageTxt(result,_("ELF analysis"));
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));
 	}
 	else if(!result && !CancelCalcul)
 	{
-		GtkWidget* message = MessageTxt("Oups a problem....","Attractors");
+		GtkWidget* message = MessageTxt(_("Oups a problem...."),_("Attractors"));
   		gtk_window_set_modal (GTK_WINDOW (message), FALSE);
 		gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));
 	}
@@ -1705,12 +1709,12 @@ void computeELFAttractors(Grid* gridELF, Grid* gridDens, gboolean ongrid)
 
 	if(!test_grid_all_positive(gridELF))
 	{
-		Message("Sorry\n The current grid is not a grid for ELF!!!","Error",TRUE);
+		Message(_("Sorry\n The current grid is not a grid for ELF!!!"),_("Error"),TRUE);
 		return;
 	}
 	if(!test_grid_all_positive(gridDens))
 	{
-		Message("Sorry\n The second grid is not a grid for electronic density!!!","Error",TRUE);
+		Message(_("Sorry\n The second grid is not a grid for electronic density!!!"),_("Error"),TRUE);
 		return;
 	}
 	if(gridELF && gridDens)
@@ -1719,7 +1723,7 @@ void computeELFAttractors(Grid* gridELF, Grid* gridDens, gboolean ongrid)
 		for(c=0;c<3;c++) 
 		if(gridELF->N[c] != gridDens->N[c]) 
 		{
-			Message("Sorry\n The Cubes of the 2 grids should be equals!!!","Error",TRUE);
+			Message(_("Sorry\n The Cubes of the 2 grids should be equals!!!"),_("Error"),TRUE);
 			return;
 		}
 	}

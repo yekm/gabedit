@@ -244,7 +244,7 @@ void free_atomic_orbitals()
 	}
 
 	init_atomic_orbitals();
-	set_status_label_info("At. Orb.","Nothing");
+	set_status_label_info(_("At. Orb."),_("Nothing"));
 
 }
 /********************************************************************************/
@@ -273,7 +273,7 @@ gboolean read_atomic_orbitals_in_gabedit(gchar *fileName,gint itype)
 	/*printf("debut de orbital\n");*/
  	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
-		Message("Sorry No file slected\n","Error",TRUE);
+		Message(_("Sorry No file selected\n"),_("Error"),TRUE);
     	return FALSE;
  	}
 
@@ -282,8 +282,8 @@ gboolean read_atomic_orbitals_in_gabedit(gchar *fileName,gint itype)
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),fileName);
+  		Message(buffer,_("Error"),TRUE);
 		g_free(t);
   		return FALSE;
  	}
@@ -542,7 +542,7 @@ void read_gabedit_atomic_orbitals(gchar *FileName)
 	free_atomic_orbitals();	
  	/*Debug("End of free atomic orbitals\n");*/
 
-	set_status_label_info("At. Orb.","Reading");
+	set_status_label_info(_("At. Orb."),_("Reading"));
 	OkBeta = read_atomic_orbitals_in_gabedit(FileName,2);/* if beta orbital*/
 	/* Debug("Ok atomic orbital = %d\n",Ok);*/
 	OkAlpha = read_atomic_orbitals_in_gabedit(FileName,1);
@@ -573,13 +573,13 @@ void read_gabedit_atomic_orbitals(gchar *FileName)
 	if(OkAlpha || OkBeta)
 	{
 		AOAvailable = TRUE;
-		set_status_label_info("At. Orb.","Ok");
+		set_status_label_info(_("At. Orb."),_("Ok"));
 		glarea_rafresh(GLArea); /* for geometry*/
 	}
 	else
 	{
 		AOAvailable = FALSE;
-		set_status_label_info("At. Orb.","Nothing");
+		set_status_label_info(_("At. Orb."),_("Nothing"));
 	}
 
 }

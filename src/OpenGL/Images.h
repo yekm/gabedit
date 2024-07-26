@@ -20,17 +20,18 @@ DEALINGS IN THE SOFTWARE.
 #define __GABEDIT_IMAGES_H__
 
 void save_bmp_file(GabeditFileChooser *SelecFile, gint response_id);
-void save_png_no_background_file(GabeditFileChooser *SelecFile, gint response_id);
+void save_png_without_background_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_png_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_jpeg_file(GabeditFileChooser *SelecFile, gint response_id);
 void copy_to_clipboard();
+void copy_to_clipboard_without_background();
 void save_ppm_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_ps_file(GabeditFileChooser *SelecFile, gint response_id);
 gchar* new_bmp(gchar* dirname, int i);
 gchar* new_ppm(gchar* dirname, int i);
 gchar* new_jpeg(gchar* dirname, int i);
 gchar* new_png(gchar* dirname, int i);
-gchar* new_png_nobackground(gchar* dirname, int i);
+gchar* new_png_without_background(gchar* dirname, int i);
 
 #endif /* __GABEDIT_IMAGES_H__ */
 
