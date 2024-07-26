@@ -1,6 +1,6 @@
 /* Sphere.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
 
+static GLfloat emission[] = { 0.0, 0.0, 0.0, 1.0 };
 /************************************************************************************************************/
 void Sphere_Draw_Precision(GLfloat radius,V3d position, GLint numberOfSubdivisions)
 {
@@ -45,6 +46,7 @@ void Sphere_Draw_Color_Precision(GLfloat radius,V3d position, V4d Specular,V4d D
 	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
+	glMaterialfv(GL_FRONT, GL_EMISSION, emission);
 	glMateriali(GL_FRONT_AND_BACK,GL_SHININESS,100);
 	Sphere_Draw_Precision(radius,position, numberOfSubdivisions);
 }
@@ -70,6 +72,7 @@ void Sphere_Draw_Color(GLfloat radius,V3d position, V4d Specular,V4d Diffuse,V4d
 	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
+	glMaterialfv(GL_FRONT, GL_EMISSION, emission);
 	glMateriali(GL_FRONT_AND_BACK,GL_SHININESS,100);
 	Sphere_Draw(radius,position);
 

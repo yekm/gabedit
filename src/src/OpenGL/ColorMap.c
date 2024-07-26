@@ -1,6 +1,6 @@
 /* ColorMap.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -206,7 +206,7 @@ ColorMap*  new_colorMap_fromGrid(Grid* grid)
 		k++;
 	}
 	sort_colorMap(colorMap);
-	//myColorMap = colorMap;
+	/*myColorMap = colorMap;*/
 	return colorMap;
 	/* print_colorMap(myColorMap);*/
 }
@@ -379,11 +379,11 @@ static gint configure_event( GtkWidget *widget, GdkEventConfigure *event )
 			{
 				gint x = i;
 				gint y = height-height/4;
-				gint lentxt;
+				gint lentxt=0;
 				
 				sprintf(t,"%0.3f",myColorMap->colorValue[k].value);
 
-				lentxt = gdk_string_width (font,t);
+				if(font) lentxt = gdk_string_width (font,t);
 				x = i-lentxt/2;
 
 	 			color.red = 0; 
@@ -393,7 +393,7 @@ static gint configure_event( GtkWidget *widget, GdkEventConfigure *event )
 				gdk_gc_set_foreground(gc,&color);
 
 				gdk_gc_set_line_attributes(gc,0,GDK_LINE_SOLID,GDK_CAP_ROUND,GDK_JOIN_ROUND);
-				gdk_draw_string(pixmap,font,gc,x,y,t);
+				if(font) gdk_draw_string(pixmap,font,gc,x,y,t);
 				kOld = k;
 			}
 		}
@@ -431,13 +431,10 @@ static GtkWidget *add_drawing_area(GtkWidget *table, gint i)
 {
 	GtkWidget *darea;
 	GdkPixmap *pixmap = NULL;
-	GdkFont* font  = gdk_fontset_load("-*-helvetica-bold-r-normal-*-*-140-*-*-*-*-*-*,*");
+	GdkFont* font  = NULL;
+ 	PangoFontDescription *font_desc = pango_font_description_from_string ("helvetica bold 12");
 
-        font = gdk_font_load(get_font_label_name());
-	/*
-	if(!font)
-  		font = PrincipalWindow->style->font;
-		*/
+  	if(font_desc) font = gdk_font_from_description (font_desc);
 
 
 	darea = gtk_drawing_area_new();

@@ -1,6 +1,6 @@
 /* UtilsInterface.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Constantes.h"
 #include "../Gaussian/GaussGlobal.h"
 #include "../Files/FileChooser.h"
+#include "../Gamess/Gamess.h"
 #include "../Molcas/Molcas.h"
 #include "../Molpro/Molpro.h"
 #include "../MPQC/MPQC.h"
@@ -884,6 +885,9 @@ FilePosTypeGeom get_geometry_type_from_gauss_input_file(gchar *NomFichier)
 		if(k==5)
 			j.geomtyp = GEOM_IS_XYZ;
 		else
+		if(k==4)
+			j.geomtyp = GEOM_IS_XYZ;
+		else
 		if(k==1)
 			j.geomtyp = GEOM_IS_ZMAT;
 		else
@@ -909,6 +913,25 @@ FilePosTypeGeom get_geometry_type_from_gauss_input_file(gchar *NomFichier)
   fclose(fd);
   g_free(t);
   return j;
+}
+/**********************************************************************************/
+void read_geom_in_gamess_input(gchar *fileName)
+{
+	gchar* logfile;
+	gchar* t;
+	FILE* file;
+	t = get_suffix_name_file(fileName);
+	logfile = g_strdup_printf("%s.log",t);
+	file = FOpen(logfile, "r");
+	if(!file)
+	{
+		if(logfile) g_free(logfile);
+		logfile = g_strdup_printf("%s.out",t);
+		file = FOpen(logfile, "r");
+		if(!file) return;
+	}
+	fclose(file);
+	read_geom_from_gamess_output_file(logfile,1);
 }
 /**********************************************************************************/
 void read_geom_in_mpqc_input(gchar *fileName)
@@ -993,6 +1016,7 @@ void get_doc(gchar *NomFichier)
 	fileopen.netWorkProtocol = defaultNetWorkProtocol;
 
 	if(iprogram == PROG_IS_MPQC) fileopen.command=g_strdup(NameCommandMPQC);
+	else if(iprogram == PROG_IS_GAMESS) fileopen.command=g_strdup(NameCommandGamess);
 	else if(iprogram == PROG_IS_GAUSS) fileopen.command=g_strdup(NameCommandGaussian);
 	else if(iprogram == PROG_IS_MOLCAS) fileopen.command=g_strdup(NameCommandMolcas);
 	else if(iprogram == PROG_IS_MOLPRO) fileopen.command=g_strdup(NameCommandMolpro);
@@ -1016,6 +1040,15 @@ void get_doc(gchar *NomFichier)
 				fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir,NBNOD-1,  fileopen.command, fileopen.netWorkProtocol);
 	}
 
+	if(iprogram == PROG_IS_GAMESS)
+	{
+ 		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
+ 		fileopen.outputfile=g_strdup_printf("%s.log",fileopen.projectname);
+ 		fileopen.logfile=g_strdup_printf("%s.log",fileopen.projectname);
+  		/* fileopen.moldenfile=g_strdup_printf("%s.molden",fileopen.projectname);*/
+  		fileopen.moldenfile=g_strdup_printf("%s.log",fileopen.projectname);
+	}
+	else
 	if(iprogram == PROG_IS_MPQC)
 	{
  		fileopen.datafile = g_strdup_printf("%s.com",fileopen.projectname);
@@ -1055,6 +1088,7 @@ void get_doc(gchar *NomFichier)
 	}
 
 	if( iprogram == PROG_IS_GAUSS) read_geom_in_gauss_input(NomFichier);
+	else if( iprogram == PROG_IS_GAMESS) read_geom_in_gamess_input(NomFichier);
 	else if( iprogram == PROG_IS_MOLPRO) read_geom_in_molpro_input(NomFichier);
 	else if( iprogram == PROG_IS_MPQC) read_geom_in_mpqc_input(NomFichier);
 	else if(iprogram == PROG_IS_MOLCAS)
@@ -1065,7 +1099,7 @@ void get_doc(gchar *NomFichier)
 
 	data_modify(FALSE);
 
-	if(GeomConvIsOpen) find_energy_gauss_molcas_molpro_mpqc(NULL,NULL);
+	if(GeomConvIsOpen) find_energy_gamess_gauss_molcas_molpro_mpqc(NULL,NULL);
 
 }
 /********************************************************************************/
@@ -1125,14 +1159,17 @@ static gboolean enreg_doc(gchar *NomFichier)
 {
 	gchar *temp;
 	FILE *fd;
+	gint i;
  
-	fd = FOpen(NomFichier, "w");
+	fd = FOpen(NomFichier, "wb");
 	if(fd == NULL)
 	{
 		Message("Sorry, I can not save file","Error",TRUE);
 		return FALSE;
 	}
 	temp=gabedit_text_get_chars(text,0,-1);
+	for(i=0;i<strlen(temp);i++)
+		if(temp[i]=='\r') temp[i] = ' ';
 	fprintf(fd,"%s",temp);
 	fclose(fd);
 	g_free(temp);
@@ -1152,6 +1189,7 @@ void enreg_selec_doc(GabeditFileChooser *SelecteurFichier , gint response_id)
 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0)) return ;
   
 	if(iprogram == PROG_IS_MPQC) fileopen.command=g_strdup(NameCommandMPQC);
+	else if(iprogram == PROG_IS_GAMESS) fileopen.command=g_strdup(NameCommandGamess);
 	else if(iprogram == PROG_IS_GAUSS) fileopen.command=g_strdup(NameCommandGaussian);
 	else if(iprogram == PROG_IS_MOLCAS) fileopen.command=g_strdup(NameCommandMolcas);
 	else if(iprogram == PROG_IS_MOLPRO) fileopen.command=g_strdup(NameCommandMolpro);
@@ -1163,6 +1201,9 @@ void enreg_selec_doc(GabeditFileChooser *SelecteurFichier , gint response_id)
  		fileopen.projectname = get_name_file(temp);
  		fileopen.localdir = get_name_dir(temp);
  		g_free(temp);
+		if(iprogram==PROG_IS_GAMESS)
+		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
+		else
 		fileopen.datafile = g_strdup_printf("%s.com",fileopen.projectname);
 		if(NomFichier) g_free(NomFichier);
 		NomFichier = g_strdup_printf("%s%s%s",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.datafile);
@@ -1195,6 +1236,14 @@ void enreg_selec_doc(GabeditFileChooser *SelecteurFichier , gint response_id)
 	 	fileopen.outputfile = g_strdup_printf("%s.out",fileopen.projectname);
  		fileopen.logfile = g_strdup_printf("%s.out",fileopen.projectname);
  		fileopen.moldenfile = g_strdup_printf("%s.molden",fileopen.projectname);
+	}
+	else
+	if(iprogram == PROG_IS_GAMESS)
+	{
+		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
+	 	fileopen.outputfile = g_strdup_printf("%s.log",fileopen.projectname);
+ 		fileopen.logfile = g_strdup_printf("%s.log",fileopen.projectname);
+ 		fileopen.moldenfile = g_strdup_printf("%s.log",fileopen.projectname);
 	}
 	else
 	if(iprogram == PROG_IS_GAUSS)
@@ -1269,6 +1318,13 @@ void new_doc_molcas(GtkWidget* wid, gpointer data)
 	iprogram = PROG_IS_MPQC;
 }
 /********************************************************************************/
+ void new_doc_gamess(GtkWidget* wid, gpointer data)
+{
+ 	newGamess();
+	iprogram = PROG_IS_GAMESS;
+	fileopen.command=g_strdup(NameCommandGamess);
+}
+/********************************************************************************/
  void new_doc_gauss(GtkWidget* wid, gpointer data)
 {
  gauss(1);
@@ -1296,7 +1352,7 @@ gchar* get_license()
  gchar *temp;
  temp=       g_strdup(
 		 "\n"
-		 "Copyright (c) 2002-2005 Abdul-Rahman Allouche.\n"
+		 "Copyright (c) 2002-2007 Abdul-Rahman Allouche.\n"
 		 "                          All rights reserved.\n"
 		 "\n"
 		 "Permission is hereby granted, free of charge, to any person obtaining a copy\n"
@@ -1337,7 +1393,7 @@ gchar* get_license()
 void show_version()
 {
  gchar* Version_S = g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
- gchar *temp=g_strdup_printf("\n Version %s \n\n Abdul-Rahman ALLOUCHE\n\n April 2005\n",Version_S);
+ gchar *temp=g_strdup_printf("\n Version %s \n\n Abdul-Rahman ALLOUCHE\n\n january 2007\n",Version_S);
  Message(temp," Version ",TRUE);
  g_free(Version_S);
  g_free(temp);
@@ -1347,16 +1403,16 @@ void go_netscape(GtkWidget *w,gpointer data)
 {
 
 #ifdef G_OS_WIN32
-	gchar* Command = "Iexplore.exe http://lasim.univ-lyon1.fr/allouche/gabedit";
+	gchar* Command = "Iexplore.exe http://gabedit.sourceforge.net/";
 	system(Command);
 #else
-	gchar* Command = "mozilla http://lasim.univ-lyon1.fr/allouche/gabedit &";
+	gchar* Command = "mozilla  http://gabedit.sourceforge.net/ &";
 	if (system(Command)<0)
 	{
-		gchar* Command = "galeon http://lasim.univ-lyon1.fr/allouche/gabedit &";
+		gchar* Command = "galeon http://gabedit.sourceforge.net/ &";
 		if (system(Command)<0)
 		{
-			gchar* Command = "konqueror http://lasim.univ-lyon1.fr/allouche/gabedit &";
+			gchar* Command = "konqueror http://gabedit.sourceforge.net/ &";
 			system(Command);
 		}
 	}
@@ -1393,7 +1449,7 @@ void show_homepage()
  gtk_box_pack_start_defaults(GTK_BOX(vboxframe), Label);
  gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(DialogueMessage)->action_area), FALSE);
  
- Bouton = create_button(DialogueMessage," http://lasim.univ-lyon1.fr/allouche/gabedit ");
+ Bouton = create_button(DialogueMessage," http://gabedit.sourceforge.net/");
  gtk_box_pack_end (GTK_BOX(vboxframe), Bouton, FALSE, TRUE, 5);  
  GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
  g_signal_connect(G_OBJECT(Bouton),
@@ -1685,6 +1741,7 @@ void get_result()
 	t=g_malloc(taille*sizeof(char));
 	if(fd!=NULL)
 	{
+		gtk_widget_set_sensitive(ResultLocalFrame, FALSE);
 		while(1)
 		{
 			nchar = fread(t, 1, taille, fd);
@@ -1692,6 +1749,7 @@ void get_result()
 			if(nchar<taille) break;
 		}
 		fclose(fd);
+		gtk_widget_set_sensitive(ResultLocalFrame, TRUE);
 	}
 	g_free(t);
 	gabedit_text_set_point(GABEDIT_TEXT(textresult),0);
@@ -1934,6 +1992,7 @@ void new_molcas(GtkWidget *widget, gchar *data)
         {
 		new_doc_molcas(NULL, NULL);
 		iprogram = PROG_IS_MOLCAS;
+		fileopen.command=g_strdup(NameCommandMolcas);
  	}
 }
 /**********************************************************************************/
@@ -1952,6 +2011,7 @@ void new_molpro(GtkWidget *widget, gchar *data)
         {
 		new_doc_molpro(NULL, NULL);
 		iprogram = PROG_IS_MOLPRO;
+		fileopen.command=g_strdup(NameCommandMolpro);
  	}
 }
 /**********************************************************************************/
@@ -1970,10 +2030,30 @@ void new_mpqc(GtkWidget *widget, gchar *data)
         {
 		new_doc_mpqc(NULL, NULL);
 		iprogram = PROG_IS_MPQC;
+		fileopen.command=g_strdup(NameCommandMPQC);
  	}
 }
 /**********************************************************************************/
- void new_gauss(GtkWidget *widget, gchar *data)
+void new_gamess(GtkWidget *widget, gchar *data)
+{
+	gchar *t;
+ 	if(imodif == DATA_MOD_YES)
+        {
+		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
+		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
+		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		Continue_YesNo(new_doc_gamess, NULL,t);
+		g_free(t);
+        }
+        else
+        {
+		new_doc_gamess(NULL, NULL);
+		iprogram = PROG_IS_GAMESS;
+		fileopen.command=g_strdup(NameCommandGamess);
+ 	}
+}
+/**********************************************************************************/
+void new_gauss(GtkWidget *widget, gchar *data)
 {
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
@@ -1988,6 +2068,7 @@ void new_mpqc(GtkWidget *widget, gchar *data)
         {
 		new_doc_gauss(NULL, NULL);
 		iprogram = PROG_IS_GAUSS;
+		fileopen.command=g_strdup(NameCommandGaussian);
  	}
 }
 /**********************************************************************************/
@@ -2118,6 +2199,7 @@ void set_default_styles()
 	g_free(font);
 	g_free(fontLabel);
 	*/
+	gtk_rc_parse_string("gtk-icon-sizes = \"gtk-menu=13,13:gtk-small-toolbar=16,16:gtk-large-toolbar=24,24\"gtk-toolbar-icon-size = small-toolbar");
 }
 /********************************************************************************/
 GtkWidget* create_text_widget(GtkWidget* box,gchar *title,GtkWidget **frame)
@@ -2151,8 +2233,18 @@ GtkWidget* create_text_widget(GtkWidget* box,gchar *title,GtkWidget **frame)
   return Text;
 }
 /*********************************************************************/
-void draw_density_orbitals_gauss_or_molcas_or_molpro(GtkWidget *wid,gpointer data)
+void draw_density_orbitals_gamess_or_gauss_or_molcas_or_molpro(GtkWidget *wid,gpointer data)
 {
+  if( iprogram == PROG_IS_GAMESS)
+  {
+ 	gchar** FileName = g_malloc(2*sizeof(gchar*));
+ 	FileName[0] = NULL;
+	FileName[1] = g_strdup_printf("%s%s%s",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.logfile);
+ 	view_orb(Fenetre,2,FileName);
+	g_free(FileName[1] );
+	g_free(FileName);
+  }
+  else
   if( iprogram == PROG_IS_GAUSS)
   {
  	gchar** FileName = g_malloc(2*sizeof(gchar*));

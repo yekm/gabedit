@@ -1,6 +1,6 @@
 /* Gabedit.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
   
 /* Initialisation */
   initialise_global_variables();
-  set_default_styles();
+  /* set_default_styles();*/
 
   Fenetre = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title(GTK_WINDOW(Fenetre),"Gabedit");
@@ -77,10 +77,6 @@ int main(int argc, char *argv[])
   vboxp = vboxmain;
 
   add_menu_toolbar();
-  hseparator = gtk_hseparator_new ();
-  gtk_widget_show (hseparator);
-  gtk_box_pack_start (GTK_BOX (vboxmain), hseparator, FALSE, FALSE, 1);
-
 
   cree_vboxs_list_text();
   cree_text_notebook();
@@ -88,7 +84,7 @@ int main(int argc, char *argv[])
   cree_files_out_err_notebook(vboxtexts);
 
   read_ressource_file();
-  set_default_styles();
+  /* set_default_styles();*/
   ListeFiles(vboxlistfiles);
   resetFontLabelErrOut();
 
@@ -98,6 +94,7 @@ int main(int argc, char *argv[])
   set_icone(Fenetre);
 
   user_install_verify(splash_screen);
+  set_default_styles();
   gtk_main();
  
   return 0;

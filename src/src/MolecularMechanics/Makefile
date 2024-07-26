@@ -1,4 +1,4 @@
-OBJECTS = Atom.o Molecule.o ForceField.o MolecularMechanics.o ConjugateGradient.o SteepestDescent.o QuasiNewton.o MolecularMechanicsDlg.o CreateMolecularMechanicsFile.o CreatePersonalMMFile.o LoadMMParameters.o SetMMParameters.o CreateDefaultPDBTpl.o LoadPDBTemplate.o PDBTemplate.o SetPDBTemplate.o SavePDBTemplate.o
+OBJECTS = Atom.o Molecule.o ForceField.o MolecularMechanics.o ConjugateGradient.o SteepestDescent.o QuasiNewton.o MolecularMechanicsDlg.o CreateMolecularMechanicsFile.o CreatePersonalMMFile.o LoadMMParameters.o SetMMParameters.o CreateDefaultPDBTpl.o LoadPDBTemplate.o PDBTemplate.o SetPDBTemplate.o SavePDBTemplate.o CalculTypesAmber.o
 
 include ../../CONFIG
 CFLAGS =  -Wall -O2 $(GTKCFLAGS)

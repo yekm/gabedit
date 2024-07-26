@@ -1,6 +1,6 @@
 /* GeomConversion.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -51,6 +51,7 @@ typedef struct _GXYZ
  gchar *Residue;
  gchar *Layer;
  gchar *Charge;
+ gboolean Variable;
  Point P;
 }GXYZ;
 
@@ -115,6 +116,8 @@ gboolean set_gxyz()
 		gxyz[i].Residue = g_strdup(GeomXYZ[i].Residue);
 		gxyz[i].Layer = g_strdup(GeomXYZ[i].Layer);
 		gxyz[i].Charge = g_strdup(GeomXYZ[i].Charge);
+		if(!test(GeomXYZ[i].X) || !test(GeomXYZ[i].Y) || !test(GeomXYZ[i].Z)) gxyz[i].Variable=TRUE;
+		else gxyz[i].Variable=FALSE;
 
 	}
 	return TRUE;
@@ -172,6 +175,7 @@ static gdouble get_dihedral_xyz(gint i,gint j,gint l,gint m)
         guint k;
 	gdouble angle;
 	gdouble dihsgn;
+	static double precision = 1e-4;
 
 	W1 = gxyz[i].P;
 	W2 = gxyz[j].P;
@@ -182,7 +186,7 @@ static gdouble get_dihedral_xyz(gint i,gint j,gint l,gint m)
 		V2.C[k] = W1.C[k] - W2.C[k];
 
         A = get_produit_vectoriel(V1,V2);
-	if(A.C[0]*A.C[0]+A.C[1]*A.C[1]+A.C[2]*A.C[2]<1e-8)
+	if(A.C[0]*A.C[0]+A.C[1]*A.C[1]+A.C[2]*A.C[2]<precision)
 	{
            return -1000;
 	}
@@ -196,7 +200,7 @@ static gdouble get_dihedral_xyz(gint i,gint j,gint l,gint m)
 		V2.C[k] = W1.C[k] - W2.C[k];
 
         B = get_produit_vectoriel(V2,V1);
-	if(B.C[0]*B.C[0]+B.C[1]*B.C[1]+B.C[2]*B.C[2]<1e-8)
+	if(B.C[0]*B.C[0]+B.C[1]*B.C[1]+B.C[2]*B.C[2]<precision)
 	{
            return -1001;
 	}
@@ -313,6 +317,7 @@ void insert_dummy_atom_gxyz(gint after,Point P)
 	gxyz[after].Residue = g_strdup("DUM");
 	gxyz[after].Layer = g_strdup(" ");
 	gxyz[after].Charge = g_strdup("0.0");
+	gxyz[after].Variable=FALSE;
 	for (i = 0; i<3;i++)
 		gxyz[after].P.C[i] = P.C[i];
 	/*
@@ -490,6 +495,7 @@ gboolean zmat_to_xyz()
 	  GeomXYZ = GeomXYZtemp;
 	  NVariablesXYZ =0;
 	  VariablesXYZ = NULL;
+  	  if(!test(Geom[1].R)) set_variable_one_atom_in_GeomXYZ(1);
 	  return TRUE;
   }
   
@@ -543,6 +549,8 @@ gboolean zmat_to_xyz()
 	  GeomXYZ = GeomXYZtemp;
 	  NVariablesXYZ =0;
 	  VariablesXYZ = NULL;
+  	  if(!test(Geom[1].R)) set_variable_one_atom_in_GeomXYZ(1);
+  	  if(!test(Geom[2].R) || !test(Geom[2].Angle) ) set_variable_one_atom_in_GeomXYZ(2);
 	  return TRUE;
   }
   for (i = 3; i <(gint)NcentersZmat; i++)
@@ -679,6 +687,12 @@ gboolean zmat_to_xyz()
   GeomXYZ = GeomXYZtemp;
   NVariablesXYZ =0;
   VariablesXYZ = NULL;
+  if(!test(Geom[1].R)) set_variable_one_atom_in_GeomXYZ(1);
+  if(!test(Geom[2].R) || !test(Geom[2].Angle) ) set_variable_one_atom_in_GeomXYZ(2);
+  for(i=3;i<(gint)NcentersZmat;i++)
+  {
+  	if(!test(Geom[i].R) || !test(Geom[i].Angle) || !test(Geom[i].Dihedral) ) set_variable_one_atom_in_GeomXYZ(i);
+  }
   return TRUE;
 }
 /*****************************************************************************/
@@ -755,6 +769,7 @@ gboolean xyz_to_zmat()
 	  Geom = Geomtemp;
 	  NVariables =0;
 	  Variables = NULL;
+	  if(gxyz[0].Variable) set_variable_one_atom_in_GeomZMatrix(0);
 	  return TRUE;
   }
   /* Atom #2 */
@@ -777,6 +792,8 @@ gboolean xyz_to_zmat()
 	  Geom = Geomtemp;
 	  NVariables =0;
 	  Variables = NULL;
+  	  for (i = 0; i <(gint)Nat; i++)
+	  	if(gxyz[i].Variable) set_variable_one_atom_in_GeomZMatrix(i);
 	  return TRUE;
   }
   
@@ -802,6 +819,8 @@ gboolean xyz_to_zmat()
 	  Geom = Geomtemp;
 	  NVariables =0;
 	  Variables = NULL;
+  	  for (i = 0; i <(gint)Nat; i++)
+	  	if(gxyz[i].Variable) set_variable_one_atom_in_GeomZMatrix(i);
 	  return TRUE;
   }
   for (i = 3; i <(gint)Nat; i++)
@@ -827,6 +846,9 @@ gboolean xyz_to_zmat()
   Geom = Geomtemp;
   NVariables =0;
   Variables = NULL;
+  for (i = 0; i <(gint)Nat; i++)
+	  if(gxyz[i].Variable) set_variable_one_atom_in_GeomZMatrix(i);
+
   return TRUE;
 }
 /*****************************************************************************/

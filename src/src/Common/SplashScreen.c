@@ -1,6 +1,6 @@
 /* SplashScreen.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -359,6 +359,54 @@ static gint expose_event(GtkWidget  *widget,GdkEventExpose *event )
   	return FALSE;
 }
 /********************************************************************************/
+static void create_welcome_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
+{
+  GtkWidget *vboxframe;
+  GtkWidget *darea;
+  gint height = 0;
+  gint width = 0;
+  gint widthVersion = 0;
+  gint heightVersion = 0;
+  gchar* txt = g_strdup("       Welcome to :");
+  GdkPixmap *pixmap = NULL;
+  GdkColor* color = g_malloc(sizeof(GdkColor));
+  gchar* Version_S = g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
+  gint* lentxt = g_malloc(sizeof(gint));
+  PangoFontDescription *font_desc = pango_font_description_from_string ("sans bold 22");
+
+/*   if(!gdk_color_parse("royal blue",color))*/
+  if(!gdk_color_parse("dark orange",color))
+  { 
+	 	color->red = 40000; 
+	  	color->green = 40000; 
+	  	color->blue = 40000; 
+  }
+  gabedit_string_get_pixel_size(Fenetre, font_desc, txt, lentxt, &height);
+  gabedit_string_get_pixel_size(Fenetre, font_desc, Version_S, &widthVersion, &heightVersion);
+  height += 10;
+  width = *lentxt + widthVersion;
+
+  g_free(Version_S);
+
+  vboxframe = vbox;
+  darea = gtk_drawing_area_new();
+  gtk_widget_set_size_request(GTK_WIDGET(darea), width, height);
+  gtk_box_pack_start (GTK_BOX(vboxframe),darea, FALSE, FALSE, 0);
+  gtk_widget_realize(darea);
+  pixmap = gdk_pixmap_new(darea->window,darea->allocation.width,darea->allocation.height,-1);
+  g_object_set_data(G_OBJECT(darea), "Text", txt);
+  g_object_set_data(G_OBJECT(darea), "Pixmap", pixmap);
+  g_object_set_data(G_OBJECT(darea), "FontDesc", font_desc);
+  g_object_set_data(G_OBJECT(darea), "Color", color);
+  g_object_set_data(G_OBJECT(darea), "LenTxt", lentxt);
+
+  g_signal_connect(G_OBJECT(darea),"configure_event",(GtkSignalFunc)configure_event,NULL);
+  g_signal_connect(G_OBJECT(darea),"expose_event",(GtkSignalFunc)expose_event,NULL);
+ 
+
+ /* gtk_widget_show(darea);*/
+}
+/********************************************************************************/
 static void create_name_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
 {
   GtkWidget *vboxframe;
@@ -420,7 +468,7 @@ static void create_program_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   GdkColor* color = g_malloc(sizeof(GdkColor));
   gchar* Version_S = g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
   gint* lentxt = g_malloc(sizeof(gint));
-  PangoFontDescription *font_desc = pango_font_description_from_string ("sans bold 66");
+  PangoFontDescription *font_desc = pango_font_description_from_string ("sans bold 56");
 
 /*   if(!gdk_color_parse("royal blue",color))*/
   if(!gdk_color_parse("dark orange",color))
@@ -464,12 +512,12 @@ static void create_gui_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   gint width = 0;
   gint widthVersion = 0;
   gint heightVersion = 0;
-  gchar* txt = g_strdup("The Graphical User Interface for Gaussian, Molcas, Molpro and MPQC ab initio programs");
+  gchar* txt = g_strdup("The Graphical User Interface for Gamess, Gaussian, Molcas, Molpro and MPQC ab initio programs");
   GdkPixmap *pixmap = NULL;
   GdkColor* color = g_malloc(sizeof(GdkColor));
   gchar* Version_S = g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
   gint* lentxt = g_malloc(sizeof(gint));
-  PangoFontDescription *font_desc = pango_font_description_from_string ("sans bold 16");
+  PangoFontDescription *font_desc = pango_font_description_from_string ("sans bold 12");
 
 /*   if(!gdk_color_parse("royal blue",color))*/
   if(!gdk_color_parse("dark orange",color))
@@ -535,7 +583,8 @@ static void create_splash_popupwin()
 /*	gtk_widget_show(vbox);*/
 	gtk_container_add (GTK_CONTAINER (MainFrame), vbox);
 	
-	create_name_frame_popup(vbox,MainFrame);
+	/* create_name_frame_popup(vbox,MainFrame);*/
+	create_welcome_frame_popup(vbox, MainFrame);
 	create_program_frame_popup(vbox,MainFrame);
  	create_gui_frame_popup(vbox,MainFrame);
 	ProgressBar = create_progress_bar_splash(vbox);
@@ -566,7 +615,7 @@ static void create_copyright_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   gint width = 0;
   gint widthVersion = 0;
   gint heightVersion = 0;
-  gchar* txt = g_strdup("Copyright (c) 2002-2005 Abdul-Rahman Allouche.");
+  gchar* txt = g_strdup("Copyright (c) 2002-2007 Abdul-Rahman Allouche.");
   GdkPixmap *pixmap = NULL;
   GdkColor* color = g_malloc(sizeof(GdkColor));
   gchar* Version_S = g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);

@@ -74,6 +74,7 @@ DrawGeom.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h
 DrawGeom.o: ../Geometry/RotFragments.h ../Geometry/GeomConversion.h
 DrawGeom.o: ../Geometry/ResultsAnalise.h ../Utils/HydrogenBond.h
 DrawGeom.o: ../MolecularMechanics/PDBTemplate.h
+DrawGeom.o: ../MolecularMechanics/CalculTypesAmber.h
 DrawGeom.o: ../Symmetry/MoleculeSymmetryInterface.h ../Utils/Jacobi.h
 DrawGeom.o: ../Geometry/MenuToolBarGeom.h
 EnergiesCurves.o: ../../Config.h
@@ -206,8 +207,9 @@ Povray.o: ../Common/Global.h
 Povray.o: ../Files/GabeditFileChooser.h
 Povray.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
 Povray.o: ../Geometry/InterfaceGeom.h ../Utils/Utils.h ../Utils/PovrayUtils.h
-Povray.o: ../Utils/AtomsProp.h ../Geometry/GeomGlobal.h ../Geometry/Mesure.h
-Povray.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h ../Common/Windows.h
+Povray.o: ../Utils/AtomsProp.h ../Utils/Vector3d.h ../Geometry/GeomGlobal.h
+Povray.o: ../Geometry/Mesure.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h
+Povray.o: ../Common/Windows.h
 ResultsAnalise.o: ../../Config.h ../Common/Global.h
 ResultsAnalise.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
 ResultsAnalise.o: ../Utils/UtilsInterface.h ../Utils/Utils.h

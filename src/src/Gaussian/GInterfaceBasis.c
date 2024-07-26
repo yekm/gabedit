@@ -1,6 +1,6 @@
 /* GInterfaceBasis.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -403,7 +403,7 @@ void  create_tabs_list()
 	NSymbCenters--;
 
 
-  if(OK[1] && ( !strcmp(Tb.Layer,"Hight") || !strcmp(Tb.Layer," ") ) )
+  if(OK[1] && ( !strcmp(Tb.Layer,"High") || !strcmp(Tb.Layer," ") ) )
   {
   	NSymbCenters++;
  	BasisC=g_realloc(BasisC,NSymbCenters*sizeof(BasisCenter));
@@ -411,7 +411,7 @@ void  create_tabs_list()
    	BasisC[NSymbCenters-1].Layer=g_strdup("Medium");
   }
 
-  if(OK[2] && ( !strcmp(Tb.Layer,"Hight") || !strcmp(Tb.Layer," ") ) )
+  if(OK[2] && ( !strcmp(Tb.Layer,"High") || !strcmp(Tb.Layer," ") ) )
   {
   	NSymbCenters++;
  	BasisC=g_realloc(BasisC,NSymbCenters*sizeof(BasisCenter));

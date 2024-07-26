@@ -1,6 +1,6 @@
 /* MPQCMole.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -547,7 +547,7 @@ static GtkWidget* addMPQCMethodToTable(GtkWidget *table, gint i, GtkWidget *comb
 	gtk_widget_set_sensitive(entryMethod, FALSE);
 
 
-	//labelMethod = add_label_table(table, " ", i, 3);
+	/*labelMethod = add_label_table(table, " ", i, 3);*/
 	labelMethod = gtk_label_new(" ");
 	hbox = gtk_hbox_new(0,FALSE);
 	gtk_box_pack_start (GTK_BOX (hbox), labelMethod, FALSE, FALSE, 0);

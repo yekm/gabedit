@@ -1,6 +1,6 @@
 /* PovrayGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -34,6 +34,8 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/AxisGL.h"
 #include "../OpenGL/PrincipalAxisGL.h"
 #include "../OpenGL/ColorMap.h"
+#include "../OpenGL/BondsOrb.h"
+#include "../OpenGL/RingsOrb.h"
 
 #include <unistd.h>
 
@@ -356,7 +358,7 @@ static gchar *get_pov_cylingre(gdouble C1[],gdouble C2[],gdouble Colors[],gdoubl
 
 }
 /********************************************************************************/
-static gchar *get_pov_one_stick(gint i,gint j)
+static gchar *get_pov_one_stick(gint i,gint j, GabEditBondType bondType)
 {
      gchar *temp;
      gchar *temp1;
@@ -370,9 +372,8 @@ static gchar *get_pov_one_stick(gint i,gint j)
      gdouble poid2;
      gdouble poid;
      gdouble C[3];
-
-     if( !draw_lines_yes_no_orb(i,j))
-	return " ";
+     V3d CC1;
+     V3d CC2;
 
      Center1 = get_prop_center(i, 1.0);
      Center2 = get_prop_center(j, 1.0);
@@ -384,19 +385,209 @@ static gchar *get_pov_one_stick(gint i,gint j)
      /* if(TypeGeom == GABEDIT_TYPEGEOM_STICK ) ep /=4;*/
      if(TypeGeom == GABEDIT_TYPEGEOM_STICK ) ep =STICKSIZE;
      else ep/=2;
+     if(TypeGeom==GABEDIT_TYPEGEOM_WIREFRAME ) ep =STICKSIZE/2;
 
  
      poid1 = GeomOrb[i].Prop.covalentRadii+GeomOrb[i].Prop.radii;
      poid2 = GeomOrb[j].Prop.covalentRadii+GeomOrb[j].Prop.radii;
      poid = poid1 + poid2 ;
-     for(l=0;l<3;l++)
-     	C[l] =(Center1.C[l]*poid2+Center2.C[l]*poid1)/poid;
-      temp1 = get_pov_cylingre(Center1.C,C,Center1.P.Colors,ep);
-      temp2 = get_pov_cylingre(C,Center2.C,Center2.P.Colors,ep);
-      temp = g_strdup_printf("%s%s",temp1,temp2);
-      g_free(temp1);
-      g_free(temp2);
-      return temp;
+     for(l=0;l<3;l++) CC1[l] =Center1.C[l];
+     for(l=0;l<3;l++) CC2[l] =Center2.C[l];
+     if(bondType == GABEDIT_BONDTYPE_SINGLE)
+     {
+     	for(l=0;l<3;l++) C[l] =(Center1.C[l]*poid2+Center2.C[l]*poid1)/poid;
+      	temp1 = get_pov_cylingre(Center1.C,C,Center1.P.Colors,ep);
+      	temp2 = get_pov_cylingre(C,Center2.C,Center2.P.Colors,ep);
+      	temp = g_strdup_printf("%s%s",temp1,temp2);
+      	g_free(temp1);
+      	g_free(temp2);
+     }
+     else if(bondType == GABEDIT_BONDTYPE_DOUBLE && TypeGeom == GABEDIT_TYPEGEOM_STICK)
+     {
+	gchar* temp3;
+  	V3d vScal = {ep*1.5,ep*1.5,ep*1.5};
+	gdouble C1[3];
+	gdouble C2[3];
+	V3d cros;
+	V3d sub;
+	V3d CRing;
+	gfloat C10[3];
+	gfloat C20[3];
+	getCentreRing(i,j, CRing);
+	v3d_sub(CRing, CC1, C10);
+	v3d_sub(CRing, CC2, C20);
+	v3d_cross(C10, C20, cros);
+	v3d_sub(CC1, CC2, sub);
+	v3d_cross(cros, sub, vScal);
+	if(v3d_dot(vScal,vScal)!=0)
+	{
+		v3d_normal(vScal);
+		v3d_scale(vScal, ep*1.5);
+	}
+	for(l=0;l<3;l++) C1[l] = Center1.C[l];
+	for(l=0;l<3;l++) C2[l] = Center2.C[l];
+     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
+      	temp1 = get_pov_cylingre(C1,C,Center1.P.Colors,ep);
+      	temp2 = get_pov_cylingre(C,C2,Center2.P.Colors,ep);
+      	temp = g_strdup_printf("%s%s",temp1,temp2);
+      	g_free(temp1);
+      	g_free(temp2);
+	for(l=0;l<3;l++) C1[l] = Center1.C[l]-vScal[l];
+	for(l=0;l<3;l++) C2[l] = Center2.C[l]-vScal[l];
+     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
+      	temp1 = get_pov_cylingre(C1,C,Center1.P.Colors,ep/3);
+      	temp2 = get_pov_cylingre(C,C2,Center2.P.Colors,ep/3);
+	temp3 = temp;
+      	temp = g_strdup_printf("%s%s%s",temp3,temp1,temp2);
+      	g_free(temp1);
+      	g_free(temp2);
+      	g_free(temp3);
+     }
+     else if(bondType == GABEDIT_BONDTYPE_TRIPLE  && TypeGeom == GABEDIT_TYPEGEOM_STICK)
+     {
+	gchar* temp3;
+  	V3d vScal = {ep*1.5,ep*1.5,ep*1.5};
+	gdouble C1[3];
+	gdouble C2[3];
+	V3d cros;
+	V3d sub;
+	V3d CRing;
+	gfloat C10[3];
+	gfloat C20[3];
+	getCentreRing(i,j, CRing);
+	v3d_sub(CRing, CC1, C10);
+	v3d_sub(CRing, CC2, C20);
+	v3d_cross(C10, C20, cros);
+	v3d_sub(CC1, CC2, sub);
+	v3d_cross(cros, sub, vScal);
+	if(v3d_dot(vScal,vScal)!=0)
+	{
+		v3d_normal(vScal);
+		v3d_scale(vScal, ep*1.5);
+	}
+	for(l=0;l<3;l++) C1[l] = Center1.C[l]-vScal[l];
+	for(l=0;l<3;l++) C2[l] = Center2.C[l]-vScal[l];
+     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
+      	temp1 = get_pov_cylingre(C1,C,Center1.P.Colors,ep/3);
+      	temp2 = get_pov_cylingre(C,C2,Center2.P.Colors,ep/3);
+      	temp = g_strdup_printf("%s%s",temp1,temp2);
+      	g_free(temp1);
+      	g_free(temp2);
+	for(l=0;l<3;l++) C1[l] = Center1.C[l];
+	for(l=0;l<3;l++) C2[l] = Center2.C[l];
+     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
+      	temp1 = get_pov_cylingre(C1,C,Center1.P.Colors,ep);
+      	temp2 = get_pov_cylingre(C,C2,Center2.P.Colors,ep);
+	temp3 = temp;
+      	temp = g_strdup_printf("%s%s%s",temp3,temp1,temp2);
+      	g_free(temp3);
+      	g_free(temp1);
+      	g_free(temp2);
+	for(l=0;l<3;l++) C1[l] = Center1.C[l]+vScal[l];
+	for(l=0;l<3;l++) C2[l] = Center2.C[l]+vScal[l];
+     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
+      	temp1 = get_pov_cylingre(C1,C,Center1.P.Colors,ep/3);
+      	temp2 = get_pov_cylingre(C,C2,Center2.P.Colors,ep/3);
+	temp3 = temp;
+      	temp = g_strdup_printf("%s%s%s",temp3,temp1,temp2);
+      	g_free(temp3);
+      	g_free(temp1);
+      	g_free(temp2);
+     }
+     else if(bondType == GABEDIT_BONDTYPE_DOUBLE)
+     {
+	gchar* temp3;
+  	V3d vScal = {ep*0.5,ep*0.5,ep*0.5};
+	gdouble C1[3];
+	gdouble C2[3];
+	V3d cros;
+	V3d sub;
+	V3d CRing;
+	gfloat C10[3];
+	gfloat C20[3];
+	getCentreRing(i,j, CRing);
+	v3d_sub(CRing, CC1, C10);
+	v3d_sub(CRing, CC2, C20);
+	v3d_cross(C10, C20, cros);
+	v3d_sub(CC1, CC2, sub);
+	v3d_cross(cros, sub, vScal);
+	if(v3d_dot(vScal,vScal)!=0)
+	{
+		v3d_normal(vScal);
+		v3d_scale(vScal, ep*0.5);
+	}
+	for(l=0;l<3;l++) C1[l] = Center1.C[l]-vScal[l];
+	for(l=0;l<3;l++) C2[l] = Center2.C[l]-vScal[l];
+     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
+      	temp1 = get_pov_cylingre(C1,C,Center1.P.Colors,ep/3);
+      	temp2 = get_pov_cylingre(C,C2,Center2.P.Colors,ep/3);
+      	temp = g_strdup_printf("%s%s",temp1,temp2);
+      	g_free(temp1);
+      	g_free(temp2);
+	for(l=0;l<3;l++) C1[l] = Center1.C[l]+vScal[l];
+	for(l=0;l<3;l++) C2[l] = Center2.C[l]+vScal[l];
+     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
+      	temp1 = get_pov_cylingre(C1,C,Center1.P.Colors,ep/3);
+      	temp2 = get_pov_cylingre(C,C2,Center2.P.Colors,ep/3);
+	temp3 = temp;
+      	temp = g_strdup_printf("%s%s%s",temp3,temp1,temp2);
+      	g_free(temp1);
+      	g_free(temp2);
+      	g_free(temp3);
+     }
+     else if(bondType == GABEDIT_BONDTYPE_TRIPLE)
+     {
+	gchar* temp3;
+  	V3d vScal = {ep*0.5,ep*0.5,ep*0.5};
+	gdouble C1[3];
+	gdouble C2[3];
+	V3d cros;
+	V3d sub;
+	V3d CRing;
+	gfloat C10[3];
+	gfloat C20[3];
+	getCentreRing(i,j, CRing);
+	v3d_sub(CRing, CC1, C10);
+	v3d_sub(CRing, CC2, C20);
+	v3d_cross(C10, C20, cros);
+	v3d_sub(CC1, CC2, sub);
+	v3d_cross(cros, sub, vScal);
+	if(v3d_dot(vScal,vScal)!=0)
+	{
+		v3d_normal(vScal);
+		v3d_scale(vScal, ep*0.5*2);
+	}
+	for(l=0;l<3;l++) C1[l] = Center1.C[l]-vScal[l];
+	for(l=0;l<3;l++) C2[l] = Center2.C[l]-vScal[l];
+     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
+      	temp1 = get_pov_cylingre(C1,C,Center1.P.Colors,ep/3);
+      	temp2 = get_pov_cylingre(C,C2,Center2.P.Colors,ep/3);
+      	temp = g_strdup_printf("%s%s",temp1,temp2);
+      	g_free(temp1);
+      	g_free(temp2);
+	for(l=0;l<3;l++) C1[l] = Center1.C[l];
+	for(l=0;l<3;l++) C2[l] = Center2.C[l];
+     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
+      	temp1 = get_pov_cylingre(C1,C,Center1.P.Colors,ep/3);
+      	temp2 = get_pov_cylingre(C,C2,Center2.P.Colors,ep/3);
+	temp3 = temp;
+      	temp = g_strdup_printf("%s%s%s",temp3,temp1,temp2);
+      	g_free(temp3);
+      	g_free(temp1);
+      	g_free(temp2);
+	for(l=0;l<3;l++) C1[l] = Center1.C[l]+vScal[l];
+	for(l=0;l<3;l++) C2[l] = Center2.C[l]+vScal[l];
+     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
+      	temp1 = get_pov_cylingre(C1,C,Center1.P.Colors,ep/3);
+      	temp2 = get_pov_cylingre(C,C2,Center2.P.Colors,ep/3);
+	temp3 = temp;
+      	temp = g_strdup_printf("%s%s%s",temp3,temp1,temp2);
+      	g_free(temp3);
+      	g_free(temp1);
+      	g_free(temp2);
+     }
+     else temp = g_strdup_printf(" ");
+     return temp;
 }
 /********************************************************************************/
 static gchar *get_pov_one_hbond(gint i,gint j)
@@ -418,16 +609,15 @@ static gchar *get_pov_one_hbond(gint i,gint j)
      gchar *temp1;
      gint ibreak;
 
-     if( !ShowHBondOrb || !draw_lines_hbond_yes_no_orb(i,j)) return " ";
-
      Center1 = get_prop_center(i, 1.0);
      Center2 = get_prop_center(j, 1.0);
      k =get_num_min_rayonIJ(i,j);
  
      if(k==i) ep = Center1.C[3];
      else ep = Center2.C[3];
-     if(TypeGeom == GABEDIT_TYPEGEOM_STICK ) ep /=4;
+     if(TypeGeom == GABEDIT_TYPEGEOM_STICK  ) ep /=4;
      else ep/=2;
+     if(TypeGeom==GABEDIT_TYPEGEOM_WIREFRAME ) ep /=4;
 
  
      poid1 = GeomOrb[i].Prop.covalentRadii+GeomOrb[i].Prop.radii;
@@ -699,6 +889,7 @@ static gchar *get_pov_atoms()
      	temp = g_strdup( "// ATOMS \n");
 	for(i=0;i<(gint)Ncenters;i++)
 	{
+		if(!ShowHAtomOrb && strcmp("H",GeomOrb[i].Symb)==0) continue;
 		tempold = temp;
 		t =get_pov_ball(i,1.0);
 		if(tempold)
@@ -745,8 +936,12 @@ static gchar *get_pov_atoms_for_stick()
      	temp = g_strdup( "// ATOMS \n");
 	for(i=0;i<(gint)Ncenters;i++)
 	{
+		if(!ShowHAtomOrb && strcmp("H",GeomOrb[i].Symb)==0) continue;
 		tempold = temp;
-		t =get_pov_ball_for_stick(i,STICKSIZE);
+		if(TypeGeom==GABEDIT_TYPEGEOM_WIREFRAME)
+			t =get_pov_ball_for_stick(i,STICKSIZE/2);
+		else
+			t =get_pov_ball_for_stick(i,STICKSIZE);
 		if(tempold)
 		{
 			temp = g_strdup_printf("%s%s",tempold,t);
@@ -768,44 +963,47 @@ static gchar *get_pov_bonds()
      gchar* t;
      gchar* tempold;
      gboolean* Ok = NULL;
+     GList* list = NULL;
      if(Ncenters>0) Ok = g_malloc(Ncenters*sizeof(gboolean));
      for(i=0;i<(gint)Ncenters;i++) Ok[i] = FALSE;
 
      temp = g_strdup( "// BONDS \n");
-     for(i=0;i<(gint)(Ncenters-1);i++)
+     for(list=BondsOrb;list!=NULL;list=list->next)
      {
-	for(j=i+1;j<(gint)Ncenters;j++)
-		if( draw_lines_yes_no_orb(i,j))
-	 	{
-			Ok[i] = TRUE;
-			Ok[j] = TRUE;
-			tempold = temp;
-			t =get_pov_one_stick(i,j);
-			if(tempold)
-                	{
-                        	temp = g_strdup_printf("%s%s",tempold,t);
-                        	g_free(tempold);
-                	}
-                	else temp = g_strdup_printf("%s",t); 
-	 	}
-     		else
-		{
-     			if( ShowHBondOrb && draw_lines_hbond_yes_no_orb(i,j))
-			{
-				tempold = temp;
-				t =get_pov_one_hbond(i,j);
-				if(tempold)
-                		{
-                        		temp = g_strdup_printf("%s%s",tempold,t);
-                        		g_free(tempold);
-                		}
-                		else temp = g_strdup_printf("%s",t); 
-			}
-		}
-     }
-     for(i=0;i<(gint)Ncenters;i++)
-	if(!Ok[i])
+	BondType* data=(BondType*)list->data;
+	i = data->n1;
+	j = data->n2;
+	if(!ShowHAtomOrb && (strcmp("H",GeomOrb[i].Symb)==0 || strcmp("H",GeomOrb[j].Symb)==0)) continue;
+	if(data->bondType == GABEDIT_BONDTYPE_HYDROGEN)
 	{
+		tempold = temp;
+		t =get_pov_one_hbond(i,j);
+		if(tempold)
+               	{
+               		temp = g_strdup_printf("%s%s",tempold,t);
+                       	g_free(tempold);
+                }
+                else temp = g_strdup_printf("%s",t); 
+	}
+	else
+	{
+		Ok[i] = TRUE;
+		Ok[j] = TRUE;
+		tempold = temp;
+		t =get_pov_one_stick(i,j,data->bondType);
+		if(tempold)
+               	{
+                       	temp = g_strdup_printf("%s%s",tempold,t);
+                       	g_free(tempold);
+               	}
+               	else temp = g_strdup_printf("%s",t); 
+	}
+     }
+
+     for(i=0;i<(gint)Ncenters;i++)
+     if(!Ok[i])
+     {
+		if(!ShowHAtomOrb && strcmp("H",GeomOrb[i].Symb)==0) continue;
 		tempold = temp;
 		t =get_pov_ball(i, 0.5);
 		if(tempold)
@@ -817,28 +1015,7 @@ static gchar *get_pov_bonds()
 			temp = g_strdup_printf("%s",t);
 		if(t)
 		  g_free(t);
-	}
-     /*
-        else
-	{
-     		XYZRC Center;
-		gdouble ep;
-		gchar* t;
-     		Center = get_prop_center(i, 1.0);
-     		ep = Center.C[3];
-     		if(TypeGeom == GABEDIT_TYPEGEOM_STICK ) ep /=4;
-		tempold = temp;
-		t =get_pov_ball(i, ep);
-		if(tempold)
-		{
-			temp = g_strdup_printf("%s%s",tempold,t);
-			g_free(tempold);
-		}
-		else
-			temp = g_strdup_printf("%s",t);
-		if(t) g_free(t);
-	}
-	*/
+      }
      if(Ok) g_free(Ok);
      return temp;
 }
@@ -917,6 +1094,26 @@ static void save_pov_planes_mapped(FILE* file)
 		fprintf(file,"%s",t);
 	}
 	fclose(filePlanesMapped);
+}
+/********************************************************************************/
+static void save_pov_rings(FILE* file)
+{
+	gchar* fileName = g_strdup_printf("%s%stmp%spovrayRings.pov",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+	FILE* fileRings = fopen(fileName,"r");
+	gchar* t = g_malloc(BSIZE*sizeof(gchar));
+
+	g_free(fileName);
+	if(!fileRings)
+	{
+		g_free(t);
+		return;
+	}
+	while(!feof(fileRings))
+	{
+		if(!fgets(t, BSIZE,fileRings)) break;
+		fprintf(file,"%s",t);
+	}
+	fclose(fileRings);
 }
 /********************************************************************************/
 static gchar* create_povray_file(gchar* fileName, gboolean saveCamera, gboolean newCamera)
@@ -1053,13 +1250,13 @@ static gchar* create_povray_file(gchar* fileName, gboolean saveCamera, gboolean 
 		fprintf(file,"%s",temp);
 		g_free(temp);
 	}
-	else if(TypeGeom==GABEDIT_TYPEGEOM_STICK)
+	else if(TypeGeom==GABEDIT_TYPEGEOM_STICK || TypeGeom==GABEDIT_TYPEGEOM_WIREFRAME)
 	{
 		temp = get_pov_atoms_for_stick(); 
 		fprintf(file,"%s",temp);
 		g_free(temp);
 	}
-	if(TypeGeom==GABEDIT_TYPEGEOM_BALLSTICK || TypeGeom==GABEDIT_TYPEGEOM_STICK)
+	if(TypeGeom==GABEDIT_TYPEGEOM_BALLSTICK || TypeGeom==GABEDIT_TYPEGEOM_STICK || TypeGeom==GABEDIT_TYPEGEOM_WIREFRAME)
 	{
 		temp = get_pov_bonds(); 
 		fprintf(file,"%s",temp);
@@ -1102,6 +1299,7 @@ static gchar* create_povray_file(gchar* fileName, gboolean saveCamera, gboolean 
 	save_pov_surfaces(file);
 	save_pov_contours(file);
 	save_pov_planes_mapped(file);
+	save_pov_rings(file);
 		
  	fclose(file);
 	return NULL;

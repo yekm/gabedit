@@ -1,6 +1,6 @@
 /* Gaussian.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -196,7 +196,7 @@ static void GetInfoBasisHight()
 
            for (i=0;i<NSymbCenters;i++)
          	if(BasisC[i].Changed)
-              		if( !strcmp(BasisC[i].Layer,"Hight") || !strcmp(BasisC[i].Layer," ") ) 
+              		if( !strcmp(BasisC[i].Layer,"High") || !strcmp(BasisC[i].Layer," ") ) 
 			{ 
 				chang=TRUE; 
 				break; 
@@ -206,13 +206,13 @@ static void GetInfoBasisHight()
           {
             for (i=0;i<NSymbTypes;i++)
               if( strcmp(BasisT[i].BasisName,"None")  ) 
-              	if( !strcmp(BasisT[i].Layer,"Hight") || !strcmp(BasisT[i].Layer," ")) 
+              	if( !strcmp(BasisT[i].Layer,"High") || !strcmp(BasisT[i].Layer," ")) 
 			GetInfoBasisT(i);
           }
 	  else
            for (i=0;i<NSymbCenters;i++)
               		if( strcmp(BasisC[i].BasisName,"None") )
-              			if( !strcmp(BasisC[i].Layer,"Hight") || !strcmp(BasisC[i].Layer," ") ) 
+              			if( !strcmp(BasisC[i].Layer,"High") || !strcmp(BasisC[i].Layer," ") ) 
 					GetInfoBasisC(i);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"\n",-1);
 }
@@ -948,6 +948,7 @@ void insert_gaussian(gint itype)
   iframe=itype;
   iinsert=0;
 
+  fileopen.command=g_strdup(NameCommandGaussian);
   Wins= gtk_dialog_new ();
   /* gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER_ALWAYS);*/
   gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER_ON_PARENT);
@@ -1019,6 +1020,7 @@ void gauss(gint ioption)
   GtkWidget *button;
 
   if(Wins) DestroyWinsGauss(Wins);  
+  fileopen.command=g_strdup(NameCommandGaussian);
 
   iframe=1;
   AddMP2=FALSE;

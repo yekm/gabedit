@@ -1,6 +1,6 @@
 /* GeomZmatrix.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -87,6 +87,9 @@ static void DialogueEdit();
 static void DialogueDelete();
 void create_window_save_zmat();
 static void DialogueTransInVar();
+static void trans_allRGeom_to_variables();
+static void trans_allAngleGeom_to_variables();
+static void trans_allDihedralGeom_to_variables();
 static void TransConstVar();
 static void MultiByA0();
 static void DivideByA0();
@@ -190,6 +193,9 @@ static void activate_action_xyz_geom (GtkAction *action)
 	else if(!strcmp(name, "Draw")) draw_geometry(NULL, NULL);
 	else if(!strcmp(name, "Save")) create_window_save_zmat(); 
 	else if(!strcmp(name, "All")) DialogueTransInVar(); 
+	else if(!strcmp(name, "AllR")) trans_allRGeom_to_variables(); 
+	else if(!strcmp(name, "AllAngles")) trans_allAngleGeom_to_variables(); 
+	else if(!strcmp(name, "AllDihedrals")) trans_allDihedralGeom_to_variables(); 
 	else if(!strcmp(name, "One")) TransConstVar(); 
 	else if(!strcmp(name, "MultiplyBya0")) MultiByA0(); 
 	else if(!strcmp(name, "DivideBya0")) DivideByA0(); 
@@ -204,6 +210,9 @@ static GtkActionEntry gtkActionEntriesZMatGeom[] =
 	{"Draw", GABEDIT_STOCK_DRAW, "D_raw", NULL, "Draw", G_CALLBACK (activate_action_xyz_geom) },
 	{"Save", GABEDIT_STOCK_SAVE, "_Save", NULL, "Save", G_CALLBACK (activate_action_xyz_geom) },
 	{"All", NULL, "_All=>", NULL, "All=>", G_CALLBACK (activate_action_xyz_geom) },
+	{"AllR", NULL, "All _R =>", NULL, "All R=>", G_CALLBACK (activate_action_xyz_geom) },
+	{"AllAngles", NULL, "All _Angles =>", NULL, "All Angles =>", G_CALLBACK (activate_action_xyz_geom) },
+	{"AllDihedrals", NULL, "All _Dihedral =>", NULL, "All Dihedral =>", G_CALLBACK (activate_action_xyz_geom) },
 	{"One", NULL, "_One=>", NULL, "One=>", G_CALLBACK (activate_action_xyz_geom) },
 	{"MultiplyBya0", GABEDIT_STOCK_A0P, "M_ultiply by a0", NULL, "Multiply by a0", G_CALLBACK (activate_action_xyz_geom) },
 	{"DivideBya0", GABEDIT_STOCK_A0D, "D_ivide by a0", NULL, "D_ivide by a0", G_CALLBACK (activate_action_xyz_geom) },
@@ -227,6 +236,9 @@ static const gchar *uiMenuZMatGeomInfo =
 "    <menuitem name=\"Save\" action=\"Save\" />\n"
 "    <separator name=\"sepMenuPopAll\" />\n"
 "    <menuitem name=\"All\" action=\"All\" />\n"
+"    <menuitem name=\"AllR\" action=\"AllR\" />\n"
+"    <menuitem name=\"AllAngles\" action=\"AllAngles\" />\n"
+"    <menuitem name=\"AllDihedrals\" action=\"AllDihedrals\" />\n"
 "    <menuitem name=\"One\" action=\"One\" />\n"
 "    <separator name=\"sepMenuPopMul\" />\n"
 "    <menuitem name=\"MultiplyBya0\" action=\"MultiplyBya0\" />\n"
@@ -1137,7 +1149,7 @@ void AllocationVariable()
     Variables = g_malloc(NVariables*sizeof(VariablesDef));
 }
 /********************************************************************************/
-void AddVariableZmat(gchar *NameV,gchar *ValueV)
+void AddVariableZmat(gchar *NameV,gchar *ValueV, gboolean rafresh)
 {
    gchar *texts[2];
    NVariables++;
@@ -1146,10 +1158,10 @@ void AddVariableZmat(gchar *NameV,gchar *ValueV)
    Variables[NVariables-1].Value = g_strdup(ValueV);
    texts[0] = g_strdup(NameV);
    texts[1] = g_strdup(ValueV);
-   appendToList(listv, texts, 2);
+   if(rafresh) appendToList(listv, texts, 2);
 }
 /********************************************************************************/
-static void trans_coord_Zmat(gchar T,guint i)
+static void trans_coord_Zmat(gchar T,guint i, gboolean rafresh)
 {
  gdouble V;
  gchar *NameV;
@@ -1162,7 +1174,7 @@ static void trans_coord_Zmat(gchar T,guint i)
     V = atof(Geom[i].Dihedral);
  NameV = g_strdup_printf("%c%s%d",T,Geom[i].Symb,i+1);
  ValueV = g_strdup_printf("%f",V);
- AddVariableZmat(NameV,ValueV);
+ AddVariableZmat(NameV,ValueV, rafresh);
  if( T == 'R' )
     Geom[i].R=g_strdup(NameV);
  if( T == 'A' )
@@ -1171,7 +1183,17 @@ static void trans_coord_Zmat(gchar T,guint i)
     Geom[i].Dihedral=g_strdup(NameV);
 }
 /********************************************************************************/
-void trans_OneGeom_to_variables(guint i)
+void set_variable_one_atom_in_GeomZMatrix(gint i)
+{
+
+	if( i>0 && test(Geom[i].R)) trans_coord_Zmat('R',i,FALSE);
+	if( i>1 && test(Geom[i].Angle) ) trans_coord_Zmat('A',i,FALSE);
+	if(i>2 && test(Geom[i].Dihedral) ) trans_coord_Zmat('D',i,FALSE);
+
+	ChangeVariablesUseds();
+}
+/********************************************************************************/
+void trans_OneGeom_to_variables(guint i, gboolean rv, gboolean ra, gboolean rd)
 {
   guint j;
   gchar *texts[NUMBER_LIST_ZMATRIX];
@@ -1179,12 +1201,12 @@ void trans_OneGeom_to_variables(guint i)
   for(j=0;j<NUMBER_LIST_ZMATRIX;j++)
   	texts[j] =g_strdup(" ");
 
-  if( i>0 && test(Geom[i].R))
-	trans_coord_Zmat('R',i);
-  if( i>1 && test(Geom[i].Angle) )
-	trans_coord_Zmat('A',i);
-  if(i>2 && test(Geom[i].Dihedral) )
-	trans_coord_Zmat('D',i);
+  if( i>0 && test(Geom[i].R) && rv)
+	trans_coord_Zmat('R',i,TRUE);
+  if( i>1 && test(Geom[i].Angle) && ra)
+	trans_coord_Zmat('A',i,TRUE);
+  if(i>2 && test(Geom[i].Dihedral) && rd )
+	trans_coord_Zmat('D',i,TRUE);
 
   texts[E_NUMBER] =g_strdup_printf("%d",i+1);
   texts[E_SYMBOL] = g_strdup(Geom[i].Symb);
@@ -1220,8 +1242,36 @@ void trans_allGeom_to_variables()
   if(NcentersZmat <1 ) return;
 
   for(i=0;i<NcentersZmat;i++)
-     trans_OneGeom_to_variables(i);
+     trans_OneGeom_to_variables(i,TRUE,TRUE,TRUE);
+  if(ZoneDessin != NULL) rafresh_drawing();
 
+}
+/********************************************************************************/
+static void trans_allRGeom_to_variables()
+{
+	guint i;
+	if(NcentersZmat <1 ) return;
+	for(i=0;i<NcentersZmat;i++)
+		trans_OneGeom_to_variables(i,TRUE,FALSE,FALSE);
+	if(ZoneDessin != NULL) rafresh_drawing();
+}
+/********************************************************************************/
+static void trans_allAngleGeom_to_variables()
+{
+	guint i;
+	if(NcentersZmat <1 ) return;
+	for(i=0;i<NcentersZmat;i++)
+		trans_OneGeom_to_variables(i,FALSE,TRUE,FALSE);
+	if(ZoneDessin != NULL) rafresh_drawing();
+}
+/********************************************************************************/
+static void trans_allDihedralGeom_to_variables()
+{
+	guint i;
+	if(NcentersZmat <1 ) return;
+	for(i=0;i<NcentersZmat;i++)
+		trans_OneGeom_to_variables(i,FALSE,FALSE,TRUE);
+	if(ZoneDessin != NULL) rafresh_drawing();
 }
 /********************************************************************************/
 static void DialogueTransInVar()
@@ -1291,7 +1341,8 @@ static void TransConstVar()
     MessageGeom("Sorry No line selected"," Warning ",TRUE);
     return;
   }
-  trans_OneGeom_to_variables((guint)Nc);   
+  trans_OneGeom_to_variables((guint)Nc, TRUE,TRUE,TRUE);   
+  if(ZoneDessin != NULL) rafresh_drawing();
 }
 /********************************************************************************/
 static void show_geom_in_list(guint i)
@@ -1392,6 +1443,7 @@ static void TransVarConst()
     return;
   }
  OneVariableToConst((guint)Nc);
+ if(ZoneDessin != NULL) rafresh_drawing();
 }
 /********************************************************************************/
 static void trans_allVariables_to_Constants()
@@ -1461,6 +1513,7 @@ static void trans_allVariables_to_Constants()
    }
    g_free(VZmat);
    g_free(Rem);
+   if(ZoneDessin != NULL) rafresh_drawing();
 }
 /********************************************************************************/
 static void DialogueTransInConst()
@@ -1837,6 +1890,10 @@ static void EditAtom(GtkWidget *w,gpointer Entree)
   texts[E_SYMBOL] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_SYMBOL])));
   texts[E_TYPE] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_TYPE])));
   texts[E_RESIDUE] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_RESIDUE])));
+
+  Nc=LineSelected;
+  if(Nc<0) Nc=LineSelectedOld;
+  Gtmp=Geom[Nc];
   if (texts[E_SYMBOL] && strcmp(texts[E_SYMBOL], ""))
  {
  	Nc=LineSelected;
@@ -1916,7 +1973,8 @@ static void EditAtom(GtkWidget *w,gpointer Entree)
   	}
   	if(Nc>1)
   	{
-  		for (i=E_ANGLE;i<E_NUMBER_ANGLE;i++)
+		/* HERE */
+  		for (i=E_ANGLE;i<=E_NUMBER_ANGLE;i++)
   		{
 			texts[i] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[i])));
 			k=testav(texts[i]);
@@ -2169,7 +2227,7 @@ static void DialogueAdd()
   if(NcentersZmat<3)
 	nlist=1;
   tlist[0]=g_strdup(" ");
-  tlist[1]=g_strdup("Hight");
+  tlist[1]=g_strdup("High");
   tlist[2]=g_strdup("Medium");
   tlist[3]=g_strdup("Low");
   
@@ -2299,7 +2357,7 @@ static void DialogueEdit()
   if(NcentersZmat==0)
  	gtk_entry_set_text(GTK_ENTRY(Entry[E_RESIDUE]),"");
   else
-  	gtk_entry_set_text(GTK_ENTRY(Entry[E_RESIDUE]),Geom[NcentersZmat-1].Residue);
+  	gtk_entry_set_text(GTK_ENTRY(Entry[E_RESIDUE]),Geom[Nc].Residue);
 
   tlistvar = get_list_variables();
   if(Nc>0)
@@ -2348,7 +2406,7 @@ static void DialogueEdit()
   if(LineSelected<3)
 	nlist=1;
   tlist[0]=g_strdup(" ");
-  tlist[1]=g_strdup("Hight");
+  tlist[1]=g_strdup("High");
   tlist[2]=g_strdup("Medium");
   tlist[3]=g_strdup("Low");
   
@@ -3841,7 +3899,7 @@ void create_geom_list(GtkWidget *vbox, GabEditTypeFileGeom readfile)
 	list = gtk_tree_view_new_with_model (model);
 	gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (list), TRUE);
 	gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (list), TRUE);
-	gtk_tree_view_set_reorderable(GTK_TREE_VIEW (list), TRUE);
+	gtk_tree_view_set_reorderable(GTK_TREE_VIEW (list), FALSE);
 	for (i=0;(gint)i<NCr;i++)
 	{
 		column = gtk_tree_view_column_new ();

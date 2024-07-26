@@ -1,6 +1,6 @@
 /* GLArea.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -21,6 +21,7 @@ DEALINGS IN THE SOFTWARE.
 #include "GlobalOrb.h"
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
+#include "../Utils/UtilsGL.h"
 #include "Sphere.h"
 #include "Cylinder.h"
 #include "GeomDraw.h"
@@ -47,6 +48,9 @@ DEALINGS IN THE SOFTWARE.
 #include "Images.h"
 #include "PovrayGL.h"
 #include "MenuToolBarGL.h"
+#include "LabelsGL.h"
+#include "RingsOrb.h"
+#include "RingsPov.h"
 
 static gint OperationType = OPERATION_ROTATION_FREE;
 
@@ -54,6 +58,10 @@ static gint numberOfSurfaces = 0;
 static GLuint* positiveSurfaces = NULL;
 static GLuint* negativeSurfaces = NULL;
 static GLuint* nullSurfaces = NULL;
+
+static GLuint listRings[] = {0,0,0,0,0,0};
+static gboolean selectedListRings[] = {FALSE,FALSE,FALSE,FALSE,FALSE,FALSE};
+static gint nMaxListRings = G_N_ELEMENTS (listRings);
 
 static GLuint GeomList = 0;
 static GLuint VibList = 0;
@@ -90,6 +98,7 @@ static gboolean perspective = TRUE;
 static gboolean animateContours = FALSE;
 static gboolean animatePlanesMapped = FALSE;
 
+/*********************************************************************************************/
 static V4d BackColor[7] =
 {
   {0.0, 0.0, 0.0, 0.0}, /* black */
@@ -101,6 +110,27 @@ static V4d BackColor[7] =
   {0.7, 0.7, 0.7, 0.0}, /* Grey  */
 };
 /*********************************************************************************************/
+void build_rings(gint size)
+{
+	if(size<3 || size > nMaxListRings-1+3)
+		return ;
+	selectedListRings[size-3] = TRUE;
+	IsoRingsAllGenLists(&listRings[size-3], size,size);
+}
+/*********************************************************************************************/
+void delete_rings_all()
+{
+	gint i;
+	for(i=0;i<nMaxListRings;i++)
+	{
+		selectedListRings[i] = FALSE;
+		if (glIsList(listRings[i]) == GL_TRUE) glDeleteLists(listRings[i],1);
+		listRings[i] = 0;
+	}
+	deleteRingsPovRayFile();
+}
+/*********************************************************************************************/
+
 gint get_background_color(guchar color[])
 {
 	if(optcol<0) return optcol;
@@ -112,13 +142,25 @@ gint get_background_color(guchar color[])
 /*********************************************************************************************/
 void  addFog()
 {
+	/*
     GLfloat fog_c[] = {0.7f, 0.7f, 0.7f, 1.0f};
     glFogi(GL_FOG_MODE, GL_LINEAR);
-    //  GL_LINEAR, GL_EXP ou GL_EXP2
     glFogf(GL_FOG_START, zNear);
     glFogf(GL_FOG_END, zFar);
     glFogfv(GL_FOG_COLOR, fog_c);
     glEnable(GL_FOG);
+    */
+
+  GLfloat fogstart =  -0.5;
+  GLfloat fogend = 1.51;
+  GLfloat fogcolor[4] = {0.0, 0.0, 0.0, 1.0};
+  
+  glShadeModel(GL_SMOOTH);
+  glFogi(GL_FOG_MODE, GL_LINEAR);
+  glFogfv(GL_FOG_COLOR, fogcolor);
+  glHint(GL_FOG_HINT, GL_DONT_CARE);
+  glFogf(GL_FOG_START, fogstart);
+  glFogf(GL_FOG_END, fogend);
 }
 /*********************************************************************************************/
 void drawChecker()
@@ -160,12 +202,12 @@ void drawChecker()
 	{
 		if((i+j)%2==0)
 		{
-			//glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse1);
+			/*glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse1);*/
 			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse1);
 		}
 		else
 		{
-			//glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse2);
+			/*glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse2);*/
 			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse2);
 		}
 		
@@ -491,6 +533,7 @@ void free_objects_all()
 {
 	free_surfaces_all();
 	free_contours_all();
+	delete_rings_all();
 	free_planes_mapped_all();
 	deleteContoursPovRayFile();
 	deletePlanesMappedPovRayFile();
@@ -616,6 +659,8 @@ void	InitGL()
     	glEnable(GL_NORMALIZE);   
 	glShadeModel(GL_SMOOTH);
 	SetLight();
+	init_labels_font();
+	glInitFonts();
 	/*
 	glFogi(GL_FOG_MODE, GL_EXP);
 	glFogf(GL_FOG_DENSITY, 0.15);
@@ -638,6 +683,7 @@ gint init(GtkWidget *widget)
 /*****************************************************************************/
 static void redrawGeometry()
 {
+	gint i;
 	if (RebuildGeom || glIsList(GeomList) != GL_TRUE )
 	{
 		/* Debug("Re Gen Geom List\n");*/
@@ -655,6 +701,8 @@ static void redrawGeometry()
 		VibList = VibGenList(VibList);
 		VibShowList(VibList);
 		RebuildGeom = FALSE;
+
+		delete_rings_all();
 	}
 	else
 	{
@@ -664,6 +712,10 @@ static void redrawGeometry()
 		axisShowList(axisList);
 		principalAxisShowList(principalAxisList);
 		VibShowList(VibList);
+
+		for(i=0;i<nMaxListRings;i++)
+			if(selectedListRings[i])
+					IsoRingsAllShowLists(listRings[i]);
 	}
 }
 /*****************************************************************************/
@@ -870,7 +922,7 @@ gint redraw(GtkWidget *widget, gpointer data)
 
     	glMatrixMode(GL_PROJECTION);
     	glLoadIdentity();
-	/* addFog();*/
+	addFog();
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	set_background_color();
 
@@ -908,10 +960,20 @@ gint redraw(GtkWidget *widget, gpointer data)
 	redrawSurfaces();
 	redrawContours();
 	redrawPlanesMapped();
-		
+	if(get_show_symbols() && get_show_numbers()) showLabelSymbolsAndNumbers();
+	else
+	{
+		if(get_show_symbols()) showLabelSymbols();
+		if(get_show_numbers()) showLabelNumbers();
+	}
+	if(get_show_dipole()) showLabelDipole();
+	if(get_show_distances()) showLabelDistances();
+	if(get_show_axes()) showLabelAxes();
+	if(get_show_axes()) showLabelPrincipalAxes();
+
 	/* Swap backbuffer to front */
 	glFlush();
-	gtk_gl_area_swapbuffers(GTK_GL_AREA(widget));
+	gtk_gl_area_swap_buffers(GTK_GL_AREA(widget));
 	createImagesFiles();
 
 	return TRUE;
@@ -1225,6 +1287,7 @@ gboolean NewGLArea(GtkWidget* vboxwin)
 	for(k=0;k<DIMAL;k++) attrlist[k] = GDK_GL_NONE;
 
 	k = 0;
+	/* attrlist[k++] = GDK_GL_BUFFER_SIZE,24;*/
 	if(openGLOptions.rgba !=0) attrlist[k++] = GDK_GL_RGBA;
 	attrlist[k++] = GDK_GL_RED_SIZE;
 	attrlist[k++] = 1;
@@ -1252,6 +1315,8 @@ gboolean NewGLArea(GtkWidget* vboxwin)
 		Message("OpenGL not supported\n","Error",TRUE);
 		return FALSE;
 	}
+	set_show_symbols(FALSE);
+	set_show_distances(FALSE);
 	trackball(Quat , 0.0, 0.0, 0.0, 0.0);
 
 	frame = gtk_frame_new (NULL);

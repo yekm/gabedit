@@ -1,5 +1,6 @@
+/* MolecularMechanics.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -69,6 +70,9 @@ AmberParameters newAmberParameters()
 
 	amberParameters.numberOfHydrogenBonded = 0;
 	amberParameters.hydrogenBondedTerms = NULL;
+
+	amberParameters.numberOfPairWise = 0;
+	amberParameters.pairWiseTerms = NULL;
 
 
 	return amberParameters;
@@ -510,8 +514,39 @@ static void setStretchParameters(AmberParameters* amberParameters,ForceField* fo
 		
 		if ( ! ( getStretchParameters(amberParameters, a1Type, a2Type,&forceConstant,&equilibriumDistance ) ) )
 		{
-			printf( "**** couldn't find stretch parameters for %s-%s(%d-%d) \n", 
+			gchar l1 = m.atoms[a1].type[0];
+			gchar l2 = m.atoms[a2].type[0];
+			printf( "**** couldn't find stretch parameters for %s-%s(%d-%d) ", 
 				m.atoms[a1].type,m.atoms[a2].type,a1Type, a2Type);
+
+			forceConstant = 310;
+			equilibriumDistance = 1.525;
+			if(l1==l2)
+			{
+				forceConstant = 415;
+				equilibriumDistance = 1.5;
+			}
+			else
+			if((l1=='C' && l2=='H' ) || (l1=='H' && l2=='C' ))
+			{
+				forceConstant = 340;
+				equilibriumDistance = 1.09;
+			}
+			else
+			if((l1=='C' && l2=='O' ) || (l1=='O' && l2=='C' ))
+			{
+				forceConstant = 570;
+				equilibriumDistance = 1.229;
+			}
+			else
+			if((l1=='C' && l2=='N' ) || (l1=='N' && l2=='C' ))
+			{
+				forceConstant = 490;
+				equilibriumDistance = 1.335;
+			}
+			printf( "-> I set  force to %f and equilibrium distance to %f\n",
+					forceConstant,equilibriumDistance);
+
 		}
 
 		bondStretchTerms[0][i] = a1;
@@ -555,8 +590,22 @@ static void setBendParameters(AmberParameters* amberParameters,ForceField* force
 		a3Type = atomTypes[a3];
 
 		if ( ! ( getBendParameters(amberParameters, a1Type, a2Type, a3Type,&forceConstant,&equilibriumAngle ) ) )
-			printf( "**** couldn't find bend parameters for %s-%s-%s \n",
+		{
+			gchar l1 = m.atoms[a1].type[0];
+			gchar l2 = m.atoms[a2].type[0];
+			gchar l3 = m.atoms[a3].type[0];
+			printf( "**** couldn't find bend parameters for %s-%s-%s ",
 			m.atoms[a1].type,m.atoms[a2].type,m.atoms[a3].type);
+			forceConstant = 60.0;
+			equilibriumAngle = 115.0;
+			if(l1=='H' || l2=='H' || l3=='H')
+			{
+				forceConstant = 50.0;
+				equilibriumAngle = 120.0;
+			}
+			printf( "-> I set force to %f and equilibrium angle to %f\n",
+					forceConstant, equilibriumAngle);
+		}
 
 		angleBendTerms[0][i] = a1;
 		angleBendTerms[1][i] = a2;

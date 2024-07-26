@@ -1,6 +1,6 @@
 /* MolecularMechanicsDlg.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -100,6 +100,7 @@ void amberMinimize(GtkWidget* Win, gpointer data)
 	conjugateGradientOptions.initialStep = 0.001;
 	conjugateGradientOptions.method = 1;
 
+	forceFieldOptions.type = AMBER;
 	forceFieldOptions.bondStretch = GTK_TOGGLE_BUTTON (buttonMMOptions[MMBOND])->active;
 	forceFieldOptions.angleBend = GTK_TOGGLE_BUTTON (buttonMMOptions[MMBEND])->active;
 	forceFieldOptions.dihedralAngle = GTK_TOGGLE_BUTTON (buttonMMOptions[MMTORSION])->active;
@@ -234,6 +235,7 @@ void amberEnergyCalculation(GtkWidget* Win, gpointer data)
 	gdouble gradientNorm = 0;
 	gint i,j;
 
+	forceFieldOptions.type = AMBER;
 	forceFieldOptions.bondStretch = GTK_TOGGLE_BUTTON (buttonMMOptions[MMBOND])->active;
 	forceFieldOptions.angleBend = GTK_TOGGLE_BUTTON (buttonMMOptions[MMBEND])->active;
 	forceFieldOptions.dihedralAngle = GTK_TOGGLE_BUTTON (buttonMMOptions[MMTORSION])->active;

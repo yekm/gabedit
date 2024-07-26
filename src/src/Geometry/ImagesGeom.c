@@ -1,6 +1,6 @@
 /* ImagesGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -240,7 +240,7 @@ void save_geometry_bmp_file(GabeditFileChooser *SelecFile, gint response_id)
   	guchar *rgbbuf;
   	guchar rgbtmp[3];
   	int pad;
-	unsigned char bmp_header[]=
+	char bmp_header[]=
 	{ 'B','M', 0,0,0,0, 0,0, 0,0, 54,0,0,0,
   	40,0,0,0, 0,0,0,0, 0,0,0,0, 1,0, 24,0, 0,0,0,0, 0,0,0,0,
   	0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 };

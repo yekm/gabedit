@@ -1,6 +1,6 @@
 /* Scp.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -21,7 +21,7 @@ DEALINGS IN THE SOFTWARE.
 *                                                               *
 *          Scp command                                          *
 *          pscp - Remote Shell Client for Windows system        *
-*          scp  - Remote Shell Client using rsh system          *
+*          scp  - Remote Shell Client using ssh system          *
 *                command for a unix/Linux system                *
 *                                                               *
 ****************************************************************/
@@ -196,7 +196,7 @@ int scp_put_file(gchar* fout,gchar* ferr,
 	}
 
 	cmdGlobal = g_strdup_printf(
-		"%s -pw %s %s %s@%s:%s/%s",
+		"%s -pw %s \"%s\" %s@%s:%s/%s",
 		pscpCommand,
 		password,
 		unixFile,
@@ -238,7 +238,7 @@ int scp_get_file(gchar* fout,gchar* ferr,
 				);
 
 	cmd = g_strdup_printf(
-		"%s -pw %s %s@%s:%s/%s %s\\%s",
+		"%s -pw %s %s@%s:%s/%s \"%s\\%s\"",
 		pscpCommand,
 		password,
 		username,hostname,
@@ -254,7 +254,7 @@ int scp_get_file(gchar* fout,gchar* ferr,
 }
 #else /* G_OS_WIN32 */
 /********************************************************
-* rsh : main processing routine; connect to server,	*
+* ssh : main processing routine; connect to server,	*
 * pass command line and wait for results				*
 *********************************************************/
 #include <stdlib.h>

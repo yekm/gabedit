@@ -1,6 +1,6 @@
 /* Preferences.h */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -27,6 +27,10 @@ void  modify_gaussian_command();
 void  modify_molpro_command();
 void  create_font_color_in_box(GtkWidget *Win,GtkWidget *Box);
 void set_font_other (gchar *fontname);
+#ifdef G_OS_WIN32
+void  create_gamess_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand);
+void  create_pscpplink_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand);
+#endif
 
 #endif /* __GABEDIT_PREFERENCES_H__ */
 

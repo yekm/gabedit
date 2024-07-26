@@ -1,5 +1,6 @@
+/* Molecule.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -589,6 +590,8 @@ void redrawMolecule(Molecule* molecule,gchar* str)
 		geometry0[i].Type =  g_strdup(molecule->atoms[i].type);
 		geometry0[i].Residue =  g_strdup(molecule->atoms[i].residueName);
 		geometry0[i].ResidueNumber =  molecule->atoms[i].residueNumber;
+		geometry0[i].Layer = HIGH_LAYER;
+		geometry0[i].Variable = FALSE;
 		geometry0[i].N = i+1;
 
 		geometry[i].X = molecule->atoms[i].coordinates[0];
@@ -599,6 +602,8 @@ void redrawMolecule(Molecule* molecule,gchar* str)
 		geometry[i].Type =  g_strdup(molecule->atoms[i].type);
 		geometry[i].Residue =  g_strdup(molecule->atoms[i].residueName);
 		geometry[i].ResidueNumber =  molecule->atoms[i].residueNumber;
+		geometry[i].Layer = HIGH_LAYER;
+		geometry[i].Variable = FALSE;
 		geometry[i].N = i+1;
 
 		C[0] +=  geometry0[i].X;

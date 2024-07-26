@@ -1,6 +1,6 @@
 /* PrincipalAxisGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -53,6 +53,12 @@ typedef struct _PrincipalAxisGLDef
 }PrincipalAxisGLDef;
 
 static PrincipalAxisGLDef axis;
+/************************************************************************/
+void getPrincipalAxisInertias(gfloat* I)
+{
+	gint i;
+	for(i=0;i<3;i++) I[i] = axis.inertia[i];
+}
 /************************************************************************/
 void getPrincipalAxisProperties(gboolean* show, gboolean* negative, gboolean* def, gfloat origin[], gfloat* radius, gfloat* scal,
 		gfloat firstVector[],gfloat secondVector[], gfloat thirdVector[],
@@ -698,15 +704,15 @@ static void drawAxis(V3d vector, GLfloat radius,V3d origin, V4d specular,V4d dif
 GLuint principalAxisGenList(GLuint axisList)
 {
 	V4d specular = {1.0f,1.0f,1.0f,1.0f};
-	V4d FirstDiffuse;
-	V4d FirstAmbiant;
-	V4d secondDiffuse;
-	V4d secondAmbiant;
-	V4d thirdDiffuse;
-	V4d thirdAmbiant;
-	V3d firstVector;
-	V3d secondVector;
-	V3d thirdVector;
+	V4d FirstDiffuse = {1.0f,1.0f,1.0f,1.0f};
+	V4d FirstAmbiant = {1.0f,1.0f,1.0f,1.0f};
+	V4d secondDiffuse = {1.0f,1.0f,1.0f,1.0f};
+	V4d secondAmbiant = {1.0f,1.0f,1.0f,1.0f};
+	V4d thirdDiffuse = {1.0f,1.0f,1.0f,1.0f};
+	V4d thirdAmbiant = {1.0f,1.0f,1.0f,1.0f};
+	V3d firstVector = {1.0f,1.0f,1.0f};
+	V3d secondVector = {1.0f,1.0f,1.0f};
+	V3d thirdVector = {1.0f,1.0f,1.0f};
 	GLfloat radius = axis.radius;
 	gint i;
 

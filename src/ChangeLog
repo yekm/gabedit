@@ -1,0 +1,30 @@
+6  June 2006 :
+   Compute and show the ELF (electron localized function).
+   Compute(numerically) and show the Laplacian and the norm of the gradient
+   for any function (Cube/...).
+   The contours for negative values can be shown in dotted lines.
+   Read and show the geometries for a Gaussian (03) Molcecular dynamique calculation.
+
+21 April 2006 :
+   Show/Hide hydrogen atoms.
+   Show symbols/distances in OpenGL window.
+   Find and show the cycles of a molecule.
+18 May 2006 :
+   Compute Amber types of atoms using the symbols and  the bonds types
+   Show multiple bonds type in Geometry draw window
+   Save correct bonds type in .hin file
+   Read Localized orbitals from GAMESS output file (RHF ou UHF)
+   Show multiple bonds in OpenGL, including with stick mode.
+   Create Povray geometry with multiple bonds.
+   The ability to select and freeze atomic positions during energy
+     minimizations(including the generation of appropriate keywords in the
+     GAMESS and Gaussian input file).
+   The ability to select and set the ONIOM Layer.
+30 May 2006 :
+   Contours for nagative values in dotted lines
+17 June 2006 :
+   ELF : Compute Electron Localized function using the MO
+10 september  2006 :
+   Read the MD trajectory from a Gaussian output file.
+10 november 2006 :
+   Implementation of an "Unit conversion utility".

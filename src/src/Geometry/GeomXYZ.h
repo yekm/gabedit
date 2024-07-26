@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -19,6 +19,7 @@ DEALINGS IN THE SOFTWARE.
 #ifndef __GABEDIT_GEOMXYZ_H__
 #define __GABEDIT_GEOMXYZ_H__
 
+void set_variable_one_atom_in_GeomXYZ(gint i);
 void create_geomXYZ_list(GtkWidget *, GabEditTypeFileGeom readfile);
 void create_variablesXYZ_list(GtkWidget *,guint);
 void create_babel_read_dialogue();
@@ -27,10 +28,13 @@ void read_mol2_tinker_file_no_add_list(gchar *NomFichier,gchar*type);
 void read_pdb_file_no_add_list(gchar *NomFichier);
 void read_hin_file_no_add_list(gchar *NomFichier);
 void read_XYZ_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile );
+void read_XYZ_from_gamess_input_file(gchar *NomFichier );
 void read_XYZ_from_mpqc_input_file(gchar *NomFichier );
 void read_geom_conv_from_dalton_output_file(gchar *NomFichier, gint numgeometry);
+void read_geom_conv_from_gamess_output_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_molden_geom_conv_file(gchar *fileName, gint numgeometry);
 void read_geom_from_gabedit_geom_conv_file(gchar *fileName, gint numgeometry);
+void read_geom_from_gamess_output_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_gaussian_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_mpqc_output_file(gchar *fileName, gint numGeometry);
 void read_geom_from_molpro_file(gchar *NomFichier, gint numgeometry);
@@ -48,6 +52,7 @@ void save_geometry_tinker_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_pdb_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_hin_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_xyz_file_no_add_list(const gchar* FileName);
+
 
 #endif /* __GABEDIT_GEOMXYZ_H__ */
 

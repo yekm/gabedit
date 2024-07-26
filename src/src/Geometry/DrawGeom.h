@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -27,15 +27,16 @@ SELECTFRAG,SELECTRESIDUE,DELETEFRAG,MOVEFRAG,ROTLOCFRAG,ROTZLOCFRAG,INSERTATOM,
 ADDFRAGMENT,
 MESURE,SHOWMESURE,
 RENDERSTICK,RENDERBALL,
-LABELNO,LABELSYMB,LABELNUMB,LABELSYMBNUMB,
+LABELNO,LABELSYMB,LABELNUMB,LABELTYP,LABELLAYER,LABELSYMBNUMB,
 LABELCHARGE,LABELSYMBCHARGE,LABELNUMBCHARGE,LABELCOORDINATES,
 FXYZ,FMOL2,FTINKER,FPDB,FHIN,FGZMAT,FMZMAT,
 FDALTONIN,FDALTONFIRST,FDALTONLAST,
+FGAMESSIN,FGAMESSFIRST,FGAMESSLAST,
 FGAUSSIN,FGAUSSOUTFIRST,FGAUSSOUTLAST,
 FMOLCASIN,FMOLCASOUTFIRST, FMOLCASOUTLAST,
 FMOLPROIN,FMOLPROOUTFIRST, FMOLPROOUTLAST,
 FMPQCIN,FMPQCOUTFIRST, FMPQCOUTLAST,
-FGEOMCONVDALTON,FGEOMCONVGAUSS,FGEOMCONVMOLPRO, FGEOMCONVMOLDEN,FGEOMCONVGABEDIT,FGEOMCONVMPQC, FGEOMCONVXYZ,
+FGEOMCONVDALTON,FGEOMCONVGAMESS,FGEOMCONVGAUSS,FGEOMCONVMOLPRO, FGEOMCONVMOLDEN,FGEOMCONVGABEDIT,FGEOMCONVMPQC, FGEOMCONVXYZ,
 SAVEJPEG, SAVEPPM, SAVEBMP, SAVEPS
 }GabEditGeomOperation;
 
@@ -43,6 +44,11 @@ typedef enum
 {
  RECTANGLE,CIRCLE,ATOMS
 }GabEditSelectType;
+
+typedef enum
+{
+ LOW_LAYER=0, MEDIUM_LAYER, HIGH_LAYER
+}GabEditLayerType;
 
 typedef struct _Camera
 {
@@ -66,6 +72,8 @@ typedef struct _GeomDef
  gdouble Coefpers;
  guint N;
  gboolean ColorAlloc;
+ GabEditLayerType Layer;
+ gboolean Variable;
 }GeomDef;
 
 typedef struct _CoordMaxMin
@@ -128,6 +136,13 @@ gchar* AtomToInsert;
 gint NumSelAtoms[4];
 gboolean Ddef;
 
+gint get_connection_type(gint i, gint j);
+void SelectFixedVariableAtoms(gboolean variable);
+void set_fix_selected_atoms();
+void set_variable_selected_atoms();
+void messageAmberTypesDefine();
+gboolean getShowMultipleBonds();
+void RenderMultipleBonds(GtkWidget *win,gboolean show);
 GabEditGeomOperation getOperationType();
 void set_origin_to_center_of_fragment();
 void set_xyz_to_principal_axes_of_selected_atoms(gpointer data, guint Operation,GtkWidget* wid);
@@ -164,6 +179,11 @@ gboolean dipole_draw_mode();
 gboolean dipole_mode();
 void CreateDrawMenu();
 void TraitementGeom(gpointer data, guint Operation,GtkWidget* wid);
+void SelectAllAtoms();
+void InvertSelectionOfAtoms();
+void unSelectAllAtoms();
+void SelectLayerAtoms(GabEditLayerType layer);
+void copySelectedAtoms();
 void DeleteMolecule();
 void SetOriginAtCenter(gpointer data, guint Operation,GtkWidget* wid);
 void read_geometries_convergence(gpointer data, guint Operation,GtkWidget* wid);
@@ -179,8 +199,10 @@ void RenderPers(GtkWidget *,gboolean);
 void RenderLight(GtkWidget *,gboolean);
 void RenderDipole(GtkWidget *,gboolean);
 void RenderHBonds(GtkWidget *,gboolean);
+void set_layer_of_selected_atoms(GabEditLayerType l);
 void SetLabelDistances(GtkWidget *,gboolean);
 void SetLabelDipole(GtkWidget *win,gboolean YesNo);
+void initLabelOptions(guint data);
 void SetLabelOptions(GtkWidget *widget, guint data);
 void AddFragment(GtkWidget *widget, guint data);
 void addAFragment(gchar* fragName);

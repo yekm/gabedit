@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -19,6 +19,8 @@ DEALINGS IN THE SOFTWARE.
 #ifndef __GABEDIT_CONTOURSDRAW_H__
 #define __GABEDIT_CONTOURSDRAW_H__
 
+void set_dotted_negative_contours(gboolean dotted);
+gboolean get_dotted_negative_contours();
 gfloat* GetGapVector(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloat gap);
 GLuint ContoursGenLists(GLuint contourslist,Grid* plansgrid,gint Ncontours,gfloat* values,gint i0,gint i1,gint numplan,gfloat gap);
 void ContoursShowLists(GLuint list);

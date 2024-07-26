@@ -21,16 +21,9 @@ Installation in unix/Linux system :
          after installation you can execute gabedit from any directory for this type :
 	 gabedit 
 
-   For install gabedit from gabedit.gz(on Linux redhat only)  execute following commands: 
-
-         gunzip   gabedit.gz 
-         chmod a+x gabedit 
-         cp gabedit   /usr/local/bin/. (optional) 
-         gabedit 
-
 Installation of binary version of Gabedit in Windows(2000, XP, ...)  system : 
 =============================================================================
-     unzip GabeditWinxxyyzz.zip file
+     click to setupGabeditxxyyzz.exe
      click to Gabedit.exe program 
 
 Compilation of Gabedit under Windows (2000, XP, ....) system : 

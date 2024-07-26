@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1547,6 +1547,257 @@ static gint read_dalton_modes(FILE* file, gchar *FileName)
 	return ret;
 }
 /********************************************************************************/
+static gboolean read_gamess_geom(FILE* file, gchar *FileName)
+{
+ 	gchar *t;
+ 	gchar *tmp = NULL;
+ 	gboolean OK;
+ 	gchar *AtomCoord[5];
+ 	guint taille=BSIZE;
+ 	guint i;
+ 	gint j=0;
+ 	gint l;
+ 	guint numgeom;
+	gchar dum[100];
+
+ 	for(i=0;i<5;i++) AtomCoord[i]=g_malloc(taille*sizeof(gchar));
+ 	t=g_malloc(taille);
+
+  	Dipole.def = FALSE;
+	free_geometry();
+	tmp = get_name_file(FileName);
+	set_status_label_info("File Name",tmp);
+	g_free(tmp);
+	set_status_label_info("File Type","Dalton");
+ 	numgeom =1;
+ 	do 
+ 	{
+		set_status_label_info("Geometry","Reading");
+ 		OK=FALSE;
+ 		while(!feof(file))
+		{
+			if(!fgets(t,taille,file))break;
+			if ( strstr(t,"FREQUENCIES IN") && strstr(t,"IR INTENSITIES IN")) break;
+			if ( strstr(t,"COORDINATES (BOHR)"))
+			{
+	  			fgets(t,taille,file);
+ 				numgeom++;
+                		OK = TRUE;
+	  			break;
+	  		}
+        	}
+ 		if(!OK && (numgeom == 1) )
+		{
+  			GtkWidget* w = Message("Sorry\nI can not read geometry from this file","Error",TRUE);
+			gtk_window_set_modal (GTK_WINDOW (w), TRUE);
+ 			g_free(t);
+ 			for(i=0;i<5;i++) g_free(AtomCoord[i]);
+			set_status_label_info("File Name","Nothing");
+			set_status_label_info("File Type","Nothing");
+			set_status_label_info("Geometry","Nothing");
+			return FALSE;
+    		}
+ 		if(!OK)break;
+
+  		j=-1;
+  		while(!feof(file) )
+  		{
+			fgets(t,taille,file);
+			if ( !strcmp(t,"\n"))
+			{
+				/* get_dipole_from_gamess_output_file(file);*/
+				break;
+			}
+    			j++;
+    			if(GeomOrb==NULL) GeomOrb=g_malloc(sizeof(TypeGeomOrb));
+    			else GeomOrb=g_realloc(GeomOrb,(j+1)*sizeof(TypeGeomOrb));
+
+			sscanf(t,"%s %s %s %s %s",AtomCoord[0],dum, AtomCoord[1], AtomCoord[2],AtomCoord[3]);
+
+			for(i=0;i<(gint)strlen(AtomCoord[0]);i++) if(isdigit(AtomCoord[0][i])) AtomCoord[0][i] = ' ';
+			delete_all_spaces(AtomCoord[0]);
+			AtomCoord[0][0]=toupper(AtomCoord[0][0]);
+	 		l=strlen(AtomCoord[0]);
+          		if (l==2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+			/*printf("j = %d symb = %s %s %s %s \n",j, AtomCoord[0], AtomCoord[1], AtomCoord[2],AtomCoord[3]);*/
+
+    			/* GeomOrb[j].Symb=g_strdup(AtomCoord[0]);*/
+			GeomOrb[j].Symb=get_symbol_using_z(atoi(dum));
+    			for(i=0;i<3;i++) GeomOrb[j].C[i]=atof((AtomCoord[i+1]));
+
+			GeomOrb[j].Prop = prop_atom_get(GeomOrb[j].Symb);
+  		}
+ 	}while(!feof(file));
+
+ 	Ncenters = j+1;
+ 	g_free(t);
+ 	for(i=0;i<5;i++) g_free(AtomCoord[i]);
+ 	if(Ncenters == 0 ) g_free(GeomOrb);
+
+	RebuildGeom = TRUE;
+	reset_grid_limits();
+	init_atomic_orbitals();
+	set_status_label_info("Geometry","Ok");
+
+	return TRUE;
+}
+/********************************************************************************/
+static gint read_gamess_modes(FILE* fd, gchar *FileName)
+{
+ 	gchar t[BSIZE];
+ 	gboolean OK;
+ 	guint taille=BSIZE;
+	gint i;
+	gint j;
+	gint c;
+	gint ne;
+	gint nf;
+	gint nir;
+	gint nfMax = 5;
+	gfloat freq[5];
+	gfloat ir[5];
+ 	gchar* sdum[5*2];
+ 	gchar* tmp;
+	gint k;
+
+	free_vibration();
+	vibration.numberOfAtoms = Ncenters;
+	vibration.geometry = g_malloc(Ncenters*sizeof(VibrationGeom));
+	for(j=0;j<Ncenters;j++)
+	{
+		vibration.geometry[j].symbol = g_strdup(GeomOrb[j].Symb);
+    		vibration.geometry[j].coordinates[0] = GeomOrb[j].C[0];
+    		vibration.geometry[j].coordinates[1] = GeomOrb[j].C[1];
+    		vibration.geometry[j].coordinates[2] = GeomOrb[j].C[2];
+	}
+	vibration.modes = g_malloc(sizeof(VibrationMode));
+  	vibration.numberOfFrequences = 0;
+
+	if(vibration.numberOfAtoms<1) return 1;
+
+ 	OK=FALSE;
+ 	while(!feof(fd))
+	{
+		if(!fgets(t,taille,fd))break;
+	 	if ( strstr( t,"FREQUENCY:") )
+	  	{
+			OK = TRUE;
+			break;
+	  	}
+	}
+
+	if(!OK) return 1;
+	for(i=0;i<nfMax*2;i++) sdum[i] = g_malloc(BSIZE*sizeof(gchar));
+
+	j = 0;
+  	while(!feof(fd))
+  	{
+		gint nfi=0;
+		if(!strstr( t,"FREQUENCY:")) break;
+
+		tmp = strstr(t,":")+1;
+		for(i=0;i<nfMax*2;i++) sprintf(sdum[i]," ");
+		nfi = sscanf(tmp,"%s %s %s %s %s %s %s %s %s %s", sdum[0],sdum[1],sdum[2],sdum[3],sdum[4],
+				sdum[5],sdum[6],sdum[7],sdum[8],sdum[9]
+				);
+		if(nfi<1)
+		{
+			vibration.numberOfFrequences = j;
+			for(i=0;i<nfMax*2;i++) g_free(sdum[i]);
+			return 2;
+		}
+		nf = 0;
+		for(i=0;i<nfi;)
+		{
+			if(strstr(sdum[i+1],"I"))
+			{
+				freq[nf] = -atof(sdum[i]);
+				i+=2;
+			}
+			else
+			{
+				freq[nf] = atof(sdum[i]);
+				i+=1;
+			}
+			nf++;
+		}
+		nir=-1;
+		if(fgets(t,taille,fd)) /* REDUCED MASS: */
+		if(fgets(t,taille,fd)) /*  IR INTENSITY: */
+		{
+			tmp =  strstr(t,":")+1;
+			nir = sscanf(tmp,"%s %s %s %s %s", sdum[0],sdum[1],sdum[2],sdum[3],sdum[4]);
+		}
+		if(nf!=nir ||!fgets(t,taille,fd) ) /* backspace*/
+		{
+			vibration.numberOfFrequences = j;
+			for(i=0;i<nfMax*2;i++) g_free(sdum[i]);
+			return 2;
+		}
+		for(i=0;i<nf;i++) ir[i] = atof(sdum[i]);
+
+		for(i=0;i<nf;i++)
+		{
+			vibration.modes = g_realloc(vibration.modes,(j+nfMax)*sizeof(VibrationMode));
+			vibration.modes[j].frequence = freq[i];
+			vibration.modes[j].IRIntensity = ir[i];
+			vibration.modes[j].RamanIntensity = 0.0;
+			vibration.modes[j].symmetry = g_strdup("Unknown");
+			for(c=0;c<3;c++) vibration.modes[j].vectors[c]= g_malloc(vibration.numberOfAtoms*sizeof(gdouble));
+			j++;
+		}
+		for(i=0;i<vibration.numberOfAtoms;i++)
+		{
+			k = j-nf;
+    			if(!fgets(t,taille,fd)) break;
+			c = 0;
+			ne = sscanf(t,"%s %s %s %lf %lf %lf %lf %lf %lf", sdum[0],sdum[1],sdum[2],
+				&vibration.modes[k  ].vectors[c][i],
+				&vibration.modes[k+1].vectors[c][i],
+				&vibration.modes[k+2].vectors[c][i],
+				&vibration.modes[k+3].vectors[c][i],
+				&vibration.modes[k+4].vectors[c][i],
+				&vibration.modes[k+5].vectors[c][i]);
+			if(ne!=nf+3)return 2;
+    			if(!fgets(t,taille,fd)) break;
+			c = 1;
+			ne = sscanf(t," %s %lf %lf %lf %lf %lf %lf",sdum[0],
+				&vibration.modes[k  ].vectors[c][i],
+				&vibration.modes[k+1].vectors[c][i],
+				&vibration.modes[k+2].vectors[c][i],
+				&vibration.modes[k+3].vectors[c][i],
+				&vibration.modes[k+4].vectors[c][i],
+				&vibration.modes[k+5].vectors[c][i]);
+			if(ne!=nf+1)return 2;
+    			if(!fgets(t,taille,fd)) break;
+			c = 2;
+			ne = sscanf(t," %s %lf %lf %lf %lf %lf %lf",sdum[0],
+				&vibration.modes[k  ].vectors[c][i],
+				&vibration.modes[k+1].vectors[c][i],
+				&vibration.modes[k+2].vectors[c][i],
+				&vibration.modes[k+3].vectors[c][i],
+				&vibration.modes[k+4].vectors[c][i],
+				&vibration.modes[k+5].vectors[c][i]);
+			if(ne!=nf+1)return 2;
+		}
+		for(i=0;i<5*2+2;i++)
+		{
+			if(!fgets(t,taille,fd))break;
+		}
+		if(i!=5*2+2 || !fgets(t,taille,fd))
+		{
+			vibration.numberOfFrequences = j;
+			for(i=0;i<nfMax*2;i++) g_free(sdum[i]);
+			return 2;
+		}
+	}
+	vibration.numberOfFrequences = j;
+	for(i=0;i<nfMax*2;i++) g_free(sdum[i]);
+
+	vibration.modes = g_realloc(vibration.modes,vibration.numberOfFrequences*sizeof(VibrationMode));
+	return 0;
+}
+/********************************************************************************/
 static gboolean read_gaussian_file_frequencies(gchar *FileName)
 {
  	gchar t[BSIZE];
@@ -2045,6 +2296,54 @@ static void read_dalton_file(GabeditFileChooser *SelecFile, gint response_id)
 	fclose(file);
 }
 /********************************************************************************/
+static void read_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+	gchar *FileName;
+	FILE* file;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+
+ 	if ((!FileName) || (strcmp(FileName,"") == 0))
+ 	{
+		Message("Sorry\n No file slected","Error",TRUE);
+    		return ;
+ 	}
+
+#ifdef G_OS_WIN32 
+ 	file = FOpen(FileName, "rb");
+#else
+	file = FOpen(FileName, "r");
+#endif
+	stop_vibration(NULL, NULL);
+	if(!file)
+	{
+		gchar buffer[BSIZE];
+		sprintf(buffer,"Sorry, I can not open '%s' file\n",FileName);
+  		Message(buffer,"Error",TRUE);
+		return;
+	}
+
+
+	if(read_gamess_geom(file, FileName))
+	{
+		/* printf("OK read geom\n");*/
+		if(read_gamess_modes(file,FileName)==0)
+		{
+				sort_vibration();
+		}
+		else
+		{
+			gchar buffer[BSIZE];
+			free_vibration();
+			sprintf(buffer,"Sorry, I can not read the frequencies from '%s' file\n",FileName);
+  			Message(buffer,"Error",TRUE);
+		}
+		rafreshList();
+	}
+	fclose(file);
+}
+/********************************************************************************/
 static void read_gaussian_file(GabeditFileChooser *SelecFile, gint response_id)
 {
 	gchar *FileName;
@@ -2064,6 +2363,16 @@ static void read_dalton_file_dlg()
  	file_chooser_open(read_dalton_file,
 			"Read last geometry and frequencies from a Dalton output file",
 			GABEDIT_TYPEFILE_DALTON,GABEDIT_TYPEWIN_ORB);
+
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+}
+/********************************************************************************/
+static void read_gamess_file_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_gamess_file,
+			"Read last geometry and frequencies from a Gamess output file",
+			GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
@@ -2742,6 +3051,7 @@ static void activate_action (GtkAction *action)
 	}
 	else if(!strcmp(name, "ReadGabedit")) read_gabedit_file_dlg();
 	else if(!strcmp(name, "ReadDalton")) read_dalton_file_dlg();
+	else if(!strcmp(name, "ReadGamess")) read_gamess_file_dlg();
 	else if(!strcmp(name, "ReadGaussian")) read_gaussian_file_dlg();
 	else if(!strcmp(name, "ReadMolpro")) read_molpro_file_dlg();
 	else if(!strcmp(name, "ReadMPQC")) read_mpqc_file_dlg();
@@ -2760,6 +3070,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"Read",     NULL, "_Read"},
 	{"ReadGabedit", GABEDIT_STOCK_GABEDIT, "Read a G_abedit file", NULL, "Read a Gabedit file", G_CALLBACK (activate_action) },
 	{"ReadDalton", GABEDIT_STOCK_DALTON, "Read a _Dalton output file", NULL, "Read a Dalton output file", G_CALLBACK (activate_action) },
+	{"ReadGamess", GABEDIT_STOCK_GAMESS, "Read a _Gamess output file", NULL, "Read a Gamess output file", G_CALLBACK (activate_action) },
 	{"ReadGaussian", GABEDIT_STOCK_GAUSSIAN, "Read a _Gaussian output file", NULL, "Read a Gaussian output file", G_CALLBACK (activate_action) },
 	{"ReadMolpro", GABEDIT_STOCK_MOLPRO, "Read a Mol_pro output file", NULL, "Read Molpro output file", G_CALLBACK (activate_action) },
 	{"ReadMPQC", GABEDIT_STOCK_MPQC, "Read a MP_QC output file", NULL, "Read a MPQC output file", G_CALLBACK (activate_action) },
@@ -2782,6 +3093,7 @@ static const gchar *uiMenuInfo =
 "    <separator name=\"sepMenuPopGabedit\" />\n"
 "    <menuitem name=\"ReadGabedit\" action=\"ReadGabedit\" />\n"
 "    <menuitem name=\"ReadDalton\" action=\"ReadDalton\" />\n"
+"    <menuitem name=\"ReadGamess\" action=\"ReadGamess\" />\n"
 "    <menuitem name=\"ReadGaussian\" action=\"ReadGaussian\" />\n"
 "    <menuitem name=\"ReadMolpro\" action=\"ReadMolpro\" />\n"
 "    <menuitem name=\"ReadMPQC\" action=\"ReadMPQC\" />\n"
@@ -2799,6 +3111,7 @@ static const gchar *uiMenuInfo =
 "      <menu name=\"Read\" action=\"Read\">\n"
 "        <menuitem name=\"ReadGabedit\" action=\"ReadGabedit\" />\n"
 "        <menuitem name=\"ReadDalton\" action=\"ReadDalton\" />\n"
+"        <menuitem name=\"ReadGamess\" action=\"ReadGamess\" />\n"
 "        <menuitem name=\"ReadGaussian\" action=\"ReadGaussian\" />\n"
 "        <menuitem name=\"ReadMolpro\" action=\"ReadMolpro\" />\n"
 "        <menuitem name=\"ReadMPQC\" action=\"ReadMPQC\" />\n"

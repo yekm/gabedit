@@ -1,6 +1,6 @@
 /* AtomsProp.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -252,7 +252,8 @@ void setPropForOneAtom(gchar* name, gchar* symbol, gint atomicNumber,
 	AtomsProp[i].covalentRadii = (covalentRadii+0.2)*ANG_TO_BOHR;
 	AtomsProp[i].bondOrderRadii = bondOrderRadii*ANG_TO_BOHR;
 	AtomsProp[i].vanDerWaalsRadii = vanDerWaalsRadii*ANG_TO_BOHR;
-	AtomsProp[i].radii = covalentRadii/1.5*ANG_TO_BOHR;
+	/*AtomsProp[i].radii = covalentRadii/1.5*ANG_TO_BOHR;*/
+	AtomsProp[i].radii = vanDerWaalsRadii*0.2*ANG_TO_BOHR;
 	AtomsProp[i].maximumBondValence = maximumBondValence;
 	AtomsProp[i].masse = masse;
 	AtomsProp[i].electronegativity = electronegativity/27.21;
@@ -269,7 +270,7 @@ void define_default_atoms_prop()
 	setPropForOneAtom("Beryllium", "Be", 4, 0.350000, 0.900000, 1.700000, 2, 9.012182, 1.570000, 0.760000, 1.000000, 0.000000);
 	setPropForOneAtom("Boron", "B", 5, 0.830000, 0.820000, 2.080000, 3, 10.811000, 2.040000, 1.000000, 0.710000, 0.710000);
 	setPropForOneAtom("Carbon", "C", 6, 0.680000, 0.770000, 1.950000, 4, 12.010700, 2.550000, 0.500000, 0.500000, 0.500000);
-	setPropForOneAtom("Nitrogen", "N", 7, 0.680000, 0.700000, 1.850000, 4, 14.006700, 3.040000, 0.050000, 0.050000, 1.000000);
+	setPropForOneAtom("Nitrogen", "N", 7, 0.680000, 0.700000, 1.850000, 3, 14.006700, 3.040000, 0.050000, 0.050000, 1.000000);
 	setPropForOneAtom("Oxygen", "O", 8, 0.680000, 0.660000, 1.700000, 2, 15.999400, 3.440000, 1.000000, 0.050000, 0.050000);
 	setPropForOneAtom("Fluorine", "F", 9, 0.640000, 0.611000, 1.730000, 1, 18.998404, 3.980000, 0.700000, 1.000000, 1.000000);
 	setPropForOneAtom("Neon", "Ne", 10, 1.120000, 0.700000, 1.540000, 0, 20.179701, 0.000000, 0.700000, 0.890000, 0.960000);

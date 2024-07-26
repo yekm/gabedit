@@ -1,6 +1,6 @@
 /* Postscript.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -369,7 +369,7 @@ gchar *get_draw_line2_hbond(gint epaisseur,guint i,guint j,gint x1,gint y1,gint 
     return temp;
 }
 /********************************************************************************/
-gchar *get_draw_line2(gint epaisseur,guint i,guint j,gint x1,gint y1,gint x2,gint y2,PColor color1,PColor color2)
+gchar *get_draw_line2(gint epaisseur,guint i,guint j,gint x1,gint y1,gint x2,gint y2,PColor color1,PColor color2,gboolean hideDistance)
 {
 	gint x0;
 	gint y0;
@@ -389,7 +389,7 @@ gchar *get_draw_line2(gint epaisseur,guint i,guint j,gint x1,gint y1,gint x2,gin
 	t=get_draw_line(x0,y0,x2,y2,color2,epaisseur);
 	temp=g_strdup_printf("%s%s",temp,t);
         g_free(t);
-	if(distances_draw_mode())
+	if(!hideDistance && distances_draw_mode())
         {
            t=get_draw_distance(i,j,x0,y0); 
 	   temp=g_strdup_printf("%s%s",temp,t);
@@ -398,7 +398,7 @@ gchar *get_draw_line2(gint epaisseur,guint i,guint j,gint x1,gint y1,gint x2,gin
     return temp;
 }
 /********************************************************************************/
-gchar *get_draw_line2_3d(gint epaisseur,guint i,guint j,gint x1,gint y1,gint x2,gint y2,PColor color1,PColor color2)
+gchar *get_draw_line2_3d(gint epaisseur,guint i,guint j,gint x1,gint y1,gint x2,gint y2,PColor color1,PColor color2,gboolean hideDistance)
 {
 	gint x0;
 	gint y0;
@@ -415,14 +415,15 @@ gchar *get_draw_line2_3d(gint epaisseur,guint i,guint j,gint x1,gint y1,gint x2,
 	gchar *t;
 	XYRC xyrc1;
 
-
-		if( !stick_mode())
+	if( !stick_mode())
     	{
 		xyrc1= get_prop_center(i);
                 rayon =(gushort)(xyrc1.C[2]*factorball);
 			if (pers_mode()) 
                 	rayon =(gushort)(geometry[i].Coefpers*xyrc1.C[2]*factorball);
                 k= ((gdouble)rayon*(gdouble)rayon-(gdouble)epaisseur*(gdouble)epaisseur/4.0);
+		 if(get_connection_type(i,j)==2) k= ((gdouble)rayon*(gdouble)rayon-(gdouble)epaisseur*(gdouble)epaisseur*9.0/4);
+		 if(get_connection_type(i,j)==3) k= ((gdouble)rayon*(gdouble)rayon-(gdouble)epaisseur*(gdouble)epaisseur*25.0/4);
 
 		if(k>0 &&(( (gdouble)(x2-x1)*(gdouble)(x2-x1)+(gdouble)(y2-y1)*(gdouble)(y2-y1) )>1e-6))
                 k = (sqrt(k))/(gdouble)(sqrt( (gdouble)(x2-x1)*(gdouble)(x2-x1)+(gdouble)(y2-y1)*(gdouble)(y2-y1) ) );     
@@ -440,18 +441,19 @@ gchar *get_draw_line2_3d(gint epaisseur,guint i,guint j,gint x1,gint y1,gint x2,
         poid1 = geometry[i].Prop.covalentRadii+geometry[i].Prop.radii;
         poid2 = geometry[j].Prop.covalentRadii+geometry[j].Prop.radii;
         poid = poid1 + poid2 ;
+
 	x0=(gint)((x1*poid2+x2*poid1)/poid +0.5);
 	y0=(gint)((y1*poid2+y2*poid1)/poid +0.5);
 	temp=get_draw_line_3d(xp,yp,x0,y0,color1,epaisseur);
 	t=get_draw_line_3d(x0,y0,x2,y2,color2,epaisseur);
 
-		if( !stick_mode())
+	if(!stick_mode())
 		temp=g_strdup_printf("	 0 setlinecap\n 2 setlinejoin\n %s 0 setlinecap\n 0 setlinejoin\n %s",temp,t);
         else
 		temp=g_strdup_printf("	 1 setlinecap\n 2 setlinejoin\n %s 1 setlinecap\n 2 setlinejoin\n %s",temp,t);
 	
         g_free(t);
-		if(distances_draw_mode())
+	if(!hideDistance && distances_draw_mode())
         {
            t=get_draw_distance(i,j,x0,y0); 
 	   temp=g_strdup_printf("%s%s",temp,t);
@@ -506,6 +508,26 @@ gchar* get_draw_numb(guint epaisseur,guint i,gint x,gint y)
      return temp; 
 }
 /********************************************************************************/
+gchar *get_draw_layer(guint epaisseur,guint i,gint x,gint y)
+{
+     gchar *temp;
+     temp = g_strdup_printf("%d %d moveto\t",x,y);
+     temp = g_strdup_printf("%s\t 0 0 0 setrgbcolor\t",temp);
+     if(geometry[i].Layer==LOW_LAYER) temp = g_strdup_printf("%s(L) show\n",temp);
+     else if(geometry[i].Layer==MEDIUM_LAYER) temp = g_strdup_printf("%s(M) show\n",temp);
+     else temp = g_strdup_printf("%s( ) show\n",temp);
+     return temp; 
+}
+/********************************************************************************/
+gchar *get_draw_typ(guint epaisseur,guint i,gint x,gint y)
+{
+     gchar *temp;
+     temp = g_strdup_printf("%d %d moveto\t",x,y);
+     temp = g_strdup_printf("%s\t 0 0 0 setrgbcolor\t",temp);
+     temp = g_strdup_printf("%s(%s) show\n",temp,geometry[i].Type);
+     return temp; 
+}
+/********************************************************************************/
 gchar* get_draw_numb_symb(guint epaisseur,guint i,gint x,gint y)
 {
      gchar *temp;
@@ -522,6 +544,8 @@ gchar *get_draw_label(guint epaisseur,guint i,gint x,gint y)
    {
    case LABELSYMB: temp=get_draw_symb(epaisseur,i,x,y);break;
    case LABELNUMB: temp=get_draw_numb(epaisseur,i,x,y);break;
+   case LABELTYP: temp=get_draw_typ(epaisseur,i,x,y);break;
+   case LABELLAYER: temp=get_draw_layer(epaisseur,i,x,y);break;
    case LABELSYMBNUMB: temp=get_draw_numb_symb(epaisseur,i,x,y);break;
    }
      return temp; 
@@ -635,6 +659,9 @@ gchar *dessine_ball_post()
 	XYRC xyrc2;
         gchar *temp;
         gchar *t;
+	gint split[2] = {0,0};
+	gdouble ab[] = {0,0};
+	gint x1, x2, y1,y2;
 
         temp=g_strdup("\n");
 
@@ -657,34 +684,112 @@ gchar *dessine_ball_post()
                 temp=g_strdup_printf("%s%s",temp,t);
                 g_free(t); 
 		for(j=i+1;j<Natoms;j++)
-                if( draw_lines_yes_no(i,j))
+                if( get_connection_type(i,j)>0)
 		{
+			gint nc = get_connection_type(i,j);
 			xyrc2= get_prop_center(j);
 			k =get_num_min_rayonIJ(i,j);
 
                 	if(k==i) epaisseur = (gint) (xyrc1.C[2]*factorstick);
                 	else epaisseur = (gint) (xyrc2.C[2]*factorstick);
                  
-			if (pers_mode()) 
-                	epaisseur =(gint)(geometry[k].Coefpers*epaisseur);
+			if (pers_mode()) epaisseur =(gint)(geometry[k].Coefpers*epaisseur);
 
 			color2 = xyrc2.P;  
 
 			if (shad_mode()) set_color_shad_post(&color2,j);
 
+			if(nc>1)
+			{
+				gdouble m = 0;
+				ab[0] = xyrc2.C[1]-xyrc1.C[1];
+				ab[1] = -xyrc2.C[0]+xyrc1.C[0];
+				m = sqrt(ab[0]*ab[0]+ab[1]*ab[1]);
+				if(m !=0)
+				{
+					ab[0] /= m;
+					ab[1] /= m;
+				}
+			}
+
 /*			if (light_mode()) */
 			if (TRUE) 
-			t=get_draw_line2_3d(epaisseur,i,j, (gint)xyrc1.C[0],(gint)xyrc1.C[1], (gint)xyrc2.C[0],(gint)xyrc2.C[1], color1,color2);
+			{
+				if(nc==2)
+				{
+					split[0] = (gint)(ab[0]*epaisseur/3);
+					split[1] = (gint)(ab[1]*epaisseur/3);
+
+					x1 = (gint)xyrc1.C[0]-split[0];
+					x2 = (gint)xyrc2.C[0]-split[0];
+					y1 = (gint)xyrc1.C[1]-split[1];
+					y2 = (gint)xyrc2.C[1]-split[1];
+					t=get_draw_line2_3d(epaisseur/3,i,j, x1,y1, x2,y2, color1,color2,TRUE);
+                 			temp=g_strdup_printf("%s%s",temp,t);
+                 			g_free(t);
+
+					x1 = (gint)xyrc1.C[0]+split[0];
+					x2 = (gint)xyrc2.C[0]+split[0];
+					y1 = (gint)xyrc1.C[1]+split[1];
+					y2 = (gint)xyrc2.C[1]+split[1];
+					t=get_draw_line2_3d(epaisseur/3,i,j, x1,y1, x2,y2, color1,color2,FALSE);
+                 			temp=g_strdup_printf("%s%s",temp,t);
+                 			g_free(t);
+				}
+				else
+				if(nc==3)
+				{
+					split[0] = (gint)(ab[0]*epaisseur/5);
+					split[1] = (gint)(ab[1]*epaisseur/5);
+
+					x1 = (gint)xyrc1.C[0]-2*split[0];
+					x2 = (gint)xyrc2.C[0]-2*split[0];
+					y1 = (gint)xyrc1.C[1]-2*split[1];
+					y2 = (gint)xyrc2.C[1]-2*split[1];
+					t=get_draw_line2_3d(epaisseur/5,i,j, x1,y1, x2,y2, color1,color2,TRUE);
+                 			temp=g_strdup_printf("%s%s",temp,t);
+                 			g_free(t);
+
+					x1 = (gint)xyrc1.C[0];
+					x2 = (gint)xyrc2.C[0];
+					y1 = (gint)xyrc1.C[1];
+					y2 = (gint)xyrc2.C[1];
+					t=get_draw_line2_3d(epaisseur/5,i,j, x1,y1, x2,y2, color1,color2,TRUE);
+                 			temp=g_strdup_printf("%s%s",temp,t);
+                 			g_free(t);
+
+					x1 = (gint)xyrc1.C[0]+2*split[0];
+					x2 = (gint)xyrc2.C[0]+2*split[0];
+					y1 = (gint)xyrc1.C[1]+2*split[1];
+					y2 = (gint)xyrc2.C[1]+2*split[1];
+					t=get_draw_line2_3d(epaisseur/5,i,j, x1,y1, x2,y2, color1,color2,FALSE);
+                 			temp=g_strdup_printf("%s%s",temp,t);
+                 			g_free(t);
+				}
+				else
+				{
+					x1 = (gint)xyrc1.C[0];
+					x2 = (gint)xyrc2.C[0];
+					y1 = (gint)xyrc1.C[1];
+					y2 = (gint)xyrc2.C[1];
+					t=get_draw_line2_3d(epaisseur,i,j, x1,y1, x2,y2, color1,color2,FALSE);
+                 			temp=g_strdup_printf("%s%s",temp,t);
+                 			g_free(t);
+				}
+			}
                 	else
-			t=get_draw_line2(epaisseur,i,j, (gint)xyrc1.C[0],(gint)xyrc1.C[1], (gint)xyrc2.C[0],(gint)xyrc2.C[1], color1,color2);
-                 	temp=g_strdup_printf("%s%s",temp,t);
-                 	g_free(t);
+			{
+				t=get_draw_line2(epaisseur,i,j, (gint)xyrc1.C[0],(gint)xyrc1.C[1], (gint)xyrc2.C[0],(gint)xyrc2.C[1], color1,color2,FALSE);
+                 		temp=g_strdup_printf("%s%s",temp,t);
+                 		g_free(t);
+			}
 		}
 		else
 		{
 			if(hbond_connections(i,j))
 			{
 				k =get_num_min_rayonIJ(i,j);
+				xyrc2= get_prop_center(j);
                 		if(k==i) epaisseur = (gint) (xyrc1.C[2]*factorstick);
                 		else epaisseur = (gint) (xyrc2.C[2]*factorstick);
 				if (pers_mode()) epaisseur =(gint)(geometry[k].Coefpers*epaisseur);
@@ -760,6 +865,9 @@ gchar *dessine_stick_post()
 	XYRC xyrc2;
         gchar *temp;
         gchar *t;
+	gint split[2] = {0,0};
+	gdouble ab[] = {0,0};
+	gint x1, x2, y1,y2;
 
         temp=g_strdup("\n");
 
@@ -774,8 +882,9 @@ gchar *dessine_stick_post()
 		if (shad_mode()) 				
 			 set_color_shad_post(&color1,i);
 		for(j=i+1;j<Natoms;j++)
-                if( draw_lines_yes_no(i,j))
+                if( get_connection_type(i,j)>0)
 		{
+			gint nc = get_connection_type(i,j);
 			xyrc2= get_prop_center(j);
 			k =get_num_min_rayonIJ(i,j);
 
@@ -788,13 +897,66 @@ gchar *dessine_stick_post()
 			color2 = xyrc2.P;  
 			if (shad_mode()) set_color_shad_post(&color2,j);
 
+			if(nc>1)
+			{
+				gdouble m = 0;
+				ab[0] = xyrc2.C[1]-xyrc1.C[1];
+				ab[1] = -xyrc2.C[0]+xyrc1.C[0];
+				m = sqrt(ab[0]*ab[0]+ab[1]*ab[1]);
+				if(m !=0)
+				{
+					ab[0] /= m;
+					ab[1] /= m;
+				}
+			}
+
 /*			if (light_mode()) */
 			if (TRUE) 
-			t=get_draw_line2_3d(epaisseur,i,j, (gint)xyrc1.C[0],(gint)xyrc1.C[1], (gint)xyrc2.C[0],(gint)xyrc2.C[1], color1,color2);
+			{
+				t=get_draw_line2_3d(epaisseur,i,j, (gint)xyrc1.C[0],(gint)xyrc1.C[1], (gint)xyrc2.C[0],(gint)xyrc2.C[1], color1,color2,FALSE);
+                 		temp=g_strdup_printf("%s%s",temp,t);
+                 		g_free(t);
+				if(nc==2)
+				{
+					split[0] = (gint)(ab[0]*epaisseur*1.5);
+					split[1] = (gint)(ab[1]*epaisseur*1.5);
+
+					x1 = (gint)xyrc1.C[0]-split[0]-split[1];
+					y1 = (gint)xyrc1.C[1]-split[1]+split[0];
+					x2 = (gint)xyrc2.C[0]-split[0]+split[1];
+					y2 = (gint)xyrc2.C[1]-split[1]-split[0];
+
+					t=get_draw_line2_3d(epaisseur/2,i,j, x1,y1,x2,y2, color1,color2,TRUE);
+                 			temp=g_strdup_printf("%s%s",temp,t);
+                 			g_free(t);
+				}
+				if(nc==3)
+				{
+					split[0] = (gint)(ab[0]*epaisseur*1.5);
+					split[1] = (gint)(ab[1]*epaisseur*1.5);
+
+					x1 = (gint)xyrc1.C[0]-split[0]-split[1];
+					y1 = (gint)xyrc1.C[1]-split[1]+split[0];
+					x2 = (gint)xyrc2.C[0]-split[0]+split[1];
+					y2 = (gint)xyrc2.C[1]-split[1]-split[0];
+					t=get_draw_line2_3d(epaisseur/2,i,j, x1,y1,x2,y2, color1,color2,TRUE);
+                 			temp=g_strdup_printf("%s%s",temp,t);
+                 			g_free(t);
+					x1 = (gint)xyrc1.C[0]+split[0]-split[1];
+					y1 = (gint)xyrc1.C[1]+split[1]+split[0];
+					x2 = (gint)xyrc2.C[0]+split[0]+split[1];
+					y2 = (gint)xyrc2.C[1]+split[1]-split[0];
+					t=get_draw_line2_3d(epaisseur/2,i,j, x1,y1,x2,y2, color1,color2,TRUE);
+                 			temp=g_strdup_printf("%s%s",temp,t);
+                 			g_free(t);
+				}
+			}
                 	else
-			t=get_draw_line2(epaisseur,i,j, (gint)xyrc1.C[0],(gint)xyrc1.C[1], (gint)xyrc2.C[0],(gint)xyrc2.C[1], color1,color2);
-                 	temp=g_strdup_printf("%s%s",temp,t);
-                 	g_free(t);
+			{
+				t=get_draw_line2(epaisseur,i,j, (gint)xyrc1.C[0],(gint)xyrc1.C[1], (gint)xyrc2.C[0],(gint)xyrc2.C[1], color1,color2,FALSE);
+                 		temp=g_strdup_printf("%s%s",temp,t);
+                 		g_free(t);
+			}
 		}
 		else
 		{

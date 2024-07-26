@@ -1,6 +1,6 @@
 /* BuildNanoTube.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -187,7 +187,7 @@ void build_nanotube_dlg()
   gint i = 0;
   
   Dlg = gtk_dialog_new();
-  gtk_window_set_title(GTK_WINDOW(Dlg),"Build Linear molecule");
+  gtk_window_set_title(GTK_WINDOW(Dlg),"Build Natotube molecule");
   gtk_window_set_position(GTK_WINDOW(Dlg),GTK_WIN_POS_CENTER);
   gtk_window_set_transient_for(GTK_WINDOW(Dlg),GTK_WINDOW(GeomDlg));
 

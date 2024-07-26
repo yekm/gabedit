@@ -1,6 +1,6 @@
 /* UtilsOrb.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -24,7 +24,9 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/GLArea.h"
 #include "../OpenGL/Orbitals.h"
 #include "../OpenGL/OrbitalsMolpro.h"
+#include "../OpenGL/OrbitalsGamess.h"
 #include "../OpenGL/GeomOrbXYZ.h"
+#include "../OpenGL/BondsOrb.h"
 #include "../OpenGL/UtilsOrb.h"
 #include "../OpenGL/TriangleDraw.h"
 #include "../Utils/Utils.h"
@@ -564,6 +566,9 @@ gint get_type_file(gchar *NomFichier)
 	if(strstr( t, "[GABEDIT FORMAT]" ))
 		ktype = GABEDIT_TYPEFILE_GABEDIT;
 	else
+	if(strstr( t, "GAMESS" ))
+		ktype = GABEDIT_TYPEFILE_GAMESS;
+	else
 	if(atoi(t)>0)
 		ktype = GABEDIT_TYPEFILE_XYZ;
 	if( ktype == GABEDIT_TYPEFILE_UNKNOWN)
@@ -574,6 +579,26 @@ gint get_type_file(gchar *NomFichier)
 			if(strstr(t,"PROGRAM SYSTEM MOLPRO"))
 			{
 				ktype = GABEDIT_TYPEFILE_MOLPRO;
+				break;
+			}
+			if(strstr(t,"GAMESS VERSION"))
+			{
+				ktype = GABEDIT_TYPEFILE_GAMESS;
+				break;
+			}
+		}
+	}
+	rewind(fd);
+	if( ktype == GABEDIT_TYPEFILE_UNKNOWN)
+	{
+		while(!feof(fd))
+		{
+			fgets(t,taille,fd);
+			if(strstr(t,"GAMESS VERSION"))
+			{
+				fgets(t,taille,fd);
+				if(strstr(t,"FROM IOWA STATE UNIVERSITY"))
+				ktype = GABEDIT_TYPEFILE_GAMESS;
 				break;
 			}
 		}
@@ -587,6 +612,50 @@ gint get_type_file(gchar *NomFichier)
 		sprintf(buffer,"Sorry,  I can not determine the type of '%s' file\n",NomFichier);
   		Message(buffer,"Error",TRUE);
  	}
+	return ktype;
+        
+}
+/**********************************************************/
+/* return 
+   -1 : undefined
+    0 : cartezian
+    1 : Spherical
+*/
+gint get_type_basis_in_gamess_file(gchar *NomFichier)
+{
+ 	gchar *t;
+ 	FILE *fd;
+ 	guint taille=BSIZE;
+	gint ktype = -1;
+
+ 	t=g_malloc(taille);
+ 	fd = FOpen(NomFichier, "r");
+
+ 	if(fd ==NULL)
+ 	{
+		gchar buffer[BSIZE];
+		sprintf(buffer,"Sorry, I can not open '%s' file\n",NomFichier);
+  		Message(buffer,"Error",TRUE);
+
+ 		g_free(t);
+  		return ktype;
+ 	}
+	ktype = 0;
+	while(!feof(fd))
+	{
+		fgets(t,taille,fd);
+        	if(strstr( t, "ISPHER="))
+		{
+			gchar t1[50];
+			gchar t2[50];
+			sscanf(t,"%s %s",t1,t2);
+			if(strstr(t2,"-")) ktype = 1;
+			else if(atoi(t2)==0) ktype = -1;
+			break;
+		}
+	}
+ 	fclose(fd);
+ 	g_free(t);
 	return ktype;
         
 }
@@ -1098,7 +1167,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),"33");
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),"49");
 
 	/* Second direction */
 	j = 0;
@@ -1144,7 +1213,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),"33");
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),"49");
 
 	/* Third direction */
 	j = 0;
@@ -1192,7 +1261,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),"33");
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),"49");
 
 
 
@@ -1282,6 +1351,7 @@ void read_any_file(gchar* FileName)
 	gint filetype = get_type_file(FileName);
 	switch(filetype)
 	{
+		case GABEDIT_TYPEFILE_GAMESS : read_gamess_orbitals(FileName);break;
 		case GABEDIT_TYPEFILE_GAUSSIAN : read_gauss_orbitals(FileName);break;
 		case GABEDIT_TYPEFILE_MOLPRO : read_molpro_orbitals(FileName);break;
 		case GABEDIT_TYPEFILE_MOLDEN : read_molden_orbitals(FileName);break;
@@ -1356,11 +1426,14 @@ void initialise_global_orbitals_variables()
 {
 	gint i;
 	PopupMenuIsOpen = FALSE;
+	BondsOrb = NULL;
 	GeomOrb = NULL;
 	GLArea = NULL;
 	Ncenters =0;
  	ShowDipoleOrb = TRUE;
  	ShowHBondOrb = FALSE;
+ 	ShowHAtomOrb = TRUE;
+	ShowMultiBondsOrb = TRUE;
  	ShowVibration = FALSE;
 	TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
 	TypeGeom = GABEDIT_TYPEGEOM_STICK;
@@ -1376,9 +1449,9 @@ void initialise_global_orbitals_variables()
 		limits.MinMax[0][i] = -5;
 	for(i=0;i<3;i++)
 		limits.MinMax[1][i] = 5;
-	NumPoints[0] = 30;
-	NumPoints[1] = 30;
-	NumPoints[2] = 30;
+	NumPoints[0] = 49;
+	NumPoints[1] = 49;
+	NumPoints[2] = 49;
 	CoefAlphaOrbitals = NULL;
 	EnerAlphaOrbitals = NULL;
 	OccAlphaOrbitals = NULL;

@@ -1,6 +1,6 @@
 /* StockIcons.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../../pixmaps/Camera.xpm"
 #include "../../pixmaps/Cancel.xpm"
 #include "../../pixmaps/Close.xpm"
+#include "../../pixmaps/ConvertUnit.xpm"
 #include "../../pixmaps/Copy.xpm"
 #include "../../pixmaps/Cut.xpm"
 #include "../../pixmaps/DeleteAtom.xpm"
@@ -51,6 +52,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../../pixmaps/Molpro.xpm"
 #include "../../pixmaps/Adf.xpm"
 #include "../../pixmaps/Dalton.xpm"
+#include "../../pixmaps/Gamess.xpm"
 #include "../../pixmaps/MoveAtom.xpm"
 #include "../../pixmaps/MPQC.xpm"
 #include "../../pixmaps/New.xpm"
@@ -154,6 +156,7 @@ void gabedit_gtk_stock_init()
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOLPRO, molpro_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_ADF, adf_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_DALTON, dalton_xpm);
+	add_one_icon(icon_factory, GABEDIT_STOCK_GAMESS, gamess_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOVE_ATOM, move_atom_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MPQC, mpqc_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_NEW, new_xpm);
@@ -161,6 +164,7 @@ void gabedit_gtk_stock_init()
 	add_one_icon(icon_factory, GABEDIT_STOCK_NO, no_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_OK, ok_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_OPEN_BABEL,open_babel_xpm );
+	add_one_icon(icon_factory, GABEDIT_STOCK_CONVERT_UNIT,convert_unit_xpm );
 	add_one_icon(icon_factory, GABEDIT_STOCK_OPEN, open_xpm );
 	add_one_icon(icon_factory, GABEDIT_STOCK_ORBITALS, orbitals_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_ORTHO, ortho_xpm);

@@ -1,6 +1,6 @@
 /*PersonalFragments.c  */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -298,7 +298,7 @@ static void deleteOneGroupe(GtkWidget*win, gpointer data)
 			{
 				if(personnalGroupes[k].fragments[i].name)
 					g_free(personnalGroupes[k].fragments[i].name);
-				FreeFragment(personnalGroupes[k].fragments[i].f);
+				FreeFragment(&personnalGroupes[k].fragments[i].f);
 			}
 			g_free(personnalGroupes[k].fragments);
 		}
@@ -698,7 +698,7 @@ static void deleteOneFragment(GtkWidget* win, gpointer data)
 	{
 		if(!strcmp(fragmentName,fragments[i].name))
 		{
-			FreeFragment(fragments[i].f);
+			FreeFragment(&fragments[i].f);
 			g_free(fragments[i].name);
 			for(j=i;j<numberOfFragments-1;j++)
 			{

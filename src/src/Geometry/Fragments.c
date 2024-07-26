@@ -1,6 +1,6 @@
 /* Fragments.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -32,16 +32,20 @@ DEALINGS IN THE SOFTWARE.
 #define ANG_TO_BOHR  1.0/0.52917726
 
 /*****************************************************************/
-void FreeFragment(Fragment F)
+void FreeFragment(Fragment* F)
 {
 	gint i=0;
-	if(F.NAtoms==0)
+	if(F->NAtoms==0)
 		return;
-	for(i=0;i<F.NAtoms;i++)
-		g_free(F.Atoms[i].Symb);
-	g_free(F.Atoms);
-	F.NAtoms = 0;
-	F.Atoms = NULL;
+	for(i=0;i<F->NAtoms;i++)
+	{
+		if(F->Atoms[i].Symb) g_free(F->Atoms[i].Symb);
+		if(F->Atoms[i].Type) g_free(F->Atoms[i].Type);
+		if(F->Atoms[i].Residue) g_free(F->Atoms[i].Residue);
+	}
+	g_free(F->Atoms);
+	F->NAtoms = 0;
+	F->Atoms = NULL;
 }
 /*****************************************************************/
 static void SetResidue(Fragment* Frag,gchar* name)

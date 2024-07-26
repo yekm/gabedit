@@ -1,6 +1,6 @@
 /* GridPlans.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -456,8 +456,8 @@ GtkWidget *create_planegrid_frame_center_vector( GtkWidget *vboxall,gchar* title
 
 	strlabels[6][0] = g_strdup(" N points ");
 	strlabels[6][1] = g_strdup(" : ");
-	strlabels[6][2] = g_strdup("30");
-	strlabels[6][3] = g_strdup("30");
+	strlabels[6][2] = g_strdup("40");
+	strlabels[6][3] = g_strdup("40");
 
 
 	frame = gtk_frame_new (title);

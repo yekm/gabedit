@@ -1,6 +1,6 @@
 /* Preferences.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -31,27 +31,28 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/GLArea.h"
 #include "../Geometry/ResultsAnalise.h"
 #include "../Geometry/GeomGlobal.h"
+#include "../Files/FolderChooser.h"
+#include "../Files/GabeditFolderChooser.h"
 void rafresh_drawing();
 void set_color_surface(gint num,gdouble v[]);
-#ifdef G_OS_WIN32
-static GtkWidget* entrypscp = NULL;
-static GtkWidget* entryplink = NULL;
-#endif
 #include "../../pixmaps/Open.xpm"
 static GtkWidget* entrybabel = NULL;
 
 GtkWidget *NoteBook;
 static GtkWidget *Wins = NULL;
+static GtkWidget *EntryGamess = NULL;
 static GtkWidget *EntryGaussian = NULL;
 static GtkWidget *EntryMolcas = NULL;
 static GtkWidget *EntryMolpro = NULL;
 static GtkWidget *EntryMPQC = NULL;
 
+static GtkWidget *ComboGamess = NULL;
 static GtkWidget *ComboGaussian = NULL;
 static GtkWidget *ComboMolcas = NULL;
 static GtkWidget *ComboMolpro = NULL;
 static GtkWidget *ComboMPQC = NULL;
 
+static GtkWidget *ButtonGamess = NULL;
 static GtkWidget *ButtonGaussian = NULL;
 static GtkWidget *ButtonMolcas = NULL;
 static GtkWidget *ButtonMolpro = NULL;
@@ -107,6 +108,88 @@ void  create_color_surfaces(GtkWidget *Wins,GtkWidget *Frame)
   create_colorsel_frame(vbox,NULL,selectors);
 }
 /********************************************************************************/
+static void  remove_gamess_command()
+{
+  G_CONST_RETURN gchar *strcom;
+  GList *glist = NULL;
+  gint i;
+  gint inList = -1;
+
+  if(gamessCommands.numberOfCommands<2)
+	  return;
+
+  strcom = gtk_entry_get_text (GTK_ENTRY (EntryGamess));
+
+  for(i=0;i<gamessCommands.numberOfCommands;i++)
+  {
+	  if(strcmp(strcom,gamessCommands.commands[i])==0)
+	  {
+		  inList = i;
+		  break;
+	  }
+  }
+  if(inList == -1)
+	  return;
+  for(i=inList;i<gamessCommands.numberOfCommands-1;i++)
+	  gamessCommands.commands[i] = gamessCommands.commands[i+1];
+
+  gamessCommands.numberOfCommands--;
+  gamessCommands.commands = g_realloc(
+		   gamessCommands.commands,
+		   gamessCommands.numberOfCommands*sizeof(gchar*));
+
+  for(i=0;i<gamessCommands.numberOfCommands;i++)
+	glist = g_list_append(glist,gamessCommands.commands[i]);
+
+  gtk_combo_box_entry_set_popdown_strings( ComboGamess, glist) ;
+
+  g_list_free(glist);
+
+  if(gamessCommands.numberOfCommands<2) gtk_widget_set_sensitive(ButtonGamess, FALSE);
+  else gtk_widget_set_sensitive(ButtonGamess, TRUE);
+
+  NameCommandGamess = g_strdup(gamessCommands.commands[0]);
+
+  str_delete_n(NameCommandGamess);
+  delete_last_spaces(NameCommandGamess);
+  delete_first_spaces(NameCommandGamess);
+}
+/********************************************************************************/
+void  modify_gamess_command()
+{
+  G_CONST_RETURN gchar *strcom;
+  GList *glist = NULL;
+  gint i;
+
+  strcom = gtk_entry_get_text (GTK_ENTRY (EntryGamess));
+  if(strcmp(strcom,""))
+      NameCommandGamess = g_strdup(strcom);
+
+  str_delete_n(NameCommandGamess);
+  delete_last_spaces(NameCommandGamess);
+  delete_first_spaces(NameCommandGamess);
+
+  for(i=0;i<gamessCommands.numberOfCommands;i++)
+  {
+	  if(strcmp(NameCommandGamess,gamessCommands.commands[i])==0)
+		  return;
+  }
+  gamessCommands.numberOfCommands++;
+  gamessCommands.commands = g_realloc(
+		   gamessCommands.commands,
+		   gamessCommands.numberOfCommands*sizeof(gchar*));
+  gamessCommands.commands[gamessCommands.numberOfCommands-1] = g_strdup(NameCommandGamess);
+
+  for(i=gamessCommands.numberOfCommands-1;i>=0;i--)
+	glist = g_list_append(glist,gamessCommands.commands[i]);
+
+  gtk_combo_box_entry_set_popdown_strings( ComboGamess, glist) ;
+
+  g_list_free(glist);
+  if(gamessCommands.numberOfCommands<2) gtk_widget_set_sensitive(ButtonGamess, FALSE);
+  else gtk_widget_set_sensitive(ButtonGamess, TRUE);
+}
+/********************************************************************************/
 static void  remove_gaussian_command()
 {
   G_CONST_RETURN gchar *strcom;
@@ -144,10 +227,8 @@ static void  remove_gaussian_command()
 
   g_list_free(glist);
 
-  if(gaussianCommands.numberOfCommands<2)
-  	gtk_widget_set_sensitive(ButtonGaussian, FALSE);
-  else
-  	gtk_widget_set_sensitive(ButtonGaussian, TRUE);
+  if(gaussianCommands.numberOfCommands<2) gtk_widget_set_sensitive(ButtonGaussian, FALSE);
+  else gtk_widget_set_sensitive(ButtonGaussian, TRUE);
 
   NameCommandGaussian = g_strdup(gaussianCommands.commands[0]);
 
@@ -187,10 +268,8 @@ void  modify_gaussian_command()
   gtk_combo_box_entry_set_popdown_strings( ComboGaussian, glist) ;
 
   g_list_free(glist);
-  if(gaussianCommands.numberOfCommands<2)
-  	gtk_widget_set_sensitive(ButtonGaussian, FALSE);
-  else
-  	gtk_widget_set_sensitive(ButtonGaussian, TRUE);
+  if(gaussianCommands.numberOfCommands<2) gtk_widget_set_sensitive(ButtonGaussian, FALSE);
+  else gtk_widget_set_sensitive(ButtonGaussian, TRUE);
 }
 /********************************************************************************/
 static void  remove_molcas_command()
@@ -1131,10 +1210,14 @@ static void changed_babel(GtkWidget* wid)
 	babelCommand = g_strdup(gtk_entry_get_text(GTK_ENTRY(entrybabel)));
 }
 /********************************************************************************/
-static void set_entry_babel(GtkWidget* SelFile)
+static void set_entry_babel(GtkWidget* SelFile, gint response_id)
 {
-  GtkWidget *entry = (GtkWidget*)(g_object_get_data(G_OBJECT(SelFile),"EntryFile"));	
-  gchar *longfile = gabedit_file_chooser_get_current_file(GABEDIT_FILE_CHOOSER(SelFile));
+  GtkWidget *entry = NULL;
+  gchar *longfile = NULL;
+   if(response_id != GTK_RESPONSE_OK) return;
+
+  entry = (GtkWidget*)(g_object_get_data(G_OBJECT(SelFile),"EntryFile"));	
+  longfile = gabedit_file_chooser_get_current_file(GABEDIT_FILE_CHOOSER(SelFile));
   gtk_entry_set_text(GTK_ENTRY(entry),longfile);
 
   if(babelCommand) g_free(babelCommand);
@@ -1160,6 +1243,36 @@ static void set_entry_babel_selction(GtkWidget* entry)
   gtk_widget_show(SelFile);
 }
 /********************************************************************************/
+static void set_entry_gamessdir(GtkWidget* dirSelector, gint response_id)
+{
+	gchar* dirname = NULL;
+	GtkWidget *entry;
+	if(response_id != GTK_RESPONSE_OK) return;
+	dirname = gabedit_folder_chooser_get_current_folder(GABEDIT_FOLDER_CHOOSER(dirSelector));
+
+
+	entry = (GtkWidget*)(g_object_get_data(G_OBJECT(dirSelector),"EntryFile"));	
+	gtk_entry_set_text(GTK_ENTRY(entry),dirname);
+
+	if(gamessDirectory) g_free(gamessDirectory);
+	gamessDirectory = g_strdup(dirname);
+}
+/********************************************************************************/
+static void set_entry_gamessDir_selection(GtkWidget* entry)
+{
+	GtkWidget *dirSelector;
+	dirSelector = selctionOfDir(set_entry_gamessdir, "Select Gamess folder", GABEDIT_TYPEWIN_ORB); 
+  	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
+  	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GtkSignalFunc)gtk_widget_destroy,NULL);
+
+	g_object_set_data(G_OBJECT (dirSelector), "EntryFile", entry);
+
+	g_signal_connect (dirSelector, "response",  G_CALLBACK (set_entry_gamessdir), GTK_OBJECT(dirSelector));
+	g_signal_connect (dirSelector, "response",  G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(dirSelector));
+
+	gtk_widget_show(dirSelector);
+}
+/********************************************************************************/
 void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 {
   GtkWidget *hbox;
@@ -1180,6 +1293,36 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
+  label = gtk_label_new ("Command for execute Gamess : ");
+  gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
+
+  combo = create_combo_box_entry(gamessCommands.commands,gamessCommands.numberOfCommands,TRUE,-1,-1);
+  ComboGamess = combo;
+  EntryGamess = GTK_BIN(combo)->child;
+  gtk_box_pack_start (GTK_BOX (hbox), combo, TRUE, TRUE, 3);
+  gtk_entry_set_text (GTK_ENTRY (EntryGamess),NameCommandGamess );
+  g_signal_connect(G_OBJECT (EntryGamess), "activate",
+			(GtkSignalFunc)modify_gamess_command,
+			NULL);
+
+  button = create_button(Wins,"  Remove from list  ");
+  ButtonGamess = button;
+  gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
+  if(gamessCommands.numberOfCommands<2)
+  	gtk_widget_set_sensitive(button, FALSE);
+  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(remove_gamess_command),NULL);
+
+  button = create_button(Wins,"  Help  ");
+  gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
+  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(help_commands),NULL);
+/* ------------------------------------------------------------------*/
+  gtk_widget_realize(Wins);
+
+  create_hseparator(vbox);
+
+/* ------------------------------------------------------------------*/
+  hbox = gtk_hbox_new (FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
   label = gtk_label_new ("Command for execute Gaussian : ");
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
@@ -1195,15 +1338,13 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   button = create_button(Wins,"  Remove from list  ");
   ButtonGaussian = button;
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
-  if(gaussianCommands.numberOfCommands<2)
-  	gtk_widget_set_sensitive(button, FALSE);
+  if(gaussianCommands.numberOfCommands<2) gtk_widget_set_sensitive(button, FALSE);
   g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(remove_gaussian_command),NULL);
 
   button = create_button(Wins,"  Help  ");
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
-  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(help_gaussian_molcas_molpro_mpqc_commands),NULL);
+  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(help_commands),NULL);
 /* ------------------------------------------------------------------*/
-  gtk_widget_realize(Wins);
 
   create_hseparator(vbox);
 
@@ -1230,7 +1371,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 
   button = create_button(Wins,"  Help  ");
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
-  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(help_gaussian_molcas_molpro_mpqc_commands),NULL);
+  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(help_commands),NULL);
 /* ------------------------------------------------------------------*/
 
   create_hseparator(vbox);
@@ -1258,7 +1399,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 
   button = create_button(Wins,"  Help  ");
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
-  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(help_gaussian_molcas_molpro_mpqc_commands),NULL);
+  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(help_commands),NULL);
 /* ------------------------------------------------------------------*/
 
   create_hseparator(vbox);
@@ -1286,7 +1427,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 
   button = create_button(Wins,"  Help  ");
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
-  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(help_gaussian_molcas_molpro_mpqc_commands),NULL);
+  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(help_commands),NULL);
 /* ------------------------------------------------------------------*/
 
   create_hseparator(vbox);
@@ -1301,7 +1442,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
-	add_label_table(table,"Command for Open Babel          : ",0,0);
+	add_label_table(table,"Command for Open Babel         : ",0,0);
   	entry = gtk_entry_new ();
 	entrybabel = entry;
 	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
@@ -1327,6 +1468,50 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   gtk_widget_show_all(frame);
 
 }
+#ifdef G_OS_WIN32
+/********************************************************************************/
+void  create_gamess_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
+{
+  GtkWidget *frame;
+  GtkWidget *button;
+
+  frame = gtk_frame_new (NULL);
+  gtk_widget_show (frame);
+  gtk_box_pack_start (GTK_BOX (vbox), frame, expand, expand, 0);
+  gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
+
+  vbox = gtk_vbox_new (FALSE, 0);
+  gtk_container_add (GTK_CONTAINER (frame), vbox);
+
+
+  {
+	GtkWidget* entry;
+  	GtkWidget *table = gtk_table_new(1,3,FALSE);
+
+	if(!gamessDirectory) gamessDirectory = g_strdup_printf("%s",g_get_home_dir());
+
+	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
+
+	add_label_table(table,"Gamess directory                        : ",0,0);
+  	entry = gtk_entry_new ();
+	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
+	gtk_table_attach(GTK_TABLE(table),entry,1,1+1,0,0+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+  	gtk_entry_set_text (GTK_ENTRY (entry),gamessDirectory);
+	gtk_editable_set_editable((GtkEditable*)entry,FALSE);
+	gtk_widget_set_sensitive(entry, FALSE);
+	button = create_button_pixmap(Wins,open_xpm,NULL);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	g_signal_connect_swapped(GTK_OBJECT (button), "clicked",
+                                     GTK_SIGNAL_FUNC(set_entry_gamessDir_selection),
+                                     GTK_OBJECT(entry));
+	add_widget_table(table,button,0,2);
+  }
+  gtk_widget_show_all(frame);
+}
+#endif
 /********************************************************************************/
 void AddPageColorSurf(GtkWidget *NoteBook)
 {
@@ -1391,39 +1576,85 @@ void AddPageProp(GtkWidget *NoteBook)
 }
 #ifdef G_OS_WIN32
 /********************************************************************************/
-static void set_entry_file(GtkWidget* SelFile)
+static void set_entry_pscpplinkdir(GtkWidget* dirSelector, gint response_id)
 {
-  GtkWidget *entry = (GtkWidget*)(g_object_get_data(G_OBJECT(SelFile),"EntryFile"));	
-  gchar *longfile = gabedit_file_chooser_get_current_file(GABEDIT_FILE_CHOOSER(SelFile));
-  gtk_entry_set_text(GTK_ENTRY(entry),longfile);
+	gchar* dirname = NULL;
+	GtkWidget *entry;
+	if(response_id != GTK_RESPONSE_OK) return;
+	dirname = gabedit_folder_chooser_get_current_folder(GABEDIT_FOLDER_CHOOSER(dirSelector));
 
-  if(pscpCommand) g_free(pscpCommand);
-  pscpCommand = g_strdup(gtk_entry_get_text(GTK_ENTRY(entrypscp)));
-  if(plinkCommand) g_free(plinkCommand);
-  plinkCommand = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryplink)));
-  if(babelCommand) g_free(babelCommand);
-  babelCommand = g_strdup(gtk_entry_get_text(GTK_ENTRY(entrybabel)));
 
+	entry = (GtkWidget*)(g_object_get_data(G_OBJECT(dirSelector),"EntryFile"));	
+	gtk_entry_set_text(GTK_ENTRY(entry),dirname);
+
+	if(strcmp(dirname,pscpplinkDirectory)!=0)
+	{
+		gchar* t = g_strdup_printf("%s;%cPATH%c",dirname,'%','%');
+		g_setenv("PATH",t,TRUE);
+		g_free(t);
+	}
+
+	if(pscpplinkDirectory) g_free(pscpplinkDirectory);
+	pscpplinkDirectory = g_strdup(dirname);
 }
 /********************************************************************************/
-static void set_entry_file_selection(GtkWidget* entry)
+static void set_entry_pscpplinkDir_selection(GtkWidget* entry)
 {
-  GtkWidget *SelFile;
+	GtkWidget *dirSelector;
+	dirSelector = selctionOfDir(set_entry_pscpplinkdir, "Select pscp & plink folder", GABEDIT_TYPEWIN_ORB); 
+  	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
+  	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GtkSignalFunc)gtk_widget_destroy,NULL);
 
-  SelFile = gabedit_file_chooser_new("File selection ", GTK_FILE_CHOOSER_ACTION_OPEN);
-  gtk_window_set_modal (GTK_WINDOW (SelFile), TRUE);
-  gabedit_file_chooser_hide_hidden(GABEDIT_FILE_CHOOSER(SelFile));
-  gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(SelFile),"*.exe");
-  g_signal_connect(G_OBJECT(SelFile),"delete_event", (GtkSignalFunc)gtk_widget_destroy,NULL);
+	g_object_set_data(G_OBJECT (dirSelector), "EntryFile", entry);
 
-  g_object_set_data(G_OBJECT (SelFile), "EntryFile", entry);
+	g_signal_connect (dirSelector, "response",  G_CALLBACK (set_entry_pscpplinkdir), GTK_OBJECT(dirSelector));
+	g_signal_connect (dirSelector, "response",  G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(dirSelector));
 
-  g_signal_connect (SelFile, "response",  G_CALLBACK (set_entry_file), GTK_OBJECT(SelFile));
-  g_signal_connect (SelFile, "response",  G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(SelFile));
-
-  gtk_widget_show(SelFile);
+	gtk_widget_show(dirSelector);
 }
-#endif
+/********************************************************************************/
+void  create_pscpplink_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
+{
+  GtkWidget *frame;
+  GtkWidget *button;
+
+  frame = gtk_frame_new (NULL);
+  gtk_widget_show (frame);
+  gtk_box_pack_start (GTK_BOX (vbox), frame, expand, expand, 0);
+  gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
+
+  vbox = gtk_vbox_new (FALSE, 0);
+  gtk_container_add (GTK_CONTAINER (frame), vbox);
+
+
+  {
+	GtkWidget* entry;
+  	GtkWidget *table = gtk_table_new(1,3,FALSE);
+
+	if(!pscpplinkDirectory) pscpplinkDirectory = g_strdup_printf("%s",g_get_home_dir());
+
+	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
+
+	add_label_table(table,"pscp & plink directory                    : ",0,0);
+  	entry = gtk_entry_new ();
+	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
+	gtk_table_attach(GTK_TABLE(table),entry,1,1+1,0,0+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+  	gtk_entry_set_text (GTK_ENTRY (entry),pscpplinkDirectory);
+	gtk_editable_set_editable((GtkEditable*)entry,FALSE);
+	gtk_widget_set_sensitive(entry, FALSE);
+	button = create_button_pixmap(Wins,open_xpm,NULL);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	g_signal_connect_swapped(GTK_OBJECT (button), "clicked",
+                                     GTK_SIGNAL_FUNC(set_entry_pscpplinkDir_selection),
+                                     GTK_OBJECT(entry));
+	add_widget_table(table,button,0,2);
+  }
+  gtk_widget_show_all(frame);
+}
+#endif /* and G_OS_WIN32 for pscp and plink */
 /********************************************************************************/
 void  create_network_protocols(GtkWidget* Win,GtkWidget *vbox,gboolean expand)
 {
@@ -1477,43 +1708,6 @@ void  create_network_protocols(GtkWidget* Win,GtkWidget *vbox,gboolean expand)
   g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(help_ssh),NULL);
 
 #ifdef G_OS_WIN32
-  {
-	GtkWidget* entry;
-  	GtkWidget *table = gtk_table_new(2,3,FALSE);
-
-	if(!pscpCommand)
-		pscpCommand = g_strdup_printf("%s%spscp.exe",g_get_current_dir(),G_DIR_SEPARATOR_S);
-	if(!plinkCommand)
-		plinkCommand = g_strdup_printf("%s%splink.exe",g_get_current_dir(),G_DIR_SEPARATOR_S);
-
-	gtk_box_pack_start (GTK_BOX (vboxframe), table, TRUE, TRUE, 0);
-
-	add_label_table(table,"    Command for pscp : ",0,0);
-  	entry = gtk_entry_new ();
-	entrypscp = entry;
-	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
-	gtk_table_attach(GTK_TABLE(table),entry,1,1+1,0,0+1, (GtkAttachOptions)(GTK_FILL | GTK_EXPAND), (GtkAttachOptions)(GTK_FILL | GTK_EXPAND), 3,3);
-  	gtk_entry_set_text (GTK_ENTRY (entry),pscpCommand);
-	gtk_editable_set_editable((GtkEditable*)entry,FALSE);
-	gtk_widget_set_sensitive(entry, FALSE);
-	button = create_button_pixmap(Win,open_xpm,NULL);
-	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
-	g_signal_connect_swapped(GTK_OBJECT (button), "clicked", GTK_SIGNAL_FUNC(set_entry_file_selection), GTK_OBJECT(entry));
-	add_widget_table(table,button,0,2);
-
-	add_label_table(table,"    Command for plink : ",1,0);
-  	entry = gtk_entry_new ();
-	entryplink = entry;
-	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
-  	add_widget_table(table,entry,1,1);
-  	gtk_entry_set_text (GTK_ENTRY (entry),plinkCommand);
-	gtk_editable_set_editable((GtkEditable*)entry,FALSE);
-	gtk_widget_set_sensitive(entry, FALSE);
-	button = create_button_pixmap(Win,open_xpm,NULL);
-	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
-	g_signal_connect_swapped(GTK_OBJECT (button), "clicked", GTK_SIGNAL_FUNC(set_entry_file_selection), GTK_OBJECT(entry));
-	add_widget_table(table,button,1,2);
-  }
 #endif
 
   gtk_widget_show_all(frame);
@@ -1528,7 +1722,7 @@ void AddPageOthers(GtkWidget *NoteBook)
   
   Frame= gtk_frame_new(NULL);
   gtk_container_set_border_width(GTK_CONTAINER(Frame), 10);
-  gtk_widget_set_size_request(GTK_WIDGET(Frame), (gint)(ScreenHeight*0.6),  (gint)(ScreenHeight*0.3));
+  /* gtk_widget_set_size_request(GTK_WIDGET(Frame), (gint)(ScreenHeight*0.6),  (gint)(ScreenHeight*0.3));*/
   LabelOnglet = gtk_label_new(" Others ");
   LabelMenu = gtk_label_new(" Others ");
   gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook),
@@ -1539,6 +1733,10 @@ void AddPageOthers(GtkWidget *NoteBook)
   gtk_container_add (GTK_CONTAINER (Frame), vbox);
 
   create_execucte_commands(Wins,vbox,FALSE);
+#ifdef G_OS_WIN32
+  create_pscpplink_directory(Wins,vbox,FALSE);
+  create_gamess_directory(Wins,vbox,FALSE);
+#endif
   create_network_protocols(Wins,vbox,FALSE);
   create_batch_commands(Wins,vbox,FALSE);
   create_opengl_frame(Wins,vbox);

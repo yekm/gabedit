@@ -1,6 +1,6 @@
 /* Povray.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -28,11 +28,14 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Utils.h"
 #include "../Utils/PovrayUtils.h"
 #include "../Utils/AtomsProp.h"
+#include "../Utils/Vector3d.h"
 #include "../Geometry/GeomGlobal.h"
 #include "../Geometry/Mesure.h"
 #include "../Geometry/Fragments.h"
 #include "../Geometry/DrawGeom.h"
 #include "../Common/Windows.h"
+
+#define STICKSIZE 0.2
 
 typedef struct _RGB
 {
@@ -56,7 +59,7 @@ static XYZRC get_prop_center(gint Num)
 	PropCenter.C[0]=geometry[Num].X;
 	PropCenter.C[1]=geometry[Num].Y;
 	PropCenter.C[2]=geometry[Num].Z;
-	PropCenter.C[3]=geometry[Num].Prop.radii*factor;
+	PropCenter.C[3]=geometry[Num].Prop.radii;
 
 	PropCenter.P.Colors[0]=(gdouble)(geometry[Num].Prop.color.red/65535.0);
 	PropCenter.P.Colors[1]=(gdouble)(geometry[Num].Prop.color.green/65535.0);
@@ -126,6 +129,23 @@ static gchar *get_ball(gint num, gfloat scale)
      return temp;
 }
 /********************************************************************************/
+static gchar *get_ball_for_stick(gint num, gfloat scale)
+{
+     gchar *temp;
+     XYZRC Center = get_prop_center(num);
+     temp = g_strdup_printf(
+		"sphere\n"
+		"{\n"
+		"\t<%14.6f,%14.6f,%14.6f> %14.6f\n"
+		"\ttexture { finish { Dull } }\n"
+		"\tpigment { rgb<%14.6f,%14.6f,%14.6f> }\n}\n"
+		,
+		Center.C[0],Center.C[1],Center.C[2],STICKSIZE*scale,
+		Center.P.Colors[0], Center.P.Colors[1], Center.P.Colors[2]
+		);
+     return temp;
+}
+/********************************************************************************/
 static gfloat get_min(gint k)
 {
      gfloat min;
@@ -189,6 +209,156 @@ static gchar *get_stick_dipole()
       return temp;
 }
 /********************************************************************************/
+static gchar *get_one_stick_for_ball(gint i,gint j)
+{
+     gchar *temp;
+     gchar *temp1;
+     gchar *temp2;
+     XYZRC Center1;
+     XYZRC Center2;
+     gint l;
+     gint k;
+     gdouble ep;
+     gdouble poid1;
+     gdouble poid2;
+     gdouble poid;
+     gdouble C[3];
+     gint nc = get_connection_type(i,j);
+
+     if(nc<1) return " ";
+
+     Center1 = get_prop_center(i);
+     Center2 = get_prop_center(j);
+     k =get_num_min_rayonIJ(i,j);
+ 
+     if(k==i) ep = Center1.C[3]*factorstick;
+     else ep = Center2.C[3]*factorstick;
+
+     if(stick_mode()) ep =STICKSIZE*factorstick;
+     else ep/=2;
+
+ 
+     poid1 = geometry[i].Prop.covalentRadii+geometry[i].Prop.radii;
+     poid2 = geometry[j].Prop.covalentRadii+geometry[j].Prop.radii;
+     poid = poid1 + poid2 ;
+
+     if(nc==3)
+     {
+	gchar* t;
+  	V3d vScal = {ep*0.5,ep*0.5,ep*0.5};
+	gdouble C1[3];
+	gdouble C2[3];
+	V3d cros;
+	V3d sub;
+	V3d C0={0,0,0};
+	gfloat C10[3];
+	gfloat C20[3];
+	gfloat CC1[3];
+	gfloat CC2[3];
+	for(l=0;l<3;l++) CC1[l] = Center1.C[l];
+	for(l=0;l<3;l++) CC2[l] = Center2.C[l];
+	v3d_sub(C0, CC1, C10);
+	v3d_sub(C0, CC2, C20);
+	v3d_cross(C10, C20, cros);
+	v3d_sub(CC1, CC2, sub);
+	v3d_cross(cros, sub, vScal);
+	if(v3d_dot(vScal,vScal)!=0)
+	{
+		v3d_normal(vScal);
+		v3d_scale(vScal, ep*0.5);
+	}
+	for(l=0;l<3;l++) C1[l] = Center1.C[l]-vScal[l];
+	for(l=0;l<3;l++) C2[l] = Center2.C[l]-vScal[l];
+     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
+      	temp1 = get_cylingre(C1,C,Center1.P.Colors,ep/3);
+      	temp2 = get_cylingre(C,C2,Center2.P.Colors,ep/3);
+      	temp = g_strdup_printf("%s%s",temp1,temp2);
+      	g_free(temp1);
+      	g_free(temp2);
+
+	for(l=0;l<3;l++) C1[l] = Center1.C[l];
+	for(l=0;l<3;l++) C2[l] = Center2.C[l];
+     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
+      	temp1 = get_cylingre(C1,C,Center1.P.Colors,ep/3);
+      	temp2 = get_cylingre(C,C2,Center2.P.Colors,ep/3);
+	t = temp;
+      	temp = g_strdup_printf("%s%s%s",t,temp1,temp2);
+      	g_free(temp1);
+      	g_free(temp2);
+      	g_free(t);
+
+	for(l=0;l<3;l++) C1[l] = Center1.C[l]+vScal[l];
+	for(l=0;l<3;l++) C2[l] = Center2.C[l]+vScal[l];
+     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
+      	temp1 = get_cylingre(C1,C,Center1.P.Colors,ep/3);
+      	temp2 = get_cylingre(C,C2,Center2.P.Colors,ep/3);
+	t = temp;
+      	temp = g_strdup_printf("%s%s%s",t,temp1,temp2);
+      	g_free(temp1);
+      	g_free(temp2);
+      	g_free(t);
+
+     }
+     else
+     if(nc==2)
+     {
+	gchar* t;
+  	V3d vScal = {ep*0.5,ep*0.5,ep*0.5};
+	gdouble C1[3];
+	gdouble C2[3];
+	V3d cros;
+	V3d sub;
+	V3d C0={0,0,0};
+	gfloat C10[3];
+	gfloat C20[3];
+	gfloat CC1[3];
+	gfloat CC2[3];
+	for(l=0;l<3;l++) CC1[l] = Center1.C[l];
+	for(l=0;l<3;l++) CC2[l] = Center2.C[l];
+	v3d_sub(C0, CC1, C10);
+	v3d_sub(C0, CC2, C20);
+	v3d_cross(C10, C20, cros);
+	v3d_sub(CC1, CC2, sub);
+	v3d_cross(cros, sub, vScal);
+	if(v3d_dot(vScal,vScal)!=0)
+	{
+		v3d_normal(vScal);
+		v3d_scale(vScal, ep*0.5);
+	}
+	for(l=0;l<3;l++) C1[l] = Center1.C[l]-vScal[l];
+	for(l=0;l<3;l++) C2[l] = Center2.C[l]-vScal[l];
+     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
+      	temp1 = get_cylingre(C1,C,Center1.P.Colors,ep/3);
+      	temp2 = get_cylingre(C,C2,Center2.P.Colors,ep/3);
+      	temp = g_strdup_printf("%s%s",temp1,temp2);
+      	g_free(temp1);
+      	g_free(temp2);
+
+	for(l=0;l<3;l++) C1[l] = Center1.C[l]+vScal[l];
+	for(l=0;l<3;l++) C2[l] = Center2.C[l]+vScal[l];
+     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
+      	temp1 = get_cylingre(C1,C,Center1.P.Colors,ep/3);
+      	temp2 = get_cylingre(C,C2,Center2.P.Colors,ep/3);
+	t = temp;
+      	temp = g_strdup_printf("%s%s%s",t,temp1,temp2);
+      	g_free(temp1);
+      	g_free(temp2);
+      	g_free(t);
+
+     }
+     else
+     {
+     	for(l=0;l<3;l++) C[l] =(Center1.C[l]*poid2+Center2.C[l]*poid1)/poid;
+      	temp1 = get_cylingre(Center1.C,C,Center1.P.Colors,ep);
+      	temp2 = get_cylingre(C,Center2.C,Center2.P.Colors,ep);
+      	temp = g_strdup_printf("%s%s",temp1,temp2);
+      	g_free(temp1);
+      	g_free(temp2);
+     }
+
+      return temp;
+}
+/********************************************************************************/
 static gchar *get_one_stick(gint i,gint j)
 {
      gchar *temp;
@@ -203,9 +373,9 @@ static gchar *get_one_stick(gint i,gint j)
      gdouble poid2;
      gdouble poid;
      gdouble C[3];
+     gint nc = get_connection_type(i,j);
 
-     if( !draw_lines_yes_no(i,j))
-	return " ";
+     if(nc<1) return " ";
 
      Center1 = get_prop_center(i);
      Center2 = get_prop_center(j);
@@ -214,20 +384,153 @@ static gchar *get_one_stick(gint i,gint j)
      if(k==i) ep = Center1.C[3]*factorstick;
      else ep = Center2.C[3]*factorstick;
 
-     if(stick_mode()) ep /=4;
+     if(stick_mode()) ep =STICKSIZE*factorstick;
      else ep/=2;
 
  
      poid1 = geometry[i].Prop.covalentRadii+geometry[i].Prop.radii;
      poid2 = geometry[j].Prop.covalentRadii+geometry[j].Prop.radii;
      poid = poid1 + poid2 ;
-     for(l=0;l<3;l++)
-     	C[l] =(Center1.C[l]*poid2+Center2.C[l]*poid1)/poid;
-      temp1 = get_cylingre(Center1.C,C,Center1.P.Colors,ep);
-      temp2 = get_cylingre(C,Center2.C,Center2.P.Colors,ep);
-      temp = g_strdup_printf("%s%s",temp1,temp2);
-      g_free(temp1);
-      g_free(temp2);
+
+     if(nc==3)
+     {
+	gchar* t;
+  	V3d vScal = {ep,ep,ep};
+	gdouble C1[3];
+	gdouble C2[3];
+	gfloat C12[3];
+	V3d cros;
+	V3d sub;
+	V3d C0={0,0,0};
+	gfloat C10[3];
+	gfloat C20[3];
+	gfloat CC1[3];
+	gfloat CC2[3];
+	for(l=0;l<3;l++) CC1[l] = Center1.C[l];
+	for(l=0;l<3;l++) CC2[l] = Center2.C[l];
+	v3d_sub(C0, CC1, C10);
+	v3d_sub(C0, CC2, C20);
+	v3d_cross(C10, C20, cros);
+	v3d_sub(CC1, CC2, sub);
+	v3d_cross(cros, sub, vScal);
+	if(v3d_dot(vScal,vScal)!=0)
+	{
+		v3d_normal(vScal);
+		v3d_scale(vScal, ep*2);
+	}
+	for(l=0;l<3;l++) C1[l] = Center1.C[l]-vScal[l];
+	for(l=0;l<3;l++) C2[l] = Center2.C[l]-vScal[l];
+     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
+
+	v3d_sub(CC1, CC2, C12);
+	if(v3d_dot(C12,C12)!=0)
+	{
+		v3d_normal(C12);
+	}
+	for(l=0;l<3;l++) C1[l] -= C12[l]*ep;
+	for(l=0;l<3;l++) C2[l] += C12[l]*ep;
+
+      	temp1 = get_cylingre(C1,C,Center1.P.Colors,ep/2);
+      	temp2 = get_cylingre(C,C2,Center2.P.Colors,ep/2);
+      	temp = g_strdup_printf("%s%s",temp1,temp2);
+      	g_free(temp1);
+      	g_free(temp2);
+
+
+	for(l=0;l<3;l++) C1[l] = Center1.C[l];
+	for(l=0;l<3;l++) C2[l] = Center2.C[l];
+     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
+      	temp1 = get_cylingre(C1,C,Center1.P.Colors,ep);
+      	temp2 = get_cylingre(C,C2,Center2.P.Colors,ep);
+	t = temp;
+      	temp = g_strdup_printf("%s%s%s",t,temp1,temp2);
+      	g_free(temp1);
+      	g_free(temp2);
+      	g_free(t);
+
+	for(l=0;l<3;l++) C1[l] = Center1.C[l]+vScal[l];
+	for(l=0;l<3;l++) C2[l] = Center2.C[l]+vScal[l];
+     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
+
+	for(l=0;l<3;l++) C1[l] -= C12[l]*ep;
+	for(l=0;l<3;l++) C2[l] += C12[l]*ep;
+
+      	temp1 = get_cylingre(C1,C,Center1.P.Colors,ep/2);
+      	temp2 = get_cylingre(C,C2,Center2.P.Colors,ep/2);
+	t = temp;
+      	temp = g_strdup_printf("%s%s%s",t,temp1,temp2);
+      	g_free(temp1);
+      	g_free(temp2);
+      	g_free(t);
+
+     }
+     else
+     if(nc==2)
+     {
+	gchar* t;
+  	V3d vScal = {ep,ep,ep};
+	gdouble C1[3];
+	gdouble C2[3];
+	V3d cros;
+	V3d sub;
+	V3d C0={0,0,0};
+	gfloat C10[3];
+	gfloat C20[3];
+	gfloat CC1[3];
+	gfloat CC2[3];
+	gfloat C12[3];
+	for(l=0;l<3;l++) CC1[l] = Center1.C[l];
+	for(l=0;l<3;l++) CC2[l] = Center2.C[l];
+	v3d_sub(C0, CC1, C10);
+	v3d_sub(C0, CC2, C20);
+	v3d_cross(C10, C20, cros);
+	v3d_sub(CC1, CC2, sub);
+	v3d_cross(cros, sub, vScal);
+	if(v3d_dot(vScal,vScal)!=0)
+	{
+		v3d_normal(vScal);
+		v3d_scale(vScal, ep*2);
+	}
+	for(l=0;l<3;l++) C1[l] = Center1.C[l]-vScal[l];
+	for(l=0;l<3;l++) C2[l] = Center2.C[l]-vScal[l];
+     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
+
+	v3d_sub(CC1, CC2, C12);
+	if(v3d_dot(C12,C12)!=0)
+	{
+		v3d_normal(C12);
+	}
+	for(l=0;l<3;l++) C1[l] -= C12[l]*ep;
+	for(l=0;l<3;l++) C2[l] += C12[l]*ep;
+
+      	temp1 = get_cylingre(C1,C,Center1.P.Colors,ep/2);
+      	temp2 = get_cylingre(C,C2,Center2.P.Colors,ep/2);
+      	temp = g_strdup_printf("%s%s",temp1,temp2);
+      	g_free(temp1);
+      	g_free(temp2);
+
+	for(l=0;l<3;l++) C1[l] = Center1.C[l];
+	for(l=0;l<3;l++) C2[l] = Center2.C[l];
+     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
+      	temp1 = get_cylingre(C1,C,Center1.P.Colors,ep);
+      	temp2 = get_cylingre(C,C2,Center2.P.Colors,ep);
+	t = temp;
+      	temp = g_strdup_printf("%s%s%s",t,temp1,temp2);
+      	g_free(temp1);
+      	g_free(temp2);
+      	g_free(t);
+
+     }
+     else
+     {
+     	for(l=0;l<3;l++) C[l] =(Center1.C[l]*poid2+Center2.C[l]*poid1)/poid;
+      	temp1 = get_cylingre(Center1.C,C,Center1.P.Colors,ep);
+      	temp2 = get_cylingre(C,Center2.C,Center2.P.Colors,ep);
+      	temp = g_strdup_printf("%s%s",temp1,temp2);
+      	g_free(temp1);
+      	g_free(temp2);
+     }
+
       return temp;
 }
 /********************************************************************************/
@@ -376,7 +679,7 @@ static gchar *get_light_sources()
      return temp;
 }
 /********************************************************************************/
-static gchar *get_atoms()
+static gchar *get_atoms(gdouble scal)
 {
      	gchar *temp=NULL;
      	gchar *tempold=NULL;
@@ -386,7 +689,7 @@ static gchar *get_atoms()
 	for(i=0;i<(gint)Natoms;i++)
 	{
 		tempold = temp;
-		t =get_ball(i,1.0);
+		t =get_ball(i,scal);
 		if(tempold)
 		{
 			temp = g_strdup_printf("%s%s",tempold,t);
@@ -401,7 +704,32 @@ static gchar *get_atoms()
      return temp;
 }
 /********************************************************************************/
-static gchar *get_bonds()
+static gchar *get_atoms_for_stick(gdouble scal)
+{
+     	gchar *temp=NULL;
+     	gchar *tempold=NULL;
+     	gchar *t=NULL;
+     	gint i=0;
+     	temp = g_strdup( "// ATOMS \n");
+	for(i=0;i<(gint)Natoms;i++)
+	{
+		tempold = temp;
+		t =get_ball_for_stick(i,scal);
+		if(tempold)
+		{
+			temp = g_strdup_printf("%s%s",tempold,t);
+			g_free(tempold);
+		}
+		else
+			temp = g_strdup_printf("%s",t);
+		if(t)
+		  g_free(t);
+	}
+
+     return temp;
+}
+/********************************************************************************/
+static gchar *get_bonds(gboolean ballstick)
 {
      gchar *temp = NULL;
      gint i,j;
@@ -415,12 +743,13 @@ static gchar *get_bonds()
      for(i=0;i<(gint)(Natoms-1);i++)
      {
 	for(j=i+1;j<(gint)Natoms;j++)
-		if( draw_lines_yes_no(i,j))
+		if(get_connection_type(i,j)>0)
 	 	{
 			Ok[i] = TRUE;
 			Ok[j] = TRUE;
 			tempold = temp;
-			t =get_one_stick(i,j);
+			if(ballstick) t =get_one_stick_for_ball(i,j);
+			else t =get_one_stick(i,j);
 			if(tempold)
                 	{
                         	temp = g_strdup_printf("%s%s",tempold,t);
@@ -530,11 +859,17 @@ static void save_povray_file(GtkWidget *w,gpointer data)
 	}
 	if( !stick_mode())
 	{
-		temp = get_atoms(); 
+		temp = get_atoms(1.0); 
 		fprintf(fd,"%s",temp);
 		g_free(temp);
 	}
-	temp = get_bonds(); 
+	else
+	{
+		temp = get_atoms_for_stick(1.0); 
+		fprintf(fd,"%s",temp);
+		g_free(temp);
+	}
+	temp = get_bonds( !stick_mode()); 
 	fprintf(fd,"%s",temp);
 	g_free(temp);
         if(Ddef && dipole_mode())

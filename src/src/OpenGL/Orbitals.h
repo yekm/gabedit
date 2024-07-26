@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -30,6 +30,7 @@ void read_gauss_orbitals(gchar* FileName);
 void read_gabedit_orbitals(gchar* FileName);
 void read_molden_orbitals(gchar* FileName);
 void read_dalton_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
+void read_gamess_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_gauss_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_molpro_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_gabedit_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);

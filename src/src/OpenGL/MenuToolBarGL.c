@@ -1,6 +1,6 @@
 /* MenuToolBarGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -41,6 +41,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/Vibration.h"
 #include "../OpenGL/AnimationRotation.h"
 #include "../OpenGL/AnimationGeomConv.h"
+#include "../OpenGL/AnimationMD.h"
 #include "../OpenGL/AnimationContours.h"
 #include "../OpenGL/AnimationPlanesMapped.h"
 #include "../OpenGL/AnimationIsoSurface.h"
@@ -49,6 +50,9 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/PrincipalAxisGL.h"
 #include "../OpenGL/PovrayGL.h"
 #include "../OpenGL/StatusOrb.h"
+#include "../OpenGL/LabelsGL.h"
+#include "../OpenGL/RingsOrb.h"
+#include "../OpenGL/ContoursDraw.h"
 #include "../Common/StockIcons.h"
 
 enum 
@@ -131,6 +135,10 @@ static void activate_action (GtkAction *action)
  		file_chooser_open(gl_read_first_dalton_file,"Read the first geometry in a Dalton output file",GABEDIT_TYPEFILE_DALTON,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name,"GeometryDaltonLast"))
  		file_chooser_open(gl_read_last_dalton_file,"Read the last geometry in a Dalton output file",GABEDIT_TYPEFILE_DALTON,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name,"GeometryGamessFirst"))
+ 		file_chooser_open(gl_read_first_gamess_file,"Read the first geometry in a Gamess output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name,"GeometryGamessLast"))
+ 		file_chooser_open(gl_read_last_gamess_file,"Read the last geometry in a Gamess output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name,"GeometryGaussianFirst"))
  		file_chooser_open(gl_read_first_gauss_file,"Read the first geometry in a Gaussian output file",GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryGaussianLast"))
@@ -155,6 +163,8 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name , "OrbitalsDalton"))
  			file_chooser_open(read_dalton_orbitals_sel,"Read Geometry and Orbitals from a Dalton output file",GABEDIT_TYPEFILE_DALTON,GABEDIT_TYPEWIN_ORB);
 			*/
+	else if(!strcmp(name , "OrbitalsGamess"))
+ 			file_chooser_open(read_gamess_orbitals_sel,"Read Geometry and Orbitals from a Gamess output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsGaussian"))
  			file_chooser_open(read_gauss_orbitals_sel,"Read Geometry and Orbitals from a Gaussian output file",GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsMolpro"))
@@ -248,6 +258,40 @@ static void activate_action (GtkAction *action)
 			TypeGrid = GABEDIT_TYPEGRID_ADENSITY;
 			create_grid("Calculation of atomic electronic density grid");
 	}
+	else if(!strcmp(name , "ELFBecke"))
+	{
+		TypeGrid = GABEDIT_TYPEGRID_ELFBECKE;
+		create_grid("Calculation of Becke ELF");
+	}
+	else if(!strcmp(name , "ELFSavin"))
+	{
+		TypeGrid = GABEDIT_TYPEGRID_ELFSAVIN;
+		create_grid("Calculation of Savin ELF");
+	}
+	else if(!strcmp(name , "CubeComputeLaplacian")) 
+	{
+			Grid* lapGrid = get_grid_laplacian(grid,2);
+			if(lapGrid)
+			{
+				free_grid(grid);
+				grid = lapGrid;
+				TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
+				limits = grid->limits;
+				create_iso_orbitals();
+			}
+	}
+	else if(!strcmp(name , "CubeComputeNormGradient")) 
+	{
+			Grid* gradGrid = get_grid_norm_gradient(grid,2);
+			if(gradGrid)
+			{
+				free_grid(grid);
+				grid = gradGrid;
+				TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
+				limits = grid->limits;
+				create_iso_orbitals();
+			}
+	}
 	else if(!strcmp(name , "ContoursFirst"))
 		create_contours("Contours in a plane perpendicular to first direction",0);
 	else if(!strcmp(name , "ContoursSecond"))
@@ -296,6 +340,41 @@ static void activate_action (GtkAction *action)
 	{
 			free_surfaces_all();
 			glarea_rafresh(GLArea);
+	}
+	else if(!strcmp(name , "Rings3"))
+	{
+		build_rings(3);
+		glarea_rafresh(GLArea);
+	}
+	else if(!strcmp(name , "Rings4"))
+	{
+		build_rings(4);
+		glarea_rafresh(GLArea);
+	}
+	else if(!strcmp(name , "Rings5"))
+	{
+		build_rings(5);
+		glarea_rafresh(GLArea);
+	}
+	else if(!strcmp(name , "Rings6"))
+	{
+		build_rings(6);
+		glarea_rafresh(GLArea);
+	}
+	else if(!strcmp(name , "Rings7"))
+	{
+		build_rings(7);
+		glarea_rafresh(GLArea);
+	}
+	else if(!strcmp(name , "Rings8"))
+	{
+		build_rings(8);
+		glarea_rafresh(GLArea);
+	}
+	else if(!strcmp(name , "RingsDelete"))
+	{
+		delete_rings_all();
+		glarea_rafresh(GLArea);
 	}
 	else if(!strcmp(name , "RenderOptimal")) set_optimal_view();
 	else if(!strcmp(name , "SetCamera")) set_camera();
@@ -363,12 +442,17 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name , "ExportPovray")) create_save_povray_orb(PrincipalWindow);
 	else if(!strcmp(name , "AnimationVibration")) vibrationDlg();
 	else if(!strcmp(name , "AnimationGeometryConvergence")) geometryConvergenceDlg();
+	else if(!strcmp(name , "AnimationMD")) geometryMDDlg();
 	else if(!strcmp(name , "AnimationRotation")) animationRotationDlg();
 	else if(!strcmp(name , "AnimationContours")) animationContoursDlg();
 	else if(!strcmp(name , "AnimationPlanesColorcoded")) animationPlanesMappedDlg();
 	else if(!strcmp(name , "AnimationIsosurface")) animationIsoSurfaceDlg();
 
-	else if(!strcmp(name , "Close")) close_window_orb(NULL,NULL);
+	else if(!strcmp(name , "Close")) 
+	{
+		gtk_widget_hide(PrincipalWindow);
+		/* close_window_orb(NULL,NULL);*/
+	}
 }
 /*********************************************************************************************************************/
 static GtkActionEntry gtkActionEntries[] =
@@ -382,6 +466,10 @@ static GtkActionEntry gtkActionEntries[] =
 		NULL, "Read the first geometry from a Dalton output file", G_CALLBACK (activate_action) },
 	{"GeometryDaltonLast", GABEDIT_STOCK_DALTON, "Read the _last geometry from a Dalton output log file", 
 		NULL, "Read the last geometry from a Dalton output file", G_CALLBACK (activate_action) },
+	{"GeometryGamessFirst", GABEDIT_STOCK_GAMESS, "Read the _first geometry from a Gamess output log file", 
+		NULL, "Read the first geometry from a Gamess output file", G_CALLBACK (activate_action) },
+	{"GeometryGamessLast", GABEDIT_STOCK_GAMESS, "Read the _last geometry from a Gamess output log file", 
+		NULL, "Read the last geometry from a Gamess output file", G_CALLBACK (activate_action) },
 	{"GeometryGaussianFirst", GABEDIT_STOCK_GAUSSIAN, "Read the _first geometry from a gaussian log file", 
 		NULL, "Read the first geometry from a gaussian log file", G_CALLBACK (activate_action) },
 	{"GeometryGaussianLast", GABEDIT_STOCK_GAUSSIAN, "Read the _last geometry from a gaussian file", 
@@ -407,6 +495,8 @@ static GtkActionEntry gtkActionEntries[] =
 	{"OrbitalsDalton", GABEDIT_STOCK_DALTON, "Read geometry and orbiatls from a _Dalton output file", 
 		NULL, "Read geometry and orbiatls from a Dalton output file", G_CALLBACK (activate_action) },
 		*/
+	{"OrbitalsGamess", GABEDIT_STOCK_GAMESS, "Read geometry and orbiatls from a _Gamess output file", 
+		NULL, "Read geometry and orbiatls from a Gamess output file", G_CALLBACK (activate_action) },
 	{"OrbitalsGaussian", GABEDIT_STOCK_GAUSSIAN, "Read geometry and orbiatls from a _Gaussian log file", 
 		NULL, "Read geometry and orbiatls from a Gaussian log file", G_CALLBACK (activate_action) },
 	{"OrbitalsMolpro", GABEDIT_STOCK_MOLPRO, "Read geometry and orbiatls from a Mol_pro output file", 
@@ -463,6 +553,8 @@ static GtkActionEntry gtkActionEntries[] =
 
 	{"CubeLoadGabeditRead", GABEDIT_STOCK_GABEDIT, "Load G_abedit cube file", NULL, "Read a Gabedit cube file", G_CALLBACK (activate_action) },
 	{"CubeLoadGabeditSave", GABEDIT_STOCK_SAVE, "_Save", NULL, "Save in a Gabedit cube file", G_CALLBACK (activate_action) },
+	{"CubeComputeLaplacian", NULL, "Compute _laplacian", NULL, "Compute laplacian", G_CALLBACK (activate_action) },
+	{"CubeComputeNormGradient", NULL, "Compute the norm of the _gradient", NULL, "Compute the norm of the _gradient", G_CALLBACK (activate_action) },
 	{"CubeSubtract", NULL, "Su_btract", NULL, "Subtract", G_CALLBACK (activate_action) },
 	{"CubeScale", NULL, "Scal_e", NULL, "Scale", G_CALLBACK (activate_action) },
 	{"CubeColorMapping", NULL, "_Color Mapping", NULL, "Color Mapping", G_CALLBACK (activate_action) },
@@ -472,6 +564,10 @@ static GtkActionEntry gtkActionEntries[] =
 	{"DensityBonds", NULL, "_Bonds", NULL, "Compute and draw bonds (electronic-atomics)", G_CALLBACK (activate_action) },
 	{"DensitySpin", NULL, "_Spin", NULL, "Compute and draw spin density", G_CALLBACK (activate_action) },
 	{"DensityAtomics", NULL, "_Atomic", NULL, "Compute and draw electronic density of atoms", G_CALLBACK (activate_action) },
+
+	{"ELF",     NULL, "_ELF"},
+	{"ELFBecke", NULL, "Compute _Becke Electron Localization Function[see JCP,92(1990)5397]", NULL, "Compute Becke Electron Localization Function", G_CALLBACK (activate_action) },
+	{"ELFSavin", NULL, "Compute _Savin Electron Localization Function[see Can.J.Chem.,74(1996)1088]", NULL, "Compute Savin Electron Localization Function", G_CALLBACK (activate_action) },
 
 	{"Contours",     NULL, "Co_ntours"},
 	{"ContoursFirst", NULL, "plane perpendicular to the _first direction", 
@@ -498,8 +594,17 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SurfacesResetIsovalue", NULL, "re_set isovalue", NULL, "re_set the isovalue for the last surface", G_CALLBACK (activate_action) },
 	{"SurfacesNew", NULL, "_new", NULL, "new surface", G_CALLBACK (activate_action) },
 	{"SurfacesDelete", NULL, "_delete all", NULL, "delete all surfaces", G_CALLBACK (activate_action) },
+	{"Rings",     NULL, "_Rings"},
+	{"Rings3", NULL, "Find and show _triangles", NULL, "Find and show triangles", G_CALLBACK (activate_action) },
+	{"Rings4", NULL, "Find and show _squares & rectangles", NULL, "Find and show squares & rectangles", G_CALLBACK (activate_action) },
+	{"Rings5", NULL, "Find and show _pentagons", NULL, "Find and show pentagons", G_CALLBACK (activate_action) },
+	{"Rings6", NULL, "Find and show he_xagons", NULL, "Find and show hexagons", G_CALLBACK (activate_action) },
+	{"Rings7", NULL, "Find and show he_ptagons", NULL, "Find and show heptagons", G_CALLBACK (activate_action) },
+	{"Rings8", NULL, "Find and show _octagons", NULL, "Find and show octagons", G_CALLBACK (activate_action) },
+	{"RingsDelete", NULL, "_delete all", NULL, "delete all rings", G_CALLBACK (activate_action) },
 	{"Render",     NULL, "_Render"},
 	{"RenderGeometry",     NULL, "_Geometry"},
+	{"RenderLabel",     NULL, "Labe_l"},
 	{"RenderSurface",     NULL, "_Surface"},
 	{"RenderSurfacePositive",     NULL, "_Positive surface"},
 	{"RenderSurfaceNegative",     NULL, "_Negative surface"},
@@ -532,7 +637,8 @@ static GtkActionEntry gtkActionEntries[] =
 
 	{"Animation",     NULL, "_Animation"},
 	{"AnimationVibration", NULL, "_Vibration", NULL, "Vibration", G_CALLBACK (activate_action) },
-	{"AnimationGeometryConvergence", NULL, "Geometry _convergence", NULL, "Animation of Geometry convergence", G_CALLBACK (activate_action) },
+	{"AnimationGeometryConvergence", NULL, "_several geometries (Convergence/IRC)", NULL, "several geometries (Convergence/IRC)", G_CALLBACK (activate_action) },
+	{"AnimationMD", NULL, "_Molecular dynamics trajectory", NULL, "Molecular dynamics trajectory", G_CALLBACK (activate_action) },
 	{"AnimationRotation", NULL, "_Rotation", NULL, "Animation of the rotation", G_CALLBACK (activate_action) },
 	{"AnimationContours", NULL, "_Contours", NULL, "Animation of the contours", G_CALLBACK (activate_action) },
 	{"AnimationPlanesColorcoded", NULL, "_Planes colorcoded", NULL, "Animation of the color-coded planes", G_CALLBACK (activate_action) },
@@ -583,6 +689,18 @@ static void toggle_action (GtkAction *action)
 		RebuildGeom = TRUE;
 		glarea_rafresh(GLArea);
 	}
+	else if(!strcmp(name,"RenderhydrogenAtoms"))
+	{
+		ShowHAtomOrb = !ShowHAtomOrb;
+		RebuildGeom = TRUE;
+		glarea_rafresh(GLArea);
+	}
+	else if(!strcmp(name,"RenderMultiBonds"))
+	{
+		ShowMultiBondsOrb = !ShowMultiBondsOrb;
+		RebuildGeom = TRUE;
+		glarea_rafresh(GLArea);
+	}
 	else if(!strcmp(name,"RenderXYZAxes"))
 	{
 			if(testShowAxis()) hideAxis();
@@ -615,6 +733,57 @@ static void toggle_action (GtkAction *action)
 		gboolean show = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
 		show_progress_bar(show);
 	}
+	else if(!strcmp(name,"RenderLabelSymbols"))
+	{
+		gboolean show = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
+		set_show_symbols(show);
+		glarea_rafresh(GLArea);
+	}
+	else if(!strcmp(name,"RenderLabelNumbers"))
+	{
+		gboolean show = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
+		set_show_numbers(show);
+		glarea_rafresh(GLArea);
+	}
+	else if(!strcmp(name,"RenderLabelDistances"))
+	{
+		gboolean show = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
+		set_show_distances(show);
+		glarea_rafresh(GLArea);
+	}
+	else if(!strcmp(name,"RenderLabelDipole"))
+	{
+		gboolean show = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
+		set_show_dipole(show);
+		glarea_rafresh(GLArea);
+	}
+	else if(!strcmp(name,"RenderLabelAxes"))
+	{
+		gboolean show = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
+		set_show_axes(show);
+		glarea_rafresh(GLArea);
+	}
+	else if(!strcmp(name,"RenderLabelsOrtho"))
+	{
+		gboolean ortho = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
+		set_labels_ortho(ortho);
+		glarea_rafresh(GLArea);
+	}
+	else if(!strcmp(name , "RingsDeleteNotPlaner"))
+	{
+		gboolean showNotPlaner = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
+		ringsSetNotPlanar(!showNotPlaner);
+	}
+	else if(!strcmp(name , "RingsRandumColors"))
+	{
+		gboolean randumColors = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
+		ringsSetRandumColors(randumColors);
+	}
+	else if(!strcmp(name , "ContoursNegativeDotted"))
+	{
+		gboolean dotted = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
+		set_dotted_negative_contours(dotted);
+	}
 }
 
 static GtkToggleActionEntry gtkActionToggleEntries[] =
@@ -624,13 +793,24 @@ static GtkToggleActionEntry gtkActionToggleEntries[] =
 	{ "RenderLightOnOff2", NULL, "OnOff _2", NULL, "On/Of the light number 2", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderLightOnOff3", NULL, "OnOff _3", NULL, "On/Of the light number 3", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderDipole", NULL, "Show _dipole", NULL, "Show dipole", G_CALLBACK (toggle_action), FALSE },
+	{ "RenderhydrogenAtoms", NULL, "Show _hydrogen atoms", NULL, "Show hydrogen atoms", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderhydrogenBonds", NULL, "Show _hydrogen bonds", NULL, "Show hydrogen bonds", G_CALLBACK (toggle_action), FALSE },
+	{ "RenderMultiBonds", NULL, "Show double and triple _bonds", NULL, "Show double and triple bonds", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderXYZAxes", NULL, "Show XYZ _Axes", NULL, "Show XYZ Axes", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderPrincipalAxes", NULL, "Show the _principal Axes", NULL, "Show principal Axes", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderPerspective", GABEDIT_STOCK_PERSPECTIVE, "Perspective", NULL, "Perspective/Orthographic", G_CALLBACK (toggle_action), TRUE},
 	{ "ShowToolBar", NULL, "_Show toolbar", NULL, "show toolbar", G_CALLBACK (toggle_action), TRUE },
 	{ "ShowStatusHandleBox", NULL, "_show status handlebox", NULL, "show status handlebox", G_CALLBACK (toggle_action), TRUE},
 	{ "ShowProgressBar", NULL, "_show progress bar", NULL, "show progress bar", G_CALLBACK (toggle_action), TRUE},
+	{ "RenderLabelSymbols", NULL, "show symbo_ls", NULL, "show symbols", G_CALLBACK (toggle_action), TRUE},
+	{ "RenderLabelNumbers", NULL, "show _numbers", NULL, "show numbers", G_CALLBACK (toggle_action), TRUE},
+	{ "RenderLabelDistances", NULL, "show _distances", NULL, "show distances", G_CALLBACK (toggle_action), TRUE},
+	{ "RenderLabelDipole", NULL, "show _dipole value", NULL, "show dipole value", G_CALLBACK (toggle_action), TRUE},
+	{ "RenderLabelAxes", NULL, "show _axis labels", NULL, "show axis labels", G_CALLBACK (toggle_action), TRUE},
+	{ "RenderLabelsOrtho", NULL, "_orthographic labels", NULL, "orthographic labels", G_CALLBACK (toggle_action), TRUE},
+	{ "RingsDeleteNotPlaner", NULL, "Show ring with not co-_planer atoms", NULL, "Show ring with not co-planer atoms", G_CALLBACK (toggle_action), TRUE},
+	{ "RingsRandumColors", NULL, "_randum colors", NULL, "randum colors", G_CALLBACK (toggle_action), TRUE},
+	{ "ContoursNegativeDotted", NULL, "_dotted contours for negative values", NULL, "dotted contours for negative values", G_CALLBACK (toggle_action), FALSE},
 };
 
 static guint numberOfGtkActionToggleEntries = G_N_ELEMENTS (gtkActionToggleEntries);
@@ -888,6 +1068,9 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"GeometryDaltonFirst\" action=\"GeometryDaltonFirst\" />\n"
 "      <menuitem name=\"GeometryDaltonLast\" action=\"GeometryDaltonLast\" />\n"
 "      <separator name=\"sepMenuDaltonGeom\" />\n"
+"      <menuitem name=\"GeometryGamessFirst\" action=\"GeometryGamessFirst\" />\n"
+"      <menuitem name=\"GeometryGamessLast\" action=\"GeometryGamessLast\" />\n"
+"      <separator name=\"sepMenuGamessGeom\" />\n"
 "      <menuitem name=\"GeometryGaussianFirst\" action=\"GeometryGaussianFirst\" />\n"
 "      <menuitem name=\"GeometryGaussianLast\" action=\"GeometryGaussianLast\" />\n"
 "      <separator name=\"sepMenuGaussianGeom\" />\n"
@@ -908,7 +1091,8 @@ static const gchar *uiMenuInfo =
 "    </menu>\n"
 "    <separator name=\"sepMenuOrbitals\" />\n"
 "    <menu name=\"Orbitals\" action = \"Orbitals\">\n"
-//"      <menuitem name=\"OrbitalsDalton\" action=\"OrbitalsDalton\" />\n"
+/*"      <menuitem name=\"OrbitalsDalton\" action=\"OrbitalsDalton\" />\n"*/
+"      <menuitem name=\"OrbitalsGamess\" action=\"OrbitalsGamess\" />\n"
 "      <menuitem name=\"OrbitalsGaussian\" action=\"OrbitalsGaussian\" />\n"
 "      <menuitem name=\"OrbitalsMolpro\" action=\"OrbitalsMolpro\" />\n"
 "      <menuitem name=\"OrbitalsGabeditRead\" action=\"OrbitalsGabeditRead\" />\n"
@@ -961,6 +1145,10 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"CubeLoadGabeditRead\" action=\"CubeLoadGabeditRead\" />\n"
 "      <separator name=\"sepMenuCubeLoadGabeditSave\" />\n"
 "      <menuitem name=\"CubeLoadGabeditSave\" action=\"CubeLoadGabeditSave\" />\n"
+"      <separator name=\"sepMenuCubeComputeLaplacian\" />\n"
+"      <menuitem name=\"CubeComputeLaplacian\" action=\"CubeComputeLaplacian\" />\n"
+"      <separator name=\"sepMenuCubeComputeNormGradient\" />\n"
+"      <menuitem name=\"CubeComputeNormGradient\" action=\"CubeComputeNormGradient\" />\n"
 "      <separator name=\"sepMenuCubeSub\" />\n"
 "      <menuitem name=\"CubeSubtract\" action=\"CubeSubtract\" />\n"
 "      <separator name=\"sepMenuCubeScale\" />\n"
@@ -976,12 +1164,20 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"DensitySpin\" action=\"DensitySpin\" />\n"
 "    </menu>\n"
 
+"    <separator name=\"sepMenuELF\" />\n"
+"    <menu name=\"ELF\" action = \"ELF\">\n"
+"        <menuitem name=\"ELFSavin\" action=\"ELFSavin\" />\n"
+"        <menuitem name=\"ELFBecke\" action=\"ELFBecke\" />\n"
+"    </menu>\n"
+
 "    <separator name=\"sepMenuContours\" />\n"
 "    <menu name=\"Contours\" action = \"Contours\">\n"
 "        <menuitem name=\"ContoursFirst\" action=\"ContoursFirst\" />\n"
 "        <menuitem name=\"ContoursSecond\" action=\"ContoursSecond\" />\n"
 "        <menuitem name=\"ContoursThird\" action=\"ContoursThird\" />\n"
 "        <menuitem name=\"ContoursOther\" action=\"ContoursOther\" />\n"
+"        <separator name=\"sepMenuContoursNegativeDotted\" />\n"
+"        <menuitem name=\"ContoursNegativeDotted\" action=\"ContoursNegativeDotted\" />\n"
 "        <separator name=\"sepMenuContoursDelete\" />\n"
 "        <menuitem name=\"ContoursDelete\" action=\"ContoursDelete\" />\n"
 "    </menu>\n"
@@ -999,6 +1195,20 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"SurfacesResetIsovalue\" action=\"SurfacesResetIsovalue\" />\n"
 "        <menuitem name=\"SurfacesNew\" action=\"SurfacesNew\" />\n"
 "        <menuitem name=\"SurfacesDelete\" action=\"SurfacesDelete\" />\n"
+"    </menu>\n"
+"    <separator name=\"sepMenuRings\" />\n"
+"    <menu name=\"Rings\" action = \"Rings\">\n"
+"        <menuitem name=\"Rings3\" action=\"Rings3\" />\n"
+"        <menuitem name=\"Rings4\" action=\"Rings4\" />\n"
+"        <menuitem name=\"Rings5\" action=\"Rings5\" />\n"
+"        <menuitem name=\"Rings6\" action=\"Rings6\" />\n"
+"        <menuitem name=\"Rings7\" action=\"Rings7\" />\n"
+"        <menuitem name=\"Rings8\" action=\"Rings8\" />\n"
+"        <separator name=\"sepMenuRingsShowNotPlaner\" />\n"
+"        <menuitem name=\"RingsDeleteNotPlaner\" action=\"RingsDeleteNotPlaner\" />\n"
+"        <menuitem name=\"RingsRandumColors\" action=\"RingsRandumColors\" />\n"
+"        <separator name=\"sepMenuRingsDelete\" />\n"
+"        <menuitem name=\"RingsDelete\" action=\"RingsDelete\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepMenuRender\" />\n"
 "    <menu name=\"Render\" action = \"Render\">\n"
@@ -1049,9 +1259,21 @@ static const gchar *uiMenuInfo =
 "           <menuitem name=\"RenderLightOnOff2\" action=\"RenderLightOnOff2\" />\n"
 "           <menuitem name=\"RenderLightOnOff3\" action=\"RenderLightOnOff3\" />\n"
 "       </menu>\n"
+"       <separator name=\"sepMenuRenderLabel\" />\n"
+"       <menu name=\"RenderLabel\" action = \"RenderLabel\">\n"
+"           <menuitem name=\"RenderLabelSymbols\" action=\"RenderLabelSymbols\" />\n"
+"           <menuitem name=\"RenderLabelNumbers\" action=\"RenderLabelNumbers\" />\n"
+"           <menuitem name=\"RenderLabelDistances\" action=\"RenderLabelDistances\" />\n"
+"           <menuitem name=\"RenderLabelDipole\" action=\"RenderLabelDipole\" />\n"
+"           <menuitem name=\"RenderLabelAxes\" action=\"RenderLabelAxes\" />\n"
+"           <separator name=\"sepMenuRenderOrtho\" />\n"
+"           <menuitem name=\"RenderLabelsOrtho\" action=\"RenderLabelsOrtho\" />\n"
+"       </menu>\n"
 "       <separator name=\"sepMenuRenderDipole\" />\n"
 "      <menuitem name=\"RenderDipole\" action=\"RenderDipole\" />\n"
+"      <menuitem name=\"RenderhydrogenAtoms\" action=\"RenderhydrogenAtoms\" />\n"
 "      <menuitem name=\"RenderhydrogenBonds\" action=\"RenderhydrogenBonds\" />\n"
+"      <menuitem name=\"RenderMultiBonds\" action=\"RenderMultiBonds\" />\n"
 "      <menuitem name=\"RenderXYZAxes\" action=\"RenderXYZAxes\" />\n"
 "      <menuitem name=\"RenderPrincipalAxes\" action=\"RenderPrincipalAxes\" />\n"
 "       <separator name=\"sepMenuRenderPerspective\" />\n"
@@ -1102,6 +1324,8 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"AnimationVibration\" action=\"AnimationVibration\" />\n"
 "        <separator name=\"sepMenuAnimationGeomConv\" />\n"
 "        <menuitem name=\"AnimationGeometryConvergence\" action=\"AnimationGeometryConvergence\" />\n"
+"        <separator name=\"sepMenuAnimationMD\" />\n"
+"        <menuitem name=\"AnimationMD\" action=\"AnimationMD\" />\n"
 "        <separator name=\"sepMenuAnimationRotation\" />\n"
 "        <menuitem name=\"AnimationRotation\" action=\"AnimationRotation\" />\n"
 "        <separator name=\"sepMenuAnimationContours\" />\n"
@@ -1150,15 +1374,26 @@ static void set_init_gtkActionToggleEntries()
 	gtkActionToggleEntries[2].is_active = FALSE; /* RenderLightOnOff2 */
 	gtkActionToggleEntries[3].is_active = FALSE; /* RenderLightOnOff3 */
 	gtkActionToggleEntries[4].is_active = ShowDipoleOrb; /* RenderDipole */
-	gtkActionToggleEntries[5].is_active = ShowHBondOrb ; /* RenderhydrogenBonds */
-	gtkActionToggleEntries[6].is_active = testShowAxis() ; /* RenderXYZAxes */
-	gtkActionToggleEntries[7].is_active = testShowPrincipalAxisGL() ; /* RenderPrincipalAxes */
+	gtkActionToggleEntries[5].is_active = ShowHAtomOrb ; /* RenderhydrogenBonds */
+	gtkActionToggleEntries[6].is_active = ShowHBondOrb ; /* RenderhydrogenBonds */
+	gtkActionToggleEntries[7].is_active = ShowMultiBondsOrb ; /* RenderMultiBonds */
+	gtkActionToggleEntries[8].is_active = testShowAxis() ; /* RenderXYZAxes */
+	gtkActionToggleEntries[9].is_active = testShowPrincipalAxisGL() ; /* RenderPrincipalAxes */
 
   	get_camera_values(&zn, &zf, &zo, &perspective);
-	gtkActionToggleEntries[8].is_active = perspective; /* RenderPerspective */
-	gtkActionToggleEntries[9].is_active = TRUE; /* ShowToolBar */
-	gtkActionToggleEntries[10].is_active = TRUE; /* ShowStatusHandleBox */
-	gtkActionToggleEntries[11].is_active = TRUE; /* ShowProgressBar */
+	gtkActionToggleEntries[10].is_active = perspective; /* RenderPerspective */
+	gtkActionToggleEntries[11].is_active = TRUE; /* ShowToolBar */
+	gtkActionToggleEntries[12].is_active = TRUE; /* ShowStatusHandleBox */
+	gtkActionToggleEntries[13].is_active = TRUE; /* ShowProgressBar */
+	gtkActionToggleEntries[14].is_active = FALSE; /* RenderLabelSymbols */
+	gtkActionToggleEntries[15].is_active = FALSE; /* RenderLabelNumbers */
+	gtkActionToggleEntries[16].is_active = FALSE; /* RenderLabelDistances */
+	gtkActionToggleEntries[17].is_active = FALSE; /* RenderLabelDipole */
+	gtkActionToggleEntries[18].is_active = FALSE; /* RenderLabelAxes */
+	gtkActionToggleEntries[19].is_active = get_labels_ortho(); /* RenderLabelsOrtho*/
+	gtkActionToggleEntries[20].is_active = !ringsGetNotPlanar(); /* RingsDeleteNotPlaner*/
+	gtkActionToggleEntries[21].is_active = ringsGetRandumColors(); /* RingsRandumColors*/
+	gtkActionToggleEntries[22].is_active = get_dotted_negative_contours(); /* "ContoursNegativeDotted" */
 }
 
 /*******************************************************************************************************************************/
@@ -1243,26 +1478,33 @@ static void set_sensitive_cube()
 	GtkWidget *cubeSubtract = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeSubtract");
 	GtkWidget *cubeScale = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeScale");
 	GtkWidget *cubeColor = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeColorMapping");
+	GtkWidget *cubeComputeLap = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeComputeLaplacian");
+	GtkWidget *cubeComputeGard = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeComputeNormGradient");
 	gboolean sensitive = TRUE;
   	if(!grid) sensitive = FALSE;
 	if(GTK_IS_WIDGET(cubeSave)) gtk_widget_set_sensitive(cubeSave, sensitive);
 	if(GTK_IS_WIDGET(cubeSubtract)) gtk_widget_set_sensitive(cubeSubtract, sensitive);
 	if(GTK_IS_WIDGET(cubeScale)) gtk_widget_set_sensitive(cubeScale, sensitive);
 	if(GTK_IS_WIDGET(cubeColor)) gtk_widget_set_sensitive(cubeColor, sensitive);
+	if(GTK_IS_WIDGET(cubeComputeLap)) gtk_widget_set_sensitive(cubeComputeLap, sensitive);
+	if(GTK_IS_WIDGET(cubeComputeGard)) gtk_widget_set_sensitive(cubeComputeGard, sensitive);
 }
 /*********************************************************************************************************************/
 static void set_sensitive_density()
 {
 	GtkWidget *density = gtk_ui_manager_get_widget (manager, "/MenuGL/Density");
+	GtkWidget *elf = gtk_ui_manager_get_widget (manager, "/MenuGL/ELF");
 	GtkWidget *atomic = gtk_ui_manager_get_widget (manager, "/MenuGL/Density/DensityAtomics");
 	GtkWidget *bonds = gtk_ui_manager_get_widget (manager, "/MenuGL/Density/DensityBonds");
 
 	if(!GeomOrb || !CoefAlphaOrbitals)
 	{
 		if(GTK_IS_WIDGET(density)) gtk_widget_set_sensitive(density, FALSE);
+		if(GTK_IS_WIDGET(elf)) gtk_widget_set_sensitive(elf, FALSE);
 		return;
 	}
 	if(GTK_IS_WIDGET(density)) gtk_widget_set_sensitive(density, TRUE);
+	if(GTK_IS_WIDGET(elf)) gtk_widget_set_sensitive(elf, TRUE);
 
 	if(!AOAvailable)
 	{

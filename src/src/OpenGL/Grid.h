@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -35,12 +35,12 @@ typedef struct _Grid
 	GridLimits limits;
 	gboolean mapped;
 }Grid;
-gfloat get_value_orbital(gfloat x,gfloat y,gfloat z,gint k);
-gfloat get_value_electronic_density_on_atom(gfloat x,gfloat y,gfloat z,gint n);
-gfloat get_value_electronic_density_atomic(gfloat x,gfloat y,gfloat z,gint dump);
-gfloat get_value_electronic_density(gfloat x,gfloat y,gfloat z,gint dump);
-gfloat get_value_electronic_density_bonds(gfloat x,gfloat y,gfloat z,gint dump);
-gfloat get_value_spin_density(gfloat x,gfloat y,gfloat z,gint dump);
+gdouble get_value_orbital(gfloat x,gfloat y,gfloat z,gint k);
+gdouble get_value_electronic_density_on_atom(gfloat x,gfloat y,gfloat z,gint n);
+gdouble get_value_electronic_density_atomic(gfloat x,gfloat y,gfloat z,gint dump);
+gdouble get_value_electronic_density(gfloat x,gfloat y,gfloat z,gint dump);
+gdouble get_value_electronic_density_bonds(gfloat x,gfloat y,gfloat z,gint dump);
+gdouble get_value_spin_density(gfloat x,gfloat y,gfloat z,gint dump);
 Grid* grid_point_alloc(gint N[],GridLimits limits);
 Grid* define_grid(gint N[],GridLimits limits);
 Grid* free_grid(Grid* grid);
@@ -50,6 +50,8 @@ gfloat firstDirection[3];
 gfloat secondDirection[3];
 gfloat thirdDirection[3];
 gfloat originOfCube[3];
+Grid* get_grid_laplacian(Grid* grid, gint nBoundary);
+Grid* get_grid_norm_gradient(Grid* grid, gint nBoundary);
 
 #endif /* __GABEDIT_GRID_H__ */
 

@@ -1,6 +1,6 @@
 /* MenuToolBar.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -35,6 +35,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Gaussian/Gaussian.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/GabeditTextEdit.h"
+#include "../Utils/ConvUtils.h"
 #include "../Geometry/Fragments.h"
 #include "../Geometry/DrawGeom.h"
 #include "../Geometry/GeomGlobal.h"
@@ -53,6 +54,16 @@ static GtkToolbar* toolBar = NULL;
 static GtkWidget* handleBoxToolBar = NULL;
 static gboolean ViewToolBar = TRUE;
 static	GtkUIManager *manager = NULL;
+/*********************************************************************************************************************/
+static void view_icons()
+{
+	static gboolean mini=TRUE;
+	mini = !mini;
+	if(mini)
+	gtk_rc_parse_string("gtk-toolbar-icon-size = small-toolbar");
+	else
+	gtk_rc_parse_string("gtk-toolbar-icon-size = large-toolbar");
+}
 /*********************************************************************************************************************/
 static void view_windows_frame ()
 {
@@ -123,7 +134,8 @@ static void activate_action (GtkAction *action)
 	const gchar *name = gtk_action_get_name (action);
 	/* const gchar *typename = G_OBJECT_TYPE_NAME (action);*/
 
-	if(!strcmp(name,"GaussianInput")) new_gauss(NULL, NULL);
+	if(!strcmp(name,"GamessInput")) new_gamess(NULL, NULL);
+	else if(!strcmp(name,"GaussianInput")) new_gauss(NULL, NULL);
 	else if(!strcmp(name,"MolcasInput")) new_molcas(NULL, NULL);
 	else if(!strcmp(name,"MolproInput")) new_molpro(NULL, NULL);
 	else if(!strcmp(name,"MPQCInput")) new_mpqc(NULL, NULL);
@@ -158,7 +170,8 @@ static void activate_action (GtkAction *action)
 		if(ZoneDessin==NULL) create_window_drawing();
 		else rafresh_drawing();
 	}
-	else if(!strcmp(name,"DisplayDensity")) { draw_density_orbitals_gauss_or_molcas_or_molpro(NULL,NULL); }
+	else if(!strcmp(name,"DisplayDensity")) { draw_density_orbitals_gamess_or_gauss_or_molcas_or_molpro(NULL,NULL); }
+	else if(!strcmp(name,"ToolsUnitConversion")) {create_conversion_dlg();}
 	else if(!strcmp(name,"ToolsProcessLocalAll")) {run_process_all(FALSE);}
 	else if(!strcmp(name,"ToolsProcessLocalUser")) {run_process_user(FALSE,NULL,NULL,NULL);}
 	else if(!strcmp(name,"ToolsProcessRemoteAll")) {create_process_remote(TRUE);}
@@ -185,6 +198,7 @@ static GtkActionEntry gtkActionEntries[] =
 {
 	{"File",     NULL, "_File"},
 	{"FileNew",  GABEDIT_STOCK_NEW, "_New"},
+	{"GamessInput", GABEDIT_STOCK_GAMESS, "_Gamess input", NULL, "New Gamess input file", G_CALLBACK (activate_action) },
 	{"GaussianInput", GABEDIT_STOCK_GAUSSIAN, "_Gaussian input", NULL, "New Gaussian input file", G_CALLBACK (activate_action) },
 	{"MolcasInput", GABEDIT_STOCK_MOLCAS, "Mol_cas input", NULL, "New Molcas input file", G_CALLBACK (activate_action) },
 	{"MolproInput", GABEDIT_STOCK_MOLPRO, "Mol_pro input", NULL, "New Molpro input file", G_CALLBACK (activate_action) },
@@ -194,7 +208,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"Save", GABEDIT_STOCK_SAVE, "_Save", "<control>S", "Save", G_CALLBACK (activate_action) },
 	{"SaveAs", GABEDIT_STOCK_SAVE_AS, "Save _as", "<control>s", "Save as", G_CALLBACK (activate_action) },
 	{"Include", GABEDIT_STOCK_INSERT, "_Include", "<control>I", "Include a file", G_CALLBACK (activate_action) },
-	{"Print", GABEDIT_STOCK_PRINT, "_Print", "<control>P", "Include a file", G_CALLBACK (activate_action) },
+	{"Print", GABEDIT_STOCK_PRINT, "_Print", "<control>P", "Print", G_CALLBACK (activate_action) },
 	{"Exit", GABEDIT_STOCK_EXIT, "E_xit", "<control>Q", "Exit", G_CALLBACK (activate_action) },
 	{"Edit",  NULL, "_Edit"},
 	{"Cut", GABEDIT_STOCK_CUT, "C_ut", "<control>X", "Cut the selected text to the clipboard", G_CALLBACK (activate_action) },
@@ -221,13 +235,14 @@ static GtkActionEntry gtkActionEntries[] =
 	{"GeometryMolpro", GABEDIT_STOCK_MOLPRO, "Mol_pro", NULL, "Edit Molpro geometry", G_CALLBACK (activate_action) },
 	{"GeometryGaussian", GABEDIT_STOCK_GAUSSIAN, "_Gaussian", NULL, "Edit Gaussian geometry", G_CALLBACK (activate_action) },
 	{"GeometryEdit", NULL, "_Edit", NULL, "Edit geometry", G_CALLBACK (activate_action) },
-	{"GeometryDraw", GABEDIT_STOCK_GEOMETRY, "_Draw", NULL, "draw geometry", G_CALLBACK (activate_action) },
+	{"GeometryDraw", GABEDIT_STOCK_GEOMETRY, "_Draw", NULL, "Draw geometry", G_CALLBACK (activate_action) },
 
 	{"DisplayDensity", GABEDIT_STOCK_ORBITALS, "_Display", NULL, "Display Geometry/Orbitals/Density/Vibration", G_CALLBACK (activate_action) },
 
 	{"Tools",  NULL, "_Tools"},
 	{"ToolsProcess",  NULL, "_Process"},
 	{"ToolsProcessLocal",  NULL, "_Local"},
+	{"ToolsUnitConversion", GABEDIT_STOCK_CONVERT_UNIT, "Unit _conversion utility", NULL, "Unit conversion utility", G_CALLBACK (activate_action) },
 	{"ToolsProcessLocalAll", NULL, "_All local process", NULL, "All local process", G_CALLBACK (activate_action) },
 	{"ToolsProcessLocalUser", NULL, "_User local process", NULL, "User local process", G_CALLBACK (activate_action) },
 	{"ToolsProcessRemote",  NULL, "_Remote"},
@@ -272,6 +287,7 @@ static void toggle_action (GtkAction *action)
 	if(!strcmp(name,"ViewWindowsFrame")) { view_windows_frame(); }
 	else if(!strcmp(name,"ViewProjectsList")) { view_projects_list( );}
 	else if(!strcmp(name,"ViewToolbar")) { view_toolbar(); }
+	else if(!strcmp(name,"ViewMiniIcons")) { view_icons(); }
 }
 static GtkToggleActionEntry gtkActionToggleEntries[] =
 {
@@ -279,6 +295,7 @@ static GtkToggleActionEntry gtkActionToggleEntries[] =
 	{ "ViewWindowsFrame", NULL, "Show _Windows frame", NULL, "Show windows frame", G_CALLBACK (toggle_action), FALSE },
 	{ "ViewProjectsList", NULL, "Show _Projects List", NULL, "Show projects List", G_CALLBACK (toggle_action), TRUE },
 	{ "ViewToolbar", NULL, "Show toolbar", NULL, "Show toolbar", G_CALLBACK (toggle_action), TRUE},
+	{ "ViewMiniIcons", NULL, "Mini icons", NULL, "Mini icons", G_CALLBACK (toggle_action), TRUE}
 };
 
 static guint numberOfGtkActionToggleEntries = G_N_ELEMENTS (gtkActionToggleEntries);
@@ -290,6 +307,7 @@ static const gchar *uiInfo =
 "  <menubar>\n"
 "    <menu name=\"_File\" action=\"File\">\n"
 "      <menu name=\"_New\" action=\"FileNew\">\n"
+"         <menuitem name=\"_Gamess input\" action=\"GamessInput\" />\n"
 "         <menuitem name=\"_Gaussian input\" action=\"GaussianInput\" />\n"
 "         <menuitem name=\"Mol_cas input\" action=\"MolcasInput\" />\n"
 "         <menuitem name=\"Mol_pro input\" action=\"MolproInput\" />\n"
@@ -332,6 +350,7 @@ static const gchar *uiInfo =
 "      <menuitem name=\"_Windows frame\" action=\"ViewWindowsFrame\" />\n"
 "      <menuitem name=\"_Projects List\" action=\"ViewProjectsList\" />\n"
 "      <menuitem name=\"_ToolBar\" action=\"ViewToolbar\" />\n"
+"      <menuitem name=\"_ToolBar\" action=\"ViewMiniIcons\" />\n"
 "      <separator name=\"sepMenuIcons\" />\n"
 "    </menu>\n"
 "    <menu name=\"_Geometry\" action=\"Geometry\">\n"
@@ -362,6 +381,8 @@ static const gchar *uiInfo =
 "        </menu>\n"
 "      </menu>\n"
 "      <menuitem name=\"Open B_abel\" action=\"ToolsOpenBabel\" />\n"
+"      <separator name=\"sepUnitConv\" />\n"
+"      <menuitem name=\"Unit conversion\" action=\"ToolsUnitConversion\" />\n"
 "    </menu>\n"
 "    <menu name=\"_Run\" action=\"Run\">\n"
 "      <menuitem name=\"_Run a abtinio program\" action=\"RunAbinitio\" />\n"
@@ -389,6 +410,7 @@ static const gchar *uiInfo =
 "    </menu>\n"
 "  </menubar>\n"
 "  <toolbar action=\"Toolbar\">\n"
+"      <toolitem name=\"_Gamess input\" action=\"GamessInput\" />\n"
 "      <toolitem name=\"_Gaussian input\" action=\"GaussianInput\" />\n"
 "      <toolitem name=\"Mol_cas input\" action=\"MolcasInput\" />\n"
 "      <toolitem name=\"Mol_pro input\" action=\"MolproInput\" />\n"
@@ -410,7 +432,10 @@ static const gchar *uiInfo =
 "      <toolitem name=\"_Draw Geometry\" action=\"GeometryDraw\" />\n"
 "      <toolitem name=\"_Display\" action=\"DisplayDensity\" />\n"
 "      <separator name=\"sepToolBarBabel\" />\n"
+/*
 "      <toolitem name=\"Open B_abel\" action=\"ToolsOpenBabel\" />\n"
+*/
+"      <toolitem name=\"Unit _conversion utility\" action=\"ToolsUnitConversion\" />\n"
 "      <separator name=\"sepToolBarExit\" />\n"
 "      <toolitem name=\"_Exit\" action=\"Exit\" />\n"
 "      <separator name=\"sepToolBarAbout\" />\n"

@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -33,8 +33,9 @@ typedef struct _DataGeomConv
 void set_sensitive_remote_frame(gboolean sensitive);
 void create_bar_result(GtkWidget* Vbox);
 DataGeomConv free_geom_conv(DataGeomConv);
-void find_energy_gauss_molcas_molpro_mpqc(GtkWidget *wid,gpointer data);
+void find_energy_gamess_gauss_molcas_molpro_mpqc(GtkWidget *wid,gpointer data);
 void read_geometries_conv_dalton(GabeditFileChooser *SelecFile, gint response_id);
+void read_geometries_conv_gamess(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_gaussian(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_molpro(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_gabedit(GabeditFileChooser *SelecFile, gint response_id);

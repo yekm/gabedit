@@ -2,6 +2,7 @@
 #ifndef __GABEDIT_PRINCIPALAXISGL_H__
 #define __GABEDIT_PRINCIPALAXISGL_H__
 
+void getPrincipalAxisInertias(gfloat* I);
 void getPrincipalAxisProperties(gboolean* show, gboolean* negative, gboolean* def, gfloat origin[], gfloat* radius, gfloat* scal,
 		gfloat firstVector[],gfloat secondVector[], gfloat thirdVector[],
 		gfloat firstColor[],gfloat secondColor[], gfloat thirdColor[]);

@@ -1,6 +1,6 @@
 /* Orbitals.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -33,6 +33,7 @@ DEALINGS IN THE SOFTWARE.
 /*
 #include "OrbitalsDalton.h"
 */
+#include "OrbitalsGamess.h"
 #include "OrbitalsMolpro.h"
 
 #define WIDTHSCR 0.608
@@ -178,7 +179,9 @@ static void applyiso(GtkWidget *Win,gpointer data)
 	}
 	if(fabs(isovalue)>fabs(limits.MinMax[1][3]) && fabs(isovalue)>fabs(limits.MinMax[0][3]))
 	{
-		GtkWidget* message = Message("Error :  The maximal value should be smaller than the minimal value ","Error",TRUE);
+		gchar buffer[BSIZE];
+		sprintf(buffer,"Error : The isovalue  value should between %f and %f",fabs(limits.MinMax[1][3]),fabs(limits.MinMax[0][3]));
+		GtkWidget* message = Message(buffer,"Error",TRUE);
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		return;
 	}
@@ -430,6 +433,7 @@ GtkWidget* create_gtk_list_orbitals(gint N,gfloat* Energies,gfloat* Occ,gchar** 
 
 	for(i=0;i<N;i++)
 	{
+		if(strcmp(sym[i],"DELETED")==0)continue;
 		List[0] = g_strdup_printf("%i",i+1);
 		List[1] = g_strdup_printf("%f",Energies[i]);
 		List[2] = g_strdup_printf("%f",Occ[i]);
@@ -592,6 +596,7 @@ GtkWidget *create_iso_frame( GtkWidget *vboxall,gchar* title)
 	strlabels[0][2] = g_strdup_printf(" %f ",limits.MinMax[0][3]);
 	strlabels[1][2] = g_strdup_printf(" %f ",limits.MinMax[1][3]);
 	v = limits.MinMax[1][3]/4;
+	if(v>0.2 && fabs(limits.MinMax[1][3])>0.01 && fabs(limits.MinMax[2][3])<0.01) v= 0.01;
 		
 	strlabels[2][2] = g_strdup_printf("%f",v);
 
@@ -1674,6 +1679,19 @@ void read_dalton_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
 
 	add_objects_for_new_grid();
  	/* read_dalton_orbitals(FileName);*/
+} 
+/********************************************************************************/
+void read_gamess_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
+{
+ 	gchar *FileName;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+	gtk_widget_hide(GTK_WIDGET(SelecFile));
+	while( gtk_events_pending() ) gtk_main_iteration();
+
+	add_objects_for_new_grid();
+ 	read_gamess_orbitals(FileName);
 } 
 /********************************************************************************/
 void read_gauss_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)

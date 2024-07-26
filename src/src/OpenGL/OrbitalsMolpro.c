@@ -1,6 +1,6 @@
 /* OrbitalsMolpro.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -335,6 +335,7 @@ OneBasis get_one_basis_from_strbasis(gchar **strbasis,gint begin,gint end,gint n
  	bas.numcenters = g_malloc(sizeof(gint));
  	bas.signe = g_malloc(sizeof(gint));
  	bas.numstandards = NULL;
+	bas.type = NULL;
 	for(i=begin;i<=end;i++)
 	{
 		if((i-begin+1)<=norb)
@@ -668,7 +669,15 @@ OneOrbital get_one_orbital_from_strorbs(gchar **strorbs,gint begin,gint end,gint
 	Debug("end str = %s\n",strorbs[end]);
 	*/
 	if(orb.ncoefs<1)
+	{
+		orb.coefs = NULL;
+		orb.energy = 0;
+		orb.occ = -1;
+		orb.numsym = -1;
+		orb.numorb = -1;
+
 		return orb;
+	}
  	allreals =gab_split (strorbs[verybegin]);
 	orb.numorb = atoi(allreals[0]); 
 	orb.numsym = (gint)( (atof(allreals[0]) - atoi(allreals[0]))*10 +0.5); 

@@ -22,8 +22,8 @@ ListeFiles.o: ../Geometry/GeomGlobal.h ../Geometry/GeomXYZ.h
 ListeFiles.o: ../Geometry/ResultsAnalise.h ../Geometry/EnergiesCurves.h
 ListeFiles.o: ../Common/Windows.h ../Geometry/GeomZmatrix.h ../Common/Run.h
 ListeFiles.o: ../Common/Status.h ../Molcas/MolcasVariables.h
-ListeFiles.o: ../Molcas/MolcasSeward.h ../../pixmaps/Gaussian.xpm
-ListeFiles.o: ../../pixmaps/Molpro.xpm ../../pixmaps/Molcas.xpm
-ListeFiles.o: ../../pixmaps/MPQC.xpm ../../pixmaps/Book_close.xpm
-ListeFiles.o: ../../pixmaps/Page.xpm ../Common/StockIcons.h
-ListeFiles.o: ../Files/ListeFiles.h
+ListeFiles.o: ../Molcas/MolcasSeward.h ../../pixmaps/GamessMini.xpm
+ListeFiles.o: ../../pixmaps/Gaussian.xpm ../../pixmaps/MolproMini.xpm
+ListeFiles.o: ../../pixmaps/MolcasMini.xpm ../../pixmaps/MPQCMini.xpm
+ListeFiles.o: ../../pixmaps/Book_close.xpm ../../pixmaps/Page.xpm
+ListeFiles.o: ../Common/StockIcons.h ../Files/ListeFiles.h

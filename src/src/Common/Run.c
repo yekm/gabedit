@@ -1,6 +1,6 @@
 /* Run.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -21,6 +21,11 @@ DEALINGS IN THE SOFTWARE.
 #include "../../Config.h"
 #include <stdlib.h>
 #include <glib.h>
+
+#ifdef G_OS_WIN32
+#include <winsock.h>
+#else
+#endif /* G_OS_WIN32 */
 
 #include <unistd.h>
 
@@ -44,6 +49,7 @@ DEALINGS IN THE SOFTWARE.
 static GtkWidget* ButtonLocal = NULL;
 static GtkWidget* ButtonRemote = NULL;
 
+static GtkWidget* ButtonGamess = NULL;
 static GtkWidget* ButtonGauss = NULL;
 static GtkWidget* ButtonMolcas = NULL;
 static GtkWidget* ButtonMolpro = NULL;
@@ -55,11 +61,35 @@ static GtkWidget* ComboCommand = NULL;
 static GtkWidget* FrameRemote = NULL;
 static GtkWidget* FrameNetWork = NULL;
 static GtkWidget* LabelDataFile = NULL;
+static GtkWidget* LabelExtFile = NULL;
 static GtkWidget* EntryLocalDir = NULL;
 static GtkWidget* LabelPassWord1 = NULL;
 static GtkWidget* LabelPassWord2 = NULL;
 static GtkWidget* EntryPassWord = NULL;
 static gint typeButton[4] = {0, 1, 2, 3}; /* local, remote, ftp, ssh */
+/********************************************************************************/
+static void changedEntryFileData(GtkWidget *entry,gpointer data);
+/********************************************************************************/
+static gboolean save_local_doc(gchar *NomFichier)
+{
+	gchar *temp;
+	FILE *fd;
+	gint i;
+ 
+	fd = FOpen(NomFichier, "wb");
+	if(fd == NULL)
+	{
+		Message("Sorry, I can not save file","Error",TRUE);
+		return FALSE;
+	}
+	temp=gabedit_text_get_chars(text,0,-1);
+	for(i=0;i<strlen(temp);i++)
+		if(temp[i]=='\r') temp[i] = ' ';
+	fprintf(fd,"%s",temp);
+	fclose(fd);
+	g_free(temp);
+	return TRUE;
+}
 /********************************************************************************/
 void set_frame_remote_visibility(GtkWidget *button,gpointer data)
 {
@@ -102,6 +132,14 @@ void set_frame_remote_visibility(GtkWidget *button,gpointer data)
 #endif
 	}
 }
+#ifdef G_OS_WIN32
+/*************************************************************************************************************/
+static gchar* listLocalGamess[] = {
+	"gamess.00.exe", "gamess.01.exe", "gamess.02.exe", "gamess.03.exe", "gamess.04.exe", "gamess.05.exe",
+	"gamess.06.exe", "gamess.07.exe", "gamess.08.exe", "gamess.09.exe"
+};
+static guint numberOfLocalGamess = G_N_ELEMENTS (listLocalGamess);
+#endif
 /********************************************************************************/
 void set_default_entrys(GtkWidget *button,gpointer data)
 {
@@ -110,6 +148,41 @@ void set_default_entrys(GtkWidget *button,gpointer data)
 
 	if (GTK_TOGGLE_BUTTON (button)->active)
 	{
+		if(button == ButtonGamess )
+		{
+#ifdef G_OS_WIN32
+			if(ButtonLocal && GTK_TOGGLE_BUTTON (ButtonLocal)->active)
+			{
+  				for(i=0;i<numberOfLocalGamess;i++)
+					glist = g_list_append(glist,listLocalGamess[i]);
+				if(!strstr(fileopen.command,"exe"))
+				{
+					if(fileopen.command) g_free(fileopen.command);
+					fileopen.command = g_strdup("gamess.05.exe");
+				}
+			}
+			else
+#endif
+  			for(i=0;i<gamessCommands.numberOfCommands;i++)
+				glist = g_list_append(glist,gamessCommands.commands[i]);
+
+  			gtk_combo_box_entry_set_popdown_strings( ComboCommand, glist) ;
+
+  			g_list_free(glist);
+			gtk_entry_set_text (GTK_ENTRY (EntryCommand), NameCommandGamess);
+			if(ButtonLocal && GTK_TOGGLE_BUTTON (ButtonLocal)->active)
+			{
+			if(fileopen.command && strlen(fileopen.command)>0)
+			       	gtk_entry_set_text (GTK_ENTRY (EntryCommand), fileopen.command);
+			}
+			else
+			if(fileopen.command && !strstr(fileopen.command,"gamess.") && strlen(fileopen.command)>0)
+			       	gtk_entry_set_text (GTK_ENTRY (EntryCommand), fileopen.command);
+
+			gtk_label_set_text(GTK_LABEL(LabelExtFile), ".inp");
+			gtk_widget_show(LabelDataFile);
+		}
+		else
 		if(button == ButtonGauss )
 		{
   			for(i=0;i<gaussianCommands.numberOfCommands;i++)
@@ -119,7 +192,9 @@ void set_default_entrys(GtkWidget *button,gpointer data)
 
   			g_list_free(glist);
 			gtk_entry_set_text (GTK_ENTRY (EntryCommand), NameCommandGaussian);
-			if(fileopen.command) gtk_entry_set_text (GTK_ENTRY (EntryCommand), fileopen.command);
+			if(fileopen.command && !strstr(fileopen.command,"gamess.") && strlen(fileopen.command)>0)
+			       	gtk_entry_set_text (GTK_ENTRY (EntryCommand), fileopen.command);
+			gtk_label_set_text(GTK_LABEL(LabelExtFile), ".com");
 			gtk_widget_show(LabelDataFile);
 		}
 		else
@@ -132,7 +207,9 @@ void set_default_entrys(GtkWidget *button,gpointer data)
 
   			g_list_free(glist);
 			gtk_entry_set_text (GTK_ENTRY (EntryCommand), NameCommandMPQC);
-			if(fileopen.command && strlen(fileopen.command)>0) gtk_entry_set_text (GTK_ENTRY (EntryCommand), fileopen.command);
+			if(fileopen.command && !strstr(fileopen.command,"gamess.") && strlen(fileopen.command)>0)
+			       	gtk_entry_set_text (GTK_ENTRY (EntryCommand), fileopen.command);
+			gtk_label_set_text(GTK_LABEL(LabelExtFile), ".com");
 			gtk_widget_show(LabelDataFile);
 		}
 		else
@@ -145,7 +222,9 @@ void set_default_entrys(GtkWidget *button,gpointer data)
 
   			g_list_free(glist);
 			gtk_entry_set_text (GTK_ENTRY (EntryCommand), NameCommandMolcas);
-			if(fileopen.command && strlen(fileopen.command)>0) gtk_entry_set_text (GTK_ENTRY (EntryCommand), fileopen.command);
+			if(fileopen.command && !strstr(fileopen.command,"gamess.") && strlen(fileopen.command)>0)
+			       	gtk_entry_set_text (GTK_ENTRY (EntryCommand), fileopen.command);
+			gtk_label_set_text(GTK_LABEL(LabelExtFile), ".com");
 			gtk_widget_show(LabelDataFile);
 		}
 		else
@@ -158,7 +237,9 @@ void set_default_entrys(GtkWidget *button,gpointer data)
 
   			g_list_free(glist);
 			gtk_entry_set_text (GTK_ENTRY (EntryCommand), NameCommandMolpro);
-			if(fileopen.command && strlen(fileopen.command)>0) gtk_entry_set_text (GTK_ENTRY (EntryCommand), fileopen.command);
+			if(fileopen.command && !strstr(fileopen.command,"gamess.") && strlen(fileopen.command)>0)
+			       	gtk_entry_set_text (GTK_ENTRY (EntryCommand), fileopen.command);
+			gtk_label_set_text(GTK_LABEL(LabelExtFile), ".com");
 			gtk_widget_show(LabelDataFile);
 		}
 		else
@@ -178,6 +259,7 @@ void set_default_entrys(GtkWidget *button,gpointer data)
 		}
 
 	}
+	changedEntryFileData(EntryFileData,NULL);
 
 }
 /********************************************************************************/
@@ -298,8 +380,8 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
 	g_free(temp);
   	put_text_in_texts_widget(Text,fout,ferr);
   	view_result(NULL,NULL);
-	if(type==LOGFILE || iprogram == PROG_IS_GAUSS)
-		break;
+	if(type==LOGFILE || iprogram == PROG_IS_GAUSS) break;
+	if(type==LOGFILE || iprogram == PROG_IS_GAMESS) break;
   case OUTFILE :
   	/* get file.out */
 /*	Debug("Get File frome remote : %s %s %s %s \n",fileopen.remotehost,fileopen.remoteuser,fileopen.remotedir,fileopen.outputfile);*/
@@ -312,8 +394,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
 	g_free(temp);
   	put_text_in_texts_widget(Text,fout,ferr);
   	view_result(NULL,NULL);
-	if(type==OUTFILE)
-		break;
+	if(type==OUTFILE) break;
   case MOLDENFILE :
   	/* get file.molden */
 /*	Debug("Get File frome remote : %s %s %s %s \n",fileopen.remotehost,fileopen.remoteuser,fileopen.remotedir,fileopen.moldenfile);*/
@@ -454,6 +535,320 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
 
   g_free(fout);
   g_free(ferr);
+}
+#ifdef G_OS_WIN32
+gboolean createGamessCsh(gchar* filename)
+{
+	FILE* file = fopen(filename,"wb");
+
+	if(file==NULL)
+	{
+		return FALSE;
+	}
+	fprintf(file,"#!./csh -f\n");
+	fprintf(file,"#  03 Feb 05 - A.R. ALLOUCHE\n");
+	fprintf(file,"#\n");
+	fprintf(file,"set TARGET=sockets\n");
+	fprintf(file,"#\n");
+	fprintf(file,"set JOB=$1\n");
+	fprintf(file,"set VERNO=$2\n");
+	fprintf(file,"set NCPUS=1\n");
+	fprintf(file,"set NNODES=1\n");
+	fprintf(file,"\n");
+	fprintf(file,"set SCR=\"$PWD\\\\scratch\"\n");
+	fprintf(file,"set SCK=\"$PWD\\\\temp\"\n");
+	fprintf(file,"set HOSTLIST=$3\n");
+	fprintf(file,"\n");
+	fprintf(file,"if ((-x \"$PWD/temp\") && (-x \"$PWD/scratch\")) then\n");
+	fprintf(file,"else\n");
+	fprintf(file,"echo \" Error: /temp and /scratch folders are missing \"\n");
+	fprintf(file,"echo \"  please create them in WinGAMESS' root folder;\"\n");
+	fprintf(file,"echo \"   gabeditRunGms.csh exiting ..     \"\n");
+	fprintf(file,"exit\n");
+	fprintf(file,"endif\n");
+	fprintf(file,"\n");
+	fprintf(file,"if (null$VERNO == null) set VERNO=05\n");
+	fprintf(file,"if (null$NNODES == null) set NNODES=1\n");
+	fprintf(file,"\n");
+	fprintf(file,"if ($JOB:r.inp == $JOB) set JOB=$JOB:r\n");
+	fprintf(file,"\n");
+	fprintf(file,"#  file assignments.\n");
+	fprintf(file,"unset echo\n");
+	fprintf(file,"setenv GMSPATH \"$PWD\"\n");
+	fprintf(file,"setenv GMSJOBNAME $JOB\n");
+	fprintf(file,"setenv  master $HOSTLIST\n");
+	fprintf(file,"setenv ERICFMT \"$GMSPATH/ericfmt.dat\"\n");
+	fprintf(file,"setenv  EXTBAS /dev/null\n");
+	fprintf(file,"setenv IRCDATA \"$SCK/$JOB.irc\"\n");
+	fprintf(file,"setenv   INPUT \"$SCR/$JOB.F05\"\n");
+	fprintf(file,"setenv   PUNCH \"$SCK/$JOB.dat\"\n");
+	fprintf(file,"setenv  AOINTS \"$SCR/$JOB.F08\"\n");
+	fprintf(file,"setenv  MOINTS \"$SCR/$JOB.F09\"\n");
+	fprintf(file,"setenv DICTNRY \"$SCR/$JOB.F10\"\n");
+	fprintf(file,"setenv DRTFILE \"$SCR/$JOB.F11\"\n");
+	fprintf(file,"setenv CIVECTR \"$SCR/$JOB.F12\"\n");
+	fprintf(file,"setenv CASINTS \"$SCR/$JOB.F13\"\n");
+	fprintf(file,"setenv  CIINTS \"$SCR/$JOB.F14\"\n");
+	fprintf(file,"setenv  WORK15 \"$SCR/$JOB.F15\"\n");
+	fprintf(file,"setenv  WORK16 \"$SCR/$JOB.F16\"\n");
+	fprintf(file,"setenv CSFSAVE \"$SCR/$JOB.F17\"\n");
+	fprintf(file,"setenv FOCKDER \"$SCR/$JOB.F18\"\n");
+	fprintf(file,"setenv  WORK19 \"$SCR/$JOB.F19\"\n");
+	fprintf(file,"setenv  DASORT \"$SCR/$JOB.F20\"\n");
+	fprintf(file,"setenv DFTINTS \"$SCR/$JOB.F21\"\n");
+	fprintf(file,"setenv DFTGRID \"$SCR/$JOB.F22\"\n");
+	fprintf(file,"setenv  JKFILE \"$SCR/$JOB.F23\"\n");
+	fprintf(file,"setenv  ORDINT \"$SCR/$JOB.F24\"\n");
+	fprintf(file,"setenv  EFPIND \"$SCR/$JOB.F25\"\n");
+	fprintf(file,"setenv PCMDATA \"$SCR/$JOB.F26\"\n");
+	fprintf(file,"setenv PCMINTS \"$SCR/$JOB.F27\"\n");
+	fprintf(file,"setenv SVPWRK1 \"$SCR/$JOB.F26\"\n");
+	fprintf(file,"setenv SVPWRK2 \"$SCR/$JOB.F27\"\n");
+	fprintf(file,"setenv  MLTPL  \"$SCR/$JOB.F28\"\n");
+	fprintf(file,"setenv  MLTPLT \"$SCR/$JOB.F29\"\n");
+	fprintf(file,"setenv  DAFL30 \"$SCR/$JOB.F30\"\n");
+	fprintf(file,"setenv  SOINTX \"$SCR/$JOB.F31\"\n");
+	fprintf(file,"setenv  SOINTY \"$SCR/$JOB.F32\"\n");
+	fprintf(file,"setenv  SOINTZ \"$SCR/$JOB.F33\"\n");
+	fprintf(file,"setenv  SORESC \"$SCR/$JOB.F34\"\n");
+	fprintf(file,"setenv   SIMEN \"$SCK/$JOB.simen\"\n");
+	fprintf(file,"setenv  SIMCOR \"$SCK/$JOB.simcor\"\n");
+	fprintf(file,"setenv GCILIST \"$SCR/$JOB.F37\"\n");
+	fprintf(file,"setenv HESSIAN \"$SCR/$JOB.F38\"\n");
+	fprintf(file,"setenv SOCCDAT \"$SCR/$JOB.F40\"\n");
+	fprintf(file,"setenv  AABB41 \"$SCR/$JOB.F41\"\n");
+	fprintf(file,"setenv  BBAA42 \"$SCR/$JOB.F42\"\n");
+	fprintf(file,"setenv  BBBB43 \"$SCR/$JOB.F43\"\n");
+	fprintf(file,"setenv  MCQD50 \"$SCR/$JOB.F50\"\n");
+	fprintf(file,"setenv  MCQD51 \"$SCR/$JOB.F51\"\n");
+	fprintf(file,"setenv  MCQD52 \"$SCR/$JOB.F52\"\n");
+	fprintf(file,"setenv  MCQD53 \"$SCR/$JOB.F53\"\n");
+	fprintf(file,"setenv  MCQD54 \"$SCR/$JOB.F54\"\n");
+	fprintf(file,"setenv  MCQD55 \"$SCR/$JOB.F55\"\n");
+	fprintf(file,"setenv  MCQD56 \"$SCR/$JOB.F56\"\n");
+	fprintf(file,"setenv  MCQD57 \"$SCR/$JOB.F57\"\n");
+	fprintf(file,"setenv  MCQD58 \"$SCR/$JOB.F58\"\n");
+	fprintf(file,"setenv  MCQD59 \"$SCR/$JOB.F59\"\n");
+	fprintf(file,"setenv  MCQD60 \"$SCR/$JOB.F60\"\n");
+	fprintf(file,"setenv  MCQD61 \"$SCR/$JOB.F61\"\n");
+	fprintf(file,"setenv  MCQD62 \"$SCR/$JOB.F62\"\n");
+	fprintf(file,"setenv  MCQD63 \"$SCR/$JOB.F63\"\n");
+	fprintf(file,"setenv  MCQD64 \"$SCR/$JOB.F64\"\n");
+	fprintf(file,"setenv NMRINT1 \"$SCR/$JOB.F61\"\n");
+	fprintf(file,"setenv NMRINT2 \"$SCR/$JOB.F62\"\n");
+	fprintf(file,"setenv NMRINT3 \"$SCR/$JOB.F63\"\n");
+	fprintf(file,"setenv NMRINT4 \"$SCR/$JOB.F64\"\n");
+	fprintf(file,"setenv NMRINT5 \"$SCR/$JOB.F65\"\n");
+	fprintf(file,"setenv NMRINT6 \"$SCR/$JOB.F66\"\n");
+	fprintf(file,"setenv DCPHFH2 \"$SCR/$JOB.F67\"\n");
+	fprintf(file,"setenv DCPHF21 \"$SCR/$JOB.F68\"\n");
+	fprintf(file,"setenv   GVVPT \"$SCR/$JOB.F69\"\n");
+	fprintf(file,"setenv  CCREST \"$SCR/$JOB.F70\"\n");
+	fprintf(file,"setenv  CCDIIS \"$SCR/$JOB.F71\"\n");
+	fprintf(file,"setenv  CCINTS \"$SCR/$JOB.F72\"\n");
+	fprintf(file,"setenv CCT1AMP \"$SCR/$JOB.F73\"\n");
+	fprintf(file,"setenv CCT2AMP \"$SCR/$JOB.F74\"\n");
+	fprintf(file,"setenv CCT3AMP \"$SCR/$JOB.F75\"\n");
+	fprintf(file,"setenv    CCVM \"$SCR/$JOB.F76\"\n");
+	fprintf(file,"setenv    CCVE \"$SCR/$JOB.F77\"\n");
+	fprintf(file,"setenv CCQUADS \"$SCR/$JOB.F78\"\n");
+	fprintf(file,"setenv QUADSVO \"$SCR/$JOB.F79\"\n");
+	fprintf(file,"setenv EOMSTAR \"$SCR/$JOB.F80\"\n");
+	fprintf(file,"setenv EOMVEC1 \"$SCR/$JOB.F81\"\n");
+	fprintf(file,"setenv EOMVEC2 \"$SCR/$JOB.F82\"\n");
+	fprintf(file,"setenv  EOMHC1 \"$SCR/$JOB.F83\"\n");
+	fprintf(file,"setenv  EOMHC2 \"$SCR/$JOB.F84\"\n");
+	fprintf(file,"setenv EOMHHHH \"$SCR/$JOB.F85\"\n");
+	fprintf(file,"setenv EOMPPPP \"$SCR/$JOB.F86\"\n");
+	fprintf(file,"setenv EOMRAMP \"$SCR/$JOB.F87\"\n");
+	fprintf(file,"setenv EOMRTMP \"$SCR/$JOB.F88\"\n");
+	fprintf(file,"setenv EOMDG12 \"$SCR/$JOB.F89\"\n");
+	fprintf(file,"setenv    MMPP \"$SCR/$JOB.F90\"\n");
+	fprintf(file,"setenv   MMHPP \"$SCR/$JOB.F91\"\n");
+	fprintf(file,"setenv MMCIVEC \"$SCR/$JOB.F92\"\n");
+	fprintf(file,"setenv MMCIVC1 \"$SCR/$JOB.F93\"\n");
+	fprintf(file,"setenv MMCIITR \"$SCR/$JOB.F94\"\n");
+	fprintf(file,"setenv  EOMVL1 \"$SCR/$JOB.F95\"\n");
+	fprintf(file,"setenv  EOMVL2 \"$SCR/$JOB.F96\"\n");
+	fprintf(file,"setenv EOMLVEC \"$SCR/$JOB.F97\"\n");
+	fprintf(file,"setenv  EOMHL1 \"$SCR/$JOB.F98\"\n");
+	fprintf(file,"setenv  EOMHL2 \"$SCR/$JOB.F99\"\n");
+	fprintf(file,"setenv  OLI201 \"$SCR/$JOB.F201\"\n");
+	fprintf(file,"setenv  OLI202 \"$SCR/$JOB.F202\"\n");
+	fprintf(file,"setenv  OLI203 \"$SCR/$JOB.F203\"\n");
+	fprintf(file,"setenv  OLI204 \"$SCR/$JOB.F204\"\n");
+	fprintf(file,"setenv  OLI205 \"$SCR/$JOB.F205\"\n");
+	fprintf(file,"setenv  OLI206 \"$SCR/$JOB.F206\"\n");
+	fprintf(file,"setenv  OLI207 \"$SCR/$JOB.F207\"\n");
+	fprintf(file,"setenv  OLI208 \"$SCR/$JOB.F208\"\n");
+	fprintf(file,"setenv  OLI209 \"$SCR/$JOB.F209\"\n");
+	fprintf(file,"setenv  OLI210 \"$SCR/$JOB.F210\"\n");
+	fprintf(file,"setenv  OLI211 \"$SCR/$JOB.F211\"\n");
+	fprintf(file,"setenv  OLI212 \"$SCR/$JOB.F212\"\n");
+	fprintf(file,"setenv  OLI213 \"$SCR/$JOB.F213\"\n");
+	fprintf(file,"setenv  OLI214 \"$SCR/$JOB.F214\"\n");
+	fprintf(file,"setenv  OLI215 \"$SCR/$JOB.F215\"\n");
+	fprintf(file,"setenv  OLI216 \"$SCR/$JOB.F216\"\n");
+	fprintf(file,"setenv  OLI217 \"$SCR/$JOB.F217\"\n");
+	fprintf(file,"setenv  OLI218 \"$SCR/$JOB.F218\"\n");
+	fprintf(file,"setenv  OLI219 \"$SCR/$JOB.F219\"\n");
+	fprintf(file,"setenv  OLI220 \"$SCR/$JOB.F220\"\n");
+	fprintf(file,"setenv  OLI221 \"$SCR/$JOB.F221\"\n");
+	fprintf(file,"setenv  OLI222 \"$SCR/$JOB.F222\"\n");
+	fprintf(file,"setenv  OLI223 \"$SCR/$JOB.F223\"\n");
+	fprintf(file,"setenv  OLI224 \"$SCR/$JOB.F224\"\n");
+	fprintf(file,"setenv  OLI225 \"$SCR/$JOB.F225\"\n");
+	fprintf(file,"setenv  OLI226 \"$SCR/$JOB.F226\"\n");
+	fprintf(file,"setenv  OLI227 \"$SCR/$JOB.F227\"\n");
+	fprintf(file,"setenv  OLI228 \"$SCR/$JOB.F228\"\n");
+	fprintf(file,"setenv  OLI229 \"$SCR/$JOB.F229\"\n");
+	fprintf(file,"setenv  OLI230 \"$SCR/$JOB.F230\"\n");
+	fprintf(file,"setenv  OLI231 \"$SCR/$JOB.F231\"\n");
+	fprintf(file,"setenv  OLI232 \"$SCR/$JOB.F232\"\n");
+	fprintf(file,"setenv  OLI233 \"$SCR/$JOB.F233\"\n");
+	fprintf(file,"setenv  OLI234 \"$SCR/$JOB.F234\"\n");
+	fprintf(file,"setenv  OLI235 \"$SCR/$JOB.F235\"\n");
+	fprintf(file,"setenv  OLI236 \"$SCR/$JOB.F236\"\n");
+	fprintf(file,"setenv  OLI237 \"$SCR/$JOB.F237\"\n");
+	fprintf(file,"setenv  OLI238 \"$SCR/$JOB.F238\"\n");
+	fprintf(file,"setenv  OLI239 \"$SCR/$JOB.F239\"\n");
+	fprintf(file,"setenv  VB2000PATH \"$GMSPATH/VB2000\"\n");
+	fprintf(file,"\n");
+	fprintf(file,"#\n");
+	fprintf(file,"if ((-x \"$GMSPATH/gamess.$VERNO.exe\") && (-x \"$GMSPATH/ddikick.exe\")) then\n");
+	fprintf(file,"else\n");
+	fprintf(file,"echo The GAMESS executable gamess.$VERNO.exe or else\n");
+	fprintf(file,"echo the DDIKICK executable ddikick.exe\n");
+	fprintf(file,"echo could not be found in directory $GMSPATH,\n");
+	fprintf(file,"echo or else they did not properly link to executable permission.\n");
+	fprintf(file,"exit 8\n");
+	fprintf(file,"endif\n");
+	fprintf(file,"#\n");
+	fprintf(file,"#        OK, now we are ready to execute!\n");
+	fprintf(file,"#    The kickoff program initiates GAMESS process(es) on all CPUs/nodes.\n");
+	fprintf(file,"#\n");
+	fprintf(file,"if ((-x \"$GMSPATH/gamess.$VERNO.exe\") && (-x \"$GMSPATH/ddikick.exe\")) then\n");
+	fprintf(file,"set echo\n");
+	fprintf(file,"\"$GMSPATH/ddikick.exe\" \"$GMSPATH/gamess.$VERNO.exe\" $JOB ");
+	fprintf(file,"-ddi $NNODES $NCPUS $HOSTLIST ");
+	fprintf(file,"-scr \"$SCR\" < /dev/null\n");
+	fprintf(file,"unset echo\n");
+	fprintf(file,"else\n");
+	fprintf(file,"echo The GAMESS executable gamess.$VERNO.exe or else\n");
+	fprintf(file,"echo the DDIKICK executable ddikick.exe\n");
+	fprintf(file,"echo could not be found in directory $GMSPATH,\n");
+	fprintf(file,"echo or else they did not properly link to executable permission.\n");
+	fprintf(file,"exit 8\n");
+	fprintf(file,"endif\n");
+	fprintf(file,"echo ----- accounting info -----\n");
+	fprintf(file,"exit\n");
+	fclose(file);
+	return TRUE;
+}
+#endif
+/***********************************************************************************************************/
+static gboolean create_cmd_gamess(G_CONST_RETURN gchar* command, gboolean local, gchar* cmddir, gchar* cmdfile, gchar* cmdall)
+{
+        FILE* fcmd = NULL;
+#ifndef G_OS_WIN32
+	gchar buffer[BSIZE];
+#endif
+
+	if(local)
+  		sprintf(cmddir,"%s", fileopen.localdir);
+	else
+		sprintf(cmddir,"%s%stmp", gabedit_directory(), G_DIR_SEPARATOR_S);
+
+#ifndef G_OS_WIN32
+	sprintf(cmdfile,"%s.cmd", fileopen.projectname);
+#else
+	if(!local)
+		sprintf(cmdfile,"%s.cmd", fileopen.projectname);
+	else
+		sprintf(cmdfile,"%s.bat", fileopen.projectname);
+#endif
+  	sprintf(cmdall,"%s%s%s",cmddir,G_DIR_SEPARATOR_S,cmdfile);
+
+
+  	fcmd = FOpen(cmdall, "w");
+	if(!fcmd)
+	{
+		if(local)
+  			Message("\nI can not create cmd file\n ","Error",TRUE);   
+		return FALSE;
+	}
+
+	if(local)
+		fprintf(fcmd,"cd %s\n", fileopen.localdir);
+	else
+		fprintf(fcmd,"cd %s\n", fileopen.remotedir);
+
+
+#ifndef G_OS_WIN32
+	fprintf(fcmd,"rm %s.dat\n",fileopen.projectname);
+	if(strcmp(command,"gms")==0)
+	{
+		fprintf(fcmd,"%s -l %s %s &\n",command,fileopen.logfile, fileopen.projectname);
+		/* printf("%s -l %s %s &\n",command,fileopen.logfile, fileopen.projectname);*/
+	}
+	else
+		fprintf(fcmd,"%s %s &\n",command,fileopen.projectname);
+	fprintf(fcmd,"exit\n");
+#else
+	 if(!local)
+	 {
+		 fprintf(fcmd,"%s %s &\n",command,fileopen.datafile);
+		 fprintf(fcmd,"exit\n");
+	 }
+	 else
+	 {
+		 gchar localhost[100];
+		 gchar versionNumber[10]="05";
+		 gchar* begin= strstr(command,".");
+		 if(begin)
+		 {
+		 	gchar* end;
+		 	gchar* k;
+		 	gint i = 0;
+			end= strstr(begin+1,".");
+			if(end)
+		 		for(k=begin+1;k<end;k++)
+		 		{
+			 		versionNumber[i] = *k;
+			 		i++;
+		 		}
+			 	versionNumber[i] = '\0';
+		 }
+		 {
+			 gchar buffer[BSIZE];
+			 sprintf(buffer,"%s\\gabeditRunGms.csh",gamessDirectory);
+			if(!createGamessCsh(buffer)) return FALSE;
+		 }
+		 
+		 winsockCheck(stderr);
+  		 gethostname(localhost,100);
+		 fprintf(fcmd,"@echo off\n");
+		 fprintf(fcmd,"echo Running %s.inp ....\n",fileopen.projectname);
+		 begin = strstr(gamessDirectory,":");
+		 if(begin) fprintf(fcmd,"%c:\n",gamessDirectory[0]);
+		 else fprintf(fcmd,"C:\n");
+		 fprintf(fcmd,"cd \"%s\\temp\"\n",gamessDirectory);
+		 fprintf(fcmd,"del %s.*\n",fileopen.projectname);
+		 fprintf(fcmd,"cd \"%s\"\n",gamessDirectory);
+		 fprintf(fcmd,"copy \"%s\\%s\" \"%s\\scratch\\%s.F05\"\n",
+				 fileopen.localdir,fileopen.datafile,gamessDirectory,fileopen.projectname);
+		 fprintf(fcmd,"csh -f gabeditRunGms.csh %s %s %s > \"%s\\%s\" \n",
+				 fileopen.projectname, versionNumber, localhost,fileopen.localdir,fileopen.logfile);
+		 fprintf(fcmd,"echo Job %s.inp finished.\n",fileopen.projectname);
+	 }
+
+#endif
+	fclose(fcmd);
+#ifndef G_OS_WIN32
+  	sprintf(buffer,"chmod u+x %s",cmdall);
+	system(buffer);
+#endif
+	return TRUE;
 }
 /***********************************************************************************************************/
 static gboolean create_cmd_gaussian(G_CONST_RETURN gchar* command, gboolean local, gchar* cmddir, gchar* cmdfile, gchar* cmdall)
@@ -866,10 +1261,11 @@ static gboolean create_cmd_other(G_CONST_RETURN gchar* command, gboolean local, 
 	return TRUE;
 }
 /********************************************************************************/
-static void run_remote_gaussian(GtkWidget *b,gpointer data)
+static void run_remote_gamess(GtkWidget *b,gpointer data)
 {  
   gchar *fout =  g_strdup_printf("%s%stmp%sfout",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
   gchar *ferr =  g_strdup_printf("%s%stmp%sferr",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+
   gchar cmdfile[BSIZE];
   gchar cmddir[BSIZE];
   gchar cmdall[BSIZE];
@@ -880,7 +1276,153 @@ static void run_remote_gaussian(GtkWidget *b,gpointer data)
   gchar *temp;
   gchar *NomFichier;
   gchar *Command;
-  FILE *fd;
+  GtkWidget **entryall;
+  GtkWidget *entry;
+  G_CONST_RETURN gchar *entrytext0;
+  gchar *entrytext;
+  gchar* title;
+  gint code = 0;
+  G_CONST_RETURN gchar *localdir;
+
+
+  entryall=(GtkWidget **)data;
+  entry=entryall[0];
+  entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
+  localdir = gtk_entry_get_text(GTK_ENTRY(EntryLocalDir));
+  entrytext = get_dir_file_name(localdir,entrytext0);
+
+  temp = get_suffix_name_file(entrytext);
+  fileopen.projectname = get_name_file(temp);
+  fileopen.localdir = get_name_dir(temp);
+  g_free(temp);
+  fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
+  fileopen.outputfile=g_strdup_printf("%s.log",fileopen.projectname);
+  fileopen.logfile=g_strdup_printf("%s.log",fileopen.projectname);
+  fileopen.moldenfile=g_strdup_printf("%s.log",fileopen.projectname);
+
+  fileopen.remotehost = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryall[2])));
+  fileopen.remoteuser = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryall[3])));
+  fileopen.remotepass  = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryall[4])));
+  fileopen.remotedir  = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryall[5])));
+  fileopen.command  = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryall[1])));
+
+  /* fileopen.netWorkProtocol Deja defini dans run_program*/
+  
+/*   Debug("remote gauss : %s %s %s\n",fileopen.remotehost,fileopen.remoteuser,fileopen.remotedir);*/
+
+  /* save file */
+   NomFichier = g_strdup_printf("%s%s%s",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.datafile);
+  
+  CreeFeuille(treeViewProjects, noeud[GABEDIT_TYPENODE_GAMESS],fileopen.projectname,fileopen.datafile,fileopen.localdir,
+			fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir,GABEDIT_TYPENODE_GAMESS, fileopen.command, fileopen.netWorkProtocol); 
+  add_host(fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir);
+
+/* Save file in local host */
+  if(!save_local_doc(NomFichier)) return;
+
+  data_modify(FALSE);
+
+  entry=entryall[1];
+  entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
+
+  title = g_strdup_printf("Run Gamess at host :%s, Login : %s",fileopen.remotehost,fileopen.remoteuser); 
+  Win = create_text_result_command(Text,Frame,title);
+  g_free(title);
+  gtk_widget_show_all(Win);
+  while( gtk_events_pending() ) gtk_main_iteration();
+  gtk_widget_set_sensitive(Win, FALSE);
+
+  if(!this_is_a_backspace(fileopen.remotedir))
+  {
+	/* Make Working directory */
+	/*  Debug("Make dir remote gauss : %s %s %s\n",fileopen.remotehost,fileopen.remoteuser,fileopen.remotedir);*/
+  	Command = g_strdup_printf("mkdir %s",fileopen.remotedir);
+  	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
+  	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
+  	g_free(Command);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
+  	put_text_in_texts_widget(Text,fout,ferr);
+  	while( gtk_events_pending() )
+          gtk_main_iteration();
+  }
+
+  if(code == 0)
+  {
+	/* put file.com */
+	/*  Debug("Put File remote gauss : %s %s %s\n",fileopen.remotehost,fileopen.remoteuser,fileopen.remotedir);*/
+  	code = put_file(fout,ferr,fileopen.datafile,fileopen.localdir,fileopen.remotedir,
+		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
+  	put_text_in_texts_widget(Text,fout,ferr);
+  	while( gtk_events_pending() )
+          gtk_main_iteration();
+  }
+  if( code==0 )
+  {
+        if(!create_cmd_gamess(entrytext0, FALSE, cmddir, cmdfile, cmdall))
+	{
+  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL, "\nI can not create cmd file\n ",-1);   
+  		gtk_widget_set_sensitive(Win, TRUE);
+		return;
+	}
+	code = 0;
+	  
+  }
+  if(code == 0)
+  {
+  	code = put_file(fout,ferr,cmdfile,cmddir,"./",
+		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1); 
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1);
+  	put_text_in_texts_widget(Text,fout,ferr);
+	unlink(cmdall);
+  	while( gtk_events_pending() )
+          gtk_main_iteration();
+  }
+  if(code == 0)
+  {
+  	Command = g_strdup_printf("chmod u+x %s",cmdfile);
+  	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
+  	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
+  	put_text_in_texts_widget(Text,fout,ferr);
+  	while( gtk_events_pending() )
+          gtk_main_iteration();
+  }
+  if(code == 0)
+  {
+  	Command = g_strdup_printf("./%s>/dev/null&",cmdfile);
+  	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nRun gamess at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nRun gamess at remote host :\n ",-1);   
+  	put_text_in_texts_widget(Text,fout,ferr);
+  	while( gtk_events_pending() )
+          gtk_main_iteration();
+  }
+  gtk_widget_set_sensitive(Win, TRUE);
+
+  g_free(fout);
+  g_free(ferr);
+}
+/********************************************************************************/
+static void run_remote_gaussian(GtkWidget *b,gpointer data)
+{  
+  gchar *fout =  g_strdup_printf("%s%stmp%sfout",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+  gchar *ferr =  g_strdup_printf("%s%stmp%sferr",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+
+  gchar cmdfile[BSIZE];
+  gchar cmddir[BSIZE];
+  gchar cmdall[BSIZE];
+
+  GtkWidget* Win;
+  GtkWidget* Text[2];
+  GtkWidget* Frame[2];
+  gchar *temp;
+  gchar *NomFichier;
+  gchar *Command;
   GtkWidget **entryall;
   GtkWidget *entry;
   G_CONST_RETURN gchar *entrytext0;
@@ -923,15 +1465,7 @@ static void run_remote_gaussian(GtkWidget *b,gpointer data)
   add_host(fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir);
 
 /* Save file in local host */
-  fd = FOpen(NomFichier, "w");
-  if(fd == NULL)
-  {
-	  Message("Sorry, I can not save file","Error",TRUE);
-	  return;
-  }
-  temp=gabedit_text_get_chars(text,0,-1);
-  fprintf(fd,"%s",temp);
-  fclose(fd);
+  if(!save_local_doc(NomFichier)) return;
 
   data_modify(FALSE);
 
@@ -1025,6 +1559,7 @@ static void run_remote_molcas(GtkWidget *b,gpointer data)
 {  
   gchar *fout =  g_strdup_printf("%s%stmp%sfout",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
   gchar *ferr =  g_strdup_printf("%s%stmp%sferr",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+
   gchar cmdfile[BSIZE];
   gchar cmddir[BSIZE];
   gchar cmdall[BSIZE];
@@ -1035,7 +1570,6 @@ static void run_remote_molcas(GtkWidget *b,gpointer data)
   gchar *temp;
   gchar *NomFichier;
   gchar *Command;
-  FILE *fd;
   GtkWidget **entryall;
   GtkWidget *entry;
   G_CONST_RETURN gchar *entrytext0;
@@ -1079,15 +1613,7 @@ static void run_remote_molcas(GtkWidget *b,gpointer data)
   add_host(fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir);
 
 /* Save file in local host */
-  fd = FOpen(NomFichier, "w");
-  if(fd == NULL)
-  {
-	  Message("Sorry, I can not save file","Error",TRUE);
-	  return;
-  }
-  temp=gabedit_text_get_chars(text,0,-1);
-  fprintf(fd,"%s",temp);
-  fclose(fd);
+  if(!save_local_doc(NomFichier)) return;
 
   data_modify(FALSE);
 
@@ -1181,6 +1707,7 @@ static void run_remote_molpro(GtkWidget *b,gpointer data)
 {  
   gchar *fout =  g_strdup_printf("%s%stmp%sfout",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
   gchar *ferr =  g_strdup_printf("%s%stmp%sferr",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+
   gchar cmdfile[BSIZE];
   gchar cmddir[BSIZE];
   gchar cmdall[BSIZE];
@@ -1194,7 +1721,6 @@ static void run_remote_molpro(GtkWidget *b,gpointer data)
   gchar *t;
   gchar *NomFichier;
   gchar *Command;
-  FILE *fd;
   GtkWidget **entryall;
   GtkWidget *entry;
   G_CONST_RETURN gchar *entrytext0;
@@ -1269,15 +1795,7 @@ static void run_remote_molpro(GtkWidget *b,gpointer data)
   add_host(fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir);
 
 /* Save file in local host */
-  fd = FOpen(NomFichier, "w");
-  if(fd == NULL)
-  {
-	  Message("Sorry, I can not save file","Error",TRUE);
-	  return;
-  }
-  temp=gabedit_text_get_chars(text,0,-1);
-  fprintf(fd,"%s",temp);
-  fclose(fd);
+  if(!save_local_doc(NomFichier)) return;
 
   data_modify(FALSE);
 
@@ -1372,6 +1890,7 @@ static void run_remote_mpqc(GtkWidget *b,gpointer data)
 {  
   gchar *fout =  g_strdup_printf("%s%stmp%sfout",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
   gchar *ferr =  g_strdup_printf("%s%stmp%sferr",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+
   gchar cmdfile[BSIZE];
   gchar cmddir[BSIZE];
   gchar cmdall[BSIZE];
@@ -1382,7 +1901,6 @@ static void run_remote_mpqc(GtkWidget *b,gpointer data)
   gchar *temp;
   gchar *NomFichier;
   gchar *Command;
-  FILE *fd;
   GtkWidget **entryall;
   GtkWidget *entry;
   G_CONST_RETURN gchar *entrytext0;
@@ -1420,15 +1938,7 @@ static void run_remote_mpqc(GtkWidget *b,gpointer data)
 			fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir,GABEDIT_TYPENODE_MPQC, fileopen.command, fileopen.netWorkProtocol); 
   add_host(fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir);
 
-  fd = FOpen(NomFichier, "w");
-  if(fd == NULL)
-  {
-	  Message("Sorry, I can not save file","Error",TRUE);
-	  return;
-  }
-  temp=gabedit_text_get_chars(text,0,-1);
-  fprintf(fd,"%s",temp);
-  fclose(fd);
+  if(!save_local_doc(NomFichier)) return;
 
   data_modify(FALSE);
 
@@ -1517,6 +2027,7 @@ static void run_remote_other(GtkWidget *b,gpointer data)
 {  
   gchar *fout =  g_strdup_printf("%s%stmp%sfout",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
   gchar *ferr =  g_strdup_printf("%s%stmp%sferr",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+
   gchar cmdfile[BSIZE];
   gchar cmddir[BSIZE];
   gchar cmdall[BSIZE];
@@ -1527,7 +2038,6 @@ static void run_remote_other(GtkWidget *b,gpointer data)
   gchar *temp;
   gchar *NomFichier;
   gchar *Command;
-  FILE *fd;
   GtkWidget **entryall;
   GtkWidget *entry;
   G_CONST_RETURN gchar *entrytext0;
@@ -1568,15 +2078,7 @@ static void run_remote_other(GtkWidget *b,gpointer data)
   add_host(fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir);
 
 
-  fd = FOpen(NomFichier, "w");
-  if(fd == NULL)
-  {
-	  Message("Sorry, I can not save file","Error",TRUE);
-	  return;
-  }
-  temp=gabedit_text_get_chars(text,0,-1);
-  fprintf(fd,"%s",temp);
-  fclose(fd);
+  if(!save_local_doc(NomFichier)) return;
 
   data_modify(FALSE);
 
@@ -1662,10 +2164,15 @@ static void run_remote_other(GtkWidget *b,gpointer data)
   g_free(ferr);
 }
 /********************************************************************************/
-static void run_local_gaussian(GtkWidget *b,gpointer data)
+static void run_local_gamess(GtkWidget *b,gpointer data)
 {  
+#ifdef G_OS_WIN32
+  gchar *fout =  g_strdup_printf("\"%s%stmp%sfout\"",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+  gchar *ferr =  g_strdup_printf("\"%s%stmp%sferr\"",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+#else
   gchar *fout =  g_strdup_printf("%s%stmp%sfout",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
   gchar *ferr =  g_strdup_printf("%s%stmp%sferr",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+#endif
 
   GtkWidget* Win;
   GtkWidget* Text[2];
@@ -1675,7 +2182,107 @@ static void run_local_gaussian(GtkWidget *b,gpointer data)
   gchar *temp;
   gchar *NomFichier;
   gchar Command[BSIZE];
-  FILE *fd;
+  GtkWidget **entryall;
+  GtkWidget *entry;
+  G_CONST_RETURN gchar *entrytext0;
+  gchar *entrytext;
+  gchar* title;
+  G_CONST_RETURN gchar *localdir;
+  gchar cmdFileAllName[BSIZE];
+  gchar cmdDir[BSIZE];
+  gchar cmdFile[BSIZE];
+
+
+  entryall=(GtkWidget **)data;
+  entry=entryall[0];
+  entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
+  localdir = gtk_entry_get_text(GTK_ENTRY(EntryLocalDir));
+  entrytext = get_dir_file_name(localdir,entrytext0);
+
+  temp = get_suffix_name_file(entrytext);
+  fileopen.projectname = get_name_file(temp);
+  fileopen.localdir = get_name_dir(temp);
+  g_free(temp);
+  fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
+  fileopen.outputfile=g_strdup_printf("%s.log",fileopen.projectname);
+  fileopen.logfile=g_strdup_printf("%s.log",fileopen.projectname);
+  fileopen.moldenfile=g_strdup_printf("%s.log",fileopen.projectname);
+  fileopen.remotehost = NULL;
+  fileopen.remoteuser = NULL;
+  fileopen.remotedir = NULL;
+
+  /* save file */
+   NomFichier = g_strdup_printf("%s%s%s",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.datafile);
+  
+  fileopen.remotehost = NULL;
+  fileopen.remoteuser = NULL;
+  fileopen.remotepass = NULL;
+  fileopen.remotedir = NULL;
+  fileopen.command  = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryall[1])));
+  CreeFeuille(treeViewProjects, noeud[GABEDIT_TYPENODE_GAMESS],fileopen.projectname,fileopen.datafile,fileopen.localdir,
+			fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir,GABEDIT_TYPENODE_GAMESS, fileopen.command, fileopen.netWorkProtocol); 
+
+/* Save file in local host */
+  if(!save_local_doc(NomFichier)) return;
+
+  data_modify(FALSE);
+
+  entry=entryall[1];
+  entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
+
+  if(!create_cmd_gamess(entrytext0, TRUE, cmdDir, cmdFile, cmdFileAllName)) return;
+#ifdef G_OS_WIN32
+  sprintf(Command ,"\"%s\"",cmdFileAllName);
+#else
+  sprintf(Command ,"%s",cmdFileAllName);
+#endif
+
+  run_local_command(fout,ferr,Command,TRUE);
+  title = g_strdup_printf("Run gamess in local : %s",Command); 
+  Win = create_text_result_command(Text,Frame,title);
+  g_free(title);
+  strout = cat_file(fout,FALSE);
+  strerr = cat_file(ferr,FALSE);
+  if(!strout && !strerr)
+  	destroy_childs(Win);
+  else
+  {
+  	if(strout)
+	{
+ 		gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,strout,-1);   
+		g_free(strout);
+	}
+  	if(strerr)
+	{
+ 		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,strerr,-1);   
+		g_free(strerr);
+	}
+  	gtk_widget_show_all(Win);
+  	if(!strout)
+  		gtk_widget_hide(Frame[0]);
+  }
+  g_free(fout);
+  g_free(ferr);
+}
+/********************************************************************************/
+static void run_local_gaussian(GtkWidget *b,gpointer data)
+{  
+#ifdef G_OS_WIN32
+  gchar *fout =  g_strdup_printf("\"%s%stmp%sfout\"",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+  gchar *ferr =  g_strdup_printf("\"%s%stmp%sferr\"",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+#else
+  gchar *fout =  g_strdup_printf("%s%stmp%sfout",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+  gchar *ferr =  g_strdup_printf("%s%stmp%sferr",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+#endif
+
+  GtkWidget* Win;
+  GtkWidget* Text[2];
+  GtkWidget* Frame[2];
+  gchar *strout;
+  gchar *strerr;
+  gchar *temp;
+  gchar *NomFichier;
+  gchar Command[BSIZE];
   GtkWidget **entryall;
   GtkWidget *entry;
   G_CONST_RETURN gchar *entrytext0;
@@ -1717,15 +2324,7 @@ static void run_local_gaussian(GtkWidget *b,gpointer data)
 			fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir,GABEDIT_TYPENODE_GAUSSIAN, fileopen.command, fileopen.netWorkProtocol); 
 
 /* Save file in local host */
-  fd = FOpen(NomFichier, "w");
-  if(fd == NULL)
-  {
-	  Message("Sorry, I can not save file","Error",TRUE);
-	  return;
-  }
-  temp=gabedit_text_get_chars(text,0,-1);
-  fprintf(fd,"%s",temp);
-  fclose(fd);
+  if(!save_local_doc(NomFichier)) return;
 
   data_modify(FALSE);
 
@@ -1765,8 +2364,13 @@ static void run_local_gaussian(GtkWidget *b,gpointer data)
 /********************************************************************************/
 static void run_local_molcas(GtkWidget *b,gpointer data)
 {  
+#ifdef G_OS_WIN32
+  gchar *fout =  g_strdup_printf("\"%s%stmp%sfout\"",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+  gchar *ferr =  g_strdup_printf("\"%s%stmp%sferr\"",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+#else
   gchar *fout =  g_strdup_printf("%s%stmp%sfout",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
   gchar *ferr =  g_strdup_printf("%s%stmp%sferr",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+#endif
 
   GtkWidget* Win;
   GtkWidget* Text[2];
@@ -1776,7 +2380,6 @@ static void run_local_molcas(GtkWidget *b,gpointer data)
   gchar *temp;
   gchar *NomFichier;
   gchar *Command;
-  FILE *fd;
   GtkWidget **entryall;
   GtkWidget *entry;
   G_CONST_RETURN gchar *entrytext0;
@@ -1819,15 +2422,7 @@ static void run_local_molcas(GtkWidget *b,gpointer data)
 			fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir,GABEDIT_TYPENODE_MOLCAS, fileopen.command, fileopen.netWorkProtocol); 
 
 /* Save file in local host */
-  fd = FOpen(NomFichier, "w");
-  if(fd == NULL)
-  {
-	  Message("Sorry, I can not save the input file","Error",TRUE);
-	  return;
-  }
-  temp=gabedit_text_get_chars(text,0,-1);
-  fprintf(fd,"%s",temp);
-  fclose(fd);
+  if(!save_local_doc(NomFichier)) return;
 
   data_modify(FALSE);
 
@@ -1871,8 +2466,13 @@ static void run_local_molcas(GtkWidget *b,gpointer data)
 /********************************************************************************/
 static void run_local_molpro(GtkWidget *b,gpointer data)
 {  
+#ifdef G_OS_WIN32
+  gchar *fout =  g_strdup_printf("\"%s%stmp%sfout\"",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+  gchar *ferr =  g_strdup_printf("\"%s%stmp%sferr\"",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+#else
   gchar *fout =  g_strdup_printf("%s%stmp%sfout",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
   gchar *ferr =  g_strdup_printf("%s%stmp%sferr",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+#endif
 
   GtkWidget* Win;
   GtkWidget* Text[2];
@@ -1883,7 +2483,6 @@ static void run_local_molpro(GtkWidget *b,gpointer data)
   gchar *t;
   gchar *NomFichier;
   gchar Command[BSIZE];
-  FILE *fd;
   GtkWidget **entryall;
   GtkWidget *entry;
   G_CONST_RETURN gchar *entrytext0;
@@ -1959,15 +2558,7 @@ static void run_local_molpro(GtkWidget *b,gpointer data)
 			fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir,GABEDIT_TYPENODE_MOLPRO, fileopen.command, fileopen.netWorkProtocol); 
 
 /* Save file in local host */
-  fd = FOpen(NomFichier, "w");
-  if(fd == NULL)
-  {
-	  Message("Sorry, I can not save file","Error",TRUE);
-	  return;
-  }
-  temp=gabedit_text_get_chars(text,0,-1);
-  fprintf(fd,"%s",temp);
-  fclose(fd);
+  if(!save_local_doc(NomFichier)) return;
 
   data_modify(FALSE);
 
@@ -2009,8 +2600,13 @@ static void run_local_molpro(GtkWidget *b,gpointer data)
 /********************************************************************************/
 static void run_local_mpqc(GtkWidget *b,gpointer data)
 {  
+#ifdef G_OS_WIN32
+  gchar *fout =  g_strdup_printf("\"%s%stmp%sfout\"",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+  gchar *ferr =  g_strdup_printf("\"%s%stmp%sferr\"",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+#else
   gchar *fout =  g_strdup_printf("%s%stmp%sfout",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
   gchar *ferr =  g_strdup_printf("%s%stmp%sferr",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+#endif
 
   GtkWidget* Win;
   GtkWidget* Text[2];
@@ -2020,7 +2616,6 @@ static void run_local_mpqc(GtkWidget *b,gpointer data)
   gchar *temp;
   gchar *NomFichier;
   gchar *Command;
-  FILE *fd;
   GtkWidget **entryall;
   GtkWidget *entry;
   G_CONST_RETURN gchar *entrytext0;
@@ -2063,15 +2658,7 @@ static void run_local_mpqc(GtkWidget *b,gpointer data)
 			fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir,GABEDIT_TYPENODE_MPQC, fileopen.command, fileopen.netWorkProtocol); 
 
 /* Save file in local host */
-  fd = FOpen(NomFichier, "w");
-  if(fd == NULL)
-  {
-	  Message("Sorry, I can not save the input file","Error",TRUE);
-	  return;
-  }
-  temp=gabedit_text_get_chars(text,0,-1);
-  fprintf(fd,"%s",temp);
-  fclose(fd);
+  if(!save_local_doc(NomFichier)) return;
 
   data_modify(FALSE);
 
@@ -2115,8 +2702,13 @@ static void run_local_mpqc(GtkWidget *b,gpointer data)
 /********************************************************************************/
 static void run_local_other(GtkWidget *b,gpointer data)
 {  
+#ifdef G_OS_WIN32
+  gchar *fout =  g_strdup_printf("\"%s%stmp%sfout\"",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+  gchar *ferr =  g_strdup_printf("\"%s%stmp%sferr\"",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+#else
   gchar *fout =  g_strdup_printf("%s%stmp%sfout",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
   gchar *ferr =  g_strdup_printf("%s%stmp%sferr",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+#endif
 
   GtkWidget* Win;
   GtkWidget* Text[2];
@@ -2126,7 +2718,6 @@ static void run_local_other(GtkWidget *b,gpointer data)
   gchar *temp;
   gchar *NomFichier;
   gchar Command[BSIZE];
-  FILE *fd;
   GtkWidget **entryall;
   GtkWidget *entry;
   G_CONST_RETURN gchar *entrytext0;
@@ -2168,17 +2759,7 @@ static void run_local_other(GtkWidget *b,gpointer data)
 			fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir,GABEDIT_TYPENODE_OTHER, fileopen.command, fileopen.netWorkProtocol); 
 
 /* Save file in local host */
-  fd = FOpen(NomFichier, "w");
-  if(fd == NULL)
-  {
-	  temp = g_strdup_printf(" I can not save %s file", NomFichier);
-	  Message(temp,"Error",TRUE);
-	  g_free(temp);
-	  return;
-  }
-  temp=gabedit_text_get_chars(text,0,-1);
-  fprintf(fd,"%s",temp);
-  fclose(fd);
+  if(!save_local_doc(NomFichier)) return;
 
   data_modify(FALSE);
 
@@ -2240,36 +2821,21 @@ void run_program(GtkWidget *button,gpointer data)
 
 	if(GTK_TOGGLE_BUTTON (ButtonLocal)->active)
 	{
-		if (GTK_TOGGLE_BUTTON (ButtonGauss)->active)
-			run_local_gaussian(NULL,data);
-		else
-		if (GTK_TOGGLE_BUTTON (ButtonMolcas)->active)
-			run_local_molcas(NULL,data);
-		else
-		if (GTK_TOGGLE_BUTTON (ButtonMPQC)->active)
-			run_local_mpqc(NULL,data);
-		else
-		if (GTK_TOGGLE_BUTTON (ButtonMolpro)->active)
-			run_local_molpro(NULL,data);
-		else
-		if (GTK_TOGGLE_BUTTON (ButtonOther)->active)
-			run_local_other(NULL,data);
+		if (GTK_TOGGLE_BUTTON (ButtonGamess)->active) run_local_gamess(NULL,data);
+		else if (GTK_TOGGLE_BUTTON (ButtonGauss)->active) run_local_gaussian(NULL,data);
+		else if (GTK_TOGGLE_BUTTON (ButtonMolcas)->active) run_local_molcas(NULL,data);
+		else if (GTK_TOGGLE_BUTTON (ButtonMPQC)->active) run_local_mpqc(NULL,data);
+		else if (GTK_TOGGLE_BUTTON (ButtonMolpro)->active) run_local_molpro(NULL,data);
+		else if (GTK_TOGGLE_BUTTON (ButtonOther)->active) run_local_other(NULL,data);
 	}
 	else
 	{
-		if (GTK_TOGGLE_BUTTON (ButtonGauss)->active)
-			run_remote_gaussian(NULL,data);
-		else
-		if (GTK_TOGGLE_BUTTON (ButtonMolcas)->active)
-			run_remote_molcas(NULL,data);
-		else
-		if (GTK_TOGGLE_BUTTON (ButtonMPQC)->active)
-			run_remote_mpqc(NULL,data);
-		else
-		if (GTK_TOGGLE_BUTTON (ButtonMolpro)->active)
-			run_remote_molpro(NULL,data);
-		else
-		run_remote_other(NULL,data);
+		if (GTK_TOGGLE_BUTTON (ButtonGamess)->active) run_remote_gamess(NULL,data);
+		else if (GTK_TOGGLE_BUTTON (ButtonGauss)->active) run_remote_gaussian(NULL,data);
+		else if (GTK_TOGGLE_BUTTON (ButtonMolcas)->active) run_remote_molcas(NULL,data);
+		else if (GTK_TOGGLE_BUTTON (ButtonMPQC)->active) run_remote_mpqc(NULL,data);
+		else if (GTK_TOGGLE_BUTTON (ButtonMolpro)->active) run_remote_molpro(NULL,data);
+		else run_remote_other(NULL,data);
 	}
 	gtk_notebook_set_current_page((GtkNotebook*)NoteBookText,0);
 }
@@ -2316,7 +2882,20 @@ static GtkWidget *create_hbox_browser_run(GtkWidget* Wins,GtkWidget* Table,
                   (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
                   (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
                   1,1);
-  add_label_table(Table,LabelRight,row,3);
+
+  {
+	GtkWidget *Label;
+	GtkWidget *hbox = gtk_hbox_new(0,FALSE);
+	
+	Label = gtk_label_new (LabelRight);
+   	gtk_label_set_justify(GTK_LABEL(Label),GTK_JUSTIFY_LEFT);
+	gtk_box_pack_start (GTK_BOX (hbox), Label, FALSE, FALSE, 0);
+	add_widget_table(Table,hbox,row,3);
+	LabelExtFile = Label;
+  }
+
+
+
   g_object_set_data (G_OBJECT (Table), "Entry", Entry);
   g_object_set_data (G_OBJECT (Table), "Label", Label);
   g_object_set_data (G_OBJECT (Table), "Window", Wins);
@@ -2362,20 +2941,23 @@ GtkWidget* create_programs_frame(GtkWidget *hbox)
   Table = gtk_table_new(2,3,FALSE);
   gtk_container_add(GTK_CONTAINER(vboxframe),Table);
 
-  ButtonGauss = gtk_radio_button_new_with_label( NULL,"Gaussian" );
-  add_widget_table(Table,ButtonGauss,0,0);
+  ButtonGamess = gtk_radio_button_new_with_label( NULL,"Gamess" );
+  add_widget_table(Table,ButtonGamess,0,0);
+
+  ButtonGauss = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonGamess)), "Gaussian "); 
+  add_widget_table(Table,ButtonGauss,0,1);
 
   ButtonMolcas = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonGauss)), "Molcas "); 
-  add_widget_table(Table,ButtonMolcas,0,1);
+  add_widget_table(Table,ButtonMolcas,0,2);
 
   ButtonMolpro = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonGauss)), "Molpro "); 
-  add_widget_table(Table,ButtonMolpro,0,2);
+  add_widget_table(Table,ButtonMolpro,1,0);
 
   ButtonMPQC = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonGauss)), "MPQC "); 
-  add_widget_table(Table,ButtonMPQC,1,0);
+  add_widget_table(Table,ButtonMPQC,1,1);
 
   ButtonOther = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonGauss)), "Other "); 
-  add_widget_table(Table,ButtonOther,1,1);
+  add_widget_table(Table,ButtonOther,1,2);
   return frame;
 }
 /********************************************************************************/
@@ -2489,7 +3071,10 @@ static void changedEntryFileData(GtkWidget *entry,gpointer data)
 	if(entrytext)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"%s.com",entrytext);
+
+		if (ButtonGamess && GTK_TOGGLE_BUTTON (ButtonGamess)->active)
+		sprintf(buffer,"%s.inp",entrytext);
+		else sprintf(buffer,"%s.com",entrytext);
 		gtk_label_set_text(GTK_LABEL(LabelDataFile), buffer);
 	}
 }
@@ -2873,33 +3458,50 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GtkSignalFunc func)
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)destroy_childs,G_OBJECT(fp));
   g_signal_connect_swapped (G_OBJECT (entry[4]), "activate", (GtkSignalFunc) gtk_button_clicked, G_OBJECT (button));
   
+  g_signal_connect(G_OBJECT(ButtonGamess), "clicked",G_CALLBACK(set_default_entrys),NULL);
   g_signal_connect(G_OBJECT(ButtonGauss), "clicked",G_CALLBACK(set_default_entrys),NULL);
   g_signal_connect(G_OBJECT(ButtonMolcas), "clicked",G_CALLBACK(set_default_entrys),NULL);
   g_signal_connect(G_OBJECT(ButtonMolpro), "clicked",G_CALLBACK(set_default_entrys),NULL);
   g_signal_connect(G_OBJECT(ButtonMPQC), "clicked",G_CALLBACK(set_default_entrys),NULL);
   g_signal_connect(G_OBJECT(ButtonOther), "clicked",G_CALLBACK(set_default_entrys),NULL);
-  if(strstr(type,"Molpro"))
-	  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMolpro), TRUE);
-  else
-  if(strstr(type,"Gaussian"))
-	  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonGauss), TRUE);
-  else
-  if(strstr(type,"Molcas"))
-	  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMolcas), TRUE);
-  else
-  if(strstr(type,"MPQC"))
-	  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMPQC), TRUE);
-  else
-	  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonOther), TRUE);
-  
+
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonGamess), FALSE);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMolpro), FALSE);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonGauss), FALSE);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMolcas), FALSE);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMPQC), FALSE);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonOther), FALSE); 
+
+  if(strstr(type,"Gamess")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonGamess), TRUE);
+  else if(strstr(type,"Molpro")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMolpro), TRUE);
+  else if(strstr(type,"Gaussian")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonGauss), TRUE);
+  else if(strstr(type,"Molcas")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMolcas), TRUE);
+  else if(strstr(type,"MPQC")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMPQC), TRUE);
+  else gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonOther), TRUE); 
+
   g_object_set_data (G_OBJECT (ButtonLocal), "TypeButton", &typeButton[0]);
   g_signal_connect(G_OBJECT(ButtonLocal), "clicked",G_CALLBACK(set_frame_remote_visibility),NULL);
+#ifdef G_OS_WIN32
+  g_signal_connect_swapped(G_OBJECT(ButtonLocal), "clicked",G_CALLBACK(set_default_entrys),ButtonGamess);
+#endif
 
   g_object_set_data (G_OBJECT (ButtonRemote), "TypeButton", &typeButton[1]);
   g_signal_connect(G_OBJECT(ButtonRemote), "clicked",G_CALLBACK(set_frame_remote_visibility),NULL);
   
 #ifdef G_OS_WIN32
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonRemote), TRUE);
+  if(iprogram == PROG_IS_GAMESS)
+  {
+  	if(fileopen.remotedir && !this_is_a_backspace(fileopen.remotedir))
+		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonRemote), TRUE);
+	else
+	{
+  		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonLocal), TRUE);
+		gtk_widget_set_sensitive(FrameRemote, FALSE);
+		gtk_widget_set_sensitive(FrameNetWork, FALSE);
+	}
+  }
+  else
+  	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonRemote), TRUE);
   /*gtk_widget_set_sensitive(ButtonLocal, FALSE);*/
 
 #else
@@ -2916,7 +3518,7 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GtkSignalFunc func)
 
   /* Show all */
   gtk_widget_show_all(fp);
-  if(!strstr(type,"Gaussian") && !strstr(type,"Molcas") && !strstr(type,"Molpro") && !strstr(type,"MPQC"))
+  if(!strstr(type,"Gamess")  && !strstr(type,"Gaussian") && !strstr(type,"Molcas") && !strstr(type,"Molpro") && !strstr(type,"MPQC"))
   	gtk_widget_hide(LabelDataFile);
 }
 /********************************************************************************/
@@ -2924,6 +3526,10 @@ void create_run ()
 {
 	switch(iprogram)
 	{
+		case PROG_IS_GAMESS :
+		create_run_dialogue_box(NULL,"Gamess",(GtkSignalFunc)run_program);
+		break;
+
 		case PROG_IS_GAUSS :
 		create_run_dialogue_box(NULL,"Gaussian",(GtkSignalFunc)run_program);
 		break;

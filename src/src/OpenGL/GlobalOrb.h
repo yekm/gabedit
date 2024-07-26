@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -45,9 +45,6 @@ DEALINGS IN THE SOFTWARE.
 #define NTS 500
 #define TMAX 50.0
 #define NATOMS 104
-#define MAJOR_VERSION    0
-#define MINOR_VERSION    0
-#define MICRO_VERSION    1
 
 #include "../Common/GabeditType.h"
 /*#include "GabEditType.h"*/
@@ -127,6 +124,8 @@ gboolean DeleteContours;
 gboolean CancelCalcul;
 gboolean ShowDipoleOrb;
 gboolean ShowHBondOrb;
+gboolean ShowHAtomOrb;
+gboolean ShowMultiBondsOrb;
 gboolean ShowVibration;
 OpenGLOptions openGLOptions;
 gboolean createBMPFiles;

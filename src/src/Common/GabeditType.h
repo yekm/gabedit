@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -54,6 +54,7 @@ typedef enum
 } GabEditTypeTexture;
 typedef enum
 {
+  GABEDIT_TYPENODE_GAMESS,
   GABEDIT_TYPENODE_GAUSSIAN,
   GABEDIT_TYPENODE_MOLCAS,
   GABEDIT_TYPENODE_MOLPRO,
@@ -73,6 +74,7 @@ typedef enum
   GABEDIT_TYPEFILE_MOLCAS,
   GABEDIT_TYPEFILE_MOLPRO,
   GABEDIT_TYPEFILE_DALTON,
+  GABEDIT_TYPEFILE_GAMESS,
   GABEDIT_TYPEFILE_MOLPRO_LOG,
   GABEDIT_TYPEFILE_MOLDEN,
   GABEDIT_TYPEFILE_GABEDIT,
@@ -83,6 +85,7 @@ typedef enum
   GABEDIT_TYPEFILE_GZMAT,
   GABEDIT_TYPEFILE_MZMAT,
   GABEDIT_TYPEFILE_HIN,
+  GABEDIT_TYPEFILE_GAMESSINPUT,
   GABEDIT_TYPEFILE_GAUSIANINPUT,
   GABEDIT_TYPEFILE_MOLCASINPUT,
   GABEDIT_TYPEFILE_MOLPROINPUT,
@@ -119,6 +122,10 @@ typedef enum
   GABEDIT_TYPEFILEGEOM_DALTONFIRST,
   GABEDIT_TYPEFILEGEOM_DALTONLAST,
 
+  GABEDIT_TYPEFILEGEOM_GAMESSIN,
+  GABEDIT_TYPEFILEGEOM_GAMESSFIRST,
+  GABEDIT_TYPEFILEGEOM_GAMESSLAST,
+
   GABEDIT_TYPEFILEGEOM_GAUSSIN,
   GABEDIT_TYPEFILEGEOM_GAUSSOUTFIRST,
   GABEDIT_TYPEFILEGEOM_GAUSSOUTLAST,
@@ -148,6 +155,8 @@ typedef enum
   GABEDIT_TYPEGRID_DDENSITY,
   GABEDIT_TYPEGRID_ADENSITY,
   GABEDIT_TYPEGRID_SDENSITY,
+  GABEDIT_TYPEGRID_ELFBECKE,
+  GABEDIT_TYPEGRID_ELFSAVIN,
 } GabEditTypeGrid;
 
 typedef enum
@@ -262,7 +271,7 @@ typedef struct _TypeFontsStyle
  GdkColor BaseColor;
  GdkColor TextColor;
 }TypeFontsStyle;
-typedef gfloat	 (*Func3d)(gfloat ,gfloat,gfloat,gint);
+typedef gdouble	 (*Func3d)(gfloat ,gfloat,gfloat,gint);
 
 #endif /* __GABEDIT_GABEDITTYPE_H__ */
 

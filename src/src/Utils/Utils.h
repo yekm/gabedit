@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -110,6 +110,7 @@ GtkStyle *set_fg_style(GtkWidget *wid,gushort red,gushort green,gushort blue);
 GtkStyle *set_bg_style(GtkWidget *wid,gushort red,gushort green,gushort blue);
 gint numb_of_string_by_row(gchar *str);
 gchar** gab_split(gchar *str);
+void get_dipole_from_gamess_output_file(FILE* fd);
 void get_dipole_from_gaussian_output_file(FILE* fd);
 void get_dipole_from_molpro_output_file(FILE* fd);
 void get_dipole_from_dalton_output_file(FILE* fd);

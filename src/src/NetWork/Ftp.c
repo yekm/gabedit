@@ -1,6 +1,6 @@
 /*Ftp.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -233,10 +233,15 @@ int data_connection(char *mode,char *cmd,char *filename)
 {
 	struct  sockaddr_in data_addr;
 	struct  sockaddr_in from_addr;
-        int s, len = sizeof (data_addr);
+        int s;
 	char *pos;
 	char *pos1;
 	int   datain = -1; 
+#ifdef G_OS_WIN32
+        gint  len = sizeof (data_addr);
+#else
+        socklen_t len = sizeof (data_addr);
+#endif
 
 	memset((char *)&data_addr,0, sizeof (data_addr));
 	data_addr.sin_addr.s_addr = INADDR_ANY;;
@@ -507,7 +512,12 @@ static int initSocket ()
 int tcpopen(char *host)
 {
 
-	int s,len;
+	int s;
+#ifdef G_OS_WIN32
+        gint  len;
+#else
+        socklen_t len;
+#endif
 
 #ifdef G_OS_WIN32
 	if( !winsockCheck(FileErr) )

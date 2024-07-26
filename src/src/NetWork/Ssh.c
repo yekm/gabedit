@@ -1,6 +1,6 @@
 /* Ssh.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -20,8 +20,8 @@ DEALINGS IN THE SOFTWARE.
 /****************************************************************
 *                                                               *
 *          Execute a shell command in remote host               *
-*          plink - Remote Shell Client for Windows 95/98 system   *
-*          ssh - Remote Shell Client using rsh system           *
+*          plink - Remote Shell Client for Windows     system   *
+*          ssh - Remote Shell Client using ssh system           *
 *                command for a unix/Linux system                *
 *                                                               *
 ****************************************************************/
@@ -64,16 +64,16 @@ static long clientThread ()
 
 
 	command = g_strdup_printf(
-					"%s -pw %s %s@%s %s > %s",
+					"%s -pw %s %s@%s %s > \"%s\"",
 					plinkCommand,passWordGlobal,
 					userNameGlobal,rhostGlobal,cmdGlobal
 					,fileouttmp);
 
-	/*printf("%s\n",command);*/
+	/* printf("%s\n",command);*/
 	system(command);
 	g_free(command);
 
-	command = g_strdup_printf("copy %s %s",fileouttmp,foutGlobal);
+	command = g_strdup_printf("copy \"%s\" \"%s\"",fileouttmp,foutGlobal);
 	system(command);
 	g_free(command);
 	g_free(fileouttmp);
@@ -115,6 +115,11 @@ void ssh (char *fout,char *ferr,const char* cmd,
 		if(cmdGlobal[i]=='&')
 			cmdGlobal[i] = ' ';
 	}
+	/*
+	printf("cmd = %s\n",cmdGlobal);
+	printf("fout = %s\n",foutGlobal);
+	printf("ferr = %s\n",ferrGlobal);
+	*/
 	
 	unlink(fout);
 	unlink(ferr);

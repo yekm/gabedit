@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -46,6 +46,7 @@ gfloat** CreateTable2(gint N);
 gfloat** FreeTable2(gfloat **T,gint N);
 void PrintAllOrb(gfloat** M);
 gint get_type_file(gchar *NomFichier);
+gint get_type_basis_in_gamess_file(gchar *NomFichier);
 gint get_type_basis_in_gaussian_file(gchar *NomFichier);
 gint get_type_basis_in_gabedit_file(gchar *NomFichier);
 gint get_type_basis_in_molden_file(gchar *NomFichier);

@@ -1,6 +1,6 @@
 /* MoleculeSymmetry.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -616,10 +616,13 @@ int computeSymmetry(
 	sprintf(message,"C1 Group");
 
 	if(strcmp(syml,"NO")!=0) getSymmetryFromSymbol(syml,&symf,&nax, message);
+	
 	/*
 	printf("symf = %d\n",symf);
+	printf("nax = %d\n",nax);
 	printf("message = %s\n",message);
 	*/
+
 	sprintf(pointGroupSymbol,"C1");
 	if(symf == 0)
 	{
@@ -655,7 +658,10 @@ int computeSymmetry(
 	if (symf < 0 ) /* symmetry not fixed */
 		symmetry = determineSymmetry(&mol,&nax,numberOfEquivalentAxes, maximalOrder, principalAxisTolerance, message);
 	else
+	{
+		determineSymmetry(&mol,&nax,numberOfEquivalentAxes, maximalOrder, principalAxisTolerance, message);
 		symmetry = symf;
+	}
 	
 	/*
 	printf("symmetry = %d\n",symmetry);
@@ -663,6 +669,7 @@ int computeSymmetry(
 	printf("Mess = %s\n", message);
 	printf("nax = %d\n", nax);
 	*/
+
 
 	if(symmetry == 0)
 	{
@@ -705,10 +712,12 @@ int computeSymmetry(
 		nax = 5;
 	}
 	getPointGroupSymbol(symmetry,nax, pointGroupSymbol);
+
 	/*
 	printf("Group %s\n",pointGroupSymbol);
 	printf("nAToms %d\n", mol.numberOfAtoms);
 	*/
+
       	for (i=0;i < mol.numberOfAtoms;i++)
 	{ 
 		sprintf(symbols[i],mol.symbol[mol.listOfAtoms[i].type]);

@@ -252,7 +252,8 @@ GdkGLPixmap *gdk_gl_pixmap_new(GdkVisual *visual, GdkPixmap *pixmap)
   GdkGLPixmapPrivate *private;
   GLXPixmap glxpixmap;
   Window root_return;
-  unsigned int x_ret, y_ret, w_ret, h_ret, bw_ret, depth_ret;
+  unsigned int w_ret, h_ret, bw_ret, depth_ret;
+  int x_ret, y_ret;
 
   g_return_val_if_fail(pixmap != NULL, NULL);
   g_return_val_if_fail(visual != NULL, NULL);

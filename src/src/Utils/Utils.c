@@ -1,6 +1,6 @@
 /* Utils.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -133,6 +133,11 @@ static void free_commands_list(CommandsList* list)
   	list->numberOfCommands = 0;
   	list->numberOfDefaultCommand = 0;
 	list->commands = NULL;
+}
+/********************************************************************************/
+void free_gamess_commands()
+{
+	free_commands_list(&gaussianCommands);
 }
 /********************************************************************************/
 void free_gaussian_commands()
@@ -427,6 +432,7 @@ gchar* cat_file(gchar* namefile,gboolean tabulation)
  FILE *fd;
  gchar *dump = NULL;
 
+
  t=g_malloc(BSIZE*sizeof(gchar));
 
  fd = FOpen(namefile, "r");
@@ -653,37 +659,12 @@ gchar *get_dir_file_name(G_CONST_RETURN gchar* dirname, G_CONST_RETURN gchar* fi
 gchar *get_name_dir(const gchar* allname)
 {
    gchar *name;
-   /*
-   gint i;
-   gint len=strlen(allname);
-   gint islash=-1;
-
-   for(i=len;i>=0;i--)
-   if(allname[i]==G_DIR_SEPARATOR)
-   {
-     islash=i;
-     break;
-   }
-   if(islash==0)
-   {  
-   	name=g_malloc(2);
-    	name[0]=G_DIR_SEPARATOR;
-   	name[1]='\0';
-   }
-   else
-   if(islash>0)
-   {  
-   	name=g_malloc(islash+1);
-   	for(i=0;i<islash;i++)
-    		name[i]=allname[i];
-   	name[islash]='\0';
-   }
-   else
-   {  
-   	   name=g_strdup_printf("%s", g_get_current_dir());
-   }
-   */
    name = g_path_get_dirname(allname);
+   if(strcmp(name,".")==0) 
+   {
+	   g_free(name);
+	   name = g_strdup(g_get_current_dir());
+   }
    
   return name;
 }
@@ -714,28 +695,7 @@ gchar *get_suffix_name_file(const gchar* allname)
    if(dirname) g_free(dirname);
    if(filename) g_free(filename);
 
-   /*
-   gchar *name=g_strdup(allname);
-   gint i;
-   gint len=strlen(allname);
-   gint ipoint=0;
-
-   for(i=len;i>0;i--)
-	if(allname[i]=='.')
-	{
-		ipoint=i;
-		break;
-	}
-   if(ipoint>0)
-   {
-	if(name)
-		g_free(name);
-   	name=g_malloc(ipoint+1);
-   	for(i=0;i<ipoint;i++)
-    		name[i]=allname[i];
-   	name[ipoint]='\0';
-   }
-   */
+   if(strcmp(name,".")==0) name = g_strdup(g_get_current_dir());
    
   return name;
 }
@@ -961,8 +921,25 @@ void create_commands_file()
 		str_delete_n(batchCommands.jobIdTitle[i]);
 		fprintf(fd,"%s\n",batchCommands.jobIdTitle[i]);
 	}
-
 	fprintf(fd,"End\n");
+/*-----------------------------------------------------------------------------*/
+
+	fprintf(fd,"Begin Gamess\n");
+	str_delete_n(NameCommandGamess);
+	delete_last_spaces(NameCommandGamess);
+	delete_first_spaces(NameCommandGamess);
+ 	fprintf(fd,"%s\n",NameCommandGamess);
+ 	fprintf(fd,"%d\n",gamessCommands.numberOfCommands);
+	for(i=0;i<gamessCommands.numberOfCommands;i++)
+	{
+		str_delete_n(gamessCommands.commands[i]);
+		delete_last_spaces(gamessCommands.commands[i]);
+		delete_first_spaces(gamessCommands.commands[i]);
+		fprintf(fd,"%s\n",gamessCommands.commands[i]);
+	}
+	fprintf(fd,"End\n");
+
+/*-----------------------------------------------------------------------------*/
 
 	fprintf(fd,"Begin Gaussian\n");
 	str_delete_n(NameCommandGaussian);
@@ -1035,6 +1012,13 @@ void create_commands_file()
 	fprintf(fd,"%s\n",babelCommand);
 	fprintf(fd,"End\n");
 
+	fprintf(fd,"Begin GamessDir\n");
+	str_delete_n(gamessDirectory);
+	delete_last_spaces(gamessDirectory);
+	delete_first_spaces(gamessDirectory);
+	fprintf(fd,"%s\n",gamessDirectory);
+	fprintf(fd,"End\n");
+
 	fclose(fd);
 
 	g_free(commandsfile);
@@ -1052,8 +1036,7 @@ void create_network_file()
  if(defaultNetWorkProtocol == GABEDIT_NETWORK_FTP_RSH) fprintf(fd,"0\n");
  else fprintf(fd,"1\n");
 
- fprintf(fd,"%s\n",pscpCommand);
- fprintf(fd,"%s\n",plinkCommand);
+ fprintf(fd,"%s\n",pscpplinkDirectory);
  fclose(fd);
 
  g_free(networkfile);
@@ -1338,6 +1321,65 @@ void read_commands_file()
 		initialise_batch_commands();
 		return;
 	}
+/*-----------------------------------------------------------------------------*/
+ 	if(fgets(t,taille,fd))
+	if(!strstr(t,"Begin Gamess"))
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd))
+	{
+ 		NameCommandGamess= g_strdup(t);
+		str_delete_n(NameCommandGamess);
+		delete_last_spaces(NameCommandGamess);
+		delete_first_spaces(NameCommandGamess);
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd) && atoi(t)>0)
+	{
+		free_gamess_commands();
+		gamessCommands.numberOfCommands = atoi(t);
+		gamessCommands.commands = g_malloc(gamessCommands.numberOfCommands*sizeof(gchar*));
+		for(i=0;i<gamessCommands.numberOfCommands;i++)
+			gamessCommands.commands[i]  = g_strdup(" ");
+		for(i=0;i<gamessCommands.numberOfCommands;i++)
+		{
+			if(!fgets(t,taille,fd) || strstr(t,"End"))
+			{
+				free_gamess_commands();
+  				gamessCommands.numberOfCommands = 1;
+  				gamessCommands.numberOfDefaultCommand = 0;
+  				gamessCommands.commands = g_malloc(sizeof(gchar*));
+  				gamessCommands.commands[0] = g_strdup("nohup g98");
+
+				fclose(fd);
+				return;
+			}
+			else
+			{
+				gamessCommands.commands[i] = g_strdup(t); 
+				str_delete_n(gamessCommands.commands[i]);
+				delete_last_spaces(gamessCommands.commands[i]);
+				delete_first_spaces(gamessCommands.commands[i]);
+			}
+		}
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(!fgets(t,taille,fd)) /* End of gamess */
+	{
+		fclose(fd);
+		return;
+	}
+/*-----------------------------------------------------------------------------*/
  	if(fgets(t,taille,fd))
 	if(!strstr(t,"Begin Gaussian"))
 	{
@@ -1588,6 +1630,30 @@ void read_commands_file()
 		fclose(fd);
 		return;
 	}
+ 	if(!fgets(t,taille,fd)) /* End of Babel */
+	{
+		fclose(fd);
+		return;
+	}
+/*-----------------------------------------------------------------------------*/
+ 	if(fgets(t,taille,fd))
+	if(!strstr(t,"Begin GamessDir"))
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd))
+	{
+ 		gamessDirectory= g_strdup(t);
+		str_delete_n(gamessDirectory);
+		delete_last_spaces(gamessDirectory);
+		delete_first_spaces(gamessDirectory);
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
  	if(fgets(t,taille,fd) && atoi(t)>0)
 
  	fclose(fd);
@@ -1624,22 +1690,17 @@ void read_network_file()
 
  	if(fgets(t,taille,fd))
 	{
-		if(pscpCommand)
-			g_free(pscpCommand);
-		pscpCommand = g_strdup(t);
+		if(pscpplinkDirectory)
+			g_free(pscpplinkDirectory);
+		pscpplinkDirectory = g_strdup(t);
 		
-		str_delete_n(pscpCommand);
-		delete_last_spaces(pscpCommand);
-		delete_first_spaces(pscpCommand);
-	}
- 	if(fgets(t,taille,fd))
-	{
-		if(plinkCommand)
-			g_free(plinkCommand);
-		plinkCommand = g_strdup(t);
-		str_delete_n(plinkCommand);
-		delete_last_spaces(plinkCommand);
-		delete_first_spaces(plinkCommand);
+		str_delete_n(pscpplinkDirectory);
+		delete_last_spaces(pscpplinkDirectory);
+		delete_first_spaces(pscpplinkDirectory);
+		sprintf(t,"%s;%cPATH%c",pscpplinkDirectory,'%','%');
+#ifdef G_OS_WIN32
+		g_setenv("PATH",t,TRUE);
+#endif
 	}
  	fclose(fd);
  }
@@ -1913,6 +1974,7 @@ void initialise_name_file()
 /*************************************************************************************/
 void initialise_name_commands()
 {
+	NameCommandGamess=g_strdup("gms");
 	NameCommandGaussian=g_strdup("nohup g98");
 	NameCommandMolcas=g_strdup("nohup molcas");
 	NameCommandMolpro=g_strdup("nohup molpro");
@@ -1921,8 +1983,10 @@ void initialise_name_commands()
 
 #ifdef G_OS_WIN32
 	babelCommand = g_strdup_printf("%s%sobabel.exe",g_get_current_dir(),G_DIR_SEPARATOR_S);
+	gamessDirectory= g_strdup_printf("C:%sWinGAMESS",G_DIR_SEPARATOR_S);
 #else
 	babelCommand=g_strdup("babel");
+	gamessDirectory= g_strdup_printf("%s%sGamess",g_get_home_dir(),G_DIR_SEPARATOR_S);
 #endif
 }
 /*************************************************************************************/
@@ -2000,8 +2064,23 @@ void initialise_global_variables()
   initialise_name_commands();
   initialise_fonts_style();
   lastdirectory = g_strdup_printf("%s", g_get_current_dir());
-  pscpCommand = g_strdup_printf("%s%spscp.exe",g_get_current_dir(),G_DIR_SEPARATOR_S);
-  plinkCommand = g_strdup_printf("%s%splink.exe",g_get_current_dir(),G_DIR_SEPARATOR_S);
+  pscpCommand = g_strdup_printf("pscp.exe");
+  plinkCommand = g_strdup_printf("plink.exe");
+  pscpplinkDirectory = g_strdup_printf("%s",g_get_current_dir());
+
+#ifdef G_OS_WIN32
+  {
+	gchar* t = g_strdup_printf("%s;%cPATH%c",pscpplinkDirectory,'%','%');
+	g_setenv("PATH",t,TRUE);
+	g_free(t);
+  }
+#endif
+
+  gamessCommands.numberOfCommands = 2;
+  gamessCommands.numberOfDefaultCommand = 0;
+  gamessCommands.commands = g_malloc(gamessCommands.numberOfCommands*sizeof(gchar*));
+  gamessCommands.commands[0] = g_strdup("gms");
+  gamessCommands.commands[1] = g_strdup("submitGamess 1:0:0");
 
   gaussianCommands.numberOfCommands = 2;
 #ifdef G_OS_WIN32
@@ -2343,6 +2422,46 @@ gchar** gab_split(gchar *str)
 	return strsplit;
 }
 /********************************************************************************/
+void get_dipole_from_gamess_output_file(FILE* fd)
+{
+ 	guint taille=BSIZE;
+  	gchar *t = g_malloc(BSIZE*sizeof(gchar));
+  	gchar* t1;
+
+	Dipole.def = FALSE;
+
+  	while(!feof(fd) )
+	{
+    		t1 = NULL;
+    		if(!fgets(t,taille,fd))break;
+    		t1 = strstr( t, "ELECTROSTATIC MOMENTS");
+		if(t1)
+		{
+  			while(!feof(fd) )
+			{
+    				if(!fgets(t,taille,fd))break;
+    				t1 = strstr( t, "DEBYE");
+				if(t1)
+				{
+					gint i;
+    					if(!fgets(t,taille,fd))break;
+					sscanf(t,"%f %f %f",&Dipole.Value[0],&Dipole.Value[1],&Dipole.Value[2]);
+					for(i=0;i<3;i++) Dipole.Value[i] /= AUTODEB;
+					Dipole.def = TRUE;
+					break;
+				}
+			}
+			break;
+		}
+		else
+		{
+			if(strstr( t, "END OF PROPERTY" )) break;
+		}
+
+	}
+	g_free(t);
+}
+/********************************************************************************/
 void get_dipole_from_gaussian_output_file(FILE* fd)
 {
  	guint taille=BSIZE;
@@ -2528,7 +2647,7 @@ void delete_last_spaces(gchar* str)
 /**********************************************/
 void delete_first_spaces(gchar* str)
 {
-	guchar *start;
+	gchar *start;
 	gint i;
 	gint lenSpace = 0;
 
@@ -2771,8 +2890,31 @@ gboolean test_type_program_mpqc(FILE* file)
 	return FALSE;
 }
 /**********************************************************************************/
+gboolean test_type_program_gamess(FILE* file)
+{
+	gchar t[BSIZE];
+	guint taille=BSIZE;
+	fseek(file, 0L, SEEK_SET);
+	while(!feof(file))
+	{
+		if(!fgets(t, taille, file)) return FALSE;
+		if(strstr(t,"!"))continue;
+		
+		if(strstr(t,"$CONTRL")) return TRUE;
+		/* sample input file */
+		if(strstr(t,"$BASIS")) return TRUE;
+		if(strstr(t,"$DATA")) return TRUE;
+	}
+	return FALSE;
+}
+/**********************************************************************************/
 gint get_type_of_program(FILE* file)
 {
+	if(test_type_program_gamess(file))
+	{
+		fseek(file, 0L, SEEK_SET);
+		return PROG_IS_GAMESS;
+	}
 	if(test_type_program_mpqc(file))
 	{
 		fseek(file, 0L, SEEK_SET);

@@ -1,6 +1,6 @@
 /* DrawGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -47,6 +47,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/ResultsAnalise.h"
 #include "../Utils/HydrogenBond.h"
 #include "../MolecularMechanics/PDBTemplate.h"
+#include "../MolecularMechanics/CalculTypesAmber.h"
 #include "../Symmetry/MoleculeSymmetryInterface.h"
 #include "../Utils/Jacobi.h"
 #include "../Geometry/MenuToolBarGeom.h"
@@ -74,7 +75,9 @@ static gfloat maxDistanceH = 3.15; /* in Agnstrom */
 static gfloat minAngleH = 145.0;
 static gfloat maxAngleH = 215.0;
 
-static gboolean** connections = NULL;
+static gint** connections = NULL;
+
+static gboolean showMultipleBonds = TRUE;
 
 /********************************************************************************/
 void set_statubar_pop_sel_atom();
@@ -117,6 +120,102 @@ guint LabelOption = LABELNO;
 static Fragment Frag = {0,NULL};
 
 /*****************************************************************************/
+gint get_connection_type(gint i, gint j)
+{
+	if(!connections)return 0;
+	if(i>=Natoms || j>=Natoms ) return 0;
+	if(connections[i][j]>0 && !showMultipleBonds) return 1;
+	return connections[i][j];
+}
+/*****************************************************************************/
+static void set_fix_variable_of_selected_atoms(gboolean variable)
+{
+	gint i;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(if_selected(i))
+		{
+			geometry[i].Variable = variable;
+			geometry0[i].Variable = variable;
+		}
+	}
+	create_GeomXYZ_from_draw_grometry();
+	dessine();
+}
+/*****************************************************************************/
+void set_fix_selected_atoms()
+{
+	gint i;
+	gint nf=0;
+	for (i=0;i<(gint)Natoms;i++)
+			if(geometry[i].Variable) nf++;
+	if(nf==0)
+	{
+		for (i=0;i<(gint)Natoms;i++)
+		{
+			geometry[i].Variable=TRUE;
+			geometry0[i].Variable = TRUE;
+		}
+	}
+	set_fix_variable_of_selected_atoms(FALSE);
+}
+/*****************************************************************************/
+void set_variable_selected_atoms()
+{
+	set_fix_variable_of_selected_atoms(TRUE);
+}
+/********************************************************************************/
+static gint testAmberTypesDefine()
+{
+	gint i;
+	gint k;
+	if(Natoms<1)return 0;
+	for(i=0;i<(gint)Natoms;i++)
+		if(geometry[i].Type && strlen(geometry[i].Type)>2) return -1;
+	k = 0;
+	for(i=0;i<(gint)Natoms;i++)
+		if(geometry[i].Type && strcmp(geometry[i].Type,geometry[i].Prop.symbol)==0) k++;
+	if(k==Natoms) return -2;
+	return 0;
+}
+/********************************************************************************/
+void messageAmberTypesDefine()
+{
+	gint k = testAmberTypesDefine();
+	if(k==0) return;
+	if(k==-1)
+	{
+    		GtkWidget* m;
+		m = Message("The type of One (or several) of atoms is not a Amber type.\n"
+		        "You can set the types of atoms by : \n"
+		        "                  \"Set/Atom Type&Charge using PDB Template\" \n"
+		        "                  \"Or\" \n"
+		        "                  \"Set/Atom Types using connections types\" \n"
+			,"Warning",TRUE);
+		gtk_window_set_modal (GTK_WINDOW (m), TRUE);
+	}
+	if(k==-2)
+	{
+    		GtkWidget* m;
+		m = Message("The types of the atoms are identical to the symbols of these atoms.\n"
+		        "You can set the types of atoms by \n"
+		        "\"Set/Atom Types using connections types\" \n"
+			,"Warning",TRUE);
+		gtk_window_set_modal (GTK_WINDOW (m), TRUE);
+	}
+}
+/*****************************************************************************/
+gboolean getShowMultipleBonds()
+{
+	return showMultipleBonds;
+}
+/*****************************************************************************/
+void RenderMultipleBonds(GtkWidget *win,gboolean show)
+{
+	showMultipleBonds = show;
+	dessine();
+}
+/*****************************************************************************/
 GabEditGeomOperation getOperationType()
 {
 	return OperationType;
@@ -154,12 +253,80 @@ static void init_connections()
 	gint j;
 	if(Natoms<1) return;
 	if(connections) free_connections();
-	connections = g_malloc(Natoms*sizeof(gboolean*));
+	connections = g_malloc(Natoms*sizeof(gint*));
 	for(i=0;i<(gint)Natoms;i++)
 	{
-		connections[i] = g_malloc(Natoms*sizeof(gboolean));
-		for(j=0;j<(gint)Natoms;j++) connections[i][j] = FALSE;
+		connections[i] = g_malloc(Natoms*sizeof(gint));
+		for(j=0;j<(gint)Natoms;j++) connections[i][j] = 0;
 	}
+}
+/************************************************************************/
+static void setMultipleBonds()
+{
+	gint* nBonds = NULL;
+	gint* num = NULL;
+	gint i;
+	gint j;
+	if(Natoms<1) return;
+	nBonds = g_malloc(Natoms*sizeof(gint));
+	num = g_malloc(Natoms*sizeof(gint));
+	for(i=0;i<(gint)Natoms;i++) num[i] = i;
+
+	for(i=0;i<(gint)Natoms-1;i++)
+	{
+		gint k = i;
+		for(j=i+1;j<(gint)Natoms;j++)
+			if(geometry[num[j]].N<geometry[num[k]].N) k = j;
+		if(k!=i)
+		{
+			gint t = num[i];
+			num[i] = num[k];
+			num[k] = t;
+		}
+	}
+
+	for(i=0;i<(gint)Natoms;i++) nBonds[i] = 0;
+	for(i=0;i<(gint)Natoms;i++)
+		for(j=i+1;j<(gint)Natoms;j++)
+			 if(connections[num[i]][num[j]]!=0) 
+			 {
+				 nBonds[i] += 1;
+				 nBonds[j] += 1;
+			 }
+	for(i=0;i<(gint)Natoms;i++)
+	{
+		for(j=i+1;j<(gint)Natoms;j++)
+		{
+			if(connections[num[i]][num[j]]==0) continue;
+			if(
+		 	nBonds[i] < geometry[num[i]].Prop.maximumBondValence &&
+		 	nBonds[j] < geometry[num[j]].Prop.maximumBondValence 
+			)
+			{
+				connections[num[i]][num[j]] = connections[num[j]][num[i]] = 2;
+				nBonds[i] += 1;
+				nBonds[j] += 1;
+			}
+		}
+	}
+	for(i=0;i<(gint)Natoms;i++)
+	{
+		for(j=i+1;j<(gint)Natoms;j++)
+		{
+			if(connections[num[i]][num[j]]==0) continue;
+			if(
+		 	nBonds[i] < geometry[num[i]].Prop.maximumBondValence &&
+		 	nBonds[j] < geometry[num[j]].Prop.maximumBondValence 
+			)
+			{
+				connections[num[i]][num[j]] = connections[num[j]][num[i]] = 3;
+				nBonds[i] += 1;
+				nBonds[j] += 1;
+			}
+		}
+	}
+	g_free(nBonds);
+	g_free(num);
 }
 /*****************************************************************************/
 static void set_connections()
@@ -172,10 +339,12 @@ static void set_connections()
 	{
 		for(j=i+1;j<(gint)Natoms;j++)
 		{
-			connections[i][j] = draw_lines_yes_no(i,j);
+			if(draw_lines_yes_no(i,j)) connections[i][j] = 1;
+			else connections[i][j] = 0;
 			connections[j][i] = connections[i][j];
 		}
 	}
+	if(showMultipleBonds) setMultipleBonds();
 }
 /*****************************************************************************/
 static void free_Hconnections()
@@ -238,7 +407,7 @@ static void set_Hconnections()
 		if(!Ok) continue;
 		for(j=0;j<(gint)Natoms;j++)
 		{
-			if(connections[i][j]) continue;
+			if(connections[i][j]!=0) continue;
 			if(i==j) continue;
 			if(strcmp(geometry[j].Prop.symbol, "H")!=0)continue;
 
@@ -260,7 +429,7 @@ static void set_Hconnections()
 			{
 				if(k==j) continue;
 				if(k==i) continue;
-				if(!connections[j][k]) continue;
+				if(connections[j][k]==0) continue;
 				/*
 				strAngle = get_angle(geometry[i].N,geometry[j].N,geometry[k].N);
 				angle = atof(strAngle);
@@ -660,6 +829,13 @@ void setMMTypesCharges(gpointer data, guint Operation,GtkWidget* wid)
 	gint i;
 	gchar* mmType = NULL;
 	gdouble charge = 0.0;
+	if(Operation==4)
+	{
+		calculTypesAmber(geometry, (gint)Natoms);
+		for(i=0;i<(gint)Natoms;i++)
+			geometry0[i].Type = g_strdup(geometry[i].Type);
+	}
+	else
 	for(i=0;i<(gint)Natoms;i++)
 	{
 		if(Operation!=3)
@@ -1061,6 +1237,166 @@ static void delete_molecule()
 	change_of_center(NULL,NULL);
 }
 /********************************************************************************/
+void SelectAllAtoms()
+{
+	gint i;
+	if(Natoms<1) return;
+	NFatoms = Natoms;
+	NumFatoms = g_malloc((NFatoms)*sizeof(gint));
+	for (i=0;i<(gint)NFatoms;i++)
+		NumFatoms[i] = geometry[i].N;
+	dessine();
+}
+/********************************************************************************/
+void InvertSelectionOfAtoms()
+{
+	gint i;
+	gint n = 0;
+	gint* num = NULL;
+	gint k = 0;
+	if(Natoms<1) return;
+	n = Natoms - NFatoms;
+	if(n<=0)
+	{
+		NFatoms = 0;
+		if(NumFatoms) g_free(NumFatoms);
+		NumFatoms = NULL;
+		dessine();
+		return;
+	}
+	else
+		num = g_malloc(n*sizeof(gint));
+
+	k = 0;
+	for (i=0;i<(gint)Natoms;i++)
+		if(!if_selected(i)) 
+		{
+			num[k] = geometry[i].N;
+			k++;
+			if(k>=n) break;
+		}
+
+	if(NumFatoms) g_free(NumFatoms);
+	NumFatoms = num;
+	NFatoms = n;
+	dessine();
+}
+/********************************************************************************/
+void unSelectAllAtoms()
+{
+	if(Natoms<1) return;
+	if(NFatoms<1) return;
+	NFatoms = 0;
+	if(NumFatoms) g_free(NumFatoms);
+	NumFatoms = NULL;
+	dessine();
+}
+/*****************************************************************************/
+void copySelectedAtoms()
+{
+	Fragment F;
+	gint i;
+	gint k;
+
+	if(Frag.NAtoms) FreeFragment(&Frag);
+	Frag.NAtoms = 0;
+	Frag.Atoms = NULL;
+	if(NFatoms<1) return;
+	F.NAtoms = NFatoms;
+	F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+
+	for (k=0;k<(gint)NFatoms;k++)
+	{
+		for (i=0;i<(gint)Natoms;i++)
+		{
+			if(NumFatoms[k]==geometry[i].N)
+			{
+				F.Atoms[k].Symb=g_strdup(geometry[i].Prop.symbol);
+				F.Atoms[k].Type=g_strdup(geometry[i].Type);
+				F.Atoms[k].Residue = g_strdup(geometry[i].Residue);
+				F.Atoms[k].Coord[0]=geometry[i].X;
+				F.Atoms[k].Coord[1]=geometry[i].Y;
+				F.Atoms[k].Coord[2]=geometry[i].Z;
+				F.Atoms[k].Charge=geometry[i].Charge;
+				break;
+			}
+		}
+		if(i==Natoms) break;
+	}
+	if(k!=NFatoms)
+	{
+		if(F.Atoms) g_free(F.Atoms);
+		return;
+	}
+
+	F.atomToDelete = -1;
+	F.atomToBondTo = -1;
+	F.angleAtom    = -1;
+
+	CenterFrag(&F);
+
+	Frag = F;
+	SetOperation (NULL,ADDFRAGMENT);
+}
+/********************************************************************************/
+void SelectLayerAtoms(GabEditLayerType layer)
+{
+	gint i;
+	gint k = 0;
+	if(Natoms<1) return;
+	NFatoms = 0;
+	if(NumFatoms) g_free(NumFatoms);
+
+	NumFatoms = g_malloc(Natoms*sizeof(gint));
+	k = 0;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(layer==geometry[i].Layer)
+			NumFatoms[k++]= geometry[i].N;
+	}
+	NFatoms = k;
+	if(k<1)
+	{
+		NFatoms = 0;
+		if(NumFatoms) g_free(NumFatoms);
+		NumFatoms=NULL;
+	}
+	else
+	{
+		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
+	}
+	dessine();
+}
+/********************************************************************************/
+void SelectFixedVariableAtoms(gboolean variable)
+{
+	gint i;
+	gint k = 0;
+	if(Natoms<1) return;
+	NFatoms = 0;
+	if(NumFatoms) g_free(NumFatoms);
+
+	NumFatoms = g_malloc(Natoms*sizeof(gint));
+	k = 0;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(variable==geometry[i].Variable)
+			NumFatoms[k++]= geometry[i].N;
+	}
+	NFatoms = k;
+	if(k<1)
+	{
+		NFatoms = 0;
+		if(NumFatoms) g_free(NumFatoms);
+		NumFatoms=NULL;
+	}
+	else
+	{
+		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
+	}
+	dessine();
+}
+/********************************************************************************/
 void DeleteMolecule()
 {
 	gchar *t ="Do you want to really destroy this molecule?" ;
@@ -1146,6 +1482,10 @@ void read_geometries_convergence(gpointer data, guint Operation,GtkWidget* wid)
  			  	  file_chooser_open(read_geometries_conv_dalton,"Load Geom. Conv. From Dalton Output file",
 				  GABEDIT_TYPEFILE_DALTON,GABEDIT_TYPEWIN_GEOM);
 				  break;
+		case FGEOMCONVGAMESS:
+ 			  	  file_chooser_open(read_geometries_conv_dalton,"Load Geom. Conv. From Gamess Output file",
+				  GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_GEOM);
+				  break;
 		case FGEOMCONVGAUSS:
  			  	  file_chooser_open(read_geometries_conv_gaussian,"Load Geom. Conv. From Gaussian Output file",
 				  GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_GEOM);
@@ -1206,7 +1546,7 @@ void save_geometry(gpointer data, guint Operation,GtkWidget* wid)
 		case FMZMAT 	: create_GeomXYZ_from_draw_grometry(); 
 				  if(!xyz_to_zmat())
 				  {
-					Message("Sorry\nConversion is not possible from XYZ to Zmat","Errot",TRUE);
+					Message("Sorry\nConversion is not possible from XYZ to Zmat","Error",TRUE);
 					return;
 				  }
  			  	  file_chooser_save(save_geometry_mzmatrix_file,"Save geometry in mopac z-matrix file",
@@ -1217,7 +1557,7 @@ void save_geometry(gpointer data, guint Operation,GtkWidget* wid)
 		case FGZMAT 	: create_GeomXYZ_from_draw_grometry(); 
 				  if(!xyz_to_zmat())
 				  {
-					Message("Sorry\nConversion is not possible from XYZ to Zmat","Errot",TRUE);
+					Message("Sorry\nConversion is not possible from XYZ to Zmat","Error",TRUE);
 					return;
 				  }
  			  	  file_chooser_save(save_geometry_gzmatrix_file,"Save geometry in gaussian z-matrix file",
@@ -2666,6 +3006,11 @@ void addAFragment(gchar* fragName)
 	SetOperation (NULL,ADDFRAGMENT);
 }
 /*****************************************************************************/
+void initLabelOptions (guint data)
+{
+	LabelOption = data ;
+}
+/*****************************************************************************/
 void SetLabelOptions (GtkWidget *widget, guint data)
 {
 	if(LabelOption != data)
@@ -2925,6 +3270,63 @@ void geometry_in_au()
         }
 }
 /*****************************************************************************/
+static void set_layer(gchar* layer, GabEditLayerType* l)
+{
+	if(strstr(layer,"Low")) *l = LOW_LAYER;
+	else if(strstr(layer,"Medium")) *l= MEDIUM_LAYER;
+	else *l = HIGH_LAYER;
+}
+/*****************************************************************************/
+static void set_constant_variable(gint i, gboolean xyz)
+{
+	if(xyz)
+	{
+        	if(!test(GeomXYZ[i].X) || !test(GeomXYZ[i].Y) || !test(GeomXYZ[i].Z))
+			geometry[i].Variable = TRUE;
+		else
+			geometry[i].Variable = FALSE;
+	}
+	else
+	{
+		if( i<1) 
+		{
+			geometry[i].Variable = FALSE;
+			return;
+		}
+		if(i>0 && !test(Geom[i].R)) 
+		{
+			geometry[i].Variable = TRUE;
+			return;
+		}
+		if(i>1 && !test(Geom[i].Angle)) 
+		{
+			geometry[i].Variable = TRUE;
+			return;
+		}
+		if(i>2 && !test(Geom[i].Dihedral)) 
+		{
+			geometry[i].Variable = TRUE;
+			return;
+		}
+		geometry[i].Variable = FALSE;
+	}
+}
+/*****************************************************************************/
+void set_layer_of_selected_atoms(GabEditLayerType l)
+{
+	gint i;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(if_selected(i))
+		{
+			geometry[i].Layer = l;
+			geometry0[i].Layer = l;
+		}
+	}
+	create_GeomXYZ_from_draw_grometry();
+	dessine();
+}
+/*****************************************************************************/
 void define_geometry_from_xyz()
 {
         guint i;
@@ -2948,6 +3350,8 @@ void define_geometry_from_xyz()
 	geometry[i].Residue = g_strdup(GeomXYZ[i].Residue);
 	geometry[i].ResidueNumber = GeomXYZ[i].ResidueNumber;
 	geometry[i].Charge = atof(GeomXYZ[i].Charge);
+	set_layer(GeomXYZ[i].Layer, &geometry[i].Layer);
+	set_constant_variable(i, TRUE);
 	geometry[i].N = i+1;
 	}
 }
@@ -2980,6 +3384,8 @@ gboolean define_geometry_from_zmat()
     geometry[0].Residue   = g_strdup(Geom[0].Residue);
     geometry[0].ResidueNumber   = Geom[0].ResidueNumber;
     geometry[0].Charge = atof(Geom[0].Charge);
+    set_layer(Geom[0].Layer, &geometry[0].Layer);
+    set_constant_variable(0, FALSE);
     return( TRUE );
   }
   
@@ -3004,6 +3410,10 @@ gboolean define_geometry_from_zmat()
     geometry[1].ResidueNumber   = Geom[1].ResidueNumber;
     geometry[0].Charge = atof(Geom[0].Charge);
     geometry[1].Charge = atof(Geom[1].Charge);
+    set_layer(Geom[0].Layer, &geometry[0].Layer);
+    set_layer(Geom[1].Layer, &geometry[1].Layer);
+    set_constant_variable(0, FALSE);
+    set_constant_variable(1, FALSE);
     return( TRUE );
   }
   
@@ -3159,6 +3569,8 @@ gboolean define_geometry_from_zmat()
     	geometry[i].Residue = g_strdup(Geom[i].Residue);
     	geometry[i].ResidueNumber = Geom[i].ResidueNumber;
     	geometry[i].Charge = atof(Geom[i].Charge);
+    	set_layer(Geom[i].Layer, &geometry[i].Layer);
+    	set_constant_variable(i, FALSE);
   }
   return( TRUE );
 }
@@ -3512,6 +3924,7 @@ static gint insert_atom(GtkWidget *widget,GdkEvent *event)
 			geometry[Natoms].Z=B[2];
 			geometry[Natoms].Prop = prop_atom_get(AtomToInsert);
 			geometry[Natoms].Type = g_strdup(AtomToInsert);
+			geometry[Natoms].Layer = HIGH_LAYER;
 			geometry[Natoms].N = Natoms+1;
 			if(Natoms==0)
 			{
@@ -3543,6 +3956,8 @@ static gint insert_atom(GtkWidget *widget,GdkEvent *event)
 
 			geometry0[Natoms].Prop = prop_atom_get(AtomToInsert);
 			geometry0[Natoms].Type = g_strdup(AtomToInsert);
+			geometry0[Natoms].Layer = HIGH_LAYER;
+			geometry0[Natoms].Variable = FALSE;
 			geometry0[Natoms].Residue = g_strdup(geometry[Natoms].Residue);
 			geometry0[Natoms].ResidueNumber = geometry[Natoms].ResidueNumber;
 			geometry0[Natoms].X = geometry[Natoms].X;
@@ -3626,12 +4041,12 @@ static gint insert_fragment(GtkWidget *widget,GdkEvent *event)
 	
 	if(Natoms>0 && NumProcheAtom<0)
 	{
-		FreeFragment(Frag);
+		FreeFragment(&Frag);
 		return 0;
 	}
 	if(Frag.NAtoms<=0)
 	{
-		FreeFragment(Frag);
+		FreeFragment(&Frag);
 		return 0;
 	}
 
@@ -3772,6 +4187,8 @@ static gint insert_fragment(GtkWidget *widget,GdkEvent *event)
 				}
 				geometry0[Natoms+j].Prop = prop_atom_get(Frag.Atoms[i].Symb);
 				geometry0[Natoms+j].Type =g_strdup(Frag.Atoms[i].Type);
+				geometry0[Natoms+j].Layer = HIGH_LAYER;
+				geometry0[Natoms+j].Variable = FALSE;
 				geometry0[Natoms+j].Residue =g_strdup(Frag.Atoms[i].Residue);
 				geometry0[Natoms+j].ResidueNumber= get_number_new_residue();
 				geometry0[Natoms+j].Charge = Frag.Atoms[i].Charge;
@@ -3779,6 +4196,7 @@ static gint insert_fragment(GtkWidget *widget,GdkEvent *event)
 
 				geometry[Natoms+j].Prop = prop_atom_get(Frag.Atoms[i].Symb);
 				geometry[Natoms+j].Type =g_strdup(Frag.Atoms[i].Type);
+				geometry[Natoms+j].Layer = HIGH_LAYER;
 				geometry[Natoms+j].Residue =g_strdup(Frag.Atoms[i].Residue);
 				geometry[Natoms+j].ResidueNumber=geometry0[Natoms+j].ResidueNumber;
 				geometry[Natoms+j].Charge = Frag.Atoms[i].Charge;
@@ -3852,7 +4270,7 @@ static gint insert_fragment(GtkWidget *widget,GdkEvent *event)
 
 	dessine();
 	set_statubar_pop_sel_atom();
-	FreeFragment(Frag);
+	FreeFragment(&Frag);
 	return 1;
 }
 /*****************************************************************************/
@@ -4256,6 +4674,8 @@ void define_geometry()
 	geometry0[i].N = geometry[i].N; 
 	geometry0[i].Prop = prop_atom_get(geometry[i].Prop.symbol);
 	geometry0[i].Type = g_strdup(geometry[i].Type);
+	geometry0[i].Layer = geometry[i].Layer;
+	geometry0[i].Variable = geometry[i].Variable;
 	geometry0[i].Residue = g_strdup(geometry[i].Residue);
 	geometry0[i].ResidueNumber = geometry[i].ResidueNumber;
 	geometry0[i].Charge = geometry[i].Charge;
@@ -4566,7 +4986,7 @@ void draw_distance(gint i,gint j,gint x0,gint y0)
 }
 /*****************************************************************************/
 void draw_line2(gint epaisseur,guint i,guint j,gint x1,gint y1,gint x2,gint y2,
-				GdkColor color1,GdkColor color2)
+				GdkColor color1,GdkColor color2, gboolean hideDistance)
 {
 	gint x0;
 	gint y0;
@@ -4588,6 +5008,9 @@ void draw_line2(gint epaisseur,guint i,guint j,gint x1,gint y1,gint x2,gint y2,
                 	rayon =(gushort)(geometry[i].Coefpers*geometry[i].Rayon*factorball);
 
                  k= ((gdouble)rayon*(gdouble)rayon-(gdouble)epaisseur*(gdouble)epaisseur/4.0);
+		 if(connections[i][j]==2) k= ((gdouble)rayon*(gdouble)rayon-(gdouble)epaisseur*(gdouble)epaisseur*9.0/4);
+		 if(connections[i][j]==3) k= ((gdouble)rayon*(gdouble)rayon-(gdouble)epaisseur*(gdouble)epaisseur*25.0/4);
+
 		if(k>0 &&(( (gdouble)(x2-x1)*(gdouble)(x2-x1)+(gdouble)(y2-y1)*(gdouble)(y2-y1) )>2))
                 k = (sqrt(k))/(gdouble)(sqrt( (gdouble)(x2-x1)*(gdouble)(x2-x1)+(gdouble)(y2-y1)*(gdouble)(y2-y1) ) );     
                 else
@@ -4595,6 +5018,8 @@ void draw_line2(gint epaisseur,guint i,guint j,gint x1,gint y1,gint x2,gint y2,
 
                 xp = x1 + (gint)(k *(x2-x1)+0.5);
                 yp = y1 + (gint)(k *(y2-y1)+0.5);   
+
+
         }
         else
         {
@@ -4619,7 +5044,7 @@ void draw_line2(gint epaisseur,guint i,guint j,gint x1,gint y1,gint x2,gint y2,
         }
 
 	draw_line(x0,y0,x2,y2,color2,epaisseur,&vx,&vy,&ep,FALSE); 
-	if(DrawDistance)
+	if(DrawDistance && !hideDistance)
                  draw_distance(i,j,x0,y0); 
 }
 /*****************************************************************************/
@@ -4836,6 +5261,53 @@ void draw_numb(guint epaisseur,guint i)
         g_free(temp);
 }
 /*****************************************************************************/
+void draw_layer(guint epaisseur,guint i)
+{
+	GdkColormap *colormap;
+	GdkColor color;
+ 	PangoFontDescription *font_desc = pango_font_description_from_string (FontsStyleLabel.fontname);
+	gchar* t= NULL;
+
+	if(geometry[i].Layer==LOW_LAYER) t= g_strdup_printf("L");
+	else if(geometry[i].Layer==MEDIUM_LAYER) t= g_strdup_printf("M");
+	else t= g_strdup_printf(" ");
+
+	color = get_color_string(i);
+   	colormap  = gdk_window_get_colormap(ZoneDessin->window);
+	gdk_color_alloc(colormap,&color);
+
+	gdk_gc_set_foreground(gc,&color);
+        if(epaisseur == 0)epaisseur =1;
+	gdk_gc_set_line_attributes(gc,epaisseur,GDK_LINE_SOLID,GDK_CAP_ROUND,GDK_JOIN_ROUND);
+	gabedit_draw_string(ZoneDessin, pixmap, font_desc, gc, geometry[i].Xi,geometry[i].Yi,t,TRUE,TRUE);
+
+	if(font_desc) pango_font_description_free (font_desc);
+	g_free(t);
+
+}
+/*****************************************************************************/
+void draw_typ(guint epaisseur,guint i)
+{
+	GdkColormap *colormap;
+	GdkColor color;
+ 	PangoFontDescription *font_desc = pango_font_description_from_string (FontsStyleLabel.fontname);
+	gchar* t= g_strdup_printf("%s", geometry[i].Type);
+        
+
+	color = get_color_string(i);
+   	colormap  = gdk_window_get_colormap(ZoneDessin->window);
+	gdk_color_alloc(colormap,&color);
+
+	gdk_gc_set_foreground(gc,&color);
+        if(epaisseur == 0)epaisseur =1;
+	gdk_gc_set_line_attributes(gc,epaisseur,GDK_LINE_SOLID,GDK_CAP_ROUND,GDK_JOIN_ROUND);
+	gabedit_draw_string(ZoneDessin, pixmap, font_desc, gc, geometry[i].Xi,geometry[i].Yi,t,TRUE,TRUE);
+
+	if(font_desc) pango_font_description_free (font_desc);
+	g_free(t);
+
+}
+/*****************************************************************************/
 void draw_numb_symb(guint epaisseur,guint i)
 {
 	GdkColormap *colormap;
@@ -4956,6 +5428,8 @@ void draw_label(guint epaisseur,guint i)
    {
    case LABELSYMB: draw_symb(epaisseur,i);break;
    case LABELNUMB: draw_numb(epaisseur,i);break;
+   case LABELTYP: draw_typ(epaisseur,i);break;
+   case LABELLAYER: draw_layer(epaisseur,i);break;
    case LABELSYMBNUMB: draw_numb_symb(epaisseur,i);break;
    case LABELCHARGE: draw_charge(epaisseur,i);break;
    case LABELSYMBCHARGE: draw_symb_charge(epaisseur,i);break;
@@ -5035,16 +5509,83 @@ void dessine_ball()
 		}
 
 		for(j=i+1;j<Natoms;j++)
-                if(connections[i][j])
+                if(connections[i][j]!=0)
 		{
+			gint split[2] = {0,0};
+			gdouble ab[] = {0,0};
 			k =get_num_min_rayonIJ(i,j);
 			epaisseur = (gint) (geometry[k].Rayon*factorstick);
     			if (PersMode) epaisseur =(gint)(geometry[k].Coefpers*epaisseur);
 			color2 = geometry[j].Prop.color;  
     			if (ShadMode) set_color_shad(&color2,j);
+			if(connections[i][j]!=1)
+			{
+				gdouble m = 0;
+				ab[0] = geometry[j].Yi-geometry[i].Yi;
+				ab[1] = -geometry[j].Xi+geometry[i].Xi;
+				m = sqrt(ab[0]*ab[0]+ab[1]*ab[1]);
+				if(m !=0)
+				{
+					ab[0] /= m;
+					ab[1] /= m;
+
+				}
+			}
+			if(connections[i][j]==3)
+			{
+				gint x1;
+				gint x2;
+				gint y1;
+				gint y2;
+
+				split[0] = (gint)(ab[0]*epaisseur/5);
+				split[1] = (gint)(ab[1]*epaisseur/5);
+
+				x1 = geometry[i].Xi-2*split[0];
+				x2 = geometry[j].Xi-2*split[0];
+				y1 = geometry[i].Yi-2*split[1];
+				y2 = geometry[j].Yi-2*split[1];
+				draw_line2(epaisseur/5,i,j,x1,y1, x2, y2, color1,color2,TRUE);
+
+				x1 = geometry[i].Xi;
+				x2 = geometry[j].Xi;
+				y1 = geometry[i].Yi;
+				y2 = geometry[j].Yi;
+				draw_line2(epaisseur/5,i,j,x1,y1, x2, y2, color1,color2,TRUE);
+
+				x1 = geometry[i].Xi+2*split[0];
+				x2 = geometry[j].Xi+2*split[0];
+				y1 = geometry[i].Yi+2*split[1];
+				y2 = geometry[j].Yi+2*split[1];
+				draw_line2(epaisseur/5,i,j,x1,y1, x2, y2, color1,color2,FALSE);
+
+			}
+			else if(connections[i][j]==2)
+			{
+				gint x1;
+				gint x2;
+				gint y1;
+				gint y2;
+
+				split[0] = (gint)(ab[0]*epaisseur/3);
+				split[1] = (gint)(ab[1]*epaisseur/3);
+
+				x1 = geometry[i].Xi-split[0];
+				x2 = geometry[j].Xi-split[0];
+				y1 = geometry[i].Yi-split[1];
+				y2 = geometry[j].Yi-split[1];
+				draw_line2(epaisseur/3,i,j,x1,y1, x2, y2, color1,color2,TRUE);
+
+				x1 = geometry[i].Xi+split[0];
+				x2 = geometry[j].Xi+split[0];
+				y1 = geometry[i].Yi+split[1];
+				y2 = geometry[j].Yi+split[1];
+				draw_line2(epaisseur/3,i,j,x1,y1, x2, y2, color1,color2,FALSE);
+			}
+			else
 			draw_line2(epaisseur,i,j,geometry[i].Xi,geometry[i].Yi,
 						geometry[j].Xi,geometry[j].Yi,
-						color1,color2);
+						color1,color2,FALSE);
 		}
 		else
 		{
@@ -5144,8 +5685,23 @@ void dessine_stick()
         {
 		k = -1;
 		for(j=i+1;j<Natoms;j++)
-                if(connections[i][j])
+                if(connections[i][j]!=0)
 		{
+			gint split[2] = {0,0};
+			gdouble ab[] = {0,0};
+			if(connections[i][j]!=1)
+			{
+				gdouble m = 0;
+				ab[0] = geometry[j].Yi-geometry[i].Yi;
+				ab[1] = -geometry[j].Xi+geometry[i].Xi;
+				m = sqrt(ab[0]*ab[0]+ab[1]*ab[1]);
+				if(m !=0)
+				{
+					ab[0] /= m;
+					ab[1] /= m;
+
+				}
+			}
 			FreeAtoms[j] = FALSE;
 			FreeAtoms[i] = FALSE;
 			k =get_num_min_rayonIJ(i,j);
@@ -5159,7 +5715,42 @@ void dessine_stick()
 				set_color_shad(&color1,i);
 				set_color_shad(&color2,j);
 			}
-			draw_line2(epaisseur,i,j,geometry[i].Xi,geometry[i].Yi, geometry[j].Xi,geometry[j].Yi, color1,color2);
+			draw_line2(epaisseur,i,j,geometry[i].Xi,geometry[i].Yi, geometry[j].Xi,geometry[j].Yi, color1,color2,FALSE);
+			if(connections[i][j]==2)
+			{
+				gint x1;
+				gint x2;
+				gint y1;
+				gint y2;
+				split[0] = (gint)(ab[0]*epaisseur*1.5);
+				split[1] = (gint)(ab[1]*epaisseur*1.5);
+
+				x1 = geometry[i].Xi-split[0]-split[1];
+				y1 = geometry[i].Yi-split[1]+split[0];
+				x2 = geometry[j].Xi-split[0]+split[1];
+				y2 = geometry[j].Yi-split[1]-split[0];
+				draw_line2(epaisseur/3,i,j,x1, y1, x2, y2, color1,color2,TRUE);
+			}
+			if(connections[i][j]==3)
+			{
+				gint x1;
+				gint x2;
+				gint y1;
+				gint y2;
+				split[0] = (gint)(ab[0]*epaisseur*1.5);
+				split[1] = (gint)(ab[1]*epaisseur*1.5);
+
+				x1 = geometry[i].Xi-split[0]-split[1];
+				y1 = geometry[i].Yi-split[1]+split[0];
+				x2 = geometry[j].Xi-split[0]+split[1];
+				y2 = geometry[j].Yi-split[1]-split[0];
+				draw_line2(epaisseur/2,i,j,x1, y1, x2, y2, color1,color2,TRUE);
+				x1 = geometry[i].Xi+split[0]-split[1];
+				y1 = geometry[i].Yi+split[1]+split[0];
+				x2 = geometry[j].Xi+split[0]+split[1];
+				y2 = geometry[j].Yi+split[1]-split[0];
+				draw_line2(epaisseur/2,i,j,x1, y1, x2, y2, color1,color2,TRUE);
+			}
 		}
 		else
 		{

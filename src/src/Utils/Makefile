@@ -1,7 +1,7 @@
-OBJECTS = GabeditTextEdit.o AtomsProp.o Jacobi.o Transformation.o Utils.o UtilsInterface.o Vector3d.o Matrix3D.o HydrogenBond.o PovrayUtils.o
+OBJECTS = GabeditTextEdit.o AtomsProp.o Jacobi.o Transformation.o Utils.o UtilsInterface.o Vector3d.o Matrix3D.o HydrogenBond.o PovrayUtils.o UtilsGL.o ConvUtils.o
 
 include ../../CONFIG
-CFLAGS =  -Wall -O2 $(GTKCFLAGS)
+CFLAGS =  -Wall -O2 $(GTKCFLAGS) $(OGLCFLAGS)
 
 all: compiling 
 

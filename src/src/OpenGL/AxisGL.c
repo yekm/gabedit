@@ -1,6 +1,6 @@
 /* AxisGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -564,12 +564,12 @@ static void drawAxis(V3d vector, GLfloat radius,V3d origin, V4d specular,V4d dif
 GLuint axisGenList(GLuint axisList)
 {
 	V4d specular = {1.0f,1.0f,1.0f,1.0f};
-	V4d xDiffuse;
-	V4d xAmbiant;
-	V4d yDiffuse;
-	V4d yAmbiant;
-	V4d zDiffuse;
-	V4d zAmbiant;
+	V4d xDiffuse = {1.0f,1.0f,1.0f,1.0f};
+	V4d xAmbiant = {1.0f,1.0f,1.0f,1.0f};
+	V4d yDiffuse = {1.0f,1.0f,1.0f,1.0f};
+	V4d yAmbiant = {1.0f,1.0f,1.0f,1.0f};
+	V4d zDiffuse = {1.0f,1.0f,1.0f,1.0f};
+	V4d zAmbiant = {1.0f,1.0f,1.0f,1.0f};
 	V3d vectorX  = {1,0,0};
 	V3d vectorY  = {0,1,0};
 	V3d vectorZ  = {0,0,1};

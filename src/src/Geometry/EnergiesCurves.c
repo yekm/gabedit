@@ -1,6 +1,6 @@
 /* EnergiesCurve.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -116,6 +116,7 @@ static void set_geom(GtkWidget *widget,gpointer data)
 	ki = (gint*)(g_object_get_data(G_OBJECT(widget),"Point"));  
 	k = *ki;
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_DALTON) read_geom_conv_from_dalton_output_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
+	if(GeomConv->fileType == GABEDIT_TYPEFILE_GAMESS) read_geom_conv_from_gamess_output_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_GAUSSIAN) read_geom_from_gaussian_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOLPRO) read_geom_from_molpro_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOLDEN) read_geom_from_molden_geom_conv_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);

@@ -1,6 +1,6 @@
 /* AtomicOrbitals.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -270,7 +270,7 @@ gboolean read_atomic_orbitals_in_gabedit(gchar *NomFichier,gint itype)
 	gint idump;
 
 	
-	//printf("debut de orbital\n");
+	/*printf("debut de orbital\n");*/
  	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
  	{
 		Message("Sorry No file slected\n","Error",TRUE);
@@ -543,7 +543,7 @@ void read_gabedit_atomic_orbitals(gchar *FileName)
  	/*Debug("End of free atomic orbitals\n");*/
 
 	set_status_label_info("At. Orb.","Reading");
-	OkBeta = read_atomic_orbitals_in_gabedit(FileName,2);// if beta orbital
+	OkBeta = read_atomic_orbitals_in_gabedit(FileName,2);/* if beta orbital*/
 	/* Debug("Ok atomic orbital = %d\n",Ok);*/
 	OkAlpha = read_atomic_orbitals_in_gabedit(FileName,1);
 	/* Debug("End of reding Alpha atomic orbitals\n");*/
@@ -574,7 +574,7 @@ void read_gabedit_atomic_orbitals(gchar *FileName)
 	{
 		AOAvailable = TRUE;
 		set_status_label_info("At. Orb.","Ok");
-		glarea_rafresh(GLArea); // for geometry
+		glarea_rafresh(GLArea); /* for geometry*/
 	}
 	else
 	{

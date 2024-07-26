@@ -40,6 +40,35 @@ AnimationIsoSurface.o: ../OpenGL/AnimationIsoSurface.h ../OpenGL/ColorMap.h
 AnimationIsoSurface.o: ../OpenGL/TriangleDraw.h ../Files/FolderChooser.h
 AnimationIsoSurface.o: ../Files/GabeditFolderChooser.h ../Common/Help.h
 AnimationIsoSurface.o: ../OpenGL/Images.h ../OpenGL/PovrayGL.h
+AnimationMD.o: ../../Config.h
+AnimationMD.o: GlobalOrb.h
+AnimationMD.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
+AnimationMD.o: ../../gtkglarea/gdkgl.h
+AnimationMD.o: Grid.h
+AnimationMD.o: IsoSurface.h ../Common/GabeditType.h ../Utils/AtomsProp.h
+AnimationMD.o: ../Utils/Utils.h ../Utils/Constantes.h
+AnimationMD.o: ../Utils/UtilsInterface.h ../OpenGL/StatusOrb.h
+AnimationMD.o: ../OpenGL/GLArea.h ../OpenGL/AnimationMD.h
+AnimationMD.o: ../OpenGL/GeomOrbXYZ.h ../OpenGL/AtomicOrbitals.h
+AnimationMD.o: ../Files/FileChooser.h ../Geometry/GeomGlobal.h
+AnimationMD.o: ../Files/FolderChooser.h ../Files/GabeditFolderChooser.h
+AnimationMD.o: ../Common/Help.h ../Common/StockIcons.h ../OpenGL/PovrayGL.h
+AnimationMD.o: ../OpenGL/Images.h ../OpenGL/UtilsOrb.h ../../pixmaps/Open.xpm
+AnimationMDOld.o: ../../Config.h
+AnimationMDOld.o: GlobalOrb.h
+AnimationMDOld.o: ../Files/GabeditFileChooser.h
+AnimationMDOld.o: ../../gtkglarea/gtkglarea.h ../../gtkglarea/gdkgl.h
+AnimationMDOld.o: Grid.h IsoSurface.h
+AnimationMDOld.o: ../Common/GabeditType.h ../Utils/AtomsProp.h
+AnimationMDOld.o: ../Utils/Utils.h ../Utils/Constantes.h
+AnimationMDOld.o: ../Utils/UtilsInterface.h ../OpenGL/StatusOrb.h
+AnimationMDOld.o: ../OpenGL/GLArea.h ../OpenGL/AnimationMD.h
+AnimationMDOld.o: ../OpenGL/GeomOrbXYZ.h ../OpenGL/AtomicOrbitals.h
+AnimationMDOld.o: ../Files/FileChooser.h ../Geometry/GeomGlobal.h
+AnimationMDOld.o: ../Files/FolderChooser.h ../Files/GabeditFolderChooser.h
+AnimationMDOld.o: ../Common/Help.h ../Common/StockIcons.h
+AnimationMDOld.o: ../OpenGL/PovrayGL.h ../OpenGL/Images.h
+AnimationMDOld.o: ../OpenGL/UtilsOrb.h ../../pixmaps/Open.xpm
 AnimationPlanesMapped.o: ../../Config.h
 AnimationPlanesMapped.o: GlobalOrb.h
 AnimationPlanesMapped.o: ../Files/GabeditFileChooser.h
@@ -87,6 +116,13 @@ Basis.o: ../../gtkglarea/gdkgl.h
 Basis.o: Grid.h IsoSurface.h ../Common/GabeditType.h
 Basis.o: UtilsOrb.h ../Utils/Utils.h ../Utils/UtilsInterface.h
 Basis.o: ../Utils/Constantes.h
+BondsOrb.o: ../../Config.h GlobalOrb.h
+BondsOrb.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
+BondsOrb.o: ../../gtkglarea/gdkgl.h
+BondsOrb.o: Grid.h IsoSurface.h
+BondsOrb.o: ../Common/GabeditType.h BondsOrb.h ../Utils/Vector3d.h
+BondsOrb.o: ../Utils/Transformation.h ../Utils/Utils.h ../Utils/Constantes.h
+BondsOrb.o: ../Utils/HydrogenBond.h
 ColorMap.o: ../../Config.h GlobalOrb.h
 ColorMap.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
 ColorMap.o: ../../gtkglarea/gdkgl.h
@@ -135,7 +171,7 @@ GeomDraw.o: ../../gtkglarea/gdkgl.h
 GeomDraw.o: Grid.h IsoSurface.h
 GeomDraw.o: ../Common/GabeditType.h ../Utils/Vector3d.h
 GeomDraw.o: ../Utils/Transformation.h ../Utils/Utils.h ../Utils/Constantes.h
-GeomDraw.o: ../Utils/HydrogenBond.h Sphere.h Cylinder.h
+GeomDraw.o: ../Utils/HydrogenBond.h Sphere.h Cylinder.h BondsOrb.h RingsOrb.h
 GeomOrbXYZ.o: ../../Config.h GlobalOrb.h
 GeomOrbXYZ.o: ../Files/GabeditFileChooser.h
 GeomOrbXYZ.o: ../../gtkglarea/gtkglarea.h ../../gtkglarea/gdkgl.h
@@ -150,13 +186,14 @@ GLArea.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
 GLArea.o: ../../gtkglarea/gdkgl.h
 GLArea.o: Grid.h IsoSurface.h
 GLArea.o: ../Common/GabeditType.h ../Utils/Vector3d.h
-GLArea.o: ../Utils/Transformation.h Sphere.h Cylinder.h GeomDraw.h
-GLArea.o: ../Utils/Utils.h ../Utils/UtilsInterface.h ../Utils/AtomsProp.h
-GLArea.o: ../Utils/Constantes.h UtilsOrb.h GeomOrbXYZ.h Basis.h
-GLArea.o: TriangleDraw.h ContoursDraw.h PlanesMappedDraw.h ContoursPov.h
-GLArea.o: PlanesMappedPov.h SurfacesPov.h Orbitals.h StatusOrb.h GridPlans.h
-GLArea.o: Dipole.h AxisGL.h PrincipalAxisGL.h VibrationDraw.h Images.h
-GLArea.o: PovrayGL.h MenuToolBarGL.h
+GLArea.o: ../Utils/Transformation.h ../Utils/UtilsGL.h Sphere.h Cylinder.h
+GLArea.o: GeomDraw.h ../Utils/Utils.h ../Utils/UtilsInterface.h
+GLArea.o: ../Utils/AtomsProp.h ../Utils/Constantes.h UtilsOrb.h GeomOrbXYZ.h
+GLArea.o: Basis.h TriangleDraw.h ContoursDraw.h PlanesMappedDraw.h
+GLArea.o: ContoursPov.h PlanesMappedPov.h SurfacesPov.h Orbitals.h
+GLArea.o: StatusOrb.h GridPlans.h Dipole.h AxisGL.h PrincipalAxisGL.h
+GLArea.o: VibrationDraw.h Images.h PovrayGL.h MenuToolBarGL.h LabelsGL.h
+GLArea.o: RingsOrb.h RingsPov.h
 GlobalOrb.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
 GlobalOrb.o: ../../gtkglarea/gdkgl.h
 GlobalOrb.o: Grid.h
@@ -177,7 +214,7 @@ GridAdfOrbitals.o: IsoSurface.h ../Common/GabeditType.h StatusOrb.h
 GridAdfOrbitals.o: UtilsOrb.h ../Utils/Utils.h ../Utils/UtilsInterface.h
 GridAdfOrbitals.o: ../Utils/AtomsProp.h ../Utils/Constantes.h GLArea.h
 GridAdfOrbitals.o: AtomicOrbitals.h Orbitals.h
-Grid.o: ../../Config.h GlobalOrb.h
+Grid.o: ../../Config.h ../Utils/Constantes.h GlobalOrb.h
 Grid.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
 Grid.o: ../../gtkglarea/gdkgl.h
 Grid.o: Grid.h IsoSurface.h ../Common/GabeditType.h
@@ -199,6 +236,11 @@ GridM2MSI.o: IsoSurface.h ../Common/GabeditType.h StatusOrb.h UtilsOrb.h
 GridM2MSI.o: GeomOrbXYZ.h ../Utils/Utils.h ../Utils/UtilsInterface.h
 GridM2MSI.o: ../Utils/AtomsProp.h ../Utils/Constantes.h GLArea.h
 GridM2MSI.o: AtomicOrbitals.h Orbitals.h
+GridOld.o: ../../Config.h ../Utils/Constantes.h GlobalOrb.h
+GridOld.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
+GridOld.o: ../../gtkglarea/gdkgl.h
+GridOld.o: Grid.h IsoSurface.h
+GridOld.o: ../Common/GabeditType.h StatusOrb.h ColorMap.h
 GridPlans.o: ../../Config.h
 GridPlans.o: ../OpenGL/GlobalOrb.h
 GridPlans.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
@@ -220,6 +262,15 @@ IsoSurface.o: ../Files/GabeditFileChooser.h
 IsoSurface.o: ../../gtkglarea/gtkglarea.h ../../gtkglarea/gdkgl.h
 IsoSurface.o: Grid.h IsoSurface.h
 IsoSurface.o: ../Common/GabeditType.h tables.h StatusOrb.h ../Utils/Utils.h
+LabelsGL.o: ../../Config.h ../Common/Global.h
+LabelsGL.o: ../Files/GabeditFileChooser.h
+LabelsGL.o: ../Common/GabeditType.h GlobalOrb.h
+LabelsGL.o: ../../gtkglarea/gtkglarea.h
+LabelsGL.o: ../../gtkglarea/gdkgl.h
+LabelsGL.o: Grid.h IsoSurface.h
+LabelsGL.o: ../Utils/Vector3d.h ../Utils/Transformation.h ../Utils/UtilsGL.h
+LabelsGL.o: ../Utils/Constantes.h ../Geometry/GeomGlobal.h ../OpenGL/AxisGL.h
+LabelsGL.o: ../OpenGL/PrincipalAxisGL.h
 MenuToolBarGL.o: ../../Config.h GlobalOrb.h
 MenuToolBarGL.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
 MenuToolBarGL.o: ../../gtkglarea/gdkgl.h
@@ -234,12 +285,14 @@ MenuToolBarGL.o: ../OpenGL/GLArea.h ../OpenGL/Orbitals.h ../OpenGL/Images.h
 MenuToolBarGL.o: ../OpenGL/GridPlans.h ../OpenGL/Contours.h
 MenuToolBarGL.o: ../OpenGL/PlanesMapped.h ../OpenGL/PreferencesOrb.h
 MenuToolBarGL.o: ../OpenGL/Vibration.h ../OpenGL/AnimationRotation.h
-MenuToolBarGL.o: ../OpenGL/AnimationGeomConv.h ../OpenGL/AnimationContours.h
+MenuToolBarGL.o: ../OpenGL/AnimationGeomConv.h ../OpenGL/AnimationMD.h
+MenuToolBarGL.o: ../OpenGL/AnimationContours.h
 MenuToolBarGL.o: ../OpenGL/AnimationPlanesMapped.h
 MenuToolBarGL.o: ../OpenGL/AnimationIsoSurface.h ../OpenGL/Dipole.h
 MenuToolBarGL.o: ../OpenGL/AxisGL.h ../OpenGL/PrincipalAxisGL.h
 MenuToolBarGL.o: ../OpenGL/PovrayGL.h ../OpenGL/StatusOrb.h
-MenuToolBarGL.o: ../Common/StockIcons.h
+MenuToolBarGL.o: ../OpenGL/LabelsGL.h ../OpenGL/RingsOrb.h
+MenuToolBarGL.o: ../OpenGL/ContoursDraw.h ../Common/StockIcons.h
 Orbitals.o: ../../Config.h GlobalOrb.h
 Orbitals.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
 Orbitals.o: ../../gtkglarea/gdkgl.h
@@ -247,7 +300,7 @@ Orbitals.o: Grid.h IsoSurface.h
 Orbitals.o: ../Common/GabeditType.h ../Utils/AtomsProp.h
 Orbitals.o: ../Utils/UtilsInterface.h ../Utils/Utils.h ../Utils/Constantes.h
 Orbitals.o: GeomDraw.h GLArea.h UtilsOrb.h Basis.h GeomOrbXYZ.h
-Orbitals.o: AtomicOrbitals.h StatusOrb.h OrbitalsMolpro.h
+Orbitals.o: AtomicOrbitals.h StatusOrb.h OrbitalsGamess.h OrbitalsMolpro.h
 OrbitalsDalton.o: ../../Config.h GlobalOrb.h
 OrbitalsDalton.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
 OrbitalsDalton.o: ../../gtkglarea/gdkgl.h
@@ -257,6 +310,15 @@ OrbitalsDalton.o: ../Utils/UtilsInterface.h ../Utils/Utils.h
 OrbitalsDalton.o: ../Utils/Constantes.h GeomDraw.h GLArea.h UtilsOrb.h
 OrbitalsDalton.o: Basis.h GeomOrbXYZ.h AtomicOrbitals.h StatusOrb.h
 OrbitalsDalton.o: Orbitals.h
+OrbitalsGamess.o: ../../Config.h GlobalOrb.h
+OrbitalsGamess.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
+OrbitalsGamess.o: ../../gtkglarea/gdkgl.h
+OrbitalsGamess.o: Grid.h
+OrbitalsGamess.o: IsoSurface.h ../Common/GabeditType.h ../Utils/AtomsProp.h
+OrbitalsGamess.o: ../Utils/UtilsInterface.h ../Utils/Utils.h
+OrbitalsGamess.o: ../Utils/Constantes.h ../Geometry/GeomGlobal.h GeomDraw.h
+OrbitalsGamess.o: GLArea.h UtilsOrb.h Basis.h GeomOrbXYZ.h AtomicOrbitals.h
+OrbitalsGamess.o: StatusOrb.h Orbitals.h
 OrbitalsMolpro.o: ../../Config.h GlobalOrb.h
 OrbitalsMolpro.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
 OrbitalsMolpro.o: ../../gtkglarea/gdkgl.h
@@ -299,6 +361,7 @@ PovrayGL.o: ../Utils/UtilsInterface.h ../Utils/Constantes.h
 PovrayGL.o: ../Utils/HydrogenBond.h ../Utils/PovrayUtils.h ../OpenGL/GLArea.h
 PovrayGL.o: ../OpenGL/GeomDraw.h ../OpenGL/TriangleDraw.h ../OpenGL/AxisGL.h
 PovrayGL.o: ../OpenGL/PrincipalAxisGL.h ../OpenGL/ColorMap.h
+PovrayGL.o: ../OpenGL/BondsOrb.h ../OpenGL/RingsOrb.h
 PreferencesOrb.o: ../../Config.h ../OpenGL/GlobalOrb.h
 PreferencesOrb.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
 PreferencesOrb.o: ../../gtkglarea/gdkgl.h
@@ -317,6 +380,20 @@ PrincipalAxisGL.o: ../Geometry/GeomGlobal.h ../Utils/Vector3d.h
 PrincipalAxisGL.o: ../Utils/Transformation.h ../Utils/Constantes.h
 PrincipalAxisGL.o: ../Utils/UtilsInterface.h ../Utils/Utils.h
 PrincipalAxisGL.o: ../Utils/Jacobi.h ../Common/Windows.h Cylinder.h GLArea.h
+RingsOrb.o: ../../Config.h GlobalOrb.h
+RingsOrb.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
+RingsOrb.o: ../../gtkglarea/gdkgl.h
+RingsOrb.o: Grid.h IsoSurface.h
+RingsOrb.o: ../Common/GabeditType.h BondsOrb.h ../Utils/Vector3d.h
+RingsOrb.o: ../Utils/Transformation.h ../Utils/Utils.h
+RingsOrb.o: ../Utils/UtilsInterface.h ../Utils/Constantes.h
+RingsOrb.o: ../Utils/HydrogenBond.h ../OpenGL/RingsPov.h
+RingsPov.o: ../../Config.h GlobalOrb.h
+RingsPov.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
+RingsPov.o: ../../gtkglarea/gdkgl.h
+RingsPov.o: Grid.h IsoSurface.h
+RingsPov.o: ../Common/GabeditType.h ../Utils/Vector3d.h ../Utils/Utils.h
+RingsPov.o: ../Utils/Transformation.h ../OpenGL/RingsOrb.h
 Sphere.o: ../../Config.h GlobalOrb.h
 Sphere.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
 Sphere.o: ../../gtkglarea/gdkgl.h
@@ -358,7 +435,8 @@ UtilsOrb.o: ../../gtkglarea/gdkgl.h
 UtilsOrb.o: Grid.h IsoSurface.h
 UtilsOrb.o: ../Common/GabeditType.h ../Utils/Vector3d.h ../OpenGL/GLArea.h
 UtilsOrb.o: ../OpenGL/Orbitals.h ../OpenGL/OrbitalsMolpro.h
-UtilsOrb.o: ../OpenGL/GeomOrbXYZ.h ../OpenGL/UtilsOrb.h
+UtilsOrb.o: ../OpenGL/OrbitalsGamess.h ../OpenGL/GeomOrbXYZ.h
+UtilsOrb.o: ../OpenGL/BondsOrb.h ../OpenGL/UtilsOrb.h
 UtilsOrb.o: ../OpenGL/TriangleDraw.h ../Utils/Utils.h
 UtilsOrb.o: ../Utils/UtilsInterface.h ../Utils/Constantes.h
 UtilsOrb.o: ../Common/Windows.h ../OpenGL/Vibration.h ../OpenGL/ContoursPov.h

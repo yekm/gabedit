@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -27,12 +27,13 @@ DEALINGS IN THE SOFTWARE.
 #include "../Files/GabeditFileChooser.h"
 #include "../Common/GabeditType.h"
 
-#define NBNOD 12
+#define NBNOD 13
 
-#define PROG_IS_MPQC  GABEDIT_TYPENODE_MPQC
+#define PROG_IS_GAMESS  GABEDIT_TYPENODE_GAMESS
+#define PROG_IS_GAUSS  GABEDIT_TYPENODE_GAUSSIAN
 #define PROG_IS_MOLCAS GABEDIT_TYPENODE_MOLCAS
 #define PROG_IS_MOLPRO GABEDIT_TYPENODE_MOLPRO
-#define PROG_IS_GAUSS  GABEDIT_TYPENODE_GAUSSIAN
+#define PROG_IS_MPQC  GABEDIT_TYPENODE_MPQC
 #define PROG_IS_OTHER -1
 
 #define GEOM_IS_XYZ    GABEDIT_TYPENODE_XYZ
@@ -44,7 +45,7 @@ DEALINGS IN THE SOFTWARE.
 
 #define MAJOR_VERSION    2
 #define MINOR_VERSION    0
-#define MICRO_VERSION    1
+#define MICRO_VERSION    7
 
 /**** Structures *********/
 typedef struct _FileOpen
@@ -136,10 +137,12 @@ typedef struct _CommandsBatch
   GtkWidget *FrameList;
   GtkWidget *Hpaned;
   GtkWidget *ResultEntryPass;
+  GtkWidget *ResultLocalFrame;
   GtkWidget *ResultRemoteFrame;
   gint iedit;
   gint imodif;
   gint iframe;
+  gchar *NameCommandGamess;
   gchar *NameCommandGaussian;
   gchar *NameCommandMolcas;
   gchar *NameCommandMolpro;
@@ -160,7 +163,10 @@ typedef struct _CommandsBatch
   GabEditNetWork defaultNetWorkProtocol;
   gchar* pscpCommand;
   gchar* plinkCommand;
+  gchar* pscpplinkDirectory;
   gchar* babelCommand;
+  gchar* gamessDirectory;
+  CommandsList gamessCommands;
   CommandsList gaussianCommands;
   CommandsList molcasCommands;
   CommandsList molproCommands;

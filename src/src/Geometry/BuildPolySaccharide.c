@@ -1,6 +1,6 @@
 /* BuildPolySaccharide.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -188,6 +188,8 @@ static void define_geometry_to_draw()
 			geometry0[Natoms].Residue = g_strdup(G[i].Residue);
 			geometry0[Natoms].ResidueNumber = G[i].ResidueNumber;
 			geometry0[Natoms].N = Natoms+1;
+			geometry0[Natoms].Layer = HIGH_LAYER;
+			geometry0[Natoms].Variable = FALSE;
 
 			geometry[Natoms].X = G[i].X;
 			geometry[Natoms].Y = G[i].Y;
@@ -198,6 +200,8 @@ static void define_geometry_to_draw()
 			geometry[Natoms].Residue = g_strdup(G[i].Residue);
 			geometry[Natoms].ResidueNumber = G[i].ResidueNumber;
 			geometry[Natoms].N = Natoms+1;
+			geometry[Natoms].Layer = HIGH_LAYER;
+			geometry[Natoms].Variable = FALSE;
 			Natoms++;
 			C[0] +=  G[i].X;
 			C[1] +=  G[i].Y;
@@ -750,14 +754,14 @@ static void add_buttons(GtkWidget *Dlg,GtkWidget* box)
   gtk_container_add(GTK_CONTAINER(box),frame);  
   gtk_widget_show (frame);
 
-  Table = gtk_table_new(LigneT-1,ColonneT,TRUE);
+  Table = gtk_table_new(LigneT,ColonneT,TRUE);
   gtk_container_add(GTK_CONTAINER(frame),Table);
   button_style = gtk_widget_get_style(Dlg); 
   
   for ( i = 0;i<LigneT;i++)
 	  for ( j = 0;j<ColonneT;j++)
   {
-	  SButtons[i][j] = NULL;
+	  SButtons[j][i] = NULL;
 	  if(strcmp(Symb[j][i],"00"))
 	  {
 		button = gtk_button_new_with_label(Symb[j][i]);

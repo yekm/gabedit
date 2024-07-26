@@ -1,6 +1,7 @@
 # DO NOT DELETE
 
-Exit.o: ../../Config.h ../Common/Global.h
+Exit.o: ../../Config.h
+Exit.o: ../Common/Global.h
 Exit.o: ../Files/GabeditFileChooser.h
 Exit.o: ../Common/GabeditType.h ../Utils/Utils.h ../Utils/UtilsInterface.h
 Exit.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h
@@ -44,9 +45,10 @@ MenuToolBar.o: ../Molcas/Molcas.h ../Molcas/MolcasBasisLibrary.h
 MenuToolBar.o: ../MPQC/MPQCBasisLibrary.h ../Molpro/Molpro.h
 MenuToolBar.o: ../Molpro/MolproBasisLibrary.h ../Gaussian/Gaussian.h
 MenuToolBar.o: ../Utils/AtomsProp.h ../Utils/GabeditTextEdit.h
-MenuToolBar.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h
-MenuToolBar.o: ../Geometry/GeomGlobal.h ../Geometry/OpenBabel.h
-MenuToolBar.o: ../Common/Printer.h ../NetWork/Process.h ../NetWork/Batch.h
+MenuToolBar.o: ../Utils/ConvUtils.h ../Geometry/Fragments.h
+MenuToolBar.o: ../Geometry/DrawGeom.h ../Geometry/GeomGlobal.h
+MenuToolBar.o: ../Geometry/OpenBabel.h ../Common/Printer.h
+MenuToolBar.o: ../NetWork/Process.h ../NetWork/Batch.h
 MenuToolBar.o: ../MolecularMechanics/SetMMParameters.h
 MenuToolBar.o: ../MolecularMechanics/SetPDBTemplate.h ../Common/StockIcons.h
 Preferences.o: ../../Config.h Global.h
@@ -56,6 +58,7 @@ Preferences.o: ../Utils/UtilsInterface.h ../Utils/AtomsProp.h
 Preferences.o: ../Utils/Utils.h Windows.h TextEdit.h ../Utils/Vector3d.h
 Preferences.o: ../OpenGL/PreferencesOrb.h ../OpenGL/GLArea.h
 Preferences.o: ../Geometry/ResultsAnalise.h ../Geometry/GeomGlobal.h
+Preferences.o: ../Files/FolderChooser.h ../Files/GabeditFolderChooser.h
 Preferences.o: ../../pixmaps/Open.xpm
 Printer.o: ../../Config.h
 Printer.o: Global.h
@@ -94,18 +97,19 @@ StockIcons.o: ../../pixmaps/About.xpm ../../pixmaps/Apply.xpm
 StockIcons.o: ../../pixmaps/Book_close.xpm ../../pixmaps/Book_open.xpm
 StockIcons.o: ../../pixmaps/Book_parent.xpm ../../pixmaps/Camera.xpm
 StockIcons.o: ../../pixmaps/Cancel.xpm ../../pixmaps/Close.xpm
-StockIcons.o: ../../pixmaps/Copy.xpm ../../pixmaps/Cut.xpm
-StockIcons.o: ../../pixmaps/DeleteAtom.xpm ../../pixmaps/Draw.xpm
-StockIcons.o: ../../pixmaps/Driver.xpm ../../pixmaps/Error.xpm
-StockIcons.o: ../../pixmaps/Exit.xpm ../../pixmaps/Find.xpm
-StockIcons.o: ../../pixmaps/Gaussian.xpm ../../pixmaps/Geometry.xpm
-StockIcons.o: ../../pixmaps/Help.xpm ../../pixmaps/Hide.xpm
-StockIcons.o: ../../pixmaps/Home.xpm ../../pixmaps/H.xpm
-StockIcons.o: ../../pixmaps/Gabedit.xpm ../../pixmaps/Info.xpm
-StockIcons.o: ../../pixmaps/InsertAtom.xpm ../../pixmaps/Insert.xpm
-StockIcons.o: ../../pixmaps/Mesure.xpm ../../pixmaps/Molcas.xpm
-StockIcons.o: ../../pixmaps/Molden.xpm ../../pixmaps/Molpro.xpm
-StockIcons.o: ../../pixmaps/Adf.xpm ../../pixmaps/Dalton.xpm
+StockIcons.o: ../../pixmaps/ConvertUnit.xpm ../../pixmaps/Copy.xpm
+StockIcons.o: ../../pixmaps/Cut.xpm ../../pixmaps/DeleteAtom.xpm
+StockIcons.o: ../../pixmaps/Draw.xpm ../../pixmaps/Driver.xpm
+StockIcons.o: ../../pixmaps/Error.xpm ../../pixmaps/Exit.xpm
+StockIcons.o: ../../pixmaps/Find.xpm ../../pixmaps/Gaussian.xpm
+StockIcons.o: ../../pixmaps/Geometry.xpm ../../pixmaps/Help.xpm
+StockIcons.o: ../../pixmaps/Hide.xpm ../../pixmaps/Home.xpm
+StockIcons.o: ../../pixmaps/H.xpm ../../pixmaps/Gabedit.xpm
+StockIcons.o: ../../pixmaps/Info.xpm ../../pixmaps/InsertAtom.xpm
+StockIcons.o: ../../pixmaps/Insert.xpm ../../pixmaps/Mesure.xpm
+StockIcons.o: ../../pixmaps/Molcas.xpm ../../pixmaps/Molden.xpm
+StockIcons.o: ../../pixmaps/Molpro.xpm ../../pixmaps/Adf.xpm
+StockIcons.o: ../../pixmaps/Dalton.xpm ../../pixmaps/Gamess.xpm
 StockIcons.o: ../../pixmaps/MoveAtom.xpm ../../pixmaps/MPQC.xpm
 StockIcons.o: ../../pixmaps/New.xpm ../../pixmaps/Next.xpm
 StockIcons.o: ../../pixmaps/No.xpm ../../pixmaps/Ok.xpm

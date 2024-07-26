@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -85,6 +85,7 @@ GtkWidget *create_checkbutton(GtkWidget *,GtkWidget *,gchar *);
 void  cree_vboxs_list_text();
 void goto_end(GtkWidget *current,gpointer data);
 void goto_end_result(GtkWidget *win,gpointer data);
+void read_geom_in_gamess_input(gchar *);
 void read_geom_in_gauss_input(gchar *);
 void read_geom_in_molcas_input(gchar *);
 void read_geom_in_molpro_input(gchar *);
@@ -94,6 +95,7 @@ void open_file(GtkWidget *widget, gchar *data);
 void new_molcas(GtkWidget *widget, gchar *data);
 void new_molpro(GtkWidget *widget, gchar *data);
 void new_mpqc(GtkWidget *widget, gchar *data);
+void new_gamess(GtkWidget *widget, gchar *data);
 void new_gauss(GtkWidget *widget, gchar *data);
 void new_other(GtkWidget *widget, gchar *data);
 GtkWidget *create_button_pixmap(GtkWidget *widget, gchar **data,gchar *string);
@@ -103,7 +105,7 @@ GtkWidget *add_label_table(GtkWidget *Table, G_CONST_RETURN gchar *label,gushort
 void set_default_styles();
 GtkWidget *create_label_pixmap(GtkWidget *widget, gchar **data,gchar *string);
 GtkWidget* create_text_widget(GtkWidget* box,gchar *title,GtkWidget **frame);
-void draw_density_orbitals_gauss_or_molcas_or_molpro(GtkWidget *wid,gpointer data);
+void draw_density_orbitals_gamess_or_gauss_or_molcas_or_molpro(GtkWidget *wid,gpointer data);
 void set_last_directory(G_CONST_RETURN gchar* FileName);
 GtkWidget* set_dipole_dialog ();
 gchar* get_last_directory();

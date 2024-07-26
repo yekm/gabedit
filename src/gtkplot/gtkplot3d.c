@@ -981,7 +981,7 @@ gtk_plot3d_draw_labels(GtkPlot3D *plot,
   gint ntick;
   gdouble m;
   gdouble size, ox, oy, oz;
-  gdouble y;
+  gdouble y=0;
   GtkPlotVector ticks_direction, center, aux;
   gdouble proj;
   gboolean veto = FALSE;

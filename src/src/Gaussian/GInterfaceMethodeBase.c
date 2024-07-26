@@ -1,6 +1,6 @@
 /* GInterfaceMethodeBase.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -611,7 +611,7 @@ static void GAjoutePageMB(GtkWidget *NoteBook,gchar * tNote,guint j, GtkWidget *
   GtkWidget *combobox;
   gboolean nothing = TRUE;
 
-  if(tNote && strcmp(tNote,"Hight") ==0 ) nothing = FALSE;
+  if(tNote && strcmp(tNote,"High") ==0 ) nothing = FALSE;
   
   NM=j;
   Basis[NM] =NULL;
@@ -673,7 +673,7 @@ void create_notebook_MB(GtkWidget *frame)
 	NoteBookMB = gtk_notebook_new();
 	gtk_notebook_set_tab_pos( GTK_NOTEBOOK(NoteBookMB),GTK_POS_LEFT);
 	gtk_box_pack_start(GTK_BOX (vbox), NoteBookMB,FALSE, FALSE, 0);
-	GAjoutePageMB(NoteBookMB,"Hight",0, &comboMethodHight, &comboBasisHight); 
+	GAjoutePageMB(NoteBookMB,"High",0, &comboMethodHight, &comboBasisHight); 
 	GAjoutePageMB(NoteBookMB,"Medium",1, &comboMethodMedium, &comboBasisMedium); 
 	GAjoutePageMB(NoteBookMB,"Lower",2, &comboMethodLower, &comboBasisLower); 
   	gtk_widget_show_all (NoteBookMB);

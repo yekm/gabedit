@@ -1,6 +1,6 @@
 /* BuildPolyPeptide.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -199,6 +199,9 @@ static void define_geometry_to_draw()
 		geometry0[n].Type = g_strdup(G[i].Type);
 		geometry0[n].Residue = g_strdup(G[i].Residue);
 		geometry0[n].ResidueNumber = G[i].ResidueNumber;
+		geometry0[n].Layer = HIGH_LAYER;
+		geometry0[n].Variable = FALSE;
+
 
 		geometry0[n].N = n+1;
 
@@ -211,6 +214,8 @@ static void define_geometry_to_draw()
 		geometry[n].Residue = g_strdup(geometry0[n].Residue);
 		geometry[n].ResidueNumber = G[i].ResidueNumber;
 		geometry[n].N = n+1;
+		geometry[n].Layer = HIGH_LAYER;
+		geometry[n].Variable = FALSE;
 		C[0] +=  G[i].X;
 		C[1] +=  G[i].Y;
 		C[2] +=  G[i].Z;
@@ -434,9 +439,9 @@ static void add_fragment(gchar* what)
 
 	define_geometry_to_draw();
 	define_good_factor();
-	create_GeomXYZ_from_draw_grometry();
 	unselect_all_atoms();
 	dessine();
+	create_GeomXYZ_from_draw_grometry();
 	lastFragNumber++;
 	lastC = C;
 	lastN = N;
@@ -682,7 +687,7 @@ static void build_polypeptide(GtkWidget *w,gpointer data)
 		delete_zwitterion();
 		return;
 	}
-	FreeFragment(Frag);
+	FreeFragment(&Frag);
 	Frag = GetFragmentPPD(fullFragName);
 	add_fragment((gchar*)data);
 	re_set_angles();
@@ -1283,7 +1288,7 @@ static void add_buttons(GtkWidget *Dlg,GtkWidget* box)
         GtkStyle *button_style;
         GtkStyle *style;
 
-	char *Symb[ColonneT][LigneT]={
+	static char *Symb[ColonneT][LigneT]={
 		{"Ala","Cys","Gly","His","Met","Thr"},
 		{"Arg","Cyx","Hid","Ile","Phe","Tyr"},
 		{"Asn","Gln","Hie","Leu","Pro","Trp"},
@@ -1298,7 +1303,7 @@ static void add_buttons(GtkWidget *Dlg,GtkWidget* box)
   gtk_container_add(GTK_CONTAINER(box),frame);  
   gtk_widget_show (frame);
 
-  Table = gtk_table_new(LigneT-1,ColonneT,TRUE);
+  Table = gtk_table_new(LigneT,ColonneT,TRUE);
   gtk_container_add(GTK_CONTAINER(frame),Table);
   button_style = gtk_widget_get_style(Dlg); 
   

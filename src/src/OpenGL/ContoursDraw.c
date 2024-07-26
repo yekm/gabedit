@@ -1,6 +1,6 @@
 /*ContoursDraw.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -24,6 +24,17 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/Contours.h"
 #include "../OpenGL/ColorMap.h"
 
+static gboolean dottedNegtaiveContours = FALSE;
+/**************************************************************************/
+void set_dotted_negative_contours(gboolean dotted)
+{
+	dottedNegtaiveContours = dotted;
+}
+/**************************************************************************/
+gboolean get_dotted_negative_contours()
+{
+	return dottedNegtaiveContours;
+}
 /**************************************************************************/
 static ColorMap* get_colorMap_contours()
 {
@@ -214,7 +225,7 @@ void PlanDraw(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloat Gap[])
 	glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
 }
 /*********************************************************************************************************/
-static void ContoursDraw(Contours contours,gfloat Gap[])
+static void ContoursDraw(Contours contours,gfloat Gap[], gfloat value)
 {
 	gint i;
 	gint j;
@@ -224,17 +235,26 @@ static void ContoursDraw(Contours contours,gfloat Gap[])
 	PointsContour** pointscontour= contours.pointscontour;
 	gfloat x, y, z;
 
-	glLineWidth(1);
-	//for(i=1;i<N[0]-2;i++)
+	glLineWidth(0.5);
+	/*for(i=1;i<N[0]-2;i++)*/
 	for(i=0;i<N[0]-1;i++)
 	{
-		//for(j=1;j<N[1]-2;j++)
+		/*for(j=1;j<N[1]-2;j++)*/
 		for(j=0;j<N[1]-1;j++)
 		{
 	/*			Debug("N(%d,%d) = %d\n",i,j,pointscontour[i][j].N);*/
 				for(n=0;n<pointscontour[i][j].N-1;n++)
 				{
 					k++;
+					if(dottedNegtaiveContours && value<0) 
+					{
+						glEnable (GL_LINE_STIPPLE);
+						/*glLineStipple (1, 0x0101);*/   /*  dotted   */
+						/*glLineStipple (1, 0x00FF);*/   /*  dashed   */
+						/*glLineStipple (1, 0x1C47);*/   /*  dash/dot/dash   */
+						/* glLineStipple (2, 0xAAAA);  */
+						glLineStipple (3, 0x5555);
+					}
 					glBegin(GL_LINES);
 					/*
 					glVertex4fv(pointscontour[i][j].point[n].C);
@@ -249,6 +269,7 @@ static void ContoursDraw(Contours contours,gfloat Gap[])
 					z = pointscontour[i][j].point[n+1].C[2] + Gap[2];
 					glVertex3f(x,y,z);
 					glEnd();
+					if(dottedNegtaiveContours && value<0) glDisable (GL_LINE_STIPPLE);
 				}
 
 		}
@@ -316,7 +337,7 @@ GLuint ContoursPlanGenOneList(Grid* plansgrid,gint Ncontours,gfloat*values,gint 
 			glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
 			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
 			contours = get_contours(plansgrid,values[i],i0,i1,numplan);
-			ContoursDraw(contours,Gap);
+			ContoursDraw(contours,Gap,values[i]);
 			contour_point_free(contours);				
 		}
 	}

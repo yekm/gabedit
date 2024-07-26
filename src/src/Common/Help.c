@@ -1,6 +1,6 @@
 /* Help.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Constantes.h"
 
 /***************************************************************************/
-void help_gaussian_molcas_molpro_mpqc_commands()
+void help_commands()
 {
 	gchar temp[BSIZE];
 	GtkWidget* win;
@@ -93,9 +93,10 @@ void help_ssh()
 		"     *  the server must support ssh protocol.\n\n"
 		"     *  the local host must support ssh protocol.\n\n"
 		"     *  on the local host, excecute the orders:\n"
-		"           ssh-keygen    (for create id_rsa ans id_rsa.pub files) [Or ssh-keygen -t rsh ]\n"
-		"           ssh-keygen -d (for create id_dsa ans id_dsa.pub files) [Or ssh-keygen -t dsh ]\n"
+		"           ssh-keygen -t rsa (for create id_rsa ans id_rsa.pub files)\n"
+		"           ssh-keygen -t dsa (for create id_dsa ans id_dsa.pub files)\n"
 		"              for the 2 ordres : you must create the codes without passphrase.\n\n"
+		/*
 		"           copy id_rsa, id_rsa.pub, id_dsa, id_dsa.pub files at .ssh directory.\n\n"
 		"           edit config file(at .ssh directory) and add the lines :\n"
 		"              Host localhostname\n"
@@ -105,6 +106,7 @@ void help_ssh()
 		"                   IdentityFile  yourHomeDirectory/.ssh/id_rsa\n"
 		"                   IdentityFile2 yourHomeDirectory/.ssh/id_dsa\n"
 		"           and save this file.\n\n"
+		*/
 		"           copy id_rsa.pub, id_dsa.pub files at HOME directory at REMOT host.\n"
 		"           (example scp id_*.pub remotlogin@remotehost:.)\n\n"
 		"     *  on the remot host, excecute the orders:\n"

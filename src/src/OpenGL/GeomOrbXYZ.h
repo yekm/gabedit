@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -19,6 +19,7 @@ DEALINGS IN THE SOFTWARE.
 #ifndef __GABEDIT_GEOMORBXYZ_H__
 #define __GABEDIT_GEOMORBXYZ_H__
 
+void DefineType();
 void reset_old_geometry();
 gboolean this_is_a_new_geometry();
 void free_geometry();
@@ -28,6 +29,8 @@ void gl_read_pdb_file_sel(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_hin_file_sel(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_first_dalton_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_last_dalton_file(GabeditFileChooser *SelecFile, gint response_id);
+void gl_read_first_gamess_file(GabeditFileChooser *SelecFile, gint response_id);
+void gl_read_last_gamess_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_first_gauss_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_last_gauss_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_first_molcas_file(GabeditFileChooser *SelecFile, gint response_id);
@@ -39,6 +42,7 @@ void gl_read_last_mpqc_file(GabeditFileChooser *SelecFile, gint response_id);
 gboolean gl_read_xyz_file(gchar *FileName);
 gboolean gl_read_molpro_file_geom_pos(gchar *FileName,long int pos);
 gboolean gl_read_dalton_file_geomi(gchar *FileName,gint num);
+gboolean gl_read_gamess_file_geomi(gchar *FileName,gint num);
 gboolean gl_read_molpro_file_geomi(gchar *FileName,gint num);
 gboolean gl_read_molcas_file_geomi(gchar *FileName,gint num);
 gboolean gl_read_gaussn_file_geomi(gchar *FileName,gint num);

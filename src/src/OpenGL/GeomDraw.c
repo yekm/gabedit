@@ -1,6 +1,6 @@
 /* GeomDraw */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -27,96 +27,9 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/HydrogenBond.h"
 #include "Sphere.h"
 #include "Cylinder.h"
+#include "BondsOrb.h"
+#include "RingsOrb.h"
 
-/************************************************************************/
-gboolean draw_lines_yes_no_orb(gint i,gint j)
-{
-	GLfloat distance;
-	V3d dif;
-	gint k;
-	
-	for(k=0;k<3;k++)
-		dif[k] = (GeomOrb[i].C[k] - GeomOrb[j].C[k]);
-
-	distance = v3d_length(dif);
-
-	if(distance<(GeomOrb[i].Prop.covalentRadii + GeomOrb[j].Prop.covalentRadii))
-		return TRUE;
-	else 
-		return FALSE;
-}
-/************************************************************************/
-gboolean draw_lines_hbond_yes_no_orb(gint i,gint j)
-{
-	gfloat minDistanceH;
-	gfloat maxDistanceH;
-	gfloat minDistanceH2;
-	gfloat maxDistanceH2;
-	gfloat minAngleH;
-	gfloat maxAngleH;
-	gfloat distance2;
-	gfloat angle;
-	gchar* strAngle;
-	Point A;
-	Point B;
-	gdouble dx, dy, dz;
-
-	gint k;
-	gint kH;
-	gint kO;
-
-	if(strcmp(GeomOrb[i].Symb,"H") == 0 )
-	{
-		kH = i;
-		kO = j;
-		if(!atomCanDoHydrogenBond(GeomOrb[j].Symb)) return FALSE;
-	}
-	else
-	{
-		if(strcmp(GeomOrb[j].Symb,"H") == 0 )
-		{
-			kH = j;
-			kO = i;
-			if(!atomCanDoHydrogenBond(GeomOrb[i].Symb)) return FALSE;
-		}
-		else return FALSE;
-	}
-	minDistanceH = getMinDistanceHBonds();
-	minDistanceH2 = minDistanceH*minDistanceH*ANG_TO_BOHR*ANG_TO_BOHR;
-
-	maxDistanceH = getMaxDistanceHBonds();
-	maxDistanceH2 = maxDistanceH*maxDistanceH*ANG_TO_BOHR*ANG_TO_BOHR;
-
-	minAngleH = getMinAngleHBonds();
-	maxAngleH = getMaxAngleHBonds();
-
-	dx = GeomOrb[i].C[0] - GeomOrb[j].C[0];
-	dy = GeomOrb[i].C[1] - GeomOrb[j].C[1];
-	dz = GeomOrb[i].C[2] - GeomOrb[j].C[2];
-	distance2 = (dx*dx+dy*dy+dz*dz);
-	if(distance2<minDistanceH2 || distance2>maxDistanceH2) return FALSE;
-
-	for(k=0;k<Ncenters;k++)
-	{
-		if(k==kH) continue;
-		if(k==kO) continue;
-		/* angle kO, kH, connection to kH */
-		if(!draw_lines_yes_no_orb(kH,k)) continue;
-		A.C[0]=GeomOrb[kO].C[0]-GeomOrb[kH].C[0];
-		A.C[1]=GeomOrb[kO].C[1]-GeomOrb[kH].C[1];
-		A.C[2]=GeomOrb[kO].C[2]-GeomOrb[kH].C[2];
-
-		B.C[0]=GeomOrb[k].C[0]-GeomOrb[kH].C[0];
-		B.C[1]=GeomOrb[k].C[1]-GeomOrb[kH].C[1];
-		B.C[2]=GeomOrb[k].C[2]-GeomOrb[kH].C[2];
-        
-        	strAngle = get_angle_vectors(A,B);
-		angle = atof(strAngle);
-		if(strAngle) g_free(strAngle);
-		if(angle>=minAngleH &&angle<=maxAngleH) return TRUE;
-	}
-	return FALSE;
-}
 /************************************************************************/
 void draw_space(int i)
 {
@@ -149,6 +62,8 @@ void draw_ball(int i,GLfloat scal)
 	Specular[2] = GeomOrb[i].Prop.color.blue/(gfloat)65535;
 	for(k=0;k<3;k++) Diffuse[k] = Specular[k]*0.8;
 	for(k=0;k<3;k++) Ambiant[k] = Specular[k]*0.5;
+	for(k=0;k<3;k++) Specular[k] = 0.8;
+	for(k=0;k<3;k++) Ambiant[k] = 0.0;
 
 	Sphere_Draw_Color(g,GeomOrb[i].C,Specular,Diffuse,Ambiant);
 
@@ -279,6 +194,7 @@ void draw_wireframe(int i,int j, int line)
 
 }
 /************************************************************************/
+/*
 void draw_bond(int i,int j,GLfloat scal)
 {
 	
@@ -315,6 +231,18 @@ void draw_bond(int i,int j,GLfloat scal)
 		Ambiant1[k] = Specular1[k]*0.5;
 		Ambiant2[k] = Specular2[k]*0.5;
 	}
+
+	for(k=0;k<3;k++)
+	{
+		Ambiant1[k] = 0.1;
+		Ambiant2[k] = 0.1;
+	}
+	for(k=0;k<3;k++)
+	{
+		Specular1[k] = 0.8;
+		Specular2[k] = 0.8;
+	}
+
 	p1 = GeomOrb[i].Prop.covalentRadii+GeomOrb[i].Prop.radii;
 	p2 = GeomOrb[j].Prop.covalentRadii+GeomOrb[j].Prop.radii;
 
@@ -324,32 +252,157 @@ void draw_bond(int i,int j,GLfloat scal)
 				p1,p2);
 
 }
+*/
+/************************************************************************/
+void draw_bond(int i,int j,GLfloat scal, GabEditBondType bondType)
+{
+	
+	int k;
+	GLfloat g;
+	V4d Specular1 = {1.0f,1.0f,1.0f,1.0f};
+	V4d Diffuse1  = {0.0f,0.0f,0.0f,1.0f};
+	V4d Ambiant1  = {0.0f,0.0f,0.0f,1.0f};
+	V4d Specular2 = {1.0f,1.0f,1.0f,1.0f};
+	V4d Diffuse2  = {0.0f,0.0f,0.0f,1.0f};
+	V4d Ambiant2  = {0.0f,0.0f,0.0f,1.0f};
+	GLfloat aspect = scal;
+	GLfloat p1;
+	GLfloat p2;
+	
+	if(GeomOrb[i].Prop.radii<GeomOrb[j].Prop.radii) g = GeomOrb[i].Prop.radii*aspect;
+	else g = GeomOrb[j].Prop.radii*aspect;
+	  
+	Specular1[0] = GeomOrb[i].Prop.color.red/(gfloat)65535;
+	Specular1[1] = GeomOrb[i].Prop.color.green/(gfloat)65535;
+	Specular1[2] = GeomOrb[i].Prop.color.blue/(gfloat)65535;
+
+	Specular2[0] = GeomOrb[j].Prop.color.red/(gfloat)65535;
+	Specular2[1] = GeomOrb[j].Prop.color.green/(gfloat)65535;
+	Specular2[2] = GeomOrb[j].Prop.color.blue/(gfloat)65535;
+
+	for(k=0;k<3;k++)
+	{
+		Diffuse1[k] = Specular1[k]*0.8;
+		Diffuse2[k] = Specular2[k]*0.8;
+	}
+	for(k=0;k<3;k++)
+	{
+		Ambiant1[k] = Specular1[k]*0.5;
+		Ambiant2[k] = Specular2[k]*0.5;
+	}
+
+	for(k=0;k<3;k++)
+	{
+		Ambiant1[k] = 0.1;
+		Ambiant2[k] = 0.1;
+	}
+	for(k=0;k<3;k++)
+	{
+		Specular1[k] = 0.8;
+		Specular2[k] = 0.8;
+	}
+
+	p1 = GeomOrb[i].Prop.covalentRadii+GeomOrb[i].Prop.radii;
+	p2 = GeomOrb[j].Prop.covalentRadii+GeomOrb[j].Prop.radii;
+
+	if(bondType == GABEDIT_BONDTYPE_SINGLE)
+		Cylinder_Draw_Color_Two(g,GeomOrb[i].C,GeomOrb[j].C,
+				Specular1,Diffuse1,Ambiant1,
+				Specular2,Diffuse2,Ambiant2,
+				p1,p2);
+	else
+	if(bondType == GABEDIT_BONDTYPE_DOUBLE)
+	{
+	  	V3d vScal = {g/aspect*0.3,g/aspect*0.3,g/aspect*0.3};
+		V3d C1;
+		V3d C2;
+		V3d cross;
+		V3d sub;
+		V3d CRing;
+		getCentreRing(i,j, CRing);
+		v3d_sub(CRing, GeomOrb[i].C, C1);
+		v3d_sub(CRing, GeomOrb[j].C, C2);
+		v3d_cross(C1, C2, cross);
+		v3d_sub(GeomOrb[i].C, GeomOrb[j].C, sub);
+		v3d_cross(cross, sub, vScal);
+		if(v3d_dot(vScal,vScal)!=0)
+		{
+			v3d_normal(vScal);
+			v3d_scale(vScal, g/aspect*0.3);
+		}
+
+		for(k=0;k<3;k++) C1[k] = GeomOrb[i].C[k]-vScal[k];
+		for(k=0;k<3;k++) C2[k] = GeomOrb[j].C[k]-vScal[k];
+		Cylinder_Draw_Color_Two(g/2,C1,C2, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
+		for(k=0;k<3;k++) C1[k] = GeomOrb[i].C[k]+vScal[k];
+		for(k=0;k<3;k++) C2[k] = GeomOrb[j].C[k]+vScal[k];
+		Cylinder_Draw_Color_Two(g/2,C1,C2, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
+	}
+	else
+	if(bondType == GABEDIT_BONDTYPE_TRIPLE)
+	{
+	  	V3d vScal = {g/aspect*0.3,g/aspect*0.3,g/aspect*0.3};
+		V3d C1;
+		V3d C2;
+		V3d cross;
+		V3d sub;
+		V3d CRing;
+		getCentreRing(i,j, CRing);
+		v3d_sub(CRing, GeomOrb[i].C, C1);
+		v3d_sub(CRing, GeomOrb[j].C, C2);
+		v3d_cross(C1, C2, cross);
+		v3d_sub(GeomOrb[i].C, GeomOrb[j].C, sub);
+		v3d_cross(cross, sub, vScal);
+		if(v3d_dot(vScal,vScal)!=0)
+		{
+			v3d_normal(vScal);
+			v3d_scale(vScal, g/aspect*0.3*2);
+		}
+
+		for(k=0;k<3;k++) C1[k] = GeomOrb[i].C[k]-vScal[k];
+		for(k=0;k<3;k++) C2[k] = GeomOrb[j].C[k]-vScal[k];
+		Cylinder_Draw_Color_Two(g/2,C1,C2, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
+		for(k=0;k<3;k++) C1[k] = GeomOrb[i].C[k];
+		for(k=0;k<3;k++) C2[k] = GeomOrb[j].C[k];
+		Cylinder_Draw_Color_Two(g/2,C1,C2, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
+		for(k=0;k<3;k++) C1[k] = GeomOrb[i].C[k]+vScal[k];
+		for(k=0;k<3;k++) C2[k] = GeomOrb[j].C[k]+vScal[k];
+		Cylinder_Draw_Color_Two(g/2,C1,C2, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
+	}
+}
 /************************************************************************/
 gint GeomDrawBallStick()
 {
-	int i;
-	int j;
-	  for(i = 0;i<Ncenters;i++)
-	  {
+	gint i;
+	gint j;
+	GList* list = NULL;
+	for(i = 0;i<Ncenters;i++) 
+	{
+		if(!ShowHAtomOrb && strcmp("H",GeomOrb[i].Symb)==0) continue;
 		draw_ball(i,1.0);
-
-		for(j=i+1;j<Ncenters;j++)
-			if(draw_lines_yes_no_orb(i,j))
-				draw_bond(i,j,1.0/3.0);
-		        else
-			if(ShowHBondOrb && draw_lines_hbond_yes_no_orb(i,j)) draw_hbond(i,j,1.0/5.0);
-
-
-	  }
-
-  return TRUE;
+	}
+	for(list=BondsOrb;list!=NULL;list=list->next)
+	{
+		BondType* data=(BondType*)list->data;
+		i = data->n1;
+		j = data->n2;
+		if(!ShowHAtomOrb && (strcmp("H",GeomOrb[i].Symb)==0 || strcmp("H",GeomOrb[j].Symb)==0)) continue;
+		if(data->bondType == GABEDIT_BONDTYPE_HYDROGEN)
+			draw_hbond(i,j,1.0/5.0);
+		else
+			draw_bond(i,j,1.0/3.0, data->bondType);
+	}
+  	return TRUE;
 }
 /************************************************************************/
 gint GeomDrawSpaceFill()
 {
 	int i;
 	  for(i = 0;i<Ncenters;i++)
+	  {
+		if(!ShowHAtomOrb && strcmp("H",GeomOrb[i].Symb)==0) continue;
 		draw_space(i);
+	  }
 
   return TRUE;
 }
@@ -366,13 +419,15 @@ static void draw_ball_for_stick(int i, GLfloat g)
 	Specular[2] = GeomOrb[i].Prop.color.blue/(gfloat)65535;
 	for(k=0;k<3;k++) Diffuse[k] = Specular[k]*0.8;
 	for(k=0;k<3;k++) Ambiant[k] = Specular[k]*0.5;
+	for(k=0;k<3;k++) Specular[k] = 0.8;
+	for(k=0;k<3;k++) Ambiant[k] = 0.1;
 
 	Sphere_Draw_Color(g,GeomOrb[i].C,Specular,Diffuse,Ambiant);
 	Sphere_Draw_Color_Precision(g,GeomOrb[i].C,Specular,Diffuse,Ambiant, (GLint)openGLOptions.numberOfSubdivisionsCylindre);
 
 }
 /************************************************************************/
-void draw_bond_for_stick(int i,int j,GLfloat g)
+void draw_bond_for_stick(int i,int j,GLfloat g, GabEditBondType bondType)
 {
 	
 	int k;
@@ -384,6 +439,7 @@ void draw_bond_for_stick(int i,int j,GLfloat g)
 	V4d Ambiant2  = {0.0f,0.0f,0.0f,1.0f};
 	GLfloat p1;
 	GLfloat p2;
+	GLfloat aspect = g;
 	
 	  
 	Specular1[0] = GeomOrb[i].Prop.color.red/(gfloat)65535;
@@ -404,6 +460,16 @@ void draw_bond_for_stick(int i,int j,GLfloat g)
 		Ambiant1[k] = Specular1[k]*0.5;
 		Ambiant2[k] = Specular2[k]*0.5;
 	}
+	for(k=0;k<3;k++)
+	{
+		Ambiant1[k] = 0;
+		Ambiant2[k] = 0;
+	}
+	for(k=0;k<3;k++)
+	{
+		Specular1[k] = 0.8;
+		Specular2[k] = 0.8;
+	}
 	p1 = GeomOrb[i].Prop.covalentRadii+GeomOrb[i].Prop.radii;
 	p2 = GeomOrb[j].Prop.covalentRadii+GeomOrb[j].Prop.radii;
 
@@ -412,38 +478,96 @@ void draw_bond_for_stick(int i,int j,GLfloat g)
 				Specular2,Diffuse2,Ambiant2,
 				p1,p2);
 
+	if(bondType == GABEDIT_BONDTYPE_SINGLE)
+		Cylinder_Draw_Color_Two(g,GeomOrb[i].C,GeomOrb[j].C,
+				Specular1,Diffuse1,Ambiant1,
+				Specular2,Diffuse2,Ambiant2,
+				p1,p2);
+	else
+	if(bondType == GABEDIT_BONDTYPE_DOUBLE)
+	{
+	  	V3d vScal = {g/aspect*0.35,g/aspect*0.35,g/aspect*0.35};
+		V3d C1;
+		V3d C2;
+		V3d cross;
+		V3d sub;
+		V3d CRing;
+		getCentreRing(i,j, CRing);
+		v3d_sub(CRing, GeomOrb[i].C, C1);
+		v3d_sub(CRing, GeomOrb[j].C, C2);
+		v3d_cross(C1, C2, cross);
+		v3d_sub(GeomOrb[i].C, GeomOrb[j].C, sub);
+		v3d_cross(cross, sub, vScal);
+		if(v3d_dot(vScal,vScal)!=0)
+		{
+			v3d_normal(vScal);
+			v3d_scale(vScal, g/aspect*0.35);
+		}
+
+		for(k=0;k<3;k++) C1[k] = GeomOrb[i].C[k];
+		for(k=0;k<3;k++) C2[k] = GeomOrb[j].C[k];
+		Cylinder_Draw_Color_Two(g,C1,C2, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
+		for(k=0;k<3;k++) C1[k] = GeomOrb[i].C[k]-vScal[k];
+		for(k=0;k<3;k++) C2[k] = GeomOrb[j].C[k]-vScal[k];
+		Cylinder_Draw_Color_Two(g/2,C1,C2, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
+	}
+	else
+	if(bondType == GABEDIT_BONDTYPE_TRIPLE)
+	{
+	  	V3d vScal = {g/aspect*0.35,g/aspect*0.35,g/aspect*0.35};
+		V3d C1;
+		V3d C2;
+		V3d cross;
+		V3d sub;
+		V3d CRing;
+		getCentreRing(i,j, CRing);
+		v3d_sub(CRing, GeomOrb[i].C, C1);
+		v3d_sub(CRing, GeomOrb[j].C, C2);
+		v3d_cross(C1, C2, cross);
+		v3d_sub(GeomOrb[i].C, GeomOrb[j].C, sub);
+		v3d_cross(cross, sub, vScal);
+		if(v3d_dot(vScal,vScal)!=0)
+		{
+			v3d_normal(vScal);
+			v3d_scale(vScal, g/aspect*0.35);
+		}
+
+		for(k=0;k<3;k++) C1[k] = GeomOrb[i].C[k]-vScal[k];
+		for(k=0;k<3;k++) C2[k] = GeomOrb[j].C[k]-vScal[k];
+		Cylinder_Draw_Color_Two(g/2,C1,C2, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
+		for(k=0;k<3;k++) C1[k] = GeomOrb[i].C[k];
+		for(k=0;k<3;k++) C2[k] = GeomOrb[j].C[k];
+		Cylinder_Draw_Color_Two(g,C1,C2, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
+		for(k=0;k<3;k++) C1[k] = GeomOrb[i].C[k]+vScal[k];
+		for(k=0;k<3;k++) C2[k] = GeomOrb[j].C[k]+vScal[k];
+		Cylinder_Draw_Color_Two(g/2,C1,C2, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
+	}
+
 }
 /************************************************************************/
 gint GeomDrawStick()
 {
 	int i;
 	int j;
-	gboolean* Ok = NULL;
 	GLfloat g = 0.2;
-	if(Ncenters>0) Ok = g_malloc(Ncenters*sizeof(gboolean));
-	for(i = 0;i<Ncenters;i++)
-		Ok[i] = FALSE;
-	
-	for(i = 0;i<Ncenters;i++)
+	GList* list = NULL;
+	for(i = 0;i<Ncenters;i++) 
 	{
-
+		if(!ShowHAtomOrb && strcmp("H",GeomOrb[i].Symb)==0) continue;
 		draw_ball_for_stick(i, g);
-		for(j=i+1;j<Ncenters;j++)
-			if(draw_lines_yes_no_orb(i,j))
-			{
-				draw_bond_for_stick(i, j, g);
-				Ok[i] = TRUE;
-				Ok[j] = TRUE;
-			}
-		        else
-			if(ShowHBondOrb && draw_lines_hbond_yes_no_orb(i,j)) draw_hbond(i,j,0.15);
-
-		if(!Ok[i]) draw_ball(i,0.2);
-
-
 	}
-	if(Ok) g_free(Ok);
 
+	for(list=BondsOrb;list!=NULL;list=list->next)
+	{
+		BondType* data=(BondType*)list->data;
+		i = data->n1;
+		j = data->n2;
+		if(!ShowHAtomOrb && (strcmp("H",GeomOrb[i].Symb)==0 || strcmp("H",GeomOrb[j].Symb)==0)) continue;
+		if(data->bondType == GABEDIT_BONDTYPE_HYDROGEN)
+			draw_hbond(i,j,0.15);
+		else
+			draw_bond_for_stick(i, j, g,  data->bondType);
+	}
 	return TRUE;
 }
 /************************************************************************/
@@ -452,27 +576,28 @@ gint GeomDrawWireFrame()
 	int i;
 	int j;
 	gboolean* Ok = NULL;
+	GList* list = NULL;
 
 	if(Ncenters>0) Ok = g_malloc(Ncenters*sizeof(gboolean));
+	for(i = 0;i<Ncenters;i++) Ok[i] = FALSE;
 
-	for(i = 0;i<Ncenters;i++)
-		Ok[i] = FALSE;
-	
-	for(i = 0;i<Ncenters;i++)
+	for(list=BondsOrb;list!=NULL;list=list->next)
 	{
-		for(j=i+1;j<Ncenters;j++)
-			if(draw_lines_yes_no_orb(i,j))
-			{
-				draw_wireframe(i,j, 5);
-				Ok[i] = TRUE;
-				Ok[j] = TRUE;
-			}
-			else
-			if(ShowHBondOrb && draw_lines_hbond_yes_no_orb(i,j)) draw_wireframe(i,j,1);
-
+		BondType* data=(BondType*)list->data;
+		i = data->n1;
+		j = data->n2;
+		if(!ShowHAtomOrb && (strcmp("H",GeomOrb[i].Symb)==0 || strcmp("H",GeomOrb[j].Symb)==0)) continue;
+		if(data->bondType == GABEDIT_BONDTYPE_HYDROGEN)
+			draw_wireframe(i,j,1);
+		else
+			 draw_wireframe(i,j, 5);
+		Ok[i] = TRUE;
+		Ok[j] = TRUE;
+	}
+	for(i = 0;i<Ncenters;i++) 
+	{
+		if(!ShowHAtomOrb && strcmp("H",GeomOrb[i].Symb)==0) continue;
 		if(!Ok[i]) draw_ball(i,0.2);
-
-
 	}
 	if(Ok) g_free(Ok);
 	glLineWidth(1);
@@ -482,6 +607,7 @@ gint GeomDrawWireFrame()
 /************************************************************************/
 gint GeomDraw()
 {
+	buildBondsOrb();
 	switch(TypeGeom)
 	{
 	case GABEDIT_TYPEGEOM_BALLSTICK : return GeomDrawBallStick();

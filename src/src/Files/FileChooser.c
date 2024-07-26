@@ -1,6 +1,6 @@
 /* FileChooser.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -60,6 +60,9 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 					   gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.out");
 					   temp = g_strdup_printf("%s.out",fileopen.projectname);
 					   break;
+	   case GABEDIT_TYPEFILE_GAMESS : 
+					   gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.log");
+					   temp = g_strdup_printf("%s.log",fileopen.projectname);
 	   case GABEDIT_TYPEFILE_GAUSSIAN : 
 		   				gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.log");
 						temp = g_strdup_printf("%s.log",fileopen.projectname);
@@ -120,6 +123,10 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 	   case GABEDIT_TYPEFILE_MZMAT : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.zmt");
 					    temp = g_strdup_printf("%s.zmt",fileopen.projectname);
+					    break;
+	   case GABEDIT_TYPEFILE_GAMESSINPUT : 
+					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.inp");
+					    temp = g_strdup_printf("%s.inp",fileopen.projectname);
 					    break;
 	   case GABEDIT_TYPEFILE_GAUSIANINPUT : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.com");
@@ -258,7 +265,7 @@ GtkWidget* file_chooser_save(gpointer data,gchar* title,GabEditTypeFile type,Gab
 void choose_file_to_open()
 {
   GtkWidget *gabeditFileChooser;
-  gchar* patternsfiles[] = {"*.com","*.xyz","*.zmt","*.gzmt","*",NULL};
+  gchar* patternsfiles[] = {"*.com","*.inp","*.xyz","*.zmt","*.gzmt","*",NULL};
 
   gabeditFileChooser = gabedit_file_chooser_new("Open file", GTK_FILE_CHOOSER_ACTION_OPEN);
   gabedit_file_chooser_hide_hidden(GABEDIT_FILE_CHOOSER(gabeditFileChooser));
@@ -277,6 +284,8 @@ void choose_file_to_open()
   }
 
    gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(gabeditFileChooser), patternsfiles);
+    if(iprogram == PROG_IS_GAMESS  || iprogram == PROG_IS_OTHER)
+   	gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.inp");
 
 
   g_signal_connect(G_OBJECT(gabeditFileChooser), "delete_event",(GtkSignalFunc)destroy_button_windows,NULL);

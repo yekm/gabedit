@@ -5,6 +5,15 @@ Atom.o: ../Common/Global.h
 Atom.o: ../Files/GabeditFileChooser.h
 Atom.o: ../Common/GabeditType.h ../Utils/Constantes.h ../Utils/AtomsProp.h
 Atom.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h Atom.h
+CalculTypesAmber.o: ../../Config.h
+CalculTypesAmber.o: ../Common/Global.h
+CalculTypesAmber.o: ../Files/GabeditFileChooser.h
+CalculTypesAmber.o: ../Common/GabeditType.h ../Geometry/Fragments.h
+CalculTypesAmber.o: ../Geometry/DrawGeom.h ../Utils/Transformation.h
+CalculTypesAmber.o: ../Utils/Constantes.h ../Utils/Utils.h
+CalculTypesAmber.o: ../Utils/UtilsInterface.h ../Utils/Vector3d.h
+CalculTypesAmber.o: ../Utils/HydrogenBond.h
+CalculTypesAmber.o: ../MolecularMechanics/CalculTypesAmber.h
 ConjugateGradient.o: ../../Config.h
 ConjugateGradient.o: ../Common/Global.h
 ConjugateGradient.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h

@@ -1,6 +1,6 @@
 /* BuildPolyNucleicAcid.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -866,6 +866,8 @@ static void defineGeometryToDraw()
 		geometry0[n].Type = g_strdup(G[i].Type);
 		geometry0[n].Residue = g_strdup(G[i].Residue);
 		geometry0[n].ResidueNumber = G[i].ResidueNumber;
+		geometry0[n].Layer = HIGH_LAYER;
+		geometry0[n].Variable = FALSE;
 
 		geometry0[n].N = n+1;
 
@@ -878,6 +880,8 @@ static void defineGeometryToDraw()
 		geometry[n].Residue = g_strdup(geometry0[n].Residue);
 		geometry[n].ResidueNumber = geometry0[n].ResidueNumber;
 		geometry[n].N = n+1;
+		geometry[n].Layer = HIGH_LAYER;
+		geometry[n].Variable = FALSE;
 		C[0] +=  G[i].X;
 		C[1] +=  G[i].Y;
 		C[2] +=  G[i].Z;
@@ -1236,6 +1240,8 @@ static void makeBasepair( gchar* sense, gchar* anti, gdouble senseAngle, gdouble
 	TransformMat3D(sM, sTmp, sNAtoms);	               	
 	TransformMat3D(aM, aTmp, aNAtoms);	               	
 
+	sFragC1P[ 0 ] = sTmp[0][0];
+	sFragC1P[ 1 ] = sTmp[0][1];
 	for ( i = 0; i < sNAtoms; i++ )
 	{
 		gchar* Name = sFrag.Atoms[ i ].Type;
@@ -1246,6 +1252,8 @@ static void makeBasepair( gchar* sense, gchar* anti, gdouble senseAngle, gdouble
 			break;
 		}
 	}
+	aFragC1P[ 0 ] = aTmp[0][0];
+	aFragC1P[ 1 ] = aTmp[0][1];
 	for ( i = 0; i < aNAtoms; i++ )
 	{
 		gchar* Name = aFrag.Atoms[ i ].Type;
@@ -2042,7 +2050,7 @@ static void initVariables()
 
 	if(custom3Value) g_free(custom3Value);
 	custom3Value = NULL;
-	printf("End initVariable\n");
+	/* printf("End initVariable\n");*/
 }
 /*****************************************************************************/
 static void destroyDlg(GtkWidget* Dlg,gpointer data) 

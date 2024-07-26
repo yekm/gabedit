@@ -37,12 +37,12 @@ int main(int argc,char* argv[])
 	if(sscanf(t,"%d",&Natoms) != 1)
 	{
 		printf("Error : readding of data file\n");
-		return;
+		return 1;
 	}
 	if(Natoms<=0)
 	{
 		printf("Error : Natoms <=0\n");
-		return;
+		return 1;
 	}
  }
  fgets(t,BSIZE,fin);

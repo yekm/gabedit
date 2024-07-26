@@ -1,6 +1,6 @@
 /* GInterfaceGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -57,7 +57,8 @@ void set_spin_of_electrons()
         for(i=0;(guint)i<NMethodes;i++)
         {
          chaine = g_strdup_printf("%d",SpinElectrons[i]);
-         gtk_entry_set_text(GTK_ENTRY(EntryCS[2*i+1]),chaine);
+	 if(EntryCS[2*i+1] && GTK_IS_ENTRY(EntryCS[2*i+1]))
+         	gtk_entry_set_text(GTK_ENTRY(EntryCS[2*i+1]),chaine);
         }
 }
 static void change_of_charge(GtkWidget *entry,gpointer d)

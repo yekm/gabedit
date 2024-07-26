@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -405,6 +405,252 @@ static gboolean read_dalton_file_geomi(gchar *FileName, gint num, Geometry* geom
 		geometry->listOfAtoms = listOfAtoms;
 	}
 	return TRUE;
+}
+/********************************************************************************/
+static gboolean read_gamess_file_geomi(gchar *FileName, gint num, Geometry* geometry)
+{
+ 	gchar *t;
+ 	gboolean OK;
+ 	gchar *AtomCoord[5];
+ 	FILE *file;
+ 	guint i;
+ 	gint j=0;
+ 	gint l;
+ 	guint numgeom;
+	Atom* listOfAtoms = NULL;
+	gchar dum[100];
+
+  
+ 	if ((!FileName) || (strcmp(FileName,"") == 0))
+ 	{
+		Message("Sorry\n No file slected","Error",TRUE);
+    		return FALSE ;
+ 	}
+
+ 	file = FOpen(FileName, "r");
+ 	if(file ==NULL)
+ 	{
+  		Message("Sorry\nI can not open this file","Error",TRUE);
+  		return FALSE;
+ 	}
+ 	t=g_malloc(BSIZE);
+ 	for(i=0;i<5;i++) AtomCoord[i]=g_malloc(BSIZE*sizeof(char));
+
+ 	numgeom =1;
+ 	do 
+ 	{
+ 		OK=FALSE;
+ 		while(!feof(file))
+		{
+			fgets(t,BSIZE,file);
+			if(strstr(t,"COORDINATES OF ALL ATOMS ARE (ANGS)"))
+			{
+	  			fgets(t,BSIZE,file);
+	  			fgets(t,BSIZE,file);
+ 				numgeom++;
+                		OK = TRUE;
+	  			break;
+	  		}
+        	}
+ 		if(!OK && (numgeom == 1) )
+		{
+  			Message("Sorry\nI can not read geometry in this file","Error",TRUE);
+ 			fclose(file);
+ 			g_free(t);
+ 			for(i=0;i<5;i++) g_free(AtomCoord[i]);
+			return FALSE;
+    		}
+ 		if(!OK)break;
+
+  		j=-1;
+  		while(!feof(file) )
+  		{
+			fgets(t,BSIZE,file);
+			if (!strcmp(t,"\n"))
+			{
+				break;
+			}
+    			j++;
+    			if(listOfAtoms == NULL) listOfAtoms = g_malloc(sizeof(Atom));
+    			else listOfAtoms = g_realloc(listOfAtoms, (j+1)*sizeof(Atom));
+
+			sscanf(t,"%s %s %s %s %s",AtomCoord[0],dum, AtomCoord[1], AtomCoord[2],AtomCoord[3]);
+
+			for(i=0;i<(gint)strlen(AtomCoord[0]);i++) if(isdigit(AtomCoord[0][i])) AtomCoord[0][i] = ' ';
+			delete_all_spaces(AtomCoord[0]);
+			AtomCoord[0][0]=toupper(AtomCoord[0][0]);
+	 		l=strlen(AtomCoord[0]);
+          		if (l==2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+
+
+    			sprintf(listOfAtoms[j].symbol,"%s",AtomCoord[0]);
+    			for(i=0;i<3;i++) listOfAtoms[j].C[i]=atof((AtomCoord[i+1]))*ANG_TO_BOHR;
+  		}
+		if(num >0 && (gint)numgeom-1 == num) break;
+			
+ 	}while(!feof(file));
+
+ 	fclose(file);
+ 	g_free(t);
+ 	for(i=0;i<5;i++) g_free(AtomCoord[i]);
+ 	if(j+1 == 0 && listOfAtoms )
+	{
+		g_free(listOfAtoms);
+	}
+ 	else
+	{
+		geometry->numberOfAtoms = j+1;
+		geometry->listOfAtoms = listOfAtoms;
+	}
+	return TRUE;
+}
+/********************************************************************************/
+static gboolean read_gamess_output(gchar* fileName)
+{
+	gchar *pdest;
+	gint  k=0;
+	gchar *maxGrad =  NULL;
+	gchar *rmsGrad =  NULL;
+	gchar *temp =  NULL;
+	gchar *tmp =  NULL;
+	gchar *t = NULL;
+	FILE *file;
+	gboolean OK;
+        
+	temp = get_name_file(fileName);
+	set_status_label_info("File Name",temp);
+	g_free(temp);
+	set_status_label_info("File Type","Gamess");
+
+ 	file = FOpen(fileName, "r"); 
+        if(!file)
+	{
+		t = g_strdup_printf(" Error : I can not open file %s\n",fileName);
+		Message(t," Error ",TRUE);
+		if(t) g_free(t);
+		return FALSE;
+	}
+	t=g_malloc(BSIZE*sizeof(gchar));
+	maxGrad =  g_malloc(50*sizeof(gchar));	
+	rmsGrad =  g_malloc(50*sizeof(gchar));	
+	temp =  g_malloc(50*sizeof(gchar));	
+	tmp =  g_malloc(50*sizeof(gchar));	
+        
+	OK = TRUE;
+	while(!feof(file))
+	{
+		if(!fgets(t,BSIZE,file)) break;
+		pdest = strstr( t,"BEGINNING GEOMETRY SEARCH POINT NSERCH");
+   		if( pdest != NULL )
+		{
+			OK = TRUE;
+			while(!feof(file) && OK )
+			{
+		 		if(!fgets(t, BSIZE,file)) { OK = FALSE; break; }
+				if(strstr(t,"COORDINATES OF ALL ATOMS ARE (ANGS)"))
+				{
+		 			if(!fgets(t, BSIZE,file)) { OK = FALSE; break; }
+		 			if(!fgets(t, BSIZE,file)) { OK = FALSE; break; }
+					OK = TRUE;
+					break;
+				}
+		 	}
+		 	if(!OK) break;
+
+			OK = TRUE;
+			while(!feof(file) && OK )
+			{
+		 		if(!fgets(t, BSIZE,file)) { OK = FALSE; break; }
+				if(strstr(t,"NSERCH") && strstr(t,"ENERGY="))
+				{
+		 			gchar* t1 = strstr(t,"ENERGY=");
+					if(t1) sscanf(t1+7,"%s",tmp); /* energy */
+					else { OK = FALSE; break; }
+					OK = TRUE;
+					break;
+				}
+		 	}
+		 	if(!OK) break;
+			OK = TRUE;
+			while(!feof(file) && OK )
+			{
+		 		if(!fgets(t, BSIZE,file)) { OK = FALSE; break; }
+				if(strstr(t,"MAXIMUM GRADIENT =")&& strstr(t,"RMS GRADIENT ="))
+				{
+		 			gchar* t1 = strstr(t,"MAXIMUM GRADIENT =");
+					if(t1) sscanf(t1+19,"%s",maxGrad); /* maxGrad */
+					else { OK = FALSE; break; }
+		 			t1 = strstr(t,"RMS GRADIENT =");
+					if(t1) sscanf(t1+15,"%s",rmsGrad); /* rmsGrad */
+					else { OK = FALSE; break; }
+					OK = TRUE;
+					break;
+				}
+		 	}
+		 	if(!OK) break;
+		}
+   		if(pdest != NULL)
+		{
+			geometryConvergence.numberOfGeometries++;
+		  	if(geometryConvergence.numberOfGeometries == 1 )
+		  	{
+				geometryConvergence.typeOfFile = GABEDIT_TYPEFILE_GAMESS;
+				geometryConvergence.fileName = g_strdup(fileName);
+				geometryConvergence.numGeometry =  g_malloc(sizeof(gint));	
+				geometryConvergence.numGeometry[0] =  1;
+				geometryConvergence.energy =  g_malloc(sizeof(gfloat));	
+				geometryConvergence.energy[0] = atof(tmp);
+				geometryConvergence.maxStep =  g_malloc(sizeof(gfloat));	
+				geometryConvergence.maxStep[0] = atof(maxGrad);
+				geometryConvergence.rmsStep =  g_malloc(sizeof(gfloat));	
+				geometryConvergence.rmsStep[0] = atof(rmsGrad);
+		  	}
+		  	else
+		  	{
+				geometryConvergence.numGeometry =  
+				g_realloc(geometryConvergence.numGeometry,geometryConvergence.numberOfGeometries*sizeof(gint));	
+				k = geometryConvergence.numberOfGeometries-1;
+				geometryConvergence.numGeometry[k] =  k+1;
+				geometryConvergence.energy =  
+				g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+				geometryConvergence.energy[k] = atof(tmp);
+
+				geometryConvergence.maxStep =  g_realloc(geometryConvergence.maxStep, geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+				geometryConvergence.maxStep[k] = atof(maxGrad);
+				geometryConvergence.rmsStep =  g_realloc(geometryConvergence.rmsStep, geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+				geometryConvergence.rmsStep[k] = atof(rmsGrad);
+		  	}
+			OK = TRUE;
+		}
+	}
+	if(!OK)
+	{
+		freeGeometryConvergence();
+		sprintf(t,"Sorry\nI can not read energy or convergence parameters from %s file ",fileName);
+		Message(t," Error ",TRUE);
+		OK = FALSE;
+	 }
+
+	fclose(file);
+	g_free(t);
+	g_free(temp);
+	g_free(maxGrad);
+	g_free(rmsGrad);
+	g_free(tmp);
+	if(geometryConvergence.numberOfGeometries>0)
+	{
+		gint i;
+		geometryConvergence.geometries = g_malloc(geometryConvergence.numberOfGeometries*sizeof(Geometry));
+		for(i=0;i<geometryConvergence.numberOfGeometries;i++)
+			if(!read_gamess_file_geomi(fileName,geometryConvergence.numGeometry[i], &geometryConvergence.geometries[i])) break;
+		if(i!=geometryConvergence.numberOfGeometries)
+		{
+			freeGeometryConvergence();
+			OK = FALSE;
+		}
+	}
+  	rafreshList();
+	return OK;
 }
 /*****************************************************************************************************/
 static gboolean read_gaussian_file_geomi_str(gchar *FileName, gint num, gchar* str, Geometry* geometry)
@@ -1891,6 +2137,19 @@ static void read_dalton_file(GabeditFileChooser *SelecFile, gint response_id)
 	read_dalton_output(FileName);
 }
 /********************************************************************************/
+static void read_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+	gchar *FileName;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+	stopAnimation(NULL, NULL);
+
+	freeGeometryConvergence();
+  	rafreshList();
+	read_gamess_output(FileName);
+}
+/********************************************************************************/
 static void read_gaussian_file(GabeditFileChooser *SelecFile, gint response_id)
 {
 	gchar *FileName;
@@ -1965,6 +2224,14 @@ static void read_dalton_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_dalton_file, "Read geometries from a Dalton output file", GABEDIT_TYPEFILE_DALTON,GABEDIT_TYPEWIN_ORB);
+
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+}
+/********************************************************************************/
+static void read_gamess_file_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_gamess_file, "Read geometries from a Gamess output file", GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
@@ -2673,6 +2940,7 @@ static void activate_action (GtkAction *action)
 	}
 	else if(!strcmp(name, "ReadGabedit")) read_gabedit_file_dlg();
 	else if(!strcmp(name, "ReadDalton")) read_dalton_file_dlg();
+	else if(!strcmp(name, "ReadGamess")) read_gamess_file_dlg();
 	else if(!strcmp(name, "ReadGaussian")) read_gaussian_file_dlg();
 	else if(!strcmp(name, "ReadMolpro")) read_molpro_file_dlg();
 	else if(!strcmp(name, "ReadMPQC")) read_mpqc_file_dlg();
@@ -2691,6 +2959,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"Read",     NULL, "_Read"},
 	{"ReadGabedit", GABEDIT_STOCK_GABEDIT, "Read a G_abedit file", NULL, "Read a Gabedit file", G_CALLBACK (activate_action) },
 	{"ReadDalton", GABEDIT_STOCK_DALTON, "Read a _Dalton output file", NULL, "Read a Dalton output file", G_CALLBACK (activate_action) },
+	{"ReadGamess", GABEDIT_STOCK_GAMESS, "Read a _Gamess output file", NULL, "Read a Gamess output file", G_CALLBACK (activate_action) },
 	{"ReadGaussian", GABEDIT_STOCK_GAUSSIAN, "Read a _Gaussian output file", NULL, "Read a Gaussian output file", G_CALLBACK (activate_action) },
 	{"ReadMolpro", GABEDIT_STOCK_MOLPRO, "Read a Mol_pro output file", NULL, "Read Molpro output file", G_CALLBACK (activate_action) },
 	{"ReadMPQC", GABEDIT_STOCK_MPQC, "Read a MP_QC output file", NULL, "Read a MPQC output file", G_CALLBACK (activate_action) },
@@ -2712,6 +2981,7 @@ static const gchar *uiMenuInfo =
 "    <separator name=\"sepMenuPopGabedit\" />\n"
 "    <menuitem name=\"ReadGabedit\" action=\"ReadGabedit\" />\n"
 "    <menuitem name=\"ReadDalton\" action=\"ReadDalton\" />\n"
+"    <menuitem name=\"ReadGamess\" action=\"ReadGamess\" />\n"
 "    <menuitem name=\"ReadGaussian\" action=\"ReadGaussian\" />\n"
 "    <menuitem name=\"ReadMolpro\" action=\"ReadMolpro\" />\n"
 "    <menuitem name=\"ReadMPQC\" action=\"ReadMPQC\" />\n"
@@ -2729,6 +2999,7 @@ static const gchar *uiMenuInfo =
 "      <menu name=\"Read\" action=\"Read\">\n"
 "        <menuitem name=\"ReadGabedit\" action=\"ReadGabedit\" />\n"
 "        <menuitem name=\"ReadDalton\" action=\"ReadDalton\" />\n"
+"        <menuitem name=\"ReadGamess\" action=\"ReadGamess\" />\n"
 "        <menuitem name=\"ReadGaussian\" action=\"ReadGaussian\" />\n"
 "        <menuitem name=\"ReadMolpro\" action=\"ReadMolpro\" />\n"
 "        <menuitem name=\"ReadMPQC\" action=\"ReadMPQC\" />\n"

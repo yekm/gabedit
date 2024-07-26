@@ -1,6 +1,6 @@
 /* Install.c */
 /**********************************************************************************************************
-Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -114,7 +114,7 @@ static struct
   {
     FALSE, "commands",
     "The \"commands\" file is used to store commands\n"
-    "for execute Gaussian, Molcas, Molpro or MPQC program.\n"
+    "for execute Gamess-US, Gaussian, Molcas, Molpro or MPQC program.\n"
   },
   {
     FALSE, "network",
@@ -603,36 +603,29 @@ void user_install_dialog_create(UserInstallCallback callback)
                                 "Click \"Continue\" to enter the GABEDIT user installation.");
 
   add_label(GTK_BOX(page),
-            "Gabedit is a Graphical User Interface to Gaussian, Molcas, Molpro and MPQC computational chemistry packages.\n"
+            "Gabedit is a Graphical User Interface to Gamess-US, Gaussian, Molcas, Molpro and MPQC computational chemistry packages.\n"
 	    "Gabedit includes graphical facilities for generating keywords and options, molecule specifications and\n"
 	    "ther input sections for even the most advanced calculation types.\n"
 	    "Gabedit includes an advanced Molecule Builder. You can use it to rapidly sketch in molecules and\n"
 	    "examine them in three dimensions. You can build molecules by atom, ring, group, amino acid and\n"
 	    "nucleoside. You can also read geometry from a file. Most major molecular file formats are supported.\n"
-	    "Gabedit includes a Gaussian, Molcas, Molpro and MPQC Calculation Setup window which allows you to set up\n"
-	    "Gaussian, Molcas, Molpro and MPQC jobs in a simple and straightforward manner.\n"
-	    "Gabedit includes a text editor for editing Gaussian, Molcas, Molpro and MPQC input files.\n"
-	    "Gabedit can graphically display a variety of Gaussian, Molcas, Molpro, MPQC and (partially) ADF calculation\n"
-	    "results, including the following:\n"
+	    "Gabedit includes a Gamess-US, Gaussian, Molcas, Molpro and MPQC Calculation Setup window which allows you to set up\n"
+	    "Gamess-US, Gaussian, Molcas, Molpro and MPQC jobs in a simple and straightforward manner.\n"
+	    "Gabedit can graphically display a variety of Gamess-US, Gaussian, Molcas, Molpro, MPQC \n"
+	    "and (partially) ADF  calculation results, including the following\n"
 	    "  - Molecular orbitals\n"
 	    "  - Surfaces from the electron density, electrostatic potential, NMR shielding density, and other properties.\n"
-	    "    Surfaces may be displayed in solid, translucent and wire mesh modes.\n"
-	    "  - Surfaces can be colorcoded by a separate property. \n"
-	    "  - Contours (colorcoded). \n"
-	    "  - Planes colorcoded. \n"
-	    "  - Dipole\n"
-	    "  - XYZ axes and the principal axes of the molecule.\n"
+	    "    Surfaces may be displayed in solid, translucent and wire mesh modes. they are can be colorcoded by a separate property. \n"
+	    "  - Contours (colorcoded), Planes colorcoded, Dipole. XYZ axes and the principal axes of the molecule.\n"
 	    "  - Animation of the normal modes corresponding to vibrational frequencies.\n"
 	    "  - Animation of the rotation of geometry, surfaces, contours, planes colorcoded, xyz and the principal axes of the molecule.\n"
-	    "  - Animation of contours.\n"
-	    "  - Animation of planes colorcoded.\n"
+	    "  - Animation of contours, Animation of planes colorcoded.\n"
 	    "Gabedit can display IR and Raman computed spectra.\n"
 	    "Gabedit can generate a povray file for geometry (including hydrogen's bond),\n"
 	    "surfaces (including colorcoded surfaces), contours, planes colorcoded.\n"
 	    "Gabedit can save picture in BMP, JPEG, PNG, PPM and PS format.\n"
 	    "Gabedit can generate automatically a series of pictures for animation\n"
 	    "(vibration, geometry convergence, rotation, contours, planes colorcoded).\n"
-	    "\n"
             );
 
   sep = gtk_hseparator_new();
@@ -640,7 +633,7 @@ void user_install_dialog_create(UserInstallCallback callback)
   gtk_widget_show(sep);
 
   add_label(GTK_BOX(page),
-		  "\nCopyright (c) 2002-2005  Abdul-Rahman Allouche.\n"
+		  "Copyright (c) 2002-2007 Abdul-Rahman Allouche.\n"
 		  "All rights reserved.\n"
 		  "\nGabedit is free.\n"
 		  ); 
@@ -796,7 +789,7 @@ void user_install_dialog_create(UserInstallCallback callback)
                                              "Click \"Continue\" to accept the settings above.");
 
   add_label(GTK_BOX(commands_network_page),
-            "To execute Molcas, Molpro or Gaussian program, "
+            "To execute Gamess-US, Gaussian, Molcas, Molpro or MPQC program, "
             "GABEDIT needs to know commands system.\n"
             "GABEDIT needs to know network protocols.");
 
@@ -962,7 +955,7 @@ static gboolean user_install_run()
 
 		add_label(GTK_BOX(log_page),
             "Did you notice any error messages in the lines above?\n"
-            "If not, installation was successful!\n"
+            "If not, installation was successful!,  "
             "Otherwise, quit and investigate the possible reason...");
 
 		buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (log_text));
@@ -989,7 +982,7 @@ static gboolean user_install_run()
 		{
 			t1 =  g_strdup_printf("mkdir %s%s%s",gabedit_directory(), G_DIR_SEPARATOR_S,tree_items[i].text);
 			t2 = g_strdup(str);
-			str =  g_strdup_printf("%s\n%s",str,t1);
+			str =  g_strdup_printf("%s\n%s",t2,t1);
 			g_free(t1);
 			g_free(t2);
 		}
@@ -1014,7 +1007,7 @@ static gboolean user_install_run()
 
 		add_label(GTK_BOX(log_page),
             "Did you notice any error messages in the lines above?\n"
-            "If not, installation was successful!\n"
+            "If not, installation was successful!,  "
             "Otherwise, quit and investigate the possible reason...");
 
 		buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (log_text));
@@ -1061,7 +1054,16 @@ static void user_install_commands_network()
   gtk_box_pack_start(GTK_BOX(commands_network_page), hbox, FALSE, TRUE, 0);
   gtk_widget_show(hbox); 
   create_execucte_commands(user_install_dialog,hbox,TRUE);
-
+#ifdef G_OS_WIN32
+  hbox = gtk_hbox_new(FALSE, 8);
+  gtk_box_pack_start(GTK_BOX(commands_network_page), hbox, FALSE, TRUE, 0);
+  gtk_widget_show(hbox); 
+  create_pscpplink_directory(user_install_dialog,hbox,TRUE);
+  hbox = gtk_hbox_new(FALSE, 8);
+  gtk_box_pack_start(GTK_BOX(commands_network_page), hbox, FALSE, TRUE, 0);
+  gtk_widget_show(hbox); 
+  create_gamess_directory(user_install_dialog,hbox,TRUE);
+#endif
   hbox = gtk_hbox_new(FALSE, 8);
   gtk_box_pack_start(GTK_BOX(commands_network_page), hbox, FALSE, TRUE, 0);
   gtk_widget_show(hbox); 
