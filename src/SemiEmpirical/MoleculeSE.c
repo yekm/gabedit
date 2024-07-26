@@ -1,6 +1,6 @@
 /* MoleculeSE.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -31,7 +31,6 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Utils.h"
 #include "AtomSE.h"
 #include "MoleculeSE.h"
-void dessine();
 void create_GeomXYZ_from_draw_grometry();
 
 static gboolean** bondedMatrix = NULL;
@@ -344,14 +343,14 @@ static void setConnections(MoleculeSE* molecule)
 	/* printf("Set Connection\n");*/
 	set_text_to_draw(_("Establishing connectivity : 2 connections..."));
 	set_statubar_operation_str(_("Establishing connectivity : 2 connections..."));
-	dessine();
+	drawGeom();
     	while( gtk_events_pending() )
         	gtk_main_iteration();
 	set2Connections(molecule);
 	set_text_to_draw(_("Establishing connectivity : 3 connections..."));
 	set_statubar_operation_str(_("Establishing connectivity : 3 connections..."));
 
-	dessine();
+	drawGeom();
 	if(StopCalcul) return;
     	while( gtk_events_pending() ) gtk_main_iteration();
 	set3Connections(molecule);
@@ -554,7 +553,7 @@ void redrawMoleculeSE(MoleculeSE* molecule,gchar* str)
 	reset_all_connections();
 	create_GeomXYZ_from_draw_grometry();
 	RebuildGeom = TRUE;
-	dessine();
+	drawGeom();
 
     	while( gtk_events_pending() )
         	gtk_main_iteration();

@@ -1,6 +1,6 @@
 /* DrawGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -62,6 +62,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/MenuToolBarGeom.h"
 #include "../Geometry/PreviewGeom.h"
 #include "../Geometry/FragmentsSelector.h"
+#include "../Geometry/SelectionDlg.h"
 #include "../IsotopeDistribution/IsotopeDistributionCalculatorDlg.h"
 #include "../Geometry/TreeMolecule.h"
 
@@ -122,9 +123,9 @@ static GabEditTypeGeom TypeGeom = GABEDIT_TYPEGEOM_STICK;
 void set_statubar_pop_sel_atom();
 void calcul_ndipole();
 void redefine_dipole();
-void dessine_dipole();
+void drawGeom_dipole();
 GtkWidget *AddNoteBookPage(GtkWidget *NoteBook,char *label);
-void dessine();
+void drawGeom();
 void destroy_all_drawing(GtkWidget *win);
 void ActivateButtonOperation (GtkWidget *widget, guint data);
 void delete_selected_atoms();
@@ -662,7 +663,7 @@ static void set_fix_variable_of_selected_atoms(gboolean variable)
 		}
 	}
 	create_GeomXYZ_from_draw_grometry();
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void set_fix_selected_atoms()
@@ -699,7 +700,7 @@ void hide_selected_atoms()
 		}
 	}
 	unselect_all_atoms();
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void hide_not_selected_atoms()
@@ -713,7 +714,7 @@ void hide_not_selected_atoms()
 			geometry0[i].show = FALSE;
 		}
 	}
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void show_hydrogen_atoms()
@@ -739,7 +740,7 @@ void show_hydrogen_atoms()
 		}
 
 	}
-	dessine();
+	drawGeom();
 	ShowHydrogenAtoms = TRUE;
 }
 /*****************************************************************************/
@@ -751,7 +752,7 @@ void show_all_atoms()
 		geometry[i].show = TRUE;
 		geometry0[i].show = TRUE;
 	}
-	dessine();
+	drawGeom();
 	ShowHydrogenAtoms = TRUE;
 }
 /********************************************************************************/
@@ -809,31 +810,31 @@ gboolean getShowMultipleBonds()
 void RenderMultipleBonds(GtkWidget *win,gboolean show)
 {
 	showMultipleBonds = show;
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void resetConnections()
 {
 	reset_all_connections();
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void resetConnectionsBetweenSelectedAndNotSelectedAtoms()
 {
 	reset_connections_between_selected_and_notselected_atoms();
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void resetConnectionsBetweenSelectedAtoms()
 {
 	reset_connections_between_selected_atoms();
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void resetMultipleConnections()
 {
 	reset_multiple_bonds();
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 GabEditGeomOperation getOperationType()
@@ -1865,7 +1866,7 @@ void set_origin_to_center_of_fragment()
 	create_GeomXYZ_from_draw_grometry();
 	TransX = 0;
 	TransY = 0;
-	dessine();
+	drawGeom();
 }
 /********************************************************************************/
 static void set_geom_to_axes(gdouble axis1[], gdouble axis2[], gdouble axis3[])
@@ -2098,7 +2099,7 @@ void set_xyz_to_principal_axes_of_selected_atoms(gpointer data, guint Operation,
 	else set_geom_to_axes(axis3, axis2, axis1);
 	create_GeomXYZ_from_draw_grometry();
 	init_quat(Quat);
-	dessine();
+	drawGeom();
 }
 /********************************************************************************/
 void create_tolerance_window(GtkWidget*w, gpointer data)
@@ -2229,7 +2230,7 @@ static gint set_key_press(GtkWidget* wid, GdkEventKey *event, gpointer data)
 			case ROTLOCFRAG : 
 			case ROTZLOCFRAG : 
 				get_geometry_from_fifo( event->keyval == GDK_U);
-				dessine();
+				drawGeom();
 				break;
 			default:break;
 		}
@@ -2246,7 +2247,7 @@ static gint set_key_press(GtkWidget* wid, GdkEventKey *event, gpointer data)
 			case ROTLOCFRAG : 
 			case ROTZLOCFRAG : 
 				get_geometry_from_fifo(event->keyval == GDK_y);
-				dessine();
+				drawGeom();
 				break;
 			default:break;
 		}
@@ -2327,7 +2328,7 @@ void setMMTypesCharges(gpointer data, guint Operation,GtkWidget* wid)
 	}
 	else setMMTypesChargesFromPDBTpl(Operation);
 	create_GeomXYZ_from_draw_grometry();
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 GeomDef* Free_One_Geom(GeomDef* geom,gint N) 
@@ -2444,7 +2445,7 @@ gboolean select_atoms_by_groupe()
 
 		}
 	}
-	dessine();
+	drawGeom();
 	return OK;
 }
 /*****************************************************************************/
@@ -2516,7 +2517,7 @@ gboolean select_atoms_by_residues()
 
 		}
 	}
-	dessine();
+	drawGeom();
 	return OK;
 }
 /*****************************************************************************/
@@ -2590,7 +2591,7 @@ void draw_selection_rectangle(gdouble x,gdouble y)
 	color.green = 65535;
 	color.blue = 65535;
 	
-	dessine();
+	drawGeom();
         gdk_colormap_alloc_color(colormap,&color,FALSE,TRUE);
     	gdk_gc_set_foreground(gc,&color);
 	if(x>BeginX)
@@ -2635,7 +2636,7 @@ void draw_selection_circle(gdouble x,gdouble y)
 	color.green = 65535;
 	color.blue = 65535;
 	
-	dessine();
+	drawGeom();
         gdk_colormap_alloc_color(colormap,&color,FALSE,TRUE);
     	gdk_gc_set_foreground(gc,&color);
 /*	GDK_LINE_ON_OFF_DASH, GDK_LINE_DOUBLE_DASH*/
@@ -2679,84 +2680,12 @@ static void delete_molecule()
 	create_GeomXYZ_from_draw_grometry();
 
 	Ddef = FALSE;
-	dessine();
+	drawGeom();
 	set_statubar_pop_sel_atom();
 	free_text_to_draw();
 	change_of_center(NULL,NULL);
 }
 /********************************************************************************/
-void SelectAllAtoms()
-{
-	gint i;
-	gint k;
-	if(Natoms<1) return;
-	NFatoms = Natoms;
-	NumFatoms = g_malloc((NFatoms)*sizeof(gint));
-	k = 0;
-	for (i=0;i<(gint)Natoms;i++)
-		if(geometry[i].show) NumFatoms[k++] = geometry[i].N;
-	NFatoms = k;
-	if(k<1)
-	{
-		NFatoms = 0;
-		if(NumFatoms) g_free(NumFatoms);
-		NumFatoms=NULL;
-	}
-	else
-	{
-		NFatoms = k;
-		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
-	}
-
-	dessine();
-}
-/********************************************************************************/
-void InvertSelectionOfAtoms()
-{
-	gint i;
-	gint n = 0;
-	gint* num = NULL;
-	gint k = 0;
-	if(Natoms<1) return;
-	n = Natoms - NFatoms;
-	if(n<=0)
-	{
-		NFatoms = 0;
-		if(NumFatoms) g_free(NumFatoms);
-		NumFatoms = NULL;
-		dessine();
-		return;
-	}
-	else
-		num = g_malloc(n*sizeof(gint));
-
-	k = 0;
-	for (i=0;i<(gint)Natoms;i++)
-		if(!if_selected(i) && geometry[i].show) 
-		{
-			num[k] = geometry[i].N;
-			k++;
-			if(k>=n) break;
-		}
-
-	n = k;
-	if(n>0) num = g_realloc(num,n*sizeof(gint));
-	if(NumFatoms) g_free(NumFatoms);
-	NumFatoms = num;
-	NFatoms = n;
-	dessine();
-}
-/********************************************************************************/
-void unSelectAllAtoms()
-{
-	if(Natoms<1) return;
-	if(NFatoms<1) return;
-	NFatoms = 0;
-	if(NumFatoms) g_free(NumFatoms);
-	NumFatoms = NULL;
-	dessine();
-}
-/*****************************************************************************/
 void copySelectedAtoms()
 {
 	Fragment F;
@@ -2805,192 +2734,6 @@ void copySelectedAtoms()
 	SetOperation (NULL,ADDFRAGMENT);
 }
 /********************************************************************************/
-void SelectLayerAtoms(GabEditLayerType layer)
-{
-	gint i;
-	gint k = 0;
-	if(Natoms<1) return;
-	NFatoms = 0;
-	if(NumFatoms) g_free(NumFatoms);
-
-	NumFatoms = g_malloc(Natoms*sizeof(gint));
-	k = 0;
-	for (i=0;i<(gint)Natoms;i++)
-	{
-		if(!geometry[i].show) continue;
-		if(layer==geometry[i].Layer)
-			NumFatoms[k++]= geometry[i].N;
-	}
-	NFatoms = k;
-	if(k<1)
-	{
-		NFatoms = 0;
-		if(NumFatoms) g_free(NumFatoms);
-		NumFatoms=NULL;
-	}
-	else
-	{
-		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
-	}
-	dessine();
-}
-/********************************************************************************/
-void SelectFixedVariableAtoms(gboolean variable)
-{
-	gint i;
-	gint k = 0;
-	if(Natoms<1) return;
-	NFatoms = 0;
-	if(NumFatoms) g_free(NumFatoms);
-
-	NumFatoms = g_malloc(Natoms*sizeof(gint));
-	k = 0;
-	for (i=0;i<(gint)Natoms;i++)
-	{
-		if(!geometry[i].show) continue;
-		if(variable==geometry[i].Variable)
-			NumFatoms[k++]= geometry[i].N;
-	}
-	NFatoms = k;
-	if(k<1)
-	{
-		NFatoms = 0;
-		if(NumFatoms) g_free(NumFatoms);
-		NumFatoms=NULL;
-	}
-	else
-	{
-		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
-	}
-	dessine();
-}
-/********************************************************************************/
-void SelectFirstResidue()
-{
-	gint i;
-	gint k = 0;
-	if(Natoms<1) return;
-	NFatoms = 0;
-	if(NumFatoms) g_free(NumFatoms);
-
-	NumFatoms = g_malloc(Natoms*sizeof(gint));
-	k = 0;
-	for (i=0;i<(gint)Natoms;i++)
-	{
-		if(!geometry[i].show) continue;
-		if(0==geometry[i].ResidueNumber)
-			NumFatoms[k++]= geometry[i].N;
-	}
-	NFatoms = k;
-	if(k<1)
-	{
-		NFatoms = 0;
-		if(NumFatoms) g_free(NumFatoms);
-		NumFatoms=NULL;
-	}
-	else
-	{
-		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
-	}
-	dessine();
-}
-/********************************************************************************/
-void SelectLastResidue()
-{
-	gint i;
-	gint k = 0;
-	gint rMax = 0;
-	if(Natoms<1) return;
-
-	for (i=1;i<(gint)Natoms;i++)
-	{
-		if(rMax<geometry[i].ResidueNumber)
-			rMax = geometry[i].ResidueNumber;
-	}
-	NFatoms = 0;
-	if(NumFatoms) g_free(NumFatoms);
-
-	NumFatoms = g_malloc(Natoms*sizeof(gint));
-	k = 0;
-	for (i=0;i<(gint)Natoms;i++)
-	{
-		if(!geometry[i].show) continue;
-		if(rMax==geometry[i].ResidueNumber)
-			NumFatoms[k++]= geometry[i].N;
-	}
-	NFatoms = k;
-	if(k<1)
-	{
-		NFatoms = 0;
-		if(NumFatoms) g_free(NumFatoms);
-		NumFatoms=NULL;
-	}
-	else
-	{
-		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
-	}
-	dessine();
-}
-/********************************************************************************/
-static void sortList(gchar** strs, gint nlist)
-{
-	gint i;
-	gint j;
-	gint k;
-
-	for(i=0;i<nlist-1;i++)
-	{
-		k = i;
-		for(j=i+1;j<nlist;j++)
-			if(strcmp(strs[k],strs[j])>0) k = j;
-		if(i != k)
-		{
-			gchar* tmp = strs[i];
-			strs[i] = strs[k];
-			strs[k] = tmp;
-		}
-	}
-}
-/********************************************************************************/
-static gchar** getListResidues(gint* nlist)
-{
-
-	gchar** t = NULL;
-	
-	gint i;
-	gint j;
-
-	*nlist = 0;
-	if(Natoms<1) return NULL;
-
-	t = g_malloc(Natoms*sizeof(gchar*));
-	*nlist = 1;
-	t[*nlist-1] =  g_strdup(geometry0[0].Residue);
-
-
-	for(i=1;i<Natoms;i++)
-	{
-		gboolean inList = FALSE;
-		for(j=0;j<*nlist;j++)
-		{
-			if(!strcmp(geometry0[i].Residue, t[j]))
-			{
-				inList = TRUE;
-				break;
-			}
-		}
-		if(!inList)
-		{
-			(*nlist)++;
-			t[*nlist-1] =  g_strdup(geometry0[i].Residue);
-		}
-	}
-	t = g_realloc(t,*nlist*sizeof(gchar*));
-	sortList(t,*nlist);
-
-	return t;
-}
-/********************************************************************************/
 static gchar** freeList(gchar** strs, gint nlist)
 {
 	gint i;
@@ -3002,605 +2745,6 @@ static gchar** freeList(gchar** strs, gint nlist)
 	g_free(strs);
 
 	return NULL;
-}
-/********************************************************************************/
-static void selectResidueByName(GtkWidget* button, GtkWidget* entry)
-{
-	gint i;
-	gint k = 0;
-	G_CONST_RETURN gchar *rName;
-
-
-	if(Natoms<1) return;
-	rName = gtk_entry_get_text(GTK_ENTRY(entry));
-	if(strlen(rName)<1) return;
-
-	NFatoms = 0;
-	if(NumFatoms) g_free(NumFatoms);
-
-	NumFatoms = g_malloc(Natoms*sizeof(gint));
-	k = 0;
-	for (i=0;i<(gint)Natoms;i++)
-	{
-		if(!geometry[i].show) continue;
-		if(!strcmp(geometry[i].Residue,rName))
-			NumFatoms[k++]= geometry[i].N;
-	}
-	NFatoms = k;
-	if(k<1)
-	{
-		NFatoms = 0;
-		if(NumFatoms) g_free(NumFatoms);
-		NumFatoms=NULL;
-	}
-	else
-	{
-		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
-	}
-	dessine();
-}
-/********************************************************************************/
-void selectResidueByNameDlg()
-{
-	GtkWidget *winDlg;
-	GtkWidget *button;
-	GtkWidget *hbox;
-	GtkWidget *entry;
-	GtkWidget *frame;
-	GtkWidget *vboxframe;
-	gint n=0;
-	gchar** t = NULL;
-  
-	winDlg = gtk_dialog_new();
-	gtk_window_set_title(GTK_WINDOW(winDlg),_("Select by Residue name"));
-	gtk_window_set_position(GTK_WINDOW(winDlg),GTK_WIN_POS_CENTER);
-	gtk_window_set_transient_for(GTK_WINDOW(winDlg),GTK_WINDOW(GeomDlg));
-
-	add_child(GeomDlg,winDlg,gtk_widget_destroy,_(" Sel. Res. "));
-	g_signal_connect(G_OBJECT(winDlg),"delete_event",(GCallback)delete_child,NULL);
-
-	frame = gtk_frame_new (NULL);
-	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
-
-	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->vbox), frame,TRUE,TRUE,0);
-
-	gtk_widget_show (frame);
-
-	vboxframe = create_vbox(frame);
-	hbox=create_hbox_false(vboxframe);
-	n=0;
-	t = getListResidues(&n);
-	entry = create_label_combo(hbox,_(" Residue Name : "),t,n, TRUE,-1,-1);
-	gtk_editable_set_editable((GtkEditable*) entry,TRUE);
-	if(t) freeList(t,n);
-
-	gtk_widget_realize(winDlg);
-
-	button = create_button(winDlg,_("Cancel"));
-	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button,TRUE,TRUE,0);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(winDlg));
-	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
-
-	button = create_button(winDlg,_("OK"));
-	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button,TRUE,TRUE,0);
-	g_signal_connect(G_OBJECT(button), "clicked",(GCallback)selectResidueByName,entry);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(winDlg));
-	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
-	gtk_widget_grab_default(button);
-    
-
-	gtk_widget_show_all(winDlg);
-}
-/********************************************************************************/
-static void selectResidueByNumber(GtkWidget* button, GtkWidget* entry)
-{
-	gint i;
-	gint k = 0;
-	G_CONST_RETURN gchar *rName;
-	gint n = 1;
-
-
-	if(Natoms<1) return;
-	rName = gtk_entry_get_text(GTK_ENTRY(entry));
-	n = atoi(rName);
-
-	NFatoms = 0;
-	if(NumFatoms) g_free(NumFatoms);
-
-	NumFatoms = g_malloc(Natoms*sizeof(gint));
-	k = 0;
-	for (i=0;i<(gint)Natoms;i++)
-	{
-		if(!geometry[i].show) continue;
-		if(geometry[i].ResidueNumber == n-1)
-			NumFatoms[k++]= geometry[i].N;
-	}
-	NFatoms = k;
-	if(k<1)
-	{
-		NFatoms = 0;
-		if(NumFatoms) g_free(NumFatoms);
-		NumFatoms=NULL;
-	}
-	else
-	{
-		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
-	}
-	dessine();
-}
-/********************************************************************************/
-void selectResidueByNumberDlg()
-{
-	GtkWidget *winDlg;
-	GtkWidget *button;
-	GtkWidget *hbox;
-	GtkWidget *entry;
-	GtkWidget *frame;
-	GtkWidget *vboxframe;
-	gint n=0;
-	gchar** t = NULL;
-  
-	winDlg = gtk_dialog_new();
-	gtk_window_set_title(GTK_WINDOW(winDlg),_("Select by Residue number"));
-	gtk_window_set_position(GTK_WINDOW(winDlg),GTK_WIN_POS_CENTER);
-	gtk_window_set_transient_for(GTK_WINDOW(winDlg),GTK_WINDOW(GeomDlg));
-
-	add_child(GeomDlg,winDlg,gtk_widget_destroy,_(" Sel. Res. "));
-	g_signal_connect(G_OBJECT(winDlg),"delete_event",(GCallback)delete_child,NULL);
-
-	frame = gtk_frame_new (NULL);
-	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
-
-	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->vbox), frame,TRUE,TRUE,0);
-
-	gtk_widget_show (frame);
-
-	vboxframe = create_vbox(frame);
-	hbox=create_hbox_false(vboxframe);
-	n=1;
-	t = g_malloc(2*sizeof(gchar*));
-	t[0] = g_strdup("1");
-	t[1] = NULL;
-	entry = create_label_combo(hbox,_(" Residue Number : "),t,n, TRUE,-1,-1);
-	gtk_editable_set_editable((GtkEditable*) entry,TRUE);
-	if(t) freeList(t,n);
-
-	gtk_widget_realize(winDlg);
-
-	button = create_button(winDlg,_("Cancel"));
-	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button,TRUE,TRUE,0);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(winDlg));
-	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
-
-	button = create_button(winDlg,_("OK"));
-	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button,TRUE,TRUE,0);
-	g_signal_connect(G_OBJECT(button), "clicked",(GCallback)selectResidueByNumber,entry);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(winDlg));
-	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
-	gtk_widget_grab_default(button);
-    
-
-	gtk_widget_show_all(winDlg);
-}
-/********************************************************************************/
-static gchar** getListMMTypes(gint* nlist)
-{
-
-	gchar** t = NULL;
-	
-	gint i;
-	gint j;
-
-	*nlist = 0;
-	if(Natoms<1) return NULL;
-
-	t = g_malloc(Natoms*sizeof(gchar*));
-	*nlist = 1;
-	t[*nlist-1] =  g_strdup(geometry0[0].mmType);
-
-
-	for(i=1;i<Natoms;i++)
-	{
-		gboolean inList = FALSE;
-		for(j=0;j<*nlist;j++)
-		{
-			if(!strcmp(geometry0[i].mmType, t[j]))
-			{
-				inList = TRUE;
-				break;
-			}
-		}
-		if(!inList)
-		{
-			(*nlist)++;
-			t[*nlist-1] =  g_strdup(geometry0[i].mmType);
-		}
-	}
-	t = g_realloc(t,*nlist*sizeof(gchar*));
-	sortList(t,*nlist);
-
-	return t;
-}
-/********************************************************************************/
-static void selectAtomsByMMType(GtkWidget* button, GtkWidget* entry)
-{
-	gint i;
-	gint k = 0;
-	G_CONST_RETURN gchar *rName;
-
-
-	if(Natoms<1) return;
-	rName = gtk_entry_get_text(GTK_ENTRY(entry));
-	if(strlen(rName)<1) return;
-
-	NFatoms = 0;
-	if(NumFatoms) g_free(NumFatoms);
-
-	NumFatoms = g_malloc(Natoms*sizeof(gint));
-	k = 0;
-	for (i=0;i<(gint)Natoms;i++)
-	{
-		if(!geometry[i].show) continue;
-		if(!strcmp(geometry[i].mmType,rName))
-			NumFatoms[k++]= geometry[i].N;
-	}
-	NFatoms = k;
-	if(k<1)
-	{
-		NFatoms = 0;
-		if(NumFatoms) g_free(NumFatoms);
-		NumFatoms=NULL;
-	}
-	else
-	{
-		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
-	}
-	dessine();
-}
-/********************************************************************************/
-void selectAtomsByMMTypeDlg()
-{
-	GtkWidget *winDlg;
-	GtkWidget *button;
-	GtkWidget *hbox;
-	GtkWidget *entry;
-	GtkWidget *frame;
-	GtkWidget *vboxframe;
-	gint n=0;
-	gchar** t = NULL;
-  
-	winDlg = gtk_dialog_new();
-	gtk_window_set_title(GTK_WINDOW(winDlg),_("Select by Type"));
-	gtk_window_set_position(GTK_WINDOW(winDlg),GTK_WIN_POS_CENTER);
-	gtk_window_set_transient_for(GTK_WINDOW(winDlg),GTK_WINDOW(GeomDlg));
-
-	add_child(GeomDlg,winDlg,gtk_widget_destroy,_(" Sel. Res. "));
-	g_signal_connect(G_OBJECT(winDlg),"delete_event",(GCallback)delete_child,NULL);
-
-	frame = gtk_frame_new (NULL);
-	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
-
-	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->vbox), frame,TRUE,TRUE,0);
-
-	gtk_widget_show (frame);
-
-	vboxframe = create_vbox(frame);
-	hbox=create_hbox_false(vboxframe);
-	n=0;
-	t = getListMMTypes(&n);
-	entry = create_label_combo(hbox,_(" Type Name : "),t,n, TRUE,-1,-1);
-	gtk_editable_set_editable((GtkEditable*) entry,TRUE);
-	if(t) freeList(t,n);
-
-	gtk_widget_realize(winDlg);
-
-	button = create_button(winDlg,_("Cancel"));
-	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button,TRUE,TRUE,0);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(winDlg));
-	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
-
-	button = create_button(winDlg,_("OK"));
-	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button,TRUE,TRUE,0);
-	g_signal_connect(G_OBJECT(button), "clicked",(GCallback)selectAtomsByMMType,entry);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(winDlg));
-	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
-	gtk_widget_grab_default(button);
-    
-
-	gtk_widget_show_all(winDlg);
-}
-/********************************************************************************/
-static gchar** getListPDBTypesFromGeom(gint* nlist)
-{
-
-	gchar** t = NULL;
-	
-	gint i;
-	gint j;
-
-	*nlist = 0;
-	if(Natoms<1) return NULL;
-
-	t = g_malloc(Natoms*sizeof(gchar*));
-	*nlist = 1;
-	t[*nlist-1] =  g_strdup(geometry0[0].pdbType);
-
-
-	for(i=1;i<Natoms;i++)
-	{
-		gboolean inList = FALSE;
-		for(j=0;j<*nlist;j++)
-		{
-			if(!strcmp(geometry0[i].pdbType, t[j]))
-			{
-				inList = TRUE;
-				break;
-			}
-		}
-		if(!inList)
-		{
-			(*nlist)++;
-			t[*nlist-1] =  g_strdup(geometry0[i].pdbType);
-		}
-	}
-	t = g_realloc(t,*nlist*sizeof(gchar*));
-	sortList(t,*nlist);
-
-	return t;
-}
-/********************************************************************************/
-static void selectAtomsByPDBType(GtkWidget* button, GtkWidget* entry)
-{
-	gint i;
-	gint k = 0;
-	G_CONST_RETURN gchar *rName;
-
-
-	if(Natoms<1) return;
-	rName = gtk_entry_get_text(GTK_ENTRY(entry));
-	if(strlen(rName)<1) return;
-
-	NFatoms = 0;
-	if(NumFatoms) g_free(NumFatoms);
-
-	NumFatoms = g_malloc(Natoms*sizeof(gint));
-	k = 0;
-	for (i=0;i<(gint)Natoms;i++)
-	{
-		if(!geometry[i].show) continue;
-		if(!strcmp(geometry[i].pdbType,rName))
-			NumFatoms[k++]= geometry[i].N;
-	}
-	NFatoms = k;
-	if(k<1)
-	{
-		NFatoms = 0;
-		if(NumFatoms) g_free(NumFatoms);
-		NumFatoms=NULL;
-	}
-	else
-	{
-		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
-	}
-	dessine();
-}
-/********************************************************************************/
-void selectAtomsByPDBTypeDlg()
-{
-	GtkWidget *winDlg;
-	GtkWidget *button;
-	GtkWidget *hbox;
-	GtkWidget *entry;
-	GtkWidget *frame;
-	GtkWidget *vboxframe;
-	gint n=0;
-	gchar** t = NULL;
-  
-	winDlg = gtk_dialog_new();
-	gtk_window_set_title(GTK_WINDOW(winDlg),_("Select by PDB Type"));
-	gtk_window_set_position(GTK_WINDOW(winDlg),GTK_WIN_POS_CENTER);
-	gtk_window_set_transient_for(GTK_WINDOW(winDlg),GTK_WINDOW(GeomDlg));
-
-	add_child(GeomDlg,winDlg,gtk_widget_destroy,_(" Sel. Res. "));
-	g_signal_connect(G_OBJECT(winDlg),"delete_event",(GCallback)delete_child,NULL);
-
-	frame = gtk_frame_new (NULL);
-	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
-
-	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->vbox), frame,TRUE,TRUE,0);
-
-	gtk_widget_show (frame);
-
-	vboxframe = create_vbox(frame);
-	hbox=create_hbox_false(vboxframe);
-	n=0;
-	t = getListPDBTypesFromGeom(&n);
-	entry = create_label_combo(hbox,_(" Type Name : "),t,n, TRUE,-1,-1);
-	gtk_editable_set_editable((GtkEditable*) entry,TRUE);
-	if(t) freeList(t,n);
-
-	gtk_widget_realize(winDlg);
-
-	button = create_button(winDlg,_("Cancel"));
-	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button,TRUE,TRUE,0);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(winDlg));
-	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
-
-	button = create_button(winDlg,_("OK"));
-	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button,TRUE,TRUE,0);
-	g_signal_connect(G_OBJECT(button), "clicked",(GCallback)selectAtomsByPDBType,entry);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(winDlg));
-	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
-	gtk_widget_grab_default(button);
-    
-
-	gtk_widget_show_all(winDlg);
-}
-/********************************************************************************/
-static gchar** getListSymbols(gint* nlist)
-{
-
-	gchar** t = NULL;
-	
-	gint i;
-	gint j;
-
-	*nlist = 0;
-	if(Natoms<1) return NULL;
-
-	t = g_malloc(Natoms*sizeof(gchar*));
-	*nlist = 1;
-	t[*nlist-1] =  g_strdup(geometry0[0].Prop.symbol);
-
-
-	for(i=1;i<Natoms;i++)
-	{
-		gboolean inList = FALSE;
-		for(j=0;j<*nlist;j++)
-		{
-			if(!strcmp(geometry0[i].Prop.symbol, t[j]))
-			{
-				inList = TRUE;
-				break;
-			}
-		}
-		if(!inList)
-		{
-			(*nlist)++;
-			t[*nlist-1] =  g_strdup(geometry0[i].Prop.symbol);
-		}
-	}
-	t = g_realloc(t,*nlist*sizeof(gchar*));
-	sortList(t,*nlist);
-
-	return t;
-}
-/********************************************************************************/
-static void selectAtomsBySymbol(GtkWidget* button, GtkWidget* entry)
-{
-	gint i;
-	gint k = 0;
-	G_CONST_RETURN gchar *rName;
-
-
-	if(Natoms<1) return;
-	rName = gtk_entry_get_text(GTK_ENTRY(entry));
-	if(strlen(rName)<1) return;
-
-	NFatoms = 0;
-	if(NumFatoms) g_free(NumFatoms);
-
-	NumFatoms = g_malloc(Natoms*sizeof(gint));
-	k = 0;
-	for (i=0;i<(gint)Natoms;i++)
-	{
-		if(!geometry[i].show) continue;
-		if(!strcmp(geometry[i].Prop.symbol,rName))
-			NumFatoms[k++]= geometry[i].N;
-	}
-	NFatoms = k;
-	if(k<1)
-	{
-		NFatoms = 0;
-		if(NumFatoms) g_free(NumFatoms);
-		NumFatoms=NULL;
-	}
-	else
-	{
-		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
-	}
-	dessine();
-}
-/********************************************************************************/
-void selectAtomsBySymbolDlg()
-{
-	GtkWidget *winDlg;
-	GtkWidget *button;
-	GtkWidget *hbox;
-	GtkWidget *entry;
-	GtkWidget *frame;
-	GtkWidget *vboxframe;
-	gint n=0;
-	gchar** t = NULL;
-  
-	winDlg = gtk_dialog_new();
-	gtk_window_set_title(GTK_WINDOW(winDlg),_("Select by Symbol"));
-	gtk_window_set_position(GTK_WINDOW(winDlg),GTK_WIN_POS_CENTER);
-	gtk_window_set_transient_for(GTK_WINDOW(winDlg),GTK_WINDOW(GeomDlg));
-
-	add_child(GeomDlg,winDlg,gtk_widget_destroy,_(" Sel. Res. "));
-	g_signal_connect(G_OBJECT(winDlg),"delete_event",(GCallback)delete_child,NULL);
-
-	frame = gtk_frame_new (NULL);
-	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
-
-	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->vbox), frame,TRUE,TRUE,0);
-
-	gtk_widget_show (frame);
-
-	vboxframe = create_vbox(frame);
-	hbox=create_hbox_false(vboxframe);
-	n=0;
-	t = getListSymbols(&n);
-	entry = create_label_combo(hbox,_(" Symbol : "),t,n, TRUE,-1,-1);
-	gtk_editable_set_editable((GtkEditable*) entry,TRUE);
-	if(t) freeList(t,n);
-
-	gtk_widget_realize(winDlg);
-
-	button = create_button(winDlg,_("Cancel"));
-	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button,TRUE,TRUE,0);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(winDlg));
-	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
-
-	button = create_button(winDlg,_("OK"));
-	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button,TRUE,TRUE,0);
-	g_signal_connect(G_OBJECT(button), "clicked",(GCallback)selectAtomsBySymbol,entry);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(winDlg));
-	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
-	gtk_widget_grab_default(button);
-    
-
-	gtk_widget_show_all(winDlg);
-}
-/********************************************************************************/
-void selectAtomsByChargeValues(gboolean positive)
-{
-	gint i;
-	gint k = 0;
-
-	if(Natoms<1) return;
-	NFatoms = 0;
-	if(NumFatoms) g_free(NumFatoms);
-
-	NumFatoms = g_malloc(Natoms*sizeof(gint));
-	k = 0;
-	for (i=0;i<(gint)Natoms;i++)
-	{
-		if(!geometry[i].show) continue;
-		if(
-			(geometry[i].Charge>0 && positive) ||
-			(geometry[i].Charge<0 && !positive)
-		)
-			NumFatoms[k++]= geometry[i].N;
-	}
-	NFatoms = k;
-	if(k<1)
-	{
-		NFatoms = 0;
-		if(NumFatoms) g_free(NumFatoms);
-		NumFatoms=NULL;
-	}
-	else
-	{
-		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
-	}
-	dessine();
 }
 /********************************************************************************/
 static void setMMTypeOfselectedAtoms(GtkWidget* button, GtkWidget* entry)
@@ -3629,7 +2773,7 @@ static void setMMTypeOfselectedAtoms(GtkWidget* button, GtkWidget* entry)
 	}
 	create_GeomXYZ_from_draw_grometry();
 	if(!strcmp(tName,"N3")) reset_all_connections();
-	dessine();
+	drawGeom();
 }
 /********************************************************************************/
 void setMMTypeOfselectedAtomsDlg()
@@ -3679,7 +2823,7 @@ void setMMTypeOfselectedAtomsDlg()
 	vboxframe = create_vbox(frame);
 	hbox=create_hbox_false(vboxframe);
 	n=0;
-	t = getListMMTypes(&n);
+	t = getListGeomMMTypes(&n);
 	entry = create_label_combo(hbox,_(" Type Name : "),t,n, TRUE,-1,-1);
 	if(strcmp(tmp,"UNK")) gtk_entry_set_text(GTK_ENTRY(entry),tmp);
 	gtk_editable_set_editable((GtkEditable*) entry,TRUE);
@@ -3728,7 +2872,7 @@ static void setPDBTypeOfselectedAtoms(GtkWidget* button, GtkWidget* entry)
 		}
 	}
 	create_GeomXYZ_from_draw_grometry();
-	dessine();
+	drawGeom();
 }
 /********************************************************************************/
 void setPDBTypeOfselectedAtomsDlg()
@@ -3827,7 +2971,7 @@ static void setResidueNameOfselectedAtoms(GtkWidget* button, GtkWidget* entry)
 		}
 	}
 	create_GeomXYZ_from_draw_grometry();
-	dessine();
+	drawGeom();
 }
 /********************************************************************************/
 static gchar* getResidueNameOfselectedAtoms()
@@ -3900,9 +3044,9 @@ void setResidueNameOfselectedAtomsDlg()
 	t = g_malloc(sizeof(gchar*)*2);
 	t[0]  = NULL;
 	t[1]  = NULL;
-	t = getResidueNameOfselectedAtoms();
+	t[0] = getResidueNameOfselectedAtoms();
 		
-	entry = create_label_combo(hbox,_(" Residue Name : "),&t,n, TRUE,-1,-1);
+	entry = create_label_combo(hbox,_(" Residue Name : "),t,n, TRUE,-1,-1);
 	g_free(t[0]);
 	g_free(t);
 	if(strcmp(tmp,"UNK")) gtk_entry_set_text(GTK_ENTRY(entry),tmp);
@@ -3926,7 +3070,7 @@ void setResidueNameOfselectedAtomsDlg()
 	gtk_widget_show_all(winDlg);
 }
 /********************************************************************************/
-static gchar** getListCharges(gint* nlist)
+gchar** getListCharges(gint* nlist)
 {
 
 	gchar** t = NULL;
@@ -3988,7 +3132,7 @@ static void setChargeOfselectedAtoms(GtkWidget* button, GtkWidget* entry)
 	}
 	create_GeomXYZ_from_draw_grometry();
 
-	dessine();
+	drawGeom();
 }
 /********************************************************************************/
 void setChargeOfselectedAtomsDlg()
@@ -4087,7 +3231,7 @@ static void scaleChargesOfSelectedAtoms(GtkWidget* button, GtkWidget* entry)
 		}
 	}
 
-	dessine();
+	drawGeom();
 }
 /********************************************************************************/
 void scaleChargesOfSelectedAtomsDlg()
@@ -4606,7 +3750,7 @@ void addMaxHydrogens()
 	reset_multiple_bonds();
 	create_GeomXYZ_from_draw_grometry();
 	reset_charges_multiplicities();
-	dessine();
+	drawGeom();
 }
 /********************************************************************************/
 void addHydrogens()
@@ -4631,7 +3775,7 @@ void addHydrogens()
 	}
 	create_GeomXYZ_from_draw_grometry();
 	reset_charges_multiplicities();
-	dessine();
+	drawGeom();
 }
 /********************************************************************************/
 void addOneHydrogen()
@@ -4656,7 +3800,7 @@ void addOneHydrogen()
 	}
 	create_GeomXYZ_from_draw_grometry();
 	reset_charges_multiplicities();
-	dessine();
+	drawGeom();
 }
 /*******************************************************************/
 void adjust_hydrogens_connected_to_atom(gint ia)
@@ -5111,7 +4255,7 @@ void addHydrogensTpl()
 	setMMTypesChargesFromPDBTpl(2);
 	create_GeomXYZ_from_draw_grometry();
 	reset_charges_multiplicities();
-	dessine();
+	drawGeom();
 }
 /********************************************************************************/
 void DeleteMolecule()
@@ -5154,7 +4298,7 @@ void SetOriginAtCenter(gpointer data, guint Operation,GtkWidget* wid)
 	TransX = 0;
 	TransY = 0;
 	reset_origine_molecule_drawgeom();
-	dessine();
+	drawGeom();
 	set_statubar_pop_sel_atom();
 	return;
 }
@@ -5451,27 +4595,27 @@ static gint ScaleByMouse(gpointer data)
 			factor +=((bevent->y - BeginY) / GeomDrawingArea->allocation.height) * 5;
 			if(factor<0.1) factor = 0.1;
 			if(factor>10) factor = 10;
-			dessine();
+			drawGeom();
 		break;
 	case SCALESTICK :
 			factorstick +=((bevent->y - BeginY) / GeomDrawingArea->allocation.height) * 5;
 			if(factorstick <0.1) factorstick  = 0.1;
 			if(factorstick >10) factorstick = 10;
-			dessine();
+			drawGeom();
 
 		break;
 	case SCALEBALL :
 			factorball +=((bevent->y - BeginY) / GeomDrawingArea->allocation.height) * 5;
 			if(factorball <0.1) factorball  = 0.1;
 			if(factorball >10) factorball = 10;
-			dessine();
+			drawGeom();
 		break;
 	case SCALEDIPOLE :
 			factordipole +=((bevent->y - BeginY) / GeomDrawingArea->allocation.height) * 5;
 			if(factordipole <0.1) factordipole  = 0.1;
 			if(factordipole >100) factordipole = 100;
 			redefine_dipole();
-			dessine();
+			drawGeom();
 		break;
 	default : break;
 
@@ -5513,7 +4657,7 @@ static gint TranslationByMouse(GtkWidget *widget, GdkEventMotion *event)
 
     TransX =(gint)(TransX+(x - BeginX)); 
     TransY =(gint)(TransY+(y - BeginY)); 
-	dessine();
+	drawGeom();
 
 	BeginX = x;
 	BeginY = y;
@@ -5556,7 +4700,7 @@ static gint RotationByMouse(GtkWidget *widget, GdkEventMotion *event)
 		(2.0*x       - area.width) / area.width,
 		(area.height - 2.0*y     ) / area.height);
 	add_quats(spin_quat, Quat, Quat);
-	dessine();
+	drawGeom();
 
 	BeginX = x;
 	BeginY = y;
@@ -5618,7 +4762,7 @@ static gint RotationZByMouse(GtkWidget *widget, GdkEventMotion *event)
 	spin_quat[3] = cos(phi/2);
 
 	add_quats(spin_quat, Quat, Quat);
-	dessine();
+	drawGeom();
 
 	BeginX = x;
 	BeginY = y;
@@ -5772,7 +4916,7 @@ static gint local_zrotate_fragment(GtkWidget *widget, GdkEventMotion *event)
 	if(RebuildConnectionsDuringEdition)
 		reset_connections_between_selected_and_notselected_atoms();
 	/* reset_all_connections();*/
-	dessine();
+	drawGeom();
 
 	init_quat(QuatFrag);
 	BeginX = x;
@@ -5873,7 +5017,7 @@ static gint local_rotate_fragment(GtkWidget *widget, GdkEventMotion *event)
 	if(RebuildConnectionsDuringEdition)
 		reset_connections_between_selected_and_notselected_atoms();
 	/* reset_all_connections();*/
-	dessine();
+	drawGeom();
 
 	init_quat(QuatFrag);
 	BeginX = x;
@@ -6005,7 +5149,7 @@ static gint move_one_atom(GdkEventMotion *event)
 	Ddef = FALSE;
 	buildRotation();
 
-	dessine();
+	drawGeom();
 	set_statubar_pop_sel_atom();
 	return TRUE;
 }
@@ -6124,7 +5268,7 @@ static gint move_all_selected_atoms(GtkWidget *widget, GdkEventMotion *event)
 	Ddef = FALSE;
 	if(RebuildConnectionsDuringEdition)
 		reset_connections_between_selected_and_notselected_atoms();
-	dessine();
+	drawGeom();
 	set_statubar_pop_sel_atom();
 	return TRUE;
 }
@@ -6250,7 +5394,7 @@ gint set_selected_atoms(GdkEventButton *bevent)
 			NumSelAtoms[i] = NumSelAtoms[i+1];
 			NumSelAtoms[i+1] = -1;
 		}
-	dessine();
+	drawGeom();
 	change_of_center(NULL,NULL);
 	set_statubar_pop_sel_atom();
 	return ns;
@@ -6268,7 +5412,7 @@ gint unselected_atom(GdkEventButton *bevent)
 	if(xii*xii+yii*yii > 8)
 	{
 		NumSelectedAtom = -1;
-		dessine();
+		drawGeom();
 		SetOperation (NULL,OperationType);
 	}
 	return NumSelectedAtom;
@@ -6287,7 +5431,7 @@ gint unselected_bond(GdkEventButton *bevent)
 	{
 		NumBatoms[0] = NumBatoms[1] = -1;
 		NBatoms = 0;
-		dessine();
+		drawGeom();
 		SetOperation (NULL,OperationType);
 	}
 	return 0;
@@ -6326,7 +5470,7 @@ gint set_selected_second_atom_bond(GdkEventButton *bevent)
 	{
 		NBatoms = 1;
 	}
-	dessine();
+	drawGeom();
 	change_of_center(NULL,NULL);
 	set_statubar_pop_sel_atom();
 	return NBatoms;
@@ -6376,7 +5520,7 @@ gint set_selected_atom(GdkEventButton *bevent)
 	CSselectedAtom[1] = geometry0[NumSelectedAtom].Y;
 	CSselectedAtom[2] = geometry0[NumSelectedAtom].Z;
 	}
-	dessine();
+	drawGeom();
 	set_statubar_pop_sel_atom();
 	return NumSelectedAtom;
 }
@@ -6442,7 +5586,7 @@ gint set_selected_bond(GdkEventButton *bevent)
 		NumBatoms[0] = (gint) geometry[na].N;
 		NumBatoms[1] = (gint) geometry[nb].N;
 	}
-	dessine();
+	drawGeom();
 	change_of_center(NULL,NULL);
 	set_statubar_pop_sel_atom();
 	return NBatoms;
@@ -6473,7 +5617,7 @@ gint set_selected_atom_bond(GdkEventButton *bevent)
 			break;
 		}
 	}
-	dessine();
+	drawGeom();
 	change_of_center(NULL,NULL);
 	set_statubar_pop_sel_atom();
 	return NBatoms;
@@ -6632,7 +5776,7 @@ gint set_selected_atoms_for_insert_frag(GdkEventButton *bevent)
 		atomToBondTo = -1;
 		angleTo = -1;
 	}
-	if(Frag.NAtoms>0 && Frag.atomToDelete != -1) dessine();
+	if(Frag.NAtoms>0 && Frag.atomToDelete != -1) drawGeom();
 	return atomToDelete;
 }
 /*****************************************************************************
@@ -6689,7 +5833,7 @@ gint button_press(GtkWidget *DrawingArea, GdkEvent *event, gpointer Menu)
 							  add_geometry_to_fifo();
 							  set_selected_atom_or_bond_to_edit(bevent); 
 							  if(NBatoms<2) add_begin_atoms_bond(bevent);
-							  dessine();
+							  drawGeom();
 							  break;
 					case ADDFRAGMENT : 
 							  add_geometry_to_fifo();
@@ -6699,13 +5843,13 @@ gint button_press(GtkWidget *DrawingArea, GdkEvent *event, gpointer Menu)
 							  add_geometry_to_fifo();
 							  init_quat(QuatFrag);
 							  ButtonPressed = TRUE;
-							  dessine();
+							  drawGeom();
 							  break;
 					case ROTZLOCFRAG : 
 							  add_geometry_to_fifo();
 							  init_quat(QuatFrag);
 							  ButtonPressed = TRUE;
-							  dessine();
+							  drawGeom();
 							  break;
 					default:break;
 				}
@@ -6742,7 +5886,7 @@ gint button_release(GtkWidget *DrawingArea, GdkEvent *event, gpointer Menu)
 	{
 		bevent = (GdkEventButton *) event;
 		if (bevent->button == 3) return TRUE;
-		if (bevent->button == 2) { dessine(); return TRUE;}
+		if (bevent->button == 2) { drawGeom(); return TRUE;}
 		if (bevent->button == 1 && ControlKeyPressed) return TRUE;
 	}
 	if(NumSelectedAtom !=-1)
@@ -6756,7 +5900,7 @@ gint button_release(GtkWidget *DrawingArea, GdkEvent *event, gpointer Menu)
 				unselect_all_atoms();
 
 			free_text_to_draw();
-			dessine();
+			drawGeom();
 			SetOperation (NULL,MOVEFRAG);
 			change_of_center(NULL,NULL);
 			break;
@@ -6765,7 +5909,7 @@ gint button_release(GtkWidget *DrawingArea, GdkEvent *event, gpointer Menu)
 			create_GeomXYZ_from_draw_grometry();
 			NumSelectedAtom = -1;
 			free_text_to_draw();
-			dessine();
+			drawGeom();
 			SetOperation (NULL,DELETEOBJECTS);
 			change_of_center(NULL,NULL);
 			break;
@@ -6827,7 +5971,7 @@ gint button_release(GtkWidget *DrawingArea, GdkEvent *event, gpointer Menu)
 		free_text_to_draw();
 		NBatoms = 0;
 		NumBatoms[0] = NumBatoms[1] = -1;
-		dessine();
+		drawGeom();
 		break;
 	case ADDFRAGMENT :
 		insert_fragment(DrawingArea,event);
@@ -6837,7 +5981,7 @@ gint button_release(GtkWidget *DrawingArea, GdkEvent *event, gpointer Menu)
 		atomToBondTo = -1;
 		angleTo = -1;
 		free_text_to_draw();
-		dessine();
+		drawGeom();
 		/*activate_rotation();*/
 		SetOperation (NULL,ADDFRAGMENT);
 		change_of_center(NULL,NULL);
@@ -6845,13 +5989,13 @@ gint button_release(GtkWidget *DrawingArea, GdkEvent *event, gpointer Menu)
 	case ROTLOCFRAG :
 		ButtonPressed = FALSE;
 		create_GeomXYZ_from_draw_grometry();
-		dessine();
+		drawGeom();
 		change_of_center(NULL,NULL);
 		break;
 	case ROTZLOCFRAG :
 		ButtonPressed = FALSE;
 		create_GeomXYZ_from_draw_grometry();
-		dessine();
+		drawGeom();
 		change_of_center(NULL,NULL);
 		break;
 	case CUTBOND :
@@ -6859,7 +6003,7 @@ gint button_release(GtkWidget *DrawingArea, GdkEvent *event, gpointer Menu)
 		free_text_to_draw();
 		create_GeomXYZ_from_draw_grometry();
 		reset_charges_multiplicities();
-		dessine();
+		drawGeom();
 		SetOperation (NULL,DELETEOBJECTS);
 		break;
 	case CHANGEBOND :
@@ -6867,12 +6011,12 @@ gint button_release(GtkWidget *DrawingArea, GdkEvent *event, gpointer Menu)
 		free_text_to_draw();
 		create_GeomXYZ_from_draw_grometry();
 		reset_charges_multiplicities();
-		dessine();
+		drawGeom();
 		SetOperation (NULL,EDITOBJECTS);
 		break;
 
 	default:
-		dessine();
+		drawGeom();
 	}
 
 	return TRUE;
@@ -6965,7 +6109,7 @@ gint motion_notify(GtkWidget *widget, GdkEventMotion *event)
 					  OperationType = DELETEOBJECTS;
 					  unselected_bond((GdkEventButton *)event);
 					  free_text_to_draw();
-					  dessine();
+					  drawGeom();
 					  break;
 			case CHANGEBOND : unselected_bond((GdkEventButton *)event);
 					  free_text_to_draw();
@@ -6983,7 +6127,7 @@ gint motion_notify(GtkWidget *widget, GdkEventMotion *event)
 							fabs(atof(get_angle(atomToDelete,atomToBondTo,geometry[j].N))-180)>0.1)
 						{
 							angleTo = geometry[j].N;
-							dessine();
+							drawGeom();
 						}
 					  }
             default : return FALSE;
@@ -7040,7 +6184,7 @@ static gint configure_event( GtkWidget *widget, GdkEventConfigure *event )
 	if (pixmap) g_object_unref(pixmap);
 	pixmap = gdk_pixmap_new(widget->window, widget->allocation.width, widget->allocation.height, -1);
 	cr = gdk_cairo_create (pixmap);
-	dessine();
+	drawGeom();
 
 	return TRUE;
 }
@@ -7071,19 +6215,19 @@ void SetCosSin()
 void RenderStick()
 {
 	TypeGeom = GABEDIT_TYPEGEOM_STICK;
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void RenderBallStick()
 {
 	TypeGeom =  GABEDIT_TYPEGEOM_BALLSTICK;
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void RenderSpaceFill()
 {
 	TypeGeom = GABEDIT_TYPEGEOM_SPACE;
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void ActivateButtonOperation (GtkWidget *widget, guint data)
@@ -7098,7 +6242,7 @@ void SetOperation (GtkWidget *widget, guint data)
 	{
 			TransX = 0;
 			TransY = 0;
-			dessine();
+			drawGeom();
 		return;
 	}
 
@@ -7128,7 +6272,7 @@ void SetOperation (GtkWidget *widget, guint data)
 		case MEASURE		:  temp = g_strdup(_(" Press and release the Left mouse button for \"Select your atoms\". "));
 							HideShowMeasure(FALSE);
 							change_of_center(NULL,NULL);
-							dessine();
+							drawGeom();
 							break;
 		case ADDFRAGMENT :  temp = g_strdup(_(" Press and release the Left mouse button for \"Insert a Fragment\". "));break;
 	}
@@ -7138,7 +6282,7 @@ void SetOperation (GtkWidget *widget, guint data)
 		gtk_statusbar_push(GTK_STATUSBAR(StatusOperation),idStatusOperation,temp);
 		g_free(temp);
 	}
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void setPersonalFragment(Fragment F)
@@ -7240,26 +6384,26 @@ void SetLabelOptions (GtkWidget *widget, guint data)
 	if(LabelOption != data)
 	{
 		LabelOption = data ;
-		dessine();
+		drawGeom();
 	}
 }
 /*****************************************************************************/
 void SetLabelDistances(GtkWidget *win,gboolean YesNo)
 {
 	DrawDistance = !DrawDistance;
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void SetLabelDipole(GtkWidget *win,gboolean YesNo)
 {
 	DrawDipole = !DrawDipole;
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void RenderShad(GtkWidget *win,gboolean YesNo)
 {
 	ShadMode = !ShadMode;
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void RenderPers(GtkWidget *win,gboolean YesNo)
@@ -7267,32 +6411,32 @@ void RenderPers(GtkWidget *win,gboolean YesNo)
 	PersMode = !PersMode;
 	if(PersMode)
 		define_coefs_pers();
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void RenderLight(GtkWidget *win,gboolean YesNo)
 {
 	LightMode = !LightMode;
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void RenderOrtep(GtkWidget *win,gboolean YesNo)
 {
 	OrtepMode = !OrtepMode;
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void RenderCartoon(GtkWidget *win,gboolean YesNo)
 {
 	CartoonMode = !CartoonMode;
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void RenderHBonds(GtkWidget *win,gboolean YesNo)
 {
 	ShowHBonds = !ShowHBonds;
 	if(ShowHBonds) set_Hconnections();
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void RenderHAtoms(GtkWidget *win,gboolean YesNo)
@@ -7306,14 +6450,14 @@ void RenderHAtoms(GtkWidget *win,gboolean YesNo)
 			geometry0[i].show = YesNo;
 		}
 	}
-	dessine();
+	drawGeom();
 	ShowHydrogenAtoms = YesNo;
 }
 /*****************************************************************************/
 void RenderDipole(GtkWidget *win,gboolean YesNo)
 {
 	ShowDipole = !ShowDipole;
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void set_dipole_from_charges()
@@ -7335,7 +6479,7 @@ void set_dipole_from_charges()
 
 	}	
 	define_geometry();
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 gdouble get_sum_charges()
@@ -7796,7 +6940,7 @@ void set_layer_of_selected_atoms(GabEditLayerType l)
 		}
 	}
 	create_GeomXYZ_from_draw_grometry();
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void define_geometry_from_xyz()
@@ -9248,7 +8392,7 @@ void alignPrincipalAxesOfSelectedAtomsToXYZ()
 	rotate_frag_for_set_its_principal_axes_to_xyz(TRUE);
 	create_GeomXYZ_from_draw_grometry();
 	init_quat(Quat);
-	dessine();
+	drawGeom();
 	activate_edit_objects();
 }
 /*****************************************************************************/
@@ -9259,7 +8403,7 @@ void alignSelectedAndNotSelectedAtoms()
 	move_the_center_of_selected_or_not_selected_atoms_to_origin(FALSE);
 	create_GeomXYZ_from_draw_grometry();
 	init_quat(Quat);
-	dessine();
+	drawGeom();
 	activate_edit_objects();
 }
 /*****************************************************************************/
@@ -9268,7 +8412,7 @@ void deleteSelectedAtoms()
 	add_geometry_to_fifo();
 	delete_all_selected_atoms();
 	create_GeomXYZ_from_draw_grometry();
-	dessine();
+	drawGeom();
 	activate_edit_objects();
 }
 /*****************************************************************************/
@@ -9277,7 +8421,7 @@ void moveCenterOfSelectedAtomsToOrigin()
 	add_geometry_to_fifo();
 	move_the_center_of_selected_or_not_selected_atoms_to_origin(TRUE);
 	create_GeomXYZ_from_draw_grometry();
-	dessine();
+	drawGeom();
 	activate_edit_objects();
 }
 /*****************************************************************************/
@@ -9367,7 +8511,7 @@ void delete_hydrogen_atoms()
 	/* reset_all_connections();*/
 	reset_charges_multiplicities();
 	create_GeomXYZ_from_draw_grometry();
-	dessine();
+	drawGeom();
 	activate_edit_objects();
 }
 /********************************************************************************/
@@ -10580,7 +9724,7 @@ void draw_ball(gint xi,gint yi,gint rayoni,GdkColor colori)
 	}
 }
 /*****************************************************************************/
-void dessine_byLayer()
+void drawGeom_byLayer()
 {	
 	guint i;
 	guint j;
@@ -10667,7 +9811,7 @@ void dessine_byLayer()
 		ni = geometry[i].N-1;
 		if(!geometry[i].show)
 		{
-			if(ShowDipole) for(j = 0;j<NDIVDIPOLE;j++) if(Ndipole[j]==(gint)i) dessine_dipole(j);
+			if(ShowDipole) for(j = 0;j<NDIVDIPOLE;j++) if(Ndipole[j]==(gint)i) drawGeom_dipole(j);
 			continue;
 		}
                 rayon = get_rayon(i);
@@ -10871,7 +10015,7 @@ void dessine_byLayer()
 			}
 		}
     		if (LabelOption != 0) draw_label(5,i);
-		if(ShowDipole) for(j = 0;j<NDIVDIPOLE;j++) if(Ndipole[j]==(gint)i) dessine_dipole(j);
+		if(ShowDipole) for(j = 0;j<NDIVDIPOLE;j++) if(Ndipole[j]==(gint)i) drawGeom_dipole(j);
 	}
         i=Natoms-1;
         rayon = get_rayon(i);
@@ -10930,7 +10074,7 @@ void dessine_byLayer()
 		default :break;
 	}
 
-	if(ShowDipole) for(j = 0;j<NDIVDIPOLE;j++) if(Ndipole[j]==(gint)i) dessine_dipole(j);
+	if(ShowDipole) for(j = 0;j<NDIVDIPOLE;j++) if(Ndipole[j]==(gint)i) drawGeom_dipole(j);
     	if (LabelOption != 0 && geometry[i].show) draw_label(5,i);
 
 	
@@ -10950,7 +10094,7 @@ void redefine_dipole()
 	}
 }
 /*****************************************************************************/
-void dessine_stick()
+void drawGeom_stick()
 {	
 	guint i;
 	guint j;
@@ -11006,7 +10150,7 @@ void dessine_stick()
 		ni = geometry[i].N-1;
 		if(!geometry[i].show)
 		{
-			if(ShowDipole) for(j = 0;j<NDIVDIPOLE;j++) if(Ndipole[j]==(gint)i) dessine_dipole(j);
+			if(ShowDipole) for(j = 0;j<NDIVDIPOLE;j++) if(Ndipole[j]==(gint)i) drawGeom_dipole(j);
 			continue;
 		}
 		k = -1;
@@ -11202,7 +10346,7 @@ void dessine_stick()
 
 
 
-		if(ShowDipole) for(j = 0;j<NDIVDIPOLE;j++) if(Ndipole[j]==(gint)i) dessine_dipole(j);
+		if(ShowDipole) for(j = 0;j<NDIVDIPOLE;j++) if(Ndipole[j]==(gint)i) drawGeom_dipole(j);
     		if (LabelOption != 0) draw_label(5,i);
         }
     	if (LabelOption != 0 && geometry[Natoms-1].show) draw_label(5,Natoms-1);
@@ -11255,7 +10399,7 @@ void calcul_ndipole()
 
 }
 /*****************************************************************************/
-void dessine_dipole(gint i)
+void drawGeom_dipole(gint i)
 {	
 	gint epaisseur;
 	GdkColor color;
@@ -11290,7 +10434,7 @@ void buildRotation()
 	rotation_geometry_quat(m);
 }
 /*****************************************************************************/
-void dessine()
+void drawGeom()
 {
 	if(!GeomDrawingArea) return;
      	pixmap_init(GeomDrawingArea);
@@ -11309,9 +10453,9 @@ void dessine()
 
 
        	if (!stick_mode())
-		dessine_byLayer();
+		drawGeom_byLayer();
 	else 
-   		dessine_stick();
+   		drawGeom_stick();
 
 	redraw();
 }
@@ -11332,7 +10476,7 @@ void rafresh_drawing()
 	gtk_notebook_set_current_page((GtkNotebook*)NoteBookDraw,i);
 
 
-	dessine();
+	drawGeom();
 	change_of_center(NULL,NULL);
 }
 /******************************************************************************/
@@ -11357,38 +10501,38 @@ void multi_geometry_by_factor(gdouble fa0)
 void multi_geometry_by_a0(GtkWidget *win, gpointer d)
 {
 	multi_geometry_by_factor(BOHR_TO_ANG);
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void divide_geometry_by_a0(GtkWidget *win, gpointer d)
 {
  multi_geometry_by_factor(1.0/BOHR_TO_ANG);
- dessine();
+ drawGeom();
 }
 /*****************************************************************************/
 void factor_default(GtkWidget *win,gpointer d)
 {
 	factor =1.0;
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void factor_stick_default(GtkWidget *win,gpointer d)
 {
 	factorstick =1.0;
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void factor_ball_default(GtkWidget *win,gpointer d)
 {
 	factorball =1.0;
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void factor_dipole_default(GtkWidget *win,gpointer d)
 {
 	factordipole =1.0;
 	redefine_dipole();
-	dessine();
+	drawGeom();
 }
 /*****************************************************************************/
 void factor_all_default(GtkWidget *win,gpointer d)
@@ -11415,7 +10559,7 @@ void set_back_color_black()
                       0, 0,
                       GeomDrawingArea->allocation.width,
                       GeomDrawingArea->allocation.height);    
-        dessine();
+        drawGeom();
 }
 /*****************************************************************************/
 void set_back_color(GtkColorSelection *Sel,gpointer *d)
@@ -11437,7 +10581,7 @@ void set_back_color(GtkColorSelection *Sel,gpointer *d)
                       0, 0,
                       GeomDrawingArea->allocation.width,
                       GeomDrawingArea->allocation.height);    
-        dessine();
+        drawGeom();
 
 }
 /*****************************************************************************/
@@ -11462,7 +10606,7 @@ void set_back_color_grey()
                       0, 0,
                       GeomDrawingArea->allocation.width,
                       GeomDrawingArea->allocation.height);    
-        dessine();
+        drawGeom();
 }
 /*****************************************************************************/
 void set_back_color_default()
@@ -11497,7 +10641,7 @@ void set_back_color_default()
                       0, 0,
                       GeomDrawingArea->allocation.width,
                       GeomDrawingArea->allocation.height);    
-        dessine();
+        drawGeom();
 }
 /*****************************************************************************/
 void open_color_dlg(GtkWidget *win,gpointer *DrawingArea)
@@ -11948,7 +11092,7 @@ void export_geometry(gchar* fileName, gchar* fileType)
 		cairo_surface_t *surface;
 		surface = cairo_pdf_surface_create(fileName, GeomDrawingArea->allocation.width, GeomDrawingArea->allocation.height);
 		crExport = cairo_create(surface);
-		dessine();
+		drawGeom();
 		cairo_show_page(crExport);
 		cairo_surface_destroy(surface);
 		cairo_destroy(crExport);
@@ -11962,7 +11106,7 @@ void export_geometry(gchar* fileName, gchar* fileType)
 		cairo_surface_t *surface;
 		surface = cairo_ps_surface_create(fileName, GeomDrawingArea->allocation.width, GeomDrawingArea->allocation.height);
 		crExport = cairo_create(surface);
-		dessine();
+		drawGeom();
 		cairo_show_page(crExport);
 		cairo_surface_destroy(surface);
 		cairo_destroy(crExport);
@@ -11977,7 +11121,7 @@ void export_geometry(gchar* fileName, gchar* fileType)
 		surface = cairo_ps_surface_create(fileName, GeomDrawingArea->allocation.width, GeomDrawingArea->allocation.height);
 		cairo_ps_surface_set_eps(surface, TRUE);
 		crExport = cairo_create(surface);
-		dessine();
+		drawGeom();
 		cairo_show_page(crExport);
 		cairo_surface_destroy(surface);
 		cairo_destroy(crExport);
@@ -11991,7 +11135,7 @@ void export_geometry(gchar* fileName, gchar* fileType)
 		cairo_surface_t *surface;
 		surface = cairo_svg_surface_create(fileName, GeomDrawingArea->allocation.width, GeomDrawingArea->allocation.height);
 		crExport = cairo_create(surface);
-		dessine();
+		drawGeom();
 		cairo_show_page(crExport);
 		cairo_surface_destroy(surface);
 		cairo_destroy(crExport);

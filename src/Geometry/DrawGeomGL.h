@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -172,15 +172,6 @@ void read_drawmolecule_file();
 GeomDef* copyGeometry(GeomDef* geom0);
 void freeGeometry(GeomDef* geom);
 gint get_connection_type(gint i, gint j);
-void SelectFixedVariableAtoms(gboolean variable);
-void SelectFirstResidue();
-void SelectLastResidue();
-void selectResidueByNameDlg();
-void selectResidueByNumberDlg();
-void selectAtomsByMMTypeDlg();
-void selectAtomsByPDBTypeDlg();
-void selectAtomsBySymbolDlg();
-void selectAtomsByChargeValues(gboolean positive);
 void setMMTypeOfselectedAtomsDlg();
 void setPDBTypeOfselectedAtomsDlg();
 void setResidueNameOfselectedAtomsDlg();
@@ -242,10 +233,6 @@ gboolean dipole_draw_mode();
 gboolean dipole_mode();
 void CreateDrawMenu();
 void TraitementGeom(gpointer data, guint Operation,GtkWidget* wid);
-void SelectAllAtoms();
-void InvertSelectionOfAtoms();
-void unSelectAllAtoms();
-void SelectLayerAtoms(GabEditLayerType layer);
 void copySelectedAtoms();
 void DeleteMolecule();
 void SetOriginAtCenter(gpointer data, guint Operation,GtkWidget* wid);
@@ -313,6 +300,7 @@ void copy_connections(GeomDef* geom0, GeomDef* geom, gint n);
 void set_optimal_geom_view();
 void getQuatGeom(gdouble q[]);
 void redrawGeomGL2PS();
+void drawGeom();
 
 #endif /* __GABEDIT_DRAWGEOMGL_H__ */
 

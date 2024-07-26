@@ -1,6 +1,6 @@
 /* Basis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1140,6 +1140,7 @@ gboolean readBasisFromGaussianFChk(gchar *fileName)
 		fclose(file);
   		return FALSE;
 	}
+	rewind(file);
 	lMax = get_one_int_from_fchk_gaussian_file(file,"Highest angular momentum ");
 	if(lMax<0)
 	{
@@ -1147,6 +1148,7 @@ gboolean readBasisFromGaussianFChk(gchar *fileName)
 		fclose(file);
   		return FALSE;
 	}
+	rewind(file);
 	contMax = get_one_int_from_fchk_gaussian_file(file,"Largest degree of contraction ");
 	if(contMax<1)
 	{
@@ -1154,6 +1156,7 @@ gboolean readBasisFromGaussianFChk(gchar *fileName)
 		fclose(file);
   		return FALSE;
 	}
+	rewind(file);
 	shellTypes = get_array_int_from_fchk_gaussian_file(file, "Shell types ", &n);
 	if(!shellTypes || n!=nShells)
 	{

@@ -1,6 +1,6 @@
 /* Orbitals.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -2026,7 +2026,7 @@ gboolean read_orbitals_from_fchk_gaussian_file(gchar* fileName)
   			return FALSE;
 		}
 	}
-	else rewind(file);
+	rewind(file);
 	energiesBeta = get_array_real_from_fchk_gaussian_file(file, "Beta Orbital Energies ", &nB);
 	if(energiesBeta)
 	{

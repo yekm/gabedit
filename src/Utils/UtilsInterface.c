@@ -1,6 +1,6 @@
 /* UtilsInterface.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1715,7 +1715,7 @@ static void show_about_new()
 	};
 
 	static const gchar *copyright =
-		"Copyright \xc2\xa9 2002-2010 Abdul-Rahman Allouche.\n"
+		"Copyright \xc2\xa9 2002-2011 Abdul-Rahman Allouche.\n"
 		"All rights reserved.\n";
 	
 	gchar *license =
@@ -1746,9 +1746,7 @@ static void show_about_new()
 		"OpenMopac, Orca, MPQC and Q-Chem computational chemistry packages.\n\n"
 		"Please use the following citations in any report or publication :\n"
 		"A.R. ALLOUCHE, Gabedit - A graphical user interface for computational chemistry softwares,\n"
-	        "Journal of Computational Chemistry, 2010,\n"
-	        "DOI: 10.1002/jcc.21600\n"
-		;
+	        "Journal of Computational Chemistry, 32, 174-182(2011)\n";
 	
 	gchar *GABEDIT_VERSION =
 		g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);

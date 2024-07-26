@@ -1,6 +1,6 @@
 /* BuildPolySaccharide.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -39,7 +39,6 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/RotFragments.h"
 #include "../Geometry/MenuToolBarGeom.h"
 
-void dessine();
 void define_good_factor();
 void create_GeomXYZ_from_draw_grometry();
 
@@ -576,7 +575,7 @@ void add_fragment(GtkWidget* button)
 	reset_multiple_bonds();
 	reset_hydrogen_bonds();
 	reset_charges_multiplicities();
-	dessine();
+	drawGeom();
 
 	lastO1 = O1;
 	lastC1 = C1;

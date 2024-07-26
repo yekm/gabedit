@@ -1,3 +1,10 @@
+20 Junuary 2011 :
+	Read beta orbitals from fchk file : Bug fixed
+	Rotation of a fragment by mouse : bug fixed
+
+22 December 2010 :
+	new tools for select atoms : multiple selection
+
 20 December 2010 :
 	Atoms can be fixed dunring MD
 	Screen capture of geometry drawing window in ppm or bmp : A bug were fixed

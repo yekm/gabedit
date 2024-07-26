@@ -1,6 +1,6 @@
 /* GridMG.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -33,6 +33,7 @@ DEALINGS IN THE SOFTWARE.
 #include "GridMG.h"
 
 #define PRECISION 1e-10
+
 
 /*********************************************************/
 /* private methods for GridMG */
@@ -703,6 +704,7 @@ static void multEqualInteriorRealGridMG(GridMG* g, gdouble a)
         		for(iz = iZBegin;iz <=iZEnd;iz++)
 				multValGridMG(g,ix,iy,iz,a);
 }
+//OLD
 /*********************************************************/
 static  void multEqualBoundaryRealGridMG(GridMG* g, gdouble a)
 {
@@ -978,8 +980,6 @@ gdouble moinsLaplacianGridMG(GridMG* g, GridMG* src)
 	int iZBegin = domain.iZBeginInterior;
 	int iZEnd = domain.iZEndInterior;
 	int nBoundary = domain.nBoundary;
-	gdouble v;
-	gdouble vx, vy, vz;
 
 	if(!ifEqualDomainMG(&g->domain,&src->domain))
 	{
@@ -993,12 +993,14 @@ gdouble moinsLaplacianGridMG(GridMG* g, GridMG* src)
 		initBoundaryGridMG(g, 0.0);
 
 #ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz,v)
+#pragma omp parallel for private(ix,iy,iz)
 #endif
 	for(ix = iXBegin;ix <= iXEnd;ix++)
 		for(iy = iYBegin;iy <= iYEnd;iy++)
 			for(iz = iZBegin;iz <= iZEnd;iz++)
 			{
+				gdouble v;
+				gdouble vx, vy, vz;
 				v = cc  * getValGridMG(src, ix,iy,iz);
 				vx = 0.0;
 				vy = 0.0;

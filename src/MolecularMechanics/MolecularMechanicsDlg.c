@@ -1,6 +1,6 @@
 /* MolecularMechanicsDlg.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -42,8 +42,6 @@ DEALINGS IN THE SOFTWARE.
 #include "../MolecularMechanics/SteepestDescent.h"
 #include "../MolecularMechanics/QuasiNewton.h"
 #include "../MolecularMechanics/MolecularDynamics.h"
-
-void dessine();
 
 typedef enum
 {
@@ -623,7 +621,7 @@ static gboolean runOneMopac(ForceField* geometry, gdouble* energy, gchar* fileNa
 		if(strstr(keyWords,"AM1")) str = g_strdup_printf("Energy by AM1/Mopac = %f", *energy);
 		else str = g_strdup_printf("Energy by PM6/Mopac = %f", *energy);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		Waiting(1);
 		if(str) g_free(str);
@@ -658,7 +656,7 @@ static gboolean runMopacFiles(gint numberOfGeometries, ForceField** geometries, 
 		else
 		str = g_strdup_printf("Minimization by PM6/Mopac of geometry n = %d... Please wait", i+1);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		if(runOneMopac(geometries[i], &energies[i], fileNamePrefix, keyWords)) 
 		{
@@ -830,7 +828,7 @@ static gboolean runOneFireFly(ForceField* geometry, gdouble* energy, gchar* file
 		read_geom_from_gamess_output_file(fileNameOut, -1);
 		str = g_strdup_printf("Energy by FireFly = %f", *energy);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		Waiting(1);
 		if(str) g_free(str);
@@ -862,7 +860,7 @@ static gboolean runFireFlyFiles(gint numberOfGeometries, ForceField** geometries
 		if(str) g_free(str);
 		str = g_strdup_printf("Minimization by FireFly of geometry n = %d... Please wait", i+1);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		if(runOneFireFly(geometries[i], &energies[i], fileNamePrefix, keyWords)) 
 		{
@@ -1319,7 +1317,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 	{
 		set_text_to_draw(" ");
 		set_statubar_operation_str(_("Calculation canceled"));
-		dessine();
+		drawGeom();
 		set_sensitive_stop_button( FALSE);
 		return;
 	}
@@ -1349,7 +1347,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 		if(str) g_free(str);
 		str = g_strdup_printf("Minimization of geometry number %d ", i+1);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		Waiting(1);
 		if(str) g_free(str);
@@ -1359,7 +1357,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 		{
 			set_text_to_draw(" ");
 			set_statubar_operation_str(_("Calculation canceled"));
-			dessine();
+			drawGeom();
 			set_sensitive_stop_button( FALSE);
 			break;
 		}
@@ -1371,7 +1369,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 			{
 				set_text_to_draw(" ");
 				set_statubar_operation_str(_("Calculation canceled"));
-				dessine();
+				drawGeom();
 			}
 			set_sensitive_stop_button( FALSE);
 			energies[i] = conjugateGradient.forceField->klass->calculateEnergyTmp
@@ -1388,7 +1386,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 			{
 				set_text_to_draw(" ");
 				set_statubar_operation_str(_("Calculation canceled"));
-				dessine();
+				drawGeom();
 			}
 			set_sensitive_stop_button( FALSE);
 			energies[i] = tmpQuasiNewton.forceField->klass->calculateEnergyTmp
@@ -1408,7 +1406,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 			{
 				set_text_to_draw(" ");
 				set_statubar_operation_str(_("Calculation canceled"));
-				dessine();
+				drawGeom();
 			}
 			set_sensitive_stop_button( FALSE);
 			energies[i] = steepestDescent.forceField->klass->calculateEnergyTmp
@@ -1433,7 +1431,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 	{
 		set_text_to_draw(" ");
 		set_statubar_operation_str(_("Calculation canceled"));
-		dessine();
+		drawGeom();
 	}
 	set_sensitive_stop_button( FALSE);
 	set_text_to_draw(" ");
@@ -1662,7 +1660,7 @@ static void amberMolecularDynamics(GtkWidget* Win, gpointer data)
 	{
 		set_text_to_draw(" ");
 		set_statubar_operation_str(_("Calculation canceled"));
-		dessine();
+		drawGeom();
 		set_sensitive_stop_button( FALSE);
 		return;
 	}
@@ -1683,7 +1681,7 @@ static void amberMolecularDynamics(GtkWidget* Win, gpointer data)
 	{
 		set_text_to_draw(" ");
 		set_statubar_operation_str(_("Calculation canceled"));
-		dessine();
+		drawGeom();
 	}
 	set_sensitive_stop_button( FALSE);
 	set_text_to_draw(" ");
@@ -3393,7 +3391,7 @@ static void amberMinimize(GtkWidget* Win, gpointer data)
 	{
 		set_text_to_draw(" ");
 		set_statubar_operation_str(_("Calculation canceled"));
-		dessine();
+		drawGeom();
 		set_sensitive_stop_button( FALSE);
 		return;
 	}
@@ -3407,7 +3405,7 @@ static void amberMinimize(GtkWidget* Win, gpointer data)
 		{
 			set_text_to_draw(" ");
 			set_statubar_operation_str(_("Calculation canceled"));
-			dessine();
+			drawGeom();
 		}
 		set_sensitive_stop_button( FALSE);
 		freeConjugateGradient(&conjugateGradient);
@@ -3421,7 +3419,7 @@ static void amberMinimize(GtkWidget* Win, gpointer data)
 		{
 			set_text_to_draw(" ");
 			set_statubar_operation_str(_("Calculation canceled"));
-			dessine();
+			drawGeom();
 		}
 		set_sensitive_stop_button( FALSE);
 		freeQuasiNewton(&quasiNewton);
@@ -3439,7 +3437,7 @@ static void amberMinimize(GtkWidget* Win, gpointer data)
 		{
 			set_text_to_draw(" ");
 			set_statubar_operation_str(_("Calculation canceled"));
-			dessine();
+			drawGeom();
 		}
 		set_sensitive_stop_button( FALSE);
 		freeSteepestDescent(&steepestDescent);
@@ -3492,7 +3490,7 @@ void amberEnergyCalculation(GtkWidget* Win, gpointer data)
 	{
 		set_text_to_draw(" ");
 		set_statubar_operation_str(_("Calculation canceled"));
-		dessine();
+		drawGeom();
 		set_sensitive_stop_button( FALSE);
 		return;
 	}
@@ -3511,7 +3509,7 @@ void amberEnergyCalculation(GtkWidget* Win, gpointer data)
 
 	set_text_to_draw(str);
 	set_statubar_operation_str(str);
-	dessine();
+	drawGeom();
 	set_sensitive_stop_button( FALSE);
 	freeForceField(&forceField);
 	set_text_to_draw(" ");

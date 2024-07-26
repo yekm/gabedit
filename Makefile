@@ -42,8 +42,9 @@ ifneq ($(external_gl2ps),1)
 GL2PS     = gl2ps/*.o
 OBJECTS  += $(GL2PS)
 SUBDIRS  += gl2ps
+GLTOPS =
 else
-OBJECTS  += -lgl2ps
+GLTOPS = -lgl2ps
 endif
  
 TARGETS = all clean dep
@@ -60,7 +61,7 @@ all: gabedit
 gabedit: $(SUBDIRS)
 	mkdir tmp
 	cp $(OBJECTS) tmp
-	$(CC) $(LDFLAGS) tmp/*.o -o gabedit $(X11LIB) $(GTKLIB) $(OGLLIB) $(JPEGLIB) $(LIBPTHREAD) $(WIN32LIB) $(OMPLIB) -g
+	$(CC) $(LDFLAGS) tmp/*.o -o gabedit $(GLTOPS) $(X11LIB) $(GTKLIB) $(OGLLIB) $(JPEGLIB) $(LIBPTHREAD) $(WIN32LIB) $(OMPLIB) -g
 	@$(RMTMP) > ptmp
 	rmdir tmp
 	@$(RM) ptmp

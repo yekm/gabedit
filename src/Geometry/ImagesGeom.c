@@ -1,6 +1,6 @@
 /* ImagesGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -253,6 +253,7 @@ guchar *get_rgb_image()
 	}
 	return rgbbuf;
   }
+  return NULL;
 
 }
 /**************************************************************************
@@ -266,6 +267,8 @@ void save_geometry_jpeg_file(GabeditFileChooser *SelecFile, gint response_id)
 /**************************************************************************
 *       Save the Frame Buffer in a ppm format file
 **************************************************************************/
+
+#ifdef DRAWGEOMGL
 static gchar* save_ppm(gchar* fileName)
 {       
 	FILE *file;
@@ -329,6 +332,52 @@ static gchar* save_ppm(gchar* fileName)
 	free(rgbbuf);
 	return NULL;
 } 
+#else
+static gchar* save_ppm(gchar* FileName)
+{       
+	FILE *file;
+	int i;
+	int j;
+	int k;
+	int width;
+	int height;
+	guchar *rgbbuf;
+	static gchar message[1024];
+
+	file = FOpen(FileName,"wb");
+
+        if (!file) {
+		sprintf(message,_("Sorry: can't open %s file\n"), FileName);
+		return message;
+        }
+
+	rgbbuf = get_rgb_image();
+	if (!rgbbuf) {
+		sprintf(message,_("Sorry: couldn't allocate memory\n"));
+	    	fclose(file);
+		return message;
+	}
+	width =  GeomDrawingArea->allocation.width;
+	height = GeomDrawingArea->allocation.height;
+
+        fprintf(file,"P6\n");
+        fprintf(file,"#Image rendered with gabedit\n");
+        fprintf(file,"%d\n%d\n255\n", width,height);
+
+	for(i=height-1; i>= 0; i--){
+	   for(j=0; j< width; j++){
+		k = 3*(j + i*width);
+		fwrite( &rgbbuf[k] ,sizeof(*rgbbuf), 1, file);
+		fwrite( &rgbbuf[k+1] ,sizeof(*rgbbuf), 1, file);
+		fwrite( &rgbbuf[k+2] ,sizeof(*rgbbuf), 1, file);
+	   }
+	}
+
+	fclose(file);
+	g_free(rgbbuf);
+	return NULL;
+} 
+#endif
 /**************************************************************************/
 void save_geometry_ppm_file(GabeditFileChooser *SelecFile, gint response_id)
 {       
@@ -365,6 +414,7 @@ static void WLSBL(int val,char* arr)
     arr[3] = (char) ((val>>24)&0xff);
 }
 /**************************************************************************/
+#ifdef DRAWGEOMGL
 static gchar* save_bmp(gchar* fileName)
 {       
 	FILE *file;
@@ -445,6 +495,78 @@ static gchar* save_bmp(gchar* fileName)
   	free(rgbbuf);
 	return NULL;
 }
+#else
+/**************************************************************************/
+static gchar* save_bmp(gchar* fileName)
+{       
+	FILE *file;
+	int i;
+	int j;
+	int width;
+	int height;
+  	guchar *rgbbuf;
+  	guchar rgbtmp[3];
+  	int pad;
+	static gchar message[1024];
+	char bmp_header[]=
+	{ 'B','M', 0,0,0,0, 0,0, 0,0, 54,0,0,0,
+  	40,0,0,0, 0,0,0,0, 0,0,0,0, 1,0, 24,0, 0,0,0,0, 0,0,0,0,
+  	0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 };
+
+ 	if ((!fileName) || (strcmp(fileName,"") == 0))
+	{
+		sprintf(message,_("Sorry\n No selected file"));
+	       	return message;
+	}
+
+	file = FOpen(fileName,"wb");
+
+	if (!file)
+	{
+		sprintf(message,_("Sorry: can't open %s file\n"), fileName);
+		return message;
+	}
+  
+  	height = GeomDrawingArea->allocation.height;
+  	width = GeomDrawingArea->allocation.width;
+
+  	rgbbuf = get_rgb_image();
+  	if (!rgbbuf)
+	{
+		sprintf(message,_("Sorry: couldn't allocate memory\n"));
+	    	fclose(file);
+		return message;
+  	}
+
+  	pad = (width*3)%4;
+  	if (pad) pad = 4 - pad;
+
+  	WLSBL((int) (3*width+pad)*height+54,bmp_header+2);
+  	WLSBL((int) width,bmp_header+18);
+  	WLSBL((int) height,bmp_header+22);
+  	WLSBL((int) 3*width*height,bmp_header+34);
+
+  	fwrite(bmp_header,1,54,file);
+
+  	for (i=0;i<height;i++)
+	{
+    		for (j=0;j<width;j++)
+		{
+			rgbtmp[0] = rgbbuf[(j+width*i)*3+2];
+			rgbtmp[1] = rgbbuf[(j+width*i)*3+1];
+			rgbtmp[2] = rgbbuf[(j+width*i)*3+0];
+			fwrite(rgbtmp,3,1,file);
+    		}
+    	rgbtmp[0] = (char) 0;
+    	for (j=0;j<pad;j++) 
+		fwrite(rgbtmp,1,1,file);
+  	}
+
+  	fclose(file);
+  	g_free(rgbbuf);
+	return NULL;
+}
+#endif
 /**************************************************************************/
 void save_geometry_bmp_file(GabeditFileChooser *SelecFile, gint response_id)
 {       
@@ -552,7 +674,11 @@ void save_geometry_ps_file(GabeditFileChooser *SelecFile, gint response_id)
 	int k;
 	int width;
 	int height;
+#ifdef DRAWGEOMGL
 	GLubyte *rgbbuf;
+#else
+	guchar *rgbbuf;
+#endif
 
 	if(response_id != GTK_RESPONSE_OK) return;
  	fileName = gabedit_file_chooser_get_current_file(SelecFile);
@@ -571,22 +697,27 @@ void save_geometry_ps_file(GabeditFileChooser *SelecFile, gint response_id)
   	width = GeomDrawingArea->allocation.width;
 
 
+#ifdef DRAWGEOMGL
 	glPixelStorei(GL_PACK_ROW_LENGTH,width);
 	glPixelStorei(GL_PACK_ALIGNMENT,1);
 
 	rgbbuf = (GLubyte *) malloc(3*width*height*sizeof(GLubyte));
+#else
+	rgbbuf = get_rgb_image();
+#endif
 	if (!rgbbuf) {
             Message(_("Sorry: couldn't allocate memory\n"),_("Error"),TRUE);
             return;
 	}
 
+#ifdef DRAWGEOMGL
 #ifdef G_OS_WIN32 
   	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,rgbbuf);
 #else
   	glReadBuffer(GL_FRONT);
   	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,rgbbuf);
 #endif
-
+#endif
         file = FOpen(fileName,"w");
 
         if (!file) {
@@ -625,7 +756,7 @@ void save_geometry_ps_file(GabeditFileChooser *SelecFile, gint response_id)
         fprintf(file,"\nshowpage\n");   
         fprintf(file,"%%%%Trailer\n");
         fclose(file);
-        free(rgbbuf);
+        g_free(rgbbuf);
 }
 /**********************************************************************************************************************************/
 void save_geometry_png_file(GabeditFileChooser *SelecFile, gint response_id)

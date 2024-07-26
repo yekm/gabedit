@@ -1,6 +1,6 @@
 /* MolecularMechanics.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -45,8 +45,6 @@ static AmberParameters* staticAmberParameters = NULL;
 static void calculateGradientAmber(ForceField* forceField);
 static void calculateEnergyAmber(ForceField* forceField);
 static gdouble calculateEnergyTmpAmber(ForceField* forceField,Molecule* m);
-
-void dessine();
 
 /**********************************************************************/
 AmberParameters newAmberParameters()
@@ -2612,12 +2610,12 @@ ForceField createAmberModel
 
 	set_text_to_draw(_("Setting of Parameters ..."));
 	set_statubar_operation_str(_("Setting of Parameters ..."));
-	dessine();
+	drawGeom();
     	while( gtk_events_pending() )
         	gtk_main_iteration();
 
 	setAmberParameters(&forceField);
-	dessine();
+	drawGeom();
     	while( gtk_events_pending() )
         	gtk_main_iteration();
 
@@ -2644,12 +2642,12 @@ ForceField createPairWiseModel
 
 	set_text_to_draw(_("Setting of Parameters ..."));
 	set_statubar_operation_str(_("Setting of Parameters ..."));
-	dessine();
+	drawGeom();
     	while( gtk_events_pending() )
         	gtk_main_iteration();
 
 	setAllPairWiseParameters(&forceField);
-	dessine();
+	drawGeom();
     	while( gtk_events_pending() )
         	gtk_main_iteration();
 

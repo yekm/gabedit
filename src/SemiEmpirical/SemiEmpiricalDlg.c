@@ -1,6 +1,6 @@
 /* SemiEmpiricalDlg.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -102,8 +102,6 @@ static gint numberOfPointsRP[2] = {10,10};
 static gdouble stepValueRP[2] = {0.1,0.1};
 static gchar typeRP[2][100] = {"Bond","Nothing"};
 static gint atomRP[2] = {1,0};
-
-void dessine();
 
 static  GtkWidget* entryFileName = NULL;
 
@@ -431,7 +429,7 @@ static gboolean runOneMopac(gchar* fileNamePrefix, gchar* keyWords)
 		else str = g_strdup_printf("Computing of energy by AM1/Mopac .... Please wait");
 		set_text_to_draw(str);
 		if(str) g_free(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 	}
 #ifndef G_OS_WIN32
@@ -457,7 +455,7 @@ static gboolean runOneMopac(gchar* fileNamePrefix, gchar* keyWords)
 		read_geom_from_mopac_output_file(fileNameOut, -1);
 		str = g_strdup_printf("Energy by Mopac = %f", energy);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		Waiting(1);
 		if(str) g_free(str);
@@ -474,7 +472,7 @@ static gboolean runOneMopac(gchar* fileNamePrefix, gchar* keyWords)
 				);
 		set_text_to_draw(str);
 		if(str) g_free(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
  		if(fileNameIn) g_free(fileNameIn);
  		if(fileNameOut) g_free(fileNameOut);
@@ -678,7 +676,7 @@ static gboolean runOneFireFly(gchar* fileNamePrefix, gchar* keyWords)
 		else str = g_strdup_printf("Computing of energy by AM1/FireFly .... Please wait");
 		set_text_to_draw(str);
 		if(str) g_free(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 	}
 #ifndef G_OS_WIN32
@@ -695,7 +693,7 @@ static gboolean runOneFireFly(gchar* fileNamePrefix, gchar* keyWords)
 
 		str = g_strdup_printf("Energy by FireFly = %f", energy);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		Waiting(1);
 		if(str) g_free(str);
@@ -712,7 +710,7 @@ static gboolean runOneFireFly(gchar* fileNamePrefix, gchar* keyWords)
 				);
 		set_text_to_draw(str);
 		if(str) g_free(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
  		if(fileNameIn) g_free(fileNameIn);
  		if(fileNameOut) g_free(fileNameOut);
@@ -976,7 +974,7 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
 		else str = g_strdup_printf("Computing of energy by Orca .... Please wait");
 		set_text_to_draw(str);
 		if(str) g_free(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 	}
 #ifndef G_OS_WIN32
@@ -993,7 +991,7 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
 
 		str = g_strdup_printf("Energy by Orca = %f", energy);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		Waiting(1);
 		if(str) g_free(str);
@@ -1010,7 +1008,7 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
 				);
 		set_text_to_draw(str);
 		if(str) g_free(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
  		if(fileNameIn) g_free(fileNameIn);
  		if(fileNameOut) g_free(fileNameOut);
@@ -2637,7 +2635,7 @@ static gboolean runOneOptMopac(SemiEmpiricalModel* geom, gdouble* energy, gchar*
 		else str = g_strdup_printf("Computing of energy by AM1/Mopac .... Please wait");
 		set_text_to_draw(str);
 		if(str) g_free(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 	}
 #ifndef G_OS_WIN32
@@ -2661,7 +2659,7 @@ static gboolean runOneOptMopac(SemiEmpiricalModel* geom, gdouble* energy, gchar*
 		read_geom_from_mopac_output_file(fileNameOut, -1);
 		str = g_strdup_printf("Energy by Mopac = %f", *energy);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		Waiting(1);
 		if(str) g_free(str);
@@ -2694,7 +2692,7 @@ static gboolean runMopacFiles(gint numberOfGeometries, SemiEmpiricalModel** geom
 		if(str) g_free(str);
 		str = g_strdup_printf("Minimization by Mopac of geometry n = %d... Please wait", i+1);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		if(runOneOptMopac(geometries[i], &energies[i], fileNamePrefix, keyWords)) 
 		{
@@ -2839,7 +2837,7 @@ static gboolean runOneOptFireFly(SemiEmpiricalModel* geom, gdouble* energy, gcha
 		else str = g_strdup_printf("Computing of energy by AM1/FireFly .... Please wait");
 		set_text_to_draw(str);
 		if(str) g_free(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 	}
 #ifndef G_OS_WIN32
@@ -2857,7 +2855,7 @@ static gboolean runOneOptFireFly(SemiEmpiricalModel* geom, gdouble* energy, gcha
 		read_geom_from_gamess_output_file(fileNameOut, -1);
 		str = g_strdup_printf("Energy by FireFly = %f", *energy);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		Waiting(1);
 		if(str) g_free(str);
@@ -2889,7 +2887,7 @@ static gboolean runFireFlyFiles(gint numberOfGeometries, SemiEmpiricalModel** ge
 		if(str) g_free(str);
 		str = g_strdup_printf("Minimization by FireFly of geometry n = %d... Please wait", i+1);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		if(runOneOptFireFly(geometries[i], &energies[i], fileNamePrefix, keyWords)) 
 		{
@@ -3535,7 +3533,7 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 	{
 		set_text_to_draw(" ");
 		set_statubar_operation_str(_("Calculation Canceled "));
-		dessine();
+		drawGeom();
 		set_sensitive_stop_button( FALSE);
 		return;
 	}
@@ -3564,7 +3562,7 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 	{
 		set_text_to_draw(" ");
 		set_statubar_operation_str(_("Calculation canceled"));
-		dessine();
+		drawGeom();
 	}
 	set_sensitive_stop_button( FALSE);
 	set_text_to_draw(" ");
@@ -3793,7 +3791,7 @@ static void semiEmpiricalMD(GtkWidget* Win, gpointer data)
 	{
 		set_text_to_draw(" ");
 		set_statubar_operation_str(_("Calculation Canceled "));
-		dessine();
+		drawGeom();
 		set_sensitive_stop_button( FALSE);
 		return;
 	}
@@ -3814,7 +3812,7 @@ static void semiEmpiricalMD(GtkWidget* Win, gpointer data)
 	{
 		set_text_to_draw(" ");
 		set_statubar_operation_str(_("Calculation Canceled "));
-		dessine();
+		drawGeom();
 	}
 	set_sensitive_stop_button(FALSE);
 	set_text_to_draw(" ");

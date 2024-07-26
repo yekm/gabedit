@@ -1,6 +1,6 @@
 /* MenuToolBarGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -62,6 +62,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Symmetry/MoleculeSymmetryInterface.h"
 #include "../Common/StockIcons.h"
 #include "../Geometry/AxesGeomGL.h"
+#include "../Geometry/SelectionDlg.h"
 
 
 /* #define EXPERIMENTAL 1*/
@@ -583,6 +584,12 @@ static void activate_action (GtkAction *action)
 		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(selectionAtoms), TRUE);
 		selectAtomsBySymbolDlg();
 	}
+	else if(!strcmp(name,"EditSelectAtomsBySphere"))
+	{
+		GtkAction *selectionAtoms = gtk_ui_manager_get_action (manager, "/MenuGeom/Operations/OperationsSelectionOfAtoms");
+		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(selectionAtoms), TRUE);
+		selectAtomsBySphereDlg();
+	}
 	else if(!strcmp(name,"EditSelectAtomsByPositiveCharges"))
 	{
 		GtkAction *selectionAtoms = gtk_ui_manager_get_action (manager, "/MenuGeom/Operations/OperationsSelectionOfAtoms");
@@ -594,6 +601,12 @@ static void activate_action (GtkAction *action)
 		GtkAction *selectionAtoms = gtk_ui_manager_get_action (manager, "/MenuGeom/Operations/OperationsSelectionOfAtoms");
 		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(selectionAtoms), TRUE);
 		selectAtomsByChargeValues(FALSE);
+	}
+	else if(!strcmp(name,"EditSelectAtomsMultiple"))
+	{
+		GtkAction *selectionAtoms = gtk_ui_manager_get_action (manager, "/MenuGeom/Operations/OperationsSelectionOfAtoms");
+		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(selectionAtoms), TRUE);
+		selectionDlg();
 	}
 	else if(!strcmp(name,"EditOpenGeometryEditor")) 
 	{
@@ -1015,8 +1028,10 @@ static GtkActionEntry gtkActionEntries[] =
 	{"EditSelectAtomsByMMType", NULL, N_("Select atoms by MM type"), NULL, "Select atoms by MM type", G_CALLBACK (activate_action) },
 	{"EditSelectAtomsByPDBType", NULL, N_("Select atoms by PDB type"), NULL, "Select atoms by PDB type", G_CALLBACK (activate_action) },
 	{"EditSelectAtomsBySymbol", NULL, N_("Select atoms by symbol"), NULL, "Select atoms by symbol", G_CALLBACK (activate_action) },
+	{"EditSelectAtomsBySphere", NULL, N_("Select atoms by sphere"), NULL, "Select atoms by sphere", G_CALLBACK (activate_action) },
 	{"EditSelectAtomsByPositiveCharges", NULL, N_("Select atoms with positive charges"), NULL, "Select atoms with positive charges", G_CALLBACK (activate_action) },
 	{"EditSelectAtomsByNegativeCharges", NULL, N_("Select atoms with negative charges"), NULL, "Select atoms with negative charges", G_CALLBACK (activate_action) },
+	{"EditSelectAtomsMultiple", NULL, N_("Multiple select atoms"), NULL, "Multiple select atoms", G_CALLBACK (activate_action) },
 
 	{"SaveAs", NULL, N_("_Save as")},
 	{"SaveAsGabedit", GABEDIT_STOCK_GABEDIT, N_("_Gabedit file"), NULL, "Save geometry in a Gabedit file", G_CALLBACK (activate_action) },
@@ -1325,8 +1340,10 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"EditSelectAtomsByMMType\" action=\"EditSelectAtomsByMMType\" />\n"
 "        <menuitem name=\"EditSelectAtomsByPDBType\" action=\"EditSelectAtomsByPDBType\" />\n"
 "        <menuitem name=\"EditSelectAtomsBySymbol\" action=\"EditSelectAtomsBySymbol\" />\n"
+"        <menuitem name=\"EditSelectAtomsBySphere\" action=\"EditSelectAtomsBySphere\" />\n"
 "        <menuitem name=\"EditSelectAtomsByPositiveCharges\" action=\"EditSelectAtomsByPositiveCharges\" />\n"
 "        <menuitem name=\"EditSelectAtomsByNegativeCharges\" action=\"EditSelectAtomsByNegativeCharges\" />\n"
+"        <menuitem name=\"EditSelectAtomsMultiple\" action=\"EditSelectAtomsMultiple\" />\n"
 "      </menu>\n"
 "      <menu name=\"SaveAs\" action=\"SaveAs\">\n"
 "        <menuitem name=\"SaveAsGabedit\" action=\"SaveAsGabedit\" />\n"
@@ -1760,8 +1777,10 @@ static void set_sensitive()
 	GtkWidget *selectResidueByName = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditSelectResidueByName");
 	GtkWidget *selectAtomsByType = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditSelectAtomsByType");
 	GtkWidget *selectAtomsBySymbol = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditSelectAtomsBySymbol");
+	GtkWidget *selectAtomsBySphere = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditSelectAtomsBySphere");
 	GtkWidget *selectAtomsByPositiveCharges = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditSelectAtomsByPositiveCharges");
 	GtkWidget *selectAtomsByNegativeCharges = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditSelectAtomsByNegativeCharges");
+	GtkWidget *selectAtomsMultiple = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditSelectAtomsMultiple");
 	GtkWidget *symmetry = gtk_ui_manager_get_widget (manager, "/MenuGeom/Symmetry");
 	GtkWidget *export = gtk_ui_manager_get_widget (manager, "/MenuGeom/Export");
 	GtkWidget *mm = gtk_ui_manager_get_widget (manager, "/MenuGeom/MolecularMechanics");
@@ -1808,8 +1827,11 @@ static void set_sensitive()
 	if(GTK_IS_WIDGET(selectResidueByName)) gtk_widget_set_sensitive(selectResidueByName, sensitive);
 	if(GTK_IS_WIDGET(selectAtomsByType)) gtk_widget_set_sensitive(selectAtomsByType, sensitive);
 	if(GTK_IS_WIDGET(selectAtomsBySymbol)) gtk_widget_set_sensitive(selectAtomsBySymbol, sensitive);
+	if(GTK_IS_WIDGET(selectAtomsBySphere)) gtk_widget_set_sensitive(selectAtomsBySphere, sensitive);
+	if(GTK_IS_WIDGET(selectAtomsBySphere) && NFatoms<1) gtk_widget_set_sensitive(selectAtomsBySphere, FALSE);
 	if(GTK_IS_WIDGET(selectAtomsByPositiveCharges)) gtk_widget_set_sensitive(selectAtomsByPositiveCharges, sensitive);
 	if(GTK_IS_WIDGET(selectAtomsByNegativeCharges)) gtk_widget_set_sensitive(selectAtomsByNegativeCharges, sensitive);
+	if(GTK_IS_WIDGET(selectAtomsMultiple)) gtk_widget_set_sensitive(selectAtomsMultiple, sensitive);
 	if(GTK_IS_WIDGET(symmetry)) gtk_widget_set_sensitive(symmetry, sensitive);
 	if(GTK_IS_WIDGET(export)) gtk_widget_set_sensitive(export, sensitive);
 	if(GTK_IS_WIDGET(mm)) gtk_widget_set_sensitive(mm, sensitive);

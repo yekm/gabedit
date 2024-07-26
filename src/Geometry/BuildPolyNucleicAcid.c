@@ -1,6 +1,6 @@
 /* BuildPolyNucleicAcid.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -42,7 +42,6 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Matrix3D.h"
 #include "../MolecularMechanics/PDBTemplate.h"
 
-void dessine();
 void define_good_factor();
 void create_GeomXYZ_from_draw_grometry();
 
@@ -1683,7 +1682,7 @@ static void buildNucleicAcid(GtkWidget *w,gpointer data)
 		create_GeomXYZ_from_draw_grometry();
 		unselect_all_atoms();
 		reset_charges_multiplicities();
-		dessine();
+		drawGeom();
 	}
 }
 /********************************************************************************/
