@@ -1,6 +1,6 @@
 /* PovrayGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1610,7 +1610,7 @@ static void create_images_window (GtkWidget* parent, gchar* fileName, gint width
 
 		gtk_widget_show (image);
 	}
-	//gtk_window_set_default_size (GTK_WINDOW (window), width+30, height+30);
+	gtk_window_set_default_size (GTK_WINDOW (window), width+30, height+30);
 	gtk_widget_realize(window);
 	gtk_widget_show (window);
 	gtk_window_set_position(GTK_WINDOW(window),GTK_WIN_POS_CENTER);
@@ -1784,7 +1784,7 @@ static void AddPOVRayLocationDlg(GtkWidget *box, GtkWidget *Win)
 	j = 2;
 	buttonDirSelector =  gabedit_dir_button();
 	/* gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (buttonDirSelector), g_getenv("PWD"));*/
-	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeightD*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeight*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
 			j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),

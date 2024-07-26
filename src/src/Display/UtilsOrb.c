@@ -1,6 +1,6 @@
 /* UtilsOrb.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1135,12 +1135,12 @@ void create_grid(gchar* title)
 
 	if(!GeomOrb)
 	{
-		Message(_("Sorry, Please load a file beforee\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!CoefAlphaOrbitals && TypeGrid != GABEDIT_TYPEGRID_MEP_CHARGES)
 	{
-		Message(_("Sorry, Please load the MO beforee\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
 		return;
 	}
 	if(TypeGrid == GABEDIT_TYPEGRID_MEP_CHARGES)
@@ -1349,12 +1349,12 @@ void create_grid_ELF_Dens_analyze(gboolean ongrid)
 
 	if(!GeomOrb)
 	{
-		Message(_("Sorry, Please load a file beforee\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!CoefAlphaOrbitals && TypeGrid != GABEDIT_TYPEGRID_MEP_CHARGES)
 	{
-		Message(_("Sorry, Please load the MO beforee\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
 		return;
 	}
 	if(TypeGrid == GABEDIT_TYPEGRID_MEP_CHARGES)
@@ -1507,8 +1507,8 @@ void initialise_global_orbitals_variables()
 	SurfShow = GABEDIT_SURFSHOW_POSNEG;
 	TypeTexture = GABEDIT_TYPETEXTURE_NONE;
 	Title = NULL;
-	ScreenWidthD = gdk_screen_width();
-	ScreenHeightD = gdk_screen_height();
+	ScreenWidth = gdk_screen_width();
+	ScreenHeight = gdk_screen_height();
 	for(i=0;i<3;i++)
 		limits.MinMax[0][i] = -5;
 	for(i=0;i<3;i++)
@@ -1536,7 +1536,7 @@ void initialise_global_orbitals_variables()
 
 	AOAvailable = FALSE;
 	RebuildSurf = TRUE;
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	newContours = TRUE;
 	newSurface = FALSE;
 	DeleteContours = FALSE;
@@ -2045,7 +2045,7 @@ void create_grid_sas(gchar* title)
 
 	if(!GeomOrb)
 	{
-		Message(_("Sorry, Please load a file beforee\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
 		return;
 	}
 	
@@ -2100,7 +2100,7 @@ static void apply_set_scale_ball_stick(GtkWidget *Win,gpointer data)
 
 	if(entryBall) sBall = atof(gtk_entry_get_text(GTK_ENTRY(entryBall)));
 	if(entryStick) sStick = atof(gtk_entry_get_text(GTK_ENTRY(entryStick)));
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	setScaleBall(sBall);
 	setScaleStick(sStick);
 	glarea_rafresh(GLArea);

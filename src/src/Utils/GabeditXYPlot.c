@@ -1,6 +1,6 @@
 /* GabeditXYPlot.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -10647,7 +10647,7 @@ GtkWidget* gabedit_xyplot_new_window(gchar* title, GtkWidget*parent)
 	gtk_window_set_title (GTK_WINDOW (window), title);
 	gtk_signal_connect (GTK_OBJECT (window), "delete_event", G_CALLBACK (gtk_widget_destroy), NULL);
 	gtk_container_set_border_width (GTK_CONTAINER (window), 2);
-	//gtk_window_set_default_size (GTK_WINDOW(window),2*gdk_screen_width()/3,2*gdk_screen_height()/3);
+	gtk_window_set_default_size (GTK_WINDOW(window),2*gdk_screen_width()/3,2*gdk_screen_height()/3);
 	
 	table=gtk_table_new(3, 1, FALSE);
 	gtk_container_add(GTK_CONTAINER(window), table);

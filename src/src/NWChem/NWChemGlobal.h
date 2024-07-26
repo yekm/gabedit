@@ -2,16 +2,16 @@
 #ifndef __GABEDIT_NWCHEMGLOBAL_H__
 #define __GABEDIT_NWCHEMGLOBAL_H__
 
-extern GtkWidget* nwchemWin;
-extern NWChemMolecule nwchemMolecule;
-extern NWChemColorFore nwchemColorFore;
-extern NWChemColorBack nwchemColorBack;
-extern NWChemBasis nwchemBasis;
-extern NWChemGuessWaveFunction nwchemGuessWaveFunction;
+GtkWidget* nwchemWin;
+NWChemMolecule nwchemMolecule;
+NWChemColorFore nwchemColorFore;
+NWChemColorBack nwchemColorBack;
+NWChemBasis nwchemBasis;
+NWChemGuessWaveFunction nwchemGuessWaveFunction;
 
-extern NWChemFunctional* functionalsNWC;
-extern NWChemStdFunctional* stdFunctionalsNWC;
-extern gdouble* sumFunctionalsNWC;
+NWChemFunctional* functionals;
+NWChemStdFunctional* stdFunctionals;
+gdouble* sumFunctionals;
 
 #endif /* __GABEDIT_NWCHEMGLOBAL_H__ */
 

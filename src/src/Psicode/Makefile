@@ -1,4 +1,4 @@
-OBJECTS = Psicode.o PsicodeMolecule.o PsicodeKeywords.o PsicodeGuess.o PsicodeBasis.o PsicodeGlobal.o
+OBJECTS = Psicode.o PsicodeMolecule.o PsicodeKeywords.o PsicodeGuess.o PsicodeBasis.o
 
 include ../../CONFIG
 CFLAGS =  $(COMMONCFLAGS) $(GTKCFLAGS)

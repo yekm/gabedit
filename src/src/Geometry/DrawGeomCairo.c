@@ -1,6 +1,6 @@
 /* DrawGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -66,45 +66,6 @@ DEALINGS IN THE SOFTWARE.
 #include "../IsotopeDistribution/IsotopeDistributionCalculatorDlg.h"
 #include "../Geometry/TreeMolecule.h"
 #include "../Geometry/BuildCrystal.h"
-
-/* extern of .h */
-FragmentsItems *FragItems;
-gint NFrags;
-
-CoordMaxMin coordmaxmin;
-
-GeomDef *geometry;
-GeomDef *geometry0;
-guint Natoms;
-
-gint *NumFatoms;
-guint NFatoms;
-
-gint TransX;
-gint TransY;
-GtkWidget *GeomDlg;
-GtkWidget *StopButton;
-gboolean StopCalcul;
-
-gboolean ShadMode;
-gboolean PersMode;
-gboolean LightMode;
-gboolean OrtepMode;
-gboolean DrawDistance;
-gboolean DrawDipole;
-gboolean ShowDipole;
-gboolean ShowHBonds;
-
-gdouble dipole[NDIVDIPOLE][3];
-gdouble dipole0[NDIVDIPOLE][3];
-gdouble dipole00[NDIVDIPOLE][3];
-gint DXi[NDIVDIPOLE];
-gint DYi[NDIVDIPOLE];
-gint Ndipole[NDIVDIPOLE];
-gchar* AtomToInsert;
-gint NumSelAtoms[4];
-gboolean Ddef;
-
 
 
 /********************************************************************************/
@@ -11480,7 +11441,7 @@ void create_window_drawing()
 	else
 		gtk_widget_show(vboxhandle);
 
-	//gtk_window_set_default_size (GTK_WINDOW(GeomDlg), (gint)(ScreenHeight*0.85), (gint)(ScreenHeight*0.85));
+	gtk_window_set_default_size (GTK_WINDOW(GeomDlg), (gint)(ScreenHeight*0.85), (gint)(ScreenHeight*0.85));
 
 
 	g_object_set_data(G_OBJECT(GeomDlg), "StatusBox",handlebox);
@@ -11628,7 +11589,7 @@ void setSymbolOfselectedAtomsDlg()
 	GtkWidget* winDlg = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_modal(GTK_WINDOW(winDlg),TRUE);
 	gtk_window_set_title(GTK_WINDOW(winDlg),_("Select your atom"));
-	//gtk_window_set_default_size (GTK_WINDOW(winDlg),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
+	gtk_window_set_default_size (GTK_WINDOW(winDlg),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
 
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);

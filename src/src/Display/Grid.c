@@ -1,6 +1,6 @@
 /* Grid.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -36,13 +36,6 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/GTF.h"
 #include "../Utils/QL.h"
 
-/* the extern variable of Grid.h */
-GridLimits limits;
-gint NumPoints[3];
-gdouble firstDirection[3];
-gdouble secondDirection[3];
-gdouble thirdDirection[3];
-gdouble originOfCube[3];
 /************************************************************************/
 static gdouble get_value_elf_becke(gdouble x,gdouble y,gdouble z,gint dump);
 static gdouble get_value_elf_savin(gdouble x,gdouble y,gdouble z,gint dump);

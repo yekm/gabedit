@@ -1,6 +1,6 @@
 /* BuildPolyPeptide.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -47,7 +47,7 @@ void create_GeomXYZ_from_draw_grometry();
 #define LigneT 7
 #define ColonneT 4
 
-static GtkWidget* Entries[3];
+static GtkWidget* Entrys[3];
 static GtkWidget* ButtonL = NULL;
 static GtkWidget* ButtonD = NULL;
 static int nbuffer = 0;
@@ -330,15 +330,15 @@ static void re_set_angles(gboolean forward)
 	if(ibuffer>nbuffer-1) ibuffer = 0;
 	if(ibuffer<0) ibuffer = nbuffer-1;
 	t = g_strdup_printf("%0.1f ",phiBuffer[ibuffer]);
-	gtk_entry_set_text(GTK_ENTRY(Entries[0]),t);
+	gtk_entry_set_text(GTK_ENTRY(Entrys[0]),t);
 	g_free(t);
 
 	t = g_strdup_printf("%0.1f ",psiBuffer[ibuffer]);
-	gtk_entry_set_text(GTK_ENTRY(Entries[1]),t);
+	gtk_entry_set_text(GTK_ENTRY(Entrys[1]),t);
 	g_free(t);
 
 	t = g_strdup_printf("%0.1f ",omegaBuffer[ibuffer]);
-	gtk_entry_set_text(GTK_ENTRY(Entries[2]),t);
+	gtk_entry_set_text(GTK_ENTRY(Entrys[2]),t);
 	g_free(t);
 		
 }
@@ -365,11 +365,11 @@ static void add_fragment(gchar* what)
 
 	if(Frag.NAtoms<1) return;
 
-	t = gtk_entry_get_text(GTK_ENTRY(Entries[0]));
+	t = gtk_entry_get_text(GTK_ENTRY(Entrys[0]));
 	phi = atof(t);
-	t = gtk_entry_get_text(GTK_ENTRY(Entries[1]));
+	t = gtk_entry_get_text(GTK_ENTRY(Entrys[1]));
 	psi = atof(t);
-	t = gtk_entry_get_text(GTK_ENTRY(Entries[2]));
+	t = gtk_entry_get_text(GTK_ENTRY(Entrys[2]));
 	omega = atof(t);
 
 	if(Nb>0) G = g_realloc(G,(Nb+Frag.NAtoms+1)*sizeof(GeomDef));
@@ -569,9 +569,9 @@ static void delete_last_fragment()
 		}
 
 		re_set_angles(FALSE);
-		t = gtk_entry_get_text(GTK_ENTRY(Entries[1]));
+		t = gtk_entry_get_text(GTK_ENTRY(Entrys[1]));
 		lastPsi = atof(t);
-		t = gtk_entry_get_text(GTK_ENTRY(Entries[2]));
+		t = gtk_entry_get_text(GTK_ENTRY(Entrys[2]));
 		lastOmega = atof(t);
 	}
 }
@@ -794,99 +794,99 @@ static void traite_conformation(GtkComboBox *combobox, gpointer d)
 	if(!strcmp(option,"Other"))
 		for(i=0;i<3;i++)
 		{
-  			gtk_editable_set_editable((GtkEditable*) Entries[i],TRUE);
+  			gtk_editable_set_editable((GtkEditable*) Entrys[i],TRUE);
 		}
 	else
 		for(i=0;i<3;i++)
 		{
-  			gtk_editable_set_editable((GtkEditable*) Entries[i],FALSE);
+  			gtk_editable_set_editable((GtkEditable*) Entrys[i],FALSE);
 		}
 
 	if ( !strcmp(option, "3-10 Helix" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"-49.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"-26.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"-49.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"-26.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 		nbuffer = 0;
 		return ;
 	}	
 	else if ( !strcmp(option, "Alpha Helix" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"-57.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"-47.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"-57.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"-47.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 		nbuffer = 0;
 		return ;
 	}
 	else if ( !strcmp(option, "Alpha Helix (LH)" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"57.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"47.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"57.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"47.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 		nbuffer = 0;
 		return ;
 	}
 	else if ( !strcmp(option, "Beta Sheet (anti-prl)" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"-139.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"135.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"-178.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"-139.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"135.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"-178.0");
 		nbuffer = 0;
 		return ;
 	}	
 	else if ( !strcmp(option, "Beta Sheet (parallel)" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"-119.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"113.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"-178.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"-119.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"113.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"-178.0");
 		nbuffer = 0;
 		return ;
 	}	
 	else if ( !strcmp(option, "Omega Helix" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"64.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"55.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"64.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"55.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 		nbuffer = 0;
 		return ;
 	}
 	else if ( !strcmp(option, "Pi Helix" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"-57.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"-70.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"-57.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"-70.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 		nbuffer = 0;
 		return ;
 	}
 	else if ( !strcmp(option, "Polyglycine II" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"80.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"-150.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"80.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"-150.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 		nbuffer = 0;
 		return ;
 	}
 	else if ( !strcmp(option, "Polyglycine II (LH)" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"-80.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"150.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"-80.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"150.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 		nbuffer = 0;
 		return ;
 	}
 	else if ( !strcmp(option, "Polyproline I" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"-83.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"158.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"0.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"-83.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"158.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"0.0");
 		nbuffer = 0;
 		return ;
 	}
 	else if ( !strcmp(option, "Polyproline II" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"-80.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"150.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"-80.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"150.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 		nbuffer = 0;
 		return ;
 	}
@@ -897,17 +897,17 @@ static void traite_conformation(GtkComboBox *combobox, gpointer d)
 	}
 	else if ( !strcmp(option, "Extended" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"180.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"180.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 		nbuffer = 0;
 		return ;
 	}	
 	else if ( !strcmp(option, "Gamma Turn" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"180.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"180.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 
 		nbuffer = 3;
 
@@ -926,9 +926,9 @@ static void traite_conformation(GtkComboBox *combobox, gpointer d)
 	}	
 	else if ( !strcmp(option, "Gamma Turn (rev)" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"-57.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"-47.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"-57.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"-47.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 
 		nbuffer = 3;
 
@@ -948,9 +948,9 @@ static void traite_conformation(GtkComboBox *combobox, gpointer d)
 	}	
 	else if ( !strcmp(option, "Beta 1 Turn" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"-57.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"-47.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"-57.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"-47.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 
 		nbuffer = 4;
 
@@ -973,9 +973,9 @@ static void traite_conformation(GtkComboBox *combobox, gpointer d)
 	}	
 	else if ( !strcmp(option, "Beta 2 Turn" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"-57.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"-47.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"-57.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"-47.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 
 		nbuffer = 4;
 
@@ -998,9 +998,9 @@ static void traite_conformation(GtkComboBox *combobox, gpointer d)
 	}	
 	else if ( !strcmp(option, "Beta 3 Turn" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"-57.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"-47.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"-57.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"-47.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 
 		nbuffer = 4;
 
@@ -1023,9 +1023,9 @@ static void traite_conformation(GtkComboBox *combobox, gpointer d)
 	}	
 	else if ( !strcmp(option, "Beta 5 Turn" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"-57.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"-47.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"-57.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"-47.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 
 		nbuffer = 4;
 
@@ -1048,9 +1048,9 @@ static void traite_conformation(GtkComboBox *combobox, gpointer d)
 	}	
 	else if ( !strcmp(option, "Beta 6a Turn" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"-57.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"-47.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"-57.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"-47.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 
 		nbuffer = 4;
 
@@ -1073,9 +1073,9 @@ static void traite_conformation(GtkComboBox *combobox, gpointer d)
 	}	
 	else if ( !strcmp(option, "Beta 6b Turn" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"-57.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"-47.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"-57.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"-47.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 
 		nbuffer = 4;
 
@@ -1098,9 +1098,9 @@ static void traite_conformation(GtkComboBox *combobox, gpointer d)
 	}	
 	else if ( !strcmp(option, "Beta 8 Turn" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"-57.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"-47.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"-57.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"-47.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 
 		nbuffer = 4;
 
@@ -1123,9 +1123,9 @@ static void traite_conformation(GtkComboBox *combobox, gpointer d)
 	}	
 	else if ( !strcmp(option, "Beta 1' Turn" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"-57.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"-47.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"-57.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"-47.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 
 		nbuffer = 4;
 
@@ -1148,9 +1148,9 @@ static void traite_conformation(GtkComboBox *combobox, gpointer d)
 	}	
 	else if ( !strcmp(option, "Beta 2' Turn" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"-57.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"-47.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"-57.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"-47.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 
 		nbuffer = 4;
 
@@ -1173,9 +1173,9 @@ static void traite_conformation(GtkComboBox *combobox, gpointer d)
 	}	
 	else if ( !strcmp(option, "Beta 3' Turn" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"-57.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"-47.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"-57.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"-47.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 
 		nbuffer = 4;
 
@@ -1198,9 +1198,9 @@ static void traite_conformation(GtkComboBox *combobox, gpointer d)
 	}	
 	else if ( !strcmp(option, "Beta 5' Turn" ))
 	{
-		gtk_entry_set_text(GTK_ENTRY(Entries[0]),"-57.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[1]),"-47.0");
-		gtk_entry_set_text(GTK_ENTRY(Entries[2]),"180.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"-57.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"-47.0");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"180.0");
 
 		nbuffer = 4;
 
@@ -1328,13 +1328,13 @@ static GtkWidget* add_options(GtkWidget* Dlg,GtkWidget *box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  1,1);
-		Entries[i] = gtk_entry_new();
-		gtk_table_attach(GTK_TABLE(Table),Entries[i],1,3,i+1,i+2,
+		Entrys[i] = gtk_entry_new();
+		gtk_table_attach(GTK_TABLE(Table),Entrys[i],1,3,i+1,i+2,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  1,1);
-  		gtk_editable_set_editable((GtkEditable*) Entries[i],FALSE);
-  		gtk_entry_set_text(GTK_ENTRY(Entries[i]),elabel[i]);
+  		gtk_editable_set_editable((GtkEditable*) Entrys[i],FALSE);
+  		gtk_entry_set_text(GTK_ENTRY(Entrys[i]),elabel[i]);
 	}
 	Label = gtk_label_new("Isomer");
 	gtk_table_attach(GTK_TABLE(Table),Label,0,1,4,5,

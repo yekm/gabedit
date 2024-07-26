@@ -1,6 +1,6 @@
 /* SemiEmpirical.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -105,7 +105,7 @@ static gboolean getGradientMopacOut(gchar* fileNameOut, SemiEmpiricalModel *seMo
 		if(strstr(buffer, "FINAL  POINT  AND  DERIVATIVES"))break;
 		if(strstr(buffer, "FINAL") && strstr(buffer, "POINT") && strstr(buffer,"AND") && strstr(buffer,"DERIVATIVES"))break;
 	}
-	if(!strstr(buffer,"FINAL")) rewind(file);// Old Mopac, beforee 2018
+	if(!strstr(buffer,"FINAL")) rewind(file);// Old Mopac, before 2018
 	 while(!feof(file))
 	 {
 		if(!fgets(buffer,BSIZE,file))break;
@@ -330,7 +330,7 @@ static void calculateGradientMopac(SemiEmpiricalModel* seModel)
 		if(!getGradientMopac(fileOut, seModel))
 		{
 			StopCalcul=TRUE;
-			set_text_to_draw(_("Problem : I cannot calculate the Gradient... "));
+			set_text_to_draw(_("Problem : I cannot caculate the Gradient... "));
 			set_statubar_operation_str(_("Calculation Stopped "));
 			drawGeom();
 			gtk_widget_set_sensitive(StopButton, FALSE);
@@ -613,7 +613,7 @@ static void calculateGradientFireFly(SemiEmpiricalModel* seModel)
 			gchar* comm = g_strdup_printf("cat %s",fileOut);
 #endif
 			StopCalcul=TRUE;
-			set_text_to_draw(_("Problem : I cannot calculate the Gradient... "));
+			set_text_to_draw(_("Problem : I cannot caculate the Gradient... "));
 			set_statubar_operation_str(_("Calculation Stopped "));
 			drawGeom();
 			gtk_widget_set_sensitive(StopButton, FALSE);
@@ -1072,7 +1072,7 @@ static void calculateGradientGeneric(SemiEmpiricalModel* seModel)
 #else
 			char* comm = g_strdup_printf("cat %s",fileOut);
 #endif
-			printf(("Problem : I cannot calculate the Gradient... "));
+			printf(("Problem : I cannot caculate the Gradient... "));
 			printf(("Calculation Stopped "));
 			system(comm);
 			free(fileOut);

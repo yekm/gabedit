@@ -1,6 +1,6 @@
 /* SetPDBTemplate.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -46,7 +46,7 @@ typedef enum
 
 } SetEntryType;
 
-static GtkWidget* Entries[NENTRYS];
+static GtkWidget* Entrys[NENTRYS];
 
 static gdouble labelWidth = 0.10;
 static gdouble entryWidth = 0.15;
@@ -221,7 +221,7 @@ static void newResidue(GtkWidget* w)
 	if(residueNumber<0)
 		return;
 
-	residueName = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entries[E_RESIDUE])));
+	residueName = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entrys[E_RESIDUE])));
 	delete_all_spaces(residueName);
 	numberOfResidues = pdbTemplate->numberOfResidues;
 	residueTemplates = pdbTemplate->residueTemplates;
@@ -254,8 +254,8 @@ static void editType(GtkWidget* w)
 	gint residueNumber;
 	gint typeNumber;
 	PDBTypeTemplate* typeTemplates; 
-	G_CONST_RETURN gchar *mmType = gtk_entry_get_text(GTK_ENTRY(Entries[E_MMTYPE]));
-	G_CONST_RETURN gchar *charge = gtk_entry_get_text(GTK_ENTRY(Entries[E_CHARGE]));
+	G_CONST_RETURN gchar *mmType = gtk_entry_get_text(GTK_ENTRY(Entrys[E_MMTYPE]));
+	G_CONST_RETURN gchar *charge = gtk_entry_get_text(GTK_ENTRY(Entrys[E_CHARGE]));
 	gboolean* expandeds;
 	GtkTreeIter node;
 	GtkTreeModel *model;
@@ -321,10 +321,10 @@ static void newType(GtkWidget* w)
 	gint typeNumber;
 	PDBTypeTemplate* typeTemplates; 
 	gint numberOfTypes;
-	G_CONST_RETURN gchar *pdbType0 = gtk_entry_get_text(GTK_ENTRY(Entries[E_PDBTYPE]));
+	G_CONST_RETURN gchar *pdbType0 = gtk_entry_get_text(GTK_ENTRY(Entrys[E_PDBTYPE]));
 	gchar *pdbType = NULL;
-	G_CONST_RETURN gchar *mmType  = gtk_entry_get_text(GTK_ENTRY(Entries[E_MMTYPE]));
-	G_CONST_RETURN gchar *charge  = gtk_entry_get_text(GTK_ENTRY(Entries[E_CHARGE]));
+	G_CONST_RETURN gchar *mmType  = gtk_entry_get_text(GTK_ENTRY(Entrys[E_MMTYPE]));
+	G_CONST_RETURN gchar *charge  = gtk_entry_get_text(GTK_ENTRY(Entrys[E_CHARGE]));
 	gboolean* expandeds;
 	GtkTreeModel *model;
    	DataTplTree* data = NULL;
@@ -440,72 +440,72 @@ static void editnewDlg(GabeditSignalFunc f,gchar* title, gboolean newResidue)
 	vboxframe = create_vbox(frame);
 	hbox=create_hbox_false(vboxframe);
 
-	Entries[E_RESIDUE] = create_label_entry(hbox,_("Residue Name : "),
+	Entrys[E_RESIDUE] = create_label_entry(hbox,_("Residue Name : "),
 		  (gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
 	if(Nc>=0 && !newResidue)
-		gtk_entry_set_text(GTK_ENTRY(Entries[E_RESIDUE]),
+		gtk_entry_set_text(GTK_ENTRY(Entrys[E_RESIDUE]),
 				pdbTemplate->residueTemplates[residueNumber].residueName);
 	else
-		gtk_entry_set_text(GTK_ENTRY(Entries[E_RESIDUE]),"");
+		gtk_entry_set_text(GTK_ENTRY(Entrys[E_RESIDUE]),"");
 
 	if(newResidue)
-		gtk_editable_set_editable((GtkEditable*) Entries[E_RESIDUE],TRUE);
+		gtk_editable_set_editable((GtkEditable*) Entrys[E_RESIDUE],TRUE);
 	else
-		gtk_editable_set_editable((GtkEditable*) Entries[E_RESIDUE],FALSE);
+		gtk_editable_set_editable((GtkEditable*) Entrys[E_RESIDUE],FALSE);
 
 	if(!newResidue)
 	{
 		gint n = 0;
 
 		hbox=create_hbox_false(vboxframe);
-		Entries[E_PDBTYPE] = create_label_entry(hbox,_("PDB Type : "),
+		Entrys[E_PDBTYPE] = create_label_entry(hbox,_("PDB Type : "),
 				(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
 		if(Nc>=0 && typeNumber>=0)
-			gtk_entry_set_text(GTK_ENTRY(Entries[E_PDBTYPE]),
+			gtk_entry_set_text(GTK_ENTRY(Entrys[E_PDBTYPE]),
 				typeTemplates[typeNumber].pdbType);
 		else
-			gtk_entry_set_text(GTK_ENTRY(Entries[E_PDBTYPE]),"");
+			gtk_entry_set_text(GTK_ENTRY(Entrys[E_PDBTYPE]),"");
 
-		gtk_editable_set_editable((GtkEditable*) Entries[E_PDBTYPE],TRUE);
+		gtk_editable_set_editable((GtkEditable*) Entrys[E_PDBTYPE],TRUE);
 
 		tlist=getListMMTypes(&n);
 
 		hbox=create_hbox_false(vboxframe);
 		if(n!=0)
 		{
-			Entries[E_MMTYPE] = create_label_combo(hbox,_("MM Type :"),tlist,n,
+			Entrys[E_MMTYPE] = create_label_combo(hbox,_("MM Type :"),tlist,n,
 			TRUE,(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
 		}
 		else
-			Entries[E_MMTYPE] = create_label_entry(hbox,_("MM Type :"),
+			Entrys[E_MMTYPE] = create_label_entry(hbox,_("MM Type :"),
 			(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
 		if(Nc>=0 && typeNumber>=0)
-			gtk_entry_set_text(GTK_ENTRY(Entries[E_MMTYPE]),
+			gtk_entry_set_text(GTK_ENTRY(Entrys[E_MMTYPE]),
 				typeTemplates[typeNumber].mmType);
 		else
-			gtk_entry_set_text(GTK_ENTRY(Entries[E_MMTYPE]),"C");
+			gtk_entry_set_text(GTK_ENTRY(Entrys[E_MMTYPE]),"C");
 
 		if(n !=0)
-			gtk_editable_set_editable((GtkEditable*) Entries[E_MMTYPE],FALSE);
+			gtk_editable_set_editable((GtkEditable*) Entrys[E_MMTYPE],FALSE);
 		else
-			gtk_editable_set_editable((GtkEditable*) Entries[E_MMTYPE],TRUE);
+			gtk_editable_set_editable((GtkEditable*) Entrys[E_MMTYPE],TRUE);
 
   		for(i=0;i<n;i++)
 	  		g_free(tlist[i]);
 
 		hbox=create_hbox_false(vboxframe);
-		Entries[E_CHARGE] = create_label_entry(hbox,_("Charge : "),
+		Entrys[E_CHARGE] = create_label_entry(hbox,_("Charge : "),
 				(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
 		if(Nc>=0 && typeNumber>=0)
 		{
 			gchar* t = g_strdup_printf("%f",typeTemplates[typeNumber].charge);
-			gtk_entry_set_text(GTK_ENTRY(Entries[E_CHARGE]),t); 
+			gtk_entry_set_text(GTK_ENTRY(Entrys[E_CHARGE]),t); 
 			g_free(t);
 		}
 		else
-			gtk_entry_set_text(GTK_ENTRY(Entries[E_CHARGE]),"0.0");
+			gtk_entry_set_text(GTK_ENTRY(Entrys[E_CHARGE]),"0.0");
 
-		gtk_editable_set_editable((GtkEditable*) Entries[E_CHARGE],TRUE);
+		gtk_editable_set_editable((GtkEditable*) Entrys[E_CHARGE],TRUE);
 	}
 
 
@@ -672,22 +672,22 @@ static void Traitement(guint Operation)
 	{
 		case MENU_NEW_RESIDUE :
 			editnewDlg(newResidue,_("New Residue"),TRUE);
-			gtk_editable_set_editable((GtkEditable*) Entries[E_RESIDUE],TRUE);
+			gtk_editable_set_editable((GtkEditable*) Entrys[E_RESIDUE],TRUE);
 			break;
 		case MENU_DELETE_RESIDUE :
 			deleteResidueDlg(NULL,NULL);
 			break;
 		case MENU_EDIT_TYPE :
 			editnewDlg(editType,_("Edit Type"),FALSE);
-			gtk_editable_set_editable((GtkEditable*) Entries[E_RESIDUE],FALSE);
-			gtk_editable_set_editable((GtkEditable*) Entries[E_PDBTYPE],FALSE);
-			gtk_editable_set_editable((GtkEditable*) Entries[E_CHARGE],TRUE);
+			gtk_editable_set_editable((GtkEditable*) Entrys[E_RESIDUE],FALSE);
+			gtk_editable_set_editable((GtkEditable*) Entrys[E_PDBTYPE],FALSE);
+			gtk_editable_set_editable((GtkEditable*) Entrys[E_CHARGE],TRUE);
 			break;
 		case MENU_NEW_TYPE :
 			editnewDlg(newType,_("New Type"),FALSE);
-			gtk_editable_set_editable((GtkEditable*) Entries[E_RESIDUE],FALSE);
-			gtk_editable_set_editable((GtkEditable*) Entries[E_PDBTYPE],TRUE);
-			gtk_editable_set_editable((GtkEditable*) Entries[E_CHARGE],TRUE);
+			gtk_editable_set_editable((GtkEditable*) Entrys[E_RESIDUE],FALSE);
+			gtk_editable_set_editable((GtkEditable*) Entrys[E_PDBTYPE],TRUE);
+			gtk_editable_set_editable((GtkEditable*) Entrys[E_CHARGE],TRUE);
 			break;
 		case MENU_DELETE_TYPE :
 			deleteOneType(NULL,NULL);

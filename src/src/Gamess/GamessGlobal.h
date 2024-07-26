@@ -2,16 +2,15 @@
 #ifndef __GABEDIT_GAMESSGLOBAL_H__
 #define __GABEDIT_GAMESSGLOBAL_H__
 
-extern GtkWidget* gamessWin;
-extern GamessMolecule gamessMolecule;
-extern GamessColorFore gamessColorFore;
-extern GamessColorBack gamessColorBack;
-extern GamessBasis gamessBasis;
+GtkWidget* gamessWin;
+GamessMolecule gamessMolecule;
+GamessColorFore gamessColorFore;
+GamessColorBack gamessColorBack;
+GamessBasis gamessBasis;
 
-extern GamessFunctional* functionalsGamess;
-extern GamessStdFunctional* stdFunctionalsGamess;
-extern gdouble* sumFunctionalsGamess;
-
+GamessFunctional* functionals;
+GamessStdFunctional* stdFunctionals;
+gdouble* sumFunctionals;
 
 #endif /* __GABEDIT_GAMESSGLOBAL_H__ */
 

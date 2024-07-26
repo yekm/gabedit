@@ -1,6 +1,6 @@
 /* PlanesMapped.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -33,7 +33,7 @@ DEALINGS IN THE SOFTWARE.
 /********************************************************************************/
 static void apply_maps(GtkWidget *Win,gpointer data)
 {
-	GtkWidget** Entries =(GtkWidget**)g_object_get_data(G_OBJECT (Win), "Entries");
+	GtkWidget** Entrys =(GtkWidget**)g_object_get_data(G_OBJECT (Win), "Entrys");
 	gint type = *((gint*)g_object_get_data(G_OBJECT (Win), "Type"));
 	G_CONST_RETURN gchar* temp;
 	gint i0=0;
@@ -42,10 +42,10 @@ static void apply_maps(GtkWidget *Win,gpointer data)
 	gint pvalue = 0;
 	gdouble gap = 0;
 	
-        temp	= gtk_entry_get_text(GTK_ENTRY(Entries[0])); 
+        temp	= gtk_entry_get_text(GTK_ENTRY(Entrys[0])); 
 	pvalue = atoi(temp);
 
-        if(!get_a_float(Entries[1],&gap,_("Error : The projection value should be float."))) return;
+        if(!get_a_float(Entrys[1],&gap,_("Error : The projection value should be float."))) return;
 	numPlane = pvalue-1;
 	if(numPlane<0 || numPlane>grid->N[type]) numPlane = grid->N[type]/2;
 	switch(type)
@@ -66,7 +66,7 @@ static GtkWidget *create_maps_frame( GtkWidget *vboxall,gchar* title,gint type)
 	GtkWidget *combo;
 	GtkWidget *vboxframe;
 	GtkWidget *hseparator;
-	GtkWidget **Entries = (GtkWidget **)g_malloc(2*sizeof(GtkWidget *));
+	GtkWidget **Entrys = (GtkWidget **)g_malloc(2*sizeof(GtkWidget *));
 	gushort i;
 	GtkWidget *Table;
 	gchar** listvalues;
@@ -94,7 +94,7 @@ static GtkWidget *create_maps_frame( GtkWidget *vboxall,gchar* title,gint type)
 	add_label_at_table(Table,strLabelPlane,i,(gushort)0,GTK_JUSTIFY_LEFT);
 	add_label_at_table(Table," : ",i,(gushort)1,GTK_JUSTIFY_LEFT);
 	combo = create_combo_box_entry(listvalues,grid->N[type], FALSE,-1,-1);
-	Entries[0] = GTK_BIN(combo)->child;
+	Entrys[0] = GTK_BIN(combo)->child;
 	add_widget_table(Table,combo,(gushort)0,(gushort)2);
 
 	i=1;
@@ -107,16 +107,16 @@ static GtkWidget *create_maps_frame( GtkWidget *vboxall,gchar* title,gint type)
 	i = 2;
 	add_label_at_table(Table, _("Projection "),i,(gushort)0,GTK_JUSTIFY_LEFT);
 	add_label_at_table(Table," : ",i,(gushort)1,GTK_JUSTIFY_LEFT);
-	Entries[1] = gtk_entry_new ();
-	add_widget_table(Table,Entries[1],(gushort)i,(gushort)2);
+	Entrys[1] = gtk_entry_new ();
+	add_widget_table(Table,Entrys[1],(gushort)i,(gushort)2);
 	add_label_at_table(Table,_(" left if <0, right if >0. and nothing if 0 "),i,(gushort)3,GTK_JUSTIFY_LEFT);
 
-	g_object_set_data(G_OBJECT (frame), "Entries",Entries);
-	g_object_set_data(G_OBJECT (GTK_OBJECT(GTK_COMBO_BOX(combo))), "Entries",Entries);
+	g_object_set_data(G_OBJECT (frame), "Entrys",Entrys);
+	g_object_set_data(G_OBJECT (GTK_OBJECT(GTK_COMBO_BOX(combo))), "Entrys",Entrys);
 	g_object_set_data(G_OBJECT (GTK_OBJECT(GTK_COMBO_BOX(combo))), "Type",&itype);
-	g_object_set_data(G_OBJECT(Entries[0]), "ComboList",GTK_OBJECT(GTK_COMBO_BOX(combo)));
-	gtk_entry_set_text(GTK_ENTRY(Entries[0]),listvalues[grid->N[type]/2]);
-	gtk_entry_set_text(GTK_ENTRY(Entries[1]),"0.0");
+	g_object_set_data(G_OBJECT(Entrys[0]), "ComboList",GTK_OBJECT(GTK_COMBO_BOX(combo)));
+	gtk_entry_set_text(GTK_ENTRY(Entrys[0]),listvalues[grid->N[type]/2]);
+	gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"0.0");
 
 	g_free(strLabelPlane);
 	for(i=0;i<grid->N[type];i++)
@@ -140,7 +140,7 @@ void create_maps(gchar* title,gint type)
   GtkWidget *vboxall;
   GtkWidget *vboxwin;
   GtkWidget *button;
-  GtkWidget** Entries;
+  GtkWidget** Entrys;
   static gint itype;
 
 
@@ -164,8 +164,8 @@ void create_maps(gchar* title,gint type)
   vboxwin = vboxall;
 
   frame = create_maps_frame(vboxall,"Maps",type);
-  Entries = (GtkWidget**) g_object_get_data(G_OBJECT (frame), "Entries");
-  g_object_set_data(G_OBJECT (Win), "Entries",Entries);
+  Entrys = (GtkWidget**) g_object_get_data(G_OBJECT (frame), "Entrys");
+  g_object_set_data(G_OBJECT (Win), "Entrys",Entrys);
   g_object_set_data(G_OBJECT (Win), "Type",&itype);
 
 

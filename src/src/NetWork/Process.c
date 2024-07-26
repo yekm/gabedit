@@ -1,6 +1,6 @@
 /* Process.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -573,7 +573,7 @@ static void kill_process(GtkWidget *Win,gpointer data)
   	else
 		scom = g_strdup("kill -KILL");
 
-/* killing of children beforee */
+/* killing of children before */
 	if(GTK_TOGGLE_BUTTON (KillAllButton)->active)
 	{
   		NumChildren = get_all_children(atoi(selectedRow),&Numb);
@@ -1106,7 +1106,7 @@ static GtkWidget* create_list_result_command(GtkWidget* gtklist,gchar* strerr,gc
   gtk_widget_grab_default(button);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_win_user_process,GTK_OBJECT(Win));
   gtk_widget_show (button);
-  //gtk_window_set_default_size (GTK_WINDOW(Win), 4*ScreenWidth/5, 4*ScreenHeight/5);
+  gtk_window_set_default_size (GTK_WINDOW(Win), 4*ScreenWidth/5, 4*ScreenHeight/5);
   if(Frame[0])
   {
   	gtk_widget_set_size_request(GTK_WIDGET(Frame[0]),-1,3*ScreenHeight/5);

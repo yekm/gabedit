@@ -1,6 +1,6 @@
 /* Gabedit2MRTWOMRQFF.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -284,7 +284,7 @@ static GtkWidget* createResultWindow(gchar* title, TWOMRQFF* qffConstants)
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)save_result_dlg,G_OBJECT(resultWindow));
 	gtk_widget_show (button);
 
-	//gtk_window_set_default_size (GTK_WINDOW(resultWindow), 4*ScreenWidth/5, 4*ScreenHeight/5);
+	gtk_window_set_default_size (GTK_WINDOW(resultWindow), 4*ScreenWidth/5, 4*ScreenHeight/5);
   	g_object_set_data (G_OBJECT (resultWindow), "TextWidget", textWidget);
 	return resultWindow;
 }

@@ -1,6 +1,6 @@
 /* GInterfaceBasis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -31,14 +31,6 @@ DEALINGS IN THE SOFTWARE.
 
 #define NC 3
 #define NHboxBasis 3
-/* extern GInterfaceBasis.h */
-BasisType *BasisT;
-BasisCenter *BasisC;
-
-gint  NSymbTypes;
-gint  NSymbCenters;
-/**************************************************************************************************/
-
 static gchar selectedRowForCenter[100]="-1";
 static GtkWidget *listC;
 static gchar selectedRowForType[100]="-1";

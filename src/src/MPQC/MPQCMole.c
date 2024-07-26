@@ -1,6 +1,6 @@
 /* MPQCMole.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -409,7 +409,7 @@ static void setComboFunctional(GtkWidget *comboFunctional)
 	gint n = mPW1PW91+1;
 	gint i;
 	for(i=0;i<n;i++)
-  		glist = g_list_append(glist,stdFunctionalsMPQC[i].name);
+  		glist = g_list_append(glist,stdFunctionals[i].name);
   	glist = g_list_append(glist,_("Your functional"));
   	gtk_combo_box_entry_set_popdown_strings( comboFunctional, glist) ;
 }
@@ -451,29 +451,29 @@ void whatFunctional(GtkWidget *entry, gpointer data)
 	dump = g_malloc(BSIZE*sizeof(gchar));
 	message = g_malloc(BSIZE*sizeof(gchar));
 	for(i=0;i<n;i++)
-		if(strcmp(entryText,stdFunctionalsMPQC[i].name)==0)
+		if(strcmp(entryText,stdFunctionals[i].name)==0)
 		{
 			gint j;
 			OK = TRUE;
 			sprintf(message,"%s",_(" This is :\n"));
-			for(j=0;j<stdFunctionalsMPQC[i].n;j++)
+			for(j=0;j<stdFunctionals[i].n;j++)
 			{
-				MPQCFunctionalType type = stdFunctionalsMPQC[i].listOfTypes[j];
-				gdouble coef = stdFunctionalsMPQC[i].coefficients[j];
+				MPQCFunctionalType type = stdFunctionals[i].listOfTypes[j];
+				gdouble coef = stdFunctionals[i].coefficients[j];
 			 	sprintf(dump,"%s",message);
 				if(j==0)
 				{
 					if(coef==1)
-			 			sprintf(message,"%s       %s\n",dump, functionalsMPQC[type].comment);
+			 			sprintf(message,"%s       %s\n",dump, functionals[type].comment);
 					else
-			 			sprintf(message,"%s     %0.3f %s\n",dump, coef, functionalsMPQC[type].comment);
+			 			sprintf(message,"%s     %0.3f %s\n",dump, coef, functionals[type].comment);
 				}
 				else
 				{
 					if(coef==1)
-			 			sprintf(message,"%s +    %s\n",dump, functionalsMPQC[type].comment);
+			 			sprintf(message,"%s +    %s\n",dump, functionals[type].comment);
 					else
-			 			sprintf(message,"%s + %0.3f %s\n",dump, coef, functionalsMPQC[type].comment);
+			 			sprintf(message,"%s + %0.3f %s\n",dump, coef, functionals[type].comment);
 				}
 			}
 		}
@@ -698,28 +698,28 @@ static void putMPQCFunctionalInTextEditor()
 		sprintf(buffer,"\t\tcoefs = [ ");
 		for(i=0;i<n;i++)
 		{
-			if(i!=HFX && sumFunctionalsMPQC[i] != 0)
+			if(i!=HFX && sumFunctionals[i] != 0)
 			{
 				sprintf(dump,"%s",buffer);
-				sprintf(buffer,"%s %0.3f ", dump, sumFunctionalsMPQC[i]);
+				sprintf(buffer,"%s %0.3f ", dump, sumFunctionals[i]);
 			}
 		}
 		sprintf(dump,"%s",buffer);
 		sprintf(buffer,"%s ] \n", dump);
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer, -1);
 
-		if(sumFunctionalsMPQC[HFX] != 0)
+		if(sumFunctionals[HFX] != 0)
 		{
-			sprintf(buffer,"\t\ta0 = %0.3f\n", sumFunctionalsMPQC[HFX]);
+			sprintf(buffer,"\t\ta0 = %0.3f\n", sumFunctionals[HFX]);
         		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer, -1);
 		}
 		sprintf(buffer,"\t\tfuncs : [ \n");
 		for(i=0;i<n;i++)
 		{
-			if(i!=HFX && sumFunctionalsMPQC[i] != 0)
+			if(i!=HFX && sumFunctionals[i] != 0)
 			{
 				sprintf(dump,"%s",buffer);
-				sprintf(buffer,"%s\t\t<%s>:()\n", dump, functionalsMPQC[i].name);
+				sprintf(buffer,"%s\t\t<%s>:()\n", dump, functionals[i].name);
 			}
 		}
 		sprintf(dump,"%s",buffer);

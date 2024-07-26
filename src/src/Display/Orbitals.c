@@ -1,6 +1,6 @@
 /* Orbitals.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -838,7 +838,7 @@ GtkWidget* create_alpha_beta_lists(GtkWidget *noteBook, gint Type)
 	gtk_box_pack_start (GTK_BOX (vbox), hbox, TRUE, TRUE, 0);
 
   	scr=gtk_scrolled_window_new(NULL,NULL);
-	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeightD*WIDTHSCR));
+	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeight*WIDTHSCR));
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scr),GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   	gtk_box_pack_start(GTK_BOX (hbox), scr,TRUE, TRUE, 2);
   	gtk_container_add(GTK_CONTAINER(scr),gtklist);
@@ -850,12 +850,12 @@ GtkWidget* create_alpha_beta_lists(GtkWidget *noteBook, gint Type)
 
 	textWidget = create_gtk_list_coef_orbitals(&widall);
   	scr=gtk_scrolled_window_new(NULL,NULL);
-	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeightD*WIDTHSCR));
+	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeight*WIDTHSCR));
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scr),GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   	gtk_box_pack_start(GTK_BOX (vbox), scr,TRUE, TRUE, 2);
   	gtk_container_add(GTK_CONTAINER(scr),textWidget);
 	g_object_set_data(G_OBJECT (gtklist), "CoefOrbWidget",textWidget);
-	gtk_widget_set_size_request(textWidget,widall,(gint)(ScreenHeightD*WIDTHSCR));
+	gtk_widget_set_size_request(textWidget,widall,(gint)(ScreenHeight*WIDTHSCR));
 
 	gtk_widget_show (hseparator);
 	gtk_box_pack_start (GTK_BOX (vbox), hseparator, FALSE, FALSE, 1);
@@ -1125,7 +1125,7 @@ void create_list_orbitals()
 
   if(NAOrb<1)
   {
-	  Message(_("Sorry, Please load a file beforee\n"),_("Error"),TRUE);
+	  Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
 	  return;
   }
 
@@ -1136,7 +1136,7 @@ void create_list_orbitals()
   gtk_window_set_title(GTK_WINDOW(Win),_("Orbitals"));
   gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
   gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
-  //gtk_window_set_default_size (GTK_WINDOW(Win),-1,(gint)(ScreenHeightD*0.69));
+  gtk_window_set_default_size (GTK_WINDOW(Win),-1,(gint)(ScreenHeight*0.69));
   gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(PrincipalWindow));
   /* gtk_window_set_modal (GTK_WINDOW (Win), TRUE);*/
 

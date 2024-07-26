@@ -1,6 +1,6 @@
 /* SemiEmpiricalDlg.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -5446,7 +5446,7 @@ static void createInfoConfoFrame(GtkWidget *box)
 	"\nAt the end of the molecular dynamic simulation,"
 	"\nthe geometries are sorted by energy and are saved in a file."
 	"\nGabedit can also optimize these geometries, interactively."
-	"\nThe very similar molecular structures can be removed."
+	"\nThe very similar molecular strcutures can be removed."
 	"\nGabedit can also creates input files for mopac, FireFly or Gaussian for a post processing."
 	"\n\n"
 	"If \"MD Trajectory via Verlet velocity Algorithm\" is selected :\n"

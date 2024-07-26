@@ -1,12 +1,3 @@
-27 July 2021
-	normalisation of RDF : bug fixed
-
-27 May 2021
-	read Energy from the comment line of xyz file if multiple geometries
-
-26 August 2020
-	Compute Cremer-Pople parameters for pyranose saccharide
-
 29 July 2020
 	Compute the type of conformer for a saccharide : pyranose (1C4, 4C1, ....) & furanose (3E, 2T2, ....)
 	Gabedit can Compute the type of conformer for one molecule or for several ones (Animation/MD or Animation/Geom. Conv of Display window)

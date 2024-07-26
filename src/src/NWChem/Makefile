@@ -1,4 +1,4 @@
-OBJECTS = NWChem.o NWChemMolecule.o NWChemKeywords.o NWChemGuess.o NWChemBasis.o NWChemGlobal.o
+OBJECTS = NWChem.o NWChemMolecule.o NWChemKeywords.o NWChemGuess.o NWChemBasis.o
 
 include ../../CONFIG
 CFLAGS =  $(COMMONCFLAGS) $(GTKCFLAGS)

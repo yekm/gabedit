@@ -1,4 +1,4 @@
-OBJECTS = DeMon.o DeMonMolecule.o DeMonKeywords.o DeMonGuess.o DeMonBasis.o DeMonGlobal.o
+OBJECTS = DeMon.o DeMonMolecule.o DeMonKeywords.o DeMonGuess.o DeMonBasis.o
 
 include ../../CONFIG
 CFLAGS =  $(COMMONCFLAGS) $(GTKCFLAGS)

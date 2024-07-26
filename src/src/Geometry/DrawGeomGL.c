@@ -1,6 +1,6 @@
 /* DrawGeomGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -75,44 +75,6 @@ DEALINGS IN THE SOFTWARE.
 #include "../IsotopeDistribution/IsotopeDistributionCalculatorDlg.h"
 #include "../Geometry/TreeMolecule.h"
 #include "../Geometry/BuildCrystal.h"
-
-/* extern of DrawGeomGL.h */
-FragmentsItems *FragItems;
-gint NFrags;
-
-CoordMaxMin coordmaxmin;
-
-GeomDef *geometry;
-GeomDef *geometry0;
-guint Natoms;
-
-gint *NumFatoms;
-guint NFatoms;
-
-gint TransX;
-gint TransY;
-GtkWidget *GeomDlg;
-GtkWidget *StopButton;
-gboolean StopCalcul;
-
-gboolean ShadMode;
-gboolean PersMode;
-gboolean LightMode;
-gboolean OrtepMode;
-gboolean DrawDistance;
-gboolean DrawDipole;
-gboolean ShowDipole;
-gboolean ShowHBonds;
-
-gdouble dipole[NDIVDIPOLE][3];
-gdouble dipole0[NDIVDIPOLE][3];
-gdouble dipole00[NDIVDIPOLE][3];
-gint DXi[NDIVDIPOLE];
-gint DYi[NDIVDIPOLE];
-gint Ndipole[NDIVDIPOLE];
-gchar* AtomToInsert;
-gint NumSelAtoms[4];
-gboolean Ddef;
 
 
 /********************************************************************************/
@@ -258,7 +220,7 @@ void getQuatGeom(gdouble q[])
 /********************************************************************************/
 static void destroy_setlight_window(GtkWidget* Win,gpointer data)
 {
-  GtkWidget**entrys =(GtkWidget**) g_object_get_data(G_OBJECT (Win), "Entries");
+  GtkWidget**entrys =(GtkWidget**) g_object_get_data(G_OBJECT (Win), "Entrys");
   gtk_widget_destroy(Win);
   if(entrys) g_free(entrys);
 }
@@ -337,7 +299,7 @@ static void set_light_position(gint num,gdouble v[])
 /********************************************************************************/
 static void apply_ligth_positions(GtkWidget *Win,gpointer data)
 {
-	GtkWidget** Entries =(GtkWidget**)g_object_get_data(G_OBJECT (Win), "Entries");
+	GtkWidget** Entrys =(GtkWidget**)g_object_get_data(G_OBJECT (Win), "Entrys");
 	G_CONST_RETURN gchar* temp;
 	gint i;
 	gint j;
@@ -347,7 +309,7 @@ static void apply_ligth_positions(GtkWidget *Win,gpointer data)
 	{
 		for(j=0;j<3;j++)
 		{
-        		temp	= gtk_entry_get_text(GTK_ENTRY(Entries[j*3+i])); 
+        		temp	= gtk_entry_get_text(GTK_ENTRY(Entrys[j*3+i])); 
 			v[j] = atof(temp);
 		}
 		set_light_position(i,v);
@@ -362,7 +324,7 @@ static GtkWidget *create_light_positions_frame( GtkWidget *vboxall,gchar* title)
 {
 	GtkWidget *frame;
 	GtkWidget *vboxframe;
-	GtkWidget **Entries = g_malloc(9*sizeof(GtkWidget*));
+	GtkWidget **Entrys = g_malloc(9*sizeof(GtkWidget*));
 	gushort i;
 	gushort j;
 	GtkWidget *Table;
@@ -392,9 +354,9 @@ static GtkWidget *create_light_positions_frame( GtkWidget *vboxall,gchar* title)
 		add_label_at_table(Table,strcolumns[i-1],0,(gushort)i,GTK_JUSTIFY_CENTER);
 		for(j=1;j<NLIGNES+1;j++)
 		{
-			Entries[(i-1)*NCOLUMNS+j-1] = gtk_entry_new ();
-			add_widget_table(Table,Entries[(i-1)*NCOLUMNS+j-1],(gushort)j,(gushort)i);
-			gtk_entry_set_text(GTK_ENTRY( Entries[(i-1)*NCOLUMNS+j-1]),temp[j-1][i-1]);
+			Entrys[(i-1)*NCOLUMNS+j-1] = gtk_entry_new ();
+			add_widget_table(Table,Entrys[(i-1)*NCOLUMNS+j-1],(gushort)j,(gushort)i);
+			gtk_entry_set_text(GTK_ENTRY( Entrys[(i-1)*NCOLUMNS+j-1]),temp[j-1][i-1]);
 		}
 	}
 
@@ -405,16 +367,16 @@ static GtkWidget *create_light_positions_frame( GtkWidget *vboxall,gchar* title)
 		g_free(temp[i]);
 	}
 	gtk_widget_show_all(frame);
-	g_object_set_data(G_OBJECT (frame), "Entries",Entries);
+	g_object_set_data(G_OBJECT (frame), "Entrys",Entrys);
 
 	i = 0;
-	g_object_set_data(G_OBJECT (Entries[i]), "Entries",Entries);
+	g_object_set_data(G_OBJECT (Entrys[i]), "Entrys",Entrys);
 	i = 2;
-	g_object_set_data(G_OBJECT (Entries[i]), "Entries",Entries);
+	g_object_set_data(G_OBJECT (Entrys[i]), "Entrys",Entrys);
 	i = 3;
-	g_object_set_data(G_OBJECT (Entries[i]), "Entries",Entries);
+	g_object_set_data(G_OBJECT (Entrys[i]), "Entrys",Entrys);
 	i = 6;
-	g_object_set_data(G_OBJECT (Entries[i]), "Entries",Entries);
+	g_object_set_data(G_OBJECT (Entrys[i]), "Entrys",Entrys);
   
   	return frame;
 }
@@ -744,7 +706,7 @@ void set_light_positions_drawgeom(gchar* title)
   GtkWidget *vboxall;
   GtkWidget *vboxwin;
   GtkWidget *button;
-  GtkWidget** Entries;
+  GtkWidget** Entrys;
 
   /* Principal Window */
   Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -756,9 +718,9 @@ void set_light_positions_drawgeom(gchar* title)
 
   vboxall = create_vbox(Win);
   vboxwin = vboxall;
-  frame = create_light_positions_frame(vboxall,_("Light positions"));
-  Entries = (GtkWidget**) g_object_get_data(G_OBJECT (frame), "Entries");
-  g_object_set_data(G_OBJECT (Win), "Entries",Entries);
+  frame = create_light_positions_frame(vboxall,_("Ligth positions"));
+  Entrys = (GtkWidget**) g_object_get_data(G_OBJECT (frame), "Entrys");
+  g_object_set_data(G_OBJECT (Win), "Entrys",Entrys);
    
 
   /* buttons box */
@@ -4010,7 +3972,7 @@ void setSymbolOfselectedAtomsDlg()
 	GtkWidget* winDlg = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_modal(GTK_WINDOW(winDlg),TRUE);
 	gtk_window_set_title(GTK_WINDOW(winDlg),_("Select your atom"));
-	//gtk_window_set_default_size (GTK_WINDOW(winDlg),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
+	gtk_window_set_default_size (GTK_WINDOW(winDlg),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
 
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
@@ -11568,7 +11530,7 @@ static GtkWidget* NewGeomDrawingArea(GtkWidget* vboxwin, GtkWidget* GeomDlg)
 	gtk_drawing_area_size(GTK_DRAWING_AREA(GeomDrawingArea),(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.2));
 	gtk_table_attach(GTK_TABLE(table),GeomDrawingArea,1,2,0,1, (GtkAttachOptions)(GTK_FILL | GTK_EXPAND  ), (GtkAttachOptions)(GTK_FILL | GTK_EXPAND ), 0,0);
 	gtk_widget_show(GTK_WIDGET(GeomDrawingArea));
-	/* Events for widget must be set beforee X Window is created */
+	/* Events for widget must be set before X Window is created */
 	gtk_widget_set_events(GeomDrawingArea,
 			GDK_EXPOSURE_MASK|
 			GDK_BUTTON_PRESS_MASK|
@@ -11832,7 +11794,7 @@ void create_window_drawing()
 	else
 		gtk_widget_show(vboxhandle);
 
-	//gtk_window_set_default_size (GTK_WINDOW(GeomDlg), (gint)(ScreenHeight*0.85), (gint)(ScreenHeight*0.85));
+	gtk_window_set_default_size (GTK_WINDOW(GeomDlg), (gint)(ScreenHeight*0.85), (gint)(ScreenHeight*0.85));
 
 
 	g_object_set_data(G_OBJECT(GeomDlg), "StatusBox",handlebox);

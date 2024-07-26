@@ -1,4 +1,4 @@
-OBJECTS = FireFly.o FireFlyMolecule.o FireFlyControl.o FireFlyBasis.o FireFlyGuess.o FireFlySCF.o FireFlyGlobal.o
+OBJECTS = FireFly.o FireFlyMolecule.o FireFlyControl.o FireFlyBasis.o FireFlyGuess.o FireFlySCF.o
 
 include ../../CONFIG
 CFLAGS =  $(COMMONCFLAGS) $(GTKCFLAGS)

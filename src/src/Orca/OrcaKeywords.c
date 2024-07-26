@@ -1,6 +1,6 @@
 /* OrcaKeywords.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -68,8 +68,8 @@ static gchar selectedSCF[BSIZE]="DEF";
 static gchar* listTypeMethodsView[] = 
 { 
 	"Hartree-Fock", 
-	"Local and gradient corrected functionalsOrca", 
-	"Hybrid functionalsOrca",
+	"Local and gradient corrected functionals", 
+	"Hybrid functionals",
 	"Meta-GGA and hybrid meta-GGA's",
 	"Perturbatively corrected double hybrid functional",
 	"Second Order Many Body Perturbation Theory",

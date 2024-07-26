@@ -1,6 +1,6 @@
 /* Run.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -439,7 +439,7 @@ GtkWidget* create_text_result_command(GtkWidget* Text[],GtkWidget* Frame[],gchar
   gtk_widget_grab_default(button);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,G_OBJECT(Win));
   gtk_widget_show (button);
-  //gtk_window_set_default_size (GTK_WINDOW(Win), 3*ScreenWidth/5, 3*ScreenHeight/5);
+  gtk_window_set_default_size (GTK_WINDOW(Win), 3*ScreenWidth/5, 3*ScreenHeight/5);
   gtk_widget_set_size_request(GTK_WIDGET(Text[0]),-1,1*ScreenHeight/5);
   return Win;
 }

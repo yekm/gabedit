@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -111,44 +111,17 @@ typedef struct _FragmentsItems
   gint Num;
 }FragmentsItems;
 
-extern FragmentsItems *FragItems;
-extern gint NFrags;
+FragmentsItems *FragItems;
+gint NFrags;
 
-extern CoordMaxMin coordmaxmin;
+CoordMaxMin coordmaxmin;
 
-extern GeomDef *geometry;
-extern GeomDef *geometry0;
-extern guint Natoms;
+GeomDef *geometry;
+GeomDef *geometry0;
+guint Natoms;
 
-extern gint *NumFatoms;
-extern guint NFatoms;
-
-extern gint TransX;
-extern gint TransY;
-extern GtkWidget *GeomDlg;
-extern GtkWidget *StopButton;
-extern gboolean StopCalcul;
-
-extern gboolean ShadMode;
-extern gboolean PersMode;
-extern gboolean LightMode;
-extern gboolean OrtepMode;
-extern gboolean DrawDistance;
-extern gboolean DrawDipole;
-extern gboolean ShowDipole;
-extern gboolean ShowHBonds;
-
-#define NDIVDIPOLE 20
-extern gdouble dipole[NDIVDIPOLE][3];
-extern gdouble dipole0[NDIVDIPOLE][3];
-extern gdouble dipole00[NDIVDIPOLE][3];
-extern gint DXi[NDIVDIPOLE];
-extern gint DYi[NDIVDIPOLE];
-extern gint Ndipole[NDIVDIPOLE];
-extern gchar* AtomToInsert;
-extern gint NumSelAtoms[4];
-extern gboolean Ddef;
-
+gint *NumFatoms;
+guint NFatoms;
 
 void createIstopeDistributionCalculationFromDrawGeom();
 void add_geometry_to_fifo();
@@ -158,6 +131,31 @@ gdouble get_factorball();
 gdouble get_factordipole();
 gdouble get_factor();
 
+gint TransX;
+gint TransY;
+GtkWidget *GeomDlg;
+GtkWidget *StopButton;
+gboolean StopCalcul;
+
+gboolean ShadMode;
+gboolean PersMode;
+gboolean LightMode;
+gboolean OrtepMode;
+gboolean DrawDistance;
+gboolean DrawDipole;
+gboolean ShowDipole;
+gboolean ShowHBonds;
+
+#define NDIVDIPOLE 20
+gdouble dipole[NDIVDIPOLE][3];
+gdouble dipole0[NDIVDIPOLE][3];
+gdouble dipole00[NDIVDIPOLE][3];
+gint DXi[NDIVDIPOLE];
+gint DYi[NDIVDIPOLE];
+gint Ndipole[NDIVDIPOLE];
+gchar* AtomToInsert;
+gint NumSelAtoms[4];
+gboolean Ddef;
 
 void  copy_screen_geom_clipboard();
 void  reset_origine_molecule_drawgeom();

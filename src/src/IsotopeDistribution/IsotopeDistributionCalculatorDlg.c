@@ -1,6 +1,6 @@
 /* IsotopeDistributionCalculatorDlg.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -485,7 +485,7 @@ static void calculate_spectrum(GtkWidget* calculateButton, gpointer data)
 /********************************************************************/
 static void delete_distribution_dlg(GtkWidget* winDlg, gpointer data)
 {
-	GtkWidget** entrys =  g_object_get_data(G_OBJECT (winDlg), "Entries");
+	GtkWidget** entrys =  g_object_get_data(G_OBJECT (winDlg), "Entrys");
 	if(entrys) g_free(entrys);
 	gtk_widget_destroy(winDlg);
 }
@@ -773,12 +773,12 @@ void compute_distribution_dlg(GtkWidget* winParent, gchar* formula)
 		  1,1);
         gtk_widget_show (xyplot);
         g_object_set_data (G_OBJECT (winDlg), "XYPLOT",xyplot);
-	//gtk_window_set_default_size (GTK_WINDOW(winDlg),4*gdk_screen_width()/5,4*gdk_screen_height()/5);
+	gtk_window_set_default_size (GTK_WINDOW(winDlg),4*gdk_screen_width()/5,4*gdk_screen_height()/5);
 
 	gtk_widget_show_all(winDlg);
 	gabedit_xyplot_enable_grids (GABEDIT_XYPLOT(xyplot), GABEDIT_XYPLOT_HMAJOR_GRID, FALSE);
 	gabedit_xyplot_enable_grids (GABEDIT_XYPLOT(xyplot), GABEDIT_XYPLOT_VMAJOR_GRID, FALSE);
 	gabedit_xyplot_show_top_legends (GABEDIT_XYPLOT(xyplot),FALSE);
 	gabedit_xyplot_show_right_legends (GABEDIT_XYPLOT(xyplot),FALSE);
-  	g_object_set_data(G_OBJECT (winDlg), "Entries", entrys);
+  	g_object_set_data(G_OBJECT (winDlg), "Entrys", entrys);
 }

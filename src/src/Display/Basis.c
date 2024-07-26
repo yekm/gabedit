@@ -1,6 +1,6 @@
 /* Basis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -64,7 +64,7 @@ gint ReadCommandLines()
         return 1; 
    if( t[0] != '#' )
    {
-     Debug("\n\nERROR : the firsts lines is not a commands lines\n\n");
+     Debug("\n\nERROR : theyre firsts lines is not a commads lines\n\n");
      return 0;
    }
   }
@@ -1265,11 +1265,11 @@ gboolean readBasisFromGaussianFChk(gchar *fileName)
 		gint nM = 0;
 		/* printf("begin primitive nS = %d\n",nS);*/
 		if(shellTypes[nS]<-1) nM = 2*abs(shellTypes[nS])+1; /* Sperical D, F, G, ...*/
-		else if(shellTypes[nS]==-1) nM = 1; /* This a SP. Make S before */
+		else if(shellTypes[nS]==-1) nM = 1; /* This a SP. Make S befor */
 		else nM = (shellTypes[nS]+1)*(shellTypes[nS]+2)/2;
 
 		/* printf("nM = %d\n",nM);*/
-		if(shellTypes[nS]==-1) getlTable(0, nCoefs, coefs, l); /* This a SP. Make S before */
+		if(shellTypes[nS]==-1) getlTable(0, nCoefs, coefs, l); /* This a SP. Make S befor */
 		else getlTable(shellTypes[nS], nCoefs, coefs, l); 
 		/* printf("end getlTable\n");*/
 		for(m=0;m<nM;m++)

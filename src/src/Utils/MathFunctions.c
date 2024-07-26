@@ -652,7 +652,7 @@ void modifiedSphericalBessel0(gint l, gdouble z[], gdouble b[], gint n)
        n    the number of requested points.
 
 
-       for arguments (z.le.5.0)  use power seriess
+       for arguments (z.le.5.0)  use power series
                                  15 terms good to 5.0d-14
                      (z.gt.5.0)  use exponential representation.
                      (z.gt.16.1) only first term in exponential
@@ -740,7 +740,7 @@ void modifiedSphericalBessel0(gint l, gdouble z[], gdouble b[], gint n)
 
 	if(n1 != 0)
 	{
-		/*power seriess.*/
+		/*power series.*/
 		gdouble v = 1.0/doubleFactorial(l+l+1);
 		for( i = ilo1; i<= ihi1; i++)
 		{

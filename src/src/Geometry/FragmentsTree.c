@@ -1,6 +1,6 @@
 /* FragmentsTree.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -478,26 +478,26 @@ static void addPersonnalFragments(FragmentsList* fragList)
 	gchar* fileName = g_strdup_printf("%s%sPersonalFragments.frg",
 			gabedit_directory(), G_DIR_SEPARATOR_S);
 	gint numberOfGroupes = 0;
-	PersonalFragments* personalFragments = NULL;
-	PersonalGroupe* personalGroupes = NULL;
+	PersonalFragments* personnalFragments = NULL;
+	PersonalGroupe* personnalGroupes = NULL;
 	gint i;
 	gint j;
 
-	personalFragments = loadAllPersonalFragments(fileName);
-	if(personalFragments) numberOfGroupes = personalFragments->numberOfGroupes;
-	if(personalFragments) personalGroupes = personalFragments->personalGroupes;
+	personnalFragments = loadAllPersonalFragments(fileName);
+	if(personnalFragments) numberOfGroupes = personnalFragments->numberOfGroupes;
+	if(personnalFragments) personnalGroupes = personnalFragments->personnalGroupes;
 
-	if(fragList && personalFragments)
+	if(fragList && personnalFragments)
 	for(i=0;i<numberOfGroupes;i++)
 	{
-		if(personalGroupes[i].numberOfFragments<1) continue;
-		names = g_malloc( personalGroupes[i].numberOfFragments*sizeof(gchar*));
-		for(j=0;j<personalGroupes[i].numberOfFragments;j++)
-			names[j] = personalGroupes[i].fragments[j].name;
+		if(personnalGroupes[i].numberOfFragments<1) continue;
+		names = g_malloc( personnalGroupes[i].numberOfFragments*sizeof(gchar*));
+		for(j=0;j<personnalGroupes[i].numberOfFragments;j++)
+			names[j] = personnalGroupes[i].fragments[j].name;
 
 		addOneGroup(fragList, 
-				personalFragments->personalGroupes[i].groupName,
-				personalGroupes[i].numberOfFragments,
+				personnalFragments->personnalGroupes[i].groupName,
+				personnalGroupes[i].numberOfFragments,
 				names);
 		g_free(names);
 	}

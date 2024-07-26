@@ -1,6 +1,6 @@
 /* MenuToolBarGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -780,52 +780,52 @@ static void activate_action (GtkAction *action)
 	}
 	else if(!strcmp(name , "RenderOptimal")) set_optimal_view();
 	else if(!strcmp(name , "SetCamera")) set_camera();
-	else if(!strcmp(name , "SetLightPositions")) set_light_positions(_("Set Light Positions"));
+	else if(!strcmp(name , "SetLigthPositions")) set_light_positions(_("Set Light Positions"));
 	else if(!strcmp(name , "SetSurfaceColors")) set_colors_surfaces(_("Set Surface Colors"));
 	else if(!strcmp(name , "SetDipole"))
 	{
 		GtkWidget* win = set_dipole_dialog();
-		RebuildGeomD = TRUE;
+		RebuildGeom = TRUE;
   		gtk_window_set_transient_for(GTK_WINDOW(win),GTK_WINDOW(PrincipalWindow));
 	}
 	else if(!strcmp(name , "SetDipoleDensity"))
 	{
-		RebuildGeomD = TRUE;
+		RebuildGeom = TRUE;
 		compute_total_dipole();
 		glarea_rafresh(GLArea);
 	}
 	else if(!strcmp(name , "SetDipoleCT"))
 	{
 		compute_charge_transfer_dipole();
-		RebuildGeomD = TRUE;
+		RebuildGeom = TRUE;
 		glarea_rafresh(GLArea);
 	}
 	else if(!strcmp(name , "SetMultipleBonds"))
 	{
-		RebuildGeomD = TRUE;
+		RebuildGeom = TRUE;
 		buildMultipleBonds();
 		glarea_rafresh(GLArea);
 	}
 	else if(!strcmp(name , "SetAllBonds"))
 	{
-		RebuildGeomD = TRUE;
+		RebuildGeom = TRUE;
 		buildBondsOrb();
 		glarea_rafresh(GLArea);
 	}
 	else if(!strcmp(name , "SetPropertiesOfAtoms")) create_table_prop();
 	else if(!strcmp(name , "SetHydrogenBondsParameters"))
 	{
-		RebuildGeomD = TRUE;
+		RebuildGeom = TRUE;
 		set_HBonds_dialog (PrincipalWindow);
 	}
 	else if(!strcmp(name , "SetXYZAxesProperties"))
 	{
-		RebuildGeomD = TRUE;
+		RebuildGeom = TRUE;
 		set_axis_dialog();
 	}
 	else if(!strcmp(name , "SetPrincipalAxesProperties"))
 	{
-		RebuildGeomD = TRUE;
+		RebuildGeom = TRUE;
 		set_principal_axisGL_dialog();
 	}
 	else if(!strcmp(name , "SetPovrayBackGround")) createPovrayOptionsWindow(PrincipalWindow);
@@ -1198,7 +1198,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"Set",     NULL, N_("_Set")},
 	{"Operation",     NULL, N_("_Operation")},
 	{"SetCamera", GABEDIT_STOCK_CAMERA, N_("_Camera"), NULL, "set the camera", G_CALLBACK (activate_action) },
-	{"SetLightPositions", NULL, N_("_Light positions"), NULL, "set Light positions", G_CALLBACK (activate_action) },
+	{"SetLigthPositions", NULL, N_("_Ligth positions"), NULL, "set Ligth positions", G_CALLBACK (activate_action) },
 	{"SetSurfaceColors", NULL, N_("_Surface colors"), NULL, "set surface colors", G_CALLBACK (activate_action) },
 	{"SetDipole", NULL, N_("_Dipole"), NULL, "set dipole", G_CALLBACK (activate_action) },
 	{"SetDipoleDensity", NULL, N_("_Compute Dipole from density"), NULL, "Compute Dipole from density", G_CALLBACK (activate_action) },
@@ -1284,7 +1284,7 @@ static void toggle_action (GtkAction *action)
 	else if(!strcmp(name,"RenderBox"))
 	{
 		setShowBox (!getShowBox());
-		RebuildGeomD = TRUE;
+		RebuildGeom = TRUE;
 		glarea_rafresh(GLArea);
 	}
 	else if(!strcmp(name,"ShowOnlyOneSurface"))
@@ -1296,19 +1296,19 @@ static void toggle_action (GtkAction *action)
 	{
 		ShowHBondOrb = !ShowHBondOrb;
 		buildHBonds();
-		RebuildGeomD = TRUE;
+		RebuildGeom = TRUE;
 		glarea_rafresh(GLArea);
 	}
 	else if(!strcmp(name,"RenderHydrogenAtoms"))
 	{
 		ShowHAtomOrb = !ShowHAtomOrb;
-		RebuildGeomD = TRUE;
+		RebuildGeom = TRUE;
 		glarea_rafresh(GLArea);
 	}
 	else if(!strcmp(name,"RenderMultiBonds"))
 	{
 		ShowMultiBondsOrb = !ShowMultiBondsOrb;
-		RebuildGeomD = TRUE;
+		RebuildGeom = TRUE;
 		glarea_rafresh(GLArea);
 	}
 	else if(!strcmp(name,"RenderXYZAxes"))
@@ -1455,22 +1455,22 @@ static void render_geometry_radio_action (GtkAction *action)
 	{
 		case GEOMETRY_STICK :
 			TypeGeom = GABEDIT_TYPEGEOM_STICK;
-			RebuildGeomD = TRUE;
+			RebuildGeom = TRUE;
 			glarea_rafresh(GLArea);
 			break;
 		case GEOMETRY_BALLSTICK :
 			TypeGeom = GABEDIT_TYPEGEOM_BALLSTICK;
-			RebuildGeomD = TRUE;
+			RebuildGeom = TRUE;
 			glarea_rafresh(GLArea);
 			break;
 		case GEOMETRY_WIREFRAME :
 			TypeGeom = GABEDIT_TYPEGEOM_WIREFRAME;
-			RebuildGeomD = TRUE;
+			RebuildGeom = TRUE;
 			glarea_rafresh(GLArea);
 			break;
 		case GEOMETRY_SPACEFILL :
 			TypeGeom = GABEDIT_TYPEGEOM_SPACE;
-			RebuildGeomD = TRUE;
+			RebuildGeom = TRUE;
 			glarea_rafresh(GLArea);
 			break;
 		case GEOMETRY_NO :
@@ -2070,7 +2070,7 @@ static const gchar *uiMenuInfo =
 "    <separator name=\"sepMenuSet\" />\n"
 "    <menu name=\"Set\" action = \"Set\">\n"
 "        <menuitem name=\"SetCamera\" action=\"SetCamera\" />\n"
-"        <menuitem name=\"SetLightPositions\" action=\"SetLightPositions\" />\n"
+"        <menuitem name=\"SetLigthPositions\" action=\"SetLigthPositions\" />\n"
 "        <menuitem name=\"SetSurfaceColors\" action=\"SetSurfaceColors\" />\n"
 "        <separator name=\"sepMenuSetDipole\" />\n"
 "        <menuitem name=\"SetDipole\" action=\"SetDipole\" />\n"

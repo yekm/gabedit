@@ -1,6 +1,6 @@
 /* EnergiesCurve.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -35,9 +35,6 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/DrawGeom.h"
 
 #define Nmax 10
-/* extern of .h */
-gboolean GeomConvIsOpen;
-
 
 gboolean DrawEnergies(GtkWidget *dessin,GdkEventConfigure *ev);
 gboolean grille(GtkWidget *dessin,GdkEventConfigure *ev);

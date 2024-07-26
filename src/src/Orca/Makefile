@@ -1,4 +1,4 @@
-OBJECTS = Orca.o OrcaMolecule.o OrcaKeywords.o OrcaGuess.o OrcaBasis.o OrcaGlobal.o
+OBJECTS = Orca.o OrcaMolecule.o OrcaKeywords.o OrcaGuess.o OrcaBasis.o
 
 include ../../CONFIG
 CFLAGS =  $(COMMONCFLAGS) $(GTKCFLAGS)

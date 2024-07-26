@@ -1,6 +1,6 @@
 /* Symmetry.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -483,8 +483,8 @@ static gdouble testSymmetryElement(Symmetry* symmetry, Element* elem)
 		gint j;
 		for(j = 0; j<mol->size(mol); j++)
 		{
-			SAtom* beforee = mol->get(mol,j);
-			SAtom after = elem->doOperationSAtom(elem,beforee);
+			SAtom* before = mol->get(mol,j);
+			SAtom after = elem->doOperationSAtom(elem,before);
 			SAtom closestAtom = after.findClosestAtom(&after, atoms);
 			gdouble shortestDist = after.distance(&after,&closestAtom);
 			gdouble dist = 1.0;

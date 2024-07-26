@@ -1,6 +1,6 @@
 /* CaptureOrbitals.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -154,7 +154,7 @@ static void create_images_window (gint n, gint* numOrbs,gchar* prefix,gchar* tit
 		GtkWidget* image = gtk_image_new_from_file (fileName);
 		gint width;
 		gint height;
-		gint h = (gint)(ScreenHeightD*scal);
+		gint h = (gint)(ScreenHeight*scal);
 		gint w = h;
 		get_image_size(image, &width, &height);
 		w = (gint)(width*h*1.0/height);
@@ -176,8 +176,8 @@ static void create_images_window (gint n, gint* numOrbs,gchar* prefix,gchar* tit
 	}
 
 	iw = (iw+15)*nCols;
-	if(iw>(gint)(0.95*ScreenWidthD)) iw = (gint)(0.95*ScreenWidthD);
-	//gtk_window_set_default_size (GTK_WINDOW (window), iw, (gint)(ScreenHeightD*0.9));
+	if(iw>(gint)(0.95*ScreenWidth)) iw = (gint)(0.95*ScreenWidth);
+	gtk_window_set_default_size (GTK_WINDOW (window), iw, (gint)(ScreenHeight*0.9));
 
 	hbox = create_hbox_false(vbox);
 	gtk_widget_realize(window);
@@ -795,7 +795,7 @@ static GtkWidget *create_slides_frame( GtkWidget *vboxall,gchar* title)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 0;
-	label = gtk_label_new(_("Number of slides by row"));
+	label = gtk_label_new(_("Nubmer of slides by row"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -962,7 +962,7 @@ static GtkWidget* new_alpha_list(GtkWidget *hboxall)
   	gtk_widget_show (frame);
   	vbox = create_vbox(frame);
   	scr=gtk_scrolled_window_new(NULL,NULL);
-	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeightD*WIDTHSCR));
+	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeight*WIDTHSCR));
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scr),GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   	gtk_box_pack_start(GTK_BOX (vbox), scr,TRUE, TRUE, 1);
   	gtk_container_add(GTK_CONTAINER(scr),gtklist);
@@ -1017,7 +1017,7 @@ static GtkWidget* new_beta_list(GtkWidget *hboxall)
   	vbox = create_vbox(frame);
   	scr=gtk_scrolled_window_new(NULL,NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scr),GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeightD*WIDTHSCR));
+	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeight*WIDTHSCR));
   	gtk_box_pack_start(GTK_BOX (vbox), scr,TRUE, TRUE, 1);
   	gtk_container_add(GTK_CONTAINER(scr),gtklist);
 	set_base_style(gtklist,55000,55000,55000);
@@ -1071,12 +1071,12 @@ void capture_orbitals_dlg()
 
 	if(!GeomOrb)
 	{
-		Message(_("Sorry, Please load a file beforee\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!CoefAlphaOrbitals)
 	{
-		Message(_("Sorry, Please load the MO beforee\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
 		return;
 	}
 

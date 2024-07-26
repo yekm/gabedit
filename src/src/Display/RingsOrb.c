@@ -1,6 +1,6 @@
 /* RingsOrb.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -42,7 +42,6 @@ typedef struct
 {
 	gchar desc[1000];
 	gdouble thetas[3];
-	gdouble CremerPople[3];
 	gdouble rms;
 }ConformerTypesRing62;
 
@@ -68,7 +67,7 @@ static gint rSize = 0;
 static gboolean deleteNotPlaner = FALSE;
 static gboolean randumColors = FALSE;
 static V4d randumC = {1.0, 1.0,1.0,0.8};
-static gdouble epsilonCoplaner = 5; /* in degree */
+static gdouble epsilonCoplaner = 5; /* in degre */
 /************************************************************************/
 gboolean ringsGetRandumColors()
 {
@@ -829,102 +828,6 @@ static gdouble vDot(gdouble* v1, gdouble* v2)
 {
     return v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
 }
-/********************************************************************************/
-/* CP[] = phi (deg) , theta(deg), Q(Ang)*/
-static gboolean computeCremerPoplePuckeringCoordinates(gint nAtoms, gint numAtoms[], gdouble CP[])
-{
-	gdouble atoms[nAtoms][3];
-	gdouble center[3];
-	gint i,c;
-	gdouble r1a[3];
-	gdouble r2a[3];
-	gdouble n[3];
-	gdouble twoPi6 = 2*M_PI/6.0;
-	gdouble fourPi6 = 2*twoPi6;
-	gdouble z[nAtoms];
-	gdouble sqrt2 = sqrt(2.0);
-	gdouble invsqrt6= 1/sqrt(6.0);
-	/*
-	gdouble q1 = 0;
-	gdouble q1cosphi = 0; 
-	gdouble q1sinphi = 0;
-	*/
-
-	gdouble q2 = 0;
-	gdouble q2cosphi = 0; 
-	gdouble q2sinphi = 0;
-
-	gdouble q3 = 0;
-	gdouble bigQ = 0;
-	gdouble radTodeg = 180.0/M_PI;
-	gdouble theta, phi;
-	gdouble nLength = 1.0;
-
-	for(c=0;c<3;c++) CP[c] = 0;
-	if(nAtoms!=6) return FALSE;
-	/* C1 C2 C3 C4 C5 O5 in numAtoms */
-	/* O5 C1 C2 C3 C4 C5 atoms */
-	
-	for(c=0;c<3;c++) atoms[0][c] = GeomOrb[numAtoms[nAtoms-1]].C[c];
-	for(i=1;i<nAtoms;i++) for(c=0;c<3;c++) atoms[i][c] = GeomOrb[numAtoms[i-1]].C[c];
-
-	for(c=0;c<3;c++) center[c] = 0;
-	for(i=0;i<nAtoms;i++) for(c=0;c<3;c++) center[c] += atoms[i][c];
-	for(c=0;c<3;c++) center[c] /= nAtoms;
-	for(i=0;i<nAtoms;i++) for(c=0;c<3;c++) atoms[i][c] -=center[c];
-
-	for(c=0;c<3;c++) r1a[c] = r2a[c] = 0.0;
-	for(i=0;i<nAtoms;i++) for(c=0;c<3;c++) r1a[c] += atoms[i][c]* sin(twoPi6*i);
-	for(i=0;i<nAtoms;i++) for(c=0;c<3;c++) r2a[c] += atoms[i][c]* cos(twoPi6*i);
-
-	vCross(r1a,r2a,n);
-	nLength = vLength(n);
-	if(nLength>1e-10) nLength = 1/nLength;
-	for(c=0;c<3;c++) n[c] *= nLength;
-	for(i=0;i<nAtoms;i++) z[i] = vDot(atoms[i],n);
-
-	for(i=0;i<nAtoms;i++) 
-	{
-		q2cosphi += z[i]*cos(fourPi6*i);
-		q2sinphi -= z[i]*sin(fourPi6*i);
-		/*
-		q1cosphi += z[i]*cos(twoPi6*i);
-		q1sinphi -= z[i]*sin(twoPi6*i);
-		*/
-		q3        += z[i]*cos(M_PI*i); 
-		bigQ += z[i]*z[i];
-	}
-	q2cosphi *= sqrt2*invsqrt6;
-	q2sinphi *= sqrt2*invsqrt6;
-	q3 *= invsqrt6;
-	q2 = sqrt(q2cosphi*q2cosphi+q2sinphi*q2sinphi);
-	/*
-	q1 = sqrt(q1cosphi*q1cosphi+q1sinphi*q1sinphi);
-	*/
-	bigQ = sqrt(bigQ);
-	if (q2cosphi > 0.){
-		if (q2sinphi > 0.) phi = atan(q2sinphi/q2cosphi)*radTodeg;
-		else phi = 360. - fabs(atan(q2sinphi/q2cosphi)*radTodeg);
-	}
-	else {
-		if (q2sinphi > 0.) phi = 180. - fabs(atan(q2sinphi/q2cosphi)*radTodeg);
-		else phi = 180. + fabs(atan(q2sinphi/q2cosphi)*radTodeg);
-	}
-	theta = atan(q2/q3)*radTodeg;
-
-	if (q3 > 0.){
-		if (q2 > 0.) theta = atan(q2/q3)*radTodeg;
-		else theta = 360. - fabs(atan(q2/q3)*radTodeg);
-	}
-	else{
-		if (q2 > 0.) theta = 180. - fabs(atan(q2/q3)*radTodeg);
-		else theta = 180. + fabs(atan(q2/q3)*radTodeg);
-	}
-	CP[0] = phi;
-	CP[1] = theta;
-	CP[2] = bigQ*BOHR_TO_ANG;
-	return TRUE;
-}
 static gdouble getOneRMSRing6(ConformerTypesRing6 listConformers[], gint numConfos, gdouble thetas[], gint nMax)
 {
 	gdouble rms = 0;
@@ -955,7 +858,6 @@ static gint addListRMSRing6(ConformerTypesRing6 listConformers[], gint nConfos, 
 	gchar* tmp2 = g_malloc(200*sizeof(gchar));
 	gdouble thetas[nMax];
 	gint c;
-	gdouble CP[3];
 
 	
 	for(i=0;i<nMax;i++)
@@ -985,7 +887,6 @@ static gint addListRMSRing6(ConformerTypesRing6 listConformers[], gint nConfos, 
 		while(thetas[i]>=360) thetas[i] -= 360;
 		if(thetas[i]>180) thetas[i] = 180-thetas[i];
 	}
-	computeCremerPoplePuckeringCoordinates(nAtoms, numAtoms, CP);
 	sprintf(tmp1,"%s"," ");
 	for(i=0;i<nAtoms;i++)
 	{
@@ -1012,7 +913,6 @@ static gint addListRMSRing6(ConformerTypesRing6 listConformers[], gint nConfos, 
 		sprintf(listRMSRing6[nOldRMSRing6+i].desc,"%30s %-6s",tmp2,listConformers[i].name);
 		listRMSRing6[nOldRMSRing6+i].rms = rms;
 		for(k=0;k<nMax;k++) listRMSRing6[nOldRMSRing6+i].thetas[k] = thetas[k];
-		for(k=0;k<3;k++) listRMSRing6[nOldRMSRing6+i].CremerPople[k] = CP[k];
 	}
 	if(tmp1) g_free(tmp1);
 	if(tmp2) g_free(tmp2);
@@ -1041,10 +941,8 @@ static void printListRMSRing6(ConformerTypesRing62 listRMSRing6[], gint nRMSRing
 	{
 		if(i==0 || listRMSRing6[i].rms<cutOff) 
 		{
-			printf("%-40s\tRMS = %10.4f\tThetas = %10.4f %10.4f %10.4f  Cremer Pople : Phi = %10.4f Theta = %10.4f Q = %10.4f\n", 
-			        listRMSRing6[i].desc, listRMSRing6[i].rms, listRMSRing6[i].thetas[0],listRMSRing6[i].thetas[1],listRMSRing6[i].thetas[2]
-                                , listRMSRing6[i].CremerPople[0],listRMSRing6[i].CremerPople[1],listRMSRing6[i].CremerPople[2]
-				);
+			printf("%-40s\tRMS = %10.4f\tThetas = %10.4f %10.4f %10.4f\n", 
+			        listRMSRing6[i].desc, listRMSRing6[i].rms, listRMSRing6[i].thetas[0],listRMSRing6[i].thetas[1],listRMSRing6[i].thetas[2]);
 		}
 	}
 }
@@ -1059,7 +957,6 @@ static void showListRMSRing6(ConformerTypesRing62 listRMSRing6[], gint nRMSRing6
 	"============================================================================\n"
 	"Type of conformation calculated using the method given in\n"
 	"Anthony D Hill and Peter J. Reilly J. Chem. Inf. Model, 47 (2007) 1031-1035\n"
-	"Angle values are given in degrees; Q in Angstrom\n"
 	"============================================================================\n"
 	);
         for(i=0;i<nRMSRing6;i++)
@@ -1067,18 +964,16 @@ static void showListRMSRing6(ConformerTypesRing62 listRMSRing6[], gint nRMSRing6
                 if(i==0 || listRMSRing6[i].rms<cutOff)
                 {
 			old = result;
-			 result = g_strdup_printf("%s%40s\t\tRMS = %10.4f\t\tThetas = %10.4f %10.4f %10.4f\t\t Cremer Pople : Phi = %10.4f Theta = %10.4f Q = %10.4f \n",
-                                    old,listRMSRing6[i].desc,   listRMSRing6[i].rms, listRMSRing6[i].thetas[0],listRMSRing6[i].thetas[1],listRMSRing6[i].thetas[2]
-                                    , listRMSRing6[i].CremerPople[0],listRMSRing6[i].CremerPople[1],listRMSRing6[i].CremerPople[2]
-				);
+			 result = g_strdup_printf("%s%40s\t\tRMS = %10.4f\t\tThetas = %10.4f %10.4f %10.4f\n",
+                                    old,listRMSRing6[i].desc,   listRMSRing6[i].rms, listRMSRing6[i].thetas[0],listRMSRing6[i].thetas[1],listRMSRing6[i].thetas[2]);
                          if(old) g_free(old);
                 }
         }
         if(result)
         {
                 GtkWidget* message = MessageTxt(result,title);
-                //gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidthD*0.8),-1);
-                gtk_widget_set_size_request(message,(gint)(ScreenWidthD*0.45),-1);
+                gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidth*0.8),-1);
+                gtk_widget_set_size_request(message,(gint)(ScreenWidth*0.45),-1);
                 /* gtk_window_set_modal (GTK_WINDOW (message), TRUE);*/
                 gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));
         }
@@ -1137,8 +1032,8 @@ static ConformerTypesRing6* initListOfConformers(gint* pnTypes)
 	n++; setPropForOneType(listConformes,n,"6E", 0.000000, 0.000000, 46.860000);
 	n++; setPropForOneType(listConformes,n,"E6", 0.000000, 0.000000, -46.860000);
 
-	*pnTypes = n+1;
-	listConformes = g_realloc(listConformes, *pnTypes *sizeof(ConformerTypesRing6));
+	*pnTypes = n;
+	listConformes = g_realloc(listConformes, nTypes*sizeof(ConformerTypesRing6));
 	return listConformes;
 
 }
@@ -1345,14 +1240,14 @@ gchar* computeConformerTypeRing6MinInfo(gchar* energy, gboolean withTitle)
 	if(withTitle)
 	{
 		if(nRings>0) 
-			result = g_strdup_printf("%32s %-7s %15s %10s %10s %10s %10s %10s %10s %10s ",
-			" Atoms","Type", "Energy","RMS", "Theta1","Theta2","Theta3","Phi","Theta", "Q");
+			result = g_strdup_printf("%32s %-7s %15s %10s %10s %10s %10s ",
+			" Atoms","Type", "Energy","RMS", "Theta1","Theta2","Theta3");
 
 		for(n=1;n<nRings;n++)
 		{
 			old = result;
-			result = g_strdup_printf("%s%32s %-7s %15s %10s %10s %10s %10s %10s %10s %10s ", old,
-			" Atoms","Type", "Energy","RMS", "Theta1","Theta2","Theta3", "Phi","Theta", "Q");
+			result = g_strdup_printf("%s%32s %-7s %15s %10s %10s %10s %10s ", old,
+			" Atoms","Type", "Energy","RMS", "Theta1","Theta2","Theta3");
                 	if(old) g_free(old);
 		}
 		if(nRings>0) 
@@ -1402,15 +1297,13 @@ gchar* computeConformerTypeRing6MinInfo(gchar* energy, gboolean withTitle)
 		i=0;
 		old = result;
 		if(old)
-		result = g_strdup_printf("%s%-40s %15s %10.4f %10.4f %10.4f %10.4f %10.4f %10.4f %10.4f ",
+		result = g_strdup_printf("%s%-40s %15s %10.4f %10.4f %10.4f %10.4f ",
                 	old, listRMSRing6[i].desc, energy,  listRMSRing6[i].rms, 
-			listRMSRing6[i].thetas[0], listRMSRing6[i].thetas[1], listRMSRing6[i].thetas[2]
-			, listRMSRing6[i].CremerPople[0], listRMSRing6[i].CremerPople[1], listRMSRing6[i].CremerPople[2]);
+			listRMSRing6[i].thetas[0], listRMSRing6[i].thetas[1], listRMSRing6[i].thetas[2]);
 		else
-		result = g_strdup_printf("%-40s %15s %10.4f %10.4f %10.4f %10.4f %10.4f %10.4f %10.4f ",
+		result = g_strdup_printf("%-40s %15s %10.4f %10.4f %10.4f %10.4f ",
                 	listRMSRing6[i].desc, energy,  listRMSRing6[i].rms, 
-			listRMSRing6[i].thetas[0], listRMSRing6[i].thetas[1], listRMSRing6[i].thetas[2]
-			, listRMSRing6[i].CremerPople[0], listRMSRing6[i].CremerPople[1], listRMSRing6[i].CremerPople[2]);
+			listRMSRing6[i].thetas[0], listRMSRing6[i].thetas[1], listRMSRing6[i].thetas[2]);
 
                 if(old) g_free(old);
 
@@ -1465,7 +1358,7 @@ static double dihedral(gint a0, gint a1, gint a2, gint a3)
 	return 180.0/M_PI*atan2(vDot(n,r[1])*length,vDot(p[0],p[1]));
 }
 /************************************************************************/
-/* return RMS in degree */
+/* return RMS in deg */
 static gdouble getOneRMSRing5(ConformerTypesRing5 listConformers[], gint numConfos, gdouble thetas[], gdouble* pPhase, gdouble* pThetam)
 {
 	double sin36 = sin(36.0/180.0*M_PI);
@@ -1577,7 +1470,6 @@ static void showListRMSRing5(ConformerTypesRing52 listRMSRing5[], gint nRMSRing5
 	"==============================================================================================================\n"
 	"Type of conformation calculated using the method given in\n"
 	"C. Altona and M. Sundaralingam, Journal of the American Chemical Society, 94:23 (1972) 8205–8212\n"
-	"All values are given in degrees\n"
 	"==============================================================================================================\n"
 	);
         for(i=0;i<nRMSRing5;i++)
@@ -1598,8 +1490,8 @@ static void showListRMSRing5(ConformerTypesRing52 listRMSRing5[], gint nRMSRing5
         if(result)
         {
                 GtkWidget* message = MessageTxt(result,title);
-                //gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidthD*0.8),-1);
-                gtk_widget_set_size_request(message,(gint)(ScreenWidthD*0.45),-1);
+                gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidth*0.8),-1);
+                gtk_widget_set_size_request(message,(gint)(ScreenWidth*0.45),-1);
                 /* gtk_window_set_modal (GTK_WINDOW (message), TRUE);*/
                 gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));
         }
@@ -1638,8 +1530,8 @@ static ConformerTypesRing5* initListOfConformersRing5(gint* pnTypes)
 	n++; setPropForOneTypeRing5(listConformes,n,"1T2", 324.0);
 	n++; setPropForOneTypeRing5(listConformes,n,"E2", 342.0);
 
-	*pnTypes = n+1;
-	listConformes = g_realloc(listConformes, *pnTypes*sizeof(ConformerTypesRing5));
+	*pnTypes = n;
+	listConformes = g_realloc(listConformes, nTypes*sizeof(ConformerTypesRing5));
 	return listConformes;
 
 }

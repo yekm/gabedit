@@ -1,6 +1,6 @@
 /* VibrationLocal.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -528,7 +528,7 @@ static GtkWidget* showLocalModes(gchar *message,gchar *title)
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)delete_child, GTK_OBJECT(dlgWin));
 
 	add_button_windows(title,dlgWin);
-	//gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeightD), (gint)(ScreenHeightD*0.4));
+	gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeight), (gint)(ScreenHeight*0.4));
 	gtk_widget_show_all(dlgWin);
 	return dlgWin;
 }
@@ -776,7 +776,7 @@ static GtkWidget* addComboListToATable(GtkWidget* table,
                   2,2);
 	entry = GTK_BIN (combo)->child;
 	g_object_set_data(G_OBJECT (entry), "Combo",combo);
-	gtk_widget_set_size_request(GTK_WIDGET(entry),(gint)(ScreenHeightD*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(entry),(gint)(ScreenHeight*0.2),-1);
 
 	return entry;
 }
@@ -826,7 +826,7 @@ static void  add_local_modes_entrys(GtkWidget *Wins,GtkWidget *vbox)
                   1,1);
 	j = 2;
 	buttonDirSelector =  gabedit_dir_button();
-	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeightD*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeight*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
 			j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
@@ -846,7 +846,7 @@ static void  add_local_modes_entrys(GtkWidget *Wins,GtkWidget *vbox)
 	j = 2;
 	entryFileName = gtk_entry_new();
 	gtk_entry_set_text(GTK_ENTRY(entryFileName),"LocalVib.gab");
-	gtk_widget_set_size_request(GTK_WIDGET(entryFileName),(gint)(ScreenHeightD*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(entryFileName),(gint)(ScreenHeight*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),entryFileName, j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -865,7 +865,7 @@ static void  add_local_modes_entrys(GtkWidget *Wins,GtkWidget *vbox)
 	j = 2;
 	entryWindow = gtk_entry_new();
 	gtk_entry_set_text(GTK_ENTRY(entryWindow),"400.0");
-	gtk_widget_set_size_request(GTK_WIDGET(entryWindow),(gint)(ScreenHeightD*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(entryWindow),(gint)(ScreenHeight*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),entryWindow, j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -884,7 +884,7 @@ static void  add_local_modes_entrys(GtkWidget *Wins,GtkWidget *vbox)
 	j = 2;
 	entryPrecision = gtk_entry_new();
 	gtk_entry_set_text(GTK_ENTRY(entryPrecision),"1e-8");
-	gtk_widget_set_size_request(GTK_WIDGET(entryPrecision),(gint)(ScreenHeightD*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(entryPrecision),(gint)(ScreenHeight*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),entryPrecision, j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -903,7 +903,7 @@ static void  add_local_modes_entrys(GtkWidget *Wins,GtkWidget *vbox)
 	j = 2;
 	entryItMax = gtk_entry_new();
 	gtk_entry_set_text(GTK_ENTRY(entryItMax),"400");
-	gtk_widget_set_size_request(GTK_WIDGET(entryItMax),(gint)(ScreenHeightD*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(entryItMax),(gint)(ScreenHeight*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),entryItMax, j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -933,7 +933,7 @@ void buildLocalModesDlg()
 
 	if(vibration.numberOfFrequencies<2) 
 	{
-		gchar* t = g_strdup_printf(_("Sorry\n You should read the geometries before")); 
+		gchar* t = g_strdup_printf(_("Sorry\n You should read the geometries befor")); 
 		Message(t,_("Error"),TRUE);
 		return;
 	}

@@ -1,4 +1,4 @@
-OBJECTS = QChem.o QChemMolecule.o QChemRem.o QChemGuess.o QChemBasis.o QChemLib.o QChemGlobal.o
+OBJECTS = QChem.o QChemMolecule.o QChemRem.o QChemGuess.o QChemBasis.o QChemLib.o
 
 include ../../CONFIG
 CFLAGS =  $(COMMONCFLAGS) $(GTKCFLAGS)

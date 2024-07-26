@@ -1,6 +1,6 @@
 /*ConvUtils.c*/
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -854,7 +854,7 @@ void create_conversion_dlg()
 	gtk_window_set_title(GTK_WINDOW(Dlg),_("Conversion utility"));
 	gtk_window_set_modal (GTK_WINDOW (Dlg), FALSE);
 	gtk_window_set_transient_for(GTK_WINDOW(Dlg),GTK_WINDOW(Fenetre));
-	//gtk_window_set_default_size(GTK_WINDOW(Dlg), ScreenWidth*0.5, -1);
+	gtk_window_set_default_size(GTK_WINDOW(Dlg), ScreenWidth*0.5, -1);
 
 
 	g_signal_connect(G_OBJECT(Dlg),"delete_event",(GCallback)destroy_dlg,NULL);

@@ -1,6 +1,6 @@
 /* Help.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -61,7 +61,7 @@ void help_ftp_rsh()
 		"        - edit .rhosts file and add the line: \n"
 		"            yourlocalmachine yourlocallogin\n"
 		"        - save file and \n"
-		"        - execute the orders \n"
+		"        - excecute the orders \n"
 		"             chmod a-wx .rhosts\n"
 		"             chmod u+rw .rhosts\n"
 		)
@@ -97,13 +97,13 @@ void help_ssh()
 		_("     To be able to use ssh protocol:\n\n"
 		"     *  the server must support ssh protocol.\n\n"
 		"     *  the local host must support ssh protocol.\n\n"
-		"     *  on the local host, execute the orders:\n"
+		"     *  on the local host, excecute the orders:\n"
 		"           ssh-keygen -t rsa (for create id_rsa ans id_rsa.pub files)\n"
 		"           ssh-keygen -t dsa (for create id_dsa ans id_dsa.pub files)\n"
 		"              for the 2 ordres : you must create the codes without passphrase.\n\n"
 		"           copy id_rsa.pub, id_dsa.pub files at HOME directory at REMOT host.\n"
 		"           (example scp id_*.pub remotlogin@remotehost:.)\n\n"
-		"     *  on the remot host, execute the orders:\n"
+		"     *  on the remot host, excecute the orders:\n"
 		"          cat id_rsa.pub >> .ssh/authorized_keys\n"
 		"          cat id_dsa.pub >> .ssh/authorized_keys2\n"
 		"          chmod go-w .ssh/authorized_keys\n"

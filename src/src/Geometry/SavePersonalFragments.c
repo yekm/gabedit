@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -32,26 +32,26 @@ static void saveTitlePesoFrag(FILE* file)
 	fprintf(file,"End\n");
 }
 /**********************************************************************/
-static void saveGroupesList(PersonalFragments* personalFragments, FILE* file)
+static void saveGroupesList(PersonalFragments* personnalFragments, FILE* file)
 {
 	gint i;
 
 	fprintf(file,"Begin Groupes List\n");
 
-	for(i=0;i<personalFragments->numberOfGroupes;i++)
-		fprintf(file,"%s\n",personalFragments->personalGroupes[i].groupName);
+	for(i=0;i<personnalFragments->numberOfGroupes;i++)
+		fprintf(file,"%s\n",personnalFragments->personnalGroupes[i].groupName);
 
 	fprintf(file,"End\n");
 }
 /**********************************************************************/
-static void saveOneFragmentsList(PersonalFragments* personalFragments, FILE* file,gint groupeNumber)
+static void saveOneFragmentsList(PersonalFragments* personnalFragments, FILE* file,gint groupeNumber)
 {
-	PersonalGroupe* personalGroupes = personalFragments->personalGroupes;
-	gint numberOfFragments =  personalFragments->personalGroupes[groupeNumber].numberOfFragments;
-	OnePersonalFragment* fragments = personalGroupes[groupeNumber].fragments;
+	PersonalGroupe* personnalGroupes = personnalFragments->personnalGroupes;
+	gint numberOfFragments =  personnalFragments->personnalGroupes[groupeNumber].numberOfFragments;
+	OnePersonalFragment* fragments = personnalGroupes[groupeNumber].fragments;
 	gint i;
 
-	fprintf(file,"Begin %s Groupe\n",personalGroupes[groupeNumber].groupName);
+	fprintf(file,"Begin %s Groupe\n",personnalGroupes[groupeNumber].groupName);
 
 	for(i=0;i<numberOfFragments;i++)
 		fprintf(file,"%s\n",fragments[i].name);
@@ -60,26 +60,26 @@ static void saveOneFragmentsList(PersonalFragments* personalFragments, FILE* fil
 			
 }
 /**********************************************************************/
-static void saveAllFragmentsList(PersonalFragments* personalFragments, FILE* file)
+static void saveAllFragmentsList(PersonalFragments* personnalFragments, FILE* file)
 {
-	gint numberOfGroupes =  personalFragments->numberOfGroupes;
+	gint numberOfGroupes =  personnalFragments->numberOfGroupes;
 	gint i;
 
 	for(i=0;i<numberOfGroupes;i++)
-		saveOneFragmentsList(personalFragments,file,i);
+		saveOneFragmentsList(personnalFragments,file,i);
 
 }
 /**********************************************************************/
-static void saveOneFragment(PersonalFragments* personalFragments, FILE* file,
+static void saveOneFragment(PersonalFragments* personnalFragments, FILE* file,
 		gint groupeNumber, gint fragmentNumber)
 {
-	PersonalGroupe* personalGroupes = personalFragments->personalGroupes;
-	OnePersonalFragment* fragments = personalGroupes[groupeNumber].fragments;
+	PersonalGroupe* personnalGroupes = personnalFragments->personnalGroupes;
+	OnePersonalFragment* fragments = personnalGroupes[groupeNumber].fragments;
 	Fragment f;
 	gint i;
 
 	fprintf(file,"Begin %s %s Fragment\n",
-			personalGroupes[groupeNumber].groupName,
+			personnalGroupes[groupeNumber].groupName,
 			fragments[fragmentNumber].name
 			);
 
@@ -103,36 +103,36 @@ static void saveOneFragment(PersonalFragments* personalFragments, FILE* file,
 	fprintf(file,"End\n");
 }
 /**********************************************************************/
-static void saveAllFragments(PersonalFragments* personalFragments, FILE* file)
+static void saveAllFragments(PersonalFragments* personnalFragments, FILE* file)
 {
-	gint numberOfGroupes =  personalFragments->numberOfGroupes;
+	gint numberOfGroupes =  personnalFragments->numberOfGroupes;
 	gint numberOfFragments;
 	gint i;
 	gint j;
 
 	for(i=0;i<numberOfGroupes;i++)
 	{
-		numberOfFragments = personalFragments->personalGroupes[i].numberOfFragments;
+		numberOfFragments = personnalFragments->personnalGroupes[i].numberOfFragments;
 		for(j=0;j<numberOfFragments;j++)
-			saveOneFragment(personalFragments,file,i,j);
+			saveOneFragment(personnalFragments,file,i,j);
 	}
 }
 /**********************************************************************/
-gboolean saveAllPersonalFragments(PersonalFragments* personalFragments,gchar* filename)
+gboolean saveAllPersonalFragments(PersonalFragments* personnalFragments,gchar* filename)
 {
 	FILE* file;
 	file = FOpen(filename,"w");
 
-	if(personalFragments == NULL)
+	if(personnalFragments == NULL)
 		return FALSE;
 	if(file == NULL)
 		return FALSE;
 	else
 	{
 		saveTitlePesoFrag(file);
-		saveGroupesList(personalFragments,file);
-		saveAllFragmentsList(personalFragments,file);
-		saveAllFragments(personalFragments,file);
+		saveGroupesList(personnalFragments,file);
+		saveAllFragmentsList(personnalFragments,file);
+		saveAllFragments(personnalFragments,file);
 		fclose(file);
 	}
 	return TRUE;

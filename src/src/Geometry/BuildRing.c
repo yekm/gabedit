@@ -1,6 +1,6 @@
 /* BuildRing.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -38,7 +38,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/InterfaceGeom.h"
 #include "../Geometry/MenuToolBarGeom.h"
 
-static GtkWidget* Entries[3];
+static GtkWidget* Entrys[3];
 static GtkWidget* FenetreTable = NULL;
 
 /********************************************************************************/
@@ -54,10 +54,10 @@ static void build_ring_molecule(GtkWidget *w,gpointer data)
 	gdouble X;
 	gdouble Y;
 
-	Symb = gtk_entry_get_text(GTK_ENTRY(Entries[0]));
-	t = gtk_entry_get_text(GTK_ENTRY(Entries[1]));
+	Symb = gtk_entry_get_text(GTK_ENTRY(Entrys[0]));
+	t = gtk_entry_get_text(GTK_ENTRY(Entrys[1]));
 	Nc = atoi(t);
-	t = gtk_entry_get_text(GTK_ENTRY(Entries[2]));
+	t = gtk_entry_get_text(GTK_ENTRY(Entrys[2]));
 	Distance = atof(t);
 
 	unselect_all_atoms();
@@ -114,7 +114,7 @@ static void set_entry_distance(GtkWidget *w,gpointer data)
   
   SAtomsProp P = prop_atom_get((gchar*)data);
   gchar* t = g_strdup_printf("%f",0.95*(P.covalentRadii+P.covalentRadii)*BOHR_TO_ANG);
-  gtk_entry_set_text(GTK_ENTRY(Entries[2]),t);
+  gtk_entry_set_text(GTK_ENTRY(Entrys[2]),t);
   g_free(t);
   g_free(P.name);
   g_free(P.symbol);
@@ -122,8 +122,8 @@ static void set_entry_distance(GtkWidget *w,gpointer data)
 /********************************************************************************/
 static void set_atom(GtkWidget *w,gpointer data)
 {
-  gtk_entry_set_text(GTK_ENTRY(Entries[0]),(char *)data);
-  gtk_editable_set_editable((GtkEditable*) Entries[0],FALSE);
+  gtk_entry_set_text(GTK_ENTRY(Entrys[0]),(char *)data);
+  gtk_editable_set_editable((GtkEditable*) Entrys[0],FALSE);
   gtk_widget_destroy(FenetreTable);
   set_entry_distance(NULL,data);
 }
@@ -143,7 +143,7 @@ static void select_atom(GtkWidget *w,gpointer entry0)
   FenetreTable = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_modal(GTK_WINDOW(FenetreTable),TRUE);
   gtk_window_set_title(GTK_WINDOW(FenetreTable),_("Select your atom"));
-  //gtk_window_set_default_size (GTK_WINDOW(FenetreTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
+  gtk_window_set_default_size (GTK_WINDOW(FenetreTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
 
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
@@ -214,20 +214,20 @@ void build_ring_molecule_dlg()
 
   /* The Atom Entry */
   hbox=create_hbox_false(vboxframe);
-  Entries[0] = create_label_entry(hbox,_("Atom                       : "),(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.15));
-  gtk_entry_set_text(GTK_ENTRY(Entries[0]),Symb);
-  gtk_editable_set_editable((GtkEditable*) Entries[0],FALSE);
+  Entrys[0] = create_label_entry(hbox,_("Atom                       : "),(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.15));
+  gtk_entry_set_text(GTK_ENTRY(Entrys[0]),Symb);
+  gtk_editable_set_editable((GtkEditable*) Entrys[0],FALSE);
 
   Button = gtk_button_new_with_label(_(" Set "));
   gtk_box_pack_start (GTK_BOX(hbox), Button, TRUE, TRUE, 5);
-  g_signal_connect(G_OBJECT(Button), "clicked", (GCallback)select_atom,Entries[0]);
+  g_signal_connect(G_OBJECT(Button), "clicked", (GCallback)select_atom,Entrys[0]);
 
   /* The Number of atoms Entry */
   tlist = g_malloc(nlist*sizeof(gchar*));
   for(i=0;i<nlist;i++)
 	  tlist[i] = g_strdup_printf("%d",i+3);
   hbox=create_hbox_false(vboxframe);
-  Entries[1] = create_label_combo(hbox,_("Number of atoms            : "),tlist,nlist,TRUE,(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.15));
+  Entrys[1] = create_label_combo(hbox,_("Number of atoms            : "),tlist,nlist,TRUE,(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.15));
 
   for(i=0;i<nlist;i++)
 	  g_free(tlist[i]);
@@ -236,8 +236,8 @@ void build_ring_molecule_dlg()
   /* The Distance between atoms */
   hbox = create_hbox_false(vboxframe);
   t = g_strdup_printf("%f",0.95*(P.covalentRadii+P.covalentRadii)*BOHR_TO_ANG);
-  Entries[2] = create_label_entry(hbox,_("Distance between atoms(Ang) : "),(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.15));
-  gtk_entry_set_text(GTK_ENTRY(Entries[2]),t);
+  Entrys[2] = create_label_entry(hbox,_("Distance between atoms(Ang) : "),(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.15));
+  gtk_entry_set_text(GTK_ENTRY(Entrys[2]),t);
   g_free(t);
 
 

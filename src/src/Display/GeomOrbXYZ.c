@@ -1,6 +1,6 @@
 /* GeomOrbXYZ.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -360,7 +360,7 @@ gboolean gl_read_molden_gabedit_geom_conv_file(gchar *fileName, gint geometryNum
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),"Ok");
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 	return TRUE;
@@ -455,7 +455,7 @@ gboolean gl_read_xyz_file_geomi(gchar *fileName,gint geometryNumber)
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),"Ok");
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 	return TRUE;
@@ -540,7 +540,7 @@ gboolean gl_read_xyz_file(gchar* FileName)
   if(nCenters>10000)
   {
   	TypeGeom = GABEDIT_TYPEGEOM_WIREFRAME;
-  	RebuildGeomD = TRUE;
+  	RebuildGeom = TRUE;
   }
   else
   {
@@ -553,7 +553,7 @@ end:
 	g_free(AtomCoord[i]);
  if(OK)
  {
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	buildBondsOrb();
 	glarea_rafresh(GLArea);
@@ -780,7 +780,7 @@ gboolean gl_read_pdb_file(gchar* FileName)
 		if(nCenters>1000)
 		{
   			TypeGeom = GABEDIT_TYPEGEOM_WIREFRAME;
-  			RebuildGeomD = TRUE;
+  			RebuildGeom = TRUE;
 		}
 	}
 	else
@@ -792,7 +792,7 @@ gboolean gl_read_pdb_file(gchar* FileName)
 	for(i=0;i<8;i++) g_free(listFields[i]);
 	if(OK)
 	{
-		RebuildGeomD = TRUE;
+		RebuildGeom = TRUE;
 		if(this_is_a_new_geometry()) free_objects_all();
 		/* buildBondsOrb();*/
 		glarea_rafresh(GLArea);
@@ -968,7 +968,7 @@ gboolean gl_read_hin_file(gchar* FileName)
 		if(nCenters>10000)
 		{
   			TypeGeom = GABEDIT_TYPEGEOM_WIREFRAME;
-  			RebuildGeomD = TRUE;
+  			RebuildGeom = TRUE;
 		}
 		readBondsHIN(fd);
 	}
@@ -982,7 +982,7 @@ gboolean gl_read_hin_file(gchar* FileName)
 	for(i=0;i<8;i++) g_free(listFields[i]);
 	if(OK)
 	{
-		RebuildGeomD = TRUE;
+		RebuildGeom = TRUE;
 		if(this_is_a_new_geometry()) free_objects_all();
 		/* buildBondsOrb();*/
 		glarea_rafresh(GLArea);
@@ -1243,7 +1243,7 @@ gboolean gl_read_molden_file_geom(gchar *FileName)
 {
 	if( gl_read_molden_or_gabedit_file_geom(FileName,0))
 	{
-		RebuildGeomD = TRUE;
+		RebuildGeom = TRUE;
 		if(this_is_a_new_geometry()) free_objects_all();
 		glarea_rafresh(GLArea);
 		return TRUE;
@@ -1255,7 +1255,7 @@ gboolean  gl_read_gabedit_file_geom(gchar *FileName)
 {
 	if(gl_read_molden_or_gabedit_file_geom(FileName,1))
 	{
-		RebuildGeomD = TRUE;
+		RebuildGeom = TRUE;
 		if(this_is_a_new_geometry()) free_objects_all();
 		glarea_rafresh(GLArea);
 		return TRUE;
@@ -1376,7 +1376,7 @@ gboolean gl_read_molpro_file_geom_pos(gchar *FileName,long int pos)
   		DefineType();
   		/* PrintGeomOrb();*/
 	}
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
@@ -1503,7 +1503,7 @@ gboolean gl_read_dalton_file_geomi(gchar *FileName,gint num)
   		DefineType();
   		/* PrintGeomOrb();*/
 	}
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
@@ -1861,7 +1861,7 @@ gboolean gl_read_gamess_file_geomi(gchar *FileName,gint num)
   		DefineType();
   		/* PrintGeomOrb();*/
 	}
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
@@ -2064,7 +2064,7 @@ gboolean gl_read_mpqc_file_geomi(gchar *fileName,gint numGeometry)
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	return TRUE;
 }
 /********************************************************************************/
@@ -2184,7 +2184,7 @@ gboolean gl_read_molcas_file_geomi(gchar *FileName,gint num)
   		DefineType();
   		/* PrintGeomOrb();*/
 	}
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
@@ -2323,7 +2323,7 @@ gboolean gl_read_molpro_file_geomi(gchar *FileName,gint num)
   		DefineType();
   		/* PrintGeomOrb();*/
 	}
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
@@ -2462,7 +2462,7 @@ gboolean gl_read_gaussn_file_geomi_str(gchar *FileName,gint num,gchar* str)
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 	return TRUE;
@@ -2620,7 +2620,7 @@ gboolean gl_read_fchk_gaussn_file_geom(gchar *fileName)
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 	return TRUE;
@@ -2822,7 +2822,7 @@ gboolean gl_read_mopac_output_file_geomi(gchar *fileName, gint numgeometry)
 	if(nCenters >0)
   		DefineType();
 
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
@@ -2988,7 +2988,7 @@ gboolean gl_read_mopac_aux_file_geomi(gchar *fileName, gint numgeometry)
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 	return TRUE;
@@ -3037,7 +3037,7 @@ gboolean gl_read_wfx_file_geom(gchar *fileName)
 	}
 	if(nCoordinates!=3*nSymbols)
 	{
-		sprintf(t,"Sorry\nI cannot read geometry from %s  file",fileName);
+		sprintf(t,"Sorry\nI cannot read geomtry from %s  file",fileName);
 		Message(t,_("Error"),TRUE);
 		fclose(file);
 		if(symbols) free_one_string_table(symbols, nSymbols);
@@ -3097,7 +3097,7 @@ gboolean gl_read_wfx_file_geom(gchar *fileName)
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 	return TRUE;
@@ -3283,7 +3283,7 @@ gboolean gl_read_orca_file_geomi(gchar *FileName,gint num)
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 	return TRUE;
@@ -3390,7 +3390,7 @@ gboolean gl_read_orca_file_hessian(gchar *FileName)
 	//printf("end reset_grid_limits\n");
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	//printf("end free_objects_all\n");
 	glarea_rafresh(GLArea);
@@ -3569,7 +3569,7 @@ gboolean gl_read_qchem_file_geomi(gchar *FileName,gint num)
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 	return TRUE;
@@ -3753,7 +3753,7 @@ gulong gl_read_nwchem_file_geomi(gchar *FileName,gint num)
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 	return lineg;
@@ -3938,7 +3938,7 @@ gulong gl_read_psicode_file_geomi(gchar *FileName,gint num)
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 	return lineg;
@@ -4027,7 +4027,7 @@ static gboolean gl_read_geom_nbo_file(gchar *fileName)
 		set_status_label_info(_("File name"),_("Nothing"));
 		set_status_label_info(_("File type"),_("Nothing"));
 		set_status_label_info(_("Mol. Orb."),_("Nothing"));
-		RebuildGeomD = TRUE;
+		RebuildGeom = TRUE;
 		return FALSE;
 	}
  	else
@@ -4044,7 +4044,7 @@ static gboolean gl_read_geom_nbo_file(gchar *fileName)
 			*/
 		}
 		buildBondsOrb();
-		RebuildGeomD = TRUE;
+		RebuildGeom = TRUE;
 		reset_grid_limits();
 		init_atomic_orbitals();
 		return TRUE;
@@ -4175,7 +4175,7 @@ static gboolean gl_read_aimall_file(gchar *fileName)
   		DefineType();
   		/* PrintGeomOrb();*/
 	}
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
@@ -4206,7 +4206,7 @@ void gl_read_first_dalton_file(GabeditFileChooser *SelecFile, gint response_id)
 
 	add_objects_for_new_grid();
  	gl_read_dalton_file_geomi(FileName,1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4221,7 +4221,7 @@ void gl_read_last_dalton_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_dalton_file_geomi(FileName,-1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
@@ -4236,7 +4236,7 @@ void gl_read_first_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
 
 	add_objects_for_new_grid();
  	gl_read_gamess_file_geomi(FileName,1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4251,7 +4251,7 @@ void gl_read_last_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_gamess_file_geomi(FileName,-1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
@@ -4266,7 +4266,7 @@ void gl_read_first_gauss_file(GabeditFileChooser *SelecFile, gint response_id)
 
 	add_objects_for_new_grid();
  	gl_read_gaussn_file_geomi(FileName,1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4281,7 +4281,7 @@ void gl_read_last_gauss_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_gaussn_file_geomi(FileName,-1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
@@ -4296,7 +4296,7 @@ gboolean gl_read_fchk_gauss_file(GabeditFileChooser *SelecFile, gint response_id
 	add_objects_for_new_grid();
  	if(gl_read_fchk_gaussn_file_geom(FileName))
 	{
-		RebuildGeomD = TRUE;
+		RebuildGeom = TRUE;
 		if(this_is_a_new_geometry()) free_objects_all();
 		glarea_rafresh(GLArea);
 		return TRUE;
@@ -4314,7 +4314,7 @@ void gl_read_first_molcas_file(GabeditFileChooser *SelecFile, gint response_id)
 	while( gtk_events_pending() ) gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_molcas_file_geomi(FileName,1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4328,7 +4328,7 @@ void gl_read_last_molcas_file(GabeditFileChooser *SelecFile, gint response_id)
 	while( gtk_events_pending() ) gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_molcas_file_geomi(FileName,-1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }  
@@ -4343,7 +4343,7 @@ void gl_read_first_molpro_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_molpro_file_geomi(FileName,1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4358,7 +4358,7 @@ void gl_read_last_molpro_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_molpro_file_geomi(FileName,-1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }  
@@ -4373,7 +4373,7 @@ void gl_read_first_mpqc_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_mpqc_file_geomi(fileName,1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4388,7 +4388,7 @@ void gl_read_last_mpqc_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_mpqc_file_geomi(fileName,-1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
@@ -4403,7 +4403,7 @@ void gl_read_first_mopac_output_file(GabeditFileChooser *SelecFile, gint respons
 
 	add_objects_for_new_grid();
  	gl_read_mopac_output_file_geomi(FileName,1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4418,7 +4418,7 @@ void gl_read_last_mopac_output_file(GabeditFileChooser *SelecFile, gint response
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_mopac_output_file_geomi(FileName,-1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
@@ -4433,7 +4433,7 @@ void gl_read_first_mopac_aux_file(GabeditFileChooser *SelecFile, gint response_i
 
 	add_objects_for_new_grid();
  	gl_read_mopac_aux_file_geomi(FileName,1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4448,7 +4448,7 @@ void gl_read_last_mopac_aux_file(GabeditFileChooser *SelecFile, gint response_id
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_mopac_aux_file_geomi(FileName,-1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
@@ -4463,7 +4463,7 @@ void gl_read_wfx_file(GabeditFileChooser *SelecFile, gint response_id)
 
 	add_objects_for_new_grid();
  	gl_read_wfx_file_geom(FileName);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4478,7 +4478,7 @@ void gl_read_first_orca_file(GabeditFileChooser *SelecFile, gint response_id)
 
 	add_objects_for_new_grid();
  	gl_read_orca_file_geomi(FileName,1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4493,7 +4493,7 @@ void gl_read_last_orca_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_orca_file_geomi(FileName,-1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
@@ -4508,7 +4508,7 @@ void gl_read_hessian_orca_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_orca_file_hessian(FileName);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
@@ -4523,7 +4523,7 @@ void gl_read_first_qchem_file(GabeditFileChooser *SelecFile, gint response_id)
 
 	add_objects_for_new_grid();
  	gl_read_qchem_file_geomi(FileName,1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4538,7 +4538,7 @@ void gl_read_last_qchem_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_qchem_file_geomi(FileName,-1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
@@ -4553,7 +4553,7 @@ void gl_read_first_nwchem_file(GabeditFileChooser *SelecFile, gint response_id)
 
 	add_objects_for_new_grid();
  	gl_read_nwchem_file_geomi(FileName,1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4568,7 +4568,7 @@ void gl_read_nbo_file(GabeditFileChooser *SelecFile, gint response_id)
 
 	add_objects_for_new_grid();
  	gl_read_geom_nbo_file(FileName);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4583,7 +4583,7 @@ void gl_read_last_nwchem_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_nwchem_file_geomi(FileName,-1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
@@ -4598,7 +4598,7 @@ void gl_read_last_psicode_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_psicode_file_geomi(FileName,-1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
@@ -4613,7 +4613,7 @@ void gl_read_first_psicode_file(GabeditFileChooser *SelecFile, gint response_id)
 
 	add_objects_for_new_grid();
  	gl_read_psicode_file_geomi(FileName,1);
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4697,7 +4697,7 @@ gboolean gl_read_geom_any_file(gchar* fileName)
 			,_("Error"),TRUE);
 		return FALSE;
 	}
-	RebuildGeomD = TRUE;
+	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 	return Ok;

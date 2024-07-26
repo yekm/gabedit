@@ -46,11 +46,10 @@ MolecularMechanicsDlg.o: MolecularMechanicsDlg.c ../../Config.h \
  ../Utils/Constants.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
  ../Geometry/Measure.h ../Geometry/ResultsAnalise.h \
- ../Geometry/GeomGlobal.h ../Geometry/../Common/GabeditType.h \
- ../Geometry/GeomXYZ.h ../Utils/Utils.h ../Utils/AtomsProp.h \
- ../Files/FolderChooser.h ../Files/GabeditFolderChooser.h \
- ../MolecularMechanics/Atom.h ../MolecularMechanics/Molecule.h \
- ../MolecularMechanics/ForceField.h \
+ ../Geometry/GeomGlobal.h ../Geometry/GeomXYZ.h ../Utils/Utils.h \
+ ../Utils/AtomsProp.h ../Files/FolderChooser.h \
+ ../Files/GabeditFolderChooser.h ../MolecularMechanics/Atom.h \
+ ../MolecularMechanics/Molecule.h ../MolecularMechanics/ForceField.h \
  ../MolecularMechanics/MolecularMechanics.h \
  ../MolecularMechanics/ConjugateGradient.h \
  ../MolecularMechanics/SteepestDescent.h \

@@ -1,4 +1,4 @@
-OBJECTS = Molcas.o MolcasGateWay.o MolcasSeward.o MolcasScf.o MolcasGridIT.o MolcasOptimization.o MolcasVariables.o MolcasLib.o MolcasBasisLibrary.o MolcasBasis.o MolcasGlobal.o
+OBJECTS = Molcas.o MolcasGateWay.o MolcasSeward.o MolcasScf.o MolcasGridIT.o MolcasOptimization.o MolcasVariables.o MolcasLib.o MolcasBasisLibrary.o MolcasBasis.o
 
 include ../../CONFIG
 CFLAGS =  $(COMMONCFLAGS) $(GTKCFLAGS)

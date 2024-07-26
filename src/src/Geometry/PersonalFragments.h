@@ -24,7 +24,7 @@ struct _PersonalGroupe
 struct _PersonalFragments
 {
 	gint numberOfGroupes;
-	PersonalGroupe* personalGroupes;
+	PersonalGroupe* personnalGroupes;
 };
 /************************************/
 /* void addGroupesToMenu();*/

@@ -1,6 +1,6 @@
 /* BondsOrb.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -26,9 +26,6 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Utils.h"
 #include "../Utils/Constants.h"
 #include "../Utils/HydrogenBond.h"
-
-/* extern GList *BondsOrb of BondsOrb.h*/
-GList *BondsOrb;
 
 /************************************************************************/
 static gboolean append_to_bonds_list(BondType* newData)
@@ -341,7 +338,7 @@ void readBondsPDB(FILE* file)
     		if(!fgets(t,taille,file)) break;
     		sscanf(t,"%s",tmp);
 		uppercase(tmp);
-		if(strcmp(tmp,"CONNECT")!=0) continue;
+		if(strcmp(tmp,"CONECT")!=0) continue;
 		if(!strcmp(t,"END")) break;
 		res = get_connections_one_connect_pdb(t);
 		if(res==0) break;

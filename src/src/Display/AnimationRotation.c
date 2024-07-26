@@ -1,6 +1,6 @@
 /* AnimationRotation.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -93,7 +93,7 @@ static void reset_last_directory(GtkWidget *dirSelector, gpointer data)
 static void set_directory(GtkWidget *win, gpointer data)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selectionOfDir(reset_last_directory, _("Set folder"), GABEDIT_TYPEWIN_ORB);
+	dirSelector = selctionOfDir(reset_last_directory, _("Set folder"), GABEDIT_TYPEWIN_ORB);
 	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
 	gtk_window_set_transient_for(GTK_WINDOW(dirSelector),GTK_WINDOW(PrincipalWindow));
 	gtk_window_set_transient_for(GTK_WINDOW(dirSelector),GTK_WINDOW(WinDlg));
@@ -197,7 +197,7 @@ static void showMessageEnd()
 {
 	gchar* format =get_format_image_from_option();
 	gchar* message = messageAnimatedImage(format);
-	gchar* t = g_strdup_printf(_("\nA seriess of gab*.%s files was created in \"%s\" directeory.\n\n\n%s") , format, get_last_directory(),message);
+	gchar* t = g_strdup_printf(_("\nA series of gab*.%s files was created in \"%s\" directeory.\n\n\n%s") , format, get_last_directory(),message);
 	GtkWidget* winDlg = Message(t,_("Info"),TRUE);
 	g_free(message);
 	gtk_window_set_modal (GTK_WINDOW (winDlg), TRUE);
@@ -266,7 +266,7 @@ static void buttonAxisSelected(GtkWidget *widget)
 
 }
 /********************************************************************************/
-static void addEntriesButtons(GtkWidget* box)
+static void addEntrysButtons(GtkWidget* box)
 {
 	GtkWidget *Button;
 	GtkWidget *frame;
@@ -515,7 +515,7 @@ void animationRotationDlg()
 	Win= gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
 	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(parentWindow));
-	/* //gtk_window_set_default_size (GTK_WINDOW(Win),-1,(gint)(ScreenHeightD*0.69));*/
+	/* gtk_window_set_default_size (GTK_WINDOW(Win),-1,(gint)(ScreenHeight*0.69));*/
 	gtk_window_set_title(GTK_WINDOW(Win),_("Rotation animation"));
 	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
 
@@ -530,7 +530,7 @@ void animationRotationDlg()
 	hbox = create_hbox_false(vbox);
 	gtk_widget_realize(Win);
 
-	addEntriesButtons(vbox);
+	addEntrysButtons(vbox);
 	gtk_widget_show_all(vbox);
 
 	gtk_widget_show_now(Win);

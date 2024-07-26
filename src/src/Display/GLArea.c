@@ -1,6 +1,6 @@
 /* GLArea.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -804,7 +804,7 @@ gint init(GtkWidget *widget)
 static void redrawGeometry()
 {
 	gint i;
-	if (RebuildGeomD || glIsList(GeomList) != GL_TRUE )
+	if (RebuildGeom || glIsList(GeomList) != GL_TRUE )
 	{
 		/* Debug("Re Gen Geom List\n");*/
 		GeomList = GeomGenList(GeomList, scaleBall, scaleStick, getShowBox());
@@ -820,7 +820,7 @@ static void redrawGeometry()
 
 		VibList = VibGenList(VibList);
 		VibShowList(VibList);
-		RebuildGeomD = FALSE;
+		RebuildGeom = FALSE;
 
 		delete_rings_all();
 	}
@@ -1498,7 +1498,7 @@ void rafresh_window_orb()
 	 {
 		 gint j;
 
-		 RebuildGeomD = TRUE;
+		 RebuildGeom = TRUE;
 		 RebuildSurf = TRUE;
 		 for(j=0;j<nCenters;j++)
 			GeomOrb[j].Prop = prop_atom_get(GeomOrb[j].Symb);
@@ -1622,11 +1622,10 @@ gboolean NewGLArea(GtkWidget* vboxwin)
 	/* Create new OpenGL widget. */
 	/* pthread_mutex_init (&theRender_mutex, NULL);*/
 	GLArea = gtk_drawing_area_new ();
-	//gtk_drawing_area_size(GTK_DRAWING_AREA(GLArea),(gint)(ScreenHeightD*0.2),(gint)(ScreenHeightD*0.2));
-	gtk_drawing_area_size(GTK_DRAWING_AREA(GLArea),(gint)(ScreenHeightD*0.5),(gint)(ScreenHeightD*0.45));
+	gtk_drawing_area_size(GTK_DRAWING_AREA(GLArea),(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.2));
 	gtk_table_attach(GTK_TABLE(table),GLArea,1,2,0,1, (GtkAttachOptions)(GTK_FILL | GTK_EXPAND  ), (GtkAttachOptions)(GTK_FILL | GTK_EXPAND ), 0,0);
 	gtk_widget_show(GTK_WIDGET(GLArea));
-	/* Events for widget must be set beforee X Window is created */
+	/* Events for widget must be set before X Window is created */
 	gtk_widget_set_events(GLArea,
 			GDK_EXPOSURE_MASK|
 			GDK_BUTTON_PRESS_MASK|
@@ -1640,11 +1639,10 @@ gboolean NewGLArea(GtkWidget* vboxwin)
 	if (!glconfig) { g_assert_not_reached (); }
 	if (!gtk_widget_set_gl_capability (GLArea, glconfig, NULL, TRUE, GDK_GL_RGBA_TYPE)) { g_assert_not_reached (); }
 
-
 	g_signal_connect(G_OBJECT(GLArea), "realize", G_CALLBACK(init), NULL);
 	g_signal_connect(G_OBJECT(GLArea), "configure_event", G_CALLBACK(reshape), NULL);
 	g_signal_connect(G_OBJECT(GLArea), "expose_event", G_CALLBACK(draw), NULL);
-	/*gtk_widget_set_size_request(GTK_WIDGET(GLArea ),(gint)(ScreenHeightD*0.2),(gint)(ScreenHeightD*0.2));*/
+	/*gtk_widget_set_size_request(GTK_WIDGET(GLArea ),(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.2));*/
   
 
 	gtk_widget_realize(GTK_WIDGET(PrincipalWindow));

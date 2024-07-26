@@ -1,6 +1,6 @@
 /* MenuToolBarGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -117,7 +117,7 @@ static void select_atom()
 	WinTable = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_modal(GTK_WINDOW(WinTable),TRUE);
 	gtk_window_set_title(GTK_WINDOW(WinTable),_("Select your atom"));
-	//gtk_window_set_default_size (GTK_WINDOW(WinTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
+	gtk_window_set_default_size (GTK_WINDOW(WinTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
 
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
@@ -1186,7 +1186,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"PersonalFragments", NULL, N_("Personal _fragment")},
 	{"PersonalFragmentsNewGroup", NULL, N_("_New Group"), NULL, "New Group", G_CALLBACK (activate_action) },
 	{"PersonalFragmentsDeleteGroup", NULL, N_("_Delete a Group"), NULL, "Delete a Group", G_CALLBACK (activate_action) },
-	{"PersonalFragmentsAddMolecule", NULL, N_("_Add this molecule to personal Fragments"), NULL, "Add this molecule to personal Fragments", G_CALLBACK (activate_action) },
+	{"PersonalFragmentsAddMolecule", NULL, N_("_Add this molecule to personnal Fragments"), NULL, "Add this molecule to personnal Fragments", G_CALLBACK (activate_action) },
 	{"PersonalFragmentsRemoveFragment", NULL, N_("_Remove a Fragment"), NULL, "Remove a Fragment", G_CALLBACK (activate_action) },
 	{"InsertAFragment", NULL, N_("Add a _fragment"), NULL, "Add a fragment", G_CALLBACK (activate_action) },
 	{"AddMaxHydrogens", NULL, N_("Add _Max Hydrogens"), NULL, "Add Max Hydrogens", G_CALLBACK (activate_action) },
@@ -2287,7 +2287,7 @@ static void activate_add_personal_fragment (GtkAction *action, gpointer data)
 	}
 
 }
-void add_a_personal_fragement_to_menu(gchar* groupName,gchar* fragName)
+void add_a_personnal_fragement_to_menu(gchar* groupName,gchar* fragName)
 {
 	const gchar* menuBase = "Edit/PersonalFragments";
 	guint  merge_id;

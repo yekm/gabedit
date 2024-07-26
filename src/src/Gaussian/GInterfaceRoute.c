@@ -1,6 +1,6 @@
 /* GInterfaceRoute.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -859,7 +859,7 @@ void create_liste_general(GtkWidget*Wins,GtkWidget*win,GtkWidget *frame)
   gtk_box_pack_start (GTK_BOX (hbox), checkbutton, TRUE, TRUE, 0);
 
   hbox =create_hbox(vbox);
-  checkbutton = gtk_check_button_new_with_label (_("Additional print"));
+  checkbutton = gtk_check_button_new_with_label (_("Addtional print"));
   CheckButtons[4]=checkbutton;
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbutton), TRUE);
   gtk_widget_show (checkbutton);

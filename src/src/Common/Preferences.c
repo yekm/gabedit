@@ -1,6 +1,6 @@
 /* Preferences.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -43,6 +43,7 @@ void set_color_surface(gint num,gdouble v[]);
 #include "../../pixmaps/Open.xpm"
 static GtkWidget* entrybabel = NULL;
 
+GtkWidget *NoteBook;
 static GtkWidget *Wins = NULL;
 static GtkWidget *EntryDeMon = NULL;
 static GtkWidget *EntryGamess = NULL;
@@ -87,9 +88,9 @@ static GtkWidget *ButtonNWChem = NULL;
 static GtkWidget *ButtonPsicode = NULL;
 
 static GtkWidget *EntryBatchType = NULL;
-static GtkWidget *selectors[3];
-static GdkColor ColorTemp;
-static gchar *FontTemp;
+GtkWidget *selectors[3];
+GdkColor ColorTemp;
+gchar *FontTemp;
 static gboolean instal = FALSE;
 
 /********************************************************************************/
@@ -1343,7 +1344,7 @@ static void open_font_dlg(GtkWidget *button,gpointer tdata)
 
 	if(!instal)
 	{
-		add_child(Wins, GTK_WIDGET(FontDlg), gtk_widget_destroy, _(" Font selection "));
+		add_child(Wins, GTK_WIDGET(FontDlg), gtk_widget_destroy, _(" Font selction "));
 		g_signal_connect(G_OBJECT(FontDlg),"delete_event",(GCallback)delete_child,NULL);
 	}
 	else
@@ -1904,7 +1905,7 @@ static void set_entry_babel(GtkWidget* SelFile, gint response_id)
   babelCommand = g_strdup(gtk_entry_get_text(GTK_ENTRY(entrybabel)));
 
 }
-static void set_entry_babel_selection(GtkWidget* entry)
+static void set_entry_babel_selction(GtkWidget* entry)
 {
   GtkWidget *SelFile;
 
@@ -1942,7 +1943,7 @@ static void set_entry_gamessdir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_gamessDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selectionOfDir(set_entry_gamessdir, _("Select Gamess folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selctionOfDir(set_entry_gamessdir, _("Select Gamess folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -1976,7 +1977,7 @@ static void set_entry_demondir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_demonDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selectionOfDir(set_entry_demondir, _("Select Demon folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selctionOfDir(set_entry_demondir, _("Select Demon folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -2010,7 +2011,7 @@ static void set_entry_orcadir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_orcaDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selectionOfDir(set_entry_orcadir, _("Select Orca folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selctionOfDir(set_entry_orcadir, _("Select Orca folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -2044,7 +2045,7 @@ static void set_entry_nwchemdir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_nwchemDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selectionOfDir(set_entry_nwchemdir, _("Select NWChem folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selctionOfDir(set_entry_nwchemdir, _("Select NWChem folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -2078,7 +2079,7 @@ static void set_entry_psicodedir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_psicodeDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selectionOfDir(set_entry_psicodedir, _("Select Psicode folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selctionOfDir(set_entry_psicodedir, _("Select Psicode folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -2112,7 +2113,7 @@ static void set_entry_fireflydir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_fireflyDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selectionOfDir(set_entry_fireflydir, _("Select FireFly folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selctionOfDir(set_entry_fireflydir, _("Select FireFly folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -2146,7 +2147,7 @@ static void set_entry_mopacdir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_mopacDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selectionOfDir(set_entry_mopacdir, _("Select Mopac folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selctionOfDir(set_entry_mopacdir, _("Select Mopac folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -2180,7 +2181,7 @@ static void set_entry_povraydir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_povrayDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selectionOfDir(set_entry_povraydir, _("Select PovRay folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selctionOfDir(set_entry_povraydir, _("Select PovRay folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -2214,7 +2215,7 @@ static void set_entry_gaussdir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_gaussDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selectionOfDir(set_entry_gaussdir, _("Select Gaussian folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selctionOfDir(set_entry_gaussdir, _("Select Gaussian folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -2251,7 +2252,7 @@ static void set_entry_openbabeldir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_openbabelDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selectionOfDir(set_entry_openbabeldir, _("Select PovRay folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selctionOfDir(set_entry_openbabeldir, _("Select PovRay folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -2645,7 +2646,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 	button = create_button_pixmap(Wins,open_xpm,NULL);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	g_signal_connect_swapped(GTK_OBJECT (button), "clicked",
-                                     G_CALLBACK(set_entry_babel_selection),
+                                     G_CALLBACK(set_entry_babel_selction),
                                      GTK_OBJECT(entry));
 	add_widget_table(table,button,0,2);
   	g_signal_connect(G_OBJECT (entrybabel), "changed",
@@ -3145,7 +3146,7 @@ void AddPageProp(GtkWidget *NoteBook)
   
   Frame= gtk_frame_new(NULL);
   gtk_container_set_border_width(GTK_CONTAINER(Frame), 10);
-  //gtk_widget_set_size_request(GTK_WIDGET(Frame), (gint)(ScreenHeight*0.6),  (gint)(ScreenHeight*0.3));
+  gtk_widget_set_size_request(GTK_WIDGET(Frame), (gint)(ScreenHeight*0.6),  (gint)(ScreenHeight*0.3));
   LabelOnglet = gtk_label_new(_(" Properties of atoms "));
   LabelMenu = gtk_label_new(_(" Properties of atoms "));
   gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook),
@@ -3181,7 +3182,7 @@ static void set_entry_pscpplinkdir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_pscpplinkDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selectionOfDir(set_entry_pscpplinkdir, _("Select pscp & plink folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selctionOfDir(set_entry_pscpplinkdir, _("Select pscp & plink folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -3401,7 +3402,6 @@ void AddPageNetWork(GtkWidget *NoteBook)
 /********************************************************************************/
 void create_preferences()
 {
-GtkWidget *NoteBook;
   GtkWidget *button;
 
   if(instal)
@@ -3420,7 +3420,7 @@ GtkWidget *NoteBook;
   instal = FALSE;
   gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER);
   gtk_window_set_transient_for(GTK_WINDOW(Wins),GTK_WINDOW(Fenetre));
-  //gtk_window_set_default_size (GTK_WINDOW(Wins), (gushort)(2.9*ScreenWidth/5), (gushort)(2.9*ScreenHeight/5));
+  gtk_window_set_default_size (GTK_WINDOW(Wins), (gushort)(2.9*ScreenWidth/5), (gushort)(2.9*ScreenHeight/5));
 /*  gtk_window_set_modal (GTK_WINDOW (Wins), TRUE);*/
 
   /* Connection des signaux "delete" et "destroy" */
