@@ -39,6 +39,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/ColorMap.h"
 #include "../OpenGL/BondsOrb.h"
 #include "../OpenGL/RingsOrb.h"
+#include "../OpenGL/Vibration.h"
 
 #include <unistd.h>
 
@@ -109,7 +110,12 @@ static XYZRC get_tete_dipole()
 
 	for(i=0;i<3;i++) PropCenter.C[i]= f*Dipole.Value[i];
 	PropCenter.C[3] = Dipole.radius;
-	for(i=0;i<3;i++) PropCenter.P.Colors[i]=Dipole.color[i]/65535.0;
+	for(i=0;i<3;i++) 
+	{
+		PropCenter.P.Colors[i]=Dipole.color[i]/65535.0;
+		PropCenter.P.Colors[i]*=0.6;
+	}
+	PropCenter.P.Colors[1] = PropCenter.P.Colors[2];
 
         return  PropCenter;
 }
@@ -133,6 +139,101 @@ static gint get_num_min_rayonIJ(gint i, gint j)
 	return j;
 }
 /********************************************************************************/
+static gchar *get_pov_vibarrow(
+		gfloat x0, gfloat y0, gfloat z0,
+		gfloat x1, gfloat y1, gfloat z1,
+		gfloat radius, gint i
+		)
+
+{
+     XYZRC C1;
+     XYZRC C2;
+     gdouble ep = radius/2;
+     gchar* temp = NULL;
+
+     C1.C[0] = x0;
+     C1.C[1] = y0;
+     C1.C[2] = z0;
+     C1.C[3] = radius/2;
+     C1.P.Colors[0]=0;
+     C1.P.Colors[1]=0;
+     C1.P.Colors[2]=1;
+
+     C2.C[0] = x1;
+     C2.C[1] = y1;
+     C2.C[2] = z1;
+     C2.C[3] = radius/2;
+     C2.P.Colors[0]=0.0;
+     C2.P.Colors[1]=0.9;
+     C2.P.Colors[2]=0.9;
+
+
+     if(!degenerated_cylinder(C1.C,C2.C))
+     temp = g_strdup_printf(
+		"// Vib\n"
+		"#declare CBas1_A%d = <%f, %f, %f>;\n"
+		"#declare CBas2_A%d = <%f, %f, %f>;\n"
+		"#declare Col1_A%d = <%f, %f, %f>;\n"
+		"#declare Col2_A%d = <%f, %f, %f>;\n"
+		"object\n"
+		"{\n"
+		"\tarrow (CBas1_A%d, CBas2_A%d, %f, Col1_A%d, Col2_A%d)\n"
+		"}\n",
+		i, C1.C[0], C1.C[1], C1.C[2],
+		i, C2.C[0], C2.C[1], C2.C[2],
+		i,C1.P.Colors[0],C1.P.Colors[1],C1.P.Colors[2],
+		i,C2.P.Colors[0],C2.P.Colors[1],C2.P.Colors[2],
+		i,i,ep,i,i
+		);
+     else temp = g_strdup(" ");
+     return temp;
+}
+/********************************************************************************/
+static gchar *get_pov_vibration()
+{
+     	gchar *temp=NULL;
+     	gchar *tempold=NULL;
+     	gchar *t=NULL;
+	gint m = rowSelected;
+	gint j;
+	gfloat x0, y0, z0;
+	gfloat x1, y1, z1;
+
+	if(!ShowVibration || m<0) return g_strdup( " ");
+
+     	temp = g_strdup( "// Vibration arrows \n");
+	for(j=0;j<Ncenters;j++)
+	{
+		if(
+			vibration.modes[m].vectors[0][j]*vibration.modes[m].vectors[0][j]+
+			vibration.modes[m].vectors[1][j]*vibration.modes[m].vectors[1][j]+
+			vibration.modes[m].vectors[2][j]*vibration.modes[m].vectors[2][j]
+			<vibration.threshold*vibration.threshold
+		)continue;
+		x0 = vibration.geometry[j].coordinates[0];
+		x1 = x0 + 2*vibration.scal*vibration.modes[m].vectors[0][j];
+
+		y0 = vibration.geometry[j].coordinates[1];
+		y1 = y0 + 2*vibration.scal*vibration.modes[m].vectors[1][j];
+
+		z0 = vibration.geometry[j].coordinates[2];
+		z1 = z0 + 2*vibration.scal*vibration.modes[m].vectors[2][j];
+		tempold = temp;
+		t = get_pov_vibarrow(x0,y0,z0,x1,y1,z1,vibration.radius,j);
+		if(t)
+		{
+			if(tempold)
+			{
+				temp = g_strdup_printf("%s%s",tempold,t);
+				g_free(tempold);
+			}
+			else temp = g_strdup_printf("%s",t);
+		  	g_free(t);
+		}
+	}
+	return temp;
+}
+/********************************************************************************/
 static gchar *get_pov_dipole()
 {
      XYZRC C1 = get_base_dipole();
@@ -154,7 +255,7 @@ static gchar *get_pov_dipole()
 		C1.C[0],C1.C[1],C1.C[2],
 		C2.C[0],C2.C[1],C2.C[2],
 		C1.P.Colors[0],C1.P.Colors[1],C1.P.Colors[2],
-		C2.P.Colors[0]/2,C2.P.Colors[1]/2,C2.P.Colors[2]/2,
+		C2.P.Colors[0],C2.P.Colors[1],C2.P.Colors[2],
 		ep
 		);
      else temp = g_strdup(" ");
@@ -248,7 +349,7 @@ static gchar *get_pov_xyz_axes()
 		yColor[0]/2,yColor[1]/2,yColor[2]/2,
 		zColor[0],zColor[1],zColor[2],
 		zColor[0]/2,zColor[1]/2,zColor[2]/2,
-		radius
+		radius/2
 		);
      return temp;
 }
@@ -775,7 +876,7 @@ static gchar *get_pov_declare_arrow()
 	"\tunion {\n"
 	"\t\tcylinder\n"
 	"\t\t{\n"
-	"\t\t\tP1,P2-(P2-P1)*0.2,r\n"
+	"\t\t\tP1,P2,r\n"
 	"\t\t\ttexture\n"
 	"\t\t\t{\n"
 	"\t\t\t\tpigment { rgb C1}\n"
@@ -784,7 +885,7 @@ static gchar *get_pov_declare_arrow()
 	"\t\t}\n"
 	"\t\tcone\n"
 	"\t\t{\n"
-	"\t\t\tP2-(P2-P1)*0.2,r*2.0,P2,0\n"
+	"\t\t\tP2,r*2.0/1.5,P2+(P2-P1)*4*r/vlength(P2-P1),0\n"
 	"\t\t\ttexture\n"
 	"\t\t\t{\n"
 	"\t\t\t\tpigment { rgb C2}\n"
@@ -1367,6 +1468,13 @@ static gchar* create_povray_file(gchar* fileName, gboolean saveCamera, gboolean 
 		fprintf(file,"%s",temp);
 		g_free(temp);
 	}
+	temp = get_pov_vibration();
+	if(temp)
+	{
+		fprintf(file,"%s",temp);
+		g_free(temp);
+	}
+
 	temp = get_pov_end_molecule();
 	fprintf(file,"%s",temp);
 	g_free(temp);

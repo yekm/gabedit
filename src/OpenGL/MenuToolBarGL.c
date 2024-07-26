@@ -56,6 +56,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/RingsOrb.h"
 #include "../OpenGL/ContoursDraw.h"
 #include "../OpenGL/CaptureOrbitals.h"
+#include "../OpenGL/IntegralOrbitals.h"
 #include "../OpenGL/BondsOrb.h"
 #include "../Common/StockIcons.h"
 
@@ -231,6 +232,16 @@ static void activate_action (GtkAction *action)
 	{
 			TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
 			 capture_orbitals_dlg();
+	}
+	else if(!strcmp(name , "OrbitalsCoulomb"))
+	{
+			TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
+			 coulomb_orbitals_dlg();
+	}
+	else if(!strcmp(name , "OrbitalsOverlap"))
+	{
+			TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
+			 compute_overlap_matrix(1);
 	}
 	else if(!strcmp(name , "CubeLoadGaussianOrbitals" ))
  		file_chooser_open(load_cube_gauss_orbitals_file,"Load Gaussian orbitals cube file",GABEDIT_TYPEFILE_CUBEGAUSS,GABEDIT_TYPEWIN_ORB);
@@ -727,8 +738,9 @@ static GtkActionEntry gtkActionEntries[] =
 		NULL, "Save in Gabedit file", G_CALLBACK (activate_action) },
 	{"OrbitalsSelection", GABEDIT_STOCK_SELECT_ALL, "_Selection", 
 		NULL, "Select an orbital", G_CALLBACK (activate_action) },
-	{"OrbitalsCapture", GABEDIT_STOCK_SELECT_ALL, "_Slideshow", 
-		NULL, "Slideshow", G_CALLBACK (activate_action) },
+	{"OrbitalsCapture", GABEDIT_STOCK_SELECT_ALL, "_Slideshow", NULL, "Slideshow", G_CALLBACK (activate_action) },
+	{"OrbitalsCoulomb", GABEDIT_STOCK_SELECT_ALL, "_Coulomb integral", NULL, "Coulomb", G_CALLBACK (activate_action) },
+	{"OrbitalsOverlap", GABEDIT_STOCK_SELECT_ALL, "Compute _overlap matrix", NULL, "Overlap", G_CALLBACK (activate_action) },
 	{"Cube",     NULL, "_Cube&Grid"},
 
 	{"CubeLoadGaussian",     GABEDIT_STOCK_GAUSSIAN, "Load _Gaussian cube"},
@@ -1398,6 +1410,9 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"OrbitalsSelection\" action=\"OrbitalsSelection\" />\n"
 "      <separator name=\"sepMenuGabeditOrbCap\" />\n"
 "      <menuitem name=\"OrbitalsCapture\" action=\"OrbitalsCapture\" />\n"
+"      <separator name=\"sepMenuGabeditOrbCoul\" />\n"
+"      <menuitem name=\"OrbitalsCoulomb\" action=\"OrbitalsCoulomb\" />\n"
+"      <menuitem name=\"OrbitalsOverlap\" action=\"OrbitalsOverlap\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepMenuCube\" />\n"
 "    <menu name=\"Cube\" action = \"Cube\">\n"
@@ -1811,11 +1826,15 @@ static void set_sensitive_orbitals()
 	GtkWidget *orbSave = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsGabeditSave");
 	GtkWidget *orbSelection = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsSelection");
 	GtkWidget *orbCapture = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsCapture");
+	GtkWidget *orbCoulomb = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsCoulomb");
+	GtkWidget *orbOverlap = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsOverlap");
 	gboolean sensitive = TRUE;
   	if(NAOrb<1) sensitive = FALSE;
 	if(GTK_IS_WIDGET(orbSave)) gtk_widget_set_sensitive(orbSave, sensitive);
 	if(GTK_IS_WIDGET(orbSelection)) gtk_widget_set_sensitive(orbSelection, sensitive);
 	if(GTK_IS_WIDGET(orbCapture)) gtk_widget_set_sensitive(orbCapture, sensitive);
+	if(GTK_IS_WIDGET(orbCoulomb)) gtk_widget_set_sensitive(orbCoulomb, sensitive);
+	if(GTK_IS_WIDGET(orbOverlap)) gtk_widget_set_sensitive(orbOverlap, sensitive);
 }
 /*********************************************************************************************************************/
 static void set_sensitive_cube()
@@ -1869,11 +1888,9 @@ static void set_sensitive_density()
 		if(GTK_IS_WIDGET(elf)) gtk_widget_set_sensitive(elf, FALSE);
 		return;
 	}
-	//if( (grid || (CoefAlphaOrbitals && GeomOrb)) && GTK_IS_WIDGET(esp)) gtk_widget_set_sensitive(esp, TRUE);
 	if(GeomOrb && GTK_IS_WIDGET(esp)) gtk_widget_set_sensitive(esp, TRUE);
 	if( grid && GTK_IS_WIDGET(espGrid)) gtk_widget_set_sensitive(espGrid, TRUE);
 	if( CoefAlphaOrbitals && GeomOrb && GTK_IS_WIDGET(espOrb)) gtk_widget_set_sensitive(espOrb, TRUE);
-	//if( grid && CoefAlphaOrbitals && GeomOrb && GTK_IS_WIDGET(espMapping)) gtk_widget_set_sensitive(espMapping, TRUE);
 	if( grid && GeomOrb && GTK_IS_WIDGET(espMapping)) gtk_widget_set_sensitive(espMapping, TRUE);
 	if( grid && CoefAlphaOrbitals && GeomOrb && GTK_IS_WIDGET(espMapping)) 
 	{

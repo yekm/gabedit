@@ -870,8 +870,9 @@ static gboolean create_cmd_pcgamess(G_CONST_RETURN gchar* command, gboolean loca
 			fprintf(fcmd,"cd \"%s\\tmp\\%cRND%c%s\"\n",g_get_home_dir(),'%','%',fileopen.projectname);
 			fprintf(fcmd,"copy \"%s\\%s\" \"%s\\tmp\\%cRND%c%s\\input\"\n",fileopen.localdir,fileopen.datafile,g_get_home_dir(),'%','%',fileopen.projectname);
 /* 			fprintf(fcmd,"pcgamess -o \"%s\\%s.log\"\n",fileopen.localdir,fileopen.projectname);*/
-			fprintf(fcmd,"pcgamess -p -o \"%s\\%s.log\"\n",fileopen.localdir,fileopen.projectname);
-			fprintf(fcmd,"move %s\\PUNCH %s.pun\n",fileopen.localdir,fileopen.projectname);
+			fprintf(fcmd,"pcgamess -o \"%s\\%s.log\"\n",fileopen.localdir,fileopen.projectname);
+			fprintf(fcmd,"move \"%s\\tmp\\%cRND%c%s\\PUNCH\" \"%s\\%s.irc\"\n",g_get_home_dir(),'%','%',fileopen.projectname, fileopen.localdir,fileopen.projectname);
+			fprintf(fcmd,"move \"%s\\tmp\\%cRND%c%s\\IRCDATA\" \"%s\\%s.irc\"\n",g_get_home_dir(),'%','%',fileopen.projectname, fileopen.localdir,fileopen.projectname);
 			fprintf(fcmd,"cd \"%s\"\n",fileopen.localdir);
 			fprintf(fcmd,"del /Q \"%s\\tmp\\%cRND%c%s\\*\"\n",g_get_home_dir(),'%','%',fileopen.projectname);
 			fprintf(fcmd,"rmdir \"%s\\tmp\\%cRND%c%s\"\n",g_get_home_dir(),'%','%',fileopen.projectname);
@@ -908,9 +909,12 @@ static gboolean create_cmd_pcgamess(G_CONST_RETURN gchar* command, gboolean loca
 			fprintf(fcmd,"mkdir $PCGAMESSDIR\n");
 			fprintf(fcmd,"cd $PCGAMESSDIR\n");
 			fprintf(fcmd,"cp $DEFAULTDIR/$fileinput input\n");
-/* 			fprintf(fcmd,"pcgamess -o $DEFAULTDIR/$filename.log\n");*/
-			fprintf(fcmd,"pcgamess -p -o $DEFAULTDIR/$filename.log\n");
-			fprintf(fcmd,"mv -f $DEFAULTDIR/PUNCH $DEFAULTDIR/$filename.pun\n");
+			fprintf(fcmd,"pcgamess -o $DEFAULTDIR/$filename.log\n");
+			fprintf(fcmd,"mv -f $PCGAMESSDIR/PUNCH $DEFAULTDIR/$filename.pun\n");
+			fprintf(fcmd,"if [ -s \"$PCGAMESSDIR/IRCDATA\" ]\n");
+			fprintf(fcmd,"then\n");
+			fprintf(fcmd,"mv -f $PCGAMESSDIR/IRCDATA $DEFAULTDIR/$filename.irc\n");
+			fprintf(fcmd,"fi\n");
 			fprintf(fcmd,"cd $DEFAULTDIR\n");
 			fprintf(fcmd,"/bin/rm -r $PCGAMESSDIR\n");
 		}
@@ -947,9 +951,12 @@ static gboolean create_cmd_pcgamess(G_CONST_RETURN gchar* command, gboolean loca
 		fprintf(fcmd,"mkdir $PCGAMESSDIR\n");
 		fprintf(fcmd,"cd $PCGAMESSDIR\n");
 		fprintf(fcmd,"cp $DEFAULTDIR/$fileinput input\n");
-/*		fprintf(fcmd,"pcgamess -o $DEFAULTDIR/$filename.log\n");*/
-		fprintf(fcmd,"pcgamess -p -o $DEFAULTDIR/$filename.log\n");
-		fprintf(fcmd,"mv -f $DEFAULTDIR/PUNCH $DEFAULTDIR/$filename.pun\n");
+		fprintf(fcmd,"pcgamess -o $DEFAULTDIR/$filename.log\n");
+		fprintf(fcmd,"mv -f $PCGAMESSDIR/PUNCH $DEFAULTDIR/$filename.pun\n");
+		fprintf(fcmd,"if [ -s \"$PCGAMESSDIR/IRCDATA\" ]\n");
+		fprintf(fcmd,"then\n");
+		fprintf(fcmd,"mv -f $PCGAMESSDIR/IRCDATA $DEFAULTDIR/$filename.irc\n");
+		fprintf(fcmd,"fi\n");
 		fprintf(fcmd,"cd $DEFAULTDIR\n");
 		fprintf(fcmd,"/bin/rm -r $PCGAMESSDIR\n");
 	}
@@ -3330,6 +3337,9 @@ static void run_local_orca(GtkWidget *b,gpointer data)
   gchar cmdFile[BSIZE];
 
 
+  unlink(fout);
+  unlink(ferr);
+
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
@@ -3430,6 +3440,8 @@ static void run_local_pcgamess(GtkWidget *b,gpointer data)
   gchar cmdDir[BSIZE];
   gchar cmdFile[BSIZE];
 
+  unlink(fout);
+  unlink(ferr);
 
   entryall=(GtkWidget **)data;
   entry=entryall[0];
@@ -3532,6 +3544,8 @@ static void run_local_qchem(GtkWidget *b,gpointer data)
   gchar cmdFile[BSIZE];
 
 
+  unlink(fout);
+  unlink(ferr);
 
   entryall=(GtkWidget **)data;
   entry=entryall[0];
@@ -3634,6 +3648,8 @@ static void run_local_mopac(GtkWidget *b,gpointer data)
   gchar cmdFile[BSIZE];
 
 
+  unlink(fout);
+  unlink(ferr);
 
   entryall=(GtkWidget **)data;
   entry=entryall[0];
@@ -3735,6 +3751,8 @@ static void run_local_gamess(GtkWidget *b,gpointer data)
   gchar cmdDir[BSIZE];
   gchar cmdFile[BSIZE];
 
+  unlink(fout);
+  unlink(ferr);
 
   entryall=(GtkWidget **)data;
   entry=entryall[0];
@@ -3836,6 +3854,8 @@ static void run_local_gaussian(GtkWidget *b,gpointer data)
   gchar cmdDir[BSIZE];
   gchar cmdFile[BSIZE];
 
+  unlink(fout);
+  unlink(ferr);
 
   entryall=(GtkWidget **)data;
   entry=entryall[0];
@@ -3932,6 +3952,9 @@ static void run_local_molcas(GtkWidget *b,gpointer data)
   gchar cmdFileAllName[BSIZE];
   gchar cmdDir[BSIZE];
   gchar cmdFile[BSIZE];
+
+  unlink(fout);
+  unlink(ferr);
 
   entryall=(GtkWidget **)data;
   entry=entryall[0];
@@ -4038,6 +4061,8 @@ static void run_local_molpro(GtkWidget *b,gpointer data)
   gchar cmdDir[BSIZE];
   gchar cmdFile[BSIZE];
 
+  unlink(fout);
+  unlink(ferr);
 
   entryall=(GtkWidget **)data;
   entry=entryall[0];
@@ -4169,6 +4194,9 @@ static void run_local_mpqc(GtkWidget *b,gpointer data)
   gchar cmdDir[BSIZE];
   gchar cmdFile[BSIZE];
 
+  unlink(fout);
+  unlink(ferr);
+
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
@@ -4271,6 +4299,8 @@ static void run_local_other(GtkWidget *b,gpointer data)
   gchar cmdDir[BSIZE];
   gchar cmdFile[BSIZE];
 
+  unlink(fout);
+  unlink(ferr);
 
   entryall=(GtkWidget **)data;
   entry=entryall[0];

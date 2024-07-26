@@ -1217,7 +1217,6 @@ void gauss(gint ioption)
 
 	/* button = gtk_button_new ();*/
 	button = create_button(Wins,"OK");
-	//g_signal_connect(G_OBJECT(button), "clicked", (GCallback)GetInfoAll,NULL);
 	g_signal_connect(G_OBJECT(button), "clicked", (GCallback)putInfoAll,NULL);
 	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);

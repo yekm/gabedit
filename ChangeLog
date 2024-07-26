@@ -193,8 +193,15 @@
   Draw the density of states.
 23 July 2009 :
   Gabedit can create a pov file and run povray interactively.
-  The povray and the opengg cameras are identical.
+  The povray and the opengl cameras are identical.
   Show the MO coefficients.
   Draw the DOS (the density of states)
   Square a grid. (phi^2)
   Apply a restriction to grid.
+19 August 2009 :
+  The scale for the vibration vectors can be negative.
+  The threshold for the vibration vectors can be changed.
+  Gabedit can now read the raman activity from a Gamess or PCGamess output file.
+  The vibration vectors are added to the povray file.
+21 August 2009 :
+  Compute the <ii|1/r12|jj> coulomb integral, analytically with GTF and numerically with GTF and STF.

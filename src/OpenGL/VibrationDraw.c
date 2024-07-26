@@ -94,9 +94,6 @@ static void draw_vector(
 	V3d Base1Pos  = {x0, y0, z0};
 	V3d Base2Pos  = {x1, y1, z1};
 	V3d Center;
-	GLfloat p1=90;
-	GLfloat p2=10;
-	GLfloat p = p1 + p2;
 	V3d Direction;
 	double lengt;
 
@@ -104,10 +101,23 @@ static void draw_vector(
 	Direction[1] = Base2Pos[1]-Base1Pos[1];
 	Direction[2] = Base2Pos[2]-Base1Pos[2];
 	lengt = v3d_length(Direction);
-	if(lengt<0.1)
-		return;
-	if(radius<0.01)
-		return;
+	if(lengt<1e-6) return;
+	if(radius<0.01) return;
+
+	Direction[0] /= lengt;
+	Direction[1] /= lengt;
+	Direction[2] /= lengt;
+
+	Center[0] = Base2Pos[0];
+	Center[1] = Base2Pos[1];
+	Center[2] = Base2Pos[2];
+
+	Base2Pos[0] += Direction[0]*2*radius;
+	Base2Pos[1] += Direction[1]*2*radius;
+	Base2Pos[2] += Direction[2]*2*radius;
+
+
+	/*
 	if(lengt>2*radius)
 	{
 		p2 = 2*radius;
@@ -124,12 +134,16 @@ static void draw_vector(
 	Center[0] = (Base1Pos[0]*p2 + Base2Pos[0]*p1)/p;
 	Center[1] = (Base1Pos[1]*p2 + Base2Pos[1]*p1)/p;
 	Center[2] = (Base1Pos[2]*p2 + Base2Pos[2]*p1)/p;
+	*/
+
+
 	Cylinder_Draw_Color(radius/2,Base1Pos,Center,Specular,Diffuse,Ambiant);
 	Diffuse[2] *=0.9;
 	Ambiant[2] *=0.9;
 	Diffuse[1] =0.9;
 
-	draw_prism(radius,Center,Base2Pos,Specular,Diffuse,Ambiant);
+	/* draw_prism(radius,Center,Base2Pos,Specular,Diffuse,Ambiant);*/
+	draw_prism(radius/1.5,Center,Base2Pos,Specular,Diffuse,Ambiant);
 }
 /************************************************************************/
 static void draw_vectors()
@@ -139,11 +153,16 @@ static void draw_vectors()
 	gfloat x0, y0, z0;
 	gfloat x1, y1, z1;
 
-	if(m<0)
-		return;
+	if(m<0) return;
 
 	for(j=0;j<Ncenters;j++)
 	{
+		if(
+			vibration.modes[m].vectors[0][j]*vibration.modes[m].vectors[0][j]+
+			vibration.modes[m].vectors[1][j]*vibration.modes[m].vectors[1][j]+
+			vibration.modes[m].vectors[2][j]*vibration.modes[m].vectors[2][j]
+			<vibration.threshold*vibration.threshold
+		)continue;
 		x0 = vibration.geometry[j].coordinates[0];
 		x1 = x0 + 2*vibration.scal*vibration.modes[m].vectors[0][j];
 

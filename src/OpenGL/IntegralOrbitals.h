@@ -16,45 +16,11 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 DEALINGS IN THE SOFTWARE.
 ************************************************************************************************************/
 
-#ifndef __GABEDIT_VIBRATION_H__
-#define __GABEDIT_VIBRATION_H__
+#ifndef __GABEDIT_COULOMBORBITALS_H__
+#define __GABEDIT_COULOMBORBITALS_H__
 
-typedef struct _VibrationMode
-{
-	gdouble frequence;
-	gdouble effectiveMass;
-	gdouble IRIntensity;
-	gdouble RamanIntensity;
-	gchar* symmetry;
-	gdouble* vectors[3];
-}VibrationMode;
+void coulomb_orbitals_dlg();
+void compute_overlap_matrix(gint typeOrb);
 
-typedef struct _VibrationGeom
-{
-	gchar* symbol;
-	gfloat coordinates[3];
-	gdouble partialCharge;
-	gdouble nuclearCharge;
-}VibrationGeom;
-
-typedef struct _Vibration
-{
-	gint numberOfAtoms;
-	VibrationGeom* geometry;
-
-	gint numberOfFrequences;
-	VibrationMode* modes;
-
-	gfloat scal;
-	gfloat velocity;
-	gfloat radius;
-	gfloat threshold;
-	gint nSteps;
-}Vibration;
-Vibration vibration;
-gint rowSelected;
-void init_vibration();
-void vibrationDlg();
-
-#endif /* __GABEDIT_VIBRATION_H__ */
+#endif /* __GABEDIT_COULOMBORBITALS_H__ */
 

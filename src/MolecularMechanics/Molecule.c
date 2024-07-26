@@ -707,7 +707,6 @@ void redrawMolecule(Molecule* molecule,gchar* str)
 	change_of_center(NULL,NULL);
 
 	create_GeomXYZ_from_draw_grometry();
-	//set_connections_from_connected2(molecule->numberOf2Connections, molecule->connected2[0], molecule->connected2[1]);
 	dessine();
 
     	while( gtk_events_pending() )

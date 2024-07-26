@@ -27,8 +27,8 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
 #include "../Utils/Constants.h"
-#include "ZlmMG.h"
-#include "MathFunctions.h"
+#include "../Utils/Zlm.h"
+#include "../Utils/MathFunctions.h"
 #include "PoissonMG.h"
 #include "../Common/GabeditType.h"
 #include "../OpenGL/GlobalOrb.h"
@@ -303,7 +303,7 @@ void setBoundaryEwaldPoissonMG(PoissonMG* ps)
 void setBoundaryMultipolPoissonMG(PoissonMG* ps)
 {
 	const int lmax = 2;
-	ZlmMG zlm[lmax+1][2*lmax+1+1];
+	Zlm zlm[lmax+1][2*lmax+1+1];
 	gint l,m;
 	gint i;
 	static gdouble PRECISION = 1e-12;
@@ -322,7 +322,7 @@ void setBoundaryMultipolPoissonMG(PoissonMG* ps)
 	for( l=0; l<=lmax; l++)
 		for( m=-l; m<=l; m++)
 		{
-			zlm[l][m+l] = getZlmMG(l, m);
+			zlm[l][m+l] = getZlm(l, m);
 		}
 	/* printf("End Zlm\n");*/
 
@@ -360,7 +360,7 @@ void setBoundaryMultipolPoissonMG(PoissonMG* ps)
 					gdouble p = temp*pow(r,l);
 					for( m=-l; m<=l; m++)
 					{
-						Q[l][m+l] += p*getValueZlmMG(&zlm[l][m+l],R[0],R[1],R[2]);
+						Q[l][m+l] += p*getValueZlm(&zlm[l][m+l],R[0],R[1],R[2]);
 					}
 				}
 			}
@@ -403,7 +403,7 @@ void setBoundaryMultipolPoissonMG(PoissonMG* ps)
 					for( m=-l; m<=l; m++)
 					{
 						if(fabs(Q[l][m+l])<10*PRECISION) continue;
-						v += temp*getValueZlmMG(&zlm[l][m+l],R[0],R[1],R[2])*Q[l][m+l]; 
+						v += temp*getValueZlm(&zlm[l][m+l],R[0],R[1],R[2])*Q[l][m+l]; 
 					}
 				}
 				setValGridMG(ps->potential, ix, iy, iz, v);
@@ -427,7 +427,7 @@ void setBoundaryMultipolPoissonMG(PoissonMG* ps)
 					for( m=-l; m<=l; m++)
 					{
 						if(fabs(Q[l][m+l])<10*PRECISION) continue;
-						v += temp*getValueZlmMG(&zlm[l][m+l],R[0],R[1],R[2])*Q[l][m+l]; 
+						v += temp*getValueZlm(&zlm[l][m+l],R[0],R[1],R[2])*Q[l][m+l]; 
 					}
 				}
 				setValGridMG(ps->potential, ix, iy, iz, v);
@@ -452,7 +452,7 @@ void setBoundaryMultipolPoissonMG(PoissonMG* ps)
 					for( m=-l; m<=l; m++)
 					{
 						if(fabs(Q[l][m+l])<10*PRECISION) continue;
-						v += temp*getValueZlmMG(&zlm[l][m+l],R[0],R[1],R[2])*Q[l][m+l]; 
+						v += temp*getValueZlm(&zlm[l][m+l],R[0],R[1],R[2])*Q[l][m+l]; 
 					}
 				}
 				setValGridMG(ps->potential, ix, iy, iz, v);
@@ -475,7 +475,7 @@ void setBoundaryMultipolPoissonMG(PoissonMG* ps)
 					for( m=-l; m<=l; m++)
 					{
 						if(fabs(Q[l][m+l])<10*PRECISION) continue;
-						v += temp*getValueZlmMG(&zlm[l][m+l],R[0],R[1],R[2])*Q[l][m+l]; 
+						v += temp*getValueZlm(&zlm[l][m+l],R[0],R[1],R[2])*Q[l][m+l]; 
 					}
 				}
 				setValGridMG(ps->potential, ix, iy, iz, v);
@@ -502,7 +502,7 @@ void setBoundaryMultipolPoissonMG(PoissonMG* ps)
 					for( m=-l; m<=l; m++)
 					{
 						if(fabs(Q[l][m+l])<10*PRECISION) continue;
-						v += temp*getValueZlmMG(&zlm[l][m+l],R[0],R[1],R[2])*Q[l][m+l]; 
+						v += temp*getValueZlm(&zlm[l][m+l],R[0],R[1],R[2])*Q[l][m+l]; 
 					}
 				}
 				setValGridMG(ps->potential, ix, iy, iz, v);
@@ -524,7 +524,7 @@ void setBoundaryMultipolPoissonMG(PoissonMG* ps)
 					for( m=-l; m<=l; m++)
 					{
 						if(fabs(Q[l][m+l])<10*PRECISION) continue;
-						v += temp*getValueZlmMG(&zlm[l][m+l],R[0],R[1],R[2])*Q[l][m+l]; 
+						v += temp*getValueZlm(&zlm[l][m+l],R[0],R[1],R[2])*Q[l][m+l]; 
 					}
 				}
 				setValGridMG(ps->potential, ix, iy, iz, v);
@@ -853,6 +853,7 @@ void solveMGPoissonMG3(PoissonMG* ps, int levelMax, int nIter, gdouble acc, int 
 		printf("-------------------------------------------\n");
 	}
 	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+	setTextInProgress("Solve Poisson equation by MultiGrid method, please wait");
 	scale = (gfloat)1.01/nIter;
 
 

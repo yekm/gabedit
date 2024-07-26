@@ -23,6 +23,8 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Constants.h"
+#include "../Utils/Zlm.h"
+#include "../Utils/GTF.h"
 
 /********************************************************************************/
 void save_basis_gabedit_format(FILE* file)
@@ -615,7 +617,7 @@ void PrintAllBasis()
  for(k=0;k<NAOrb;k++)
  {
 
-	 for(n=0;n<AOrb[k].N;n++)
+	 for(n=0;n<AOrb[k].numberOfFunctions;n++)
 	 {
 		
 		 l=0;
@@ -644,11 +646,11 @@ void NormaliseAllBasis()
  gint k,n;
 
  for(k=0;k<NAOrb;k++)
-	 for(n=0;n<AOrb[k].N;n++)
-		 NormaliseRadial(&AOrb[k].Gtf[n]);
+	 for(n=0;n<AOrb[k].numberOfFunctions;n++)
+		 normaliseRadialGTF(&AOrb[k].Gtf[n]);
 
  for(k=0;k<NAOrb;k++)
-		 NormaliseCGTF(&AOrb[k]);
+		 normaliseCGTF(&AOrb[k]);
 }
 /**********************************************/
 void DefineAtomicNumOrb()
@@ -784,10 +786,10 @@ void DefineCartBasis()
 			l2 = l[1][m];
 	 		l3 = l[2][m];
 	 		k++;
-	 		AOrb[k].N=Type[GeomOrb[i].NumType].Ao[j].N;
+	 		AOrb[k].numberOfFunctions=Type[GeomOrb[i].NumType].Ao[j].N;
 			AOrb[k].NumCenter = i;
-	 		AOrb[k].Gtf =g_malloc(AOrb[k].N*sizeof(GTF));
-	 		for(n=0;n<AOrb[k].N;n++)
+	 		AOrb[k].Gtf =g_malloc(AOrb[k].numberOfFunctions*sizeof(GTF));
+	 		for(n=0;n<AOrb[k].numberOfFunctions;n++)
 	 		{
 	   			AOrb[k].Gtf[n].Ex   = Type[GeomOrb[i].NumType].Ao[j].Ex[n];
 	   			AOrb[k].Gtf[n].Coef = Type[GeomOrb[i].NumType].Ao[j].Coef[n];
@@ -814,7 +816,7 @@ void DefineSphericalBasis()
  gint kl;
  gint L,M;
  CGTF *temp;
- Slm Stemp;
+ Zlm Stemp;
  gint N,Nc,n;
  gint inc;
  gint  klbeg;
@@ -864,15 +866,15 @@ void DefineSphericalBasis()
     		{
 			/*Debug("L =%d kl=%d M=%d \n",L,kl,M);*/
 	 		k++;
-	 	   	Stemp =  GetCoefSlm(L,M);
+	 	   	Stemp =  getZlm(L,M);
 
-	 		temp[k].N=Stemp.N*Type[GeomOrb[i].NumType].Ao[j].N;
+	 		temp[k].numberOfFunctions=Stemp.numberOfCoefficients*Type[GeomOrb[i].NumType].Ao[j].N;
 		    temp[k].NumCenter=i;
 			/*Debug("M=%d N=%d\n",M,temp[k].N);*/
-	 		temp[k].Gtf =g_malloc(temp[k].N*sizeof(GTF));
+	 		temp[k].Gtf =g_malloc(temp[k].numberOfFunctions*sizeof(GTF));
           		Nc=-1;
 	 		for(N=0;N<Type[GeomOrb[i].NumType].Ao[j].N;N++)
-	 			 for(n=0;n<Stemp.N;n++)
+	 			 for(n=0;n<Stemp.numberOfCoefficients;n++)
 	 			{
 	 			   Nc++;
 	 			

@@ -244,6 +244,7 @@ typedef enum
   GABEDIT_PROGORB_SAVEGEOM,
   GABEDIT_PROGORB_COMPISOSURFACE,
   GABEDIT_PROGORB_COMPGRID,
+  GABEDIT_PROGORB_COMPINTEG,
   GABEDIT_PROGORB_SCALEGRID,
   GABEDIT_PROGORB_SUBSGRID,
   GABEDIT_PROGORB_READGRID,
@@ -256,19 +257,21 @@ typedef enum
   GABEDIT_PROGORB_COMPMEPGRID,
 } GabEditTypeProgressOrb;
 
-typedef struct _LXYZ
+typedef struct _LXYZ LXYZ;
+struct _LXYZ
 {
- gfloat Coef;
- gint l[3];
-}LXYZ;
+	gdouble Coef;
+	gint l[3];
+};
 
-typedef struct _Slm
+typedef struct _Zlm Zlm;
+struct _Zlm
 {
- gint l;
- gint m;
- gint N;
- LXYZ *lxyz;
-}Slm;
+	gint l;
+	gint m;
+	gint numberOfCoefficients;
+	LXYZ* lxyz;
+};
 
 typedef struct _GTF
 {
@@ -296,7 +299,7 @@ typedef struct _TYPE
 
 typedef struct _CGTF
 {
- gint N;
+ gint numberOfFunctions;
  gint NumCenter;
  GTF* Gtf;
  gint L; /* used if spherical basis*/

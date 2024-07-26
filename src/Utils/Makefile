@@ -1,4 +1,4 @@
-OBJECTS = GabeditTextEdit.o AtomsProp.o Jacobi.o Transformation.o Utils.o UtilsInterface.o Vector3d.o Matrix3D.o HydrogenBond.o PovrayUtils.o UtilsGL.o ConvUtils.o GabeditXYPlot.o UtilsCairo.o
+OBJECTS = GabeditTextEdit.o AtomsProp.o Jacobi.o Transformation.o Utils.o UtilsInterface.o Vector3d.o Matrix3D.o HydrogenBond.o PovrayUtils.o UtilsGL.o ConvUtils.o GabeditXYPlot.o UtilsCairo.o Zlm.o MathFunctions.o GTF.o TTables.o
 
 include ../../CONFIG
 CFLAGS =  $(COMMONCFLAGS) $(GTKCFLAGS) $(OGLCFLAGS)

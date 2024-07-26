@@ -23,6 +23,8 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
 #include "../Utils/Constants.h"
+#include "../Utils/Zlm.h"
+#include "../Utils/MathFunctions.h"
 #include "../Geometry/GeomGlobal.h"
 #include "GeomDraw.h"
 #include "GLArea.h"
@@ -47,7 +49,7 @@ static void DefineMopacSphericalBasis(gchar** strbasis, gint* nums, gint* pqn, g
  gint i,k;
  gint c;
  CSTF *temp;
- Slm Stemp;
+ Zlm Stemp;
  gint n;
 
  NOrb = nrows;
@@ -56,34 +58,34 @@ static void DefineMopacSphericalBasis(gchar** strbasis, gint* nums, gint* pqn, g
  for(k=0;k<nrows;k++)
  {
 	i = nums[k]-1;
-	Stemp =  GetCoefSlm(0,0);
-	if(!strcmp(strbasis[k],"S")) Stemp =  GetCoefSlm(0,0);
-	else if(!strcmp(strbasis[k],"PZ")) Stemp =  GetCoefSlm(1,0);
-	else if(!strcmp(strbasis[k],"PX")) Stemp =  GetCoefSlm(1,1);
-	else if(!strcmp(strbasis[k],"PY")) Stemp =  GetCoefSlm(1,-1);
-	else if(!strcmp(strbasis[k],"Z2")) Stemp =  GetCoefSlm(2,0);
-	else if(!strcmp(strbasis[k],"XZ")) Stemp =  GetCoefSlm(2,1);
-	else if(!strcmp(strbasis[k],"YZ")) Stemp =  GetCoefSlm(2,-1);
-	else if(!strcmp(strbasis[k],"X2")) Stemp =  GetCoefSlm(2,2);
-	else if(!strcmp(strbasis[k],"XY")) Stemp =  GetCoefSlm(2,-2);
-	else if(!strcmp(strbasis[k],"Z3")) Stemp =  GetCoefSlm(3,0);
-	else if(!strcmp(strbasis[k],"XZ2")) Stemp =  GetCoefSlm(3,1);
-	else if(!strcmp(strbasis[k],"YZ2")) Stemp =  GetCoefSlm(3,-1);
-	else if(!strcmp(strbasis[k],"ZX2")) Stemp =  GetCoefSlm(3,2);
-	else if(!strcmp(strbasis[k],"XYZ")) Stemp =  GetCoefSlm(3,-2);
-	else if(!strcmp(strbasis[k],"X3")) Stemp =  GetCoefSlm(3,3);
-	else if(!strcmp(strbasis[k],"Y3")) Stemp =  GetCoefSlm(3,-3);
+	Stemp =  getZlm(0,0);
+	if(!strcmp(strbasis[k],"S")) Stemp =  getZlm(0,0);
+	else if(!strcmp(strbasis[k],"PZ")) Stemp =  getZlm(1,0);
+	else if(!strcmp(strbasis[k],"PX")) Stemp =  getZlm(1,1);
+	else if(!strcmp(strbasis[k],"PY")) Stemp =  getZlm(1,-1);
+	else if(!strcmp(strbasis[k],"Z2")) Stemp =  getZlm(2,0);
+	else if(!strcmp(strbasis[k],"XZ")) Stemp =  getZlm(2,1);
+	else if(!strcmp(strbasis[k],"YZ")) Stemp =  getZlm(2,-1);
+	else if(!strcmp(strbasis[k],"X2")) Stemp =  getZlm(2,2);
+	else if(!strcmp(strbasis[k],"XY")) Stemp =  getZlm(2,-2);
+	else if(!strcmp(strbasis[k],"Z3")) Stemp =  getZlm(3,0);
+	else if(!strcmp(strbasis[k],"XZ2")) Stemp =  getZlm(3,1);
+	else if(!strcmp(strbasis[k],"YZ2")) Stemp =  getZlm(3,-1);
+	else if(!strcmp(strbasis[k],"ZX2")) Stemp =  getZlm(3,2);
+	else if(!strcmp(strbasis[k],"XYZ")) Stemp =  getZlm(3,-2);
+	else if(!strcmp(strbasis[k],"X3")) Stemp =  getZlm(3,3);
+	else if(!strcmp(strbasis[k],"Y3")) Stemp =  getZlm(3,-3);
 
-	temp[k].N=Stemp.N;
+	temp[k].N=Stemp.numberOfCoefficients;
 	temp[k].NumCenter=i;
 	temp[k].Stf =g_malloc(temp[k].N*sizeof(STF));
-	for(n=0;n<Stemp.N;n++)
+	for(n=0;n<Stemp.numberOfCoefficients;n++)
 	{
 		temp[k].Stf[n].pqn   = pqn[k];
 		temp[k].Stf[n].Ex   = zetas[k];
 	   	temp[k].Stf[n].Coef = Stemp.lxyz[n].Coef;
 		/* printf("Coef Sph = %f l=%d %d %d\n", temp[k].Stf[n].Coef,Stemp.lxyz[n].l[0],Stemp.lxyz[n].l[1],Stemp.lxyz[n].l[2]);*/
-	   	temp[k].Stf[n].Coef *= pow(2*zetas[k],pqn[k]+0.5)/sqrt(fact[2*pqn[k]]);
+	   	temp[k].Stf[n].Coef *= pow(2*zetas[k],pqn[k]+0.5)/sqrt(factorial(2*pqn[k]));
 	   	for(c=0;c<3;c++)
 	   	{
 	   		temp[k].Stf[n].C[c] = GeomOrb[i].C[c];

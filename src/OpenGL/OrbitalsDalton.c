@@ -446,7 +446,6 @@ static gboolean good_sym_orb(gchar* str)
 static gboolean set_basis_from_a_strbasis(gchar** strbasis, gint nrows)
 {
 	CGTF *tmpBasis;
-	Slm Stemp;
 	gint row = 0;
 	static gchar dum[100];
 	static gchar numC[100];

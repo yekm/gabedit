@@ -20,7 +20,6 @@ DEALINGS IN THE SOFTWARE.
 #define __GABEDIT_ORBITALS_H__
 
 void destroy_win_list();
-GtkWidget *add_label_at_table(GtkWidget *Table,gchar *label,gushort line,gushort colonne,GtkJustification just);
 void free_orbitals();
 void applygrid(GtkWidget *Win,gpointer data);
 void create_iso_orbitals();

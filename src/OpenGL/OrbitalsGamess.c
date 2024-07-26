@@ -340,10 +340,10 @@ static void DefineGamessCartBasis()
 			l2 = l[1][m];
 	 		l3 = l[2][m];
 	 		k++;
-	 		AOrb[k].N=Type[GeomOrb[i].NumType].Ao[j].N;
+	 		AOrb[k].numberOfFunctions=Type[GeomOrb[i].NumType].Ao[j].N;
 			AOrb[k].NumCenter = i;
-	 		AOrb[k].Gtf =g_malloc(AOrb[k].N*sizeof(GTF));
-	 		for(n=0;n<AOrb[k].N;n++)
+	 		AOrb[k].Gtf =g_malloc(AOrb[k].numberOfFunctions*sizeof(GTF));
+	 		for(n=0;n<AOrb[k].numberOfFunctions;n++)
 	 		{
 	   			AOrb[k].Gtf[n].Ex   = Type[GeomOrb[i].NumType].Ao[j].Ex[n];
 	   			AOrb[k].Gtf[n].Coef = Type[GeomOrb[i].NumType].Ao[j].Coef[n];
@@ -362,96 +362,6 @@ NOrb = NAOrb;
 DefineAtomicNumOrb();
 /* DefineNorb();*/
 }
-/**********************************************/
-/*
-static void DefineGamessSphericalBasis()
-{
- gint i,j,k;
- gint c;
- gint kl;
- gint L,M;
- CGTF *temp;
- Slm Stemp;
- gint N,Nc,n;
- gint inc;
- gint  klbeg;
- gint  klend;
- gint  klinc;
-
-
- NOrb = 0;
- for(i=0;i<Ncenters;i++)
- {
-	 for(j=0;j<Type[GeomOrb[i].NumType].Norb;j++)
-	 {
-		L=Type[GeomOrb[i].NumType].Ao[j].L;
-		NOrb += 2*L+1;
-	 }
- }
-
- temp  = g_malloc(NOrb*sizeof(CGTF));
-
- k=-1;
- for(i=0;i<Ncenters;i++)
-	 for(j=0;j<Type[GeomOrb[i].NumType].Norb;j++)
-	{
-	 	L =Type[GeomOrb[i].NumType].Ao[j].L;
-
-		if(L==1)
-		{
-                	klbeg = L;
-                	klend = 0;
-                	klinc = -1;
-		}
-		else
-		{
-                	klbeg = 0;
-                	klend = L;
-                	klinc = +1;
-		}
-		for(kl = klbeg;(klbeg == 0 && kl<=klend) || (klbeg == L && kl>=klend);kl +=klinc)
-		{
-		if(kl!=0)
-		    inc = 2*kl;	
-		else
-		    inc = 1;
-		for(M=kl;M>=-kl;M -=inc)
-    		{
-	 		k++;
-	 	   	Stemp =  GetCoefSlm(L,M);
-
-	 		temp[k].N=Stemp.N*Type[GeomOrb[i].NumType].Ao[j].N;
-		    temp[k].NumCenter=i;
-	 		temp[k].Gtf =g_malloc(temp[k].N*sizeof(GTF));
-          		Nc=-1;
-	 		for(N=0;N<Type[GeomOrb[i].NumType].Ao[j].N;N++)
-	 			 for(n=0;n<Stemp.N;n++)
-	 			{
-	 			   Nc++;
-	 			
-	   				temp[k].Gtf[Nc].Ex   = Type[GeomOrb[i].NumType].Ao[j].Ex[N];
-	   				temp[k].Gtf[Nc].Coef = Type[GeomOrb[i].NumType].Ao[j].Coef[N]*Stemp.lxyz[n].Coef;
-	   				for(c=0;c<3;c++)
-	   				{
-	   					temp[k].Gtf[Nc].C[c] = GeomOrb[i].C[c];
-	   					temp[k].Gtf[Nc].l[c] = Stemp.lxyz[n].l[c];
-	   				}
-	 			}
-		if(L==0)
-		  break;
-	      }
-		if(L==0)
-		  break;
-	      }
-	}
-	 for(i=0;i<NAOrb;i++)
-		g_free(AOrb[i].Gtf);
-g_free(AOrb);
-NAOrb = NOrb;
-AOrb = temp;
-DefineAtomicNumOrb();
-}
-*/
 /********************************************************************************/
 static gchar** read_basis_from_a_gamess_output_file(gchar *FileName, gint* nrs)
 {

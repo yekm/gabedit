@@ -12,6 +12,11 @@ ConvUtils.o: ../Common/Global.h
 ConvUtils.o: ../Files/GabeditFileChooser.h
 ConvUtils.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
 ConvUtils.o: ../Utils/Utils.h ../Utils/Constants.h
+GTF.o: ../../Config.h
+GTF.o: ../Common/Global.h
+GTF.o: ../Files/GabeditFileChooser.h
+GTF.o: ../Common/GabeditType.h ../Utils/Vector3d.h ../Utils/Utils.h
+GTF.o: ../Utils/Constants.h ../Utils/MathFunctions.h Zlm.h
 GabeditTextEdit.o: ../../Config.h ../Common/GabeditType.h
 GabeditXYPlot.o: GabeditXYPlot.h
 GabeditXYPlotWin.o: GabeditXYPlot.h GabeditXYPlotWin.h
@@ -27,6 +32,9 @@ HydrogenBond.o: ../Common/Windows.h ../OpenGL/GLArea.h ../Common/StockIcons.h
 Jacobi.o: ../../Config.h ../Common/Global.h
 Jacobi.o: ../Files/GabeditFileChooser.h
 Jacobi.o: ../Common/GabeditType.h
+MathFunctions.o: ../Utils/Constants.h Zlm.h ../Common/GabeditType.h
+MathFunctions.o: MathFunctions.h
+MathFunctions.o: Zlm.h ../Common/GabeditType.h
 Matrix3D.o: ../../Config.h
 Matrix3D.o: ../Common/Global.h
 Matrix3D.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
@@ -88,3 +96,6 @@ UtilsInterface.o: ../Common/StockIcons.h
 Vector3d.o: ../../Config.h
 Vector3d.o: ../Common/Global.h
 Vector3d.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h Vector3d.h
+Zlm.o: ../../Config.h
+Zlm.o: ../Utils/Constants.h Zlm.h ../Common/GabeditType.h MathFunctions.h
+Zlm.o: ../Common/GabeditType.h

@@ -6,7 +6,7 @@
 #include <gtk/gtk.h>
 #include "../Utils/Constants.h"
 
-#include "ZlmMG.h"
+#include "Zlm.h"
 #include "MathFunctions.h"
 
 /********************************************************************/
@@ -14,14 +14,16 @@
 typedef struct _Factorial Factorial;
 typedef struct _DoubleFactorial DoubleFactorial;
 typedef struct _Binomial Binomial;
+typedef struct _Binomial2 Binomial2; /* Ci2j */
 typedef struct _Fprod Fprod;
-typedef struct _ZlmMGTable ZlmMGTable;
+typedef struct _ZlmTable ZlmTable;
 typedef struct _Table2 Table2;
 struct _Factorial { gdouble* data; gint nMax; };
 struct _DoubleFactorial { gdouble* data; gint nMax; };
 struct _Binomial { gdouble** data; gint nMax; };
+struct _Binomial2 { gdouble** data; gint nMax; };
 struct _Fprod { gdouble** data; gint nMax; };
-struct _ZlmMGTable { ZlmMG** data; gint lMax; };
+struct _ZlmTable { Zlm** data; gint lMax; };
 struct _Table2 { gdouble** data; gint N1; gint N2; };
 /* private methods */
 static void initFactorial(gint max);
@@ -36,13 +38,17 @@ static void initBinomial(gint max);
 static void resizeBinomial(gint max);
 static gdouble getValueBinomial(gint, gint);
 
+static void initBinomial2(gint max);
+static void resizeBinomial2(gint max);
+static gdouble getValueBinomial2(gint, gint);
+
 static void initFprod(gint max);
 static void resizeFprod(gint max);
 static gdouble getValueFprod(gint, gint);
 
-static void initZlmMGTable(gint max);
-static void resizeZlmMGTable(gint max);
-static ZlmMG getValueZlmMGTable(gint, gint);
+static void initZlmTable(gint max);
+static void resizeZlmTable(gint max);
+static Zlm getValueZlmTable(gint, gint);
 /********************************************************************/
 static Factorial* f = NULL;
 /********************************************************************/
@@ -267,6 +273,95 @@ static gdouble getValueBinomial(gint i, gint j)
 	return b->data[i][j];
 }
 /********************************************************************/
+static Binomial2* b2 = NULL;
+/********************************************************************/
+gdouble binomial2(gint i, gint j)
+{
+	return getValueBinomial2(i, j);
+}
+/********************************************************************/
+static void initBinomial2(gint max)
+{
+	gint i,j;
+	if(max<1) max = 1;
+	if(b2) g_free(b2); 
+	b2 = g_malloc(sizeof(Binomial2));
+	b2->nMax = max;
+	b2->data = g_malloc((b2->nMax+1)*sizeof(gdouble*));
+	for( i=0;i<b2->nMax+1;i++)
+		b2->data[i] = g_malloc((i+1)*sizeof(gdouble));
+
+	for( i=0;i<b2->nMax+1;i++)
+	for( j=0;j<=i/2;j++)
+		b2->data[i][j] = factorial(i)/factorial(j)/factorial(i-2*j);
+}
+/********************************************************************/
+static void resizeBinomial2(gint max)
+{
+	gint i,j;
+	gint min;
+	gdouble** dataNew = NULL;
+	if(max<1) max = 1;
+	if(b2==NULL || b2->data == NULL)
+	{
+		initBinomial2(max);
+		return;
+	}
+	dataNew = g_malloc((max+1)*sizeof(gdouble*));
+	for( i=0;i<max+1;i++)
+		dataNew[i] =  g_malloc((i+1)*sizeof(gdouble));
+
+	min =(b2->nMax>max)?max:b2->nMax;
+	for( i=0;i<min+1;i++)
+	for( j=0;j<=i/2;j++)
+	{
+		dataNew[i][j] = b2->data[i][j];
+	}
+	for( i=min+1;i<max+1;i++)
+	for( j=0;j<=i/2;j++)
+	{
+		dataNew[i][j] = factorial(i)/factorial(j)/factorial(i-2*j);
+	}
+	if(b2->data)
+	{
+		for( i=0;i<b2->nMax+1;i++) g_free(b2->data[i]);
+		g_free(b2->data);
+	}
+
+	b2->nMax = max;
+	b2->data = dataNew;
+}
+/********************************************************************/
+static gdouble getValueBinomial2(gint i, gint j)
+{
+	if(j>i/2)
+		return 1.0;
+
+	if(i<=1) return 1.0;
+	if(!b2)
+	{
+		if(i>20) resizeBinomial2(i);
+		else resizeBinomial2(10);
+	}
+	if(i>b2->nMax) resizeBinomial2(i);
+	return b2->data[i][j];
+}
+/********************************************************************/
+void destroyBinomial2()
+{
+	if(b2)
+	{
+		if(b2->data)
+		{
+			gint i;
+			for( i=0;i<b2->nMax+1;i++) g_free(b2->data[i]);
+			g_free(b2->data);
+		}
+		g_free(b2);
+	}
+	b2 = NULL;
+}
+/********************************************************************/
 void destroyBinomial()
 {
 	if(b)
@@ -384,50 +479,50 @@ void destroyFprod()
 	fp = NULL;
 }
 /********************************************************************/
-static ZlmMGTable *z = NULL;
+static ZlmTable *z = NULL;
 /********************************************************************/
-ZlmMG fZlmMG(gint l, gint m)
+Zlm fZlm(gint l, gint m)
 {
-	return getValueZlmMGTable(l, m);
+	return getValueZlmTable(l, m);
 }
 /********************************************************************/
-static void initZlmMGTable(gint max)
+static void initZlmTable(gint max)
 {
 	gint l,m;
 	if(max<0) max = 0;
 	if(z) g_free(z);
-	z = g_malloc(sizeof(ZlmMGTable));
+	z = g_malloc(sizeof(ZlmTable));
 	z->lMax = max;
-	z->data = g_malloc((z->lMax+1)*sizeof(ZlmMG*));
+	z->data = g_malloc((z->lMax+1)*sizeof(Zlm*));
 	for( l=0;l<=z->lMax;l++)
-		z->data[l] = g_malloc((2*l+1+1)*sizeof(ZlmMG));
+		z->data[l] = g_malloc((2*l+1+1)*sizeof(Zlm));
 
 	for( l=0;l<=z->lMax;l++)
 		for( m=-l;m<=l;m++)
-			z->data[l][m+l] = getZlmMG(l,m);
+			z->data[l][m+l] = getZlm(l,m);
 }
 /********************************************************************/
-static void resizeZlmMGTable(gint max)
+static void resizeZlmTable(gint max)
 {
-	if(!z && max<5) initZlmMGTable(5);
-	else initZlmMGTable(max);
+	if(!z && max<5) initZlmTable(5);
+	else initZlmTable(max);
 }
 /********************************************************************/
-static ZlmMG getValueZlmMGTable(gint l, gint m)
+static Zlm getValueZlmTable(gint l, gint m)
 {
 	if(m>l) m = l;
 	if(m<-l) m = -l;
 	if(!z)
 	{
-		if(l>10) resizeZlmMGTable(l);
-		else resizeZlmMGTable(10);
+		if(l>10) resizeZlmTable(l);
+		else resizeZlmTable(10);
 	}
 
-	if(l>z->lMax) resizeZlmMGTable(l);
+	if(l>z->lMax) resizeZlmTable(l);
 	return z->data[l][m+l];
 }
 /********************************************************************/
-void destroyZlmMGTable()
+void destroyZlmTable()
 {
 	gint l;
 	if(z)
@@ -469,12 +564,23 @@ void setValueTable2(Table2* t, gint i, gint j, gdouble v)
 	t->data[i][j] = v;
 }
 /*********************************************************************/
-static gint m1p(gint i)
+gint m1p(gint i)
 {
-	if(i%2==0)
-		return 1;
-	else
-		return -1;
+	if(i%2==0) return 1;
+	else return -1;
+}
+/**********************************************/
+gdouble dpn(gdouble e,gint n)
+{
+	gdouble p=1.0;
+	gint k;
+	if(fabs(e)<1e-10)
+	{
+		if (n==0) return 1.0;
+		else return 0.0;
+	}
+	for(k=1;k<=n;k++) p *=e;
+	return p;
 }
 /********************************************************************/
 gdouble modifiedSphericalBessel(gint l, gdouble z)
@@ -717,4 +823,34 @@ void modifiedSphericalBessel0(gint l, gdouble z[], gdouble b[], gint n)
 		for( i = ilo3; i<= ihi3; i++)
 			b[i]=-rm[i]*tzmi[i];
 	}
+}
+/**********************************************/
+/*gdouble H(gint m[3],gdouble *Fk,gdouble **hx,gdouble **hy,gdouble **hz)*/
+gdouble H(gint m[3],gdouble **PQn,gdouble *Gk)
+{
+	gint u,v,w;
+	gint k;
+	gdouble h=0.0;
+	gint mm=m[0]+m[1]+m[2];
+	gdouble tempu;
+	gdouble temp;
+
+
+	for(u=0;u<=m[0]/2;u++)
+	{
+		if(PQn[0][m[0]-2*u]==0)continue;
+		tempu =m1p(u)*	binomial2(m[0],u)*PQn[0][m[0]-2*u];
+		for(v=0;v<=m[1]/2;v++)
+		{
+			if(PQn[1][m[1]-2*v]==0)continue;
+			temp =tempu*m1p(v)*binomial2(m[1],v)*PQn[1][m[1]-2*v];
+			for(w=0;w<=m[2]/2;w++)
+			{
+				if(PQn[2][m[2]-2*w]==0)continue;
+				k = mm-u-v-w;
+				h+=temp*m1p(w)*binomial2(m[2],w)*PQn[2][m[2]-2*w]*Gk[k];
+			}
+		}
+	}
+	return h;
 }

@@ -276,7 +276,7 @@ void computeNMRSpectrum(
 	/* printf("End calculate diagonal elements of hamiltonian\n");*/
 	if(frequencies) g_free(frequencies);
 
-//	calculate off diagonal elements of hamiltonian
+/*	calculate off diagonal elements of hamiltonian*/
 	ii=-1 ;
 	for ( ja=1 ; ja<nBasis ; ja++)
 	{

@@ -656,9 +656,6 @@ static void drawPrismColor(GLfloat radius,V3d Base1Pos,V3d Base2Pos, V4d Specula
 /***************************************************************************************************************/
 static void drawAxis(V3d vector, GLfloat radius,V3d origin, V4d specular,V4d diffuse,V4d ambiant)
 {
-	GLfloat p1=90;
-	GLfloat p2=10;
-	GLfloat p = p1 + p2;
 	V3d bottom;
 	V3d top;
 	V3d center;
@@ -685,9 +682,15 @@ static void drawAxis(V3d vector, GLfloat radius,V3d origin, V4d specular,V4d dif
 
 	if(radius<0.1) radius = 0.1;
 
-	center[0] = (bottom[0]*p2 + top[0]*p1)/p;
-	center[1] = (bottom[1]*p2 + top[1]*p1)/p;
-	center[2] = (bottom[2]*p2 + top[2]*p1)/p;
+	if(axis.negative) lengt *=2;
+
+	center[0] = top[0];
+	center[1] = top[1];
+	center[2] = top[2];
+
+	top[0] += (top[0]-bottom[0])/lengt*2*radius;
+	top[1] += (top[1]-bottom[1])/lengt*2*radius;
+	top[2] += (top[2]-bottom[2])/lengt*2*radius;
 
 	Cylinder_Draw_Color(radius/2,bottom,center,specular,diffuse,ambiant);
 	for(i=0;i<3;i++)
@@ -698,7 +701,7 @@ static void drawAxis(V3d vector, GLfloat radius,V3d origin, V4d specular,V4d dif
 	diffuseFleche[3] = diffuse[3];
 	ambiantFleche[3] = ambiant[3];
 
-	drawPrismColor(radius,center,top,specular,diffuseFleche,ambiantFleche);
+	drawPrismColor(radius/1.5,center,top,specular,diffuseFleche,ambiantFleche);
 }
 /************************************************************************/
 GLuint principalAxisGenList(GLuint axisList)

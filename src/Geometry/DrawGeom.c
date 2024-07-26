@@ -290,7 +290,7 @@ void get_geometry_from_fifo(gboolean toNext)
 		GList* last = g_list_last(fifoGeometries);
 		if(currentFifoGeometries == last) return;
 		list = g_list_next(currentFifoGeometries);
-		//if( list != last ) 
+		/*if( list != last )*/
 			currentFifoGeometries  = list;
 		oldNext = TRUE;
 

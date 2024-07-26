@@ -16,45 +16,31 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 DEALINGS IN THE SOFTWARE.
 ************************************************************************************************************/
 
-#ifndef __GABEDIT_VIBRATION_H__
-#define __GABEDIT_VIBRATION_H__
+#ifndef __GABEDIT_TTABLES_H__
+#define __GABEDIT_TTABLES_H__
 
-typedef struct _VibrationMode
+typedef struct _TABLE
 {
-	gdouble frequence;
-	gdouble effectiveMass;
-	gdouble IRIntensity;
-	gdouble RamanIntensity;
-	gchar* symmetry;
-	gdouble* vectors[3];
-}VibrationMode;
+	gint n[3];
+	gdouble Val;
+}TABLE;
 
-typedef struct _VibrationGeom
+typedef struct _TTABLESGTF
 {
-	gchar* symbol;
-	gfloat coordinates[3];
-	gdouble partialCharge;
-	gdouble nuclearCharge;
-}VibrationGeom;
-
-typedef struct _Vibration
+	gint NT1;
+	gint NT2;
+	gint NMAX[3];
+	TABLE* T1;
+	TABLE* T2;
+	gdouble C[3];
+	gdouble g;
+}TTABLESGTF;
+typedef struct _TTABLES
 {
-	gint numberOfAtoms;
-	VibrationGeom* geometry;
+	gint N[2];
+	TTABLESGTF **T;
+}TTABLES;
 
-	gint numberOfFrequences;
-	VibrationMode* modes;
-
-	gfloat scal;
-	gfloat velocity;
-	gfloat radius;
-	gfloat threshold;
-	gint nSteps;
-}Vibration;
-Vibration vibration;
-gint rowSelected;
-void init_vibration();
-void vibrationDlg();
-
-#endif /* __GABEDIT_VIBRATION_H__ */
-
+TTABLES **createTTables(CGTF *AOrb, gint NAOrb, gdouble CutOffInt2);
+void freeTTables(gint NAOrb, TTABLES** Ttables);
+#endif /* __GABEDIT_TTABLES_H__*/

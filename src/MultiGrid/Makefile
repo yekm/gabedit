@@ -1,4 +1,4 @@
-OBJECTS = ZlmMG.o MathFunctions.o DomainMG.o GridMG.o  PoissonMG.o
+OBJECTS = DomainMG.o GridMG.o  PoissonMG.o
 
 include ../../CONFIG
 

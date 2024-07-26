@@ -45,6 +45,7 @@ DEALINGS IN THE SOFTWARE.
 
 static	GtkWidget *WinDlg = NULL;
 static	GtkWidget *EntryScal = NULL;
+static	GtkWidget *EntryThreshold = NULL;
 static	GtkWidget *EntryVelocity = NULL;
 static	GtkWidget *EntryRadius = NULL;
 static	GtkWidget *EntryNSteps = NULL;
@@ -747,6 +748,7 @@ void init_vibration()
 	vibration.numberOfFrequences = 0;
 	vibration.modes = NULL;
 	vibration.scal = 0.5;
+	vibration.threshold = 0.001; /* Bohr*/
 	vibration.velocity = 0.1;
 	vibration.radius = 0.1;
 	vibration.nSteps = 4;
@@ -911,17 +913,18 @@ static gboolean save_vibration_gabedit_format(gchar *FileName)
 /********************************************************************************/
 static void reset_parameters(GtkWidget *win, gpointer data)
 {
-	gdouble scal     = atof(gtk_entry_get_text(GTK_ENTRY(EntryScal)));
-	gdouble velo     = atof(gtk_entry_get_text(GTK_ENTRY(EntryVelocity)));
-	gdouble radius   = atof(gtk_entry_get_text(GTK_ENTRY(EntryRadius)));
+	gdouble scal      = atof(gtk_entry_get_text(GTK_ENTRY(EntryScal)));
+	gdouble threshold = atof(gtk_entry_get_text(GTK_ENTRY(EntryThreshold)));
+	gdouble velo      = atof(gtk_entry_get_text(GTK_ENTRY(EntryVelocity)));
+	gdouble radius    = atof(gtk_entry_get_text(GTK_ENTRY(EntryRadius)));
 	gint nSteps   = atof(gtk_entry_get_text(GTK_ENTRY(EntryNSteps)));
 	gchar t[BSIZE];
 
-	if(scal<0)
+	if(threshold<0)
 	{
-		scal = -scal;
-		sprintf(t,"%f",scal);
-		gtk_entry_set_text(GTK_ENTRY(EntryScal),t);
+		threshold = -threshold;
+		sprintf(t,"%f",threshold);
+		gtk_entry_set_text(GTK_ENTRY(EntryThreshold),t);
 	}
 	if(velo<0)
 	{
@@ -952,6 +955,7 @@ static void reset_parameters(GtkWidget *win, gpointer data)
 	}
 
 	vibration.scal = scal;
+	vibration.threshold = threshold;
 	vibration.velocity = velo;
 	vibration.radius = radius;
 	vibration.nSteps = nSteps;
@@ -2594,6 +2598,7 @@ static gint read_gamess_modes(FILE* fd, gchar *FileName)
 	gint nfMax = 5;
 	gfloat freq[5];
 	gfloat ir[5];
+	gfloat raman[5];
 	gfloat mass[5];
  	gchar* sdum[5*2];
  	gchar* tmp;
@@ -2664,39 +2669,54 @@ static gint read_gamess_modes(FILE* fd, gchar *FileName)
 			nf++;
 		}
 		nir=-1;
-		if(fgets(t,taille,fd)) /* REDUCED MASS: */
+		for(i=0;i<nfMax;i++) ir[i] = 0;
+		for(i=0;i<nfMax;i++) raman[i] = 0;
+		while(fgets(t,BSIZE,fd) && strstr(t,":")) /* REDUCED MASS: IR INTENSITY: RAMAN ACTIVITY: Depol,... backspace */
 		{
-			tmp =  strstr(t,":")+1;
-			nmass = sscanf(tmp,"%s %s %s %s %s", sdum[0],sdum[1],sdum[2],sdum[3],sdum[4]);
+			if(strstr(t,"MASS:"))
+			{
+				tmp =  strstr(t,":")+1;
+				nmass = sscanf(tmp,"%s %s %s %s %s", sdum[0],sdum[1],sdum[2],sdum[3],sdum[4]);
+				if(nf!=nmass)
+				{
+					vibration.numberOfFrequences = j;
+					for(i=0;i<nfMax*2;i++) g_free(sdum[i]);
+					return 2;
+				}
+				for(i=0;i<nf;i++) mass[i] = atof(sdum[i]);
+			}
+			if(strstr(t,"IR"))
+			{
+				tmp =  strstr(t,":")+1;
+				nir = sscanf(tmp,"%s %s %s %s %s", sdum[0],sdum[1],sdum[2],sdum[3],sdum[4]);
+				if(nf!=nir)
+				{
+					vibration.numberOfFrequences = j;
+					for(i=0;i<nfMax*2;i++) g_free(sdum[i]);
+					return 2;
+				}
+				for(i=0;i<nf;i++) ir[i] = atof(sdum[i]);
+			}
+			if(strstr(t,"RAMAN"))
+			{
+				tmp =  strstr(t,":")+1;
+				nir = sscanf(tmp,"%s %s %s %s %s", sdum[0],sdum[1],sdum[2],sdum[3],sdum[4]);
+				if(nf!=nir)
+				{
+					vibration.numberOfFrequences = j;
+					for(i=0;i<nfMax*2;i++) g_free(sdum[i]);
+					return 2;
+				}
+				for(i=0;i<nf;i++) raman[i] = atof(sdum[i]);
+			}
 		}
-		if(nf!=nmass)
-		{
-			vibration.numberOfFrequences = j;
-			for(i=0;i<nfMax*2;i++) g_free(sdum[i]);
-			return 2;
-		}
-		for(i=0;i<nf;i++) mass[i] = atof(sdum[i]);
-
-		if(fgets(t,taille,fd)) /*  IR INTENSITY: */
-		{
-			tmp =  strstr(t,":")+1;
-			nir = sscanf(tmp,"%s %s %s %s %s", sdum[0],sdum[1],sdum[2],sdum[3],sdum[4]);
-		}
-		if(nf!=nir ||!fgets(t,taille,fd) ) /* backspace*/
-		{
-			vibration.numberOfFrequences = j;
-			for(i=0;i<nfMax*2;i++) g_free(sdum[i]);
-			return 2;
-		}
-		for(i=0;i<nf;i++) ir[i] = atof(sdum[i]);
-
 		for(i=0;i<nf;i++)
 		{
 			vibration.modes = g_realloc(vibration.modes,(j+nfMax)*sizeof(VibrationMode));
 			vibration.modes[j].frequence = freq[i];
 			vibration.modes[j].IRIntensity = ir[i];
 			vibration.modes[j].effectiveMass = mass[i];
-			vibration.modes[j].RamanIntensity = 0.0;
+			vibration.modes[j].RamanIntensity = raman[i];
 			vibration.modes[j].symmetry = g_strdup("Unknown");
 			for(c=0;c<3;c++) vibration.modes[j].vectors[c]= g_malloc(vibration.numberOfAtoms*sizeof(gdouble));
 			j++;
@@ -4031,7 +4051,7 @@ static void addEntrysButtons(GtkWidget* box)
 
 	vboxframe = create_vbox(frame);
 
-  	table = gtk_table_new(5,3,FALSE);
+  	table = gtk_table_new(6,3,FALSE);
 	gtk_box_pack_start(GTK_BOX(vboxframe), table,TRUE,TRUE,0);
 
 	i=0;
@@ -4041,10 +4061,22 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_table_attach(GTK_TABLE(table),EntryScal,2,2+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
-		  3,3);
+		  1,1);
 	gtk_editable_set_editable((GtkEditable*) EntryScal,TRUE);
 	sprintf(t,"%f",vibration.scal);
 	gtk_entry_set_text(GTK_ENTRY(EntryScal),t);
+
+	i++;
+	add_label_table(table," Threshold(Bohr) ",(gushort)i,0);
+	add_label_table(table," : ",(gushort)i,1); 
+	EntryThreshold = gtk_entry_new();
+	gtk_table_attach(GTK_TABLE(table),EntryThreshold,2,2+1,i,i+1,
+		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
+		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+		  1,1);
+	gtk_editable_set_editable((GtkEditable*) EntryThreshold,TRUE);
+	sprintf(t,"%f",vibration.threshold);
+	gtk_entry_set_text(GTK_ENTRY(EntryThreshold),t);
 
 	i++;
 	add_label_table(table," Time step(s) ",(gushort)i,0);
@@ -4053,7 +4085,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_table_attach(GTK_TABLE(table),EntryVelocity,2,2+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
-		  3,3);
+		  1,1);
 	gtk_editable_set_editable((GtkEditable*) EntryVelocity,TRUE);
 	sprintf(t,"%f",vibration.velocity);
 	gtk_entry_set_text(GTK_ENTRY(EntryVelocity),t);
@@ -4065,7 +4097,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_table_attach(GTK_TABLE(table),EntryRadius,2,2+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
-		  3,3);
+		  1,1);
 	gtk_editable_set_editable((GtkEditable*) EntryRadius,TRUE);
 	sprintf(t,"%f",vibration.radius);
 	gtk_entry_set_text(GTK_ENTRY(EntryRadius),t);
@@ -4077,7 +4109,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_table_attach(GTK_TABLE(table),EntryNSteps,2,2+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
-		  3,3);
+		  1,1);
 	gtk_editable_set_editable((GtkEditable*) EntryNSteps,TRUE);
 	sprintf(t,"%d",vibration.nSteps);
 	gtk_entry_set_text(GTK_ENTRY(EntryNSteps),t);
@@ -4087,7 +4119,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_table_attach(GTK_TABLE(table),separator,0,3,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
-		  3,3);
+		  1,1);
 
   	table = gtk_table_new(2,3,FALSE);
 	gtk_box_pack_start(GTK_BOX(vboxframe), table,TRUE,TRUE,0);
@@ -4125,7 +4157,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_table_attach(GTK_TABLE(table),separator,0,2,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
-		  3,3);
+		  1,1);
 
 
 
@@ -4136,19 +4168,20 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_table_attach(GTK_TABLE(table),Button,0,0+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
-		  3,3);
+		  1,1);
 	PlayButton = Button;
 
 	Button = create_button(WinDlg,"Stop");
 	gtk_table_attach(GTK_TABLE(table),Button,1,1+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
-		  3,3);
+		  1,1);
 	StopButton = Button;
 
   	g_signal_connect(G_OBJECT(PlayButton), "clicked",(GCallback)play_vibration,NULL);
   	g_signal_connect(G_OBJECT(StopButton), "clicked",(GCallback)stop_vibration,NULL);
   	g_signal_connect_swapped(G_OBJECT (EntryScal), "activate", (GCallback)reset_parameters, NULL);
+  	g_signal_connect_swapped(G_OBJECT (EntryThreshold), "activate", (GCallback)reset_parameters, NULL);
   	g_signal_connect_swapped(G_OBJECT (EntryVelocity), "activate", (GCallback)reset_parameters, NULL);
   	g_signal_connect_swapped(G_OBJECT (EntryRadius), "activate", (GCallback)reset_parameters, NULL);
 }
@@ -4174,7 +4207,7 @@ static GtkTreeView* addList(GtkWidget *vbox, GtkUIManager *manager)
 	widall=widall*Factor+40;
 
 	scr=gtk_scrolled_window_new(NULL,NULL);
-	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeight*0.45));
+	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeight*0.4));
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scr),GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC); 
 	gtk_box_pack_start(GTK_BOX (vbox), scr,TRUE, TRUE, 2);
 
@@ -4283,6 +4316,13 @@ static void animate_vibration()
 		for(j=0;j<Ncenters;j++)
 		{
     			GeomOrb[j].Symb=g_strdup(vibration.geometry[j].symbol);
+			if(
+				vibration.modes[m].vectors[0][j]*vibration.modes[m].vectors[0][j]+
+				vibration.modes[m].vectors[1][j]*vibration.modes[m].vectors[1][j]+
+				vibration.modes[m].vectors[2][j]*vibration.modes[m].vectors[2][j]
+				<vibration.threshold*vibration.threshold
+			)continue;
+
     			GeomOrb[j].C[0] = vibration.geometry[j].coordinates[0]
 				+k*vibration.scal*vibration.modes[m].vectors[0][j];
 

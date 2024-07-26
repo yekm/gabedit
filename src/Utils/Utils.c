@@ -52,6 +52,7 @@ DEALINGS IN THE SOFTWARE.
 #include <stdarg.h> 
 #include <pwd.h>
 #include <unistd.h> 
+#include <sys/times.h>
 #endif /* G_OS_WIN32 */
 
 #define DebugFlag 0
@@ -68,6 +69,19 @@ void save_principal_axis_properties();
 void read_principal_axis_properties();
 void initPrincipalAxisGL();
 
+
+/********************************************************************************/
+#ifndef G_OS_WIN32
+#define TIMER_TICK      60
+static clock_t it;
+static struct tms itt;
+void timing(double* cpu,double *sys)
+{
+	it=times(&itt);
+	*cpu=(double) itt.tms_utime / (double) TIMER_TICK;
+	*sys=(double) itt.tms_stime / (double) TIMER_TICK;
+}
+#endif
 #ifdef G_OS_WIN32
 /************************************************************************
 *  error : display an error message and possibly the last Winsock error *

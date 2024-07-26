@@ -126,7 +126,8 @@ Basis.o: Grid.h
 Basis.o: ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h
 Basis.o: ../MultiGrid/DomainMG.h ../MultiGrid/TypesMG.h IsoSurface.h
 Basis.o: ../Common/GabeditType.h UtilsOrb.h ../Utils/Utils.h
-Basis.o: ../Utils/UtilsInterface.h ../Utils/Constants.h
+Basis.o: ../Utils/UtilsInterface.h ../Utils/Constants.h ../Utils/Zlm.h
+Basis.o: ../Utils/GTF.h ../Utils/TTables.h
 BondsOrb.o: ../../Config.h GlobalOrb.h
 BondsOrb.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
 BondsOrb.o: ../../gtkglarea/gdkgl.h ../../gl2ps/gl2ps.h
@@ -188,6 +189,25 @@ ContoursPov.o: ../Utils/Vector3d.h ../Utils/Utils.h ../Utils/Transformation.h
 ContoursPov.o: ../OpenGL/Contours.h
 ContoursPov.o: ../OpenGL/ContoursDraw.h
 ContoursPov.o: ../OpenGL/ColorMap.h
+CoulombOrbitalsOld.o: ../../Config.h ../OpenGL/GlobalOrb.h
+CoulombOrbitalsOld.o: ../Files/GabeditFileChooser.h
+CoulombOrbitalsOld.o: ../../gtkglarea/gtkglarea.h ../../gtkglarea/gdkgl.h
+CoulombOrbitalsOld.o: ../../gl2ps/gl2ps.h
+CoulombOrbitalsOld.o: Grid.h
+CoulombOrbitalsOld.o: ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h
+CoulombOrbitalsOld.o: ../MultiGrid/DomainMG.h ../MultiGrid/TypesMG.h
+CoulombOrbitalsOld.o: IsoSurface.h ../Common/GabeditType.h
+CoulombOrbitalsOld.o: ../Utils/Vector3d.h ../Utils/GTF.h ../Utils/TTables.h
+CoulombOrbitalsOld.o: ../OpenGL/GLArea.h ../OpenGL/Orbitals.h
+CoulombOrbitalsOld.o: ../OpenGL/OrbitalsMolpro.h ../OpenGL/OrbitalsGamess.h
+CoulombOrbitalsOld.o: ../OpenGL/OrbitalsQChem.h ../OpenGL/GeomOrbXYZ.h
+CoulombOrbitalsOld.o: ../OpenGL/BondsOrb.h ../OpenGL/UtilsOrb.h
+CoulombOrbitalsOld.o: ../OpenGL/TriangleDraw.h ../Utils/Utils.h
+CoulombOrbitalsOld.o: ../Utils/UtilsInterface.h ../Utils/Constants.h
+CoulombOrbitalsOld.o: ../Files/FileChooser.h ../Common/Windows.h
+CoulombOrbitalsOld.o: ../OpenGL/Vibration.h ../OpenGL/ContoursPov.h
+CoulombOrbitalsOld.o: ../OpenGL/PlanesMappedPov.h ../OpenGL/LabelsGL.h
+CoulombOrbitalsOld.o: ../OpenGL/StatusOrb.h
 Cylinder.o: ../../Config.h GlobalOrb.h
 Cylinder.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
 Cylinder.o: ../../gtkglarea/gdkgl.h ../../gl2ps/gl2ps.h
@@ -267,7 +287,8 @@ Grid.o: ../../gtkglarea/gdkgl.h ../../gl2ps/gl2ps.h
 Grid.o: Grid.h ../MultiGrid/PoissonMG.h
 Grid.o: ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h ../MultiGrid/TypesMG.h
 Grid.o: IsoSurface.h ../Common/GabeditType.h StatusOrb.h UtilsOrb.h
-Grid.o: ColorMap.h ../Utils/UtilsInterface.h
+Grid.o: ColorMap.h ../Utils/UtilsInterface.h ../Utils/Zlm.h
+Grid.o: ../Utils/MathFunctions.h ../Utils/Zlm.h
 Grid.o: ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h
 Grid.o: ../MultiGrid/DomainMG.h ../MultiGrid/TypesMG.h
 GridAdfDensity.o: ../../Config.h GlobalOrb.h
@@ -341,6 +362,24 @@ Images.o: ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h
 Images.o: ../MultiGrid/DomainMG.h ../MultiGrid/TypesMG.h IsoSurface.h
 Images.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h ../Utils/Utils.h
 Images.o: GLArea.h
+IntegralOrbitals.o: ../../Config.h ../OpenGL/GlobalOrb.h
+IntegralOrbitals.o: ../Files/GabeditFileChooser.h
+IntegralOrbitals.o: ../../gtkglarea/gtkglarea.h ../../gtkglarea/gdkgl.h
+IntegralOrbitals.o: ../../gl2ps/gl2ps.h
+IntegralOrbitals.o: Grid.h
+IntegralOrbitals.o: ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h
+IntegralOrbitals.o: ../MultiGrid/DomainMG.h ../MultiGrid/TypesMG.h
+IntegralOrbitals.o: IsoSurface.h ../Common/GabeditType.h ../Utils/Vector3d.h
+IntegralOrbitals.o: ../Utils/GTF.h ../Utils/TTables.h ../OpenGL/GLArea.h
+IntegralOrbitals.o: ../OpenGL/Orbitals.h ../OpenGL/OrbitalsMolpro.h
+IntegralOrbitals.o: ../OpenGL/OrbitalsGamess.h ../OpenGL/OrbitalsQChem.h
+IntegralOrbitals.o: ../OpenGL/GeomOrbXYZ.h ../OpenGL/BondsOrb.h
+IntegralOrbitals.o: ../OpenGL/UtilsOrb.h ../OpenGL/TriangleDraw.h
+IntegralOrbitals.o: ../Utils/Utils.h ../Utils/UtilsInterface.h
+IntegralOrbitals.o: ../Utils/Constants.h ../Files/FileChooser.h
+IntegralOrbitals.o: ../Common/Windows.h ../OpenGL/Vibration.h
+IntegralOrbitals.o: ../OpenGL/ContoursPov.h ../OpenGL/PlanesMappedPov.h
+IntegralOrbitals.o: ../OpenGL/LabelsGL.h ../OpenGL/StatusOrb.h
 IsoSurface.o: ../../Config.h GlobalOrb.h
 IsoSurface.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
 IsoSurface.o: ../../gtkglarea/gdkgl.h ../../gl2ps/gl2ps.h
@@ -383,8 +422,8 @@ MenuToolBarGL.o: ../OpenGL/AxisGL.h ../OpenGL/PrincipalAxisGL.h
 MenuToolBarGL.o: ../OpenGL/PovrayGL.h ../OpenGL/ExportGL.h
 MenuToolBarGL.o: ../OpenGL/StatusOrb.h ../OpenGL/LabelsGL.h
 MenuToolBarGL.o: ../OpenGL/RingsOrb.h ../OpenGL/ContoursDraw.h
-MenuToolBarGL.o: ../OpenGL/CaptureOrbitals.h ../OpenGL/BondsOrb.h
-MenuToolBarGL.o: ../Common/StockIcons.h
+MenuToolBarGL.o: ../OpenGL/CaptureOrbitals.h ../OpenGL/IntegralOrbitals.h
+MenuToolBarGL.o: ../OpenGL/BondsOrb.h ../Common/StockIcons.h
 Orbitals.o: ../../Config.h GlobalOrb.h
 Orbitals.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
 Orbitals.o: ../../gtkglarea/gdkgl.h ../../gl2ps/gl2ps.h
@@ -425,7 +464,8 @@ OrbitalsMolpro.o: Grid.h ../MultiGrid/PoissonMG.h
 OrbitalsMolpro.o: ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h
 OrbitalsMolpro.o: ../MultiGrid/TypesMG.h IsoSurface.h ../Common/GabeditType.h
 OrbitalsMolpro.o: ../Utils/AtomsProp.h ../Utils/UtilsInterface.h
-OrbitalsMolpro.o: ../Utils/Utils.h ../Utils/Constants.h GeomDraw.h GLArea.h
+OrbitalsMolpro.o: ../Utils/Utils.h ../Utils/Constants.h ../Utils/Zlm.h
+OrbitalsMolpro.o: ../Utils/GTF.h ../Utils/TTables.h GeomDraw.h GLArea.h
 OrbitalsMolpro.o: UtilsOrb.h Basis.h GeomOrbXYZ.h AtomicOrbitals.h
 OrbitalsMolpro.o: StatusOrb.h Orbitals.h
 OrbitalsMopac.o: ../../Config.h GlobalOrb.h
@@ -435,7 +475,8 @@ OrbitalsMopac.o: Grid.h ../MultiGrid/PoissonMG.h
 OrbitalsMopac.o: ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h
 OrbitalsMopac.o: ../MultiGrid/TypesMG.h IsoSurface.h ../Common/GabeditType.h
 OrbitalsMopac.o: ../Utils/AtomsProp.h ../Utils/UtilsInterface.h
-OrbitalsMopac.o: ../Utils/Utils.h ../Utils/Constants.h
+OrbitalsMopac.o: ../Utils/Utils.h ../Utils/Constants.h ../Utils/Zlm.h
+OrbitalsMopac.o: ../Utils/MathFunctions.h ../Utils/Zlm.h
 OrbitalsMopac.o: ../Geometry/GeomGlobal.h GeomDraw.h GLArea.h UtilsOrb.h
 OrbitalsMopac.o: Basis.h GeomOrbXYZ.h AtomicOrbitals.h StatusOrb.h Orbitals.h
 OrbitalsMopac.o: BondsOrb.h
@@ -448,9 +489,9 @@ OrbitalsOrca.o: Grid.h
 OrbitalsOrca.o: ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h
 OrbitalsOrca.o: ../MultiGrid/DomainMG.h ../MultiGrid/TypesMG.h IsoSurface.h
 OrbitalsOrca.o: ../Utils/Constants.h ../Utils/AtomsProp.h
-OrbitalsOrca.o: ../Utils/UtilsInterface.h ../Utils/Utils.h GeomDraw.h
-OrbitalsOrca.o: GLArea.h GeomOrbXYZ.h UtilsOrb.h StatusOrb.h Basis.h
-OrbitalsOrca.o: Orbitals.h
+OrbitalsOrca.o: ../Utils/UtilsInterface.h ../Utils/Utils.h ../Utils/Zlm.h
+OrbitalsOrca.o: GeomDraw.h GLArea.h GeomOrbXYZ.h UtilsOrb.h StatusOrb.h
+OrbitalsOrca.o: Basis.h Orbitals.h
 OrbitalsQChem.o: ../../Config.h GlobalOrb.h
 OrbitalsQChem.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
 OrbitalsQChem.o: ../../gtkglarea/gdkgl.h ../../gl2ps/gl2ps.h
@@ -458,7 +499,7 @@ OrbitalsQChem.o: Grid.h ../MultiGrid/PoissonMG.h
 OrbitalsQChem.o: ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h
 OrbitalsQChem.o: ../MultiGrid/TypesMG.h IsoSurface.h ../Common/GabeditType.h
 OrbitalsQChem.o: ../Utils/AtomsProp.h ../Utils/UtilsInterface.h
-OrbitalsQChem.o: ../Utils/Utils.h ../Utils/Constants.h
+OrbitalsQChem.o: ../Utils/Utils.h ../Utils/Constants.h ../Utils/Zlm.h
 OrbitalsQChem.o: ../Geometry/GeomGlobal.h GeomDraw.h GLArea.h UtilsOrb.h
 OrbitalsQChem.o: Basis.h GeomOrbXYZ.h AtomicOrbitals.h StatusOrb.h Orbitals.h
 OrbitalsQChem.o: BondsOrb.h
@@ -492,20 +533,20 @@ PlanesMappedPov.o: ../Utils/Utils.h ../Utils/Transformation.h
 PlanesMappedPov.o: ../OpenGL/PlanesMapped.h
 PlanesMappedPov.o: ../OpenGL/PlanesMappedDraw.h
 PlanesMappedPov.o: ../OpenGL/ColorMap.h
-PovrayGL.o: ../../Config.h GlobalOrb.h
-PovrayGL.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
-PovrayGL.o: ../../gtkglarea/gdkgl.h ../../gl2ps/gl2ps.h
-PovrayGL.o: Grid.h
-PovrayGL.o: ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h
-PovrayGL.o: ../MultiGrid/DomainMG.h ../MultiGrid/TypesMG.h IsoSurface.h
-PovrayGL.o: ../Common/GabeditType.h ../Geometry/GeomGlobal.h
-PovrayGL.o: ../Files/FileChooser.h ../Utils/Vector3d.h
-PovrayGL.o: ../Utils/Transformation.h ../Utils/Utils.h
+PovrayGL.o: ../../Config.h ../Common/Global.h
+PovrayGL.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h GlobalOrb.h
+PovrayGL.o: ../../gtkglarea/gtkglarea.h ../../gtkglarea/gdkgl.h
+PovrayGL.o: ../../gl2ps/gl2ps.h
+PovrayGL.o: Grid.h ../MultiGrid/PoissonMG.h
+PovrayGL.o: ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h
+PovrayGL.o: ../MultiGrid/TypesMG.h IsoSurface.h ../Utils/AtomsProp.h
+PovrayGL.o: ../Geometry/GeomGlobal.h ../Files/FileChooser.h
+PovrayGL.o: ../Utils/Vector3d.h ../Utils/Transformation.h ../Utils/Utils.h
 PovrayGL.o: ../Utils/UtilsInterface.h ../Utils/Constants.h
 PovrayGL.o: ../Utils/HydrogenBond.h ../Utils/PovrayUtils.h ../OpenGL/GLArea.h
 PovrayGL.o: ../OpenGL/GeomDraw.h ../OpenGL/TriangleDraw.h ../OpenGL/AxisGL.h
 PovrayGL.o: ../OpenGL/PrincipalAxisGL.h ../OpenGL/ColorMap.h
-PovrayGL.o: ../OpenGL/BondsOrb.h ../OpenGL/RingsOrb.h
+PovrayGL.o: ../OpenGL/BondsOrb.h ../OpenGL/RingsOrb.h ../OpenGL/Vibration.h
 PreferencesOrb.o: ../../Config.h ../OpenGL/GlobalOrb.h
 PreferencesOrb.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
 PreferencesOrb.o: ../../gtkglarea/gdkgl.h ../../gl2ps/gl2ps.h

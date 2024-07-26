@@ -46,6 +46,7 @@ typedef struct _DataTree
  GtkTreeIter* noeud;
 }DataTree;
 
+void timing(double* cpu,double *sys);
 #ifdef G_OS_WIN32
 gboolean winsockCheck(FILE* );
 #endif /* G_OS_WIN32 */

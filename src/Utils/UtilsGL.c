@@ -270,14 +270,14 @@ static GLuint gdk_gl_font_use_pango_font2 (const gchar* font_name)
 	if (fontInfo == NULL)
 	{
 		
- 	    // try to load other fonts
+ 	    /* try to load other fonts*/
  		fontInfo = XLoadQueryFont (dpy, "-*-fixed-*-*-*-*-18-*-*-*-*-*-*-*");
 		if(fontInfo == NULL) fontInfo = XLoadQueryFont (dpy, "-*-fixed-*-*-*-*-12-*-*-*-*-*-*-*");
 		if(fontInfo == NULL) fontInfo = XLoadQueryFont (dpy, "-*-fixed-*-*-*-*-10-*-*-*-*-*-*-*");
 		if(fontInfo == NULL) fontInfo = XLoadQueryFont (dpy, "-*-fixed-*-*-*-*-8-*-*-*-*-*-*-*");
 		if(fontInfo == NULL) fontInfo = XLoadQueryFont (dpy, "-*-fixed-*-*-*-*-*-*-*-*-*-*-*-*");
  	
- 	    // any font will do !
+ 	    /* any font will do !*/
  	    if (fontInfo == NULL) fontInfo = XLoadQueryFont(dpy, "-*-*-*-*-*-*-*-*-*-*-*-*-*-*");
  	
  	    if (fontInfo == NULL) return 0;

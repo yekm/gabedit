@@ -1,4 +1,4 @@
-/* ZlmMG.c */
+/* Zlm.c */
 /**********************************************************************************************************
 Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 #include <ctype.h>
 #include <gtk/gtk.h>
 #include "../Utils/Constants.h"
-#include "ZlmMG.h"
+#include "Zlm.h"
 #include "MathFunctions.h"
 
 /*
@@ -45,9 +45,9 @@ static gdouble Cklm(int k,int l,int m)
 }
 */
 /**********************************************/
-static void deleteEqZlm(ZlmMG* zlm)
+static void deleteEqZlm(Zlm* zlm)
 {
-	ZlmMG St;
+	Zlm St;
 	gint Nc;
 	gint ok;
 	gint i,j,k;
@@ -61,7 +61,7 @@ static void deleteEqZlm(ZlmMG* zlm)
 	St.numberOfCoefficients = numberOfCoefficients;
 	for(i=0;i<numberOfCoefficients;i++) Ndel[i] = 0;
 
-	St.lxyz = g_malloc(zlm->numberOfCoefficients*sizeof(LXYZMG));
+	St.lxyz = g_malloc(zlm->numberOfCoefficients*sizeof(LXYZ));
    	Nc=-1;
 
 	for(i=0 ; i<numberOfCoefficients ; i++)
@@ -97,7 +97,7 @@ static void deleteEqZlm(ZlmMG* zlm)
 	g_free(St.lxyz);
 }
 /**********************************************/
-static void setCoefZlm(ZlmMG* zlm)
+static void setCoefZlm(Zlm* zlm)
 {
 	gint Nc = 0;
 	gdouble Norm;
@@ -108,7 +108,7 @@ static void setCoefZlm(ZlmMG* zlm)
 	guint t;
 	guint u;
 	guint v2;
-	LXYZMG* lxyz = zlm->lxyz;
+	LXYZ* lxyz = zlm->lxyz;
 
 
 	Norm = sqrt((2*l+1)/(4*PI))*sqrt(factorial(l+absm)/factorial(l-absm))*factorial(absm)/doubleFactorial(2*absm); 
@@ -124,7 +124,7 @@ static void setCoefZlm(ZlmMG* zlm)
 				Nc++;
 		}
 	zlm->numberOfCoefficients = Nc;
-	zlm->lxyz = g_malloc(Nc*sizeof(LXYZMG));
+	zlm->lxyz = g_malloc(Nc*sizeof(LXYZ));
 	lxyz = zlm->lxyz;
 	Nc=-1;
 	for (t=0; t <= (l - absm)/2; t++)
@@ -153,13 +153,13 @@ static void setCoefZlm(ZlmMG* zlm)
 	deleteEqZlm(zlm);
 }
 /**********************************************/
-ZlmMG getZlmMG0()
+Zlm getZlm0()
 {
-	ZlmMG zlm;
+	Zlm zlm;
 	zlm.l = 0;
 	zlm.m = 0;
 	zlm.numberOfCoefficients = 1;
-	zlm.lxyz = g_malloc(zlm.numberOfCoefficients*sizeof(LXYZMG));
+	zlm.lxyz = g_malloc(zlm.numberOfCoefficients*sizeof(LXYZ));
 	zlm.lxyz[0].Coef = sqrt(1.0/(4*PI));
 	zlm.lxyz[0].l[0] = 0;
 	zlm.lxyz[0].l[1] = 0;
@@ -167,12 +167,12 @@ ZlmMG getZlmMG0()
 	return zlm;
 }
 /**********************************************/
-ZlmMG getZlmMG(int ll, int mm)
+Zlm getZlm(int ll, int mm)
 {
-	ZlmMG zlm;
-	if(ll==0 && mm == 0) return getZlmMG0();
-	if(ll<0) return getZlmMG0();
-	if(abs(mm)>ll) return getZlmMG0();
+	Zlm zlm;
+	if(ll==0 && mm == 0) return getZlm0();
+	if(ll<0) return getZlm0();
+	if(abs(mm)>ll) return getZlm0();
 
 	zlm.l = ll;
 	zlm.m = mm;
@@ -180,29 +180,29 @@ ZlmMG getZlmMG(int ll, int mm)
 	return zlm;
 }
 /**********************************************/
-void destroyZlmMG(ZlmMG* zlm)
+void destroyZlm(Zlm* zlm)
 {
 	if(zlm && zlm->lxyz) g_free(zlm->lxyz);
 }
 /*********************************************************/
-void copyZlmMG(ZlmMG* zlm, ZlmMG* right) 
+void copyZlm(Zlm* zlm, Zlm* right) 
 {
 	gint i;
 	if(zlm == right) return;
 
-	destroyZlmMG(zlm);
+	destroyZlm(zlm);
 	zlm->l = right->l;
 	zlm->m = right->m;
 	zlm->numberOfCoefficients = right->numberOfCoefficients;
-	zlm->lxyz = g_malloc(zlm->numberOfCoefficients*sizeof(LXYZMG));
+	zlm->lxyz = g_malloc(zlm->numberOfCoefficients*sizeof(LXYZ));
 	for(i=0; i<zlm->numberOfCoefficients; i++)
 		zlm->lxyz[i] = right->lxyz[i];
 }
 /**********************************************/
-gdouble getValueZlmMG(ZlmMG* zlm, gdouble x, gdouble y, gdouble z)
+gdouble getValueZlm(Zlm* zlm, gdouble x, gdouble y, gdouble z)
 {
 	gint numberOfCoefficients = zlm->numberOfCoefficients;
-	LXYZMG* lxyz = zlm->lxyz;
+	LXYZ* lxyz = zlm->lxyz;
 	gdouble flm = 0;
 	gint i;
 
@@ -235,7 +235,7 @@ gdouble getValueZlmMG(ZlmMG* zlm, gdouble x, gdouble y, gdouble z)
 	return flm;
 }
 /*********************************************************/
-void printZlmMG(ZlmMG* zlm)
+void printZlm(Zlm* zlm)
 {
 	gint i;
 	printf("%22s%d%s%d%s\n","Coefficients of Z(",zlm->l,",",zlm->m,")");

@@ -72,10 +72,6 @@ gint ScreenHeight;
 TypeFontsStyle FontStyle;
 gchar *Title;
 
-gfloat ffact[MAX_FACT];
-gfloat fact[MAX_FACT];
-gfloat CIJ[MAX_FACT][MAX_FACT];
-
 TYPE *Type;
 CGTF *AOrb;
 

@@ -64,6 +64,41 @@ void setTextInProgress(gchar* t)
     	while( gtk_events_pending() ) gtk_main_iteration();
 }
 /********************************************************************************/
+gint progress_orb_txt(gfloat scal,gchar* str,gboolean reset)
+{
+
+	gdouble new_val;
+	guint idStatus = 0;
+
+	gtk_widget_set_sensitive(button, FALSE); 
+	idStatus= gtk_statusbar_get_context_id(GTK_STATUSBAR(StatusProgress),"Testing");
+	gtk_statusbar_pop(GTK_STATUSBAR(StatusProgress),idStatus);
+	if(reset)
+	{
+		gtk_widget_show(ProgressBar);
+		new_val = 0;
+	}
+	else if(scal>0)
+	{
+    		new_val = gtk_progress_bar_get_fraction( GTK_PROGRESS_BAR(ProgressBar) ) + scal;
+		if (new_val > 1) new_val = 1;
+	}
+	else
+	{
+    		new_val = gtk_progress_bar_get_fraction( GTK_PROGRESS_BAR(ProgressBar) ) - scal;
+		if (new_val > 1) new_val = 1;
+		if (new_val <0 ) new_val = 0;
+	}
+	gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (ProgressBar), new_val);
+	gtk_widget_set_sensitive(button, TRUE); 
+
+	gtk_statusbar_pop(GTK_STATUSBAR(StatusProgress),idStatus);
+	gtk_statusbar_push(GTK_STATUSBAR(StatusProgress),idStatus, str);
+	while( gtk_events_pending() ) gtk_main_iteration();
+
+	return TRUE;
+}
+/********************************************************************************/
 gint progress_orb(gfloat scal,GabEditTypeProgressOrb  type,gboolean reset)
 {
 
@@ -115,9 +150,12 @@ gint progress_orb(gfloat scal,GabEditTypeProgressOrb  type,gboolean reset)
 	case  GABEDIT_PROGORB_SAVEGEOM: 
 		t = g_strdup_printf(" Recording of the geometry : %.0f%%",new_val*100);
 		break;
+	case  GABEDIT_PROGORB_COMPINTEG: 
+		t = g_strdup_printf(" Computing of an integral : %.0f%%",new_val*100);
+		break;
 	case GABEDIT_PROGORB_COMPGRID :
 		if(TypeGrid == GABEDIT_TYPEGRID_EDENSITY)
-		t = g_strdup_printf(" Compute the electronic density grid : %.0f%%",new_val*100);
+		t = g_strdup_printf(" Computing of the electronic density grid : %.0f%%",new_val*100);
 		else
 		if(TypeGrid == GABEDIT_TYPEGRID_ORBITAL)
 		t = g_strdup_printf(" Compute the orbital grid : %.0f%%",new_val*100);
@@ -170,6 +208,7 @@ gint progress_orb(gfloat scal,GabEditTypeProgressOrb  type,gboolean reset)
 	if(
 		type==GABEDIT_PROGORB_READGRID || 
 		type==GABEDIT_PROGORB_COMPGRID || 
+		type==GABEDIT_PROGORB_COMPINTEG || 
 		type == GABEDIT_PROGORB_SCANFILEGRID || 
 		type==GABEDIT_PROGORB_COMPMULTIPOL ||
 		type==GABEDIT_PROGORB_COMPLAPGRID ||

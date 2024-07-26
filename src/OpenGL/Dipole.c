@@ -309,9 +309,6 @@ void Dipole_Draw()
 	V3d Base2Pos  = {Dipole.Value[0],Dipole.Value[1],Dipole.Value[2]};
 	GLfloat radius = Dipole.radius;
 	V3d Center;
-	GLfloat p1=90;
-	GLfloat p2=10;
-	GLfloat p = p1 + p2;
 	GLfloat scal = 2;
 	V3d Direction;
 	double lengt;
@@ -327,30 +324,32 @@ void Dipole_Draw()
 	Direction[1] = Base2Pos[1]-Base1Pos[1];
 	Direction[2] = Base2Pos[2]-Base1Pos[2];
 	lengt = v3d_length(Direction);
-	/*
-	radius=lengt/10; 
-	if(radius>0.25)
-		radius = 0.25;
-	*/
-	if(radius<0.1)
-		radius = 0.1;
+	if(radius<0.1) radius = 0.1;
 
+	Direction[0] /= lengt;
+	Direction[1] /= lengt;
+	Direction[2] /= lengt;
 
 	Base2Pos[0] *= scal;
 	Base2Pos[1] *= scal;
 	Base2Pos[2] *= scal;
 
-	Center[0] = (Base1Pos[0]*p2 + Base2Pos[0]*p1)/p;
-	Center[1] = (Base1Pos[1]*p2 + Base2Pos[1]*p1)/p;
-	Center[2] = (Base1Pos[2]*p2 + Base2Pos[2]*p1)/p;
+	Center[0] = Base2Pos[0];
+	Center[1] = Base2Pos[1];
+	Center[2] = Base2Pos[2];
+
+	Base2Pos[0] += Direction[0]*2*radius;
+	Base2Pos[1] += Direction[1]*2*radius;
+	Base2Pos[2] += Direction[2]*2*radius;
+
 	Cylinder_Draw_Color(radius/2,Base1Pos,Center,Specular,Diffuse,Ambiant);
 	for(i=0;i<3;i++)
 	{
 		Diffuse[i] *=0.6;
 		Ambiant[i] *=0.6;
 	}
-
-	Prism_Draw_Color(radius,Center,Base2Pos,Specular,Diffuse,Ambiant);
+	Diffuse[1] = Diffuse[2];
+	Prism_Draw_Color(radius/1.5,Center,Base2Pos,Specular,Diffuse,Ambiant);
 }
 /************************************************************************/
 GLuint DipGenList(GLuint diplist)

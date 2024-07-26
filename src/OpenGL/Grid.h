@@ -61,6 +61,10 @@ Grid* compute_mep_grid_using_partial_charges_cube_grid(Grid* grid);
 Grid* compute_mep_grid_using_partial_charges(gint N[],GridLimits limits);
 Grid* solve_poisson_equation_from_density_grid(Grid* grid, PoissonSolverMethod psMethod);
 Grid* solve_poisson_equation_from_orbitals(gint N[],GridLimits limits, PoissonSolverMethod psMethod);
+gboolean compute_coulomb_integrale_iijj(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
+		gdouble* pInteg, gdouble* pNormi, gdouble* pNormj, gdouble* pOverlap);
+gboolean compute_coulomb_integrale_iijj_poisson(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
+		gdouble* pInteg, gdouble* pNorm, gdouble* pNormj, gdouble* pOverlap);
 
 #endif /* __GABEDIT_GRID_H__ */
 

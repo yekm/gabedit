@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/AtomsProp.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
+#include "../Utils/Zlm.h"
 #include "GeomDraw.h"
 #include "GLArea.h"
 #include "GeomOrbXYZ.h"
@@ -96,7 +97,7 @@ static void DefineOrcaSphericalBasis()
 	gint kl;
 	gint L,M;
 	CGTF *temp;
-	Slm Stemp;
+	Zlm Stemp;
 	gint N,Nc,n;
 	gint inc;
 	gint  klbeg;
@@ -144,15 +145,15 @@ static void DefineOrcaSphericalBasis()
     			{
 				/*Debug("L =%d kl=%d M=%d \n",L,kl,M);*/
 	 			k++;
-	 	   		Stemp =  GetCoefSlm(L,M);
+	 	   		Stemp =  getZlm(L,M);
 
-	 			temp[k].N=Stemp.N*Type[GeomOrb[i].NumType].Ao[j].N;
+	 			temp[k].numberOfFunctions=Stemp.numberOfCoefficients*Type[GeomOrb[i].NumType].Ao[j].N;
 		    		temp[k].NumCenter=i;
 				/* Debug("M=%d N=%d\n",M,temp[k].N);*/
-	 			temp[k].Gtf =g_malloc(temp[k].N*sizeof(GTF));
+	 			temp[k].Gtf =g_malloc(temp[k].numberOfFunctions*sizeof(GTF));
           			Nc=-1;
 	 			for(N=0;N<Type[GeomOrb[i].NumType].Ao[j].N;N++)
-	 			for(n=0;n<Stemp.N;n++)
+	 			for(n=0;n<Stemp.numberOfCoefficients;n++)
 	 			{
 	 			   	Nc++;
 	   				temp[k].Gtf[Nc].Ex   = Type[GeomOrb[i].NumType].Ao[j].Ex[N];

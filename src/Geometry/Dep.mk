@@ -256,9 +256,10 @@ Povray.o: ../Common/Global.h
 Povray.o: ../Files/GabeditFileChooser.h
 Povray.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
 Povray.o: ../Geometry/InterfaceGeom.h ../Utils/Utils.h ../Utils/PovrayUtils.h
-Povray.o: ../Utils/AtomsProp.h ../Utils/Vector3d.h ../Geometry/GeomGlobal.h
-Povray.o: ../Geometry/Mesure.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h
-Povray.o: Fragments.h ../Common/Windows.h
+Povray.o: ../Utils/AtomsProp.h ../Utils/Vector3d.h ../Utils/Constants.h
+Povray.o: ../Geometry/GeomGlobal.h ../Geometry/Mesure.h
+Povray.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h Fragments.h
+Povray.o: ../Common/Windows.h
 PreviewGeom.o: ../../Config.h
 PreviewGeom.o: ../Common/Global.h
 PreviewGeom.o: ../Files/GabeditFileChooser.h

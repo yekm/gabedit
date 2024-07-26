@@ -23,6 +23,8 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
 #include "../Utils/Constants.h"
+#include "../Utils/Zlm.h"
+#include "../Utils/GTF.h"
 #include "GeomDraw.h"
 #include "GLArea.h"
 #include "UtilsOrb.h"
@@ -152,7 +154,7 @@ void delete_identique_atomic_standard_orb(TypeBasisBySym BasisBySym[MAXSYM],gint
  {
  	todelete[i] = TRUE;
  	for(j=0;j<i;j++)
-		if(to_cgtf_is_id(tmp[j],AOrb[i]))
+		if(CGTFEqCGTF(&tmp[j],&AOrb[i]))
 			break;
 	if(j!=i)
 		continue;
@@ -231,7 +233,7 @@ void define_standard_spherical_basis_from_molpro_basis(TypeBasisBySym BasisBySym
  gint c;
  gint L,M;
  CGTF *temp;
- Slm Stemp;
+ Zlm Stemp;
  gint N,Nc,n;
  gchar* t;
  gint naorbs;
@@ -275,7 +277,7 @@ void define_standard_spherical_basis_from_molpro_basis(TypeBasisBySym BasisBySym
 
 		}
 		/* Debug("L = %d M = %d \n",L,M);*/
-	 	Stemp =  GetCoefSlm(L,M);
+	 	Stemp =  getZlm(L,M);
 	 	BasisBySym[i].Basis[j].numstandards = g_malloc(BasisBySym[i].Basis[j].ncenters*sizeof(gint));
 		for(c=0;c<BasisBySym[i].Basis[j].ncenters;c++)
 		{
@@ -283,15 +285,15 @@ void define_standard_spherical_basis_from_molpro_basis(TypeBasisBySym BasisBySym
 
 	 		BasisBySym[i].Basis[j].numstandards[c] = k;
 
-	 		temp[k].N=Stemp.N*BasisBySym[i].Basis[j].nexps;
+	 		temp[k].numberOfFunctions=Stemp.numberOfCoefficients*BasisBySym[i].Basis[j].nexps;
 		    temp[k].NumCenter=BasisBySym[i].Basis[j].numcenters[c]-1;
 		    /* Debug("numcenter = %d\n",temp[k].NumCenter);*/
 		    temp[k].L = L;
 		    temp[k].M = M;
-	 		temp[k].Gtf =g_malloc(temp[k].N*sizeof(GTF));
+	 		temp[k].Gtf =g_malloc(temp[k].numberOfFunctions*sizeof(GTF));
           		Nc=-1;
 	 		for(N=0;N<BasisBySym[i].Basis[j].nexps;N++)
-	 			 for(n=0;n<Stemp.N;n++)
+	 			 for(n=0;n<Stemp.numberOfCoefficients;n++)
 	 			{
 	 			   	Nc++;
 	   				temp[k].Gtf[Nc].Ex   = BasisBySym[i].Basis[j].exps[N];

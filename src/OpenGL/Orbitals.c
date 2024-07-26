@@ -849,23 +849,6 @@ GtkWidget* create_alpha_beta_lists(GtkWidget *noteBook, gint Type)
 
 }
 /********************************************************************************/
-GtkWidget *add_label_at_table(GtkWidget *Table,gchar *label,gushort line,gushort colonne,GtkJustification just)
-{
-	GtkWidget *Label;
-	GtkWidget *hbox = gtk_hbox_new(0,FALSE);
-	
-	Label = gtk_label_new (label);
-   	gtk_label_set_justify(GTK_LABEL(Label),just);
-	if(just ==GTK_JUSTIFY_CENTER) 
-		gtk_box_pack_start (GTK_BOX (hbox), Label, TRUE, TRUE, 0);
-	else
-		gtk_box_pack_start (GTK_BOX (hbox), Label, FALSE, FALSE, 0);
-	
-	add_widget_table(Table,hbox,line,colonne);
-
-	return Label;
-}
-/********************************************************************************/
 GtkWidget *create_iso_frame( GtkWidget *vboxall,gchar* title)
 {
 	GtkWidget *frame;

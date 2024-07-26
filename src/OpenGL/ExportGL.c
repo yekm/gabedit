@@ -76,7 +76,6 @@ static void export_file(GabeditFileChooser *SelecteurFichier , gint response_id)
 		buffsize += 1024*1024;
       		gl2psBeginPage("Gabedit", "Gabedit", NULL, gl2ps_type, GL2PS_BSP_SORT, 
                      GL2PS_OCCLUSION_CULL | GL2PS_USE_CURRENT_VIEWPORT | GL2PS_NO_BLENDING, 
-                     //GL2PS_USE_CURRENT_VIEWPORT, 
                      GL_RGBA, 0, NULL, 0, 0, 0, buffsize, file,fileName);
 		redrawGL2PS();
 		state = gl2psEndPage();

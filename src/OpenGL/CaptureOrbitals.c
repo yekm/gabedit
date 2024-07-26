@@ -1105,7 +1105,7 @@ void capture_orbitals_dlg()
 	hbox = gtk_hbox_new (TRUE, 0);
 	gtk_box_pack_start (GTK_BOX (vboxall), hbox, TRUE, TRUE, 0); 
 	label = gtk_label_new("");
-	gtk_label_set_markup(GTK_LABEL(label), "<span foreground=\"#FF0000\"><big>Use mouse + the key Ctrl (or the key shift) to select several orbitals</big></span>\n");
+	gtk_label_set_markup(GTK_LABEL(label), "<span foreground=\"#FF0000\"><big>Use mouse + the Ctrl key (or the shift key) to select several orbitals</big></span>\n");
 	gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0); 
 
 	hbox = create_orbitals_list(vboxall);

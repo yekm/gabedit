@@ -206,8 +206,10 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ToolsIRSpectrumMolden")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_MOLDEN);}
 	else if(!strcmp(name,"ToolsIRSpectrumTxt")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_TXT);}
 	else if(!strcmp(name,"ToolsRamanSpectrumGabedit")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_GABEDIT);}
-	else if(!strcmp(name,"ToolsRamanSpectrumOrca")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_ORCA);}
+	else if(!strcmp(name,"ToolsRamanSpectrumGamess")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_GAMESS);}
 	else if(!strcmp(name,"ToolsRamanSpectrumGaussian")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_GAUSSIAN);}
+	else if(!strcmp(name,"ToolsRamanSpectrumOrca")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_ORCA);}
+	else if(!strcmp(name,"ToolsRamanSpectrumPCGamess")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_GAMESS);}
 	else if(!strcmp(name,"ToolsRamanSpectrumMolden")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_MOLDEN);}
 	else if(!strcmp(name,"ToolsRamanSpectrumTxt")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_TXT);}
 	else if(!strcmp(name,"ToolsUVSpectrumGabedit")) { createUVSpectrum(Fenetre,GABEDIT_TYPEFILE_GABEDIT);}
@@ -322,8 +324,10 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ToolsRamanSpectrum",  NULL, "_Raman spectrum"},
 
 	{"ToolsRamanSpectrumGabedit",  GABEDIT_STOCK_GABEDIT, "Read frequencies and intensities from a _Gabedit file", NULL, "Gabedit", G_CALLBACK (activate_action) },
+	{"ToolsRamanSpectrumGamess",  GABEDIT_STOCK_GAMESS, "Read frequencies and intensities from a Game_ss output file", NULL, "Gamess", G_CALLBACK (activate_action) },
 	{"ToolsRamanSpectrumGaussian",  GABEDIT_STOCK_GAUSSIAN, "Read frequencies and intensities from a _Gaussian output file", NULL, "Gaussian", G_CALLBACK (activate_action) },
 	{"ToolsRamanSpectrumOrca",  GABEDIT_STOCK_ORCA, "Read frequencies and intensities from a _Orca output file", NULL, "Orca", G_CALLBACK (activate_action) },
+	{"ToolsRamanSpectrumPCGamess",  GABEDIT_STOCK_PCGAMESS, "Read frequencies and intensities from a _PCGamess output file", NULL, "PCGamess", G_CALLBACK (activate_action) },
 	{"ToolsRamanSpectrumMolden",  GABEDIT_STOCK_MOLDEN, "Read frequencies and intensities from a Mo_lden file", NULL, "Molden", G_CALLBACK (activate_action) },
 	{"ToolsRamanSpectrumTxt",  NULL, "Read frequencies and intensities from an ASCII XY file(2 columns)", NULL, "Txt", G_CALLBACK (activate_action) },
 	{"ToolsUVSpectrum",  NULL, "_UV spectrum"},
@@ -496,8 +500,10 @@ static const gchar *uiInfo =
 "      <separator name=\"sepRamanSpectrum\" />\n"
 "      <menu name=\"ToolsRamanSpectrum\" action=\"ToolsRamanSpectrum\">\n"
 "          <menuitem name=\"ToolsRamanSpectrumGabedit\" action=\"ToolsRamanSpectrumGabedit\" />\n"
+"          <menuitem name=\"ToolsRamanSpectrumGamess\" action=\"ToolsRamanSpectrumGamess\" />\n"
 "          <menuitem name=\"ToolsRamanSpectrumGaussian\" action=\"ToolsRamanSpectrumGaussian\" />\n"
 "          <menuitem name=\"ToolsRamanSpectrumOrca\" action=\"ToolsRamanSpectrumOrca\" />\n"
+"          <menuitem name=\"ToolsRamanSpectrumPCGamess\" action=\"ToolsRamanSpectrumPCGamess\" />\n"
 "          <menuitem name=\"ToolsRamanSpectrumMolden\" action=\"ToolsRamanSpectrumMolden\" />\n"
 "          <menuitem name=\"ToolsRamanSpectrumTxt\" action=\"ToolsRamanSpectrumTxt\" />\n"
 "      </menu>\n"

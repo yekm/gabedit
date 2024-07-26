@@ -586,13 +586,15 @@ static gboolean read_gamess_file(GabeditFileChooser *SelecFile, gint response_id
 			nf++;
 		}
 		nir=-1;
-		if(fgets(t,BSIZE,fd)) /* REDUCED MASS: */
-		if(fgets(t,BSIZE,fd)) /*  IR INTENSITY: */
+		while(fgets(t,BSIZE,fd) && strstr(t,":")) /* REDUCED MASS: IR INTENSITY: Raman, Depol,... backspace */
 		{
-			tmp =  strstr(t,":")+1;
-			nir = sscanf(tmp,"%s %s %s %s %s", sdum[0],sdum[1],sdum[2],sdum[3],sdum[4]);
+			if(strstr(t,"IR INTENSITY:"))
+			{
+				tmp =  strstr(t,":")+1;
+				nir = sscanf(tmp,"%s %s %s %s %s", sdum[0],sdum[1],sdum[2],sdum[3],sdum[4]);
+			}
 		}
-		if(nf!=nir ||!fgets(t,BSIZE,fd) ) /* backspace*/
+		if(nf!=nir)
 		{
 			for(i=0;i<nfMax*2;i++) g_free(sdum[i]);
 			messageErrorFreq(FileName);

@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
 #include "../Utils/Constants.h"
+#include "../Utils/Zlm.h"
 #include "../Geometry/GeomGlobal.h"
 #include "GeomDraw.h"
 #include "GLArea.h"
@@ -314,10 +315,10 @@ static void DefineQChemCartBasis()
 			l2 = l[1][m];
 	 		l3 = l[2][m];
 	 		k++;
-	 		AOrb[k].N=Type[GeomOrb[i].NumType].Ao[j].N;
+	 		AOrb[k].numberOfFunctions=Type[GeomOrb[i].NumType].Ao[j].N;
 			AOrb[k].NumCenter = i;
-	 		AOrb[k].Gtf =g_malloc(AOrb[k].N*sizeof(GTF));
-	 		for(n=0;n<AOrb[k].N;n++)
+	 		AOrb[k].Gtf =g_malloc(AOrb[k].numberOfFunctions*sizeof(GTF));
+	 		for(n=0;n<AOrb[k].numberOfFunctions;n++)
 	 		{
 	   			AOrb[k].Gtf[n].Ex   = Type[GeomOrb[i].NumType].Ao[j].Ex[n];
 	   			AOrb[k].Gtf[n].Coef = Type[GeomOrb[i].NumType].Ao[j].Coef[n];
@@ -344,7 +345,7 @@ static void DefineQChemSphericalBasis()
  gint kl;
  gint L,M;
  CGTF *temp;
- Slm Stemp;
+ Zlm Stemp;
  gint N,Nc,n;
  gint  klbeg;
  gint  klend;
@@ -385,14 +386,14 @@ static void DefineQChemSphericalBasis()
 		{
 			M = kl;
 	 		k++;
-	 	   	Stemp =  GetCoefSlm(L,M);
+	 	   	Stemp =  getZlm(L,M);
 
-	 		temp[k].N=Stemp.N*Type[GeomOrb[i].NumType].Ao[j].N;
+	 		temp[k].numberOfFunctions=Stemp.numberOfCoefficients*Type[GeomOrb[i].NumType].Ao[j].N;
 		    	temp[k].NumCenter=i;
-	 		temp[k].Gtf =g_malloc(temp[k].N*sizeof(GTF));
+	 		temp[k].Gtf =g_malloc(temp[k].numberOfFunctions*sizeof(GTF));
           		Nc=-1;
 	 		for(N=0;N<Type[GeomOrb[i].NumType].Ao[j].N;N++)
-	 			 for(n=0;n<Stemp.N;n++)
+	 			 for(n=0;n<Stemp.numberOfCoefficients;n++)
 	 			{
 	 			   Nc++;
 	 			

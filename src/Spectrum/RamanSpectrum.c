@@ -327,7 +327,129 @@ static void read_dalton_file_dlg()
 /********************************************************************************/
 static gboolean read_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
 {
-	return FALSE;
+ 	gchar t[BSIZE];
+ 	gboolean OK;
+	gint i;
+	gint j;
+	gint nf;
+	gint nir;
+	gint nfMax = 5;
+	gfloat freq[5];
+	gfloat ir[5];
+ 	gchar* sdum[5*2];
+ 	gchar* tmp;
+	gint numberOfFrequencies = 0;
+	gdouble* frequencies = NULL;
+	gdouble* intensities = NULL;
+	gchar *FileName;
+ 	FILE *fd;
+
+	if(response_id != GTK_RESPONSE_OK) return FALSE;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+
+ 	fd = FOpen(FileName, "r");
+
+ 	OK=FALSE;
+ 	while(!feof(fd))
+	{
+		if(!fgets(t,BSIZE,fd))break;
+	 	if ( strstr( t,"FREQUENCY:") )
+	  	{
+			OK = TRUE;
+			break;
+	  	}
+	}
+
+	if(!OK) 
+	{
+		messageErrorFreq(FileName);
+		if(frequencies) g_free(frequencies);
+		if(intensities) g_free(intensities);
+		return FALSE;
+	}
+	for(i=0;i<nfMax*2;i++) sdum[i] = g_malloc(BSIZE*sizeof(gchar));
+
+	j = 0;
+  	while(!feof(fd))
+  	{
+		gint nfi=0;
+		if(!strstr( t,"FREQUENCY:"))
+		{
+			if(!fgets(t,BSIZE,fd)) break;
+			continue;
+		}
+
+		tmp = strstr(t,":")+1;
+		for(i=0;i<nfMax*2;i++) sprintf(sdum[i]," ");
+		nfi = sscanf(tmp,"%s %s %s %s %s %s %s %s %s %s", sdum[0],sdum[1],sdum[2],sdum[3],sdum[4],
+				sdum[5],sdum[6],sdum[7],sdum[8],sdum[9]
+				);
+		if(nfi<1)
+		{
+			for(i=0;i<nfMax*2;i++) g_free(sdum[i]);
+			messageErrorFreq(FileName);
+			if(frequencies) g_free(frequencies);
+			if(intensities) g_free(intensities);
+			return FALSE;
+		}
+		nf = 0;
+		for(i=0;i<nfi;)
+		{
+			if(strstr(sdum[i+1],"I"))
+			{
+				freq[nf] = -atof(sdum[i]);
+				i+=2;
+			}
+			else
+			{
+				freq[nf] = atof(sdum[i]);
+				i+=1;
+			}
+			nf++;
+		}
+		nir=-1;
+		while(fgets(t,BSIZE,fd) && strstr(t,":")) /* REDUCED MASS: IR INTENSITY: RAMAN ACTIVITY: Depol,... backspace */
+		{
+			if(strstr(t,"RAMAN"))
+			{
+				tmp =  strstr(t,":")+1;
+				nir = sscanf(tmp,"%s %s %s %s %s", sdum[0],sdum[1],sdum[2],sdum[3],sdum[4]);
+			}
+		}
+		if(nf!=nir)
+		{
+			for(i=0;i<nfMax*2;i++) g_free(sdum[i]);
+			messageErrorFreq(FileName);
+			if(frequencies) g_free(frequencies);
+			if(intensities) g_free(intensities);
+			return FALSE;
+		}
+		for(i=0;i<nf;i++) ir[i] = atof(sdum[i]);
+
+		for(i=0;i<nf;i++)
+		{
+			numberOfFrequencies++;
+			frequencies = g_realloc(frequencies, numberOfFrequencies*sizeof(gdouble));
+			intensities = g_realloc(intensities, numberOfFrequencies*sizeof(gdouble));
+			frequencies[numberOfFrequencies-1] = freq[i];
+			intensities[numberOfFrequencies-1] = ir[i];
+		}
+		if(!fgets(t,BSIZE,fd)) break;
+	}
+	if(numberOfFrequencies>0)
+	{
+		createRamanSpectrumWin(numberOfFrequencies, frequencies, intensities);
+	}
+	else
+	{
+		messageErrorFreq(FileName);
+	}
+
+
+	if(frequencies) g_free(frequencies);
+	if(intensities) g_free(intensities);
+	fclose(fd);
+	return TRUE;
 }
 /********************************************************************************/
 static void read_gamess_file_dlg()

@@ -664,6 +664,51 @@ GtkWidget* Message(char *message,char *titre,gboolean center)
     return DialogueMessage;
 }
 /********************************************************************************/
+GtkWidget* MessageTxt(gchar *message,gchar *title)
+{
+	GtkWidget *dlgWin = NULL;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	GtkWidget *txtWid;
+	GtkWidget *button;
+
+
+	dlgWin = gtk_dialog_new();
+	gtk_widget_realize(GTK_WIDGET(dlgWin));
+
+	gtk_window_set_title(GTK_WINDOW(dlgWin),title);
+	gtk_window_set_transient_for(GTK_WINDOW(dlgWin),GTK_WINDOW(Fenetre));
+	gtk_window_set_position(GTK_WINDOW(dlgWin),GTK_WIN_POS_CENTER);
+
+	g_signal_connect(G_OBJECT(dlgWin), "delete_event", (GCallback)destroy_button_windows, NULL);
+	g_signal_connect(G_OBJECT(dlgWin), "delete_event", (GCallback)gtk_widget_destroy, NULL);
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(dlgWin)->vbox), frame,TRUE,TRUE,0);
+
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	txtWid = create_text_widget(vboxframe,NULL,&frame);
+	if(message) gabedit_text_insert (GABEDIT_TEXT(txtWid), NULL, NULL, NULL,message,-1);   
+
+	gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(dlgWin)->action_area), FALSE);
+  
+	button = create_button(dlgWin,"OK");
+	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(dlgWin)->action_area), button, FALSE, TRUE, 5);  
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)destroy_button_windows, GTK_OBJECT(dlgWin));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(dlgWin));
+
+	add_button_windows(title,dlgWin);
+	gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeight*0.4), (gint)(ScreenHeight*0.4));
+	gtk_widget_show_all(dlgWin);
+	return dlgWin;
+}
+/********************************************************************************/
 void select_all()
 {
 	
@@ -2007,6 +2052,23 @@ GtkWidget *add_label_table(GtkWidget *Table, G_CONST_RETURN gchar *label,gushort
 	Label = gtk_label_new (label);
    	gtk_label_set_justify(GTK_LABEL(Label),GTK_JUSTIFY_LEFT);
 	gtk_box_pack_start (GTK_BOX (hbox), Label, FALSE, FALSE, 0);
+	add_widget_table(Table,hbox,line,colonne);
+
+	return Label;
+}
+/********************************************************************************/
+GtkWidget *add_label_at_table(GtkWidget *Table,gchar *label,gushort line,gushort colonne,GtkJustification just)
+{
+	GtkWidget *Label;
+	GtkWidget *hbox = gtk_hbox_new(0,FALSE);
+	
+	Label = gtk_label_new (label);
+   	gtk_label_set_justify(GTK_LABEL(Label),just);
+	if(just ==GTK_JUSTIFY_CENTER) 
+		gtk_box_pack_start (GTK_BOX (hbox), Label, TRUE, TRUE, 0);
+	else
+		gtk_box_pack_start (GTK_BOX (hbox), Label, FALSE, FALSE, 0);
+	
 	add_widget_table(Table,hbox,line,colonne);
 
 	return Label;

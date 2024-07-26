@@ -617,14 +617,12 @@ static void GAjoutePageMB(GtkWidget *NoteBook,gchar * tNote,guint j, GtkWidget *
 
   hbox =create_hbox(vbox);
 
-  //FrameMethode = create_frame(window1,hbox,"METHOD");
   FrameMethode =create_vbox(hbox);
   gtk_container_set_border_width(GTK_CONTAINER(FrameMethode), 2);
   FrameM[NM]=FrameMethode;
   combobox = create_liste_methods(window1,FrameMethode, nothing);
   *comboMethod = combobox;
 
-  //FrameBasis = create_frame(window1,hbox,"BASIS");
   FrameBasis =create_vbox(hbox);
   gtk_container_set_border_width(GTK_CONTAINER(FrameBasis), 2);
   FrameB[NM]=FrameBasis;
