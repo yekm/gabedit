@@ -1,3 +1,9 @@
+05 September 2012
+	Bug fixed : reading of the number occuped beta orbitals from a fchk file.
+
+25 July 2012
+	Bug fixed : read orbitals with ECP from a GAMESS-US output file
+
 20 July 2012
 	Analysis of Spatial Extent in Charge-Transfer Excitations implemented (See Le Bahers et al., J. Chem. Theory Comput. 2011, 7, 2498–2506)
 

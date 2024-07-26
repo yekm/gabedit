@@ -2011,6 +2011,7 @@ gboolean read_orbitals_from_fchk_gaussian_file(gchar* fileName)
 	}
 	nAOcc = get_one_int_from_fchk_gaussian_file(file,"Number of alpha electrons ");
 	nBOcc = get_one_int_from_fchk_gaussian_file(file,"Number of beta electrons ");
+/* printf("nBOcc=%d\n",nBOcc);*/
 	nBasis = get_one_int_from_fchk_gaussian_file(file,"Number of basis functions  ");
 	if(nBasis<1)
 	{
@@ -2083,35 +2084,35 @@ gboolean read_orbitals_from_fchk_gaussian_file(gchar* fileName)
 			EnerBetaOrbitals = EnerAlphaOrbitals;
 			OccBetaOrbitals = OccAlphaOrbitals;
 			SymBetaOrbitals = SymAlphaOrbitals;
-			NBetaOcc = nBOcc;
+			NBetaOcc = nAOcc;
 			NBetaOrb = nA;
 		}
 	}
 	if(coefsBeta && energiesBeta && nB>0 && nB<=nBasis)
 	{
 		EnerBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
-		for(i=0;i<nA;i++) EnerBetaOrbitals[i] = energiesBeta[i];
-		for(i=nA;i<NOrb;i++) EnerBetaOrbitals[i] = 0.0;
+		for(i=0;i<nB;i++) EnerBetaOrbitals[i] = energiesBeta[i];
+		for(i=nB;i<NOrb;i++) EnerBetaOrbitals[i] = 0.0;
 
 		CoefBetaOrbitals = CreateTable2(NOrb);
 
 		k = 0;
-		for(i=0;i<nA;i++) 
-		for(ib=0;ib<nA;ib++) 
+		for(i=0;i<nB;i++) 
+		for(ib=0;ib<nB;ib++) 
 			CoefBetaOrbitals[i][ib] = coefsBeta[k++];
-		for(i=nA;i<NOrb;i++)
-		for(ib=0;ib<nA;ib++) 
+		for(i=nB;i<NOrb;i++)
+		for(ib=0;ib<nB;ib++) 
 			CoefBetaOrbitals[i][ib] = 0;
 
 		SymBetaOrbitals = g_malloc(NOrb*sizeof(gchar*));
-		for(i=0;i<nA;i++) SymBetaOrbitals[i] = g_strdup("UNK");
-		for(i=nA;i<NOrb;i++) SymBetaOrbitals[i] = g_strdup("DELETE");
+		for(i=0;i<nB;i++) SymBetaOrbitals[i] = g_strdup("UNK");
+		for(i=nB;i<NOrb;i++) SymBetaOrbitals[i] = g_strdup("DELETE");
 
 		OccBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
-		for(i=0;i<nAOcc;i++) OccBetaOrbitals[i] = 1.0;
-		for(i=nAOcc;i<NOrb;i++) OccBetaOrbitals[i] = 0.0;
-		NBetaOcc = nAOcc;
-		NBetaOrb = nA;
+		for(i=0;i<nBOcc;i++) OccBetaOrbitals[i] = 1.0;
+		for(i=nBOcc;i<NOrb;i++) OccBetaOrbitals[i] = 0.0;
+		NBetaOcc = nBOcc;/* bug fixed 03 Sep 2012 */
+		NBetaOrb = nB;
 		if(!energiesAlpha && !coefsAlpha && nA == 0 && nBOcc==nAOcc)
 		{
 			CoefAlphaOrbitals = CoefBetaOrbitals;

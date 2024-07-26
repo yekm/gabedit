@@ -730,9 +730,12 @@ static gint get_number_of_ecp_core_electrons(gchar* FileName)
 		{
 			gchar* equal=strstr(t,"REMOVES");
 			if(equal) ne=atoi(equal+strlen("REMOVES"));
+		}
+		if(strstr(t,"NUMBER OF OCCUPIED ORBITALS") && strstr(t,"KEPT"))/* recent version of GAMESS-US */
+		{
+			ne = 0;
 			break;
 		}
-
 	}
 	if(t!=NULL) g_free(t);
 	if(file) fclose(file);
