@@ -24,9 +24,13 @@ typedef struct _AtomMol
 	gdouble coordinates[3];
 	gdouble charge;
 	SAtomsProp prop;
-	gchar* type;
+	gchar* mmType;
+	gchar* pdbType;
 	gchar* residueName;
 	gint residueNumber;
+
+	gboolean show;
+	GabEditLayerType layer;
 }AtomMol;
 
 gdouble getAngle(AtomMol *a1,AtomMol* a2,AtomMol* a3);

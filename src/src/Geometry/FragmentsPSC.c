@@ -25,7 +25,12 @@ DEALINGS IN THE SOFTWARE.
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
+#include "../Common/GabeditType.h"
+#include "../Utils/Utils.h"
 #include "../Geometry/Fragments.h"
+#include "../MolecularMechanics/PDBTemplate.h"
+#include "../Geometry/DrawGeom.h"
+#include "../MolecularMechanics/CalculTypesAmber.h"
 
 #define ANG_TO_BOHR  1.0/0.52917726
 /*****************************************************************/
@@ -36,10 +41,31 @@ static void SetResidue(Fragment* Frag,gchar* name)
 		Frag->Atoms[i].Residue = g_strdup(name);
 
 }
-/*****************************************************************/
+/********************************************************************************/
+static void SetMMTypes(Fragment* Frag)
+{
+	gint i;
+	gchar* residue = NULL;
+	gdouble charge;
+	if(Frag->NAtoms<1) return;
+	residue = Frag->Atoms[0].Residue;
+
+	for(i=0;i<Frag->NAtoms;i++)
+	{
+		if(Frag->Atoms[i].mmType) g_free(Frag->Atoms[i].mmType);
+		Frag->Atoms[i].mmType = getMMTypeFromPDBTpl(residue, Frag->Atoms[i].pdbType,&charge);
+		if(strcmp(Frag->Atoms[i].mmType,"UNK"))  Frag->Atoms[i].Charge = charge;
+	}
+	for(i=0;i<Frag->NAtoms;i++)
+		if(!strcmp(Frag->Atoms[i].mmType,"UNK")) break;
+	if(i!=Frag->NAtoms) calculTypesAmberForAFragment(Frag);
+
+}
+/********************************************************************************/
 static void SetAtom(Atom* A,gchar* symb,gfloat x,gfloat y,gfloat z)
 {
-	A->Type = g_strdup(symb);
+	A->mmType = g_strdup(symb);
+	A->pdbType = g_strdup(symb);
 	A->Symb = g_strdup_printf("%c",toupper(symb[0]));
 
 	A->Coord[0] = (gdouble)x*(gdouble)ANG_TO_BOHR;
@@ -540,6 +566,7 @@ Fragment GetFragmentPSC(gchar* Name,gboolean alpha)
 	}
 	else
 		SetResidue(&F,"UNK");
+	SetMMTypes(&F);
 
 	return F;
 

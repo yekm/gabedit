@@ -55,6 +55,7 @@ DEALINGS IN THE SOFTWARE.
 #endif /* G_OS_WIN32 */
 
 #define DebugFlag 0
+#define Debug1Flag 1
 
 void create_color_surfaces_file();
 void read_color_surfaces_file();
@@ -160,6 +161,16 @@ void free_mpqc_commands()
 	free_commands_list(&mpqcCommands);
 }
 /********************************************************************************/
+void free_pcgamess_commands()
+{
+	free_commands_list(&pcgamessCommands);
+}
+/********************************************************************************/
+void free_qchem_commands()
+{
+	free_commands_list(&qchemCommands);
+}
+/********************************************************************************/
 gchar* get_time_str()
 {
 	gchar* str=NULL;
@@ -176,7 +187,7 @@ gboolean this_is_a_backspace(gchar *st)
 {
         gint i;
         for(i=0;i<(gint)strlen(st);i++)
-        	if(st[i] != ' ' && st[i] !='\n')
+        	if(st[i] != ' ' && st[i] !='\n' && st[i] !='\r')
                 	return FALSE;
         return TRUE;
 }   
@@ -467,6 +478,12 @@ gchar* cat_file(gchar* namefile,gboolean tabulation)
    tsrt = NULL;
  }
  g_free(t);
+ t = tsrt;
+ if(t)
+ {
+ 	tsrt = g_locale_to_utf8(t,-1,NULL,NULL,NULL);
+	g_free(t);
+ }
 
  return tsrt;
   
@@ -1004,6 +1021,37 @@ void create_commands_file()
 		fprintf(fd,"%s\n",mpqcCommands.commands[i]);
 	}
 	fprintf(fd,"End\n");
+/*-----------------------------------------------------------------------------*/
+	fprintf(fd,"Begin PCGamess\n");
+	str_delete_n(NameCommandPCGamess);
+	delete_last_spaces(NameCommandPCGamess);
+	delete_first_spaces(NameCommandPCGamess);
+ 	fprintf(fd,"%s\n",NameCommandPCGamess);
+ 	fprintf(fd,"%d\n",pcgamessCommands.numberOfCommands);
+	for(i=0;i<pcgamessCommands.numberOfCommands;i++)
+	{
+		str_delete_n(pcgamessCommands.commands[i]);
+		delete_last_spaces(pcgamessCommands.commands[i]);
+		delete_first_spaces(pcgamessCommands.commands[i]);
+		fprintf(fd,"%s\n",pcgamessCommands.commands[i]);
+	}
+	fprintf(fd,"End\n");
+/*-----------------------------------------------------------------------------*/
+	fprintf(fd,"Begin QChem\n");
+	str_delete_n(NameCommandQChem);
+	delete_last_spaces(NameCommandQChem);
+	delete_first_spaces(NameCommandQChem);
+ 	fprintf(fd,"%s\n",NameCommandQChem);
+ 	fprintf(fd,"%d\n",qchemCommands.numberOfCommands);
+	for(i=0;i<qchemCommands.numberOfCommands;i++)
+	{
+		str_delete_n(qchemCommands.commands[i]);
+		delete_last_spaces(qchemCommands.commands[i]);
+		delete_first_spaces(qchemCommands.commands[i]);
+		fprintf(fd,"%s\n",qchemCommands.commands[i]);
+	}
+	fprintf(fd,"End\n");
+/*-----------------------------------------------------------------------------*/
 
 	fprintf(fd,"Begin Babel\n");
 	str_delete_n(babelCommand);
@@ -1017,6 +1065,13 @@ void create_commands_file()
 	delete_last_spaces(gamessDirectory);
 	delete_first_spaces(gamessDirectory);
 	fprintf(fd,"%s\n",gamessDirectory);
+	fprintf(fd,"End\n");
+
+	fprintf(fd,"Begin PCGamessDir\n");
+	str_delete_n(pcgamessDirectory);
+	delete_last_spaces(pcgamessDirectory);
+	delete_first_spaces(pcgamessDirectory);
+	fprintf(fd,"%s\n",pcgamessDirectory);
 	fprintf(fd,"End\n");
 
 	fclose(fd);
@@ -1613,6 +1668,122 @@ void read_commands_file()
 	}
 /*-----------------------------------------------------------------------------*/
  	if(fgets(t,taille,fd))
+	if(!strstr(t,"Begin PCGamess"))
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd))
+	{
+ 		NameCommandPCGamess= g_strdup(t);
+		str_delete_n(NameCommandPCGamess);
+		delete_last_spaces(NameCommandPCGamess);
+		delete_first_spaces(NameCommandPCGamess);
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd) && atoi(t)>0)
+	{
+		free_pcgamess_commands();
+		pcgamessCommands.numberOfCommands = atoi(t);
+		pcgamessCommands.commands = g_malloc(pcgamessCommands.numberOfCommands*sizeof(gchar*));
+		for(i=0;i<pcgamessCommands.numberOfCommands;i++)
+			pcgamessCommands.commands[i]  = g_strdup(" ");
+		for(i=0;i<pcgamessCommands.numberOfCommands;i++)
+		{
+			if(!fgets(t,taille,fd) || strstr(t,"End"))
+			{
+				free_pcgamess_commands();
+  				pcgamessCommands.numberOfCommands = 1;
+  				pcgamessCommands.numberOfDefaultCommand = 0;
+  				pcgamessCommands.commands = g_malloc(sizeof(gchar*));
+  				pcgamessCommands.commands[0] = g_strdup("nohup pcgamess");
+
+				fclose(fd);
+				return;
+			}
+			else
+			{
+				pcgamessCommands.commands[i] = g_strdup(t); 
+				str_delete_n(pcgamessCommands.commands[i]);
+				delete_last_spaces(pcgamessCommands.commands[i]);
+				delete_first_spaces(pcgamessCommands.commands[i]);
+			}
+		}
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(!fgets(t,taille,fd)) /* End of PCGamess */
+	{
+		fclose(fd);
+		return;
+	}
+/*-----------------------------------------------------------------------------*/
+ 	if(fgets(t,taille,fd))
+	if(!strstr(t,"Begin QChem"))
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd))
+	{
+ 		NameCommandQChem= g_strdup(t);
+		str_delete_n(NameCommandQChem);
+		delete_last_spaces(NameCommandQChem);
+		delete_first_spaces(NameCommandQChem);
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd) && atoi(t)>0)
+	{
+		free_qchem_commands();
+		qchemCommands.numberOfCommands = atoi(t);
+		qchemCommands.commands = g_malloc(qchemCommands.numberOfCommands*sizeof(gchar*));
+		for(i=0;i<qchemCommands.numberOfCommands;i++)
+			qchemCommands.commands[i]  = g_strdup(" ");
+		for(i=0;i<qchemCommands.numberOfCommands;i++)
+		{
+			if(!fgets(t,taille,fd) || strstr(t,"End"))
+			{
+				free_qchem_commands();
+  				qchemCommands.numberOfCommands = 1;
+  				qchemCommands.numberOfDefaultCommand = 0;
+  				qchemCommands.commands = g_malloc(sizeof(gchar*));
+  				qchemCommands.commands[0] = g_strdup("nohup qchem");
+
+				fclose(fd);
+				return;
+			}
+			else
+			{
+				qchemCommands.commands[i] = g_strdup(t); 
+				str_delete_n(qchemCommands.commands[i]);
+				delete_last_spaces(qchemCommands.commands[i]);
+				delete_first_spaces(qchemCommands.commands[i]);
+			}
+		}
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(!fgets(t,taille,fd)) /* End of QChem */
+	{
+		fclose(fd);
+		return;
+	}
+/*-----------------------------------------------------------------------------*/
+ 	if(fgets(t,taille,fd))
 	if(!strstr(t,"Begin Babel"))
 	{
 		fclose(fd);
@@ -1648,6 +1819,37 @@ void read_commands_file()
 		str_delete_n(gamessDirectory);
 		delete_last_spaces(gamessDirectory);
 		delete_first_spaces(gamessDirectory);
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(!fgets(t,taille,fd)) /* End of GamessDir */
+	{
+		fclose(fd);
+		return;
+	}
+/*-----------------------------------------------------------------------------*/
+ 	if(fgets(t,taille,fd))
+	if(!strstr(t,"Begin PCGamessDir"))
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd))
+	{
+ 		pcgamessDirectory= g_strdup(t);
+		str_delete_n(pcgamessDirectory);
+		delete_last_spaces(pcgamessDirectory);
+		delete_first_spaces(pcgamessDirectory);
+#ifdef G_OS_WIN32
+		{
+		gchar t[BSIZE];
+		sprintf(t,"%s;%cPATH%c",pcgamessDirectory,'%','%');
+		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
+		}
+#endif
 	}
 	else
 	{
@@ -1748,11 +1950,31 @@ gchar *bohr_to_ang(gchar *angstr)
 	return austr;
 }
 /*************************************************************************************/
+static gboolean debug1flag()
+{
+   gchar localhost[100];
+   if(!Debug1Flag) return FALSE;
+
+#ifdef G_OS_WIN32
+   winsockCheck(stderr);
+#endif
+   gethostname(localhost,100);
+   if(strlen(localhost)>=5)
+   {
+	   g_strup(localhost);
+	   gchar* d = strstr(localhost,"L");
+	   if(d[0]=='L' && d[1]=='A')
+	   if(d[2]=='S' && d[3]=='I')
+	   if(d[4]=='M') return TRUE;
+   }
+   return FALSE;
+}
+/*************************************************************************************/
 guint get_number_electrons(guint type)
 {
 /* 
-   type = 1 : Medium and Hight
-   type = 2 : Hight
+   type = 1 : Medium and High
+   type = 2 : High
    type = other : All
 */
    guint i;
@@ -1765,14 +1987,16 @@ guint get_number_electrons(guint type)
 	       Atom = prop_atom_get(GeomXYZ[i].Symb);
                switch (type)
                {
-        	case 1 : if(!strcmp(GeomXYZ[i].Layer," ") || 
-			    !strcmp(GeomXYZ[i].Layer,"Hight") ||
+        	case 1 : if(this_is_a_backspace (GeomXYZ[i].Layer) || 
+			    !strcmp(GeomXYZ[i].Layer,"High") ||
 			    !strcmp(GeomXYZ[i].Layer,"Medium") )
 				Ne += Atom.atomicNumber;
 			 break;
-        	case 2 : if(!strcmp(GeomXYZ[i].Layer," ") || 
-			    !strcmp(GeomXYZ[i].Layer,"Hight") )
+        	case 2 : if(this_is_a_backspace (GeomXYZ[i].Layer) || 
+			    !strcmp(GeomXYZ[i].Layer,"High") )
+				 {
 				Ne += Atom.atomicNumber;
+				 }
 			 break;
         	default : Ne += Atom.atomicNumber;
                }
@@ -1785,13 +2009,13 @@ guint get_number_electrons(guint type)
 		Atom = prop_atom_get(Geom[i].Symb);
                switch (type)
                {
-        	case 1 : if(!strcmp(Geom[i].Layer," ") || 
-			    !strcmp(Geom[i].Layer,"Hight") ||
+        	case 1 : if(this_is_a_backspace (Geom[i].Layer) || 
+			    !strcmp(Geom[i].Layer,"High") ||
 			    !strcmp(Geom[i].Layer,"Medium") )
 				Ne += Atom.atomicNumber;
 			 break;
-        	case 2 : if(!strcmp(Geom[i].Layer," ") || 
-			    !strcmp(Geom[i].Layer,"Hight") )
+        	case 2 : if(this_is_a_backspace (Geom[i].Layer) || 
+			    !strcmp(Geom[i].Layer,"High") )
 		        	 Ne += Atom.atomicNumber;
 			 break;
         	default : Ne += Atom.atomicNumber;
@@ -1839,6 +2063,45 @@ guint get_num_variableZmat(gchar *NameV)
 		return i;
 	
   return 0;
+} 
+/*************************************************************************************/
+gboolean geometry_with_medium_layer()
+{
+
+   gint i;
+
+   if(debug1flag()) return FALSE;
+
+   if(MethodeGeom == GEOM_IS_XYZ)
+   {
+   	for(i=0;i<NcentersXYZ;i++)
+		if(strstr(GeomXYZ[i].Layer,"Med") ) return TRUE;
+   }
+   else if(MethodeGeom == GEOM_IS_ZMAT)
+   {
+   	for(i=0;i<NcentersZmat;i++)
+		if(strstr(Geom[i].Layer,"Med") ) return TRUE;
+   }
+   return FALSE;
+} 
+/*************************************************************************************/
+gboolean geometry_with_lower_layer()
+{
+   gint i;
+
+   if(debug1flag()) return FALSE;
+
+   if(MethodeGeom == GEOM_IS_XYZ)
+   {
+   	for(i=0;i<NcentersXYZ;i++)
+		if(strstr(GeomXYZ[i].Layer,"Lo") ) return TRUE;
+   }
+   else if(MethodeGeom == GEOM_IS_ZMAT)
+   {
+   	for(i=0;i<NcentersZmat;i++)
+		if(strstr(Geom[i].Layer,"Lo") ) return TRUE;
+   }
+   return FALSE;
 } 
 /*************************************************************************************/
 void uppercase(gchar *str)
@@ -1974,19 +2237,36 @@ void initialise_name_file()
 /*************************************************************************************/
 void initialise_name_commands()
 {
+#ifdef G_OS_WIN32
+	gchar t[BSIZE];
+	NameCommandGamess=g_strdup("gms");
+	NameCommandGaussian=g_strdup("g98");
+	NameCommandMolcas=g_strdup("molcas");
+	NameCommandMolpro=g_strdup("molpro");
+	NameCommandMPQC=g_strdup("mpqc");
+	NameCommandPCGamess=g_strdup("pcgamess");
+	NameCommandQChem=g_strdup("qc");
+#else
 	NameCommandGamess=g_strdup("gms");
 	NameCommandGaussian=g_strdup("nohup g98");
 	NameCommandMolcas=g_strdup("nohup molcas");
 	NameCommandMolpro=g_strdup("nohup molpro");
 	NameCommandMPQC=g_strdup("nohup mpqc");
+	NameCommandPCGamess=g_strdup("pcgamess");
+	NameCommandQChem=g_strdup("qchem");
+#endif
 
 
 #ifdef G_OS_WIN32
 	babelCommand = g_strdup_printf("%s%sobabel.exe",g_get_current_dir(),G_DIR_SEPARATOR_S);
 	gamessDirectory= g_strdup_printf("C:%sWinGAMESS",G_DIR_SEPARATOR_S);
+	pcgamessDirectory= g_strdup_printf("C:%sPCGAMESS",G_DIR_SEPARATOR_S);
+	sprintf(t,"%s;%cPATH%c",pcgamessDirectory,'%','%');
+	g_setenv("PATH",t,TRUE);
 #else
 	babelCommand=g_strdup("babel");
 	gamessDirectory= g_strdup_printf("%s%sGamess",g_get_home_dir(),G_DIR_SEPARATOR_S);
+	pcgamessDirectory= g_strdup_printf("%s%sPCGamess",g_get_home_dir(),G_DIR_SEPARATOR_S);
 #endif
 }
 /*************************************************************************************/
@@ -2091,7 +2371,7 @@ void initialise_global_variables()
   gaussianCommands.commands[0] = g_strdup("nohup g98");
   gaussianCommands.commands[1] = g_strdup("submitGaussian 1:0:0");
 #ifdef G_OS_WIN32
-    gaussianCommands.commands[2] = g_strdup("C:\\Gaussian\\g98");
+    gaussianCommands.commands[2] = g_strdup("g98");
 #endif
 
 
@@ -2104,7 +2384,7 @@ void initialise_global_variables()
   molcasCommands.commands[0] = g_strdup("nohup molcas");
   molcasCommands.commands[1] = g_strdup("submitMolcas 1:0:0");
 #ifdef G_OS_WIN32
-  molcasCommands.commands[2] = g_strdup("C:\\Molcas\\molcas");
+  molcasCommands.commands[2] = g_strdup("molcas");
 #endif
 
   molproCommands.numberOfCommands = 2;
@@ -2117,7 +2397,7 @@ void initialise_global_variables()
   molproCommands.commands[0] = g_strdup("nohup molpro");
   molproCommands.commands[1] = g_strdup("submitMolpro 1:0:0");
 #ifdef G_OS_WIN32
-  molproCommands.commands[2] = g_strdup("C:\\Molpro\\molpro");
+  molproCommands.commands[2] = g_strdup("molpro");
 #endif
 
 	mpqcCommands.numberOfCommands = 2;
@@ -2130,7 +2410,33 @@ void initialise_global_variables()
   mpqcCommands.commands[0] = g_strdup("nohup mpqc");
   mpqcCommands.commands[1] = g_strdup("submitMPQC 1:0:0");
 #ifdef G_OS_WIN32
-  mpqcCommands.commands[2] = g_strdup("C:\\MPQC\\mpqc");
+  mpqcCommands.commands[2] = g_strdup("mpqc");
+#endif
+
+	pcgamessCommands.numberOfCommands = 2;
+#ifdef G_OS_WIN32
+      pcgamessCommands.numberOfCommands = 3;
+#endif
+
+  pcgamessCommands.numberOfDefaultCommand = 0;
+  pcgamessCommands.commands = g_malloc(pcgamessCommands.numberOfCommands*sizeof(gchar*));
+  pcgamessCommands.commands[0] = g_strdup("nohup pcgamess");
+  pcgamessCommands.commands[1] = g_strdup("submitPCGamess 1:0:0");
+#ifdef G_OS_WIN32
+  pcgamessCommands.commands[2] = g_strdup("pcgamess");
+#endif
+
+	qchemCommands.numberOfCommands = 2;
+#ifdef G_OS_WIN32
+      qchemCommands.numberOfCommands = 3;
+#endif
+
+  qchemCommands.numberOfDefaultCommand = 0;
+  qchemCommands.commands = g_malloc(qchemCommands.numberOfCommands*sizeof(gchar*));
+  qchemCommands.commands[0] = g_strdup("nohup qchem");
+  qchemCommands.commands[1] = g_strdup("submitQChem 1:0:0");
+#ifdef G_OS_WIN32
+  qchemCommands.commands[2] = g_strdup("qc");
 #endif
 
  
@@ -2386,6 +2692,40 @@ gint numb_of_string_by_row(gchar *str)
 	return n;
 }
 /********************************************************************************/
+gint numb_of_reals_by_row(gchar *str)
+{
+	gint n=0;
+	gchar* t=str;
+	gchar p[BSIZE];
+	while(*t!='\n' && *t !='\0')
+	{
+		if(*t =='\t') *t =' ';
+		if(*t =='\r') *t =' ';
+		if(*t!=' ')
+		{
+			sscanf(t,"%s",p);
+			if(test(p)) n++;
+			while(*t!=' ')
+			{
+				t++;
+				if(*t =='\n' || *t =='\0')
+					break;
+			}
+
+		}
+		else
+		{
+			while(*t ==' ' )
+			{
+				t++;
+				if(*t =='\n' || *t =='\0')
+					break;
+			}
+		}
+	}
+	return n;
+}
+/********************************************************************************/
 gchar** gab_split(gchar *str)
 {
 	gchar** strsplit= g_malloc(sizeof(gchar*));
@@ -2594,6 +2934,51 @@ void get_dipole_from_dalton_output_file(FILE* fd)
 		else
 		{
 			if(strstr( t, ">>>>" )) break;
+		}
+
+	}
+	g_free(t);
+}
+/********************************************************************************/
+void get_dipole_from_qchem_output_file(FILE* fd)
+{
+ 	guint taille=BSIZE;
+  	gchar *t = g_malloc(BSIZE*sizeof(gchar));
+  	gchar* pdest;
+	gint ngrad = 0;
+	gint i;
+
+	Dipole.def = FALSE;
+
+  	while(!feof(fd) )
+	{
+    		pdest = NULL;
+		Dipole.def = FALSE;
+    		fgets(t,taille,fd);
+    		pdest = strstr( t, "Dipole Moment (Debye)");
+
+		if(pdest)
+		{
+    		if(!feof(fd)) fgets(t,taille,fd);
+		else break;
+		Dipole.def = TRUE;
+    		pdest = strstr( t, "X")+2;
+		if(pdest) sscanf(pdest,"%f",&Dipole.Value[0]);
+    		pdest = strstr( t, "Y")+2;
+		if(pdest) sscanf(pdest,"%f",&Dipole.Value[1]);
+    		pdest = strstr( t, "Z")+2;
+		if(pdest) sscanf(pdest,"%f",&Dipole.Value[2]);
+		for(i=0;i<3;i++) Dipole.Value[i] /= AUTODEB;
+		break;
+		}
+		else
+		{
+          		pdest = strstr( t, "GradGradGrad" );
+			if(pdest)
+			{
+				ngrad++;
+			}
+			if(ngrad>2) break;
 		}
 
 	}
@@ -2908,12 +3293,51 @@ gboolean test_type_program_gamess(FILE* file)
 	return FALSE;
 }
 /**********************************************************************************/
+gboolean test_type_program_pcgamess(FILE* file)
+{
+	gchar t[BSIZE];
+	guint taille=BSIZE;
+	fseek(file, 0L, SEEK_SET);
+	while(!feof(file))
+	{
+		if(!fgets(t, taille, file)) return FALSE;
+		if(strstr(t,"PCGamess")) return TRUE;
+	}
+	return FALSE;
+}
+/**********************************************************************************/
+gboolean test_type_program_qchem(FILE* file)
+{
+	gchar t[BSIZE];
+	guint taille=BSIZE;
+	fseek(file, 0L, SEEK_SET);
+	while(!feof(file))
+	{
+		if(!fgets(t, taille, file)) return FALSE;
+		if(strstr(t,"!"))continue;
+		
+		if(strstr(t,"$molecule")) return TRUE;
+		if(strstr(t,"$rem")) return TRUE;
+	}
+	return FALSE;
+}
+/**********************************************************************************/
 gint get_type_of_program(FILE* file)
 {
+	if(test_type_program_pcgamess(file))
+	{
+		fseek(file, 0L, SEEK_SET);
+		return PROG_IS_PCGAMESS;
+	}
 	if(test_type_program_gamess(file))
 	{
 		fseek(file, 0L, SEEK_SET);
 		return PROG_IS_GAMESS;
+	}
+	if(test_type_program_qchem(file))
+	{
+		fseek(file, 0L, SEEK_SET);
+		return PROG_IS_QCHEM;
 	}
 	if(test_type_program_mpqc(file))
 	{

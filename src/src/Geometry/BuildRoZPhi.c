@@ -113,7 +113,8 @@ static void build_rozphi_molecule(GtkWidget *w,gpointer data)
 	{
 		GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
 		GeomXYZ[j].Symb=g_strdup(Symb);
-		GeomXYZ[j].Type=g_strdup(Symb);
+		GeomXYZ[j].mmType=g_strdup(Symb);
+		GeomXYZ[j].pdbType=g_strdup(Symb);
 		GeomXYZ[j].Residue=g_strdup(Symb);
 		X = Ro*cos(j*angle+phi);
 		Y = Ro*sin(j*angle+phi);

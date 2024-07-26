@@ -248,7 +248,7 @@ void showLabelDistances()
 			continue;
 		for(k=0;k<3;k++)
 			tmp[k] = (GeomOrb[i].C[k] + GeomOrb[j].C[k])/2;
-		sprintf(buffer, "%0.3f",distance);
+		sprintf(buffer, "%0.1f",distance);
 
 		if(ortho)
 			glPrintOrtho(tmp[0], tmp[1], tmp[2], buffer);

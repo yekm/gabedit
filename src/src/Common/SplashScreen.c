@@ -289,7 +289,7 @@ static gint configure_event( GtkWidget *widget, GdkEventConfigure *event )
 		x = 6;
 		y = 10;
     		tmpcolor.red = 0;
-		tmpcolor.green =0;
+		tmpcolor.green =60000;
 		tmpcolor.blue = 65535;
 		gdk_colormap_alloc_color(colormap, &tmpcolor, FALSE, TRUE);
 		gdk_gc_set_foreground(gc,&tmpcolor);
@@ -372,7 +372,7 @@ static void create_welcome_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   GdkColor* color = g_malloc(sizeof(GdkColor));
   gchar* Version_S = g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
   gint* lentxt = g_malloc(sizeof(gint));
-  PangoFontDescription *font_desc = pango_font_description_from_string ("sans bold 22");
+  PangoFontDescription *font_desc = pango_font_description_from_string ("sans bold 20");
 
 /*   if(!gdk_color_parse("royal blue",color))*/
   if(!gdk_color_parse("dark orange",color))
@@ -420,7 +420,7 @@ static void create_name_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   GdkColor* color = g_malloc(sizeof(GdkColor));
   gchar* Version_S = g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
   gint* lentxt = g_malloc(sizeof(gint));
-  PangoFontDescription *font_desc = pango_font_description_from_string ("sans bold 18");
+  PangoFontDescription *font_desc = pango_font_description_from_string ("sans bold 16");
 
 /*   if(!gdk_color_parse("royal blue",color))*/
   if(!gdk_color_parse("dark orange",color))
@@ -468,7 +468,7 @@ static void create_program_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   GdkColor* color = g_malloc(sizeof(GdkColor));
   gchar* Version_S = g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
   gint* lentxt = g_malloc(sizeof(gint));
-  PangoFontDescription *font_desc = pango_font_description_from_string ("sans bold 56");
+  PangoFontDescription *font_desc = pango_font_description_from_string ("sans bold 50");
 
 /*   if(!gdk_color_parse("royal blue",color))*/
   if(!gdk_color_parse("dark orange",color))
@@ -512,12 +512,14 @@ static void create_gui_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   gint width = 0;
   gint widthVersion = 0;
   gint heightVersion = 0;
-  gchar* txt = g_strdup("The Graphical User Interface for Gamess, Gaussian, Molcas, Molpro and MPQC ab initio programs");
+  /* gchar* txt = g_strdup("The Graphical User Interface for Gamess, Gaussian, Molcas, Molpro, MPQC, PG Gamess and Q-Chem ab initio programs");
+   */
+  gchar* txt = g_strdup("The Graphical User Interface for computational chemistry packages");
   GdkPixmap *pixmap = NULL;
   GdkColor* color = g_malloc(sizeof(GdkColor));
   gchar* Version_S = g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
   gint* lentxt = g_malloc(sizeof(gint));
-  PangoFontDescription *font_desc = pango_font_description_from_string ("sans bold 12");
+  PangoFontDescription *font_desc = pango_font_description_from_string ("sans bold 16");
 
 /*   if(!gdk_color_parse("royal blue",color))*/
   if(!gdk_color_parse("dark orange",color))

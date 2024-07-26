@@ -247,6 +247,7 @@ gboolean DefineBasisType(gchar *NomFichier)
 	gint j;
 	gboolean ok;
 	gint nsym;
+	long int geompos =  0;
 
 	/* Debug("debut de DefineBasisType\n");*/
  	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
@@ -272,7 +273,8 @@ gboolean DefineBasisType(gchar *NomFichier)
 		if(pdest != NULL)
 		{
 			ok = TRUE;
-			break;
+			geompos =  ftell(forb);
+			/* break; NO for get the last basis */
 		}
 	}
 	if(!ok)
@@ -287,10 +289,11 @@ gboolean DefineBasisType(gchar *NomFichier)
 		g_free(t);
   		return FALSE;
 	}
+	fseek(forb, geompos, SEEK_SET);
 
-	sym=g_malloc(10*sizeof(char));
+	sym=g_malloc(10*sizeof(gchar));
 
-	t=(char*)g_malloc(taille);
+	t=(gchar*)g_malloc(taille*sizeof(gchar));
  
 	if(forb !=NULL)
 	{

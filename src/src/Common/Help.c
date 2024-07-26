@@ -33,15 +33,17 @@ void help_commands()
 	        "       Type the new command and enter. \n"
 		"       This command becomes the default command.\n\n"
 		"     * For change the default command:\n"
-	        "       Select a command of the list and type enter.\n\n" 
-		"     * For remove a command of the list:\n"
+	        "       Select a command from the list and type enter.\n\n" 
+		"     * For remove a command from the list:\n"
 	        "       Select the command to be removed and clicks on the\n"
 	        "       \"Remove from list\" button.\n\n\n"
 		"     * NB:\n"
 	        "      You can choose as commands the name of any\n"
 	       	"      script which accepts any number of parameters.\n"
 	        "      However last parameter accepted by script must be the name\n"
-	        "      of data file(included the com extension).\n"
+	        "      of data file(included the extension \n"
+	        "             .com for Gaussian, Molpro, Molcas and\n"
+	        "             .inp for Gamess, PCGamess and Q-Chem).\n"
 		 );
 	win = Message(temp," Info ",FALSE);
 	gtk_window_set_modal (GTK_WINDOW (win), TRUE);

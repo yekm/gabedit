@@ -24,11 +24,267 @@ DEALINGS IN THE SOFTWARE.
 #include <string.h>
 
 #include "../Common/Global.h"
+#include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/GabeditTextEdit.h"
+#include "../Geometry/GeomGlobal.h"
+#include "../Geometry/GeomXYZ.h"
+#include "../Geometry/InterfaceGeom.h"
 #include "GInterfaceLink.h"
 #include "GInterfaceMethodeBase.h"
 #include "GaussGlobal.h"
+#include "GInterfaceGeom.h"
+static GtkWidget *EntryChargeSpin[6];
+
+/*******************************************************************/
+void GetChargesAndMultiplicitiesFromMain( )
+{
+  	G_CONST_RETURN gchar *entrytext;
+
+        if(EntryChargeSpin[0]!=NULL)
+	{
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryChargeSpin[0]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryChargeSpin[1]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+        }
+        if(EntryChargeSpin[2]!=NULL)
+	{
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryChargeSpin[2]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryChargeSpin[3]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryChargeSpin[2]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryChargeSpin[3]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+        }
+        if(EntryChargeSpin[4]!=NULL)
+	{
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryChargeSpin[4]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryChargeSpin[5]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryChargeSpin[4]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryChargeSpin[5]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryChargeSpin[4]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryChargeSpin[5]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+        }
+
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"\n",-1);
+}
+/************************************************************************************************************/
+static gint get_number_of_model_connections()
+{
+	gint i;
+	gint j;
+	gint nc = 0;
+	gint NC = NcentersXYZ;
+	if(MethodeGeom == GEOM_IS_ZMAT) NC = NcentersZmat;
+    	for(i=0;i<NC;i++)
+	{
+		if( MethodeGeom == GEOM_IS_XYZ) 
+			if(strstr(GeomXYZ[i].Layer,"Me") || strstr(GeomXYZ[i].Layer,"Lo")) continue;
+		if( MethodeGeom == GEOM_IS_ZMAT) 
+			if(strstr(Geom[i].Layer,"Me") || strstr(Geom[i].Layer,"Lo")) continue;
+    		for(j=0;j<NC;j++)
+		{
+			if(i==j) continue;
+			if( MethodeGeom == GEOM_IS_XYZ) 
+				if(!strstr(GeomXYZ[j].Layer,"Me") && !strstr(GeomXYZ[j].Layer,"Lo")) continue;
+			if( MethodeGeom == GEOM_IS_ZMAT) 
+				if(!strstr(Geom[j].Layer,"Me") && !strstr(Geom[j].Layer,"Lo")) continue;
+			if(connecteds(i,j)) nc++;
+		}
+	}
+	return nc;
+}
+/************************************************************************************************************/
+static gint get_number_of_inter_connections()
+{
+	gint i;
+	gint j;
+	gint nc = 0;
+	gint NC = NcentersXYZ;
+	if(MethodeGeom == GEOM_IS_ZMAT) NC = NcentersZmat;
+    	for(i=0;i<NC;i++)
+	{
+
+		if( MethodeGeom == GEOM_IS_XYZ) 
+			if(strstr(GeomXYZ[i].Layer," ") || strstr(GeomXYZ[i].Layer,"Lo") || strstr(GeomXYZ[i].Layer,"Hi")) continue;
+		if( MethodeGeom == GEOM_IS_ZMAT) 
+			if(strstr(Geom[i].Layer," ") || strstr(Geom[i].Layer,"Lo") || strstr(Geom[i].Layer,"Hi")) continue;
+
+    		for(j=0;j<NC;j++)
+		{
+			if(i==j) continue;
+			if( MethodeGeom == GEOM_IS_XYZ) 
+				if(!strstr(GeomXYZ[j].Layer," ") && !strstr(GeomXYZ[j].Layer,"Lo") && !strstr(GeomXYZ[j].Layer,"Hi")) continue;
+			if( MethodeGeom == GEOM_IS_ZMAT) 
+				if(!strstr(Geom[j].Layer," ") && !strstr(Geom[j].Layer,"Lo") && !strstr(Geom[j].Layer,"Hi")) continue;
+			if(connecteds(i,j)) nc++;
+		}
+	}
+	return nc;
+}
+/************************************************************************************************************/
+static void set_spin_of_electrons_for_main()
+{
+        gint i;
+        guint NumberElectrons[3];
+        guint SpinElectrons[3];
+        gchar* chaine;
+
+        if(EntryChargeSpin[0] == NULL ) return;
+        NumberElectrons[2]= get_number_electrons(2);
+        NumberElectrons[1]= get_number_electrons(1);
+        NumberElectrons[0]= get_number_electrons(0);
+
+        for(i=0;i<3;i++)
+		SpinElectrons[i]=0;
+        if(NMethodes==3)
+	{
+        	NumberElectrons[2] += get_number_of_model_connections();
+        	NumberElectrons[1] += get_number_of_inter_connections();
+	}
+        if(NMethodes==2)
+	{
+        	NumberElectrons[1] += get_number_of_model_connections();
+	}
+
+        for(i=0;(guint)i<NMethodes;i++)
+        	if((NumberElectrons[i]-ChargeGauss[i])%2==0)
+			SpinElectrons[i]=1;
+                else
+			SpinElectrons[i]=2;
+
+        for(i=0;(guint)i<NMethodes;i++)
+        {
+         	chaine = g_strdup_printf("%d",SpinElectrons[i]);
+	 	if(EntryChargeSpin[2*i+1] && GTK_IS_ENTRY(EntryChargeSpin[2*i+1]))
+		{
+         		gtk_entry_set_text(GTK_ENTRY(EntryChargeSpin[2*i+1]),chaine);
+		}
+        }
+}
+/************************************************************************************************************/
+static void change_of_charge(GtkWidget *entry,gpointer d)
+{
+        G_CONST_RETURN gchar *entry_text;
+        gint *Number;
+
+        Number = (gint*)d;
+        entry_text = gtk_entry_get_text(GTK_ENTRY(entry));
+        ChargeGauss[*Number] = atoi(entry_text);
+	set_spin_of_electrons_for_main();
+
+}
+/************************************************************************************************************/
+static void create_combo_charge(GtkWidget *hbox,gint Num,gchar *tlabel)
+{
+  gchar *tlist[]={"0","1","-1","2","-2","3","-3","4","-4"};
+  gint *Number;
+  Number = g_malloc(sizeof(gint));
+  *Number = Num/2;
+  EntryChargeSpin[Num] = create_label_combo(hbox,tlabel,tlist,9,TRUE,-1,(gint)(ScreenHeight*0.1));
+  g_signal_connect(G_OBJECT(EntryChargeSpin[Num]), "changed", GTK_SIGNAL_FUNC(change_of_charge), Number);
+  ChargeGauss[*Number] = 0;
+}
+/************************************************************************************************************/
+static void create_combo_spin(GtkWidget *hbox,gint Num,gchar *tlabel)
+{
+  gchar *tlist[]={"1","2","3","4","5","6","7","8","9"};
+  EntryChargeSpin[Num] = create_label_combo(hbox,tlabel,tlist,9,TRUE,-1,(gint)(ScreenHeight*0.1));
+}
+/************************************************************************************************************/
+static void addChargeSpinFrame(GtkWidget *vboxmain)
+{
+  GtkWidget *window1;
+  GtkWidget *Frame;
+  GtkWidget *vbox;
+  GtkWidget *hbox;
+  GtkWidget *hbox2;
+  gint i;
+  gboolean medium = geometry_with_medium_layer();
+  gboolean lower = geometry_with_lower_layer();
+  
+  for(i=0;i<6;i++)
+	EntryChargeSpin[i] = NULL;
+
+  Frame = gtk_frame_new("Molecular Specifications");
+  gtk_container_set_border_width(GTK_CONTAINER(Frame), 5);
+
+  gtk_container_add (GTK_CONTAINER (vboxmain),  Frame);
+
+  window1 = Frame;
+  g_object_set_data(G_OBJECT (window1), "window1", window1);
+
+  vbox =create_vbox(window1);
+
+  hbox =create_hbox_false(vbox);
+  hbox2 =create_hbox_false(vbox);
+  NMethodes = 0;
+
+  if(medium || lower )
+  {
+  	create_label_hbox(hbox, "Charge of   ",100);
+  	create_combo_charge(hbox,0,"Real system : ");
+  	create_label_hbox(hbox2,"2*Spin+1 of ",100);
+  	create_combo_spin(hbox2,1,"Real system : ");
+        NMethodes++;
+  }
+  else
+  {
+  	create_label_hbox(hbox,"Charge of   ",-1);
+  	create_combo_charge(hbox,0,"system : ");
+  	create_label_hbox(hbox,"2*Spin+1 of ",-1);
+  	create_combo_spin(hbox,1,"system : ");
+        NMethodes++;
+  }
+  if(medium && lower )
+  {
+  	create_combo_charge(hbox,2,"Intermediate system : ");
+  	create_combo_spin(hbox2,3,"Intermediate system : ");
+  	NMethodes++;
+  	create_combo_charge(hbox,4,"Model system : ");
+  	create_combo_spin(hbox2,5,"Model system : ");
+  	NMethodes++;
+  }
+  else
+  if(medium || lower )
+  {
+  	create_combo_charge(hbox,2,"Model system : ");
+  	create_combo_spin(hbox2,3,"Model system : ");
+  	NMethodes++;
+  }
+
+  set_spin_of_electrons_for_main();
+}
 
 /*****************************************************************************************/
 static void polar_activate(GtkWidget *button,gpointer data)
@@ -472,137 +728,6 @@ static void create_freq_option ( GtkWidget *Wins)
   gtk_widget_show_all(fp);
 }
 /*****************************************************************************************/
-static void timeDependent_activate(GtkWidget *button,gpointer data)
-{
-  	GtkWidget* buttonOptions =(GtkWidget*)data;
-	if (GTK_TOGGLE_BUTTON (button)->active) 
-	{
-  		if(TtimeDependent == NULL ) TtimeDependent=g_malloc(50*sizeof(gchar));
-  		sprintf(TtimeDependent," TD");
-		if(GTK_IS_WIDGET(buttonOptions)) gtk_widget_set_sensitive(buttonOptions,TRUE);
-	}
-	else
-	{
-  		if(TtimeDependent) g_free(TtimeDependent);
-  		TtimeDependent = NULL;
-		if(GTK_IS_WIDGET(buttonOptions)) gtk_widget_set_sensitive(buttonOptions,FALSE);
-	}
-}
-/*****************************************************************************************/
-static void gene_timeDependent(GtkWidget *b,gpointer data)
-{
-	GtkWidget **entryall;
-	GtkWidget *entry;
-	G_CONST_RETURN gchar *entrytext;
-	guint ipar;
-	ipar=0;
-	if(TtimeDependent == NULL ) TtimeDependent=g_malloc(50*sizeof(gchar));
-	sprintf(TtimeDependent," TD");
-	entryall=(GtkWidget **)data;
-	entry=entryall[0];
-	entrytext = gtk_entry_get_text(GTK_ENTRY(entry));
-	if (strcmp(entrytext,"default") )
-	{
-		ipar=1;
-		sprintf(TtimeDependent,"%s(%s",TtimeDependent,entrytext);
-	}
-	entry=entryall[1];
-	entrytext = gtk_entry_get_text(GTK_ENTRY(entry));
-	if (strcmp(entrytext,"default") )
-	{
-		if(ipar) sprintf(TtimeDependent,"%s, NStates=%s",TtimeDependent,entrytext);
-		else 
-		{
-			ipar=1;
-			sprintf(TtimeDependent,"%s(NStates=%s",TtimeDependent,entrytext);
-		}
-	}
-	entry=entryall[2];
-	entrytext = gtk_entry_get_text(GTK_ENTRY(entry));
-	if (strcmp(entrytext,"default") )
-	{
-		if(ipar) sprintf(TtimeDependent,"%s, Root=%s",TtimeDependent,entrytext);
-		else 
-		{
-			ipar=1;
-			sprintf(TtimeDependent,"%s(Root=%s",TtimeDependent,entrytext);
-		}
-	}
-	if(ipar) sprintf(TtimeDependent,"%s) ",TtimeDependent);
-}
-/*****************************************************************************************/
-static void create_timeDependent_option (GtkWidget* Wins)
-{
-	GtkWidget *fp;
-	GtkWidget *frame;
-	GtkWidget **entry;
-	GtkWidget *vboxall;
-	GtkWidget *vboxframe;
-	GtkWidget *hbox1;
-	GtkWidget *hbox2;
-	GtkWidget *button;
-	gint nlist = 1;
-	gchar *list[4];
-	entry=g_malloc(3*sizeof(GtkWidget*));
-  
-	fp = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_modal(GTK_WINDOW(fp),TRUE);
-	gtk_window_set_position(GTK_WINDOW(fp),GTK_WIN_POS_CENTER);
-	gtk_window_set_title(GTK_WINDOW(fp),"time-dependent (HF or DFT)");
-	gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
-	gtk_window_set_transient_for(GTK_WINDOW(fp),GTK_WINDOW(Wins));
-	gtk_window_set_modal (GTK_WINDOW (fp), TRUE);
-
-	add_child(Wins,fp,gtk_widget_destroy," timeDependent. ");
-	g_signal_connect(G_OBJECT(fp),"delete_event",(GtkSignalFunc)delete_child,NULL);
-
-	vboxall = create_vbox(fp);
-	frame = gtk_frame_new (NULL);
-	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
-	gtk_container_add (GTK_CONTAINER (vboxall), frame);
-	gtk_widget_show (frame);
-
-	vboxframe = create_vbox(frame);
-	nlist=3;
-	list[0]=g_strdup("Singlets");
-	list[1]=g_strdup("Triplets");
-	list[2]=g_strdup("50-50");
-	hbox1 = create_hbox(vboxframe);
-	entry[0] = create_combo_box_entry_liste(fp,hbox1," Type :",list,nlist);
-
-	nlist=4;
-	list[0]=g_strdup("default");
-	list[1]=g_strdup("3");
-	list[2]=g_strdup("6");
-	list[3]=g_strdup("12");
-	hbox1 = create_hbox(vboxframe);
-	entry[1] = create_combo_box_entry_liste(fp,hbox1," NStates  :",list,nlist);
-
-	nlist=4;
-	list[0]=g_strdup("default");
-	list[1]=g_strdup("1");
-	list[2]=g_strdup("2");
-	list[3]=g_strdup("3");
-	hbox1 = create_hbox(vboxframe);
-	entry[2] = create_combo_box_entry_liste(fp,hbox1," Root  :",list,nlist);
-
-	hbox2 = create_hbox(vboxall);
-	gtk_widget_realize(fp);
-
-	button = create_button(fp,"Cancel");
-	gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(delete_child),GTK_OBJECT(fp));
-	gtk_widget_show (button);
-
-	button = create_button(fp,"OK");
-	gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
-	gtk_widget_show (button);
-	g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(gene_timeDependent),(gpointer)entry);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(delete_child),GTK_OBJECT(fp));
-   
-	gtk_widget_show_all(fp);
-}
-/*****************************************************************************************/
 void traite_button_general (GtkWidget *button, gpointer data)
 {
  GtkWidget *Wins = GTK_WIDGET(g_object_get_data (G_OBJECT (button), "Window"));  
@@ -611,8 +736,6 @@ void traite_button_general (GtkWidget *button, gpointer data)
  if (!strcmp((char *)data,"    Controls the SCF procedure" ) ) create_scf_option(Wins);
   else
  if (!strcmp((char *)data,"Compute the dipole polarizabilities" ) ) create_polar_option(Wins);
- else
- if (!strcmp((char *)data,"Time dependent (HF or DFT)" ) ) create_timeDependent_option(Wins);
 }
 /*****************************************************************************************/
 void connect_button(GtkWidget *Wins,GtkWidget *button,gchar *t)
@@ -685,31 +808,6 @@ void create_liste_general(GtkWidget*Wins,GtkWidget*win,GtkWidget *frame)
 	i++;
 	gtk_table_attach(GTK_TABLE(table),hseparator,0,0+2,i,i+1, (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) , (GtkAttachOptions)(GTK_FILL | GTK_EXPAND), 1,1);
   }
-  /* Time dependent (HF or DFT) */
-  {
-  	GtkWidget *buttonCheck;
-  	GtkWidget *buttonOption;
-
-	i++;
-  	t=g_strdup("Time dependent (HF or DFT)");
-  	buttonCheck = gtk_check_button_new_with_label (t);
-	j = 0;
-	gtk_table_attach(GTK_TABLE(table),buttonCheck,j,j+1,i,i+1, (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) , (GtkAttachOptions)(GTK_FILL | GTK_EXPAND), 1,1);
-  	gtk_widget_show (buttonCheck);
-
-  	buttonOption = gtk_button_new_with_label ("Options");
-	j = 1;
-	gtk_table_attach(GTK_TABLE(table),buttonOption,j,j+1,i,i+1, (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) , (GtkAttachOptions)(GTK_FILL | GTK_EXPAND), 1,1);
-  	gtk_widget_show (buttonOption);
-	if(GTK_IS_WIDGET(buttonOption)) gtk_widget_set_sensitive(buttonOption,FALSE);
-  	connect_button(Wins,buttonOption,t);
-  	g_signal_connect(G_OBJECT(buttonCheck), "clicked",GTK_SIGNAL_FUNC(timeDependent_activate),(gpointer)buttonOption);
-	hseparator = gtk_hseparator_new ();
-
-	i++;
-	gtk_table_attach(GTK_TABLE(table),hseparator,0,0+2,i,i+1, (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) , (GtkAttachOptions)(GTK_FILL | GTK_EXPAND), 1,1);
-  }
-
   /* scf procedure */
   {
   	GtkWidget *label;
@@ -826,10 +924,11 @@ void  c_opt_combo()
 {
   gchar *liste[9];
   int nliste = 0;
-  nliste=3;
-  liste[0]=g_strdup("Redundant");
-  liste[1]=g_strdup("Z-matrix");
-  liste[2]=g_strdup("Cartesian");
+  nliste=4;
+  liste[0]=g_strdup("default");
+  liste[1]=g_strdup("Redundant");
+  liste[2]=g_strdup("Z-matrix");
+  liste[3]=g_strdup("Cartesian");
   HboxT[0] = create_hbox(VboxT);
   EntryTypes[0]= create_combo_box_entry_liste(FrameT,HboxT[0]," Coordinate system options :",liste,nliste);
   nliste=4;
@@ -839,11 +938,12 @@ void  c_opt_combo()
   liste[3]=g_strdup("Loose");
   HboxT[1] = create_hbox(VboxT);
   EntryTypes[1]= create_combo_box_entry_liste(FrameT,HboxT[1],"  Convergence criteries :",liste,nliste);
-  nliste=4;
-  liste[0]=g_strdup("20");
-  liste[1]=g_strdup("10");
-  liste[2]=g_strdup("30");
-  liste[3]=g_strdup("40");
+  nliste=5;
+  liste[0]=g_strdup("default");
+  liste[1]=g_strdup("20");
+  liste[2]=g_strdup("10");
+  liste[3]=g_strdup("30");
+  liste[4]=g_strdup("40");
   HboxT[2] = create_hbox(VboxT);
   EntryTypes[2]= create_combo_box_entry_liste(FrameT,HboxT[2]," MaxCycle  :",liste,nliste);
   nliste=4;
@@ -958,16 +1058,13 @@ GtkWidget *create_add_keyword (GtkWidget* win,GtkWidget *vbox,gchar *tlabel)
   return entry;
 }
 /*****************************************************************************************/
-void GAjoutePageRoute(GtkWidget *NoteBook,GtkWidget *Wins)
+void GAjoutePageRouteMain(GtkWidget *NoteBook,GtkWidget *Wins)
 {
-  GtkWidget *Frame;
   GtkWidget *LabelOnglet;
   GtkWidget *LabelMenu;
   GtkWidget *window1;
   GtkWidget *vbox;
   GtkWidget *hbox;
-  GtkWidget *FrameLink;
-  GtkWidget *FrameTitle;
   GtkWidget *FrameType;
   GtkWidget *FrameGeneral;
   GtkWidget *FrameMethodeBase;
@@ -976,36 +1073,30 @@ void GAjoutePageRoute(GtkWidget *NoteBook,GtkWidget *Wins)
   Tfreq=NULL;
   Tscf=NULL;
   Tpolar=NULL;
-  TtimeDependent=NULL;
   Types=NULL;
   nHboxT=NHBOXT_MAX;
+
+  for(i=0;i<6;i++)
+        EntryChargeSpin[i] = NULL;
 
   for(i=0;i<nHboxT;i++)
   	HboxT[i]=NULL;
   
-  Frame = gtk_frame_new(NULL);
-  gtk_container_set_border_width(GTK_CONTAINER(Frame), 10);
+  window1 = gtk_frame_new(NULL);
   
-  LabelOnglet = gtk_label_new("Calculation commands");
-  LabelMenu = gtk_label_new("Calculation commands");
+  LabelOnglet = gtk_label_new("Main");
+  LabelMenu = gtk_label_new("Main");
   gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook),
-                                Frame,
+                                window1,
                                 LabelOnglet, LabelMenu);
 
-  window1 = Frame;
   g_object_set_data(G_OBJECT (window1), "window1", window1);
   
   vbox =create_vbox(window1);
- 
+
   hbox =create_hbox(vbox);
-
-  FrameLink = create_frame(window1,hbox,"LINK OPTIONS");
-  create_button_link(FrameLink,Wins);
-
-  FrameTitle = create_frame(window1,hbox,"Title");
-  TextTitle = create_text(window1,FrameTitle,TRUE);
-  gabedit_text_insert (GABEDIT_TEXT (TextTitle), NULL, NULL, NULL, "Input file generated by gabedit...", -1);
-
+  addChargeSpinFrame(hbox);
+ 
   hbox =create_hbox(vbox);
 
   FrameMethodeBase = create_frame(window1,hbox,"METHOD");
@@ -1018,7 +1109,42 @@ void GAjoutePageRoute(GtkWidget *NoteBook,GtkWidget *Wins)
   create_liste_types(window1,FrameType);
   FrameGeneral = create_frame(window1,hbox,"GENERAL");
   create_liste_general(Wins,window1,FrameGeneral);
-  gtk_widget_show_all(Frame);
+  gtk_widget_show_all(window1);
   gtk_widget_hide (CheckButtons[8]);
+}
+/*****************************************************************************************/
+void GAjoutePageRouteOptions(GtkWidget *NoteBook,GtkWidget *Wins)
+{
+	GtkWidget *Frame;
+	GtkWidget *LabelOnglet;
+	GtkWidget *LabelMenu;
+	GtkWidget *window1;
+	GtkWidget *vbox;
+	GtkWidget *hbox;
+	GtkWidget *FrameLink;
+	GtkWidget *FrameTitle;
+  
+  
+	Frame = gtk_frame_new(NULL);
+  
+	LabelOnglet = gtk_label_new("Options");
+	LabelMenu = gtk_label_new("Options");
+	gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook), Frame, LabelOnglet, LabelMenu);
+
+	window1 = Frame;
+	g_object_set_data(G_OBJECT (window1), "window1", window1);
+  
+	vbox =create_vbox(window1);
+ 
+	hbox =create_hbox(vbox);
+
+	FrameLink = create_frame(window1,hbox,"LINK OPTIONS");
+	create_button_link(FrameLink,Wins);
+
+	FrameTitle = create_frame(window1,hbox,"Title");
+	TextTitle = create_text(window1,FrameTitle,TRUE);
+	gabedit_text_insert (GABEDIT_TEXT (TextTitle), NULL, NULL, NULL, "Input file generated by gabedit...", -1);
+
+	gtk_widget_show_all(Frame);
 }
 

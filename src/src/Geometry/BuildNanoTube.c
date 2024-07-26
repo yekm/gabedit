@@ -159,7 +159,8 @@ static void build_nanotube(GtkWidget *w,gpointer data)
 	{
 		GeomXYZ[i].Nentry=NUMBER_LIST_XYZ;
 		GeomXYZ[i].Symb=g_strdup("C");
-		GeomXYZ[i].Type=g_strdup("CA");
+		GeomXYZ[i].mmType=g_strdup("CA");
+		GeomXYZ[i].pdbType=g_strdup("CA");
 		GeomXYZ[i].Residue=g_strdup("TUB");
 		GeomXYZ[i].X=g_strdup_printf("%f",coord[0][i]);
 		GeomXYZ[i].Y=g_strdup_printf("%f",coord[1][i]);

@@ -27,13 +27,15 @@ DEALINGS IN THE SOFTWARE.
 #include "../Files/GabeditFileChooser.h"
 #include "../Common/GabeditType.h"
 
-#define NBNOD 13
+#define NBNOD GABEDIT_TYPENODE_OTHER + 1
 
 #define PROG_IS_GAMESS  GABEDIT_TYPENODE_GAMESS
 #define PROG_IS_GAUSS  GABEDIT_TYPENODE_GAUSSIAN
 #define PROG_IS_MOLCAS GABEDIT_TYPENODE_MOLCAS
 #define PROG_IS_MOLPRO GABEDIT_TYPENODE_MOLPRO
 #define PROG_IS_MPQC  GABEDIT_TYPENODE_MPQC
+#define PROG_IS_PCGAMESS  GABEDIT_TYPENODE_PCGAMESS
+#define PROG_IS_QCHEM  GABEDIT_TYPENODE_QCHEM
 #define PROG_IS_OTHER -1
 
 #define GEOM_IS_XYZ    GABEDIT_TYPENODE_XYZ
@@ -44,8 +46,8 @@ DEALINGS IN THE SOFTWARE.
 #define DATA_MOD_NO    0
 
 #define MAJOR_VERSION    2
-#define MINOR_VERSION    0
-#define MICRO_VERSION    7
+#define MINOR_VERSION    1
+#define MICRO_VERSION    0
 
 /**** Structures *********/
 typedef struct _FileOpen
@@ -147,6 +149,8 @@ typedef struct _CommandsBatch
   gchar *NameCommandMolcas;
   gchar *NameCommandMolpro;
   gchar *NameCommandMPQC;
+  gchar *NameCommandPCGamess;
+  gchar *NameCommandQChem;
   gint ScreenWidth;
   gint ScreenHeight;
   FontsStyle FontsStyleData;
@@ -166,11 +170,14 @@ typedef struct _CommandsBatch
   gchar* pscpplinkDirectory;
   gchar* babelCommand;
   gchar* gamessDirectory;
+  gchar* pcgamessDirectory;
   CommandsList gamessCommands;
   CommandsList gaussianCommands;
   CommandsList molcasCommands;
   CommandsList molproCommands;
   CommandsList mpqcCommands;
+  CommandsList pcgamessCommands;
+  CommandsList qchemCommands;
 
   gchar *NameTypeBatch;
   gchar *NameCommandBatchAll;

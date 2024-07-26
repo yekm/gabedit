@@ -31,6 +31,7 @@ typedef struct _GeometryMD
 	gdouble energy;
 	gdouble time;
 	gchar* comments;
+	long int filePos;
 }GeometryMD;
 
 typedef struct _GeometriesMD
@@ -43,7 +44,7 @@ typedef struct _GeometriesMD
 }GeometriesMD;
 GeometriesMD geometriesMD;
 void initGeometryMD();
-void geometryMDDlg();
+void geometriesMDDlg();
 
 #endif /* __GABEDIT_ANIMATIONMD_H__ */
 

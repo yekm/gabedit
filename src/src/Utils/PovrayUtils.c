@@ -348,5 +348,4 @@ gchar *get_pov_background(gfloat xScale, gfloat yScale, gfloat zScale)
 		default: return NULL;
 	}
 }
-
 /********************************************************************************/

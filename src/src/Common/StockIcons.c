@@ -50,9 +50,11 @@ DEALINGS IN THE SOFTWARE.
 #include "../../pixmaps/Molcas.xpm"
 #include "../../pixmaps/Molden.xpm"
 #include "../../pixmaps/Molpro.xpm"
+#include "../../pixmaps/QChem.xpm"
 #include "../../pixmaps/Adf.xpm"
 #include "../../pixmaps/Dalton.xpm"
 #include "../../pixmaps/Gamess.xpm"
+#include "../../pixmaps/PCGamess.xpm"
 #include "../../pixmaps/MoveAtom.xpm"
 #include "../../pixmaps/MPQC.xpm"
 #include "../../pixmaps/New.xpm"
@@ -154,9 +156,11 @@ void gabedit_gtk_stock_init()
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOLCAS, molcas_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOLDEN, molden_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOLPRO, molpro_xpm);
+	add_one_icon(icon_factory, GABEDIT_STOCK_QCHEM, qchem_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_ADF, adf_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_DALTON, dalton_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_GAMESS, gamess_xpm);
+	add_one_icon(icon_factory, GABEDIT_STOCK_PCGAMESS, pcgamess_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOVE_ATOM, move_atom_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MPQC, mpqc_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_NEW, new_xpm);

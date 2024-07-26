@@ -514,10 +514,10 @@ static void setStretchParameters(AmberParameters* amberParameters,ForceField* fo
 		
 		if ( ! ( getStretchParameters(amberParameters, a1Type, a2Type,&forceConstant,&equilibriumDistance ) ) )
 		{
-			gchar l1 = m.atoms[a1].type[0];
-			gchar l2 = m.atoms[a2].type[0];
+			gchar l1 = m.atoms[a1].mmType[0];
+			gchar l2 = m.atoms[a2].mmType[0];
 			printf( "**** couldn't find stretch parameters for %s-%s(%d-%d) ", 
-				m.atoms[a1].type,m.atoms[a2].type,a1Type, a2Type);
+				m.atoms[a1].mmType,m.atoms[a2].mmType,a1Type, a2Type);
 
 			forceConstant = 310;
 			equilibriumDistance = 1.525;
@@ -591,13 +591,19 @@ static void setBendParameters(AmberParameters* amberParameters,ForceField* force
 
 		if ( ! ( getBendParameters(amberParameters, a1Type, a2Type, a3Type,&forceConstant,&equilibriumAngle ) ) )
 		{
-			gchar l1 = m.atoms[a1].type[0];
-			gchar l2 = m.atoms[a2].type[0];
-			gchar l3 = m.atoms[a3].type[0];
+			gchar l1 = m.atoms[a1].mmType[0];
+			gchar l2 = m.atoms[a2].mmType[0];
+			gchar l3 = m.atoms[a3].mmType[0];
 			printf( "**** couldn't find bend parameters for %s-%s-%s ",
-			m.atoms[a1].type,m.atoms[a2].type,m.atoms[a3].type);
+			m.atoms[a1].mmType,m.atoms[a2].mmType,m.atoms[a3].mmType);
 			forceConstant = 60.0;
 			equilibriumAngle = 115.0;
+			if(!strcmp(m.atoms[a2].mmType,"CT"))
+			{
+				forceConstant = 50.0;
+				equilibriumAngle = 109.0;
+			}
+			else
 			if(l1=='H' || l2=='H' || l3=='H')
 			{
 				forceConstant = 50.0;
@@ -770,6 +776,7 @@ static void setHydrogenBondedParameters(AmberParameters* amberParameters,ForceFi
 
 		a1Type = atomTypes[a1];
 		a2Type = atomTypes[a2];
+		/* printf("a1 = %d a2 = %d %s %s\n",a1,a2, amberParameters->atomTypes[a1Type].name, amberParameters->atomTypes[a2Type].name);*/
 
 		if ( canHydrogenBond( amberParameters, a1Type, a2Type ) )
 		{ 
@@ -792,7 +799,7 @@ static void setHydrogenBondedParameters(AmberParameters* amberParameters,ForceFi
 		for( i=0; i<HYDROGENBONDEDDIM;i++)
 		{
 			hydrogenBondedTerms[i] = 
-				g_realloc(hydrogenBondedTerms[i],numberOfHydrogenBonded*sizeof(gint));
+				g_realloc(hydrogenBondedTerms[i],numberOfHydrogenBonded*sizeof(gdouble));
 		}
 
 	forceField-> numberOfHydrogenBonded = numberOfHydrogenBonded;
@@ -844,17 +851,16 @@ static void setNonBondedParameters(AmberParameters* amberParameters, ForceField*
 		if ( !useHydrogenBonded || !canHydrogenBond(amberParameters, a1Type, a2Type ) )
 		{ 
 			if ( ! ( getNonBondedParameters(amberParameters, a1Type, &equilibriumDistance, &epsilon ) ) )
-				printf( "**** couldn't find non bonded parameters for %s \n",m.atoms[a1].type);
+				printf( "**** couldn't find non bonded parameters for %s \n",m.atoms[a1].mmType);
 		
-			epsilonProduct = epsilon;
+			epsilonProduct = sqrt(fabs(epsilon));
 			ri = equilibriumDistance;
 			/*printf("r1 = %f eps1 = %f\n",equilibriumDistance,epsilon);*/
 
 			getNonBondedParameters(amberParameters, a2Type, &equilibriumDistance, &epsilon );
 			/*printf("r2 = %f eps2 = %f\n",equilibriumDistance,epsilon);*/
-			epsilonProduct *= epsilon;
+			epsilonProduct *= sqrt(fabs(epsilon));
 			rj = equilibriumDistance;
-			epsilonProduct = sqrt( epsilonProduct );
 			Bij = ( ri + rj ) * ( ri + rj );
 			Bij = Bij * Bij * Bij;
 			Aij = Bij * Bij * epsilonProduct;
@@ -894,23 +900,26 @@ static void setNonBondedParameters(AmberParameters* amberParameters, ForceField*
 		rj = 0;
 	        if ( getNonBondedParameters(amberParameters, a1Type, &equilibriumDistance, &epsilon ) )
 		{
-	        	epsilonProduct = epsilon;
+	        	epsilonProduct = sqrt(fabs(epsilon));
 	        	ri = equilibriumDistance;
 			/*printf("r1 = %f eps1 = %f\n",equilibriumDistance,epsilon);*/
 		}
 		else
+		{
 			epsilonProduct = 0;
+		}
 
 	        if ( getNonBondedParameters( amberParameters, a4Type, &equilibriumDistance, &epsilon ) )
 		{
-	        	epsilonProduct *= epsilon;
+	        	epsilonProduct *= sqrt(fabs(epsilon));
 	        	rj = equilibriumDistance;
 			/*printf("r2 = %f eps2 = %f\n",equilibriumDistance,epsilon);*/
 		}
 		else
+		{
 			epsilonProduct = 0;
+		}
 
-	       	epsilonProduct = sqrt( epsilonProduct );
 	       	Bij = ( ri + rj ) * ( ri + rj );
 	       	Bij = Bij * Bij * Bij;
 	       	Aij = Bij * Bij * epsilonProduct / 2.0;
@@ -925,7 +934,7 @@ static void setNonBondedParameters(AmberParameters* amberParameters, ForceField*
 		nonBondedTerms[1][numberOfNonBonded] = a4;
 		nonBondedTerms[2][numberOfNonBonded] = Aij;
 		nonBondedTerms[3][numberOfNonBonded] = Bij;
-		nonBondedTerms[4][numberOfNonBonded] = 0.5;
+		nonBondedTerms[4][numberOfNonBonded] = 1.0/(gdouble)1.2;
 		numberOfNonBonded++;
 	}
 	if(numberOfNonBonded==0)
@@ -979,7 +988,7 @@ static void setPairWiseParameters(AmberParameters* amberParameters, ForceField* 
 
 		if ( ! ( getPairWiseParameters(amberParameters, a1Type,a2Type,&a, &beta,&c6,&c8, &c10,&b) ) )
 				printf( "**** couldn't find pair wise parameters for %s-%s\n",
-					m.atoms[a1].type, m.atoms[a2].type);
+					m.atoms[a1].mmType, m.atoms[a2].mmType);
 		
 			pairWiseTerms[0][numberOfPairWise] = a1;
 			pairWiseTerms[1][numberOfPairWise] = a2;
@@ -1015,14 +1024,14 @@ static void setAtomTypes(AmberParameters* amberParameters,ForceField* forceField
 	gint i;
 	for(i=0;i<nAtoms;i++)
 	{ 
-		/* printf("Atom %s=",m.atoms[i].type); */
-		atomTypes[i] = getNumberType(amberParameters, m.atoms[i].type);
+		/* printf("Atom %s=",m.atoms[i].mmType); */
+		atomTypes[i] = getNumberType(amberParameters, m.atoms[i].mmType);
 		/*
 		{
 			gint j;
 			gint nTypes = amberParameters->numberOfTypes;
 			AmberAtomTypes* types = amberParameters->atomTypes;
-			gchar* type = m.atoms[i].type;
+			gchar* type = m.atoms[i].mmType;
 			gint len = strlen(type);
 
 			if(strcmp(type,"X")==0)
@@ -1241,7 +1250,7 @@ static void calculateGradientBondAmber(ForceField* forceField)
 		if ( bondLength < 1.0e-10 ) 
 			bondLength = 1.0e-10;
 
-		term = - forceConstant * ( bondLength - equilibriumDistance ) / bondLength;
+		term = - 2*forceConstant * ( bondLength - equilibriumDistance ) / bondLength;
 		forceix = term * rijx;
 		forceiy = term * rijy;
 		forceiz = term * rijz;
@@ -1313,7 +1322,7 @@ static void calculateGradientBendAmber(ForceField* forceField)
 				denominator = 1.0e-10;
 			}
 
-			term = angleBendTerms[3][i] * (thetaDeg - angleBendTerms[4][i]) / denominator;
+			term = 2*angleBendTerms[3][i] * (thetaDeg - angleBendTerms[4][i]) / denominator;
 			term *= D2R;
 
 			rijx = atomi.coordinates[0] - atomj.coordinates[0];
@@ -1592,7 +1601,7 @@ static void calculateGradientNonBondedAmber(ForceField* forceField)
 		nonBondedTerms[i] = forceField->nonBondedTerms[i];
 
 	/* non-bonded part */
-	coulombFactor = 332.0 / ( permittivity * permittivityScale );
+	coulombFactor = 332.05382 / ( permittivity * permittivityScale );
 	for (  i = 0; i < numberOfNonBonded; i++ )
 	{
 		ai       = (gint)nonBondedTerms[0][i];
@@ -1744,7 +1753,7 @@ static void calculateGradientPairWise(ForceField* forceField)
 		pairWiseTerms[i] = forceField->pairWiseTerms[i];
 
 	/* non-bonded part */
-	coulombFactor = 332.0 / ( permittivity * permittivityScale );
+	coulombFactor = 332.05382 / ( permittivity * permittivityScale );
 	for (  i = 0; i < numberOfPairWise; i++ )
 	{
 		ai       = (gint)pairWiseTerms[0][i];
@@ -1972,7 +1981,7 @@ static gdouble calculateEnergyBondAmber(ForceField* forceField,Molecule* molecul
 		bondLength = sqrt( rijx * rijx + rijy * rijy + rijz * rijz );
 		term = bondLength - equilibriumDistance;
 
-		energy += ( forceConstant / 2.0 ) * term * term;
+		energy += ( forceConstant ) * term * term;
 
 	} 
 	return energy;
@@ -2007,7 +2016,7 @@ static gdouble calculateEnergyBendAmber(ForceField* forceField,Molecule* molecul
 		thetaDeg = getAngle(&atomi, &atomj, &atomk);
 
 		term = thetaDeg - angleBendTerms[4][i];
-		term *= term * angleBendTerms[3][i] / 2.0;
+		term *= term * angleBendTerms[3][i];
 		term *= D2RxD2R;
 
 		energy += term;
@@ -2085,7 +2094,7 @@ static gdouble calculateEnergyfNonBondedAmber(ForceField* forceField,Molecule* m
 		nonBondedTerms[i] = forceField->nonBondedTerms[i];
 
 	/* now for non-bonded term */
-	coulombFactor = 332.0 / ( permittivity * permittivityScale );
+	coulombFactor = 332.05382 / ( permittivity * permittivityScale );
 	/*printf("number of Non Bonded terms = %d\n",numberOfNonBonded);*/
 	for (  i = 0; i < numberOfNonBonded; i++ )
 	{
@@ -2161,6 +2170,11 @@ static gdouble calculateEnergyHydrogenBondedAmber(ForceField* forceField,Molecul
 		rijz = atomi.coordinates[2] - atomj.coordinates[2];
 
 		rij2 = rijx * rijx + rijy * rijy + rijz * rijz;
+		if ( rij2 < 1.0e-2 )
+		{
+			printf("i = %d j = %d\n",ai,aj);
+			rij2 = 1.0e-2;	
+		}
 		rij4 = rij2 * rij2;
 		rij6 = rij4 * rij2;
 		rij10 = rij6 * rij4;
@@ -2202,8 +2216,8 @@ static gdouble calculateEnergyPairWise(ForceField* forceField,Molecule* molecule
 		pairWiseTerms[i] = forceField->pairWiseTerms[i];
 
 	/* now for non-bonded term */
-	coulombFactor = 332.0 / ( permittivity * permittivityScale );
-	/* printf("numbee of Non Bonded terms = %d\n",numberOfPairWise);*/
+	coulombFactor = 332.05382/ ( permittivity * permittivityScale );
+	/* printf("number of Non Bonded terms = %d\n",numberOfPairWise);*/
 	for (  i = 0; i < numberOfPairWise; i++ )
 	{
 		ai     = (gint)pairWiseTerms[0][i];
@@ -2430,7 +2444,7 @@ void setPointerAmberParameters(AmberParameters* ptr)
 	staticAmberParameters = ptr;
 }
 /********************************************************************************/
-gchar** getListTypes(gint* nlist)
+gchar** getListMMTypes(gint* nlist)
 {
 
 	gchar** t = NULL;

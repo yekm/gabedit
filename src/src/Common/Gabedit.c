@@ -91,6 +91,7 @@ int main(int argc, char *argv[])
   if(argc>1) get_doc(argv[1]);
 
   imodif = DATA_MOD_NO;
+  set_icon_default();
   set_icone(Fenetre);
 
   user_install_verify(splash_screen);

@@ -26,6 +26,7 @@ BuildPolyNucleicAcid.o: ../Geometry/DrawGeom.h ../Geometry/GeomXYZ.h
 BuildPolyNucleicAcid.o: ../Geometry/InterfaceGeom.h
 BuildPolyNucleicAcid.o: ../Geometry/FragmentsPNA.h ../Geometry/RotFragments.h
 BuildPolyNucleicAcid.o: ../Geometry/MenuToolBarGeom.h ../Utils/Matrix3D.h
+BuildPolyNucleicAcid.o: ../MolecularMechanics/PDBTemplate.h
 BuildPolyPeptide.o: ../../Config.h
 BuildPolyPeptide.o: ../Common/Global.h ../Files/GabeditFileChooser.h
 BuildPolyPeptide.o: ../Common/GabeditType.h ../Utils/Utils.h
@@ -35,6 +36,7 @@ BuildPolyPeptide.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h
 BuildPolyPeptide.o: ../Geometry/GeomXYZ.h ../Geometry/InterfaceGeom.h
 BuildPolyPeptide.o: ../Geometry/FragmentsPPD.h ../Geometry/RotFragments.h
 BuildPolyPeptide.o: ../Geometry/MenuToolBarGeom.h
+BuildPolyPeptide.o: ../MolecularMechanics/PDBTemplate.h
 BuildPolySaccharide.o: ../../Config.h
 BuildPolySaccharide.o: ../Common/Global.h
 BuildPolySaccharide.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
@@ -76,6 +78,7 @@ DrawGeom.o: ../Geometry/ResultsAnalise.h ../Utils/HydrogenBond.h
 DrawGeom.o: ../MolecularMechanics/PDBTemplate.h
 DrawGeom.o: ../MolecularMechanics/CalculTypesAmber.h
 DrawGeom.o: ../Symmetry/MoleculeSymmetryInterface.h ../Utils/Jacobi.h
+DrawGeom.o: ../Utils/Vector3d.h ../Utils/GabeditTextEdit.h
 DrawGeom.o: ../Geometry/MenuToolBarGeom.h
 EnergiesCurves.o: ../../Config.h
 EnergiesCurves.o: ../Common/Global.h
@@ -88,12 +91,23 @@ EnergiesCurves.o: ../Common/Windows.h ../Geometry/Fragments.h
 EnergiesCurves.o: ../Geometry/DrawGeom.h
 Fragments.o: ../../Config.h
 Fragments.o: ../Common/GabeditType.h ../Geometry/Fragments.h ../Utils/Utils.h
+Fragments.o: ../MolecularMechanics/PDBTemplate.h ../Geometry/DrawGeom.h
+Fragments.o: ../MolecularMechanics/CalculTypesAmber.h
 FragmentsPNA.o: ../../Config.h
-FragmentsPNA.o: ../Geometry/Fragments.h
+FragmentsPNA.o: ../Common/GabeditType.h
+FragmentsPNA.o: ../Utils/Utils.h ../Geometry/Fragments.h
+FragmentsPNA.o: ../MolecularMechanics/PDBTemplate.h ../Geometry/DrawGeom.h
+FragmentsPNA.o: ../MolecularMechanics/CalculTypesAmber.h
 FragmentsPPD.o: ../../Config.h
-FragmentsPPD.o: ../Geometry/Fragments.h
+FragmentsPPD.o: ../Common/GabeditType.h
+FragmentsPPD.o: ../Utils/Utils.h ../Geometry/Fragments.h
+FragmentsPPD.o: ../MolecularMechanics/PDBTemplate.h ../Geometry/DrawGeom.h
+FragmentsPPD.o: ../MolecularMechanics/CalculTypesAmber.h
 FragmentsPSC.o: ../../Config.h
-FragmentsPSC.o: ../Geometry/Fragments.h
+FragmentsPSC.o: ../Common/GabeditType.h
+FragmentsPSC.o: ../Utils/Utils.h ../Geometry/Fragments.h
+FragmentsPSC.o: ../MolecularMechanics/PDBTemplate.h ../Geometry/DrawGeom.h
+FragmentsPSC.o: ../MolecularMechanics/CalculTypesAmber.h
 GeomConversion.o: ../../Config.h
 GeomConversion.o: ../Common/Global.h ../Files/GabeditFileChooser.h
 GeomConversion.o: ../Common/GabeditType.h ../Utils/Constantes.h
@@ -114,7 +128,8 @@ GeomXYZ.o: ../Files/ListeFiles.h ../Common/Windows.h
 GeomXYZ.o: ../Geometry/InterfaceGeom.h ../Gaussian/Gaussian.h
 GeomXYZ.o: ../Molpro/Molpro.h ../Geometry/GeomConversion.h
 GeomXYZ.o: ../Common/StockIcons.h ../Geometry/GeomXYZ.h
-GeomXYZ.o: ../Geometry/OpenBabel.h
+GeomXYZ.o: ../Geometry/OpenBabel.h ../MolecularMechanics/PDBTemplate.h
+GeomXYZ.o: ../MolecularMechanics/CalculTypesAmber.h
 GeomZmatrix.o: ../../Config.h
 GeomZmatrix.o: ../Common/Global.h
 GeomZmatrix.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h

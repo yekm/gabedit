@@ -87,10 +87,11 @@ static void saveOneFragment(PersonalFragments* personnalFragments, FILE* file,
 	fprintf(file,"%d\n",f.NAtoms);
 	for(i=0;i<f.NAtoms;i++)
 	{
-		fprintf(file,"%s %s %s %f %f %f %f\n",
+		fprintf(file,"%s %s %s %s %f %f %f %f\n",
 			f.Atoms[i].Residue,
 			f.Atoms[i].Symb,
-			f.Atoms[i].Type,
+			f.Atoms[i].pdbType,
+			f.Atoms[i].mmType,
 			f.Atoms[i].Coord[0],
 			f.Atoms[i].Coord[1],
 			f.Atoms[i].Coord[2],

@@ -19,14 +19,18 @@ DEALINGS IN THE SOFTWARE.
 
 
 #include "../../Config.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "../Common/Global.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
 #include "../Utils/GabeditTextEdit.h"
 #include "../Geometry/GeomGlobal.h"
+#include "../Geometry/GeomXYZ.h"
 #include "../Geometry/InterfaceGeom.h"
 #include "../Utils/AtomsProp.h"
-#include "../../pixmaps/Next.xpm"
+/* #include "../../pixmaps/Next.xpm" */
 #include "GaussGlobal.h"
 #include "GInterfaceRoute.h"
 #include "GInterfaceGeom.h"
@@ -397,32 +401,26 @@ static gchar *get_info_basis(gint im)
         if(EntryBasis[1][im]!=NULL)nentry++;
         if( strcmp(Basis[im],"GEN") )
         {
-        tmp = g_strsplit(Basis[im],"G",2);
-        temp = g_strdup(tmp[0]);
+        	tmp = g_strsplit(Basis[im],"G",2);
+        	temp = g_strdup(tmp[0]);
         }
-        else
-        temp = g_strdup(Basis[im]);
+        else temp = g_strdup(Basis[im]);
 
-  	if (strcmp(temp,Basis[im]) )
-             Modify=TRUE;
+  	if (strcmp(temp,Basis[im]) ) Modify=TRUE;
         if(EntryBasis[0][im]!=NULL)
         {
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryBasis[0][im]));
-  	if (strcmp(entrytext,"No") )
-           temp=g_strdup_printf("%s%s",temp,entrytext);
+  		if (strcmp(entrytext,"No") ) temp=g_strdup_printf("%s%s",temp,entrytext);
         }
-  	if (Modify)
-        	temp = g_strdup_printf("%sG",temp);
+  	if (Modify) temp = g_strdup_printf("%sG",temp);
         if(EntryBasis[1][im]!=NULL)
         {
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryBasis[1][im]));
-  	if (strcmp(entrytext,"No") )
-        {
-  		if (strcmp(entrytext,"Yes") )
-           		temp=g_strdup_printf("%s%s",temp,entrytext);
-                else
-           		temp=g_strdup_printf("AUG-%s",temp);
-        }
+  		if (strcmp(entrytext,"No") )
+        	{
+  			if (strcmp(entrytext,"Yes") ) temp=g_strdup_printf("%s%s",temp,entrytext);
+                	else temp=g_strdup_printf("AUG-%s",temp);
+        	}
         }
 
        return temp;
@@ -437,7 +435,8 @@ static gchar *get_info_method(gint im)
 
   	entrytext = gtk_entry_get_text(GTK_ENTRY(EntryMethods[0][im]));
         tmp = g_strsplit(entrytext,")",2);
-        temp=g_strdup(entrytext);
+	if(strstr(entrytext,"TDDFT")) temp=g_strdup_printf(" TD");
+	else temp=g_strdup(entrytext);
 
   	if (strcmp(temp,tmp[0])) Modify=TRUE;
 
@@ -460,7 +459,8 @@ static gchar *get_info_method(gint im)
   	if (!strcmp(Methodes[im],"Excited States") )
         {
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryMethods[1][im]));
-        	temp=g_strdup_printf("%s(%s",temp,entrytext);
+		temp=g_strdup_printf("%s(%s",temp,entrytext);
+
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryMethods[2][im]));
   		if (strcmp(entrytext,"default") )
         		temp=g_strdup_printf("%s,Nstates=%s",temp,entrytext);
@@ -511,6 +511,22 @@ static gchar *get_info_method(gint im)
        return temp;
 }
 /*******************************************************************/
+static void AddWithBasis(gchar* method, gchar* basis)
+{
+		if(strstr(method,"TD("))
+		{
+        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"B3LYP/",-1);
+        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,basis,-1);
+        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,method,-1);
+		}
+		else
+		{
+        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,method,-1);
+        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"/",-1);
+        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,basis,-1);
+		}
+}
+/*******************************************************************/
 static void GetInfoMB(  )
 {
         gboolean ONIOM=FALSE;
@@ -518,9 +534,18 @@ static void GetInfoMB(  )
 
         if ( Methodes[0]!=NULL )
 	{
-            temp=get_info_method(0);
-	    if(!strcmp(temp,"AMBER"))
-		    amber = TRUE;
+            temp = get_info_method(0);
+	    if(!strcmp(temp,"AMBER")) amber = TRUE;
+       	    if ( Methodes[1]!=NULL )
+	    {
+            	temp = get_info_method(1);
+	    	if(!strcmp(temp,"AMBER")) amber = TRUE;
+	    }
+       	    if ( Methodes[2]!=NULL )
+	    {
+            	temp = get_info_method(2);
+	    	if(!strcmp(temp,"AMBER")) amber = TRUE;
+	    }
 	}
         else
         {
@@ -531,43 +556,37 @@ static void GetInfoMB(  )
         if ( (Methodes[2]!=NULL) ) ONIOM=TRUE;
         if ( ONIOM) {
         	gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,"ONIOM(",-1);
-        	gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,temp,-1);
         }
-        else
-        	gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,temp,-1);
 
 	if(strcmp(Methodes[0],"Semi-Empirical Methods") && strcmp(Methodes[0],"Molecular Mechanics Methods"))
-        if (Basis[0]!=NULL)
-        {
-            	temp=get_info_basis(0);
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"/",-1);
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,temp,-1);
-        }
+	{
+        	if (Basis[0]!=NULL) AddWithBasis(temp, get_info_basis(0));
+		else gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,temp,-1);
+	}
+	else gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,temp,-1);
+
         if ( Methodes[1]!=NULL )
         {
             	temp=get_info_method(1);
         	gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,":",-1);
-        	gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,temp,-1);
 		if(strcmp(Methodes[1],"Semi-Empirical Methods") && strcmp(Methodes[1],"Molecular Mechanics Methods"))
-        	if (Basis[1]!=NULL)
-        	{
-            		temp=get_info_basis(1);
-        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"/",-1);
-        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,temp,-1);
-        	}
+		{
+        		if (Basis[1]!=NULL) AddWithBasis(temp, get_info_basis(1));
+			else gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,temp,-1);
+		}
+		else gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,temp,-1);
         }
+
         if ( Methodes[2]!=NULL )
         {
             	temp=get_info_method(2);
         	gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,":",-1);
-        	gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,temp,-1);
 		if(strcmp(Methodes[2],"Semi-Empirical Methods") && strcmp(Methodes[2],"Molecular Mechanics Methods"))
-        	if (Basis[2]!=NULL)
-        	{
-            		temp=get_info_basis(2);
-        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"/",-1);
-        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,temp,-1);
-        	}
+		{
+        		if (Basis[2]!=NULL) AddWithBasis(temp, get_info_basis(2));
+			else gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,temp,-1);
+		}
+		else gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,temp,-1);
         }
         if ( ONIOM) 
         	gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,")",-1);
@@ -588,28 +607,34 @@ static void GetInfoType()
 	}
 
   	entrytext = gtk_entry_get_text(GTK_ENTRY(EntryTypes[0]));
-        temp=g_strdup_printf("Opt(%s",entrytext);
-  	entrytext = gtk_entry_get_text(GTK_ENTRY(EntryTypes[1]));
-        if( strcmp(entrytext,"default") )
-        	temp=g_strdup_printf("%s,%s",temp,entrytext);
-  	entrytext = gtk_entry_get_text(GTK_ENTRY(EntryTypes[2]));
-        temp=g_strdup_printf("%s,MaxCycle=%s",temp,entrytext);
-  	entrytext = gtk_entry_get_text(GTK_ENTRY(EntryTypes[3]));
-        if( strcmp(entrytext,"default") )
-        	temp=g_strdup_printf("%s,StepSize=%s",temp,entrytext);
-  	entrytext = gtk_entry_get_text(GTK_ENTRY(EntryTypes[4]));
-        if( strcmp(entrytext,"No") )
-        	temp=g_strdup_printf("%s,Saddle=%s",temp,entrytext);
-  	entrytext = gtk_entry_get_text(GTK_ENTRY(EntryTypes[5]));
-        if( strcmp(entrytext,"No") )
-        	temp=g_strdup_printf("%s,TS, noeigentest",temp);
-        temp=g_strdup_printf("%s) ",temp);
+	if(strcmp(entrytext,"default")) temp=g_strdup_printf("Opt(%s",entrytext);
+	else temp=g_strdup_printf("Opt(");
 
-		gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,"\n# ",-1);
+  	entrytext = gtk_entry_get_text(GTK_ENTRY(EntryTypes[1]));
+        if( strcmp(entrytext,"default") ) temp=g_strdup_printf("%s,%s",temp,entrytext);
+
+  	entrytext = gtk_entry_get_text(GTK_ENTRY(EntryTypes[2]));
+        if( strcmp(entrytext,"default") ) temp=g_strdup_printf("%s,MaxCycle=%s",temp,entrytext);
+
+  	entrytext = gtk_entry_get_text(GTK_ENTRY(EntryTypes[3]));
+        if( strcmp(entrytext,"default") ) temp=g_strdup_printf("%s,StepSize=%s",temp,entrytext);
+
+  	entrytext = gtk_entry_get_text(GTK_ENTRY(EntryTypes[4]));
+        if( strcmp(entrytext,"No") ) temp=g_strdup_printf("%s,Saddle=%s",temp,entrytext);
+
+  	entrytext = gtk_entry_get_text(GTK_ENTRY(EntryTypes[5]));
+        if( strcmp(entrytext,"No") ) temp=g_strdup_printf("%s,TS, noeigentest",temp);
+
+        temp=g_strdup_printf("%s) ",temp);
+	if(strstr(temp,"Opt()")) temp=g_strdup_printf("Opt ");
+	if(strstr(temp,"Opt(,")) temp[4]=' ';
+
+	gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,"\n# ",-1);
        	gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,temp,-1);
 
 }
 /*******************************************************************/
+/*
 static void NewFrame( GtkWidget *widget, gpointer   data )
 {
 	gboolean OK=FALSE;
@@ -624,7 +649,6 @@ static void NewFrame( GtkWidget *widget, gpointer   data )
                 {
                       if(WindowGeom)
 			gtk_widget_destroy(WindowGeom);
-                   /* iframe est modifie dans destroy() */
                 }
                 WindowGeom = Wins;
 		GAjoutePageGeom(NoteBook); 
@@ -678,6 +702,7 @@ static void NewFrame( GtkWidget *widget, gpointer   data )
        gtk_notebook_set_current_page((GtkNotebook*)NoteBook,1);
        gtk_notebook_remove_page((GtkNotebook *)NoteBook,0);
 }
+*/
 /*******************************************************************/
 void SaveGauss( GtkWidget *widget, gpointer   data )
 {
@@ -687,24 +712,76 @@ void SaveGauss( GtkWidget *widget, gpointer   data )
        	gabedit_text_set_editable(GABEDIT_TEXT(text), TRUE);
 }
 /*******************************************************************/
+static void GetChargesAndMultiplicities( )
+{
+  	G_CONST_RETURN gchar *entrytext;
+
+        if(EntryCS[0]!=NULL)
+	{
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryCS[0]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryCS[1]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+        }
+        if(EntryCS[2]!=NULL)
+	{
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryCS[2]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryCS[3]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryCS[2]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryCS[3]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+        }
+        if(EntryCS[4]!=NULL)
+	{
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryCS[4]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryCS[5]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryCS[4]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryCS[5]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryCS[4]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryCS[5]));
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
+        }
+
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"\n",-1);
+}
+/*******************************************************************/
 static void GetInfoZMatrix( )
 {
   	guint i;
-  	G_CONST_RETURN gchar *entrytext;
   	gchar *line;
 	SAtomsProp prop;
       
-        for (i=0;i<6;i++)
-	{
-        	if(EntryCS[i]!=NULL)
-		{
-  			entrytext = gtk_entry_get_text(GTK_ENTRY(EntryCS[i]));
-        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
-        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
-        	}
- 	}
-
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"\n",-1);
+	if(iframe==1) GetChargesAndMultiplicitiesFromMain( );
+	else GetChargesAndMultiplicities( );
 
         if(GeomFromCheck)
         {
@@ -718,7 +795,7 @@ static void GetInfoZMatrix( )
 			line=g_strdup_printf("%s",Geom[i].Symb);
 		else
   			line=g_strdup_printf("%s-%s-%s",
-				Geom[i].Symb,Geom[i].Type,Geom[i].Charge);
+				Geom[i].Symb,Geom[i].mmType,Geom[i].Charge);
 
         	if(Geom[i].Nentry>NUMBER_ENTRY_0)
   			line=g_strdup_printf("%s\t%s\t%s",line,Geom[i].NR,Geom[i].R);
@@ -761,21 +838,14 @@ static void GetInfoZMatrix( )
 static void GetInfoXYZ( )
 {
   	guint i;
-  	G_CONST_RETURN gchar *entrytext;
   	gchar *line;
 	SAtomsProp prop;
+	gboolean medium = geometry_with_medium_layer();
+	gboolean lower = geometry_with_lower_layer();
 
-        for (i=0;i<6;i++)
-	{
-        	if(EntryCS[i]!=NULL)
-		{
-  			entrytext = gtk_entry_get_text(GTK_ENTRY(EntryCS[i]));
-        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,entrytext,-1);
-        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," \t",-1);
-        	}
- 	}
+	if(iframe==1) GetChargesAndMultiplicitiesFromMain( );
+	else GetChargesAndMultiplicities( );
 
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"\n",-1);
         if(GeomFromCheck)
         {
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"\n",-1);
@@ -790,11 +860,55 @@ static void GetInfoXYZ( )
 				GeomXYZ[i].Symb,GeomXYZ[i].X,GeomXYZ[i].Y,GeomXYZ[i].Z);
 		else
   			line=g_strdup_printf("%s-%s-%s\t0\t%s\t%s\t%s",
-				GeomXYZ[i].Symb,GeomXYZ[i].Type,GeomXYZ[i].Charge,
+				GeomXYZ[i].Symb,GeomXYZ[i].mmType,GeomXYZ[i].Charge,
 				GeomXYZ[i].X,GeomXYZ[i].Y,GeomXYZ[i].Z);
 
-  		if (strcmp(GeomXYZ[i].Layer," ") )
-  			line=g_strdup_printf("%s\t %s\n",line,GeomXYZ[i].Layer);
+  		if (strcmp(GeomXYZ[i].Layer," ") && (medium||lower) )
+		{
+			/* if(strstr(GeomXYZ[i].Layer,"Hi") || GeomXYZ[i].Symb[0]=='H')*/
+			if(strstr(GeomXYZ[i].Layer,"Hi"))
+  				line=g_strdup_printf("%s\t %s\n",line,GeomXYZ[i].Layer);
+			else
+			{
+				gint j;
+				gint k=-1;
+        			for(j=0;j<NcentersXYZ;j++)
+				{
+					if(i==j) continue;
+					if(strstr(GeomXYZ[j].Layer,"Lo")) continue;
+					if(strstr(GeomXYZ[i].Layer,"Me") 
+						&& (strstr(GeomXYZ[j].Layer,"Me") || strstr(GeomXYZ[j].Layer,"Lo")) ) 
+						continue;
+
+					if(connecteds(i,j))
+					{
+						k = j;
+						break;
+					}
+				}
+				if(k==-1)
+  					line=g_strdup_printf("%s\t %s\n",line,GeomXYZ[i].Layer);
+				else
+				{
+					gchar tmp[100];
+					sprintf(tmp,"H-H-0.1");
+					if(!strcmp(GeomXYZ[k].mmType,"CA")) sprintf(tmp,"H-HA-0.170");
+					if(!strcmp(GeomXYZ[k].mmType,"S")) sprintf(tmp,"H-H-0.1");
+					if(!strcmp(GeomXYZ[k].mmType,"SH")) sprintf(tmp,"H-HS-0.1");
+					if(!strcmp(GeomXYZ[k].mmType,"OH")) sprintf(tmp,"H-HO-0.440");
+					if(!strcmp(GeomXYZ[k].mmType,"N")) sprintf(tmp,"H-H-0.275");
+					if(!strcmp(GeomXYZ[k].mmType,"N2")) sprintf(tmp,"H-H-0.431");
+					if(!strcmp(GeomXYZ[k].mmType,"NA")) sprintf(tmp,"H-H-0.431");
+					if(!strcmp(GeomXYZ[k].Symb,"CT")) sprintf(tmp,"H-H?-0.033");
+					if(!strcmp(GeomXYZ[k].mmType,"CR")) sprintf(tmp,"H-H5-0.06");
+					if(!strcmp(GeomXYZ[k].mmType,"CK")) sprintf(tmp,"H-H5-0.06");
+					if(!strcmp(GeomXYZ[k].mmType,"CW")) sprintf(tmp,"H-H4-0.229");
+					if(!strcmp(GeomXYZ[k].mmType,"CM")) sprintf(tmp,"H-H4-0.229");
+					if(!strcmp(GeomXYZ[k].mmType,"CV")) sprintf(tmp,"H-H4-0.229");
+  					line=g_strdup_printf("%s\t %s\t %s\t %d\n",line,GeomXYZ[i].Layer,tmp,k+1);
+				}
+			}
+		}
 		else
   			line=g_strdup_printf("%s\n",line);
  		prop = prop_atom_get(GeomXYZ[i].Symb);
@@ -934,7 +1048,36 @@ void GetInfoAll( GtkWidget *widget, gpointer   data )
         	GetInfoBasis();
 	}
 }
+/*******************************************************************/
+static void putInfoAll( GtkWidget *Wins, gpointer   data )
+{
+	if(iinsert != 0)
+	{
+		reset_name_files();
+		ClearText(text);
+	}
+	else
+	{
+		GetLink1();
+	}
+	data_modify(TRUE);
+	GetInfoLink();
 
+	if(TestButtonActive(CheckButtons[4]) ) gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"#P ",-1);
+	else gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"# ",-1);
+
+	GetInfoMB();
+	GetInfoType();
+	GetInfoPFS();
+	GetInfoGene();
+	if(AddMP2) gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," MP2 ",-1);
+	GetInfoTitle();
+	GetInfoUnits();
+	if( MethodeGeom == GEOM_IS_ZMAT) GetInfoZMatrix();
+	else if( MethodeGeom == GEOM_IS_XYZ) GetInfoXYZ();
+	GeomFromCheck = FALSE;
+  	if(Wins) DestroyWinsGauss(Wins);  
+}
 /*******************************************************************/
 void insert_gaussian(gint itype)
 {
@@ -951,7 +1094,8 @@ void insert_gaussian(gint itype)
   fileopen.command=g_strdup(NameCommandGaussian);
   Wins= gtk_dialog_new ();
   /* gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER_ALWAYS);*/
-  gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER_ON_PARENT);
+  /* gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER_ON_PARENT);*/
+  gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_NONE);
   gtk_window_set_transient_for(GTK_WINDOW(Wins),GTK_WINDOW(Fenetre));
   gtk_window_set_title(&GTK_DIALOG(Wins)->window,"Gaussian input");
 
@@ -1017,76 +1161,79 @@ void insert_gaussian(gint itype)
 /*******************************************************************/
 void gauss(gint ioption)
 {
-  GtkWidget *button;
+	GtkWidget *button;
 
-  if(Wins) DestroyWinsGauss(Wins);  
-  fileopen.command=g_strdup(NameCommandGaussian);
+	if( 
+		(MethodeGeom == GEOM_IS_XYZ && NcentersXYZ<1) ||
+		(MethodeGeom == GEOM_IS_ZMAT && NcentersZmat<1)  ||
+		(MethodeGeom != GEOM_IS_XYZ && MethodeGeom != GEOM_IS_ZMAT)  
+	) 
+	{
+		Message(
+			"You must initially define your geometry.\n\n"
+			"From the principal Menu select : Geometry/Draw\n"
+			"and draw (or read) your molecule.",
+			"Error",TRUE);
+		return;
+	}
 
-  iframe=1;
-  AddMP2=FALSE;
-  AddConical=FALSE;
+	if(Wins) DestroyWinsGauss(Wins);  
+	fileopen.command=g_strdup(NameCommandGaussian);
 
-  if(!ioption) 
-	iinsert = 0;
-  else
-  	iinsert = 1;
-  gtk_notebook_set_current_page((GtkNotebook*)NoteBookText,0);
+	iframe=1;
+	AddMP2=FALSE;
+	AddConical=FALSE;
 
-  Wins= gtk_dialog_new ();
-  /* gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER_ALWAYS);*/
-  gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER_ON_PARENT);
-  gtk_window_set_transient_for(GTK_WINDOW(Wins),GTK_WINDOW(Fenetre));
-  gtk_window_set_title(&GTK_DIALOG(Wins)->window,"Gaussian input");
+	if(!ioption) iinsert = 0;
+	else iinsert = 1;
+	gtk_notebook_set_current_page((GtkNotebook*)NoteBookText,0);
+
+	Wins= gtk_dialog_new ();
+	/* gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER_ALWAYS);*/
+	/* gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER_ON_PARENT);*/
+	gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_NONE);
+	gtk_window_set_transient_for(GTK_WINDOW(Wins),GTK_WINDOW(Fenetre));
+	gtk_window_set_title(&GTK_DIALOG(Wins)->window,"Gaussian input");
 
 
-  init_child(Wins,DestroyWinsGauss," Gauss input ");
-  g_signal_connect(G_OBJECT(Wins),"delete_event",(GtkSignalFunc)destroy_childs,NULL);
+	init_child(Wins,DestroyWinsGauss," Gauss input ");
+	g_signal_connect(G_OBJECT(Wins),"delete_event",(GtkSignalFunc)destroy_childs,NULL);
  
-  NoteBook = gtk_notebook_new();
-  gtk_box_pack_start(GTK_BOX (GTK_DIALOG(Wins)->vbox), NoteBook,TRUE, TRUE, 0);
+	NoteBook = gtk_notebook_new();
+	gtk_box_pack_start(GTK_BOX (GTK_DIALOG(Wins)->vbox), NoteBook,TRUE, TRUE, 0);
   
-  GAjoutePageRoute(NoteBook,Wins); 
+	GAjoutePageRouteMain(NoteBook,Wins); 
+	GAjoutePageRouteOptions(NoteBook,Wins); 
 
-  gtk_widget_realize(Wins);
-  gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(Wins)->action_area), TRUE); 
+	gtk_widget_realize(Wins);
+	gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(Wins)->action_area), TRUE); 
 
-  button = create_button(Wins,"CANCEL");
-  GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
-  gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
-  g_signal_connect_swapped(G_OBJECT(button),"clicked",GTK_SIGNAL_FUNC(to_cancel_win),GTK_OBJECT(Wins));
-  gtk_widget_show (button);
+	button = create_button(Wins,"CANCEL");
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
+	g_signal_connect_swapped(G_OBJECT(button),"clicked",GTK_SIGNAL_FUNC(to_cancel_win),GTK_OBJECT(Wins));
+	gtk_widget_show (button);
 
-  /*
-  button = create_button(Wins,"SAVE&CLOSE");
-  GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
-  gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)GetInfoAll,NULL);
-  g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)SaveGauss,NULL);
-  g_signal_connect_swapped(G_OBJECT(button),"clicked",GTK_SIGNAL_FUNC(destroy_childs),GTK_OBJECT(Wins));
-  gtk_widget_show (button);
-  */
+	/* button = gtk_button_new ();*/
+	button = create_button(Wins,"OK");
+	//g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)GetInfoAll,NULL);
+	g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)putInfoAll,NULL);
+	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+	gtk_widget_show (button);
+	/* g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)NewFrame,NULL);*/
 
-  button = gtk_button_new ();
-  hboxb=gtk_hbox_new(TRUE,2);
-  gtk_container_add (GTK_CONTAINER (hboxb),  create_label_pixmap(Wins,next_xpm,"NEXT"));
-  gtk_container_add (GTK_CONTAINER (button), hboxb);
-  g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)GetInfoAll,NULL);
-  gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
-  GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
-  gtk_widget_grab_default(button);
-  gtk_widget_show (button);
-  g_signal_connect(G_OBJECT(button), "clicked", (GtkSignalFunc)NewFrame,NULL);
-
-  gtk_widget_show_all(Wins);
-  if(iinsert != 0)
-  {
-  	gtk_widget_hide (CheckButtons[7]);
-  	gtk_widget_hide (CheckButtons[8]);
-  }
-  else
-  {
-  	GTK_TOGGLE_BUTTON (CheckButtons[7])->active=TRUE;
-  	GTK_TOGGLE_BUTTON (CheckButtons[8])->active=TRUE;
-  }
-  GeomFromCheck = FALSE;
+	gtk_widget_show_all(Wins);
+	if(iinsert != 0)
+	{
+  		gtk_widget_hide (CheckButtons[7]);
+  		gtk_widget_hide (CheckButtons[8]);
+	}
+	else
+	{
+  		GTK_TOGGLE_BUTTON (CheckButtons[7])->active=TRUE;
+  		GTK_TOGGLE_BUTTON (CheckButtons[8])->active=TRUE;
+	}
+	GeomFromCheck = FALSE;
 }

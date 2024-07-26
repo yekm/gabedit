@@ -184,7 +184,7 @@ static void gamessInputFileWindow(gboolean newInputFile)
 	if(Wins) destroy_childs(Wins);
 
 	Wins= gtk_dialog_new ();
-	gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER);
+	gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_NONE);
 	gtk_window_set_transient_for(GTK_WINDOW(Wins),GTK_WINDOW(Fenetre));
 	gtk_window_set_title(&GTK_DIALOG(Wins)->window,"Gamess input");
     	gtk_window_set_modal (GTK_WINDOW (Wins), TRUE);

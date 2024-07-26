@@ -40,6 +40,7 @@ DEALINGS IN THE SOFTWARE.
 #include <unistd.h>
 
 #define STICKSIZE 0.2
+#define STICKSIZEBALL 0.7
 
 
 typedef struct _RGB
@@ -379,8 +380,11 @@ static gchar *get_pov_one_stick(gint i,gint j, GabEditBondType bondType)
      Center2 = get_prop_center(j, 1.0);
      k =get_num_min_rayonIJ(i,j);
  
+     /*
      if(k==i) ep = Center1.C[3];
      else ep = Center2.C[3];
+     */
+     ep =  STICKSIZEBALL;
 
      /* if(TypeGeom == GABEDIT_TYPEGEOM_STICK ) ep /=4;*/
      if(TypeGeom == GABEDIT_TYPEGEOM_STICK ) ep =STICKSIZE;
@@ -615,6 +619,7 @@ static gchar *get_pov_one_hbond(gint i,gint j)
  
      if(k==i) ep = Center1.C[3];
      else ep = Center2.C[3];
+
      if(TypeGeom == GABEDIT_TYPEGEOM_STICK  ) ep /=4;
      else ep/=2;
      if(TypeGeom==GABEDIT_TYPEGEOM_WIREFRAME ) ep /=4;

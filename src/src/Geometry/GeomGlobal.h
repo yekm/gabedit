@@ -41,7 +41,8 @@ typedef struct _GeomAtomDef
 {
  gint Nentry;
  gchar *Symb;
- gchar *Type;
+ gchar *mmType;
+ gchar *pdbType;
  gchar *Residue;
  gint ResidueNumber;
  gchar *R;
@@ -66,7 +67,8 @@ typedef struct _GeomXYZAtomDef
 {
  gint Nentry;
  gchar *Symb;
- gchar *Type;
+ gchar *mmType;
+ gchar *pdbType;
  gchar *Residue;
  gint ResidueNumber;
  gchar* Charge;
@@ -102,8 +104,8 @@ typedef struct _FilePosTypeGeom
 #define NUMBER_ENTRY_R		7
 #define NUMBER_ENTRY_ANGLE	9
 #define NUMBER_ENTRY_DIHEDRAL	11
-#define NUMBER_LIST_ZMATRIX	12
-#define NUMBER_LIST_XYZ		9
+#define NUMBER_LIST_ZMATRIX	13
+#define NUMBER_LIST_XYZ		10
  
 
 VariablesXYZDef *VariablesXYZ;

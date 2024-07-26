@@ -468,7 +468,7 @@ static void editnewDlg(GabeditSignalFunc f,gchar* title, gboolean newResidue)
 
 		gtk_editable_set_editable((GtkEditable*) Entrys[E_PDBTYPE],TRUE);
 
-		tlist=getListTypes(&n);
+		tlist=getListMMTypes(&n);
 
 		hbox=create_hbox_false(vboxframe);
 		if(n!=0)

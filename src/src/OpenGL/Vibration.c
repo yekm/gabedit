@@ -30,7 +30,8 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/AtomicOrbitals.h"
 #include "../Files/FileChooser.h"
 #include "../Geometry/GeomGlobal.h"
-#include "../Curve/VibSpectrum.h"
+#include "../Spectrum/IRSpectrum.h"
+#include "../Spectrum/RamanSpectrum.h"
 #include "../Files/FolderChooser.h"
 #include "../Files/GabeditFolderChooser.h"
 #include "../Common/Help.h"
@@ -1105,9 +1106,14 @@ static void read_molpro_file(GabeditFileChooser *SelecFile, gint response_id)
 }
 
 /********************************************************************************/
-static void create_window_spectrum()
+static void create_window_irspectrum()
 {
-		createVibrationSpectrum(WinDlg, vibration);
+		createIRSpectrumFromVibration(WinDlg, vibration);
+}
+/********************************************************************************/
+static void create_window_ramanspectrum()
+{
+		createRamanSpectrumFromVibration(WinDlg, vibration);
 }
 /********************************************************************************/
 static void read_molpro_file_dlg()
@@ -1608,6 +1614,7 @@ static gboolean read_gamess_geom(FILE* file, gchar *FileName)
 				/* get_dipole_from_gamess_output_file(file);*/
 				break;
 			}
+			if ( !strcmp(t,"\r\n")) break;
     			j++;
     			if(GeomOrb==NULL) GeomOrb=g_malloc(sizeof(TypeGeomOrb));
     			else GeomOrb=g_realloc(GeomOrb,(j+1)*sizeof(TypeGeomOrb));
@@ -1694,6 +1701,7 @@ static gint read_gamess_modes(FILE* fd, gchar *FileName)
   	{
 		gint nfi=0;
 		if(!strstr( t,"FREQUENCY:")) break;
+
 
 		tmp = strstr(t,":")+1;
 		for(i=0;i<nfMax*2;i++) sprintf(sdum[i]," ");
@@ -2357,6 +2365,160 @@ static void read_gaussian_file(GabeditFileChooser *SelecFile, gint response_id)
 	read_gaussian_file_frequencies(FileName);
 }
 /********************************************************************************/
+static gboolean read_qchem_file_frequencies(gchar *FileName)
+{
+ 	gchar t[BSIZE];
+ 	gchar sdum1[BSIZE];
+ 	gchar sdum2[BSIZE];
+ 	gboolean OK;
+ 	FILE *fd;
+ 	guint taille=BSIZE;
+	gint idum;
+	gint nf;
+	gdouble freq[3] = {0,0,0};
+	gdouble IRIntensity[3] = {0,0,0};
+	gdouble RamanIntensity[3]={ 0,0,0};
+	gdouble v[3][3];
+	gchar sym[3][BSIZE];
+	gint j;
+	gint k;
+	gint nfOld;
+
+
+	Dipole.def = FALSE;
+	free_vibration();
+	vibration.numberOfAtoms = Ncenters;
+	vibration.geometry = g_malloc(Ncenters*sizeof(VibrationGeom));
+	for(j=0;j<Ncenters;j++)
+	{
+		vibration.geometry[j].symbol = g_strdup(GeomOrb[j].Symb);
+    		vibration.geometry[j].coordinates[0] = GeomOrb[j].C[0];
+    		vibration.geometry[j].coordinates[1] = GeomOrb[j].C[1];
+    		vibration.geometry[j].coordinates[2] = GeomOrb[j].C[2];
+	}
+  	vibration.numberOfFrequences = 0;
+	vibration.modes = g_malloc(sizeof(VibrationMode));
+
+ 	fd = FOpen(FileName, "r");
+	if(!fd) return FALSE;
+
+	for(j=0;j<3;j++)
+	{
+		sprintf(sym[j]," ");
+		for(k=0;k<3;k++) v[j][k] = 0;
+	}
+
+ 	do 
+ 	{
+ 		OK=FALSE;
+ 		while(!feof(fd))
+		{
+	  		fgets(t,taille,fd);
+	 		if (strstr( t,"VIBRATIONAL ANALYSIS") ) OK = TRUE;
+	 		if (strstr( t,"Mode:") && OK ){ OK = TRUE; break;}
+		}
+		if(!OK) break;
+  		while(!feof(fd) )
+  		{
+			if(!strstr(t,"Mode:")) break;
+			nf = sscanf(t,"%s %d %d %d",sdum1,&idum,&idum,&idum);
+			nf--;
+			if(nf<0 || nf>3) break;
+			/*
+			if(!fgets(t,taille,fd)) break;
+			sscanf(t,"%s %s %s",sym[0],sym[1],sym[2]);
+			*/
+			sprintf(sym[0],"UNKNOWN");
+			sprintf(sym[1],"UNKNOWN");
+			sprintf(sym[2],"UNKNOWN");
+
+			if(!fgets(t,taille,fd)) break;
+			sscanf(t,"%s %lf %lf %lf", sdum1, &freq[0],&freq[1],&freq[2]);
+			while(!feof(fd))
+			{
+    				fgets(t,taille,fd);
+				if(strstr(t,"IR Intens:"))
+				{
+					sscanf(t,"%s %s %lf %lf %lf", sdum1,sdum2, &IRIntensity[0],&IRIntensity[1],&IRIntensity[2]);
+					break;
+				}
+			}
+			RamanIntensity[0] = 0;
+			RamanIntensity[1] = 0;
+			RamanIntensity[2] = 0;
+			if(!strstr(t,"X      Y      Z"))
+			while(!feof(fd))
+			{
+    				fgets(t,taille,fd);
+				if(strstr(t,"X      Y      Z")) break;
+			}
+			nfOld = vibration.numberOfFrequences;
+  			vibration.numberOfFrequences += nf;
+			vibration.modes = g_realloc(
+					vibration.modes,
+					vibration.numberOfFrequences*sizeof(VibrationMode));
+
+			for(k=0;k<nf;k++)
+			{
+				vibration.modes[k+nfOld].frequence = freq[k];
+				vibration.modes[k+nfOld].IRIntensity = IRIntensity[k];
+				vibration.modes[k+nfOld].RamanIntensity = RamanIntensity[k];
+				vibration.modes[k+nfOld].symmetry = g_strdup(sym[k]);
+				vibration.modes[k+nfOld].vectors[0]= 
+					g_malloc(vibration.numberOfAtoms*sizeof(gdouble));
+				vibration.modes[k+nfOld].vectors[1]= 
+					g_malloc(vibration.numberOfAtoms*sizeof(gdouble));
+				vibration.modes[k+nfOld].vectors[2]= 
+					g_malloc(vibration.numberOfAtoms*sizeof(gdouble));
+			}
+
+			for(j=0;j<Ncenters && !feof(fd);j++)
+			{
+				if(!fgets(t,taille,fd)) break;
+				sscanf(t,"%s %lf %lf %lf %lf %lf %lf %lf %lf %lf",
+					sdum1,
+					&v[0][0],&v[0][1],&v[0][2],
+					&v[1][0],&v[1][1],&v[1][2],
+					&v[2][0],&v[2][1],&v[2][2]
+					);
+				for(k=0;k<nf;k++)
+				{
+					vibration.modes[k+nfOld].vectors[0][j]= v[k][0]; 
+					vibration.modes[k+nfOld].vectors[1][j]= v[k][1]; 
+					vibration.modes[k+nfOld].vectors[2][j]= v[k][2]; 
+				}
+			}
+    			if(!fgets(t,taille,fd))break; /* backspace */
+    			if(!fgets(t,taille,fd))break; /* Mode: or END */
+		}
+ 	}while(!feof(fd));
+	rafreshList();
+	if(vibration.numberOfFrequences<1)
+	{
+		GtkWidget* w = NULL;
+		gchar buffer[BSIZE];
+		sprintf(buffer,"Sorry, I can not read frequencies from '%s' file\n",FileName);
+  		w = Message(buffer,"Error",TRUE);
+		gtk_window_set_modal (GTK_WINDOW (w), TRUE);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+/********************************************************************************/
+static void read_qchem_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+	gchar *FileName;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+
+	stop_vibration(NULL, NULL);
+
+ 	gl_read_last_qchem_file(SelecFile, response_id);
+	read_qchem_file_frequencies(FileName);
+}
+/********************************************************************************/
 static void read_dalton_file_dlg()
 {
 	GtkWidget* filesel = 
@@ -2392,7 +2554,17 @@ static void read_adf_file_dlg()
 	GtkWidget* filesel = 
  	file_chooser_open(read_adf_file,
 			"Read last geometry and frequencies from a ADF output file",
-			GABEDIT_TYPEFILE_MOLPRO,GABEDIT_TYPEWIN_ORB);
+			GABEDIT_TYPEFILE_ADF,GABEDIT_TYPEWIN_ORB);
+
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+}
+/********************************************************************************/
+static void read_qchem_file_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_qchem_file,
+			"Read last geometry and frequencies from a Q-Chem output file",
+			GABEDIT_TYPEFILE_QCHEM,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
@@ -2500,7 +2672,8 @@ static gboolean show_menu_popup(GtkUIManager *manager, guint button, guint32 tim
 	GtkWidget *menu = gtk_ui_manager_get_widget (manager, "/MenuVibration");
 	if (GTK_IS_MENU (menu)) 
 	{
-		set_sensitive_option(manager,"/MenuVibration/DrawSpectrum");
+		set_sensitive_option(manager,"/MenuVibration/DrawIRSpectrum");
+		set_sensitive_option(manager,"/MenuVibration/DrawRamanSpectrum");
 		set_sensitive_option(manager,"/MenuVibration/SaveGabedit");
 		gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, button, time);
 		return TRUE;
@@ -3047,7 +3220,8 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "Tools"))
 	{
 		GtkUIManager *manager = g_object_get_data(G_OBJECT(action), "Manager");
-		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/Tools/DrawSpectrum");
+		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/Tools/DrawIRSpectrum");
+		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/Tools/DrawRamanSpectrum");
 	}
 	else if(!strcmp(name, "ReadGabedit")) read_gabedit_file_dlg();
 	else if(!strcmp(name, "ReadDalton")) read_dalton_file_dlg();
@@ -3056,10 +3230,13 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "ReadMolpro")) read_molpro_file_dlg();
 	else if(!strcmp(name, "ReadMPQC")) read_mpqc_file_dlg();
 	else if(!strcmp(name, "ReadADF")) read_adf_file_dlg();
+	else if(!strcmp(name, "ReadPCGamess")) read_gamess_file_dlg();
+	else if(!strcmp(name, "ReadQChem")) read_qchem_file_dlg();
 	else if(!strcmp(name, "ReadMolden")) read_molden_file_dlg();
 	else if(!strcmp(name, "SaveGabedit")) save_gabedit_file_dlg();
 	else if(!strcmp(name, "Close")) destroyDlg(NULL,NULL);
-	else if(!strcmp(name, "DrawSpectrum")) create_window_spectrum();
+	else if(!strcmp(name, "DrawIRSpectrum")) create_window_irspectrum();
+	else if(!strcmp(name, "DrawRamanSpectrum")) create_window_ramanspectrum();
 	else if(!strcmp(name, "HelpSupportedFormat")) help_supported_format();
 	else if(!strcmp(name, "HelpAnimation")) help_animated_file();
 }
@@ -3075,11 +3252,14 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadMolpro", GABEDIT_STOCK_MOLPRO, "Read a Mol_pro output file", NULL, "Read Molpro output file", G_CALLBACK (activate_action) },
 	{"ReadMPQC", GABEDIT_STOCK_MPQC, "Read a MP_QC output file", NULL, "Read a MPQC output file", G_CALLBACK (activate_action) },
 	{"ReadADF", GABEDIT_STOCK_ADF, "Read a _ADF output file", NULL, "Read a ADF output file", G_CALLBACK (activate_action) },
+	{"ReadPCGamess", GABEDIT_STOCK_PCGAMESS, "Read a _PCGamess output file", NULL, "Read a PCGamess output file", G_CALLBACK (activate_action) },
+	{"ReadQChem", GABEDIT_STOCK_QCHEM, "Read a _Q-Chem output file", NULL, "Read a Q-Chem output file", G_CALLBACK (activate_action) },
 	{"ReadMolden", GABEDIT_STOCK_MOLDEN, "Read a Mol_den output file", NULL, "Read a Molden file", G_CALLBACK (activate_action) },
 	{"SaveGabedit", GABEDIT_STOCK_SAVE, "_Save", NULL, "Save", G_CALLBACK (activate_action) },
 	{"Close", GABEDIT_STOCK_CLOSE, "_Close", NULL, "Close", G_CALLBACK (activate_action) },
 	{"Tools",     NULL, "_Tools", NULL, NULL, G_CALLBACK (activate_action)},
-	{"DrawSpectrum", GABEDIT_STOCK_DRAW, "Draw _Spectrum", NULL, "Draw Spectrum", G_CALLBACK (activate_action) },
+	{"DrawIRSpectrum", GABEDIT_STOCK_DRAW, "Draw _IR Spectrum", NULL, "Draw IR Spectrum", G_CALLBACK (activate_action) },
+	{"DrawRamanSpectrum", GABEDIT_STOCK_DRAW, "Draw _Raman Spectrum", NULL, "Draw Raman Spectrum", G_CALLBACK (activate_action) },
 	{"Help",     NULL, "_Help"},
 	{"HelpSupportedFormat", NULL, "_Supported format...", NULL, "Supported format...", G_CALLBACK (activate_action) },
 	{"HelpAnimation", NULL, "Creation of an _animated file...", NULL, "Creation of an animated file...", G_CALLBACK (activate_action) },
@@ -3098,11 +3278,14 @@ static const gchar *uiMenuInfo =
 "    <menuitem name=\"ReadMolpro\" action=\"ReadMolpro\" />\n"
 "    <menuitem name=\"ReadMPQC\" action=\"ReadMPQC\" />\n"
 "    <menuitem name=\"ReadADF\" action=\"ReadADF\" />\n"
+"    <menuitem name=\"ReadPCGamess\" action=\"ReadPCGamess\" />\n"
+"    <menuitem name=\"ReadQChem\" action=\"ReadQChem\" />\n"
 "    <menuitem name=\"ReadMolden\" action=\"ReadMolden\" />\n"
 "    <separator name=\"sepMenuPopSave\" />\n"
 "    <menuitem name=\"SaveGabedit\" action=\"SaveGabedit\" />\n"
 "    <separator name=\"sepMenuPopDraw\" />\n"
-"    <menuitem name=\"DrawSpectrum\" action=\"DrawSpectrum\" />\n"
+"    <menuitem name=\"DrawIRSpectrum\" action=\"DrawIRSpectrum\" />\n"
+"    <menuitem name=\"DrawRamanSpectrum\" action=\"DrawRamanSpectrum\" />\n"
 "    <separator name=\"sepMenuPopClose\" />\n"
 "    <menuitem name=\"Close\" action=\"Close\" />\n"
 "  </popup>\n"
@@ -3116,6 +3299,8 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadMolpro\" action=\"ReadMolpro\" />\n"
 "        <menuitem name=\"ReadMPQC\" action=\"ReadMPQC\" />\n"
 "        <menuitem name=\"ReadADF\" action=\"ReadADF\" />\n"
+"        <menuitem name=\"ReadPCGamess\" action=\"ReadPCGamess\" />\n"
+"        <menuitem name=\"ReadQChem\" action=\"ReadQChem\" />\n"
 "        <menuitem name=\"ReadMolden\" action=\"ReadMolden\" />\n"
 "      </menu>\n"
 "      <separator name=\"sepMenuSave\" />\n"
@@ -3124,7 +3309,8 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"Close\" action=\"Close\" />\n"
 "    </menu>\n"
 "      <menu name=\"Tools\" action=\"Tools\">\n"
-"         <menuitem name=\"DrawSpectrum\" action=\"DrawSpectrum\" />\n"
+"         <menuitem name=\"DrawIRSpectrum\" action=\"DrawIRSpectrum\" />\n"
+"         <menuitem name=\"DrawRamanSpectrum\" action=\"DrawRamanSpectrum\" />\n"
 "      </menu>\n"
 "      <menu name=\"Help\" action=\"Help\">\n"
 "         <menuitem name=\"HelpSupportedFormat\" action=\"HelpSupportedFormat\" />\n"

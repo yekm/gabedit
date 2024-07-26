@@ -48,7 +48,8 @@ typedef enum
 {
   E_NUMBER=0,
   E_SYMBOL,
-  E_TYPE,
+  E_MMTYPE,
+  E_PDBTYPE,
   E_RESIDUE,
   E_R,
   E_NUMBER_R,
@@ -75,7 +76,8 @@ static gint LineSelectedOld = -1;
 static gdouble labelWidth = 0.15;
 static gdouble entryWidth = 0.20;
 
-gchar** getListTypes(gint* nlist);
+gchar** getListMMTypes(gint* nlist);
+gchar** getListPDBTypes(gchar* residueName, gint* nlist);
 /********************************************************************************/
 static void clearList(GtkWidget* myList);
 static void removeFromList(GtkWidget* myList, gint ligne);
@@ -489,14 +491,16 @@ static void append_list_geom()
 		switch ( Nc) {
 		case 0: texts[E_NUMBER] = g_strdup_printf("%d",Nc+1);
 			texts[E_SYMBOL] = g_strdup(Geom[Nc].Symb);
-			texts[E_TYPE] = g_strdup(Geom[Nc].Type);
+			texts[E_MMTYPE] = g_strdup(Geom[Nc].mmType);
+			texts[E_PDBTYPE] = g_strdup(Geom[Nc].pdbType);
 			texts[E_RESIDUE] = g_strdup(Geom[Nc].Residue);
 			texts[E_CHARGE] = g_strdup(Geom[Nc].Charge);
 		  	texts[E_LAYER] = g_strdup(Geom[Nc].Layer);
 		break;
 		case 1: texts[E_NUMBER] = g_strdup_printf("%d",Nc+1);
 	        	texts[E_SYMBOL] = g_strdup(Geom[Nc].Symb);
-	        	texts[E_TYPE] = g_strdup(Geom[Nc].Type);
+	        	texts[E_MMTYPE] = g_strdup(Geom[Nc].mmType);
+	        	texts[E_PDBTYPE] = g_strdup(Geom[Nc].pdbType);
 			texts[E_RESIDUE] = g_strdup(Geom[Nc].Residue);
 		  	texts[E_R] = g_strdup(Geom[Nc].R);
 		  	texts[E_NUMBER_R] = g_strdup(Geom[Nc].NR);
@@ -505,7 +509,8 @@ static void append_list_geom()
 		break;
 		case 2: texts[E_NUMBER] = g_strdup_printf("%d",Nc+1);
 	        	texts[E_SYMBOL] = g_strdup(Geom[Nc].Symb);
-	        	texts[E_TYPE] = g_strdup(Geom[Nc].Type);
+	        	texts[E_MMTYPE] = g_strdup(Geom[Nc].mmType);
+	        	texts[E_PDBTYPE] = g_strdup(Geom[Nc].pdbType);
 			texts[E_RESIDUE] = g_strdup(Geom[Nc].Residue);
 		  	texts[E_R] = g_strdup(Geom[Nc].R);
 		  	texts[E_NUMBER_R] = g_strdup(Geom[Nc].NR);
@@ -516,7 +521,8 @@ static void append_list_geom()
 		break;
 		default : texts[E_NUMBER] = g_strdup_printf("%d",Nc+1);
 	        	texts[E_SYMBOL] = g_strdup(Geom[Nc].Symb);
-	        	texts[E_TYPE] = g_strdup(Geom[Nc].Type);
+	        	texts[E_MMTYPE] = g_strdup(Geom[Nc].mmType);
+	        	texts[E_PDBTYPE] = g_strdup(Geom[Nc].pdbType);
 			texts[E_RESIDUE] = g_strdup(Geom[Nc].Residue);
 		  	texts[E_R] = g_strdup(Geom[Nc].R);
 		  	texts[E_NUMBER_R] = g_strdup(Geom[Nc].NR);
@@ -546,8 +552,10 @@ void FreeGeom(GeomAtomDef* Geomtemp,VariablesDef* Variablestemp,gint Ncent,gint 
  {
    if(Geomtemp[i].Symb)
 	g_free(Geomtemp[i].Symb);
-   if(Geomtemp[i].Type)
-	g_free(Geomtemp[i].Type);
+   if(Geomtemp[i].mmType)
+	g_free(Geomtemp[i].mmType);
+   if(Geomtemp[i].pdbType)
+	g_free(Geomtemp[i].pdbType);
    if(i>0)
    {
 	if(Geomtemp[i].R)
@@ -597,7 +605,8 @@ void freeGeom()
  for(i=0;i<NcentersZmat;i++)
  {
    g_free(Geom[i].Symb);
-   g_free(Geom[i].Type);
+   g_free(Geom[i].mmType);
+   g_free(Geom[i].pdbType);
    if(i>0)
    {
    	g_free(Geom[i].R);
@@ -1210,7 +1219,8 @@ void trans_OneGeom_to_variables(guint i, gboolean rv, gboolean ra, gboolean rd)
 
   texts[E_NUMBER] =g_strdup_printf("%d",i+1);
   texts[E_SYMBOL] = g_strdup(Geom[i].Symb);
-  texts[E_TYPE] = g_strdup(Geom[i].Type);
+  texts[E_MMTYPE] = g_strdup(Geom[i].mmType);
+  texts[E_PDBTYPE] = g_strdup(Geom[i].pdbType);
   texts[E_RESIDUE] = g_strdup(Geom[i].Residue);
   if(i>0)
   {
@@ -1354,7 +1364,8 @@ static void show_geom_in_list(guint i)
 
   texts[E_NUMBER] = g_strdup_printf("%d",i+1);
   texts[E_SYMBOL] = g_strdup(Geom[i].Symb);
-  texts[E_TYPE] = g_strdup(Geom[i].Type);
+  texts[E_MMTYPE] = g_strdup(Geom[i].mmType);
+  texts[E_PDBTYPE] = g_strdup(Geom[i].pdbType);
   texts[E_RESIDUE] = g_strdup(Geom[i].Residue);
   if(i>0)
   {
@@ -1626,7 +1637,8 @@ static void set_entry_Zmat()
 /********************************************************************************/
 static void SetAtom(GtkWidget *w,gpointer data)
 {
-  gtk_entry_set_text(GTK_ENTRY(Entry[E_TYPE]),(char *)data);
+  gtk_entry_set_text(GTK_ENTRY(Entry[E_MMTYPE]),(char *)data);
+  gtk_entry_set_text(GTK_ENTRY(Entry[E_PDBTYPE]),(char *)data);
   gtk_entry_set_text(GTK_ENTRY(Entry[E_SYMBOL]),(char *)data);
   gtk_entry_set_text(GTK_ENTRY(Entry[E_RESIDUE]),(char *)data);
   gtk_editable_set_editable((GtkEditable*) Entry[E_SYMBOL],FALSE);
@@ -1715,7 +1727,8 @@ static void AddAtom(GtkWidget *w,gpointer Entree)
 	  texts[i]=g_strdup(" ");
 
   texts[E_SYMBOL] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_SYMBOL])));
-  texts[E_TYPE] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_TYPE])));
+  texts[E_MMTYPE] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_MMTYPE])));
+  texts[E_PDBTYPE] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_PDBTYPE])));
   texts[E_RESIDUE] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_RESIDUE])));
   if (texts[E_SYMBOL] && strcmp(texts[E_SYMBOL], ""))
   { /* on cree l'atome */
@@ -1728,7 +1741,8 @@ static void AddAtom(GtkWidget *w,gpointer Entree)
   	texts[E_NUMBER] =g_strdup_printf("%d",NcentersZmat);
   	Geom[NcentersZmat-1].Nentry=NUMBER_ENTRY_0;
   	Geom[NcentersZmat-1].Symb=g_strdup(texts[E_SYMBOL]);
-  	Geom[NcentersZmat-1].Type=g_strdup(texts[E_TYPE]);
+  	Geom[NcentersZmat-1].mmType=g_strdup(texts[E_MMTYPE]);
+  	Geom[NcentersZmat-1].pdbType=g_strdup(texts[E_PDBTYPE]);
   	Geom[NcentersZmat-1].Residue=g_strdup(texts[E_RESIDUE]);
 
   	if(NcentersZmat==1)
@@ -1888,7 +1902,8 @@ static void EditAtom(GtkWidget *w,gpointer Entree)
 	  texts[i]=g_strdup(" ");
 
   texts[E_SYMBOL] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_SYMBOL])));
-  texts[E_TYPE] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_TYPE])));
+  texts[E_MMTYPE] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_MMTYPE])));
+  texts[E_PDBTYPE] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_PDBTYPE])));
   texts[E_RESIDUE] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_RESIDUE])));
 
   Nc=LineSelected;
@@ -1911,7 +1926,8 @@ static void EditAtom(GtkWidget *w,gpointer Entree)
 	  		oldResidue = TRUE;
 
   		Gtmp.Symb=g_strdup(texts[E_SYMBOL]);
-  		Gtmp.Type=g_strdup(texts[E_TYPE]);
+  		Gtmp.mmType=g_strdup(texts[E_MMTYPE]);
+  		Gtmp.pdbType=g_strdup(texts[E_PDBTYPE]);
   		Gtmp.Residue=g_strdup(texts[E_RESIDUE]);
 		if(!oldResidue)
 		{
@@ -2102,7 +2118,8 @@ static void DialogueAdd()
   gchar *tlabel[]={		
   			" ",
   			"Atom Symbol : ",
-  			"Atom Type : ",
+  			"MM Type : ",
+  			"PDB Type : ",
   			"Residue : ",
 			"R : ",
 			"Center : ",
@@ -2155,22 +2172,52 @@ static void DialogueAdd()
   hbox=create_hbox_false(vboxframe);
   {
 	gint n=0;
-	gchar** t = getListTypes(&n);
+	gchar** t = getListMMTypes(&n);
 	if(n!=0)
 	{
-		Entry[E_TYPE] = create_label_combo(hbox,tlabel[E_TYPE],t,n,
+		Entry[E_MMTYPE] = create_label_combo(hbox,tlabel[E_MMTYPE],t,n,
 		TRUE,(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
 	}
 	else
-		Entry[E_TYPE] = create_label_entry(hbox,tlabel[E_TYPE],
+	{
+		Entry[E_MMTYPE] = create_label_entry(hbox,tlabel[E_MMTYPE],
 		(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
+	}
 
-	if(t)
-		freeList(t,n);
+	if(t) freeList(t,n);
 	if(NcentersZmat==0)
-  		gtk_entry_set_text(GTK_ENTRY(Entry[E_TYPE]),"H");
+	{
+  		gtk_entry_set_text(GTK_ENTRY(Entry[E_MMTYPE]),"H");
+	}
 	else
-  		gtk_entry_set_text(GTK_ENTRY(Entry[E_TYPE]),Geom[NcentersZmat-1].Type);
+	{
+  		gtk_entry_set_text(GTK_ENTRY(Entry[E_MMTYPE]),Geom[NcentersZmat-1].mmType);
+	}
+  }
+  hbox=create_hbox_false(vboxframe);
+  {
+	gint n=0;
+	gchar** t = getListPDBTypes("UNK",&n);
+	if(n!=0)
+	{
+		Entry[E_PDBTYPE] = create_label_combo(hbox,tlabel[E_PDBTYPE],t,n,
+		TRUE,(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
+	}
+	else
+	{
+		Entry[E_PDBTYPE] = create_label_entry(hbox,tlabel[E_PDBTYPE],
+		(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
+	}
+	if(NcentersZmat==0)
+	{
+  		gtk_entry_set_text(GTK_ENTRY(Entry[E_PDBTYPE]),"H");
+	}
+	else
+	{
+  		gtk_entry_set_text(GTK_ENTRY(Entry[E_PDBTYPE]),Geom[NcentersZmat-1].pdbType);
+	}
+
+	if(t) freeList(t,n);
   }
   hbox=create_hbox_false(vboxframe);
   Entry[E_RESIDUE] = create_label_entry(hbox,tlabel[E_RESIDUE],
@@ -2224,8 +2271,7 @@ static void DialogueAdd()
 
   tlist=g_malloc(4*sizeof(gchar*));
   nlist=4;
-  if(NcentersZmat<3)
-	nlist=1;
+  /* if(NcentersZmat<3) nlist=1;*/
   tlist[0]=g_strdup(" ");
   tlist[1]=g_strdup("High");
   tlist[2]=g_strdup("Medium");
@@ -2268,7 +2314,8 @@ static void DialogueEdit()
   gchar *tlabel[]={		
   			" ",
   			"Atom Symbol : ",
-  			"Atom Type : ",
+  			"MM Type : ",
+  			"PDB Type : ",
   			"Residue : ",
 			"R : ",
 			"Center : ",
@@ -2336,19 +2383,38 @@ static void DialogueEdit()
   hbox=create_hbox_false(vboxframe);
   {
 	gint n=0;
-	gchar** t = getListTypes(&n);
+	gchar** t = getListMMTypes(&n);
 	if(n!=0)
 	{
-		Entry[E_TYPE] = create_label_combo(hbox,tlabel[E_TYPE],t,n,
+		Entry[E_MMTYPE] = create_label_combo(hbox,tlabel[E_MMTYPE],t,n,
 		TRUE,(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
 	}
 	else
-		Entry[E_TYPE] = create_label_entry(hbox,tlabel[E_TYPE],
+	{
+		Entry[E_MMTYPE] = create_label_entry(hbox,tlabel[E_MMTYPE],
 		(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
+	}
 
-	gtk_entry_set_text(GTK_ENTRY(Entry[E_TYPE]),Geom[Nc].Type);
-	if(t)
-		freeList(t,n);
+	gtk_entry_set_text(GTK_ENTRY(Entry[E_MMTYPE]),Geom[Nc].mmType);
+	if(t) freeList(t,n);
+  }
+  hbox=create_hbox_false(vboxframe);
+  {
+	gint n=0;
+	gchar** t = getListPDBTypes(Geom[Nc].Residue, &n);
+	if(n!=0)
+	{
+		Entry[E_PDBTYPE] = create_label_combo(hbox,tlabel[E_PDBTYPE],t,n,
+		TRUE,(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
+	}
+	else
+	{
+		Entry[E_PDBTYPE] = create_label_entry(hbox,tlabel[E_PDBTYPE],
+		(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
+	}
+
+	gtk_entry_set_text(GTK_ENTRY(Entry[E_PDBTYPE]),Geom[Nc].pdbType);
+	if(t) freeList(t,n);
   }
   hbox=create_hbox_false(vboxframe);
   Entry[E_RESIDUE] = create_label_entry(hbox,tlabel[E_RESIDUE],
@@ -2403,8 +2469,7 @@ static void DialogueEdit()
 
   tlist=g_malloc(4*sizeof(gchar*));
   nlist=4;
-  if(LineSelected<3)
-	nlist=1;
+  /* if(LineSelected<3) nlist=1;*/
   tlist[0]=g_strdup(" ");
   tlist[1]=g_strdup("High");
   tlist[2]=g_strdup("Medium");
@@ -2613,7 +2678,8 @@ void read_Zmat_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFil
 		 	Geomtemp=g_malloc(sizeof(GeomAtomDef));
 		 	Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_0;
                  	Geomtemp[Ncent-1].Symb=g_strdup(AtomCoord[0]);
-                 	Geomtemp[Ncent-1].Type=g_strdup(AtomCoord[0]);
+                 	Geomtemp[Ncent-1].mmType=g_strdup(AtomCoord[0]);
+                 	Geomtemp[Ncent-1].pdbType=g_strdup(AtomCoord[0]);
                  	Geomtemp[Ncent-1].Residue=g_strdup(" ");
                  	Geomtemp[Ncent-1].ResidueNumber=0;
                  	Geomtemp[Ncent-1].Charge=g_strdup("0.0"); 
@@ -2637,7 +2703,8 @@ void read_Zmat_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFil
 		Ncent++;
                 Geomtemp=g_realloc(Geomtemp,Ncent*sizeof(GeomAtomDef)); 
                 Geomtemp[Ncent-1].Symb=NULL;
-                Geomtemp[Ncent-1].Type=NULL;
+                Geomtemp[Ncent-1].mmType=NULL;
+                Geomtemp[Ncent-1].pdbType=NULL;
                 Geomtemp[Ncent-1].NR=NULL;
                 Geomtemp[Ncent-1].R=NULL;
                 Geomtemp[Ncent-1].NAngle=NULL;
@@ -2661,7 +2728,8 @@ void read_Zmat_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFil
 					}
                         		Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_R;
                         		Geomtemp[Ncent-1].Symb=g_strdup(AtomCoord[0]);
-                        		Geomtemp[Ncent-1].Type=g_strdup(AtomCoord[0]);
+                        		Geomtemp[Ncent-1].mmType=g_strdup(AtomCoord[0]);
+                        		Geomtemp[Ncent-1].pdbType=g_strdup(AtomCoord[0]);
                         		Geomtemp[Ncent-1].Residue=g_strdup(" ");
                  			Geomtemp[Ncent-1].ResidueNumber=0;
                         		Geomtemp[Ncent-1].NR=g_strdup(AtomCoord[1]);
@@ -2694,7 +2762,8 @@ void read_Zmat_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFil
 						Kvar++;
                         		Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_ANGLE;
                         		Geomtemp[Ncent-1].Symb=g_strdup(AtomCoord[0]);
-                        		Geomtemp[Ncent-1].Type=g_strdup(AtomCoord[0]);
+                        		Geomtemp[Ncent-1].mmType=g_strdup(AtomCoord[0]);
+                        		Geomtemp[Ncent-1].pdbType=g_strdup(AtomCoord[0]);
                         		Geomtemp[Ncent-1].Residue=g_strdup(" ");
                  			Geomtemp[Ncent-1].ResidueNumber=0;
                         		Geomtemp[Ncent-1].NR=g_strdup(AtomCoord[1]);
@@ -2735,7 +2804,8 @@ void read_Zmat_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFil
 						Kvar++;
 					Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_DIHEDRAL;
                         		Geomtemp[Ncent-1].Symb=g_strdup(AtomCoord[0]);
-                        		Geomtemp[Ncent-1].Type=g_strdup(AtomCoord[0]);
+                        		Geomtemp[Ncent-1].mmType=g_strdup(AtomCoord[0]);
+                        		Geomtemp[Ncent-1].pdbType=g_strdup(AtomCoord[0]);
                         		Geomtemp[Ncent-1].Residue=g_strdup(" ");
                  			Geomtemp[Ncent-1].ResidueNumber=0;
                         		Geomtemp[Ncent-1].NR=g_strdup(AtomCoord[1]);
@@ -2880,7 +2950,8 @@ void read_Zmat_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
 
 		get_symb_type_charge(AtomCoord[0],symb,type,charge);
     		Geomtemp[Ncent-1].Symb = g_strdup(symb);
-    		Geomtemp[Ncent-1].Type = g_strdup(type);
+    		Geomtemp[Ncent-1].mmType = g_strdup(type);
+    		Geomtemp[Ncent-1].pdbType = g_strdup(type);
   		Geomtemp[Ncent-1].Charge=g_strdup(charge);
 
   		Geomtemp[Ncent-1].Residue=g_strdup("DUM");
@@ -2927,7 +2998,8 @@ void read_Zmat_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
 
 			get_symb_type_charge(AtomCoord[0],symb,type,charge);
     			Geomtemp[Ncent-1].Symb = g_strdup(symb);
-    			Geomtemp[Ncent-1].Type = g_strdup(type);
+    			Geomtemp[Ncent-1].mmType = g_strdup(type);
+    			Geomtemp[Ncent-1].pdbType = g_strdup(type);
   			Geomtemp[Ncent-1].Charge=g_strdup(charge);
 
   			Geomtemp[Ncent-1].Residue=g_strdup("DUM");
@@ -2954,7 +3026,8 @@ void read_Zmat_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
 
 			get_symb_type_charge(AtomCoord[0],symb,type,charge);
     			Geomtemp[Ncent-1].Symb = g_strdup(symb);
-    			Geomtemp[Ncent-1].Type = g_strdup(type);
+    			Geomtemp[Ncent-1].mmType = g_strdup(type);
+    			Geomtemp[Ncent-1].pdbType = g_strdup(type);
   			Geomtemp[Ncent-1].Charge=g_strdup(charge);
 
   			Geomtemp[Ncent-1].Residue=g_strdup("DUM");
@@ -2983,7 +3056,8 @@ void read_Zmat_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
 
 			get_symb_type_charge(AtomCoord[0],symb,type,charge);
     			Geomtemp[Ncent-1].Symb = g_strdup(symb);
-    			Geomtemp[Ncent-1].Type = g_strdup(type);
+    			Geomtemp[Ncent-1].mmType = g_strdup(type);
+    			Geomtemp[Ncent-1].pdbType = g_strdup(type);
   			Geomtemp[Ncent-1].Charge=g_strdup(charge);
 
   			Geomtemp[Ncent-1].Residue=g_strdup("DUM");
@@ -3068,6 +3142,252 @@ void read_Zmat_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
  set_last_directory(NomFichier);
 }
 /*************************************************************************************/
+void read_Zmat_from_qchem_input_file(gchar *NomFichier)
+{
+ gchar *t;
+ gboolean OK;
+ gchar *AtomCoord[7];
+ FILE *fd;
+ guint taille=BSIZE;
+ guint i;
+ gint j;
+ gboolean Uvar=FALSE;
+ GeomAtomDef* Geomtemp=NULL;
+ gint Ncent = 0;
+ gint Nvar = 0;
+ VariablesDef* Variablestemp=NULL;
+ gchar symb[BSIZE];
+ gchar type[BSIZE];
+ gchar charge[BSIZE];
+ 
+ if ( strcmp(NomFichier,"") == 0 ) return;
+
+ for(i=0;i<7;i++)
+	AtomCoord[i]=g_malloc(taille*sizeof(gchar));
+ 
+
+ t=g_malloc(taille);
+ fd = FOpen(NomFichier, "r");
+ OK=TRUE;
+ if(fd!=NULL)
+ { 
+	 while(!feof(fd))
+	 {
+       		if(!fgets(t,taille,fd))
+		{
+			OK = FALSE;
+			break;
+		}
+		g_strup(t);
+		if(strstr(t,"$MOLECULE"))
+		{
+	 		fgets(t,taille,fd); /* charge and spin */
+			OK = TRUE;
+			break;
+		}
+	 }
+	 if(OK) fgets(t,taille,fd);
+  	i = sscanf(t,"%s",AtomCoord[0]);
+        if(i != 1)
+		OK = FALSE;
+        else
+	{
+  		Ncent++;
+  		Geomtemp=g_malloc(sizeof(GeomAtomDef));
+  		Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_0;
+
+		get_symb_type_charge(AtomCoord[0],symb,type,charge);
+    		Geomtemp[Ncent-1].Symb = g_strdup(symb);
+    		Geomtemp[Ncent-1].mmType = g_strdup(type);
+    		Geomtemp[Ncent-1].pdbType = g_strdup(type);
+  		Geomtemp[Ncent-1].Charge=g_strdup(charge);
+
+  		Geomtemp[Ncent-1].Residue=g_strdup("DUM");
+		Geomtemp[Ncent-1].ResidueNumber=0;
+  		Geomtemp[Ncent-1].Layer=g_strdup(" ");
+ 	}
+  	j=-1;
+  	while(!feof(fd) && OK )
+  	{
+    		j++;
+    		fgets(t,taille,fd);
+		if(strstr(t,"$end")) break;
+                if(t[0] == '\n') break;
+                for(i=0;i<strlen(t);i++)
+                   if(t[i] != ' ') break;
+                if(i == strlen(t)-1) break;
+                for(i=0;i<strlen(t);i++) if(t[i] ==',') t[i] = ' ';
+
+    		i = sscanf(t,"%s ",AtomCoord[0]);
+                if(i != 1)
+		{
+			OK = FALSE;
+			break;
+		}
+                if( !strcmp(AtomCoord[0],"Variables") ) 
+                {
+			Uvar = TRUE;
+			break;
+                }
+  		Ncent++;
+  		Geomtemp=g_realloc(Geomtemp,Ncent*sizeof(GeomAtomDef));
+        	switch( Ncent ){
+        	case 2 : 
+                	i = sscanf(t,"%s %s %s ",AtomCoord[0],AtomCoord[1],AtomCoord[2]);
+                	if( i != 3 )
+                	{
+				Ncent--;
+  				Geomtemp=g_realloc(Geomtemp,Ncent*sizeof(GeomAtomDef));
+				OK = FALSE;
+                	}
+                        if( !test(AtomCoord[2]) )
+                              Uvar = TRUE;
+  			Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_R;
+
+			get_symb_type_charge(AtomCoord[0],symb,type,charge);
+    			Geomtemp[Ncent-1].Symb = g_strdup(symb);
+    			Geomtemp[Ncent-1].mmType = g_strdup(type);
+    			Geomtemp[Ncent-1].pdbType = g_strdup(type);
+  			Geomtemp[Ncent-1].Charge=g_strdup(charge);
+
+  			Geomtemp[Ncent-1].Residue=g_strdup("DUM");
+			Geomtemp[Ncent-1].ResidueNumber=0;
+  			Geomtemp[Ncent-1].NR=g_strdup(AtomCoord[1]);
+  			Geomtemp[Ncent-1].R=g_strdup(AtomCoord[2]);
+  			Geomtemp[Ncent-1].Layer=g_strdup(" ");
+			break;
+   		case 3 : 
+			i =  sscanf(
+				t,"%s %s %s %s %s ",
+				AtomCoord[0],AtomCoord[1],AtomCoord[2],
+				AtomCoord[3],AtomCoord[4]
+				);
+			if(i != 5) 
+                	{
+				Ncent--;
+  				Geomtemp=g_realloc(Geomtemp,Ncent*sizeof(GeomAtomDef));
+				OK = FALSE;
+                	}
+                        if(!test(AtomCoord[2]) || !test(AtomCoord[4]) )
+                              Uvar = TRUE;
+  			Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_ANGLE;
+
+			get_symb_type_charge(AtomCoord[0],symb,type,charge);
+    			Geomtemp[Ncent-1].Symb = g_strdup(symb);
+    			Geomtemp[Ncent-1].mmType = g_strdup(type);
+    			Geomtemp[Ncent-1].pdbType = g_strdup(type);
+  			Geomtemp[Ncent-1].Charge=g_strdup(charge);
+
+  			Geomtemp[Ncent-1].Residue=g_strdup("DUM");
+			Geomtemp[Ncent-1].ResidueNumber=0;
+  			Geomtemp[Ncent-1].NR=g_strdup(AtomCoord[1]);
+  			Geomtemp[Ncent-1].R=g_strdup(AtomCoord[2]);
+  			Geomtemp[Ncent-1].NAngle=g_strdup(AtomCoord[3]);
+  			Geomtemp[Ncent-1].Angle=g_strdup(AtomCoord[4]);
+  			Geomtemp[Ncent-1].Layer=g_strdup(" ");
+			break;
+        	default :
+                 	i =  sscanf(
+				t,"%s %s %s %s %s %s %s",
+				AtomCoord[0],AtomCoord[1],AtomCoord[2],
+				AtomCoord[3],AtomCoord[4],AtomCoord[5],AtomCoord[6]
+				);
+			if( i!= 7)
+                 	{
+				Ncent--;
+  				Geomtemp=g_realloc(Geomtemp,Ncent*sizeof(GeomAtomDef));
+				OK = FALSE;
+                 	}
+                        if(!test(AtomCoord[2]) || !test(AtomCoord[4]) || !test(AtomCoord[6]))
+                              Uvar = TRUE;
+  			Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_DIHEDRAL;
+
+			get_symb_type_charge(AtomCoord[0],symb,type,charge);
+    			Geomtemp[Ncent-1].Symb = g_strdup(symb);
+    			Geomtemp[Ncent-1].mmType = g_strdup(type);
+    			Geomtemp[Ncent-1].pdbType = g_strdup(type);
+  			Geomtemp[Ncent-1].Charge=g_strdup(charge);
+
+  			Geomtemp[Ncent-1].Residue=g_strdup("DUM");
+			Geomtemp[Ncent-1].ResidueNumber=0;
+  			Geomtemp[Ncent-1].NR=g_strdup(AtomCoord[1]);
+  			Geomtemp[Ncent-1].R=g_strdup(AtomCoord[2]);
+  			Geomtemp[Ncent-1].NAngle=g_strdup(AtomCoord[3]);
+  			Geomtemp[Ncent-1].Angle=g_strdup(AtomCoord[4]);
+  			Geomtemp[Ncent-1].NDihedral=g_strdup(AtomCoord[5]);
+  			Geomtemp[Ncent-1].Dihedral=g_strdup(AtomCoord[6]);
+  			Geomtemp[Ncent-1].Layer=g_strdup(" ");
+	}/*end switch*/
+  	}/*end while*/
+/* Variables */
+  Nvar=0;
+  while(!feof(fd) && Uvar && OK )
+  {
+  	fgets(t,taille,fd);
+        OK=TRUE;
+	if(strstr(t,"$end")) break;
+        for(i=0;i<strlen(t)-1;i++)
+ 		if ( (int)t[i] != (int)' ' )
+                OK=FALSE;
+        if(OK)
+		break;
+ 	else
+	{
+  		Nvar++;
+  		if(Nvar==1)
+  			Variablestemp = g_malloc(Nvar*sizeof(VariablesDef));
+  		else
+  			Variablestemp = g_realloc(Variablestemp,Nvar*sizeof(VariablesDef));
+  		Variablestemp[Nvar-1].Name=NULL;
+  		Variablestemp[Nvar-1].Value=NULL;
+                for(i=0;i<strlen(t);i++) if(t[i] =='=') t[i] = ' ';
+  		i = sscanf(t,"%s %s",AtomCoord[0],AtomCoord[1]);
+		if( i == 2)
+		{
+  			Variablestemp[Nvar-1].Name=g_strdup(AtomCoord[0]);
+  			Variablestemp[Nvar-1].Value=g_strdup(AtomCoord[1]);
+  			Variablestemp[Nvar-1].Used=TRUE;
+			OK = TRUE;
+		}
+		else
+		{
+			OK = FALSE;
+		}
+ 	 }
+  }
+/* end while variables */
+  fclose(fd);
+ }
+ else
+      OK = FALSE;
+
+ g_free(t);
+ for(i=0;i<7;i++)
+	g_free(AtomCoord[i]);
+ if( !OK || Ncent <1 )
+ {
+   FreeGeom(Geomtemp,Variablestemp,Ncent,Nvar);
+   MessageGeom("Sorry\n I can not read geometry in Q-Chem input file"," Error ",TRUE);
+   return;
+ }
+ if(Geom)
+	freeGeom();
+ if(Variables)
+	freeVariables(Variables);
+ Geom = Geomtemp;
+ NcentersZmat = Ncent;
+ NVariables = Nvar;
+ Variables = Variablestemp;
+ MethodeGeom = GEOM_IS_ZMAT;
+ if( Units== 0 ) Geom_Change_Unit(FALSE);
+ if(GeomIsOpen)
+	create_geom_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
+
+ if(ZoneDessin != NULL)
+	rafresh_drawing();
+ set_last_directory(NomFichier);
+}
+/*************************************************************************************/
  void read_ZMatrix_file_no_add_list(gchar* NomFichier)
 {
  gchar *t;
@@ -3097,7 +3417,8 @@ void read_Zmat_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
   Geom=g_malloc(sizeof(GeomAtomDef));
   Geom[NcentersZmat-1].Nentry=NUMBER_ENTRY_0;
   Geom[NcentersZmat-1].Symb=g_strdup(AtomCoord[0]);
-  Geom[NcentersZmat-1].Type=g_strdup(AtomCoord[0]);
+  Geom[NcentersZmat-1].mmType=g_strdup(AtomCoord[0]);
+  Geom[NcentersZmat-1].pdbType=g_strdup(AtomCoord[0]);
   Geom[NcentersZmat-1].Residue=g_strdup(" ");
   Geom[NcentersZmat-1].ResidueNumber=0;
   Geom[NcentersZmat-1].Charge=g_strdup("0.0");
@@ -3132,7 +3453,8 @@ void read_Zmat_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
                 };
   		Geom[NcentersZmat-1].Nentry=NUMBER_ENTRY_R;
   		Geom[NcentersZmat-1].Symb=g_strdup(AtomCoord[0]);
-  		Geom[NcentersZmat-1].Type=g_strdup(AtomCoord[0]);
+  		Geom[NcentersZmat-1].mmType=g_strdup(AtomCoord[0]);
+  		Geom[NcentersZmat-1].pdbType=g_strdup(AtomCoord[0]);
   		Geom[NcentersZmat-1].Residue=g_strdup(" ");
   		Geom[NcentersZmat-1].ResidueNumber=0;
   		Geom[NcentersZmat-1].NR=g_strdup(AtomCoord[1]);
@@ -3158,7 +3480,8 @@ void read_Zmat_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
                 };
   		Geom[NcentersZmat-1].Nentry=NUMBER_ENTRY_ANGLE;
   		Geom[NcentersZmat-1].Symb=g_strdup(AtomCoord[0]);
-  		Geom[NcentersZmat-1].Type=g_strdup(AtomCoord[0]);
+  		Geom[NcentersZmat-1].mmType=g_strdup(AtomCoord[0]);
+  		Geom[NcentersZmat-1].pdbType=g_strdup(AtomCoord[0]);
   		Geom[NcentersZmat-1].Residue=g_strdup(" ");
   		Geom[NcentersZmat-1].ResidueNumber=0;
   		Geom[NcentersZmat-1].NR=g_strdup(AtomCoord[1]);
@@ -3187,7 +3510,8 @@ void read_Zmat_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
                  };
   		Geom[NcentersZmat-1].Nentry=NUMBER_ENTRY_DIHEDRAL;
   		Geom[NcentersZmat-1].Symb=g_strdup(AtomCoord[0]);
-  		Geom[NcentersZmat-1].Type=g_strdup(AtomCoord[0]);
+  		Geom[NcentersZmat-1].mmType=g_strdup(AtomCoord[0]);
+  		Geom[NcentersZmat-1].pdbType=g_strdup(AtomCoord[0]);
   		Geom[NcentersZmat-1].Residue=g_strdup(" ");
   		Geom[NcentersZmat-1].ResidueNumber=0;
   		Geom[NcentersZmat-1].NR=g_strdup(AtomCoord[1]);
@@ -3328,7 +3652,8 @@ void read_ZMatrix_file(GabeditFileChooser *SelecteurFichier, gint response_id)
   Geom=g_malloc(sizeof(GeomAtomDef));
   Geom[NcentersZmat-1].Nentry=NUMBER_ENTRY_0;
   Geom[NcentersZmat-1].Symb=g_strdup(AtomCoord[0]);
-  Geom[NcentersZmat-1].Type=g_strdup(AtomCoord[0]);
+  Geom[NcentersZmat-1].mmType=g_strdup(AtomCoord[0]);
+  Geom[NcentersZmat-1].pdbType=g_strdup(AtomCoord[0]);
   Geom[NcentersZmat-1].Residue=g_strdup(" ");
   Geom[NcentersZmat-1].ResidueNumber=0;
   Geom[NcentersZmat-1].Charge=g_strdup("0.0");
@@ -3363,7 +3688,8 @@ void read_ZMatrix_file(GabeditFileChooser *SelecteurFichier, gint response_id)
                 };
   		Geom[NcentersZmat-1].Nentry=NUMBER_ENTRY_R;
   		Geom[NcentersZmat-1].Symb=g_strdup(AtomCoord[0]);
-  		Geom[NcentersZmat-1].Type=g_strdup(AtomCoord[0]);
+  		Geom[NcentersZmat-1].mmType=g_strdup(AtomCoord[0]);
+  		Geom[NcentersZmat-1].pdbType=g_strdup(AtomCoord[0]);
   		Geom[NcentersZmat-1].Residue=g_strdup(" ");
   		Geom[NcentersZmat-1].ResidueNumber=0;
   		Geom[NcentersZmat-1].NR=g_strdup(AtomCoord[1]);
@@ -3390,7 +3716,8 @@ void read_ZMatrix_file(GabeditFileChooser *SelecteurFichier, gint response_id)
                 };
   		Geom[NcentersZmat-1].Nentry=NUMBER_ENTRY_ANGLE;
   		Geom[NcentersZmat-1].Symb=g_strdup(AtomCoord[0]);
-  		Geom[NcentersZmat-1].Type=g_strdup(AtomCoord[0]);
+  		Geom[NcentersZmat-1].mmType=g_strdup(AtomCoord[0]);
+  		Geom[NcentersZmat-1].pdbType=g_strdup(AtomCoord[0]);
   		Geom[NcentersZmat-1].Residue=g_strdup(" ");
   		Geom[NcentersZmat-1].ResidueNumber=0;
   		Geom[NcentersZmat-1].NR=g_strdup(AtomCoord[1]);
@@ -3419,7 +3746,8 @@ void read_ZMatrix_file(GabeditFileChooser *SelecteurFichier, gint response_id)
                  };
   		Geom[NcentersZmat-1].Nentry=NUMBER_ENTRY_DIHEDRAL;
   		Geom[NcentersZmat-1].Symb=g_strdup(AtomCoord[0]);
-  		Geom[NcentersZmat-1].Type=g_strdup(AtomCoord[0]);
+  		Geom[NcentersZmat-1].mmType=g_strdup(AtomCoord[0]);
+  		Geom[NcentersZmat-1].pdbType=g_strdup(AtomCoord[0]);
   		Geom[NcentersZmat-1].Residue=g_strdup(" ");
   		Geom[NcentersZmat-1].ResidueNumber=0;
   		Geom[NcentersZmat-1].NR=g_strdup(AtomCoord[1]);
@@ -3580,7 +3908,8 @@ static void set_center(gchar* info[])
 		case 0 :
 			Geom[NcentersZmat-1].Nentry=NUMBER_ENTRY_0;
 			Geom[NcentersZmat-1].Symb=g_strdup(info[0]);
-			Geom[NcentersZmat-1].Type=g_strdup(info[0]);
+			Geom[NcentersZmat-1].mmType=g_strdup(info[0]);
+			Geom[NcentersZmat-1].pdbType=g_strdup(info[0]);
 			Geom[NcentersZmat-1].Residue=g_strdup(" ");
   			Geom[NcentersZmat-1].ResidueNumber=0;
 			Geom[NcentersZmat-1].Charge=g_strdup("0.0");
@@ -3589,7 +3918,8 @@ static void set_center(gchar* info[])
 		case 1 :
   			Geom[NcentersZmat-1].Nentry=NUMBER_ENTRY_R;
   			Geom[NcentersZmat-1].Symb=g_strdup(info[0]);
-			Geom[NcentersZmat-1].Type=g_strdup(info[0]);
+			Geom[NcentersZmat-1].mmType=g_strdup(info[0]);
+			Geom[NcentersZmat-1].pdbType=g_strdup(info[0]);
 			Geom[NcentersZmat-1].Residue=g_strdup(" ");
   			Geom[NcentersZmat-1].ResidueNumber=0;
   			Geom[NcentersZmat-1].NR=g_strdup(info[7]);
@@ -3600,7 +3930,8 @@ static void set_center(gchar* info[])
 		case 2 :
   			Geom[NcentersZmat-1].Nentry=NUMBER_ENTRY_ANGLE;
   			Geom[NcentersZmat-1].Symb=g_strdup(info[0]);
-			Geom[NcentersZmat-1].Type=g_strdup(info[0]);
+			Geom[NcentersZmat-1].mmType=g_strdup(info[0]);
+			Geom[NcentersZmat-1].pdbType=g_strdup(info[0]);
 			Geom[NcentersZmat-1].Residue=g_strdup(" ");
   			Geom[NcentersZmat-1].ResidueNumber=0;
   			Geom[NcentersZmat-1].NR=g_strdup(info[7]);
@@ -3613,7 +3944,8 @@ static void set_center(gchar* info[])
 		case 3 :
   			Geom[NcentersZmat-1].Nentry=NUMBER_ENTRY_DIHEDRAL;
   			Geom[NcentersZmat-1].Symb=g_strdup(info[0]);
-			Geom[NcentersZmat-1].Type=g_strdup(info[0]);
+			Geom[NcentersZmat-1].mmType=g_strdup(info[0]);
+			Geom[NcentersZmat-1].pdbType=g_strdup(info[0]);
 			Geom[NcentersZmat-1].Residue=g_strdup(" ");
   			Geom[NcentersZmat-1].ResidueNumber=0;
   			Geom[NcentersZmat-1].NR=g_strdup(info[7]);
@@ -3855,7 +4187,7 @@ void create_geom_list(GtkWidget *vbox, GabEditTypeFileGeom readfile)
 	guint Factor=7;
 	guint widall=0;
 	gchar *titres[NUMBER_LIST_ZMATRIX]={	
-			"N ","Symbol","Type",
+			"N ","Symbol","MM Type","PDB Type",
 			"Residue",
 			"R          "," N ",
 			"Angle      "," N ",
@@ -3863,7 +4195,7 @@ void create_geom_list(GtkWidget *vbox, GabEditTypeFileGeom readfile)
 			"Charge",
 			"Layer"
 	           };
-	guint width[NUMBER_LIST_ZMATRIX]={	4,6,8,
+	guint width[NUMBER_LIST_ZMATRIX]={	4,6,8,8,
 	                8,
 			10,4,
 			10,4,
@@ -3892,7 +4224,8 @@ void create_geom_list(GtkWidget *vbox, GabEditTypeFileGeom readfile)
 	store = gtk_list_store_new (NUMBER_LIST_ZMATRIX,
 		       	G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 		       	G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-		       	G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING
+		       	G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			G_TYPE_STRING
 			);
         model = GTK_TREE_MODEL (store);
 

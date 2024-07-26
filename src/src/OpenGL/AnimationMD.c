@@ -56,6 +56,9 @@ static gchar formatFilm[100] = "BMP";
 static gint rowSelected = -1;
 
 static gchar* inputGaussDirectory = NULL;
+static gint spinMultiplicity=1;
+static gint totalCharge = 0;
+static GtkWidget* buttonChkgauss = NULL;
 
 /********************************************************************************/
 static void animate();
@@ -63,6 +66,180 @@ static void rafreshList();
 static void stopAnimation(GtkWidget *win, gpointer data);
 static void playAnimation(GtkWidget *win, gpointer data);
 static gboolean set_geometry(gint k);
+
+/*************************************************************************************************************/
+static gint getNumberOfValenceElectrons(gint g)
+{
+	gint ne = 0;
+	gint a;
+
+	for(a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
+	{
+  		SAtomsProp Prop = prop_atom_get(geometriesMD.geometries[g].listOfAtoms[a].symbol);
+		ne += Prop.atomicNumber;
+	}
+	return ne;
+}
+/************************************************************************************************************/
+static void setComboSpinMultiplicity(GtkWidget *comboSpinMultiplicity)
+{
+	GList *glist = NULL;
+	gint i;
+	gint nlist = 0;
+	gchar** list = NULL;
+	gint k;
+	gint kinc;
+	gint ne = getNumberOfValenceElectrons(0) - totalCharge;
+
+	if(ne%2==0) nlist = ne/2+1;
+	else nlist = (ne+1)/2;
+
+	if(nlist<1) return;
+	list = g_malloc(nlist*sizeof(gchar*));
+	if(!list) return;
+	for(i=0;i<nlist;i++)
+		list[i] = g_malloc(10*sizeof(gchar));
+
+
+	if(GTK_IS_WIDGET(comboSpinMultiplicity)) gtk_widget_set_sensitive(comboSpinMultiplicity, TRUE);
+	if(ne%2==0) k = 1;
+	else k = 2;
+
+	kinc = 2;
+	for(i=0;i<nlist;i++)
+	{
+		sprintf(list[i],"%d",k);
+		k+=kinc;
+	}
+
+  	for(i=0;i<nlist;i++) glist = g_list_append(glist,list[i]);
+
+  	gtk_combo_box_entry_set_popdown_strings( comboSpinMultiplicity, glist) ;
+  	g_list_free(glist);
+	if(list)
+	{
+		for(i=0;i<nlist;i++) if(list[i]) g_free(list[i]);
+		g_free(list);
+	}
+}
+/********************************************************************************/
+static void setComboCharge(GtkWidget *comboCharge)
+{
+	GList *glist = NULL;
+	gint i;
+	gint nlist;
+	gchar** list = NULL;
+	gint k;
+
+	nlist = getNumberOfValenceElectrons(0)*2-2+1;
+
+	if(nlist<1) return;
+	list = g_malloc(nlist*sizeof(gchar*));
+	if(!list) return;
+	for(i=0;i<nlist;i++)
+		list[i] = g_malloc(10*sizeof(gchar));
+
+
+	sprintf(list[0],"0");
+	k = 1;
+	for(i=1;i<nlist-1;i+=2)
+	{
+		sprintf(list[i],"+%d",k);
+		sprintf(list[i+1],"%d",-k);
+		k += 1;
+	}
+
+  	for(i=0;i<nlist;i++) glist = g_list_append(glist,list[i]);
+
+  	gtk_combo_box_entry_set_popdown_strings( comboCharge, glist) ;
+  	g_list_free(glist);
+	if(list)
+	{
+		for(i=0;i<nlist;i++) if(list[i]) g_free(list[i]);
+		g_free(list);
+	}
+}
+/**********************************************************************/
+static void changedEntrySpinMultiplicity(GtkWidget *entry, gpointer data)
+{
+	G_CONST_RETURN gchar* entryText = NULL;
+	 
+	if(!GTK_IS_WIDGET(entry)) return;
+
+	entryText = gtk_entry_get_text(GTK_ENTRY(entry));
+	if(strlen(entryText)<1)return;
+
+	spinMultiplicity=atoi(entryText);
+}
+/**********************************************************************/
+static void changedEntryCharge(GtkWidget *entry, gpointer data)
+{
+	G_CONST_RETURN gchar* entryText = NULL;
+	GtkWidget* comboSpinMultiplicity = NULL;
+	 
+	if(!GTK_IS_WIDGET(entry)) return;
+
+	entryText = gtk_entry_get_text(GTK_ENTRY(entry));
+	if(strlen(entryText)<1)return;
+
+	totalCharge = atoi(entryText);
+
+	comboSpinMultiplicity  = g_object_get_data(G_OBJECT (entry), "ComboSpinMultiplicity");
+	if(GTK_IS_WIDGET(comboSpinMultiplicity)) setComboSpinMultiplicity(comboSpinMultiplicity);
+
+}
+/**********************************************************************/
+static GtkWidget* addComboListToATable(GtkWidget* table,
+		gchar** list, gint nlist, gint i, gint j, gint k)
+{
+	GtkWidget *entry = NULL;
+	GtkWidget *combo = NULL;
+
+	combo = create_combo_box_entry(list, nlist, TRUE, -1, -1);
+
+	gtk_table_attach(GTK_TABLE(table),combo,j,j+k,i,i+1,
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
+                  2,2);
+	entry = GTK_BIN (combo)->child;
+	g_object_set_data(G_OBJECT (entry), "Combo",combo);
+	gtk_widget_set_size_request(GTK_WIDGET(entry),(gint)(ScreenHeight*0.2),-1);
+
+	return entry;
+}
+/***********************************************************************************************/
+static GtkWidget *addChargeToTable(GtkWidget *table, gint i)
+{
+	GtkWidget* entryCharge = NULL;
+	GtkWidget* comboCharge = NULL;
+	gint nlistCharge = 1;
+	gchar* listCharge[] = {"0"};
+
+	add_label_table(table,"Charge",(gushort)i,0);
+	add_label_table(table,":",(gushort)i,1);
+	entryCharge = addComboListToATable(table, listCharge, nlistCharge, i, 2, 1);
+	comboCharge  = g_object_get_data(G_OBJECT (entryCharge), "Combo");
+	gtk_widget_set_sensitive(entryCharge, FALSE);
+
+	return comboCharge;
+}
+/***********************************************************************************************/
+static GtkWidget *addSpinToTable(GtkWidget *table, gint i)
+{
+	GtkWidget* entrySpinMultiplicity = NULL;
+	GtkWidget* comboSpinMultiplicity = NULL;
+	gint nlistspinMultiplicity = 1;
+	gchar* listspinMultiplicity[] = {"0"};
+
+	add_label_table(table,"Spin multiplicity",(gushort)i,0);
+	add_label_table(table,":",(gushort)i,1);
+	entrySpinMultiplicity = addComboListToATable(table, listspinMultiplicity, nlistspinMultiplicity, i, 2, 1);
+	comboSpinMultiplicity  = g_object_get_data(G_OBJECT (entrySpinMultiplicity), "Combo");
+	gtk_widget_set_sensitive(entrySpinMultiplicity, FALSE);
+
+	g_signal_connect(G_OBJECT(entrySpinMultiplicity),"changed", GTK_SIGNAL_FUNC(changedEntrySpinMultiplicity),NULL);
+	return comboSpinMultiplicity;
+}
 /*************************************************************************************************************/
 static void print_gaussian_geometries_link(GtkWidget* Win, gpointer data)
 {
@@ -96,7 +273,7 @@ static void print_gaussian_geometries_link(GtkWidget* Win, gpointer data)
 		fprintf(file,"# Units(Ang,Deg)\n");
 		if(g!=0) fprintf(file,"# Guess=read\n");
 		fprintf(file,"\n File generated by Gabedit(MD)\n\n");
-		fprintf(file," 0    1\n");
+		fprintf(file,"%d   %d\n",totalCharge,spinMultiplicity);
 
 		for(a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
 		{
@@ -170,13 +347,14 @@ static void print_gaussian_one_geometry(gint g, G_CONST_RETURN gchar* supstr)
 		if(fileName) g_free(fileName);
 		return;
 	}
-	fprintf(file,"%cChk=gabmd_%d\n",p,g);
+	if(GTK_IS_WIDGET(buttonChkgauss)&& GTK_TOGGLE_BUTTON (buttonChkgauss)->active)
+		fprintf(file,"%cChk=gabmg_%d\n",p,g);
 	fprintf(file,"# %s\n",supstr);
 	fprintf(file,"# Gfinput IOP(6/7=3) pop=full Test\n");
 	fprintf(file,"# Units(Ang,Deg)\n");
 	if(g!=0) fprintf(file,"# Guess=read\n");
 	fprintf(file,"\n File generated by Gabedit(MD)\n\n");
-	fprintf(file," 0    1\n");
+	fprintf(file,"%d   %d\n",totalCharge,spinMultiplicity);
 
 	for(a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
 	{
@@ -399,6 +577,7 @@ static void delete_one_geometry()
 {
 
 	gint k = rowSelected;
+	gint j;
 
 	if(k<0 || k >= geometriesMD.numberOfGeometries) return;
 	if(!geometriesMD.geometries) return;
@@ -414,7 +593,52 @@ static void delete_one_geometry()
 			if(geometriesMD.geometries[k].listOfAtoms) g_free(geometriesMD.geometries[k].listOfAtoms);
 			if(geometriesMD.geometries[k].comments) g_free(geometriesMD.geometries[k].comments);
 	}
+	for(j=k;j<geometriesMD.numberOfGeometries-1;j++)
+	{
+		geometriesMD.geometries[j].energy = geometriesMD.geometries[j+1].energy;
+		geometriesMD.geometries[j].time = geometriesMD.geometries[j+1].time;
+		geometriesMD.geometries[j].comments = geometriesMD.geometries[j+1].comments;
+		geometriesMD.geometries[j].listOfAtoms = geometriesMD.geometries[j+1].listOfAtoms;
+	}
 	geometriesMD.numberOfGeometries--;
+	geometriesMD.geometries = g_realloc(geometriesMD.geometries,geometriesMD.numberOfGeometries*sizeof(GeometryMD));
+	rafreshList();
+
+	return;
+}
+/********************************************************************************/
+static void delete_half_geometries()
+{
+
+	gint k;
+	gint j;
+
+	if(!geometriesMD.geometries) return;
+	if(geometriesMD.numberOfGeometries<2) return;
+
+	for(k=1;k<geometriesMD.numberOfGeometries;k+=2)
+	{
+		if(geometriesMD.geometries[k].listOfAtoms) g_free(geometriesMD.geometries[k].listOfAtoms);
+		if(geometriesMD.geometries[k].comments) g_free(geometriesMD.geometries[k].comments);
+
+	}
+	j = 0;
+	for(k=1;k<geometriesMD.numberOfGeometries-1;k+=2)
+	{
+		j++;
+		geometriesMD.geometries[j].energy = geometriesMD.geometries[k+1].energy;
+		geometriesMD.geometries[j].time = geometriesMD.geometries[k+1].time;
+		geometriesMD.geometries[j].comments = geometriesMD.geometries[k+1].comments;
+		geometriesMD.geometries[j].listOfAtoms = geometriesMD.geometries[k+1].listOfAtoms;
+	}
+	geometriesMD.numberOfGeometries = j+1;
+	if(geometriesMD.numberOfGeometries>0)
+	geometriesMD.geometries = g_realloc(geometriesMD.geometries,geometriesMD.numberOfGeometries*sizeof(GeometryMD));
+	else
+	{
+		if(geometriesMD.geometries ) g_free(geometriesMD.geometries );
+		geometriesMD.numberOfGeometries  = 0;
+	}
 	rafreshList();
 
 	return;
@@ -630,6 +854,35 @@ static gint get_number_of_geomtries_in_gaussian(gchar *fileName)
 	return nG;
 }
 /*************************************************************************************************************/
+static void scan_geomtries_position_in_gaussian(gchar *fileName)
+{
+ 	gchar *t;
+ 	FILE *file;
+	gint j;
+	long int pos = -1;
+
+	for(j=0;j<geometriesMD.numberOfGeometries;j++)
+		geometriesMD.geometries[j].filePos = -1;
+  
+ 	file = FOpen(fileName, "r");
+	if(!file) return ;
+	t = g_malloc(BSIZE*sizeof(gchar));
+	j = 0;
+ 	while(!feof(file))
+	{
+		/* pos = ftell(file);*/
+  		if(!fgets(t,BSIZE,file))break;
+		if(strstr( t,"Summary information for step"))
+		{ 
+			pos = ftell(file);
+			geometriesMD.geometries[j].filePos = pos; 
+			j++;
+		}
+	}
+	g_free(t);
+	fclose(file);
+}
+/*************************************************************************************************************/
 static gboolean read_MD_gaussian_file_step(gchar* fileName, gint step)
 {
  	gchar *t;
@@ -641,7 +894,6 @@ static gboolean read_MD_gaussian_file_step(gchar* fileName, gint step)
 	gint c = 0;
 	gboolean OK = FALSE;
 	AtomMD* listOfAtoms = NULL;
-	gint nG;
 
 	geometriesMD.geometries[j].time = 0.0;
 	geometriesMD.geometries[j].energy = 0.0;
@@ -660,28 +912,13 @@ static gboolean read_MD_gaussian_file_step(gchar* fileName, gint step)
 		listOfAtoms[i].V[2] = 0;
 	}
 	
+	if(geometriesMD.geometries[j].filePos<0) return FALSE;
   
  	file = FOpen(fileName, "r");
-	if(!file) return 0;
+	if(!file) return FALSE;
 	t = g_malloc(BSIZE*sizeof(gchar));
 	OK = FALSE;
-	nG = 0;
- 	while(!feof(file))
-	{
-  		if(!fgets(t,BSIZE,file))break;
-		if(strstr( t,"Summary information for step")) nG++;
-		if(step+1==nG)
-		{
-			OK = TRUE;
-			break;
-		}
-	}
-	if(!OK)
-	{
-		g_free(t);
-		fclose(file);
-		return FALSE;
-	}
+	fseek(file, geometriesMD.geometries[j].filePos, SEEK_SET);
 	k = 0;
  	while(!feof(file))
 	{
@@ -791,6 +1028,7 @@ static gboolean read_gaussian_output(gchar* fileName)
   		rafreshList();
 		return FALSE;
 	}
+	scan_geomtries_position_in_gaussian(fileName);
 	for(j=0;j<geometriesMD.numberOfGeometries;j++)
 		if(!read_MD_gaussian_file_step(fileName, j)) 
 		{
@@ -833,6 +1071,7 @@ static gboolean read_gabedit_MD_file(gchar *fileName)
 	gint i;
 	gint j;
 	gint k;
+	gint nG = 0;
 
 	tmp = get_name_file(fileName);
 	set_status_label_info("File Name",tmp);
@@ -916,12 +1155,20 @@ static gboolean read_gabedit_MD_file(gchar *fileName)
 					geometriesMD.geometries[j].listOfAtoms[i].V[2] = vdum3;
 				}
 			}
+			nG = j;
 			OK = TRUE;
 		}
 	}
 	fclose(file);
  	g_free(t);
  	g_free(sdum);
+	if(nG<=0) OK = FALSE;
+	if(nG>0 && nG<geometriesMD.numberOfGeometries)
+	{
+		geometriesMD.numberOfGeometries = nG;
+		geometriesMD.geometries = g_realloc(geometriesMD.geometries,
+				geometriesMD.numberOfGeometries*sizeof(GeometryMD));
+	}
 	if(!OK) freeGeometryMD();
 	rafreshList();
 	return OK;
@@ -1103,21 +1350,30 @@ static void set_entry_inputGaussDir_selection(GtkWidget* entry)
 	gtk_widget_show(dirSelector);
 }
 /********************************************************************************/
-GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
+static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 {
 	GtkWidget *button;
 
 	GtkWidget* entry;
-  	GtkWidget *table = gtk_table_new(2,3,FALSE);
+	GtkWidget* sep;
+  	GtkWidget *table = gtk_table_new(8,4,FALSE);
+	GtkWidget* comboSpinMultiplicity = NULL;
+	GtkWidget* comboCharge = NULL;
+	gint i;
+
+	totalCharge = 0;
+	spinMultiplicity=1;
 
 	if(!inputGaussDirectory) inputGaussDirectory = g_strdup_printf("%s",g_get_home_dir());
 
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
-	add_label_table(table," Directory                    : ",0,0);
+	i = 0;
+	add_label_table(table," Directory ",i,0);
+	add_label_table(table,":",i,1);
   	entry = gtk_entry_new ();
 	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
-	gtk_table_attach(GTK_TABLE(table),entry,1,1+1,0,0+1,
+	gtk_table_attach(GTK_TABLE(table),entry,2,2+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
                   (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
                   3,3);
@@ -1129,19 +1385,62 @@ GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox,gboolean expa
 	g_signal_connect_swapped(GTK_OBJECT (button), "clicked",
                                      GTK_SIGNAL_FUNC(set_entry_inputGaussDir_selection),
                                      GTK_OBJECT(entry));
-	add_widget_table(table,button,0,2);
+	add_widget_table(table,button,i,3);
 
-	add_label_table(table," Keywords                    : ",1,0);
+	i = 1;
+	comboCharge = addChargeToTable(table, i);
+	i = 2;
+	comboSpinMultiplicity = addSpinToTable(table, i);
+	i = 3;
+	sep = gtk_hseparator_new ();;
+	gtk_table_attach(GTK_TABLE(table),sep,0,0+4,i,i+1,
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+                  2,2);
+
+	if(GTK_IS_COMBO_BOX(comboCharge))
+		g_object_set_data(G_OBJECT (GTK_BIN(comboCharge)->child), "ComboSpinMultiplicity", comboSpinMultiplicity);
+	setComboCharge(comboCharge);
+	setComboSpinMultiplicity(comboSpinMultiplicity);
+	g_signal_connect(G_OBJECT(GTK_BIN(comboCharge)->child),"changed", GTK_SIGNAL_FUNC(changedEntryCharge),NULL);
+
+	i = 4;
+	add_label_table(table," Keywords ",i,0);
+	add_label_table(table,":",i,1);
   	entry = gtk_entry_new ();
 	g_object_set_data(G_OBJECT(Wins), "EntryKeywords", entry);
 	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
-	gtk_table_attach(GTK_TABLE(table),entry,1,1+2,1,1+1,
+	gtk_table_attach(GTK_TABLE(table),entry,2,2+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
                   (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
                   3,3);
-  	gtk_entry_set_text (GTK_ENTRY (entry),"B3LYP/6-31G* NMR");
+  	gtk_entry_set_text (GTK_ENTRY (entry),"B3LYP/6-31G* Opt");
 	gtk_editable_set_editable((GtkEditable*)entry,TRUE);
 	gtk_widget_set_sensitive(entry, TRUE);
+
+	i = 5;
+	sep = gtk_hseparator_new ();
+	gtk_table_attach(GTK_TABLE(table),sep,0,0+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+
+
+	i = 6;
+	buttonChkgauss = gtk_check_button_new_with_label ("check file");
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonChkgauss), FALSE);
+	gtk_table_attach(GTK_TABLE(table),buttonChkgauss,0,0+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+
+	i = 7;
+	sep = gtk_hseparator_new ();
+	gtk_table_attach(GTK_TABLE(table),sep,0,0+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+
 	gtk_widget_show_all(table);
 	return entry;
 }
@@ -1277,6 +1576,7 @@ static gboolean show_menu_popup(GtkUIManager *manager, guint button, guint32 tim
 		set_sensitive_option(manager,"/MenuGeomMD/CreateGaussInput");
 		set_sensitive_option(manager,"/MenuGeomMD/CreateGaussInputLink");
 		set_sensitive_option(manager,"/MenuGeomMD/DeleteGeometry");
+		set_sensitive_option(manager,"/MenuGeomMD/DeleteHalfGeometries");
 		gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, button, time);
 		return TRUE;
 	}
@@ -1810,6 +2110,7 @@ static void activate_action (GtkAction *action)
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGaussInput");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGaussInputLink");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/DeleteGeometry");
+		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/DeleteHalfGeometries");
 	}
 	else if(!strcmp(name, "ReadGabedit")) read_gabedit_file_dlg();
 	else if(!strcmp(name, "ReadGaussian")) read_gaussian_file_dlg();
@@ -1818,6 +2119,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "CreateGaussInput")) create_gaussian_file_dlg(FALSE);
 	else if(!strcmp(name, "CreateGaussInputLink")) create_gaussian_file_dlg(TRUE);
 	else if(!strcmp(name, "DeleteGeometry")) delete_one_geometry();
+	else if(!strcmp(name, "DeleteHalfGeometries")) delete_half_geometries();
 	else if(!strcmp(name, "Close")) destroyDlg(NULL);
 	else if(!strcmp(name, "HelpSupportedFormat")) help_supported_format();
 	else if(!strcmp(name, "HelpAnimation")) help_animated_file();
@@ -1834,6 +2136,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"CreateGaussInput", GABEDIT_STOCK_GAUSSIAN, "_Create a serie of single input file for Gaussian", NULL, "Save", G_CALLBACK (activate_action) },
 	{"CreateGaussInputLink", GABEDIT_STOCK_GAUSSIAN, "_Create single input file for Gaussian with more geometries", NULL, "Save", G_CALLBACK (activate_action) },
 	{"DeleteGeometry", GABEDIT_STOCK_CUT, "_Delete selected geometry", NULL, "Delete selected geometry", G_CALLBACK (activate_action) },
+	{"DeleteHalfGeometries", GABEDIT_STOCK_CUT, "remove the _half of the geometries", NULL, "remove the half of the geometries", G_CALLBACK (activate_action) },
 	{"Close", GABEDIT_STOCK_CLOSE, "_Close", NULL, "Close", G_CALLBACK (activate_action) },
 	{"Help",     NULL, "_Help"},
 	{"HelpSupportedFormat", NULL, "_Supported format...", NULL, "Supported format...", G_CALLBACK (activate_action) },
@@ -1857,6 +2160,7 @@ static const gchar *uiMenuInfo =
 "    <menuitem name=\"CreateGaussInputLink\" action=\"CreateGaussInputLink\" />\n"
 "    <separator name=\"sepMenuDelete\" />\n"
 "    <menuitem name=\"DeleteGeometry\" action=\"DeleteGeometry\" />\n"
+"    <menuitem name=\"DeleteHalfGeometries\" action=\"DeleteHalfGeometries\" />\n"
 "    <separator name=\"sepMenuPopClose\" />\n"
 "    <menuitem name=\"Close\" action=\"Close\" />\n"
 "  </popup>\n"
@@ -1875,6 +2179,7 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"CreateGaussInputLink\" action=\"CreateGaussInputLink\" />\n"
 "      <separator name=\"sepMenuDelete\" />\n"
 "      <menuitem name=\"DeleteGeometry\" action=\"DeleteGeometry\" />\n"
+"      <menuitem name=\"DeleteHalfGeometries\" action=\"DeleteHalfGeometries\" />\n"
 "      <separator name=\"sepMenuClose\" />\n"
 "      <menuitem name=\"Close\" action=\"Close\" />\n"
 "    </menu>\n"
@@ -1932,7 +2237,7 @@ static GtkUIManager *create_menu(GtkWidget* box)
 	return manager;
 }
 /********************************************************************************/
-void geometryMDDlg()
+void geometriesMDDlg()
 {
 	GtkWidget *Win;
 	GtkWidget *vbox;

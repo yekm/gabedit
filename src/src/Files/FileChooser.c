@@ -32,7 +32,7 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 {
   GtkWidget *gabeditFileChooser;
   gchar* patternsfiles[] = {"*","*.log","*.out","*.xyz","*.mol2","*.tnk","*.pdb","*.hin","*.zmt","*.gzmt",
-	  		    "*.gcube","*.cube","*.CUBE","*.M2Msi","*.M2MSI","*.t41","*",NULL};
+	  		    "*.gcube","*.cube","*.CUBE","*.M2Msi","*.M2MSI","*.t41","*.txt","*",NULL};
   GtkSignalFunc *func = (GtkSignalFunc *)data;
   gchar* temp = NULL;
 
@@ -63,6 +63,11 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 	   case GABEDIT_TYPEFILE_GAMESS : 
 					   gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.log");
 					   temp = g_strdup_printf("%s.log",fileopen.projectname);
+					   break;
+	   case GABEDIT_TYPEFILE_PCGAMESS : 
+					   gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.log");
+					   temp = g_strdup_printf("%s.log",fileopen.projectname);
+					   break;
 	   case GABEDIT_TYPEFILE_GAUSSIAN : 
 		   				gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.log");
 						temp = g_strdup_printf("%s.log",fileopen.projectname);
@@ -84,6 +89,14 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 
 					    temp = g_strdup_printf("%s.log",fileopen.projectname);
 					    break;
+	   case GABEDIT_TYPEFILE_QCHEM : 
+		   				gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.out");
+						temp = g_strdup_printf("%s.out",fileopen.projectname);
+					  	break;
+	   case GABEDIT_TYPEFILE_ADF : 
+		   				gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.out");
+						temp = g_strdup_printf("%s.out",fileopen.projectname);
+					  	break;
 	   case GABEDIT_TYPEFILE_MOLDEN : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.molden");
 					    temp = g_strdup_printf("%s.molden",fileopen.projectname);
@@ -128,6 +141,10 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.inp");
 					    temp = g_strdup_printf("%s.inp",fileopen.projectname);
 					    break;
+	   case GABEDIT_TYPEFILE_PCGAMESSINPUT : 
+					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.inp");
+					    temp = g_strdup_printf("%s.inp",fileopen.projectname);
+					    break;
 	   case GABEDIT_TYPEFILE_GAUSIANINPUT : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.com");
 					    temp = g_strdup_printf("%s.com",fileopen.projectname);
@@ -139,6 +156,10 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 	   case GABEDIT_TYPEFILE_MOLPROINPUT : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.com");
 					    temp = g_strdup_printf("%s.com",fileopen.projectname);
+					    break;
+	   case GABEDIT_TYPEFILE_QCHEMINPUT : 
+					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.inp");
+					    temp = g_strdup_printf("%s.inp",fileopen.projectname);
 					    break;
 	   case GABEDIT_TYPEFILE_JPEG : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.jpg");
@@ -183,6 +204,10 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 	   case GABEDIT_TYPEFILE_CUBEGABEDIT : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.gcube");
 					    temp = g_strdup_printf("%s.gcube",fileopen.projectname);
+				      	    break;
+	   case GABEDIT_TYPEFILE_TXT : 
+					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.txt");
+					    temp = g_strdup_printf("%s.txt",fileopen.projectname);
 				      	    break;
 	default :break;
    }
@@ -244,7 +269,7 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
   	g_signal_connect (gabeditFileChooser, "response", G_CALLBACK (delete_child), GTK_OBJECT(gabeditFileChooser));
   else
   	g_signal_connect (gabeditFileChooser, "response", G_CALLBACK (destroy_button_windows),GTK_OBJECT(gabeditFileChooser));
-  g_signal_connect (gabeditFileChooser, "response", G_CALLBACK (gtk_widget_destroy),GTK_OBJECT(gabeditFileChooser));
+  g_signal_connect_after (gabeditFileChooser, "response", G_CALLBACK (gtk_widget_destroy),GTK_OBJECT(gabeditFileChooser));
   
   gtk_widget_show(gabeditFileChooser);
 
@@ -284,7 +309,7 @@ void choose_file_to_open()
   }
 
    gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(gabeditFileChooser), patternsfiles);
-    if(iprogram == PROG_IS_GAMESS  || iprogram == PROG_IS_OTHER)
+    if(iprogram == PROG_IS_GAMESS  || iprogram == PROG_IS_PCGAMESS || iprogram == PROG_IS_OTHER)
    	gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.inp");
 
 

@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/Orbitals.h"
 #include "../OpenGL/OrbitalsMolpro.h"
 #include "../OpenGL/OrbitalsGamess.h"
+#include "../OpenGL/OrbitalsQChem.h"
 #include "../OpenGL/GeomOrbXYZ.h"
 #include "../OpenGL/BondsOrb.h"
 #include "../OpenGL/UtilsOrb.h"
@@ -569,7 +570,7 @@ gint get_type_file(gchar *NomFichier)
 	if(strstr( t, "GAMESS" ))
 		ktype = GABEDIT_TYPEFILE_GAMESS;
 	else
-	if(atoi(t)>0)
+	if(atoi(t)>0 && !strstr(t,"**********"))
 		ktype = GABEDIT_TYPEFILE_XYZ;
 	if( ktype == GABEDIT_TYPEFILE_UNKNOWN)
 	{
@@ -584,6 +585,11 @@ gint get_type_file(gchar *NomFichier)
 			if(strstr(t,"GAMESS VERSION"))
 			{
 				ktype = GABEDIT_TYPEFILE_GAMESS;
+				break;
+			}
+			if(strstr(t,"Welcome to Q-Chem"))
+			{
+				ktype = GABEDIT_TYPEFILE_QCHEM;
 				break;
 			}
 		}
@@ -704,6 +710,61 @@ gint get_type_basis_in_gaussian_file(gchar *NomFichier)
 			break;
 		}
 	}
+
+ 	fclose(fd);
+ 	g_free(t);
+	return ktype;
+        
+}
+/**********************************************************/
+/* return 
+   -1 : undefined
+    0 : cartezian
+    1 : Spherical
+*/
+gint get_type_basis_in_qchem_file(gchar *NomFichier)
+{
+ 	gchar *t;
+ 	FILE *fd;
+ 	guint taille=BSIZE;
+	gint ktype = -1;
+	gint ks = 0;
+	gint kc = 0;
+
+ 	t=g_malloc(taille);
+ 	fd = FOpen(NomFichier, "r");
+
+ 	if(fd ==NULL)
+ 	{
+		gchar buffer[BSIZE];
+		sprintf(buffer,"Sorry, I can not open '%s' file\n",NomFichier);
+  		Message(buffer,"Error",TRUE);
+
+ 		g_free(t);
+  		return ktype;
+ 	}
+	ktype = 0;
+	while(!feof(fd))
+	{
+		fgets(t,taille,fd);
+        	if(strstr( t, "  d 1 ")) ks++;
+        	if(strstr( t, "  f 1 ")) ks++;
+        	if(strstr( t, "  g 1 ")) ks++;
+        	if(strstr( t, "  h 1 ")) ks++;
+        	if(strstr( t, "  i 1 ")) ks++;
+        	if(strstr( t, "  j 1 ")) ks++;
+        	if(strstr( t, " dxx ")) kc++;
+        	if(strstr( t, " fxyz ")) kc++;
+        	if(strstr( t, " gxxxx ")) kc++;
+        	if(strstr( t, " hxxxxx ")) kc++;
+        	if(strstr( t, " ixxxxx ")) kc++;
+        	if(strstr( t, " jxxxxx ")) kc++;
+	}
+	/* printf("ks = %d kc = %d\n",ks,kc);*/
+	if(ks>0 && kc ==0) ktype = 1;
+	else if(ks==0 && kc >0) ktype = 0;
+	else if(ks==0 && kc==0) ktype = 0;
+	else ktype= -1;
 
  	fclose(fd);
  	g_free(t);
@@ -944,6 +1005,12 @@ static void change_entry_value(GtkWidget *Entry, gpointer data)
 	gint k;
 	gchar* temp;
 	GtkWidget *entries[3][6];
+	gchar tnG[100]="49";
+	gint nG = (gint)fabs(limits.MinMax[1][1]-limits.MinMax[0][1])*6;
+
+	if(nG<20) nG = 20;
+	if(nG>60) nG = 60;
+	sprintf(tnG,"%d",nG);
 	if(GTK_IS_WIDGET(Entry))
 	{
 		entriestmp = (GtkWidget **)g_object_get_data (G_OBJECT (Entry), "Entries");
@@ -1006,6 +1073,8 @@ static void change_entry_value(GtkWidget *Entry, gpointer data)
 		}
 		for(i=0;i<3;i++)
 			C3[i] = C1[(i+1)%3]*C2[(i+2)%3] - C2[(i+1)%3]*C1[(i+2)%3];
+
+
 		for(i=0;i<3;i++)
 		{
 			temp = g_strdup_printf("%f",C2[i]);
@@ -1056,9 +1125,15 @@ static void change_entry_value(GtkWidget *Entry, gpointer data)
 		min = atof(gtk_entry_get_text(GTK_ENTRY(entries[ii][jj])));
 		max = -min;
 
+		nG = (gint)fabs(max-min)*6;
+		if(nG<20) nG = 20;
+		if(nG>60) nG = 60;
+		sprintf(tnG,"%d",nG);
+
 		temp = g_strdup_printf("%f",max);
 		gtk_entry_set_text(GTK_ENTRY(entries[ii][jj+1]),temp);
 		g_free(temp);
+		gtk_entry_set_text(GTK_ENTRY(entries[ii][jj+2]),tnG);
 		if(ii<2)
 		{
 			temp = g_strdup_printf("%f",min);
@@ -1099,6 +1174,12 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	GtkWidget *Table;
 	gchar* temp = NULL;
 	static GtkWidget* entries[3][6];
+	gint nG = (gint)fabs(limits.MinMax[1][1]-limits.MinMax[0][1])*6;
+	gchar tnG[100]="49";
+
+	if(nG<20) nG = 20;
+	if(nG>60) nG = 60;
+	sprintf(tnG,"%d",nG);
 
 	frame = gtk_frame_new (title);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
@@ -1167,7 +1248,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),"49");
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),tnG);
 
 	/* Second direction */
 	j = 0;
@@ -1213,7 +1294,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),"49");
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),tnG);
 
 	/* Third direction */
 	j = 0;
@@ -1261,7 +1342,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),"49");
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),tnG);
 
 
 
@@ -1354,6 +1435,7 @@ void read_any_file(gchar* FileName)
 		case GABEDIT_TYPEFILE_GAMESS : read_gamess_orbitals(FileName);break;
 		case GABEDIT_TYPEFILE_GAUSSIAN : read_gauss_orbitals(FileName);break;
 		case GABEDIT_TYPEFILE_MOLPRO : read_molpro_orbitals(FileName);break;
+		case GABEDIT_TYPEFILE_QCHEM : read_qchem_orbitals(FileName);break;
 		case GABEDIT_TYPEFILE_MOLDEN : read_molden_orbitals(FileName);break;
 		case GABEDIT_TYPEFILE_GABEDIT : read_gabedit_orbitals(FileName);break;
 		case GABEDIT_TYPEFILE_XYZ : gl_read_xyz_file(FileName);break;
@@ -1437,7 +1519,7 @@ void initialise_global_orbitals_variables()
  	ShowVibration = FALSE;
 	TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
 	TypeGeom = GABEDIT_TYPEGEOM_STICK;
-	TypeBlend = GABEDIT_BLEND_YES;
+	TypeBlend = GABEDIT_BLEND_NO;
 	TypePosWireFrame = GABEDIT_POS_WIREFRAME_NO;
 	TypeNegWireFrame = GABEDIT_NEG_WIREFRAME_NO;
 	SurfShow = GABEDIT_SURFSHOW_POSNEG;

@@ -27,9 +27,11 @@ DEALINGS IN THE SOFTWARE.
 #include "../Gaussian/GaussGlobal.h"
 #include "../Files/FileChooser.h"
 #include "../Gamess/Gamess.h"
+#include "../PCGamess/PCGamess.h"
 #include "../Molcas/Molcas.h"
 #include "../Molpro/Molpro.h"
 #include "../MPQC/MPQC.h"
+#include "../QChem/QChem.h"
 #include "../Gaussian/Gaussian.h"
 #include "../Geometry/GeomGlobal.h"
 #include "../Utils/UtilsInterface.h"
@@ -69,6 +71,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../../pixmaps/Next.xpm"
 #include "../../pixmaps/Stop.xpm"
 #include "../../pixmaps/Play.xpm"
+#include "../Common/StockIcons.h"
 
 /********************************************************************************/
 static gint destroy_popup(gpointer data)
@@ -357,6 +360,14 @@ GtkWidget *create_radio_button_pixmap(GtkWidget *widget, gchar **data,gchar *str
  
   return Button ;
 } 
+/********************************************************************************/
+void set_icon_default()
+{
+  GdkPixbuf *pixbuf;
+   
+  pixbuf = gdk_pixbuf_new_from_xpm_data((const char**)gabedit_xpm);
+  gtk_window_set_default_icon (pixbuf);
+}     
 /********************************************************************************/
 void set_icone(GtkWidget *widget)
 {
@@ -915,7 +926,85 @@ FilePosTypeGeom get_geometry_type_from_gauss_input_file(gchar *NomFichier)
   return j;
 }
 /**********************************************************************************/
+FilePosTypeGeom get_geometry_type_from_qchem_input_file(gchar *NomFichier)
+{
+ gchar *t;
+ FILE *fd;
+ guint taille=BSIZE;
+ FilePosTypeGeom j;
+ gint k;
+
+ 
+ j.geomtyp=GEOM_IS_OTHER;
+ j.numline=0;
+ j.units=1;
+ t=g_malloc(taille);
+ fd = FOpen(NomFichier, "r");
+ if(fd!=NULL)
+ {
+ while(!feof(fd) )    
+ {
+ 	if(!fgets(t, taille, fd)) break;
+	if(strstr(t,"$molecule")) break;
+  	j.numline++;
+  }
+/* Charge and Spin */
+ if(!feof(fd) )    
+ {
+ if(fgets(t, taille, fd))
+  	j.numline++;
+ }
+/* First line of geometry */
+  if(!feof(fd) )    
+  {
+ 	if(!fgets(t, taille, fd))
+        {
+  		j.geomtyp = GEOM_IS_OTHER;
+        }
+        else
+        {
+		gchar dump[5][BSIZE];
+ 		j.numline++;
+
+		k = sscanf(t,"%s %s %s %s %s",dump[0],dump[1],dump[2],dump[3],dump[4]);
+		if(k==5)
+			j.geomtyp = GEOM_IS_XYZ;
+		else
+		if(k==4)
+			j.geomtyp = GEOM_IS_XYZ;
+		else
+		if(k==1)
+			j.geomtyp = GEOM_IS_ZMAT;
+		else
+			j.geomtyp = GEOM_IS_OTHER;
+        }
+   }
+ }     
+  fclose(fd);
+  g_free(t);
+  return j;
+}
+/**********************************************************************************/
 void read_geom_in_gamess_input(gchar *fileName)
+{
+	gchar* logfile;
+	gchar* t;
+	FILE* file;
+	t = get_suffix_name_file(fileName);
+	logfile = g_strdup_printf("%s.log",t);
+	file = FOpen(logfile, "r");
+	if(!file)
+	{
+		if(logfile) g_free(logfile);
+		logfile = g_strdup_printf("%s.out",t);
+		file = FOpen(logfile, "r");
+		if(!file) return;
+	}
+	fclose(file);
+	read_geom_from_gamess_output_file(logfile,1);
+}
+/**********************************************************************************/
+void read_geom_in_pcgamess_input(gchar *fileName)
 {
 	gchar* logfile;
 	gchar* t;
@@ -971,6 +1060,19 @@ void read_geom_in_molpro_input(gchar *NameFile)
     		Message("Sorry\nI can not read gemetry in molpro input file\n"," Warning ",TRUE);
 }
 /**********************************************************************************/
+void read_geom_in_qchem_input(gchar *NameFile)
+{
+	FilePosTypeGeom j;
+ 	j=  get_geometry_type_from_qchem_input_file(NameFile);
+ 	if( j.geomtyp == GEOM_IS_XYZ)
+		read_XYZ_from_qchem_input_file(NameFile);
+      	else
+ 	if( j.geomtyp == GEOM_IS_ZMAT)
+		read_Zmat_from_qchem_input_file(NameFile);
+        else
+    		Message("Sorry\nI can not read gemetry in Q-Chem input file\n"," Warning ",TRUE);
+}
+/**********************************************************************************/
 void get_doc(gchar *NomFichier)
 {
 	gchar *t;
@@ -1017,9 +1119,11 @@ void get_doc(gchar *NomFichier)
 
 	if(iprogram == PROG_IS_MPQC) fileopen.command=g_strdup(NameCommandMPQC);
 	else if(iprogram == PROG_IS_GAMESS) fileopen.command=g_strdup(NameCommandGamess);
+	else if(iprogram == PROG_IS_PCGAMESS) fileopen.command=g_strdup(NameCommandPCGamess);
 	else if(iprogram == PROG_IS_GAUSS) fileopen.command=g_strdup(NameCommandGaussian);
 	else if(iprogram == PROG_IS_MOLCAS) fileopen.command=g_strdup(NameCommandMolcas);
 	else if(iprogram == PROG_IS_MOLPRO) fileopen.command=g_strdup(NameCommandMolpro);
+	else if(iprogram == PROG_IS_QCHEM) fileopen.command=g_strdup(NameCommandQChem);
      	else fileopen.command=NULL;
 
 	if(iprogram> PROG_IS_OTHER )
@@ -1041,6 +1145,15 @@ void get_doc(gchar *NomFichier)
 	}
 
 	if(iprogram == PROG_IS_GAMESS)
+	{
+ 		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
+ 		fileopen.outputfile=g_strdup_printf("%s.log",fileopen.projectname);
+ 		fileopen.logfile=g_strdup_printf("%s.log",fileopen.projectname);
+  		/* fileopen.moldenfile=g_strdup_printf("%s.molden",fileopen.projectname);*/
+  		fileopen.moldenfile=g_strdup_printf("%s.log",fileopen.projectname);
+	}
+	else
+	if(iprogram == PROG_IS_PCGAMESS)
 	{
  		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
  		fileopen.outputfile=g_strdup_printf("%s.log",fileopen.projectname);
@@ -1080,6 +1193,13 @@ void get_doc(gchar *NomFichier)
  		fileopen.logfile=g_strdup_printf("%s.log",fileopen.projectname);
   		fileopen.moldenfile=g_strdup_printf("%s.log",fileopen.projectname);
  	}
+	else if(iprogram == PROG_IS_QCHEM)
+ 	{
+ 		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
+ 		fileopen.outputfile=g_strdup_printf("%s.out",fileopen.projectname);
+ 		fileopen.logfile=g_strdup_printf("%s.out",fileopen.projectname);
+  		fileopen.moldenfile=g_strdup_printf("%s.out",fileopen.projectname);
+ 	}
 	else
 	{
  		fileopen.datafile = g_strdup_printf("%s",fileopen.projectname);
@@ -1089,8 +1209,10 @@ void get_doc(gchar *NomFichier)
 
 	if( iprogram == PROG_IS_GAUSS) read_geom_in_gauss_input(NomFichier);
 	else if( iprogram == PROG_IS_GAMESS) read_geom_in_gamess_input(NomFichier);
+	else if( iprogram == PROG_IS_PCGAMESS) read_geom_in_pcgamess_input(NomFichier);
 	else if( iprogram == PROG_IS_MOLPRO) read_geom_in_molpro_input(NomFichier);
 	else if( iprogram == PROG_IS_MPQC) read_geom_in_mpqc_input(NomFichier);
+	else if( iprogram == PROG_IS_QCHEM) read_geom_in_qchem_input(NomFichier);
 	else if(iprogram == PROG_IS_MOLCAS)
 	{
 		setMolcasVariablesFromInputFile(NomFichier);
@@ -1099,7 +1221,7 @@ void get_doc(gchar *NomFichier)
 
 	data_modify(FALSE);
 
-	if(GeomConvIsOpen) find_energy_gamess_gauss_molcas_molpro_mpqc(NULL,NULL);
+	if(GeomConvIsOpen) find_energy_gamess_gauss_molcas_molpro_mpqc_qchem(NULL,NULL);
 
 }
 /********************************************************************************/
@@ -1190,6 +1312,7 @@ void enreg_selec_doc(GabeditFileChooser *SelecteurFichier , gint response_id)
   
 	if(iprogram == PROG_IS_MPQC) fileopen.command=g_strdup(NameCommandMPQC);
 	else if(iprogram == PROG_IS_GAMESS) fileopen.command=g_strdup(NameCommandGamess);
+	else if(iprogram == PROG_IS_PCGAMESS) fileopen.command=g_strdup(NameCommandPCGamess);
 	else if(iprogram == PROG_IS_GAUSS) fileopen.command=g_strdup(NameCommandGaussian);
 	else if(iprogram == PROG_IS_MOLCAS) fileopen.command=g_strdup(NameCommandMolcas);
 	else if(iprogram == PROG_IS_MOLPRO) fileopen.command=g_strdup(NameCommandMolpro);
@@ -1202,6 +1325,12 @@ void enreg_selec_doc(GabeditFileChooser *SelecteurFichier , gint response_id)
  		fileopen.localdir = get_name_dir(temp);
  		g_free(temp);
 		if(iprogram==PROG_IS_GAMESS)
+		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
+		else
+		if(iprogram==PROG_IS_PCGAMESS)
+		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
+		else
+		if(iprogram==PROG_IS_QCHEM)
 		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
 		else
 		fileopen.datafile = g_strdup_printf("%s.com",fileopen.projectname);
@@ -1239,6 +1368,14 @@ void enreg_selec_doc(GabeditFileChooser *SelecteurFichier , gint response_id)
 	}
 	else
 	if(iprogram == PROG_IS_GAMESS)
+	{
+		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
+	 	fileopen.outputfile = g_strdup_printf("%s.log",fileopen.projectname);
+ 		fileopen.logfile = g_strdup_printf("%s.log",fileopen.projectname);
+ 		fileopen.moldenfile = g_strdup_printf("%s.log",fileopen.projectname);
+	}
+	else
+	if(iprogram == PROG_IS_PCGAMESS)
 	{
 		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
 	 	fileopen.outputfile = g_strdup_printf("%s.log",fileopen.projectname);
@@ -1325,9 +1462,23 @@ void new_doc_molcas(GtkWidget* wid, gpointer data)
 	fileopen.command=g_strdup(NameCommandGamess);
 }
 /********************************************************************************/
+ void new_doc_pcgamess(GtkWidget* wid, gpointer data)
+{
+ 	newPCGamess();
+	iprogram = PROG_IS_PCGAMESS;
+	fileopen.command=g_strdup(NameCommandPCGamess);
+}
+/********************************************************************************/
  void new_doc_gauss(GtkWidget* wid, gpointer data)
 {
  gauss(1);
+}
+/********************************************************************************/
+ void new_doc_qchem(GtkWidget* wid, gpointer data)
+{
+ 	newQChem();
+	iprogram = PROG_IS_QCHEM;
+	fileopen.command=g_strdup(NameCommandQChem);
 }
 /********************************************************************************/
 void new_doc_other(GtkWidget* wid, gpointer data)
@@ -1345,49 +1496,76 @@ void new_doc_other(GtkWidget* wid, gpointer data)
 {
  gauss(0);
 }
-
 /********************************************************************************/
-gchar* get_license()
-{
- gchar *temp;
- temp=       g_strdup(
-		 "\n"
-		 "Copyright (c) 2002-2007 Abdul-Rahman Allouche.\n"
-		 "                          All rights reserved.\n"
-		 "\n"
-		 "Permission is hereby granted, free of charge, to any person obtaining a copy\n"
-		 "of this software(the Gabedit) and associated documentation files, to deal in\n"
-		 "the Software without restriction, including without limitation the rights to\n"
-		 "use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies\n"
-		 "of the Software, and to permit persons to whom the Software is furnished to \n"
-		 "do so, subject to the following conditions:\n"
-		 "\n"
-		 "The above copyright notice and this permission notice shall be included in all\n"
-		 " copies or substantial portions of the Software.\n"
-		 "\n"
-		 "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n"
-		 "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n"
-		 "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL\n"
-		 "THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n"
-		 "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n"
-		 "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER\n"
-		 "DEALINGS IN THE SOFTWARE.\n"
-		 "\n"
-		 );
- 
- return temp; 
+static void show_about_new()
+ {
+	static const gchar *authors[] = {
+		"Abdul-Rahman Allouche <allouchear@users.sourceforge.net>",
+		NULL
+	};
 
+	static const gchar *documenters[] = {
+		"Abdul-Rahman Allouche <allouchear@users.sourceforge.net>",
+		NULL
+	};
+
+	static const gchar *copyright =
+		"Copyright \xc2\xa9 2002-2007 Abdul-Rahman Allouche.\n"
+		"All rights reserved.\n";
+	
+	gchar *license =
+		g_strdup_printf("%s%s",
+			copyright,
+			"\n"
+			"Permission is hereby granted, free of charge, to any person obtaining a copy\n"
+			"of this software(the Gabedit) and associated documentation files, to deal in\n"
+			"the Software without restriction, including without limitation the rights to\n"
+			"use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies\n"
+			"of the Software, and to permit persons to whom the Software is furnished to \n"
+			"do so, subject to the following conditions:\n"
+			"\n"
+			"The above copyright notice and this permission notice shall be included in all\n"
+			"copies or substantial portions of the Software.\n"
+			"\n"
+			"THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n"
+			"IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n"
+			"FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL\n"
+			"THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n"
+			"LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n"
+			"OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER\n"
+			"DEALINGS IN THE SOFTWARE."
+			);
+
+	static const gchar *comments =
+		"Graphical User Interface to GAMESS-US, Gaussian, Molcas, Molpro, "
+		"MPQC, PCGamess and Q-Chem computational chemistry packages.";
+	
+	gchar *GABEDIT_VERSION =
+		g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
+	
+	gtk_about_dialog_set_url_hook(show_homepage, NULL, NULL);
+
+	gtk_show_about_dialog (
+		NULL,
+		"name", "Gabedit",
+		"version", GABEDIT_VERSION,
+		"comments", comments,
+		"copyright", copyright,
+		"license", license,
+		"website", "http://gabedit.sourceforge.net",
+		"documenters", documenters,
+		"authors", authors,
+		"logo-icon-name", GTK_STOCK_ABOUT,
+		NULL);
+		
+	g_free(GABEDIT_VERSION);
+	g_free(license);
 }
 /********************************************************************************/
- void show_about()
+void show_about()
 {
-	create_about_frame();
-/*
-	gchar *temp;
-	temp= get_license();
-	Message(temp," About gabedit ",FALSE);
-	g_free(temp);
-*/
+	if(GTK_MAJOR_VERSION>=2 && GTK_MINOR_VERSION>=6) show_about_new();
+	else create_about_frame();
 }
 /********************************************************************************/
 void show_version()
@@ -1399,7 +1577,7 @@ void show_version()
  g_free(temp);
 }
 /********************************************************************************/
-void go_netscape(GtkWidget *w,gpointer data)
+void show_homepage(GtkWidget *w,gpointer data)
 {
 
 #ifdef G_OS_WIN32
@@ -1419,66 +1597,7 @@ void go_netscape(GtkWidget *w,gpointer data)
 #endif
 }
 /********************************************************************************/
-void show_homepage()
-{
- char *message="\nThe home page of gabedit is :";
- char *titre="Home Page";
- GtkWidget *DialogueMessage = NULL;
- GtkWidget *Label, *Bouton;
- GtkWidget *frame, *vboxframe;
- DialogueMessage = gtk_dialog_new();
- gtk_widget_realize(GTK_WIDGET(DialogueMessage));
-
- gtk_window_set_title(GTK_WINDOW(DialogueMessage),titre);
- gtk_window_set_transient_for(GTK_WINDOW(DialogueMessage),GTK_WINDOW(Fenetre));
- gtk_window_set_position(GTK_WINDOW(DialogueMessage),GTK_WIN_POS_CENTER);
-
- g_signal_connect(G_OBJECT(DialogueMessage), "delete_event", (GtkSignalFunc)destroy_button_windows, NULL);
- g_signal_connect(G_OBJECT(DialogueMessage), "delete_event", (GtkSignalFunc)gtk_widget_destroy, NULL);
-  frame = gtk_frame_new (NULL);
-  gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
-  gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
-
- gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(DialogueMessage)->vbox), frame);
-
- gtk_widget_show (frame);
-
- vboxframe = create_vbox(frame);
-
- Label = create_label_with_pixmap(Fenetre,message,titre);
- gtk_box_pack_start_defaults(GTK_BOX(vboxframe), Label);
- gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(DialogueMessage)->action_area), FALSE);
- 
- Bouton = create_button(DialogueMessage," http://gabedit.sourceforge.net/");
- gtk_box_pack_end (GTK_BOX(vboxframe), Bouton, FALSE, TRUE, 5);  
- GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
- g_signal_connect(G_OBJECT(Bouton),
-                       "clicked",
-                       (GtkSignalFunc)go_netscape,
-                       NULL);
- g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",
-                          (GtkSignalFunc)destroy_button_windows,
-                          GTK_OBJECT(DialogueMessage));
- g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",
-                          (GtkSignalFunc)gtk_widget_destroy,
-                          GTK_OBJECT(DialogueMessage));
-
- Bouton = create_button(DialogueMessage,"OK");
- gtk_box_pack_end (GTK_BOX( GTK_DIALOG(DialogueMessage)->action_area), Bouton, FALSE, TRUE, 5);  
- GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
- gtk_widget_grab_default(Bouton);
- g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",
-                          (GtkSignalFunc)destroy_button_windows,
-                          GTK_OBJECT(DialogueMessage));
- g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",
-                          (GtkSignalFunc)gtk_widget_destroy,
-                          GTK_OBJECT(DialogueMessage));
-
- add_button_windows("Home page",DialogueMessage);
- gtk_widget_show_all(DialogueMessage);
-}
-/********************************************************************************/
- void desole(void)
+void desole(void)
 {
  char *temp="Sorry , this option is not active";
  Message(temp," Warning ",TRUE);
@@ -2034,6 +2153,25 @@ void new_mpqc(GtkWidget *widget, gchar *data)
  	}
 }
 /**********************************************************************************/
+void new_pcgamess(GtkWidget *widget, gchar *data)
+{
+	gchar *t;
+ 	if(imodif == DATA_MOD_YES)
+        {
+		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
+		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
+		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		Continue_YesNo(new_doc_pcgamess, NULL,t);
+		g_free(t);
+        }
+        else
+        {
+		new_doc_pcgamess(NULL, NULL);
+		iprogram = PROG_IS_PCGAMESS;
+		fileopen.command=g_strdup(NameCommandPCGamess);
+ 	}
+}
+/**********************************************************************************/
 void new_gamess(GtkWidget *widget, gchar *data)
 {
 	gchar *t;
@@ -2069,6 +2207,25 @@ void new_gauss(GtkWidget *widget, gchar *data)
 		new_doc_gauss(NULL, NULL);
 		iprogram = PROG_IS_GAUSS;
 		fileopen.command=g_strdup(NameCommandGaussian);
+ 	}
+}
+/**********************************************************************************/
+void new_qchem(GtkWidget *widget, gchar *data)
+{
+	gchar *t;
+ 	if(imodif == DATA_MOD_YES)
+        {
+		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
+		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
+		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		Continue_YesNo(new_doc_qchem, NULL,t);
+		g_free(t);
+        }
+        else
+        {
+		new_doc_qchem(NULL, NULL);
+		iprogram = PROG_IS_QCHEM;
+		fileopen.command=g_strdup(NameCommandGamess);
  	}
 }
 /**********************************************************************************/
@@ -2245,6 +2402,16 @@ void draw_density_orbitals_gamess_or_gauss_or_molcas_or_molpro(GtkWidget *wid,gp
 	g_free(FileName);
   }
   else
+  if( iprogram == PROG_IS_PCGAMESS)
+  {
+ 	gchar** FileName = g_malloc(2*sizeof(gchar*));
+ 	FileName[0] = NULL;
+	FileName[1] = g_strdup_printf("%s%s%s",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.logfile);
+ 	view_orb(Fenetre,2,FileName);
+	g_free(FileName[1] );
+	g_free(FileName);
+  }
+  else
   if( iprogram == PROG_IS_GAUSS)
   {
  	gchar** FileName = g_malloc(2*sizeof(gchar*));
@@ -2266,6 +2433,16 @@ void draw_density_orbitals_gamess_or_gauss_or_molcas_or_molpro(GtkWidget *wid,gp
   }
   else
   if( iprogram == PROG_IS_MOLPRO)
+  {
+ 	gchar** FileName = g_malloc(2*sizeof(gchar*));
+ 	FileName[0] = NULL;
+	FileName[1] = g_strdup_printf("%s%s%s",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.outputfile);
+ 	view_orb(Fenetre,2,FileName);
+	g_free(FileName[1] );
+	g_free(FileName);
+  }
+  else
+  if( iprogram == PROG_IS_QCHEM)
   {
  	gchar** FileName = g_malloc(2*sizeof(gchar*));
  	FileName[0] = NULL;

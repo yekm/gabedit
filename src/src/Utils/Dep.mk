@@ -12,6 +12,9 @@ ConvUtils.o: ../Files/GabeditFileChooser.h
 ConvUtils.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
 ConvUtils.o: ../Utils/Utils.h ../Utils/Constantes.h
 GabeditTextEdit.o: ../../Config.h ../Common/GabeditType.h
+GabeditXYPlot.o: GabeditXYPlot.h
+GabeditXYPlotWin.o: GabeditXYPlot.h GabeditXYPlotWin.h
+GabeditXYPlotWin.o: GabeditXYPlot.h
 HydrogenBond.o: ../../Config.h
 HydrogenBond.o: ../Common/Global.h
 HydrogenBond.o: ../Files/GabeditFileChooser.h
@@ -57,7 +60,8 @@ UtilsInterface.o: ../Common/Global.h
 UtilsInterface.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
 UtilsInterface.o: ../Utils/Constantes.h ../Gaussian/GaussGlobal.h
 UtilsInterface.o: ../Files/FileChooser.h ../Gamess/Gamess.h
-UtilsInterface.o: ../Molcas/Molcas.h ../Molpro/Molpro.h ../MPQC/MPQC.h
+UtilsInterface.o: ../PCGamess/PCGamess.h ../Molcas/Molcas.h
+UtilsInterface.o: ../Molpro/Molpro.h ../MPQC/MPQC.h ../QChem/QChem.h
 UtilsInterface.o: ../Gaussian/Gaussian.h ../Geometry/GeomGlobal.h
 UtilsInterface.o: ../Utils/UtilsInterface.h ../Geometry/InterfaceGeom.h
 UtilsInterface.o: ../Utils/Utils.h ../Utils/GabeditTextEdit.h
@@ -77,6 +81,7 @@ UtilsInterface.o: ../../pixmaps/A0p.xpm ../../pixmaps/A0d.xpm
 UtilsInterface.o: ../../pixmaps/Open.xpm ../../pixmaps/Gabedit.xpm
 UtilsInterface.o: ../../pixmaps/Print.xpm ../../pixmaps/Next.xpm
 UtilsInterface.o: ../../pixmaps/Stop.xpm ../../pixmaps/Play.xpm
+UtilsInterface.o: ../Common/StockIcons.h
 Vector3d.o: ../../Config.h
 Vector3d.o: ../Common/Global.h
 Vector3d.o: ../Files/GabeditFileChooser.h

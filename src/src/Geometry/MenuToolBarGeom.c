@@ -231,8 +231,10 @@ enum
 	LABEL_CHARGES,
 	LABEL_SYMBOLS_CHARGES,
 	LABEL_NUMBERS_CHARGES,
+	LABEL_REDIDUES,
 	LABEL_COORDINATES,
-	LABEL_TYPES,
+	LABEL_MMTYPES,
+	LABEL_PDBTYPES,
 	LABEL_LAYERS,
 };
 static void render_label_radio_action (GtkAction *action)
@@ -244,12 +246,14 @@ static void render_label_radio_action (GtkAction *action)
 		case LABEL_NO : SetLabelOptions (NULL,  LABELNO); break;
 		case  LABEL_SYMBOLS : SetLabelOptions (NULL, LABELSYMB ); break;
 		case  LABEL_NUMBERS : SetLabelOptions (NULL,  LABELNUMB); break;
-		case  LABEL_TYPES : SetLabelOptions (NULL,  LABELTYP); break;
+		case  LABEL_MMTYPES : SetLabelOptions (NULL,  LABELMMTYP); break;
+		case  LABEL_PDBTYPES : SetLabelOptions (NULL,  LABELPDBTYP); break;
 		case  LABEL_LAYERS : SetLabelOptions (NULL,  LABELLAYER); break;
 		case  LABEL_SYMBOLS_NUMBERS : SetLabelOptions (NULL,  LABELSYMBNUMB); break;
 		case  LABEL_CHARGES : SetLabelOptions (NULL,  LABELCHARGE); break;
 		case  LABEL_SYMBOLS_CHARGES: SetLabelOptions (NULL,  LABELSYMBCHARGE); break;
 		case  LABEL_NUMBERS_CHARGES: SetLabelOptions (NULL,  LABELNUMBCHARGE); break;
+		case  LABEL_REDIDUES: SetLabelOptions (NULL,  LABELRESIDUES); break;
 		case  LABEL_COORDINATES: SetLabelOptions (NULL,  LABELCOORDINATES); break;
 	}
 }
@@ -257,12 +261,14 @@ static GtkRadioActionEntry labelEntries[] = {
   { "LabelsNothing", NULL, "_Nothing", NULL, "no labels", LABEL_NO },
   { "LabelsSymbols", NULL, "_Symbols", NULL, "show symbols", LABEL_SYMBOLS},
   { "LabelsNumbers", NULL, "_Numbers", NULL, "show numbers of atoms", LABEL_NUMBERS},
-  { "LabelsTypes", NULL, "_Types", NULL, "show types of atoms", LABEL_TYPES},
+  { "LabelsMMTypes", NULL, "_MM Types", NULL, "show MM types of atoms", LABEL_MMTYPES},
+  { "LabelsPDBTypes", NULL, "_PDB Types", NULL, "show PDB types of atoms", LABEL_PDBTYPES},
   { "LabelsLayers", NULL, "_Layer", NULL, "show layer of atoms", LABEL_LAYERS},
   { "LabelsSymbolsAndNumbers", NULL, "Symbols_&Numbers", NULL, "show symbols and numbers of atoms", LABEL_SYMBOLS_NUMBERS},
   { "LabelsCharges", NULL, "_Charges", NULL, "show charges of atoms", LABEL_CHARGES},
   { "LabelsSymbolsAndCharges", NULL, "Symbols_&Charges", NULL, "show symbols and charges of atoms", LABEL_SYMBOLS_CHARGES},
   { "LabelsNumbersAndCharges", NULL, "Numbers_&Charges", NULL, "show numbers and charges of atoms", LABEL_NUMBERS_CHARGES},
+  { "LabelsRedidues", NULL, "Residues", NULL, "show redidues", LABEL_REDIDUES},
   { "LabelsCoordinates", NULL, "C_oordinates", NULL, "show coordinates of atoms", LABEL_COORDINATES},
 };
 static guint numberOfLabelEntries = G_N_ELEMENTS (labelEntries);
@@ -365,6 +371,8 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ReadMPQCInput")) { selc_gauss_molcas_molpro_mpqc_input_file("Read Geometry from a MPQC input file");}
 	else if(!strcmp(name,"ReadMPQCFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MPQCOUTFIRST);}
 	else if(!strcmp(name,"ReadMPQCLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MPQCOUTLAST);}
+	else if(!strcmp(name,"ReadQChemFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_QCHEMOUTFIRST);}
+	else if(!strcmp(name,"ReadQChemLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_QCHEMOUTLAST);}
 	else if(!strcmp(name,"ReadUsingOpenBabel")) { create_babel_read_dialogue(); }
 	else if(!strcmp(name,"ReadGeomConvDalton"))
  	  file_chooser_open(read_geometries_conv_dalton,"Load Geom. Conv. From Dalton Output file", GABEDIT_TYPEFILE_DALTON,GABEDIT_TYPEWIN_GEOM);
@@ -377,6 +385,8 @@ static void activate_action (GtkAction *action)
 
 	else if(!strcmp(name,"ReadGeomConvMPQC"))
    	  file_chooser_open(read_geometries_conv_mpqc,"Load Geom. Conv. From MPQC output file", GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_GEOM);
+	else if(!strcmp(name,"ReadGeomConvQChem"))
+   	  file_chooser_open(read_geometries_conv_qchem,"Load Geom. Conv. From Q-Chem output file", GABEDIT_TYPEFILE_QCHEM,GABEDIT_TYPEWIN_GEOM);
 
 	else if(!strcmp(name,"ReadGeomConvGabedit"))
    	  file_chooser_open(read_geometries_conv_gabedit,"Load Geom. Conv. From Gabedit file", GABEDIT_TYPEFILE_GABEDIT,GABEDIT_TYPEWIN_GEOM);
@@ -386,6 +396,8 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ReadGeomConvXYZ"))
   	  file_chooser_open(read_geometries_conv_xyz,"Load Geom. Conv. From XYZ", GABEDIT_TYPEFILE_XYZ,GABEDIT_TYPEWIN_GEOM);
 	else if(!strcmp(name,"EditDeleteMolecule")) DeleteMolecule();
+	else if(!strcmp(name,"EditDeleteHydrogenAtoms")) deleteHydrogenAtoms();
+	else if(!strcmp(name,"EditDeleteSelectedAtoms")) deleteSelectedAtoms();
 	else if(!strcmp(name,"EditCopySelectedAtoms")) copySelectedAtoms();
 	else if(!strcmp(name,"EditSelectAll"))
 	{
@@ -434,6 +446,54 @@ static void activate_action (GtkAction *action)
 		GtkAction *selectionAtoms = gtk_ui_manager_get_action (manager, "/MenuGeom/Operations/OperationsSelectionOfAtoms");
 		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(selectionAtoms), TRUE);
 		SelectFixedVariableAtoms(TRUE);
+	}
+	else if(!strcmp(name,"EditSelectFirstResidue"))
+	{
+		GtkAction *selectionAtoms = gtk_ui_manager_get_action (manager, "/MenuGeom/Operations/OperationsSelectionOfAtoms");
+		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(selectionAtoms), TRUE);
+		SelectFirstResidue();
+	}
+	else if(!strcmp(name,"EditSelectLastResidue"))
+	{
+		GtkAction *selectionAtoms = gtk_ui_manager_get_action (manager, "/MenuGeom/Operations/OperationsSelectionOfAtoms");
+		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(selectionAtoms), TRUE);
+		SelectLastResidue();
+	}
+	else if(!strcmp(name,"EditSelectResidueByName"))
+	{
+		GtkAction *selectionAtoms = gtk_ui_manager_get_action (manager, "/MenuGeom/Operations/OperationsSelectionOfAtoms");
+		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(selectionAtoms), TRUE);
+		selectResidueByNameDlg();
+	}
+	else if(!strcmp(name,"EditSelectAtomsByMMType"))
+	{
+		GtkAction *selectionAtoms = gtk_ui_manager_get_action (manager, "/MenuGeom/Operations/OperationsSelectionOfAtoms");
+		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(selectionAtoms), TRUE);
+		selectAtomsByMMTypeDlg();
+	}
+	else if(!strcmp(name,"EditSelectAtomsByPDBType"))
+	{
+		GtkAction *selectionAtoms = gtk_ui_manager_get_action (manager, "/MenuGeom/Operations/OperationsSelectionOfAtoms");
+		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(selectionAtoms), TRUE);
+		selectAtomsByPDBTypeDlg();
+	}
+	else if(!strcmp(name,"EditSelectAtomsBySymbol"))
+	{
+		GtkAction *selectionAtoms = gtk_ui_manager_get_action (manager, "/MenuGeom/Operations/OperationsSelectionOfAtoms");
+		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(selectionAtoms), TRUE);
+		selectAtomsBySymbolDlg();
+	}
+	else if(!strcmp(name,"EditSelectAtomsByPositiveCharges"))
+	{
+		GtkAction *selectionAtoms = gtk_ui_manager_get_action (manager, "/MenuGeom/Operations/OperationsSelectionOfAtoms");
+		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(selectionAtoms), TRUE);
+		selectAtomsByChargeValues(TRUE);
+	}
+	else if(!strcmp(name,"EditSelectAtomsByNegativeCharges"))
+	{
+		GtkAction *selectionAtoms = gtk_ui_manager_get_action (manager, "/MenuGeom/Operations/OperationsSelectionOfAtoms");
+		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(selectionAtoms), TRUE);
+		selectAtomsByChargeValues(FALSE);
 	}
 	else if(!strcmp(name,"EditOpenGeometryEditor")) 
 	{
@@ -511,6 +571,12 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "RenderDefaultAll")) factor_all_default(NULL, NULL);
 	else if(!strcmp(name, "RenderBackgroundColorBlack")) set_back_color_black();
 	else if(!strcmp(name, "RenderBackgroundColorOther")) open_color_dlg( NULL, NULL);
+	else if(!strcmp(name,"RenderHideHydrogenAtoms")) RenderHAtoms(NULL, FALSE);
+	else if(!strcmp(name, "RenderHideSelectedAtoms")) hide_selected_atoms();
+	else if(!strcmp(name, "RenderHideNotSelectedAtoms")) hide_not_selected_atoms();
+	else if(!strcmp(name, "RenderShowAllAtoms")) show_all_atoms();
+	else if(!strcmp(name, "RenderShowHydrogenAtoms")) show_hydrogen_atoms();
+
 	else if(!strcmp(name, "SymmetryRotationalConstantes")) create_symmetry_window( NULL, 0);
 	else if(!strcmp(name, "SymmetryGroupSymmetry")) get_standard_orientation_with_reduction(NULL, 0);
 	else if(!strcmp(name, "SymmetryAbelianGroup")) get_abelian_orientation_with_reduction(NULL, 0);
@@ -524,8 +590,19 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "SetSelectedAtomsToLowLayer")) set_layer_of_selected_atoms(LOW_LAYER);
 	else if(!strcmp(name, "SetSelectedAtomsToFixed")) set_fix_selected_atoms();
 	else if(!strcmp(name, "SetSelectedAtomsToVariable")) set_variable_selected_atoms();
+	else if(!strcmp(name, "SetMMTypeOfselectedAtoms")) setMMTypeOfselectedAtomsDlg();
+	else if(!strcmp(name, "SetPDBTypeOfselectedAtoms")) setPDBTypeOfselectedAtomsDlg();
+	else if(!strcmp(name, "SetChargeOfselectedAtoms")) setChargeOfselectedAtomsDlg();
+	else if(!strcmp(name, "scaleChargesOfSelectedAtoms")) scaleChargesOfSelectedAtomsDlg();
+	else if(!strcmp(name, "AddHydrogensToSelectedAtoms")) addHydrogensToSelectedAtoms();
+	else if(!strcmp(name, "AddHydrogensToSelectedAtomsTpl")) addHydrogensToSelectedAtomsTpl();
+	else if(!strcmp(name, "AddOneHydrogenToSelectedAtoms")) addOneHydrogenToSelectedAtoms();
 	else if(!strcmp(name, "SetDipole")) set_dipole_dialog();
 	else if(!strcmp(name, "SetDipoleFormCharges")) set_dipole_from_charges();
+	else if(!strcmp(name, "ComputeDipoleFormCharges")) compute_dipole_from_charges();
+	else if(!strcmp(name, "ComputeTotalCharge")) compute_total_charge();
+	else if(!strcmp(name, "ComputeChargeForResidues")) compute_charge_by_residue();
+	else if(!strcmp(name, "ComputeChargeOfSelectedsAtoms")) compute_charge_of_selected_atoms();
 	else if(!strcmp(name, "SetHydrogenBonds"))set_HBonds_dialog_geom(NULL, 0);
 	else if(!strcmp(name, "SetPropertiesOfAtoms")) create_table_prop();
 	else if(!strcmp(name, "SetMolecularMechanicsParameters")) setMMParamatersDlg();
@@ -575,6 +652,11 @@ static void activate_action (GtkAction *action)
 		MolecularMechanicsMinimizeDlg();
 		messageAmberTypesDefine();
 	}
+	else if(!strcmp(name, "MolecularMechanicsDynamics"))
+	{
+		MolecularMechanicsDynamicsDlg();
+		messageAmberTypesDefine();
+	}
 	else if(!strcmp(name, "Close")) destroy_drawing_and_childs(NULL, 0);
 }
 /*--------------------------------------------------------------------*/
@@ -604,6 +686,8 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadMPQCInput", GABEDIT_STOCK_MPQC, "MP_QC Input file", NULL, "Read a MPQC Input file", G_CALLBACK (activate_action) },
 	{"ReadMPQCFirst", GABEDIT_STOCK_MPQC, "F_irst geometry from a MPQC output file", NULL, "Read the first geometry from a MPQC output file", G_CALLBACK (activate_action) },
 	{"ReadMPQCLast", GABEDIT_STOCK_MPQC, "L_ast geometry from a MPQC output file", NULL, "Read the last geometry from a MPQC output file", G_CALLBACK (activate_action) },
+	{"ReadQChemFirst", GABEDIT_STOCK_QCHEM, "F_irst geometry from a Q-Chem output file", NULL, "Read the first geometry from a MPQC output file", G_CALLBACK (activate_action) },
+	{"ReadQChemLast", GABEDIT_STOCK_QCHEM, "L_ast geometry from a Q-Chem output file", NULL, "Read the last geometry from a MPQC output file", G_CALLBACK (activate_action) },
 	{"ReadUsingOpenBabel", GABEDIT_STOCK_OPEN_BABEL, "_Other format (using open babel)", NULL, "Other format (using open babel)", G_CALLBACK (activate_action) },
 
 	{"ReadGeomConv", NULL, "Geometries _Convergence"},
@@ -612,11 +696,18 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadGeomConvGaussian", GABEDIT_STOCK_GAUSSIAN, "from a _Gaussian output file", NULL, "Read Geometries Convergence from a Gaussian output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvMolpro", GABEDIT_STOCK_MOLPRO, "from a Mol_pro log file", NULL, "Read Geometries Convergence from a Molpro log file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvMPQC", GABEDIT_STOCK_MPQC, "from a MP_QC output file", NULL, "Read Geometries Convergence from a MPQC output file", G_CALLBACK (activate_action) },
+	{"ReadGeomConvQChem", GABEDIT_STOCK_QCHEM, "from a Q-_Chem output file", NULL, "Read Geometries Convergence from a Q-Chem output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvGabedit", GABEDIT_STOCK_GABEDIT, "from a G_abedit file", NULL, "Read Geometries Convergence from a Gabedit file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvMolden", GABEDIT_STOCK_MOLDEN, "from a Mol_den file", NULL, "Read Geometries Convergence from a Molden file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvXYZ", NULL, "from a _XYZ file", NULL, "Read several Geometries from a XYZ file", G_CALLBACK (activate_action) },
 
 	{"Edit", NULL, "_Edit"},
+	{"EditCopySelectedAtoms", GABEDIT_STOCK_COPY, "_Copy&Past selected atoms", NULL, "Copy&Past selected atoms", G_CALLBACK (activate_action) },
+	{"EditDeleteHydrogenAtoms", GABEDIT_STOCK_CUT, "_Remove hydrogen atoms", NULL, "Remove hydrogen atoms", G_CALLBACK (activate_action) },
+	{"EditDeleteSelectedAtoms", GABEDIT_STOCK_CUT, "Remove selected atoms", NULL, "Remove selected atoms", G_CALLBACK (activate_action) },
+	{"EditDeleteMolecule", GABEDIT_STOCK_CUT, "_Delete molecule", NULL, "Delete molecule", G_CALLBACK (activate_action) },
+	{"EditOpenGeometryEditor", NULL, "_Open XYZ or GZMAT editor", NULL, "Open XYZ or GZMAT editor", G_CALLBACK (activate_action) },
+	{"Selection", NULL, "_Selection"},
 	{"EditSelectAll", NULL, "Select _all atoms", NULL, "Select all atoms", G_CALLBACK (activate_action) },
 	{"EditInvertSelection", NULL, "_Invert selection", NULL, "Invert selection", G_CALLBACK (activate_action) },
 	{"EditUnSelectAll", NULL, "_Unselect all", NULL, "Unselect all", G_CALLBACK (activate_action) },
@@ -625,9 +716,14 @@ static GtkActionEntry gtkActionEntries[] =
 	{"EditSelectLowAtoms", NULL, "Select atoms with _low layer", NULL, "Select atoms with low layer", G_CALLBACK (activate_action) },
 	{"EditSelectFixedAtoms", NULL, "Select _freezing atoms during optimizations", NULL, "Select freezing atoms during optimizations", G_CALLBACK (activate_action) },
 	{"EditSelectVariableAtoms", NULL, "Select _not freezing atoms during optimizations", NULL, "Select not freezing atoms during optimizations", G_CALLBACK (activate_action) },
-	{"EditCopySelectedAtoms", GABEDIT_STOCK_COPY, "_Copy&Past selected atoms", NULL, "Copy&Past selected atoms", G_CALLBACK (activate_action) },
-	{"EditDeleteMolecule", GABEDIT_STOCK_CUT, "_Delete molecule", NULL, "Delete molecule", G_CALLBACK (activate_action) },
-	{"EditOpenGeometryEditor", NULL, "_Open XYZ or GZMAT editor", NULL, "Open XYZ or GZMAT editor", G_CALLBACK (activate_action) },
+	{"EditSelectFirstResidue", NULL, "Select the _first residue", NULL, "Select the first residue", G_CALLBACK (activate_action) },
+	{"EditSelectLastResidue", NULL, "Select the _last residue", NULL, "Select the last residue", G_CALLBACK (activate_action) },
+	{"EditSelectResidueByName", NULL, "Select residues by name", NULL, "Select residues by name", G_CALLBACK (activate_action) },
+	{"EditSelectAtomsByMMType", NULL, "Select atoms by MM type", NULL, "Select atoms by MM type", G_CALLBACK (activate_action) },
+	{"EditSelectAtomsByPDBType", NULL, "Select atoms by PDB type", NULL, "Select atoms by PDB type", G_CALLBACK (activate_action) },
+	{"EditSelectAtomsBySymbol", NULL, "Select atoms by symbol", NULL, "Select atoms by symbol", G_CALLBACK (activate_action) },
+	{"EditSelectAtomsByPositiveCharges", NULL, "Select atoms with positive charges", NULL, "Select atoms with positive charges", G_CALLBACK (activate_action) },
+	{"EditSelectAtomsByNegativeCharges", NULL, "Select atoms with negative charges", NULL, "Select atoms with negative charges", G_CALLBACK (activate_action) },
 
 	{"SaveAs", NULL, "_Save as"},
 	{"SaveAsXYZ", NULL, "_XYZ file", NULL, "Save geometry in a XYZ file", G_CALLBACK (activate_action) },
@@ -652,6 +748,9 @@ static GtkActionEntry gtkActionEntries[] =
 	{"AddPersonalEditDeleteGroup", NULL, "_Delete a Group", NULL, "Delete a Group", G_CALLBACK (activate_action) },
 	{"AddPersonalEditAddMolecule", NULL, "_Add this molecule to personnal Fragments", NULL, "Add this molecule to personnal Fragments", G_CALLBACK (activate_action) },
 	{"AddPersonalEditRemoveFragment", NULL, "_Remove a Fragment", NULL, "Remove a Fragment", G_CALLBACK (activate_action) },
+	{"AddHydrogensToSelectedAtoms", NULL, "Add _Hydrogens to selected atoms", NULL, "Add Hydrogens to selected atoms", G_CALLBACK (activate_action) },
+	{"AddOneHydrogenToSelectedAtoms", NULL, "Add _one Hydrogen to selected atoms", NULL, "Add one Hydrogen to selected atoms", G_CALLBACK (activate_action) },
+	{"AddHydrogensToSelectedAtomsTpl", NULL, "Add _Hydrogens to selected atoms using PDB template", NULL, "Add Hydrogens to selected atoms using PDB template", G_CALLBACK (activate_action) },
 
 	{"Build", NULL, "_Build"},
 	{"BuildLinearMolecule", NULL, "_Linear Molecule", NULL, "build a linear molecule", G_CALLBACK (activate_action) },
@@ -675,6 +774,11 @@ static GtkActionEntry gtkActionEntries[] =
 	{"RenderBackgroundColor", NULL, "_Background Color"},
 	{"RenderBackgroundColorBlack", NULL, "_Black", NULL, "black background", G_CALLBACK (activate_action) },
 	{"RenderBackgroundColorOther", NULL, "_Other", NULL, "reset the background color", G_CALLBACK (activate_action) },
+	{"RenderHideHydrogenAtoms", NULL, "Hide _hydrogen atoms", NULL, "Hide hydrogen atoms", G_CALLBACK (activate_action) },
+	{"RenderHideNotSelectedAtoms", NULL, "Hide _not selected atoms", NULL, "Hide not selected atoms", G_CALLBACK (activate_action) },
+	{"RenderHideSelectedAtoms", NULL, "Hide _selected atoms", NULL, "Hide selected atoms", G_CALLBACK (activate_action) },
+	{"RenderShowHydrogenAtoms", NULL, "_Show hydrogen atoms", NULL, "Show hydrogen atoms", G_CALLBACK (activate_action) },
+	{"RenderShowAllAtoms", NULL, "_Show all atoms", NULL, "Show all atoms", G_CALLBACK (activate_action) },
 
 	{"Symmetry", NULL, "_Symmetry"},
 	{"SymmetryRotationalConstantes", NULL, "Rotational Constantes & Dipole at there principal axis", NULL, "compute the rotational constantes &  the dipole at there principal axis", G_CALLBACK (activate_action) },
@@ -692,6 +796,10 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SetSelectedAtomsToLowLayer", NULL, "Set selected atoms to _Low layer", NULL, "Set selected atoms to Low layer", G_CALLBACK (activate_action) },
 	{"SetSelectedAtomsToFixed", NULL, "Set selected atoms to _freezing during optimizations", NULL, "Set selected atoms to freezing during optimizations", G_CALLBACK (activate_action) },
 	{"SetSelectedAtomsToVariable", NULL, "Set selected atoms to _not freezing during optimizations", NULL, "Set selected atoms to not freezing during optimizations", G_CALLBACK (activate_action) },
+	{"SetMMTypeOfselectedAtoms", NULL, "Set the _MM type of selected atoms", NULL, "Set the MM type of selected atoms", G_CALLBACK (activate_action) },
+	{"SetPDBTypeOfselectedAtoms", NULL, "Set the _PDB type of selected atoms", NULL, "Set the PDB type of selected atoms", G_CALLBACK (activate_action) },
+	{"SetChargeOfselectedAtoms", NULL, "Set the _Charge of selected atoms", NULL, "Set the charge of selected atoms", G_CALLBACK (activate_action) },
+	{"scaleChargesOfSelectedAtoms", NULL, "scale the _Charge of selected atoms", NULL, "scale the charge of selected atoms", G_CALLBACK (activate_action) },
 	{"SetDipole", NULL, "_Dipole", NULL, "Set dipole", G_CALLBACK (activate_action) },
 	{"SetDipoleFormCharges", NULL, "_Compute Dipole from charges", NULL, "Compute dipole using charges", G_CALLBACK (activate_action) },
 	{"SetHydrogenBonds", NULL, "_Hydrogen bonds parameters", NULL, "Set the hydrogen bonds parameters", G_CALLBACK (activate_action) },
@@ -710,6 +818,11 @@ static GtkActionEntry gtkActionEntries[] =
 	{"Export", NULL, "Ex_port"},
 	{"ExportPostscript", NULL, "P_ostscript", NULL, "create a postscript file", G_CALLBACK (activate_action) },
 	{"ExportPovray", NULL, "Po_vray", NULL, "create a povray file", G_CALLBACK (activate_action) },
+	{"Tools", NULL, "_Tools"},
+	{"ComputeTotalCharge", NULL, "_Compute total charge", NULL, "Compute total charge", G_CALLBACK (activate_action) },
+	{"ComputeChargeForResidues", NULL, "Compute charge for _residues", NULL, "Compute charge for residues", G_CALLBACK (activate_action) },
+	{"ComputeChargeOfSelectedsAtoms", NULL, "Compute charge of _selected atoms", NULL, "Compute charge of selected atoms", G_CALLBACK (activate_action) },
+	{"ComputeDipoleFormCharges", NULL, "_Compute dipole from charges", NULL, "Compute dipole from charges", G_CALLBACK (activate_action) },
 
 	{"ScreenCapture", NULL, "Screen Ca_pture"},
 	{"ScreenCaptureJPG", NULL, "_JPG format", NULL, "create a JPEG file", G_CALLBACK (activate_action) },
@@ -721,6 +834,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"MolecularMechanics", NULL, "_Molecular Mechanics"},
 	{"MolecularMechanicsEnergy", NULL, "_Energy", NULL, "compute the energy using the MM method", G_CALLBACK (activate_action) },
 	{"MolecularMechanicsOptimization", NULL, "_Optimization", NULL, "optimize the geometry using the MM method", G_CALLBACK (activate_action) },
+	{"MolecularMechanicsDynamics", NULL, "Molcecular _Dynamics", NULL, "Molcecular dynamics using the MM method", G_CALLBACK (activate_action) },
 
 	{"View", NULL, "_View"},
 
@@ -764,6 +878,9 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"ReadMPQCInput\" action=\"ReadMPQCInput\" />\n"
 "      <menuitem name=\"ReadMPQCFirst\" action=\"ReadMPQCFirst\" />\n"
 "      <menuitem name=\"ReadMPQCLast\" action=\"ReadMPQCLast\" />\n"
+"      <separator name=\"sepMenuReadQChem\" />\n"
+"      <menuitem name=\"ReadQChemFirst\" action=\"ReadQChemFirst\" />\n"
+"      <menuitem name=\"ReadQChemLast\" action=\"ReadQChemLast\" />\n"
 "      <separator name=\"sepMenuReadOpenBabel\" />\n"
 "      <menuitem name=\"ReadUsingOpenBabel\" action=\"ReadUsingOpenBabel\" />\n"
 "      <separator name=\"sepMenuReadGeomConv\" />\n"
@@ -773,28 +890,40 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadGeomConvGaussian\" action=\"ReadGeomConvGaussian\" />\n"
 "        <menuitem name=\"ReadGeomConvMolpro\" action=\"ReadGeomConvMolpro\" />\n"
 "        <menuitem name=\"ReadGeomConvMPQC\" action=\"ReadGeomConvMPQC\" />\n"
+"        <menuitem name=\"ReadGeomConvQChem\" action=\"ReadGeomConvQChem\" />\n"
 "        <menuitem name=\"ReadGeomConvGabedit\" action=\"ReadGeomConvGabedit\" />\n"
 "        <menuitem name=\"ReadGeomConvMolden\" action=\"ReadGeomConvMolden\" />\n"
 "        <menuitem name=\"ReadGeomConvXYZ\" action=\"ReadGeomConvXYZ\" />\n"
 "      </menu>\n"
 "    </menu>\n"
 "      <menu name=\"Edit\" action=\"Edit\">\n"
-"        <menuitem name=\"EditSelectAll\" action=\"EditSelectAll\" />\n"
-"        <menuitem name=\"EditInvertSelection\" action=\"EditInvertSelection\" />\n"
-"        <menuitem name=\"EditUnSelectAll\" action=\"EditUnSelectAll\" />\n"
-"        <separator name=\"sepMenuEditSelectHighAtoms\" />\n"
-"        <menuitem name=\"EditSelectHighAtoms\" action=\"EditSelectHighAtoms\" />\n"
-"        <menuitem name=\"EditSelectMediumAtoms\" action=\"EditSelectMediumAtoms\" />\n"
-"        <menuitem name=\"EditSelectLowAtoms\" action=\"EditSelectLowAtoms\" />\n"
-"        <separator name=\"sepMenuEditSelectFixedAtoms\" />\n"
-"        <menuitem name=\"EditSelectFixedAtoms\" action=\"EditSelectFixedAtoms\" />\n"
-"        <menuitem name=\"EditSelectVariableAtoms\" action=\"EditSelectVariableAtoms\" />\n"
-"        <separator name=\"sepMenuEditCopySelectedAtoms\" />\n"
 "        <menuitem name=\"EditCopySelectedAtoms\" action=\"EditCopySelectedAtoms\" />\n"
 "        <separator name=\"sepMenuEditDeleteMolecule\" />\n"
+"        <menuitem name=\"EditDeleteHydrogenAtoms\" action=\"EditDeleteHydrogenAtoms\" />\n"
+"        <menuitem name=\"EditDeleteSelectedAtoms\" action=\"EditDeleteSelectedAtoms\" />\n"
 "        <menuitem name=\"EditDeleteMolecule\" action=\"EditDeleteMolecule\" />\n"
 "        <separator name=\"sepMenuEditOpenGeometryEditor\" />\n"
 "        <menuitem name=\"EditOpenGeometryEditor\" action=\"EditOpenGeometryEditor\" />\n"
+"      </menu>\n"
+"      <menu name=\"Selection\" action=\"Selection\">\n"
+"        <menuitem name=\"EditSelectAll\" action=\"EditSelectAll\" />\n"
+"        <menuitem name=\"EditInvertSelection\" action=\"EditInvertSelection\" />\n"
+"        <menuitem name=\"EditUnSelectAll\" action=\"EditUnSelectAll\" />\n"
+"        <separator name=\"sepMenuSelectHighAtoms\" />\n"
+"        <menuitem name=\"EditSelectHighAtoms\" action=\"EditSelectHighAtoms\" />\n"
+"        <menuitem name=\"EditSelectMediumAtoms\" action=\"EditSelectMediumAtoms\" />\n"
+"        <menuitem name=\"EditSelectLowAtoms\" action=\"EditSelectLowAtoms\" />\n"
+"        <separator name=\"sepMenuSelectFixedAtoms\" />\n"
+"        <menuitem name=\"EditSelectFixedAtoms\" action=\"EditSelectFixedAtoms\" />\n"
+"        <menuitem name=\"EditSelectVariableAtoms\" action=\"EditSelectVariableAtoms\" />\n"
+"        <menuitem name=\"EditSelectFirstResidue\" action=\"EditSelectFirstResidue\" />\n"
+"        <menuitem name=\"EditSelectLastResidue\" action=\"EditSelectLastResidue\" />\n"
+"        <menuitem name=\"EditSelectResidueByName\" action=\"EditSelectResidueByName\" />\n"
+"        <menuitem name=\"EditSelectAtomsByMMType\" action=\"EditSelectAtomsByMMType\" />\n"
+"        <menuitem name=\"EditSelectAtomsByPDBType\" action=\"EditSelectAtomsByPDBType\" />\n"
+"        <menuitem name=\"EditSelectAtomsBySymbol\" action=\"EditSelectAtomsBySymbol\" />\n"
+"        <menuitem name=\"EditSelectAtomsByPositiveCharges\" action=\"EditSelectAtomsByPositiveCharges\" />\n"
+"        <menuitem name=\"EditSelectAtomsByNegativeCharges\" action=\"EditSelectAtomsByNegativeCharges\" />\n"
 "      </menu>\n"
 "      <menu name=\"SaveAs\" action=\"SaveAs\">\n"
 "        <menuitem name=\"SaveAsXYZ\" action=\"SaveAsXYZ\" />\n"
@@ -838,6 +967,11 @@ static const gchar *uiMenuInfo =
 "          </menu>\n"
 "          <separator name=\"sepMenuAddPersonalEditEnd\" />\n"
 "        </menu>\n"
+"          <separator name=\"sepMenuAddEnd\" />\n"
+"          <menuitem name=\"AddHydrogensToSelectedAtoms\" action=\"AddHydrogensToSelectedAtoms\" />\n"
+"          <menuitem name=\"AddOneHydrogenToSelectedAtoms\" action=\"AddOneHydrogenToSelectedAtoms\" />\n"
+"          <separator name=\"sepMenuAddTpl\" />\n"
+"          <menuitem name=\"AddHydrogensToSelectedAtomsTpl\" action=\"AddHydrogensToSelectedAtomsTpl\" />\n"
 "      </menu>\n"
 "      <menu name=\"Build\" action=\"Build\">\n"
 "        <menuitem name=\"BuildLinearMolecule\" action=\"BuildLinearMolecule\" />\n"
@@ -878,12 +1012,14 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"LabelsNothing\" action=\"LabelsNothing\" />\n"
 "      <menuitem name=\"LabelsSymbols\" action=\"LabelsSymbols\" />\n"
 "      <menuitem name=\"LabelsNumbers\" action=\"LabelsNumbers\" />\n"
-"      <menuitem name=\"LabelsTypes\" action=\"LabelsTypes\" />\n"
+"      <menuitem name=\"LabelsMMTypes\" action=\"LabelsMMTypes\" />\n"
+"      <menuitem name=\"LabelsPDBTypes\" action=\"LabelsPDBTypes\" />\n"
 "      <menuitem name=\"LabelsLayers\" action=\"LabelsLayers\" />\n"
 "      <menuitem name=\"LabelsSymbolsAndNumbers\" action=\"LabelsSymbolsAndNumbers\" />\n"
 "      <menuitem name=\"LabelsCharges\" action=\"LabelsCharges\" />\n"
 "      <menuitem name=\"LabelsSymbolsAndCharges\" action=\"LabelsSymbolsAndCharges\" />\n"
 "      <menuitem name=\"LabelsNumbersAndCharges\" action=\"LabelsNumbersAndCharges\" />\n"
+"      <menuitem name=\"LabelsRedidues\" action=\"LabelsRedidues\" />\n"
 "      <menuitem name=\"LabelsCoordinates\" action=\"LabelsCoordinates\" />\n"
 "      <separator name=\"sepMenuLabelsDistances\" />\n"
 "      <menuitem name=\"LabelsDistances\" action=\"LabelsDistances\" />\n"
@@ -913,6 +1049,12 @@ static const gchar *uiMenuInfo =
 "         <menuitem name=\"RenderBackgroundColorBlack\" action=\"RenderBackgroundColorBlack\" />\n"
 "         <menuitem name=\"RenderBackgroundColorOther\" action=\"RenderBackgroundColorOther\" />\n"
 "      </menu>\n"
+"      <separator name=\"sepMenuShowHide\" />\n"
+"      <menuitem name=\"RenderHideHydrogenAtoms\" action=\"RenderHideHydrogenAtoms\" />\n"
+"      <menuitem name=\"RenderHideNotSelectedAtoms\" action=\"RenderHideNotSelectedAtoms\" />\n"
+"      <menuitem name=\"RenderHideSelectedAtoms\" action=\"RenderHideSelectedAtoms\" />\n"
+"      <menuitem name=\"RenderShowHydrogenAtoms\" action=\"RenderShowHydrogenAtoms\" />\n"
+"      <menuitem name=\"RenderShowAllAtoms\" action=\"RenderShowAllAtoms\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepMenuSymmetry\" />\n"
 "    <menu name=\"Symmetry\" action=\"Symmetry\">\n"
@@ -935,6 +1077,11 @@ static const gchar *uiMenuInfo =
 "      <separator name=\"sepMenuSetFixed\" />\n"
 "      <menuitem name=\"SetSelectedAtomsToFixed\" action=\"SetSelectedAtomsToFixed\" />\n"
 "      <menuitem name=\"SetSelectedAtomsToVariable\" action=\"SetSelectedAtomsToVariable\" />\n"
+"      <separator name=\"sepMenuSetType\" />\n"
+"      <menuitem name=\"SetMMTypeOfselectedAtoms\" action=\"SetMMTypeOfselectedAtoms\" />\n"
+"      <menuitem name=\"SetPDBTypeOfselectedAtoms\" action=\"SetPDBTypeOfselectedAtoms\" />\n"
+"      <menuitem name=\"SetChargeOfselectedAtoms\" action=\"SetChargeOfselectedAtoms\" />\n"
+"      <menuitem name=\"scaleChargesOfSelectedAtoms\" action=\"scaleChargesOfSelectedAtoms\" />\n"
 "      <separator name=\"sepMenuSetDipole\" />\n"
 "      <menuitem name=\"SetDipole\" action=\"SetDipole\" />\n"
 "      <menuitem name=\"SetDipoleFormCharges\" action=\"SetDipoleFormCharges\" />\n"
@@ -967,10 +1114,19 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"ScreenCapturePNG\" action=\"ScreenCapturePNG\" />\n"
 "      <menuitem name=\"ScreenCapturePS\" action=\"ScreenCapturePS\" />\n"
 "    </menu>\n"
+"    <separator name=\"sepTools\" />\n"
+"    <menu name=\"Tools\" action=\"Tools\">\n"
+"      <menuitem name=\"ComputeTotalCharge\" action=\"ComputeTotalCharge\" />\n"
+"      <menuitem name=\"ComputeDipoleFormCharges\" action=\"ComputeDipoleFormCharges\" />\n"
+"      <separator name=\"sepSel\" />\n"
+"      <menuitem name=\"ComputeChargeForResidues\" action=\"ComputeChargeForResidues\" />\n"
+"      <menuitem name=\"ComputeChargeOfSelectedsAtoms\" action=\"ComputeChargeOfSelectedsAtoms\" />\n"
+"    </menu>\n"
 "    <separator name=\"sepMolecularMechanics\" />\n"
 "    <menu name=\"MolecularMechanics\" action=\"MolecularMechanics\">\n"
 "      <menuitem name=\"MolecularMechanicsEnergy\" action=\"MolecularMechanicsEnergy\" />\n"
 "      <menuitem name=\"MolecularMechanicsOptimization\" action=\"MolecularMechanicsOptimization\" />\n"
+"      <menuitem name=\"MolecularMechanicsDynamics\" action=\"MolecularMechanicsDynamics\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepView\" />\n"
 "    <menu name=\"View\" action=\"View\">\n"
@@ -1325,15 +1481,24 @@ static void set_sensitive()
 {
 	GtkWidget *saveAs = gtk_ui_manager_get_widget (manager, "/MenuGeom/SaveAs");
 	GtkWidget *deleteMolecule = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/EditDeleteMolecule");
+	GtkWidget *deleteHydrogenAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/EditDeleteHydrogenAtoms");
+	GtkWidget *deleteSelectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/EditDeleteSelectedAtoms");
 	GtkWidget *copySelectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/EditCopySelectedAtoms");
-	GtkWidget *selectAllAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/EditSelectAll");
-	GtkWidget *invertSelection = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/EditInvertSelection");
-	GtkWidget *unSelectAll = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/EditUnSelectAll");
-	GtkWidget *selectHighAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/EditSelectHighAtoms");
-	GtkWidget *selectMediumAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/EditSelectMediumAtoms");
-	GtkWidget *selectLowAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/EditSelectLowAtoms");
-	GtkWidget *selectFixedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/EditSelectFixedAtoms");
-	GtkWidget *selectVariableAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/EditSelectVariableAtoms");
+	GtkWidget *selectAllAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditSelectAll");
+	GtkWidget *invertSelection = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditInvertSelection");
+	GtkWidget *unSelectAll = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditUnSelectAll");
+	GtkWidget *selectHighAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditSelectHighAtoms");
+	GtkWidget *selectMediumAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditSelectMediumAtoms");
+	GtkWidget *selectLowAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditSelectLowAtoms");
+	GtkWidget *selectFixedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditSelectFixedAtoms");
+	GtkWidget *selectVariableAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditSelectVariableAtoms");
+	GtkWidget *selectFirstResidue = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditSelectFirstResidue");
+	GtkWidget *selectLastResidue = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditSelectLastResidue");
+	GtkWidget *selectResidueByName = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditSelectResidueByName");
+	GtkWidget *selectAtomsByType = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditSelectAtomsByType");
+	GtkWidget *selectAtomsBySymbol = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditSelectAtomsBySymbol");
+	GtkWidget *selectAtomsByPositiveCharges = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditSelectAtomsByPositiveCharges");
+	GtkWidget *selectAtomsByNegativeCharges = gtk_ui_manager_get_widget (manager, "/MenuGeom/Selection/EditSelectAtomsByNegativeCharges");
 	GtkWidget *symmetry = gtk_ui_manager_get_widget (manager, "/MenuGeom/Symmetry");
 	GtkWidget *export = gtk_ui_manager_get_widget (manager, "/MenuGeom/Export");
 	GtkWidget *mm = gtk_ui_manager_get_widget (manager, "/MenuGeom/MolecularMechanics");
@@ -1354,10 +1519,18 @@ static void set_sensitive()
 	GtkWidget *layerLow = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetSelectedAtomsToLowLayer");
 	GtkWidget *fixedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetSelectedAtomsToFixed");
 	GtkWidget *variableAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetSelectedAtomsToVariable");
+	GtkWidget *setMMTypeOfselectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetMMTypeOfselectedAtoms");
+	GtkWidget *setPDBTypeOfselectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetPDBTypeOfselectedAtoms");
+	GtkWidget *setChargeOfselectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetChargeOfselectedAtoms");
+	GtkWidget *scaleChargeOfselectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/ScaleChargeOfselectedAtoms");
+	GtkWidget *addPersonnalFragment = gtk_ui_manager_get_widget (manager, "/MenuGeom/Add/AddPersonal/AddPersonalEdit/AddPersonalEditAddMolecule");
+	GtkWidget *removePersonnalFragment = gtk_ui_manager_get_widget (manager, "/MenuGeom/Add/AddPersonal/AddPersonalEdit/AddPersonalEditRemoveFragment");
+	GtkWidget *removeAGroup = gtk_ui_manager_get_widget (manager, "/MenuGeom/Add/AddPersonal/AddPersonalEdit/AddPersonalEditDeleteGroup");
 	gboolean sensitive = TRUE;
 
   	if(Natoms<1) sensitive = FALSE;
 	if(GTK_IS_WIDGET(saveAs)) gtk_widget_set_sensitive(saveAs, sensitive);
+	if(GTK_IS_WIDGET(deleteHydrogenAtoms)) gtk_widget_set_sensitive(deleteHydrogenAtoms, sensitive);
 	if(GTK_IS_WIDGET(deleteMolecule)) gtk_widget_set_sensitive(deleteMolecule, sensitive);
 	if(GTK_IS_WIDGET(selectAllAtoms)) gtk_widget_set_sensitive(selectAllAtoms, sensitive);
 	if(GTK_IS_WIDGET(selectHighAtoms)) gtk_widget_set_sensitive(selectHighAtoms, sensitive);
@@ -1365,6 +1538,13 @@ static void set_sensitive()
 	if(GTK_IS_WIDGET(selectLowAtoms)) gtk_widget_set_sensitive(selectLowAtoms, sensitive);
 	if(GTK_IS_WIDGET(selectFixedAtoms)) gtk_widget_set_sensitive(selectFixedAtoms, sensitive);
 	if(GTK_IS_WIDGET(selectVariableAtoms)) gtk_widget_set_sensitive(selectVariableAtoms, sensitive);
+	if(GTK_IS_WIDGET(selectFirstResidue)) gtk_widget_set_sensitive(selectFirstResidue, sensitive);
+	if(GTK_IS_WIDGET(selectLastResidue)) gtk_widget_set_sensitive(selectLastResidue, sensitive);
+	if(GTK_IS_WIDGET(selectResidueByName)) gtk_widget_set_sensitive(selectResidueByName, sensitive);
+	if(GTK_IS_WIDGET(selectAtomsByType)) gtk_widget_set_sensitive(selectAtomsByType, sensitive);
+	if(GTK_IS_WIDGET(selectAtomsBySymbol)) gtk_widget_set_sensitive(selectAtomsBySymbol, sensitive);
+	if(GTK_IS_WIDGET(selectAtomsByPositiveCharges)) gtk_widget_set_sensitive(selectAtomsByPositiveCharges, sensitive);
+	if(GTK_IS_WIDGET(selectAtomsByNegativeCharges)) gtk_widget_set_sensitive(selectAtomsByNegativeCharges, sensitive);
 	if(GTK_IS_WIDGET(symmetry)) gtk_widget_set_sensitive(symmetry, sensitive);
 	if(GTK_IS_WIDGET(export)) gtk_widget_set_sensitive(export, sensitive);
 	if(GTK_IS_WIDGET(mm)) gtk_widget_set_sensitive(mm, sensitive);
@@ -1379,7 +1559,12 @@ static void set_sensitive()
 	if(NFatoms<1) sensitive = FALSE;
 	if(GTK_IS_WIDGET(origAtoms)) gtk_widget_set_sensitive(origAtoms, sensitive);
 	if(getOperationType()!=SELECTFRAG && getOperationType()!=SELECTRESIDUE)sensitive = FALSE;
+	if(GTK_IS_WIDGET(deleteSelectedAtoms)) gtk_widget_set_sensitive(deleteSelectedAtoms, sensitive);
 	if(GTK_IS_WIDGET(copySelectedAtoms)) gtk_widget_set_sensitive(copySelectedAtoms, sensitive);
+	if(GTK_IS_WIDGET(setMMTypeOfselectedAtoms)) gtk_widget_set_sensitive(setMMTypeOfselectedAtoms, sensitive);
+	if(GTK_IS_WIDGET(setPDBTypeOfselectedAtoms)) gtk_widget_set_sensitive(setPDBTypeOfselectedAtoms, sensitive);
+	if(GTK_IS_WIDGET(setChargeOfselectedAtoms)) gtk_widget_set_sensitive(setChargeOfselectedAtoms, sensitive);
+	if(GTK_IS_WIDGET(scaleChargeOfselectedAtoms)) gtk_widget_set_sensitive(scaleChargeOfselectedAtoms, sensitive);
 
 	sensitive = TRUE;
   	if(Natoms<1) sensitive = FALSE;
@@ -1395,9 +1580,15 @@ static void set_sensitive()
 	if(GTK_IS_WIDGET(layerHigh)) gtk_widget_set_sensitive(layerHigh, sensitive);
 	if(GTK_IS_WIDGET(invertSelection)) gtk_widget_set_sensitive(invertSelection, sensitive);
 	if(GTK_IS_WIDGET(unSelectAll)) gtk_widget_set_sensitive(unSelectAll, sensitive);
-  	if(Natoms<3) sensitive = FALSE;
+  	if(Natoms<2) sensitive = FALSE;
 	if(GTK_IS_WIDGET(layerMedium)) gtk_widget_set_sensitive(layerMedium, sensitive);
 	if(GTK_IS_WIDGET(layerLow)) gtk_widget_set_sensitive(layerLow, sensitive);
+
+	 sensitive = TRUE;
+	if(getNumberOfGroups()<1) sensitive = FALSE;
+	if(GTK_IS_WIDGET(addPersonnalFragment)) gtk_widget_set_sensitive(addPersonnalFragment, sensitive);
+	if(GTK_IS_WIDGET(removePersonnalFragment)) gtk_widget_set_sensitive(removePersonnalFragment, sensitive);
+	if(GTK_IS_WIDGET(removeAGroup)) gtk_widget_set_sensitive(removeAGroup, sensitive);
 
 }
 /*********************************************************************************************************************/

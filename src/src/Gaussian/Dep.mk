@@ -1,12 +1,13 @@
 # DO NOT DELETE
 
-Gaussian.o: ../../Config.h ../Common/Global.h
-Gaussian.o: ../Files/GabeditFileChooser.h
-Gaussian.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
-Gaussian.o: ../Utils/Utils.h ../Utils/GabeditTextEdit.h
-Gaussian.o: ../Geometry/GeomGlobal.h ../Geometry/InterfaceGeom.h
-Gaussian.o: ../Utils/AtomsProp.h ../../pixmaps/Next.xpm GaussGlobal.h
-Gaussian.o: GInterfaceRoute.h GInterfaceGeom.h GInterfaceBasis.h
+Gaussian.o: ../../Config.h
+Gaussian.o: ../Common/Global.h
+Gaussian.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
+Gaussian.o: ../Utils/UtilsInterface.h ../Utils/Utils.h
+Gaussian.o: ../Utils/GabeditTextEdit.h ../Geometry/GeomGlobal.h
+Gaussian.o: ../Geometry/GeomXYZ.h ../Geometry/InterfaceGeom.h
+Gaussian.o: ../Utils/AtomsProp.h GaussGlobal.h GInterfaceRoute.h
+Gaussian.o: GInterfaceGeom.h GInterfaceBasis.h
 GInterfaceBasis.o: ../../Config.h
 GInterfaceBasis.o: ../Common/Global.h
 GInterfaceBasis.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
@@ -25,10 +26,15 @@ GInterfaceLink.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
 GInterfaceLink.o: ../Utils/UtilsInterface.h GaussGlobal.h
 GInterfaceMethodeBase.o: ../../Config.h
 GInterfaceMethodeBase.o: ../Common/Global.h ../Files/GabeditFileChooser.h
-GInterfaceMethodeBase.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
-GInterfaceMethodeBase.o: GaussGlobal.h
+GInterfaceMethodeBase.o: ../Common/GabeditType.h ../Utils/Utils.h
+GInterfaceMethodeBase.o: ../Utils/UtilsInterface.h ../Geometry/GeomGlobal.h
+GInterfaceMethodeBase.o: ../Geometry/GeomXYZ.h ../Geometry/InterfaceGeom.h
+GInterfaceMethodeBase.o: GInterfaceGeom.h GaussGlobal.h
 GInterfaceRoute.o: ../../Config.h
 GInterfaceRoute.o: ../Common/Global.h
 GInterfaceRoute.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
-GInterfaceRoute.o: ../Utils/UtilsInterface.h ../Utils/GabeditTextEdit.h
+GInterfaceRoute.o: ../Utils/Utils.h ../Utils/UtilsInterface.h
+GInterfaceRoute.o: ../Utils/GabeditTextEdit.h ../Geometry/GeomGlobal.h
+GInterfaceRoute.o: ../Geometry/GeomXYZ.h ../Geometry/InterfaceGeom.h
 GInterfaceRoute.o: GInterfaceLink.h GInterfaceMethodeBase.h GaussGlobal.h
+GInterfaceRoute.o: GInterfaceGeom.h

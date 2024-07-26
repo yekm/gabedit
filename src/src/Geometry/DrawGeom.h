@@ -27,8 +27,8 @@ SELECTFRAG,SELECTRESIDUE,DELETEFRAG,MOVEFRAG,ROTLOCFRAG,ROTZLOCFRAG,INSERTATOM,
 ADDFRAGMENT,
 MESURE,SHOWMESURE,
 RENDERSTICK,RENDERBALL,
-LABELNO,LABELSYMB,LABELNUMB,LABELTYP,LABELLAYER,LABELSYMBNUMB,
-LABELCHARGE,LABELSYMBCHARGE,LABELNUMBCHARGE,LABELCOORDINATES,
+LABELNO,LABELSYMB,LABELNUMB,LABELMMTYP,LABELPDBTYP,LABELLAYER,LABELSYMBNUMB,
+LABELCHARGE,LABELSYMBCHARGE,LABELNUMBCHARGE,LABELRESIDUES,LABELCOORDINATES,
 FXYZ,FMOL2,FTINKER,FPDB,FHIN,FGZMAT,FMZMAT,
 FDALTONIN,FDALTONFIRST,FDALTONLAST,
 FGAMESSIN,FGAMESSFIRST,FGAMESSLAST,
@@ -63,9 +63,11 @@ typedef struct _GeomDef
  gdouble Z;
  gdouble Charge;
  SAtomsProp Prop;
- gchar* Type;
+ gchar* mmType;
+ gchar* pdbType;
  gchar* Residue;
  gint ResidueNumber;
+ gboolean show;
  gint Xi;
  gint Yi;
  gushort Rayon;
@@ -138,6 +140,20 @@ gboolean Ddef;
 
 gint get_connection_type(gint i, gint j);
 void SelectFixedVariableAtoms(gboolean variable);
+void SelectFirstResidue();
+void SelectLastResidue();
+void selectResidueByNameDlg();
+void selectAtomsByMMTypeDlg();
+void selectAtomsByPDBTypeDlg();
+void selectAtomsBySymbolDlg();
+void selectAtomsByChargeValues(gboolean positive);
+void setMMTypeOfselectedAtomsDlg();
+void setPDBTypeOfselectedAtomsDlg();
+void setChargeOfselectedAtomsDlg();
+void scaleChargesOfSelectedAtomsDlg();
+void addHydrogensToSelectedAtoms();
+void addOneHydrogenToSelectedAtoms();
+void addHydrogensToSelectedAtomsTpl();
 void set_fix_selected_atoms();
 void set_variable_selected_atoms();
 void messageAmberTypesDefine();
@@ -199,6 +215,7 @@ void RenderPers(GtkWidget *,gboolean);
 void RenderLight(GtkWidget *,gboolean);
 void RenderDipole(GtkWidget *,gboolean);
 void RenderHBonds(GtkWidget *,gboolean);
+void RenderHAtoms(GtkWidget *,gboolean);
 void set_layer_of_selected_atoms(GabEditLayerType l);
 void SetLabelDistances(GtkWidget *,gboolean);
 void SetLabelDipole(GtkWidget *win,gboolean YesNo);
@@ -215,8 +232,19 @@ void to_povray(GtkWidget *win, guint data);
 void destroy_drawing_and_childs(GtkWidget *win,gpointer data);
 void SetOperation(GtkWidget *,guint);
 void set_dipole_from_charges();
+void compute_total_charge();
+void compute_charge_by_residue();
+void compute_charge_of_selected_atoms();
+void compute_dipole_from_charges();
 void setPersonalFragment(Fragment F);
 void unselect_all_atoms();
+void hide_selected_atoms();
+void hide_not_selected_atoms();
+void show_all_atoms();
+void show_hydrogen_atoms();
+void deleteSelectedAtoms();
+void deleteHydrogenAtoms();
+void define_geometry();
 
 #endif /* __GABEDIT_DRAWGEOM_H__ */
 

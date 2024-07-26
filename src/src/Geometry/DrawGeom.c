@@ -50,6 +50,8 @@ DEALINGS IN THE SOFTWARE.
 #include "../MolecularMechanics/CalculTypesAmber.h"
 #include "../Symmetry/MoleculeSymmetryInterface.h"
 #include "../Utils/Jacobi.h"
+#include "../Utils/Vector3d.h"
+#include "../Utils/GabeditTextEdit.h"
 #include "../Geometry/MenuToolBarGeom.h"
 
 
@@ -164,6 +166,67 @@ void set_variable_selected_atoms()
 {
 	set_fix_variable_of_selected_atoms(TRUE);
 }
+/*****************************************************************************/
+void hide_selected_atoms()
+{
+	gint i;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(if_selected(i))
+		{
+			geometry[i].show = FALSE;
+			geometry0[i].show = FALSE;
+		}
+	}
+	unselect_all_atoms();
+	dessine();
+}
+/*****************************************************************************/
+void hide_not_selected_atoms()
+{
+	gint i;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(!if_selected(i))
+		{
+			geometry[i].show = FALSE;
+			geometry0[i].show = FALSE;
+		}
+	}
+	dessine();
+}
+/*****************************************************************************/
+void show_hydrogen_atoms()
+{
+	gint i;
+	gint j;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(!geometry[i].show) continue;
+		for (j=0;j<(gint)Natoms;j++)
+		{
+			if(connections[i][j]<1) continue;
+			if(!strcmp(geometry[j].Prop.symbol,"H")) 
+			{
+				geometry[j].show = TRUE;
+				geometry0[j].show = TRUE;
+			}
+		}
+
+	}
+	dessine();
+}
+/*****************************************************************************/
+void show_all_atoms()
+{
+	gint i;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		geometry[i].show = TRUE;
+		geometry0[i].show = TRUE;
+	}
+	dessine();
+}
 /********************************************************************************/
 static gint testAmberTypesDefine()
 {
@@ -171,10 +234,14 @@ static gint testAmberTypesDefine()
 	gint k;
 	if(Natoms<1)return 0;
 	for(i=0;i<(gint)Natoms;i++)
-		if(geometry[i].Type && strlen(geometry[i].Type)>2) return -1;
+		if(geometry[i].mmType && strlen(geometry[i].mmType)>2) 
+		{
+			printf("Problem with %s\n",geometry[i].mmType);
+			return -1;
+		}
 	k = 0;
 	for(i=0;i<(gint)Natoms;i++)
-		if(geometry[i].Type && strcmp(geometry[i].Type,geometry[i].Prop.symbol)==0) k++;
+		if(geometry[i].mmType && strcmp(geometry[i].mmType,geometry[i].Prop.symbol)==0) k++;
 	if(k==Natoms) return -2;
 	return 0;
 }
@@ -502,9 +569,9 @@ void set_origin_to_center_of_fragment()
 		if(if_selected(i))
 		{
 			j++;
-			C[0] += geometry[i].X;
-			C[1] += geometry[i].Y;
-			C[2] += geometry[i].Z;
+			C[0] += geometry0[i].X;
+			C[1] += geometry0[i].Y;
+			C[2] += geometry0[i].Z;
 		}
 	}
 	if(j==0) return;
@@ -833,14 +900,17 @@ void setMMTypesCharges(gpointer data, guint Operation,GtkWidget* wid)
 	{
 		calculTypesAmber(geometry, (gint)Natoms);
 		for(i=0;i<(gint)Natoms;i++)
-			geometry0[i].Type = g_strdup(geometry[i].Type);
+		{
+			geometry0[i].mmType = g_strdup(geometry[i].mmType);
+			geometry0[i].pdbType = g_strdup(geometry[i].pdbType);
+		}
 	}
 	else
 	for(i=0;i<(gint)Natoms;i++)
 	{
 		if(Operation!=3)
 		{
-			mmType = getMMTypeFromPDBTpl(geometry[i].Residue,geometry[i].Type,&charge);
+			mmType = getMMTypeFromPDBTpl(geometry[i].Residue,geometry[i].pdbType,&charge);
 			if(!strcmp(mmType,"UNK"))
 			{
 				g_free(mmType);
@@ -852,15 +922,15 @@ void setMMTypesCharges(gpointer data, guint Operation,GtkWidget* wid)
 			case 0: geometry[i].Charge = charge;
 				geometry0[i].Charge = charge;
 				break;
-			case 1: g_free(geometry[i].Type);
-				g_free(geometry0[i].Type);
-				geometry[i].Type = g_strdup(mmType);
-				geometry0[i].Type = g_strdup(mmType);
+			case 1: g_free(geometry[i].mmType);
+				g_free(geometry0[i].mmType);
+				geometry[i].mmType = g_strdup(mmType);
+				geometry0[i].mmType = g_strdup(mmType);
 				break;
-			case 2: g_free(geometry[i].Type);
-				g_free(geometry0[i].Type);
-				geometry[i].Type = g_strdup(mmType);
-				geometry0[i].Type = g_strdup(mmType);
+			case 2: g_free(geometry[i].mmType);
+				g_free(geometry0[i].mmType);
+				geometry[i].mmType = g_strdup(mmType);
+				geometry0[i].mmType = g_strdup(mmType);
 				geometry[i].Charge = charge;
 				geometry0[i].Charge = charge;
 				break;
@@ -884,8 +954,10 @@ GeomDef* Free_One_Geom(GeomDef* geom,gint N)
  {
     for (i=0;i<(guint)N;i++)
     {
+	g_free(geom[i].Prop.name);
 	g_free(geom[i].Prop.symbol);
-	g_free(geom[i].Type);
+	g_free(geom[i].mmType);
+	g_free(geom[i].pdbType);
 	g_free(geom[i].Residue);
     }
 		        
@@ -938,59 +1010,6 @@ void draw_text(gchar* str)
 	if(font_desc) pango_font_description_free (font_desc);
 
 }
-/*****************************************************************************/
-/*
-void select_atoms_by_residues()
-{
-	gint i;
-	gfloat x1=0;
-	gfloat y1=0;
-	gfloat xi;
-	gfloat yi;
-	gfloat d = 0;
-	gint j;
-
-
-	x1 = BeginX;
-	y1 = BeginY;
-
-	if(!ShiftKeyPressed)
-	{
-		if(!NumFatoms)
-			g_free(NumFatoms);
-		NumFatoms = NULL;
-
-		NFatoms = 0;
-	}
-	for(i=0;i<(gint)Natoms;i++)
-	{
-		xi = geometry[i].Xi;
-		yi = geometry[i].Yi;
-		d = (xi-x1)*(xi-x1) + (yi-y1)*(yi-y1);
-		d = sqrt(d);
-		if(d<=geometry[i].Rayon)
-		{
-			for(j=0;j<(gint)Natoms;j++)
-			{
-				if(geometry[i].ResidueNumber == geometry[j].ResidueNumber)
-				if(!if_selected(j))
-				{
-					if(NumFatoms == NULL)
-						NumFatoms = g_malloc((NFatoms+1)*sizeof(gint));
-					else
-						NumFatoms = g_realloc(NumFatoms,(NFatoms+1)*sizeof(gint));
-				NumFatoms[NFatoms] = geometry[j].N;
-				NFatoms++;
-				}
-			}
-			break;
-
-		}
-	}
-	dessine();
-}
-*/
-
 /*****************************************************************************/
 void select_atoms_by_residues()
 {
@@ -1111,6 +1130,7 @@ void select_atoms_by_rectangle(gfloat x,gfloat y)
 	}
 	for(i=0;i<(gint)Natoms;i++)
 	{
+		if(!geometry[i].show) continue;
 		xi = geometry[i].Xi;
 		yi = geometry[i].Yi;
 		if(xi>=x1 && xi<=x2 && yi>=y1 && yi<=y2 && !if_selected(i))
@@ -1165,8 +1185,11 @@ void draw_selection_rectangle(gfloat x,gfloat y)
 		yf = BeginY-y;
 	}
 	gdk_gc_set_line_attributes(gc,1,GDK_LINE_DOUBLE_DASH,GDK_CAP_NOT_LAST,GDK_JOIN_MITER);
-	/*gdk_gc_set_line_attributes(gc,1,GDK_LINE_ON_OFF_DASH,GDK_CAP_NOT_LAST,GDK_JOIN_MITER);*/
+#if !defined(G_OS_WIN32)
   	gdk_draw_rectangle (ZoneDessin->window,gc,FALSE,xi, yi, xf, yf);
+#else
+  	gdk_draw_rectangle (ZoneDessin->window,ZoneDessin->style->white_gc,FALSE,xi, yi, xf, yf);
+#endif
 }
 /********************************************************************************/
 void draw_selection_circle(gfloat x,gfloat y)
@@ -1240,11 +1263,26 @@ static void delete_molecule()
 void SelectAllAtoms()
 {
 	gint i;
+	gint k;
 	if(Natoms<1) return;
 	NFatoms = Natoms;
 	NumFatoms = g_malloc((NFatoms)*sizeof(gint));
-	for (i=0;i<(gint)NFatoms;i++)
-		NumFatoms[i] = geometry[i].N;
+	k = 0;
+	for (i=0;i<(gint)Natoms;i++)
+		if(geometry[i].show) NumFatoms[k++] = geometry[i].N;
+	NFatoms = k;
+	if(k<1)
+	{
+		NFatoms = 0;
+		if(NumFatoms) g_free(NumFatoms);
+		NumFatoms=NULL;
+	}
+	else
+	{
+		NFatoms = k;
+		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
+	}
+
 	dessine();
 }
 /********************************************************************************/
@@ -1269,13 +1307,15 @@ void InvertSelectionOfAtoms()
 
 	k = 0;
 	for (i=0;i<(gint)Natoms;i++)
-		if(!if_selected(i)) 
+		if(!if_selected(i) && geometry[i].show) 
 		{
 			num[k] = geometry[i].N;
 			k++;
 			if(k>=n) break;
 		}
 
+	n = k;
+	if(n>0) num = g_realloc(num,n*sizeof(gint));
 	if(NumFatoms) g_free(NumFatoms);
 	NumFatoms = num;
 	NFatoms = n;
@@ -1312,7 +1352,8 @@ void copySelectedAtoms()
 			if(NumFatoms[k]==geometry[i].N)
 			{
 				F.Atoms[k].Symb=g_strdup(geometry[i].Prop.symbol);
-				F.Atoms[k].Type=g_strdup(geometry[i].Type);
+				F.Atoms[k].mmType=g_strdup(geometry[i].mmType);
+				F.Atoms[k].pdbType=g_strdup(geometry[i].pdbType);
 				F.Atoms[k].Residue = g_strdup(geometry[i].Residue);
 				F.Atoms[k].Coord[0]=geometry[i].X;
 				F.Atoms[k].Coord[1]=geometry[i].Y;
@@ -1351,6 +1392,7 @@ void SelectLayerAtoms(GabEditLayerType layer)
 	k = 0;
 	for (i=0;i<(gint)Natoms;i++)
 	{
+		if(!geometry[i].show) continue;
 		if(layer==geometry[i].Layer)
 			NumFatoms[k++]= geometry[i].N;
 	}
@@ -1380,6 +1422,7 @@ void SelectFixedVariableAtoms(gboolean variable)
 	k = 0;
 	for (i=0;i<(gint)Natoms;i++)
 	{
+		if(!geometry[i].show) continue;
 		if(variable==geometry[i].Variable)
 			NumFatoms[k++]= geometry[i].N;
 	}
@@ -1394,6 +1437,1680 @@ void SelectFixedVariableAtoms(gboolean variable)
 	{
 		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
 	}
+	dessine();
+}
+/********************************************************************************/
+void SelectFirstResidue()
+{
+	gint i;
+	gint k = 0;
+	if(Natoms<1) return;
+	NFatoms = 0;
+	if(NumFatoms) g_free(NumFatoms);
+
+	NumFatoms = g_malloc(Natoms*sizeof(gint));
+	k = 0;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(!geometry[i].show) continue;
+		if(0==geometry[i].ResidueNumber)
+			NumFatoms[k++]= geometry[i].N;
+	}
+	NFatoms = k;
+	if(k<1)
+	{
+		NFatoms = 0;
+		if(NumFatoms) g_free(NumFatoms);
+		NumFatoms=NULL;
+	}
+	else
+	{
+		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
+	}
+	dessine();
+}
+/********************************************************************************/
+void SelectLastResidue()
+{
+	gint i;
+	gint k = 0;
+	gint rMax = 0;
+	if(Natoms<1) return;
+
+	for (i=1;i<(gint)Natoms;i++)
+	{
+		if(rMax<geometry[i].ResidueNumber)
+			rMax = geometry[i].ResidueNumber;
+	}
+	NFatoms = 0;
+	if(NumFatoms) g_free(NumFatoms);
+
+	NumFatoms = g_malloc(Natoms*sizeof(gint));
+	k = 0;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(!geometry[i].show) continue;
+		if(rMax==geometry[i].ResidueNumber)
+			NumFatoms[k++]= geometry[i].N;
+	}
+	NFatoms = k;
+	if(k<1)
+	{
+		NFatoms = 0;
+		if(NumFatoms) g_free(NumFatoms);
+		NumFatoms=NULL;
+	}
+	else
+	{
+		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
+	}
+	dessine();
+}
+/********************************************************************************/
+static void sortList(gchar** strs, gint nlist)
+{
+	gint i;
+	gint j;
+	gint k;
+
+	for(i=0;i<nlist-1;i++)
+	{
+		k = i;
+		for(j=i+1;j<nlist;j++)
+			if(strcmp(strs[k],strs[j])>0) k = j;
+		if(i != k)
+		{
+			gchar* tmp = strs[i];
+			strs[i] = strs[k];
+			strs[k] = tmp;
+		}
+	}
+}
+/********************************************************************************/
+static gchar** getListResidues(gint* nlist)
+{
+
+	gchar** t = NULL;
+	
+	gint i;
+	gint j;
+
+	*nlist = 0;
+	if(Natoms<1) return NULL;
+
+	t = g_malloc(Natoms*sizeof(gchar*));
+	*nlist = 1;
+	t[*nlist-1] =  g_strdup(geometry0[0].Residue);
+
+
+	for(i=1;i<Natoms;i++)
+	{
+		gboolean inList = FALSE;
+		for(j=0;j<*nlist;j++)
+		{
+			if(!strcmp(geometry0[i].Residue, t[j]))
+			{
+				inList = TRUE;
+				break;
+			}
+		}
+		if(!inList)
+		{
+			(*nlist)++;
+			t[*nlist-1] =  g_strdup(geometry0[i].Residue);
+		}
+	}
+	t = g_realloc(t,*nlist*sizeof(gchar*));
+	sortList(t,*nlist);
+
+	return t;
+}
+/********************************************************************************/
+static gchar** freeList(gchar** strs, gint nlist)
+{
+	gint i;
+
+	for(i=0;i<nlist;i++)
+		if(strs[i])
+			g_free(strs[i]);
+
+	g_free(strs);
+
+	return NULL;
+}
+/********************************************************************************/
+static void selectResidueByName(GtkWidget* button, GtkWidget* entry)
+{
+	gint i;
+	gint k = 0;
+	G_CONST_RETURN gchar *rName;
+
+
+	if(Natoms<1) return;
+	rName = gtk_entry_get_text(GTK_ENTRY(entry));
+	if(strlen(rName)<1) return;
+
+	NFatoms = 0;
+	if(NumFatoms) g_free(NumFatoms);
+
+	NumFatoms = g_malloc(Natoms*sizeof(gint));
+	k = 0;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(!geometry[i].show) continue;
+		if(!strcmp(geometry[i].Residue,rName))
+			NumFatoms[k++]= geometry[i].N;
+	}
+	NFatoms = k;
+	if(k<1)
+	{
+		NFatoms = 0;
+		if(NumFatoms) g_free(NumFatoms);
+		NumFatoms=NULL;
+	}
+	else
+	{
+		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
+	}
+	dessine();
+}
+/********************************************************************************/
+void selectResidueByNameDlg()
+{
+	GtkWidget *winDlg;
+	GtkWidget *button;
+	GtkWidget *hbox;
+	GtkWidget *entry;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	gint n=0;
+	gchar** t = NULL;
+  
+	winDlg = gtk_dialog_new();
+	gtk_window_set_title(GTK_WINDOW(winDlg),"Select by Residue name");
+	gtk_window_set_position(GTK_WINDOW(winDlg),GTK_WIN_POS_CENTER);
+	gtk_window_set_transient_for(GTK_WINDOW(winDlg),GTK_WINDOW(GeomDlg));
+
+	add_child(GeomDlg,winDlg,gtk_widget_destroy," Sel. Res. ");
+	g_signal_connect(G_OBJECT(winDlg),"delete_event",(GtkSignalFunc)delete_child,NULL);
+
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->vbox), frame);
+
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	hbox=create_hbox_false(vboxframe);
+	n=0;
+	t = getListResidues(&n);
+	entry = create_label_combo(hbox, " Residue Name : ",t,n, TRUE,-1,-1);
+	gtk_editable_set_editable((GtkEditable*) entry,TRUE);
+	if(t) freeList(t,n);
+
+	gtk_widget_realize(winDlg);
+
+	button = create_button(winDlg,"Cancel");
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+
+	button = create_button(winDlg,"OK");
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button);
+	g_signal_connect(G_OBJECT(button), "clicked",(GtkSignalFunc)selectResidueByName,entry);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+    
+
+	gtk_widget_show_all(winDlg);
+}
+/********************************************************************************/
+static gchar** getListMMTypes(gint* nlist)
+{
+
+	gchar** t = NULL;
+	
+	gint i;
+	gint j;
+
+	*nlist = 0;
+	if(Natoms<1) return NULL;
+
+	t = g_malloc(Natoms*sizeof(gchar*));
+	*nlist = 1;
+	t[*nlist-1] =  g_strdup(geometry0[0].mmType);
+
+
+	for(i=1;i<Natoms;i++)
+	{
+		gboolean inList = FALSE;
+		for(j=0;j<*nlist;j++)
+		{
+			if(!strcmp(geometry0[i].mmType, t[j]))
+			{
+				inList = TRUE;
+				break;
+			}
+		}
+		if(!inList)
+		{
+			(*nlist)++;
+			t[*nlist-1] =  g_strdup(geometry0[i].mmType);
+		}
+	}
+	t = g_realloc(t,*nlist*sizeof(gchar*));
+	sortList(t,*nlist);
+
+	return t;
+}
+/********************************************************************************/
+static void selectAtomsByMMType(GtkWidget* button, GtkWidget* entry)
+{
+	gint i;
+	gint k = 0;
+	G_CONST_RETURN gchar *rName;
+
+
+	if(Natoms<1) return;
+	rName = gtk_entry_get_text(GTK_ENTRY(entry));
+	if(strlen(rName)<1) return;
+
+	NFatoms = 0;
+	if(NumFatoms) g_free(NumFatoms);
+
+	NumFatoms = g_malloc(Natoms*sizeof(gint));
+	k = 0;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(!geometry[i].show) continue;
+		if(!strcmp(geometry[i].mmType,rName))
+			NumFatoms[k++]= geometry[i].N;
+	}
+	NFatoms = k;
+	if(k<1)
+	{
+		NFatoms = 0;
+		if(NumFatoms) g_free(NumFatoms);
+		NumFatoms=NULL;
+	}
+	else
+	{
+		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
+	}
+	dessine();
+}
+/********************************************************************************/
+void selectAtomsByMMTypeDlg()
+{
+	GtkWidget *winDlg;
+	GtkWidget *button;
+	GtkWidget *hbox;
+	GtkWidget *entry;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	gint n=0;
+	gchar** t = NULL;
+  
+	winDlg = gtk_dialog_new();
+	gtk_window_set_title(GTK_WINDOW(winDlg),"Select by Type");
+	gtk_window_set_position(GTK_WINDOW(winDlg),GTK_WIN_POS_CENTER);
+	gtk_window_set_transient_for(GTK_WINDOW(winDlg),GTK_WINDOW(GeomDlg));
+
+	add_child(GeomDlg,winDlg,gtk_widget_destroy," Sel. Res. ");
+	g_signal_connect(G_OBJECT(winDlg),"delete_event",(GtkSignalFunc)delete_child,NULL);
+
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->vbox), frame);
+
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	hbox=create_hbox_false(vboxframe);
+	n=0;
+	t = getListMMTypes(&n);
+	entry = create_label_combo(hbox, " Type Name : ",t,n, TRUE,-1,-1);
+	gtk_editable_set_editable((GtkEditable*) entry,TRUE);
+	if(t) freeList(t,n);
+
+	gtk_widget_realize(winDlg);
+
+	button = create_button(winDlg,"Cancel");
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+
+	button = create_button(winDlg,"OK");
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button);
+	g_signal_connect(G_OBJECT(button), "clicked",(GtkSignalFunc)selectAtomsByMMType,entry);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+    
+
+	gtk_widget_show_all(winDlg);
+}
+/********************************************************************************/
+static gchar** getListPDBTypesFromGeom(gint* nlist)
+{
+
+	gchar** t = NULL;
+	
+	gint i;
+	gint j;
+
+	*nlist = 0;
+	if(Natoms<1) return NULL;
+
+	t = g_malloc(Natoms*sizeof(gchar*));
+	*nlist = 1;
+	t[*nlist-1] =  g_strdup(geometry0[0].pdbType);
+
+
+	for(i=1;i<Natoms;i++)
+	{
+		gboolean inList = FALSE;
+		for(j=0;j<*nlist;j++)
+		{
+			if(!strcmp(geometry0[i].pdbType, t[j]))
+			{
+				inList = TRUE;
+				break;
+			}
+		}
+		if(!inList)
+		{
+			(*nlist)++;
+			t[*nlist-1] =  g_strdup(geometry0[i].pdbType);
+		}
+	}
+	t = g_realloc(t,*nlist*sizeof(gchar*));
+	sortList(t,*nlist);
+
+	return t;
+}
+/********************************************************************************/
+static void selectAtomsByPDBType(GtkWidget* button, GtkWidget* entry)
+{
+	gint i;
+	gint k = 0;
+	G_CONST_RETURN gchar *rName;
+
+
+	if(Natoms<1) return;
+	rName = gtk_entry_get_text(GTK_ENTRY(entry));
+	if(strlen(rName)<1) return;
+
+	NFatoms = 0;
+	if(NumFatoms) g_free(NumFatoms);
+
+	NumFatoms = g_malloc(Natoms*sizeof(gint));
+	k = 0;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(!geometry[i].show) continue;
+		if(!strcmp(geometry[i].pdbType,rName))
+			NumFatoms[k++]= geometry[i].N;
+	}
+	NFatoms = k;
+	if(k<1)
+	{
+		NFatoms = 0;
+		if(NumFatoms) g_free(NumFatoms);
+		NumFatoms=NULL;
+	}
+	else
+	{
+		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
+	}
+	dessine();
+}
+/********************************************************************************/
+void selectAtomsByPDBTypeDlg()
+{
+	GtkWidget *winDlg;
+	GtkWidget *button;
+	GtkWidget *hbox;
+	GtkWidget *entry;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	gint n=0;
+	gchar** t = NULL;
+  
+	winDlg = gtk_dialog_new();
+	gtk_window_set_title(GTK_WINDOW(winDlg),"Select by PDB Type");
+	gtk_window_set_position(GTK_WINDOW(winDlg),GTK_WIN_POS_CENTER);
+	gtk_window_set_transient_for(GTK_WINDOW(winDlg),GTK_WINDOW(GeomDlg));
+
+	add_child(GeomDlg,winDlg,gtk_widget_destroy," Sel. Res. ");
+	g_signal_connect(G_OBJECT(winDlg),"delete_event",(GtkSignalFunc)delete_child,NULL);
+
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->vbox), frame);
+
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	hbox=create_hbox_false(vboxframe);
+	n=0;
+	t = getListPDBTypesFromGeom(&n);
+	entry = create_label_combo(hbox, " Type Name : ",t,n, TRUE,-1,-1);
+	gtk_editable_set_editable((GtkEditable*) entry,TRUE);
+	if(t) freeList(t,n);
+
+	gtk_widget_realize(winDlg);
+
+	button = create_button(winDlg,"Cancel");
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+
+	button = create_button(winDlg,"OK");
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button);
+	g_signal_connect(G_OBJECT(button), "clicked",(GtkSignalFunc)selectAtomsByPDBType,entry);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+    
+
+	gtk_widget_show_all(winDlg);
+}
+/********************************************************************************/
+static gchar** getListSymbols(gint* nlist)
+{
+
+	gchar** t = NULL;
+	
+	gint i;
+	gint j;
+
+	*nlist = 0;
+	if(Natoms<1) return NULL;
+
+	t = g_malloc(Natoms*sizeof(gchar*));
+	*nlist = 1;
+	t[*nlist-1] =  g_strdup(geometry0[0].Prop.symbol);
+
+
+	for(i=1;i<Natoms;i++)
+	{
+		gboolean inList = FALSE;
+		for(j=0;j<*nlist;j++)
+		{
+			if(!strcmp(geometry0[i].Prop.symbol, t[j]))
+			{
+				inList = TRUE;
+				break;
+			}
+		}
+		if(!inList)
+		{
+			(*nlist)++;
+			t[*nlist-1] =  g_strdup(geometry0[i].Prop.symbol);
+		}
+	}
+	t = g_realloc(t,*nlist*sizeof(gchar*));
+	sortList(t,*nlist);
+
+	return t;
+}
+/********************************************************************************/
+static void selectAtomsBySymbol(GtkWidget* button, GtkWidget* entry)
+{
+	gint i;
+	gint k = 0;
+	G_CONST_RETURN gchar *rName;
+
+
+	if(Natoms<1) return;
+	rName = gtk_entry_get_text(GTK_ENTRY(entry));
+	if(strlen(rName)<1) return;
+
+	NFatoms = 0;
+	if(NumFatoms) g_free(NumFatoms);
+
+	NumFatoms = g_malloc(Natoms*sizeof(gint));
+	k = 0;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(!geometry[i].show) continue;
+		if(!strcmp(geometry[i].Prop.symbol,rName))
+			NumFatoms[k++]= geometry[i].N;
+	}
+	NFatoms = k;
+	if(k<1)
+	{
+		NFatoms = 0;
+		if(NumFatoms) g_free(NumFatoms);
+		NumFatoms=NULL;
+	}
+	else
+	{
+		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
+	}
+	dessine();
+}
+/********************************************************************************/
+void selectAtomsBySymbolDlg()
+{
+	GtkWidget *winDlg;
+	GtkWidget *button;
+	GtkWidget *hbox;
+	GtkWidget *entry;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	gint n=0;
+	gchar** t = NULL;
+  
+	winDlg = gtk_dialog_new();
+	gtk_window_set_title(GTK_WINDOW(winDlg),"Select by Symbol");
+	gtk_window_set_position(GTK_WINDOW(winDlg),GTK_WIN_POS_CENTER);
+	gtk_window_set_transient_for(GTK_WINDOW(winDlg),GTK_WINDOW(GeomDlg));
+
+	add_child(GeomDlg,winDlg,gtk_widget_destroy," Sel. Res. ");
+	g_signal_connect(G_OBJECT(winDlg),"delete_event",(GtkSignalFunc)delete_child,NULL);
+
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->vbox), frame);
+
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	hbox=create_hbox_false(vboxframe);
+	n=0;
+	t = getListSymbols(&n);
+	entry = create_label_combo(hbox, " Symbol : ",t,n, TRUE,-1,-1);
+	gtk_editable_set_editable((GtkEditable*) entry,TRUE);
+	if(t) freeList(t,n);
+
+	gtk_widget_realize(winDlg);
+
+	button = create_button(winDlg,"Cancel");
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+
+	button = create_button(winDlg,"OK");
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button);
+	g_signal_connect(G_OBJECT(button), "clicked",(GtkSignalFunc)selectAtomsBySymbol,entry);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+    
+
+	gtk_widget_show_all(winDlg);
+}
+/********************************************************************************/
+void selectAtomsByChargeValues(gboolean positive)
+{
+	gint i;
+	gint k = 0;
+
+	if(Natoms<1) return;
+	NFatoms = 0;
+	if(NumFatoms) g_free(NumFatoms);
+
+	NumFatoms = g_malloc(Natoms*sizeof(gint));
+	k = 0;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(!geometry[i].show) continue;
+		if(
+			(geometry[i].Charge>0 && positive) ||
+			(geometry[i].Charge<0 && !positive)
+		)
+			NumFatoms[k++]= geometry[i].N;
+	}
+	NFatoms = k;
+	if(k<1)
+	{
+		NFatoms = 0;
+		if(NumFatoms) g_free(NumFatoms);
+		NumFatoms=NULL;
+	}
+	else
+	{
+		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
+	}
+	dessine();
+}
+/********************************************************************************/
+static void setMMTypeOfselectedAtoms(GtkWidget* button, GtkWidget* entry)
+{
+	gint i;
+	gint k = 0;
+	G_CONST_RETURN gchar *tName;
+
+
+	if(Natoms<1) return;
+	tName = gtk_entry_get_text(GTK_ENTRY(entry));
+	if(strlen(tName)<1) return;
+	if(NFatoms<1) return;
+	if(!NumFatoms) return;
+
+	for (k=0;k<(gint)NFatoms;k++)
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(geometry[i].N== NumFatoms[k])
+		{
+			if(geometry[i].mmType) g_free(geometry[i].mmType);
+			geometry[i].mmType = g_strdup(tName);
+			if(geometry0[i].mmType) g_free(geometry0[i].mmType);
+			geometry0[i].mmType = g_strdup(tName);
+		}
+	}
+	create_GeomXYZ_from_draw_grometry();
+	dessine();
+}
+/********************************************************************************/
+void setMMTypeOfselectedAtomsDlg()
+{
+	GtkWidget *winDlg;
+	GtkWidget *button;
+	GtkWidget *hbox;
+	GtkWidget *entry;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	gint n=0;
+	gchar** t = NULL;
+	gchar tmp[100] = "UNK";
+	gint i;
+	gint k;
+
+	if(Natoms<1) return;
+	if(NFatoms<1) return;
+	if(!NumFatoms) return;
+
+	k=0;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(geometry[i].N == NumFatoms[k])
+		{
+			sprintf(tmp,"%s",geometry[i].mmType);
+			break;
+		}
+	}
+  
+	winDlg = gtk_dialog_new();
+	gtk_window_set_title(GTK_WINDOW(winDlg),"Set MM Type of selected atoms");
+	gtk_window_set_position(GTK_WINDOW(winDlg),GTK_WIN_POS_CENTER);
+	gtk_window_set_transient_for(GTK_WINDOW(winDlg),GTK_WINDOW(GeomDlg));
+
+	add_child(GeomDlg,winDlg,gtk_widget_destroy," Set Sel. Type.");
+	g_signal_connect(G_OBJECT(winDlg),"delete_event",(GtkSignalFunc)delete_child,NULL);
+
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->vbox), frame);
+
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	hbox=create_hbox_false(vboxframe);
+	n=0;
+	t = getListMMTypes(&n);
+	entry = create_label_combo(hbox, " Type Name : ",t,n, TRUE,-1,-1);
+	if(strcmp(tmp,"UNK")) gtk_entry_set_text(GTK_ENTRY(entry),tmp);
+	gtk_editable_set_editable((GtkEditable*) entry,TRUE);
+	if(t) freeList(t,n);
+
+	gtk_widget_realize(winDlg);
+
+	button = create_button(winDlg,"Cancel");
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+
+	button = create_button(winDlg,"OK");
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button);
+	g_signal_connect(G_OBJECT(button), "clicked",(GtkSignalFunc)setMMTypeOfselectedAtoms,entry);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+    
+
+	gtk_widget_show_all(winDlg);
+}
+/********************************************************************************/
+static void setPDBTypeOfselectedAtoms(GtkWidget* button, GtkWidget* entry)
+{
+	gint i;
+	gint k = 0;
+	G_CONST_RETURN gchar *tName;
+
+
+	if(Natoms<1) return;
+	tName = gtk_entry_get_text(GTK_ENTRY(entry));
+	if(strlen(tName)<1) return;
+	if(NFatoms<1) return;
+	if(!NumFatoms) return;
+
+	for (k=0;k<(gint)NFatoms;k++)
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(geometry[i].N== NumFatoms[k])
+		{
+			if(geometry[i].pdbType) g_free(geometry[i].pdbType);
+			geometry[i].pdbType = g_strdup(tName);
+			if(geometry0[i].pdbType) g_free(geometry0[i].pdbType);
+			geometry0[i].pdbType = g_strdup(tName);
+		}
+	}
+	create_GeomXYZ_from_draw_grometry();
+	dessine();
+}
+/********************************************************************************/
+void setPDBTypeOfselectedAtomsDlg()
+{
+	GtkWidget *winDlg;
+	GtkWidget *button;
+	GtkWidget *hbox;
+	GtkWidget *entry;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	gint n=0;
+	gchar** t = NULL;
+	gchar tmp[100] = "UNK";
+	gint i;
+	gint k;
+
+	if(Natoms<1) return;
+	if(NFatoms<1) return;
+	if(!NumFatoms) return;
+
+	k=0;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(geometry[i].N == NumFatoms[k])
+		{
+			sprintf(tmp,"%s",geometry[i].pdbType);
+			break;
+		}
+	}
+  
+	winDlg = gtk_dialog_new();
+	gtk_window_set_title(GTK_WINDOW(winDlg),"Set PDB Type of selected atoms");
+	gtk_window_set_position(GTK_WINDOW(winDlg),GTK_WIN_POS_CENTER);
+	gtk_window_set_transient_for(GTK_WINDOW(winDlg),GTK_WINDOW(GeomDlg));
+
+	add_child(GeomDlg,winDlg,gtk_widget_destroy," Set Sel. Type.");
+	g_signal_connect(G_OBJECT(winDlg),"delete_event",(GtkSignalFunc)delete_child,NULL);
+
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->vbox), frame);
+
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	hbox=create_hbox_false(vboxframe);
+	n=0;
+	t = getListPDBTypesFromGeom(&n);
+	entry = create_label_combo(hbox, " Type Name : ",t,n, TRUE,-1,-1);
+	if(strcmp(tmp,"UNK")) gtk_entry_set_text(GTK_ENTRY(entry),tmp);
+	gtk_editable_set_editable((GtkEditable*) entry,TRUE);
+	if(t) freeList(t,n);
+
+	gtk_widget_realize(winDlg);
+
+	button = create_button(winDlg,"Cancel");
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+
+	button = create_button(winDlg,"OK");
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button);
+	g_signal_connect(G_OBJECT(button), "clicked",(GtkSignalFunc)setPDBTypeOfselectedAtoms,entry);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+    
+
+	gtk_widget_show_all(winDlg);
+}
+/********************************************************************************/
+static gchar** getListCharges(gint* nlist)
+{
+
+	gchar** t = NULL;
+	
+	gint i;
+	gint j;
+
+	*nlist = 0;
+	if(Natoms<1) return NULL;
+
+	t = g_malloc(Natoms*sizeof(gchar*));
+	*nlist = 1;
+	t[*nlist-1] =  g_strdup_printf("%f",geometry0[0].Charge);
+
+
+	for(i=1;i<Natoms;i++)
+	{
+		gboolean inList = FALSE;
+		for(j=0;j<*nlist;j++)
+		{
+			if(geometry0[i].Charge==atof(t[j]))
+			{
+				inList = TRUE;
+				break;
+			}
+		}
+		if(!inList)
+		{
+			(*nlist)++;
+			t[*nlist-1] =  g_strdup_printf("%f",geometry0[i].Charge);
+		}
+	}
+	t = g_realloc(t,*nlist*sizeof(gchar*));
+
+	return t;
+}
+/********************************************************************************/
+static void setChargeOfselectedAtoms(GtkWidget* button, GtkWidget* entry)
+{
+	gint i;
+	gint k = 0;
+	G_CONST_RETURN gchar *tValue;
+
+
+	if(Natoms<1) return;
+	tValue = gtk_entry_get_text(GTK_ENTRY(entry));
+	if(strlen(tValue)<1) return;
+	if(NFatoms<1) return;
+	if(!NumFatoms) return;
+
+	for (k=0;k<(gint)NFatoms;k++)
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(geometry[i].N== NumFatoms[k])
+		{
+			geometry[i].Charge = atof(tValue);
+			geometry0[i].Charge = atof(tValue);
+		}
+	}
+	create_GeomXYZ_from_draw_grometry();
+
+	dessine();
+}
+/********************************************************************************/
+void setChargeOfselectedAtomsDlg()
+{
+	GtkWidget *winDlg;
+	GtkWidget *button;
+	GtkWidget *hbox;
+	GtkWidget *entry;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	gint n=0;
+	gchar** t = NULL;
+	gchar tmp[100] = "UNK";
+	gint i;
+	gint k;
+
+	if(Natoms<1) return;
+	if(NFatoms<1) return;
+	if(!NumFatoms) return;
+
+	k=0;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(geometry[i].N == NumFatoms[k])
+		{
+			sprintf(tmp,"%f",geometry[i].Charge);
+			break;
+		}
+	}
+  
+	winDlg = gtk_dialog_new();
+	gtk_window_set_title(GTK_WINDOW(winDlg),"Set Charge of selected atoms");
+	gtk_window_set_position(GTK_WINDOW(winDlg),GTK_WIN_POS_CENTER);
+	gtk_window_set_transient_for(GTK_WINDOW(winDlg),GTK_WINDOW(GeomDlg));
+
+	add_child(GeomDlg,winDlg,gtk_widget_destroy," Set Sel. Charge.");
+	g_signal_connect(G_OBJECT(winDlg),"delete_event",(GtkSignalFunc)delete_child,NULL);
+
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->vbox), frame);
+
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	hbox=create_hbox_false(vboxframe);
+	n=0;
+	t = getListCharges(&n);
+	entry = create_label_combo(hbox, " Charge : ",t,n, TRUE,-1,-1);
+	if(strcmp(tmp,"UNK")) gtk_entry_set_text(GTK_ENTRY(entry),tmp);
+	gtk_editable_set_editable((GtkEditable*) entry,TRUE);
+	if(t) freeList(t,n);
+
+	gtk_widget_realize(winDlg);
+
+	button = create_button(winDlg,"Cancel");
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+
+	button = create_button(winDlg,"OK");
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button);
+	g_signal_connect(G_OBJECT(button), "clicked",(GtkSignalFunc)setChargeOfselectedAtoms,entry);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+    
+
+	gtk_widget_show_all(winDlg);
+}
+/********************************************************************************/
+static void scaleChargesOfSelectedAtoms(GtkWidget* button, GtkWidget* entry)
+{
+	gint i;
+	gint k;
+	G_CONST_RETURN gchar *strEntry;
+	gdouble factor = 1.0;
+
+
+	if(Natoms<1) return;
+	if(NFatoms<1) return;
+	if(!NumFatoms) return;
+	strEntry = gtk_entry_get_text(GTK_ENTRY(entry));
+	if(strlen(strEntry)<1) return;
+	factor = atof(strEntry);
+
+	for (k=0;k<(gint)NFatoms;k++)
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(geometry[i].N== NumFatoms[k])
+		{
+			geometry[i].Charge *= factor;
+			geometry0[i].Charge *= factor;
+		}
+	}
+
+	dessine();
+}
+/********************************************************************************/
+void scaleChargesOfSelectedAtomsDlg()
+{
+	GtkWidget *winDlg;
+	GtkWidget *button;
+	GtkWidget *hbox;
+	GtkWidget *label;
+	GtkWidget *entry;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+  
+	winDlg = gtk_dialog_new();
+	gtk_window_set_title(GTK_WINDOW(winDlg),"Scale charges of selected atoms");
+	gtk_window_set_position(GTK_WINDOW(winDlg),GTK_WIN_POS_CENTER);
+	gtk_window_set_transient_for(GTK_WINDOW(winDlg),GTK_WINDOW(GeomDlg));
+
+	add_child(GeomDlg,winDlg,gtk_widget_destroy," Scal. Char. ");
+	g_signal_connect(G_OBJECT(winDlg),"delete_event",(GtkSignalFunc)delete_child,NULL);
+
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->vbox), frame);
+
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	hbox=create_hbox_false(vboxframe);
+	label = gtk_label_new(" Factor : ");
+	gtk_box_pack_start_defaults( GTK_BOX(hbox), label);
+	entry = gtk_entry_new();
+	gtk_entry_set_text(GTK_ENTRY(entry),"1.0");
+	gtk_box_pack_start_defaults( GTK_BOX(hbox), entry);
+
+	gtk_widget_realize(winDlg);
+
+	button = create_button(winDlg,"Cancel");
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+
+	button = create_button(winDlg,"OK");
+	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button);
+	g_signal_connect(G_OBJECT(button), "clicked",(GtkSignalFunc)scaleChargesOfSelectedAtoms,entry);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+    
+
+	gtk_widget_show_all(winDlg);
+}
+/*****************************************************************************/
+static void set_vect_ij(gint i, gint j, gfloat V[])
+{
+	V[0] = geometry0[j].X-geometry0[i].X;
+	V[1] = geometry0[j].Y-geometry0[i].Y;
+	V[2] = geometry0[j].Z-geometry0[i].Z;
+}
+/*****************************************************************************/
+static void add_hydrogen_atoms(gint addToI, gint nH, gchar* HType)
+{
+	static SAtomsProp propH = {0};
+	static gint begin = 0;
+	gint i;
+	gint k;
+	gdouble dist = 1.0;
+	gint geom = 0; /* 0=3D, 1=planar, 2=linear */
+	gdouble angle = 109.5*PI/180.0;
+	gint nV;
+	gint nC;
+	gint* listOfConnectedAtoms = NULL;
+
+	if(begin==0)
+	{
+		begin++;
+		propH = prop_atom_get("H");
+	}
+	dist = (geometry[addToI].Prop.covalentRadii+propH.covalentRadii)*0.9;
+	if(nH==1) 
+	{
+		angle = 180.0*PI/180.0;
+		geom = 2;
+	}
+	if(nH==2 && strcmp(geometry0[addToI].Prop.symbol,"N")) 
+	{
+		angle = 120.0*PI/180.0;
+		geom = 1;
+	}
+	nV =geometry[addToI].Prop.maximumBondValence;
+	if(nV<1) return;
+	listOfConnectedAtoms = g_malloc(nV*sizeof(gint));
+
+	if(Natoms>0)
+	{
+		geometry0 = g_realloc(geometry0,(Natoms+nH)*sizeof(GeomDef));
+		geometry = g_realloc(geometry,(Natoms+nH)*sizeof(GeomDef)); 
+	}
+	else
+	{
+		geometry0 = g_malloc(nH*sizeof(GeomDef));
+		geometry = g_malloc(nH*sizeof(GeomDef)); 
+	}
+
+
+	nC = 0;
+	for(i=0;i<(gint)Natoms;i++)
+	{
+		if(connections[addToI][i]>0)
+		{
+			listOfConnectedAtoms[nC] = i;
+			nC++;
+		}
+	}
+
+	for(i=0;i<nH;i++)
+	{
+		gfloat v1[3];
+		gfloat v2[3];
+		gfloat v3[3];
+		gfloat v4[3];
+		gfloat v5[3];
+		for(k=0;k<3;k++)
+			v1[k] = rand()/(gdouble)RAND_MAX-0.5;
+		v3d_normal(v1);
+
+		switch (nC)
+		{
+			case 1:
+				{
+					set_vect_ij(addToI, listOfConnectedAtoms[0], v2);
+					v3d_normal(v2);
+					v3d_cross(v1,v2,v3);
+					v3d_normal(v3);
+					v3d_scale(v2,cos(angle));
+					v3d_scale(v3,sin(angle));
+					v3d_add(v2,v3,v1);
+					break;
+				}
+			case 2:
+				{
+					set_vect_ij(addToI, listOfConnectedAtoms[0], v2);
+					v3d_normal(v2);
+					set_vect_ij(addToI, listOfConnectedAtoms[1], v3);
+					v3d_normal(v3);
+					if(geom==0)
+					{
+						v3d_add(v2,v3,v4);
+						v3d_normal(v4);
+						v3d_scale(v4,-1.0);
+						v3d_cross(v2,v3,v5);
+						v3d_normal(v5);
+						v3d_scale(v4,0.5);
+						v3d_scale(v5,0.5);
+						v3d_add(v4,v5,v1);
+						v3d_normal(v1);
+					}
+					else
+					{
+						v3d_add(v2,v3,v1);
+						v3d_normal(v1);
+						v3d_scale(v1,-1.0);
+					}
+					break;
+				}
+			default:
+				if(nC>=3)
+				{
+					set_vect_ij(addToI, listOfConnectedAtoms[0], v2);
+					v3d_normal(v2);
+					set_vect_ij(addToI, listOfConnectedAtoms[1], v3);
+					v3d_normal(v3);
+					set_vect_ij(addToI, listOfConnectedAtoms[2], v4);
+					v3d_normal(v4);
+					v3d_add(v2,v3,v5);
+					v3d_add(v5,v4,v1);
+					v3d_normal(v1);
+					v3d_scale(v1,-1.0);
+					break;
+				}
+
+		}
+		geometry[Natoms].X= geometry0[addToI].X + dist*v1[0];
+		geometry[Natoms].Y= geometry0[addToI].Y + dist*v1[1];
+		geometry[Natoms].Z= geometry0[addToI].Z + dist*v1[2];
+		geometry[Natoms].Prop = prop_atom_get("H");
+		geometry[Natoms].mmType = g_strdup(HType);
+		geometry[Natoms].pdbType = g_strdup(HType);
+		geometry[Natoms].Layer = geometry[addToI].Layer;
+		geometry[Natoms].N = Natoms+1;
+		if(Natoms==0)
+		{
+			geometry[Natoms].Residue = g_strdup("H");
+			geometry[Natoms].ResidueNumber = 0;
+		}
+		else
+		{
+			geometry[Natoms].Residue = g_strdup(geometry[addToI].Residue);
+			geometry[Natoms].ResidueNumber = geometry[addToI].ResidueNumber;
+		}
+		geometry[Natoms].Charge = 0.0;
+		geometry[Natoms].Variable = FALSE;
+		geometry[Natoms].show = TRUE;
+
+		geometry0[Natoms].X = geometry[Natoms].X;
+		geometry0[Natoms].Y = geometry[Natoms].Y;
+		geometry0[Natoms].Z = geometry[Natoms].Z;
+		geometry0[Natoms].Prop = prop_atom_get("H");
+		geometry0[Natoms].mmType = g_strdup(geometry[Natoms].mmType);
+		geometry0[Natoms].pdbType = g_strdup(geometry[Natoms].pdbType);
+		geometry0[Natoms].Layer = geometry[Natoms].Layer;
+		geometry0[Natoms].Residue = g_strdup(geometry[Natoms].Residue);
+		geometry0[Natoms].ResidueNumber = geometry[Natoms].ResidueNumber;
+		geometry0[Natoms].Charge = 0.0;
+		geometry0[Natoms].Variable = FALSE;
+		geometry0[Natoms].N = geometry[Natoms].N;
+		geometry0[Natoms].show = TRUE;
+
+		Natoms++;
+		nC++;
+		listOfConnectedAtoms = g_realloc(listOfConnectedAtoms, nC*sizeof(gint));
+		listOfConnectedAtoms[nC-1] = Natoms-1;
+	}
+	if(listOfConnectedAtoms) g_free(listOfConnectedAtoms);
+}
+/*****************************************************************************/
+static gboolean add_hydrogen_atom(gint addToI)
+{
+	gint nMultiple = 0;
+	gint nAll = 0;
+	gchar HType[100] = "H";
+	gint j;
+	gint nV = 0;
+	gint nH = 0;
+
+	
+	if(Natoms<1 ) return FALSE;
+	if(addToI>Natoms-1) return FALSE;
+
+	nV =geometry[addToI].Prop.maximumBondValence;
+	if(nV<1) return FALSE;
+
+	for(j=0;j<(gint)Natoms;j++)
+	{
+		if(connections[addToI][j]>1) nMultiple++;
+		nAll += connections[addToI][j];
+	}
+	/*
+	printf("Type = %s res = %s\n", geometry[addToI].mmType, geometry[addToI].Residue);
+	printf("nAll = %d nMul = %d\n", nAll, nMultiple);
+	*/
+
+	nH = nV - nAll;
+	/* printf("nV = %d nH = %d nAll = %d nMult = %d\n", nV, nH, nAll, nMultiple);*/
+	if(nH<1)
+	{
+		return FALSE;
+	}
+	if(nAll>=geometry[addToI].Prop.maximumBondValence && nMultiple==0) 
+	{
+		return FALSE;
+	}
+
+
+	if(!strcmp(geometry[addToI].pdbType,"CA")) sprintf(HType,"HA1");
+	else if(!strcmp(geometry[addToI].pdbType,"OH")) sprintf(HType,"HO");
+	else if(strstr(geometry[addToI].pdbType,"OE")) sprintf(HType,"HO");
+	else if(strstr(geometry[addToI].pdbType,"OD")) sprintf(HType,"HO");
+	else if(!strcmp(geometry[addToI].pdbType,"OG1")) sprintf(HType,"HG1");
+	else if(!strcmp(geometry[addToI].pdbType,"CT")) sprintf(HType,"HT");
+	else if(!strcmp(geometry[addToI].pdbType,"CB")) sprintf(HType,"HB1");
+	else if(!strcmp(geometry[addToI].pdbType,"SG")) sprintf(HType,"HG");
+	else if(!strcmp(geometry[addToI].pdbType,"CD1")) sprintf(HType,"HD11");
+	else if(!strcmp(geometry[addToI].pdbType,"CD2")) sprintf(HType,"HD22");
+	else if(strstr(geometry[addToI].pdbType,"CD")) sprintf(HType,"HD1");
+	else if(!strcmp(geometry[addToI].pdbType,"CG1")) sprintf(HType,"HG11");
+	else if(!strcmp(geometry[addToI].pdbType,"CG2")) sprintf(HType,"HG22");
+	else if(strstr(geometry[addToI].pdbType,"CG")) sprintf(HType,"HG1");
+	else if(!strcmp(geometry[addToI].pdbType,"CE1")) sprintf(HType,"HE1");
+	else if(!strcmp(geometry[addToI].pdbType,"CE2")) sprintf(HType,"HE2");
+	else if(strstr(geometry[addToI].pdbType,"CE")) sprintf(HType,"HE2");
+	else if(strstr(geometry[addToI].pdbType,"NZ")) sprintf(HType,"HZ2");
+	else if(strstr(geometry[addToI].pdbType,"NZ")) sprintf(HType,"HZ2");
+	else if(!strcmp(geometry[addToI].pdbType,"CZ1")) sprintf(HType,"HZ1");
+	else if(!strcmp(geometry[addToI].pdbType,"CZ2")) sprintf(HType,"HZ2");
+	else if(!strcmp(geometry[addToI].pdbType,"CZ3")) sprintf(HType,"HZ3");
+	else if(strstr(geometry[addToI].pdbType,"CZ")) sprintf(HType,"HZ");
+	else if(!strcmp(geometry[addToI].pdbType,"NE")) sprintf(HType,"HE");
+	else if(!strcmp(geometry[addToI].pdbType,"N")) sprintf(HType,"HN");
+	else if(!strcmp(geometry[addToI].pdbType,"NE1")) sprintf(HType,"HE1");
+	else if(!strcmp(geometry[addToI].pdbType,"NH1")) sprintf(HType,"HH11");
+	else if(!strcmp(geometry[addToI].pdbType,"NH2")) sprintf(HType,"HH21");
+	else if(!strcmp(geometry[addToI].pdbType,"CH1")) sprintf(HType,"HH1");
+	else if(!strcmp(geometry[addToI].pdbType,"CH2")) sprintf(HType,"HH2");
+	else if(!strcmp(geometry[addToI].pdbType,"CH3")) sprintf(HType,"H2");
+	else 
+	{
+		sprintf(HType,"%s1",geometry[addToI].pdbType);
+		if(strlen(HType)>0) HType[0] = 'H';
+	}
+	add_hydrogen_atoms(addToI, nH, HType);
+
+	set_connections();
+	return TRUE;
+}
+/*****************************************************************************/
+static gboolean add_one_hydrogen_atom(gint addToI)
+{
+	gint nMultiple = 0;
+	gint nAll = 0;
+	gchar HType[100] = "H";
+	gint j;
+	gint nV = 0;
+	gint nH = 0;
+	gint nC = 0;
+
+	
+	if(Natoms<1 ) return FALSE;
+	if(addToI>Natoms-1) return FALSE;
+
+	nV =geometry[addToI].Prop.maximumBondValence;
+	if(nV<1) return FALSE;
+
+	for(j=0;j<(gint)Natoms;j++)
+	{
+		if(connections[addToI][j]>0) nC++;
+		if(connections[addToI][j]>1) nMultiple++;
+		nAll += connections[addToI][j];
+	}
+	/*
+	printf("Type = %s res = %s\n", geometry[addToI].pdbType, geometry[addToI].Residue);
+	printf("nAll = %d nMul = %d\n", nAll, nMultiple);
+	*/
+
+	nH = nV - nC;
+	/* printf("nV = %d nH = %d nAll = %d nMult = %d\n", nV, nH, nAll, nMultiple);*/
+	if(nH<1)
+	{
+		return FALSE;
+	}
+	else nH = 1;
+	if(nAll>=geometry[addToI].Prop.maximumBondValence && nMultiple==0) 
+	{
+		return FALSE;
+	}
+
+
+	if(!strcmp(geometry[addToI].pdbType,"CA")) sprintf(HType,"HA1");
+	else if(!strcmp(geometry[addToI].pdbType,"OH")) sprintf(HType,"HO");
+	else if(strstr(geometry[addToI].pdbType,"OE")) sprintf(HType,"HO");
+	else if(strstr(geometry[addToI].pdbType,"OD")) sprintf(HType,"HO");
+	else if(!strcmp(geometry[addToI].pdbType,"OG1")) sprintf(HType,"HG1");
+	else if(!strcmp(geometry[addToI].pdbType,"CT")) sprintf(HType,"HT");
+	else if(!strcmp(geometry[addToI].pdbType,"CB")) sprintf(HType,"HB1");
+	else if(!strcmp(geometry[addToI].pdbType,"SG")) sprintf(HType,"HG");
+	else if(!strcmp(geometry[addToI].pdbType,"CD1")) sprintf(HType,"HD11");
+	else if(!strcmp(geometry[addToI].pdbType,"CD2")) sprintf(HType,"HD22");
+	else if(strstr(geometry[addToI].pdbType,"CD")) sprintf(HType,"HD1");
+	else if(!strcmp(geometry[addToI].pdbType,"CG1")) sprintf(HType,"HG11");
+	else if(!strcmp(geometry[addToI].pdbType,"CG2")) sprintf(HType,"HG22");
+	else if(strstr(geometry[addToI].pdbType,"CG")) sprintf(HType,"HG1");
+	else if(!strcmp(geometry[addToI].pdbType,"CE1")) sprintf(HType,"HE1");
+	else if(!strcmp(geometry[addToI].pdbType,"CE2")) sprintf(HType,"HE2");
+	else if(strstr(geometry[addToI].pdbType,"CE")) sprintf(HType,"HE2");
+	else if(strstr(geometry[addToI].pdbType,"NZ")) sprintf(HType,"HZ2");
+	else if(strstr(geometry[addToI].pdbType,"NZ")) sprintf(HType,"HZ2");
+	else if(!strcmp(geometry[addToI].pdbType,"CZ1")) sprintf(HType,"HZ1");
+	else if(!strcmp(geometry[addToI].pdbType,"CZ2")) sprintf(HType,"HZ2");
+	else if(!strcmp(geometry[addToI].pdbType,"CZ3")) sprintf(HType,"HZ3");
+	else if(strstr(geometry[addToI].pdbType,"CZ")) sprintf(HType,"HZ");
+	else if(!strcmp(geometry[addToI].pdbType,"NE")) sprintf(HType,"HE");
+	else if(!strcmp(geometry[addToI].pdbType,"N")) sprintf(HType,"HN");
+	else if(!strcmp(geometry[addToI].pdbType,"NE1")) sprintf(HType,"HE1");
+	else if(!strcmp(geometry[addToI].pdbType,"NH1")) sprintf(HType,"HH11");
+	else if(!strcmp(geometry[addToI].pdbType,"NH2")) sprintf(HType,"HH21");
+	else if(!strcmp(geometry[addToI].pdbType,"CH1")) sprintf(HType,"HH1");
+	else if(!strcmp(geometry[addToI].pdbType,"CH2")) sprintf(HType,"HH2");
+	else if(!strcmp(geometry[addToI].pdbType,"CH3")) sprintf(HType,"H2");
+	else 
+	{
+		sprintf(HType,"%s1",geometry[addToI].pdbType);
+		if(strlen(HType)>0) HType[0] = 'H';
+	}
+	add_hydrogen_atoms(addToI, nH, HType);
+
+	set_connections();
+	return TRUE;
+}
+/********************************************************************************/
+void addHydrogensToSelectedAtoms()
+{
+	gint i;
+	gint k = 0;
+
+
+	if(Natoms<1) return;
+	if(NFatoms<1) return;
+	if(!NumFatoms) return;
+
+	for (k=0;k<(gint)NFatoms;k++)
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(geometry[i].N== NumFatoms[k])
+		{
+			add_hydrogen_atom(i);
+			break;
+		}
+	}
+	create_GeomXYZ_from_draw_grometry();
+	dessine();
+}
+/********************************************************************************/
+void addOneHydrogenToSelectedAtoms()
+{
+	gint i;
+	gint k = 0;
+
+
+	if(Natoms<1) return;
+	if(NFatoms<1) return;
+	if(!NumFatoms) return;
+
+	for (k=0;k<(gint)NFatoms;k++)
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(geometry[i].N== NumFatoms[k])
+		{
+			add_one_hydrogen_atom(i);
+			break;
+		}
+	}
+	create_GeomXYZ_from_draw_grometry();
+	dessine();
+}
+/*****************************************************************************/
+static void add_hydrogen_atoms_tpl(gint addToI, gint nA)
+{
+	static SAtomsProp propH = {0};
+	static gint begin = 0;
+	gint i;
+	gint k;
+	gdouble dist = 1.0;
+	gint geom = 0; /* 0=3D, 1=planar, 2=linear */
+	gdouble angle = 109.5*PI/180.0;
+	gint nV;
+	gint nC;
+	gint* listOfConnectedAtoms = NULL;
+	gint nH;
+	gchar* hAtoms[10];
+	gint nAll;
+	gint nOldH = 0;
+
+	nV =geometry[addToI].Prop.maximumBondValence;
+	if(nV<1) return;
+	nAll = 0;
+	nOldH = 0;
+	for(i=0;i<(gint)nA;i++)
+	{
+		if(connections[addToI][i]>0) 
+		{
+			nAll += 1;
+			/* if(!strcmp(geometry0[i].Prop.symbol,"H")) nOldH += 1;*/
+		}
+	}
+	if(!strcmp(geometry[addToI].Prop.symbol,"N")) nV++;
+	/* printf("nV=%d nAll=%d %s %s \n",nV,nAll,geometry[addToI].Residue,geometry[addToI].pdbType);*/
+	/* if(nV<=nAll) return;*/
+
+	for(i=0;i<10;i++)
+		hAtoms[i] = g_malloc(sizeof(gchar)*100);
+	nH = getHydrogensFromPDBTpl(geometry[addToI].Residue,geometry[addToI].pdbType, hAtoms);
+	/* printf("%s %s nH=%d\n",geometry[addToI].Residue,geometry[addToI].pdbType,nH);*/
+	nH -= nOldH;
+
+	/* if(nH>nV-nAll) nH = nV-nAll;*/
+	if(nH<1)
+	{
+		for(i=0;i<10;i++)
+			g_free(hAtoms[i]);
+		return;
+	}
+
+	if(begin==0)
+	{
+		begin++;
+		propH = prop_atom_get("H");
+	}
+	dist = (geometry[addToI].Prop.covalentRadii+propH.covalentRadii)*0.9;
+	/*
+	if(nH+nOldH==1) 
+	{
+		angle = 120.0*PI/180.0;
+		geom = 1;
+	}
+	if(nH+nOldH==2 && strcmp(geometry0[addToI].Prop.symbol,"N")) 
+	{
+		angle = 120.0*PI/180.0;
+		geom = 1;
+	}
+	*/
+	listOfConnectedAtoms = g_malloc(nV*sizeof(gint));
+
+	if(Natoms>0)
+	{
+		geometry0 = g_realloc(geometry0,(Natoms+nH)*sizeof(GeomDef));
+		geometry = g_realloc(geometry,(Natoms+nH)*sizeof(GeomDef)); 
+	}
+	else
+	{
+		geometry0 = g_malloc(nH*sizeof(GeomDef));
+		geometry = g_malloc(nH*sizeof(GeomDef)); 
+	}
+
+
+	nC = 0;
+	for(i=0;i<(gint)nA;i++)
+	{
+		if(connections[addToI][i]>0)
+		{
+			listOfConnectedAtoms[nC] = i;
+			nC++;
+		}
+	}
+
+	for(i=0;i<nH;i++)
+	{
+		gfloat v1[3];
+		gfloat v2[3];
+		gfloat v3[3];
+		gfloat v4[3];
+		gfloat v5[3];
+		for(k=0;k<3;k++)
+			v1[k] = rand()/(gdouble)RAND_MAX-0.5;
+		v3d_normal(v1);
+
+		switch (nC)
+		{
+			case 1:
+				{
+					set_vect_ij(addToI, listOfConnectedAtoms[0], v2);
+					v3d_normal(v2);
+					v3d_cross(v1,v2,v3);
+					v3d_normal(v3);
+					v3d_scale(v2,cos(angle));
+					v3d_scale(v3,sin(angle));
+					v3d_add(v2,v3,v1);
+					break;
+				}
+			case 2:
+				{
+					set_vect_ij(addToI, listOfConnectedAtoms[0], v2);
+					v3d_normal(v2);
+					set_vect_ij(addToI, listOfConnectedAtoms[1], v3);
+					v3d_normal(v3);
+					if(geom==0)
+					{
+						v3d_add(v2,v3,v4);
+						v3d_normal(v4);
+						v3d_scale(v4,-1.0);
+						v3d_cross(v2,v3,v5);
+						v3d_normal(v5);
+						v3d_scale(v4,0.5);
+						v3d_scale(v5,0.5);
+						v3d_add(v4,v5,v1);
+						v3d_normal(v1);
+					}
+					else
+					{
+						v3d_add(v2,v3,v1);
+						v3d_normal(v1);
+						v3d_scale(v1,-1.0);
+					}
+					break;
+				}
+			default:
+				if(nC>=3)
+				{
+					set_vect_ij(addToI, listOfConnectedAtoms[nC-3], v2);
+					v3d_normal(v2);
+					set_vect_ij(addToI, listOfConnectedAtoms[nC-2], v3);
+					v3d_normal(v3);
+					set_vect_ij(addToI, listOfConnectedAtoms[nC-1], v4);
+					v3d_normal(v4);
+					v3d_add(v2,v3,v5);
+					v3d_add(v5,v4,v1);
+					v3d_normal(v1);
+					v3d_scale(v1,-1.0);
+					break;
+				}
+
+		}
+		geometry[Natoms].X= geometry0[addToI].X + dist*v1[0];
+		geometry[Natoms].Y= geometry0[addToI].Y + dist*v1[1];
+		geometry[Natoms].Z= geometry0[addToI].Z + dist*v1[2];
+		geometry[Natoms].Prop = prop_atom_get("H");
+		geometry[Natoms].mmType = g_strdup(hAtoms[i]);
+		geometry[Natoms].pdbType = g_strdup(hAtoms[i]);
+		geometry[Natoms].Layer = geometry[addToI].Layer;
+		geometry[Natoms].N = Natoms+1;
+		if(Natoms==0)
+		{
+			geometry[Natoms].Residue = g_strdup("H");
+			geometry[Natoms].ResidueNumber = 0;
+		}
+		else
+		{
+			geometry[Natoms].Residue = g_strdup(geometry[addToI].Residue);
+			geometry[Natoms].ResidueNumber = geometry[addToI].ResidueNumber;
+		}
+		geometry[Natoms].Charge = 0.0;
+		geometry[Natoms].Variable = FALSE;
+		geometry[Natoms].show = TRUE;
+
+		geometry0[Natoms].X = geometry[Natoms].X;
+		geometry0[Natoms].Y = geometry[Natoms].Y;
+		geometry0[Natoms].Z = geometry[Natoms].Z;
+		geometry0[Natoms].Prop = prop_atom_get("H");
+		geometry0[Natoms].mmType = g_strdup(geometry[Natoms].mmType);
+		geometry0[Natoms].pdbType = g_strdup(geometry[Natoms].pdbType);
+		geometry0[Natoms].Layer = geometry[Natoms].Layer;
+		geometry0[Natoms].Residue = g_strdup(geometry[Natoms].Residue);
+		geometry0[Natoms].ResidueNumber = geometry[Natoms].ResidueNumber;
+		geometry0[Natoms].Charge = 0.0;
+		geometry0[Natoms].Variable = FALSE;
+		geometry0[Natoms].N = geometry[Natoms].N;
+		geometry0[Natoms].show = TRUE;
+
+		Natoms++;
+		
+		nC++;
+		listOfConnectedAtoms = g_realloc(listOfConnectedAtoms, nC*sizeof(gint));
+		listOfConnectedAtoms[nC-1] = Natoms-1;
+	}
+	if(listOfConnectedAtoms) g_free(listOfConnectedAtoms);
+	for(i=0;i<10;i++)
+		g_free(hAtoms[i]);
+}
+/********************************************************************************/
+void addHydrogensToSelectedAtomsTpl()
+{
+	gint i;
+	gint k = 0; 
+	gint nA = Natoms;
+
+
+	if(Natoms<1) return;
+	if(NFatoms<1) return;
+	if(!NumFatoms) return;
+
+	for (k=0;k<(gint)NFatoms;k++)
+	for (i=0;i<(gint)nA;i++)
+	{
+		if(geometry[i].N== NumFatoms[k])
+		{
+			add_hydrogen_atoms_tpl(i,nA);
+			/*
+			connections[i] = g_realloc(connections[i],Natoms*sizeof(gint));
+			connections[i][Natoms-1] = 1;
+			*/
+			break;
+		}
+	}
+	set_connections();
+	create_GeomXYZ_from_draw_grometry();
 	dessine();
 }
 /********************************************************************************/
@@ -2572,6 +4289,7 @@ gint set_selected_atom(GdkEventButton *bevent)
 	NumSelectedAtom = -1;
 	for(i=0;i<(gint)Natoms;i++)
 	{
+		if(!geometry[i].show) continue;
 		xii = xi-geometry[i].Xi;
 		yii = yi-geometry[i].Yi;
 		d1 = xii*xii+yii*yii;
@@ -2865,8 +4583,8 @@ static void pixmap_init(GtkWidget *widget)
 /*****************************************************************************/
 static gint configure_event( GtkWidget *widget, GdkEventConfigure *event )
 {
-	if(gc) gdk_gc_destroy(gc);
-	gc = gdk_gc_new(ZoneDessin->window);
+	/*if(gc) gdk_gc_destroy(gc);*/
+	if(!gc) gc = gdk_gc_new(ZoneDessin->window);
 	if (pixmap) gdk_pixmap_unref(pixmap);
 	pixmap = gdk_pixmap_new(widget->window, widget->allocation.width, widget->allocation.height, -1);
 	dessine();
@@ -2966,7 +4684,8 @@ void setPersonalFragment(Fragment F)
 	{
 		Frag.Atoms[i].Residue = g_strdup(F.Atoms[i].Residue);
 		Frag.Atoms[i].Symb = g_strdup(F.Atoms[i].Symb);
-		Frag.Atoms[i].Type = g_strdup(F.Atoms[i].Type);
+		Frag.Atoms[i].mmType = g_strdup(F.Atoms[i].mmType);
+		Frag.Atoms[i].pdbType = g_strdup(F.Atoms[i].pdbType);
 		Frag.Atoms[i].Coord[0] = F.Atoms[i].Coord[0];
 		Frag.Atoms[i].Coord[1] = F.Atoms[i].Coord[1];
 		Frag.Atoms[i].Coord[2] = F.Atoms[i].Coord[2];
@@ -3058,6 +4777,20 @@ void RenderHBonds(GtkWidget *win,gboolean YesNo)
 	dessine();
 }
 /*****************************************************************************/
+void RenderHAtoms(GtkWidget *win,gboolean YesNo)
+{
+	gint i;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(!strcmp(geometry0[i].Prop.symbol,"H"))
+		{
+			geometry[i].show = YesNo;
+			geometry0[i].show = YesNo;
+		}
+	}
+	dessine();
+}
+/*****************************************************************************/
 void RenderDipole(GtkWidget *win,gboolean YesNo)
 {
 	ShowDipole = !ShowDipole;
@@ -3084,6 +4817,208 @@ void set_dipole_from_charges()
 	}	
 	define_geometry();
 	dessine();
+}
+/*****************************************************************************/
+void compute_total_charge()
+{
+	gdouble c = 0;
+	gdouble cNeg = 0;
+	gdouble cPos = 0;
+	gint j;
+    	GtkWidget* m;
+	gchar tmp[BSIZE];
+
+	for(j=0;j<(gint)Natoms;j++)
+	{
+		if(geometry0[j].Charge>0) cPos += geometry0[j].Charge;
+		if(geometry0[j].Charge<0) cNeg += geometry0[j].Charge;
+		c += geometry0[j].Charge;
+
+	}	
+	if(cNeg !=0 && cPos != 0)
+	sprintf(tmp,
+			"Total Charge = %f\n"
+			"Sum of positive charges = %f\n"
+			"Sum of negative charges = %f\n"
+			"positive/negative       = %f\n"
+			"negative/positive       = %f\n"
+			,
+			c, cPos, cNeg, cPos/cNeg, cNeg/cPos);
+	else
+	sprintf(tmp,
+			"Total Charge = %f\n"
+			"Sum of positive charges = %f\n"
+			"Sum of negative charges = %f\n"
+			,
+			c, cPos, cNeg);
+	m = Message(tmp,"Info",TRUE);
+	gtk_window_set_modal (GTK_WINDOW (m), TRUE);
+}
+/*****************************************************************************/
+void compute_charge_of_selected_atoms()
+{
+	gdouble c = 0;
+	gdouble cNeg = 0;
+	gdouble cPos = 0;
+	gint j;
+    	GtkWidget* m;
+	gchar tmp[BSIZE];
+
+	for(j=0;j<(gint)Natoms;j++)
+	{
+		if(!if_selected(j)) continue;
+
+		if(geometry0[j].Charge>0) cPos += geometry0[j].Charge;
+		if(geometry0[j].Charge<0) cNeg += geometry0[j].Charge;
+		c += geometry0[j].Charge;
+
+	}	
+	if(cNeg !=0 && cPos != 0)
+	sprintf(tmp,
+			"Total Charge = %f\n"
+			"Sum of positive charges = %f\n"
+			"Sum of negative charges = %f\n"
+			"positive/negative       = %f\n"
+			"negative/positive       = %f\n"
+			,
+			c, cPos, cNeg, cPos/cNeg, cNeg/cPos);
+	else
+	sprintf(tmp,
+			"Total Charge = %f\n"
+			"Sum of positive charges = %f\n"
+			"Sum of negative charges = %f\n"
+			,
+			c, cPos, cNeg);
+	m = Message(tmp,"Info",TRUE);
+	gtk_window_set_modal (GTK_WINDOW (m), TRUE);
+}
+/********************************************************************************/
+static GtkWidget* create_text_win(gchar* title)
+{
+	GtkWidget *Win;
+	GtkWidget *frame;
+	GtkWidget *vboxall;
+	GtkWidget *vboxwin;
+	GtkWidget *text;
+
+	/* Principal Window */
+	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(Win),title);
+	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
+	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(Fenetre));
+	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
+
+	gtk_widget_realize(Win);
+	g_signal_connect(G_OBJECT(Win),"delete_event",(GtkSignalFunc)gtk_widget_destroy,NULL);
+
+	gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
+	vboxall = create_vbox(Win);
+	vboxwin = vboxall;
+
+	frame = gtk_frame_new (NULL);
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+	gtk_container_add(GTK_CONTAINER(vboxall),frame);
+	gtk_widget_show (frame);
+	text = create_text(Win,frame,TRUE);
+	set_font (text,FontsStyleResult.fontname);
+	set_base_style(text,FontsStyleResult.BaseColor.red ,FontsStyleResult.BaseColor.green ,FontsStyleResult.BaseColor.blue);
+	set_text_style(text,FontsStyleResult.TextColor.red ,FontsStyleResult.TextColor.green ,FontsStyleResult.TextColor.blue);
+	g_object_set_data(G_OBJECT (Win), "Text", text);
+	return Win;
+}
+/*****************************************************************************/
+void compute_charge_by_residue()
+{
+	gint i;
+	gint j;
+	gint k;
+	gdouble* charges = NULL;
+	gint nr = 0;
+	GtkWidget *win;
+	GtkWidget *text;
+	gchar tmp[BSIZE];
+	gint* nums = NULL;
+
+	if(Natoms<1) return;
+
+	for(j=0;j<(gint)Natoms;j++)
+	{
+		if( nr<geometry0[j].ResidueNumber+1) nr = geometry0[j].ResidueNumber+1;
+	}
+	if(nr<1) return;
+
+	charges = g_malloc(nr*sizeof(gdouble));
+	nums = g_malloc(nr*sizeof(gint));
+
+	for(k=0;k<nr;k++) charges[k] = 0;
+	for(k=0;k<nr;k++) nums[k] = 0;
+	
+
+	for(j=0;j<(gint)Natoms;j++)
+	{
+		k =  geometry0[j].ResidueNumber;
+		charges[k] += geometry0[j].Charge;
+		nums[k] = j;
+	}
+	for(i=0;i<nr-1;i++)
+	{
+		k = i;
+		for(j=i+1;j<nr;j++)
+			if(geometry0[nums[k]].ResidueNumber>geometry0[nums[j]].ResidueNumber) k = j;
+		if(i!=k)
+		{
+			gdouble x;
+			gint ix;
+			x = charges[k];
+			charges[k] = charges[i];
+			charges[i] = x;
+			ix = nums[k];
+			nums[k] = nums[i];
+			nums[i] = ix;
+			
+		}
+	}
+	win = create_text_win("Charge by residues");
+    	gtk_widget_set_size_request(GTK_WIDGET(win),(gint)(ScreenHeight*0.5),(gint)(ScreenHeight*0.5));
+	text = g_object_get_data(G_OBJECT (win), "Text");
+	if(text)
+	for(k=0;k<nr;k++)
+	{
+		j = nums[k]+1;
+		sprintf(tmp,"%s[%d] Charge = %f\n",
+				geometry0[j-1].Residue,geometry0[j-1].ResidueNumber+1,charges[k]);
+		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,tmp,-1);
+	}
+	if(nums)g_free(nums);
+	if(charges)g_free(charges);
+	gtk_widget_show_all(win);
+}
+/*****************************************************************************/
+void compute_dipole_from_charges()
+{
+	gint j;
+	gdouble D[3] = {0,0,0};
+    	GtkWidget* m;
+	gchar tmp[100];
+	gdouble tot = 0;
+
+	for(j=0;j<(gint)Natoms;j++)
+	{
+		D[0] += geometry0[j].X*geometry0[j].Charge;
+		D[1] += geometry0[j].Y*geometry0[j].Charge;
+		D[2] += geometry0[j].Z*geometry0[j].Charge;
+	}	
+	for(j=0;j<3;j++)
+		D[j] *= AUTODEB;
+
+	for(j=0;j<3;j++)
+		tot += D[j]*D[j];
+	tot = sqrt(tot);
+
+	sprintf(tmp,"Dipole (Debye) : X= %f Y= %f Z= %f  Tot=%f\n",D[0] ,  D[1], D[2],tot);
+	m = Message(tmp,"Info",TRUE);
+	gtk_window_set_modal (GTK_WINDOW (m), TRUE);
 }
 /*****************************************************************************/
 gchar *get_distance(gint i,gint j)
@@ -3346,9 +5281,11 @@ void define_geometry_from_xyz()
           else
 		geometry[i].Z = atof(GeomXYZ[i].Z);
 	geometry[i].Prop = prop_atom_get(GeomXYZ[i].Symb);
-	geometry[i].Type = g_strdup(GeomXYZ[i].Type);
+	geometry[i].mmType = g_strdup(GeomXYZ[i].mmType);
+	geometry[i].pdbType = g_strdup(GeomXYZ[i].pdbType);
 	geometry[i].Residue = g_strdup(GeomXYZ[i].Residue);
 	geometry[i].ResidueNumber = GeomXYZ[i].ResidueNumber;
+	geometry[i].show = TRUE;
 	geometry[i].Charge = atof(GeomXYZ[i].Charge);
 	set_layer(GeomXYZ[i].Layer, &geometry[i].Layer);
 	set_constant_variable(i, TRUE);
@@ -3380,9 +5317,11 @@ gboolean define_geometry_from_zmat()
   if (Natoms == 1)
   {
     geometry[0].Prop = prop_atom_get(Geom[0].Symb);
-    geometry[0].Type   = g_strdup(Geom[0].Type);
+    geometry[0].mmType   = g_strdup(Geom[0].mmType);
+    geometry[0].pdbType   = g_strdup(Geom[0].pdbType);
     geometry[0].Residue   = g_strdup(Geom[0].Residue);
     geometry[0].ResidueNumber   = Geom[0].ResidueNumber;
+    geometry[0].show   = TRUE;
     geometry[0].Charge = atof(Geom[0].Charge);
     set_layer(Geom[0].Layer, &geometry[0].Layer);
     set_constant_variable(0, FALSE);
@@ -3402,12 +5341,16 @@ gboolean define_geometry_from_zmat()
   {
     geometry[0].Prop = prop_atom_get(Geom[0].Symb);
     geometry[1].Prop = prop_atom_get(Geom[1].Symb);
-    geometry[0].Type = g_strdup(Geom[0].Type);
-    geometry[1].Type = g_strdup(Geom[1].Type);
+    geometry[0].mmType = g_strdup(Geom[0].mmType);
+    geometry[1].mmType = g_strdup(Geom[1].mmType);
+    geometry[0].pdbType = g_strdup(Geom[0].pdbType);
+    geometry[1].pdbType = g_strdup(Geom[1].pdbType);
     geometry[0].Residue = g_strdup(Geom[0].Residue);
     geometry[1].Residue = g_strdup(Geom[1].Residue);
     geometry[0].ResidueNumber   = Geom[0].ResidueNumber;
     geometry[1].ResidueNumber   = Geom[1].ResidueNumber;
+    geometry[0].show   = TRUE;
+    geometry[1].show   = TRUE;
     geometry[0].Charge = atof(Geom[0].Charge);
     geometry[1].Charge = atof(Geom[1].Charge);
     set_layer(Geom[0].Layer, &geometry[0].Layer);
@@ -3565,10 +5508,12 @@ gboolean define_geometry_from_zmat()
   for(i=0;i<(gint)Natoms;i++)
   {
 	geometry[i].Prop = prop_atom_get(Geom[i].Symb);
-    	geometry[i].Type = g_strdup(Geom[i].Type);
+    	geometry[i].mmType = g_strdup(Geom[i].mmType);
+    	geometry[i].pdbType = g_strdup(Geom[i].pdbType);
     	geometry[i].Residue = g_strdup(Geom[i].Residue);
     	geometry[i].ResidueNumber = Geom[i].ResidueNumber;
     	geometry[i].Charge = atof(Geom[i].Charge);
+    	geometry[i].show   = TRUE;
     	set_layer(Geom[i].Layer, &geometry[i].Layer);
     	set_constant_variable(i, FALSE);
   }
@@ -3815,8 +5760,16 @@ static gint replace_atom()
 	geometry[NumSelectedAtom].Prop = prop_atom_get(AtomToInsert);
 	g_free(geometry0[NumSelectedAtom].Prop.symbol);
 	geometry0[NumSelectedAtom].Prop = prop_atom_get(AtomToInsert);
-	g_free(geometry[NumSelectedAtom].Type);
-	geometry[NumSelectedAtom].Type = g_strdup(AtomToInsert);
+
+	g_free(geometry[NumSelectedAtom].mmType);
+	geometry[NumSelectedAtom].mmType = g_strdup(AtomToInsert);
+	g_free(geometry0[NumSelectedAtom].mmType);
+	geometry0[NumSelectedAtom].mmType = g_strdup(AtomToInsert);
+
+	g_free(geometry[NumSelectedAtom].pdbType);
+	geometry[NumSelectedAtom].pdbType = g_strdup(AtomToInsert);
+	g_free(geometry0[NumSelectedAtom].pdbType);
+	geometry0[NumSelectedAtom].pdbType = g_strdup(AtomToInsert);
 	return 1;
 }
 /*****************************************************************************/
@@ -3923,8 +5876,10 @@ static gint insert_atom(GtkWidget *widget,GdkEvent *event)
 			geometry[Natoms].Y=B[1];
 			geometry[Natoms].Z=B[2];
 			geometry[Natoms].Prop = prop_atom_get(AtomToInsert);
-			geometry[Natoms].Type = g_strdup(AtomToInsert);
+			geometry[Natoms].mmType = g_strdup(AtomToInsert);
+			geometry[Natoms].pdbType = g_strdup(AtomToInsert);
 			geometry[Natoms].Layer = HIGH_LAYER;
+			geometry[Natoms].show = TRUE;
 			geometry[Natoms].N = Natoms+1;
 			if(Natoms==0)
 			{
@@ -3955,11 +5910,13 @@ static gint insert_atom(GtkWidget *widget,GdkEvent *event)
 			geometry[Natoms].Charge = 0.0;
 
 			geometry0[Natoms].Prop = prop_atom_get(AtomToInsert);
-			geometry0[Natoms].Type = g_strdup(AtomToInsert);
+			geometry0[Natoms].mmType = g_strdup(AtomToInsert);
+			geometry0[Natoms].pdbType = g_strdup(AtomToInsert);
 			geometry0[Natoms].Layer = HIGH_LAYER;
 			geometry0[Natoms].Variable = FALSE;
 			geometry0[Natoms].Residue = g_strdup(geometry[Natoms].Residue);
 			geometry0[Natoms].ResidueNumber = geometry[Natoms].ResidueNumber;
+			geometry0[Natoms].show = geometry[Natoms].show;
 			geometry0[Natoms].X = geometry[Natoms].X;
 			geometry0[Natoms].Y = geometry[Natoms].Y;
 			geometry0[Natoms].Z = geometry[Natoms].Z;
@@ -4186,19 +6143,23 @@ static gint insert_fragment(GtkWidget *widget,GdkEvent *event)
 
 				}
 				geometry0[Natoms+j].Prop = prop_atom_get(Frag.Atoms[i].Symb);
-				geometry0[Natoms+j].Type =g_strdup(Frag.Atoms[i].Type);
+				geometry0[Natoms+j].mmType =g_strdup(Frag.Atoms[i].mmType);
+				geometry0[Natoms+j].pdbType =g_strdup(Frag.Atoms[i].pdbType);
 				geometry0[Natoms+j].Layer = HIGH_LAYER;
 				geometry0[Natoms+j].Variable = FALSE;
 				geometry0[Natoms+j].Residue =g_strdup(Frag.Atoms[i].Residue);
 				geometry0[Natoms+j].ResidueNumber= get_number_new_residue();
+				geometry0[Natoms+j].show= TRUE;
 				geometry0[Natoms+j].Charge = Frag.Atoms[i].Charge;
 				geometry0[Natoms+j].N = Natoms+j+1;
 
 				geometry[Natoms+j].Prop = prop_atom_get(Frag.Atoms[i].Symb);
-				geometry[Natoms+j].Type =g_strdup(Frag.Atoms[i].Type);
+				geometry[Natoms+j].mmType =g_strdup(Frag.Atoms[i].mmType);
+				geometry[Natoms+j].pdbType =g_strdup(Frag.Atoms[i].pdbType);
 				geometry[Natoms+j].Layer = HIGH_LAYER;
 				geometry[Natoms+j].Residue =g_strdup(Frag.Atoms[i].Residue);
 				geometry[Natoms+j].ResidueNumber=geometry0[Natoms+j].ResidueNumber;
+				geometry[Natoms+j].show=geometry0[Natoms+j].show;
 				geometry[Natoms+j].Charge = Frag.Atoms[i].Charge;
 				geometry[Natoms+j].N = Natoms+j+1;
 			}
@@ -4399,6 +6360,81 @@ void delete_all_selected_atoms()
 		g_free(NumFatoms);
 	NumFatoms = NULL;
 	Ddef = FALSE;
+}
+/*****************************************************************************/
+void deleteSelectedAtoms()
+{
+	delete_all_selected_atoms();
+	dessine();
+}
+/*****************************************************************************/
+void delete_hydrogen_atoms()
+{
+
+	gint i;
+	gint j;
+	GeomDef tmp;
+	gint nA = 0;
+
+	for (i=0;i<(gint)Natoms-1;i++)
+	{
+		if(strcmp(geometry[i].Prop.symbol,"H")) continue;
+
+		for(j=i+1;j<(gint)Natoms;j++)
+			if(strcmp(geometry[j].Prop.symbol,"H"))
+			{
+				tmp = geometry0[i];
+				geometry0[i] = geometry0[j];
+				geometry0[j] = tmp ;
+				tmp = geometry[i];
+				geometry[i] = geometry[j];
+				geometry[j] = tmp ;
+				break;
+			}
+	}
+	nA = 0;
+	for (i=0;i<(gint)Natoms;i++)
+		if(strcmp(geometry[i].Prop.symbol,"H")) nA++;
+
+	Natoms = nA;
+
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		geometry0[i].N = i+1;
+		geometry[i].N = i+1;
+	}
+
+	if(Natoms>0)
+	{
+		geometry0 = g_realloc(geometry0,Natoms*sizeof(GeomDef));
+		geometry = g_realloc(geometry,Natoms*sizeof(GeomDef)); 
+	}
+	else
+	{
+		if(geometry0)
+			g_free(geometry0);
+		geometry0 = NULL;
+		if(geometry)
+			g_free(geometry);
+		geometry = NULL;
+		Natoms = 0;
+	}
+	NFatoms = 0;
+	if(NumFatoms)
+		g_free(NumFatoms);
+	NumFatoms = NULL;
+	Ddef = FALSE;
+	create_GeomXYZ_from_draw_grometry();
+	dessine();
+}
+/********************************************************************************/
+void deleteHydrogenAtoms()
+{
+	gchar *t ="Do you want to really remove all hydrogen atoms?" ;
+	if(Natoms>0)
+		Continue_YesNo(delete_hydrogen_atoms, NULL,t);
+	else
+		Message("No hydrogen atoms to remove\n"," Warning ",TRUE);
 }
 /*****************************************************************************/
 void delete_selected_atoms()
@@ -4673,11 +6709,13 @@ void define_geometry()
 	geometry0[i].Z = geometry[i].Z; 
 	geometry0[i].N = geometry[i].N; 
 	geometry0[i].Prop = prop_atom_get(geometry[i].Prop.symbol);
-	geometry0[i].Type = g_strdup(geometry[i].Type);
+	geometry0[i].mmType = g_strdup(geometry[i].mmType);
+	geometry0[i].pdbType = g_strdup(geometry[i].pdbType);
 	geometry0[i].Layer = geometry[i].Layer;
 	geometry0[i].Variable = geometry[i].Variable;
 	geometry0[i].Residue = g_strdup(geometry[i].Residue);
 	geometry0[i].ResidueNumber = geometry[i].ResidueNumber;
+	geometry0[i].show = geometry[i].show;
 	geometry0[i].Charge = geometry[i].Charge;
 	} 
 	if(Ddef)
@@ -5001,11 +7039,14 @@ void draw_line2(gint epaisseur,guint i,guint j,gint x1,gint y1,gint x2,gint y2,
 	gfloat vx,vy;
 	gint ep;
 
-        if ( !StickMode )
+        if ( !StickMode && geometry[i].Layer != LOW_LAYER )
         { 
                 rayon =(gushort)(geometry[i].Rayon*factorball);
     		if (PersMode) 
                 	rayon =(gushort)(geometry[i].Coefpers*geometry[i].Rayon*factorball);
+		if(geometry[i].Layer == LOW_LAYER) rayon /= 6;
+		if(geometry[i].Layer == MEDIUM_LAYER) rayon /= 2;
+		if(rayon<2) rayon = 2;
 
                  k= ((gdouble)rayon*(gdouble)rayon-(gdouble)epaisseur*(gdouble)epaisseur/4.0);
 		 if(connections[i][j]==2) k= ((gdouble)rayon*(gdouble)rayon-(gdouble)epaisseur*(gdouble)epaisseur*9.0/4);
@@ -5286,12 +7327,34 @@ void draw_layer(guint epaisseur,guint i)
 
 }
 /*****************************************************************************/
-void draw_typ(guint epaisseur,guint i)
+void draw_mmtyp(guint epaisseur,guint i)
 {
 	GdkColormap *colormap;
 	GdkColor color;
  	PangoFontDescription *font_desc = pango_font_description_from_string (FontsStyleLabel.fontname);
-	gchar* t= g_strdup_printf("%s", geometry[i].Type);
+	gchar* t= g_strdup_printf("%s", geometry[i].mmType);
+        
+
+	color = get_color_string(i);
+   	colormap  = gdk_window_get_colormap(ZoneDessin->window);
+	gdk_color_alloc(colormap,&color);
+
+	gdk_gc_set_foreground(gc,&color);
+        if(epaisseur == 0)epaisseur =1;
+	gdk_gc_set_line_attributes(gc,epaisseur,GDK_LINE_SOLID,GDK_CAP_ROUND,GDK_JOIN_ROUND);
+	gabedit_draw_string(ZoneDessin, pixmap, font_desc, gc, geometry[i].Xi,geometry[i].Yi,t,TRUE,TRUE);
+
+	if(font_desc) pango_font_description_free (font_desc);
+	g_free(t);
+
+}
+/*****************************************************************************/
+void draw_pdbtyp(guint epaisseur,guint i)
+{
+	GdkColormap *colormap;
+	GdkColor color;
+ 	PangoFontDescription *font_desc = pango_font_description_from_string (FontsStyleLabel.fontname);
+	gchar* t= g_strdup_printf("%s", geometry[i].pdbType);
         
 
 	color = get_color_string(i);
@@ -5394,6 +7457,28 @@ void draw_numb_charge(guint epaisseur,guint i)
         g_free(temp);
 }
 /*****************************************************************************/
+void draw_residues(guint epaisseur,guint i)
+{
+	GdkColormap *colormap;
+        GdkColor color;
+        gchar *temp;
+ 	PangoFontDescription *font_desc = pango_font_description_from_string (FontsStyleLabel.fontname);
+        temp = g_strdup_printf("%s[%d]",geometry[i].Residue,geometry[i].ResidueNumber+1);
+
+        color = get_color_string(i);
+
+   	colormap  = gdk_window_get_colormap(ZoneDessin->window);
+	gdk_color_alloc(colormap,&color);
+	gdk_gc_set_foreground(gc,&color);
+        if(epaisseur == 0)epaisseur =1;
+	gdk_gc_set_line_attributes(gc,epaisseur,GDK_LINE_SOLID,GDK_CAP_ROUND,GDK_JOIN_ROUND);
+	gabedit_draw_string(ZoneDessin, pixmap, font_desc, gc, geometry[i].Xi,geometry[i].Yi,temp, TRUE,TRUE);
+
+	if(font_desc) pango_font_description_free (font_desc);
+
+        g_free(temp);
+}
+/*****************************************************************************/
 void draw_coordinates(guint epaisseur,guint i)
 {
 	GdkColormap *colormap;
@@ -5428,14 +7513,233 @@ void draw_label(guint epaisseur,guint i)
    {
    case LABELSYMB: draw_symb(epaisseur,i);break;
    case LABELNUMB: draw_numb(epaisseur,i);break;
-   case LABELTYP: draw_typ(epaisseur,i);break;
+   case LABELMMTYP: draw_mmtyp(epaisseur,i);break;
+   case LABELPDBTYP: draw_pdbtyp(epaisseur,i);break;
    case LABELLAYER: draw_layer(epaisseur,i);break;
    case LABELSYMBNUMB: draw_numb_symb(epaisseur,i);break;
    case LABELCHARGE: draw_charge(epaisseur,i);break;
    case LABELSYMBCHARGE: draw_symb_charge(epaisseur,i);break;
    case LABELNUMBCHARGE: draw_numb_charge(epaisseur,i);break;
+   case LABELRESIDUES: draw_residues(epaisseur,i);break;
    case LABELCOORDINATES: draw_coordinates(epaisseur,i);break;
    }
+}
+/*****************************************************************************/
+void dessine_byLayer()
+{	
+	guint i;
+	guint j;
+	guint k;
+	gint epaisseur;
+        gushort rayon;
+	GdkColor color1;
+	GdkColor color2;
+	GdkColor colorRed;
+	GdkColor colorGreen;
+	GdkColor colorBlue;
+	GdkColor colorFrag;
+
+	colorRed.red   = 65535;
+	colorRed.green = 0;
+	colorRed.blue  = 0;
+
+	colorGreen.red   = 0;
+	colorGreen.green = 65535;
+	colorGreen.blue  = 0;
+
+	colorBlue.red   = 0;
+	colorBlue.green = 0;
+	colorBlue.blue  = 65535;
+
+	colorFrag = colorGreen;
+
+	set_connections();
+	if(ShowHBonds) set_Hconnections();
+
+	for(i=0;i<Natoms;i++)
+	if((gint)i==NumSelectedAtom)
+	{
+		for(j = 0;j<NFatoms;j++)
+			if(NumFatoms[j] == (gint)geometry[i].N) colorFrag = colorRed;
+		break;
+	}
+        if(ButtonPressed && OperationType==ROTLOCFRAG) colorFrag = colorRed;
+        if(ButtonPressed && OperationType==ROTZLOCFRAG) colorFrag = colorRed;
+
+	define_coord_ecran();
+	for(i=0;i<Natoms-1;i++)
+	{
+		if(!geometry[i].show)
+		{
+			if(ShowDipole) for(j = 0;j<NDIVDIPOLE;j++) if(Ndipole[j]==(gint)i) dessine_dipole(j);
+			continue;
+		}
+                rayon =(gushort)(geometry[i].Rayon*factorball);
+    		if (PersMode) rayon =(gushort)(geometry[i].Coefpers*geometry[i].Rayon*factorball);
+		color1 = geometry[i].Prop.color;  
+    		if (ShadMode) set_color_shad(&color1,i);
+		if(geometry[i].Layer == LOW_LAYER) rayon /= 6;
+		if(geometry[i].Layer == MEDIUM_LAYER) rayon /= 2;
+		if(rayon<2) rayon = 2;
+
+		if(geometry0[i].Layer != LOW_LAYER)
+    			draw_cercle(geometry[i].Xi,geometry[i].Yi,rayon,color1);
+		if((gint)i==NumSelectedAtom) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorRed);
+		else
+		if(NSA>-1 && (gint)geometry[i].N == NSA) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorBlue);
+		if(OperationType == MESURE)
+		for(j = 0;j<4;j++)
+		if(NumSelAtoms[j] == (gint)geometry[i].N) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorGreen);
+        	switch(OperationType)
+		{
+			case SELECTFRAG :
+			case SELECTRESIDUE :
+			case DELETEFRAG :
+			case ROTLOCFRAG :
+			case ROTZLOCFRAG :
+			case MOVEFRAG :
+			for(j = 0;j<NFatoms;j++)
+				if(NumFatoms[j] == (gint)geometry[i].N)
+	 				draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorFrag);
+			break;
+			default :break;
+		}
+
+		for(j=i+1;j<Natoms;j++)
+                if(connections[i][j]!=0)
+		{
+			if(!geometry[j].show) continue;
+			gint split[2] = {0,0};
+			gdouble ab[] = {0,0};
+			k =get_num_min_rayonIJ(i,j);
+			epaisseur = (gint) (geometry[k].Rayon*factorstick);
+    			if (PersMode) epaisseur =(gint)(geometry[k].Coefpers*epaisseur);
+			if(geometry[i].Layer == LOW_LAYER || geometry[j].Layer == LOW_LAYER ) epaisseur /= 6;
+			if(geometry[i].Layer == MEDIUM_LAYER || geometry[j].Layer == MEDIUM_LAYER ) epaisseur /= 2;
+			if(epaisseur<1) epaisseur = 1;
+
+			color2 = geometry[j].Prop.color;  
+    			if (ShadMode) set_color_shad(&color2,j);
+			if(connections[i][j]!=1)
+			{
+				gdouble m = 0;
+				ab[0] = geometry[j].Yi-geometry[i].Yi;
+				ab[1] = -geometry[j].Xi+geometry[i].Xi;
+				m = sqrt(ab[0]*ab[0]+ab[1]*ab[1]);
+				if(m !=0)
+				{
+					ab[0] /= m;
+					ab[1] /= m;
+
+				}
+			}
+			if(connections[i][j]==3)
+			{
+				gint x1;
+				gint x2;
+				gint y1;
+				gint y2;
+
+				split[0] = (gint)(ab[0]*epaisseur/5);
+				split[1] = (gint)(ab[1]*epaisseur/5);
+
+				x1 = geometry[i].Xi-2*split[0];
+				x2 = geometry[j].Xi-2*split[0];
+				y1 = geometry[i].Yi-2*split[1];
+				y2 = geometry[j].Yi-2*split[1];
+				draw_line2(epaisseur/5,i,j,x1,y1, x2, y2, color1,color2,TRUE);
+
+				x1 = geometry[i].Xi;
+				x2 = geometry[j].Xi;
+				y1 = geometry[i].Yi;
+				y2 = geometry[j].Yi;
+				draw_line2(epaisseur/5,i,j,x1,y1, x2, y2, color1,color2,TRUE);
+
+				x1 = geometry[i].Xi+2*split[0];
+				x2 = geometry[j].Xi+2*split[0];
+				y1 = geometry[i].Yi+2*split[1];
+				y2 = geometry[j].Yi+2*split[1];
+				draw_line2(epaisseur/5,i,j,x1,y1, x2, y2, color1,color2,FALSE);
+
+			}
+			else if(connections[i][j]==2)
+			{
+				gint x1;
+				gint x2;
+				gint y1;
+				gint y2;
+
+				split[0] = (gint)(ab[0]*epaisseur/3);
+				split[1] = (gint)(ab[1]*epaisseur/3);
+
+				x1 = geometry[i].Xi-split[0];
+				x2 = geometry[j].Xi-split[0];
+				y1 = geometry[i].Yi-split[1];
+				y2 = geometry[j].Yi-split[1];
+				draw_line2(epaisseur/3,i,j,x1,y1, x2, y2, color1,color2,TRUE);
+
+				x1 = geometry[i].Xi+split[0];
+				x2 = geometry[j].Xi+split[0];
+				y1 = geometry[i].Yi+split[1];
+				y2 = geometry[j].Yi+split[1];
+				draw_line2(epaisseur/3,i,j,x1,y1, x2, y2, color1,color2,FALSE);
+			}
+			else
+			draw_line2(epaisseur,i,j,geometry[i].Xi,geometry[i].Yi,
+						geometry[j].Xi,geometry[j].Yi,
+						color1,color2,FALSE);
+		}
+		else
+		{
+			if(geometry[i].show && geometry[j].show && ShowHBonds && Hconnections[i][j])
+			{
+				epaisseur = 8;
+                		epaisseur*=factorstick;
+				color1 = geometry[i].Prop.color;  
+				color2 = geometry[j].Prop.color;  
+				draw_line2_hbond(geometry[i].Xi,geometry[i].Yi, geometry[j].Xi,geometry[j].Yi, i,  j,  color1, color2,  epaisseur);
+			}
+		}
+    		if (LabelOption != 0) draw_label(5,i);
+		if(ShowDipole) for(j = 0;j<NDIVDIPOLE;j++) if(Ndipole[j]==(gint)i) dessine_dipole(j);
+	}
+        i=Natoms-1;
+        rayon =(gushort)(geometry[i].Rayon*factorball);
+    	if (PersMode) rayon =(gushort)(geometry[i].Coefpers*geometry[i].Rayon*factorball);
+	color1 = geometry[i].Prop.color;  
+    	if (ShadMode) set_color_shad(&color1,i);
+	if(geometry[i].Layer == LOW_LAYER) rayon /= 6;
+	if(geometry[i].Layer == MEDIUM_LAYER) rayon /= 2;
+	if(rayon<2) rayon = 2;
+
+	if(geometry[i].Layer != LOW_LAYER && geometry[i].show)
+		draw_cercle(geometry[i].Xi,geometry[i].Yi,rayon,color1);
+	if((gint)i==NumSelectedAtom && geometry[i].show) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorRed);
+	else
+	if(NSA>-1 && (gint)geometry[i].N == NSA && geometry[i].show) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorBlue);
+	if(OperationType == MESURE && geometry[i].show)
+	for(j = 0;j<4;j++)
+		if(NumSelAtoms[j] == (gint)geometry[i].N )
+ 			draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorGreen);
+        switch(OperationType)
+	{
+		case SELECTFRAG :
+		case SELECTRESIDUE :
+		case DELETEFRAG :
+		case ROTLOCFRAG :
+		case ROTZLOCFRAG :
+		case MOVEFRAG :
+		for(j = 0;j<NFatoms;j++)
+		if(NumFatoms[j] == (gint)geometry[i].N && geometry[i].show)
+ 			draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorFrag);
+		break;
+		default :break;
+	}
+
+	if(ShowDipole) for(j = 0;j<NDIVDIPOLE;j++) if(Ndipole[j]==(gint)i) dessine_dipole(j);
+    	if (LabelOption != 0 && geometry[i].show) draw_label(5,i);
+
+	
 }
 /*****************************************************************************/
 void dessine_ball()
@@ -5482,6 +7786,12 @@ void dessine_ball()
 	define_coord_ecran();
 	for(i=0;i<Natoms-1;i++)
 	{
+		if(!geometry[i].show)
+		{
+			if(ShowDipole) for(j = 0;j<NDIVDIPOLE;j++) if(Ndipole[j]==(gint)i) dessine_dipole(j);
+			continue;
+		}
+
                 rayon =(gushort)(geometry[i].Rayon*factorball);
     		if (PersMode) rayon =(gushort)(geometry[i].Coefpers*geometry[i].Rayon*factorball);
 		color1 = geometry[i].Prop.color;  
@@ -5511,6 +7821,7 @@ void dessine_ball()
 		for(j=i+1;j<Natoms;j++)
                 if(connections[i][j]!=0)
 		{
+			if(!geometry[j].show) continue;
 			gint split[2] = {0,0};
 			gdouble ab[] = {0,0};
 			k =get_num_min_rayonIJ(i,j);
@@ -5589,7 +7900,7 @@ void dessine_ball()
 		}
 		else
 		{
-			if(ShowHBonds && Hconnections[i][j])
+			if(geometry[i].show && geometry[j].show && ShowHBonds && Hconnections[i][j])
 			{
 				epaisseur = 8;
                 		epaisseur*=factorstick;
@@ -5606,11 +7917,12 @@ void dessine_ball()
     	if (PersMode) rayon =(gushort)(geometry[i].Coefpers*geometry[i].Rayon*factorball);
 	color1 = geometry[i].Prop.color;  
     	if (ShadMode) set_color_shad(&color1,i);
-	draw_cercle(geometry[i].Xi,geometry[i].Yi,rayon,color1);
+	if(geometry[i].show)
+		draw_cercle(geometry[i].Xi,geometry[i].Yi,rayon,color1);
 	if((gint)i==NumSelectedAtom) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorRed);
 	else
-	if(NSA>-1 && (gint)geometry[i].N == NSA) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorBlue);
-	if(OperationType == MESURE)
+	if(NSA>-1 && (gint)geometry[i].N == NSA && geometry[i].show) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorBlue);
+	if(OperationType == MESURE && geometry[i].show)
 	for(j = 0;j<4;j++)
 		if(NumSelAtoms[j] == (gint)geometry[i].N)
  			draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorGreen);
@@ -5630,7 +7942,7 @@ void dessine_ball()
 	}
 
 	if(ShowDipole) for(j = 0;j<NDIVDIPOLE;j++) if(Ndipole[j]==(gint)i) dessine_dipole(j);
-    	if (LabelOption != 0) draw_label(5,i);
+    	if (LabelOption != 0 && geometry[i].show) draw_label(5,i);
 
 	
 }
@@ -5683,10 +7995,16 @@ void dessine_stick()
 
 	for(i=0;i<Natoms;i++)
         {
+		if(!geometry[i].show)
+		{
+			if(ShowDipole) for(j = 0;j<NDIVDIPOLE;j++) if(Ndipole[j]==(gint)i) dessine_dipole(j);
+			continue;
+		}
 		k = -1;
 		for(j=i+1;j<Natoms;j++)
                 if(connections[i][j]!=0)
 		{
+			if(!geometry[j].show) continue;
 			gint split[2] = {0,0};
 			gdouble ab[] = {0,0};
 			if(connections[i][j]!=1)
@@ -5754,7 +8072,7 @@ void dessine_stick()
 		}
 		else
 		{
-			if(ShowHBonds && Hconnections[i][j])
+			if(geometry[i].show && geometry[j].show && ShowHBonds && Hconnections[i][j])
 			{
 				epaisseur = 4;
                 		epaisseur*=factorstick;
@@ -5804,7 +8122,7 @@ void dessine_stick()
 		if(ShowDipole) for(j = 0;j<NDIVDIPOLE;j++) if(Ndipole[j]==(gint)i) dessine_dipole(j);
     		if (LabelOption != 0) draw_label(5,i);
         }
-    	if (LabelOption != 0) draw_label(5,Natoms-1);
+    	if (LabelOption != 0 && geometry[Natoms-1].show) draw_label(5,Natoms-1);
 	g_free(FreeAtoms);
 	
 }
@@ -5922,7 +8240,10 @@ void dessine()
 	if (StickMode) 
    		dessine_stick();
 	else 
-		dessine_ball();
+	{
+		//dessine_ball();
+		dessine_byLayer();
+	}
 
 	redraw();
 }

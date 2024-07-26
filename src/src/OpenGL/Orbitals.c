@@ -35,6 +35,7 @@ DEALINGS IN THE SOFTWARE.
 */
 #include "OrbitalsGamess.h"
 #include "OrbitalsMolpro.h"
+#include "OrbitalsQChem.h"
 
 #define WIDTHSCR 0.608
 
@@ -918,7 +919,6 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
  	for(i=0;i<5;i++)
 		AtomCoord[i]=g_malloc(taille*sizeof(char));
   
-	/* Debug("Norb = %d\n",NOrb);*/
 	CoefOrbitals = CreateTable2(NOrb);
 	EnerOrbitals = g_malloc(NOrb*sizeof(gfloat));
 	SymOrbitals = g_malloc(NOrb*sizeof(gchar*));
@@ -948,7 +948,7 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
                 		OK = TRUE;
 	  			break;
 	  		}
-        }
+        	}
  		if(!OK && (numorb == 1) )
 		{
 			if(itype!=1)
@@ -1692,6 +1692,19 @@ void read_gamess_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
 
 	add_objects_for_new_grid();
  	read_gamess_orbitals(FileName);
+} 
+/********************************************************************************/
+void read_qchem_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
+{
+ 	gchar *FileName;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+	gtk_widget_hide(GTK_WIDGET(SelecFile));
+	while( gtk_events_pending() ) gtk_main_iteration();
+
+	add_objects_for_new_grid();
+ 	read_qchem_orbitals(FileName);
 } 
 /********************************************************************************/
 void read_gauss_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)

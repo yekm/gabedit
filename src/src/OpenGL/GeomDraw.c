@@ -160,6 +160,16 @@ void draw_wireframe(int i,int j, int line)
 	{
 		Ambiant1[k] = Specular1[k]*0.9;
 		Ambiant2[k] = Specular2[k]*0.9;
+		Ambiant1[k] = Specular1[k];
+		Ambiant2[k] = Specular2[k];
+	}
+	for(k=0;k<3;k++)
+	{
+		Specular1[k] = 0;
+		Specular2[k] = 0;
+
+		Diffuse1[k] = 0.1;
+		Diffuse2[k] = 0.1;
 	}
 	p1 = GeomOrb[i].Prop.covalentRadii+GeomOrb[i].Prop.radii;
 	p2 = GeomOrb[j].Prop.covalentRadii+GeomOrb[j].Prop.radii;
@@ -269,8 +279,11 @@ void draw_bond(int i,int j,GLfloat scal, GabEditBondType bondType)
 	GLfloat p1;
 	GLfloat p2;
 	
+	/*
 	if(GeomOrb[i].Prop.radii<GeomOrb[j].Prop.radii) g = GeomOrb[i].Prop.radii*aspect;
 	else g = GeomOrb[j].Prop.radii*aspect;
+	*/
+	g = 0.8*aspect;
 	  
 	Specular1[0] = GeomOrb[i].Prop.color.red/(gfloat)65535;
 	Specular1[1] = GeomOrb[i].Prop.color.green/(gfloat)65535;
@@ -590,7 +603,7 @@ gint GeomDrawWireFrame()
 		if(data->bondType == GABEDIT_BONDTYPE_HYDROGEN)
 			draw_wireframe(i,j,1);
 		else
-			 draw_wireframe(i,j, 5);
+			 draw_wireframe(i,j, 2);
 		Ok[i] = TRUE;
 		Ok[j] = TRUE;
 	}

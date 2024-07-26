@@ -40,23 +40,23 @@ void apply_colorselections(GtkWidget* Win,gpointer data)
 {
 	gdouble Col[4];
 	GdkColor color;
-  	GtkWidget**selectors =(GtkWidget**) g_object_get_data(G_OBJECT (Win), "Selectors");
+  	GtkColorButton**selectors =(GtkColorButton**) g_object_get_data(G_OBJECT (Win), "Selectors");
 
 	/* positive value */
-	gtk_color_selection_get_current_color(GTK_COLOR_SELECTION(selectors[0]), &color); 
+	gtk_color_button_get_color (selectors[0], &color);
 	Col[0] = color.red/65535.0;
 	Col[1] = color.green/65535.0;
 	Col[2] = color.blue/65535.0;
 	set_color_surface(0,Col);
 
 	/* negative value */
-	gtk_color_selection_get_current_color(GTK_COLOR_SELECTION(selectors[1]), &color); 
+	gtk_color_button_get_color (selectors[1], &color);
 	Col[0] = color.red/65535.0;
 	Col[1] = color.green/65535.0;
 	Col[2] = color.blue/65535.0;
 	set_color_surface(1,Col);
 	/* density surface */
-	gtk_color_selection_get_current_color(GTK_COLOR_SELECTION(selectors[2]), &color); 
+	gtk_color_button_get_color (selectors[2], &color);
 	Col[0] = color.red/65535.0;
 	Col[1] = color.green/65535.0;
 	Col[2] = color.blue/65535.0;
@@ -107,15 +107,15 @@ GtkWidget *create_colorsel_frame(GtkWidget *vboxall,gchar* title,GtkWidget** sel
 			}
 			add_widget_table(Table,frame,(gushort)i,(gushort)j);
 			vboxframe = create_vbox(frame);
-			selector = gtk_color_selection_new ();
+
 			color.red = (gushort)(v[0]*65535);
 			color.green = (gushort)(v[1]*65535);
 			color.blue = (gushort)(v[2]*65535);
-			gtk_color_selection_set_current_color(GTK_COLOR_SELECTION(selector),&color);
-			gtk_color_selection_set_current_color(GTK_COLOR_SELECTION(selector),&color);
+
+			selector = gtk_color_button_new_with_color (&color);
+
 			gtk_widget_show(selector);
 			gtk_widget_show(frame);
-			gtk_color_selection_set_has_opacity_control (GTK_COLOR_SELECTION(selector),FALSE);
 			gtk_container_add(GTK_CONTAINER(vboxframe),selector);
 			selectors[num] = selector;
 		}

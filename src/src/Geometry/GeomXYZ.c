@@ -45,6 +45,8 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/StockIcons.h"
 #include "../Geometry/GeomXYZ.h"
 #include "../Geometry/OpenBabel.h"
+#include "../MolecularMechanics/PDBTemplate.h"
+#include "../MolecularMechanics/CalculTypesAmber.h"
 
 #ifdef G_OS_WIN32
 #include <fcntl.h>
@@ -55,14 +57,15 @@ DEALINGS IN THE SOFTWARE.
 
 #define MAXNAME 6
 #define MAXATOMTYPE 4
-#define MAXRESIDUENAME 3
+#define MAXRESIDUENAME 4
 #define MAXSYMBOL 2
 
 typedef enum
 {
   E_NUMBER=0,
   E_SYMBOL,
-  E_TYPE,
+  E_MMTYPE,
+  E_PDBTYPE,
   E_RESIDUE,
   E_X,
   E_Y,
@@ -93,7 +96,8 @@ static void TransXYZConstXVar();
 static void TransXYZConstYVar();
 static void TransXYZConstZVar();
 static void get_position(guint i,gdouble Pos[]);
-gchar** getListTypes(gint* nlist);
+gchar** getListMMTypes(gint* nlist);
+gchar** getListPDBTypes(gchar* residueName, gint* nlist);
 /********************************************************************************/
 static void DialogueAdd();
 static void DialogueEdit();
@@ -110,6 +114,20 @@ static void removeFromList(GtkWidget* myList, gint ligne);
 static void insertToList(GtkWidget* myList, gint ligne, gchar* texts[], gint nColumns);
 static void appendToList(GtkWidget* myList, gchar* texts[], gint nColumns);
 static void append_list();
+/********************************************************************************/
+static void calculMMTypes(gboolean withCharge)
+{
+	gint i;
+	MethodeGeom = GEOM_IS_XYZ;
+	define_geometry();
+	calculTypesAmber(geometry,NcentersXYZ);
+	for(i=0;i<(gint)NcentersXYZ;i++)
+	{
+		gint in = geometry[i].N-1;
+		GeomXYZ[in].mmType = g_strdup(geometry[i].mmType);
+		if(withCharge) GeomXYZ[in].Charge = g_strdup_printf("%f",geometry[i].Charge);
+	}
+}
 /********************************************************************************/
 static void set_sensitive_option(GtkUIManager *manager, gchar* path, gboolean sensitive)
 {
@@ -329,7 +347,8 @@ static void row_deleted(GtkTreeModel *model, GtkTreePath *path, gpointer data)
 			k -= NcentersXYZ;
 		}
 		tmpGeomXYZ[i].Symb = g_strdup(GeomXYZ[k].Symb);
-		tmpGeomXYZ[i].Type = g_strdup(GeomXYZ[k].Type);
+		tmpGeomXYZ[i].mmType = g_strdup(GeomXYZ[k].mmType);
+		tmpGeomXYZ[i].pdbType = g_strdup(GeomXYZ[k].pdbType);
   		tmpGeomXYZ[i].Residue  = g_strdup(GeomXYZ[k].Residue);
 		tmpGeomXYZ[i].X = g_strdup(GeomXYZ[k].X);
 		tmpGeomXYZ[i].Y = g_strdup(GeomXYZ[k].Y);
@@ -344,7 +363,8 @@ static void row_deleted(GtkTreeModel *model, GtkTreePath *path, gpointer data)
 	for(i=0;i<NcentersXYZ;i++)
 	{
 		g_free(GeomXYZ[i].Symb);
-		g_free(GeomXYZ[i].Type);
+		g_free(GeomXYZ[i].mmType);
+		g_free(GeomXYZ[i].pdbType);
 		g_free(GeomXYZ[i].Residue);
 		g_free(GeomXYZ[i].X);
 		g_free(GeomXYZ[i].Y);
@@ -637,7 +657,8 @@ static void append_list()
  	 	texts[E_NUMBER] = g_strdup_printf("%d",Nc+1);
   		texts[E_SYMBOL] = g_strdup(GeomXYZ[Nc].Symb);
   		texts[E_RESIDUE] = g_strdup(GeomXYZ[Nc].Residue);
-  		texts[E_TYPE] = g_strdup(GeomXYZ[Nc].Type);
+  		texts[E_MMTYPE] = g_strdup(GeomXYZ[Nc].mmType);
+  		texts[E_PDBTYPE] = g_strdup(GeomXYZ[Nc].pdbType);
   		texts[E_X] = g_strdup(GeomXYZ[Nc].X);
   		texts[E_Y] = g_strdup(GeomXYZ[Nc].Y);
   		texts[E_Z] = g_strdup(GeomXYZ[Nc].Z);
@@ -701,8 +722,41 @@ static void sort_GeomXYZ()
 		GeomXYZ[k] = t;
 	}
   }
-   clearList(list);
-   append_list();
+  if(GeomIsOpen)
+  {
+   	clearList(list);
+   	append_list();
+  }
+   if(ZoneDessin != NULL)
+         draw_geometry(NULL,NULL);
+}
+/*****************************************************************************/
+static void sortGeomXYZByResidueNumber()
+{
+  gint i;
+  gint j;
+  gint k;
+  GeomXYZAtomDef t;
+
+  if (NcentersXYZ <= 0) return ;
+  for (i = 0; i <(gint)NcentersXYZ-1; i++)
+  {
+	k = i;
+  	for (j = i+1; j <(gint)NcentersXYZ; j++)
+  	if( GeomXYZ[j].ResidueNumber<GeomXYZ[k].ResidueNumber)
+		k = j; 
+	if(k!=i)
+	{
+		t= GeomXYZ[i];
+		GeomXYZ[i] = GeomXYZ[k];
+		GeomXYZ[k] = t;
+	}
+  }
+  if(GeomIsOpen)
+  {
+   	clearList(list);
+   	append_list();
+  }
    if(ZoneDessin != NULL)
          draw_geometry(NULL,NULL);
 }
@@ -741,8 +795,10 @@ void FreeGeomXYZ(GeomXYZAtomDef* GeomXYZtemp, VariablesXYZDef* VariablesXYZtemp,
  	{
 	if(GeomXYZtemp[i].Symb)
    		g_free(GeomXYZtemp[i].Symb);
-	if(GeomXYZtemp[i].Type)
-   		g_free(GeomXYZtemp[i].Type);
+	if(GeomXYZtemp[i].mmType)
+   		g_free(GeomXYZtemp[i].mmType);
+	if(GeomXYZtemp[i].pdbType)
+   		g_free(GeomXYZtemp[i].pdbType);
 	if(GeomXYZtemp[i].X)
    		g_free(GeomXYZtemp[i].X);
 	if(GeomXYZtemp[i].Y)
@@ -774,7 +830,9 @@ void freeGeomXYZ()
  for(i=0;i<NcentersXYZ;i++)
  {
    g_free(GeomXYZ[i].Symb);
-   g_free(GeomXYZ[i].Type);
+   g_free(GeomXYZ[i].mmType);
+   g_free(GeomXYZ[i].pdbType);
+   g_free(GeomXYZ[i].Residue);
    g_free(GeomXYZ[i].X);
    g_free(GeomXYZ[i].Y);
    g_free(GeomXYZ[i].Z);
@@ -1107,7 +1165,8 @@ void show_geom_in_list(guint i)
 	texts[E_NUMBER] = g_strdup_printf("%d",i+1);
 	texts[E_SYMBOL] = g_strdup(GeomXYZ[i].Symb);
 	texts[E_RESIDUE] = g_strdup(GeomXYZ[i].Residue);
-	texts[E_TYPE] = g_strdup(GeomXYZ[i].Type);
+	texts[E_MMTYPE] = g_strdup(GeomXYZ[i].mmType);
+	texts[E_PDBTYPE] = g_strdup(GeomXYZ[i].pdbType);
 	texts[E_X] = g_strdup(GeomXYZ[i].X);
 	texts[E_Y] = g_strdup(GeomXYZ[i].Y);
 	texts[E_Z] = g_strdup(GeomXYZ[i].Z);
@@ -1568,7 +1627,8 @@ static void set_entry_XYZ()
 static void SetAtom(GtkWidget *w,gpointer data)
 {
   gtk_entry_set_text(GTK_ENTRY(Entry[E_SYMBOL]),(char *)data);
-  gtk_entry_set_text(GTK_ENTRY(Entry[E_TYPE]),(char *)data);
+  gtk_entry_set_text(GTK_ENTRY(Entry[E_MMTYPE]),(char *)data);
+  gtk_entry_set_text(GTK_ENTRY(Entry[E_PDBTYPE]),(char *)data);
   gtk_editable_set_editable((GtkEditable*) Entry[E_SYMBOL],FALSE);
   gtk_widget_destroy(FenetreTable);
   set_entry_XYZ();
@@ -1652,7 +1712,8 @@ static void AddAtom(GtkWidget *w,gpointer Entree)
   DestroyDialog = TRUE;
   texts[E_NUMBER] = g_strdup_printf("%d",NcentersXYZ+1);
   texts[E_SYMBOL] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_SYMBOL])));
-  texts[E_TYPE] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_TYPE])));
+  texts[E_MMTYPE] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_MMTYPE])));
+  texts[E_PDBTYPE] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_PDBTYPE])));
   texts[E_RESIDUE] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_RESIDUE])));
   for (i=E_X;i<=E_Z;i++)
   {
@@ -1691,7 +1752,8 @@ static void AddAtom(GtkWidget *w,gpointer Entree)
 
   GeomXYZ[NcentersXYZ-1].Nentry=NUMBER_LIST_XYZ;
   GeomXYZ[NcentersXYZ-1].Symb  = g_strdup(texts[E_SYMBOL]);
-  GeomXYZ[NcentersXYZ-1].Type  = g_strdup(texts[E_TYPE]);
+  GeomXYZ[NcentersXYZ-1].mmType  = g_strdup(texts[E_MMTYPE]);
+  GeomXYZ[NcentersXYZ-1].pdbType  = g_strdup(texts[E_PDBTYPE]);
   GeomXYZ[NcentersXYZ-1].Residue  = g_strdup(texts[E_RESIDUE]);
   GeomXYZ[NcentersXYZ-1].X     = g_strdup(texts[E_X]);
   GeomXYZ[NcentersXYZ-1].Y     = g_strdup(texts[E_Y]);
@@ -1741,7 +1803,8 @@ static void EditAtom(GtkWidget *w,gpointer Entree)
   texts[E_NUMBER] = g_strdup_printf("%d",Nc+1);
   texts[E_SYMBOL] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_SYMBOL])));
   texts[E_RESIDUE] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_RESIDUE])));
-  texts[E_TYPE] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_TYPE])));
+  texts[E_MMTYPE] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_MMTYPE])));
+  texts[E_PDBTYPE] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[E_PDBTYPE])));
 
   for (i=E_X;i<=E_Z;i++)
   {
@@ -1783,7 +1846,8 @@ static void EditAtom(GtkWidget *w,gpointer Entree)
 	  oldResidue = TRUE;
   GeomXYZ[Nc].Nentry=NUMBER_LIST_XYZ;
   GeomXYZ[Nc].Symb  = g_strdup(texts[E_SYMBOL]);
-  GeomXYZ[Nc].Type  = g_strdup(texts[E_TYPE]);
+  GeomXYZ[Nc].mmType  = g_strdup(texts[E_MMTYPE]);
+  GeomXYZ[Nc].pdbType  = g_strdup(texts[E_PDBTYPE]);
   GeomXYZ[Nc].Residue  = g_strdup(texts[E_RESIDUE]);
   GeomXYZ[Nc].X     = g_strdup(texts[E_X]);
   GeomXYZ[Nc].Y     = g_strdup(texts[E_Y]);
@@ -1870,7 +1934,8 @@ static void DialogueAdd(GtkWidget *w,gpointer data)
   gint nlist;
   gchar *tlabel[]={	" ",	
 	  		"Atom Symbol : ", 
-	  		"Atom Type : ",
+	  		"MM Type : ",
+	  		"PDB Type : ",
 	  		"Residue Type : ",
 			" X : ", 
 			" Y : ", 
@@ -1920,23 +1985,55 @@ static void DialogueAdd(GtkWidget *w,gpointer data)
   hbox=create_hbox_false(vboxframe);
   {
 	gint n=0;
-	gchar** t = getListTypes(&n);
+	gchar** t = getListMMTypes(&n);
 	if(n!=0)
 	{
-		Entry[E_TYPE] = create_label_combo(hbox,tlabel[E_TYPE],t,n,
+		Entry[E_MMTYPE] = create_label_combo(hbox,tlabel[E_MMTYPE],t,n,
 		TRUE,(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
 	}
 	else
-		Entry[E_TYPE] = create_label_entry(hbox,tlabel[E_TYPE],
+	{
+		Entry[E_MMTYPE] = create_label_entry(hbox,tlabel[E_MMTYPE],
 		(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
+	}
 
 	if(t)
 		freeList(t,n);
 
 	if(NcentersXYZ==0)
-  		gtk_entry_set_text(GTK_ENTRY(Entry[E_TYPE]),"H");
+	{
+  		gtk_entry_set_text(GTK_ENTRY(Entry[E_MMTYPE]),"H");
+	}
 	else
-		gtk_entry_set_text(GTK_ENTRY(Entry[E_TYPE]),GeomXYZ[NcentersXYZ-1].Type);
+	{
+		gtk_entry_set_text(GTK_ENTRY(Entry[E_MMTYPE]),GeomXYZ[NcentersXYZ-1].mmType);
+	}
+  }
+  hbox=create_hbox_false(vboxframe);
+  {
+	gint n=0;
+	gchar** t = getListPDBTypes("UNK", &n);
+	if(n!=0)
+	{
+		Entry[E_PDBTYPE] = create_label_combo(hbox,tlabel[E_PDBTYPE],t,n,
+		TRUE,(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
+	}
+	else
+	{
+		Entry[E_PDBTYPE] = create_label_entry(hbox,tlabel[E_PDBTYPE],
+		(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
+	}
+
+	if(t) freeList(t,n);
+
+	if(NcentersXYZ==0)
+	{
+  		gtk_entry_set_text(GTK_ENTRY(Entry[E_PDBTYPE]),"H");
+	}
+	else
+	{
+		gtk_entry_set_text(GTK_ENTRY(Entry[E_PDBTYPE]),GeomXYZ[NcentersXYZ-1].pdbType);
+	}
   }
   hbox=create_hbox_false(vboxframe);
   Entry[E_RESIDUE] = create_label_entry(hbox,tlabel[E_RESIDUE],
@@ -2009,7 +2106,8 @@ static void DialogueEdit()
 
   gchar *tlabel[]={	" ",	
 	  		"Atom Symbol : ", 
-	  		"Atom Type : ",
+	  		"MM Type : ",
+	  		"PDB Type : ",
 	  		"Residue Type : ",
 			" X : ", 
 			" Y : ", 
@@ -2065,19 +2163,38 @@ static void DialogueEdit()
   hbox=create_hbox_false(vboxframe);
   {
 	gint n=0;
-	gchar** t = getListTypes(&n);
+	gchar** t = getListMMTypes(&n);
 	if(n!=0)
 	{
-		Entry[E_TYPE] = create_label_combo(hbox,tlabel[E_TYPE],t,n,
+		Entry[E_MMTYPE] = create_label_combo(hbox,tlabel[E_MMTYPE],t,n,
 		TRUE,(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
 	}
 	else
-		Entry[E_TYPE] = create_label_entry(hbox,tlabel[E_TYPE],
+	{
+		Entry[E_MMTYPE] = create_label_entry(hbox,tlabel[E_MMTYPE],
 		(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
+	}
 
-	if(t)
-		freeList(t,n);
-	gtk_entry_set_text(GTK_ENTRY(Entry[E_TYPE]),GeomXYZ[Nc].Type);
+	if(t) freeList(t,n);
+	gtk_entry_set_text(GTK_ENTRY(Entry[E_MMTYPE]),GeomXYZ[Nc].mmType);
+  }
+  hbox=create_hbox_false(vboxframe);
+  {
+	gint n=0;
+	gchar** t = getListPDBTypes(GeomXYZ[Nc].Residue, &n);
+	if(n!=0)
+	{
+		Entry[E_PDBTYPE] = create_label_combo(hbox,tlabel[E_PDBTYPE],t,n,
+		TRUE,(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
+	}
+	else
+	{
+		Entry[E_PDBTYPE] = create_label_entry(hbox,tlabel[E_PDBTYPE],
+		(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
+	}
+
+	if(t) freeList(t,n);
+	gtk_entry_set_text(GTK_ENTRY(Entry[E_PDBTYPE]),GeomXYZ[Nc].pdbType);
   }
   hbox=create_hbox_false(vboxframe);
   Entry[E_RESIDUE] = create_label_entry(hbox,tlabel[E_RESIDUE],
@@ -2226,7 +2343,10 @@ static gchar* get_symb_atom(gchar* symb)
 			S = g_strdup_printf("%c",toupper(symb[0]));
 	}
 	if(!test_atom_define(S))
+	{
 		S = g_strdup_printf("%c",toupper(symb[0]));
+		if(!test_atom_define(S))  S = g_strdup("H");
+	}
 
 
 	return S;
@@ -2353,11 +2473,13 @@ void read_hin_file_no_add_list(gchar *NomFichier)
 		/* printf("%s %s %s %s %s %s %s \n",listFields[0],listFields[1],listFields[2],listFields[3],listFields[4],listFields[5],listFields[6]);*/
 		GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
 		GeomXYZ[j].Symb= g_strdup(listFields[1]);
+
+		if(strcmp(listFields[0],"-")==0) GeomXYZ[j].pdbType= g_strdup(listFields[1]);
+		else GeomXYZ[j].pdbType= g_strdup(listFields[1]);
 			
-		if(strcmp(listFields[0],"-")==0)
-			GeomXYZ[j].Type= g_strdup(listFields[1]);
-		else
-			GeomXYZ[j].Type= g_strdup(listFields[0]);
+		if(strcmp(listFields[2],"**")==0) GeomXYZ[j].mmType= g_strdup(listFields[1]);
+		else GeomXYZ[j].mmType= g_strdup(listFields[2]);
+
 		GeomXYZ[j].Residue= g_strdup(resName);
 		GeomXYZ[j].ResidueNumber= i;
 
@@ -2515,7 +2637,7 @@ void create_babel_save_dialogue()
 /******************************************************************************/
 static void save_atom_hin_file(FILE* file, 
 		gchar*name, gint atomNumber,
-		gchar* atomType, gchar* residueName,
+		gchar* atomPDBType, gchar* atomMMType, gchar* residueName,
 		gint residueNumber,
 		gdouble x, gdouble y, gdouble z,
 		gdouble occupancy,
@@ -2529,9 +2651,9 @@ static void save_atom_hin_file(FILE* file,
 {
 	gint i;
         fprintf(file,"atom %d ",atomNumber);
-        fprintf(file,"%s ",atomType);
+        fprintf(file,"%s ",atomPDBType);
         fprintf(file,"%s ",symbol); 
-        fprintf(file,"** - "); 
+        fprintf(file,"%s - ",atomMMType); 
         fprintf(file,"%f ",charge); 
         fprintf(file,"%f ",x); 
         fprintf(file,"%f ",y); 
@@ -2736,25 +2858,19 @@ gboolean save_hin_file(G_CONST_RETURN gchar* FileName)
 				fprintf(fd,"res %d %s %d - - \n",j+1,GeomXYZ[i].Residue,j+1);
 			j++;
 		}
-		if(!test(GeomXYZ[i].X))
-			X = get_value_variableXYZ(GeomXYZ[i].X);
-		else
-			X = atof(GeomXYZ[i].X);
-		if(!test(GeomXYZ[i].Y))
-			Y = get_value_variableXYZ(GeomXYZ[i].Y);
-		else
-			Y = atof(GeomXYZ[i].Y);
-		if(!test(GeomXYZ[i].Z))
-			Z = get_value_variableXYZ(GeomXYZ[i].Z);
-		else
-			Z = atof(GeomXYZ[i].Z);
+		if(!test(GeomXYZ[i].X)) X = get_value_variableXYZ(GeomXYZ[i].X);
+		else X = atof(GeomXYZ[i].X);
+		if(!test(GeomXYZ[i].Y)) Y = get_value_variableXYZ(GeomXYZ[i].Y);
+		else Y = atof(GeomXYZ[i].Y);
+		if(!test(GeomXYZ[i].Z)) Z = get_value_variableXYZ(GeomXYZ[i].Z);
+		else Z = atof(GeomXYZ[i].Z);
 		if(Units==0)
 		{
 			X *= BOHR_TO_ANG;
 			Y *= BOHR_TO_ANG;
 			Z *= BOHR_TO_ANG;
 		}
-		save_atom_hin_file(fd,"ATOM",i+1,GeomXYZ[i].Type,GeomXYZ[i].Residue,
+		save_atom_hin_file(fd,"ATOM",i+1,GeomXYZ[i].pdbType, GeomXYZ[i].mmType,GeomXYZ[i].Residue,
 		GeomXYZ[i].ResidueNumber, X,Y,Z,
 		1.0, 300.0, GeomXYZ[i].Symb, atof(GeomXYZ[i].Charge),N,connection, connectionType);
 	}
@@ -2879,6 +2995,59 @@ void create_babel_read_dialogue()
 	g_signal_connect_swapped(G_OBJECT(okButton), "clicked",G_CALLBACK(delete_child),GTK_OBJECT(win));
 }
 /*************************************************************************************/
+void read_charges_from_gromacs_topology_file(gchar *NomFichier)
+{
+	gchar *fileNameTOP = NULL;
+	FILE* file;
+	gchar* str = NULL;
+	gboolean OK = FALSE;
+	gchar** split = NULL;
+	gint i,j;
+
+	fileNameTOP = get_suffix_name_file(NomFichier);
+	fileNameTOP = g_strdup_printf("%s.top",fileNameTOP);
+	file = FOpen(fileNameTOP, "r");
+	if(fileNameTOP) g_free(fileNameTOP);
+ 	if(file == NULL) return;
+	str = g_malloc(BSIZE*sizeof(gchar));
+	fseek(file, 0L, SEEK_SET);
+
+	while(!feof(file))
+	{
+    		if(!fgets(str,BSIZE,file)) break;
+		if(strstr(str,"[ atoms ]"))
+		{
+			OK = TRUE;
+			break;
+		}
+	}
+
+	j = -1;
+	while(!feof(file))
+	{
+    		if(!fgets(str,BSIZE,file)) break;
+		if(strlen(str)>0 && str[0] ==';') continue;
+		if(strstr(str,"[")) break;
+		split = NULL;
+		split = gab_split(str);
+		i = 0;
+		if(split)
+		for(i=0;i<8;i++)
+		{
+			if(split[i]==NULL) break;
+			if(i==6 && split[i]) break;
+		}
+		if(i==6)
+		{
+			j++;
+			GeomXYZ[j].Charge=g_strdup(split[6]);
+		}
+		if(split) g_strfreev(split);
+		if(j>=NcentersXYZ)  break;
+	}
+	fclose(file);
+}
+/*************************************************************************************/
 static gboolean read_atom_pdb_file(gchar* line,gchar* listFields[])
 {
 	gint i;
@@ -2891,10 +3060,17 @@ static gboolean read_atom_pdb_file(gchar* line,gchar* listFields[])
 	for(i=0;i<MAXATOMTYPE;i++)
 		listFields[k][i] = line[13+i-1];
 	listFields[k][MAXATOMTYPE] = '\0';
+	if(isdigit(listFields[k][0]))
+	{
+		gchar c0 = listFields[k][0];
+		for(i=0;i<MAXATOMTYPE-1;i++)
+			listFields[k][i] = listFields[k][i+1];
+		listFields[k][MAXATOMTYPE-1] = c0;
+	}
 	/* 1-> Residue Name */
 	k = 1;
 	for(i=0;i<MAXRESIDUENAME;i++)
-		listFields[k][i] = line[18+i-1];
+		listFields[k][i] = line[17+i-1];
 	listFields[k][MAXRESIDUENAME] = '\0';
 
 	/* 2-> Residue Number */
@@ -2926,7 +3102,7 @@ static gboolean read_atom_pdb_file(gchar* line,gchar* listFields[])
 	{
 		for(i=0;i<2;i++)
 		{
-			listFields[k][i] = line[77+i-1];
+			listFields[k][i] = line[76+i];
 		}
 		listFields[k][2] = '\0';
 		if(listFields[k][1]==' ')
@@ -2969,6 +3145,7 @@ void read_pdb_file_no_add_list(gchar *NomFichier)
 	guint taille=BSIZE;
 	guint i;
 	gint j;
+	gdouble charge;
 
 	for(i=0;i<8;i++)
 		listFields[i]=g_malloc(taille*sizeof(gchar));
@@ -3012,9 +3189,10 @@ void read_pdb_file_no_add_list(gchar *NomFichier)
 		else
 			GeomXYZ[j].Symb= g_strdup(listFields[6]);
 			
-		GeomXYZ[j].Type= g_strdup(listFields[0]);
+		GeomXYZ[j].pdbType= g_strdup(listFields[0]);
 		GeomXYZ[j].Residue= g_strdup(listFields[1]);
 		GeomXYZ[j].ResidueNumber= atoi(listFields[2])-1;
+		GeomXYZ[j].mmType= getMMTypeFromPDBTpl(GeomXYZ[j].Residue,GeomXYZ[j].pdbType,&charge);
 
 		if(Units==1)
 		{
@@ -3029,7 +3207,9 @@ void read_pdb_file_no_add_list(gchar *NomFichier)
 			GeomXYZ[j].Z=g_strdup(ang_to_bohr(listFields[5]));
 		}
 		if(strlen(listFields[7])<=0)
-			GeomXYZ[j].Charge=g_strdup("0.0");
+		{
+			GeomXYZ[j].Charge=g_strdup_printf("%f",charge);
+		}
 		else
 			GeomXYZ[j].Charge=g_strdup(listFields[7]);
 
@@ -3043,6 +3223,7 @@ void read_pdb_file_no_add_list(gchar *NomFichier)
 	g_free(t);
 	for(i=0;i<8;i++)
 		g_free(listFields[i]);
+	read_charges_from_gromacs_topology_file(NomFichier);
 	
 	if(GeomIsOpen)
 	{
@@ -3103,17 +3284,39 @@ static void save_atom_pdb_file(FILE* file,
 	g_strup(localName);
 
 	if(strlen(atomType)>MAXATOMTYPE)
+	{
 		strncpy(localAtomType, atomType, MAXATOMTYPE);
+	}
 	else
-		strcpy(localAtomType,atomType);
+	{
+		if(atomType && isdigit(atomType[0])) strcpy(localAtomType,atomType);
+		else 
+		{
+			sprintf(localAtomType," %s",atomType);
+			if(strlen(localAtomType)>=MAXATOMTYPE)
+			{
+				if(isdigit(localAtomType[MAXATOMTYPE]))
+					localAtomType[0] = localAtomType[MAXATOMTYPE];
+				localAtomType[MAXATOMTYPE] = '\0';
+			}
+		}
+	}
 
-	if(strlen(residueName)>MAXRESIDUENAME)
+	if(strlen(residueName)>=MAXRESIDUENAME)
 		strncpy(localResidueName, residueName, MAXRESIDUENAME);
 	else
-		strcpy(localResidueName,residueName);
+	{
+		sprintf(localResidueName," %s",residueName);
+		if(strlen(localResidueName)>=MAXRESIDUENAME)
+		{
+			if(isdigit(localResidueName[MAXRESIDUENAME]))
+				localResidueName[0] = localResidueName[MAXRESIDUENAME];
+			localResidueName[MAXRESIDUENAME] = '\0';
+		}
+	}
 	g_strup(localResidueName);
 
-	if(strlen(symbol)>MAXRESIDUENAME)
+	if(strlen(symbol)>MAXSYMBOL)
 		strncpy(localSymbol, symbol, MAXSYMBOL);
 	else
 		strcpy(localSymbol,symbol);
@@ -3130,8 +3333,7 @@ static void save_atom_pdb_file(FILE* file,
         fprintf(file,"%-6s",localName); /* Atom or HETATM */
         fprintf(file,"%-6d",atomNumber); 
         fprintf(file,"%-4s",localAtomType); 
-        fprintf(file," "); 
-        fprintf(file,"%-3s",localResidueName); 
+        fprintf(file,"%-4s",localResidueName); 
         fprintf(file,"  "); 
         fprintf(file,"%-4d",residueNumber); 
         fprintf(file,"    "); 
@@ -3177,6 +3379,7 @@ gboolean save_pdb_file(G_CONST_RETURN gchar* FileName)
 	g_free(t);
 	return FALSE;
  }
+ sortGeomXYZByResidueNumber();
 
   fprintf(fd,"HEADER    PROTEIN\n");
   fprintf(fd,"COMPND    UNNAMED\n");
@@ -3207,7 +3410,7 @@ gboolean save_pdb_file(G_CONST_RETURN gchar* FileName)
               Y *= BOHR_TO_ANG;
               Z *= BOHR_TO_ANG;
          }
-	save_atom_pdb_file(fd,"ATOM",i+1,GeomXYZ[i].Type,GeomXYZ[i].Residue,
+	save_atom_pdb_file(fd,"ATOM",i+1,GeomXYZ[i].pdbType,GeomXYZ[i].Residue,
 		GeomXYZ[i].ResidueNumber+1, X,Y,Z,
 		1.0, 300.0, GeomXYZ[i].Symb, atof(GeomXYZ[i].Charge));
    }
@@ -3514,7 +3717,8 @@ static void read_molden_gabedit_geom_conv_file(gchar* fileName, gint geometryNum
 
 						GeomXYZ[i].Nentry=NUMBER_LIST_XYZ;
 						GeomXYZ[i].Symb=g_strdup(AtomCoord[0]);
-						GeomXYZ[i].Type=g_strdup(GeomXYZ[i].Symb);
+						GeomXYZ[i].mmType=g_strdup(GeomXYZ[i].Symb);
+						GeomXYZ[i].pdbType=g_strdup(GeomXYZ[i].Symb);
 						GeomXYZ[i].Residue=g_strdup(GeomXYZ[i].Symb);
 						GeomXYZ[i].ResidueNumber=0;
 						if(Units == 0 )
@@ -3548,6 +3752,7 @@ static void read_molden_gabedit_geom_conv_file(gchar* fileName, gint geometryNum
 	}
 
 	fclose(fd);
+ 	calculMMTypes(FALSE);
 	if(GeomIsOpen && MethodeGeom == GEOM_IS_XYZ)
 	{
    		clearList(list);
@@ -3742,7 +3947,8 @@ void read_geom_from_mpqc_output_file(gchar *fileName, gint numGeometry)
 
 			GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
 			GeomXYZ[j].Symb=g_strdup(AtomCoord[0]);
-			GeomXYZ[j].Type=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].mmType=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].pdbType=g_strdup(AtomCoord[0]);
 			GeomXYZ[j].Residue=g_strdup(AtomCoord[0]);
 			GeomXYZ[j].ResidueNumber=0;
 
@@ -3790,6 +3996,7 @@ void read_geom_from_mpqc_output_file(gchar *fileName, gint numGeometry)
 	if(numGeometry<0) get_charges_from_mpqc_output_file(fd,NcentersXYZ);
 
 	fclose(fd);
+ 	calculMMTypes(FALSE);
 	g_free(t);
 	for(i=0;i<5;i++) g_free(AtomCoord[i]);
 
@@ -3910,7 +4117,8 @@ void read_geom_conv_from_dalton_output_file(gchar *NomFichier, gint numgeometry)
 			if (l==2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
 			GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
 			GeomXYZ[j].Symb=g_strdup(AtomCoord[0]);
-			GeomXYZ[j].Type=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].mmType=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].pdbType=g_strdup(AtomCoord[0]);
 			GeomXYZ[j].Residue=g_strdup(AtomCoord[0]);
 			GeomXYZ[j].ResidueNumber=0;
 			if(Units == 1 )
@@ -3934,6 +4142,7 @@ void read_geom_conv_from_dalton_output_file(gchar *NomFichier, gint numgeometry)
 	}while(!feof(fd));
 
 	fclose(fd);
+ 	calculMMTypes(FALSE);
 	g_free(t);
 	for(i=0;i<5;i++) g_free(AtomCoord[i]);
 	if(GeomIsOpen && MethodeGeom == GEOM_IS_XYZ)
@@ -4023,7 +4232,8 @@ void read_geom_from_dalton_output_file(gchar *NomFichier, gint numgeometry)
 			if (l==2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
 			GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
 			GeomXYZ[j].Symb=g_strdup(AtomCoord[0]);
-			GeomXYZ[j].Type=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].mmType=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].pdbType=g_strdup(AtomCoord[0]);
 			GeomXYZ[j].Residue=g_strdup(AtomCoord[0]);
 			GeomXYZ[j].ResidueNumber=0;
 			if(Units == 1 )
@@ -4047,6 +4257,7 @@ void read_geom_from_dalton_output_file(gchar *NomFichier, gint numgeometry)
 	}while(!feof(fd));
 
 	fclose(fd);
+ 	calculMMTypes(FALSE);
 	g_free(t);
 	for(i=0;i<5;i++) g_free(AtomCoord[i]);
 	if(GeomIsOpen && MethodeGeom == GEOM_IS_XYZ)
@@ -4144,7 +4355,7 @@ void read_geom_conv_from_gamess_output_file(gchar *NomFichier, gint numgeometry)
 		while(!feof(fd) )
 		{
 			fgets(t,taille,fd);
-			if ( !strcmp(t,"\n"))
+			if ( !strcmp(t,"\n") || !strcmp(t,"\r\n"))
 			{
 				get_dipole_from_gamess_output_file(fd);
 				break;
@@ -4167,7 +4378,8 @@ void read_geom_conv_from_gamess_output_file(gchar *NomFichier, gint numgeometry)
 			GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
 			/* GeomXYZ[j].Symb=g_strdup(AtomCoord[0]);*/
 			GeomXYZ[j].Symb=get_symbol_using_z(atoi(dum));
-			GeomXYZ[j].Type=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].mmType=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].pdbType=g_strdup(AtomCoord[0]);
 			GeomXYZ[j].Residue=g_strdup(AtomCoord[0]);
 			GeomXYZ[j].ResidueNumber=0;
 			if(Units != uni )
@@ -4200,6 +4412,7 @@ void read_geom_conv_from_gamess_output_file(gchar *NomFichier, gint numgeometry)
 	}while(!feof(fd));
 
 	fclose(fd);
+ 	calculMMTypes(FALSE);
 	g_free(t);
 	for(i=0;i<5;i++) g_free(AtomCoord[i]);
 	if(GeomIsOpen && MethodeGeom == GEOM_IS_XYZ)
@@ -4281,6 +4494,7 @@ void read_geom_from_gamess_output_file(gchar *NomFichier, gint numgeometry)
 		{
 			fgets(t,taille,fd);
 			if ( !strcmp(t,"\n")) break;
+			if ( !strcmp(t,"\r\n")) break;
 			j++;
 
 			if(GeomXYZ==NULL) GeomXYZ=g_malloc(sizeof(GeomXYZAtomDef));
@@ -4299,7 +4513,8 @@ void read_geom_from_gamess_output_file(gchar *NomFichier, gint numgeometry)
 			GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
 			/* GeomXYZ[j].Symb=g_strdup(AtomCoord[0]);*/
 			GeomXYZ[j].Symb=get_symbol_using_z(atoi(dum));
-			GeomXYZ[j].Type=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].mmType=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].pdbType=g_strdup(AtomCoord[0]);
 			GeomXYZ[j].Residue=g_strdup(AtomCoord[0]);
 			GeomXYZ[j].ResidueNumber=0;
 			if(Units != uni )
@@ -4339,6 +4554,7 @@ void read_geom_from_gamess_output_file(gchar *NomFichier, gint numgeometry)
 	}
 
 	fclose(fd);
+ 	calculMMTypes(FALSE);
 	g_free(t);
 	for(i=0;i<5;i++) g_free(AtomCoord[i]);
 	if(GeomIsOpen && MethodeGeom == GEOM_IS_XYZ)
@@ -4448,7 +4664,8 @@ void read_geom_from_xyz_file(gchar *fileName, gint numGeom)
           		if (l==2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
     			GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
     			GeomXYZ[j].Symb=g_strdup(AtomCoord[0]);
-    			GeomXYZ[j].Type=g_strdup(AtomCoord[0]);
+    			GeomXYZ[j].mmType=g_strdup(AtomCoord[0]);
+    			GeomXYZ[j].pdbType=g_strdup(AtomCoord[0]);
     			GeomXYZ[j].Residue=g_strdup(AtomCoord[0]);
     			GeomXYZ[j].ResidueNumber=0;
     			if(Units==1)
@@ -4475,6 +4692,7 @@ void read_geom_from_xyz_file(gchar *fileName, gint numGeom)
 	}
 	fclose(file);
 	g_free(t);
+	calculMMTypes(TRUE);
 	if(GeomIsOpen) create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
 	if(ZoneDessin != NULL) rafresh_drawing();
 }
@@ -4494,6 +4712,10 @@ void read_geom_from_gaussian_file(gchar *NomFichier, gint numgeometry)
  gchar *pdest;
  gint result;
  guint itype=0;
+ gchar* strStandard = "Standard orientation:";
+ gchar* strInput = "Input orientation:";
+ gchar* strOther = "orientation:";
+ gchar* strSearch = strOther;
 
  for(i=0;i<5;i++)
 	AtomCoord[i]=g_malloc(taille*sizeof(char));
@@ -4508,13 +4730,25 @@ void read_geom_from_gaussian_file(gchar *NomFichier, gint numgeometry)
   g_free(t);
   return;
  }
+ while(!feof(fd))
+ {
+	  if(!fgets(t,taille,fd))break;
+          if(strstr( t, strStandard))
+	  {
+		  strSearch = strStandard;
+		  break;
+	  }
+          if(strstr( t, strInput))
+		  strSearch = strInput;
+ }
+ fseek(fd, 0L, SEEK_SET);
  numgeom =0;
  do 
  {
  OK=FALSE;
  while(!feof(fd)){
 	  fgets(t,taille,fd);
-          pdest = strstr( t, "Standard orientation:");
+          pdest = strstr( t, strSearch);
           result = pdest - t ;
 	  /*
           pdest = strstr( t, "Input orientation:" );
@@ -4586,7 +4820,8 @@ void read_geom_from_gaussian_file(gchar *NomFichier, gint numgeometry)
 
     GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
     GeomXYZ[j].Symb=g_strdup(symb_atom_get((guint)atoi(AtomCoord[0])));
-    GeomXYZ[j].Type=g_strdup(GeomXYZ[j].Symb);
+    GeomXYZ[j].mmType=g_strdup(GeomXYZ[j].Symb);
+    GeomXYZ[j].pdbType=g_strdup(GeomXYZ[j].Symb);
     GeomXYZ[j].Residue=g_strdup(GeomXYZ[j].Symb);
     GeomXYZ[j].ResidueNumber=0;
     if(Units == 0 )
@@ -4612,6 +4847,7 @@ void read_geom_from_gaussian_file(gchar *NomFichier, gint numgeometry)
 
  fclose(fd);
  g_free(t);
+ calculMMTypes(FALSE);
  for(i=0;i<5;i++)
 	g_free(AtomCoord[i]);
  if(GeomIsOpen && MethodeGeom == GEOM_IS_XYZ)
@@ -4710,7 +4946,8 @@ void read_geom_from_molpro_file(gchar *NomFichier, gint numgeometry)
 	 	AtomCoord[0][1]=tolower(AtomCoord[0][1]);
     GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
     GeomXYZ[j].Symb=g_strdup(AtomCoord[0]);
-    GeomXYZ[j].Type=g_strdup(AtomCoord[0]);
+    GeomXYZ[j].mmType=g_strdup(AtomCoord[0]);
+    GeomXYZ[j].pdbType=g_strdup(AtomCoord[0]);
     GeomXYZ[j].Residue=g_strdup(AtomCoord[0]);
     GeomXYZ[j].ResidueNumber=0;
     if(Units == 1 )
@@ -4736,6 +4973,7 @@ void read_geom_from_molpro_file(gchar *NomFichier, gint numgeometry)
 
  fclose(fd);
  g_free(t);
+ calculMMTypes(FALSE);
  for(i=0;i<5;i++)
 	g_free(AtomCoord[i]);
  if(GeomIsOpen && MethodeGeom == GEOM_IS_XYZ)
@@ -4824,9 +5062,11 @@ void read_last_gaussian_file(GabeditFileChooser *SelecFile , gint response_id)
     result = pdest - t ;
     if ( result >0 )
     {
+	long geomposok = ftell(fd);
 	get_charges_from_gaussian_output_file(fd,j+1);
       	get_dipole_from_gaussian_output_file(fd);
 	get_natural_charges_from_gaussian_output_file(fd,j+1);
+	fseek(fd, geomposok, SEEK_SET);
       	break;
     }
     j++;
@@ -4847,7 +5087,8 @@ void read_last_gaussian_file(GabeditFileChooser *SelecFile , gint response_id)
 
     GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
     GeomXYZ[j].Symb=g_strdup(symb_atom_get((guint)atoi(AtomCoord[0])));
-    GeomXYZ[j].Type=g_strdup(GeomXYZ[j].Symb);
+    GeomXYZ[j].mmType=g_strdup(GeomXYZ[j].Symb);
+    GeomXYZ[j].pdbType=g_strdup(GeomXYZ[j].Symb);
     GeomXYZ[j].Residue=g_strdup(GeomXYZ[j].Symb);
     GeomXYZ[j].ResidueNumber=0;
     if(Units == 0 )
@@ -4870,6 +5111,8 @@ void read_last_gaussian_file(GabeditFileChooser *SelecFile , gint response_id)
  }while(!feof(fd));
 
  fclose(fd);
+ calculMMTypes(FALSE);
+
  g_free(t);
  for(i=0;i<5;i++)
 	g_free(AtomCoord[i]);
@@ -4974,7 +5217,8 @@ void read_first_gaussian_file(GabeditFileChooser *SelecFile, gint response_id)
 	 	AtomCoord[0][1]=tolower(AtomCoord[0][1]);
     GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
     GeomXYZ[j].Symb=g_strdup(symb_atom_get((guint)atoi(AtomCoord[0])));
-    GeomXYZ[j].Type=g_strdup(GeomXYZ[j].Symb);
+    GeomXYZ[j].mmType=g_strdup(GeomXYZ[j].Symb);
+    GeomXYZ[j].pdbType=g_strdup(GeomXYZ[j].Symb);
     GeomXYZ[j].Residue=g_strdup(GeomXYZ[j].Symb);
     GeomXYZ[j].ResidueNumber=0;
     if(Units == 0 )
@@ -4994,6 +5238,7 @@ void read_first_gaussian_file(GabeditFileChooser *SelecFile, gint response_id)
   }
 
  fclose(fd);
+ calculMMTypes(FALSE);
  NcentersXYZ = j+1;
  g_free(t);
  for(i=0;i<5;i++)
@@ -5093,7 +5338,8 @@ void read_last_molcas_file(GabeditFileChooser *SelecFile , gint response_id)
 
 		GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
 		GeomXYZ[j].Symb=g_strdup(symb);
-		GeomXYZ[j].Type=g_strdup(symb);
+		GeomXYZ[j].mmType=g_strdup(symb);
+		GeomXYZ[j].pdbType=g_strdup(symb);
 		GeomXYZ[j].Residue=g_strdup(symb);
 		GeomXYZ[j].ResidueNumber=0;
 		if(Units == 1 )
@@ -5114,6 +5360,7 @@ void read_last_molcas_file(GabeditFileChooser *SelecFile , gint response_id)
 	NcentersXYZ = j+1;
 	}while(!feof(file));
 	fclose(file);
+ 	calculMMTypes(FALSE);
 
 	if(GeomIsOpen)
 	{
@@ -5208,7 +5455,8 @@ AtomCoord[2],AtomCoord[3]);
 	 	AtomCoord[0][1]=tolower(AtomCoord[0][1]);
     GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
     GeomXYZ[j].Symb=g_strdup(AtomCoord[0]);
-    GeomXYZ[j].Type=g_strdup(AtomCoord[0]);
+    GeomXYZ[j].mmType=g_strdup(AtomCoord[0]);
+    GeomXYZ[j].pdbType=g_strdup(AtomCoord[0]);
     GeomXYZ[j].Residue=g_strdup(AtomCoord[0]);
     GeomXYZ[j].ResidueNumber=0;
     if(Units == 1 )
@@ -5231,6 +5479,7 @@ AtomCoord[2],AtomCoord[3]);
  }while(!feof(fd));
 
  fclose(fd);
+ calculMMTypes(FALSE);
  g_free(t);
  for(i=0;i<5;i++)
 	g_free(AtomCoord[i]);
@@ -5245,6 +5494,223 @@ AtomCoord[2],AtomCoord[3]);
   
   set_last_directory(NomFichier);
 }
+/********************************************************************************/
+void get_charges_from_qchem_output_file(FILE* fd,gint N)
+{
+ 	guint taille=BSIZE;
+  	gchar t[BSIZE];
+  	gchar dump[BSIZE];
+  	gchar d[BSIZE];
+  	gchar* pdest;
+	gint i;
+	gint ngrad=0;
+
+
+	for(i=0;i<N;i++)
+		GeomXYZ[i].Charge = g_strdup("0.0");
+
+  	while(!feof(fd) )
+	{
+    		pdest = NULL;
+    		fgets(t,taille,fd);
+    		pdest = strstr( t, "Mulliken Net Atomic Charges");
+
+		if(pdest)
+		{
+			gboolean OK = FALSE;
+  			while(!feof(fd) )
+			{
+    				if(!fgets(t,taille,fd)) break;
+				if(strstr(t,"----------------"))
+				{
+					OK = TRUE;
+					break;
+				}
+			}
+			if(!OK) break;
+
+			for(i=0;i<N;i++)
+			{
+    				if(!feof(fd)) fgets(t,taille,fd);
+				else break;
+				if(sscanf(t,"%s %s %s",dump,dump,d)==3)
+				{
+					g_free(GeomXYZ[i].Charge);
+					GeomXYZ[i].Charge = g_strdup(d);
+				}
+			}
+			break;
+		}
+		else
+		{
+          		pdest = strstr( t, "GradGradGrad" );
+			if(pdest)
+			{
+				ngrad++;
+			}
+			if(ngrad>2)
+				break;
+		}
+
+	}
+}
+/********************************************************************************/
+void read_geom_from_qchem_file(gchar *NomFichier, gint numgeometry)
+{
+	gchar *t;
+	gboolean OK;
+	gchar *AtomCoord[5];
+	FILE *fd;
+	guint taille=BSIZE;
+	guint idummy;
+	guint i;
+	gint j=0;
+	gint l;
+	gint numgeom;
+	gchar *pdest;
+	long int geomposok = 0;
+
+	for(i=0;i<5;i++) AtomCoord[i]=g_malloc(taille*sizeof(gchar));
+	 
+	t=g_malloc(taille*sizeof(gchar));
+	fd = FOpen(NomFichier, "r");
+	if(fd ==NULL)
+	{
+	 	g_free(t);
+	 	t = g_strdup_printf("Sorry\nI can not open %s  file ",NomFichier);
+	 	MessageGeom(t," Error ",TRUE);
+	 	g_free(t);
+	 	return;
+	}
+	numgeom =0;
+	OK=FALSE;
+	 while(!feof(fd))
+	 {
+		if(!fgets(t,taille,fd))break;
+		pdest = strstr( t, "Atom         X            Y            Z");
+		if(pdest) 
+		{
+			if(!fgets(t,taille,fd))break;
+			pdest = strstr( t, "----------------------------------------");
+		}
+		if ( pdest )
+		{
+			numgeom++;
+			geomposok = ftell(fd);
+			if(numgeom == numgeometry )
+			{
+				OK = TRUE;
+				break;
+			}
+			if(numgeometry<0)
+			{
+				OK = TRUE;
+			}
+		}
+	 }
+	 if(numgeom == 0)
+	 {
+		g_free(t);
+		t = g_strdup_printf("Sorry\nI can not read geometry in	%s file ",NomFichier);
+		MessageGeom(t," Error ",TRUE);
+		g_free(t);
+		return;
+	  }
+	j=-1;
+	fseek(fd, geomposok, SEEK_SET);
+	while(!feof(fd) )
+	{
+		if(!fgets(t,taille,fd))break;
+		pdest = strstr( t, "----------------------------------" );
+		if (pdest)
+		{
+			geomposok = ftell(fd);
+			get_charges_from_qchem_output_file(fd,j+1);
+			fseek(fd, geomposok, SEEK_SET);
+ 			get_dipole_from_qchem_output_file(fd);
+			break;
+		}
+		j++;
+		if(GeomXYZ==NULL) GeomXYZ=g_malloc(sizeof(GeomXYZAtomDef));
+		else GeomXYZ=g_realloc(GeomXYZ,(j+1)*sizeof(GeomXYZAtomDef));
+
+		sscanf(t,"%d %s %s %s %s",&idummy,AtomCoord[0],AtomCoord[1],AtomCoord[2],AtomCoord[3]);
+		AtomCoord[0][0]=toupper(AtomCoord[0][0]);
+		l=strlen(AtomCoord[0]); 
+		if(isdigit(AtomCoord[0][1]))l=1;
+		if (l==2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+		if(l==1)sprintf(t,"%c",AtomCoord[0][0]);
+		else sprintf(t,"%c%c",AtomCoord[0][0],AtomCoord[0][1]);
+
+		GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
+		GeomXYZ[j].Symb=g_strdup(t);
+		GeomXYZ[j].mmType=g_strdup(GeomXYZ[j].Symb);
+		GeomXYZ[j].pdbType=g_strdup(GeomXYZ[j].Symb);
+		GeomXYZ[j].Residue=g_strdup(GeomXYZ[j].Symb);
+		GeomXYZ[j].ResidueNumber=0;
+		if(Units == 0 )
+		{
+			GeomXYZ[j].X=g_strdup(ang_to_bohr(AtomCoord[1]));
+			GeomXYZ[j].Y=g_strdup(ang_to_bohr(AtomCoord[2]));
+			GeomXYZ[j].Z=g_strdup(ang_to_bohr(AtomCoord[3]));
+		}
+		else
+		{
+			GeomXYZ[j].X=g_strdup(AtomCoord[1]);
+			GeomXYZ[j].Y=g_strdup(AtomCoord[2]);
+			GeomXYZ[j].Z=g_strdup(AtomCoord[3]);
+		}
+		GeomXYZ[j].Charge=g_strdup("0.0");
+		GeomXYZ[j].Layer=g_strdup(" ");
+	  }
+	NcentersXYZ = j+1;
+
+	 fclose(fd);
+ 	 calculMMTypes(FALSE);
+	 g_free(t);
+	 for(i=0;i<5;i++) g_free(AtomCoord[i]);
+	 if(GeomIsOpen && MethodeGeom == GEOM_IS_XYZ)
+	 {
+	 	clearList(list);
+		append_list();
+	 }
+	 MethodeGeom = GEOM_IS_XYZ;
+	 if(ZoneDessin != NULL) rafresh_drawing();
+	 if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
+}
+/********************************************************************************/
+void read_first_qchem_file(GabeditFileChooser *SelecFile , gint response_id)
+{
+	gchar *NomFichier;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+	NomFichier = gabedit_file_chooser_get_current_file(SelecFile);
+	
+	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
+	{
+		MessageGeom("Sorry\n No file slected"," Error ",TRUE);
+		return ;
+	}
+	read_geom_from_qchem_file(NomFichier, 1);
+	set_last_directory(NomFichier);
+}
+/********************************************************************************/
+void read_last_qchem_file(GabeditFileChooser *SelecFile , gint response_id)
+{
+	gchar *NomFichier;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+	NomFichier = gabedit_file_chooser_get_current_file(SelecFile);
+	
+	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
+	{
+		MessageGeom("Sorry\n No file slected"," Error ",TRUE);
+		return ;
+	}
+	read_geom_from_qchem_file(NomFichier, -1);
+	set_last_directory(NomFichier);
+}
+/********************************************************************************/
 /********************************************************************************/
 void read_first_molcas_file(GabeditFileChooser *SelecFile, gint response_id)
 {
@@ -5324,7 +5790,8 @@ void read_first_molcas_file(GabeditFileChooser *SelecFile, gint response_id)
 
 		GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
 		GeomXYZ[j].Symb=g_strdup(symb);
-		GeomXYZ[j].Type=g_strdup(symb);
+		GeomXYZ[j].mmType=g_strdup(symb);
+		GeomXYZ[j].pdbType=g_strdup(symb);
 		GeomXYZ[j].Residue=g_strdup(symb);
 		GeomXYZ[j].ResidueNumber=0;
 		if(Units == 1 )
@@ -5343,6 +5810,7 @@ void read_first_molcas_file(GabeditFileChooser *SelecFile, gint response_id)
 		GeomXYZ[j].Layer=g_strdup(" ");
 	}
 	fclose(file);
+ 	calculMMTypes(FALSE);
 	NcentersXYZ = j+1;
 
 	if(GeomIsOpen)
@@ -5431,7 +5899,8 @@ void read_first_molpro_file(GabeditFileChooser *SelecFile, gint response_id)
 	 	AtomCoord[0][1]=tolower(AtomCoord[0][1]);
     GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
     GeomXYZ[j].Symb=g_strdup(AtomCoord[0]);
-    GeomXYZ[j].Type=g_strdup(AtomCoord[0]);
+    GeomXYZ[j].mmType=g_strdup(AtomCoord[0]);
+    GeomXYZ[j].pdbType=g_strdup(AtomCoord[0]);
     GeomXYZ[j].Residue=g_strdup(AtomCoord[0]);
     GeomXYZ[j].ResidueNumber=0;
     if(Units == 1 )
@@ -5451,6 +5920,7 @@ void read_first_molpro_file(GabeditFileChooser *SelecFile, gint response_id)
   }
 
  fclose(fd);
+ calculMMTypes(FALSE);
  NcentersXYZ = j+1;
  g_free(t);
  for(i=0;i<5;i++)
@@ -5523,7 +5993,7 @@ void read_XYZ_from_gamess_input_file(gchar *fileName)
 	for(i=0;i<5;i++) AtomCoord[i]=g_malloc(taille*sizeof(char));
 
 	t=g_malloc(taille);
-	fd = FOpen(fileName, "r");
+	fd = FOpen(fileName, "rb");
 	OK=TRUE;
 	if(fd!=NULL)
 	{
@@ -5582,7 +6052,8 @@ void read_XYZ_from_gamess_input_file(gchar *fileName)
 				get_symb_type_charge(AtomCoord[0],symb,type,charge);
 
     				GeomXYZtemp[j].Symb=g_strdup(symb);
-				GeomXYZtemp[j].Type=g_strdup(type);
+				GeomXYZtemp[j].mmType=g_strdup(type);
+				GeomXYZtemp[j].pdbType=g_strdup(type);
 				GeomXYZtemp[j].Charge=g_strdup(charge);
 
     				GeomXYZtemp[j].Residue=g_strdup("DUM");
@@ -5615,6 +6086,7 @@ void read_XYZ_from_gamess_input_file(gchar *fileName)
 	NVariablesXYZ = 0;
 	VariablesXYZ = VariablesXYZtemp;
 	MethodeGeom = GEOM_IS_XYZ;
+ 	calculMMTypes(FALSE);
 
 	if( unitAng && Units== 0 ) GeomXYZ_Change_Unit(FALSE);
 	else if( !unitAng && Units== 1 ) GeomXYZ_Change_Unit(TRUE);
@@ -5706,7 +6178,8 @@ void read_XYZ_from_mpqc_input_file(gchar *fileName)
 				get_symb_type_charge(AtomCoord[0],symb,type,charge);
 
     				GeomXYZtemp[j].Symb=g_strdup(symb);
-				GeomXYZtemp[j].Type=g_strdup(type);
+				GeomXYZtemp[j].mmType=g_strdup(type);
+				GeomXYZtemp[j].pdbType=g_strdup(type);
 				GeomXYZtemp[j].Charge=g_strdup(charge);
 
     				GeomXYZtemp[j].Residue=g_strdup("DUM");
@@ -5739,6 +6212,7 @@ void read_XYZ_from_mpqc_input_file(gchar *fileName)
 	NVariablesXYZ = 0;
 	VariablesXYZ = VariablesXYZtemp;
 	MethodeGeom = GEOM_IS_XYZ;
+ 	calculMMTypes(FALSE);
 
 	if( unitAng && Units== 0 ) GeomXYZ_Change_Unit(FALSE);
 	else if( !unitAng && Units== 1 ) GeomXYZ_Change_Unit(TRUE);
@@ -5795,7 +6269,8 @@ void read_XYZ_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
 	for(j = 0;j<Ncent ;j++)
         {
     		GeomXYZtemp[j].Symb=NULL;
-    		GeomXYZtemp[j].Type=NULL;
+    		GeomXYZtemp[j].mmType=NULL;
+    		GeomXYZtemp[j].pdbType=NULL;
     		GeomXYZtemp[j].X=NULL;
     		GeomXYZtemp[j].Y=NULL;
     		GeomXYZtemp[j].Z=NULL;
@@ -5824,7 +6299,8 @@ void read_XYZ_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
 	 			AtomCoord[0][1]=tolower(AtomCoord[0][1]);
     			GeomXYZtemp[j].Nentry=NUMBER_LIST_XYZ;
     			GeomXYZtemp[j].Symb=g_strdup(AtomCoord[0]);
-    			GeomXYZtemp[j].Type=g_strdup(AtomCoord[0]);
+    			GeomXYZtemp[j].mmType=g_strdup(AtomCoord[0]);
+    			GeomXYZtemp[j].pdbType=g_strdup(AtomCoord[0]);
     			GeomXYZtemp[j].Residue=g_strdup(AtomCoord[0]);
     			GeomXYZtemp[j].ResidueNumber=0;
                         if(!test(AtomCoord[1]) || !test(AtomCoord[2]) || !test(AtomCoord[3]))
@@ -5914,6 +6390,7 @@ void read_XYZ_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
  NVariablesXYZ = Nvar;
  VariablesXYZ = VariablesXYZtemp;
  MethodeGeom = GEOM_IS_XYZ;
+ calculMMTypes(FALSE);
  if( InfoFile.units== 1 && Units== 0 )
  	GeomXYZ_Change_Unit(FALSE);
  else
@@ -5945,31 +6422,25 @@ void read_XYZ_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile 
  gchar symb[BSIZE];
  gchar type[BSIZE];
  gchar charge[BSIZE];
- 
- for(i=0;i<5;i++)
-	AtomCoord[i]=g_malloc(taille*sizeof(char));
- 
 
- t=g_malloc(taille);
+ for(i=0;i<5;i++)
+	AtomCoord[i]=g_malloc(taille*sizeof(gchar));
+ 
+ t=g_malloc(taille*sizeof(gchar));
  fd = FOpen(NomFichier, "r");
  OK=TRUE;
  if(fd!=NULL)
  {
-	for(i=0;i<InfoFile.numline-1;i++)
-       		fgets(t,taille,fd);
+	for(i=0;i<InfoFile.numline-1;i++) fgets(t,taille,fd);
 	GeomXYZtemp=g_malloc(sizeof(GeomXYZAtomDef));
   	j=-1;
   	while(!feof(fd) && OK )
   	{
     		j++;
-    		fgets(t,taille,fd);
-                if(t[0] == '\n')
-			break;
-                for(i=0;i<(gint)strlen(t);i++)
-                   if(t[i] != ' ')
-                		break;
-                if(i == (gint)strlen(t)-1)
-                      break;
+    		if(!fgets(t,taille,fd))break;
+                if(t[0] == '\n') break;
+                for(i=0;i<(gint)strlen(t);i++) if(t[i] != ' ') break;
+                if(i == (gint)strlen(t)-1) break;
     		i = sscanf(t,"%s ",AtomCoord[0]);
                 if(i != 1)
 		{
@@ -6002,6 +6473,7 @@ void read_XYZ_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile 
       			if (l>=2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
 
     			GeomXYZtemp[j].Nentry=NUMBER_LIST_XYZ;
+
 			get_symb_type_charge(AtomCoord[0],symb,type,charge);
 			{
 				gint k;
@@ -6010,7 +6482,8 @@ void read_XYZ_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile 
 			}
 
     			GeomXYZtemp[j].Symb=g_strdup(symb);
-			GeomXYZtemp[j].Type=g_strdup(type);
+			GeomXYZtemp[j].mmType=g_strdup(type);
+			GeomXYZtemp[j].pdbType=g_strdup(type);
 			GeomXYZtemp[j].Charge=g_strdup(charge);
 
     			GeomXYZtemp[j].Residue=g_strdup("DUM");
@@ -6021,7 +6494,9 @@ void read_XYZ_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile 
     			GeomXYZtemp[j].Y=g_strdup(AtomCoord[2]);
     			GeomXYZtemp[j].Z=g_strdup(AtomCoord[3]);
 
-    			GeomXYZtemp[j].Layer=g_strdup(" ");
+			if(strstr(t,"Low")) GeomXYZtemp[j].Layer=g_strdup("Low");
+			else if(strstr(t,"Med")) GeomXYZtemp[j].Layer=g_strdup("Medium");
+			else GeomXYZtemp[j].Layer=g_strdup(" ");
 		}
                else
                 {
@@ -6039,7 +6514,7 @@ void read_XYZ_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile 
                 OK=FALSE;
         if(OK)
         {
-		OK = TRUE; /* sortie normale*/
+		OK = TRUE; 
 		break;
         }
  	else
@@ -6103,6 +6578,345 @@ void read_XYZ_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile 
  set_last_directory(NomFichier);
 }
 /*************************************************************************************/
+void read_XYZ_from_qchem_input_file(gchar *NomFichier)
+{
+ gchar *t;
+ gboolean OK;
+ gchar *AtomCoord[5];
+ FILE *fd;
+ guint taille=BSIZE;
+ gint i;
+ gint j;
+ gint l;
+ gboolean Uvar=FALSE;
+ GeomXYZAtomDef* GeomXYZtemp=NULL;
+ gint Ncent = 0;
+ gint Nvar = 0;
+ VariablesXYZDef* VariablesXYZtemp=NULL;
+ gchar symb[BSIZE];
+ gchar type[BSIZE];
+ gchar charge[BSIZE];
+ 
+ for(i=0;i<5;i++)
+	AtomCoord[i]=g_malloc(taille*sizeof(char));
+ 
+
+ t=g_malloc(taille);
+ fd = FOpen(NomFichier, "r");
+
+ OK=TRUE;
+ if(fd!=NULL)
+ {
+	 while(!feof(fd))
+	 {
+		if(!fgets(t,taille,fd))
+		{
+			OK = FALSE;
+			break;
+		}
+		g_strup(t);
+		if(strstr(t,"$MOLECULE"))
+		{
+    			fgets(t,taille,fd); /* charge and spin */
+			OK = TRUE;
+			break;
+		}
+	 }
+	 if(OK) GeomXYZtemp=g_malloc(sizeof(GeomXYZAtomDef));
+  	j=-1;
+  	while(!feof(fd) && OK )
+  	{
+    		j++;
+    		fgets(t,taille,fd);
+		if(strstr(t,"$")) break;
+                if(t[0] == '\n') break;
+                for(i=0;i<(gint)strlen(t);i++)
+                   if(t[i] != ' ') break;
+
+                if(i == (gint)strlen(t)-1) break;
+
+    		i = sscanf(t,"%s ",AtomCoord[0]);
+                if(i != 1)
+		{
+			OK = FALSE;
+			break;
+		}
+                if( !strcmp(AtomCoord[0],"Variables") ) 
+                {
+			Uvar = TRUE;
+			break;
+                }
+                i = sscanf(t,"%s %s %s %s %s",AtomCoord[0],AtomCoord[4],AtomCoord[1],AtomCoord[2],AtomCoord[3]);
+    		if( i!= 5 ) 
+		{
+                	i = sscanf(t,"%s %s %s %s",AtomCoord[0],AtomCoord[1],AtomCoord[2],AtomCoord[3]);
+		}
+    		if( i== 5 || i== 4)
+                {
+
+                        Ncent = j+1;
+			GeomXYZtemp=g_realloc(GeomXYZtemp,Ncent*sizeof(GeomXYZAtomDef));
+    			AtomCoord[0][0]=toupper(AtomCoord[0][0]);
+			if(isdigit(AtomCoord[0][0]))
+			{
+				gchar* sy = get_symbol_using_z(atoi(AtomCoord[0]));
+				sprintf(AtomCoord[0],"%s",sy);
+				g_free(sy);
+			}
+    			l=strlen(AtomCoord[0]);
+      			if (l>=2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+
+    			GeomXYZtemp[j].Nentry=NUMBER_LIST_XYZ;
+			get_symb_type_charge(AtomCoord[0],symb,type,charge);
+			{
+				gint k;
+				for(k=0;k<(gint)strlen(symb);k++) if(isdigit(symb[k])) symb[k] = ' ';
+				delete_all_spaces(symb);
+			}
+
+    			GeomXYZtemp[j].Symb=g_strdup(symb);
+			GeomXYZtemp[j].mmType=g_strdup(type);
+			GeomXYZtemp[j].pdbType=g_strdup(type);
+			GeomXYZtemp[j].Charge=g_strdup(charge);
+
+    			GeomXYZtemp[j].Residue=g_strdup("DUM");
+    			GeomXYZtemp[j].ResidueNumber=0;
+                        if(!test(AtomCoord[1]) || !test(AtomCoord[2]) || !test(AtomCoord[3]))
+                              Uvar = TRUE;
+    			GeomXYZtemp[j].X=g_strdup(AtomCoord[1]);
+    			GeomXYZtemp[j].Y=g_strdup(AtomCoord[2]);
+    			GeomXYZtemp[j].Z=g_strdup(AtomCoord[3]);
+
+    			GeomXYZtemp[j].Layer=g_strdup(" ");
+		}
+               else
+                {
+                 OK = FALSE;
+                }
+  	}
+/* Variables */
+  Nvar=0;
+  while(!feof(fd) && Uvar && OK )
+  {
+  	fgets(t,taille,fd);
+        OK=TRUE;
+        for(i=0;i<(gint)strlen(t)-1;i++)
+ 		if ( (int)t[i] != (int)' ' )
+                OK=FALSE;
+        if(OK || strstr(t,"$"))
+        {
+		OK = TRUE; /* sortie normale*/
+		break;
+        }
+ 	else
+	{
+  	Nvar++;
+  	if(Nvar==1)
+  		VariablesXYZtemp = g_malloc(Nvar*sizeof(VariablesXYZDef));
+  	else
+  		VariablesXYZtemp = g_realloc(VariablesXYZtemp,Nvar*sizeof(VariablesXYZDef));
+  	i = sscanf(t,"%s %s",AtomCoord[0],AtomCoord[1]);
+        if( i == 2)
+        {
+  		VariablesXYZtemp[Nvar-1].Name=g_strdup(AtomCoord[0]);
+  		VariablesXYZtemp[Nvar-1].Value=g_strdup(AtomCoord[1]);
+  		VariablesXYZtemp[Nvar-1].Used=TRUE;
+                OK = TRUE;
+         }
+         else 
+	 {
+		Nvar--;
+  		VariablesXYZtemp = g_realloc(VariablesXYZtemp,Nvar*sizeof(VariablesXYZDef));
+                OK = FALSE;
+		break;
+	 }
+ 	 }
+  }
+/* end while variables */
+  fclose(fd);
+ }
+ else
+      OK = FALSE;
+
+ g_free(t);
+ for(i=0;i<5;i++)
+	g_free(AtomCoord[i]);
+ if( !OK || Ncent <1 )
+ {
+   FreeGeomXYZ(GeomXYZtemp,VariablesXYZtemp,Ncent, Nvar);
+   MessageGeom("Sorry\n I can not read geometry in QChem input file"," Error ",TRUE);
+   return;
+ }
+ if(GeomXYZ)
+	freeGeomXYZ(GeomXYZ);
+ if(VariablesXYZ)
+	freeVariablesXYZ(VariablesXYZ);
+ GeomXYZ = GeomXYZtemp;
+ NcentersXYZ = Ncent;
+ NVariablesXYZ = Nvar;
+ VariablesXYZ = VariablesXYZtemp;
+ MethodeGeom = GEOM_IS_XYZ;
+ calculMMTypes(FALSE);
+ if( Units== 0 ) GeomXYZ_Change_Unit(FALSE);
+ if(GeomIsOpen)
+	create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
+
+ if(ZoneDessin != NULL)
+	rafresh_drawing();
+ set_last_directory(NomFichier);
+}
+/*************************************************************************************/
+static gint get_pdbtype_charge_from_tinker_amber_key_file(
+		gchar* NomFichier,
+		gchar***types, 
+		gchar***residues, 
+		gdouble**charges)
+{
+	FILE *file;
+	gint n = 0;
+	gchar* tstr = NULL;
+	gchar sdum0[100];
+	gchar sdum1[100];
+	gchar sdum2[100];
+	gchar sdum3[500];
+	gchar res[100];
+	gint idum;
+	gint k;
+	gchar** pdbTypes = NULL;
+	gchar** residueNames = NULL;
+	gdouble* chargesValue = NULL;
+	gdouble ddum;
+	gint i;
+	gchar *fileNameKey = NULL;
+	gchar *fileNameParameters = NULL;
+
+	*charges = chargesValue;
+	*types = pdbTypes;
+	*residues = residueNames;
+
+	fileNameKey = get_suffix_name_file(NomFichier);
+	fileNameKey = g_strdup_printf("%s.key",fileNameKey);
+	/* printf("Key file = %s\n", fileNameKey);*/
+	file = FOpen(fileNameKey, "r");
+	if(fileNameKey) g_free(fileNameKey);
+ 	if(file == NULL) return 0;
+	tstr = g_malloc(BSIZE*sizeof(gchar));
+	sprintf(sdum1,"NO");
+	while(!feof(file))
+	{
+    		if(!fgets(tstr,BSIZE,file)) break;
+    		k = sscanf(tstr,"%s %s",sdum1,sdum3);
+		if(k!=2) continue;
+		if(!strstr(sdum1,"parameters")) continue;
+		if(strstr(sdum3,".prm")) fileNameParameters =  g_strdup(sdum3);
+		else fileNameParameters =  g_strdup_printf("%s.prm",sdum3);
+	}
+	fclose(file);
+	/* printf("param file = %s\n", fileNameParameters);*/
+	if(!fileNameParameters) return 0;
+
+	file = FOpen(fileNameParameters, "r");
+ 	if(file == NULL) return 0;
+
+	fseek(file, 0L, SEEK_SET);
+	/* get the number of pdb type */
+	n = 0;
+	while(!feof(file))
+	{
+    		if(!fgets(tstr,BSIZE,file)) break;
+    		k = sscanf(tstr,"%s %d %s %s",sdum1,&idum,sdum2,sdum3);
+		if(k!=4) continue;
+		if(idum<1) continue;
+		if(!strstr(sdum1,"biotyp")) continue;
+		n++;
+		if(idum>n) n = idum;
+	}
+	if(n==0)
+	{
+		fclose(file);
+		return 0;
+	}
+	pdbTypes = g_malloc(n*sizeof(gchar*));
+	residueNames = g_malloc(n*sizeof(gchar*));
+	chargesValue = g_malloc(n*sizeof(gdouble));
+	for(i=0;i<n;i++)
+	{
+		pdbTypes[i] = NULL;
+		residueNames[i] = NULL;
+		chargesValue[i] = 0.0;
+	}
+	fseek(file, 0L, SEEK_SET);
+	/* set pdb type, residueNames */
+	while(!feof(file))
+	{
+    		if(!fgets(tstr,BSIZE,file)) break;
+		if(strstr(tstr,"N-Terminal") || strstr(tstr,"C-Terminal")) 
+		{
+			k = sscanf(tstr,"%s %d %s %s %s",sdum1,&idum,sdum2,sdum0,sdum3);
+			k--;
+		}
+		else k = sscanf(tstr,"%s %d %s %s",sdum1,&idum,sdum2,sdum3);
+		if(k!=4) continue;
+		if(idum<1) continue;
+		if(!strstr(sdum1,"biotyp")) continue;
+		if(idum>n) continue;
+		i = idum-1;
+		pdbTypes[i] = g_strdup(sdum2);
+		sprintf(res,"UNK");
+		k = 0;
+		for(i=0;i<strlen(sdum3);i++)
+		{
+			if(sdum3[i]=='"') continue;
+			res[k++] = toupper(sdum3[i]);
+			if(k>2)break;
+		}
+		if(strstr(sdum3,"C-Terminus"))sprintf(res,"NME");
+		else if(strstr(sdum3,"N-Terminus"))sprintf(res,"ACE");
+		else if(strstr(sdum3,"C-Terminal"))sprintf(res,"CTE");
+		else if(strstr(sdum3,"Adenosine"))sprintf(res,"DA");
+		else if(strstr(sdum3,"Guanosine"))sprintf(res,"DG");
+		else if(strstr(sdum3,"Cytidine"))sprintf(res,"DC");
+		else if(strstr(sdum3,"Uridine"))sprintf(res,"DU");
+		else if(strstr(sdum3,"Deoxyadenosine"))sprintf(res,"DA");
+		else if(strstr(sdum3,"Deoxyguanosine"))sprintf(res,"DG");
+		else if(strstr(sdum3,"Deoxycytidine"))sprintf(res,"DC");
+		else if(strstr(sdum3,"Deoxythymidine"))sprintf(res,"DT");
+		else if(strstr(sdum3,"5'") && strstr(sdum3,"RNA"))sprintf(res,"RG");
+		else if(strstr(sdum3,"3'") && strstr(sdum3,"RNA"))sprintf(res,"RG");
+		else if(strstr(sdum3,"5'") && strstr(sdum3,"DNA"))sprintf(res,"DT");
+		else if(strstr(sdum3,"3'") && strstr(sdum3,"DNA"))sprintf(res,"DT");
+		i =  idum-1;
+		residueNames[i] = g_strdup(res);
+	}
+	for(i=0;i<n;i++)
+	{
+		if(!pdbTypes[i])  pdbTypes[i] = g_strdup("UNK");
+		if(!residueNames[i])  residueNames[i] = g_strdup("UNK");
+	}
+	fseek(file, 0L, SEEK_SET);
+	/* set charge */
+	while(!feof(file))
+	{
+    		if(!fgets(tstr,BSIZE,file)) break;
+    		k = sscanf(tstr,"%s %d %lf",sdum1,&idum,&ddum);
+		if(k!=3) continue;
+		if(idum<1) continue;
+		if(!strstr(sdum1,"charge")) continue;
+		if(idum>n) continue;
+		i = idum-1;
+		chargesValue[i] = ddum;
+	}
+	fclose(file);
+	*charges = chargesValue;
+	*types = pdbTypes;
+	*residues = residueNames;
+	/*
+	for(i=0;i<n;i++)
+		printf("%s %s %f\n",pdbTypes[i], residueNames[i] , chargesValue[i]);
+		*/
+	return n;
+}
+/*************************************************************************************/
 void read_mol2_tinker_file_no_add_list(gchar *NomFichier,gchar*type)
 {
 	gchar *t;
@@ -6115,6 +6929,11 @@ void read_mol2_tinker_file_no_add_list(gchar *NomFichier,gchar*type)
 	gint j;
 	gint l;
 	gint Nc = -1;
+	gchar** pdbTypes = NULL;
+	gchar** residueNames = NULL;
+	gdouble* charges = NULL;
+	gint npdb = 0;
+	gint ipdb = 0;
 
 	for(i=0;i<5;i++) AtomCoord[i]=g_malloc(taille*sizeof(gchar));
 
@@ -6170,11 +6989,11 @@ void read_mol2_tinker_file_no_add_list(gchar *NomFichier,gchar*type)
 			MessageGeom(t," Error ",TRUE);
 			return;
 		}
+		npdb = get_pdbtype_charge_from_tinker_amber_key_file
+			(NomFichier, &pdbTypes, &residueNames, &charges);
 	}
- 	if(GeomXYZ)
-   		freeGeomXYZ();
- 	if(VariablesXYZ)
-		freeVariablesXYZ(VariablesXYZ);
+ 	if(GeomXYZ) freeGeomXYZ();
+ 	if(VariablesXYZ) freeVariablesXYZ(VariablesXYZ);
 	Dipole.def = FALSE;
 	GeomXYZ=g_malloc(sizeof(GeomXYZAtomDef));
 	j=0;
@@ -6186,17 +7005,34 @@ void read_mol2_tinker_file_no_add_list(gchar *NomFichier,gchar*type)
 			break;
 		if(atoi(t)<=0)
 			break;
-    		sscanf(t,"%d %s %s %s %s",&i,AtomCoord[0],AtomCoord[1],AtomCoord[2],AtomCoord[3]);
+    		sscanf(t,"%d %s %s %s %s %d",&i,AtomCoord[0],AtomCoord[1],AtomCoord[2],AtomCoord[3],&ipdb);
 		AtomCoord[0][0]=toupper(AtomCoord[0][0]);
 		l=strlen(AtomCoord[0]);
-		if (l==2)
-			AtomCoord[0][1]=tolower(AtomCoord[0][1]);
 		GeomXYZ=g_realloc(GeomXYZ,(j+1)*sizeof(GeomXYZAtomDef));
 		GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
-		GeomXYZ[j].Symb=g_strdup(AtomCoord[0]);
-		GeomXYZ[j].Type=g_strdup(AtomCoord[0]);
-		GeomXYZ[j].Residue=g_strdup(AtomCoord[0]);
-		GeomXYZ[j].ResidueNumber=0;
+		GeomXYZ[j].Symb= get_symb_atom(AtomCoord[0]);
+		GeomXYZ[j].mmType=g_strdup(AtomCoord[0]);
+		GeomXYZ[j].pdbType=g_strdup(AtomCoord[0]);
+		if(ipdb>0 && npdb>0 && ipdb<npdb)
+		{
+			GeomXYZ[j].Residue = g_strdup(residueNames[ipdb-1]);
+			/* experimental */
+			if(j==0) GeomXYZ[j].ResidueNumber = 0;
+			else
+			{
+				if(strcmp(GeomXYZ[j].Residue,GeomXYZ[j-1].Residue))
+					GeomXYZ[j].ResidueNumber = GeomXYZ[j-1].ResidueNumber+1;
+				else
+					GeomXYZ[j].ResidueNumber = GeomXYZ[j-1].ResidueNumber;
+			}
+			GeomXYZ[j].Charge=g_strdup_printf("%f",charges[ipdb-1]);
+		}
+		else
+		{
+			GeomXYZ[j].Residue=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].ResidueNumber=0;
+			GeomXYZ[j].Charge=g_strdup("0.0");
+		}
 		if(Units==1)
 		{
 			GeomXYZ[j].X=g_strdup(AtomCoord[1]);
@@ -6209,10 +7045,17 @@ void read_mol2_tinker_file_no_add_list(gchar *NomFichier,gchar*type)
 			GeomXYZ[j].Y=g_strdup(ang_to_bohr(AtomCoord[2]));
 			GeomXYZ[j].Z=g_strdup(ang_to_bohr(AtomCoord[3]));
 		}
-		GeomXYZ[j].Charge=g_strdup("0.0");
 		GeomXYZ[j].Layer=g_strdup(" ");
 		j++;
 	}
+	for(i=0;i<npdb;i++)
+	{
+		if(pdbTypes && pdbTypes[i]) g_free(pdbTypes[i]);
+		if(residueNames && residueNames[i]) g_free(residueNames[i]);
+	}
+	if(residueNames) g_free(residueNames);
+	if(pdbTypes) g_free(pdbTypes);
+	if(charges) g_free(charges);
 	fclose(fd);
 	NcentersXYZ = j;
 
@@ -6454,7 +7297,8 @@ void read_XYZ_file_no_add_list(G_CONST_RETURN  gchar *NomFichier)
 	 	AtomCoord[0][1]=tolower(AtomCoord[0][1]);
     GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
     GeomXYZ[j].Symb=g_strdup(AtomCoord[0]);
-    GeomXYZ[j].Type=g_strdup(AtomCoord[0]);
+    GeomXYZ[j].mmType=g_strdup(AtomCoord[0]);
+    GeomXYZ[j].pdbType=g_strdup(AtomCoord[0]);
     GeomXYZ[j].Residue=g_strdup(AtomCoord[0]);
     GeomXYZ[j].ResidueNumber=0;
     if(Units==1)
@@ -6475,6 +7319,7 @@ void read_XYZ_file_no_add_list(G_CONST_RETURN  gchar *NomFichier)
   fclose(fd);
  }
  g_free(t);
+ calculMMTypes(FALSE);
  for(i=0;i<5;i++)
 	g_free(AtomCoord[i]);
  if(GeomIsOpen)
@@ -6506,10 +7351,8 @@ void create_GeomXYZ_from_draw_grometry()
 	gboolean toSort = FALSE;
 	gint iHigh = -1;
 
- 	if(GeomXYZ)
-   		freeGeomXYZ();
- 	if(VariablesXYZ)
-		freeVariablesXYZ(VariablesXYZ);
+ 	if(GeomXYZ) freeGeomXYZ();
+ 	if(VariablesXYZ) freeVariablesXYZ(VariablesXYZ);
 
 	Dipole.def = FALSE;
 	NcentersXYZ = Natoms;
@@ -6519,14 +7362,14 @@ void create_GeomXYZ_from_draw_grometry()
 
 	GeomXYZ=g_malloc(NcentersXYZ*sizeof(GeomXYZAtomDef));
 	*/
-	if(Natoms>0)
-		GeomXYZ=g_malloc(NcentersXYZ*sizeof(GeomXYZAtomDef));
+	if(Natoms>0) GeomXYZ=g_malloc(NcentersXYZ*sizeof(GeomXYZAtomDef));
 
 	for(j=0;j<(gint)NcentersXYZ;j++)
 	{
     		GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
     		GeomXYZ[j].Symb=g_strdup(geometry0[j].Prop.symbol);
-    		GeomXYZ[j].Type=g_strdup(geometry0[j].Type);
+    		GeomXYZ[j].mmType=g_strdup(geometry0[j].mmType);
+    		GeomXYZ[j].pdbType=g_strdup(geometry0[j].pdbType);
     		GeomXYZ[j].Residue=g_strdup(geometry0[j].Residue);
     		GeomXYZ[j].ResidueNumber=geometry0[j].ResidueNumber;
     		if(Units==1)
@@ -6559,7 +7402,7 @@ void create_GeomXYZ_from_draw_grometry()
 			GeomXYZ[j].Layer=g_strdup(" ");
 		}
     }
-	if(toSort)
+	if(toSort && iHigh>=0)
 	{
 		GeomXYZAtomDef t;
 		gint i;
@@ -6800,7 +7643,8 @@ void read_pdb_file(GabeditFileChooser *SelecFile, gint response_id)
 	 	AtomCoord[0][1]=tolower(AtomCoord[0][1]);
     GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
     GeomXYZ[j].Symb=g_strdup(AtomCoord[0]);
-    GeomXYZ[j].Type=g_strdup(AtomCoord[0]);
+    GeomXYZ[j].mmType=g_strdup(AtomCoord[0]);
+    GeomXYZ[j].pdbType=g_strdup(AtomCoord[0]);
     GeomXYZ[j].Residue=g_strdup(AtomCoord[0]);
     GeomXYZ[j].ResidueNumber=0;
     if(Units==1)
@@ -6821,6 +7665,7 @@ void read_pdb_file(GabeditFileChooser *SelecFile, gint response_id)
   fclose(fd);
  }
  g_free(t);
+ calculMMTypes(FALSE);
  for(i=0;i<5;i++)
 	g_free(AtomCoord[i]);
  if(GeomIsOpen)
@@ -6884,10 +7729,12 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
 	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a dalton output file", GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
+  case GABEDIT_TYPEFILEGEOM_PCGAMESSFIRST : 
   case GABEDIT_TYPEFILEGEOM_GAMESSFIRST : 
 	   SelecFile = gabedit_file_chooser_new("Read the first geometry from a Gamess output file", GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternslog);
 	   break;
+  case GABEDIT_TYPEFILEGEOM_PCGAMESSLAST : 
   case GABEDIT_TYPEFILEGEOM_GAMESSLAST : 
 	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a Gamess output file", GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternslog);
@@ -6928,6 +7775,14 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
 	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a MPQC output file", GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
+  case GABEDIT_TYPEFILEGEOM_QCHEMOUTFIRST : 
+	   SelecFile = gabedit_file_chooser_new("Read the first geometry from a Q-Chem output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+   	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
+	   break;
+  case GABEDIT_TYPEFILEGEOM_QCHEMOUTLAST : 
+	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a Q-Chem output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+   	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
+	   break;
   case GABEDIT_TYPEFILEGEOM_TINKER :
 	   SelecFile = gabedit_file_chooser_new("Read Tinker file", GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternstnk);
@@ -6943,11 +7798,13 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   case GABEDIT_TYPEFILEGEOM_GABEDIT : return;
   case GABEDIT_TYPEFILEGEOM_MOLDEN : return;
   case GABEDIT_TYPEFILEGEOM_DALTONIN : return;
+  case GABEDIT_TYPEFILEGEOM_PCGAMESSIN : return;
   case GABEDIT_TYPEFILEGEOM_GAMESSIN : return;
   case GABEDIT_TYPEFILEGEOM_GAUSSIN : return;
   case GABEDIT_TYPEFILEGEOM_MOLCASIN : return;
   case GABEDIT_TYPEFILEGEOM_MOLPROIN : return;
   case GABEDIT_TYPEFILEGEOM_MPQCIN : return;
+  case GABEDIT_TYPEFILEGEOM_QCHEMIN : return;
   case GABEDIT_TYPEFILEGEOM_GAUSSIAN_ZMATRIX : return;
   case GABEDIT_TYPEFILEGEOM_MOPAC_ZMATRIX : return;
   case GABEDIT_TYPEFILEGEOM_UNKNOWN : return;
@@ -6972,9 +7829,11 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_dalton_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_DALTONLAST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_dalton_file), GTK_OBJECT(SelecFile)); break;
+  case GABEDIT_TYPEFILEGEOM_PCGAMESSFIRST :
   case GABEDIT_TYPEFILEGEOM_GAMESSFIRST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_gamess_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_GAMESSLAST :
+  case GABEDIT_TYPEFILEGEOM_PCGAMESSLAST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_gamess_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_GAUSSOUTFIRST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_gaussian_file), GTK_OBJECT(SelecFile)); break;
@@ -6992,6 +7851,10 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_mpqc_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_MPQCOUTLAST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_mpqc_file), GTK_OBJECT(SelecFile)); break;
+  case GABEDIT_TYPEFILEGEOM_QCHEMOUTFIRST :
+	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_qchem_file), GTK_OBJECT(SelecFile)); break;
+  case GABEDIT_TYPEFILEGEOM_QCHEMOUTLAST :
+	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_qchem_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_MOL2 :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_mol2_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_TINKER :
@@ -7005,10 +7868,12 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   case GABEDIT_TYPEFILEGEOM_MOLDEN : 
   case GABEDIT_TYPEFILEGEOM_GAUSSIN : 
   case GABEDIT_TYPEFILEGEOM_DALTONIN : 
+  case GABEDIT_TYPEFILEGEOM_PCGAMESSIN : 
   case GABEDIT_TYPEFILEGEOM_GAMESSIN : 
   case GABEDIT_TYPEFILEGEOM_MOLCASIN : 
   case GABEDIT_TYPEFILEGEOM_MOLPROIN : 
   case GABEDIT_TYPEFILEGEOM_MPQCIN : 
+  case GABEDIT_TYPEFILEGEOM_QCHEMIN : 
   case GABEDIT_TYPEFILEGEOM_GAUSSIAN_ZMATRIX : 
   case GABEDIT_TYPEFILEGEOM_MOPAC_ZMATRIX : 
   case GABEDIT_TYPEFILEGEOM_UNKNOWN : return;
@@ -7244,14 +8109,15 @@ void create_geomXYZ_list(GtkWidget *vbox, GabEditTypeFileGeom readfile)
 	gchar *titres[NUMBER_LIST_XYZ]={
   			"Nr",
 	  		" Symbol ", 
-	  		" Type   ",
+	  		" MM Type  ",
+	  		" PDB Type ",
 	  		" Residue ",
 			" X ", 
 			" Y ", 
 			" Z ", 
 			" Charge "," Layer    "
   		};
-	gint width[NUMBER_LIST_XYZ]={4,6,8,8,10,10,10,10,10 }; 
+	gint width[NUMBER_LIST_XYZ]={4,6,8,8,8,10,10,10,10,10 }; 
 	GtkUIManager *manager = NULL;
 
   
@@ -7277,10 +8143,10 @@ void create_geomXYZ_list(GtkWidget *vbox, GabEditTypeFileGeom readfile)
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scr),GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC); 
 	gtk_box_pack_start(GTK_BOX (vbox), scr,TRUE, TRUE, 2);
 
-	store = gtk_list_store_new (9,
+	store = gtk_list_store_new (NUMBER_LIST_XYZ,
 		       	G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 		       	G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-		       	G_TYPE_STRING
+		       	G_TYPE_STRING, G_TYPE_STRING
 			);
         model = GTK_TREE_MODEL (store);
 

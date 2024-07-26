@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/AtomsProp.h"
 #include "../Geometry/Fragments.h"
 #include "../Geometry/DrawGeom.h"
+#include "../Geometry/Mesure.h"
 #include "Atom.h"
 #include "Molecule.h"
 void dessine();
@@ -76,8 +77,10 @@ void freeMolecule(Molecule* molecule)
 		{
 			if(molecule->atoms[i].prop.symbol != NULL)
 				g_free(molecule->atoms[i].prop.symbol);
-			if(molecule->atoms[i].type !=NULL )
-				g_free(molecule->atoms[i].type);
+			if(molecule->atoms[i].mmType !=NULL )
+				g_free(molecule->atoms[i].mmType);
+			if(molecule->atoms[i].pdbType !=NULL )
+				g_free(molecule->atoms[i].pdbType);
 		}
 
 		g_free(molecule->atoms);
@@ -552,9 +555,12 @@ Molecule createMolecule(GeomDef* geom,gint natoms,gboolean connections)
 		molecule.atoms[i].coordinates[1] = geom[i].Y*BOHR_TO_ANG;
 		molecule.atoms[i].coordinates[2] = geom[i].Z*BOHR_TO_ANG;
 		molecule.atoms[i].charge = geom[i].Charge;
-		molecule.atoms[i].type = g_strdup(geom[i].Type);
+		molecule.atoms[i].mmType = g_strdup(geom[i].mmType);
+		molecule.atoms[i].pdbType = g_strdup(geom[i].pdbType);
 		molecule.atoms[i].residueName = g_strdup(geom[i].Residue);
 		molecule.atoms[i].residueNumber = geom[i].ResidueNumber;
+		molecule.atoms[i].layer = geom[i].Layer;
+		molecule.atoms[i].show = geom[i].show;
 	}
 	if(connections)
 		setConnections(&molecule);
@@ -587,10 +593,12 @@ void redrawMolecule(Molecule* molecule,gchar* str)
 		geometry0[i].Z = molecule->atoms[i].coordinates[2];
 		geometry0[i].Charge =  molecule->atoms[i].charge;
 		geometry0[i].Prop = prop_atom_get(molecule->atoms[i].prop.symbol);
-		geometry0[i].Type =  g_strdup(molecule->atoms[i].type);
+		geometry0[i].pdbType =  g_strdup(molecule->atoms[i].pdbType);
+		geometry0[i].mmType =  g_strdup(molecule->atoms[i].mmType);
 		geometry0[i].Residue =  g_strdup(molecule->atoms[i].residueName);
 		geometry0[i].ResidueNumber =  molecule->atoms[i].residueNumber;
-		geometry0[i].Layer = HIGH_LAYER;
+		geometry0[i].show =  molecule->atoms[i].show;
+		geometry0[i].Layer =  molecule->atoms[i].layer;
 		geometry0[i].Variable = FALSE;
 		geometry0[i].N = i+1;
 
@@ -599,10 +607,12 @@ void redrawMolecule(Molecule* molecule,gchar* str)
 		geometry[i].Z = molecule->atoms[i].coordinates[2];
 		geometry[i].Charge =  molecule->atoms[i].charge;
 		geometry[i].Prop = prop_atom_get(molecule->atoms[i].prop.symbol);
-		geometry[i].Type =  g_strdup(molecule->atoms[i].type);
+		geometry[i].pdbType =  g_strdup(molecule->atoms[i].pdbType);
+		geometry[i].mmType =  g_strdup(molecule->atoms[i].mmType);
 		geometry[i].Residue =  g_strdup(molecule->atoms[i].residueName);
 		geometry[i].ResidueNumber =  molecule->atoms[i].residueNumber;
-		geometry[i].Layer = HIGH_LAYER;
+		geometry[i].show =  molecule->atoms[i].show;
+		geometry[i].Layer =  molecule->atoms[i].layer;
 		geometry[i].Variable = FALSE;
 		geometry[i].N = i+1;
 
@@ -640,7 +650,9 @@ void redrawMolecule(Molecule* molecule,gchar* str)
 	unselect_all_atoms();
 	set_text_to_draw(str);
 	set_statubar_operation_str(str);
+	change_of_center(NULL,NULL);
 	dessine();
+
     	while( gtk_events_pending() )
         	gtk_main_iteration();
 

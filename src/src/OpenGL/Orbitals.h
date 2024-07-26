@@ -33,6 +33,7 @@ void read_dalton_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_gamess_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_gauss_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_molpro_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
+void read_qchem_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_gabedit_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void save_gabedit_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_molden_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);

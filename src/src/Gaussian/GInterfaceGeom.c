@@ -32,6 +32,61 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/InterfaceGeom.h"
 #include "GaussGlobal.h"
 
+/************************************************************************************************************/
+static gint get_number_of_model_connections()
+{
+	gint i;
+	gint j;
+	gint nc = 0;
+	gint NC = NcentersXYZ;
+	if(MethodeGeom == GEOM_IS_ZMAT) NC = NcentersZmat;
+    	for(i=0;i<NC;i++)
+	{
+		if( MethodeGeom == GEOM_IS_XYZ) 
+			if(strstr(GeomXYZ[i].Layer,"Me") || strstr(GeomXYZ[i].Layer,"Lo")) continue;
+		if( MethodeGeom == GEOM_IS_ZMAT) 
+			if(strstr(Geom[i].Layer,"Me") || strstr(Geom[i].Layer,"Lo")) continue;
+    		for(j=0;j<NC;j++)
+		{
+			if(i==j) continue;
+			if( MethodeGeom == GEOM_IS_XYZ) 
+				if(!strstr(GeomXYZ[j].Layer,"Me") && !strstr(GeomXYZ[j].Layer,"Lo")) continue;
+			if( MethodeGeom == GEOM_IS_ZMAT) 
+				if(!strstr(Geom[j].Layer,"Me") && !strstr(Geom[j].Layer,"Lo")) continue;
+			if(connecteds(i,j)) nc++;
+		}
+	}
+	return nc;
+}
+/************************************************************************************************************/
+static gint get_number_of_inter_connections()
+{
+	gint i;
+	gint j;
+	gint nc = 0;
+	gint NC = NcentersXYZ;
+	if(MethodeGeom == GEOM_IS_ZMAT) NC = NcentersZmat;
+    	for(i=0;i<NC;i++)
+	{
+
+		if( MethodeGeom == GEOM_IS_XYZ) 
+			if(strstr(GeomXYZ[i].Layer," ") || strstr(GeomXYZ[i].Layer,"Lo") || strstr(GeomXYZ[i].Layer,"Hi")) continue;
+		if( MethodeGeom == GEOM_IS_ZMAT) 
+			if(strstr(Geom[i].Layer," ") || strstr(Geom[i].Layer,"Lo") || strstr(Geom[i].Layer,"Hi")) continue;
+
+    		for(j=0;j<NC;j++)
+		{
+			if(i==j) continue;
+			if( MethodeGeom == GEOM_IS_XYZ) 
+				if(!strstr(GeomXYZ[j].Layer," ") && !strstr(GeomXYZ[j].Layer,"Lo") && !strstr(GeomXYZ[j].Layer,"Hi")) continue;
+			if( MethodeGeom == GEOM_IS_ZMAT) 
+				if(!strstr(Geom[j].Layer," ") && !strstr(Geom[j].Layer,"Lo") && !strstr(Geom[j].Layer,"Hi")) continue;
+			if(connecteds(i,j)) nc++;
+		}
+	}
+	return nc;
+}
+/************************************************************************************************************/
 void set_spin_of_electrons()
 {
         gint i;
@@ -39,14 +94,22 @@ void set_spin_of_electrons()
         guint SpinElectrons[3];
         gchar* chaine;
 
-        if(EntryCS[0] == NULL )
-		return;
-        NumberElectrons[0]= get_number_electrons(2);
+        if(EntryCS[0] == NULL ) return;
+        NumberElectrons[2]= get_number_electrons(2);
         NumberElectrons[1]= get_number_electrons(1);
-        NumberElectrons[2]= get_number_electrons(0);
+        NumberElectrons[0]= get_number_electrons(0);
 
         for(i=0;i<3;i++)
 		SpinElectrons[i]=0;
+        if(NMethodes==3)
+	{
+        	NumberElectrons[2] += get_number_of_model_connections();
+        	NumberElectrons[1] += get_number_of_inter_connections();
+	}
+        if(NMethodes==2)
+	{
+        	NumberElectrons[1] += get_number_of_model_connections();
+	}
 
         for(i=0;(guint)i<NMethodes;i++)
         	if((NumberElectrons[i]-ChargeGauss[i])%2==0)
@@ -56,11 +119,14 @@ void set_spin_of_electrons()
 
         for(i=0;(guint)i<NMethodes;i++)
         {
-         chaine = g_strdup_printf("%d",SpinElectrons[i]);
-	 if(EntryCS[2*i+1] && GTK_IS_ENTRY(EntryCS[2*i+1]))
-         	gtk_entry_set_text(GTK_ENTRY(EntryCS[2*i+1]),chaine);
+         	chaine = g_strdup_printf("%d",SpinElectrons[i]);
+	 	if(EntryCS[2*i+1] && GTK_IS_ENTRY(EntryCS[2*i+1]))
+		{
+         		gtk_entry_set_text(GTK_ENTRY(EntryCS[2*i+1]),chaine);
+		}
         }
 }
+/************************************************************************************************************/
 static void change_of_charge(GtkWidget *entry,gpointer d)
 {
         G_CONST_RETURN gchar *entry_text;
@@ -72,6 +138,7 @@ static void change_of_charge(GtkWidget *entry,gpointer d)
 	set_spin_of_electrons();
 
 }
+/************************************************************************************************************/
 static void create_combo_charge(GtkWidget *hbox,gint Num,gchar *tlabel)
 {
   gchar *tlist[]={"0","1","-1","2","-2","3","-3","4","-4"};
@@ -82,12 +149,13 @@ static void create_combo_charge(GtkWidget *hbox,gint Num,gchar *tlabel)
   g_signal_connect(G_OBJECT(EntryCS[Num]), "changed", GTK_SIGNAL_FUNC(change_of_charge), Number);
   ChargeGauss[*Number] = 0;
 }
+/************************************************************************************************************/
 static void create_combo_spin(GtkWidget *hbox,gint Num,gchar *tlabel)
 {
   gchar *tlist[]={"1","2","3","4","5","6","7","8","9"};
  EntryCS[Num] = create_label_combo(hbox,tlabel,tlist,9,TRUE,-1,(gint)(ScreenHeight*0.1));
 }
-
+/************************************************************************************************************/
 void GAjoutePageGeom(GtkWidget *NoteBook)
 {
   GtkWidget *window1;
@@ -125,33 +193,37 @@ void GAjoutePageGeom(GtkWidget *NoteBook)
   hbox =create_hbox_false(vbox);
   hbox2 =create_hbox_false(vbox);
   NMethodes = 0;
+
   if(Methodes[1]!=NULL || Methodes[2]!=NULL )
   {
-  	create_label_hbox(hbox,"Charge of    : ",(gint)(ScreenHeight*0.1));
-  	create_combo_charge(hbox,0,"Hight system : ");
-  	create_label_hbox(hbox2,"2*Spin+1 of : ",(gint)(ScreenHeight*0.1));
-  	create_combo_spin(hbox2,1,"Hight system : ");
-  	NMethodes++;
+  	create_label_hbox(hbox,"Charge of    ",-1);
+  	create_combo_charge(hbox,0,"Real system : ");
+  	create_label_hbox(hbox2,"2*Spin+1 of ",-1);
+  	create_combo_spin(hbox2,1,"Real system : ");
+        NMethodes++;
   }
   else
   {
-  	create_label_hbox(hbox,"Charge of ",-1);
+  	create_label_hbox(hbox,"Charge of   ",-1);
   	create_combo_charge(hbox,0,"system : ");
-  	create_label_hbox(hbox,"    2*Spin+1 of ",-1);
+  	create_label_hbox(hbox,"2*Spin+1 of ",-1);
   	create_combo_spin(hbox,1,"system : ");
         NMethodes++;
   }
-
-  if(Methodes[1]!=NULL)
+  if(Methodes[1]!=NULL && Methodes[2]!=NULL )
   {
-  	create_combo_charge(hbox,2,"Medium system : ");
-  	create_combo_spin(hbox2,3,"Medium system : ");
+  	create_combo_charge(hbox,2,"Intermediate system : ");
+  	create_combo_spin(hbox2,3,"Intermediate system : ");
+  	NMethodes++;
+  	create_combo_charge(hbox,4,"Model system : ");
+  	create_combo_spin(hbox2,5,"Model system : ");
   	NMethodes++;
   }
-  if(Methodes[2]!=NULL)
+  else
+  if(Methodes[1]!=NULL || Methodes[2]!=NULL )
   {
-  	create_combo_charge(hbox,4,"Lower system : ");
-  	create_combo_spin(hbox2,5,"Lower system : ");
+  	create_combo_charge(hbox,2,"Model system : ");
+  	create_combo_spin(hbox2,3,"Model system : ");
   	NMethodes++;
   }
 

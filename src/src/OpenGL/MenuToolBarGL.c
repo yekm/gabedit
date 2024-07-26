@@ -155,6 +155,14 @@ static void activate_action (GtkAction *action)
  		file_chooser_open(gl_read_first_mpqc_file,"Read the first geometry from a MPQC output file",GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryMPQCLast"))
  		file_chooser_open(gl_read_last_mpqc_file,"Read the last geometry from a MPQC output file",GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name,"GeometryPCGamessFirst"))
+ 		file_chooser_open(gl_read_first_gamess_file,"Read the first geometry in a PCGamess output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name,"GeometryPCGamessLast"))
+ 		file_chooser_open(gl_read_last_gamess_file,"Read the last geometry in a PCGamess output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name ,"GeometryQChemFirst"))
+ 		file_chooser_open(gl_read_first_qchem_file,"Read the first geometry from a Q-Chem output file",GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name ,"GeometryQChemLast"))
+ 		file_chooser_open(gl_read_last_qchem_file,"Read the last geometry from a Q-Chem output file",GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryGabedit"))
  		file_chooser_open(gl_read_gabedit_file,"Read geometry from a gabedit file",GABEDIT_TYPEFILE_GABEDIT,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryMolden"))
@@ -165,6 +173,10 @@ static void activate_action (GtkAction *action)
 			*/
 	else if(!strcmp(name , "OrbitalsGamess"))
  			file_chooser_open(read_gamess_orbitals_sel,"Read Geometry and Orbitals from a Gamess output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name , "OrbitalsPCGamess"))
+ 			file_chooser_open(read_gamess_orbitals_sel,"Read Geometry and Orbitals from a PCGamess output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name , "OrbitalsQChem"))
+ 			file_chooser_open(read_qchem_orbitals_sel,"Read Geometry and Orbitals from a Q-Chem output file",GABEDIT_TYPEFILE_QCHEM,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsGaussian"))
  			file_chooser_open(read_gauss_orbitals_sel,"Read Geometry and Orbitals from a Gaussian output file",GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsMolpro"))
@@ -442,7 +454,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name , "ExportPovray")) create_save_povray_orb(PrincipalWindow);
 	else if(!strcmp(name , "AnimationVibration")) vibrationDlg();
 	else if(!strcmp(name , "AnimationGeometryConvergence")) geometryConvergenceDlg();
-	else if(!strcmp(name , "AnimationMD")) geometryMDDlg();
+	else if(!strcmp(name , "AnimationMD")) geometriesMDDlg();
 	else if(!strcmp(name , "AnimationRotation")) animationRotationDlg();
 	else if(!strcmp(name , "AnimationContours")) animationContoursDlg();
 	else if(!strcmp(name , "AnimationPlanesColorcoded")) animationPlanesMappedDlg();
@@ -486,6 +498,14 @@ static GtkActionEntry gtkActionEntries[] =
 		NULL, "Read the first geometry from a MPQC output file", G_CALLBACK (activate_action) },
 	{"GeometryMPQCLast", GABEDIT_STOCK_MPQC, "Read the _last geometry from a MPQC output file", 
 		NULL, "Read the last geometry from a MPQC output file", G_CALLBACK (activate_action) },
+	{"GeometryPCGamessFirst", GABEDIT_STOCK_PCGAMESS, "Read the _first geometry from a PCGamess output log file", 
+		NULL, "Read the first geometry from a PCGamess output file", G_CALLBACK (activate_action) },
+	{"GeometryPCGamessLast", GABEDIT_STOCK_PCGAMESS, "Read the _last geometry from a PCGamess output log file", 
+		NULL, "Read the last geometry from a PCGamess output file", G_CALLBACK (activate_action) },
+	{"GeometryQChemFirst", GABEDIT_STOCK_QCHEM, "Read the _first geometry from a Q-Chem output file", 
+		NULL, "Read the first geometry from a Q-Chem output file", G_CALLBACK (activate_action) },
+	{"GeometryQChemLast", GABEDIT_STOCK_QCHEM, "Read the _last geometry from a Q-Chem output file", 
+		NULL, "Read the last geometry from a Q-Chem output file", G_CALLBACK (activate_action) },
 	{"GeometryGabedit", GABEDIT_STOCK_GABEDIT, "Read from a G_abedit file", 
 		NULL, "Read the geometry from a Gabedit file", G_CALLBACK (activate_action) },
 	{"GeometryMolden", GABEDIT_STOCK_MOLDEN, "Read from a Mol_den file", 
@@ -501,6 +521,10 @@ static GtkActionEntry gtkActionEntries[] =
 		NULL, "Read geometry and orbiatls from a Gaussian log file", G_CALLBACK (activate_action) },
 	{"OrbitalsMolpro", GABEDIT_STOCK_MOLPRO, "Read geometry and orbiatls from a Mol_pro output file", 
 		NULL, "Read geometry and orbiatls from a Molpro output file", G_CALLBACK (activate_action) },
+	{"OrbitalsPCGamess", GABEDIT_STOCK_PCGAMESS, "Read geometry and orbiatls from a _PCGamess output file", 
+		NULL, "Read geometry and orbiatls from a PCGamess output file", G_CALLBACK (activate_action) },
+	{"OrbitalsQChem", GABEDIT_STOCK_QCHEM, "Read geometry and orbiatls from a Q-_Chem output file", 
+		NULL, "Read geometry and orbiatls from a Q-Chem output file", G_CALLBACK (activate_action) },
 	{"OrbitalsGabeditRead", GABEDIT_STOCK_GABEDIT, "Read geometry and orbiatls from a G_abedit file", 
 		NULL, "Read geometry and orbiatls from a Gabedit file", G_CALLBACK (activate_action) },
 	{"OrbitalsMolden", GABEDIT_STOCK_MOLDEN, "Read geometry and orbiatls from a Mol_den file", 
@@ -788,7 +812,7 @@ static void toggle_action (GtkAction *action)
 
 static GtkToggleActionEntry gtkActionToggleEntries[] =
 {
-	{ "RenderSurfaceTransparency", NULL, "_Transparency", NULL, "render transparency", G_CALLBACK (toggle_action), TRUE },
+	{ "RenderSurfaceTransparency", NULL, "_Transparency", NULL, "render transparency", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderLightOnOff1", NULL, "OnOff _1", NULL, "On/Of the light number 1", G_CALLBACK (toggle_action), TRUE },
 	{ "RenderLightOnOff2", NULL, "OnOff _2", NULL, "On/Of the light number 2", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderLightOnOff3", NULL, "OnOff _3", NULL, "On/Of the light number 3", G_CALLBACK (toggle_action), FALSE },
@@ -1083,6 +1107,12 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"GeometryMPQCFirst\" action=\"GeometryMPQCFirst\" />\n"
 "      <menuitem name=\"GeometryMPQCLast\" action=\"GeometryMPQCLast\" />\n"
 "      <separator name=\"sepMenuMPQCGeom\" />\n"
+"      <menuitem name=\"GeometryPCGamessFirst\" action=\"GeometryPCGamessFirst\" />\n"
+"      <menuitem name=\"GeometryPCGamessLast\" action=\"GeometryPCGamessLast\" />\n"
+"      <separator name=\"sepMenuPCGamessGeom\" />\n"
+"      <menuitem name=\"GeometryQChemFirst\" action=\"GeometryQChemFirst\" />\n"
+"      <menuitem name=\"GeometryQChemLast\" action=\"GeometryQChemLast\" />\n"
+"      <separator name=\"sepMenuQChemGeom\" />\n"
 "      <menuitem name=\"GeometryGabedit\" action=\"GeometryGabedit\" />\n"
 "      <separator name=\"sepMenuGabeditGeom\" />\n"
 "      <menuitem name=\"GeometryMolden\" action=\"GeometryMolden\" />\n"
@@ -1095,6 +1125,8 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"OrbitalsGamess\" action=\"OrbitalsGamess\" />\n"
 "      <menuitem name=\"OrbitalsGaussian\" action=\"OrbitalsGaussian\" />\n"
 "      <menuitem name=\"OrbitalsMolpro\" action=\"OrbitalsMolpro\" />\n"
+"      <menuitem name=\"OrbitalsPCGamess\" action=\"OrbitalsPCGamess\" />\n"
+"      <menuitem name=\"OrbitalsQChem\" action=\"OrbitalsQChem\" />\n"
 "      <menuitem name=\"OrbitalsGabeditRead\" action=\"OrbitalsGabeditRead\" />\n"
 "      <menuitem name=\"OrbitalsMolden\" action=\"OrbitalsMolden\" />\n"
 "      <separator name=\"sepMenuGabeditOrbSave\" />\n"
@@ -1369,7 +1401,11 @@ static void set_init_gtkActionToggleEntries()
   	gfloat zn, zf, zo;
   	gboolean perspective = FALSE;
 
+	if(TypeBlend==GABEDIT_BLEND_YES)
 	gtkActionToggleEntries[0].is_active = TRUE; /* "RenderSurfaceTransparency" */
+	else
+	gtkActionToggleEntries[0].is_active = FALSE; /* "RenderSurfaceTransparency" */
+
 	gtkActionToggleEntries[1].is_active = TRUE; /* RenderLightOnOff1 */
 	gtkActionToggleEntries[2].is_active = FALSE; /* RenderLightOnOff2 */
 	gtkActionToggleEntries[3].is_active = FALSE; /* RenderLightOnOff3 */

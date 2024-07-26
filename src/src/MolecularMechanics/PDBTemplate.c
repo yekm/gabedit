@@ -176,6 +176,66 @@ gchar* getMMTypeFromPDBTpl(gchar* residueName,gchar* pdbType,gdouble* charge)
 	}
 }
 /************************************************************/
+static gint getHydrogens(gint residueNumber, gchar* pdbType, gchar** hAtoms)
+{
+	gint j;
+	gint k;
+	PDBTypeTemplate* typeTemplates = 
+		staticPDBTemplate->residueTemplates[residueNumber].typeTemplates;
+	gint numberOfTypes = staticPDBTemplate->residueTemplates[residueNumber].numberOfTypes;
+	gint nH = 0;
+	for(j=0;j<numberOfTypes;j++)
+	{
+		if(!strcmp(pdbType,typeTemplates[j].pdbType))
+		{
+			for(k=j+1;k<numberOfTypes;k++)
+			{
+				if(!typeTemplates[k].pdbType) break;
+				if(typeTemplates[k].pdbType[0]!='H') break;
+				sprintf(hAtoms[nH],typeTemplates[k].pdbType);
+				nH++;
+				if(nH>10) break;
+			}
+			return nH;
+		}
+	}
+	return nH;
+}
+/************************************************************/
+gint getHydrogensFromPDBTpl(gchar* residueName,gchar* pdbType, gchar** hAtoms)
+{
+	gint nH = 0;
+	gint residueNumber = -1;
+
+	if(!pdbType) return nH;
+	if(pdbType && (pdbType[0]=='H' || pdbType[0]=='h')) return nH;
+	if(!staticPDBTemplate) return nH;
+	residueNumber = getResiduePDBTplNumber(residueName);
+	if(residueNumber==-1)
+	{
+		residueNumber = getResiduePDBTplNumber("ALLRESIDUE");
+		if(residueNumber==-1)
+			return nH;
+		else
+			return getHydrogens(residueNumber,pdbType, hAtoms);
+	}
+	else
+	{
+		nH = getHydrogens(residueNumber,pdbType, hAtoms);
+		if(nH == 0)
+		{
+			residueNumber = getResiduePDBTplNumber("ALLRESIDUE");
+			if(residueNumber==-1)
+				return nH;
+			else
+				return getHydrogens(residueNumber,pdbType, hAtoms);
+		}
+		else
+			return nH;
+	}
+	return nH;
+}
+/************************************************************/
 PDBTemplate* getPointerPDBTemplate()
 {
 	return staticPDBTemplate;
@@ -204,4 +264,26 @@ void savePersonalPDBTpl(GtkWidget* win)
 	g_free(filename);
 }
 /************************************************************/
+gchar** getListPDBTypes(gchar* residueName, gint* nlist)
+{
+	gchar** t = NULL;
+	gint j;
+	gint residueNumber = getResiduePDBTplNumber(residueName);
+	PDBTypeTemplate* typeTemplates = NULL;
+	gint numberOfTypes = 0;
+
+	*nlist = 0;
+
+	if(residueNumber==-1) residueNumber = getResiduePDBTplNumber("ALLRESIDUE");
+	if(residueNumber==-1) return NULL;
+
+	typeTemplates = staticPDBTemplate->residueTemplates[residueNumber].typeTemplates;
+	numberOfTypes = staticPDBTemplate->residueTemplates[residueNumber].numberOfTypes;
+	t = g_malloc(numberOfTypes*sizeof(gchar*));
+	for(j=0;j<numberOfTypes;j++)
+		t[j] = g_strdup(typeTemplates[j].pdbType);
+	*nlist = numberOfTypes;
+	return t;
+}
+/********************************************************************************/
 

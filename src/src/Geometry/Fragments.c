@@ -28,6 +28,9 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/GabeditType.h"
 #include "../Geometry/Fragments.h"
 #include "../Utils/Utils.h"
+#include "../MolecularMechanics/PDBTemplate.h"
+#include "../Geometry/DrawGeom.h"
+#include "../MolecularMechanics/CalculTypesAmber.h"
 
 #define ANG_TO_BOHR  1.0/0.52917726
 
@@ -40,7 +43,8 @@ void FreeFragment(Fragment* F)
 	for(i=0;i<F->NAtoms;i++)
 	{
 		if(F->Atoms[i].Symb) g_free(F->Atoms[i].Symb);
-		if(F->Atoms[i].Type) g_free(F->Atoms[i].Type);
+		if(F->Atoms[i].mmType) g_free(F->Atoms[i].mmType);
+		if(F->Atoms[i].pdbType) g_free(F->Atoms[i].pdbType);
 		if(F->Atoms[i].Residue) g_free(F->Atoms[i].Residue);
 	}
 	g_free(F->Atoms);
@@ -55,12 +59,33 @@ static void SetResidue(Fragment* Frag,gchar* name)
 		Frag->Atoms[i].Residue = g_strdup(name);
 
 }
+/********************************************************************************/
+static void SetMMTypes(Fragment* Frag)
+{
+	gint i;
+	gchar* residue = NULL;
+	gdouble charge;
+	if(Frag->NAtoms<1) return;
+	residue = Frag->Atoms[0].Residue;
+
+	for(i=0;i<Frag->NAtoms;i++)
+	{
+		if(Frag->Atoms[i].mmType) g_free(Frag->Atoms[i].mmType);
+		Frag->Atoms[i].mmType = getMMTypeFromPDBTpl(residue, Frag->Atoms[i].pdbType,&charge);
+		if(strcmp(Frag->Atoms[i].mmType,"UNK"))  Frag->Atoms[i].Charge = charge;
+	}
+	for(i=0;i<Frag->NAtoms;i++)
+		if(!strcmp(Frag->Atoms[i].mmType,"UNK")) break;
+	if(i!=Frag->NAtoms) calculTypesAmberForAFragment(Frag);
+
+}
 /*****************************************************************/
 static void SetAtom(Atom* A,gchar* symb,gfloat x,gfloat y,gfloat z)
 {
 	gchar Forbidden[]={'0','1','2','3','4','5','6','7','8','9'};
 
-	A->Type = g_strdup(symb);
+	A->mmType = g_strdup(symb);
+	A->pdbType = g_strdup(symb);
 	if(strlen(symb)==1)
 		A->Symb = g_strdup(symb);
 	else
@@ -119,6 +144,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =7 ;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GANH");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", 4.996f, 1.858f, -8.663f );
         	SetAtom(&F.Atoms[ 1 ] ,  "O2", 6.185f, 1.875f, -8.348f );
         	SetAtom(&F.Atoms[ 2 ] ,  "O3", 4.400f, 0.684f, -9.004f );
@@ -135,6 +161,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =4 ;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GALD");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", 3.450f, 0.774f, -9.239f );
         	SetAtom(&F.Atoms[ 1 ] ,  "O2", 4.639f, 0.791f, -8.925f );
         	SetAtom(&F.Atoms[ 2 ] ,  "H11", 2.972f, -0.166f, -9.513f );
@@ -147,6 +174,7 @@ Fragment GetFragment(gchar* Name)
 	else if ( !strcmp(Name, "Amide" ) ){
 		F.NAtoms =4;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GAMD");
         	SetAtom(&F.Atoms[ 0 ] ,  "N1", 3.975f, 0.737f, -8.798f );
         	SetAtom(&F.Atoms[ 1 ] ,  "H11", 4.979f, 0.953f, -8.799f );
         	SetAtom(&F.Atoms[ 2 ] ,  "H12", 3.618f, -0.044f, -9.359f );
@@ -160,6 +188,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms = 4;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GAMN");
         	SetAtom(&F.Atoms[ 0 ] ,  "N1", 4.030f, 0.810f, -9.087f );
         	SetAtom(&F.Atoms[ 1 ] ,  "H11", 5.007f, 0.824f, -8.828f );
         	SetAtom(&F.Atoms[ 2 ] ,  "H12", 3.754f, -0.136f, -9.308f );
@@ -172,6 +201,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms = 11;
 		F.Atoms  = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GIPP");
 		SetAtom(&F.Atoms[ 0 ] , "H",-2.026358f,-0.863664f,0.000860f);
 		SetAtom(&F.Atoms[ 1 ] , "H",-0.613329f,-1.465632f,0.893451f);
 		SetAtom(&F.Atoms[ 2 ] , "H",-0.601007f,-1.455971f,-0.878523f);
@@ -191,6 +221,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =4;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GCXT");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", 9.131f, 1.248f, -7.673f );
         	SetAtom(&F.Atoms[ 1 ] ,  "O2", 10.445f, 1.266f, -7.325f );
         	SetAtom(&F.Atoms[ 2 ] ,  "O3", 8.534f, 0.074f, -8.014f );
@@ -205,6 +236,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =5;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GCXA");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", 6.536f, 1.243f, -8.355f );
         	SetAtom(&F.Atoms[ 1 ] ,  "O2", 7.725f, 1.260f, -8.040f );
         	SetAtom(&F.Atoms[ 2 ] ,  "O3", 5.939f, 0.070f, -8.697f );
@@ -220,6 +252,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =3;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GHDX");
         	SetAtom(&F.Atoms[ 0 ] ,  "OH", 4.013f, 0.831f, -9.083f );
         	SetAtom(&F.Atoms[ 1 ] ,  "HH1", 4.941f, 0.844f, -8.837f );
         	SetAtom(&F.Atoms[ 2 ] ,  "HH2", 3.750f, -0.068f, -9.293f );
@@ -232,6 +265,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =6;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GMTX");
         	SetAtom(&F.Atoms[ 0 ] ,  "O1", 3.177f, 0.623f, -8.490f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", 4.559f, 0.642f, -8.124f );
         	SetAtom(&F.Atoms[ 2 ] ,  "H11", 2.820f, 1.513f, -8.443f );
@@ -247,6 +281,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =5;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GMTL");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", 3.875f, 0.678f, -8.417f );
         	SetAtom(&F.Atoms[ 1 ] ,  "H11", 3.800f, 1.690f, -8.076f );
         	SetAtom(&F.Atoms[ 2 ] ,  "H12", 4.907f, 0.410f, -8.516f );
@@ -262,6 +297,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =3;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GNIL");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", 3.506f, 0.774f, -9.225f );
         	SetAtom(&F.Atoms[ 1 ] ,  "N2", 4.628f, 0.790f, -8.928f );
         	SetAtom(&F.Atoms[ 2 ] ,  "H11", 2.482f, 0.760f, -9.496f );
@@ -274,6 +310,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =3;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GNIS");
         	SetAtom(&F.Atoms[ 0 ] ,  "N1", 3.470f, 0.802f, -9.230f );
         	SetAtom(&F.Atoms[ 1 ] ,  "O2", 4.621f, 0.818f, -8.925f );
         	SetAtom(&F.Atoms[ 2 ] ,  "H11", 3.027f, -0.070f, -9.483f );
@@ -286,6 +323,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =4;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GNIO");
      		SetAtom(&F.Atoms[ 0 ] ,  "N1", 10.980f, 1.214f, -7.193f );
         	SetAtom(&F.Atoms[ 1 ] ,  "O2", 12.149f, 1.231f, -6.883f );
         	SetAtom(&F.Atoms[ 2 ] ,  "O3", 10.449f, 0.170f, -7.496f );
@@ -300,6 +338,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =3;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GTHL");
         	SetAtom(&F.Atoms[ 0 ] ,  "C", -1.444f, 0.079f, 0.000f );
         	SetAtom(&F.Atoms[ 1 ] ,  "S", -1.396f, 1.890f, 0.000f );
         	SetAtom(&F.Atoms[ 2 ] ,  "H", -2.720f, 2.065f, 0.000f );
@@ -312,6 +351,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =8;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GETH");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", 3.108f, 0.653f, -8.526f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", 4.597f, 0.674f, -8.132f );
         	SetAtom(&F.Atoms[ 2 ] ,  "H11", 2.815f, -0.349f, -8.761f );
@@ -329,6 +369,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =6;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GETL");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", 3.402f, 0.773f, -9.252f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", 4.697f, 0.791f, -8.909f );
         	SetAtom(&F.Atoms[ 2 ] ,  "H11", 2.933f, -0.150f, -9.521f );
@@ -344,6 +385,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =11;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GPPN");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", 2.709f, 1.156f, -8.689f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", 4.198f, 1.177f, -8.295f );
         	SetAtom(&F.Atoms[ 2 ] ,  "C3", 4.770f, -0.251f, -8.369f );
@@ -364,6 +406,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =9;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GPPL");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", 5.705f, 1.171f, -7.853f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", 7.000f, 1.189f, -7.509f );
         	SetAtom(&F.Atoms[ 2 ] ,  "C3", 7.808f, -0.110f, -7.502f );
@@ -382,6 +425,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =14;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GSBN");
 		SetAtom(&F.Atoms[ 0 ] ,  "C", -0.064f, -0.757f, 0.000f );
 		SetAtom(&F.Atoms[ 1 ] ,  "C", -0.064f, 0.783f, 0.000f );
 		SetAtom(&F.Atoms[ 2 ] ,  "C", -1.516f, 1.296f, 0.000f );
@@ -405,6 +449,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =14;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GTBN");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", 2.142f, 1.395f, -8.932f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", 3.631f, 1.416f, -8.537f );
         	SetAtom(&F.Atoms[ 2 ] ,  "C3", 4.203f, -0.012f, -8.612f );
@@ -428,6 +473,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =10;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GBDN");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", 2.351f, 1.413f, -9.428f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", 3.646f, 1.432f, -9.085f );
         	SetAtom(&F.Atoms[ 2 ] ,  "C3", 4.454f, 0.132f, -9.077f );
@@ -448,6 +494,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =20;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GHXN");
 		SetAtom(&F.Atoms[ 0 ] ,  "C", -0.124f, -2.470f, 0.000f );
 		SetAtom(&F.Atoms[ 1 ] ,  "C", -0.124f, -0.930f, 0.000f );
 		SetAtom(&F.Atoms[ 2 ] ,  "C", -1.576f, -0.417f, 0.000f );
@@ -477,6 +524,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =23;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GHPN");
 		SetAtom(&F.Atoms[ 0 ] ,  "C", -0.265f, -2.359f, 0.000f );
 		SetAtom(&F.Atoms[ 1 ] ,  "C", -0.265f, -0.819f, 0.000f );
 		SetAtom(&F.Atoms[ 2 ] ,  "C", -1.717f, -0.305f, 0.000f );
@@ -508,6 +556,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =26;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GOCN");
 		SetAtom(&F.Atoms[ 0 ] ,  "C", -0.324f, -2.196f, 0.000f );
 		SetAtom(&F.Atoms[ 1 ] ,  "C", -0.324f, -0.656f, 0.000f );
 		SetAtom(&F.Atoms[ 2 ] ,  "C", -1.776f, -0.142f, 0.000f );
@@ -543,6 +592,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =29;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GNNN");
 		SetAtom(&F.Atoms[ 0 ] ,  "C", -0.451f, -2.085f, 0.000f );
 		SetAtom(&F.Atoms[ 1 ] ,  "C", -0.451f, -0.545f, 0.000f );
 		SetAtom(&F.Atoms[ 2 ] ,  "C", -1.903f, -0.031f, 0.000f );
@@ -581,6 +631,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =32;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GDCN");
 		SetAtom(&F.Atoms[ 0 ] ,  "C", -0.514f, -1.932f, 0.000f );
 		SetAtom(&F.Atoms[ 1 ] ,  "C", -0.514f, -0.392f, 0.000f );
 		SetAtom(&F.Atoms[ 2 ] ,  "C", -1.966f, 0.121f, 0.000f );
@@ -622,6 +673,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =35;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GUCN");
 		SetAtom(&F.Atoms[ 0 ] ,  "C", -0.632f, -1.821f, 0.000f );
 		SetAtom(&F.Atoms[ 1 ] ,  "C", -0.632f, -0.281f, 0.000f );
 		SetAtom(&F.Atoms[ 2 ] ,  "C", -2.084f, 0.232f, 0.000f );
@@ -666,6 +718,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =38;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GDON");
 		SetAtom(&F.Atoms[ 0 ] ,  "C", -0.697f, -1.676f, 0.000f );
 		SetAtom(&F.Atoms[ 1 ] ,  "C", -0.697f, -0.136f, 0.000f );
 		SetAtom(&F.Atoms[ 2 ] ,  "C", -2.149f, 0.378f, 0.000f );
@@ -713,6 +766,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =41;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GTDN");
 		SetAtom(&F.Atoms[ 0 ] ,  "C", -0.809f, -1.565f, 0.000f );
 		SetAtom(&F.Atoms[ 1 ] ,  "C", -0.809f, -0.025f, 0.000f );
 		SetAtom(&F.Atoms[ 2 ] ,  "C", -2.261f, 0.489f, 0.000f );
@@ -763,6 +817,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =44;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GTTN");
 		SetAtom(&F.Atoms[ 0 ] ,  "C", -0.877f, -1.424f, 0.000f );
 		SetAtom(&F.Atoms[ 1 ] ,  "C", -0.877f, 0.116f, 0.000f );
 		SetAtom(&F.Atoms[ 2 ] ,  "C", -2.329f, 0.629f, 0.000f );
@@ -816,6 +871,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =47;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GPTN");
 		SetAtom(&F.Atoms[ 0 ] ,  "C", -0.984f, -1.314f, 0.000f );
 		SetAtom(&F.Atoms[ 1 ] ,  "C", -0.984f, 0.226f, 0.000f );
 		SetAtom(&F.Atoms[ 2 ] ,  "C", -2.436f, 0.740f, 0.000f );
@@ -872,6 +928,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =50;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GHTN");
 		SetAtom(&F.Atoms[ 0 ] ,  "C", -1.053f, -1.177f, 0.000f );
 		SetAtom(&F.Atoms[ 1 ] ,  "C", -1.053f, 0.363f, 0.000f );
 		SetAtom(&F.Atoms[ 2 ] ,  "C", -2.505f, 0.877f, 0.000f );
@@ -931,6 +988,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =53;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GHDN");
 		SetAtom(&F.Atoms[ 0 ] ,  "C", -1.157f, -1.066f, 0.000f );
 		SetAtom(&F.Atoms[ 1 ] ,  "C", -1.157f, 0.474f, 0.000f );
 		SetAtom(&F.Atoms[ 2 ] ,  "C", -2.609f, 0.987f, 0.000f );
@@ -993,6 +1051,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =56;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GODN");
 		SetAtom(&F.Atoms[ 0 ] ,  "C", -1.227f, -0.932f, 0.000f );
 		SetAtom(&F.Atoms[ 1 ] ,  "C", -1.227f, 0.608f, 0.000f );
 		SetAtom(&F.Atoms[ 2 ] ,  "C", -2.679f, 1.121f, 0.000f );
@@ -1058,6 +1117,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =59;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GNDN");
 		SetAtom(&F.Atoms[ 0 ] ,  "C", -1.328f, -0.821f, 0.000f );
 		SetAtom(&F.Atoms[ 1 ] ,  "C", -1.328f, 0.719f, 0.000f );
 		SetAtom(&F.Atoms[ 2 ] ,  "C", -2.780f, 1.232f, 0.000f );
@@ -1126,6 +1186,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =62;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GECS");
 		SetAtom(&F.Atoms[ 0 ] ,  "C", -1.399f, -0.690f, 0.000f );
 		SetAtom(&F.Atoms[ 1 ] ,  "C", -1.399f, 0.850f, 0.000f );
 		SetAtom(&F.Atoms[ 2 ] ,  "C", -2.851f, 1.363f, 0.000f );
@@ -1197,6 +1258,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =92;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GTCN");
 		SetAtom(&F.Atoms[ 0 ] ,  "C", -2.185f, 0.280f, -0.037f );
 		SetAtom(&F.Atoms[ 1 ] ,  "C", -2.185f, 1.820f, -0.037f );
 		SetAtom(&F.Atoms[ 2 ] ,  "C", -3.637f, 2.334f, -0.037f );
@@ -1298,6 +1360,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =122;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GTON");
 		SetAtom(&F.Atoms[ 0 ] ,  "C", -2.909f, 1.109f, -0.079f );
 		SetAtom(&F.Atoms[ 1 ] ,  "C", -2.909f, 2.649f, -0.079f );
 		SetAtom(&F.Atoms[ 2 ] ,  "C", -4.361f, 3.162f, -0.079f );
@@ -1429,6 +1492,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =22;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GAPT");
         	SetAtom(&F.Atoms[ 0 ] ,  "C6", -1.247f, -2.075f, -0.001f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C7", -2.425f, -1.310f, 0.002f );
         	SetAtom(&F.Atoms[ 2 ] ,  "C8", -2.390f, 0.092f, 0.001f );
@@ -1460,6 +1524,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =12;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GBZN");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", 5.274f, 1.999f, -8.568f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", 6.627f, 2.018f, -8.209f );
         	SetAtom(&F.Atoms[ 2 ] ,  "C3", 7.366f, 0.829f, -8.202f );
@@ -1481,6 +1546,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =15;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GBNZ");
         	SetAtom(&F.Atoms[ 0 ] ,  "C3", -0.630f, -1.409f, -0.001f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C4", -1.896f, -0.810f, 0.000f );
         	SetAtom(&F.Atoms[ 2 ] ,  "C5", -2.033f, 0.587f, 0.001f );
@@ -1505,6 +1571,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =9;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GCPA");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", -0.727f, -0.481f, 0.111f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", 0.780f, -0.397f, -0.078f );
         	SetAtom(&F.Atoms[ 2 ] ,  "C3", -0.052f, 0.876f, -0.032f );
@@ -1523,6 +1590,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =12;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GCBN");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", -1.469f, 0.919f, -0.493f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", -0.744f, 0.468f, 0.829f );
         	SetAtom(&F.Atoms[ 2 ] ,  "C3", 0.641f, 0.549f, 0.088f );
@@ -1544,6 +1612,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =10;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GCTN");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", -0.662f, -0.898f, 0.000f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", 0.664f, -0.897f, 0.000f );
         	SetAtom(&F.Atoms[ 2 ] ,  "C3", 0.781f, 0.600f, 0.000f );
@@ -1563,6 +1632,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =8;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GCBD");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", -0.735f, 0.668f, 0.000f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", -0.735f, -0.668f, 0.000f );
         	SetAtom(&F.Atoms[ 2 ] ,  "C3", 0.735f, -0.668f, 0.000f );
@@ -1580,6 +1650,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =15;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GCPT");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", 2.791f, 1.160f, -8.743f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", 4.193f, 1.206f, -8.137f );
         	SetAtom(&F.Atoms[ 2 ] ,  "C3", 4.756f, -0.182f, -8.439f );
@@ -1604,6 +1675,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =13;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GCPN");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", -0.667f, 1.157f, 0.052f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", 0.667f, 1.157f, 0.052f );
         	SetAtom(&F.Atoms[ 2 ] ,  "C3", 1.232f, -0.221f, -0.140f );
@@ -1626,6 +1698,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =11;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GCPE");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", -0.189f, 1.147f, 0.000f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", 1.081f, 0.733f, 0.000f );
         	SetAtom(&F.Atoms[ 2 ] ,  "C3", 1.081f, -0.733f, 0.000f );
@@ -1646,6 +1719,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =18;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GCHX");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", 3.593f, 1.069f, -9.284f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", 4.975f, 0.956f, -8.613f );
         	SetAtom(&F.Atoms[ 2 ] ,  "C3", 4.949f, -0.181f, -7.573f );
@@ -1673,6 +1747,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =16;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GCHH");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", -0.668f, 1.407f, 0.049f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", 0.668f, 1.407f, -0.050f );
         	SetAtom(&F.Atoms[ 2 ] ,  "C3", 1.494f, 0.146f, -0.108f );
@@ -1698,6 +1773,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =21;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GCPP");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", 1.612f, -0.409f, -0.203f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", 1.326f, 0.967f, 0.406f );
         	SetAtom(&F.Atoms[ 2 ] ,  "C3", 0.086f, 1.717f, -0.109f );
@@ -1728,6 +1804,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =19;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GCHE");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", -0.669f, 1.630f, -0.184f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", 0.669f, 1.630f, -0.184f );
         	SetAtom(&F.Atoms[ 2 ] ,  "C3", 1.501f, 0.528f, 0.423f );
@@ -1756,6 +1833,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =24;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GCON");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", 0.255f, 0.953f, -1.443f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", -1.254f, 0.921f, -1.138f );
         	SetAtom(&F.Atoms[ 2 ] ,  "C3", -1.798f, 0.027f, -0.024f );
@@ -1789,6 +1867,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =9;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GIDL");
         	SetAtom(&F.Atoms[ 0 ] ,  "N1", 0.650f, 0.656f, 0.000f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C1", 1.087f, -0.564f, 0.000f );
         	SetAtom(&F.Atoms[ 2 ] ,  "N2", 0.110f, -1.350f, 0.000f );
@@ -1807,6 +1886,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =19;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GNBN");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", -0.002f, 1.117f, 0.354f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", 1.264f, 0.778f, -0.478f );
         	SetAtom(&F.Atoms[ 2 ] ,  "C3", 1.267f, -0.775f, -0.476f );
@@ -1835,6 +1915,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =17;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"G2NB");
         	SetAtom(&F.Atoms[ 0 ] ,  "C1", -0.184f, -1.124f, -0.292f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C2", -1.342f, -0.666f, 0.553f );
         	SetAtom(&F.Atoms[ 2 ] ,  "C3", -1.341f, 0.667f, 0.554f );
@@ -1861,6 +1942,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =8;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GOXL");
         	SetAtom(&F.Atoms[ 0 ] ,  "O1", 0.602f, 1.081f, 0.000f );
         	SetAtom(&F.Atoms[ 1 ] ,  "C1", 1.321f, -0.058f, 0.000f );
         	SetAtom(&F.Atoms[ 2 ] ,  "N1", 0.511f, -1.030f, 0.000f );
@@ -1878,6 +1960,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =38;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GPFN");
 		SetAtom(&F.Atoms[ 0 ] ,  "C1", -2.374f, 0.827f, -8.284f );
 		SetAtom(&F.Atoms[ 1 ] ,  "C2", -1.021f, 0.847f, -7.926f );
 		SetAtom(&F.Atoms[ 2 ] ,  "C2A", -0.534f, -0.464f, -8.004f );
@@ -1925,6 +2008,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =24;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GXTN");
 		SetAtom(&F.Atoms[ 0 ] ,  "C1", 2.512f, 1.210f, 0.031f );
 		SetAtom(&F.Atoms[ 1 ] ,  "C2", 3.694f, 0.467f, 0.092f );
 		SetAtom(&F.Atoms[ 2 ] ,  "C3", 3.639f, -0.929f, 0.065f );
@@ -1958,6 +2042,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =4;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GAMA");
 		SetAtom(&F.Atoms[ 0 ] , "N1", 0.000f, 0.000f, -0.270f );
 		SetAtom(&F.Atoms[ 1 ] , "H1", 0.000f, 1.018f, 0.090f );
 		SetAtom(&F.Atoms[ 2 ] , "H2", 0.882f, -0.509f, 0.090f );
@@ -1971,6 +2056,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =4;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GFMD");
 		SetAtom(&F.Atoms[ 0 ] , "C1", 0.033f, 0.000f, 0.000f );
 		SetAtom(&F.Atoms[ 1 ] , "O1", -1.187f, 0.000f, 0.000f );
 		SetAtom(&F.Atoms[ 2 ] , "H1", 0.577f, 0.943f, 0.000f );
@@ -1984,6 +2070,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =6;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GFME");
 		SetAtom(&F.Atoms[ 0 ] , "C1", -0.640f, -0.053f, 0.000f );
 		SetAtom(&F.Atoms[ 1 ] , "O1", -1.364f, 0.930f, 0.000f );
 		SetAtom(&F.Atoms[ 2 ] , "N1", 0.708f, 0.030f, 0.000f );
@@ -1998,6 +2085,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =14;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GGCL");
 		SetAtom(&F.Atoms[ 0 ] , "C1", 2.383f, 0.745f, -8.395f );
 		SetAtom(&F.Atoms[ 1 ] , "O4", 1.852f, 2.071f, -8.326f );
 		SetAtom(&F.Atoms[ 2 ] , "C2", 3.871f, 0.766f, -8.001f );
@@ -2020,6 +2108,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =10;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GGCO");
 		SetAtom(&F.Atoms[ 0 ] , "C1", 3.176f, 0.694f, -8.784f );
 		SetAtom(&F.Atoms[ 1 ] , "O3", 2.784f, -0.645f, -9.098f );
 		SetAtom(&F.Atoms[ 2 ] , "C2", 4.664f, 0.715f, -8.390f );
@@ -2038,6 +2127,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =7;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GHZN");
 		SetAtom(&F.Atoms[ 0 ] , "C1", 2.803f, 1.003f, -8.612f );
 		SetAtom(&F.Atoms[ 1 ] , "N2", 4.050f, 1.020f, -8.282f );
 		SetAtom(&F.Atoms[ 2 ] , "N3", 4.631f, 0.086f, -8.276f );
@@ -2053,6 +2143,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =5;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GIMN");
 		SetAtom(&F.Atoms[ 0 ] , "N1", -0.747f, -0.496f, 0.000f );
 		SetAtom(&F.Atoms[ 1 ] , "C1", 0.425f, -0.001f, 0.000f );
 		SetAtom(&F.Atoms[ 2 ] , "H2", 1.281f, -0.675f, 0.000f );
@@ -2066,6 +2157,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =8;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GURA");
 		SetAtom(&F.Atoms[ 0 ] , "C1", 0.000f, 0.481f, 0.000f );
 		SetAtom(&F.Atoms[ 1 ] , "O1", 0.000f, 1.703f, 0.000f );
 		SetAtom(&F.Atoms[ 2 ] , "N1", -1.170f, -0.197f, 0.000f );
@@ -2082,6 +2174,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms =3;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GWAT");
 		SetAtom(&F.Atoms[ 0 ] , "O1", 0.000f, -0.388f, 0.000f );
 		SetAtom(&F.Atoms[ 1 ] , "H1", 0.751f, 0.194f, 0.000f );
 		SetAtom(&F.Atoms[ 2 ] , "H2", -0.751f, 0.194f, 0.000f );
@@ -2094,6 +2187,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms = 60;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GC60");
 		SetAtom(&F.Atoms[ 0 ] , "C",1.226500f,0.000000f,3.314500f);
 		SetAtom(&F.Atoms[ 1 ] , "C",0.379000f,1.166400f,3.314500f);
 		SetAtom(&F.Atoms[ 2 ] , "C",-0.992200f,0.720900f,3.314500f);
@@ -2162,6 +2256,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms = 21;
 		F.Atoms  = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GAPN");
 		SetAtom(&F.Atoms[ 0 ] , "C",0.000000f,0.000000f,0.000000f);
 		SetAtom(&F.Atoms[ 1 ] , "C",1.400000f,0.000000f,0.000000f);
 		SetAtom(&F.Atoms[ 2 ] , "C",2.091000f,1.216000f,0.000000f);
@@ -2191,6 +2286,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms = 24;
 		F.Atoms  = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GCFN");
 		SetAtom(&F.Atoms[ 0 ] , "C",0.000000f,0.000000f,0.000000f);
 		SetAtom(&F.Atoms[ 1 ] , "C",1.392000f,0.000000f,0.000000f);
 		SetAtom(&F.Atoms[ 2 ] , "N",2.076000f,1.164000f,0.000000f);
@@ -2223,6 +2319,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms = 50;
 		F.Atoms  = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GHIN");
 		SetAtom(&F.Atoms[ 0 ] , "C",0.000000f,0.000000f,0.000000f);
 		SetAtom(&F.Atoms[ 1 ] , "C",1.400000f,0.000000f,0.000000f);
 		SetAtom(&F.Atoms[ 2 ] , "C",2.108000f,1.210000f,0.000000f);
@@ -2281,6 +2378,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms = 49;
 		F.Atoms  = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GLSD");
 		SetAtom(&F.Atoms[ 0 ] , "C",0.000000f,0.000000f,0.000000f);
 		SetAtom(&F.Atoms[ 1 ] , "C",1.397000f,0.000000f,0.000000f);
 		SetAtom(&F.Atoms[ 2 ] , "C",2.012000f,1.258000f,0.000000f);
@@ -2338,6 +2436,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms = 50;
 		F.Atoms  = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GMTD");
 		SetAtom(&F.Atoms[ 0 ] , "C",0.000000f,0.000000f,0.000000f);
 		SetAtom(&F.Atoms[ 1 ] , "C",1.399000f,0.000000f,0.000000f);
 		SetAtom(&F.Atoms[ 2 ] , "C",2.111000f,1.206000f,0.000000f);
@@ -2396,6 +2495,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms = 40;
 		F.Atoms  = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GMPN");
 		SetAtom(&F.Atoms[ 0 ] , "C",0.000000f,0.000000f,0.000000f);
 		SetAtom(&F.Atoms[ 1 ] , "C",1.400000f,0.000000f,0.000000f);
 		SetAtom(&F.Atoms[ 2 ] , "C",2.106000f,1.211000f,0.000000f);
@@ -2444,6 +2544,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms = 26;
 		F.Atoms  = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GNTN");
 		SetAtom(&F.Atoms[ 0 ] , "C",0.000000f,0.000000f,0.000000f);
 		SetAtom(&F.Atoms[ 1 ] , "C",1.400000f,0.000000f,0.000000f);
 		SetAtom(&F.Atoms[ 2 ] , "C",2.082000f,1.223000f,0.000000f);
@@ -2478,6 +2579,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms = 33;
 		F.Atoms  = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GVLM");
 		SetAtom(&F.Atoms[ 0 ] , "C",0.000000f,0.000000f,0.000000f);
 		SetAtom(&F.Atoms[ 1 ] , "C",1.404000f,0.000000f,0.000000f);
 		SetAtom(&F.Atoms[ 2 ] , "C",2.078000f,1.228000f,0.000000f);
@@ -2519,6 +2621,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms = 63;
 		F.Atoms  = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GVGR");
 		SetAtom(&F.Atoms[ 0 ] , "C",0.000000f,0.000000f,0.000000f);
 		SetAtom(&F.Atoms[ 1 ] , "C",1.398000f,0.000000f,0.000000f);
 		SetAtom(&F.Atoms[ 2 ] , "C",2.105000f,1.207000f,0.000000f);
@@ -2590,6 +2693,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms = 70;
 		F.Atoms  = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GC70");
 		SetAtom(&F.Atoms[ 0 ] , "C",8.793000f,-0.828000f,-0.153000f);
 		SetAtom(&F.Atoms[ 1 ] , "C",9.405000f,0.041000f,-1.062000f);
 		SetAtom(&F.Atoms[ 2 ] , "C",8.400000f,0.766000f,-1.711000f);
@@ -2668,6 +2772,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms = 78;
 		F.Atoms  = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GC78");
 		SetAtom(&F.Atoms[ 0 ] , "C",4.214000f,-1.186000f,0.704000f);
 		SetAtom(&F.Atoms[ 1 ] , "C",3.416000f,-2.159000f,1.422000f);
 		SetAtom(&F.Atoms[ 2 ] , "C",4.214000f,-1.189000f,-0.691000f);
@@ -2754,6 +2859,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms = 80;
 		F.Atoms  = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GC80");
 		SetAtom(&F.Atoms[ 0 ] , "C",-1.790000f,-1.249000f,7.854000f);
 		SetAtom(&F.Atoms[ 1 ] , "C",-1.795000f,0.150000f,7.869000f);
 		SetAtom(&F.Atoms[ 2 ] , "C",-0.601000f,0.882000f,7.869000f);
@@ -2842,6 +2948,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms = 82;
 		F.Atoms  = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GC82");
 		SetAtom(&F.Atoms[ 0 ] , "C",3.228000f,-1.003000f,2.195000f);
 		SetAtom(&F.Atoms[ 1 ] , "C",4.135000f,-0.812000f,1.136000f);
 		SetAtom(&F.Atoms[ 2 ] , "C",4.474000f,0.500000f,0.661000f);
@@ -2932,6 +3039,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms = 84;
 		F.Atoms  = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GC84");
 		SetAtom(&F.Atoms[ 0 ] , "C",-1.579000f,0.721000f,3.576000f);
 		SetAtom(&F.Atoms[ 1 ] , "C",-2.509000f,1.451000f,2.805000f);
 		SetAtom(&F.Atoms[ 2 ] , "C",-3.603000f,0.728000f,2.285000f);
@@ -3024,6 +3132,7 @@ Fragment GetFragment(gchar* Name)
 	{
 		F.NAtoms = 240;
 		F.Atoms  = g_malloc(F.NAtoms*sizeof(Atom));
+		sprintf(T,"GC240");
 		SetAtom(&F.Atoms[ 0 ] , "C",-2.281342f,4.587967f,4.598389f);
 		SetAtom(&F.Atoms[ 1 ] , "C",-2.163620f,5.608307f,3.610657f);
 		SetAtom(&F.Atoms[ 2 ] , "C",-3.035400f,5.630814f,2.448380f);
@@ -3269,6 +3378,7 @@ Fragment GetFragment(gchar* Name)
 		F.angleAtom    =3;
 	}
 	CenterFrag(&F);
+	if(!strcmp(T,"UNK"))
 	for(i=0;i<(gint)strlen(Name);i++)
 		T[i] = toupper(Name[i]);
 	if(strlen(Name)>0)
@@ -3279,6 +3389,7 @@ Fragment GetFragment(gchar* Name)
 	}
 	else
 		SetResidue(&F,"UNK");
+	SetMMTypes(&F);
 	return F;
 }
 /*****************************************************************/

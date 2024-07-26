@@ -169,6 +169,7 @@ static void loadOneFragment(PersonalFragments* personnalFragments, FILE* file,
 	gchar dump1[BSIZE];
 	gchar dump2[BSIZE];
 	gchar dump3[BSIZE];
+	gchar dump4[BSIZE];
 
 	f.NAtoms = 0;
 	f.Atoms = NULL;
@@ -190,8 +191,8 @@ static void loadOneFragment(PersonalFragments* personnalFragments, FILE* file,
 		sprintf(dump1,"DUM");
 		sprintf(dump2,"X");
 		sprintf(dump3,"X");
-		sscanf(list[i+1],"%s %s %s %lf %lf %lf %lf",
-			dump1,dump2,dump3,
+		sscanf(list[i+1],"%s %s %s %s %lf %lf %lf %lf",
+			dump1,dump2,dump3,dump4,
 			&f.Atoms[i].Coord[0],
 			&f.Atoms[i].Coord[1],
 			&f.Atoms[i].Coord[2],
@@ -199,12 +200,14 @@ static void loadOneFragment(PersonalFragments* personnalFragments, FILE* file,
 				);
 		f.Atoms[i].Residue = g_strdup(dump1);
 		f.Atoms[i].Symb = g_strdup(dump2);
-		f.Atoms[i].Type = g_strdup(dump3);
+		f.Atoms[i].pdbType = g_strdup(dump3);
+		f.Atoms[i].mmType = g_strdup(dump3);
 		/*
 		printf("%s %s %s %f %f %f %f\n",
 				f.Atoms[i].Residue,
 				f.Atoms[i].Symb,
-				f.Atoms[i].Type,
+				f.Atoms[i].pdbType,
+				f.Atoms[i].mmType,
 				f.Atoms[i].Coord[0],
 				f.Atoms[i].Coord[1],
 				f.Atoms[i].Coord[2],

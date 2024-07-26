@@ -28,6 +28,7 @@ struct _PersonalFragments
 };
 /************************************/
 void addGroupesToMenu();
+gint getNumberOfGroups();
 void addFragmentsToMenu();
 void newGroupeDlg(gpointer data, guint Operation,GtkWidget* wid);
 void deleteGroupeDlg(gpointer data, guint Operation,GtkWidget* wid);

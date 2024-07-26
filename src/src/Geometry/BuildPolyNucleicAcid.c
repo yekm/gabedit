@@ -40,6 +40,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/RotFragments.h"
 #include "../Geometry/MenuToolBarGeom.h"
 #include "../Utils/Matrix3D.h"
+#include "../MolecularMechanics/PDBTemplate.h"
 
 void dessine();
 void define_good_factor();
@@ -294,10 +295,11 @@ static void deleteLastAtom()
 	Ddef = FALSE;
 }
 /********************************************************************************/
-static void addAtom(gdouble c[],gchar *symb, gchar* type, gchar* residue,
+static void addAtom(gdouble c[],gchar *symb, gchar* pdbtype, gchar* residue,
 		gdouble charge, gint fragmentNumber)
 {
 	gint j;
+	gchar* mmType;
 
 	if(Nb>0)
 		G = g_realloc(G,(Nb+1)*sizeof(GeomDef));
@@ -311,7 +313,15 @@ static void addAtom(gdouble c[],gchar *symb, gchar* type, gchar* residue,
 	G[j].Y=c[1];
 	G[j].Z=c[2];
 	G[j].Charge=charge;
-	G[j].Type=g_strdup(type);
+	G[j].pdbType=g_strdup(pdbtype);
+	mmType = getMMTypeFromPDBTpl(residue,pdbtype,&charge);
+	if(!strcmp(mmType,"UNK"))
+	{
+		g_free(mmType);
+		G[j].mmType=g_strdup(pdbtype);
+	}
+	else G[j].mmType=mmType;
+
 	G[j].Residue=g_strdup(residue);
 	G[j].ResidueNumber=fragmentNumber;
 
@@ -340,7 +350,8 @@ static void addFragment(Fragment Frag)
 		G[j].Y=Frag.Atoms[i].Coord[1];
 		G[j].Z=Frag.Atoms[i].Coord[2];
 		G[j].Charge=Frag.Atoms[i].Charge;
-		G[j].Type=g_strdup(Frag.Atoms[i].Type);
+		G[j].mmType=g_strdup(Frag.Atoms[i].mmType);
+		G[j].pdbType=g_strdup(Frag.Atoms[i].pdbType);
 		G[j].Residue=g_strdup(Frag.Atoms[i].Residue);
 		G[j].ResidueNumber=lastFrag+1;
 
@@ -389,12 +400,14 @@ static void setTorsionAngles( gint fragNumber, gboolean sense )
 	gint sugarIndex = -1;
 	gdouble sugarPucker = 20.0;
 
+
+	/* Name = G[ i ].pdbType;*/
 	for ( i = 0; i < Nb; i++ )
 	{
 		if(G[i].ResidueNumber != fragNumber) 
 			continue;
 
-		Name = G[ i ].Type;
+		Name = G[ i ].pdbType;
 		number = i;
 
 		if ( ( strstr(Name,"'" ) != NULL ) || ( strstr(Name, "T" ) != NULL ) ||
@@ -555,9 +568,9 @@ static void setTorsionAngles( gint fragNumber, gboolean sense )
 				C4 = i;
 		}
 	}
-	if(O4P !=1 &&  C1P != -1 && C2P != -1 && C3P !=-1)
+	if(O4P != -1 &&  C1P != -1 && C2P != -1 && C3P !=-1)
 		SetTorsion( Nb,G,O4P, C1P, C2P, C3P, 0, nu1Array, nu1ArrayCounter );
-	if(C1P !=1 &&  C2P != -1 && C3P != -1 && C4P !=-1)
+	if(C1P != -1 &&  C2P != -1 && C3P != -1 && C4P !=-1)
 		SetTorsion( Nb,G,C1P, C2P, C3P, C4P, 0, nu2Array, nu2ArrayCounter );
 
 	setCoord(C1PAtom,C1P);
@@ -751,26 +764,20 @@ static void fixBackbone( gint previousFragNumber, gint currentFragNumber )
 
 	for( i = 0; i < Nb; i++ )
 	{
-		if(previousFragNumber != G[i].ResidueNumber)
-			continue;
-		Name = G[i].Type;
+		if(previousFragNumber != G[i].ResidueNumber) continue;
+		Name = G[i].pdbType;
 
-		if ( !strcmp(Name, "O3'" ) )
-			O3P = i;
+		if ( !strcmp(Name, "O3'" ) ) O3P = i;
 	}
 	for( i = 0; i < Nb; i++ )
 	{
 		if(currentFragNumber != G[i].ResidueNumber)
 			continue;
-		Name = G[i].Type;
-		if ( !strcmp(Name, "O1P" ) )
-			O1P = i;
-		else if ( !strcmp(Name, "O2P" ) )
-			O2P = i;
-		else if ( !strcmp(Name, "P" ) )
-			P = i;
-		else if ( !strcmp(Name, "O5'" ) )
-			O5P = i;
+		Name = G[i].pdbType;
+		if ( !strcmp(Name, "O1P" ) ) O1P = i;
+		else if ( !strcmp(Name, "O2P" ) ) O2P = i;
+		else if ( !strcmp(Name, "P" ) ) P = i;
+		else if ( !strcmp(Name, "O5'" ) ) O5P = i;
 	}
 	if ( ( O3P == -1 ) || ( O1P == -1 ) || ( O2P == -1 ) || ( P == -1 ) ||
 		( O5P == -1 ) )
@@ -804,7 +811,7 @@ static void addCounterIons(gint fragNumber )
 		if(fragNumber != G[i].ResidueNumber)
 			continue;
 		ifrag = i;
-		Name = G[i].Type;
+		Name = G[i].pdbType;
 		if ( !strcmp(Name, "P" ) )
 			P = i;
 		else if (  !strcmp(Name, "O5'" ) )
@@ -863,9 +870,11 @@ static void defineGeometryToDraw()
 		geometry0[n].Z = G[i].Z;
 		geometry0[n].Charge = G[i].Charge;
 		geometry0[n].Prop = prop_atom_get(G[i].Prop.symbol);
-		geometry0[n].Type = g_strdup(G[i].Type);
+		geometry0[n].mmType = g_strdup(G[i].mmType);
+		geometry0[n].pdbType = g_strdup(G[i].pdbType);
 		geometry0[n].Residue = g_strdup(G[i].Residue);
 		geometry0[n].ResidueNumber = G[i].ResidueNumber;
+		geometry0[n].show = TRUE;
 		geometry0[n].Layer = HIGH_LAYER;
 		geometry0[n].Variable = FALSE;
 
@@ -876,9 +885,11 @@ static void defineGeometryToDraw()
 		geometry[n].Z = G[i].Z;
 		geometry[n].Charge = G[i].Charge;
 		geometry[n].Prop = prop_atom_get(G[i].Prop.symbol);
-		geometry[n].Type = g_strdup(geometry0[n].Type);
+		geometry[n].mmType = g_strdup(geometry0[n].mmType);
+		geometry[n].pdbType = g_strdup(geometry0[n].pdbType);
 		geometry[n].Residue = g_strdup(geometry0[n].Residue);
 		geometry[n].ResidueNumber = geometry0[n].ResidueNumber;
+		geometry[n].show = geometry0[n].show;
 		geometry[n].N = n+1;
 		geometry[n].Layer = HIGH_LAYER;
 		geometry[n].Variable = FALSE;
@@ -999,7 +1010,7 @@ static gboolean cap(gboolean fiveToThree, gboolean doubleStranded, gboolean five
 			if(firstFrag != G[i].ResidueNumber)
 				continue;
 			ifrag = i;
-			name = G[i].Type;
+			name = G[i].pdbType;
 			if ( !strcmp(name,"P" ) )
 				P = i;
 			else if ( !strcmp(name, "O1P" ) )
@@ -1079,7 +1090,7 @@ static gboolean cap(gboolean fiveToThree, gboolean doubleStranded, gboolean five
 			if(secondFrag != G[i].ResidueNumber)
 				continue;
 			ifrag = i;
-			name = G[i].Type;
+			name = G[i].pdbType;
 			if ( !strcmp(name, "C3'" ) )
 				C3P = i;
 			else if ( !strcmp(name, "O3'" ) )
@@ -1244,7 +1255,7 @@ static void makeBasepair( gchar* sense, gchar* anti, gdouble senseAngle, gdouble
 	sFragC1P[ 1 ] = sTmp[0][1];
 	for ( i = 0; i < sNAtoms; i++ )
 	{
-		gchar* Name = sFrag.Atoms[ i ].Type;
+		gchar* Name = sFrag.Atoms[ i ].pdbType;
 		if ( !strcmp(Name, "C1'" ) )
 		{
 			sFragC1P[ 0 ] = sTmp[i][0];
@@ -1256,7 +1267,7 @@ static void makeBasepair( gchar* sense, gchar* anti, gdouble senseAngle, gdouble
 	aFragC1P[ 1 ] = aTmp[0][1];
 	for ( i = 0; i < aNAtoms; i++ )
 	{
-		gchar* Name = aFrag.Atoms[ i ].Type;
+		gchar* Name = aFrag.Atoms[ i ].pdbType;
 		if ( !strcmp(Name, "C1'" ) )
 		{
 			aFragC1P[ 0 ] = aTmp[i][0];
@@ -1348,27 +1359,26 @@ static void makeBasepair( gchar* sense, gchar* anti, gdouble senseAngle, gdouble
 		lastFrag++;
 		addFragment(aFrag );
 		setTorsionAngles(  lastFrag+1, FALSE );
-		if ( GTK_TOGGLE_BUTTON (buttonCounterIon)->active )
-				addCounterIons(lastFrag+1 );
+		if ( GTK_TOGGLE_BUTTON (buttonCounterIon)->active ) addCounterIons(lastFrag+1 );
 		if ( lastSenseFrag != -1 )
 		{
-			int fragmentDistance = abs( lastFrag+1 - lastSenseFrag );
-			if ( fragmentDistance == 1 )
+			int fragmentDistance = abs( lastFrag - lastSenseFrag );
+			if ( fragmentDistance == 2 )
 			{
 				if ( zform )
 				{
-					fixBackbone( lastFrag+1, lastSenseFrag );
+					fixBackbone( lastFrag, lastSenseFrag );
 				}
 				else
 				{
-					fixBackbone( lastSenseFrag, lastFrag+1 );
+					fixBackbone( lastSenseFrag, lastFrag );
 				}
 			}
 		}
 		if ( lastAntiFrag != -1 )
 		{
 			gint fragmentDistance = abs( lastFrag+1 - lastAntiFrag );
-			if ( fragmentDistance == 1 )
+			if ( fragmentDistance == 2 )
 			{
 				if ( zform )
 				{
@@ -1380,8 +1390,8 @@ static void makeBasepair( gchar* sense, gchar* anti, gdouble senseAngle, gdouble
 				}
 			}
 		}
-		lastSenseFrag++;
-		lastAntiFrag++;
+		 lastSenseFrag = lastFrag;
+		 lastAntiFrag = lastFrag+1;
 	}
 	lastFrag++;
 	if ( oddBasepair )
@@ -2029,18 +2039,17 @@ static void initVariables()
 	capped5End = FALSE;
 	if(Nb>0)
 	{
-		printf("Nb = %d\n",Nb);
 		gint i;
                 for (i=0;i<Nb;i++)
 		{
 			g_free(G[i].Prop.name);
 			g_free(G[i].Prop.symbol);
-			g_free(G[i].Type);
+			g_free(G[i].mmType);
+			g_free(G[i].pdbType);
 			g_free(G[i].Residue);
 		}
 
 		if(G) g_free(G);
-		printf("End freeG\n");
 	}
 	Nb=0;
 	G = NULL;

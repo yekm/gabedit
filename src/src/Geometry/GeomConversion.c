@@ -47,7 +47,8 @@ DEALINGS IN THE SOFTWARE.
 typedef struct _GXYZ
 {
  gchar *Symb;
- gchar *Type;
+ gchar *mmType;
+ gchar *pdbType;
  gchar *Residue;
  gchar *Layer;
  gchar *Charge;
@@ -67,8 +68,10 @@ void free_gxyz()
 	{
 		if(gxyz[i].Symb)
 			g_free(gxyz[i].Symb);
-		if(gxyz[i].Type)
-			g_free(gxyz[i].Type);
+		if(gxyz[i].mmType)
+			g_free(gxyz[i].mmType);
+		if(gxyz[i].pdbType)
+			g_free(gxyz[i].pdbType);
 		if(gxyz[i].Residue)
 			g_free(gxyz[i].Residue);
 		if(gxyz[i].Charge)
@@ -112,7 +115,8 @@ gboolean set_gxyz()
 		A = get_coord_xyz_float(i);
 		gxyz[i].P = A;
 		gxyz[i].Symb = g_strdup(GeomXYZ[i].Symb);
-		gxyz[i].Type = g_strdup(GeomXYZ[i].Type);
+		gxyz[i].mmType = g_strdup(GeomXYZ[i].mmType);
+		gxyz[i].pdbType = g_strdup(GeomXYZ[i].pdbType);
 		gxyz[i].Residue = g_strdup(GeomXYZ[i].Residue);
 		gxyz[i].Layer = g_strdup(GeomXYZ[i].Layer);
 		gxyz[i].Charge = g_strdup(GeomXYZ[i].Charge);
@@ -313,7 +317,8 @@ void insert_dummy_atom_gxyz(gint after,Point P)
 		gxyz[i] = gxyz[i-1];
 	}
 	gxyz[after].Symb = g_strdup("X");
-	gxyz[after].Type = g_strdup("X");
+	gxyz[after].mmType = g_strdup("X");
+	gxyz[after].pdbType = g_strdup("X");
 	gxyz[after].Residue = g_strdup("DUM");
 	gxyz[after].Layer = g_strdup(" ");
 	gxyz[after].Charge = g_strdup("0.0");
@@ -401,8 +406,10 @@ void delete_dummy_atoms()
 			ndummy++;
 			if(GeomXYZ[i].Symb)
 				g_free(GeomXYZ[i].Symb);
-			if(GeomXYZ[i].Type)
-				g_free(GeomXYZ[i].Type);
+			if(GeomXYZ[i].mmType)
+				g_free(GeomXYZ[i].mmType);
+			if(GeomXYZ[i].pdbType)
+				g_free(GeomXYZ[i].pdbType);
 			if(GeomXYZ[i].Layer)
 				g_free(GeomXYZ[i].Layer);
 			if(GeomXYZ[i].X)
@@ -444,7 +451,8 @@ gboolean zmat_to_xyz()
   {
   GeomXYZtemp[i].Nentry = NUMBER_LIST_XYZ;
   GeomXYZtemp[i].Symb = NULL;
-  GeomXYZtemp[i].Type = NULL;
+  GeomXYZtemp[i].mmType = NULL;
+  GeomXYZtemp[i].pdbType = NULL;
   GeomXYZtemp[i].Residue = NULL;
   GeomXYZtemp[i].X = NULL; 
   GeomXYZtemp[i].Y = NULL; 
@@ -456,7 +464,8 @@ gboolean zmat_to_xyz()
   /* Atom #1 */
   GeomXYZtemp[0].Nentry = NUMBER_LIST_XYZ;
   GeomXYZtemp[0].Symb = g_strdup(Geom[0].Symb);
-  GeomXYZtemp[0].Type = g_strdup(Geom[0].Type);
+  GeomXYZtemp[0].mmType = g_strdup(Geom[0].mmType);
+  GeomXYZtemp[0].pdbType = g_strdup(Geom[0].pdbType);
   GeomXYZtemp[0].Residue = g_strdup(Geom[0].Residue);
   GeomXYZtemp[0].X = g_strdup("0.0");
   GeomXYZtemp[0].Y =  g_strdup("0.0"); 
@@ -476,7 +485,8 @@ gboolean zmat_to_xyz()
   /* Atom #2 */
   GeomXYZtemp[1].Nentry = NUMBER_LIST_XYZ;
   GeomXYZtemp[1].Symb = g_strdup(Geom[1].Symb);
-  GeomXYZtemp[1].Type = g_strdup(Geom[1].Type);
+  GeomXYZtemp[1].mmType = g_strdup(Geom[1].mmType);
+  GeomXYZtemp[1].pdbType = g_strdup(Geom[1].pdbType);
   GeomXYZtemp[1].Residue = g_strdup(Geom[1].Residue);
   GeomXYZtemp[1].Charge = g_strdup(Geom[1].Charge);
   if(!test(Geom[1].R))
@@ -502,7 +512,8 @@ gboolean zmat_to_xyz()
   /* Atom #3 */
   GeomXYZtemp[2].Nentry = NUMBER_LIST_XYZ;
   GeomXYZtemp[2].Symb = g_strdup(Geom[2].Symb);
-  GeomXYZtemp[2].Type = g_strdup(Geom[2].Type);
+  GeomXYZtemp[2].mmType = g_strdup(Geom[2].mmType);
+  GeomXYZtemp[2].pdbType = g_strdup(Geom[2].pdbType);
   GeomXYZtemp[2].Residue = g_strdup(Geom[2].Residue);
   GeomXYZtemp[2].Charge = g_strdup(Geom[2].Charge);
   if(!test(Geom[2].R))
@@ -677,7 +688,8 @@ gboolean zmat_to_xyz()
   {
   	GeomXYZtemp[i].Nentry = NUMBER_LIST_XYZ;
 	GeomXYZtemp[i].Symb = g_strdup(Geom[i].Symb);
-	GeomXYZtemp[i].Type = g_strdup(Geom[i].Type);
+	GeomXYZtemp[i].mmType = g_strdup(Geom[i].mmType);
+	GeomXYZtemp[i].pdbType = g_strdup(Geom[i].pdbType);
 	GeomXYZtemp[i].Residue = g_strdup(Geom[i].Residue);
 	GeomXYZtemp[i].Charge = g_strdup(Geom[i].Charge);
 	GeomXYZtemp[i].Layer = g_strdup(Geom[i].Layer);
@@ -739,7 +751,8 @@ gboolean xyz_to_zmat()
   {
   Geomtemp[i].Nentry = NUMBER_LIST_ZMATRIX;
   Geomtemp[i].Symb = NULL;
-  Geomtemp[i].Type = NULL;
+  Geomtemp[i].mmType = NULL;
+  Geomtemp[i].pdbType = NULL;
   Geomtemp[i].Residue = NULL;
   Geomtemp[i].R = NULL; 
   Geomtemp[i].NR = NULL; 
@@ -754,7 +767,8 @@ gboolean xyz_to_zmat()
   /* Atom #1 */
   Geomtemp[0].Nentry = NUMBER_ENTRY_0;
   Geomtemp[0].Symb = g_strdup(gxyz[0].Symb);
-  Geomtemp[0].Type = g_strdup(gxyz[0].Type);
+  Geomtemp[0].mmType = g_strdup(gxyz[0].mmType);
+  Geomtemp[0].pdbType = g_strdup(gxyz[0].pdbType);
   Geomtemp[0].Residue = g_strdup(gxyz[0].Residue);
   Geomtemp[0].Charge = g_strdup(gxyz[0].Charge);
   Geomtemp[0].Layer = g_strdup(gxyz[0].Layer);
@@ -775,7 +789,8 @@ gboolean xyz_to_zmat()
   /* Atom #2 */
   Geomtemp[1].Nentry =  NUMBER_ENTRY_R;
   Geomtemp[1].Symb = g_strdup(gxyz[1].Symb);
-  Geomtemp[1].Type = g_strdup(gxyz[1].Type);
+  Geomtemp[1].mmType = g_strdup(gxyz[1].mmType);
+  Geomtemp[1].pdbType = g_strdup(gxyz[1].pdbType);
   Geomtemp[1].Residue = g_strdup(gxyz[1].Residue);
   Geomtemp[1].Charge = g_strdup(gxyz[1].Charge);
   Geomtemp[1].Layer = g_strdup(gxyz[1].Layer);
@@ -800,7 +815,8 @@ gboolean xyz_to_zmat()
   /* Atom #3 */
   Geomtemp[2].Nentry =  NUMBER_ENTRY_ANGLE;
   Geomtemp[2].Symb = g_strdup(gxyz[2].Symb);
-  Geomtemp[2].Type = g_strdup(gxyz[2].Type);
+  Geomtemp[2].mmType = g_strdup(gxyz[2].mmType);
+  Geomtemp[2].pdbType = g_strdup(gxyz[2].pdbType);
   Geomtemp[2].Residue = g_strdup(gxyz[2].Residue);
   Geomtemp[2].Charge = g_strdup(gxyz[2].Charge);
   Geomtemp[2].Layer = g_strdup(gxyz[2].Layer);
@@ -827,7 +843,8 @@ gboolean xyz_to_zmat()
   {   
   Geomtemp[i].Nentry =  NUMBER_ENTRY_DIHEDRAL;
   Geomtemp[i].Symb = g_strdup(gxyz[i].Symb);
-  Geomtemp[i].Type = g_strdup(gxyz[i].Type);
+  Geomtemp[i].mmType = g_strdup(gxyz[i].mmType);
+  Geomtemp[i].pdbType = g_strdup(gxyz[i].pdbType);
   Geomtemp[i].Residue = g_strdup(gxyz[i].Residue);
   Geomtemp[i].Charge = g_strdup(gxyz[i].Charge);
   Geomtemp[i].Layer = g_strdup(gxyz[i].Layer);

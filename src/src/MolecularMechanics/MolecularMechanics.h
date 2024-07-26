@@ -130,7 +130,7 @@ void saveAmberParameters();
 AmberParameters* getPointerAmberParameters();
 void setPointerAmberParameters(AmberParameters* ptr);
 AmberParameters newAmberParameters();
-gchar** getListTypes(gint* nlist);
+gchar** getListMMTypes(gint* nlist);
 
 #endif /* __GABEDIT_MOLECULARMECHANICS_H__ */
 

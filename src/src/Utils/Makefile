@@ -1,4 +1,4 @@
-OBJECTS = GabeditTextEdit.o AtomsProp.o Jacobi.o Transformation.o Utils.o UtilsInterface.o Vector3d.o Matrix3D.o HydrogenBond.o PovrayUtils.o UtilsGL.o ConvUtils.o
+OBJECTS = GabeditTextEdit.o AtomsProp.o Jacobi.o Transformation.o Utils.o UtilsInterface.o Vector3d.o Matrix3D.o HydrogenBond.o PovrayUtils.o UtilsGL.o ConvUtils.o GabeditXYPlot.o
 
 include ../../CONFIG
 CFLAGS =  -Wall -O2 $(GTKCFLAGS) $(OGLCFLAGS)
@@ -11,7 +11,7 @@ all: compiling
 compiling: $(OBJECTS)
 
 clean:
-	@$(REMOVEFILE) *.chk p *o gabedit *.com *.out *.log *.test test* *.cpp  *old *.ps
+	@$(REMOVEFILE) *.chk p *o gabedit *.com *.out *.log *.test test* *.cpp  *old *.ps .*swp *~ 
 
 include Dep.mk
 #make dependance

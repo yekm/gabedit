@@ -19,7 +19,9 @@ DEALINGS IN THE SOFTWARE.
 #ifndef __GABEDIT_GINTERFACEROUTE_H__
 #define __GABEDIT_GINTERFACEROUTE_H__
 
-void GAjoutePageRoute(GtkWidget *,GtkWidget *Wins);
+void GetChargesAndMultiplicitiesFromMain( );
+void GAjoutePageRouteMain(GtkWidget *,GtkWidget *Wins);
+void GAjoutePageRouteOptions(GtkWidget *,GtkWidget *Wins);
 
 #endif /* __GABEDIT_GINTERFACEROUTE_H__ */
 

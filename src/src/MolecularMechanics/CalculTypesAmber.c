@@ -25,12 +25,14 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/Global.h"
 #include "../Geometry/Fragments.h"
 #include "../Geometry/DrawGeom.h"
+#include "../Geometry/Fragments.h"
 #include "../Utils/Transformation.h"
 #include "../Utils/Constantes.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Vector3d.h"
 #include "../Utils/HydrogenBond.h"
+#include "../Utils/AtomsProp.h"
 #include "../MolecularMechanics/CalculTypesAmber.h"
 /**********************************************************************************************************/
 typedef enum
@@ -349,6 +351,15 @@ static gboolean atomInRing(Molecule* m, gint numAtom, gint ringSize)
 	return inRingRecursive( m, numAtom,  numAtom, ringSize, TRUE);
 }
 /************************************************************************/
+static gboolean allCarbon(Molecule* m)
+{
+	GeomDef* geom = m->geom;
+	gint i;
+	for(i=0;i<m->numberOfAtoms;i++)
+		if(inStack[i] && strcmp(geom[i].Prop.symbol,"C" )) return FALSE;
+	return TRUE;
+}
+/************************************************************************/
 static gchar* subString(gchar* str, gint begin, gint end)
 {
 	gchar* res = NULL;
@@ -596,10 +607,10 @@ static gchar* getAmberTypeOfAtom(Molecule* m, gint atomNumber)
 	/*printf("Atom number = %d symbol = %s\n",atomNumber, geom[atomNumber].Prop.symbol);*/
 	if ( !strcmp(geom[atomNumber].Prop.symbol,"H" ))
 	{
-		if (  isConnectedTo( m, atomNumber, "N(*4)", TRUE ) ) return "H3";
-		else if (  isConnectedTo( m, atomNumber, "N(H)(C(N(H2)))", TRUE ) ) return "H3";
+		if (  isConnectedTo( m, atomNumber, "N(*4)", TRUE ) ) return "H";
+		else if (  isConnectedTo( m, atomNumber, "N(H)(C(N(H2)))", TRUE ) ) return "H";
 		else if ( (  isConnectedTo( m, atomNumber, "N(C(N2))", TRUE ) ) &&
-			 isConnectedTo( m, atomNumber, "N(C(N(H2))(N(H2)))", TRUE ) ) return "H3";
+			 isConnectedTo( m, atomNumber, "N(C(N(H2))(N(H2)))", TRUE ) ) return "H";
 		else if (  isConnectedTo( m, atomNumber, "C", TRUE ) ) 
 		{
 			gint numberOfConnections = m->connected[ atomNumber ][ 0 ];
@@ -608,7 +619,16 @@ static gchar* getAmberTypeOfAtom(Molecule* m, gint atomNumber)
 			{
 				gint newAtom = m->connected[atomNumber][i];
 				if(!strcmp(geom[newAtom].Prop.symbol,"C" ))
-					if(atomInRing( m, newAtom, 6 )) return "HA";
+				{
+					/* printf("atom = %d sym = %s\n", newAtom,geom[newAtom].Prop.symbol);*/
+					if(atomInRing( m, newAtom, 6 ) && allCarbon(m)) return "HA";
+					else if (  isConnectedTo( m, newAtom, "N2", TRUE ) ) return "H5";
+					else if (  isConnectedTo( m, newAtom, "N(C)", TRUE ) ) return "H4";
+					else if (  isConnectedTo( m, newAtom, "N(H3)", TRUE ) ) return "HP";
+					else if (  isConnectedTo( m, newAtom, "N(*)", TRUE ) ) return "H1";
+					else if (  isConnectedTo( m, newAtom, "S", TRUE ) ) return "H1";
+					else if (  isConnectedTo( m, newAtom, "O", TRUE ) ) return "H1";
+				}
 			}
 			return "HC";
 		}
@@ -642,7 +662,7 @@ static gchar* getAmberTypeOfAtom(Molecule* m, gint atomNumber)
 							return "CK";
 				else if (  isConnectedTo( m, atomNumber,"(N2)(H)", TRUE ) ) return "CR";
 				else if (  isConnectedTo( m, atomNumber,"(C(H2))(N)", TRUE ) ) return "CC";
-				else if (  isConnectedTo( m, atomNumber,"C(H2)", TRUE ) ) return "C4";
+				else if (  isConnectedTo( m, atomNumber,"C(H2)", TRUE ) ) return "C*";
 				else if (  isConnectedTo( m, atomNumber,"N(~*)(*)", TRUE ) ) return "CW";
 				else if (  isConnectedTo( m, atomNumber,"N", TRUE ) ) return "CV";
 				else return "CT";
@@ -660,16 +680,25 @@ static gchar* getAmberTypeOfAtom(Molecule* m, gint atomNumber)
 			else if (  isConnectedTo( m, atomNumber, "(~O2)", TRUE ) ) return "C";
 			else if (  isConnectedTo( m, atomNumber, "=O", TRUE ) ) return "C";
 			else if (  isConnectedTo( m, atomNumber, "(=C)(-S)", TRUE ) ) return "CY";
-			else if (  isConnectedTo( m, atomNumber, "(=C)", TRUE ) ) return "CX";
+			/*else if (  isConnectedTo( m, atomNumber, "(=C)", TRUE ) ) return "CX";*/
 			else if (  isConnectedTo( m, atomNumber, "(N3)", TRUE ) ) return "CA";
 			else return "CT";
 		}
 		else if ( sp(m, atomNumber ) == 3 )
 		{
 			if (  isConnectedTo( m, atomNumber, "(N3)", TRUE ) ) return "CA";
+			else if (  isConnectedTo( m, atomNumber, "=O", TRUE ) ) return "C";
+			else if (  isConnectedTo( m, atomNumber, "(=C)(-S)", TRUE ) ) return "CY";
+			/* else if (  isConnectedTo( m, atomNumber, "(=C)", TRUE ) ) return "CT";*/
 			else return "CT";
 		}
-		else return "CT";
+		else { 
+			if (  isConnectedTo( m, atomNumber, "(N3)", TRUE ) ) return "CA";
+			else if (  isConnectedTo( m, atomNumber, "=O", TRUE ) ) return "C";
+			else if (  isConnectedTo( m, atomNumber, "(=C)(-S)", TRUE ) ) return "CY";
+			/* else if (  isConnectedTo( m, atomNumber, "(=C)", TRUE ) ) return "CX";*/
+			else return "CT";
+		}
 	}
 	else if ( !strcmp(geom[atomNumber].Prop.symbol,"N" ) )
 	{
@@ -678,8 +707,8 @@ static gchar* getAmberTypeOfAtom(Molecule* m, gint atomNumber)
 			if ( atomInRing( m, atomNumber, 5 ) )
 			{
 				if ( (  isConnectedTo( m, atomNumber, "(C3)", TRUE ) ) && 
-				     (  isConnectedTo( m, atomNumber, "(C)(C(=*))(C(=*))", TRUE ) ) ) return "N4";
-				else if (  isConnectedTo( m, atomNumber, "(C3)", TRUE ) ) return "N4";
+				     (  isConnectedTo( m, atomNumber, "(C)(C(=*))(C(=*))", TRUE ) ) ) return "N*";
+				else if (  isConnectedTo( m, atomNumber, "(C3)", TRUE ) ) return "N*";
 				else if (  isConnectedTo( m, atomNumber, "Fe", TRUE ) ) return "NA";
 				else if (  isConnectedTo( m, atomNumber, "H", TRUE ) ) return "NA";
 				else return "NB";
@@ -690,7 +719,7 @@ static gchar* getAmberTypeOfAtom(Molecule* m, gint atomNumber)
 				else if ( (  isConnectedTo( m, atomNumber, "(H)(C2)", TRUE ) ) 
 					&& (  isConnectedTo( m, atomNumber, "(H)(C(=O))(C(=O))", TRUE ) ) ) return "NA";
 				else if (  isConnectedTo( m, atomNumber, "(H)(C(=O))(C(=N))", TRUE ) ) return "NA";
-				else if (  isConnectedTo( m, atomNumber, "(C3)", TRUE ) ) return "N4";
+				else if (  isConnectedTo( m, atomNumber, "(C3)", TRUE ) ) return "N*";
 				else return "NC";
 			}
 			else if (  isConnectedTo( m, atomNumber, "-C(=O)", TRUE ) ) 
@@ -812,9 +841,59 @@ void calculTypesAmber(GeomDef* geom, gint nAtoms)
 		if (  isConnectedTo( &m, i, "C", TRUE ) ) printf("atom number %d  have %s type \n",i+1,"HC");
 		*/
 
-		if(geom[i].Type) g_free(geom[i].Type);
-		geom[i].Type = g_strdup(getAmberTypeOfAtom(&m, i));
+		if(geom[i].mmType) g_free(geom[i].mmType);
+		geom[i].mmType = g_strdup(getAmberTypeOfAtom(&m, i));
 	}
 	freeMolecule(&m);
 }
 /**********************************************************************************************************/
+static GeomDef* getMyGeomFromFrag(Fragment* F)
+{
+	GeomDef* geom = NULL;
+	gint i;
+	if(F->NAtoms<=0) return NULL;
+
+	geom  = g_malloc(F->NAtoms*sizeof(GeomDef)); 
+
+	for(i=0;i<F->NAtoms;i++)
+		geom[i].Prop = prop_atom_get(F->Atoms[i].Symb);
+
+	for(i=0;i<F->NAtoms;i++)
+	{
+		geom[i].X = F->Atoms[i].Coord[0];
+		geom[i].Y = F->Atoms[i].Coord[1];
+		geom[i].Z = F->Atoms[i].Coord[2];
+		geom[i].Prop = prop_atom_get(F->Atoms[i].Symb);
+		geom[i].mmType =g_strdup(F->Atoms[i].mmType);
+		geom[i].pdbType =g_strdup(F->Atoms[i].pdbType);
+		geom[i].Layer = HIGH_LAYER;
+		geom[i].Variable = FALSE;
+		geom[i].Residue =g_strdup(F->Atoms[i].Residue);
+		geom[i].ResidueNumber= 0;
+		geom[i].show= TRUE;
+		geom[i].Charge = F->Atoms[i].Charge;
+		geom[i].N = i+1;
+	}
+	return geom;
+}
+/**********************************************************************************************************/
+void calculTypesAmberForAFragment(Fragment* F)
+{
+	gint i;
+	Molecule m;
+	GeomDef* geom = NULL;
+	if(F->NAtoms<1) return;
+	geom = getMyGeomFromFrag(F);
+	if(!geom) return;
+	m = getMyMolecule(geom, F->NAtoms);
+	for(i=0;i<F->NAtoms;i++)
+	{
+ 
+		/*
+		*/
+		if(F->Atoms[i].mmType) g_free(F->Atoms[i].mmType);
+		F->Atoms[i].mmType = g_strdup(getAmberTypeOfAtom(&m, i));
+	}
+	Free_One_Geom(geom,F->NAtoms);
+	freeMolecule(&m);
+}

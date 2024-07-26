@@ -27,6 +27,7 @@ AnimationGeomConv.o: ../Files/FileChooser.h ../Geometry/GeomGlobal.h
 AnimationGeomConv.o: ../Files/FolderChooser.h ../Files/GabeditFolderChooser.h
 AnimationGeomConv.o: ../Common/Help.h ../Common/StockIcons.h
 AnimationGeomConv.o: ../OpenGL/PovrayGL.h ../OpenGL/Images.h
+AnimationGeomConv.o: ../OpenGL/UtilsOrb.h ../../pixmaps/Open.xpm
 AnimationIsoSurface.o: ../../Config.h
 AnimationIsoSurface.o: GlobalOrb.h
 AnimationIsoSurface.o: ../Files/GabeditFileChooser.h
@@ -54,21 +55,6 @@ AnimationMD.o: ../Files/FileChooser.h ../Geometry/GeomGlobal.h
 AnimationMD.o: ../Files/FolderChooser.h ../Files/GabeditFolderChooser.h
 AnimationMD.o: ../Common/Help.h ../Common/StockIcons.h ../OpenGL/PovrayGL.h
 AnimationMD.o: ../OpenGL/Images.h ../OpenGL/UtilsOrb.h ../../pixmaps/Open.xpm
-AnimationMDOld.o: ../../Config.h
-AnimationMDOld.o: GlobalOrb.h
-AnimationMDOld.o: ../Files/GabeditFileChooser.h
-AnimationMDOld.o: ../../gtkglarea/gtkglarea.h ../../gtkglarea/gdkgl.h
-AnimationMDOld.o: Grid.h IsoSurface.h
-AnimationMDOld.o: ../Common/GabeditType.h ../Utils/AtomsProp.h
-AnimationMDOld.o: ../Utils/Utils.h ../Utils/Constantes.h
-AnimationMDOld.o: ../Utils/UtilsInterface.h ../OpenGL/StatusOrb.h
-AnimationMDOld.o: ../OpenGL/GLArea.h ../OpenGL/AnimationMD.h
-AnimationMDOld.o: ../OpenGL/GeomOrbXYZ.h ../OpenGL/AtomicOrbitals.h
-AnimationMDOld.o: ../Files/FileChooser.h ../Geometry/GeomGlobal.h
-AnimationMDOld.o: ../Files/FolderChooser.h ../Files/GabeditFolderChooser.h
-AnimationMDOld.o: ../Common/Help.h ../Common/StockIcons.h
-AnimationMDOld.o: ../OpenGL/PovrayGL.h ../OpenGL/Images.h
-AnimationMDOld.o: ../OpenGL/UtilsOrb.h ../../pixmaps/Open.xpm
 AnimationPlanesMapped.o: ../../Config.h
 AnimationPlanesMapped.o: GlobalOrb.h
 AnimationPlanesMapped.o: ../Files/GabeditFileChooser.h
@@ -236,11 +222,6 @@ GridM2MSI.o: IsoSurface.h ../Common/GabeditType.h StatusOrb.h UtilsOrb.h
 GridM2MSI.o: GeomOrbXYZ.h ../Utils/Utils.h ../Utils/UtilsInterface.h
 GridM2MSI.o: ../Utils/AtomsProp.h ../Utils/Constantes.h GLArea.h
 GridM2MSI.o: AtomicOrbitals.h Orbitals.h
-GridOld.o: ../../Config.h ../Utils/Constantes.h GlobalOrb.h
-GridOld.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
-GridOld.o: ../../gtkglarea/gdkgl.h
-GridOld.o: Grid.h IsoSurface.h
-GridOld.o: ../Common/GabeditType.h StatusOrb.h ColorMap.h
 GridPlans.o: ../../Config.h
 GridPlans.o: ../OpenGL/GlobalOrb.h
 GridPlans.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
@@ -301,6 +282,7 @@ Orbitals.o: ../Common/GabeditType.h ../Utils/AtomsProp.h
 Orbitals.o: ../Utils/UtilsInterface.h ../Utils/Utils.h ../Utils/Constantes.h
 Orbitals.o: GeomDraw.h GLArea.h UtilsOrb.h Basis.h GeomOrbXYZ.h
 Orbitals.o: AtomicOrbitals.h StatusOrb.h OrbitalsGamess.h OrbitalsMolpro.h
+Orbitals.o: OrbitalsQChem.h
 OrbitalsDalton.o: ../../Config.h GlobalOrb.h
 OrbitalsDalton.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
 OrbitalsDalton.o: ../../gtkglarea/gdkgl.h
@@ -328,6 +310,15 @@ OrbitalsMolpro.o: ../Utils/UtilsInterface.h ../Utils/Utils.h
 OrbitalsMolpro.o: ../Utils/Constantes.h GeomDraw.h GLArea.h UtilsOrb.h
 OrbitalsMolpro.o: Basis.h GeomOrbXYZ.h AtomicOrbitals.h StatusOrb.h
 OrbitalsMolpro.o: Orbitals.h
+OrbitalsQChem.o: ../../Config.h GlobalOrb.h
+OrbitalsQChem.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
+OrbitalsQChem.o: ../../gtkglarea/gdkgl.h
+OrbitalsQChem.o: Grid.h
+OrbitalsQChem.o: IsoSurface.h ../Common/GabeditType.h ../Utils/AtomsProp.h
+OrbitalsQChem.o: ../Utils/UtilsInterface.h ../Utils/Utils.h
+OrbitalsQChem.o: ../Utils/Constantes.h ../Geometry/GeomGlobal.h GeomDraw.h
+OrbitalsQChem.o: GLArea.h UtilsOrb.h Basis.h GeomOrbXYZ.h AtomicOrbitals.h
+OrbitalsQChem.o: StatusOrb.h Orbitals.h
 PlanesMapped.o: ../../Config.h
 PlanesMapped.o: ../OpenGL/GlobalOrb.h
 PlanesMapped.o: ../Files/GabeditFileChooser.h
@@ -435,8 +426,8 @@ UtilsOrb.o: ../../gtkglarea/gdkgl.h
 UtilsOrb.o: Grid.h IsoSurface.h
 UtilsOrb.o: ../Common/GabeditType.h ../Utils/Vector3d.h ../OpenGL/GLArea.h
 UtilsOrb.o: ../OpenGL/Orbitals.h ../OpenGL/OrbitalsMolpro.h
-UtilsOrb.o: ../OpenGL/OrbitalsGamess.h ../OpenGL/GeomOrbXYZ.h
-UtilsOrb.o: ../OpenGL/BondsOrb.h ../OpenGL/UtilsOrb.h
+UtilsOrb.o: ../OpenGL/OrbitalsGamess.h ../OpenGL/OrbitalsQChem.h
+UtilsOrb.o: ../OpenGL/GeomOrbXYZ.h ../OpenGL/BondsOrb.h ../OpenGL/UtilsOrb.h
 UtilsOrb.o: ../OpenGL/TriangleDraw.h ../Utils/Utils.h
 UtilsOrb.o: ../Utils/UtilsInterface.h ../Utils/Constantes.h
 UtilsOrb.o: ../Common/Windows.h ../OpenGL/Vibration.h ../OpenGL/ContoursPov.h
@@ -451,9 +442,10 @@ Vibration.o: ../Utils/Constantes.h ../Utils/UtilsInterface.h
 Vibration.o: ../OpenGL/StatusOrb.h ../OpenGL/GLArea.h ../OpenGL/Vibration.h
 Vibration.o: ../OpenGL/GeomOrbXYZ.h ../OpenGL/AtomicOrbitals.h
 Vibration.o: ../Files/FileChooser.h ../Geometry/GeomGlobal.h
-Vibration.o: ../Curve/VibSpectrum.h ../Files/FolderChooser.h
-Vibration.o: ../Files/GabeditFolderChooser.h ../Common/Help.h
-Vibration.o: ../Common/StockIcons.h ../OpenGL/Images.h ../OpenGL/PovrayGL.h
+Vibration.o: ../Spectrum/IRSpectrum.h ../Spectrum/RamanSpectrum.h
+Vibration.o: ../Files/FolderChooser.h ../Files/GabeditFolderChooser.h
+Vibration.o: ../Common/Help.h ../Common/StockIcons.h ../OpenGL/Images.h
+Vibration.o: ../OpenGL/PovrayGL.h
 VibrationDraw.o: ../../Config.h ../OpenGL/GlobalOrb.h
 VibrationDraw.o: ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h
 VibrationDraw.o: ../../gtkglarea/gdkgl.h

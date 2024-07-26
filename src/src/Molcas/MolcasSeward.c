@@ -599,7 +599,8 @@ static gboolean setGeomXYZFromSXYZ(gint numberOfAtoms, gchar** symbols, gdouble*
 	{
 		GeomXYZ[i].Nentry=NUMBER_LIST_XYZ;
 		GeomXYZ[i].Symb=g_strdup(symbols[i]);
-		GeomXYZ[i].Type=g_strdup(symbols[i]);
+		GeomXYZ[i].mmType=g_strdup(symbols[i]);
+		GeomXYZ[i].pdbType=g_strdup(symbols[i]);
 		GeomXYZ[i].Residue=g_strdup(symbols[i]);
 		GeomXYZ[i].ResidueNumber=0;
 		if(Units==1)
@@ -647,7 +648,8 @@ static gboolean setGeomXYZFromMolcasMolecule()
 		sprintf(symb,"%s",molcasMolecule.symbol[molcasMolecule.listOfAtoms[i].type]);
 		GeomXYZ[i].Nentry=NUMBER_LIST_XYZ;
 		GeomXYZ[i].Symb=g_strdup(symb);
-		GeomXYZ[i].Type=g_strdup(symb);
+		GeomXYZ[i].mmType=g_strdup(symb);
+		GeomXYZ[i].pdbType=g_strdup(symb);
 		GeomXYZ[i].Residue=g_strdup(symb);
 		GeomXYZ[i].ResidueNumber=0;
 		if(Units==1)

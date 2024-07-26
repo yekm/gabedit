@@ -126,7 +126,8 @@ static void init_variables()
 		{
 			g_free(G[i].Prop.symbol);
 			g_free(G[i].Prop.name);
-			g_free(G[i].Type);
+			g_free(G[i].mmType);
+			g_free(G[i].pdbType);
 			g_free(G[i].Residue);
 		}
 
@@ -148,7 +149,8 @@ static void destroy_dlg(GtkWidget* Dlg,gpointer data)
 		{
 			g_free(G[i].Prop.symbol);
 			g_free(G[i].Prop.name);
-			g_free(G[i].Type);
+			g_free(G[i].mmType);
+			g_free(G[i].pdbType);
 			g_free(G[i].Residue);
 		}
 
@@ -184,9 +186,11 @@ static void define_geometry_to_draw()
 			geometry0[Natoms].Z = G[i].Z;
 			geometry0[Natoms].Charge = G[i].Charge;
 			geometry0[Natoms].Prop = prop_atom_get(G[i].Prop.symbol);
-			geometry0[Natoms].Type = g_strdup(G[i].Type);
+			geometry0[Natoms].mmType = g_strdup(G[i].mmType);
+			geometry0[Natoms].pdbType = g_strdup(G[i].pdbType);
 			geometry0[Natoms].Residue = g_strdup(G[i].Residue);
 			geometry0[Natoms].ResidueNumber = G[i].ResidueNumber;
+			geometry0[Natoms].show = TRUE;
 			geometry0[Natoms].N = Natoms+1;
 			geometry0[Natoms].Layer = HIGH_LAYER;
 			geometry0[Natoms].Variable = FALSE;
@@ -196,9 +200,11 @@ static void define_geometry_to_draw()
 			geometry[Natoms].Z = G[i].Z;
 			geometry[Natoms].Charge = G[i].Charge;
 			geometry[Natoms].Prop = prop_atom_get(G[i].Prop.symbol);
-			geometry[Natoms].Type = g_strdup(G[i].Type);
+			geometry[Natoms].mmType = g_strdup(G[i].mmType);
+			geometry[Natoms].pdbType = g_strdup(G[i].pdbType);
 			geometry[Natoms].Residue = g_strdup(G[i].Residue);
 			geometry[Natoms].ResidueNumber = G[i].ResidueNumber;
+			geometry[Natoms].show = TRUE;
 			geometry[Natoms].N = Natoms+1;
 			geometry[Natoms].Layer = HIGH_LAYER;
 			geometry[Natoms].Variable = FALSE;
@@ -241,7 +247,7 @@ static void fixH6BondAngles( gint previousFragNumber, gint currentFragNumber )
 	{
 		if(G[i].ResidueNumber != previousFragNumber)
 			continue;
-		if ( !strcmp(G[i].Type ,"O1" ) )
+		if ( !strcmp(G[i].pdbType ,"O1" ) )
 			LastO1 = i;
 	}
 	for( i = 0; i < Nb; i++ )
@@ -249,15 +255,15 @@ static void fixH6BondAngles( gint previousFragNumber, gint currentFragNumber )
 		if(G[i].ResidueNumber != currentFragNumber)
 			continue;
 
-		if ( !strcmp(G[i].Type ,"H61" ) )
+		if ( !strcmp(G[i].pdbType ,"H61" ) )
 			H61 = i;
-		else if ( !strcmp(G[i].Type ,"H62" ) )
+		else if ( !strcmp(G[i].pdbType ,"H62" ) )
 			H62 = i;
-		else if ( !strcmp(G[i].Type ,"H62" ) )
+		else if ( !strcmp(G[i].pdbType ,"H62" ) )
 			H62 = i;
-		else if ( !strcmp(G[i].Type ,"C6" ) )
+		else if ( !strcmp(G[i].pdbType ,"C6" ) )
 			C6 = i;
-		else if ( !strcmp(G[i].Type ,"C5" ) )
+		else if ( !strcmp(G[i].pdbType ,"C5" ) )
 			C5 = i;
 	}
 	if ( ( LastO1 == -1 ) || ( H61 == -1 ) || 
@@ -320,89 +326,90 @@ void add_fragment(GtkWidget* button)
 		G[j].Y=Frag.Atoms[i].Coord[1];
 		G[j].Z=Frag.Atoms[i].Coord[2];
 		G[j].Charge=Frag.Atoms[i].Charge;
-		G[j].Type=g_strdup(Frag.Atoms[i].Type);
+		G[j].mmType=g_strdup(Frag.Atoms[i].mmType);
+		G[j].pdbType=g_strdup(Frag.Atoms[i].pdbType);
 		G[j].Residue=g_strdup(Frag.Atoms[i].Residue);
 		G[j].ResidueNumber=lastFragNumber+1;
 
 		G[j].Prop = prop_atom_get(Frag.Atoms[i].Symb);
 		G[j].N = j+1;
 		
-		if (!strcmp(Frag.Atoms[i].Type, "O1" ) ){
+		if (!strcmp(Frag.Atoms[i].pdbType, "O1" ) ){
 			O1 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "O2" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "O2" ) ){
 			O2 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "O3" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "O3" ) ){
 			O3 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "O4" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "O4" ) ){
 			O4 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "O5" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "O5" ) ){
 			O5 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "O" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "O" ) ){
 			O = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "O6" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "O6" ) ){
 			O6 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "HO1" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "HO1" ) ){
 			HO1 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "HO2" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "HO2" ) ){
 			HO2 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "HO3" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "HO3" ) ){
 			HO3 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "HO4" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "HO4" ) ){
 			HO4 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "HO6" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "HO6" ) ){
 			HO6 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "C1" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "C1" ) ){
 			C1 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "C2" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "C2" ) ){
 			C2 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "C3" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "C3" ) ){
 			C3 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "C4" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "C4" ) ){
 			C4 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "C5" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "C5" ) ){
 			C5 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "C6" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "C6" ) ){
 			C6 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "H1" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "H1" ) ){
 			H1 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "H2" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "H2" ) ){
 			H2 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "H3" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "H3" ) ){
 			H3 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "H4" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "H4" ) ){
 			H4 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "H6" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "H6" ) ){
 			H6 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "H5" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "H5" ) ){
 			H5 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "H61" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "H61" ) ){
 			H61 = j;
 		}
-		else if (!strcmp(Frag.Atoms[i].Type, "H61" ) ){
+		else if (!strcmp(Frag.Atoms[i].pdbType, "H61" ) ){
 			H62 = j;
 		}
 		omegaArray[ omegaArrayCounter++ ] = j;

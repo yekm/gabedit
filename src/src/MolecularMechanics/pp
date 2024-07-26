@@ -1,0 +1,7 @@
+	for ( i = 0; i < molecularDynamics->numberOfAtoms; i++)
+	{
+		gdouble speed = maxwel(molecularDynamics->forceField->molecule.atoms[i].prop.masse,temperature);
+		getRandVect(speed, molecularDynamics->velocity[i]);
+		for ( j = 0; j < 3; j++)
+			C[j] += molecularDynamics->velocity[i][j];
+	}

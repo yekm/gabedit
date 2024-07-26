@@ -209,7 +209,7 @@ int scp_put_file(gchar* fout,gchar* ferr,
 	if(system(cmdGlobal)!=0)
 	{
 			FILE* FileErr = FOpen(ferr,"w");
-			fprintf(FileErr,"Sorry, I Cannot put file at remot host...\n");
+			fprintf(FileErr,"Sorry, I Cannot put %s file at remot host...\n",filename);
 			fclose(FileErr);
 			unlink(unixFile);
 			g_free(unixFile);

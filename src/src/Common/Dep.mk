@@ -51,6 +51,9 @@ MenuToolBar.o: ../Geometry/OpenBabel.h ../Common/Printer.h
 MenuToolBar.o: ../NetWork/Process.h ../NetWork/Batch.h
 MenuToolBar.o: ../MolecularMechanics/SetMMParameters.h
 MenuToolBar.o: ../MolecularMechanics/SetPDBTemplate.h ../Common/StockIcons.h
+MenuToolBar.o: ../OpenGL/Vibration.h ../Utils/GabeditXYPlot.h
+MenuToolBar.o: ../Spectrum/IRSpectrum.h ../Spectrum/RamanSpectrum.h
+MenuToolBar.o: ../Spectrum/UVSpectrum.h ../Spectrum/NMRSpectrum.h
 Preferences.o: ../../Config.h Global.h
 Preferences.o: ../Files/GabeditFileChooser.h
 Preferences.o: ../Common/GabeditType.h ../Common/Help.h
@@ -108,8 +111,9 @@ StockIcons.o: ../../pixmaps/H.xpm ../../pixmaps/Gabedit.xpm
 StockIcons.o: ../../pixmaps/Info.xpm ../../pixmaps/InsertAtom.xpm
 StockIcons.o: ../../pixmaps/Insert.xpm ../../pixmaps/Mesure.xpm
 StockIcons.o: ../../pixmaps/Molcas.xpm ../../pixmaps/Molden.xpm
-StockIcons.o: ../../pixmaps/Molpro.xpm ../../pixmaps/Adf.xpm
-StockIcons.o: ../../pixmaps/Dalton.xpm ../../pixmaps/Gamess.xpm
+StockIcons.o: ../../pixmaps/Molpro.xpm ../../pixmaps/QChem.xpm
+StockIcons.o: ../../pixmaps/Adf.xpm ../../pixmaps/Dalton.xpm
+StockIcons.o: ../../pixmaps/Gamess.xpm ../../pixmaps/PCGamess.xpm
 StockIcons.o: ../../pixmaps/MoveAtom.xpm ../../pixmaps/MPQC.xpm
 StockIcons.o: ../../pixmaps/New.xpm ../../pixmaps/Next.xpm
 StockIcons.o: ../../pixmaps/No.xpm ../../pixmaps/Ok.xpm

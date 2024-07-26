@@ -25,7 +25,12 @@ DEALINGS IN THE SOFTWARE.
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
+#include "../Common/GabeditType.h"
+#include "../Utils/Utils.h"
 #include "../Geometry/Fragments.h"
+#include "../MolecularMechanics/PDBTemplate.h"
+#include "../Geometry/DrawGeom.h"
+#include "../MolecularMechanics/CalculTypesAmber.h"
 
 #define ANG_TO_BOHR  1.0/0.52917726
 /*****************************************************************/
@@ -36,10 +41,31 @@ static void SetResidue(Fragment* Frag,gchar* name)
 		Frag->Atoms[i].Residue = g_strdup(name);
 
 }
+/********************************************************************************/
+static void SetMMTypes(Fragment* Frag)
+{
+	gint i;
+	gchar* residue = NULL;
+	gdouble charge;
+	if(Frag->NAtoms<1) return;
+	residue = Frag->Atoms[0].Residue;
+
+	for(i=0;i<Frag->NAtoms;i++)
+	{
+		if(Frag->Atoms[i].mmType) g_free(Frag->Atoms[i].mmType);
+		Frag->Atoms[i].mmType = getMMTypeFromPDBTpl(residue, Frag->Atoms[i].pdbType,&charge);
+		if(strcmp(Frag->Atoms[i].mmType,"UNK"))  Frag->Atoms[i].Charge = charge;
+	}
+	for(i=0;i<Frag->NAtoms;i++)
+		if(!strcmp(Frag->Atoms[i].mmType,"UNK")) break;
+	if(i!=Frag->NAtoms) calculTypesAmberForAFragment(Frag);
+
+}
 /*****************************************************************/
 static void SetAtom(Atom* A,gchar* symb,gfloat x,gfloat y,gfloat z,gfloat charge)
 {
-	A->Type = g_strdup(symb);
+	A->mmType = g_strdup(symb);
+	A->pdbType = g_strdup(symb);
 	A->Symb = g_strdup_printf("%c",toupper(symb[0]));
 
 	A->Coord[0] = (gdouble)x*(gdouble)ANG_TO_BOHR;
@@ -124,7 +150,7 @@ Fragment GetFragmentPNA(gchar* Name)
 		SetAtom(&F.Atoms[ 20 ], "H42", 5.973f, 1.091f, -0.002f, 0.351f );
 		SetAtom(&F.Atoms[ 21 ], "N3", 3.502f, 1.272f, -0.001f, -0.860f );
 		SetAtom(&F.Atoms[ 22 ], "C2", 2.143f, 1.226f, -0.001f, 0.859f );
-		SetAtom(&F.Atoms[ 23 ], "O2", 1.443f, 2.249f, 0.000f, -0.508f );
+		SetAtom(&F.Atoms[ 23 ], "O", 1.443f, 2.249f, 0.000f, -0.508f );
 		SetAtom(&F.Atoms[ 24 ], "C3'", -1.868f, -1.469f, 0.021f, 0.233f );
 		SetAtom(&F.Atoms[ 25 ], "H3'", -2.271f, -2.479f, -0.051f, 0.025f );
 		SetAtom(&F.Atoms[ 26 ], "C2'", -0.624f, -1.140f, -0.807f, -0.307f );
@@ -199,7 +225,7 @@ Fragment GetFragmentPNA(gchar* Name)
 		SetAtom(&F.Atoms[ 22 ], "N3", 3.476f, 1.373f, -0.002f, -0.851f );
 		SetAtom(&F.Atoms[ 23 ], "H3", 3.996f, 2.330f, -0.046f, 0.355f );
 		SetAtom(&F.Atoms[ 24 ], "C2", 2.103f, 1.246f, -0.001f, 0.849f );
-		SetAtom(&F.Atoms[ 25 ], "O2", 1.368f, 2.216f, 0.091f, -0.488f );
+		SetAtom(&F.Atoms[ 25 ], "O", 1.368f, 2.216f, 0.091f, -0.488f );
 		SetAtom(&F.Atoms[ 26 ], "C3'", -1.871f, -1.464f, -0.028f, 0.233f );
 		SetAtom(&F.Atoms[ 27 ], "H3'", -2.275f, -2.474f, -0.109f, 0.025f );
 		SetAtom(&F.Atoms[ 28 ], "C2'", -0.605f, -1.139f, -0.823f, -0.307f );
@@ -272,7 +298,7 @@ Fragment GetFragmentPNA(gchar* Name)
 		SetAtom(&F.Atoms[ 20 ], "H42", 5.973f, 1.091f, -0.002f, 0.351f );
 		SetAtom(&F.Atoms[ 21 ], "N3", 3.502f, 1.272f, -0.001f, -0.860f );
 		SetAtom(&F.Atoms[ 22 ], "C2", 2.143f, 1.226f, -0.001f, 0.859f );
-		SetAtom(&F.Atoms[ 23 ], "O2", 1.443f, 2.249f, 0.000f, -0.508f );
+		SetAtom(&F.Atoms[ 23 ], "O", 1.443f, 2.249f, 0.000f, -0.508f );
 		SetAtom(&F.Atoms[ 24 ], "C3'", -1.868f, -1.469f, 0.021f, 0.303f );
 		SetAtom(&F.Atoms[ 25 ], "H3'", -2.271f, -2.479f, -0.051f, 0.007f );
 		SetAtom(&F.Atoms[ 26 ], "C2'", -0.624f, -1.140f, -0.807f, 0.101f );
@@ -346,7 +372,7 @@ Fragment GetFragmentPNA(gchar* Name)
 		SetAtom(&F.Atoms[ 19 ], "N3", 3.476f, 1.373f, -0.002f, -0.768f );
 		SetAtom(&F.Atoms[ 20 ], "H3", 3.996f, 2.330f, -0.046f, 0.334f );
 		SetAtom(&F.Atoms[ 21 ], "C2", 2.103f, 1.246f, -0.001f, 0.775f );
-		SetAtom(&F.Atoms[ 22 ], "O2", 1.368f, 2.216f, 0.091f, -0.472f );
+		SetAtom(&F.Atoms[ 22 ], "O", 1.368f, 2.216f, 0.091f, -0.472f );
 		SetAtom(&F.Atoms[ 23 ], "C3'", -1.871f, -1.464f, -0.028f, 0.303f );
 		SetAtom(&F.Atoms[ 24 ], "H3'", -2.275f, -2.474f, -0.109f, 0.007f );
 		SetAtom(&F.Atoms[ 25 ], "C2'", -0.605f, -1.139f, -0.823f, 0.101f );
@@ -381,7 +407,7 @@ Fragment GetFragmentPNA(gchar* Name)
 		SetAtom(&F.Atoms[ 19 ], "N3", 3.476f, 1.373f, -0.002f, -0.768f );
 		SetAtom(&F.Atoms[ 20 ], "H3", 3.996f, 2.330f, -0.046f, 0.334f );
 		SetAtom(&F.Atoms[ 21 ], "C2", 2.103f, 1.246f, -0.001f, 0.775f );
-		SetAtom(&F.Atoms[ 22 ], "O2", 1.368f, 2.216f, 0.091f, -0.472f );
+		SetAtom(&F.Atoms[ 22 ], "O", 1.368f, 2.216f, 0.091f, -0.472f );
 		SetAtom(&F.Atoms[ 23 ], "C3'", -1.871f, -1.464f, -0.028f, 0.233f );
 		SetAtom(&F.Atoms[ 24 ], "H3'", -2.275f, -2.474f, -0.109f, 0.025f );
 		SetAtom(&F.Atoms[ 25 ], "C2'", -0.605f, -1.139f, -0.823f, -0.307f );
@@ -418,7 +444,7 @@ Fragment GetFragmentPNA(gchar* Name)
 		SetAtom(&F.Atoms[ 22 ], "N3", 3.476f, 1.373f, -0.002f, -0.851f );
 		SetAtom(&F.Atoms[ 23 ], "H3", 3.996f, 2.330f, -0.046f, 0.355f );
 		SetAtom(&F.Atoms[ 24 ], "C2", 2.103f, 1.246f, -0.001f, 0.849f );
-		SetAtom(&F.Atoms[ 25 ], "O2", 1.368f, 2.216f, 0.091f, -0.488f );
+		SetAtom(&F.Atoms[ 25 ], "O", 1.368f, 2.216f, 0.091f, -0.488f );
 		SetAtom(&F.Atoms[ 26 ], "C3'", -1.871f, -1.464f, -0.028f, 0.303f );
 		SetAtom(&F.Atoms[ 27 ], "H3'", -2.275f, -2.474f, -0.109f, 0.007f );
 		SetAtom(&F.Atoms[ 28 ], "C2'", -0.605f, -1.139f, -0.823f, 0.101f );
@@ -1254,25 +1280,25 @@ Fragment GetFragmentPNA(gchar* Name)
 	}
 
 	if(!strcmp(Name,"dADE"))
-		SetResidue(&F,"DA");
+		SetResidue(&F,"DA3");
 	else if ( !strcmp(Name, "dCYT") )
-		SetResidue(&F,"DC");
+		SetResidue(&F,"DC3");
 	else if ( !strcmp(Name, "dTHY") )
-		SetResidue(&F,"DT");
+		SetResidue(&F,"DT3");
 	else if ( !strcmp(Name, "dGUA") )
-		SetResidue(&F,"DG");
+		SetResidue(&F,"DG3");
 	else if ( !strcmp(Name, "dURA") )
-		SetResidue(&F,"DU");
+		SetResidue(&F,"DU3");
 	else if ( !strcmp(Name, "rADE") )
-		SetResidue(&F,"RA");
+		SetResidue(&F,"RA3");
 	else if ( !strcmp(Name, "rCYT") )
-		SetResidue(&F,"RC");
+		SetResidue(&F,"RC3");
 	else if ( !strcmp(Name, "rGUA") )
-		SetResidue(&F,"RG");
+		SetResidue(&F,"RG3");
 	else if ( !strcmp(Name, "rTHY") )
-		SetResidue(&F,"RT");
+		SetResidue(&F,"RT3");
 	else if ( !strcmp(Name, "rURA") )
-		SetResidue(&F,"RU");
+		SetResidue(&F,"RU3");
 	else
 	{
 		for(i=1;i<(gint)strlen(Name);i++)
@@ -1285,6 +1311,7 @@ Fragment GetFragmentPNA(gchar* Name)
 		else
 			SetResidue(&F,"UNK");
 	}
+	SetMMTypes(&F);
 
 	return F;
 }

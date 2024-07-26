@@ -963,6 +963,8 @@ void createGamessSymmetryFrame(GtkWidget *win, GtkWidget *box)
 
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonGabedit), FALSE);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonGabedit), TRUE);
+
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
 }
 /************************************************************************************************************/
 static void setComboSpinMultiplicity(GtkWidget *comboSpinMultiplicity)
@@ -1227,7 +1229,6 @@ void createGamessChargeMultiplicityFrame(GtkWidget *box)
 void putGamessChargeAndSpinInfoInTextEditor()
 {
 	gchar buffer[BSIZE];
-	if(totalCharge==0) return;
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, &gamessColorFore.keyWord, &gamessColorBack.keyWord, "$CONTRL",-1);
 	sprintf(buffer," ICHARG=%d ",totalCharge);

@@ -603,24 +603,22 @@ void user_install_dialog_create(UserInstallCallback callback)
                                 "Click \"Continue\" to enter the GABEDIT user installation.");
 
   add_label(GTK_BOX(page),
-            "Gabedit is a Graphical User Interface to Gamess-US, Gaussian, Molcas, Molpro and MPQC computational chemistry packages.\n"
-	    "Gabedit includes graphical facilities for generating keywords and options, molecule specifications and\n"
-	    "ther input sections for even the most advanced calculation types.\n"
-	    "Gabedit includes an advanced Molecule Builder. You can use it to rapidly sketch in molecules and\n"
-	    "examine them in three dimensions. You can build molecules by atom, ring, group, amino acid and\n"
-	    "nucleoside. You can also read geometry from a file. Most major molecular file formats are supported.\n"
-	    "Gabedit includes a Gamess-US, Gaussian, Molcas, Molpro and MPQC Calculation Setup window which allows you to set up\n"
-	    "Gamess-US, Gaussian, Molcas, Molpro and MPQC jobs in a simple and straightforward manner.\n"
-	    "Gabedit can graphically display a variety of Gamess-US, Gaussian, Molcas, Molpro, MPQC \n"
-	    "and (partially) ADF  calculation results, including the following\n"
+            "Gabedit is a Graphical User Interface to Gamess-US, Gaussian, Molcas, Molpro, MPQC ,PCGamess and Q-Chem\n"
+            "computational chemistry packages.\n"
+	    "It can display a variety of calculation results including support for most major molecular file formats.\n"
+	    "The advanced 'Molecule Builder' allows to rapidly sketch in molecules and examine them in 3D\n"
+	    "Graphics can be exported to various formats, including animations\n"
+	    "\n"
+	    "Gabedit can creates input file for GAMESS(US), GAUSSIAN, MOLCAS, MOLPRO , MPQC PCGamess and Q-Chem.\n"
+	    "Gabedit can graphically display a variety of Gamess-US, Gaussian, Molcas, Molpro, MPQC, PCGamess, Q-Chem\n"
+	    "and (partially) ADF calculation results, including the following\n"
 	    "  - Molecular orbitals\n"
 	    "  - Surfaces from the electron density, electrostatic potential, NMR shielding density, and other properties.\n"
-	    "    Surfaces may be displayed in solid, translucent and wire mesh modes. they are can be colorcoded by a separate property. \n"
 	    "  - Contours (colorcoded), Planes colorcoded, Dipole. XYZ axes and the principal axes of the molecule.\n"
 	    "  - Animation of the normal modes corresponding to vibrational frequencies.\n"
-	    "  - Animation of the rotation of geometry, surfaces, contours, planes colorcoded, xyz and the principal axes of the molecule.\n"
+	    "  - Animation of the rotation of geometry, surfaces, contours, planes colorcoded.\n"
 	    "  - Animation of contours, Animation of planes colorcoded.\n"
-	    "Gabedit can display IR and Raman computed spectra.\n"
+	    "Gabedit can display UV-Vis, IR and Raman computed spectra.\n"
 	    "Gabedit can generate a povray file for geometry (including hydrogen's bond),\n"
 	    "surfaces (including colorcoded surfaces), contours, planes colorcoded.\n"
 	    "Gabedit can save picture in BMP, JPEG, PNG, PPM and PS format.\n"
@@ -1114,20 +1112,20 @@ static void user_install_colorsurfaces_done()
   	GtkWidget**selectors =(GtkWidget**) g_object_get_data(G_OBJECT (colorsurfaces_page), "Selectors");
 
 	/* positive value */
-	gtk_color_selection_get_current_color(GTK_COLOR_SELECTION(selectors[0]), &color); 
+	gtk_color_button_get_color ((GtkColorButton*)selectors[0], &color);
 	Col[0] = color.red/65535.0;
 	Col[1] = color.green/65535.0;
 	Col[2] = color.blue/65535.0;
 	set_color_surface(0,Col);
 
 	/* negative value */
-	gtk_color_selection_get_current_color(GTK_COLOR_SELECTION(selectors[1]), &color); 
+	gtk_color_button_get_color ((GtkColorButton*)selectors[1], &color);
 	Col[0] = color.red/65535.0;
 	Col[1] = color.green/65535.0;
 	Col[2] = color.blue/65535.0;
 	set_color_surface(1,Col);
 	/* density surface */
-	gtk_color_selection_get_current_color(GTK_COLOR_SELECTION(selectors[2]), &color); 
+	gtk_color_button_get_color ((GtkColorButton*)selectors[2], &color);
 	Col[0] = color.red/65535.0;
 	Col[1] = color.green/65535.0;
 	Col[2] = color.blue/65535.0;

@@ -12,7 +12,7 @@ CalculTypesAmber.o: ../Common/GabeditType.h ../Geometry/Fragments.h
 CalculTypesAmber.o: ../Geometry/DrawGeom.h ../Utils/Transformation.h
 CalculTypesAmber.o: ../Utils/Constantes.h ../Utils/Utils.h
 CalculTypesAmber.o: ../Utils/UtilsInterface.h ../Utils/Vector3d.h
-CalculTypesAmber.o: ../Utils/HydrogenBond.h
+CalculTypesAmber.o: ../Utils/HydrogenBond.h ../Utils/AtomsProp.h
 CalculTypesAmber.o: ../MolecularMechanics/CalculTypesAmber.h
 ConjugateGradient.o: ../../Config.h
 ConjugateGradient.o: ../Common/Global.h
@@ -54,6 +54,12 @@ LoadPDBTemplate.o: ../Files/GabeditFileChooser.h
 LoadPDBTemplate.o: ../Common/GabeditType.h
 LoadPDBTemplate.o: ../MolecularMechanics/PDBTemplate.h ../Utils/Utils.h
 LoadPDBTemplate.o: ../Utils/Constantes.h
+MolecularDynamics.o: ../../Config.h
+MolecularDynamics.o: ../Common/Global.h
+MolecularDynamics.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
+MolecularDynamics.o: ../Utils/AtomsProp.h ../Geometry/Fragments.h
+MolecularDynamics.o: ../Geometry/DrawGeom.h Atom.h Molecule.h ForceField.h
+MolecularDynamics.o: MolecularDynamics.h
 MolecularMechanics.o: ../../Config.h
 MolecularMechanics.o: ../Common/Global.h
 MolecularMechanics.o: ../Files/GabeditFileChooser.h
@@ -68,18 +74,20 @@ MolecularMechanicsDlg.o: ../Common/Global.h
 MolecularMechanicsDlg.o: ../Files/GabeditFileChooser.h
 MolecularMechanicsDlg.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
 MolecularMechanicsDlg.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h
-MolecularMechanicsDlg.o: ../MolecularMechanics/Atom.h
+MolecularMechanicsDlg.o: ../Geometry/Mesure.h ../MolecularMechanics/Atom.h
 MolecularMechanicsDlg.o: ../MolecularMechanics/Molecule.h
 MolecularMechanicsDlg.o: ../MolecularMechanics/ForceField.h
 MolecularMechanicsDlg.o: ../MolecularMechanics/MolecularMechanics.h
 MolecularMechanicsDlg.o: ../MolecularMechanics/ConjugateGradient.h
 MolecularMechanicsDlg.o: ../MolecularMechanics/SteepestDescent.h
 MolecularMechanicsDlg.o: ../MolecularMechanics/QuasiNewton.h
+MolecularMechanicsDlg.o: ../MolecularMechanics/MolecularDynamics.h
 Molecule.o: ../../Config.h
 Molecule.o: ../Common/Global.h
 Molecule.o: ../Files/GabeditFileChooser.h
 Molecule.o: ../Common/GabeditType.h ../Utils/AtomsProp.h
-Molecule.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h Atom.h Molecule.h
+Molecule.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h
+Molecule.o: ../Geometry/Mesure.h Atom.h Molecule.h
 PDBTemplate.o: ../../Config.h
 PDBTemplate.o: ../Common/Global.h
 PDBTemplate.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h

@@ -519,12 +519,21 @@ gchar *get_draw_layer(guint epaisseur,guint i,gint x,gint y)
      return temp; 
 }
 /********************************************************************************/
-gchar *get_draw_typ(guint epaisseur,guint i,gint x,gint y)
+gchar *get_draw_mmtyp(guint epaisseur,guint i,gint x,gint y)
 {
      gchar *temp;
      temp = g_strdup_printf("%d %d moveto\t",x,y);
      temp = g_strdup_printf("%s\t 0 0 0 setrgbcolor\t",temp);
-     temp = g_strdup_printf("%s(%s) show\n",temp,geometry[i].Type);
+     temp = g_strdup_printf("%s(%s) show\n",temp,geometry[i].mmType);
+     return temp; 
+}
+/********************************************************************************/
+gchar *get_draw_pdbtyp(guint epaisseur,guint i,gint x,gint y)
+{
+     gchar *temp;
+     temp = g_strdup_printf("%d %d moveto\t",x,y);
+     temp = g_strdup_printf("%s\t 0 0 0 setrgbcolor\t",temp);
+     temp = g_strdup_printf("%s(%s) show\n",temp,geometry[i].pdbType);
      return temp; 
 }
 /********************************************************************************/
@@ -544,7 +553,8 @@ gchar *get_draw_label(guint epaisseur,guint i,gint x,gint y)
    {
    case LABELSYMB: temp=get_draw_symb(epaisseur,i,x,y);break;
    case LABELNUMB: temp=get_draw_numb(epaisseur,i,x,y);break;
-   case LABELTYP: temp=get_draw_typ(epaisseur,i,x,y);break;
+   case LABELMMTYP: temp=get_draw_mmtyp(epaisseur,i,x,y);break;
+   case LABELPDBTYP: temp=get_draw_pdbtyp(epaisseur,i,x,y);break;
    case LABELLAYER: temp=get_draw_layer(epaisseur,i,x,y);break;
    case LABELSYMBNUMB: temp=get_draw_numb_symb(epaisseur,i,x,y);break;
    }

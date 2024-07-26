@@ -176,6 +176,7 @@ static gint* read_geomorb_gamess_file_geom(gchar *FileName)
 			{
 				break;
 			}
+			if ( !strcmp(t,"\r\n")) break;
     			j++;
     			if(GeomOrb==NULL) GeomOrb=g_malloc(sizeof(TypeGeomOrb));
     			else GeomOrb=g_realloc(GeomOrb,(j+1)*sizeof(TypeGeomOrb));
@@ -211,6 +212,7 @@ static gint* read_geomorb_gamess_file_geom(gchar *FileName)
 	{
 		g_free(GeomOrb);
 		g_free(znuc);
+		znuc = NULL;
 	}
  	else
 	{
@@ -488,7 +490,7 @@ static gchar** read_basis_from_a_gamess_output_file(gchar *FileName, gint* nrs)
 		{
 			if(!fgets(t,taille,fd))break;
 			if(strstr(t,"SHELL TYPE"))
-			if(strstr(t,"PRIMITIVE"))
+			if(strstr(t,"EXPONENT"))
 			{
 				OK = TRUE;
 				break;
@@ -679,6 +681,12 @@ static gboolean DefineGamessBasisType(gchar** strbasis, gint nrows)
 		sscanf(strbasis[k],"%s",t);
 		if(!isdigit(t[0])) /* symbol of atom*/
 		{
+			/*
+			for(i=1;i<strlen(t);i++)
+				if(isdigit(t[i])) t[i] = ' ';
+			delete_last_spaces(t);
+			*/
+
 			i=get_num_type_from_symbol(t);
 			if(i<0)
 			{
@@ -692,6 +700,20 @@ static gboolean DefineGamessBasisType(gchar** strbasis, gint nrows)
 			continue;
 		}
 		sscanf(strbasis[k],"%s %s",t,shell);
+		if(strstr(strbasis[k],"(") && strstr(strbasis[k],")"))
+		{
+			gchar dum1[BSIZE];
+			gchar dum2[BSIZE];
+			for(j=0;j<strlen(strbasis[k]);j++)
+			{
+				if(strbasis[k][j]==')') strbasis[k][j]=' ';
+				if(strbasis[k][j]=='(') strbasis[k][j]=' ';
+			}
+			ne = sscanf(strbasis[k],"%s %s %s %s %s %s %s %s",t,shell,temp[3],temp[0],dum1, temp[1],dum2, temp[2]);
+			if(ne==8) ne = 6;
+			else if(ne==6) ne = 5;
+		}
+		else
 		ne = sscanf(strbasis[k],"%s %s %s %s %s %s",t,shell,temp[3],temp[0],temp[1],temp[2]);
 		if(ne<5)
 		{
@@ -740,7 +762,7 @@ static gboolean DefineGamessBasisType(gchar** strbasis, gint nrows)
     	return TRUE;
 }
 /********************************************************************************/
-void get_number_of_occuped_orbitals(gchar* FileName, gint* nAlpha, gint* nBeta)
+static void get_number_of_occuped_orbitals(gchar* FileName, gint* nAlpha, gint* nBeta)
 {
  	gchar *t;
  	FILE *file;
@@ -1069,6 +1091,10 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *NomFichier,GabEditOrbTy
 	  		if(!fgets(t,taille,fd))break;
 			k1 = sscanf(t,"%d %d %d %d %d",&NumOrb[0],&NumOrb[1],&NumOrb[2],&NumOrb[3],&NumOrb[4]);
 			for(i=0;i<k1;i++) NumOrb[i]--;
+			for(i=0;i<k1;i++) 
+			{
+				if(NumOrb[i]<0 || NumOrb[i]>NOrb-1) break;
+			}
 			if(k1<1)
 			{
 				break;
@@ -1215,6 +1241,7 @@ void read_gamess_orbitals(gchar* FileName)
 	strbasis=read_basis_from_a_gamess_output_file(FileName, &nrs);
 	if(strbasis==NULL)
 	{
+		printf("strbasis=NULL\n");
 		if(GeomOrb)
 		{
 			init_atomic_orbitals();
@@ -1255,7 +1282,7 @@ void read_gamess_orbitals(gchar* FileName)
 		GeomOrb[i].Symb=get_symbol_using_z(znuc[i]);
 		GeomOrb[i].Prop = prop_atom_get(GeomOrb[i].Symb);
 	}
-  	DefineType();
+  	/*DefineType();*/
 	RebuildGeom = TRUE;
 	reset_grid_limits();
 	init_atomic_orbitals();
@@ -1276,7 +1303,7 @@ void read_gamess_orbitals(gchar* FileName)
 		sphericalBasis = FALSE;
 	}
  	
- 	/*PrintAllBasis();*/
+ 	/* PrintAllBasis();*/
  	NormaliseAllBasis();
  	/* PrintAllBasis();*/
  	DefineNOccs();

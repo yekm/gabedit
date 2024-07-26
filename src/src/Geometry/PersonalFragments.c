@@ -54,6 +54,12 @@ static gdouble entryWidth = 0.15;
 
 static PersonalFragments* personnalFragments = NULL;
 /*****************************************************************************/
+gint getNumberOfGroups()
+{
+	if(personnalFragments) return personnalFragments->numberOfGroupes;
+	else return 0;
+}
+/*****************************************************************************/
 static gint getIndexGeom(gint n)
 {
 	gint k;
@@ -82,6 +88,11 @@ static gchar** getListGroupes(gint*n)
 	gchar**t = NULL;
 	gint i;
 
+	if(!personnalFragments) 
+	{
+		*n = 0;
+		return NULL;
+	}
 	*n = personnalFragments->numberOfGroupes;
 	if(*n<1)
 		return t;
@@ -506,7 +517,8 @@ static void addFragment(GtkWidget* win, gpointer data)
 	{
 		f.Atoms[i].Residue = g_strdup(geometry[i].Residue);
 		f.Atoms[i].Symb = g_strdup(geometry[i].Prop.symbol);
-		f.Atoms[i].Type = g_strdup(geometry[i].Type);
+		f.Atoms[i].mmType = g_strdup(geometry[i].mmType);
+		f.Atoms[i].pdbType = g_strdup(geometry[i].pdbType);
 		f.Atoms[i].Coord[0] = geometry[i].X;
 		f.Atoms[i].Coord[1] = geometry[i].Y;
 		f.Atoms[i].Coord[2] = geometry[i].Z;

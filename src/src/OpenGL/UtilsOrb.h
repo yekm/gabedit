@@ -48,6 +48,7 @@ void PrintAllOrb(gfloat** M);
 gint get_type_file(gchar *NomFichier);
 gint get_type_basis_in_gamess_file(gchar *NomFichier);
 gint get_type_basis_in_gaussian_file(gchar *NomFichier);
+gint get_type_basis_in_qchem_file(gchar *NomFichier);
 gint get_type_basis_in_gabedit_file(gchar *NomFichier);
 gint get_type_basis_in_molden_file(gchar *NomFichier);
 gboolean testi(char c);

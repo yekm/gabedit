@@ -22,7 +22,8 @@ DEALINGS IN THE SOFTWARE.
 typedef struct _Atom
 {
  gchar *Symb;
- gchar *Type;
+ gchar *mmType;
+ gchar *pdbType;
  gchar *Residue;
  gdouble Coord[3];
  gdouble Charge;

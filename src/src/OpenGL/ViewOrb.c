@@ -46,8 +46,7 @@ int view_orb(GtkWidget* Parent,int argc, char **argv)
 		{
 			gtk_widget_hide(GTK_WIDGET(PrincipalWindow));
 			gtk_widget_show(GTK_WIDGET(PrincipalWindow));
-			if(argc>1)
- 			read_any_file(argv[1]);
+			/* if(argc>1) read_any_file(argv[1]);*/
 			return 0;
 		}
 	}
@@ -90,8 +89,7 @@ int view_orb(GtkWidget* Parent,int argc, char **argv)
 	color_map_hide(handleBoxColorMapGrid);
 	color_map_hide(handleBoxColorMapContours);
 	color_map_hide(handleBoxColorMapPlanesMapped);
-	if(argc>1)
- 	read_any_file(argv[1]);
+	/* if(argc>1) read_any_file(argv[1]);*/
 
 	first = FALSE;
 

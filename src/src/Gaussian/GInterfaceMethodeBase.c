@@ -24,9 +24,15 @@ DEALINGS IN THE SOFTWARE.
 #include <string.h>
 
 #include "../Common/Global.h"
+#include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
+#include "../Geometry/GeomGlobal.h"
+#include "../Geometry/GeomXYZ.h"
+#include "../Geometry/InterfaceGeom.h"
+#include "GInterfaceGeom.h"
 #include "GaussGlobal.h"
 
+/************************************************************************************************************/
 void  c_basis_presents(gchar *ListAtoms)
 {
   GtkWidget *label;
@@ -100,44 +106,6 @@ void  c_diffuse_aug()
   HboxB[1][NM] = create_hbox(VboxB[NM]);
   EntryBasis[1][NM]= create_combo_box_entry_liste(FrameB[NM],HboxB[1][NM]," Diffuse function :",liste,nliste);
 }
-void  c_basis_combo()
-{
-  gchar *liste[9];
-  int nliste = 0;
-  NM=gtk_notebook_get_current_page((GtkNotebook*)NoteBookMB);
-  nliste=3;
-  liste[0]=g_strdup("Redundant");
-  liste[1]=g_strdup("Z-matrix");
-  liste[2]=g_strdup("Cartesian");
-  HboxB[0][NM] = create_hbox(VboxB[NM]);
-  EntryBasis[0][NM]= create_combo_box_entry_liste(FrameB[NM],HboxB[0][NM]," Coordinate system options :",liste,nliste);
-  nliste=2;
-  liste[0]=g_strdup("No");
-  liste[1]=g_strdup("Yes");
-  HboxB[1][NM] = create_hbox(VboxB[NM]);
-  EntryBasis[1][NM]= create_combo_box_entry_liste(FrameB[NM],HboxB[1][NM]," optimization  a transition  :",liste,nliste);
-  nliste=4;
-  liste[0]=g_strdup("20");
-  liste[1]=g_strdup("10");
-  liste[2]=g_strdup("30");
-  liste[3]=g_strdup("40");
-  HboxB[2][NM] = create_hbox(VboxB[NM]);
-  EntryBasis[2][NM]= create_combo_box_entry_liste(FrameB[NM],HboxB[2][NM]," MaxCycle  :",liste,nliste);
-  nliste=4;
-  liste[0]=g_strdup("30");
-  liste[1]=g_strdup("10");
-  liste[2]=g_strdup("20");
-  liste[3]=g_strdup("40");
-  HboxB[3][NM] = create_hbox(VboxB[NM]);
-  EntryBasis[3][NM]= create_combo_box_entry_liste(FrameB[NM],HboxB[3][NM]," StepSize  :",liste,nliste);
-  nliste=4;
-  liste[0]=g_strdup("No");
-  liste[1]=g_strdup("1");
-  liste[2]=g_strdup("2");
-  liste[3]=g_strdup("3");
-  HboxB[4][NM] = create_hbox(VboxB[NM]);
-  EntryBasis[4][NM]= create_combo_box_entry_liste(FrameB[NM],HboxB[4][NM],"  Saddle point of order :",liste,nliste);
-}
 /********************************************************************************************************/
 static void traite_basis (GtkComboBox *combobox, gpointer d)
 {
@@ -152,7 +120,7 @@ static void traite_basis (GtkComboBox *combobox, gpointer d)
 	}
 	if(Basis[NM]) g_free(Basis[NM]);
 	Basis[NM] = NULL;
-  	if ( strcmp((char *)data,"Please select your basis") && strcmp((char *)data,"None(for semi-emprical and mechanical methods)") ) 
+  	if ( strcmp((char *)data,"Please select your basis") && strcmp((char *)data,"None") ) 
 		Basis[NM] =g_strdup((char *)data);
 
 	for (i=0;i<nHboxB;i++)
@@ -210,10 +178,12 @@ static GtkWidget *create_liste_basis(GtkWidget*win,GtkWidget *frame)
 
 	store = gtk_tree_store_new (1,G_TYPE_STRING);
         gtk_tree_store_append (store, &iter, NULL);
-        gtk_tree_store_set (store, &iter, 0, "None(for semi-emprical and mechanical methods)", -1);
+        gtk_tree_store_set (store, &iter, 0, "None", -1);
         gtk_tree_store_append (store, &iter, NULL);
+	/*
         gtk_tree_store_set (store, &iter, 0, "GEN", -1);
         gtk_tree_store_append (store, &iter, NULL);
+	*/
         gtk_tree_store_set (store, &iter, 0, "STO-3G", -1);
         gtk_tree_store_append (store, &iter, NULL);
         gtk_tree_store_set (store, &iter, 0, "3-21G", -1);
@@ -281,6 +251,7 @@ static GtkWidget *create_liste_basis(GtkWidget*win,GtkWidget *frame)
 	gtk_box_pack_start (GTK_BOX (vbox), hseparator, FALSE, FALSE, 1);
 	return combobox;
 }
+/********************************************************************************************************/
 void c_hf_combo()
 {
   gchar *liste[9];
@@ -293,7 +264,7 @@ void c_hf_combo()
   HboxM[0][NM] = create_hbox(VboxM[NM]);
   EntryMethods[0][NM]= create_combo_box_entry_liste(FrameM[NM],HboxM[0][NM]," Select your method :",liste,nliste);
 }
-
+/********************************************************************************************************/
 void  c_ci_combo()
 {
   gchar *liste[9];
@@ -327,7 +298,7 @@ void  c_ci_combo()
   HboxM[3][NM] = create_hbox(VboxM[NM]);
   EntryMethods[3][NM]= create_combo_box_entry_liste(FrameM[NM],HboxM[3][NM]," Number of cycles  :",liste,nliste);
 }
-
+/********************************************************************************************************/
 void  c_mp_combo()
 {
   gchar *liste[9];
@@ -355,7 +326,7 @@ void  c_mp_combo()
  HboxM[2][NM] = create_hbox(VboxM[NM]);
   EntryMethods[2][NM]= create_combo_box_entry_liste(FrameM[NM],HboxM[2][NM]," Options  :",liste,nliste);
 }
-
+/********************************************************************************************************/
 void c_semi_combo()
 {
   gchar *liste[9];
@@ -372,7 +343,7 @@ void c_semi_combo()
   HboxM[0][NM] = create_hbox(VboxM[NM]);
   EntryMethods[0][NM]= create_combo_box_entry_liste(FrameM[NM],HboxM[0][NM]," Select your method :",liste,nliste);
 }
-
+/********************************************************************************************************/
 void c_mecha_combo()
 {
   gchar *liste[9];
@@ -385,7 +356,7 @@ void c_mecha_combo()
   HboxM[0][NM] = create_hbox(VboxM[NM]);
   EntryMethods[0][NM]= create_combo_box_entry_liste(FrameM[NM],HboxM[0][NM]," Select your method :",liste,nliste);
 }
-
+/********************************************************************************************************/
 void  c_hybrid_combo()
 {
   gchar *liste[9];
@@ -404,7 +375,7 @@ void  c_hybrid_combo()
   HboxM[0][NM] = create_hbox(VboxM[NM]);
   EntryMethods[0][NM]= create_combo_box_entry_liste(FrameM[NM],HboxM[0][NM]," Select your method :",liste,nliste);
 }
-
+/********************************************************************************************************/
 void c_dft_combo()
 {
   gchar *liste[9];
@@ -430,15 +401,16 @@ void c_dft_combo()
   HboxM[1][NM] = create_hbox(VboxM[NM]);
   EntryMethods[1][NM] = create_combo_box_entry_liste(FrameM[NM],HboxM[1][NM]," Correlation Functionals :",liste,nliste);
 }
-
+/********************************************************************************************************/
 void  c_excited_combo()
 {
   gchar *liste[9];
   int nliste = 0;
   NM=gtk_notebook_get_current_page((GtkNotebook*)NoteBookMB);
-  nliste=2;
+  nliste=3;
   liste[0]=g_strdup("CIS");
   liste[1]=g_strdup("RPA");
+  liste[2]=g_strdup("TDDFT");
   HboxM[0][NM] = create_hbox(VboxM[NM]);
   EntryMethods[0][NM]= create_combo_box_entry_liste(FrameM[NM],HboxM[0][NM]," Select your method :",liste,nliste);
   nliste=3;
@@ -461,7 +433,7 @@ void  c_excited_combo()
   HboxM[3][NM] = create_hbox(VboxM[NM]);
   EntryMethods[3][NM]= create_combo_box_entry_liste(FrameM[NM],HboxM[3][NM]," Root  :",liste,nliste);
 }
-
+/********************************************************************************************************/
 void  c_casscf_combo()
 {
   gchar *liste[9];
@@ -611,7 +583,13 @@ static void GAjoutePageMB(GtkWidget *NoteBook,gchar * tNote,guint j, GtkWidget *
   GtkWidget *combobox;
   gboolean nothing = TRUE;
 
+  /*
   if(tNote && strcmp(tNote,"High") ==0 ) nothing = FALSE;
+  if(tNote && strcmp(tNote," ") ==0 ) nothing = FALSE;
+  if(!tNote) nothing = FALSE;
+  */
+
+  nothing = FALSE;
   
   NM=j;
   Basis[NM] =NULL;
@@ -627,13 +605,10 @@ static void GAjoutePageMB(GtkWidget *NoteBook,gchar * tNote,guint j, GtkWidget *
   	EntryBasis[i][j]=NULL;
   }
   Frame = gtk_frame_new(NULL);
-  gtk_container_set_border_width(GTK_CONTAINER(Frame), 10);
 
   LabelOnglet = gtk_label_new(tNote);
   LabelMenu = gtk_label_new(tNote);
-  gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook),
-                                Frame,
-                                LabelOnglet, LabelMenu);
+  gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook), Frame, LabelOnglet, LabelMenu);
 
   window1 = Frame;
   g_object_set_data(G_OBJECT (window1), "window1", window1);
@@ -642,12 +617,16 @@ static void GAjoutePageMB(GtkWidget *NoteBook,gchar * tNote,guint j, GtkWidget *
 
   hbox =create_hbox(vbox);
 
-  FrameMethode = create_frame(window1,hbox,"METHOD");
+  //FrameMethode = create_frame(window1,hbox,"METHOD");
+  FrameMethode =create_vbox(hbox);
+  gtk_container_set_border_width(GTK_CONTAINER(FrameMethode), 2);
   FrameM[NM]=FrameMethode;
   combobox = create_liste_methods(window1,FrameMethode, nothing);
   *comboMethod = combobox;
 
-  FrameBasis = create_frame(window1,hbox,"BASIS");
+  //FrameBasis = create_frame(window1,hbox,"BASIS");
+  FrameBasis =create_vbox(hbox);
+  gtk_container_set_border_width(GTK_CONTAINER(FrameBasis), 2);
   FrameB[NM]=FrameBasis;
   combobox = create_liste_basis(window1,FrameBasis);
   *comboBasis = combobox;
@@ -666,25 +645,51 @@ void create_notebook_MB(GtkWidget *frame)
 	GtkWidget* comboBasisMedium = NULL;
 	GtkWidget* comboBasisLower = NULL;
 
+	gboolean medium = geometry_with_medium_layer();
+	gboolean lower = geometry_with_lower_layer();
+	gint ilower = 2;
+	gint i,j;
+
 	nHboxM=NHBOXM_MAX;
 	nHboxB=NHBOXB_MAX;
+
+	for(i=0;i<nHboxB;i++)
+	{
+		for(j=0;j<3;j++)
+		{
+  			HboxB[i][j]=NULL;
+  			EntryBasis[i][j]=NULL;
+		}
+	}
+	for(j=0;j<3;j++) Methodes[j] = NULL;
 
 	vbox =create_vbox(frame);
 	NoteBookMB = gtk_notebook_new();
 	gtk_notebook_set_tab_pos( GTK_NOTEBOOK(NoteBookMB),GTK_POS_LEFT);
 	gtk_box_pack_start(GTK_BOX (vbox), NoteBookMB,FALSE, FALSE, 0);
-	GAjoutePageMB(NoteBookMB,"High",0, &comboMethodHight, &comboBasisHight); 
-	GAjoutePageMB(NoteBookMB,"Medium",1, &comboMethodMedium, &comboBasisMedium); 
-	GAjoutePageMB(NoteBookMB,"Lower",2, &comboMethodLower, &comboBasisLower); 
+	if(medium || lower) GAjoutePageMB(NoteBookMB,"High",0, &comboMethodHight, &comboBasisHight); 
+	else GAjoutePageMB(NoteBookMB,NULL,0, &comboMethodHight, &comboBasisHight); 
+	if(medium) GAjoutePageMB(NoteBookMB,"Medium",1, &comboMethodMedium, &comboBasisMedium); 
+	if(lower) 
+	{
+		if(!medium) ilower = 1;
+		GAjoutePageMB(NoteBookMB,"Lower",ilower, &comboMethodLower, &comboBasisLower); 
+	}
   	gtk_widget_show_all (NoteBookMB);
 	gtk_notebook_set_current_page((GtkNotebook*)NoteBookMB, 0);
-	gtk_combo_box_set_active (GTK_COMBO_BOX (comboMethodHight), 0);
-	gtk_combo_box_set_active (GTK_COMBO_BOX (comboBasisHight), 2);
-	gtk_notebook_set_current_page((GtkNotebook*)NoteBookMB, 1);
-	gtk_combo_box_set_active (GTK_COMBO_BOX (comboMethodMedium), 0);
-	gtk_combo_box_set_active (GTK_COMBO_BOX (comboBasisMedium), 0);
-	gtk_notebook_set_current_page((GtkNotebook*)NoteBookMB, 2);
-	gtk_combo_box_set_active (GTK_COMBO_BOX (comboMethodLower), 0);
-	gtk_combo_box_set_active (GTK_COMBO_BOX (comboBasisLower), 0);
+	gtk_combo_box_set_active (GTK_COMBO_BOX (comboMethodHight), 5);
+	gtk_combo_box_set_active (GTK_COMBO_BOX (comboBasisHight), 6);
+	if(comboMethodMedium)
+	{
+		gtk_notebook_set_current_page((GtkNotebook*)NoteBookMB, 1);
+		gtk_combo_box_set_active (GTK_COMBO_BOX (comboMethodMedium), 0);
+		gtk_combo_box_set_active (GTK_COMBO_BOX (comboBasisMedium), 2);
+	}
+	if(comboBasisLower)
+	{
+		gtk_notebook_set_current_page((GtkNotebook*)NoteBookMB, ilower);
+		gtk_combo_box_set_active (GTK_COMBO_BOX (comboMethodLower), 8);
+		gtk_combo_box_set_active (GTK_COMBO_BOX (comboBasisLower), 0);
+	}
 	gtk_notebook_set_current_page((GtkNotebook*)NoteBookMB, 0);
 }

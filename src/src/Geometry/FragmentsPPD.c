@@ -25,7 +25,12 @@ DEALINGS IN THE SOFTWARE.
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
+#include "../Common/GabeditType.h"
+#include "../Utils/Utils.h"
 #include "../Geometry/Fragments.h"
+#include "../MolecularMechanics/PDBTemplate.h"
+#include "../Geometry/DrawGeom.h"
+#include "../MolecularMechanics/CalculTypesAmber.h"
 
 #define ANG_TO_BOHR  1.0/0.52917726
 /*****************************************************************/
@@ -36,10 +41,31 @@ static void SetResidue(Fragment* Frag,gchar* name)
 		Frag->Atoms[i].Residue = g_strdup(name);
 
 }
-/*****************************************************************/
+/********************************************************************************/
+static void SetMMTypes(Fragment* Frag)
+{
+	gint i;
+	gchar* residue = NULL;
+	gdouble charge;
+	if(Frag->NAtoms<1) return;
+	residue = Frag->Atoms[0].Residue;
+
+	for(i=0;i<Frag->NAtoms;i++)
+	{
+		if(Frag->Atoms[i].mmType) g_free(Frag->Atoms[i].mmType);
+		Frag->Atoms[i].mmType = getMMTypeFromPDBTpl(residue, Frag->Atoms[i].pdbType,&charge);
+		if(strcmp(Frag->Atoms[i].mmType,"UNK"))  Frag->Atoms[i].Charge = charge;
+	}
+	for(i=0;i<Frag->NAtoms;i++)
+		if(!strcmp(Frag->Atoms[i].mmType,"UNK")) break;
+	if(i!=Frag->NAtoms) calculTypesAmberForAFragment(Frag);
+
+}
+/********************************************************************************/
 static void SetAtom(Atom* A,gchar* symb,gfloat x,gfloat y,gfloat z,gfloat charge)
 {
-	A->Type = g_strdup(symb);
+	A->mmType = g_strdup(symb);
+	A->pdbType = g_strdup(symb);
 	A->Symb = g_strdup_printf("%c",toupper(symb[0]));
 
 	A->Coord[0] = (gdouble)x*(gdouble)ANG_TO_BOHR;
@@ -331,10 +357,10 @@ Fragment GetFragmentPPD(gchar* Name)
                 SetAtom(&F.Atoms[ 12 ], "HG21", 1.870f, -0.524f, 3.381f, 0.029f );
                 SetAtom(&F.Atoms[ 13 ], "HG22", 1.914f, 1.017f, 2.490f, 0.029f );
                 SetAtom(&F.Atoms[ 14 ], "HG23", 0.432f, 0.032f, 2.491f, 0.029f );
-                SetAtom(&F.Atoms[ 15 ], "CD1", 1.947f, -2.889f, 2.491f, -0.085f );
-                SetAtom(&F.Atoms[ 16 ], "HD11", 1.554f, -3.906f, 2.490f, 0.028f );
-                SetAtom(&F.Atoms[ 17 ], "HD12", 3.036f, -2.921f, 2.491f, 0.028f);
-                SetAtom(&F.Atoms[ 18 ], "HD13", 1.599f, -2.365f, 3.381f, 0.028f );
+                SetAtom(&F.Atoms[ 15 ], "CD", 1.947f, -2.889f, 2.491f, -0.085f );
+                SetAtom(&F.Atoms[ 16 ], "HD1", 1.554f, -3.906f, 2.490f, 0.028f );
+                SetAtom(&F.Atoms[ 17 ], "HD2", 3.036f, -2.921f, 2.491f, 0.028f);
+                SetAtom(&F.Atoms[ 18 ], "HD3", 1.599f, -2.365f, 3.381f, 0.028f );
 	}
 	else if ( !strcmp(Name, "Lleu" ) ){
 		F.NAtoms =  19;
@@ -834,10 +860,10 @@ Fragment GetFragmentPPD(gchar* Name)
                 SetAtom(&F.Atoms[ 12 ], "HG21", 3.882f, -1.301f, -2.135f, 0.029f );
                 SetAtom(&F.Atoms[ 13 ], "HG22", 3.927f, 0.239f, -1.245f, 0.029f );
                 SetAtom(&F.Atoms[ 14 ], "HG23", 3.882f, -1.301f, -0.355f, 0.029f );
-                SetAtom(&F.Atoms[ 15 ], "CD1", 1.946f, -2.889f, -2.490f, -0.085f );
-                SetAtom(&F.Atoms[ 16 ], "HD11", 1.554f, -3.905f, -2.490f, 0.028f );
-                SetAtom(&F.Atoms[ 17 ], "HD12", 1.598f, -2.365f, -3.380f, 0.028f );
-                SetAtom(&F.Atoms[ 18 ], "HD13", 3.036f, -2.920f, -2.490f, 0.028f );
+                SetAtom(&F.Atoms[ 15 ], "CD", 1.946f, -2.889f, -2.490f, -0.085f );
+                SetAtom(&F.Atoms[ 16 ], "HD1", 1.554f, -3.905f, -2.490f, 0.028f );
+                SetAtom(&F.Atoms[ 17 ], "HD2", 1.598f, -2.365f, -3.380f, 0.028f );
+                SetAtom(&F.Atoms[ 18 ], "HD3", 3.036f, -2.920f, -2.490f, 0.028f );
 	}
 	else if ( !strcmp(Name, "Dleu" ) ){
 		F.NAtoms = 19;
@@ -1077,6 +1103,7 @@ Fragment GetFragmentPPD(gchar* Name)
 	}
 	else
 		SetResidue(&F,"UNK");
+	SetMMTypes(&F);
 	return F;
 
 }

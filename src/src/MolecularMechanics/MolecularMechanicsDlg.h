@@ -22,6 +22,7 @@ DEALINGS IN THE SOFTWARE.
 
 void MolecularMechanicsEnergyDlg();
 void MolecularMechanicsMinimizeDlg();
+void MolecularMechanicsDynamicsDlg();
 
 #endif /* __GABEDIT_MOLECULARMECHANICSDLG_H__ */
 

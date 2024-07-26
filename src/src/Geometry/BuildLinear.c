@@ -78,7 +78,8 @@ static void build_linear_molecule(GtkWidget *w,gpointer data)
 	{
 		GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
 		GeomXYZ[j].Symb=g_strdup(Symb);
-		GeomXYZ[j].Type=g_strdup(Symb);
+		GeomXYZ[j].mmType=g_strdup(Symb);
+		GeomXYZ[j].pdbType=g_strdup(Symb);
 		GeomXYZ[j].Residue=g_strdup(Symb);
 		GeomXYZ[j].X=g_strdup_printf("%f",j*Distance);
 		GeomXYZ[j].Y=g_strdup("0.0");

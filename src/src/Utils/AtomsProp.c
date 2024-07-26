@@ -190,7 +190,7 @@ SAtomsProp prop_atom_get(const gchar *Symb)
 		}
 
 	}
-	Message("Sorry , Your atom is not defined "," Warning ",TRUE);
+	printf("Warning : Sorry , Your atom %s is not defined\n",Symb);
         i=0;
 	temp.name   = g_strdup(AtomsProp[i].name);
 	temp.symbol   = g_strdup(AtomsProp[i].symbol);

@@ -119,6 +119,7 @@ static void set_geom(GtkWidget *widget,gpointer data)
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_GAMESS) read_geom_conv_from_gamess_output_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_GAUSSIAN) read_geom_from_gaussian_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOLPRO) read_geom_from_molpro_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
+	if(GeomConv->fileType == GABEDIT_TYPEFILE_QCHEM) read_geom_from_qchem_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOLDEN) read_geom_from_molden_geom_conv_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_GABEDIT) read_geom_from_molden_geom_conv_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MPQC) read_geom_from_mpqc_output_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
@@ -572,6 +573,9 @@ GtkWidget *add_energies_curve( GtkWidget *WindowEnergies, DataGeomConv* GeomConv
 			case GABEDIT_TYPEFILE_MOLPRO :
           			Message("Sorry\n I can not read energies from your molpro log file\n"," Error ",TRUE);
 				break;
+			case GABEDIT_TYPEFILE_QCHEM :
+          			Message("Sorry\n I can not read energies from your molpro log file\n"," Error ",TRUE);
+				break;
 			case GABEDIT_TYPEFILE_MOLDEN :
         	  		Message("Sorry\n I can not read energies from your molden file\n"," Error ",TRUE);
 				break;
@@ -594,8 +598,7 @@ GtkWidget *add_energies_curve( GtkWidget *WindowEnergies, DataGeomConv* GeomConv
                 Hbox = gtk_hbox_new (FALSE, 0);
                 gtk_widget_ref (Hbox);
 		t = g_strdup_printf("Hbox%d",j);
-		g_object_set_data_full(G_OBJECT (Vbox), t,
-					  Hbox,(GtkDestroyNotify) gtk_widget_unref);
+		g_object_set_data_full(G_OBJECT (Vbox), t, Hbox,(GtkDestroyNotify) gtk_widget_unref);
 		g_free(t);
                 gtk_widget_show (Hbox);
                 gtk_box_pack_start(GTK_BOX(Vbox), Hbox,TRUE,TRUE,5);
@@ -721,6 +724,9 @@ void create_energies_curves(DataGeomConv* GeomConv,gint N)
 			break;
 		case GABEDIT_TYPEFILE_MOLPRO :
           		Message("Sorry\n I can not read energies from your molpro log file\n"," Error ",TRUE);
+			break;
+		case GABEDIT_TYPEFILE_QCHEM :
+          		Message("Sorry\n I can not read energies from your q-chme output file\n"," Error ",TRUE);
 			break;
 		case GABEDIT_TYPEFILE_MOLDEN :
           		Message("Sorry\n I can not read energies from your molden file\n"," Error ",TRUE);

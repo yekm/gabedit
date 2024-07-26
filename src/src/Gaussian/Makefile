@@ -12,7 +12,7 @@ all: compiling
 compiling: $(OBJECTS)
 
 clean:
-	@$(REMOVEFILE) *.chk p *o gabedit *.com *.out *.log *.test test* *.cpp  *old *.ps
+	@$(REMOVEFILE) *.chk p *o gabedit *.com *.out *.log *.test test* *.cpp  *old *.ps .*swp *~ 
 
 include Dep.mk
 #make dependance

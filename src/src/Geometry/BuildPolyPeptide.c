@@ -39,6 +39,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/FragmentsPPD.h"
 #include "../Geometry/RotFragments.h"
 #include "../Geometry/MenuToolBarGeom.h"
+#include "../MolecularMechanics/PDBTemplate.h"
 
 void dessine();
 void define_good_factor();
@@ -132,7 +133,8 @@ static void init_variables()
 		{
 			g_free(G[i].Prop.symbol);
 			g_free(G[i].Prop.name);
-			g_free(G[i].Type);
+			g_free(G[i].mmType);
+			g_free(G[i].pdbType);
 			g_free(G[i].Residue);
 		}
 
@@ -158,7 +160,8 @@ static void destroy_dlg(GtkWidget* Dlg,gpointer data)
 		{
 			g_free(G[i].Prop.symbol);
 			g_free(G[i].Prop.name);
-			g_free(G[i].Type);
+			g_free(G[i].mmType);
+			g_free(G[i].pdbType);
 			g_free(G[i].Residue);
 		}
 
@@ -196,9 +199,11 @@ static void define_geometry_to_draw()
 		geometry0[n].Z = G[i].Z;
 		geometry0[n].Charge = G[i].Charge;
 		geometry0[n].Prop = prop_atom_get(G[i].Prop.symbol);
-		geometry0[n].Type = g_strdup(G[i].Type);
+		geometry0[n].mmType = g_strdup(G[i].mmType);
+		geometry0[n].pdbType = g_strdup(G[i].pdbType);
 		geometry0[n].Residue = g_strdup(G[i].Residue);
 		geometry0[n].ResidueNumber = G[i].ResidueNumber;
+		geometry0[n].show = TRUE;
 		geometry0[n].Layer = HIGH_LAYER;
 		geometry0[n].Variable = FALSE;
 
@@ -210,9 +215,11 @@ static void define_geometry_to_draw()
 		geometry[n].Z = G[i].Z;
 		geometry[n].Charge = G[i].Charge;
 		geometry[n].Prop = prop_atom_get(G[i].Prop.symbol);
-		geometry[n].Type = g_strdup(geometry0[n].Type);
+		geometry[n].mmType = g_strdup(geometry0[n].mmType);
+		geometry[n].pdbType = g_strdup(geometry0[n].pdbType);
 		geometry[n].Residue = g_strdup(geometry0[n].Residue);
 		geometry[n].ResidueNumber = G[i].ResidueNumber;
+		geometry[n].show = TRUE;
 		geometry[n].N = n+1;
 		geometry[n].Layer = HIGH_LAYER;
 		geometry[n].Variable = FALSE;
@@ -327,35 +334,36 @@ static void add_fragment(gchar* what)
 		G[j].Y=Frag.Atoms[i].Coord[1];
 		G[j].Z=Frag.Atoms[i].Coord[2];
 		G[j].Charge=Frag.Atoms[i].Charge;
-		G[j].Type=g_strdup(Frag.Atoms[i].Type);
+		G[j].mmType=g_strdup(Frag.Atoms[i].mmType);
+		G[j].pdbType=g_strdup(Frag.Atoms[i].pdbType);
 		G[j].Residue=g_strdup(Frag.Atoms[i].Residue);
 		G[j].ResidueNumber=lastFragNumber+1;
 
 		G[j].Prop = prop_atom_get(Frag.Atoms[i].Symb);
 		G[j].N = j+1;
 
-		if(!strcmp(Frag.Atoms[i].Type,"C"))
+		if(!strcmp(Frag.Atoms[i].pdbType,"C"))
 		{
 			C =  j;
 			phiArray[ phiArrayCounter++ ] =  j;
 		}
 		else
-		if(!strcmp(Frag.Atoms[i].Type,"N"))
+		if(!strcmp(Frag.Atoms[i].pdbType,"N"))
 			N =  j;
 		else
-		if(!strcmp(Frag.Atoms[i].Type,"CA"))
+		if(!strcmp(Frag.Atoms[i].pdbType,"CA"))
 			CA = j;
 		else
-		if(!strcmp(Frag.Atoms[i].Type,"CH3"))
+		if(!strcmp(Frag.Atoms[i].pdbType,"CH3"))
 			CH3 = j;
 		else
-		if(!strcmp(Frag.Atoms[i].Type,"O"))
+		if(!strcmp(Frag.Atoms[i].pdbType,"O"))
 		{
 			O =  j;
 			phiArray[ phiArrayCounter++ ] =  j;
 		}
 		else
-		if(!strcmp(Frag.Atoms[i].Type,"H"))
+		if(!strcmp(Frag.Atoms[i].pdbType,"H"))
 		{
 			H =  j;
 			phiArray[ phiArrayCounter++ ] =  j;
@@ -404,7 +412,8 @@ static void add_fragment(gchar* what)
 
 	G[Nb].Charge = 0.0;
 	G[Nb].Prop = prop_atom_get("H");
-	G[Nb].Type = g_strdup("H");
+	G[Nb].mmType = g_strdup("H");
+	G[Nb].pdbType = g_strdup("H");
 	G[Nb].Residue = g_strdup("H");
 	G[Nb].ResidueNumber = lastFragNumber+1; 
 	G[Nb].N = Nb+1;
@@ -453,6 +462,20 @@ static void add_fragment(gchar* what)
 	lastPsi = psi;
 }
 /********************************************************************************/
+static gchar* getmmType(gchar* pdbtype, gchar* residue)
+{
+	gchar* mmType;
+	gdouble charge;
+
+	mmType = getMMTypeFromPDBTpl(residue,pdbtype,&charge);
+	if(!strcmp(mmType,"UNK"))
+	{
+		g_free(mmType);
+		return g_strdup(pdbtype);
+	}
+	return mmType;
+}
+/********************************************************************************/
 static void add_zwitterion()
 {
 	/* do first fragment*/
@@ -465,24 +488,24 @@ static void add_zwitterion()
 		if(G[i].ResidueNumber != 0)
 			continue;
 
-		if(!strcmp(G[i].Type,"N"))
+		if(!strcmp(G[i].pdbType,"N"))
 			firstN = i;
-		if(!strcmp(G[i].Type,"H"))
+		if(!strcmp(G[i].pdbType,"H"))
 			firstH = i;
-		if(!strcmp(G[i].Type,"CA"))
+		if(!strcmp(G[i].pdbType,"CA"))
 			firstCA = i;
-		if(!strcmp(G[i].Type,"C"))
+		if(!strcmp(G[i].pdbType,"C"))
 			firstC = i;
-		if(!strcmp(G[i].Type,"CH3"))
+		if(!strcmp(G[i].pdbType,"CH3"))
 			firstC = i;
-		if(!strcmp(G[i].Type,"HA1"))
+		if(!strcmp(G[i].pdbType,"HA1"))
 			firstHA1 = i;
 	}
 	if ( ( firstN != -1 ) && ( firstH != -1 ) && ( firstCA != -1 ) )
 	{
-		if(G[firstH].Type)
-			g_free(G[firstH].Type);
-		G[firstH].Type = g_strdup("1H");
+		if(G[firstH].pdbType)
+			g_free(G[firstH].pdbType);
+		G[firstH].pdbType = g_strdup("1H");
 
 		if(Nb>0)
 			G = g_realloc(G,(Nb+2)*sizeof(GeomDef));
@@ -495,7 +518,8 @@ static void add_zwitterion()
 
 		G[Nb].Charge = 0.0;
 		G[Nb].Prop = prop_atom_get("H");
-		G[Nb].Type = g_strdup("2H");
+		G[Nb].pdbType = g_strdup("2H");
+		G[Nb].mmType =getmmType(G[Nb].pdbType, G[0].Residue);
 		G[Nb].Residue = g_strdup(G[0].Residue);
 		G[Nb].ResidueNumber = 0;
 		G[Nb].N = Nb+1;
@@ -506,7 +530,9 @@ static void add_zwitterion()
 
 		G[Nb+1].Charge = 0.0;
 		G[Nb+1].Prop = prop_atom_get("H");
-		G[Nb+1].Type = g_strdup("3H");
+		G[Nb+1].pdbType = g_strdup("3H");
+		G[Nb+1].mmType =getmmType(G[Nb+1].pdbType, G[0].Residue);
+
 		G[Nb+1].Residue = g_strdup(G[0].Residue);
 		G[Nb+1].ResidueNumber = 0;
 		G[Nb+1].N = Nb+2;
@@ -539,17 +565,17 @@ static void add_zwitterion()
 		if(G[i].ResidueNumber != lastFragNumber)
 			continue;
 
-		if(!strcmp(G[i].Type,"N"))
+		if(!strcmp(G[i].pdbType,"N"))
 			firstN = i;
-		if(!strcmp(G[i].Type,"O"))
+		if(!strcmp(G[i].pdbType,"O"))
 			firstO = i;
-		if(!strcmp(G[i].Type,"CA"))
+		if(!strcmp(G[i].pdbType,"CA"))
 			firstCA = i;
-		if(!strcmp(G[i].Type,"C"))
+		if(!strcmp(G[i].pdbType,"C"))
 			firstC = i;
-		if(!strcmp(G[i].Type,"CH3"))
+		if(!strcmp(G[i].pdbType,"CH3"))
 			firstC = i;
-		if(!strcmp(G[i].Type,"HA1"))
+		if(!strcmp(G[i].pdbType,"HA1"))
 			firstHA1 = i;
 	}
 	if ( ( firstCA != -1 ) && ( firstC != -1 ) && ( firstO != -1 ) )
@@ -565,7 +591,7 @@ static void add_zwitterion()
 
 		G[Nb].Charge = 0.0;
 		G[Nb].Prop = prop_atom_get("O");
-		G[Nb].Type = g_strdup("OXT");
+		G[Nb].pdbType = g_strdup("OXT");
 		{
 			gint k;
 			gint n=0;
@@ -579,6 +605,7 @@ static void add_zwitterion()
 			}
 			G[Nb].Residue = g_strdup(G[k].Residue);
 		}
+		G[Nb].mmType =getmmType(G[Nb].pdbType, G[Nb].Residue);
 		G[Nb].ResidueNumber = lastFragNumber;
 		G[Nb].N = Nb+1;
 
@@ -613,45 +640,60 @@ static void delete_zwitterion()
 		if(G[i].ResidueNumber != 0)
 			continue;
 
-		if(!strcmp(G[i].Type,"N"))
+		if(!strcmp(G[i].pdbType,"N"))
 			firstN = i;
-		if(!strcmp(G[i].Type,"1H"))
+		if(!strcmp(G[i].pdbType,"1H"))
 			firstH1 = i;
-		if(!strcmp(G[i].Type,"2H"))
+		if(!strcmp(G[i].pdbType,"2H"))
 			firstH2 = i;
-		if(!strcmp(G[i].Type,"3H"))
+		if(!strcmp(G[i].pdbType,"3H"))
 			firstH3 = i;
 	}
 	if ( ( firstN != -1 ) && ( firstH1 != -1 ) && ( firstH2 != -1 ) &&( firstH3 != -1 ) )
 	{
 		G[firstH2].N = 0;
-		if(G[firstH2].Type)
-			g_free(G[firstH2].Type);
-		G[firstH2].Type = g_strdup("Unknown");
+		if(G[firstH2].pdbType)
+			g_free(G[firstH2].pdbType);
+		G[firstH2].pdbType = g_strdup("Unknown");
+
+		if(G[firstH2].mmType)
+			g_free(G[firstH2].mmType);
+		G[firstH2].mmType = g_strdup("Unknown");
 
 		G[firstH3].N = 0;
-		if(G[firstH3].Type)
-			g_free(G[firstH3].Type);
-		G[firstH3].Type = g_strdup("Unknown");
+		if(G[firstH3].pdbType)
+			g_free(G[firstH3].pdbType);
+		G[firstH3].pdbType = g_strdup("Unknown");
 
-		if(G[firstH1].Type)
-			g_free(G[firstH1].Type);
-		G[firstH1].Type = g_strdup("H");
+		if(G[firstH3].mmType)
+			g_free(G[firstH3].mmType);
+		G[firstH3].mmType = g_strdup("Unknown");
+
+		if(G[firstH1].pdbType)
+			g_free(G[firstH1].pdbType);
+		G[firstH1].pdbType = g_strdup("H");
+
+		if(G[firstH1].mmType)
+			g_free(G[firstH1].mmType);
+		G[firstH1].mmType = g_strdup("H");
 	}
 	for ( i = 0; i < Nb; i++ )
 	{
 		if(G[i].ResidueNumber != lastFragNumber)
 			continue;
 
-		if(!strcmp(G[i].Type,"OXT"))
+		if(!strcmp(G[i].pdbType,"OXT"))
 			firstOXT = i;
 	}
 	if ( firstOXT != -1 )
 	{
 		G[firstOXT].N = 0;
-		if(G[firstOXT].Type)
-			g_free(G[firstOXT].Type);
-		G[firstOXT].Type = g_strdup("Unknown");
+		if(G[firstOXT].pdbType)
+			g_free(G[firstOXT].pdbType);
+		G[firstOXT].pdbType = g_strdup("Unknown");
+		if(G[firstOXT].mmType)
+			g_free(G[firstOXT].mmType);
+		G[firstOXT].mmType = g_strdup("Unknown");
 	}
 	define_geometry_to_draw();
 	define_good_factor();
@@ -1295,6 +1337,13 @@ static void add_buttons(GtkWidget *Dlg,GtkWidget* box)
 		{"Asp","Glu","Hip","Lys","Ser","Val"},
 		{"Ace(N-cap)","Nme(C-cap)","Zwitterion","Undo Zwit." ,"00","00"}
 		};
+	static char *SymbOne[ColonneT][LigneT]={
+		{"A","C","G","H","M","T"},
+		{"R","C","H","I","F","Y"},
+		{"N","Q","H","L","P","W"},
+		{"D","E","H","K","S","V"},
+		{"00","00","00","00" ,"00","00"}
+		};
 
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
@@ -1312,7 +1361,13 @@ static void add_buttons(GtkWidget *Dlg,GtkWidget* box)
   {
 	  if(strcmp(Symb[j][i],"00"))
 	  {
-	  	button = gtk_button_new_with_label(Symb[j][i]);
+		gchar tmp[100];
+		if(strcmp(SymbOne[j][i],"00"))
+			sprintf(tmp,"%s (%s)",Symb[j][i],SymbOne[j][i]);
+		else
+			sprintf(tmp,"%s",Symb[j][i]);
+	  	button = gtk_button_new_with_label(tmp);
+
           	style=set_button_style(button_style,button,"H");
           	g_signal_connect(G_OBJECT(button), "clicked",
                             (GtkSignalFunc)build_polypeptide,(gpointer )Symb[j][i]);
