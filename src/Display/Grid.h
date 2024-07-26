@@ -54,6 +54,7 @@ gdouble thirdDirection[3];
 gdouble originOfCube[3];
 Grid* get_grid_laplacian(Grid* grid, gint nBoundary);
 Grid* get_grid_norm_gradient(Grid* grid, gint nBoundary);
+Grid* get_grid_sign_lambda2_density(Grid* grid, gint nBoundary);
 Grid* compute_mep_grid_using_multipol_from_density_grid(Grid* grid, gint lmax);
 gdouble** compute_multipol_from_grid(Grid* grid, gint lmax, gdouble xOff, gdouble yOff, gdouble zOff);
 Grid* compute_mep_grid_using_multipol_from_orbitals(gint N[],GridLimits limits, gint lmax);
@@ -78,6 +79,9 @@ gboolean compute_isovalue_percent_from_grid(Grid* grid, gboolean square, gdouble
 Grid* copyGrid(Grid* grid);
 Grid* compute_mep_grid_exact(gint N[],GridLimits limits);
 Grid* compute_mep_grid_using_orbitals(gint N[],GridLimits limits);
+void reset_boundary(Grid* grid, gint nBoundary);
+gdouble getLambda2(Grid* grid, gint i, gint j, gint k, gdouble* fcx, gdouble* fcy, gdouble* fcz, gdouble* lfcx, gdouble* lfcy, gdouble* lfcz, gint nBoundary);
+gboolean get_charge_transfer_centers(Grid* grid, gdouble* CN, gdouble* CP, gdouble *qn, gdouble* qp, gdouble* H);
 
 #endif /* __GABEDIT_GRID_H__ */
 

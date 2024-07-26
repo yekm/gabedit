@@ -64,7 +64,7 @@ static void build_linear_molecule(GtkWidget *w,gpointer data)
 	if(Nc<1)
 		return;
 
-	Dipole.def = FALSE;
+	init_dipole();
  	if(GeomXYZ) freeGeomXYZ();
  	if(VariablesXYZ) freeVariablesXYZ(VariablesXYZ);
 

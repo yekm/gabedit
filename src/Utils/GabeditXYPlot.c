@@ -2655,7 +2655,7 @@ static void build_fourier(GtkWidget* buttonDFT, gpointer user_data)
 			if(n>0) { X = g_realloc(X,n*sizeof(gdouble));  Y = g_realloc(Y,n*sizeof(gdouble));}
 			if(correction)
 			{
-				//gdouble conv = 1/scale*47992.36961128;/* 10^15Hz->Kelvin*/
+				/*gdouble conv = 1/scale*47992.36961128; 10^15Hz->Kelvin*/
 				gdouble conv = 1.43877505;/* cm-1=>Kelvin*/
 				gdouble fac = conv/temperature;
 				gdouble fac2 = fac/2;
@@ -5348,7 +5348,9 @@ static GtkWidget *add_point_types_combo(GtkWidget *hbox, XYPlotData* data)
 		"<span>&#9670;</span>", "<span>&#9674;</span>",
 		"<span>&#8226;</span>",
 		"<span><b>&#9788;</b></span>",
-		"<span>&#9651;</span>", "<span>&#9650;</span>"};
+		"<span>&#9651;</span>", "<span>&#9650;</span>",
+		"."
+		};
 	gint n = G_N_ELEMENTS (list);
 
 	store = gtk_tree_store_new (1,G_TYPE_STRING);
@@ -11026,4 +11028,111 @@ void gabedit_xyplot_help()
 	gtk_widget_show_all(dialog);
        gtk_window_set_modal (GTK_WINDOW (dialog), TRUE);
        g_free(tmp);
+}
+/****************************************************************************************/
+void gabedit_xyplot_set_data_line_width (GabeditXYPlot *xyplot, gdouble line_width)
+{
+	g_return_if_fail (xyplot != NULL);
+	g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+
+	if(line_width<0) line_width = 0;
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+	XYPlotData *current_data; 
+	GList *current_node; 
+ 
+	if (xyplot->data_list ){
+		current_node=g_list_first(xyplot->data_list);
+		current_data=(XYPlotData*)current_node->data;  
+		for (; current_node!=NULL; current_node=current_node->next)
+		{
+        		current_data=(XYPlotData*)current_node->data;  
+			current_data->line_width = line_width;
+		}
+	}
+	xyplot_free_legends(xyplot);
+	xyplot_build_legends(xyplot);  
+	xyplot_calculate_sizes(xyplot);
+
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+}
+/****************************************************************************************/
+void gabedit_xyplot_set_data_point_size (GabeditXYPlot *xyplot, gdouble point_size)
+{
+	g_return_if_fail (xyplot != NULL);
+	g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+
+	if(point_size<0) point_size = 0;
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+	XYPlotData *current_data; 
+	GList *current_node; 
+ 
+	if (xyplot->data_list ){
+		current_node=g_list_first(xyplot->data_list);
+		current_data=(XYPlotData*)current_node->data;  
+		for (; current_node!=NULL; current_node=current_node->next)
+		{
+        		current_data=(XYPlotData*)current_node->data;  
+			current_data->point_size = point_size;
+			xyplot_build_points_data(GABEDIT_XYPLOT(xyplot), current_data);
+		}
+	}
+	xyplot_free_legends(xyplot);
+	xyplot_build_legends(xyplot);  
+	xyplot_calculate_sizes(xyplot);
+
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+}
+/****************************************************************************************/
+void gabedit_xyplot_set_data_point_type (GabeditXYPlot *xyplot, gchar c)
+{
+	g_return_if_fail (xyplot != NULL);
+	g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+	XYPlotData *current_data; 
+	GList *current_node; 
+ 
+	if (xyplot->data_list ){
+		current_node=g_list_first(xyplot->data_list);
+		current_data=(XYPlotData*)current_node->data;  
+		for (; current_node!=NULL; current_node=current_node->next)
+		{
+        		current_data=(XYPlotData*)current_node->data;  
+			sprintf(current_data->point_str,"%c",c);
+			xyplot_build_points_data(GABEDIT_XYPLOT(xyplot), current_data);
+		}
+	}
+	xyplot_free_legends(xyplot);
+	xyplot_build_legends(xyplot);  
+	xyplot_calculate_sizes(xyplot);
+
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+}
+/****************************************************************************************/
+void gabedit_xyplot_set_data_point_color (GabeditXYPlot *xyplot, gdouble red, gdouble green, gdouble blue)
+{
+	g_return_if_fail (xyplot != NULL);
+	g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
+	XYPlotData *current_data; 
+	GList *current_node; 
+ 
+	if (xyplot->data_list ){
+		current_node=g_list_first(xyplot->data_list);
+		current_data=(XYPlotData*)current_node->data;  
+		for (; current_node!=NULL; current_node=current_node->next)
+		{
+        		current_data=(XYPlotData*)current_node->data;  
+			current_data->point_color.red = SCALE2(red);
+			current_data->point_color.green = SCALE2(green);
+			current_data->point_color.blue = SCALE2(blue);
+			xyplot_build_points_data(GABEDIT_XYPLOT(xyplot), current_data);
+		}
+	}
+	xyplot_free_legends(xyplot);
+	xyplot_build_legends(xyplot);  
+	xyplot_calculate_sizes(xyplot);
+
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
 }

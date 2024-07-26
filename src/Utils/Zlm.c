@@ -112,7 +112,7 @@ static void setCoefZlm(Zlm* zlm)
 	LXYZ* lxyz = zlm->lxyz;
 
 
-	//Norm = sqrt((2*l+1)/(4*PI))*sqrt(factorial(l+absm)/factorial(l-absm))*factorial(absm)/doubleFactorial(2*absm); 
+	/*Norm = sqrt((2*l+1)/(4*PI))*sqrt(factorial(l+absm)/factorial(l-absm))*factorial(absm)/doubleFactorial(2*absm); */
 	Norm = sqrt((2*l+1)/(4*PI))*sqrt(factorial(l+absm)*factorial(l-absm))/factorial(l)/pow(2.0,absm);
 	if(m != 0) Norm *= sqrt(2.0);
 

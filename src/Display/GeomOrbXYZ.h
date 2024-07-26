@@ -47,6 +47,8 @@ void gl_read_first_mopac_aux_file(GabeditFileChooser *SelecFile, gint response_i
 void gl_read_last_mopac_aux_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_first_nwchem_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_last_nwchem_file(GabeditFileChooser *SelecFile, gint response_id);
+void gl_read_first_psicode_file(GabeditFileChooser *SelecFile, gint response_id);
+void gl_read_last_psicode_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_nbo_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_first_qchem_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_last_qchem_file(GabeditFileChooser *SelecFile, gint response_id);

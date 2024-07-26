@@ -29,6 +29,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/UtilsGL.h"
 #include "../Utils/Utils.h"
 #include "../Common/Windows.h"
+#include "../Utils/GabeditTextEdit.h"
 
 /********************************************************************************/
 static void create_frame_dipole(GtkWidget *Dialogue,GtkWidget *vboxframe, gdouble DN[], gdouble DE[], gdouble D[], gdouble ne, gdouble z)
@@ -242,7 +243,7 @@ void compute_total_dipole()
 
 	Dipole.def = TRUE;
 	for(c=0;c<3;c++)
-		Dipole.Value[c] = D[c];
+		Dipole.value[c] = D[c];
 
 	create_dipole_window(DN,DE,D,ne,z);
 }
@@ -252,11 +253,11 @@ void Dipole_Draw()
 	V4d Specular = {1.0f,1.0f,1.0f,1.0f};
 	V4d Diffuse  = {0.0f,0.0f,1.0f,1.0f};
 	V4d Ambiant  = {0.0f,0.0f,0.1f,1.0f};
-	V3d Base1Pos  = {0.0f,0.0f,0.0f};
-	V3d Base2Pos  = {Dipole.Value[0],Dipole.Value[1],Dipole.Value[2]};
+	V3d Base1Pos  = {Dipole.origin[0],Dipole.origin[1],Dipole.origin[2]};
+	V3d Base2Pos  = {Dipole.origin[0]+Dipole.value[0],Dipole.origin[1]+Dipole.value[1],Dipole.origin[2]+Dipole.value[2]};
 	GLdouble radius = Dipole.radius;
 	V3d Center;
-	GLdouble scal = 2;
+	GLdouble scal = 1;
 	V3d Direction;
 	double lengt;
 	gint i;
@@ -273,14 +274,16 @@ void Dipole_Draw()
 	lengt = v3d_length(Direction);
 	if(radius<0.1) radius = 0.1;
 
+	Base2Pos[0] = Base1Pos[0]+Direction[0]*scal;
+	Base2Pos[1] = Base1Pos[1]+Direction[1]*scal;
+	Base2Pos[2] = Base1Pos[2]+Direction[2]*scal;
+
 	Direction[0] /= lengt;
 	Direction[1] /= lengt;
 	Direction[2] /= lengt;
 
-	Base2Pos[0] *= scal;
-	Base2Pos[1] *= scal;
-	Base2Pos[2] *= scal;
 
+/*
 	Center[0] = Base2Pos[0];
 	Center[1] = Base2Pos[1];
 	Center[2] = Base2Pos[2];
@@ -288,6 +291,10 @@ void Dipole_Draw()
 	Base2Pos[0] += Direction[0]*2*radius;
 	Base2Pos[1] += Direction[1]*2*radius;
 	Base2Pos[2] += Direction[2]*2*radius;
+*/
+	Center[0] = Base2Pos[0]- Direction[0]*2*radius;
+	Center[1] = Base2Pos[1]- Direction[1]*2*radius;
+	Center[2] = Base2Pos[2]- Direction[2]*2*radius;
 
 	Cylinder_Draw_Color(radius/2,Base1Pos,Center,Specular,Diffuse,Ambiant);
 	for(i=0;i<3;i++)
@@ -325,6 +332,150 @@ void DipShowList(GLuint diplist)
 			glCallList(diplist);
 
 }
+/********************************************************************************/
+static GtkWidget* showResultDlg(gchar *message,gchar *title)
+{
+	GtkWidget *dlgWin = NULL;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	GtkWidget *txtWid;
+	GtkWidget *button;
+
+
+	dlgWin = gtk_dialog_new();
+	gtk_widget_realize(GTK_WIDGET(dlgWin));
+
+	gtk_window_set_title(GTK_WINDOW(dlgWin),title);
+	gtk_window_set_position(GTK_WINDOW(dlgWin),GTK_WIN_POS_CENTER);
+  	/* gtk_window_set_modal (GTK_WINDOW (dlgWin), TRUE);*/
+	gtk_window_set_transient_for(GTK_WINDOW(dlgWin),GTK_WINDOW(PrincipalWindow));
+
+	g_signal_connect(G_OBJECT(dlgWin), "delete_event", (GCallback)gtk_widget_destroy, NULL);
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(dlgWin)->vbox), frame,TRUE,TRUE,0);
+
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	txtWid = create_text_widget(vboxframe,NULL,&frame);
+	if(message) gabedit_text_insert (GABEDIT_TEXT(txtWid), NULL, NULL, NULL,message,-1);   
+
+	gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(dlgWin)->action_area), FALSE);
+  
+	button = create_button(dlgWin,"Close");
+	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(dlgWin)->action_area), button, FALSE, TRUE, 5);  
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(dlgWin));
+
+	add_button_windows(title,dlgWin);
+	gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeight*0.6), (gint)(ScreenHeight*0.5));
+	gtk_widget_show_all(dlgWin);
+	return dlgWin;
+}
 /************************************************************************/
+void compute_charge_transfer_dipole()
+{
+	gdouble D[3];
+	gint c;
+	gdouble CN[3];
+	gdouble CP[3];
+	gdouble QCTp;
+	gdouble QCTm;
+	gdouble H;
 
+	gchar* str = NULL;
+	gchar* tmp = NULL;
+	gdouble module;
+	gdouble dist;
 
+	if(!grid)
+	{
+		GtkWidget* message =Message(_("Sorry, Grid not defined "),_("Error"),TRUE);
+  		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+		return;
+	}
+	if(!get_charge_transfer_centers(grid, CN, CP, &QCTm, &QCTp,&H)) return;
+
+	for(c=0;c<3;c++) D[c] = CP[c] - CN[c];
+
+	Dipole.def = TRUE;
+	for(c=0;c<3;c++) Dipole.value[c] = D[c]*(fabs(QCTp)+fabs(QCTm))/2;
+	for(c=0;c<3;c++) Dipole.value[c] *= AUTODEB;
+	for(c=0;c<3;c++) Dipole.origin[c] = CN[c];
+
+	dist = 0;
+	for(c=0;c<3;c++) dist += D[c]*D[c];
+	dist = sqrt(dist);
+
+	str = g_strdup_printf(
+				" Index of Spatial Extent in Charge-Transfer Excitations\n"
+				" See Le Bahers et al. J. Chem. Theory Comput. 7, 2498 (2011)\n\n"
+				);
+
+	tmp = str;
+	str = g_strdup_printf("%s Donor center (Bohr) = %f %f %f\n",tmp,CN[0],CN[1],CN[2]);
+	g_free(tmp);
+
+	tmp = str;
+	str = g_strdup_printf("%s Acceptor center (Bohr) = %f %f %f\n",tmp,CP[0],CP[1],CP[2]);
+	g_free(tmp);
+
+	tmp = str;
+	str = g_strdup_printf("%s H index (Bohr) = %f\n",tmp,H);
+	g_free(tmp);
+
+	tmp = str;
+	str = g_strdup_printf("%s DCT Distance bteween the 2 centers(Bohr) = %f\n\n",tmp,dist);
+	g_free(tmp);
+
+	tmp = str;
+	str = g_strdup_printf("%s Sum of positive density difference = %f\n",tmp,QCTp);
+	g_free(tmp);
+
+	tmp = str;
+	str = g_strdup_printf("%s Sum of negative density difference = %f\n\n",tmp,QCTm);
+	g_free(tmp);
+
+	for(c=0;c<3;c++) CP[c] *= BOHR_TO_ANG;
+	for(c=0;c<3;c++) CN[c] *= BOHR_TO_ANG;
+
+	tmp = str;
+	str = g_strdup_printf("%s Donor center (Ang) = %f %f %f\n",tmp,CN[0],CN[1],CN[2]);
+	g_free(tmp);
+
+	tmp = str;
+	str = g_strdup_printf("%s Acceptor center (Ang) = %f %f %f\n",tmp,CP[0],CP[1],CP[2]);
+	g_free(tmp);
+
+	tmp = str;
+	str = g_strdup_printf("%s H index (Ang) = %f\n",tmp,H*BOHR_TO_ANG);
+	g_free(tmp);
+
+	tmp = str;
+	str = g_strdup_printf("%s DCT Distance bteween the 2 centers(Ang) = %f\n\n",tmp,dist*BOHR_TO_ANG);
+	g_free(tmp);
+
+	tmp = str;
+	str = g_strdup_printf("%s t = DCT-H (Ang) = %f\n\n",tmp,(dist-H)*BOHR_TO_ANG);
+	g_free(tmp);
+
+	tmp = str;
+	str = g_strdup_printf("%s Dipole (Debye) = %f %f %f\n\n",tmp,Dipole.value[0],Dipole.value[1],Dipole.value[2]);
+	g_free(tmp);
+
+	tmp = str;
+	str = g_strdup_printf(
+		"%s Please note that the vector showed in \"Display window\" is not the dipole.\n"
+		" It is a vector from the donor center to acceptor center\n",tmp);
+	g_free(tmp);
+
+	for(c=0;c<3;c++) Dipole.value[c] = D[c];
+	showResultDlg(str,"Charge-Transfer");
+
+	g_free(str);
+	//for(c=0;c<3;c++) Dipole.value[c] /= (fabs(QCTp)+fabs(QCTm))/2;
+}

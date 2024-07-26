@@ -37,6 +37,7 @@ struct _AmberAtomTypes
 	gint number;
 	gdouble masse;
 	gdouble polarisability;
+	gchar* description;
 };
 /************************************/
 struct _AmberBondStretchTerms

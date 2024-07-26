@@ -47,10 +47,12 @@ static gboolean readAmberTypes(AmberParameters* amberParameters, FILE* file)
 	gchar t[BSIZE];
 	gchar dumpName[BSIZE];
 	gchar dumpSymb[BSIZE];
+	gchar dumpDesc[BSIZE];
 	gint len = BSIZE;
 	gboolean Ok = FALSE;
 	gint n = 0;
 	AmberAtomTypes* types = NULL;
+	gint np;
 	/* Search Begin INPUT FOR  ATOM TYPES */ 
 
 	while(!feof(file))
@@ -88,15 +90,49 @@ static gboolean readAmberTypes(AmberParameters* amberParameters, FILE* file)
 
 
 
-		sscanf(t,"%s %s %d %lf %lf",
+		np = sscanf(t,"%s %s %d %lf %lf %s",
 			dumpName,
 			dumpSymb,
 			&types[n].number,
 			&types[n].masse,
-			&types[n].polarisability);
+			&types[n].polarisability,dumpDesc);
+
 	      	types[n].name = g_strdup(dumpName);	
 	      	types[n].symbol = g_strdup(dumpSymb);
 		types[n].number--;
+		/*printf("t=%s\n",t);*/
+		/*printf("dumpDesc=%s\n",dumpDesc);*/
+		if(np>=6) 
+		{
+			gchar** strsplit;
+			gint ls,l;
+			np = 0;
+			types[n].description = NULL;
+
+			ls = strlen(t);
+			for(l = 0;l<ls;l++) if(t[l]=='\t') t[l]=' ';
+			strsplit = gab_split(t);
+
+			while(strsplit[np])
+			{
+				/*printf("===> %s ", strsplit[np]);*/
+				if( np == 5 ) { types[n].description = g_strdup(strsplit[np]);}
+				if(np>5 && types[n].description) {
+					gchar* tmp = types[n].description;
+					types[n].description = g_strdup_printf("%s %s",tmp,strsplit[np]);
+					g_free(tmp);
+				}
+				np++;
+			}
+			/*printf("===>\n");*/
+			if(!types[n].description) types[n].description =  g_strdup(dumpSymb);
+			ls = strlen(types[n].description);
+			for(l = 0;l<ls;l++) if(types[n].description[l]=='\n') types[n].description[l]='\0';
+			g_strfreev(strsplit);
+			
+		}
+		else types[n].description =  g_strdup(dumpSymb);
+		
 
 		n++;
 		types = g_realloc(types,(n+1)*sizeof(AmberAtomTypes));
@@ -831,6 +867,7 @@ gboolean readAmberParameters(AmberParameters* amberParameters,gchar* filename)
 	FILE* file;
 	file = FOpen(filename,"rb");
 
+	/* printf("filename = %s\n",filename);*/
 	if(file == NULL)
 		return FALSE;
 	else

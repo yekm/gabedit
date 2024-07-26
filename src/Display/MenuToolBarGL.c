@@ -62,6 +62,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Display/IntegralOrbitals.h"
 #include "../Display/BondsOrb.h"
 #include "../Display/TriangleDraw.h"
+#include "../Display/NCI.h"
 #include "../Common/StockIcons.h"
 
 enum 
@@ -205,6 +206,11 @@ static void activate_action (GtkAction *action)
  		file_chooser_open(gl_read_first_nwchem_file,_("Read the first geometry from a NWChem output file"),GABEDIT_TYPEFILE_NWCHEM,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryNWChemLast"))
  		file_chooser_open(gl_read_last_nwchem_file,_("Read the last geometry from a NWChem output file"),GABEDIT_TYPEFILE_NWCHEM,GABEDIT_TYPEWIN_ORB);
+
+	else if(!strcmp(name ,"GeometryPsicodeFirst"))
+ 		file_chooser_open(gl_read_first_psicode_file,_("Read the first geometry from a Psicode output file"),GABEDIT_TYPEFILE_PSICODE,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name ,"GeometryPsicodeLast"))
+ 		file_chooser_open(gl_read_last_psicode_file,_("Read the last geometry from a Psicode output file"),GABEDIT_TYPEFILE_PSICODE,GABEDIT_TYPEWIN_ORB);
 
 	else if(!strcmp(name ,"GeometryNBO"))
  		file_chooser_open(gl_read_nbo_file,_("Read the geometry from a NBO output file(.31)"),GABEDIT_TYPEFILE_NBO_BASIS,GABEDIT_TYPEWIN_ORB);
@@ -579,6 +585,30 @@ static void activate_action (GtkAction *action)
 				create_iso_orbitals();
 			}
 	}
+	else if(!strcmp(name , "CubeSignLambda2Density")) 
+	{
+			Grid* sl2Grid = get_grid_sign_lambda2_density(grid,2);
+			if(sl2Grid)
+			{
+				free_grid(grid);
+				grid = sl2Grid;
+				TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
+				limits = grid->limits;
+				create_iso_orbitals();
+			}
+	}
+	else if(!strcmp(name , "NCISurface")) 
+	{
+			nci_surface_dlg("NCI Surface");
+	}
+	else if(!strcmp(name , "NCI2D")) 
+	{
+		nci2D_analysis_dlg("NCI 2D analysis");
+	}
+	else if(!strcmp(name , "NCIHelp")) 
+	{
+			help_nci();
+	}
 	else if(!strcmp(name , "ContoursFirst"))
 		create_contours(_("Contours in a plane perpendicular to first direction"),0);
 	else if(!strcmp(name , "ContoursSecond"))
@@ -681,6 +711,12 @@ static void activate_action (GtkAction *action)
 	{
 		RebuildGeom = TRUE;
 		compute_total_dipole();
+		glarea_rafresh(GLArea);
+	}
+	else if(!strcmp(name , "SetDipoleCT"))
+	{
+		compute_charge_transfer_dipole();
+		RebuildGeom = TRUE;
 		glarea_rafresh(GLArea);
 	}
 	else if(!strcmp(name , "SetMultipleBonds"))
@@ -851,6 +887,11 @@ static GtkActionEntry gtkActionEntries[] =
 		NULL, "Read the first geometry from a _NWChem output file", G_CALLBACK (activate_action) },
 	{"GeometryNWChemLast", GABEDIT_STOCK_NWCHEM, N_("Read the _last geometry from a _NWChem output file"), 
 		NULL, "Read the last geometry from a _NWChem output file", G_CALLBACK (activate_action) },
+	{"GeometryPsicode",     GABEDIT_STOCK_PSICODE, N_("Geometry _Psicode")},
+	{"GeometryPsicodeFirst", GABEDIT_STOCK_PSICODE, N_("Read the _first geometry from a Psicode output file"), 
+		NULL, "Read the first geometry from a _Psicode output file", G_CALLBACK (activate_action) },
+	{"GeometryPsicodeLast", GABEDIT_STOCK_PSICODE, N_("Read the _last geometry from a _Psicode output file"), 
+		NULL, "Read the last geometry from a _Psicode output file", G_CALLBACK (activate_action) },
 	{"GeometryNBO", GABEDIT_STOCK_NBO, N_("Read from a _NBO file (.31)"), 
 		NULL, "Read the geometry from a NBO file(.31)", G_CALLBACK (activate_action) },
 	{"GeometryQChem",     GABEDIT_STOCK_QCHEM, N_("Geometry Q-_Chem")},
@@ -949,6 +990,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"CubeLoadGabeditSave", GABEDIT_STOCK_SAVE, N_("_Save"), NULL, "Save in a Gabedit cube file", G_CALLBACK (activate_action) },
 	{"CubeComputeLaplacian", NULL, N_("Compute _laplacian"), NULL, "Compute laplacian", G_CALLBACK (activate_action) },
 	{"CubeComputeNormGradient", NULL, N_("Compute the norm of the _gradient"), NULL, "Compute the norm of the _gradient", G_CALLBACK (activate_action) },
+	{"CubeSignLambda2Density", NULL, N_("Multiply by the sign of the _middle eigenvalue of hessian"), NULL, "Compute sign _lambda2 * grid", G_CALLBACK (activate_action) },
 	{"CubeSubtract", NULL, N_("Su_btract"), NULL, "Subtract", G_CALLBACK (activate_action) },
 	{"CubeScale", NULL, N_("Scal_e"), NULL, "Scale", G_CALLBACK (activate_action) },
 	{"CubeSquare", NULL, N_("S_quare"), NULL, "Square", G_CALLBACK (activate_action) },
@@ -972,6 +1014,11 @@ static GtkActionEntry gtkActionEntries[] =
 	{"FEDNucleophilic", NULL, N_("Compute Frontier MO _nucleophilic susceptibility"), NULL, "Compute Frontier MO nucleophilic susceptibility", G_CALLBACK (activate_action) },
 	{"FEDRadical", NULL, N_("Compute Frontier MO _radical susceptibility"), NULL, "Compute Frontier MO radical susceptibility", G_CALLBACK (activate_action) },
 	{"FEDSetAlpha", NULL, N_("Set the value of _alpha parameter"), NULL, "Set the value of _alpha parameter", G_CALLBACK (activate_action) },
+
+	{"NCI",     NULL, N_("_NCI")},
+	{"NCI2D", NULL, N_("_NCI 2D analysis"), NULL, "NCI 2D analysis", G_CALLBACK (activate_action) },
+	{"NCISurface", NULL, N_("Compute _NCI surface"), NULL, "Compute NCI from density grid", G_CALLBACK (activate_action) },
+	{"NCIHelp", NULL, N_("_Refs for non-covalent interactions (NCI) index analysis"), NULL, "help nci", G_CALLBACK (activate_action) },
 
 	{"SAS",     NULL, N_("_SAS")},
 	{"SASCompute", NULL, N_("_Solvent Accessible Surface"), NULL, "Compute and draw Solvent Accessible Surface", G_CALLBACK (activate_action) },
@@ -1051,6 +1098,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SetSurfaceColors", NULL, N_("_Surface colors"), NULL, "set surface colors", G_CALLBACK (activate_action) },
 	{"SetDipole", NULL, N_("_Dipole"), NULL, "set dipole", G_CALLBACK (activate_action) },
 	{"SetDipoleDensity", NULL, N_("_Compute Dipole from density"), NULL, "Compute Dipole from density", G_CALLBACK (activate_action) },
+	{"SetDipoleCT", NULL, N_("_Compute Charge transfert Dipole from density difference"), NULL, "Compute CT Dipole from density difference", G_CALLBACK (activate_action) },
 	{"SetAllBonds", NULL, N_("Compute all _bonds"), NULL, "Compute all bonds", G_CALLBACK (activate_action) },
 	{"SetMultipleBonds", NULL, N_("Compute _multiple bonds"), NULL, "Compute multiple bonds", G_CALLBACK (activate_action) },
 	{"SetPropertiesOfAtoms", NULL, N_("P_roperties of atoms"), NULL, "set the properties of atoms", G_CALLBACK (activate_action) },
@@ -1591,6 +1639,11 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"GeometryNWChemFirst\" action=\"GeometryNWChemFirst\" />\n"
 "        <menuitem name=\"GeometryNWChemLast\" action=\"GeometryNWChemLast\" />\n"
 "      </menu>\n"
+"      <separator name=\"sepMenuPsicodeGeom\" />\n"
+"      <menu name=\"GeometryPsicode\" action=\"GeometryPsicode\">\n"
+"        <menuitem name=\"GeometryPsicodeFirst\" action=\"GeometryPsicodeFirst\" />\n"
+"        <menuitem name=\"GeometryPsicodeLast\" action=\"GeometryPsicodeLast\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuOrcaGeom\" />\n"
 "      <menu name=\"GeometryQChem\" action=\"GeometryQChem\">\n"
 "        <menuitem name=\"GeometryQChemFirst\" action=\"GeometryQChemFirst\" />\n"
@@ -1684,6 +1737,8 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"CubeComputeLaplacian\" action=\"CubeComputeLaplacian\" />\n"
 "      <separator name=\"sepMenuCubeComputeNormGradient\" />\n"
 "      <menuitem name=\"CubeComputeNormGradient\" action=\"CubeComputeNormGradient\" />\n"
+"      <separator name=\"sepMenuCubeSignLambda2Density\" />\n"
+"      <menuitem name=\"CubeSignLambda2Density\" action=\"CubeSignLambda2Density\" />\n"
 "      <separator name=\"sepMenuCubeSub\" />\n"
 "      <menuitem name=\"CubeSubtract\" action=\"CubeSubtract\" />\n"
 "      <separator name=\"sepMenuCubeScale\" />\n"
@@ -1710,6 +1765,14 @@ static const gchar *uiMenuInfo =
 "    <menu name=\"ELF\" action = \"ELF\">\n"
 "        <menuitem name=\"ELFSavin\" action=\"ELFSavin\" />\n"
 "        <menuitem name=\"ELFBecke\" action=\"ELFBecke\" />\n"
+"    </menu>\n"
+
+"    <separator name=\"sepMenuNCI\" />\n"
+"    <menu name=\"NCI\" action = \"NCI\">\n"
+"        <menuitem name=\"NCI2D\" action=\"NCI2D\" />\n"
+"        <menuitem name=\"NCISurface\" action=\"NCISurface\" />\n"
+"         <separator name=\"sepMenuNCIHelp\" />\n"
+"        <menuitem name=\"NCIHelp\" action=\"NCIHelp\" />\n"
 "    </menu>\n"
 /*
 "        <menuitem name=\"ELFSavinAttractors\" action=\"ELFSavinAttractors\" />\n"
@@ -1879,6 +1942,7 @@ static const gchar *uiMenuInfo =
 "        <separator name=\"sepMenuSetDipole\" />\n"
 "        <menuitem name=\"SetDipole\" action=\"SetDipole\" />\n"
 "        <menuitem name=\"SetDipoleDensity\" action=\"SetDipoleDensity\" />\n"
+"        <menuitem name=\"SetDipoleCT\" action=\"SetDipoleCT\" />\n"
 "        <separator name=\"sepMenuSetBonds\" />\n"
 "        <menuitem name=\"SetAllBonds\" action=\"SetAllBonds\" />\n"
 "        <menuitem name=\"SetMultipleBonds\" action=\"SetMultipleBonds\" />\n"
@@ -2123,6 +2187,7 @@ static void set_sensitive_cube()
 	GtkWidget *cubeColor = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeColorMapping");
 	GtkWidget *cubeComputeLap = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeComputeLaplacian");
 	GtkWidget *cubeComputeGard = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeComputeNormGradient");
+	GtkWidget *cubesl2Gard = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeSignLambda2Density");
 	gboolean sensitive = TRUE;
   	if(!grid) sensitive = FALSE;
 	if(GTK_IS_WIDGET(cubeSave)) gtk_widget_set_sensitive(cubeSave, sensitive);
@@ -2135,12 +2200,14 @@ static void set_sensitive_cube()
 	if(GTK_IS_WIDGET(cubeColor)) gtk_widget_set_sensitive(cubeColor, sensitive);
 	if(GTK_IS_WIDGET(cubeComputeLap)) gtk_widget_set_sensitive(cubeComputeLap, sensitive);
 	if(GTK_IS_WIDGET(cubeComputeGard)) gtk_widget_set_sensitive(cubeComputeGard, sensitive);
+	if(GTK_IS_WIDGET(cubesl2Gard)) gtk_widget_set_sensitive(cubesl2Gard, sensitive);
 }
 /*********************************************************************************************************************/
 static void set_sensitive_density()
 {
 	GtkWidget *density = gtk_ui_manager_get_widget (manager, "/MenuGL/Density");
 	GtkWidget *elf = gtk_ui_manager_get_widget (manager, "/MenuGL/ELF");
+	GtkWidget *nci = gtk_ui_manager_get_widget (manager, "/MenuGL/NCI");
 	GtkWidget *fed = gtk_ui_manager_get_widget (manager, "/MenuGL/Fukui");
 	GtkWidget *atomic = gtk_ui_manager_get_widget (manager, "/MenuGL/Density/DensityAtomics");
 	GtkWidget *bonds = gtk_ui_manager_get_widget (manager, "/MenuGL/Density/DensityBonds");
@@ -2173,6 +2240,7 @@ static void set_sensitive_density()
 		if(GTK_IS_WIDGET(sas)) gtk_widget_set_sensitive(sas, FALSE);
 		if(GTK_IS_WIDGET(density)) gtk_widget_set_sensitive(density, FALSE);
 		if(GTK_IS_WIDGET(elf)) gtk_widget_set_sensitive(elf, FALSE);
+		if(GTK_IS_WIDGET(nci)) gtk_widget_set_sensitive(nci, FALSE);
 		if(GTK_IS_WIDGET(fed)) gtk_widget_set_sensitive(fed, FALSE);
 		return;
 	}
@@ -2195,6 +2263,8 @@ static void set_sensitive_density()
 	}
 
 	if(GTK_IS_WIDGET(sas)) gtk_widget_set_sensitive(sas, TRUE);
+	if(GTK_IS_WIDGET(nci)) gtk_widget_set_sensitive(nci, FALSE);
+	if(grid && GTK_IS_WIDGET(nci)) gtk_widget_set_sensitive(nci, TRUE);
 	if(!GeomOrb || !CoefAlphaOrbitals)
 	{
 		if(GTK_IS_WIDGET(density)) gtk_widget_set_sensitive(density, FALSE);
@@ -2214,6 +2284,7 @@ static void set_sensitive_density()
 	}
 	if(GTK_IS_WIDGET(atomic)) gtk_widget_set_sensitive(atomic, TRUE);
 	if(GTK_IS_WIDGET(bonds)) gtk_widget_set_sensitive(bonds, TRUE);
+
 }
 /*********************************************************************************************************************/
 static void set_sensitive_contours()
@@ -2288,9 +2359,11 @@ static void set_sensitive_surfaces()
 static void set_sensitive_set()
 {
 	GtkWidget *computeDipole = gtk_ui_manager_get_widget (manager, "/MenuGL/Set/SetDipoleDensity");
+	GtkWidget *computeCTDipole = gtk_ui_manager_get_widget (manager, "/MenuGL/Set/SetDipoleCT");
 	gboolean sensitive = TRUE;
   	if(!grid) sensitive = FALSE;
 	if(GTK_IS_WIDGET(computeDipole)) gtk_widget_set_sensitive(computeDipole, sensitive);
+	if(GTK_IS_WIDGET(computeCTDipole)) gtk_widget_set_sensitive(computeCTDipole, sensitive);
 }
 /*********************************************************************************************************************/
 static void set_sensitive_export()

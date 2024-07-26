@@ -124,7 +124,7 @@ static gboolean read_geomorb_qchem_file_geom(gchar *FileName)
   		return FALSE;
  	}
 
-  	Dipole.def = FALSE;
+  	init_dipole();
 	free_data_all();
 	tmp = get_name_file(FileName);
 	set_status_label_info(_("File name"),tmp);

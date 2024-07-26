@@ -704,7 +704,6 @@ static void multEqualInteriorRealGridMG(GridMG* g, gdouble a)
         		for(iz = iZBegin;iz <=iZEnd;iz++)
 				multValGridMG(g,ix,iy,iz,a);
 }
-//OLD
 /*********************************************************/
 static  void multEqualBoundaryRealGridMG(GridMG* g, gdouble a)
 {

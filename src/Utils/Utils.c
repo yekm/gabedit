@@ -190,6 +190,11 @@ void free_nwchem_commands()
 	free_commands_list(&nwchemCommands);
 }
 /********************************************************************************/
+void free_psicode_commands()
+{
+	free_commands_list(&psicodeCommands);
+}
+/********************************************************************************/
 void free_orca_commands()
 {
 	free_commands_list(&orcaCommands);
@@ -1122,6 +1127,21 @@ void create_commands_file()
 	}
 	fprintf(fd,"End\n");
 /*-----------------------------------------------------------------------------*/
+	fprintf(fd,"Begin Psicode\n");
+	str_delete_n(NameCommandPsicode);
+	delete_last_spaces(NameCommandPsicode);
+	delete_first_spaces(NameCommandPsicode);
+ 	fprintf(fd,"%s\n",NameCommandPsicode);
+ 	fprintf(fd,"%d\n",psicodeCommands.numberOfCommands);
+	for(i=0;i<psicodeCommands.numberOfCommands;i++)
+	{
+		str_delete_n(psicodeCommands.commands[i]);
+		delete_last_spaces(psicodeCommands.commands[i]);
+		delete_first_spaces(psicodeCommands.commands[i]);
+		fprintf(fd,"%s\n",psicodeCommands.commands[i]);
+	}
+	fprintf(fd,"End\n");
+/*-----------------------------------------------------------------------------*/
 	fprintf(fd,"Begin Orca\n");
 	str_delete_n(NameCommandOrca);
 	delete_last_spaces(NameCommandOrca);
@@ -1216,6 +1236,13 @@ void create_commands_file()
 	delete_last_spaces(nwchemDirectory);
 	delete_first_spaces(nwchemDirectory);
 	fprintf(fd,"%s\n",nwchemDirectory);
+	fprintf(fd,"End\n");
+
+	fprintf(fd,"Begin PsicodeDir\n");
+	str_delete_n(psicodeDirectory);
+	delete_last_spaces(psicodeDirectory);
+	delete_first_spaces(psicodeDirectory);
+	fprintf(fd,"%s\n",psicodeDirectory);
 	fprintf(fd,"End\n");
 
 	fprintf(fd,"Begin OrcaDir\n");
@@ -2062,6 +2089,65 @@ void read_commands_file()
 	}
 /*-----------------------------------------------------------------------------*/
  	if(fgets(t,taille,fd))
+	if(!strstr(t,"Begin Psicode"))
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd))
+	{
+ 		NameCommandPsicode= g_strdup(t);
+		str_delete_n(NameCommandPsicode);
+		delete_last_spaces(NameCommandPsicode);
+		delete_first_spaces(NameCommandPsicode);
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd) && atoi(t)>0)
+	{
+		free_psicode_commands();
+		psicodeCommands.numberOfCommands = atoi(t);
+		psicodeCommands.commands = g_malloc(psicodeCommands.numberOfCommands*sizeof(gchar*));
+		for(i=0;i<psicodeCommands.numberOfCommands;i++)
+			psicodeCommands.commands[i]  = g_strdup(" ");
+		for(i=0;i<psicodeCommands.numberOfCommands;i++)
+		{
+			if(!fgets(t,taille,fd) || strstr(t,"End"))
+			{
+				free_psicode_commands();
+  				psicodeCommands.numberOfCommands = 1;
+  				psicodeCommands.numberOfDefaultCommand = 0;
+  				psicodeCommands.commands = g_malloc(sizeof(gchar*));
+  				psicodeCommands.commands[0] = g_strdup("nohup psicode");
+
+				fclose(fd);
+				return;
+			}
+			else
+			{
+				psicodeCommands.commands[i] = g_strdup(t); 
+				str_delete_n(psicodeCommands.commands[i]);
+				delete_last_spaces(psicodeCommands.commands[i]);
+				delete_first_spaces(psicodeCommands.commands[i]);
+			}
+		}
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(!fgets(t,taille,fd)) /* End of Psicode */
+	{
+		fclose(fd);
+		return;
+	}
+/*-----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*/
+ 	if(fgets(t,taille,fd))
 	if(!strstr(t,"Begin Orca"))
 	{
 		fclose(fd);
@@ -2425,6 +2511,37 @@ void read_commands_file()
 		return;
 	}
  	if(!fgets(t,taille,fd)) /* End of NWChemDir */
+	{
+		fclose(fd);
+		return;
+	}
+/*-----------------------------------------------------------------------------*/
+ 	if(fgets(t,taille,fd))
+	if(!strstr(t,"Begin PsicodeDir"))
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd))
+	{
+ 		psicodeDirectory= g_strdup(t);
+		str_delete_n(psicodeDirectory);
+		delete_last_spaces(psicodeDirectory);
+		delete_first_spaces(psicodeDirectory);
+#ifdef G_OS_WIN32
+		{
+		gchar t[BBSIZE];
+		sprintf(t,"%s;%s",psicodeDirectory,g_getenv("PATH"));
+		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
+		}
+#endif
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(!fgets(t,taille,fd)) /* End of PsicodeDir */
 	{
 		fclose(fd);
 		return;
@@ -2989,6 +3106,7 @@ void initialise_name_commands()
 	NameCommandQChem=g_strdup("qc");
 	NameCommandOrca=g_strdup("orca");
 	NameCommandNWChem=g_strdup("nwchem");
+	NameCommandPsicode=g_strdup("psi4");
 	NameCommandMopac=g_strdup("MOPAC2009");
 	NameCommandPovray=g_strdup("start /w pvengine /nr /exit /render +A0.3 -UV");
 #else
@@ -3001,6 +3119,7 @@ void initialise_name_commands()
 	NameCommandQChem=g_strdup("qchem");
 	NameCommandOrca=g_strdup("orca");
 	NameCommandNWChem=g_strdup("nwchem");
+	NameCommandPsicode=g_strdup("psi4");
 	NameCommandMopac=g_strdup("/opt/mopac/MOPAC2009.exe");
 	NameCommandPovray=g_strdup("povray +A0.3 -UV");
 #endif
@@ -3011,6 +3130,7 @@ void initialise_name_commands()
 	gamessDirectory= g_strdup_printf("C:%sWinGAMESS",G_DIR_SEPARATOR_S);
 	orcaDirectory= g_strdup_printf("C:%sORCA_DevCenter%sorca%sx86_exe%srelease%sOrca",G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
 	nwchemDirectory= g_strdup_printf("C:%sNWChem",G_DIR_SEPARATOR_S);
+	psicodeDirectory= g_strdup_printf("C:%sPsicode",G_DIR_SEPARATOR_S);
 	fireflyDirectory= g_strdup_printf("C:%sFIREFLY",G_DIR_SEPARATOR_S);
 	mopacDirectory= g_strdup_printf("\"C:%sProgram Files%sMOPAC\"",G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
 	povrayDirectory= g_strdup_printf("\"C:%sProgram Files%sPovRay%sbin\"",G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
@@ -3022,6 +3142,7 @@ void initialise_name_commands()
 	gamessDirectory= g_strdup_printf("%s%sGamess",g_get_home_dir(),G_DIR_SEPARATOR_S);
 	orcaDirectory= g_strdup_printf("%s%sOrca",g_get_home_dir(),G_DIR_SEPARATOR_S);
 	nwchemDirectory= g_strdup_printf("%s%sNWChem",g_get_home_dir(),G_DIR_SEPARATOR_S);
+	psicodeDirectory= g_strdup_printf("%s%sPsicode",g_get_home_dir(),G_DIR_SEPARATOR_S);
 	fireflyDirectory= g_strdup_printf("%s%sFireFly",g_get_home_dir(),G_DIR_SEPARATOR_S);
 	mopacDirectory= g_strdup_printf("/opt/mopac");
 	povrayDirectory= g_strdup_printf("/usr/local/bin");
@@ -3192,6 +3313,8 @@ void initialise_global_variables()
 #ifdef G_OS_WIN32
   orcaCommands.commands[2] = g_strdup("orca");
 #endif
+
+/*---------------------------------------------------------------------*/
 	nwchemCommands.numberOfCommands = 2;
 #ifdef G_OS_WIN32
       nwchemCommands.numberOfCommands = 3;
@@ -3204,6 +3327,20 @@ void initialise_global_variables()
 #ifdef G_OS_WIN32
   nwchemCommands.commands[2] = g_strdup("nwchem");
 #endif
+/*---------------------------------------------------------------------*/
+	psicodeCommands.numberOfCommands = 2;
+#ifdef G_OS_WIN32
+      psicodeCommands.numberOfCommands = 3;
+#endif
+
+  psicodeCommands.numberOfDefaultCommand = 0;
+  psicodeCommands.commands = g_malloc(psicodeCommands.numberOfCommands*sizeof(gchar*));
+  psicodeCommands.commands[0] = g_strdup("nohup psicode");
+  psicodeCommands.commands[1] = g_strdup("submitPsicode 1:0:0");
+#ifdef G_OS_WIN32
+  psicodeCommands.commands[2] = g_strdup("psi4");
+#endif
+/*---------------------------------------------------------------------*/
 
 	fireflyCommands.numberOfCommands = 2;
 #ifdef G_OS_WIN32
@@ -3255,11 +3392,8 @@ void initialise_global_variables()
 
  
   initialise_batch_commands();
-  Dipole.def = FALSE;
-  Dipole.radius = 0.25;
-  Dipole.color[0] = 0;
-  Dipole.color[1] = 0;
-  Dipole.color[2] = 65535;
+  init_dipole();
+
   initAxis();
   initPrincipalAxisGL();
 	colorMapColors[0][0] = 1;
@@ -3597,7 +3731,7 @@ void get_dipole_from_gamess_output_file(FILE* fd)
   	gchar *t = g_malloc(BBSIZE*sizeof(gchar));
   	gchar* t1;
 
-	Dipole.def = FALSE;
+	init_dipole();
 
   	while(!feof(fd) )
 	{
@@ -3614,8 +3748,8 @@ void get_dipole_from_gamess_output_file(FILE* fd)
 				{
 					gint i;
     					if(!fgets(t,taille,fd))break;
-					sscanf(t,"%lf %lf %lf",&Dipole.Value[0],&Dipole.Value[1],&Dipole.Value[2]);
-					for(i=0;i<3;i++) Dipole.Value[i] /= AUTODEB;
+					sscanf(t,"%lf %lf %lf",&Dipole.value[0],&Dipole.value[1],&Dipole.value[2]);
+					for(i=0;i<3;i++) Dipole.value[i] /= AUTODEB;
 					Dipole.def = TRUE;
 					break;
 				}
@@ -3638,7 +3772,7 @@ void get_dipole_from_turbomole_output_file(FILE* fd)
   	gchar dum[100];
 
 
-	Dipole.def = FALSE;
+	init_dipole();
 
   	while(!feof(fd) )
 	{
@@ -3653,11 +3787,11 @@ void get_dipole_from_turbomole_output_file(FILE* fd)
 					gdouble d;
     					if(!fgets(t,taille,fd))break;
     					if(!fgets(t,taille,fd))break;/* x */
-					sscanf(t,"%s %lf %lf %lf",dum, &d, &d, &Dipole.Value[0]);
+					sscanf(t,"%s %lf %lf %lf",dum, &d, &d, &Dipole.value[0]);
     					if(!fgets(t,taille,fd))break;/* y */
-					sscanf(t,"%s %lf %lf %lf",dum, &d, &d, &Dipole.Value[1]);
+					sscanf(t,"%s %lf %lf %lf",dum, &d, &d, &Dipole.value[1]);
     					if(!fgets(t,taille,fd))break;/* z */
-					sscanf(t,"%s %lf %lf %lf",dum, &d, &d, &Dipole.Value[2]);
+					sscanf(t,"%s %lf %lf %lf",dum, &d, &d, &Dipole.value[2]);
 					Dipole.def = TRUE;
 					break;
 				}
@@ -3676,12 +3810,12 @@ void get_dipole_from_gaussian_output_file(FILE* fd)
 	gint ngrad = 0;
 	gint i;
 
-	Dipole.def = FALSE;
+	init_dipole();
 
   	while(!feof(fd) )
 	{
     		pdest = NULL;
-		Dipole.def = FALSE;
+		init_dipole();
     		if(!feof(fd)) { char* e = fgets(t,taille,fd);}
     		pdest = strstr( t, "Dipole moment (Debye)");
 
@@ -3693,17 +3827,17 @@ void get_dipole_from_gaussian_output_file(FILE* fd)
 			break;
 		Dipole.def = TRUE;
     		pdest = strstr( t, "X=")+2;
-		sscanf(pdest,"%lf",&Dipole.Value[0]);
+		sscanf(pdest,"%lf",&Dipole.value[0]);
     		pdest = strstr( t, "Y=")+2;
-		sscanf(pdest,"%lf",&Dipole.Value[1]);
+		sscanf(pdest,"%lf",&Dipole.value[1]);
     		pdest = strstr( t, "Z=")+2;
-		sscanf(pdest,"%lf",&Dipole.Value[2]);
+		sscanf(pdest,"%lf",&Dipole.value[2]);
 		/*
 		Debug("t =%s\n",t);
-		Debug("Dipole = %f %f %f\n",Dipole.Value[0],Dipole.Value[1],Dipole.Value[2]);
+		Debug("Dipole = %f %f %f\n",Dipole.value[0],Dipole.value[1],Dipole.value[2]);
 		*/
 		for(i=0;i<3;i++)
-			Dipole.Value[i] /= AUTODEB;
+			Dipole.value[i] /= AUTODEB;
 		break;
 		}
 		else
@@ -3729,7 +3863,7 @@ void get_dipole_from_molpro_output_file(FILE* fd)
   	gchar* t1;
   	gchar* t2;
 
-	Dipole.def = FALSE;
+	init_dipole();
 
   	while(!feof(fd) )
 	{
@@ -3741,10 +3875,10 @@ void get_dipole_from_molpro_output_file(FILE* fd)
 		{
 		Dipole.def = TRUE;
     		t2 = strstr( t1, ":")+2;
-		sscanf(t2,"%lf %lf %lf",&Dipole.Value[0],&Dipole.Value[1],&Dipole.Value[2]);
+		sscanf(t2,"%lf %lf %lf",&Dipole.value[0],&Dipole.value[1],&Dipole.value[2]);
 		/*
 		Debug("t =%s\n",t);
-		Debug("Dipole = %f %f %f\n",Dipole.Value[0],Dipole.Value[1],Dipole.Value[2]);
+		Debug("Dipole = %f %f %f\n",Dipole.value[0],Dipole.value[1],Dipole.value[2]);
 		*/
 		break;
 		}
@@ -3770,7 +3904,7 @@ void get_dipole_from_dalton_output_file(FILE* fd)
   	gchar* t2;
 	gchar dum[100];
 
-	Dipole.def = FALSE;
+	init_dipole();
 
   	while(!feof(fd) )
 	{
@@ -3785,15 +3919,15 @@ void get_dipole_from_dalton_output_file(FILE* fd)
     			if(!fgets(t,taille,fd))break;
     			t2 = strstr( t1, ":")+2;
     			if(!fgets(t,taille,fd))break;
-			sscanf(t,"%s %lf",dum, &Dipole.Value[0]);
+			sscanf(t,"%s %lf",dum, &Dipole.value[0]);
     			if(!fgets(t,taille,fd))break;
-			sscanf(t,"%s %lf",dum, &Dipole.Value[1]);
+			sscanf(t,"%s %lf",dum, &Dipole.value[1]);
     			if(!fgets(t,taille,fd))break;
-			sscanf(t,"%s %lf",dum, &Dipole.Value[2]);
+			sscanf(t,"%s %lf",dum, &Dipole.value[2]);
 			Dipole.def = TRUE;
 		/*
 			Debug("t =%s\n",t);
-			Debug("Dipole = %f %f %f\n",Dipole.Value[0],Dipole.Value[1],Dipole.Value[2]);
+			Debug("Dipole = %f %f %f\n",Dipole.value[0],Dipole.value[1],Dipole.value[2]);
 		*/
 			break;
 		}
@@ -3812,12 +3946,12 @@ void get_dipole_from_orca_output_file(FILE* fd)
   	gchar *t = g_malloc(BBSIZE*sizeof(gchar));
   	gchar* pdest;
 
-	Dipole.def = FALSE;
+	init_dipole();
 
   	while(!feof(fd) )
 	{
     		pdest = NULL;
-		Dipole.def = FALSE;
+		init_dipole();
     		if(!feof(fd)) { char* e = fgets(t,taille,fd);}
     		pdest = strstr( t, "Total Dipole Moment");
 
@@ -3825,7 +3959,7 @@ void get_dipole_from_orca_output_file(FILE* fd)
 		{
 			pdest = strstr( t,":")+1;
 			Dipole.def = TRUE;
-			sscanf(pdest,"%lf %lf %lf",&Dipole.Value[0],&Dipole.Value[1],&Dipole.Value[2]);
+			sscanf(pdest,"%lf %lf %lf",&Dipole.value[0],&Dipole.value[1],&Dipole.value[2]);
 			break;
 		}
 	}
@@ -3838,12 +3972,12 @@ void get_dipole_from_nwchem_output_file(FILE* fd)
   	gchar *t = g_malloc(BBSIZE*sizeof(gchar));
   	gchar* pdest;
 
-	Dipole.def = FALSE;
+	init_dipole();
 
   	while(!feof(fd) )
 	{
     		pdest = NULL;
-		Dipole.def = FALSE;
+		init_dipole();
     		if(!feof(fd)) { char* e = fgets(t,taille,fd);}
     		pdest = strstr( t, "Nuclear Dipole moment");
 		if(pdest)
@@ -3861,7 +3995,43 @@ void get_dipole_from_nwchem_output_file(FILE* fd)
 			if(!OK) break;
     			if(!fgets(t,taille,fd)) break;
 			Dipole.def = TRUE;
-			sscanf(pdest,"%lf %lf %lf",&Dipole.Value[0],&Dipole.Value[1],&Dipole.Value[2]);
+			sscanf(pdest,"%lf %lf %lf",&Dipole.value[0],&Dipole.value[1],&Dipole.value[2]);
+			break;
+		}
+	}
+	g_free(t);
+}
+/********************************************************************************/
+void get_dipole_from_psicode_output_file(FILE* fd)
+{
+ 	guint taille=BBSIZE;
+  	gchar *t = g_malloc(BBSIZE*sizeof(gchar));
+  	gchar* pdest;
+
+	init_dipole();
+
+  	while(!feof(fd) )
+	{
+    		pdest = NULL;
+		init_dipole();
+    		if(!feof(fd)) { char* e = fgets(t,taille,fd);}
+    		pdest = strstr( t, "Nuclear Dipole moment");
+		if(pdest)
+		{
+			gboolean OK = FALSE;
+  			while(!feof(fd) )
+			{
+    				if(!fgets(t,taille,fd)) break;
+				if(strstr(t,"---------------- ---------------- ----------------"))
+				{
+					OK = TRUE;
+					break;
+				}
+			}
+			if(!OK) break;
+    			if(!fgets(t,taille,fd)) break;
+			Dipole.def = TRUE;
+			sscanf(pdest,"%lf %lf %lf",&Dipole.value[0],&Dipole.value[1],&Dipole.value[2]);
 			break;
 		}
 	}
@@ -3876,12 +4046,12 @@ void get_dipole_from_qchem_output_file(FILE* fd)
 	gint ngrad = 0;
 	gint i;
 
-	Dipole.def = FALSE;
+	init_dipole();
 
   	while(!feof(fd) )
 	{
     		pdest = NULL;
-		Dipole.def = FALSE;
+		init_dipole();
     		if(!feof(fd)) { char* e = fgets(t,taille,fd);}
     		pdest = strstr( t, "Dipole Moment (Debye)");
 
@@ -3891,12 +4061,12 @@ void get_dipole_from_qchem_output_file(FILE* fd)
 		else break;
 		Dipole.def = TRUE;
     		pdest = strstr( t, "X")+2;
-		if(pdest) sscanf(pdest,"%lf",&Dipole.Value[0]);
+		if(pdest) sscanf(pdest,"%lf",&Dipole.value[0]);
     		pdest = strstr( t, "Y")+2;
-		if(pdest) sscanf(pdest,"%lf",&Dipole.Value[1]);
+		if(pdest) sscanf(pdest,"%lf",&Dipole.value[1]);
     		pdest = strstr( t, "Z")+2;
-		if(pdest) sscanf(pdest,"%lf",&Dipole.Value[2]);
-		for(i=0;i<3;i++) Dipole.Value[i] /= AUTODEB;
+		if(pdest) sscanf(pdest,"%lf",&Dipole.value[2]);
+		for(i=0;i<3;i++) Dipole.value[i] /= AUTODEB;
 		break;
 		}
 		else
@@ -3921,12 +4091,12 @@ void get_dipole_from_mopac_output_file(FILE* fd)
 	gint i;
 	gchar dum[100];
 
-	Dipole.def = FALSE;
+	init_dipole();
 
   	while(!feof(fd) )
 	{
     		pdest = NULL;
-		Dipole.def = FALSE;
+		init_dipole();
     		if(!feof(fd)) { char* e = fgets(t,taille,fd);}
     		pdest = strstr( t, "DIPOLE           X         Y         Z");
 
@@ -3937,8 +4107,8 @@ void get_dipole_from_mopac_output_file(FILE* fd)
     			if(!fgets(t,taille,fd)) break;
 			Dipole.def = TRUE;
     			pdest = strstr( t, "SUM")+2;
-			sscanf(t,"%s %lf %lf %lf",dum,&Dipole.Value[0],&Dipole.Value[1], &Dipole.Value[2]);
-			for(i=0;i<3;i++) Dipole.Value[i] /= AUTODEB;
+			sscanf(t,"%s %lf %lf %lf",dum,&Dipole.value[0],&Dipole.value[1], &Dipole.value[2]);
+			for(i=0;i<3;i++) Dipole.value[i] /= AUTODEB;
 			break;
 		}
 	}
@@ -3951,12 +4121,12 @@ void get_dipole_from_mopac_aux_file(FILE* fd)
   	gchar* pdest;
 	gint i;
 
-	Dipole.def = FALSE;
+	init_dipole();
 
   	while(!feof(fd) )
 	{
     		pdest = NULL;
-		Dipole.def = FALSE;
+		init_dipole();
     		if(!feof(fd)) { char* e = fgets(t,BBSIZE,fd);}
     		pdest = strstr( t, "DIPOLE:DEBYE=");
 
@@ -3964,11 +4134,11 @@ void get_dipole_from_mopac_aux_file(FILE* fd)
 		{
 			Dipole.def = TRUE;
     			pdest = strstr( t, "=")+1;
-			Dipole.Value[0] = 0;
-			Dipole.Value[1] = 0;
-			Dipole.Value[2] = 0;
-			if(pdest) sscanf(pdest,"%lf %lf %lf",&Dipole.Value[0], &Dipole.Value[1],&Dipole.Value[2]);
-			for(i=0;i<3;i++) Dipole.Value[i] /= AUTODEB;
+			Dipole.value[0] = 0;
+			Dipole.value[1] = 0;
+			Dipole.value[2] = 0;
+			if(pdest) sscanf(pdest,"%lf %lf %lf",&Dipole.value[0], &Dipole.value[1],&Dipole.value[2]);
+			for(i=0;i<3;i++) Dipole.value[i] /= AUTODEB;
 			break;
 		}
 	}
@@ -3988,14 +4158,19 @@ void set_dipole(GtkWidget* fp,gpointer data)
 	for(i=1;i<4;i++)
 	{
 		tentry = gtk_entry_get_text(GTK_ENTRY(entrys[i]));
-		Dipole.Value[i-1] = atof(tentry)*fact;
+		Dipole.value[i-1] = atof(tentry)*fact;
 	}
-	for(i=0;i<3;i++)
-		Dipole.Value[i] /= AUTODEB;
+	for(i=0;i<3;i++) Dipole.value[i] /= AUTODEB;
 
 	tentry = gtk_entry_get_text(GTK_ENTRY(entrys[4]));
 	Dipole.radius = atof(tentry)/AUTODEB;
 	if(Dipole.radius<1e-6) Dipole.radius = 0.1;
+
+	for(i=5;i<8;i++)
+	{
+		tentry = gtk_entry_get_text(GTK_ENTRY(entrys[i]));
+		Dipole.origin[i-5] = atof(tentry)/BOHR_TO_ANG;
+	}
 
 	Dipole.color[0] = color->red;
 	Dipole.color[1] = color->green;
@@ -4004,6 +4179,18 @@ void set_dipole(GtkWidget* fp,gpointer data)
 
         if(GeomDrawingArea != NULL)
 		 draw_geometry(NULL,NULL);
+}
+/**********************************************/
+void init_dipole()
+{
+	gint i;
+	Dipole.def= FALSE;
+	Dipole.radius = 0.25;
+	Dipole.color[0] = 0;
+	Dipole.color[1] = 0;
+	Dipole.color[2] = 65535;
+	for(i=0;i<3;i++) Dipole.value[i] = 0.0;
+	for(i=0;i<3;i++) Dipole.origin[i] = 0.0;
 }
 /**********************************************/
 void delete_last_spaces(gchar* str)
@@ -4312,6 +4499,22 @@ gboolean test_type_program_nwchem(FILE* file)
 	return FALSE;
 }
 /**********************************************************************************/
+gboolean test_type_program_psicode(FILE* file)
+{
+	gchar t[BBSIZE];
+	guint taille=BBSIZE;
+	fseek(file, 0L, SEEK_SET);
+	while(!feof(file))
+	{
+		if(!fgets(t, taille, file)) return FALSE;
+		if(strstr(t,"Psicode input") && strstr(t,"#")) return TRUE;
+		g_strup(t);
+		if(strstr(t,"GEOMETRY")) return TRUE;
+		if(strstr(t,"ZMATRIX")) return TRUE;
+	}
+	return FALSE;
+}
+/**********************************************************************************/
 gboolean test_type_program_orca(FILE* file)
 {
 	gchar t[BBSIZE];
@@ -4397,6 +4600,11 @@ gint get_type_of_program(FILE* file)
 	{
 		fseek(file, 0L, SEEK_SET);
 		return PROG_IS_NWCHEM;
+	}
+	if(test_type_program_psicode(file))
+	{
+		fseek(file, 0L, SEEK_SET);
+		return PROG_IS_PSICODE;
 	}
 	if(test_type_program_gaussian(file))
 	{
@@ -5150,4 +5358,165 @@ void getPositionsRadiusBond2(gdouble r, gdouble Orig[], gdouble Ci[], gdouble Cj
 	for(k=0;k<3;k++) C12[k] += Orig[k]; 
 	for(k=0;k<3;k++) C21[k] += Orig[k]; 
 	for(k=0;k<3;k++) C22[k] += Orig[k]; 
+}
+/*********************************************************************************************************************/
+void getCoefsGradient(gint nBoundary, gdouble xh, gdouble yh, gdouble zh, gdouble* fcx, gdouble* fcy, gdouble* fcz)
+{
+	gdouble* coefs =  g_malloc((nBoundary)*sizeof(gdouble));
+	gdouble xxh = 1.0;
+	gdouble yyh = 1.0;
+	gdouble zzh = 1.0;
+	gint i;
+	
+	switch(nBoundary)
+	{
+		case 1:{
+				gdouble denom = 2.0;
+				gdouble c[] = {-1.0};
+				for(i=0;i<nBoundary;i++) coefs[i] = c[i]/denom;
+				break;
+			}
+		case 2:{
+				gdouble denom =12.0;
+				gdouble c[] = { 1.0, -8.0};
+				for(i=0;i<nBoundary;i++) coefs[i] = c[i]/denom;
+				break;
+			}
+		case 3:{
+				gdouble denom =60.0;
+				gdouble c[] = { -1.0, +9.0, -45.0};
+				for(i=0;i<nBoundary;i++) coefs[i] = c[i]/denom;
+				break;
+			}
+		case 4:{
+				gdouble denom =840.0;
+				gdouble c[] = { 3.0, -32.0, +168.0, -672.0};
+				for(i=0;i<nBoundary;i++) coefs[i] = c[i]/denom;
+				break;
+			}
+		case 5:{
+				gdouble denom =2520.0 ;
+				gdouble c[] = { -2.0, +25.0, -150.0,+600.0, -2100.0};
+				for(i=0;i<nBoundary;i++) coefs[i] = c[i]/denom;
+				break;
+			}
+		case 6:{
+				gdouble denom =27720.0 ;
+				gdouble c[] = { 5.0, -72.0, +495.0, -2200.0, +7425.0, -23760.0};
+				for(i=0;i<nBoundary;i++) coefs[i] = c[i]/denom;
+				break;
+			}
+		case 7:{
+				gdouble denom =360360.0;
+				gdouble c[] = { -15.0, +245.0, -1911.0, +9555.0, -35035.0, +105105.0, -315315.0};
+				for(i=0;i<nBoundary;i++) coefs[i] = c[i]/denom;
+				break;
+			}
+		case 8:{
+				gdouble denom =720720.0;
+				gdouble c[] = { 7.0, -128.0, +1120.0, -6272.0, +25480.0, -81536.0, +224224.0, -640640.0};
+				for(i=0;i<nBoundary;i++) coefs[i] = c[i]/denom;
+				break;
+			}
+	}
+
+	xxh = 1.0 / (xh);
+	yyh = 1.0 / (yh);
+	zzh = 1.0 / (zh);
+
+	for(i=0;i<nBoundary;i++)
+	{
+		fcx[i] =  xxh * coefs[i];
+		fcy[i] =  yyh * coefs[i];
+		fcz[i] =  zzh * coefs[i];
+	}
+
+	g_free(coefs);
+}
+/*********************************************************************************************************************************/
+void getCoefsLaplacian(gint nBoundary, gdouble xh, gdouble yh, gdouble zh, gdouble* fcx, gdouble* fcy, gdouble* fcz, gdouble* cc)
+{
+	gdouble* coefs =  g_malloc((nBoundary+1)*sizeof(gdouble));
+	gdouble x2h = 1.0 / (xh * xh);
+	gdouble y2h = 1.0 / (yh * yh);
+	gdouble z2h = 1.0 / (zh * zh);
+	gint i;
+	
+	switch(nBoundary)
+	{
+		case 1:{
+				gdouble c[] = {-2.0, 1.0};
+				for(i=0;i<=nBoundary;i++)
+					coefs[i] = c[i];
+				break;
+			}
+		case 2:{
+				gdouble denom = 12.0;
+				gdouble c[] = {-30.0, 16.0, -1.0};
+				for(i=0;i<=nBoundary;i++)
+					coefs[i] = c[i]/denom;
+				break;
+			}
+		case 3:{
+				gdouble denom = 180.0;
+				gdouble c[] = {-490.0, 270.0,-27.0, 2.0};
+				for(i=0;i<=nBoundary;i++)
+					coefs[i] = c[i]/denom;
+				break;
+			}
+		case 4:{
+				gdouble denom = 5040.0;
+				gdouble c[] = {-14350.0, 8064.0, -1008.0, 128.0, -9.0};
+				for(i=0;i<=nBoundary;i++)
+					coefs[i] = c[i]/denom;
+				break;
+			}
+		case 5:{
+				gdouble denom = 25200.0;
+				gdouble c[] = {-73766.0, 42000.0, -6000.0, 1000.0, -125.0, 8.0};
+				for(i=0;i<=nBoundary;i++)
+					coefs[i] = c[i]/denom;
+				break;
+			}
+		case 6:{
+				gdouble denom = 831600.0;
+			 	gdouble c[] = {-2480478.0,1425600.0,-222750.0,44000.0,-7425.0,864.0,-50.0};
+				for(i=0;i<=nBoundary;i++)
+					coefs[i] = c[i]/denom;
+				break;
+			}
+		case 7:{
+				gdouble denom = 75675600.0;
+				gdouble c[] = {-228812298.0,132432300.0,-22072050.0,4904900.0,-1003275.0, 160524.0,-17150.0,900.0};
+				for(i=0;i<=nBoundary;i++)
+					coefs[i] = c[i]/denom;
+				break;
+			}
+		case 8:{
+				gdouble denom = 302702400.0;
+				gdouble c[] = {-924708642.0,538137600.0,-94174080.0,22830080.0,-5350800.0,1053696.0,-156800.0,15360.0,-735.0};
+				for(i=0;i<=nBoundary;i++)
+					coefs[i] = c[i]/denom;
+				break;
+			}
+	}
+
+	*cc = x2h + y2h + z2h;
+	*cc *= coefs[0];
+
+	for(i=0;i<=nBoundary;i++)
+	{
+		fcx[i] =  x2h * coefs[i];
+		fcy[i] =  y2h * coefs[i];
+		fcz[i] =  z2h * coefs[i];
+	}
+
+	g_free(coefs);
+}
+/*********************************************************************************/
+void swapDouble(gdouble* a, gdouble* b)
+{
+	gdouble c = *a;
+	*a = *b;
+	*b = c;
 }

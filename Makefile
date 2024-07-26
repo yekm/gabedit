@@ -17,6 +17,7 @@ NETWORK    = src/NetWork/*.o
 OPENGL     = src/Display/*.o
 FIREFLY   = src/FireFly/*.o
 NWCHEM    = src/NWChem/*.o
+PSICODE    = src/Psicode/*.o
 ORCA      = src/Orca/*.o
 QCHEM      = src/QChem/*.o
 SEMIEMP    = src/SemiEmpirical/*.o
@@ -29,13 +30,13 @@ IDC   = src/IsotopeDistribution/*.o
 OBJECTS = \
 	$(COMMON) $(CURVE) $(FILES) $(GAMESS) $(GAUSS) $(GEOM) $(MODELS) \
 	$(MOLCAS) $(MOLPRO) $(MOPAC) $(MPQC) $(MULTIGRID) $(NETWORK) \
-	$(OPENGL) $(FIREFLY) $(NWCHEM) $(ORCA) $(QCHEM) $(SEMIEMP) $(UTILS) \
+	$(OPENGL) $(FIREFLY) $(NWCHEM) $(PSICODE) $(ORCA) $(QCHEM) $(SEMIEMP) $(UTILS) \
 	$(SYMMETRY) $(VIBCORR) $(IDC)
 
 SUBDIRS = \
 	src/Display src/Common src/Files src/Gaussian \
  	src/Geometry src/Spectrum src/MolecularMechanics src/Molpro src/Molcas \
-	src/MPQC src/Gamess src/NWChem src/Orca src/QChem src/Mopac src/NetWork src/Utils \
+	src/MPQC src/Gamess src/NWChem  src/Psicode src/Orca src/QChem src/Mopac src/NetWork src/Utils \
 	src/Symmetry src/FireFly src/MultiGrid src/SemiEmpirical \
 	src/VibrationalCorrections src/IsotopeDistribution
 

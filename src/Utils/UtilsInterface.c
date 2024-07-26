@@ -34,6 +34,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../MPQC/MPQC.h"
 #include "../Orca/Orca.h"
 #include "../NWChem/NWChem.h"
+#include "../Psicode/Psicode.h"
 #include "../QChem/QChem.h"
 #include "../Mopac/Mopac.h"
 #include "../Gaussian/Gaussian.h"
@@ -1002,6 +1003,58 @@ FilePosTypeGeom get_geometry_type_from_nwchem_input_file(gchar *NomFichier)
   return j;
 }
 /**********************************************************************************/
+FilePosTypeGeom get_geometry_type_from_psicode_input_file(gchar *NomFichier)
+{
+ gchar *t;
+ FILE *fd;
+ guint taille=BSIZE;
+ FilePosTypeGeom j;
+
+ 
+ j.geomtyp=GEOM_IS_OTHER;
+ j.numline=0;
+ j.units=1;
+ /* printf("NomFichier=%s\n",NomFichier);*/
+ t = g_malloc(taille*sizeof(gchar));
+ fd = FOpen(NomFichier, "rb");
+ if(fd==NULL) return j;
+ while(!feof(fd) )    
+ {
+ 	if(!fgets(t, taille, fd)) break;
+	g_strup(t);
+		/* printf("t=%s\n",t);*/
+	if(strstr(t,"MOLECULE")) 
+	{
+		gint charge,mult;
+		gboolean OK = FALSE;
+		gint i;
+		if(fgets(t,taille,fd) && 2==sscanf(t,"%d %d",&charge,&mult)) OK = TRUE;
+		else OK = FALSE;
+		/* printf("t=%s\n",t);*/
+		if(OK && fgets(t,taille,fd))
+		{
+			gchar*t1 = g_malloc(taille*sizeof(gchar));
+			gchar*t2 = g_malloc(taille*sizeof(gchar));
+			gchar*t3 = g_malloc(taille*sizeof(gchar));
+			gchar*t4 = g_malloc(taille*sizeof(gchar));
+		/* printf("t=%s\n",t);*/
+        		i = sscanf(t,"%s %s %s %s",t1,t2,t3,t4);
+			if(i==4)j.geomtyp = GEOM_IS_XYZ;
+			else j.geomtyp = GEOM_IS_ZMAT;
+  			g_free(t1);
+  			g_free(t2);
+  			g_free(t3);
+  			g_free(t4);
+		}
+		break;
+	}
+  	j.numline++;
+  }
+  fclose(fd);
+  g_free(t);
+  return j;
+}
+/**********************************************************************************/
 FilePosTypeGeom get_geometry_type_from_orca_input_file(gchar *NomFichier)
 {
  gchar *t;
@@ -1238,6 +1291,19 @@ void read_geom_in_nwchem_input(gchar *NameFile)
     		Message(_("Sorry\nI can not read gemetry in NWChem input file\n"),_("Warning"),TRUE);
 }
 /**********************************************************************************/
+void read_geom_in_psicode_input(gchar *NameFile)
+{
+	FilePosTypeGeom j;
+ 	j=  get_geometry_type_from_psicode_input_file(NameFile);
+ 	if( j.geomtyp == GEOM_IS_XYZ)
+		read_XYZ_from_psicode_input_file(NameFile);
+      	else
+ 	if( j.geomtyp == GEOM_IS_ZMAT)
+		read_Zmat_from_psicode_input_file(NameFile);
+        else
+    		Message(_("Sorry\nI can not read gemetry in Psicode input file\n"),_("Warning"),TRUE);
+}
+/**********************************************************************************/
 void read_geom_in_orca_input(gchar *NameFile)
 {
 	FilePosTypeGeom j;
@@ -1441,6 +1507,7 @@ void get_doc(gchar *NomFichier)
 	else if( iprogram == PROG_IS_MPQC) read_geom_in_mpqc_input(NomFichier);
 	else if( iprogram == PROG_IS_ORCA) read_geom_in_orca_input(NomFichier);
 	else if( iprogram == PROG_IS_NWCHEM) read_geom_in_nwchem_input(NomFichier);
+	else if( iprogram == PROG_IS_PSICODE) read_geom_in_psicode_input(NomFichier);
 	else if( iprogram == PROG_IS_QCHEM) read_geom_in_qchem_input(NomFichier);
 	else if( iprogram == PROG_IS_MOPAC) read_geom_in_mopac_input(NomFichier);
 	else if(iprogram == PROG_IS_MOLCAS)
@@ -1733,6 +1800,13 @@ void new_doc_molcas(GtkWidget* wid, gpointer data)
  	newNWChem();
 	iprogram = PROG_IS_NWCHEM;
 	fileopen.command=g_strdup(NameCommandNWChem);
+}
+/********************************************************************************/
+void new_doc_psicode(GtkWidget* wid, gpointer data)
+{
+ 	newPsicode();
+	iprogram = PROG_IS_PSICODE;
+	fileopen.command=g_strdup(NameCommandPsicode);
 }
 /********************************************************************************/
  void new_doc_qchem(GtkWidget* wid, gpointer data)
@@ -2517,6 +2591,25 @@ void new_nwchem(GtkWidget *widget, gchar *data)
  	}
 }
 /**********************************************************************************/
+void new_psicode(GtkWidget *widget, gchar *data)
+{
+	gchar *t;
+ 	if(imodif == DATA_MOD_YES)
+        {
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
+		Continue_YesNo(new_doc_psicode, NULL,t);
+		g_free(t);
+        }
+        else
+        {
+		new_doc_psicode(NULL, NULL);
+		iprogram = PROG_IS_PSICODE;
+		fileopen.command=g_strdup(NameCommandPsicode);
+ 	}
+}
+/**********************************************************************************/
 void new_orca(GtkWidget *widget, gchar *data)
 {
 	gchar *t;
@@ -2930,9 +3023,9 @@ GtkWidget* set_dipole_dialog ()
   GtkWidget *button;
   GtkWidget *label;
   GtkStyle *style;
-  static GtkWidget* entrys[5];
+  static GtkWidget* entrys[8];
   static GdkColor color;
-  gchar* tlabel[5]={"Factor : ","X : ","Y : ","Z : ","Radius : "};
+  gchar* tlabel[8]={"Factor : ","X(D) : ","Y(D) : ","Z(D) : ","Radius : ","X0(Ang) : ","Y0(Ang) : ","Z0(Ang) : "};
   gint i;
 
   /* principal Window */
@@ -2974,7 +3067,7 @@ GtkWidget* set_dipole_dialog ()
 		}
 		else
 		{
-			gchar* t = g_strdup_printf("%f",Dipole.Value[i-1]*AUTODEB);
+			gchar* t = g_strdup_printf("%f",Dipole.value[i-1]*AUTODEB);
 			gtk_entry_set_text(GTK_ENTRY(entrys[i]),t);
 			g_free(t);
 		}
@@ -2985,6 +3078,22 @@ GtkWidget* set_dipole_dialog ()
 			gtk_entry_set_text(GTK_ENTRY(entrys[i]),"1.0");
 		else
 			gtk_entry_set_text(GTK_ENTRY(entrys[i]),"0.0");
+	}
+  }
+  for(i=5;i<8;i++)
+  {
+	hbox = create_hbox(vboxframe);
+	label = gtk_label_new (tlabel[i]);
+	gtk_widget_show (label);
+	gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, FALSE, 0);
+
+	entrys[i] = gtk_entry_new ();
+	gtk_widget_show (entrys[i]);
+	gtk_box_pack_start (GTK_BOX (hbox), entrys[i], FALSE, TRUE, 0);
+	{
+		gchar* t = g_strdup_printf("%f",Dipole.origin[i-5]*BOHR_TO_ANG);
+		gtk_entry_set_text(GTK_ENTRY(entrys[i]),t);
+		g_free(t);
 	}
   }
   hbox = gtk_hbox_new (TRUE, 0);
@@ -3014,12 +3123,9 @@ GtkWidget* set_dipole_dialog ()
 
   hbox = create_hbox(vboxall);
 
-  button = create_button(Fenetre,_("OK"));
+  button = create_button(Fenetre,_("Close"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  g_object_set_data(G_OBJECT (button), "Color", &color);
-  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(set_dipole),(gpointer)entrys);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_widget_destroy),GTK_OBJECT(fp));
-  gtk_widget_show (button);
 
   button = create_button(Fenetre,_("Apply"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
@@ -3027,9 +3133,14 @@ GtkWidget* set_dipole_dialog ()
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(set_dipole),(gpointer)entrys);
   gtk_widget_show (button);
 
-  button = create_button(Fenetre,_("Close"));
+
+  button = create_button(Fenetre,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
+  g_object_set_data(G_OBJECT (button), "Color", &color);
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(set_dipole),(gpointer)entrys);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_widget_destroy),GTK_OBJECT(fp));
+  gtk_widget_show (button);
+
 
   gtk_widget_show (button);
    
@@ -3114,12 +3225,11 @@ static gint doAutoCorr(gdouble** Dipole, gdouble* X, gint M)
 {
 	int m,n,j;
 	for (m = 0; m < M; m++) X[m] = 0.0;
-	// This algorithm was adapted from the formulas given in
-	// J. Kohanoff Comp. Mat. Sci. 2 221-232 (1994). The estimator 
-	// formulation used here is unbiased and statistically consistent, 
-   	// 
-   	// Looping through all time origins to collect an average -
-   	// 
+	/* This algorithm was adapted from the formulas given in
+	 J. Kohanoff Comp. Mat. Sci. 2 221-232 (1994). The estimator 
+	 formulation used here is unbiased and statistically consistent, 
+   	 Looping through all time origins to collect an average -
+   	*/ 
 	int NCorr = 3*M/4;
 	int Nav = M - NCorr;
    	for (m = 0; m < NCorr; m++)

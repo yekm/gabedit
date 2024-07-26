@@ -255,7 +255,7 @@ static void set_dipole_to_principal_axis()
 		for(i=0;i<3;i++)
 		{
 			M += A[i]*A[i];
-			M0 += Dipole.Value[i]*Dipole.Value[i];
+			M0 += Dipole.value[i]*Dipole.value[i];
 		}
 		M = sqrt(M);
 		M0 = sqrt(M0);

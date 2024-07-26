@@ -130,7 +130,7 @@ static gboolean read_geomorb_nbo_file_geom(gchar *fileName)
 	sscanf(t,"%d %d %d",&nAtoms,&nShell,&nExp);
 	if(!goToLine(file,"--------")) return FALSE;
 	if(nAtoms<1) return FALSE;
-  	Dipole.def = FALSE;
+  	init_dipole();
     	GeomOrb=g_malloc(nAtoms*sizeof(TypeGeomOrb));
 	uni = 1;
 
@@ -483,8 +483,6 @@ static gboolean read_basis_from_a_nbo_output_file(gchar *fileName)
 	lmax = 0;
 	for(is = 0; is<nShell; is++)
 	{
-		//fgets(t,BSIZE,file);
-		//printf("%s\n",t);
 		if(1!=fscanf(file,"%d",&numCenters[is])) break;
 		numCenters[is]--;
 		if(1!=fscanf(file,"%d",&nOrbs[is])) break;

@@ -31,22 +31,22 @@ UtilsInterface.o: UtilsInterface.c ../../Config.h ../Common/Global.h \
   ../Common/../Common/GabeditType.h ../Utils/Constants.h \
   ../Gaussian/GaussGlobal.h ../Files/FileChooser.h ../Gamess/Gamess.h \
   ../FireFly/FireFly.h ../Molcas/Molcas.h ../Molpro/Molpro.h \
-  ../MPQC/MPQC.h ../Orca/Orca.h ../NWChem/NWChem.h ../QChem/QChem.h \
-  ../Mopac/Mopac.h ../Gaussian/Gaussian.h ../Geometry/GeomGlobal.h \
-  ../Utils/UtilsInterface.h ../Geometry/InterfaceGeom.h ../Utils/Utils.h \
-  ../Utils/GabeditTextEdit.h ../Geometry/ResultsAnalise.h \
-  ../Geometry/EnergiesCurves.h ../Common/Windows.h ../Files/ListeFiles.h \
-  ../Geometry/GeomXYZ.h ../Geometry/GeomZmatrix.h \
-  ../Common/SplashScreen.h ../Display/ViewOrb.h ../Geometry/Fragments.h \
-  ../Geometry/DrawGeom.h ../Geometry/DrawGeomCairo.h \
-  ../Geometry/Fragments.h ../Common/Exit.h ../Molcas/MolcasVariables.h \
-  ../Molcas/MolcasGateWay.h ../Utils/GabeditXYPlot.h ../../pixmaps/Ok.xpm \
-  ../../pixmaps/Cancel.xpm ../../pixmaps/Yes.xpm ../../pixmaps/No.xpm \
-  ../../pixmaps/SaveMini.xpm ../../pixmaps/Close.xpm \
-  ../../pixmaps/Apply.xpm ../../pixmaps/Question.xpm \
-  ../../pixmaps/Warning.xpm ../../pixmaps/Error.xpm \
-  ../../pixmaps/Info.xpm ../../pixmaps/A0p.xpm ../../pixmaps/A0d.xpm \
-  ../../pixmaps/Open.xpm ../../pixmaps/Gabedit.xpm \
+  ../MPQC/MPQC.h ../Orca/Orca.h ../NWChem/NWChem.h ../Psicode/Psicode.h \
+  ../QChem/QChem.h ../Mopac/Mopac.h ../Gaussian/Gaussian.h \
+  ../Geometry/GeomGlobal.h ../Utils/UtilsInterface.h \
+  ../Geometry/InterfaceGeom.h ../Utils/Utils.h ../Utils/GabeditTextEdit.h \
+  ../Geometry/ResultsAnalise.h ../Geometry/EnergiesCurves.h \
+  ../Common/Windows.h ../Files/ListeFiles.h ../Geometry/GeomXYZ.h \
+  ../Geometry/GeomZmatrix.h ../Common/SplashScreen.h ../Display/ViewOrb.h \
+  ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Common/Exit.h \
+  ../Molcas/MolcasVariables.h ../Molcas/MolcasGateWay.h \
+  ../Utils/GabeditXYPlot.h ../../pixmaps/Ok.xpm ../../pixmaps/Cancel.xpm \
+  ../../pixmaps/Yes.xpm ../../pixmaps/No.xpm ../../pixmaps/SaveMini.xpm \
+  ../../pixmaps/Close.xpm ../../pixmaps/Apply.xpm \
+  ../../pixmaps/Question.xpm ../../pixmaps/Warning.xpm \
+  ../../pixmaps/Error.xpm ../../pixmaps/Info.xpm ../../pixmaps/A0p.xpm \
+  ../../pixmaps/A0d.xpm ../../pixmaps/Open.xpm ../../pixmaps/Gabedit.xpm \
   ../../pixmaps/Print.xpm ../../pixmaps/Next.xpm ../../pixmaps/Stop.xpm \
   ../../pixmaps/Play.xpm ../Common/StockIcons.h
 Vector3d.o: Vector3d.c ../../Config.h ../Common/Global.h \

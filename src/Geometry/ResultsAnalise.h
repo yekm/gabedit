@@ -44,6 +44,7 @@ void read_geometries_conv_mopac_irc(GabeditFileChooser *SelecFile, gint response
 void read_geometries_conv_orca(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_qchem(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_nwchem(GabeditFileChooser *SelecFile, gint response_id);
+void read_geometries_conv_psicode(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_gabedit(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_molden(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_mpqc(GabeditFileChooser *SelecFile, gint response_id);

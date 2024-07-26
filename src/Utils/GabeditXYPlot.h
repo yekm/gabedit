@@ -291,6 +291,10 @@ void gabedit_xyplot_set_x_label (GabeditXYPlot *xyplot, G_CONST_RETURN gchar* st
 void gabedit_xyplot_set_y_label (GabeditXYPlot *xyplot, G_CONST_RETURN gchar* str);
 GtkWidget* gabedit_xyplot_new_window(gchar* title, GtkWidget*parent);
 void gabedit_xyplot_help();
+void gabedit_xyplot_set_data_line_width (GabeditXYPlot *xyplot, gdouble line_width);
+void gabedit_xyplot_set_data_point_size (GabeditXYPlot *xyplot, gdouble point_size);
+void gabedit_xyplot_set_data_point_type (GabeditXYPlot *xyplot, gchar c);
+void gabedit_xyplot_set_data_point_color (GabeditXYPlot *xyplot, gdouble red, gdouble green, gdouble blue);
 
 G_END_DECLS
 

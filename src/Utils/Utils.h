@@ -124,10 +124,12 @@ void get_dipole_from_molpro_output_file(FILE* fd);
 void get_dipole_from_dalton_output_file(FILE* fd);
 void get_dipole_from_orca_output_file(FILE* fd);
 void get_dipole_from_nwchem_output_file(FILE* fd);
+void get_dipole_from_psicode_output_file(FILE* fd);
 void get_dipole_from_qchem_output_file(FILE* fd);
 void get_dipole_from_mopac_output_file(FILE* fd);
 void get_dipole_from_mopac_aux_file(FILE* fd);
 void set_dipole(GtkWidget* fp,gpointer data);
+void init_dipole();
 void read_commands_file();
 void read_network_file();
 void set_path();
@@ -165,6 +167,9 @@ void getvScaleBond(gdouble r, gdouble Center1[], gdouble Center2[], gdouble vSca
 void getPositionsRadiusBond3(gdouble r, gdouble Orig[], gdouble Center1[], gdouble Center2[], gdouble C11[], gdouble C12[],  gdouble C21[],  gdouble C22[], gdouble C31[],  gdouble C32[], gdouble radius[], gint type);
 void getPositionsRadiusBond2(gdouble r, gdouble Orig[], gdouble Center1[], gdouble Center2[], gdouble C11[], gdouble C12[],  gdouble C21[],  gdouble C22[], gdouble radius[], gint type);
 gdouble get_multipole_rank();
+void getCoefsGradient(gint nBoundary, gdouble xh, gdouble yh, gdouble zh, gdouble* fcx, gdouble* fcy, gdouble* fcz);
+void getCoefsLaplacian(gint nBoundary, gdouble xh, gdouble yh, gdouble zh, gdouble* fcx, gdouble* fcy, gdouble* fcz, gdouble* cc);
+void swapDouble(gdouble* a, gdouble* b);
 
 #endif /* __GABEDIT_UTILS_H__ */
 

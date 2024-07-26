@@ -707,7 +707,6 @@ static void create_gaussian_correction_vibration_file_dlg()
 	/* Show all */
 	gtk_widget_show_all (Win);
 }
-//HERE
 /********************************************************************************/
 static void print_gaussian_along_vibration_one_geometry(gchar* fileNameBas, FILE* file, G_CONST_RETURN gchar* keys, gint mode, gdouble delta)
 {
@@ -1295,7 +1294,7 @@ static gboolean read_gabedit_molden_geom(gchar *FileName)
 	gint j;
 	gint ne;
 
-	Dipole.def = FALSE;
+	init_dipole();
 
 	tmp = get_name_file(FileName);
 	set_status_label_info(_("File name"),tmp);
@@ -2061,7 +2060,7 @@ static gboolean read_molpro_geom(FILE*fd, gchar *FileName)
 	gint ne;
  	long geomposok = 0;
 
-	Dipole.def = FALSE;
+	init_dipole();
 
 	tmp = get_name_file(FileName);
 	set_status_label_info(_("File name"),tmp);
@@ -2797,7 +2796,7 @@ static gboolean read_gamess_geom(FILE* file, gchar *FileName)
  	for(i=0;i<5;i++) AtomCoord[i]=g_malloc(taille*sizeof(gchar));
  	t=g_malloc(taille);
 
-  	Dipole.def = FALSE;
+  	init_dipole();
 	free_geometry();
 	tmp = get_name_file(FileName);
 	set_status_label_info(_("File name"),tmp);
@@ -3091,7 +3090,7 @@ static gboolean read_gaussian_file_frequencies(gchar *FileName)
 	gint nfOld;
 
 
-	Dipole.def = FALSE;
+	init_dipole();
 	free_vibration();
 	vibration.numberOfAtoms = Ncenters;
 	vibration.geometry = g_malloc(Ncenters*sizeof(VibrationGeom));
@@ -3285,7 +3284,7 @@ static gboolean read_fchk_gaussian_file_frequencies(gchar *fileName)
 	idxIR = 3*nf;
 	idxRaman = 4*nf;
 
-	Dipole.def = FALSE;
+	init_dipole();
 	free_vibration();
 	vibration.numberOfAtoms = Ncenters;
 	vibration.geometry = g_malloc(Ncenters*sizeof(VibrationGeom));
@@ -3337,7 +3336,7 @@ static gboolean read_adf_geom(FILE*fd, gchar *FileName)
 	gint ne;
  	long geomposok = 0;
 
-	Dipole.def = FALSE;
+	init_dipole();
 
 	tmp = get_name_file(FileName);
 	set_status_label_info(_("File name"),tmp);
@@ -3759,7 +3758,7 @@ static gboolean read_qchem_file_frequencies(gchar *FileName)
 	gint nfOld;
 
 
-	Dipole.def = FALSE;
+	init_dipole();
 	free_vibration();
 	vibration.numberOfAtoms = Ncenters;
 	vibration.geometry = g_malloc(Ncenters*sizeof(VibrationGeom));
@@ -3931,7 +3930,7 @@ static gboolean read_nwchem_file_frequencies(gchar *FileName)
 	gint nfOld;
 
 
-	Dipole.def = FALSE;
+	init_dipole();
 	free_vibration();
 	vibration.numberOfAtoms = Ncenters;
 	vibration.geometry = g_malloc(Ncenters*sizeof(VibrationGeom));
@@ -4062,6 +4061,156 @@ static void read_nwchem_file(GabeditFileChooser *SelecFile, gint response_id)
 	read_nwchem_file_frequencies(FileName);
 }
 /********************************************************************************/
+static gboolean read_psicode_file_frequencies(gchar *FileName)
+{
+ 	gchar t[BSIZE];
+ 	gchar sdum1[BSIZE];
+ 	gboolean OK;
+ 	FILE *fd;
+ 	guint taille=BSIZE;
+	gint idum;
+	gint nf;
+
+	gdouble freq[6] = {0,0,0,0,0,0};
+	gdouble IRIntensity[6] = {0,0,0,0,0,0};
+	gdouble mass[6] = {1,1,1,1,1,1};
+	gdouble RamanIntensity[6]={0,0,0,0,0,0};
+	gdouble v[6][3];
+	gchar sym[6][BSIZE];
+	gint i;
+	gint j;
+	gint k;
+	gint nfOld;
+
+
+	init_dipole();
+	free_vibration();
+	vibration.numberOfAtoms = Ncenters;
+	vibration.geometry = g_malloc(Ncenters*sizeof(VibrationGeom));
+	for(j=0;j<Ncenters;j++)
+	{
+		vibration.geometry[j].symbol = g_strdup(GeomOrb[j].Symb);
+    		vibration.geometry[j].coordinates[0] = GeomOrb[j].C[0];
+    		vibration.geometry[j].coordinates[1] = GeomOrb[j].C[1];
+    		vibration.geometry[j].coordinates[2] = GeomOrb[j].C[2];
+    		vibration.geometry[j].partialCharge = GeomOrb[j].partialCharge;
+    		vibration.geometry[j].variable = GeomOrb[j].variable;
+    		vibration.geometry[j].nuclearCharge = GeomOrb[j].nuclearCharge;
+	}
+  	vibration.numberOfFrequences = 0;
+	vibration.modes = g_malloc(sizeof(VibrationMode));
+
+ 	fd = FOpen(FileName, "rb");
+	if(!fd) return FALSE;
+
+	for(j=0;j<6;j++)
+	{
+		sprintf(sym[j]," ");
+		for(k=0;k<3;k++) v[j][k] = 0;
+	}
+
+ 	do 
+ 	{
+ 		OK=FALSE;
+		gint ns = 0;
+ 		while(!feof(fd))
+		{
+    			{ char* e = fgets(t,taille,fd);}
+	 		if (strstr( t,"Frequencies in cm^-1; force constants in au.") ) 
+			{
+    				{ char* e = fgets(t,taille,fd);}
+    				{ char* e = fgets(t,taille,fd);}
+				OK = TRUE; 
+				break;
+			}
+		}
+		if(!OK) break;
+  		while(!feof(fd) )
+  		{
+			nf = sscanf(t,"%s %lf %lf %lf %lf %lf %lf", sdum1,&freq[0],&freq[1],&freq[2],&freq[3],&freq[4],&freq[5]);
+			nf--;
+			if(nf<1) break;
+			for(i=0;i<6;i++) sprintf(sym[i],"UNKNOWN");
+
+			nfOld = vibration.numberOfFrequences;
+  			vibration.numberOfFrequences += nf;
+			vibration.modes = g_realloc( vibration.modes, vibration.numberOfFrequences*sizeof(VibrationMode));
+
+			for(k=0;k<nf;k++)
+			{
+				vibration.modes[k+nfOld].frequence = freq[k];
+				vibration.modes[k+nfOld].effectiveMass = mass[k];
+				vibration.modes[k+nfOld].IRIntensity = IRIntensity[k];
+				vibration.modes[k+nfOld].RamanIntensity = RamanIntensity[k];
+				vibration.modes[k+nfOld].symmetry = g_strdup(sym[k]);
+				for(i=0;i<3;i++) 
+					vibration.modes[k+nfOld].vectors[i]= g_malloc(vibration.numberOfAtoms*sizeof(gdouble));
+			}
+			if(!fgets(t,taille,fd)) break;
+			vibration.modes[nfOld].IRIntensity = 0.0;
+			vibration.modes[nfOld].RamanIntensity = 0.0;
+			sscanf(t,"%s %s %lf", sdum1,sdum1, &vibration.modes[nfOld].effectiveMass);
+			vibration.modes[nfOld].effectiveMass /= (vibration.modes[nfOld].frequence/219474.63)*(vibration.modes[nfOld].frequence/219474.63);
+			vibration.modes[nfOld].effectiveMass /= 1822.88848121; 
+
+			if(!fgets(t,taille,fd)) break;
+			for(j=0;j<Ncenters && !feof(fd);j++)
+			{
+				if(!fgets(t,taille,fd)) break;
+				sscanf(t,"%s %lf %lf %lf", sdum1, &v[0][0], &v[1][0], &v[2][0]);
+				for(k=0;k<nf;k++)
+				{
+					for(i=0;i<3;i++) vibration.modes[k+nfOld].vectors[i][j]= v[i][0]; 
+				}
+			}
+			{
+				gdouble Ni = 0;
+				for(j=0;j<Ncenters;j++)
+				{
+    					gdouble mass = get_masse_from_symbol(vibration.geometry[j].symbol);
+					if(mass>0)
+					for(i=0;i<3;i++) Ni += vibration.modes[nfOld].vectors[i][j]*vibration.modes[nfOld].vectors[i][j]/mass;
+				}
+				if(Ni>0)vibration.modes[nfOld].effectiveMass /= Ni; 
+				/* printf("freq %f masseff %f Ni=%f\n",vibration.modes[nfOld].frequence,  vibration.modes[nfOld].effectiveMass,Ni);*/
+				for(j=0;j<Ncenters;j++)
+				{
+    					gdouble mass = get_masse_from_symbol(vibration.geometry[j].symbol);
+					if(mass>0)
+					for(i=0;i<3;i++) vibration.modes[nfOld].vectors[i][j] /= sqrt(mass); 
+				}
+			}
+			if(!fgets(t,taille,fd)) break;/* back space */
+			if(!fgets(t,taille,fd)) break;
+		}
+ 	}while(!feof(fd));
+	rafreshList();
+	if(vibration.numberOfFrequences<1)
+	{
+		GtkWidget* w = NULL;
+		gchar buffer[BSIZE];
+		sprintf(buffer,_("Sorry, I can not read frequencies from '%s' file\n"),FileName);
+  		w = Message(buffer,_("Error"),TRUE);
+		gtk_window_set_modal (GTK_WINDOW (w), TRUE);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+/********************************************************************************/
+static void read_psicode_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+	gchar *FileName;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+
+	stop_vibration(NULL, NULL);
+
+ 	gl_read_last_psicode_file(SelecFile, response_id);
+	read_psicode_file_frequencies(FileName);
+}
+/********************************************************************************/
 static gboolean read_orca_file_frequencies(gchar *FileName)
 {
  	gchar t[BSIZE];
@@ -4083,7 +4232,7 @@ static gboolean read_orca_file_frequencies(gchar *FileName)
 	gdouble dum;
 
 
-	Dipole.def = FALSE;
+	init_dipole();
 	free_vibration();
 	vibration.numberOfAtoms = Ncenters;
 	vibration.geometry = g_malloc(Ncenters*sizeof(VibrationGeom));
@@ -4319,6 +4468,16 @@ static void read_nwchem_file_dlg()
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
 /********************************************************************************/
+static void read_psicode_file_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_psicode_file,
+			"Read last geometry and frequencies from a Psicode output file",
+			GABEDIT_TYPEFILE_PSICODE,GABEDIT_TYPEWIN_ORB);
+
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+}
+/********************************************************************************/
 static void read_orca_file_dlg()
 {
 	GtkWidget* filesel = 
@@ -4379,7 +4538,7 @@ static void stop_vibration(GtkWidget *win, gpointer data)
 	buildBondsOrb();
 	RebuildGeom = TRUE;
 	ShowVibration = TRUE;
-	Dipole.def = FALSE;
+	init_dipole();
 	init_atomic_orbitals();
 	free_iso_all();
 	if(this_is_an_object((GtkObject*)GLArea))
@@ -5032,6 +5191,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "ReadFireFly")) read_gamess_file_dlg();
 	else if(!strcmp(name, "ReadQChem")) read_qchem_file_dlg();
 	else if(!strcmp(name, "ReadNWChem")) read_nwchem_file_dlg();
+	else if(!strcmp(name, "ReadPsicode")) read_psicode_file_dlg();
 	else if(!strcmp(name, "ReadMolden")) read_molden_file_dlg();
 	else if(!strcmp(name, "RemoveSelectedMode")) remove_selected_mode();
 	else if(!strcmp(name, "RemoveBeforeSelectedMode")) remove_all_modes_before_selected_mode();
@@ -5064,6 +5224,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadOrca", GABEDIT_STOCK_ORCA, "Read a _Orca output file", NULL, "Read a Orca output file", G_CALLBACK (activate_action) },
 	{"ReadFireFly", GABEDIT_STOCK_FIREFLY, "Read a _FireFly output file", NULL, "Read a FireFly output file", G_CALLBACK (activate_action) },
 	{"ReadNWChem", GABEDIT_STOCK_NWCHEM, "Read a _NWChem output file", NULL, "Read a NWChem output file", G_CALLBACK (activate_action) },
+	{"ReadPsicode", GABEDIT_STOCK_PSICODE, "Read a _Psicode output file", NULL, "Read a Psicode output file", G_CALLBACK (activate_action) },
 	{"ReadQChem", GABEDIT_STOCK_QCHEM, "Read a _Q-Chem output file", NULL, "Read a Q-Chem output file", G_CALLBACK (activate_action) },
 	{"ReadMolden", GABEDIT_STOCK_MOLDEN, "Read a Mol_den output file", NULL, "Read a Molden file", G_CALLBACK (activate_action) },
 	{"RemoveSelectedMode", GABEDIT_STOCK_CUT, "_Remove the selected mode", NULL, "Remove selected mode", G_CALLBACK (activate_action) },
@@ -5103,6 +5264,7 @@ static const gchar *uiMenuInfo =
 "    <menuitem name=\"ReadOrca\" action=\"ReadOrca\" />\n"
 "    <menuitem name=\"ReadQChem\" action=\"ReadQChem\" />\n"
 "    <menuitem name=\"ReadNWChem\" action=\"ReadNWChem\" />\n"
+"    <menuitem name=\"ReadPsicode\" action=\"ReadPsicode\" />\n"
 "    <menuitem name=\"ReadMolden\" action=\"ReadMolden\" />\n"
 "    <separator name=\"sepMenuPopRemove\" />\n"
 "    <menuitem name=\"RemoveSelectedMode\" action=\"RemoveSelectedMode\" />\n"
@@ -5137,6 +5299,7 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadOrca\" action=\"ReadOrca\" />\n"
 "        <menuitem name=\"ReadQChem\" action=\"ReadQChem\" />\n"
 "        <menuitem name=\"ReadNWChem\" action=\"ReadNWChem\" />\n"
+"        <menuitem name=\"ReadPsicode\" action=\"ReadPsicode\" />\n"
 "        <menuitem name=\"ReadMolden\" action=\"ReadMolden\" />\n"
 "      </menu>\n"
 "      <separator name=\"sepMenuSave\" />\n"
@@ -5282,6 +5445,7 @@ void read_modes(GabeditFileChooser *selecFile, gint response_id)
 	else if(fileType == GABEDIT_TYPEFILE_ORCA) read_orca_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_QCHEM) read_qchem_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_NWCHEM) read_nwchem_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_PSICODE) read_psicode_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_GABEDIT) read_gabedit_molden_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_MOLDEN) read_gabedit_molden_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_UNKNOWN) 

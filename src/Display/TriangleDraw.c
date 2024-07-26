@@ -110,13 +110,14 @@ void IsoDrawNoMapped(IsoSurface* iso)
 	gint j;
 	gint k;
 	gint n=0;;
+	gint nBoundary = 2;
 
 /*	glBegin(GL_TRIANGLES);*/
-	for(i=1;i<iso->N[0]-2;i++)
+	for(i=nBoundary;i<iso->N[0]-nBoundary-1;i++)
 	{
-		for(j=1;j<iso->N[1]-2;j++)
+		for(j=nBoundary;j<iso->N[1]-nBoundary-1;j++)
 		{
-			for(k=1;k<iso->N[2]-2;k++)
+			for(k=nBoundary;k<iso->N[2]-nBoundary-1;k++)
 			{
 				for(n=0;n<iso->cube[i][j][k].Ntriangles;n++)
 				{

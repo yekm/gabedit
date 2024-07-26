@@ -702,7 +702,6 @@ static void activate_dihedral_entry(GtkWidget* entry, gchar* data)
 		g_free(oldA);
 		return;
 	}
-//HERE
         if (GTK_TOGGLE_BUTTON (MoveGroupButton)->active) 
 	{
         	if (GTK_TOGGLE_BUTTON (Move23Button)->active) 

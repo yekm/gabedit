@@ -283,7 +283,8 @@ static void putOrcaMoleculeInTextEditor()
 			sprintf(X,"%f",x);
 			sprintf(Y,"%f",y);
 			sprintf(Z,"%f",z);
-			sprintf(buffer," %s  %s %s %s\n",orcaMolecule.listOfAtoms[i].symbol, X,Y,Z);
+			if(!strcmp(orcaMolecule.listOfAtoms[i].symbol,"X")) sprintf(buffer," %s  %s %s %s\n","DA", X,Y,Z);
+			else sprintf(buffer," %s  %s %s %s\n",orcaMolecule.listOfAtoms[i].symbol, X,Y,Z);
         		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer, -1);
 		}
 		sprintf(buffer,"*\n");
@@ -322,6 +323,9 @@ static void putOrcaMoleculeInTextEditor()
         	for(i=0;i<NcentersZmat;i++)
         	{
 			SAtomsProp prop = prop_atom_get(Geom[i].Symb);
+			gchar symb[100];
+			if(!strcmp(Geom[i].Symb,"X")) sprintf(symb,"%s","DA");
+			else sprintf(symb,"%s",Geom[i].Symb);
         		if(Geom[i].Nentry>NUMBER_ENTRY_ANGLE)
 			{
 				gchar R[100];
@@ -335,7 +339,7 @@ static void putOrcaMoleculeInTextEditor()
   				if(!test(Geom[i].Dihedral)) sprintf(D,"%f",get_value_variableZmat(Geom[i].Dihedral));
 
 				sprintf(buffer," %s  %s %s %s %s %s %s\n",
-						Geom[i].Symb,
+						symb,
 						Geom[i].NR, Geom[i].NAngle, Geom[i].NDihedral, 
 						R, A, D);
         			gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, &prop.color, buffer, -1);
@@ -350,7 +354,7 @@ static void putOrcaMoleculeInTextEditor()
 				sprintf(A,"%s",Geom[i].Angle);
   				if(!test(Geom[i].Angle)) sprintf(A,"%f",get_value_variableZmat(Geom[i].Angle));
 				sprintf(buffer," %s  %s %s %s %s %s %s\n",
-						Geom[i].Symb,
+						symb,
 						Geom[i].NR, Geom[i].NAngle, "0", 
 						R, A, "0.0");
         			gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, &prop.color, buffer, -1);
@@ -362,11 +366,11 @@ static void putOrcaMoleculeInTextEditor()
 				sprintf(R,"%s",Geom[i].R);
   				if(!test(Geom[i].R)) sprintf(R,"%f",get_value_variableZmat(Geom[i].R));
 				sprintf(buffer," %s  %s %s\n",
-						Geom[i].Symb,
+						symb,
 						Geom[i].NR,R
 						);
 				sprintf(buffer," %s  %s %s %s %s %s %s\n",
-						Geom[i].Symb,
+						symb,
 						Geom[i].NR, "0", "0", 
 						R, "0.0", "0.0");
         			gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, &prop.color, buffer, -1);
@@ -374,7 +378,7 @@ static void putOrcaMoleculeInTextEditor()
 			else
 			{
 				sprintf(buffer," %s  %s %s %s %s %s %s\n",
-						Geom[i].Symb,
+						symb,
 						"0", "0", "0",
 						"0.0", "0.0", "0.0");
         			gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, &prop.color, buffer, -1);

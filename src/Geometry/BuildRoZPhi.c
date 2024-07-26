@@ -100,7 +100,7 @@ static void build_rozphi_molecule(GtkWidget *w,gpointer data)
 	Ro = Distance/Ro; 
 
 	phi *= DEG_TO_RAD;
-	Dipole.def = FALSE;
+	init_dipole();
 
 
 	NcentersXYZ += Nc;

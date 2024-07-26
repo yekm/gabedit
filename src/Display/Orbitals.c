@@ -955,6 +955,7 @@ GtkWidget *create_iso_frame( GtkWidget *vboxall,gchar* title)
 	if(TypeGrid == GABEDIT_TYPEGRID_FEDELECTROPHILIC) v *= 3;
 	if(TypeGrid == GABEDIT_TYPEGRID_FEDNUCLEOPHILIC) v *= 3;
 	if(TypeGrid == GABEDIT_TYPEGRID_FEDRADICAL) v *= 3;
+	if(TypeGrid == GABEDIT_TYPEGRID_NCI) v = 0.1;
 		
 	strlabels[2][2] = g_strdup_printf("%lf",v);
 

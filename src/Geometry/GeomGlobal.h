@@ -79,14 +79,6 @@ typedef struct _GeomXYZAtomDef
  gint* typeConnections;
 }GeomXYZAtomDef;
 
-typedef struct _DipoleDef
-{
- gboolean def;
- gdouble Value[3];
- gdouble radius;
- gdouble color[3];
-}DipoleDef;
-
 typedef struct _GeomInter
 {
  GtkWidget *window; 

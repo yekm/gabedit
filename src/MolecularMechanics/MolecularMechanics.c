@@ -88,6 +88,10 @@ static void freeAmberParameters(AmberParameters* amberParameters)
 		if(amberParameters->atomTypes[i].name)
 			g_free(amberParameters->atomTypes[i].name);
 
+	for(i=0;i<amberParameters->numberOfTypes;i++)
+		if(amberParameters->atomTypes[i].name)
+			g_free(amberParameters->atomTypes[i].description);
+
 	amberParameters->numberOfTypes = 0;
 	if(amberParameters->atomTypes )
 		g_free(amberParameters->atomTypes );

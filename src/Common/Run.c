@@ -54,6 +54,7 @@ static GtkWidget* ButtonMolpro = NULL;
 static GtkWidget* ButtonMPQC = NULL;
 static GtkWidget* ButtonOrca = NULL;
 static GtkWidget* ButtonNWChem = NULL;
+static GtkWidget* ButtonPsicode = NULL;
 static GtkWidget* ButtonFireFly = NULL;
 static GtkWidget* ButtonQChem = NULL;
 static GtkWidget* ButtonMopac = NULL;
@@ -299,6 +300,22 @@ void set_default_entrys(GtkWidget *button,gpointer data)
 			gtk_label_set_text(GTK_LABEL(LabelExtFile), ".nw");
 			gtk_widget_show(LabelDataFile);
   			iprogram = PROG_IS_NWCHEM;
+		}
+		else
+		if(button == ButtonPsicode )
+		{
+  			for(i=0;i<nwchemCommands.numberOfCommands;i++)
+				glist = g_list_append(glist,nwchemCommands.commands[i]);
+
+  			gtk_combo_box_entry_set_popdown_strings( ComboCommand, glist) ;
+
+  			g_list_free(glist);
+			gtk_entry_set_text (GTK_ENTRY (EntryCommand), NameCommandPsicode);
+			if(fileopen.command && !strstr(fileopen.command,"gamess.") && strlen(fileopen.command)>0)
+			       	gtk_entry_set_text (GTK_ENTRY (EntryCommand), fileopen.command);
+			gtk_label_set_text(GTK_LABEL(LabelExtFile), ".psi");
+			gtk_widget_show(LabelDataFile);
+  			iprogram = PROG_IS_PSICODE;
 		}
 		else
 		if(button == ButtonQChem )
@@ -1188,6 +1205,79 @@ static gboolean create_cmd_nwchem(G_CONST_RETURN gchar* command, gboolean local,
 		fprintf(fcmd,"rm -f %s.db\n",fileopen.projectname);
 #endif
 		fprintf(fcmd,"%s %s > %s.out &\n",command,fileopen.datafile,fileopen.projectname);
+		fprintf(fcmd,"exit\n");
+	}
+	else
+	{
+		 fprintf(fcmd,"%s %s &\n",command,fileopen.datafile);
+		 fprintf(fcmd,"exit\n");
+	}
+	fclose(fcmd);
+#ifndef G_OS_WIN32
+  	sprintf(buffer,"chmod u+x %s",cmdall);
+	{ int i = system(buffer);}
+#endif
+	if(commandStr) g_free(commandStr);
+	return TRUE;
+}
+/***********************************************************************************************************/
+static gboolean create_cmd_psicode(G_CONST_RETURN gchar* command, gboolean local, gchar* cmddir, gchar* cmdfile, gchar* cmdall)
+{
+        FILE* fcmd = NULL;
+	gchar* commandStr = g_strdup(command);
+#ifndef G_OS_WIN32
+	gchar buffer[BSIZE];
+#endif
+	delete_last_spaces(commandStr);
+	delete_first_spaces(commandStr);
+
+	if(local)
+  		sprintf(cmddir,"%s", fileopen.localdir);
+	else
+		sprintf(cmddir,"%s%stmp", gabedit_directory(), G_DIR_SEPARATOR_S);
+
+#ifndef G_OS_WIN32
+	sprintf(cmdfile,"%s.cmd", fileopen.projectname);
+#else
+	if(!local) sprintf(cmdfile,"%s.cmd", fileopen.projectname);
+	else sprintf(cmdfile,"%s.bat", fileopen.projectname);
+#endif
+  	sprintf(cmdall,"%s%s%s",cmddir,G_DIR_SEPARATOR_S,cmdfile);
+
+  	fcmd = FOpen(cmdall, "w");
+	if(!fcmd)
+	{
+		if(local) Message(_("\nI can not create cmd file\n"),_("Error"),TRUE);   
+		return FALSE;
+	}
+#ifndef G_OS_WIN32
+	fprintf(fcmd,"#!/bin/sh\n");
+#else
+	if(local)
+	{
+		if(strstr(psicodeDirectory,"\"")) fprintf(fcmd,"set PATH=%s;%cPATH%c\n",psicodeDirectory,'%','%');
+		else fprintf(fcmd,"set PATH=\"%s\";%cPATH%c\n",psicodeDirectory,'%','%');
+	}
+#endif
+
+	if(local) 
+	{
+#ifdef G_OS_WIN32
+		addUnitDisk(fcmd, fileopen.localdir);
+#endif
+		fprintf(fcmd,"cd %s\n", fileopen.localdir);
+	}
+	else fprintf(fcmd,"cd %s\n", fileopen.remotedir);
+
+
+	if(!strcmp(commandStr,"psi4") || !strcmp(commandStr,"nohup psi4"))
+	{
+#ifdef G_OS_WIN32
+		fprintf(fcmd,"del %s.db\n",fileopen.projectname);
+#else
+		fprintf(fcmd,"rm -f %s.db\n",fileopen.projectname);
+#endif
+		fprintf(fcmd,"%s -i %s -o %s.out &\n",command,fileopen.datafile,fileopen.projectname);
 		fprintf(fcmd,"exit\n");
 	}
 	else
@@ -2308,6 +2398,153 @@ static void run_remote_nwchem(GtkWidget *b,gpointer data)
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
   	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nRun NWChem at remote host :\n"),-1);   
   	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nRun NWChem at remote host :\n"),-1);   
+  	put_text_in_texts_widget(Text,fout,ferr);
+  	while( gtk_events_pending() )
+          gtk_main_iteration();
+  }
+  gtk_widget_set_sensitive(Win, TRUE);
+
+  g_free(fout);
+  g_free(ferr);
+}
+/********************************************************************************/
+static void run_remote_psicode(GtkWidget *b,gpointer data)
+{  
+  gchar *fout =  g_strdup_printf("%s%stmp%sfout",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+  gchar *ferr =  g_strdup_printf("%s%stmp%sferr",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+
+  gchar cmdfile[BSIZE];
+  gchar cmddir[BSIZE];
+  gchar cmdall[BSIZE];
+
+  GtkWidget* Win;
+  GtkWidget* Text[2];
+  GtkWidget* Frame[2];
+  gchar *temp;
+  gchar *NomFichier;
+  gchar *Command;
+  GtkWidget **entryall;
+  GtkWidget *entry;
+  G_CONST_RETURN gchar *entrytext0;
+  gchar *entrytext;
+  gchar* title;
+  gint code = 0;
+  G_CONST_RETURN gchar *localdir;
+
+
+  entryall=(GtkWidget **)data;
+  entry=entryall[0];
+  entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
+  entrytext = get_dir_file_name(localdir,entrytext0);
+
+  temp = get_suffix_name_file(entrytext);
+  fileopen.projectname = get_name_file(temp);
+  fileopen.localdir = get_name_dir(temp);
+  g_free(temp);
+  fileopen.datafile = g_strdup_printf("%s.psi",fileopen.projectname);
+  fileopen.outputfile=g_strdup_printf("%s.out",fileopen.projectname);
+  fileopen.logfile=g_strdup_printf("%s.out",fileopen.projectname);
+  fileopen.moldenfile=g_strdup_printf("%s.out",fileopen.projectname);
+
+  fileopen.remotehost = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryall[2])));
+  fileopen.remoteuser = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryall[3])));
+  fileopen.remotepass  = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryall[4])));
+  fileopen.remotedir  = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryall[5])));
+  fileopen.command  = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryall[1])));
+
+  /* fileopen.netWorkProtocol Deja defini dans run_program*/
+  
+/*   Debug("remote psicode : %s %s %s\n",fileopen.remotehost,fileopen.remoteuser,fileopen.remotedir);*/
+
+  /* save file */
+   NomFichier = g_strdup_printf("%s%s%s",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.datafile);
+  
+  CreeFeuille(treeViewProjects, noeud[GABEDIT_TYPENODE_PSICODE],fileopen.projectname,fileopen.datafile,fileopen.localdir,
+			fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir,GABEDIT_TYPENODE_PSICODE, fileopen.command, fileopen.netWorkProtocol); 
+  add_host(fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir);
+
+/* Save file in local host */
+  if(!save_local_doc(NomFichier)) return;
+
+  data_modify(FALSE);
+
+  entry=entryall[1];
+  entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
+
+  title = g_strdup_printf(_("Run Psicode at host :%s, Login : %s"),fileopen.remotehost,fileopen.remoteuser); 
+  Win = create_text_result_command(Text,Frame,title);
+  g_free(title);
+  gtk_widget_show_all(Win);
+  while( gtk_events_pending() ) gtk_main_iteration();
+  gtk_widget_set_sensitive(Win, FALSE);
+
+  if(!this_is_a_backspace(fileopen.remotedir))
+  {
+	/* Make Working directory */
+	/*  Debug("Make dir remote psicode : %s %s %s\n",fileopen.remotehost,fileopen.remoteuser,fileopen.remotedir);*/
+  	Command = g_strdup_printf("mkdir %s",fileopen.remotedir);
+  	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
+  	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
+  	g_free(Command);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
+  	put_text_in_texts_widget(Text,fout,ferr);
+  	while( gtk_events_pending() )
+          gtk_main_iteration();
+  }
+
+  if(code == 0)
+  {
+	/* put file.com */
+	/*  Debug("Put File remote psicode : %s %s %s\n",fileopen.remotehost,fileopen.remoteuser,fileopen.remotedir);*/
+  	code = put_file(fout,ferr,fileopen.datafile,fileopen.localdir,fileopen.remotedir,
+		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
+  	put_text_in_texts_widget(Text,fout,ferr);
+  	while( gtk_events_pending() )
+          gtk_main_iteration();
+  }
+  if( code==0 )
+  {
+        if(!create_cmd_psicode(entrytext0, FALSE, cmddir, cmdfile, cmdall))
+	{
+  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nI can not create cmd file\n"),-1);   
+  		gtk_widget_set_sensitive(Win, TRUE);
+		return;
+	}
+	code = 0;
+	  
+  }
+  if(code == 0)
+  {
+  	code = put_file(fout,ferr,cmdfile,cmddir,"./",
+		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1); 
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1);
+  	put_text_in_texts_widget(Text,fout,ferr);
+	unlink(cmdall);
+  	while( gtk_events_pending() )
+          gtk_main_iteration();
+  }
+  if(code == 0)
+  {
+  	Command = g_strdup_printf("chmod u+x %s",cmdfile);
+  	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
+  	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nchmod for cmd file :\n"),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nchmod for cmd file :\n"),-1);   
+  	put_text_in_texts_widget(Text,fout,ferr);
+  	while( gtk_events_pending() )
+          gtk_main_iteration();
+  }
+  if(code == 0)
+  {
+  	Command = g_strdup_printf("./%s>/dev/null&",cmdfile);
+  	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nRun Psicode at remote host :\n"),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nRun Psicode at remote host :\n"),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -3870,6 +4107,110 @@ static void run_local_nwchem(GtkWidget *b,gpointer data)
   g_free(ferr);
 }
 /********************************************************************************/
+static void run_local_psicode(GtkWidget *b,gpointer data)
+{  
+#ifdef G_OS_WIN32
+  gchar *fout =  g_strdup_printf("\"%s%stmp%sfout\"",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+  gchar *ferr =  g_strdup_printf("\"%s%stmp%sferr\"",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+#else
+  gchar *fout =  g_strdup_printf("%s%stmp%sfout",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+  gchar *ferr =  g_strdup_printf("%s%stmp%sferr",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+#endif
+
+  GtkWidget* Win;
+  GtkWidget* Text[2];
+  GtkWidget* Frame[2];
+  gchar *strout;
+  gchar *strerr;
+  gchar *temp;
+  gchar *NomFichier;
+  gchar Command[BSIZE];
+  GtkWidget **entryall;
+  GtkWidget *entry;
+  G_CONST_RETURN gchar *entrytext0;
+  gchar *entrytext;
+  gchar* title;
+  G_CONST_RETURN gchar *localdir;
+  gchar cmdFileAllName[BSIZE];
+  gchar cmdDir[BSIZE];
+  gchar cmdFile[BSIZE];
+
+
+  unlink(fout);
+  unlink(ferr);
+
+  entryall=(GtkWidget **)data;
+  entry=entryall[0];
+  entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
+  entrytext = get_dir_file_name(localdir,entrytext0);
+
+  temp = get_suffix_name_file(entrytext);
+  fileopen.projectname = get_name_file(temp);
+  fileopen.localdir = get_name_dir(temp);
+  g_free(temp);
+  fileopen.datafile = g_strdup_printf("%s.psi",fileopen.projectname);
+  fileopen.outputfile=g_strdup_printf("%s.out",fileopen.projectname);
+  fileopen.logfile=g_strdup_printf("%s.out",fileopen.projectname);
+  fileopen.moldenfile=g_strdup_printf("%s.out",fileopen.projectname);
+  fileopen.remotehost = NULL;
+  fileopen.remoteuser = NULL;
+  fileopen.remotedir = NULL;
+
+  /* save file */
+   NomFichier = g_strdup_printf("%s%s%s",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.datafile);
+  
+  fileopen.remotehost = NULL;
+  fileopen.remoteuser = NULL;
+  fileopen.remotepass = NULL;
+  fileopen.remotedir = NULL;
+  fileopen.command  = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryall[1])));
+  CreeFeuille(treeViewProjects, noeud[GABEDIT_TYPENODE_PSICODE],fileopen.projectname,fileopen.datafile,fileopen.localdir,
+			fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir,GABEDIT_TYPENODE_PSICODE, fileopen.command, fileopen.netWorkProtocol); 
+
+/* Save file in local host */
+  if(!save_local_doc(NomFichier)) return;
+
+  data_modify(FALSE);
+
+  entry=entryall[1];
+  entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
+
+  if(!create_cmd_psicode(entrytext0, TRUE, cmdDir, cmdFile, cmdFileAllName)) return;
+#ifdef G_OS_WIN32
+  sprintf(Command ,"\"%s\"",cmdFileAllName);
+#else
+  sprintf(Command ,"%s",cmdFileAllName);
+#endif
+
+  run_local_command(fout,ferr,Command,TRUE);
+  title = g_strdup_printf(_("Run Psicode in local : %s"),Command); 
+  Win = create_text_result_command(Text,Frame,title);
+  g_free(title);
+  strout = cat_file(fout,FALSE);
+  strerr = cat_file(ferr,FALSE);
+  if(!strout && !strerr)
+  	destroy_children(Win);
+  else
+  {
+  	if(strout)
+	{
+ 		gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,strout,-1);   
+		g_free(strout);
+	}
+  	if(strerr)
+	{
+ 		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,strerr,-1);   
+		g_free(strerr);
+	}
+  	gtk_widget_show_all(Win);
+  	if(!strout)
+  		gtk_widget_hide(Frame[0]);
+  }
+  g_free(fout);
+  g_free(ferr);
+}
+/********************************************************************************/
 static void run_local_firefly(GtkWidget *b,gpointer data)
 {  
 #ifdef G_OS_WIN32
@@ -4859,6 +5200,7 @@ void run_program(GtkWidget *button,gpointer data)
 		else if (GTK_TOGGLE_BUTTON (ButtonMolpro)->active) run_local_molpro(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonOrca)->active) run_local_orca(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonNWChem)->active) run_local_nwchem(NULL,data);
+		else if (GTK_TOGGLE_BUTTON (ButtonPsicode)->active) run_local_psicode(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonFireFly)->active) run_local_firefly(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonQChem)->active) run_local_qchem(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonMopac)->active) run_local_mopac(NULL,data);
@@ -4873,6 +5215,7 @@ void run_program(GtkWidget *button,gpointer data)
 		else if (GTK_TOGGLE_BUTTON (ButtonMolpro)->active) run_remote_molpro(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonOrca)->active) run_remote_orca(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonNWChem)->active) run_remote_nwchem(NULL,data);
+		else if (GTK_TOGGLE_BUTTON (ButtonPsicode)->active) run_remote_psicode(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonFireFly)->active) run_remote_firefly(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonQChem)->active) run_remote_qchem(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonMopac)->active) run_remote_mopac(NULL,data);
@@ -5011,14 +5354,18 @@ GtkWidget* create_programs_frame(GtkWidget *hbox)
   add_widget_table(Table,ButtonNWChem,2,1);
 
 
+
   ButtonFireFly = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonGauss)), "FireFly "); 
   add_widget_table(Table,ButtonFireFly,2,2);
 
   ButtonQChem = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonGauss)), "Q-Chem "); 
   add_widget_table(Table,ButtonQChem,3,0);
 
+  ButtonPsicode = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonGauss)), "Psicode "); 
+  add_widget_table(Table,ButtonPsicode,3,1);
+
   ButtonOther = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonGauss)), "Other "); 
-  add_widget_table(Table,ButtonOther,3,1);
+  add_widget_table(Table,ButtonOther,3,2);
   return frame;
 }
 /********************************************************************************/
@@ -5155,6 +5502,8 @@ static void changedEntryFileData(GtkWidget *entry,gpointer data)
 		sprintf(buffer,"%s.inp",entrytext);
 		else if (ButtonNWChem && GTK_TOGGLE_BUTTON (ButtonNWChem)->active)
 		sprintf(buffer,"%s.nw",entrytext);
+		else if (ButtonPsicode && GTK_TOGGLE_BUTTON (ButtonPsicode)->active)
+		sprintf(buffer,"%s.psi",entrytext);
 		else if (ButtonMopac && GTK_TOGGLE_BUTTON (ButtonMopac)->active)
 		sprintf(buffer,"%s.mop",entrytext);
 		else sprintf(buffer,"%s.com",entrytext);
@@ -5552,6 +5901,7 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GCallback func)
   g_signal_connect(G_OBJECT(ButtonQChem), "clicked",G_CALLBACK(set_default_entrys),NULL);
   g_signal_connect(G_OBJECT(ButtonOrca), "clicked",G_CALLBACK(set_default_entrys),NULL);
   g_signal_connect(G_OBJECT(ButtonNWChem), "clicked",G_CALLBACK(set_default_entrys),NULL);
+  g_signal_connect(G_OBJECT(ButtonPsicode), "clicked",G_CALLBACK(set_default_entrys),NULL);
   g_signal_connect(G_OBJECT(ButtonMopac), "clicked",G_CALLBACK(set_default_entrys),NULL);
   g_signal_connect(G_OBJECT(ButtonOther), "clicked",G_CALLBACK(set_default_entrys),NULL);
 
@@ -5563,6 +5913,7 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GCallback func)
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonFireFly), FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonOrca), FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonNWChem), FALSE);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonPsicode), FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonQChem), FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMopac), FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonOther), FALSE); 
@@ -5575,6 +5926,7 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GCallback func)
   else if(strstr(type,"MPQC")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMPQC), TRUE);
   else if(strstr(type,"Orca")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonOrca), TRUE);
   else if(strstr(type,"NWChem")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonNWChem), TRUE);
+  else if(strstr(type,"Psicode")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonPsicode), TRUE);
   else if(strstr(type,"Q-Chem")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonQChem), TRUE);
   else if(strstr(type,"Mopac")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMopac), TRUE);
   else gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonOther), TRUE); 
@@ -5650,6 +6002,9 @@ void create_run ()
 		break;
 		case PROG_IS_NWCHEM :
 		create_run_dialogue_box(NULL,"NWChem",(GCallback)run_program);
+		break;
+		case PROG_IS_PSICODE :
+		create_run_dialogue_box(NULL,"Psicode",(GCallback)run_program);
 		break;
 		case PROG_IS_FIREFLY :
 		create_run_dialogue_box(NULL,"FireFly",(GCallback)run_program);

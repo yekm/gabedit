@@ -751,6 +751,24 @@ static void glGetWorldCoordinates(gdouble x, gdouble y, gdouble *w)
 	glDepthMask(GL_TRUE);
 	glDepthRange(0.0f,1.0f);
 	glReadPixels( (GLint)x, (GLint)(winY), 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ );
+	if(fabs(winZ-1)<1e-10 && Natoms>1)
+	{
+		GLdouble View2D[3];
+		gdouble mindist = -1;
+		gdouble xii,yii,d1;
+		for(i=Natoms-1;i>=0;i--)
+		{
+			gluProject(geometry[i].X, geometry[i].Y, geometry[i].Z,mvmatrix, projmatrix, viewport, &View2D[0], &View2D[1], &View2D[2]);
+			xii = View2D[0]-winX;
+			yii = View2D[1]-winY;
+			d1 = xii*xii+yii*yii;
+			if(mindist<0 || mindist>d1)
+			{
+				mindist = d1;
+				winZ = View2D[2];
+			}
+		}
+	}
 	gluUnProject( winX, winY, winZ, mvmatrix, projmatrix, viewport, &r[0], &r[1], &r[2]);
 	for(i=0;i<3;i++) w[i] = r[i];
 }
@@ -5923,6 +5941,7 @@ gint set_selected_second_atom_bond(GdkEventButton *bevent)
 	{
 		gdouble rayon = get_rayon_selection(i);
 		if(geometry[i].N==geometry[NumSelectedAtom].N) continue;
+		if(geometry[i].N==NumBatoms[0]) continue;
 		xa = w[0]-geometry[i].X;
 		ya = w[1]-geometry[i].Y;
 		za = w[2]-geometry[i].Z;
@@ -5933,7 +5952,63 @@ gint set_selected_second_atom_bond(GdkEventButton *bevent)
 			break;
 		}
 	}
-	if(nb>0)
+	if(nb<=0 &&NumPointedAtom>=0 && Natoms>1)
+	{
+		/* NumPointedAtom could be on top of an atom, Search it */
+		gdouble rb = 0;
+		gdouble rmin = 1000;
+		if(NumPointedAtom>=0) rb = get_rayon_selection(Natoms-1);
+		for(i=Natoms-2;i>=0;i--)
+		{
+			gchar *dist = NULL;
+			gdouble d = 0;
+			gdouble rcut = 0.0;
+			if(geometry[i].N==geometry[NumSelectedAtom].N) continue;
+			if(i == NumPointedAtom) continue;
+			if(geometry[i].N==NumBatoms[0]) continue;
+			dist = get_distance(geometry[i].N, geometry[Natoms-1].N);
+			if(dist) rcut = get_rayon_selection(i)+rb;
+			if(dist)  d = atof(dist) / BOHR_TO_ANG;
+			if(d<rmin) rmin = d;
+			if(dist && d<rcut)
+			{
+				nb = (gint) geometry[i].N;
+				break;
+			}
+		}
+/*
+		gdouble rmin = 1000;
+		gdouble rb = get_rayon_selection(Natoms-1);
+		GLdouble View2D[3];
+		gdouble mindist = -1;
+		gint imin = -1;
+		gdouble winX, winY, winZ;
+		gdouble xii,yii,d1;
+		i = Natoms-1;
+		gluProject(geometry[i].X, geometry[i].Y, geometry[i].Z,mvmatrix, projmatrix, viewport, &winX, &winY, &winZ);
+		for(i=Natoms-2;i>=0;i--)
+		{
+			gluProject(geometry[i].X, geometry[i].Y, geometry[i].Z,mvmatrix, projmatrix, viewport, &View2D[0], &View2D[1], &View2D[2]);
+			xii = View2D[0]-winX;
+			yii = View2D[1]-winY;
+			d1 = xii*xii+yii*yii;
+			if(mindist<0 || mindist>d1)
+			{
+				mindist = d1;
+				imin = i;
+			}
+		}
+		i =imin;
+		gluProject(geometry[i].X, geometry[i].Y, geometry[i].Z,mvmatrix, projmatrix, viewport, &View2D[0], &View2D[1], &View2D[2]);
+		printf("imin = %d mindis = %f winz = %f  winz2 = %f \n",imin,sqrt(mindist),winZ, View2D[2] );
+		if(imin>0 && sqrt(mindist)<get_rayon_selection(imin)+rb)
+		{
+			nb = (gint) geometry[imin].N;
+		}
+*/
+	}
+	if(nb>0 && nb !=  NumBatoms[0])
+	//if(nb>0)
 	{
 		NBatoms = 2;
 		NumBatoms[1] = nb;
@@ -6131,6 +6206,7 @@ gint get_atom_to_select(GdkEventButton *bevent, gdouble f)
 		d1 = xii*xii+yii*yii+zii*zii;
 		rayon = f*get_rayon_selection(i);
 		d2 = d1-rayon*rayon;
+		/* printf("i=%d, d1 = %f , d2 = %f\n",i,d1,d2);*/
 		if(d2<0) return i;
 	}
 	return -1;
@@ -6418,6 +6494,14 @@ gint button_release(GtkWidget *DrawingArea, GdkEvent *event, gpointer Menu)
 	case SELECTRESIDUE : SetOperation(NULL,SELECTOBJECTS);  break;
 	case SELECTFRAG : SetOperation(NULL,SELECTOBJECTS);  break;
 	case ADDATOMSBOND :
+/*
+		printf("NBatoms=%d NumBatoms=%d %d\n",NBatoms, NumBatoms[0], NumBatoms[1]);
+		if(NBatoms==2 && NumBatoms[0]>0 &&  NumBatoms[1]>0 && NumBatoms[0]==NumBatoms[1])
+		{
+			delete_one_atom(NumSelectedAtom);
+		}
+		else 
+*/
 		if(NBatoms==2 && NumBatoms[0]>0 &&  NumBatoms[1]>0 && NumBatoms[0]!=NumBatoms[1])
 		{
 			delete_one_atom(NumSelectedAtom);
@@ -6429,10 +6513,22 @@ gint button_release(GtkWidget *DrawingArea, GdkEvent *event, gpointer Menu)
 			delete_one_atom(NumSelectedAtom);
 			if( NumBatoms[0] != NumBatoms[1]) add_bond();
 		}
-		else if(NumBatoms[0]>0)
+		else if(NumBatoms[0]>0 && NumSelectedAtom>-1)
 		{
-			gint res = get_atom_to_select((GdkEventButton *)event,scaleAnneau*1.2);
-			if(res != -1)
+			gchar *dist = get_distance(geometry[NumSelectedAtom].N,NumBatoms[0]);
+			gdouble d = 0;
+			gdouble rcut = get_rayon_selection(NumSelectedAtom)+get_rayon_selection(get_indice(NumBatoms[0]));
+			if(dist)  d = atof(dist) / BOHR_TO_ANG;
+/*
+			printf("distance = %f\n",d);
+			printf("rcut = %f\n",rcut);
+			printf("NumSelectedatom = %d\n",NumSelectedAtom);
+			printf("Numbatom = %d\n",get_indice(NumBatoms[0]));
+*/
+
+
+			//if(res != -1)
+			if(dist && d<rcut)
 			{
 				delete_one_atom(NumSelectedAtom);
 				replace_atom(get_indice(NumBatoms[0]));
@@ -6879,6 +6975,7 @@ static gint redraw(GtkWidget *widget)
     	glLoadIdentity();
 	addFog();
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	glClearDepth(1.0);
 	set_background_color();
 
 	mYPerspective(45,(GLdouble)widget->allocation.width/(GLdouble)widget->allocation.height,1,100);
@@ -7290,13 +7387,13 @@ void set_dipole_from_charges()
 	NumSelectedAtom = -1;
 	unselect_all_atoms();
 	Dipole.def = TRUE;
-	for(i=0;i<3;i++)
-		Dipole.Value[i] = 0.0;
+	for(i=0;i<3;i++) Dipole.value[i] = 0.0;
+	for(i=0;i<3;i++) Dipole.origin[i] = 0.0;
 	for(j=0;j<(gint)Natoms;j++)
 	{
-		Dipole.Value[0] += geometry0[j].X*geometry0[j].Charge;
-		Dipole.Value[1] += geometry0[j].Y*geometry0[j].Charge;
-		Dipole.Value[2] += geometry0[j].Z*geometry0[j].Charge;
+		Dipole.value[0] += geometry0[j].X*geometry0[j].Charge;
+		Dipole.value[1] += geometry0[j].Y*geometry0[j].Charge;
+		Dipole.value[2] += geometry0[j].Z*geometry0[j].Charge;
 
 	}	
 	drawGeom();
@@ -8130,11 +8227,15 @@ static gint insert_atom(GdkEventButton *bevent)
 	glGetWorldCoordinates(x,y,w);
 	X = w[0];
 	Y = w[1];
+	Z = w[2];
   
 	if(Natoms==0) geometry[Natoms].Prop = prop_atom_get(AtomToInsert);
 
+/*
 	if(Natoms>0 && NumProcheAtom>-1) Z = geometry[NumProcheAtom].Z;
 	else Z = 0.0;
+*/
+	//if(Natoms==0) Z = 0;
 
 	geometry[Natoms].X=X;
 	geometry[Natoms].Y=Y;
@@ -9371,8 +9472,9 @@ void draw_label_dipole()
         gdouble P[3];
 	gchar* t= NULL;
 	gdouble d = 0.0;
-	V3d Base1Pos  = {0.0f,0.0f,0.0f};
-	V3d Base2Pos  = {Dipole.Value[0],Dipole.Value[1],Dipole.Value[2]};
+	V3d Base1Pos  = {Dipole.origin[0],Dipole.origin[1],Dipole.origin[2]};
+	V3d Base2Pos  = {Dipole.origin[0]+Dipole.value[0],Dipole.origin[1]+Dipole.value[1],Dipole.origin[2]+Dipole.value[2]};
+
 	GLdouble scal = 2*factordipole;
 	gint i;
 	GLdouble radius = Dipole.radius;
@@ -9380,8 +9482,8 @@ void draw_label_dipole()
 
 	for(i=0;i<3;i++)
 	{
-		d += Dipole.Value[i]*Dipole.Value[i];
-		P[i]=(Base2Pos[i]*scal+Base1Pos[i])/2;
+		d += Dipole.value[i]*Dipole.value[i];
+		P[i]=(Dipole.value[i]*scal+Base1Pos[i]+Base1Pos[i])/2;
 	}
 	t = g_strdup_printf("%0.3f D",sqrt(d)*AUTODEB);
 
@@ -10161,8 +10263,8 @@ static void gl_build_dipole()
 	V4d Specular = {1.0f,1.0f,1.0f,1.0f};
 	V4d Diffuse  = {0.0f,0.0f,1.0f,1.0f};
 	V4d Ambiant  = {0.0f,0.0f,0.1f,1.0f};
-	V3d Base1Pos  = {0.0f,0.0f,0.0f};
-	V3d Base2Pos  = {Dipole.Value[0],Dipole.Value[1],Dipole.Value[2]};
+	V3d Base1Pos  = {Dipole.origin[0],Dipole.origin[1],Dipole.origin[2]};
+	V3d Base2Pos  = {Dipole.origin[0]+Dipole.value[0],Dipole.origin[1]+Dipole.value[1],Dipole.origin[2]+Dipole.value[2]};
 	GLdouble radius = Dipole.radius;
 	V3d Center;
 	GLdouble scal = 2*factordipole;
@@ -10185,13 +10287,14 @@ static void gl_build_dipole()
 	lengt = v3d_length(Direction);
 	if(radius<0.1) radius = 0.1;
 
+	Base2Pos[0] = Base1Pos[0] + Direction[0]*scal;
+	Base2Pos[1] = Base1Pos[1] + Direction[1]*scal;
+	Base2Pos[2] = Base1Pos[2] + Direction[2]*scal;
+
 	Direction[0] /= lengt;
 	Direction[1] /= lengt;
 	Direction[2] /= lengt;
 
-	Base2Pos[0] *= scal;
-	Base2Pos[1] *= scal;
-	Base2Pos[2] *= scal;
 
 	Center[0] = Base2Pos[0];
 	Center[1] = Base2Pos[1];

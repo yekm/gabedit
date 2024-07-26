@@ -1895,7 +1895,7 @@ static void append_list_geom()
 void FreeGeom(GeomAtomDef* Geomtemp,VariablesDef* Variablestemp,gint Ncent,gint Nvar)
 {
  guint i;
- Dipole.def = FALSE;
+ init_dipole();
  if( Geomtemp)
  for(i=0;(gint)i<Ncent;i++)
  {
@@ -1948,7 +1948,7 @@ void FreeGeom(GeomAtomDef* Geomtemp,VariablesDef* Variablestemp,gint Ncent,gint 
 void freeGeom()
 {
  guint i;
- Dipole.def = FALSE;
+ init_dipole();
  if(Geom == NULL)
     return;
  for(i=0;i<NcentersZmat;i++)
@@ -2063,7 +2063,7 @@ void save_gzmatrix_file(G_CONST_RETURN gchar* NameFileZmatrix)
 			Geom[i].NDihedral,Geom[i].Dihedral);
   }
 /*  Variables */
-  fprintf(fd," \n");
+  fprintf(fd,"\n");
   for(i=0;i<NVariables;i++)
   {
   if(Units==1)
@@ -2087,7 +2087,7 @@ void save_gzmatrix_file(G_CONST_RETURN gchar* NameFileZmatrix)
 		Variables[i].Name,Variables[i].Value);
    }
   }
-  fprintf(fd," \n");
+  fprintf(fd,"\n");
 
   fclose(fd);
   datafile = get_name_file(NameFileZmatrix);
@@ -4999,6 +4999,254 @@ void read_Zmat_from_nwchem_input_file(gchar *NomFichier)
 	set_last_directory(NomFichier);
 }
 /*************************************************************************************/
+void read_Zmat_from_psicode_input_file(gchar *NomFichier)
+{
+	gchar *t;
+ 	gboolean OK;
+ 	gchar *AtomCoord[7];
+ 	FILE *file;
+ 	guint taille=BSIZE;
+ 	guint i;
+ 	gint j;
+	gint k;
+ 	gboolean Uvar=FALSE;
+ 	GeomAtomDef* Geomtemp=NULL;
+ 	gint Ncent = 0;
+ 	gint Nvar = 0;
+ 	VariablesDef* Variablestemp=NULL;
+ 	gchar symb[BSIZE];
+ 	gchar type[BSIZE];
+ 	gchar charge[BSIZE];
+	gint globalCharge, mult;
+ 
+ 	if ( strcmp(NomFichier,"") == 0 ) return;
+
+	file = FOpen(NomFichier, "rb");
+	OK=TRUE;
+ 	if(file==NULL)
+	{
+   		MessageGeom(_("Sorry\n I can not read geometry in Psicode input file"),_("Error"),TRUE);
+   		return;
+	}
+	t=g_malloc(taille*sizeof(gchar));
+	for(i=0;i<5;i++)
+		AtomCoord[i]=g_malloc(taille*sizeof(char));
+
+	 while(!feof(file))
+	 {
+		if(!fgets(t,taille,file))
+		{
+			OK = FALSE;
+			break;
+		}
+		g_strup(t);
+		if(strstr(t,"MOLECULE"))
+		{
+			OK = TRUE;
+			break;
+		}
+	 }
+	if(fgets(t,taille,file) && 2==sscanf(t,"%d %d",&globalCharge,&mult)) OK = TRUE;
+	else OK = FALSE;
+
+ 	for(i=0;i<7;i++)
+		AtomCoord[i]=g_malloc(taille*sizeof(gchar));
+ 
+
+  	Ncent = 0;
+/* printf("begin read zmatrix\n");*/
+  	while(!feof(file) && OK )
+  	{
+    		{ char* e = fgets(t,taille,file);}
+/* printf("t=%s\n",t);*/
+                if(strstr(t,"SYMMETRY")) continue;
+		if(strstr(t,"}")) break;
+		if(this_is_a_backspace(t)) break;
+                for(i=0;i<(gint)strlen(t);i++) if(t[i] != ' ' && t[i]!= '\t') break;
+                if(i<=(gint)strlen(t) && t[i] == '#') continue;
+
+    		i = sscanf(t,"%s ",AtomCoord[0]);
+                if(i != 1)
+		{
+			OK = FALSE;
+			break;
+		}
+  		Ncent++;
+		if(Ncent==1) Geomtemp=g_malloc(Ncent*sizeof(GeomAtomDef));
+		else Geomtemp=g_realloc(Geomtemp,Ncent*sizeof(GeomAtomDef));
+        	switch( Ncent ){
+        	case 1 : 
+  			Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_0;
+
+			get_symb_type_charge(AtomCoord[0],symb,type,charge);
+    			Geomtemp[Ncent-1].Symb = g_strdup(symb);
+    			Geomtemp[Ncent-1].mmType = g_strdup(type);
+    			Geomtemp[Ncent-1].pdbType = g_strdup(type);
+  			Geomtemp[Ncent-1].Charge=g_strdup(charge);
+
+  			Geomtemp[Ncent-1].Residue=g_strdup("DUM");
+			Geomtemp[Ncent-1].ResidueNumber=0;
+  			Geomtemp[Ncent-1].Layer=g_strdup(" ");
+			break;
+        	case 2 : 
+/* printf("t=%s\n",t);*/
+                 	i =  sscanf(
+				t,"%s %s %s",
+				AtomCoord[0],AtomCoord[1],AtomCoord[2]
+				);
+/* printf("i=%d\n",i);*/
+                	if( i != 3 )
+                	{
+				Ncent--;
+  				Geomtemp=g_realloc(Geomtemp,Ncent*sizeof(GeomAtomDef));
+				OK = FALSE;
+                	}
+                        if( !test(AtomCoord[2]) ) Uvar = TRUE;
+  			Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_R;
+
+			get_symb_type_charge(AtomCoord[0],symb,type,charge);
+    			Geomtemp[Ncent-1].Symb = g_strdup(symb);
+    			Geomtemp[Ncent-1].mmType = g_strdup(type);
+    			Geomtemp[Ncent-1].pdbType = g_strdup(type);
+  			Geomtemp[Ncent-1].Charge=g_strdup(charge);
+
+  			Geomtemp[Ncent-1].Residue=g_strdup("DUM");
+			Geomtemp[Ncent-1].ResidueNumber=0;
+  			Geomtemp[Ncent-1].NR=g_strdup(AtomCoord[1]);
+  			Geomtemp[Ncent-1].R=g_strdup(AtomCoord[2]);
+  			Geomtemp[Ncent-1].Layer=g_strdup(" ");
+			break;
+   		case 3 : 
+/* printf("t=%s\n",t);*/
+                 	i =  sscanf(
+				t,"%s %s %s %s %s",
+				AtomCoord[0],AtomCoord[1],AtomCoord[2],
+				AtomCoord[3],AtomCoord[4]
+				);
+/* printf("i=%d\n",i);*/
+			if(i != 5) 
+                	{
+				Ncent--;
+  				Geomtemp=g_realloc(Geomtemp,Ncent*sizeof(GeomAtomDef));
+				OK = FALSE;
+                	}
+                        if(!test(AtomCoord[2]) || !test(AtomCoord[4]) )
+                              Uvar = TRUE;
+  			Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_ANGLE;
+
+			get_symb_type_charge(AtomCoord[0],symb,type,charge);
+    			Geomtemp[Ncent-1].Symb = g_strdup(symb);
+    			Geomtemp[Ncent-1].mmType = g_strdup(type);
+    			Geomtemp[Ncent-1].pdbType = g_strdup(type);
+  			Geomtemp[Ncent-1].Charge=g_strdup(charge);
+
+  			Geomtemp[Ncent-1].Residue=g_strdup("DUM");
+			Geomtemp[Ncent-1].ResidueNumber=0;
+  			Geomtemp[Ncent-1].NR=g_strdup(AtomCoord[1]);
+  			Geomtemp[Ncent-1].R=g_strdup(AtomCoord[2]);
+  			Geomtemp[Ncent-1].NAngle=g_strdup(AtomCoord[3]);
+  			Geomtemp[Ncent-1].Angle=g_strdup(AtomCoord[4]);
+  			Geomtemp[Ncent-1].Layer=g_strdup(" ");
+			break;
+        	default :
+                 	i =  sscanf(
+				t,"%s %s %s %s %s %s %s",
+				AtomCoord[0],AtomCoord[1],AtomCoord[2],
+				AtomCoord[3],AtomCoord[4],AtomCoord[5],AtomCoord[6]
+				);
+			if( i!= 7)
+                 	{
+				Ncent--;
+  				Geomtemp=g_realloc(Geomtemp,Ncent*sizeof(GeomAtomDef));
+				OK = FALSE;
+                 	}
+                        if(!test(AtomCoord[2]) || !test(AtomCoord[4]) || !test(AtomCoord[6]))
+                              Uvar = TRUE;
+  			Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_DIHEDRAL;
+
+			get_symb_type_charge(AtomCoord[0],symb,type,charge);
+    			Geomtemp[Ncent-1].Symb = g_strdup(symb);
+    			Geomtemp[Ncent-1].mmType = g_strdup(type);
+    			Geomtemp[Ncent-1].pdbType = g_strdup(type);
+  			Geomtemp[Ncent-1].Charge=g_strdup(charge);
+
+  			Geomtemp[Ncent-1].Residue=g_strdup("DUM");
+			Geomtemp[Ncent-1].ResidueNumber=0;
+  			Geomtemp[Ncent-1].NR=g_strdup(AtomCoord[1]);
+  			Geomtemp[Ncent-1].R=g_strdup(AtomCoord[2]);
+  			Geomtemp[Ncent-1].NAngle=g_strdup(AtomCoord[3]);
+  			Geomtemp[Ncent-1].Angle=g_strdup(AtomCoord[4]);
+  			Geomtemp[Ncent-1].NDihedral=g_strdup(AtomCoord[5]);
+  			Geomtemp[Ncent-1].Dihedral=g_strdup(AtomCoord[6]);
+  			Geomtemp[Ncent-1].Layer=g_strdup(" ");
+	}/*end switch*/
+  	}/*end while*/
+/* Variables */
+	Nvar=0;
+	while(!feof(file) && Uvar && OK )
+	{
+    		{ char* e = fgets(t,taille,file);}
+		g_strup(t);
+/* printf("t=%s\n",t);*/
+		for(k=0;k<(gint)strlen(t);k++) if(t[k]=='=') t[k] = ' ';
+			/* printf("Ncent = %d\n",Ncent);*/
+			/* printf("t = %s\n",t);*/
+        	for(j=1;j<Ncent;j++)
+		{
+			gchar* co[3] = {Geomtemp[j].R,NULL,NULL};
+			if(j>=2) co[1] = Geomtemp[j].Angle;
+			if(j>=3) co[2] = Geomtemp[j].Dihedral;
+				/* printf("j = %d \n",j);*/
+        		for(k=0;k<3;k++)
+			if(co[k] && !test(co[k]))
+			{
+				gchar* b = strstr(t,co[k]);
+				/* printf("co = %s t = %s\n",co[k],t);*/
+				if(b) 
+				{
+					b = b+strlen(co[k])+1;
+  					Nvar++;
+  					if(Nvar==1) Variablestemp = g_malloc(Nvar*sizeof(VariablesDef));
+  					else Variablestemp = g_realloc(Variablestemp,Nvar*sizeof(VariablesDef));
+  					Variablestemp[Nvar-1].Name=g_strdup(co[k]);
+  					Variablestemp[Nvar-1].Value=g_strdup_printf("%f",atof(b));
+  					Variablestemp[Nvar-1].Used=TRUE;
+				}
+			}
+		}
+		if(strstr(t,"}")) break;
+  	}
+/* end while variables */
+	fclose(file);
+	if(OK)
+ 	{
+		TotalCharges[0] = globalCharge;
+		SpinMultiplicities[0] = mult;
+ 	}
+
+	g_free(t);
+	for(i=0;i<7;i++) g_free(AtomCoord[i]);
+	if( !OK || Ncent <1 )
+	{
+		FreeGeom(Geomtemp,Variablestemp,Ncent,Nvar);
+		MessageGeom(_("Sorry\n I can not read geometry in Psicode input file"),_("Error"),TRUE);
+		return;
+	}
+	if(Geom) freeGeom();
+	if(Variables) freeVariables(Variables);
+	Geom = Geomtemp;
+	NcentersZmat = Ncent;
+	NVariables = Nvar;
+	Variables = Variablestemp;
+	MethodeGeom = GEOM_IS_ZMAT;
+	if( Units== 0 ) Geom_Change_Unit(FALSE);
+	if(GeomIsOpen)
+		create_geom_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
+
+	if(GeomDrawingArea != NULL) rafresh_drawing();
+	set_last_directory(NomFichier);
+}
+/*************************************************************************************/
 void read_Zmat_from_orca_input_file(gchar *NomFichier)
 {
 	gchar *t;
@@ -5018,6 +5266,7 @@ void read_Zmat_from_orca_input_file(gchar *NomFichier)
  	gchar type[BSIZE];
  	gchar charge[BSIZE];
 	gint globalCharge, mult;
+	gint l;
  
  	if ( strcmp(NomFichier,"") == 0 ) return;
 
@@ -5072,6 +5321,9 @@ void read_Zmat_from_orca_input_file(gchar *NomFichier)
         	case 1 : 
   			Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_0;
 
+    			l=strlen(AtomCoord[0]);
+      			if (l>=2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+			if(!strcmp(AtomCoord[0],"Da")) sprintf(AtomCoord[0],"X");
 			get_symb_type_charge(AtomCoord[0],symb,type,charge);
     			Geomtemp[Ncent-1].Symb = g_strdup(symb);
     			Geomtemp[Ncent-1].mmType = g_strdup(type);
@@ -5097,6 +5349,9 @@ void read_Zmat_from_orca_input_file(gchar *NomFichier)
                         if( !test(AtomCoord[4]) ) Uvar = TRUE;
   			Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_R;
 
+    			l=strlen(AtomCoord[0]);
+      			if (l>=2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+			if(!strcmp(AtomCoord[0],"Da")) sprintf(AtomCoord[0],"X");
 			get_symb_type_charge(AtomCoord[0],symb,type,charge);
     			Geomtemp[Ncent-1].Symb = g_strdup(symb);
     			Geomtemp[Ncent-1].mmType = g_strdup(type);
@@ -5125,6 +5380,9 @@ void read_Zmat_from_orca_input_file(gchar *NomFichier)
                               Uvar = TRUE;
   			Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_ANGLE;
 
+    			l=strlen(AtomCoord[0]);
+      			if (l>=2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+			if(!strcmp(AtomCoord[0],"Da")) sprintf(AtomCoord[0],"X");
 			get_symb_type_charge(AtomCoord[0],symb,type,charge);
     			Geomtemp[Ncent-1].Symb = g_strdup(symb);
     			Geomtemp[Ncent-1].mmType = g_strdup(type);
@@ -5155,6 +5413,9 @@ void read_Zmat_from_orca_input_file(gchar *NomFichier)
                               Uvar = TRUE;
   			Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_DIHEDRAL;
 
+    			l=strlen(AtomCoord[0]);
+      			if (l>=2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+			if(!strcmp(AtomCoord[0],"Da")) sprintf(AtomCoord[0],"X");
 			get_symb_type_charge(AtomCoord[0],symb,type,charge);
     			Geomtemp[Ncent-1].Symb = g_strdup(symb);
     			Geomtemp[Ncent-1].mmType = g_strdup(type);
@@ -6205,13 +6466,8 @@ void read_ZMatrix_file(GabeditFileChooser *SelecteurFichier, gint response_id)
   {
   { char* e = fgets(t,taille,fd);}
   sscanf(t,"%s",AtomCoord[0]);
-        OK=TRUE;
-        for(i=0;i<strlen(t)-1;i++)
- 		if ( (int)t[i] != (int)' ' )
-                OK=FALSE;
-        if(OK)
-		break;
- 	else
+	if(this_is_a_backspace(t)) break;
+	else
  	{
   	NcentersZmat++;
   	Geom=g_realloc(Geom,NcentersZmat*sizeof(GeomAtomDef));
@@ -6308,12 +6564,7 @@ void read_ZMatrix_file(GabeditFileChooser *SelecteurFichier, gint response_id)
   while(!feof(fd) )
   {
   	{ char* e = fgets(t,taille,fd);}
-        OK=TRUE;
-        for(i=0;i<strlen(t)-1;i++)
- 		if ( (int)t[i] != (int)' ' )
-                OK=FALSE;
-        if(OK)
-		break;
+	if(this_is_a_backspace(t)) break;
  	else
 	{
   	NVariables++;

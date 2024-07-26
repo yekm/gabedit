@@ -6486,12 +6486,12 @@ void set_dipole_from_charges()
 	unselect_all_atoms();
 	Dipole.def = TRUE;
 	for(i=0;i<3;i++)
-		Dipole.Value[i] = 0.0;
+		Dipole.value[i] = 0.0;
 	for(j=0;j<(gint)Natoms;j++)
 	{
-		Dipole.Value[0] += geometry0[j].X*geometry0[j].Charge;
-		Dipole.Value[1] += geometry0[j].Y*geometry0[j].Charge;
-		Dipole.Value[2] += geometry0[j].Z*geometry0[j].Charge;
+		Dipole.value[0] += geometry0[j].X*geometry0[j].Charge;
+		Dipole.value[1] += geometry0[j].Y*geometry0[j].Charge;
+		Dipole.value[2] += geometry0[j].Z*geometry0[j].Charge;
 
 	}	
 	define_geometry();
@@ -8957,7 +8957,7 @@ void define_geometry()
 	Ddef = Dipole.def;
 	if(Ddef)
 	{
-		gdouble step[3] ={Dipole.Value[0]/(NDIVDIPOLE-1),Dipole.Value[1]/(NDIVDIPOLE-1),Dipole.Value[2]/(NDIVDIPOLE-1)};
+		gdouble step[3] ={Dipole.value[0]/(NDIVDIPOLE-1),Dipole.value[1]/(NDIVDIPOLE-1),Dipole.value[2]/(NDIVDIPOLE-1)};
 		dipole[0][0] = -X0[0];
 		dipole[0][1] = -X0[1];
 		dipole[0][2] = -X0[2];
@@ -10453,7 +10453,7 @@ void draw_dipole(gint x0,gint y0)
  	PangoFontDescription *font_desc = pango_font_description_from_string (FontsStyleLabel.fontname);
 
 	for(i=0;i<3;i++)
-		d += Dipole.Value[i]*Dipole.Value[i];
+		d += Dipole.value[i]*Dipole.value[i];
 
 	t = g_strdup_printf("%0.3f D",sqrt(d)*AUTODEB);
 

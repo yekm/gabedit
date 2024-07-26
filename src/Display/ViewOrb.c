@@ -41,7 +41,7 @@ int view_orb(GtkWidget* Parent,int argc, char **argv)
 	static gboolean first = TRUE;
 
 
-	Dipole.def = FALSE;
+	init_dipole();
 	if(!first)
 	{
 		if(PrincipalWindow)

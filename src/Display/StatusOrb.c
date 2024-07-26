@@ -150,6 +150,7 @@ gint progress_orb(gdouble scal,GabEditTypeProgressOrb  type,gboolean reset)
 	{
 
 	case GABEDIT_PROGORB_UNK : 
+		t = g_strdup_printf(_(" %.0f%%"),new_val*100);
 		break;
 
 	case  GABEDIT_PROGORB_READGEOM: 
@@ -206,6 +207,12 @@ gint progress_orb(gdouble scal,GabEditTypeProgressOrb  type,gboolean reset)
 	case GABEDIT_PROGORB_COMPGRADGRID :
 		t = g_strdup_printf(_(" Computing of the gradient of the grid : %.0f%%"),new_val*100);
 		break;
+	case GABEDIT_PROGORB_COMPNCIGRID :
+		t = g_strdup_printf(_(" Computing NCI from the density grid : %.0f%%"),new_val*100);
+		break;
+	case GABEDIT_PROGORB_COMPL2GRID :
+		t = g_strdup_printf(_(" Computing sign of middle eigenvalue hessian * grid : %.0f%%"),new_val*100);
+		break;
 	case GABEDIT_PROGORB_SCANFILEGRID :
 		t = g_strdup_printf(_(" Scan file for get the total orbitals number ....."));
 		break;
@@ -230,6 +237,8 @@ gint progress_orb(gdouble scal,GabEditTypeProgressOrb  type,gboolean reset)
 		type==GABEDIT_PROGORB_COMPMULTIPOL ||
 		type==GABEDIT_PROGORB_COMPLAPGRID ||
 		type==GABEDIT_PROGORB_COMPGRADGRID ||
+		type==GABEDIT_PROGORB_COMPNCIGRID ||
+		type==GABEDIT_PROGORB_COMPL2GRID ||
 		type==GABEDIT_PROGORB_COMPMEPGRID
 	)
 		gtk_widget_set_sensitive(button, TRUE); 

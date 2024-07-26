@@ -968,7 +968,6 @@ static gboolean orthonormalize_orbitals_diag(gchar* FileName, gdouble**CoefOrbit
 /********************************************************************************/
 static gboolean orthonormalize_orbitals(gchar* FileName, gdouble**CoefOrbitals, gint nb, gint ne)
 {
-	//return orthonormalize_orbitals_schmidt(FileName, CoefOrbitals, no);
 	return orthonormalize_orbitals_diag(FileName, CoefOrbitals, nb, ne);
 }
 /********************************************************************************/

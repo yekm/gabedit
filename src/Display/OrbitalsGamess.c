@@ -157,7 +157,7 @@ static gint* read_geomorb_gamess_file_geom(gchar *FileName)
   		return NULL;
  	}
 
-  	Dipole.def = FALSE;
+  	init_dipole();
 	free_data_all();
 	tmp = get_name_file(FileName);
 	set_status_label_info(_("File name"),tmp);
@@ -1274,7 +1274,6 @@ void read_gamess_orbitals(gchar* FileName)
 		if(GeomOrb[i].Symb) g_free(GeomOrb[i].Symb);
 		GeomOrb[i].Symb=get_symbol_using_z(znuc[i]);
 		GeomOrb[i].Prop = prop_atom_get(GeomOrb[i].Symb);
-		//GeomOrb[i].partialCharge = 0.0;
 		GeomOrb[i].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[i].Symb);
 		GeomOrb[i].variable = TRUE;
 		/* printf("%s %i %f\n",GeomOrb[i].Symb,i,GeomOrb[i].nuclearCharge);*/

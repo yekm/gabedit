@@ -671,7 +671,6 @@ static void getMultiplicityName(gint multiplicity, gchar* buffer)
 /*************************************************************************************************************/
 static void putNWChemSCFKeywordsInfoInTextEditor()
 {
-//HERE
 	if( !strcmp(selectedTypeMethod,"DFT") || !strcmp(selectedTypeMethod,"HFexch")|| !strcmp(selectedTypeMethod,"Hybrid") || !strcmp(selectedTypeMethod,"Meta-GGA"))
 	{
 		gchar buffer[BSIZE];

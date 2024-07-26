@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 void compute_total_dipole();
 GLuint DipGenList(GLuint diplist);
 void DipShowList(GLuint diplist);
+void compute_charge_transfer_dipole();
 
 #endif /* __GABEDIT_DIPOLE_H__ */
 

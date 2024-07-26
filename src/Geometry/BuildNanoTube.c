@@ -148,7 +148,7 @@ static void build_nanotube(GtkWidget *w,gpointer data)
 		coord[3][i] = coord[3][i-(2*hcd)]+alpha;
 	}
 
-	Dipole.def = FALSE;
+	init_dipole();
  	if(GeomXYZ) freeGeomXYZ();
  	if(VariablesXYZ) freeVariablesXYZ(VariablesXYZ);
 

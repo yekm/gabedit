@@ -2924,7 +2924,7 @@ static gboolean set_geometry(gint k)
 	}
 	Ncenters = nAtoms;
 	init_atomic_orbitals();
-	Dipole.def = FALSE;
+	init_dipole();
 	buildBondsOrb();
 	RebuildGeom = TRUE;
 	glarea_rafresh(GLArea);
@@ -3199,7 +3199,7 @@ static void stopAnimation(GtkWidget *win, gpointer data)
 
 	buildBondsOrb();
 	RebuildGeom = TRUE;
-	Dipole.def = FALSE;
+	init_dipole();
 	init_atomic_orbitals();
 	free_iso_all();
 	if(this_is_an_object((GtkObject*)GLArea)) glarea_rafresh(GLArea);

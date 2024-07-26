@@ -27,6 +27,7 @@ void read_ZMatrix_mopac_file_no_add_list(gchar*FileName);
 void read_Zmat_from_gauss_input_file(gchar *, FilePosTypeGeom  );
 void read_Zmat_from_orca_input_file(gchar *NomFichier);
 void read_Zmat_from_nwchem_input_file(gchar *NomFichier);
+void read_Zmat_from_psicode_input_file(gchar *NomFichier);
 void read_Zmat_from_qchem_input_file(gchar *NomFichier);
 void read_Zmat_from_mopac_input_file(gchar *NomFichier);
 void read_Zmat_from_mopac_irc_output_file(gchar *FileName, gint numGeom);

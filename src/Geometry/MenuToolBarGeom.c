@@ -452,6 +452,9 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ReadOrcaLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_ORCAOUTLAST);}
 	else if(!strcmp(name,"ReadNWChemFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_NWCHEMOUTFIRST);}
 	else if(!strcmp(name,"ReadNWChemLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_NWCHEMOUTLAST);}
+
+	else if(!strcmp(name,"ReadPsicodeFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_PSICODEOUTFIRST);}
+	else if(!strcmp(name,"ReadPsicodeLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_PSICODEOUTLAST);}
 	else if(!strcmp(name,"ReadQChemFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_QCHEMOUTFIRST);}
 	else if(!strcmp(name,"ReadQChemLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_QCHEMOUTLAST);}
 	else if(!strcmp(name,"ReadUsingOpenBabel")) { create_babel_read_dialogue(); }
@@ -478,6 +481,9 @@ static void activate_action (GtkAction *action)
 
 	else if(!strcmp(name,"ReadGeomConvNWChem"))
    	  file_chooser_open(read_geometries_conv_nwchem,_("Load Geom. Conv. From NWChem output file"), GABEDIT_TYPEFILE_NWCHEM,GABEDIT_TYPEWIN_GEOM);
+
+	else if(!strcmp(name,"ReadGeomConvPsicode"))
+   	  file_chooser_open(read_geometries_conv_psicode,_("Load Geom. Conv. From Psicode output file"), GABEDIT_TYPEFILE_PSICODE,GABEDIT_TYPEWIN_GEOM);
 
 	else if(!strcmp(name,"ReadGeomConvQChem"))
    	  file_chooser_open(read_geometries_conv_qchem,_("Load Geom. Conv. From Q-Chem output file"), GABEDIT_TYPEFILE_QCHEM,GABEDIT_TYPEWIN_GEOM);
@@ -1007,6 +1013,10 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadNWChemFirst", GABEDIT_STOCK_NWCHEM, N_("F_irst geometry from a NWChem output file"), NULL, "Read the first geometry from a NWChem output file", G_CALLBACK (activate_action) },
 	{"ReadNWChemLast", GABEDIT_STOCK_NWCHEM, N_("L_ast geometry from a NWChem output file"), NULL, "Read the last geometry from a NWChem output file", G_CALLBACK (activate_action) },
 
+	{"Psicode", GABEDIT_STOCK_PSICODE, "_Psicode"},
+	{"ReadPsicodeFirst", GABEDIT_STOCK_PSICODE, N_("F_irst geometry from a Psicode output file"), NULL, "Read the first geometry from a Psicode output file", G_CALLBACK (activate_action) },
+	{"ReadPsicodeLast", GABEDIT_STOCK_PSICODE, N_("L_ast geometry from a Psicode output file"), NULL, "Read the last geometry from a Psicode output file", G_CALLBACK (activate_action) },
+
 	{"ReadUsingOpenBabel", GABEDIT_STOCK_OPEN_BABEL, N_("_Other format (using open babel)"), NULL, "Other format (using open babel)", G_CALLBACK (activate_action) },
 
 	{"ReadGeomConv", NULL, N_("Geometries _Convergence")},
@@ -1021,6 +1031,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadGeomConvMPQC", GABEDIT_STOCK_MPQC, N_("from a MP_QC output file"), NULL, "Read Geometries Convergence from a MPQC output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvOrca", GABEDIT_STOCK_ORCA, N_("from a _Orca output file"), NULL, "Read Geometries Convergence from a Orca output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvNWChem", GABEDIT_STOCK_NWCHEM, N_("from a _NWChemoutput file"), NULL, "Read Geometries Convergence from a NWChem output file", G_CALLBACK (activate_action) },
+	{"ReadGeomConvPsicode", GABEDIT_STOCK_PSICODE, N_("from a _Psicodeoutput file"), NULL, "Read Geometries Convergence from a Psicode output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvQChem", GABEDIT_STOCK_QCHEM, N_("from a Q-_Chem output file"), NULL, "Read Geometries Convergence from a Q-Chem output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvGabedit", GABEDIT_STOCK_GABEDIT, N_("from a G_abedit file"), NULL, "Read Geometries Convergence from a Gabedit file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvMolden", GABEDIT_STOCK_MOLDEN, N_("from a Mol_den file"), NULL, "Read Geometries Convergence from a Molden file", G_CALLBACK (activate_action) },
@@ -1308,6 +1319,11 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadNWChemFirst\" action=\"ReadNWChemFirst\" />\n"
 "        <menuitem name=\"ReadNWChemLast\" action=\"ReadNWChemLast\" />\n"
 "      </menu>\n"
+"      <separator name=\"sepMenuReadPsicode\" />\n"
+"      <menu name=\"Psicode\" action=\"Psicode\">\n"
+"        <menuitem name=\"ReadPsicodeFirst\" action=\"ReadPsicodeFirst\" />\n"
+"        <menuitem name=\"ReadPsicodeLast\" action=\"ReadPsicodeLast\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuReadTurbomole\" />\n"
 "      <menu name=\"Turbomole\" action=\"Turbomole\">\n"
 "        <menuitem name=\"ReadTurbomoleFirst\" action=\"ReadTurbomoleFirst\" />\n"
@@ -1326,6 +1342,7 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadGeomConvMPQC\" action=\"ReadGeomConvMPQC\" />\n"
 "        <menuitem name=\"ReadGeomConvOrca\" action=\"ReadGeomConvOrca\" />\n"
 "        <menuitem name=\"ReadGeomConvNWChem\" action=\"ReadGeomConvNWChem\" />\n"
+"        <menuitem name=\"ReadGeomConvPsicode\" action=\"ReadGeomConvPsicode\" />\n"
 "        <menuitem name=\"ReadGeomConvQChem\" action=\"ReadGeomConvQChem\" />\n"
 "        <menuitem name=\"ReadGeomConvGabedit\" action=\"ReadGeomConvGabedit\" />\n"
 "        <menuitem name=\"ReadGeomConvMolden\" action=\"ReadGeomConvMolden\" />\n"

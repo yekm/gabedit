@@ -637,6 +637,7 @@ static gchar* getAmberTypeOfAtom(Molecule* m, gint atomNumber)
 	}
 	else if ( !strcmp(geom[atomNumber].Prop.symbol,"C" ))
 	{
+		/* printf("sp = %d\n",sp(m, atomNumber ));*/
 		if ( sp(m, atomNumber ) == 2 )
 		{
 			if ( ( atomInRing( m, atomNumber, 5 ) ) && ( atomInRing( m, atomNumber, 6 ) ) )

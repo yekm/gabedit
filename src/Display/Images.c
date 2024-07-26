@@ -31,68 +31,6 @@ static void snapshot_pixbuf_free (guchar   *pixels, gpointer  data)
 	g_free (pixels);
 }
 /**************************************************************************/
-/*
-static GdkPixbuf  *get_pixbuf_gl(guchar* colorTrans)
-{       
-	gint width;
-	gint height;
-      	gint stride;
-	GdkPixbuf  *pixbuf = NULL;
-	GdkPixbuf  *tmp = NULL;
-	GdkPixbuf  *tmp2 = NULL;
-	guchar *data;
-	GLint viewport[4];
-
-	glGetIntegerv(GL_VIEWPORT, viewport);
-  	width  = viewport[2];
-  	height = viewport[3];
-
-#ifdef G_OS_WIN32 
-	stride = width*3;
-
-	data = g_malloc0 (sizeof (guchar) * stride * height);
-  	//glReadBuffer(GL_BACK);
-  	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,data);
-	tmp = gdk_pixbuf_new_from_data (data, GDK_COLORSPACE_RGB, FALSE, 
-                                      8, width, height, stride, snapshot_pixbuf_free,
-                                      NULL);
-#else
-	stride = width*4;
-
-	data = g_malloc0 (sizeof (guchar) * stride * height);
-  	glReadBuffer(GL_FRONT);
-  	glReadPixels(0,0,width,height,GL_RGBA,GL_UNSIGNED_BYTE,data);
-	tmp = gdk_pixbuf_new_from_data (data, GDK_COLORSPACE_RGB, TRUE, 
-                                      8, width, height, stride, snapshot_pixbuf_free,
-                                      NULL);
-#endif
-
-	if(tmp)
-	{
-		tmp2 = gdk_pixbuf_flip (tmp, TRUE); 
-		g_object_unref (tmp);
-	}
-
-	if(tmp2)
-	{
-		pixbuf = gdk_pixbuf_rotate_simple (tmp2, GDK_PIXBUF_ROTATE_UPSIDEDOWN);
-		g_object_unref (tmp2);
-	}
-
-	if(colorTrans)
-	{
-		tmp = gdk_pixbuf_add_alpha(pixbuf, TRUE, colorTrans[0], colorTrans[1], colorTrans[2]);
-		if(tmp!=pixbuf)
-		{
- 			g_object_unref (pixbuf);
-			pixbuf = tmp;
-		}
-	}
-	
-	return pixbuf;
-}
-*/
-
 /**************************************************************************/
 static GdkPixbuf  *get_pixbuf_gl(guchar* colorTrans)
 {       

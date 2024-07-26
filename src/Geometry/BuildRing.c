@@ -71,7 +71,7 @@ static void build_ring_molecule(GtkWidget *w,gpointer data)
 	Ro = sqrt(2*(1-cos(angle) )); 
 	Ro = Distance/Ro; 
 
-	Dipole.def = FALSE;
+	init_dipole();
  	if(GeomXYZ)
    		freeGeomXYZ();
  	if(VariablesXYZ)

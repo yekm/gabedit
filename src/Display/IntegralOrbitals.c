@@ -2533,7 +2533,6 @@ void compute_mulliken_charges()
 		for(l=0;l<=k;l++)
 		{
 			gint jc = (AOrb)?AOrb[l].NumCenter:SAOrb[l].NumCenter;
-			//gint fact = (k==l)?1:2;
 			gint fact = 1;
 			if(CancelCalcul) break;
 			if(AOrb) o = overlapCGTF(&AOrb[k],&AOrb[l])*fact;
@@ -2541,7 +2540,6 @@ void compute_mulliken_charges()
 		/* printf("k=%d o = %lf\n",k,o);*/
 			for(i=0;i<NAlphaOcc;i++) charges[ic] -= OccAlphaOrbitals[i]*CoefAlphaOrbitals[i][k]*CoefAlphaOrbitals[i][l]*o;
 			for(i=0;i<NBetaOcc;i++)  charges[ic] -= OccBetaOrbitals[i]*CoefBetaOrbitals[i][k]*CoefBetaOrbitals[i][l]*o;
-			//if(ic!=jc)
 			if(k!=l)
 			{
 			for(i=0;i<NAlphaOcc;i++) charges[jc] -= OccAlphaOrbitals[i]*CoefAlphaOrbitals[i][k]*CoefAlphaOrbitals[i][l]*o;
@@ -2582,7 +2580,6 @@ void compute_mulliken_charges()
 /************************************************************************************************************/
 static void setBondOrdersToCalculated(GtkWidget *win)
 {
-	//gint i;
 	gint i;
 	gint j;
 	gdouble* bondOrders = NULL;

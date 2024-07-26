@@ -1,3 +1,15 @@
+20 July 2012
+	Analysis of Spatial Extent in Charge-Transfer Excitations implemented (See Le Bahers et al., J. Chem. Theory Comput. 2011, 7, 2498–2506)
+
+19 July 2012
+	NCI (non-covalent interactions index) analysis implemented (see Johnson et al., J. Am. Chem. Soc. 132, 6498 (2010))
+	Dummy atom in an orca input file bug fixed
+	Read orbitals&Geometry from an orca  ouput file with a dummy atom, bug fixed
+	Insert a non-bonded atom in "Draw geometry window" bug fixed
+
+07 July 2012 :
+	Psi4 partially supported : input file, geometries, frequencies, UV Spectrum
+
 20 June 2012 :
 	Bug fixed : computing of double&triple bonds
 
@@ -5,7 +17,7 @@
 	Warning with -Wformat have been fixed
 
 29 March 2012 :
-	Filter (Gaussian, Blackman, Blackman-Harris,...) in GabexitXYPlot window (not fully tested)
+	Several Filters (Gaussian, Blackman, Blackman-Harris,...) implemented in XYPlot window (not fully tested)
 
 08 Marsh 2012 :
 	read gamess geometries in Display window :  bug fixed

@@ -109,7 +109,7 @@ static XYZRC get_tete_dipole()
 	gint i;
 	static GLdouble f = 2;
 
-	for(i=0;i<3;i++) PropCenter.C[i]= f*Dipole.Value[i];
+	for(i=0;i<3;i++) PropCenter.C[i]= f*Dipole.value[i];
 	PropCenter.C[3] = Dipole.radius;
 	for(i=0;i<3;i++) 
 	{

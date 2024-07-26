@@ -2282,8 +2282,8 @@ static gboolean read_mopac_aux_file_geomi(gchar *FileName, gint numgeometry, Geo
 		return FALSE;
 	  }
 
-	Dipole.def = FALSE;
-	for(i=0;i<3;i++) Dipole.Value[i] = 0;
+	init_dipole();
+	for(i=0;i<3;i++) Dipole.value[i] = 0;
 	j=-1;
 	fseek(file, geomposok, SEEK_SET);
 	while(!feof(file) )
@@ -4224,7 +4224,7 @@ gboolean read_one_hin_file(gchar* FileName, Geometry* geometry)
 	for(i=0;i<8;i++) sprintf(listFields[i]," ");
 	t=g_malloc(taille*sizeof(gchar));
 
-  	Dipole.def = FALSE;
+  	init_dipole();
 
 	j=0;
 
@@ -4530,7 +4530,7 @@ static gboolean set_geometry(gint k)
 	}
 	Ncenters = nAtoms;
 	init_atomic_orbitals();
-	Dipole.def = FALSE;
+	init_dipole();
 	buildBondsOrb();
 	RebuildGeom = TRUE;
 	glarea_rafresh(GLArea);
@@ -4586,7 +4586,7 @@ static void stopAnimation(GtkWidget *win, gpointer data)
 
 	buildBondsOrb();
 	RebuildGeom = TRUE;
-	Dipole.def = FALSE;
+	init_dipole();
 	init_atomic_orbitals();
 	free_iso_all();
 	if(this_is_an_object((GtkObject*)GLArea)) glarea_rafresh(GLArea);

@@ -41,7 +41,7 @@ UtilsOrb.o: UtilsOrb.c ../../Config.h ../Display/GlobalOrb.h \
   ../Utils/UtilsInterface.h ../Utils/Constants.h ../Common/Windows.h \
   ../Display/Vibration.h ../Display/ContoursPov.h \
   ../Display/PlanesMappedPov.h ../Display/GridCube.h ../Display/GridCP.h \
-  ../Display/ColorMap.h
+  ../Display/ColorMap.h ../Display/LabelsGL.h
 Basis.o: Basis.c ../../Config.h GlobalOrb.h ../Files/GabeditFileChooser.h \
   ../../gl2ps/gl2ps.h Grid.h ../MultiGrid/PoissonMG.h \
   ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h ../MultiGrid/TypesMG.h \
@@ -138,7 +138,8 @@ OrbitalsNBO.o: OrbitalsNBO.c ../../Config.h GlobalOrb.h \
   ../Utils/AtomsProp.h ../Utils/UtilsInterface.h ../Utils/Utils.h \
   ../Utils/Zlm.h ../Utils/../Common/GabeditType.h ../Utils/Constants.h \
   ../Geometry/GeomGlobal.h GeomDraw.h GLArea.h UtilsOrb.h Basis.h \
-  GeomOrbXYZ.h AtomicOrbitals.h StatusOrb.h Orbitals.h BondsOrb.h
+  GeomOrbXYZ.h AtomicOrbitals.h StatusOrb.h Orbitals.h BondsOrb.h \
+  LabelsGL.h
 Orbitals.o: Orbitals.c ../../Config.h GlobalOrb.h \
   ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
   ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
@@ -449,7 +450,7 @@ MenuToolBarGL.o: MenuToolBarGL.c ../../Config.h GlobalOrb.h \
   ../Display/CaptureOrbitals.h ../Display/IntegralOrbitals.h \
   ../Display/BondsOrb.h ../Display/TriangleDraw.h \
   ../Display/../Utils/Vector3d.h ../Display/../Utils/Transformation.h \
-  ../Common/StockIcons.h
+  ../Display/NCI.h ../Common/StockIcons.h
 LabelsGL.o: LabelsGL.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h GlobalOrb.h \
@@ -535,3 +536,9 @@ AnimationGrids.o: AnimationGrids.c ../../Config.h GlobalOrb.h \
   ../Files/FolderChooser.h ../Files/GabeditFolderChooser.h \
   ../Common/Help.h ../Common/StockIcons.h ../Display/PovrayGL.h \
   ../Display/Images.h ../Display/UtilsOrb.h ../Display/BondsOrb.h
+NCI.o: NCI.c ../../Config.h ../Utils/Constants.h GlobalOrb.h \
+  ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
+  ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
+  ../MultiGrid/TypesMG.h IsoSurface.h ../Common/GabeditType.h StatusOrb.h \
+  UtilsOrb.h ColorMap.h ../Utils/GabeditXYPlot.h \
+  ../Utils/UtilsInterface.h ../Utils/Utils.h ../Display/Grid.h
