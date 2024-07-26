@@ -538,7 +538,7 @@ static gchar *get_pov_one_stick(gint i,gint j, GabEditBondType bondType)
      poid = poid1 + poid2 ;
      for(l=0;l<3;l++) CC1[l] =Center1.C[l];
      for(l=0;l<3;l++) CC2[l] =Center2.C[l];
-     if(bondType == GABEDIT_BONDTYPE_SINGLE)
+     if(bondType == GABEDIT_BONDTYPE_SINGLE || !ShowMultiBondsOrb)
      {
      	for(l=0;l<3;l++) C[l] =(Center1.C[l]*poid2+Center2.C[l]*poid1)/poid;
       	temp1 = get_pov_cylingre(Center1.C,C,Center1.P.Colors,ep);

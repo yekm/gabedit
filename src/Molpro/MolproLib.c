@@ -45,10 +45,10 @@ void get_basis_list(gchar* Symb,gchar* orb,gchar* outfile,gchar* errfile)
 {
  	gchar *allorb[21] = {"ECP", "s","p","d","f","g","h","i","j","k","l",
 				 "S","P","D","F","G","H","I","J","K","L"};
-	FILE* fout=FOpen(outfile,"w");  
-	FILE* ferr=FOpen(errfile,"w");  
+	FILE* fout=fopen(outfile,"w");  
+	FILE* ferr=fopen(errfile,"w");  
         gchar *filename =  g_strdup_printf("%s/molprobasis",gabedit_directory());  
-	FILE* fin = FOpen(filename,"r");
+	FILE* fin = fopen(filename,"r");
 	gchar t[BSIZE];
 	gint numorb1=-1;
 	gint numorb2=-1;
@@ -67,7 +67,7 @@ void get_basis_list(gchar* Symb,gchar* orb,gchar* outfile,gchar* errfile)
 	if(!fin)
 	{
 		create_molpro_basis_file();
-		fin = FOpen(filename,"r");
+		fin = fopen(filename,"r");
 	}
 	if(!fin)
 	{
@@ -121,7 +121,7 @@ void get_basis_list(gchar* Symb,gchar* orb,gchar* outfile,gchar* errfile)
 gboolean create_molpro_basis_file()
 {
         gchar *filename =  g_strdup_printf("%s/molprobasis",gabedit_directory());  
-	FILE* fout = FOpen(filename,"w");
+	FILE* fout = fopen(filename,"w");
 
 	g_free(filename);
 	if(fout==NULL)

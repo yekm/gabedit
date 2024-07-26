@@ -39,6 +39,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Display/Images.h"
 #include "../Display/UtilsOrb.h"
 #include "../Display/BondsOrb.h"
+#include "../Utils/GabeditXYPlot.h"
 #include "../../pixmaps/Open.xpm"
 
 static	GtkWidget *WinDlg = NULL;
@@ -68,7 +69,966 @@ static void rafreshList();
 static void stopAnimation(GtkWidget *win, gpointer data);
 static void playAnimation(GtkWidget *win, gpointer data);
 static gboolean set_geometry(gint k);
+static GtkWidget* addComboListToATable(GtkWidget* table, gchar** list, gint nlist, gint i, gint j, gint k);
+void  add_cancel_ok_button(GtkWidget *Win,GtkWidget *vbox,GtkWidget *entry, GCallback myFunc);
+static void print_gaussian_geometries(GtkWidget* Win, gpointer data);
 
+/************************************************************************************************************/
+static void setComboReference(GtkWidget *comboReference)
+{
+	GList *glist = NULL;
+	gchar** list = NULL;
+	gint n = 0;
+
+	if(geometriesMD.numberOfGeometries>0)
+	{
+		gint i;
+		list = g_malloc(geometriesMD.numberOfGeometries*sizeof(gchar*));
+		n = geometriesMD.numberOfGeometries;
+		if(n>10)
+		{ 
+			n = 10; 
+			gtk_editable_set_editable((GtkEditable*)GTK_BIN (comboReference)->child,TRUE);
+			gtk_widget_set_sensitive(GTK_BIN (comboReference)->child, TRUE);
+		}
+  		for(i=0;i<n;i++) 
+		{
+			list[i] = g_strdup_printf("%d",i+1);
+			glist = g_list_append(glist,list[i]);
+		}
+	}
+
+  	glist = g_list_append(glist,"Average");
+
+  	gtk_combo_box_entry_set_popdown_strings(comboReference, glist) ;
+
+	if(list && n>0) 
+	{
+		gint i;
+		for(i=0;i<n;i++) g_free(list[i]);
+		g_free(list);
+	}
+  	g_list_free(glist);
+}
+/************************************************************************************************************/
+static void setComboRMSDMethod(GtkWidget *comboRMSDMethod)
+{
+	GList *glist = NULL;
+
+  	glist = g_list_append(glist,"All atoms");
+  	glist = g_list_append(glist,"Non-hydrogen atoms");
+  	glist = g_list_append(glist,"Selected atoms by numbers");
+  	glist = g_list_append(glist,"Selected atoms by symbols");
+  	glist = g_list_append(glist,"Selected atoms by MM types");
+  	glist = g_list_append(glist,"Selected atoms by PDB types");
+
+  	gtk_combo_box_entry_set_popdown_strings(comboRMSDMethod, glist) ;
+
+  	g_list_free(glist);
+}
+/********************************************************************************/
+static void setEntryRMSDAtomsList(GtkWidget *entry)
+{
+	GList *glist = NULL;
+	GtkWidget *comboRMSDMethod = g_object_get_data(G_OBJECT (entry), "ComboRMSDMethod");
+	G_CONST_RETURN gchar* entryText = NULL;
+	GtkWidget *entryCombo =  GTK_BIN (comboRMSDMethod)->child;
+	entryText = gtk_entry_get_text(GTK_ENTRY(entryCombo));
+	gchar** list = NULL;
+	gint n = 0;
+
+	if(entryText && strstr(entryText,"All atoms")) gtk_entry_set_text(GTK_ENTRY(entry),"");
+	else if(entryText && strstr(entryText,"Non")) gtk_entry_set_text(GTK_ENTRY(entry),"");
+	else if(entryText && strstr(entryText,"numbers")&&geometriesMD.numberOfGeometries>0)
+	{
+		gint i;
+                gint nAtoms = geometriesMD.geometries[0].numberOfAtoms;
+		list = g_malloc(nAtoms*sizeof(gchar*));
+		n = nAtoms;
+  		for(i=0;i<n;i++) list[i] = g_strdup_printf("%d ",i+1);
+	}
+	else if(entryText && strstr(entryText,"symbol")&&geometriesMD.numberOfGeometries>0)
+	{
+		gint i,j;
+                gint nAtoms = geometriesMD.geometries[0].numberOfAtoms;
+		list = g_malloc(nAtoms*sizeof(gchar*));
+		n = 0;
+  		for(i=0;i<nAtoms;i++) 
+		{
+			gchar* t = geometriesMD.geometries[0].listOfAtoms[i].symbol;
+			for(j=0;j<n;j++)
+			{
+				gchar tmp[100];
+				sprintf(tmp,"%s ",t);
+				if(!strcmp(tmp,list[j])) break;
+			}
+			if(j==n) list[n++] = g_strdup_printf("%s ",t);
+		}
+	}
+	else if(entryText && strstr(entryText,"MM")&&geometriesMD.numberOfGeometries>0)
+	{
+		gint i,j;
+                gint nAtoms = geometriesMD.geometries[0].numberOfAtoms;
+		list = g_malloc(nAtoms*sizeof(gchar*));
+		n = 0;
+  		for(i=0;i<nAtoms;i++) 
+		{
+			gchar* t = geometriesMD.geometries[0].listOfAtoms[i].mmType;
+			for(j=0;j<n;j++)
+			{
+				gchar tmp[100];
+				sprintf(tmp,"%s ",t);
+				if(!strcmp(tmp,list[j])) break;
+			}
+			if(j==n) list[n++] = g_strdup_printf("%s ",t);
+		}
+	}
+	else if(entryText && strstr(entryText,"PDB")&&geometriesMD.numberOfGeometries>0)
+	{
+		gint i,j;
+                gint nAtoms = geometriesMD.geometries[0].numberOfAtoms;
+		list = g_malloc(nAtoms*sizeof(gchar*));
+		n = 0;
+  		for(i=0;i<nAtoms;i++) 
+		{
+			gchar* t = geometriesMD.geometries[0].listOfAtoms[i].pdbType;
+			for(j=0;j<n;j++)
+			{
+				gchar tmp[100];
+				sprintf(tmp,"%s ",t);
+				if(!strcmp(tmp,list[j])) break;
+			}
+			if(j==n) list[n++] = g_strdup_printf("%s ",t);
+		}
+	}
+
+	if(list && n>0) 
+	{
+		gint i;
+		gint pos;
+		gtk_widget_set_sensitive(entry, TRUE);
+		gtk_entry_set_text(GTK_ENTRY(entry),"");
+		for(i=0;i<(n>10?10:n);i++) gtk_editable_insert_text(GTK_EDITABLE(entry), list[i], -1, &pos);
+		for(i=0;i<n;i++) g_free(list[i]);
+		g_free(list);
+	}
+	else gtk_widget_set_sensitive(entry, FALSE);
+	if(glist) g_list_free(glist);
+}
+/**********************************************************************/
+static void changedRMSDMethod(GtkWidget *entry, gpointer data)
+{
+	GtkWidget* entryList = NULL;
+	entryList  = g_object_get_data(G_OBJECT (entry), "EntryRMSDAtomsList");
+	setEntryRMSDAtomsList(entryList);
+}
+/***********************************************************************************************/
+static GtkWidget *addReferenceToTable(GtkWidget *table, gint i)
+{
+	GtkWidget* entry = NULL;
+	GtkWidget* combo = NULL;
+	gint nlist = 1;
+	gchar* list[] = {"1"};
+
+	entry = addComboListToATable(table, list, nlist, i, 2, 1);
+	combo  = g_object_get_data(G_OBJECT (entry), "Combo");
+	gtk_widget_set_sensitive(entry, FALSE);
+
+	return combo;
+}
+/***********************************************************************************************/
+static GtkWidget *addComboRMSDMethodToTable(GtkWidget *table, gint i)
+{
+	GtkWidget* entry = NULL;
+	GtkWidget* combo = NULL;
+	gint nlist = 1;
+	gchar* list[] = {"All atoms"};
+
+	entry = addComboListToATable(table, list, nlist, i, 2, 1);
+	combo  = g_object_get_data(G_OBJECT (entry), "Combo");
+	gtk_widget_set_sensitive(entry, FALSE);
+
+	return combo;
+}
+/********************************************************************************/
+static GtkWidget*   add_input_rmsd_entrys(GtkWidget *Wins,GtkWidget *vbox)
+{
+	GtkWidget* entry;
+	GtkWidget* sep;
+  	GtkWidget *table = gtk_table_new(7,4,FALSE);
+	GtkWidget* comboReference = NULL;
+	GtkWidget* comboRMSMethod = NULL;
+	gint i;
+
+	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
+
+	i = 0;
+	add_label_table(table,_(" Reference "),i,0);
+	add_label_table(table,":",i,1);
+	comboReference = addReferenceToTable(table, i);
+	i = 1;
+	add_label_table(table,_(" Method "),i,0);
+	add_label_table(table,":",i,1);
+	comboRMSMethod = addComboRMSDMethodToTable(table, i);
+	i = 2;
+	add_label_table(table,_(" List "),i,0);
+	add_label_table(table,":",i,1);
+  	entry = gtk_entry_new ();
+	g_object_set_data(G_OBJECT(Wins), "EntryRMSDAtomsList", entry);
+	gtk_table_attach(GTK_TABLE(table),entry,2,2+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+	i = 3;
+	sep = gtk_hseparator_new ();
+	gtk_table_attach(GTK_TABLE(table),sep,0,0+4,i,i+1,
+		(GtkAttachOptions) (GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions) (GTK_FILL | GTK_EXPAND),
+                  2,2);
+
+	if(GTK_IS_COMBO_BOX(comboReference))
+	{
+		g_object_set_data(G_OBJECT (GTK_BIN(comboRMSMethod)->child), "EntryRMSDAtomsList", entry);
+		g_object_set_data(G_OBJECT (entry), "ComboRMSDMethod", comboRMSMethod);
+		setEntryRMSDAtomsList(entry);
+		g_object_set_data(G_OBJECT (Wins), "EntryRMSDAtomsList",(entry));
+		g_object_set_data(G_OBJECT (Wins), "ComboRMSDMethod",GTK_BIN(comboRMSMethod)->child);
+		g_object_set_data(G_OBJECT (Wins), "ComboReference",GTK_BIN(comboReference)->child);
+	}
+	setComboReference(comboReference);
+	setComboRMSDMethod(comboRMSMethod);
+	g_signal_connect(G_OBJECT(GTK_BIN(comboRMSMethod)->child),"changed", G_CALLBACK(changedRMSDMethod),NULL);
+
+	gtk_widget_show_all(table);
+	entry = GTK_BIN (comboReference)->child;
+	return entry;
+}
+/*************************************************************************************************************/
+static void build_rmsd(GtkWidget* Win, gpointer data)
+{
+	gint g;
+	GtkWidget* entryReference = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"ComboReference"));	
+	GtkWidget* entryMethod = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"ComboRMSDMethod"));	
+	GtkWidget* entryList = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"EntryRMSDAtomsList"));	
+	gdouble** C0 = NULL;
+	gint nref;
+	gdouble* X = NULL;
+	gdouble* Y = NULL;
+	gint i;
+	G_CONST_RETURN gchar* str = NULL;
+	GtkWidget* xyplot;
+	GtkWidget* window;
+	gint N = geometriesMD.numberOfGeometries;
+
+	if(geometriesMD.numberOfGeometries<1) return;
+	if(geometriesMD.geometries[0].numberOfAtoms<1) return;
+	
+
+	if(entryReference) str = gtk_entry_get_text(GTK_ENTRY(entryReference));
+	if(!str) return;
+	if(strstr(str,"Aver")) nref = -1;
+	else nref = atof(str)-1;
+	C0 = g_malloc(geometriesMD.geometries[0].numberOfAtoms*sizeof(gdouble*));
+	for(i=0;i<geometriesMD.geometries[0].numberOfAtoms;i++) C0[i] = g_malloc(3*sizeof(gdouble));
+	if(nref>=0)
+	{
+		gint j;
+		for(i=0;i<geometriesMD.geometries[0].numberOfAtoms;i++) 
+		for(j=0;j<3;j++)
+			C0[i][j] = geometriesMD.geometries[nref].listOfAtoms[i].C[j];
+	}
+	else
+	{
+		gint j;
+		for(i=0;i<geometriesMD.geometries[0].numberOfAtoms;i++) 
+		for(j=0;j<3;j++)
+			C0[i][j] = 0;
+		for(g = 0;g<geometriesMD.numberOfGeometries;g++)
+		for(i=0;i<geometriesMD.geometries[0].numberOfAtoms;i++) 
+		for(j=0;j<3;j++)
+			C0[i][j] += geometriesMD.geometries[g].listOfAtoms[i].C[j];
+		for(i=0;i<geometriesMD.geometries[0].numberOfAtoms;i++) 
+		for(j=0;j<3;j++)
+			C0[i][j] /= geometriesMD.numberOfGeometries;
+	}
+
+	if(entryMethod) str = gtk_entry_get_text(GTK_ENTRY(entryMethod));
+	if(!str) return;
+
+	X = g_malloc(N*sizeof(gdouble));
+	Y = g_malloc(N*sizeof(gdouble));
+	for(i=0;i<N;i++) X[i] = i+1;
+	for(i=0;i<N;i++) Y[i] = 0;
+	if(strstr(str,"All atoms"))
+	{
+		for(g = 0;g<geometriesMD.numberOfGeometries;g++)
+		{
+			gdouble d = 0;
+			gdouble xx = 0;
+			gint j;
+
+			gint a;
+
+			for(a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
+			for(j=0;j<3;j++) 
+			{
+				xx = geometriesMD.geometries[g].listOfAtoms[a].C[j]-C0[a][j];
+				d+= xx*xx;
+			}
+			d = sqrt(d)*BOHR_TO_ANG;
+			d /=geometriesMD.geometries[g].numberOfAtoms;
+			Y[g] = d;
+		}
+	}
+	else if(strstr(str,"Non"))
+	{
+		for(g = 0;g<geometriesMD.numberOfGeometries;g++)
+		{
+			gdouble d = 0;
+			gdouble xx = 0;
+			gint j;
+
+			gint a;
+			gint k = 0;
+
+			for(a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
+			if(strcmp( geometriesMD.geometries[g].listOfAtoms[a].symbol,"H"))
+			for(j=0;j<3;j++) 
+			{
+				xx = geometriesMD.geometries[g].listOfAtoms[a].C[j]-C0[a][j];
+				d+= xx*xx;
+				k++;
+			}
+			d = sqrt(d)*BOHR_TO_ANG;
+			if(k>0) d /=k/3.0;
+			Y[g] = d;
+		}
+	}
+	else if(strstr(str,"symbol"))
+	{
+		str = gtk_entry_get_text(GTK_ENTRY(entryList));
+		for(g = 0;g<geometriesMD.numberOfGeometries;g++)
+		{
+			gdouble d = 0;
+			gdouble xx = 0;
+			gint j;
+
+			gint a;
+			gint k = 0;
+
+			for(a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
+			{
+				gchar tmp[100];
+				gchar tmp2[10000];
+				sprintf(tmp2,"%s ",str);
+				sprintf(tmp,"%s ",geometriesMD.geometries[g].listOfAtoms[a].symbol);
+				if(strstr(tmp2,tmp))
+				for(j=0;j<3;j++) 
+				{
+					xx = geometriesMD.geometries[g].listOfAtoms[a].C[j]-C0[a][j];
+					d+= xx*xx;
+					k++;
+				}
+			}
+			d = sqrt(d)*BOHR_TO_ANG;
+			if(k>0) d /=k/3.0;
+			Y[g] = d;
+		}
+	}
+	else if(strstr(str,"number"))
+	{
+		str = gtk_entry_get_text(GTK_ENTRY(entryList));
+		for(g = 0;g<geometriesMD.numberOfGeometries;g++)
+		{
+			gdouble d = 0;
+			gdouble xx = 0;
+			gint j;
+
+			gint a;
+			gint k = 0;
+
+			for(a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
+			{
+				gchar tmp[100];
+				gchar tmp2[10000];
+				sprintf(tmp2,"%s ",str);
+				sprintf(tmp,"%d ",a+1);
+				if(strstr(tmp2,tmp))
+				for(j=0;j<3;j++) 
+				{
+					xx = geometriesMD.geometries[g].listOfAtoms[a].C[j]-C0[a][j];
+					d+= xx*xx;
+					k++;
+				}
+			}
+			d = sqrt(d)*BOHR_TO_ANG;
+			if(k>0) d /=k/3.0;
+			Y[g] = d;
+		}
+	}
+	else if(strstr(str,"MM"))
+	{
+		str = gtk_entry_get_text(GTK_ENTRY(entryList));
+		for(g = 0;g<geometriesMD.numberOfGeometries;g++)
+		{
+			gdouble d = 0;
+			gdouble xx = 0;
+			gint j;
+
+			gint a;
+			gint k = 0;
+
+			for(a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
+			{
+				gchar tmp[100];
+				gchar tmp2[10000];
+				sprintf(tmp2,"%s ",str);
+				sprintf(tmp,"%s ",geometriesMD.geometries[g].listOfAtoms[a].mmType);
+				if(strstr(tmp2,tmp))
+				for(j=0;j<3;j++) 
+				{
+					xx = geometriesMD.geometries[g].listOfAtoms[a].C[j]-C0[a][j];
+					d+= xx*xx;
+					k++;
+				}
+			}
+			d = sqrt(d)*BOHR_TO_ANG;
+			if(k>0) d /=k/3.0;
+			Y[g] = d;
+		}
+	}
+	else if(strstr(str,"PDB"))
+	{
+		str = gtk_entry_get_text(GTK_ENTRY(entryList));
+		for(g = 0;g<geometriesMD.numberOfGeometries;g++)
+		{
+			gdouble d = 0;
+			gdouble xx = 0;
+			gint j;
+
+			gint a;
+			gint k = 0;
+
+			for(a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
+			{
+				gchar tmp[100];
+				gchar tmp2[10000];
+				sprintf(tmp2,"%s ",str);
+				sprintf(tmp,"%s ",geometriesMD.geometries[g].listOfAtoms[a].pdbType);
+				if(strstr(tmp2,tmp))
+				for(j=0;j<3;j++) 
+				{
+					xx = geometriesMD.geometries[g].listOfAtoms[a].C[j]-C0[a][j];
+					d+= xx*xx;
+					k++;
+				}
+			}
+			d = sqrt(d)*BOHR_TO_ANG;
+			if(k>0) d /=k/3.0;
+			Y[g] = d;
+		}
+	}
+
+	gtk_widget_destroy(Win);
+
+	window = gabedit_xyplot_new_window(_("RMSD"),NULL);
+	xyplot = g_object_get_data(G_OBJECT (window), "XYPLOT");
+	gabedit_xyplot_add_data_conv(GABEDIT_XYPLOT(xyplot),N, X,  Y, 1.0, GABEDIT_XYPLOT_CONV_NONE,NULL);
+	gabedit_xyplot_set_range_xmin (GABEDIT_XYPLOT(xyplot), 0.0);
+	gabedit_xyplot_set_x_label (GABEDIT_XYPLOT(xyplot), "Frame");
+	gabedit_xyplot_set_y_label (GABEDIT_XYPLOT(xyplot), "RMSD (Ang)");
+	if(C0) for(i=0;i<geometriesMD.geometries[0].numberOfAtoms;i++) g_free(C0[i]);
+	if(C0) g_free(C0);
+	g_free(X); 
+	g_free(Y);
+}
+/********************************************************************************************************/
+static void create_rmsd_dlg()
+{
+	GtkWidget *Win;
+	GtkWidget *frame;
+	GtkWidget *vboxall;
+	GtkWidget* vbox;
+	GtkWidget* entry;
+
+
+	/* Principal Window */
+	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(Win),"compute pair radial distribution");
+	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
+	gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
+	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(PrincipalWindow));
+	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
+
+	add_glarea_child(Win,"gr");
+	g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)delete_child,NULL);
+
+	vboxall = create_vbox(Win);
+
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
+	gtk_box_pack_start(GTK_BOX(vboxall), frame,TRUE,TRUE,0);
+	gtk_widget_show (frame);
+  	vbox = gtk_vbox_new (FALSE, 0);
+	gtk_container_add (GTK_CONTAINER (frame), vbox);
+
+  	gtk_widget_realize(Win);
+	entry =  add_input_rmsd_entrys(Win,vbox);
+	add_cancel_ok_button(Win,vbox,entry,(GCallback)build_rmsd);
+
+	/* Show all */
+	gtk_widget_show_all (Win);
+}
+/************************************************************************************************************/
+static void setComboMethod(GtkWidget *comboMethod)
+{
+	GList *glist = NULL;
+
+  	glist = g_list_append(glist,"Number");
+  	glist = g_list_append(glist,"Symbol");
+  	glist = g_list_append(glist,"MM Type");
+  	glist = g_list_append(glist,"PDB Type");
+
+  	gtk_combo_box_entry_set_popdown_strings(comboMethod, glist) ;
+
+  	g_list_free(glist);
+}
+/********************************************************************************/
+static void setComboVal(GtkWidget *comboVal)
+{
+	GList *glist = NULL;
+	GtkWidget *comboMethod = g_object_get_data(G_OBJECT (comboVal), "ComboMethod");
+	G_CONST_RETURN gchar* entryText = NULL;
+	GtkWidget *entry =  GTK_BIN (comboMethod)->child;
+	entryText = gtk_entry_get_text(GTK_ENTRY(entry));
+	gchar** list = NULL;
+	gint n = 0;
+
+	if(entryText && strstr(entryText,"Number")&&geometriesMD.numberOfGeometries>0)
+	{
+		gint i;
+                gint nAtoms = geometriesMD.geometries[0].numberOfAtoms;
+		list = g_malloc(nAtoms*sizeof(gchar*));
+		n = nAtoms;
+  		for(i=0;i<nAtoms;i++) 
+			list[i] = g_strdup_printf("%d",i+1);
+  		for(i=0;i<n;i++) 
+			glist = g_list_append(glist,list[i]);
+	}
+	if(entryText && strstr(entryText,"Symbol")&&geometriesMD.numberOfGeometries>0)
+	{
+		gint i,j;
+                gint nAtoms = geometriesMD.geometries[0].numberOfAtoms;
+		list = g_malloc(nAtoms*sizeof(gchar*));
+		n = 0;
+  		for(i=0;i<nAtoms;i++) 
+		{
+			gchar* t = geometriesMD.geometries[0].listOfAtoms[i].symbol;
+			for(j=0;j<n;j++)
+			{
+				if(!strcmp(t,list[j])) break;
+			}
+			if(j==n)
+				list[n++] = g_strdup(t);
+		}
+  		for(i=0;i<n;i++) 
+			glist = g_list_append(glist,list[i]);
+	}
+	if(entryText && strstr(entryText,"MM Type")&&geometriesMD.numberOfGeometries>0)
+	{
+		gint i,j;
+                gint nAtoms = geometriesMD.geometries[0].numberOfAtoms;
+		list = g_malloc(nAtoms*sizeof(gchar*));
+		n = 0;
+  		for(i=0;i<nAtoms;i++) 
+		{
+			gchar* t = geometriesMD.geometries[0].listOfAtoms[i].mmType;
+			for(j=0;j<n;j++)
+			{
+				if(!strcmp(t,list[j])) break;
+			}
+			if(j==n)
+				list[n++] = g_strdup(t);
+		}
+  		for(i=0;i<n;i++) 
+			glist = g_list_append(glist,list[i]);
+	}
+	if(entryText && strstr(entryText,"PDB Type")&&geometriesMD.numberOfGeometries>0)
+	{
+		gint i,j;
+                gint nAtoms = geometriesMD.geometries[0].numberOfAtoms;
+		list = g_malloc(nAtoms*sizeof(gchar*));
+		n = 0;
+  		for(i=0;i<nAtoms;i++) 
+		{
+			gchar* t = geometriesMD.geometries[0].listOfAtoms[i].pdbType;
+			for(j=0;j<n;j++)
+			{
+				if(!strcmp(t,list[j])) break;
+			}
+			if(j==n)
+				list[n++] = g_strdup(t);
+		}
+  		for(i=0;i<n;i++) 
+			glist = g_list_append(glist,list[i]);
+	}
+
+  	gtk_combo_box_entry_set_popdown_strings( comboVal, glist) ;
+	if(list && n>0) 
+	{
+		gint i;
+		for(i=0;i<n;i++) g_free(list[i]);
+		g_free(list);
+	}
+  	g_list_free(glist);
+}
+/**********************************************************************/
+static void changedMethod(GtkWidget *entry, gpointer data)
+{
+	GtkWidget* comboVal = NULL;
+	 
+	comboVal  = g_object_get_data(G_OBJECT (entry), "ComboVal1");
+	setComboVal(comboVal);
+	comboVal  = g_object_get_data(G_OBJECT (entry), "ComboVal2");
+	setComboVal(comboVal);
+
+}
+/***********************************************************************************************/
+static GtkWidget *addMethodToTable(GtkWidget *table, gint i)
+{
+	GtkWidget* entry = NULL;
+	GtkWidget* combo = NULL;
+	gint nlist = 1;
+	gchar* list[] = {"Number"};
+
+	entry = addComboListToATable(table, list, nlist, i, 0, 3);
+	combo  = g_object_get_data(G_OBJECT (entry), "Combo");
+	gtk_widget_set_sensitive(entry, FALSE);
+
+	return combo;
+}
+/***********************************************************************************************/
+static GtkWidget *addValToTable(GtkWidget *table, gint i)
+{
+	GtkWidget* entry = NULL;
+	GtkWidget* combo = NULL;
+	gint nlist = 1;
+	gchar* list[] = {"1"};
+
+	entry = addComboListToATable(table, list, nlist, i, 0, 3);
+	combo  = g_object_get_data(G_OBJECT (entry), "Combo");
+	gtk_widget_set_sensitive(entry, FALSE);
+
+	return combo;
+}
+/********************************************************************************/
+static GtkWidget*   add_inputgr_entrys(GtkWidget *Wins,GtkWidget *vbox)
+{
+	GtkWidget* entry;
+	GtkWidget* sep;
+  	GtkWidget *table = gtk_table_new(7,4,FALSE);
+	GtkWidget* comboMethod = NULL;
+	GtkWidget* comboVal1 = NULL;
+	GtkWidget* comboVal2 = NULL;
+	gint i;
+
+	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
+
+	i = 0;
+	comboMethod = addMethodToTable(table, i);
+	i = 1;
+	comboVal1 = addValToTable(table, i);
+	i = 2;
+	comboVal2 = addValToTable(table, i);
+	i = 3;
+	sep = gtk_hseparator_new ();
+	gtk_table_attach(GTK_TABLE(table),sep,0,0+4,i,i+1,
+		(GtkAttachOptions) (GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions) (GTK_FILL | GTK_EXPAND),
+                  2,2);
+
+	if(GTK_IS_COMBO_BOX(comboMethod))
+	{
+		g_object_set_data(G_OBJECT (GTK_BIN(comboMethod)->child), "ComboVal1", comboVal1);
+		g_object_set_data(G_OBJECT (GTK_BIN(comboMethod)->child), "ComboVal2", comboVal2);
+		g_object_set_data(G_OBJECT (comboVal1), "ComboMethod", comboMethod);
+		g_object_set_data(G_OBJECT (comboVal2), "ComboMethod", comboMethod);
+		setComboVal(comboVal1);
+		setComboVal(comboVal2);
+		g_object_set_data(G_OBJECT (Wins), "EntryMethod",GTK_BIN(comboMethod)->child);
+		g_object_set_data(G_OBJECT (Wins), "EntryVal1",GTK_BIN(comboVal1)->child);
+		g_object_set_data(G_OBJECT (Wins), "EntryVal2",GTK_BIN(comboVal2)->child);
+	}
+	setComboMethod(comboMethod);
+	g_signal_connect(G_OBJECT(GTK_BIN(comboMethod)->child),"changed", G_CALLBACK(changedMethod),NULL);
+
+	i = 4;
+	add_label_table(table,_(" dr "),i,0);
+	add_label_table(table,":",i,1);
+  	entry = gtk_entry_new ();
+	g_object_set_data(G_OBJECT(Wins), "Entrydr", entry);
+	gtk_table_attach(GTK_TABLE(table),entry,2,2+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+  	gtk_entry_set_text (GTK_ENTRY (entry),"0.1");
+	gtk_editable_set_editable((GtkEditable*)entry,TRUE);
+	gtk_widget_set_sensitive(entry, TRUE);
+
+	i = 5;
+	add_label_table(table,_(" max r "),i,0);
+	add_label_table(table,":",i,1);
+  	entry = gtk_entry_new ();
+	g_object_set_data(G_OBJECT(Wins), "Entrymaxr", entry);
+	gtk_table_attach(GTK_TABLE(table),entry,2,2+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+  	gtk_entry_set_text (GTK_ENTRY (entry),"10.0");
+	gtk_editable_set_editable((GtkEditable*)entry,TRUE);
+	gtk_widget_set_sensitive(entry, TRUE);
+
+	gtk_widget_show_all(table);
+	entry = GTK_BIN (comboMethod)->child;
+	return entry;
+}
+/*************************************************************************************************************/
+static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
+{
+	gint g;
+	GtkWidget* entrydr = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"Entrydr"));	
+	GtkWidget* entrymaxr = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"Entrymaxr"));	
+	GtkWidget* entryVal1 = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"EntryVal1"));	
+	GtkWidget* entryVal2 = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"EntryVal2"));	
+	GtkWidget* entryMethod = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"EntryMethod"));	
+	gdouble dr,maxr;
+	gint N;
+	gint n1,n2;
+	gdouble* X = NULL;
+	gdouble* Y = NULL;
+	gint i;
+	G_CONST_RETURN gchar* str = NULL;
+	GtkWidget* xyplot;
+	GtkWidget* window;
+
+	if(geometriesMD.numberOfGeometries<1) return;
+
+	if(entrydr) str = gtk_entry_get_text(GTK_ENTRY(entrydr));
+	if(!str) return;
+	dr = atof(str);
+	if(dr<1e-10) return;
+	if(entrymaxr) str = gtk_entry_get_text(GTK_ENTRY(entrymaxr));
+	if(!str) return;
+	maxr = atof(str);
+	N = maxr/dr+1;
+	if(N<2) return;
+	if(entryMethod) str = gtk_entry_get_text(GTK_ENTRY(entryMethod));
+	if(!str) return;
+	X = g_malloc(N*sizeof(gdouble));
+	Y = g_malloc(N*sizeof(gdouble));
+	for(i=0;i<N;i++) X[i] = dr*i;
+	for(i=0;i<N;i++) Y[i] = 0;
+	if(strstr(str,"Number"))
+	{
+		if(entryVal1) str = gtk_entry_get_text(GTK_ENTRY(entryVal1));
+		if(!str) return;
+		n1 = atoi(str);
+		if(entryVal2) str = gtk_entry_get_text(GTK_ENTRY(entryVal2));
+		if(!str) return;
+		n2 = atoi(str);
+
+		n1--;
+		n2--;
+		if(n1>=0 && n2>=0)
+		for(g = 0;g<geometriesMD.numberOfGeometries;g++)
+		{
+			gint a = n1;
+			gint b = n2;
+			gdouble d = 0;
+			gdouble xx = 0;
+			gint j;
+			for(j=0;j<3;j++) 
+			{
+				xx = geometriesMD.geometries[g].listOfAtoms[a].C[j]-geometriesMD.geometries[g].listOfAtoms[b].C[j];
+				d+= xx*xx;
+			}
+			d = sqrt(d)*BOHR_TO_ANG;
+			if(d>maxr) continue;
+			Y[(gint)(d/dr)]++;
+		}
+	}
+	else if(strstr(str,"Symbol"))
+	{
+		gchar s1[100];
+		gchar s2[100];
+		if(entryVal1) str = gtk_entry_get_text(GTK_ENTRY(entryVal1));
+		if(!str) return;
+		sprintf(s1,"%s",str);
+		if(entryVal2) str = gtk_entry_get_text(GTK_ENTRY(entryVal2));
+		if(!str) return;
+		sprintf(s2,"%s",str);
+
+		for(g = 0;g<geometriesMD.numberOfGeometries;g++)
+		{
+			gint a;
+			gint b;
+			for(a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
+			for(b=0;b<a;b++)
+			{
+				if(
+				(!strcmp(geometriesMD.geometries[g].listOfAtoms[a].symbol,s1) && !strcmp(geometriesMD.geometries[g].listOfAtoms[b].symbol,s2))
+				||
+				(!strcmp(geometriesMD.geometries[g].listOfAtoms[a].symbol,s2) && !strcmp(geometriesMD.geometries[g].listOfAtoms[b].symbol,s1))
+				)
+				{
+					gdouble d = 0;
+					gdouble xx = 0;
+					gint j;
+					for(j=0;j<3;j++) 
+					{
+						xx = geometriesMD.geometries[g].listOfAtoms[a].C[j]-geometriesMD.geometries[g].listOfAtoms[b].C[j];
+						d+= xx*xx;
+					}
+					d = sqrt(d)*BOHR_TO_ANG;
+					if(d>maxr) continue;
+					Y[(gint)(d/dr)]++;
+				}
+
+			}
+		}
+	}
+	else if(strstr(str,"MM Type"))
+	{
+		gchar s1[100];
+		gchar s2[100];
+		if(entryVal1) str = gtk_entry_get_text(GTK_ENTRY(entryVal1));
+		if(!str) return;
+		sprintf(s1,"%s",str);
+		if(entryVal2) str = gtk_entry_get_text(GTK_ENTRY(entryVal2));
+		if(!str) return;
+		sprintf(s2,"%s",str);
+
+		for(g = 0;g<geometriesMD.numberOfGeometries;g++)
+		{
+			gint a;
+			gint b;
+			for(a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
+			for(b=0;b<a;b++)
+			{
+				if(
+				(!strcmp(geometriesMD.geometries[g].listOfAtoms[a].mmType,s1) && !strcmp(geometriesMD.geometries[g].listOfAtoms[b].mmType,s2))
+				||
+				(!strcmp(geometriesMD.geometries[g].listOfAtoms[a].mmType,s2) && !strcmp(geometriesMD.geometries[g].listOfAtoms[b].mmType,s1))
+				)
+				{
+					gdouble d = 0;
+					gdouble xx = 0;
+					gint j;
+					for(j=0;j<3;j++) 
+					{
+						xx = geometriesMD.geometries[g].listOfAtoms[a].C[j]-geometriesMD.geometries[g].listOfAtoms[b].C[j];
+						d+= xx*xx;
+					}
+					d = sqrt(d)*BOHR_TO_ANG;
+					if(d>maxr) continue;
+					Y[(gint)(d/dr)]++;
+				}
+
+			}
+		}
+	}
+	else if(strstr(str,"PDB Type"))
+	{
+		gchar s1[100];
+		gchar s2[100];
+		if(entryVal1) str = gtk_entry_get_text(GTK_ENTRY(entryVal1));
+		if(!str) return;
+		sprintf(s1,"%s",str);
+		if(entryVal2) str = gtk_entry_get_text(GTK_ENTRY(entryVal2));
+		if(!str) return;
+		sprintf(s2,"%s",str);
+
+		for(g = 0;g<geometriesMD.numberOfGeometries;g++)
+		{
+			gint a;
+			gint b;
+			for(a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
+			for(b=0;b<a;b++)
+			{
+				if(
+				(!strcmp(geometriesMD.geometries[g].listOfAtoms[a].pdbType,s1) && !strcmp(geometriesMD.geometries[g].listOfAtoms[b].pdbType,s2))
+				||
+				(!strcmp(geometriesMD.geometries[g].listOfAtoms[a].pdbType,s2) && !strcmp(geometriesMD.geometries[g].listOfAtoms[b].pdbType,s1))
+				)
+				{
+					gdouble d = 0;
+					gdouble xx = 0;
+					gint j;
+					for(j=0;j<3;j++) 
+					{
+						xx = geometriesMD.geometries[g].listOfAtoms[a].C[j]-geometriesMD.geometries[g].listOfAtoms[b].C[j];
+						d+= xx*xx;
+					}
+					d = sqrt(d)*BOHR_TO_ANG;
+					if(d>maxr) continue;
+					Y[(gint)(d/dr)]++;
+				}
+
+			}
+		}
+	}
+
+	gtk_widget_destroy(Win);
+
+	window = gabedit_xyplot_new_window(_("Pair radial distribution"),NULL);
+	xyplot = g_object_get_data(G_OBJECT (window), "XYPLOT");
+	gabedit_xyplot_add_data_conv(GABEDIT_XYPLOT(xyplot),N, X,  Y, 1.0, GABEDIT_XYPLOT_CONV_NONE,NULL);
+	gabedit_xyplot_set_range_xmin (GABEDIT_XYPLOT(xyplot), 0.0);
+	gabedit_xyplot_set_x_label (GABEDIT_XYPLOT(xyplot), "r(Ang)");
+	gabedit_xyplot_set_y_label (GABEDIT_XYPLOT(xyplot), "g(r)");
+	g_free(X); 
+	g_free(Y);
+}
+/********************************************************************************************************/
+static void create_gr_dlg()
+{
+	GtkWidget *Win;
+	GtkWidget *frame;
+	GtkWidget *vboxall;
+	GtkWidget* vbox;
+	GtkWidget* entry;
+
+
+	/* Principal Window */
+	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(Win),"compute pair radial distribution");
+	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
+	gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
+	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(PrincipalWindow));
+	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
+
+	add_glarea_child(Win,"gr");
+	g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)delete_child,NULL);
+
+	vboxall = create_vbox(Win);
+
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
+	gtk_box_pack_start(GTK_BOX(vboxall), frame,TRUE,TRUE,0);
+	gtk_widget_show (frame);
+  	vbox = gtk_vbox_new (FALSE, 0);
+	gtk_container_add (GTK_CONTAINER (frame), vbox);
+
+  	gtk_widget_realize(Win);
+	entry =  add_inputgr_entrys(Win,vbox);
+	add_cancel_ok_button(Win,vbox,entry,(GCallback)build_pair_radial_distribution);
+
+	/* Show all */
+	gtk_widget_show_all (Win);
+}
+  
 /*************************************************************************************************************/
 static gint getNumberOfValenceElectrons(gint g)
 {
@@ -508,6 +1468,29 @@ static void print_velocity_velocity_correlation_function(gchar* fileName)
 		fprintf(file,"%lf %lf\n",geometriesMD.geometries[g].time,Cvv[g]);
 	}
 	fclose(file);
+}
+/*************************************************************************************************************/
+static void display_velocity_velocity_correlation_function()
+{
+	GtkWidget* xyplot;
+	GtkWidget* window;
+	gint n = 0;
+	gdouble dt = 0;
+	gdouble* X = NULL;
+	gdouble* Y = get_velocity_velocity_correlation_function(&n, &dt);
+	gint i;
+	if(!Y) return;
+	X = g_malloc(n*sizeof(gdouble));
+	for(i=0;i<n;i++) X[i] = geometriesMD.geometries[i].time;
+	
+
+	window = gabedit_xyplot_new_window(_("Velocity-Velocity autocorrelation"),NULL);
+	xyplot = g_object_get_data(G_OBJECT (window), "XYPLOT");
+	gabedit_xyplot_add_data_conv(GABEDIT_XYPLOT(xyplot),n, X,  Y, 1.0, GABEDIT_XYPLOT_CONV_NONE,NULL);
+	gabedit_xyplot_set_range_xmin (GABEDIT_XYPLOT(xyplot), 0.0);
+	gabedit_xyplot_set_x_label (GABEDIT_XYPLOT(xyplot), "cm<sup>-1</sup>");
+	g_free(X); 
+	g_free(Y);
 }
 /********************************************************************************/
 static void reset_last_directory(GtkWidget *dirSelector, gpointer data)
@@ -2259,8 +3242,11 @@ static gboolean show_menu_popup(GtkUIManager *manager, guint button, guint32 tim
 		set_sensitive_option(manager,"/MenuGeomMD/SaveGabedit");
 		set_sensitive_option(manager,"/MenuGeomMD/SavePDB");
 		set_sensitive_option(manager,"/MenuGeomMD/SaveVelocityAutocorrelation");
+		set_sensitive_option(manager,"/MenuGeomMD/DisplayVelocityAutocorrelation");
 		set_sensitive_option(manager,"/MenuGeomMD/CreateGaussInput");
 		set_sensitive_option(manager,"/MenuGeomMD/CreateGaussInputLink");
+		set_sensitive_option(manager,"/MenuGeomMD/CreateGr");
+		set_sensitive_option(manager,"/MenuGeomMD/ComputeRMSD");
 		set_sensitive_option(manager,"/MenuGeomMD/DeleteGeometry");
 		set_sensitive_option(manager,"/MenuGeomMD/DeleteHalfGeometries");
 		set_sensitive_option(manager,"/MenuGeomMD/DeleteBeforeSelectedGeometry");
@@ -2801,8 +3787,11 @@ static void activate_action (GtkAction *action)
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/SaveGabedit");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/SavePDB");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/SaveVelocityAutocorrelation");
+		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/DisplayVelocityAutocorrelation");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGaussInput");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGaussInputLink");
+		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGr");
+		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/ComputeRMSD");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/DeleteGeometry");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/DeleteHalfGeometries");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/DeleteBeforeSelectedGeometry");
@@ -2815,8 +3804,11 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "SaveGabedit")) save_gabedit_file_dlg();
 	else if(!strcmp(name, "SavePDB")) save_pdb_file_dlg();
 	else if(!strcmp(name, "SaveVelocityAutocorrelation")) save_velocity_autocorrelation_dlg();
+	else if(!strcmp(name, "DisplayVelocityAutocorrelation")) display_velocity_velocity_correlation_function();
 	else if(!strcmp(name, "CreateGaussInput")) create_gaussian_file_dlg(FALSE);
 	else if(!strcmp(name, "CreateGaussInputLink")) create_gaussian_file_dlg(TRUE);
+	else if(!strcmp(name, "CreateGr")) create_gr_dlg(FALSE);
+	else if(!strcmp(name, "ComputeRMSD")) create_rmsd_dlg(FALSE);
 	else if(!strcmp(name, "DeleteGeometry")) delete_one_geometry();
 	else if(!strcmp(name, "DeleteHalfGeometries")) delete_half_geometries();
 	else if(!strcmp(name, "DeleteBeforeSelectedGeometry")) delete_before_selected_geometry();
@@ -2837,8 +3829,11 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SaveGabedit", GABEDIT_STOCK_SAVE, N_("_Save"), NULL, "Save", G_CALLBACK (activate_action) },
 	{"SavePDB", GABEDIT_STOCK_PDB, N_("_Save as pdb file "), NULL, "Save as pdb", G_CALLBACK (activate_action) },
 	{"SaveVelocityAutocorrelation", GABEDIT_STOCK_SAVE, N_("_Save velocity-velocity autocorrelation function"), NULL, "Save velocity-velocity autocorrelation function", G_CALLBACK (activate_action) },
+	{"DisplayVelocityAutocorrelation", NULL, N_("_Display velocity-velocity autocorrelation function"), NULL, "Display velocity-velocity autocorrelation function", G_CALLBACK (activate_action) },
 	{"CreateGaussInput", GABEDIT_STOCK_GAUSSIAN, N_("_Create a serie of single input file for Gaussian"), NULL, "Save", G_CALLBACK (activate_action) },
-	{"CreateGaussInputLink", GABEDIT_STOCK_GAUSSIAN, N_("_Create single input file for Gaussian with more geometries"), NULL, "Save", G_CALLBACK (activate_action) },
+	{"CreateGaussInputLink", GABEDIT_STOCK_GAUSSIAN, N_("Create _single input file for Gaussian with more geometries"), NULL, "Save", G_CALLBACK (activate_action) },
+	{"CreateGr", GABEDIT_STOCK_GAUSSIAN, N_("Compute pair _radial distribution"), NULL, "Gr", G_CALLBACK (activate_action) },
+	{"ComputeRMSD", GABEDIT_STOCK_GAUSSIAN, N_("_Compute RMSD"), NULL, "RMSD", G_CALLBACK (activate_action) },
 	{"DeleteGeometry", GABEDIT_STOCK_CUT, N_("_Delete selected geometry"), NULL, "Delete selected geometry", G_CALLBACK (activate_action) },
 	{"DeleteHalfGeometries", GABEDIT_STOCK_CUT, N_("Remove the _half of the geometries"), NULL, "remove the half of the geometries", G_CALLBACK (activate_action) },
 	{"DeleteBeforeSelectedGeometry", GABEDIT_STOCK_CUT, N_("Remove geometries before the selected geometry"), NULL, "remove before", G_CALLBACK (activate_action) },
@@ -2865,9 +3860,15 @@ static const gchar *uiMenuInfo =
 "    <menuitem name=\"SavePDB\" action=\"SavePDB\" />\n"
 "    <separator name=\"sepMenuPopSaveVelocityAutocorrelation\" />\n"
 "    <menuitem name=\"SaveVelocityAutocorrelation\" action=\"SaveVelocityAutocorrelation\" />\n"
+"    <separator name=\"sepMenuPopDisplayVelocityAutocorrelation\" />\n"
+"    <menuitem name=\"DisplayVelocityAutocorrelation\" action=\"DisplayVelocityAutocorrelation\" />\n"
 "    <separator name=\"sepMenuCreateGauss\" />\n"
 "    <menuitem name=\"CreateGaussInput\" action=\"CreateGaussInput\" />\n"
 "    <menuitem name=\"CreateGaussInputLink\" action=\"CreateGaussInputLink\" />\n"
+"    <separator name=\"sepMenuCreateGr\" />\n"
+"    <menuitem name=\"CreateGr\" action=\"CreateGr\" />\n"
+"    <separator name=\"sepMenuComputeRMSD\" />\n"
+"    <menuitem name=\"ComputeRMSD\" action=\"ComputeRMSD\" />\n"
 "    <separator name=\"sepMenuDelete\" />\n"
 "    <menuitem name=\"DeleteGeometry\" action=\"DeleteGeometry\" />\n"
 "    <menuitem name=\"DeleteHalfGeometries\" action=\"DeleteHalfGeometries\" />\n"
@@ -2890,9 +3891,15 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"SavePDB\" action=\"SavePDB\" />\n"
 "      <separator name=\"sepMenuSaveVelocityAutocorrelation\" />\n"
 "      <menuitem name=\"SaveVelocityAutocorrelation\" action=\"SaveVelocityAutocorrelation\" />\n"
+"      <separator name=\"sepMenuDisplayVelocityAutocorrelation\" />\n"
+"      <menuitem name=\"DisplayVelocityAutocorrelation\" action=\"DisplayVelocityAutocorrelation\" />\n"
 "      <separator name=\"sepMenuCreateGauss\" />\n"
 "      <menuitem name=\"CreateGaussInput\" action=\"CreateGaussInput\" />\n"
 "      <menuitem name=\"CreateGaussInputLink\" action=\"CreateGaussInputLink\" />\n"
+"      <separator name=\"sepMenuCreateGr\" />\n"
+"      <menuitem name=\"CreateGr\" action=\"CreateGr\" />\n"
+"      <separator name=\"sepMenuComputeRMSD\" />\n"
+"      <menuitem name=\"ComputeRMSD\" action=\"ComputeRMSD\" />\n"
 "      <separator name=\"sepMenuDelete\" />\n"
 "      <menuitem name=\"DeleteGeometry\" action=\"DeleteGeometry\" />\n"
 "      <menuitem name=\"DeleteHalfGeometries\" action=\"DeleteHalfGeometries\" />\n"

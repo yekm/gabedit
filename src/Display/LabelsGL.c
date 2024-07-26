@@ -38,7 +38,7 @@ static gboolean showDistances = FALSE;
 static gboolean showDipole = FALSE;
 static gboolean showAxes = FALSE;
 static gchar fontName[BSIZE] = "sans 14";
-static gchar fontNameTitle[BSIZE] = "sans bold 48";
+static gchar fontNameTitle[BSIZE] = "sans 48";
 static gboolean ortho = FALSE;
 static gchar* strTitle = NULL;
 static gint xTitle = 0;
@@ -50,6 +50,7 @@ static gboolean initColor = TRUE;
 void init_labels_font()
 {
 	sprintf(fontName,"%s",FontsStyleLabel.fontname);
+	sprintf(fontNameTitle,"%s","sans 48");
 }
 /*********************************************************************************************/
 gboolean get_labels_ortho()
@@ -442,14 +443,15 @@ void showLabelTitle(gint width, gint height)
 	color[1] = colorTitle.green/65535.0; 
 	color[2] = colorTitle.blue/65535.0; 
 
+	glInitFontsUsing(fontNameTitle);
 	glDisable ( GL_LIGHTING ) ;
 	glColor4dv(color);
-	glInitFontsUsing(fontNameTitle);
 
 	glLoadIdentity();
 	
 	glMatrixMode(GL_PROJECTION);
-	glPushMatrix(); glLoadIdentity();
+	glPushMatrix();
+	glLoadIdentity();
 	gluOrtho2D(0, width, 0, height);
 
 	
@@ -458,7 +460,6 @@ void showLabelTitle(gint width, gint height)
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 	
-	glPopMatrix();
 	glEnable ( GL_LIGHTING ) ;
 	glDeleteFontsList();
 }

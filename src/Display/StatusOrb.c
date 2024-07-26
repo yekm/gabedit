@@ -141,6 +141,7 @@ gint progress_orb(gdouble scal,GabEditTypeProgressOrb  type,gboolean reset)
 			if (new_val <0 ) new_val = 0;
 		}
 
+		while( gtk_events_pending() ) gtk_main_iteration();
 
     /* Set the new value */
     gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (ProgressBar), new_val);

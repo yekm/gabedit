@@ -221,7 +221,7 @@ static void reset_spin_of_electrons()
 		SpinElectrons[i]=0;
     	for(i=0;i<NcentersXYZ;i++)
 	{
-		if(get_layer(GeomXYZ[i].Layer)==LOW_LAYER) nH =1;
+		if(get_layer(GeomXYZ[i].Layer)==LOW_LAYER) nL =1;
 		if(get_layer(GeomXYZ[i].Layer)==MEDIUM_LAYER) nM =1;
 		if(get_layer(GeomXYZ[i].Layer)==HIGH_LAYER) nH =1;
 	}
@@ -5967,6 +5967,149 @@ void read_geom_conv_from_gamess_output_file(gchar *NomFichier, gint numgeometry)
 	if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
 }
 /********************************************************************************/
+void get_charges_from_aimall_file(FILE* fd,gint N)
+{
+ 	guint taille=BSIZE;
+  	gchar t[BSIZE];
+  	gchar dump[BSIZE];
+  	gchar d[BSIZE];
+  	gchar* pdest;
+	gint i;
+
+
+	/* printf("NAtoms = %d\n",N);*/
+	for(i=0;i<N;i++) GeomXYZ[i].Charge = g_strdup("0.0");
+
+  	while(!feof(fd) )
+	{
+    		pdest = NULL;
+    		if(!fgets(t,taille,fd)) break;
+    		pdest = strstr( t, "Atom A          q(A)");
+		if(pdest)
+		{
+    			if(!fgets(t,taille,fd)) break;
+			for(i=0;i<N;i++)
+			{
+    				if(!fgets(t,taille,fd)) break;
+				if(sscanf(t,"%s %s",dump, d)==2)
+				{
+					g_free(GeomXYZ[i].Charge);
+					GeomXYZ[i].Charge = g_strdup(d);
+				}
+				else break;
+			}
+			break;
+		}
+	}
+}
+/********************************************************************************/
+void read_geom_from_aimall_file(gchar *NomFichier)
+{
+	gchar *t;
+	gboolean OK;
+	gchar *AtomCoord[5];
+	FILE *fd;
+	guint taille=BSIZE;
+	guint i;
+	gint j=0;
+	gint l;
+	gchar dum[100];
+	gint uni=0;
+
+	for(i=0;i<5;i++) AtomCoord[i]=g_malloc(taille*sizeof(char));
+  
+	t=g_malloc(taille);
+	fd = FOpen(NomFichier, "r");
+	if(fd ==NULL)
+	{
+		g_free(t);
+		t = g_strdup_printf(_("Sorry\nI can not open %s  file "),NomFichier);
+		MessageGeom(t,_("Error"),TRUE);
+		g_free(t);
+		return;
+	}
+	OK=FALSE;
+	while(!feof(fd))
+	{
+		fgets(t,taille,fd);
+		if ( strstr(t,"Atom      Charge                X                  Y                  Z"))
+		{
+  			fgets(t,taille,fd);
+			OK = TRUE;
+			break; 
+  		}
+	}
+
+	j=-1;
+	while(!feof(fd) )
+	{
+		fgets(t,taille,fd);
+		if(this_is_a_backspace(t))
+		{
+			get_charges_from_aimall_file(fd,j+1);
+			break;
+		}
+		j++;
+
+		if(GeomXYZ==NULL) GeomXYZ=g_malloc(sizeof(GeomXYZAtomDef));
+		else GeomXYZ=g_realloc(GeomXYZ,(j+1)*sizeof(GeomXYZAtomDef));
+
+  		GeomXYZ[j].typeConnections = NULL;
+		sscanf(t,"%s %s %s %s %s",AtomCoord[0],dum, AtomCoord[1], AtomCoord[2],AtomCoord[3]);
+		{
+			gint k;
+			for(k=0;k<(gint)strlen(AtomCoord[0]);k++) if(isdigit(AtomCoord[0][k])) AtomCoord[0][k] = ' ';
+			delete_all_spaces(AtomCoord[0]);
+		}
+		AtomCoord[0][0]=toupper(AtomCoord[0][0]);
+		l=strlen(AtomCoord[0]);
+		if (l==2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+		GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
+		GeomXYZ[j].Symb=get_symbol_using_z(atoi(dum));
+		GeomXYZ[j].mmType=g_strdup(AtomCoord[0]);
+		GeomXYZ[j].pdbType=g_strdup(AtomCoord[0]);
+		GeomXYZ[j].Residue=g_strdup(AtomCoord[0]);
+		GeomXYZ[j].ResidueNumber=0;
+		if(Units != uni )
+		{
+			if(Units==1)
+			{
+				GeomXYZ[j].X=g_strdup(bohr_to_ang(AtomCoord[1]));
+				GeomXYZ[j].Y=g_strdup(bohr_to_ang(AtomCoord[2]));
+				GeomXYZ[j].Z=g_strdup(bohr_to_ang(AtomCoord[3]));
+			}
+			else
+			{
+				GeomXYZ[j].X=g_strdup(ang_to_bohr(AtomCoord[1]));
+				GeomXYZ[j].Y=g_strdup(ang_to_bohr(AtomCoord[2]));
+				GeomXYZ[j].Z=g_strdup(ang_to_bohr(AtomCoord[3]));
+			}
+		}
+		else
+		{
+			GeomXYZ[j].X=g_strdup(AtomCoord[1]);
+			GeomXYZ[j].Y=g_strdup(AtomCoord[2]);
+			GeomXYZ[j].Z=g_strdup(AtomCoord[3]);
+		}
+		GeomXYZ[j].Charge=g_strdup("0.0");
+		GeomXYZ[j].Layer=g_strdup(" ");
+	}
+
+	NcentersXYZ = j+1;
+	fclose(fd);
+ 	calculMMTypes(FALSE);
+	g_free(t);
+	for(i=0;i<5;i++) g_free(AtomCoord[i]);
+	if(GeomIsOpen && MethodeGeom == GEOM_IS_XYZ)
+	{
+   		clearList(list);
+		append_list();
+	}
+	MethodeGeom = GEOM_IS_XYZ;
+	if(GeomDrawingArea != NULL) rafresh_drawing();
+	if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
+}
+/********************************************************************************/
 static void get_charge_and_multilicity(FILE* fd)
 {
  	guint taille=BSIZE;
@@ -6311,6 +6454,21 @@ void read_last_irc_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
 		return ;
 	}
 	read_geom_from_gamess_irc_file(fileName,-1);
+}
+/********************************************************************************/
+void read_aimall_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+	gchar *fileName;
+
+ 	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(SelecFile);
+  
+	if ((!fileName) || (strcmp(fileName,"") == 0))
+	{
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
+		return ;
+	}
+	read_geom_from_aimall_file(fileName);
 }
 /********************************************************************************/
 void read_geom_from_turbomole_output_file(gchar *fileName, gint numgeometry)
@@ -7766,6 +7924,190 @@ void read_geom_from_qchem_file(gchar *NomFichier, gint numgeometry)
 	 if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
 }
 /********************************************************************************/
+void get_charges_from_nwchem_output_file(FILE* fd,gint N)
+{
+ 	guint taille=BSIZE;
+  	gchar t[BSIZE];
+  	gchar d3[BSIZE];
+  	gchar d4[BSIZE];
+  	gchar d[BSIZE];
+  	gchar* pdest;
+	gint i;
+
+
+	for(i=0;i<N;i++)
+		GeomXYZ[i].Charge = g_strdup("0.0");
+
+  	while(!feof(fd) )
+	{
+    		pdest = NULL;
+    		fgets(t,taille,fd);
+    		pdest = strstr( t, "Atom       Charge   Shell Charges");
+
+		if(pdest)
+		{
+			gboolean OK = FALSE;
+  			while(!feof(fd) )
+			{
+    				if(!fgets(t,taille,fd)) break;
+				if(strstr(t,"----------------"))
+				{
+					OK = TRUE;
+					break;
+				}
+			}
+			if(!OK) break;
+
+			for(i=0;i<N;i++)
+			{
+    				if(!feof(fd)) fgets(t,taille,fd);
+				else break;
+				if(sscanf(t,"%s %s %s %s",d,d,d3,d4)==4)
+				{
+					g_free(GeomXYZ[i].Charge);
+					GeomXYZ[i].Charge = g_strdup_printf("%f",atof(d3)-atof(d4));
+				}
+			}
+			break;
+		}
+	}
+}
+/********************************************************************************/
+void read_geom_from_nwchem_file(gchar *NomFichier, gint numgeometry)
+{
+	gchar *t;
+	gboolean OK;
+	gchar *AtomCoord[5];
+	FILE *fd;
+	guint taille=BSIZE;
+	guint idummy;
+	guint i;
+	gint j=0;
+	gint l;
+	gint numgeom;
+	gchar *pdest;
+	long int geomposok = 0;
+	gboolean ang = FALSE;
+
+	for(i=0;i<5;i++) AtomCoord[i]=g_malloc(taille*sizeof(gchar));
+	 
+	t=g_malloc(taille*sizeof(gchar));
+	fd = FOpen(NomFichier, "r");
+	if(fd ==NULL)
+	{
+	 	g_free(t);
+	 	t = g_strdup_printf(_("Sorry\nI can not open %s  file "),NomFichier);
+	 	MessageGeom(t,_("Error"),TRUE);
+	 	g_free(t);
+	 	return;
+	}
+	numgeom =0;
+	OK=FALSE;
+	 while(!feof(fd))
+	 {
+		if(!fgets(t,taille,fd))break;
+		if(strstr(t,"Output coordinates in angstroms ")) ang = TRUE;
+		if(strstr(t,"Output coordinates in a.u.")) ang = FALSE;
+		pdest = strstr( t, "Charge          X              Y              Z");
+		if(pdest) 
+		{
+			if(!fgets(t,taille,fd))break;
+			pdest = strstr( t, "--------------");
+		}
+		if ( pdest )
+		{
+			numgeom++;
+			geomposok = ftell(fd);
+			if(numgeom == numgeometry )
+			{
+				OK = TRUE;
+				break;
+			}
+			if(numgeometry<0)
+			{
+				OK = TRUE;
+			}
+		}
+	 }
+	 if(numgeom == 0)
+	 {
+		g_free(t);
+		t = g_strdup_printf(_("Sorry\nI can not read geometry in	%s file "),NomFichier);
+		MessageGeom(t,_("Error"),TRUE);
+		g_free(t);
+		return;
+	  }
+	j=-1;
+	fseek(fd, geomposok, SEEK_SET);
+	while(!feof(fd) )
+	{
+		if(!fgets(t,taille,fd))break;
+		if(this_is_a_backspace(t))
+		{
+			geomposok = ftell(fd);
+			get_charges_from_nwchem_output_file(fd,j+1);
+			fseek(fd, geomposok, SEEK_SET);
+ 			get_dipole_from_nwchem_output_file(fd);
+			break;
+		}
+		j++;
+		if(GeomXYZ==NULL) GeomXYZ=g_malloc(sizeof(GeomXYZAtomDef));
+		else GeomXYZ=g_realloc(GeomXYZ,(j+1)*sizeof(GeomXYZAtomDef));
+   		GeomXYZ[j].typeConnections = NULL;
+
+		sscanf(t,"%d %s %s %s %s %s",&idummy,AtomCoord[0],AtomCoord[4],AtomCoord[1],AtomCoord[2],AtomCoord[3]);
+		AtomCoord[0][0]=toupper(AtomCoord[0][0]);
+		l=strlen(AtomCoord[0]); 
+		if(isdigit(AtomCoord[0][1]))l=1;
+		if (l==2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+		if(l==1)sprintf(t,"%c",AtomCoord[0][0]);
+		else sprintf(t,"%c%c",AtomCoord[0][0],AtomCoord[0][1]);
+
+		GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
+		GeomXYZ[j].Symb=g_strdup(t);
+		GeomXYZ[j].mmType=g_strdup(GeomXYZ[j].Symb);
+		GeomXYZ[j].pdbType=g_strdup(GeomXYZ[j].Symb);
+		GeomXYZ[j].Residue=g_strdup(GeomXYZ[j].Symb);
+		GeomXYZ[j].ResidueNumber=0;
+
+		if(!ang )
+		{
+			AtomCoord[1] = bohr_to_ang(AtomCoord[1]);
+			AtomCoord[2] = bohr_to_ang(AtomCoord[2]);
+			AtomCoord[3] = bohr_to_ang(AtomCoord[3]);
+		}
+
+		if(Units == 0 )
+		{
+			GeomXYZ[j].X=g_strdup(ang_to_bohr(AtomCoord[1]));
+			GeomXYZ[j].Y=g_strdup(ang_to_bohr(AtomCoord[2]));
+			GeomXYZ[j].Z=g_strdup(ang_to_bohr(AtomCoord[3]));
+		}
+		else
+		{
+			GeomXYZ[j].X=g_strdup(AtomCoord[1]);
+			GeomXYZ[j].Y=g_strdup(AtomCoord[2]);
+			GeomXYZ[j].Z=g_strdup(AtomCoord[3]);
+		}
+		GeomXYZ[j].Charge=g_strdup("0.0");
+		GeomXYZ[j].Layer=g_strdup(" ");
+	  }
+	NcentersXYZ = j+1;
+
+	 fclose(fd);
+ 	 calculMMTypes(FALSE);
+	 g_free(t);
+	 for(i=0;i<5;i++) g_free(AtomCoord[i]);
+	 if(GeomIsOpen && MethodeGeom == GEOM_IS_XYZ)
+	 {
+	 	clearList(list);
+		append_list();
+	 }
+	 MethodeGeom = GEOM_IS_XYZ;
+	 if(GeomDrawingArea != NULL) rafresh_drawing();
+	 if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
+}
+/********************************************************************************/
 void get_esp_charges_from_mopac_output_file(FILE* fd,gint N)
 {
  	guint taille=BSIZE;
@@ -8722,6 +9064,38 @@ void read_last_orca_file(GabeditFileChooser *SelecFile , gint response_id)
 	set_last_directory(NomFichier);
 }
 /********************************************************************************/
+void read_first_nwchem_file(GabeditFileChooser *SelecFile , gint response_id)
+{
+	gchar *NomFichier;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+	NomFichier = gabedit_file_chooser_get_current_file(SelecFile);
+	
+	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
+	{
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
+		return ;
+	}
+	read_geom_from_nwchem_file(NomFichier, 1);
+	set_last_directory(NomFichier);
+}
+/********************************************************************************/
+void read_last_nwchem_file(GabeditFileChooser *SelecFile , gint response_id)
+{
+	gchar *NomFichier;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+	NomFichier = gabedit_file_chooser_get_current_file(SelecFile);
+	
+	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
+	{
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
+		return ;
+	}
+	read_geom_from_nwchem_file(NomFichier, -1);
+	set_last_directory(NomFichier);
+}
+/********************************************************************************/
 void read_first_qchem_file(GabeditFileChooser *SelecFile , gint response_id)
 {
 	gchar *NomFichier;
@@ -9672,6 +10046,213 @@ void read_XYZ_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile 
  if(GeomDrawingArea != NULL)
 	rafresh_drawing();
  set_last_directory(NomFichier);
+}
+/*************************************************************************************/
+void read_XYZ_from_nwchem_input_file(gchar *NomFichier)
+{
+	gchar *t;
+	gboolean OK;
+	gboolean icharge;
+	gchar *AtomCoord[5];
+	FILE *file;
+	guint taille=BSIZE;
+	gint i;
+	gint j;
+	gint l;
+	gint k;
+	gboolean Uvar=FALSE;
+	GeomXYZAtomDef* GeomXYZtemp=NULL;
+	gint Ncent = 0;
+	gint Nvar = 0;
+	VariablesXYZDef* VariablesXYZtemp=NULL;
+	gchar symb[BSIZE];
+	gchar type[BSIZE];
+	gchar charge[BSIZE];
+	gint globalCharge, mult;
+ 
+ 
+
+	file = FOpen(NomFichier, "r");
+	OK=TRUE;
+ 	if(file==NULL)
+	{
+   		MessageGeom(_("Sorry\n I can not read geometry in NWChem input file"),_("Error"),TRUE);
+   		return;
+	}
+	t=g_malloc(taille*sizeof(gchar));
+	for(i=0;i<5;i++)
+		AtomCoord[i]=g_malloc(taille*sizeof(char));
+
+	 while(!feof(file))
+	 {
+		if(!fgets(t,taille,file))
+		{
+			OK = FALSE;
+			break;
+		}
+		g_strup(t);
+		//if(strstr(t,"geometry") && 4==sscanf(t,"%s %s %d %d",AtomCoord[0],AtomCoord[1],&globalCharge, &mult) )
+		if(strstr(t,"GEOMETRY"))
+		{
+			OK = TRUE;
+			break;
+		}
+	 }
+	 if(OK) GeomXYZtemp=g_malloc(sizeof(GeomXYZAtomDef));
+	j=-1;
+ 	while(!feof(file) && OK )
+  	{
+    		j++;
+    		if(!fgets(t,taille,file))break;
+		g_strup(t);
+		if(strstr(t,"ZMATRIX"))
+		{
+			g_free(GeomXYZtemp);
+   			MessageGeom(_("Sorry\n I can not zmatrix geometry from a NWChem input file"),_("Error"),TRUE);
+			return;
+		}
+
+		if(strstr(t,"END")) break;
+		if(strstr(t,"SYMMETRY")) { j--; continue;}
+                for(i=0;i<(gint)strlen(t);i++) if(t[i] != ' ') break;
+                if(i<=(gint)strlen(t) && t[i] == '*') break;
+		for(k=0;k<(gint)strlen(t);k++) if(t[k]=='{' || t[k]=='}') t[k] = ' ';
+                i = sscanf(t,"%s %s %s %s",AtomCoord[0],AtomCoord[1],AtomCoord[2],AtomCoord[3]);
+    		if(i== 4)
+                {
+
+                        Ncent = j+1;
+			GeomXYZtemp=g_realloc(GeomXYZtemp,Ncent*sizeof(GeomXYZAtomDef));
+    			AtomCoord[0][0]=toupper(AtomCoord[0][0]);
+    			l=strlen(AtomCoord[0]);
+      			if (l>=2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+
+    			GeomXYZtemp[j].Nentry=NUMBER_LIST_XYZ;
+			get_symb_type_charge(AtomCoord[0],symb,type,charge);
+			{
+				gint k;
+				for(k=0;k<(gint)strlen(symb);k++) if(isdigit(symb[k])) symb[k] = ' ';
+				delete_all_spaces(symb);
+			}
+
+    			GeomXYZtemp[j].Symb=g_strdup(symb);
+			GeomXYZtemp[j].mmType=g_strdup(type);
+			GeomXYZtemp[j].pdbType=g_strdup(type);
+			GeomXYZtemp[j].Charge=g_strdup(charge);
+
+    			GeomXYZtemp[j].Residue=g_strdup("DUM");
+    			GeomXYZtemp[j].ResidueNumber=0;
+                        if(!test(AtomCoord[1]) || !test(AtomCoord[2]) || !test(AtomCoord[3])) Uvar = TRUE;
+    			GeomXYZtemp[j].X=g_strdup(AtomCoord[1]);
+    			GeomXYZtemp[j].Y=g_strdup(AtomCoord[2]);
+    			GeomXYZtemp[j].Z=g_strdup(AtomCoord[3]);
+
+    			GeomXYZtemp[j].Layer=g_strdup(" ");
+    			GeomXYZtemp[j].typeConnections = NULL;
+		}
+               else
+                 OK = FALSE;
+  	}
+/* Variables */
+	Nvar=0;
+	fseek(file, 0L, SEEK_SET);
+	if(Uvar)
+	{
+		OK =FALSE;
+  		while(!feof(file) && Uvar)
+  		{
+ 			if(!fgets(t,taille,file)) break;
+			g_strup(t);
+			if(strstr(t,"VARIABLE")) 
+			{
+				OK = TRUE;
+				break;
+			}
+  		}
+  	}
+	while(!feof(file) && Uvar && OK )
+	{
+		g_strup(t);
+		for(k=0;k<(gint)strlen(t);k++) if(t[k]=='=') t[k] = ' ';
+        	for(j=0;j<Ncent;j++)
+		{
+			gchar* co[3] = {GeomXYZtemp[j].X,GeomXYZtemp[j].Y,GeomXYZtemp[j].Z};
+        		for(k=0;k<3;k++)
+			if(!test(co[k]))
+			{
+				gchar* b = strstr(t,co[k]);
+				if(b) 
+				{
+					b = b+strlen(co[k])+1;
+  					Nvar++;
+  					if(Nvar==1) VariablesXYZtemp = g_malloc(Nvar*sizeof(VariablesXYZDef));
+  					else VariablesXYZtemp = g_realloc(VariablesXYZtemp,Nvar*sizeof(VariablesXYZDef));
+  					VariablesXYZtemp[Nvar-1].Name=g_strdup(co[k]);
+  					VariablesXYZtemp[Nvar-1].Value=g_strdup_printf("%f",atof(b));
+  					VariablesXYZtemp[Nvar-1].Used=TRUE;
+				}
+			}
+		}
+		if(strstr(t,"END")) break;
+  		fgets(t,taille,file);
+  	}
+/* end while variables */
+	fseek(file, 0L, SEEK_SET);
+	icharge = FALSE;
+	globalCharge = 0;
+	mult = 0;
+	while(OK && !feof(file))
+	{
+		if(!fgets(t,taille,file)) break;
+		g_strup(t);
+		if(strstr(t,"CHARGE") && 2==sscanf(t,"%s %d",AtomCoord[0],&globalCharge) )
+		{
+			icharge = TRUE;
+			continue;
+		}
+		if(strstr(t,"SINGLET")) mult=1;
+		if(strstr(t,"DOUBLET")) mult=2;
+		if(strstr(t,"TRIPLET")) mult=3;
+		if(strstr(t,"QUARTET")) mult=4;
+		if(strstr(t,"QUINTET")) mult=5;
+		if(strstr(t,"SEXTET")) mult=6;
+		if(strstr(t,"SEPTET")) mult=7;
+		if(strstr(t,"OCTET")) mult=8;
+		if(strlen(t)>5 && strstr(t,"MULT") && sscanf(strstr(t,"MULT")+4,"%d",&k) && k>0 ) mult=k;
+		if(strlen(t)>6 && strstr(t,"NOPEN") && sscanf(strstr(t,"NOOPEN")+5,"%d",&k) && k>0 ) mult=2*k;
+		if(mult>0 && icharge) break;
+	}
+	fclose(file);
+	g_free(t);
+	if(OK)
+ 	{
+		TotalCharges[0] = globalCharge;
+		if(mult>0) SpinMultiplicities[0] = mult;
+		else reset_spin_of_electrons();
+ 	}
+
+	for(i=0;i<5;i++) g_free(AtomCoord[i]);
+	if( !OK || Ncent <1 )
+	{
+   		FreeGeomXYZ(GeomXYZtemp,VariablesXYZtemp,Ncent, Nvar);
+   		MessageGeom(_("Sorry\n I can not read geometry in NWChem input file"),_("Error"),TRUE);
+   		return;
+ 	}
+	if(GeomXYZ) freeGeomXYZ(GeomXYZ);
+	if(VariablesXYZ) freeVariablesXYZ(VariablesXYZ);
+	GeomXYZ = GeomXYZtemp;
+ 	NcentersXYZ = Ncent;
+ 	NVariablesXYZ = Nvar;
+ 	VariablesXYZ = VariablesXYZtemp;
+ 	MethodeGeom = GEOM_IS_XYZ;
+ 	calculMMTypes(FALSE);
+ 	if( Units== 0 ) GeomXYZ_Change_Unit(FALSE);
+ 	if(GeomIsOpen)
+		create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
+
+ 	if(GeomDrawingArea != NULL)
+		rafresh_drawing();
+ 	set_last_directory(NomFichier);
 }
 /*************************************************************************************/
 void read_XYZ_from_orca_input_file(gchar *NomFichier)
@@ -11464,6 +12045,7 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   gchar* patternsmol2[] = {"*.mol2","*",NULL};
   gchar* patternspdb[] = {"*.pdb","*",NULL};
   gchar* patternshin[] = {"*.hin","*",NULL};
+  gchar* patternsaimall[] = {"*.sum","*",NULL};
   gchar* patternstnk[] = {"*.tnk","*",NULL};
   gchar* patternslog[] = {"*.log","*",NULL};
   gchar* patternsout[] = {"*.out","*.log","*",NULL};
@@ -11553,11 +12135,19 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
   case GABEDIT_TYPEFILEGEOM_ORCAOUTFIRST : 
-	   SelecFile = gabedit_file_chooser_new(_("Read the first geometry from a ORCA-Chem output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read the first geometry from a ORCA output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
   case GABEDIT_TYPEFILEGEOM_ORCAOUTLAST : 
 	   SelecFile = gabedit_file_chooser_new(_("Read the last geometry from a ORCA output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
+   	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
+	   break;
+  case GABEDIT_TYPEFILEGEOM_NWCHEMOUTFIRST : 
+	   SelecFile = gabedit_file_chooser_new(_("Read the first geometry from a NWCHEM output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
+   	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
+	   break;
+  case GABEDIT_TYPEFILEGEOM_NWCHEMOUTLAST : 
+	   SelecFile = gabedit_file_chooser_new(_("Read the last geometry from a NWCHEM output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
   case GABEDIT_TYPEFILEGEOM_QCHEMOUTFIRST : 
@@ -11592,6 +12182,10 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
 	   SelecFile = gabedit_file_chooser_new(_("Read hyperchem file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternshin);
 	   break;
+  case GABEDIT_TYPEFILEGEOM_AIMALL :
+	   SelecFile = gabedit_file_chooser_new(_("Read AIMAll file"), GTK_FILE_CHOOSER_ACTION_OPEN);
+   	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsaimall);
+	   break;
   case GABEDIT_TYPEFILEGEOM_GABEDIT :
 	   SelecFile = gabedit_file_chooser_new(_("Read Gabedit file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsgab);
@@ -11609,6 +12203,7 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   case GABEDIT_TYPEFILEGEOM_MOLPROIN : return;
   case GABEDIT_TYPEFILEGEOM_MPQCIN : return;
   case GABEDIT_TYPEFILEGEOM_ORCAIN : return;
+  case GABEDIT_TYPEFILEGEOM_NWCHEMIN : return;
   case GABEDIT_TYPEFILEGEOM_QCHEMIN : return;
   case GABEDIT_TYPEFILEGEOM_MOPACIN : return;
   case GABEDIT_TYPEFILEGEOM_GAUSSIAN_ZMATRIX : return;
@@ -11676,6 +12271,11 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   case GABEDIT_TYPEFILEGEOM_QCHEMOUTLAST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_qchem_file), GTK_OBJECT(SelecFile)); break;
 
+  case GABEDIT_TYPEFILEGEOM_NWCHEMOUTFIRST :
+	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_nwchem_file), GTK_OBJECT(SelecFile)); break;
+  case GABEDIT_TYPEFILEGEOM_NWCHEMOUTLAST :
+	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_nwchem_file), GTK_OBJECT(SelecFile)); break;
+
   case GABEDIT_TYPEFILEGEOM_MOPACOUTFIRST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_mopac_output_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_MOPACOUTLAST :
@@ -11691,6 +12291,8 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_pdb_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_HIN :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_hin_file), GTK_OBJECT(SelecFile)); break;
+  case GABEDIT_TYPEFILEGEOM_AIMALL :
+	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_aimall_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_GABEDIT :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_gabedit_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_MOPACOUTSCAN :
@@ -11705,6 +12307,7 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   case GABEDIT_TYPEFILEGEOM_MOLPROIN : 
   case GABEDIT_TYPEFILEGEOM_MPQCIN : 
   case GABEDIT_TYPEFILEGEOM_ORCAIN : 
+  case GABEDIT_TYPEFILEGEOM_NWCHEMIN : 
   case GABEDIT_TYPEFILEGEOM_QCHEMIN : 
   case GABEDIT_TYPEFILEGEOM_MOPACIN : 
   case GABEDIT_TYPEFILEGEOM_GAUSSIAN_ZMATRIX : 
@@ -11723,83 +12326,73 @@ void save_xyzmol2tinkerpdbhin_file(GtkWidget* win,gpointer data)
 	GtkWidget * ButtonPDB = g_object_get_data(G_OBJECT(win),"ButtonPDB");
 	GtkWidget * ButtonHIN = g_object_get_data(G_OBJECT(win),"ButtonHIN");
 	GtkWidget * entry = g_object_get_data(G_OBJECT(win),"Entry");
-	 if (GTK_TOGGLE_BUTTON (ButtonXYZ)->active)
-	 {
-		 save_xyz_file_entry(entry);
-	 }
+	GtkWidget * buttonDirSelector = g_object_get_data(G_OBJECT(win),"ButtonDirSelector");
+	G_CONST_RETURN gchar *entrytext;
+	gchar *dirName;
+	gchar *fileName;
+
+  	entrytext = gtk_entry_get_text(GTK_ENTRY(entry));
+  	dirName = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
+  	fileName = get_dir_file_name(dirName,entrytext);
+	if ((!fileName) || (strcmp(fileName,"") == 0)) return ;
+	if (GTK_TOGGLE_BUTTON (ButtonXYZ)->active)
+	{
+	 	save_xyz_file(fileName);
+	}
 	 else
 	 if (GTK_TOGGLE_BUTTON (ButtonMol2)->active)
 	 {
-		 save_mol2_file_entry(entry);
+		save_mol2_file(fileName);
 	 }
 	 else
 	 if (GTK_TOGGLE_BUTTON (ButtonPDB)->active)
 	 {
-		 save_pdb_file_entry(entry);
+		 save_pdb_file(fileName);
 	 }
 	 if (GTK_TOGGLE_BUTTON (ButtonHIN)->active)
 	 {
-		 save_hin_file_entry(entry);
+		 save_hin_file(fileName);
 	 }
 	 else
 	 {
-		 save_tinker_file_entry(entry);
+		 save_tinker_file(fileName);
 	 }
 }
 /********************************************************************************/
-void reset_extended_xyz_file(GtkWidget* b,gpointer data)
+static void reset_extended_file(gpointer data,G_CONST_RETURN gchar* ext)
 {
 	GtkWidget* entry = GTK_WIDGET(data);
 	G_CONST_RETURN gchar* entrytext = gtk_entry_get_text(GTK_ENTRY(entry)); 
-	gchar*	temp = get_suffix_name_file(entrytext);
-	gchar*	t = g_strdup_printf("%s.xyz",temp);
+	gchar*	temp = get_filename_without_ext(entrytext);
+	gchar*	t = g_strdup_printf("%s.%s",temp,ext);
 	gtk_entry_set_text(GTK_ENTRY(entry),t);
 	g_free(t);
 	g_free(temp);
 }
 /********************************************************************************/
-void reset_extended_mol2_file(GtkWidget* b,gpointer data)
+static void reset_extended_xyz_file(GtkWidget* b,gpointer data)
 {
-	GtkWidget* entry = GTK_WIDGET(data);
-	G_CONST_RETURN gchar* entrytext = gtk_entry_get_text(GTK_ENTRY(entry)); 
-	gchar*	temp = get_suffix_name_file(entrytext);
-	gchar*	t = g_strdup_printf("%s.mol2",temp);
-	gtk_entry_set_text(GTK_ENTRY(entry),t);
-	g_free(t);
-	g_free(temp);
+	reset_extended_file(data,"xyz");
 }
 /********************************************************************************/
-void reset_extended_tinker_file(GtkWidget* b,gpointer data)
+static void reset_extended_mol2_file(GtkWidget* b,gpointer data)
 {
-	GtkWidget* entry = GTK_WIDGET(data);
-	G_CONST_RETURN gchar* entrytext = gtk_entry_get_text(GTK_ENTRY(entry)); 
-	gchar*	temp = get_suffix_name_file(entrytext);
-	gchar*	t = g_strdup_printf("%s.tnk",temp);
-	gtk_entry_set_text(GTK_ENTRY(entry),t);
-	g_free(t);
-	g_free(temp);
+	reset_extended_file(data,"mol2");
 }
 /********************************************************************************/
-void reset_extended_pdb_file(GtkWidget* b,gpointer data)
+static void reset_extended_tinker_file(GtkWidget* b,gpointer data)
 {
-	GtkWidget* entry = GTK_WIDGET(data);
-	G_CONST_RETURN gchar* entrytext = gtk_entry_get_text(GTK_ENTRY(entry)); 
-	gchar*	temp = get_suffix_name_file(entrytext);
-	gchar*	t = g_strdup_printf("%s.pdb",temp);
-	gtk_entry_set_text(GTK_ENTRY(entry),t);
-	g_free(t);
-	g_free(temp);
+	reset_extended_file(data,"tnk");
 }
 /********************************************************************************/
-void reset_extended_hin_file(GtkWidget* b,gpointer data)
+static void reset_extended_pdb_file(GtkWidget* b,gpointer data)
 {
-	GtkWidget* entry = GTK_WIDGET(data);
-	G_CONST_RETURN gchar* entrytext = gtk_entry_get_text(GTK_ENTRY(entry)); 
-	gchar*	temp = get_suffix_name_file(entrytext);
-	gchar*	t = g_strdup_printf("%s.hin",temp);
-	gtk_entry_set_text(GTK_ENTRY(entry),t);
-	g_free(t);
-	g_free(temp);
+	reset_extended_file(data,"pdb");
+}
+/********************************************************************************/
+static void reset_extended_hin_file(GtkWidget* b,gpointer data)
+{
+	reset_extended_file(data,"hin");
 }
 /********************************************************************************/
 void create_window_save_xyzmol2tinkerpdbhin()
@@ -11810,6 +12403,7 @@ void create_window_save_xyzmol2tinkerpdbhin()
   GtkWidget *vboxframe;
   GtkWidget *hbox;
   GtkWidget *button;
+  GtkWidget *buttonDirSelector;
   GtkWidget *ButtonXYZ;
   GtkWidget *ButtonMol2;
   GtkWidget *ButtonTinker;
@@ -11818,9 +12412,8 @@ void create_window_save_xyzmol2tinkerpdbhin()
   GtkWidget *entry;
   GtkWidget *Win = WindowGeom;
   gchar      *labelt = g_strdup(" File  : ");
-  gchar      *liste;
   gchar      *titre=g_strdup("Save in xyz/mol2/tinker/Hyperchem file");
-  static gchar* patterns[] = {"*.xyz *.mol2 *.tnk *.pdb *.hin","*.xyz","*.mol2","*.tnk","*.pdb","*.hin",NULL};
+  gchar* fileName  = g_strdup_printf("%s.xyz",fileopen.projectname);
 
   if(NcentersXYZ<1)
   {
@@ -11829,7 +12422,6 @@ void create_window_save_xyzmol2tinkerpdbhin()
   }
   if(!Win)
 	  Win = Fenetre;
-  liste  = g_strdup_printf("%s%s%s.xyz",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.projectname);
 
   fp = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title(GTK_WINDOW(fp),titre);
@@ -11852,39 +12444,41 @@ void create_window_save_xyzmol2tinkerpdbhin()
 
   vboxframe = create_vbox(frame);
 
-  hbox = gtk_hbox_new(TRUE, 10);
-  gtk_container_add (GTK_CONTAINER (vboxframe), hbox);
+  hbox = gtk_hbox_new(FALSE, 10);
+  //gtk_container_add (GTK_CONTAINER (vboxframe), hbox);
+  gtk_box_pack_start (GTK_BOX (vboxframe), hbox, FALSE, FALSE, 5);
   gtk_widget_show (hbox);
   ButtonXYZ = gtk_radio_button_new_with_label( NULL,"XYZ " );
   gtk_box_pack_start (GTK_BOX (hbox), ButtonXYZ, FALSE, FALSE, 5);
   gtk_widget_show (ButtonXYZ);
-  ButtonMol2 = gtk_radio_button_new_with_label(
-                       gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonXYZ)),
-                       "Mol2"); 
+  ButtonMol2 = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonXYZ)), "Mol2"); 
    gtk_box_pack_start (GTK_BOX (hbox), ButtonMol2, FALSE, FALSE, 5);
    gtk_widget_show (ButtonMol2);
-  ButtonTinker = gtk_radio_button_new_with_label(
-                       gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonXYZ)),
-                       "Tinker"); 
+  ButtonTinker = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonXYZ)), "Tinker"); 
    gtk_box_pack_start (GTK_BOX (hbox), ButtonTinker, FALSE, FALSE, 5);
    gtk_widget_show (ButtonTinker);
-   ButtonPDB = gtk_radio_button_new_with_label(
-                       gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonXYZ)),
-                       "PDB"); 
+
+  hbox = gtk_hbox_new(FALSE, 10);
+  gtk_box_pack_start (GTK_BOX (vboxframe), hbox, FALSE, FALSE, 5);
+
+
+   ButtonPDB = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonXYZ)), "PDB"); 
    gtk_box_pack_start (GTK_BOX (hbox), ButtonPDB, FALSE, FALSE, 5);
    gtk_widget_show (ButtonPDB);
 
-   ButtonHIN = gtk_radio_button_new_with_label(
-                       gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonXYZ)),
-                       "Hyperchem"); 
+   ButtonHIN = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonXYZ)), "Hyperchem"); 
    gtk_box_pack_start (GTK_BOX (hbox), ButtonHIN, FALSE, FALSE, 5);
    gtk_widget_show (ButtonHIN);
    create_hseparator(vboxframe); 
  
 
 
-  hbox = create_hbox_browser(Win,vboxframe,labelt,liste,patterns);
-  entry = (GtkWidget*)(g_object_get_data(G_OBJECT(hbox),"Entry"));
+  create_table_browser(Win,vboxframe);
+  entry = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"EntryFileName"));
+  gtk_entry_set_text(GTK_ENTRY(entry),fileName);
+  buttonDirSelector = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"ButtonDirSelector"));
+  if(fileopen.localdir && strcmp(fileopen.localdir,"NoName")!=0) gtk_file_chooser_set_current_folder( GTK_FILE_CHOOSER(buttonDirSelector), fileopen.localdir);
+
   create_hseparator(vboxframe); 
   g_signal_connect(G_OBJECT(ButtonXYZ),"clicked",(GCallback)reset_extended_xyz_file,(gpointer)(entry));
   g_signal_connect(G_OBJECT(ButtonMol2),"clicked",(GCallback)reset_extended_mol2_file,(gpointer)(entry));
@@ -11898,6 +12492,7 @@ void create_window_save_xyzmol2tinkerpdbhin()
   g_object_set_data(G_OBJECT (fp), "ButtonPDB",ButtonPDB);
   g_object_set_data(G_OBJECT (fp), "ButtonHIN",ButtonHIN);
   g_object_set_data(G_OBJECT (fp), "Entry",entry);
+  g_object_set_data(G_OBJECT (fp), "ButtonDirSelector",buttonDirSelector);
   
   create_hseparator(vboxall); 
   hbox = gtk_hbox_new(FALSE, 0);
@@ -11921,7 +12516,7 @@ void create_window_save_xyzmol2tinkerpdbhin()
 
 
   g_free(labelt);
-  g_free(liste);
+  g_free(fileName);
    
   gtk_widget_show_all(fp);
 }

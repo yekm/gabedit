@@ -105,17 +105,18 @@ static gboolean animatePlanesMapped = FALSE;
 static gdouble scaleBall = 1.0;
 static gdouble scaleStick = 1.0;
 static gboolean showOneSurface = TRUE;
+static gboolean showCell = FALSE;
 
 /*********************************************************************************************/
 static V4d BackColor[7] =
 {
-  {0.0, 0.0, 0.0, 0.0}, /* black */
+  {0.0, 0.0, 0.0, 1.0}, /* black */
   {1.0, 1.0, 1.0, 1.0}, /* white */
   {1.0, 0.0, 0.0, 1.0}, /* red   */
   {0.0, 1.0, 0.0, 1.0}, /* green */
   {0.0, 0.0, 1.0, 1.0}, /* blue  */
-  {1.0, 0.5, 0.5, 0.0}, /* peach */
-  {0.7, 0.7, 0.7, 0.0}, /* Grey  */
+  {1.0, 0.5, 0.5, 1.0}, /* peach */
+  {0.7, 0.7, 0.7, 1.0}, /* Grey  */
 };
 /*********************************************************************************************/
 gdouble getScaleBall()
@@ -131,6 +132,16 @@ gdouble getScaleStick()
 gboolean getShowOneSurface()
 {
 	return showOneSurface;
+}
+/*********************************************************************************************/
+gboolean getShowCell()
+{
+	return showCell;
+}
+/*********************************************************************************************/
+void setShowCell(gboolean c)
+{
+	showCell = c;
 }
 /*********************************************************************************************/
 void setScaleBall(gdouble a)
@@ -842,6 +853,14 @@ static void  redrawSurfaces()
 	}
 }
 /*****************************************************************************/
+static void  redrawCell()
+{
+	GLuint cell = 0;
+	if(!showCell) return;
+	CellGenLists(&cell);
+	CellShowLists(cell);
+}
+/*****************************************************************************/
 static void redrawContours()
 {
 	gboolean reBuildFirstPlaneContours = TRUE;
@@ -1064,6 +1083,7 @@ gint redrawGL2PS()
 
 	redrawGeometry();
 	redrawSurfaces();
+	redrawCell();
 	redrawContours();
 	redrawPlanesMapped();
 	if(get_show_symbols() || get_show_numbers() || get_show_charges()) showLabelSymbolsNumbersCharges();
@@ -1127,6 +1147,7 @@ static gint redraw(GtkWidget *widget, gpointer data)
 
 	redrawGeometry();
 	redrawSurfaces();
+	redrawCell();
 	redrawContours();
 	redrawPlanesMapped();
 	if(get_show_symbols() || get_show_numbers() || get_show_charges()) showLabelSymbolsNumbersCharges();
@@ -1135,6 +1156,12 @@ static gint redraw(GtkWidget *widget, gpointer data)
 	if(get_show_axes()) showLabelAxes();
 	if(get_show_axes()) showLabelPrincipalAxes();
 	showLabelTitle(GLArea->allocation.width,GLArea->allocation.height);
+
+	/*
+	glEnable(GL_DEPTH_TEST);	
+	glDepthMask(GL_TRUE);
+	glDepthRange(0.0f,1.0f);
+	*/
 
 	if (gdk_gl_drawable_is_double_buffered (gldrawable))
 		gdk_gl_drawable_swap_buffers (gldrawable);

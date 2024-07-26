@@ -94,6 +94,7 @@ void read_geom_in_gauss_input(gchar *);
 void read_geom_in_molcas_input(gchar *);
 void read_geom_in_molpro_input(gchar *);
 void read_geom_in_mpqc_input(gchar *);
+void read_geom_in_nwchem_input(gchar *);
 void read_geom_in_orca_input(gchar *);
 void read_geom_in_qchem_input(gchar *);
 void read_geom_in_mopac_input(gchar *);
@@ -106,11 +107,13 @@ void new_mpqc(GtkWidget *widget, gchar *data);
 void new_gamess(GtkWidget *widget, gchar *data);
 void new_firefly(GtkWidget *widget, gchar *data);
 void new_gauss(GtkWidget *widget, gchar *data);
+void new_nwchem(GtkWidget *widget, gchar *data);
 void new_orca(GtkWidget *widget, gchar *data);
 void new_qchem(GtkWidget *widget, gchar *data);
 void new_other(GtkWidget *widget, gchar *data);
 GtkWidget *create_button_pixmap(GtkWidget *widget, gchar **data,gchar *string);
 GtkWidget *create_hbox_browser(GtkWidget* Wins,GtkWidget* vbox,gchar *tlabel,gchar *deffile,gchar** patterns);
+GtkWidget*  create_table_browser(GtkWidget *Wins,GtkWidget *vbox);
 void add_widget_table(GtkWidget *Table,GtkWidget *wid,gushort line,gushort colonne);
 GtkWidget *add_label_at_table(GtkWidget *Table,gchar *label,gushort line,gushort colonne,GtkJustification just);
 GtkWidget *add_label_table(GtkWidget *Table, G_CONST_RETURN gchar *label,gushort line,gushort colonne);
@@ -123,6 +126,7 @@ GtkWidget* set_dipole_dialog ();
 gchar* get_last_directory();
 void fit_windows_position(GtkWidget* parent, GtkWidget* child);
 void  create_opengl_frame(GtkWidget* Win,GtkWidget *vbox);
+void read_admp_build_dipole_dipole_autocorrelation_dlg();
 
 #endif /* __GABEDIT_UTILSINTERFACE_H__ */
 

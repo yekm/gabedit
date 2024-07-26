@@ -55,6 +55,7 @@ static GtkWidget *EntryMPQC = NULL;
 static GtkWidget *EntryFireFly = NULL;
 static GtkWidget *EntryQChem = NULL;
 static GtkWidget *EntryOrca = NULL;
+static GtkWidget *EntryNWChem = NULL;
 
 static GtkWidget *ComboGamess = NULL;
 static GtkWidget *ComboGaussian = NULL;
@@ -66,6 +67,7 @@ static GtkWidget *ComboMPQC = NULL;
 static GtkWidget *ComboFireFly = NULL;
 static GtkWidget *ComboQChem = NULL;
 static GtkWidget *ComboOrca = NULL;
+static GtkWidget *ComboNWChem = NULL;
 
 static GtkWidget *ButtonGamess = NULL;
 static GtkWidget *ButtonGaussian = NULL;
@@ -77,6 +79,7 @@ static GtkWidget *ButtonMPQC = NULL;
 static GtkWidget *ButtonFireFly = NULL;
 static GtkWidget *ButtonQChem = NULL;
 static GtkWidget *ButtonOrca = NULL;
+static GtkWidget *ButtonNWChem = NULL;
 
 static GtkWidget *EntryBatchType = NULL;
 GtkWidget *selectors[3];
@@ -887,6 +890,92 @@ void  modify_orca_command()
   	gtk_widget_set_sensitive(ButtonOrca, FALSE);
   else
   	gtk_widget_set_sensitive(ButtonOrca, TRUE);
+}
+/********************************************************************************/
+static void  remove_nwchem_command()
+{
+  G_CONST_RETURN gchar *strcom;
+  GList *glist = NULL;
+  gint i;
+  gint inList = -1;
+
+  if(nwchemCommands.numberOfCommands<2)
+	  return;
+
+  strcom = gtk_entry_get_text (GTK_ENTRY (EntryNWChem));
+
+  for(i=0;i<nwchemCommands.numberOfCommands;i++)
+  {
+	  if(strcmp(strcom,nwchemCommands.commands[i])==0)
+	  {
+		  inList = i;
+		  break;
+	  }
+  }
+  if(inList == -1)
+	  return;
+  for(i=inList;i<nwchemCommands.numberOfCommands-1;i++)
+	  nwchemCommands.commands[i] = nwchemCommands.commands[i+1];
+
+  nwchemCommands.numberOfCommands--;
+  nwchemCommands.commands = g_realloc(
+		   nwchemCommands.commands,
+		   nwchemCommands.numberOfCommands*sizeof(gchar*));
+
+  for(i=0;i<nwchemCommands.numberOfCommands;i++)
+	glist = g_list_append(glist,nwchemCommands.commands[i]);
+
+  gtk_combo_box_entry_set_popdown_strings( ComboNWChem, glist) ;
+
+  g_list_free(glist);
+
+  if(nwchemCommands.numberOfCommands<2)
+  	gtk_widget_set_sensitive(ButtonNWChem, FALSE);
+  else
+  	gtk_widget_set_sensitive(ButtonNWChem, TRUE);
+
+  NameCommandNWChem = g_strdup(nwchemCommands.commands[0]);
+
+  str_delete_n(NameCommandNWChem);
+  delete_last_spaces(NameCommandNWChem);
+  delete_first_spaces(NameCommandNWChem);
+}
+/********************************************************************************/
+void  modify_nwchem_command()
+{
+  G_CONST_RETURN gchar *strcom;
+  GList *glist = NULL;
+  gint i;
+
+  strcom = gtk_entry_get_text (GTK_ENTRY (EntryNWChem));
+  if(strcmp(strcom,""))
+      NameCommandNWChem = g_strdup(strcom);
+
+  str_delete_n(NameCommandNWChem);
+  delete_last_spaces(NameCommandNWChem);
+  delete_first_spaces(NameCommandNWChem);
+
+  for(i=0;i<nwchemCommands.numberOfCommands;i++)
+  {
+	  if(strcmp(NameCommandNWChem,nwchemCommands.commands[i])==0)
+		  return;
+  }
+  nwchemCommands.numberOfCommands++;
+  nwchemCommands.commands = g_realloc(
+		   nwchemCommands.commands,
+		   nwchemCommands.numberOfCommands*sizeof(gchar*));
+  nwchemCommands.commands[nwchemCommands.numberOfCommands-1] = g_strdup(NameCommandNWChem);
+
+  for(i=nwchemCommands.numberOfCommands-1;i>=0;i--)
+	glist = g_list_append(glist,nwchemCommands.commands[i]);
+
+  gtk_combo_box_entry_set_popdown_strings( ComboNWChem, glist) ;
+
+  g_list_free(glist);
+  if(nwchemCommands.numberOfCommands<2)
+  	gtk_widget_set_sensitive(ButtonNWChem, FALSE);
+  else
+  	gtk_widget_set_sensitive(ButtonNWChem, TRUE);
 }
 /********************************************************************************/
 static void  remove_povray_command()
@@ -1700,7 +1789,7 @@ static void set_entry_orcadir(GtkWidget* dirSelector, gint response_id)
 
 	if(orcaDirectory) g_free(orcaDirectory);
 	orcaDirectory = g_strdup(dirname);
-	t = g_strdup_printf("%s;%cPATH%c",orcaDirectory,'%','%');
+	t = g_strdup_printf("%s;%s",orcaDirectory,g_getenv("PATH"));
 	g_setenv("PATH",t,TRUE);
 	g_free(t);
 }
@@ -1720,6 +1809,40 @@ static void set_entry_orcaDir_selection(GtkWidget* entry)
 	gtk_widget_show(dirSelector);
 }
 /********************************************************************************/
+static void set_entry_nwchemdir(GtkWidget* dirSelector, gint response_id)
+{
+	gchar* dirname = NULL;
+	gchar* t = NULL;
+	GtkWidget *entry;
+	if(response_id != GTK_RESPONSE_OK) return;
+	dirname = gabedit_folder_chooser_get_current_folder(GABEDIT_FOLDER_CHOOSER(dirSelector));
+
+
+	entry = (GtkWidget*)(g_object_get_data(G_OBJECT(dirSelector),"EntryFile"));	
+	gtk_entry_set_text(GTK_ENTRY(entry),dirname);
+
+	if(nwchemDirectory) g_free(nwchemDirectory);
+	nwchemDirectory = g_strdup(dirname);
+	t = g_strdup_printf("%s;%s",nwchemDirectory,g_getenv("PATH"));
+	g_setenv("PATH",t,TRUE);
+	g_free(t);
+}
+/********************************************************************************/
+static void set_entry_nwchemDir_selection(GtkWidget* entry)
+{
+	GtkWidget *dirSelector;
+	dirSelector = selctionOfDir(set_entry_nwchemdir, _("Select NWChem folder"), GABEDIT_TYPEWIN_ORB); 
+  	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
+  	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
+
+	g_object_set_data(G_OBJECT (dirSelector), "EntryFile", entry);
+
+	g_signal_connect (dirSelector, "response",  G_CALLBACK (set_entry_nwchemdir), GTK_OBJECT(dirSelector));
+	g_signal_connect (dirSelector, "response",  G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(dirSelector));
+
+	gtk_widget_show(dirSelector);
+}
+/********************************************************************************/
 static void set_entry_fireflydir(GtkWidget* dirSelector, gint response_id)
 {
 	gchar* dirname = NULL;
@@ -1734,7 +1857,7 @@ static void set_entry_fireflydir(GtkWidget* dirSelector, gint response_id)
 
 	if(fireflyDirectory) g_free(fireflyDirectory);
 	fireflyDirectory = g_strdup(dirname);
-	t = g_strdup_printf("%s;%cPATH%c",fireflyDirectory,'%','%');
+	t = g_strdup_printf("%s;%s",fireflyDirectory,g_getenv("PATH"));
 	g_setenv("PATH",t,TRUE);
 	g_free(t);
 }
@@ -1768,7 +1891,7 @@ static void set_entry_mopacdir(GtkWidget* dirSelector, gint response_id)
 
 	if(mopacDirectory) g_free(mopacDirectory);
 	mopacDirectory = g_strdup(dirname);
-	t = g_strdup_printf("%s;%cPATH%c",mopacDirectory,'%','%');
+	t = g_strdup_printf("%s;%s",mopacDirectory,g_getenv("PATH"));
 	g_setenv("PATH",t,TRUE);
 	g_free(t);
 }
@@ -1802,7 +1925,7 @@ static void set_entry_povraydir(GtkWidget* dirSelector, gint response_id)
 
 	if(povrayDirectory) g_free(povrayDirectory);
 	povrayDirectory = g_strdup(dirname);
-	t = g_strdup_printf("%s;%cPATH%c",povrayDirectory,'%','%');
+	t = g_strdup_printf("%s;%s",povrayDirectory,g_getenv("PATH"));
 	g_setenv("PATH",t,TRUE);
 	g_free(t);
 }
@@ -1836,7 +1959,7 @@ static void set_entry_gaussdir(GtkWidget* dirSelector, gint response_id)
 
 	if(gaussDirectory) g_free(gaussDirectory);
 	gaussDirectory = g_strdup(dirname);
-	t = g_strdup_printf("%s;%cPATH%c",gaussDirectory,'%','%');
+	t = g_strdup_printf("%s;%s",gaussDirectory,g_getenv("PATH"));
 	g_setenv("PATH",t,TRUE);
 	g_free(t);
 }
@@ -2033,6 +2156,30 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   if(orcaCommands.numberOfCommands<2)
   	gtk_widget_set_sensitive(button, FALSE);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(remove_orca_command),NULL);
+
+  button = create_button(Wins,_("  Help  "));
+  gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(help_commands),NULL);
+
+  create_hseparator(vbox);
+  hbox = gtk_hbox_new (FALSE, 0);
+/* ------------------------------------------------------------------*/
+  gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
+  label = gtk_label_new (_("Command for execute NWChem       : "));
+  gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
+
+  combo = create_combo_box_entry(nwchemCommands.commands,nwchemCommands.numberOfCommands,TRUE,-1,-1);
+  ComboNWChem = combo;
+  EntryNWChem =  GTK_BIN(combo)->child;
+  gtk_box_pack_start (GTK_BOX (hbox), combo, TRUE, TRUE, 3);
+  gtk_entry_set_text (GTK_ENTRY (EntryNWChem),NameCommandNWChem);
+  g_signal_connect(G_OBJECT (EntryNWChem), "activate", (GCallback)modify_nwchem_command, NULL);
+  button = create_button(Wins,_("  Remove from list  "));
+  ButtonNWChem = button;
+  gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
+  if(nwchemCommands.numberOfCommands<2)
+  	gtk_widget_set_sensitive(button, FALSE);
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(remove_nwchem_command),NULL);
 
   button = create_button(Wins,_("  Help  "));
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
@@ -2255,6 +2402,50 @@ void  create_orca_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	g_signal_connect_swapped(GTK_OBJECT (button), "clicked",
                                      G_CALLBACK(set_entry_orcaDir_selection),
+                                     GTK_OBJECT(entry));
+	add_widget_table(table,button,0,2);
+  }
+  gtk_widget_show_all(frame);
+}
+#endif
+#ifdef G_OS_WIN32
+/********************************************************************************/
+void  create_nwchem_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
+{
+  GtkWidget *frame;
+  GtkWidget *button;
+
+  frame = gtk_frame_new (NULL);
+  gtk_widget_show (frame);
+  gtk_box_pack_start (GTK_BOX (vbox), frame, expand, expand, 0);
+  gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
+
+  vbox = gtk_vbox_new (FALSE, 0);
+  gtk_container_add (GTK_CONTAINER (frame), vbox);
+
+
+  {
+	GtkWidget* entry;
+  	GtkWidget *table = gtk_table_new(1,3,FALSE);
+
+	if(!nwchemDirectory) nwchemDirectory = g_strdup_printf("%s",g_get_home_dir());
+
+	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
+
+	add_label_table(table,_("NWChem directory                        : "),0,0);
+  	entry = gtk_entry_new ();
+	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
+	gtk_table_attach(GTK_TABLE(table),entry,1,1+1,0,0+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+  	gtk_entry_set_text (GTK_ENTRY (entry),nwchemDirectory);
+	gtk_editable_set_editable((GtkEditable*)entry,FALSE);
+	gtk_widget_set_sensitive(entry, FALSE);
+	button = create_button_pixmap(Wins,open_xpm,NULL);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	g_signal_connect_swapped(GTK_OBJECT (button), "clicked",
+                                     G_CALLBACK(set_entry_nwchemDir_selection),
                                      GTK_OBJECT(entry));
 	add_widget_table(table,button,0,2);
   }
@@ -2510,7 +2701,7 @@ static void set_entry_pscpplinkdir(GtkWidget* dirSelector, gint response_id)
 
 	/*if(strcmp(dirname,pscpplinkDirectory)!=0)*/
 	{
-		gchar* t = g_strdup_printf("%s;%cPATH%c",dirname,'%','%');
+		gchar* t = g_strdup_printf("%s;%s",dirname,g_getenv("PATH"));
 		g_setenv("PATH",t,TRUE);
 		g_free(t);
 	}
@@ -2654,6 +2845,7 @@ void AddPageOthers(GtkWidget *NoteBook)
 #ifdef G_OS_WIN32
   create_gamess_directory(Wins,vbox,FALSE);
   create_orca_directory(Wins,vbox,FALSE);
+  create_nwchem_directory(Wins,vbox,FALSE);
   create_firefly_directory(Wins,vbox,FALSE);
   create_mopac_directory(Wins,vbox,FALSE);
   create_gauss_directory(Wins,vbox,FALSE);
@@ -2886,9 +3078,10 @@ void  create_opengl_frame(GtkWidget* Win,GtkWidget *vbox)
 	GtkWidget* combo;
 	GtkWidget *table = gtk_table_new(2,5,FALSE);
 	static gchar* typeButton[] = {"RGBA","DOUBLEBUFFER" ,"ALPHASIZE","DEPTHSIZE"};
-	static gchar* values[] = {"5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30"};
+	static gchar* values[] = {"5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","40","50","60","80","100"};
 	static gchar* typeEntry[] = {"CYLINDER","SPHERE"};
 	gushort i;
+	gint nv = sizeof(values)/sizeof(gchar*);
 
 
 	frame = gtk_frame_new (_("OpenGL Options"));
@@ -2906,7 +3099,7 @@ void  create_opengl_frame(GtkWidget* Win,GtkWidget *vbox)
 	i = 0;
 	add_label_table(table,_(" Number Of Subdivisions for a Cylinder "),i,0);
 	add_label_table(table," : ",i,1);
-	combo = create_combo_box_entry(values,26,TRUE,-1,-1);
+	combo = create_combo_box_entry(values,nv,TRUE,-1,-1);
 	EntryCylinder = GTK_BIN(combo)->child;
 	add_widget_table(table,combo,i,2);
 	gtk_editable_set_editable((GtkEditable*)EntryCylinder,FALSE);
@@ -2916,7 +3109,7 @@ void  create_opengl_frame(GtkWidget* Win,GtkWidget *vbox)
 	i = 1;
 	add_label_table(table,_(" Number Of Subdivisions for a Sphere "),i,0);
 	add_label_table(table," : ",i,1);
-	combo = create_combo_box_entry(values,26,TRUE,-1,-1);
+	combo = create_combo_box_entry(values,nv,TRUE,-1,-1);
 	EntrySphere = GTK_BIN(combo)->child;
 	add_widget_table(table,combo,i,2);
 	gtk_editable_set_editable((GtkEditable*)EntrySphere,FALSE);

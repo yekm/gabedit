@@ -38,6 +38,7 @@ void read_molpro_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_orca_orbitals_sel_2mkl(GabeditFileChooser *SelecFile, gint response_id);
 void read_orca_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_qchem_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
+void read_nwchem_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_mopac_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_gabedit_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void save_gabedit_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);

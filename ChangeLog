@@ -1,3 +1,33 @@
+13 Jyly 2011 :
+	NWChem is now supported
+	Geometry and charges can be read from a aimall sum file
+
+10 June 2011 :
+	Bug fixed for animated vibration/threshold
+	Bug fixed : orbitals molpro (define NOrb)
+
+1 June 2011 :
+	Group of the third atom can be rotated in Draw Geom window.
+
+30 April 2011 :
+	pair radial distribution
+	RMSD for a trajectory
+	Reading dipole from a ADMP output file and computing of auto correlation dipole function (not fully tested)
+
+7 April 2011 :
+	Fourier Transformation in GabexitXYPlot window (not fully tested)
+
+5 April 2011 :
+	Orthonormalization of Mopac MO (only normalisation on old versions)
+
+10 Mars 2011 :
+	Local rotation bug fixed
+	Screen capture (using png or tif) under window bug fixed 
+
+22 February 2011 :
+	Show cell in Display window
+	Bug : Update coordinates after a move fragment
+
 20 Junuary 2011 :
 	Read beta orbitals from fchk file : Bug fixed
 	Rotation of a fragment by mouse : bug fixed

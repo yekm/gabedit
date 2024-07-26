@@ -309,6 +309,8 @@ static gchar *get_pov_one_stick_for_ball(gint i,gint j)
 
      if(nc<1) return " ";
 
+     if(!getShowMultipleBonds()) nc = 1;
+
      Center1 = get_prop_center(i);
      Center2 = get_prop_center(j);
  
@@ -437,6 +439,7 @@ static gchar *get_pov_one_stick(gint i,gint j)
      gint nc = get_connection_type(i,j);
 
      if(nc<1) return " ";
+     if(!getShowMultipleBonds()) nc = 1;
 
      Center1 = get_prop_center(i);
      Center2 = get_prop_center(j);

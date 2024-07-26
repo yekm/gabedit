@@ -415,16 +415,19 @@ static gboolean runOneMopac(gchar* fileNamePrefix, gchar* keyWords)
 	{
 		gchar* str = NULL;
 		if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("Minimization by PM6-DH2/Mopac ... Please wait");
+		else if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6-DH+")) str = g_strdup_printf("Minimization by PM6-DH+/Mopac ... Please wait");
 		else if(strstr(keyWords,"SPARKLE") && strstr(keyWords,"PM6")) str = g_strdup_printf("Minimization by Sparkle/PM6/Mopac ... Please wait");
 		else if(strstr(keyWords,"SPARKLE") && strstr(keyWords,"AM1")) str = g_strdup_printf("Minimization by Sparkle/AM1/Mopac ... Please wait");
 		else if(strstr(keyWords,"SPARKLE") && strstr(keyWords,"PM3")) str = g_strdup_printf("Minimization by Sparkle/PM3/Mopac ... Please wait");
 		else if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6")) str = g_strdup_printf("Minimization by PM6/Mopac ... Please wait");
 		else if(strstr(keyWords,"XYZ") && strstr(keyWords,"AM1")) str = g_strdup_printf("Minimization by AM1/Mopac ... Please wait");
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("ESP charges from PM6-DH2/Mopac ... Please wait");
+		else if(strstr(keyWords,"ESP") && strstr(keyWords,"PM6-DH+")) str = g_strdup_printf("ESP charges from PM6-DH+/Mopac ... Please wait");
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"PM6")) str = g_strdup_printf("ESP charges from PM6/Mopac ... Please wait");
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"AM1")) str = g_strdup_printf("ESP charges from AM1/Mopac ... Please wait");
 		else if(strstr(keyWords,"POINT")) str = g_strdup_printf("Reaction path by Mopac ... Please wait");
 		else if(strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("Computing of energy by PM6-DH2/Mopac .... Please wait");
+		else if(strstr(keyWords,"PM6-DH+")) str = g_strdup_printf("Computing of energy by PM6-DH+/Mopac .... Please wait");
 		else if(strstr(keyWords,"PM6")) str = g_strdup_printf("Computing of energy by PM6/Mopac .... Please wait");
 		else str = g_strdup_printf("Computing of energy by AM1/Mopac .... Please wait");
 		set_text_to_draw(str);
@@ -1056,6 +1059,14 @@ static void runSemiEmpirical(GtkWidget* Win, gpointer data, gchar* type, gchar* 
 		}
 		if(fileNamePrefix) g_free(fileNamePrefix);
 	}
+	else if(!strcmp(type,"PM6DH+MopacEnergy"))
+	{
+		gchar* fileNamePrefix = get_suffix_name_file(fileName);
+		if(runOneMopac(fileNamePrefix, "PM6-DH+ 1SCF"))
+		{
+		}
+		if(fileNamePrefix) g_free(fileNamePrefix);
+	}
 	else
 	if(!strcmp(type,"PM6MopacEnergy"))
 	{
@@ -1069,6 +1080,17 @@ static void runSemiEmpirical(GtkWidget* Win, gpointer data, gchar* type, gchar* 
 	{
 		gchar* fileNamePrefix = get_suffix_name_file(fileName);
 		if(runOneMopac(fileNamePrefix, "PM6-DH2 XYZ AUX"))
+		{
+			gchar* fileOut = g_strdup_printf("%sOne.aux",fileNamePrefix);
+			find_energy_mopac_aux(fileOut);
+			if(fileOut) g_free(fileOut);
+		}
+		if(fileNamePrefix) g_free(fileNamePrefix);
+	}
+	else if(!strcmp(type,"PM6DH+MopacOptimize"))
+	{
+		gchar* fileNamePrefix = get_suffix_name_file(fileName);
+		if(runOneMopac(fileNamePrefix, "PM6-DH+ XYZ AUX"))
 		{
 			gchar* fileOut = g_strdup_printf("%sOne.aux",fileNamePrefix);
 			find_energy_mopac_aux(fileOut);
@@ -1091,6 +1113,17 @@ static void runSemiEmpirical(GtkWidget* Win, gpointer data, gchar* type, gchar* 
 	{
 		gchar* fileNamePrefix = get_suffix_name_file(fileName);
 		if(runOneMopac(fileNamePrefix, "PM6-DH2 1SCF ESP"))
+		{
+			gchar* fileOut = g_strdup_printf("%sOne.out",fileNamePrefix);
+			read_geom_from_mopac_output_file(fileOut, -1);
+			if(fileOut) g_free(fileOut);
+		}
+		if(fileNamePrefix) g_free(fileNamePrefix);
+	}
+	else if(!strcmp(type,"PM6DH+MopacESP"))
+	{
+		gchar* fileNamePrefix = get_suffix_name_file(fileName);
+		if(runOneMopac(fileNamePrefix, "PM6-DH+ 1SCF ESP"))
 		{
 			gchar* fileOut = g_strdup_printf("%sOne.out",fileNamePrefix);
 			read_geom_from_mopac_output_file(fileOut, -1);
@@ -1274,6 +1307,33 @@ static void runPM6DH2MopacESP(GtkWidget* Win, gpointer data)
 	TotalCharges[0] = totalCharge;
 	SpinMultiplicities[0] = spinMultiplicity;
 	runSemiEmpirical(Win, data, "PM6DH2MopacESP",NULL);
+}
+/*****************************************************************************/
+static void runPM6DHpMopacEnergy(GtkWidget* Win, gpointer data)
+{
+	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
+	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
+	TotalCharges[0] = totalCharge;
+	SpinMultiplicities[0] = spinMultiplicity;
+	runSemiEmpirical(Win, data, "PM6DH+MopacEnergy",NULL);
+}
+/*****************************************************************************/
+static void runPM6DHpMopacOptimize(GtkWidget* Win, gpointer data)
+{
+	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
+	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
+	TotalCharges[0] = totalCharge;
+	SpinMultiplicities[0] = spinMultiplicity;
+	runSemiEmpirical(Win, data, "PM6DH+MopacOptimize",NULL);
+}
+/*****************************************************************************/
+static void runPM6DHpMopacESP(GtkWidget* Win, gpointer data)
+{
+	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
+	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
+	TotalCharges[0] = totalCharge;
+	SpinMultiplicities[0] = spinMultiplicity;
+	runSemiEmpirical(Win, data, "PM6DH+MopacESP",NULL);
 }
 /*****************************************************************************/
 static void runPM6MopacEnergy(GtkWidget* Win, gpointer data)
@@ -2092,7 +2152,7 @@ static void AddOptionsDlg(GtkWidget *NoteBook, GtkWidget *win,gchar* type)
                   1,1);
 		addMopacOptions(vbox, type);
 	}
-	else if(strstr(type,"MopacScanAM1") || strstr(type,"MopacScanPM6") || strstr(type,"MopacScanPM6DH2"))
+	else if(strstr(type,"MopacScanAM1") || strstr(type,"MopacScanPM6") || strstr(type,"MopacScanPM6DH2") || strstr(type,"MopacScanPM6DH+") )
 	{
 		i++;
 		j = 0;
@@ -2170,7 +2230,7 @@ static GtkWidget *addMopacHamiltonianToTable(GtkWidget *table, gint i)
 	GtkWidget* entryMopacHamiltonian = NULL;
 	GtkWidget* comboMopacHamiltonian = NULL;
 	gint nlistHamiltonian = 6;
-	gchar* listHamiltonian[] = {"PM6","PM6-DH2","AM1","RM1","PM3","MNDO"};
+	gchar* listHamiltonian[] = {"PM6","PM6-DH+","PM6-DH2","AM1","RM1","PM3","MNDO"};
 
 	add_label_table(table,_("Model"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
@@ -2416,6 +2476,12 @@ void semiEmpiricalDlg(gchar* type)
 		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runPM6DH2MopacOptimize,GTK_OBJECT(Win));
 	else if(!strcmp(type,"PM6DH2MopacESP"))
 		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runPM6DH2MopacESP,GTK_OBJECT(Win));
+	else if(!strcmp(type,"PM6DH+MopacEnergy"))
+		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runPM6DHpMopacEnergy,GTK_OBJECT(Win));
+	else if(!strcmp(type,"PM6DH+MopacOptimize"))
+		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runPM6DHpMopacOptimize,GTK_OBJECT(Win));
+	else if(!strcmp(type,"PM6DH+MopacESP"))
+		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runPM6DHpMopacESP,GTK_OBJECT(Win));
 	else if(!strcmp(type,"PM6MopacEnergy"))
 		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runPM6MopacEnergy,GTK_OBJECT(Win));
 	else if(!strcmp(type,"PM6MopacOptimize"))
@@ -2494,7 +2560,7 @@ static gboolean saveConfoGeometries(gint numberOfGeometries, SemiEmpiricalModel*
 				);
 	}
 	fprintf(file,"\n");
-	fprintf(file,"[GEOMS]\n");
+	fprintf(file,"[GEOMS] 1\n"); /* for format # 1 */
 	fprintf(file,"%d 2\n",nG);
 	fprintf(file,"energy kcal/mol 1\n");
 	fprintf(file,"deltaE K 1\n");
@@ -2622,15 +2688,18 @@ static gboolean runOneOptMopac(SemiEmpiricalModel* geom, gdouble* energy, gchar*
 	{
 		gchar* str = NULL;
 		if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("Minimization by PM6-DH2/Mopac ... Please wait");
+		else if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6-DH+")) str = g_strdup_printf("Minimization by PM6-DH+/Mopac ... Please wait");
 		else if(strstr(keyWords,"SPARKLE") && strstr(keyWords,"PM6")) str = g_strdup_printf("Minimization by Sparkle/PM6/Mopac ... Please wait");
 		else if(strstr(keyWords,"SPARKLE") && strstr(keyWords,"AM1")) str = g_strdup_printf("Minimization by Sparkle/AM1/Mopac ... Please wait");
 		else if(strstr(keyWords,"SPARKLE") && strstr(keyWords,"PM3")) str = g_strdup_printf("Minimization by Sparkle/PM3/Mopac ... Please wait");
 		else if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6")) str = g_strdup_printf("Minimization by PM6/Mopac ... Please wait");
 		else if(strstr(keyWords,"XYZ") && strstr(keyWords,"AM1")) str = g_strdup_printf("Minimization by AM1/Mopac ... Please wait");
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("ESP charges from PM6-DH2/Mopac ... Please wait");
+		else if(strstr(keyWords,"ESP") && strstr(keyWords,"PM6-DH+")) str = g_strdup_printf("ESP charges from PM6-DH+/Mopac ... Please wait");
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"PM6")) str = g_strdup_printf("ESP charges from PM6/Mopac ... Please wait");
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"AM1")) str = g_strdup_printf("ESP charges from AM1/Mopac ... Please wait");
 		else if(strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("Computing of energy by PM6-DH2/Mopac .... Please wait");
+		else if(strstr(keyWords,"PM6-DH+")) str = g_strdup_printf("Computing of energy by PM6-DH+/Mopac .... Please wait");
 		else if(strstr(keyWords,"PM6")) str = g_strdup_printf("Computing of energy by PM6/Mopac .... Please wait");
 		else str = g_strdup_printf("Computing of energy by AM1/Mopac .... Please wait");
 		set_text_to_draw(str);

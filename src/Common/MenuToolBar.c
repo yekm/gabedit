@@ -150,6 +150,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"MolproInput")) new_molpro(NULL, NULL);
 	else if(!strcmp(name,"MopacInput")) new_mopac(NULL, NULL);
 	else if(!strcmp(name,"MPQCInput")) new_mpqc(NULL, NULL);
+	else if(!strcmp(name,"NWChemInput")) new_nwchem(NULL, NULL);
 	else if(!strcmp(name,"OrcaInput")) new_orca(NULL, NULL);
 	else if(!strcmp(name,"FireFlyInput")) new_firefly(NULL, NULL);
 	else if(!strcmp(name,"QChemInput")) new_qchem(NULL, NULL);
@@ -200,6 +201,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ToolsIRSpectrumGabedit")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_GABEDIT);}
 	else if(!strcmp(name,"ToolsIRSpectrumDalton")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_DALTON);}
 	else if(!strcmp(name,"ToolsIRSpectrumGamess")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_GAMESS);}
+	else if(!strcmp(name,"ToolsIRSpectrumNWChem")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_NWCHEM);}
 	else if(!strcmp(name,"ToolsIRSpectrumOrca")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_ORCA);}
 	else if(!strcmp(name,"ToolsIRSpectrumFireFly")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_FIREFLY);}
 	else if(!strcmp(name,"ToolsIRSpectrumGaussian")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_GAUSSIAN);}
@@ -211,6 +213,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ToolsRamanSpectrumGabedit")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_GABEDIT);}
 	else if(!strcmp(name,"ToolsRamanSpectrumGamess")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_GAMESS);}
 	else if(!strcmp(name,"ToolsRamanSpectrumGaussian")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_GAUSSIAN);}
+	else if(!strcmp(name,"ToolsRamanSpectrumNWChem")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_NWCHEM);}
 	else if(!strcmp(name,"ToolsRamanSpectrumOrca")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_ORCA);}
 	else if(!strcmp(name,"ToolsRamanSpectrumFireFly")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_GAMESS);}
 	else if(!strcmp(name,"ToolsRamanSpectrumMolden")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_MOLDEN);}
@@ -219,12 +222,14 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ToolsUVSpectrumGamess")) { createUVSpectrum(Fenetre,GABEDIT_TYPEFILE_GAMESS);}
 	else if(!strcmp(name,"ToolsUVSpectrumGaussian")) { createUVSpectrum(Fenetre,GABEDIT_TYPEFILE_GAUSSIAN);}
 	else if(!strcmp(name,"ToolsUVSpectrumFireFly")) { createUVSpectrum(Fenetre,GABEDIT_TYPEFILE_FIREFLY);}
+	else if(!strcmp(name,"ToolsUVSpectrumNWChem")) { createUVSpectrum(Fenetre,GABEDIT_TYPEFILE_NWCHEM);}
 	else if(!strcmp(name,"ToolsUVSpectrumOrca")) { createUVSpectrum(Fenetre,GABEDIT_TYPEFILE_ORCA);}
 	else if(!strcmp(name,"ToolsUVSpectrumQChem")) { createUVSpectrum(Fenetre,GABEDIT_TYPEFILE_QCHEM);}
 	else if(!strcmp(name,"ToolsUVSpectrumTxt")) { createUVSpectrum(Fenetre,GABEDIT_TYPEFILE_TXT);}
 
 	else if(!strcmp(name,"ToolsECDSpectrumGabedit")) { createECDSpectrum(Fenetre,GABEDIT_TYPEFILE_GABEDIT);}
 	else if(!strcmp(name,"ToolsECDSpectrumGaussian")) { createECDSpectrum(Fenetre,GABEDIT_TYPEFILE_GAUSSIAN);}
+	else if(!strcmp(name,"ToolsECDSpectrumNWChem")) { createECDSpectrum(Fenetre,GABEDIT_TYPEFILE_NWCHEM);}
 	else if(!strcmp(name,"ToolsECDSpectrumOrca")) { createECDSpectrum(Fenetre,GABEDIT_TYPEFILE_ORCA);}
 	else if(!strcmp(name,"ToolsECDSpectrumTxt")) { createECDSpectrum(Fenetre,GABEDIT_TYPEFILE_TXT);}
 
@@ -232,6 +237,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ToolsNMR2SpectrumTxt")) { createNMR2Spectrum(Fenetre,GABEDIT_TYPEFILE_TXT);}
 
 	else if(!strcmp(name,"ToolsVibCorrectionsGaussian")) {read_vibcorrection_gaussian_file_dlg(); }
+	else if(!strcmp(name,"ToolsAutoCorrelationGaussian")) {read_admp_build_dipole_dipole_autocorrelation_dlg(); }
 	else if(!strcmp(name,"ToolsIsotopeDistribution")) { compute_distribution_dlg(Fenetre, NULL); }
 
 	else if(!strcmp(name,"RunAbinitio")) {create_run();}
@@ -256,6 +262,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"MolproInput", GABEDIT_STOCK_MOLPRO, N_("Mol_pro input"), NULL, "New Molpro input file", G_CALLBACK (activate_action) },
 	{"MopacInput", GABEDIT_STOCK_MOPAC, N_("_Mopac input"), NULL, "New Mopac input file", G_CALLBACK (activate_action) },
 	{"MPQCInput", GABEDIT_STOCK_MPQC, N_("MP_QC input"), NULL, "New MPQC input file", G_CALLBACK (activate_action) },
+	{"NWChemInput", GABEDIT_STOCK_NWCHEM, N_("_NWChem input"), NULL, "New NWChem input file", G_CALLBACK (activate_action) },
 	{"OrcaInput", GABEDIT_STOCK_ORCA, N_("_Orca input"), NULL, "New Orca input file", G_CALLBACK (activate_action) },
 	{"FireFlyInput", GABEDIT_STOCK_FIREFLY, N_("_FireFly input"), NULL, "New FireFly input file", G_CALLBACK (activate_action) },
 	{"QChemInput", GABEDIT_STOCK_QCHEM, N_("Q-_Chem input"), NULL, "New Q-Chem input file", G_CALLBACK (activate_action) },
@@ -321,6 +328,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ToolsIRSpectrumGamess",  GABEDIT_STOCK_GAMESS, N_("Read frequencies and intensities from a _Gamess output file"), NULL, "Gamess", G_CALLBACK (activate_action) },
 	{"ToolsIRSpectrumGaussian",  GABEDIT_STOCK_GAUSSIAN, N_("Read frequencies and intensities from a _Gaussian output file"), NULL, "Gaussian", G_CALLBACK (activate_action) },
 	{"ToolsIRSpectrumMolpro",  GABEDIT_STOCK_MOLPRO, N_("Read frequencies and intensities from a _Molpro output file"), NULL, "Molpro", G_CALLBACK (activate_action) },
+	{"ToolsIRSpectrumNWChem",  GABEDIT_STOCK_NWCHEM, N_("Read frequencies and intensities from a _NWChem output file"), NULL, "NWChem", G_CALLBACK (activate_action) },
 	{"ToolsIRSpectrumOrca",  GABEDIT_STOCK_ORCA, N_("Read frequencies and intensities from a _Orca output file"), NULL, "Orca", G_CALLBACK (activate_action) },
 	{"ToolsIRSpectrumFireFly",  GABEDIT_STOCK_FIREFLY, N_("Read frequencies and intensities from a _FireFly output file"), NULL, "FireFly", G_CALLBACK (activate_action) },
 	{"ToolsIRSpectrumQChem",  GABEDIT_STOCK_QCHEM, N_("Read frequencies and intensities from a _Q-Chem output file"), NULL, "QChem", G_CALLBACK (activate_action) },
@@ -332,6 +340,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ToolsRamanSpectrumGabedit",  GABEDIT_STOCK_GABEDIT, N_("Read frequencies and intensities from a _Gabedit file"), NULL, "Gabedit", G_CALLBACK (activate_action) },
 	{"ToolsRamanSpectrumGamess",  GABEDIT_STOCK_GAMESS, N_("Read frequencies and intensities from a Game_ss output file"), NULL, "Gamess", G_CALLBACK (activate_action) },
 	{"ToolsRamanSpectrumGaussian",  GABEDIT_STOCK_GAUSSIAN, N_("Read frequencies and intensities from a _Gaussian output file"), NULL, "Gaussian", G_CALLBACK (activate_action) },
+	{"ToolsRamanSpectrumNWChem",  GABEDIT_STOCK_NWCHEM, N_("Read frequencies and intensities from a _NWChem output file"), NULL, "NWChem", G_CALLBACK (activate_action) },
 	{"ToolsRamanSpectrumOrca",  GABEDIT_STOCK_ORCA, N_("Read frequencies and intensities from a _Orca output file"), NULL, "Orca", G_CALLBACK (activate_action) },
 	{"ToolsRamanSpectrumFireFly",  GABEDIT_STOCK_FIREFLY, N_("Read frequencies and intensities from a _FireFly output file"), NULL, "FireFly", G_CALLBACK (activate_action) },
 	{"ToolsRamanSpectrumMolden",  GABEDIT_STOCK_MOLDEN, N_("Read frequencies and intensities from a Mo_lden file"), NULL, "Molden", G_CALLBACK (activate_action) },
@@ -341,6 +350,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ToolsUVSpectrumGamess",  GABEDIT_STOCK_GAMESS, N_("Read energies and intensities from a _Gamess output file"), NULL, "Gamess", G_CALLBACK (activate_action) },
 	{"ToolsUVSpectrumGaussian",  GABEDIT_STOCK_GAUSSIAN, N_("Read energies and intensities from a _Gaussian output file"), NULL, "Gaussian", G_CALLBACK (activate_action) },
 	{"ToolsUVSpectrumFireFly",  GABEDIT_STOCK_FIREFLY, N_("Read energies and intensities from a _FireFly output file"), NULL, "FireFly", G_CALLBACK (activate_action) },
+	{"ToolsUVSpectrumNWChem",  GABEDIT_STOCK_NWCHEM, N_("Read energies and intensities from a NWChem output file"), NULL, "NWChem", G_CALLBACK (activate_action) },
 	{"ToolsUVSpectrumOrca",  GABEDIT_STOCK_ORCA, N_("Read energies and intensities from a Orca output file"), NULL, "Orca", G_CALLBACK (activate_action) },
 	{"ToolsUVSpectrumQChem",  GABEDIT_STOCK_QCHEM, N_("Read energies and intensities from a Q_Chem output file"), NULL, "QChem", G_CALLBACK (activate_action) },
 	{"ToolsUVSpectrumTxt",  NULL, N_("Read energies and intensities from an ASCII XY file(2 columns)"), NULL, "Txt", G_CALLBACK (activate_action) },
@@ -348,6 +358,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ToolsECDSpectrum",  NULL, N_("_ECD spectrum")},
 	{"ToolsECDSpectrumGabedit",  GABEDIT_STOCK_GABEDIT, N_("Read energies and intensities from a _Gabedit file"), NULL, "Gabedit", G_CALLBACK (activate_action) },
 	{"ToolsECDSpectrumGaussian",  GABEDIT_STOCK_GAUSSIAN, N_("Read energies and intensities from a _Gaussian output file"), NULL, "Gaussian", G_CALLBACK (activate_action) },
+	{"ToolsECDSpectrumNWChem",  GABEDIT_STOCK_NWCHEM, N_("Read energies and intensities from a _NWChem output file"), NULL, "NWChem", G_CALLBACK (activate_action) },
 	{"ToolsECDSpectrumOrca",  GABEDIT_STOCK_ORCA, N_("Read energies and intensities from a _Orca output file"), NULL, "Orca", G_CALLBACK (activate_action) },
 	{"ToolsECDSpectrumTxt",  NULL, N_("Read energies and intensities from an ASCII XY file(2 columns)"), NULL, "Txt", G_CALLBACK (activate_action) },
 
@@ -357,6 +368,8 @@ static GtkActionEntry gtkActionEntries[] =
 
 	{"ToolsVibCorrections",  NULL, N_("Ro_vibrational corrections")},
 	{"ToolsVibCorrectionsGaussian",  NULL, N_("Read Gaussian output file for compute the ro-vibrational corrections"), NULL, "Gaussian", G_CALLBACK (activate_action) },
+	{"ToolsAutoCorrelation",  NULL, N_("_Auto correlation")},
+	{"ToolsAutoCorrelationGaussian",  NULL, N_("Read Gaussian output file for compute the dipole-dipole auto correlation function"), NULL, "Gaussian", G_CALLBACK (activate_action) },
 	{"ToolsIsotopeDistribution",  NULL, N_("Compute the isotope distribution for a molecule"), NULL, "Isotope distribution", G_CALLBACK (activate_action) },
 
 	{"Run",  NULL, N_("_Run")},
@@ -414,6 +427,7 @@ static const gchar *uiInfo =
 "         <menuitem name=\"MolproInput\" action=\"MolproInput\" />\n"
 "         <menuitem name=\"MopacInput\" action=\"MopacInput\" />\n"
 "         <menuitem name=\"MPQCInput\" action=\"MPQCInput\" />\n"
+"         <menuitem name=\"NWChemInput\" action=\"NWChemInput\" />\n"
 "         <menuitem name=\"OrcaInput\" action=\"OrcaInput\" />\n"
 "         <menuitem name=\"FireFlyInput\" action=\"FireFlyInput\" />\n"
 "         <menuitem name=\"QChemInput\" action=\"QChemInput\" />\n"
@@ -500,6 +514,7 @@ static const gchar *uiInfo =
 "          <menuitem name=\"ToolsIRSpectrumGamess\" action=\"ToolsIRSpectrumGamess\" />\n"
 "          <menuitem name=\"ToolsIRSpectrumGaussian\" action=\"ToolsIRSpectrumGaussian\" />\n"
 "          <menuitem name=\"ToolsIRSpectrumMolpro\" action=\"ToolsIRSpectrumMolpro\" />\n"
+"          <menuitem name=\"ToolsIRSpectrumNWChem\" action=\"ToolsIRSpectrumNWChem\" />\n"
 "          <menuitem name=\"ToolsIRSpectrumOrca\" action=\"ToolsIRSpectrumOrca\" />\n"
 "          <menuitem name=\"ToolsIRSpectrumFireFly\" action=\"ToolsIRSpectrumFireFly\" />\n"
 "          <menuitem name=\"ToolsIRSpectrumQChem\" action=\"ToolsIRSpectrumQChem\" />\n"
@@ -512,6 +527,7 @@ static const gchar *uiInfo =
 "          <menuitem name=\"ToolsRamanSpectrumGabedit\" action=\"ToolsRamanSpectrumGabedit\" />\n"
 "          <menuitem name=\"ToolsRamanSpectrumGamess\" action=\"ToolsRamanSpectrumGamess\" />\n"
 "          <menuitem name=\"ToolsRamanSpectrumGaussian\" action=\"ToolsRamanSpectrumGaussian\" />\n"
+"          <menuitem name=\"ToolsRamanSpectrumNWChem\" action=\"ToolsRamanSpectrumNWChem\" />\n"
 "          <menuitem name=\"ToolsRamanSpectrumOrca\" action=\"ToolsRamanSpectrumOrca\" />\n"
 "          <menuitem name=\"ToolsRamanSpectrumFireFly\" action=\"ToolsRamanSpectrumFireFly\" />\n"
 "          <menuitem name=\"ToolsRamanSpectrumMolden\" action=\"ToolsRamanSpectrumMolden\" />\n"
@@ -522,6 +538,7 @@ static const gchar *uiInfo =
 "          <menuitem name=\"ToolsUVSpectrumGabedit\" action=\"ToolsUVSpectrumGabedit\" />\n"
 "          <menuitem name=\"ToolsUVSpectrumGamess\" action=\"ToolsUVSpectrumGamess\" />\n"
 "          <menuitem name=\"ToolsUVSpectrumGaussian\" action=\"ToolsUVSpectrumGaussian\" />\n"
+"          <menuitem name=\"ToolsUVSpectrumNWChem\" action=\"ToolsUVSpectrumNWChem\" />\n"
 "          <menuitem name=\"ToolsUVSpectrumOrca\" action=\"ToolsUVSpectrumOrca\" />\n"
 "          <menuitem name=\"ToolsUVSpectrumFireFly\" action=\"ToolsUVSpectrumFireFly\" />\n"
 "          <menuitem name=\"ToolsUVSpectrumQChem\" action=\"ToolsUVSpectrumQChem\" />\n"
@@ -531,6 +548,7 @@ static const gchar *uiInfo =
 "      <menu name=\"ToolsECDSpectrum\" action=\"ToolsECDSpectrum\">\n"
 "          <menuitem name=\"ToolsECDSpectrumGabedit\" action=\"ToolsECDSpectrumGabedit\" />\n"
 "          <menuitem name=\"ToolsECDSpectrumGaussian\" action=\"ToolsECDSpectrumGaussian\" />\n"
+"          <menuitem name=\"ToolsECDSpectrumNWChem\" action=\"ToolsECDSpectrumNWChem\" />\n"
 "          <menuitem name=\"ToolsECDSpectrumOrca\" action=\"ToolsECDSpectrumOrca\" />\n"
 "          <menuitem name=\"ToolsECDSpectrumTxt\" action=\"ToolsECDSpectrumTxt\" />\n"
 "      </menu>\n"
@@ -544,6 +562,10 @@ static const gchar *uiInfo =
 "      <separator name=\"sepVibCorrections\" />\n"
 "      <menu name=\"ToolsVibCorrections\" action=\"ToolsVibCorrections\">\n"
 "          <menuitem name=\"ToolsVibCorrectionsGaussian\" action=\"ToolsVibCorrectionsGaussian\" />\n"
+"      </menu>\n"
+"      <separator name=\"sepAutoCorrelation\" />\n"
+"      <menu name=\"ToolsAutoCorrelation\" action=\"ToolsAutoCorrelation\">\n"
+"          <menuitem name=\"ToolsAutoCorrelationGaussian\" action=\"ToolsAutoCorrelationGaussian\" />\n"
 "      </menu>\n"
 "    </menu>\n"
 "    <menu name=\"Run\" action=\"Run\">\n"
@@ -577,6 +599,7 @@ static const gchar *uiInfo =
 "      <toolitem name=\"MolproInput\" action=\"MolproInput\" />\n"
 "      <toolitem name=\"MopacInput\" action=\"MopacInput\" />\n"
 "      <toolitem name=\"MPQCInput\" action=\"MPQCInput\" />\n"
+"      <toolitem name=\"NWChemInput\" action=\"NWChemInput\" />\n"
 "      <toolitem name=\"OrcaInput\" action=\"OrcaInput\" />\n"
 "      <toolitem name=\"FireFlyInput\" action=\"FireFlyInput\" />\n"
 "      <toolitem name=\"QChemInput\" action=\"QChemInput\" />\n"

@@ -465,7 +465,7 @@ static gboolean saveConfoGeometries(gint numberOfGeometries, ForceField** geomet
 				);
 	}
 	fprintf(file,"\n");
-	fprintf(file,"[GEOMS]\n");
+	fprintf(file,"[GEOMS]  1 \n");/* 1 for format # 1 */
 	fprintf(file,"%d 2\n",nG);
 	fprintf(file,"energy kcal/mol 1\n");
 	fprintf(file,"deltaE K 1\n");

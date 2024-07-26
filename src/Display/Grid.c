@@ -33,6 +33,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Utils.h"
 #include "../Utils/Zlm.h"
 #include "../Utils/MathFunctions.h"
+#include "../Utils/GTF.h"
 
 /************************************************************************/
 static gdouble get_value_elf_becke(gdouble x,gdouble y,gdouble z,gint dump);
@@ -278,6 +279,57 @@ gdouble get_value_spin_density(gdouble x,gdouble y,gdouble z,gint dump)
 	g_free(PhiAlpha);
 	g_free(PhiBeta);
 	return v1-v2;
+}
+/**************************************************************/
+gdouble get_value_electrostatic_potential(gdouble x,gdouble y,gdouble z,gdouble* XkXl)
+{
+	
+	gdouble v = 0.0;
+	gint i;
+	gint j;
+	gint k;
+	gint kl = 0;
+	gdouble C[] = {x,y,z};
+	gdouble schwarzCutOff = 1e-2;
+
+	if(!AOrb) return 0;
+
+	for(i=0;i<NAOrb;i++) XkXl[kl++] = ionicPotentialCGTF(&AOrb[i], &AOrb[i], C, 1.0);
+	for(i=0;i<NAOrb;i++)
+	for(j=0;j<i;j++)
+	{
+		if( fabs(XkXl[i]* XkXl[j])>schwarzCutOff) XkXl[kl++] = ionicPotentialCGTF(&AOrb[i], &AOrb[j], C, 1.0);
+		else XkXl[kl++] = 0;
+	}
+	/*if(kl!=NAOrb*(NAOrb+1)/2) exit(1);*/
+	if(kl!=NAOrb*(NAOrb+1)/2) printf("Erreur\n");
+
+	v = 0;
+	for(k=0;k<NAlphaOrb;k++)
+		if(OccAlphaOrbitals[k]>1e-8)
+		{
+			kl = 0;
+			for(i=0;i<NAOrb;i++)
+				v += OccAlphaOrbitals[k]*CoefAlphaOrbitals[k][i]*CoefAlphaOrbitals[k][i]*XkXl[kl++];
+			for(i=0;i<NAOrb;i++)
+			for(j=0;j<i;j++)
+				v += 2*OccAlphaOrbitals[k]*CoefAlphaOrbitals[k][i]*CoefAlphaOrbitals[k][j]*XkXl[kl++];
+		}
+	if(CoefBetaOrbitals==CoefAlphaOrbitals) v *= 2;
+	else
+	{
+		if(OccBetaOrbitals[k]>1e-8) 
+		{
+			kl = 0;
+			for(i=0;i<NAOrb;i++)
+				v += OccBetaOrbitals[k]*CoefBetaOrbitals[k][i]*CoefBetaOrbitals[k][i]*XkXl[kl++];
+			for(i=0;i<NAOrb;i++)
+			for(j=0;j<i;j++)
+				v += 2*OccBetaOrbitals[k]*CoefBetaOrbitals[k][i]*CoefBetaOrbitals[k][j]*XkXl[kl++];
+			if(kl!=NAOrb*(NAOrb+1)/2) printf("Erreur\n");
+		}
+	}
+	return v;
 }
 /*********************************************************************************/
 gboolean test_grid_all_positive(Grid* grid)
@@ -578,13 +630,18 @@ Grid* define_grid_point(gint N[],GridLimits limits,Func3d func)
 #ifdef ENABLE_OMP
 #ifndef G_OS_WIN32
 #pragma omp critical
+{
+	        /* printf("progress_orb\n");*/
 		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
+	        /* printf("end progress_orb\n");*/
+}
 #endif
 #else
 		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
 #endif
 
 	}
+	/* printf("end loop\n");*/
 	if(CancelCalcul)  progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 	v = grid->point[0][0][0].C[3];
        	grid->limits.MinMax[0][3] =  v;
@@ -613,6 +670,7 @@ Grid* define_grid(gint N[],GridLimits limits)
 	Grid *grid = NULL;
 	set_status_label_info(_("Grid"),_("Computing"));
 	CancelCalcul = FALSE;
+	/* printf("Begin dfine_grid\n");*/
 	switch(TypeGrid)
 	{
 		case GABEDIT_TYPEGRID_ORBITAL :
@@ -661,12 +719,17 @@ Grid* define_grid(gint N[],GridLimits limits)
 		case GABEDIT_TYPEGRID_MEP_MG :
 			grid = solve_poisson_equation_from_orbitals(N,limits, GABEDIT_MG);
 			break;
+		case GABEDIT_TYPEGRID_MEP_EXACT :
+			grid = compute_mep_grid_exact(N,limits);
+			break;
 
 	}
+	/* printf("end dfine_grid\n");*/
 	if(grid)
 		set_status_label_info(_("Grid"),_("Ok"));
 	else
 		set_status_label_info(_("Grid"),_("Nothing"));
+	/* printf("end dfine_grid\n");*/
 	return grid;
 }
 /*********************************************************************************/
@@ -2641,6 +2704,144 @@ Grid* solve_poisson_equation_from_orbitals(gint N[],GridLimits limits, PoissonSo
 	if(!eGrid) return NULL;
 	esp = solve_poisson_equation_from_density_grid(eGrid, psMethod);
 	eGrid=free_grid(eGrid);
+	set_status_label_info(_("Grid")," ");
+	return esp;
+}
+/*********************************************************************************/
+Grid* compute_mep_grid_exact(gint N[],GridLimits limits)
+{
+	gint i;
+	Grid* esp = NULL;
+	gboolean beg = TRUE;
+	gdouble scale;
+	gdouble V0[3];
+	gdouble V1[3];
+	gdouble V2[3];
+	gdouble firstPoint[3];
+
+	if(!AOrb)
+	{
+		Message(_("Sorry\n This option is implemented only for Gaussian Basis Function"),_("Error"),TRUE);
+		return NULL;
+	}
+
+	esp = grid_point_alloc(N,limits);
+	for(i=0;i<3;i++)
+	{
+		V0[i] = firstDirection[i] *(esp->limits.MinMax[1][0]-esp->limits.MinMax[0][0]);
+		V1[i] = secondDirection[i]*(esp->limits.MinMax[1][1]-esp->limits.MinMax[0][1]);
+		V2[i] = thirdDirection[i] *(esp->limits.MinMax[1][2]-esp->limits.MinMax[0][2]);
+	}
+	for(i=0;i<3;i++)
+	{
+		firstPoint[i] = V0[i] + V1[i] + V2[i];
+		firstPoint[i] = originOfCube[i] - firstPoint[i]/2;
+	}
+	for(i=0;i<3;i++)
+	{
+		V0[i] /= esp->N[0]-1;
+		V1[i] /= esp->N[1]-1;
+		V2[i] /= esp->N[2]-1;
+	}
+	
+			
+
+#ifndef G_OS_WIN32
+	progress_orb(0,GABEDIT_PROGORB_COMPMEPGRID,TRUE);
+#endif
+	scale = (gdouble)1.01/esp->N[0];
+#ifdef ENABLE_OMP
+//#pragma omp parallel for private(i)
+#endif
+	for(i=0;i<esp->N[0];i++)
+	{
+		gint j;
+		gint k;
+		gdouble x;
+		gdouble y;
+		gdouble z;
+		gdouble r;
+		gdouble PRECISION = 1e-13;
+		gdouble invR = 1.0;
+		gdouble v;
+		gint n;
+		gdouble* XkXl = g_malloc(NAOrb*(NAOrb+1)/2*sizeof(gdouble));
+		if(!CancelCalcul)
+		for(j=0;j<esp->N[1];j++)
+		{
+			for(k=0;k<esp->N[2];k++)
+			{
+				x = firstPoint[0] + i*V0[0] + j*V1[0] +  k*V2[0]; 
+				y = firstPoint[1] + i*V0[1] + j*V1[1] +  k*V2[1]; 
+				z = firstPoint[2] + i*V0[2] + j*V1[2] +  k*V2[2]; 
+
+				esp->point[i][j][k].C[0] = x;
+				esp->point[i][j][k].C[1] = y;
+				esp->point[i][j][k].C[2] = z;
+				v = 0;
+				v = get_value_electrostatic_potential( x, y, z, XkXl);
+
+				for(n=0;n<Ncenters;n++)
+				{
+					x = esp->point[i][j][k].C[0]-GeomOrb[n].C[0];
+					y = esp->point[i][j][k].C[1]-GeomOrb[n].C[1];
+					z = esp->point[i][j][k].C[2]-GeomOrb[n].C[2];
+					r = sqrt(x*x +  y*y + z*z+PRECISION);
+					invR = 1.0 /r;
+					v+= invR*GeomOrb[n].nuclearCharge;
+				}
+				esp->point[i][j][k].C[3]=v;
+			}
+		}
+#ifndef G_OS_WIN32
+#ifdef ENABLE_OMP
+//#pragma omp critical
+#endif
+		g_free(XkXl);
+		progress_orb(scale,GABEDIT_PROGORB_COMPMEPGRID,FALSE);
+#endif
+	}
+	if(CancelCalcul) 
+		progress_orb(0,GABEDIT_PROGORB_COMPMEPGRID,TRUE);
+	if(!CancelCalcul)
+	for(i=0;i<esp->N[0];i++)
+	{
+		gint j;
+		gint k;
+		gdouble v;
+		for(j=0;j<esp->N[1];j++)
+		{
+			for(k=0;k<esp->N[2];k++)
+			{
+				v = esp->point[i][j][k].C[3];
+				if(beg)
+				{
+					beg = FALSE;
+        				esp->limits.MinMax[0][3] =  v;
+        				esp->limits.MinMax[1][3] =  v;
+				}
+                		else
+				{
+        				if(esp->limits.MinMax[0][3]>v) esp->limits.MinMax[0][3] =  v;
+        				if(esp->limits.MinMax[1][3]<v) esp->limits.MinMax[1][3] =  v;
+				}
+			}
+		}
+	}
+	if(CancelCalcul)
+	{
+		esp = free_grid(esp);
+	}
+	return esp;
+
+}
+/*********************************************************************************/
+Grid* compute_mep_grid_using_orbitals(gint N[],GridLimits limits)
+{
+	Grid* esp = NULL;
+
+	TypeGrid = GABEDIT_TYPEGRID_EDENSITY;
+	esp = compute_mep_grid_exact(N, limits);
 	set_status_label_info(_("Grid")," ");
 	return esp;
 }

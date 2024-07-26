@@ -296,10 +296,20 @@ gint* getListGroupe(gint* nGroupAtoms, GeomDef*  geom, gint NAtoms, gint i1, gin
 	initTreeMolecule(&treeMolecule, geom, NAtoms, 6);
 	if(i3>=0 && i4>=0) 
 	{
+		if(i4>=NAtoms)
+		{
+		nG = i3;
+		nEx1 = i2;
+		nEx2 = i1;
+		nEx3 = i4-NAtoms;
+		}
+		else
+		{
 		nG = i4;
 		nEx1 = i3;
 		nEx2 = i2;
 		nEx3 = i1;
+		}
 	}
 	else if(i3>=0) 
 	{

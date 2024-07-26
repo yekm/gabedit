@@ -413,6 +413,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ReadTinker")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_TINKER); }
 	else if(!strcmp(name,"ReadPDB")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_PDB); }
 	else if(!strcmp(name,"ReadHyperchem")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_HIN);}
+	else if(!strcmp(name,"ReadAIMAll")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_AIMALL);}
 	else if(!strcmp(name,"ReadMol")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MOL);}
 	else if(!strcmp(name,"ReadGabedit")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_GABEDIT);}
 	else if(!strcmp(name,"ReadGaussianZMat")) { MethodeGeom = GEOM_IS_ZMAT;selc_ZMatrix_file(); }
@@ -448,6 +449,8 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ReadFireFlyLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_GAMESSLAST); }
 	else if(!strcmp(name,"ReadOrcaFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_ORCAOUTFIRST);}
 	else if(!strcmp(name,"ReadOrcaLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_ORCAOUTLAST);}
+	else if(!strcmp(name,"ReadNWChemFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_NWCHEMOUTFIRST);}
+	else if(!strcmp(name,"ReadNWChemLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_NWCHEMOUTLAST);}
 	else if(!strcmp(name,"ReadQChemFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_QCHEMOUTFIRST);}
 	else if(!strcmp(name,"ReadQChemLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_QCHEMOUTLAST);}
 	else if(!strcmp(name,"ReadUsingOpenBabel")) { create_babel_read_dialogue(); }
@@ -471,6 +474,9 @@ static void activate_action (GtkAction *action)
    	  file_chooser_open(read_geometries_conv_mpqc,_("Load Geom. Conv. From MPQC output file"), GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_GEOM);
 	else if(!strcmp(name,"ReadGeomConvOrca"))
    	  file_chooser_open(read_geometries_conv_orca,_("Load Geom. Conv. From ORCA output file"), GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_GEOM);
+
+	else if(!strcmp(name,"ReadGeomConvNWChem"))
+   	  file_chooser_open(read_geometries_conv_nwchem,_("Load Geom. Conv. From NWChem output file"), GABEDIT_TYPEFILE_NWCHEM,GABEDIT_TYPEWIN_GEOM);
 
 	else if(!strcmp(name,"ReadGeomConvQChem"))
    	  file_chooser_open(read_geometries_conv_qchem,_("Load Geom. Conv. From Q-Chem output file"), GABEDIT_TYPEFILE_QCHEM,GABEDIT_TYPEWIN_GEOM);
@@ -831,6 +837,10 @@ static void activate_action (GtkAction *action)
 	{
 		semiEmpiricalDlg("PM6DH2MopacEnergy");
 	}
+	else if(!strcmp(name, "SemiEmpiricalEnergyMopacPM6DH+"))
+	{
+		semiEmpiricalDlg("PM6DH+MopacEnergy");
+	}
 	else if(!strcmp(name, "SemiEmpiricalEnergyMopacPM6"))
 	{
 		semiEmpiricalDlg("PM6MopacEnergy");
@@ -847,6 +857,10 @@ static void activate_action (GtkAction *action)
 	{
 		semiEmpiricalDlg("PM6DH2MopacOptimize");
 	}
+	else if(!strcmp(name, "SemiEmpiricalOptimizationMopacPM6DH+"))
+	{
+		semiEmpiricalDlg("PM6DH+MopacOptimize");
+	}
 	else if(!strcmp(name, "SemiEmpiricalOptimizationMopacPM6"))
 	{
 		semiEmpiricalDlg("PM6MopacOptimize");
@@ -854,6 +868,10 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "SemiEmpiricalESPMopacPM6DH2"))
 	{
 		semiEmpiricalDlg("PM6DH2MopacESP");
+	}
+	else if(!strcmp(name, "SemiEmpiricalESPMopacPM6DH+"))
+	{
+		semiEmpiricalDlg("PM6DH+MopacESP");
 	}
 	else if(!strcmp(name, "SemiEmpiricalESPMopacPM6"))
 	{
@@ -874,6 +892,10 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "SemiEmpiricalScanMopacPM6DH2"))
 	{
 		semiEmpiricalDlg("MopacScanPM6DH2");
+	}
+	else if(!strcmp(name, "SemiEmpiricalScanMopacPM6DH+"))
+	{
+		semiEmpiricalDlg("MopacScanPM6DH+");
 	}
 	else if(!strcmp(name, "SemiEmpiricalScanMopacPM6"))
 	{
@@ -920,6 +942,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadTinker", NULL, N_("_Tinker file"), NULL, "Read a Tinker file", G_CALLBACK (activate_action) },
 	{"ReadPDB", GABEDIT_STOCK_PDB, N_("_PDB file"), NULL, "Read a PDB file", G_CALLBACK (activate_action) },
 	{"ReadHyperchem", NULL, N_("_Hyperchem file"), NULL, "Read a Hyperchem file", G_CALLBACK (activate_action) },
+	{"ReadAIMAll", NULL, N_("_AIMAll file"), NULL, "Read a AIMAll file", G_CALLBACK (activate_action) },
 	{"ReadMol", NULL, N_("_Mol file"), NULL, "Read a Mol file", G_CALLBACK (activate_action) },
 	{"ReadGabedit", GABEDIT_STOCK_GABEDIT, N_("_Gabedit file"), NULL, "Read a Gabedit file", G_CALLBACK (activate_action) },
 	{"ReadGaussianZMat", GABEDIT_STOCK_GAUSSIAN, N_("_Gaussian Z-Matrix file"), NULL, "Read a Gaussian Z-Matrix file", G_CALLBACK (activate_action) },
@@ -979,6 +1002,10 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadQChemFirst", GABEDIT_STOCK_QCHEM, N_("F_irst geometry from a Q-Chem output file"), NULL, "Read the first geometry from a Q-Chem output file", G_CALLBACK (activate_action) },
 	{"ReadQChemLast", GABEDIT_STOCK_QCHEM, N_("L_ast geometry from a Q-Chem output file"), NULL, "Read the last geometry from a Q-Chem output file", G_CALLBACK (activate_action) },
 
+	{"NWChem", GABEDIT_STOCK_NWCHEM, "_NWChem"},
+	{"ReadNWChemFirst", GABEDIT_STOCK_NWCHEM, N_("F_irst geometry from a NWChem output file"), NULL, "Read the first geometry from a NWChem output file", G_CALLBACK (activate_action) },
+	{"ReadNWChemLast", GABEDIT_STOCK_NWCHEM, N_("L_ast geometry from a NWChem output file"), NULL, "Read the last geometry from a NWChem output file", G_CALLBACK (activate_action) },
+
 	{"ReadUsingOpenBabel", GABEDIT_STOCK_OPEN_BABEL, N_("_Other format (using open babel)"), NULL, "Other format (using open babel)", G_CALLBACK (activate_action) },
 
 	{"ReadGeomConv", NULL, N_("Geometries _Convergence")},
@@ -992,6 +1019,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadGeomConvMopac", GABEDIT_STOCK_MOPAC, N_("from a _Mopac aux file"), NULL, "Read Geometries Convergence from a Mopac aux file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvMPQC", GABEDIT_STOCK_MPQC, N_("from a MP_QC output file"), NULL, "Read Geometries Convergence from a MPQC output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvOrca", GABEDIT_STOCK_ORCA, N_("from a _Orca output file"), NULL, "Read Geometries Convergence from a Orca output file", G_CALLBACK (activate_action) },
+	{"ReadGeomConvNWChem", GABEDIT_STOCK_NWCHEM, N_("from a _NWChemoutput file"), NULL, "Read Geometries Convergence from a NWChem output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvQChem", GABEDIT_STOCK_QCHEM, N_("from a Q-_Chem output file"), NULL, "Read Geometries Convergence from a Q-Chem output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvGabedit", GABEDIT_STOCK_GABEDIT, N_("from a G_abedit file"), NULL, "Read Geometries Convergence from a Gabedit file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvMolden", GABEDIT_STOCK_MOLDEN, N_("from a Mol_den file"), NULL, "Read Geometries Convergence from a Molden file", G_CALLBACK (activate_action) },
@@ -1170,9 +1198,13 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SemiEmpiricalScanMopac", NULL, N_("Mopac _Reaction path"), NULL, "Mopac Scan calculation", G_CALLBACK (activate_action) },
 
 	{"SemiEmpiricalEnergyMopacPM6DH2", NULL, N_("Mopac PM6-DH2 _Energy"), NULL, "compute the energy using the PM6-DH2 method from Mopac", G_CALLBACK (activate_action) },
+	{"SemiEmpiricalEnergyMopacPM6DH+", NULL, N_("Mopac PM6-DH+ _Energy"), NULL, "compute the energy using the PM6-DH+ method from Mopac", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalOptimizationMopacPM6DH2", NULL, N_("Mopac PM6-DH2 _Optimization"), NULL, "optimize the geometry using the PM6-DH2 method from Mopac", G_CALLBACK (activate_action) },
+	{"SemiEmpiricalOptimizationMopacPM6DH+", NULL, N_("Mopac PM6-DH+ _Optimization"), NULL, "optimize the geometry using the PM6-DH+ method from Mopac", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalESPMopacPM6DH2", NULL, N_("Mopac PM6-DH2 _ESP charges"), NULL, "ESP Charge using the PM6-DH2 method from Mopac", G_CALLBACK (activate_action) },
+	{"SemiEmpiricalESPMopacPM6DH+", NULL, N_("Mopac PM6-DH+ _ESP charges"), NULL, "ESP Charge using the PM6-DH+ method from Mopac", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalScanMopacPM6DH2", NULL, N_("Mopac PM6-DH2 _Reaction path"), NULL, "Reaction path using the PM6-DH2 method from Mopac", G_CALLBACK (activate_action) },
+	{"SemiEmpiricalScanMopacPM6DH+", NULL, N_("Mopac PM6-DH+ _Reaction path"), NULL, "Reaction path using the PM6-DH+ method from Mopac", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalEnergyMopacPM6", NULL, N_("Mopac PM6 _Energy"), NULL, "compute the energy using the PM6 method from Mopac", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalOptimizationMopacPM6", NULL, N_("Mopac PM6 _Optimization"), NULL, "optimize the geometry using the PM6 method from Mopac", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalESPMopacPM6", NULL, N_("Mopac PM6 _ESP charges"), NULL, "ESP Charge using the PM6 method from Mopac", G_CALLBACK (activate_action) },
@@ -1208,6 +1240,7 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"ReadTinker\" action=\"ReadTinker\" />\n"
 "      <menuitem name=\"ReadPDB\" action=\"ReadPDB\" />\n"
 "      <menuitem name=\"ReadHyperchem\" action=\"ReadHyperchem\" />\n"
+"      <menuitem name=\"ReadAIMAll\" action=\"ReadAIMAll\" />\n"
 "      <separator name=\"sepMenuReadFireFly\" />\n"
 "      <menu name=\"FireFly\" action=\"FireFly\">\n"
 "        <menuitem name=\"ReadFireFlyFirst\" action=\"ReadFireFlyFirst\" />\n"
@@ -1269,6 +1302,11 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadQChemFirst\" action=\"ReadQChemFirst\" />\n"
 "        <menuitem name=\"ReadQChemLast\" action=\"ReadQChemLast\" />\n"
 "      </menu>\n"
+"      <separator name=\"sepMenuReadNWChem\" />\n"
+"      <menu name=\"NWChem\" action=\"NWChem\">\n"
+"        <menuitem name=\"ReadNWChemFirst\" action=\"ReadNWChemFirst\" />\n"
+"        <menuitem name=\"ReadNWChemLast\" action=\"ReadNWChemLast\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuReadTurbomole\" />\n"
 "      <menu name=\"Turbomole\" action=\"Turbomole\">\n"
 "        <menuitem name=\"ReadTurbomoleFirst\" action=\"ReadTurbomoleFirst\" />\n"
@@ -1286,6 +1324,7 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadGeomConvMopac\" action=\"ReadGeomConvMopac\" />\n"
 "        <menuitem name=\"ReadGeomConvMPQC\" action=\"ReadGeomConvMPQC\" />\n"
 "        <menuitem name=\"ReadGeomConvOrca\" action=\"ReadGeomConvOrca\" />\n"
+"        <menuitem name=\"ReadGeomConvNWChem\" action=\"ReadGeomConvNWChem\" />\n"
 "        <menuitem name=\"ReadGeomConvQChem\" action=\"ReadGeomConvQChem\" />\n"
 "        <menuitem name=\"ReadGeomConvGabedit\" action=\"ReadGeomConvGabedit\" />\n"
 "        <menuitem name=\"ReadGeomConvMolden\" action=\"ReadGeomConvMolden\" />\n"

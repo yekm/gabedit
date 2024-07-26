@@ -38,6 +38,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Display/Images.h"
 #include "../Display/UtilsOrb.h"
 #include "../Display/BondsOrb.h"
+#include "../Utils/GabeditXYPlot.h"
 #include "../../pixmaps/Open.xpm"
 
 static	GtkWidget *WinDlg = NULL;
@@ -67,7 +68,457 @@ static void rafreshList();
 static void stopAnimation(GtkWidget *win, gpointer data);
 static void playAnimation(GtkWidget *win, gpointer data);
 static gboolean set_geometry(gint k);
+static GtkWidget* addComboListToATable(GtkWidget* table, gchar** list, gint nlist, gint i, gint j, gint k);
+static void  add_cancel_ok_button(GtkWidget *Win,GtkWidget *vbox,GtkWidget *entry, GCallback myFunc);
 
+/************************************************************************************************************/
+static void setComboMethod(GtkWidget *comboMethod)
+{
+	GList *glist = NULL;
+
+  	glist = g_list_append(glist,"Number");
+  	glist = g_list_append(glist,"Symbol");
+  	glist = g_list_append(glist,"MM Type");
+  	glist = g_list_append(glist,"PDB Type");
+
+  	gtk_combo_box_entry_set_popdown_strings(comboMethod, glist) ;
+
+  	g_list_free(glist);
+}
+/********************************************************************************/
+static void setComboVal(GtkWidget *comboVal)
+{
+	GList *glist = NULL;
+	GtkWidget *comboMethod = g_object_get_data(G_OBJECT (comboVal), "ComboMethod");
+	G_CONST_RETURN gchar* entryText = NULL;
+	GtkWidget *entry =  GTK_BIN (comboMethod)->child;
+	entryText = gtk_entry_get_text(GTK_ENTRY(entry));
+	gchar** list = NULL;
+	gint n = 0;
+
+	if(entryText && strstr(entryText,"Number")&&geometryConvergence.numberOfGeometries>0)
+	{
+		gint i;
+                gint nAtoms = geometryConvergence.geometries[0].numberOfAtoms;
+		list = g_malloc(nAtoms*sizeof(gchar*));
+		n = nAtoms;
+  		for(i=0;i<nAtoms;i++) 
+			list[i] = g_strdup_printf("%d",i+1);
+  		for(i=0;i<n;i++) 
+			glist = g_list_append(glist,list[i]);
+	}
+	if(entryText && strstr(entryText,"Symbol")&&geometryConvergence.numberOfGeometries>0)
+	{
+		gint i,j;
+                gint nAtoms = geometryConvergence.geometries[0].numberOfAtoms;
+		list = g_malloc(nAtoms*sizeof(gchar*));
+		n = 0;
+  		for(i=0;i<nAtoms;i++) 
+		{
+			gchar* t = geometryConvergence.geometries[0].listOfAtoms[i].symbol;
+			for(j=0;j<n;j++)
+			{
+				if(!strcmp(t,list[j])) break;
+			}
+			if(j==n)
+				list[n++] = g_strdup(t);
+		}
+  		for(i=0;i<n;i++) 
+			glist = g_list_append(glist,list[i]);
+	}
+	if(entryText && strstr(entryText,"MM Type")&&geometryConvergence.numberOfGeometries>0)
+	{
+		gint i,j;
+                gint nAtoms = geometryConvergence.geometries[0].numberOfAtoms;
+		list = g_malloc(nAtoms*sizeof(gchar*));
+		n = 0;
+  		for(i=0;i<nAtoms;i++) 
+		{
+			gchar* t = geometryConvergence.geometries[0].listOfAtoms[i].mmType;
+			for(j=0;j<n;j++)
+			{
+				if(!strcmp(t,list[j])) break;
+			}
+			if(j==n)
+				list[n++] = g_strdup(t);
+		}
+  		for(i=0;i<n;i++) 
+			glist = g_list_append(glist,list[i]);
+	}
+	if(entryText && strstr(entryText,"PDB Type")&&geometryConvergence.numberOfGeometries>0)
+	{
+		gint i,j;
+                gint nAtoms = geometryConvergence.geometries[0].numberOfAtoms;
+		list = g_malloc(nAtoms*sizeof(gchar*));
+		n = 0;
+  		for(i=0;i<nAtoms;i++) 
+		{
+			gchar* t = geometryConvergence.geometries[0].listOfAtoms[i].pdbType;
+			for(j=0;j<n;j++)
+			{
+				if(!strcmp(t,list[j])) break;
+			}
+			if(j==n)
+				list[n++] = g_strdup(t);
+		}
+  		for(i=0;i<n;i++) 
+			glist = g_list_append(glist,list[i]);
+	}
+
+  	gtk_combo_box_entry_set_popdown_strings( comboVal, glist) ;
+	if(list && n>0) 
+	{
+		gint i;
+		for(i=0;i<n;i++) g_free(list[i]);
+		g_free(list);
+	}
+  	g_list_free(glist);
+}
+/**********************************************************************/
+static void changedMethod(GtkWidget *entry, gpointer data)
+{
+	GtkWidget* comboVal = NULL;
+	 
+	comboVal  = g_object_get_data(G_OBJECT (entry), "ComboVal1");
+	setComboVal(comboVal);
+	comboVal  = g_object_get_data(G_OBJECT (entry), "ComboVal2");
+	setComboVal(comboVal);
+
+}
+/***********************************************************************************************/
+static GtkWidget *addMethodToTable(GtkWidget *table, gint i)
+{
+	GtkWidget* entry = NULL;
+	GtkWidget* combo = NULL;
+	gint nlist = 1;
+	gchar* list[] = {"Number"};
+
+	entry = addComboListToATable(table, list, nlist, i, 0, 3);
+	combo  = g_object_get_data(G_OBJECT (entry), "Combo");
+	gtk_widget_set_sensitive(entry, FALSE);
+
+	return combo;
+}
+/***********************************************************************************************/
+static GtkWidget *addValToTable(GtkWidget *table, gint i)
+{
+	GtkWidget* entry = NULL;
+	GtkWidget* combo = NULL;
+	gint nlist = 1;
+	gchar* list[] = {"1"};
+
+	entry = addComboListToATable(table, list, nlist, i, 0, 3);
+	combo  = g_object_get_data(G_OBJECT (entry), "Combo");
+	gtk_widget_set_sensitive(entry, FALSE);
+
+	return combo;
+}
+/********************************************************************************/
+static GtkWidget*   add_inputgr_entrys(GtkWidget *Wins,GtkWidget *vbox)
+{
+	GtkWidget* entry;
+	GtkWidget* sep;
+  	GtkWidget *table = gtk_table_new(7,4,FALSE);
+	GtkWidget* comboMethod = NULL;
+	GtkWidget* comboVal1 = NULL;
+	GtkWidget* comboVal2 = NULL;
+	gint i;
+
+	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
+
+	i = 0;
+	comboMethod = addMethodToTable(table, i);
+	i = 1;
+	comboVal1 = addValToTable(table, i);
+	i = 2;
+	comboVal2 = addValToTable(table, i);
+	i = 3;
+	sep = gtk_hseparator_new ();
+	gtk_table_attach(GTK_TABLE(table),sep,0,0+4,i,i+1,
+		(GtkAttachOptions) (GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions) (GTK_FILL | GTK_EXPAND),
+                  2,2);
+
+	if(GTK_IS_COMBO_BOX(comboMethod))
+	{
+		g_object_set_data(G_OBJECT (GTK_BIN(comboMethod)->child), "ComboVal1", comboVal1);
+		g_object_set_data(G_OBJECT (GTK_BIN(comboMethod)->child), "ComboVal2", comboVal2);
+		g_object_set_data(G_OBJECT (comboVal1), "ComboMethod", comboMethod);
+		g_object_set_data(G_OBJECT (comboVal2), "ComboMethod", comboMethod);
+		setComboVal(comboVal1);
+		setComboVal(comboVal2);
+		g_object_set_data(G_OBJECT (Wins), "EntryMethod",GTK_BIN(comboMethod)->child);
+		g_object_set_data(G_OBJECT (Wins), "EntryVal1",GTK_BIN(comboVal1)->child);
+		g_object_set_data(G_OBJECT (Wins), "EntryVal2",GTK_BIN(comboVal2)->child);
+	}
+	setComboMethod(comboMethod);
+	g_signal_connect(G_OBJECT(GTK_BIN(comboMethod)->child),"changed", G_CALLBACK(changedMethod),NULL);
+
+	i = 4;
+	add_label_table(table,_(" dr "),i,0);
+	add_label_table(table,":",i,1);
+  	entry = gtk_entry_new ();
+	g_object_set_data(G_OBJECT(Wins), "Entrydr", entry);
+	gtk_table_attach(GTK_TABLE(table),entry,2,2+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+  	gtk_entry_set_text (GTK_ENTRY (entry),"0.1");
+	gtk_editable_set_editable((GtkEditable*)entry,TRUE);
+	gtk_widget_set_sensitive(entry, TRUE);
+
+	i = 5;
+	add_label_table(table,_(" max r "),i,0);
+	add_label_table(table,":",i,1);
+  	entry = gtk_entry_new ();
+	g_object_set_data(G_OBJECT(Wins), "Entrymaxr", entry);
+	gtk_table_attach(GTK_TABLE(table),entry,2,2+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+  	gtk_entry_set_text (GTK_ENTRY (entry),"10.0");
+	gtk_editable_set_editable((GtkEditable*)entry,TRUE);
+	gtk_widget_set_sensitive(entry, TRUE);
+
+	gtk_widget_show_all(table);
+	entry = GTK_BIN (comboMethod)->child;
+	return entry;
+}
+/*************************************************************************************************************/
+static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
+{
+	gint g;
+	GtkWidget* entrydr = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"Entrydr"));	
+	GtkWidget* entrymaxr = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"Entrymaxr"));	
+	GtkWidget* entryVal1 = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"EntryVal1"));	
+	GtkWidget* entryVal2 = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"EntryVal2"));	
+	GtkWidget* entryMethod = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"EntryMethod"));	
+	gdouble dr,maxr;
+	gint N;
+	gint n1,n2;
+	gdouble* X = NULL;
+	gdouble* Y = NULL;
+	gint i;
+	G_CONST_RETURN gchar* str = NULL;
+	GtkWidget* xyplot;
+	GtkWidget* window;
+
+	if(geometryConvergence.numberOfGeometries<1) return;
+
+	if(entrydr) str = gtk_entry_get_text(GTK_ENTRY(entrydr));
+	if(!str) return;
+	dr = atof(str);
+	if(dr<1e-10) return;
+	if(entrymaxr) str = gtk_entry_get_text(GTK_ENTRY(entrymaxr));
+	if(!str) return;
+	maxr = atof(str);
+	N = maxr/dr+1;
+	if(N<2) return;
+	if(entryMethod) str = gtk_entry_get_text(GTK_ENTRY(entryMethod));
+	if(!str) return;
+	X = g_malloc(N*sizeof(gdouble));
+	Y = g_malloc(N*sizeof(gdouble));
+	for(i=0;i<N;i++) X[i] = dr*i;
+	for(i=0;i<N;i++) Y[i] = 0;
+	if(strstr(str,"Number"))
+	{
+		if(entryVal1) str = gtk_entry_get_text(GTK_ENTRY(entryVal1));
+		if(!str) return;
+		n1 = atoi(str);
+		if(entryVal2) str = gtk_entry_get_text(GTK_ENTRY(entryVal2));
+		if(!str) return;
+		n2 = atoi(str);
+
+		n1--;
+		n2--;
+		if(n1>=0 && n2>=0)
+		for(g = 0;g<geometryConvergence.numberOfGeometries;g++)
+		{
+			gint a = n1;
+			gint b = n2;
+			gdouble d = 0;
+			gdouble xx = 0;
+			gint j;
+			for(j=0;j<3;j++) 
+			{
+				xx = geometryConvergence.geometries[g].listOfAtoms[a].C[j]-geometryConvergence.geometries[g].listOfAtoms[b].C[j];
+				d+= xx*xx;
+			}
+			d = sqrt(d)*BOHR_TO_ANG;
+			if(d>maxr) continue;
+			Y[(gint)(d/dr)]++;
+		}
+	}
+	else if(strstr(str,"Symbol"))
+	{
+		gchar s1[100];
+		gchar s2[100];
+		if(entryVal1) str = gtk_entry_get_text(GTK_ENTRY(entryVal1));
+		if(!str) return;
+		sprintf(s1,"%s",str);
+		if(entryVal2) str = gtk_entry_get_text(GTK_ENTRY(entryVal2));
+		if(!str) return;
+		sprintf(s2,"%s",str);
+
+		for(g = 0;g<geometryConvergence.numberOfGeometries;g++)
+		{
+			gint a;
+			gint b;
+			for(a=0;a<geometryConvergence.geometries[g].numberOfAtoms;a++)
+			for(b=0;b<a;b++)
+			{
+				if(
+				(!strcmp(geometryConvergence.geometries[g].listOfAtoms[a].symbol,s1) && !strcmp(geometryConvergence.geometries[g].listOfAtoms[b].symbol,s2))
+				||
+				(!strcmp(geometryConvergence.geometries[g].listOfAtoms[a].symbol,s2) && !strcmp(geometryConvergence.geometries[g].listOfAtoms[b].symbol,s1))
+				)
+				{
+					gdouble d = 0;
+					gdouble xx = 0;
+					gint j;
+					for(j=0;j<3;j++) 
+					{
+						xx = geometryConvergence.geometries[g].listOfAtoms[a].C[j]-geometryConvergence.geometries[g].listOfAtoms[b].C[j];
+						d+= xx*xx;
+					}
+					d = sqrt(d)*BOHR_TO_ANG;
+					if(d>maxr) continue;
+					Y[(gint)(d/dr)]++;
+				}
+
+			}
+		}
+	}
+	else if(strstr(str,"MM Type"))
+	{
+		gchar s1[100];
+		gchar s2[100];
+		if(entryVal1) str = gtk_entry_get_text(GTK_ENTRY(entryVal1));
+		if(!str) return;
+		sprintf(s1,"%s",str);
+		if(entryVal2) str = gtk_entry_get_text(GTK_ENTRY(entryVal2));
+		if(!str) return;
+		sprintf(s2,"%s",str);
+
+		for(g = 0;g<geometryConvergence.numberOfGeometries;g++)
+		{
+			gint a;
+			gint b;
+			for(a=0;a<geometryConvergence.geometries[g].numberOfAtoms;a++)
+			for(b=0;b<a;b++)
+			{
+				if(
+				(!strcmp(geometryConvergence.geometries[g].listOfAtoms[a].mmType,s1) && !strcmp(geometryConvergence.geometries[g].listOfAtoms[b].mmType,s2))
+				||
+				(!strcmp(geometryConvergence.geometries[g].listOfAtoms[a].mmType,s2) && !strcmp(geometryConvergence.geometries[g].listOfAtoms[b].mmType,s1))
+				)
+				{
+					gdouble d = 0;
+					gdouble xx = 0;
+					gint j;
+					for(j=0;j<3;j++) 
+					{
+						xx = geometryConvergence.geometries[g].listOfAtoms[a].C[j]-geometryConvergence.geometries[g].listOfAtoms[b].C[j];
+						d+= xx*xx;
+					}
+					d = sqrt(d)*BOHR_TO_ANG;
+					if(d>maxr) continue;
+					Y[(gint)(d/dr)]++;
+				}
+
+			}
+		}
+	}
+	else if(strstr(str,"PDB Type"))
+	{
+		gchar s1[100];
+		gchar s2[100];
+		if(entryVal1) str = gtk_entry_get_text(GTK_ENTRY(entryVal1));
+		if(!str) return;
+		sprintf(s1,"%s",str);
+		if(entryVal2) str = gtk_entry_get_text(GTK_ENTRY(entryVal2));
+		if(!str) return;
+		sprintf(s2,"%s",str);
+
+		for(g = 0;g<geometryConvergence.numberOfGeometries;g++)
+		{
+			gint a;
+			gint b;
+			for(a=0;a<geometryConvergence.geometries[g].numberOfAtoms;a++)
+			for(b=0;b<a;b++)
+			{
+				if(
+				(!strcmp(geometryConvergence.geometries[g].listOfAtoms[a].pdbType,s1) && !strcmp(geometryConvergence.geometries[g].listOfAtoms[b].pdbType,s2))
+				||
+				(!strcmp(geometryConvergence.geometries[g].listOfAtoms[a].pdbType,s2) && !strcmp(geometryConvergence.geometries[g].listOfAtoms[b].pdbType,s1))
+				)
+				{
+					gdouble d = 0;
+					gdouble xx = 0;
+					gint j;
+					for(j=0;j<3;j++) 
+					{
+						xx = geometryConvergence.geometries[g].listOfAtoms[a].C[j]-geometryConvergence.geometries[g].listOfAtoms[b].C[j];
+						d+= xx*xx;
+					}
+					d = sqrt(d)*BOHR_TO_ANG;
+					if(d>maxr) continue;
+					Y[(gint)(d/dr)]++;
+				}
+
+			}
+		}
+	}
+
+	gtk_widget_destroy(Win);
+
+	window = gabedit_xyplot_new_window(_("Pair radial distribution"),NULL);
+	xyplot = g_object_get_data(G_OBJECT (window), "XYPLOT");
+	gabedit_xyplot_add_data_conv(GABEDIT_XYPLOT(xyplot),N, X,  Y, 1.0, GABEDIT_XYPLOT_CONV_NONE,NULL);
+	gabedit_xyplot_set_range_xmin (GABEDIT_XYPLOT(xyplot), 0.0);
+	gabedit_xyplot_set_x_label (GABEDIT_XYPLOT(xyplot), "r(Ang)");
+	gabedit_xyplot_set_y_label (GABEDIT_XYPLOT(xyplot), "g(r)");
+	g_free(X); 
+	g_free(Y);
+}
+/********************************************************************************************************/
+static void create_gr_dlg()
+{
+	GtkWidget *Win;
+	GtkWidget *frame;
+	GtkWidget *vboxall;
+	GtkWidget* vbox;
+	GtkWidget* entry;
+
+
+	/* Principal Window */
+	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(Win),"compute radial distribution");
+	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
+	gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
+	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(PrincipalWindow));
+	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
+
+	add_glarea_child(Win,"gr");
+	g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)delete_child,NULL);
+
+	vboxall = create_vbox(Win);
+
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
+	gtk_box_pack_start(GTK_BOX(vboxall), frame,TRUE,TRUE,0);
+	gtk_widget_show (frame);
+  	vbox = gtk_vbox_new (FALSE, 0);
+	gtk_container_add (GTK_CONTAINER (frame), vbox);
+
+  	gtk_widget_realize(Win);
+	entry =  add_inputgr_entrys(Win,vbox);
+	add_cancel_ok_button(Win,vbox,entry,(GCallback)build_pair_radial_distribution);
+
+	/* Show all */
+	gtk_widget_show_all (Win);
+}
 /*************************************************************************************************************/
 static gint getNumberOfValenceElectrons(gint g)
 {
@@ -4174,6 +4625,7 @@ static gboolean show_menu_popup(GtkUIManager *manager, guint button, guint32 tim
 		set_sensitive_option(manager,"/MenuGeomConv/DeleteGeometry");
 		set_sensitive_option(manager,"/MenuGeomConv/CreateGaussInput");
 		set_sensitive_option(manager,"/MenuGeomConv/CreateGaussInputLink");
+		set_sensitive_option(manager,"/MenuGeomConv/CreateGr");
 		gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, button, time);
 		return TRUE;
 	}
@@ -4936,6 +5388,7 @@ static void activate_action (GtkAction *action)
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/DeleteGeometry");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGaussInput");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGaussInputLink");
+		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGr");
 	}
 	else if(!strcmp(name, "ReadAuto")) read_file_dlg();
 	else if(!strcmp(name, "ReadGabedit")) read_gabedit_file_dlg();
@@ -4960,6 +5413,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "HelpAnimation")) help_animated_file();
 	else if(!strcmp(name, "CreateGaussInput")) create_gaussian_file_dlg(FALSE);
 	else if(!strcmp(name, "CreateGaussInputLink")) create_gaussian_file_dlg(TRUE);
+	else if(!strcmp(name, "CreateGr")) create_gr_dlg(TRUE);
 }
 /*--------------------------------------------------------------------*/
 static GtkActionEntry gtkActionEntries[] =
@@ -4981,6 +5435,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadMolden", GABEDIT_STOCK_MOLDEN, N_("Read a Mol_den output file"), NULL, "Read a Molden file", G_CALLBACK (activate_action) },
 	{"CreateGaussInput", GABEDIT_STOCK_GAUSSIAN, N_("_Create multiple input file for Gaussian"), NULL, "Save", G_CALLBACK (activate_action) },
 	{"CreateGaussInputLink", GABEDIT_STOCK_GAUSSIAN, N_("_Create single input file for Gaussian with more geometries"), NULL, "Save", G_CALLBACK (activate_action) },
+	{"CreateGr", GABEDIT_STOCK_GAUSSIAN, N_("_Compute pair radial distribution"), NULL, "gr", G_CALLBACK (activate_action) },
 	{"ReadXYZ", NULL, N_("Read a _xyz file"), NULL, "Read a xyz file", G_CALLBACK (activate_action) },
 	{"ReadHIN", NULL, N_("Read a _Hyperchem files"), NULL, "Read a hyperchem files", G_CALLBACK (activate_action) },
 	{"SaveGabedit", GABEDIT_STOCK_SAVE, N_("_Save in Gabedit format"), NULL, "Save", G_CALLBACK (activate_action) },
@@ -5022,6 +5477,8 @@ static const gchar *uiMenuInfo =
 "    <separator name=\"sepMenuCreateGauss\" />\n"
 "    <menuitem name=\"CreateGaussInput\" action=\"CreateGaussInput\" />\n"
 "    <menuitem name=\"CreateGaussInputLink\" action=\"CreateGaussInputLink\" />\n"
+"    <separator name=\"sepMenuCreateGr\" />\n"
+"    <menuitem name=\"CreateGr\" action=\"CreateGr\" />\n"
 "    <separator name=\"sepMenuPopClose\" />\n"
 "    <menuitem name=\"Close\" action=\"Close\" />\n"
 "  </popup>\n"
@@ -5052,6 +5509,7 @@ static const gchar *uiMenuInfo =
 "      <separator name=\"sepMenuCreateGauss\" />\n"
 "      <menuitem name=\"CreateGaussInput\" action=\"CreateGaussInput\" />\n"
 "      <menuitem name=\"CreateGaussInputLink\" action=\"CreateGaussInputLink\" />\n"
+"      <menuitem name=\"CreateGr\" action=\"CreateGr\" />\n"
 "      <separator name=\"sepMenuClose\" />\n"
 "      <menuitem name=\"Close\" action=\"Close\" />\n"
 "    </menu>\n"

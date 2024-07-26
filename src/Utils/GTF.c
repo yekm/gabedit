@@ -444,7 +444,7 @@ gdouble ionicPotentialGTF(GTF* left, GTF* right,gdouble* C,gdouble Z)
 		temp=(left->Ex*left->C[j]+right->Ex*right->C[j])/gama;
 		PA[j]=left->C[j]-temp;
 		PB[j]=right->C[j]-temp;
-		PC[j]=-left->C[j]+temp;
+		PC[j]=-C[j]+temp;
 		R2 += (left->C[j]-right->C[j])*(left->C[j]-right->C[j]);
 		PC2 += PC[j]*PC[j];
 	}

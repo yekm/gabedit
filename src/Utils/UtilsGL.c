@@ -151,7 +151,7 @@ void glPrintOrtho(gdouble x, gdouble y, gdouble z, gchar *str, gboolean centerX,
 /*********************************************************************************************/
 void glDeleteFontsList()
 {
-	glDeleteLists(fontOffset,128);
+	glDeleteLists(fontOffset,256);
 }
 /*********************************************************************************************/
 /* pango fonts for OpenGL  */
@@ -159,14 +159,14 @@ void glInitFontsUsing(gchar* fontname)
 {
 	/*if (fontOffset >=0) return;*/
 
-	fontOffset = glGenLists(128);
+	fontOffset = glGenLists(256);
 	if (fontOffset)
 	{ 
 		PangoFontDescription *pfd = NULL;
 		PangoFont *pangoFont = NULL;
 		PangoFontMetrics* metrics;
 		pfd = pango_font_description_from_string(fontname);
-		pangoFont = gdk_gl_font_use_pango_font(pfd, 0, 128, fontOffset);
+		pangoFont = gdk_gl_font_use_pango_font(pfd, 0, 256, fontOffset);
 		if (pangoFont)
 		{
 			glFontsize = pango_font_description_get_size(pfd) / PANGO_SCALE;

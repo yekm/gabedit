@@ -1047,6 +1047,7 @@ void define_standard_orbitlas_from_molpro_orbitals(TypeBasisBySym BasisBySym[MAX
 			if(OccOrbitals [k]>0)
 				Nocc = k+1;
 			/*
+			printf("Nocc=%d\n",Nocc);
 			Debug("NumSym = %d NumOrbs = %d\n",i,j);
 			Debug("NBasis= %d NumOrbs = %d\n",BasisBySym[numsym].Nbasis,OrbitalsBySym[i].Orbs[j].ncoefs);
 			*/
@@ -1057,7 +1058,7 @@ void define_standard_orbitlas_from_molpro_orbitals(TypeBasisBySym BasisBySym[MAX
 				c = OrbitalsBySym[i].Orbs[j].coefs[n];
 				for(ic=0;ic<BasisBySym[numsym].Basis[n].ncenters;ic++)
 				{
-					/* Debug("\t NumCoef = %d NumCenter  = %d\n",n,ic); */
+					/*Debug("\t NumCoef = %d NumCenter  = %d\n",n,ic);*/
 					kp = BasisBySym[numsym].Basis[n].numstandards[ic];
 					/* Debug("\t k = %d kp = %d\n",k,kp);*/
 					CoefOrbitals[k][kp] = c*BasisBySym[numsym].Basis[n].signe[ic]; 
@@ -1562,11 +1563,8 @@ void apply_orbs(GtkWidget *button,gpointer data)
 			NormaliseAllBasis();
 			/* PrintAllBasis();*/
 			type = 0;
-			if(strstr(listorb[numorb].orbtypes[numprog],"NATURAL ORBITALS"))
-				type = 1;
-			else
-			if(strstr(listorb[numorb].orbtypes[numprog],"Natural orbitals"))
-				type = 2;
+			if(strstr(listorb[numorb].orbtypes[numprog],"NATURAL ORBITALS")) type = 1;
+			else if(strstr(listorb[numorb].orbtypes[numprog],"Natural orbitals")) type = 2;
 					
 			newpos = read_orbitals_from_a_molpro_output_file(FileName,OrbitalsBySym,&maxsym,listorb[numorb].orbpos[numprog],type);
 			/* PrintMolproOrbitals(OrbitalsBySym,maxsym);*/
@@ -1585,6 +1583,7 @@ void apply_orbs(GtkWidget *button,gpointer data)
 			{
 				define_standard_orbitlas_from_molpro_orbitals(BasisBySym,OrbitalsBySym,maxsym,0);
 			}
+			NOrb = NAOrb;
 
 			if(NAlphaOrb>0 || NBetaOrb>0)
 			{

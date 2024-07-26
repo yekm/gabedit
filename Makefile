@@ -16,6 +16,7 @@ MULTIGRID  = src/MultiGrid/*.o
 NETWORK    = src/NetWork/*.o
 OPENGL     = src/Display/*.o
 FIREFLY   = src/FireFly/*.o
+NWCHEM    = src/NWChem/*.o
 ORCA      = src/Orca/*.o
 QCHEM      = src/QChem/*.o
 SEMIEMP    = src/SemiEmpirical/*.o
@@ -28,13 +29,13 @@ IDC   = src/IsotopeDistribution/*.o
 OBJECTS = \
 	$(COMMON) $(CURVE) $(FILES) $(GAMESS) $(GAUSS) $(GEOM) $(MODELS) \
 	$(MOLCAS) $(MOLPRO) $(MOPAC) $(MPQC) $(MULTIGRID) $(NETWORK) \
-	$(OPENGL) $(FIREFLY) $(ORCA) $(QCHEM) $(SEMIEMP) $(UTILS) \
+	$(OPENGL) $(FIREFLY) $(NWCHEM) $(ORCA) $(QCHEM) $(SEMIEMP) $(UTILS) \
 	$(SYMMETRY) $(VIBCORR) $(IDC)
 
 SUBDIRS = \
 	src/Display src/Common src/Files src/Gaussian \
  	src/Geometry src/Spectrum src/MolecularMechanics src/Molpro src/Molcas \
-	src/MPQC src/Gamess src/Orca src/QChem src/Mopac src/NetWork src/Utils \
+	src/MPQC src/Gamess src/NWChem src/Orca src/QChem src/Mopac src/NetWork src/Utils \
 	src/Symmetry src/FireFly src/MultiGrid src/SemiEmpirical \
 	src/VibrationalCorrections src/IsotopeDistribution
 
@@ -59,7 +60,7 @@ $(SUBDIRS):
 all: gabedit
 
 gabedit: $(SUBDIRS)
-	mkdir tmp
+	$(MKDIR) tmp
 	cp $(OBJECTS) tmp
 	$(CC) $(LDFLAGS) tmp/*.o -o gabedit $(GLTOPS) $(X11LIB) $(GTKLIB) $(OGLLIB) $(JPEGLIB) $(LIBPTHREAD) $(WIN32LIB) $(OMPLIB) -g
 	@$(RMTMP) > ptmp

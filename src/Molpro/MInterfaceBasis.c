@@ -388,7 +388,7 @@ gboolean ListeBasis(GtkWidget *listOfBasis,char *NomFichier)
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(listOfBasis));
         store = GTK_LIST_STORE (model);
 
-	fd = FOpen(NomFichier, "r");
+	fd = fopen(NomFichier, "r");
 	if(fd!=NULL)
 	{
 		while(!feof(fd))
@@ -623,7 +623,7 @@ gchar* get_error_message()
  gint taille = BSIZE;
  gchar t[BSIZE];
  FILE *fd;
- fd = FOpen(errfile, "r");
+ fd = fopen(errfile, "r");
  if(fd)
  {
   	while(!feof(fd))
@@ -682,7 +682,7 @@ gint create_one_liste (GtkWidget *widget, gpointer data,gboolean fromfile)
 
 	t=g_malloc(40);
  	terr = NULL;
- 	fd = FOpen(outfile, "r");
+ 	fd = fopen(outfile, "r");
  	if(fd)
  	{
  		terr=fgets(t,40,fd);
@@ -701,7 +701,7 @@ gint create_one_liste (GtkWidget *widget, gpointer data,gboolean fromfile)
  	else
     		OK = 0;
 	
- 	fd = FOpen(outfile, "r");
+ 	fd = fopen(outfile, "r");
  	if(fd)
  	{
  		fclose(fd);

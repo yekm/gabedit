@@ -23,6 +23,8 @@ void resetBeginNegative();
 gdouble getScaleBall();
 gdouble getScaleStick();
 gboolean getShowOneSurface();
+gboolean getShowCell();
+void setShowCell(gboolean c);
 void setScaleBall(gdouble a);
 void setScaleStick(gdouble a);
 void setShowOneSurface(gboolean a);

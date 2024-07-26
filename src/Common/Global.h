@@ -38,6 +38,7 @@ DEALINGS IN THE SOFTWARE.
 #define PROG_IS_ORCA  GABEDIT_TYPENODE_ORCA
 #define PROG_IS_FIREFLY  GABEDIT_TYPENODE_FIREFLY
 #define PROG_IS_QCHEM  GABEDIT_TYPENODE_QCHEM
+#define PROG_IS_NWCHEM  GABEDIT_TYPENODE_NWCHEM
 #define PROG_IS_MOPAC  GABEDIT_TYPENODE_MOPAC
 #define PROG_IS_OTHER -1
 
@@ -50,7 +51,7 @@ DEALINGS IN THE SOFTWARE.
 
 #define MAJOR_VERSION    2
 #define MINOR_VERSION    3
-#define MICRO_VERSION    5
+#define MICRO_VERSION    9
 
 /**** Structures *********/
 typedef struct _FileOpen
@@ -155,6 +156,7 @@ typedef struct _CommandsBatch
   gchar *NameCommandFireFly;
   gchar *NameCommandQChem;
   gchar *NameCommandOrca;
+  gchar *NameCommandNWChem;
   gchar *NameCommandMopac;
   gchar *NameCommandPovray;
   gint ScreenWidth;
@@ -178,6 +180,7 @@ typedef struct _CommandsBatch
   gchar* gamessDirectory;
   gchar* fireflyDirectory;
   gchar* orcaDirectory;
+  gchar* nwchemDirectory;
   gchar* mopacDirectory;
   gchar* gaussDirectory;
   gchar* povrayDirectory;
@@ -187,6 +190,7 @@ typedef struct _CommandsBatch
   CommandsList molproCommands;
   CommandsList mpqcCommands;
   CommandsList orcaCommands;
+  CommandsList nwchemCommands;
   CommandsList fireflyCommands;
   CommandsList qchemCommands;
   CommandsList mopacCommands;

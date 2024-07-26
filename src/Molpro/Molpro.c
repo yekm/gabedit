@@ -76,7 +76,7 @@ static void GetInfoMemory()
 static void insert_gth_option(gchar *type,gchar *def, const gchar *value,gchar *Commentaire)
 {
         gchar *chaine;
-        chaine=g_strdup_printf("Gthresh,%s=%s;\t\t\t!%s\n",type,value,Commentaire);
+        chaine=g_strdup_printf("Gthresh,%s=%s;   !%s\n",type,value,Commentaire);
         if(strcmp(def,value))
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,chaine,-1);
         g_free(chaine);
@@ -143,7 +143,7 @@ static int TestButtonActive(GtkWidget *button)
 static void insert_gprint_option(gchar *Type,gchar *Commentaire)
 {
         gchar *chaine;
-        chaine=g_strdup_printf("Gprint,%s;\t\t\t\t! %s\n",Type,Commentaire);
+        chaine=g_strdup_printf("Gprint,%s;    ! %s\n",Type,Commentaire);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,chaine,-1);
 }
 /************************************************************************************************************/
@@ -346,10 +346,10 @@ static void GetInfoXYZ(const gchar *SymEntry, const gchar *OptEntry)
         if(VariablesXYZ[i].Used)
  	 {
           if(Units==1)
-  		line=g_strdup_printf("%s\t=\t%s;\n",
+  		line=g_strdup_printf("%s=%s;\n",
 			VariablesXYZ[i].Name,VariablesXYZ[i].Value);
              else
-  		line=g_strdup_printf("%s\t=\t%s;\n",
+  		line=g_strdup_printf("%s=%s;\n",
 			VariablesXYZ[i].Name,bohr_to_ang(VariablesXYZ[i].Value));
 
           gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,line,-1);
@@ -387,7 +387,7 @@ static void GetInfoXYZ(const gchar *SymEntry, const gchar *OptEntry)
 	for(i=0;i<(guint)NcentersXYZ;i++)
         {
             if(Units==1)
-  	    line=g_strdup_printf("%s,\t%s,\t%s,\t%s",GeomXYZ[i].Symb,
+  	    line=g_strdup_printf("%s, %s,  %s,  %s",GeomXYZ[i].Symb,
                                 GeomXYZ[i].X,GeomXYZ[i].Y,GeomXYZ[i].Z);
             else
             {
@@ -401,7 +401,7 @@ static void GetInfoXYZ(const gchar *SymEntry, const gchar *OptEntry)
              if(test(GeomXYZ[i].Z))
              	Zstr =g_strdup(bohr_to_ang(GeomXYZ[i].Z));
                     
-  	    line=g_strdup_printf("%s,\t%s,\t%s,\t%s",GeomXYZ[i].Symb,
+  	    line=g_strdup_printf("%s,  %s,  %s,  %s",GeomXYZ[i].Symb,
                               Xstr,Ystr,Zstr);
             
             }
@@ -483,11 +483,11 @@ static void GetInfoZmatrix(const gchar *SymEntry, const gchar *OptEntry)
         {
   		line=g_strdup_printf("%s",Geom[i].Symb);
         if(Geom[i].Nentry>NUMBER_ENTRY_0)
-  		line=g_strdup_printf("%s,\t%s,\t%s",line,Geom[i].NR,Geom[i].R);
+  		line=g_strdup_printf("%s, %s, %s",line,Geom[i].NR,Geom[i].R);
         if(Geom[i].Nentry>NUMBER_ENTRY_R)
-  		line=g_strdup_printf("%s,\t%s,\t%s",line,Geom[i].NAngle,Geom[i].Angle);
+  		line=g_strdup_printf("%s, %s, %s",line,Geom[i].NAngle,Geom[i].Angle);
         if(Geom[i].Nentry>NUMBER_ENTRY_ANGLE)
-  		line=g_strdup_printf("%s,\t%s,\t%s",line,Geom[i].NDihedral,Geom[i].Dihedral);
+  		line=g_strdup_printf("%s, %s, %s",line,Geom[i].NDihedral,Geom[i].Dihedral);
 
 		line=g_strdup_printf("%s;\n",line);
  	prop = prop_atom_get(Geom[i].Symb);
@@ -573,6 +573,7 @@ static void GetInfoComm()
         if(iinsert) gabedit_text_set_point(GABEDIT_TEXT(text),nchar);
         CommText=  gabedit_text_get_chars(comm->TextComm, 0, -1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, CommText,-1);
+	if(strstr( CommText,"{")) gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "}\n",-1);
         g_free(CommText);
         if(iinsert) gabedit_text_set_point(GABEDIT_TEXT(text),0);
 }
