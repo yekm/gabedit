@@ -1,0 +1,53 @@
+/**********************************************************************************************************
+Copyright (c) 2002 Abdul-Rahman Allouche. All rights reserved
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
+and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all copies or substantial portions
+  of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+************************************************************************************************************/
+
+#ifndef __GABEDIT_GEOMXYZ_H__
+#define __GABEDIT_GEOMXYZ_H__
+
+void create_geomXYZ_list(GtkWidget *, GabEditTypeFileGeom readfile);
+void create_variablesXYZ_list(GtkWidget *,guint);
+void create_babel_read_dialogue();
+void read_XYZ_file_no_add_list(G_CONST_RETURN  gchar *);
+void read_mol2_tinker_file_no_add_list(gchar *NomFichier,gchar*type);
+void read_pdb_file_no_add_list(gchar *NomFichier);
+void read_hin_file_no_add_list(gchar *NomFichier);
+void read_XYZ_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile );
+void read_XYZ_from_mpqc_input_file(gchar *NomFichier );
+void read_geom_conv_from_dalton_output_file(gchar *NomFichier, gint numgeometry);
+void read_geom_from_molden_geom_conv_file(gchar *fileName, gint numgeometry);
+void read_geom_from_gabedit_geom_conv_file(gchar *fileName, gint numgeometry);
+void read_geom_from_gaussian_file(gchar *NomFichier, gint numgeometry);
+void read_geom_from_mpqc_output_file(gchar *fileName, gint numGeometry);
+void read_geom_from_molpro_file(gchar *NomFichier, gint numgeometry);
+void read_geom_from_xyz_file(gchar *fileName, gint numGeom);
+void read_XYZ_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile);
+void create_GeomXYZ_from_draw_grometry();
+void freeGeomXYZ();
+void freeVariablesXYZ();
+void FreeGeomXYZ(GeomXYZAtomDef* GeomXYZtemp, VariablesXYZDef* VariablesXYZtemp, gint Ncent, gint Nvar);
+void selc_XYZ_file(guint itype);
+void create_babel_save_dialogue();
+void save_geometry_xyz_file(GabeditFileChooser *SelecFile, gint response_id);
+void save_geometry_mol2_file(GabeditFileChooser *SelecFile, gint response_id);
+void save_geometry_tinker_file(GabeditFileChooser *SelecFile, gint response_id);
+void save_geometry_pdb_file(GabeditFileChooser *SelecFile, gint response_id);
+void save_geometry_hin_file(GabeditFileChooser *SelecFile, gint response_id);
+void save_xyz_file_no_add_list(const gchar* FileName);
+
+#endif /* __GABEDIT_GEOMXYZ_H__ */
+
