@@ -21,4 +21,5 @@ DEALINGS IN THE SOFTWARE.
 void determinePrincipalAxis(MolSymMolecule* mol,gdouble* centerOfGravity, int* numberOfEquivalentAxes, 
 		gdouble* inertialMoment, gdouble axes[3][3], gdouble principalAxisTolerance, gboolean sorting);
 
+
 #endif /* __GABEDIT_PRINCIPALAXIS_H__ */

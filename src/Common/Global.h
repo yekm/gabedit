@@ -52,7 +52,7 @@ DEALINGS IN THE SOFTWARE.
 
 #define MAJOR_VERSION    2
 #define MINOR_VERSION    4
-#define MICRO_VERSION    6
+#define MICRO_VERSION    7
 
 /**** Structures *********/
 typedef struct _FileOpen

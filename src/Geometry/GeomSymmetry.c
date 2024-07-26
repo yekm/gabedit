@@ -1,4 +1,4 @@
-/* Symmetry.c */
+/* GeomSymmetry.c */
 /**********************************************************************************************************
 Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 

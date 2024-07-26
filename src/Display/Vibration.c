@@ -3819,18 +3819,22 @@ static gboolean read_qchem_file_frequencies(gchar *FileName)
 					break;
 				}
 			}
+			RamanIntensity[0] = 0;
+			RamanIntensity[1] = 0;
+			RamanIntensity[2] = 0;
 			while(!feof(fd))
 			{
     				{ char* e = fgets(t,taille,fd);}
 				if(strstr(t,"IR Intens:"))
 				{
 					sscanf(t,"%s %s %lf %lf %lf", sdum1,sdum2, &IRIntensity[0],&IRIntensity[1],&IRIntensity[2]);
-					break;
 				}
+				if(strstr(t,"Raman Intens"))
+				{
+					sscanf(t,"%s %s %lf %lf %lf", sdum1,sdum2, &RamanIntensity[0],&RamanIntensity[1],&RamanIntensity[2]);
+				}
+				if(strstr(t,"X      Y      Z")) break;
 			}
-			RamanIntensity[0] = 0;
-			RamanIntensity[1] = 0;
-			RamanIntensity[2] = 0;
 			if(!strstr(t,"X      Y      Z"))
 			while(!feof(fd))
 			{

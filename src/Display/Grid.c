@@ -3033,7 +3033,92 @@ gboolean compute_transition_matrix_numeric(gint N[],GridLimits limits, gint type
 	return TRUE;
 }
 /******************************************************************************************************************/
-gboolean compute_spatial_overlap_numeric(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
+gboolean compute_spatial_overlapij_numeric(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
+		gdouble* pInteg, gdouble* pNormi, gdouble* pNormj, gdouble* pOverlap)
+{
+	Grid *gridi = NULL;
+	Grid *gridj = NULL;
+	gint ki,li,mi;
+	gdouble scale;
+	gdouble normi = 0;
+	gdouble normj = 0;
+	gdouble overlap = 0;
+	gdouble xx,yy,zz;
+	gdouble dv = 0;
+
+	*pInteg = 0;
+	*pNormi = -1;
+	*pNormj = -1;
+	*pOverlap = -1;
+
+	gridi = define_grid_orb(N, limits, typeOrbi,  i);
+	if(!gridi) return FALSE;
+	gridj = 0;
+	gridj = define_grid_orb(N, limits, typeOrbj,  j);
+	if(!gridj) return FALSE;
+	set_status_label_info(_("Grid"),_("Comp. |phi_i*phi_j|"));
+	scale = (gdouble)1.01/gridi->N[0];
+	for(ki=0;ki<gridi->N[0];ki++)
+	{
+		for(li=0;li<gridi->N[1];li++)
+		{
+			for(mi=0;mi<gridi->N[2];mi++)
+			{
+				overlap +=  gridi->point[ki][li][mi].C[3]*gridj->point[ki][li][mi].C[3];
+				normi += gridi->point[ki][li][mi].C[3]*gridi->point[ki][li][mi].C[3];
+				normj += gridj->point[ki][li][mi].C[3]*gridj->point[ki][li][mi].C[3];
+				gridi->point[ki][li][mi].C[3] = fabs(gridi->point[ki][li][mi].C[3]* gridj->point[ki][li][mi].C[3]);
+			}
+		}
+		if(CancelCalcul) 
+		{
+			progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+			break;
+		}
+		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
+	}
+	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+	if(CancelCalcul) 
+	{
+		free_grid(gridi);
+		free_grid(gridj);
+		return FALSE;
+	}
+	set_status_label_info(_("Grid"),_("Computing of < |i| | |j| >."));
+	scale = (gdouble)1.01/gridi->N[0];
+	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+	for(ki=0;ki<gridi->N[0];ki++)
+	{
+		for(li=0;li<gridi->N[1];li++)
+		for(mi=0;mi<gridi->N[2];mi++)
+		{
+			*pInteg += gridi->point[ki][li][mi].C[3];
+		}
+		if(CancelCalcul) 
+		{
+			progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+			break;
+		}
+		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
+	}
+	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+	xx = gridi->point[1][0][0].C[0]-gridi->point[0][0][0].C[0];
+	yy = gridi->point[0][1][0].C[1]-gridi->point[0][0][0].C[1];
+	zz = gridi->point[0][0][1].C[2]-gridi->point[0][0][0].C[2];
+	dv = fabs(xx*yy*zz);
+	free_grid(gridi);
+	free_grid(gridj);
+	if(CancelCalcul) return FALSE;
+
+	*pInteg *= dv;
+	*pNormi = normi*dv;
+	*pNormj = normj*dv;
+	*pOverlap = overlap*dv;
+	
+	return TRUE;
+}
+/******************************************************************************************************************/
+gboolean compute_spatial_overlapiijj_numeric(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
 		gdouble* pInteg, gdouble* pNormi, gdouble* pNormj, gdouble* pOverlap)
 {
 	Grid *gridi = NULL;

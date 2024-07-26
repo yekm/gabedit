@@ -931,7 +931,8 @@ long int read_orbitals_from_a_molpro_output_file(gchar *FileName,TypeOrbitalsByS
 			  	strstr(t,"Natural orbitals saved") || 
 				strstr(t,"ELECTRON ORBITALS FOR NEGATIVE SPIN") ||
 			  	strstr(t,"EXPECTATION VALUE OF S") || 
-			  	strstr(t,"EXTRA SYMMETRY") 
+			  	strstr(t,"EXTRA SYMMETRY") ||
+			  	strstr(t,"RECORD") 
 			)
 			{
 				/* Debug("t = \n",t); */
@@ -951,7 +952,8 @@ long int read_orbitals_from_a_molpro_output_file(gchar *FileName,TypeOrbitalsByS
 			  	strstr(t,"Natural orbitals saved") || 
 				strstr(t,"ELECTRON ORBITALS FOR NEGATIVE SPIN") ||
 			  	strstr(t,"EXPECTATION VALUE OF S") || 
-			  	strstr(t,"EXTRA SYMMETRY") 
+			  	strstr(t,"EXTRA SYMMETRY") ||
+			  	strstr(t,"RECORD") 
 			)
 			{
 				/* Debug("t = \n",t); */

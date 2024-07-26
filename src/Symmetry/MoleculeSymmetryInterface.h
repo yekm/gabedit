@@ -19,6 +19,7 @@ DEALINGS IN THE SOFTWARE.
 #define __GABEDIT_MOLECULESYMMETRYINTERFACE_H__
 
 void createGeometrySymmetryWindow(gint numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z, gchar* groupeSymbol);
+void createGeometrySymmetrizationWindow(gint numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z, gchar* groupeSymbol);
 GtkWidget* createGeometryAbelianGroupWindow(gint numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z, gchar* pointGroupSymbol, 
 		gchar* abelianPointGroupSymbol);
 void createToleranceWindow(GtkWidget* win, GabeditSignalFunc myFunc);

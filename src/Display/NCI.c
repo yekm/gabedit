@@ -32,6 +32,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
 #include "../Display/Grid.h"
+#include "../Display/Orbitals.h"
 
 /*********************************************************************************************************************************/
 static gint compute_nci2D_from_density_grid(Grid* grid, gdouble densityCutOff, gdouble RDGCutOff, gint nBoundary, gdouble**pX, gdouble**pY)

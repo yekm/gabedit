@@ -77,7 +77,7 @@ ResultsAnalise.o: ResultsAnalise.c ../../Config.h ../Common/Global.h \
   ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \
   ../Utils/Utils.h ../Utils/Constants.h ../Geometry/ResultsAnalise.h \
   ../Geometry/EnergiesCurves.h ../Common/Run.h ../Display/ViewOrb.h
-Symmetry.o: Symmetry.c ../../Config.h ../Common/Global.h \
+GeomSymmetry.o: GeomSymmetry.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \
   ../Utils/Utils.h ../Utils/Constants.h ../Utils/AtomsProp.h \
@@ -209,18 +209,18 @@ MenuToolBarGeom.o: MenuToolBarGeom.c ../../Config.h ../Common/Global.h \
   ../MolecularMechanics/SetMMParameters.h \
   ../MolecularMechanics/SetPDBTemplate.h \
   ../SemiEmpirical/SemiEmpiricalDlg.h ../Geometry/GeomXYZ.h \
-  ../Geometry/GeomZmatrix.h ../Geometry/Symmetry.h ../Files/FileChooser.h \
-  ../Geometry/ImagesGeom.h ../Geometry/RotFragments.h \
-  ../Geometry/BuildLinear.h ../Geometry/BuildRing.h \
-  ../Geometry/BuildRoZPhi.h ../Geometry/BuildPolyPeptide.h \
-  ../Geometry/BuildPolySaccharide.h ../Geometry/BuildPolyNucleicAcid.h \
-  ../Geometry/BuildNanoTube.h ../Geometry/PersonalFragments.h \
-  ../Geometry/ResultsAnalise.h ../Geometry/GeomConversion.h \
-  ../Geometry/MenuToolBarGeom.h ../Geometry/OpenBabel.h \
-  ../Geometry/FragmentsSelector.h ../Geometry/ExportGeom.h \
-  ../Utils/HydrogenBond.h ../Symmetry/MoleculeSymmetryInterface.h \
-  ../Common/StockIcons.h ../Geometry/AxesGeomGL.h \
-  ../Geometry/SelectionDlg.h
+  ../Geometry/GeomZmatrix.h ../Geometry/GeomSymmetry.h \
+  ../Files/FileChooser.h ../Geometry/ImagesGeom.h \
+  ../Geometry/RotFragments.h ../Geometry/BuildLinear.h \
+  ../Geometry/BuildRing.h ../Geometry/BuildRoZPhi.h \
+  ../Geometry/BuildPolyPeptide.h ../Geometry/BuildPolySaccharide.h \
+  ../Geometry/BuildPolyNucleicAcid.h ../Geometry/BuildNanoTube.h \
+  ../Geometry/PersonalFragments.h ../Geometry/ResultsAnalise.h \
+  ../Geometry/GeomConversion.h ../Geometry/MenuToolBarGeom.h \
+  ../Geometry/OpenBabel.h ../Geometry/FragmentsSelector.h \
+  ../Geometry/ExportGeom.h ../Utils/HydrogenBond.h \
+  ../Symmetry/MoleculeSymmetryInterface.h ../Common/StockIcons.h \
+  ../Geometry/AxesGeomGL.h ../Geometry/SelectionDlg.h
 PreviewGeom.o: PreviewGeom.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/Constants.h \
@@ -228,12 +228,12 @@ PreviewGeom.o: PreviewGeom.c ../../Config.h ../Common/Global.h \
   ../Utils/PovrayUtils.h ../Utils/AtomsProp.h ../Geometry/GeomGlobal.h \
   ../Geometry/Measure.h ../Geometry/Povray.h ../Common/Windows.h \
   ../Utils/Transformation.h ../Geometry/GeomXYZ.h \
-  ../Geometry/GeomZmatrix.h ../Geometry/Symmetry.h ../Files/FileChooser.h \
-  ../Geometry/ImagesGeom.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
-  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
-  ../Geometry/RotFragments.h ../Geometry/GeomConversion.h \
-  ../Geometry/ResultsAnalise.h ../Utils/HydrogenBond.h \
-  ../MolecularMechanics/PDBTemplate.h \
+  ../Geometry/GeomZmatrix.h ../Geometry/GeomSymmetry.h \
+  ../Files/FileChooser.h ../Geometry/ImagesGeom.h ../Geometry/Fragments.h \
+  ../Geometry/DrawGeom.h ../Geometry/DrawGeomCairo.h \
+  ../Geometry/Fragments.h ../Geometry/RotFragments.h \
+  ../Geometry/GeomConversion.h ../Geometry/ResultsAnalise.h \
+  ../Utils/HydrogenBond.h ../MolecularMechanics/PDBTemplate.h \
   ../MolecularMechanics/CalculTypesAmber.h \
   ../Symmetry/MoleculeSymmetryInterface.h ../Utils/Jacobi.h \
   ../Utils/Vector3d.h ../Utils/GabeditTextEdit.h \
@@ -271,8 +271,8 @@ DrawGeomCairo.o: DrawGeomCairo.c ../../Config.h ../Common/Global.h \
   ../Utils/PovrayUtils.h ../Utils/AtomsProp.h ../Geometry/GeomGlobal.h \
   ../Geometry/Measure.h ../Geometry/Povray.h ../Common/Windows.h \
   ../Utils/Transformation.h ../Geometry/GeomXYZ.h \
-  ../Geometry/GeomZmatrix.h ../Geometry/Symmetry.h ../Files/FileChooser.h \
-  ../Geometry/ImagesGeom.h ../Geometry/Fragments.h \
+  ../Geometry/GeomZmatrix.h ../Geometry/GeomSymmetry.h \
+  ../Files/FileChooser.h ../Geometry/ImagesGeom.h ../Geometry/Fragments.h \
   ../Geometry/FragmentsPPD.h ../Geometry/DrawGeom.h \
   ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
   ../Geometry/RotFragments.h ../Geometry/GeomConversion.h \

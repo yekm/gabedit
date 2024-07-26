@@ -18,10 +18,6 @@ DEALINGS IN THE SOFTWARE.
 #ifndef __GABEDIT_MOLECULESYMMETRY_H__
 #define __GABEDIT_MOLECULESYMMETRY_H__
 
-int computeSymmetry(
-		gdouble principalAxisToterance, gboolean axz_3, gchar* pointGroupeSymbol,
-		gint maximalOrder, gboolean redu,
-	       	gint* numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z, gdouble* eps, gchar* message);
 int computeAbelianGroup(
 		gdouble principalAxisTolerance, gchar* pointGroupSymbol, gchar* abelianPointGroupSymbol,
 		gint maximalOrder, gboolean redu,
@@ -40,6 +36,22 @@ int generateMoleculeUsingAbelianGroup(
 		gchar*** symbols, gdouble** X, gdouble** Y, gdouble** Z
 		);
 void buildStandardOrientation(gint numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z);
+
+int computeAndSymmetrize(gdouble principalAxisTolerance, gboolean axz_3, gchar* pointGroupSymbol,gint maximalOrder,
+	       	gint* numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z,  gdouble* precision, gchar* message);
+
+int computeSymmetry(
+		gdouble principalAxisTolerance, gchar* pointGroupSymbol,
+		gint maximalOrder, gboolean redu,
+	       	gint* numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z,  gdouble* precision, gchar* message);
+int computeSymmetryOld(
+		gdouble principalAxisTolerance, gboolean axz_3, gchar* pointGroupSymbol,
+		gint maximalOrder, gboolean redu,
+	       	gint* numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z,  gdouble* precision, gchar* message);
+int computeSymmetrization(
+		gdouble principalAxisTolerance, gchar* pointGroupSymbol,
+		gint maximalOrder,
+	       	gint* numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z,  gdouble* precision, gchar* message);
 
 #endif /* __GABEDIT_MOLECULESYMMETRY_H__ */
 

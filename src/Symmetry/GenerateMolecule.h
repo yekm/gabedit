@@ -20,6 +20,9 @@ DEALINGS IN THE SOFTWARE.
 #define __GABEDIT_GENERATEMOLECULE_H__
 
 void generateMoleculeFromTheBasisSetOfAtoms(MolSymMolecule* mol, gint numberOfElements, gchar** elements);
+void generateForTetraedalSymmetry(MolSymMolecule *mol,gint sym, gdouble axes[3][3]);
+void generateForOctaedralSymmetry(MolSymMolecule *mol,gint sym, gdouble axes[3][3]);
+void generateForIcosaedralSymmetry(MolSymMolecule *mol,gint sym, gdouble axes[3][3]);
 
 #endif /* __GABEDIT_GENERATEMOLECULE_H__ */
 

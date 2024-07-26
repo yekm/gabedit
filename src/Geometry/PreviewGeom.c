@@ -36,7 +36,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Transformation.h"
 #include "../Geometry/GeomXYZ.h"
 #include "../Geometry/GeomZmatrix.h"
-#include "../Geometry/Symmetry.h"
+#include "../Geometry/GeomSymmetry.h"
 #include "../Files/FileChooser.h"
 #include "../Geometry/ImagesGeom.h"
 #include "../Geometry/Fragments.h"

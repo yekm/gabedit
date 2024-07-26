@@ -1,3 +1,27 @@
+24 July 2013
+	Gabedit can now calculate the lambda diagnostic for CT (see Peach et al. J. Chem. Phys. 128, 044118 (2008))
+
+18 July 2013
+	Gabedit can now symmetrize a molecule (see Largent, RJ, Polik, WF, Schmidt, JR, J. Comput Chem. 33 (2012) 1637-1642)
+
+08 July 2013
+	new parsers to read : 
+		UV-Visible spectrum from a Gamess unrestricted TDDFT calculation
+		Raman spectrum from a QChem output file
+		Anharmonic IR spectrum(VT2) from a Gaussian (D01) output file
+		Anharmonic IR spectrum(VSCF, VSCF-PT2) from a Gamess output file
+
+02 May 2013
+	bug fixed : analytical gradient for PairWize potential with OMP
+
+02 April 2013
+	bug fixed : set distance, angle, dihedral in DragGeomCairo bug fixed
+	bug fixed : analytical gradient for PairWize potential 
+
+05 March 2013
+	bug fixed : read geometries convergence with non scf method from a molpro log files
+	New DFT functionals in Gaussian interface
+
 16 September 2012
 	bug fixed : read personal fragment under windows
 

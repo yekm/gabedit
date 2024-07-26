@@ -1,4 +1,4 @@
-OBJECTS = MoleculeSymmetry.o MoleculeSymmetryInterface.o PolyHedralOperators.o ReducePolyHedralMolecule.o PrincipalAxis.o ReduceMolecule.o SymmetryOperators.o GenerateMolecule.o
+OBJECTS = MoleculeSymmetry.o MoleculeSymmetryInterface.o PolyHedralOperators.o ReducePolyHedralMolecule.o PrincipalAxis.o ReduceMolecule.o SymmetryOperators.o GenerateMolecule.o Element.o SAtom.o SMolecule.o Elements.o SOperation.o SOperations.o HashMapSAtoms.o PointGroup.o PointGroups.o Symmetry.o
 
 include ../../CONFIG
 CFLAGS =  $(COMMONCFLAGS) $(GTKCFLAGS)

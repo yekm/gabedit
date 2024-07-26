@@ -97,3 +97,6 @@ TTables.o: TTables.c ../../Config.h ../Common/Global.h \
 Interpolation.o: Interpolation.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h
+Point3D.o: Point3D.c ../../Config.h ../Common/Global.h \
+  ../Common/../Files/GabeditFileChooser.h \
+  ../Common/../Common/GabeditType.h ../Utils/Point3D.h

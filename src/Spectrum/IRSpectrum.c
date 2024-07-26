@@ -640,6 +640,93 @@ static void read_gamess_file_dlg()
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
 /********************************************************************************/
+static gboolean read_gamess_anharmonic_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+ 	gchar t[BSIZE];
+ 	gchar sdum1[BSIZE];
+ 	gchar sdum2[BSIZE];
+ 	gchar sdum3[BSIZE];
+ 	gboolean OK;
+	gint nf;
+	gint i;
+	gdouble freq[3] = {0,0,0};
+	gdouble IRIntensity[3] = {0,0,0};
+	gint numberOfFrequencies = 0;
+	gdouble* frequencies = NULL;
+	gdouble* intensities = NULL;
+	gchar *FileName;
+ 	FILE *fd;
+	gchar** allreals = NULL;
+
+	if(response_id != GTK_RESPONSE_OK) return FALSE;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+
+ 	fd = FOpen(FileName, "rb");
+	if(!fd) return FALSE;
+
+ 	do 
+ 	{
+ 		OK=FALSE;
+ 		while(!feof(fd))
+		{
+    			if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}
+	 		/* if ( strstr( t,"reduced masses") )*/
+	 		if ( strstr( t,"IR INTENSITIES ARE CALCULATED USING DIPOLE MOMENTS") )
+	  		{
+    				if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}/* MODE   FREQUENCY, CM-1  INTENSITY, KM/MOL */
+				OK = TRUE;
+				numberOfFrequencies = 0;
+				break;
+	  		}
+		}
+  		while(!feof(fd) )
+  		{
+			gint k;
+    			if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}
+			if(strstr(t,"FINISHED")) break;
+			if(this_is_a_backspace(t)) break;
+ 			allreals =gab_split (t);
+			k = 0;
+			while(allreals && allreals[k]) k++;
+			if(k==3)
+			{
+				numberOfFrequencies++;
+				frequencies = g_realloc(frequencies, numberOfFrequencies*sizeof(gdouble));
+				intensities = g_realloc(intensities, numberOfFrequencies*sizeof(gdouble));
+				frequencies[numberOfFrequencies-1] = atof(allreals[1]);
+				intensities[numberOfFrequencies-1] = atof(allreals[2]);
+			}
+			g_strfreev(allreals);
+			allreals = NULL;
+		}
+ 	}while(!feof(fd));
+
+	if(numberOfFrequencies>0)
+	{
+		createIRSpectrumWin(numberOfFrequencies, frequencies, intensities);
+	}
+	else
+	{
+		messageErrorFreq(FileName);
+	}
+
+
+	if(frequencies) g_free(frequencies);
+	if(intensities) g_free(intensities);
+	fclose(fd);
+	return TRUE;
+}
+/********************************************************************************/
+static void read_gamess_anharmonic_file_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_gamess_anharmonic_file,
+			_("Read last Anharmonic Infrared spectrum from a GAMESS output file"),
+			GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_OTHER);
+
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+}
+/********************************************************************************/
 static gboolean read_gaussian_file(GabeditFileChooser *SelecFile, gint response_id)
 {
  	gchar t[BSIZE];
@@ -726,6 +813,149 @@ static void read_gaussian_file_dlg()
 	GtkWidget* filesel = 
  	file_chooser_open(read_gaussian_file,
 			_("Read last frequencies and intensities from a Gaussian output file"),
+			GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_OTHER);
+
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+}
+/********************************************************************************/
+static gboolean read_gaussian_anharmonic_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+ 	gchar t[BSIZE];
+ 	gchar sdum1[BSIZE];
+ 	gchar sdum2[BSIZE];
+ 	gchar sdum3[BSIZE];
+ 	gboolean OK;
+	gint nf;
+	gint i;
+	gdouble freq[3] = {0,0,0};
+	gdouble IRIntensity[3] = {0,0,0};
+	gint numberOfFrequencies = 0;
+	gdouble* frequencies = NULL;
+	gdouble* intensities = NULL;
+	gchar *FileName;
+ 	FILE *fd;
+	gchar** allreals = NULL;
+
+	if(response_id != GTK_RESPONSE_OK) return FALSE;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+
+ 	fd = FOpen(FileName, "rb");
+	if(!fd) return FALSE;
+
+ 	do 
+ 	{
+ 		OK=FALSE;
+ 		while(!feof(fd))
+		{
+    			if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}
+	 		/* if ( strstr( t,"reduced masses") )*/
+	 		if ( strstr( t,"Anharmonic Infrared Spectroscopy") )
+	  		{
+				OK = TRUE;
+				numberOfFrequencies = 0;
+				break;
+	  		}
+		}
+  		while(!feof(fd) )
+  		{
+			gboolean fundamental = FALSE;
+			gboolean overtones = FALSE;
+			gboolean combination = FALSE;
+ 			while(!feof(fd))
+			{
+    				if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}
+	 			/* if ( strstr( t,"reduced masses") )*/
+	 			if ( strstr( t,"Fundamental Bands") )
+	  			{
+					fundamental = TRUE;
+					overtones = FALSE;
+					combination = FALSE;
+    					if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}/* ----- */
+    					if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);} /* Mode(Quanta) */
+					break;
+	  			}
+	 			if ( strstr( t,"Overtones") )
+	  			{
+					fundamental = FALSE;
+					overtones = TRUE;
+					combination = FALSE;
+    					if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}
+    					if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}
+					break;
+	  			}
+	 			if ( strstr( t,"Combination Bands") )
+	  			{
+					fundamental = FALSE;
+					overtones = FALSE;
+					combination = TRUE;
+    					if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}
+    					if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}
+					break;
+	  			}
+			}
+
+ 			while(!feof(fd))
+			{
+				gint k;
+    				if(!feof(fd)) { char* e = fgets(t,BSIZE,fd);}
+				if(strstr(t,"Leave")) break;
+				if(this_is_a_backspace(t)) break;
+ 				allreals =gab_split (t);
+				k = 0;
+				while(allreals && allreals[k]) k++;
+				if(k==5 && fundamental)
+				{
+					numberOfFrequencies++;
+					frequencies = g_realloc(frequencies, numberOfFrequencies*sizeof(gdouble));
+					intensities = g_realloc(intensities, numberOfFrequencies*sizeof(gdouble));
+					frequencies[numberOfFrequencies-1] = atof(allreals[2]);
+					intensities[numberOfFrequencies-1] = atof(allreals[4]);
+				}
+				if(k==4 && overtones)
+				{
+					numberOfFrequencies++;
+					frequencies = g_realloc(frequencies, numberOfFrequencies*sizeof(gdouble));
+					intensities = g_realloc(intensities, numberOfFrequencies*sizeof(gdouble));
+					frequencies[numberOfFrequencies-1] = atof(allreals[2]);
+					intensities[numberOfFrequencies-1] = atof(allreals[3]);
+				}
+				if(k==5 && combination)
+				{
+					numberOfFrequencies++;
+					frequencies = g_realloc(frequencies, numberOfFrequencies*sizeof(gdouble));
+					intensities = g_realloc(intensities, numberOfFrequencies*sizeof(gdouble));
+					frequencies[numberOfFrequencies-1] = atof(allreals[3]);
+					intensities[numberOfFrequencies-1] = atof(allreals[4]);
+				}
+				g_strfreev(allreals);
+				allreals = NULL;
+			}
+			if(strstr(t,"Leave")) break;
+			if(combination) break;
+		}
+ 	}while(!feof(fd));
+
+	if(numberOfFrequencies>0)
+	{
+		createIRSpectrumWin(numberOfFrequencies, frequencies, intensities);
+	}
+	else
+	{
+		messageErrorFreq(FileName);
+	}
+
+
+	if(frequencies) g_free(frequencies);
+	if(intensities) g_free(intensities);
+	fclose(fd);
+	return TRUE;
+}
+/********************************************************************************/
+static void read_gaussian_anharmonic_file_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_gaussian_anharmonic_file,
+			_("Read last Anharmonic Infrared spectrum from a Gaussian output file"),
 			GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -1275,9 +1505,11 @@ void createIRSpectrum(GtkWidget *parentWindow, GabEditTypeFile typeOfFile)
 	if(typeOfFile==GABEDIT_TYPEFILE_MOLPRO) read_molpro_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_DALTON) read_dalton_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_GAMESS) read_gamess_file_dlg();
+	if(typeOfFile==GABEDIT_TYPEFILE_GAMESS_ANHARMONIC) read_gamess_anharmonic_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_ORCA) read_orca_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_FIREFLY) read_gamess_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_GAUSSIAN) read_gaussian_file_dlg();
+	if(typeOfFile==GABEDIT_TYPEFILE_GAUSSIAN_ANHARMONIC) read_gaussian_anharmonic_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_NWCHEM) read_nwchem_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_PSICODE) read_psicode_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_QCHEM) read_qchem_file_dlg();

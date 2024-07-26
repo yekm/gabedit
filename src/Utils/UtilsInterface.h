@@ -57,6 +57,7 @@ void new_doc_orca();
 void new_doc_qchem();
 void insert_doc_gauss();
 gchar* get_license();
+void new_psicode(GtkWidget *widget, gchar *data);
 void show_about();
 void show_version();
 void show_homepage();

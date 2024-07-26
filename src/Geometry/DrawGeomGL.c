@@ -47,7 +47,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Transformation.h"
 #include "../Geometry/GeomXYZ.h"
 #include "../Geometry/GeomZmatrix.h"
-#include "../Geometry/Symmetry.h"
+#include "../Geometry/GeomSymmetry.h"
 #include "../Files/FileChooser.h"
 #include "../Geometry/ImagesGeom.h"
 #include "../Geometry/Fragments.h"
@@ -2840,7 +2840,7 @@ static void set_xyz_to_standard_orientation(gint type)
 	j = 0;
 	for(i = 0;i<Natoms;i++)
 	{
-		if(type == 0 || (type==1 & if_selected(i))  || (type==2 & !if_selected(i)))
+		if(type == 0 || (type==1 && if_selected(i))  || (type==2 && !if_selected(i)))
 		{
 			X[j] = geometry[i].X;
 			Y[j] = geometry[i].Y;
@@ -2855,7 +2855,7 @@ static void set_xyz_to_standard_orientation(gint type)
 	j = 0;
 	for(i = 0;i<Natoms;i++)
 	{
-		if(type == 0 || (type==1 & if_selected(i))  || (type==2 & !if_selected(i)))
+		if(type == 0 || (type==1 && if_selected(i))  || (type==2 && !if_selected(i)))
 		{
 			geometry0[i].X = X[j];
 			geometry0[i].Y = Y[j];
@@ -3018,6 +3018,73 @@ void get_standard_orientation_with_reduction(GtkWidget*w, gpointer data)
 
 	for (i=0;i<(gint)Natoms;i++)
 		g_free( symbols[i]);
+	g_free( symbols);
+	g_free(X);
+	g_free(Y);
+	g_free(Z);
+	return;
+}
+/********************************************************************************/
+void get_standard_orientation_with_symmetrization(GtkWidget*w, gpointer data)
+{
+	gchar** symbols = NULL;
+	gdouble* X = NULL;
+	gdouble* Y = NULL;
+	gdouble* Z = NULL;
+	gint i;
+	gint numberOfAtoms = Natoms;
+	gchar groupeSymbol[BSIZE];
+
+	if(Natoms<1)
+	{
+		 Message(_("Sorry, the number of atoms is not positive"),_("Error"),TRUE);
+		return;
+	}
+	symbols = (gchar**)g_malloc(sizeof(gchar*)*(Natoms));
+	if(symbols == NULL) return;
+
+	X = (gdouble*)g_malloc(sizeof(gdouble)*(Natoms));
+	if(X == NULL) return;
+	Y = (gdouble*)g_malloc(sizeof(gdouble)*(Natoms));
+	if(Y == NULL) return;
+	Z = (gdouble*)g_malloc(sizeof(gdouble)*(Natoms));
+	if(Z == NULL) return;
+
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		symbols[i] = g_strdup(geometry0[i].Prop.symbol);
+		X[i] = geometry0[i].X*BOHR_TO_ANG;
+		Y[i] = geometry0[i].Y*BOHR_TO_ANG;
+		Z[i] = geometry0[i].Z*BOHR_TO_ANG;
+	}
+	createGeometrySymmetrizationWindow(numberOfAtoms,symbols,X, Y, Z, groupeSymbol);
+
+// reset geometry0
+	for(i = 0;i<numberOfAtoms;i++)
+	{
+		g_free(geometry0[i].Prop.symbol);
+		geometry0[i].Prop = prop_atom_get(symbols[i]);
+		geometry0[i].mmType = g_strdup(symbols[i]);
+		geometry0[i].pdbType = g_strdup(symbols[i]);
+		geometry0[i].Residue = g_strdup(symbols[i]);
+		geometry0[i].Charge = 0.0;
+		geometry0[i].X = X[i]/BOHR_TO_ANG;
+		geometry0[i].Y = Y[i]/BOHR_TO_ANG;
+		geometry0[i].Z = Z[i]/BOHR_TO_ANG;
+
+		g_free(geometry[i].Prop.symbol);
+		geometry[i].Prop = prop_atom_get(symbols[i]);
+		geometry[i].mmType = g_strdup(symbols[i]);
+		geometry[i].pdbType = g_strdup(symbols[i]);
+		geometry[i].Residue = g_strdup(symbols[i]);
+		geometry[i].Charge = 0.0;
+		geometry[i].X = geometry0[i].X;
+		geometry[i].Y = geometry0[i].Y;
+		geometry[i].Z = geometry0[i].Z;
+	}
+	resetConnections();
+	create_GeomXYZ_from_draw_grometry();
+	for (i=0;i<(gint)Natoms;i++) g_free( symbols[i]);
 	g_free( symbols);
 	g_free(X);
 	g_free(Y);

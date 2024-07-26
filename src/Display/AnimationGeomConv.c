@@ -1441,6 +1441,7 @@ static gboolean read_gamess_file_geomi(gchar *FileName, gint num, Geometry* geom
           		if (l==2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
 
 
+			sprintf(AtomCoord[0],get_symbol_using_z(atoi(dum)));
     			sprintf(listOfAtoms[j].symbol,"%s",AtomCoord[0]);
     			sprintf(listOfAtoms[j].mmType,"%s",AtomCoord[0]);
     			sprintf(listOfAtoms[j].pdbType,"%s",AtomCoord[0]);
@@ -1992,6 +1993,17 @@ static gboolean read_molpro_file_geomi(gchar *FileName, gint num, Geometry* geom
  		while(!feof(file))
 		{
 			{char* e = fgets(t,BSIZE,file);}
+			if (strstr(t,"Optimization point")) 
+			{
+				OK=TRUE;
+				break;
+			}
+		}
+		if(!OK) break;
+ 		OK=FALSE;
+ 		while(!feof(file))
+		{
+			{char* e = fgets(t,BSIZE,file);}
 			if ( !strcmp(t," ATOMIC COORDINATES\n"))
 			{
 				{char* e = fgets(t,BSIZE,file);}
@@ -2042,6 +2054,7 @@ static gboolean read_molpro_file_geomi(gchar *FileName, gint num, Geometry* geom
 			listOfAtoms[j].nuclearCharge = get_atomic_number_from_symbol(listOfAtoms[j].symbol);
 			listOfAtoms[j].variable = 0;
   		}
+
 		if(num >0 && (gint)numgeom-1 == num) break;
 			
  	}while(!feof(file));
@@ -2052,13 +2065,15 @@ static gboolean read_molpro_file_geomi(gchar *FileName, gint num, Geometry* geom
  	if(j+1 == 0 && listOfAtoms )
 	{
 		g_free(listOfAtoms);
+		OK = FALSE;
 	}
  	else
 	{
 		geometry->numberOfAtoms = j+1;
 		geometry->listOfAtoms = listOfAtoms;
+		OK = TRUE;
 	}
-	return TRUE;
+	return OK;
 }
 /********************************************************************************/
 static gboolean read_mpqc_file_geomi(gchar *fileName,gint numGeometry, Geometry* geometry)

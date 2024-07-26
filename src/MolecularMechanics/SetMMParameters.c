@@ -33,7 +33,7 @@ DEALINGS IN THE SOFTWARE.
 #include "MolecularMechanics.h"
 #include "../Common/StockIcons.h"
 
-#define NENTRYS 20
+#define NENTRYS 21
 typedef enum
 {
   E_S=0,
@@ -57,7 +57,6 @@ typedef enum
   E_C8  =18,
   E_C10 =19,
   E_DESC = 20,
-
 } SetEntryType;
 typedef enum
 {

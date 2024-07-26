@@ -356,10 +356,10 @@ void c_mecha_combo()
 /********************************************************************************************************/
 void  c_hybrid_combo()
 {
-  gchar *liste[9];
+  gchar *liste[35];
   int nliste = 0;
   NM=gtk_notebook_get_current_page((GtkNotebook*)NoteBookMB);
-  nliste=9;
+  nliste=35;
   liste[0]=g_strdup("B3LYP");
   liste[1]=g_strdup("B3P86");
   liste[2]=g_strdup("B3PW91");
@@ -369,34 +369,80 @@ void  c_hybrid_combo()
   liste[6]=g_strdup("G961LYP");
   liste[7]=g_strdup("BHandH");
   liste[8]=g_strdup("BHandHLYP");
+  liste[9]=g_strdup("CAM-B3LYP");
+  liste[10]=g_strdup("LC-wPBE");
+  liste[11]=g_strdup("wB97X");
+  liste[12]=g_strdup("wB97XD");
+  liste[13]=g_strdup("PBE1PBE");
+  liste[14]=g_strdup("HSEh1PBE");
+  liste[15]=g_strdup("HSE2PBE");
+  liste[16]=g_strdup("HSE1PBE");
+  liste[17]=g_strdup("PBEh1PBE");
+  liste[18]=g_strdup("O3LYP");
+  liste[19]=g_strdup("TPSSh");
+  liste[20]=g_strdup("BMK");
+  liste[21]=g_strdup("M06");
+  liste[22]=g_strdup("M06HF");
+  liste[23]=g_strdup("M062X");
+  liste[24]=g_strdup("M05");
+  liste[25]=g_strdup("M052X");
+  liste[26]=g_strdup("X3LYP");
+  liste[27]=g_strdup("VSXC");
+  liste[28]=g_strdup("HCTH");
+  liste[29]=g_strdup("HCTH93");
+  liste[30]=g_strdup("HCTH147");
+  liste[31]=g_strdup("HCTH407");
+  liste[32]=g_strdup("tHCTH");
+  liste[33]=g_strdup("M06L");
+  liste[34]=g_strdup("B97D");
   HboxM[0][NM] = create_hbox(VboxM[NM]);
   EntryMethods[0][NM]= create_combo_box_entry_liste(FrameM[NM],HboxM[0][NM],_(" Select your method :"),liste,nliste);
 }
 /********************************************************************************************************/
 void c_dft_combo()
 {
-  gchar *liste[9];
+  gchar *liste[14];
   int nliste = 0;
   NM=gtk_notebook_get_current_page((GtkNotebook*)NoteBookMB);
-  nliste=6;
-  liste[0]=g_strdup("S");
-  liste[1]=g_strdup("XA");
-  liste[2]=g_strdup("B");
+  nliste=13;
+  liste[0]=g_strdup("B");
+  liste[1]=g_strdup("S");
+  liste[2]=g_strdup("XA");
   liste[3]=g_strdup("PW91");
   liste[4]=g_strdup("MPW");
   liste[5]=g_strdup("G96");
+  liste[6]=g_strdup("PBE");
+  liste[7]=g_strdup("O");
+  liste[8]=g_strdup("TPSS");
+  liste[9]=g_strdup("BRx");
+  liste[10]=g_strdup("PKZB");
+  liste[11]=g_strdup("wPBEh");
+  liste[12]=g_strdup("PBEh");
   HboxM[0][NM] = create_hbox(VboxM[NM]);
   EntryMethods[0][NM] = create_combo_box_entry_liste(FrameM[NM],HboxM[0][NM],_(" Exchange Functional :"),liste,nliste);
-  nliste=7;
-  liste[0]=g_strdup("VWN");
-  liste[1]=g_strdup("VWN5");
-  liste[2]=g_strdup("LYP");
+  nliste=14;
+  liste[0]=g_strdup("LYP");
+  liste[1]=g_strdup("VWN");
+  liste[2]=g_strdup("VWN5");
   liste[3]=g_strdup("PL");
   liste[4]=g_strdup("P86");
   liste[5]=g_strdup("PW91");
-  liste[6]=g_strdup("B96");
+  liste[6]=g_strdup("B95");
+  liste[7]=g_strdup("PBE");
+  liste[8]=g_strdup("TPSS");
+  liste[9]=g_strdup("KCIS");
+  liste[10]=g_strdup("BRC");
+  liste[11]=g_strdup("PKZB");
+  liste[12]=g_strdup("VP86");
+  liste[13]=g_strdup("V5LYP");
   HboxM[1][NM] = create_hbox(VboxM[NM]);
   EntryMethods[1][NM] = create_combo_box_entry_liste(FrameM[NM],HboxM[1][NM],_(" Correlation Functionals :"),liste,nliste);
+
+  nliste=2;
+  liste[0]=g_strdup("None");
+  liste[1]=g_strdup("LC-");
+  HboxM[2][NM] = create_hbox(VboxM[NM]);
+  EntryMethods[2][NM] = create_combo_box_entry_liste(FrameM[NM],HboxM[2][NM],_(" Corrections :"),liste,nliste);
 }
 /********************************************************************************************************/
 void  c_excited_combo()
@@ -499,7 +545,7 @@ static void traite_methods (GtkComboBox *combobox, gpointer d)
 	else if (!strcmp((char *)data,_("MP Methods")) ) c_mp_combo ();
 	else if (!strcmp((char *)data,_("Semi-Empirical Methods")) ) c_semi_combo();
 	else if (!strcmp((char *)data,_("Molecular Mechanics Methods")) ) c_mecha_combo();
-	else if (!strcmp((char *)data,_("Hybrid Functional Methods")) ) c_hybrid_combo();
+	else if (!strcmp((char *)data,_("Hybrid/Standalone Functional Methods")) ) c_hybrid_combo();
 	else if (!strcmp((char *)data,_("Density Functional Methods")) ) c_dft_combo();
 	else if (!strcmp((char *)data,_("Excited States")) ) c_excited_combo();
 	gtk_widget_show_all(FrameM[NM]);
@@ -537,7 +583,7 @@ static GtkWidget *create_liste_methods(GtkWidget*win,GtkWidget *frame, gboolean 
         gtk_tree_store_append (store, &iter, NULL);
         gtk_tree_store_set (store, &iter, 0, _("Density Functional Methods"), -1);
         gtk_tree_store_append (store, &iter, NULL);
-        gtk_tree_store_set (store, &iter, 0, _("Hybrid Functional Methods"), -1);
+        gtk_tree_store_set (store, &iter, 0, _("Hybrid/Standalone Functional Methods"), -1);
         gtk_tree_store_append (store, &iter, NULL);
         gtk_tree_store_set (store, &iter, 0, _("Excited States"), -1);
         gtk_tree_store_append (store, &iter, NULL);

@@ -236,7 +236,8 @@ Dipole.o: Dipole.c ../../Config.h GlobalOrb.h \
   ../Display/UtilsOrb.h ../Geometry/GeomGlobal.h ../Utils/Vector3d.h \
   ../Utils/Transformation.h ../Utils/Constants.h \
   ../Utils/UtilsInterface.h ../Utils/UtilsGL.h ../Utils/Vector3d.h \
-  ../Utils/Transformation.h ../Utils/Utils.h ../Common/Windows.h
+  ../Utils/Transformation.h ../Utils/Utils.h ../Common/Windows.h \
+  ../Utils/GabeditTextEdit.h
 AxisGL.o: AxisGL.c ../../Config.h GlobalOrb.h \
   ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
   ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \

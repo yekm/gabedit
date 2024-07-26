@@ -216,7 +216,7 @@ static gchar* computeGroupSymmetry()
 		Z[i] = fireflyMolecule.listOfAtoms[i].position[2];
 	}
 	sprintf(pointGroupSymbol,"NO");
-	computeSymmetry(principalAxisTolerance, FALSE, pointGroupSymbol,maximalOrder, TRUE, &numberOfAtoms,symbols, X, Y, Z, &positionTolerance, message);
+	computeSymmetryOld(principalAxisTolerance, FALSE, pointGroupSymbol,maximalOrder, TRUE, &numberOfAtoms,symbols, X, Y, Z, &positionTolerance, message);
 
 
 	for (i=0;i<(gint)numberOfAtoms;i++) g_free( symbols[i]);
@@ -655,7 +655,7 @@ static void putFireFlyMoleculeInTextEditor()
 	if(MethodeGeom==GEOM_IS_XYZ && (nrvar== 3*NcentersXYZ || nrvar==0))
 	{
 		sprintf(pointGroupSymbol,"%s",fireflyMolecule.groupSymmetry);
-		computeSymmetry(principalAxisTolerance, FALSE, pointGroupSymbol,maximalOrder, TRUE, &numberOfAtoms,symbols, X, Y, Z, &positionTolerance, message);
+		computeSymmetryOld(principalAxisTolerance, FALSE, pointGroupSymbol,maximalOrder, TRUE, &numberOfAtoms,symbols, X, Y, Z, &positionTolerance, message);
 		/*
 		if(strlen(pointGroupSymbol)>1 && strcmp(pointGroupSymbol,"C1")!=0 && isdigit(pointGroupSymbol[1]))
 			setFirstAtomToXAxis(numberOfAtoms, X, Y, Z);

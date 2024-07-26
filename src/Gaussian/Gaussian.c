@@ -440,6 +440,9 @@ static gchar *get_info_method(gint im)
         {
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryMethods[1][im]));
         	temp=g_strdup_printf("%s%s",temp,entrytext);
+  		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryMethods[2][im]));
+  		if (!strcmp(entrytext,"LC-"))
+        		temp=g_strdup_printf("%s%s",entrytext,temp);
         }
         else
   	if (!strcmp(Methodes[im],_("MP Methods")) )
@@ -769,11 +772,11 @@ static void GetInfoXYZ( )
 	SAtomsProp prop;
 	gboolean medium = geometry_with_medium_layer();
 	gboolean lower = geometry_with_lower_layer();
-	gboolean redundant = FALSE;
+	gboolean redundant = TRUE;
   	G_CONST_RETURN gchar *entrytext =  NULL;
 
   	if(Types && strcmp(Types,_("Single Point"))) entrytext =  gtk_entry_get_text(GTK_ENTRY(EntryTypes[0]));
-	if(entrytext && strstr(entrytext,"Redundant")) redundant = TRUE;
+	if(entrytext && !strstr(entrytext,"Redundant") && !strstr(entrytext,"Default") && !strstr(entrytext,"default")) redundant = FALSE;
 
 	if(iframe==1) GetChargesAndMultiplicitiesFromMain( );
 	else GetChargesAndMultiplicities( );

@@ -40,7 +40,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../SemiEmpirical/SemiEmpiricalDlg.h"
 #include "../Geometry/GeomXYZ.h"
 #include "../Geometry/GeomZmatrix.h"
-#include "../Geometry/Symmetry.h"
+#include "../Geometry/GeomSymmetry.h"
 #include "../Files/FileChooser.h"
 #include "../Geometry/ImagesGeom.h"
 #include "../Geometry/RotFragments.h"
@@ -722,6 +722,7 @@ static void activate_action (GtkAction *action)
 
 	else if(!strcmp(name, "SymmetryRotationalConstantes")) create_symmetry_window( NULL, 0);
 	else if(!strcmp(name, "SymmetryGroupSymmetry")) get_standard_orientation_with_reduction(NULL, 0);
+	else if(!strcmp(name, "SymmetryGroupSymmetrize")) get_standard_orientation_with_symmetrization(NULL, 0);
 	else if(!strcmp(name, "SymmetryAbelianGroup")) get_abelian_orientation_with_reduction(NULL, 0);
 	else if(!strcmp(name, "SymmetrySetTolerance")) create_tolerance_window (NULL, 0);
 	else if(!strcmp(name, "SetOriginToCenterOfMolecule")) SetOriginAtCenter(NULL, 0, NULL);
@@ -1136,6 +1137,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SymmetryRotationalConstantes", NULL, N_("Rotational Constantes & Dipole at there principal axis"), NULL, "compute the rotational constantes &  the dipole at there principal axis", G_CALLBACK (activate_action) },
 	{"SymmetryGroupSymmetry", NULL, N_("_Group of symmetry & Geometry with reduce molecule to its basis set of atoms"), NULL, "compute the _Groupe symmetry and geometry with  reduce molecule to its basis set of atoms", G_CALLBACK (activate_action) },
 	{"SymmetryAbelianGroup", NULL, N_("_Abelian group & Geometry with  reduce molecule to its basis set of atoms"), NULL, "compute the _Abelian group and Geometry with reduce molecule to its basis set of atoms", G_CALLBACK (activate_action) },
+	{"SymmetryGroupSymmetrize", NULL, N_("_Symmetrize"), NULL, "compute the _Groupe symmetry and geometry with reduce symmetrization", G_CALLBACK (activate_action) },
 	{"SymmetrySetTolerance", NULL, N_("_Set tolerance parameters"), NULL, "Set tolerance parameters", G_CALLBACK (activate_action) },
 
 	{"Set", NULL, N_("_Set")},
@@ -1541,6 +1543,8 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"SymmetryRotationalConstantes\" action=\"SymmetryRotationalConstantes\" />\n"
 "      <menuitem name=\"SymmetryGroupSymmetry\" action=\"SymmetryGroupSymmetry\" />\n"
 "      <menuitem name=\"SymmetryAbelianGroup\" action=\"SymmetryAbelianGroup\" />\n"
+"      <separator name=\"sepMenuSymmetryGroupSymmetrize\" />\n"
+"      <menuitem name=\"SymmetryGroupSymmetrize\" action=\"SymmetryGroupSymmetrize\" />\n"
 "      <separator name=\"sepMenuSymmetrySetTolerance\" />\n"
 "      <menuitem name=\"SymmetrySetTolerance\" action=\"SymmetrySetTolerance\" />\n"
 "    </menu>\n"

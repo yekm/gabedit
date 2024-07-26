@@ -324,14 +324,28 @@ static gboolean read_gamess_file(GabeditFileChooser *SelecFile, gint response_id
 			if(this_is_a_backspace(t)) break;
  			allreals =gab_split (t);
 			k = 0;
-			while(allreals && allreals[k] && k<7) k++;
-			if(k==7)
+			/* printf("t=%s\n",t);*/
+			while(allreals && allreals[k])
+			{
+				/*printf("k=%d %s\n",k,allreals[k]);*/
+				k++;
+			}
+			/* printf("k=%d\n",k);*/
+			if(k==8)/* Second column = symmetry */
 			{
 				numberOfStates++;
 				energies = g_realloc(energies, numberOfStates*sizeof(gdouble));
 				intensities = g_realloc(intensities, numberOfStates*sizeof(gdouble));
 				energies[numberOfStates-1] = atof(allreals[3]);
 				intensities[numberOfStates-1] = atof(allreals[7]);
+			}
+			if(k==7)/* Second column = energy in au */
+			{
+				numberOfStates++;
+				energies = g_realloc(energies, numberOfStates*sizeof(gdouble));
+				intensities = g_realloc(intensities, numberOfStates*sizeof(gdouble));
+				energies[numberOfStates-1] = atof(allreals[2]);
+				intensities[numberOfStates-1] = atof(allreals[6]);
 			}
 			g_strfreev(allreals);
 			allreals = NULL;

@@ -187,6 +187,7 @@ void set_xyz_to_principal_axes_of_selected_atoms(gpointer data, guint Operation,
 void create_tolerance_window(GtkWidget*w, gpointer data);
 void get_abelian_orientation_with_reduction(GtkWidget*w, gpointer data);
 void get_standard_orientation_with_reduction(GtkWidget*w, gpointer data);
+void get_standard_orientation_with_symmetrization(GtkWidget*w, gpointer data);
 void setMMTypesCharges(gpointer data, guint Operation,GtkWidget* wid);
 GeomDef* Free_One_Geom(GeomDef* geom,gint N);
 void set_text_to_draw(gchar* str);

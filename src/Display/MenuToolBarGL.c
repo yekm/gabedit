@@ -277,10 +277,20 @@ static void activate_action (GtkAction *action)
 			TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
 			transition_matrix_orbitals_dlg();
 	}
-	else if(!strcmp(name , "OrbitalsSpatialOverlap"))
+	else if(!strcmp(name , "OrbitalsSpatialOverlapIIJJ"))
 	{
 			TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
-			spatial_overlap_orbitals_dlg();
+			spatial_overlapiijj_orbitals_dlg();
+	}
+	else if(!strcmp(name , "OrbitalsSpatialOverlapIJ"))
+	{
+			TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
+			spatial_overlapij_orbitals_dlg();
+	}
+	else if(!strcmp(name , "OrbitalsLambdaDiagnostic"))
+	{
+			TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
+			lambda_diagnostic_dlg();
 	}
 	else if(!strcmp(name , "OrbitalsOverlap"))
 	{
@@ -943,7 +953,9 @@ static GtkActionEntry gtkActionEntries[] =
 	{"OrbitalsCapture", GABEDIT_STOCK_SELECT_ALL, N_("_Slideshow"), NULL, "Slideshow", G_CALLBACK (activate_action) },
 	{"OrbitalsCoulomb", NULL, N_("_Coulomb integral"), NULL, "Coulomb", G_CALLBACK (activate_action) },
 	{"OrbitalsTransition", NULL, N_("_Transition matrix elements"), NULL, "TM", G_CALLBACK (activate_action) },
-	{"OrbitalsSpatialOverlap", NULL, N_("_Spatial overlap matrix"), NULL, "TM", G_CALLBACK (activate_action) },
+	{"OrbitalsSpatialOverlapIIJJ", NULL, N_("_Spatial overlap matrix <ii|jj> "), NULL, "TM", G_CALLBACK (activate_action) },
+	{"OrbitalsSpatialOverlapIJ", NULL, N_("_Spatial overlap matrix <|i| | |j| > "), NULL, "TM", G_CALLBACK (activate_action) },
+	{"OrbitalsLambdaDiagnostic", NULL, N_("_Lambda diagnostic "), NULL, "TM", G_CALLBACK (activate_action) },
 	{"OrbitalsOverlap", NULL, N_("Compute _overlap matrix"), NULL, "Overlap", G_CALLBACK (activate_action) },
 	{"MullikenCharges", NULL, N_("Compute _Mulliken charges"), NULL, "Mulliken", G_CALLBACK (activate_action) },
 	{"BondOrder", NULL, N_("Compute _Bond orders"), NULL, "Bond orders", G_CALLBACK (activate_action) },
@@ -1685,7 +1697,9 @@ static const gchar *uiMenuInfo =
 "      <separator name=\"sepMenuGabeditOrbCoul\" />\n"
 "      <menuitem name=\"OrbitalsCoulomb\" action=\"OrbitalsCoulomb\" />\n"
 "      <menuitem name=\"OrbitalsTransition\" action=\"OrbitalsTransition\" />\n"
-"      <menuitem name=\"OrbitalsSpatialOverlap\" action=\"OrbitalsSpatialOverlap\" />\n"
+"      <menuitem name=\"OrbitalsSpatialOverlapIIJJ\" action=\"OrbitalsSpatialOverlapIIJJ\" />\n"
+"      <menuitem name=\"OrbitalsSpatialOverlapIJ\" action=\"OrbitalsSpatialOverlapIJ\" />\n"
+"      <menuitem name=\"OrbitalsLambdaDiagnostic\" action=\"OrbitalsLambdaDiagnostic\" />\n"
 "      <menuitem name=\"MullikenCharges\" action=\"MullikenCharges\" />\n"
 "      <menuitem name=\"BondOrder\" action=\"BondOrder\" />\n"
 /*
@@ -2158,7 +2172,9 @@ static void set_sensitive_orbitals()
 	GtkWidget *orbCapture = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsCapture");
 	GtkWidget *orbCoulomb = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsCoulomb");
 	GtkWidget *orbTransition = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsTransition");
-	GtkWidget *orbSpatialOverlap = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsSpatialOverlap");
+	GtkWidget *orbSpatialOverlapiijj = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsSpatialOverlapIIJJ");
+	GtkWidget *orbSpatialOverlapij = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsSpatialOverlapIJ");
+	GtkWidget *orbLambdaDiagnostic = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsLambdaDiagnostic");
 	GtkWidget *mullikenCharges = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/MullikenCharges");
 	GtkWidget *bondorder = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/BondOrder");
 	/* GtkWidget *orbOverlap = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsOverlap");*/
@@ -2172,7 +2188,9 @@ static void set_sensitive_orbitals()
 	if(GTK_IS_WIDGET(mullikenCharges)) gtk_widget_set_sensitive(mullikenCharges, sensitive);
 	if(GTK_IS_WIDGET(bondorder)) gtk_widget_set_sensitive(bondorder, sensitive);
 	/* if(GTK_IS_WIDGET(orbOverlap)) gtk_widget_set_sensitive(orbOverlap, sensitive);*/
-	if(GTK_IS_WIDGET(orbSpatialOverlap)) gtk_widget_set_sensitive(orbSpatialOverlap, sensitive);
+	if(GTK_IS_WIDGET(orbSpatialOverlapiijj)) gtk_widget_set_sensitive(orbSpatialOverlapiijj, sensitive);
+	if(GTK_IS_WIDGET(orbSpatialOverlapij)) gtk_widget_set_sensitive(orbSpatialOverlapij, sensitive);
+	if(GTK_IS_WIDGET(orbLambdaDiagnostic)) gtk_widget_set_sensitive(orbLambdaDiagnostic, sensitive);
 }
 /*********************************************************************************************************************/
 static void set_sensitive_cube()

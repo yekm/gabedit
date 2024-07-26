@@ -68,9 +68,7 @@ void reduceForTetraedalSymmetry(MolSymMolecule *mol,gint sym)
 	gdouble eps = 1e-3;
 
 	if(mol->numberOfAtoms >0) eps = mol->listOfAtoms[0].eps;
-	removeAllPointsOnOneSideOfAPlane(mol, 0.0, -1.0, 0., eps);
 	removeAllPointsOnOneSideOfAPlane(mol, 0.577350269,  0.0, -0.816496581, eps);
-	removeAllPointsOnOneSideOfAPlane(mol, 0.288675135, -0.5, -0.816496581, eps);
 
 	if (sym & SYM_D)
 		removeAllPointsOnOneSideOfAPlane(mol,-0.866025404, 0.5, 0.0,-eps);

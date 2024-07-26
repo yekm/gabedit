@@ -2011,8 +2011,7 @@ static void calculateGradientPairWise(ForceField* forceField)
 		rijz = atomi.coordinates[2] - atomj.coordinates[2];
 
 		rij2 = rijx * rijx + rijy * rijy + rijz * rijz;
-		if ( rij2 < 1.0e-2 )
-			rij2 = 1.0e-2;	
+		if ( rij2 < 1.0e-8 ) rij2 = 1.0e-8;	
 
 		rij = sqrt( rij2 );
 		rij3 = rij2 * rij;
@@ -2023,13 +2022,13 @@ static void calculateGradientPairWise(ForceField* forceField)
 		rij10 = rij9 * rij;
 		rij11 = rij10 * rij;
 		rij12 = rij11 * rij;
-		if(useCoulomb)
-			coulombTerm = ( chargei * chargej * coulombFactor ) / rij3;
-		else
-			coulombTerm = 0.0;
+		if(useCoulomb) coulombTerm = ( chargei * chargej * coulombFactor ) / rij3;
+		else coulombTerm = 0.0;
 		
+		/* printf("A = %f Beta = %f qi = %f qj = %f rij = %f\n",A,Beta,chargei,chargej,rij);*/
 		
-		term1 = -A*Beta/rij*exp(-Beta*rij);
+		/*term1 = -A*Beta/rij*exp(-Beta*rij);*/
+		term1 = A*Beta/rij*exp(-Beta*rij);
 
 		br = b*rij;
 		ebr = exp(-b*rij);
@@ -2100,7 +2099,8 @@ static void calculateGradientPairWise(ForceField* forceField)
 				-C10*ebr/rij11*sp;
 		}
 
-		termAll = term1 - term6 - term8 - term10 + coulombTerm;
+		//termAll = term1 - term6 - term8 - term10 + coulombTerm;
+		termAll = term1 + term6 + term8 + term10 + coulombTerm;
 
 
 		forceix = termAll * rijx;
@@ -2109,9 +2109,6 @@ static void calculateGradientPairWise(ForceField* forceField)
 		forcejx = - forceix;
 		forcejy = - forceiy;
 		forcejz = - forceiz;
-#ifdef ENABLE_OMP
-#pragma omp critical
-#endif
 		{
 		m->gradient[0][ai] -= forceix;
 		m->gradient[1][ai] -= forceiy;
@@ -2134,27 +2131,27 @@ static void calculateGradientAmber(ForceField* forceField)
 			m->gradient[j][i] = 0.0;
 
 	calculateGradientBondAmber(forceField);
-	if(StopCalcul)
-		return;
+	if(StopCalcul) return;
 	calculateGradientBendAmber(forceField);
-	if(StopCalcul)
-		return;
+	if(StopCalcul) return;
 	calculateGradientDihedralAmber(forceField);
-	if(StopCalcul)
-		return;
+	if(StopCalcul) return;
 	calculateGradientImproperTorsion(forceField);
-	if(StopCalcul)
-		return;
+	if(StopCalcul) return;
 	calculateGradientNonBondedAmber(forceField);
-	if(StopCalcul)
-		return;
+	if(StopCalcul) return;
 	calculateGradientHydrogenBondedAmber(forceField);
-	if(StopCalcul)
-		return;
+	/*
+	printf("Before grad pairwise\n");
+	for( i=0; i<m->nAtoms;i++) for(j=0;j<3;j++) printf(" i = %d j = %d g = %f\n",i,j,m->gradient[j][i]);
+	*/
+	if(StopCalcul) return;
 	calculateGradientPairWise(forceField);
-	if(StopCalcul)
-		return;
-
+	if(StopCalcul) return;
+	/*
+	printf("After grad pairwise\n");
+	for( i=0; i<m->nAtoms;i++) for(j=0;j<3;j++) printf(" i = %d j = %d g = %f\n",i,j,m->gradient[j][i]);
+	*/
 	for( i=0; i<m->nAtoms;i++)
 	{
 		if(!m->atoms[i].variable)
@@ -2478,9 +2475,6 @@ static gdouble calculateEnergyPairWise(ForceField* forceField,Molecule* molecule
 	/* now for non-bonded term */
 	coulombFactor = 332.05382/ ( permittivity * permittivityScale );
 	/* printf("number of Non Bonded terms = %d\n",numberOfPairWise);*/
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(i,A,Beta,c6,b,atomi,atomj,chargei,chargej,rijx,rijy,rijz,rij2,rij,rij6,rij8,rij10,coulombTerm,B6,B8,B10) reduction(+:energy)
-#endif
 	for (  i = 0; i < numberOfPairWise; i++ )
 	{
 		ai     = (gint)pairWiseTerms[0][i];
@@ -2504,8 +2498,7 @@ static gdouble calculateEnergyPairWise(ForceField* forceField,Molecule* molecule
 		rijz = atomi.coordinates[2] - atomj.coordinates[2];
 
 		rij2 = rijx * rijx + rijy * rijy + rijz * rijz;
-		if(rij2<1e-2)
-			rij = 1e-2;
+		//if(rij2<1e-2) rij = 1e-2;
 
 		rij = sqrt( rij2 );
 		rij6 = rij2 * rij2 * rij2;
@@ -2520,6 +2513,7 @@ static gdouble calculateEnergyPairWise(ForceField* forceField,Molecule* molecule
 		B6  = 0;
 		B8  = 0;
 		B10 = 0;
+		/* printf("A = %f Beta = %f qi = %f qj = %f rij = %f\n",A,Beta,chargei,chargej,rij);*/
 		if(useVanderWals)
 		{
 			gdouble fact = 1.0;
@@ -2544,6 +2538,7 @@ static gdouble calculateEnergyPairWise(ForceField* forceField,Molecule* molecule
 				fact = 1.0;
 				s = 1.0;
 				br = b*rij;
+				brk = 1.0;
 				for(k=1;k<=2*4;k++)
 				{
 					fact *= k;
@@ -2558,6 +2553,7 @@ static gdouble calculateEnergyPairWise(ForceField* forceField,Molecule* molecule
 				fact = 1.0;
 				s = 1.0;
 				br = b*rij;
+				brk = 1.0;
 				for(k=1;k<=2*5;k++)
 				{
 					fact *= k;
