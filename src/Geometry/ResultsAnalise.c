@@ -1,6 +1,6 @@
 /* ResultsAnalise.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of gcharge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -284,6 +284,8 @@ void find_energy_mopac_irc_output(gchar* NomFichier)
         gint Ncalculs = 0;
   	static DataGeomConv* GeomConv =NULL;
 	gboolean OK;
+	gint nirc=0;
+	gint nch=0;
 
         
 	t=g_malloc(taille*sizeof(gchar));
@@ -316,6 +318,11 @@ void find_energy_mopac_irc_output(gchar* NomFichier)
 		while(!feof(fd) && OK )
 		{
 	 		if(!fgets(t, BSIZE,fd)) { OK = FALSE; break; }
+			if(strstr(t,"IRC CALCULATION COMPLETE"))
+			{
+				 nirc++;
+				if(nirc==1) nch=GeomConv[Ncalculs-1].Npoint;
+			}
 			if(
 				strstr(t,"POTENTIAL") && 
 				strstr(t,"LOST") &&
@@ -328,8 +335,11 @@ void find_energy_mopac_irc_output(gchar* NomFichier)
 	 			if(!fgets(t, BSIZE,fd)) { OK = FALSE; break; }
 				gint c;
 				for(c=0;c<strlen(t);c++) if(t[c]=='D'||t[c]=='d')t[c]='e';
-				if(4!=sscanf(t,"%s %s %s %s",dum,potential,elost,e))
-				{ OK = FALSE; break; }
+				/*if(4!=sscanf(t,"%s %s %s %s",dum,potential,elost,e))
+				/{ OK = FALSE; break; }*/
+				c =sscanf(t,"%s %s %s %s",dum,potential,elost,e);
+				if(c<=0) continue;
+				if(c!=4){ OK = FALSE; break; }
 			}
 			else continue;
 		  	GeomConv[Ncalculs-1].Npoint++;
@@ -369,6 +379,33 @@ void find_energy_mopac_irc_output(gchar* NomFichier)
 	{
 	   k++;
 	   GeomConv[i].NumGeom[j] = k;
+	}
+	if(nirc==2)
+	{
+		/* sort */
+		gint j;
+		/*
+		fprintf(stderr,"DEBUG sorting IRC\n");
+		fprintf(stderr,"DEBUG Ncalculs %d\n", Ncalculs);
+		*/
+		for( j=0;j<Ncalculs;j++)
+		{
+			gint n= GeomConv[j].Npoint-nch;
+			gint nA=GeomConv[j].Npoint;
+			for(i=0;(gint)i<GeomConv[j].Ntype;i++)
+			for(k=0;k<n/2;k++)
+			{
+				gint na=nch+k;
+				gint nb=nA-k-1;
+				gchar* data = GeomConv[j].Data[i][na];
+				GeomConv[j].Data[i][na] = GeomConv[j].Data[i][nb];
+				GeomConv[j].Data[i][nb] = data;
+
+				gint numGeom = GeomConv[j].NumGeom[na];
+				GeomConv[j].NumGeom[na] = GeomConv[j].NumGeom[nb];
+				GeomConv[j].NumGeom[nb] = numGeom;
+			}
+		}
 	}
 	create_energies_curves(GeomConv,Ncalculs);
 	g_free(t);
@@ -705,7 +742,7 @@ DataGeomConv init_geom_xyz_conv(gchar *namefile)
 	return GeomConv;
 }
 /*********************************************************************/
-static void find_energy_xyz(gchar* fileName)
+void find_energy_xyz(gchar* fileName)
 {
 	gint  i=0;
 	gint  j=0;
@@ -716,6 +753,8 @@ static void find_energy_xyz(gchar* fileName)
   	static DataGeomConv* GeomConv =NULL;
 	gint ne;
 	gint nAtoms;
+	gdouble* energies=NULL;
+	gint nEnergies = 0;
 
 	GeomConv = NULL;
         
@@ -738,8 +777,35 @@ static void find_energy_xyz(gchar* fileName)
 				Ncalculs = 1;
 				GeomConv =  g_malloc(sizeof(DataGeomConv) );
   				GeomConv[0] = init_geom_xyz_conv(fileName);
+				energies =  g_malloc(sizeof(gdouble) );
 			}
 		 	if(!fgets(t,taille,file)) break; /* title */
+			/* try to read energy. Accepted format : 
+                           E value
+                           E value
+			   Energy=value
+			   Energy value
+			   Energy: value
+			*/
+			for(i=0;i<strlen(t);i++) if(t[i]=='=') t[i]=' ';/* remove = */
+			for(i=0;i<strlen(t);i++) if(t[i]==':') t[i]=' ';/* remove : */
+			int pos=-1;
+			char*spos = NULL;
+			double energy=0;
+		 	uppercase(t);
+			spos=strstr(t," E ");
+			if(spos) pos = sscanf(spos+strlen(" E "),"%lf",&energy);
+			if(pos!=1) {
+				spos=strstr(t," ENERGY ");
+				if(spos) pos = sscanf(spos+strlen(" ENERGY "),"%lf",&energy);
+			}
+			if(pos==1)/* Ok energy detected */
+			{
+				energies[nEnergies] = energy;
+				nEnergies++;
+				energies =  g_realloc(energies, (nEnergies+1)*sizeof(gdouble));
+			}
+			
 			GeomConv[0].Npoint++;
 			for(i=0;i<nAtoms;i++)
 				if(!fgets(t,taille,file))break;
@@ -749,6 +815,7 @@ static void find_energy_xyz(gchar* fileName)
 	}
 
 	fclose(file);
+	/* printf("Npoint = %d nEner = %d\n",GeomConv[0].Npoint, nEnergies);*/
    
 	if(GeomConv)
 	{
@@ -766,10 +833,148 @@ static void find_energy_xyz(gchar* fileName)
 			for(j=0;(gint)j<GeomConv[0].Npoint;j++)
 			{
 				GeomConv[0].NumGeom[j] = j+1;
-		 		GeomConv[0].Data[0][j] = g_strdup_printf("%d",j+1);
+				if(nEnergies==GeomConv[0].Npoint) GeomConv[0].Data[0][j] = g_strdup_printf("%lf",energies[j]);
+				else GeomConv[0].Data[0][j] = g_strdup_printf("%d",j+1);
 			}
 		}
 	}
+	if(energies) g_free(energies);
+	create_energies_curves(GeomConv,Ncalculs);
+}
+/*********************************************************************/
+DataGeomConv init_geom_xtb_conv(gchar *namefile)
+{
+	gint i;
+	DataGeomConv GeomConv;
+	GeomConv.Npoint = 0;
+	GeomConv.Ntype  = 2;
+	GeomConv.fileType = GABEDIT_TYPEFILE_XYZ;
+	GeomConv.TypeCalcul = g_strdup(_("Geometries for an xtb log file"));
+	GeomConv.NumGeom = NULL;
+	GeomConv.GeomFile = g_strdup(namefile);
+	GeomConv.TypeData = g_malloc(GeomConv.Ntype*sizeof(gchar*) );
+	GeomConv.TypeData[0] = g_strdup(_(" Energy(kcal)"));
+	GeomConv.TypeData[1] = g_strdup(_(" Grad norm(kcal/Ang)"));
+	GeomConv.Data = g_malloc(GeomConv.Ntype*sizeof(gchar**) );
+ 	for(i = 0;i<GeomConv.Ntype;i++)
+ 		GeomConv.Data[i] = NULL;
+	return GeomConv;
+}
+/*********************************************************************/
+void find_energy_xtb(gchar* fileName)
+{
+	gint  i=0;
+	gint  j=0;
+	guint taille=BSIZE;
+	gchar t[BSIZE];
+	FILE *file;
+        gint Ncalculs = 0;
+  	static DataGeomConv* GeomConv =NULL;
+	gint ne;
+	gint nAtoms;
+	gdouble* energies=NULL;
+	gdouble* norms=NULL;
+	gint nEnergies = 0;
+
+	GeomConv = NULL;
+        
+ 	file = FOpen(fileName, "rb"); 
+        if(!file)
+	{
+		sprintf(t,_(" Error : I can not open file %s\n"),fileName);
+		Message(t,_("Error"),TRUE);
+		return;
+	}
+        
+	 while(!feof(file))
+	{
+		if(!fgets(t,taille,file))break;
+		ne = sscanf(t,"%d",&nAtoms);
+		if(ne==1 && nAtoms>0)
+		 {
+         		if(Ncalculs==0)
+			{
+				Ncalculs = 1;
+				GeomConv =  g_malloc(sizeof(DataGeomConv) );
+  				GeomConv[0] = init_geom_xtb_conv(fileName);
+				energies =  g_malloc(sizeof(gdouble) );
+				norms =  g_malloc(sizeof(gdouble) );
+			}
+		 	if(!fgets(t,taille,file)) break; /* title */
+			/* try to read energy. Accepted format : 
+                           E value
+                           E value
+			   Energy=value
+			   Energy value
+			   Energy: value
+			*/
+			for(i=0;i<strlen(t);i++) if(t[i]=='=') t[i]=' ';/* remove = */
+			for(i=0;i<strlen(t);i++) if(t[i]==':') t[i]=' ';/* remove : */
+			int pos=-1;
+			char*spos = NULL;
+			double energy=0;
+			double norm=0;
+		 	uppercase(t);
+			spos=strstr(t," E ");
+			if(spos) pos = sscanf(spos+strlen(" E "),"%lf",&energy);
+			if(pos!=1) {
+				spos=strstr(t," ENERGY ");
+				if(spos) pos = sscanf(spos+strlen(" ENERGY "),"%lf",&energy);
+			}
+			if(pos==1)/* Ok energy detected */
+			{
+				norm=1e10;
+				if(strstr(t," GNORM")) sscanf(strstr(t," GNORM")+strlen(" GNORM "),"%lf",&norm);
+				energies[nEnergies] = energy;
+				norms[nEnergies] = norm;
+				nEnergies++;
+				energies =  g_realloc(energies, (nEnergies+1)*sizeof(gdouble));
+				norms =  g_realloc(norms, (nEnergies+1)*sizeof(gdouble));
+			}
+
+			
+			GeomConv[0].Npoint++;
+			for(i=0;i<nAtoms;i++)
+				if(!fgets(t,taille,file))break;
+		 }
+		else
+			break;
+	}
+
+	fclose(file);
+	/* printf("Npoint = %d nEner = %d\n",GeomConv[0].Npoint, nEnergies);*/
+   
+	if(GeomConv)
+	{
+		if(GeomConv[0].Npoint == 0)
+		{
+			GeomConv[0] =  free_geom_conv(GeomConv[0]);
+			g_free(GeomConv);
+			GeomConv =  NULL;
+			Ncalculs = 0;
+		}
+		else
+		{
+			GeomConv[0].NumGeom = g_malloc(GeomConv[0].Npoint*sizeof(gint));	
+			GeomConv[0].Data[0] = g_malloc(GeomConv[0].Npoint*sizeof(gchar*));	
+			GeomConv[0].Data[1] = g_malloc(GeomConv[0].Npoint*sizeof(gchar*));	
+			for(j=0;(gint)j<GeomConv[0].Npoint;j++)
+			{
+				GeomConv[0].NumGeom[j] = j+1;
+				if(nEnergies==GeomConv[0].Npoint) 
+				{
+					GeomConv[0].Data[0][j] = g_strdup_printf("%lf",energies[j]*AUTOKCAL);
+					GeomConv[0].Data[1][j] = g_strdup_printf("%lf",norms[j]*AUTOKCAL/BOHR_TO_ANG);
+				}
+				else 
+				{
+					GeomConv[0].Data[0][j] = g_strdup_printf("UNK");
+					GeomConv[0].Data[1][j] = g_strdup_printf("UNK");
+				}
+			}
+		}
+	}
+	if(energies) g_free(energies);
 	create_energies_curves(GeomConv,Ncalculs);
 }
 /*********************************************************************/

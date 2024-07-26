@@ -1,6 +1,6 @@
 /* DrawGeomGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -149,8 +149,11 @@ static gint NumPointedAtom = -1;
 static gboolean ButtonPressed = FALSE;
 static gboolean ShiftKeyPressed = FALSE;
 static gboolean ControlKeyPressed = FALSE;
+static gboolean AltKeyPressed = FALSE;
+static gboolean WindowKeyPressed = FALSE;
 static gboolean FKeyPressed = FALSE;
 static gboolean GKeyPressed = FALSE;
+static gboolean SKeyPressed = FALSE;
 
 gchar* strToDraw = NULL;
 
@@ -3165,7 +3168,15 @@ static gint set_key_press(GtkWidget* wid, GdkEventKey *event, gpointer data)
 	}
 	else if((event->keyval == GDK_Alt_L || event->keyval == GDK_Alt_R) )
 	{
-		ControlKeyPressed = TRUE;
+		AltKeyPressed = TRUE;
+	}
+	else if((event->keyval == GDK_Super_L || event->keyval == GDK_Super_R) )
+	{
+		WindowKeyPressed = TRUE;
+	}
+	else if((event->keyval == GDK_S || event->keyval == GDK_s) )
+	{
+		SKeyPressed = TRUE;
 	}
 	else if((event->keyval == GDK_F || event->keyval == GDK_f) )
 	{
@@ -3225,9 +3236,13 @@ static gint set_key_release(GtkWidget* wid, GdkEventKey *event, gpointer data)
 	else if((event->keyval == GDK_Control_L || event->keyval == GDK_Control_R) )
 		ControlKeyPressed = FALSE;
 	else if((event->keyval == GDK_Alt_L || event->keyval == GDK_Alt_R) )
-		ControlKeyPressed = FALSE;
+		AltKeyPressed = FALSE;
+	else if((event->keyval == GDK_Super_L || event->keyval == GDK_Super_R) )
+		WindowKeyPressed = FALSE;
 	else if((event->keyval == GDK_F || event->keyval == GDK_f) )
 		FKeyPressed = FALSE;
+	else if((event->keyval == GDK_S || event->keyval == GDK_s) )
+		SKeyPressed = FALSE;
 	else if((event->keyval == GDK_G || event->keyval == GDK_g) )
 		GKeyPressed = FALSE;
 	return TRUE;
@@ -3524,12 +3539,32 @@ void select_atoms_by_rectangle(gdouble x,gdouble y)
 		y1 = y;
 		y2 = BeginY;
 	}
-	if(!ShiftKeyPressed)
+	if(!ShiftKeyPressed && !WindowKeyPressed && !AltKeyPressed)
 	{
 		if(!NumFatoms) g_free(NumFatoms);
 		NumFatoms = NULL;
 		NFatoms = 0;
 	}
+	if(SKeyPressed || WindowKeyPressed ||  AltKeyPressed)
+	for(i=0;i<(gint)Natoms;i++)
+	{
+		if(!geometry[i].show) continue;
+		gluProject(geometry[i].X, geometry[i].Y, geometry[i].Z,mvmatrix, projmatrix, viewport, &View2D[0], &View2D[1], &View2D[2]);
+		xi = View2D[0];
+		yi = viewport[3]-View2D[1];
+		if(xi>=x1 && xi<=x2 && yi>=y1 && yi<=y2 && if_selected(i))
+		{
+			gint k,kk;
+			kk=-1;
+			for(k=0;k<(gint)NFatoms;k++) if(NumFatoms[k] == geometry[i].N) {kk=k; break;}
+			if(kk!=-1)
+			{
+				for(k=kk;k<(gint)NFatoms-1;k++) NumFatoms[k] = NumFatoms[k+1];
+				NFatoms--;
+			}
+		}
+	}
+	else
 	for(i=0;i<(gint)Natoms;i++)
 	{
 		if(!geometry[i].show) continue;
@@ -11676,7 +11711,7 @@ void create_window_drawing()
 	gtk_window_set_title(GTK_WINDOW(GeomDlg),_("Gabedit : Draw Geometry "));
 	gtk_window_set_transient_for(GTK_WINDOW(GeomDlg),GTK_WINDOW(Fenetre));
 
-	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
+	/* gtk_window_move(GTK_WINDOW(GeomDlg),0,0);*/
 	init_child(GeomDlg,destroy_all_drawing,_(" Draw Geom. "));
 	g_signal_connect(G_OBJECT(GeomDlg),"delete_event",(GCallback)destroy_children,NULL);
 
@@ -11848,7 +11883,7 @@ void create_window_drawing()
 	g_signal_connect(G_OBJECT (GeomDlg), "key_release_event", (GCallback) set_key_release, NULL);
 	gtk_widget_show(GeomDlg);
 
-	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
+	/* gtk_window_move(GTK_WINDOW(GeomDlg),0,0);*/
 
 
 	/* set_back_color_black();*/

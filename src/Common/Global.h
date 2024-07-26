@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -53,7 +53,7 @@ DEALINGS IN THE SOFTWARE.
 
 #define MAJOR_VERSION    2
 #define MINOR_VERSION    5
-#define MICRO_VERSION    1
+#define MICRO_VERSION    2
 
 /**** Structures *********/
 typedef struct _FileOpen
@@ -152,6 +152,7 @@ extern   gint imodif;
 extern   gint iframe;
 extern   gchar *NameCommandGamess;
 extern   gchar *NameCommandGaussian;
+extern   gchar *NameCommandXTB;
 extern   gchar *NameCommandMolcas;
 extern   gchar *NameCommandMolpro;
 extern   gchar *NameCommandMPQC;
@@ -188,12 +189,14 @@ extern   gchar* demonDirectory;
 extern   gchar* nwchemDirectory;
 extern   gchar* psicodeDirectory;
 extern   gchar* mopacDirectory;
+extern   gchar* xtbDirectory;
 extern   gchar* gaussDirectory;
 extern   gchar* povrayDirectory;
 extern   gchar* openbabelDirectory;
 extern   CommandsList demonCommands;
 extern   CommandsList gamessCommands;
 extern   CommandsList gaussianCommands;
+extern   CommandsList xtbCommands;
 extern   CommandsList molcasCommands;
 extern   CommandsList molproCommands;
 extern   CommandsList mpqcCommands;

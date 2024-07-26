@@ -1,6 +1,6 @@
 /* FragmentsTree.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -386,7 +386,7 @@ static void addAminoAcidsL(FragmentsList* fragList)
 		"Asn","Gln","Hie","Leu","Pro","Trp",
 		"Asp","Glu","Hip","Lys","Ser","Val",
 		"Ash", "Glh","Lyn","Roh",
-		"Ace","Nme"
+		"Ace","Nme",
 		"Cala","Ccys","Cgly","Chis","Cmet","Cthr",
 		"Carg","Ccyx","Ccym","Chid","Cile","Cphe","Ctyr",
 		"Casn","Cgln","Chie","Cleu","Cpro","Ctrp",
@@ -421,7 +421,7 @@ static void addAminoAcidsD(FragmentsList* fragList)
 		"Asn","Gln","Hie","Leu","Pro","Trp",
 		"Asp","Glu","Hip","Lys","Ser","Val",
 		"Ash", "Glh","Lyn","Roh",
-		"Ace","Nme"
+		"Ace","Nme",
 		"Cala","Ccys","Cgly","Chis","Cmet","Cthr",
 		"Carg","Ccyx","Ccym","Chid","Cile","Cphe","Ctyr",
 		"Casn","Cgln","Chie","Cleu","Cpro","Ctrp",

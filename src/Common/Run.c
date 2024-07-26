@@ -1,6 +1,6 @@
 /* Run.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1873,6 +1873,21 @@ static gboolean create_cmd_gaussian(G_CONST_RETURN gchar* command, gboolean loca
 		if(!strcmp(command,"g03.exe")||!strcmp(command,"g98.exe"))
 		{
 		    fprintf(fcmd,"set GAUSS_EXEDIR=%s\n",gaussDirectory);
+		    fprintf(fcmd,"del/Q %s 2>nul\n",fileopen.logfile);
+		    fprintf(fcmd,"%s%s%s %s %s\n",gaussDirectory,G_DIR_SEPARATOR_S,command,fileopen.datafile, fileopen.logfile);
+		}
+		else if(!strcmp(command,"g16.exe"))
+		{
+		    gint lm=strlen(gaussDirectory);
+		    if(gaussDirectory[0]=='\"' && gaussDirectory[lm-1]=='\"')
+		    {
+			gint k;
+		    	fprintf(fcmd,"set GAUSS_EXEDIR=");
+			for (k=1;k<lm-1;k++) fprintf(fcmd,"%c",gaussDirectory[k]);
+		    	fprintf(fcmd,"\n");
+		    }
+		    else
+		    	fprintf(fcmd,"set GAUSS_EXEDIR=%s\n",gaussDirectory);
 		    fprintf(fcmd,"del/Q %s 2>nul\n",fileopen.logfile);
 		    fprintf(fcmd,"%s%s%s %s %s\n",gaussDirectory,G_DIR_SEPARATOR_S,command,fileopen.datafile, fileopen.logfile);
 		}

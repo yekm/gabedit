@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -25,7 +25,7 @@ void parse_liste_files();
 void ListeFiles(GtkWidget* vbox);
 void CreeFeuille(GtkWidget* treeView, GtkTreeIter *parent,gchar* projectname,gchar*datafile,gchar* localdir,
 				  gchar* remotehost,gchar* remoteuser,gchar* remotepass,gchar* remotedir,gint itype, gchar* command, GabEditNetWork netWorkProtocol);
-void cree_files_out_err_notebook(GtkWidget* box);
+void create_files_out_err_notebook(GtkWidget* box);
 
 #endif /* __GABEDIT_LISTEFILES_H__ */
 

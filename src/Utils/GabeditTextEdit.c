@@ -1,6 +1,6 @@
 /* GabeditTextEdit.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -19,6 +19,7 @@ DEALINGS IN THE SOFTWARE.
 
 #include "../../Config.h"
 #include <gtk/gtk.h>
+#include <string.h>
 #include "../Common/GabeditType.h"
 
 /************************************************************************************************************/
@@ -40,6 +41,29 @@ void gabedit_text_insert(GtkWidget* text, GdkFont* font, GdkColor* colorFore, Gd
 		gint char_offset  = 0;
 		if(!GTK_IS_TEXT_VIEW (text)) return;
 		buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
+		if(!buffer)
+		{
+			fprintf(stderr,"Error : Buffer =NULL\n");
+			return;
+		}
+		if(str==NULL || strlen(str)<1)
+		{
+			fprintf(stderr,"Error : len text <1\n");
+			return;
+		}
+		/*
+		if( gtk_text_buffer_get_modified(buffer))
+			fprintf(stderr,"Warning buffer modified\n");
+		*/
+		if(!g_utf8_validate (str, l, NULL))
+		{
+			
+			fprintf(stderr,"Warning lenstr =%d\n",(int)strlen(str));
+			return;
+		}
+		/* fprintf(stderr,"lenstr =%d\n",strlen(str));*/
+
+
 		gtk_text_buffer_get_iter_at_mark (buffer, &match_start, gtk_text_buffer_get_mark (buffer,"insert"));
 		char_offset = gtk_text_iter_get_offset(&match_start);
 		gtk_text_buffer_insert_at_cursor (buffer, str, l);

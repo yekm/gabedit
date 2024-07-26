@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -86,9 +86,9 @@ GtkWidget*  Message(char *message,char *titre,gboolean center);
 GtkWidget* MessageTxt(gchar *message,gchar *title);
 void show_forbidden_characters();
 gboolean variable_name_valid(gchar *);
-void  cree_p_vbox();
+void  create_p_vbox();
 GtkWidget *create_checkbutton(GtkWidget *,GtkWidget *,gchar *);
-void  cree_vboxs_list_text();
+void  create_vboxs_list_text();
 void goto_end(GtkWidget *current,gpointer data);
 void goto_end_result(GtkWidget *win,gpointer data);
 void read_geom_in_gamess_input(gchar *);

@@ -1,3 +1,24 @@
+2 September 2022
+	XTB supported : Draw Geometry/Semi-Emperical (XTB, MD, MDConfo)
+	Gabedit can compute energy, optimize a geometry, make a MD and MD search conformation using XTB methods
+
+18 May 2022
+	Minor bugs fixed (load the result file, management of window sizes and positions by the system and users)
+	The result file is not loaded automaticaly. Load only if the user click on update button
+
+11 May 2022
+	Window key of the keyboard to unselect atoms
+
+8 February 2022
+	CIF : _space_group_symop_operation_xyz is now supported
+	Gaussian output file with different basis sets for one type of atom : Supported
+
+27 July 2021
+	normalisation of RDF : bug fixed
+
+27 May 2021
+	read Energy from the comment line of xyz file if multiple geometries
+
 26 August 2020
 	Compute Cremer-Pople parameters for pyranose saccharide
 

@@ -1,6 +1,6 @@
 /* ViewOrb.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -97,7 +97,7 @@ int view_orb(GtkWidget* Parent,int argc, char **argv)
 
 	first = FALSE;
 
-	gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);
+	/* gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);*/
 	InitializeAll();
 	/*printCoefZlm();*/
 

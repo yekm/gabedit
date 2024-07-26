@@ -1,6 +1,6 @@
 /* ImagesGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -136,7 +136,8 @@ static void save_geometry_image(GabeditFileChooser *SelecFile, gchar* type, guch
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
 	while( gtk_events_pending() ) gtk_main_iteration();
 
-	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
+	gtk_window_present(GTK_WINDOW(GeomDlg));
+	/* gtk_window_move(GTK_WINDOW(GeomDlg),0,0);*/
 	rafresh_drawing();
 	while( gtk_events_pending() ) gtk_main_iteration();
 #ifdef DRAWGEOMGL
@@ -394,7 +395,8 @@ void save_geometry_ppm_file(GabeditFileChooser *SelecFile, gint response_id)
  	}
 
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
-	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
+	gtk_window_present(GTK_WINDOW(GeomDlg));
+	/* gtk_window_move(GTK_WINDOW(GeomDlg),0,0);*/
 	rafresh_drawing();
 	while( gtk_events_pending() )
 		gtk_main_iteration();
@@ -584,7 +586,8 @@ void save_geometry_bmp_file(GabeditFileChooser *SelecFile, gint response_id)
  	}
 
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
-	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
+	gtk_window_present(GTK_WINDOW(GeomDlg));
+	/* gtk_window_move(GTK_WINDOW(GeomDlg),0,0);*/
 	rafresh_drawing();
 	while( gtk_events_pending() )
 		gtk_main_iteration();
@@ -690,7 +693,8 @@ void save_geometry_ps_file(GabeditFileChooser *SelecFile, gint response_id)
     	return ;
  	}
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
-	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
+	gtk_window_present(GTK_WINDOW(GeomDlg));
+	/* gtk_window_move(GTK_WINDOW(GeomDlg),0,0);*/
 	rafresh_drawing();
 	while( gtk_events_pending() )
 		gtk_main_iteration();

@@ -1,6 +1,6 @@
 /* Utils.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -162,12 +162,17 @@ static void free_commands_list(CommandsList* list)
 /********************************************************************************/
 void free_gamess_commands()
 {
-	free_commands_list(&gaussianCommands);
+	free_commands_list(&gamessCommands);
 }
 /********************************************************************************/
 void free_gaussian_commands()
 {
 	free_commands_list(&gaussianCommands);
+}
+/********************************************************************************/
+void free_xtb_commands()
+{
+	free_commands_list(&xtbCommands);
 }
 /********************************************************************************/
 void free_molcas_commands()
@@ -1165,6 +1170,23 @@ void create_commands_file()
 
 /*-----------------------------------------------------------------------------*/
 
+	fprintf(fd,"Begin XTB\n");
+	str_delete_n(NameCommandXTB);
+	delete_last_spaces(NameCommandXTB);
+	delete_first_spaces(NameCommandXTB);
+ 	fprintf(fd,"%s\n",NameCommandXTB);
+ 	fprintf(fd,"%d\n",xtbCommands.numberOfCommands);
+	for(i=0;i<xtbCommands.numberOfCommands;i++)
+	{
+		str_delete_n(xtbCommands.commands[i]);
+		delete_last_spaces(xtbCommands.commands[i]);
+		delete_first_spaces(xtbCommands.commands[i]);
+		fprintf(fd,"%s\n",xtbCommands.commands[i]);
+	}
+	fprintf(fd,"End\n");
+
+/*-----------------------------------------------------------------------------*/
+
 	fprintf(fd,"Begin Molcas\n");
 	str_delete_n(NameCommandMolcas);
 	delete_last_spaces(NameCommandMolcas);
@@ -1371,6 +1393,13 @@ void create_commands_file()
 	delete_last_spaces(mopacDirectory);
 	delete_first_spaces(mopacDirectory);
 	fprintf(fd,"%s\n",mopacDirectory);
+	fprintf(fd,"End\n");
+
+	fprintf(fd,"Begin XTBDir\n");
+	str_delete_n(xtbDirectory);
+	delete_last_spaces(xtbDirectory);
+	delete_first_spaces(xtbDirectory);
+	fprintf(fd,"%s\n",xtbDirectory);
 	fprintf(fd,"End\n");
 
 	fprintf(fd,"Begin GaussDir\n");
@@ -1863,6 +1892,7 @@ void read_commands_file()
 	readCommandsOneSoft(fd, "Begin DeMon", &NameCommandDeMon, &demonCommands, free_demon_commands, "default");
 	readCommandsOneSoft(fd, "Begin Gamess", &NameCommandGamess, &gamessCommands, free_gamess_commands, "nohup runGamess");
 	readCommandsOneSoft(fd, "Begin Gaussian", &NameCommandGaussian, &gaussianCommands, free_gaussian_commands, "nohup g09");
+	readCommandsOneSoft(fd, "Begin XTB", &NameCommandXTB, &xtbCommands, free_xtb_commands, "xtb");
 	readCommandsOneSoft(fd, "Begin Molcas", &NameCommandMolcas, &molcasCommands, free_molcas_commands, "nohup runMolcas");
 	readCommandsOneSoft(fd, "Begin Molpro", &NameCommandMolpro, &molproCommands, free_molpro_commands, "nohup runMolpro");
 	readCommandsOneSoft(fd, "Begin MPQC", &NameCommandMPQC, &mpqcCommands, free_mpqc_commands, "nohup mpqc");
@@ -1882,6 +1912,7 @@ void read_commands_file()
 	readOneDir(fd, "Begin OrcaDir", &orcaDirectory);
 	readOneDir(fd, "Begin FireFlyDir", &fireflyDirectory);
 	readOneDir(fd, "Begin MopacDir", &mopacDirectory);
+	readOneDir(fd, "Begin XTBDir", &xtbDirectory);
 	readOneDir(fd, "Begin GaussDir", &gaussDirectory);
 	readOneDir(fd, "Begin PovRayDir", &povrayDirectory);
 	readOneDir(fd, "Begin OpenBabelDir", &openbabelDirectory);
@@ -1940,10 +1971,11 @@ void set_path()
 #ifdef G_OS_WIN32
 	{
 		gchar t[BBSIZE];
-		sprintf(t,"%s;%s;%s;%s;%s;%s;%s;%s;%s",
+		sprintf(t,"%s;%s;%s;%s;%s;%s;%s;%s;%s;%s",
 		orcaDirectory,
 		fireflyDirectory,
 		mopacDirectory,
+		xtbDirectory,
 		gaussDirectory,
 		demonDirectory,
 		pscpplinkDirectory,
@@ -2285,7 +2317,8 @@ void initialise_name_commands()
 	gchar t[BBSIZE];
 	NameCommandDeMon=g_strdup("demon");
 	NameCommandGamess=g_strdup("submitGMS");
-	NameCommandGaussian=g_strdup("g03.exe");
+	NameCommandGaussian=g_strdup("g16.exe");
+	NameCommandXTB=g_strdup("xtb");
 	NameCommandMolcas=g_strdup("molcas");
 	NameCommandMolpro=g_strdup("molpro");
 	NameCommandMPQC=g_strdup("mpqc");
@@ -2299,7 +2332,8 @@ void initialise_name_commands()
 #else
 	NameCommandDeMon=g_strdup("default");
 	NameCommandGamess=g_strdup("submitGMS");
-	NameCommandGaussian=g_strdup("nohup g03");
+	NameCommandXTB=g_strdup("xtb");
+	NameCommandGaussian=g_strdup("nohup g16");
 	NameCommandMolcas=g_strdup("nohup molcas");
 	NameCommandMolpro=g_strdup("nohup molpro");
 	NameCommandMPQC=g_strdup("nohup mpqc");
@@ -2321,11 +2355,12 @@ void initialise_name_commands()
 	psicodeDirectory= g_strdup_printf("C:%sPsicode",G_DIR_SEPARATOR_S);
 	fireflyDirectory= g_strdup_printf("C:%sFIREFLY",G_DIR_SEPARATOR_S);
 	mopacDirectory= g_strdup_printf("\"C:%sProgram Files%sMOPAC\"",G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+	xtbDirectory= g_strdup_printf("\"C:%sProgram Files%sXTB%sbin\"",G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
 	povrayDirectory= g_strdup_printf("\"C:%sProgram Files%sPovRay%sbin\"",G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
 	openbabelDirectory= g_strdup_printf("C:%sOpenBabel",G_DIR_SEPARATOR_S);
 	babelCommand = g_strdup_printf("%s%sobabel.exe",openbabelDirectory,G_DIR_SEPARATOR_S);
-	gaussDirectory= g_strdup_printf("\"C:%sG03W\"",G_DIR_SEPARATOR_S);
-	sprintf(t,"%s;%s;%s;%s;%s;%s;%s;%s",orcaDirectory,fireflyDirectory,mopacDirectory,gaussDirectory,demonDirectory,povrayDirectory,openbabelDirectory,g_getenv("PATH"));
+	gaussDirectory= g_strdup_printf("\"C:%sG16W\"",G_DIR_SEPARATOR_S);
+	sprintf(t,"%s;%s;%s;%s;%s;%s;%s;%s;%s",orcaDirectory,fireflyDirectory,mopacDirectory,xtbDirectory,gaussDirectory,demonDirectory,povrayDirectory,openbabelDirectory,g_getenv("PATH"));
 	g_setenv("PATH",t,TRUE);
 #else
 	demonDirectory= g_strdup_printf("%s%sDeMon",g_get_home_dir(),G_DIR_SEPARATOR_S);
@@ -2335,6 +2370,7 @@ void initialise_name_commands()
 	psicodeDirectory= g_strdup_printf("%s%sPsicode",g_get_home_dir(),G_DIR_SEPARATOR_S);
 	fireflyDirectory= g_strdup_printf("%s%sFireFly",g_get_home_dir(),G_DIR_SEPARATOR_S);
 	mopacDirectory= g_strdup_printf("/opt/mopac");
+	xtbDirectory= g_strdup_printf("/opt/xtb");
 	povrayDirectory= g_strdup_printf("/usr/local/bin");
 	openbabelDirectory= g_strdup_printf("%s%sOpenBabel",g_get_home_dir(),G_DIR_SEPARATOR_S);
 	babelCommand = g_strdup_printf("%s%sobabel.exe",openbabelDirectory,G_DIR_SEPARATOR_S);
@@ -2448,12 +2484,23 @@ void initialise_global_variables()
 #endif
   gaussianCommands.numberOfDefaultCommand = 0;
   gaussianCommands.commands = g_malloc(gaussianCommands.numberOfCommands*sizeof(gchar*));
-  gaussianCommands.commands[0] = g_strdup("nohup g03");
+  gaussianCommands.commands[0] = g_strdup("nohup g16");
   gaussianCommands.commands[1] = g_strdup("submitGaussian 1:0:0");
 #ifdef G_OS_WIN32
-    gaussianCommands.commands[2] = g_strdup("g03.exe");
+    gaussianCommands.commands[2] = g_strdup("g16.exe");
 #endif
 
+  xtbCommands.numberOfCommands = 2;
+#ifdef G_OS_WIN32
+    xtbCommands.numberOfCommands = 3;
+#endif
+  xtbCommands.numberOfDefaultCommand = 0;
+  xtbCommands.commands = g_malloc(xtbCommands.numberOfCommands*sizeof(gchar*));
+  xtbCommands.commands[0] = g_strdup("xtb");
+  xtbCommands.commands[1] = g_strdup("submitXTB 1:0:0");
+#ifdef G_OS_WIN32
+  xtbCommands.commands[2] = g_strdup("xtb");
+#endif
 
   molcasCommands.numberOfCommands = 2;
 #ifdef G_OS_WIN32
@@ -5877,12 +5924,16 @@ gchar *readFile(gchar *filename)
 
     fp = fopen(filename, "rb");
     if(fp) {
+        /*size_t l=0;*/
         fseek(fp, 0, SEEK_END);
         fsize = ftell(fp);
         rewind(fp);
 
-        fcontent = (gchar*) malloc(sizeof(gchar) * fsize);
-        fread(fcontent, 1, fsize, fp);
+        fcontent = (gchar*) g_malloc(sizeof(gchar) * fsize+1);
+        fread(fcontent, sizeof(gchar), fsize, fp);
+        /*l=fread(fcontent, sizeof(gchar), fsize, fp);
+	printf("l=%d\n",l);*/
+	fcontent[fsize]='\0';
         fclose(fp);
     }
     return fcontent;

@@ -1,6 +1,6 @@
 /* TextEdit.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -301,6 +301,7 @@ void AjoutePageNotebook(char *label,GtkWidget **TextP)
 
   *TextP = gabedit_text_new ();
   set_tab_size (*TextP, 8);
+  gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(*TextP),GTK_WRAP_CHAR);
   /* gabedit_text_set_word_wrap (GABEDIT_TEXT(*TextP), FALSE);*/
   
 /*
@@ -328,13 +329,24 @@ void AjoutePageNotebook(char *label,GtkWidget **TextP)
   	g_object_set_data(G_OBJECT (*TextP), "EndPos", &end_pos);
   }
 }
+/********************************************************************************/
+void show_message_update_result()
+{
+	guint nchar;
+	nchar=gabedit_text_get_length(GABEDIT_TEXT(textresult));
+	gabedit_text_set_point(GABEDIT_TEXT(textresult),0);
+	gabedit_text_forward_delete(GABEDIT_TEXT(textresult),nchar);
+	gabedit_text_insert (GABEDIT_TEXT(textresult), NULL, NULL, NULL, "\n\tClick on update or update/end (Right toolbar) to load result file\n",-1);
+	gabedit_text_set_point(GABEDIT_TEXT(textresult),0);
+}
 /*****************************************************************************************/
 void view_result_calcul(GtkWidget *noteb,gpointer d)
 {
   int numpage;
   numpage = gtk_notebook_get_current_page ((GtkNotebook *)noteb);
   if(numpage == 0)
-    get_result();
+	show_message_update_result();
+    /* get_result();*/
 }
 /*****************************************************************************************/
 void set_imodif(GtkWidget *wid, gpointer data)
@@ -342,7 +354,7 @@ void set_imodif(GtkWidget *wid, gpointer data)
  	data_modify(TRUE);
 }     
 /*****************************************************************************************/
-void cree_text_notebook()
+void create_text_notebook()
 {
   GtkWidget *hbox;
 

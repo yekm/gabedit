@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -65,6 +65,8 @@ void find_energy_qchem_output(gchar* fileName);
 gint find_energy_mopac_aux(gchar* fileName);
 void find_energy_mopac_scan_output(gchar* fileName);
 void find_energy_mopac_irc_output(gchar* fileName);
+void find_energy_xyz(gchar* fileName);
+void find_energy_xtb(gchar* fileName);
 
 #endif /* __GABEDIT_RESULTSANALISE_H__ */
 

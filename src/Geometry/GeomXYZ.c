@@ -1,6 +1,6 @@
 /* GGeomXYZ.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -14041,7 +14041,7 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   gchar* patternsout[] = {"*.out","*.log","*",NULL};
   gchar* patternsaux[] = {"*.aux","*",NULL};
   gchar* patternsgab[] = {"*.gab","*",NULL};
-  gchar* patternsmol[] = {"*.mol","*",NULL};
+  gchar* patternsmol[] = {"*.mol","*.sdf","*",NULL};
   gchar* patternsirc[] = {"*.irc","*",NULL};
   gchar* patternsfchk[] = {"*.fchk","*",NULL};
   gchar* patternsposcar[] = {"POS*","*",NULL};
@@ -14059,7 +14059,7 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsxyz);
 	   break;
   case GABEDIT_TYPEFILEGEOM_MOL :
-	   SelecFile = gabedit_file_chooser_new(_("Read Mol file"), GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read Mol/sdf file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsmol);
 	   break;
   case GABEDIT_TYPEFILEGEOM_DALTONFIRST : 

@@ -1,6 +1,6 @@
 /* EnergiesCurve.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -813,7 +813,7 @@ void create_energies_curves(DataGeomConv* GeomConv,gint N)
 
         add_button_windows(_("Geom. Conv."),WindowEnergies);
 	gtk_window_set_transient_for(GTK_WINDOW(WindowEnergies),GTK_WINDOW(Fenetre));
-	gtk_window_move(GTK_WINDOW(WindowEnergies),(gint)(ScreenHeight*0.72),0);
+	/*gtk_window_move(GTK_WINDOW(WindowEnergies),(gint)(ScreenHeight*0.72),0);*/
 	gtk_widget_show_all(WindowEnergies);
         set_icone(WindowEnergies);
 

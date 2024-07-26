@@ -1,6 +1,6 @@
 /* MenuToolBar.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -686,6 +686,10 @@ static const gchar *uiInfo =
 "      <toolitem name=\"OrcaInput\" action=\"OrcaInput\" />\n"
 "      <toolitem name=\"FireFlyInput\" action=\"FireFlyInput\" />\n"
 "      <toolitem name=\"QChemInput\" action=\"QChemInput\" />\n"
+"      <separator name=\"sepToolBarGeom\" />\n"
+"      <toolitem name=\"GeometryDraw\" action=\"GeometryDraw\" />\n"
+"      <toolitem name=\"DisplayDensity\" action=\"DisplayDensity\" />\n"
+"      <separator name=\"sepToolBarEdit\" />\n"
 "      <toolitem name=\"Include\" action=\"Include\" />\n"
 "      <toolitem name=\"Open\" action=\"Open\" />\n"
 "      <toolitem name=\"Save\" action=\"Save\" />\n"
@@ -699,9 +703,6 @@ static const gchar *uiInfo =
 "      <toolitem name=\"SelectAll\" action=\"SelectAll\" />\n"
 "      <separator name=\"sepToolBarRun\" />\n"
 "      <toolitem name=\"RunAbinitio\" action=\"RunAbinitio\" />\n"
-"      <separator name=\"sepToolBarGeom\" />\n"
-"      <toolitem name=\"GeometryDraw\" action=\"GeometryDraw\" />\n"
-"      <toolitem name=\"DisplayDensity\" action=\"DisplayDensity\" />\n"
 "      <separator name=\"sepToolBarBabel\" />\n"
 /*
 "      <toolitem name=\"Open B_abel\" action=\"ToolsOpenBabel\" />\n"

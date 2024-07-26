@@ -1,6 +1,6 @@
 /* SemiEmpiricalDlg.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -79,6 +79,7 @@ static  GtkWidget* buttonDirSelector = NULL;
 static  GtkWidget* entryCharge = NULL;
 static  GtkWidget* entrySpinMultiplicity = NULL;
 static  GtkWidget* buttonCreateGaussian = NULL ;
+static  GtkWidget* buttonCreateXTB = NULL ;
 static  GtkWidget* entryGaussianKeywords = NULL; 
 static  GtkWidget* buttonCreateMopac = NULL ;
 static  GtkWidget* entryMopacKeywords = NULL; 
@@ -86,6 +87,8 @@ static  GtkWidget* buttonCreateFireFly = NULL ;
 static  GtkWidget* entryFireFlyKeywords = NULL; 
 static  GtkWidget* entryOpenBabelKeywords = NULL; 
 static  GtkWidget* entryOpenBabelPotential = NULL; 
+static  GtkWidget* entryXTBKeywords = NULL; 
+static  GtkWidget* entryXTBPotential = NULL; 
 static  GtkWidget* entryGenericKeywords = NULL; 
 static  GtkWidget* entryGenericPotential = NULL; 
 static  GtkWidget* buttonPostNone = NULL ;
@@ -93,10 +96,12 @@ static  GtkWidget* buttonPostOpt = NULL ;
 static  GtkWidget* buttonMopac = NULL ;
 static  GtkWidget* buttonFireFly = NULL ;
 static  GtkWidget* buttonOpenBabel = NULL ;
+static  GtkWidget* buttonXTB = NULL ;
 static  GtkWidget* buttonGeneric = NULL ;
 static  GtkWidget* entryMopacMethod = NULL;
 static  GtkWidget* entryFireFlyMethod = NULL;
 static  GtkWidget* entryOpenBabelMethod = NULL;
+static  GtkWidget* entryXTBMethod = NULL;
 static  GtkWidget* entryGenericMethod = NULL;
 static  GtkWidget* entryMopacHamiltonianSparkle = NULL;
 static  GtkWidget* entryMopacHamiltonian = NULL;
@@ -104,6 +109,7 @@ static  GtkWidget* entryAddMopacKeywords = NULL;
 static  GtkWidget* entryOrcaHamiltonian = NULL;
 static  GtkWidget* entryAddOrcaKeywords = NULL;
 static  GtkWidget* entryAddOpenBabelKeywords = NULL;
+static  GtkWidget* entryAddXTBKeywords = NULL;
 static  gchar* genericProgName = NULL;
 static gint totalCharge = 0;
 static gint spinMultiplicity=1;
@@ -121,6 +127,7 @@ static void addOrcaOptions(GtkWidget *box, gchar* type);
 static void addMopacSparkleOptions(GtkWidget *box, gchar* type);
 static void addOpenBabelOptions(GtkWidget *box, gchar* type);
 static gboolean runOneGeneric(MoleculeSE* mol, char* fileNamePrefix, char* keyWords, char* genericCommand);
+static gboolean runOneXTB(MoleculeSE* mol, char* fileNamePrefix, char* keyWords, char* xtbCommand);
 /*********************************************************************************/
 static void getMultiplicityName(gint multiplicity, gchar* buffer)
 {
@@ -1309,18 +1316,6 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
 	return TRUE;
 }
 /*****************************************************************************/
-static void runGeneric(MoleculeSE* mol, char* fileName, char* keys, char* genericCommand)
-{
-	if(keys && genericCommand)
-	{
-		gchar* fileNamePrefix = get_suffix_name_file(fileName);
-		if(runOneGeneric(mol, fileNamePrefix, keys, genericCommand))
-		{
-		}
-		if(fileNamePrefix) free(fileNamePrefix);
-	}
-}
-/*****************************************************************************/
 static void runSemiEmpirical(GtkWidget* Win, gpointer data, gchar* type, gchar* keys)
 {
 	gchar* fileName = NULL;
@@ -1629,6 +1624,42 @@ static void runSemiEmpirical(GtkWidget* Win, gpointer data, gchar* type, gchar* 
 		}
 		if(fileNamePrefix) g_free(fileNamePrefix);
 	}
+	else if(!strcmp(type,"XTBEnergy"))
+	{
+		gchar* fileNamePrefix = get_suffix_name_file(fileName);
+		gchar* mkeys=NULL;
+		if(spinMultiplicity!=1 && !strstr(keys,"uhf")  )
+			mkeys = g_strdup_printf(" %s --uhf %d ", keys, spinMultiplicity-1);
+		else 
+			mkeys = g_strdup_printf(" %s ", keys);
+
+		printf("Keys = %s\n",mkeys);
+		if(runOneXTB(NULL,fileNamePrefix,"Energy",mkeys))
+		{
+		}
+		if(fileNamePrefix) g_free(fileNamePrefix);
+		if(mkeys) g_free(mkeys);
+	}
+	else if(!strcmp(type,"XTBOptimize"))
+	{
+		gchar* fileNamePrefix = get_suffix_name_file(fileName);
+		gchar* mkeys=NULL;
+		if(spinMultiplicity!=1 && !strstr(keys,"uhf")  )
+			mkeys = g_strdup_printf(" %s --uhf %d ", keys, spinMultiplicity-1);
+		else 
+			mkeys = g_strdup_printf(" %s ", keys);
+		printf("Keys = %s\n",mkeys);
+		if(runOneXTB(NULL,fileNamePrefix, "Opt",mkeys))
+		{
+			gchar* dirName= get_name_dir(fileName);
+			gchar* fileGeoms = g_strdup_printf("%s%sxtbopt.log",dirName, G_DIR_SEPARATOR_S);
+			find_energy_xtb(fileGeoms);
+			if(fileGeoms) g_free(fileGeoms);
+			if(dirName) g_free(dirName);
+		}
+		if(fileNamePrefix) g_free(fileNamePrefix);
+		if(mkeys) g_free(mkeys);
+	}
 }
 /*****************************************************************************/
 static void runAM1FireFlyEnergy(GtkWidget* Win, gpointer data)
@@ -1726,6 +1757,41 @@ static void runGenericOptimize(GtkWidget* Win, gpointer data)
 	if(potential) keys = g_strdup_printf("%s",potential);
 	else keys = g_strdup_printf("generic");
 	runSemiEmpirical(Win, data, "GenericOptimize",keys);
+	if(keys) g_free(keys);
+}
+/*****************************************************************************/
+static void runXTBEnergy(GtkWidget* Win, gpointer data)
+{
+	G_CONST_RETURN gchar* potential = gtk_entry_get_text(GTK_ENTRY(entryXTBPotential));
+	gchar* keys = NULL;
+	gchar* uhf = NULL;
+	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
+	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
+	TotalCharges[0] = totalCharge;
+	SpinMultiplicities[0] = spinMultiplicity;
+
+	if( spinMultiplicity==1)
+		uhf = g_strdup(" ");
+	else
+		uhf = g_strdup_printf(" --uhf %d ", spinMultiplicity-1);
+	if(potential) keys = g_strdup_printf("%s %s",potential, uhf);
+	else keys = g_strdup_printf(" %s ",uhf);
+
+	runSemiEmpirical(Win, data, "XTBEnergy",keys);
+	if(keys) g_free(keys);
+}
+/*****************************************************************************/
+static void runXTBOptimize(GtkWidget* Win, gpointer data)
+{
+	G_CONST_RETURN gchar* potential = gtk_entry_get_text(GTK_ENTRY(entryXTBPotential));
+	gchar* keys = NULL;
+	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
+	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
+	TotalCharges[0] = totalCharge;
+	SpinMultiplicities[0] = spinMultiplicity;
+	if(potential) keys = g_strdup_printf("%s",potential);
+	else keys = g_strdup_printf(" --gfn 2 ");
+	runSemiEmpirical(Win, data, "XTBOptimize",keys);
 	if(keys) g_free(keys);
 }
 /*****************************************************************************/
@@ -1897,7 +1963,7 @@ static gboolean runOneGeneric(MoleculeSE* mol, char* fileNamePrefix, char* keyWo
 	gint type = 0;
 	gboolean newMolSE = FALSE;
 	MoleculeSE molecule;
-#ifdef OS_WIN32
+#ifdef G_OS_WIN32
 	char c='%';
 #endif
 
@@ -1910,14 +1976,14 @@ static gboolean runOneGeneric(MoleculeSE* mol, char* fileNamePrefix, char* keyWo
 
 	if(!mol) return FALSE;
 	if(mol->nAtoms<1) return FALSE;
-#ifndef OS_WIN32
+#ifndef G_OS_WIN32
 	fileNameSH = g_strdup_printf("%sGenericOne.sh",fileNamePrefix);
 #else
 	fileNameSH = g_strdup_printf("%sGenericOne.bat",fileNamePrefix);
 #endif
  	fileSH = fopen(fileNameSH, "w");
 	if(!fileSH) return FALSE;
-#ifdef OS_WIN32
+#ifdef G_OS_WIN32
 	fprintf(fileSH,"@echo off\n");
 #endif
 
@@ -1947,7 +2013,7 @@ static gboolean runOneGeneric(MoleculeSE* mol, char* fileNamePrefix, char* keyWo
 		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 	}
-#ifndef OS_WIN32
+#ifndef G_OS_WIN32
 	fprintf(fileSH,"%s %s %s",genericCommand,fileNameIn,fileNameOut);
 	fclose(fileSH);
 	sprintf(buffer,"chmod u+x %s",fileNameSH);
@@ -1991,6 +2057,183 @@ static gboolean runOneGeneric(MoleculeSE* mol, char* fileNamePrefix, char* keyWo
 				(
 				"Sorry, I cannot read the output file : %s "
 				" ; Check also the installation of Generic..."
+				),
+				fileNameOut
+				);
+		/* printf(str);*/
+		set_text_to_draw(str);
+		drawGeom();
+    		while( gtk_events_pending() ) gtk_main_iteration();
+		if(str) g_free(str);
+ 		if(fileNameIn) free(fileNameIn);
+ 		if(fileNameOut) free(fileNameOut);
+ 		if(fileNameSH) free(fileNameSH);
+		if(mol && newMolSE) freeMoleculeSE(mol);
+		return FALSE;
+	}
+
+ 	if(fileNameIn) free(fileNameIn);
+ 	if(fileNameOut) free(fileNameOut);
+ 	if(fileNameSH) free(fileNameSH);
+	if(mol && newMolSE) freeMoleculeSE(mol);
+	return TRUE;
+}
+/*****************************************************************************/
+static gboolean getEnergyXTB(char* fileNameOut, double* energy)
+{
+	FILE* file = NULL;
+	char buffer[1024];
+	char* tag = " TOTAL ENERGY ";
+ 	file = fopen(fileNameOut, "r");
+	if(!file) return FALSE;
+	 while(!feof(file))
+	 {
+		if(!fgets(buffer,BSIZE,file))break;
+		if(strstr( buffer, tag))
+		{
+			char* pdest = strstr( buffer, tag)+strlen(tag)+1 ;
+			int i;
+			if(pdest && sscanf(pdest,"%lf",energy)==1)
+			{
+				for(i=0;i<strlen(pdest);i++) if(pdest[i]=='D' || pdest[i]=='d') pdest[i] ='E';
+				if(sscanf(pdest,"%lf",energy)==1)
+				{
+					fclose(file);
+					*energy *=AUTOKCAL;
+					return TRUE;
+				}
+			}
+		}
+	 }
+	fclose(file);
+	return FALSE;
+}
+/*****************************************************************************/
+static gboolean runOneXTB(MoleculeSE* mol, char* fileNamePrefix, char* stype, char* keyWords)
+{
+	FILE* file = NULL;
+	FILE* fileSH = NULL;
+	gchar* fileNameIn = NULL;
+	gchar* fileNameOut = NULL;
+	gchar* fileNameSH = NULL;
+	gchar multiplicityStr[100];
+	gchar buffer[1024];
+	gdouble energy = 0;
+	gint type = 0;
+	gboolean newMolSE = FALSE;
+	MoleculeSE molecule;
+	gchar* dirName=NULL;
+#ifdef G_OS_WIN32
+	char c='%';
+#endif
+
+	if(!mol)
+	{
+		molecule = createMoleculeSE(geometry0,(gint)Natoms, totalCharge, spinMultiplicity, TRUE);
+		mol = &molecule;
+		newMolSE = TRUE;
+	}
+
+	if(!mol) return FALSE;
+	if(mol->nAtoms<1) return FALSE;
+
+
+#ifndef G_OS_WIN32
+	fileNameSH = g_strdup_printf("%sXTBOne.sh",fileNamePrefix);
+#else
+	fileNameSH = g_strdup_printf("%sXTBOne.bat",fileNamePrefix);
+#endif
+ 	fileSH = fopen(fileNameSH, "w");
+	if(!fileSH) return FALSE;
+#ifdef G_OS_WIN32
+	fprintf(fileSH,"@echo off\n");
+	fprintf(fileSH,"set PATH=%cPATH%c;\"%s\"\n",c,c,xtbDirectory);
+#endif
+
+	fileNameIn = g_strdup_printf("%sOne.xyz",fileNamePrefix);
+	fileNameOut = g_strdup_printf("%sOne.out",fileNamePrefix);
+
+ 	file = fopen(fileNameIn, "w");
+	if(!file) 
+	{
+ 		if(fileNameIn) free(fileNameIn);
+ 		if(fileNameOut) free(fileNameOut);
+ 		if(fileNameSH) free(fileNameSH);
+		return FALSE;
+	}
+
+	if(strstr(stype,"Opt")) type = 2;
+	if(strstr(stype,"GRAD")) type = 1;
+	addGeometryMoleculeSEToXYZ(mol,file);
+	fclose(file);
+	{
+		char* str = NULL;
+		if(type==2) str = g_strdup_printf("Minimization by XTB/%s ... Please wait",keyWords);
+		else str = g_strdup_printf("Energy by XTB/%s ... Please wait",keyWords);
+		/* printf("%s\n",str);*/
+		set_text_to_draw(str);
+		if(str) g_free(str);
+		drawGeom();
+    		while( gtk_events_pending() ) gtk_main_iteration();
+	}
+#ifndef G_OS_WIN32
+	dirName= get_name_dir(fileNameIn);
+	fprintf(fileSH,"cd %s\n",dirName);
+	g_free(dirName);
+	if(type==2)
+		fprintf(fileSH,"%s %s --opt %s >  %s",NameCommandXTB, fileNameIn, keyWords, fileNameOut);
+	else
+		fprintf(fileSH,"%s %s %s >  %s",NameCommandXTB, fileNameIn, keyWords, fileNameOut);
+	fclose(fileSH);
+	sprintf(buffer,"chmod u+x %s",fileNameSH);
+	system(buffer);
+	system(fileNameSH);
+#else
+	addUnitDisk(fileSH, fileNamePrefix);
+	dirName= get_name_dir(fileNameIn);
+	fprintf(fileSH,"cd %s\n",dirName);
+	g_free(dirName);
+	if(type==2)
+		fprintf(fileSH,"\"%s\" \"%s\"  %s --opt > \"%s\"",NameCommandXTB,fileNameIn, keyWords, fileNameOut);
+	else
+		fprintf(fileSH,"\"%s\" \"%s\"  %s > \"%s\"",NameCommandXTB,fileNameIn, keyWords, fileNameOut);
+	fclose(fileSH);
+	sprintf(buffer,"\"%s\"",fileNameSH);
+	system(buffer);
+#endif
+
+	if(getEnergyXTB(fileNameOut,&energy))
+	{
+		gchar* str = NULL;
+		str = g_strdup_printf("Energy by %s %s = %f", NameCommandXTB, keyWords, energy);
+		mol->energy = energy;
+		/* printf("%s\n",str);*/
+		set_text_to_draw(str);
+		drawGeom();
+    		while( gtk_events_pending() ) gtk_main_iteration();
+		if(str) g_free(str);
+		if(type==2)
+		{
+			gchar* str = g_strdup_printf("%s.gab",fileNamePrefix);
+			readGeometryFromXTBOutputFile(mol,fileNameOut);
+			saveGeometry(mol, energy, str);
+			read_geom_from_gabedit_geom_conv_file(str, 1);
+			if(str) g_free(str);
+			/* str = g_strdup_printf("Energy by OpenBabel = %f", energy);*/
+			str = g_strdup_printf("Energy by %s = %f", NameCommandXTB,energy);
+			set_text_to_draw(str);
+			drawGeom();
+    			while( gtk_events_pending() ) gtk_main_iteration();
+			Waiting(1);
+		}
+	}
+	else
+	{
+		gchar* str = NULL;
+		str = g_strdup_printf(
+				(
+				"Sorry, I cannot read the output file : %s "
+				" ; Check also the installation of XTB..."
 				),
 				fileNameOut
 				);
@@ -2750,6 +2993,50 @@ static void addGenericOptions(GtkWidget *box, gchar* type)
 /*----------------------------------------------------------------------------------*/
 }
 /************************************************************************************************************/
+static void addXTBOptions(GtkWidget *box, gchar* type)
+{
+	GtkWidget* frame;
+	GtkWidget* vboxFrame;
+	GtkWidget* comboXTBPotential = NULL;
+	GtkWidget* label = NULL;
+	GtkWidget *table = NULL;
+	gint i;
+	gint j;
+
+	table = gtk_table_new(2,5,FALSE);
+
+	frame = gtk_frame_new (NULL);
+	gtk_widget_show (frame);
+	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
+	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
+
+	vboxFrame = gtk_vbox_new (FALSE, 3);
+	gtk_widget_show (vboxFrame);
+	gtk_container_add (GTK_CONTAINER (frame), vboxFrame);
+	gtk_box_pack_start (GTK_BOX (vboxFrame), table, TRUE, TRUE, 0);
+/*----------------------------------------------------------------------------------*/
+	i = 0;
+	j = 0;
+	add_label_table(table,_("Method"),(gushort)i,(gushort)j);
+/*----------------------------------------------------------------------------------*/
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	j = 2;
+	entryXTBPotential = gtk_entry_new();
+	gtk_widget_set_size_request(GTK_WIDGET(entryXTBPotential),(gint)(ScreenHeight*0.2),-1);
+	gtk_table_attach(GTK_TABLE(table),entryXTBPotential, j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_entry_set_text(GTK_ENTRY(entryXTBPotential),"--gfn 1");
+/*----------------------------------------------------------------------------------*/
+}
+/************************************************************************************************************/
 static void AddOptionsDlg(GtkWidget *NoteBook, GtkWidget *win,gchar* type)
 {
 	gint i;
@@ -2801,6 +3088,18 @@ static void AddOptionsDlg(GtkWidget *NoteBook, GtkWidget *win,gchar* type)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 		addGenericOptions(vbox, type);
+	}
+	else if(strstr(type,"XTB"))
+	{
+		i++;
+		j = 0;
+		vbox = gtk_vbox_new (FALSE, 0);
+		gtk_table_attach(GTK_TABLE(table),vbox,
+			j,j+6,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+		addXTBOptions(vbox, type);
 	}
 	else if(strstr(type,"OpenBabel"))
 	{
@@ -3240,6 +3539,12 @@ void semiEmpiricalDlg(gchar* type)
 	else if(!strcmp(type,"OpenBabelOptimize"))
 		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runOpenBabelOptimize,GTK_OBJECT(Win));
 
+	else if(!strcmp(type,"XTBEnergy"))
+		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runXTBEnergy,GTK_OBJECT(Win));
+	else if(!strcmp(type,"XTBOptimize"))
+		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runXTBOptimize,GTK_OBJECT(Win));
+
+
 	else if(!strcmp(type,"GenericEnergy"))
 		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runGenericEnergy,GTK_OBJECT(Win));
 	else if(!strcmp(type,"GenericOptimize"))
@@ -3561,6 +3866,7 @@ static gboolean runMopacFiles(gint numberOfGeometries, SemiEmpiricalModel** geom
 			geometries[i]->molecule = createFromGeomXYZMoleculeSE(
 			geometries[i]->molecule.totalCharge,
 			geometries[i]->molecule.spinMultiplicity,TRUE);
+			geometries[i]->molecule.energy = energies[i];
 			nM++;
 		}
 		if(StopCalcul) break;
@@ -3582,13 +3888,13 @@ static gboolean runOneOptGeneric(SemiEmpiricalModel* geom, double* energy, char*
 	int type = 0;
 	MoleculeSE* mol = &geom->molecule;
 	*energy = 0;
-#ifdef OS_WIN32
+#ifdef G_OS_WIN32
 	char c='%';
 #endif
 
 	if(!geom) return FALSE;
 	if(geom->molecule.nAtoms<1) return FALSE;
-#ifndef OS_WIN32
+#ifndef G_OS_WIN32
 	fileNameSH = g_strdup_printf("%sGeneOne.sh",fileNamePrefix);
 #else
 	fileNameSH = g_strdup_printf("%sGeneOne.bat",fileNamePrefix);
@@ -3630,7 +3936,7 @@ static gboolean runOneOptGeneric(SemiEmpiricalModel* geom, double* energy, char*
 		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 	}
-#ifndef OS_WIN32
+#ifndef G_OS_WIN32
 	fprintf(fileSH,"%s %s %s",genericCommand,fileNameIn,fileNameOut);
 	fclose(fileSH);
 	sprintf(buffer,"chmod u+x %s",fileNameSH);
@@ -3675,8 +3981,143 @@ static gboolean runGenericFiles(int numberOfGeometries, SemiEmpiricalModel** geo
 		printf("Minimization by Generic of geometry n = %d... Please wait\n", i+1);
 		if(runOneOptGeneric(geometries[i], &energies[i], fileNamePrefix, keyWords, genericCommand)) 
 		{
+			geometries[i]->molecule.energy = energies[i];
 			nM++;
 		}
+	}
+	if(str) free(str);
+	if(nM==nG) return TRUE;
+	return FALSE;
+
+}
+/*****************************************************************************/
+static gboolean runOneOptXTB(SemiEmpiricalModel* geom, double* energy, char* fileNamePrefix, char* stype, char* keyWords)
+{
+	FILE* file = NULL;
+	FILE* fileSH = NULL;
+	char* fileNameIn = NULL;
+	char* fileNameOut = NULL;
+	char* fileNameSH = NULL;
+	char buffer[1024];
+	int type = 0;
+	gchar* keys = NULL;
+	gchar* dirName=NULL;
+	MoleculeSE* mol = &geom->molecule;
+	*energy = 0;
+#ifdef G_OS_WIN32
+	char c='%';
+#endif
+
+	if(!geom) return FALSE;
+	if(geom->molecule.nAtoms<1) return FALSE;
+#ifndef G_OS_WIN32
+	fileNameSH = g_strdup_printf("%sXTBOne.sh",fileNamePrefix);
+#else
+	fileNameSH = g_strdup_printf("%sXTBOne.bat",fileNamePrefix);
+#endif
+ 	fileSH = fopen(fileNameSH, "w");
+	printf("fileNameSH=%s\n",fileNameSH);
+	if(!fileSH) return FALSE;
+#ifdef G_OS_WIN32
+	fprintf(fileSH,"@echo off\n");
+	fprintf(fileSH,"set PATH=%cPATH%c;\"%s\"\n",c,c,xtbDirectory);
+#endif
+
+	fileNameIn = g_strdup_printf("%sOne.xyz",fileNamePrefix);
+	fileNameOut = g_strdup_printf("%sOne.out",fileNamePrefix);
+
+ 	file = fopen(fileNameIn, "w");
+	if(!file) 
+	{
+ 		if(fileNameIn) free(fileNameIn);
+ 		if(fileNameOut) free(fileNameOut);
+ 		if(fileNameSH) free(fileNameSH);
+		return FALSE;
+	}
+ 	file = fopen(fileNameIn, "w");
+	if(!file) 
+	{
+ 		if(fileNameIn) free(fileNameIn);
+ 		if(fileNameOut) free(fileNameOut);
+ 		if(fileNameSH) free(fileNameSH);
+		return FALSE;
+	}
+	if(mol->spinMultiplicity!=1 && !strstr(keyWords,"uhf")  )
+		keys = g_strdup_printf(" %s --uhf %d ", keyWords, mol->spinMultiplicity-1);
+	else 
+		keys = g_strdup_printf(" %s ", keyWords);
+	if(strstr(stype,"Opt")) type = 2;
+	if(strstr(stype,"ENGRAD")) type = 1;
+	addGeometryMoleculeSEToXYZ(mol,file);
+	fclose(file);
+#ifndef G_OS_WIN32
+	dirName= get_name_dir(fileNameIn);
+	fprintf(fileSH,"cd %s\n",dirName);
+	g_free(dirName);
+	if(type==2)
+		fprintf(fileSH,"%s %s --opt %s >  %s 2>/dev/null ",NameCommandXTB, fileNameIn,keys, fileNameOut);
+	else
+		fprintf(fileSH,"%s %s %s >  %s 2>/dev/null",NameCommandXTB, fileNameIn,keys, fileNameOut);
+	fclose(fileSH);
+	sprintf(buffer,"chmod u+x %s",fileNameSH);
+	system(buffer);
+	system(fileNameSH);
+#else
+	addUnitDisk(fileSH, fileNamePrefix);
+	dirName= get_name_dir(fileNameIn);
+	fprintf(fileSH,"cd %s\n",dirName);
+	g_free(dirName);
+	if(type==2)
+		fprintf(fileSH,"\"%s\" \"%s\"  %s --opt > \"%s\"",NameCommandXTB,fileNameIn,keys, fileNameOut);
+	else
+		fprintf(fileSH,"\"%s\" \"%s\"  %s > \"%s\"",NameCommandXTB,fileNameIn,keys, fileNameOut);
+	fclose(fileSH);
+	sprintf(buffer,"\"%s\"",fileNameSH);
+	system(buffer);
+#endif
+
+	if(getEnergyXTB(fileNameOut,energy))
+	{
+		printf("Energy by XTB = %f\n", *energy);
+		readGeometryFromXTBOutputFile(mol,fileNameOut);
+	}
+	else
+	{
+ 		if(fileNameIn) free(fileNameIn);
+ 		if(fileNameOut) free(fileNameOut);
+ 		if(fileNameSH) free(fileNameSH);
+		return FALSE;
+	}
+
+ 	if(fileNameIn) free(fileNameIn);
+ 	if(fileNameOut) free(fileNameOut);
+ 	if(fileNameSH) free(fileNameSH);
+ 	if(keys) g_free(keys);
+	return TRUE;
+}
+/*****************************************************************************/
+static gboolean runXTBFiles(int numberOfGeometries, SemiEmpiricalModel** geometries, double* energies, char* fileNamePrefix, char* stype, char* keyWords)
+{
+	int i;
+	int nG = 0;
+	int nM = 0;
+	gchar* str = NULL;
+	for(i=0;i<numberOfGeometries;i++)
+	{
+		if(!geometries[i]) continue;
+		nG++;
+		if(str) g_free(str);
+		printf("Minimization by XTB of geometry n = %d... Please wait\n", i+1);
+		str = g_strdup_printf("Minimization by XTB of geometry n = %d... Please wait\n", i+1);
+		set_text_to_draw(str);
+		drawGeom();
+    		while( gtk_events_pending() ) gtk_main_iteration();
+		if(runOneOptXTB(geometries[i], &energies[i], fileNamePrefix, stype, keyWords)) 
+		{
+			geometries[i]->molecule.energy = energies[i];
+			nM++;
+		}
+		if(StopCalcul) break;
 	}
 	if(str) free(str);
 	if(nM==nG) return TRUE;
@@ -3869,6 +4310,7 @@ static gboolean runFireFlyFiles(gint numberOfGeometries, SemiEmpiricalModel** ge
 			geometries[i]->molecule = createFromGeomXYZMoleculeSE(
 			geometries[i]->molecule.totalCharge,
 			geometries[i]->molecule.spinMultiplicity,TRUE);
+			geometries[i]->molecule.energy = energies[i];
 			nM++;
 		}
 		if(StopCalcul) break;
@@ -4365,6 +4807,67 @@ static gboolean createFireFlyFiles(gint numberOfGeometries, SemiEmpiricalModel**
 
 }
 /*****************************************************************************/
+static gchar* createXTBFiles(gint numberOfGeometries, SemiEmpiricalModel** geometries, gdouble* energies, gchar* fileNamePrefix, gchar* keyWords)
+{
+	FILE* file = NULL;
+	FILE* fileSH = NULL;
+	gint i;
+	gint j;
+	gint nG = 0;
+	gchar* fileName = NULL;
+	gchar* fileNameSH = NULL;
+
+	if(numberOfGeometries<1) return FALSE;
+	if(!geometries) return FALSE;
+	if(!energies) return FALSE;
+	for(i=0;i<numberOfGeometries;i++) if(geometries[i]) nG++;
+	if(nG<1) return FALSE;
+#ifndef G_OS_WIN32
+	fileNameSH = g_strdup_printf("%sXTB.sh",fileNamePrefix);
+#else
+	fileNameSH = g_strdup_printf("%sXTB.bat",fileNamePrefix);
+#endif
+ 	fileSH = FOpen(fileNameSH, "w");
+	if(!fileSH) return FALSE;
+
+
+	for(i=0;i<numberOfGeometries;i++)
+	{
+		if(!geometries[i]) continue;
+ 		if(fileName) g_free(fileName);
+		fileName = g_strdup_printf("%s_%d.xyz",fileNamePrefix,i+1);
+ 		file = FOpen(fileName, "w");
+		if(!file) return FALSE;
+		fprintf(file,"%d\n",geometries[i]->molecule.nAtoms);
+		/* fprintf(file,"%d %d ; File generated by Gabedit, %s\n", totalCharge,spinMultiplicity, keyWords);*/
+		fprintf(file,"%d %d ; File generated by Gabedit ; Energy= %0.12f ; Method=%s\n", 
+			totalCharge,spinMultiplicity, geometries[i]->molecule.energy, geometries[i]->method);
+		for(j=0;j<geometries[i]->molecule.nAtoms;j++)
+		{
+		fprintf(file,"%s %f %f %f\n", 
+				geometries[i]->molecule.atoms[j].prop.symbol,
+				geometries[i]->molecule.atoms[j].coordinates[0],
+				geometries[i]->molecule.atoms[j].coordinates[1],
+				geometries[i]->molecule.atoms[j].coordinates[2]
+				);
+		}
+		fprintf(file,"\n");
+		fclose(file);
+		fprintf(fileSH,"%s %s %s\n",NameCommandXTB,fileName,  keyWords);
+	}
+	fclose(fileSH);
+#ifndef G_OS_WIN32
+	{
+		gchar buffer[1024];
+  		sprintf(buffer,"chmod u+x %s",fileNameSH);
+		{int ierr= system(buffer);}
+	}
+#endif
+ 	if(fileName) g_free(fileName);
+ 	return fileNameSH;
+
+}
+/*****************************************************************************/
 static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 {
 	SemiEmpiricalModel seModel; 
@@ -4384,6 +4887,7 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 	gchar* mopacKeywords = NULL;
 	gchar* gaussianKeywords = NULL;
 	gchar* fireflyKeywords = NULL;
+	gchar* xtbKeywords = NULL;
 	gdouble friction=40;
 	gdouble collide = 20;
 	MDThermostatType thermostat = NONE;
@@ -4394,6 +4898,7 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 	gboolean optFireFly = FALSE;
 	gboolean optOpenBabel = FALSE;
 	gboolean optGeneric = FALSE;
+	gboolean optXTB = FALSE;
 	gchar* program = NULL;
 	gchar* method = NULL;
 	gdouble tolEnergy = -1;
@@ -4434,6 +4939,11 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 	{
 		program = g_strdup("OpenBabel");
 		method = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryOpenBabelMethod)));
+	}
+	else if(GTK_TOGGLE_BUTTON (buttonXTB)->active) 
+	{
+		program = g_strdup("XTB");
+		method = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryXTBMethod)));
 	}
 	else 
 	{
@@ -4481,10 +4991,12 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 	if(stepSize<0) stepSize = 1.0;
 	if(stepSize>5) stepSize = 5.0;
 
+
 	optMopac = GTK_TOGGLE_BUTTON (buttonPostOpt)->active && GTK_TOGGLE_BUTTON (buttonMopac)->active; 
 	optFireFly = GTK_TOGGLE_BUTTON (buttonPostOpt)->active && GTK_TOGGLE_BUTTON (buttonFireFly)->active; 
 	optOpenBabel = GTK_TOGGLE_BUTTON (buttonPostOpt)->active && GTK_TOGGLE_BUTTON (buttonOpenBabel)->active; 
 	optGeneric = GTK_TOGGLE_BUTTON (buttonPostOpt)->active && GTK_TOGGLE_BUTTON (buttonGeneric)->active; 
+	optXTB = GTK_TOGGLE_BUTTON (buttonPostOpt)->active && GTK_TOGGLE_BUTTON (buttonXTB)->active; 
 	/* number for geometries */
 	{
 		gchar* tmp = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryNumberOfGeom)));
@@ -4509,6 +5021,9 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 		mopacKeywords = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryMopacKeywords)));
 	if(GTK_TOGGLE_BUTTON (buttonCreateFireFly)->active)
 		fireflyKeywords = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryFireFlyKeywords)));
+	if(GTK_TOGGLE_BUTTON (buttonCreateXTB)->active)
+		xtbKeywords = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryXTBKeywords)));
+
 
 	if(GTK_TOGGLE_BUTTON (buttonSaveTraj)->active)
 	{
@@ -4543,7 +5058,9 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 	if(!strcmp(program,"Mopac")) seModel = createMopacModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName, constraints);
 	else if(!strcmp(program,"FireFly")) seModel = createFireFlyModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName,constraints);
 	else if(!strcmp(program,"OpenBabel")) seModel = createOpenBabelModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName,constraints);
+	else if(!strcmp(program,"XTB")) seModel = createXTBModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName,constraints);
 	else seModel = createGenericModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName,constraints);
+
 
 	g_free(program);
 
@@ -4635,8 +5152,9 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
                         char* fileNameGeomOpenBabel =g_strdup_printf("%sOpenBabel.gab",fileNamePrefix);
                         sortGeometries(numberOfGeometries, geometries, energies);
                         removeIdenticalGeometries(&numberOfGeometries, &geometries, &energies, tolEnergy, tolDistance);
-                        if(saveConfoGeometries(numberOfGeometries, geometries, energies, fileNameGeom))
+                        if(saveConfoGeometries(numberOfGeometries, geometries, energies, fileNameGeomOpenBabel))
                         {
+				read_gabedit_file_no_add_list(fileNameGeomOpenBabel);
                                 strcat(message,fileNameGeom);
                                 strcat(message,("\n\tGeometries after minimization by OpenBabel"));
                                 strcat(message,("\n\tTo read this file through Gabedit : 'Read/Gabedit file'\n\n"));
@@ -4646,6 +5164,29 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
                 }
                 if(fileNamePrefix) free(fileNamePrefix);
                 if(keys)free(keys);
+        }
+        /* minimazation by XTB*/
+        if(optXTB && !StopCalcul )
+        {
+                gchar* fileNamePrefix = get_suffix_name_file(fileNameGeom);
+		gchar* type=g_strdup_printf("Opt");
+                if(runXTBFiles(numberOfGeometries, geometries, energies, fileNamePrefix, type, method))
+                {
+                        char* fileNameGeomXTB =g_strdup_printf("%sXTB.gab",fileNamePrefix);
+                        sortGeometries(numberOfGeometries, geometries, energies);
+                        removeIdenticalGeometries(&numberOfGeometries, &geometries, &energies, tolEnergy, tolDistance);
+                        if(saveConfoGeometries(numberOfGeometries, geometries, energies, fileNameGeomXTB))
+                        {
+				read_gabedit_file_no_add_list(fileNameGeomXTB);
+                                strcat(message,fileNameGeom);
+                                strcat(message,("\n\tGeometries after minimization by XTB"));
+                                strcat(message,("\n\tTo read this file through Gabedit : 'Read/Gabedit file'\n\n"));
+                        }
+                        free(fileNameGeomXTB);
+
+                }
+                if(fileNamePrefix) free(fileNamePrefix);
+                if(type)free(type);
         }
         /* minimazation by Generic*/
         if(optGeneric && !StopCalcul )
@@ -4671,7 +5212,7 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
         }
 
 	g_free(method);
-	if(!optMopac && !optFireFly && !optGeneric && !optOpenBabel && !StopCalcul)
+	if(!optMopac && !optFireFly && !optGeneric && !optOpenBabel && !optXTB && !StopCalcul)
 	{
 		/*  sort by energies */
 		sortGeometries(numberOfGeometries, geometries, energies);
@@ -4708,8 +5249,19 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 			gchar* fileNamePrefix = get_suffix_name_file(fileNameGeom);
 			createFireFlyFiles(numberOfGeometries, geometries, energies, fileNamePrefix, fireflyKeywords);
 			strcat(message,fileNamePrefix);
-			strcat(message,_("P_*.inp\n\tFiles for a post processing by FireFly\n\n"));
+			strcat(message,_("*_*.inp\n\tFiles for a post processing by FireFly\n\n"));
 			if(fileNamePrefix) g_free(fileNamePrefix);
+		}
+		if(xtbKeywords)
+		{
+			gchar* fileNamePrefix = get_suffix_name_file(fileNameGeom);
+			gchar* fileNameSH=createXTBFiles(numberOfGeometries, geometries, energies, fileNamePrefix, xtbKeywords);
+			strcat(message,fileNamePrefix);
+			strcat(message,_("*_*.xyz\n\tFiles for a post processing by XTB\n\n"));
+			strcat(message,_("see also file : "));
+			strcat(message,fileNameSH);
+			if(fileNamePrefix) g_free(fileNamePrefix);
+			if(fileNameSH) g_free(fileNameSH);
 		}
 	}
 	if(geometries)
@@ -4777,6 +5329,11 @@ static void semiEmpiricalMD(GtkWidget* Win, gpointer data)
 	{
 		program = g_strdup("OpenBabel");
 		method = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryOpenBabelMethod)));
+	}
+	else if(GTK_TOGGLE_BUTTON (buttonXTB)->active) 
+	{
+		program = g_strdup("XTB");
+		method = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryXTBMethod)));
 	}
 	else if(GTK_TOGGLE_BUTTON (buttonGeneric)->active) 
 	{
@@ -4859,6 +5416,7 @@ static void semiEmpiricalMD(GtkWidget* Win, gpointer data)
 	else if(!strcmp(program,"FireFly")) seModel = createFireFlyModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName, constraints);
 	else if(!strcmp(program,"OpenBabel")) seModel = createOpenBabelModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName, constraints);
 	else if(!strcmp(program,"Generic")) seModel = createGenericModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName, constraints);
+	else if(!strcmp(program,"XTB")) seModel = createXTBModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName, constraints);
 
 	g_free(method);
 	g_free(program);
@@ -5482,7 +6040,7 @@ static void createPostProcessingFrame(GtkWidget *box)
 	totalCharge = TotalCharges[0];
 	spinMultiplicity=SpinMultiplicities[0];
 
-	table = gtk_table_new(10,5,FALSE);
+	table = gtk_table_new(12,5,FALSE);
 
 	frame = gtk_frame_new (_("Post Processing"));
 	gtk_widget_show (frame);
@@ -5674,6 +6232,31 @@ static void createPostProcessingFrame(GtkWidget *box)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	j = 0;
+	buttonCreateXTB = gtk_check_button_new_with_label(_("Create XTB files.    Keywords ")); 
+	gtk_table_attach(GTK_TABLE(table),buttonCreateXTB,
+			j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCreateXTB), FALSE);
+/*----------------------------------------------------------------------------------*/
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	j = 2;
+	entryXTBKeywords = gtk_entry_new();
+	gtk_entry_set_text(GTK_ENTRY(entryXTBKeywords),"--gfn 1");
+	gtk_table_attach(GTK_TABLE(table),entryXTBKeywords, j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
 }
 /********************************************************************************/
 static void AddModelOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
@@ -5698,7 +6281,7 @@ static void AddModelOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 	vbox = gtk_vbox_new (FALSE, 0);
 	gtk_container_add (GTK_CONTAINER (frame), vbox);
 
-	table = gtk_table_new(5,3,FALSE);
+	table = gtk_table_new(6,3,FALSE);
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
 	i=-1;
@@ -5725,6 +6308,34 @@ static void AddModelOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 	entryMopacMethod = gtk_entry_new();
 	gtk_entry_set_text(GTK_ENTRY(entryMopacMethod),"PM7");
 	gtk_table_attach(GTK_TABLE(table),entryMopacMethod, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*==================================================================================*/
+	i++;
+	j = 0;
+	buttonXTB = gtk_radio_button_new_with_label(
+			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonMopac)),
+			_("Use XTB with method"));
+	gtk_table_attach(GTK_TABLE(table),buttonXTB,
+			j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonXTB), FALSE);
+	gtk_widget_show (buttonXTB);
+/*----------------------------------------------------------------------------------*/
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	j = 2;
+	entryXTBMethod = gtk_entry_new();
+	gtk_entry_set_text(GTK_ENTRY(entryXTBMethod)," --gfn 1 ");
+	gtk_table_attach(GTK_TABLE(table),entryXTBMethod, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);

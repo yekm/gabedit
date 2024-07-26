@@ -1,6 +1,6 @@
 /* UtilsInterface.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1974,7 +1974,7 @@ static void show_about_new()
 	};
 
 	static const gchar *copyright =
-		"Copyright \xc2\xa9 2002-2013 Abdul-Rahman Allouche.\n"
+		"Copyright \xc2\xa9 2002-2022 Abdul-Rahman Allouche.\n"
 		"All rights reserved.\n";
 	
 	gchar *license =
@@ -2368,6 +2368,7 @@ void get_result()
  
 	fileName = g_strdup_printf("%s%s%s",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.outputfile);
 	t = readFile(fileName);
+	/*printf("strlen=%d\n",strlen(t));*/
 	g_free(fileName);
 	if(t!=NULL)
 	{
@@ -2501,14 +2502,14 @@ void show_forbidden_characters()
 	g_free(temp);
 }
 /********************************************************************************/
-void  cree_p_vbox()
+void  create_p_vbox()
 {
 	vboxmain = gtk_vbox_new (FALSE, 0);
 	gtk_container_add (GTK_CONTAINER (Fenetre), vboxmain);
 	gtk_widget_show (vboxmain);
 }
 /********************************************************************************/
-void  cree_vboxs_list_text()
+void  create_vboxs_list_text()
 {
 	GtkWidget *hpaned;
 

@@ -1,6 +1,6 @@
 /* Global.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -45,6 +45,7 @@ DEALINGS IN THE SOFTWARE.
   gint imodif;
   gint iframe;
   gchar *NameCommandGamess;
+  gchar *NameCommandXTB;
   gchar *NameCommandGaussian;
   gchar *NameCommandMolcas;
   gchar *NameCommandMolpro;
@@ -82,12 +83,14 @@ DEALINGS IN THE SOFTWARE.
   gchar* nwchemDirectory;
   gchar* psicodeDirectory;
   gchar* mopacDirectory;
+  gchar* xtbDirectory;
   gchar* gaussDirectory;
   gchar* povrayDirectory;
   gchar* openbabelDirectory;
   CommandsList demonCommands;
   CommandsList gamessCommands;
   CommandsList gaussianCommands;
+  CommandsList xtbCommands;
   CommandsList molcasCommands;
   CommandsList molproCommands;
   CommandsList mpqcCommands;
