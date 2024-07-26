@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -591,11 +591,10 @@ static void setComboMethod(GtkWidget *comboMethod)
 {
 	GList *glist = NULL;
 
-  	glist = g_list_append(glist,"All");
+  	glist = g_list_append(glist,"Number");
   	glist = g_list_append(glist,"Symbol");
   	glist = g_list_append(glist,"MM Type");
   	glist = g_list_append(glist,"PDB Type");
-  	glist = g_list_append(glist,"Number");
 
   	gtk_combo_box_entry_set_popdown_strings(comboMethod, glist) ;
 
@@ -801,31 +800,6 @@ static GtkWidget*   add_inputgr_entrys(GtkWidget *Wins,GtkWidget *vbox)
 	return entry;
 }
 /*************************************************************************************************************/
-static void getLattice(gdouble boxLength[], gdouble maxr, gint g)
-{
-	gint nTv = 0;
-	gdouble Tv[3][3];
-	gchar tmp[BSIZE];
-	for(gint a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
-	{
-		sprintf(tmp,"%s", geometriesMD.geometries[g].listOfAtoms[a].symbol);
-		uppercase(tmp);
-		if(!strcmp(tmp,"TV")) { 
-			for(gint j=0;j<3;j++) Tv[nTv][j]= geometriesMD.geometries[g].listOfAtoms[a].C[j];
-			nTv++;
-		}
-	}
-	if(nTv<3) 
-		for(gint i=0;i<3;i++) boxLength[i] = 2*maxr/BOHR_TO_ANG;
-	else for(gint i=0;i<nTv;i++)
-	{
-		gdouble r = 0;
-		for(gint j=0;j<3;j++) r+= Tv[i][j]* Tv[i][j];
-		boxLength[i]=sqrt(r);	
-	}
-
-}
-/*************************************************************************************************************/
 static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
 {
 	gint g;
@@ -839,9 +813,7 @@ static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
 	gint n1,n2;
 	gdouble* X = NULL;
 	gdouble* Y = NULL;
-	gdouble* Ymol = NULL;
 	gint i;
-	gint j;
 	G_CONST_RETURN gchar* str = NULL;
 	GtkWidget* xyplot;
 	GtkWidget* window;
@@ -863,50 +835,35 @@ static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
 	Y = g_malloc(N*sizeof(gdouble));
 	for(i=0;i<N;i++) X[i] = dr*i;
 	for(i=0;i<N;i++) Y[i] = 0;
-	Ymol = g_malloc(N*sizeof(gdouble));
-	gdouble dr3 = 4.0/3.0*M_PI*dr*dr*dr;
-	gdouble boxLength[3];
 
-
+	/*
 	if(strstr(str,"All"))
 	{
-		for(g = 0;g<geometriesMD.numberOfGeometries;g++)
+		for(g = 0;g<geometryConvergence.numberOfGeometries;g++)
 		{
+			int n=geometryConvergence.geometries[g].numberOfAtoms;
+			double fact = 1.0/(4*M_PI*dr)/n/n*(maxr*maxr*maxr)/geometriesMD.numberOfGeometries;
 			gint a;
 			gint b;
-			gint na = geometriesMD.geometries[g].numberOfAtoms;
-			gint nb = geometriesMD.geometries[g].numberOfAtoms;
-
-			for(i=0;i<N;i++) Ymol[i] = 0;
-			getLattice(boxLength,  maxr, g);
-
-			for(a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
-			for(b=0;b<geometriesMD.geometries[g].numberOfAtoms;b++)
+			for(a=0;a<geometryConvergence.geometries[g].numberOfAtoms;a++)
+			for(b=0;b<a;b++)
 			{
-				if(a==b) continue;
 				gdouble d = 0;
 				gdouble xx = 0;
 				gint j;
 				for(j=0;j<3;j++) 
 				{
-					xx = geometriesMD.geometries[g].listOfAtoms[a].C[j]-geometriesMD.geometries[g].listOfAtoms[b].C[j];
-					if (xx>boxLength[j]/2)  xx -= boxLength[i];
-					if (xx<-boxLength[j]/2) xx += boxLength[i];
+					xx = geometryConvergence.geometries[g].listOfAtoms[a].C[j]-geometryConvergence.geometries[g].listOfAtoms[b].C[j];
 					d+= xx*xx;
 				}
 				d = sqrt(d)*BOHR_TO_ANG;
 				if(d>maxr) continue;
-				Ymol[(gint)(d/dr)]+=1;
+				Y[(gint)(d/dr)]+= fact/(d*d);
 			}
-			for(j=0;j<3;j++)  boxLength[i] *= BOHR_TO_ANG;
-			gdouble rho=na*nb/(boxLength[0]*boxLength[1]*boxLength[2]);
-			gdouble norm = rho*dr3;
-			for(i=0;i<N;i++) Ymol[i] /= ((i+1.0)*(i+1.0)*(i+1.0)-1.0*i*i*i)*norm;
-			for(i=0;i<N;i++) Y[i] += Ymol[i];
 		}
-		for(i=0;i<N;i++) Y[i] /= geometriesMD.numberOfGeometries;
 	}
 	else 
+	*/
 	if(strstr(str,"Number"))
 	{
 		if(entryVal1) str = gtk_entry_get_text(GTK_ENTRY(entryVal1));
@@ -926,29 +883,15 @@ static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
 			gdouble d = 0;
 			gdouble xx = 0;
 			gint j;
-
-			for(i=0;i<N;i++) Ymol[i] = 0;
-			getLattice(boxLength,  maxr, g);
-
-			gint na=1;
-			gint nb=1;
 			for(j=0;j<3;j++) 
 			{
 				xx = geometriesMD.geometries[g].listOfAtoms[a].C[j]-geometriesMD.geometries[g].listOfAtoms[b].C[j];
-				if (xx>boxLength[j]/2)  xx -= boxLength[i];
-				if (xx<-boxLength[j]/2) xx += boxLength[i];
 				d+= xx*xx;
 			}
 			d = sqrt(d)*BOHR_TO_ANG;
 			if(d>maxr) continue;
-			Ymol[(gint)(d/dr)]++;
-			for(j=0;j<3;j++)  boxLength[i] *= BOHR_TO_ANG;
-			gdouble rho=na*nb/(boxLength[0]*boxLength[1]*boxLength[2]);
-			gdouble norm = rho*dr3;
-			for(i=0;i<N;i++) Ymol[i] /= ((i+1.0)*(i+1.0)*(i+1.0)-1.0*i*i*i)*norm;
-			for(i=0;i<N;i++) Y[i] += Ymol[i];
+			Y[(gint)(d/dr)]++;
 		}
-		for(i=0;i<N;i++) Y[i] /= geometriesMD.numberOfGeometries;
 	}
 	else if(strstr(str,"Symbol"))
 	{
@@ -965,21 +908,20 @@ static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
 		{
 			gint a;
 			gint b;
-			gint na=0;
-			gint nb=0;
-			getLattice(boxLength,  maxr, g);
+			int na=0;
+			int nb=0;
+			double fact = 1.0;
 			for(a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
 				if(!strcmp(geometriesMD.geometries[g].listOfAtoms[a].symbol,s1)) na++;
 			for(b=0;b<geometriesMD.geometries[g].numberOfAtoms;b++)
 				if(!strcmp(geometriesMD.geometries[g].listOfAtoms[b].symbol,s2)) nb++;
 
-			for(i=0;i<N;i++) Ymol[i] = 0;
+			if(na>0 && nb>0) fact = 1.0/(2*M_PI*dr)/na/nb*(maxr*maxr*maxr)/geometriesMD.numberOfGeometries;
 			if(na>0 && nb>0)
 			for(a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
 			{
-				for(b=0;b<geometriesMD.geometries[g].numberOfAtoms;b++)
+				for(b=0;b<a;b++)
 				{
-					if(a==b) continue;
 					if(
 					(!strcmp(geometriesMD.geometries[g].listOfAtoms[a].symbol,s1) && !strcmp(geometriesMD.geometries[g].listOfAtoms[b].symbol,s2))
 					||
@@ -992,25 +934,17 @@ static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
 						for(j=0;j<3;j++) 
 						{
 							xx = geometriesMD.geometries[g].listOfAtoms[a].C[j]-geometriesMD.geometries[g].listOfAtoms[b].C[j];
-							if (xx>boxLength[j]/2)  xx -= boxLength[i];
-							if (xx<-boxLength[j]/2) xx += boxLength[i];
 							d+= xx*xx;
 						}
 						d = sqrt(d)*BOHR_TO_ANG;
 						if(d>maxr) continue;
 						//Y[(gint)(d/dr)]++;
-						Ymol[(gint)((d)/dr)] += 1;
+						Y[(gint)(d/dr)] += fact/(d*d);
 					}
 
 				}
 			}
-			for(j=0;j<3;j++)  boxLength[i] *= BOHR_TO_ANG;
-			gdouble rho=na*nb/(boxLength[0]*boxLength[1]*boxLength[2]);
-			gdouble norm = rho*dr3;
-			for(i=0;i<N;i++) Ymol[i] /= ((i+1.0)*(i+1.0)*(i+1.0)-1.0*i*i*i)*norm;
-			for(i=0;i<N;i++) Y[i] += Ymol[i];
 		}
-		for(i=0;i<N;i++) Y[i] /= geometriesMD.numberOfGeometries;
 	}
 	else if(strstr(str,"MM Type"))
 	{
@@ -1027,19 +961,9 @@ static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
 		{
 			gint a;
 			gint b;
-			gint na=0;
-			gint nb=0;
 			for(a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
-				if(!strcmp(geometriesMD.geometries[g].listOfAtoms[a].mmType,s1)) na++;
-			for(b=0;b<geometriesMD.geometries[g].numberOfAtoms;b++)
-				if(!strcmp(geometriesMD.geometries[g].listOfAtoms[b].mmType,s2)) nb++;
-			for(i=0;i<N;i++) Ymol[i] = 0;
-			getLattice(boxLength,  maxr, g);
-
-			for(a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
-			for(b=0;b<geometriesMD.geometries[g].numberOfAtoms;b++)
+			for(b=0;b<a;b++)
 			{
-				if(a==b) continue;
 				if(
 				(!strcmp(geometriesMD.geometries[g].listOfAtoms[a].mmType,s1) && !strcmp(geometriesMD.geometries[g].listOfAtoms[b].mmType,s2))
 				||
@@ -1052,23 +976,15 @@ static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
 					for(j=0;j<3;j++) 
 					{
 						xx = geometriesMD.geometries[g].listOfAtoms[a].C[j]-geometriesMD.geometries[g].listOfAtoms[b].C[j];
-						if (xx>boxLength[j]/2)  xx -= boxLength[i];
-						if (xx<-boxLength[j]/2) xx += boxLength[i];
 						d+= xx*xx;
 					}
 					d = sqrt(d)*BOHR_TO_ANG;
 					if(d>maxr) continue;
-					Ymol[(gint)(d/dr)]++;
+					Y[(gint)(d/dr)]++;
 				}
 
 			}
-			for(j=0;j<3;j++)  boxLength[i] *= BOHR_TO_ANG;
-			gdouble rho=na*nb/(boxLength[0]*boxLength[1]*boxLength[2]);
-			gdouble norm = rho*dr3;
-			for(i=0;i<N;i++) Ymol[i] /= ((i+1.0)*(i+1.0)*(i+1.0)-1.0*i*i*i)*norm;
-			for(i=0;i<N;i++) Y[i] += Ymol[i];
 		}
-		for(i=0;i<N;i++) Y[i] /= geometriesMD.numberOfGeometries;
 	}
 	else if(strstr(str,"PDB Type"))
 	{
@@ -1085,18 +1001,9 @@ static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
 		{
 			gint a;
 			gint b;
-			gint na=0;
-			gint nb=0;
 			for(a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
-				if(!strcmp(geometriesMD.geometries[g].listOfAtoms[a].pdbType,s1)) na++;
-			for(b=0;b<geometriesMD.geometries[g].numberOfAtoms;b++)
-				if(!strcmp(geometriesMD.geometries[g].listOfAtoms[b].pdbType,s2)) nb++;
-			for(i=0;i<N;i++) Ymol[i] = 0;
-			getLattice(boxLength,  maxr, g);
-			for(a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
-			for(b=0;b<geometriesMD.geometries[g].numberOfAtoms;b++)
+			for(b=0;b<a;b++)
 			{
-				if(a==b) continue;
 				if(
 				(!strcmp(geometriesMD.geometries[g].listOfAtoms[a].pdbType,s1) && !strcmp(geometriesMD.geometries[g].listOfAtoms[b].pdbType,s2))
 				||
@@ -1109,25 +1016,16 @@ static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
 					for(j=0;j<3;j++) 
 					{
 						xx = geometriesMD.geometries[g].listOfAtoms[a].C[j]-geometriesMD.geometries[g].listOfAtoms[b].C[j];
-						if (xx>boxLength[j]/2)  xx -= boxLength[i];
-						if (xx<-boxLength[j]/2) xx += boxLength[i];
 						d+= xx*xx;
 					}
 					d = sqrt(d)*BOHR_TO_ANG;
 					if(d>maxr) continue;
-					Ymol[(gint)(d/dr)]++;
+					Y[(gint)(d/dr)]++;
 				}
 
 			}
-			for(j=0;j<3;j++)  boxLength[i] *= BOHR_TO_ANG;
-			gdouble rho=na*nb/(boxLength[0]*boxLength[1]*boxLength[2]);
-			gdouble norm = rho*dr3;
-			for(i=0;i<N;i++) Ymol[i] /= ((i+1.0)*(i+1.0)*(i+1.0)-1.0*i*i*i)*norm;
-			for(i=0;i<N;i++) Y[i] += Ymol[i];
 		}
-		for(i=0;i<N;i++) Y[i] /= geometriesMD.numberOfGeometries;
 	}
-
 
 	gtk_widget_destroy(Win);
 

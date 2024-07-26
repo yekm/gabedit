@@ -1,6 +1,6 @@
 /* GLArea.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1622,8 +1622,7 @@ gboolean NewGLArea(GtkWidget* vboxwin)
 	/* Create new OpenGL widget. */
 	/* pthread_mutex_init (&theRender_mutex, NULL);*/
 	GLArea = gtk_drawing_area_new ();
-	//gtk_drawing_area_size(GTK_DRAWING_AREA(GLArea),(gint)(ScreenHeightD*0.2),(gint)(ScreenHeightD*0.2));
-	gtk_drawing_area_size(GTK_DRAWING_AREA(GLArea),(gint)(ScreenHeightD*0.5),(gint)(ScreenHeightD*0.45));
+	gtk_drawing_area_size(GTK_DRAWING_AREA(GLArea),(gint)(ScreenHeightD*0.2),(gint)(ScreenHeightD*0.2));
 	gtk_table_attach(GTK_TABLE(table),GLArea,1,2,0,1, (GtkAttachOptions)(GTK_FILL | GTK_EXPAND  ), (GtkAttachOptions)(GTK_FILL | GTK_EXPAND ), 0,0);
 	gtk_widget_show(GTK_WIDGET(GLArea));
 	/* Events for widget must be set beforee X Window is created */
@@ -1639,7 +1638,6 @@ gboolean NewGLArea(GtkWidget* vboxwin)
 	glconfig = configure_gl();
 	if (!glconfig) { g_assert_not_reached (); }
 	if (!gtk_widget_set_gl_capability (GLArea, glconfig, NULL, TRUE, GDK_GL_RGBA_TYPE)) { g_assert_not_reached (); }
-
 
 	g_signal_connect(G_OBJECT(GLArea), "realize", G_CALLBACK(init), NULL);
 	g_signal_connect(G_OBJECT(GLArea), "configure_event", G_CALLBACK(reshape), NULL);

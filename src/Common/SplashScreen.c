@@ -1,6 +1,6 @@
 /* SplashScreen.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -628,7 +628,7 @@ static void create_copyright_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   gint width = 0;
   gint widthVersion = 0;
   gint heightVersion = 0;
-  gchar* txt = g_strdup("Copyright (c) 2002-2021 Abdul-Rahman Allouche.");
+  gchar* txt = g_strdup("Copyright (c) 2002-2013 Abdul-Rahman Allouche.");
   GdkPixmap *pixmap = NULL;
   GdkColor* color = g_malloc(sizeof(GdkColor));
   gchar* Version_S = g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);

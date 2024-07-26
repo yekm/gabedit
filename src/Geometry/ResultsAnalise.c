@@ -1,6 +1,6 @@
 /* ResultsAnalise.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of gcharge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -716,8 +716,6 @@ static void find_energy_xyz(gchar* fileName)
   	static DataGeomConv* GeomConv =NULL;
 	gint ne;
 	gint nAtoms;
-	gdouble* energies=NULL;
-	gint nEnergies = 0;
 
 	GeomConv = NULL;
         
@@ -740,33 +738,8 @@ static void find_energy_xyz(gchar* fileName)
 				Ncalculs = 1;
 				GeomConv =  g_malloc(sizeof(DataGeomConv) );
   				GeomConv[0] = init_geom_xyz_conv(fileName);
-				energies =  g_malloc(sizeof(gdouble) );
 			}
 		 	if(!fgets(t,taille,file)) break; /* title */
-			/* try to read energy. Accepted format : 
-                           E value
-                           E value
-			   Energy=value
-			   Energy value
-			*/
-			for(i=0;i<strlen(t);i++) if(t[i]=='=') t[i]=' ';/* remove = */
-			int pos=-1;
-			char*spos = NULL;
-			double energy=0;
-		 	uppercase(t);
-			spos=strstr(t," E ");
-			if(spos) pos = sscanf(spos+strlen(" E "),"%lf",&energy);
-			if(pos!=1) {
-				spos=strstr(t," ENERGY ");
-				if(spos) pos = sscanf(spos+strlen(" ENERGY "),"%lf",&energy);
-			}
-			if(pos==1)/* Ok energy detected */
-			{
-				energies[nEnergies] = energy;
-				nEnergies++;
-				energies =  g_realloc(energies, (nEnergies+1)*sizeof(gdouble));
-			}
-			
 			GeomConv[0].Npoint++;
 			for(i=0;i<nAtoms;i++)
 				if(!fgets(t,taille,file))break;
@@ -776,7 +749,6 @@ static void find_energy_xyz(gchar* fileName)
 	}
 
 	fclose(file);
-	/* printf("Npoint = %d nEner = %d\n",GeomConv[0].Npoint, nEnergies);*/
    
 	if(GeomConv)
 	{
@@ -794,12 +766,10 @@ static void find_energy_xyz(gchar* fileName)
 			for(j=0;(gint)j<GeomConv[0].Npoint;j++)
 			{
 				GeomConv[0].NumGeom[j] = j+1;
-				if(nEnergies==GeomConv[0].Npoint) GeomConv[0].Data[0][j] = g_strdup_printf("%lf",energies[j]);
-				else GeomConv[0].Data[0][j] = g_strdup_printf("%d",j+1);
+		 		GeomConv[0].Data[0][j] = g_strdup_printf("%d",j+1);
 			}
 		}
 	}
-	if(energies) g_free(energies);
 	create_energies_curves(GeomConv,Ncalculs);
 }
 /*********************************************************************/
