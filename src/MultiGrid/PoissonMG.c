@@ -301,9 +301,45 @@ void setBoundaryEwaldPoissonMG(PoissonMG* ps)
 			}
 }
 /*********************************************************/
+static void getCOff(PoissonMG* ps, gdouble* pxOff, gdouble* pyOff, gdouble* pzOff)
+{
+	gdouble temp;
+	gdouble x,y,z;
+	DomainMG domain = getDomainPoissonMG(ps);
+	int ixs,iys,izs;
+	gdouble xOff =0, yOff = 0, zOff = 0;
+	gdouble Q = 0;
+
+	for(ixs=domain.iXBeginInterior;ixs<=domain.iXEndInterior;ixs++)
+		for(iys = domain.iYBeginInterior;iys <=domain.iYEndInterior;iys++)
+			for(izs = domain.iZBeginInterior;izs <=domain.iZEndInterior;izs++)
+			{
+				x = domain.x0 + ixs*domain.xh;
+				y = domain.y0 + iys*domain.yh;
+				z = domain.z0 + izs*domain.zh;
+				temp = getValGridMG(ps->source,ixs, iys, izs);
+				Q += temp;
+				xOff += temp*x;
+				yOff += temp*y;
+				zOff += temp*z;
+			}
+	if(Q!=0)
+	{
+		*pxOff = xOff/Q;
+		*pyOff = yOff/Q;
+		*pzOff = zOff/Q;
+	}
+	else
+	{
+		*pxOff = 0;
+		*pyOff = 0;
+		*pzOff = 0;
+	}
+}
+/*********************************************************/
 void setBoundaryMultipolPoissonMG(PoissonMG* ps)
 {
-	const int lmax = 2;
+	const int lmax = 3;
 	Zlm zlm[lmax+1][2*lmax+1+1];
 	gint l,m;
 	gint i;
@@ -318,7 +354,7 @@ void setBoundaryMultipolPoissonMG(PoissonMG* ps)
 	gdouble xOff =0, yOff = 0, zOff = 0;
 	gdouble r;
 
-	/* printf("Begin Set boundaries using multipol approximation\n");*/
+	/* printf("Begin Set boundaries using multipole approximation\n");*/
 
 	for( l=0; l<=lmax; l++)
 		for( m=-l; m<=l; m++)
@@ -333,12 +369,13 @@ void setBoundaryMultipolPoissonMG(PoissonMG* ps)
 
 
 
-	printf(_("Set boundaries using multipol approximation\n"));
+	printf(_("Set boundaries using multipole approximation\n"));
 
 	setOperationGridMG(ps->potential,GABEDIT_BOUNDARY);
 	initGridMG(ps->potential,0.0);
 	/* printf("End initGridMG\n");*/
 	setOperationGridMG(ps->potential,GABEDIT_ALL);
+	getCOff(ps, &xOff, &yOff, &zOff);
 
 	for(ixs=domain.iXBeginInterior;ixs<=domain.iXEndInterior;ixs++)
 		for(iys = domain.iYBeginInterior;iys <=domain.iYEndInterior;iys++)
@@ -366,17 +403,17 @@ void setBoundaryMultipolPoissonMG(PoissonMG* ps)
 				}
 			}
 	printf(_("Total charge = %f\n"),Q[0][0]*sqrt(4*PI));
+	printf(_("Center = %f %f %f\n"),xOff, yOff, zOff);
 	for( l=0; l<=lmax; l++)
 		for( m=-l; m<=l; m++)
 		{
 
 			unsigned int absm = abs(m);
-			gdouble Norm = sqrt((2*l+1)/(4*PI))*sqrt(factorial(l+absm)/factorial(l-absm));
+			gdouble Norm = 1;
+			Norm = sqrt((2*l+1)/(4*PI))*sqrt(factorial(l+absm)*factorial(l-absm))/factorial(l)/pow(2.0,absm);
 			if(m!=0) Norm *= sqrt(2.0);
-			Norm = 1/Norm;
-			Q[l][m+l] *= Norm;
-			printf("Q(%d,%d)=%f\n",l,m,Q[l][m+l]);
-			Q[l][m+l] *= Norm;
+			printf("Q(%d,%d)=%f\n",l,m,Q[l][m+l]/Norm);
+			Q[l][m+l] *= 4*PI/(2*l+1);
 		}
 	int ix,iy,iz;
 

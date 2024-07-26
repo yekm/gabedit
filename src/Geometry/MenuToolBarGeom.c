@@ -284,6 +284,7 @@ typedef enum
 {
 	GEOMETRY_STICK,
 	GEOMETRY_BALLSTICK,
+	GEOMETRY_SPACEFILL,
 }TypeRenderGeom;
 static void render_geometry_radio_action (GtkAction *action)
 {
@@ -293,11 +294,13 @@ static void render_geometry_radio_action (GtkAction *action)
 	{
 		case GEOMETRY_STICK :  RenderStick(); break;
 		case GEOMETRY_BALLSTICK : RenderBallStick(); break;
+		case GEOMETRY_SPACEFILL : RenderSpaceFill(); break;
 	}
 }
 static GtkRadioActionEntry rendereGeometryEntries[] = {
   { "RenderGeometryStick", GABEDIT_STOCK_RENDER_STICK, N_("_Stick"), NULL, "render stick", GEOMETRY_STICK },
   { "RenderGeometryBallAndStick", GABEDIT_STOCK_RENDER_BALL_STICK, N_("_Ball&Stick"), NULL, "render Ball&Stick", GEOMETRY_BALLSTICK },
+  { "RenderGeometrySpaceFill", GABEDIT_STOCK_RENDER_BALL_STICK, N_("_Space fill"), NULL, "render space fill", GEOMETRY_SPACEFILL },
 };
 static guint numberOfRenderGeometryEntries = G_N_ELEMENTS (rendereGeometryEntries);
 /*********************************************************************************************************************/
@@ -417,6 +420,8 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ReadDaltonLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_DALTONLAST); }
 	else if(!strcmp(name,"ReadGamessFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_GAMESSFIRST); }
 	else if(!strcmp(name,"ReadGamessLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_GAMESSLAST); }
+	else if(!strcmp(name,"ReadTurbomoleFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_TURBOMOLEFIRST); }
+	else if(!strcmp(name,"ReadTurbomoleLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_TURBOMOLELAST); }
 	else if(!strcmp(name,"ReadGaussianInput")) { selc_all_input_file(_("Read Geometry from a Gaussian input file")); }
 	else if(!strcmp(name,"ReadGaussianFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_GAUSSOUTFIRST); }
 	else if(!strcmp(name,"ReadGaussianLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_GAUSSOUTLAST);}
@@ -704,6 +709,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "SetSelectedAtomsToVariable")) set_variable_selected_atoms();
 	else if(!strcmp(name, "SetMMTypeOfselectedAtoms")) setMMTypeOfselectedAtomsDlg();
 	else if(!strcmp(name, "SetPDBTypeOfselectedAtoms")) setPDBTypeOfselectedAtomsDlg();
+	else if(!strcmp(name, "SetResidueNameOfselectedAtoms")) setResidueNameOfselectedAtomsDlg();
 	else if(!strcmp(name, "SetChargeOfselectedAtoms")) setChargeOfselectedAtomsDlg();
 	else if(!strcmp(name, "scaleChargesOfSelectedAtoms")) scaleChargesOfSelectedAtomsDlg();
 	else if(!strcmp(name, "InsertAFragment")) activate_insert_fragment();
@@ -918,6 +924,10 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadGamessFirst", GABEDIT_STOCK_GAMESS, N_("F_irst geometry from a Gamess output file"), NULL, "Read the first geometry from a Gamess output file", G_CALLBACK (activate_action) },
 	{"ReadGamessLast", GABEDIT_STOCK_GAMESS, N_("L_ast geometry from a Gamess output file"), NULL, "Read the last geometry from a Gamess output file", G_CALLBACK (activate_action) },
 
+	{"Turbomole", NULL, "_Turbomole"},
+	{"ReadTurbomoleFirst", NULL, N_("F_irst geometry from a Turbomole output file"), NULL, "Read the first geometry from a Turbomole output file", G_CALLBACK (activate_action) },
+	{"ReadTurbomoleLast", NULL, N_("L_ast geometry from a Turbomole output file"), NULL, "Read the last geometry from a Turbomole output file", G_CALLBACK (activate_action) },
+
 	{"Gaussian", GABEDIT_STOCK_GAUSSIAN, "_Gaussian"},
 	{"ReadGaussianInput", GABEDIT_STOCK_GAUSSIAN, N_("_Gaussian Input file"), NULL, "Read a Gaussian Input file", G_CALLBACK (activate_action) },
 	{"ReadGaussianFirst", GABEDIT_STOCK_GAUSSIAN, N_("F_irst geometry from a Gaussian output file"), NULL, "Read the first geometry from a Gaussian output file", G_CALLBACK (activate_action) },
@@ -1083,6 +1093,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SetSelectedAtomsToVariable", NULL, N_("Set selected atoms to _not freeze during optimizations"), NULL, "Set selected atoms to not freeze during optimizations", G_CALLBACK (activate_action) },
 	{"SetMMTypeOfselectedAtoms", NULL, N_("Set the _MM type of selected atoms"), NULL, "Set the MM type of selected atoms", G_CALLBACK (activate_action) },
 	{"SetPDBTypeOfselectedAtoms", NULL, N_("Set the _PDB type of selected atoms"), NULL, "Set the PDB type of selected atoms", G_CALLBACK (activate_action) },
+	{"SetResidueNameOfselectedAtoms", NULL, N_("Set the Residue _Name of selected atoms"), NULL, "Set the Residue name of selected atoms", G_CALLBACK (activate_action) },
 	{"SetChargeOfselectedAtoms", NULL, N_("Set the _Charge of selected atoms"), NULL, "Set the charge of selected atoms", G_CALLBACK (activate_action) },
 	{"scaleChargesOfSelectedAtoms", NULL, N_("scale the _Charge of selected atoms"), NULL, "scale the charge of selected atoms", G_CALLBACK (activate_action) },
 	{"SetDipole", NULL, N_("_Dipole"), NULL, "Set dipole", G_CALLBACK (activate_action) },
@@ -1243,6 +1254,11 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadQChemFirst\" action=\"ReadQChemFirst\" />\n"
 "        <menuitem name=\"ReadQChemLast\" action=\"ReadQChemLast\" />\n"
 "      </menu>\n"
+"      <separator name=\"sepMenuReadTurbomole\" />\n"
+"      <menu name=\"Turbomole\" action=\"Turbomole\">\n"
+"        <menuitem name=\"ReadTurbomoleFirst\" action=\"ReadTurbomoleFirst\" />\n"
+"        <menuitem name=\"ReadTurbomoleLast\" action=\"ReadTurbomoleLast\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuReadOpenBabel\" />\n"
 "      <menuitem name=\"ReadUsingOpenBabel\" action=\"ReadUsingOpenBabel\" />\n"
 "      <separator name=\"sepMenuReadGeomConv\" />\n"
@@ -1396,6 +1412,9 @@ static const gchar *uiMenuInfo =
 "    <menu name=\"Render\" action=\"Render\">\n"
 "      <menuitem name=\"RenderGeometryStick\" action=\"RenderGeometryStick\" />\n"
 "      <menuitem name=\"RenderGeometryBallAndStick\" action=\"RenderGeometryBallAndStick\" />\n"
+#ifdef DRAWGEOMGL
+"      <menuitem name=\"RenderGeometrySpaceFill\" action=\"RenderGeometrySpaceFill\" />\n"
+#endif
 "      <separator name=\"sepMenuPerspective\" />\n"
 "      <menuitem name=\"RenderPerspective\" action=\"RenderPerspective\" />\n"
 #ifndef DRAWGEOMGL
@@ -1463,6 +1482,7 @@ static const gchar *uiMenuInfo =
 "      <separator name=\"sepMenuSetType\" />\n"
 "      <menuitem name=\"SetMMTypeOfselectedAtoms\" action=\"SetMMTypeOfselectedAtoms\" />\n"
 "      <menuitem name=\"SetPDBTypeOfselectedAtoms\" action=\"SetPDBTypeOfselectedAtoms\" />\n"
+"      <menuitem name=\"SetResidueNameOfselectedAtoms\" action=\"SetResidueNameOfselectedAtoms\" />\n"
 "      <menuitem name=\"SetChargeOfselectedAtoms\" action=\"SetChargeOfselectedAtoms\" />\n"
 "      <menuitem name=\"scaleChargesOfSelectedAtoms\" action=\"scaleChargesOfSelectedAtoms\" />\n"
 "      <separator name=\"sepMenuSetDipole\" />\n"
@@ -1682,7 +1702,7 @@ void create_toolbar_and_popup_menu_geom(GtkWidget* box)
 	initLabelOptions (LABELNO);
 	gtk_action_group_add_radio_actions (actionGroup, labelEntries , numberOfLabelEntries, LABEL_NO, G_CALLBACK (render_label_radio_action), NULL);
 
-	if(!StickMode) mode = GEOMETRY_BALLSTICK;
+	if(!stick_mode()) mode = GEOMETRY_BALLSTICK;
 	gtk_action_group_add_radio_actions (actionGroup, rendereGeometryEntries, numberOfRenderGeometryEntries, mode, G_CALLBACK (render_geometry_radio_action), NULL);
 
   	gtk_ui_manager_insert_action_group (merge, actionGroup, 0);
@@ -1765,6 +1785,7 @@ static void set_sensitive()
 	GtkWidget *variableAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetSelectedAtomsToVariable");
 	GtkWidget *setMMTypeOfselectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetMMTypeOfselectedAtoms");
 	GtkWidget *setPDBTypeOfselectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetPDBTypeOfselectedAtoms");
+	GtkWidget *setResidueNameOfselectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetResidueNameOfselectedAtoms");
 	GtkWidget *setChargeOfselectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetChargeOfselectedAtoms");
 	GtkWidget *scaleChargeOfselectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/ScaleChargeOfselectedAtoms");
 	GtkWidget *addPersonnalFragment = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/PersonalFragments/PersonalFragmentsAddMolecule");
@@ -1815,6 +1836,7 @@ static void set_sensitive()
 	if(GTK_IS_WIDGET(copySelectedAtoms)) gtk_widget_set_sensitive(copySelectedAtoms, sensitive);
 	if(GTK_IS_WIDGET(setMMTypeOfselectedAtoms)) gtk_widget_set_sensitive(setMMTypeOfselectedAtoms, sensitive);
 	if(GTK_IS_WIDGET(setPDBTypeOfselectedAtoms)) gtk_widget_set_sensitive(setPDBTypeOfselectedAtoms, sensitive);
+	if(GTK_IS_WIDGET(setResidueNameOfselectedAtoms)) gtk_widget_set_sensitive(setResidueNameOfselectedAtoms, sensitive);
 	if(GTK_IS_WIDGET(setChargeOfselectedAtoms)) gtk_widget_set_sensitive(setChargeOfselectedAtoms, sensitive);
 	if(GTK_IS_WIDGET(scaleChargeOfselectedAtoms)) gtk_widget_set_sensitive(scaleChargeOfselectedAtoms, sensitive);
 	if(GTK_IS_WIDGET(resetSelectedConnections)) gtk_widget_set_sensitive(resetSelectedConnections, sensitive);

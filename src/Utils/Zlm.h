@@ -7,6 +7,6 @@ Zlm getZlm(int , int);
 void destroyZlm(Zlm*);
 void copyZlm(Zlm*, Zlm*);
 gdouble getValueZlm(Zlm*, gdouble, gdouble, gdouble);
-void printfZlm(Zlm*);
+void printZlm(Zlm*);
 
 #endif /* __GABEDIT_ZLM_H__ */

@@ -4676,6 +4676,103 @@ void get_charges_from_gamess_output_file(FILE* fd,gint N)
 	}
 }
 /********************************************************************************/
+gboolean get_npa_charges_from_turbomole_output_file(FILE* fd,gint N)
+{
+ 	guint taille=BSIZE;
+  	gchar t[BSIZE];
+  	gchar dump[BSIZE];
+  	gchar d[BSIZE];
+  	gchar* pdest;
+	gint i;
+
+
+	/* printf("NAtoms = %d\n",N);*/
+
+  	while(!feof(fd) )
+	{
+    		pdest = NULL;
+    		if(!fgets(t,taille,fd)) break;
+    		pdest = strstr( t, "Summary of Natural Population Analysis:");
+
+		if(pdest)
+		{
+  			while(!feof(fd) )
+			{
+    				if(!fgets(t,taille,fd)) break;
+				if(strstr(t,"Atom") && strstr(t,"Charge") && strstr(t,"Core")) break;
+			}
+			if(!(strstr(t,"Atom") && strstr(t,"Charge") && strstr(t,"Core"))) return FALSE;
+    			if(!fgets(t,taille,fd)) break;
+			for(i=0;i<N;i++)
+			{
+    				if(!fgets(t,taille,fd)) break;
+				if(sscanf(t,"%s %s %s",dump, dump, d)==3)
+				{
+					g_free(GeomXYZ[i].Charge);
+					GeomXYZ[i].Charge = g_strdup(d);
+				}
+				else return FALSE;
+			}
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+/********************************************************************************/
+gboolean get_fit_charges_from_turbomole_output_file(FILE* fd,gint N)
+{
+ 	guint taille=BSIZE;
+  	gchar t[BSIZE];
+  	gchar dump[BSIZE];
+  	gchar d[BSIZE];
+  	gchar* pdest;
+	gint i;
+
+
+	/* printf("NAtoms = %d\n",N);*/
+
+  	while(!feof(fd) )
+	{
+    		pdest = NULL;
+    		if(!fgets(t,taille,fd)) break;
+    		pdest = strstr( t, "charges resulting from fit:");
+
+		if(pdest)
+		{
+  			while(!feof(fd) )
+			{
+    				if(!fgets(t,taille,fd)) break;
+				if(strstr(t,"atom") && strstr(t,"radius/au") && strstr(t,"charge")) break;
+			}
+			if(!(strstr(t,"atom") && strstr(t,"radius/au") && strstr(t,"charge"))) return FALSE;
+    			if(!fgets(t,taille,fd)) break;
+			for(i=0;i<N;i++)
+			{
+    				if(!fgets(t,taille,fd)) break;
+				if(sscanf(t,"%s %s %s %s",dump, dump, dump, d)==4)
+				{
+					g_free(GeomXYZ[i].Charge);
+					GeomXYZ[i].Charge = g_strdup(d);
+				}
+				else return FALSE;
+			}
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+/********************************************************************************/
+void get_charges_from_turbomole_output_file(FILE* fd,gint N)
+{
+	gint i;
+	long long int pos = ftell(fd);
+	for(i=0;i<N;i++) GeomXYZ[i].Charge = g_strdup("0.0");
+	if(get_fit_charges_from_turbomole_output_file(fd,N)) return;
+	fseek(fd, pos, SEEK_SET);
+	if(get_npa_charges_from_turbomole_output_file(fd,N)) return;
+	
+}
+/********************************************************************************/
 void get_charges_from_gaussian_output_file(FILE* fd,gint N)
 {
  	guint taille=BSIZE;
@@ -6173,6 +6270,176 @@ void read_last_irc_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
 		return ;
 	}
 	read_geom_from_gamess_irc_file(fileName,-1);
+}
+/********************************************************************************/
+void read_geom_from_turbomole_output_file(gchar *fileName, gint numgeometry)
+{
+	gchar *t;
+	gboolean OK;
+	gchar *AtomCoord[5];
+	FILE *fd;
+	guint taille=BSIZE;
+	guint i;
+	gint j=0;
+	gint l;
+	guint numgeom;
+	gint uni=1;
+ 	long geomposok = 0;
+
+
+	for(i=0;i<5;i++) AtomCoord[i]=g_malloc(taille*sizeof(char));
+  
+	t=g_malloc(taille*sizeof(gchar));
+ 	fd = FOpen(fileName, "rb");
+	if(fd ==NULL)
+	{
+		g_free(t);
+		t = g_strdup_printf(_("Sorry\nI can not open %s  file "),fileName);
+		MessageGeom(t,_("Error"),TRUE);
+		g_free(t);
+		return;
+	}
+	numgeom = 0;
+	do 
+	{
+		OK=FALSE;
+		while(!feof(fd)){
+			fgets(t,taille,fd);
+			if ( strstr(t,"Atomic coordinate, charge and isotop information"))
+			{
+				while(!feof(fd)){
+	  			fgets(t,taille,fd);
+				if(strstr(t,"atomic") && strstr(t, "coordinates") && strstr(t,"atom") && strstr(t,"shells") && strstr(t,"charge")) break;
+				}
+				if(!(strstr(t,"atomic") && strstr(t, "coordinates") && strstr(t,"atom") && strstr(t,"shells") && strstr(t,"charge"))) {OK = FALSE; break;}
+ 				numgeom++;
+				uni=0;
+				if((gint)numgeom == numgeometry ) { OK = TRUE; break; }
+				if(numgeometry<0 ) { OK = TRUE; break; }
+	  		}
+		}
+		if(!OK && (numgeom == 0) ){
+			g_free(t);
+			t = g_strdup_printf(_("Sorry\nI can not open %s  file "),fileName);
+			MessageGeom(t,_("Error"),TRUE);
+			g_free(t);
+			return;
+		}
+		if(!OK)break;
+
+		j=-1;
+		while(!feof(fd) )
+		{
+			fgets(t,taille,fd);
+			if ( !strcmp(t,"\n")) break;
+			if ( !strcmp(t,"\r\n")) break;
+			j++;
+
+			if(GeomXYZ==NULL) GeomXYZ=g_malloc(sizeof(GeomXYZAtomDef));
+			else GeomXYZ=g_realloc(GeomXYZ,(j+1)*sizeof(GeomXYZAtomDef));
+  			GeomXYZ[j].typeConnections = NULL;
+
+			sscanf(t,"%s %s %s %s",AtomCoord[1], AtomCoord[2],AtomCoord[3], AtomCoord[0]);
+			{
+				gint k;
+				for(k=0;k<(gint)strlen(AtomCoord[0]);k++) if(isdigit(AtomCoord[0][k])) AtomCoord[0][k] = ' ';
+				delete_all_spaces(AtomCoord[0]);
+			}
+
+			AtomCoord[0][0]=toupper(AtomCoord[0][0]);
+			l=strlen(AtomCoord[0]);
+			if (l==2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+			GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
+			GeomXYZ[j].Symb=g_strdup(AtomCoord[0]);
+			/* GeomXYZ[j].Symb=get_symbol_using_z(atoi(dum));*/
+			GeomXYZ[j].mmType=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].pdbType=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].Residue=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].ResidueNumber=0;
+			if(Units != uni )
+			{
+				if(Units==1)
+				{
+				GeomXYZ[j].X=g_strdup(bohr_to_ang(AtomCoord[1]));
+				GeomXYZ[j].Y=g_strdup(bohr_to_ang(AtomCoord[2]));
+				GeomXYZ[j].Z=g_strdup(bohr_to_ang(AtomCoord[3]));
+				}
+				else
+				{
+				GeomXYZ[j].X=g_strdup(ang_to_bohr(AtomCoord[1]));
+				GeomXYZ[j].Y=g_strdup(ang_to_bohr(AtomCoord[2]));
+				GeomXYZ[j].Z=g_strdup(ang_to_bohr(AtomCoord[3]));
+				}
+			}
+			else
+			{
+				GeomXYZ[j].X=g_strdup(AtomCoord[1]);
+				GeomXYZ[j].Y=g_strdup(AtomCoord[2]);
+				GeomXYZ[j].Z=g_strdup(AtomCoord[3]);
+			}
+			GeomXYZ[j].Charge=g_strdup("0.0");
+			GeomXYZ[j].Layer=g_strdup(" ");
+		}
+
+		NcentersXYZ = j+1;
+		if(OK && numgeometry>=0) break;
+		if(numgeometry<0) geomposok = ftell(fd);
+	}while(!feof(fd));
+	if ( NcentersXYZ >0 )
+	{
+		if(numgeometry<0) fseek(fd, geomposok, SEEK_SET);
+		geomposok = ftell(fd);
+		get_charges_from_turbomole_output_file(fd,NcentersXYZ);
+		fseek(fd, geomposok, SEEK_SET);
+		get_dipole_from_turbomole_output_file(fd);
+		/*
+		fseek(fd, geomposok, SEEK_SET);
+		get_charge_and_multilicity(fd);
+		*/
+	}
+
+	fclose(fd);
+ 	calculMMTypes(FALSE);
+	g_free(t);
+	for(i=0;i<5;i++) g_free(AtomCoord[i]);
+	if(GeomIsOpen && MethodeGeom == GEOM_IS_XYZ)
+	{
+   		clearList(list);
+		append_list();
+	}
+	MethodeGeom = GEOM_IS_XYZ;
+	if(GeomDrawingArea != NULL) rafresh_drawing();
+	if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
+}
+/********************************************************************************/
+void read_first_turbomole_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+	gchar *fileName;
+
+ 	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(SelecFile);
+  
+	if ((!fileName) || (strcmp(fileName,"") == 0))
+	{
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
+		return ;
+	}
+	read_geom_from_turbomole_output_file(fileName,1);
+}
+/********************************************************************************/
+void read_last_turbomole_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+	gchar *fileName;
+
+ 	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(SelecFile);
+  
+	if ((!fileName) || (strcmp(fileName,"") == 0))
+	{
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
+		return ;
+	}
+	read_geom_from_turbomole_output_file(fileName,-1);
 }
 /********************************************************************************/
 void read_geom_from_xyz_file(gchar *fileName, gint numGeom)
@@ -11199,6 +11466,11 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
 	   SelecFile = gabedit_file_chooser_new(_("Read the last geometry from a Gamess IRC file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsirc);
 	   break;
+  case GABEDIT_TYPEFILEGEOM_TURBOMOLEFIRST : 
+  case GABEDIT_TYPEFILEGEOM_TURBOMOLELAST : 
+	   SelecFile = gabedit_file_chooser_new(_("Read the last geometry from a Turbomole output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
+   	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
+	   break;
   case GABEDIT_TYPEFILEGEOM_GAUSSOUTFIRST : 
 	   SelecFile = gabedit_file_chooser_new(_("Read the first geometry from a gaussian output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternslog);
@@ -11336,6 +11608,10 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_gaussian_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_GAUSSOUTLAST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_gaussian_file), GTK_OBJECT(SelecFile)); break;
+  case GABEDIT_TYPEFILEGEOM_TURBOMOLEFIRST :
+	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_turbomole_file), GTK_OBJECT(SelecFile)); break;
+  case GABEDIT_TYPEFILEGEOM_TURBOMOLELAST :
+	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_turbomole_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_GAUSSIAN_FCHK :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_fchk_gaussian_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_MOLCASOUTFIRST :

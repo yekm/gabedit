@@ -482,18 +482,31 @@ static gboolean saveConfoGeometries(gint numberOfGeometries, ForceField** geomet
 		fprintf(file,"%d %d %d\n",geometries[i]->molecule.nAtoms,totalCharge,spinMultiplicity);
 		for(j=0;j<geometries[i]->molecule.nAtoms;j++)
 		{
-		fprintf(file," %s %s %s %s %d %f %d %f %f %f\n", 
-				geometries[i]->molecule.atoms[j].prop.symbol,
-				geometries[i]->molecule.atoms[j].mmType,
-				geometries[i]->molecule.atoms[j].pdbType,
-				geometries[i]->molecule.atoms[j].residueName,
-				geometries[i]->molecule.atoms[j].residueNumber,
-				geometries[i]->molecule.atoms[j].charge,
-				geometries[i]->molecule.atoms[j].layer,
-				geometries[i]->molecule.atoms[j].coordinates[0],
-				geometries[i]->molecule.atoms[j].coordinates[1],
-				geometries[i]->molecule.atoms[j].coordinates[2]
-				);
+                        int nc = 0;
+                        int k;
+                        for(k=0;k<geometries[i]->molecule.nAtoms;k++)
+                                if(geometries[i]->molecule.atoms[j].typeConnections&&geometries[i]->molecule.atoms[j].typeConnections[k]>0) nc++;
+
+                        fprintf(file," %s %s %s %s %d %f %d %f %f %f %d ",
+                                geometries[i]->molecule.atoms[j].prop.symbol,
+                                geometries[i]->molecule.atoms[j].mmType,
+                                geometries[i]->molecule.atoms[j].pdbType,
+                                geometries[i]->molecule.atoms[j].residueName,
+                                geometries[i]->molecule.atoms[j].residueNumber,
+                                geometries[i]->molecule.atoms[j].charge,
+                                geometries[i]->molecule.atoms[j].layer,
+                                geometries[i]->molecule.atoms[j].coordinates[0],
+                                geometries[i]->molecule.atoms[j].coordinates[1],
+                                geometries[i]->molecule.atoms[j].coordinates[2],
+                                nc
+                                );
+                        for(k=0;k< geometries[i]->molecule.nAtoms;k++)
+                        {
+                                int nk =  geometries[i]->molecule.atoms[k].N-1;
+                                if(geometries[i]->molecule.atoms[j].typeConnections && geometries[i]->molecule.atoms[j].typeConnections[nk]>0)
+                                        fprintf(file," %d %d", nk+1, geometries[i]->molecule.atoms[j].typeConnections[nk]);
+                        }
+                        fprintf(file,"\n");
 		}
 	}
 	fclose(file);

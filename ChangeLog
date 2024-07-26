@@ -1,3 +1,10 @@
+02 December 2010 :
+	Multigrid method : multipolaire developpement at the center of charge. Multipole order 3 is now used.
+	Comformational search with semi-emperical : A bug is fixed.
+
+08 November 2010 :
+	add Space Fill option to "Draw Geom"" window.
+
 02 November 2010 :
 	Migration to OpenGL for "Draw Geom" window.
 	Remove DRAWGEOMGL variable from CONFIG file to obtain a "Draw Geom" with old style(Cairo).

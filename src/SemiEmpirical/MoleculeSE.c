@@ -52,6 +52,12 @@ MoleculeSE newMoleculeSE()
 
 	for(i=0;i<3;i++)
 		molecule.gradient[i] = NULL;
+	molecule.numberOf2Connections = 0;
+	for(i=0;i<2;i++)
+		molecule.connected2[i] = NULL;
+	molecule.numberOf3Connections = 0;
+	for(i=0;i<3;i++)
+		molecule.connected3[i] = NULL;
 
 	return molecule;
 
@@ -444,6 +450,7 @@ MoleculeSE createFromGeomXYZMoleculeSE(gint charge, gint spin, gboolean connecti
 			test(GeomXYZ[i].Z)
 		) 
 		molecule.atoms[i].variable = TRUE;
+		molecule.atoms[i].typeConnections = NULL;
 		if(GeomXYZ[i].typeConnections)
 		{
 			gint j;

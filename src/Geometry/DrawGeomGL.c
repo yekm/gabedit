@@ -141,6 +141,8 @@ static GLuint SelectionList = 0;
 static GLuint DipoleList = 0;
 static GLuint AxesList = 0;
 
+static GabEditTypeGeom TypeGeom = GABEDIT_TYPEGEOM_STICK;
+
 /********************************************************************************/
 void set_statubar_pop_sel_atom();
 GtkWidget *AddNoteBookPage(GtkWidget *NoteBook,char *label);
@@ -1073,9 +1075,10 @@ static gdouble get_rayon(gint i)
 	/* gdouble factorball = get_factorball();*/
 	gdouble sl = 4.5;
 	gdouble sm = 2;
-        if ( !StickMode && geometry[i].Layer != LOW_LAYER )
+        if ( TypeGeom!= GABEDIT_TYPEGEOM_STICK && geometry[i].Layer != LOW_LAYER )
         { 
-                rayon =(geometry[i].Prop.radii*factorball);
+		if(space_fill_mode()) rayon =(geometry[i].Prop.vanDerWaalsRadii*factorball);
+		else rayon =(geometry[i].Prop.radii*factorball);
 		if(geometry[i].Layer == LOW_LAYER) rayon /= sl;
 		if(geometry[i].Layer == MEDIUM_LAYER) rayon /= sm;
 	}
@@ -4341,6 +4344,130 @@ void setPDBTypeOfselectedAtomsDlg()
 	gtk_widget_show_all(winDlg);
 }
 /********************************************************************************/
+static void setResidueNameOfselectedAtoms(GtkWidget* button, GtkWidget* entry)
+{
+	gint i;
+	gint k = 0;
+	G_CONST_RETURN gchar *tName;
+
+
+	if(Natoms<1) return;
+	tName = gtk_entry_get_text(GTK_ENTRY(entry));
+	if(strlen(tName)<1) return;
+	if(NFatoms<1) return;
+	if(!NumFatoms) return;
+
+	for (k=0;k<(gint)NFatoms;k++)
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(geometry[i].N== NumFatoms[k])
+		{
+			if(geometry[i].Residue) g_free(geometry[i].Residue);
+			geometry[i].Residue = g_strdup(tName);
+			if(geometry0[i].Residue) g_free(geometry0[i].Residue);
+			geometry0[i].Residue = g_strdup(tName);
+		}
+	}
+	create_GeomXYZ_from_draw_grometry();
+	dessine();
+}
+/********************************************************************************/
+static gchar* getResidueNameOfselectedAtoms()
+{
+	gint i;
+	gint k = 0;
+
+	if(Natoms<1) return g_strdup("DUM");
+	if(NFatoms<1) return  g_strdup("DUM");
+	if(!NumFatoms) return  g_strdup("DUM");
+
+	for (k=0;k<(gint)NFatoms;k++)
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(geometry[i].N== NumFatoms[k])
+		{
+			 g_strdup(geometry[i].Residue);
+		}
+	}
+	return  g_strdup("DUM");
+}
+/********************************************************************************/
+void setResidueNameOfselectedAtomsDlg()
+{
+	GtkWidget *winDlg;
+	GtkWidget *button;
+	GtkWidget *hbox;
+	GtkWidget *entry;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	gint n=0;
+	gchar** t = NULL;
+	gchar tmp[100] = "UNK";
+	gint i;
+	gint k;
+
+	if(Natoms<1) return;
+	if(NFatoms<1) return;
+	if(!NumFatoms) return;
+
+	k=0;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(geometry[i].N == NumFatoms[k])
+		{
+			sprintf(tmp,"%s",geometry[i].pdbType);
+			break;
+		}
+	}
+  
+	winDlg = gtk_dialog_new();
+	gtk_window_set_title(GTK_WINDOW(winDlg),_("Set Residue name of selected atoms"));
+	gtk_window_set_position(GTK_WINDOW(winDlg),GTK_WIN_POS_CENTER);
+	gtk_window_set_transient_for(GTK_WINDOW(winDlg),GTK_WINDOW(GeomDlg));
+
+	add_child(GeomDlg,winDlg,gtk_widget_destroy,_(" Set Sel. Type."));
+	g_signal_connect(G_OBJECT(winDlg),"delete_event",(GCallback)delete_child,NULL);
+
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->vbox), frame,TRUE,TRUE,0);
+
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	hbox=create_hbox_false(vboxframe);
+	n=1;
+	t = g_malloc(sizeof(gchar*)*2);
+	t[0]  = NULL;
+	t[1]  = NULL;
+	t[0] = getResidueNameOfselectedAtoms();
+		
+	entry = create_label_combo(hbox,_(" Residue Name : "),t,n, TRUE,-1,-1);
+	g_free(t[0]);
+	g_free(t);
+	if(strcmp(tmp,"UNK")) gtk_entry_set_text(GTK_ENTRY(entry),tmp);
+	gtk_editable_set_editable((GtkEditable*) entry,TRUE);
+
+	gtk_widget_realize(winDlg);
+
+	button = create_button(winDlg,_("Cancel"));
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button,TRUE,TRUE,0);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+
+	button = create_button(winDlg,_("OK"));
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button,TRUE,TRUE,0);
+	g_signal_connect(G_OBJECT(button), "clicked",(GCallback)setResidueNameOfselectedAtoms,entry);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+    
+
+	gtk_widget_show_all(winDlg);
+}
+/********************************************************************************/
 static gchar** getListCharges(gint* nlist)
 {
 
@@ -5777,7 +5904,14 @@ gboolean dipole_mode()
 /********************************************************************************/  
 gboolean stick_mode()
 {
-	return StickMode;
+	if( TypeGeom == GABEDIT_TYPEGEOM_STICK ) return TRUE;
+	return FALSE;
+}
+/********************************************************************************/  
+gboolean space_fill_mode()
+{
+	if( TypeGeom == GABEDIT_TYPEGEOM_SPACE ) return TRUE;
+	return FALSE;
 }
 /********************************************************************************/  
 gboolean pers_mode()
@@ -7679,14 +7813,21 @@ void SetCosSin()
 /*****************************************************************************/ 
 void RenderStick()
 {
-	StickMode = TRUE;
+	TypeGeom = GABEDIT_TYPEGEOM_STICK;
 	RebuildGeom = TRUE;
 	dessine();
 }
 /*****************************************************************************/
 void RenderBallStick()
 {
-	StickMode = FALSE;
+	TypeGeom = GABEDIT_TYPEGEOM_BALLSTICK;
+	RebuildGeom = TRUE;
+	dessine();
+}
+/*****************************************************************************/
+void RenderSpaceFill()
+{
+	TypeGeom = GABEDIT_TYPEGEOM_SPACE;
 	RebuildGeom = TRUE;
 	dessine();
 }
@@ -8661,9 +8802,11 @@ void set_optimal_geom_view()
   	gdouble zn, zf, zo;
   	gdouble aspect;
 	gdouble C[3];
+	gdouble X0[3];
 
 	if(!geometry || Natoms<1 ) return;
 
+        for(i=0;i<3;i++) X0[i] = 0.0;
 	min = geometry[0].X;
 	max = geometry[0].Y;
 	for(i=0;i<Natoms;i++)
@@ -8676,7 +8819,11 @@ void set_optimal_geom_view()
 			if(min>C[j]) min = C[j];
 			if(max<C[j]) max = C[j];
 		}
+		X0[0] +=geometry[i].X;
+		X0[1] +=geometry[i].Y;
+		X0[2] +=geometry[i].Z;
 	}
+        for(i=0;i<3;i++) X0[i] /= Natoms;
 	get_camera_values(&zn, &zf, &zo, &aspect, &perspective);
 	zn = 1;
 	zf = fabs(max-min)*5;
@@ -8690,6 +8837,23 @@ void set_optimal_geom_view()
 	}
 	zo = 1/zo*45;
 	set_camera_values(zn,zf,zo,perspective);
+	Trans[0]=0;
+	Trans[1]=0;
+	
+        for(i=0;i<Natoms;i++)
+	{
+		geometry[i].X -= X0[0];
+		geometry[i].Y -= X0[1];
+		geometry[i].Z -= X0[2]; 
+
+		geometry0[i].X -= X0[0];
+		geometry0[i].Y -= X0[1];
+		geometry0[i].Z -= X0[2]; 
+	} 
+	RebuildGeom = TRUE;
+
+        for(i=0;i<3;i++) Orig[i] = X0[i];
+	dessine();
 }
 /********************************************************************************/
 void define_good_factor()
@@ -9847,94 +10011,6 @@ void rotation(double a,double b,double angle,double *ap,double *bp)
 	*bp = b*cosangle + a *sinangle;
 }
 /*****************************************************************************/
-void set_to_yaxis()
-{
-	double A;
-	double B;
-	double angle=90;
-	double Xmax,Xmin;
-	double Ymax,Ymin;
-	double Zmax,Zmin;
-	guint i;
-	guint axe;
-
-
-        if(Natoms<1)
-          return;
-
-	Xmax =geometry[0].X;
-	Ymax =geometry[0].Y;
-	Zmax =geometry[0].Z;
-
-	Xmin =geometry[0].X;
-	Ymin =geometry[0].Y;
-	Zmin =geometry[0].Z;
-
-	for (i = 1;i<Natoms;i++)
-	{
-	if (geometry[i].X>Xmax)
-			  Xmax =geometry[i].X;
-	if (geometry[i].X<Xmin)
-			  Xmin =geometry[i].X;
-
-	if (geometry[i].Y>Ymax)
-			   Ymax =geometry[i].Y;
-	if (geometry[i].Y<Ymin)
-			  Ymin =geometry[i].Y;
-
-    	if (geometry[i].Z>Zmax)
-			Zmax =geometry[i].Z;	
-	if (geometry[i].Z<Zmin)
-			Zmin =geometry[i].Z;
-
-	}
-        axe=0;
-        if(fabs(Ymax-Ymin)<=fabs(Xmax-Xmin))
-        {
-        	if(fabs(Zmax-Zmin)<fabs(Ymax-Ymin))
-                    axe=2;
-                 else
-		    axe=1;
-         }
-         else
-        {
-        	if(fabs(Zmax-Zmin)<fabs(Xmax-Xmin))
-                    axe=2;
-         }
-         
-        
-	if(axe==0)
-	{
-		for (i=0;i<Natoms;i++)
-		{
-			A = geometry[i].Z;
-			B = geometry[i].X;
-			rotation(A,B,angle,&geometry[i].Z,&geometry[i].X);
-		}
-		for (i=0;i<NDIVDIPOLE;i++)
-		{
-			A = dipole[i][2];
-			B = dipole[i][0];
-			rotation(A,B,angle,&dipole[i][2],&dipole[i][0]);
-		}
-	}
-        else if(axe==1)
-	{
-		for (i=0;i<Natoms;i++)
-		{
-			A = geometry[i].Y;
-			B = geometry[i].Z;
-			rotation(A,B,angle,&geometry[i].Y,&geometry[i].Z);
-		}
-		for (i=0;i<NDIVDIPOLE;i++)
-		{
-			A = dipole[i][1];
-			B = dipole[i][2];
-			rotation(A,B,angle,&dipole[i][1],&dipole[i][2]);
-		}
-	}
-}
-/*****************************************************************************/
 void define_geometry()
 {
         guint i;
@@ -9987,16 +10063,6 @@ void define_geometry()
 	} 
 
 	Ddef = Dipole.def;
-	if(Ddef)
-	{
-		gdouble step[3] ={Dipole.Value[0]/(NDIVDIPOLE-1),Dipole.Value[1]/(NDIVDIPOLE-1),Dipole.Value[2]/(NDIVDIPOLE-1)};
-		dipole[0][0] = -X0[0];
-		dipole[0][1] = -X0[1];
-		dipole[0][2] = -X0[2];
-		for(i=1;i<NDIVDIPOLE;i++)
-			for(j=0;j<3;j++)
-				dipole[i][j] = dipole[0][j]+step[j]*i;
-	}
         for(i=0;i<3;i++) Orig[i] = X0[i];
 
 	if(geometry0) g_free(geometry0);
@@ -10021,15 +10087,6 @@ void define_geometry()
 	geometry0[i].Charge = geometry[i].Charge;
 	geometry0[i].typeConnections = NULL;
 	} 
-	if(Ddef)
-	{
-	for(i=0;i<NDIVDIPOLE;i++)
-		for(j=0;j<3;j++)
-		{
-			dipole0[i][j] = dipole[0][j] + (dipole[i][j]-dipole[0][j])*factordipole;
-			dipole00[i][j] = dipole0[i][j];
-		}
-	}
 	
 	nC = 0;
 	for(i=0;i<Natoms;i++)
@@ -10134,6 +10191,8 @@ void draw_distance(gint i,gint j)
         gdouble P[3];
 	gchar* t= NULL;
 
+   	if(!geometry[i].show) return;
+   	if(!geometry[j].show) return;
 	P[0]=(geometry[i].X+geometry[j].X)/2;
 	P[1]=(geometry[i].Y+geometry[j].Y)/2;
 	P[2]=(geometry[i].Z+geometry[j].Z)/2;
@@ -10338,6 +10397,12 @@ static void draw_ball(gdouble X, gdouble Y, gdouble Z, GLdouble radii, GdkColor*
 	for(k=0;k<3;k++) Specular[k] = 0.8;
 	for(k=0;k<3;k++) Ambiant[k] = 0.0;
 
+	if(TypeGeom == GABEDIT_TYPEGEOM_SPACE)
+	{
+		OpenGLOptions openGLOptions = get_opengl_options();
+		Sphere_Draw_Color_Precision(radii,position,Specular,Diffuse,Ambiant, (GLint)openGLOptions.numberOfSubdivisionsSphere*2);
+	}
+	else
 	Sphere_Draw_Color(radii,position,Specular,Diffuse,Ambiant);
 
 }
@@ -10484,7 +10549,7 @@ static void draw_bond(int i,int j,GLdouble scal, gint connectionType)
 		gdouble C22[3];
 		gdouble rs[3];
 		gint type = 1;
-		if(StickMode) type = 0;
+		if(TypeGeom== GABEDIT_TYPEGEOM_STICK) type = 0;
 		else if(geometry[i].Layer == LOW_LAYER || geometry[j].Layer == LOW_LAYER) type = 0;
 		getPositionsRadiusBond2(r, Ci, Cj, C11, C12,  C21,  C22, rs, type);
 		Cylinder_Draw_Color_Two(rs[0],C11,C12, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
@@ -10502,43 +10567,12 @@ static void draw_bond(int i,int j,GLdouble scal, gint connectionType)
 		gdouble C32[3];
 		gdouble rs[3];
 		gint type = 1;
-		if(StickMode) type = 0;
-		printf("Triple bond\n");
+		if(TypeGeom== GABEDIT_TYPEGEOM_STICK) type = 0;
 		getPositionsRadiusBond3(r, Ci, Cj, C11, C12,  C21,  C22, C31, C32, rs, type);
 		Cylinder_Draw_Color_Two(rs[0],C11,C12, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
 		Cylinder_Draw_Color_Two(rs[1],C21,C22, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
 		Cylinder_Draw_Color_Two(rs[2],C31,C32, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
 		
-/*
-		if(StickMode)
-		{
-			gdouble s = 2.8;
-			gdouble rs[3] = {r/4,r,r/4};
-			for(k=0;k<3;k++) C1[k] = Ci[k]-s*vScal[k];
-			for(k=0;k<3;k++) C2[k] = Cj[k]-s*vScal[k];
-			Cylinder_Draw_Color_Two(rs[0],C1,C2, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
-			for(k=0;k<3;k++) C1[k] = Ci[k];
-			for(k=0;k<3;k++) C2[k] = Cj[k];
-			Cylinder_Draw_Color_Two(rs[1],C1,C2, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
-			for(k=0;k<3;k++) C1[k] = Ci[k]+s*vScal[k];
-			for(k=0;k<3;k++) C2[k] = Cj[k]+s*vScal[k];
-			Cylinder_Draw_Color_Two(rs[2],C1,C2, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
-		}
-		else
-		{
-			gdouble s = 1.8;
-			gdouble rs[3] = {r/4,r/2,r/4};
-			for(k=0;k<3;k++) C1[k] = Ci[k]-s*vScal[k];
-			for(k=0;k<3;k++) C2[k] = Cj[k]-s*vScal[k];
-			Cylinder_Draw_Color_Two(rs[0],C1,C2, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
-			for(k=0;k<3;k++) C1[k] = Ci[k];
-			for(k=0;k<3;k++) C2[k] = Cj[k];
-			Cylinder_Draw_Color_Two(rs[1],C1,C2, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
-			for(k=0;k<3;k++) C1[k] = Ci[k]+s*vScal[k];
-			for(k=0;k<3;k++) C2[k] = Cj[k]+s*vScal[k];
-			Cylinder_Draw_Color_Two(rs[2],C1,C2, Specular1,Diffuse1,Ambiant1, Specular2,Diffuse2,Ambiant2, p1,p2);
-		}
-*/
 	}
 }
 /************************************************************************/
@@ -10654,6 +10688,7 @@ static void gl_build_geometry()
 		rayon = get_rayon(i);
 		if(!geometry[i].show) continue;
 		draw_ball(geometry[i].X,geometry[i].Y,geometry[i].Z, get_rayon(i), &geometry[i].Prop.color);
+		if(TypeGeom==GABEDIT_TYPEGEOM_SPACE) continue;
 		for(j=i+1, nj = geometry[j].N-1;j<Natoms;j++, nj = geometry[j].N-1)
                 if(geometry[i].typeConnections[nj]>0)
 		{
@@ -11467,7 +11502,7 @@ static GtkWidget* NewGeomDrawingArea(GtkWidget* vboxwin, GtkWidget* GeomDlg)
 		Ddef = FALSE;
 		AtomToInsert = g_strdup("C");
 		for(i=0;i<4;i++) NumSelAtoms[i] = -1;
-		StickMode = TRUE;
+		TypeGeom  = GABEDIT_TYPEGEOM_STICK;
 		ShadMode = FALSE;
 		PersMode = FALSE;
 		LightMode = FALSE;
@@ -11593,7 +11628,7 @@ void create_window_drawing()
 		Ddef = FALSE;
 		AtomToInsert = g_strdup("C");
 		for(i=0;i<4;i++) NumSelAtoms[i] = -1;
-		StickMode = TRUE;
+		TypeGeom  = GABEDIT_TYPEGEOM_STICK;
 		ShadMode = FALSE;
 		PersMode = FALSE;
 		LightMode = FALSE;
@@ -11808,7 +11843,7 @@ void create_window_drawing()
 	/* set_back_color_grey();*/
 	set_back_color_default();
 	set_icone(GeomDlg);
-	if(Natoms == 0) SetOperation(NULL,EDITOBJECTS);
+	//if(Natoms == 0) SetOperation(NULL,EDITOBJECTS);
 	/*define_good_trans();*/
 }
 #endif /* DRAWGEOMGL*/

@@ -50,7 +50,7 @@ DEALINGS IN THE SOFTWARE.
 
 #define MAJOR_VERSION    2
 #define MINOR_VERSION    3
-#define MICRO_VERSION    2
+#define MICRO_VERSION    3
 
 /**** Structures *********/
 typedef struct _FileOpen
@@ -202,6 +202,7 @@ typedef struct _CommandsBatch
   gint colorMapType;
   gdouble colorMapColors[3][3];
   gdouble alpha_opacity;
+  gdouble multipole_rank;
 
 #endif /* __GABEDIT_GLOBAL_H__ */
 

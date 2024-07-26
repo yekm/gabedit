@@ -30,6 +30,7 @@ DEALINGS IN THE SOFTWARE.
 #include "ColorMap.h"
 #include "../MultiGrid/PoissonMG.h"
 #include "../Utils/UtilsInterface.h"
+#include "../Utils/Utils.h"
 #include "../Utils/Zlm.h"
 #include "../Utils/MathFunctions.h"
 
@@ -652,7 +653,7 @@ Grid* define_grid(gint N[],GridLimits limits)
 			grid = compute_mep_grid_using_partial_charges(N, limits);
 			break;
 		case GABEDIT_TYPEGRID_MEP_MULTIPOL :
-			grid = compute_mep_grid_using_multipol_from_orbitals(N, limits, 2);
+			grid = compute_mep_grid_using_multipol_from_orbitals(N, limits, get_multipole_rank());
 			break;
 		case GABEDIT_TYPEGRID_MEP_CG :
 			grid = solve_poisson_equation_from_orbitals(N,limits, GABEDIT_CG);
@@ -2029,7 +2030,7 @@ static gdouble get_value_sas(gdouble x,gdouble y,gdouble z,gint dump)
 	return v;
 }
 /*********************************************************************************/
-gdouble** compute_multipol_from_grid(Grid* grid, gint lmax)
+gdouble** compute_multipol_from_grid(Grid* grid, gint lmax, gdouble xOff, gdouble yOff, gdouble zOff)
 {
 	gint i;
 	gint j;
@@ -2042,8 +2043,8 @@ gdouble** compute_multipol_from_grid(Grid* grid, gint lmax)
 	gdouble r;
 	gdouble temp;
 	gdouble p;
-	gdouble** Q = g_malloc(lmax*sizeof(gdouble*));
-	Zlm** slm = g_malloc(lmax*sizeof(Zlm*));
+	gdouble** Q = g_malloc((lmax+1)*sizeof(gdouble*));
+	Zlm** slm = g_malloc((lmax+1)*sizeof(Zlm*));
 	gdouble PRECISION = 1e-13;
 	gdouble dv = 0;
 	gdouble scale;
@@ -2073,9 +2074,9 @@ gdouble** compute_multipol_from_grid(Grid* grid, gint lmax)
 		{
 			for(k=0;k<grid->N[2];k++)
 			{
-				x = grid->point[i][j][k].C[0];
-				y = grid->point[i][j][k].C[1];
-				z = grid->point[i][j][k].C[2];
+				x = grid->point[i][j][k].C[0]-xOff;
+				y = grid->point[i][j][k].C[1]-yOff;
+				z = grid->point[i][j][k].C[2]-zOff;
 				r = sqrt(x*x +  y*y + z*z+PRECISION);
 				temp = grid->point[i][j][k].C[3]*dv;
 				x /= r;
@@ -2323,6 +2324,46 @@ Grid* compute_mep_grid_using_partial_charges(gint N[], GridLimits limits)
 	return esp;
 
 }
+/*********************************************************/
+static void getCOff(Grid* grid, gdouble* pxOff, gdouble* pyOff, gdouble* pzOff)
+{
+	gdouble temp;
+	gdouble x,y,z;
+	int i,j,k;
+	gdouble xOff =0, yOff = 0, zOff = 0;
+	gdouble Q = 0;
+
+	for(i=0;i<grid->N[0];i++)
+	{
+		for(j=0;j<grid->N[1];j++)
+		{
+			for(k=0;k<grid->N[2];k++)
+			{
+				x = grid->point[i][j][k].C[0];
+				y = grid->point[i][j][k].C[1];
+				z = grid->point[i][j][k].C[2];
+
+				temp =  grid->point[i][j][k].C[3];
+				Q += temp;
+				xOff += temp*x;
+				yOff += temp*y;
+				zOff += temp*z;
+			}
+		}
+	}
+	if(Q!=0)
+	{
+		*pxOff = xOff/Q;
+		*pyOff = yOff/Q;
+		*pzOff = zOff/Q;
+	}
+	else
+	{
+		*pxOff = 0;
+		*pyOff = 0;
+		*pzOff = 0;
+	}
+}
 /*********************************************************************************/
 Grid* compute_mep_grid_using_multipol_from_density_grid(Grid* grid, gint lmax)
 {
@@ -2345,18 +2386,20 @@ Grid* compute_mep_grid_using_multipol_from_density_grid(Grid* grid, gint lmax)
 	gint n;
 	gboolean beg = TRUE;
 	gdouble scale;
+	gdouble xOff=0, yOff=0, zOff=0;
 
 	if(!test_grid_all_positive(grid))
 	{
 		Message(_("Sorry\n The current grid is not a grid for electronic density"),_("Error"),TRUE);
 		return NULL;
 	}
+	getCOff(grid,&xOff, &yOff, &zOff);
 
-	Q = compute_multipol_from_grid(grid,lmax);
+	Q = compute_multipol_from_grid(grid,lmax, xOff, yOff, zOff);
 	if(!Q) return NULL;
 
 	esp = grid_point_alloc(grid->N,grid->limits);
-	slm = g_malloc(lmax*sizeof(Zlm*));
+	slm = g_malloc((lmax+1)*sizeof(Zlm*));
 
 	for(l=0;l<=lmax;l++)
 	{
@@ -2366,17 +2409,17 @@ Grid* compute_mep_grid_using_multipol_from_density_grid(Grid* grid, gint lmax)
 	}
 
 	printf("Electronic values. All values in AU\n");
+	printf("Center %f %f %f\n", xOff, yOff, zOff);
 	for(l=0; l<=lmax; l++)
 		for(m=-l; m<=l; m++)
 		{
 
 			unsigned int absm = abs(m);
-			gdouble Norm = sqrt((2*l+1)/(4*PI))*sqrt(factorial(l+absm)/factorial(l-absm));
+			gdouble Norm = 1;
+			Norm = sqrt((2*l+1)/(4*PI))*sqrt(factorial(l+absm)*factorial(l-absm))/factorial(l)/pow(2.0,absm);
 			if(m!=0) Norm *= sqrt(2.0);
-			Norm = 1/Norm;
-			Q[l][m+l] *= Norm;
-			printf("Q[%d][%d] = %lf\n",l,m,Q[l][m+l]);
-			Q[l][m+l] *= Norm;
+			printf("Q[%d][%d] = %lf\n",l,m,Q[l][m+l]/Norm);
+			Q[l][m+l] *= 4*PI/(2*l+1);
 		}
 
 	progress_orb(0,GABEDIT_PROGORB_COMPMEPGRID,TRUE);
@@ -2394,6 +2437,10 @@ Grid* compute_mep_grid_using_multipol_from_density_grid(Grid* grid, gint lmax)
 				esp->point[i][j][k].C[0] = x;
 				esp->point[i][j][k].C[1] = y;
 				esp->point[i][j][k].C[2] = z;
+
+				x -=xOff;
+				y -=yOff;
+				z -=zOff;
 
 				r = sqrt(x*x +  y*y + z*z+PRECISION);
 				invR = 1.0 /r;
@@ -2490,6 +2537,7 @@ Grid* solve_poisson_equation_from_density_grid(Grid* grid, PoissonSolverMethod p
 	PoissonMG* ps= NULL;
 	gint Nx, Ny, Nz;
 	LaplacianOrderMG laplacianOrder= GABEDIT_LAPLACIAN_2;
+	/* LaplacianOrderMG laplacianOrder= GABEDIT_LAPLACIAN_4;*/
 	gdouble PRECISION = 1e-13;
 
 	if(!test_grid_all_positive(grid))
@@ -2529,7 +2577,15 @@ Grid* solve_poisson_equation_from_density_grid(Grid* grid, PoissonSolverMethod p
 				setValGridMG(source,i,j,k,grid->point[i][j][k].C[3]*fourPI);
 			}
 	ps = getPoissonMG(potential, source);
-	setTextInProgress(_("Set boundary values from multipole "));
+/*
+	ps->condition=GABEDIT_CONDITION_EWALD;
+	ps->condition=GABEDIT_CONDITION_CLUSTER;
+	ps->condition=GABEDIT_CONDITION_PERIODIC;
+*/
+	if(ps->condition==GABEDIT_CONDITION_EWALD) setTextInProgress(_("Set boundary values from EWALD "));
+	else if(ps->condition==GABEDIT_CONDITION_CLUSTER) setTextInProgress(_("Set boundary values to 0 "));
+	else if(ps->condition==GABEDIT_CONDITION_PERIODIC) setTextInProgress(_("Periodic boundary conditions  "));
+	else setTextInProgress(_("Set boundary values from multipole "));
 	tradesBoundaryPoissonMG(ps);
 	setTextInProgress(_("Solve the Poisson equation"));
 	/* solve poisson */
@@ -2537,7 +2593,7 @@ Grid* solve_poisson_equation_from_density_grid(Grid* grid, PoissonSolverMethod p
 	if(psMethod==GABEDIT_CG)
 		solveCGPoissonMG(ps, 200, 1e-6);
 	else
-		solveMGPoissonMG3(ps, domain.maxLevel, 20, 1e-6, 0);
+		solveMGPoissonMG3(ps, domain.maxLevel, 100, 1e-6, 0);
 	if(CancelCalcul)
 	{
 		destroyPoissonMG(ps); /* destroy of source and potential Grid */

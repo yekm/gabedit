@@ -2015,7 +2015,7 @@ void mapping_with_mep(gint N[],GridLimits limits, PoissonSolverMethod psMethod)
 	if(psMethod != GABEDIT_UNK)
 		mep = solve_poisson_equation_from_orbitals(N,limits, psMethod);
 	else
-		mep = compute_mep_grid_using_multipol_from_orbitals(N, limits, 2);
+		mep = compute_mep_grid_using_multipol_from_orbitals(N, limits, get_multipole_rank());
 
 	TypeGrid = oldTypeGrid;
 	if(!mep) return;

@@ -32,6 +32,8 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Constants.h"
 #include "GridMG.h"
 
+#define PRECISION 1e-10
+
 /*********************************************************/
 /* private methods for GridMG */
 static void initAllGridMG(GridMG* g, gdouble);
@@ -217,6 +219,70 @@ void initGridMG(GridMG*g, gdouble sommeValue)
 		case GABEDIT_INTERIOR: initInteriorGridMG(g, sommeValue);break;
 		case GABEDIT_BOUNDARY: initBoundaryGridMG(g, sommeValue);break;
 	}
+}
+/*********************************************************/
+void addGaussian(GridMG* g, gdouble Z, gdouble x1, gdouble y1, gdouble z1, gdouble sigma) 
+{
+	gdouble sigma2 = sigma*sigma;
+
+	DomainMG* domain = &g->domain;
+	GridMG* tmp = getNewGridMGUsingDomain(domain);
+
+	gdouble x0 = domain->x0;
+	gdouble y0 = domain->y0;
+	gdouble z0 = domain->z0;
+
+	gdouble xh = domain->xh;
+	gdouble yh = domain->yh;
+	gdouble zh = domain->zh;
+
+	gdouble r2x;
+	gdouble r2y;
+	gdouble r2z;
+
+	gdouble r20x=2*sigma2*xh*xh;
+	gdouble r20y=2*sigma2*yh*yh;
+	gdouble r20z=2*sigma2*zh*zh;
+
+	gdouble x, y , z;
+	int ix, iy, iz;
+	gdouble s  = 0;
+	gdouble ex = 0;
+
+	for(ix=domain->iXBeginBoundaryLeft;ix<=domain->iXEndBoundaryRight;ix++)
+	{
+        	x = x0 + ix*domain->xh;
+		r2x = (x-x1)*(x-x1);
+		for(iy = domain->iYBeginBoundaryLeft;iy <=domain->iYEndBoundaryRight;iy++)
+		{
+        		y = y0 + iy*domain->yh;
+			r2y = (y-y1)*(y-y1);
+			for(iz = domain->iZBeginBoundaryLeft;iz <=domain->iZEndBoundaryRight;iz++)
+			{
+        			z = z0 + iz*domain->zh;
+				r2z = (z-z1)*(z-z1);
+
+				ex =  exp(-r2x/r20x)*exp(-r2y/r20y)*exp(-r2z/r20z);
+				setValGridMG(tmp, ix, iy, iz, ex);
+				s += ex; 
+
+			}
+		}
+	}
+
+
+	s *= xh*yh*zh; 
+	
+	if(fabs(s)>PRECISION)
+	{
+		OperationTypeMG operation =  getOperationGridMG(g);
+		setOperationGridMG(tmp, GABEDIT_INTERIOR);
+		setOperationGridMG(g, GABEDIT_INTERIOR);
+		multEqualRealGridMG(tmp,Z/s);
+		plusEqualGridMG( g, tmp);
+		setOperationGridMG(g, operation);
+	}
+	destroyGridMG(tmp);
 }
 /*********************************************************/
 static void equalAllGridMG(GridMG* g, GridMG* src) 

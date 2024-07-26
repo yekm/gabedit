@@ -221,6 +221,11 @@ gchar* get_time_str()
 	return str;
 }
 /********************************************************************************/
+gdouble get_multipole_rank()
+{
+  return multipole_rank;
+}
+/********************************************************************************/
 gboolean this_is_a_backspace(gchar *st)
 {
         gint i;
@@ -3113,6 +3118,8 @@ void initialise_global_variables()
 #ifdef DRAWGEOMGL
   initAxesGeom();
 #endif
+  multipole_rank = 3;
+  alpha_opacity = 0.5;
 }
 /*************************************************************************************/
 void run_molden (gchar *titre)
@@ -3463,6 +3470,43 @@ void get_dipole_from_gamess_output_file(FILE* fd)
 			if(strstr( t, "END OF PROPERTY" )) break;
 		}
 
+	}
+	g_free(t);
+}
+/********************************************************************************/
+void get_dipole_from_turbomole_output_file(FILE* fd)
+{
+ 	guint taille=BSIZE;
+  	gchar *t = g_malloc(BSIZE*sizeof(gchar));
+  	gchar dum[100];
+
+
+	Dipole.def = FALSE;
+
+  	while(!feof(fd) )
+	{
+    		if(!fgets(t,taille,fd))break;
+		if(strstr( t, "electrostatic moments"))
+		{
+  			while(!feof(fd) )
+			{
+    				if(!fgets(t,taille,fd))break;
+				if(strstr( t, "dipole moment"))
+				{
+					gdouble d;
+    					if(!fgets(t,taille,fd))break;
+    					if(!fgets(t,taille,fd))break;/* x */
+					sscanf(t,"%s %lf %lf %lf",dum, &d, &d, &Dipole.Value[0]);
+    					if(!fgets(t,taille,fd))break;/* y */
+					sscanf(t,"%s %lf %lf %lf",dum, &d, &d, &Dipole.Value[1]);
+    					if(!fgets(t,taille,fd))break;/* z */
+					sscanf(t,"%s %lf %lf %lf",dum, &d, &d, &Dipole.Value[2]);
+					Dipole.def = TRUE;
+					break;
+				}
+			}
+			break;
+		}
 	}
 	g_free(t);
 }
@@ -4416,6 +4460,11 @@ GabEditTypeFile get_type_output_file(gchar* fileName)
 			if(strstr(t,"Welcome to Q-Chem"))
 			{
 				ktype = GABEDIT_TYPEFILE_QCHEM;
+				break;
+			}
+			if(strstr(t,"TURBOMOLE GmbH"))
+			{
+				ktype = GABEDIT_TYPEFILE_TURBOMOLE;
 				break;
 			}
 		}

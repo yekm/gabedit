@@ -21,6 +21,7 @@ DEALINGS IN THE SOFTWARE.
 
 #include "Fragments.h"
 #include "../../gl2ps/gl2ps.h"
+#include "../Geometry/AxesGeomGL.h"
 
 typedef enum
 {
@@ -138,7 +139,6 @@ GtkWidget *GeomDlg;
 GtkWidget *StopButton;
 gboolean StopCalcul;
 
-gboolean StickMode;
 gboolean ShadMode;
 gboolean PersMode;
 gboolean LightMode;
@@ -183,6 +183,7 @@ void selectAtomsBySymbolDlg();
 void selectAtomsByChargeValues(gboolean positive);
 void setMMTypeOfselectedAtomsDlg();
 void setPDBTypeOfselectedAtomsDlg();
+void setResidueNameOfselectedAtomsDlg();
 void setChargeOfselectedAtomsDlg();
 void scaleChargesOfSelectedAtomsDlg();
 void addMaxHydrogens();
@@ -210,6 +211,7 @@ guint label_option();
 gboolean distances_draw_mode();
 gboolean ortho_mode();
 gboolean stick_mode();
+gboolean space_fill_mode();
 gboolean pers_mode();
 gboolean shad_mode();
 gboolean light_mode();
@@ -235,6 +237,7 @@ gboolean getRebuildConnectionsDuringEditionYesNo();
 void ActivateButtonOperation (GtkWidget *widget, guint data);
 void RenderStick();
 void RenderBallStick();
+void RenderSpaceFill();
 gboolean dipole_draw_mode();
 gboolean dipole_mode();
 void CreateDrawMenu();
@@ -309,6 +312,7 @@ void reset_charges_multiplicities();
 void copy_connections(GeomDef* geom0, GeomDef* geom, gint n);
 void set_optimal_geom_view();
 void getQuatGeom(gdouble q[]);
+void redrawGeomGL2PS();
 
 #endif /* __GABEDIT_DRAWGEOMGL_H__ */
 

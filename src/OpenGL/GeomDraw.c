@@ -371,7 +371,6 @@ static void draw_ball_for_stick(int i, GLdouble g)
 	V4d Specular = {1.0f,1.0f,1.0f,1.0f};
 	V4d Diffuse  = {0.0f,0.0f,0.0f,1.0f};
 	V4d Ambiant  = {0.0f,0.0f,0.0f,1.0f};
-	OpenGLOptions openGLOptions = get_opengl_options();
 	  
 	Specular[0] = GeomOrb[i].Prop.color.red/(gdouble)65535;
 	Specular[1] = GeomOrb[i].Prop.color.green/(gdouble)65535;
@@ -382,7 +381,6 @@ static void draw_ball_for_stick(int i, GLdouble g)
 	for(k=0;k<3;k++) Ambiant[k] = 0.1;
 
 	Sphere_Draw_Color(g,GeomOrb[i].C,Specular,Diffuse,Ambiant);
-	Sphere_Draw_Color_Precision(g,GeomOrb[i].C,Specular,Diffuse,Ambiant, (GLint)openGLOptions.numberOfSubdivisionsCylindre);
 
 }
 /************************************************************************/

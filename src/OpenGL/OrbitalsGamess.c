@@ -1242,7 +1242,7 @@ void read_gamess_orbitals(gchar* FileName)
 		GeomOrb[i].Prop = prop_atom_get(GeomOrb[i].Symb);
 		//GeomOrb[i].partialCharge = 0.0;
 		GeomOrb[i].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[i].Symb);
-		printf("%s %i %f\n",GeomOrb[i].Symb,i,GeomOrb[i].nuclearCharge);
+		/* printf("%s %i %f\n",GeomOrb[i].Symb,i,GeomOrb[i].nuclearCharge);*/
 	}
   	/*DefineType();*/
 	buildBondsOrb();

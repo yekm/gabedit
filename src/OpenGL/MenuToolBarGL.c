@@ -29,6 +29,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/GridCP.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/UtilsInterface.h"
+#include "../Utils/Utils.h"
 #include "../Utils/HydrogenBond.h"
 #include "../Utils/PovrayUtils.h"
 #include "../Files/FileChooser.h"
@@ -434,7 +435,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name , "MEPGridMultipol"))
 	{
 		CancelCalcul = FALSE;
-		Grid* esp = compute_mep_grid_using_multipol_from_density_grid(grid, 4);
+		Grid* esp = compute_mep_grid_using_multipol_from_density_grid(grid, get_multipole_rank());
 		if(esp)
 		{
 			free_grid(grid);
@@ -478,7 +479,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name , "MEPMappingMultipol"))
 	{
 		CancelCalcul = FALSE;
-		mapping_with_mep_from_multipol(2);
+		mapping_with_mep_from_multipol(get_multipole_rank());
 	}
 	else if(!strcmp(name , "MEPMappingCG"))
 	{

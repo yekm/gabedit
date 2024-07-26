@@ -659,6 +659,7 @@ static void read_file(GabeditFileChooser *selecFile, gint response_id)
 	else if(fileType == GABEDIT_TYPEFILE_MPQC) read_last_mpqc_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_DALTON) read_last_dalton_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_GAUSSIAN) read_last_gaussian_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MOLPRO) read_last_molpro_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_GAMESS) read_last_gamess_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_FIREFLY) read_last_gamess_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_MOLCAS) read_last_molcas_file(selecFile, response_id);

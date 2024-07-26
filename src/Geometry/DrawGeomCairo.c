@@ -116,6 +116,8 @@ static gdouble factordipole = 1.0;
 
 static gboolean buttonpress = FALSE;
 
+static GabEditTypeGeom TypeGeom = GABEDIT_TYPEGEOM_STICK;
+
 /********************************************************************************/
 void set_statubar_pop_sel_atom();
 void calcul_ndipole();
@@ -487,7 +489,7 @@ static gushort get_epaisseur()
 static gushort get_rayon(gint i)
 {
         gushort rayon;
-        if ( !StickMode && geometry[i].Layer != LOW_LAYER )
+        if ( !stick_mode() && geometry[i].Layer != LOW_LAYER )
         { 
                 rayon =(gushort)(0.8*geometry[i].Rayon*factorball);
     		if (PersMode) rayon =(gushort)(geometry[i].Coefpers*geometry[i].Rayon*factorball);
@@ -3800,6 +3802,130 @@ void setPDBTypeOfselectedAtomsDlg()
 	gtk_widget_show_all(winDlg);
 }
 /********************************************************************************/
+static void setResidueNameOfselectedAtoms(GtkWidget* button, GtkWidget* entry)
+{
+	gint i;
+	gint k = 0;
+	G_CONST_RETURN gchar *tName;
+
+
+	if(Natoms<1) return;
+	tName = gtk_entry_get_text(GTK_ENTRY(entry));
+	if(strlen(tName)<1) return;
+	if(NFatoms<1) return;
+	if(!NumFatoms) return;
+
+	for (k=0;k<(gint)NFatoms;k++)
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(geometry[i].N== NumFatoms[k])
+		{
+			if(geometry[i].Residue) g_free(geometry[i].Residue);
+			geometry[i].Residue = g_strdup(tName);
+			if(geometry0[i].Residue) g_free(geometry0[i].Residue);
+			geometry0[i].Residue = g_strdup(tName);
+		}
+	}
+	create_GeomXYZ_from_draw_grometry();
+	dessine();
+}
+/********************************************************************************/
+static gchar* getResidueNameOfselectedAtoms()
+{
+	gint i;
+	gint k = 0;
+
+	if(Natoms<1) return g_strdup("DUM");
+	if(NFatoms<1) return  g_strdup("DUM");
+	if(!NumFatoms) return  g_strdup("DUM");
+
+	for (k=0;k<(gint)NFatoms;k++)
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(geometry[i].N== NumFatoms[k])
+		{
+			 g_strdup(geometry[i].Residue);
+		}
+	}
+	return  g_strdup("DUM");
+}
+/********************************************************************************/
+void setResidueNameOfselectedAtomsDlg()
+{
+	GtkWidget *winDlg;
+	GtkWidget *button;
+	GtkWidget *hbox;
+	GtkWidget *entry;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	gint n=0;
+	gchar** t = NULL;
+	gchar tmp[100] = "UNK";
+	gint i;
+	gint k;
+
+	if(Natoms<1) return;
+	if(NFatoms<1) return;
+	if(!NumFatoms) return;
+
+	k=0;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(geometry[i].N == NumFatoms[k])
+		{
+			sprintf(tmp,"%s",geometry[i].pdbType);
+			break;
+		}
+	}
+  
+	winDlg = gtk_dialog_new();
+	gtk_window_set_title(GTK_WINDOW(winDlg),_("Set Residue name of selected atoms"));
+	gtk_window_set_position(GTK_WINDOW(winDlg),GTK_WIN_POS_CENTER);
+	gtk_window_set_transient_for(GTK_WINDOW(winDlg),GTK_WINDOW(GeomDlg));
+
+	add_child(GeomDlg,winDlg,gtk_widget_destroy,_(" Set Sel. Type."));
+	g_signal_connect(G_OBJECT(winDlg),"delete_event",(GCallback)delete_child,NULL);
+
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->vbox), frame,TRUE,TRUE,0);
+
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	hbox=create_hbox_false(vboxframe);
+	n=1;
+	t = g_malloc(sizeof(gchar*)*2);
+	t[0]  = NULL;
+	t[1]  = NULL;
+	t = getResidueNameOfselectedAtoms();
+		
+	entry = create_label_combo(hbox,_(" Residue Name : "),&t,n, TRUE,-1,-1);
+	g_free(t[0]);
+	g_free(t);
+	if(strcmp(tmp,"UNK")) gtk_entry_set_text(GTK_ENTRY(entry),tmp);
+	gtk_editable_set_editable((GtkEditable*) entry,TRUE);
+
+	gtk_widget_realize(winDlg);
+
+	button = create_button(winDlg,_("Cancel"));
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button,TRUE,TRUE,0);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+
+	button = create_button(winDlg,_("OK"));
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button,TRUE,TRUE,0);
+	g_signal_connect(G_OBJECT(button), "clicked",(GCallback)setResidueNameOfselectedAtoms,entry);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+    
+
+	gtk_widget_show_all(winDlg);
+}
+/********************************************************************************/
 static gchar** getListCharges(gint* nlist)
 {
 
@@ -5226,7 +5352,14 @@ gboolean dipole_mode()
 /********************************************************************************/  
 gboolean stick_mode()
 {
-	return StickMode;
+	if(TypeGeom== GABEDIT_TYPEGEOM_STICK) return TRUE;
+	return FALSE;
+}
+/********************************************************************************/  
+gboolean space_fill_mode()
+{
+	if( TypeGeom == GABEDIT_TYPEGEOM_SPACE ) return TRUE;
+	return FALSE;
 }
 /********************************************************************************/  
 gboolean pers_mode()
@@ -6937,13 +7070,19 @@ void SetCosSin()
 /*****************************************************************************/ 
 void RenderStick()
 {
-	StickMode = TRUE;
+	TypeGeom = GABEDIT_TYPEGEOM_STICK;
 	dessine();
 }
 /*****************************************************************************/
 void RenderBallStick()
 {
-	StickMode = FALSE;
+	TypeGeom =  GABEDIT_TYPEGEOM_BALLSTICK;
+	dessine();
+}
+/*****************************************************************************/
+void RenderSpaceFill()
+{
+	TypeGeom = GABEDIT_TYPEGEOM_SPACE;
 	dessine();
 }
 /*****************************************************************************/
@@ -9856,7 +9995,7 @@ static void draw_line2_hbond(gint x1,gint y1,gint x2,gint y2, gint i, gint j, Gd
 
 	if((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)<epaisseur*epaisseur) return;
 
-        if ( !StickMode && geometry[i].Layer != LOW_LAYER )
+        if ( !stick_mode() && geometry[i].Layer != LOW_LAYER )
         { 
                 rayon = get_rayon(i);
 
@@ -10243,7 +10382,7 @@ void draw_line2(gint epaisseur,guint i,guint j,gint x1,gint y1,gint x2,gint y2,
 
 	if((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)<epaisseur*epaisseur) return;
 
-        if ( !StickMode && geometry[i].Layer != LOW_LAYER )
+        if ( !stick_mode() && geometry[i].Layer != LOW_LAYER )
         { 
                 rayon = get_rayon(i);
 
@@ -10279,7 +10418,7 @@ void draw_line2(gint epaisseur,guint i,guint j,gint x1,gint y1,gint x2,gint y2,
 	{
 		if(LightMode)
 		{
-        		if (!StickMode)
+        		if (!stick_mode())
 			{
 			color1.red = color1.green = color1.blue = 0;
 			draw_line(xp,yp,x2,y2,color1,epaisseur,TRUE);
@@ -10291,7 +10430,7 @@ void draw_line2(gint epaisseur,guint i,guint j,gint x1,gint y1,gint x2,gint y2,
 			gdk_colormap_alloc_color(colormap,&color1,FALSE,TRUE);
 			gdk_gc_set_foreground(gc,&color1);
 			gdk_colormap_alloc_color(colormap,&color2,FALSE,TRUE);
-			if(!StickMode)
+			if(!stick_mode())
 			gdk_gc_set_line_attributes(gc,epaisseur,GDK_LINE_SOLID,GDK_CAP_NOT_LAST,GDK_JOIN_ROUND);
 			else gdk_gc_set_line_attributes(gc,epaisseur,GDK_LINE_SOLID,GDK_CAP_ROUND,GDK_JOIN_ROUND);
 
@@ -10306,7 +10445,7 @@ void draw_line2(gint epaisseur,guint i,guint j,gint x1,gint y1,gint x2,gint y2,
 	{
 		if(LightMode)
 		{
-        		if (!StickMode)
+        		if (!stick_mode())
 			{
 			color1.red = color1.green = color1.blue = 0;
 			draw_line(xp,yp,x2,y2,color1,epaisseur,TRUE);
@@ -10318,7 +10457,7 @@ void draw_line2(gint epaisseur,guint i,guint j,gint x1,gint y1,gint x2,gint y2,
 			gdk_colormap_alloc_color(colormap,&color1,FALSE,TRUE);
 			gdk_gc_set_foreground(gc,&color1);
 			gdk_colormap_alloc_color(colormap,&color2,FALSE,TRUE);
-			if(!StickMode)
+        		if (!stick_mode())
 			gdk_gc_set_line_attributes(gc,epaisseur,GDK_LINE_SOLID,GDK_CAP_NOT_LAST,GDK_JOIN_ROUND);
 			else
 			gdk_gc_set_line_attributes(gc,epaisseur,GDK_LINE_SOLID,GDK_CAP_ROUND,GDK_JOIN_ROUND);
@@ -11169,12 +11308,10 @@ void dessine()
 	buildRotation();
 
 
-	if (StickMode) 
-   		dessine_stick();
-	else 
-	{
+       	if (!stick_mode())
 		dessine_byLayer();
-	}
+	else 
+   		dessine_stick();
 
 	redraw();
 }
@@ -11577,7 +11714,7 @@ void create_window_drawing()
 		Ddef = FALSE;
 		AtomToInsert = g_strdup("C");
 		for(i=0;i<4;i++) NumSelAtoms[i] = -1;
-		StickMode = TRUE;
+		TypeGeom =  GABEDIT_TYPEGEOM_STICK;
 		ShadMode = FALSE;
 		PersMode = FALSE;
 		LightMode = FALSE;

@@ -68,9 +68,9 @@ Povray.o: Povray.c ../../Config.h ../Common/Global.h \
   ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \
   ../Geometry/InterfaceGeom.h ../Utils/Utils.h ../Utils/PovrayUtils.h \
   ../Utils/AtomsProp.h ../Utils/Vector3d.h ../Utils/Constants.h \
-  ../Geometry/GeomGlobal.h ../Geometry/Measure.h ../Geometry/Fragments.h \
-  ../Geometry/DrawGeom.h ../Geometry/DrawGeomCairo.h \
-  ../Geometry/Fragments.h ../Common/Windows.h
+  ../Utils/Transformation.h ../Geometry/GeomGlobal.h \
+  ../Geometry/Measure.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Common/Windows.h
 ResultsAnalise.o: ResultsAnalise.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \

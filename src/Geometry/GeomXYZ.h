@@ -80,6 +80,8 @@ void read_first_dalton_file(GabeditFileChooser *SelecFile, gint response_id);
 void read_last_dalton_file(GabeditFileChooser *SelecFile, gint response_id);
 void read_first_gamess_file(GabeditFileChooser *SelecFile, gint response_id);
 void read_last_gamess_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_first_turbomole_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_last_turbomole_file(GabeditFileChooser *SelecFile, gint response_id);
 void read_last_gaussian_file(GabeditFileChooser *SelecFile , gint response_id);
 void read_first_gaussian_file(GabeditFileChooser *SelecFile, gint response_id);
 void read_fchk_gaussian_file(GabeditFileChooser *SelecFile , gint response_id);

@@ -787,7 +787,7 @@ static void apply_coulomb_orbitals(GtkWidget *Win,gpointer data)
 						ii,ii,normi,
 						ii,ii,ii,ii,integ);
 				else
-					result = g_strdup_printf("Canceled? ! ");
+					result = g_strdup_printf("Canceled? !\n If not see your terminal ");
 			}
 			else
 			{

@@ -55,7 +55,7 @@ gdouble originOfCube[3];
 Grid* get_grid_laplacian(Grid* grid, gint nBoundary);
 Grid* get_grid_norm_gradient(Grid* grid, gint nBoundary);
 Grid* compute_mep_grid_using_multipol_from_density_grid(Grid* grid, gint lmax);
-gdouble** compute_multipol_from_grid(Grid* grid, gint lmax);
+gdouble** compute_multipol_from_grid(Grid* grid, gint lmax, gdouble xOff, gdouble yOff, gdouble zOff);
 Grid* compute_mep_grid_using_multipol_from_orbitals(gint N[],GridLimits limits, gint lmax);
 Grid* compute_mep_grid_using_partial_charges_cube_grid(Grid* grid);
 Grid* compute_mep_grid_using_partial_charges(gint N[],GridLimits limits);

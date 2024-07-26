@@ -111,9 +111,10 @@ static gdouble get_rayon(gint i)
 	gdouble factorball = get_factorball();
 	gdouble sl = 4.5;
 	gdouble sm = 2;
-        if ( !StickMode && geometry[i].Layer != LOW_LAYER )
+        if ( !stick_mode() && geometry[i].Layer != LOW_LAYER )
         { 
-                rayon =(geometry[i].Prop.radii*factorball);
+		if(space_fill_mode()) rayon =(geometry[i].Prop.vanDerWaalsRadii*factorball);
+		else rayon =(geometry[i].Prop.radii*factorball);
 		if(geometry[i].Layer == LOW_LAYER) rayon /= sl;
 		if(geometry[i].Layer == MEDIUM_LAYER) rayon /= sm;
 	}
@@ -229,7 +230,7 @@ static gchar *get_pov_ball_for_stick(gint num, gdouble scale)
 /********************************************************************************/
 static gdouble get_min(gint k)
 {
-     gdouble min;
+     gdouble min=0;
      gint i=0;
 
      if(k==0)
@@ -251,7 +252,7 @@ static gdouble get_min(gint k)
      	}
      }
      
-     min -=10;
+     min -=100;
     return min;
 }
 /********************************************************************************/
