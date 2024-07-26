@@ -1,6 +1,6 @@
 /* UtilsCIF.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -267,6 +267,7 @@ static gchar* buildAtomsListFromBlockGeom(Crystal* crystal, GList* listGeom, gch
 		for(i=0;i<len;i++)
 		{
 			if(isItNumber(val[i])) {val[i]='\0';break;}
+			if(val[i]=='(') {val[i]='\0';break;}
 			if(val[i]=='\0') break;
 		}
 		for(i=len-1;i>=1;i--)
@@ -332,13 +333,14 @@ static gchar* buildSymOperatorsFromBlockSym(Crystal* crystal, GList* listSymOp)
 		{
 			i++;
 			if(strstr(line, "_symmetry_equiv_pos_as_xyz")) { numCol = i; break;}
+			if(strstr(line, "_space_group_symop_operation_xyz")) { numCol = i; break;}
 		}
         }
 
 	ok = TRUE;
 	if(numCol<0)
 	{
-		gchar* error = g_strdup_printf("Error in sym block : no _symmetry_equiv_pos_as_xyz");
+		gchar* error = g_strdup_printf("Error in sym block : no _symmetry_equiv_pos_as_xyz \nand no _space_group_symop_operation_xyz");
 		fprintf(stderr,"%s\n",error);
 		ok = FALSE;
 		return error;
@@ -489,9 +491,11 @@ static gchar* read_and_apply_symop_from_cif_file(Crystal* crystal, FILE* file)
 {
 	gchar* error = NULL;
 	GList* listStrSymOp = read_loop_block(file, "_symmetry_equiv_pos_as_xyz");
+	if(!listStrSymOp) listStrSymOp = read_loop_block(file, "_space_group_symop_operation_xyz");
+
 	if(!listStrSymOp)
 	{
-		error = g_strdup_printf("Error in sym block : no _symmetry_equiv_pos_as_xyz");
+		error = g_strdup_printf("Error in sym block : no _symmetry_equiv_pos_as_xyz \nand no _space_group_symop_operation_xyz");
 		return error;
 	}
 	//print_block(listStrSymOp);

@@ -1,7 +1,8 @@
 Gabedit.o: Gabedit.c ../../Config.h Global.h \
  ../Files/GabeditFileChooser.h ../Common/GabeditType.h MenuToolBar.h \
  TextEdit.h ../Utils/UtilsInterface.h ../Utils/Utils.h \
- ../Utils/AtomsProp.h ../Geometry/GeomGlobal.h SplashScreen.h Install.h \
+ ../Utils/AtomsProp.h ../Geometry/GeomGlobal.h \
+ ../Geometry/../Common/GabeditType.h SplashScreen.h Install.h \
  ../Files/ListeFiles.h Windows.h StockIcons.h
 Help.o: Help.c ../../Config.h Global.h ../Files/GabeditFileChooser.h \
  ../Common/GabeditType.h ../Utils/UtilsInterface.h ../Utils/Constants.h
@@ -19,8 +20,8 @@ Preferences.o: Preferences.c ../../Config.h Global.h \
  ../Utils/Constants.h Windows.h TextEdit.h ../Utils/Vector3d.h \
  ../Display/PreferencesOrb.h ../Display/GLArea.h ../Display/UtilsOrb.h \
  ../Geometry/ResultsAnalise.h ../Geometry/GeomGlobal.h \
- ../Files/FolderChooser.h ../Files/GabeditFolderChooser.h \
- ../../pixmaps/Open.xpm
+ ../Geometry/../Common/GabeditType.h ../Files/FolderChooser.h \
+ ../Files/GabeditFolderChooser.h ../../pixmaps/Open.xpm
 Printer.o: Printer.c ../../Config.h Global.h \
  ../Files/GabeditFileChooser.h ../Common/GabeditType.h \
  ../Utils/UtilsInterface.h ../Utils/Utils.h ../Utils/GabeditTextEdit.h \
@@ -78,9 +79,9 @@ MenuToolBar.o: MenuToolBar.c ../../Config.h ../Common/Global.h \
  ../Utils/AtomsProp.h ../Utils/GabeditTextEdit.h ../Utils/ConvUtils.h \
  ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
- ../Geometry/GeomGlobal.h ../Geometry/OpenBabel.h ../Common/Printer.h \
- ../NetWork/Process.h ../NetWork/Batch.h \
- ../MolecularMechanics/SetMMParameters.h \
+ ../Geometry/GeomGlobal.h ../Geometry/../Common/GabeditType.h \
+ ../Geometry/OpenBabel.h ../Common/Printer.h ../NetWork/Process.h \
+ ../NetWork/Batch.h ../MolecularMechanics/SetMMParameters.h \
  ../MolecularMechanics/SetPDBTemplate.h ../Common/StockIcons.h \
  ../Display/Vibration.h ../Utils/GabeditXYPlot.h \
  ../Utils/GabeditContoursPlot.h ../Spectrum/IRSpectrum.h \
@@ -134,3 +135,5 @@ StockIcons.o: StockIcons.c ../../pixmaps/A0d.xpm ../../pixmaps/A0p.xpm \
  ../../pixmaps/Warning.xpm ../../pixmaps/Yes.xpm ../../pixmaps/Zoom.xpm \
  ../../pixmaps/Pdb.xpm ../../pixmaps/O.xpm ../../pixmaps/AtomToInsert.xpm \
  ../../pixmaps/Knot.xpm StockIcons.h
+Global.o: Global.c ../../Config.h Global.h ../Files/GabeditFileChooser.h \
+ ../Common/GabeditType.h

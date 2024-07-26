@@ -5,14 +5,15 @@ MPQC.o: MPQC.c ../../Config.h ../Common/Global.h \
  ../MPQC/MPQCGuessWaveFunction.h ../MPQC/MPQCMpqc.h ../MPQC/MPQCBasis.h \
  ../MPQC/MPQCFunctionals.h ../MPQC/MPQCOptimization.h \
  ../MPQC/MPQCProperties.h ../Utils/UtilsInterface.h \
- ../Geometry/GeomGlobal.h ../Geometry/InterfaceGeom.h ../Utils/Utils.h \
- ../Utils/AtomsProp.h ../Utils/Constants.h ../Utils/GabeditTextEdit.h
+ ../Geometry/GeomGlobal.h ../Geometry/../Common/GabeditType.h \
+ ../Geometry/InterfaceGeom.h ../Utils/Utils.h ../Utils/AtomsProp.h \
+ ../Utils/Constants.h ../Utils/GabeditTextEdit.h
 MPQCMolecule.o: MPQCMolecule.c ../../Config.h ../Common/Global.h \
  ../Common/../Files/GabeditFileChooser.h \
  ../Common/../Common/GabeditType.h ../MPQC/MPQCTypes.h \
  ../MPQC/MPQCGlobal.h ../Geometry/GeomGlobal.h \
- ../Geometry/GeomConversion.h ../Geometry/GeomXYZ.h \
- ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+ ../Geometry/../Common/GabeditType.h ../Geometry/GeomConversion.h \
+ ../Geometry/GeomXYZ.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Utils/Utils.h \
  ../Utils/UtilsInterface.h ../Utils/Constants.h \
  ../Utils/GabeditTextEdit.h ../Geometry/InterfaceGeom.h \
@@ -22,8 +23,9 @@ MPQCMole.o: MPQCMole.c ../../Config.h ../Common/Global.h \
  ../Common/../Files/GabeditFileChooser.h \
  ../Common/../Common/GabeditType.h ../MPQC/MPQCTypes.h \
  ../MPQC/MPQCGlobal.h ../MPQC/MPQCBasis.h ../MPQC/MPQCFunctionals.h \
- ../Geometry/GeomGlobal.h ../Geometry/GeomConversion.h \
- ../Geometry/GeomXYZ.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+ ../Geometry/GeomGlobal.h ../Geometry/../Common/GabeditType.h \
+ ../Geometry/GeomConversion.h ../Geometry/GeomXYZ.h \
+ ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Utils/Utils.h \
  ../Utils/UtilsInterface.h ../Utils/Constants.h \
  ../Geometry/InterfaceGeom.h ../Common/Windows.h ../Utils/AtomsProp.h \
@@ -33,8 +35,8 @@ MPQCGuessWaveFunction.o: MPQCGuessWaveFunction.c ../../Config.h \
  ../Common/Global.h ../Common/../Files/GabeditFileChooser.h \
  ../Common/../Common/GabeditType.h ../MPQC/MPQCTypes.h \
  ../MPQC/MPQCGlobal.h ../MPQC/MPQCBasis.h ../Geometry/GeomGlobal.h \
- ../Geometry/GeomConversion.h ../Geometry/GeomXYZ.h \
- ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+ ../Geometry/../Common/GabeditType.h ../Geometry/GeomConversion.h \
+ ../Geometry/GeomXYZ.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Utils/Utils.h \
  ../Utils/UtilsInterface.h ../Utils/Constants.h \
  ../Geometry/InterfaceGeom.h ../Common/Windows.h ../Utils/AtomsProp.h \
@@ -44,8 +46,8 @@ MPQCMpqc.o: MPQCMpqc.c ../../Config.h ../Common/Global.h \
  ../Common/../Files/GabeditFileChooser.h \
  ../Common/../Common/GabeditType.h ../MPQC/MPQCTypes.h \
  ../MPQC/MPQCGlobal.h ../MPQC/MPQCProperties.h ../Geometry/GeomGlobal.h \
- ../Geometry/GeomConversion.h ../Geometry/GeomXYZ.h \
- ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+ ../Geometry/../Common/GabeditType.h ../Geometry/GeomConversion.h \
+ ../Geometry/GeomXYZ.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Utils/Utils.h \
  ../Utils/UtilsInterface.h ../Utils/Constants.h \
  ../Geometry/InterfaceGeom.h ../Common/Windows.h ../Utils/AtomsProp.h \
@@ -55,8 +57,8 @@ MPQCBasis.o: MPQCBasis.c ../../Config.h ../Common/Global.h \
  ../Common/../Files/GabeditFileChooser.h \
  ../Common/../Common/GabeditType.h ../MPQC/MPQCTypes.h \
  ../MPQC/MPQCGlobal.h ../MPQC/MPQCLib.h ../Geometry/GeomGlobal.h \
- ../Geometry/GeomConversion.h ../Geometry/GeomXYZ.h \
- ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+ ../Geometry/../Common/GabeditType.h ../Geometry/GeomConversion.h \
+ ../Geometry/GeomXYZ.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Utils/Utils.h \
  ../Utils/UtilsInterface.h ../Utils/Constants.h \
  ../Geometry/InterfaceGeom.h ../Common/Windows.h ../Utils/AtomsProp.h \

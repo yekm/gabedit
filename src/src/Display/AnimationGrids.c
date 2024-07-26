@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -39,6 +39,10 @@ DEALINGS IN THE SOFTWARE.
 #include "../Display/Images.h"
 #include "../Display/UtilsOrb.h"
 #include "../Display/BondsOrb.h"
+
+/* extern AnimationGrids.h */
+AnimationGrids animationGrids;
+/*****************************************/
 
 static	GtkWidget *WinDlg = NULL;
 static	GtkWidget *EntryVelocity = NULL;
@@ -94,7 +98,7 @@ static void reset_last_directory(GtkWidget *dirSelector, gpointer data)
 static void set_directory(GtkWidget *win, gpointer data)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(reset_last_directory, _("Set folder"), GABEDIT_TYPEWIN_ORB);
+	dirSelector = selectionOfDir(reset_last_directory, _("Set folder"), GABEDIT_TYPEWIN_ORB);
 	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
 	gtk_window_set_transient_for(GTK_WINDOW(dirSelector),GTK_WINDOW(PrincipalWindow));
 	gtk_window_set_transient_for(GTK_WINDOW(dirSelector),GTK_WINDOW(WinDlg));
@@ -450,7 +454,7 @@ static gboolean set_grid(gint k)
 	if(nAtoms>0) init_atomic_orbitals();
 	init_dipole();
 	buildBondsOrb();
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 
 	grid = copyGrid(animationGrids.grids[k]);
 
@@ -480,7 +484,7 @@ static void stopAnimation(GtkWidget *win, gpointer data)
 	while( gtk_events_pending() ) gtk_main_iteration();
 
 	buildBondsOrb();
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	init_dipole();
 	init_atomic_orbitals();
 	free_iso_all();
@@ -675,7 +679,7 @@ static void showMessageEnd()
 	gchar* format =get_format_image_from_option();
 	gchar* message = messageAnimatedImage(format);
 	gchar* t = g_strdup_printf(
-			_("\nA series of gab*.%s files was created in \"%s\" directeory.\n\n\n%s")
+			_("\nA seriess of gab*.%s files was created in \"%s\" directeory.\n\n\n%s")
 			, format, get_last_directory(),message);
 	GtkWidget* winDlg = Message(t,_("Info"),TRUE);
 	g_free(message);
@@ -738,7 +742,7 @@ static GtkWidget *create_list_of_formats()
 	return combobox;
 }
 /********************************************************************************************************/
-static void addEntrysButtons(GtkWidget* box)
+static void addEntriesButtons(GtkWidget* box)
 {
 	GtkWidget *Button;
 	GtkWidget *frame;
@@ -875,7 +879,7 @@ static GtkTreeView* addList(GtkWidget *vbox, GtkUIManager *manager)
 	widall=widall*Factor+40;
 
 	scr=gtk_scrolled_window_new(NULL,NULL);
-	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeight*0.53));
+	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeightD*0.53));
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scr),GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC); 
 	gtk_box_pack_start(GTK_BOX (vbox), scr,TRUE, TRUE, 2);
 
@@ -1044,10 +1048,10 @@ static void help_animated_file()
 		" For create an animated file :\n"
 		" ============================\n"
 	        "   1) Read grids from Gabedit or from DX files.\n"
-	        "   2) Select \"create a series of BMP (or PPM or POV) images\" button.\n"
+	        "   2) Select \"create a seriess of BMP (or PPM or POV) images\" button.\n"
 	        "      You can select your favorite directory by clicking to \"Directory\" button.\n"
 	        "   3) Click to Play button.\n"
-	        "   4) After on cycle Gabedit create a series of BMP(gab*.bmp) or PPM (gab*.ppm)  or POV(gab*.pov) files.\n"
+	        "   4) After on cycle Gabedit create a seriess of BMP(gab*.bmp) or PPM (gab*.ppm)  or POV(gab*.pov) files.\n"
 	        "      From these files, you can create a gif or a png animated file using convert software.\n"
 	        "              with \"convert -delay 10 -loop 1000 gab*.bmp imageAnim.gif\" command you can create a gif animated file.\n"
 	        "              with \"convert -delay 10 -loop 1000 gab*.bmp imageAnim.mng\" command you can create a png animated file.\n\n"
@@ -1195,7 +1199,7 @@ void animationGridsDlg()
 	Win= gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
 	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(parentWindow));
-	gtk_window_set_default_size (GTK_WINDOW(Win),-1,(gint)(ScreenHeight*0.69));
+	//gtk_window_set_default_size (GTK_WINDOW(Win),-1,(gint)(ScreenHeightD*0.69));
 	gtk_window_set_title(GTK_WINDOW(Win),"Multiple Grids");
 	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
 
@@ -1215,7 +1219,7 @@ void animationGridsDlg()
 	gtk_widget_realize(Win);
 
 	treeView = addList(hbox, manager);
-	addEntrysButtons(vbox);
+	addEntriesButtons(vbox);
 	gtk_widget_show_all(vbox);
 
 	gtk_widget_show_now(Win);

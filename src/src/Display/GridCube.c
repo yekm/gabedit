@@ -1,6 +1,6 @@
 /* GridCube.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1125,7 +1125,7 @@ gboolean read_geometry_from_gauss_cube_file(FILE* file,gint Natoms)
 	if(OK)
 	{
 		buildBondsOrb();
-		RebuildGeom = TRUE;
+		RebuildGeomD = TRUE;
 		if(this_is_a_new_geometry()) free_objects_all();
 		glarea_rafresh(GLArea);
 		init_atomic_orbitals();

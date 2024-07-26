@@ -1,6 +1,6 @@
 /* SemiEmpirical.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -41,6 +41,8 @@ static void calculateGradientFireFly(SemiEmpiricalModel* seModel);
 static void calculateEnergyFireFly(SemiEmpiricalModel* seModel);
 static void calculateGradientOpenBabel(SemiEmpiricalModel* seModel);
 static void calculateEnergyOpenBabel(SemiEmpiricalModel* seModel);
+static void calculateGradientXTB(SemiEmpiricalModel* seModel);
+static void calculateEnergyXTB(SemiEmpiricalModel* seModel);
 static void calculateGradientGeneric(SemiEmpiricalModel* seModel);
 static void calculateEnergyGeneric(SemiEmpiricalModel* seModel);
 
@@ -105,7 +107,7 @@ static gboolean getGradientMopacOut(gchar* fileNameOut, SemiEmpiricalModel *seMo
 		if(strstr(buffer, "FINAL  POINT  AND  DERIVATIVES"))break;
 		if(strstr(buffer, "FINAL") && strstr(buffer, "POINT") && strstr(buffer,"AND") && strstr(buffer,"DERIVATIVES"))break;
 	}
-	if(!strstr(buffer,"FINAL")) rewind(file);// Old Mopac, before 2018
+	if(!strstr(buffer,"FINAL")) rewind(file);// Old Mopac, beforee 2018
 	 while(!feof(file))
 	 {
 		if(!fgets(buffer,BSIZE,file))break;
@@ -330,7 +332,7 @@ static void calculateGradientMopac(SemiEmpiricalModel* seModel)
 		if(!getGradientMopac(fileOut, seModel))
 		{
 			StopCalcul=TRUE;
-			set_text_to_draw(_("Problem : I cannot caculate the Gradient... "));
+			set_text_to_draw(_("Problem : I cannot calculate the Gradient... "));
 			set_statubar_operation_str(_("Calculation Stopped "));
 			drawGeom();
 			gtk_widget_set_sensitive(StopButton, FALSE);
@@ -613,7 +615,7 @@ static void calculateGradientFireFly(SemiEmpiricalModel* seModel)
 			gchar* comm = g_strdup_printf("cat %s",fileOut);
 #endif
 			StopCalcul=TRUE;
-			set_text_to_draw(_("Problem : I cannot caculate the Gradient... "));
+			set_text_to_draw(_("Problem : I cannot calculate the Gradient... "));
 			set_statubar_operation_str(_("Calculation Stopped "));
 			drawGeom();
 			gtk_widget_set_sensitive(StopButton, FALSE);
@@ -980,19 +982,19 @@ char* runOneGeneric(SemiEmpiricalModel* seModel, char* keyWords)
 #ifdef ENABLE_MPI
 	MPI_Comm_rank( MPI_COMM_WORLD,&rank);
 #endif
-#ifdef OS_WIN32
+#ifdef G_OS_WIN32
 	char c='%';
 #endif
 
 	if(mol->nAtoms<1) return fileNameOut;
-#ifndef OS_WIN32
+#ifndef G_OS_WIN32
 	fileNameSH = g_strdup_printf("%s%sGenericOne%d.sh",seModel->workDir,G_DIR_SEPARATOR_S,rank);
 #else
 	fileNameSH = g_strdup_printf("%s%sGenericOne%d.bat",seModel->workDir,G_DIR_SEPARATOR_S,rank);
 #endif
  	fileSH = fopen(fileNameSH, "w");
 	if(!fileSH) return FALSE;
-#ifdef OS_WIN32
+#ifdef G_OS_WIN32
 	fprintf(fileSH,"@echo off\n");
 #endif
 
@@ -1017,7 +1019,7 @@ char* runOneGeneric(SemiEmpiricalModel* seModel, char* keyWords)
 	addMoleculeSEToFile(mol,file);
 	fclose(file);
 
-#ifndef OS_WIN32
+#ifndef G_OS_WIN32
 	fprintf(fileSH,"%s %s %s",NameCommandGeneric,fileNameIn,fileNameOut);
 	fclose(fileSH);
 	sprintf(buffer,"chmod u+x %s",fileNameSH);
@@ -1067,12 +1069,12 @@ static void calculateGradientGeneric(SemiEmpiricalModel* seModel)
 				m.gradient[j][i] = 0.0;
 		if(!getGradientGeneric(fileOut, seModel))
 		{
-#ifdef OS_WIN32
+#ifdef G_OS_WIN32
 			char* comm = g_strdup_printf("type %s",fileOut);
 #else
 			char* comm = g_strdup_printf("cat %s",fileOut);
 #endif
-			printf(("Problem : I cannot caculate the Gradient... "));
+			printf(("Problem : I cannot calculate the Gradient... "));
 			printf(("Calculation Stopped "));
 			system(comm);
 			free(fileOut);
@@ -1108,6 +1110,275 @@ static void calculateEnergyGeneric(SemiEmpiricalModel* seModel)
 SemiEmpiricalModel createGenericModel (GeomDef* geom,gint Natoms,gint charge, gint spin, gchar* method, gchar* dirName, SemiEmpiricalModelConstraints constraints)
 {
 	SemiEmpiricalModel seModel = newGenericModel(method,dirName, constraints);
+	seModel.molecule = createMoleculeSE(geom,Natoms, charge, spin,TRUE);
+	setRattleConstraintsParameters(&seModel);
+	
+	return seModel;
+}
+/**********************************************************************/
+static gboolean getDipoleXTB(char* fileNameOut, double* dipole)
+{
+	FILE* file = NULL;
+	char buffer[1024];
+	char* tag = "dipole moment from electron density";
+ 	file = fopen(fileNameOut, "r");
+	if(!file) return FALSE;
+	 while(!feof(file))
+	 {
+		if(!fgets(buffer,BSIZE,file))break;
+		if(strstr( buffer, tag))
+		{
+			char* pdest = NULL;
+			fgets(buffer,BSIZE,file);/*    X       Y       Z */
+			fgets(buffer,BSIZE,file);/*   -1.2200   0.3625   0.7455  total (Debye):    3.749 */
+			if(sscanf(buffer,"%lf %lf %lf",&dipole[0],&dipole[1],&dipole[2])==3)
+			{
+				gint i;
+				for(i=0;i<3;i++) dipole[i] *= AUTODEB;
+				fclose(file);
+				return TRUE;
+			}
+		}
+	 }
+	fclose(file);
+	return FALSE;
+}
+/*****************************************************************************/
+static gboolean getEnergyXTB(char* fileNameOut, double* energy)
+{
+	FILE* file = NULL;
+	char buffer[1024];
+	char* tag = " TOTAL ENERGY ";
+ 	file = fopen(fileNameOut, "r");
+	if(!file) return FALSE;
+	 while(!feof(file))
+	 {
+		if(!fgets(buffer,BSIZE,file))break;
+		if(strstr( buffer, tag))
+		{
+			char* pdest = strstr( buffer, tag)+strlen(tag)+1 ;
+			int i;
+			if(pdest && sscanf(pdest,"%lf",energy)==1)
+			{
+				for(i=0;i<strlen(pdest);i++) if(pdest[i]=='D' || pdest[i]=='d') pdest[i] ='E';
+				if(sscanf(pdest,"%lf",energy)==1)
+				{
+					fclose(file);
+					*energy *=AUTOKCAL;
+					return TRUE;
+				}
+			}
+		}
+	 }
+	fclose(file);
+	return FALSE;
+}
+/*****************************************************************************/
+/* FROM myFileOne.engrad file, not from output file */
+gboolean getGradientXTB(char* fileName, SemiEmpiricalModel *seModel)
+{
+	FILE* file = NULL;
+	char buffer[1024];
+	gboolean Ok = FALSE;
+	char* tag = "The current gradient in Eh/bohr";
+	int i;
+	int j;
+
+ 	file = fopen(fileName, "r");
+	if(!file) return FALSE;
+	 while(!feof(file))
+	 {
+		if(!fgets(buffer,BSIZE,file))break;
+		if(strstr( buffer, tag))
+		{
+			if(!fgets(buffer,BSIZE,file)) { fclose(file); return FALSE;}/* #*/
+			for(i=0;i<seModel->molecule.nAtoms;i++)
+			{
+				gint k;
+				for(k=0;k<3;k++)
+				{
+					if(!fgets(buffer,BSIZE,file))break;
+					for(j=0;j<strlen(buffer);j++) if(buffer[j]=='D' || buffer[j]=='d') buffer[j] ='E';
+					if(sscanf(buffer,"%lf", &seModel->molecule.gradient[k][i])!=1)
+					{
+						fclose(file);
+						return FALSE;
+					}
+				}
+				for(j=0;j<3;j++) seModel->molecule.gradient[j][i] *= AUTOKCAL/BOHR_TO_ANG;
+				/*for(j=0;j<3;j++) seModel->molecule.gradient[j][i] = - seModel->molecule.gradient[j][i];*/
+				/* printf("Grad = %f %f %f\n", seModel->molecule.gradient[0][i], seModel->molecule.gradient[1][i], seModel->molecule.gradient[2][i]);*/
+			}
+			break;
+		}
+	}
+	Ok = TRUE;
+	fclose(file);
+	return Ok;
+}
+/*****************************************************************************/
+static char* runOneXTB(SemiEmpiricalModel* seModel, char* keyWords)
+{
+	FILE* file = NULL;
+	FILE* fileSH = NULL;
+	char* fileNameIn = NULL;
+	char* fileNameOut = NULL;
+	char* fileNameSH = NULL;
+	gchar* dirName=NULL;
+	char buffer[1024];
+	gchar* keys=NULL;
+	MoleculeSE* mol = &seModel->molecule;
+	/* char* NameCommandXTB = seModel->method;*/
+	int rank = 0;
+#ifdef ENABLE_MPI
+	MPI_Comm_rank( MPI_COMM_WORLD,&rank);
+#endif
+#ifdef G_OS_WIN32
+	char c='%';
+#endif
+
+	if(mol->nAtoms<1) return fileNameOut;
+#ifndef G_OS_WIN32
+	fileNameSH = g_strdup_printf("%s%sXTBOne%d.sh",seModel->workDir,G_DIR_SEPARATOR_S,rank);
+#else
+	fileNameSH = g_strdup_printf("%s%sXTBOne%d.bat",seModel->workDir,G_DIR_SEPARATOR_S,rank);
+#endif
+ 	fileSH = fopen(fileNameSH, "w");
+	if(!fileSH) return FALSE;
+#ifdef G_OS_WIN32
+	fprintf(fileSH,"@echo off\n");
+	fprintf(fileSH,"set PATH=%cPATH%c;\"%s\"\n",c,c,xtbDirectory);
+#endif
+
+	fileNameIn = g_strdup_printf("%s%sXTBOne%d.xyz",seModel->workDir,G_DIR_SEPARATOR_S,rank);
+	fileNameOut = g_strdup_printf("%s%sXTBOne%d.out",seModel->workDir,G_DIR_SEPARATOR_S,rank);
+
+ 	file = fopen(fileNameIn, "w");
+	if(!file) 
+	{
+ 		if(fileNameIn) free(fileNameIn);
+ 		if(fileNameOut) free(fileNameOut);
+ 		if(fileNameSH) free(fileNameSH);
+		return FALSE;
+	}
+	addGeometryMoleculeSEToXYZ(mol,file);
+	fclose(file);
+	if(seModel->molecule.spinMultiplicity!=1 && !strstr(keyWords,"uhf")  )
+		keys = g_strdup_printf(" %s --uhf %d ", keyWords, seModel->molecule.spinMultiplicity-1);
+	else 
+		keys = g_strdup_printf(" %s ", keyWords);
+
+#ifndef G_OS_WIN32
+	dirName= get_name_dir(fileNameIn);
+	fprintf(fileSH,"cd %s\n",dirName);
+	g_free(dirName);
+	/* printf("NameCommandXTB= %s\n",NameCommandXTB);*/
+	/* printf("%s %s %s >  %s\n",NameCommandXTB, fileNameIn,keys, fileNameOut);*/
+	fprintf(fileSH,"%s %s %s >  %s 2> /dev/null ",NameCommandXTB, fileNameIn,keys, fileNameOut);
+	/* fprintf(fileSH,"%s %s %s >  %s ",NameCommandXTB, fileNameIn,keys, fileNameOut);*/
+	fclose(fileSH);
+	sprintf(buffer,"chmod u+x %s",fileNameSH);
+	system(buffer);
+	system(fileNameSH);
+#else
+	addUnitDisk(fileSH, fileNameSH);
+	dirName= get_name_dir(fileNameIn);
+	fprintf(fileSH,"cd %s\n",dirName);
+	g_free(dirName);
+	fprintf(fileSH,"\"%s\" \"%s\"  %s > \"%s\" ",NameCommandXTB,fileNameIn,keys, fileNameOut);
+	fclose(fileSH);
+	sprintf(buffer,"\"%s\"",fileNameSH);
+	system(buffer);
+#endif
+
+	unlink(fileNameIn);
+	//unlink(fileNameSH);
+ 	if(fileNameIn) free(fileNameIn);
+ 	if(fileNameSH) free(fileNameSH);
+ 	if(keys) g_free(keys);
+	return fileNameOut;
+}
+/**********************************************************************/
+static SemiEmpiricalModel newXTBModel(char* method, char* dirName, SemiEmpiricalModelConstraints constraints)
+{
+	/* method = nameCommand */
+	SemiEmpiricalModel seModel = newSemiEmpiricalModel(method, dirName, constraints);
+
+	seModel.klass->calculateGradient = calculateGradientXTB;
+	seModel.klass->calculateEnergy = calculateEnergyXTB;
+
+	return seModel;
+}
+/**********************************************************************/
+static void calculateGradientXTB(SemiEmpiricalModel* seModel)
+{
+	int i;
+	int j;
+	MoleculeSE m = seModel->molecule;
+	char* keyWords = NULL;
+	char* fileOut = NULL;
+	gchar* fileNamePrefix = NULL;
+	gchar* fileNameGrad = NULL;
+	if(!seModel) return;
+	if(seModel->molecule.nAtoms<1) return;
+	if(!seModel->method) return;
+	keyWords = g_strdup_printf("%s --grad ",seModel->method);
+	fileOut = runOneXTB(seModel, keyWords);
+	fileNamePrefix = get_suffix_name_file(fileOut);
+	fileNameGrad = g_strdup_printf("%s.engrad",fileNamePrefix);
+	if(fileNamePrefix) g_free(fileNamePrefix);
+
+
+	if(fileOut)
+	{
+		for(j=0;j<3;j++)
+			for( i=0; i<m.nAtoms;i++)
+				m.gradient[j][i] = 0.0;
+		/* printf("fileGrad=%s\n", fileNameGrad);*/
+		if(!getGradientXTB(fileNameGrad, seModel))
+		{
+#ifdef G_OS_WIN32
+			char* comm = g_strdup_printf("type %s",fileOut);
+#else
+			char* comm = g_strdup_printf("cat %s",fileOut);
+#endif
+			printf(("Problem : I cannot calculate the Gradient... "));
+			printf(("Calculation Stopped "));
+			system(comm);
+			free(fileOut);
+			free(comm);
+			exit(1);
+			return;
+		}
+		getEnergyXTB(fileOut, &seModel->molecule.energy);
+		getDipoleXTB(fileOut, seModel->molecule.dipole);
+		free(fileOut);
+		g_free(fileNameGrad);
+	}
+
+}
+/**********************************************************************/
+static void calculateEnergyXTB(SemiEmpiricalModel* seModel)
+{
+	char* keyWords = NULL;
+	char* fileOut = NULL;
+	if(!seModel) return;
+	if(seModel->molecule.nAtoms<1) return;
+	if(!seModel->method) return;
+	keyWords = g_strdup_printf("%s ",seModel->method);
+	fileOut = runOneXTB(seModel, keyWords);
+	if(fileOut)
+	{
+		getEnergyXTB(fileOut, &seModel->molecule.energy);
+		getDipoleXTB(fileOut, seModel->molecule.dipole);
+		free(fileOut);
+	}
+
+}
+/**********************************************************************/
+SemiEmpiricalModel createXTBModel (GeomDef* geom,gint Natoms,gint charge, gint spin, gchar* method, gchar* dirName, SemiEmpiricalModelConstraints constraints)
+{
+	SemiEmpiricalModel seModel = newXTBModel(method,dirName, constraints);
 	seModel.molecule = createMoleculeSE(geom,Natoms, charge, spin,TRUE);
 	setRattleConstraintsParameters(&seModel);
 	

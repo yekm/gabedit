@@ -1,6 +1,6 @@
 /* MolecularMechanicsDlg.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -75,7 +75,7 @@ typedef enum
 	GRADMAXLINES       = 2,
 	GRADINITIALSTEP    = 3,
 	GRADFREQUENCY      = 4
-} GradientEntrys;
+} GradientEntries;
 
 typedef enum
 {
@@ -2419,7 +2419,7 @@ static void createInfoConfoFrame(GtkWidget *box)
 	label = gtk_label_new(
 	"During the production stage, Gabedit selects a number geometries."
 	"\nAt the end of the molecular dynamic simulation, each selected geometry is optimized."
-	"\nThe very similar molecular strcutures can be removed."
+	"\nThe very similar molecular structures can be removed."
 	"\nFinally the geometries are sorted by energy and are saved in a file."
 	"\nGabedit can also optimize these geometries, interactively, by Mopac or by FireFly."
 	"\nGabedit can also creates input files for mopac, FireFly or Gaussian for a post processing."
@@ -3725,7 +3725,7 @@ static void AddGradientOptionsDlg(GtkWidget *NoteBook)
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonMinimizeOptions[GRADWOLF]), FALSE);
 
 
-/* Entrys */
+/* Entries */
 	j = 3;
 	i = 2;
 	gtk_table_attach(GTK_TABLE(table),vseparator,

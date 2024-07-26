@@ -2,16 +2,16 @@
 #ifndef __GABEDIT_PSICODEGLOBAL_H__
 #define __GABEDIT_PSICODEGLOBAL_H__
 
-GtkWidget* psicodeWin;
-PsicodeMolecule psicodeMolecule;
-PsicodeColorFore psicodeColorFore;
-PsicodeColorBack psicodeColorBack;
-PsicodeBasis psicodeBasis;
-PsicodeGuessWaveFunction psicodeGuessWaveFunction;
+extern GtkWidget* psicodeWin;
+extern PsicodeMolecule psicodeMolecule;
+extern PsicodeColorFore psicodeColorFore;
+extern PsicodeColorBack psicodeColorBack;
+extern PsicodeBasis psicodeBasis;
+extern PsicodeGuessWaveFunction psicodeGuessWaveFunction;
 
-PsicodeFunctional* functionals;
-PsicodeStdFunctional* stdFunctionals;
-gdouble* sumFunctionals;
+extern PsicodeFunctional* functionalsPsi;
+extern PsicodeStdFunctional* stdFunctionalsPsi;
+extern gdouble* sumFunctionalsPsi;
 
 #endif /* __GABEDIT_PSICODEGLOBAL_H__ */
 

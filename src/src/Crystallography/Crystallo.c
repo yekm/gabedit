@@ -1,6 +1,6 @@
 
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1450,7 +1450,7 @@ void createSlab(GList** patoms, gdouble surface[], gdouble layers[], gdouble emp
 	crystalloSetCartnAtomsInBox(atoms);
 	//fprintf(stderr,"VolumeSV=%f\n", crystalloGetVolume(atoms));
 	buildSuperCellSimple(&atoms, (gint)layers[0], (gint)layers[1], (gint)layers[2]);
-	fprintf(stderr,"Volume SuperCell befor third per to 2 others=%f\n", zWithEmptySpace*crystalloGetVolume(atoms));
+	fprintf(stderr,"Volume SuperCell before third per to 2 others=%f\n", zWithEmptySpace*crystalloGetVolume(atoms));
 	/* set third vector perpendocular to  first and second ones*/
 	if(orientSurfaceXY)
 	{

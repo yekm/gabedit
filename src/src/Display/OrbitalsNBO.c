@@ -1,6 +1,6 @@
 /* OrbitalsNBO.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -166,7 +166,7 @@ static gboolean read_geomorb_nbo_file_geom(gchar *fileName)
 		set_status_label_info(_("File name"),_("Nothing"));
 		set_status_label_info(_("File type"),_("Nothing"));
 		set_status_label_info(_("Mol. Orb."),_("Nothing"));
-		RebuildGeom = TRUE;
+		RebuildGeomD = TRUE;
 		return FALSE;
 	}
  	else
@@ -198,7 +198,7 @@ static gboolean read_geomorb_nbo_file_geom(gchar *fileName)
 			Type[i].Ao = NULL;
 		}
 		buildBondsOrb();
-		RebuildGeom = TRUE;
+		RebuildGeomD = TRUE;
 		return TRUE;
 	}
 	return TRUE;
@@ -882,7 +882,7 @@ void read_nbo_orbitals(gchar* fileName)
 	set_status_label_info(_("Mol. Orb."),_("Reading"));
  	InitializeAll();
 	buildBondsOrb();
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	reset_grid_limits();
 	init_atomic_orbitals();
 

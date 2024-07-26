@@ -1,6 +1,6 @@
 /* QChemRem.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -90,7 +90,7 @@ static gchar* listExchangeMethodsReal[] =
 	"Becke",
 	"Gill96",
 	"GG99 ",
-	"Becke(EDF1)"
+	"Becke(EDF1)",
 	"PW91",
 	"B3PW91",
 	"B3LYP",

@@ -2,19 +2,20 @@
 #ifndef __GABEDIT_MPQCGLOBAL_H__
 #define __GABEDIT_MPQCGLOBAL_H__
 
-GtkWidget* mpqcWin;
-MPQCMolecule mpqcMolecule;
-MPQCColorFore mpqcColorFore;
-MPQCColorBack mpqcColorBack;
-MPQCMole mpqcMole;
-MPQCGuessWaveFunction mpqcGuessWaveFunction;
-MPQCMpqc mpqcMpqc;
-MPQCBasis mpqcBasis;
+extern GtkWidget* mpqcWin;
+extern MPQCMolecule mpqcMolecule;
+extern MPQCColorFore mpqcColorFore;
+extern MPQCColorBack mpqcColorBack;
+extern MPQCMole mpqcMole;
+extern MPQCGuessWaveFunction mpqcGuessWaveFunction;
+extern MPQCMpqc mpqcMpqc;
+extern MPQCBasis mpqcBasis;
 
-MPQCFunctional* functionals;
-MPQCStdFunctional* stdFunctionals;
-gdouble* sumFunctionals;
-MPQCOptimization mpqcOptimization;
+extern MPQCFunctional* functionalsMPQC;
+extern MPQCStdFunctional* stdFunctionalsMPQC;
+extern gdouble* sumFunctionalsMPQC;
+extern MPQCOptimization mpqcOptimization;
+
 
 #endif /* __GABEDIT_MPQCGLOBAL_H__ */
 

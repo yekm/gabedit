@@ -1,6 +1,6 @@
 /* Preferences.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -43,11 +43,11 @@ void set_color_surface(gint num,gdouble v[]);
 #include "../../pixmaps/Open.xpm"
 static GtkWidget* entrybabel = NULL;
 
-GtkWidget *NoteBook;
 static GtkWidget *Wins = NULL;
 static GtkWidget *EntryDeMon = NULL;
 static GtkWidget *EntryGamess = NULL;
 static GtkWidget *EntryGaussian = NULL;
+static GtkWidget *EntryXTB = NULL;
 static GtkWidget *EntryMolcas = NULL;
 static GtkWidget *EntryMolpro = NULL;
 static GtkWidget *EntryMopac = NULL;
@@ -62,6 +62,7 @@ static GtkWidget *EntryPsicode = NULL;
 static GtkWidget *ComboDeMon = NULL;
 static GtkWidget *ComboGamess = NULL;
 static GtkWidget *ComboGaussian = NULL;
+static GtkWidget *ComboXTB = NULL;
 static GtkWidget *ComboMolcas = NULL;
 static GtkWidget *ComboMolpro = NULL;
 static GtkWidget *ComboMopac = NULL;
@@ -76,6 +77,7 @@ static GtkWidget *ComboPsicode = NULL;
 static GtkWidget *ButtonDeMon = NULL;
 static GtkWidget *ButtonGamess = NULL;
 static GtkWidget *ButtonGaussian = NULL;
+static GtkWidget *ButtonXTB = NULL;
 static GtkWidget *ButtonMolcas = NULL;
 static GtkWidget *ButtonMolpro = NULL;
 static GtkWidget *ButtonMopac = NULL;
@@ -88,9 +90,9 @@ static GtkWidget *ButtonNWChem = NULL;
 static GtkWidget *ButtonPsicode = NULL;
 
 static GtkWidget *EntryBatchType = NULL;
-GtkWidget *selectors[3];
-GdkColor ColorTemp;
-gchar *FontTemp;
+static GtkWidget *selectors[3];
+static GdkColor ColorTemp;
+static gchar *FontTemp;
 static gboolean instal = FALSE;
 
 /********************************************************************************/
@@ -299,6 +301,89 @@ void  modify_gaussian_command()
   if(gaussianCommands.numberOfCommands<2) gtk_widget_set_sensitive(ButtonGaussian, FALSE);
   else gtk_widget_set_sensitive(ButtonGaussian, TRUE);
 }
+/********************************************************************************/
+static void  remove_xtb_command()
+{
+  G_CONST_RETURN gchar *strcom;
+  GList *glist = NULL;
+  gint i;
+  gint inList = -1;
+
+  if(xtbCommands.numberOfCommands<2)
+	  return;
+
+  strcom = gtk_entry_get_text (GTK_ENTRY (EntryXTB));
+
+  for(i=0;i<xtbCommands.numberOfCommands;i++)
+  {
+	  if(strcmp(strcom,xtbCommands.commands[i])==0)
+	  {
+		  inList = i;
+		  break;
+	  }
+  }
+  if(inList == -1)
+	  return;
+  for(i=inList;i<xtbCommands.numberOfCommands-1;i++)
+	  xtbCommands.commands[i] = xtbCommands.commands[i+1];
+
+  xtbCommands.numberOfCommands--;
+  xtbCommands.commands = g_realloc(
+		   xtbCommands.commands,
+		   xtbCommands.numberOfCommands*sizeof(gchar*));
+
+  for(i=0;i<xtbCommands.numberOfCommands;i++)
+	glist = g_list_append(glist,xtbCommands.commands[i]);
+
+  gtk_combo_box_entry_set_popdown_strings( ComboXTB, glist) ;
+
+  g_list_free(glist);
+
+  if(xtbCommands.numberOfCommands<2) gtk_widget_set_sensitive(ButtonXTB, FALSE);
+  else gtk_widget_set_sensitive(ButtonXTB, TRUE);
+
+  NameCommandXTB = g_strdup(xtbCommands.commands[0]);
+
+  str_delete_n(NameCommandXTB);
+  delete_last_spaces(NameCommandXTB);
+  delete_first_spaces(NameCommandXTB);
+}
+/********************************************************************************/
+void  modify_xtb_command()
+{
+  G_CONST_RETURN gchar *strcom;
+  GList *glist = NULL;
+  gint i;
+
+  strcom = gtk_entry_get_text (GTK_ENTRY (EntryXTB));
+  if(strcmp(strcom,""))
+      NameCommandXTB = g_strdup(strcom);
+
+  str_delete_n(NameCommandXTB);
+  delete_last_spaces(NameCommandXTB);
+  delete_first_spaces(NameCommandXTB);
+
+  for(i=0;i<xtbCommands.numberOfCommands;i++)
+  {
+	  if(strcmp(NameCommandXTB,xtbCommands.commands[i])==0)
+		  return;
+  }
+  xtbCommands.numberOfCommands++;
+  xtbCommands.commands = g_realloc(
+		   xtbCommands.commands,
+		   xtbCommands.numberOfCommands*sizeof(gchar*));
+  xtbCommands.commands[xtbCommands.numberOfCommands-1] = g_strdup(NameCommandXTB);
+
+  for(i=xtbCommands.numberOfCommands-1;i>=0;i--)
+	glist = g_list_append(glist,xtbCommands.commands[i]);
+
+  gtk_combo_box_entry_set_popdown_strings( ComboXTB, glist) ;
+
+  g_list_free(glist);
+  if(xtbCommands.numberOfCommands<2) gtk_widget_set_sensitive(ButtonXTB, FALSE);
+  else gtk_widget_set_sensitive(ButtonXTB, TRUE);
+}
+/********************************************************************************/
 /********************************************************************************/
 static void  remove_molcas_command()
 {
@@ -1344,7 +1429,7 @@ static void open_font_dlg(GtkWidget *button,gpointer tdata)
 
 	if(!instal)
 	{
-		add_child(Wins, GTK_WIDGET(FontDlg), gtk_widget_destroy, _(" Font selction "));
+		add_child(Wins, GTK_WIDGET(FontDlg), gtk_widget_destroy, _(" Font selection "));
 		g_signal_connect(G_OBJECT(FontDlg),"delete_event",(GCallback)delete_child,NULL);
 	}
 	else
@@ -1905,7 +1990,7 @@ static void set_entry_babel(GtkWidget* SelFile, gint response_id)
   babelCommand = g_strdup(gtk_entry_get_text(GTK_ENTRY(entrybabel)));
 
 }
-static void set_entry_babel_selction(GtkWidget* entry)
+static void set_entry_babel_selection(GtkWidget* entry)
 {
   GtkWidget *SelFile;
 
@@ -1943,7 +2028,7 @@ static void set_entry_gamessdir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_gamessDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(set_entry_gamessdir, _("Select Gamess folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selectionOfDir(set_entry_gamessdir, _("Select Gamess folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -1977,7 +2062,7 @@ static void set_entry_demondir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_demonDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(set_entry_demondir, _("Select Demon folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selectionOfDir(set_entry_demondir, _("Select Demon folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -2011,7 +2096,7 @@ static void set_entry_orcadir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_orcaDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(set_entry_orcadir, _("Select Orca folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selectionOfDir(set_entry_orcadir, _("Select Orca folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -2045,7 +2130,7 @@ static void set_entry_nwchemdir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_nwchemDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(set_entry_nwchemdir, _("Select NWChem folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selectionOfDir(set_entry_nwchemdir, _("Select NWChem folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -2079,7 +2164,7 @@ static void set_entry_psicodedir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_psicodeDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(set_entry_psicodedir, _("Select Psicode folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selectionOfDir(set_entry_psicodedir, _("Select Psicode folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -2113,7 +2198,7 @@ static void set_entry_fireflydir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_fireflyDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(set_entry_fireflydir, _("Select FireFly folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selectionOfDir(set_entry_fireflydir, _("Select FireFly folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -2147,13 +2232,47 @@ static void set_entry_mopacdir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_mopacDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(set_entry_mopacdir, _("Select Mopac folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selectionOfDir(set_entry_mopacdir, _("Select Mopac folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
 	g_object_set_data(G_OBJECT (dirSelector), "EntryFile", entry);
 
 	g_signal_connect (dirSelector, "response",  G_CALLBACK (set_entry_mopacdir), GTK_OBJECT(dirSelector));
+	g_signal_connect (dirSelector, "response",  G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(dirSelector));
+
+	gtk_widget_show(dirSelector);
+}
+/********************************************************************************/
+static void set_entry_xtbdir(GtkWidget* dirSelector, gint response_id)
+{
+	gchar* dirname = NULL;
+	gchar* t = NULL;
+	GtkWidget *entry;
+	if(response_id != GTK_RESPONSE_OK) return;
+	dirname = gabedit_folder_chooser_get_current_folder(GABEDIT_FOLDER_CHOOSER(dirSelector));
+
+
+	entry = (GtkWidget*)(g_object_get_data(G_OBJECT(dirSelector),"EntryFile"));	
+	gtk_entry_set_text(GTK_ENTRY(entry),dirname);
+
+	if(xtbDirectory) g_free(xtbDirectory);
+	xtbDirectory = g_strdup(dirname);
+	t = g_strdup_printf("%s;%s",xtbDirectory,g_getenv("PATH"));
+	g_setenv("PATH",t,TRUE);
+	g_free(t);
+}
+/********************************************************************************/
+static void set_entry_xtbDir_selection(GtkWidget* entry)
+{
+	GtkWidget *dirSelector;
+	dirSelector = selectionOfDir(set_entry_xtbdir, _("Select XTB folder"), GABEDIT_TYPEWIN_ORB); 
+  	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
+  	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
+
+	g_object_set_data(G_OBJECT (dirSelector), "EntryFile", entry);
+
+	g_signal_connect (dirSelector, "response",  G_CALLBACK (set_entry_xtbdir), GTK_OBJECT(dirSelector));
 	g_signal_connect (dirSelector, "response",  G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(dirSelector));
 
 	gtk_widget_show(dirSelector);
@@ -2181,7 +2300,7 @@ static void set_entry_povraydir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_povrayDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(set_entry_povraydir, _("Select PovRay folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selectionOfDir(set_entry_povraydir, _("Select PovRay folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -2215,7 +2334,7 @@ static void set_entry_gaussdir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_gaussDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(set_entry_gaussdir, _("Select Gaussian folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selectionOfDir(set_entry_gaussdir, _("Select Gaussian folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -2252,7 +2371,7 @@ static void set_entry_openbabeldir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_openbabelDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(set_entry_openbabeldir, _("Select PovRay folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selectionOfDir(set_entry_openbabeldir, _("Select PovRay folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -2284,7 +2403,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new (_("Command for execute Gamess : "));
+  label = gtk_label_new (_("Command to execute Gamess : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(gamessCommands.commands,gamessCommands.numberOfCommands,TRUE,-1,-1);
@@ -2314,7 +2433,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new (_("Command for execute DeMon    : "));
+  label = gtk_label_new (_("Command to execute DeMon    : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(demonCommands.commands,demonCommands.numberOfCommands,TRUE,-1,-1);
@@ -2343,7 +2462,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new (_("Command for execute Gaussian : "));
+  label = gtk_label_new (_("Command to execute Gaussian : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(gaussianCommands.commands,gaussianCommands.numberOfCommands,TRUE,-1,-1);
@@ -2371,7 +2490,35 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new (_("Command for execute Molpro    : "));
+  label = gtk_label_new (_("Command to execute XTB : "));
+  gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
+
+  combo = create_combo_box_entry(xtbCommands.commands,xtbCommands.numberOfCommands,TRUE,-1,-1);
+  ComboXTB = combo;
+  EntryXTB = GTK_BIN(combo)->child;
+  gtk_box_pack_start (GTK_BOX (hbox), combo, TRUE, TRUE, 3);
+  gtk_entry_set_text (GTK_ENTRY (EntryXTB),NameCommandXTB );
+  g_signal_connect(G_OBJECT (EntryXTB), "activate",
+			(GCallback)modify_xtb_command,
+			NULL);
+
+  button = create_button(Wins,_("  Remove from list  "));
+  ButtonXTB = button;
+  gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
+  if(xtbCommands.numberOfCommands<2) gtk_widget_set_sensitive(button, FALSE);
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(remove_xtb_command),NULL);
+
+  button = create_button(Wins,_("  Help  "));
+  gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(help_commands),NULL);
+/* ------------------------------------------------------------------*/
+
+  create_hseparator(vbox);
+
+/* ------------------------------------------------------------------*/
+  hbox = gtk_hbox_new (FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
+  label = gtk_label_new (_("Command to execute Molpro    : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(molproCommands.commands,molproCommands.numberOfCommands,TRUE,-1,-1);
@@ -2399,7 +2546,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new (_("Command for execute Molcas    : "));
+  label = gtk_label_new (_("Command to execute Molcas    : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(molcasCommands.commands,molcasCommands.numberOfCommands,TRUE,-1,-1);
@@ -2427,7 +2574,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new (_("Command for execute MPQC    : "));
+  label = gtk_label_new (_("Command to execute MPQC    : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(mpqcCommands.commands,mpqcCommands.numberOfCommands,TRUE,-1,-1);
@@ -2454,7 +2601,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new (_("Command for execute Orca       : "));
+  label = gtk_label_new (_("Command to execute Orca       : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(orcaCommands.commands,orcaCommands.numberOfCommands,TRUE,-1,-1);
@@ -2478,7 +2625,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new (_("Command for execute NWChem       : "));
+  label = gtk_label_new (_("Command to execute NWChem       : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(nwchemCommands.commands,nwchemCommands.numberOfCommands,TRUE,-1,-1);
@@ -2502,7 +2649,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new (_("Command for execute Psicode       : "));
+  label = gtk_label_new (_("Command to execute Psicode       : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(psicodeCommands.commands,psicodeCommands.numberOfCommands,TRUE,-1,-1);
@@ -2526,7 +2673,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new (_("Command for execute FireFly    : "));
+  label = gtk_label_new (_("Command to execute FireFly    : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(fireflyCommands.commands,fireflyCommands.numberOfCommands,TRUE,-1,-1);
@@ -2550,7 +2697,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new (_("Command for execute Q-Chem    : "));
+  label = gtk_label_new (_("Command to execute Q-Chem    : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(qchemCommands.commands,qchemCommands.numberOfCommands,TRUE,-1,-1);
@@ -2574,7 +2721,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new (_("Command for execute Mopac    : "));
+  label = gtk_label_new (_("Command to execute Mopac    : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(mopacCommands.commands,mopacCommands.numberOfCommands,TRUE,-1,-1);
@@ -2598,7 +2745,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
-  label = gtk_label_new (_("Command for execute Povray    : "));
+  label = gtk_label_new (_("Command to execute Povray    : "));
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
   combo = create_combo_box_entry(povrayCommands.commands,povrayCommands.numberOfCommands,TRUE,-1,-1);
@@ -2646,7 +2793,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 	button = create_button_pixmap(Wins,open_xpm,NULL);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	g_signal_connect_swapped(GTK_OBJECT (button), "clicked",
-                                     G_CALLBACK(set_entry_babel_selction),
+                                     G_CALLBACK(set_entry_babel_selection),
                                      GTK_OBJECT(entry));
 	add_widget_table(table,button,0,2);
   	g_signal_connect(G_OBJECT (entrybabel), "changed",
@@ -2967,6 +3114,48 @@ void  create_mopac_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   gtk_widget_show_all(frame);
 }
 /********************************************************************************/
+void  create_xtb_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
+{
+  GtkWidget *frame;
+  GtkWidget *button;
+
+  frame = gtk_frame_new (NULL);
+  gtk_widget_show (frame);
+  gtk_box_pack_start (GTK_BOX (vbox), frame, expand, expand, 0);
+  gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
+
+  vbox = gtk_vbox_new (FALSE, 0);
+  gtk_container_add (GTK_CONTAINER (frame), vbox);
+
+
+  {
+	GtkWidget* entry;
+  	GtkWidget *table = gtk_table_new(1,3,FALSE);
+
+	if(!xtbDirectory) xtbDirectory = g_strdup_printf("%s",g_get_home_dir());
+
+	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
+
+	add_label_table(table,_("XTB directory                            : "),0,0);
+  	entry = gtk_entry_new ();
+	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
+	gtk_table_attach(GTK_TABLE(table),entry,1,1+1,0,0+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+  	gtk_entry_set_text (GTK_ENTRY (entry),xtbDirectory);
+	gtk_editable_set_editable((GtkEditable*)entry,FALSE);
+	gtk_widget_set_sensitive(entry, FALSE);
+	button = create_button_pixmap(Wins,open_xpm,NULL);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	g_signal_connect_swapped(GTK_OBJECT (button), "clicked",
+                                     G_CALLBACK(set_entry_xtbDir_selection),
+                                     GTK_OBJECT(entry));
+	add_widget_table(table,button,0,2);
+  }
+  gtk_widget_show_all(frame);
+}
+/********************************************************************************/
 void  create_povray_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 {
   GtkWidget *frame;
@@ -3146,7 +3335,7 @@ void AddPageProp(GtkWidget *NoteBook)
   
   Frame= gtk_frame_new(NULL);
   gtk_container_set_border_width(GTK_CONTAINER(Frame), 10);
-  gtk_widget_set_size_request(GTK_WIDGET(Frame), (gint)(ScreenHeight*0.6),  (gint)(ScreenHeight*0.3));
+  //gtk_widget_set_size_request(GTK_WIDGET(Frame), (gint)(ScreenHeight*0.6),  (gint)(ScreenHeight*0.3));
   LabelOnglet = gtk_label_new(_(" Properties of atoms "));
   LabelMenu = gtk_label_new(_(" Properties of atoms "));
   gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook),
@@ -3182,7 +3371,7 @@ static void set_entry_pscpplinkdir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_pscpplinkDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(set_entry_pscpplinkdir, _("Select pscp & plink folder"), GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selectionOfDir(set_entry_pscpplinkdir, _("Select pscp & plink folder"), GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -3319,6 +3508,7 @@ void AddPageOthers(GtkWidget *NoteBook)
   create_psicode_directory(Wins,vbox,FALSE);
   create_firefly_directory(Wins,vbox,FALSE);
   create_mopac_directory(Wins,vbox,FALSE);
+  create_xtb_directory(Wins,vbox,FALSE);
   create_gauss_directory(Wins,vbox,FALSE);
   create_povray_directory(Wins,vbox,FALSE);
 #endif
@@ -3402,6 +3592,7 @@ void AddPageNetWork(GtkWidget *NoteBook)
 /********************************************************************************/
 void create_preferences()
 {
+GtkWidget *NoteBook;
   GtkWidget *button;
 
   if(instal)
@@ -3420,7 +3611,7 @@ void create_preferences()
   instal = FALSE;
   gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER);
   gtk_window_set_transient_for(GTK_WINDOW(Wins),GTK_WINDOW(Fenetre));
-  gtk_window_set_default_size (GTK_WINDOW(Wins), (gushort)(2.9*ScreenWidth/5), (gushort)(2.9*ScreenHeight/5));
+  //gtk_window_set_default_size (GTK_WINDOW(Wins), (gushort)(2.9*ScreenWidth/5), (gushort)(2.9*ScreenHeight/5));
 /*  gtk_window_set_modal (GTK_WINDOW (Wins), TRUE);*/
 
   /* Connection des signaux "delete" et "destroy" */

@@ -1,6 +1,6 @@
 /* SetMMParameters.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -125,7 +125,7 @@ static AmberParameters* amberParameters = NULL;
 
 static gchar rowSelectedLists[][100] ={"-1","-1","-1","-1","-1","-1","-1","-1"}; 
 
-static GtkWidget* Entrys[NENTRYS];
+static GtkWidget* Entries[NENTRYS];
 
 /********************************************************************************/
 static void newDlg(GtkWidget *win,gpointer data);
@@ -309,7 +309,7 @@ static gchar** getLocalListTypes(gint* nlist)
 /********************************************************************************/
 static void setAtom(GtkWidget *w,gpointer data)
 {
-  gtk_entry_set_text(GTK_ENTRY(Entrys[E_S]),(char *)data);
+  gtk_entry_set_text(GTK_ENTRY(Entries[E_S]),(char *)data);
 }
 /********************************************************************************/
 static void SelectAtom(GtkWidget *w,gpointer entry0)
@@ -794,8 +794,8 @@ static void editnewPairWiseDlg(GabeditSignalFunc f,gchar* title,gboolean sensiti
 			(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 			(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 			1,1);
-	Entrys[E_T1] = GTK_BIN(combo)->child;
-	gtk_entry_set_text(GTK_ENTRY(Entrys[E_T1]),t1);
+	Entries[E_T1] = GTK_BIN(combo)->child;
+	gtk_entry_set_text(GTK_ENTRY(Entries[E_T1]),t1);
 	gtk_widget_set_sensitive(combo, sensitive); 
 
 	combo = gtk_combo_box_entry_new_text();
@@ -805,8 +805,8 @@ static void editnewPairWiseDlg(GabeditSignalFunc f,gchar* title,gboolean sensiti
 			(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 			(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 			1,1);
-	Entrys[E_T2] = GTK_BIN(combo)->child;
-	gtk_entry_set_text(GTK_ENTRY(Entrys[E_T2]),t2);
+	Entries[E_T2] = GTK_BIN(combo)->child;
+	gtk_entry_set_text(GTK_ENTRY(Entries[E_T2]),t2);
 	gtk_widget_set_sensitive(combo, sensitive); 
 
 	tlist = freeList(tlist,nlist);
@@ -841,7 +841,7 @@ static void editnewPairWiseDlg(GabeditSignalFunc f,gchar* title,gboolean sensiti
 			(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 			(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 			1,1);
-	Entrys[E_A] = GTK_BIN(combo)->child;
+	Entries[E_A] = GTK_BIN(combo)->child;
 
 	tlist = freeList(tlist,nlist);
 	list = NULL;
@@ -875,7 +875,7 @@ static void editnewPairWiseDlg(GabeditSignalFunc f,gchar* title,gboolean sensiti
 			(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 			(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 			1,1);
-	Entrys[E_BETA] = GTK_BIN(combo)->child;
+	Entries[E_BETA] = GTK_BIN(combo)->child;
 
 	tlist = freeList(tlist,nlist);
 	list = NULL;
@@ -909,7 +909,7 @@ static void editnewPairWiseDlg(GabeditSignalFunc f,gchar* title,gboolean sensiti
 			(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 			(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 			1,1);
-	Entrys[E_C6] = GTK_BIN(combo)->child;
+	Entries[E_C6] = GTK_BIN(combo)->child;
 
 	tlist = freeList(tlist,nlist);
 	list = NULL;
@@ -943,7 +943,7 @@ static void editnewPairWiseDlg(GabeditSignalFunc f,gchar* title,gboolean sensiti
 			(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 			(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 			1,1);
-	Entrys[E_C8] = GTK_BIN(combo)->child;
+	Entries[E_C8] = GTK_BIN(combo)->child;
 
 	tlist = freeList(tlist,nlist);
 	list = NULL;
@@ -977,7 +977,7 @@ static void editnewPairWiseDlg(GabeditSignalFunc f,gchar* title,gboolean sensiti
 			(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 			(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 			1,1);
-	Entrys[E_C10] = GTK_BIN(combo)->child;
+	Entries[E_C10] = GTK_BIN(combo)->child;
 
 	tlist = freeList(tlist,nlist);
 	list = NULL;
@@ -1011,7 +1011,7 @@ static void editnewPairWiseDlg(GabeditSignalFunc f,gchar* title,gboolean sensiti
 			(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 			(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 			1,1);
-	Entrys[E_B] = GTK_BIN(combo)->child;
+	Entries[E_B] = GTK_BIN(combo)->child;
 
 	tlist = freeList(tlist,nlist);
 
@@ -1089,8 +1089,8 @@ static void editnewNonBondedDlg(GabeditSignalFunc f,gchar* title,gboolean sensit
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l*2,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,3,0,1,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_T1] = GTK_BIN(combo)->child;
-	gtk_entry_set_text(GTK_ENTRY(Entrys[E_T1]),t1);
+	Entries[E_T1] = GTK_BIN(combo)->child;
+	gtk_entry_set_text(GTK_ENTRY(Entries[E_T1]),t1);
 	gtk_widget_set_sensitive(combo, sensitive); 
 
 	tlist = freeList(tlist,nlist);
@@ -1116,7 +1116,7 @@ static void editnewNonBondedDlg(GabeditSignalFunc f,gchar* title,gboolean sensit
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l*2,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,3,1,2,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_R] = GTK_BIN(combo)->child;
+	Entries[E_R] = GTK_BIN(combo)->child;
 
 	tlist = freeList(tlist,nlist);
 	list = NULL;
@@ -1141,7 +1141,7 @@ static void editnewNonBondedDlg(GabeditSignalFunc f,gchar* title,gboolean sensit
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l*2,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,3,2,3,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_E] = GTK_BIN(combo)->child;
+	Entries[E_E] = GTK_BIN(combo)->child;
 
 	tlist = freeList(tlist,nlist);
 
@@ -1166,12 +1166,12 @@ static void editnewNonBondedDlg(GabeditSignalFunc f,gchar* title,gboolean sensit
 /********************************************************************************/
 static void editPairWise(GtkWidget *win)
 {
-	gdouble a	   = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_A])));
-	gdouble beta	= atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_BETA])));
-	gdouble c6	  = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_C6])));
-	gdouble c8	  = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_C8])));
-	gdouble c10	 = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_C10])));
-	gdouble b	   = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_B])));
+	gdouble a	   = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_A])));
+	gdouble beta	= atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_BETA])));
+	gdouble c6	  = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_C6])));
+	gdouble c8	  = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_C8])));
+	gdouble c10	 = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_C10])));
+	gdouble b	   = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_B])));
 	gint i = atoi(rowSelectedLists[MMNUMBERPAIRWISE]);
 
 	if(i<0)
@@ -1196,8 +1196,8 @@ static void editPairWiseDlg(GtkWidget *win,gpointer data)
 /********************************************************************************/
 static void editNonBonded(GtkWidget *win)
 {
-	gdouble r	      = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_R])));
-	gdouble epsilon	= atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_E])));
+	gdouble r	      = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_R])));
+	gdouble epsilon	= atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_E])));
 	gint i = atoi(rowSelectedLists[MMNUMBERNONBONDED]);
 
 	if(i<0)
@@ -1279,16 +1279,16 @@ static void editnewHBondDlg(GabeditSignalFunc f,gchar* title,gboolean sensitive)
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,3,0,1,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_T1] = GTK_BIN(combo)->child;
-	gtk_entry_set_text(GTK_ENTRY(Entrys[E_T1]),t1);
+	Entries[E_T1] = GTK_BIN(combo)->child;
+	gtk_entry_set_text(GTK_ENTRY(Entries[E_T1]),t1);
 	gtk_widget_set_sensitive(combo, sensitive); 
 
 	combo = gtk_combo_box_entry_new_text();
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,3,4,0,1,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_T2] = GTK_BIN(combo)->child;
-	gtk_entry_set_text(GTK_ENTRY(Entrys[E_T2]),t2);
+	Entries[E_T2] = GTK_BIN(combo)->child;
+	gtk_entry_set_text(GTK_ENTRY(Entries[E_T2]),t2);
 	gtk_widget_set_sensitive(combo, sensitive); 
 
 	tlist = freeList(tlist,nlist);
@@ -1314,7 +1314,7 @@ static void editnewHBondDlg(GabeditSignalFunc f,gchar* title,gboolean sensitive)
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l*2,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,4,1,2,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_C] = GTK_BIN(combo)->child;
+	Entries[E_C] = GTK_BIN(combo)->child;
 
 	tlist = freeList(tlist,nlist);
 	list = NULL;
@@ -1339,7 +1339,7 @@ static void editnewHBondDlg(GabeditSignalFunc f,gchar* title,gboolean sensitive)
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l*2,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,4,2,3,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_D] = GTK_BIN(combo)->child;
+	Entries[E_D] = GTK_BIN(combo)->child;
 
 	tlist = freeList(tlist,nlist);
 
@@ -1365,8 +1365,8 @@ static void editnewHBondDlg(GabeditSignalFunc f,gchar* title,gboolean sensitive)
 /********************************************************************************/
 static void editHBond(GtkWidget *win)
 {
-	gdouble c = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_C])));
-	gdouble d = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_D])));
+	gdouble c = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_C])));
+	gdouble d = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_D])));
 	gint i = atoi(rowSelectedLists[MMNUMBERHBOND]);
 
 	if(i<0)
@@ -1454,32 +1454,32 @@ static void editnewImproperDlg(GabeditSignalFunc f,gchar* title,gboolean sensiti
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,3,0,1,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_T1] = GTK_BIN(combo)->child;
-	gtk_entry_set_text(GTK_ENTRY(Entrys[E_T1]),t1);
+	Entries[E_T1] = GTK_BIN(combo)->child;
+	gtk_entry_set_text(GTK_ENTRY(Entries[E_T1]),t1);
 	gtk_widget_set_sensitive(combo, sensitive); 
 
 	combo = gtk_combo_box_entry_new_text();
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,3,4,0,1,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_T2] = GTK_BIN(combo)->child;
-	gtk_entry_set_text(GTK_ENTRY(Entrys[E_T2]),t2);
+	Entries[E_T2] = GTK_BIN(combo)->child;
+	gtk_entry_set_text(GTK_ENTRY(Entries[E_T2]),t2);
 	gtk_widget_set_sensitive(combo, sensitive); 
 
 	combo = gtk_combo_box_entry_new_text();
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,4,5,0,1,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_T3] = GTK_BIN(combo)->child;
-	gtk_entry_set_text(GTK_ENTRY(Entrys[E_T3]),t3);
+	Entries[E_T3] = GTK_BIN(combo)->child;
+	gtk_entry_set_text(GTK_ENTRY(Entries[E_T3]),t3);
 	gtk_widget_set_sensitive(combo, sensitive); 
 
 	combo = gtk_combo_box_entry_new_text();
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,5,6,0,1,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_T4] = GTK_BIN(combo)->child;
-	gtk_entry_set_text(GTK_ENTRY(Entrys[E_T4]),t4);
+	Entries[E_T4] = GTK_BIN(combo)->child;
+	gtk_entry_set_text(GTK_ENTRY(Entries[E_T4]),t4);
 	gtk_widget_set_sensitive(combo, sensitive); 
 
 
@@ -1506,7 +1506,7 @@ static void editnewImproperDlg(GabeditSignalFunc f,gchar* title,gboolean sensiti
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l*4,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,6,1,2,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_B] = GTK_BIN(combo)->child;
+	Entries[E_B] = GTK_BIN(combo)->child;
 
 	tlist = freeList(tlist,nlist);
 	list = NULL;
@@ -1531,7 +1531,7 @@ static void editnewImproperDlg(GabeditSignalFunc f,gchar* title,gboolean sensiti
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l*4,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,6,2,3,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_P] = GTK_BIN(combo)->child;
+	Entries[E_P] = GTK_BIN(combo)->child;
 
 	tlist = freeList(tlist,nlist);
 	list = NULL;
@@ -1556,7 +1556,7 @@ static void editnewImproperDlg(GabeditSignalFunc f,gchar* title,gboolean sensiti
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l*4,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,6,3,4,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_N] = GTK_BIN(combo)->child;
+	Entries[E_N] = GTK_BIN(combo)->child;
 
 	tlist = freeList(tlist,nlist);
 
@@ -1581,9 +1581,9 @@ static void editnewImproperDlg(GabeditSignalFunc f,gchar* title,gboolean sensiti
 /********************************************************************************/
 static void editImproper(GtkWidget *win)
 {
-	gdouble barrier = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_B])));
-	gdouble phase	 = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_P])));
-	gdouble n	     = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_N])));
+	gdouble barrier = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_B])));
+	gdouble phase	 = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_P])));
+	gdouble n	     = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_N])));
 	gint i = atoi(rowSelectedLists[MMNUMBERIMPROPER]);
 
 	if(i<0)
@@ -1697,32 +1697,32 @@ static void editnewTorsionDlg(GabeditSignalFunc f,gchar* title,gboolean sensitiv
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,3,0,1,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_T1] = GTK_BIN(combo)->child;
-	gtk_entry_set_text(GTK_ENTRY(Entrys[E_T1]),t1);
+	Entries[E_T1] = GTK_BIN(combo)->child;
+	gtk_entry_set_text(GTK_ENTRY(Entries[E_T1]),t1);
 	gtk_widget_set_sensitive(combo, sensitive); 
 
 	combo = gtk_combo_box_entry_new_text();
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,3,4,0,1,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_T2] = GTK_BIN(combo)->child;
-	gtk_entry_set_text(GTK_ENTRY(Entrys[E_T2]),t2);
+	Entries[E_T2] = GTK_BIN(combo)->child;
+	gtk_entry_set_text(GTK_ENTRY(Entries[E_T2]),t2);
 	gtk_widget_set_sensitive(combo, sensitive); 
 
 	combo = gtk_combo_box_entry_new_text();
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,4,5,0,1,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_T3] = GTK_BIN(combo)->child;
-	gtk_entry_set_text(GTK_ENTRY(Entrys[E_T3]),t3);
+	Entries[E_T3] = GTK_BIN(combo)->child;
+	gtk_entry_set_text(GTK_ENTRY(Entries[E_T3]),t3);
 	gtk_widget_set_sensitive(combo, sensitive); 
 
 	combo = gtk_combo_box_entry_new_text();
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,5,6,0,1,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_T4] = GTK_BIN(combo)->child;
-	gtk_entry_set_text(GTK_ENTRY(Entrys[E_T4]),t4);
+	Entries[E_T4] = GTK_BIN(combo)->child;
+	gtk_entry_set_text(GTK_ENTRY(Entries[E_T4]),t4);
 	gtk_widget_set_sensitive(combo, sensitive); 
 
 	tlist = freeList(tlist,nlist);
@@ -1748,7 +1748,7 @@ static void editnewTorsionDlg(GabeditSignalFunc f,gchar* title,gboolean sensitiv
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l*4,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,6,1,2,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_D] = GTK_BIN(combo)->child;
+	Entries[E_D] = GTK_BIN(combo)->child;
 
 	tlist = freeList(tlist,nlist);
 	list = NULL;
@@ -1773,7 +1773,7 @@ static void editnewTorsionDlg(GabeditSignalFunc f,gchar* title,gboolean sensitiv
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l*4,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,6,2,3,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_B] = GTK_BIN(combo)->child;
+	Entries[E_B] = GTK_BIN(combo)->child;
 
 	tlist = freeList(tlist,nlist);
 	list = NULL;
@@ -1798,7 +1798,7 @@ static void editnewTorsionDlg(GabeditSignalFunc f,gchar* title,gboolean sensitiv
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l*4,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,6,3,4,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_P] = GTK_BIN(combo)->child;
+	Entries[E_P] = GTK_BIN(combo)->child;
 
 	tlist = freeList(tlist,nlist);
 	list = NULL;
@@ -1823,7 +1823,7 @@ static void editnewTorsionDlg(GabeditSignalFunc f,gchar* title,gboolean sensitiv
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l*4,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,6,4,5,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_N] = GTK_BIN(combo)->child;
+	Entries[E_N] = GTK_BIN(combo)->child;
 
 	tlist = freeList(tlist,nlist);
 
@@ -1848,10 +1848,10 @@ static void editnewTorsionDlg(GabeditSignalFunc f,gchar* title,gboolean sensitiv
 /********************************************************************************/
 static void editTorsion(GtkWidget *win)
 {
-	gdouble divisor = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_D])));
-	gdouble barrier = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_B])));
-	gdouble phase	 = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_P])));
-	gdouble n	     = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_N])));
+	gdouble divisor = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_D])));
+	gdouble barrier = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_B])));
+	gdouble phase	 = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_P])));
+	gdouble n	     = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_N])));
 	gint Nc = atoi(rowSelectedLists[MMNUMBERTORSION]);
 	gint i;
 	gint j;
@@ -1944,24 +1944,24 @@ static void editnewBendDlg(GabeditSignalFunc f,gchar* title,gboolean sensitive)
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,3,0,1,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_T1] = GTK_BIN(combo)->child;
-	gtk_entry_set_text(GTK_ENTRY(Entrys[E_T1]),t1);
+	Entries[E_T1] = GTK_BIN(combo)->child;
+	gtk_entry_set_text(GTK_ENTRY(Entries[E_T1]),t1);
 	gtk_widget_set_sensitive(combo, sensitive); 
 
 	combo = gtk_combo_box_entry_new_text();
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,3,4,0,1,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_T2] = GTK_BIN(combo)->child;
-	gtk_entry_set_text(GTK_ENTRY(Entrys[E_T2]),t2);
+	Entries[E_T2] = GTK_BIN(combo)->child;
+	gtk_entry_set_text(GTK_ENTRY(Entries[E_T2]),t2);
 	gtk_widget_set_sensitive(combo, sensitive); 
 
 	combo = gtk_combo_box_entry_new_text();
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,4,5,0,1,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_T3] = GTK_BIN(combo)->child;
-	gtk_entry_set_text(GTK_ENTRY(Entrys[E_T3]),t3);
+	Entries[E_T3] = GTK_BIN(combo)->child;
+	gtk_entry_set_text(GTK_ENTRY(Entries[E_T3]),t3);
 	gtk_widget_set_sensitive(combo, sensitive); 
 
 	tlist = freeList(tlist,nlist);
@@ -1987,7 +1987,7 @@ static void editnewBendDlg(GabeditSignalFunc f,gchar* title,gboolean sensitive)
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l*2,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,5,1,2,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_F] = GTK_BIN(combo)->child;
+	Entries[E_F] = GTK_BIN(combo)->child;
 
 	tlist = freeList(tlist,nlist);
 	list = NULL;
@@ -2012,7 +2012,7 @@ static void editnewBendDlg(GabeditSignalFunc f,gchar* title,gboolean sensitive)
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l*2,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,5,2,3,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_A] = GTK_BIN(combo)->child;
+	Entries[E_A] = GTK_BIN(combo)->child;
 
 	tlist = freeList(tlist,nlist);
 
@@ -2038,8 +2038,8 @@ static void editnewBendDlg(GabeditSignalFunc f,gchar* title,gboolean sensitive)
 static void editBend(GtkWidget *win)
 {
 
-	gdouble force = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_F])));
-	gdouble angle = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_A])));
+	gdouble force = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_F])));
+	gdouble angle = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_A])));
 	gint i = atoi(rowSelectedLists[MMNUMBERBEND]);
 
 	if(i<0)
@@ -2121,16 +2121,16 @@ static void editnewBondDlg(GabeditSignalFunc f,gchar* title,gboolean sensitive)
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,3,0,1,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_T1] = GTK_BIN(combo)->child;
-	gtk_entry_set_text(GTK_ENTRY(Entrys[E_T1]),t1);
+	Entries[E_T1] = GTK_BIN(combo)->child;
+	gtk_entry_set_text(GTK_ENTRY(Entries[E_T1]),t1);
 	gtk_widget_set_sensitive(combo, sensitive); 
 
 	combo = gtk_combo_box_entry_new_text();
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,3,4,0,1,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_T2] = GTK_BIN(combo)->child;
-	gtk_entry_set_text(GTK_ENTRY(Entrys[E_T2]),t2);
+	Entries[E_T2] = GTK_BIN(combo)->child;
+	gtk_entry_set_text(GTK_ENTRY(Entries[E_T2]),t2);
 	gtk_widget_set_sensitive(combo, sensitive); 
 
 	tlist = freeList(tlist,nlist);
@@ -2156,7 +2156,7 @@ static void editnewBondDlg(GabeditSignalFunc f,gchar* title,gboolean sensitive)
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l*2,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,4,1,2,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_F] = GTK_BIN(combo)->child;
+	Entries[E_F] = GTK_BIN(combo)->child;
 
 	tlist = freeList(tlist,nlist);
 	list = NULL;
@@ -2181,7 +2181,7 @@ static void editnewBondDlg(GabeditSignalFunc f,gchar* title,gboolean sensitive)
 	gtk_combo_box_entry_set_popdown_strings(combo,list);
 	gtk_widget_set_size_request(GTK_WIDGET(combo),l*2,-1);
 	gtk_table_attach(GTK_TABLE(table),combo,2,4,2,3,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,(GtkAttachOptions)(GTK_FILL | GTK_EXPAND),1,1);
-	Entrys[E_R] = GTK_BIN(combo)->child;
+	Entries[E_R] = GTK_BIN(combo)->child;
 
 	tlist = freeList(tlist,nlist);
 
@@ -2206,8 +2206,8 @@ static void editnewBondDlg(GabeditSignalFunc f,gchar* title,gboolean sensitive)
 /********************************************************************************/
 static void editBond(GtkWidget* w)
 {
-	gdouble force = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_F])));
-	gdouble r	   = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_R])));
+	gdouble force = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_F])));
+	gdouble r	   = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_R])));
 	gint i = atoi(rowSelectedLists[MMNUMBERBOND]);
 
 	if(i<0)
@@ -2226,10 +2226,10 @@ static void editBondDlg(GtkWidget *win,gpointer data)
 /********************************************************************************/
 static void editType(GtkWidget* w)
 {
-	G_CONST_RETURN gchar *symbol = gtk_entry_get_text(GTK_ENTRY(Entrys[E_S]));
-	gdouble masse = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_M])));
-	gdouble pol	 = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_P])));
-	G_CONST_RETURN gchar* desc = (gtk_entry_get_text(GTK_ENTRY(Entrys[E_DESC])));
+	G_CONST_RETURN gchar *symbol = gtk_entry_get_text(GTK_ENTRY(Entries[E_S]));
+	gdouble masse = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_M])));
+	gdouble pol	 = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_P])));
+	G_CONST_RETURN gchar* desc = (gtk_entry_get_text(GTK_ENTRY(Entries[E_DESC])));
 	gint i = atoi(rowSelectedLists[MMNUMBERTYPE]);
 
 	if(i<0)
@@ -2244,11 +2244,11 @@ static void editType(GtkWidget* w)
 /********************************************************************************/
 static void newType(GtkWidget* w)
 {
-	G_CONST_RETURN gchar *symbol = gtk_entry_get_text(GTK_ENTRY(Entrys[E_S]));
-	G_CONST_RETURN gchar *name = gtk_entry_get_text(GTK_ENTRY(Entrys[E_T]));
-	gdouble masse = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_M])));
-	gdouble pol	 = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_P])));
-	G_CONST_RETURN gchar* desc = (gtk_entry_get_text(GTK_ENTRY(Entrys[E_DESC])));
+	G_CONST_RETURN gchar *symbol = gtk_entry_get_text(GTK_ENTRY(Entries[E_S]));
+	G_CONST_RETURN gchar *name = gtk_entry_get_text(GTK_ENTRY(Entries[E_T]));
+	gdouble masse = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_M])));
+	gdouble pol	 = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_P])));
+	G_CONST_RETURN gchar* desc = (gtk_entry_get_text(GTK_ENTRY(Entries[E_DESC])));
 	gint i = atoi(rowSelectedLists[MMNUMBERTYPE]);
 	gint j;
 	gint number = 0;
@@ -2316,20 +2316,20 @@ static void editnewTypeDlg(GabeditSignalFunc f,gchar* title)
 	vboxframe = create_vbox(frame);
 	hbox=create_hbox_false(vboxframe);
 
-	Entrys[E_S] = create_label_entry(hbox,typeTitles[1],(gint)(ScreenHeight*0.1),(gint)(ScreenHeight*0.15));
-	if(Nc>=0) gtk_entry_set_text(GTK_ENTRY(Entrys[E_S]),amberParameters->atomTypes[Nc].symbol);
-	else gtk_entry_set_text(GTK_ENTRY(Entrys[E_S]),"C");
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_S],FALSE);
+	Entries[E_S] = create_label_entry(hbox,typeTitles[1],(gint)(ScreenHeight*0.1),(gint)(ScreenHeight*0.15));
+	if(Nc>=0) gtk_entry_set_text(GTK_ENTRY(Entries[E_S]),amberParameters->atomTypes[Nc].symbol);
+	else gtk_entry_set_text(GTK_ENTRY(Entries[E_S]),"C");
+	gtk_editable_set_editable((GtkEditable*) Entries[E_S],FALSE);
 
 	Button = gtk_button_new_with_label(" Modify ");
 	gtk_box_pack_start (GTK_BOX(hbox), Button, TRUE, TRUE, 5);
-	g_signal_connect(G_OBJECT(Button), "clicked", (GCallback)SelectAtom,Entrys[E_S]);
+	g_signal_connect(G_OBJECT(Button), "clicked", (GCallback)SelectAtom,Entries[E_S]);
 
 	hbox=create_hbox_false(vboxframe);
-	Entrys[E_T] = create_label_entry(hbox,typeTitles[0],(gint)(ScreenHeight*0.1),(gint)(ScreenHeight*0.15));
-	if(Nc>=0) gtk_entry_set_text(GTK_ENTRY(Entrys[E_T]),amberParameters->atomTypes[Nc].name);
-	else gtk_entry_set_text(GTK_ENTRY(Entrys[E_T])," ");
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_T],FALSE);
+	Entries[E_T] = create_label_entry(hbox,typeTitles[0],(gint)(ScreenHeight*0.1),(gint)(ScreenHeight*0.15));
+	if(Nc>=0) gtk_entry_set_text(GTK_ENTRY(Entries[E_T]),amberParameters->atomTypes[Nc].name);
+	else gtk_entry_set_text(GTK_ENTRY(Entries[E_T])," ");
+	gtk_editable_set_editable((GtkEditable*) Entries[E_T],FALSE);
 
 	tlist=g_malloc(2*sizeof(char*));
 
@@ -2341,9 +2341,9 @@ static void editnewTypeDlg(GabeditSignalFunc f,gchar* title)
 	tlist[1]=g_strdup(" ");
 	nlist=2;
 	hbox=create_hbox_false(vboxframe);
-	Entrys[E_M] = create_label_combo(hbox,typeTitles[2],tlist,nlist,FALSE,
+	Entries[E_M] = create_label_combo(hbox,typeTitles[2],tlist,nlist,FALSE,
 			(gint)(ScreenHeight*0.1),(gint)(ScreenHeight*0.15));
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_M],TRUE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_M],TRUE);
 
 	for(i=0;i<nlist;i++)
 		g_free(tlist[i]);
@@ -2356,18 +2356,18 @@ static void editnewTypeDlg(GabeditSignalFunc f,gchar* title)
 	tlist[1]=g_strdup(" ");
 	nlist=2;
 	hbox=create_hbox_false(vboxframe);
-	Entrys[E_P] = create_label_combo(hbox,typeTitles[3],tlist,nlist,FALSE,
+	Entries[E_P] = create_label_combo(hbox,typeTitles[3],tlist,nlist,FALSE,
 			(gint)(ScreenHeight*0.1),(gint)(ScreenHeight*0.15));
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_P],TRUE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_P],TRUE);
 
 	for(i=0;i<nlist;i++)
 		g_free(tlist[i]);
 
 	hbox=create_hbox_false(vboxframe);
-	Entrys[E_DESC] = create_label_entry(hbox,typeTitles[4],(gint)(ScreenHeight*0.1),(gint)(ScreenHeight*0.15));
-	if(Nc>=0) gtk_entry_set_text(GTK_ENTRY(Entrys[E_DESC]),amberParameters->atomTypes[Nc].description);
-	else gtk_entry_set_text(GTK_ENTRY(Entrys[E_DESC])," ");
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_DESC],TRUE);
+	Entries[E_DESC] = create_label_entry(hbox,typeTitles[4],(gint)(ScreenHeight*0.1),(gint)(ScreenHeight*0.15));
+	if(Nc>=0) gtk_entry_set_text(GTK_ENTRY(Entries[E_DESC]),amberParameters->atomTypes[Nc].description);
+	else gtk_entry_set_text(GTK_ENTRY(Entries[E_DESC])," ");
+	gtk_editable_set_editable((GtkEditable*) Entries[E_DESC],TRUE);
 	
 	g_free(tlist);
 
@@ -2393,7 +2393,7 @@ static void editnewTypeDlg(GabeditSignalFunc f,gchar* title)
 static void editTypeDlg(GtkWidget *w,gpointer data)
 {
 	editnewTypeDlg(editType,"Edit a type");
-	      gtk_editable_set_editable((GtkEditable*) Entrys[E_T],FALSE);
+	      gtk_editable_set_editable((GtkEditable*) Entries[E_T],FALSE);
 }
 /********************************************************************************/
 static void editDlg(GtkWidget *win,gpointer data)
@@ -2430,14 +2430,14 @@ static void editDlg(GtkWidget *win,gpointer data)
 /********************************************************************************/
 static void newPairWise(GtkWidget *win)
 {
-	G_CONST_RETURN	gchar* t1     = gtk_entry_get_text(GTK_ENTRY(Entrys[E_T1]));
-	G_CONST_RETURN	gchar* t2     = gtk_entry_get_text(GTK_ENTRY(Entrys[E_T2]));
-	gdouble a	   = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_A])));
-	gdouble beta	= atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_BETA])));
-	gdouble c6	  = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_C6])));
-	gdouble c8	  = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_C8])));
-	gdouble c10	 = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_C10])));
-	gdouble b	   = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_B])));
+	G_CONST_RETURN	gchar* t1     = gtk_entry_get_text(GTK_ENTRY(Entries[E_T1]));
+	G_CONST_RETURN	gchar* t2     = gtk_entry_get_text(GTK_ENTRY(Entries[E_T2]));
+	gdouble a	   = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_A])));
+	gdouble beta	= atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_BETA])));
+	gdouble c6	  = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_C6])));
+	gdouble c8	  = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_C8])));
+	gdouble c10	 = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_C10])));
+	gdouble b	   = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_B])));
 	gint i;
 	gint number1 = getNumberType(amberParameters,t1);
 	gint number2 = getNumberType(amberParameters,t2);
@@ -2488,15 +2488,15 @@ static void newPairWise(GtkWidget *win)
 static void newPairWiseDlg(GtkWidget *win,gpointer data)
 {
 	editnewPairWiseDlg(newPairWise,"New Pair Wise term ",TRUE);
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_T1],FALSE);
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_T2],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_T1],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_T2],FALSE);
 }
 /********************************************************************************/
 static void newNonBonded(GtkWidget *win)
 {
-	G_CONST_RETURN gchar* t1	     = gtk_entry_get_text(GTK_ENTRY(Entrys[E_T1]));
-	gdouble r	     = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_R])));
-	gdouble epsilon = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_E])));
+	G_CONST_RETURN gchar* t1	     = gtk_entry_get_text(GTK_ENTRY(Entries[E_T1]));
+	gdouble r	     = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_R])));
+	gdouble epsilon = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_E])));
 	gint i = atoi(rowSelectedLists[MMNUMBERNONBONDED]);
 	gint j;
 	gint number = getNumberType(amberParameters,t1);
@@ -2531,15 +2531,15 @@ static void newNonBonded(GtkWidget *win)
 static void newNonBondedDlg(GtkWidget *win,gpointer data)
 {
 	editnewNonBondedDlg(newNonBonded,"New Non-Bonded term ",TRUE);
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_T1],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_T1],FALSE);
 }
 /********************************************************************************/
 static void newHBond(GtkWidget *win)
 {
-	G_CONST_RETURN gchar *t1 = gtk_entry_get_text(GTK_ENTRY(Entrys[E_T1]));
-	G_CONST_RETURN gchar *t2 = gtk_entry_get_text(GTK_ENTRY(Entrys[E_T2]));
-	gdouble c = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_C])));
-	gdouble d	 = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_D])));
+	G_CONST_RETURN gchar *t1 = gtk_entry_get_text(GTK_ENTRY(Entries[E_T1]));
+	G_CONST_RETURN gchar *t2 = gtk_entry_get_text(GTK_ENTRY(Entries[E_T2]));
+	gdouble c = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_C])));
+	gdouble d	 = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_D])));
 	gint i = atoi(rowSelectedLists[MMNUMBERHBOND]);
 	gint j;
 	gint number1 = getNumberType(amberParameters,t1);
@@ -2586,19 +2586,19 @@ static void newHBond(GtkWidget *win)
 static void newHBondDlg(GtkWidget *win,gpointer data)
 {
 	editnewHBondDlg(newHBond,"New H-Bond",TRUE);
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_T1],FALSE);
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_T2],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_T1],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_T2],FALSE);
 }
 /********************************************************************************/
 static void newImproper(GtkWidget *win)
 {
-	G_CONST_RETURN gchar *t1 = gtk_entry_get_text(GTK_ENTRY(Entrys[E_T1]));
-	G_CONST_RETURN gchar *t2 = gtk_entry_get_text(GTK_ENTRY(Entrys[E_T2]));
-	G_CONST_RETURN gchar *t3 = gtk_entry_get_text(GTK_ENTRY(Entrys[E_T3]));
-	G_CONST_RETURN gchar *t4 = gtk_entry_get_text(GTK_ENTRY(Entrys[E_T4]));
-	gdouble barrier = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_B])));
-	gdouble phase	 = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_P])));
-	gdouble n	    = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_N])));
+	G_CONST_RETURN gchar *t1 = gtk_entry_get_text(GTK_ENTRY(Entries[E_T1]));
+	G_CONST_RETURN gchar *t2 = gtk_entry_get_text(GTK_ENTRY(Entries[E_T2]));
+	G_CONST_RETURN gchar *t3 = gtk_entry_get_text(GTK_ENTRY(Entries[E_T3]));
+	G_CONST_RETURN gchar *t4 = gtk_entry_get_text(GTK_ENTRY(Entries[E_T4]));
+	gdouble barrier = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_B])));
+	gdouble phase	 = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_P])));
+	gdouble n	    = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_N])));
 	gint i = atoi(rowSelectedLists[MMNUMBERIMPROPER]);
 	gint j;
 	gint number1 = getNumberType(amberParameters,t1);
@@ -2655,22 +2655,22 @@ static void newImproper(GtkWidget *win)
 static void newImproperDlg(GtkWidget *win,gpointer data)
 {
 	editnewImproperDlg(newImproper,"new Improper terms",TRUE);
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_T1],FALSE);
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_T2],FALSE);
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_T3],FALSE);
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_T4],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_T1],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_T2],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_T3],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_T4],FALSE);
 }
 /********************************************************************************/
 static void newTorsion(GtkWidget *win)
 {
-	G_CONST_RETURN gchar *t1 = gtk_entry_get_text(GTK_ENTRY(Entrys[E_T1]));
-	G_CONST_RETURN gchar *t2 = gtk_entry_get_text(GTK_ENTRY(Entrys[E_T2]));
-	G_CONST_RETURN gchar *t3 = gtk_entry_get_text(GTK_ENTRY(Entrys[E_T3]));
-	G_CONST_RETURN gchar *t4 = gtk_entry_get_text(GTK_ENTRY(Entrys[E_T4]));
-	gdouble divisor = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_D])));
-	gdouble barrier = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_B])));
-	gdouble phase	 = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_P])));
-	gdouble n = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_N])));
+	G_CONST_RETURN gchar *t1 = gtk_entry_get_text(GTK_ENTRY(Entries[E_T1]));
+	G_CONST_RETURN gchar *t2 = gtk_entry_get_text(GTK_ENTRY(Entries[E_T2]));
+	G_CONST_RETURN gchar *t3 = gtk_entry_get_text(GTK_ENTRY(Entries[E_T3]));
+	G_CONST_RETURN gchar *t4 = gtk_entry_get_text(GTK_ENTRY(Entries[E_T4]));
+	gdouble divisor = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_D])));
+	gdouble barrier = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_B])));
+	gdouble phase	 = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_P])));
+	gdouble n = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_N])));
 	gint i;
 	gint j;
 	gint ii;
@@ -2768,19 +2768,19 @@ static void newTorsion(GtkWidget *win)
 static void newTorsionDlg(GtkWidget *win,gpointer data)
 {
 	editnewTorsionDlg(newTorsion,"Torsion editor",TRUE);
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_T1],FALSE);
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_T2],FALSE);
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_T3],FALSE);
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_T4],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_T1],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_T2],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_T3],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_T4],FALSE);
 }
 /********************************************************************************/
 static void newBend(GtkWidget *win)
 {
-	G_CONST_RETURN gchar *t1 = gtk_entry_get_text(GTK_ENTRY(Entrys[E_T1]));
-	G_CONST_RETURN gchar *t2 = gtk_entry_get_text(GTK_ENTRY(Entrys[E_T2]));
-	G_CONST_RETURN gchar *t3 = gtk_entry_get_text(GTK_ENTRY(Entrys[E_T3]));
-	gdouble force = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_F])));
-	gdouble angle	 = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_A])));
+	G_CONST_RETURN gchar *t1 = gtk_entry_get_text(GTK_ENTRY(Entries[E_T1]));
+	G_CONST_RETURN gchar *t2 = gtk_entry_get_text(GTK_ENTRY(Entries[E_T2]));
+	G_CONST_RETURN gchar *t3 = gtk_entry_get_text(GTK_ENTRY(Entries[E_T3]));
+	gdouble force = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_F])));
+	gdouble angle	 = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_A])));
 	gint i = atoi(rowSelectedLists[MMNUMBERBEND]);
 	gint j;
 	gint number1 = getNumberType(amberParameters,t1);
@@ -2832,18 +2832,18 @@ static void newBend(GtkWidget *win)
 static void newBendDlg(GtkWidget *win,gpointer data)
 {
 	editnewBendDlg(newBend,"new Bend",TRUE);
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_T1],FALSE);
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_T2],FALSE);
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_T3],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_T1],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_T2],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_T3],FALSE);
 
 }
 /********************************************************************************/
 static void newBond(GtkWidget* w)
 {
-	G_CONST_RETURN gchar *t1 = gtk_entry_get_text(GTK_ENTRY(Entrys[E_T1]));
-	G_CONST_RETURN gchar *t2 = gtk_entry_get_text(GTK_ENTRY(Entrys[E_T2]));
-	gdouble force = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_F])));
-	gdouble r	 = atof(gtk_entry_get_text(GTK_ENTRY(Entrys[E_R])));
+	G_CONST_RETURN gchar *t1 = gtk_entry_get_text(GTK_ENTRY(Entries[E_T1]));
+	G_CONST_RETURN gchar *t2 = gtk_entry_get_text(GTK_ENTRY(Entries[E_T2]));
+	gdouble force = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_F])));
+	gdouble r	 = atof(gtk_entry_get_text(GTK_ENTRY(Entries[E_R])));
 	gint i = atoi(rowSelectedLists[MMNUMBERBOND]);
 	gint j;
 	gint number1 = getNumberType(amberParameters,t1);
@@ -2894,15 +2894,15 @@ static void newBond(GtkWidget* w)
 static void newBondDlg(GtkWidget *win,gpointer data)
 {
 	editnewBondDlg(newBond,"New Bond",TRUE);
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_T1],FALSE);
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_T2],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_T1],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_T2],FALSE);
 }
 /********************************************************************************/
 static void newTypeDlg(GtkWidget *win,gpointer data)
 {
 
 	editnewTypeDlg(newType,"New type");
-	  gtk_editable_set_editable((GtkEditable*) Entrys[E_T],TRUE);
+	  gtk_editable_set_editable((GtkEditable*) Entries[E_T],TRUE);
 }
 /********************************************************************************/
 static void newDlg(GtkWidget *win,gpointer data)
@@ -3478,7 +3478,7 @@ static void deleteTypeDlg(GtkWidget *win,gpointer data)
 	{
 		GtkWidget* w;
 		gchar* t = g_strdup_printf(
-			"Sorry this type is used\nPlease delete all parameters for this type before"
+			"Sorry this type is used\nPlease delete all parameters for this type beforee"
 			);
 		w = Message(t,"Warning",TRUE);
 		gtk_window_set_modal (GTK_WINDOW (w), TRUE);

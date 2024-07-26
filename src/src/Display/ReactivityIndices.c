@@ -1,6 +1,6 @@
 /* ReactivityIndices.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -492,7 +492,7 @@ static GtkWidget* showCalculatedIndices(gchar *message,gchar *title)
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)delete_child, GTK_OBJECT(dlgWin));
 
 	add_button_windows(title,dlgWin);
-	gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeight), (gint)(ScreenHeight*0.4));
+	//gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeightD), (gint)(ScreenHeightD*0.4));
 	gtk_widget_show_all(dlgWin);
 	return dlgWin;
 }
@@ -976,7 +976,7 @@ static GtkWidget* new_alpha_list(GtkWidget *hboxall)
   	gtk_widget_show (frame);
   	vbox = create_vbox(frame);
   	scr=gtk_scrolled_window_new(NULL,NULL);
-	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeight*WIDTHSCR));
+	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeightD*WIDTHSCR));
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scr),GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   	gtk_box_pack_start(GTK_BOX (vbox), scr,TRUE, TRUE, 1);
   	gtk_container_add(GTK_CONTAINER(scr),gtklist);
@@ -1031,7 +1031,7 @@ static GtkWidget* new_beta_list(GtkWidget *hboxall)
   	vbox = create_vbox(frame);
   	scr=gtk_scrolled_window_new(NULL,NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scr),GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeight*WIDTHSCR));
+	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeightD*WIDTHSCR));
   	gtk_box_pack_start(GTK_BOX (vbox), scr,TRUE, TRUE, 1);
   	gtk_container_add(GTK_CONTAINER(scr),gtklist);
 	set_base_style(gtklist,55000,55000,55000);
@@ -1072,17 +1072,17 @@ void reactivity_indices_fmo_dlg()
 
 	if(!GeomOrb)
 	{
-		Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load a file beforee\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!CoefAlphaOrbitals)
 	{
-		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load the MO beforee\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!AOrb && !SAOrb)
 	{
-		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load the MO beforee\n"),_("Error"),TRUE);
 		return;
 	}
 
@@ -1260,7 +1260,7 @@ void reactivity_indices_fd_dlg()
 	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)help_reactivity_indices_FD,G_OBJECT(Win));
 	gtk_widget_show (button);
-	gtk_window_set_default_size (GTK_WINDOW(Win), (gint)(ScreenHeight*0.4), -1);
+	//gtk_window_set_default_size (GTK_WINDOW(Win), (gint)(ScreenHeightD*0.4), -1);
 
 	gtk_widget_show_all (Win);
 }

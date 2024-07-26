@@ -1,6 +1,6 @@
 /* Status.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -22,6 +22,9 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Utils.h"
 #include "../Geometry/ResultsAnalise.h"
 #include "../Common/Status.h"
+/* extern *.h */
+gboolean stopDownLoad;
+/********************************************************************************/
 
 static GtkWidget *ProgressBar = NULL;
 static GtkWidget *ProgressTable = NULL;

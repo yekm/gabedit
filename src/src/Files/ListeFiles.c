@@ -1,6 +1,6 @@
 /* ListeFiles.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -318,7 +318,7 @@ static void set_properties(GtkWidget *Win,gpointer data)
 {  
 	DataTree*  newdata = NULL;
 	DataTree*  olddata = (DataTree*)(g_object_get_data(G_OBJECT(Win),"Data")); 
-	GtkWidget **entrys = (GtkWidget **)(g_object_get_data(G_OBJECT(Win),"Entrys"));
+	GtkWidget **entrys = (GtkWidget **)(g_object_get_data(G_OBJECT(Win),"Entries"));
 	GtkWidget **buttons =(GtkWidget **)(g_object_get_data(G_OBJECT(Win),"Buttons"));
 
 	GtkWidget * buttonSsh = g_object_get_data(G_OBJECT(Win),"ButtonSsh");
@@ -917,7 +917,7 @@ static void create_set_dialogue_window()
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
-	g_object_set_data(G_OBJECT(fp),"Entrys",entrys);
+	g_object_set_data(G_OBJECT(fp),"Entries",entrys);
 	g_object_set_data(G_OBJECT(fp),"Buttons",buttons);
 	g_object_set_data(G_OBJECT(fp),"Data",data);
 	g_object_set_data(G_OBJECT(fp),"ButtonSsh",ButtonSsh);
@@ -1334,6 +1334,8 @@ static void create_remote_frame(GtkWidget *hbox)
   RemoteLabel[2] = add_label_table(Table,"",2,2);
 
 
+  for (i=0;i<NR;i++)
+  	gtk_label_set_line_wrap(GTK_LABEL(RemoteLabel[i]),TRUE);
 
   for (i=0;i<NR;i++)
         g_free(LabelLeft[i]);
@@ -1376,7 +1378,7 @@ static void AddNotebookPage(GtkWidget* NoteBook,char *label,GtkWidget **TextP)
   
 
   Frame = gtk_frame_new(NULL);
-  gtk_container_set_border_width(GTK_CONTAINER(Frame), 2);
+  //gtk_container_set_border_width(GTK_CONTAINER(Frame), 2);
 
   LabelOnglet = gtk_label_new(label);
   gtk_widget_show(LabelOnglet);
@@ -1468,6 +1470,7 @@ static void create_local_frame(GtkWidget *hbox)
   add_label_table(Table,":",0,1);
   LocalLabel[0] = add_label_table(Table,localhost,0,2);
 
+
   Label = add_label_table(Table,LabelLeft[1],1,0);
   add_label_table(Table,":",1,1);
   LocalLabel[1] = add_label_table(Table,localuser,1,2);
@@ -1477,10 +1480,13 @@ static void create_local_frame(GtkWidget *hbox)
   LocalLabel[2] = add_label_table(Table," ",2,2);
 
   for (i=0;i<NL;i++)
+  	gtk_label_set_line_wrap(GTK_LABEL(LocalLabel[i]),TRUE);
+
+  for (i=0;i<NL;i++)
         g_free(LabelLeft[i]);
 }
 /********************************************************************************/
-static void AddNotebookPageFiles(GtkWidget* NoteBook,char *label)
+static void AddNotebookPageFiles(GtkWidget* NoteBook,char *label, gboolean local)
 {
   GtkWidget *vboxframe;
   GtkWidget *hbox;
@@ -1502,12 +1508,12 @@ static void AddNotebookPageFiles(GtkWidget* NoteBook,char *label)
 
   hbox = gtk_hbox_new(TRUE,1);
   gtk_container_add(GTK_CONTAINER(vboxframe),hbox);
-  create_local_frame(hbox);
-  create_remote_frame(hbox);
+  if(local) create_local_frame(hbox);
+  else create_remote_frame(hbox);
 
 }
 /********************************************************************************/
-void cree_files_out_err_notebook(GtkWidget* box)
+void create_files_out_err_notebook(GtkWidget* box)
 {
   GtkWidget *NoteBook;
 
@@ -1515,11 +1521,12 @@ void cree_files_out_err_notebook(GtkWidget* box)
   gtk_notebook_set_show_border(GTK_NOTEBOOK(NoteBook),TRUE);
   gtk_notebook_popup_enable(GTK_NOTEBOOK(NoteBook));
   gtk_notebook_set_tab_pos(GTK_NOTEBOOK(NoteBook),GTK_POS_LEFT);
-  gtk_notebook_set_scrollable(GTK_NOTEBOOK(NoteBook), TRUE); 
+  /*gtk_notebook_set_scrollable(GTK_NOTEBOOK(NoteBook), TRUE); */
   gtk_widget_show(NoteBook);
   gtk_box_pack_start(GTK_BOX (box), NoteBook,FALSE, TRUE, 0);
 
-  AddNotebookPageFiles(NoteBook,_(" Location "));
+  AddNotebookPageFiles(NoteBook,_(" Local "), TRUE);
+  AddNotebookPageFiles(NoteBook,_(" Remote "), FALSE);
   
   AddNotebookPage(NoteBook,_(" Output "),&TextOutput);
   gabedit_text_set_editable (GABEDIT_TEXT (TextOutput), FALSE);

@@ -13,10 +13,10 @@ ListeFiles.o: ListeFiles.c ../../Config.h ../Common/Global.h \
  ../Common/../Common/GabeditType.h ../Utils/Utils.h \
  ../Utils/UtilsInterface.h ../Utils/Constants.h \
  ../Utils/GabeditTextEdit.h ../Geometry/GeomGlobal.h \
- ../Geometry/GeomXYZ.h ../Geometry/ResultsAnalise.h \
- ../Geometry/EnergiesCurves.h ../Common/Windows.h \
- ../Geometry/GeomZmatrix.h ../Common/Run.h ../Common/Status.h \
- ../Molcas/MolcasVariables.h ../Molcas/MolcasGateWay.h \
+ ../Geometry/../Common/GabeditType.h ../Geometry/GeomXYZ.h \
+ ../Geometry/ResultsAnalise.h ../Geometry/EnergiesCurves.h \
+ ../Common/Windows.h ../Geometry/GeomZmatrix.h ../Common/Run.h \
+ ../Common/Status.h ../Molcas/MolcasVariables.h ../Molcas/MolcasGateWay.h \
  ../../pixmaps/DeMonMini.xpm ../../pixmaps/GamessMini.xpm \
  ../../pixmaps/FireFlyMini.xpm ../../pixmaps/Gaussian.xpm \
  ../../pixmaps/MolproMini.xpm ../../pixmaps/MolcasMini.xpm \

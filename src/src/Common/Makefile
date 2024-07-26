@@ -1,4 +1,4 @@
-OBJECTS = Gabedit.o Help.o Install.o Preferences.o Printer.o Run.o SplashScreen.o TextEdit.o Windows.o Status.o Exit.o MenuToolBar.o StockIcons.o
+OBJECTS = Gabedit.o Help.o Install.o Preferences.o Printer.o Run.o SplashScreen.o TextEdit.o Windows.o Status.o Exit.o MenuToolBar.o StockIcons.o Global.o
 
 
 include ../../CONFIG

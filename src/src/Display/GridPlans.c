@@ -1,6 +1,6 @@
 /* GridPlans.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -301,12 +301,12 @@ Grid* define_plane_grid(Point5 C, Point5 V, gdouble *len, gint *N)
 	Plane plane;
   	if(!GeomOrb)
   	{
-	  	Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
+	  	Message(_("Sorry, Please load a file beforee\n"),_("Error"),TRUE);
 	  	return NULL;
   	}
   	if(!CoefAlphaOrbitals)
   	{
-	  	Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
+	  	Message(_("Sorry, Please load the MO beforee\n"),_("Error"),TRUE);
 	  	return NULL;
   	}
 
@@ -353,7 +353,7 @@ Grid* define_plane_grid(Point5 C, Point5 V, gdouble *len, gint *N)
 void apply_planegrid_center_vector(GtkWidget *Win,gpointer data)
 {
 			
-	GtkWidget** Entrys =(GtkWidget**)g_object_get_data(G_OBJECT (Win), "Entrys");
+	GtkWidget** Entries =(GtkWidget**)g_object_get_data(G_OBJECT (Win), "Entries");
   	gchar* type = g_object_get_data(G_OBJECT (Win), "Type");
 	gint i;
 	gint N[2];
@@ -361,17 +361,17 @@ void apply_planegrid_center_vector(GtkWidget *Win,gpointer data)
 	Point5 C;
 	Point5 V;
 	
-	N[0] = get_number_of_point(Entrys[8]);
+	N[0] = get_number_of_point(Entries[8]);
 	if(N[0]<=0) return;
-	N[1] = get_number_of_point(Entrys[9]);
+	N[1] = get_number_of_point(Entries[9]);
 	if(N[1]<=0) return;
-	if(!get_a_float(Entrys[6],&len[0],_("Error : The length of plane should be a float."))) return;
+	if(!get_a_float(Entries[6],&len[0],_("Error : The length of plane should be a float."))) return;
 	if(len[0]<=0)
 	{
 		Message(_("Error : The length of plane should be positive. "),_("Error"),TRUE);
 		return;
 	}
-	if(!get_a_float(Entrys[7],&len[1],_(" Error : The length of plane should be a float."))) return;
+	if(!get_a_float(Entries[7],&len[1],_(" Error : The length of plane should be a float."))) return;
 	if(len[1]<=0)
 	{
 		Message(_("Error : The length of plane should be positive. "),_("Error"),TRUE);
@@ -379,11 +379,11 @@ void apply_planegrid_center_vector(GtkWidget *Win,gpointer data)
 	}
 	for(i=0;i<5;i+=2)
 	{	
-        	if(!get_a_float(Entrys[i],&C.C[i/2],_("Error : A non float value in a float area."))) return;
+        	if(!get_a_float(Entries[i],&C.C[i/2],_("Error : A non float value in a float area."))) return;
 	}
 	for(i=1;i<6;i+=2)
 	{	
-        	if(!get_a_float(Entrys[i],&V.C[i/2],_("Error : A non float value in a float area."))) return;
+        	if(!get_a_float(Entries[i],&V.C[i/2],_("Error : A non float value in a float area."))) return;
 	}
 	if( sqrt(V.C[0] * V.C[0] + V.C[1] * V.C[1] + V.C[2] * V.C[2])<1e-6)
 	{
@@ -417,7 +417,7 @@ GtkWidget *create_planegrid_frame_center_vector( GtkWidget *vboxall,gchar* title
 	GtkWidget *Label;
 	GtkWidget *vboxframe;
 	GtkWidget *hseparator;
-	GtkWidget **Entrys = (GtkWidget **)g_malloc(10*sizeof(GtkWidget *));
+	GtkWidget **Entries = (GtkWidget **)g_malloc(10*sizeof(GtkWidget *));
 	gushort i;
 	gushort j;
 	gushort k;
@@ -480,9 +480,9 @@ GtkWidget *create_planegrid_frame_center_vector( GtkWidget *vboxall,gchar* title
 	for(i=1;i<4;i++)
 		for(j=2;j<NCOLUMNS;j++)
 			{
-				Entrys[k] = gtk_entry_new ();
-				add_widget_table(Table,Entrys[k],(gushort)i,(gushort)j);
-				gtk_entry_set_text(GTK_ENTRY(Entrys[k]),strlabels[i][j]);
+				Entries[k] = gtk_entry_new ();
+				add_widget_table(Table,Entries[k],(gushort)i,(gushort)j);
+				gtk_entry_set_text(GTK_ENTRY(Entries[k]),strlabels[i][j]);
 				k++;
 			}
 	hseparator = gtk_hseparator_new ();
@@ -501,13 +501,13 @@ GtkWidget *create_planegrid_frame_center_vector( GtkWidget *vboxall,gchar* title
 	for(i=6;i<NLIGNES+1;i++)
 		for(j=2;j<NCOLUMNS;j++)
 			{
-				Entrys[k] = gtk_entry_new ();
-				add_widget_table(Table,Entrys[k],(gushort)i,(gushort)j);
-				gtk_entry_set_text(GTK_ENTRY(Entrys[k]),strlabels[i-1][j]);
+				Entries[k] = gtk_entry_new ();
+				add_widget_table(Table,Entries[k],(gushort)i,(gushort)j);
+				gtk_entry_set_text(GTK_ENTRY(Entries[k]),strlabels[i-1][j]);
 				k++;
 			}
 	
-	g_object_set_data(G_OBJECT (frame), "Entrys",Entrys);
+	g_object_set_data(G_OBJECT (frame), "Entries",Entries);
 	for(i=0;i<NLIGNES;i++)
 	{
 		for(j=0;j<NCOLUMNS;j++)
@@ -528,18 +528,18 @@ void create_planeGrid_center_vector(gchar* type)
   GtkWidget *vboxall;
   GtkWidget *vboxwin;
   GtkWidget *button;
-  GtkWidget** Entrys;
+  GtkWidget** Entries;
   gchar* planeFor[] ={_("Contours"),_("Maps")};
   gint itype = 0;
 
   if(!GeomOrb)
   {
-  	Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
+  	Message(_("Sorry, Please load a file beforee\n"),_("Error"),TRUE);
   	return;
  }
  if(!CoefAlphaOrbitals)
  {
-  	Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
+  	Message(_("Sorry, Please load the MO beforee\n"),_("Error"),TRUE);
   	return;
  }
  if(strstr(type,planeFor[1])) itype = 1;
@@ -558,9 +558,9 @@ void create_planeGrid_center_vector(gchar* type)
   vboxall = create_vbox(Win);
   vboxwin = vboxall;
 
-  frame = create_planegrid_frame_center_vector(vboxall,_("Defintion of plan"));
-  Entrys = (GtkWidget**) g_object_get_data(G_OBJECT (frame), "Entrys");
-  g_object_set_data(G_OBJECT (Win), "Entrys",Entrys);
+  frame = create_planegrid_frame_center_vector(vboxall,_("Definition of plan"));
+  Entries = (GtkWidget**) g_object_get_data(G_OBJECT (frame), "Entries");
+  g_object_set_data(G_OBJECT (Win), "Entries",Entries);
 
   /* buttons box */
   hbox = create_hbox_false(vboxwin);

@@ -1,6 +1,6 @@
 /* BuildCrystal.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1219,7 +1219,7 @@ void build_supercell_dlg()
 /********************************************************************************/
 static void build_wulff(GtkWidget *Dlg,gpointer data)
 {
-	GtkWidget*** entrys =  g_object_get_data(G_OBJECT (Dlg), "Entrys");
+	GtkWidget*** entrys =  g_object_get_data(G_OBJECT (Dlg), "Entries");
   	DataWulffDlg* dataWulffDlg = g_object_get_data(G_OBJECT (Dlg), "DataWulffDlg");
   	Crystal* crystal = g_object_get_data(G_OBJECT (Dlg), "Crystal");
 
@@ -1317,7 +1317,7 @@ static void  add_wulff_parameters_entrys(GtkWidget *Wins,GtkWidget *vbox, gint n
 		i=3;
 		for(j=0;j<4;j++) gtk_entry_set_text(GTK_ENTRY(entrys[i][j]),str[j]);
 	}
-	g_object_set_data(G_OBJECT(Wins), "Entrys", entrys);
+	g_object_set_data(G_OBJECT(Wins), "Entries", entrys);
 	gtk_widget_show_all(table);
 }
 /**********************************************************************/
@@ -1443,7 +1443,7 @@ static void  add_slab_parameters_entrys(GtkWidget *Wins,GtkWidget *vbox)
 		i=1;
 		for(j=0;j<3;j++) gtk_entry_set_text(GTK_ENTRY(entrys[i][j]),str[j]);
 	}
-	g_object_set_data(G_OBJECT(Wins), "Entrys", entrys);
+	g_object_set_data(G_OBJECT(Wins), "Entries", entrys);
 
 	i=4;
 	j=0;
@@ -1483,7 +1483,7 @@ static void  add_slab_parameters_entrys(GtkWidget *Wins,GtkWidget *vbox)
 /********************************************************************************/
 static void build_slab(GtkWidget *Dlg,gpointer data)
 {
-	GtkWidget*** entrys =  g_object_get_data(G_OBJECT (Dlg), "Entrys");
+	GtkWidget*** entrys =  g_object_get_data(G_OBJECT (Dlg), "Entries");
 	GtkWidget* entryEmptySpace =  g_object_get_data(G_OBJECT (Dlg), "EntryEmptySpace");
   	DataSlabDlg* dataSlabDlg = g_object_get_data(G_OBJECT (Dlg), "DataSlabDlg");
   	Crystal* crystal = g_object_get_data(G_OBJECT (Dlg), "Crystal");

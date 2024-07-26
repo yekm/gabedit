@@ -1,6 +1,6 @@
 /* AtomsProp.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1444,7 +1444,7 @@ void create_table_prop()
   WinTable = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title(GTK_WINDOW(WinTable),_("Select your atom"));
   gtk_window_set_position(GTK_WINDOW(WinTable),GTK_WIN_POS_CENTER);
-  gtk_window_set_default_size (GTK_WINDOW(WinTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
+  //gtk_window_set_default_size (GTK_WINDOW(WinTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
 
   g_signal_connect(G_OBJECT(WinTable), "delete_event", (GCallback)destroy_button_windows, NULL);
   g_signal_connect(G_OBJECT(WinTable), "delete_event", (GCallback)gtk_widget_destroy, NULL);

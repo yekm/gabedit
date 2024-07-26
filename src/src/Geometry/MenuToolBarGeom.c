@@ -1,6 +1,6 @@
 /* MenuToolBarGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -117,7 +117,7 @@ static void select_atom()
 	WinTable = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_modal(GTK_WINDOW(WinTable),TRUE);
 	gtk_window_set_title(GTK_WINDOW(WinTable),_("Select your atom"));
-	gtk_window_set_default_size (GTK_WINDOW(WinTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
+	//gtk_window_set_default_size (GTK_WINDOW(WinTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
 
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
@@ -687,7 +687,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"SaveAsMol"))
 	{
 		create_GeomXYZ_from_draw_grometry();
- 		file_chooser_save(save_geometry_mol_file,_("Save geometry in mol file"), GABEDIT_TYPEFILE_MOL,GABEDIT_TYPEWIN_GEOM);
+ 		file_chooser_save(save_geometry_mol_file,_("Save geometry in mol(sdf) file"), GABEDIT_TYPEFILE_MOL,GABEDIT_TYPEWIN_GEOM);
 	}
 	else if(!strcmp(name,"SaveAsTinker"))
 	{
@@ -1015,6 +1015,14 @@ static void activate_action (GtkAction *action)
 	{
 		semiEmpiricalDlg("GenericOptimize");
 	}
+	else if(!strcmp(name, "SemiEmpiricalEnergyXTB"))
+	{
+		semiEmpiricalDlg("XTBEnergy");
+	}
+	else if(!strcmp(name, "SemiEmpiricalOptimizationXTB"))
+	{
+		semiEmpiricalDlg("XTBOptimize");
+	}
 
 
 	else if(!strcmp(name, "Close")) destroy_drawing_and_children(NULL, 0);
@@ -1030,7 +1038,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadPDB", GABEDIT_STOCK_PDB, N_("_PDB file"), NULL, "Read a PDB file", G_CALLBACK (activate_action) },
 	{"ReadHyperchem", NULL, N_("_Hyperchem file"), NULL, "Read a Hyperchem file", G_CALLBACK (activate_action) },
 	{"ReadAIMAll", NULL, N_("_AIMAll file"), NULL, "Read a AIMAll file", G_CALLBACK (activate_action) },
-	{"ReadMol", NULL, N_("_Mol file"), NULL, "Read a Mol file", G_CALLBACK (activate_action) },
+	{"ReadMol", NULL, N_("_Mol (sdf) file"), NULL, "Read a Mol(sdf) file", G_CALLBACK (activate_action) },
 	{"ReadGabedit", GABEDIT_STOCK_GABEDIT, N_("_Gabedit file"), NULL, "Read a Gabedit file", G_CALLBACK (activate_action) },
 	{"ReadPOSCAR", NULL, N_("_POSCAR file"), NULL, "Read a POSCAR file", G_CALLBACK (activate_action) },
 	{"ReadWFX", NULL, N_("_WFX file"), NULL, "Read a WFX file", G_CALLBACK (activate_action) },
@@ -1169,7 +1177,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SaveAsGabedit", GABEDIT_STOCK_GABEDIT, N_("_Gabedit file"), NULL, "Save geometry in a Gabedit file", G_CALLBACK (activate_action) },
 	{"SaveAsXYZ", NULL, N_("_XYZ file"), NULL, "Save geometry in a XYZ file", G_CALLBACK (activate_action) },
 	{"SaveAsMol2", NULL, N_("_Mol2 file"), NULL, "Save geometry in a Mol2 file", G_CALLBACK (activate_action) },
-	{"SaveAsMol", NULL, N_("_Mol file"), NULL, "Save geometry in a Mol file", G_CALLBACK (activate_action) },
+	{"SaveAsMol", NULL, N_("_Mol (sdf) file"), NULL, "Save geometry in a Mol (sdf) file", G_CALLBACK (activate_action) },
 	{"SaveAsTinker", NULL, N_("_Tinker file"), NULL, "Save geometry in a Tinker file", G_CALLBACK (activate_action) },
 	{"SaveAsPDB", GABEDIT_STOCK_PDB, N_("_pdb file"), NULL, "Save geometry in a pdb file", G_CALLBACK (activate_action) },
 	{"SaveAsPOSCARCartn", NULL, N_("_POSCAR (Cartesian) file"), NULL, "Save geometry in a POSCAR file", G_CALLBACK (activate_action) },
@@ -1186,7 +1194,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"PersonalFragments", NULL, N_("Personal _fragment")},
 	{"PersonalFragmentsNewGroup", NULL, N_("_New Group"), NULL, "New Group", G_CALLBACK (activate_action) },
 	{"PersonalFragmentsDeleteGroup", NULL, N_("_Delete a Group"), NULL, "Delete a Group", G_CALLBACK (activate_action) },
-	{"PersonalFragmentsAddMolecule", NULL, N_("_Add this molecule to personnal Fragments"), NULL, "Add this molecule to personnal Fragments", G_CALLBACK (activate_action) },
+	{"PersonalFragmentsAddMolecule", NULL, N_("_Add this molecule to personal Fragments"), NULL, "Add this molecule to personal Fragments", G_CALLBACK (activate_action) },
 	{"PersonalFragmentsRemoveFragment", NULL, N_("_Remove a Fragment"), NULL, "Remove a Fragment", G_CALLBACK (activate_action) },
 	{"InsertAFragment", NULL, N_("Add a _fragment"), NULL, "Add a fragment", G_CALLBACK (activate_action) },
 	{"AddMaxHydrogens", NULL, N_("Add _Max Hydrogens"), NULL, "Add Max Hydrogens", G_CALLBACK (activate_action) },
@@ -1363,6 +1371,9 @@ static GtkActionEntry gtkActionEntries[] =
 
 	{"SemiEmpiricalEnergyGeneric", NULL, N_("Generic _Energy"), NULL, "compute the energy using your own program", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalOptimizationGeneric", NULL, N_("Generic _Optimization"), NULL, "optimize the geometry using your own program", G_CALLBACK (activate_action) },
+
+	{"SemiEmpiricalEnergyXTB", NULL, N_("XTB _Energy"), NULL, "compute the energy using XTB", G_CALLBACK (activate_action) },
+	{"SemiEmpiricalOptimizationXTB", NULL, N_("XTB _Optimization"), NULL, "optimize the geometry using XTB", G_CALLBACK (activate_action) },
 
 	{"SemiEmpiricalMD", NULL, N_("Molecular _Dynamics"), NULL, "Molecular dynamics using a semi-empirical method", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalMDConfo", NULL, N_("Molecular _Dynamics Conformational search"), NULL, "Molecular dynamics conformational search using a semi-empirical  method", G_CALLBACK (activate_action) },
@@ -1832,6 +1843,10 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"SemiEmpiricalESPMopac\" action=\"SemiEmpiricalESPMopac\" />\n"
 "      <menuitem name=\"SemiEmpiricalScanMopac\" action=\"SemiEmpiricalScanMopac\" />\n"
 
+"      <separator name=\"sepSemiEmpiricalXTB\" />\n"
+"      <menuitem name=\"SemiEmpiricalEnergyXTB\" action=\"SemiEmpiricalEnergyXTB\" />\n"
+"      <menuitem name=\"SemiEmpiricalOptimizationXTB\" action=\"SemiEmpiricalOptimizationXTB\" />\n"
+
 "      <separator name=\"sepSemiEmpiricalOrca\" />\n"
 "      <menuitem name=\"SemiEmpiricalEnergyOrca\" action=\"SemiEmpiricalEnergyOrca\" />\n"
 "      <menuitem name=\"SemiEmpiricalOptimizationOrca\" action=\"SemiEmpiricalOptimizationOrca\" />\n"
@@ -2287,7 +2302,7 @@ static void activate_add_personal_fragment (GtkAction *action, gpointer data)
 	}
 
 }
-void add_a_personnal_fragement_to_menu(gchar* groupName,gchar* fragName)
+void add_a_personal_fragement_to_menu(gchar* groupName,gchar* fragName)
 {
 	const gchar* menuBase = "Edit/PersonalFragments";
 	guint  merge_id;

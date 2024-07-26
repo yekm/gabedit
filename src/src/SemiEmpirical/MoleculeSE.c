@@ -1,6 +1,6 @@
 /* MoleculeSE.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -843,6 +843,83 @@ gint get_connections_one_atom(gchar* t, gint nAtoms, gint ibeg, gint* connection
         return 1;
 }
 /********************************************************************************/
+gboolean readGeometryFromXTBOutputFile(MoleculeSE* mol, char* fileName)
+{
+	FILE* file = NULL;
+	char buffer[BSIZE];
+	char* pdest = NULL;
+	//char* energyTag = "TOTAL ENERGY =";
+	char* energyTag = " TOTAL ENERGY ";
+	char* geomTag = " final structure:";
+	char* gradTag = "Gradients:";
+	char dum[100];
+
+	printf("Read geom from %s\n",fileName);
+ 	file = fopen(fileName, "r");
+	if(!file) return FALSE;
+	 while(!feof(file))
+	 {
+		if(!fgets(buffer,BSIZE,file))break;
+		pdest = strstr( buffer, energyTag);
+		if(pdest &&sscanf(pdest+strlen(energyTag)+1,"%lf",&mol->energy)==1)
+		{
+			mol->energy *= AUTOKCAL;
+			break;
+		}
+	 }
+	rewind(file);
+	 while(!feof(file))
+	 {
+		if(!fgets(buffer,BSIZE,file))break;
+		if(strstr(buffer, geomTag))
+		{
+			int i;
+			if(!fgets(buffer,BSIZE,file))break;/* === */
+			if(!fgets(buffer,BSIZE,file))break;/* number of atoms */
+			if(!fgets(buffer,BSIZE,file))break; /* comments */
+			for(i=0;i<mol->nAtoms;i++)
+			{
+				if(!fgets(buffer,BSIZE,file))break;
+				/* printf("%s\n",buffer);*/
+				if(sscanf(buffer,"%s %lf %lf %lf",
+					dum,
+					&mol->atoms[i].coordinates[0],
+					&mol->atoms[i].coordinates[1],
+					&mol->atoms[i].coordinates[2]
+					)!=4) break;
+			}
+			break;
+		}
+	 }
+	 while(!feof(file))
+	 {
+		if(!fgets(buffer,BSIZE,file))break;
+		if(strstr(buffer, gradTag))
+		{
+			int i;
+			for(i=0;i<mol->nAtoms;i++)
+			{
+				if(!fgets(buffer,BSIZE,file))break;
+				//printf("%s\n",buffer);
+				if(sscanf(buffer,"%lf %lf %lf",
+					&mol->gradient[0][i],
+					&mol->gradient[1][i],
+					&mol->gradient[2][i]
+					)!=3) break;
+			}
+			break;
+		}
+	 }
+	/*
+	{
+		int i;
+		for(i=0;i<mol->nAtoms;i++) mol->atoms[i].typeConnections = NULL; 
+	}
+	*/
+	fclose(file);
+	return TRUE;
+}
+/********************************************************************************/
 gboolean readGeometryFromGenericOutputFile(MoleculeSE* molecule, char* namefile)
 {
 	FILE* file = NULL;
@@ -970,6 +1047,26 @@ gboolean readGeometryFromGenericOutputFile(MoleculeSE* molecule, char* namefile)
 		
 	}
 	freeMoleculeSE(mol);
+	return TRUE;
+}
+/*****************************************************************************/
+gboolean addGeometryMoleculeSEToXYZ(MoleculeSE* molecule,FILE* file)
+{
+	int j,k;
+	int nc;
+
+	if(!molecule) return FALSE;
+	fprintf(file,"%d\n",molecule->nAtoms);
+	fprintf(file,"%d %d\n",molecule->totalCharge, molecule->spinMultiplicity);
+	for(j=0;j<molecule->nAtoms;j++)
+	{
+		fprintf(file," %s %0.12lf %0.12lf %0.12lf\n", 
+				molecule->atoms[j].prop.symbol,
+				molecule->atoms[j].coordinates[0],
+				molecule->atoms[j].coordinates[1],
+				molecule->atoms[j].coordinates[2]
+				);
+	}
 	return TRUE;
 }
 /*****************************************************************************/

@@ -1,6 +1,6 @@
 /* BuildPolyNucleicAcid.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -199,7 +199,7 @@ typedef enum
 	B_ALL				= 8
 } ButtonNumbers;
 
-static GtkWidget* Entrys[NENTRYS];
+static GtkWidget* Entries[NENTRYS];
 static GtkWidget* Buttons[NBUTTONS];
 
 static GtkWidget* buttonDNA = NULL;
@@ -1427,26 +1427,26 @@ static gboolean getOneValue(gdouble* value, G_CONST_RETURN gchar* strValue, G_CO
 static gboolean getParameters()
 {
 	gboolean build53 = GTK_TOGGLE_BUTTON (buttonBuild53)->active;
-	G_CONST_RETURN gchar* tBeta = gtk_entry_get_text(GTK_ENTRY(Entrys[E_BETA]));
-	G_CONST_RETURN gchar* tGamma = gtk_entry_get_text(GTK_ENTRY(Entrys[E_GAMMA]));
-	G_CONST_RETURN gchar* tDelta = gtk_entry_get_text(GTK_ENTRY(Entrys[E_DELTA]));
-	G_CONST_RETURN gchar* tChi = gtk_entry_get_text(GTK_ENTRY(Entrys[E_CHI]));
-	G_CONST_RETURN gchar* tTip = gtk_entry_get_text(GTK_ENTRY(Entrys[E_TIP]));
-	G_CONST_RETURN gchar* tInclination = gtk_entry_get_text(GTK_ENTRY(Entrys[E_INCLINATION]));
-	G_CONST_RETURN gchar* tOpening = gtk_entry_get_text(GTK_ENTRY(Entrys[E_OPENNING]));
-	G_CONST_RETURN gchar* tPropellerTwist = gtk_entry_get_text(GTK_ENTRY(Entrys[E_PROPELLERTWIST]));
-	G_CONST_RETURN gchar* tBuckle = gtk_entry_get_text(GTK_ENTRY(Entrys[E_BUCKLE]));
-	G_CONST_RETURN gchar* tTwist = gtk_entry_get_text(GTK_ENTRY(Entrys[E_TWIST]));
-	G_CONST_RETURN gchar* tRoll = gtk_entry_get_text(GTK_ENTRY(Entrys[E_ROLL]));
-	G_CONST_RETURN gchar* tDx = gtk_entry_get_text(GTK_ENTRY(Entrys[E_XDISPLACEMENT]));
-	G_CONST_RETURN gchar* tDy = gtk_entry_get_text(GTK_ENTRY(Entrys[E_YDISPLACEMENT]));
-	G_CONST_RETURN gchar* tShear = gtk_entry_get_text(GTK_ENTRY(Entrys[E_SHEARSX]));
-	G_CONST_RETURN gchar* tStagger = gtk_entry_get_text(GTK_ENTRY(Entrys[E_STAGGERSZ]));
-	G_CONST_RETURN gchar* tStretch = gtk_entry_get_text(GTK_ENTRY(Entrys[E_STRETCHSY]));
-	G_CONST_RETURN gchar* tShift = gtk_entry_get_text(GTK_ENTRY(Entrys[E_SHIFTDX]));
-	G_CONST_RETURN gchar* tSlide = gtk_entry_get_text(GTK_ENTRY(Entrys[E_SLIDEDY]));
-	G_CONST_RETURN gchar* tRise = gtk_entry_get_text(GTK_ENTRY(Entrys[E_RISEDZ]));
-	G_CONST_RETURN gchar* tTilt = gtk_entry_get_text(GTK_ENTRY(Entrys[E_TILT]));
+	G_CONST_RETURN gchar* tBeta = gtk_entry_get_text(GTK_ENTRY(Entries[E_BETA]));
+	G_CONST_RETURN gchar* tGamma = gtk_entry_get_text(GTK_ENTRY(Entries[E_GAMMA]));
+	G_CONST_RETURN gchar* tDelta = gtk_entry_get_text(GTK_ENTRY(Entries[E_DELTA]));
+	G_CONST_RETURN gchar* tChi = gtk_entry_get_text(GTK_ENTRY(Entries[E_CHI]));
+	G_CONST_RETURN gchar* tTip = gtk_entry_get_text(GTK_ENTRY(Entries[E_TIP]));
+	G_CONST_RETURN gchar* tInclination = gtk_entry_get_text(GTK_ENTRY(Entries[E_INCLINATION]));
+	G_CONST_RETURN gchar* tOpening = gtk_entry_get_text(GTK_ENTRY(Entries[E_OPENNING]));
+	G_CONST_RETURN gchar* tPropellerTwist = gtk_entry_get_text(GTK_ENTRY(Entries[E_PROPELLERTWIST]));
+	G_CONST_RETURN gchar* tBuckle = gtk_entry_get_text(GTK_ENTRY(Entries[E_BUCKLE]));
+	G_CONST_RETURN gchar* tTwist = gtk_entry_get_text(GTK_ENTRY(Entries[E_TWIST]));
+	G_CONST_RETURN gchar* tRoll = gtk_entry_get_text(GTK_ENTRY(Entries[E_ROLL]));
+	G_CONST_RETURN gchar* tDx = gtk_entry_get_text(GTK_ENTRY(Entries[E_XDISPLACEMENT]));
+	G_CONST_RETURN gchar* tDy = gtk_entry_get_text(GTK_ENTRY(Entries[E_YDISPLACEMENT]));
+	G_CONST_RETURN gchar* tShear = gtk_entry_get_text(GTK_ENTRY(Entries[E_SHEARSX]));
+	G_CONST_RETURN gchar* tStagger = gtk_entry_get_text(GTK_ENTRY(Entries[E_STAGGERSZ]));
+	G_CONST_RETURN gchar* tStretch = gtk_entry_get_text(GTK_ENTRY(Entries[E_STRETCHSY]));
+	G_CONST_RETURN gchar* tShift = gtk_entry_get_text(GTK_ENTRY(Entries[E_SHIFTDX]));
+	G_CONST_RETURN gchar* tSlide = gtk_entry_get_text(GTK_ENTRY(Entries[E_SLIDEDY]));
+	G_CONST_RETURN gchar* tRise = gtk_entry_get_text(GTK_ENTRY(Entries[E_RISEDZ]));
+	G_CONST_RETURN gchar* tTilt = gtk_entry_get_text(GTK_ENTRY(Entries[E_TILT]));
 	gchar* t;
 	GtkWidget* w;
 	GtkWidget* entryLeft = GTK_BIN (comboLeftButton)->child;
@@ -1719,7 +1719,7 @@ static void resetFormList(GtkWidget* win, gpointer data)
 	}
 }
 /********************************************************************************/
-static void resetSensitivitieEntrys(GtkWidget* win, gpointer data)
+static void resetSensitivitieEntries(GtkWidget* win, gpointer data)
 {
 	gint i;
 	GtkWidget* entry = GTK_BIN(comboForm)->child;
@@ -1728,16 +1728,16 @@ static void resetSensitivitieEntrys(GtkWidget* win, gpointer data)
 	for(i=0;i<NENTRYS;i++)
 	{
 		if(!strcmp(form,"custom"))
-			gtk_widget_set_sensitive(Entrys[i], TRUE);
+			gtk_widget_set_sensitive(Entries[i], TRUE);
 		else
-			gtk_widget_set_sensitive(Entrys[i], FALSE);
+			gtk_widget_set_sensitive(Entries[i], FALSE);
 	}
-	gtk_widget_set_sensitive(Entrys[E_ALPHA], FALSE);
-	gtk_widget_set_sensitive(Entrys[E_EPSILON], FALSE);
-	gtk_widget_set_sensitive(Entrys[E_ZETA], FALSE);
+	gtk_widget_set_sensitive(Entries[E_ALPHA], FALSE);
+	gtk_widget_set_sensitive(Entries[E_EPSILON], FALSE);
+	gtk_widget_set_sensitive(Entries[E_ZETA], FALSE);
 }
 /********************************************************************************/
-static void resetValueEntrys(GtkWidget* win, gpointer data)
+static void resetValueEntries(GtkWidget* win, gpointer data)
 {
 	gint i;
 	GtkWidget* entry = GTK_BIN(comboForm)->child;
@@ -1786,14 +1786,14 @@ static void resetValueEntrys(GtkWidget* win, gpointer data)
 		return;
 
 	for(i=0;i<NENTRYS;i++)
-		gtk_entry_set_text(GTK_ENTRY(Entrys[i]), values[i]);
+		gtk_entry_set_text(GTK_ENTRY(Entries[i]), values[i]);
 }
 /********************************************************************************/
 static void resetZFormDNA(GtkWidget* win, gpointer data)
 {
 	GtkWidget* entryForm = GTK_BIN(comboForm)->child;
 	G_CONST_RETURN gchar* form = gtk_entry_get_text(GTK_ENTRY(entryForm));
-	G_CONST_RETURN gchar* tip = gtk_entry_get_text(GTK_ENTRY(Entrys[E_TIP]));
+	G_CONST_RETURN gchar* tip = gtk_entry_get_text(GTK_ENTRY(Entries[E_TIP]));
 	GtkWidget* entrySugar = GTK_BIN(comboSugar)->child;
 	gint i;
 
@@ -1803,12 +1803,12 @@ static void resetZFormDNA(GtkWidget* win, gpointer data)
 	if(strcmp(tip,z1formDNA[E_TIP])==0)
 	{
 		for(i=0;i<NENTRYS;i++)
-			gtk_entry_set_text(GTK_ENTRY(Entrys[i]), z2formDNA[i]);
+			gtk_entry_set_text(GTK_ENTRY(Entries[i]), z2formDNA[i]);
 	}
 	else
 	{
 		for(i=0;i<NENTRYS;i++)
-			gtk_entry_set_text(GTK_ENTRY(Entrys[i]), z1formDNA[i]);
+			gtk_entry_set_text(GTK_ENTRY(Entries[i]), z1formDNA[i]);
 	}
 
 
@@ -1982,17 +1982,17 @@ static void newLabelEntry(GtkWidget* table,EntryNumbers entryNum,gint l, gint c)
 	GtkWidget* label2;
 	label1 = newLeftLabel(tlabels[entryNum]);
 	label2 = newLeftLabel(" : ");
-	Entrys [entryNum] = newLeftEntry();
+	Entries [entryNum] = newLeftEntry();
 	gtk_table_attach(GTK_TABLE(table),label1,c,c+1,l,l+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 	gtk_table_attach(GTK_TABLE(table),label2,c+1,c+2,l,l+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
-	gtk_table_attach(GTK_TABLE(table),Entrys [entryNum],c+2,c+3,l,l+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
+	gtk_table_attach(GTK_TABLE(table),Entries [entryNum],c+2,c+3,l,l+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 }
 /********************************************************************************/
 static void initVariables()
 {
 	gint i;
 
-	for(i=0;i<NENTRYS;i++) Entrys[i] = NULL;
+	for(i=0;i<NENTRYS;i++) Entries[i] = NULL;
 
 	lastSenseFrag = -1;
 	lastAntiFrag = -1;
@@ -2455,11 +2455,11 @@ void build_polynucleicacid_dlg()
   g_signal_connect_swapped(G_OBJECT(buttonRNA), "clicked",(GCallback)resetTypeList,NULL);
   resetSensitivitieButtons(NULL,NULL);
   resetFormList(NULL,NULL);
-  resetSensitivitieEntrys(NULL,NULL);
-  g_signal_connect(G_OBJECT(GTK_BIN(comboForm)->child), "changed",G_CALLBACK(resetSensitivitieEntrys),NULL);
-  g_signal_connect(G_OBJECT(GTK_BIN(comboForm)->child), "changed",G_CALLBACK(resetValueEntrys),NULL);
+  resetSensitivitieEntries(NULL,NULL);
+  g_signal_connect(G_OBJECT(GTK_BIN(comboForm)->child), "changed",G_CALLBACK(resetSensitivitieEntries),NULL);
+  g_signal_connect(G_OBJECT(GTK_BIN(comboForm)->child), "changed",G_CALLBACK(resetValueEntries),NULL);
   g_signal_connect(G_OBJECT(GTK_BIN(comboForm)->child), "changed",G_CALLBACK(resetSugarEntry),NULL);
-  resetValueEntrys(NULL, NULL);
+  resetValueEntries(NULL, NULL);
   resetSugarEntry(NULL,NULL);
   resetButtonCustom(NULL,NULL);
   g_signal_connect(G_OBJECT(GTK_BIN(comboLeftButton)->child), "changed",G_CALLBACK(resetButtonCustom),NULL);

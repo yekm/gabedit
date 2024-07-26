@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -51,80 +51,78 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/GabeditType.h"
 /*#include "GabEditType.h"*/
 
-GtkWidget* PrincipalWindow;
-GtkWidget* GLArea;
+extern GtkWidget* PrincipalWindow;
+extern GtkWidget* GLArea;
 
-TypeGeomOrb* GeomOrb;
-gint ScreenWidth;
-gint ScreenHeight;
-TypeFontsStyle FontStyle;
-gchar *Title;
+extern TypeGeomOrb* GeomOrb;
+extern gint ScreenWidthD;
+extern gint ScreenHeightD;
+extern TypeFontsStyle FontStyle;
+extern gchar *Title;
 
-TYPE *Type;
-CGTF *AOrb;
+extern TYPE *Type;
+extern CGTF *AOrb;
 
-CSTF *SAOrb;
-gdouble* SOverlaps;
+extern CSTF *SAOrb;
+extern gdouble* SOverlaps;
 
-gint nCenters;
-gint Ntype;
-gint NAOrb;
-gint NOrb; /* Maximal number of orbital */
-gint NAlphaOrb; /* Alpha orbital number */
-gint NBetaOrb; /* Beta orbital number */
-gint NTotOcc;
-gint NAlphaOcc;
-gint NBetaOcc;
-gint TypeSelOrb; /* Type of Selected orbital 1 if alpha 2 if beta */
-gint NumSelOrb;  /* Number of Selected orbital : 0,1,2.... */    
-FILE* forb;
-gdouble **CoefAlphaOrbitals;
-gdouble *OccAlphaOrbitals;
-gdouble *EnerAlphaOrbitals;
-gchar	**SymAlphaOrbitals;
+extern gint nCenters;
+extern gint Ntype;
+extern gint NAOrb;
+extern gint NOrb; /* Maximal number of orbital */
+extern gint NAlphaOrb; /* Alpha orbital number */
+extern gint NBetaOrb; /* Beta orbital number */
+extern gint NTotOcc;
+extern gint NAlphaOcc;
+extern gint NBetaOcc;
+extern gint TypeSelOrb; /* Type of Selected orbital 1 if alpha 2 if beta */
+extern gint NumSelOrb;  /* Number of Selected orbital : 0,1,2.... */    
+extern FILE* forb;
+extern gdouble **CoefAlphaOrbitals;
+extern gdouble *OccAlphaOrbitals;
+extern gdouble *EnerAlphaOrbitals;
+extern gchar	**SymAlphaOrbitals;
 
-gdouble **CoefBetaOrbitals;
-gdouble *EnerBetaOrbitals;
-gdouble *OccBetaOrbitals;
-gchar	**SymBetaOrbitals;
+extern gdouble **CoefBetaOrbitals;
+extern gdouble *EnerBetaOrbitals;
+extern gdouble *OccBetaOrbitals;
+extern gchar	**SymBetaOrbitals;
 
-GabEditTypeGeom TypeGeom;
-GabEditTypeGrid TypeGrid;
-GabEditTypeTexture TypeTexture;
-GabEditTypeBlend TypeBlend;
-GabEditTypeWireFrame  TypePosWireFrame;
-GabEditTypeWireFrame  TypeNegWireFrame;
-GabEditTypeSurfShow SurfShow;
-gboolean PopupMenuIsOpen;
-IsoSurface* isopositive;
-IsoSurface* isonegative;
-IsoSurface* isonull;
-Grid* grid;
-Grid* gridPlaneForContours;
-gboolean reDrawContoursPlane;
-Grid* gridPlaneForPlanesMapped;
-gboolean reDrawPlaneMappedPlane;
-gboolean AOAvailable;
-gboolean RebuildSurf;
-gboolean RebuildGeom;
-gboolean newSurface;
-gboolean newContours;
-gboolean DeleteContours;
-gboolean CancelCalcul;
-gboolean ShowDipoleOrb;
-gboolean ShowHBondOrb;
-gboolean ShowHAtomOrb;
-gboolean ShowMultiBondsOrb;
-gboolean ShowVibration;
-gboolean createBMPFiles;
-gint numBMPFile;
-gboolean createPPMFiles;
-gint numPPMFile;
-gboolean createPOVFiles;
-gint numPOVFile;
-gdouble solventRadius;
-gdouble alphaFED;
-
-
+extern GabEditTypeGeom TypeGeom;
+extern GabEditTypeGrid TypeGrid;
+extern GabEditTypeTexture TypeTexture;
+extern GabEditTypeBlend TypeBlend;
+extern GabEditTypeWireFrame  TypePosWireFrame;
+extern GabEditTypeWireFrame  TypeNegWireFrame;
+extern GabEditTypeSurfShow SurfShow;
+extern gboolean PopupMenuIsOpen;
+extern IsoSurface* isopositive;
+extern IsoSurface* isonegative;
+extern IsoSurface* isonull;
+extern Grid* grid;
+extern Grid* gridPlaneForContours;
+extern gboolean reDrawContoursPlane;
+extern Grid* gridPlaneForPlanesMapped;
+extern gboolean reDrawPlaneMappedPlane;
+extern gboolean AOAvailable;
+extern gboolean RebuildSurf;
+extern gboolean RebuildGeomD;
+extern gboolean newSurface;
+extern gboolean newContours;
+extern gboolean DeleteContours;
+extern gboolean CancelCalcul;
+extern gboolean ShowDipoleOrb;
+extern gboolean ShowHBondOrb;
+extern gboolean ShowHAtomOrb;
+extern gboolean ShowMultiBondsOrb;
+extern gboolean ShowVibration;
+extern gboolean createBMPFiles;
+extern gint numBMPFile;
+extern gboolean createPPMFiles;
+extern gint numPPMFile;
+extern gboolean createPOVFiles;
+extern gint numPOVFile;
+extern gdouble solventRadius;
+extern gdouble alphaFED;
 #endif /* __GABEDIT_GLOBALORB_H__ */
 

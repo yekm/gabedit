@@ -30,4 +30,5 @@ GabeditKPoints.o: GabeditKPoints.c ../../Config.h ../../spglib/spglib.h \
  ../Crystallography/../Utils/Constants.h \
  ../Crystallography/../Crystallography/GabeditKPoints.h \
  ../Crystallography/../Crystallography/../../spglib/spglib.h \
+ ../Crystallography/GabeditSPG.h ../Crystallography/../../spglib/spglib.h \
  ../Crystallography/GabeditKPoints.h

@@ -1,6 +1,6 @@
 /* Basis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -64,7 +64,7 @@ gint ReadCommandLines()
         return 1; 
    if( t[0] != '#' )
    {
-     Debug("\n\nERROR : theyre firsts lines is not a commads lines\n\n");
+     Debug("\n\nERROR : the firsts lines is not a commands lines\n\n");
      return 0;
    }
   }
@@ -240,6 +240,87 @@ gboolean ReadOneBasis(gint i,gint j,char *t,gint *nsym)
        return TRUE;
 }
 /**********************************************/
+gint getGaussianNumberOfBasisCenters(gchar *fileName)
+{
+	gchar *sym;
+	gchar *t;
+	gint taille=BSIZE;
+	gint i;
+	gboolean ok;
+	long int geompos =  0;
+	int nC = 0;
+
+ 	if ((!fileName) || (strcmp(fileName,"") == 0)) return nC;
+
+ 	forb = FOpen(fileName, "rb");
+ 	if(forb == NULL) return -1;
+	t=(gchar*)g_malloc(taille*sizeof(gchar));
+	ok = FALSE;
+	while(!feof(forb))
+	{
+    		{ char* e = fgets(t,taille,forb);}
+		if(strstr(t,"asis set") != NULL) /* Basis for g98 and basis for g03 */
+		{
+			ok = TRUE;
+			geompos =  ftell(forb);
+			/* break; NO for get the last basis */
+		}
+	}
+	if(!ok) 
+	{
+		g_free(t);
+  		return nC;
+	}
+	fseek(forb, geompos, SEEK_SET);
+
+	sym=g_malloc(10*sizeof(gchar));
+
+	while(!feof(forb))
+	{
+    		{ char* e = fgets(t,taille,forb);}
+     		if(!strcmp(t,"\n") || !strcmp(t," ") )
+     		{
+			g_free(t);
+       			return nC;
+		}
+
+		if(  strcmp(t,"\n")!= 0  && strcmp(t," ") && t[1] !='*')
+		{
+			sscanf(t,"%s",sym);
+			sym[0]=toupper(sym[0]);
+			if(strlen(sym)>1)
+     			sym[1]=tolower(sym[1]);
+			/*i=GetNumType(sym);*/
+			i=atoi(sym)-1;
+			/* printf("DEBUG i=%d\n",i+1);*/
+			if(i>-1)
+			{
+				nC++;
+				while(!feof(forb))
+     				{
+    					{ char* e = fgets(t,taille,forb);}
+     					if(!strcmp(t,"\n") || t[1]=='*') break;
+     				}
+			}
+			else
+			{
+     				if(!strcmp(t,"\n") || !strcmp(t," ") ) 
+				{
+					fclose(forb);
+					g_free(t);
+					g_free(sym);
+					return nC;
+				}
+        			break;
+			}
+		}
+	}
+	fclose(forb);
+	g_free(t);
+	g_free(sym);
+	return nC;
+}
+/**********************************************/
 gboolean DefineBasisType(gchar *fileName)
 {
 	gchar *sym;
@@ -251,6 +332,15 @@ gboolean DefineBasisType(gchar *fileName)
 	gboolean ok;
 	gint nsym;
 	long int geompos =  0;
+	int nbasa=0;
+	gint nC = getGaussianNumberOfBasisCenters(fileName);
+
+	/* printf("DEBUG nC=%d\n",nC);*/
+	if(nC==nCenters)
+	{
+		Ntype = nCenters;
+ 		for(i=0;i<nCenters;i++) GeomOrb[i].NumType= i;
+	}
 
 	/* Debug("debut de DefineBasisType\n");*/
  	if ((!fileName) || (strcmp(fileName,"") == 0))
@@ -330,6 +420,7 @@ gboolean DefineBasisType(gchar *fileName)
      				sym[1]=tolower(sym[1]);
 				/*i=GetNumType(sym);*/
 				i=atoi(sym)-1;
+				/* printf("DEBUG i=%d\n",i+1);*/
 				if(i>-1)
 				{
 					sym = g_strdup( GeomOrb[i].Symb);
@@ -337,10 +428,12 @@ gboolean DefineBasisType(gchar *fileName)
      					Type[i].Symb=g_strdup(sym);
      					Type[i].N=GetNelectrons(sym);
      					j=-1;
+					nbasa=0;
 					while(!feof(forb))
      					{
     						{ char* e = fgets(t,taille,forb);}
      						if(!strcmp(t,"\n") || t[1]=='*') break;
+						nbasa++;
      						j++;
         					Type[i].Norb=j+1;
      						if(j == 0) Type[i].Ao=g_malloc(sizeof(AO));
@@ -360,6 +453,7 @@ gboolean DefineBasisType(gchar *fileName)
         						Type[i].Norb=j+1;
 						}
      					}
+					/* printf("DEBUG nbasa=%d\n",nbasa);*/
 				}
 				else
 				{
@@ -1265,11 +1359,11 @@ gboolean readBasisFromGaussianFChk(gchar *fileName)
 		gint nM = 0;
 		/* printf("begin primitive nS = %d\n",nS);*/
 		if(shellTypes[nS]<-1) nM = 2*abs(shellTypes[nS])+1; /* Sperical D, F, G, ...*/
-		else if(shellTypes[nS]==-1) nM = 1; /* This a SP. Make S befor */
+		else if(shellTypes[nS]==-1) nM = 1; /* This a SP. Make S before */
 		else nM = (shellTypes[nS]+1)*(shellTypes[nS]+2)/2;
 
 		/* printf("nM = %d\n",nM);*/
-		if(shellTypes[nS]==-1) getlTable(0, nCoefs, coefs, l); /* This a SP. Make S befor */
+		if(shellTypes[nS]==-1) getlTable(0, nCoefs, coefs, l); /* This a SP. Make S before */
 		else getlTable(shellTypes[nS], nCoefs, coefs, l); 
 		/* printf("end getlTable\n");*/
 		for(m=0;m<nM;m++)

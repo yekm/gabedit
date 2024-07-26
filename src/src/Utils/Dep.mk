@@ -6,7 +6,8 @@ AtomsProp.o: AtomsProp.c ../../Config.h ../Common/Global.h \
  ../Utils/AtomsProp.h ../Utils/UtilsInterface.h ../Geometry/Fragments.h \
  ../Geometry/DrawGeom.h ../Geometry/DrawGeomCairo.h \
  ../Geometry/Fragments.h ../Utils/Utils.h ../Geometry/GeomGlobal.h \
- ../Display/GLArea.h ../Common/Windows.h
+ ../Geometry/../Common/GabeditType.h ../Display/GLArea.h \
+ ../Common/Windows.h
 Jacobi.o: Jacobi.c ../../Config.h ../Common/Global.h \
  ../Common/../Files/GabeditFileChooser.h \
  ../Common/../Common/GabeditType.h
@@ -19,7 +20,8 @@ Transformation.o: Transformation.c ../../Config.h ../Common/Global.h \
 Utils.o: Utils.c ../../Config.h ../Common/Global.h \
  ../Common/../Files/GabeditFileChooser.h \
  ../Common/../Common/GabeditType.h ../Utils/Constants.h \
- ../Utils/Vector3d.h ../Geometry/GeomGlobal.h ../Utils/AtomsProp.h \
+ ../Utils/Vector3d.h ../Geometry/GeomGlobal.h \
+ ../Geometry/../Common/GabeditType.h ../Utils/AtomsProp.h \
  ../Utils/UtilsInterface.h ../Utils/Utils.h ../Utils/GabeditTextEdit.h \
  ../Geometry/ResultsAnalise.h ../Geometry/EnergiesCurves.h \
  ../Common/TextEdit.h ../Common/Preferences.h ../Common/Run.h \
@@ -34,11 +36,12 @@ UtilsInterface.o: UtilsInterface.c ../../Config.h ../Common/Global.h \
  ../MPQC/MPQC.h ../DeMon/DeMon.h ../Orca/Orca.h ../NWChem/NWChem.h \
  ../Psicode/Psicode.h ../QChem/QChem.h ../Mopac/Mopac.h \
  ../Gaussian/Gaussian.h ../Geometry/GeomGlobal.h \
- ../Utils/UtilsInterface.h ../Geometry/InterfaceGeom.h ../Utils/Utils.h \
- ../Utils/GabeditTextEdit.h ../Geometry/ResultsAnalise.h \
- ../Geometry/EnergiesCurves.h ../Common/Windows.h ../Files/ListeFiles.h \
- ../Geometry/GeomXYZ.h ../Geometry/GeomZmatrix.h ../Common/SplashScreen.h \
- ../Display/ViewOrb.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+ ../Geometry/../Common/GabeditType.h ../Utils/UtilsInterface.h \
+ ../Geometry/InterfaceGeom.h ../Utils/Utils.h ../Utils/GabeditTextEdit.h \
+ ../Geometry/ResultsAnalise.h ../Geometry/EnergiesCurves.h \
+ ../Common/Windows.h ../Files/ListeFiles.h ../Geometry/GeomXYZ.h \
+ ../Geometry/GeomZmatrix.h ../Common/SplashScreen.h ../Display/ViewOrb.h \
+ ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Common/Exit.h \
  ../Molcas/MolcasVariables.h ../Molcas/MolcasGateWay.h \
  ../Utils/GabeditXYPlot.h ../../pixmaps/Ok.xpm ../../pixmaps/Cancel.xpm \
@@ -60,9 +63,10 @@ HydrogenBond.o: HydrogenBond.c ../../Config.h ../Common/Global.h \
  ../Common/../Files/GabeditFileChooser.h \
  ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \
  ../Utils/Utils.h ../Utils/AtomsProp.h ../Geometry/GeomGlobal.h \
- ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
- ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Common/Windows.h \
- ../Display/GLArea.h ../Common/StockIcons.h
+ ../Geometry/../Common/GabeditType.h ../Geometry/Fragments.h \
+ ../Geometry/DrawGeom.h ../Geometry/DrawGeomCairo.h \
+ ../Geometry/Fragments.h ../Common/Windows.h ../Display/GLArea.h \
+ ../Common/StockIcons.h
 PovrayUtils.o: PovrayUtils.c ../../Config.h ../Common/Global.h \
  ../Common/../Files/GabeditFileChooser.h \
  ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \

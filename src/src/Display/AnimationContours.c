@@ -1,6 +1,6 @@
 /* AnimationContours.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -131,7 +131,7 @@ static void reset_last_directory(GtkWidget *dirSelector, gpointer data)
 static void set_directory(GtkWidget *win, gpointer data)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(reset_last_directory, _("Set folder"), GABEDIT_TYPEWIN_ORB);
+	dirSelector = selectionOfDir(reset_last_directory, _("Set folder"), GABEDIT_TYPEWIN_ORB);
 	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
 	gtk_window_set_transient_for(GTK_WINDOW(dirSelector),GTK_WINDOW(PrincipalWindow));
 	gtk_window_set_transient_for(GTK_WINDOW(dirSelector),GTK_WINDOW(WinDlg));
@@ -503,7 +503,7 @@ static void showMessageEnd()
 {
 	gchar* format =get_format_image_from_option();
 	gchar* message = messageAnimatedImage(format);
-	gchar* t = g_strdup_printf(_("\nA series of gab*.%s files was created in \"%s\" directeory.\n\n\n%s"), format, get_last_directory(),message);
+	gchar* t = g_strdup_printf(_("\nA seriess of gab*.%s files was created in \"%s\" directeory.\n\n\n%s"), format, get_last_directory(),message);
 	GtkWidget* winDlg = Message(t,_("Info"),TRUE);
 	g_free(message);
 	gtk_window_set_modal (GTK_WINDOW (winDlg), TRUE);
@@ -565,7 +565,7 @@ static GtkWidget *create_list_of_formats()
 	return combobox;
 }
 /********************************************************************************/
-static void addEntrysButtons(GtkWidget* box)
+static void addEntriesButtons(GtkWidget* box)
 {
 	GtkWidget *Button;
 	GtkWidget *frame;
@@ -892,7 +892,7 @@ void animationContoursDlg()
 	gtk_widget_realize(Win);
 
 	setMinMaxIsovalues();
-	addEntrysButtons(vbox);
+	addEntriesButtons(vbox);
 	gtk_widget_show_all(vbox);
 
 	gtk_widget_show_now(Win);

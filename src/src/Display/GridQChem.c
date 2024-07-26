@@ -1,6 +1,6 @@
 /* GridQChem.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -339,7 +339,7 @@ static gboolean read_qchemout_file(gchar* filename)
 	if(Ok) init_atomic_orbitals();
 
 	buildBondsOrb();
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	glarea_rafresh(GLArea);
 
 	if(nCenters>0) set_status_label_info(_("Geometry"),_("Ok"));

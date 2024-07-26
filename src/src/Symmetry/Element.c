@@ -1,6 +1,6 @@
 /* Point3D.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -36,15 +36,15 @@ static gboolean eq(Element* e, gdouble d1, gdouble d2);
 static gboolean eqPoint(Element* e, Point3D* p1, Point3D* p2);
 static gboolean eqAxes(Element* e, Point3D* p1, Point3D* p2);
 static gint getNumUniqueOperations(Element* e);
-static Point3D doInversion(Element* e, Point3D* before);
+static Point3D doInversion(Element* e, Point3D* beforee);
 static Point3D* getPosition(Element* e);
 static Point3D* getPoint(Element* e);
 static Point3D* getNormal(Element* e);
 static Point3D* getAxis(Element* e);
-static Point3D doReflection(Element* e, Point3D* before);
-static Point3D doUnit(Element* e, Point3D* before);
-static Point3D doRotation(Element* e, Point3D* before);
-static Point3D doImproperRotation(Element* e, Point3D* before);
+static Point3D doReflection(Element* e, Point3D* beforee);
+static Point3D doUnit(Element* e, Point3D* beforee);
+static Point3D doRotation(Element* e, Point3D* beforee);
+static Point3D doImproperRotation(Element* e, Point3D* beforee);
 static SAtom doOperationSAtom(Element* element, SAtom* oldAtom);
 static gchar* toString(Element* element);
 /************************************************************************************************************/
@@ -198,9 +198,9 @@ void copyElement(Element* e, Element** newElement)
 	**newElement = *e;
 }
 /************************************************************************************************************/
-static Point3D doUnit(Element* e, Point3D* before)
+static Point3D doUnit(Element* e, Point3D* beforee)
 {
-	return *before;
+	return *beforee;
 }
 /************************************************************************************************************/
 static gint getNumUniqueOperations(Element* e)
@@ -283,18 +283,18 @@ static gboolean eqAxes(Element* e, Point3D* p1, Point3D* p2)
 	return 1.0 - fabs(p1->dotProd(p1,p2)) < e->DOT_TOLERANCE;
 }
 /************************************************************************************************************/
-static Point3D doInversion(Element* e, Point3D* before)
+static Point3D doInversion(Element* e, Point3D* beforee)
 {
 	Point3D newPos = newPoint3D();
-	newPos.x = 2 * e->point.x - before->x;
-	newPos.y = 2 * e->point.y - before->y;
-	newPos.z = 2 * e->point.z - before->z;
+	newPos.x = 2 * e->point.x - beforee->x;
+	newPos.y = 2 * e->point.y - beforee->y;
+	newPos.z = 2 * e->point.z - beforee->z;
 	return newPos;
 }
 /************************************************************************************************************/
-static Point3D doReflection(Element* e, Point3D* before)
+static Point3D doReflection(Element* e, Point3D* beforee)
 {
-	Point3D oldCoords = before->sub(before,&e->point);
+	Point3D oldCoords = beforee->sub(beforee,&e->point);
 	Point3D newCoords = newPoint3D();
 				
 	newCoords.x = e->m[0][0]*oldCoords.x + e->m[0][1]*oldCoords.y + e->m[0][2]*oldCoords.z;
@@ -305,12 +305,12 @@ static Point3D doReflection(Element* e, Point3D* before)
 	return newCoords;
 }
 /************************************************************************************************************/
-static Point3D doRotation(Element* e, Point3D* before)
+static Point3D doRotation(Element* e, Point3D* beforee)
 {
-	if(e->n == e->GABEDIT_C_INFINITY) return *before;
+	if(e->n == e->GABEDIT_C_INFINITY) return *beforee;
 	else
 	{
-		Point3D oldCoords = before->sub(before,&e->point);
+		Point3D oldCoords = beforee->sub(beforee,&e->point);
 		Point3D newCoords = newPoint3D();
 			
 		newCoords.x = e->m[0][0]*oldCoords.x + e->m[0][1]*oldCoords.y + e->m[0][2]*oldCoords.z;
@@ -322,9 +322,9 @@ static Point3D doRotation(Element* e, Point3D* before)
 	}
 }
 /************************************************************************************************************/
-static Point3D doImproperRotation(Element* e, Point3D* before)
+static Point3D doImproperRotation(Element* e, Point3D* beforee)
 {
-	Point3D oldCoords = before->sub(before,&e->point);
+	Point3D oldCoords = beforee->sub(beforee,&e->point);
 	Point3D newCoords = newPoint3D();
 		
 	if(e->n==0) return newCoords;
@@ -374,9 +374,9 @@ static Point3D doImproperRotation(Element* e, Point3D* before)
 	return finalCoords;
 }
 /************************************************************************************************************/
-static SAtom doOperationSAtom(Element* e, SAtom* before)
+static SAtom doOperationSAtom(Element* e, SAtom* beforee)
 {
-	SAtom a = *before;
+	SAtom a = *beforee;
 	Point3D oldPosition =  a.getPosition(&a);
 	Point3D newPosition =  e->doOperation(e, &oldPosition);
 	a.setPosition(&a, &newPosition);

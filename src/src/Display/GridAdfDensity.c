@@ -1,6 +1,6 @@
 /* GridAdf.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -736,7 +736,7 @@ static void read_adf_file(gchar* filename)
 	{
 		/*printf("C'est OK\n");*/
 		buildBondsOrb();
-		RebuildGeom = TRUE;
+		RebuildGeomD = TRUE;
 		glarea_rafresh(GLArea);
 		init_atomic_orbitals();
 		set_status_label_info(_("Geometry"),_("Ok"));

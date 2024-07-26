@@ -1,6 +1,6 @@
 /* PsicodeKeywords.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -64,8 +64,8 @@ static gchar selectedSCF[BSIZE]="DEF";
 static gchar* listTypeMethodsView[] = 
 { 
 	"Hatree-Fock", 
-	"Local and gradient corrected functionals", 
-	"Hybrid functionals",
+	"Local and gradient corrected functionalsPsi", 
+	"Hybrid functionalsPsi",
 	"Meta-GGA and hybrid meta-GGA's",
 	"X_LRC",
 	"Second Order Many Body Perturbation Theory",

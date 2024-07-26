@@ -1,6 +1,6 @@
 /* GGeomXYZ.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -2968,7 +2968,7 @@ static void SelectAtom(GtkWidget *w,gpointer entry0)
   FenetreTable = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_modal(GTK_WINDOW(FenetreTable),TRUE);
   gtk_window_set_title(GTK_WINDOW(FenetreTable),_("Select your atom"));
-  gtk_window_set_default_size (GTK_WINDOW(FenetreTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
+  //gtk_window_set_default_size (GTK_WINDOW(FenetreTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
 
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
@@ -3438,7 +3438,7 @@ static void DialogueEdit()
   Nc=LineSelected;
   if(Nc<0 ) {
   	if(NcentersXYZ<1 ) 
-   		MessageGeom(_("Create center before \n"),_("Error"),TRUE);
+   		MessageGeom(_("Create center beforee \n"),_("Error"),TRUE);
         else
    		MessageGeom(_("Please Select your center \n"),_("Warning"),TRUE);
    return;
@@ -4944,7 +4944,7 @@ void read_pdb_file_no_add_list(gchar *NomFichier)
 	{
     		if(!fgets(t,taille,fd)) break;
     		sscanf(t,"%s",listFields[0]);
-		if(strcmp(listFields[0],"CONECT")!=0) continue;
+		if(strcmp(listFields[0],"CONNECT")!=0) continue;
 		if(!strcmp(t,"END")) break;
 		if(!read_atom_pdb_file(t,listFields)) continue;
 		get_connections_one_connect_pdb(t);
@@ -5164,7 +5164,7 @@ gboolean save_pdb_file(G_CONST_RETURN gchar* FileName)
 	if(N>0)
 	{
 		gint len = 0;
-		fprintf(fd,"CONECT %4d ",i+1);
+		fprintf(fd,"CONNECT %4d ",i+1);
 		len +=  6 + 1 +4;
 		fprintf(fd,"%4d",connection[0]);
 		len +=  4;
@@ -6197,7 +6197,7 @@ void read_geom_from_wfx_file(gchar *fileName)
 	}
 	if(nCoordinates!=3*nSymbols)
 	{
-		sprintf(t,"Sorry\nI cannot read geomtry from %s  file",fileName);
+		sprintf(t,"Sorry\nI cannot read geometry from %s  file",fileName);
 		MessageGeom(t," Error ",TRUE);
 		fclose(file);
 		if(symbols) free_one_string_table(symbols, nSymbols);
@@ -7541,7 +7541,7 @@ void read_geom_from_poscar_file(gchar *fileName)
 		if(nmax<1 || nmax != nmax2)
 		{
 			if(t)g_free(t);
-			t = g_strdup_printf(_("Sorry\nI can not the symbol of atoms from %s file,\nadd these after the cell definition before the number of each type"),fileName);
+			t = g_strdup_printf(_("Sorry\nI can not the symbol of atoms from %s file,\nadd these after the cell definition beforee the number of each type"),fileName);
 			MessageGeom(t,_("Error"),TRUE);
 			g_free(t);
 			if(strsplit1) g_strfreev(strsplit1);
@@ -14041,7 +14041,7 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   gchar* patternsout[] = {"*.out","*.log","*",NULL};
   gchar* patternsaux[] = {"*.aux","*",NULL};
   gchar* patternsgab[] = {"*.gab","*",NULL};
-  gchar* patternsmol[] = {"*.mol","*",NULL};
+  gchar* patternsmol[] = {"*.mol","*.sdf","*",NULL};
   gchar* patternsirc[] = {"*.irc","*",NULL};
   gchar* patternsfchk[] = {"*.fchk","*",NULL};
   gchar* patternsposcar[] = {"POS*","*",NULL};
@@ -14059,7 +14059,7 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsxyz);
 	   break;
   case GABEDIT_TYPEFILEGEOM_MOL :
-	   SelecFile = gabedit_file_chooser_new(_("Read Mol file"), GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read Mol/sdf file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsmol);
 	   break;
   case GABEDIT_TYPEFILEGEOM_DALTONFIRST : 
@@ -14866,7 +14866,7 @@ static void DialogueEditV()
   Nc=LineSelectedV;
   if(Nc<0 ) {
   	if(NVariablesXYZ<1)
-   	MessageGeom(_("Create variable before \n"),_("Warning"),TRUE);
+   	MessageGeom(_("Create variable beforee \n"),_("Warning"),TRUE);
        else
    	MessageGeom(_("Please Select your variable \n"),_("Warning"),TRUE);
    return;

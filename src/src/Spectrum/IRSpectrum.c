@@ -1,6 +1,6 @@
 /* IRSpectrum.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1620,7 +1620,7 @@ static gboolean read_igvpt2_file(GabeditFileChooser *SelecFile, gint response_id
         if(result)
         {
                	GtkWidget* message = AnharmonicResultTxt(result,"iGVPT2 result");
-               	gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidth*0.8),-1);
+               	//gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidth*0.8),-1);
                	gtk_widget_set_size_request(message,(gint)(ScreenWidth*0.45),-1);
                	/* gtk_window_set_modal (GTK_WINDOW (message), TRUE);*/
                	/* gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));*/
@@ -1651,7 +1651,7 @@ static gboolean read_igvpt2_file(GabeditFileChooser *SelecFile, gint response_id
         	if(result)
         	{
                 	GtkWidget* message = AnharmonicResultTxt(result,"iGVPT2 result");
-                	gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidth*0.8),-1);
+                	//gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidth*0.8),-1);
                 	gtk_widget_set_size_request(message,(gint)(ScreenWidth*0.45),-1);
                 	// gtk_window_set_modal (GTK_WINDOW (message), TRUE);
                 	// gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));
@@ -1704,7 +1704,7 @@ void createIRSpectrumFromVibration(GtkWidget *parentWindow, Vibration ibration)
 	gint j;
 	if(numberOfFrequencies<1)
 	{
-		GtkWidget* mess=Message(_("For draw spectrum,Sorry, Please read a file before"),_("Error"),TRUE);
+		GtkWidget* mess=Message(_("For draw spectrum,Sorry, Please read a file beforee"),_("Error"),TRUE);
     		gtk_window_set_modal (GTK_WINDOW (mess), TRUE);
 		return;
 	}

@@ -1,6 +1,6 @@
 /* IRSpectrum.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -383,7 +383,7 @@ GtkWidget* AnharmonicResultTxt(gchar *message,gchar *title)
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(dlgWin));
 
 	add_button_windows(title,dlgWin);
-	gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeight*0.4), (gint)(ScreenHeight*0.4));
+	//gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeight*0.4), (gint)(ScreenHeight*0.4));
 	gtk_widget_show_all(dlgWin);
   	g_object_set_data(G_OBJECT (dlgWin), "TxtWidget", txtWid);
 	return dlgWin;
@@ -552,7 +552,7 @@ static void run_igvpt2_win(GtkWidget* Win, gpointer data)
         	if(result)
         	{
                 	GtkWidget* message = AnharmonicResultTxt(result,"iGVPT2 result");
-                	gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidth*0.8),-1);
+                	//gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidth*0.8),-1);
                 	gtk_widget_set_size_request(message,(gint)(ScreenWidth*0.45),-1);
                 	/* gtk_window_set_modal (GTK_WINDOW (message), TRUE);*/
         	}

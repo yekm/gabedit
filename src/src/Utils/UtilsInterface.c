@@ -1,6 +1,6 @@
 /* UtilsInterface.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -701,7 +701,7 @@ GtkWidget* MessageTxt(gchar *message,gchar *title)
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(dlgWin));
 
 	add_button_windows(title,dlgWin);
-	gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeight*0.4), (gint)(ScreenHeight*0.4));
+	//gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeight*0.4), (gint)(ScreenHeight*0.4));
 	gtk_widget_show_all(dlgWin);
 	return dlgWin;
 }
@@ -1974,7 +1974,7 @@ static void show_about_new()
 	};
 
 	static const gchar *copyright =
-		"Copyright \xc2\xa9 2002-2013 Abdul-Rahman Allouche.\n"
+		"Copyright \xc2\xa9 2002-2022 Abdul-Rahman Allouche.\n"
 		"All rights reserved.\n";
 	
 	gchar *license =
@@ -2004,7 +2004,7 @@ static void show_about_new()
 		"Graphical User Interface to DeMon, FireFly, GAMESS-US, Gaussian, Molcas, Molpro, "
 		"OpenMopac, Orca, MPQC, NWChem and Q-Chem computational chemistry packages.\n\n"
 		"Please use the following citations in any report or publication :\n"
-		"A.R. ALLOUCHE, Gabedit - A graphical user interface for computational chemistry softwares,\n"
+		"A.R. ALLOUCHE, Gabedit - A graphical user interface for computational chemistry software,\n"
 	        "Journal of Computational Chemistry, 32, 174-182(2011)\n";
 	
 	gchar *GABEDIT_VERSION =
@@ -2368,6 +2368,7 @@ void get_result()
  
 	fileName = g_strdup_printf("%s%s%s",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.outputfile);
 	t = readFile(fileName);
+	/*printf("strlen=%d\n",strlen(t));*/
 	g_free(fileName);
 	if(t!=NULL)
 	{
@@ -2486,7 +2487,7 @@ void show_forbidden_characters()
     	'`','\'','.','"',':',';'};
 	guint All=36;
 	guint i;
-	temp = g_strdup(_("Sorry the name of varibale is not valid !\n\n"));
+	temp = g_strdup(_("Sorry the name of variable is not valid !\n\n"));
 	temp = g_strdup_printf(_("%s The first character can not be one of : \n"),temp);
 	for(i=0;i<10;i++)
 		temp = g_strdup_printf("%s %c",temp,Forbidden[i]);
@@ -2501,14 +2502,14 @@ void show_forbidden_characters()
 	g_free(temp);
 }
 /********************************************************************************/
-void  cree_p_vbox()
+void  create_p_vbox()
 {
 	vboxmain = gtk_vbox_new (FALSE, 0);
 	gtk_container_add (GTK_CONTAINER (Fenetre), vboxmain);
 	gtk_widget_show (vboxmain);
 }
 /********************************************************************************/
-void  cree_vboxs_list_text()
+void  create_vboxs_list_text()
 {
 	GtkWidget *hpaned;
 

@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -49,9 +49,10 @@ typedef struct _GeometryConvergence
 	Geometry* geometries;
 	gchar** comments;
 }GeometryConvergence;
-GeometryConvergence geometryConvergence;
 void initGeometryConvergence();
 void geometryConvergenceDlg();
+
+extern GeometryConvergence geometryConvergence;
 
 #endif /* __GABEDIT_ANIMATIONGEOMCONV_H__ */
 

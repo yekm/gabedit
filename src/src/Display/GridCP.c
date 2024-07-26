@@ -1,6 +1,6 @@
 /* GridCP.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1246,7 +1246,7 @@ static GtkWidget* showResultDlg(gchar *message,gchar *title,GridCP* gridCP)
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)destroyResultDlg, GTK_OBJECT(dlgWin));
 
 	add_button_windows(title,dlgWin);
-	gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeight*0.6), (gint)(ScreenHeight*0.5));
+	//gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeightD*0.6), (gint)(ScreenHeightD*0.5));
 	gtk_widget_show_all(dlgWin);
   	g_object_set_data(G_OBJECT (dlgWin), "GridCP",gridCP);
 	return dlgWin;

@@ -1,6 +1,6 @@
 /* GridMolcas.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -490,7 +490,7 @@ static void create_list_molcasgrid_orbitals()
 
   if(numberOfOrbitals<1)
   {
-	  Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
+	  Message(_("Sorry, Please load a file beforee\n"),_("Error"),TRUE);
 	  return;
   }
   selectedRow=0;
@@ -501,7 +501,7 @@ static void create_list_molcasgrid_orbitals()
   gtk_window_set_title(GTK_WINDOW(Win),"Orbitals");
   gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
   gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
-  gtk_widget_set_size_request (GTK_WIDGET(Win), 3*ScreenWidth/10,(gint)(ScreenHeight*0.69));
+  gtk_widget_set_size_request (GTK_WIDGET(Win), 3*ScreenWidthD/10,(gint)(ScreenHeightD*0.69));
   gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(PrincipalWindow));
   gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
 
@@ -908,7 +908,7 @@ static void read_molcasgrid_orbitals_file(gchar* filename)
 	}
 
 	buildBondsOrb();
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	glarea_rafresh(GLArea);
 	if(Ok) init_atomic_orbitals();
 
@@ -987,7 +987,7 @@ static void read_molcasgrid_density_file(gchar* filename)
 	}
 
 	buildBondsOrb();
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	glarea_rafresh(GLArea);
 	if(Ok) init_atomic_orbitals();
 

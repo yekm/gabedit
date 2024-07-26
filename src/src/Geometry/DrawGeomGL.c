@@ -1,6 +1,6 @@
 /* DrawGeomGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -76,6 +76,44 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/TreeMolecule.h"
 #include "../Geometry/BuildCrystal.h"
 
+/* extern of DrawGeomGL.h */
+FragmentsItems *FragItems;
+gint NFrags;
+
+CoordMaxMin coordmaxmin;
+
+GeomDef *geometry;
+GeomDef *geometry0;
+guint Natoms;
+
+gint *NumFatoms;
+guint NFatoms;
+
+gint TransX;
+gint TransY;
+GtkWidget *GeomDlg;
+GtkWidget *StopButton;
+gboolean StopCalcul;
+
+gboolean ShadMode;
+gboolean PersMode;
+gboolean LightMode;
+gboolean OrtepMode;
+gboolean DrawDistance;
+gboolean DrawDipole;
+gboolean ShowDipole;
+gboolean ShowHBonds;
+
+gdouble dipole[NDIVDIPOLE][3];
+gdouble dipole0[NDIVDIPOLE][3];
+gdouble dipole00[NDIVDIPOLE][3];
+gint DXi[NDIVDIPOLE];
+gint DYi[NDIVDIPOLE];
+gint Ndipole[NDIVDIPOLE];
+gchar* AtomToInsert;
+gint NumSelAtoms[4];
+gboolean Ddef;
+
 
 /********************************************************************************/
 #define MAT 30
@@ -111,8 +149,11 @@ static gint NumPointedAtom = -1;
 static gboolean ButtonPressed = FALSE;
 static gboolean ShiftKeyPressed = FALSE;
 static gboolean ControlKeyPressed = FALSE;
+static gboolean AltKeyPressed = FALSE;
+static gboolean WindowKeyPressed = FALSE;
 static gboolean FKeyPressed = FALSE;
 static gboolean GKeyPressed = FALSE;
+static gboolean SKeyPressed = FALSE;
 
 gchar* strToDraw = NULL;
 
@@ -220,7 +261,7 @@ void getQuatGeom(gdouble q[])
 /********************************************************************************/
 static void destroy_setlight_window(GtkWidget* Win,gpointer data)
 {
-  GtkWidget**entrys =(GtkWidget**) g_object_get_data(G_OBJECT (Win), "Entrys");
+  GtkWidget**entrys =(GtkWidget**) g_object_get_data(G_OBJECT (Win), "Entries");
   gtk_widget_destroy(Win);
   if(entrys) g_free(entrys);
 }
@@ -299,7 +340,7 @@ static void set_light_position(gint num,gdouble v[])
 /********************************************************************************/
 static void apply_ligth_positions(GtkWidget *Win,gpointer data)
 {
-	GtkWidget** Entrys =(GtkWidget**)g_object_get_data(G_OBJECT (Win), "Entrys");
+	GtkWidget** Entries =(GtkWidget**)g_object_get_data(G_OBJECT (Win), "Entries");
 	G_CONST_RETURN gchar* temp;
 	gint i;
 	gint j;
@@ -309,7 +350,7 @@ static void apply_ligth_positions(GtkWidget *Win,gpointer data)
 	{
 		for(j=0;j<3;j++)
 		{
-        		temp	= gtk_entry_get_text(GTK_ENTRY(Entrys[j*3+i])); 
+        		temp	= gtk_entry_get_text(GTK_ENTRY(Entries[j*3+i])); 
 			v[j] = atof(temp);
 		}
 		set_light_position(i,v);
@@ -324,7 +365,7 @@ static GtkWidget *create_light_positions_frame( GtkWidget *vboxall,gchar* title)
 {
 	GtkWidget *frame;
 	GtkWidget *vboxframe;
-	GtkWidget **Entrys = g_malloc(9*sizeof(GtkWidget*));
+	GtkWidget **Entries = g_malloc(9*sizeof(GtkWidget*));
 	gushort i;
 	gushort j;
 	GtkWidget *Table;
@@ -354,9 +395,9 @@ static GtkWidget *create_light_positions_frame( GtkWidget *vboxall,gchar* title)
 		add_label_at_table(Table,strcolumns[i-1],0,(gushort)i,GTK_JUSTIFY_CENTER);
 		for(j=1;j<NLIGNES+1;j++)
 		{
-			Entrys[(i-1)*NCOLUMNS+j-1] = gtk_entry_new ();
-			add_widget_table(Table,Entrys[(i-1)*NCOLUMNS+j-1],(gushort)j,(gushort)i);
-			gtk_entry_set_text(GTK_ENTRY( Entrys[(i-1)*NCOLUMNS+j-1]),temp[j-1][i-1]);
+			Entries[(i-1)*NCOLUMNS+j-1] = gtk_entry_new ();
+			add_widget_table(Table,Entries[(i-1)*NCOLUMNS+j-1],(gushort)j,(gushort)i);
+			gtk_entry_set_text(GTK_ENTRY( Entries[(i-1)*NCOLUMNS+j-1]),temp[j-1][i-1]);
 		}
 	}
 
@@ -367,16 +408,16 @@ static GtkWidget *create_light_positions_frame( GtkWidget *vboxall,gchar* title)
 		g_free(temp[i]);
 	}
 	gtk_widget_show_all(frame);
-	g_object_set_data(G_OBJECT (frame), "Entrys",Entrys);
+	g_object_set_data(G_OBJECT (frame), "Entries",Entries);
 
 	i = 0;
-	g_object_set_data(G_OBJECT (Entrys[i]), "Entrys",Entrys);
+	g_object_set_data(G_OBJECT (Entries[i]), "Entries",Entries);
 	i = 2;
-	g_object_set_data(G_OBJECT (Entrys[i]), "Entrys",Entrys);
+	g_object_set_data(G_OBJECT (Entries[i]), "Entries",Entries);
 	i = 3;
-	g_object_set_data(G_OBJECT (Entrys[i]), "Entrys",Entrys);
+	g_object_set_data(G_OBJECT (Entries[i]), "Entries",Entries);
 	i = 6;
-	g_object_set_data(G_OBJECT (Entrys[i]), "Entrys",Entrys);
+	g_object_set_data(G_OBJECT (Entries[i]), "Entries",Entries);
   
   	return frame;
 }
@@ -706,7 +747,7 @@ void set_light_positions_drawgeom(gchar* title)
   GtkWidget *vboxall;
   GtkWidget *vboxwin;
   GtkWidget *button;
-  GtkWidget** Entrys;
+  GtkWidget** Entries;
 
   /* Principal Window */
   Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -718,9 +759,9 @@ void set_light_positions_drawgeom(gchar* title)
 
   vboxall = create_vbox(Win);
   vboxwin = vboxall;
-  frame = create_light_positions_frame(vboxall,_("Ligth positions"));
-  Entrys = (GtkWidget**) g_object_get_data(G_OBJECT (frame), "Entrys");
-  g_object_set_data(G_OBJECT (Win), "Entrys",Entrys);
+  frame = create_light_positions_frame(vboxall,_("Light positions"));
+  Entries = (GtkWidget**) g_object_get_data(G_OBJECT (frame), "Entries");
+  g_object_set_data(G_OBJECT (Win), "Entries",Entries);
    
 
   /* buttons box */
@@ -3127,7 +3168,15 @@ static gint set_key_press(GtkWidget* wid, GdkEventKey *event, gpointer data)
 	}
 	else if((event->keyval == GDK_Alt_L || event->keyval == GDK_Alt_R) )
 	{
-		ControlKeyPressed = TRUE;
+		AltKeyPressed = TRUE;
+	}
+	else if((event->keyval == GDK_Super_L || event->keyval == GDK_Super_R) )
+	{
+		WindowKeyPressed = TRUE;
+	}
+	else if((event->keyval == GDK_S || event->keyval == GDK_s) )
+	{
+		SKeyPressed = TRUE;
 	}
 	else if((event->keyval == GDK_F || event->keyval == GDK_f) )
 	{
@@ -3187,9 +3236,13 @@ static gint set_key_release(GtkWidget* wid, GdkEventKey *event, gpointer data)
 	else if((event->keyval == GDK_Control_L || event->keyval == GDK_Control_R) )
 		ControlKeyPressed = FALSE;
 	else if((event->keyval == GDK_Alt_L || event->keyval == GDK_Alt_R) )
-		ControlKeyPressed = FALSE;
+		AltKeyPressed = FALSE;
+	else if((event->keyval == GDK_Super_L || event->keyval == GDK_Super_R) )
+		WindowKeyPressed = FALSE;
 	else if((event->keyval == GDK_F || event->keyval == GDK_f) )
 		FKeyPressed = FALSE;
+	else if((event->keyval == GDK_S || event->keyval == GDK_s) )
+		SKeyPressed = FALSE;
 	else if((event->keyval == GDK_G || event->keyval == GDK_g) )
 		GKeyPressed = FALSE;
 	return TRUE;
@@ -3486,12 +3539,32 @@ void select_atoms_by_rectangle(gdouble x,gdouble y)
 		y1 = y;
 		y2 = BeginY;
 	}
-	if(!ShiftKeyPressed)
+	if(!ShiftKeyPressed && !WindowKeyPressed && !AltKeyPressed)
 	{
 		if(!NumFatoms) g_free(NumFatoms);
 		NumFatoms = NULL;
 		NFatoms = 0;
 	}
+	if(SKeyPressed || WindowKeyPressed ||  AltKeyPressed)
+	for(i=0;i<(gint)Natoms;i++)
+	{
+		if(!geometry[i].show) continue;
+		gluProject(geometry[i].X, geometry[i].Y, geometry[i].Z,mvmatrix, projmatrix, viewport, &View2D[0], &View2D[1], &View2D[2]);
+		xi = View2D[0];
+		yi = viewport[3]-View2D[1];
+		if(xi>=x1 && xi<=x2 && yi>=y1 && yi<=y2 && if_selected(i))
+		{
+			gint k,kk;
+			kk=-1;
+			for(k=0;k<(gint)NFatoms;k++) if(NumFatoms[k] == geometry[i].N) {kk=k; break;}
+			if(kk!=-1)
+			{
+				for(k=kk;k<(gint)NFatoms-1;k++) NumFatoms[k] = NumFatoms[k+1];
+				NFatoms--;
+			}
+		}
+	}
+	else
 	for(i=0;i<(gint)Natoms;i++)
 	{
 		if(!geometry[i].show) continue;
@@ -3972,7 +4045,7 @@ void setSymbolOfselectedAtomsDlg()
 	GtkWidget* winDlg = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_modal(GTK_WINDOW(winDlg),TRUE);
 	gtk_window_set_title(GTK_WINDOW(winDlg),_("Select your atom"));
-	gtk_window_set_default_size (GTK_WINDOW(winDlg),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
+	//gtk_window_set_default_size (GTK_WINDOW(winDlg),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
 
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
@@ -11530,7 +11603,7 @@ static GtkWidget* NewGeomDrawingArea(GtkWidget* vboxwin, GtkWidget* GeomDlg)
 	gtk_drawing_area_size(GTK_DRAWING_AREA(GeomDrawingArea),(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.2));
 	gtk_table_attach(GTK_TABLE(table),GeomDrawingArea,1,2,0,1, (GtkAttachOptions)(GTK_FILL | GTK_EXPAND  ), (GtkAttachOptions)(GTK_FILL | GTK_EXPAND ), 0,0);
 	gtk_widget_show(GTK_WIDGET(GeomDrawingArea));
-	/* Events for widget must be set before X Window is created */
+	/* Events for widget must be set beforee X Window is created */
 	gtk_widget_set_events(GeomDrawingArea,
 			GDK_EXPOSURE_MASK|
 			GDK_BUTTON_PRESS_MASK|
@@ -11638,7 +11711,7 @@ void create_window_drawing()
 	gtk_window_set_title(GTK_WINDOW(GeomDlg),_("Gabedit : Draw Geometry "));
 	gtk_window_set_transient_for(GTK_WINDOW(GeomDlg),GTK_WINDOW(Fenetre));
 
-	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
+	/* gtk_window_move(GTK_WINDOW(GeomDlg),0,0);*/
 	init_child(GeomDlg,destroy_all_drawing,_(" Draw Geom. "));
 	g_signal_connect(G_OBJECT(GeomDlg),"delete_event",(GCallback)destroy_children,NULL);
 
@@ -11794,7 +11867,7 @@ void create_window_drawing()
 	else
 		gtk_widget_show(vboxhandle);
 
-	gtk_window_set_default_size (GTK_WINDOW(GeomDlg), (gint)(ScreenHeight*0.85), (gint)(ScreenHeight*0.85));
+	//gtk_window_set_default_size (GTK_WINDOW(GeomDlg), (gint)(ScreenHeight*0.85), (gint)(ScreenHeight*0.85));
 
 
 	g_object_set_data(G_OBJECT(GeomDlg), "StatusBox",handlebox);
@@ -11810,7 +11883,7 @@ void create_window_drawing()
 	g_signal_connect(G_OBJECT (GeomDlg), "key_release_event", (GCallback) set_key_release, NULL);
 	gtk_widget_show(GeomDlg);
 
-	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
+	/* gtk_window_move(GTK_WINDOW(GeomDlg),0,0);*/
 
 
 	/* set_back_color_black();*/

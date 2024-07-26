@@ -1,6 +1,6 @@
 /* Vibration.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -48,6 +48,9 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/GabeditTextEdit.h"
 #include "../Common/Windows.h"
 
+/* extern variable of Vibration.h */
+Vibration vibration;
+gint rowSelected;
 
 static	GtkWidget *WinDlg = NULL;
 static	GtkWidget *EntryScal = NULL;
@@ -544,7 +547,7 @@ static GtkWidget* addComboListToATable(GtkWidget* table,
                   2,2);
 	entry = GTK_BIN (combo)->child;
 	g_object_set_data(G_OBJECT (entry), "Combo",combo);
-	gtk_widget_set_size_request(GTK_WIDGET(entry),(gint)(ScreenHeight*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(entry),(gint)(ScreenHeightD*0.2),-1);
 
 	return entry;
 }
@@ -848,7 +851,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox)
                   1,1);
 	j = 2;
 	buttonDirSelector =  gabedit_dir_button();
-	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeight*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeightD*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
 			j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
@@ -868,7 +871,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox)
 	j = 2;
 	entryFileName = gtk_entry_new();
 	gtk_entry_set_text(GTK_ENTRY(entryFileName),"averVib.com");
-	gtk_widget_set_size_request(GTK_WIDGET(entryFileName),(gint)(ScreenHeight*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(entryFileName),(gint)(ScreenHeightD*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),entryFileName, j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -887,7 +890,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox)
 	j = 2;
 	entryDelta = gtk_entry_new();
 	gtk_entry_set_text(GTK_ENTRY(entryDelta),"0.03");
-	gtk_widget_set_size_request(GTK_WIDGET(entryDelta),(gint)(ScreenHeight*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(entryDelta),(gint)(ScreenHeightD*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),entryDelta, j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -1008,7 +1011,7 @@ static void create_gaussian_correction_vibration_file_dlg()
 
 	if(vibration.numberOfFrequencies<1) 
 	{
-		gchar* t = g_strdup_printf(_("Sorry\n You should read the geometries befor")); 
+		gchar* t = g_strdup_printf(_("Sorry\n You should read the geometries before")); 
 		Message(t,_("Error"),TRUE);
 		return;
 	}
@@ -1365,7 +1368,7 @@ static GtkWidget*   add_inputGauss_qff_entrys(GtkWidget *Wins,GtkWidget *vbox)
                   1,1);
 	j = 2;
 	buttonDirSelector =  gabedit_dir_button();
-	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeight*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeightD*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
 			j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
@@ -1385,7 +1388,7 @@ static GtkWidget*   add_inputGauss_qff_entrys(GtkWidget *Wins,GtkWidget *vbox)
 	j = 2;
 	entryFileName = gtk_entry_new();
 	gtk_entry_set_text(GTK_ENTRY(entryFileName),"qff.com");
-	gtk_widget_set_size_request(GTK_WIDGET(entryFileName),(gint)(ScreenHeight*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(entryFileName),(gint)(ScreenHeightD*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),entryFileName, j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -1404,7 +1407,7 @@ static GtkWidget*   add_inputGauss_qff_entrys(GtkWidget *Wins,GtkWidget *vbox)
 	j = 2;
 	entryDelta = gtk_entry_new();
 	gtk_entry_set_text(GTK_ENTRY(entryDelta),"0.4");
-	gtk_widget_set_size_request(GTK_WIDGET(entryDelta),(gint)(ScreenHeight*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(entryDelta),(gint)(ScreenHeightD*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),entryDelta, j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -1544,7 +1547,7 @@ static void create_gaussian_qff_file_dlg()
 
 	if(vibration.numberOfFrequencies<1) 
 	{
-		gchar* t = g_strdup_printf(_("Sorry\n You should read the geometries befor")); 
+		gchar* t = g_strdup_printf(_("Sorry\n You should read the geometries before")); 
 		Message(t,_("Error"),TRUE);
 		return;
 	}
@@ -1977,7 +1980,7 @@ static GtkWidget*   add_inputCChemI_qff_entrys(GtkWidget *Wins,GtkWidget *vbox)
                   1,1);
 	j = 2;
 	buttonDirSelector =  gabedit_dir_button();
-	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeight*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeightD*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
 			j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
@@ -1997,7 +2000,7 @@ static GtkWidget*   add_inputCChemI_qff_entrys(GtkWidget *Wins,GtkWidget *vbox)
 	j = 2;
 	entryFileName = gtk_entry_new();
 	gtk_entry_set_text(GTK_ENTRY(entryFileName),"qff.ici");
-	gtk_widget_set_size_request(GTK_WIDGET(entryFileName),(gint)(ScreenHeight*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(entryFileName),(gint)(ScreenHeightD*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),entryFileName, j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -2016,7 +2019,7 @@ static GtkWidget*   add_inputCChemI_qff_entrys(GtkWidget *Wins,GtkWidget *vbox)
 	j = 2;
 	entryDelta = gtk_entry_new();
 	gtk_entry_set_text(GTK_ENTRY(entryDelta),"0.4");
-	gtk_widget_set_size_request(GTK_WIDGET(entryDelta),(gint)(ScreenHeight*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(entryDelta),(gint)(ScreenHeightD*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),entryDelta, j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -2124,7 +2127,7 @@ static void create_cchemi_qff_file_dlg()
 
 	if(vibration.numberOfFrequencies<1) 
 	{
-		gchar* t = g_strdup_printf(_("Sorry\n You should read the geometries befor")); 
+		gchar* t = g_strdup_printf(_("Sorry\n You should read the geometries before")); 
 		Message(t,_("Error"),TRUE);
 		return;
 	}
@@ -2285,7 +2288,7 @@ static GtkWidget*   add_inputGauss_entrys_along_one_frequency(GtkWidget *Wins,Gt
                   1,1);
 	j = 2;
 	buttonDirSelector =  gabedit_dir_button();
-	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeight*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeightD*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
 			j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
@@ -2305,7 +2308,7 @@ static GtkWidget*   add_inputGauss_entrys_along_one_frequency(GtkWidget *Wins,Gt
 	j = 2;
 	entryFileName = gtk_entry_new();
 	gtk_entry_set_text(GTK_ENTRY(entryFileName),"freq.com");
-	gtk_widget_set_size_request(GTK_WIDGET(entryFileName),(gint)(ScreenHeight*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(entryFileName),(gint)(ScreenHeightD*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),entryFileName, j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -2324,7 +2327,7 @@ static GtkWidget*   add_inputGauss_entrys_along_one_frequency(GtkWidget *Wins,Gt
 	j = 2;
 	entryDelta = gtk_entry_new();
 	gtk_entry_set_text(GTK_ENTRY(entryDelta),"0.1");
-	gtk_widget_set_size_request(GTK_WIDGET(entryDelta),(gint)(ScreenHeight*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(entryDelta),(gint)(ScreenHeightD*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),entryDelta, j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -2407,7 +2410,7 @@ static void create_gaussian_along_vibration_file_dlg()
 
 	if(vibration.numberOfFrequencies<1) 
 	{
-		gchar* t = g_strdup_printf(_("Sorry\n You should read the geometries befor")); 
+		gchar* t = g_strdup_printf(_("Sorry\n You should read the geometries before")); 
 		Message(t,_("Error"),TRUE);
 		return;
 	}
@@ -2470,7 +2473,7 @@ static void reset_last_directory(GtkWidget *dirSelector, gpointer data)
 static void set_directory(GtkWidget *win, gpointer data)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(reset_last_directory, "Set folder", GABEDIT_TYPEWIN_ORB);
+	dirSelector = selectionOfDir(reset_last_directory, "Set folder", GABEDIT_TYPEWIN_ORB);
 	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
 	gtk_window_set_transient_for(GTK_WINDOW(dirSelector),GTK_WINDOW(PrincipalWindow));
 	gtk_window_set_transient_for(GTK_WINDOW(dirSelector),GTK_WINDOW(WinDlg));
@@ -2809,7 +2812,7 @@ static gboolean read_gabedit_molden_geom(gchar *FileName)
 	nCenters = j;
 	GeomOrb = g_realloc(GeomOrb,nCenters*sizeof(TypeGeomOrb));
 
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
@@ -3028,7 +3031,7 @@ static void remove_selected_mode()
 	rafreshList();
 }
 /********************************************************************************/
-static void remove_all_modes_before_selected_mode()
+static void remove_all_modes_beforee_selected_mode()
 {
 	stop_vibration(NULL, NULL);
 	remove_modes(0,rowSelected-1);
@@ -3601,7 +3604,7 @@ static gboolean read_molpro_geom(FILE*fd, gchar *FileName)
 	else
 		free_geometry();
 
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
@@ -3885,7 +3888,7 @@ static gboolean read_dalton_geom(FILE* file, gchar *FileName)
  	for(i=0;i<5;i++) g_free(AtomCoord[i]);
  	if(nCenters == 0 ) g_free(GeomOrb);
 
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
@@ -4319,7 +4322,7 @@ static gboolean read_gamess_geom(FILE* file, gchar *FileName)
  	for(i=0;i<5;i++) g_free(AtomCoord[i]);
  	if(nCenters == 0 ) g_free(GeomOrb);
 
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
@@ -4888,7 +4891,7 @@ static gboolean read_adf_geom(FILE*fd, gchar *FileName)
 	else
 		free_geometry();
 
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
@@ -6032,7 +6035,7 @@ static void stop_vibration(GtkWidget *win, gpointer data)
 
 	reset_geom_vibration();
 	buildBondsOrb();
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	ShowVibration = TRUE;
 	init_dipole();
 	init_atomic_orbitals();
@@ -6209,7 +6212,7 @@ static void showMessageEnd()
 {
 	gchar* format =get_format_image_from_option();
 	gchar* message = messageAnimatedImage(format);
-	gchar* t = g_strdup_printf(_("\nA series of gab*.%s files was created in \"%s\" directeory.\n\n\n%s") , format, get_last_directory(),message);
+	gchar* t = g_strdup_printf(_("\nA seriess of gab*.%s files was created in \"%s\" directeory.\n\n\n%s") , format, get_last_directory(),message);
 	GtkWidget* winDlg = Message(t,_("Info"),TRUE);
 	g_free(message);
 	gtk_window_set_modal (GTK_WINDOW (winDlg), TRUE);
@@ -6271,7 +6274,7 @@ static GtkWidget *create_list_of_formats()
 	return combobox;
 }
 /*****************************************************************/
-static void addEntrysButtons(GtkWidget* box)
+static void addEntriesButtons(GtkWidget* box)
 {
 	GtkWidget *Button;
 	GtkWidget *frame;
@@ -6446,7 +6449,7 @@ static GtkTreeView* addList(GtkWidget *vbox, GtkUIManager *manager)
 	widall=widall*Factor+40;
 
 	scr=gtk_scrolled_window_new(NULL,NULL);
-	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeight*0.4));
+	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeightD*0.4));
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scr),GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC); 
 	gtk_box_pack_start(GTK_BOX (vbox), scr,TRUE, TRUE, 2);
 
@@ -6578,7 +6581,7 @@ static void animate_vibration()
 		init_atomic_orbitals();
 
 		buildBondsOrb();
-		RebuildGeom = TRUE;
+		RebuildGeomD = TRUE;
 		glarea_rafresh(GLArea);
 		createImageFile();
 		Waiting(vibration.velocity);
@@ -6637,10 +6640,10 @@ static void help_animated_file()
 		" For create an animated file :\n"
 		" ============================\n"
 	        "   1) Read frequencies and normal modes from a Gaussian, Molpro, Gabedit, Molden, ADF or MPQC output file.\n"
-	        "   2) Select \"create a series of BMP (or PPM or POV) images\" button.\n"
+	        "   2) Select \"create a seriess of BMP (or PPM or POV) images\" button.\n"
 	        "      You can select your favorite directory by clicking to \"Directory\" button.\n"
 	        "   3) Click to Play button.\n"
-	        "   4) After on cycle Gabedit create a series of BMP(gab*.bmp) or PPM (gab*.ppm)  or POV(gab*.pov) files.\n"
+	        "   4) After on cycle Gabedit create a seriess of BMP(gab*.bmp) or PPM (gab*.ppm)  or POV(gab*.pov) files.\n"
 	        "      From these files, you can create a gif or a png animated file using convert software.\n"
 	        "              with \"convert -delay 10 -loop 1000 gab*.bmp imageAnim.gif\" command you can create a gif animated file.\n"
 	        "              with \"convert -delay 10 -loop 1000 gab*.bmp imageAnim.mng\" command you can create a png animated file.\n\n"
@@ -6703,7 +6706,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "ReadPsicode")) read_psicode_file_dlg();
 	else if(!strcmp(name, "ReadMolden")) read_molden_file_dlg();
 	else if(!strcmp(name, "RemoveSelectedMode")) remove_selected_mode();
-	else if(!strcmp(name, "RemoveBeforeSelectedMode")) remove_all_modes_before_selected_mode();
+	else if(!strcmp(name, "RemoveBeforeSelectedMode")) remove_all_modes_beforee_selected_mode();
 	else if(!strcmp(name, "RemoveAfterSelectedMode")) remove_all_modes_after_selected_mode();
 	else if(!strcmp(name, "SortModes")) sort_modes();
 	else if(!strcmp(name, "SaveGabedit")) save_gabedit_file_dlg();
@@ -6744,7 +6747,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadQChem", GABEDIT_STOCK_QCHEM, "Read a _Q-Chem output file", NULL, "Read a Q-Chem output file", G_CALLBACK (activate_action) },
 	{"ReadMolden", GABEDIT_STOCK_MOLDEN, "Read a Mol_den output file", NULL, "Read a Molden file", G_CALLBACK (activate_action) },
 	{"RemoveSelectedMode", GABEDIT_STOCK_CUT, "_Remove the selected mode", NULL, "Remove selected mode", G_CALLBACK (activate_action) },
-	{"RemoveBeforeSelectedMode", GABEDIT_STOCK_CUT, "Remove all modes _before the selected mode", NULL, "Remove before selected mode", G_CALLBACK (activate_action) },
+	{"RemoveBeforeSelectedMode", GABEDIT_STOCK_CUT, "Remove all modes _beforee the selected mode", NULL, "Remove beforee selected mode", G_CALLBACK (activate_action) },
 	{"RemoveAfterSelectedMode", GABEDIT_STOCK_CUT, "Remove all modes _after the selected mode", NULL, "Remove after selected mode", G_CALLBACK (activate_action) },
 	{"SortModes", GABEDIT_STOCK_CUT, "Sort", NULL, "Sort", G_CALLBACK (activate_action) },
 	{"SaveGabedit", GABEDIT_STOCK_SAVE, "_Save", NULL, "Save", G_CALLBACK (activate_action) },
@@ -6931,7 +6934,7 @@ void vibrationDlg()
 	Win= gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
 	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(parentWindow));
-	gtk_window_set_default_size (GTK_WINDOW(Win),-1,(gint)(ScreenHeight*0.69));
+	//gtk_window_set_default_size (GTK_WINDOW(Win),-1,(gint)(ScreenHeightD*0.69));
 	gtk_window_set_title(GTK_WINDOW(Win),"Vibration");
 	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
 
@@ -6951,7 +6954,7 @@ void vibrationDlg()
 	gtk_widget_realize(Win);
 
 	treeView = addList(hbox, manager);
-	addEntrysButtons(vbox);
+	addEntriesButtons(vbox);
 	gtk_widget_show_all(vbox);
 
 	gtk_widget_show_now(Win);
@@ -7242,8 +7245,8 @@ static void run_hybrid_QMMM_win(GtkWidget* Win, gpointer data)
         	if(result)
         	{
                 	GtkWidget* message = AnharmonicResultTxt(result,"iGVPT2 result");
-                	gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidth*0.8),-1);
-                	gtk_widget_set_size_request(message,(gint)(ScreenWidth*0.45),-1);
+                	//gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidthD*0.8),-1);
+                	gtk_widget_set_size_request(message,(gint)(ScreenWidthD*0.45),-1);
                 	/* gtk_window_set_modal (GTK_WINDOW (message), TRUE);*/
                 	gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));
         	}
@@ -7305,7 +7308,7 @@ static GtkWidget*   add_inputiGVPT2(GtkWidget *Wins,GtkWidget *vbox)
                   1,1);
 	j = 2;
 	buttonDirSelector = gabedit_dir_button();
-	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeight*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeightD*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
 			j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
@@ -7325,7 +7328,7 @@ static GtkWidget*   add_inputiGVPT2(GtkWidget *Wins,GtkWidget *vbox)
 	j = 2;
 	entryFileName = gtk_entry_new();
 	gtk_entry_set_text(GTK_ENTRY(entryFileName),"iGVPT2.ici");
-	gtk_widget_set_size_request(GTK_WIDGET(entryFileName),(gint)(ScreenHeight*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(entryFileName),(gint)(ScreenHeightD*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),entryFileName, j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -7357,7 +7360,7 @@ static void create_hybryd_QMMM_file_dlg(gboolean run)
 
 	if(vibration.numberOfFrequencies<1) 
 	{
-		gchar* t = g_strdup_printf(_("Sorry\n You should read the geometries befor")); 
+		gchar* t = g_strdup_printf(_("Sorry\n You should read the geometries before")); 
 		Message(t,_("Error"),TRUE);
 		return;
 	}
@@ -7613,7 +7616,7 @@ static GtkWidget* showCalculatedThermo(gchar *message,gchar *title)
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)delete_child, GTK_OBJECT(dlgWin));
 
 	add_button_windows(title,dlgWin);
-	gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeight), (gint)(ScreenHeight*0.4));
+	//gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeightD), (gint)(ScreenHeightD*0.4));
 	gtk_widget_show_all(dlgWin);
 	return dlgWin;
 }
@@ -7852,7 +7855,7 @@ static void create_thermo_dlg()
 
 	if(vibration.numberOfFrequencies<1) 
 	{
-		gchar* t = g_strdup_printf(_("Sorry\n You should read the geometries befor")); 
+		gchar* t = g_strdup_printf(_("Sorry\n You should read the geometries before")); 
 		Message(t,_("Error"),TRUE);
 		return;
 	}

@@ -1,6 +1,6 @@
 /* Images.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -136,7 +136,8 @@ void save_png_without_background_file(GabeditFileChooser *SelecFile, gint respon
  	}
 
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
-	gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);
+	gtk_window_present(GTK_WINDOW(PrincipalWindow));
+	/* gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);*/
 	glarea_rafresh(GLArea);
 	while( gtk_events_pending() ) gtk_main_iteration();
 	if(numCol>=0) gabedit_save_image_gl(GLArea, fileName, "png",color);
@@ -158,7 +159,8 @@ void save_png_file(GabeditFileChooser *SelecFile, gint response_id)
  	}
 
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
-	gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);
+	gtk_window_present(GTK_WINDOW(PrincipalWindow));
+	/* gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);*/
 	while( gtk_events_pending() ) gtk_main_iteration();
 	glarea_rafresh(GLArea);
 	while( gtk_events_pending() ) gtk_main_iteration();
@@ -180,7 +182,8 @@ void save_jpeg_file(GabeditFileChooser *SelecFile, gint response_id)
  	}
 
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
-	gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);
+	gtk_window_present(GTK_WINDOW(PrincipalWindow));
+	/* gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);*/
 	glarea_rafresh(GLArea);
 	while( gtk_events_pending() )
 		gtk_main_iteration();
@@ -290,7 +293,8 @@ void save_ppm_file(GabeditFileChooser *SelecFile, gint response_id)
  	}
 
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
-	gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);
+	gtk_window_present(GTK_WINDOW(PrincipalWindow));
+	/* gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);*/
 	glarea_rafresh(GLArea);
 	while( gtk_events_pending() )
 		gtk_main_iteration();
@@ -410,7 +414,8 @@ void save_bmp_file(GabeditFileChooser *SelecFile, gint response_id)
  	}
 
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
-	gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);
+	gtk_window_present(GTK_WINDOW(PrincipalWindow));
+	/* gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);*/
 	glarea_rafresh(GLArea);
 	while( gtk_events_pending() )
 		gtk_main_iteration();
@@ -512,7 +517,8 @@ void save_ps_file(GabeditFileChooser *SelecFile, gint response_id)
     	return ;
  	}
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
-	gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);
+	gtk_window_present(GTK_WINDOW(PrincipalWindow));
+	/* gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);*/
 	glarea_rafresh(GLArea);
 	while( gtk_events_pending() )
 		gtk_main_iteration();

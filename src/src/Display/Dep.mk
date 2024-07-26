@@ -4,9 +4,10 @@ GeomOrbXYZ.o: GeomOrbXYZ.c ../../Config.h GlobalOrb.h \
  ../MultiGrid/TypesMG.h IsoSurface.h ../Common/GabeditType.h UtilsOrb.h \
  ../Utils/AtomsProp.h ../Utils/Vector3d.h ../Utils/UtilsInterface.h \
  ../Utils/Transformation.h ../Utils/Constants.h ../Geometry/GeomGlobal.h \
- ../Geometry/OpenBabel.h ../Utils/Utils.h ../Utils/UtilsGL.h \
- ../Utils/Vector3d.h ../Utils/Transformation.h GLArea.h StatusOrb.h \
- AtomicOrbitals.h BondsOrb.h
+ ../Geometry/../Common/GabeditType.h ../Geometry/OpenBabel.h \
+ ../Utils/Utils.h ../Utils/UtilsGL.h ../Utils/Vector3d.h \
+ ../Utils/Transformation.h GLArea.h StatusOrb.h AtomicOrbitals.h \
+ BondsOrb.h
 BondsOrb.o: BondsOrb.c ../../Config.h GlobalOrb.h \
  ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
  ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
@@ -66,8 +67,8 @@ ViewOrb.o: ViewOrb.c ../../Config.h GlobalOrb.h \
  ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
  ../MultiGrid/TypesMG.h IsoSurface.h ../Common/GabeditType.h UtilsOrb.h \
  ../Utils/Vector3d.h ../Utils/Utils.h ../Utils/UtilsInterface.h \
- ../Utils/AtomsProp.h ../Geometry/GeomGlobal.h GLArea.h StatusOrb.h \
- ColorMap.h
+ ../Utils/AtomsProp.h ../Geometry/GeomGlobal.h \
+ ../Geometry/../Common/GabeditType.h GLArea.h StatusOrb.h ColorMap.h
 GLArea.o: GLArea.c ../../Config.h GlobalOrb.h \
  ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
  ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
@@ -85,9 +86,9 @@ OrbitalsGamess.o: OrbitalsGamess.c ../../Config.h GlobalOrb.h \
  ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
  ../MultiGrid/TypesMG.h IsoSurface.h ../Common/GabeditType.h \
  ../Utils/AtomsProp.h ../Utils/UtilsInterface.h ../Utils/Utils.h \
- ../Utils/Constants.h ../Geometry/GeomGlobal.h GeomDraw.h GLArea.h \
- UtilsOrb.h Basis.h GeomOrbXYZ.h AtomicOrbitals.h StatusOrb.h Orbitals.h \
- BondsOrb.h
+ ../Utils/Constants.h ../Geometry/GeomGlobal.h \
+ ../Geometry/../Common/GabeditType.h GeomDraw.h GLArea.h UtilsOrb.h \
+ Basis.h GeomOrbXYZ.h AtomicOrbitals.h StatusOrb.h Orbitals.h BondsOrb.h
 OrbitalsMolpro.o: OrbitalsMolpro.c ../../Config.h GlobalOrb.h \
  ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
  ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
@@ -112,16 +113,18 @@ OrbitalsQChem.o: OrbitalsQChem.c ../../Config.h GlobalOrb.h \
  ../MultiGrid/TypesMG.h IsoSurface.h ../Common/GabeditType.h \
  ../Utils/AtomsProp.h ../Utils/UtilsInterface.h ../Utils/Utils.h \
  ../Utils/Constants.h ../Utils/Zlm.h ../Utils/../Common/GabeditType.h \
- ../Geometry/GeomGlobal.h GeomDraw.h GLArea.h UtilsOrb.h Basis.h \
- GeomOrbXYZ.h AtomicOrbitals.h StatusOrb.h Orbitals.h BondsOrb.h
+ ../Geometry/GeomGlobal.h ../Geometry/../Common/GabeditType.h GeomDraw.h \
+ GLArea.h UtilsOrb.h Basis.h GeomOrbXYZ.h AtomicOrbitals.h StatusOrb.h \
+ Orbitals.h BondsOrb.h
 OrbitalsNWChem.o: OrbitalsNWChem.c ../../Config.h GlobalOrb.h \
  ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
  ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
  ../MultiGrid/TypesMG.h IsoSurface.h ../Common/GabeditType.h \
  ../Utils/AtomsProp.h ../Utils/UtilsInterface.h ../Utils/Utils.h \
  ../Utils/Constants.h ../Utils/Zlm.h ../Utils/../Common/GabeditType.h \
- ../Geometry/GeomGlobal.h GeomDraw.h GLArea.h UtilsOrb.h Basis.h \
- GeomOrbXYZ.h AtomicOrbitals.h StatusOrb.h Orbitals.h BondsOrb.h
+ ../Geometry/GeomGlobal.h ../Geometry/../Common/GabeditType.h GeomDraw.h \
+ GLArea.h UtilsOrb.h Basis.h GeomOrbXYZ.h AtomicOrbitals.h StatusOrb.h \
+ Orbitals.h BondsOrb.h
 OrbitalsMopac.o: OrbitalsMopac.c ../../Config.h GlobalOrb.h \
  ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
  ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
@@ -129,17 +132,18 @@ OrbitalsMopac.o: OrbitalsMopac.c ../../Config.h GlobalOrb.h \
  ../Utils/AtomsProp.h ../Utils/UtilsInterface.h ../Utils/Utils.h \
  ../Utils/Constants.h ../Utils/Zlm.h ../Utils/../Common/GabeditType.h \
  ../Utils/QL.h ../Utils/MathFunctions.h ../Utils/Zlm.h \
- ../Geometry/GeomGlobal.h GeomDraw.h GLArea.h UtilsOrb.h Basis.h \
- GeomOrbXYZ.h AtomicOrbitals.h StatusOrb.h Orbitals.h BondsOrb.h
+ ../Geometry/GeomGlobal.h ../Geometry/../Common/GabeditType.h GeomDraw.h \
+ GLArea.h UtilsOrb.h Basis.h GeomOrbXYZ.h AtomicOrbitals.h StatusOrb.h \
+ Orbitals.h BondsOrb.h
 OrbitalsNBO.o: OrbitalsNBO.c ../../Config.h GlobalOrb.h \
  ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
  ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
  ../MultiGrid/TypesMG.h IsoSurface.h ../Common/GabeditType.h \
  ../Utils/AtomsProp.h ../Utils/UtilsInterface.h ../Utils/Utils.h \
  ../Utils/Zlm.h ../Utils/../Common/GabeditType.h ../Utils/Constants.h \
- ../Geometry/GeomGlobal.h GeomDraw.h GLArea.h UtilsOrb.h Basis.h \
- GeomOrbXYZ.h AtomicOrbitals.h StatusOrb.h Orbitals.h BondsOrb.h \
- LabelsGL.h
+ ../Geometry/GeomGlobal.h ../Geometry/../Common/GabeditType.h GeomDraw.h \
+ GLArea.h UtilsOrb.h Basis.h GeomOrbXYZ.h AtomicOrbitals.h StatusOrb.h \
+ Orbitals.h BondsOrb.h LabelsGL.h
 Orbitals.o: Orbitals.c ../../Config.h GlobalOrb.h \
  ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
  ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
@@ -233,7 +237,8 @@ Dipole.o: Dipole.c ../../Config.h GlobalOrb.h \
  ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
  ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
  ../MultiGrid/TypesMG.h IsoSurface.h ../Common/GabeditType.h \
- ../Display/UtilsOrb.h ../Geometry/GeomGlobal.h ../Utils/Vector3d.h \
+ ../Display/UtilsOrb.h ../Geometry/GeomGlobal.h \
+ ../Geometry/../Common/GabeditType.h ../Utils/Vector3d.h \
  ../Utils/Transformation.h ../Utils/Constants.h ../Utils/UtilsInterface.h \
  ../Utils/UtilsGL.h ../Utils/Vector3d.h ../Utils/Transformation.h \
  ../Utils/Utils.h ../Common/Windows.h ../Utils/GabeditTextEdit.h
@@ -241,18 +246,20 @@ AxisGL.o: AxisGL.c ../../Config.h GlobalOrb.h \
  ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
  ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
  ../MultiGrid/TypesMG.h IsoSurface.h ../Common/GabeditType.h \
- ../Geometry/GeomGlobal.h ../Utils/Vector3d.h ../Utils/Transformation.h \
- ../Utils/Constants.h ../Utils/UtilsInterface.h ../Utils/UtilsGL.h \
- ../Utils/Vector3d.h ../Utils/Transformation.h ../Utils/Utils.h \
- ../Common/Windows.h GLArea.h ../Display/UtilsOrb.h
+ ../Geometry/GeomGlobal.h ../Geometry/../Common/GabeditType.h \
+ ../Utils/Vector3d.h ../Utils/Transformation.h ../Utils/Constants.h \
+ ../Utils/UtilsInterface.h ../Utils/UtilsGL.h ../Utils/Vector3d.h \
+ ../Utils/Transformation.h ../Utils/Utils.h ../Common/Windows.h GLArea.h \
+ ../Display/UtilsOrb.h
 PrincipalAxisGL.o: PrincipalAxisGL.c ../../Config.h GlobalOrb.h \
  ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
  ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
  ../MultiGrid/TypesMG.h IsoSurface.h ../Common/GabeditType.h \
- ../Geometry/GeomGlobal.h ../Utils/Vector3d.h ../Utils/Transformation.h \
- ../Utils/Constants.h ../Utils/UtilsInterface.h ../Utils/UtilsGL.h \
- ../Utils/Vector3d.h ../Utils/Transformation.h ../Utils/Utils.h \
- ../Utils/Jacobi.h ../Common/Windows.h GLArea.h ../Display/UtilsOrb.h
+ ../Geometry/GeomGlobal.h ../Geometry/../Common/GabeditType.h \
+ ../Utils/Vector3d.h ../Utils/Transformation.h ../Utils/Constants.h \
+ ../Utils/UtilsInterface.h ../Utils/UtilsGL.h ../Utils/Vector3d.h \
+ ../Utils/Transformation.h ../Utils/Utils.h ../Utils/Jacobi.h \
+ ../Common/Windows.h GLArea.h ../Display/UtilsOrb.h
 Vibration.o: Vibration.c ../../Config.h GlobalOrb.h \
  ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
  ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
@@ -261,21 +268,23 @@ Vibration.o: Vibration.c ../../Config.h GlobalOrb.h \
  ../Utils/UtilsInterface.h ../Display/StatusOrb.h ../Display/GLArea.h \
  ../Display/Vibration.h ../Display/GeomOrbXYZ.h \
  ../Display/AtomicOrbitals.h ../Files/FileChooser.h \
- ../Geometry/GeomGlobal.h ../Spectrum/IRSpectrum.h \
- ../Spectrum/../Display/Vibration.h ../Spectrum/RamanSpectrum.h \
- ../Spectrum/IGVPT2Spectrum.h ../Files/FolderChooser.h \
- ../Files/GabeditFolderChooser.h ../Common/Help.h ../Common/StockIcons.h \
- ../Display/Images.h ../Display/PovrayGL.h ../Display/BondsOrb.h \
- ../Display/UtilsOrb.h ../Display/PrincipalAxisGL.h \
- ../Display/VibrationLocal.h ../Display/../Display/Vibration.h \
- ../Utils/GabeditTextEdit.h ../Common/Windows.h
+ ../Geometry/GeomGlobal.h ../Geometry/../Common/GabeditType.h \
+ ../Spectrum/IRSpectrum.h ../Spectrum/../Display/Vibration.h \
+ ../Spectrum/RamanSpectrum.h ../Spectrum/IGVPT2Spectrum.h \
+ ../Files/FolderChooser.h ../Files/GabeditFolderChooser.h \
+ ../Common/Help.h ../Common/StockIcons.h ../Display/Images.h \
+ ../Display/PovrayGL.h ../Display/BondsOrb.h ../Display/UtilsOrb.h \
+ ../Display/PrincipalAxisGL.h ../Display/VibrationLocal.h \
+ ../Display/../Display/Vibration.h ../Utils/GabeditTextEdit.h \
+ ../Common/Windows.h
 VibrationDraw.o: VibrationDraw.c ../../Config.h ../Display/GlobalOrb.h \
  ../Display/../Files/GabeditFileChooser.h ../Display/../../gl2ps/gl2ps.h \
  ../Display/Grid.h ../Display/../MultiGrid/PoissonMG.h \
  ../Display/../MultiGrid/GridMG.h ../Display/../MultiGrid/DomainMG.h \
  ../Display/../MultiGrid/TypesMG.h ../Display/IsoSurface.h \
  ../Display/../Common/GabeditType.h ../Display/UtilsOrb.h \
- ../Display/GeomDraw.h ../Geometry/GeomGlobal.h ../Utils/Vector3d.h \
+ ../Display/GeomDraw.h ../Geometry/GeomGlobal.h \
+ ../Geometry/../Common/GabeditType.h ../Utils/Vector3d.h \
  ../Utils/Transformation.h ../Utils/Constants.h ../Utils/UtilsGL.h \
  ../Utils/Vector3d.h ../Utils/Transformation.h ../Display/Vibration.h
 VibrationLocal.o: VibrationLocal.c ../../Config.h ../Display/GlobalOrb.h \
@@ -359,10 +368,11 @@ AnimationGeomConv.o: AnimationGeomConv.c ../../Config.h GlobalOrb.h \
  ../Utils/UtilsInterface.h ../Display/StatusOrb.h ../Display/GLArea.h \
  ../Display/AnimationGeomConv.h ../Display/GeomOrbXYZ.h \
  ../Display/AtomicOrbitals.h ../Files/FileChooser.h \
- ../Geometry/GeomGlobal.h ../Files/FolderChooser.h \
- ../Files/GabeditFolderChooser.h ../Common/Help.h ../Common/StockIcons.h \
- ../Display/PovrayGL.h ../Display/Images.h ../Display/UtilsOrb.h \
- ../Display/BondsOrb.h ../Utils/GabeditXYPlot.h ../../pixmaps/Open.xpm
+ ../Geometry/GeomGlobal.h ../Geometry/../Common/GabeditType.h \
+ ../Files/FolderChooser.h ../Files/GabeditFolderChooser.h \
+ ../Common/Help.h ../Common/StockIcons.h ../Display/PovrayGL.h \
+ ../Display/Images.h ../Display/UtilsOrb.h ../Display/BondsOrb.h \
+ ../Display/RingsOrb.h ../Utils/GabeditXYPlot.h ../../pixmaps/Open.xpm
 AnimationMD.o: AnimationMD.c ../../Config.h ../Common/Global.h \
  ../Common/../Files/GabeditFileChooser.h \
  ../Common/../Common/GabeditType.h GlobalOrb.h \
@@ -373,17 +383,19 @@ AnimationMD.o: AnimationMD.c ../../Config.h ../Common/Global.h \
  ../Utils/UtilsInterface.h ../Display/StatusOrb.h ../Display/GLArea.h \
  ../Display/AnimationMD.h ../Display/GeomOrbXYZ.h \
  ../Display/AtomicOrbitals.h ../Files/FileChooser.h \
- ../Geometry/GeomGlobal.h ../Files/FolderChooser.h \
- ../Files/GabeditFolderChooser.h ../Common/Help.h ../Common/StockIcons.h \
- ../Display/PovrayGL.h ../Display/Images.h ../Display/UtilsOrb.h \
- ../Display/BondsOrb.h ../Utils/GabeditXYPlot.h ../../pixmaps/Open.xpm
+ ../Geometry/GeomGlobal.h ../Geometry/../Common/GabeditType.h \
+ ../Files/FolderChooser.h ../Files/GabeditFolderChooser.h \
+ ../Common/Help.h ../Common/StockIcons.h ../Display/PovrayGL.h \
+ ../Display/Images.h ../Display/UtilsOrb.h ../Display/BondsOrb.h \
+ ../Display/RingsOrb.h ../Utils/GabeditXYPlot.h ../../pixmaps/Open.xpm
 PovrayGL.o: PovrayGL.c ../../Config.h ../Common/Global.h \
  ../Common/../Files/GabeditFileChooser.h \
  ../Common/../Common/GabeditType.h GlobalOrb.h \
  ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
  ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
  ../MultiGrid/TypesMG.h IsoSurface.h ../Common/GabeditType.h \
- ../Utils/AtomsProp.h ../Geometry/GeomGlobal.h ../Files/FileChooser.h \
+ ../Utils/AtomsProp.h ../Geometry/GeomGlobal.h \
+ ../Geometry/../Common/GabeditType.h ../Files/FileChooser.h \
  ../Utils/Vector3d.h ../Utils/Transformation.h ../Utils/UtilsGL.h \
  ../Utils/Vector3d.h ../Utils/Transformation.h ../Utils/Utils.h \
  ../Utils/UtilsInterface.h ../Utils/Constants.h ../Utils/HydrogenBond.h \
@@ -428,12 +440,13 @@ SurfacesPov.o: SurfacesPov.c ../../Config.h GlobalOrb.h \
  ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
  ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
  ../MultiGrid/TypesMG.h IsoSurface.h ../Common/GabeditType.h \
- ../Geometry/GeomGlobal.h ../Utils/Vector3d.h ../Utils/Transformation.h \
- ../Utils/Utils.h ../Utils/UtilsInterface.h ../Utils/Constants.h \
- ../Utils/HydrogenBond.h ../Utils/PovrayUtils.h ../Display/GLArea.h \
- ../Display/GeomDraw.h ../Display/TriangleDraw.h \
- ../Display/../Utils/Vector3d.h ../Display/../Utils/Transformation.h \
- ../Display/AxisGL.h ../Display/PrincipalAxisGL.h ../Display/ColorMap.h
+ ../Geometry/GeomGlobal.h ../Geometry/../Common/GabeditType.h \
+ ../Utils/Vector3d.h ../Utils/Transformation.h ../Utils/Utils.h \
+ ../Utils/UtilsInterface.h ../Utils/Constants.h ../Utils/HydrogenBond.h \
+ ../Utils/PovrayUtils.h ../Display/GLArea.h ../Display/GeomDraw.h \
+ ../Display/TriangleDraw.h ../Display/../Utils/Vector3d.h \
+ ../Display/../Utils/Transformation.h ../Display/AxisGL.h \
+ ../Display/PrincipalAxisGL.h ../Display/ColorMap.h
 RingsPov.o: RingsPov.c ../../Config.h GlobalOrb.h \
  ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
  ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
@@ -471,9 +484,9 @@ LabelsGL.o: LabelsGL.c ../../Config.h ../Common/Global.h \
  ../MultiGrid/TypesMG.h IsoSurface.h ../Common/GabeditType.h \
  ../Utils/Vector3d.h ../Utils/Transformation.h ../Utils/UtilsGL.h \
  ../Utils/Vector3d.h ../Utils/Transformation.h ../Utils/Constants.h \
- ../Geometry/GeomGlobal.h ../Display/AxisGL.h \
- ../Display/PrincipalAxisGL.h ../Display/UtilsOrb.h ../Display/GLArea.h \
- ../Utils/UtilsInterface.h
+ ../Geometry/GeomGlobal.h ../Geometry/../Common/GabeditType.h \
+ ../Display/AxisGL.h ../Display/PrincipalAxisGL.h ../Display/UtilsOrb.h \
+ ../Display/GLArea.h ../Utils/UtilsInterface.h
 RingsOrb.o: RingsOrb.c ../../Config.h GlobalOrb.h \
  ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
  ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
@@ -486,13 +499,14 @@ ExportGL.o: ExportGL.c ../../Config.h GlobalOrb.h \
  ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
  ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
  ../MultiGrid/TypesMG.h IsoSurface.h ../Common/GabeditType.h \
- ../Geometry/GeomGlobal.h ../Files/FileChooser.h ../Utils/Vector3d.h \
- ../Utils/Transformation.h ../Utils/Utils.h ../Utils/UtilsInterface.h \
- ../Utils/Constants.h ../Utils/HydrogenBond.h ../Display/GLArea.h \
- ../Display/GeomDraw.h ../Display/TriangleDraw.h \
- ../Display/../Utils/Vector3d.h ../Display/../Utils/Transformation.h \
- ../Display/AxisGL.h ../Display/PrincipalAxisGL.h ../Display/ColorMap.h \
- ../Display/BondsOrb.h ../Display/RingsOrb.h
+ ../Geometry/GeomGlobal.h ../Geometry/../Common/GabeditType.h \
+ ../Files/FileChooser.h ../Utils/Vector3d.h ../Utils/Transformation.h \
+ ../Utils/Utils.h ../Utils/UtilsInterface.h ../Utils/Constants.h \
+ ../Utils/HydrogenBond.h ../Display/GLArea.h ../Display/GeomDraw.h \
+ ../Display/TriangleDraw.h ../Display/../Utils/Vector3d.h \
+ ../Display/../Utils/Transformation.h ../Display/AxisGL.h \
+ ../Display/PrincipalAxisGL.h ../Display/ColorMap.h ../Display/BondsOrb.h \
+ ../Display/RingsOrb.h
 CaptureOrbitals.o: CaptureOrbitals.c ../../Config.h \
  ../Display/GlobalOrb.h ../Display/../Files/GabeditFileChooser.h \
  ../Display/../../gl2ps/gl2ps.h ../Display/Grid.h \
@@ -544,7 +558,8 @@ AnimationGrids.o: AnimationGrids.c ../../Config.h GlobalOrb.h \
  ../Utils/UtilsInterface.h ../Display/StatusOrb.h ../Display/GLArea.h \
  ../Display/AnimationGrids.h ../Display/GridCube.h \
  ../Display/GeomOrbXYZ.h ../Display/AtomicOrbitals.h \
- ../Files/FileChooser.h ../Geometry/GeomGlobal.h ../Files/FolderChooser.h \
+ ../Files/FileChooser.h ../Geometry/GeomGlobal.h \
+ ../Geometry/../Common/GabeditType.h ../Files/FolderChooser.h \
  ../Files/GabeditFolderChooser.h ../Common/Help.h ../Common/StockIcons.h \
  ../Display/PovrayGL.h ../Display/Images.h ../Display/UtilsOrb.h \
  ../Display/BondsOrb.h
@@ -578,5 +593,9 @@ wfx.o: wfx.c ../../Config.h GlobalOrb.h ../Files/GabeditFileChooser.h \
  ../Utils/UtilsInterface.h ../Utils/Utils.h ../Utils/Constants.h \
  ../Utils/Zlm.h ../Utils/../Common/GabeditType.h ../Utils/QL.h \
  ../Utils/MathFunctions.h ../Utils/Zlm.h ../Geometry/GeomGlobal.h \
- GeomDraw.h GLArea.h UtilsOrb.h Basis.h GeomOrbXYZ.h AtomicOrbitals.h \
- StatusOrb.h Orbitals.h BondsOrb.h
+ ../Geometry/../Common/GabeditType.h GeomDraw.h GLArea.h UtilsOrb.h \
+ Basis.h GeomOrbXYZ.h AtomicOrbitals.h StatusOrb.h Orbitals.h BondsOrb.h
+GlobalOrb.o: GlobalOrb.c ../../Config.h GlobalOrb.h \
+ ../Files/GabeditFileChooser.h ../../gl2ps/gl2ps.h Grid.h \
+ ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \
+ ../MultiGrid/TypesMG.h IsoSurface.h ../Common/GabeditType.h

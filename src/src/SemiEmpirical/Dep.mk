@@ -8,7 +8,8 @@ MoleculeSE.o: MoleculeSE.c ../../Config.h ../Common/Global.h \
  ../Common/../Common/GabeditType.h ../Utils/AtomsProp.h \
  ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
- ../Geometry/Measure.h ../Geometry/GeomGlobal.h ../Geometry/GeomXYZ.h \
+ ../Geometry/Measure.h ../Geometry/GeomGlobal.h \
+ ../Geometry/../Common/GabeditType.h ../Geometry/GeomXYZ.h \
  ../Utils/Constants.h ../Utils/Utils.h AtomSE.h MoleculeSE.h
 SemiEmpiricalModel.o: SemiEmpiricalModel.c ../../Config.h \
  ../Common/Global.h ../Common/../Files/GabeditFileChooser.h \
@@ -35,8 +36,8 @@ SemiEmpiricalDlg.o: SemiEmpiricalDlg.c ../../Config.h ../Common/Global.h \
  ../Utils/Constants.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
  ../Geometry/Measure.h ../Geometry/ResultsAnalise.h \
- ../Geometry/GeomGlobal.h ../Geometry/GeomXYZ.h ../Utils/Utils.h \
- ../Utils/AtomsProp.h ../Files/FolderChooser.h \
- ../Files/GabeditFolderChooser.h AtomSE.h MoleculeSE.h \
- SemiEmpiricalModel.h SemiEmpirical.h SemiEmpiricalMD.h \
+ ../Geometry/GeomGlobal.h ../Geometry/../Common/GabeditType.h \
+ ../Geometry/GeomXYZ.h ../Utils/Utils.h ../Utils/AtomsProp.h \
+ ../Files/FolderChooser.h ../Files/GabeditFolderChooser.h AtomSE.h \
+ MoleculeSE.h SemiEmpiricalModel.h SemiEmpirical.h SemiEmpiricalMD.h \
  SemiEmpiricalDlg.h

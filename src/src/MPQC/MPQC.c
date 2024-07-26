@@ -1,6 +1,6 @@
 /* MPQC.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -71,8 +71,8 @@ void destroyWinsMPQC(GtkWidget *win)
 	destroy(Wins,NULL);
 	Wins = NULL;
 	initMoleculeButtons();
-	freeMPQCFunctionals();
-	freeMPQCStdFunctionals();
+	freeMPQCFunctionalsMPQC();
+	freeMPQCStdFunctionalsMPQC();
 	freeMPQCMole();
 	freeMPQCGuessWaveFunction();
 	freeMPQCMolecule();
@@ -156,8 +156,8 @@ static void mpqcInputFileWindow(gboolean newInputFile)
 	newFile = newInputFile;
 	initMPQCMpqc();
 	initMPQCMole();
-	initMPQCFunctionals();
-	initMPQCStdFunctionals();
+	initMPQCFunctionalsMPQC();
+	initMPQCStdFunctionalsMPQC();
 	initMPQCGuessWaveFunction();
 	initMPQCMolecule();
 	initMPQCBasis();

@@ -1,6 +1,6 @@
 /* Install.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -187,7 +187,7 @@ static struct
     TRUE, "tmp",
     N_(
     "This subdirectory is used by the GABEDIT to store\n"
-    "tempory files."
+    "temporary files."
     )
   }
 };
@@ -638,7 +638,7 @@ void user_install_dialog_create(UserInstallCallback callback)
             "Gabedit is a Graphical User Interface to FireFly, Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC , NWChem, Orca, Psicode and Q-Chem\n"
             "computational chemistry packages.\n"
 	    "It can display a variety of calculation results including support for most major molecular file formats.\n"
-	    "The advanced 'Molecule Builder' allows to rapidly sketch in molecules and examine them in 3D\n"
+	    "The advanced 'Molecule Builder' allows one to rapidly sketch in molecules and examine them in 3D\n"
 	    "Graphics can be exported to various formats, including animations\n"
 	    "\n"
 	    "Gabedit can creates input file for the computational chemistry packages(CCP) cited above.\n"
@@ -646,7 +646,7 @@ void user_install_dialog_create(UserInstallCallback callback)
 	    "Gabedit can display UV-Vis, IR and Raman computed spectra.\n"
 	    "Gabedit can generate a povray file for geometry, surfaces, contours, planes colorcoded.\n"
 	    "Gabedit can save picture in BMP, JPEG, PNG, PPM, PDF and PS format.\n"
-	    "It can generate automatically a series of pictures for animation(vibration, geometry convergence, ....).\n"
+	    "It can generate automatically a seriess of pictures for animation(vibration, geometry convergence, ....).\n"
 	    )
             );
 
@@ -656,7 +656,7 @@ void user_install_dialog_create(UserInstallCallback callback)
 
   add_label(GTK_BOX(page),
 		  _(
-		  "Copyright (c) 2002-2013 Abdul-Rahman Allouche.\n"
+		  "Copyright (c) 2002-2022 Abdul-Rahman Allouche.\n"
 		  "All rights reserved.\n"
 		  "\nGabedit is free.\n"
 		  )

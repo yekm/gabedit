@@ -1,6 +1,6 @@
 /* FileChooser.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2022 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -35,7 +35,7 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
   GtkWidget *gabeditFileChooser;
   gchar* patternsfiles[] = {	"*",
 			    	"*.inp","*.com","*.mop","*.nw","*.psi",
-	  			"*.log","*.out","*.fchk", "*.aux","*.wfx", "*.gab","*.ici","*.xyz","*.mol2","*.mol","*.tnk","*.pdb","*.hin","*.zmt","*.gzmt",
+	  			"*.log","*.out","*.fchk", "*.aux","*.wfx", "*.gab","*.ici","*.xyz","*.mol2","*.mol","*.sdf","*.tnk","*.pdb","*.hin","*.zmt","*.gzmt",
 	  		    	"*.hf","*.gcube","*.cube","*.CUBE","*.grid","*.M2Msi","*.t41","*.dx","*.trj","*.irc","*.txt","*.xml","*.cif","*",
 			    	NULL};
   GCallback *func = (GCallback *)data;
@@ -594,7 +594,7 @@ void set_entry_selected_file(GtkWidget* hbox)
   gtk_window_set_modal (GTK_WINDOW (gabeditFileChooser), TRUE);
   gabedit_file_chooser_hide_hidden(GABEDIT_FILE_CHOOSER(gabeditFileChooser));
   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(gabeditFileChooser), patterns);
-  add_child(Win,gabeditFileChooser,gtk_widget_destroy,_(" File selction "));
+  add_child(Win,gabeditFileChooser,gtk_widget_destroy,_(" File selection "));
   g_signal_connect(G_OBJECT(gabeditFileChooser),"delete_event",(GCallback)delete_child,NULL);
 
 

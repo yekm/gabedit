@@ -1,4 +1,4 @@
-OBJECTS = Mopac.o MopacMolecule.o MopacRem.o 
+OBJECTS = Mopac.o MopacMolecule.o MopacRem.o  MopacGlobal.o
 
 include ../../CONFIG
 CFLAGS =  $(COMMONCFLAGS) $(GTKCFLAGS)
