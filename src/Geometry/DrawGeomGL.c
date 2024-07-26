@@ -1,6 +1,6 @@
 /* DrawGeomGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -2740,6 +2740,180 @@ static int compute_fragment_principal_axes(gdouble axis1[], gdouble axis2[], gdo
 	g_free(v);
 	printf("I= %f %f %f\n",I[0],I[1],I[2]);
 	return nFrag;
+}
+/********************************************************************************/
+static void rotate_slected_atoms_minimize_rmsd()
+{
+	gint i,j;
+
+	gint nA = 0;
+	const gint N = 8;
+        gdouble d[8];
+        gdouble w[8][3] = {
+                {1,1,1},
+                {-1,1,1},
+                {1,-1,1},
+                {1,1,-1},
+                {-1,-1,1},
+                {-1,1,-1},
+                {1,-1,-1},
+                {-1,-1,-1}
+        };
+        gdouble x, y, z;
+	gint* numA = NULL;
+	gint* numB = NULL;
+	gint iA, iB;
+
+	if(Natoms<1) return;
+
+	j = 0;
+	for(i = 0;i<Natoms;i++)
+		if(if_selected(i)) nA++;
+
+	if(nA != Natoms - nA || nA == 0) return;
+	numA = g_malloc(nA*sizeof(gint));
+	numB = g_malloc(nA*sizeof(gint));
+        for (i=0;i<nA;i++) numA[i] = -1;
+        for (i=0;i<nA;i++) numB[i] = -1;
+
+	iA = iB = 0;
+	for(i = 0;i<Natoms;i++)
+		if(if_selected(i)) numA[iA++] = i;
+		else numB[iB++] = i;
+
+	for(i = 0;i<nA;i++)
+	if(strcmp(geometry[numA[i]].Prop.symbol, geometry[numB[i]].Prop.symbol))
+	{
+		g_free(numA);
+		g_free(numB);
+		return;
+	}
+
+        for (j=0;j<N;j++) d[j] = 0;
+        for (i=0;i<nA;i++)
+        {
+                for (j=0;j<N;j++)
+                {
+                x = geometry[numA[i]].X - w[j][0]*geometry[numB[i]].X;
+                y = geometry[numA[i]].Y - w[j][1]*geometry[numB[i]].Y;
+                z = geometry[numA[i]].Z - w[j][2]*geometry[numB[i]].Z;
+                d[j] += x*x + y*y + z*z;
+                }
+        }
+        double dmin = d[0];
+	int jmin = 0;
+        for (j=1;j<N;j++) if(dmin>d[j]) {dmin=d[j]; jmin = j;}
+        for (i=0;i<nA;i++)
+	{
+                geometry[numB[i]].X *=  w[jmin][0];
+                geometry[numB[i]].Y *=  w[jmin][1];
+                geometry[numB[i]].Z *=  w[jmin][2];
+
+                geometry0[numB[i]].X *=  w[jmin][0];
+                geometry0[numB[i]].Y *=  w[jmin][1];
+                geometry0[numB[i]].Z *=  w[jmin][2];
+	}
+
+
+	RebuildGeom = TRUE;
+}
+/********************************************************************************/
+/* type = 0 all atoms, type = 1 selected atoms, type = 2 not selected atoms */
+static void set_xyz_to_standard_orientation(gint type)
+{
+	gint i,j;
+
+	gdouble* X;
+	gdouble* Y;
+	gdouble* Z;
+	gchar** symbols;
+	gint nA = 0;
+
+	if(Natoms<1) return;
+
+	X = g_malloc(Natoms*sizeof(gdouble));
+	Y = g_malloc(Natoms*sizeof(gdouble));
+	Z = g_malloc(Natoms*sizeof(gdouble));
+	symbols = g_malloc(Natoms*sizeof(gchar*));
+	for(i = 0;i<Natoms;i++) symbols[i] = NULL;
+
+	j = 0;
+	for(i = 0;i<Natoms;i++)
+	{
+		if(type == 0 || (type==1 & if_selected(i))  || (type==2 & !if_selected(i)))
+		{
+			X[j] = geometry[i].X;
+			Y[j] = geometry[i].Y;
+			Z[j] = geometry[i].Z;
+			symbols[j] = g_strdup(geometry[i].Prop.symbol);
+			j++;
+		}
+	}
+
+	buildStandardOrientation(j, symbols, X, Y, Z);
+
+	j = 0;
+	for(i = 0;i<Natoms;i++)
+	{
+		if(type == 0 || (type==1 & if_selected(i))  || (type==2 & !if_selected(i)))
+		{
+			geometry0[i].X = X[j];
+			geometry0[i].Y = Y[j];
+			geometry0[i].Z = Z[j];
+
+			geometry[i].X = X[j];
+			geometry[i].Y = Y[j];
+			geometry[i].Z = Z[j];
+			j++;
+		}
+	}
+
+	if(symbols) for(i = 0;i<Natoms;i++) if(symbols[i]) g_free(symbols[i]);
+	if(symbols) g_free(symbols);
+	
+	if(X) g_free(X);
+	if(Y) g_free(Y);
+	if(Z) g_free(Z);
+
+	RebuildGeom = TRUE;
+}
+/********************************************************************************/
+void set_xyz_to_standard_orientation_all()
+{
+	set_xyz_to_standard_orientation(0);
+	create_GeomXYZ_from_draw_grometry();
+	init_quat(Quat);
+	RebuildGeom = TRUE;
+	drawGeom();
+}
+/********************************************************************************/
+void set_xyz_to_standard_orientation_selected_atoms()
+{
+	set_xyz_to_standard_orientation(1);
+	create_GeomXYZ_from_draw_grometry();
+	init_quat(Quat);
+	RebuildGeom = TRUE;
+	drawGeom();
+}
+/********************************************************************************/
+void set_xyz_to_standard_orientation_not_selected_atoms()
+{
+	set_xyz_to_standard_orientation(2);
+	create_GeomXYZ_from_draw_grometry();
+	init_quat(Quat);
+	RebuildGeom = TRUE;
+	drawGeom();
+}
+/********************************************************************************/
+void set_xyz_to_standard_orientation_selected_and_not_selected_atoms()
+{
+	set_xyz_to_standard_orientation(1);
+	set_xyz_to_standard_orientation(2);
+	rotate_slected_atoms_minimize_rmsd();
+	create_GeomXYZ_from_draw_grometry();
+	init_quat(Quat);
+	RebuildGeom = TRUE;
+	drawGeom();
 }
 /********************************************************************************/
 void set_xyz_to_principal_axes_of_selected_atoms(gpointer data, guint Operation,GtkWidget* wid)

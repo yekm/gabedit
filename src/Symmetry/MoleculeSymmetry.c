@@ -1,6 +1,6 @@
 /* MoleculeSymmetry.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -676,7 +676,7 @@ int computeSymmetry(
 		return ret;
 	}
 
-	determinePrincipalAxis(&mol,centerOfGravity,&numberOfEquivalentAxes,inertialMoment,axes, principalAxisTolerance);  /* transform to principal axes */
+	determinePrincipalAxis(&mol,centerOfGravity,&numberOfEquivalentAxes,inertialMoment,axes, principalAxisTolerance, TRUE);  /* transform to principal axes */
 	
 	if(DEBUGSYM){ 
 	printf("End principal\n");
@@ -859,7 +859,7 @@ int computeAbelianGroup(
 		return ret;
 	}
 
-	determinePrincipalAxis(&mol,centerOfGravity,&numberOfEquivalentAxes,inertialMoment,axes, principalAxisTolerance);  /* transform to principal axes */
+	determinePrincipalAxis(&mol,centerOfGravity,&numberOfEquivalentAxes,inertialMoment,axes, principalAxisTolerance,TRUE);  /* transform to principal axes */
 	/*
 	
 	printf("End principal\n");
@@ -1006,3 +1006,62 @@ int generateMoleculeUsingAbelianGroup(
 	return 0;
 }
 /************************************************************************************************************/
+void buildStandardOrientation(gint numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z)
+{
+	gdouble eps = -1.0;
+	MolSymMolecule mol;
+	gdouble centerOfGravity[3]; 
+	gint numberOfEquivalentAxes;
+	gdouble inertialMoment[3];
+	gdouble axes[3][3];
+	gdouble ax1[3],ax2[3];
+	gint ret;
+	gint nax = 0; /* order of z axis */
+	gint symmetry;
+	gint symf = -1;
+	gint i;
+	gdouble principalAxisTolerance = 0.001;
+	gdouble x,y,z,m,mtot;
+	MolSymAtom *atomList;
+
+	ret = setMolSymMolecule(&mol, numberOfAtoms, symbols, X, Y, Z, eps);
+	if (ret != 0) return;
+
+	determinePrincipalAxis(&mol,centerOfGravity,&numberOfEquivalentAxes,inertialMoment,axes, principalAxisTolerance,FALSE);  /* transform to principal axes */
+
+
+	atomList = mol.listOfAtoms;
+	x = y = z =0.0;
+	mtot = 0;
+	for (i=0;i<mol.numberOfAtoms;i++)	  /* center of gravity and total mass */
+	{
+		/* m = sqrt(prime[atomList->type]);*/
+		m = fabs(mol.masse[atomList->type]);
+		x += m*atomList->position[0];
+		y += m*atomList->position[1];
+		z += m*atomList->position[2];
+		mtot += m;
+		atomList++;
+	  }
+	centerOfGravity[0] = x/mtot;
+	centerOfGravity[1] = y/mtot;
+	centerOfGravity[2] = z/mtot;
+
+      	for (i=0;i < mol.numberOfAtoms;i++)
+	{ 
+		X[i] = mol.listOfAtoms[i].position[0]-centerOfGravity[0];
+		Y[i] = mol.listOfAtoms[i].position[1]-centerOfGravity[1];
+		Z[i] = mol.listOfAtoms[i].position[2]-centerOfGravity[2];
+	}
+
+	if(mol.listOfAtoms) g_free(mol.listOfAtoms);
+	if(mol.symbol)
+	{
+		for(i=0; i<mol.numberOfAtoms; i++) if(mol.symbol[i]) g_free(mol.symbol[i]);
+		g_free(mol.symbol);
+	}
+	if(mol.numberOfAtomsOfEachType) g_free(mol.numberOfAtomsOfEachType);
+	if(mol.masse) g_free(mol.masse);
+
+	
+}

@@ -1,3 +1,10 @@
+16 September 2012
+	bug fixed : read personal fragment under windows
+
+14 September 2012
+	set molecule in the standard orientation
+	Align selected and not selected fragments
+
 05 September 2012
 	Bug fixed : reading of the number occuped beta orbitals from a fchk file.
 

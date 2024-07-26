@@ -1,6 +1,6 @@
 /* MenuToolBarGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -728,6 +728,8 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "SetOriginToCenterOfSelectedAtoms")) set_origin_to_center_of_fragment();
 	else if(!strcmp(name, "SetXYZToPAX")) set_xyz_to_principal_axes_of_selected_atoms(NULL,0, NULL);
 	else if(!strcmp(name, "SetXYZToPAZ")) set_xyz_to_principal_axes_of_selected_atoms(NULL,1, NULL);
+	else if(!strcmp(name, "SetXYZToStandardOrientaion")) set_xyz_to_standard_orientation_all();
+	else if(!strcmp(name, "SetXYZToStandardOrientaionSelectedAndNotSelected")) set_xyz_to_standard_orientation_selected_and_not_selected_atoms();
 	else if(!strcmp(name, "SetSelectedAtomsToHighLayer")) set_layer_of_selected_atoms(HIGH_LAYER);
 	else if(!strcmp(name, "SetSelectedAtomsToMediumLayer")) set_layer_of_selected_atoms(MEDIUM_LAYER);
 	else if(!strcmp(name, "SetSelectedAtomsToLowLayer")) set_layer_of_selected_atoms(LOW_LAYER);
@@ -1141,6 +1143,8 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SetOriginToCenterOfSelectedAtoms", NULL, N_("Set origin at Center of _selected atoms"), NULL, "Set origin at center of selected atoms", G_CALLBACK (activate_action) },
 	{"SetXYZToPAX", NULL, N_("Set XYZ axes to the principal axes of selected atoms (_X = min inertia)"), NULL, "Set XYZ axes to the principal axes of selected atoms (X = min inertia)", G_CALLBACK (activate_action) },
 	{"SetXYZToPAZ", NULL, N_("Set XYZ axes to the principal axes of selected atoms (_Z = min inertia)"), NULL, "Set XYZ axes to the principal axes of selected atoms (Z axis = min inertia)", G_CALLBACK (activate_action) },
+	{"SetXYZToStandardOrientaion", NULL, N_("Set XYZ axes to the standard orientation"), NULL, "Set XYZ axes to standard orientation", G_CALLBACK (activate_action) },
+	{"SetXYZToStandardOrientaionSelectedAndNotSelected", NULL, N_("Align seletecd and not selected fragments"), NULL, "Align 2 fragments", G_CALLBACK (activate_action) },
 	{"SetSelectedAtomsToHighLayer", NULL, N_("Set selected atoms to _Hight layer"), NULL, "Set selected atoms to Hight layer", G_CALLBACK (activate_action) },
 	{"SetSelectedAtomsToMediumLayer", NULL, N_("Set selected atoms to _Medium layer"), NULL, "Set selected atoms to Medium layer", G_CALLBACK (activate_action) },
 	{"SetSelectedAtomsToLowLayer", NULL, N_("Set selected atoms to _Low layer"), NULL, "Set selected atoms to Low layer", G_CALLBACK (activate_action) },
@@ -1546,6 +1550,8 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"SetOriginToCenterOfSelectedAtoms\" action=\"SetOriginToCenterOfSelectedAtoms\" />\n"
 "      <menuitem name=\"SetXYZToPAX\" action=\"SetXYZToPAX\" />\n"
 "      <menuitem name=\"SetXYZToPAZ\" action=\"SetXYZToPAZ\" />\n"
+"      <menuitem name=\"SetXYZToStandardOrientaion\" action=\"SetXYZToStandardOrientaion\" />\n"
+"      <menuitem name=\"SetXYZToStandardOrientaionSelectedAndNotSelected\" action=\"SetXYZToStandardOrientaionSelectedAndNotSelected\" />\n"
 "      <separator name=\"sepMenuSetLayer\" />\n"
 "      <menuitem name=\"SetSelectedAtomsToHighLayer\" action=\"SetSelectedAtomsToHighLayer\" />\n"
 "      <menuitem name=\"SetSelectedAtomsToMediumLayer\" action=\"SetSelectedAtomsToMediumLayer\" />\n"
@@ -1853,6 +1859,8 @@ static void set_sensitive()
 	GtkWidget *origAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetOriginToCenterOfSelectedAtoms");
 	GtkWidget *pax = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetXYZToPAX");
 	GtkWidget *paz = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetXYZToPAZ");
+	GtkWidget *so = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetXYZToStandardOrientaion");
+	GtkWidget *sosns = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetXYZToStandardOrientaionSelectedAndNotSelected");
 
 	GtkWidget *layerHigh = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetSelectedAtomsToHighLayer");
 	GtkWidget *layerMedium = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetSelectedAtomsToMediumLayer");
@@ -1926,6 +1934,7 @@ static void set_sensitive()
   	if(Natoms<2) sensitive = FALSE;
 	if(GTK_IS_WIDGET(resetAllConnections)) gtk_widget_set_sensitive(resetAllConnections, sensitive);
 	if(GTK_IS_WIDGET(resetMultipleConnections)) gtk_widget_set_sensitive(resetMultipleConnections, sensitive);
+	if(GTK_IS_WIDGET(so)) gtk_widget_set_sensitive(so, sensitive);
 
 	if(NFatoms<2) sensitive = FALSE;
 	if(GTK_IS_WIDGET(pax)) gtk_widget_set_sensitive(pax, sensitive);
@@ -1939,6 +1948,7 @@ static void set_sensitive()
 	if(GTK_IS_WIDGET(layerHigh)) gtk_widget_set_sensitive(layerHigh, sensitive);
 	if(GTK_IS_WIDGET(invertSelection)) gtk_widget_set_sensitive(invertSelection, sensitive);
 	if(GTK_IS_WIDGET(unSelectAll)) gtk_widget_set_sensitive(unSelectAll, sensitive);
+	if(GTK_IS_WIDGET(sosns)) gtk_widget_set_sensitive(sosns, sensitive);
   	if(Natoms<2) sensitive = FALSE;
 	if(GTK_IS_WIDGET(layerMedium)) gtk_widget_set_sensitive(layerMedium, sensitive);
 	if(GTK_IS_WIDGET(layerLow)) gtk_widget_set_sensitive(layerLow, sensitive);

@@ -1,6 +1,6 @@
 /* MolSymInterface.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -644,3 +644,7 @@ gdouble getTolerancePrincipalAxis()
 	return tolerancePrincipalAxisValue;
 }
 /****************************************************************************************************************************/
+void buildStandardOrientationDlg(gint numberOfAtoms, gchar** symbols, gdouble* X, gdouble* Y, gdouble* Z)
+{
+	buildStandardOrientation(numberOfAtoms, symbols, X, Y, Z);
+}

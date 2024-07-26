@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -121,7 +121,7 @@ static void loadOneFragmentsList(PersonalFragments* personnalFragments, FILE* fi
 	gint numberOfFragments = 0;
 	OnePersonalFragment* fragments = NULL;
 	gint i;
-	gchar* str = g_strdup_printf("Begin %s Groupe\n",personnalGroupes[groupeNumber].groupName);
+	gchar* str = g_strdup_printf("Begin %s Groupe",personnalGroupes[groupeNumber].groupName);
 	gchar** fragmentsList = getOneList(file,&numberOfFragments,str,TRUE);
 
 	if(numberOfFragments<1)
@@ -160,7 +160,7 @@ static void loadOneFragment(PersonalFragments* personnalFragments, FILE* file,
 	OnePersonalFragment* fragments = personnalGroupes[groupeNumber].fragments;
 	Fragment f = fragments[fragmentNumber].f;
 	gint i;
-	gchar* str = g_strdup_printf("Begin %s %s Fragment\n",
+	gchar* str = g_strdup_printf("Begin %s %s Fragment",
 			personnalGroupes[groupeNumber].groupName,
 			fragments[fragmentNumber].name
 			);

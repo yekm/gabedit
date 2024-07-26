@@ -1,6 +1,6 @@
 /* PrincipalAxis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -152,7 +152,7 @@ static void swap(gint i,gint j,gdouble* mat, gdouble vecs[3][3])
                               1 4
                                 2   */
 void determinePrincipalAxis(MolSymMolecule* mol,gdouble* centerOfGravity, gint* numberOfEquivalentAxes,
-	       gdouble* inertialMoment, gdouble axes[3][3], gdouble principalAxisTolerance)
+	       gdouble* inertialMoment, gdouble axes[3][3], gdouble principalAxisTolerance, gboolean sorting)
 {
 	gint i,j;
 	gdouble mat[6];
@@ -240,5 +240,5 @@ void determinePrincipalAxis(MolSymMolecule* mol,gdouble* centerOfGravity, gint* 
 			atomList->position[j] = x*axes[0][j] + y*axes[1][j] + atomList->position[2]*axes[2][j];
 		atomList++;
 	}
-	qsort(mol->listOfAtoms,mol->numberOfAtoms,sizeof(MolSymAtom),compare2atoms);
+	if(sorting) qsort(mol->listOfAtoms,mol->numberOfAtoms,sizeof(MolSymAtom),compare2atoms);
 }

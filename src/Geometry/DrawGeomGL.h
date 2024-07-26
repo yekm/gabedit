@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2012 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -302,6 +302,10 @@ void getQuatGeom(gdouble q[]);
 void redrawGeomGL2PS();
 void drawGeom();
 void getOptimalCiCj(gint i, gint j, gdouble* Ci, gdouble* Cj, gdouble* C0);
+void set_xyz_to_standard_orientation_all();
+void set_xyz_to_standard_orientation_selected_atoms();
+void set_xyz_to_standard_orientation_not_selected_atoms();
+void set_xyz_to_standard_orientation_selected_and_not_selected_atoms();
 
 #endif /* __GABEDIT_DRAWGEOMGL_H__ */
 
