@@ -684,7 +684,7 @@ void read_orca_orbitals_from_output_file(gchar* fileName)
 	gboolean Ok = FALSE;
  	gchar *t = NULL;
 
-	typefile =get_type_file(fileName);
+	typefile =get_type_file_orb(fileName);
 
 	if(typefile==GABEDIT_TYPEFILE_UNKNOWN) return;
 	if(typefile != GABEDIT_TYPEFILE_ORCA)

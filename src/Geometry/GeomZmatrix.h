@@ -37,5 +37,7 @@ void selc_ZMatrix_mopac_file();
 void selc_ZMatrix_file();
 void save_geometry_gzmatrix_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_mzmatrix_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_ZMatrix_file(GabeditFileChooser *SelecteurFichier, gint response_id);
+void read_ZMatrix_mopac_file(GabeditFileChooser *SelecteurFichier, gint response_id);
 
 #endif /* __GABEDIT_GEOMZMATRIX_H__ */

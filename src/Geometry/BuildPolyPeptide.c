@@ -926,7 +926,7 @@ static void build_c_capping(GtkWidget *Dlg,gpointer data)
 	frameAminoAcide = g_object_get_data(G_OBJECT (Dlg), "FrameAminoAcide");
 	ccap = (gchar*) g_object_get_data(G_OBJECT (Dlg), "C-CAP");
 	if(!ccap ) return;
-	if(!strcmp(ccap,"Notting")) return;
+	if(!strcmp(ccap,"Nothing")) return;
 	if(lastFragNumber < 0) return;
 	if(!strcmp(ccap,"NME")) 
 	{
@@ -996,7 +996,7 @@ static void build_n_capping(GtkWidget *Dlg,gchar* firstResidue)
 		re_set_angles(TRUE);
   		reset_sensitive_build_c_capping(Dlg, TRUE);
 	}
-	else if(!strcmp(ncap,"Notting")) 
+	else if(!strcmp(ncap,"Nothing")) 
 	{
 		sprintf(fragName,"%s",firstResidue);
 		lowercase(fragName);
@@ -1634,7 +1634,7 @@ static GtkWidget* add_n_cap(GtkWidget* Dlg,GtkWidget *box)
 	GtkWidget* frame;
 	GtkWidget* button1;
 	GtkWidget* button;
-	static gchar* list[] = {"ACE","NH3+","NH2","Notting"};
+	static gchar* list[] = {"ACE","NH3+","NH2","Nothing"};
 	gint i;
 	gint nOptions = G_N_ELEMENTS (list);
 
@@ -1677,7 +1677,7 @@ static GtkWidget* add_c_cap(GtkWidget* Dlg,GtkWidget *box)
 	GtkWidget* frame;
 	GtkWidget* button1;
 	GtkWidget* button;
-	static gchar* list[] = {"NME","NHE","COO-","COOH","Notting"};
+	static gchar* list[] = {"NME","NHE","COO-","COOH","Nothing"};
 	gint i;
 	gint nOptions = G_N_ELEMENTS (list);
 

@@ -128,7 +128,7 @@ gboolean GeomIsOpen;
 guint TypeGeomOpen;
 guint Units;
 guint NMethodes;
-gint NSA;
+gint NSA[4];
 gint TotalCharges[3];
 gint SpinMultiplicities[3];
 

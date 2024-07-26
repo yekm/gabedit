@@ -54,6 +54,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Spectrum/ECDSpectrum.h"
 #include "../Spectrum/NMRSpectrum.h"
 #include "../VibrationalCorrections/GabeditGaussianInput.h"
+#include "../IsotopeDistribution/IsotopeDistributionCalculatorDlg.h"
 
 /*********************************************************************************************************************/
 static gboolean ViewWindows = FALSE;
@@ -228,6 +229,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ToolsNMR2SpectrumTxt")) { createNMR2Spectrum(Fenetre,GABEDIT_TYPEFILE_TXT);}
 
 	else if(!strcmp(name,"ToolsVibCorrectionsGaussian")) {read_vibcorrection_gaussian_file_dlg(); }
+	else if(!strcmp(name,"ToolsIsotopeDistribution")) { compute_distribution_dlg(Fenetre, NULL); }
 
 	else if(!strcmp(name,"RunAbinitio")) {create_run();}
 	else if(!strcmp(name,"RunViewResult")) {view_result();}
@@ -350,6 +352,7 @@ static GtkActionEntry gtkActionEntries[] =
 
 	{"ToolsVibCorrections",  NULL, "Ro_vibrational corrections"},
 	{"ToolsVibCorrectionsGaussian",  NULL, "Read Gaussian output file for compute the ro-vibrational corrections", NULL, "Gaussian", G_CALLBACK (activate_action) },
+	{"ToolsIsotopeDistribution",  NULL, "Compute the isotope distribution for a molecule", NULL, "Isotope distribution", G_CALLBACK (activate_action) },
 
 	{"Run",  NULL, "_Run"},
 	{"RunAbinitio", GTK_STOCK_EXECUTE, "_Run a abtinio program",  "<control>R", "Run a abtinio program", G_CALLBACK (activate_action) },
@@ -528,6 +531,8 @@ static const gchar *uiInfo =
 "          <menuitem name=\"ToolsNMRSpectrumTxt\" action=\"ToolsNMRSpectrumTxt\" />\n"
 "          <menuitem name=\"ToolsNMR2SpectrumTxt\" action=\"ToolsNMR2SpectrumTxt\" />\n"
 "      </menu>\n"
+"      <separator name=\"sepIsotopDistribution\" />\n"
+"      <menuitem name=\"ToolsIsotopeDistribution\" action=\"ToolsIsotopeDistribution\" />\n"
 "      <separator name=\"sepVibCorrections\" />\n"
 "      <menu name=\"ToolsVibCorrections\" action=\"ToolsVibCorrections\">\n"
 "          <menuitem name=\"ToolsVibCorrectionsGaussian\" action=\"ToolsVibCorrectionsGaussian\" />\n"

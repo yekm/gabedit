@@ -2056,3 +2056,20 @@ void mapping_with_mep_from_charges()
 	mapping_cube_by_an_other_cube(mep);
 	free_grid(mep);
 }
+/********************************************************************************/
+void mapping_with_fed(gint n)
+{
+	Grid* mep = NULL;
+	GabEditTypeGrid oldTypeGrid = TypeGrid;
+
+	if(n==0) TypeGrid = GABEDIT_TYPEGRID_FEDELECTROPHILIC;
+	else if(n==2) TypeGrid = GABEDIT_TYPEGRID_FEDNUCLEOPHILIC;
+	else TypeGrid = GABEDIT_TYPEGRID_FEDRADICAL;
+
+	mep = compute_fed_grid_using_cube_grid(grid, n);
+
+	TypeGrid = oldTypeGrid;
+	if(!mep) return;
+	mapping_cube_by_an_other_cube(mep);
+	free_grid(mep);
+}

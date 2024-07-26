@@ -195,7 +195,7 @@ static void build_data_xyplot_curve_withconv(XYPlotWinData* winData, XYPlotData*
 		}
 
 		dataCurve->size++;
-	}while(xx<winData->xmax && winData->size<n);
+	}while(xx<winData->xmax && dataCurve->size<n);
 
 	if(dataCurve->size>0) 
 	{

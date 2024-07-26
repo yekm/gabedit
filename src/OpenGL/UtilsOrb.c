@@ -204,7 +204,7 @@ void printLineChar(char c,gint n)
   printf("\n");
 }
 /**********************************************/
-gint get_type_file(gchar *fileName)
+gint get_type_file_orb(gchar *fileName)
 {
  	gchar *t;
  	FILE *fd;
@@ -1332,7 +1332,7 @@ void create_grid_ELF_Dens_analyze(gboolean ongrid)
 /********************************************************************************/
 void read_any_file(gchar* FileName)
 {
-	gint filetype = get_type_file(FileName);
+	gint filetype = get_type_file_orb(FileName);
 	switch(filetype)
 	{
 		case GABEDIT_TYPEFILE_GAMESS : read_gamess_orbitals(FileName);break;
@@ -1342,7 +1342,7 @@ void read_any_file(gchar* FileName)
 		case GABEDIT_TYPEFILE_MOLDEN : read_molden_orbitals(FileName);break;
 		case GABEDIT_TYPEFILE_GABEDIT : read_gabedit_orbitals(FileName);break;
 		case GABEDIT_TYPEFILE_XYZ : gl_read_xyz_file(FileName);break;
-		case GABEDIT_TYPEFILE_GAUSIANINPUT : 
+		case GABEDIT_TYPEFILE_GAUSSIANINPUT : 
 		case GABEDIT_TYPEFILE_MOLCASINPUT :  
 		case GABEDIT_TYPEFILE_MOLPROINPUT :  
 		case GABEDIT_TYPEFILE_UNKNOWN : break;
@@ -1482,6 +1482,7 @@ void initialise_global_orbitals_variables()
 	colorMapColors[2][1] = 1;
 	colorMapColors[2][2] = 1;
 	colorMapType = 1;
+	alphaFED = 3.0; /* eV^-1 */
 }
 /********************************************************************************/
 void close_window_orb(GtkWidget*win, gpointer data)
@@ -2555,4 +2556,123 @@ void createColorMapOptionsWindow(GtkWidget* win)
 
 	gtk_widget_show_all(dialogWindow);
 	if(GTK_IS_WIDGET(win)) gtk_window_set_transient_for(GTK_WINDOW(dialogWindow),GTK_WINDOW(win));
+}
+/********************************************************************************/
+static void set_alphaFED(GtkWidget *button,gpointer data)
+{
+	GtkWidget* entry = (GtkWidget*)data;
+	G_CONST_RETURN gchar* temp;
+	gchar* dump = NULL;
+	GtkWidget* Win = g_object_get_data (G_OBJECT (button), "Win");
+
+	if(!GTK_IS_WIDGET(data)) return;
+
+       	temp	= gtk_entry_get_text(GTK_ENTRY(entry)); 
+	if(temp && strlen(temp)>0)
+	{
+		dump = g_strdup(temp);
+		delete_first_spaces(dump);
+		delete_last_spaces(dump);
+	}
+
+	if(dump && strlen(dump)>0 && this_is_a_real(dump) && atof(dump)>=0 && atof(dump)<=100)
+	{
+		alphaFED = atof(dump);
+		if(dump) g_free(dump);
+		gtk_widget_destroy(Win);
+	}
+	else
+	{
+		GtkWidget* message = Message("Error : alpha should be a real between 0 and 100 ","Error",TRUE);
+  		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+		if(dump) g_free(dump);
+		gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(Win));
+		return;
+	}
+}
+/*********************************************************************/
+GtkWidget* set_alphaFED_dialog ()
+{
+	GtkWidget *fp;
+	GtkWidget *frame;
+	GtkWidget *vboxall;
+	GtkWidget *vboxframe;
+	GtkWidget *hbox;
+	GtkWidget *button;
+	GtkWidget *label;
+	GtkWidget* entry;
+	GtkWidget *hseparator;
+	gchar* tlabel="Alpha(eV^-1) : ";
+	gchar* val = NULL;
+	gchar* info = 
+		"f (x,y,z) = (2 - n)/2{\n" 
+	      	"      [sum_j(1 to N) O_j  Phi_j (x,y,z)^2 e^(-alpha(e_HOMO -e_j ))]/\n"
+	        "     [sum_j(1 to N) O_j   e^(-alpha(e_HOMO -e_j ))]\n"
+      		"}\n"
+      		"+ n/2 {\n" 
+	        "      [sum_j(1 to N) (2-O_j)  Phi_j (x,y,z)^2 e^(+alpha(e_LUMO -e_j ))]/\n"
+	        "      [sum_j(1 to N) (2-O_j)   e^(+alpha(e_LUMO -e_j ))]\n"
+      		"}\n\n"
+		"n  = 0 for an electrophilic reaction,\n"
+     		"     1 for a radical reaction, and\n"
+     		"     2 for a nucleophilic reaction.\n"
+		"N is the number of orbitals.\n" 
+		"O_j is the number of electrons in orbital j.\n" 
+		"Phi_j(x,y,z) is the value of the orbital j at point (x,y,z).\n"
+		"e_j is the energy of orbital j.\n";
+
+	fp = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_modal(GTK_WINDOW(fp),TRUE);
+	gtk_window_set_title(GTK_WINDOW(fp),"Set alpha for FED calculation");
+	gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
+
+	gtk_window_set_position(GTK_WINDOW(fp),GTK_WIN_POS_CENTER);
+	gtk_window_set_modal (GTK_WINDOW (fp), TRUE);
+
+	g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)gtk_widget_destroy,NULL);
+
+	vboxall = create_vbox(fp);
+	frame = gtk_frame_new (NULL);
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+	gtk_container_add (GTK_CONTAINER (vboxall), frame);
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+
+	hbox = create_hbox(vboxframe);
+	label = gtk_label_new (info);
+	gtk_widget_show (label);
+	gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, FALSE, 0);
+
+	hseparator = gtk_hseparator_new ();
+	gtk_box_pack_start (GTK_BOX (vboxframe), hseparator, TRUE, FALSE, 0);
+
+	hbox = create_hbox(vboxframe);
+	label = gtk_label_new (tlabel);
+	gtk_widget_show (label);
+	gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, FALSE, 0);
+
+	entry = gtk_entry_new ();
+	gtk_widget_show (entry);
+	gtk_box_pack_start (GTK_BOX (hbox), entry, FALSE, TRUE, 0);
+	val = g_strdup_printf("%f",alphaFED);
+       	gtk_entry_set_text(GTK_ENTRY(entry),val);
+	if(val) g_free(val);
+
+	hbox = create_hbox(vboxall);
+
+	button = create_button(PrincipalWindow,"OK");
+	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
+	g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(set_alphaFED),(gpointer)entry);
+	g_object_set_data (G_OBJECT (button), "Win", fp);
+	gtk_widget_show (button);
+
+	button = create_button(PrincipalWindow,"Cancel");
+	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_widget_destroy),GTK_OBJECT(fp));
+
+	gtk_widget_show (button);
+   
+	gtk_widget_show_all(fp);
+	return fp;
 }

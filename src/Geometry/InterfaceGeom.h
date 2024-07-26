@@ -29,6 +29,7 @@ void edit_geometry();
 void create_units_option(GtkWidget *,gchar *);
 void selc_all_input_file(gchar *data);
 void create_geomXYZ_interface (GabEditTypeFileGeom readfile);
+void read_geom_any_file_dlg();
 
 #endif /* __GABEDIT_INTERFACEGEOM_H__ */
 

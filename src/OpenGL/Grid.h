@@ -68,6 +68,8 @@ gboolean compute_coulomb_integrale_iijj_poisson(gint N[],GridLimits limits, gint
 Grid* define_grid_electronic_density(gint N[],GridLimits limits);
 Grid* define_grid_ELFBECKE(gint N[],GridLimits limits);
 Grid* define_grid_ELFSAVIN(gint N[],GridLimits limits);
+Grid* define_grid_FED(gint N[],GridLimits limits, gint n);
+Grid* compute_fed_grid_using_cube_grid(Grid* grid, gint n);
 
 #endif /* __GABEDIT_GRID_H__ */
 

@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 #include "Global.h"
 #include "../Utils/Utils.h"
 #include "../Common/MenuToolBar.h"
+#include <gdk/gdk.h>
 
 /********************************************************************************/
 void create_frame_windows(GtkWidget *box)
@@ -37,21 +38,7 @@ void create_frame_windows(GtkWidget *box)
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
   gtk_box_pack_start (GTK_BOX (box), frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
-#ifdef G_OS_WIN32
-  {
-	gint height;
-  	PangoFontDescription *font_desc = pango_font_description_from_string ("terminal 12");
-	GdkFont* font = NULL;
-	if(font_desc) font = gdk_font_from_description (font_desc);
-	if(font)
-	{
-		height = (gint)( 2.5*gdk_string_height (font,"WINDOWS") );
-		gtk_widget_set_size_request(GTK_WIDGET(frame),-1,height);
-	}
-  }
-#else
   gtk_widget_set_size_request(GTK_WIDGET(frame),-1,(gint)(ScreenHeight*0.05));
-#endif
 /*  gtk_widget_set_size_request(GTK_WIDGET(frame),-1,height);*/
 /*  Debug("height = %d\n",height);*/
   gtk_widget_show (frame);

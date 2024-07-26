@@ -435,7 +435,8 @@ static void row_deleted(GtkTreeModel *model, GtkTreePath *path, gpointer data)
 	g_free(tmp);
 	gtk_tree_selection_select_path  (gtk_tree_view_get_selection (GTK_TREE_VIEW (list)), path);
 	gtk_tree_path_free(path);
-	NSA = LineSelected+1;
+	NSA[0] = LineSelected+1;
+	NSA[1] = NSA[2] = NSA[3] =-1;
  	if(ZoneDessin != NULL) rafresh_drawing();
 }
 /********************************************************************************/
@@ -467,7 +468,8 @@ static void event_dispatcher(GtkWidget *widget, GdkEventButton *event, gpointer 
 	if(strstr(menuName,"Geom"))
 	{
   		LineSelected = row;
-		NSA = LineSelected+1;
+		NSA[0] = LineSelected+1;
+		NSA[1] = NSA[2] = NSA[3] =-1;
 	}
 	else
 	{
@@ -10749,7 +10751,8 @@ void create_geomXYZ_list(GtkWidget *vbox, GabEditTypeFileGeom readfile)
 	if(iprogram == PROG_IS_MOLPRO) NCr = NUMBER_LIST_XYZ-1;
 	else NCr = NUMBER_LIST_XYZ;
 
-	NSA = -1;
+	NSA[0] = -1;
+	NSA[1] = NSA[2] = NSA[3] =-1;
 	MethodeGeom = GEOM_IS_XYZ;
 	if(GeomXYZ!=NULL && readfile != GABEDIT_TYPEFILEGEOM_UNKNOWN)
 	{

@@ -1787,7 +1787,7 @@ void show_about()
 void show_version()
 {
  gchar* Version_S = g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
- gchar *temp=g_strdup_printf("\n Version %s \n\n Abdul-Rahman ALLOUCHE\n\n january 2007\n",Version_S);
+ gchar *temp=g_strdup_printf("\n Version %s \n\n Abdul-Rahman ALLOUCHE\n",Version_S);
  Message(temp," Version ",TRUE);
  g_free(Version_S);
  g_free(temp);

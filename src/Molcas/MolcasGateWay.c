@@ -1319,7 +1319,7 @@ static void activateSolvRadioButton(GtkWidget *button, gpointer data)
 	{
 		if(entrySolvation) gtk_widget_set_sensitive(entrySolvation, FALSE);
 		if(buttonConductor) gtk_widget_set_sensitive(buttonConductor, FALSE);
-		sprintf(molcasSolvation.method,"Notting");
+		sprintf(molcasSolvation.method,"Nothing");
 	}
 }
 /***************************************************************************************/
@@ -1365,7 +1365,7 @@ void createSolvationFrame(GtkWidget *win, GtkWidget *box)
 	GtkWidget *table = gtk_table_new(1,5,FALSE);
 	GtkWidget* entrySolvent = NULL;
 	GtkWidget* buttonConductor = gtk_check_button_new_with_label ("Conductor Version");
-	static gchar* types[] ={"Notting","PCM"};
+	static gchar* types[] ={"Nothing","PCM"};
 	gchar* listSolvents[] = { "Water", "Acetonitrile", "Methanol", "Ethanol", "IsoQuinoline", "Quinoline",
 		"Chloroform", "EthylEther", "MethyleneChloride", "DiChloroEthane", "CarbonTetraChloride",
 		"Benzene", "Toluene", "ChloroBenzene", "NitroMethane", "Heptane",
@@ -1387,7 +1387,7 @@ void createSolvationFrame(GtkWidget *win, GtkWidget *box)
 	entrySolvent = addComboListToATable(table, listSolvents, nlistSolvents, 0, 2, 1);
 	add_widget_table(table, buttonConductor, 0, 3);
 
-	button = addRadioButtonToATable(table, NULL, "Notting", 0, 0,1);
+	button = addRadioButtonToATable(table, NULL, "Nothing", 0, 0,1);
 	g_object_set_data(G_OBJECT (button), "Type",types[0]);
 	g_object_set_data(G_OBJECT (button), "EntrySolvent",entrySolvent);
 	g_object_set_data(G_OBJECT (button), "ButtonConductor",buttonConductor);
@@ -1405,7 +1405,7 @@ void createSolvationFrame(GtkWidget *win, GtkWidget *box)
 	gtk_entry_set_text(GTK_ENTRY(entrySolvent),"Water");
 	gtk_widget_set_sensitive(entrySolvent, FALSE);
 	gtk_widget_set_sensitive(buttonConductor, FALSE);
-	sprintf(molcasSolvation.method,"Notting");
+	sprintf(molcasSolvation.method,"Nothing");
 	sprintf(molcasSolvation.solvent,"Water");
 	g_signal_connect(G_OBJECT(buttonConductor),"clicked", G_CALLBACK(activateSolvConductorButton),NULL);
 }
@@ -1413,7 +1413,7 @@ void createSolvationFrame(GtkWidget *win, GtkWidget *box)
 static void putSolvationSewardInTextEditor()
 {
         gchar buffer[BSIZE];
-	if(!strcmp(molcasSolvation.method,"Notting")) return;
+	if(!strcmp(molcasSolvation.method,"Nothing")) return;
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.subProgram, NULL, "RF-Input\n",-1);
 	if(!strcmp(molcasSolvation.method,"PCM") || !strcmp(molcasSolvation.method,"CPCM"))
 	{
@@ -1463,7 +1463,7 @@ static void putInfoInTextWidget(GtkWidget* textWid)
 
         gabedit_text_insert (GABEDIT_TEXT(textWid), NULL, &molcasColorFore.subProgram, NULL, "Generators : ",-1);
 	if(molcasMolecule.numberOfMolcasGenerators==0)
-        	gabedit_text_insert (GABEDIT_TEXT(textWid), NULL, NULL, NULL, "Notting", -1);
+        	gabedit_text_insert (GABEDIT_TEXT(textWid), NULL, NULL, NULL, "Nothing", -1);
 	
       	for (i=0;i<molcasMolecule.numberOfMolcasGenerators;i++)
 	{

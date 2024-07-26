@@ -221,6 +221,17 @@ gboolean this_is_a_backspace(gchar *st)
         return TRUE;
 }   
 /********************************************************************************/
+void changeDInE(gchar *st)
+{
+        gint i;
+	gint l = 0;
+	if(!st) return;
+	l = strlen(st);
+        for(i=0;i<l;i++)
+       		if(st[i] == 'D' || st[i] =='d') 
+			st[i]='e';
+}   
+/********************************************************************************/
 void  set_file_open(gchar* remotehost,gchar* remoteuser,gchar* remotedir, GabEditNetWork netWorkProtocol)
 {
   gchar localhost[100];
@@ -2671,7 +2682,7 @@ void initialise_name_commands()
 	NameCommandPCGamess=g_strdup("pcgamess");
 	NameCommandQChem=g_strdup("qc");
 	NameCommandOrca=g_strdup("orca");
-	NameCommandMopac=g_strdup("MOPAC2007");
+	NameCommandMopac=g_strdup("MOPAC2009");
 	NameCommandPovray=g_strdup("start /w pvengine /nr /exit /render +A0.3 -UV");
 #else
 	NameCommandGamess=g_strdup("submitGMS");
@@ -2682,7 +2693,7 @@ void initialise_name_commands()
 	NameCommandPCGamess=g_strdup("pcgamess");
 	NameCommandQChem=g_strdup("qchem");
 	NameCommandOrca=g_strdup("orca");
-	NameCommandMopac=g_strdup("/opt/mopac/MOPAC2007.out");
+	NameCommandMopac=g_strdup("/opt/mopac/MOPAC2009.out");
 	NameCommandPovray=g_strdup("povray +A0.3 -UV");
 #endif
 
@@ -2778,7 +2789,7 @@ void initialise_global_variables()
   GeomIsOpen = FALSE;
   iprogram = PROG_IS_OTHER;
   Units = 1;
-  NSA = -1;
+  NSA[0] = NSA[1] = NSA[2] = NSA[3] = -1;
   ScreenWidth = gdk_screen_width();
   ScreenHeight = gdk_screen_height();
   GeomConvIsOpen = FALSE;
@@ -2908,7 +2919,7 @@ void initialise_global_variables()
   mopacCommands.commands[0] = g_strdup("mopac");
   mopacCommands.commands[1] = g_strdup("submitMopac 1:0:0");
 #ifdef G_OS_WIN32
-  mopacCommands.commands[2] = g_strdup("MOPAC2007");
+  mopacCommands.commands[2] = g_strdup("MOPAC2009");
 #endif
 
 	povrayCommands.numberOfCommands = 1;
@@ -4109,4 +4120,227 @@ gboolean zmat_mopac_scan_output_file(gchar *FileName)
 		}
 	}
 	return FALSE;
+}
+/*************************************************************************************/
+gchar *get_extenssion_file(const gchar* filename)
+{
+	gchar *ext = NULL;
+	gint len = 0;
+	gint i;
+	gint p=-1;
+	gint lnew = 0;
+
+	if(!filename || strlen(filename)<1) return NULL;
+	len=strlen(filename);
+
+	for(i=len;i>0;i--)
+	if(filename[i]=='.')
+	{
+		p=i+1;
+		break;
+	}
+	lnew  = len-p;
+	if(p<0 || lnew<=0) return NULL;
+	ext= g_malloc((lnew+1)*sizeof(gchar));
+
+	for(i=p;i<len;i++) ext[i-p]= filename[i];
+	ext[lnew]= '\0';
+	return ext;
+}
+/**********************************************/
+GabEditTypeFile get_type_output_file(gchar* fileName)
+{
+ 	gchar *t;
+ 	guint taille=BSIZE;
+	GabEditTypeFile ktype = GABEDIT_TYPEFILE_UNKNOWN;
+	FILE* file = FOpen(fileName, "rb");
+
+ 	if(!file) return ktype;
+
+ 	t=g_malloc(taille*sizeof(gchar));
+
+	rewind(file);
+	fgets(t,taille,file);
+	g_strup(t);
+        if(strstr(t, "ENTERING" )) ktype = GABEDIT_TYPEFILE_GAUSSIAN;
+	else if(strstr( t, "[MOLDEN FORMAT]" )) ktype = GABEDIT_TYPEFILE_MOLDEN;
+	else if(strstr( t, "[GABEDIT FORMAT]" )) ktype = GABEDIT_TYPEFILE_GABEDIT;
+	else if(strstr( t, "GAMESS" )) ktype = GABEDIT_TYPEFILE_GAMESS;
+	else if(atoi(t)>0 && !strstr(t,"**********")) ktype = GABEDIT_TYPEFILE_XYZ;
+	if( ktype == GABEDIT_TYPEFILE_UNKNOWN)
+	{
+		while(!feof(file))
+		{
+			fgets(t,taille,file);
+			if(strstr(t,"PROGRAM SYSTEM MOLPRO"))
+			{
+				ktype = GABEDIT_TYPEFILE_MOLPRO;
+				break;
+			}
+			if(strstr(t,"GAMESS VERSION") || strstr(t,"PC GAMESS"))
+			{
+				ktype = GABEDIT_TYPEFILE_GAMESS;
+				break;
+			}
+			if(strstr(t,"Welcome to Q-Chem"))
+			{
+				ktype = GABEDIT_TYPEFILE_QCHEM;
+				break;
+			}
+		}
+	}
+	rewind(file);
+	if( ktype == GABEDIT_TYPEFILE_UNKNOWN)
+	{
+		while(!feof(file))
+		{
+			fgets(t,taille,file);
+			if(strstr(t,"* O   R   C   A *"))
+			{
+				ktype = GABEDIT_TYPEFILE_ORCA;
+				break;
+			}
+		}
+	}
+	rewind(file);
+	if( ktype == GABEDIT_TYPEFILE_UNKNOWN)
+	{
+		while(!feof(file))
+		{
+			fgets(t,taille,file);
+			if(strstr(t,"GAMESS"))
+			{
+				fgets(t,taille,file);
+				if(strstr(t,"FROM IOWA STATE UNIVERSITY"))
+				ktype = GABEDIT_TYPEFILE_GAMESS;
+				break;
+			}
+		}
+	}
+	rewind(file);
+	if( ktype == GABEDIT_TYPEFILE_UNKNOWN)
+	{
+		fgets(t,taille,file);
+		if(strstr(t,"START OF MOPAC FILE"))
+			ktype = GABEDIT_TYPEFILE_MOPAC_AUX;
+	}
+	rewind(file);
+	if( ktype == GABEDIT_TYPEFILE_UNKNOWN)
+	{
+  		while(!feof(file) )    
+  		{
+ 			if(!fgets(t, taille, file))break;
+			if( strstr(t,"VARIABLE") && strstr(t,"FUNCTION")) 
+			{
+				ktype = GABEDIT_TYPEFILE_MOPAC_SCAN;
+				break;
+			}
+		}
+	}
+
+ 	g_free(t);
+	fclose(file);
+	return ktype;
+}
+/**********************************************/
+GabEditTypeFile get_type_input_file(gchar* fileName)
+{
+	FILE* file = FOpen(fileName, "rb");
+	if(test_type_program_orca(file))
+	{
+		fseek(file, 0L, SEEK_SET);
+		fclose(file);
+		return GABEDIT_TYPEFILE_ORCAINPUT;
+	}
+	if(test_type_program_pcgamess(file))
+	{
+		fseek(file, 0L, SEEK_SET);
+		fclose(file);
+		return GABEDIT_TYPEFILE_PCGAMESSINPUT;
+	}
+	if(test_type_program_gamess(file))
+	{
+		fseek(file, 0L, SEEK_SET);
+		fclose(file);
+		return GABEDIT_TYPEFILE_GAMESSINPUT;
+	}
+	if(test_type_program_qchem(file))
+	{
+		fseek(file, 0L, SEEK_SET);
+		fclose(file);
+		return GABEDIT_TYPEFILE_QCHEMINPUT;
+	}
+	if(test_type_program_mopac(file))
+	{
+		fseek(file, 0L, SEEK_SET);
+		fclose(file);
+		return GABEDIT_TYPEFILE_MOPACINPUT;
+	}
+	if(test_type_program_mpqc(file))
+	{
+		fseek(file, 0L, SEEK_SET);
+		fclose(file);
+		return GABEDIT_TYPEFILE_MPQCINPUT;
+	}
+	if(test_type_program_gaussian(file))
+	{
+		fseek(file, 0L, SEEK_SET);
+		fclose(file);
+		return GABEDIT_TYPEFILE_GAUSSIANINPUT;
+	}
+	if(test_type_program_molcas(file))
+	{
+		fseek(file, 0L, SEEK_SET);
+		fclose(file);
+		return GABEDIT_TYPEFILE_MOLCASINPUT;
+	}
+	if(test_type_program_molpro(file))
+	{
+		fseek(file, 0L, SEEK_SET);
+		fclose(file);
+		return GABEDIT_TYPEFILE_MOLPROINPUT;
+	}
+	fseek(file, 0L, SEEK_SET);
+	fclose(file);
+	return GABEDIT_TYPEFILE_UNKNOWN;
+}
+/************************************************/
+GabEditTypeFile get_type_file(gchar* filename)
+{
+	gchar* ext = NULL;
+	if(!filename) return GABEDIT_TYPEFILE_UNKNOWN;
+	ext = get_extenssion_file(filename);
+	if(!ext) return GABEDIT_TYPEFILE_UNKNOWN;
+	g_strup(ext);
+	if( !strcmp(ext,"INP") || !strcmp(ext,"COM") || !strcmp(ext,"IN") || !strcmp(ext,"MOP") ) 
+		return get_type_input_file(filename);
+	if( !strcmp(ext,"OUT") || !strcmp(ext,"LOG") ) 
+		return get_type_output_file(filename);
+	if( !strcmp(ext,"MOL2")) return GABEDIT_TYPEFILE_MOL2;
+	if( !strcmp(ext,"XYZ")) return GABEDIT_TYPEFILE_XYZ;
+	if( !strcmp(ext,"PDB")) return GABEDIT_TYPEFILE_PDB;
+	if( !strcmp(ext,"GZMT")) return GABEDIT_TYPEFILE_GZMAT;
+	if( !strcmp(ext,"ZMT")) return GABEDIT_TYPEFILE_MZMAT;
+	if( !strcmp(ext,"HIN")) return GABEDIT_TYPEFILE_HIN;
+	if( !strcmp(ext,"TNK")) return GABEDIT_TYPEFILE_TINKER;
+	if( !strcmp(ext,"GAB")) return GABEDIT_TYPEFILE_GABEDIT;
+	if( !strcmp(ext,"MOLDEN")) return GABEDIT_TYPEFILE_MOLDEN;
+	if( !strcmp(ext,"MFJ")) return GABEDIT_TYPEFILE_MOBCAL;
+	if( !strcmp(ext,"AUX")) return GABEDIT_TYPEFILE_MOPAC_AUX;
+	if( !strcmp(ext,"JPG")) return GABEDIT_TYPEFILE_JPEG;
+	if( !strcmp(ext,"JPEG")) return GABEDIT_TYPEFILE_JPEG;
+	if( !strcmp(ext,"PPM")) return GABEDIT_TYPEFILE_PPM;
+	if( !strcmp(ext,"BMP")) return GABEDIT_TYPEFILE_BMP;
+	if( !strcmp(ext,"PNG")) return GABEDIT_TYPEFILE_PNG;
+	if( !strcmp(ext,"PS")) return GABEDIT_TYPEFILE_PS;
+	if( !strcmp(ext,"T41")) return GABEDIT_TYPEFILE_CUBEADF;
+	if( !strcmp(ext,"GRID")) return GABEDIT_TYPEFILE_CUBEMOLCAS;
+	if( !strcmp(ext,"HF")) return GABEDIT_TYPEFILE_CUBEQCHEM;
+	if( !strcmp(ext,"GCUBE")) return GABEDIT_TYPEFILE_CUBEGABEDIT;
+	if( !strcmp(ext,"TRJ")) return GABEDIT_TYPEFILE_TRJ;
+	if( !strcmp(ext,"TXT")) return GABEDIT_TYPEFILE_TXT;
+	if( !strcmp(ext,"CUBE") &&  !strcmp(filename,"CUBE")) return GABEDIT_TYPEFILE_CUBEMOLPRO;
+	if( !strcmp(ext,"CUBE")) return GABEDIT_TYPEFILE_CUBEGAUSS;
+
+	return GABEDIT_TYPEFILE_UNKNOWN;
 }

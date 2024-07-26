@@ -19,6 +19,7 @@ DEALINGS IN THE SOFTWARE.
 
 
 #include "../../Config.h"
+#include <stdlib.h>
 #include "Global.h"
 #include "../Common/Help.h"
 #include "../Utils/UtilsInterface.h"
@@ -78,7 +79,6 @@ GtkWidget *selectors[3];
 GdkColor ColorTemp;
 gchar *FontTemp;
 static gboolean instal = FALSE;
-
 
 /********************************************************************************/
 void destroy_preferences_window(GtkWidget*Win)

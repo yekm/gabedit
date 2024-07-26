@@ -54,40 +54,40 @@
 17 June 2006 :
    ELF : Compute Electron Localized function using the MO
 
-10 september  2006 :
+10 September  2006 :
    Read the MD trajectory from a Gaussian output file.
 
-10 november 2006 :
+10 November 2006 :
    Implementation of an "Unit conversion utility".
-9 febrary 2007 :
+9 Febrary 2007 :
    Gtkplot library has removed.
    New windows for draw IR, Raman and UV/Visible spectrum.
 
-20 febrary 2007 :
+20 Febrary 2007 :
    Gabedit can read the output file of PCGAMESS(Orbitals+Vibration+IR+UV)
 
-1 mars 2007 :
+1 Mars 2007 :
    Gabedit can read the output file of Q-Chem(Orbitals+Vibration+IR+UV)
 
-15 mars 2007 :
+15 Mars 2007 :
    Gabedit can create an input output file of Q-Chem
 
-2 september 2007 :
+2 September 2007 :
    Gabedit can read Q-Chem grid file
    Gabedit can create an input output file of Q-Chem
 
 26 octobre 2007 :
    Export of XY plot in svg format
 
-7 november 2007 :
+7 November 2007 :
    Cartoon mode fro draw geometry
    New algorithm  for compute NMR spectrum
    Export of XY plot in svg format
 
-20 november 2007 :
+20 November 2007 :
    Gabedit can show the SAS
 
-13 december 2007 :
+13 December 2007 :
    The MEP (Molecular electrostatic potential) can be calculated by Gabedit
    MEP can be calculated by Multipole approximaiton
    MEP can be calculated by solving the poisson equation 
@@ -100,7 +100,7 @@
 11 february 2008 :
    MEP can be calculated from the charges of atoms
 
-28 april  2008 :
+28 April  2008 :
    New windows for ECD spectrum.
    New windows for read NMR spectrum from a text file.
 
@@ -136,18 +136,18 @@
    The curves of XYplot window can be exported in eps, ps, pdf or svg file.
    New tool for compute distance between 2 points on XYPlot window.
    "Control+left button" can be used for do a zoom on XYPlot window. 
-2 november 2008 :
+2 November 2008 :
    Increase speed of selection on the XYplot window.
    The identical molecular structures are removed after a Molecular dynamics conformational search.
-11 november 2008 :
+11 November 2008 :
    A Molecular dynamics conformational search is implemented using a PM6/MOPAC or AM1/PCGamess method.
    One can optimize, calculate the ESP fit charges and energy by MOPAC or PCGamess by one click from the "Draw Geometry" window.
-30 november 2008 :
+30 November 2008 :
   The background color of the Draw and Display windows  are saved at the end of session. 
   They are restored in the  next session.
   The .dat Gamess file is copied in the directory of the input file at the end of the run.
   One can run guassian under windows (locally) without runWg03.bat file (but not tested. I have not gaussian under windows).
-10 december 2008 :
+10 December 2008 :
   All deprecated Gdk, Gtk and pango functions has removed.
   The stick&ball can be scaled in the Display window.
   The user can change the order of atoms by changing the number of atom in the Geometry editor.
@@ -172,20 +172,20 @@
   Gabedit can read the normal modes from a molpro 2008 out file.
   Gabedit can read the first and last geometries from a gaussian out file with a "nosymm" calculation.
   The problem of connectivity after the change of number of center (in XYZ geometry editor) is corrected.
-2 april 2009 :
+2 April 2009 :
   Gabedit can read the esp charges from Gaussian. Gabedit read the esp
   charges. If they are not available, Gabedit read the natural charges. If they
   are not available, Gabedit read the Mullekan charges.
-13 april 2009 :
+13 April 2009 :
   New capping possibility for the polypeptide builder.
   A undo is implemented for the polypeptide builder.
-18 may 2009 :
+18 May 2009 :
   Gabedit can create a input file for the 7.4 version of molcas : xyz, zmat, Full symmetry, ....
   Migration from m2msi to grid format for molcas
   Bug fixed for computing of electronic density if orbitals (from molden file) not sorted by occupation number.
-26 may 2009 :
+26 May 2009 :
   Implementation of reaction path calculation with openmopac
-  Translation and rotation are removed to begin of a MD simulation for a Maxwel-Bolzmann velocity distribution
+  Translation and rotation are removed at beginning of a MD simulation.
 11 July 2009 :
   Orca 2.7 is now supported.
 20 July 2009 :
@@ -204,11 +204,20 @@
   Gabedit can now read the raman activity from a Gamess or PCGamess output file.
   The vibration vectors are added to the povray file.
 21 August 2009 :
-  Compute the <ii|1/r12|jj> coulomb integral, analytically with GTF and numerically with GTF and STF.
+  Computing of the <ii|1/r12|jj> coulomb integral, analytically with GTF and numerically with GTF and STF.
 3 September 2009 :
   Copy images to clipboard.
 13 September 2009 :
   Computing of AIM charges [See W. Tang et al J. Phys. Cond.. Matt. 21, 084204(09)]
 19 October 2009 :
    Bug fixed for reading beta orbitals form orca output file.
-
+21 October 2009 :
+   Bug fixed for creation of an orca input file with constraints.
+23 October 2009 :
+   Implementation of a tool to predict the masses and abundances of the isotopes for a given molecule.
+   Atomic weights and isotopic compositions for All Elements are taken from 
+   http://physics.nist.gov/PhysRefData/Compositions/
+9 November 2009 :
+   Computing of the electrophilic, nucleophilic and radical susceptibilities for a molecule.
+11 November 2009 :
+   the n,p, f and l keys can be used for selecting a geometry on the "Geom.Conv" window.

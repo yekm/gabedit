@@ -34,8 +34,6 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/StockIcons.h"
 #include "../Utils/GabeditTextEdit.h"
 
-#define AMU_TO_AU 1822.88848121
-#define AU_TO_CM1 219474.63
 #define DEBUGFLAG 0
 
 /************************************************************************************************************/
@@ -982,6 +980,7 @@ static gboolean readLastShieldingTensors(FILE* file, VibCorrectionsSigma* sigmas
 	for(i=0;i<nAtoms;i++)
 	{
 		if(!fgets(t,BSIZE,file))break;
+		changeDInE(t);
 		Ok =getValueFromLine(t,"Isotropic","=",&sigmas[i].isotropic);
 		if(!Ok) break;
 		Ok =getValueFromLine(t,"Anisotropy","=",&sigmas[i].anisotropy);

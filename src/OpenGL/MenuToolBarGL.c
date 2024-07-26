@@ -138,6 +138,8 @@ static void activate_action (GtkAction *action)
 	const gchar *name = gtk_action_get_name (action);
 	/* const gchar *typename = G_OBJECT_TYPE_NAME (action);*/
 
+	if(!strcmp(name,"GeometryAuto"))
+		file_chooser_open(gl_read_geom_any_file_sel,"Read geometry",GABEDIT_TYPEFILE_UNKNOWN,GABEDIT_TYPEWIN_ORB);
 	if(!strcmp(name,"GeometryXYZ"))
 		file_chooser_open(gl_read_xyz_file_sel,"Read a xyz file",GABEDIT_TYPEFILE_XYZ,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name,"GeometryPDB"))
@@ -195,6 +197,9 @@ static void activate_action (GtkAction *action)
  		file_chooser_open(gl_read_gabedit_file,"Read geometry from a gabedit file",GABEDIT_TYPEFILE_GABEDIT,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryMolden"))
  		file_chooser_open(gl_read_molden_file,"Read geometry from a molden file",GABEDIT_TYPEFILE_MOLDEN,GABEDIT_TYPEWIN_ORB);
+
+	else if(!strcmp(name , "OrbitalsAuto"))
+ 			file_chooser_open(read_orbitals_sel,"Read Geometry and Orbitals(Auto)",GABEDIT_TYPEFILE_UNKNOWN,GABEDIT_TYPEWIN_ORB);
 	/*
 	else if(!strcmp(name , "OrbitalsDalton"))
  			file_chooser_open(read_dalton_orbitals_sel,"Read Geometry and Orbitals from a Dalton output file",GABEDIT_TYPEFILE_DALTON,GABEDIT_TYPEWIN_ORB);
@@ -355,6 +360,25 @@ static void activate_action (GtkAction *action)
 		TypeGrid = GABEDIT_TYPEGRID_ELFSAVIN;
 		create_grid_ELF_Dens_analyze(TRUE);
 	}
+	else if(!strcmp(name , "FEDElectrophilic"))
+	{
+		TypeGrid = GABEDIT_TYPEGRID_FEDELECTROPHILIC;
+		create_grid("Calculation of FED Electrophilic susceptibility");
+	}
+	else if(!strcmp(name , "FEDNucleophilic"))
+	{
+		TypeGrid = GABEDIT_TYPEGRID_FEDNUCLEOPHILIC;
+		create_grid("Calculation of FED Nucleophilic susceptibility");
+	}
+	else if(!strcmp(name , "FEDRadical"))
+	{
+		TypeGrid = GABEDIT_TYPEGRID_FEDRADICAL;
+		create_grid("Calculation of FED Radical susceptibility");
+	}
+	else if(!strcmp(name , "FEDSetAlpha"))
+	{
+		set_alphaFED_dialog ();
+	}
 	else if(!strcmp(name , "SASCompute"))
 	{
 		TypeGrid = GABEDIT_TYPEGRID_SAS;
@@ -447,6 +471,21 @@ static void activate_action (GtkAction *action)
 	{
 		CancelCalcul = FALSE;
 		mapping_with_mep(grid->N,grid->limits, GABEDIT_MG);
+	}
+	else if(!strcmp(name , "FEDElectrophilicMapping"))
+	{
+		CancelCalcul = FALSE;
+		mapping_with_fed(0);
+	}
+	else if(!strcmp(name , "FEDNucleophilicMapping"))
+	{
+		CancelCalcul = FALSE;
+		mapping_with_fed(2);
+	}
+	else if(!strcmp(name , "FEDRadicalMapping"))
+	{
+		CancelCalcul = FALSE;
+		mapping_with_fed(1);
 	}
 	else if(!strcmp(name , "CubeComputeLaplacian")) 
 	{
@@ -667,6 +706,7 @@ static void activate_action (GtkAction *action)
 static GtkActionEntry gtkActionEntries[] =
 {
 	{"Geometry",     NULL, "_Geometry"},
+	{"GeometryAuto", NULL, "Read (Auto)", NULL, "Read the geometry from file", G_CALLBACK (activate_action) },
 	{"GeometryXYZ", NULL, "Read the geometry from a _xyz file", NULL, "Read the geometry from a xyz file", G_CALLBACK (activate_action) },
 	{"GeometryPDB", GABEDIT_STOCK_PDB, "Read the geometry from a _pdb file", NULL, "Read the geometry from a pdb file", G_CALLBACK (activate_action) },
 	{"GeometryHIN", NULL, "Read the geometry from a _hyperchem file", NULL, "Read the geometry from a hyperchem file", G_CALLBACK (activate_action) },
@@ -730,30 +770,32 @@ static GtkActionEntry gtkActionEntries[] =
 	{"GeometryMolden", GABEDIT_STOCK_MOLDEN, "Read from a Mol_den file", 
 		NULL, "Read the from a Molden file", G_CALLBACK (activate_action) },
 	{"Orbitals",     NULL, "_Orbitals"},
+	{"OrbitalsAuto", NULL, "Read geometry and orbitals (_Auto)", 
+		NULL, "Read geometry and orbitals from a Gamess output file", G_CALLBACK (activate_action) },
 	/*
-	{"OrbitalsDalton", GABEDIT_STOCK_DALTON, "Read geometry and orbiatls from a _Dalton output file", 
-		NULL, "Read geometry and orbiatls from a Dalton output file", G_CALLBACK (activate_action) },
+	{"OrbitalsDalton", GABEDIT_STOCK_DALTON, "Read geometry and orbitals from a _Dalton output file", 
+		NULL, "Read geometry and orbitals from a Dalton output file", G_CALLBACK (activate_action) },
 		*/
-	{"OrbitalsGamess", GABEDIT_STOCK_GAMESS, "Read geometry and orbiatls from a _Gamess output file", 
-		NULL, "Read geometry and orbiatls from a Gamess output file", G_CALLBACK (activate_action) },
-	{"OrbitalsGaussian", GABEDIT_STOCK_GAUSSIAN, "Read geometry and orbiatls from a _Gaussian log file", 
-		NULL, "Read geometry and orbiatls from a Gaussian log file", G_CALLBACK (activate_action) },
-	{"OrbitalsMolpro", GABEDIT_STOCK_MOLPRO, "Read geometry and orbiatls from a Mol_pro output file", 
-		NULL, "Read geometry and orbiatls from a Molpro output file", G_CALLBACK (activate_action) },
-	{"OrbitalsOrca", GABEDIT_STOCK_ORCA, "Read geometry and orbiatls from a _Orca output file", 
-		NULL, "Read geometry and orbiatls from a Orca output files", G_CALLBACK (activate_action) },
-	{"OrbitalsOrca2mkl", GABEDIT_STOCK_ORCA, "Read geometry and orbiatls from a _Orca files using orca_2mkl", 
-		NULL, "Read geometry and orbiatls from a Orca output files", G_CALLBACK (activate_action) },
-	{"OrbitalsPCGamess", GABEDIT_STOCK_PCGAMESS, "Read geometry and orbiatls from a _PCGamess output file", 
-		NULL, "Read geometry and orbiatls from a PCGamess output file", G_CALLBACK (activate_action) },
-	{"OrbitalsQChem", GABEDIT_STOCK_QCHEM, "Read geometry and orbiatls from a Q-_Chem output file", 
-		NULL, "Read geometry and orbiatls from a Q-Chem output file", G_CALLBACK (activate_action) },
-	{"OrbitalsMopac", GABEDIT_STOCK_MOPAC, "Read geometry and orbiatls from a _Mopac aux file", 
-		NULL, "Read geometry and orbiatls from a Mopac aux file", G_CALLBACK (activate_action) },
-	{"OrbitalsGabeditRead", GABEDIT_STOCK_GABEDIT, "Read geometry and orbiatls from a G_abedit file", 
-		NULL, "Read geometry and orbiatls from a Gabedit file", G_CALLBACK (activate_action) },
-	{"OrbitalsMolden", GABEDIT_STOCK_MOLDEN, "Read geometry and orbiatls from a Mol_den file", 
-		NULL, "Read geometry and orbiatls from a Molden file", G_CALLBACK (activate_action) },
+	{"OrbitalsGamess", GABEDIT_STOCK_GAMESS, "Read geometry and orbitals from a _Gamess output file", 
+		NULL, "Read geometry and orbitals from a Gamess output file", G_CALLBACK (activate_action) },
+	{"OrbitalsGaussian", GABEDIT_STOCK_GAUSSIAN, "Read geometry and orbitals from a _Gaussian log file", 
+		NULL, "Read geometry and orbitals from a Gaussian log file", G_CALLBACK (activate_action) },
+	{"OrbitalsMolpro", GABEDIT_STOCK_MOLPRO, "Read geometry and orbitals from a Mol_pro output file", 
+		NULL, "Read geometry and orbitals from a Molpro output file", G_CALLBACK (activate_action) },
+	{"OrbitalsOrca", GABEDIT_STOCK_ORCA, "Read geometry and orbitals from a _Orca output file", 
+		NULL, "Read geometry and orbitals from a Orca output files", G_CALLBACK (activate_action) },
+	{"OrbitalsOrca2mkl", GABEDIT_STOCK_ORCA, "Read geometry and orbitals from a _Orca files using orca_2mkl", 
+		NULL, "Read geometry and orbitals from a Orca output files", G_CALLBACK (activate_action) },
+	{"OrbitalsPCGamess", GABEDIT_STOCK_PCGAMESS, "Read geometry and orbitals from a _PCGamess output file", 
+		NULL, "Read geometry and orbitals from a PCGamess output file", G_CALLBACK (activate_action) },
+	{"OrbitalsQChem", GABEDIT_STOCK_QCHEM, "Read geometry and orbitals from a Q-_Chem output file", 
+		NULL, "Read geometry and orbitals from a Q-Chem output file", G_CALLBACK (activate_action) },
+	{"OrbitalsMopac", GABEDIT_STOCK_MOPAC, "Read geometry and orbitals from a _Mopac aux file", 
+		NULL, "Read geometry and orbitals from a Mopac aux file", G_CALLBACK (activate_action) },
+	{"OrbitalsGabeditRead", GABEDIT_STOCK_GABEDIT, "Read geometry and orbitals from a G_abedit file", 
+		NULL, "Read geometry and orbitals from a Gabedit file", G_CALLBACK (activate_action) },
+	{"OrbitalsMolden", GABEDIT_STOCK_MOLDEN, "Read geometry and orbitals from a Mol_den file", 
+		NULL, "Read geometry and orbitals from a Molden file", G_CALLBACK (activate_action) },
 	{"OrbitalsGabeditSave", GABEDIT_STOCK_SAVE, "Save in a G_abedit file", 
 		NULL, "Save in Gabedit file", G_CALLBACK (activate_action) },
 	{"OrbitalsSelection", GABEDIT_STOCK_SELECT_ALL, "_Selection", 
@@ -821,6 +863,11 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ELFBecke", NULL, "Compute _Becke Electron Localization Function[see JCP,92(1990)5397]", NULL, "Compute Becke Electron Localization Function", G_CALLBACK (activate_action) },
 	{"ELFSavin", NULL, "Compute _Savin Electron Localization Function[see Can.J.Chem.,74(1996)1088]", NULL, "Compute Savin Electron Localization Function", G_CALLBACK (activate_action) },
 	{"ELFSavinAttractors", NULL, "Compute _Savin ELF + Attractors", NULL, "Compute Savin ELF+Attractors", G_CALLBACK (activate_action) },
+	{"Fukui",     NULL, "_Fukui"},
+	{"FEDElectrophilic", NULL, "Compute Frontier MO _electrophilic susceptibility", NULL, "Compute Frontier MO electrophilic susceptibility", G_CALLBACK (activate_action) },
+	{"FEDNucleophilic", NULL, "Compute Frontier MO _nucleophilic susceptibility", NULL, "Compute Frontier MO nucleophilic susceptibility", G_CALLBACK (activate_action) },
+	{"FEDRadical", NULL, "Compute Frontier MO _radical susceptibility", NULL, "Compute Frontier MO radical susceptibility", G_CALLBACK (activate_action) },
+	{"FEDSetAlpha", NULL, "Set the value of _alpha parameter", NULL, "Set the value of _alpha parameter", G_CALLBACK (activate_action) },
 
 	{"SAS",     NULL, "_SAS"},
 	{"SASCompute", NULL, "_Solvent Accessible Surface", NULL, "Compute and draw Solvent Accessible Surface", G_CALLBACK (activate_action) },
@@ -834,6 +881,9 @@ static GtkActionEntry gtkActionEntries[] =
 	{"MEPMappingCG", NULL, "MEP by solving Poisson Equation using _Congugate Gradient method", NULL, "MEP by solving Poisson Equation using Congugate Gradient method", G_CALLBACK (activate_action) },
 	{"MEPMappingMultipol", NULL, "MEP using Multipole", NULL, "MEP using Multipole", G_CALLBACK (activate_action) },
 	{"MEPMappingCharges", NULL, "MEP using partial charges", NULL, "MEP using partial charges", G_CALLBACK (activate_action) },
+	{"FEDElectrophilicMapping", NULL, "Mapping by the _electrophilic susceptibility", NULL, "Mapping by the _electrophilic susceptibility", G_CALLBACK (activate_action) },
+	{"FEDNucleophilicMapping", NULL, "Mapping by the _nucleophilic susceptibility", NULL, "Mapping by the _nucleophilic susceptibility", G_CALLBACK (activate_action) },
+	{"FEDRadicalMapping", NULL, "Mapping by the _radical susceptibility", NULL, "Mapping by the _radical susceptibility", G_CALLBACK (activate_action) },
 
 	{"MEPOrbitalsMG", NULL, "MEP by solving Poisson Equation using _Multigrid method", NULL, "MEP by solving Poisson Equation using Multigrid method", G_CALLBACK (activate_action) },
 	{"MEPOrbitalsCG", NULL, "MEP by solving Poisson Equation using _Congugate Gradient method", NULL, "MEP by solving Poisson Equation using Congugate Gradient method", G_CALLBACK (activate_action) },
@@ -900,7 +950,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SetXYZAxesProperties", NULL, "XYZ _Axes properties", NULL, "set the properties of the XYZ Axes", G_CALLBACK (activate_action) },
 	{"SetPrincipalAxesProperties", NULL, "_Principal Axes properties", NULL, "set the properties of the principal Axes", G_CALLBACK (activate_action) },
 	{"SetPovrayBackGround", NULL, "_Povray background", NULL, "set the background for the Povray file", G_CALLBACK (activate_action) },
-	{"SetColorMap", NULL, "Color _mappring", NULL, "set the color mapping options", G_CALLBACK (activate_action) },
+	{"SetColorMap", NULL, "Color _mapping", NULL, "set the color mapping options", G_CALLBACK (activate_action) },
 	{"SetTitle", NULL, "_Title", NULL, "Set title", G_CALLBACK (activate_action) },
 	{"SetScaleBallStick", NULL, "_Scale ball&stick", NULL, "Scale ball&stick", G_CALLBACK (activate_action) },
 	{"ScreenCapture",     NULL, "Screen Ca_pture"},
@@ -1353,6 +1403,8 @@ static guint numberOfOperationEntries = G_N_ELEMENTS (operationEntries);
 static const gchar *uiMenuInfo =
 "  <popup name=\"MenuGL\">\n"
 "    <menu name=\"Geometry\" action=\"Geometry\">\n"
+"      <menuitem name=\"GeometryAuto\" action=\"GeometryAuto\" />\n"
+"      <separator name=\"sepMenuGeomAuto\" />\n"
 "      <menuitem name=\"GeometryXYZ\" action=\"GeometryXYZ\" />\n"
 "      <menuitem name=\"GeometryPDB\" action=\"GeometryPDB\" />\n"
 "      <menuitem name=\"GeometryHIN\" action=\"GeometryHIN\" />\n"
@@ -1417,6 +1469,8 @@ static const gchar *uiMenuInfo =
 "    </menu>\n"
 "    <separator name=\"sepMenuOrbitals\" />\n"
 "    <menu name=\"Orbitals\" action = \"Orbitals\">\n"
+"      <menuitem name=\"OrbitalsAuto\" action=\"OrbitalsAuto\" />\n"
+"      <separator name=\"sepMenuOrbitalsAuto\" />\n"
 /*"      <menuitem name=\"OrbitalsDalton\" action=\"OrbitalsDalton\" />\n"*/
 "      <menuitem name=\"OrbitalsGamess\" action=\"OrbitalsGamess\" />\n"
 "      <menuitem name=\"OrbitalsGaussian\" action=\"OrbitalsGaussian\" />\n"
@@ -1509,9 +1563,21 @@ static const gchar *uiMenuInfo =
 "    <menu name=\"ELF\" action = \"ELF\">\n"
 "        <menuitem name=\"ELFSavin\" action=\"ELFSavin\" />\n"
 "        <menuitem name=\"ELFBecke\" action=\"ELFBecke\" />\n"
+"    </menu>\n"
 /*
 "        <menuitem name=\"ELFSavinAttractors\" action=\"ELFSavinAttractors\" />\n"
 */
+"    <separator name=\"sepMenuFED\" />\n"
+"    <menu name=\"Fukui\" action = \"Fukui\">\n"
+"        <menuitem name=\"FEDElectrophilic\" action=\"FEDElectrophilic\" />\n"
+"        <menuitem name=\"FEDNucleophilic\" action=\"FEDNucleophilic\" />\n"
+"        <menuitem name=\"FEDRadical\" action=\"FEDRadical\" />\n"
+"        <separator name=\"sepMappingFED\" />\n"
+"        <menuitem name=\"FEDElectrophilicMapping\" action=\"FEDElectrophilicMapping\" />\n"
+"        <menuitem name=\"FEDNucleophilicMapping\" action=\"FEDNucleophilicMapping\" />\n"
+"        <menuitem name=\"FEDRadicalMapping\" action=\"FEDRadicalMapping\" />\n"
+"        <separator name=\"sepAlphaFED\" />\n"
+"        <menuitem name=\"FEDSetAlpha\" action=\"FEDSetAlpha\" />\n"
 "    </menu>\n"
 
 "    <separator name=\"sepMenuSAS\" />\n"
@@ -1900,6 +1966,7 @@ static void set_sensitive_density()
 {
 	GtkWidget *density = gtk_ui_manager_get_widget (manager, "/MenuGL/Density");
 	GtkWidget *elf = gtk_ui_manager_get_widget (manager, "/MenuGL/ELF");
+	GtkWidget *fed = gtk_ui_manager_get_widget (manager, "/MenuGL/Fukui");
 	GtkWidget *atomic = gtk_ui_manager_get_widget (manager, "/MenuGL/Density/DensityAtomics");
 	GtkWidget *bonds = gtk_ui_manager_get_widget (manager, "/MenuGL/Density/DensityBonds");
 	GtkWidget *sas = gtk_ui_manager_get_widget (manager, "/MenuGL/SAS");
@@ -1910,6 +1977,9 @@ static void set_sensitive_density()
 	GtkWidget *espMappingMG = gtk_ui_manager_get_widget (manager, "/MenuGL/MEP/MEPMapping/MEPMappingMG");
 	GtkWidget *espMappingCG = gtk_ui_manager_get_widget (manager, "/MenuGL/MEP/MEPMapping/MEPMappingCG");
 	GtkWidget *espMappingMP = gtk_ui_manager_get_widget (manager, "/MenuGL/MEP/MEPMapping/MEPMappingMultipol");
+	GtkWidget *fedElectroMapping = gtk_ui_manager_get_widget (manager, "/MenuGL/Fukui/FEDElectrophilicMapping");
+	GtkWidget *fedNucleoMapping = gtk_ui_manager_get_widget (manager, "/MenuGL/Fukui/FEDNucleophilicMapping");
+	GtkWidget *fedRadicalMapping = gtk_ui_manager_get_widget (manager, "/MenuGL/Fukui/FEDRadicalMapping");
 
 	if(GTK_IS_WIDGET(esp)) gtk_widget_set_sensitive(esp, FALSE);
 	if(GTK_IS_WIDGET(espGrid)) gtk_widget_set_sensitive(espGrid, FALSE);
@@ -1918,11 +1988,15 @@ static void set_sensitive_density()
 	if(GTK_IS_WIDGET(espMappingMG)) gtk_widget_set_sensitive(espMappingMG, FALSE);
 	if(GTK_IS_WIDGET(espMappingCG)) gtk_widget_set_sensitive(espMappingCG, FALSE);
 	if(GTK_IS_WIDGET(espMappingMP)) gtk_widget_set_sensitive(espMappingMP, FALSE);
+	if(GTK_IS_WIDGET(fedElectroMapping)) gtk_widget_set_sensitive(fedElectroMapping, FALSE);
+	if(GTK_IS_WIDGET(fedNucleoMapping)) gtk_widget_set_sensitive(fedNucleoMapping, FALSE);
+	if(GTK_IS_WIDGET(fedRadicalMapping)) gtk_widget_set_sensitive(fedRadicalMapping, FALSE);
 	if(!GeomOrb)
 	{
 		if(GTK_IS_WIDGET(sas)) gtk_widget_set_sensitive(sas, FALSE);
 		if(GTK_IS_WIDGET(density)) gtk_widget_set_sensitive(density, FALSE);
 		if(GTK_IS_WIDGET(elf)) gtk_widget_set_sensitive(elf, FALSE);
+		if(GTK_IS_WIDGET(fed)) gtk_widget_set_sensitive(fed, FALSE);
 		return;
 	}
 	if(GeomOrb && GTK_IS_WIDGET(esp)) gtk_widget_set_sensitive(esp, TRUE);
@@ -1935,16 +2009,24 @@ static void set_sensitive_density()
 		if(GTK_IS_WIDGET(espMappingCG)) gtk_widget_set_sensitive(espMappingCG, TRUE);
 		if(GTK_IS_WIDGET(espMappingMP)) gtk_widget_set_sensitive(espMappingMP, TRUE);
 	}
+	if( grid && GeomOrb) 
+	{
+		if(GTK_IS_WIDGET(fedElectroMapping)) gtk_widget_set_sensitive(fedElectroMapping, TRUE);
+		if(GTK_IS_WIDGET(fedNucleoMapping)) gtk_widget_set_sensitive(fedNucleoMapping, TRUE);
+		if(GTK_IS_WIDGET(fedRadicalMapping)) gtk_widget_set_sensitive(fedRadicalMapping, TRUE);
+	}
 
 	if(GTK_IS_WIDGET(sas)) gtk_widget_set_sensitive(sas, TRUE);
 	if(!GeomOrb || !CoefAlphaOrbitals)
 	{
 		if(GTK_IS_WIDGET(density)) gtk_widget_set_sensitive(density, FALSE);
 		if(GTK_IS_WIDGET(elf)) gtk_widget_set_sensitive(elf, FALSE);
+		if(GTK_IS_WIDGET(fed)) gtk_widget_set_sensitive(fed, FALSE);
 		return;
 	}
 	if(GTK_IS_WIDGET(density)) gtk_widget_set_sensitive(density, TRUE);
 	if(GTK_IS_WIDGET(elf)) gtk_widget_set_sensitive(elf, TRUE);
+	if(GTK_IS_WIDGET(fed)) gtk_widget_set_sensitive(fed, TRUE);
 
 	if(!AOAvailable)
 	{

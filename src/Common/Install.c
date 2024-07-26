@@ -898,7 +898,9 @@ void user_install_verify(UserInstallCallback user_install_callback)
 /*  Local functions  */
 static gboolean user_install_run()
 {
+#ifndef G_OS_WIN32
 	FILE *pfp;
+#endif
 	gchar *str;
 	gchar *t1;
 	gchar *t2;
@@ -907,9 +909,6 @@ static gboolean user_install_run()
 	GtkWidget *log_text;
 
 #ifdef G_OS_WIN32
-	gchar *tmpfile = NULL;
-	gchar *home_dir = NULL;
-	gchar *home_dir_sep = NULL;
 	gint Ok = 1;
 
 	t1 = g_strdup_printf("%s",gabedit_directory());

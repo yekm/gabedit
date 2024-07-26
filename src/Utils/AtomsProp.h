@@ -27,6 +27,7 @@ gchar* get_symbol_using_z(gint z);
 gdouble get_atomic_number_from_symbol(gchar* symbol);
 gdouble get_masse_from_symbol(gchar* symbol);
 gboolean test_atom_define(gchar *Symb);
+void prop_atom_free(SAtomsProp* prop);
 SAtomsProp prop_atom_get(const gchar *);
 void define_default_atoms_prop();
 gchar *symb_atom_get(guint); 

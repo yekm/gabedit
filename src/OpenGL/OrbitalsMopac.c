@@ -673,7 +673,7 @@ void read_mopac_orbitals(gchar* FileName)
 	gint nPqn = 0;
 
 
-	typefile =get_type_file(FileName);
+	typefile =get_type_file_orb(FileName);
 	if(typefile==GABEDIT_TYPEFILE_UNKNOWN) return;
 
 

@@ -878,6 +878,9 @@ GtkWidget *create_iso_frame( GtkWidget *vboxall,gchar* title)
 	if(TypeGrid == GABEDIT_TYPEGRID_SAS) v = 0;
 	if(TypeGrid == GABEDIT_TYPEGRID_ELFSAVIN) v = 0.8;
 	if(TypeGrid == GABEDIT_TYPEGRID_ELFBECKE) v = 0.8;
+	if(TypeGrid == GABEDIT_TYPEGRID_FEDELECTROPHILIC) v = 0.8;
+	if(TypeGrid == GABEDIT_TYPEGRID_FEDNUCLEOPHILIC) v = 0.8;
+	if(TypeGrid == GABEDIT_TYPEGRID_FEDRADICAL) v = 0.8;
 		
 	strlabels[2][2] = g_strdup_printf("%lf",v);
 
@@ -1807,7 +1810,7 @@ void read_gauss_orbitals(gchar* FileName)
 	gchar *t = NULL;
 
 
-	typefile =get_type_file(FileName);
+	typefile =get_type_file_orb(FileName);
 	if(typefile==GABEDIT_TYPEFILE_UNKNOWN) return;
 	if(typefile != GABEDIT_TYPEFILE_GAUSSIAN)
 	{
@@ -1898,7 +1901,7 @@ void read_gabedit_orbitals(gchar* FileName)
 	gboolean OkBeta = FALSE;
 	gchar* t = NULL;
 
-	typefile =get_type_file(FileName);
+	typefile =get_type_file_orb(FileName);
 
 	if(typefile==GABEDIT_TYPEFILE_UNKNOWN)
 		return;
@@ -1998,7 +2001,7 @@ void read_molden_orbitals(gchar* FileName)
 	gboolean OkBeta = FALSE;
  	gchar *t = NULL;
 
-	typefile =get_type_file(FileName);
+	typefile =get_type_file_orb(FileName);
 
 	if(typefile==GABEDIT_TYPEFILE_UNKNOWN)
 		return;
@@ -2259,3 +2262,39 @@ void read_molden_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
  	read_molden_orbitals(FileName);
 } 
 
+/*******************************************************/
+gboolean read_orbitals(gchar* fileName)
+{
+	GabEditTypeFile fileType = get_type_file(fileName);
+	if(fileType == GABEDIT_TYPEFILE_GAMESS) read_gamess_orbitals(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_PCGAMESS) read_gamess_orbitals(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_GAUSSIAN) read_gauss_orbitals(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_MOLPRO) read_molpro_orbitals(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_MOPAC) read_mopac_orbitals(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_MOPAC_AUX) read_mopac_orbitals(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_ORCA) read_orca_orbitals_from_output_file(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_QCHEM) read_qchem_orbitals(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_GABEDIT) read_gabedit_orbitals(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_MOLDEN) read_molden_orbitals(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_UNKNOWN) 
+	{
+		Message(
+			"Sorry, I cannot find the type of your file\n"
+			," Error ",TRUE);
+		return FALSE;
+	}
+	return TRUE;
+}
+/*************************************************************************/
+void read_orbitals_sel(GabeditFileChooser *selecFile, gint response_id)
+{
+	gchar *fileName;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(selecFile);
+	gtk_widget_hide(GTK_WIDGET(selecFile));
+	while( gtk_events_pending() ) gtk_main_iteration();
+ 
+	add_objects_for_new_grid();
+ 	read_orbitals(fileName);
+}

@@ -40,6 +40,7 @@ void read_mopac_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_gabedit_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void save_gabedit_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_molden_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
+void read_orbitals_sel(GabeditFileChooser *selecFile, gint response_id);
 
 #endif /* __GABEDIT_ORBITALS_H__ */
 

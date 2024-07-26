@@ -61,6 +61,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/MenuToolBarGeom.h"
 #include "../Geometry/PreviewGeom.h"
 #include "../Geometry/FragmentsSelector.h"
+#include "../IsotopeDistribution/IsotopeDistributionCalculatorDlg.h"
 
 
 /********************************************************************************/
@@ -164,6 +165,52 @@ static void stop_calcul(GtkWidget *wi, gpointer data);
 void delete_all_selected_atoms();
 static void reset_connections_between_selected_atoms();
 static void reset_connections_between_selected_and_notselected_atoms();
+/**********************************************************************************/
+static gchar* getFormulaOfTheMolecule()
+{
+	gint i,j;
+	gchar* formula = NULL;
+	gchar* dum = NULL;
+	gint *tag = NULL;
+	if(Natoms<1) return formula;
+	tag = g_malloc(Natoms*sizeof(gint));
+	if(!tag) return formula;
+        for(i=0;i<Natoms;i++) tag[i] = 1;
+
+        for(i=0;i<Natoms-1;i++)
+	{
+		if(tag[i]<=0) continue;
+        	for(j=i+1;j<Natoms;j++)
+			if(!strcmp(geometry0[i].Prop.symbol,geometry0[j].Prop.symbol)) 
+			{
+				tag[i]++;
+				tag[j]--;
+			}
+	}
+	formula = g_strdup("");
+        for(i=0;i<Natoms;i++)
+	{
+		if(tag[i]<=0) continue;
+		dum = formula;
+		formula = g_strdup_printf("%s%s%d",formula,geometry0[i].Prop.symbol,tag[i]);
+		g_free(dum);
+	}
+	if(tag) g_free(tag);
+	if(formula && strlen(formula)<1)
+	{
+		g_free(formula);
+		formula = NULL;
+		return formula;
+
+	}
+	return formula;
+}
+/**********************************************************************************/
+void createIstopeDistributionCalculationFromDrawGeom()
+{
+	gchar* formula = getFormulaOfTheMolecule();
+	compute_distribution_dlg(Fenetre, formula);
+}
 /*********************************************************************************************/
 void  copy_screen_geom_clipboard()
 {
@@ -9761,7 +9808,7 @@ void draw_anneau(gint xi,gint yi,gint rayoni,GdkColor colori)
         colormap  = gdk_drawable_get_colormap(ZoneDessin->window);
         gdk_colormap_alloc_color(colormap,&colori,FALSE,TRUE);
 	gdk_gc_set_foreground(gc,&colori);
-	gdk_gc_set_line_attributes(gc,2,GDK_LINE_SOLID,GDK_CAP_ROUND,GDK_JOIN_ROUND);
+	gdk_gc_set_line_attributes(gc,4,GDK_LINE_SOLID,GDK_CAP_ROUND,GDK_JOIN_ROUND);
 	gdk_gc_set_fill(gc,GDK_STIPPLED);
 
 	gabedit_cairo_cercle(cr, ZoneDessin, gc, xi, yi,rayoni);
@@ -10233,22 +10280,27 @@ void dessine_byLayer()
 	GdkColor colorRed;
 	GdkColor colorGreen;
 	GdkColor colorBlue;
+	GdkColor colorYellow;
 	GdkColor colorFrag;
 	gint ni;
 	gint nj;
 
-	colorRed.red   = 65535;
+	colorRed.red   = 40000;
 	colorRed.green = 0;
 	colorRed.blue  = 0;
 	colorRed.pixel  = 0;
 
 	colorGreen.red   = 0;
-	colorGreen.green = 65535;
+	colorGreen.green = 40000;
 	colorGreen.blue  = 0;
 
 	colorBlue.red   = 0;
 	colorBlue.green = 0;
-	colorBlue.blue  = 65535;
+	colorBlue.blue  = 40000;
+
+	colorYellow.red   = 40000;
+	colorYellow.green = 40000;
+	colorYellow.blue  = 0;
 
 	colorFrag = colorGreen;
 
@@ -10282,7 +10334,12 @@ void dessine_byLayer()
 		}
 		if((gint)i==NumSelectedAtom) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorRed);
 		else
-		if(NSA>-1 && (gint)geometry[i].N == NSA) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorBlue);
+		{
+			if(NSA[0]>-1 && (gint)geometry[i].N == NSA[0]) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorRed);
+			if(NSA[1]>-1 && (gint)geometry[i].N == NSA[1]) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorGreen);
+			if(NSA[2]>-1 && (gint)geometry[i].N == NSA[2]) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorBlue);
+			if(NSA[3]>-1 && (gint)geometry[i].N == NSA[3]) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorYellow);
+		}
 		if(OperationType == MESURE)
 		for(j = 0;j<4;j++)
 		if(NumSelAtoms[j] == (gint)geometry[i].N) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorGreen);
@@ -10476,7 +10533,12 @@ void dessine_byLayer()
 	}
 	if((gint)i==NumSelectedAtom && geometry[i].show) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorRed);
 	else
-	if(NSA>-1 && (gint)geometry[i].N == NSA && geometry[i].show) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorBlue);
+	{
+		if(NSA[0]>-1 && (gint)geometry[i].N == NSA[0] && geometry[i].show) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorRed);
+		if(NSA[1]>-1 && (gint)geometry[i].N == NSA[1] && geometry[i].show) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorGreen);
+		if(NSA[2]>-1 && (gint)geometry[i].N == NSA[2] && geometry[i].show) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorBlue);
+		if(NSA[3]>-1 && (gint)geometry[i].N == NSA[2] && geometry[i].show) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorYellow);
+	}
 	if(OperationType == MESURE && geometry[i].show)
 	for(j = 0;j<4;j++)
 		if(NumSelAtoms[j] == (gint)geometry[i].N )
@@ -10548,23 +10610,28 @@ void dessine_stick()
 	GdkColor colorRed;
 	GdkColor colorGreen;
 	GdkColor colorBlue;
+	GdkColor colorYellow;
 	GdkColor colorFrag;
     	gushort rayon;
 	gboolean* FreeAtoms = g_malloc(Natoms*sizeof(gboolean));
 	gint ni, nj;
 
-	colorRed.red = 65535;
+	colorRed.red   = 40000;
 	colorRed.green = 0;
-	colorRed.blue = 0;
-	colorRed.pixel = 0;
+	colorRed.blue  = 0;
+	colorRed.pixel  = 0;
 
 	colorGreen.red   = 0;
-	colorGreen.green = 65535;
+	colorGreen.green = 40000;
 	colorGreen.blue  = 0;
 
 	colorBlue.red   = 0;
 	colorBlue.green = 0;
-	colorBlue.blue  = 65535;
+	colorBlue.blue  = 40000;
+
+	colorYellow.red   = 40000;
+	colorYellow.green = 40000;
+	colorYellow.blue  = 0;
 
 	colorFrag = colorGreen;
 
@@ -10735,7 +10802,12 @@ void dessine_stick()
 		}
 		if((gint)i==NumSelectedAtom) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorRed);
 		else
-		if(NSA>-1 && (gint)geometry[i].N == NSA) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorBlue);
+		{
+			if(NSA[0]>-1 && (gint)geometry[i].N == NSA[0]) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorRed);
+			if(NSA[1]>-1 && (gint)geometry[i].N == NSA[1]) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorGreen);
+			if(NSA[2]>-1 && (gint)geometry[i].N == NSA[2]) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorBlue);
+			if(NSA[3]>-1 && (gint)geometry[i].N == NSA[3]) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorYellow);
+		}
 		if(OperationType == MESURE)
 		for(j = 0;j<4;j++)
 		if(NumSelAtoms[j] == (gint)geometry[i].N)

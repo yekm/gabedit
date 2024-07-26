@@ -1152,8 +1152,7 @@ void read_qchem_orbitals(gchar* FileName)
 	gint typebasis = -1;
 	/* gint j,jj; */
 
-
-	typefile =get_type_file(FileName);
+	typefile =get_type_file_orb(FileName);
 	if(typefile==GABEDIT_TYPEFILE_UNKNOWN) return;
 
 

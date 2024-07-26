@@ -315,19 +315,19 @@ static gchar* listScfConvergenceReal[] = {
 static guint numberOfScfConvergence = G_N_ELEMENTS (listScfConvergenceView);
 static gchar selectedScfConvergence[BSIZE]="NONE";
 /*************************************************************************************************************/
-static gchar* listNottingExcitedView[] = 
+static gchar* listNothingExcitedView[] = 
 { 
-	"Notting", 
+	"Nothing", 
 };
-static gchar* listNottingExcitedReal[] = 
+static gchar* listNothingExcitedReal[] = 
 { 
 	"NONE", 
 };
-static guint numberOfNottingExcited = G_N_ELEMENTS (listNottingExcitedView);
+static guint numberOfNothingExcited = G_N_ELEMENTS (listNothingExcitedView);
 /*************************************************************************************************************/
 static gchar* listSemiEmpExcitedView[] = 
 { 
-	"Notting",
+	"Nothing",
 	"CIS",
 };
 static gchar* listSemiEmpExcitedReal[] = 
@@ -339,7 +339,7 @@ static guint numberOfSemiEmpExcited = G_N_ELEMENTS (listSemiEmpExcitedView);
 /*************************************************************************************************************/
 static gchar* listHFExcitedView[] = 
 { 
-	"Notting",
+	"Nothing",
 	"CIS",
 	"CIS(D)",
 };
@@ -353,7 +353,7 @@ static guint numberOfHFExcited = G_N_ELEMENTS (listHFExcitedView);
 /*************************************************************************************************************/
 static gchar* listDFTExcitedView[] = 
 { 
-	"Notting",
+	"Nothing",
 	"TD-DFT",
 };
 static gchar* listDFTExcitedReal[] = 
@@ -364,9 +364,9 @@ static gchar* listDFTExcitedReal[] =
 static guint numberOfDFTExcited = G_N_ELEMENTS (listDFTExcitedView);
 /*************************************************************************************************************/
 static gchar selectedExcited[BSIZE]="NONE";
-static gchar** listExcitedView = listNottingExcitedView;
-static gchar** listExcitedReal = listNottingExcitedReal;
-static guint numberOfExcited = G_N_ELEMENTS (listNottingExcitedView);
+static gchar** listExcitedView = listNothingExcitedView;
+static gchar** listExcitedReal = listNothingExcitedReal;
+static guint numberOfExcited = G_N_ELEMENTS (listNothingExcitedView);
 /*************************************************************************************************************/
 static void putOrcaExcitedInfoInTextEditor()
 {
@@ -470,9 +470,9 @@ static void setOrcaExcited()
 	}
 	else
 	{
-		listExcitedView = listNottingExcitedView;
-		listExcitedReal = listNottingExcitedReal;
-		numberOfExcited = numberOfNottingExcited;
+		listExcitedView = listNothingExcitedView;
+		listExcitedReal = listNothingExcitedReal;
+		numberOfExcited = numberOfNothingExcited;
 	}
 	
 	if (comboExcited && gtk_combo_box_get_active_iter (GTK_COMBO_BOX(comboExcited), &iter))

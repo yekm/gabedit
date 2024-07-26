@@ -33,6 +33,9 @@ DEALINGS IN THE SOFTWARE.
 static gdouble get_value_elf_becke(gdouble x,gdouble y,gdouble z,gint dump);
 static gdouble get_value_elf_savin(gdouble x,gdouble y,gdouble z,gint dump);
 static gdouble get_value_sas(gdouble x,gdouble y,gdouble z,gint dump);
+static gdouble get_value_fed(gdouble x,gdouble y,gdouble z,gdouble alpha, gint n, gdouble eHOMO, gdouble eLUMO);
+static gdouble get_energy_homo();
+static gdouble get_energy_lumo();
 /************************************************************************/
 gdouble get_value_STF(gdouble x,gdouble y,gdouble z,gint i,gint n)
 {
@@ -407,6 +410,98 @@ void print_grid_point(Grid* grid)
 
 }
 /**************************************************************/
+Grid* define_grid_point_fed(gint N[],GridLimits limits,gint n)
+{
+	Grid* grid;
+	gint i;
+	gint j;
+	gint k;
+	gdouble x;
+	gdouble y;
+	gdouble z;
+	gdouble v;
+	gboolean beg = TRUE;
+	gdouble scale;
+	gdouble V0[3];
+	gdouble V1[3];
+	gdouble V2[3];
+	gdouble firstPoint[3];
+	gdouble eHOMO = get_energy_homo();
+	gdouble eLUMO = get_energy_lumo();
+	gdouble alpha = alphaFED*AUTOEV;
+
+	if(eHOMO>1e8) return NULL;
+	if(eLUMO>1e8 && n!=0) return NULL;
+
+	grid = grid_point_alloc(N,limits);
+	for(i=0;i<3;i++)
+	{
+	V0[i] = firstDirection[i] *(grid->limits.MinMax[1][0]-grid->limits.MinMax[0][0]);
+	V1[i] = secondDirection[i]*(grid->limits.MinMax[1][1]-grid->limits.MinMax[0][1]);
+	V2[i] = thirdDirection[i] *(grid->limits.MinMax[1][2]-grid->limits.MinMax[0][2]);
+	}
+	for(i=0;i<3;i++)
+	{
+		firstPoint[i] = V0[i] + V1[i] + V2[i];
+		firstPoint[i] = originOfCube[i] - firstPoint[i]/2;
+	}
+	for(i=0;i<3;i++)
+	{
+		V0[i] /= grid->N[0]-1;
+		V1[i] /= grid->N[1]-1;
+		V2[i] /= grid->N[2]-1;
+	}
+	
+	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+	scale = (gdouble)1.01/grid->N[0];
+ 
+	for(i=0;i<grid->N[0];i++)
+	{
+		for(j=0;j<grid->N[1];j++)
+		{
+			for(k=0;k<grid->N[2];k++)
+			{
+				x = firstPoint[0] + i*V0[0] + j*V1[0] +  k*V2[0]; 
+				y = firstPoint[1] + i*V0[1] + j*V1[1] +  k*V2[1]; 
+				z = firstPoint[2] + i*V0[2] + j*V1[2] +  k*V2[2]; 
+				
+				v = get_value_fed( x, y, z, alpha,  n,  eHOMO,  eLUMO);
+
+				grid->point[i][j][k].C[0] = x;
+				grid->point[i][j][k].C[1] = y;
+				grid->point[i][j][k].C[2] = z;
+				grid->point[i][j][k].C[3] = v;
+				if(beg)
+				{
+					beg = FALSE;
+        				grid->limits.MinMax[0][3] =  v;
+        				grid->limits.MinMax[1][3] =  v;
+				}
+                		else
+				{
+        				if(grid->limits.MinMax[0][3]>v)
+        					grid->limits.MinMax[0][3] =  v;
+        				if(grid->limits.MinMax[1][3]<v)
+        					grid->limits.MinMax[1][3] =  v;
+				}
+			}
+		}
+		if(CancelCalcul) 
+		{
+			progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+			break;
+		}
+
+		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
+	}
+
+	if(CancelCalcul)
+	{
+		grid = free_grid(grid);
+	}
+	return grid;
+}
+/**************************************************************/
 Grid* define_grid_point(gint N[],GridLimits limits,Func3d func)
 {
 	Grid* grid;
@@ -520,6 +615,15 @@ Grid* define_grid(gint N[],GridLimits limits)
 		case GABEDIT_TYPEGRID_ELFSAVIN :
 			grid = define_grid_point(N,limits,get_value_elf_savin);
 			break;
+		case GABEDIT_TYPEGRID_FEDELECTROPHILIC :
+			grid = define_grid_point_fed( N, limits,0);
+			break;
+		case GABEDIT_TYPEGRID_FEDRADICAL :
+			grid = define_grid_point_fed( N, limits,1);
+			break;
+		case GABEDIT_TYPEGRID_FEDNUCLEOPHILIC :
+			grid = define_grid_point_fed( N, limits,2);
+			break;
 		case GABEDIT_TYPEGRID_SAS :
 		case GABEDIT_TYPEGRID_SASMAP :
 			grid = define_grid_point(N,limits,get_value_sas);
@@ -544,6 +648,12 @@ Grid* define_grid(gint N[],GridLimits limits)
 		set_status_label_info("Grid","Nothing");
 	return grid;
 }
+/*********************************************************************************/
+Grid* compute_fed_grid_using_cube_grid(Grid* grid, gint n)
+{
+	if(!grid) return NULL;
+	return define_grid_point_fed(grid->N,grid->limits,n);
+}
 /**************************************************************/
 Grid* define_grid_electronic_density(gint N[],GridLimits limits)
 {
@@ -555,6 +665,27 @@ Grid* define_grid_electronic_density(gint N[],GridLimits limits)
 	CancelCalcul = FALSE;
 	TypeGrid = GABEDIT_TYPEGRID_EDENSITY;
 	grid = define_grid_point(N,limits,get_value_electronic_density);
+	TypeGrid = TypeGridOld;
+	if(grid) set_status_label_info("Grid","Ok");
+	else set_status_label_info("Grid","Nothing");
+	return grid;
+}
+/**************************************************************/
+Grid* define_grid_FED(gint N[],GridLimits limits, gint n)
+{
+	Grid *grid = NULL;
+	GabEditTypeGrid TypeGridOld = TypeGrid;
+	gchar* t = NULL;
+	if(n==0) t = g_strdup_printf("Computing FED Grid for a electrophilic reaction");
+	else if(n==2) t = g_strdup_printf("Computing FED Grid for a nucleophilic reaction");
+	else t = g_strdup_printf("Computing FED Grid for a radical reaction");
+	set_status_label_info("Grid",t);
+	g_free(t);
+	CancelCalcul = FALSE;
+	if(n==0) TypeGrid = GABEDIT_TYPEGRID_FEDELECTROPHILIC;
+	else if(n==2) TypeGrid = GABEDIT_TYPEGRID_FEDNUCLEOPHILIC;
+	else TypeGrid = GABEDIT_TYPEGRID_FEDRADICAL;
+	grid = define_grid_point_fed(N,limits,n);
 	TypeGrid = TypeGridOld;
 	if(grid) set_status_label_info("Grid","Ok");
 	else set_status_label_info("Grid","Nothing");
@@ -1381,6 +1512,140 @@ static gdouble get_norm2_grad_value_electronic_density(gdouble x,gdouble y,gdoub
 	return vx*vx+vy*vy+vz*vz; 
 }
 */
+/*********************************************************************************/
+/*
+f (x,y,z) = 
+      (2 - n)/2 
+      { 
+	      [sum_j(1 to N) O_j  Phi_j (x,y,z)^2 e^(-alpha(e_HOMO -e_j ))]/
+	      [sum_j(1 to N) O_j   e^(-alpha(e_HOMO -e_j ))]
+      }
+      +
+      n/2 
+      { 
+	      [sum_j(1 to N) (2-O_j)  Phi_j (x,y,z)^2 e^(+alpha(e_LUMO -e_j ))]/
+	      [sum_j(1 to N) (2-O_j)   e^(+alpha(e_LUMO -e_j ))]
+      }
+n  = 0 for an electrophilic reaction, 
+     1 for a radical reaction, and 
+     2 for a nucleophilic reaction. 
+N is the number of orbitals. 
+O_j is the number of electrons in orbital j. 
+Phi_j(x,y,z) is the value of the orbital j at point (x,y,z).
+e_j is the energy of orbital j.
+*/
+
+static gdouble get_value_fed(gdouble x,gdouble y,gdouble z,gdouble alpha, gint n, gdouble eHOMO, gdouble eLUMO)
+{
+	gdouble s1_1  = 0.0;
+	gdouble s1_2  = 0.0;
+	gdouble s2_1  = 0.0;
+	gdouble s2_2  = 0.0;
+	gdouble de = 0;
+	gdouble d = 0;
+	gdouble cgv;
+
+	gint i;
+	gint k1;
+	gint k2;
+	gdouble *PhiAlpha = g_malloc(NAlphaOrb*sizeof(gdouble));
+	gdouble *PhiBeta  = g_malloc(NBetaOrb*sizeof(gdouble));
+
+	for(k1=0;k1<NAlphaOrb;k1++) PhiAlpha[k1] = 0.0;
+	for(k2=0;k2<NBetaOrb;k2++) PhiBeta[k2] = 0.0;
+
+	for(i=0;i<NAOrb;i++)
+	{
+		cgv = get_value_CBTF(x,y,z,i);
+		for(k1=0;k1<NAlphaOrb;k1++) if(OccAlphaOrbitals[k1]>1e-8) PhiAlpha[k1] += CoefAlphaOrbitals[k1][i]*cgv;
+		
+		for(k2=0;k2<NBetaOrb;k2++) if(OccBetaOrbitals[k2]>1e-8) PhiBeta[k2]  += CoefBetaOrbitals[k2][i]*cgv;
+ 	}
+	for(k1=0;k1<NAlphaOrb;k1++) if(OccAlphaOrbitals[k1]>1e-8) PhiAlpha[k1] = PhiAlpha[k1] * PhiAlpha[k1] ; 
+	for(k2=0;k2<NBetaOrb;k2++) if(OccBetaOrbitals[k2]>1e-8) PhiBeta[k2]  = PhiBeta[k2]  * PhiBeta[k2]  ; 
+
+	if(n!=2) 
+	for(k1=0;k1<NAlphaOrb;k1++)
+	if(OccAlphaOrbitals[k1]>1e-8)
+	{
+			de = exp(-alpha*(eHOMO-EnerAlphaOrbitals[k1]));
+			d = OccAlphaOrbitals[k1]*de;
+			s1_1 += d*PhiAlpha[k1];
+			s1_2 += d;
+	}
+	if(n!=2) 
+	for(k1=0;k1<NBetaOrb;k1++)
+	if(OccBetaOrbitals[k1]>1e-8)
+	{
+			de = exp(-alpha*(eHOMO-EnerBetaOrbitals[k1]));
+			d = OccBetaOrbitals[k1]* de;
+			s1_1 += d*PhiBeta[k1];
+			s1_2 += d;
+	}
+	if(n!=0) 
+	for(k1=0;k1<NAlphaOrb;k1++)
+	if(OccAlphaOrbitals[k1]>1e-8)
+	{
+			de = exp(alpha*(eLUMO-EnerAlphaOrbitals[k1]));
+			d = OccAlphaOrbitals[k1]*de;
+			s2_1 += d*PhiAlpha[k1];
+			s2_2 += d;
+	}
+	if(n!=0) 
+	for(k1=0;k1<NBetaOrb;k1++)
+	if(OccBetaOrbitals[k1]>1e-8)
+	{
+			de = exp(alpha*(eLUMO-EnerBetaOrbitals[k1]));
+			d = OccBetaOrbitals[k1]*de;
+			s2_1 += d*PhiBeta[k1];
+			s2_2 += d;
+	}
+
+	g_free(PhiAlpha);
+	g_free(PhiBeta);
+	if(s1_2<1e-12) s1_2 = 1;
+	if(s2_2<1e-12) s2_2 = 1;
+	
+	return (2.-n)/2.*s1_1/s1_2 + n/2.*s2_1/s2_2;
+}
+/****************************************************************/
+static gdouble get_energy_homo()
+{
+	gdouble e = 0;
+	gint k;
+
+	if(NAlphaOrb<1) return 1e10;
+	e =EnerAlphaOrbitals[0];
+	for(k=1;k<NAlphaOrb;k++) 
+		if(OccAlphaOrbitals[k]>1e-8 && EnerAlphaOrbitals[k]>e) e =EnerAlphaOrbitals[k];
+	for(k=0;k<NBetaOrb;k++)
+		if(OccBetaOrbitals[k]>1e-8 && EnerBetaOrbitals[k]>e) e = EnerBetaOrbitals[k];
+	
+	return e;
+}
+/****************************************************************/
+static gdouble get_energy_lumo()
+{
+	gdouble e = 0;
+	gint k;
+	gboolean begin = TRUE;
+
+	if(NAlphaOrb<1) return 1e10;
+	e =EnerAlphaOrbitals[0];
+	for(k=0;k<NAlphaOrb;k++) 
+	if(begin || (OccAlphaOrbitals[k]<1e-8 && EnerAlphaOrbitals[k]<e)) 
+	{
+		e =EnerAlphaOrbitals[k];
+		begin = FALSE;
+	}
+	for(k=0;k<NBetaOrb;k++) 
+	if(begin || (OccBetaOrbitals[k]<1e-8 && EnerBetaOrbitals[k]<e)) 
+	{
+		e =EnerBetaOrbitals[k];
+		begin = FALSE;
+	}
+	return e;
+}
 /*********************************************************************************/
 static gdouble get_value_elf_becke(gdouble x,gdouble y,gdouble z,gint dump)
 {

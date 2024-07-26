@@ -22,18 +22,21 @@ SEMIEMP    = src/SemiEmpirical/*.o
 UTILS      = src/Utils/*.o
 SYMMETRY   = src/Symmetry/*.o
 VIBCORR   = src/VibrationalCorrections/*.o
+IDC   = src/IsotopeDistribution/*.o
 
  
 OBJECTS = \
 	$(COMMON) $(CURVE) $(FILES) $(GAMESS) $(GAUSS) $(GEOM) $(MODELS) \
 	$(MOLCAS) $(MOLPRO) $(MOPAC) $(MPQC) $(MULTIGRID) $(NETWORK) \
-	$(OPENGL) $(PCGAMESS) $(ORCA) $(QCHEM) $(SEMIEMP) $(UTILS) $(SYMMETRY) $(VIBCORR)
+	$(OPENGL) $(PCGAMESS) $(ORCA) $(QCHEM) $(SEMIEMP) $(UTILS) \
+	$(SYMMETRY) $(VIBCORR) $(IDC)
 
 SUBDIRS = \
 	src/OpenGL src/Common src/Files src/Gaussian \
  	src/Geometry src/Spectrum src/MolecularMechanics src/Molpro src/Molcas \
 	src/MPQC src/Gamess src/Orca src/QChem src/Mopac src/NetWork src/Utils \
-	src/Symmetry src/PCGamess src/MultiGrid src/SemiEmpirical src/VibrationalCorrections
+	src/Symmetry src/PCGamess src/MultiGrid src/SemiEmpirical \
+	src/VibrationalCorrections src/IsotopeDistribution
 
 ifneq ($(external_gtkglarea),1)
 GTKGL     = gtkglarea/*.o

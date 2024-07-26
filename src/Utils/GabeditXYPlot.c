@@ -605,6 +605,65 @@ static void add_new_data(GtkWidget* xyplot, gint numberOfPoints, gdouble* X,  gd
 	}
 }
 /********************************************************************************/
+static void add_new_data_peaks(GtkWidget* xyplot, gint numberOfPoints, gdouble* X,  gdouble* Y)
+{
+	if(numberOfPoints>0)
+	{
+		gint loop;
+		XYPlotData *data = g_malloc(sizeof(XYPlotData));
+		guint red = rand()%60000;
+		guint green = rand()%60000;
+		guint blue = rand()%60000;
+		gdouble xmin = 0;
+		gdouble xmax = 0;
+
+		data->size=3*numberOfPoints+2;
+		data->x = g_malloc(data->size*sizeof(gdouble)); 
+		data->y = g_malloc(data->size*sizeof(gdouble)); 
+
+		xmin = X[0];
+		xmax = X[0];
+		for(loop = 1; loop<numberOfPoints;loop++)
+		{
+			if(xmin>X[loop]) xmin = X[loop];
+			if(xmax<X[loop]) xmax = X[loop];
+		}
+
+		data->x[0]=xmin;
+		data->y[0]=0;
+		data->x[data->size-1]=xmax;
+		data->y[data->size-1]=0;
+		for (loop=0; loop<numberOfPoints; loop++){
+			gint iold = loop*3+1;
+			data->x[iold]=X[loop];
+			data->y[iold]=0;
+
+			data->x[iold+1]=X[loop];
+			data->y[iold+1]=Y[loop];
+
+			data->x[iold+2]=X[loop];
+			data->y[iold+2]=0;
+		}
+
+		sprintf(data->point_str,"+");
+		data->point_pango = NULL;
+		xyplot_build_points_data(GABEDIT_XYPLOT(xyplot), data);
+
+		data->point_size=0;
+		data->line_width=2;
+		data->point_color.red=red; 
+		data->point_color.green=green; 
+		data->point_color.blue=blue; 
+
+		data->line_color.red=green;
+		data->line_color.green=red;
+		data->line_color.blue=blue;
+		data->line_style=GDK_LINE_SOLID;
+		gabedit_xyplot_add_data (GABEDIT_XYPLOT(xyplot), data);
+		gabedit_xyplot_set_autorange(GABEDIT_XYPLOT(xyplot), NULL);
+	}
+}
+/********************************************************************************/
 static gchar** my_strsplit(gchar *str)
 {
 	gchar** strsplit= g_malloc(sizeof(gchar*));
@@ -656,10 +715,12 @@ static gboolean read_data_xy1yncolumns(GtkFileChooser *filesel, gint response_id
 	gint i;
 	gint k;
 	gdouble x=0;
+	gboolean doPeaks = FALSE;
 
 	if(response_id != GTK_RESPONSE_OK) return FALSE;
  	fileName = gtk_file_chooser_get_filename(filesel);
 	xyplot = g_object_get_data(G_OBJECT (filesel), "XYPLOT");
+	doPeaks = GPOINTER_TO_INT(g_object_get_data(G_OBJECT (filesel), "DoPeaks"));
 
  	fd = fopen(fileName, "rb");
 
@@ -728,7 +789,8 @@ static gboolean read_data_xy1yncolumns(GtkFileChooser *filesel, gint response_id
 		{
 			if(numberOfPoints[k]>0 && X[k] && Y[k])
 			{
-				add_new_data(xyplot, numberOfPoints[k], X[k],  Y[k]);
+				if(doPeaks) add_new_data_peaks(xyplot, numberOfPoints[k], X[k],  Y[k]);
+				else add_new_data(xyplot, numberOfPoints[k], X[k],  Y[k]);
 			}
 			if(X[k]) g_free(X[k]);
 			if(Y[k]) g_free(Y[k]);
@@ -757,7 +819,7 @@ static gboolean read_data_xy1yncolumns(GtkFileChooser *filesel, gint response_id
 
 }
 /********************************************************************************/
-static void read_data_xy1yncolumns_dlg(GtkWidget* xyplot)
+static void read_data_xy1yncolumns_dlg(GtkWidget* xyplot, gboolean doPeaks)
 {
 	GtkWidget* parentWindow = NULL;
 	gchar* patternsfiles[] = {"*.txt","*",NULL}; 
@@ -770,6 +832,7 @@ static void read_data_xy1yncolumns_dlg(GtkWidget* xyplot)
 			patternsfiles);
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 	g_object_set_data(G_OBJECT (filesel), "XYPLOT", xyplot);
+	g_object_set_data(G_OBJECT (filesel), "DoPeaks",  GINT_TO_POINTER(doPeaks));
 }
 /********************************************************************************/
 static gboolean this_is_a_backspace(gchar *st)
@@ -795,10 +858,12 @@ static gboolean read_data_2columns(GtkFileChooser *filesel, gint response_id)
 	gdouble b;
 	GtkWidget* xyplot = NULL;
 	gint nData= 0;
+	gboolean doPeaks = FALSE;
 
 	if(response_id != GTK_RESPONSE_OK) return FALSE;
  	fileName = gtk_file_chooser_get_filename(filesel);
 	xyplot = g_object_get_data(G_OBJECT (filesel), "XYPLOT");
+	doPeaks = GPOINTER_TO_INT(g_object_get_data(G_OBJECT (filesel), "DoPeaks"));
 
  	fd = fopen(fileName, "rb");
  	OK=FALSE;
@@ -829,7 +894,8 @@ static gboolean read_data_2columns(GtkFileChooser *filesel, gint response_id)
 	}
 	if(numberOfPoints>0)
 	{
-		add_new_data(xyplot, numberOfPoints, X,  Y);
+		if(doPeaks) add_new_data_peaks(xyplot, numberOfPoints, X,  Y);
+		else add_new_data(xyplot, numberOfPoints, X,  Y);
 	}
 	else if(nData == 0)
 	{
@@ -853,7 +919,7 @@ static gboolean read_data_2columns(GtkFileChooser *filesel, gint response_id)
 
 }
 /********************************************************************************/
-static void read_data_2columns_dlg(GtkWidget* xyplot)
+static void read_data_2columns_dlg(GtkWidget* xyplot, gboolean doPeaks)
 {
 	GtkWidget* parentWindow = NULL;
 	gchar* patternsfiles[] = {"*.txt","*",NULL}; 
@@ -866,6 +932,7 @@ static void read_data_2columns_dlg(GtkWidget* xyplot)
 			patternsfiles);
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 	g_object_set_data(G_OBJECT (filesel), "XYPLOT", xyplot);
+	g_object_set_data(G_OBJECT (filesel), "DoPeaks",  GINT_TO_POINTER(doPeaks));
 }
 /********************************************************************************/
 static gboolean save_data_2columns(GtkFileChooser *filesel, gint response_id)
@@ -3151,8 +3218,10 @@ static void activate_action (GtkAction *action)
 	if(!strcmp(name,"SetDigits")) { set_digits_dialog(xyplot); }
 	if(!strcmp(name,"SetFontSize")) { set_font_size_dialog(xyplot); }
 	if(!strcmp(name,"SetAutoRanges")) { gabedit_xyplot_set_autorange(GABEDIT_XYPLOT(xyplot), NULL); }
-	if(!strcmp(name,"DataRead2Columns")) { read_data_2columns_dlg(xyplot); }
-	if(!strcmp(name,"DataReadXY1YnColumns")) { read_data_xy1yncolumns_dlg(xyplot); }
+	if(!strcmp(name,"DataRead2Columns")) { read_data_2columns_dlg(xyplot,FALSE); }
+	if(!strcmp(name,"DataRead2ColumnsPeaks")) { read_data_2columns_dlg(xyplot,TRUE); }
+	if(!strcmp(name,"DataReadXY1YnColumns")) { read_data_xy1yncolumns_dlg(xyplot,FALSE); }
+	if(!strcmp(name,"DataReadXY1YnColumnsPeaks")) { read_data_xy1yncolumns_dlg(xyplot,TRUE); }
 	if(!strcmp(name,"DataReadJDX")) { read_data_jdx_dlg(xyplot); }
 	if(!strcmp(name,"DataReadJMRUI")) { read_data_jMRUI_dlg(xyplot); }
 	if(!strcmp(name,"DataSaveAll")) { save_all_data_2columns_dlg(xyplot); }
@@ -3190,6 +3259,8 @@ static GtkActionEntry gtkActionEntries[] =
 	{"DataReadXY1YnColumns", NULL, "_Read data from an ASCII X.Y1..Yn file(x, y1, y2,...,yn)", NULL, "Read data from an ASCII XY file(2 columns)", G_CALLBACK (activate_action) },
 	{"DataReadJDX", NULL, "_Read data from a JDX file", NULL, "Read data from a JDX file", G_CALLBACK (activate_action) },
 	{"DataReadJMRUI", NULL, "_Read data from a jMRUI text file", NULL, "Read data from a jMRUI text file", G_CALLBACK (activate_action) },
+	{"DataRead2ColumnsPeaks", NULL, "_Read data from an ASCII XY file(2 columns) and draw peaks", NULL, "Read data from an ASCII XY file(2 columns) and draw peaks", G_CALLBACK (activate_action) },
+	{"DataReadXY1YnColumnsPeaks", NULL, "_Read data from an ASCII X.Y1..Yn file(x, y1, y2,...,yn) and draw peaks", NULL, "Read data from an ASCII XY file(2 columns) and draw peaks", G_CALLBACK (activate_action) },
 	{"DataSaveAll", NULL, "_Save all data in an ascii XY file(2columns)", NULL, "Save all data in an ascii file(2columns)", G_CALLBACK (activate_action) },
 	{"DataRemoveAll", NULL, "_Remove all data", NULL, "Remove all data", G_CALLBACK (activate_action) },
 	{"DataChangeAll", NULL, "_Change all", NULL, "change all", G_CALLBACK (activate_action) },
@@ -3257,7 +3328,13 @@ static void add_data_to_actions(GtkUIManager *manager, GtkWidget   *xyplot)
 	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Data/DataAdd/DataRead2Columns");
 	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
 
+	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Data/DataAdd/DataRead2ColumnsPeaks");
+	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
+
 	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Data/DataAdd/DataReadXY1YnColumns");
+	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
+
+	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Data/DataAdd/DataReadXY1YnColumnsPeaks");
 	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
 
 	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Data/DataAdd/DataReadJDX");
@@ -3344,6 +3421,9 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"DataReadXY1YnColumns\" action=\"DataReadXY1YnColumns\" />\n"
 "        <menuitem name=\"DataReadJDX\" action=\"DataReadJDX\" />\n"
 "        <menuitem name=\"DataReadJMRUI\" action=\"DataReadJMRUI\" />\n"
+"        <separator name=\"sepPeaks\" />\n"
+"        <menuitem name=\"DataRead2ColumnsPeaks\" action=\"DataRead2ColumnsPeaks\" />\n"
+"        <menuitem name=\"DataReadXY1YnColumnsPeaks\" action=\"DataReadXY1YnColumnsPeaks\" />\n"
 "      </menu>\n"
 "        <separator name=\"sepDataSaveAll\" />\n"
 "        <menuitem name=\"DataSaveAll\" action=\"DataSaveAll\" />\n"
@@ -4583,6 +4663,36 @@ static gint gabedit_xyplot_button_press (GtkWidget *widget, GdkEventButton *even
       xyplot->move_point.x=event->x;
       xyplot->move_point.y=event->y;
   } 
+  if (!xyplot->shift_key_pressed && ! xyplot->control_key_pressed && event->button != xyplot->mouse_zoom_button)
+    if ( (event->x > xyplot->plotting_rect.x) && 
+         (event->x < (xyplot->plotting_rect.x + xyplot->plotting_rect.width)) && 
+         (event->y > xyplot->plotting_rect.y) && 
+         (event->y < (xyplot->plotting_rect.y + xyplot->plotting_rect.height)) ){
+
+	gdouble X, Y;
+	gchar txt[BSIZE];
+	PangoLayout *playout;
+
+	if(gabedit_xyplot_get_point(GABEDIT_XYPLOT(xyplot), event->x, event->y, &X, &Y))
+		sprintf(txt,"(%f ; %f)",X,Y);
+	playout=gtk_widget_create_pango_layout (widget, txt);
+	if(playout)
+	{
+		GdkRectangle rect;
+		rect.x=0; 
+		rect.y=0; 
+		rect.width=widget->allocation.width;
+		rect.height=widget->allocation.height;
+		gtk_paint_layout (widget->style, widget->window, 
+			GTK_STATE_NORMAL, FALSE, 
+			&rect, widget, NULL, 
+			event->x,
+			event->y,
+			playout);
+		g_object_unref(G_OBJECT(playout));
+	}
+
+  } 
 
   if ( xyplot->mouse_autorange_enabled && 
       (event->button == xyplot->mouse_autorange_button) )
@@ -4675,6 +4785,8 @@ static gint gabedit_xyplot_button_release (GtkWidget *widget, GdkEventButton *ev
     gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
     xyplot->mouse_button=0;
   }
+   else
+    gtk_widget_queue_draw(GTK_WIDGET(xyplot));  
 
   if (xyplot->mouse_displace_enabled && 
       (event->button == xyplot->mouse_displace_button) && 
@@ -6068,6 +6180,240 @@ GtkWidget* gabedit_xyplot_new_window(gchar* title, GtkWidget*parent)
 	return window;
 }
 /****************************************************************************************/
+void gabedit_xyplot_add_data_peaks(GabeditXYPlot *xyplot, gint numberOfPoints, gdouble* X,  gdouble* Y, GdkColor color)
+{
+	g_return_if_fail (xyplot != NULL);
+	g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+	g_return_if_fail (X != NULL);
+	g_return_if_fail (Y != NULL);
+	if(numberOfPoints>0)
+	{
+		gint loop;
+		XYPlotData *data = g_malloc(sizeof(XYPlotData));
+		guint red = (color.red);
+		guint green = (color.green);
+		guint blue = (color.blue);
+		gdouble xmin = 0;
+		gdouble xmax = 0;
+
+		data->size=3*numberOfPoints+2;
+		data->x = g_malloc(data->size*sizeof(gdouble)); 
+		data->y = g_malloc(data->size*sizeof(gdouble)); 
+
+		xmin = X[0];
+		xmax = X[0];
+		for(loop = 1; loop<numberOfPoints;loop++)
+		{
+			if(xmin>X[loop]) xmin = X[loop];
+			if(xmax<X[loop]) xmax = X[loop];
+		}
+
+		data->x[0]=xmin;
+		data->y[0]=0;
+		data->x[data->size-1]=xmax;
+		data->y[data->size-1]=0;
+		for (loop=0; loop<numberOfPoints; loop++){
+			gint iold = loop*3+1;
+			data->x[iold]=X[loop];
+			data->y[iold]=0;
+
+			data->x[iold+1]=X[loop];
+			data->y[iold+1]=Y[loop];
+
+			data->x[iold+2]=X[loop];
+			data->y[iold+2]=0;
+		}
+
+		sprintf(data->point_str,"+");
+		data->point_pango = NULL;
+		xyplot_build_points_data(GABEDIT_XYPLOT(xyplot), data);
+
+		data->point_size=0;
+		data->line_width=2;
+		data->point_color.red=red; 
+		data->point_color.green=green; 
+		data->point_color.blue=blue; 
+
+		data->line_color.red=green;
+		data->line_color.green=red;
+		data->line_color.blue=blue;
+		data->line_style=GDK_LINE_SOLID;
+		gabedit_xyplot_add_data (GABEDIT_XYPLOT(xyplot), data);
+		gabedit_xyplot_set_autorange(GABEDIT_XYPLOT(xyplot), NULL);
+	}
+}
+/****************************************************************************************/
+static void xyplot_curve_noconv(GabeditXYPlot *xyplot, gint numberOfPoints, gdouble* X,  gdouble* Y, GdkColor color)
+{
+	gint loop;
+	guint red = (color.red);
+	guint green = (color.green);
+	guint blue = (color.blue);
+	XYPlotData *data = g_malloc(sizeof(XYPlotData));
+	
+	data->size=numberOfPoints;
+	if(data->size>0)
+	{
+		data->x = g_malloc(data->size*sizeof(gdouble)); 
+		data->y = g_malloc(data->size*sizeof(gdouble)); 
+	}
+	
+	for (loop=0; loop<data->size; loop++){
+		data->x[loop]=X[loop];
+		data->y[loop]=Y[loop];
+	}
+	sprintf(data->point_str,"+");
+
+	data->point_size=0;
+	data->line_width=2;
+	data->point_color.red=red; 
+	data->point_color.green=green; 
+	data->point_color.blue=blue; 
+
+	data->line_color.red=green;
+	data->line_color.green=red;
+	data->line_color.blue=blue;
+	data->line_style=GDK_LINE_SOLID;
+	gabedit_xyplot_add_data (GABEDIT_XYPLOT(xyplot), data);
+	gabedit_xyplot_set_autorange(GABEDIT_XYPLOT(xyplot), NULL);
+
+}
+/********************************************************************************/
+static gdouble lorentzianLineshape(gdouble rel_offset)
+{
+	return 1.0 / (1.0 + rel_offset * rel_offset);
+}
+/********************************************************************************/
+static gdouble gaussianLineshape(gdouble rel_offset)
+{
+  gdouble nln2 = -log(2.0);
+  return exp(nln2 * rel_offset * rel_offset);
+}
+/****************************************************************************************/
+static void build_data_xyplot_curve_withconv(GabeditXYPlot *xyplot, gint numberOfPoints, gdouble* X,  gdouble* Y, gdouble halfWidth, gdouble (*lineshape)(gdouble), GdkColor color)
+{
+	gint i;
+	gint j;
+	gint n = 0;
+        gdouble xx ;
+        gdouble h0 = halfWidth/20;
+	guint red = (color.red);
+	guint green = (color.green);
+	guint blue = (color.blue);
+	XYPlotData *data = g_malloc(sizeof(XYPlotData));
+	gdouble xmin = 0;
+	gdouble xmax = 0;
+	
+	data->size=0;
+	data->point_size=0;
+	data->line_width=2;
+	data->point_color.red=green; 
+	data->point_color.green=red; 
+	data->point_color.blue=blue; 
+
+	data->line_color.red=red;
+	data->line_color.green=green;
+	data->line_color.blue=blue;
+	data->line_style=GDK_LINE_SOLID;
+	
+	data->x = NULL;
+	data->y = NULL;
+
+	if(numberOfPoints<1||!X||!Y) return;
+	
+	xmin = X[0];
+	xmax = X[0];
+	for (i=0; i<numberOfPoints; i++){
+		if(X[i]<xmin) xmin = X[i];
+		if(X[i]>xmax) xmax = X[i];
+	}
+
+        xx = xmin-10*halfWidth;
+        h0 = halfWidth/10;
+	n = (gint)((xmax-xmin)/h0+0.5)+numberOfPoints;
+	if(n>0) data->x = (gdouble*)g_malloc(sizeof(gdouble)*n);
+	if(numberOfPoints>0 && n>0)
+	do
+	{
+		gdouble dmin = 0.0;
+		gdouble d = 0.0;
+		gint jmin = 0;
+		for (j=0; j < numberOfPoints; j++)
+		{
+			gdouble center = (gdouble) X[j];
+			d = fabs(xx - center);
+			if(d<dmin || j==0) 
+			{
+				jmin = j;
+				dmin = d;
+			}
+		}
+		data->x[data->size] = xx;
+		if(dmin<h0)
+		{
+			if(xx< X[jmin])
+			{
+				xx = (gdouble) X[jmin];
+				data->x[data->size] = xx;
+				xx += h0+1e-8;
+			}
+			else
+			{
+				xx = (gdouble) X[jmin];
+				data->x[data->size] = xx;
+				xx += h0+1e-8;
+			}
+		}
+		else
+		{
+			if(dmin> 5*halfWidth) xx += h0+dmin/5;
+			else xx += h0;
+		}
+		data->size++;
+	}while(xx<xmax && data->size<n);
+
+	if(data->size>0) 
+	{
+		data->x = (gdouble*)g_realloc(data->x,sizeof(gdouble)*data->size);
+		data->y = (gdouble*)g_malloc(sizeof(gdouble)*data->size);
+	}
+
+	if(numberOfPoints>0)
+	for (i=0; i < data->size; i++)
+	{
+		gdouble yy = 0.0;
+		for (j=0; j < numberOfPoints; j++)
+		{
+			gdouble center = (gdouble) X[j];
+			gdouble rel_offset = (data->x[i] - center) / halfWidth;
+			yy += Y[j]*lineshape(rel_offset);
+		}
+		data->y[i] = yy;
+	}
+
+	sprintf(data->point_str,"+");
+	data->point_pango = NULL;
+	xyplot_build_points_data(GABEDIT_XYPLOT(xyplot), data);
+	gabedit_xyplot_add_data (GABEDIT_XYPLOT(xyplot), data);
+	gabedit_xyplot_set_autorange(GABEDIT_XYPLOT(xyplot), NULL);
+}
+/****************************************************************************************/
+void gabedit_xyplot_add_data_conv(GabeditXYPlot *xyplot, gint numberOfPoints, gdouble* X,  gdouble* Y, gdouble halfWidth,GabeditXYPlotConvType convType, GdkColor color)
+{
+	switch(convType)
+	{
+		case GABEDIT_XYPLOT_CONV_NONE :
+			xyplot_curve_noconv(xyplot, numberOfPoints, X,  Y, color);
+			break;
+		case GABEDIT_XYPLOT_CONV_LORENTZ :
+			build_data_xyplot_curve_withconv(xyplot, numberOfPoints, X,  Y, halfWidth, lorentzianLineshape, color);
+			break;
+		case GABEDIT_XYPLOT_CONV_GAUSS :
+			build_data_xyplot_curve_withconv(xyplot, numberOfPoints, X,  Y, halfWidth, gaussianLineshape, color);
+	}
+
+}
+/****************************************************************************************/
 void gabedit_xyplot_help()
 {
 	GtkWidget* dialog = NULL;
@@ -6087,7 +6433,7 @@ void gabedit_xyplot_help()
 			"\t Set : ticks, ranges, X and Y labels, digits, font size, auto ranges\n"
 			"\t Render : grids, directions, legends\n"
 			"\t Data : read data from multiple format(txt 2 or more, JDX, jMRUI)\n"
-			"\t        A backspace ligne in a txt file is interpreted as a begining new data\n"
+			"\t        A backspace ligne in a txt file is interpreted as a beginning new data\n"
 			"\t        Save all data at a txt file\n"
 			"\t        Remove all all\n"
 			"\t        change data (scale, shift, ...)\n"

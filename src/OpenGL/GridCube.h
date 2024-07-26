@@ -41,6 +41,7 @@ void save_cube_gabedit_file(GabeditFileChooser *SelecFile, gint response_id);
 void mapping_with_mep(gint N[],GridLimits limits, PoissonSolverMethod psMethod);
 void mapping_with_mep_from_multipol(gint lmax);
 void mapping_with_mep_from_charges();
+void mapping_with_fed(gint n);
 
 #endif /* __GABEDIT_GRIDCUBE_H__ */
 

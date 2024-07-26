@@ -3409,6 +3409,37 @@ static void read_hin_files(GabeditFileChooser *SelecFile, gint response_id)
   	rafreshList();
 	
 }
+/*************************************************************************/
+static void read_file(GabeditFileChooser *selecFile, gint response_id)
+{
+	gchar *fileName;
+	GabEditTypeFile fileType = GABEDIT_TYPEFILE_UNKNOWN;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(selecFile);
+	gtk_widget_hide(GTK_WIDGET(selecFile));
+	while( gtk_events_pending() ) gtk_main_iteration();
+
+	fileType = get_type_file(fileName);
+	if(fileType == GABEDIT_TYPEFILE_DALTON) read_dalton_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_GAUSSIAN) read_gaussian_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_GABEDIT) read_gabedit_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MOLPRO) read_molpro_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MOPAC_AUX) read_mopac_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_GAMESS) read_gamess_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_PCGAMESS) read_gamess_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MOLDEN) read_molden_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_XYZ) read_xyz_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_HIN) read_hin_files(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MPQC) read_mpqc_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_QCHEM) read_qchem_file(selecFile, response_id);
+	else 
+	{
+		Message(
+			"Sorry, I cannot find the type of your file\n"
+			," Error ",TRUE);
+	}
+}
 /********************************************************************************/
 static void read_gabedit_file_dlg()
 {
@@ -3499,6 +3530,13 @@ static void read_hin_multiple_files_dlg()
 	
 	gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filesel),TRUE);
 
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+}
+/********************************************************************************/
+static void read_file_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_file, "Read geometries from a file", GABEDIT_TYPEFILE_UNKNOWN,GABEDIT_TYPEWIN_ORB);
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
 /********************************************************************************/
@@ -4406,6 +4444,7 @@ static void activate_action (GtkAction *action)
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGaussInput");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGaussInputLink");
 	}
+	else if(!strcmp(name, "ReadAuto")) read_file_dlg();
 	else if(!strcmp(name, "ReadGabedit")) read_gabedit_file_dlg();
 	else if(!strcmp(name, "ReadDalton")) read_dalton_file_dlg();
 	else if(!strcmp(name, "ReadGamess")) read_gamess_file_dlg();
@@ -4432,6 +4471,7 @@ static GtkActionEntry gtkActionEntries[] =
 {
 	{"File",     NULL, "_File", NULL, NULL, G_CALLBACK (activate_action)},
 	{"Read",     NULL, "_Read"},
+	{"ReadAuto", NULL, "Read a file(Auto)", NULL, "Read a file", G_CALLBACK (activate_action) },
 	{"ReadGabedit", GABEDIT_STOCK_GABEDIT, "Read a G_abedit file", NULL, "Read a Gabedit file", G_CALLBACK (activate_action) },
 	{"ReadDalton", GABEDIT_STOCK_DALTON, "Read a _Dalton output file", NULL, "Read a Dalton output file", G_CALLBACK (activate_action) },
 	{"ReadGamess", GABEDIT_STOCK_GAMESS, "Read a _Gamess output file", NULL, "Read a Gamess output file", G_CALLBACK (activate_action) },
@@ -4461,6 +4501,8 @@ static guint numberOfGtkActionEntries = G_N_ELEMENTS (gtkActionEntries);
 static const gchar *uiMenuInfo =
 "  <popup name=\"MenuGeomConv\">\n"
 "    <separator name=\"sepMenuPopGabedit\" />\n"
+"    <menuitem name=\"ReadAuto\" action=\"ReadAuto\" />\n"
+"    <separator name=\"sepMenuAuto\" />\n"
 "    <menuitem name=\"ReadGabedit\" action=\"ReadGabedit\" />\n"
 "    <menuitem name=\"ReadDalton\" action=\"ReadDalton\" />\n"
 "    <menuitem name=\"ReadGamess\" action=\"ReadGamess\" />\n"
@@ -4487,6 +4529,8 @@ static const gchar *uiMenuInfo =
 "  <menubar name = \"MenuBar\">\n"
 "    <menu name=\"File\" action=\"File\">\n"
 "      <menu name=\"Read\" action=\"Read\">\n"
+"        <menuitem name=\"ReadAuto\" action=\"ReadAuto\" />\n"
+"        <separator name=\"sepMenuAuto\" />\n"
 "        <menuitem name=\"ReadGabedit\" action=\"ReadGabedit\" />\n"
 "        <menuitem name=\"ReadDalton\" action=\"ReadDalton\" />\n"
 "        <menuitem name=\"ReadGamess\" action=\"ReadGamess\" />\n"

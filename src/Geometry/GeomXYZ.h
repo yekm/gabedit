@@ -67,6 +67,32 @@ void save_geometry_gabedit_file(GabeditFileChooser *SelecFile, gint response_id)
 void save_xyz_file_no_add_list(const gchar* FileName);
 gboolean connecteds(guint i,guint j);
 
+void read_hin_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_gabedit_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_first_mpqc_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_last_mpqc_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_first_dalton_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_last_dalton_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_first_gamess_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_last_gamess_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_last_gaussian_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_first_gaussian_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_last_molcas_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_last_molpro_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_first_orca_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_last_orca_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_first_qchem_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_last_qchem_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_first_mopac_output_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_last_mopac_output_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_last_mopac_aux_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_first_molcas_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_first_molpro_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_mol2_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_tinker_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_pdb_file(GabeditFileChooser *SelecFile, gint response_id);
+ void read_XYZ_file(GabeditFileChooser *SelecFile, gint  response_id);
+
 
 #endif /* __GABEDIT_GEOMXYZ_H__ */
 

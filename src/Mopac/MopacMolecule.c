@@ -45,7 +45,7 @@ static gint spinMultiplicity=1;
 
 static gint numberOfPointsRP[2] = {10,10};
 static gdouble stepValueRP[2] = {0.1,0.1};
-static gchar typeRP[2][100] = {"Bond","Notting"};
+static gchar typeRP[2][100] = {"Bond","Nothing"};
 static gint atomRP[2] = {1,0};
 
 /************************************************************************************************************/
@@ -54,7 +54,7 @@ void putMopacReactionPathInTextEditor()
 	gchar buffer[BSIZE];
         gabedit_text_insert (GABEDIT_TEXT(text), NULL,  NULL, NULL, "1SCF ",-1);
 	sprintf(buffer,"STEP=%g POINT=%d ",stepValueRP[0],numberOfPointsRP[0]);
-	if(strcmp(typeRP[1],"Notting"))
+	if(strcmp(typeRP[1],"Nothing"))
 		sprintf(buffer,"STEP1=%g POINT1=%d STEP2=%g POINT2=%d",
 				stepValueRP[0],numberOfPointsRP[0],
 				stepValueRP[1],numberOfPointsRP[1]
@@ -721,17 +721,17 @@ void createMopacChargeMultiplicityFrame(GtkWidget *box)
 	*/
 }
 /************************************************************************************************************/
-static void setComboReactionPathVariableType(GtkWidget *comboReactionPathVariableType, gboolean notting)
+static void setComboReactionPathVariableType(GtkWidget *comboReactionPathVariableType, gboolean nothing)
 {
 	GList *glist = NULL;
 	gint i;
-	gchar* listXYZ[] = {"Notting","X","Y","Z"};
-	gchar* listZMatrix[] = {"Notting","Bond","Angle","Dihedral"};
+	gchar* listXYZ[] = {"Nothing","X","Y","Z"};
+	gchar* listZMatrix[] = {"Nothing","Bond","Angle","Dihedral"};
 	gchar** list = NULL;
 	gint iBegin = 0;
 	gint iEnd = 3;
 
-	if(!notting) iBegin = 1;
+	if(!nothing) iBegin = 1;
 	if(MethodeGeom==GEOM_IS_XYZ) list = listXYZ;
 	else list = listZMatrix;
 
@@ -956,7 +956,7 @@ void createReactionPathFrame(GtkWidget *box)
 
 	table = gtk_table_new(3,5,FALSE);
 
-	sprintf(typeRP[1],"Notting");
+	sprintf(typeRP[1],"Nothing");
 	if(MethodeGeom==GEOM_IS_XYZ) sprintf(typeRP[0],"X");
 	else sprintf(typeRP[0],"Bond");
 

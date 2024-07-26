@@ -1380,7 +1380,7 @@ static void editHBond(GtkWidget *win)
 /********************************************************************************/
 static void editHBondDlg(GtkWidget *win,gpointer data)
 {
-	editnewHBondDlg(editHBond,"Edit H-Bond paramters",FALSE);
+	editnewHBondDlg(editHBond,"Edit H-Bond parameters",FALSE);
 }
 /********************************************************************************/
 static void editnewImproperDlg(GabeditSignalFunc f,gchar* title,gboolean sensitive)
@@ -2219,7 +2219,7 @@ static void editBond(GtkWidget* w)
 /********************************************************************************/
 static void editBondDlg(GtkWidget *win,gpointer data)
 {
-	editnewBondDlg(editBond,"Edit Bond paramters",FALSE);
+	editnewBondDlg(editBond,"Edit Bond parameters",FALSE);
 }
 /********************************************************************************/
 static void editType(GtkWidget* w)

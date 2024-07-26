@@ -31,11 +31,14 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/GeomGlobal.h"
 #include "../Geometry/GeomXYZ.h"
 #include "../Geometry/GeomZmatrix.h"
+#include "../Geometry/ResultsAnalise.h"
 #include "../Utils/UtilsInterface.h"
+#include "../Utils/Utils.h"
 #include "../Utils/AtomsProp.h"
 #include "../Geometry/Fragments.h"
 #include "../Geometry/DrawGeom.h"
 #include "../Common/Windows.h"
+#include "../Files/FileChooser.h"
 
 static GtkWidget *FrameGeom;
 /*************************************************************************/
@@ -637,4 +640,55 @@ void create_units_option(GtkWidget *hbox,gchar *tlabel)
 	gtk_widget_set_size_request(GTK_WIDGET(combobox), -1, 25 );
   	gtk_box_pack_start (GTK_BOX (hbox), combobox, TRUE, TRUE, 10);
         gtk_combo_box_set_active (GTK_COMBO_BOX (combobox), 0);
+}
+/*************************************************************************/
+static void read_file(GabeditFileChooser *selecFile, gint response_id)
+{
+	gchar *fileName;
+	GabEditTypeFile fileType = GABEDIT_TYPEFILE_UNKNOWN;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(selecFile);
+	gtk_widget_hide(GTK_WIDGET(selecFile));
+	while( gtk_events_pending() ) gtk_main_iteration();
+
+	fileType = get_type_file(fileName);
+	if(fileType == GABEDIT_TYPEFILE_HIN) read_hin_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_XYZ) read_XYZ_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_GABEDIT) read_gabedit_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MPQC) read_last_mpqc_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_DALTON) read_last_dalton_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_GAUSSIAN) read_last_gaussian_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_GAMESS) read_last_gamess_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_PCGAMESS) read_last_gamess_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MOLCAS) read_last_molcas_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MOLPRO) read_last_molpro_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_ORCA) read_last_orca_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_QCHEM) read_last_qchem_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MOPAC) read_last_mopac_output_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MOPAC_AUX) read_last_mopac_aux_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MOPAC_SCAN) read_geometries_conv_mopac_scan(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MOL2) read_mol2_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_TINKER) read_tinker_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_PDB) read_pdb_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_GZMAT) read_ZMatrix_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MZMAT) read_ZMatrix_mopac_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_GAUSSIANINPUT) read_gauss_input_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MOLCASINPUT) read_molcas_input_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MOLPROINPUT) read_molpro_input_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MOPACINPUT) read_mopac_input_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MPQCINPUT) read_mpqc_input_file(selecFile, response_id);
+	else 
+	{
+		Message(
+			"Sorry, I cannot read this file\n"
+			," Error ",TRUE);
+	}
+}
+/********************************************************************************/
+void read_geom_any_file_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_file, "Read geometries", GABEDIT_TYPEFILE_UNKNOWN,GABEDIT_TYPEWIN_ORB);
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }

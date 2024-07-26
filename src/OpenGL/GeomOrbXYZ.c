@@ -1208,7 +1208,7 @@ gboolean gl_read_molden_or_gabedit_file_geom(gchar *FileName,gint type)
  	if(Ncenters == 0 )
 	{
 		if(GeomOrb) g_free(GeomOrb);
-		set_status_label_info("Geometry","Notting");
+		set_status_label_info("Geometry","Nothing");
 		return FALSE;
 	}
  	else
@@ -3504,3 +3504,67 @@ void gl_read_gabedit_file(GabeditFileChooser *SelecFile, gint response_id)
  	gl_read_gabedit_file_geom(FileName);
 } 
 /*******************************************************/
+gboolean gl_read_geom_any_file(gchar* fileName)
+{
+	GabEditTypeFile fileType = get_type_file(fileName);
+	gboolean Ok = FALSE;
+	if(fileType == GABEDIT_TYPEFILE_XYZ) Ok = gl_read_xyz_file(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_PDB) Ok =  gl_read_pdb_file(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_HIN) Ok = gl_read_hin_file(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_DALTON) Ok = gl_read_dalton_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_GAMESS) Ok = gl_read_gamess_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_PCGAMESS) Ok = gl_read_gamess_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_GAUSSIAN) Ok = gl_read_gaussn_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_MOLCAS) Ok = gl_read_molcas_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_MOLPRO) Ok = gl_read_molpro_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_MOPAC) Ok = gl_read_mopac_output_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_MOPAC_AUX) Ok = gl_read_mopac_aux_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_MPQC) Ok = gl_read_mpqc_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_ORCA) Ok = gl_read_orca_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_QCHEM) Ok = gl_read_qchem_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_GABEDIT) Ok = gl_read_gabedit_file_geom(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_MOLDEN) Ok = gl_read_molden_file_geom(fileName);
+	else if(
+		fileType ==  GABEDIT_TYPEFILE_ORCAINPUT||
+		fileType ==  GABEDIT_TYPEFILE_PCGAMESSINPUT||
+		fileType ==  GABEDIT_TYPEFILE_GAMESSINPUT||
+		fileType ==  GABEDIT_TYPEFILE_QCHEMINPUT||
+		fileType ==  GABEDIT_TYPEFILE_MOPACINPUT||
+		fileType ==  GABEDIT_TYPEFILE_MPQCINPUT||
+		fileType ==  GABEDIT_TYPEFILE_GAUSSIANINPUT||
+		fileType ==  GABEDIT_TYPEFILE_MOLCASINPUT||
+		fileType ==  GABEDIT_TYPEFILE_MOLPROINPUT
+	)
+	{
+		Message(
+			"Sorry, I cannot read this file here\n"
+			"You can read it from the 'Draw Geometry' window, save it in hin and read it from this window 'Display window'\n"
+			," Error ",TRUE);
+		return FALSE;
+	}
+	else if(fileType == GABEDIT_TYPEFILE_UNKNOWN) 
+	{
+		Message(
+			"Sorry, I cannot find the type of your file\n"
+			" Try to read it using openbabel\n"
+			," Error ",TRUE);
+		return FALSE;
+	}
+	RebuildGeom = TRUE;
+	if(this_is_a_new_geometry()) free_objects_all();
+	glarea_rafresh(GLArea);
+	return Ok;
+}
+/*************************************************************************/
+void gl_read_geom_any_file_sel(GabeditFileChooser *selecFile, gint response_id)
+{
+	gchar *fileName;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(selecFile);
+	gtk_widget_hide(GTK_WIDGET(selecFile));
+	while( gtk_events_pending() ) gtk_main_iteration();
+ 
+	add_objects_for_new_grid();
+ 	gl_read_geom_any_file(fileName);
+}

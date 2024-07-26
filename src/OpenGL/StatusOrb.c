@@ -170,6 +170,15 @@ gint progress_orb(gdouble scal,GabEditTypeProgressOrb  type,gboolean reset)
 		if(TypeGrid == GABEDIT_TYPEGRID_ELFBECKE || TypeGrid == GABEDIT_TYPEGRID_ELFSAVIN)
 		t = g_strdup_printf(" Grid computing for the ELF : %.0f%%",new_val*100);
 		else
+		if(TypeGrid == GABEDIT_TYPEGRID_FEDELECTROPHILIC)
+		t = g_strdup_printf(" Grid computing for the Electro. susceptibility : %.0f%%",new_val*100);
+		else
+		if(TypeGrid == GABEDIT_TYPEGRID_FEDNUCLEOPHILIC)
+		t = g_strdup_printf(" Grid computing for the Nucleo. susceptibility : %.0f%%",new_val*100);
+		else
+		if(TypeGrid == GABEDIT_TYPEGRID_FEDRADICAL)
+		t = g_strdup_printf(" Grid computing for the Radical. susceptibility : %.0f%%",new_val*100);
+		else
 		t = g_strdup_printf(" Grid Computing : %.0f%%",new_val*100);
 		break;
 	case GABEDIT_PROGORB_SCALEGRID :

@@ -170,7 +170,7 @@ static gboolean setOrcaMoleculeFromGeomXYZ()
 /************************************************************************************************************/
 static gboolean setOrcaMoleculeFromGeomZMatrix()
 {
-	iprogram=PROG_IS_GAMESS;
+	iprogram=PROG_IS_ORCA;
 	if(!zmat_to_xyz()) return FALSE;
 	delete_dummy_atoms();
 	/* conversion_zmat_to_xyz();*/
@@ -266,6 +266,7 @@ static void putOrcaMoleculeInTextEditor()
         gchar buffer[BSIZE];
 	gint i;
 	gint nV = 0;
+	gdouble x,y,z;
 
 	if(orcaMolecule.numberOfAtoms<1) return;
 
@@ -278,15 +279,11 @@ static void putOrcaMoleculeInTextEditor()
 			gchar X[100];
 			gchar Y[100];
 			gchar Z[100];
-			sprintf(X,"%s",GeomXYZ[i].X);
-  			if(!test(GeomXYZ[i].X)) sprintf(X,"{%s}",GeomXYZ[i].X);
-			sprintf(Y,"%s",GeomXYZ[i].Y);
-  			if(!test(GeomXYZ[i].Y)) sprintf(Y,"{%s}",GeomXYZ[i].Y);
-			sprintf(Z,"%s",GeomXYZ[i].Z);
-  			if(!test(GeomXYZ[i].Z)) sprintf(Z,"{%s}",GeomXYZ[i].Z);
-
-			sprintf(buffer," %s  %s %s %s\n",orcaMolecule.listOfAtoms[i].symbol,
-					X,Y,Z);
+			setXYZFromGeomXYZ(i, &x, &y, &z);
+			sprintf(X,"%f",x);
+			sprintf(Y,"%f",y);
+			sprintf(Z,"%f",z);
+			sprintf(buffer," %s  %s %s %s\n",orcaMolecule.listOfAtoms[i].symbol, X,Y,Z);
         		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer, -1);
 		}
 		sprintf(buffer,"*\n");
@@ -297,21 +294,10 @@ static void putOrcaMoleculeInTextEditor()
         	{
         		if(VariablesXYZ[i].Used)
 			{
-				sprintf(buffer,"%cparams \n",'%');
-        			gabedit_text_insert (GABEDIT_TEXT(text), NULL, &orcaColorFore.keyWord, &orcaColorBack.keyWord, buffer, -1);
 				nV++;
 				break;
 			}
         	}
-        	for(i=0;i<NVariablesXYZ;i++)
-        	{
-        		if(VariablesXYZ[i].Used)
-			{
-  				sprintf(buffer," %s  %s\n",VariablesXYZ[i].Name,VariablesXYZ[i].Value);
-        			gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,buffer,-1);
-			}
-        	}
-		if(nV>0) gabedit_text_insert (GABEDIT_TEXT(text), NULL, &orcaColorFore.keyWord, &orcaColorBack.keyWord," end #params\n",-1);
 		if(nV>0) 
 		{
 			sprintf(buffer,"%cgeom Constraints\n",'%');
@@ -320,7 +306,7 @@ static void putOrcaMoleculeInTextEditor()
 			{
   				if(!test(GeomXYZ[i].X) || !test(GeomXYZ[i].Y) || !test(GeomXYZ[i].Z)) 
 				{
-					sprintf(buffer,"  C {%d} C\n",i);
+					sprintf(buffer,"  {C %d C}\n",i);
         				gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,buffer,-1);
 				}
 			}
@@ -342,17 +328,16 @@ static void putOrcaMoleculeInTextEditor()
 				gchar A[100];
 				gchar D[100];
 				sprintf(R,"%s",Geom[i].R);
-  				if(!test(Geom[i].R)) sprintf(R,"{%s}",Geom[i].R);
+  				if(!test(Geom[i].R)) sprintf(R,"%f",get_value_variableZmat(Geom[i].R));
 				sprintf(A,"%s",Geom[i].Angle);
-  				if(!test(Geom[i].Angle)) sprintf(A,"{%s}",Geom[i].Angle);
+  				if(!test(Geom[i].Angle)) sprintf(A,"%f",get_value_variableZmat(Geom[i].Angle));
 				sprintf(D,"%s",Geom[i].Dihedral);
-  				if(!test(Geom[i].Dihedral)) sprintf(D,"{%s}",Geom[i].Dihedral);
+  				if(!test(Geom[i].Dihedral)) sprintf(D,"%f",get_value_variableZmat(Geom[i].Dihedral));
 
 				sprintf(buffer," %s  %s %s %s %s %s %s\n",
 						Geom[i].Symb,
-						Geom[i].NR,R,
-						Geom[i].NAngle,A,
-						Geom[i].NDihedral,D);
+						Geom[i].NR, Geom[i].NAngle, Geom[i].NDihedral, 
+						R, A, D);
         			gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, &prop.color, buffer, -1);
 			}
 			else
@@ -361,14 +346,13 @@ static void putOrcaMoleculeInTextEditor()
 				gchar R[100];
 				gchar A[100];
 				sprintf(R,"%s",Geom[i].R);
-  				if(!test(Geom[i].R)) sprintf(R,"{%s}",Geom[i].R);
+  				if(!test(Geom[i].R)) sprintf(R,"%f",get_value_variableZmat(Geom[i].R));
 				sprintf(A,"%s",Geom[i].Angle);
-  				if(!test(Geom[i].Angle)) sprintf(A,"{%s}",Geom[i].Angle);
-				sprintf(buffer," %s  %s %s %s %s\n",
+  				if(!test(Geom[i].Angle)) sprintf(A,"%f",get_value_variableZmat(Geom[i].Angle));
+				sprintf(buffer," %s  %s %s %s %s %s %s\n",
 						Geom[i].Symb,
-						Geom[i].NR,R,
-						Geom[i].NAngle,A
-						);
+						Geom[i].NR, Geom[i].NAngle, "0", 
+						R, A, "0.0");
         			gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, &prop.color, buffer, -1);
 			}
 			else
@@ -376,18 +360,23 @@ static void putOrcaMoleculeInTextEditor()
 			{
 				gchar R[100];
 				sprintf(R,"%s",Geom[i].R);
-  				if(!test(Geom[i].R)) sprintf(R,"{%s}",Geom[i].R);
+  				if(!test(Geom[i].R)) sprintf(R,"%f",get_value_variableZmat(Geom[i].R));
 				sprintf(buffer," %s  %s %s\n",
 						Geom[i].Symb,
 						Geom[i].NR,R
 						);
+				sprintf(buffer," %s  %s %s %s %s %s %s\n",
+						Geom[i].Symb,
+						Geom[i].NR, "0", "0", 
+						R, "0.0", "0.0");
         			gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, &prop.color, buffer, -1);
 			}
 			else
 			{
-				sprintf(buffer," %s \n",
-						Geom[i].Symb
-						);
+				sprintf(buffer," %s  %s %s %s %s %s %s\n",
+						Geom[i].Symb,
+						"0", "0", "0",
+						"0.0", "0.0", "0.0");
         			gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, &prop.color, buffer, -1);
 			}
         	}
@@ -399,22 +388,10 @@ static void putOrcaMoleculeInTextEditor()
         	{
         		if(Variables[i].Used)
 			{
-				sprintf(buffer,"%cparams \n",'%');
-        			gabedit_text_insert (GABEDIT_TEXT(text), NULL, &orcaColorFore.keyWord, &orcaColorBack.keyWord,buffer,-1);
 				nV++;
 				break;
 			}
         	}
-        	for(i=0;i<NVariables;i++)
-        	{
-        		if(Variables[i].Used)
-			{
-  				sprintf(buffer," %s  %s\n",Variables[i].Name,Variables[i].Value);
-        			gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,buffer,-1);
-			}
-        	}
-		if(nV>0)
-        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, &orcaColorFore.keyWord, &orcaColorBack.keyWord," end #params\n",-1);
 		if(nV>0) 
 		{
 			sprintf(buffer,"%cgeom Constraints\n",'%');
@@ -423,19 +400,19 @@ static void putOrcaMoleculeInTextEditor()
 			{
   				if(Geom[i].Nentry>=NUMBER_ENTRY_R && !test(Geom[i].R)) 
 				{
-					sprintf(buffer,"  B {%d %d} C\n",atoi(Geom[i].NR)-1,i);
+					sprintf(buffer,"  {B %d %d C}\n",atoi(Geom[i].NR)-1,i);
         				gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,buffer,-1);
 				}
   				if(Geom[i].Nentry>=NUMBER_ENTRY_ANGLE && !test(Geom[i].Angle)) 
 				{
-					sprintf(buffer,"  A {%d %d %d} C\n",
+					sprintf(buffer,"  {A %d %d %d C}\n",
 							atoi(Geom[i].NAngle)-1,
 							atoi(Geom[i].NR)-1,i);
         				gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,buffer,-1);
 				}
   				if(Geom[i].Nentry>NUMBER_ENTRY_ANGLE && !test(Geom[i].Dihedral)) 
 				{
-					sprintf(buffer,"  D {%d %d %d %d} C\n",
+					sprintf(buffer,"  {D %d %d %d %d C}\n",
 							atoi(Geom[i].NDihedral)-1, 
 							atoi(Geom[i].NAngle)-1,
 							atoi(Geom[i].NR)-1,i);

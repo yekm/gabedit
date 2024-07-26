@@ -137,6 +137,7 @@ gint numPOVFile;
 gdouble solventRadius;
 gdouble colorMapColors[3][3];
 gint colorMapType;
+gdouble alphaFED;
 
 
 #endif /* __GABEDIT_GLOBALORB_H__ */

@@ -68,6 +68,7 @@ gboolean gl_read_molden_gabedit_geom_conv_file(gchar *fileName, gint geometryNum
 gdouble get_cube_length();
 void reset_grid_limits();
 void gl_get_charges_from_mopac_output_file(FILE* fd);
+void gl_read_geom_any_file_sel(GabeditFileChooser *selecFile, gint response_id);
 
 #endif /* __GABEDIT_GEOMORBXYZ_H__ */
 

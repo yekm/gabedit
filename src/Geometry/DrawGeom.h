@@ -123,6 +123,7 @@ guint Natoms;
 gint *NumFatoms;
 guint NFatoms;
 
+void createIstopeDistributionCalculationFromDrawGeom();
 void add_geometry_to_fifo();
 void get_geometry_from_fifo(gboolean toNext);
 gdouble get_factorstick();

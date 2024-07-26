@@ -610,6 +610,87 @@ static void delete_one_geometry()
 	return;
 }
 /********************************************************************************/
+static void delete_geometries_between(gint begin, gint end)
+{
+
+	gint k;
+	gint j;
+
+	if(!geometriesMD.geometries) return;
+	if(begin<0) begin = 0;
+	if(end>=geometriesMD.numberOfGeometries) end = geometriesMD.numberOfGeometries-1;
+	if(end<0) end = geometriesMD.numberOfGeometries-1;
+	if(geometriesMD.numberOfGeometries<1) return;
+	if(end<begin)
+	{
+		k = begin;
+		begin = end;
+		end = k;
+	}
+
+	for(k=begin;k<=end;k++)
+	{
+		if(geometriesMD.geometries[k].listOfAtoms) g_free(geometriesMD.geometries[k].listOfAtoms);
+		if(geometriesMD.geometries[k].comments) g_free(geometriesMD.geometries[k].comments);
+
+	}
+	for(k=begin;k<geometriesMD.numberOfGeometries-1;k++)
+	{
+		j = k+end-begin+1;
+		if(j>=geometriesMD.numberOfGeometries) break;
+		geometriesMD.geometries[k].energy = geometriesMD.geometries[j].energy;
+		geometriesMD.geometries[k].time = geometriesMD.geometries[j].time;
+		geometriesMD.geometries[k].comments = geometriesMD.geometries[j].comments;
+		geometriesMD.geometries[k].listOfAtoms = geometriesMD.geometries[j].listOfAtoms;
+	}
+	geometriesMD.numberOfGeometries -= end-begin+1;
+	if(geometriesMD.numberOfGeometries>0)
+	geometriesMD.geometries = g_realloc(geometriesMD.geometries,geometriesMD.numberOfGeometries*sizeof(GeometryMD));
+	else
+	{
+		if(geometriesMD.geometries ) g_free(geometriesMD.geometries );
+		geometriesMD.numberOfGeometries  = 0;
+	}
+	rafreshList();
+
+	return;
+}
+/********************************************************************************/
+static void delete_before_selected_geometry()
+{
+
+	gint k = rowSelected;
+
+	if(k<=0) return;
+	if(!geometriesMD.geometries) return;
+	if(geometriesMD.numberOfGeometries==1)
+	{
+		freeGeometryMD();
+		rafreshList();
+		return;
+	}
+	delete_geometries_between(0, k-1);
+	return;
+}
+/********************************************************************************/
+static void delete_after_selected_geometry()
+{
+
+	gint k = rowSelected;
+
+	if(k<0) return;
+	if(k>=geometriesMD.numberOfGeometries-1) return;
+	if(!geometriesMD.geometries) return;
+	if(geometriesMD.numberOfGeometries==1)
+	{
+		freeGeometryMD();
+		rafreshList();
+		return;
+	}
+	delete_geometries_between(k+1, geometriesMD.numberOfGeometries-1);
+	return;
+}
+/********************************************************************************/
 static void delete_half_geometries()
 {
 
@@ -1521,6 +1602,28 @@ static void read_gamess_trj_file(GabeditFileChooser *SelecFile, gint response_id
 	*/
 
 }
+/*************************************************************************/
+static void read_file(GabeditFileChooser *selecFile, gint response_id)
+{
+	gchar *fileName;
+	GabEditTypeFile fileType = GABEDIT_TYPEFILE_UNKNOWN;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(selecFile);
+	gtk_widget_hide(GTK_WIDGET(selecFile));
+	while( gtk_events_pending() ) gtk_main_iteration();
+
+	fileType = get_type_file(fileName);
+	if(fileType == GABEDIT_TYPEFILE_TRJ) read_gamess_trj_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_GAUSSIAN) read_gaussian_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_GABEDIT) read_gabedit_file(selecFile, response_id);
+	else 
+	{
+		Message(
+			"Sorry, I cannot find the type of your file\n"
+			," Error ",TRUE);
+	}
+}
 /********************************************************************************/
 static void read_gabedit_file_dlg()
 {
@@ -1545,6 +1648,13 @@ static void read_gamess_trj_file_dlg()
 	GtkWidget* filesel = 
  	file_chooser_open(read_gamess_trj_file, "Read geometries from a Gamess trj file", GABEDIT_TYPEFILE_TRJ,GABEDIT_TYPEWIN_ORB);
 
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+}
+/********************************************************************************/
+static void read_file_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_file, "Read geometries", GABEDIT_TYPEFILE_UNKNOWN,GABEDIT_TYPEWIN_ORB);
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
 /********************************************************************************/
@@ -1905,6 +2015,8 @@ static gboolean show_menu_popup(GtkUIManager *manager, guint button, guint32 tim
 		set_sensitive_option(manager,"/MenuGeomMD/CreateGaussInputLink");
 		set_sensitive_option(manager,"/MenuGeomMD/DeleteGeometry");
 		set_sensitive_option(manager,"/MenuGeomMD/DeleteHalfGeometries");
+		set_sensitive_option(manager,"/MenuGeomMD/DeleteBeforeSelectedGeometry");
+		set_sensitive_option(manager,"/MenuGeomMD/DeleteAfterSelectedGeometry");
 		gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, button, time);
 		return TRUE;
 	}
@@ -2439,7 +2551,10 @@ static void activate_action (GtkAction *action)
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGaussInputLink");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/DeleteGeometry");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/DeleteHalfGeometries");
+		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/DeleteBeforeSelectedGeometry");
+		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/DeleteAfterSelectedGeometry");
 	}
+	else if(!strcmp(name, "ReadAuto")) read_file_dlg();
 	else if(!strcmp(name, "ReadGabedit")) read_gabedit_file_dlg();
 	else if(!strcmp(name, "ReadGaussian")) read_gaussian_file_dlg();
 	else if(!strcmp(name, "ReadGamess")) read_gamess_trj_file_dlg();
@@ -2449,6 +2564,8 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "CreateGaussInputLink")) create_gaussian_file_dlg(TRUE);
 	else if(!strcmp(name, "DeleteGeometry")) delete_one_geometry();
 	else if(!strcmp(name, "DeleteHalfGeometries")) delete_half_geometries();
+	else if(!strcmp(name, "DeleteBeforeSelectedGeometry")) delete_before_selected_geometry();
+	else if(!strcmp(name, "DeleteAfterSelectedGeometry")) delete_after_selected_geometry();
 	else if(!strcmp(name, "Close")) destroyDlg(NULL);
 	else if(!strcmp(name, "HelpSupportedFormat")) help_supported_format();
 	else if(!strcmp(name, "HelpAnimation")) help_animated_file();
@@ -2458,6 +2575,7 @@ static GtkActionEntry gtkActionEntries[] =
 {
 	{"File",     NULL, "_File", NULL, NULL, G_CALLBACK (activate_action)},
 	{"Read",     NULL, "_Read"},
+	{"ReadAuto", NULL, "Read a file(Auto)", NULL, "Read a file", G_CALLBACK (activate_action) },
 	{"ReadGabedit", GABEDIT_STOCK_GABEDIT, "Read a G_abedit file", NULL, "Read a Gabedit file", G_CALLBACK (activate_action) },
 	{"ReadGaussian", GABEDIT_STOCK_GAUSSIAN, "Read a _Gaussian output file", NULL, "Read a Gaussian output file", G_CALLBACK (activate_action) },
 	{"ReadGamess", GABEDIT_STOCK_GAMESS, "Read a Games_s trj file", NULL, "Read a Gamess trj file", G_CALLBACK (activate_action) },
@@ -2467,6 +2585,8 @@ static GtkActionEntry gtkActionEntries[] =
 	{"CreateGaussInputLink", GABEDIT_STOCK_GAUSSIAN, "_Create single input file for Gaussian with more geometries", NULL, "Save", G_CALLBACK (activate_action) },
 	{"DeleteGeometry", GABEDIT_STOCK_CUT, "_Delete selected geometry", NULL, "Delete selected geometry", G_CALLBACK (activate_action) },
 	{"DeleteHalfGeometries", GABEDIT_STOCK_CUT, "remove the _half of the geometries", NULL, "remove the half of the geometries", G_CALLBACK (activate_action) },
+	{"DeleteBeforeSelectedGeometry", GABEDIT_STOCK_CUT, "remove geometries before the selected geometry", NULL, "remove before", G_CALLBACK (activate_action) },
+	{"DeleteAfterSelectedGeometry", GABEDIT_STOCK_CUT, "remove geometries after the selected geometry", NULL, "remove before", G_CALLBACK (activate_action) },
 	{"Close", GABEDIT_STOCK_CLOSE, "_Close", NULL, "Close", G_CALLBACK (activate_action) },
 	{"Help",     NULL, "_Help"},
 	{"HelpSupportedFormat", NULL, "_Supported format...", NULL, "Supported format...", G_CALLBACK (activate_action) },
@@ -2479,6 +2599,8 @@ static guint numberOfGtkActionEntries = G_N_ELEMENTS (gtkActionEntries);
 static const gchar *uiMenuInfo =
 "  <popup name=\"MenuGeomMD\">\n"
 "    <separator name=\"sepMenuPopGabedit\" />\n"
+"    <menuitem name=\"ReadAuto\" action=\"ReadAuto\" />\n"
+"    <separator name=\"sepMenuAuto\" />\n"
 "    <menuitem name=\"ReadGabedit\" action=\"ReadGabedit\" />\n"
 "    <menuitem name=\"ReadGaussian\" action=\"ReadGaussian\" />\n"
 "    <menuitem name=\"ReadGamess\" action=\"ReadGamess\" />\n"
@@ -2492,12 +2614,16 @@ static const gchar *uiMenuInfo =
 "    <separator name=\"sepMenuDelete\" />\n"
 "    <menuitem name=\"DeleteGeometry\" action=\"DeleteGeometry\" />\n"
 "    <menuitem name=\"DeleteHalfGeometries\" action=\"DeleteHalfGeometries\" />\n"
+"    <menuitem name=\"DeleteBeforeSelectedGeometry\" action=\"DeleteBeforeSelectedGeometry\" />\n"
+"    <menuitem name=\"DeleteAfterSelectedGeometry\" action=\"DeleteAfterSelectedGeometry\" />\n"
 "    <separator name=\"sepMenuPopClose\" />\n"
 "    <menuitem name=\"Close\" action=\"Close\" />\n"
 "  </popup>\n"
 "  <menubar name = \"MenuBar\">\n"
 "    <menu name=\"File\" action=\"File\">\n"
 "      <menu name=\"Read\" action=\"Read\">\n"
+"        <menuitem name=\"ReadAuto\" action=\"ReadAuto\" />\n"
+"        <separator name=\"sepMenuAuto\" />\n"
 "        <menuitem name=\"ReadGabedit\" action=\"ReadGabedit\" />\n"
 "        <menuitem name=\"ReadGaussian\" action=\"ReadGaussian\" />\n"
 "        <menuitem name=\"ReadGamess\" action=\"ReadGamess\" />\n"
@@ -2512,6 +2638,8 @@ static const gchar *uiMenuInfo =
 "      <separator name=\"sepMenuDelete\" />\n"
 "      <menuitem name=\"DeleteGeometry\" action=\"DeleteGeometry\" />\n"
 "      <menuitem name=\"DeleteHalfGeometries\" action=\"DeleteHalfGeometries\" />\n"
+"      <menuitem name=\"DeleteBeforeSelectedGeometry\" action=\"DeleteBeforeSelectedGeometry\" />\n"
+"      <menuitem name=\"DeleteAfterSelectedGeometry\" action=\"DeleteAfterSelectedGeometry\" />\n"
 "      <separator name=\"sepMenuClose\" />\n"
 "      <menuitem name=\"Close\" action=\"Close\" />\n"
 "    </menu>\n"

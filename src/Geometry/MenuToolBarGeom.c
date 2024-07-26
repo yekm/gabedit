@@ -69,7 +69,7 @@ static	GtkUIManager *manager = NULL;
 static GtkWidget* handleBoxToolBar = NULL;
 static gboolean ViewToolBar = TRUE;
 static	GtkToolbar* toolBar = NULL;
-/*********************************************************************************************************************/
+/******************************************************************/
 static void view_toolbar ()
 {
 	if(!handleBoxToolBar) return;
@@ -368,6 +368,7 @@ static guint numberOfGtkActionToggleEntries = G_N_ELEMENTS (gtkActionToggleEntri
 static void activate_action (GtkAction *action)
 {
 	const gchar *name = gtk_action_get_name (action);
+	if(!strcmp(name,"ReadAuto")) read_geom_any_file_dlg();
 	if(!strcmp(name,"ReadXYZ")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_XYZ); }
 	else if(!strcmp(name,"ReadMol2")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MOL2); }
 	else if(!strcmp(name,"ReadTinker")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_TINKER); }
@@ -654,6 +655,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "SetDipole")) set_dipole_dialog();
 	else if(!strcmp(name, "SetDipoleFormCharges")) set_dipole_from_charges();
 	else if(!strcmp(name, "ComputeDipoleFormCharges")) compute_dipole_from_charges();
+	else if(!strcmp(name, "ComputeIsotopeDistribution")) createIstopeDistributionCalculationFromDrawGeom();
 	else if(!strcmp(name, "ComputeTotalCharge")) compute_total_charge();
 	else if(!strcmp(name, "ComputeChargeForResidues")) compute_charge_by_residue();
 	else if(!strcmp(name, "ComputeChargeOfSelectedsAtoms")) compute_charge_of_selected_atoms();
@@ -802,6 +804,7 @@ static void activate_action (GtkAction *action)
 static GtkActionEntry gtkActionEntries[] =
 {
 	{"Read", NULL, "_Read"},
+	{"ReadAuto", NULL, "_Any file", NULL, "Read a  file", G_CALLBACK (activate_action) },
 	{"ReadXYZ", NULL, "_XYZ file", NULL, "Read a XYZ file", G_CALLBACK (activate_action) },
 	{"ReadMol2", NULL, "_Mol2 file", NULL, "Read a Mol2 file", G_CALLBACK (activate_action) },
 	{"ReadTinker", NULL, "_Tinker file", NULL, "Read a Tinker file", G_CALLBACK (activate_action) },
@@ -1013,6 +1016,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ComputeChargeForResidues", NULL, "Compute charge for _residues", NULL, "Compute charge for residues", G_CALLBACK (activate_action) },
 	{"ComputeChargeOfSelectedsAtoms", NULL, "Compute charge of _selected atoms", NULL, "Compute charge of selected atoms", G_CALLBACK (activate_action) },
 	{"ComputeDipoleFormCharges", NULL, "_Compute dipole from charges", NULL, "Compute dipole from charges", G_CALLBACK (activate_action) },
+	{"ComputeIsotopeDistribution", NULL, "_Isotope distribution calculator", NULL, "Isotope distribution calculator", G_CALLBACK (activate_action) },
 
 	{"ScreenCapture", NULL, "Screen Ca_pture"},
 	{"ScreenCaptureJPG", NULL, "_JPG format", NULL, "create a JPEG file", G_CALLBACK (activate_action) },
@@ -1063,6 +1067,8 @@ static const gchar *uiMenuInfo =
 "  <popup name=\"MenuGeom\">\n"
 "    <separator name=\"sepMenuPopRead\" />\n"
 "    <menu name=\"Read\" action=\"Read\">\n"
+"      <menuitem name=\"ReadAuto\" action=\"ReadAuto\" />\n"
+"      <separator name=\"sepMenuReadAuto\" />\n"
 "      <menuitem name=\"ReadGabedit\" action=\"ReadGabedit\" />\n"
 "      <menuitem name=\"ReadXYZ\" action=\"ReadXYZ\" />\n"
 "      <menuitem name=\"ReadMol2\" action=\"ReadMol2\" />\n"
@@ -1370,6 +1376,8 @@ static const gchar *uiMenuInfo =
 "      <separator name=\"sepSel\" />\n"
 "      <menuitem name=\"ComputeChargeForResidues\" action=\"ComputeChargeForResidues\" />\n"
 "      <menuitem name=\"ComputeChargeOfSelectedsAtoms\" action=\"ComputeChargeOfSelectedsAtoms\" />\n"
+"      <separator name=\"sepIsotope\" />\n"
+"      <menuitem name=\"ComputeIsotopeDistribution\" action=\"ComputeIsotopeDistribution\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepMolecularMechanics\" />\n"
 "    <menu name=\"MolecularMechanics\" action=\"MolecularMechanics\">\n"

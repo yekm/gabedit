@@ -55,7 +55,10 @@ MenuToolBar.o: ../Spectrum/IRSpectrum.h ../Spectrum/RamanSpectrum.h
 MenuToolBar.o: ../Spectrum/UVSpectrum.h ../Spectrum/ECDSpectrum.h
 MenuToolBar.o: ../Spectrum/NMRSpectrum.h
 MenuToolBar.o: ../VibrationalCorrections/GabeditGaussianInput.h
-Preferences.o: ../../Config.h Global.h
+MenuToolBar.o: ../IsotopeDistribution/IsotopeDistributionCalculatorDlg.h
+MenuToolBar.o: ../IsotopeDistribution/IsotopeDistributionCalculator.h
+Preferences.o: ../../Config.h
+Preferences.o: Global.h
 Preferences.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
 Preferences.o: ../Common/Help.h ../Utils/UtilsInterface.h
 Preferences.o: ../Utils/AtomsProp.h ../Utils/Utils.h Windows.h TextEdit.h

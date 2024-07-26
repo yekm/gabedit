@@ -165,7 +165,7 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.inp");
 					    temp = g_strdup_printf("%s.inp",fileopen.projectname);
 					    break;
-	   case GABEDIT_TYPEFILE_GAUSIANINPUT : 
+	   case GABEDIT_TYPEFILE_GAUSSIANINPUT : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.com");
 					    temp = g_strdup_printf("%s.com",fileopen.projectname);
 					    break;

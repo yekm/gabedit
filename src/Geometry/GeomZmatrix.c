@@ -99,7 +99,7 @@ static void DialogueTransInVar();
 static void trans_allRGeom_to_variables();
 static void trans_allAngleGeom_to_variables();
 static void trans_allDihedralGeom_to_variables();
-static void TransConstVar();
+static void TransConstVar(gboolean vr, gboolean va, gboolean vd);
 static void MultiByA0();
 static void DivideByA0();
 /********************************************************************************/
@@ -989,6 +989,39 @@ static gboolean reset_dihedral_value(gint Nc, gchar* val)
 	}
 }
 /********************************************************************************/
+static void selectedCell (GtkCellRenderer *renderer, GtkCellEditable *editable, gchar *path_string, gpointer user_data)
+{
+	gint numCol = 0;
+	numCol = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(renderer),"NumColumn"));
+	gint Nc = -1;
+	Nc = atoi(path_string);
+	if(Nc<0) return;
+	if((numCol==E_R || numCol==E_NUMBER_R) && Nc>0)
+	{
+		NSA[0] = Nc+1;
+		NSA[1] = atoi(Geom[Nc].NR);
+		NSA[2] = -1;
+		NSA[3] = -1;
+ 		if(ZoneDessin != NULL) rafresh_drawing();
+	}
+	else if((numCol==E_ANGLE || numCol==E_NUMBER_ANGLE) && Nc>1)
+	{
+		NSA[0] = Nc+1;
+		NSA[1] = atoi(Geom[Nc].NR);
+		NSA[2] = atoi(Geom[Nc].NAngle);
+		NSA[3] = -1;
+ 		if(ZoneDessin != NULL) rafresh_drawing();
+	}
+	else if((numCol==E_DIHEDRAL || numCol==E_NUMBER_DIHEDRAL) && Nc>2)
+	{
+		NSA[0] = Nc+1;
+		NSA[1] = atoi(Geom[Nc].NR);
+		NSA[2] = atoi(Geom[Nc].NAngle);
+		NSA[3] = atoi(Geom[Nc].NDihedral);
+ 		if(ZoneDessin != NULL) rafresh_drawing();
+	}
+}
+/********************************************************************************/
 static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 		    gchar *new_text, gpointer data)
 {
@@ -1467,7 +1500,10 @@ static void activate_action_xyz_geom (GtkAction *action)
 	else if(!strcmp(name, "AllR")) trans_allRGeom_to_variables(); 
 	else if(!strcmp(name, "AllAngles")) trans_allAngleGeom_to_variables(); 
 	else if(!strcmp(name, "AllDihedrals")) trans_allDihedralGeom_to_variables(); 
-	else if(!strcmp(name, "One")) TransConstVar(); 
+	else if(!strcmp(name, "OneAtom")) TransConstVar(TRUE,TRUE,TRUE); 
+	else if(!strcmp(name, "OneR")) TransConstVar(TRUE,FALSE,FALSE); 
+	else if(!strcmp(name, "OneAngle")) TransConstVar(FALSE,TRUE,FALSE); 
+	else if(!strcmp(name, "OneDihedral")) TransConstVar(FALSE,FALSE,TRUE); 
 	else if(!strcmp(name, "MultiplyBya0")) MultiByA0(); 
 	else if(!strcmp(name, "DivideBya0")) DivideByA0(); 
 	else if(!strcmp(name, "ToXYZ")) conversion_zmat_to_xyz(); 
@@ -1484,7 +1520,10 @@ static GtkActionEntry gtkActionEntriesZMatGeom[] =
 	{"AllR", NULL, "All _R =>", NULL, "All R=>", G_CALLBACK (activate_action_xyz_geom) },
 	{"AllAngles", NULL, "All _Angles =>", NULL, "All Angles =>", G_CALLBACK (activate_action_xyz_geom) },
 	{"AllDihedrals", NULL, "All _Dihedral =>", NULL, "All Dihedral =>", G_CALLBACK (activate_action_xyz_geom) },
-	{"One", NULL, "_One=>", NULL, "One=>", G_CALLBACK (activate_action_xyz_geom) },
+	{"OneAtom", NULL, "_One atom=>", NULL, "One atom=>", G_CALLBACK (activate_action_xyz_geom) },
+	{"OneR", NULL, "_One R=>", NULL, "One R=>", G_CALLBACK (activate_action_xyz_geom) },
+	{"OneAngle", NULL, "_One Angle=>", NULL, "One Angle=>", G_CALLBACK (activate_action_xyz_geom) },
+	{"OneDihedral", NULL, "_One Dihedral=>", NULL, "One Dihedral=>", G_CALLBACK (activate_action_xyz_geom) },
 	{"MultiplyBya0", GABEDIT_STOCK_A0P, "M_ultiply by a0", NULL, "Multiply by a0", G_CALLBACK (activate_action_xyz_geom) },
 	{"DivideBya0", GABEDIT_STOCK_A0D, "D_ivide by a0", NULL, "D_ivide by a0", G_CALLBACK (activate_action_xyz_geom) },
 	{"ToXYZ", NULL, "to _XYZ", NULL, "to XYZ", G_CALLBACK (activate_action_xyz_geom) },
@@ -1510,7 +1549,10 @@ static const gchar *uiMenuZMatGeomInfo =
 "    <menuitem name=\"AllR\" action=\"AllR\" />\n"
 "    <menuitem name=\"AllAngles\" action=\"AllAngles\" />\n"
 "    <menuitem name=\"AllDihedrals\" action=\"AllDihedrals\" />\n"
-"    <menuitem name=\"One\" action=\"One\" />\n"
+"    <menuitem name=\"OneAtom\" action=\"OneAtom\" />\n"
+"    <menuitem name=\"OneR\" action=\"OneR\" />\n"
+"    <menuitem name=\"OneAngle\" action=\"OneAngle\" />\n"
+"    <menuitem name=\"OneDihedral\" action=\"OneDihedral\" />\n"
 "    <separator name=\"sepMenuPopMul\" />\n"
 "    <menuitem name=\"MultiplyBya0\" action=\"MultiplyBya0\" />\n"
 "    <menuitem name=\"DivideBya0\" action=\"DivideBya0\" />\n"
@@ -1632,7 +1674,8 @@ static void event_dispatcher(GtkWidget *widget, GdkEventButton *event, gpointer 
 	if(strstr(menuName,"Geom"))
 	{
   		LineSelected = row;
-		NSA = LineSelected+1;
+		NSA[0] = LineSelected+1;
+		NSA[1] = NSA[2] = NSA[3] =-1;
 	}
 	else
 	{
@@ -2634,7 +2677,7 @@ static void DialogueTransInVar()
   gtk_widget_show_all(Dialogue);
 }
 /********************************************************************************/
-static void TransConstVar()
+static void TransConstVar(gboolean vr, gboolean va, gboolean vd)
 {
  gint Nc;
  Nc=LineSelected;
@@ -2643,7 +2686,7 @@ static void TransConstVar()
     MessageGeom("Sorry No line selected"," Warning ",TRUE);
     return;
   }
-  trans_OneGeom_to_variables((guint)Nc, TRUE,TRUE,TRUE);   
+  trans_OneGeom_to_variables((guint)Nc, vr,va,vd);
   if(ZoneDessin != NULL) rafresh_drawing();
 }
 /********************************************************************************/
@@ -6291,7 +6334,7 @@ void create_geom_list(GtkWidget *vbox, GabEditTypeFileGeom readfile)
   
 	if(iprogram == PROG_IS_MOLPRO) NCr = NUMBER_LIST_ZMATRIX-1;
 	else NCr = NUMBER_LIST_ZMATRIX;
-	NSA = -1;
+	NSA[0] = NSA[1] = NSA[2] = NSA[3] =-1;
 	MethodeGeom = GEOM_IS_ZMAT;
 
 	if(readfile != GABEDIT_TYPEFILEGEOM_UNKNOWN) freeGeom();
@@ -6338,6 +6381,7 @@ void create_geom_list(GtkWidget *vbox, GabEditTypeFileGeom readfile)
 		gtk_tree_view_append_column (GTK_TREE_VIEW (list), column);
 		g_object_set_data(G_OBJECT(renderer),"NumColumn", GINT_TO_POINTER(i));
 		g_signal_connect (renderer, "edited", G_CALLBACK (editedGeom), model);
+		g_signal_connect (renderer, "editing-started", G_CALLBACK (selectedCell), model);
 	}
 	gtk_container_add(GTK_CONTAINER(scr),list);
 	/* Drag and Drop */

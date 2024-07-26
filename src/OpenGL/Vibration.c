@@ -71,6 +71,7 @@ static void animate_vibration();
 static void rafreshList();
 static void stop_vibration(GtkWidget *win, gpointer data);
 static void play_vibration(GtkWidget *win, gpointer data);
+static void read_modes_dlg();
 /************************************************************************************************************/
 static gint getNumberOfValenceElectrons()
 {
@@ -350,13 +351,13 @@ static void print_gaussian_correction_vibration_one_geometry(gchar* fileNameBas,
 	for(i=0;i<vibration.numberOfAtoms;i++)
 	{
 		if(mode2<0)
-		fprintf(file,"%s %lf %lf %lf\n",vibration.geometry[i].symbol,
+		fprintf(file,"%s %0.8lf %0.8lf %0.8lf\n",vibration.geometry[i].symbol,
 		(vibration.geometry[i].coordinates[0]+vibration.modes[mode1].vectors[0][i]*delta1)*BOHR_TO_ANG,
 		(vibration.geometry[i].coordinates[1]+vibration.modes[mode1].vectors[1][i]*delta1)*BOHR_TO_ANG,
 		(vibration.geometry[i].coordinates[2]+vibration.modes[mode1].vectors[2][i]*delta1)*BOHR_TO_ANG
 		);
 		else
-		fprintf(file,"%s %lf %lf %lf\n",vibration.geometry[i].symbol,
+		fprintf(file,"%s %0.8lf %0.8lf %0.8lf\n",vibration.geometry[i].symbol,
 		(vibration.geometry[i].coordinates[0]
 		 +vibration.modes[mode1].vectors[0][i]*delta1
 		 +vibration.modes[mode2].vectors[0][i]*delta2)*BOHR_TO_ANG,
@@ -440,7 +441,7 @@ static void print_gaussian_correction_vibration_geometries_link(GtkWidget* Win, 
 	fprintf(file,"%d   %d\n",totalCharge,spinMultiplicity);
 	for(i=0;i<vibration.numberOfAtoms;i++)
 	{
-		fprintf(file,"%s %lf %lf %lf\n",vibration.geometry[i].symbol,
+		fprintf(file,"%s %0.8lf %0.8lf %0.8lf\n",vibration.geometry[i].symbol,
 		vibration.geometry[i].coordinates[0]*BOHR_TO_ANG,
 		vibration.geometry[i].coordinates[1]*BOHR_TO_ANG,
 		vibration.geometry[i].coordinates[2]*BOHR_TO_ANG
@@ -549,7 +550,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox)
                   1,1);
 	j = 2;
 	entryDelta = gtk_entry_new();
-	gtk_entry_set_text(GTK_ENTRY(entryDelta),"0.05");
+	gtk_entry_set_text(GTK_ENTRY(entryDelta),"0.03");
 	gtk_widget_set_size_request(GTK_WIDGET(entryDelta),(gint)(ScreenHeight*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),entryDelta, j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
@@ -586,7 +587,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox)
                   (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
                   (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
                   3,3);
-  	gtk_entry_set_text (GTK_ENTRY (entry),"B3LYP/6-311++G** SCF(Tight)");
+  	gtk_entry_set_text (GTK_ENTRY (entry),"B3LYP/6-311++G** SCF(Tight) Int=UltraFine");
 	gtk_editable_set_editable((GtkEditable*)entry,TRUE);
 	gtk_widget_set_sensitive(entry, TRUE);
 /*----------------------------------------------------------------------------------*/
@@ -2846,12 +2847,14 @@ static gboolean read_gaussian_file_frequencies(gchar *FileName)
 			sscanf(t,"%s %s %s",sym[0],sym[1],sym[2]);
 
 			if(!fgets(t,taille,fd)) break;
+			changeDInE(t); 
 			sscanf(t,"%s %s %lf %lf %lf", sdum1,sdum2, &freq[0],&freq[1],&freq[2]);
 			while(!feof(fd))
 			{
     				fgets(t,taille,fd);
 				if(strstr(t,"Red. masses"))
 				{
+					changeDInE(t); 
 					sscanf(t,"%s %s %s %lf %lf %lf", sdum1,sdum2, sdum3, &mass[0],&mass[1],&mass[2]);
 					break;
 				}
@@ -2861,6 +2864,7 @@ static gboolean read_gaussian_file_frequencies(gchar *FileName)
     				fgets(t,taille,fd);
 				if(strstr(t,"IR Inten"))
 				{
+					changeDInE(t); 
 					sscanf(t,"%s %s %s %lf %lf %lf", sdum1,sdum2, sdum3, &IRIntensity[0],&IRIntensity[1],&IRIntensity[2]);
 					break;
 				}
@@ -2870,6 +2874,7 @@ static gboolean read_gaussian_file_frequencies(gchar *FileName)
     				fgets(t,taille,fd);
 				if(strstr(t,"Raman"))
 				{
+					changeDInE(t); 
 					sscanf(t,"%s %s %s %lf %lf %lf", sdum1,sdum2, sdum3, &RamanIntensity[0],&RamanIntensity[1],&RamanIntensity[2]);
 					break;
 				}
@@ -2905,8 +2910,8 @@ static gboolean read_gaussian_file_frequencies(gchar *FileName)
 
 			for(j=0;j<Ncenters && !feof(fd);j++)
 			{
-				if(!fgets(t,taille,fd))
-					break;
+				if(!fgets(t,taille,fd)) break;
+				changeDInE(t); 
 				sscanf(t,"%d %d %lf %lf %lf %lf %lf %lf %lf %lf %lf",
 					&idum,&idum,
 					&v[0][0],&v[0][1],&v[0][2],
@@ -4436,6 +4441,7 @@ static void activate_action (GtkAction *action)
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/Tools/RemoveAfterSelectedMode");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/Tools/SortModes");
 	}
+	else if(!strcmp(name, "ReadAuto")) read_modes_dlg();
 	else if(!strcmp(name, "ReadGabedit")) read_gabedit_file_dlg();
 	else if(!strcmp(name, "ReadDalton")) read_dalton_file_dlg();
 	else if(!strcmp(name, "ReadGamess")) read_gamess_file_dlg();
@@ -4465,6 +4471,7 @@ static GtkActionEntry gtkActionEntries[] =
 {
 	{"File",     NULL, "_File", NULL, NULL, G_CALLBACK (activate_action)},
 	{"Read",     NULL, "_Read"},
+	{"ReadAuto", NULL, "Read (Auto)", NULL, "Read(Auto)", G_CALLBACK (activate_action) },
 	{"ReadGabedit", GABEDIT_STOCK_GABEDIT, "Read a G_abedit file", NULL, "Read a Gabedit file", G_CALLBACK (activate_action) },
 	{"ReadDalton", GABEDIT_STOCK_DALTON, "Read a _Dalton output file", NULL, "Read a Dalton output file", G_CALLBACK (activate_action) },
 	{"ReadGamess", GABEDIT_STOCK_GAMESS, "Read a _Gamess output file", NULL, "Read a Gamess output file", G_CALLBACK (activate_action) },
@@ -4498,6 +4505,8 @@ static guint numberOfGtkActionEntries = G_N_ELEMENTS (gtkActionEntries);
 static const gchar *uiMenuInfo =
 "  <popup name=\"MenuVibration\">\n"
 "    <separator name=\"sepMenuPopGabedit\" />\n"
+"    <menuitem name=\"ReadAuto\" action=\"ReadAuto\" />\n"
+"    <separator name=\"sepMenuAuto\" />\n"
 "    <menuitem name=\"ReadGabedit\" action=\"ReadGabedit\" />\n"
 "    <menuitem name=\"ReadDalton\" action=\"ReadDalton\" />\n"
 "    <menuitem name=\"ReadGamess\" action=\"ReadGamess\" />\n"
@@ -4528,6 +4537,8 @@ static const gchar *uiMenuInfo =
 "  <menubar name = \"MenuBar\">\n"
 "    <menu name=\"File\" action=\"File\">\n"
 "      <menu name=\"Read\" action=\"Read\">\n"
+"        <menuitem name=\"ReadAuto\" action=\"ReadAuto\" />\n"
+"        <separator name=\"sepMenuAuto\" />\n"
 "        <menuitem name=\"ReadGabedit\" action=\"ReadGabedit\" />\n"
 "        <menuitem name=\"ReadDalton\" action=\"ReadDalton\" />\n"
 "        <menuitem name=\"ReadGamess\" action=\"ReadGamess\" />\n"
@@ -4660,4 +4671,43 @@ void vibrationDlg()
 
   	rafreshList();
 	stop_vibration(NULL, NULL);
+}
+/*************************************************************************/
+void read_modes(GabeditFileChooser *selecFile, gint response_id)
+{
+	gchar *fileName;
+	GabEditTypeFile fileType = GABEDIT_TYPEFILE_UNKNOWN;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(selecFile);
+	gtk_widget_hide(GTK_WIDGET(selecFile));
+	while( gtk_events_pending() ) gtk_main_iteration();
+
+	fileType = get_type_file(fileName);
+	if(fileType == GABEDIT_TYPEFILE_GAMESS) read_gamess_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_PCGAMESS) read_gamess_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_GAUSSIAN) read_gaussian_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MOLPRO) read_molpro_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MOPAC) read_mopac_aux_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MOPAC_AUX) read_mopac_aux_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_ORCA) read_orca_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_QCHEM) read_qchem_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_GABEDIT) read_gabedit_molden_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MOLDEN) read_gabedit_molden_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_UNKNOWN) 
+	{
+		Message(
+			"Sorry, I cannot find the type of your file\n"
+			," Error ",TRUE);
+	}
+}
+/********************************************************************************/
+static void read_modes_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_modes,
+			"Read geometry and frequencies",
+			GABEDIT_TYPEFILE_UNKNOWN,GABEDIT_TYPEWIN_ORB);
+
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }

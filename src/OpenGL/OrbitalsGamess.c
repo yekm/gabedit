@@ -1106,7 +1106,7 @@ void read_gamess_orbitals(gchar* FileName)
 	GabEditOrbLocalType typeLocal;
 
 
-	typefile =get_type_file(FileName);
+	typefile =get_type_file_orb(FileName);
 	if(typefile==GABEDIT_TYPEFILE_UNKNOWN) return;
 
 

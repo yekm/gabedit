@@ -35,6 +35,13 @@ typedef enum
   GABEDIT_XYPLOT_VMINOR_GRID
 } GabeditXYPlotGrid;
 
+typedef enum
+{
+  GABEDIT_XYPLOT_CONV_NONE,
+  GABEDIT_XYPLOT_CONV_LORENTZ,
+  GABEDIT_XYPLOT_CONV_GAUSS
+} GabeditXYPlotConvType;
+
 
 #define GABEDIT_TYPE_XYPLOT                 (gabedit_xyplot_get_type ())
 #define GABEDIT_XYPLOT(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), GABEDIT_TYPE_XYPLOT, GabeditXYPlot))
@@ -183,6 +190,8 @@ void gabedit_xyplot_get_grids_attributes (GabeditXYPlot *xyplot, GabeditXYPlotGr
 void gabedit_xyplot_enable_grids (GabeditXYPlot *xyplot, GabeditXYPlotGrid grid, gboolean enable);
 void gabedit_xyplot_add_data (GabeditXYPlot *xyplot, XYPlotData *data);
 void gabedit_xyplot_remove_data (GabeditXYPlot *xyplot, XYPlotData *data);
+void gabedit_xyplot_add_data_peaks(GabeditXYPlot *xyplot, gint numberOfPoints, gdouble* X,  gdouble* Y, GdkColor color);
+void gabedit_xyplot_add_data_conv(GabeditXYPlot *xyplot, gint numberOfPoints, gdouble* X,  gdouble* Y, gdouble halfWidth,GabeditXYPlotConvType convType, GdkColor color);
 void gabedit_xyplot_configure_mouse_zoom (GabeditXYPlot *xyplot, gboolean enabled, guint button);
 void gabedit_xyplot_configure_mouse_distance (GabeditXYPlot *xyplot, gboolean enabled, guint button);
 void gabedit_xyplot_configure_wheel_zoom (GabeditXYPlot *xyplot, gboolean enabled, gdouble factor);

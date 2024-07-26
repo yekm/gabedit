@@ -406,7 +406,7 @@ long clientThread ()
 void rsh (char *fout,char *ferr,const char* cmd,
 	       const char *hostname,const char* userName,char *passwod)
 {
-	HANDLE threadHnd;
+	HANDLE threadHnd = NULL;
 
 	FileOut = FOpen(fout,"w");
 	FileErr = FOpen(ferr,"w");

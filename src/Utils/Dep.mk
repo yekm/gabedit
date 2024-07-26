@@ -7,6 +7,14 @@ AtomsProp.o: ../Utils/Constants.h ../Utils/AtomsProp.h
 AtomsProp.o: ../Utils/UtilsInterface.h ../Geometry/Fragments.h
 AtomsProp.o: ../Geometry/DrawGeom.h ../Geometry/Fragments.h ../Utils/Utils.h
 AtomsProp.o: ../Geometry/GeomGlobal.h ../OpenGL/GLArea.h ../Common/Windows.h
+AtomsPropOld.o: ../../Config.h
+AtomsPropOld.o: ../Common/Global.h
+AtomsPropOld.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
+AtomsPropOld.o: ../Utils/Constants.h ../Utils/AtomsProp.h
+AtomsPropOld.o: ../Utils/UtilsInterface.h ../Geometry/Fragments.h
+AtomsPropOld.o: ../Geometry/DrawGeom.h ../Geometry/Fragments.h
+AtomsPropOld.o: ../Utils/Utils.h ../Geometry/GeomGlobal.h ../OpenGL/GLArea.h
+AtomsPropOld.o: ../Common/Windows.h
 ConvUtils.o: ../../Config.h
 ConvUtils.o: ../Common/Global.h
 ConvUtils.o: ../Files/GabeditFileChooser.h

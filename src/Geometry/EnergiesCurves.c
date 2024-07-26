@@ -42,7 +42,6 @@ void set_point(GtkWidget *widget, gint x,gint y, gint k);
 gint get_coord(gint len,gdouble min, gdouble max,gdouble v,gboolean renv);
 void get_coord_ecran(GtkWidget *widget,gint *tabx,gint *taby);
 static void set_geom(GtkWidget *widget,gpointer data);
-void set_point(GtkWidget *widget, gint x,gint y, gint k);
 
 
 /********************************************************************************************/
@@ -466,6 +465,59 @@ gboolean DrawEnergies(GtkWidget *dessin,GdkEventConfigure *ev)
 	return TRUE;
 	
 }
+/********************************************************************************/
+static gint set_key_press(GtkWidget* wid, GdkEventKey *event, gpointer data)
+{
+  	GtkWidget *dessin = (GtkWidget*) data;
+	gint *pk = NULL;
+	gint k = 0;
+	gint s = 0;
+	DataGeomConv *GeomConv;
+	gint* tabx = NULL;
+	gint* taby = NULL;
+	if((event->keyval == GDK_rightarrow) ) s=1;
+	else if((event->keyval == GDK_rightarrow) ) s=-1;
+	else if((event->keyval == GDK_downarrow) ) s=2;
+	else if((event->keyval == GDK_uparrow) ) s=-2;
+	else if((event->keyval == GDK_n) ) s=1;
+	else if((event->keyval == GDK_N) ) s=1;
+	else if((event->keyval == GDK_p) ) s=-1;
+	else if((event->keyval == GDK_P) ) s=-1;
+	else if((event->keyval == GDK_f) ) s=-2;
+	else if((event->keyval == GDK_F) ) s=-2;
+	else if((event->keyval == GDK_l) ) s=2;
+	else if((event->keyval == GDK_L) ) s=2;
+
+	if(!dessin) return FALSE;
+
+        pk = (gint*)(g_object_get_data(G_OBJECT(dessin),"Point"));  
+	if(!pk) return FALSE;
+        k = *pk;
+	GeomConv = (DataGeomConv*)(g_object_get_data(G_OBJECT(dessin),"Geometry"));
+	if(!GeomConv) return FALSE;
+	if(GeomConv->Npoint<1) return FALSE;
+
+	tabx = g_malloc(GeomConv->Npoint*sizeof(gint));
+	taby = g_malloc(GeomConv->Npoint*sizeof(gint));
+
+
+	if(s==-2) k = 0;
+	else if(s==2) k = GeomConv->Npoint-1;
+	else if(s==1) k++;
+	else if(s==-1) k--;
+	if(k<0) k = 0;
+	if(k>GeomConv->Npoint-1) k=GeomConv->Npoint-1;
+	*pk = k;
+	get_coord_ecran(dessin,tabx,taby);
+	set_point(dessin,tabx[k],taby[k],k);
+ 	set_geom(dessin,NULL);
+	g_free(tabx);
+	g_free(taby);
+
+	GTK_WIDGET_GET_CLASS(wid)->key_press_event(wid, event);
+	return TRUE;
+
+}
 /********************************************************************************************/
 static gint button_press_event (GtkWidget *widget, GdkEventButton *event)
 {
@@ -624,8 +676,10 @@ GtkWidget *add_energies_curve( GtkWidget *WindowEnergies, DataGeomConv* GeomConv
 	gtk_container_add(GTK_CONTAINER(Frame),hbox);
 	
 	dessin=gtk_drawing_area_new();
+
 	gtk_widget_set_events (dessin, GDK_EXPOSURE_MASK
                          | GDK_LEAVE_NOTIFY_MASK
+			 | GDK_CONTROL_MASK 
                          | GDK_BUTTON_PRESS_MASK
                          | GDK_POINTER_MOTION_MASK
                          | GDK_POINTER_MOTION_HINT_MASK);
@@ -697,8 +751,8 @@ GtkWidget *add_energies_curve( GtkWidget *WindowEnergies, DataGeomConv* GeomConv
 
 	g_signal_connect(G_OBJECT(dessin),"expose_event", (GCallback)expose_event,NULL);
 	g_signal_connect(G_OBJECT(dessin),"configure_event", (GCallback)configure_event,NULL);
+	g_signal_connect(G_OBJECT (WindowEnergies), "key_press_event", (GCallback) set_key_press, dessin);
 	set_geom(dessin,NULL);
-					   
 	return dessin;
 
 }

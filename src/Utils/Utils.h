@@ -55,6 +55,7 @@ void free_molpro_commands();
 void free_mpqc_commands();
 gchar* get_time_str();
 gboolean this_is_a_backspace(gchar *st);
+void changeDInE(gchar *st);
 FILE* FOpen(const gchar *fileutf8, const gchar* type);
 void  set_file_open(gchar* remotehost,gchar* remoteuser,gchar* remotedir, GabEditNetWork netWorkProtocol);
 gboolean  this_is_an_object(GtkObject *obj);
@@ -145,6 +146,9 @@ G_CONST_RETURN gchar* get_open_babel_command();
 gchar** get_one_block_from_aux_mopac_file(FILE* file, gchar* blockName,  gint* n);
 gchar** free_one_string_table(gchar** table, gint n);
 gboolean zmat_mopac_scan_output_file(gchar *FileName);
+GabEditTypeFile get_type_output_file(gchar* fileName);
+GabEditTypeFile get_type_input_file(gchar* fileName);
+GabEditTypeFile get_type_file(gchar* filename);
 
 #endif /* __GABEDIT_UTILS_H__ */
 
