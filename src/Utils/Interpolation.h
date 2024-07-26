@@ -15,43 +15,24 @@ THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABI
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ************************************************************************************************************/
-#ifndef __GABEDIT_ANIMATIONMD_H__
-#define __GABEDIT_ANIMATIONMD_H__
-
-typedef struct _AtomMD
-{
-	gchar symbol[5];
-	gdouble C[3];
-	gdouble V[3];
-
-	gchar mmType[10];
-	gchar pdbType[10];
-	gchar resName[50];
-	gint resNumber;
-	gdouble partialCharge;
-	gdouble nuclearCharge;
-}AtomMD;
-typedef struct _GeometryMD
-{
-	gint numberOfAtoms;
-	AtomMD* listOfAtoms;
-	gdouble energy;
-	gdouble time;
-	gchar* comments;
-	long int filePos;
-}GeometryMD;
-
-typedef struct _GeometriesMD
-{
-	gchar* fileName;
-	GabEditTypeFile typeOfFile;
-	gint numberOfGeometries;
-	GeometryMD* geometries;
-	gdouble velocity;
-}GeometriesMD;
-GeometriesMD geometriesMD;
-void initGeometryMD();
-void geometriesMDDlg();
-
-#endif /* __GABEDIT_ANIMATIONMD_H__ */
-
+#ifndef __GABEDIT_INTERPOLATION_H__
+#define __GABEDIT_INTERPOLATION_H__
+void computBicubCoef(
+	gdouble z[], 
+	gdouble dzdx[], 
+	gdouble dzdy[], 
+	gdouble d2zdxdy[], 
+	gdouble dx, gdouble dy,
+	gdouble **c);
+void biCubicInterpolation(
+	gdouble z[], 
+	gdouble dzdx[], 
+	gdouble dzdy[], 
+	gdouble d2zdxdy[], 
+	gdouble xl, gdouble xu, 
+	gdouble yl, gdouble yu, 
+	gdouble x, gdouble y, 
+	gdouble *pz, gdouble *pdzdx, gdouble *pdzdy,
+	gdouble *pd2zdx2, gdouble *pd2zdy2, gdouble *pd2zdxdy
+	);
+#endif

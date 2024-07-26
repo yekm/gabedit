@@ -568,6 +568,7 @@ Molecule createMolecule(GeomDef* geom,gint natoms,gboolean connections)
 		molecule.atoms[i].residueNumber = geom[i].ResidueNumber;
 		molecule.atoms[i].layer = geom[i].Layer;
 		molecule.atoms[i].show = geom[i].show;
+		molecule.atoms[i].variable = geom[i].Variable;
 		molecule.atoms[i].N = geom[i].N;
 	
 		molecule.atoms[i].typeConnections = NULL; 
@@ -587,6 +588,15 @@ Molecule createMolecule(GeomDef* geom,gint natoms,gboolean connections)
 
 	for(i=0;i<3;i++) /* x, y and z derivatives */
 		molecule.gradient[i] = g_malloc(molecule.nAtoms*sizeof(gdouble));
+	/* if all freezed, set all to variable */
+	{
+		gint j = 0;
+		for(i=0;i<molecule.nAtoms;i++)
+			if(!molecule.atoms[i].variable) j++;
+		if(j==molecule.nAtoms)
+		for(i=0;i<molecule.nAtoms;i++)
+			molecule.atoms[i].variable = TRUE;
+	}
 
 	return molecule;
 }
@@ -619,8 +629,8 @@ void redrawMolecule(Molecule* molecule,gchar* str)
 		geometry0[i].Residue =  g_strdup(molecule->atoms[i].residueName);
 		geometry0[i].ResidueNumber =  molecule->atoms[i].residueNumber;
 		geometry0[i].show =  molecule->atoms[i].show;
+		geometry0[i].Variable =  molecule->atoms[i].variable;
 		geometry0[i].Layer =  molecule->atoms[i].layer;
-		geometry0[i].Variable = FALSE;
 		geometry0[i].N = molecule->atoms[i].N;
 		geometry0[i].typeConnections = NULL;
 
@@ -634,8 +644,8 @@ void redrawMolecule(Molecule* molecule,gchar* str)
 		geometry[i].Residue =  g_strdup(molecule->atoms[i].residueName);
 		geometry[i].ResidueNumber =  molecule->atoms[i].residueNumber;
 		geometry[i].show =  molecule->atoms[i].show;
+		geometry[i].Variable =  molecule->atoms[i].variable;
 		geometry[i].Layer =  molecule->atoms[i].layer;
-		geometry[i].Variable = FALSE;
 		geometry[i].N = molecule->atoms[i].N;
 		geometry[i].typeConnections = NULL;
 
@@ -736,6 +746,7 @@ Molecule copyMolecule(Molecule* m)
 		molecule.atoms[i].residueNumber = m->atoms[i].residueNumber;
 		molecule.atoms[i].layer = m->atoms[i].layer;
 		molecule.atoms[i].show = m->atoms[i].show;
+		molecule.atoms[i].variable = m->atoms[i].variable;
 		molecule.atoms[i].N = m->atoms[i].N;
 
 		molecule.atoms[i].typeConnections = NULL; 

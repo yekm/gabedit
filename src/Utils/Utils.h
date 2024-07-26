@@ -49,7 +49,7 @@ typedef struct _DataTree
 void timing(double* cpu,double *sys);
 #ifdef G_OS_WIN32
 gboolean winsockCheck(FILE* );
-void addUnitDisk(FILE* file, gchar* name);
+void addUnitDisk(FILE* file, G_CONST_RETURN gchar* name);
 #endif /* G_OS_WIN32 */
 void free_gaussian_commands();
 void free_molpro_commands();

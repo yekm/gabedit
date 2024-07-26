@@ -92,11 +92,13 @@ typedef enum
 #define NINTEGOPTIONS 3
 #define NTHERMOPTIONS 3
 #define NENTRYTOL 2
+#define NCONSTRAINTS 3
 
 static	GtkWidget* buttonTypesOptions[3];
 static	GtkWidget* buttonMMOptions[NOPTIONS1+NOPTIONS2+NOPTIONS3];
 static	GtkWidget* buttonMinimizeOptions[NGRADOPTIONS];
 static	GtkWidget* buttonMDOptions[NINTEGOPTIONS];
+static	GtkWidget* buttonConstraintsOptions[NCONSTRAINTS];
 static	GtkWidget* buttonMDThermOptions[NTHERMOPTIONS];
 static	GtkWidget* entryMinimizeOptions[NGRADENTRYS];
 static	GtkWidget* frameAmber = NULL;
@@ -1125,6 +1127,13 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 	forceFieldOptions.hydrogenBonded = GTK_TOGGLE_BUTTON (buttonMMOptions[MMHBOND])->active;
 	forceFieldOptions.coulomb = GTK_TOGGLE_BUTTON (buttonMMOptions[MMCOULOMB])->active;
 	forceFieldOptions.vanderWals = GTK_TOGGLE_BUTTON (buttonMMOptions[PWVANDERWALS])->active;
+
+	forceFieldOptions.rattleConstraints = NOCONSTRAINTS;
+	if(GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSCONSTRAINTS])->active)
+			forceFieldOptions.rattleConstraints = BONDSCONSTRAINTS;
+	if(GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSANGLESCONSTRAINTS])->active)
+			forceFieldOptions.rattleConstraints = BONDSANGLESCONSTRAINTS;
+
 	if(GTK_TOGGLE_BUTTON (buttonTypesOptions[AMBER])->active )
 		forceFieldOptions.type = AMBER;
 	else
@@ -1537,6 +1546,11 @@ static void amberMolecularDynamics(GtkWidget* Win, gpointer data)
 	forceFieldOptions.hydrogenBonded = GTK_TOGGLE_BUTTON (buttonMMOptions[MMHBOND])->active;
 	forceFieldOptions.coulomb = GTK_TOGGLE_BUTTON (buttonMMOptions[MMCOULOMB])->active;
 	forceFieldOptions.vanderWals = GTK_TOGGLE_BUTTON (buttonMMOptions[PWVANDERWALS])->active;
+	forceFieldOptions.rattleConstraints = NOCONSTRAINTS;
+	if(GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSCONSTRAINTS])->active)
+			forceFieldOptions.rattleConstraints = BONDSCONSTRAINTS;
+	if(GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSANGLESCONSTRAINTS])->active)
+			forceFieldOptions.rattleConstraints = BONDSANGLESCONSTRAINTS;
 	if(GTK_TOGGLE_BUTTON (buttonTypesOptions[AMBER])->active )
 		forceFieldOptions.type = AMBER;
 	else
@@ -1684,7 +1698,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 	gtk_widget_show (vbox);
 	gtk_container_add (GTK_CONTAINER (frame), vbox);
 
-	table = gtk_table_new(16,6,FALSE);
+	table = gtk_table_new(20,6,FALSE);
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
 /*----------------------------------------------------------------------------------*/
@@ -2026,6 +2040,46 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 12;
 	j = 0;
+	buttonConstraintsOptions[NOCONSTRAINTS]= gtk_radio_button_new_with_label( NULL, "No constraints"); 
+	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[NOCONSTRAINTS],
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS]), TRUE);
+/*----------------------------------------------------------------------------------*/
+	i = 13;
+	j = 0;
+	buttonConstraintsOptions[BONDSCONSTRAINTS]= gtk_radio_button_new_with_label(
+			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS])), "Bond constraints"); 
+	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[BONDSCONSTRAINTS],
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSCONSTRAINTS]), FALSE);
+/*----------------------------------------------------------------------------------*/
+	i = 14;
+	j = 0;
+	buttonConstraintsOptions[BONDSANGLESCONSTRAINTS]= gtk_radio_button_new_with_label(
+			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS])), "Bond & Angle constraints"); 
+	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[BONDSANGLESCONSTRAINTS],
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSANGLESCONSTRAINTS]), FALSE);
+/*----------------------------------------------------------------------------------*/
+	i = 15;
+	j = 0;
+	hseparator = gtk_hseparator_new ();
+	gtk_table_attach(GTK_TABLE(table),hseparator, j,j+6,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = 16;
+	j = 0;
 	buttonSaveTraj = gtk_check_button_new_with_label("Save Trajectory in "); 
 	gtk_table_attach(GTK_TABLE(table),buttonSaveTraj,
 			j,j+1,i,i+1,
@@ -2034,7 +2088,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonSaveTraj), FALSE);
 /*----------------------------------------------------------------------------------*/
-	i = 12;
+	i = 16;
 	j = 1;
 	label = gtk_label_new(":");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -2042,7 +2096,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 12;
+	i = 16;
 	j = 2;
 	entryFileNameTraj = gtk_entry_new();
 	gtk_widget_set_size_request(entryFileNameTraj, 60, -1);
@@ -2052,7 +2106,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 13;
+	i = 17;
 	j = 0;
 	buttonSaveProp = gtk_check_button_new_with_label("Save Properties in "); 
 	gtk_table_attach(GTK_TABLE(table),buttonSaveProp,
@@ -2062,7 +2116,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonSaveProp), FALSE);
 /*----------------------------------------------------------------------------------*/
-	i = 13;
+	i = 17;
 	j = 1;
 	label = gtk_label_new(":");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -2070,7 +2124,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 13;
+	i = 17;
 	j = 2;
 	entryFileNameProp = gtk_entry_new();
 	gtk_widget_set_size_request(entryFileNameProp, 60, -1);
@@ -2080,7 +2134,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 14;
+	i = 18;
 	j = 0;
 	label = gtk_label_new("Folder");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -2088,7 +2142,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 14;
+	i = 18;
 	j = 1;
 	label = gtk_label_new(":");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -2096,7 +2150,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 14;
+	i = 18;
 	j = 2;
 	buttonDirSelector =  gtk_file_chooser_button_new("Select your folder", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
 	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
@@ -2316,7 +2370,7 @@ static void createInfoMDFrame(GtkWidget *box)
 	"\n"
 	"If \"Stochastic Dynamics via Verlet velocity Algorithm\" is selected :\n"
 	"        A stochastic dynamic simulation is run using Verlet velocity Algorithm.\n"
-	"        The velocities are scaled (Berendsen méthod)during the Heating, Equilibrium and Cooling steps.\n"
+	"        The velocities are scaled (Berendsen method)during the Heating, Equilibrium and Cooling steps.\n"
 	);
 	gtk_label_set_justify(GTK_LABEL(label),GTK_JUSTIFY_LEFT);
 	gtk_widget_show (label);
@@ -2356,7 +2410,7 @@ static void createInfoConfoFrame(GtkWidget *box)
 	"\n"
 	"If \"Stochastic Dynamics via Verlet velocity Algorithm\" is selected :\n"
 	"        A stochastic dynamic simulation is run using Verlet velocity Algorithm.\n"
-	"        The velocities are scaled (Berendsen méthod)during the Heating, Equilibrium and Cooling steps.\n"
+	"        The velocities are scaled (Berendsen method)during the Heating, Equilibrium and Cooling steps.\n"
 	);
 	gtk_label_set_justify(GTK_LABEL(label),GTK_JUSTIFY_LEFT);
 	gtk_widget_show (label);
@@ -2799,7 +2853,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 	gtk_widget_show (vbox);
 	gtk_container_add (GTK_CONTAINER (frame), vbox);
 
-	table = gtk_table_new(18,6,FALSE);
+	table = gtk_table_new(20,6,FALSE);
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
 /*----------------------------------------------------------------------------------*/
@@ -3112,6 +3166,46 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 12;
 	j = 0;
+	buttonConstraintsOptions[NOCONSTRAINTS]= gtk_radio_button_new_with_label( NULL, "No constraints"); 
+	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[NOCONSTRAINTS],
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS]), TRUE);
+/*----------------------------------------------------------------------------------*/
+	i = 13;
+	j = 0;
+	buttonConstraintsOptions[BONDSCONSTRAINTS]= gtk_radio_button_new_with_label(
+			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS])), "Bond constraints"); 
+	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[BONDSCONSTRAINTS],
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSCONSTRAINTS]), FALSE);
+/*----------------------------------------------------------------------------------*/
+	i = 14;
+	j = 0;
+	buttonConstraintsOptions[BONDSANGLESCONSTRAINTS]= gtk_radio_button_new_with_label(
+			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS])), "Bond & Angle constraints"); 
+	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[BONDSANGLESCONSTRAINTS],
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSANGLESCONSTRAINTS]), FALSE);
+/*----------------------------------------------------------------------------------*/
+	i = 15;
+	j = 0;
+	hseparator = gtk_hseparator_new ();
+	gtk_table_attach(GTK_TABLE(table),hseparator, j,j+6,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = 16;
+	j = 0;
 	buttonSaveTraj = gtk_check_button_new_with_label("Save Trajectory in "); 
 	gtk_table_attach(GTK_TABLE(table),buttonSaveTraj,
 			j,j+1,i,i+1,
@@ -3120,7 +3214,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonSaveTraj), FALSE);
 /*----------------------------------------------------------------------------------*/
-	i = 12;
+	i = 16;
 	j = 1;
 	label = gtk_label_new(":");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -3128,7 +3222,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 12;
+	i = 16;
 	j = 2;
 	entryFileNameTraj = gtk_entry_new();
 	gtk_widget_set_size_request(entryFileNameTraj, 60, -1);
@@ -3138,7 +3232,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 13;
+	i = 17;
 	j = 0;
 	buttonSaveProp = gtk_check_button_new_with_label("Save Properties in "); 
 	gtk_table_attach(GTK_TABLE(table),buttonSaveProp,
@@ -3148,7 +3242,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonSaveProp), FALSE);
 /*----------------------------------------------------------------------------------*/
-	i = 13;
+	i = 17;
 	j = 1;
 	label = gtk_label_new(":");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -3156,7 +3250,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 13;
+	i = 17;
 	j = 2;
 	entryFileNameProp = gtk_entry_new();
 	gtk_widget_set_size_request(entryFileNameProp, 60, -1);
@@ -3194,6 +3288,7 @@ static void amberMinimize(GtkWidget* Win, gpointer data)
 	forceFieldOptions.hydrogenBonded = GTK_TOGGLE_BUTTON (buttonMMOptions[MMHBOND])->active;
 	forceFieldOptions.coulomb = GTK_TOGGLE_BUTTON (buttonMMOptions[MMCOULOMB])->active;
 	forceFieldOptions.vanderWals = GTK_TOGGLE_BUTTON (buttonMMOptions[PWVANDERWALS])->active;
+	forceFieldOptions.rattleConstraints = NOCONSTRAINTS;
 
 	useConjugateGradient = GTK_TOGGLE_BUTTON (buttonMinimizeOptions[GRADCONJUGATE])->active;
 	useQuasiNewton = GTK_TOGGLE_BUTTON (buttonMinimizeOptions[GRADQUASINEWTON])->active;
@@ -3334,6 +3429,7 @@ void amberEnergyCalculation(GtkWidget* Win, gpointer data)
 	forceFieldOptions.hydrogenBonded = GTK_TOGGLE_BUTTON (buttonMMOptions[MMHBOND])->active;
 	forceFieldOptions.coulomb = GTK_TOGGLE_BUTTON (buttonMMOptions[MMCOULOMB])->active;
 	forceFieldOptions.vanderWals = GTK_TOGGLE_BUTTON (buttonMMOptions[PWVANDERWALS])->active;
+	forceFieldOptions.rattleConstraints = NOCONSTRAINTS;
 
 	if(GTK_TOGGLE_BUTTON (buttonTypesOptions[AMBER])->active )
 		forceFieldOptions.type = AMBER;

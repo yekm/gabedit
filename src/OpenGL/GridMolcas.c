@@ -895,7 +895,7 @@ static void read_molcasgrid_orbitals_file(gchar* filename)
 			if(!Ok)
 			{
 				free_data_all();
-				Message("Sorry, I can not grid informations from thi file\n","Error",TRUE);
+				Message("Sorry, I can not grid information from thi file\n","Error",TRUE);
 			}
 		}
 		else
@@ -962,7 +962,7 @@ static void read_molcasgrid_density_file(gchar* filename)
 			if(!Ok)
 			{
 				free_data_all();
-				Message("Sorry, I can not grid informations from thi file\n","Error",TRUE);
+				Message("Sorry, I can not grid information from thi file\n","Error",TRUE);
 			}
 		}
 		else

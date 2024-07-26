@@ -83,7 +83,7 @@ static gboolean instal = FALSE;
 /********************************************************************************/
 void destroy_preferences_window(GtkWidget*Win)
 {
-  destroy_childs(Wins);
+  destroy_children(Wins);
   Wins = NULL;
 }
 /********************************************************************************/

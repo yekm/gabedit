@@ -83,7 +83,7 @@ void timing(double* cpu,double *sys)
 }
 #endif
 #ifdef G_OS_WIN32
-void addUnitDisk(FILE* file, gchar* name)
+void addUnitDisk(FILE* file, G_CONST_RETURN gchar* name)
 {
 	if(name && strlen(name)>1 && name[1]==':')
 		fprintf(file,"%c%c\n", name[0],name[1]);
@@ -2977,7 +2977,7 @@ void run_molden (gchar *titre)
 	g_free(title);
 	strout = cat_file(fout,FALSE);
 	strerr = cat_file(ferr,FALSE);
-	if(!strout && !strerr) destroy_childs(Win);
+	if(!strout && !strerr) destroy_children(Win);
 	else
 	{
   		if(strout)
@@ -4101,6 +4101,7 @@ gchar** get_one_block_from_aux_mopac_file(FILE* file, gchar* blockName,  gint* n
 				}
 				else
 				{
+					if(!strstr(blockName,"ATOM_EL"))
 					for(k=0;k<strlen(elements[i]);k++)
 					{
 						if(elements[i][k]=='D') elements[i][k]='e';
@@ -4155,7 +4156,13 @@ gboolean zmat_mopac_scan_output_file(gchar *FileName)
   	while(!feof(fd) )
 	{
     		if(!fgets(t,taille,fd)) break;
-		if ( strstr(t,"ATOM  CHEMICAL   BOND LENGTH    BOND ANGLE    TWIST ANGLE"))
+		if ( strstr(t,"ATOM")
+		 && strstr(t,"CHEMICAL")
+		 && strstr(t,"BOND")
+		 && strstr(t,"LENGTH")
+		 && strstr(t,"ANGLE")
+		 && strstr(t,"TWIST")
+		 )
 		{
 			return TRUE;
 		}

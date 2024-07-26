@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 #define IMPROPERDIHEDRALDIM	7 /*a1 a2 a3 a4 Pk Phase Pn */
 #define NONBONDEDDIM 		5 /* a1 a2 Aij Bij CoulombFactor */
 #define HYDROGENBONDEDDIM 	4 /* a1 a2 Cij Dij */
+#define RATTLEDIM	        3 /* a1 a2 r12 */
 
 #define PAIRWISEDIM 	8 /* a1 a2 A Beta C6 C8 C10 b  : 
 			     potential = A*exp(-Beta*r)-Somme C2n*f2n/r**(2*n) + Zi*Zj/r 
@@ -42,6 +43,13 @@ typedef enum
   PAIRWISE
 } ForceFieldTypes;
 
+typedef enum
+{
+  NOCONSTRAINTS = 0,
+  BONDSCONSTRAINTS = 1,
+  BONDSANGLESCONSTRAINTS = 2
+} ForceFieldConstraints;
+
 struct _ForceFieldOptions
 {
 	ForceFieldTypes type;
@@ -54,6 +62,7 @@ struct _ForceFieldOptions
 	gboolean hydrogenBonded;/* For Amber */
 	gboolean coulomb; /* For Amber and Pair-Wise */
 	gboolean vanderWals; /* For Ionic */
+	ForceFieldConstraints rattleConstraints;/*  rattle constraints */
 };
 struct _ForceField
 {
@@ -65,6 +74,7 @@ struct _ForceField
 	gint numberOfImproperTorsionTerms;
 	gint numberOfNonBonded;
 	gint numberOfHydrogenBonded;
+	gint numberOfRattleConstraintsTerms;
 
 	gdouble* bondStretchTerms[STRETCHDIM];
 	gdouble* angleBendTerms[BENDDIM];
@@ -75,6 +85,8 @@ struct _ForceField
 
 	gint numberOfPairWise;
 	gdouble* pairWiseTerms[PAIRWISEDIM];
+
+	gdouble* rattleConstraintsTerms[RATTLEDIM];
 
 	ForceFieldOptions options;
 };

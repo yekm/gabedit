@@ -49,7 +49,7 @@ DEALINGS IN THE SOFTWARE.
 
 #define MAJOR_VERSION    2
 #define MINOR_VERSION    2
-#define MICRO_VERSION    10
+#define MICRO_VERSION    11
 
 /**** Structures *********/
 typedef struct _FileOpen
@@ -78,12 +78,12 @@ typedef struct _FontsStyle
  GdkColor TextColor;
 }FontsStyle;
 
-typedef struct _WidgetChilds
+typedef struct _WidgetChildren
 {
- gint nchilds;
- GtkWidget **childs;
- GabeditSignalFunc *destroychilds;
-}WidgetChilds;
+ gint nchildren;
+ GtkWidget **children;
+ GabeditSignalFunc *destroychildren;
+}WidgetChildren;
 
 typedef struct _User
 {

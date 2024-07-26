@@ -511,7 +511,7 @@ static void create_info_win()
 	vboxwin = create_vbox(fp);
         gtk_widget_realize(fp);
   	init_child(fp,gtk_widget_destroy," Prop. of project ");
-	g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_childs,NULL);
+	g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_children,NULL);
 
 	hbox = gtk_hbox_new(0,FALSE);
 	gtk_box_pack_start (GTK_BOX(vboxwin),hbox , TRUE, TRUE, 2);
@@ -527,7 +527,7 @@ static void create_info_win()
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,GTK_OBJECT(fp));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,GTK_OBJECT(fp));
         gtk_widget_show_all(fp);
 }
 /********************************************************************************/
@@ -570,7 +570,7 @@ static void create_set_dialogue_window()
 
   	gtk_widget_realize(fp);
   	init_child(fp,gtk_widget_destroy," Prop. of project ");
-	g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_childs,NULL);
+	g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_children,NULL);
 
 	gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
 	vboxall = create_vbox(fp);
@@ -867,7 +867,7 @@ static void create_set_dialogue_window()
 	button = create_button(fp,"Cancel");
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,GTK_OBJECT(fp));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,GTK_OBJECT(fp));
 	gtk_widget_show (button);
 
 	button = create_button(fp,"OK");
@@ -882,7 +882,7 @@ static void create_set_dialogue_window()
 	g_object_set_data(G_OBJECT(fp),"ButtonFtpRsh",ButtonFtpRsh);
 
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(set_properties),(gpointer)fp);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,GTK_OBJECT(fp));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,GTK_OBJECT(fp));
 
 
 	g_object_set_data(G_OBJECT(buttons[0]),"FrameRemote",FrameRemote);

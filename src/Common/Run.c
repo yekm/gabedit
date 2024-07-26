@@ -354,7 +354,7 @@ GtkWidget* create_text_result_command(GtkWidget* Text[],GtkWidget* Frame[],gchar
 
   gtk_widget_realize(Win);
   init_child(Win,gtk_widget_destroy," Run ");
-  g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)destroy_children,NULL);
 
   gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
   vboxall = create_vbox(Win);
@@ -384,7 +384,7 @@ GtkWidget* create_text_result_command(GtkWidget* Text[],GtkWidget* Frame[],gchar
   gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, FALSE, 5);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,G_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,G_OBJECT(Win));
   gtk_widget_show (button);
   gtk_window_set_default_size (GTK_WINDOW(Win), 3*ScreenWidth/5, 3*ScreenHeight/5);
   gtk_widget_set_size_request(GTK_WIDGET(Text[0]),-1,1*ScreenHeight/5);
@@ -3446,7 +3446,7 @@ static void run_local_orca(GtkWidget *b,gpointer data)
   strout = cat_file(fout,FALSE);
   strerr = cat_file(ferr,FALSE);
   if(!strout && !strerr)
-  	destroy_childs(Win);
+  	destroy_children(Win);
   else
   {
   	if(strout)
@@ -3549,7 +3549,7 @@ static void run_local_firefly(GtkWidget *b,gpointer data)
   strout = cat_file(fout,FALSE);
   strerr = cat_file(ferr,FALSE);
   if(!strout && !strerr)
-  	destroy_childs(Win);
+  	destroy_children(Win);
   else
   {
   	if(strout)
@@ -3653,7 +3653,7 @@ static void run_local_qchem(GtkWidget *b,gpointer data)
   strout = cat_file(fout,FALSE);
   strerr = cat_file(ferr,FALSE);
   if(!strout && !strerr)
-  	destroy_childs(Win);
+  	destroy_children(Win);
   else
   {
   	if(strout)
@@ -3757,7 +3757,7 @@ static void run_local_mopac(GtkWidget *b,gpointer data)
   strout = cat_file(fout,FALSE);
   strerr = cat_file(ferr,FALSE);
   if(!strout && !strerr)
-  	destroy_childs(Win);
+  	destroy_children(Win);
   else
   {
   	if(strout)
@@ -3860,7 +3860,7 @@ static void run_local_gamess(GtkWidget *b,gpointer data)
   strout = cat_file(fout,FALSE);
   strerr = cat_file(ferr,FALSE);
   if(!strout && !strerr)
-  	destroy_childs(Win);
+  	destroy_children(Win);
   else
   {
   	if(strout)
@@ -3959,7 +3959,7 @@ static void run_local_gaussian(GtkWidget *b,gpointer data)
   strout = cat_file(fout,FALSE);
   strerr = cat_file(ferr,FALSE);
   if(!strout && !strerr)
-  	destroy_childs(Win);
+  	destroy_children(Win);
   else
   {
   	if(strout)
@@ -4064,7 +4064,7 @@ static void run_local_molcas(GtkWidget *b,gpointer data)
   g_free(title);
   strout = cat_file(fout,FALSE);
   strerr = cat_file(ferr,FALSE);
-  if(!strout && !strerr) destroy_childs(Win);
+  if(!strout && !strerr) destroy_children(Win);
   else
   {
   	if(strout)
@@ -4200,7 +4200,7 @@ static void run_local_molpro(GtkWidget *b,gpointer data)
   strout = cat_file(fout,FALSE);
   strerr = cat_file(ferr,FALSE);
   if(!strout && !strerr)
-  	destroy_childs(Win);
+  	destroy_children(Win);
   else
   {
   	if(strout)
@@ -4305,7 +4305,7 @@ static void run_local_mpqc(GtkWidget *b,gpointer data)
   g_free(title);
   strout = cat_file(fout,FALSE);
   strerr = cat_file(ferr,FALSE);
-  if(!strout && !strerr) destroy_childs(Win);
+  if(!strout && !strerr) destroy_children(Win);
   else
   {
   	if(strout)
@@ -4410,7 +4410,7 @@ static void run_local_other(GtkWidget *b,gpointer data)
   strout = cat_file(fout,FALSE);
   strerr = cat_file(ferr,FALSE);
   if(!strout && !strerr)
-  	destroy_childs(Win);
+  	destroy_children(Win);
   else
   {
   	if(strout)
@@ -5063,7 +5063,7 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GCallback func)
 
   gtk_widget_realize(fp);
   init_child(fp,gtk_widget_destroy," Run ");
-  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_children,NULL);
 
   gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
   vboxall = create_vbox(fp);
@@ -5110,7 +5110,7 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GCallback func)
   button = create_button(fp,"Cancel");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 5);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,G_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,G_OBJECT(fp));
   gtk_widget_show (button);
 
   button = create_button(fp,"OK");
@@ -5131,7 +5131,7 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GCallback func)
 
 
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(func),(gpointer)entry);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,G_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,G_OBJECT(fp));
   g_signal_connect_swapped (G_OBJECT (entry[4]), "activate", (GCallback) gtk_button_clicked, G_OBJECT (button));
   
   g_signal_connect(G_OBJECT(ButtonGamess), "clicked",G_CALLBACK(set_default_entrys),NULL);

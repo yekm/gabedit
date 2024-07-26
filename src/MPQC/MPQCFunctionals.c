@@ -560,7 +560,7 @@ void mpqcSumDensityFunctionalWindow()
 	g_object_set_data(G_OBJECT (win), "Coefficients", coefficients);
 
 	init_child(win, destroyWindow," MPQC Sum. Dens. ");
-	g_signal_connect(G_OBJECT(win),"delete_event",(GCallback)destroy_childs,NULL);
+	g_signal_connect(G_OBJECT(win),"delete_event",(GCallback)destroy_children,NULL);
 
 	gtk_widget_realize(win);
 
@@ -578,11 +578,11 @@ void mpqcSumDensityFunctionalWindow()
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(setSumDensityFunctionals),GTK_OBJECT(win));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_childs),GTK_OBJECT(win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_children),GTK_OBJECT(win));
 
 	button = create_button(win,"Close");
   	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(win)->action_area), button, FALSE, TRUE, 5);  
-	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK(destroy_childs),GTK_OBJECT(win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK(destroy_children),GTK_OBJECT(win));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_show (button);
 

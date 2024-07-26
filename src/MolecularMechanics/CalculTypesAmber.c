@@ -883,6 +883,7 @@ static GeomDef* getMyGeomFromFrag(Fragment* F)
 		geom[i].Residue =g_strdup(F->Atoms[i].Residue);
 		geom[i].ResidueNumber= 0;
 		geom[i].show= TRUE;
+		geom[i].Variable= TRUE;
 		geom[i].Charge = F->Atoms[i].Charge;
 		geom[i].N = i+1;
 		geom[i].typeConnections = NULL;

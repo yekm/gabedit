@@ -1501,7 +1501,7 @@ void close_window_orb(GtkWidget*win, gpointer data)
 	free_data_all();
 	free_objects_all();
 
-  	destroy_childs(PrincipalWindow);
+  	destroy_children(PrincipalWindow);
 
 	GLArea = NULL;
 	PrincipalWindow = NULL;

@@ -52,6 +52,10 @@ typedef enum
 
 #define NENTRYTOL 2
 
+#define NCONSTRAINTS 3
+
+static	GtkWidget* buttonConstraintsOptions[NCONSTRAINTS];
+
 static	GtkWidget* entryTolerance[NENTRYTOL];
 static	GtkWidget* buttonTolerance[NENTRYTOL];
 
@@ -86,6 +90,7 @@ static  GtkWidget* buttonMopac = NULL ;
 static  GtkWidget* buttonFireFly = NULL ;
 static  GtkWidget* entryMopacMethod = NULL;
 static  GtkWidget* entryFireFlyMethod = NULL;
+static  GtkWidget* entryMopacHamiltonianSparkle = NULL;
 static  GtkWidget* entryMopacHamiltonian = NULL;
 static  GtkWidget* entryAddMopacKeywords = NULL;
 static  GtkWidget* entryOrcaHamiltonian = NULL;
@@ -105,6 +110,7 @@ static  GtkWidget* entryFileName = NULL;
 /*********************************************************************************/
 static void addMopacOptions(GtkWidget *box, gchar* type);
 static void addOrcaOptions(GtkWidget *box, gchar* type);
+static void addMopacSparkleOptions(GtkWidget *box, gchar* type);
 /*********************************************************************************/
 static void getMultiplicityName(gint multiplicity, gchar* buffer)
 {
@@ -411,10 +417,11 @@ static gboolean runOneMopac(gchar* fileNamePrefix, gchar* keyWords)
 	{
 		gchar* str = NULL;
 		if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("Minimization by PM6-DH2/Mopac ... Please wait");
-		else
-		if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6")) str = g_strdup_printf("Minimization by PM6/Mopac ... Please wait");
-		else
-		if(strstr(keyWords,"XYZ") && strstr(keyWords,"AM1")) str = g_strdup_printf("Minimization by AM1/Mopac ... Please wait");
+		else if(strstr(keyWords,"SPARKLE") && strstr(keyWords,"PM6")) str = g_strdup_printf("Minimization by Sparkle/PM6/Mopac ... Please wait");
+		else if(strstr(keyWords,"SPARKLE") && strstr(keyWords,"AM1")) str = g_strdup_printf("Minimization by Sparkle/AM1/Mopac ... Please wait");
+		else if(strstr(keyWords,"SPARKLE") && strstr(keyWords,"PM3")) str = g_strdup_printf("Minimization by Sparkle/PM3/Mopac ... Please wait");
+		else if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6")) str = g_strdup_printf("Minimization by PM6/Mopac ... Please wait");
+		else if(strstr(keyWords,"XYZ") && strstr(keyWords,"AM1")) str = g_strdup_printf("Minimization by AM1/Mopac ... Please wait");
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("ESP charges from PM6-DH2/Mopac ... Please wait");
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"PM6")) str = g_strdup_printf("ESP charges from PM6/Mopac ... Please wait");
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"AM1")) str = g_strdup_printf("ESP charges from AM1/Mopac ... Please wait");
@@ -506,6 +513,38 @@ static gboolean getEnergyFireFly(gchar* fileNameOut, gdouble* energy)
 	fclose(file);
 	return OK;
 }
+/*************************************************************************************************************/
+static void putFireFlyMoleculeXYZFixed(FILE* file)
+{
+	gint i,k,l;
+	gint nvar = 0;
+
+        if(Natoms<2)return;
+	nvar = 0;
+        for(i=0;i<Natoms;i++)
+		if(geometry[i].Variable) nvar+=3;
+	/* printf("nvar = %d\n",nvar);*/
+	if(nvar==3*Natoms) return;
+	if(nvar==0) return;
+
+        fprintf(file," ");
+        fprintf(file, "$STATPT\n");
+        fprintf (file,"   IFREEZ(1)=");
+
+	l = 0;
+        for(i=0;i<Natoms;i++)
+	{
+		if(!geometry[i].Variable)
+		{
+			l++;
+			k = i*3+1;
+			fprintf(file,"%d, %d, %d ",k,k+1,k+2);
+			if(l%10==0) fprintf(file,"\n");
+		}
+	}
+	fprintf(file,"\n ");
+        fprintf (file, "$END\n");
+}
 /*****************************************************************************/
 static gboolean runOneFireFly(gchar* fileNamePrefix, gchar* keyWords)
 {
@@ -573,9 +612,13 @@ static gboolean runOneFireFly(gchar* fileNamePrefix, gchar* keyWords)
 		sscanf(strstr(keyWords,"GBASIS"),"%s",buffer);
 		fprintf(file," $BASIS %s $END\n",buffer);
 	}
-	if(!strstr(keyWords,"Optimize"))
+	if(strstr(keyWords,"Optimize"))
 	{
         	fprintf(file, " $STATPT OptTol=1e-4 NStep=500 $END\n");
+	}
+	if(strstr(keyWords,"Optimize"))
+	{
+		putFireFlyMoleculeXYZFixed(file);
 	}
 	fprintf(file," $DATA\n");
 	fprintf(file,"Molecule specification\n");
@@ -1111,6 +1154,17 @@ static void runSemiEmpirical(GtkWidget* Win, gpointer data, gchar* type, gchar* 
 		}
 		if(fileNamePrefix) g_free(fileNamePrefix);
 	}
+        else if(!strcmp(type,"MopacOptimizeSparkle") && keys)
+	{
+		gchar* fileNamePrefix = get_suffix_name_file(fileName);
+		if(runOneMopac(fileNamePrefix, keys))
+		{
+			gchar* fileOut = g_strdup_printf("%sOne.aux",fileNamePrefix);
+			find_energy_mopac_aux(fileOut);
+			if(fileOut) g_free(fileOut);
+		}
+		if(fileNamePrefix) g_free(fileNamePrefix);
+	}
 	else if(!strcmp(type,"MopacESP") && keys)
 	{
 		gchar* fileNamePrefix = get_suffix_name_file(fileName);
@@ -1298,6 +1352,19 @@ static void runMopacOptimize(GtkWidget* Win, gpointer data)
 	TotalCharges[0] = totalCharge;
 	SpinMultiplicities[0] = spinMultiplicity;
 	runSemiEmpirical(Win, data, "MopacOptimize",keys);
+	if(keys) g_free(keys);
+}
+/*****************************************************************************/
+static void runMopacOptimizeSparkle(GtkWidget* Win, gpointer data)
+{
+	G_CONST_RETURN gchar* model = gtk_entry_get_text(GTK_ENTRY(entryMopacHamiltonianSparkle));
+	G_CONST_RETURN gchar* addKeys = gtk_entry_get_text(GTK_ENTRY(entryAddMopacKeywords));
+	gchar* keys = g_strdup_printf("%s SPARKLE XYZ AUX %s",model,addKeys);
+	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
+	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
+	TotalCharges[0] = totalCharge;
+	SpinMultiplicities[0] = spinMultiplicity;
+	runSemiEmpirical(Win, data, "MopacOptimizeSparkle",keys);
 	if(keys) g_free(keys);
 }
 /*****************************************************************************/
@@ -1987,52 +2054,63 @@ static void AddOptionsDlg(GtkWidget *NoteBook, GtkWidget *win,gchar* type)
 /*----------------------------------------------------------------------------------*/
 	if(strstr(type,"Orca"))
 	{
-	i++;
-	j = 0;
-	vbox = gtk_vbox_new (FALSE, 0);
-	gtk_table_attach(GTK_TABLE(table),vbox,
+		i++;
+		j = 0;
+		vbox = gtk_vbox_new (FALSE, 0);
+		gtk_table_attach(GTK_TABLE(table),vbox,
 			j,j+6,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
-	addOrcaOptions(vbox, type);
+		addOrcaOptions(vbox, type);
+	}
+	else if(strstr(type,"Mopac") && strstr(type,"Sparkle"))
+	{
+		i++;
+		j = 0;
+		vbox = gtk_vbox_new (FALSE, 0);
+		gtk_table_attach(GTK_TABLE(table),vbox, j,j+3,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+		addMopacSparkleOptions(vbox, type);
 	}
 	else
 	if(strstr(type,"Mopac") && !strstr(type,"PM6") && !strstr(type,"AM1"))
 	{
-	i++;
-	j = 0;
-	vbox = gtk_vbox_new (FALSE, 0);
-	gtk_table_attach(GTK_TABLE(table),vbox,
+		i++;
+		j = 0;
+		vbox = gtk_vbox_new (FALSE, 0);
+		gtk_table_attach(GTK_TABLE(table),vbox,
 			j,j+6,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
-	addMopacOptions(vbox, type);
+		addMopacOptions(vbox, type);
 	}
 	else if(strstr(type,"MopacScanAM1") || strstr(type,"MopacScanPM6") || strstr(type,"MopacScanPM6DH2"))
 	{
-	i++;
-	j = 0;
-	vbox = gtk_vbox_new (FALSE, 0);
-	gtk_table_attach(GTK_TABLE(table),vbox,
+		i++;
+		j = 0;
+		vbox = gtk_vbox_new (FALSE, 0);
+		gtk_table_attach(GTK_TABLE(table),vbox,
 			j,j+6,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
-	addMopacOptions(vbox, type);
+		addMopacOptions(vbox, type);
 	}
 	if(strstr(type,"MopacScan"))
 	{
-	i++;
-	j = 0;
-	vbox = gtk_vbox_new (FALSE, 0);
-	gtk_table_attach(GTK_TABLE(table),vbox,
+		i++;
+		j = 0;
+		vbox = gtk_vbox_new (FALSE, 0);
+		gtk_table_attach(GTK_TABLE(table),vbox,
 			j,j+6,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
-	createReactionPathFrame(vbox);
+		createReactionPathFrame(vbox);
 	}
 /*----------------------------------------------------------------------------------*/
 	i++;
@@ -2125,6 +2203,74 @@ static void addMopacOptions(GtkWidget *box, gchar* type)
 	i = 0;
 	comboMopacHamiltonian = addMopacHamiltonianToTable(table, i);
 	entryMopacHamiltonian = GTK_WIDGET(GTK_BIN(comboMopacHamiltonian)->child);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	j = 0;
+	add_label_table(table,"Additional keywords",(gushort)i,(gushort)j);
+/*----------------------------------------------------------------------------------*/
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	j = 2;
+	entryAddMopacKeywords = gtk_entry_new();
+	if(strstr(type,"Opt")) gtk_entry_set_text(GTK_ENTRY(entryAddMopacKeywords),"GNORM=0.01");
+	else if(strstr(type,"Gradient")) gtk_entry_set_text(GTK_ENTRY(entryAddMopacKeywords),"GNORM=0.01");
+	else if(strstr(type,"Scan")) gtk_entry_set_text(GTK_ENTRY(entryAddMopacKeywords),"GEO-OK EPS=78.39 RSOLV=1.3");
+	else gtk_entry_set_text(GTK_ENTRY(entryAddMopacKeywords),"BONDS");
+	gtk_widget_set_size_request(GTK_WIDGET(entryAddMopacKeywords),(gint)(ScreenHeight*0.2),-1);
+	gtk_table_attach(GTK_TABLE(table),entryAddMopacKeywords, j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	if(strstr(type,"MopacScanAM1")) gtk_entry_set_text(GTK_ENTRY(entryMopacHamiltonian),"AM1");
+/*----------------------------------------------------------------------------------*/
+}
+/**********************************************************************/
+static GtkWidget *addMopacHamiltonianSparkleToTable(GtkWidget *table, gint i)
+{
+	GtkWidget* entryMopacHamiltonianSparkle = NULL;
+	GtkWidget* comboMopacHamiltonianSparkle = NULL;
+	gint nlistHamiltonianSparkle = 3;
+	gchar* listHamiltonianSparkle[] = {"AM1","PM6","PM3"};
+
+	add_label_table(table,"Model",(gushort)i,0);
+	add_label_table(table,":",(gushort)i,1);
+	entryMopacHamiltonianSparkle = addComboListToATable(table, listHamiltonianSparkle, nlistHamiltonianSparkle, i, 2, 1);
+	comboMopacHamiltonianSparkle  = g_object_get_data(G_OBJECT (entryMopacHamiltonianSparkle), "Combo");
+	gtk_widget_set_sensitive(entryMopacHamiltonianSparkle, FALSE);
+
+	return comboMopacHamiltonianSparkle;
+}
+/**********************************************************************/
+static void addMopacSparkleOptions(GtkWidget *box, gchar* type)
+{
+	GtkWidget* frame;
+	GtkWidget* vboxFrame;
+	GtkWidget* comboMopacHamiltonianSparkle = NULL;
+	GtkWidget* label = NULL;
+	GtkWidget *table = NULL;
+	gint i;
+	gint j;
+
+	table = gtk_table_new(2,5,FALSE);
+
+	frame = gtk_frame_new (NULL);
+	gtk_widget_show (frame);
+	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
+	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
+
+	vboxFrame = gtk_vbox_new (FALSE, 3);
+	gtk_widget_show (vboxFrame);
+	gtk_container_add (GTK_CONTAINER (frame), vboxFrame);
+	gtk_box_pack_start (GTK_BOX (vboxFrame), table, TRUE, TRUE, 0);
+/*----------------------------------------------------------------------------------*/
+	i = 0;
+	comboMopacHamiltonianSparkle = addMopacHamiltonianSparkleToTable(table, i);
+	entryMopacHamiltonianSparkle = GTK_WIDGET(GTK_BIN(comboMopacHamiltonianSparkle)->child);
 /*----------------------------------------------------------------------------------*/
 	i++;
 	j = 0;
@@ -2282,6 +2428,8 @@ void semiEmpiricalDlg(gchar* type)
 		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runMopacEnergy,GTK_OBJECT(Win));
 	else if(!strcmp(type,"MopacOptimize"))
 		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runMopacOptimize,GTK_OBJECT(Win));
+	else if(!strcmp(type,"MopacOptimizeSparkle"))
+                g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runMopacOptimizeSparkle,GTK_OBJECT(Win));
 	else if(!strcmp(type,"MopacESP"))
 		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runMopacESP,GTK_OBJECT(Win));
 	else if(strstr(type,"MopacScan")!=NULL)
@@ -2442,10 +2590,11 @@ static gboolean runOneOptMopac(SemiEmpiricalModel* geom, gdouble* energy, gchar*
 	{
 		gchar* str = NULL;
 		if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("Minimization by PM6-DH2/Mopac ... Please wait");
-		else
-		if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6")) str = g_strdup_printf("Minimization by PM6/Mopac ... Please wait");
-		else
-		if(strstr(keyWords,"XYZ") && strstr(keyWords,"AM1")) str = g_strdup_printf("Minimization by AM1/Mopac ... Please wait");
+		else if(strstr(keyWords,"SPARKLE") && strstr(keyWords,"PM6")) str = g_strdup_printf("Minimization by Sparkle/PM6/Mopac ... Please wait");
+		else if(strstr(keyWords,"SPARKLE") && strstr(keyWords,"AM1")) str = g_strdup_printf("Minimization by Sparkle/AM1/Mopac ... Please wait");
+		else if(strstr(keyWords,"SPARKLE") && strstr(keyWords,"PM3")) str = g_strdup_printf("Minimization by Sparkle/PM3/Mopac ... Please wait");
+		else if(strstr(keyWords,"XYZ") && strstr(keyWords,"PM6")) str = g_strdup_printf("Minimization by PM6/Mopac ... Please wait");
+		else if(strstr(keyWords,"XYZ") && strstr(keyWords,"AM1")) str = g_strdup_printf("Minimization by AM1/Mopac ... Please wait");
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"PM6-DH2")) str = g_strdup_printf("ESP charges from PM6-DH2/Mopac ... Please wait");
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"PM6")) str = g_strdup_printf("ESP charges from PM6/Mopac ... Please wait");
 		else if(strstr(keyWords,"ESP") && strstr(keyWords,"AM1")) str = g_strdup_printf("ESP charges from AM1/Mopac ... Please wait");
@@ -2523,7 +2672,7 @@ static gboolean runMopacFiles(gint numberOfGeometries, SemiEmpiricalModel** geom
 			*/
 			geometries[i]->molecule = createFromGeomXYZMoleculeSE(
 			geometries[i]->molecule.totalCharge,
-			geometries[i]->molecule.spinMultiplicity);
+			geometries[i]->molecule.spinMultiplicity,TRUE);
 			nM++;
 		}
 		if(StopCalcul) break;
@@ -2718,7 +2867,7 @@ static gboolean runFireFlyFiles(gint numberOfGeometries, SemiEmpiricalModel** ge
 			*/
 			geometries[i]->molecule = createFromGeomXYZMoleculeSE(
 			geometries[i]->molecule.totalCharge,
-			geometries[i]->molecule.spinMultiplicity);
+			geometries[i]->molecule.spinMultiplicity,TRUE);
 			nM++;
 		}
 		if(StopCalcul) break;
@@ -3214,10 +3363,18 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 	gchar* method = NULL;
 	gdouble tolEnergy = -1;
 	gdouble tolDistance = -1;
+	SemiEmpiricalModelConstraints constraints = NOCONSTRAINTS;
 
 	gint i;
 	gchar message[BSIZE]="Created files :\n";
 	gchar* dirName = NULL;
+
+	constraints = NOCONSTRAINTS;
+	if(GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSCONSTRAINTS])->active)
+				constraints = BONDSCONSTRAINTS;
+	if(GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSANGLESCONSTRAINTS])->active)
+				constraints = BONDSANGLESCONSTRAINTS;
+
 
 	if(GTK_TOGGLE_BUTTON (buttonTolerance[TOLE])->active)
 		tolEnergy = atoi(gtk_entry_get_text(GTK_ENTRY(entryTolerance[TOLE])));
@@ -3334,9 +3491,9 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 	StopCalcul = FALSE;
 
 	if(!strcmp(program,"Mopac"))
-		seModel = createMopacModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName);
+		seModel = createMopacModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName, constraints);
 	else
-		seModel = createFireFlyModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName);
+		seModel = createFireFlyModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName,constraints);
 	g_free(program);
 
 	if(StopCalcul)
@@ -3496,6 +3653,13 @@ static void semiEmpiricalMD(GtkWidget* Win, gpointer data)
 	gchar* dirName = NULL;
 	gint totalCharge = 0;
 	gint spinMultiplicity = 1;
+	SemiEmpiricalModelConstraints constraints = NOCONSTRAINTS;
+
+	constraints = NOCONSTRAINTS;
+	if(GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSCONSTRAINTS])->active)
+				constraints = BONDSCONSTRAINTS;
+	if(GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSANGLESCONSTRAINTS])->active)
+				constraints = BONDSANGLESCONSTRAINTS;
 
 
 	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
@@ -3582,9 +3746,9 @@ static void semiEmpiricalMD(GtkWidget* Win, gpointer data)
 	StopCalcul = FALSE;
 
 	if(!strcmp(program,"Mopac"))
-		seModel = createMopacModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName);
+		seModel = createMopacModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName, constraints);
 	else
-		seModel = createFireFlyModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName);
+		seModel = createFireFlyModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName, constraints);
 	g_free(method);
 	g_free(program);
 
@@ -3646,7 +3810,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 	gtk_widget_show (vbox);
 	gtk_container_add (GTK_CONTAINER (frame), vbox);
 
-	table = gtk_table_new(16,6,FALSE);
+	table = gtk_table_new(20,6,FALSE);
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
 /*----------------------------------------------------------------------------------*/
@@ -3987,6 +4151,46 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 12;
 	j = 0;
+	buttonConstraintsOptions[NOCONSTRAINTS]= gtk_radio_button_new_with_label( NULL, "No constraints"); 
+	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[NOCONSTRAINTS],
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS]), TRUE);
+/*----------------------------------------------------------------------------------*/
+	i = 13;
+	j = 0;
+	buttonConstraintsOptions[BONDSCONSTRAINTS]= gtk_radio_button_new_with_label(
+			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS])), "Bond constraints"); 
+	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[BONDSCONSTRAINTS],
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSCONSTRAINTS]), FALSE);
+/*----------------------------------------------------------------------------------*/
+	i = 14;
+	j = 0;
+	buttonConstraintsOptions[BONDSANGLESCONSTRAINTS]= gtk_radio_button_new_with_label(
+			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS])), "Bond & Angle constraints"); 
+	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[BONDSANGLESCONSTRAINTS],
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSANGLESCONSTRAINTS]), FALSE);
+/*----------------------------------------------------------------------------------*/
+	i = 15;
+	j = 0;
+	hseparator = gtk_hseparator_new ();
+	gtk_table_attach(GTK_TABLE(table),hseparator, j,j+6,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = 16;
+	j = 0;
 	buttonSaveTraj = gtk_check_button_new_with_label("Save Trajectory in "); 
 	gtk_table_attach(GTK_TABLE(table),buttonSaveTraj,
 			j,j+1,i,i+1,
@@ -3995,7 +4199,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonSaveTraj), FALSE);
 /*----------------------------------------------------------------------------------*/
-	i = 12;
+	i = 16;
 	j = 1;
 	label = gtk_label_new(":");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -4003,7 +4207,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 12;
+	i = 16;
 	j = 2;
 	entryFileNameTraj = gtk_entry_new();
 	gtk_widget_set_size_request(entryFileNameTraj, 60, -1);
@@ -4013,7 +4217,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 13;
+	i = 17;
 	j = 0;
 	buttonSaveProp = gtk_check_button_new_with_label("Save Properties in "); 
 	gtk_table_attach(GTK_TABLE(table),buttonSaveProp,
@@ -4023,7 +4227,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonSaveProp), FALSE);
 /*----------------------------------------------------------------------------------*/
-	i = 13;
+	i = 17;
 	j = 1;
 	label = gtk_label_new(":");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -4031,7 +4235,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 13;
+	i = 17;
 	j = 2;
 	entryFileNameProp = gtk_entry_new();
 	gtk_widget_set_size_request(entryFileNameProp, 60, -1);
@@ -4041,7 +4245,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 14;
+	i = 18;
 	j = 0;
 	label = gtk_label_new("Folder");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -4049,7 +4253,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 14;
+	i = 18;
 	j = 1;
 	label = gtk_label_new(":");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -4057,7 +4261,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 14;
+	i = 18;
 	j = 2;
 	buttonDirSelector =  gtk_file_chooser_button_new("Select your folder", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
 	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
@@ -4093,7 +4297,7 @@ static void createInfoMDFrame(GtkWidget *box)
 	"\n"
 	"If \"Stochastic Dynamics via Verlet velocity Algorithm\" is selected :\n"
 	"        A stochastic dynamic simulation is run using Verlet velocity Algorithm.\n"
-	"        The velocities are scaled (Berendsen méthod)during the Heating, Equilibrium and Cooling steps.\n"
+	"        The velocities are scaled (Berendsen method)during the Heating, Equilibrium and Cooling steps.\n"
 	);
 	gtk_label_set_justify(GTK_LABEL(label),GTK_JUSTIFY_LEFT);
 	gtk_widget_show (label);
@@ -4133,7 +4337,7 @@ static void createInfoConfoFrame(GtkWidget *box)
 	"\n"
 	"If \"Stochastic Dynamics via Verlet velocity Algorithm\" is selected :\n"
 	"        A stochastic dynamic simulation is run using Verlet velocity Algorithm.\n"
-	"        The velocities are scaled (Berendsen méthod)during the Heating, Equilibrium and Cooling steps.\n"
+	"        The velocities are scaled (Berendsen method)during the Heating, Equilibrium and Cooling steps.\n"
 	);
 	gtk_label_set_justify(GTK_LABEL(label),GTK_JUSTIFY_LEFT);
 	gtk_widget_show (label);
@@ -4925,6 +5129,46 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 12;
 	j = 0;
+	buttonConstraintsOptions[NOCONSTRAINTS]= gtk_radio_button_new_with_label( NULL, "No constraints"); 
+	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[NOCONSTRAINTS],
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS]), TRUE);
+/*----------------------------------------------------------------------------------*/
+	i = 13;
+	j = 0;
+	buttonConstraintsOptions[BONDSCONSTRAINTS]= gtk_radio_button_new_with_label(
+			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS])), "Bond constraints"); 
+	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[BONDSCONSTRAINTS],
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSCONSTRAINTS]), FALSE);
+/*----------------------------------------------------------------------------------*/
+	i = 14;
+	j = 0;
+	buttonConstraintsOptions[BONDSANGLESCONSTRAINTS]= gtk_radio_button_new_with_label(
+			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS])), "Bond & Angle constraints"); 
+	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[BONDSANGLESCONSTRAINTS],
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSANGLESCONSTRAINTS]), FALSE);
+/*----------------------------------------------------------------------------------*/
+	i = 15;
+	j = 0;
+	hseparator = gtk_hseparator_new ();
+	gtk_table_attach(GTK_TABLE(table),hseparator, j,j+6,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = 16;
+	j = 0;
 	buttonSaveTraj = gtk_check_button_new_with_label("Save Trajectory in "); 
 	gtk_table_attach(GTK_TABLE(table),buttonSaveTraj,
 			j,j+1,i,i+1,
@@ -4933,7 +5177,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonSaveTraj), FALSE);
 /*----------------------------------------------------------------------------------*/
-	i = 12;
+	i = 16;
 	j = 1;
 	label = gtk_label_new(":");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -4941,7 +5185,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 12;
+	i = 16;
 	j = 2;
 	entryFileNameTraj = gtk_entry_new();
 	gtk_widget_set_size_request(entryFileNameTraj, 60, -1);
@@ -4951,7 +5195,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 13;
+	i = 17;
 	j = 0;
 	buttonSaveProp = gtk_check_button_new_with_label("Save Properties in "); 
 	gtk_table_attach(GTK_TABLE(table),buttonSaveProp,
@@ -4961,7 +5205,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonSaveProp), FALSE);
 /*----------------------------------------------------------------------------------*/
-	i = 13;
+	i = 17;
 	j = 1;
 	label = gtk_label_new(":");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -4969,7 +5213,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 13;
+	i = 17;
 	j = 2;
 	entryFileNameProp = gtk_entry_new();
 	gtk_widget_set_size_request(entryFileNameProp, 60, -1);

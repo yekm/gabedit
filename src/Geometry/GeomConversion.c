@@ -1268,11 +1268,11 @@ static gint build_grand_parents(gint* levels, GList** lists, gint nLevels)
   	for (i = 0; i <nLevels; i++) 
 	{
 		gp = lists[i];
-		if(!gp || (gint)(gp->data)>-1) continue;
+		if(!gp || GPOINTER_TO_INT(gp->data)>-1) continue;
 
 		p = gp->next;
-		if(!p || (gint)(p->data)<0) continue;
-		j =(gint)(p->data);
+		if(!p || GPOINTER_TO_INT(p->data)<0) continue;
+		j =GPOINTER_TO_INT(p->data);
 		lj = levels[j];
 
 		p = get_parent(lists[lj]);

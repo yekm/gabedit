@@ -374,7 +374,7 @@ void create_print_page()
   gtk_widget_realize(Wins);
 
   init_child(Wins,gtk_widget_destroy," Print ");
-  g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_children,NULL);
  
   Frame = create_frame(Wins,GTK_DIALOG(Wins)->vbox,NULL); 
   vbox = create_vbox(Frame);
@@ -394,7 +394,7 @@ void create_print_page()
   button = create_button(Wins,"Cancel");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
-  g_signal_connect_swapped(GTK_OBJECT(button), "clicked",G_CALLBACK(destroy_childs),GTK_OBJECT(Wins));
+  g_signal_connect_swapped(GTK_OBJECT(button), "clicked",G_CALLBACK(destroy_children),GTK_OBJECT(Wins));
   gtk_widget_show (button);
 
   button = create_button(Wins,"Display");
@@ -408,7 +408,7 @@ void create_print_page()
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(print_file),NULL);
-  g_signal_connect_swapped(GTK_OBJECT(button), "clicked",G_CALLBACK(destroy_childs),GTK_OBJECT(Wins));
+  g_signal_connect_swapped(GTK_OBJECT(button), "clicked",G_CALLBACK(destroy_children),GTK_OBJECT(Wins));
   gtk_widget_grab_default(button);
   gtk_widget_show (button);
 

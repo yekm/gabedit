@@ -165,7 +165,7 @@ gint progress_orb(gdouble scal,GabEditTypeProgressOrb  type,gboolean reset)
 		t = g_strdup_printf(" Computing of the electronic density grid : %.0f%%",new_val*100);
 		else
 		if(TypeGrid == GABEDIT_TYPEGRID_ORBITAL)
-		t = g_strdup_printf(" Grid coomputing for an orbital : %.0f%%",new_val*100);
+		t = g_strdup_printf(" Grid computing for an orbital : %.0f%%",new_val*100);
 		else
 		if(TypeGrid == GABEDIT_TYPEGRID_ELFBECKE || TypeGrid == GABEDIT_TYPEGRID_ELFSAVIN)
 		t = g_strdup_printf(" Grid computing for the ELF : %.0f%%",new_val*100);

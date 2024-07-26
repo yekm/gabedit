@@ -1821,6 +1821,7 @@ void build_polypeptide_dlg()
   gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Dlg)->action_area), Button, FALSE, FALSE, 5);  
   g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)undo,GTK_OBJECT(Dlg));
   g_object_set_data(G_OBJECT (Dlg), "UndoButton",Button);
+  reset_sensitive_undo_button(Dlg);
 
   Button = create_button(Dlg,"Add C-capping");
   gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Dlg)->action_area), Button, FALSE, FALSE, 5);  

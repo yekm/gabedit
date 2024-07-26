@@ -28,9 +28,12 @@ typedef struct _AtomSE
 	gchar* pdbType;
 	gchar* residueName;
 	gint residueNumber;
+	gint N;
 
+	gboolean variable;
 	gboolean show;
 	GabEditLayerType layer;
+	gint* typeConnections;
 }AtomSE;
 
 gdouble getAngleSE(AtomSE *a1,AtomSE* a2,AtomSE* a3);

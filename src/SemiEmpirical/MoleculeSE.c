@@ -34,6 +34,7 @@ DEALINGS IN THE SOFTWARE.
 void dessine();
 void create_GeomXYZ_from_draw_grometry();
 
+static gboolean** bondedMatrix = NULL;
 
 #define BOHR_TO_ANG  0.52917726
 
@@ -89,9 +90,270 @@ void freeMoleculeSE(MoleculeSE* molecule)
 			g_free(molecule->gradient[i]);
 			molecule->gradient[i] = NULL;
 		}
+	molecule->numberOf2Connections = 0;
+	for(i=0;i<2;i++)
+	{
+		if(molecule->connected2[i] != NULL)
+			g_free(molecule->connected2[i]);
+		molecule->connected2[i] = NULL;
+	}
+	molecule->numberOf3Connections = 0;
+	for(i=0;i<3;i++)
+	{
+		if(molecule->connected3[i] != NULL)
+			g_free(molecule->connected3[i]);
+		molecule->connected3[i] = NULL;
+	}
 }
 /*****************************************************************************/
-MoleculeSE createMoleculeSE(GeomDef* geom,gint natoms, gint charge, gint spin)
+static void createBondedMatrix(MoleculeSE* molecule)
+{
+	gint nAtoms = molecule->nAtoms;
+	gint i;
+	gint j;
+
+	if(nAtoms<1)
+		return;
+
+	bondedMatrix = g_malloc(nAtoms*sizeof(gboolean*));
+	for(i=0;i<nAtoms;i++)
+		bondedMatrix[i] = g_malloc(nAtoms*sizeof(gboolean));
+
+	for(i=0;i<nAtoms;i++)
+	{
+		for(j=0;j<nAtoms;j++)
+			bondedMatrix[i][j] = FALSE;
+
+		bondedMatrix[i][i] = TRUE;
+	}
+
+}
+/*****************************************************************************/
+static void freeBondedMatrix(MoleculeSE* molecule)
+{
+	gint nAtoms = molecule->nAtoms;
+	gint i;
+
+	if(bondedMatrix == NULL)
+	       return;
+	for(i=0;i<nAtoms;i++)
+		if(bondedMatrix[i] != NULL)
+		       	g_free(bondedMatrix[i]);
+
+	g_free(bondedMatrix);
+	bondedMatrix = NULL;
+
+}
+/*****************************************************************************/
+static void updatebondedMatrix(gint a1, gint a2)
+{
+	bondedMatrix[a1][a2] = TRUE;
+	bondedMatrix[a2][a1] = TRUE;
+
+}
+/*****************************************************************************/
+static gboolean isConnected2(MoleculeSE* molecule,gint i,gint j)
+{
+	gdouble distance;
+	gdouble dij;
+	gint k;
+	AtomSE a1 = molecule->atoms[i];
+	AtomSE a2 = molecule->atoms[j];
+
+	if(molecule->atoms[i].typeConnections)
+	{
+		 	gint nj = molecule->atoms[j].N-1;
+			if(molecule->atoms[i].typeConnections[nj]>0) return TRUE;
+			else return FALSE;
+	}
+	distance = 0;
+	for (k=0;k<3;k++)
+	{
+		dij = a1.coordinates[k]-a2.coordinates[k];
+		distance +=dij*dij;
+	}
+	distance = sqrt(distance)/BOHR_TO_ANG;
+
+	if(distance<(a1.prop.covalentRadii+a2.prop.covalentRadii)) return TRUE;
+  	else return FALSE;
+}
+/*****************************************************************************/
+static void set2Connections(MoleculeSE* molecule)
+{
+	gint i;
+	gint j;
+	gint k=0;
+
+	k = molecule->nAtoms;
+	k = k*(k-1)/2;
+	for(i=0;i<2;i++)
+		molecule->connected2[i] = g_malloc(k*sizeof(gint));
+
+	k=0;
+	for(i=0;i<molecule->nAtoms-1;i++)
+		for(j=i+1;j<molecule->nAtoms;j++)
+	{
+		if(isConnected2(molecule,i,j))
+		{
+			molecule->connected2[0][k]= i;
+			molecule->connected2[1][k]= j;
+
+			updatebondedMatrix(i,j);
+
+			k++;
+
+		}
+	}
+	molecule->numberOf2Connections = k;
+	if(k==0)
+		for(i=0;i<2;i++)
+		{
+			g_free(molecule->connected2[i]);
+			molecule->connected2[i] = NULL;
+		}
+	else
+		for(i=0;i<2;i++)
+			molecule->connected2[i] = g_realloc(molecule->connected2[i],k*sizeof(gint));
+	/* printing for test*/
+	/*
+	printf("%d 2 connections : \n",molecule->numberOf2Connections);
+	for(k=0;k<molecule->numberOf2Connections;k++)
+	{
+
+		i =  molecule->connected2[0][k];
+		j =  molecule->connected2[1][k];
+		printf("%d-%d ",i,j);
+	}
+	printf("\n");
+	*/
+
+
+}
+/*****************************************************************************/
+static void permut(gint* a,gint *b)
+{
+	gint c = *a;
+	*a = *b;
+	*b = c;
+}
+/*****************************************************************************/
+static gboolean  isConnected3(MoleculeSE* molecule,gint n,gint i,gint j, gint k)
+{
+	gint c;
+	gint a1,a2,a3;
+	for(c=0;c<n;c++)
+	{
+		a1 =  molecule->connected3[0][c];
+		a2 =  molecule->connected3[1][c];
+		a3 =  molecule->connected3[2][c];
+		if(a1==i && a2 == j && a3 == k)
+			return TRUE;
+	}
+	return FALSE;
+
+}
+/*****************************************************************************/
+static gboolean  connect3(MoleculeSE* molecule,gint n,gint i,gint j, gint k)
+{
+	if(i>k)permut(&i,&k);
+	if(!isConnected3(molecule,n,i,j,k))
+	{
+		molecule->connected3[0][n]= i;
+		molecule->connected3[1][n]= j;
+		molecule->connected3[2][n]= k;
+
+		updatebondedMatrix(i,j);
+		updatebondedMatrix(i,k);
+		updatebondedMatrix(j,k);
+
+		return TRUE;
+	}
+	return FALSE;
+
+}
+/*****************************************************************************/
+static void set3Connections(MoleculeSE* molecule)
+{
+	gint i;
+	gint j;
+	gint k=0;
+	gint l=0;
+	gint n=0;
+
+	k = molecule->numberOf2Connections*molecule->nAtoms;
+	for(i=0;i<3;i++)
+		molecule->connected3[i] = g_malloc(k*sizeof(gint));
+
+	n=0;
+	for(k=0;k<molecule->numberOf2Connections;k++)
+	{
+		i = molecule->connected2[0][k];
+		j = molecule->connected2[1][k];
+		for(l=0;l<molecule->nAtoms;l++)
+		{
+			if(l!=i && l!=j)
+			{
+				if( isConnected2(molecule,i,l))
+					if( connect3(molecule,n,l,i,j))
+						n++;
+
+				if( isConnected2(molecule,j,l))
+					if( connect3(molecule,n,i,j,l))
+						n++;
+			}
+		}
+
+	}
+	molecule->numberOf3Connections = n;
+	if(n==0)
+		for(i=0;i<3;i++)
+		{
+			g_free(molecule->connected3[i]);
+			molecule->connected3[i] = NULL;
+		}
+	else
+		for(i=0;i<3;i++)
+			molecule->connected3[i] = g_realloc(molecule->connected3[i],n*sizeof(gint));
+	/* printing for test*/
+	/*
+	printf("%d 3 connections : \n",molecule->numberOf3Connections);
+	for(k=0;k<molecule->numberOf3Connections;k++)
+	{
+
+		i =  molecule->connected3[0][k];
+		j =  molecule->connected3[1][k];
+		l =  molecule->connected3[2][k];
+		printf("%d-%d-%d ",i,j,l);
+	}
+	printf("\n");
+	*/
+
+
+}
+/*****************************************************************************/
+static void setConnections(MoleculeSE* molecule)
+{
+	createBondedMatrix(molecule);
+
+	/* printf("Set Connection\n");*/
+	set_text_to_draw("Establishing connectivity : 2 connections...");
+	set_statubar_operation_str("Establishing connectivity : 2 connections...");
+	dessine();
+    	while( gtk_events_pending() )
+        	gtk_main_iteration();
+	set2Connections(molecule);
+	set_text_to_draw("Establishing connectivity : 3 connections...");
+	set_statubar_operation_str("Establishing connectivity : 3 connections...");
+
+	dessine();
+	if(StopCalcul) return;
+    	while( gtk_events_pending() ) gtk_main_iteration();
+	set3Connections(molecule);
+
+	freeBondedMatrix(molecule);
+}
+/*****************************************************************************/
+MoleculeSE createMoleculeSE(GeomDef* geom,gint natoms, gint charge, gint spin, gboolean connections)
 {
 
 	gint i;
@@ -110,9 +372,23 @@ MoleculeSE createMoleculeSE(GeomDef* geom,gint natoms, gint charge, gint spin)
 		molecule.atoms[i].pdbType = g_strdup(geom[i].pdbType);
 		molecule.atoms[i].residueName = g_strdup(geom[i].Residue);
 		molecule.atoms[i].residueNumber = geom[i].ResidueNumber;
+		molecule.atoms[i].N = geom[i].N;
 		molecule.atoms[i].layer = geom[i].Layer;
 		molecule.atoms[i].show = geom[i].show;
+		molecule.atoms[i].variable = geom[i].Variable;
+		molecule.atoms[i].typeConnections = NULL; 
+		if(geom[i].typeConnections)
+		{
+			gint j;
+			molecule.atoms[i].typeConnections = g_malloc(molecule.nAtoms*sizeof(gint));
+			for(j=0;j<molecule.nAtoms;j++)
+			{
+			 	gint nj = geom[j].N-1;
+				molecule.atoms[i].typeConnections[nj] = geom[i].typeConnections[nj];
+			}
+		}
 	}
+	if(connections) setConnections(&molecule);
 	molecule.totalCharge = charge;
 	molecule.spinMultiplicity = spin;
 
@@ -122,7 +398,7 @@ MoleculeSE createMoleculeSE(GeomDef* geom,gint natoms, gint charge, gint spin)
 	return molecule;
 }
 /*****************************************************************************/
-MoleculeSE createFromGeomXYZMoleculeSE(gint charge, gint spin)
+MoleculeSE createFromGeomXYZMoleculeSE(gint charge, gint spin, gboolean connections)
 {
 
 	gdouble x,y,z;
@@ -131,6 +407,7 @@ MoleculeSE createFromGeomXYZMoleculeSE(gint charge, gint spin)
 
 	molecule.nAtoms = NcentersXYZ;
 	molecule.atoms = g_malloc(molecule.nAtoms*sizeof(AtomSE));
+
 	for(i=0;i<molecule.nAtoms;i++)
 	{
 		molecule.atoms[i].prop = prop_atom_get(GeomXYZ[i].Symb);
@@ -155,11 +432,30 @@ MoleculeSE createFromGeomXYZMoleculeSE(gint charge, gint spin)
 		molecule.atoms[i].pdbType = g_strdup(GeomXYZ[i].pdbType);
 		molecule.atoms[i].residueName = g_strdup(GeomXYZ[i].Residue);
 		molecule.atoms[i].residueNumber = GeomXYZ[i].ResidueNumber;
+		molecule.atoms[i].N = i+1;
 		if(strstr(GeomXYZ[i].Layer,"Low")) molecule.atoms[i].layer = LOW_LAYER;
 		if(strstr(GeomXYZ[i].Layer,"Medium")) molecule.atoms[i].layer = MEDIUM_LAYER;
 		else molecule.atoms[i].layer = HIGH_LAYER;
 		molecule.atoms[i].show = TRUE;
+		molecule.atoms[i].variable = FALSE;
+         	if(
+			test(GeomXYZ[i].X) ||
+			test(GeomXYZ[i].Y) ||
+			test(GeomXYZ[i].Z)
+		) 
+		molecule.atoms[i].variable = TRUE;
+		if(GeomXYZ[i].typeConnections)
+		{
+			gint j;
+			molecule.atoms[i].typeConnections = g_malloc(molecule.nAtoms*sizeof(gint));
+			for(j=0;j<molecule.nAtoms;j++)
+			{
+			 	gint nj = j;
+				molecule.atoms[i].typeConnections[nj] = GeomXYZ[i].typeConnections[nj];
+			}
+		}
 	}
+	if(connections) setConnections(&molecule);
 	molecule.totalCharge = charge;
 	molecule.spinMultiplicity = spin;
 
@@ -196,9 +492,9 @@ void redrawMoleculeSE(MoleculeSE* molecule,gchar* str)
 		geometry0[i].Residue =  g_strdup(molecule->atoms[i].residueName);
 		geometry0[i].ResidueNumber =  molecule->atoms[i].residueNumber;
 		geometry0[i].show =  molecule->atoms[i].show;
+		geometry0[i].Variable =  molecule->atoms[i].variable;
 		geometry0[i].Layer =  molecule->atoms[i].layer;
-		geometry0[i].Variable = FALSE;
-		geometry0[i].N = i+1;
+		geometry0[i].N = molecule->atoms[i].N;
 
 		geometry[i].X = molecule->atoms[i].coordinates[0];
 		geometry[i].Y = molecule->atoms[i].coordinates[1];
@@ -210,9 +506,9 @@ void redrawMoleculeSE(MoleculeSE* molecule,gchar* str)
 		geometry[i].Residue =  g_strdup(molecule->atoms[i].residueName);
 		geometry[i].ResidueNumber =  molecule->atoms[i].residueNumber;
 		geometry[i].show =  molecule->atoms[i].show;
+		geometry[i].Variable =  molecule->atoms[i].variable;
 		geometry[i].Layer =  molecule->atoms[i].layer;
-		geometry[i].Variable = FALSE;
-		geometry[i].N = i+1;
+		geometry[i].N = molecule->atoms[i].N;
 
 		C[0] +=  geometry0[i].X;
 		C[1] +=  geometry0[i].Y;
@@ -278,8 +574,10 @@ MoleculeSE copyMoleculeSE(MoleculeSE* m)
 		molecule.atoms[i].pdbType = g_strdup(m->atoms[i].pdbType);
 		molecule.atoms[i].residueName = g_strdup(m->atoms[i].residueName);
 		molecule.atoms[i].residueNumber = m->atoms[i].residueNumber;
+		molecule.atoms[i].N = m->atoms[i].N;
 		molecule.atoms[i].layer = m->atoms[i].layer;
 		molecule.atoms[i].show = m->atoms[i].show;
+		molecule.atoms[i].variable = m->atoms[i].variable;
 	}
 
 

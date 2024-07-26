@@ -22,6 +22,7 @@ DEALINGS IN THE SOFTWARE.
 void coulomb_orbitals_dlg();
 void compute_overlap_matrix(gint typeOrb);
 void transition_matrix_orbitals_dlg();
+void spatial_overlap_orbitals_dlg();
 
 #endif /* __GABEDIT_COULOMBORBITALS_H__ */
 

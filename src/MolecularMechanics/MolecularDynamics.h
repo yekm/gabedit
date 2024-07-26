@@ -25,7 +25,6 @@ typedef enum
   BEEMAN = 1,
   STOCHASTIC = 2
 } MDIntegratorType;
-
 typedef enum
 {
   NONE = 0,
@@ -40,9 +39,12 @@ struct _MolecularDynamics
 	ForceField* forceField;
 	gint numberOfAtoms;
 	gint updateFrequency;
+	gdouble** coordinatesOld; 
 	gdouble** velocity; 
 	gdouble** a; 
 	gdouble** aold; 
+	gboolean* moved;
+	gboolean* update;
 	gdouble dt;
 	gdouble dt_2;
 	gdouble dt2_2;
@@ -53,6 +55,7 @@ struct _MolecularDynamics
 	gdouble kineticEnergy;
 	gdouble totalEnergy;
 	gdouble kelvin;
+
 
 	gdouble* positionFriction;
 	gdouble* velocityFriction;

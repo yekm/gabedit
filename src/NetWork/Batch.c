@@ -57,7 +57,7 @@ static gchar*** List = NULL;
 /********************************************************************************/
 static void destroy_win_user_batch(GtkWidget* Win, gpointer data)
 {
-	destroy_childs(Win);
+	destroy_children(Win);
 	WinUserBatch = NULL;
 }
 /********************************************************************************/
@@ -301,7 +301,7 @@ static void kill_batch(GtkWidget *Win,gpointer data)
 	}
 	if(WinUserBatch)
 	{
-  		destroy_childs(WinUserBatch);
+  		destroy_children(WinUserBatch);
 		WinUserBatch = NULL;
 		run_batch_user(Remote,RemoteUser,RemoteHost,RemotePassWord);
 	}
@@ -334,7 +334,7 @@ static void create_kill_batch(GtkWidget*Win, gchar* rowPath)
 
   gtk_widget_realize(fp);
   init_child(fp,gtk_widget_destroy," Kill ");
-  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_children,NULL);
 
   gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
   vboxall = create_vbox(fp);
@@ -357,7 +357,7 @@ static void create_kill_batch(GtkWidget*Win, gchar* rowPath)
   button = create_button(fp,"Cancel");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,GTK_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,GTK_OBJECT(fp));
   gtk_widget_show (button);
 
   button = create_button(fp,"OK");
@@ -366,7 +366,7 @@ static void create_kill_batch(GtkWidget*Win, gchar* rowPath)
   gtk_widget_grab_default(button);
   gtk_widget_show (button);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)kill_batch,GTK_OBJECT(Win));
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,GTK_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,GTK_OBJECT(fp));
   
 
   gtk_widget_show_all(fp);
@@ -643,7 +643,7 @@ void create_batch_remote(gboolean all)
 
   gtk_widget_realize(fp);
   init_child(fp,gtk_widget_destroy," Remote Batch Jobs ");
-  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_children,NULL);
 
   gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
   vboxall = create_vbox(fp);
@@ -671,7 +671,7 @@ void create_batch_remote(gboolean all)
   button = create_button(fp,"Cancel");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,GTK_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,GTK_OBJECT(fp));
   gtk_widget_show (button);
 
   button = create_button(fp,"OK");
@@ -683,7 +683,7 @@ void create_batch_remote(gboolean all)
 
   if(!all) g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(run_batch_remote_user),(gpointer)NULL);
   else g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(run_batch_remote_all),(gpointer)NULL);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,GTK_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,GTK_OBJECT(fp));
   
 
 
@@ -744,7 +744,7 @@ void run_batch_all(gboolean remote)
 	strout = cat_file(fout,FALSE);
 	strerr = cat_file(ferr,FALSE);
 	if(!strout && !strerr)
-  		destroy_childs(Win);
+  		destroy_children(Win);
 	else
 	{
   		if(strout)
@@ -795,7 +795,7 @@ static GtkWidget* create_list_result_command(GtkWidget* gtklist,gchar* strerr,gc
 
   gtk_widget_realize(Win);
   init_child(Win,gtk_widget_destroy," List of Jobs ");
-  g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)destroy_children,NULL);
 
   gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
   vboxall = create_vbox(Win);
@@ -933,7 +933,7 @@ void run_batch_user(gboolean remote,gchar *remoteuser,gchar *remotehost,gchar *r
 				localhost,localuser);
 	}
 	if(WinUserBatch)
-		destroy_childs(WinUserBatch);
+		destroy_children(WinUserBatch);
 
   	get_list_from_file(fout);
   	gtklist = create_gtk_list_batch();

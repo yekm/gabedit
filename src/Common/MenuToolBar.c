@@ -48,6 +48,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/StockIcons.h"
 #include "../OpenGL/Vibration.h"
 #include "../Utils/GabeditXYPlot.h"
+#include "../Utils/GabeditContoursPlot.h"
 #include "../Spectrum/IRSpectrum.h"
 #include "../Spectrum/RamanSpectrum.h"
 #include "../Spectrum/UVSpectrum.h"
@@ -195,6 +196,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ToolsBatchRemoteUser")) {create_batch_remote(FALSE);}
 	else if(!strcmp(name,"ToolsOpenBabel")) {create_babel_dialogue();}
 	else if(!strcmp(name,"ToolsXYPlot")) { gabedit_xyplot_new_window(NULL,Fenetre);}
+	else if(!strcmp(name,"ToolsContoursPlot")) { gabedit_contoursplot_new_window(NULL,Fenetre);}
 	else if(!strcmp(name,"ToolsIRSpectrumGabedit")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_GABEDIT);}
 	else if(!strcmp(name,"ToolsIRSpectrumDalton")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_DALTON);}
 	else if(!strcmp(name,"ToolsIRSpectrumGamess")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_GAMESS);}
@@ -310,6 +312,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ToolsBatchRemoteAll", NULL, "_All remote batch jobs", NULL, "All remote batch jobs", G_CALLBACK (activate_action) },
 	{"ToolsBatchRemoteUser", NULL, "_User remote batch jobs", NULL, "User remote batch jobs", G_CALLBACK (activate_action) },
 	{"ToolsOpenBabel",  GABEDIT_STOCK_OPEN_BABEL, "Open B_abel", NULL, "Open babel", G_CALLBACK (activate_action) },
+	{"ToolsContoursPlot",  GABEDIT_STOCK_GABEDIT, "Contours plotter", NULL, "ContoursPlotter", G_CALLBACK (activate_action) },
 	{"ToolsXYPlot",  GABEDIT_STOCK_GABEDIT, "XY plotter", NULL, "XYPlotter", G_CALLBACK (activate_action) },
 	{"ToolsIRSpectrum",  NULL, "_IR spectrum"},
 
@@ -487,6 +490,8 @@ static const gchar *uiInfo =
 "      <menuitem name=\"Unit conversion\" action=\"ToolsUnitConversion\" />\n"
 "      <separator name=\"sepXYPlot\" />\n"
 "      <menuitem name=\"ToolsXYPlot\" action=\"ToolsXYPlot\" />\n"
+"      <separator name=\"sepContoursPlot\" />\n"
+"      <menuitem name=\"ToolsContousPlot\" action=\"ToolsContoursPlot\" />\n"
 
 "      <separator name=\"sepIRSpectrum\" />\n"
 "      <menu name=\"ToolsIRSpectrum\" action=\"ToolsIRSpectrum\">\n"

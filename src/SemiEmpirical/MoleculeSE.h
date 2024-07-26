@@ -27,11 +27,16 @@ typedef struct _MoleculeSE
 	gint totalCharge;
 	gdouble energy;
 	gdouble* gradient[3];
+
+	gint numberOf2Connections;
+	gint* connected2[2];
+	gint numberOf3Connections;
+	gint* connected3[3];
 }MoleculeSE;
 
 MoleculeSE newMoleculeSE();
-MoleculeSE createMoleculeSE(GeomDef* geom,gint natoms, gint charge, gint spin);
-MoleculeSE createFromGeomXYZMoleculeSE(gint charge, gint spin);
+MoleculeSE createMoleculeSE(GeomDef* geom,gint natoms, gint charge, gint spin, gboolean connections);
+MoleculeSE createFromGeomXYZMoleculeSE(gint charge, gint spin, gboolean connections);
 void freeMoleculeSE(MoleculeSE* molecule);
 void redrawMoleculeSE(MoleculeSE* molecule,gchar* str);
 MoleculeSE copyMoleculeSE(MoleculeSE* m);

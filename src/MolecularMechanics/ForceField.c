@@ -43,6 +43,7 @@ ForceField newForceField()
 	forceField.klass->calculateEnergyTmp = NULL;
 
 
+	forceField.numberOfRattleConstraintsTerms = 0;
 	forceField.numberOfStretchTerms = 0;
 	forceField.numberOfBendTerms = 0;
 	forceField.numberOfDihedralTerms = 0;
@@ -63,6 +64,9 @@ ForceField newForceField()
 	for(i=0;i<HYDROGENBONDEDDIM;i++)
 		forceField.hydrogenBondedTerms[i] = NULL;
 
+	for(i=0;i<RATTLEDIM;i++)
+		forceField.rattleConstraintsTerms[i] = NULL;
+
 	forceField.numberOfPairWise = 0;
 	for(i=0;i<PAIRWISEDIM;i++)
 		forceField.pairWiseTerms[i] = NULL;
@@ -72,6 +76,7 @@ ForceField newForceField()
 	forceField.options.hydrogenBonded = TRUE;
 	forceField.options.improperTorsion = TRUE;
 	forceField.options.vanderWals = TRUE;
+	forceField.options.rattleConstraints = NOCONSTRAINTS;
 	return forceField;
 
 }
@@ -123,6 +128,12 @@ void freeForceField(ForceField* forceField)
 			g_free(forceField->hydrogenBondedTerms[i]);
 			forceField->hydrogenBondedTerms[i] = NULL;
 		}
+	for(i=0;i<RATTLEDIM;i++)
+		if(forceField->rattleConstraintsTerms[i] != NULL)
+		{
+			g_free(forceField->rattleConstraintsTerms[i]);
+			forceField->rattleConstraintsTerms[i] = NULL;
+		}
 
 	forceField->numberOfStretchTerms = 0;
 	forceField->numberOfBendTerms = 0;
@@ -130,6 +141,7 @@ void freeForceField(ForceField* forceField)
 	forceField->numberOfImproperTorsionTerms = 0;
 	forceField->numberOfNonBonded = 0;
 	forceField->numberOfHydrogenBonded = 0;
+	forceField->numberOfRattleConstraintsTerms = 0;
 
 	for(i=0;i<PAIRWISEDIM;i++)
 		if(forceField->pairWiseTerms[i] != NULL)
@@ -212,6 +224,14 @@ ForceField copyForceField(ForceField* f)
 		for(j=0;j<k;j++) forceField.hydrogenBondedTerms[i][j] = f->hydrogenBondedTerms[i][j];
 	}
 
+	k = forceField.numberOfRattleConstraintsTerms;
+	if(k>0)
+	for(i=0;i<RATTLEDIM;i++)
+	{
+		forceField.rattleConstraintsTerms[i] = g_malloc(k*sizeof(gdouble));
+		for(j=0;j<k;j++) forceField.rattleConstraintsTerms[i][j] = f->rattleConstraintsTerms[i][j];
+	}
+
 	k = forceField.numberOfPairWise = f->numberOfPairWise;
 	if(k>0)
 	for(i=0;i<PAIRWISEDIM;i++)
@@ -229,6 +249,7 @@ ForceField copyForceField(ForceField* f)
 	forceField.options.angleBend = f->options.angleBend;
 	forceField.options.dihedralAngle = f->options.dihedralAngle;
 	forceField.options.nonBonded = f->options.nonBonded;
+	forceField.options.rattleConstraints = f->options.rattleConstraints;
 
 	return forceField;
 

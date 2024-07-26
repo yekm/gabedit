@@ -1,11 +1,30 @@
+5 April 2010 :
+	   The bond lengths can be fixed during a MD simulation.
+
+1 April 2010 :
+	   Partial optimisation is now available with the MM potential
+
+29 March 2010 :
+	   Computing of spatial overlap matrix <ii|delra(ri,rj)|jj>.
+	   A contours plotting tool have been implemented.
+
+22 March 2010 :
+	   Bug fixed : reading correctly the geometries with a Pd or a Cd from aux file
+	   Add a tool for Optimizing geometry using/Sparkle from the Draw Geom window
+	   New fast method for compute NMR spectrum
+
 24 February 2010 :
-	   Bug fixed : if disk is not C: (under window) for run Gamess or PCGamess
+	   Bug fixed : if disk is not C: (under window) for run Gamess or FireFly
+
 10 February 2010 :
 	   Add PM6-DH2 to list of openmopac methods
+
 09 February 2010 :
 	   Add tif format to list of image formats supported by gabedit
+
 01 February 2010 :
 	   Bug to Add hydrogen with a NH2-terminal from a pdb template has fixed
+
 15 January 2010 :
 	In animation Geom. Conv. tools of OpenGL window : 
 	   If ONIOM is in keyword, the HW and OW are writeen at "Low" layer in Gaussian input file.

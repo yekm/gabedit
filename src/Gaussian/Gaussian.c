@@ -54,7 +54,7 @@ void DestroyWinsGauss(GtkWidget *win)
 /*******************************************************************/
 static void to_cancel_win(GtkWidget* win,gpointer data)
 {
-  Cancel_YesNo(win,data, destroy_childs);
+  Cancel_YesNo(win,data, destroy_children);
 }
 /*******************************************************************/
 static void GetLink1()
@@ -693,11 +693,11 @@ static void NewFrame( GtkWidget *widget, gpointer   data )
                 break;
          }
        if(!OK) {
-        destroy_childs(Wins);
+        destroy_children(Wins);
 	iedit=1;
 	return;
 	}
-       delete_all_childs(Wins);
+       delete_all_children(Wins);
        gtk_widget_set_size_request(Wins,-1,-1);
        gtk_widget_show_all(Wins);  
        gtk_notebook_set_current_page((GtkNotebook*)NoteBook,1);
@@ -843,6 +843,11 @@ static void GetInfoXYZ( )
 	SAtomsProp prop;
 	gboolean medium = geometry_with_medium_layer();
 	gboolean lower = geometry_with_lower_layer();
+	gboolean redundant = FALSE;
+  	G_CONST_RETURN gchar *entrytext =  NULL;
+
+  	if(Types) entrytext =  gtk_entry_get_text(GTK_ENTRY(EntryTypes[0]));
+	if(entrytext && strstr(entrytext,"Redundant")) redundant = TRUE;
 
 	if(iframe==1) GetChargesAndMultiplicitiesFromMain( );
 	else GetChargesAndMultiplicities( );
@@ -857,12 +862,72 @@ static void GetInfoXYZ( )
         for(i=0;i<NcentersXYZ;i++)
         {
 		if(!amber)
+		{
+			if(!redundant)
   			line=g_strdup_printf("%s\t0\t%s\t%s\t%s",
 				GeomXYZ[i].Symb,GeomXYZ[i].X,GeomXYZ[i].Y,GeomXYZ[i].Z);
+			else
+			{
+				gchar X[100];
+				gchar Y[100];
+				gchar Z[100];
+				gint ivar = -1;
+				sprintf(X,"%s",GeomXYZ[i].X);
+				sprintf(Y,"%s",GeomXYZ[i].Y);
+				sprintf(Z,"%s",GeomXYZ[i].Z);
+				if(!test(GeomXYZ[i].X)) 
+				{
+					ivar = 0;
+					sprintf(X,"%0.10f",get_value_variableXYZ(GeomXYZ[i].X));
+				}
+				if(!test(GeomXYZ[i].Y)) 
+				{
+					ivar = 0;
+					sprintf(Y,"%0.10f",get_value_variableXYZ(GeomXYZ[i].Y));
+				}
+				if(!test(GeomXYZ[i].Z)) 
+				{
+					ivar = 0;
+					sprintf(Z,"%0.10f",get_value_variableXYZ(GeomXYZ[i].Z));
+				}
+  				line=g_strdup_printf("%s\t%d\t%s\t%s\t%s", GeomXYZ[i].Symb,ivar,X,Y,Z);
+			}
+		}
 		else
+		{
+			if(!redundant)
   			line=g_strdup_printf("%s-%s-%s\t0\t%s\t%s\t%s",
 				GeomXYZ[i].Symb,GeomXYZ[i].mmType,GeomXYZ[i].Charge,
 				GeomXYZ[i].X,GeomXYZ[i].Y,GeomXYZ[i].Z);
+			else
+			{
+				gchar X[100];
+				gchar Y[100];
+				gchar Z[100];
+				gint ivar = -1;
+				sprintf(X,"%s",GeomXYZ[i].X);
+				sprintf(Y,"%s",GeomXYZ[i].Y);
+				sprintf(Z,"%s",GeomXYZ[i].Z);
+				if(!test(GeomXYZ[i].X)) 
+				{
+					ivar = 0;
+					sprintf(X,"%0.10f",get_value_variableXYZ(GeomXYZ[i].X));
+				}
+				if(!test(GeomXYZ[i].Y)) 
+				{
+					ivar = 0;
+					sprintf(Y,"%0.10f",get_value_variableXYZ(GeomXYZ[i].Y));
+				}
+				if(!test(GeomXYZ[i].Z)) 
+				{
+					ivar = 0;
+					sprintf(Z,"%0.10f",get_value_variableXYZ(GeomXYZ[i].Z));
+				}
+  				line=g_strdup_printf("%s-%s-%s\t%d\t%s\t%s\t%s",
+				GeomXYZ[i].Symb,GeomXYZ[i].mmType,GeomXYZ[i].Charge,ivar,
+				X,Y,Z);
+			}
+		}
 
   		if (strcmp(GeomXYZ[i].Layer," ") && (medium||lower) )
 		{
@@ -915,7 +980,7 @@ static void GetInfoXYZ( )
  		prop = prop_atom_get(GeomXYZ[i].Symb);
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL,NULL, &prop.color,line,-1);
         }
-        if(NVariablesXYZ>0)
+        if(NVariablesXYZ>0 && !redundant)
         for(i=0;i<NVariablesXYZ;i++)
         {
         	if(VariablesXYZ[i].Used)
@@ -924,6 +989,7 @@ static void GetInfoXYZ( )
 			break;
 		}
         }
+        if(NVariablesXYZ>0 && !redundant)
         for(i=0;i<NVariablesXYZ;i++)
         {
         	if(VariablesXYZ[i].Used)
@@ -1101,7 +1167,7 @@ void insert_gaussian(gint itype)
   gtk_window_set_title(&GTK_DIALOG(Wins)->window,"Gaussian input");
 
   init_child(Wins,DestroyWinsGauss," Gauss input ");
-  g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_children,NULL);
 
   NoteBook = gtk_notebook_new();
   gtk_box_pack_start(GTK_BOX (GTK_DIALOG(Wins)->vbox), NoteBook,FALSE, FALSE, 0);
@@ -1152,7 +1218,7 @@ void insert_gaussian(gint itype)
   gtk_widget_show (button);
   g_signal_connect(G_OBJECT(button), "clicked", (GCallback)GetInfoAll,NULL);
   g_signal_connect(G_OBJECT(button), "clicked", (GCallback)data_modify,NULL);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_childs),GTK_OBJECT(Wins));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_children),GTK_OBJECT(Wins));
   
 
   gtk_widget_show_all(Wins);
@@ -1198,7 +1264,7 @@ void gauss(gint ioption)
 
 
 	init_child(Wins,DestroyWinsGauss," Gauss input ");
-	g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_childs,NULL);
+	g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_children,NULL);
  
 	NoteBook = gtk_notebook_new();
 	gtk_box_pack_start(GTK_BOX (GTK_DIALOG(Wins)->vbox), NoteBook,TRUE, TRUE, 0);

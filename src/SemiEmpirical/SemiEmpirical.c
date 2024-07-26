@@ -206,9 +206,9 @@ static gchar* runOneMopac(SemiEmpiricalModel* seModel, gchar* keyWords)
 	return fileNameOut;
 }
 /**********************************************************************/
-static SemiEmpiricalModel newMopacModel(gchar* method, gchar* dirName)
+static SemiEmpiricalModel newMopacModel(gchar* method, gchar* dirName, SemiEmpiricalModelConstraints constraints)
 {
-	SemiEmpiricalModel seModel = newSemiEmpiricalModel(method, dirName);
+	SemiEmpiricalModel seModel = newSemiEmpiricalModel(method, dirName, constraints);
 
 	seModel.klass->calculateGradient = calculateGradientMopac;
 	seModel.klass->calculateEnergy = calculateEnergyMopac;
@@ -267,11 +267,12 @@ static void calculateEnergyMopac(SemiEmpiricalModel* seModel)
 
 }
 /**********************************************************************/
-SemiEmpiricalModel createMopacModel (GeomDef* geom,gint Natoms,gint charge, gint spin, gchar* method, gchar* dirName)
+SemiEmpiricalModel createMopacModel (GeomDef* geom,gint Natoms,gint charge, gint spin, gchar* method, gchar* dirName, SemiEmpiricalModelConstraints constraints)
 {
-	SemiEmpiricalModel seModel = newMopacModel(method, dirName);
+	SemiEmpiricalModel seModel = newMopacModel(method, dirName, constraints);
 
-	seModel.molecule = createMoleculeSE(geom,Natoms, charge, spin);
+	seModel.molecule = createMoleculeSE(geom,Natoms, charge, spin,TRUE);
+	setRattleConstraintsParameters(&seModel);
 	
 	return seModel;
 }
@@ -434,7 +435,7 @@ static gchar* runOneFireFly(SemiEmpiricalModel* seModel, gchar* keyWords)
 	}
 	fprintf(file," $END\n");
 	fclose(file);
-	fileNamePrefix = g_strdup_printf("%s%s",seModel->workDir,G_DIR_SEPARATOR_S);
+	fileNamePrefix = g_strdup_printf("%s%sWorkFF",seModel->workDir,G_DIR_SEPARATOR_S);
 #ifndef G_OS_WIN32
 	if(!strcmp(NameCommandFireFly,"pcgamess") || !strcmp(NameCommandFireFly,"nohup pcgamess")
 	|| !strcmp(NameCommandFireFly,"firefly") || !strcmp(NameCommandFireFly,"nohup firefly"))
@@ -483,9 +484,9 @@ static gchar* runOneFireFly(SemiEmpiricalModel* seModel, gchar* keyWords)
 	return fileNameOut;
 }
 /**********************************************************************/
-static SemiEmpiricalModel newFireFlyModel(gchar* method, gchar* dirName)
+static SemiEmpiricalModel newFireFlyModel(gchar* method, gchar* dirName, SemiEmpiricalModelConstraints constraints)
 {
-	SemiEmpiricalModel seModel = newSemiEmpiricalModel(method, dirName);
+	SemiEmpiricalModel seModel = newSemiEmpiricalModel(method, dirName, constraints);
 
 	seModel.klass->calculateGradient = calculateGradientFireFly;
 	seModel.klass->calculateEnergy = calculateEnergyFireFly;
@@ -552,11 +553,12 @@ static void calculateEnergyFireFly(SemiEmpiricalModel* seModel)
 
 }
 /**********************************************************************/
-SemiEmpiricalModel createFireFlyModel (GeomDef* geom,gint Natoms,gint charge, gint spin, gchar* method, gchar* dirName)
+SemiEmpiricalModel createFireFlyModel (GeomDef* geom,gint Natoms,gint charge, gint spin, gchar* method, gchar* dirName, SemiEmpiricalModelConstraints constraints)
 {
-	SemiEmpiricalModel seModel = newFireFlyModel(method,dirName);
+	SemiEmpiricalModel seModel = newFireFlyModel(method,dirName, constraints);
 
-	seModel.molecule = createMoleculeSE(geom,Natoms, charge, spin);
+	seModel.molecule = createMoleculeSE(geom,Natoms, charge, spin,TRUE);
+	setRattleConstraintsParameters(&seModel);
 	
 	return seModel;
 }

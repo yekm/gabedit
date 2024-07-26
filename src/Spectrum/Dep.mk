@@ -30,8 +30,8 @@ NMRSpectrum.o: NMRSpectrum.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/Constants.h \
   ../Utils/UtilsInterface.h ../Utils/Utils.h ../Utils/Jacobi.h \
-  ../Files/FileChooser.h ../Common/Windows.h ../Utils/GabeditXYPlot.h \
-  ../OpenGL/Vibration.h SpectrumWin.h
+  ../Utils/QL.h ../Files/FileChooser.h ../Common/Windows.h \
+  ../Utils/GabeditXYPlot.h ../OpenGL/Vibration.h SpectrumWin.h
 DOS.o: DOS.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/Constants.h \

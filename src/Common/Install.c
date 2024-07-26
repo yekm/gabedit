@@ -132,7 +132,7 @@ static struct
   },
   {
     FALSE, "hosts",
-    "GABEDIT save the recent remote hosts informations.\n"
+    "GABEDIT save the recent remote hosts information.\n"
     "We save only 20 recent remote host.\n"
   },
   {

@@ -72,6 +72,8 @@ Grid* define_grid_FED(gint N[],GridLimits limits, gint n);
 Grid* compute_fed_grid_using_cube_grid(Grid* grid, gint n);
 gboolean compute_transition_matrix_numeric(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
 gdouble* pInteg, gdouble* pNormi, gdouble* pNormj, gdouble* pOverlap);
+gboolean compute_spatial_overlap_numeric(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
+		gdouble* pInteg, gdouble* pNormi, gdouble* pNormj, gdouble* pOverlap);
 gboolean compute_isovalue_percent_from_grid(Grid* grid, gboolean square, gdouble percent, gdouble precision, gdouble* pIsovalue);
 
 #endif /* __GABEDIT_GRID_H__ */

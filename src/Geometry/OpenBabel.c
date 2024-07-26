@@ -604,7 +604,7 @@ void create_babel_dialogue()
 
 	gtk_widget_realize(fp);
 	init_child(fp, gtk_widget_destroy, " Babel ");
-	g_signal_connect(G_OBJECT(fp),"delete_event",G_CALLBACK(destroy_childs),NULL);
+	g_signal_connect(G_OBJECT(fp),"delete_event",G_CALLBACK(destroy_children),NULL);
 
 	gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
 	vboxall = create_vbox(fp);
@@ -853,7 +853,7 @@ GtkWidget* create_babel_read_save_dialogue(gboolean read)
 	if(read) init_child(fp, gtk_widget_destroy, " Read geometry with Open Babel ");
 	else init_child(fp, gtk_widget_destroy, " Save geometry using  Open Babel ");
 
-	g_signal_connect(G_OBJECT(fp),"delete_event",G_CALLBACK(destroy_childs),NULL);
+	g_signal_connect(G_OBJECT(fp),"delete_event",G_CALLBACK(destroy_children),NULL);
 
 	gtk_container_set_border_width (GTK_CONTAINER (fp), 0);
 	vboxall = create_vbox(fp);

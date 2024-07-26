@@ -59,7 +59,7 @@ static gchar* RemotePassWord = NULL;
 /********************************************************************************/
 static void destroy_win_user_process(GtkWidget* Win, gpointer data)
 {
-	destroy_childs(Win);
+	destroy_children(Win);
 	WinUserProcess = NULL;
 }
 /********************************************************************************/
@@ -203,9 +203,9 @@ static gint get_num_child(gint row)
 
 }
 /********************************************************************************/
-static gint* get_all_childs(gint row,gint* Numb)
+static gint* get_all_children(gint row,gint* Numb)
 {
-	gint *NumChilds = NULL;
+	gint *NumChildren = NULL;
 	gint num = -1;
 
 	*Numb = 0;
@@ -214,8 +214,8 @@ static gint* get_all_childs(gint row,gint* Numb)
 	num = get_num_child(row);
 	if(num>-1)
 	{
-		NumChilds = g_malloc(sizeof(gint));
-		NumChilds[0] = num;
+		NumChildren = g_malloc(sizeof(gint));
+		NumChildren[0] = num;
 		(*Numb)++;
 	}
 	else
@@ -226,32 +226,32 @@ static gint* get_all_childs(gint row,gint* Numb)
 		num = get_num_child(num);
 		if(num>-1)
 		{
-			NumChilds = g_realloc(NumChilds,(*Numb+1)*sizeof(gint));
-			NumChilds[*Numb] = num;
+			NumChildren = g_realloc(NumChildren,(*Numb+1)*sizeof(gint));
+			NumChildren[*Numb] = num;
 			(*Numb)++;
 		}
 	}
-	return NumChilds;
+	return NumChildren;
 	
 
 }
 /********************************************************************************/
-static gchar *get_string_all_childs(gint row)
+static gchar *get_string_all_children(gint row)
 {
 	gint Numb = 0;
-	gint *NumChilds = NULL;
+	gint *NumChildren = NULL;
 	gint j;
   	gchar* rowprocess = NULL;
   	gchar* str = NULL;
   	gchar* dump = NULL;
 
-	NumChilds = get_all_childs(row,&Numb);
+	NumChildren = get_all_children(row,&Numb);
 	if(Numb>0)
   		str = get_title_process();
 
  	for(j=0;j<Numb;j++)
  	{
-  		rowprocess = get_row_process(NumChilds[j]);
+  		rowprocess = get_row_process(NumChildren[j]);
 		dump = str;
 		if(j==0)
   			str = g_strdup_printf("%s%s",dump,rowprocess);
@@ -264,8 +264,8 @@ static gchar *get_string_all_childs(gint row)
 			rowprocess = NULL;
 		}
  	}
-	if(NumChilds)
-		g_free(NumChilds);
+	if(NumChildren)
+		g_free(NumChildren);
 	return str;
 
 }
@@ -456,7 +456,7 @@ void create_process_remote(gboolean all)
 
   gtk_widget_realize(fp);
   init_child(fp,gtk_widget_destroy," Remote Process ");
-  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_children,NULL);
 
   gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
   vboxall = create_vbox(fp);
@@ -484,7 +484,7 @@ void create_process_remote(gboolean all)
   button = create_button(fp,"Cancel");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,GTK_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,GTK_OBJECT(fp));
   gtk_widget_show (button);
 
   button = create_button(fp,"OK");
@@ -495,23 +495,23 @@ void create_process_remote(gboolean all)
   g_signal_connect_swapped(G_OBJECT (EntryPassWord ), "activate", (GCallback) gtk_button_clicked, GTK_OBJECT (button));
   if(!all) g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(run_process_remote_user),(gpointer)NULL);
   else g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(run_process_remote_all),(gpointer)NULL);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,GTK_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,GTK_OBJECT(fp));
   
 
   /* Show all */
   gtk_widget_show_all(fp);
 }
 /********************************************************************************/
-static GtkWidget* create_childs_frame(GtkWidget *box,gint row)
+static GtkWidget* create_children_frame(GtkWidget *box,gint row)
 {
   GtkWidget *frame;
   GtkWidget *vboxframe;
   GtkWidget *Label;
   gchar *str = NULL;
  
-  str = get_string_all_childs(row);
+  str = get_string_all_children(row);
 
-  frame = gtk_frame_new ("Childs Process");
+  frame = gtk_frame_new ("Children Process");
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_box_pack_start (GTK_BOX( box), frame, TRUE, TRUE, 3);
   gtk_widget_show (frame);
@@ -562,7 +562,7 @@ static void kill_process(GtkWidget *Win,gpointer data)
   	gchar *scom = NULL;
   	gchar *t = NULL;
 	gint Numb = 0;
-	gint *NumChilds = NULL;
+	gint *NumChildren = NULL;
 	gint i;
 	gchar *fout =  g_strdup_printf("%s%stmp%sfout",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
 	gchar *ferr =  g_strdup_printf("%s%stmp%sferr",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
@@ -573,15 +573,15 @@ static void kill_process(GtkWidget *Win,gpointer data)
   	else
 		scom = g_strdup("kill -KILL");
 
-/* killing of childs before */
+/* killing of children before */
 	if(GTK_TOGGLE_BUTTON (KillAllButton)->active)
 	{
-  		NumChilds = get_all_childs(atoi(selectedRow),&Numb);
+  		NumChildren = get_all_children(atoi(selectedRow),&Numb);
   		if(Numb>0)
 		{
 			for(i=Numb-1;i>=0;i--)
 			{
-  				command = g_strdup_printf("%s %s",scom,get_pid(NumChilds[i]));
+  				command = g_strdup_printf("%s %s",scom,get_pid(NumChildren[i]));
 				if(Remote)
 				{
   					/*rsh (fout,ferr,command, RemoteUser,RemoteHost);*/
@@ -599,8 +599,8 @@ static void kill_process(GtkWidget *Win,gpointer data)
 				}
 				g_free(command);
 			}
-  			if(NumChilds)
-  				g_free(NumChilds);
+  			if(NumChildren)
+  				g_free(NumChildren);
 		}
 	}
 /* killing of parent */
@@ -617,7 +617,7 @@ static void kill_process(GtkWidget *Win,gpointer data)
 	}
 	if(WinUserProcess)
 	{
-  		destroy_childs(WinUserProcess);
+  		destroy_children(WinUserProcess);
 		WinUserProcess = NULL;
 		run_process_user(Remote,RemoteUser,RemoteHost,RemotePassWord);
 	}
@@ -661,7 +661,7 @@ static GtkWidget* create_options_frame(GtkWidget *hbox)
                        gtk_radio_button_get_group (GTK_RADIO_BUTTON (button1)),
                        "kill -KILL "); 
   add_widget_table(Table,button2,0,1);
-  button3 = gtk_check_button_new_with_label("Kill all childs process " );
+  button3 = gtk_check_button_new_with_label("Kill all children process " );
   add_widget_table(Table,button3,1,0);
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button2), TRUE);
@@ -692,7 +692,7 @@ static void create_kill_process(GtkWidget*Win,gint row)
 
   gtk_widget_realize(fp);
   init_child(fp,gtk_widget_destroy," Kill ");
-  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_children,NULL);
 
   gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
   vboxall = create_vbox(fp);
@@ -710,7 +710,7 @@ static void create_kill_process(GtkWidget*Win,gint row)
   frame = create_label_frame(hbox,row);
 
   hbox = create_hbox(vboxall);
-  frame = create_childs_frame(hbox,row);
+  frame = create_children_frame(hbox,row);
 
   hbox = create_hbox(vboxall);
   frame = create_options_frame(hbox);
@@ -722,7 +722,7 @@ static void create_kill_process(GtkWidget*Win,gint row)
   button = create_button(fp,"Cancel");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,GTK_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,GTK_OBJECT(fp));
   gtk_widget_show (button);
 
   button = create_button(fp,"OK");
@@ -731,7 +731,7 @@ static void create_kill_process(GtkWidget*Win,gint row)
   gtk_widget_grab_default(button);
   gtk_widget_show (button);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)kill_process,GTK_OBJECT(Win));
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,GTK_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,GTK_OBJECT(fp));
   
 
   gtk_widget_show_all(fp);
@@ -1048,7 +1048,7 @@ static GtkWidget* create_list_result_command(GtkWidget* gtklist,gchar* strerr,gc
   init_child(Win,gtk_widget_destroy," List of process ");
 
   
-  g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)destroy_children,NULL);
 
  
   gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
@@ -1172,7 +1172,7 @@ void run_process_all(gboolean remote)
   strout = cat_file(fout,FALSE);
   strerr = cat_file(ferr,FALSE);
   if(!strout && !strerr)
-  	destroy_childs(Win);
+  	destroy_children(Win);
   else
   {
   	if(strout)
@@ -1271,7 +1271,7 @@ void run_process_user(gboolean remote,gchar *remoteuser,gchar *remotehost,gchar 
   		title = g_strdup_printf("Process in host : \"%s\" ;  for user : \"%s\" ",localhost,localuser);
 	}
 	if(WinUserProcess)
-		destroy_childs(WinUserProcess);
+		destroy_children(WinUserProcess);
 
   	get_list_from_file(fout);
 

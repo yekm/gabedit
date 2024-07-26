@@ -373,7 +373,9 @@ AnimationGeomConv.o: AnimationGeomConv.c ../../Config.h GlobalOrb.h \
   ../Files/GabeditFolderChooser.h ../Common/Help.h ../Common/StockIcons.h \
   ../OpenGL/PovrayGL.h ../OpenGL/Images.h ../OpenGL/UtilsOrb.h \
   ../OpenGL/BondsOrb.h ../../pixmaps/Open.xpm
-AnimationMD.o: AnimationMD.c ../../Config.h GlobalOrb.h \
+AnimationMD.o: AnimationMD.c ../../Config.h ../Common/Global.h \
+  ../Common/../Files/GabeditFileChooser.h \
+  ../Common/../Common/GabeditType.h GlobalOrb.h \
   ../Files/GabeditFileChooser.h ../../gtkglarea/gtkglarea.h \
   ../../gtkglarea/gdkgl.h ../../gl2ps/gl2ps.h Grid.h \
   ../MultiGrid/PoissonMG.h ../MultiGrid/GridMG.h ../MultiGrid/DomainMG.h \

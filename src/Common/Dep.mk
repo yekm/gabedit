@@ -79,7 +79,8 @@ MenuToolBar.o: MenuToolBar.c ../../Config.h ../Common/Global.h \
   ../NetWork/Process.h ../NetWork/Batch.h \
   ../MolecularMechanics/SetMMParameters.h \
   ../MolecularMechanics/SetPDBTemplate.h ../Common/StockIcons.h \
-  ../OpenGL/Vibration.h ../Utils/GabeditXYPlot.h ../Spectrum/IRSpectrum.h \
+  ../OpenGL/Vibration.h ../Utils/GabeditXYPlot.h \
+  ../Utils/GabeditContoursPlot.h ../Spectrum/IRSpectrum.h \
   ../Spectrum/RamanSpectrum.h ../Spectrum/UVSpectrum.h \
   ../Spectrum/ECDSpectrum.h ../Spectrum/NMRSpectrum.h \
   ../VibrationalCorrections/GabeditGaussianInput.h \

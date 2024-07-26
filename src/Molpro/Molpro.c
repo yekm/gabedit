@@ -590,7 +590,7 @@ static void GetInfo( GtkWidget *widget, gpointer   data )
 	       break;
         case 2:GetInfoBasis(); break;
         case 3:GetInfoComm();
-			   if(data == NULL) destroy_childs(Wins);
+			   if(data == NULL) destroy_children(Wins);
 			   break;
         }
       if( data !=NULL ){
@@ -633,7 +633,7 @@ static void NewFrame( GtkWidget *widget, gpointer   data )
 
                   break;
 	}
-       	delete_all_childs(Wins);
+       	delete_all_children(Wins);
        	gtk_widget_show_all(Wins);  
        	gtk_notebook_set_current_page((GtkNotebook*)NoteBook,1);
        	gtk_notebook_remove_page((GtkNotebook *)NoteBook,0);
@@ -641,7 +641,7 @@ static void NewFrame( GtkWidget *widget, gpointer   data )
 /************************************************************************************************************/
 static void to_cancel_win(GtkWidget* win,gpointer data)
 {
-  Cancel_YesNo(win,data, destroy_childs);
+  Cancel_YesNo(win,data, destroy_children);
 }
 /************************************************************************************************************/
 void insert_molpro(gint itype)
@@ -652,7 +652,7 @@ void insert_molpro(gint itype)
   gtk_notebook_set_current_page((GtkNotebook*)NoteBookText,0);
   fileopen.command=g_strdup(NameCommandMolpro);
 
-  if(Wins) destroy_childs(Wins);
+  if(Wins) destroy_children(Wins);
   iframe=itype;
   iinsert=0;
 
@@ -663,7 +663,7 @@ void insert_molpro(gint itype)
   gtk_window_set_title(&GTK_DIALOG(Wins)->window,"molpro input");
 
   init_child(Wins,DestroyWinsMolpro," Molpro input ");
-  g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_children,NULL);
 
  
   NoteBook = gtk_notebook_new();
@@ -713,7 +713,7 @@ void insert_molpro(gint itype)
   gtk_widget_show (button);
   g_signal_connect(G_OBJECT(button), "clicked", (GCallback)GetInfo,NULL);
   g_signal_connect(G_OBJECT(button), "clicked", (GCallback)data_modify,NULL);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_childs),GTK_OBJECT(Wins));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_children),GTK_OBJECT(Wins));
   
 
   gtk_widget_show_all(Wins);
@@ -727,7 +727,7 @@ void molpro()
   gtk_notebook_set_current_page((GtkNotebook*)NoteBookText,0);
   fileopen.command=g_strdup(NameCommandMolpro);
 
-  if(Wins) destroy_childs(Wins);
+  if(Wins) destroy_children(Wins);
   iframe=1;
   iinsert=1;
   
@@ -737,7 +737,7 @@ void molpro()
   gtk_window_set_title(&GTK_DIALOG(Wins)->window,"molpro input");
 
   init_child(Wins,DestroyWinsMolpro," Molpro input ");
-  g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_children,NULL);
  
   NoteBook = gtk_notebook_new();
   gtk_box_pack_start(GTK_BOX (GTK_DIALOG(Wins)->vbox), NoteBook,TRUE, TRUE, 0);
@@ -758,7 +758,7 @@ void molpro()
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked",(GCallback)GetInfo,&iframe);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_childs),GTK_OBJECT(Wins));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_children),GTK_OBJECT(Wins));
   gtk_widget_show (button);
   */
 

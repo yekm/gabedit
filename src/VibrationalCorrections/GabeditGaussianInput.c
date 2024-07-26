@@ -241,7 +241,7 @@ static GtkWidget* createResultWindow(gchar* title)
 
 	gtk_widget_realize(resultWindow);
 	init_child(resultWindow,gtk_widget_destroy," Vib. Corr. ");
-	g_signal_connect(G_OBJECT(resultWindow),"delete_event",(GCallback)destroy_childs,NULL);
+	g_signal_connect(G_OBJECT(resultWindow),"delete_event",(GCallback)destroy_children,NULL);
 
 	gtk_container_set_border_width (GTK_CONTAINER (resultWindow), 4);
 	vboxall = create_vbox(resultWindow);
@@ -261,7 +261,7 @@ static GtkWidget* createResultWindow(gchar* title)
 	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, FALSE, 1);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,G_OBJECT(resultWindow));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,G_OBJECT(resultWindow));
 	gtk_widget_show (button);
 
 	button = create_button(resultWindow,"Save");

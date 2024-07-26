@@ -77,7 +77,7 @@ void destroyWinsOrca(GtkWidget *win)
 /************************************************************************************************************/
 static void toCancelWin(GtkWidget* win,gpointer data)
 {
-	Cancel_YesNo(win, data, destroy_childs);
+	Cancel_YesNo(win, data, destroy_children);
 }
 /************************************************************************************************************/
 static void putTitleInTextEditor()
@@ -157,7 +157,7 @@ static void orcaInputFileWindow(gboolean newInputFile)
 		return;
 	}
 
-	if(Wins) destroy_childs(Wins);
+	if(Wins) destroy_children(Wins);
 
 	Wins= gtk_dialog_new ();
 	gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER);
@@ -166,7 +166,7 @@ static void orcaInputFileWindow(gboolean newInputFile)
     	gtk_window_set_modal (GTK_WINDOW (Wins), TRUE);
 
 	init_child(Wins, destroyWinsOrca," Orca input ");
-	g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_childs,NULL);
+	g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_children,NULL);
 
 	gtk_widget_realize(Wins);
 
@@ -197,7 +197,7 @@ static void orcaInputFileWindow(gboolean newInputFile)
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(putInfoInTextEditor),GTK_OBJECT(Wins));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_childs),GTK_OBJECT(Wins));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_children),GTK_OBJECT(Wins));
 	
 
 	gtk_widget_show_all(Wins);

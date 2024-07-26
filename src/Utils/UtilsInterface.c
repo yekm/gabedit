@@ -131,27 +131,27 @@ void create_popup_win(gchar* label)
 /********************************************************************************/
 void init_child(GtkWidget *widget, GabeditSignalFunc func,gchar *buttonlabel)
 {
-  WidgetChilds  *childs = g_malloc(sizeof(WidgetChilds));
-  g_object_set_data(G_OBJECT (widget), "Childs", childs);
-  childs->nchilds = 1;
-  childs->childs = g_malloc(sizeof(GtkWidget*));
-  childs->destroychilds = g_malloc(sizeof(GCallback));
-  childs->childs[0] = widget;
-  g_object_set_data(G_OBJECT(childs->childs[0]),"Parent",widget);
-  childs->destroychilds[0] = func;
+  WidgetChildren  *children = g_malloc(sizeof(WidgetChildren));
+  g_object_set_data(G_OBJECT (widget), "Children", children);
+  children->nchildren = 1;
+  children->children = g_malloc(sizeof(GtkWidget*));
+  children->destroychildren = g_malloc(sizeof(GCallback));
+  children->children[0] = widget;
+  g_object_set_data(G_OBJECT(children->children[0]),"Parent",widget);
+  children->destroychildren[0] = func;
   if(buttonlabel)
 	add_button_windows(buttonlabel,widget);
 }
 /********************************************************************************/
 void add_child(GtkWidget *widget,GtkWidget *childwidget,GabeditSignalFunc func,gchar *buttonlabel)
 {
-  WidgetChilds  *childs = (WidgetChilds  *)g_object_get_data(G_OBJECT(widget),"Childs");
-  childs->nchilds++;
-  childs->childs = g_realloc(childs->childs,childs->nchilds*sizeof(GtkWidget*));
-  childs->destroychilds = g_realloc(childs->destroychilds,childs->nchilds*sizeof(GCallback));
-  childs->childs[childs->nchilds-1] = childwidget;
-  g_object_set_data(G_OBJECT(childs->childs[childs->nchilds-1]),"Parent",widget);
-  childs->destroychilds[childs->nchilds-1] = func;
+  WidgetChildren  *children = (WidgetChildren  *)g_object_get_data(G_OBJECT(widget),"Children");
+  children->nchildren++;
+  children->children = g_realloc(children->children,children->nchildren*sizeof(GtkWidget*));
+  children->destroychildren = g_realloc(children->destroychildren,children->nchildren*sizeof(GCallback));
+  children->children[children->nchildren-1] = childwidget;
+  g_object_set_data(G_OBJECT(children->children[children->nchildren-1]),"Parent",widget);
+  children->destroychildren[children->nchildren-1] = func;
   if(buttonlabel)
 	add_button_windows(buttonlabel,childwidget);
 }
@@ -159,78 +159,78 @@ void add_child(GtkWidget *widget,GtkWidget *childwidget,GabeditSignalFunc func,g
 void delete_child(GtkWidget *childwidget)
 {
   GtkWidget *widget = NULL;
-  WidgetChilds  *childs;
+  WidgetChildren  *children;
   gint i;
   gint k;
 
   widget = GTK_WIDGET(g_object_get_data(G_OBJECT(childwidget),"Parent"));
   if(!widget)
 	return;
-  childs = (WidgetChilds  *)g_object_get_data(G_OBJECT(widget),"Childs");
+  children = (WidgetChildren  *)g_object_get_data(G_OBJECT(widget),"Children");
 
   k = -1;
-  for(i=0;i<childs->nchilds;i++)
+  for(i=0;i<children->nchildren;i++)
   {
-	if(childs->childs[i]==childwidget)
+	if(children->children[i]==childwidget)
         {
-		destroy_button_windows(childs->childs[i]);
-		childs->destroychilds[i](childs->childs[i]);
-		childs->childs[i] = NULL;
+		destroy_button_windows(children->children[i]);
+		children->destroychildren[i](children->children[i]);
+		children->children[i] = NULL;
 		k = i;
 		break;
 	}
   }
   if(k!=-1)
   {
-  	for(i=k;i<childs->nchilds-1;i++)
+  	for(i=k;i<children->nchildren-1;i++)
   	{
-		childs->childs[i] = childs->childs[i+1];
-		childs->destroychilds[i] = childs->destroychilds[i+1];
+		children->children[i] = children->children[i+1];
+		children->destroychildren[i] = children->destroychildren[i+1];
   	}
-  	childs->nchilds--;
-  	childs->childs = g_realloc(childs->childs,childs->nchilds*sizeof(GtkWidget*));
-  	childs->destroychilds = g_realloc(childs->destroychilds,childs->nchilds*sizeof(GCallback));
+  	children->nchildren--;
+  	children->children = g_realloc(children->children,children->nchildren*sizeof(GtkWidget*));
+  	children->destroychildren = g_realloc(children->destroychildren,children->nchildren*sizeof(GCallback));
   }
 }
 /********************************************************************************/
-void delete_all_childs(GtkWidget *widget)
+void delete_all_children(GtkWidget *widget)
 {
-  WidgetChilds  *childs;
+  WidgetChildren  *children;
   gint i;
 
   if(!widget)
 	return;
-  childs = (WidgetChilds  *)g_object_get_data(G_OBJECT(widget),"Childs");
-  for(i=1;i<childs->nchilds;i++)
+  children = (WidgetChildren  *)g_object_get_data(G_OBJECT(widget),"Children");
+  for(i=1;i<children->nchildren;i++)
   {
-	if(childs->childs[i])
+	if(children->children[i])
 	{
-		destroy_button_windows(childs->childs[i]);
-		childs->destroychilds[i](childs->childs[i]);
-		childs->childs[i] = NULL;
+		destroy_button_windows(children->children[i]);
+		children->destroychildren[i](children->children[i]);
+		children->children[i] = NULL;
 	}
   }
-  childs->nchilds = 1;
-  childs->childs = g_realloc(childs->childs,childs->nchilds*sizeof(GtkWidget*));
-  childs->destroychilds = g_realloc(childs->destroychilds,childs->nchilds*sizeof(GCallback));
+  children->nchildren = 1;
+  children->children = g_realloc(children->children,children->nchildren*sizeof(GtkWidget*));
+  children->destroychildren = g_realloc(children->destroychildren,children->nchildren*sizeof(GCallback));
    
 }
 /********************************************************************************/
-void destroy_childs(GtkWidget *widget)
+void destroy_children(GtkWidget *widget)
 {
-  WidgetChilds  *childs = (WidgetChilds  *)g_object_get_data(G_OBJECT(widget),"Childs");
+  WidgetChildren  *children = (WidgetChildren  *)g_object_get_data(G_OBJECT(widget),"Children");
   gint i;
-  for(i=childs->nchilds-1;i>=0;i--)
+  for(i=children->nchildren-1;i>=0;i--)
   {
-   if(childs->childs[i])
+   if(children->children[i])
    {
-	destroy_button_windows(childs->childs[i]);
-	childs->destroychilds[i](childs->childs[i]);
+	destroy_button_windows(children->children[i]);
+	children->destroychildren[i](children->children[i]);
    }
   }
-  g_free(childs->childs);
-  g_free(childs->destroychilds);
-  g_free(childs);
+  g_free(children->children);
+  g_free(children->destroychildren);
+  g_free(children);
 }
 /********************************************************************************/
 /* create_pixmap, convenience function to create a pixmap widget, from data */

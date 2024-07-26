@@ -249,6 +249,11 @@ static void activate_action (GtkAction *action)
 			TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
 			transition_matrix_orbitals_dlg();
 	}
+	else if(!strcmp(name , "OrbitalsSpatialOverlap"))
+	{
+			TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
+			spatial_overlap_orbitals_dlg();
+	}
 	else if(!strcmp(name , "OrbitalsOverlap"))
 	{
 			TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
@@ -813,6 +818,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"OrbitalsCapture", GABEDIT_STOCK_SELECT_ALL, "_Slideshow", NULL, "Slideshow", G_CALLBACK (activate_action) },
 	{"OrbitalsCoulomb", NULL, "_Coulomb integral", NULL, "Coulomb", G_CALLBACK (activate_action) },
 	{"OrbitalsTransition", NULL, "_Transition matrix elements", NULL, "TM", G_CALLBACK (activate_action) },
+	{"OrbitalsSpatialOverlap", NULL, "_Spatial overlap matrix", NULL, "TM", G_CALLBACK (activate_action) },
 	{"OrbitalsOverlap", NULL, "Compute _overlap matrix", NULL, "Overlap", G_CALLBACK (activate_action) },
 	{"Cube",     NULL, "_Cube&Grid"},
 
@@ -1509,6 +1515,7 @@ static const gchar *uiMenuInfo =
 "      <separator name=\"sepMenuGabeditOrbCoul\" />\n"
 "      <menuitem name=\"OrbitalsCoulomb\" action=\"OrbitalsCoulomb\" />\n"
 "      <menuitem name=\"OrbitalsTransition\" action=\"OrbitalsTransition\" />\n"
+"      <menuitem name=\"OrbitalsSpatialOverlap\" action=\"OrbitalsSpatialOverlap\" />\n"
 /*
 "      <menuitem name=\"OrbitalsOverlap\" action=\"OrbitalsOverlap\" />\n"
 */
@@ -1949,7 +1956,8 @@ static void set_sensitive_orbitals()
 	GtkWidget *orbCapture = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsCapture");
 	GtkWidget *orbCoulomb = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsCoulomb");
 	GtkWidget *orbTransition = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsTransition");
-	GtkWidget *orbOverlap = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsOverlap");
+	GtkWidget *orbSpatialOverlap = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsSpatialOverlap");
+	/* GtkWidget *orbOverlap = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsOverlap");*/
 	gboolean sensitive = TRUE;
   	if(NAOrb<1) sensitive = FALSE;
 	if(GTK_IS_WIDGET(orbSave)) gtk_widget_set_sensitive(orbSave, sensitive);
@@ -1957,7 +1965,8 @@ static void set_sensitive_orbitals()
 	if(GTK_IS_WIDGET(orbCapture)) gtk_widget_set_sensitive(orbCapture, sensitive);
 	if(GTK_IS_WIDGET(orbCoulomb)) gtk_widget_set_sensitive(orbCoulomb, sensitive);
 	if(GTK_IS_WIDGET(orbTransition)) gtk_widget_set_sensitive(orbTransition, sensitive);
-	if(GTK_IS_WIDGET(orbOverlap)) gtk_widget_set_sensitive(orbOverlap, sensitive);
+	/* if(GTK_IS_WIDGET(orbOverlap)) gtk_widget_set_sensitive(orbOverlap, sensitive);*/
+	if(GTK_IS_WIDGET(orbSpatialOverlap)) gtk_widget_set_sensitive(orbSpatialOverlap, sensitive);
 }
 /*********************************************************************************************************************/
 static void set_sensitive_cube()

@@ -3092,6 +3092,98 @@ void selectResidueByNameDlg()
 	gtk_widget_show_all(winDlg);
 }
 /********************************************************************************/
+static void selectResidueByNumber(GtkWidget* button, GtkWidget* entry)
+{
+	gint i;
+	gint k = 0;
+	G_CONST_RETURN gchar *rName;
+	gint n = 1;
+
+
+	if(Natoms<1) return;
+	rName = gtk_entry_get_text(GTK_ENTRY(entry));
+	n = atoi(rName);
+
+	NFatoms = 0;
+	if(NumFatoms) g_free(NumFatoms);
+
+	NumFatoms = g_malloc(Natoms*sizeof(gint));
+	k = 0;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(!geometry[i].show) continue;
+		if(geometry[i].ResidueNumber == n-1)
+			NumFatoms[k++]= geometry[i].N;
+	}
+	NFatoms = k;
+	if(k<1)
+	{
+		NFatoms = 0;
+		if(NumFatoms) g_free(NumFatoms);
+		NumFatoms=NULL;
+	}
+	else
+	{
+		NumFatoms = g_realloc(NumFatoms,NFatoms*sizeof(gint));
+	}
+	dessine();
+}
+/********************************************************************************/
+void selectResidueByNumberDlg()
+{
+	GtkWidget *winDlg;
+	GtkWidget *button;
+	GtkWidget *hbox;
+	GtkWidget *entry;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	gint n=0;
+	gchar** t = NULL;
+  
+	winDlg = gtk_dialog_new();
+	gtk_window_set_title(GTK_WINDOW(winDlg),"Select by Residue number");
+	gtk_window_set_position(GTK_WINDOW(winDlg),GTK_WIN_POS_CENTER);
+	gtk_window_set_transient_for(GTK_WINDOW(winDlg),GTK_WINDOW(GeomDlg));
+
+	add_child(GeomDlg,winDlg,gtk_widget_destroy," Sel. Res. ");
+	g_signal_connect(G_OBJECT(winDlg),"delete_event",(GCallback)delete_child,NULL);
+
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->vbox), frame,TRUE,TRUE,0);
+
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	hbox=create_hbox_false(vboxframe);
+	n=1;
+	t = g_malloc(2*sizeof(gchar*));
+	t[0] = g_strdup("1");
+	t[1] = NULL;
+	entry = create_label_combo(hbox, " Residue Number : ",t,n, TRUE,-1,-1);
+	gtk_editable_set_editable((GtkEditable*) entry,TRUE);
+	if(t) freeList(t,n);
+
+	gtk_widget_realize(winDlg);
+
+	button = create_button(winDlg,"Cancel");
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button,TRUE,TRUE,0);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+
+	button = create_button(winDlg,"OK");
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(winDlg)->action_area), button,TRUE,TRUE,0);
+	g_signal_connect(G_OBJECT(button), "clicked",(GCallback)selectResidueByNumber,entry);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(winDlg));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+    
+
+	gtk_widget_show_all(winDlg);
+}
+/********************************************************************************/
 static gchar** getListMMTypes(gint* nlist)
 {
 
@@ -11312,9 +11404,9 @@ GtkWidget *create_hbox_in_vbox(GtkWidget *vbox)
 	return hbox;
 }
 /*****************************************************************************/
-void destroy_drawing_and_childs(GtkWidget *win,gpointer data)
+void destroy_drawing_and_children(GtkWidget *win,gpointer data)
 {
-  destroy_childs(GeomDlg);
+  destroy_children(GeomDlg);
 }
 /*****************************************************************************/
 void destroy_all_drawing(GtkWidget *win)
@@ -11465,7 +11557,7 @@ void create_window_drawing()
 
 	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
 	init_child(GeomDlg,destroy_all_drawing," Draw Geom. ");
-	g_signal_connect(G_OBJECT(GeomDlg),"delete_event",(GCallback)destroy_childs,NULL);
+	g_signal_connect(G_OBJECT(GeomDlg),"delete_event",(GCallback)destroy_children,NULL);
 
 	frame = create_frame_in_vbox(NULL,GeomDlg,VboxWin,TRUE);
 	gtk_widget_show (frame);

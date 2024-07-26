@@ -401,7 +401,7 @@ GtkWidget* createMolcasBasisWindow()
 	gtk_window_set_title(&GTK_DIALOG(dlgWin)->window,"Molcas Basis");
 
 	init_child(dlgWin, detroyBasisWindow ," Molcas Basis ");
-	g_signal_connect(G_OBJECT(dlgWin),"delete_event",(GCallback)destroy_childs,NULL);
+	g_signal_connect(G_OBJECT(dlgWin),"delete_event",(GCallback)destroy_children,NULL);
 
 	frame = gtk_frame_new (NULL);
 	gtk_widget_show (frame);
@@ -459,7 +459,7 @@ GtkWidget* createMolcasBasisWindow()
 
 	button = create_button(dlgWin,"CANCEL");
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(dlgWin)->action_area), button, FALSE, TRUE, 5);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK(destroy_childs),GTK_OBJECT(dlgWin));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK(destroy_children),GTK_OBJECT(dlgWin));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_show (button);
 	/*
@@ -471,7 +471,7 @@ GtkWidget* createMolcasBasisWindow()
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_childs),GTK_OBJECT(dlgWin));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_children),GTK_OBJECT(dlgWin));
 
 	gtk_widget_show_all(dlgWin);
 	Wins = dlgWin;

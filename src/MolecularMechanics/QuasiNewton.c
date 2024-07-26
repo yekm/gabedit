@@ -77,10 +77,10 @@ void	runQuasiNewton(QuasiNewton* quasiNewton)
 		forceField->klass->calculateGradient(forceField);
 		energy = forceField->klass->calculateEnergyTmp(forceField, &forceField->molecule );
 		/* set x  and g table from coordinates and gradient */
-		if(StopCalcul)
-			break;
-		for(i=0,i3=0;i<nAtoms;i++,i3+=3)
+		if(StopCalcul) break;
+		for(i=0,i3=0;i<nAtoms;i++)
 		{
+			if(!forceField->molecule.atoms[i].variable) continue;
 			x[i3  ] = forceField->molecule.atoms[i].coordinates[0];
 			x[i3+1] = forceField->molecule.atoms[i].coordinates[1];
 			x[i3+2] = forceField->molecule.atoms[i].coordinates[2];
@@ -88,17 +88,28 @@ void	runQuasiNewton(QuasiNewton* quasiNewton)
 			g[i3  ] = forceField->molecule.gradient[0][i];
 			g[i3+1] = forceField->molecule.gradient[1][i];
 			g[i3+2] = forceField->molecule.gradient[2][i];
+			i3 += 3;
 		}
+		lbfgs(i3, i3,x, energy,g,diagco,diag,
+				quasiNewton->epsilon,quasiNewton->tolerence,
+				quasiNewton->maxLines,
+				&iflag);
+		/*
 		lbfgs(nAtomsX3, nAtomsX3,x, energy,g,diagco,diag,
 				quasiNewton->epsilon,quasiNewton->tolerence,
 				quasiNewton->maxLines,
 				&iflag);
+				*/
 		/* set coordinates from x */
-		for(i=0,i3=0;i<nAtoms;i++,i3+=3)
+		for(i=0,i3=0;i<nAtoms;i++)
 		{
-			forceField->molecule.atoms[i].coordinates[0] = x[i3];
-			forceField->molecule.atoms[i].coordinates[1] = x[i3+1];
-			forceField->molecule.atoms[i].coordinates[2] = x[i3+2];
+			if(forceField->molecule.atoms[i].variable) 
+			{
+				forceField->molecule.atoms[i].coordinates[0] = x[i3];
+				forceField->molecule.atoms[i].coordinates[1] = x[i3+1];
+				forceField->molecule.atoms[i].coordinates[2] = x[i3+2];
+				i3+=3;
+			}
 		}
 
 		if ( updateNumber >= quasiNewton->updateFrequency )

@@ -512,6 +512,12 @@ static void activate_action (GtkAction *action)
 		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(selectionAtoms), TRUE);
 		SelectLastResidue();
 	}
+	else if(!strcmp(name,"EditSelectResidueByNumber"))
+	{
+		GtkAction *selectionAtoms = gtk_ui_manager_get_action (manager, "/MenuGeom/Operations/OperationsSelectionOfAtoms");
+		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(selectionAtoms), TRUE);
+		selectResidueByNumberDlg();
+	}
 	else if(!strcmp(name,"EditSelectResidueByName"))
 	{
 		GtkAction *selectionAtoms = gtk_ui_manager_get_action (manager, "/MenuGeom/Operations/OperationsSelectionOfAtoms");
@@ -784,6 +790,10 @@ static void activate_action (GtkAction *action)
 	{
 		semiEmpiricalDlg("MopacOptimize");
 	}
+	else if(!strcmp(name, "SemiEmpiricalOptimisationMopacSparkle"))
+	{
+		semiEmpiricalDlg("MopacOptimizeSparkle");
+	}
 	else if(!strcmp(name, "SemiEmpiricalESPMopac"))
 	{
 		semiEmpiricalDlg("MopacESP");
@@ -825,7 +835,7 @@ static void activate_action (GtkAction *action)
 		semiEmpiricalDlg("OrcaOptimize");
 	}
 
-	else if(!strcmp(name, "Close")) destroy_drawing_and_childs(NULL, 0);
+	else if(!strcmp(name, "Close")) destroy_drawing_and_children(NULL, 0);
 }
 /*--------------------------------------------------------------------*/
 static GtkActionEntry gtkActionEntries[] =
@@ -935,6 +945,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"EditSelectVariableAtoms", NULL, "Select _not freezing atoms during optimizations", NULL, "Select not freezing atoms during optimizations", G_CALLBACK (activate_action) },
 	{"EditSelectFirstResidue", NULL, "Select the _first residue", NULL, "Select the first residue", G_CALLBACK (activate_action) },
 	{"EditSelectLastResidue", NULL, "Select the _last residue", NULL, "Select the last residue", G_CALLBACK (activate_action) },
+	{"EditSelectResidueByNumber", NULL, "Select redidue by number", NULL, "Select residue by number", G_CALLBACK (activate_action) },
 	{"EditSelectResidueByName", NULL, "Select residues by name", NULL, "Select residues by name", G_CALLBACK (activate_action) },
 	{"EditSelectAtomsByMMType", NULL, "Select atoms by MM type", NULL, "Select atoms by MM type", G_CALLBACK (activate_action) },
 	{"EditSelectAtomsByPDBType", NULL, "Select atoms by PDB type", NULL, "Select atoms by PDB type", G_CALLBACK (activate_action) },
@@ -1015,8 +1026,8 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SetSelectedAtomsToHighLayer", NULL, "Set selected atoms to _Hight layer", NULL, "Set selected atoms to Hight layer", G_CALLBACK (activate_action) },
 	{"SetSelectedAtomsToMediumLayer", NULL, "Set selected atoms to _Medium layer", NULL, "Set selected atoms to Medium layer", G_CALLBACK (activate_action) },
 	{"SetSelectedAtomsToLowLayer", NULL, "Set selected atoms to _Low layer", NULL, "Set selected atoms to Low layer", G_CALLBACK (activate_action) },
-	{"SetSelectedAtomsToFixed", NULL, "Set selected atoms to _freezing during optimizations", NULL, "Set selected atoms to freezing during optimizations", G_CALLBACK (activate_action) },
-	{"SetSelectedAtomsToVariable", NULL, "Set selected atoms to _not freezing during optimizations", NULL, "Set selected atoms to not freezing during optimizations", G_CALLBACK (activate_action) },
+	{"SetSelectedAtomsToFixed", NULL, "Set selected atoms to _freeze during optimizations", NULL, "Set selected atoms to freeze during optimizations", G_CALLBACK (activate_action) },
+	{"SetSelectedAtomsToVariable", NULL, "Set selected atoms to _not freeze during optimizations", NULL, "Set selected atoms to not freeze during optimizations", G_CALLBACK (activate_action) },
 	{"SetMMTypeOfselectedAtoms", NULL, "Set the _MM type of selected atoms", NULL, "Set the MM type of selected atoms", G_CALLBACK (activate_action) },
 	{"SetPDBTypeOfselectedAtoms", NULL, "Set the _PDB type of selected atoms", NULL, "Set the PDB type of selected atoms", G_CALLBACK (activate_action) },
 	{"SetChargeOfselectedAtoms", NULL, "Set the _Charge of selected atoms", NULL, "Set the charge of selected atoms", G_CALLBACK (activate_action) },
@@ -1070,6 +1081,7 @@ static GtkActionEntry gtkActionEntries[] =
 
 	{"SemiEmpiricalEnergyMopac", NULL, "Mopac _Energy", NULL, "compute the energy using Mopac", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalOptimisationMopac", NULL, "Mopac _Optimisation", NULL, "optimize the geometry using Mopac", G_CALLBACK (activate_action) },
+	{"SemiEmpiricalOptimisationMopacSparkle", NULL, "Mopac _Sparkle Optimization", NULL, "optimize the geometry of a lanthanide complex using Mopac", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalESPMopac", NULL, "Mopac _ESP charges", NULL, "ESP Charge using Mopac", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalScanMopac", NULL, "Mopac _Reaction path", NULL, "Mopac Scan calculation", G_CALLBACK (activate_action) },
 
@@ -1233,6 +1245,7 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"EditSelectVariableAtoms\" action=\"EditSelectVariableAtoms\" />\n"
 "        <menuitem name=\"EditSelectFirstResidue\" action=\"EditSelectFirstResidue\" />\n"
 "        <menuitem name=\"EditSelectLastResidue\" action=\"EditSelectLastResidue\" />\n"
+"        <menuitem name=\"EditSelectResidueByNumber\" action=\"EditSelectResidueByNumber\" />\n"
 "        <menuitem name=\"EditSelectResidueByName\" action=\"EditSelectResidueByName\" />\n"
 "        <menuitem name=\"EditSelectAtomsByMMType\" action=\"EditSelectAtomsByMMType\" />\n"
 "        <menuitem name=\"EditSelectAtomsByPDBType\" action=\"EditSelectAtomsByPDBType\" />\n"
@@ -1443,6 +1456,7 @@ static const gchar *uiMenuInfo =
 "      <separator name=\"sepSemiEmpiricalMopac\" />\n"
 "      <menuitem name=\"SemiEmpiricalEnergyMopac\" action=\"SemiEmpiricalEnergyMopac\" />\n"
 "      <menuitem name=\"SemiEmpiricalOptimisationMopac\" action=\"SemiEmpiricalOptimisationMopac\" />\n"
+"      <menuitem name=\"SemiEmpiricalOptimisationMopacSparkle\" action=\"SemiEmpiricalOptimisationMopacSparkle\" />\n"
 "      <menuitem name=\"SemiEmpiricalESPMopac\" action=\"SemiEmpiricalESPMopac\" />\n"
 "      <menuitem name=\"SemiEmpiricalScanMopac\" action=\"SemiEmpiricalScanMopac\" />\n"
 

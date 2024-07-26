@@ -22,6 +22,14 @@ DEALINGS IN THE SOFTWARE.
 typedef struct _SemiEmpiricalModel  SemiEmpiricalModel;
 typedef struct _SemiEmpiricalModelClass  SemiEmpiricalModelClass;
 typedef struct _SemiEmpiricalModelOptions  SemiEmpiricalModelOptions;
+#define RATTLEDIM	        3 /* a1 a2 r12 */
+
+typedef enum
+{
+  NOCONSTRAINTS = 0,
+  BONDSCONSTRAINTS = 1,
+  BONDSANGLESCONSTRAINTS = 2
+} SemiEmpiricalModelConstraints;
 
 struct _SemiEmpiricalModel
 {
@@ -29,6 +37,9 @@ struct _SemiEmpiricalModel
 	SemiEmpiricalModelClass* klass;
 	gchar* method;
 	gchar* workDir;
+	SemiEmpiricalModelConstraints constraints;
+	gint numberOfRattleConstraintsTerms;
+	gdouble* rattleConstraintsTerms[RATTLEDIM];
 };
 struct _SemiEmpiricalModelClass
 {
@@ -37,9 +48,10 @@ struct _SemiEmpiricalModelClass
 };
 
 
-SemiEmpiricalModel newSemiEmpiricalModel(gchar* method, gchar* dirName);
+SemiEmpiricalModel newSemiEmpiricalModel(gchar* method, gchar* dirName, SemiEmpiricalModelConstraints constraints);
 void freeSemiEmpiricalModel(SemiEmpiricalModel* seModel);
 SemiEmpiricalModel copySemiEmpiricalModel(SemiEmpiricalModel* seModel);
+void setRattleConstraintsParameters(SemiEmpiricalModel* semiEmpiricalModel);
 
 #endif /* __GABEDIT_SEMIEMPIRICALMODEL_H__ */
 

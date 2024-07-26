@@ -379,7 +379,7 @@ GtkWidget *create_grids_list_frame( GtkWidget *vboxall,gchar** gridsList,gint n,
 	gtk_widget_set_sensitive(entry,FALSE); 
         g_object_set_data(G_OBJECT (entry), "FileName",fileName);
         g_object_set_data(G_OBJECT (entry), "Combo",combo);
-	g_object_set_data(G_OBJECT (entry), "N", (gpointer)n);
+	g_object_set_data(G_OBJECT (entry), "N", GINT_TO_POINTER(n));
 	g_object_set_data(G_OBJECT (entry), "GridsList", gridsList);
 
 	g_object_set_data(G_OBJECT (frame), "Entry", entry);
@@ -400,7 +400,7 @@ static void apply_read_grid(GtkWidget *button,gpointer data)
 
         if(!this_is_an_object((GtkObject*)entry)) return;
 
-	n = (gint)g_object_get_data(G_OBJECT (entry), "N");
+	n = GPOINTER_TO_INT(g_object_get_data(G_OBJECT (entry), "N"));
 	gridsList = g_object_get_data(G_OBJECT (entry), "GridsList");
 
 	t = gtk_entry_get_text(GTK_ENTRY(entry));

@@ -37,6 +37,7 @@ DEALINGS IN THE SOFTWARE.
 /********************************************************************************/
 static gdouble GTFstarGTF(GTF* p,GTF* q);
 static gdouble GTFstarGTFstarGTF(GTF* left,GTF* midle, GTF* right);
+static gdouble GTFstarGTFstarGTFstarGTF(GTF* A,GTF* B, GTF* C, GTF* D);
 static gdouble f(gint i,gint l,gint m,gdouble A,gdouble B);
 static gdouble Theta(int i,int r,int l1,int l2, gdouble A, gdouble B, gdouble g);
 static gdouble B(int i,int ip,int r, int rp, int u, gdouble PQ, gdouble d, gdouble T1,gdouble T2);
@@ -224,6 +225,81 @@ static gdouble GTFstarGTFstarGTF(GTF* left,GTF* midle, GTF* right)
 	}
 	return  c*sum[0]*sum[1]*sum[2];
 }
+/**********************************************/
+static gdouble GTFstarGTFstarGTFstarGTF(GTF* A,GTF* B, GTF* C, GTF* D)
+{
+	gdouble sum[3];
+	gdouble t;
+	gdouble PA[3];
+	gdouble PB[3];
+	gdouble QC[3];
+	gdouble QD[3];
+	gdouble P[3];
+	gdouble Q[3];
+	gdouble GP[3];
+	gdouble GQ[3];
+	gdouble gama1=A->Ex+B->Ex;
+	gdouble gama2=C->Ex+D->Ex;
+	gdouble gama=gama1+gama2;
+	gdouble R2AB=0.0;
+	gdouble R2CD=0.0;
+	gdouble R2PQ=0.0;
+	gdouble c = 0;
+	gint iAB;
+	gint iCD;
+	gint i,j;
+
+	for(j=0;j<3;j++)
+	{
+		t=(A->Ex*A->C[j]+B->Ex*B->C[j])/gama1;
+		P[j]=t;
+		PA[j]=A->C[j]-t;
+		PB[j]=B->C[j]-t;
+		R2AB += (A->C[j]-B->C[j])*(A->C[j]-B->C[j]);
+	}
+	for(j=0;j<3;j++)
+	{
+		t=(C->Ex*C->C[j]+D->Ex*D->C[j])/gama2;
+		Q[j]=t;
+		QC[j]=C->C[j]-t;
+		QD[j]=D->C[j]-t;
+		R2CD += (C->C[j]-D->C[j])*(C->C[j]-D->C[j]);
+	}
+	for(j=0;j<3;j++)
+	{
+		t=(gama1*P[j]+gama2*Q[j])/gama;
+		GP[j]=P[j]-t;
+		GQ[j]=Q[j]-t;
+		R2PQ += (P[j]-Q[j])*(P[j]-Q[j]);
+	}
+	c = (PI/gama)*sqrt(PI/gama)
+		*exp(-A->Ex*B->Ex/gama1*R2AB)
+		*exp(-C->Ex*D->Ex/gama2*R2CD)
+		*exp(-gama1*gama2/gama*R2PQ);
+
+
+	for(j=0;j<3;j++)
+	{
+		sum[j]=0.0;
+		for(iAB=0;iAB<=(A->l[j]+B->l[j]);iAB++)
+		{
+			gdouble fiAB = f(iAB,A->l[j],B->l[j],PA[j],PB[j]);
+			for(iCD=0;iCD<=(C->l[j]+D->l[j]);iCD++)
+			{
+				gdouble fiCD = f(iCD,C->l[j],D->l[j],QC[j],QD[j]);
+				for(i=0;i<=(iAB+iCD)/2;i++)
+				{
+					sum[j] +=
+					fiAB*
+					fiCD*
+					f(2*i,iAB,iCD,GP[j],GQ[j])*
+					doubleFactorial(2*i-1)/(dpn(2.0,i)*dpn(gama,i));
+	 			}
+			}
+		}
+	}
+	return  c*sum[0]*sum[1]*sum[2];
+}
 /********************************************************************************/
 gdouble normeGTF(GTF* p)
 {
@@ -261,6 +337,11 @@ gdouble overlapGTF(GTF* p,GTF* q)
 gdouble overlap3GTF(GTF* p,GTF* q, GTF* r)
 {
 	return p->Coef*q->Coef*r->Coef*GTFstarGTFstarGTF(p,q,r);
+}
+/********************************************************************************/
+gdouble overlap4GTF(GTF* p,GTF* q, GTF* r, GTF* s)
+{
+	return p->Coef*q->Coef*r->Coef*s->Coef*GTFstarGTFstarGTFstarGTF(p,q,r,s);
 }
 /********************************************************************************/
 gdouble GTFxyzGTF(GTF* p,GTF* q, gint ix, gint iy, gint iz)
@@ -689,6 +770,23 @@ gdouble overlap3CGTF(CGTF* left, CGTF* midle, CGTF* right)
 	for(np=0;np<midle->numberOfFunctions;np++)
 	for(ns=0;ns<right->numberOfFunctions;ns++)
 			sum += overlap3GTF(&(left->Gtf[n]),&(midle->Gtf[np]), &(right->Gtf[ns]));
+
+	return sum;
+}
+/********************************************************************************************/
+gdouble overlap4CGTF(CGTF* A, CGTF* B, CGTF* C, CGTF* D)
+{
+	gdouble sum=0.0;
+	gint np;
+	gint nq;
+	gint nr;
+	gint ns;
+
+	for(np=0;np<A->numberOfFunctions;np++)
+	for(nq=0;nq<B->numberOfFunctions;nq++)
+	for(nr=0;nr<C->numberOfFunctions;nr++)
+	for(ns=0;ns<D->numberOfFunctions;ns++)
+			sum += overlap4GTF(&(A->Gtf[np]),&(B->Gtf[nq]), &(C->Gtf[nr]),  &(D->Gtf[ns]));
 
 	return sum;
 }

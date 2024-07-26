@@ -31,6 +31,7 @@ typedef struct _AtomMol
 	gint N;
 
 	gboolean show;
+	gboolean variable;
 	GabEditLayerType layer;
 	gint* typeConnections;
 }AtomMol;

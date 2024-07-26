@@ -9,6 +9,9 @@ AtomsProp.o: AtomsProp.c ../../Config.h ../Common/Global.h \
 Jacobi.o: Jacobi.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h
+QL.o: QL.c ../../Config.h ../Common/Global.h \
+  ../Common/../Files/GabeditFileChooser.h \
+  ../Common/../Common/GabeditType.h
 Transformation.o: Transformation.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h Vector3d.h Transformation.h Utils.h
@@ -68,6 +71,8 @@ ConvUtils.o: ConvUtils.c ../../Config.h ../Common/Global.h \
   ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \
   ../Utils/Utils.h ../Utils/Constants.h
 GabeditXYPlot.o: GabeditXYPlot.c GabeditXYPlot.h
+GabeditContoursPlot.o: GabeditContoursPlot.c GabeditContoursPlot.h \
+  Interpolation.h
 UtilsCairo.o: UtilsCairo.c ../../Config.h
 Zlm.o: Zlm.c ../../Config.h ../Utils/Constants.h Zlm.h \
   ../Common/GabeditType.h MathFunctions.h
@@ -84,3 +89,6 @@ TTables.o: TTables.c ../../Config.h ../Common/Global.h \
   ../Common/../Common/GabeditType.h ../Utils/Constants.h \
   ../Utils/TTables.h ../Utils/MathFunctions.h ../Utils/Zlm.h \
   ../Utils/../Common/GabeditType.h ../Utils/GTF.h ../Utils/TTables.h
+Interpolation.o: Interpolation.c ../../Config.h ../Common/Global.h \
+  ../Common/../Files/GabeditFileChooser.h \
+  ../Common/../Common/GabeditType.h

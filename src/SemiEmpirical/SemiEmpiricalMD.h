@@ -40,6 +40,7 @@ struct _SemiEmpiricalMD
 	SemiEmpiricalModel* seModel;
 	gint numberOfAtoms;
 	gint updateFrequency;
+	gdouble** coordinatesOld; 
 	gdouble** velocity; 
 	gdouble** a; 
 	gdouble** aold; 
@@ -53,6 +54,8 @@ struct _SemiEmpiricalMD
 	gdouble kineticEnergy;
 	gdouble totalEnergy;
 	gdouble kelvin;
+	gboolean* moved;
+	gboolean* update;
 
 	gdouble* positionFriction;
 	gdouble* velocityFriction;
