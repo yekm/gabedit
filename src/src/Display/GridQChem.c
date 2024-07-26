@@ -1,6 +1,6 @@
 /* GridQChem.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -257,7 +257,7 @@ static gboolean read_qchem_geometry(FILE* file)
 
 	Ok = set_position_label(file,"Standard Nuclear Orientation",buffer, len);
 	if(!Ok) return FALSE;
-	Ncenters = 0;
+	nCenters = 0;
 	if(Ok)
 	{
 		if(!fgets(buffer,len,file)) return FALSE; /* I     Atom         X            Y            Z */
@@ -274,7 +274,7 @@ static gboolean read_qchem_geometry(FILE* file)
     		else GeomOrb=g_realloc(GeomOrb,(j+1)*sizeof(TypeGeomOrb));
 		if(5 != sscanf(buffer,"%d %s %lf %lf %lf",&ii,buffer1, &GeomOrb[j-1].C[0], &GeomOrb[j-1].C[1], &GeomOrb[j-1].C[2]))
 		{
-			Ncenters = j;
+			nCenters = j;
 			g_free(GeomOrb);
 			return FALSE;
 		}
@@ -292,7 +292,7 @@ static gboolean read_qchem_geometry(FILE* file)
 		GeomOrb[j-1].variable = TRUE;
 		GeomOrb[j-1].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[j-1].Symb);
   	}
-	Ncenters = j;
+	nCenters = j;
 	if(j<1) Ok = FALSE;
 	return Ok;
 }
@@ -317,7 +317,7 @@ static gboolean read_qchemout_file(gchar* filename)
 	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
 	set_status_label_info(_("File type"),_("QChem output file"));
-	Ncenters = 0;
+	nCenters = 0;
 	/* read geometry */
 	Ok = read_qchem_geometry(file);
 	if(!Ok)
@@ -339,10 +339,10 @@ static gboolean read_qchemout_file(gchar* filename)
 	if(Ok) init_atomic_orbitals();
 
 	buildBondsOrb();
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	glarea_rafresh(GLArea);
 
-	if(Ncenters>0) set_status_label_info(_("Geometry"),_("Ok"));
+	if(nCenters>0) set_status_label_info(_("Geometry"),_("Ok"));
 	/*printf("N = %d %d %d\n",N[0],N[1],N[2]);*/
 
 	CancelCalcul = FALSE;

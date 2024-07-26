@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -36,6 +36,14 @@ typedef struct _Grid
 	GridLimits limits;
 	gboolean mapped;
 }Grid;
+
+extern GridLimits limits;
+extern gint NumPoints[3];
+extern gdouble firstDirection[3];
+extern gdouble secondDirection[3];
+extern gdouble thirdDirection[3];
+extern gdouble originOfCube[3];
+
 gdouble get_value_orbital(gdouble x,gdouble y,gdouble z,gint k);
 gdouble get_value_electronic_density_on_atom(gdouble x,gdouble y,gdouble z,gint n);
 gdouble get_value_electronic_density_atomic(gdouble x,gdouble y,gdouble z,gint dump);
@@ -46,12 +54,7 @@ gboolean test_grid_all_positive(Grid* grid);
 Grid* grid_point_alloc(gint N[],GridLimits limits);
 Grid* define_grid(gint N[],GridLimits limits);
 Grid* free_grid(Grid* grid);
-GridLimits limits;
-gint NumPoints[3];
-gdouble firstDirection[3];
-gdouble secondDirection[3];
-gdouble thirdDirection[3];
-gdouble originOfCube[3];
+
 Grid* get_grid_laplacian(Grid* grid, gint nBoundary);
 Grid* get_grid_norm_gradient(Grid* grid, gint nBoundary);
 Grid* get_grid_sign_lambda2_density(Grid* grid, gint nBoundary);
@@ -62,6 +65,7 @@ Grid* compute_mep_grid_using_partial_charges_cube_grid(Grid* grid);
 Grid* compute_mep_grid_using_partial_charges(gint N[],GridLimits limits);
 Grid* solve_poisson_equation_from_density_grid(Grid* grid, PoissonSolverMethod psMethod);
 Grid* solve_poisson_equation_from_orbitals(gint N[],GridLimits limits, PoissonSolverMethod psMethod);
+gboolean compute_coulomb_integrale(Grid* grid);
 gboolean compute_coulomb_integrale_iijj(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
 		gdouble* pInteg, gdouble* pNormi, gdouble* pNormj, gdouble* pOverlap);
 gboolean compute_coulomb_integrale_iijj_poisson(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
@@ -85,6 +89,7 @@ void reset_boundary(Grid* grid, gint nBoundary);
 gdouble getLambda2(Grid* grid, gint i, gint j, gint k, gdouble* fcx, gdouble* fcy, gdouble* fcz, gdouble* lfcx, gdouble* lfcy, gdouble* lfcz, gint nBoundary);
 gboolean get_charge_transfer_centers(Grid* grid, gdouble* CN, gdouble* CP, gdouble *qn, gdouble* qp, gdouble* H);
 gboolean compute_integrale_from_grid_all_space(Grid* grid, gdouble* pInteg);
+gdouble get_value_CBTF(gdouble x,gdouble y,gdouble z,gint i);
 
 #endif /* __GABEDIT_GRID_H__ */
 

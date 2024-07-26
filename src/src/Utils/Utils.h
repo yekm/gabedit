@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -221,6 +221,12 @@ void deleteLastSpaces(gchar* str);
 void deleteFirstSpaces(gchar* str);
 void deleteAllSpaces(gchar* str);
 gboolean goToStr(FILE* file, gchar* tag);
+gchar** get_one_block_from_wfx_file(FILE* file, gchar* blockName,  gint* n);
+gint* get_one_block_int_from_wfx_file(FILE* file, gchar* blockName,  gint* n);
+gdouble* get_one_block_real_from_wfx_file(FILE* file, gchar* blockName,  gint* n);
+gboolean get_one_int_from_wfx_file(FILE* file, gchar* blockName, gint* n);
+gdouble* get_one_orbital_from_wfx_file(FILE* file, gint* n, gint*numOrb);
+gchar *readFile(gchar *filename);
 
 #endif /* __GABEDIT_UTILS_H__ */
 

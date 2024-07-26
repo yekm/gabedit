@@ -1,6 +1,6 @@
 /* PreviewGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -451,6 +451,58 @@ static void define_good_factor(GtkWidget* drawingArea)
 	prevData->zoom = factor/Cmax;
 }
 /*****************************************************************************/
+static void getXiYi(GtkWidget* drawingArea, gint* pXi, gint* pYi, gdouble C[])
+{
+	gushort Xmax;
+	gushort Ymax;
+	gushort Rmax;
+	gint Xi;
+	gint Yi;
+	guint i;
+	gdouble X;
+	gdouble Y;
+	gdouble Cmax;
+	PrevGeom* geom = NULL;
+	Camera camera;
+	gint nAtoms;
+	gdouble factor;
+
+	PrevData* prevData = (PrevData*)g_object_get_data(G_OBJECT (drawingArea), "PrevData");
+
+	if(!prevData) return;
+	geom = prevData->geom;
+	nAtoms = prevData->nAtoms;
+	camera = prevData->camera;
+	factor = prevData->zoom;
+
+	factor =1;
+
+	Xmax=drawingArea->allocation.width;
+	Ymax=drawingArea->allocation.height;
+	Rmax = Xmax;
+	if(Rmax<Ymax) Rmax = Ymax;
+
+	Cmax = get_cmax(nAtoms, geom);
+	
+	{
+		if(FALSE)
+		{
+			X = C[0]*camera.f/(-C[2]+camera.position);
+			Y = C[1]*camera.f/(-C[2]+camera.position);
+			Cmax  = Cmax*camera.f/(camera.position);
+		}
+		else
+		{
+			X = C[0];
+			Y = C[1];
+		}
+		Xi = (gint)(X/Cmax*factor*Rmax/2)+Xmax/2+TransX;
+		Yi = (gint)(-Y/Cmax*factor*Rmax/2)+Ymax/2+TransY;
+	}
+	*pXi = Xi;
+	*pYi = Yi;
+}
+/*****************************************************************************/
 static void define_coord_ecran(GtkWidget* drawingArea)
 {
 	gushort Xmax;
@@ -753,6 +805,9 @@ static gboolean draw_molecule( GtkWidget *drawingArea)
 	PrevData* prevData = (PrevData*)g_object_get_data(G_OBJECT (drawingArea), "PrevData");
 	PrevGeom* geom = NULL;
 	gdouble m[4][4];
+	gchar tmp[100];
+	gint nTv = 0;
+	gint iTv[3] = {0,0,0};
 
 	if(!prevData)return FALSE;
 	geom = prevData->geom;
@@ -788,6 +843,10 @@ static gboolean draw_molecule( GtkWidget *drawingArea)
         {
 		k = -1;
 		SAtomsProp propi = prop_atom_get(geom[i].symbol);
+                sprintf(tmp,"%s",geom[i].symbol);
+                uppercase(tmp);
+		if(strstr(tmp,"TV")) continue;
+
 		for(j=i+1;j<prevData->nAtoms;j++)
                 if(prevData->connections[i][j]!=0)
 		{
@@ -878,6 +937,57 @@ static gboolean draw_molecule( GtkWidget *drawingArea)
 
         }
 	g_free(FreeAtoms);
+	nTv = 0;
+	for(i=0;i<prevData->nAtoms;i++)
+        {
+                sprintf(tmp,"%s",geom[i].symbol);
+                uppercase(tmp);
+                if(!strcmp(tmp,"TV")) { iTv[nTv]= i; nTv++;}
+	}
+	if(nTv>0)
+	{
+			gint Xmax=drawingArea->allocation.width;
+			gint Ymax=drawingArea->allocation.height;
+			gdouble C[3] = {0,0,0};
+			gint X0 = 0;
+			gint Y0 = 0;
+			gint X1,Y1;
+			gdouble vx,vy;
+			gint ep;
+			SAtomsProp propi = prop_atom_get(geom[iTv[0]].symbol);
+			epaisseur = (gint) (geom[iTv[0]].Rayon/2);
+			color1 = propi.color;  
+			gint k,l;
+			gint X2,Y2;
+			getXiYi(drawingArea,&X0,&Y0,C);
+
+			for(i=0;i<nTv;i++) 
+			{
+				getXiYi(drawingArea,&X1,&Y1,geom[iTv[i]].C);
+				draw_line(drawingArea, X1,Y1,X0,Y0,color1,epaisseur,&vx,&vy,&ep,TRUE);
+			}
+			if(nTv>2)
+			{
+				for(i=0;i<3;i++) C[i] = geom[iTv[0]].C[i]+  geom[iTv[1]].C[i]+geom[iTv[2]].C[i];
+				getXiYi(drawingArea,&X2,&Y2,C);
+			}
+			for(k=0;k<nTv-1;k++) 
+			for(l=k+1;l<nTv;l++) 
+			{
+				for(i=0;i<3;i++) C[i] = geom[iTv[k]].C[i]+  geom[iTv[l]].C[i];
+				getXiYi(drawingArea,&X0,&Y0,C);
+
+				getXiYi(drawingArea,&X1,&Y1,geom[iTv[k]].C);
+				draw_line(drawingArea, X1,Y1,X0,Y0,color1,epaisseur,&vx,&vy,&ep,TRUE);
+
+				getXiYi(drawingArea,&X1,&Y1,geom[iTv[l]].C);
+				draw_line(drawingArea, X1,Y1,X0,Y0,color1,epaisseur,&vx,&vy,&ep,TRUE);
+				if(nTv>2) draw_line(drawingArea, X2,Y2,X0,Y0,color1,epaisseur,&vx,&vy,&ep,TRUE);
+			}
+			// HERE
+			//continue;
+	}
+
 	redraw(drawingArea);
 	
 	return TRUE;

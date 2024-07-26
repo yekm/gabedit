@@ -7,7 +7,7 @@ gboolean popup_menu_geom(guint button, guint32 time);
 /*
 void add_a_personal_group_to_menu(gchar* groupName);
 void delete_a_personal_group_from_menu(gchar* groupName);
-void add_a_personnal_fragement_to_menu(gchar* groupName,gchar* fragmentName);
+void add_a_personal_fragement_to_menu(gchar* groupName,gchar* fragmentName);
 void delete_a_personal_fragment_from_menu(gchar* groupName,gchar* fragmentName);
 */
 void activate_rotation();

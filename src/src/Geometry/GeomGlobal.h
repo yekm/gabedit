@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -29,6 +29,9 @@ DEALINGS IN THE SOFTWARE.
 #ifndef GEOM_IS_OTHER
 #define GEOM_IS_OTHER  -1
 #endif
+
+#include <gtk/gtk.h>
+#include "../Common/GabeditType.h"
 
 typedef struct _VariablesDef
 {
@@ -100,30 +103,31 @@ typedef struct _FilePosTypeGeom
 #define NUMBER_LIST_ZMATRIX	13
 #define NUMBER_LIST_XYZ		10
  
+extern VariablesXYZDef *VariablesXYZ;
+extern VariablesDef *Variables;
+extern GeomAtomDef* Geom;
+extern GeomXYZAtomDef* GeomXYZ;
+extern guint  NVariablesXYZ;
+extern guint  NVariables;
+extern guint NcentersXYZ;
+extern guint NcentersZmat;
+extern guint MethodeGeom;
+extern guint Nelectrons;
+extern DipoleDef Dipole;
+extern GtkWidget *GeomDrawingArea;
+extern GeomInter *geominter;
+extern GtkWidget *HboxGeom;
+extern GtkWidget *WindowGeom;
+extern gboolean GeomIsOpen;
+extern guint TypeGeomOpen;
+extern guint Units;
+extern guint NMethodes;
+extern gint NSA[4];
+extern gint TotalCharges[3];
+extern gint SpinMultiplicities[3];
+extern gboolean RebuildGeom;
 
-VariablesXYZDef *VariablesXYZ;
-VariablesDef *Variables;
-GeomAtomDef* Geom;
-GeomXYZAtomDef* GeomXYZ;
-guint  NVariablesXYZ;
-guint  NVariables;
-guint NcentersXYZ;
-guint NcentersZmat;
-guint MethodeGeom;
-guint Nelectrons;
-DipoleDef Dipole;
-GtkWidget *GeomDrawingArea;
-GeomInter *geominter;
-GtkWidget *HboxGeom;
-GtkWidget *WindowGeom;
-gboolean GeomIsOpen;
-guint TypeGeomOpen;
-guint Units;
-guint NMethodes;
-gint NSA[4];
-gint TotalCharges[3];
-gint SpinMultiplicities[3];
-gboolean RebuildGeom;
+
 
 void set_spin_of_electrons();
 

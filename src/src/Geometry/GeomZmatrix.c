@@ -1,6 +1,6 @@
 /* GeomZmatrix.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -3027,7 +3027,7 @@ static void SelectAtom(GtkWidget *w,gpointer entry0)
   FenetreTable = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_modal(GTK_WINDOW(FenetreTable),TRUE);
   gtk_window_set_title(GTK_WINDOW(FenetreTable),"Select your atom");
-  gtk_window_set_default_size (GTK_WINDOW(FenetreTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
+  //gtk_window_set_default_size (GTK_WINDOW(FenetreTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
 
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
@@ -3706,7 +3706,7 @@ static void DialogueEdit()
   if(Nc<0 )
   {
 	if(NcentersZmat<1 ) 
-   		MessageGeom(_("Create center before \n"),_("Warning"),TRUE);
+   		MessageGeom(_("Create center beforee \n"),_("Warning"),TRUE);
        	else
    		MessageGeom(_("Please Select your center \n"),_("Warning"),TRUE);
    	return;
@@ -7486,7 +7486,7 @@ static void DialogueEditV()
   Nc=LineSelectedV;
   if(Nc<0 ) {
   	if(NVariables<1)
-   	MessageGeom(_("Create variable before \n"),_("Warning"),TRUE);
+   	MessageGeom(_("Create variable beforee \n"),_("Warning"),TRUE);
        else
    	MessageGeom(_("Please Select your variable \n"),_("Warning"),TRUE);
    return;

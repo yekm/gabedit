@@ -1,6 +1,6 @@
 /* GridMolcas.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -490,7 +490,7 @@ static void create_list_molcasgrid_orbitals()
 
   if(numberOfOrbitals<1)
   {
-	  Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
+	  Message(_("Sorry, Please load a file beforee\n"),_("Error"),TRUE);
 	  return;
   }
   selectedRow=0;
@@ -501,7 +501,7 @@ static void create_list_molcasgrid_orbitals()
   gtk_window_set_title(GTK_WINDOW(Win),"Orbitals");
   gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
   gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
-  gtk_widget_set_size_request (GTK_WIDGET(Win), 3*ScreenWidth/10,(gint)(ScreenHeight*0.69));
+  gtk_widget_set_size_request (GTK_WIDGET(Win), 3*ScreenWidthD/10,(gint)(ScreenHeightD*0.69));
   gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(PrincipalWindow));
   gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
 
@@ -549,7 +549,7 @@ static void create_list_molcasgrid_orbitals()
 
   gtk_widget_show_now(Win);
 
-  fit_windows_position(PrincipalWindow, Win);
+  /* fit_windows_position(PrincipalWindow, Win);*/
 
   gtk_widget_show_all (Win);
 }
@@ -826,17 +826,17 @@ static gboolean read_molcasgrid_geometry(FILE* file)
 	gint j;
 
 	Ok = set_position_label(file,"Natom=",buffer, len);
-	Ncenters = 0;
+	nCenters = 0;
 	if(Ok)
 	{
 		pos = strstr(buffer,"=")+1;
-		Ncenters = atoi(pos);
-		if(Ncenters<1)Ok = FALSE;
+		nCenters = atoi(pos);
+		if(nCenters<1)Ok = FALSE;
 	}
 	if(Ok)
 	{
-		GeomOrb=g_malloc(Ncenters*sizeof(TypeGeomOrb));
-		for( i=0; i<Ncenters; i++)
+		GeomOrb=g_malloc(nCenters*sizeof(TypeGeomOrb));
+		for( i=0; i<nCenters; i++)
 		{
 			if(!fgets(buffer,len,file))
 				return FALSE;
@@ -882,7 +882,7 @@ static void read_molcasgrid_orbitals_file(gchar* filename)
 	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
 	set_status_label_info(_("File type"),_("Molcas grid formatted file"));
-	Ncenters = 0;
+	nCenters = 0;
 	
 	Ok = read_molcasgrid_geometry(file);
 	if(Ok)
@@ -908,11 +908,11 @@ static void read_molcasgrid_orbitals_file(gchar* filename)
 	}
 
 	buildBondsOrb();
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	glarea_rafresh(GLArea);
 	if(Ok) init_atomic_orbitals();
 
-	if(Ncenters>0) set_status_label_info(_("Geometry"),_("Ok"));
+	if(nCenters>0) set_status_label_info(_("Geometry"),_("Ok"));
 	/*printf("N = %d %d %d\n",N[0],N[1],N[2]);*/
 
 	if(Ok) set_status_label_info(_("Grid"),_("Ok"));
@@ -946,7 +946,7 @@ static void read_molcasgrid_density_file(gchar* filename)
 	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
 	set_status_label_info(_("File type"),_("Molcas grid formatted file"));
-	Ncenters = 0;
+	nCenters = 0;
 	/* read geometry */
 	Ok = read_molcasgrid_geometry(file);
 	if(Ok)
@@ -987,11 +987,11 @@ static void read_molcasgrid_density_file(gchar* filename)
 	}
 
 	buildBondsOrb();
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	glarea_rafresh(GLArea);
 	if(Ok) init_atomic_orbitals();
 
-	if(Ncenters>0) set_status_label_info(_("Geometry"),_("Ok"));
+	if(nCenters>0) set_status_label_info(_("Geometry"),_("Ok"));
 	/*printf("N = %d %d %d\n",N[0],N[1],N[2]);*/
 
 	if(Ok) set_status_label_info(_("Grid"),_("Ok"));

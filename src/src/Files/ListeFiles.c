@@ -1,6 +1,6 @@
 /* ListeFiles.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -318,7 +318,7 @@ static void set_properties(GtkWidget *Win,gpointer data)
 {  
 	DataTree*  newdata = NULL;
 	DataTree*  olddata = (DataTree*)(g_object_get_data(G_OBJECT(Win),"Data")); 
-	GtkWidget **entrys = (GtkWidget **)(g_object_get_data(G_OBJECT(Win),"Entrys"));
+	GtkWidget **entrys = (GtkWidget **)(g_object_get_data(G_OBJECT(Win),"Entries"));
 	GtkWidget **buttons =(GtkWidget **)(g_object_get_data(G_OBJECT(Win),"Buttons"));
 
 	GtkWidget * buttonSsh = g_object_get_data(G_OBJECT(Win),"ButtonSsh");
@@ -917,7 +917,7 @@ static void create_set_dialogue_window()
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
-	g_object_set_data(G_OBJECT(fp),"Entrys",entrys);
+	g_object_set_data(G_OBJECT(fp),"Entries",entrys);
 	g_object_set_data(G_OBJECT(fp),"Buttons",buttons);
 	g_object_set_data(G_OBJECT(fp),"Data",data);
 	g_object_set_data(G_OBJECT(fp),"ButtonSsh",ButtonSsh);

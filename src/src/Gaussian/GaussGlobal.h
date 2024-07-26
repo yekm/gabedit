@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -24,38 +24,41 @@ DEALINGS IN THE SOFTWARE.
 #define NHBOXB_MAX 5
 #define NMETHODS 3
 #define NCHECKBUTTON 9
-GtkWidget *TextTitle;
-gchar *Tfreq;
-gchar *Tscf;
-gchar *Tpolar;
-gchar* TtimeDependent;
-gchar *Types;
+#include <gtk/gtk.h>
 
-GtkWidget* FrameT;
-GtkWidget* VboxT;
-guint nHboxT;
-GtkWidget* HboxT[NHBOXT_MAX];
-GtkWidget *EntryTypes[NHBOXT_MAX];
 
-gchar *Methodes[NMETHODS];
-gchar *Basis[NMETHODS];
-GtkWidget* FrameM[NMETHODS];
-GtkWidget* VboxM[NMETHODS];
-guint nHboxM;
-GtkWidget* HboxM[NHBOXM_MAX][NMETHODS];
-GtkWidget *EntryMethods[NHBOXM_MAX][NMETHODS];
-GtkWidget* FrameB[NMETHODS];
-GtkWidget* VboxB[NMETHODS];
-guint nHboxB;
-GtkWidget* HboxB[NHBOXB_MAX][NMETHODS];
-GtkWidget *EntryBasis[NHBOXB_MAX][NMETHODS];
-GtkWidget *NoteBookMB;
-gint NM;
+extern GtkWidget *TextTitle;
+extern gchar *Tfreq;
+extern gchar *Tscf;
+extern gchar *Tpolar;
+extern gchar* TtimeDependent;
+extern gchar *Types;
 
-GtkWidget* CheckButtons[NCHECKBUTTON];
-GtkWidget *EntryCS[6];
-gboolean GeomFromCheck;
-gchar* StrLink;
+extern GtkWidget* FrameT;
+extern GtkWidget* VboxT;
+extern guint nHboxT;
+extern GtkWidget* HboxT[NHBOXT_MAX];
+extern GtkWidget *EntryTypes[NHBOXT_MAX];
+
+extern gchar *Methodes[NMETHODS];
+extern gchar *Basis[NMETHODS];
+extern GtkWidget* FrameM[NMETHODS];
+extern GtkWidget* VboxM[NMETHODS];
+extern guint nHboxM;
+extern GtkWidget* HboxM[NHBOXM_MAX][NMETHODS];
+extern GtkWidget *EntryMethods[NHBOXM_MAX][NMETHODS];
+extern GtkWidget* FrameB[NMETHODS];
+extern GtkWidget* VboxB[NMETHODS];
+extern guint nHboxB;
+extern GtkWidget* HboxB[NHBOXB_MAX][NMETHODS];
+extern GtkWidget *EntryBasis[NHBOXB_MAX][NMETHODS];
+extern GtkWidget *NoteBookMB;
+extern gint NM;
+
+extern GtkWidget* CheckButtons[NCHECKBUTTON];
+extern GtkWidget *EntryCS[6];
+extern gboolean GeomFromCheck;
+extern gchar* StrLink;
 
 #endif /* __GABEDIT_GAUSSGLOBAL_H__ */
 

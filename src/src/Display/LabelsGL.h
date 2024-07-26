@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -28,18 +28,18 @@ gboolean get_show_numbers();
 void set_show_numbers(gboolean ac);
 gboolean get_show_charges();
 void set_show_charges(gboolean ac);
-void showLabelSymbolsNumbersCharges();
+void showLabelSymbolsNumbersCharges(PangoContext *ft2_context);
 gboolean get_show_distances();
 void set_show_distances(gboolean ac);
-void showLabelDistances();
+void showLabelDistances(PangoContext *ft2_context);
 gboolean get_show_dipole();
 void set_show_dipole(gboolean ac);
-void showLabelDipole();
+void showLabelDipole(PangoContext *ft2_context);
 gboolean get_show_axes();
 void set_show_axes(gboolean ac);
-void showLabelAxes();
-void showLabelPrincipalAxes();
-void showLabelTitle(gint width,gint height);
+void showLabelAxes(PangoContext *ft2_context);
+void showLabelPrincipalAxes(PangoContext *ft2_context);
+void showLabelTitle(gint width,gint height, PangoContext *ft2_context);
 gchar* get_label_title();
 void set_label_title(gchar* str, gint x, gint y);
 void set_title_dlg();

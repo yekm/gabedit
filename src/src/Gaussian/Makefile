@@ -1,4 +1,4 @@
-OBJECTS = GInterfaceBasis.o GInterfaceGeom.o GInterfaceLink.o GInterfaceMethodeBase.o GInterfaceRoute.o Gaussian.o
+OBJECTS = GInterfaceBasis.o GInterfaceGeom.o GInterfaceLink.o GInterfaceMethodeBase.o GInterfaceRoute.o Gaussian.o GaussGlobal.o
 
 include ../../CONFIG
 CFLAGS =  $(COMMONCFLAGS) $(GTKCFLAGS)

@@ -1,6 +1,6 @@
 /* BuildRoZPhi.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -38,7 +38,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/InterfaceGeom.h"
 #include "../Geometry/MenuToolBarGeom.h"
 
-static GtkWidget* Entrys[6];
+static GtkWidget* Entries[6];
 static GtkWidget* WinTable = NULL;
 static gboolean First = TRUE;
 
@@ -72,18 +72,18 @@ static void build_rozphi_molecule(GtkWidget *w,gpointer data)
 	N0 = NcentersXYZ;
 		
 	First = FALSE;
-	Symb = gtk_entry_get_text(GTK_ENTRY(Entrys[0]));
-	t = gtk_entry_get_text(GTK_ENTRY(Entrys[1]));
+	Symb = gtk_entry_get_text(GTK_ENTRY(Entries[0]));
+	t = gtk_entry_get_text(GTK_ENTRY(Entries[1]));
 	Nc = atoi(t);
-	t = gtk_entry_get_text(GTK_ENTRY(Entrys[2]));
+	t = gtk_entry_get_text(GTK_ENTRY(Entries[2]));
 	Distance = atof(t);
 	if(Nc==1)
 		Distance = 0.0;
 
-	t = gtk_entry_get_text(GTK_ENTRY(Entrys[4]));
+	t = gtk_entry_get_text(GTK_ENTRY(Entries[4]));
 	Z = atof(t);
 
-	t = gtk_entry_get_text(GTK_ENTRY(Entrys[5]));
+	t = gtk_entry_get_text(GTK_ENTRY(Entries[5]));
 	phi = atof(t);
 
 	if(Units==0)
@@ -142,7 +142,7 @@ static void set_entry_distance(GtkWidget *w,gpointer data)
   
   SAtomsProp P = prop_atom_get((gchar*)data);
   gchar* t = g_strdup_printf("%f",0.95*(P.covalentRadii+P.covalentRadii)*BOHR_TO_ANG);
-  gtk_entry_set_text(GTK_ENTRY(Entrys[2]),t);
+  gtk_entry_set_text(GTK_ENTRY(Entries[2]),t);
   g_free(t);
   g_free(P.name);
   g_free(P.symbol);
@@ -156,10 +156,10 @@ static void set_ro_entry (GtkWidget *w,gpointer data)
 	gdouble Ro; 
 	gint Nc;
 	gdouble angle;
-	t0 = gtk_entry_get_text(GTK_ENTRY(Entrys[2]));
+	t0 = gtk_entry_get_text(GTK_ENTRY(Entries[2]));
 	Distance = atof(t0);
 
-	t0 = gtk_entry_get_text(GTK_ENTRY(Entrys[1]));
+	t0 = gtk_entry_get_text(GTK_ENTRY(Entries[1]));
 	Nc = atoi(t0);
 
 	if(Nc<1) return;
@@ -168,9 +168,9 @@ static void set_ro_entry (GtkWidget *w,gpointer data)
 	Ro = Distance/Ro; 
 	t = g_strdup_printf("%f",Ro);
 	if(Nc>1)
-		gtk_entry_set_text(GTK_ENTRY(Entrys[3]),t);
+		gtk_entry_set_text(GTK_ENTRY(Entries[3]),t);
 	else
-		gtk_entry_set_text(GTK_ENTRY(Entrys[3]),"0.0");
+		gtk_entry_set_text(GTK_ENTRY(Entries[3]),"0.0");
 
 	g_free(t);
 	
@@ -178,8 +178,8 @@ static void set_ro_entry (GtkWidget *w,gpointer data)
 /********************************************************************************/
 static void set_atom(GtkWidget *w,gpointer data)
 {
-  gtk_entry_set_text(GTK_ENTRY(Entrys[0]),(char *)data);
-  gtk_editable_set_editable((GtkEditable*) Entrys[0],FALSE);
+  gtk_entry_set_text(GTK_ENTRY(Entries[0]),(char *)data);
+  gtk_editable_set_editable((GtkEditable*) Entries[0],FALSE);
   gtk_widget_destroy(WinTable);
   set_entry_distance(NULL,data);
 }
@@ -199,7 +199,7 @@ static void select_atom(GtkWidget *w,gpointer entry0)
   WinTable = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_modal(GTK_WINDOW(WinTable),TRUE);
   gtk_window_set_title(GTK_WINDOW(WinTable),_("Select your atom"));
-  gtk_window_set_default_size (GTK_WINDOW(WinTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
+  //gtk_window_set_default_size (GTK_WINDOW(WinTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
 
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
@@ -304,28 +304,28 @@ void build_rozphi_molecule_dlg()
 		  (GtkAttachOptions)(GTK_FILL | GTK_SHRINK),
 		  1,1);
 
-	  Entrys[i] = gtk_entry_new();
-	  gtk_table_attach(GTK_TABLE(Table),Entrys[i],2,3,i,i+1,
+	  Entries[i] = gtk_entry_new();
+	  gtk_table_attach(GTK_TABLE(Table),Entries[i],2,3,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_SHRINK) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_SHRINK),
 		  1,1);
-	  gtk_entry_set_text(GTK_ENTRY(Entrys[i]),tentry[i]);
+	  gtk_entry_set_text(GTK_ENTRY(Entries[i]),tentry[i]);
 
   }
   Button = gtk_button_new_with_label(_(" Set "));
-  g_signal_connect(G_OBJECT(Button), "clicked", (GCallback)select_atom,Entrys[0]);
+  g_signal_connect(G_OBJECT(Button), "clicked", (GCallback)select_atom,Entries[0]);
   gtk_table_attach(GTK_TABLE(Table),Button,3,4,0,1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  1,1);
-  gtk_editable_set_editable((GtkEditable*) Entrys[0],FALSE);
+  gtk_editable_set_editable((GtkEditable*) Entries[0],FALSE);
 
-  gtk_editable_set_editable((GtkEditable*) Entrys[3],FALSE);
-  g_signal_connect(G_OBJECT(Entrys[1]), "changed", (GCallback)set_ro_entry,Entrys[3]);
-  g_signal_connect(G_OBJECT(Entrys[2]), "changed", (GCallback)set_ro_entry,Entrys[3]);
+  gtk_editable_set_editable((GtkEditable*) Entries[3],FALSE);
+  g_signal_connect(G_OBJECT(Entries[1]), "changed", (GCallback)set_ro_entry,Entries[3]);
+  g_signal_connect(G_OBJECT(Entries[2]), "changed", (GCallback)set_ro_entry,Entries[3]);
 
   t = g_strdup_printf("%f",0.95*(P.covalentRadii+P.covalentRadii)*BOHR_TO_ANG);
-  gtk_entry_set_text(GTK_ENTRY(Entrys[2]),t);
+  gtk_entry_set_text(GTK_ENTRY(Entries[2]),t);
   g_free(t);
 
   Button = gtk_button_new_with_label(_("  Insert  "));
@@ -350,6 +350,6 @@ void build_rozphi_molecule_dlg()
   gtk_widget_show_all(GTK_DIALOG(Dlg)->action_area);
   gtk_widget_show_now(Dlg);
 
-  fit_windows_position(GeomDlg, Dlg);
+  /* fit_windows_position(GeomDlg, Dlg);*/
 }
 

@@ -1,6 +1,6 @@
 /* UtilsOrb.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -101,7 +101,7 @@ gint GetTotalNelectrons()
 {
   gint i;
   gint N=0;
- for(i=0;i<Ncenters;i++)
+ for(i=0;i<nCenters;i++)
  {
          if(Type[GeomOrb[i].NumType].N>0)
               N +=Type[GeomOrb[i].NumType].N;
@@ -113,7 +113,7 @@ gdouble GetSumAbsCharges()
 {
 	gdouble s = 0;
 	gint i;
-	for(i=0;i<Ncenters;i++)
+	for(i=0;i<nCenters;i++)
 		s += fabs(GeomOrb[i].partialCharge);
 	return s;
 }
@@ -225,6 +225,9 @@ gint get_type_file_orb(gchar *fileName)
 	else
         if(strstr( t, "[MOLDEN FORMAT]" ))
 			ktype = GABEDIT_TYPEFILE_MOLDEN;
+	else 
+	if(mystrcasestr( t, "<Title>"))
+                        ktype = GABEDIT_TYPEFILE_WFX;
 	else
 	if(strstr( t, "[GABEDIT FORMAT]" ))
 		ktype = GABEDIT_TYPEFILE_GABEDIT;
@@ -242,6 +245,11 @@ gint get_type_file_orb(gchar *fileName)
 			if(strstr(t,"PROGRAM SYSTEM MOLPRO"))
 			{
 				ktype = GABEDIT_TYPEFILE_MOLPRO;
+				break;
+			}
+			if(mystrcasestr( t, "<Title>"))
+			{
+                        	ktype = GABEDIT_TYPEFILE_WFX;
 				break;
 			}
 			if(strstr(t,"GAMESS VERSION") || strstr(t,"PC GAMESS"))
@@ -1127,12 +1135,12 @@ void create_grid(gchar* title)
 
 	if(!GeomOrb)
 	{
-		Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load a file beforee\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!CoefAlphaOrbitals && TypeGrid != GABEDIT_TYPEGRID_MEP_CHARGES)
 	{
-		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load the MO beforee\n"),_("Error"),TRUE);
 		return;
 	}
 	if(TypeGrid == GABEDIT_TYPEGRID_MEP_CHARGES)
@@ -1341,12 +1349,12 @@ void create_grid_ELF_Dens_analyze(gboolean ongrid)
 
 	if(!GeomOrb)
 	{
-		Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load a file beforee\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!CoefAlphaOrbitals && TypeGrid != GABEDIT_TYPEGRID_MEP_CHARGES)
 	{
-		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load the MO beforee\n"),_("Error"),TRUE);
 		return;
 	}
 	if(TypeGrid == GABEDIT_TYPEGRID_MEP_CHARGES)
@@ -1485,7 +1493,7 @@ void initialise_global_orbitals_variables()
 	BondsOrb = NULL;
 	GeomOrb = NULL;
 	GLArea = NULL;
-	Ncenters =0;
+	nCenters =0;
  	ShowDipoleOrb = TRUE;
  	ShowHBondOrb = FALSE;
  	ShowHAtomOrb = TRUE;
@@ -1499,8 +1507,8 @@ void initialise_global_orbitals_variables()
 	SurfShow = GABEDIT_SURFSHOW_POSNEG;
 	TypeTexture = GABEDIT_TYPETEXTURE_NONE;
 	Title = NULL;
-	ScreenWidth = gdk_screen_width();
-	ScreenHeight = gdk_screen_height();
+	ScreenWidthD = gdk_screen_width();
+	ScreenHeightD = gdk_screen_height();
 	for(i=0;i<3;i++)
 		limits.MinMax[0][i] = -5;
 	for(i=0;i<3;i++)
@@ -1528,7 +1536,7 @@ void initialise_global_orbitals_variables()
 
 	AOAvailable = FALSE;
 	RebuildSurf = TRUE;
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	newContours = TRUE;
 	newSurface = FALSE;
 	DeleteContours = FALSE;
@@ -2037,7 +2045,7 @@ void create_grid_sas(gchar* title)
 
 	if(!GeomOrb)
 	{
-		Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load a file beforee\n"),_("Error"),TRUE);
 		return;
 	}
 	
@@ -2092,7 +2100,7 @@ static void apply_set_scale_ball_stick(GtkWidget *Win,gpointer data)
 
 	if(entryBall) sBall = atof(gtk_entry_get_text(GTK_ENTRY(entryBall)));
 	if(entryStick) sStick = atof(gtk_entry_get_text(GTK_ENTRY(entryStick)));
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	setScaleBall(sBall);
 	setScaleStick(sStick);
 	glarea_rafresh(GLArea);

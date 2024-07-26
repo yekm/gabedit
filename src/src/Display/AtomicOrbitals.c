@@ -1,6 +1,6 @@
 /* AtomicOrbitals.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -37,7 +37,7 @@ void save_ao_orbitals_gabedit_format(FILE* file)
 	gint j;
 	gint k;
 	fprintf(file,"[AO]\n");
-	for(i=0;i<Ncenters;i++)
+	for(i=0;i<nCenters;i++)
 	for(j=0;j<GeomOrb[i].NAlphaOrb;j++)
 	{
 		fprintf(file," Ene= %lf\n",GeomOrb[i].EnerAlphaOrbitals[j]);
@@ -47,7 +47,7 @@ void save_ao_orbitals_gabedit_format(FILE* file)
 		for(k=0;k<GeomOrb[i].NAOrb;k++)
 			fprintf(file,"     %d    %lf\n",k+1, GeomOrb[i].CoefAlphaOrbitals[j][k]);
 	}
-	for(i=0;i<Ncenters;i++)
+	for(i=0;i<nCenters;i++)
 	for(j=0;j<GeomOrb[i].NBetaOrb;j++)
 	{
 		fprintf(file," Ene= %lf\n",GeomOrb[i].EnerBetaOrbitals[j]);
@@ -65,7 +65,7 @@ void print_atomic_orbitals()
 	gint k;
 	gint j;
 
-	for(j=0;j<Ncenters;j++)
+	for(j=0;j<nCenters;j++)
 	{
 		Debug("Center %d \n",j);
 
@@ -192,7 +192,7 @@ void init_atomic_orbitals()
 	gint i;
 
 	AOAvailable = FALSE;
-	for(i=0;i<Ncenters;i++)
+	for(i=0;i<nCenters;i++)
 	{
 		GeomOrb[i].NAOrb = 0;
 		GeomOrb[i].NAlphaOrb = 0;
@@ -225,7 +225,7 @@ void free_atomic_orbitals()
 	gdouble**AtCoefBetaOrbitals;
 	gint i;
 
-	for(i=0;i<Ncenters;i++)
+	for(i=0;i<nCenters;i++)
 	{
 		AtNOrb = GeomOrb[i].NAOrb;
 		AtNAlphaOrb = GeomOrb[i].NAlphaOrb;
@@ -430,7 +430,7 @@ end:
 	switch(itype)
 	{
 		case 1 : 
-			for(j=0;j<Ncenters;j++)
+			for(j=0;j<nCenters;j++)
 			{
 				/* Debug("Center n %d NAOrb = %d \n",j,GeomOrb[j].NAOrb);*/
 				GeomOrb[j].NAlphaOrb = 0;
@@ -456,7 +456,7 @@ end:
 			}
 			break;
 		case 2 : 
-			for(j=0;j<Ncenters;j++)
+			for(j=0;j<nCenters;j++)
 			{
 				GeomOrb[j].NBetaOrb = 0;
 				GeomOrb[j].EnerBetaOrbitals = g_malloc(GeomOrb[j].NAOrb*sizeof(gdouble));
@@ -480,7 +480,7 @@ end:
 			}
 			break;
 		case 3 : 
-			for(j=0;j<Ncenters;j++)
+			for(j=0;j<nCenters;j++)
 			{
 				GeomOrb[j].NAlphaOrb = 0;
 				GeomOrb[j].EnerAlphaOrbitals = g_malloc(GeomOrb[j].NAOrb*sizeof(gdouble));
@@ -502,7 +502,7 @@ end:
 					GeomOrb[j].NAlphaOrb++;
 				}
 			}
-			for(j=0;j<Ncenters;j++)
+			for(j=0;j<nCenters;j++)
 			{
 				GeomOrb[j].NBetaOrb = 0;
 				GeomOrb[j].EnerBetaOrbitals = g_malloc(GeomOrb[j].NAOrb*sizeof(gdouble));
@@ -550,7 +550,7 @@ void read_gabedit_atomic_orbitals(gchar *FileName)
 	/* Debug("End of reding Alpha atomic orbitals\n");*/
 	if(!OkBeta)
 	{
-		for(j=0;j<Ncenters;j++)
+		for(j=0;j<nCenters;j++)
 		{
 			GeomOrb[j].CoefBetaOrbitals = GeomOrb[j].CoefAlphaOrbitals;
 			GeomOrb[j].EnerBetaOrbitals = GeomOrb[j].EnerAlphaOrbitals;		

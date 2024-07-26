@@ -1,6 +1,6 @@
 /* FragmentsSelector.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -108,7 +108,7 @@ static void help(GtkWidget* button, GtkWidget* FragmentsSelectorDlg)
 	g_free(temp);
 }
 /********************************************************************************/
-void create_window_fragments_selector()
+void create_window_fragments_selector(gchar* nodeNameToExpand, gchar* fragmentToSelect)
 {
 	GtkWidget *vboxframe;
 	GtkWidget *frame;
@@ -131,6 +131,11 @@ void create_window_fragments_selector()
 	}
 	else
 	{
+		treeView = g_object_get_data(G_OBJECT(FragmentsSelectorDlg), "TreeView");
+		if(fragmentToSelect) add_a_fragment(FragmentsSelectorDlg,fragmentToSelect);
+		if(nodeNameToExpand) gtk_tree_selection_unselect_all (gtk_tree_view_get_selection (GTK_TREE_VIEW (treeView)));
+		if(nodeNameToExpand) gtk_tree_view_collapse_all(GTK_TREE_VIEW (treeView));
+		if(nodeNameToExpand) expandNodeStr(treeView, nodeNameToExpand);
 		gtk_widget_show(FragmentsSelectorDlg);
 		return;
 	}
@@ -144,7 +149,7 @@ void create_window_fragments_selector()
 	gtk_widget_add_events(GeomDlg,GDK_KEY_RELEASE_MASK);
    
 
-	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
+	/*gtk_window_move(GTK_WINDOW(GeomDlg),0,0);*/
 	add_child(GeomDlg,FragmentsSelectorDlg, gtk_widget_destroy,_(" Frag. Sel. "));
 	g_signal_connect (GTK_OBJECT (FragmentsSelectorDlg), "delete_event", G_CALLBACK (gtk_widget_hide), NULL);
 
@@ -205,8 +210,9 @@ void create_window_fragments_selector()
 	
 
 	gtk_widget_show (FragmentsSelectorDlg);
-	fit_windows_position(GeomDlg,FragmentsSelectorDlg);
-	add_a_fragment(FragmentsSelectorDlg,"Amine");
+	/* fit_windows_position(GeomDlg,FragmentsSelectorDlg);*/
+	if(fragmentToSelect) add_a_fragment(FragmentsSelectorDlg,fragmentToSelect);
+	if(nodeNameToExpand) expandNodeStr(treeView, nodeNameToExpand);
 	g_signal_connect (G_OBJECT (entry), "changed", (GCallback)changed_entry_angle, NULL);
 	g_signal_connect(G_OBJECT(button), "clicked",(GCallback)help,FragmentsSelectorDlg);
 

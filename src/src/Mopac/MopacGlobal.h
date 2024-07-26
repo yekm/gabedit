@@ -2,14 +2,14 @@
 #ifndef __GABEDIT_MOPACGLOBAL_H__
 #define __GABEDIT_MOPACGLOBAL_H__
 
-GtkWidget* mopacWin;
-MopacMolecule mopacMolecule;
-MopacColorFore mopacColorFore;
-MopacColorBack mopacColorBack;
+extern GtkWidget* mopacWin;
+extern MopacMolecule mopacMolecule;
+extern MopacColorFore mopacColorFore;
+extern MopacColorBack mopacColorBack;
 
-MopacFunctional* functionals;
-MopacStdFunctional* stdFunctionals;
-gdouble* sumFunctionals;
+extern MopacFunctional* functionalsMopac;
+extern MopacStdFunctional* stdFunctionalsMopac;
+extern gdouble* sumFunctionalsMopac;
 
 #endif /* __GABEDIT_MOPACGLOBAL_H__ */
 

@@ -1,6 +1,6 @@
 /* Status.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -187,7 +187,7 @@ gint progress_orb(gdouble scal,GabEditTypeProgressOrb  type,gboolean reset)
 		t = g_strdup_printf(_(" Scale grid : %.0f%%"),new_val*100);
 		break;
 	case GABEDIT_PROGORB_SUBSGRID :
-		t = g_strdup_printf(_(" Substract grid : %.0f%%"),new_val*100);
+		t = g_strdup_printf(_(" Subtract grid : %.0f%%"),new_val*100);
 		break;
 	case GABEDIT_PROGORB_COMPISOSURFACE :
 		t = g_strdup_printf(_(" Isosurface Computing : %.0f%%"),new_val*100);

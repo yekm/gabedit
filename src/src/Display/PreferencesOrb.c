@@ -1,6 +1,6 @@
 /* PreferencesOrb.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -170,14 +170,14 @@ void set_colors_surfaces(gchar* title)
 /********************************************************************************/
 void destroy_setlight_window(GtkWidget* Win,gpointer data)
 {
-  GtkWidget**entrys =(GtkWidget**) g_object_get_data(G_OBJECT (Win), "Entrys");
+  GtkWidget**entrys =(GtkWidget**) g_object_get_data(G_OBJECT (Win), "Entries");
   delete_child(Win);
   g_free(entrys);
 }
 /********************************************************************************/
 void apply_ligth_positions(GtkWidget *Win,gpointer data)
 {
-	GtkWidget** Entrys =(GtkWidget**)g_object_get_data(G_OBJECT (Win), "Entrys");
+	GtkWidget** Entries =(GtkWidget**)g_object_get_data(G_OBJECT (Win), "Entries");
 	G_CONST_RETURN gchar* temp;
 	gint i;
 	gint j;
@@ -187,7 +187,7 @@ void apply_ligth_positions(GtkWidget *Win,gpointer data)
 	{
 		for(j=0;j<3;j++)
 		{
-        		temp	= gtk_entry_get_text(GTK_ENTRY(Entrys[j*3+i])); 
+        		temp	= gtk_entry_get_text(GTK_ENTRY(Entries[j*3+i])); 
 			v[j] = atof(temp);
 		}
 		set_light_position(i,v);
@@ -202,7 +202,7 @@ GtkWidget *create_light_positions_frame( GtkWidget *vboxall,gchar* title)
 {
 	GtkWidget *frame;
 	GtkWidget *vboxframe;
-	GtkWidget **Entrys = g_malloc(9*sizeof(GtkWidget*));
+	GtkWidget **Entries = g_malloc(9*sizeof(GtkWidget*));
 	gushort i;
 	gushort j;
 	GtkWidget *Table;
@@ -232,9 +232,9 @@ GtkWidget *create_light_positions_frame( GtkWidget *vboxall,gchar* title)
 		add_label_at_table(Table,strcolumns[i-1],0,(gushort)i,GTK_JUSTIFY_CENTER);
 		for(j=1;j<NLIGNES+1;j++)
 		{
-			Entrys[(i-1)*NCOLUMNS+j-1] = gtk_entry_new ();
-			add_widget_table(Table,Entrys[(i-1)*NCOLUMNS+j-1],(gushort)j,(gushort)i);
-			gtk_entry_set_text(GTK_ENTRY( Entrys[(i-1)*NCOLUMNS+j-1]),temp[j-1][i-1]);
+			Entries[(i-1)*NCOLUMNS+j-1] = gtk_entry_new ();
+			add_widget_table(Table,Entries[(i-1)*NCOLUMNS+j-1],(gushort)j,(gushort)i);
+			gtk_entry_set_text(GTK_ENTRY( Entries[(i-1)*NCOLUMNS+j-1]),temp[j-1][i-1]);
 		}
 	}
 
@@ -245,16 +245,16 @@ GtkWidget *create_light_positions_frame( GtkWidget *vboxall,gchar* title)
 		g_free(temp[i]);
 	}
 	gtk_widget_show_all(frame);
-	g_object_set_data(G_OBJECT (frame), "Entrys",Entrys);
+	g_object_set_data(G_OBJECT (frame), "Entries",Entries);
 
 	i = 0;
-	g_object_set_data(G_OBJECT (Entrys[i]), "Entrys",Entrys);
+	g_object_set_data(G_OBJECT (Entries[i]), "Entries",Entries);
 	i = 2;
-	g_object_set_data(G_OBJECT (Entrys[i]), "Entrys",Entrys);
+	g_object_set_data(G_OBJECT (Entries[i]), "Entries",Entries);
 	i = 3;
-	g_object_set_data(G_OBJECT (Entrys[i]), "Entrys",Entrys);
+	g_object_set_data(G_OBJECT (Entries[i]), "Entries",Entries);
 	i = 6;
-	g_object_set_data(G_OBJECT (Entrys[i]), "Entrys",Entrys);
+	g_object_set_data(G_OBJECT (Entries[i]), "Entries",Entries);
   
   	return frame;
 }
@@ -264,7 +264,7 @@ static void get_min_max_coord(gdouble* xmin, gdouble* xmax)
 	gint i,j;
 	gdouble min = 0;
 	gdouble max = 0;
-	if(!GeomOrb || Ncenters<1 )
+	if(!GeomOrb || nCenters<1 )
 	{
 		*xmin = min;
 		*xmax = max;
@@ -273,7 +273,7 @@ static void get_min_max_coord(gdouble* xmin, gdouble* xmax)
  
 	min = GeomOrb[0].C[0];
 	max = GeomOrb[0].C[0];
-	for(i=0;i<Ncenters;i++)
+	for(i=0;i<nCenters;i++)
 	{
 		for(j=0;j<3;j++)
 		{
@@ -540,7 +540,7 @@ void set_light_positions(gchar* title)
   GtkWidget *vboxall;
   GtkWidget *vboxwin;
   GtkWidget *button;
-  GtkWidget** Entrys;
+  GtkWidget** Entries;
 
   /* Principal Window */
   Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -554,9 +554,9 @@ void set_light_positions(gchar* title)
 
   vboxall = create_vbox(Win);
   vboxwin = vboxall;
-  frame = create_light_positions_frame(vboxall,_("Ligth positions"));
-  Entrys = (GtkWidget**) g_object_get_data(G_OBJECT (frame), "Entrys");
-  g_object_set_data(G_OBJECT (Win), "Entrys",Entrys);
+  frame = create_light_positions_frame(vboxall,_("Light positions"));
+  Entries = (GtkWidget**) g_object_get_data(G_OBJECT (frame), "Entries");
+  g_object_set_data(G_OBJECT (Win), "Entries",Entries);
    
 
   /* buttons box */

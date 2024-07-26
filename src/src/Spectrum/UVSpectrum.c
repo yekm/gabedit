@@ -1,6 +1,6 @@
 /* UVSpectrum.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -34,6 +34,64 @@ DEALINGS IN THE SOFTWARE.
 #include "../Display/Vibration.h"
 #include "SpectrumWin.h"
 
+/************************************************************************/
+static void add_oncurve_to_new_win(GtkWidget *newxyplot, XYPlotData* data, gdouble* pxmax, gdouble* pymax)
+{
+	gdouble *X = NULL;
+	gdouble *Y = NULL;
+	gint loop;
+	gint i;
+	X = g_malloc(data->size*sizeof(gdouble));
+	Y = g_malloc(data->size*sizeof(gdouble));
+	for (loop=0; loop<data->size; loop++) if(fabs(data->y[loop]) > *pymax ) *pymax = fabs(data->y[loop]);
+	i=0;
+	for (loop=0; loop<data->size; loop++)
+	{
+		if(fabs(data->x[loop])>1e-10)
+		{
+			X[i]= 1239.8424121/data->x[loop];
+			Y[i]= data->y[loop];
+			if(X[i]>*pxmax && fabs(Y[i])>*pymax*1e-2) *pxmax = X[i];
+			i++;
+		}
+	}
+       	gabedit_xyplot_add_data_conv(GABEDIT_XYPLOT(newxyplot),i, X,  Y, 1.0, GABEDIT_XYPLOT_CONV_NONE,NULL);
+	if(X) g_free(X);
+	if(Y) g_free(Y);
+}
+/************************************************************************/
+static void create_uv_nm_spectrum(GtkWidget *oldWin,gpointer d)
+{
+	GtkWidget *newWin;
+        GtkWidget* oldxyplot = g_object_get_data(G_OBJECT (oldWin), "XYPLOT");
+        GtkWidget* newxyplot = NULL;
+        GList* data_list = GABEDIT_XYPLOT(oldxyplot)->data_list;
+	gdouble xmax = 0;
+	gdouble ymax = -100;
+
+        GList* current = NULL;
+        XYPlotWinData* dataW = NULL;
+        XYPlotData* data = NULL;
+        if(!data_list) return;
+        current=g_list_first(data_list);
+
+	newWin = gabedit_xyplot_new_window("UV",NULL);
+        newxyplot = g_object_get_data(G_OBJECT (newWin), "XYPLOT");
+        for(; current != NULL; current = current->next)
+        {
+               	data = (XYPlotData*)current->data;
+		if(!data) continue;
+		if(data->size<1) continue;
+		add_oncurve_to_new_win(newxyplot, data, &xmax, &ymax);
+	}
+	gabedit_xyplot_set_autorange(GABEDIT_XYPLOT(newxyplot), NULL);
+        gabedit_xyplot_set_range_xmin (GABEDIT_XYPLOT(newxyplot), 0.0);
+        gabedit_xyplot_set_range_xmax (GABEDIT_XYPLOT(newxyplot), xmax);
+	gabedit_xyplot_set_x_label (GABEDIT_XYPLOT(newxyplot), "Wavelength(nm)");
+	gabedit_xyplot_set_y_label (GABEDIT_XYPLOT(newxyplot), "Intensity");
+	/* fprintf(stderr,"xmax=%f\n",xmax);*/
+
+}
 /********************************************************************************/
 static void check_nm_ev_toggled(GtkToggleButton *togglebutton, gpointer user_data)
 {
@@ -88,6 +146,11 @@ static void check_nm_ev_toggled(GtkToggleButton *togglebutton, gpointer user_dat
 	{
 		spectrum_win_set_xlabel(window, "eV");
 	}
+	{
+		GtkWidget* nmButton = g_object_get_data(G_OBJECT (togglebutton), "nmButton");
+		if(nm) gtk_widget_set_sensitive(nmButton,FALSE);
+		else gtk_widget_set_sensitive(nmButton,TRUE);
+	}
 	gtk_widget_queue_draw(GTK_WIDGET(xyplot));
 
 }
@@ -96,9 +159,11 @@ static void createUVSpectrumWin(gint numberOfStates, gdouble* energies, gdouble*
 {
 	GtkWidget* window = spectrum_win_new_with_xy(_("UV/Visible spectrum"),  numberOfStates, energies, intensities);
 	GtkWidget* hbox = g_object_get_data(G_OBJECT (window), "HBoxData");
+	GtkWidget* hbox2 = g_object_get_data(G_OBJECT (window), "HBoxData2");
 	GtkWidget* xyplot = g_object_get_data(G_OBJECT (window), "XYPLOT");
 	GtkWidget* check_nm_ev = NULL;
 	GtkWidget* tmp_hbox = NULL;
+	GtkWidget* button = NULL;
 
 	spectrum_win_set_half_width(window, 0.05);
 	spectrum_win_set_xmin(window, 0.0);
@@ -117,6 +182,16 @@ static void createUVSpectrumWin(gint numberOfStates, gdouble* energies, gdouble*
 	g_signal_connect(G_OBJECT(check_nm_ev), "toggled", G_CALLBACK(check_nm_ev_toggled), xyplot);
 	spectrum_win_set_xlabel(window, "eV");
 	spectrum_win_set_ylabel(window, _("Intensity"));
+
+	button = create_button(window,_("nm"));
+        gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
+        GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+        gtk_widget_grab_default(button);
+        gtk_widget_show (button);
+        g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)create_uv_nm_spectrum,GTK_OBJECT(window));
+
+	g_object_set_data(G_OBJECT (check_nm_ev), "nmButton",button);
+	g_object_set_data(G_OBJECT (button), "Window",window);
 
 }
 /********************************************************************************/

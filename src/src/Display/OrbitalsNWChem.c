@@ -1,6 +1,6 @@
 /* OrbitalsNWChem.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -93,7 +93,7 @@ static gboolean sphericalBasis = FALSE;
 static gulong read_geomorb_nwchem_file_geom(gchar *FileName)
 {
 	gulong lineg = gl_read_nwchem_file_geomi(FileName,-1);
- 	if(Ncenters != 0 )
+ 	if(nCenters != 0 )
 	{
   		DefineType();
   		/* PrintGeomOrb();*/
@@ -110,7 +110,7 @@ static void DefineNWChemCartBasis()
  gint m;
 
  NAOrb = 0;
- for(i=0;i<Ncenters;i++)
+ for(i=0;i<nCenters;i++)
  {
 	 for(j=0;j<Type[GeomOrb[i].NumType].Norb;j++)
 	 {
@@ -124,7 +124,7 @@ static void DefineNWChemCartBasis()
  SAOrb = NULL;
  
  k=-1;
- for(i=0;i<Ncenters;i++)
+ for(i=0;i<nCenters;i++)
 	 for(j=0;j<Type[GeomOrb[i].NumType].Norb;j++)
  {
 	L = Type[GeomOrb[i].NumType].Ao[j].L;
@@ -239,7 +239,7 @@ static void DefineNWChemSphericalBasis()
 
 
  NOrb = 0;
- for(i=0;i<Ncenters;i++)
+ for(i=0;i<nCenters;i++)
  {
 	 for(j=0;j<Type[GeomOrb[i].NumType].Norb;j++)
 	 {
@@ -251,7 +251,7 @@ static void DefineNWChemSphericalBasis()
  temp  = g_malloc(NOrb*sizeof(CGTF));
 
  k=-1;
- for(i=0;i<Ncenters;i++)
+ for(i=0;i<nCenters;i++)
 	 for(j=0;j<Type[GeomOrb[i].NumType].Norb;j++)
 	{
 	 	L =Type[GeomOrb[i].NumType].Ao[j].L;
@@ -404,7 +404,7 @@ static gchar** read_basis_from_a_nwchem_output_file(gchar *FileName, gint* nrs, 
 static gint get_num_type_from_symbol(gchar* symbol)
 {
 	gint k;
-	for(k=0;k<Ncenters;k++)
+	for(k=0;k<nCenters;k++)
 	{
 		if(strcmp(symbol,GeomOrb[k].Symb)==0)
 			return (gint)GeomOrb[k].NumType;
@@ -478,7 +478,7 @@ static gboolean DefineNWChemBasisType(gchar** strbasis, gint nrows)
 	for(i=0;i<10;i++) temp[i] = g_malloc(BSIZE*sizeof(gchar));
 
 	/*
-	for(k=0;k<Ncenters;k++)
+	for(k=0;k<nCenters;k++)
 	{
 		printf("%s %d\n",GeomOrb[k].Symb,GeomOrb[k].NumType);
 	}
@@ -490,7 +490,7 @@ static gboolean DefineNWChemBasisType(gchar** strbasis, gint nrows)
 		Type[i].Ao = NULL;
         	Type[i].Norb=0;
 	}
-	for(k=0;k<Ncenters;k++)
+	for(k=0;k<nCenters;k++)
 	{
 		sprintf(sym,"%s",GeomOrb[k].Symb);
 		i = GeomOrb[k].NumType;
@@ -1016,7 +1016,7 @@ void read_nwchem_orbitals(gchar* FileName)
 		if(GeomOrb)
 		{
 			init_atomic_orbitals();
-			for(i=0;i<Ncenters;i++) GeomOrb[i].Prop = prop_atom_get("H");
+			for(i=0;i<nCenters;i++) GeomOrb[i].Prop = prop_atom_get("H");
 			free_geometry();
 		}
 		set_status_label_info(_("File name"),_("Nothing"));
@@ -1067,7 +1067,7 @@ void read_nwchem_orbitals(gchar* FileName)
 	*/
   	DefineType();
 	buildBondsOrb();
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));

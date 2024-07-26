@@ -3,17 +3,17 @@
 
 [Setup]
 AppName=Gabedit
-AppVerName=Gabedit 2.5.0
+AppVerName=Gabedit251
 AppPublisher=Abdul-Rahman Allouche
 AppPublisherURL=http://gabedit.sf.net
 AppSupportURL=http://gabedit.sf.net
 AppUpdatesURL=http://gabedit.sf.net
-DefaultDirName=C:\Gabedit250
+DefaultDirName=C:\Gabedit251
 DefaultGroupName=Gabedit
-LicenseFile=C:\Users\allou\tmp\Gabedit250\License
-SetupIconFile=C:\Users\allou\tmp\Gabedit250\Gabedit48.ico
-OutputDir=C:\Users\allou\tmp
-OutputBaseFilename=setupGabedit250
+LicenseFile=C:\Users\allou\Documents\Gabedit251\License
+SetupIconFile=C:\Users\allou\Documents\Gabedit251\Gabedit48.ico
+OutputDir=C:\Users\allou\Documents
+OutputBaseFilename=setupGabedit251
 Compression=lzma
 SolidCompression=yes
 PrivilegesRequired=none
@@ -22,8 +22,8 @@ PrivilegesRequired=none
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\allou\tmp\Gabedit250\gabedit.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\allou\tmp\Gabedit250\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\allou\Documents\Gabedit251\gabedit.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\allou\Documents\Gabedit251\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

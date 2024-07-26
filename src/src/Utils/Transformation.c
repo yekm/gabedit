@@ -1,6 +1,6 @@
 /*Transformation.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -407,5 +407,31 @@ gdouble** Inverse3(gdouble **mat)
       	invmat[2][2] = (t4-t8)*t17;
 
 	return invmat;
+}
+/**************************************************/
+gboolean InverseMat3D(gdouble invmat[3][3], gdouble mat[3][3])
+{
+	gdouble t4,t6,t8,t10,t12,t14,t17;
+
+	t4 = mat[0][0]*mat[1][1];     
+ 	t6 = mat[0][0]*mat[1][2];
+      	t8 = mat[0][1]*mat[1][0];
+      	t10 = mat[0][2]*mat[1][0];
+      	t12 = mat[0][1]*mat[2][0];
+      	t14 = mat[0][2]*mat[2][0];
+      	t17 = (t4*mat[2][2]-t6*mat[2][1]-t8*mat[2][2]+t10*mat[2][1]+t12*mat[1][2]-t14*mat[1][1]);
+	if(fabs(t17)<1e-12) return FALSE;
+	
+      	t17 = 1/t17;
+      	invmat[0][0] = (mat[1][1]*mat[2][2]-mat[1][2]*mat[2][1])*t17;
+      	invmat[0][1] = -(mat[0][1]*mat[2][2]-mat[0][2]*mat[2][1])*t17;
+      	invmat[0][2] = -(-mat[0][1]*mat[1][2]+mat[0][2]*mat[1][1])*t17;
+      	invmat[1][0] = -(mat[1][0]*mat[2][2]-mat[1][2]*mat[2][0])*t17;
+      	invmat[1][1] = (mat[0][0]*mat[2][2]-t14)*t17;
+      	invmat[1][2] = -(t6-t10)*t17;
+      	invmat[2][0] = -(-mat[1][0]*mat[2][1]+mat[1][1]*mat[2][0])*t17;
+      	invmat[2][1] = -(mat[0][0]*mat[2][1]-t12)*t17;
+      	invmat[2][2] = (t4-t8)*t17;
+	return TRUE;
 }
 /**************************************************/

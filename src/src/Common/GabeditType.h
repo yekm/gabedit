@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -86,6 +86,8 @@ typedef enum
 {
   GABEDIT_TYPEFILE_GAUSSIAN,
   GABEDIT_TYPEFILE_GAUSSIAN_ANHARMONIC,
+  GABEDIT_TYPEFILE_GAUSSIAN_SCANOPT,
+  GABEDIT_TYPEFILE_GAUSSIAN_IRCOPT,
   GABEDIT_TYPEFILE_MOLCAS,
   GABEDIT_TYPEFILE_MOLPRO,
   GABEDIT_TYPEFILE_DALTON,
@@ -132,6 +134,7 @@ typedef enum
   GABEDIT_TYPEFILE_ORCA,
   GABEDIT_TYPEFILE_VASPOUTCAR,
   GABEDIT_TYPEFILE_VASPPOSCAR,
+  GABEDIT_TYPEFILE_CIF,
   GABEDIT_TYPEFILE_VASPXML,
   GABEDIT_TYPEFILE_FIREFLY,
   GABEDIT_TYPEFILE_QCHEM,
@@ -155,6 +158,7 @@ typedef enum
   GABEDIT_TYPEFILE_NBO,
   GABEDIT_TYPEFILE_XML,
   GABEDIT_TYPEFILE_IGVPT2,
+  GABEDIT_TYPEFILE_WFX,
   GABEDIT_TYPEFILE_UNKNOWN,
 } GabEditTypeFile;
 
@@ -213,6 +217,8 @@ typedef enum
   GABEDIT_TYPEFILEGEOM_VASPXMLFIRST,
   GABEDIT_TYPEFILEGEOM_VASPXMLLAST,
 
+  GABEDIT_TYPEFILEGEOM_CIF,
+
   GABEDIT_TYPEFILEGEOM_QCHEMIN,
   GABEDIT_TYPEFILEGEOM_QCHEMOUTFIRST,
   GABEDIT_TYPEFILEGEOM_QCHEMOUTLAST,
@@ -244,6 +250,8 @@ typedef enum
 
   GABEDIT_TYPEFILEGEOM_GAUSSIAN_ZMATRIX,
   GABEDIT_TYPEFILEGEOM_MOPAC_ZMATRIX,
+
+  GABEDIT_TYPEFILEGEOM_WFX,
 
   GABEDIT_TYPEFILEGEOM_UNKNOWN
 } GabEditTypeFileGeom;

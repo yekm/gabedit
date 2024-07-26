@@ -1,6 +1,6 @@
 /* IRSpectrum.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -34,6 +34,64 @@ DEALINGS IN THE SOFTWARE.
 #include "../Spectrum/SpectrumWin.h"
 #include "../Spectrum/IGVPT2Spectrum.h"
 
+/************************************************************************/
+static void add_oncurve_to_new_win(GtkWidget *newxyplot, XYPlotData* data, gdouble* pxmax, gdouble* pymax)
+{
+	gdouble *X = NULL;
+	gdouble *Y = NULL;
+	gint loop;
+	gint i;
+	X = g_malloc(data->size*sizeof(gdouble));
+	Y = g_malloc(data->size*sizeof(gdouble));
+	for (loop=0; loop<data->size; loop++) if(fabs(data->y[loop]) > *pymax ) *pymax = fabs(data->y[loop]);
+	i=0;
+	for (loop=0; loop<data->size; loop++)
+	{
+		if(fabs(data->x[loop])>1e-10)
+		{
+			X[i]= 10000.0/data->x[loop];
+			Y[i]= data->y[loop];
+			if(X[i]>*pxmax && fabs(Y[i])>*pymax*1e-2) *pxmax = X[i];
+			i++;
+		}
+	}
+       	gabedit_xyplot_add_data_conv(GABEDIT_XYPLOT(newxyplot),i, X,  Y, 1.0, GABEDIT_XYPLOT_CONV_NONE,NULL);
+	if(X) g_free(X);
+	if(Y) g_free(Y);
+}
+/************************************************************************/
+static void create_microm_spectrum(GtkWidget *oldWin,gpointer d)
+{
+	GtkWidget *newWin;
+        GtkWidget* oldxyplot = g_object_get_data(G_OBJECT (oldWin), "XYPLOT");
+        GtkWidget* newxyplot = NULL;
+        GList* data_list = GABEDIT_XYPLOT(oldxyplot)->data_list;
+	gdouble xmax = 0;
+	gdouble ymax = -100;
+
+        GList* current = NULL;
+        XYPlotWinData* dataW = NULL;
+        XYPlotData* data = NULL;
+        if(!data_list) return;
+        current=g_list_first(data_list);
+
+	newWin = gabedit_xyplot_new_window("IR",NULL);
+        newxyplot = g_object_get_data(G_OBJECT (newWin), "XYPLOT");
+        for(; current != NULL; current = current->next)
+        {
+               	data = (XYPlotData*)current->data;
+		if(!data) continue;
+		if(data->size<1) continue;
+		add_oncurve_to_new_win(newxyplot, data, &xmax, &ymax);
+	}
+	gabedit_xyplot_set_autorange(GABEDIT_XYPLOT(newxyplot), NULL);
+        gabedit_xyplot_set_range_xmin (GABEDIT_XYPLOT(newxyplot), 0.0);
+        gabedit_xyplot_set_range_xmax (GABEDIT_XYPLOT(newxyplot), xmax);
+	gabedit_xyplot_set_x_label (GABEDIT_XYPLOT(newxyplot), "&#181;m");
+	gabedit_xyplot_set_y_label (GABEDIT_XYPLOT(newxyplot), "Intensity");
+	/* fprintf(stderr,"xmax=%f\n",xmax);*/
+
+}
 /********************************************************************************/
 static void check_microm_cmm1_toggled(GtkToggleButton *togglebutton, gpointer user_data)
 {
@@ -86,6 +144,11 @@ static void check_microm_cmm1_toggled(GtkToggleButton *togglebutton, gpointer us
 	}
 	else
 		spectrum_win_set_xlabel(window, "cm<sup>-1</sup>");
+	{
+		GtkWidget* micromButton = g_object_get_data(G_OBJECT (togglebutton), "micromButton");
+		if(microm) gtk_widget_set_sensitive(micromButton,FALSE);
+		else gtk_widget_set_sensitive(micromButton,TRUE);
+	}
 	gtk_widget_queue_draw(GTK_WIDGET(xyplot));
 
 }
@@ -127,6 +190,7 @@ GtkWidget* createIRSpectrumWin(gint numberOfFrequencies, gdouble* frequencies, g
 	GtkWidget* check_microm_cmm1 = NULL;
 	GtkWidget* tmp_hbox = NULL;
 	GtkWidget* buttonReflect = NULL;
+	GtkWidget* button = NULL;
 
 	spectrum_win_relect_x(window, TRUE);
 	spectrum_win_relect_y(window, TRUE);
@@ -148,14 +212,20 @@ GtkWidget* createIRSpectrumWin(gint numberOfFrequencies, gdouble* frequencies, g
 	g_signal_connect(G_OBJECT(check_microm_cmm1), "toggled", G_CALLBACK(check_microm_cmm1_toggled), xyplot);
 	spectrum_win_set_xlabel(window, "cm<sup>-1</sup>");
 
-	tmp_hbox=gtk_hbox_new(FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(hbox2), tmp_hbox, FALSE, FALSE, 30);
-	gtk_widget_show(tmp_hbox);
-
 	buttonReflect = create_button(window,_(" Reflect "));
-	gtk_box_pack_start(GTK_BOX(tmp_hbox), buttonReflect, FALSE, FALSE, 4);
+	gtk_box_pack_start(GTK_BOX(hbox2), buttonReflect, FALSE, FALSE, 4);
         g_signal_connect(G_OBJECT(buttonReflect), "clicked", G_CALLBACK(reflectXY), xyplot);
 	gtk_widget_show(buttonReflect);
+
+	button = create_button(window,_("microm"));
+        gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
+        GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+        gtk_widget_grab_default(button);
+        gtk_widget_show (button);
+        g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)create_microm_spectrum,GTK_OBJECT(window));
+
+	g_object_set_data(G_OBJECT (check_microm_cmm1), "micromButton",button);
+	g_object_set_data(G_OBJECT (button), "Window",window);
 
 
 	return window;
@@ -1531,7 +1601,7 @@ static void read_sample_2columns_file_dlg()
 /********************************************************************************/
 static gboolean read_igvpt2_file(GabeditFileChooser *SelecFile, gint response_id)
 {
- 	gchar t[BSIZE];
+	static int sizeMax = BSIZE*20;
  	gboolean OK = TRUE;
 	gint numberOfFrequencies = 0;
 	gdouble* frequencies = NULL;
@@ -1546,29 +1616,50 @@ static gboolean read_igvpt2_file(GabeditFileChooser *SelecFile, gint response_id
 
 	if(response_id != GTK_RESPONSE_OK) return FALSE;
  	fileName = gabedit_file_chooser_get_current_file(SelecFile);
+	result= readFile(fileName);
+        if(result)
+        {
+               	GtkWidget* message = AnharmonicResultTxt(result,"iGVPT2 result");
+               	//gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidth*0.8),-1);
+               	gtk_widget_set_size_request(message,(gint)(ScreenWidth*0.45),-1);
+               	/* gtk_window_set_modal (GTK_WINDOW (message), TRUE);*/
+               	/* gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));*/
+		//g_free(result);
+        }
+	/*
  	file = fopen(fileName, "r");
 	if(file)
 	{
-		gchar* t = g_malloc(BSIZE*sizeof(gchar));
+		gchar* t = g_malloc((sizeMax+1)*sizeof(gchar));
 		result = g_strdup_printf("%s","");
+		int line=0;
 		while(!feof(file))
         	{
-                	if(!fgets(t,BSIZE,file))break;
+			t[sizeMax-1]='\0';
+			line++;
+                	if(!fgets(t,sizeMax,file))break;
+			int i;
+			for(i=0;i<sizeMax;i++) if(t[i]=='\0') break;
+			if(i>=sizeMax-1) fprintf(stderr,"MaxLength!!! \n");
+			//fprintf(stderr,"Line=%d\r",line);
 			old = result;
 			result = g_strdup_printf("%s%s",old,t);
                         if(old) g_free(old);
         	}
+		fprintf(stderr,"End of read\n");
+		fprintf(stderr,"resultesize = %d\n", strlen(result));
         	if(result)
         	{
                 	GtkWidget* message = AnharmonicResultTxt(result,"iGVPT2 result");
-                	gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidth*0.8),-1);
+                	//gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidth*0.8),-1);
                 	gtk_widget_set_size_request(message,(gint)(ScreenWidth*0.45),-1);
-                	/* gtk_window_set_modal (GTK_WINDOW (message), TRUE);*/
-                	/* gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));*/
+                	// gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+                	// gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));
         	}
 		fclose(file);
 		g_free(t);
 	}
+	*/
 
 
 	return OK;
@@ -1613,7 +1704,7 @@ void createIRSpectrumFromVibration(GtkWidget *parentWindow, Vibration ibration)
 	gint j;
 	if(numberOfFrequencies<1)
 	{
-		GtkWidget* mess=Message(_("For draw spectrum,Sorry, Please read a file before"),_("Error"),TRUE);
+		GtkWidget* mess=Message(_("For draw spectrum,Sorry, Please read a file beforee"),_("Error"),TRUE);
     		gtk_window_set_modal (GTK_WINDOW (mess), TRUE);
 		return;
 	}

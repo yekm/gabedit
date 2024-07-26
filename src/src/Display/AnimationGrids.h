@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permision is hereby granted, free of charge, to any person obtaining a copy of this software and asociated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -44,9 +44,10 @@ typedef struct _AnimationGrids
 	Grid** grids;
 	gchar** fileNames;
 }AnimationGrids;
-AnimationGrids animationGrids;
 void initAnimationGrids();
 void animationGridsDlg();
+
+extern AnimationGrids animationGrids;
 
 #endif /* __GABEDIT_ANIMATIONGRIDS_H__ */
 

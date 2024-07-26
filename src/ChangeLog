@@ -1,3 +1,76 @@
+27 July 2021
+	normalisation of RDF : bug fixed
+
+27 May 2021
+	read Energy from the comment line of xyz file if multiple geometries
+
+26 August 2020
+	Compute Cremer-Pople parameters for pyranose saccharide
+
+29 July 2020
+	Compute the type of conformer for a saccharide : pyranose (1C4, 4C1, ....) & furanose (3E, 2T2, ....)
+	Gabedit can Compute the type of conformer for one molecule or for several ones (Animation/MD or Animation/Geom. Conv of Display window)
+
+12 May October 2020
+	remove gdk_gl_font_use_pango_font.
+	new style of labels on GL windows
+
+31 October 2019
+	Rotate fragment without rotation of all structure
+
+13 June 2019
+	Change Error in Warning if the electronic density is negative during  NCI analysis
+
+12 June 2019
+	Remove call fit_windows_position
+
+22 January 2019
+	minor bug fixed : set origin to center of molecule
+
+17 January 2019
+	Gabedit can now read orbitals& geometry from WFX file.
+	It can also export orbitals in a WFX file.
+
+5 December 2018
+	Mopac gradients output file format changed in 2018. Gabedit supports now this new format.
+
+31 October 2018
+	Export structure in CIF file (with or without symmetry operators).
+	Reduction to primitive Cell.
+	Reduction to Niggli or Delaunay Cell.
+	Computing of space group & symmetry operators.
+	Standardize cell (to conventional or primitive).
+	Generate k-points along high symmetry lines, for band structure calculations.
+	Get a prototype crystal from a database implemented in Gabedit.
+
+13 October 2018
+	read CIF file
+	Build slab : Crystallography/Build slab
+
+1 October 2018
+	read Direct poscar file : if u_<0 or u_i>1 for an atom=> shift to set it on the cell
+
+27 September 2018
+	Build superCell : Crystallography/Build superCell
+	Create clusters using Wulff construction : Crystallography/Build cluster using Wulff construction
+
+21 September 2018
+	UV spectrum can be converted in UV nm
+
+19 September 2018
+	Localization of Normal Modes.  References : 
+	Christoph R. Jacob & Markus Riher , J. Chem Phys. 130 (2009) 084106
+	Xiaolu Cheng, Justin J. Talbot, and Ryan P. Steele, J. Chem. Phys. 145 (2016) 124112;
+
+11 July 2018
+	Constraint bug(with recent versions of orca) in Orca input file fixed
+
+21 June 2018
+	Global and local reactivity indices (By Finite difference or Frontier Molecular Orbitals) : Display window/Reactvity Indices
+
+14 June 2018
+	New tool to compute the thermochemistry : Display window/Animation/Vibration
+	
 03 April 2017
 	Bug fixed for set center to origin
 	

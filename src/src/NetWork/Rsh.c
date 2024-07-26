@@ -1,6 +1,6 @@
 /* Rsh.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -368,7 +368,7 @@ void rsh_command (const char* cmd, const char* userName)
 
 /********************************************************
 * clientThread : this is the FileErr client thread;		*
-* it is started before sending the command string		*
+* it is started beforee sending the command string		*
 * to the server; its purpose is to accept connections	*
 * from the server and receive the FileErr output		*
 *********************************************************/

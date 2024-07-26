@@ -1,6 +1,6 @@
 /* Grid.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -36,6 +36,13 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/GTF.h"
 #include "../Utils/QL.h"
 
+/* the extern variable of Grid.h */
+GridLimits limits;
+gint NumPoints[3];
+gdouble firstDirection[3];
+gdouble secondDirection[3];
+gdouble thirdDirection[3];
+gdouble originOfCube[3];
 /************************************************************************/
 static gdouble get_value_elf_becke(gdouble x,gdouble y,gdouble z,gint dump);
 static gdouble get_value_elf_savin(gdouble x,gdouble y,gdouble z,gint dump);
@@ -182,7 +189,7 @@ gdouble get_value_electronic_density_atomic(gdouble x,gdouble y,gdouble z,gint d
 {
 	gdouble v = 0.0;
 	gint i;
-	for(i=0;i<Ncenters;i++)
+	for(i=0;i<nCenters;i++)
 		v += get_value_electronic_density_on_atom(x,y,z,i);
 		
 	return v;
@@ -834,6 +841,107 @@ Grid* define_grid_orb(gint N[],GridLimits limits, gint typeOrb, gint i)
 	if(grid) set_status_label_info(_("Grid"),_("Ok"));
 	else set_status_label_info(_("Grid"),_("Nothing"));
 	return grid;
+}
+/**************************************************************/
+gboolean compute_coulomb_integrale(Grid *grid)
+{
+	Grid *gridi = grid;
+	Grid *gridj = grid;
+	gint ki,li,mi;
+	gint kj,lj,mj;
+	gdouble scale;
+	gdouble norm = 0;
+	gdouble r12 = 0;
+	gdouble xx,yy,zz;
+	gdouble integ = 0;
+	gdouble dv = 0;
+	gdouble PRECISION = 1e-10;
+
+	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+	set_status_label_info(_("Grid"),_("Comp. <phi|phi>"));
+	scale = (gdouble)1.01/gridi->N[0];
+#ifdef ENABLE_OMP
+#ifdef G_OS_WIN32
+	setTextInProgress(_("Computing of  <phi|phi>, please wait..."));
+#endif
+#pragma omp parallel for private(ki,li,mi) reduction(+:norm)
+#endif
+	for(ki=0;ki<gridi->N[0];ki++)
+	{
+		if(!CancelCalcul) 
+		for(li=0;li<gridi->N[1];li++)
+			for(mi=0;mi<gridi->N[2];mi++)
+				norm += gridi->point[ki][li][mi].C[3];
+#ifdef ENABLE_OMP
+#ifndef G_OS_WIN32
+#pragma omp critical
+		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
+#endif
+#else
+		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
+#endif
+	}
+	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+	if(CancelCalcul) 
+	{
+		return FALSE;
+	}
+	set_status_label_info(_("Grid"),_("Computing of Coulomb int."));
+	scale = (gdouble)1.01/gridi->N[0];
+	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+#ifdef ENABLE_OMP
+#ifdef G_OS_WIN32
+	setTextInProgress(_("Computing of Coulomb integral, please wait..."));
+#endif
+#pragma omp parallel for private(xx,yy,zz,r12,ki,li,mi,kj,lj,mj) reduction(+:integ)
+#endif
+	for(ki=0;ki<gridi->N[0];ki++)
+	{
+		if(!CancelCalcul) 
+		for(li=0;li<gridi->N[1];li++)
+		for(mi=0;mi<gridi->N[2];mi++)
+			for(kj=0;kj<gridj->N[0];kj++)
+			for(lj=0;lj<gridj->N[1];lj++)
+			for(mj=0;mj<gridj->N[2];mj++)
+			{
+		    		xx = gridi->point[ki][li][mi].C[0]-gridj->point[kj][lj][mj].C[0];
+		    		yy = gridi->point[ki][li][mi].C[1]-gridj->point[kj][lj][mj].C[1];
+		    		zz = gridi->point[ki][li][mi].C[2]-gridj->point[kj][lj][mj].C[2];
+		    		r12 = xx*xx+yy*yy+zz*zz;
+		    		if(r12>PRECISION) 
+					integ += gridi->point[ki][li][mi].C[3]*gridj->point[kj][lj][mj].C[3]/sqrt(r12);
+			}
+#ifdef ENABLE_OMP
+#ifndef G_OS_WIN32
+#pragma omp critical
+		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
+#endif
+#else
+		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
+#endif
+	}
+	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+	xx = gridi->point[1][0][0].C[0]-gridi->point[0][0][0].C[0];
+	yy = gridi->point[0][1][0].C[1]-gridi->point[0][0][0].C[1];
+	zz = gridi->point[0][0][1].C[2]-gridi->point[0][0][0].C[2];
+	dv = fabs(xx*yy*zz);
+	if(CancelCalcul) return FALSE;
+
+	integ *=dv*dv;
+	norm *= dv;
+	
+	if(!CancelCalcul)
+	{
+		gchar* result = g_strdup_printf( "<phi|1/r12|phi> = %0.12lf Hartree\n"
+				       "<phi|phi> = %0.12lf Hartree\n",
+                                                integ, norm
+                                                );
+		GtkWidget* message = MessageTxt(result,_("Result"));
+  		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+		gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));
+		if(result) g_free(result);
+	}
+	return TRUE;
 }
 /**************************************************************/
 gboolean compute_coulomb_integrale_iijj(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
@@ -2057,7 +2165,7 @@ static gdouble get_value_sas(gdouble x,gdouble y,gdouble z,gint dump)
 	gdouble t = 0;
 	gint i;
 	gdouble PRECISION = 1e-10;
-	for(i=0;i<Ncenters;i++)
+	for(i=0;i<nCenters;i++)
 	{
 		xi = x-GeomOrb[i].C[0];
 		yi = y-GeomOrb[i].C[1];
@@ -2256,7 +2364,7 @@ Grid* compute_mep_grid_using_partial_charges_cube_grid(Grid* grid)
 				y *= invR;
 				z *= invR;
 				v = 0;
-				for(n=0;n<Ncenters;n++)
+				for(n=0;n<nCenters;n++)
 				{
 					x = esp->point[i][j][k].C[0]-GeomOrb[n].C[0];
 					y = esp->point[i][j][k].C[1]-GeomOrb[n].C[1];
@@ -2334,7 +2442,7 @@ Grid* compute_mep_grid_using_partial_charges(gint N[], GridLimits limits)
 				y *= invR;
 				z *= invR;
 				v = 0;
-				for(n=0;n<Ncenters;n++)
+				for(n=0;n<nCenters;n++)
 				{
 					x = esp->point[i][j][k].C[0]-GeomOrb[n].C[0];
 					y = esp->point[i][j][k].C[1]-GeomOrb[n].C[1];
@@ -2505,7 +2613,7 @@ Grid* compute_mep_grid_using_multipol_from_density_grid(Grid* grid, gint lmax)
 						v += temp*getValueZlm(&slm[l][m+l],x,y,z)*Q[l][m+l];
 					}
 				}
-				for(n=0;n<Ncenters;n++)
+				for(n=0;n<nCenters;n++)
 				{
 					x = grid->point[i][j][k].C[0]-GeomOrb[n].C[0];
 					y = grid->point[i][j][k].C[1]-GeomOrb[n].C[1];
@@ -2659,7 +2767,7 @@ Grid* solve_poisson_equation_from_density_grid(Grid* grid, PoissonSolverMethod p
 				gdouble v = 0;
 				gint n;
 				gdouble x,y,z,r,invR;
-				for(n=0;n<Ncenters;n++)
+				for(n=0;n<nCenters;n++)
 				{
 					x = esp->point[i][j][k].C[0]-GeomOrb[n].C[0];
 					y = esp->point[i][j][k].C[1]-GeomOrb[n].C[1];
@@ -2766,7 +2874,7 @@ Grid* compute_mep_grid_exact(gint N[],GridLimits limits)
 				v = 0;
 				v = get_value_electrostatic_potential( x, y, z, XkXl);
 
-				for(n=0;n<Ncenters;n++)
+				for(n=0;n<nCenters;n++)
 				{
 					x = esp->point[i][j][k].C[0]-GeomOrb[n].C[0];
 					y = esp->point[i][j][k].C[1]-GeomOrb[n].C[1];
@@ -2910,7 +3018,7 @@ gboolean compute_coulomb_integrale_iijj_poisson(gint N[],GridLimits limits, gint
 			gdouble v = 0;
 			gint n;
 			gdouble x,y,z,r,invR;
-			for(n=0;n<Ncenters;n++)
+			for(n=0;n<nCenters;n++)
 			{
 				x = potential->point[k][l][m].C[0]-GeomOrb[n].C[0];
 				y = potential->point[k][l][m].C[1]-GeomOrb[n].C[1];

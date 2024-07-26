@@ -1,6 +1,6 @@
 /* Orbitals.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -43,6 +43,7 @@ DEALINGS IN THE SOFTWARE.
 #include "OrbitalsMopac.h"
 #include "OrbitalsOrca.h"
 #include "OrbitalsNBO.h"
+#include "wfx.h"
 
 #define WIDTHSCR 0.56
 
@@ -837,7 +838,7 @@ GtkWidget* create_alpha_beta_lists(GtkWidget *noteBook, gint Type)
 	gtk_box_pack_start (GTK_BOX (vbox), hbox, TRUE, TRUE, 0);
 
   	scr=gtk_scrolled_window_new(NULL,NULL);
-	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeight*WIDTHSCR));
+	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeightD*WIDTHSCR));
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scr),GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   	gtk_box_pack_start(GTK_BOX (hbox), scr,TRUE, TRUE, 2);
   	gtk_container_add(GTK_CONTAINER(scr),gtklist);
@@ -849,12 +850,12 @@ GtkWidget* create_alpha_beta_lists(GtkWidget *noteBook, gint Type)
 
 	textWidget = create_gtk_list_coef_orbitals(&widall);
   	scr=gtk_scrolled_window_new(NULL,NULL);
-	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeight*WIDTHSCR));
+	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeightD*WIDTHSCR));
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scr),GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   	gtk_box_pack_start(GTK_BOX (vbox), scr,TRUE, TRUE, 2);
   	gtk_container_add(GTK_CONTAINER(scr),textWidget);
 	g_object_set_data(G_OBJECT (gtklist), "CoefOrbWidget",textWidget);
-	gtk_widget_set_size_request(textWidget,widall,(gint)(ScreenHeight*WIDTHSCR));
+	gtk_widget_set_size_request(textWidget,widall,(gint)(ScreenHeightD*WIDTHSCR));
 
 	gtk_widget_show (hseparator);
 	gtk_box_pack_start (GTK_BOX (vbox), hseparator, FALSE, FALSE, 1);
@@ -1124,7 +1125,7 @@ void create_list_orbitals()
 
   if(NAOrb<1)
   {
-	  Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
+	  Message(_("Sorry, Please load a file beforee\n"),_("Error"),TRUE);
 	  return;
   }
 
@@ -1135,7 +1136,7 @@ void create_list_orbitals()
   gtk_window_set_title(GTK_WINDOW(Win),_("Orbitals"));
   gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
   gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
-  gtk_window_set_default_size (GTK_WINDOW(Win),-1,(gint)(ScreenHeight*0.69));
+  //gtk_window_set_default_size (GTK_WINDOW(Win),-1,(gint)(ScreenHeightD*0.69));
   gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(PrincipalWindow));
   /* gtk_window_set_modal (GTK_WINDOW (Win), TRUE);*/
 
@@ -1208,7 +1209,7 @@ void create_list_orbitals()
 
 
   gtk_widget_show (Win);
-  fit_windows_position(PrincipalWindow, Win);
+  /* fit_windows_position(PrincipalWindow, Win);*/
   /* Show all */
 
   gtk_widget_show_all (Win);
@@ -1259,7 +1260,7 @@ static void save_geometry_gabedit_format(FILE* file)
 {
 	gint j;
 	fprintf(file,"[Atoms] Angs\n");
-	for(j=0;j<Ncenters;j++)
+	for(j=0;j<nCenters;j++)
 	{
 		fprintf(file,"%s %d %d %lf %lf %lf\n",GeomOrb[j].Symb,j+1,(gint)GeomOrb[j].Prop.atomicNumber,
 				BOHR_TO_ANG*GeomOrb[j].C[0],BOHR_TO_ANG*GeomOrb[j].C[1],BOHR_TO_ANG*GeomOrb[j].C[2]);
@@ -2416,6 +2417,66 @@ void read_molden_orbitals(gchar* FileName)
 
 }
 /********************************************************************************/
+void read_wfx_orbitals(gchar* fileName)
+{
+	gint typefile;
+	gchar *t = NULL;
+
+
+	typefile =get_type_file_orb(fileName);
+	if(typefile==GABEDIT_TYPEFILE_UNKNOWN) return;
+	if(typefile != GABEDIT_TYPEFILE_WFX)
+	{
+		gchar buffer[BSIZE];
+		sprintf(buffer,_("Sorry, I cannot read this format in '%s' file\n"),fileName);
+  		Message(buffer,_("Error"),TRUE);
+		return ;
+	}
+	free_data_all();
+	t = get_name_file(fileName);
+	set_status_label_info(_("File name"),t);
+	g_free(t);
+	set_status_label_info(_("File type"),"Gaussian fchk");
+	set_status_label_info(_("Mol. Orb."),_("Reading"));
+	
+	free_orbitals();	
+ 	if(!gl_read_wfx_file_geom(fileName))
+	{
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
+		return;
+	}
+
+	set_status_label_info(_("Mol. Orb."),_("Reading"));
+ 	InitializeAll();
+ 	if(!readBasisFromWFX(fileName))
+	{
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
+		return;
+	}
+
+	sphericalBasis = FALSE; /* Can be also cart or mixed */
+ 	//NormaliseAllBasis();
+	if(read_orbitals_from_wfx_file(fileName))
+	{
+		/* PrintAllOrb(CoefAlphaOrbitals);*/
+		set_status_label_info(_("Mol. Orb."),_("Ok"));
+		glarea_rafresh(GLArea); /* for geometry*/
+		NumSelOrb = NAlphaOcc-1;
+		create_list_orbitals();
+	}
+	else
+	{
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
+	}
+	DefineType();
+} 
+/********************************************************************************/
 void read_dalton_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
 {
  	/* gchar *FileName;*/
@@ -2590,6 +2651,18 @@ void save_gabedit_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
  	save_gabedit_orbitals(FileName);
 } 
 /********************************************************************************/
+void save_wfx_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
+{
+ 	gchar *fileName;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(SelecFile);
+	gtk_widget_hide(GTK_WIDGET(SelecFile));
+	while( gtk_events_pending() ) gtk_main_iteration();
+
+	export_to_wfx_file(fileName, -1, 0, 1);
+} 
+/********************************************************************************/
 void read_molden_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
 {
  	gchar *FileName;
@@ -2602,6 +2675,20 @@ void read_molden_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
 
 	add_objects_for_new_grid();
  	read_molden_orbitals(FileName);
+} 
+/********************************************************************************/
+void read_wfx_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
+{
+ 	gchar *FileName;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+	gtk_widget_hide(GTK_WIDGET(SelecFile));
+	while( gtk_events_pending() )
+		gtk_main_iteration();
+
+	add_objects_for_new_grid();
+ 	read_wfx_orbitals(FileName);
 } 
 
 /*******************************************************/

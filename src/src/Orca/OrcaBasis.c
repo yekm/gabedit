@@ -1,6 +1,6 @@
 /* OrcaBasis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -475,7 +475,7 @@ static gchar* listAhlrichsBasisView[] =
 	"TZV Ahlrichs triple-zeta valence basis set. NOT identical to VTZ",
 	"QZVP Ahlrichs quadruple-zeta basis set. P is already polarized",
 	"DZ Ahlrichs double zeta basis set",
-	"QZVPP(-g,-f) QZVPP with higest polarization functions deleted",
+	"QZVPP(-g,-f) QZVPP with highest polarization functions deleted",
 
 	"SV(P) SV + One polar set on all non-hydrogens atoms",
 	"VDZ(P) VDZ + One polar set on all non-hydrogens atoms",
@@ -710,7 +710,7 @@ static gchar* listDef2AhlrichsBasisView[] =
 	"Def2-TZVPP TZVPP basis set with 'new' polarization functions",
 	"Def2-aug-TZVPP Same but with diffuse functions from aug-cc-pVTZ",
 	"Def2-QZVPP Very accurate quadruple-zeta basis.",
-	"Def2-QZVPP(-g,-f) higest angular momentum polarization functions deleted",
+	"Def2-QZVPP(-g,-f) highest angular momentum polarization functions deleted",
 };
 static gchar* listDef2AhlrichsBasisReal[] = 
 { 

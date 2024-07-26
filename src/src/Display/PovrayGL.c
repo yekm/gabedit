@@ -1,6 +1,6 @@
 /* PovrayGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -126,7 +126,7 @@ static gdouble get_min(gint k)
      gdouble min;
      gint i=0;
      min = GeomOrb[0].C[k];
-     for(i=1;i<(gint)Ncenters;i++)
+     for(i=1;i<(gint)nCenters;i++)
 		if(min>GeomOrb[i].C[k])
 			min = GeomOrb[i].C[k];
      
@@ -203,7 +203,7 @@ static gchar *get_pov_vibration()
 	if(!ShowVibration || m<0) return g_strdup( " ");
 
      	temp = g_strdup( "// Vibration arrows \n");
-	for(j=0;j<Ncenters;j++)
+	for(j=0;j<nCenters;j++)
 	{
 		if(
 			vibration.modes[m].vectors[0][j]*vibration.modes[m].vectors[0][j]+
@@ -1089,7 +1089,7 @@ static gchar *get_pov_atoms()
      	gchar *t=NULL;
      	gint i=0;
      	temp = g_strdup( "// ATOMS \n");
-	for(i=0;i<(gint)Ncenters;i++)
+	for(i=0;i<(gint)nCenters;i++)
 	{
 		if(!ShowHAtomOrb && strcmp("H",GeomOrb[i].Symb)==0) continue;
 		tempold = temp;
@@ -1136,7 +1136,7 @@ static gchar *get_pov_atoms_for_stick()
      	gchar *t=NULL;
      	gint i=0;
      	temp = g_strdup( "// ATOMS \n");
-	for(i=0;i<(gint)Ncenters;i++)
+	for(i=0;i<(gint)nCenters;i++)
 	{
 		if(!ShowHAtomOrb && strcmp("H",GeomOrb[i].Symb)==0) continue;
 		tempold = temp;
@@ -1166,8 +1166,8 @@ static gchar *get_pov_bonds()
      gchar* tempold;
      gboolean* Ok = NULL;
      GList* list = NULL;
-     if(Ncenters>0) Ok = g_malloc(Ncenters*sizeof(gboolean));
-     for(i=0;i<(gint)Ncenters;i++) Ok[i] = FALSE;
+     if(nCenters>0) Ok = g_malloc(nCenters*sizeof(gboolean));
+     for(i=0;i<(gint)nCenters;i++) Ok[i] = FALSE;
 
      temp = g_strdup( "// BONDS \n");
      for(list=BondsOrb;list!=NULL;list=list->next)
@@ -1202,7 +1202,7 @@ static gchar *get_pov_bonds()
 	}
      }
 
-     for(i=0;i<(gint)Ncenters;i++)
+     for(i=0;i<(gint)nCenters;i++)
      if(!Ok[i])
      {
 		if(!ShowHAtomOrb && strcmp("H",GeomOrb[i].Symb)==0) continue;
@@ -1436,7 +1436,7 @@ static gchar* create_povray_file(gchar* fileName, gboolean saveCamera, gboolean 
 		}
 	}
 
-     	if(Ncenters<1)
+     	if(nCenters<1)
 	{
 		fclose(file);
 		return NULL;
@@ -1610,7 +1610,7 @@ static void create_images_window (GtkWidget* parent, gchar* fileName, gint width
 
 		gtk_widget_show (image);
 	}
-	gtk_window_set_default_size (GTK_WINDOW (window), width+30, height+30);
+	//gtk_window_set_default_size (GTK_WINDOW (window), width+30, height+30);
 	gtk_widget_realize(window);
 	gtk_widget_show (window);
 	gtk_window_set_position(GTK_WINDOW(window),GTK_WIN_POS_CENTER);
@@ -1784,7 +1784,7 @@ static void AddPOVRayLocationDlg(GtkWidget *box, GtkWidget *Win)
 	j = 2;
 	buttonDirSelector =  gabedit_dir_button();
 	/* gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (buttonDirSelector), g_getenv("PWD"));*/
-	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeight*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeightD*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
 			j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),

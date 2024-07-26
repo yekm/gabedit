@@ -1,6 +1,6 @@
 /* OrbitalsOrca.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -106,7 +106,7 @@ static void DefineOrcaSphericalBasis()
 
 
 	NOrb = 0;
-	for(i=0;i<Ncenters;i++)
+	for(i=0;i<nCenters;i++)
 	{
 	 	for(j=0;j<Type[GeomOrb[i].NumType].Norb;j++)
 	 	{
@@ -118,7 +118,7 @@ static void DefineOrcaSphericalBasis()
 	temp  = g_malloc(NOrb*sizeof(CGTF));
 
 	k=-1;
-	for(i=0;i<Ncenters;i++)
+	for(i=0;i<nCenters;i++)
 	for(j=0;j<Type[GeomOrb[i].NumType].Norb;j++)
 	{
 	 	L =Type[GeomOrb[i].NumType].Ao[j].L;
@@ -296,11 +296,11 @@ static void resortAtoms(gint* numAtoms)
 	TypeGeomOrb* newGeom = NULL;
 	gint i;
 	if(!numAtoms)return;
-	if(Ncenters<1)return;
-	for(i=0;i<Ncenters;i++) if(numAtoms[i] == -1) return;
-	newGeom = g_malloc(Ncenters*sizeof(TypeGeomOrb));
-	for(i=0;i<Ncenters;i++) newGeom[i] = GeomOrb[numAtoms[i]];
-	for(i=0;i<Ncenters;i++) GeomOrb[i] = newGeom[i];
+	if(nCenters<1)return;
+	for(i=0;i<nCenters;i++) if(numAtoms[i] == -1) return;
+	newGeom = g_malloc(nCenters*sizeof(TypeGeomOrb));
+	for(i=0;i<nCenters;i++) newGeom[i] = GeomOrb[numAtoms[i]];
+	for(i=0;i<nCenters;i++) GeomOrb[i] = newGeom[i];
 	g_free(newGeom);
 }
 */
@@ -365,8 +365,8 @@ static gboolean DefineOrcaBasisType(gchar *fileName)
 	}
 
 	/* Debug("Ntype = %d\n",Ntype);*/
-	/* numAtoms = g_malloc(Ncenters*sizeof(gint));*/
-	/* for(i=0;i<Ncenters;i++) numAtoms[i] = -1;*/
+	/* numAtoms = g_malloc(nCenters*sizeof(gint));*/
+	/* for(i=0;i<nCenters;i++) numAtoms[i] = -1;*/
 	nAtoms = 0;
 	Type = g_malloc(Ntype*sizeof(TYPE));
 	for(i=0;i<Ntype;i++)
@@ -384,8 +384,8 @@ static gboolean DefineOrcaBasisType(gchar *fileName)
 			sscanf(t,"%s %s",sdum,sym);
 			/* Debug("sym = %s\n",sym);*/
 			i = -1;
-			for(j=0;j<Ncenters;j++) if(!strcmp(sym,GeomOrb[j].Symb)) {i = j;break;}
-			/* if(i>-1 && i<Ncenters) numAtoms[nAtoms] = i;*/
+			for(j=0;j<nCenters;j++) if(!strcmp(sym,GeomOrb[j].Symb)) {i = j;break;}
+			/* if(i>-1 && i<nCenters) numAtoms[nAtoms] = i;*/
 			nAtoms++;
 			/* Debug("i1 = %d \n",i);*/
 			if(i>-1)

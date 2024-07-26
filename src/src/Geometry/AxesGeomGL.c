@@ -1,6 +1,6 @@
 /* AxesGeomGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -517,7 +517,7 @@ void gl_build_axes(gdouble* position)
 	Draw_Arrow(vectorZ, radius, origin,  specular, zDiffuse, zAmbiant, axes.negative);
 }
 /*********************************************************************************************/
-void showLabelAxesGeom(gboolean ortho, gdouble* position)
+void showLabelAxesGeom(gboolean ortho, gdouble* position, PangoContext *ft2_context)
 {
 	gint i;
 	V4d color  = {0.8,0.8,0.8,1.0 };
@@ -561,7 +561,7 @@ void showLabelAxesGeom(gboolean ortho, gdouble* position)
 	color[1] = FontsStyleLabel.TextColor.green/65535.0; 
 	color[2] = FontsStyleLabel.TextColor.blue/65535.0; 
 
-	 glInitFontsUsing(FontsStyleLabel.fontname);
+	 glInitFontsUsing(FontsStyleLabel.fontname, &ft2_context);
 
 	if(radius<0.1) radius = 0.1;
 	glDisable ( GL_LIGHTING ) ;
@@ -571,11 +571,11 @@ void showLabelAxesGeom(gboolean ortho, gdouble* position)
 	if(ortho)
 	{
 		sprintf(buffer,"X");
-		glPrintOrtho(vectorX[0], vectorX[1], vectorX[2], buffer,TRUE,TRUE);
+		glPrintOrtho(vectorX[0], vectorX[1], vectorX[2], buffer,TRUE,TRUE, ft2_context);
 		sprintf(buffer,"Y");
-		glPrintOrtho(vectorY[0], vectorY[1], vectorY[2], buffer,TRUE,TRUE);
+		glPrintOrtho(vectorY[0], vectorY[1], vectorY[2], buffer,TRUE,TRUE, ft2_context);
 		sprintf(buffer,"Z");
-		glPrintOrtho(vectorZ[0], vectorZ[1], vectorZ[2], buffer,TRUE,TRUE);
+		glPrintOrtho(vectorZ[0], vectorZ[1], vectorZ[2], buffer,TRUE,TRUE, ft2_context);
 	}
 	else
 	{
@@ -588,11 +588,11 @@ void showLabelAxesGeom(gboolean ortho, gdouble* position)
 		glPrint(vectorZ[0], vectorZ[1], vectorZ[2], buffer);
 		*/
 		sprintf(buffer,"X");
-		glPrintScale(vectorX[0], vectorX[1], vectorX[2], 1.2*radius, buffer);
+		glPrintScale(vectorX[0], vectorX[1], vectorX[2], 1.2*radius, buffer, ft2_context);
 		sprintf(buffer,"Y");
-		glPrintScale(vectorY[0], vectorY[1], vectorY[2], 1.2*radius, buffer);
+		glPrintScale(vectorY[0], vectorY[1], vectorY[2], 1.2*radius, buffer, ft2_context);
 		sprintf(buffer,"Z");
-		glPrintScale(vectorZ[0], vectorZ[1], vectorZ[2], 1.2*radius, buffer);
+		glPrintScale(vectorZ[0], vectorZ[1], vectorZ[2], 1.2*radius, buffer, ft2_context);
 	}
 	glEnable ( GL_LIGHTING ) ;
 }

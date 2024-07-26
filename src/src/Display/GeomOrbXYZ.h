@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -45,6 +45,7 @@ void gl_read_first_mopac_output_file(GabeditFileChooser *SelecFile, gint respons
 void gl_read_last_mopac_output_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_first_mopac_aux_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_last_mopac_aux_file(GabeditFileChooser *SelecFile, gint response_id);
+void gl_read_wfx_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_first_nwchem_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_last_nwchem_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_first_psicode_file(GabeditFileChooser *SelecFile, gint response_id);
@@ -55,6 +56,7 @@ void gl_read_last_qchem_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_first_orca_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_last_orca_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_hessian_orca_file(GabeditFileChooser *SelecFile, gint response_id);
+gboolean gl_read_wfx_file_geom(gchar *fileName);
 gboolean gl_read_xyz_file(gchar *FileName);
 gboolean gl_read_molpro_file_geom_pos(gchar *FileName,long int pos);
 gboolean gl_read_dalton_file_geomi(gchar *FileName,gint num);

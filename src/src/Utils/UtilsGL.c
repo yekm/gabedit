@@ -1,6 +1,6 @@
 /* UtilsGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -27,6 +27,8 @@ DEALINGS IN THE SOFTWARE.
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <gtk/gtkgl.h>
+
+#include <pango/pangoft2.h>
 
 /*
 #ifndef G_OS_WIN32
@@ -103,7 +105,8 @@ gint glTextHeight()
 }
 /*********************************************************************************************/
 /* print at a window position */
-void glPrintWin(gint x, gint y, gint height, gchar *str)
+/*
+void glPrintWinOld(gint x, gint y, gint height, gchar *str)
 {
 	gdouble w[3];
 
@@ -114,9 +117,11 @@ void glPrintWin(gint x, gint y, gint height, gchar *str)
 	glListBase(fontOffset);
 	glCallLists(strlen(str), GL_UNSIGNED_BYTE, str);
 }
+*/
 /*********************************************************************************************/
 /* print at a world position */
-void glPrint(gdouble x, gdouble y, gdouble z, gchar *str)
+/*
+void glPrintOld(gdouble x, gdouble y, gdouble z, gchar *str)
 {
 	glRasterPos3f(x,y,z); 
 	gl2psText(str, "Times-Roman", glFontsize);
@@ -124,8 +129,10 @@ void glPrint(gdouble x, gdouble y, gdouble z, gchar *str)
 	glListBase(fontOffset);
 	glCallLists(strlen(str), GL_UNSIGNED_BYTE, str);
 }
+*/
 /*********************************************************************************************/
-void glPrintOrtho(gdouble x, gdouble y, gdouble z, gchar *str, gboolean centerX, gboolean centerY)
+/*
+void glPrintOrthoOld(gdouble x, gdouble y, gdouble z, gchar *str, gboolean centerX, gboolean centerY)
 {
 	gdouble w[] = {x, y, z};
 	gint xy[] = {0, 0};
@@ -141,55 +148,34 @@ void glPrintOrtho(gdouble x, gdouble y, gdouble z, gchar *str, gboolean centerX,
 	
 	if(centerX) xy[0] -= charWidth*strlen(str)/2;
 	if(centerY) xy[1] += charHeight/4;
-	glPrintWin(xy[0], xy[1], viewport[3], str);
+	glPrintWinOld(xy[0], xy[1], viewport[3], str);
 	
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 	
 	glPopMatrix();
 }
+*/
 /*********************************************************************************************/
 void glDeleteFontsList()
 {
 	glDeleteLists(fontOffset,256);
 }
 /*********************************************************************************************/
-/* pango fonts for OpenGL  */
-void glInitFontsUsing(gchar* fontname)
-{
-	OpenGLOptions openGlOptions = get_opengl_options();
-	/*if (fontOffset >=0) return;*/
-
-	/* fprintf(stderr,"FontName = %s\n",fontname);*/
-	fontOffset = glGenLists(256);
-	if (fontOffset && openGlOptions.activateText==1)
-	{ 
-		PangoFontDescription *pfd = NULL;
-		PangoFont *pangoFont = NULL;
-		PangoFontMetrics* metrics;
-		pfd = pango_font_description_from_string(fontname);
-		pangoFont = gdk_gl_font_use_pango_font(pfd, 0, 256, fontOffset);
-		if (pangoFont)
-		{
-			glFontsize = pango_font_description_get_size(pfd) / PANGO_SCALE;
-			metrics = pango_font_get_metrics(pangoFont, NULL);
-			charWidth = pango_font_metrics_get_approximate_char_width(metrics);
-			charHeight = pango_font_metrics_get_ascent(metrics)
-			 	    +pango_font_metrics_get_descent(metrics);
-			charWidth  /= PANGO_SCALE;
-			charHeight /= PANGO_SCALE;
-			pango_font_metrics_unref(metrics);
-		}
-
-		if(pfd) pango_font_description_free(pfd); 
-	}
-}
 /*********************************************************************************************/
 /* pango fonts for OpenGL  */
-void glInitFonts()
+/*
+void glInitFontsOld()
+{
+	glInitFontsUsingOld(FontsStyleLabel.fontname);
+}
+*/
+/*********************************************************************************************/
+/* pango fonts for OpenGL  */
+void glInitFonts(PangoContext* *pft2_context)
 {
 	/*if (fontOffset >=0) return;*/
-	glInitFontsUsing(FontsStyleLabel.fontname);
+	glInitFontsUsing(FontsStyleLabel.fontname, pft2_context);
 }
 /*********************************************************************************************/
 /* get a World coordinates from scene coordinates */
@@ -242,7 +228,8 @@ void getNormalPlanWindow(gdouble N[])
 }
 /*********************************************************************************************/
 /* print at a world position  after scaling of scal in scene coordinates*/
-void glPrintScale(gdouble x, gdouble y, gdouble z, gdouble scale, gchar *str)
+/*
+void glPrintScaleOld(gdouble x, gdouble y, gdouble z, gdouble scale, gchar *str)
 {
 	gdouble VScene[]={0,0,0};
 	gdouble VWorld[]={x,y,z};
@@ -297,6 +284,7 @@ void glPrintScale(gdouble x, gdouble y, gdouble z, gdouble scale, gchar *str)
 	glListBase(fontOffset);
 	glCallLists(strlen(str), GL_UNSIGNED_BYTE, str);
 }
+*/
 /*************************************************************************************/
 OpenGLOptions get_opengl_options()
 {
@@ -567,4 +555,250 @@ void Draw_Arrow(V3d vector, GLdouble radius,V3d origin, V4d specular,V4d diffuse
 
 	Prism_Draw_Color(radius/1.5,center,top,specular,diffuseFleche,ambiantFleche);
 }
+/*********************************************************************************************/
+/* pango fonts for OpenGL  */
+void glInitFontsUsing(gchar* fontname, PangoContext* *pft2_context)
+{
+	OpenGLOptions openGlOptions = get_opengl_options();
+	/*if (fontOffset >=0) return;*/
 
+	/* fprintf(stderr,"FontName = %s\n",fontname);*/
+	fontOffset = glGenLists(256);
+	if (fontOffset && openGlOptions.activateText==1)
+	{ 
+		//static PangoContext *ft2_context = NULL;
+
+		PangoFontDescription *pfd = pango_font_description_from_string(fontname);
+		if (pfd)
+		{
+			glFontsize = pango_font_description_get_size(pfd) / PANGO_SCALE;
+			/* fprintf(stderr,"PANGO_SCALE = %d\n",PANGO_SCALE);*/
+			if(!*pft2_context) *pft2_context = pango_ft2_get_context (10*glFontsize, 10*glFontsize);
+			pango_context_set_font_description (*pft2_context, pfd);
+			charWidth = glFontsize / PANGO_SCALE;
+			charHeight = glFontsize / PANGO_SCALE;
+			pango_font_description_free(pfd); 
+		}
+	}
+}
+/*********************************************************************************************/
+void gl_pango_ft2_render_layout (PangoLayout *layout)
+{
+	PangoRectangle logical_rect;
+	FT_Bitmap bitmap;
+	GLvoid *pixels;
+	guint32 *p;
+	GLfloat color[4];
+	guint32 rgb;
+	GLfloat a;
+	guint8 *row, *row_end;
+	int i;
+
+	pango_layout_get_extents (layout, NULL, &logical_rect);
+	if (logical_rect.width == 0 || logical_rect.height == 0)
+  		return;
+
+	bitmap.rows = PANGO_PIXELS (logical_rect.height);
+	bitmap.width = PANGO_PIXELS (logical_rect.width);
+	bitmap.pitch = bitmap.width;
+	bitmap.buffer = g_malloc (bitmap.rows * bitmap.width);
+	bitmap.num_grays = 256;
+	bitmap.pixel_mode = ft_pixel_mode_grays;
+
+	memset (bitmap.buffer, 0, bitmap.rows * bitmap.width);
+	pango_ft2_render_layout (&bitmap, layout, PANGO_PIXELS (-logical_rect.x), 0);
+
+	pixels = g_malloc (bitmap.rows * bitmap.width * 4);
+	p = (guint32 *) pixels;
+
+	glGetFloatv (GL_CURRENT_COLOR, color);
+#if !defined(GL_VERSION_1_2) && G_BYTE_ORDER == G_LITTLE_ENDIAN
+	  rgb =	((guint32) (color[0] * 255.0))        |
+        	(((guint32) (color[1] * 255.0)) << 8)  |
+        	(((guint32) (color[2] * 255.0)) << 16);
+#else
+  	rgb = 	(((guint32) (color[0] * 255.0)) << 24) |
+        	(((guint32) (color[1] * 255.0)) << 16) |
+        	(((guint32) (color[2] * 255.0)) << 8);
+#endif
+	a = color[3];
+
+	row = bitmap.buffer + bitmap.rows * bitmap.width; /* past-the-end */
+	row_end = bitmap.buffer;      /* beginning */
+
+	if (a == 1.0)
+	{
+		do
+        	{
+          		row -= bitmap.width;
+          		for (i = 0; i < bitmap.width; i++)
+#if !defined(GL_VERSION_1_2) && G_BYTE_ORDER == G_LITTLE_ENDIAN
+            			*p++ = rgb | (((guint32) row[i]) << 24);
+#else
+            			*p++ = rgb | ((guint32) row[i]);
+#endif
+        	}
+      		while (row != row_end);
+    	}
+	else
+    	{
+      		do
+        	{
+          		row -= bitmap.width;
+          		for (i = 0; i < bitmap.width; i++)
+#if !defined(GL_VERSION_1_2) && G_BYTE_ORDER == G_LITTLE_ENDIAN
+            			*p++ = rgb | (((guint32) (a * row[i])) << 24);
+#else
+            			*p++ = rgb | ((guint32) (a * row[i]));
+#endif
+        	}while (row != row_end);
+	}
+
+	glPixelStorei (GL_UNPACK_ALIGNMENT, 4);
+
+	glEnable (GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+#if !defined(GL_VERSION_1_2)
+	glDrawPixels (bitmap.width, bitmap.rows, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+#else
+	glDrawPixels (bitmap.width, bitmap.rows, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, pixels);
+#endif
+	glDisable (GL_BLEND);
+	g_free (bitmap.buffer);
+	g_free (pixels);
+}
+/*********************************************************************************************/
+/* print at a window position */
+void glPrintWin(gint x, gint y, gint height, gchar *str, PangoContext *ft2_context)
+{
+	PangoLayout *layout;
+	PangoRectangle logical_rect;
+
+	/* Text layout */
+	layout = pango_layout_new (ft2_context);
+	pango_layout_set_width (layout, PANGO_SCALE * strlen(str)*height);
+	pango_layout_set_alignment (layout, PANGO_ALIGN_CENTER);
+
+	gdouble w[3];
+
+	glGetWorldCoords(x, y, height, w);
+	glRasterPos3f(w[0], w[1], w[2]); 
+	gl2psText(str, "Times-Roman", glFontsize);
+
+	pango_layout_set_text (layout, str, -1);
+
+
+	glListBase(fontOffset);
+	glCallLists(strlen(str), GL_UNSIGNED_BYTE, str);
+
+	gl_pango_ft2_render_layout (layout);
+
+	g_object_unref (G_OBJECT (layout));
+}
+/*********************************************************************************************/
+void glPrintOrtho(gdouble x, gdouble y, gdouble z, gchar *str, gboolean centerX, gboolean centerY, PangoContext *ft2_context)
+{
+	gdouble w[] = {x, y, z};
+	gint xy[] = {0, 0};
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	glGetWindowCoords(w, viewport[3], xy);
+	glPushMatrix();
+	glLoadIdentity();
+	
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix(); glLoadIdentity();
+	gluOrtho2D(0, viewport[2], 0, viewport[3]);
+
+	
+	if(centerX) xy[0] -= charWidth*strlen(str)/2;
+	if(centerY) xy[1] += charHeight/4;
+	glPrintWin(xy[0], xy[1], viewport[3], str, ft2_context);
+	
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	
+	glPopMatrix();
+}
+/*********************************************************************************************/
+/* print at a world position */
+void glPrint(gdouble x, gdouble y, gdouble z, gchar *str, PangoContext *ft2_context)
+{
+
+	PangoLayout *layout;
+	PangoRectangle logical_rect;
+
+	/* Text layout */
+	layout = pango_layout_new (ft2_context);
+	pango_layout_set_width (layout, PANGO_SCALE * strlen(str)*glFontsize);
+	pango_layout_set_alignment (layout, PANGO_ALIGN_CENTER);
+
+	gdouble w[3];
+
+	glRasterPos3f(x,y,z); 
+	gl2psText(str, "Times-Roman", glFontsize);
+
+	pango_layout_set_text (layout, str, -1);
+
+
+	glListBase(fontOffset);
+	glCallLists(strlen(str), GL_UNSIGNED_BYTE, str);
+
+	gl_pango_ft2_render_layout (layout);
+
+	g_object_unref (G_OBJECT (layout));
+}
+/*********************************************************************************************/
+/* print at a world position  after scaling of scal in scene coordinates*/
+void glPrintScale(gdouble x, gdouble y, gdouble z, gdouble scale, gchar *str, PangoContext *ft2_context)
+{
+	gdouble VScene[]={0,0,0};
+	gdouble VWorld[]={x,y,z};
+	GLdouble mvMatrix[4][4];
+	gdouble** trMatrix;
+	gdouble** invMatrix;
+	gint i;
+	gint j;
+	glGetDoublev(GL_MODELVIEW_MATRIX, &mvMatrix[0][0]);
+	trMatrix = g_malloc(3*sizeof(gdouble*));
+	for(i=0;i<3;i++) trMatrix[i] = g_malloc(3*sizeof(gdouble));
+
+	for(i=0;i<3;i++)
+		for(j=0;j<3;j++)
+			trMatrix[j][i] = mvMatrix[i][j];
+
+	for(i=0;i<3;i++)
+	{
+		VScene[i] = 0;
+		for(j=0;j<3;j++)
+		{
+			VScene[i] += trMatrix[i][j]*VWorld[j];
+		}
+	}
+	VScene[2] += scale;
+
+	invMatrix = Inverse3(trMatrix);
+	for(i=0;i<3;i++) g_free(trMatrix[i]);
+	g_free(trMatrix);
+
+	if(invMatrix != NULL)
+	{
+		for(i=0;i<3;i++)
+		{
+			VWorld[i] = 0;
+			for(j=0;j<3;j++)
+			{
+				VWorld[i] += invMatrix[i][j]*VScene[j];
+			}
+		}
+		for(i=0;i<3;i++) g_free(invMatrix[i]);
+		g_free(invMatrix);
+	}
+	else
+	{
+		VWorld[0] = x;
+		VWorld[1] = y;
+		VWorld[2] = z;
+	}
+	glPrint(VWorld[0],VWorld[1],VWorld[2], str, ft2_context);
+}

@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -53,7 +53,7 @@ DEALINGS IN THE SOFTWARE.
 
 #define MAJOR_VERSION    2
 #define MINOR_VERSION    5
-#define MICRO_VERSION    0
+#define MICRO_VERSION    1
 
 /**** Structures *********/
 typedef struct _FileOpen
@@ -127,95 +127,95 @@ typedef struct _CommandsBatch
 }CommandsBatch;
 
 /**** Global variables *********/
-  GtkWidget *Fenetre;
-  GtkWidget *vboxlistfiles;
-  GtkWidget *vboxtexts;
-  GtkWidget *vboxmain;
-  GtkWidget *BarreMenu;
-  GtkWidget *text;
-  GtkWidget *treeViewProjects;
-  GtkTreeIter *noeud[NBNOD];
-  GtkWidget *NoteBookText;
-  GtkWidget *NoteBookInfo;
-  GtkWidget *TextOutput;
-  GtkWidget *TextError;
-  GtkWidget *textresult;
-  GtkWidget *HboxWins;
-  GtkWidget *FrameWins;
-  GtkWidget *FrameList;
-  GtkWidget *Hpaned;
-  GtkWidget *ResultEntryPass;
-  GtkWidget *ResultLocalFrame;
-  GtkWidget *ResultRemoteFrame;
-  gint iedit;
-  gint imodif;
-  gint iframe;
-  gchar *NameCommandGamess;
-  gchar *NameCommandGaussian;
-  gchar *NameCommandMolcas;
-  gchar *NameCommandMolpro;
-  gchar *NameCommandMPQC;
-  gchar *NameCommandFireFly;
-  gchar *NameCommandQChem;
-  gchar *NameCommandOrca;
-  gchar *NameCommandDeMon;
-  gchar *NameCommandNWChem;
-  gchar *NameCommandPsicode;
-  gchar *NameCommandMopac;
-  gchar *NameCommandPovray;
-  gint ScreenWidth;
-  gint ScreenHeight;
-  FontsStyle FontsStyleData;
-  FontsStyle FontsStyleResult;
-  FontsStyle FontsStyleOther;
-  FontsStyle FontsStyleLabel;
+extern   GtkWidget *Fenetre;
+extern   GtkWidget *vboxlistfiles;
+extern   GtkWidget *vboxtexts;
+extern   GtkWidget *vboxmain;
+extern   GtkWidget *BarreMenu;
+extern   GtkWidget *text;
+extern   GtkWidget *treeViewProjects;
+extern   GtkTreeIter *noeud[NBNOD];
+extern   GtkWidget *NoteBookText;
+extern   GtkWidget *NoteBookInfo;
+extern   GtkWidget *TextOutput;
+extern   GtkWidget *TextError;
+extern   GtkWidget *textresult;
+extern   GtkWidget *HboxWins;
+extern   GtkWidget *FrameWins;
+extern   GtkWidget *FrameList;
+extern   GtkWidget *Hpaned;
+extern   GtkWidget *ResultEntryPass;
+extern   GtkWidget *ResultLocalFrame;
+extern   GtkWidget *ResultRemoteFrame;
+extern   gint iedit;
+extern   gint imodif;
+extern   gint iframe;
+extern   gchar *NameCommandGamess;
+extern   gchar *NameCommandGaussian;
+extern   gchar *NameCommandMolcas;
+extern   gchar *NameCommandMolpro;
+extern   gchar *NameCommandMPQC;
+extern   gchar *NameCommandFireFly;
+extern   gchar *NameCommandQChem;
+extern   gchar *NameCommandOrca;
+extern   gchar *NameCommandDeMon;
+extern   gchar *NameCommandNWChem;
+extern   gchar *NameCommandPsicode;
+extern   gchar *NameCommandMopac;
+extern   gchar *NameCommandPovray;
+extern   gint ScreenWidth;
+extern   gint ScreenHeight;
+extern   FontsStyle FontsStyleData;
+extern   FontsStyle FontsStyleResult;
+extern   FontsStyle FontsStyleOther;
+extern   FontsStyle FontsStyleLabel;
 
-  RecentHosts recenthosts;
+extern   RecentHosts recenthosts;
 
-  int iprogram; 
-  gboolean MeasureIsHide;
-  FileOpen fileopen;
-  gchar* lastdirectory;
-  GabEditNetWork defaultNetWorkProtocol;
-  gchar* pscpCommand;
-  gchar* plinkCommand;
-  gchar* pscpplinkDirectory;
-  gchar* babelCommand;
-  gchar* gamessDirectory;
-  gchar* fireflyDirectory;
-  gchar* orcaDirectory;
-  gchar* demonDirectory;
-  gchar* nwchemDirectory;
-  gchar* psicodeDirectory;
-  gchar* mopacDirectory;
-  gchar* gaussDirectory;
-  gchar* povrayDirectory;
-  gchar* openbabelDirectory;
-  CommandsList demonCommands;
-  CommandsList gamessCommands;
-  CommandsList gaussianCommands;
-  CommandsList molcasCommands;
-  CommandsList molproCommands;
-  CommandsList mpqcCommands;
-  CommandsList orcaCommands;
-  CommandsList nwchemCommands;
-  CommandsList psicodeCommands;
-  CommandsList fireflyCommands;
-  CommandsList qchemCommands;
-  CommandsList mopacCommands;
-  CommandsList povrayCommands;
+extern   int iprogram; 
+extern   gboolean MeasureIsHide;
+extern   FileOpen fileopen;
+extern   gchar* lastdirectory;
+extern   GabEditNetWork defaultNetWorkProtocol;
+extern   gchar* pscpCommand;
+extern   gchar* plinkCommand;
+extern   gchar* pscpplinkDirectory;
+extern   gchar* babelCommand;
+extern   gchar* gamessDirectory;
+extern   gchar* fireflyDirectory;
+extern   gchar* orcaDirectory;
+extern   gchar* demonDirectory;
+extern   gchar* nwchemDirectory;
+extern   gchar* psicodeDirectory;
+extern   gchar* mopacDirectory;
+extern   gchar* gaussDirectory;
+extern   gchar* povrayDirectory;
+extern   gchar* openbabelDirectory;
+extern   CommandsList demonCommands;
+extern   CommandsList gamessCommands;
+extern   CommandsList gaussianCommands;
+extern   CommandsList molcasCommands;
+extern   CommandsList molproCommands;
+extern   CommandsList mpqcCommands;
+extern   CommandsList orcaCommands;
+extern   CommandsList nwchemCommands;
+extern   CommandsList psicodeCommands;
+extern   CommandsList fireflyCommands;
+extern   CommandsList qchemCommands;
+extern   CommandsList mopacCommands;
+extern   CommandsList povrayCommands;
 
-  gchar *NameTypeBatch;
-  gchar *NameCommandBatchAll;
-  gchar *NameCommandBatchUser;
-  gchar *NameCommandBatchKill;
-  gchar *NamejobIdTitleBatch;
-  CommandsBatch batchCommands;
-  OpenGLOptions openGLOptions;
-  gint colorMapType;
-  gdouble colorMapColors[3][3];
-  gdouble alpha_opacity;
-  gdouble multipole_rank;
+extern   gchar *NameTypeBatch;
+extern   gchar *NameCommandBatchAll;
+extern   gchar *NameCommandBatchUser;
+extern   gchar *NameCommandBatchKill;
+extern   gchar *NamejobIdTitleBatch;
+extern   CommandsBatch batchCommands;
+extern   OpenGLOptions openGLOptions;
+extern   gint colorMapType;
+extern   gdouble colorMapColors[3][3];
+extern   gdouble alpha_opacity;
+extern   gdouble multipole_rank;
 
 #endif /* __GABEDIT_GLOBAL_H__ */
 

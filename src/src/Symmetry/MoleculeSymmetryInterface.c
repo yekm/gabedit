@@ -1,6 +1,6 @@
 /* MolSymInterface.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -30,7 +30,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/GabeditTextEdit.h"
 #include "../Common/Windows.h"
 #include "../Symmetry/MoleculeSymmetry.h"
-#include "../Symmetry/Symmetry.h"
+#include "../Symmetry/SymmetryGabedit.h"
 
 /* 0-> Position ; 1-> Principal axis */
 static gint typeOfTolerance[] = { 0,1};
@@ -243,7 +243,7 @@ void createGeometrySymmetryWindow(gint numberOfAtoms,
 		putGeometryInTextWidget(TextWid,numberOfAtoms, symbolstmp, Xtmp, Ytmp, Ztmp);
 	}
 
-	gtk_window_set_default_size (GTK_WINDOW(Dialogue), ScreenWidth/3, ScreenHeight/3);
+	//gtk_window_set_default_size (GTK_WINDOW(Dialogue), ScreenWidth/3, ScreenHeight/3);
 	 gtk_widget_show_all(Dialogue);
 	 g_free(title);
 
@@ -360,7 +360,7 @@ GtkWidget* createGeometryAbelianGroupWindow(gint numberOfAtoms,
 	putInfoAbelianGroup(TextWid, abelianPointGroupSymbol, nGenerators, generators, nMolcas, molcasGenerators, nElements, elements);
 	putGeometryInTextWidget(TextWid,numberOfAtoms, symbols, X, Y, Z);
 
-	gtk_window_set_default_size (GTK_WINDOW(Dialogue), ScreenWidth/3, ScreenHeight/3);
+	//gtk_window_set_default_size (GTK_WINDOW(Dialogue), ScreenWidth/3, ScreenHeight/3);
 	 gtk_widget_show_all(Dialogue);
 	 g_free(title);
 
@@ -722,7 +722,7 @@ void createGeometrySymmetrizationWindow(gint numberOfAtoms, gchar** symbols, gdo
 
 	putInfoInTextWidget(TextWid, groupSymbol,  principalAxisTolerance, eps, message);
 	putGeometryInTextWidget(TextWid,numberOfAtoms, symbols, X, Y, Z);
-	gtk_window_set_default_size (GTK_WINDOW(Dialogue), ScreenWidth/3, ScreenHeight/3);
+	//gtk_window_set_default_size (GTK_WINDOW(Dialogue), ScreenWidth/3, ScreenHeight/3);
 	gtk_widget_show_all(Dialogue);
 	g_free(title);
 
