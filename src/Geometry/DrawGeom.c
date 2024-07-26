@@ -2065,7 +2065,10 @@ static int compute_fragment_principal_axes(gdouble axis1[], gdouble axis2[], gdo
 
 	for(i=0;i<3;i++) axis1[i] =  v[i][0];
 	for(i=0;i<3;i++) axis2[i] =  v[i][1];
+	for(i=0;i<3;i++) axis3[i] =  v[(i+1)%3][0]*v[(i+2)%3][1]-v[(i+2)%3][0]*v[(i+1)%3][1];
+	/*
 	for(i=0;i<3;i++) axis3[i] =  v[i][2];
+	*/
 
 	for(i=0;i<3;i++) g_free(v[i]);
 	g_free(v);

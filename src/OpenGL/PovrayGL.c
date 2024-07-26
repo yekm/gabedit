@@ -837,10 +837,11 @@ static gchar *get_pov_declare_surface_options()
 
 	temp = g_strdup_printf(
 	 "// transparency coeffition\n"
-	 "#declare surfaceTransCoef = 0.6;\n"
+	 "#declare surfaceTransCoef = %lf;\n"
 	 "// wire frame radius of cylinder\n"
 	 "#declare wireFrameCylinderRadius = %lf;\n"
 	 "\n\n",
+	 get_alpha_opacity(),
 	 ep
 	);
 	return temp;

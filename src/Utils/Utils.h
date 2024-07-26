@@ -145,6 +145,7 @@ void gabedit_draw_string(GtkWidget* parent, GdkPixmap* pixmap, PangoFontDescript
 void gabedit_save_image(GtkWidget* widget, gchar *fileName, gchar* type);
 G_CONST_RETURN gchar* get_open_babel_command();
 gchar** get_one_block_from_aux_mopac_file(FILE* file, gchar* blockName,  gint* n);
+gint get_num_orbitals_from_aux_mopac_file(FILE* file, gchar* blockName,  gint* begin, gint* end);
 gchar** free_one_string_table(gchar** table, gint n);
 gboolean zmat_mopac_irc_output_file(gchar *FileName);
 gboolean zmat_mopac_scan_output_file(gchar *FileName);

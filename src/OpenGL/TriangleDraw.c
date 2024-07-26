@@ -24,10 +24,13 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Transformation.h"
 #include "../OpenGL/ColorMap.h"
 #include "../OpenGL/UtilsOrb.h"
+#include "../OpenGL/GLArea.h"
+#include "../Utils/UtilsInterface.h"
 
-static V4d color_positive = {0.0, 0.0,0.8,0.8};
-static V4d color_negative = {0.8, 0.0,0.0,0.8};
-static V4d color_density  = {0.0, 0.8,0.8,0.8};
+static GLdouble alpha = 0.6;
+static V4d color_positive = {0.0, 0.0,0.8,0.6};
+static V4d color_negative = {0.8, 0.0,0.0,0.6};
+static V4d color_density  = {0.0, 0.8,0.8,0.6};
 
 /*********************************************************************************************/
 void get_color_surface(gint num,gdouble v[])
@@ -173,11 +176,11 @@ void IsoDrawMapped(IsoSurface* iso)
 	gint n=0;
 	V4d Diffuse  = {0.5,0.5,0.5,1.0};
 	V4d Specular = {0.8,0.8,0.8,1.0 };
-	V4d Ambiant  = {0.2,0.2,0.2,0.8};
+	V4d Ambiant  = {0.2,0.2,0.2,alpha};
 	gdouble value;
-	V4d color1  = {0.5,0.5,0.5,0.8};
-	V4d color2  = {0.5,0.5,0.5,0.8};
-	V4d color3  = {0.5,0.5,0.5,0.8};
+	V4d color1  = {0.5,0.5,0.5,alpha};
+	V4d color2  = {0.5,0.5,0.5,alpha};
+	V4d color3  = {0.5,0.5,0.5,alpha};
 	ColorMap* colorMap = get_colorMap_mapping_cube();
 
 	glMaterialdv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
@@ -227,10 +230,10 @@ void IsoDraw(	IsoSurface* iso)
 GLuint IsoGenOneList(IsoSurface* isosurface,gint type)
 {
 	GLuint isolist;
-	if(!isosurface)
-		return 0;
 
-    isolist = glGenLists(1);
+	if(!isosurface) return 0;
+
+	isolist = glGenLists(1);
 	glNewList(isolist, GL_COMPILE);
 
 	/* glEnable (GL_POLYGON_SMOOTH);*/
@@ -263,7 +266,6 @@ GLuint IsoGenOneList(IsoSurface* isosurface,gint type)
 	else
 		glDisable(GL_BLEND);
 
-	/*la couleur de l'objet va etre (1-alpha_de_l_objet) * couleur du fond et (le_reste * couleur originale) */
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	/*glDepthMask(FALSE);*/
 
@@ -277,8 +279,9 @@ GLuint IsoGenOneList(IsoSurface* isosurface,gint type)
 		case 0 : /* positive */
 		{
 			gdouble* Diffuse  = color_positive;
-			V4d Specular = {0.8,0.8,0.8,0.8};
-			V4d Ambiant  = {0.2,0.2,0.2,0.8};
+			V4d Specular = {0.8,0.8,0.8,alpha};
+			V4d Ambiant  = {0.2,0.2,0.2,alpha};
+			color_positive[3] = alpha;
 
 			glMaterialdv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
 			glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
@@ -291,8 +294,9 @@ GLuint IsoGenOneList(IsoSurface* isosurface,gint type)
 		{
 		
 			gdouble* Diffuse  = color_negative;
-			V4d Specular = {0.8,0.8,0.8,0.8 };
-			V4d Ambiant  = {0.2,0.2,0.2,0.8};
+			V4d Specular = {0.8,0.8,0.8,alpha};
+			V4d Ambiant  = {0.2,0.2,0.2,alpha};
+			color_negative[3] = alpha;
 			
 			glMaterialdv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
 			glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
@@ -304,8 +308,9 @@ GLuint IsoGenOneList(IsoSurface* isosurface,gint type)
 		case 2:
 		{
 			gdouble* Diffuse  = color_density;
-			V4d Specular = {0.8,0.8,0.8,0.8 };
-			V4d Ambiant  = {0.2,0.2,0.2,0.8};
+			V4d Specular = {0.8,0.8,0.8,alpha};
+			V4d Ambiant  = {0.2,0.2,0.2,alpha};
+			color_density[3] = alpha;
 			glMaterialdv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
 			glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
 			glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
@@ -361,3 +366,131 @@ void IsoShowLists(GLuint positiveSurface, GLuint negativeSurface, GLuint nullSur
 
 }
 /*********************************************************************************************/
+gdouble get_alpha_opacity()
+{
+	return alpha;
+}
+/*********************************************************************************************/
+void set_alpha_opacity(gdouble a)
+{
+	alpha = a;
+	if(alpha>1) alpha = 1;
+	if(alpha<0) alpha = 0;
+}
+/********************************************************************************/
+static void apply_set_opacity(GtkWidget *Win,gpointer data)
+{
+	GtkWidget* opacitySpinButton = NULL;
+	gdouble a = 0;
+
+	if(!GTK_IS_WIDGET(Win)) return;
+
+	opacitySpinButton = g_object_get_data (G_OBJECT (Win), "OpacitySpinButton");
+
+	a = gtk_spin_button_get_value (GTK_SPIN_BUTTON(opacitySpinButton));
+	if(a>=0 && a<=100) alpha = a/100;
+	RebuildSurf = TRUE;
+	glarea_rafresh(GLArea);
+}
+/********************************************************************************/
+static void apply_set_opacity_close(GtkWidget *Win,gpointer data)
+{
+	apply_set_opacity(Win,data);
+	delete_child(Win);
+}
+/********************************************************************************/
+static GtkWidget *add_spin_button( GtkWidget *table, gchar* strLabel, gint il)
+{
+	gushort i;
+	gushort j;
+	GtkWidget *spinButton;
+	GtkWidget *label;
+
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 0;
+	label = gtk_label_new(strLabel);
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 2;
+	spinButton =  gtk_spin_button_new_with_range (0, 100, 1);
+
+	gtk_table_attach(GTK_TABLE(table),spinButton,
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+
+  	return spinButton;
+}
+/********************************************************************************/
+void set_opacity_dlg()
+{
+	GtkWidget *Win;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	GtkWidget *hbox;
+	GtkWidget *table;
+	GtkWidget *vboxall;
+	GtkWidget *opacitySpinButton;
+	GtkWidget *button;
+
+	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(Win),"Set opacity");
+	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
+	gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
+	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
+
+	add_glarea_child(Win,"Opacity ");
+
+	vboxall = create_vbox(Win);
+	frame = gtk_frame_new (NULL);
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+	gtk_container_add (GTK_CONTAINER (vboxall), frame);
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	table = gtk_table_new(5,3,FALSE);
+	gtk_container_add(GTK_CONTAINER(vboxframe),table);
+
+	opacitySpinButton = add_spin_button( table, "Opacity coefficient : ", 1);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(opacitySpinButton),(gint)(alpha*100));
+	g_object_set_data (G_OBJECT (Win), "OpacitySpinButton",opacitySpinButton);
+
+	hbox = create_hbox_false(vboxall);
+	gtk_widget_realize(Win);
+
+	button = create_button(Win,"OK");
+	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+	gtk_widget_show (button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_set_opacity_close,G_OBJECT(Win));
+
+	button = create_button(Win,"Apply");
+	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_show (button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_set_opacity,G_OBJECT(Win));
+
+	button = create_button(Win,"Cancel");
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, G_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,G_OBJECT(Win));
+	gtk_widget_show (button);
+
+	gtk_widget_show_all (Win);
+}

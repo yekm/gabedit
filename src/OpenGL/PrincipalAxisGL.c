@@ -268,9 +268,13 @@ static void compute_the_principal_axis()
 	axis.secondVector[1] = v[1][1]; 
 	axis.secondVector[2] = v[2][1]; 
 
+	for(i=0;i<3;i++)
+		axis.thirdVector[i] = v[(i+1)%3][0]*v[(i+2)%3][1]-v[(i+2)%3][0]*v[(i+1)%3][1];
+		/*
 	axis.thirdVector[0] = v[0][2]; 
 	axis.thirdVector[1] = v[1][2]; 
 	axis.thirdVector[2] = v[2][2]; 
+	*/
 
 	axis.inertia[0] = I[0]; 
 	axis.inertia[1] = I[1]; 

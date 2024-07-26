@@ -94,10 +94,14 @@ gdouble** CreateTable2(gint N)
 {
 	gdouble** T;
 	gint i;
-	T = g_malloc(N*sizeof(gdouble*)) ;
+	gint j;
 
+	T = g_malloc(N*sizeof(gdouble*)) ;
 	for(i=0;i<N;i++)
+	{
 		T[i] = g_malloc(N*sizeof(gdouble));
+		for(j=0;j<N;j++) T[i][j] = 0.0;
+	}
 
 	return T;
 }
@@ -1601,6 +1605,7 @@ void create_opengl_file()
 		fprintf(fd,"%lf %lf %lf\n",colorMapColors[1][0], colorMapColors[1][1],colorMapColors[1][2]);
 		fprintf(fd,"%lf %lf %lf\n",colorMapColors[2][0], colorMapColors[2][1],colorMapColors[2][2]);
 		fprintf(fd,"%d\n",getShowOneSurface());
+		fprintf(fd,"%lf\n",get_alpha_opacity());
 		fclose(fd);
 	}
 	g_free(openglfile);
@@ -1698,6 +1703,11 @@ void read_opengl_file()
  		if(fgets(t,taille,fd))
 			if(sscanf(t,"%d",&showOneSurface)!=1) showOneSurface = 0;
 		setShowOneSurface(showOneSurface);
+ 		if(fgets(t,taille,fd))
+		{
+			gdouble alpha;
+			if(sscanf(t,"%lf",&alpha)==1) set_alpha_opacity(alpha);
+		}
 
 		fclose(fd);
 	}

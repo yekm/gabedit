@@ -4061,6 +4061,24 @@ G_CONST_RETURN gchar* get_open_babel_command()
 	return babelCommand;
 }
 /**********************************************************************************************************************************/
+gint get_num_orbitals_from_aux_mopac_file(FILE* file, gchar* blockName,  gint* begin, gint* end)
+{
+	gchar t[BSIZE];
+	*begin = 0;
+	*end = 0;
+	 while(!feof(file))
+	 {
+		if(!fgets(t,BSIZE,file))break;
+		if(strstr( t, blockName))
+		{
+			gchar* pdest = strstr( t, "=")+1;
+			gint i = sscanf(pdest,"%d %d",begin,end);
+			return i;
+		}
+	 }
+	 return 0;
+}
+/**********************************************************************************************************************************/
 gchar** get_one_block_from_aux_mopac_file(FILE* file, gchar* blockName,  gint* n)
 {
 	gint nElements = 0;

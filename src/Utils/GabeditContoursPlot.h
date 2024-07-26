@@ -52,6 +52,34 @@ typedef enum
 
 typedef struct 
 {
+	guint xi;
+	guint yi;
+	gint width;
+	gint height;
+	gdouble x;
+	gdouble y;
+	gchar* str;
+	PangoLayout* pango;
+}ContoursPlotObjectText;
+
+typedef struct 
+{
+	guint x1i;
+	guint y1i;
+	guint x2i;
+	guint y2i;
+	gdouble x1;
+	gdouble y1;
+	gdouble x2;
+	gdouble y2;
+  	guint width;
+  	guint arrow_size;
+  	GdkColor color;
+  	GdkLineStyle style;
+}ContoursPlotObjectLine;
+
+typedef struct 
+{
 	gdouble value;
 	gint size;
 	gdouble* x;
@@ -120,6 +148,7 @@ struct _GabeditContoursPlot
   guint x_legends_digits; 
   guint y_legends_digits; 
 
+  guint length_ticks; 
   guint hmajor_ticks, hminor_ticks; 
   guint vmajor_ticks, vminor_ticks; 
   gdouble d_hmajor, d_hminor; 
@@ -128,6 +157,7 @@ struct _GabeditContoursPlot
   gdouble d_hlegend, d_vlegend; 
   
   GdkGC *back_gc; 
+  GdkGC *fore_gc; 
   
   PangoLayout **h_legends;
   PangoLayout **v_legends;
@@ -135,8 +165,10 @@ struct _GabeditContoursPlot
   gchar** h_legends_str;
   gchar** v_legends_str;
   
-  gint legends_width;
-  gint legends_height;
+  gint x_legends_width;
+  gint x_legends_height;
+  gint y_legends_width;
+  gint y_legends_height;
 
   gchar *h_label_str;
   gchar *v_label_str;
@@ -175,6 +207,7 @@ struct _GabeditContoursPlot
   GList *data_list;
   
   GdkGC *data_gc;
+  GdkGC *lines_gc;
 
   guint mouse_button; 
   
@@ -186,6 +219,8 @@ struct _GabeditContoursPlot
   
   GdkPoint zoom_point;
   GdkPoint distance_point;
+  GdkPoint object_begin_point;
+  GdkPoint object_end_point;
   
   GdkRectangle zoom_rect;
   GdkRectangle distance_rect;
@@ -208,6 +243,17 @@ struct _GabeditContoursPlot
   gboolean dashed_negative_contours;
 
   gboolean d_key_pressed;
+
+  gint nObjectsText;
+  ContoursPlotObjectText* objectsText;
+  gint selected_objects_text_num;
+  gboolean t_key_pressed;
+
+  gint nObjectsLine;
+  ContoursPlotObjectLine* objectsLine;
+  gint selected_objects_line_num;
+  gint selected_objects_line_type;
+  gboolean l_key_pressed;
 };
 
 struct _GabeditContoursPlotClass
@@ -225,12 +271,13 @@ void gabedit_contoursplot_set_range_ymax (GabeditContoursPlot *contoursplot, gdo
 void gabedit_contoursplot_set_autorange (GabeditContoursPlot *contoursplot, ContoursPlotData *data);    
 void gabedit_contoursplot_get_range (GabeditContoursPlot *contoursplot, gdouble *xmin, gdouble *xmax, gdouble *ymin, gdouble *ymax);
 gboolean gabedit_contoursplot_get_point (GabeditContoursPlot *contoursplot, guint x, guint y, gdouble *xv, gdouble *yv);
-void gabedit_contoursplot_set_ticks (GabeditContoursPlot *contoursplot, guint hmajor, guint hminor, guint vmajor, guint vminor);
+void gabedit_contoursplot_set_ticks (GabeditContoursPlot *contoursplot, guint hmajor, guint hminor, guint vmajor, guint vminor, guint length);
 void gabedit_contoursplot_set_ticks_hmajor (GabeditContoursPlot *contoursplot, guint hmajor);
 void gabedit_contoursplot_set_ticks_hminor (GabeditContoursPlot *contoursplot, guint hminor);
 void gabedit_contoursplot_set_ticks_vmajor (GabeditContoursPlot *contoursplot, guint vmajor);
 void gabedit_contoursplot_set_ticks_vminor (GabeditContoursPlot *contoursplot, guint vminor);
-void gabedit_contoursplot_get_ticks (GabeditContoursPlot *contoursplot, guint *hmajor, guint *hminor, guint *vmajor, guint *vminor);
+void gabedit_contoursplot_set_ticks_length (GabeditContoursPlot *contoursplot, guint length);
+void gabedit_contoursplot_get_ticks (GabeditContoursPlot *contoursplot, guint *hmajor, guint *hminor, guint *vmajor, guint *vminor, guint* length);
 void gabedit_contoursplot_set_x_legends_digits (GabeditContoursPlot *contoursplot, guint digits);
 void gabedit_contoursplot_set_y_legends_digits (GabeditContoursPlot *contoursplot, guint digits);
 guint gabedit_contoursplot_get_x_legends_digits (GabeditContoursPlot *contoursplot);
@@ -247,7 +294,7 @@ void gabedit_contoursplot_configure_mouse_distance (GabeditContoursPlot *contour
 void gabedit_contoursplot_configure_wheel_zoom (GabeditContoursPlot *contoursplot, gboolean enabled, gdouble factor);
 void gabedit_contoursplot_configure_mouse_displace (GabeditContoursPlot *contoursplot, gboolean enabled, guint button);
 void gabedit_contoursplot_configure_mouse_autorange (GabeditContoursPlot *contoursplot, gboolean enabled, guint button);
-void gabedit_contoursplot_save(GabeditContoursPlot *contoursplot, gchar *fileName, gchar* type);
+void gabedit_contoursplot_save_image(GabeditContoursPlot *contoursplot, gchar *fileName, gchar* type);
 void gabedit_contoursplot_reflect_x (GabeditContoursPlot *contoursplot, gboolean reflection);
 void gabedit_contoursplot_reflect_y (GabeditContoursPlot *contoursplot, gboolean reflection);
 void gabedit_contoursplot_show_left_legends (GabeditContoursPlot *contoursplot, gboolean show);

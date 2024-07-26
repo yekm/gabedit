@@ -1,7 +1,7 @@
 # wibdows config (with MinGW)
 
 CC = gcc -mms-bitfields 
-GTKDIR = C:/GnuPrograms/gtk
+GTKDIR = C:/GnuPrograms/gtk22
 #GTKLIB = `pkg-config gtk+-2.0 --libs`
 GTKLIB = -L$(GTKDIR)/lib -lgtk-win32-2.0 -lgdk-win32-2.0 -latk-1.0 -lgdk_pixbuf-2.0 -lpangowin32-1.0 -lgdi32 -lpango-1.0 -lgobject-2.0 -lgmodule-2.0 -lglib-2.0  -lcairo -lpangocairo-1.0
 
@@ -17,5 +17,5 @@ JPEGLIB    =
 WIN32LIB   = -lwsock32 -lcomdlg32
 X11LIB   =
 PTHREADLIB  = 
-COMMONCFLAGS = -Wall -O2
+COMMONCFLAGS = -Wall -O2 -DENABLE_DEPRECATED
 

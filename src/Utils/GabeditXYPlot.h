@@ -52,6 +52,34 @@ typedef enum
 
 typedef struct 
 {
+	guint xi;
+	guint yi;
+	gint width;
+	gint height;
+	gdouble x;
+	gdouble y;
+	gchar* str;
+	PangoLayout* pango;
+}XYPlotObjectText;
+
+typedef struct 
+{
+	guint x1i;
+	guint y1i;
+	guint x2i;
+	guint y2i;
+	gdouble x1;
+	gdouble y1;
+	gdouble x2;
+	gdouble y2;
+  	guint width;
+  	guint arrow_size;
+  	GdkColor color;
+  	GdkLineStyle style;
+}XYPlotObjectLine;
+
+typedef struct 
+{
   gdouble *x, *y;
   guint size;
   gchar point_str[100];
@@ -80,6 +108,7 @@ struct _GabeditXYPlot
   guint x_legends_digits; 
   guint y_legends_digits; 
 
+  guint length_ticks; 
   guint hmajor_ticks, hminor_ticks; 
   guint vmajor_ticks, vminor_ticks; 
   gdouble d_hmajor, d_hminor; 
@@ -88,6 +117,7 @@ struct _GabeditXYPlot
   gdouble d_hlegend, d_vlegend; 
   
   GdkGC *back_gc; 
+  GdkGC *fore_gc; 
   
   PangoLayout **h_legends;
   PangoLayout **v_legends;
@@ -95,8 +125,10 @@ struct _GabeditXYPlot
   gchar** h_legends_str;
   gchar** v_legends_str;
   
-  gint legends_width;
-  gint legends_height;
+  gint x_legends_width;
+  gint x_legends_height;
+  gint y_legends_width;
+  gint y_legends_height;
 
   gchar *h_label_str;
   gchar *v_label_str;
@@ -128,6 +160,7 @@ struct _GabeditXYPlot
   GList *data_list;
   
   GdkGC *data_gc;
+  GdkGC *lines_gc;
 
   guint mouse_button; 
   
@@ -139,6 +172,8 @@ struct _GabeditXYPlot
   
   GdkPoint zoom_point;
   GdkPoint distance_point;
+  GdkPoint object_begin_point;
+  GdkPoint object_end_point;
   
   GdkRectangle zoom_rect;
   GdkRectangle distance_rect;
@@ -157,6 +192,18 @@ struct _GabeditXYPlot
 
   gboolean shift_key_pressed;
   gboolean control_key_pressed;
+
+  gint nObjectsText;
+  XYPlotObjectText* objectsText;
+  gint selected_objects_text_num;
+  gboolean t_key_pressed;
+
+  gint nObjectsLine;
+  XYPlotObjectLine* objectsLine;
+  gint selected_objects_line_num;
+  gint selected_objects_line_type;
+  gboolean l_key_pressed;
+
 };
 
 struct _GabeditXYPlotClass
@@ -174,12 +221,13 @@ void gabedit_xyplot_set_range_ymax (GabeditXYPlot *xyplot, gdouble ymax);
 void gabedit_xyplot_set_autorange (GabeditXYPlot *xyplot, XYPlotData *data);    
 void gabedit_xyplot_get_range (GabeditXYPlot *xyplot, gdouble *xmin, gdouble *xmax, gdouble *ymin, gdouble *ymax);
 gboolean gabedit_xyplot_get_point (GabeditXYPlot *xyplot, guint x, guint y, gdouble *xv, gdouble *yv);
-void gabedit_xyplot_set_ticks (GabeditXYPlot *xyplot, guint hmajor, guint hminor, guint vmajor, guint vminor);
+void gabedit_xyplot_set_ticks (GabeditXYPlot *xyplot, guint hmajor, guint hminor, guint vmajor, guint vminor, guint length);
 void gabedit_xyplot_set_ticks_hmajor (GabeditXYPlot *xyplot, guint hmajor);
 void gabedit_xyplot_set_ticks_hminor (GabeditXYPlot *xyplot, guint hminor);
 void gabedit_xyplot_set_ticks_vmajor (GabeditXYPlot *xyplot, guint vmajor);
 void gabedit_xyplot_set_ticks_vminor (GabeditXYPlot *xyplot, guint vminor);
-void gabedit_xyplot_get_ticks (GabeditXYPlot *xyplot, guint *hmajor, guint *hminor, guint *vmajor, guint *vminor);
+void gabedit_xyplot_set_ticks_length(GabeditXYPlot *xyplot, guint length);
+void gabedit_xyplot_get_ticks (GabeditXYPlot *xyplot, guint *hmajor, guint *hminor, guint *vmajor, guint *vminor, guint* length);
 void gabedit_xyplot_set_x_legends_digits (GabeditXYPlot *xyplot, guint digits);
 void gabedit_xyplot_set_y_legends_digits (GabeditXYPlot *xyplot, guint digits);
 guint gabedit_xyplot_get_x_legends_digits (GabeditXYPlot *xyplot);
@@ -197,7 +245,7 @@ void gabedit_xyplot_configure_mouse_distance (GabeditXYPlot *xyplot, gboolean en
 void gabedit_xyplot_configure_wheel_zoom (GabeditXYPlot *xyplot, gboolean enabled, gdouble factor);
 void gabedit_xyplot_configure_mouse_displace (GabeditXYPlot *xyplot, gboolean enabled, guint button);
 void gabedit_xyplot_configure_mouse_autorange (GabeditXYPlot *xyplot, gboolean enabled, guint button);
-void gabedit_xyplot_save(GabeditXYPlot *xyplot, gchar *fileName, gchar* type);
+void gabedit_xyplot_save_image(GabeditXYPlot *xyplot, gchar *fileName, gchar* type);
 void gabedit_xyplot_reflect_x (GabeditXYPlot *xyplot, gboolean reflection);
 void gabedit_xyplot_reflect_y (GabeditXYPlot *xyplot, gboolean reflection);
 void gabedit_xyplot_show_left_legends (GabeditXYPlot *xyplot, gboolean show);

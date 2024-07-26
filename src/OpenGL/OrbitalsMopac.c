@@ -136,7 +136,74 @@ static gdouble* read_basis_zeta_from_a_mopac_output_file(gchar *FileName, gint* 
 	return zetas;
 }
 /********************************************************************************/
-static gdouble* read_overlap_matrix_from_a_mopac_output_file(gchar *FileName, gint* nrs)
+static gdouble* read_overlap_matrix_from_a_mopac_output_file_comp(gchar *FileName, gint* nrs)
+{
+ 	gchar **strIndices;
+ 	gchar **strMatrix;
+ 	FILE *file;
+	gdouble *overlapMatrix = NULL;
+	gint i;
+	gint ni;
+	gint no;
+	gint N = NOrb*(NOrb+1)/2;
+	gint n = 0;
+	
+ 	if ((!FileName) || (strcmp(FileName,"") == 0))
+ 	{
+		Message("Sorry No file slected\n","Error",TRUE);
+    		return NULL;
+ 	}
+
+ 	file = FOpen(FileName, "rb");
+ 	if(file ==NULL)
+ 	{
+		gchar buffer[BSIZE];
+		sprintf(buffer,"Sorry, I can not open '%s' file\n",FileName);
+  		Message(buffer,"Error",TRUE);
+  		return NULL;
+ 	}
+	strIndices = get_one_block_from_aux_mopac_file(file, "OVERLAP_INDICES[",  &ni);
+	if(!strIndices) 
+	{
+		fclose(file);
+		return NULL;
+	}
+	if(ni>N || ni<1)
+	{
+		free_one_string_table(strIndices,ni);
+		fclose(file);
+		return NULL;
+	}
+	strMatrix = get_one_block_from_aux_mopac_file(file, "OVERLAP_COEFFICIENTS[",  &no);
+	if(!strMatrix) 
+	{
+		fclose(file);
+		return NULL;
+	}
+	if(no>N || no<1 ||ni!=no)
+	{
+		free_one_string_table(strMatrix,no);
+		fclose(file);
+		return NULL;
+	}
+
+	overlapMatrix = g_malloc(N*sizeof(gdouble));
+	for(i=0;i<N;i++) overlapMatrix[i] = 0.0;
+
+	for(i=0;i<ni;i++) 
+	{
+		n = atoi(strIndices[i])-1;
+		overlapMatrix[n] =  atof(strMatrix[i]);
+	}
+
+	free_one_string_table(strIndices,ni);
+	free_one_string_table(strMatrix,no);
+	*nrs = ni;
+
+	return overlapMatrix;
+}
+/********************************************************************************/
+static gdouble* read_overlap_matrix_from_a_mopac_output_file_nocomp(gchar *FileName, gint* nrs)
 {
  	gchar **str;
  	FILE *file;
@@ -171,6 +238,14 @@ static gdouble* read_overlap_matrix_from_a_mopac_output_file(gchar *FileName, gi
 	return overlapMatrix;
 }
 /********************************************************************************/
+static gdouble* read_overlap_matrix_from_a_mopac_output_file(gchar *FileName, gint* nrs)
+{
+	gdouble* overlap = read_overlap_matrix_from_a_mopac_output_file_nocomp(FileName, nrs);
+	if(overlap) return overlap;
+	overlap = read_overlap_matrix_from_a_mopac_output_file_comp(FileName, nrs);
+	return overlap;
+}
+/********************************************************************************/
 static gint* read_basis_atompqn_from_a_mopac_output_file(gchar *FileName, gint* nrs)
 {
  	gchar **str;
@@ -200,7 +275,6 @@ static gint* read_basis_atompqn_from_a_mopac_output_file(gchar *FileName, gint* 
 	for(i=0;i<*nrs;i++)
 	{
 		pqn[i] = atoi(str[i]);
-		/* printf("n=%d\n",pqn[i]);*/
 	}
 	free_one_string_table(str,*nrs);
 
@@ -265,8 +339,124 @@ static gchar** read_basis_types_from_a_mopac_output_file(gchar *FileName, gint* 
 	fclose(file);
 	return strbasis;
 }
+/**********************************************************************************************************************************/
+static gboolean test_string_in_aux_mopac_file(FILE* file, gchar* str)
+{
+	gchar t[BSIZE];
+	 while(!feof(file))
+	 {
+		if(!fgets(t,BSIZE,file))break;
+		if(strstr( t, str)) return TRUE;
+	 }
+	 return FALSE;
+}
 /********************************************************************************/
-static gboolean set_sym_orbitals(gchar* FileName)
+static void get_number_of_mos(FILE* file, gint* n, gint* nAlpha, gint* nBeta, gint* nBegin, gint* nEnd, gint* nBeginAlpha,
+		gint* nEndAlpha, gint* nBeginBeta, gint* nEndBeta)
+{
+	*n = 0;
+	*nAlpha = 0;
+	*nBeta = 0;
+	*nBeginAlpha = 0;
+	*nEndAlpha = 0;
+	*nBeginBeta = 0;
+	*nEndBeta = 0;
+
+	fseek(file, 0L, SEEK_SET);
+	*nAlpha = get_num_orbitals_from_aux_mopac_file(file, "SET_OF_ALPHA_MOS=",  nBeginAlpha, nEndAlpha);
+	if(*nAlpha>0)
+	{
+		fseek(file, 0L, SEEK_SET);
+		*nBeta = get_num_orbitals_from_aux_mopac_file(file, "SET_OF_BETA_MOS=",  nBeginBeta, nEndBeta);
+	}
+	else 
+	{
+		fseek(file, 0L, SEEK_SET);
+		*n = get_num_orbitals_from_aux_mopac_file(file, "SET_OF_MOS=",  nBegin, nEnd);
+	}
+	fseek(file, 0L, SEEK_SET);
+	if(*n!=0 || *nAlpha!=0 || *nBeta!=0) return ;
+	if(test_string_in_aux_mopac_file(file, "ALPHA_EIGENVALUES["))
+	{
+		*nAlpha = NOrb;
+		*nBeginAlpha = 1; 
+		*nEndAlpha = NOrb; 
+		*nBeta = NOrb;
+		*nBeginBeta = 1; 
+		*nEndBeta = NOrb; 
+	}
+	else 
+	{
+		fseek(file, 0L, SEEK_SET);
+		if(test_string_in_aux_mopac_file(file, "EIGENVALUES["))
+		{
+			*n = NOrb;
+			*nBegin = 1; 
+			*nEnd = NOrb; 
+		}
+	}
+	fseek(file, 0L, SEEK_SET);
+	
+
+}
+/********************************************************************************/
+static gboolean set_sym_orbitals_comp(gchar* FileName)
+{
+ 	FILE *file;
+	gint nAlpha = 0;
+	gint nBeta = 0;
+	gint n = 0;
+	gint i;
+	gint nBeginAlpha = 0;
+	gint nEndAlpha = 0;
+	gint nBeginBeta = 0;
+	gint nEndBeta = 0;
+	gint nBegin = 0;
+	gint nEnd = 0;
+
+ 	file = FOpen(FileName, "rb");
+ 	if(file ==NULL) return FALSE;
+
+	get_number_of_mos(file, &n, &nAlpha, &nBeta, &nBegin, &nEnd, &nBeginAlpha, &nEndAlpha, &nBeginBeta, &nEndBeta);
+
+	if(n>0)
+	{
+		SymAlphaOrbitals = g_malloc(NOrb*sizeof(gchar*));
+		SymBetaOrbitals = g_malloc(NOrb*sizeof(gchar*));
+		for(i=0;i<NOrb;i++) SymAlphaOrbitals[i] = g_strdup("DELETED");
+		for(i=0;i<NOrb;i++) SymBetaOrbitals[i] = g_strdup("DELETED");
+		for(i=nBegin-1;i<nEnd;i++) 
+		{
+			if(SymAlphaOrbitals[i]) g_free(SymAlphaOrbitals[i]);
+			if(SymBetaOrbitals[i]) g_free(SymBetaOrbitals[i]);
+			SymAlphaOrbitals[i] = g_strdup_printf("N=%d",i+1);
+			SymBetaOrbitals[i]  = g_strdup_printf("N=%d",i+1);
+		}
+	}
+	if(nAlpha>0 && nAlpha==nBeta)
+	{
+		SymAlphaOrbitals = g_malloc(NOrb*sizeof(gchar*));
+		SymBetaOrbitals = g_malloc(NOrb*sizeof(gchar*));
+		for(i=0;i<NOrb;i++) SymAlphaOrbitals[i] = g_strdup("DELETED");
+		for(i=0;i<NOrb;i++) SymBetaOrbitals[i] = g_strdup("DELETED");
+		for(i=nBeginAlpha-1;i<nEndAlpha;i++) 
+		{
+			if(SymAlphaOrbitals[i]) g_free(SymAlphaOrbitals[i]);
+			SymAlphaOrbitals[i] = g_strdup_printf("N=%d",i+1);
+		}
+		for(i=nBeginBeta-1;i<nEndBeta;i++) 
+		{
+			if(SymBetaOrbitals[i]) g_free(SymBetaOrbitals[i]);
+			SymBetaOrbitals[i]  = g_strdup_printf("N=%d",i+1);
+		}
+	}
+
+	fclose(file);
+	if(n>0 || (nAlpha>0 && nAlpha==nBeta)) return TRUE;
+	else return FALSE;
+}
+/********************************************************************************/
+static gboolean set_sym_orbitals_nocomp(gchar* FileName)
 {
  	FILE *file;
 	gchar**  strAlpha = NULL;
@@ -276,9 +466,17 @@ static gboolean set_sym_orbitals(gchar* FileName)
 	gint nBeta = 0;
 	gint n = 0;
 	gint i;
+	gint nBeginAlpha = 0;
+	gint nEndAlpha = 0;
+	gint nBeginBeta = 0;
+	gint nEndBeta = 0;
+	gint nBegin = 0;
+	gint nEnd = 0;
 
  	file = FOpen(FileName, "rb");
  	if(file ==NULL) return FALSE;
+
+	get_number_of_mos(file, &n, &nAlpha, &nBeta, &nBegin, &nEnd, &nBeginAlpha, &nEndAlpha, &nBeginBeta, &nEndBeta);
 
 	strAlpha = get_one_block_from_aux_mopac_file(file, "ALPHA_M.O.SYMMETRY_LABELS[",  &nAlpha);
 	if(strAlpha)
@@ -294,15 +492,33 @@ static gboolean set_sym_orbitals(gchar* FileName)
 	if(n>0)
 	{
 		SymAlphaOrbitals = g_malloc(NOrb*sizeof(gchar*));
-		for(i=0;i<NOrb;i++) SymAlphaOrbitals[i] = g_strdup(str[i]);
-		SymBetaOrbitals = SymAlphaOrbitals;
+		SymBetaOrbitals = g_malloc(NOrb*sizeof(gchar*));
+		for(i=0;i<NOrb;i++) SymAlphaOrbitals[i] = g_strdup("DELETED");
+		for(i=0;i<NOrb;i++) SymBetaOrbitals[i] = g_strdup("DELETED");
+		for(i=nBegin-1;i<nEnd;i++) 
+		{
+			if(SymAlphaOrbitals[i]) g_free(SymAlphaOrbitals[i]);
+			if(SymBetaOrbitals[i]) g_free(SymBetaOrbitals[i]);
+			SymAlphaOrbitals[i] = g_strdup(str[i-nBegin+1]);
+			SymBetaOrbitals[i]  = g_strdup(str[i-nBegin+1]);
+		}
 	}
 	if(nAlpha>0 && nAlpha==nBeta)
 	{
 		SymAlphaOrbitals = g_malloc(NOrb*sizeof(gchar*));
-		for(i=0;i<NOrb;i++) SymAlphaOrbitals[i] = g_strdup(strAlpha[i]);
 		SymBetaOrbitals = g_malloc(NOrb*sizeof(gchar*));
-		for(i=0;i<NOrb;i++) SymBetaOrbitals[i] = g_strdup(strBeta[i]);
+		for(i=0;i<NOrb;i++) SymAlphaOrbitals[i] = g_strdup("DELETED");
+		for(i=0;i<NOrb;i++) SymBetaOrbitals[i] = g_strdup("DELETED");
+		for(i=nBeginAlpha-1;i<nEndAlpha;i++) 
+		{
+			if(SymAlphaOrbitals[i]) g_free(SymAlphaOrbitals[i]);
+			SymAlphaOrbitals[i] = g_strdup(strAlpha[i-nBeginAlpha+1]);
+		}
+		for(i=nBeginBeta-1;i<nEndBeta;i++) 
+		{
+			if(SymBetaOrbitals[i]) g_free(SymBetaOrbitals[i]);
+			SymBetaOrbitals[i] = g_strdup(strBeta[i-nBeginBeta+1]);
+		}
 	}
 
 	if(file) fclose(file);
@@ -313,13 +529,64 @@ static gboolean set_sym_orbitals(gchar* FileName)
 	else 
 	{
 		SymAlphaOrbitals = g_malloc(NOrb*sizeof(gchar*));
+		SymBetaOrbitals = g_malloc(NOrb*sizeof(gchar*));
 		for(i=0;i<NOrb;i++) SymAlphaOrbitals[i] = g_strdup("UNK");
-		SymBetaOrbitals = SymAlphaOrbitals;
-		return TRUE;
+		for(i=0;i<NOrb;i++) SymBetaOrbitals[i] = g_strdup("UNK");
+		/*SymBetaOrbitals = SymAlphaOrbitals;*/
+		return FALSE;
 	}
 }
 /********************************************************************************/
-static gboolean set_ener_orbitals(gchar* FileName)
+static gboolean set_sym_orbitals(gchar* FileName)
+{
+	if(set_sym_orbitals_nocomp(FileName)) return TRUE;
+	return set_sym_orbitals_comp(FileName);
+}
+/********************************************************************************/
+static gboolean set_ener_orbitals_comp(gchar* FileName)
+{
+ 	FILE *file;
+	gint i;
+	gint nBeginAlpha = 0;
+	gint nEndAlpha = 0;
+	gint nBeginBeta = 0;
+	gint nEndBeta = 0;
+	gint nBegin = 0;
+	gint nEnd = 0;
+	gint n = 0;
+	gint nAlpha = 0;
+	gint nBeta = 0;
+
+
+ 	file = FOpen(FileName, "rb");
+ 	if(file ==NULL) return FALSE;
+
+	get_number_of_mos(file, &n, &nAlpha, &nBeta, &nBegin, &nEnd, &nBeginAlpha, &nEndAlpha, &nBeginBeta, &nEndBeta);
+
+	if(n>0)
+	{
+		EnerAlphaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+		EnerBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+		for(i=0;i<NOrb;i++) EnerAlphaOrbitals[i] = 0.0;
+		for(i=0;i<NOrb;i++) EnerBetaOrbitals[i] = 0.0;
+	}
+	if(nAlpha>0)
+	{
+		EnerAlphaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+		for(i=0;i<NOrb;i++) EnerAlphaOrbitals[i] = 0.0;
+	}
+	if(nBeta>0)
+	{
+		EnerBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+		for(i=0;i<NOrb;i++) EnerBetaOrbitals[i] = 0.0;
+	}
+
+	if(file) fclose(file);
+	if(n>0 || (nAlpha>0 && nAlpha==nBeta)) return TRUE;
+	else return FALSE;
+}
+/********************************************************************************/
+static gboolean set_ener_orbitals_nocomp(gchar* FileName)
 {
  	FILE *file;
 	gchar**  strAlpha = NULL;
@@ -329,9 +596,17 @@ static gboolean set_ener_orbitals(gchar* FileName)
 	gint nBeta = 0;
 	gint n = 0;
 	gint i;
+	gint nBeginAlpha = 0;
+	gint nEndAlpha = 0;
+	gint nBeginBeta = 0;
+	gint nEndBeta = 0;
+	gint nBegin = 0;
+	gint nEnd = 0;
 
  	file = FOpen(FileName, "rb");
  	if(file ==NULL) return FALSE;
+
+	get_number_of_mos(file, &n, &nAlpha, &nBeta, &nBegin, &nEnd, &nBeginAlpha, &nEndAlpha, &nBeginBeta, &nEndBeta);
 
 	strAlpha = get_one_block_from_aux_mopac_file(file, "ALPHA_EIGENVALUES[",  &nAlpha);
 	if(strAlpha)
@@ -348,18 +623,22 @@ static gboolean set_ener_orbitals(gchar* FileName)
 	{
 		EnerAlphaOrbitals = g_malloc(NOrb*sizeof(gdouble));
 		EnerBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
-		for(i=0;i<NOrb;i++) EnerAlphaOrbitals[i] = atof(str[i])/AUTOEV;
-		for(i=0;i<NOrb;i++) EnerBetaOrbitals[i] = atof(str[i])/AUTOEV;
+		for(i=0;i<NOrb;i++) EnerAlphaOrbitals[i] = 0.0;
+		for(i=0;i<NOrb;i++) EnerBetaOrbitals[i] = 0.0;
+		for(i=nBegin-1;i<nEnd;i++) EnerAlphaOrbitals[i] = atof(str[i-nBegin+1])/AUTOEV;
+		for(i=nBegin-1;i<nEnd;i++) EnerBetaOrbitals[i] = atof(str[i-nBegin+1])/AUTOEV;
 	}
 	if(nAlpha>0)
 	{
 		EnerAlphaOrbitals = g_malloc(NOrb*sizeof(gdouble));
-		for(i=0;i<NOrb;i++) EnerAlphaOrbitals[i] = atof(strAlpha[i])/AUTOEV;
-	}
-	if(nBeta>0)
-	{
-		EnerBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
-		for(i=0;i<NOrb;i++) EnerBetaOrbitals[i] = atof(strBeta[i])/AUTOEV;
+		for(i=0;i<NOrb;i++) EnerAlphaOrbitals[i] = 0.0;
+		for(i=nBeginAlpha-1;i<nEndAlpha;i++) EnerAlphaOrbitals[i] = atof(strAlpha[i-nBeginAlpha+1])/AUTOEV;
+		if(nBeta>0)
+		{
+			EnerBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+			for(i=0;i<NOrb;i++) EnerBetaOrbitals[i] = 0.0;
+			for(i=nBeginBeta-1;i<nEndBeta;i++) EnerBetaOrbitals[i] = atof(strBeta[i-nBeginBeta+1])/AUTOEV;
+		}
 	}
 
 	if(file) fclose(file);
@@ -368,6 +647,18 @@ static gboolean set_ener_orbitals(gchar* FileName)
 	free_one_string_table(str, n);
 	if(n>0 || (nAlpha>0 && nAlpha==nBeta)) return TRUE;
 	else return FALSE;
+}
+/********************************************************************************/
+static gboolean set_ener_orbitals(gchar* FileName)
+{
+	gint i;
+	if(set_ener_orbitals_nocomp(FileName)) return TRUE;
+	if(set_ener_orbitals_comp(FileName)) return TRUE;
+	EnerAlphaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+	EnerBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+	for(i=0;i<NOrb;i++) EnerAlphaOrbitals[i] = 0.0;
+	for(i=0;i<NOrb;i++) EnerBetaOrbitals[i] = 0.0;
+	return TRUE;
 }
 /********************************************************************************/
 static gboolean normalize_orbitals(gchar* FileName, gdouble**CoefOrbitals)
@@ -402,7 +693,80 @@ static gboolean normalize_orbitals(gchar* FileName, gdouble**CoefOrbitals)
 	return TRUE;
 }
 /********************************************************************************/
-static gboolean set_occ_orbitals(gchar* FileName)
+static gint get_num_electrons(FILE* file)
+{
+	gint n = 0;
+	gint nE = 0;
+	gint i;
+	gchar** str;
+	long int pos = ftell(file);
+	fseek(file, 0L, SEEK_SET);
+	str = get_one_block_from_aux_mopac_file(file, "ATOM_CORE[",  &nE);
+	for(i=0;i<nE;i++) n+=atoi(str[i]);
+	fseek(file, pos, SEEK_SET);
+	return n;
+}
+/********************************************************************************/
+static gboolean set_occ_orbitals_comp(gchar* FileName)
+{
+ 	FILE *file;
+	gint nAlpha = 0;
+	gint nBeta = 0;
+	gint n = 0;
+	gint i;
+	gint nBeginAlpha = 0;
+	gint nEndAlpha = 0;
+	gint nBeginBeta = 0;
+	gint nEndBeta = 0;
+	gint nBegin = 0;
+	gint nEnd = 0;
+	gint ne = 0;
+	gint nA = 0;
+	gint nB = 0;
+
+ 	file = FOpen(FileName, "rb");
+ 	if(file ==NULL) return FALSE;
+	ne = get_num_electrons(file);
+
+	get_number_of_mos(file, &n, &nAlpha, &nBeta, &nBegin, &nEnd, &nBeginAlpha, &nEndAlpha, &nBeginBeta, &nEndBeta);
+
+	if(n>0)
+	{
+		OccAlphaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+		OccBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+		for(i=0;i<NOrb;i++) OccAlphaOrbitals[i] = 0.0;
+		for(i=0;i<NOrb;i++) OccBetaOrbitals[i]  = 0.0;
+		nA = ne;
+		if(nEnd+nBegin<nA || nA == 0) nA = nEnd+nBegin;
+		nA /=2;
+		for(i=0;i<nA;i++) 
+		{
+			OccAlphaOrbitals[i] = 1.0;
+			OccBetaOrbitals[i]  = 1.0;
+		}
+	}
+	if(nAlpha>0 && nAlpha==nBeta)
+	{
+		OccAlphaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+		OccBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+		for(i=0;i<NOrb;i++) OccAlphaOrbitals[i] = 0.0;
+		for(i=0;i<NOrb;i++) OccBetaOrbitals[i]  = 0.0;
+		nA = ne;
+		if(nEndAlpha+nBeginAlpha<nA || nA == 0) nA = nEndAlpha+nBeginAlpha;
+		nA /=2;
+		for(i=0;i<nA;i++) OccAlphaOrbitals[i] = 1.0;
+		nB = ne;
+		if(nEndBeta+nBeginBeta<nB || nB == 0) nB = nEndBeta+nBeginBeta;
+		nB /=2;
+		for(i=0;i<nB;i++) OccBetaOrbitals[i]  =  1.0;
+	}
+
+	fclose(file);
+	if(n>0 || (nAlpha>0 && nAlpha==nBeta)) return TRUE;
+	else return FALSE;
+}
+/********************************************************************************/
+static gboolean set_occ_orbitals_nocomp(gchar* FileName)
 {
  	FILE *file;
 	gchar**  strAlpha = NULL;
@@ -412,9 +776,17 @@ static gboolean set_occ_orbitals(gchar* FileName)
 	gint nBeta = 0;
 	gint n = 0;
 	gint i;
+	gint nBeginAlpha = 0;
+	gint nEndAlpha = 0;
+	gint nBeginBeta = 0;
+	gint nEndBeta = 0;
+	gint nBegin = 0;
+	gint nEnd = 0;
 
  	file = FOpen(FileName, "rb");
  	if(file ==NULL) return FALSE;
+
+	get_number_of_mos(file, &n, &nAlpha, &nBeta, &nBegin, &nEnd, &nBeginAlpha, &nEndAlpha, &nBeginBeta, &nEndBeta);
 
 	strAlpha = get_one_block_from_aux_mopac_file(file, "ALPHA_MOLECULAR_ORBITAL_OCCUPANCIES[",  &nAlpha);
 	if(strAlpha)
@@ -431,17 +803,31 @@ static gboolean set_occ_orbitals(gchar* FileName)
 	{
 		OccAlphaOrbitals = g_malloc(NOrb*sizeof(gdouble));
 		OccBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
-		for(i=0;i<NOrb;i++) OccAlphaOrbitals[i] = atof(str[i]);
+		for(i=0;i<NOrb;i++) OccAlphaOrbitals[i] = 0.0;
+		for(i=0;i<nBegin;i++) OccAlphaOrbitals[i] = 1.0;
+
+		for(i=nBegin-1;i<nEnd;i++) OccAlphaOrbitals[i] = atof(str[i-nBegin+1]);
 		for(i=0;i<NOrb;i++) if(OccAlphaOrbitals[i]>=2) OccAlphaOrbitals[i] = 1;
-		for(i=0;i<NOrb;i++) OccBetaOrbitals[i] = atof(str[i]);
+
+		for(i=0;i<NOrb;i++) OccBetaOrbitals[i] = 0.0;
+		for(i=0;i<nBegin;i++) OccBetaOrbitals[i] = 1.0;
+		for(i=nBegin-1;i<nEnd;i++) OccBetaOrbitals[i] = atof(str[i-nBegin+1]);
 		for(i=0;i<NOrb;i++) if(OccBetaOrbitals[i]>=2) OccBetaOrbitals[i] -= 1;
 	}
 	if(nAlpha>0 && nAlpha==nBeta)
 	{
 		OccAlphaOrbitals = g_malloc(NOrb*sizeof(gdouble));
-		for(i=0;i<NOrb;i++) OccAlphaOrbitals[i] = atof(strAlpha[i]);
 		OccBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
-		for(i=0;i<NOrb;i++) OccBetaOrbitals[i] = atof(strBeta[i]);
+
+		for(i=0;i<NOrb;i++) OccAlphaOrbitals[i] = 0.0;
+		for(i=0;i<nBeginAlpha;i++) OccAlphaOrbitals[i] = 1.0;
+		for(i=nBeginAlpha-1;i<nEndAlpha;i++) OccAlphaOrbitals[i] = atof(strAlpha[i-nBeginAlpha+1]);
+		for(i=0;i<NOrb;i++) if(OccAlphaOrbitals[i]>=2) OccAlphaOrbitals[i] = 1;
+
+		for(i=0;i<NOrb;i++) OccBetaOrbitals[i] = 0.0;
+		for(i=0;i<nBeginBeta;i++) OccBetaOrbitals[i] = 1.0;
+		for(i=nBeginBeta-1;i<nEndBeta;i++) OccBetaOrbitals[i] = atof(strBeta[i-nBeginBeta+1]);
+		for(i=0;i<NOrb;i++) if(OccBetaOrbitals[i]>=2) OccBetaOrbitals[i] -= 1;
 	}
 
 	fclose(file);
@@ -452,7 +838,114 @@ static gboolean set_occ_orbitals(gchar* FileName)
 	else return FALSE;
 }
 /********************************************************************************/
-static gboolean set_coef_orbitals(gchar* FileName)
+static gboolean set_occ_orbitals(gchar* FileName)
+{
+	if(set_occ_orbitals_nocomp(FileName)) return TRUE;
+	return set_occ_orbitals_comp(FileName);
+		
+}
+/********************************************************************************/
+static gboolean set_coef_orbitals_comp(gchar* FileName)
+{
+ 	FILE *file;
+	gchar**  strIndices = NULL;
+	gchar**  strCoefs = NULL;
+	gint i,k;
+	gint ni;
+	gint nc;
+	gint nBeginAlpha = 0;
+	gint nEndAlpha = 0;
+	gint nBeginBeta = 0;
+	gint nEndBeta = 0;
+	gint nBegin = 0;
+	gint nEnd = 0;
+	gint n = 0;
+	gint nAlpha = 0;
+	gint nBeta = 0;
+
+ 	file = FOpen(FileName, "rb");
+ 	if(file ==NULL) return FALSE;
+	get_number_of_mos(file, &n, &nAlpha, &nBeta, &nBegin, &nEnd, &nBeginAlpha, &nEndAlpha, &nBeginBeta, &nEndBeta);
+	if(nAlpha>0)
+	{
+		CoefAlphaOrbitals = CreateTable2(NOrb);
+		for(i=nBeginAlpha-1;i<=nEndAlpha-1;i++)
+		{
+			strIndices = get_one_block_from_aux_mopac_file(file, "ALPHA_MO_INDICES[",  &ni);
+			strCoefs = get_one_block_from_aux_mopac_file(file, "ALPHA_MO_COEFFICIENTS[",  &nc);
+			if(ni!=nc || ni>NOrb || ni<1)
+			{
+				free_one_string_table(strIndices, ni);
+				free_one_string_table(strCoefs, nc);
+				nAlpha = 0;
+				break;
+			}
+			for(k=0;k<ni;k++)
+			{
+				gint a = atoi(strIndices[k])-1;
+				CoefAlphaOrbitals[i][a]=atof(strCoefs[k]);
+			}
+
+		}
+		if(nAlpha!=0)
+		{
+			fseek(file, 0L, SEEK_SET);
+			CoefBetaOrbitals = CreateTable2(NOrb);
+			for(i=nBeginBeta-1;i<=nEndBeta-1;i++)
+			{
+				strIndices = get_one_block_from_aux_mopac_file(file, "BETA_MO_INDICES[",  &ni);
+				strCoefs = get_one_block_from_aux_mopac_file(file, "BETA_MO_COEFFICIENTS[",  &nc);
+				if(ni!=nc || ni>NOrb || ni<1)
+				{
+					free_one_string_table(strIndices, ni);
+					free_one_string_table(strCoefs, nc);
+					nAlpha = 0;
+					nBeta = 0;
+					break;
+				}
+				for(k=0;k<ni;k++)
+				{
+					gint a = atoi(strIndices[k])-1;
+					CoefBetaOrbitals[i][a]=atof(strCoefs[k]);
+				}
+			}
+			if(nAlpha>0) normalize_orbitals(FileName, CoefAlphaOrbitals);
+			if(nBeta>0) normalize_orbitals(FileName, CoefBetaOrbitals);
+		}
+
+	}
+	else 
+	{
+		fseek(file, 0L, SEEK_SET);
+		CoefAlphaOrbitals = CreateTable2(NOrb);
+		CoefBetaOrbitals = CoefAlphaOrbitals;
+		for(i=nBegin-1;i<=nEnd-1;i++)
+		{
+			strIndices = get_one_block_from_aux_mopac_file(file, "MO_INDICES[",  &ni);
+			strCoefs = get_one_block_from_aux_mopac_file(file, "MO_COEFFICIENTS[",  &nc);
+			if(ni!=nc || ni>NOrb || ni<1)
+			{
+				free_one_string_table(strIndices, ni);
+				free_one_string_table(strCoefs, nc);
+				n = 0;
+				break;
+			}
+			for(k=0;k<ni;k++)
+			{
+				gint a = atoi(strIndices[k])-1;
+				CoefAlphaOrbitals[i][a]=atof(strCoefs[k]);
+			}
+			free_one_string_table(strIndices, ni);
+			free_one_string_table(strCoefs, nc);
+		}
+		if(n>0) normalize_orbitals(FileName, CoefAlphaOrbitals);
+	}
+	if(file) fclose(file);
+	if(n>0 || (nAlpha>0 && nAlpha==nBeta)) return TRUE;
+	else return FALSE;
+}
+/********************************************************************************/
+static gboolean set_coef_orbitals_nocomp(gchar* FileName)
 {
  	FILE *file;
 	gchar**  strAlpha = NULL;
@@ -462,9 +955,17 @@ static gboolean set_coef_orbitals(gchar* FileName)
 	gint nBeta = 0;
 	gint n = 0;
 	gint i,j,k;
+	gint nBeginAlpha = 0;
+	gint nEndAlpha = 0;
+	gint nBeginBeta = 0;
+	gint nEndBeta = 0;
+	gint nBegin = 0;
+	gint nEnd = 0;
 
  	file = FOpen(FileName, "rb");
  	if(file ==NULL) return FALSE;
+
+	get_number_of_mos(file, &n, &nAlpha, &nBeta, &nBegin, &nEnd, &nBeginAlpha, &nEndAlpha, &nBeginBeta, &nEndBeta);
 
 	strAlpha = get_one_block_from_aux_mopac_file(file, "ALPHA_EIGENVECTORS[",  &nAlpha);
 	if(strAlpha)
@@ -482,7 +983,7 @@ static gboolean set_coef_orbitals(gchar* FileName)
 		CoefAlphaOrbitals = CreateTable2(NOrb);
 		CoefBetaOrbitals = CoefAlphaOrbitals;
 		k = 0;
-		for(i=0;i<NOrb;i++) 
+		for(i=nBegin-1;i<nEnd;i++) 
 			for(j=0;j<NOrb;j++)
 				CoefAlphaOrbitals[i][j]=atof(str[k++]);
 		normalize_orbitals(FileName, CoefAlphaOrbitals);
@@ -492,12 +993,14 @@ static gboolean set_coef_orbitals(gchar* FileName)
 		CoefAlphaOrbitals = CreateTable2(NOrb);
 		CoefBetaOrbitals = CreateTable2(NOrb);
 		k = 0;
-		for(i=0;i<NOrb;i++) 
+		for(i=nBeginAlpha-1;i<nEndAlpha;i++) 
 			for(j=0;j<NOrb;j++)
-			{
-				CoefAlphaOrbitals[i][j]=atof(strAlpha[k]);
+				CoefAlphaOrbitals[i][j]=atof(strAlpha[k++]);
+		k = 0;
+		for(i=nBeginBeta-1;i<nEndBeta;i++) 
+			for(j=0;j<NOrb;j++)
 				CoefBetaOrbitals[i][j]=atof(strBeta[k++]);
-			}
+
 		normalize_orbitals(FileName, CoefAlphaOrbitals);
 		normalize_orbitals(FileName, CoefBetaOrbitals);
 	}
@@ -507,6 +1010,13 @@ static gboolean set_coef_orbitals(gchar* FileName)
 	free_one_string_table(str, n);
 	if(n>0 || (nAlpha>0 && nAlpha==nBeta)) return TRUE;
 	else return FALSE;
+}
+/********************************************************************************/
+static gboolean set_coef_orbitals(gchar* FileName)
+{
+	if(set_coef_orbitals_nocomp(FileName)) return TRUE;
+	return set_coef_orbitals_comp(FileName);
+
 }
 /********************************************************************************/
 static gboolean set_ener_orbitals_localized(gchar* FileName)
@@ -747,8 +1257,9 @@ void read_mopac_orbitals(gchar* FileName)
  	/* PrintAllBasis();*/
 
 	Ok = set_occ_orbitals(FileName);
-	/* printf("OK occ = %d\n",Ok);*/
+	/* printf("Ok occ = %d\n",Ok);*/
 	if(Ok) Ok = set_sym_orbitals(FileName);
+	/* printf("Ok sym = %d\n",Ok);*/
 	if(Ok) 
 	{
 		Ok = set_ener_orbitals_localized(FileName);
@@ -756,7 +1267,9 @@ void read_mopac_orbitals(gchar* FileName)
 		else
 		{
 			Ok = set_ener_orbitals(FileName);
+			/* printf("Ok ener = %d\n",Ok);*/
 			if(Ok) Ok = set_coef_orbitals(FileName);
+			/* printf("Ok coef = %d\n",Ok);*/
 		}
 	}
 
@@ -783,10 +1296,13 @@ void read_mopac_orbitals(gchar* FileName)
 	}
 	else
 	{
+		gchar buffer[BSIZE];
 		free_orbitals();	
 		set_status_label_info("File Name","Nothing");
 		set_status_label_info("File Type","Nothing");
 		set_status_label_info("Mol. Orb.","Nothing");
+		sprintf(buffer,"Sorry, I can not read the orbitals from '%s' file\n",FileName);
+  		Message(buffer,"Error",TRUE);
 	}
 
 } 

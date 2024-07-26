@@ -59,6 +59,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/CaptureOrbitals.h"
 #include "../OpenGL/IntegralOrbitals.h"
 #include "../OpenGL/BondsOrb.h"
+#include "../OpenGL/TriangleDraw.h"
 #include "../Common/StockIcons.h"
 
 enum 
@@ -652,6 +653,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name , "SetPovrayBackGround")) createPovrayOptionsWindow(PrincipalWindow);
 	else if(!strcmp(name , "SetColorMap")) createColorMapOptionsWindow(PrincipalWindow);
 	else if(!strcmp(name , "SetTitle")) set_title_dlg();
+	else if(!strcmp(name , "SetOpacity")) set_opacity_dlg();
 	else if(!strcmp(name , "SetScaleBallStick")) set_scale_ball_stick_dlg();
 	else if(!strcmp(name , "ScreenCaptureJPG"))
 	{
@@ -970,6 +972,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SetColorMap", NULL, "Color _mapping", NULL, "set the color mapping options", G_CALLBACK (activate_action) },
 	{"SetTitle", NULL, "_Title", NULL, "Set title", G_CALLBACK (activate_action) },
 	{"SetScaleBallStick", NULL, "_Scale ball&stick", NULL, "Scale ball&stick", G_CALLBACK (activate_action) },
+	{"SetOpacity", NULL, "_Opacity", NULL, "Set opacity", G_CALLBACK (activate_action) },
 	{"ScreenCapture",     NULL, "Screen Ca_pture"},
 	{"ScreenCaptureJPG", NULL, "_JPG format", NULL, "save image in a JPG file", G_CALLBACK (activate_action) },
 	{"ScreenCapturePPM", NULL, "_PPM format", NULL, "save image in a PPM file", G_CALLBACK (activate_action) },
@@ -1769,6 +1772,8 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"SetColorMap\" action=\"SetColorMap\" />\n"
 "        <separator name=\"sepMenuSetTitle\" />\n"
 "        <menuitem name=\"SetTitle\" action=\"SetTitle\" />\n"
+"        <separator name=\"sepMenuSetOpacity\" />\n"
+"        <menuitem name=\"SetOpacity\" action=\"SetOpacity\" />\n"
 "        <separator name=\"sepMenuSetScaleBallStick\" />\n"
 "        <menuitem name=\"SetScaleBallStick\" action=\"SetScaleBallStick\" />\n"
 "    </menu>\n"

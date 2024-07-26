@@ -52,6 +52,33 @@ static GtkWidget* winList = NULL;
 /********************************************************************************/
 static void resetViewOrbCoef(GtkWidget* textWidget);
 /************************************************************************************************************/
+static gint getNumSelectOrb(gint numRow)
+{
+	gint n = -1;
+	gint i;
+	if(numRow<0) return -1;
+	for(i=0;i<NOrb;i++)
+	{
+  		if(TypeSelOrb == 1 && strcmp(SymAlphaOrbitals[i],"DELETED")) n++;
+		else if( TypeSelOrb != 1 && strcmp(SymBetaOrbitals[i],"DELETED")) n++;
+		if(n==numRow) return i;
+	}
+	return -1;
+}
+/************************************************************************************************************/
+static gint getNumSelectRow(gint numOrb)
+{
+	gint numRow = -1;
+	gint i;
+	for(i=0;i<NOrb;i++)
+	{
+  		if(TypeSelOrb == 1 && strcmp(SymAlphaOrbitals[i],"DELETED")) numRow++;
+		else if(TypeSelOrb != 1 && strcmp(SymBetaOrbitals[i],"DELETED")) numRow++;
+		if(i==numOrb) return numRow;
+	}
+	return -1;
+}
+/************************************************************************************************************/
 static void destroyWinsList(GtkWidget *win)
 {
 	if(GTK_IS_WIDGET(win)) delete_child(win);
@@ -69,8 +96,10 @@ static void selectRow(GtkWidget* list, gint row)
 {
 	GtkWidget* textWidget = NULL;
 	GtkTreePath *path;
-	gchar* tmp = g_strdup_printf("%d",row);
+	gchar* tmp = NULL;
 
+	if(row<0) return;
+	tmp = g_strdup_printf("%d",row);
 	path = gtk_tree_path_new_from_string  (tmp);
 	g_free(tmp);
 	if(!list) return;
@@ -573,7 +602,7 @@ static void eventDispatcher(GtkWidget *widget, GdkEventButton *event, gpointer u
 		{
 			model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
 			gtk_tree_selection_select_path  (gtk_tree_view_get_selection (GTK_TREE_VIEW (widget)), path);
- 			NumSelOrbtmp = atoi(gtk_tree_path_to_string(path));
+			NumSelOrbtmp = getNumSelectOrb(atoi(gtk_tree_path_to_string(path)));
 			gtk_tree_model_get_iter (model, &iter, path);
 			gtk_tree_path_free(path);
  			if ((GdkEventButton *) event && ((GdkEventButton *) event)->type==GDK_2BUTTON_PRESS)
@@ -1177,12 +1206,12 @@ void create_list_orbitals()
   if(TypeSelOrb == 1 && NumSelOrb > -1)
   {
   	gtk_tree_selection_unselect_all (gtk_tree_view_get_selection (GTK_TREE_VIEW (betalist)));
-	selectRow(alphalist,NumSelOrb);
+	selectRow(alphalist,getNumSelectRow(NumSelOrb));
   }
   if(TypeSelOrb == 2 && NumSelOrb > -1)
   {
   	gtk_tree_selection_unselect_all (gtk_tree_view_get_selection (GTK_TREE_VIEW (alphalist)));
-	selectRow(betalist,NumSelOrb);  
+	selectRow(betalist,getNumSelectRow(NumSelOrb));  
   }
   winList = Win;
 }
