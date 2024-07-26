@@ -1,6 +1,6 @@
 /* MPQCGuessWaveFunction.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -77,19 +77,19 @@ void createMPQCProperties(GtkWidget *box)
 	gtk_box_pack_start (GTK_BOX (vboxFrame), table, TRUE, TRUE, 0);
 
 	i = 0;
-	buttonPrintNPA = gtk_check_button_new_with_label ("Print the natural population analysis ");
+	buttonPrintNPA = gtk_check_button_new_with_label (_("Print the natural population analysis "));
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonPrintNPA), mpqcMole.printNPA);
 	add_widget_table(table, buttonPrintNPA, (gushort)i, 0);
 	g_object_set_data(G_OBJECT (buttonPrintNPA), "Type", &buttonTypes[PRINTNPA]);
 	g_signal_connect(G_OBJECT(buttonPrintNPA),"clicked", G_CALLBACK(activateButton),NULL);
 	i = 1;
-	buttonPrintNAO = gtk_check_button_new_with_label ("Print the natural atomic orbitals");
+	buttonPrintNAO = gtk_check_button_new_with_label (_("Print the natural atomic orbitals"));
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonPrintNAO), mpqcMole.printNAO);
 	add_widget_table(table, buttonPrintNAO, (gushort)i, 0);
 	g_object_set_data(G_OBJECT (buttonPrintNAO), "Type", &buttonTypes[PRINTNAO]);
 	g_signal_connect(G_OBJECT(buttonPrintNAO),"clicked", G_CALLBACK(activateButton),NULL);
 	i = 2;
-	buttonFrequencies = gtk_check_button_new_with_label ("Calcul Frequencies");
+	buttonFrequencies = gtk_check_button_new_with_label (_("Calcul Frequencies"));
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonFrequencies), mpqcMpqc.frequencies);
 	add_widget_table(table, buttonFrequencies, (gushort)i, 0);
 	g_object_set_data(G_OBJECT (buttonFrequencies), "Type", &buttonTypes[FREQUENCIES]);

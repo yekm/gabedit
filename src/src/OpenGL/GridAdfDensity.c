@@ -1,6 +1,6 @@
 /* GridAdf.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -104,7 +104,7 @@ static gboolean get_values_from_adf_file(FILE* file,gdouble V[])
 	{
 		if(!fgets(t,len,file))  /* Nx, X0,X1,X2 */   
 		{
-			Message("I can not read adf file\n","Error",TRUE);
+			Message(_("I can not read adf file\n"),_("Error"),TRUE);
 			g_free(V);
 			return FALSE;
 		}
@@ -151,7 +151,7 @@ static void get_grid_from_adf_file(FILE* file,gchar* label)
 	/* printf("N = %d %d %d\n",N[0],N[1],N[2]);*/
 	if(!grid) 
 	{
-		Message("Sorry, I can not read density from this file","Error",TRUE);
+		Message(_("Sorry, I can not read density from this file"),_("Error"),TRUE);
 		return;
 	}
 	progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
@@ -161,7 +161,7 @@ static void get_grid_from_adf_file(FILE* file,gchar* label)
 	V = g_malloc((N[0]*N[1]*N[2]+6)*sizeof(gdouble));
 	if(!set_position(file,label))
 	{
-		Message("Sorry, I can not read density from this file","Error",TRUE);
+		Message(_("Sorry, I can not read density from this file"),_("Error"),TRUE);
 		grid = free_grid(grid);
 		return;
 	}
@@ -230,9 +230,9 @@ static void read_density()
 	FILE* file = FOpen(adfFileName, "rb");
 	if(!file)
 	{
-		sprintf(buffer,"Sorry, i can not open \"%s\" file",adfFileName);
+		sprintf(buffer,_("Sorry, i can not open \"%s\" file"),adfFileName);
 		grid = free_grid(grid);
-		Message(buffer,"Error",TRUE);
+		Message(buffer,_("Error"),TRUE);
 		return;
 	}
 
@@ -244,11 +244,11 @@ static void read_density()
 	{
         	limits = grid->limits;
 		create_iso_orbitals();
-		set_status_label_info("Grid","Ok");
+		set_status_label_info(_("Grid"),_("Ok"));
 	}
 	else
 	{
-		set_status_label_info("Grid","Nothing");
+		set_status_label_info(_("Grid"),_("Nothing"));
 		CancelCalcul = FALSE;
 	}
 
@@ -685,15 +685,15 @@ static void read_adf_file(gchar* filename)
 	CancelCalcul = FALSE;
 	if(!file)
 	{
-		Message("I can not open file\n","Error",TRUE);
+		Message(_("I can not open file\n"),_("Error"),TRUE);
 		return ;
 	}
 
 	free_data_all();
 	tmp = get_name_file(filename);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","ADF Formatted file(41)");
+	set_status_label_info(_("File type"),_("ADF Formatted file(41)"));
 	Ncenters = 0;
 	/* read geometry */
 	while(!feof(file) && Ok)
@@ -738,11 +738,11 @@ static void read_adf_file(gchar* filename)
 		RebuildGeom = TRUE;
 		glarea_rafresh(GLArea);
 		init_atomic_orbitals();
-		set_status_label_info("Geometry","Ok");
+		set_status_label_info(_("Geometry"),_("Ok"));
 	}
 	/*printf("N = %d %d %d\n",N[0],N[1],N[2]);*/
 
-	set_status_label_info("Grid","Nothing");
+	set_status_label_info(_("Grid"),_("Nothing"));
 	CancelCalcul = FALSE;
 
 	fclose(file);

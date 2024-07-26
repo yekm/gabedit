@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -47,8 +47,11 @@ void read_geom_from_molpro_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_orca_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_qchem_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_mopac_output_file(gchar *NomFichier, gint numgeometry);
+void read_geom_from_gamess_irc_file(gchar *NomFichier, gint numgeometry);
+void read_XYZ_from_mopac_irc_output_file(gchar *FileName, gint numGeom);
 void read_XYZ_from_mopac_scan_output_file(gchar *FileName, gint numGeom);
 void read_geom_from_mopac_scan_output_file(gchar *FileName, gint numGeom);
+void read_geom_from_mopac_irc_output_file(gchar *FileName, gint numGeom);
 void read_geom_from_mopac_aux_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_xyz_file(gchar *fileName, gint numGeom);
 void read_XYZ_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile);
@@ -66,6 +69,35 @@ void save_geometry_hin_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_gabedit_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_xyz_file_no_add_list(const gchar* FileName);
 gboolean connecteds(guint i,guint j);
+
+void read_hin_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_gabedit_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_first_mpqc_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_last_mpqc_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_first_dalton_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_last_dalton_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_first_gamess_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_last_gamess_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_last_gaussian_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_first_gaussian_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_fchk_gaussian_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_last_molcas_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_last_molpro_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_first_orca_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_last_orca_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_first_qchem_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_last_qchem_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_first_mopac_output_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_last_mopac_output_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_last_mopac_aux_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_last_irc_gamess_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_first_molcas_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_first_molpro_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_mol2_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_tinker_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_pdb_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_XYZ_file(GabeditFileChooser *SelecFile, gint  response_id);
+void reset_connections_XYZ();
 
 
 #endif /* __GABEDIT_GEOMXYZ_H__ */

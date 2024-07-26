@@ -1,6 +1,6 @@
 /* StockIcons.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -52,7 +52,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../../pixmaps/DeleteCut.xpm"
 #include "../../pixmaps/AddBond.xpm"
 #include "../../pixmaps/Insert.xpm"
-#include "../../pixmaps/Mesure.xpm"
+#include "../../pixmaps/Measure.xpm"
 #include "../../pixmaps/Molcas.xpm"
 #include "../../pixmaps/Molden.xpm"
 #include "../../pixmaps/Molpro.xpm"
@@ -62,7 +62,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../../pixmaps/Adf.xpm"
 #include "../../pixmaps/Dalton.xpm"
 #include "../../pixmaps/Gamess.xpm"
-#include "../../pixmaps/PCGamess.xpm"
+#include "../../pixmaps/FireFly.xpm"
 #include "../../pixmaps/MoveAtom.xpm"
 #include "../../pixmaps/MPQC.xpm"
 #include "../../pixmaps/New.xpm"
@@ -167,7 +167,7 @@ void gabedit_gtk_stock_init()
 	add_one_icon(icon_factory, GABEDIT_STOCK_DELETE_CUT, delete_cut_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_ADD_BOND, add_bond_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_INSERT, insert_xpm);
-	add_one_icon(icon_factory, GABEDIT_STOCK_MESURE, mesure_xpm);
+	add_one_icon(icon_factory, GABEDIT_STOCK_MEASURE, measure_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOLCAS, molcas_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOLDEN, molden_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOLPRO, molpro_xpm);
@@ -177,7 +177,7 @@ void gabedit_gtk_stock_init()
 	add_one_icon(icon_factory, GABEDIT_STOCK_ADF, adf_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_DALTON, dalton_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_GAMESS, gamess_xpm);
-	add_one_icon(icon_factory, GABEDIT_STOCK_PCGAMESS, pcgamess_xpm);
+	add_one_icon(icon_factory, GABEDIT_STOCK_FIREFLY, firefly_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOVE_ATOM, move_atom_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MPQC, mpqc_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_NEW, new_xpm);

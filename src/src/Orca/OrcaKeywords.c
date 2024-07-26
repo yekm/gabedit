@@ -1,6 +1,6 @@
 /* OrcaKeywords.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -315,19 +315,19 @@ static gchar* listScfConvergenceReal[] = {
 static guint numberOfScfConvergence = G_N_ELEMENTS (listScfConvergenceView);
 static gchar selectedScfConvergence[BSIZE]="NONE";
 /*************************************************************************************************************/
-static gchar* listNottingExcitedView[] = 
+static gchar* listNothingExcitedView[] = 
 { 
-	"Notting", 
+	"Nothing", 
 };
-static gchar* listNottingExcitedReal[] = 
+static gchar* listNothingExcitedReal[] = 
 { 
 	"NONE", 
 };
-static guint numberOfNottingExcited = G_N_ELEMENTS (listNottingExcitedView);
+static guint numberOfNothingExcited = G_N_ELEMENTS (listNothingExcitedView);
 /*************************************************************************************************************/
 static gchar* listSemiEmpExcitedView[] = 
 { 
-	"Notting",
+	"Nothing",
 	"CIS",
 };
 static gchar* listSemiEmpExcitedReal[] = 
@@ -339,7 +339,7 @@ static guint numberOfSemiEmpExcited = G_N_ELEMENTS (listSemiEmpExcitedView);
 /*************************************************************************************************************/
 static gchar* listHFExcitedView[] = 
 { 
-	"Notting",
+	"Nothing",
 	"CIS",
 	"CIS(D)",
 };
@@ -353,7 +353,7 @@ static guint numberOfHFExcited = G_N_ELEMENTS (listHFExcitedView);
 /*************************************************************************************************************/
 static gchar* listDFTExcitedView[] = 
 { 
-	"Notting",
+	"Nothing",
 	"TD-DFT",
 };
 static gchar* listDFTExcitedReal[] = 
@@ -364,9 +364,9 @@ static gchar* listDFTExcitedReal[] =
 static guint numberOfDFTExcited = G_N_ELEMENTS (listDFTExcitedView);
 /*************************************************************************************************************/
 static gchar selectedExcited[BSIZE]="NONE";
-static gchar** listExcitedView = listNottingExcitedView;
-static gchar** listExcitedReal = listNottingExcitedReal;
-static guint numberOfExcited = G_N_ELEMENTS (listNottingExcitedView);
+static gchar** listExcitedView = listNothingExcitedView;
+static gchar** listExcitedReal = listNothingExcitedReal;
+static guint numberOfExcited = G_N_ELEMENTS (listNothingExcitedView);
 /*************************************************************************************************************/
 static void putOrcaExcitedInfoInTextEditor()
 {
@@ -470,9 +470,9 @@ static void setOrcaExcited()
 	}
 	else
 	{
-		listExcitedView = listNottingExcitedView;
-		listExcitedReal = listNottingExcitedReal;
-		numberOfExcited = numberOfNottingExcited;
+		listExcitedView = listNothingExcitedView;
+		listExcitedReal = listNothingExcitedReal;
+		numberOfExcited = numberOfNothingExcited;
 	}
 	
 	if (comboExcited && gtk_combo_box_get_active_iter (GTK_COMBO_BOX(comboExcited), &iter))
@@ -623,7 +623,7 @@ GtkWidget* addOrcaScfConvergenceToTable(GtkWidget *table, gint i)
 	GtkWidget* comboScfConvergence = NULL;
 
 
-	add_label_table(table,"ScfConvergence",(gushort)i,0);
+	add_label_table(table,_("SCF convergence"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	comboScfConvergence  = create_list_scfconvergence();
 
@@ -1089,7 +1089,7 @@ void createOrcaKeywordsFrame(GtkWidget *win, GtkWidget *box)
 	listMethodsReal = listHybridMethodsReal;
 	numberOfMethods = numberOfHybridMethods;
 
-	frame = gtk_frame_new ("Job Specification:");
+	frame = gtk_frame_new (_("Job Specification:"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -1102,7 +1102,7 @@ void createOrcaKeywordsFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Job Type -----------------------------------------*/
 	l=0; 
 	c = 0; ncases=1;
-	add_label_table(table,"Job Type",l,c);
+	add_label_table(table,_("Job Type"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_jobtype();
@@ -1114,7 +1114,7 @@ void createOrcaKeywordsFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ SCF Type -----------------------------------------*/
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"SCF Type",l,c);
+	add_label_table(table,_("SCF Type"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_scf();
@@ -1127,7 +1127,7 @@ void createOrcaKeywordsFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ SCF Convergence -----------------------------------------*/
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"SCF Convergence",l,c);
+	add_label_table(table,_("SCF Convergence"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	comboScfConvergence  = create_list_scfconvergence();
@@ -1140,7 +1140,7 @@ void createOrcaKeywordsFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Method Type -----------------------------------------*/
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"Type of method",l,c);
+	add_label_table(table,_("Type of method"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_type_methods();
@@ -1153,7 +1153,7 @@ void createOrcaKeywordsFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------  Method -----------------------------------------*/
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"Method",l,c);
+	add_label_table(table,_("Method"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_methods();
@@ -1167,7 +1167,7 @@ void createOrcaKeywordsFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------  Excited states -----------------------------------------*/
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"Excited states",l,c);
+	add_label_table(table,_("Excited states"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_excited();

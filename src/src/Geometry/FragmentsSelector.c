@@ -1,6 +1,6 @@
 /* FragmentsSelector.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -76,6 +76,7 @@ static void help(GtkWidget* button, GtkWidget* FragmentsSelectorDlg)
 	gchar* temp;
 	GtkWidget* win;
 	temp = g_strdup_printf(
+		_(
 		" * In the fragment selector :\n"
 	        "       Clic to an atom (generally a H atom) connected to only one other atom. \n"
 		"       This atom is colored in red.\n"
@@ -99,8 +100,9 @@ static void help(GtkWidget* button, GtkWidget* FragmentsSelectorDlg)
 	        "       The red atoms are deleted\n"
 	        "       The dihedral angle between the blue, green (of molecule), green and blue (of fragment) is set to the value given by user\n\n"
 	        "       If all atoms of the fragment are unselected, then all these atoms are inserted in the molecule.\n"
+		)
 		 );
-	win = Message(temp," Info ",FALSE);
+	win = Message(temp,_("Info"),FALSE);
 	gtk_window_set_transient_for(GTK_WINDOW(win),GTK_WINDOW(FragmentsSelectorDlg));
 	gtk_window_set_modal (GTK_WINDOW (win), TRUE);
 	g_free(temp);
@@ -137,13 +139,13 @@ void create_window_fragments_selector()
 	gtk_container_add(GTK_CONTAINER(FragmentsSelectorDlg),VboxWin);
 	gtk_widget_show(VboxWin);
 
-	gtk_window_set_title(GTK_WINDOW(FragmentsSelectorDlg),"Gabedit : Fragment Selector ");
+	gtk_window_set_title(GTK_WINDOW(FragmentsSelectorDlg),_("Gabedit : Fragment Selector "));
 	gtk_window_set_transient_for(GTK_WINDOW(FragmentsSelectorDlg),GTK_WINDOW(GeomDlg));
 	gtk_widget_add_events(GeomDlg,GDK_KEY_RELEASE_MASK);
    
 
 	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
-	add_child(GeomDlg,FragmentsSelectorDlg, gtk_widget_destroy," Frag. Sel. ");
+	add_child(GeomDlg,FragmentsSelectorDlg, gtk_widget_destroy,_(" Frag. Sel. "));
 	g_signal_connect (GTK_OBJECT (FragmentsSelectorDlg), "delete_event", G_CALLBACK (gtk_widget_hide), NULL);
 
 	frame = gtk_frame_new (NULL);

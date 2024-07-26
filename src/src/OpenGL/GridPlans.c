@@ -1,6 +1,6 @@
 /* GridPlans.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -301,19 +301,19 @@ Grid* define_plane_grid(Point5 C, Point5 V, gdouble *len, gint *N)
 	Plane plane;
   	if(!GeomOrb)
   	{
-	  	Message("Sorry, Please load a file before\n","Error",TRUE);
+	  	Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
 	  	return NULL;
   	}
   	if(!CoefAlphaOrbitals)
   	{
-	  	Message("Sorry, Please load the MO before\n","Error",TRUE);
+	  	Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
 	  	return NULL;
   	}
 
   	if(!AOAvailable &&(TypeGrid == GABEDIT_TYPEGRID_DDENSITY || TypeGrid == GABEDIT_TYPEGRID_ADENSITY))
   	{
-	  	Message("Sorry, No atomic orbitals available.\nPlease use a gabedit file for load : \n"
-		  "Geometry, Molecular and Atomic Orbitals\n","Error",TRUE);
+	  	Message(_("Sorry, No atomic orbitals available.\nPlease use a gabedit file for load : \n"
+		  "Geometry, Molecular and Atomic Orbitals\n"),_("Error"),TRUE);
 	  	return NULL;
   	}
 
@@ -365,29 +365,29 @@ void apply_planegrid_center_vector(GtkWidget *Win,gpointer data)
 	if(N[0]<=0) return;
 	N[1] = get_number_of_point(Entrys[9]);
 	if(N[1]<=0) return;
-	if(!get_a_float(Entrys[6],&len[0],"Error : The length of plane should be a float.")) return;
+	if(!get_a_float(Entrys[6],&len[0],_("Error : The length of plane should be a float."))) return;
 	if(len[0]<=0)
 	{
-		Message("Error : The length of plane should be positive. ","Error",TRUE);
+		Message(_("Error : The length of plane should be positive. "),_("Error"),TRUE);
 		return;
 	}
-	if(!get_a_float(Entrys[7],&len[1]," Error : The length of plane should be a float.")) return;
+	if(!get_a_float(Entrys[7],&len[1],_(" Error : The length of plane should be a float."))) return;
 	if(len[1]<=0)
 	{
-		Message("Error : The length of plane should be positive. ","Error",TRUE);
+		Message(_("Error : The length of plane should be positive. "),_("Error"),TRUE);
 		return;
 	}
 	for(i=0;i<5;i+=2)
 	{	
-        	if(!get_a_float(Entrys[i],&C.C[i/2],"Error : A non float value in a float area.")) return;
+        	if(!get_a_float(Entrys[i],&C.C[i/2],_("Error : A non float value in a float area."))) return;
 	}
 	for(i=1;i<6;i+=2)
 	{	
-        	if(!get_a_float(Entrys[i],&V.C[i/2],"Error : A non float value in a float area.")) return;
+        	if(!get_a_float(Entrys[i],&V.C[i/2],_("Error : A non float value in a float area."))) return;
 	}
 	if( sqrt(V.C[0] * V.C[0] + V.C[1] * V.C[1] + V.C[2] * V.C[2])<1e-6)
 	{
-		Message("Error : The length of normal Vector should be > 1e-6. ","Error",TRUE);
+		Message(_("Error : The length of normal Vector should be > 1e-6. "),_("Error"),TRUE);
 		return;
 	}
 	/* Debug("V = %lf %lf %lf \n",V.C[0] , V.C[1] , V.C[2]); */
@@ -396,13 +396,13 @@ void apply_planegrid_center_vector(GtkWidget *Win,gpointer data)
 		if(strstr(type,"Maps"))
 		{
 			gridPlaneForPlanesMapped = define_plane_grid(C,V,len,N);
-			create_maps_plane("Definition of Maps");
+			create_maps_plane(_("Definition of Maps"));
 			reDrawPlaneMappedPlane = FALSE;
 		}
 		else
 		{
 			gridPlaneForContours = define_plane_grid(C,V,len,N);
-			create_contours_plane("Definition of contours");
+			create_contours_plane(_("Definition of contours"));
 			reDrawContoursPlane = FALSE;
 		}
 	}
@@ -426,8 +426,8 @@ GtkWidget *create_planegrid_frame_center_vector( GtkWidget *vboxall,gchar* title
 	
 	strlabels[0][0] = g_strdup("  ");
 	strlabels[0][1] = g_strdup("  ");
-	strlabels[0][2] = g_strdup("Center of plan");
-	strlabels[0][3] = g_strdup("Vector perpendicular to plan");
+	strlabels[0][2] = g_strdup(_("Center of plan"));
+	strlabels[0][3] = g_strdup(_("Vector perpendicular to plan"));
 
 	strlabels[1][0] = g_strdup(" X ");
 	strlabels[1][1] = g_strdup(" : ");
@@ -446,15 +446,15 @@ GtkWidget *create_planegrid_frame_center_vector( GtkWidget *vboxall,gchar* title
 
 	strlabels[4][0] = g_strdup("  ");
 	strlabels[4][1] = g_strdup("  ");
-	strlabels[4][2] = g_strdup("First  direction");
-	strlabels[4][3] = g_strdup("Second direction");
+	strlabels[4][2] = g_strdup(_("First  direction"));
+	strlabels[4][3] = g_strdup(_("Second direction"));
 
-	strlabels[5][0] = g_strdup(" Length ");
+	strlabels[5][0] = g_strdup(_(" Length "));
 	strlabels[5][1] = g_strdup(" : ");
 	strlabels[5][2] = g_strdup("10.0");
 	strlabels[5][3] = g_strdup("10.0");
 
-	strlabels[6][0] = g_strdup(" N points ");
+	strlabels[6][0] = g_strdup(_(" N points "));
 	strlabels[6][1] = g_strdup(" : ");
 	strlabels[6][2] = g_strdup("40");
 	strlabels[6][3] = g_strdup("40");
@@ -529,17 +529,17 @@ void create_planeGrid_center_vector(gchar* type)
   GtkWidget *vboxwin;
   GtkWidget *button;
   GtkWidget** Entrys;
-  static gchar* planeFor[] ={"Contours","Maps"};
+  gchar* planeFor[] ={_("Contours"),_("Maps")};
   gint itype = 0;
 
   if(!GeomOrb)
   {
-  	Message("Sorry, Please load a file before\n","Error",TRUE);
+  	Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
   	return;
  }
  if(!CoefAlphaOrbitals)
  {
-  	Message("Sorry, Please load the MO before\n","Error",TRUE);
+  	Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
   	return;
  }
  if(strstr(type,planeFor[1])) itype = 1;
@@ -547,18 +547,18 @@ void create_planeGrid_center_vector(gchar* type)
 
   /* Principal Window */
   Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_title(GTK_WINDOW(Win),"Definition of plane by a Point and a Vector");
+  gtk_window_set_title(GTK_WINDOW(Win),_("Definition of plane by a Point and a Vector"));
   gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
   gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
   gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(PrincipalWindow));
   gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
 
-  add_glarea_child(Win,"Plane of contours ");
+  add_glarea_child(Win,_("Plane of contours "));
 
   vboxall = create_vbox(Win);
   vboxwin = vboxall;
 
-  frame = create_planegrid_frame_center_vector(vboxall,"Defintion of plan");
+  frame = create_planegrid_frame_center_vector(vboxall,_("Defintion of plan"));
   Entrys = (GtkWidget**) g_object_get_data(G_OBJECT (frame), "Entrys");
   g_object_set_data(G_OBJECT (Win), "Entrys",Entrys);
 
@@ -566,14 +566,14 @@ void create_planeGrid_center_vector(gchar* type)
   hbox = create_hbox_false(vboxwin);
   gtk_widget_realize(Win);
 
-  button = create_button(Win,"Cancel");
+  button = create_button(Win,_("Cancel"));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Win));
   gtk_widget_show (button);
 
-  button = create_button(Win,"OK");
+  button = create_button(Win,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);

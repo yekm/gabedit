@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -27,11 +27,16 @@ typedef struct _MoleculeSE
 	gint totalCharge;
 	gdouble energy;
 	gdouble* gradient[3];
+
+	gint numberOf2Connections;
+	gint* connected2[2];
+	gint numberOf3Connections;
+	gint* connected3[3];
 }MoleculeSE;
 
 MoleculeSE newMoleculeSE();
-MoleculeSE createMoleculeSE(GeomDef* geom,gint natoms, gint charge, gint spin);
-MoleculeSE createFromGeomXYZMoleculeSE(gint charge, gint spin);
+MoleculeSE createMoleculeSE(GeomDef* geom,gint natoms, gint charge, gint spin, gboolean connections);
+MoleculeSE createFromGeomXYZMoleculeSE(gint charge, gint spin, gboolean connections);
 void freeMoleculeSE(MoleculeSE* molecule);
 void redrawMoleculeSE(MoleculeSE* molecule,gchar* str);
 MoleculeSE copyMoleculeSE(MoleculeSE* m);

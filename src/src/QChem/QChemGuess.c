@@ -1,6 +1,6 @@
 /* QChemGuess.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -178,7 +178,7 @@ void createQChemGuessFrame(GtkWidget *win, GtkWidget *box)
 
 	buttonMixed = NULL;
 
-	frame = gtk_frame_new ("Mo Guess");
+	frame = gtk_frame_new (_("Mo Guess"));
 	guessFrame = frame;
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
@@ -192,7 +192,7 @@ void createQChemGuessFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Guess Method -----------------------------------------*/
 	l=0; 
 	c = 0; ncases=1;
-	add_label_table(table,"Initial Guess",l,c);
+	add_label_table(table,_("Initial Guess"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_guessmethods();
@@ -217,7 +217,7 @@ void createQChemGuessFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Mix ------------*/
 	l++; 
 	c = 0; ncases=3;
-	buttonMixed = gtk_check_button_new_with_label ("Mixed alpha and beta orbitals");
+	buttonMixed = gtk_check_button_new_with_label (_("Mixed alpha and beta orbitals"));
 	gtk_table_attach(GTK_TABLE(table),buttonMixed,c,c+ncases,l,l+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),

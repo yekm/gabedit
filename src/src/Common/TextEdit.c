@@ -1,6 +1,6 @@
 /* TextEdit.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -80,8 +80,8 @@ static void find_text_forward(GtkWidget *wid,gpointer entry)
 
 	n = gabedit_text_search_forward(view, str);
 
-	if(n>0) t = g_strdup_printf("      %d strings found and marked in red",n);
-	else t = g_strdup_printf("      no strings found");
+	if(n>0) t = g_strdup_printf(_("      %d strings found and marked in red"),n);
+	else t = g_strdup_printf(_("      no strings found"));
 	gtk_label_set_text(GTK_LABEL(label),t);
 	g_free(t);
 }
@@ -105,8 +105,8 @@ static void find_text_backward(GtkWidget *wid,gpointer entry)
 
 	n = gabedit_text_search_backward(view, str);
 
-	if(n>0) t = g_strdup_printf("      %d strings found and marked in red",n);
-	else t = g_strdup_printf("      no strings found");
+	if(n>0) t = g_strdup_printf(_("      %d strings found and marked in red"),n);
+	else t = g_strdup_printf(_("      no strings found"));
 	gtk_label_set_text(GTK_LABEL(label),t);
 	g_free(t);
 }
@@ -130,8 +130,8 @@ static void find_text_all(GtkWidget *wid,gpointer entry)
 
 	n = gabedit_text_search_all(view, str);
 
-	if(n>0) t = g_strdup_printf("      %d strings found and marked in red",n);
-	else t = g_strdup_printf("      no strings found");
+	if(n>0) t = g_strdup_printf(_("      %d strings found and marked in red"),n);
+	else t = g_strdup_printf(_("      no strings found"));
 	gtk_label_set_text(GTK_LABEL(label),t);
 	g_free(t);
 }
@@ -186,7 +186,7 @@ void find_text_win()
   g_signal_connect(G_OBJECT(fp), "delete_event", (GCallback)gtk_widget_destroy, NULL);
 
   vboxall = create_vbox(fp);
-  frame = gtk_frame_new ("FIND");
+  frame = gtk_frame_new (_("FIND"));
   gtk_container_set_border_width (GTK_CONTAINER (frame), 2);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
@@ -196,7 +196,7 @@ void find_text_win()
   g_object_ref (hbox1);
   gtk_widget_show (hbox1);
   gtk_box_pack_start (GTK_BOX (vboxframe), hbox1, FALSE, FALSE, 2);
-  entry= create_combo_box_entry_liste_find(fp,hbox1," String to find :",liste,nliste);
+  entry= create_combo_box_entry_liste_find(fp,hbox1,_(" String to find :"),liste,nliste);
 
 
   hseparator = gtk_hseparator_new ();
@@ -212,17 +212,17 @@ void find_text_win()
   gtk_widget_show (hbox2);
   gtk_box_pack_start (GTK_BOX (vboxall), hbox2, FALSE, FALSE, 4);
   
-  button = gtk_button_new_with_label ("All");
+  button = gtk_button_new_with_label (_("All"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   gtk_widget_show (button);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(find_text_all),(gpointer)entry);
 
-  button = gtk_button_new_with_label ("Forward");
+  button = gtk_button_new_with_label (_("Forward"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   gtk_widget_show (button);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(find_text_forward),(gpointer)entry);
 
-  button = gtk_button_new_with_label ("Backward");
+  button = gtk_button_new_with_label (_("Backward"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   gtk_widget_show (button);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(find_text_backward),(gpointer)entry);
@@ -238,7 +238,7 @@ void find_text_win()
 
   gtk_widget_show (button);
    
-  add_button_windows(" Find ",fp);
+  add_button_windows(_(" Find "),fp);
   gtk_widget_show_all(fp);
 }
 /*****************************************************************************************/
@@ -292,7 +292,7 @@ void AjoutePageNotebook(char *label,GtkWidget **TextP)
 
   g_object_set_data(G_OBJECT (Frame), "Frame", Frame);
 
-  if(strcmp(label,"Data") )
+  if(strcmp(label,_("Data")) )
         Frame = AddBarResult(Frame);    
   scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
   gtk_widget_show (scrolledwindow);
@@ -312,26 +312,16 @@ void AjoutePageNotebook(char *label,GtkWidget **TextP)
   gtk_widget_show (*TextP);
   gtk_container_add (GTK_CONTAINER (scrolledwindow), *TextP);
   g_object_set_data(G_OBJECT (*TextP), "LabelOnglet", LabelOnglet);
-  if( !strcmp(label,"Data") )
+  if( !strcmp(label,_("Data")) )
   {
 	static guint start_pos = 0;
 	static guint end_pos = 0;
-	/*
-  	PangoFontDescription *font_desc = pango_font_description_from_string (FontsStyleLabel.fontname);
-	*/
 
         styledef =  gtk_style_copy(LabelOnglet->style); 
         stylered =  gtk_style_copy(LabelOnglet->style); 
         stylered->fg[0].red=65535;
         stylered->fg[0].green=0;
         stylered->fg[0].blue=0;
-	/*
-  	if (font_desc)
-	{
-		stylered->font_desc = font_desc;
-		styledef->font_desc = font_desc;
-	}
-	*/
 	g_object_set_data(G_OBJECT (*TextP), "StyleDef", styledef);
   	g_object_set_data(G_OBJECT (*TextP), "StyleRed", stylered);
   	g_object_set_data(G_OBJECT (*TextP), "StartPos", &start_pos);
@@ -365,13 +355,13 @@ void cree_text_notebook()
 
   gtk_box_pack_start(GTK_BOX (vboxtexts), NoteBookText,TRUE, TRUE, 0);
   
-  AjoutePageNotebook("Data",&text);
+  AjoutePageNotebook(_("Data"),&text);
   gabedit_text_set_editable (GABEDIT_TEXT (text), TRUE);
   set_font (text,FontsStyleData.fontname);
   set_base_style(text,FontsStyleData.BaseColor.red ,FontsStyleData.BaseColor.green ,FontsStyleData.BaseColor.blue);
   set_text_style(text,FontsStyleData.TextColor.red ,FontsStyleData.TextColor.green ,FontsStyleData.TextColor.blue);
 
-  AjoutePageNotebook("Result",&textresult);
+  AjoutePageNotebook(_("Result"),&textresult);
   gabedit_text_set_editable (GABEDIT_TEXT (textresult), TRUE);
   set_font (textresult,FontsStyleResult.fontname);
   set_base_style(textresult,FontsStyleResult.BaseColor.red ,FontsStyleResult.BaseColor.green ,FontsStyleResult.BaseColor.blue);

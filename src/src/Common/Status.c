@@ -1,6 +1,6 @@
 /* Status.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -98,7 +98,7 @@ static GtkWidget *create_progress_bar(GtkWidget *box)
 			1,1);
 
 
-  	button = gtk_button_new_with_label(" Cancel ");
+  	button = gtk_button_new_with_label(_(" Cancel "));
 	ButtonCancel = button;
   	gtk_widget_show_all (button);
 	gtk_table_attach(GTK_TABLE(table),button,2,3,0,1,

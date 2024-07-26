@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -25,7 +25,6 @@ typedef enum
   BEEMAN = 1,
   STOCHASTIC = 2
 } MDIntegratorType;
-
 typedef enum
 {
   NONE = 0,
@@ -40,9 +39,12 @@ struct _MolecularDynamics
 	ForceField* forceField;
 	gint numberOfAtoms;
 	gint updateFrequency;
+	gdouble** coordinatesOld; 
 	gdouble** velocity; 
 	gdouble** a; 
 	gdouble** aold; 
+	gboolean* moved;
+	gboolean* update;
 	gdouble dt;
 	gdouble dt_2;
 	gdouble dt2_2;
@@ -53,6 +55,7 @@ struct _MolecularDynamics
 	gdouble kineticEnergy;
 	gdouble totalEnergy;
 	gdouble kelvin;
+
 
 	gdouble* positionFriction;
 	gdouble* velocityFriction;

@@ -1,6 +1,6 @@
 /* MolcasBasis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Molcas/MolcasTypes.h"
 #include "../Molcas/MolcasGlobal.h"
 #include "../Molcas/MolcasVariables.h"
-#include "../Molcas/MolcasOptimisation.h"
+#include "../Molcas/MolcasOptimization.h"
 #include "../Molcas/MolcasGateWay.h"
 #include "../Molcas/MolcasScf.h"
 #include "../Molcas/MolcasLib.h"
@@ -189,7 +189,7 @@ static GtkWidget *createWidgetListOfBasis(gchar* fileName)
 	GtkCellRenderer *renderer;
 	GtkTreeViewColumn *column;
 
-     	title[0] = g_strdup("List of available basis");
+     	title[0] = g_strdup(_("List of available basis"));
    	if(!hBasisBox)
    	{
   		creationOfNewHBox = TRUE;
@@ -340,7 +340,7 @@ static void selectAnAtoms(GtkTreeSelection *selection, gpointer data)
 	*/
 	row = atoi(pathString);
   	numberOfSelectedAtom = row;
-	terr = g_strdup_printf("Atom n %d is selected ", row);
+	terr = g_strdup_printf(_("Atom n %d is selected "), row);
 	gtk_widget_show(labelInfo);
   	gtk_label_set_text( GTK_LABEL(labelInfo),terr);
 	g_free(terr);
@@ -390,7 +390,7 @@ GtkWidget* createMolcasBasisWindow()
 
 	if(molcasMolecule.numberOfAtoms <1)
 	{
-		dlgWin = Message("You must initially define your geometry.","Error",TRUE);
+		dlgWin = Message(_("You must initially define your geometry."),_("Error"),TRUE);
 		return dlgWin;
 	}
 
@@ -398,10 +398,10 @@ GtkWidget* createMolcasBasisWindow()
 	dlgWin= gtk_dialog_new ();
 	gtk_window_set_position(GTK_WINDOW(dlgWin),GTK_WIN_POS_CENTER);
 	gtk_window_set_transient_for(GTK_WINDOW(dlgWin),GTK_WINDOW(Fenetre));
-	gtk_window_set_title(&GTK_DIALOG(dlgWin)->window,"Molcas Basis");
+	gtk_window_set_title(&GTK_DIALOG(dlgWin)->window,_("Molcas Basis"));
 
-	init_child(dlgWin, detroyBasisWindow ," Molcas Basis ");
-	g_signal_connect(G_OBJECT(dlgWin),"delete_event",(GCallback)destroy_childs,NULL);
+	init_child(dlgWin, detroyBasisWindow ,_(" Molcas Basis "));
+	g_signal_connect(G_OBJECT(dlgWin),"delete_event",(GCallback)destroy_children,NULL);
 
 	frame = gtk_frame_new (NULL);
 	gtk_widget_show (frame);
@@ -421,7 +421,7 @@ GtkWidget* createMolcasBasisWindow()
 	hBox = gtk_hbox_new (FALSE, 0);
 	gtk_box_pack_start (GTK_BOX (vBoxPaned), hBox, FALSE, FALSE, 0);
 
-	labelInfo = gtk_label_new ("Please select a atom ");
+	labelInfo = gtk_label_new (_("Please select a atom "));
 	gtk_widget_show (labelInfo);
 	gtk_box_pack_start (GTK_BOX (vBoxPaned), labelInfo, FALSE, FALSE, 0);
 
@@ -457,9 +457,9 @@ GtkWidget* createMolcasBasisWindow()
 	gtk_tree_selection_set_mode (select, GTK_SELECTION_SINGLE);
 	g_signal_connect (G_OBJECT (select), "changed", G_CALLBACK (selectAnAtoms), NULL);
 
-	button = create_button(dlgWin,"CANCEL");
+	button = create_button(dlgWin,_("Cancel"));
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(dlgWin)->action_area), button, FALSE, TRUE, 5);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK(destroy_childs),GTK_OBJECT(dlgWin));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK(destroy_children),GTK_OBJECT(dlgWin));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_show (button);
 	/*
@@ -471,7 +471,7 @@ GtkWidget* createMolcasBasisWindow()
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_childs),GTK_OBJECT(dlgWin));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_children),GTK_OBJECT(dlgWin));
 
 	gtk_widget_show_all(dlgWin);
 	Wins = dlgWin;

@@ -1,6 +1,6 @@
 /* MPQCBasis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -82,7 +82,7 @@ static void setComboBasis(GtkWidget *comboBasis)
 		atom++;
 	}
 	if(atomsList) basisList = getMPQCBasisListOfAtoms(atomsList,message);
-	if(!basisList) basisList = g_list_append(basisList, "Sorry, I can not obtain one type of bases for all atoms of your molecule");
+	if(!basisList) basisList = g_list_append(basisList, _("Sorry, I can not obtain one type of bases for all atoms of your molecule"));
 	g_list_free(atomsList);
 
   	gtk_combo_box_entry_set_popdown_strings( comboBasis, basisList);
@@ -154,7 +154,7 @@ void addMPQCBasisToTable(GtkWidget *table, gint i)
 	gchar* listBasis[] = {" "};
 
 
-	add_label_table(table,"Basis",(gushort)i,0);
+	add_label_table(table,_("Basis"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entryBasis = addComboListToATable(table, listBasis, nlistBasis, i, 2, 1);
 	comboBasis  = g_object_get_data(G_OBJECT (entryBasis), "Combo");
@@ -172,7 +172,7 @@ void addMPQCBasisGuessToTable(GtkWidget *table, gint i)
 	gint nlistBasis = 1;
 	gchar* listBasis[] = {" "};
 
-	add_label_table(table,"Basis",(gushort)i,0);
+	add_label_table(table,_("Basis"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entryBasisGuess = addComboListToATable(table, listBasis, nlistBasis, i, 2, 1);
 	comboBasisGuess  = g_object_get_data(G_OBJECT (entryBasisGuess), "Combo");
@@ -194,7 +194,7 @@ void addMPQCAuxBasisToTable(GtkWidget *table, gint i, GtkWidget* comboMethod)
 	if(GTK_IS_COMBO_BOX(comboMethod)) entryMethod = GTK_BIN(comboMethod)->child;
 
 
-	label = add_label_table(table,"Auxiliary basis",(gushort)i,0);
+	label = add_label_table(table,_("Auxiliary basis"),(gushort)i,0);
 	if(entryMethod) g_object_set_data(G_OBJECT (entryMethod), "LabelAuxBasis1", label);
 	label = add_label_table(table,":",(gushort)i,1);
 	if(entryMethod) g_object_set_data(G_OBJECT (entryMethod), "LabelAuxBasis2", label);

@@ -1,6 +1,6 @@
 /*Ftp.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -143,7 +143,7 @@ long get_file_from_data(int din,char* filename)
 	long bytes = 0;
 	char buf[2];
 	long step = FileSize/100;
-	gchar* str = g_strdup_printf("Get \"%s\" File from \"%s\" host : %%p%%%%",filename,HostName);
+	gchar* str = g_strdup_printf(_("Get \"%s\" File from \"%s\" host : %%p%%%%"),filename,HostName);
 	buf[1] = '\0';
 
         if( (fout = FOpen(filename,"w")) != NULL && !stopDownLoad)
@@ -180,7 +180,7 @@ int get_reply()
 	{
 		if(ReadMsg(cinput,reply_string, sizeof(reply_string))<=0)
 		{
-			fprintf(FileErr,"Error in get_reply\n");
+			fprintf(FileErr,_("Error in get_reply\n"));
 			fflush(FileErr);
 			return 1;
 		};
@@ -676,7 +676,7 @@ int ftp_get_file(char* fout,char* ferr,char* filename,char* localdir,char* remot
 	int finput = -1;
 	int code = 0;
 	long bytes = 0;
-	gchar* str = g_strdup_printf("Get \"%s\" File from remote host : %%p%%",filename);
+	gchar* str = g_strdup_printf(_("Get \"%s\" File from remote host : %%p%%"),filename);
 
 	FileOut = FOpen(fout,"w");
 	FileErr = FOpen(ferr,"w");
@@ -687,7 +687,7 @@ int ftp_get_file(char* fout,char* ferr,char* filename,char* localdir,char* remot
 	}
 	
 	show_progress_connection();
-	progress_connection(0,"Connecting....",FALSE);
+	progress_connection(0,_("Connecting...."),FALSE);
 	if( !cinput || !coutput || !HostName || strcmp(HostName,hostname)  || !UserName || strcmp(UserName,username) )
 	{
 		if( (code = ftp_connection(hostname,username,password)) != 0)

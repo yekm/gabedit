@@ -1,6 +1,6 @@
 /* MolecularMechanics.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -545,17 +545,161 @@ static gboolean canHydrogenBond(AmberParameters* amberParameters, gint a1Type, g
 	return FALSE;
 }
 /**********************************************************************/
+static void setRattleConstraintsParameters(ForceField* forceField)
+{
+	gint i;
+	gint j;
+	gint k;
+	gint a1,a2,a3;
+	gdouble r2;
+	gdouble d;
+	Molecule* m = &forceField->molecule;
+	gint numberOfRattleConstraintsTerms = 0;
+	gdouble* rattleConstraintsTerms[RATTLEDIM];
+
+	forceField->numberOfRattleConstraintsTerms = 0;
+	for( i=0; i<RATTLEDIM;i++) forceField->rattleConstraintsTerms[i] = NULL;
+
+	if(m->nAtoms<1) return;
+
+	if(forceField->options.rattleConstraints==NOCONSTRAINTS) return;
+	numberOfRattleConstraintsTerms = m->numberOf2Connections;
+	if(forceField->options.rattleConstraints==BONDSANGLESCONSTRAINTS) 
+		numberOfRattleConstraintsTerms += m->numberOf3Connections;
+
+	if(numberOfRattleConstraintsTerms<1) return;
+	for( i=0; i<RATTLEDIM;i++)
+       		rattleConstraintsTerms[i] = g_malloc(numberOfRattleConstraintsTerms*sizeof(gdouble));
+
+
+	/* 1=a1, 2=a2, 3=r2a1a2 */
+	/* RATTLEDIM 	3 */
+	j = 0;
+	for ( i = 0; i < m->numberOf2Connections; i++)
+	{
+    		while( gtk_events_pending() ) gtk_main_iteration();
+		if(StopCalcul) break;
+		a1 = m->connected2[0][i];
+		a2 = m->connected2[1][i];
+		r2 = 0;
+		for (k=0;k<3;k++)
+		{
+			d = m->atoms[a1].coordinates[k]-m->atoms[a2].coordinates[k];
+			r2 +=d*d;
+		}
+		rattleConstraintsTerms[0][j] = a1;
+		rattleConstraintsTerms[1][j] = a2;
+		rattleConstraintsTerms[2][j] = r2;
+		j++;
+	}
+	if(forceField->options.rattleConstraints==BONDSANGLESCONSTRAINTS)
+	{
+		gint a1p, a2p;
+		gint* nConnections = NULL;
+		gint* nAngles = NULL;
+       		nConnections = g_malloc(m->nAtoms*sizeof(gint));
+       		nAngles = g_malloc(m->nAtoms*sizeof(gint));
+		for ( i = 0; i < m->nAtoms; i++)
+		{
+			nConnections[i] = 0;
+			nAngles[i] = 0;
+		}
+		for ( i = 0; i < m->nAtoms; i++)
+		if(m->atoms[i].typeConnections)
+		{
+			for ( k = 0; k < m->nAtoms; k++)
+				if(i!=k && m->atoms[i].typeConnections[m->atoms[k].N-1]>0) nConnections[i]++;
+			/* printf("%d %s nCon=%d\n",i,m->atoms[i].mmType,nConnections[i]);*/
+		}
+		for ( i = 0; i < m->numberOf3Connections; i++)
+		{
+    			while( gtk_events_pending() ) gtk_main_iteration();
+			if(StopCalcul) break;
+			a1 = m->connected3[0][i];
+			a2 = m->connected3[1][i];
+			a3 = m->connected3[2][i];
+			if(nAngles[a2]>=2*nConnections[a2]-3) continue;
+			for (k=0;k<j;k++)
+			{
+				a1p = (gint)rattleConstraintsTerms[0][k];
+				a2p = (gint)rattleConstraintsTerms[1][k];
+				if(a1p==a1 && a2p==a3) break;
+				if(a1p==a3 && a2p==a1) break;
+			}
+			if(k!=j) continue;
+
+			nAngles[a2]++;
+			r2 = 0;
+			for (k=0;k<3;k++)
+			{
+				d = m->atoms[a1].coordinates[k]-m->atoms[a3].coordinates[k];
+				r2 +=d*d;
+			}
+			rattleConstraintsTerms[0][j] = a1;
+			rattleConstraintsTerms[1][j] = a3;
+			rattleConstraintsTerms[2][j] = r2;
+			j++;
+		}
+		/*
+		for ( i = 0; i < m->nAtoms; i++)
+		{
+			printf("%d %s nAngle = %d 2*nCon-3=%d\n",i,m->atoms[i].mmType,nAngles[i],2*nConnections[i]-3);
+		}
+		*/
+       		if(nConnections) g_free(nConnections);
+       		if(nAngles) g_free(nAngles);
+	}
+
+	if(j<1)
+	{
+		numberOfRattleConstraintsTerms=0;
+		for( i=0; i<RATTLEDIM;i++)
+		{
+       			g_free(rattleConstraintsTerms[i]);
+       			rattleConstraintsTerms[i] = NULL;
+		}
+	}
+	else if(numberOfRattleConstraintsTerms!=j)
+	{
+		numberOfRattleConstraintsTerms=j;
+		for( i=0; i<RATTLEDIM;i++)
+		{
+       			rattleConstraintsTerms[i] = 
+				g_realloc(rattleConstraintsTerms[i],numberOfRattleConstraintsTerms*sizeof(gdouble));
+		}
+	}
+	forceField->numberOfRattleConstraintsTerms = numberOfRattleConstraintsTerms;
+	for( i=0; i<RATTLEDIM;i++)
+       		forceField->rattleConstraintsTerms[i] = rattleConstraintsTerms[i]; 
+
+	printf(_("number Of RattleConstraintsTerms = %d\n"), forceField->numberOfRattleConstraintsTerms);
+	printf(_("number free degrees = %d\n"), 3*m->nAtoms-6-forceField->numberOfRattleConstraintsTerms);
+	/*
+	for ( i = 0; i < forceField->numberOfRattleConstraintsTerms; i++)
+	{
+			a1 = (gint)rattleConstraintsTerms[0][i];
+			a2 = (gint)rattleConstraintsTerms[1][i];
+			r2 = rattleConstraintsTerms[2][i];
+			printf("%d  %d %s %s r2= %f\n",
+				a1,a2,
+				m->atoms[a1].mmType,
+				m->atoms[a2].mmType,
+				r2);
+	}
+	*/
+}
+/**********************************************************************/
 static void setStretchParameters(AmberParameters* amberParameters,ForceField* forceField,gint* atomTypes)
 {
 	gint i;
 	gint a1,a2;
 	gint a1Type, a2Type;
 	gdouble forceConstant, equilibriumDistance;
-	Molecule m = forceField->molecule;
+	Molecule* m = &forceField->molecule;
 	gint numberOfStretchTerms = 0;
 	gdouble* bondStretchTerms[STRETCHDIM];
 
-	numberOfStretchTerms = m.numberOf2Connections;
+	numberOfStretchTerms = m->numberOf2Connections;
 	for( i=0; i<STRETCHDIM;i++)
        		bondStretchTerms[i] = g_malloc(numberOfStretchTerms*sizeof(gdouble));
 
@@ -567,17 +711,17 @@ static void setStretchParameters(AmberParameters* amberParameters,ForceField* fo
         		gtk_main_iteration();
 		if(StopCalcul)
 			break;
-		a1 = m.connected2[0][i];
-		a2 = m.connected2[1][i];
+		a1 = m->connected2[0][i];
+		a2 = m->connected2[1][i];
 		a1Type = atomTypes[a1];
 		a2Type = atomTypes[a2];
 		
 		if ( ! ( getStretchParameters(amberParameters, a1Type, a2Type,&forceConstant,&equilibriumDistance ) ) )
 		{
-			gchar l1 = m.atoms[a1].mmType[0];
-			gchar l2 = m.atoms[a2].mmType[0];
-			printf( "**** couldn't find stretch parameters for %s-%s(%d-%d) ", 
-				m.atoms[a1].mmType,m.atoms[a2].mmType,a1Type, a2Type);
+			gchar l1 = m->atoms[a1].mmType[0];
+			gchar l2 = m->atoms[a2].mmType[0];
+			printf( _("**** couldn't find stretch parameters for %s-%s(%d-%d) "), 
+				m->atoms[a1].mmType,m->atoms[a2].mmType,a1Type, a2Type);
 
 			forceConstant = 310;
 			equilibriumDistance = 1.525;
@@ -604,11 +748,11 @@ static void setStretchParameters(AmberParameters* amberParameters,ForceField* fo
 				forceConstant = 490;
 				equilibriumDistance = 1.335;
 			}
-			if(isIonic( m.atoms[a1].mmType) || isIonic( m.atoms[a2].mmType))
+			if(isIonic( m->atoms[a1].mmType) || isIonic( m->atoms[a2].mmType))
 			{
 				forceConstant = 0;
 			}
-			printf( "-> I set  force to %f and equilibrium distance to %f\n",
+			printf( _("-> I set  force to %f and equilibrium distance to %f\n"),
 					forceConstant,equilibriumDistance);
 
 		}
@@ -629,12 +773,12 @@ static void setBendParameters(AmberParameters* amberParameters,ForceField* force
 	gint i;
 	gint a1,a2,a3;
 	gint a1Type, a2Type, a3Type;
-	Molecule m = forceField->molecule;
+	Molecule* m = &forceField->molecule;
 	gint numberOfBendTerms = 0;
 	gdouble* angleBendTerms[BENDDIM];
 	gdouble forceConstant, equilibriumAngle;
 
-	numberOfBendTerms =  m.numberOf3Connections;
+	numberOfBendTerms =  m->numberOf3Connections;
 	for( i=0; i<BENDDIM;i++)
 		angleBendTerms[i] =  g_malloc(numberOfBendTerms*sizeof(gdouble)); 
 
@@ -646,23 +790,23 @@ static void setBendParameters(AmberParameters* amberParameters,ForceField* force
         		gtk_main_iteration();
 		if(StopCalcul)
 			break;
-		a1 = m.connected3[0][i];
-		a2 = m.connected3[1][i];
-		a3 = m.connected3[2][i];
+		a1 = m->connected3[0][i];
+		a2 = m->connected3[1][i];
+		a3 = m->connected3[2][i];
 		a1Type = atomTypes[a1];
 		a2Type = atomTypes[a2];
 		a3Type = atomTypes[a3];
 
 		if ( ! ( getBendParameters(amberParameters, a1Type, a2Type, a3Type,&forceConstant,&equilibriumAngle ) ) )
 		{
-			gchar l1 = m.atoms[a1].mmType[0];
-			gchar l2 = m.atoms[a2].mmType[0];
-			gchar l3 = m.atoms[a3].mmType[0];
-			printf( "**** couldn't find bend parameters for %s-%s-%s ",
-			m.atoms[a1].mmType,m.atoms[a2].mmType,m.atoms[a3].mmType);
+			gchar l1 = m->atoms[a1].mmType[0];
+			gchar l2 = m->atoms[a2].mmType[0];
+			gchar l3 = m->atoms[a3].mmType[0];
+			printf(_("**** couldn't find bend parameters for %s-%s-%s "),
+			m->atoms[a1].mmType,m->atoms[a2].mmType,m->atoms[a3].mmType);
 			forceConstant = 60.0;
 			equilibriumAngle = 115.0;
-			if(!strcmp(m.atoms[a2].mmType,"CT"))
+			if(!strcmp(m->atoms[a2].mmType,"CT"))
 			{
 				forceConstant = 50.0;
 				equilibriumAngle = 109.0;
@@ -673,12 +817,11 @@ static void setBendParameters(AmberParameters* amberParameters,ForceField* force
 				forceConstant = 50.0;
 				equilibriumAngle = 120.0;
 			}
-			if(isIonic( m.atoms[a1].mmType) || isIonic( m.atoms[a2].mmType) ||  isIonic( m.atoms[a3].mmType))
+			if(isIonic( m->atoms[a1].mmType) || isIonic( m->atoms[a2].mmType) ||  isIonic( m->atoms[a3].mmType))
 			{
 				forceConstant = 0;
 			}
-			printf( "-> I set force to %f and equilibrium angle to %f\n",
-					forceConstant, equilibriumAngle);
+			printf(_("-> I set force to %f and equilibrium angle to %f\n"), forceConstant, equilibriumAngle);
 		}
 
 		angleBendTerms[0][i] = a1;
@@ -702,7 +845,7 @@ static void setDihedralParameters(AmberParameters* amberParameters,ForceField* f
 	gint l;
 	gint a1,a2,a3,a4;
 	gint a1Type, a2Type, a3Type,a4Type;
-	Molecule m = forceField->molecule;
+	Molecule* m = &forceField->molecule;
 	gdouble* dihedralAngleTerms[DIHEDRALDIM];
 	gint numberOfDihedralTerms = 0;
 	gint dim;
@@ -711,20 +854,20 @@ static void setDihedralParameters(AmberParameters* amberParameters,ForceField* f
 	/*  DIHEDRALDIM	8 */
 
 	for( i=0; i<DIHEDRALDIM;i++)
-		dihedralAngleTerms[i] =  g_malloc(4*m.numberOf4Connections*sizeof(gdouble)); 
+		dihedralAngleTerms[i] =  g_malloc(4*m->numberOf4Connections*sizeof(gdouble)); 
 
 	numberOfDihedralTerms = 0;
 
-	for (  i = 0; i < m.numberOf4Connections; i++ )
+	for (  i = 0; i < m->numberOf4Connections; i++ )
 	{
     		while( gtk_events_pending() )
         		gtk_main_iteration();
 		if(StopCalcul)
 			break;
-		a1 = m.connected4[0][i];
-		a2 = m.connected4[1][i];
-		a3 = m.connected4[2][i];
-		a4 = m.connected4[3][i];
+		a1 = m->connected4[0][i];
+		a2 = m->connected4[1][i];
+		a3 = m->connected4[2][i];
+		a4 = m->connected4[3][i];
 
 		a1Type = atomTypes[a1];
 		a2Type = atomTypes[a2];
@@ -750,7 +893,7 @@ static void setDihedralParameters(AmberParameters* amberParameters,ForceField* f
 					amberParameters->dihedralAngleTerms[k].n[j];
 
 				numberOfDihedralTerms++;
-				if(numberOfDihedralTerms>4*m.numberOf4Connections)
+				if(numberOfDihedralTerms>4*m->numberOf4Connections)
 				{
 					for( l=0; l<DIHEDRALDIM;l++)
 					{
@@ -773,7 +916,7 @@ static void setImproperTorionParameters(AmberParameters* amberParameters, ForceF
 	gint i;
 	gint a1,a2,a3,a4;
 	gint a1Type, a2Type, a3Type,a4Type;
-	Molecule m = forceField->molecule;
+	Molecule* m = &forceField->molecule;
 	gdouble forceConstant, equilibriumAngle, terms;
 	gint numberOfImproperTorsionTerms = 0;
 	gdouble* improperTorsionTerms[IMPROPERDIHEDRALDIM];
@@ -781,11 +924,11 @@ static void setImproperTorionParameters(AmberParameters* amberParameters, ForceF
 	/*  8 terms 1=a1, 2=a2, 3=a3, 4=a4, 5=Idiv, 6=Pk, 7=Phase, 8=Pn */
 	/*  IMPROPERDIHEDRALDIM	8 */
 
-	numberOfImproperTorsionTerms = m.numberOf4Connections;
+	numberOfImproperTorsionTerms = m->numberOf4Connections;
 
 	for( i=0; i<IMPROPERDIHEDRALDIM;i++)
 		improperTorsionTerms[i] =  
-			g_malloc(m.numberOf4Connections*sizeof(gdouble)); 
+			g_malloc(m->numberOf4Connections*sizeof(gdouble)); 
 
 	for (  i = 0; i < numberOfImproperTorsionTerms; i++ )
 	{
@@ -793,10 +936,10 @@ static void setImproperTorionParameters(AmberParameters* amberParameters, ForceF
         		gtk_main_iteration();
 		if(StopCalcul)
 			break;
-		a1 = m.connected4[0][i];
-		a2 = m.connected4[1][i];
-		a3 = m.connected4[2][i];
-		a4 = m.connected4[3][i];
+		a1 = m->connected4[0][i];
+		a2 = m->connected4[1][i];
+		a3 = m->connected4[2][i];
+		a4 = m->connected4[3][i];
 
 		a1Type = atomTypes[a1];
 		a2Type = atomTypes[a2];
@@ -826,21 +969,21 @@ static void setHydrogenBondedParameters(AmberParameters* amberParameters,ForceFi
 	gint i;
 	gint a1,a2;
 	gint a1Type,a2Type;
-	Molecule m = forceField->molecule;
+	Molecule* m = &forceField->molecule;
 	gdouble C, D;
 	gdouble* hydrogenBondedTerms[HYDROGENBONDEDDIM];
 
 	for( i=0; i<HYDROGENBONDEDDIM;i++)
-		hydrogenBondedTerms[i] =  g_malloc(m.numberOfNonBonded*sizeof(gdouble));
+		hydrogenBondedTerms[i] =  g_malloc(m->numberOfNonBonded*sizeof(gdouble));
 
-	for ( i = 0; i < m.numberOfNonBonded; i++ )
+	for ( i = 0; i < m->numberOfNonBonded; i++ )
 	{
     		while( gtk_events_pending() )
         		gtk_main_iteration();
 		if(StopCalcul)
 			break;
-		a1 = m.nonBonded[0][i];
-		a2 = m.nonBonded[1][i];
+		a1 = m->nonBonded[0][i];
+		a2 = m->nonBonded[1][i];
 
 		a1Type = atomTypes[a1];
 		a2Type = atomTypes[a2];
@@ -882,7 +1025,7 @@ static void setNonBondedParameters(AmberParameters* amberParameters, ForceField*
 	gint i;
 	gint a1,a2,a4;
 	gint a1Type,a2Type,a4Type;
-	Molecule m = forceField->molecule;
+	Molecule* m = &forceField->molecule;
 	gdouble equilibriumDistance, epsilon;
 	gdouble epsilonProduct;
 	gdouble ri, rj;
@@ -894,16 +1037,16 @@ static void setNonBondedParameters(AmberParameters* amberParameters, ForceField*
 	/* NONBONDEDDIM 5 */
 	for( i=0; i<NONBONDEDDIM;i++)
 		nonBondedTerms[i] =  
-			g_malloc((m.numberOfNonBonded+m.numberOf4Connections)*sizeof(gdouble)); 
+			g_malloc((m->numberOfNonBonded+m->numberOf4Connections)*sizeof(gdouble)); 
 
-	for ( i = 0; i < m.numberOfNonBonded; i++ )
+	for ( i = 0; i < m->numberOfNonBonded; i++ )
 	{
     		while( gtk_events_pending() )
         		gtk_main_iteration();
 		if(StopCalcul)
 			break;
-		a1 = m.nonBonded[0][i];
-		a2 = m.nonBonded[1][i];
+		a1 = m->nonBonded[0][i];
+		a2 = m->nonBonded[1][i];
 /*
 		if(a1==a2)
 		{
@@ -919,7 +1062,7 @@ static void setNonBondedParameters(AmberParameters* amberParameters, ForceField*
 		if ( !useHydrogenBonded || !canHydrogenBond(amberParameters, a1Type, a2Type ) )
 		{ 
 			if ( ! ( getNonBondedParameters(amberParameters, a1Type, &equilibriumDistance, &epsilon ) ) )
-				printf( "**** couldn't find non bonded parameters for %s \n",m.atoms[a1].mmType);
+				printf(_("**** couldn't find non bonded parameters for %s \n"),m->atoms[a1].mmType);
 		
 			epsilonProduct = sqrt(fabs(epsilon));
 			ri = equilibriumDistance;
@@ -944,14 +1087,14 @@ static void setNonBondedParameters(AmberParameters* amberParameters, ForceField*
 	}
 
 	/* now 1/2 non bonded */
-	for (  i = 0; i < m.numberOf4Connections; i++ )
+	for (  i = 0; i < m->numberOf4Connections; i++ )
 	{
     		while( gtk_events_pending() )
         		gtk_main_iteration();
 		if(StopCalcul)
 			break;
-		a1 = m.connected4[0][i];
-		a4 = m.connected4[3][i];
+		a1 = m->connected4[0][i];
+		a4 = m->connected4[3][i];
 /*
 		if(a1==a4)
 		{
@@ -1028,11 +1171,11 @@ static void setPairWiseParameters(AmberParameters* amberParameters, ForceField* 
 	gint j;
 	gint a1,a2;
 	gint a1Type,a2Type;
-	Molecule m = forceField->molecule;
+	Molecule* m = &forceField->molecule;
 	gdouble a, beta, c6, c8, c10, b;
 	gdouble* pairWiseTerms[PAIRWISEDIM];
 
-	numberOfPairWise = m.nAtoms*(m.nAtoms-1)/2;
+	numberOfPairWise = m->nAtoms*(m->nAtoms-1)/2;
 
 	/* PAIRWISEDIM 8 */
 	for( i=0; i<PAIRWISEDIM;i++)
@@ -1040,8 +1183,8 @@ static void setPairWiseParameters(AmberParameters* amberParameters, ForceField* 
 			g_malloc((numberOfPairWise)*sizeof(gdouble)); 
 
 	numberOfPairWise = 0;
-	for ( i = 0; i < m.nAtoms; i++ )
-	for ( j = i+1; j < m.nAtoms; j++ )
+	for ( i = 0; i < m->nAtoms; i++ )
+	for ( j = i+1; j < m->nAtoms; j++ )
 	{
     		while( gtk_events_pending() )
         		gtk_main_iteration();
@@ -1055,8 +1198,8 @@ static void setPairWiseParameters(AmberParameters* amberParameters, ForceField* 
 		a2Type = atomTypes[a2];
 
 		if ( ! ( getPairWiseParameters(amberParameters, a1Type,a2Type,&a, &beta,&c6,&c8, &c10,&b) ) )
-				printf( "**** couldn't find pair wise parameters for %s-%s\n",
-					m.atoms[a1].mmType, m.atoms[a2].mmType);
+				printf( _("**** couldn't find pair wise parameters for %s-%s\n"),
+					m->atoms[a1].mmType, m->atoms[a2].mmType);
 		
 			pairWiseTerms[0][numberOfPairWise] = a1;
 			pairWiseTerms[1][numberOfPairWise] = a2;
@@ -1087,19 +1230,19 @@ static void setPairWiseParameters(AmberParameters* amberParameters, ForceField* 
 /**********************************************************************/
 static void setAtomTypes(AmberParameters* amberParameters,ForceField* forceField,gint* atomTypes)
 {
-	Molecule m = forceField->molecule;
-	gint nAtoms = m.nAtoms;
+	Molecule* m = &forceField->molecule;
+	gint nAtoms = m->nAtoms;
 	gint i;
 	for(i=0;i<nAtoms;i++)
 	{ 
-		/* printf("Atom %s=",m.atoms[i].mmType); */
-		atomTypes[i] = getNumberType(amberParameters, m.atoms[i].mmType);
+		/* printf("Atom %s=",m->atoms[i].mmType); */
+		atomTypes[i] = getNumberType(amberParameters, m->atoms[i].mmType);
 		/*
 		{
 			gint j;
 			gint nTypes = amberParameters->numberOfTypes;
 			AmberAtomTypes* types = amberParameters->atomTypes;
-			gchar* type = m.atoms[i].mmType;
+			gchar* type = m->atoms[i].mmType;
 			gint len = strlen(type);
 
 			if(strcmp(type,"X")==0)
@@ -1118,8 +1261,8 @@ static void setAtomTypes(AmberParameters* amberParameters,ForceField* forceField
 /**********************************************************************/
 static void setAmberParameters(ForceField* forceField)
 {
-	Molecule m = forceField->molecule;
-	gint* atomTypes = g_malloc(m.nAtoms*sizeof(gint));
+	Molecule* m = &forceField->molecule;
+	gint* atomTypes = g_malloc(m->nAtoms*sizeof(gint));
 	AmberParameters amberParameters;
 
 
@@ -1159,61 +1302,34 @@ static void setAmberParameters(ForceField* forceField)
 		return;
 	}
 
-    	while( gtk_events_pending() )
-        	gtk_main_iteration();
-	if(forceField->options.bondStretch)
-		setStretchParameters(&amberParameters,forceField,atomTypes);
-	if(StopCalcul)
-	{
-		return;
-	}
-    	while( gtk_events_pending() )
-        	gtk_main_iteration();
+    	while( gtk_events_pending() ) gtk_main_iteration();
+	if(forceField->options.bondStretch) setStretchParameters(&amberParameters,forceField,atomTypes);
+	if(StopCalcul) return;
+    	while( gtk_events_pending() ) gtk_main_iteration();
 
-	if(forceField->options.angleBend)
-		setBendParameters(&amberParameters,forceField,atomTypes);
-	if(StopCalcul)
-	{
-		return;
-	}
-    	while( gtk_events_pending() )
-        	gtk_main_iteration();
+	if(forceField->options.angleBend) setBendParameters(&amberParameters,forceField,atomTypes);
+	if(StopCalcul) return;
+    	while( gtk_events_pending() ) gtk_main_iteration();
 
-	if(forceField->options.dihedralAngle)
-		setDihedralParameters(&amberParameters, forceField,atomTypes);
-	if(StopCalcul)
-	{
-		return;
-	}
-    	while( gtk_events_pending() )
-        	gtk_main_iteration();
+	if(forceField->options.dihedralAngle) setDihedralParameters(&amberParameters, forceField,atomTypes);
+	if(StopCalcul) return;
+    	while( gtk_events_pending() ) gtk_main_iteration();
 
-	if(forceField->options.improperTorsion)
-		setImproperTorionParameters(&amberParameters,forceField,atomTypes);
-	if(StopCalcul)
-	{
-		return;
-	}
-    	while( gtk_events_pending() )
-        	gtk_main_iteration();
+	if(forceField->options.improperTorsion) setImproperTorionParameters(&amberParameters,forceField,atomTypes);
+	if(StopCalcul) return;
+    	while( gtk_events_pending() ) gtk_main_iteration();
 
-	if(forceField->options.hydrogenBonded)
-		setHydrogenBondedParameters(&amberParameters,forceField,atomTypes);
-	if(StopCalcul)
-	{
-		return;
-	}
-    	while( gtk_events_pending() )
-        	gtk_main_iteration();
+	if(forceField->options.hydrogenBonded) setHydrogenBondedParameters(&amberParameters,forceField,atomTypes);
+	if(StopCalcul) return;
+    	while( gtk_events_pending() ) gtk_main_iteration();
 	
-	if(forceField->options.nonBonded)
-		setNonBondedParameters(&amberParameters,forceField,atomTypes);
-	if(StopCalcul)
-	{
-		return;
-	}
-    	while( gtk_events_pending() )
-        	gtk_main_iteration();
+	if(forceField->options.nonBonded) setNonBondedParameters(&amberParameters,forceField,atomTypes);
+	if(StopCalcul) return;
+    	while( gtk_events_pending() ) gtk_main_iteration();
+
+	if(forceField->options.rattleConstraints!=NOCONSTRAINTS) setRattleConstraintsParameters(forceField);
+	if(StopCalcul) return;
+    	while( gtk_events_pending() ) gtk_main_iteration();
 	
 
 	/*
@@ -1223,8 +1339,8 @@ static void setAmberParameters(ForceField* forceField)
 /**********************************************************************/
 static void setAllPairWiseParameters(ForceField* forceField)
 {
-	Molecule m = forceField->molecule;
-	gint* atomTypes = g_malloc(m.nAtoms*sizeof(gint));
+	Molecule* m = &forceField->molecule;
+	gint* atomTypes = g_malloc(m->nAtoms*sizeof(gint));
 	AmberParameters amberParameters;
 
 
@@ -1271,14 +1387,12 @@ static void setAllPairWiseParameters(ForceField* forceField)
 
 		
 	setPairWiseParameters(&amberParameters,forceField,atomTypes);
-	
+	if(StopCalcul) return;
+	while( gtk_events_pending() ) gtk_main_iteration();
 
-	if(StopCalcul)
-	{
-		return;
-	}
-    while( gtk_events_pending() )
-        	gtk_main_iteration();
+	if(forceField->options.rattleConstraints!=NOCONSTRAINTS) setRattleConstraintsParameters(forceField);
+	if(StopCalcul) return;
+    	while( gtk_events_pending() ) gtk_main_iteration();
 
 	/*
 	freeAmberParameters(&amberParameters);
@@ -1293,7 +1407,7 @@ static void calculateGradientBondAmber(ForceField* forceField)
 	gdouble rijx, rijy, rijz, forceConstant, equilibriumDistance, term;
 	gdouble forceix, forceiy, forceiz;
 	gdouble bondLength;
-	Molecule m = forceField->molecule;
+	Molecule* m = &forceField->molecule;
 	gdouble* bondStretchTerms[STRETCHDIM];
 	gint numberOfStretchTerms = forceField->numberOfStretchTerms;
 
@@ -1306,8 +1420,8 @@ static void calculateGradientBondAmber(ForceField* forceField)
 		aj = (gint)bondStretchTerms[1][i];
 		forceConstant = bondStretchTerms[2][i];
 		equilibriumDistance = bondStretchTerms[3][i];
-		atomi =  m.atoms[ai];
-		atomj =  m.atoms[aj];
+		atomi =  m->atoms[ai];
+		atomj =  m->atoms[aj];
 
 		rijx = atomi.coordinates[0]  - atomj.coordinates[0];	
 		rijy = atomi.coordinates[1]  - atomj.coordinates[1];	
@@ -1323,13 +1437,16 @@ static void calculateGradientBondAmber(ForceField* forceField)
 		forceiy = term * rijy;
 		forceiz = term * rijz;
 		
-		m.gradient[0][ai] -= forceix;
-		m.gradient[1][ai] -= forceiy;
-		m.gradient[2][ai] -= forceiz;
+		if(m->atoms[ai].variable)
+		{
+			m->gradient[0][ai] -= forceix;
+			m->gradient[1][ai] -= forceiy;
+			m->gradient[2][ai] -= forceiz;
+		}
 		
-		m.gradient[0][aj] += forceix;
-		m.gradient[1][aj] += forceiy;
-		m.gradient[2][aj] += forceiz;
+		m->gradient[0][aj] += forceix;
+		m->gradient[1][aj] += forceiy;
+		m->gradient[2][aj] += forceiz;
 	} 
 }
 /**********************************************************************/
@@ -1357,7 +1474,7 @@ static void calculateGradientBendAmber(ForceField* forceField)
 	gdouble term2jx, term2jy, term2jz;
 	gdouble term2kx, term2ky, term2kz;
 
-	Molecule m = forceField->molecule;
+	Molecule* m = &forceField->molecule;
 	gdouble* angleBendTerms[BENDDIM];
 	static gdouble	D2R = 1.0/57.29577951308232090712;
 	gint numberOfBendTerms = forceField->numberOfBendTerms;
@@ -1370,9 +1487,9 @@ static void calculateGradientBendAmber(ForceField* forceField)
 		ai = (gint)angleBendTerms[0][i];
 		aj = (gint)angleBendTerms[1][i];
 		ak = (gint)angleBendTerms[2][i];
-		atomi =  m.atoms[ai];
-		atomj =  m.atoms[aj];
-		atomk =  m.atoms[ak];
+		atomi =  m->atoms[ai];
+		atomj =  m->atoms[aj];
+		atomk =  m->atoms[ak];
 
 		thetaDeg = getAngle(&atomi, &atomj, &atomk);
 		thetaRad = thetaDeg * D2R;
@@ -1450,17 +1567,17 @@ static void calculateGradientBendAmber(ForceField* forceField)
 			forceky = term * term2ky;
 			forcekz = term * term2kz;
 			
-			m.gradient[0][ai] -= forceix;
-			m.gradient[1][ai] -= forceiy;
-			m.gradient[2][ai] -= forceiz;
+			m->gradient[0][ai] -= forceix;
+			m->gradient[1][ai] -= forceiy;
+			m->gradient[2][ai] -= forceiz;
 			
-			m.gradient[0][aj] -= forcejx;
-			m.gradient[1][aj] -= forcejy;
-			m.gradient[2][aj] -= forcejz;
+			m->gradient[0][aj] -= forcejx;
+			m->gradient[1][aj] -= forcejy;
+			m->gradient[2][aj] -= forcejz;
 			
-			m.gradient[0][ak] -= forcekx;
-			m.gradient[1][ak] -= forceky;
-			m.gradient[2][ak] -= forcekz;
+			m->gradient[0][ak] -= forcekx;
+			m->gradient[1][ak] -= forceky;
+			m->gradient[2][ak] -= forcekz;
 		}
 	} 
 }
@@ -1497,7 +1614,7 @@ static void calculateGradientDihedralAmber(ForceField* forceField)
 	gint n;
 	gdouble vn;
 
-	Molecule m = forceField->molecule;
+	Molecule* m = &forceField->molecule;
 	gdouble* dihedralAngleTerms[DIHEDRALDIM];
 	static gdouble	D2R = 1.0/57.29577951308232090712;
 	gint numberOfDihedralTerms = forceField->numberOfDihedralTerms;
@@ -1512,10 +1629,10 @@ static void calculateGradientDihedralAmber(ForceField* forceField)
 		ak = (gint)dihedralAngleTerms[2][i];
 		al = (gint)dihedralAngleTerms[3][i];
 
-		atomi =  m.atoms[ai];
-		atomj =  m.atoms[aj];
-		atomk =  m.atoms[ak];
-		atoml =  m.atoms[al];
+		atomi =  m->atoms[ai];
+		atomj =  m->atoms[aj];
+		atomk =  m->atoms[ak];
+		atoml =  m->atoms[al];
 
 		rjix = atomj.coordinates[0] - atomi.coordinates[0];
 		rjiy = atomj.coordinates[1] - atomi.coordinates[1];
@@ -1620,21 +1737,21 @@ static void calculateGradientDihedralAmber(ForceField* forceField)
 		forcely = rkjx*dedzu - rkjz*dedxu;
 		forcelz = rkjy*dedxu - rkjx*dedyu;
 
-		m.gradient[0][ai] += forceix;
-		m.gradient[1][ai] += forceiy;
-		m.gradient[2][ai] += forceiz;
+		m->gradient[0][ai] += forceix;
+		m->gradient[1][ai] += forceiy;
+		m->gradient[2][ai] += forceiz;
 
-		m.gradient[0][aj] += forcejx;
-		m.gradient[1][aj] += forcejy;
-		m.gradient[2][aj] += forcejz;
+		m->gradient[0][aj] += forcejx;
+		m->gradient[1][aj] += forcejy;
+		m->gradient[2][aj] += forcejz;
 
-		m.gradient[0][ak] += forcekx;
-		m.gradient[1][ak] += forceky;
-		m.gradient[2][ak] += forcekz;
+		m->gradient[0][ak] += forcekx;
+		m->gradient[1][ak] += forceky;
+		m->gradient[2][ak] += forcekz;
 
-		m.gradient[0][al] += forcelx;
-		m.gradient[1][al] += forcely;
-		m.gradient[2][al] += forcelz;
+		m->gradient[0][al] += forcelx;
+		m->gradient[1][al] += forcely;
+		m->gradient[2][al] += forcelz;
 	}
 }
 /**********************************************************************/
@@ -1662,7 +1779,7 @@ static void calculateGradientNonBondedAmber(ForceField* forceField)
 	gdouble  term1, term2, term3;
 
 	gboolean useCoulomb = forceField->options.coulomb;
-	Molecule m = forceField->molecule;
+	Molecule* m = &forceField->molecule;
 	gdouble* nonBondedTerms[NONBONDEDDIM];
 	gint numberOfNonBonded = forceField->numberOfNonBonded;
 
@@ -1679,8 +1796,8 @@ static void calculateGradientNonBondedAmber(ForceField* forceField)
 		Bij      = nonBondedTerms[3][i];
 		factorNonBonded   = nonBondedTerms[4][i];
 
-		atomi =  m.atoms[ai];
-		atomj =  m.atoms[aj];
+		atomi =  m->atoms[ai];
+		atomj =  m->atoms[aj];
 
 		chargei = atomi.charge;
 		chargej = atomj.charge;
@@ -1717,12 +1834,12 @@ static void calculateGradientNonBondedAmber(ForceField* forceField)
 		forcejx = - forceix;
 		forcejy = - forceiy;
 		forcejz = - forceiz;
-		m.gradient[0][ai] -= forceix;
-		m.gradient[1][ai] -= forceiy;
-		m.gradient[2][ai] -= forceiz;
-		m.gradient[0][aj] -= forcejx;
-		m.gradient[1][aj] -= forcejy;
-		m.gradient[2][aj] -= forcejz;
+		m->gradient[0][ai] -= forceix;
+		m->gradient[1][ai] -= forceiy;
+		m->gradient[2][ai] -= forceiz;
+		m->gradient[0][aj] -= forcejx;
+		m->gradient[1][aj] -= forcejy;
+		m->gradient[2][aj] -= forcejz;
 	}  
 }
 /*********************************************************************/
@@ -1741,7 +1858,7 @@ static void calculateGradientHydrogenBondedAmber(ForceField* forceField)
 	gdouble  term1, term2, term3;
 
 
-	Molecule m = forceField->molecule;
+	Molecule* m = &forceField->molecule;
 	gdouble* hydrogenBondedTerms[HYDROGENBONDEDDIM];
 	gint numberOfHydrogenBonded =  forceField->numberOfHydrogenBonded;
 
@@ -1756,8 +1873,8 @@ static void calculateGradientHydrogenBondedAmber(ForceField* forceField)
 		Cij = hydrogenBondedTerms[2][i];
 		Dij = hydrogenBondedTerms[3][i];
 
-		atomi =  m.atoms[ai];
-		atomj =  m.atoms[aj];
+		atomi =  m->atoms[ai];
+		atomj =  m->atoms[aj];
 
 		rijx = atomi.coordinates[0] - atomj.coordinates[0];
 		rijy = atomi.coordinates[1] - atomj.coordinates[1];
@@ -1781,12 +1898,12 @@ static void calculateGradientHydrogenBondedAmber(ForceField* forceField)
 		forcejx = - forceix;
 		forcejy = - forceiy;
 		forcejz = - forceiz;
-		m.gradient[0][ai] -= forceix;
-		m.gradient[1][ai] -= forceiy;
-		m.gradient[2][ai] -= forceiz;
-		m.gradient[0][aj] -= forcejx;
-		m.gradient[1][aj] -= forcejy;
-		m.gradient[2][aj] -= forcejz;
+		m->gradient[0][ai] -= forceix;
+		m->gradient[1][ai] -= forceiy;
+		m->gradient[2][ai] -= forceiz;
+		m->gradient[0][aj] -= forcejx;
+		m->gradient[1][aj] -= forcejy;
+		m->gradient[2][aj] -= forcejz;
 	}
 }
 /**********************************************************************/
@@ -1814,7 +1931,7 @@ static void calculateGradientPairWise(ForceField* forceField)
 
 	gboolean useCoulomb = forceField->options.coulomb;
 	gboolean useVanderWals = forceField->options.vanderWals;
-	Molecule m = forceField->molecule;
+	Molecule* m = &forceField->molecule;
 	gdouble* pairWiseTerms[PAIRWISEDIM];
 	gint numberOfPairWise = forceField->numberOfPairWise;
 
@@ -1834,8 +1951,8 @@ static void calculateGradientPairWise(ForceField* forceField)
 		C10      = pairWiseTerms[6][i];
 		b        = pairWiseTerms[7][i];
 
-		atomi =  m.atoms[ai];
-		atomj =  m.atoms[aj];
+		atomi =  m->atoms[ai];
+		atomj =  m->atoms[aj];
 
 		chargei = atomi.charge;
 		chargej = atomj.charge;
@@ -1944,12 +2061,12 @@ static void calculateGradientPairWise(ForceField* forceField)
 		forcejx = - forceix;
 		forcejy = - forceiy;
 		forcejz = - forceiz;
-		m.gradient[0][ai] -= forceix;
-		m.gradient[1][ai] -= forceiy;
-		m.gradient[2][ai] -= forceiz;
-		m.gradient[0][aj] -= forcejx;
-		m.gradient[1][aj] -= forcejy;
-		m.gradient[2][aj] -= forcejz;
+		m->gradient[0][ai] -= forceix;
+		m->gradient[1][ai] -= forceiy;
+		m->gradient[2][ai] -= forceiz;
+		m->gradient[0][aj] -= forcejx;
+		m->gradient[1][aj] -= forcejy;
+		m->gradient[2][aj] -= forcejz;
 	}  
 }
 /**********************************************************************/
@@ -1957,11 +2074,11 @@ static void calculateGradientAmber(ForceField* forceField)
 {
 	gint i;
 	gint j;
-	Molecule m = forceField->molecule;
+	Molecule* m = &forceField->molecule;
 
 	for(j=0;j<3;j++)
-		for( i=0; i<m.nAtoms;i++)
-			m.gradient[j][i] = 0.0;
+		for( i=0; i<m->nAtoms;i++)
+			m->gradient[j][i] = 0.0;
 
 	calculateGradientBondAmber(forceField);
 	if(StopCalcul)
@@ -1985,6 +2102,12 @@ static void calculateGradientAmber(ForceField* forceField)
 	if(StopCalcul)
 		return;
 
+	for( i=0; i<m->nAtoms;i++)
+	{
+		if(!m->atoms[i].variable)
+			for(j=0;j<3;j++)
+				m->gradient[j][i] = 0.0;
+	}
 }
 /**********************************************************************/
 /*
@@ -1992,24 +2115,24 @@ static void calculateGradientNumericAmber(ForceField* forceField)
 {
 	gint i;
 	gint j;
-	Molecule m = forceField->molecule;
+	Molecule* m = &forceField->molecule;
 	gdouble h=0.0001;
 	gdouble E1;
 	gdouble E2;
 
 	for(j=0;j<3;j++)
-		for( i=0; i<m.nAtoms;i++)
+		for( i=0; i<m->nAtoms;i++)
 		{
     			while( gtk_events_pending() )
         			gtk_main_iteration();
 			if(StopCalcul)
 				return;
-			m.atoms[i].coordinates[j] += h;
+			m->atoms[i].coordinates[j] += h;
 			E1 = calculateEnergyTmpAmber(forceField,&m);
-			m.atoms[i].coordinates[j] -= h+h;
+			m->atoms[i].coordinates[j] -= h+h;
 			E2 = calculateEnergyTmpAmber(forceField,&m);
-			m.atoms[i].coordinates[j] += h;
-			m.gradient[j][i] = (E1-E2)/2/h;
+			m->atoms[i].coordinates[j] += h;
+			m->gradient[j][i] = (E1-E2)/2/h;
 		}
 
 
@@ -2023,7 +2146,7 @@ static gdouble calculateEnergyBondAmber(ForceField* forceField,Molecule* molecul
 	AtomMol atomi,atomj;
 	gdouble rijx, rijy, rijz, forceConstant, equilibriumDistance, term;
 
-	Molecule m = *molecule;
+	Molecule* m = molecule;
 	gdouble* bondStretchTerms[STRETCHDIM];
 	gint numberOfStretchTerms = forceField->numberOfStretchTerms;
 	gdouble energy = 0.0;
@@ -2039,8 +2162,8 @@ static gdouble calculateEnergyBondAmber(ForceField* forceField,Molecule* molecul
 		aj = (gint)bondStretchTerms[1][i];
 		forceConstant = bondStretchTerms[2][i];
 		equilibriumDistance = bondStretchTerms[3][i];
-		atomi =  m.atoms[ai];
-		atomj =  m.atoms[aj];
+		atomi =  m->atoms[ai];
+		atomj =  m->atoms[aj];
 		
 
 		rijx = atomi.coordinates[0]  - atomj.coordinates[0];	
@@ -2066,7 +2189,7 @@ static gdouble calculateEnergyBendAmber(ForceField* forceField,Molecule* molecul
 	gdouble energy = 0.0;
 	static gdouble D2RxD2R = 1/( RAD_TO_DEG*RAD_TO_DEG);
 
-	Molecule m = *molecule;
+	Molecule* m = molecule;
 	gdouble* angleBendTerms[BENDDIM];
 	gint numberOfBendTerms = forceField->numberOfBendTerms;
 
@@ -2078,9 +2201,9 @@ static gdouble calculateEnergyBendAmber(ForceField* forceField,Molecule* molecul
 		ai = (gint)angleBendTerms[0][i];
 		aj = (gint)angleBendTerms[1][i];
 		ak = (gint)angleBendTerms[2][i];
-		atomi =  m.atoms[ai];
-		atomj =  m.atoms[aj];
-		atomk =  m.atoms[ak];
+		atomi =  m->atoms[ai];
+		atomj =  m->atoms[aj];
+		atomk =  m->atoms[ak];
 
 		thetaDeg = getAngle(&atomi, &atomj, &atomk);
 
@@ -2109,7 +2232,7 @@ static gdouble calculateEnergyDihedralAmber(ForceField* forceField,Molecule* mol
 	gint ai, aj, ak, al;
 	AtomMol atomi,atomj, atomk, atoml;
 	gdouble phiDeg;
-	Molecule m = *molecule;
+	Molecule* m = molecule;
 	gdouble* dihedralAngleTerms[DIHEDRALDIM];
 	gint numberOfDihedralTerms = forceField->numberOfDihedralTerms;
 	gdouble energy = 0.0;
@@ -2124,10 +2247,10 @@ static gdouble calculateEnergyDihedralAmber(ForceField* forceField,Molecule* mol
 		aj = (gint)dihedralAngleTerms[1][i];
 		ak = (gint)dihedralAngleTerms[2][i];
 		al = (gint)dihedralAngleTerms[3][i];
-		atomi =  m.atoms[ai];
-		atomj =  m.atoms[aj];
-		atomk =  m.atoms[ak];
-		atoml =  m.atoms[al];
+		atomi =  m->atoms[ai];
+		atomj =  m->atoms[aj];
+		atomk =  m->atoms[ak];
+		atoml =  m->atoms[al];
 
 		phiDeg = getTorsion(  &atomi ,&atomj, &atomk, &atoml);
 
@@ -2153,7 +2276,7 @@ static gdouble calculateEnergyfNonBondedAmber(ForceField* forceField,Molecule* m
 	gdouble chargei, chargej, Aij, Bij, rij;
 	gdouble permittivityScale = 1, permittivity = 1;
 	gdouble coulombFactor;
-	Molecule m = *molecule;
+	Molecule* m = molecule;
 	gdouble* nonBondedTerms[NONBONDEDDIM];
 	gint numberOfNonBonded = forceField->numberOfNonBonded;
 	gboolean useCoulomb = forceField->options.coulomb;
@@ -2173,8 +2296,8 @@ static gdouble calculateEnergyfNonBondedAmber(ForceField* forceField,Molecule* m
 		Bij    = nonBondedTerms[3][i];
 		factorNonBonded = nonBondedTerms[4][i];
 
-		atomi =  m.atoms[ai];
-		atomj =  m.atoms[aj];
+		atomi =  m->atoms[ai];
+		atomj =  m->atoms[aj];
 
 		chargei = atomi.charge;
 		chargej = atomj.charge;
@@ -2215,7 +2338,7 @@ static gdouble calculateEnergyHydrogenBondedAmber(ForceField* forceField,Molecul
 	gdouble rijx, rijy, rijz;
 	gdouble rij4, rij10;
 	gdouble Cij, Dij;
-	Molecule m = *molecule;
+	Molecule* m = molecule;
 	gdouble* hydrogenBondedTerms[HYDROGENBONDEDDIM];
 	gint numberOfHydrogenBonded =  forceField->numberOfHydrogenBonded;
 	gdouble energy = 0.0;
@@ -2231,8 +2354,8 @@ static gdouble calculateEnergyHydrogenBondedAmber(ForceField* forceField,Molecul
 		Cij = hydrogenBondedTerms[2][i];
 		Dij = hydrogenBondedTerms[3][i];
 
-		atomi =  m.atoms[ai];
-		atomj =  m.atoms[aj];
+		atomi =  m->atoms[ai];
+		atomj =  m->atoms[aj];
 
 		rijx = atomi.coordinates[0] - atomj.coordinates[0];
 		rijy = atomi.coordinates[1] - atomj.coordinates[1];
@@ -2271,7 +2394,7 @@ static gdouble calculateEnergyPairWise(ForceField* forceField,Molecule* molecule
 	gdouble chargei, chargej, rij;
 	gdouble permittivityScale = 1, permittivity = 1;
 	gdouble coulombFactor;
-	Molecule m = *molecule;
+	Molecule* m = molecule;
 	gdouble* pairWiseTerms[PAIRWISEDIM];
 	gint numberOfPairWise = forceField->numberOfPairWise;
 	gboolean useCoulomb = forceField->options.coulomb;
@@ -2298,8 +2421,8 @@ static gdouble calculateEnergyPairWise(ForceField* forceField,Molecule* molecule
 		c10    = pairWiseTerms[6][i];
 		b      = pairWiseTerms[7][i];
 
-		atomi =  m.atoms[ai];
-		atomj =  m.atoms[aj];
+		atomi =  m->atoms[ai];
+		atomj =  m->atoms[aj];
 
 		chargei = atomi.charge;
 		chargej = atomj.charge;
@@ -2388,9 +2511,9 @@ static gdouble calculateEnergyPairWise(ForceField* forceField,Molecule* molecule
 /**********************************************************************/
 static void calculateEnergyAmber(ForceField* forceField)
 {
-	Molecule m = forceField->molecule;
+	Molecule* m = &forceField->molecule;
 
-	forceField->molecule.energy =  calculateEnergyTmpAmber(forceField,&m);
+	forceField->molecule.energy =  calculateEnergyTmpAmber(forceField,m);
 }
 /**********************************************************************/
 static gdouble calculateEnergyTmpAmber(ForceField* forceField,Molecule* molecule)
@@ -2418,8 +2541,8 @@ ForceField createAmberModel
 	
 	forceField.options = forceFieldOptions;
 
-	set_text_to_draw("Setting of Parameters ...");
-	set_statubar_operation_str("Setting of Parameters ...");
+	set_text_to_draw(_("Setting of Parameters ..."));
+	set_statubar_operation_str(_("Setting of Parameters ..."));
 	dessine();
     	while( gtk_events_pending() )
         	gtk_main_iteration();
@@ -2450,8 +2573,8 @@ ForceField createPairWiseModel
 	forceField.options.hydrogenBonded = FALSE;
 
 
-	set_text_to_draw("Setting of Parameters ...");
-	set_statubar_operation_str("Setting of Parameters ...");
+	set_text_to_draw(_("Setting of Parameters ..."));
+	set_statubar_operation_str(_("Setting of Parameters ..."));
 	dessine();
     	while( gtk_events_pending() )
         	gtk_main_iteration();

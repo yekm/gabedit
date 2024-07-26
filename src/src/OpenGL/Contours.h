@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -33,6 +33,7 @@ void contour_point_free(Contours contours);
 Contours get_contours(Grid* plansgrid,gdouble value,gint i0,gint i1,gint numplan);
 void create_contours(gchar* title,gint type);
 void create_contours_plane(gchar* title);
+void create_contours_isosurface();
 
 #endif /* __GABEDIT_CONTOURS_H__ */
 

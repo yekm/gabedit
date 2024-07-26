@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -23,6 +23,7 @@ void gabedit_cairo_string(cairo_t* cr, GtkWidget* parent, PangoFontDescription *
 void gabedit_cairo_triangle(cairo_t *cr,  GtkWidget* parent, GdkGC* gc,
 		gdouble x1,gdouble y1,gdouble x2,gdouble y2, gdouble x3,gdouble y3);
 void gabedit_cairo_line(cairo_t *cr,  GtkWidget* parent, GdkGC* gc, gdouble x1,gdouble y1,gdouble x2,gdouble y2);
+void gabedit_cairo_arc(cairo_t *cr,  GtkWidget* parent, GdkGC* gc, gint xc,gint yc,gint rayon, gdouble angle1, gdouble angle2 , gdouble scale1, gdouble scale2);
 void gabedit_cairo_cercle(cairo_t *cr,  GtkWidget* parent, GdkGC* gc, gint xc,gint yc,gint rayon);
 void gabedit_cairo_line_gradient(cairo_t *cr,  GtkWidget* parent, GdkGC* gc, GdkColor color1,  GdkColor color2, gdouble x1,gdouble y1,gdouble x2,gdouble y2);
 void gabedit_cairo_cercle_gradient(cairo_t *cr,  GtkWidget* parent, GdkGC* gc, gint xc,gint yc,gint rayon);

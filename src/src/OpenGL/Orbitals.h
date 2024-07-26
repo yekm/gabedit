@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -27,11 +27,13 @@ void create_grid_orbitals();
 void create_list_orbitals();
 gboolean read_last_orbitals_in_gaussian_file(gchar *fileName,gint itype);
 void read_gauss_orbitals(gchar* FileName);
+void read_fchk_gauss_orbitals(gchar* fileName);
 void read_gabedit_orbitals(gchar* FileName);
 void read_molden_orbitals(gchar* FileName);
 void read_dalton_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_gamess_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_gauss_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
+void read_fchk_gauss_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_molpro_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_orca_orbitals_sel_2mkl(GabeditFileChooser *SelecFile, gint response_id);
 void read_orca_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
@@ -40,6 +42,7 @@ void read_mopac_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_gabedit_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void save_gabedit_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_molden_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
+void read_orbitals_sel(GabeditFileChooser *selecFile, gint response_id);
 
 #endif /* __GABEDIT_ORBITALS_H__ */
 

@@ -1,6 +1,6 @@
 /*HydrogenBond.c*/
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -181,7 +181,7 @@ static void deleteAnAtomDlg()
 	if(nAtomsCanConnect == 1)
 	{
 		GtkWidget* win;
-		win = Message("Sorry, You can not delete all atoms","Warning",TRUE);
+		win = Message(_("Sorry, You can not delete all atoms"),_("Warning"),TRUE);
 		gtk_window_set_modal(GTK_WINDOW(win),TRUE);
 		return;
 	}
@@ -234,7 +234,7 @@ static void addAnAtomDlg()
 
   winTable = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_modal(GTK_WINDOW(winTable),TRUE);
-  gtk_window_set_title(GTK_WINDOW(winTable),"Select your atom");
+  gtk_window_set_title(GTK_WINDOW(winTable),_("Select your atom"));
   gtk_window_set_default_size (GTK_WINDOW(winTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
 
   frame = gtk_frame_new (NULL);
@@ -320,9 +320,9 @@ static void activate_action (GtkAction *action)
 /*--------------------------------------------------------------------*/
 static GtkActionEntry gtkActionEntries[] =
 {
-	{"DeleteAtom", GABEDIT_STOCK_CUT, "_Delete selected atom", NULL, "Delete selected atom", G_CALLBACK (activate_action) },
-	{"AddAtom", GABEDIT_STOCK_NEW, "_Add an atom", NULL, "Add an atom", G_CALLBACK (activate_action) },
-	{"DefaultAtoms", NULL, "_Default atoms", NULL, "Default atoms", G_CALLBACK (activate_action) },
+	{"DeleteAtom", GABEDIT_STOCK_CUT, N_("_Delete selected atom"), NULL, "Delete selected atom", G_CALLBACK (activate_action) },
+	{"AddAtom", GABEDIT_STOCK_NEW, N_("_Add an atom"), NULL, "Add an atom", G_CALLBACK (activate_action) },
+	{"DefaultAtoms", NULL, N_("_Default atoms"), NULL, "Default atoms", G_CALLBACK (activate_action) },
 };
 static guint numberOfGtkActionEntries = G_N_ELEMENTS (gtkActionEntries);
 /********************************************************************************/
@@ -349,6 +349,7 @@ static GtkUIManager *create_menu(GtkWidget* win)
   	g_signal_connect_swapped (win, "destroy", G_CALLBACK (g_object_unref), manager);
 
 	actionGroup = gtk_action_group_new ("GabeditHBonds");
+	gtk_action_group_set_translation_domain(actionGroup,GETTEXT_PACKAGE);
 	gtk_action_group_add_actions (actionGroup, gtkActionEntries, numberOfGtkActionEntries, NULL);
 
   	gtk_ui_manager_insert_action_group (manager, actionGroup, 0);
@@ -491,7 +492,7 @@ void set_HBonds_dialog (GtkWidget* winParent)
 	GtkWidget *hseparator;
 	GtkWidget *label;
 	static GtkWidget* entrys[4];
-	gchar* tlabel[4]={"Min Distance (Angstroms)","Max Distance (Angstroms)","Min angle (degrees)","Max angle (degrees)"};
+	gchar* tlabel[4]={N_("Min Distance (Angstroms)"),N_("Max Distance (Angstroms)"),N_("Min angle (degrees)"),N_("Max angle (degrees)")};
 	gint i;
 	GtkWidget* table;
 	gchar* t = NULL;
@@ -501,7 +502,7 @@ void set_HBonds_dialog (GtkWidget* winParent)
 
 	fp = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_modal(GTK_WINDOW(fp),TRUE);
-	gtk_window_set_title(GTK_WINDOW(fp),"Set the hydrogen's bonds parameters");
+	gtk_window_set_title(GTK_WINDOW(fp),_("Set the hydrogen's bonds parameters"));
 	gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
 
 	gtk_window_set_position(GTK_WINDOW(fp),GTK_WIN_POS_CENTER);
@@ -552,7 +553,7 @@ void set_HBonds_dialog (GtkWidget* winParent)
 		  3,3);
 	i = 5;
 	hbox = gtk_hbox_new(0,FALSE);
-	label = gtk_label_new ("  There atoms can do an hydrogen bonds.\n  Use right button of mouse to modify this list.");
+	label = gtk_label_new (_("  There atoms can do an hydrogen bonds.\n  Use right button of mouse to modify this list."));
    	gtk_label_set_justify(GTK_LABEL(label),GTK_JUSTIFY_LEFT);
 	gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
 	gtk_table_attach(GTK_TABLE(table),hbox,0,0+3,i,i+1,

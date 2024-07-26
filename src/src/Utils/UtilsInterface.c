@@ -1,6 +1,6 @@
 /* UtilsInterface.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -21,13 +21,14 @@ DEALINGS IN THE SOFTWARE.
 #include "../../Config.h"
 #include <stdlib.h>
 #include <ctype.h>
+#include <unistd.h>
 
 #include "../Common/Global.h"
 #include "../Utils/Constants.h"
 #include "../Gaussian/GaussGlobal.h"
 #include "../Files/FileChooser.h"
 #include "../Gamess/Gamess.h"
-#include "../PCGamess/PCGamess.h"
+#include "../FireFly/FireFly.h"
 #include "../Molcas/Molcas.h"
 #include "../Molpro/Molpro.h"
 #include "../MPQC/MPQC.h"
@@ -130,27 +131,27 @@ void create_popup_win(gchar* label)
 /********************************************************************************/
 void init_child(GtkWidget *widget, GabeditSignalFunc func,gchar *buttonlabel)
 {
-  WidgetChilds  *childs = g_malloc(sizeof(WidgetChilds));
-  g_object_set_data(G_OBJECT (widget), "Childs", childs);
-  childs->nchilds = 1;
-  childs->childs = g_malloc(sizeof(GtkWidget*));
-  childs->destroychilds = g_malloc(sizeof(GCallback));
-  childs->childs[0] = widget;
-  g_object_set_data(G_OBJECT(childs->childs[0]),"Parent",widget);
-  childs->destroychilds[0] = func;
+  WidgetChildren  *children = g_malloc(sizeof(WidgetChildren));
+  g_object_set_data(G_OBJECT (widget), "Children", children);
+  children->nchildren = 1;
+  children->children = g_malloc(sizeof(GtkWidget*));
+  children->destroychildren = g_malloc(sizeof(GCallback));
+  children->children[0] = widget;
+  g_object_set_data(G_OBJECT(children->children[0]),"Parent",widget);
+  children->destroychildren[0] = func;
   if(buttonlabel)
 	add_button_windows(buttonlabel,widget);
 }
 /********************************************************************************/
 void add_child(GtkWidget *widget,GtkWidget *childwidget,GabeditSignalFunc func,gchar *buttonlabel)
 {
-  WidgetChilds  *childs = (WidgetChilds  *)g_object_get_data(G_OBJECT(widget),"Childs");
-  childs->nchilds++;
-  childs->childs = g_realloc(childs->childs,childs->nchilds*sizeof(GtkWidget*));
-  childs->destroychilds = g_realloc(childs->destroychilds,childs->nchilds*sizeof(GCallback));
-  childs->childs[childs->nchilds-1] = childwidget;
-  g_object_set_data(G_OBJECT(childs->childs[childs->nchilds-1]),"Parent",widget);
-  childs->destroychilds[childs->nchilds-1] = func;
+  WidgetChildren  *children = (WidgetChildren  *)g_object_get_data(G_OBJECT(widget),"Children");
+  children->nchildren++;
+  children->children = g_realloc(children->children,children->nchildren*sizeof(GtkWidget*));
+  children->destroychildren = g_realloc(children->destroychildren,children->nchildren*sizeof(GCallback));
+  children->children[children->nchildren-1] = childwidget;
+  g_object_set_data(G_OBJECT(children->children[children->nchildren-1]),"Parent",widget);
+  children->destroychildren[children->nchildren-1] = func;
   if(buttonlabel)
 	add_button_windows(buttonlabel,childwidget);
 }
@@ -158,78 +159,78 @@ void add_child(GtkWidget *widget,GtkWidget *childwidget,GabeditSignalFunc func,g
 void delete_child(GtkWidget *childwidget)
 {
   GtkWidget *widget = NULL;
-  WidgetChilds  *childs;
+  WidgetChildren  *children;
   gint i;
   gint k;
 
   widget = GTK_WIDGET(g_object_get_data(G_OBJECT(childwidget),"Parent"));
   if(!widget)
 	return;
-  childs = (WidgetChilds  *)g_object_get_data(G_OBJECT(widget),"Childs");
+  children = (WidgetChildren  *)g_object_get_data(G_OBJECT(widget),"Children");
 
   k = -1;
-  for(i=0;i<childs->nchilds;i++)
+  for(i=0;i<children->nchildren;i++)
   {
-	if(childs->childs[i]==childwidget)
+	if(children->children[i]==childwidget)
         {
-		destroy_button_windows(childs->childs[i]);
-		childs->destroychilds[i](childs->childs[i]);
-		childs->childs[i] = NULL;
+		destroy_button_windows(children->children[i]);
+		children->destroychildren[i](children->children[i]);
+		children->children[i] = NULL;
 		k = i;
 		break;
 	}
   }
   if(k!=-1)
   {
-  	for(i=k;i<childs->nchilds-1;i++)
+  	for(i=k;i<children->nchildren-1;i++)
   	{
-		childs->childs[i] = childs->childs[i+1];
-		childs->destroychilds[i] = childs->destroychilds[i+1];
+		children->children[i] = children->children[i+1];
+		children->destroychildren[i] = children->destroychildren[i+1];
   	}
-  	childs->nchilds--;
-  	childs->childs = g_realloc(childs->childs,childs->nchilds*sizeof(GtkWidget*));
-  	childs->destroychilds = g_realloc(childs->destroychilds,childs->nchilds*sizeof(GCallback));
+  	children->nchildren--;
+  	children->children = g_realloc(children->children,children->nchildren*sizeof(GtkWidget*));
+  	children->destroychildren = g_realloc(children->destroychildren,children->nchildren*sizeof(GCallback));
   }
 }
 /********************************************************************************/
-void delete_all_childs(GtkWidget *widget)
+void delete_all_children(GtkWidget *widget)
 {
-  WidgetChilds  *childs;
+  WidgetChildren  *children;
   gint i;
 
   if(!widget)
 	return;
-  childs = (WidgetChilds  *)g_object_get_data(G_OBJECT(widget),"Childs");
-  for(i=1;i<childs->nchilds;i++)
+  children = (WidgetChildren  *)g_object_get_data(G_OBJECT(widget),"Children");
+  for(i=1;i<children->nchildren;i++)
   {
-	if(childs->childs[i])
+	if(children->children[i])
 	{
-		destroy_button_windows(childs->childs[i]);
-		childs->destroychilds[i](childs->childs[i]);
-		childs->childs[i] = NULL;
+		destroy_button_windows(children->children[i]);
+		children->destroychildren[i](children->children[i]);
+		children->children[i] = NULL;
 	}
   }
-  childs->nchilds = 1;
-  childs->childs = g_realloc(childs->childs,childs->nchilds*sizeof(GtkWidget*));
-  childs->destroychilds = g_realloc(childs->destroychilds,childs->nchilds*sizeof(GCallback));
+  children->nchildren = 1;
+  children->children = g_realloc(children->children,children->nchildren*sizeof(GtkWidget*));
+  children->destroychildren = g_realloc(children->destroychildren,children->nchildren*sizeof(GCallback));
    
 }
 /********************************************************************************/
-void destroy_childs(GtkWidget *widget)
+void destroy_children(GtkWidget *widget)
 {
-  WidgetChilds  *childs = (WidgetChilds  *)g_object_get_data(G_OBJECT(widget),"Childs");
+  WidgetChildren  *children = (WidgetChildren  *)g_object_get_data(G_OBJECT(widget),"Children");
   gint i;
-  for(i=childs->nchilds-1;i>=0;i--)
+  for(i=children->nchildren-1;i>=0;i--)
   {
-   if(childs->childs[i])
+   if(children->children[i])
    {
-	destroy_button_windows(childs->childs[i]);
-	childs->destroychilds[i](childs->childs[i]);
+	destroy_button_windows(children->children[i]);
+	children->destroychildren[i](children->children[i]);
    }
   }
-  g_free(childs->childs);
-  g_free(childs->destroychilds);
-  g_free(childs);
+  g_free(children->children);
+  g_free(children->destroychildren);
+  g_free(children);
 }
 /********************************************************************************/
 /* create_pixmap, convenience function to create a pixmap widget, from data */
@@ -464,16 +465,16 @@ GtkWidget *create_label_with_pixmap(GtkWidget *Win,gchar *string,gchar *type)
 {
     GtkWidget *hbox;
     GtkWidget *Label;
-    if( strstr(type,"Question") )
+    if( strstr(type,_("Question")) )
     	hbox = create_pixmap_label(Win,question_xpm,string);
     else
-    if( strstr(type,"Warning") )
+    if( strstr(type,_("Warning")) )
     	hbox = create_pixmap_label(Win,warning_xpm,string);
     else
-    if( strstr(type,"Error") )
+    if( strstr(type,_("Error")))
     	hbox = create_pixmap_label(Win,error_xpm,string);
     else
-    if( strstr(type,"Info") )
+    if( strstr(type,_("Info")) )
     	hbox = create_pixmap_label(Win,info_xpm,string);
     else
     {
@@ -538,47 +539,35 @@ void exit_all(GtkWidget *widget, gchar *data)
 GtkWidget *create_button(GtkWidget *Win,gchar *string)
 {
     GtkWidget *button;
-    if( strstr(string,"OK") )
-    	button = create_button_pixmap(Win,ok_xpm,"  OK   ");
+    if( strstr(string,_("OK")) )
+    	button = create_button_pixmap(Win,ok_xpm,_("OK"));
     else
-    if(strstr(string,"Cancel") )
-    	button = create_button_pixmap(Win,cancel_xpm," Cancel ");
+    if(strstr(string,_("Cancel")) )
+    	button = create_button_pixmap(Win,cancel_xpm,_("Cancel"));
     else
-    if(strstr(string,"CANCEL") )
-    	button = create_button_pixmap(Win,cancel_xpm," CANCEL ");
+    if(strstr(string,_("Yes")) )
+    	button = create_button_pixmap(Win,yes_xpm,_("Yes"));
     else
-    if(strstr(string,"Yes") )
-    	button = create_button_pixmap(Win,yes_xpm,"Yes");
+    if(strstr(string,_("No")) )
+    	button = create_button_pixmap(Win,no_xpm,_("No"));
     else
-    if(strstr(string,"No") )
-    	button = create_button_pixmap(Win,no_xpm," No ");
+    if(strstr(string,_("Save&Apply&Close")) )
+    	button = create_button_pixmap(Win,savemini_xpm,_("Save&Apply&Close"));
     else
-    if(strstr(string,"SAVE&CLOSE") )
-    	button = create_button_pixmap(Win,savemini_xpm," SAVE & CLOSE ");
+    if(strstr(string,_("Save&Close")) )
+    	button = create_button_pixmap(Win,savemini_xpm,_("Save&Close"));
     else
-    if(strstr(string,"Save&Apply&Close") )
-    	button = create_button_pixmap(Win,savemini_xpm," Save&Apply&Close ");
+    if(strstr(string,_("Apply&Close")) )
+    	button = create_button_pixmap(Win,apply_xpm,_("Apply&Close"));
     else
-    if(strstr(string,"Save&Close") )
-    	button = create_button_pixmap(Win,savemini_xpm," Save & Close ");
+    if(strstr(string,_("Save")) )
+    	button = create_button_pixmap(Win,savemini_xpm,_("Save"));
     else
-    if(strstr(string,"Apply&Close") )
-    	button = create_button_pixmap(Win,apply_xpm," Apply&Close ");
+    if(strstr(string,_("Close")) )
+    	button = create_button_pixmap(Win,close_xpm,_("Close"));
     else
-    if(strstr(string,"Save") )
-    	button = create_button_pixmap(Win,savemini_xpm," Save ");
-    else
-    if(strstr(string,"SAVE") )
-    	button = create_button_pixmap(Win,savemini_xpm," SAVE ");
-    else
-    if(strstr(string,"CLOSE") )
-    	button = create_button_pixmap(Win,close_xpm," CLOSE ");
-    else
-    if(strstr(string,"Close") )
-    	button = create_button_pixmap(Win,close_xpm," Close ");
-    else
-    if(strstr(string,"Apply") )
-    	button = create_button_pixmap(Win,apply_xpm," Apply ");
+    if(strstr(string,_("Apply")) )
+    	button = create_button_pixmap(Win,apply_xpm,_("Apply"));
     else
     if(strstr(string," *a0 ") )
 		button = create_button_pixmap(Win,a0p_xpm,NULL);
@@ -586,17 +575,17 @@ GtkWidget *create_button(GtkWidget *Win,gchar *string)
     if(strstr(string," /a0 ") )
 		button = create_button_pixmap(Win,a0d_xpm,NULL);
     else
-    if(strstr(string,"Print") )
-    	button = create_button_pixmap(Win,print_xpm," Print ");
+    if(strstr(string,_("Print")) )
+    	button = create_button_pixmap(Win,print_xpm,_("Print"));
     else
-    if(strstr(string,"Stop") )
-    	button = create_button_pixmap(Win,stop_xpm," Stop ");
+    if(strstr(string,_("Stop")) )
+    	button = create_button_pixmap(Win,stop_xpm,_("Stop"));
     else
-    if(strstr(string,"Play") )
-    	button = create_button_pixmap(Win,play_xpm," Play ");
+    if(strstr(string,_("Play")) )
+    	button = create_button_pixmap(Win,play_xpm,_("Play"));
     else
-    if(strstr(string,"Next")||strstr(string,"NEXT") )
-    	button = create_button_pixmap(Win,next_xpm," NEXT ");
+    if(strstr(string,_("Next")) )
+    	button = create_button_pixmap(Win,next_xpm,_("Next"));
     else
     	button = gtk_button_new_with_label(string);
 
@@ -648,7 +637,7 @@ GtkWidget* Message(char *message,char *titre,gboolean center)
     
     gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(DialogueMessage)->action_area), FALSE);
   
-  Bouton = create_button(DialogueMessage,"OK");
+  Bouton = create_button(DialogueMessage,_("OK"));
   gtk_box_pack_end (GTK_BOX( GTK_DIALOG(DialogueMessage)->action_area), Bouton, FALSE, TRUE, 5);  
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Bouton);
@@ -696,7 +685,7 @@ GtkWidget* MessageTxt(gchar *message,gchar *title)
 
 	gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(dlgWin)->action_area), FALSE);
   
-	button = create_button(dlgWin,"OK");
+	button = create_button(dlgWin,_("OK"));
 	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(dlgWin)->action_area), button, FALSE, TRUE, 5);  
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
@@ -761,7 +750,7 @@ void Cancel_YesNo(GtkWidget *widget, gpointer   data, GabeditSignalFunc func)
 	GtkWidget *frame, *vboxframe;
     DialogueMessage = gtk_dialog_new();
 	gtk_window_set_position(GTK_WINDOW(DialogueMessage),GTK_WIN_POS_CENTER);
-    gtk_window_set_title(GTK_WINDOW(DialogueMessage)," Warning ");
+    gtk_window_set_title(GTK_WINDOW(DialogueMessage),_("Warning"));
     gtk_window_set_modal (GTK_WINDOW (DialogueMessage), TRUE);
 
     g_signal_connect(G_OBJECT(DialogueMessage),
@@ -779,7 +768,7 @@ void Cancel_YesNo(GtkWidget *widget, gpointer   data, GabeditSignalFunc func)
     gtk_widget_show (frame);
     vboxframe = create_vbox(frame);
 
-    Label = gtk_label_new("Are you sure to \ncancel this window ?");
+    Label = gtk_label_new(_("Are you sure to \ncancel this window ?"));
     gtk_box_pack_start(GTK_BOX(vboxframe), Label,TRUE,TRUE,0);
     gtk_label_set_justify(GTK_LABEL(Label),
                           GTK_JUSTIFY_CENTER);
@@ -787,13 +776,13 @@ void Cancel_YesNo(GtkWidget *widget, gpointer   data, GabeditSignalFunc func)
     
     gtk_widget_realize(DialogueMessage);
 
-    Bouton = create_button(DialogueMessage,"No");
+    Bouton = create_button(DialogueMessage,_("No"));
     gtk_box_pack_start( GTK_BOX(GTK_DIALOG(DialogueMessage)->action_area), Bouton,TRUE,TRUE,0);
     g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(DialogueMessage));
     GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
     gtk_widget_grab_default(Bouton);
 
-    Bouton = create_button(DialogueMessage,"Yes");
+    Bouton = create_button(DialogueMessage,_("Yes"));
     gtk_box_pack_start( GTK_BOX(GTK_DIALOG(DialogueMessage)->action_area), Bouton,TRUE,TRUE,0);
     GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
     g_signal_connect_swapped(G_OBJECT(Bouton),"clicked", (GCallback)func, GTK_OBJECT(widget));
@@ -1145,7 +1134,7 @@ void read_geom_in_gamess_input(gchar *fileName)
 	read_geom_from_gamess_output_file(logfile,1);
 }
 /**********************************************************************************/
-void read_geom_in_pcgamess_input(gchar *fileName)
+void read_geom_in_firefly_input(gchar *fileName)
 {
 	gchar* logfile;
 	gchar* t;
@@ -1179,7 +1168,7 @@ void read_geom_in_gauss_input(gchar *NameFile)
  	if( j.geomtyp == GEOM_IS_ZMAT)
 		read_Zmat_from_gauss_input_file(NameFile,j);
         else
-    		Message("Sorry\nI can not read gemetry in gaussian input file\n"," Warning ",TRUE);
+    		Message(_("Sorry\nI can not read gemetry in gaussian input file\n"),_("Warning"),TRUE);
 }
 /**********************************************************************************/
 void read_geom_in_molcas_input(gchar *NameFile)
@@ -1198,7 +1187,7 @@ void read_geom_in_molpro_input(gchar *NameFile)
  	if( j.geomtyp == GEOM_IS_ZMAT)
 		read_Zmat_from_molpro_input_file(NameFile,j);
         else
-    		Message("Sorry\nI can not read gemetry in molpro input file\n"," Warning ",TRUE);
+    		Message(_("Sorry\nI can not read gemetry in molpro input file\n"),_("Warning"),TRUE);
 }
 /**********************************************************************************/
 void read_geom_in_orca_input(gchar *NameFile)
@@ -1211,7 +1200,7 @@ void read_geom_in_orca_input(gchar *NameFile)
  	if( j.geomtyp == GEOM_IS_ZMAT)
 		read_Zmat_from_orca_input_file(NameFile);
         else
-    		Message("Sorry\nI can not read gemetry in Q-Chem input file\n"," Warning ",TRUE);
+    		Message(_("Sorry\nI can not read gemetry in Q-Chem input file\n"),_("Warning"),TRUE);
 }
 /**********************************************************************************/
 void read_geom_in_qchem_input(gchar *NameFile)
@@ -1224,7 +1213,7 @@ void read_geom_in_qchem_input(gchar *NameFile)
  	if( j.geomtyp == GEOM_IS_ZMAT)
 		read_Zmat_from_qchem_input_file(NameFile);
         else
-    		Message("Sorry\nI can not read gemetry in Q-Chem input file\n"," Warning ",TRUE);
+    		Message(_("Sorry\nI can not read gemetry in Q-Chem input file\n"),_("Warning"),TRUE);
 }
 /**********************************************************************************/
 void read_geom_in_mopac_input(gchar *NameFile)
@@ -1237,7 +1226,7 @@ void read_geom_in_mopac_input(gchar *NameFile)
  	if( j.geomtyp == GEOM_IS_ZMAT)
 		read_Zmat_from_mopac_input_file(NameFile);
         else
-    		Message("Sorry\nI can not read gemetry in Mopac input file\n"," Warning ",TRUE);
+    		Message(_("Sorry\nI can not read gemetry in Mopac input file\n"),_("Warning"),TRUE);
 }
 /**********************************************************************************/
 void get_doc(gchar *NomFichier)
@@ -1254,8 +1243,8 @@ void get_doc(gchar *NomFichier)
 	if(fd==NULL)
 	{
 		g_free(t);
-		t = g_strdup_printf("Sorry, I can not open\n %s\n file",NomFichier);
-		Message(t,"Error",TRUE);
+		t = g_strdup_printf(_("Sorry, I can not open\n %s\n file"),NomFichier);
+		Message(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	}
@@ -1286,7 +1275,7 @@ void get_doc(gchar *NomFichier)
 
 	if(iprogram == PROG_IS_MPQC) fileopen.command=g_strdup(NameCommandMPQC);
 	else if(iprogram == PROG_IS_GAMESS) fileopen.command=g_strdup(NameCommandGamess);
-	else if(iprogram == PROG_IS_PCGAMESS) fileopen.command=g_strdup(NameCommandPCGamess);
+	else if(iprogram == PROG_IS_FIREFLY) fileopen.command=g_strdup(NameCommandFireFly);
 	else if(iprogram == PROG_IS_GAUSS) fileopen.command=g_strdup(NameCommandGaussian);
 	else if(iprogram == PROG_IS_MOLCAS) fileopen.command=g_strdup(NameCommandMolcas);
 	else if(iprogram == PROG_IS_MOLPRO) fileopen.command=g_strdup(NameCommandMolpro);
@@ -1322,7 +1311,7 @@ void get_doc(gchar *NomFichier)
   		fileopen.moldenfile=g_strdup_printf("%s.log",fileopen.projectname);
 	}
 	else
-	if(iprogram == PROG_IS_PCGAMESS)
+	if(iprogram == PROG_IS_FIREFLY)
 	{
  		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
  		fileopen.outputfile=g_strdup_printf("%s.log",fileopen.projectname);
@@ -1392,7 +1381,7 @@ void get_doc(gchar *NomFichier)
 
 	if( iprogram == PROG_IS_GAUSS) read_geom_in_gauss_input(NomFichier);
 	else if( iprogram == PROG_IS_GAMESS) read_geom_in_gamess_input(NomFichier);
-	else if( iprogram == PROG_IS_PCGAMESS) read_geom_in_pcgamess_input(NomFichier);
+	else if( iprogram == PROG_IS_FIREFLY) read_geom_in_firefly_input(NomFichier);
 	else if( iprogram == PROG_IS_MOLPRO) read_geom_in_molpro_input(NomFichier);
 	else if( iprogram == PROG_IS_MPQC) read_geom_in_mpqc_input(NomFichier);
 	else if( iprogram == PROG_IS_ORCA) read_geom_in_orca_input(NomFichier);
@@ -1471,7 +1460,7 @@ static gboolean enreg_doc(gchar *NomFichier)
 	fd = FOpen(NomFichier, "wb");
 	if(fd == NULL)
 	{
-		Message("Sorry, I can not save file","Error",TRUE);
+		Message(_("Sorry, I can not save file"),_("Error"),TRUE);
 		return FALSE;
 	}
 	temp=gabedit_text_get_chars(text,0,-1);
@@ -1497,7 +1486,7 @@ void enreg_selec_doc(GabeditFileChooser *SelecteurFichier , gint response_id)
   
 	if(iprogram == PROG_IS_MPQC) fileopen.command=g_strdup(NameCommandMPQC);
 	else if(iprogram == PROG_IS_GAMESS) fileopen.command=g_strdup(NameCommandGamess);
-	else if(iprogram == PROG_IS_PCGAMESS) fileopen.command=g_strdup(NameCommandPCGamess);
+	else if(iprogram == PROG_IS_FIREFLY) fileopen.command=g_strdup(NameCommandFireFly);
 	else if(iprogram == PROG_IS_GAUSS) fileopen.command=g_strdup(NameCommandGaussian);
 	else if(iprogram == PROG_IS_MOLCAS) fileopen.command=g_strdup(NameCommandMolcas);
 	else if(iprogram == PROG_IS_MOLPRO) fileopen.command=g_strdup(NameCommandMolpro);
@@ -1512,7 +1501,7 @@ void enreg_selec_doc(GabeditFileChooser *SelecteurFichier , gint response_id)
 		if(iprogram==PROG_IS_GAMESS)
 		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
 		else
-		if(iprogram==PROG_IS_PCGAMESS)
+		if(iprogram==PROG_IS_FIREFLY)
 		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
 		else
 		if(iprogram==PROG_IS_QCHEM)
@@ -1563,7 +1552,7 @@ void enreg_selec_doc(GabeditFileChooser *SelecteurFichier , gint response_id)
  		fileopen.moldenfile = g_strdup_printf("%s.log",fileopen.projectname);
 	}
 	else
-	if(iprogram == PROG_IS_PCGAMESS)
+	if(iprogram == PROG_IS_FIREFLY)
 	{
 		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
 	 	fileopen.outputfile = g_strdup_printf("%s.log",fileopen.projectname);
@@ -1664,11 +1653,11 @@ void new_doc_molcas(GtkWidget* wid, gpointer data)
 	fileopen.command=g_strdup(NameCommandGamess);
 }
 /********************************************************************************/
- void new_doc_pcgamess(GtkWidget* wid, gpointer data)
+ void new_doc_firefly(GtkWidget* wid, gpointer data)
 {
- 	newPCGamess();
-	iprogram = PROG_IS_PCGAMESS;
-	fileopen.command=g_strdup(NameCommandPCGamess);
+ 	newFireFly();
+	iprogram = PROG_IS_FIREFLY;
+	fileopen.command=g_strdup(NameCommandFireFly);
 }
 /********************************************************************************/
  void new_doc_gauss(GtkWidget* wid, gpointer data)
@@ -1726,7 +1715,7 @@ static void show_about_new()
 	};
 
 	static const gchar *copyright =
-		"Copyright \xc2\xa9 2002-2009 Abdul-Rahman Allouche.\n"
+		"Copyright \xc2\xa9 2002-2010 Abdul-Rahman Allouche.\n"
 		"All rights reserved.\n";
 	
 	gchar *license =
@@ -1753,8 +1742,13 @@ static void show_about_new()
 			);
 
 	static const gchar *comments =
-		"Graphical User Interface to GAMESS-US, Gaussian, Molcas, Molpro, "
-		"MPQC, PCGamess and Q-Chem computational chemistry packages.";
+		"Graphical User Interface to FireFly, GAMESS-US, Gaussian, Molcas, Molpro, "
+		"OpenMopac, Orca, MPQC and Q-Chem computational chemistry packages.\n\n"
+		"Please use the following citations in any report or publication :\n"
+		"A.R. ALLOUCHE, Gabedit - A graphical user interface for computational chemistry softwares,\n"
+	        "Journal of Computational Chemistry, 2010,\n"
+	        "DOI: 10.1002/jcc.21600\n"
+		;
 	
 	gchar *GABEDIT_VERSION =
 		g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
@@ -1787,8 +1781,8 @@ void show_about()
 void show_version()
 {
  gchar* Version_S = g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
- gchar *temp=g_strdup_printf("\n Version %s \n\n Abdul-Rahman ALLOUCHE\n\n january 2007\n",Version_S);
- Message(temp," Version ",TRUE);
+ gchar *temp=g_strdup_printf("\n Version %s \n\n Abdul-Rahman ALLOUCHE\n",Version_S);
+ Message(temp,_("Version"),TRUE);
  g_free(Version_S);
  g_free(temp);
 }
@@ -1815,8 +1809,8 @@ void show_homepage(GtkWidget *w,gpointer data)
 /********************************************************************************/
 void desole(void)
 {
- char *temp="Sorry , this option is not active";
- Message(temp," Warning ",TRUE);
+ char *temp=_("Sorry , this option is not active");
+ Message(temp,_("Warning"),TRUE);
 }
 /********************************************************************************/
  void change_insert(void)
@@ -2213,18 +2207,18 @@ void show_forbidden_characters()
     	'`','\'','.','"',':',';'};
 	guint All=36;
 	guint i;
-	temp = g_strdup("Sorry the name of varibale is not valid !\n\n");
-	temp = g_strdup_printf("%s The first caractere can not be one of : \n",temp);
+	temp = g_strdup(_("Sorry the name of varibale is not valid !\n\n"));
+	temp = g_strdup_printf(_("%s The first character can not be one of : \n"),temp);
 	for(i=0;i<10;i++)
 		temp = g_strdup_printf("%s %c",temp,Forbidden[i]);
 	temp = g_strdup_printf("%s \n\n",temp);
-	temp = g_strdup_printf("%s Do not use the following characters :\n",temp);
+	temp = g_strdup_printf(_("%s Do not use the following characters :\n"),temp);
 	for(i=11;i<All;i++)
 	{
 		temp = g_strdup_printf("%s %c ",temp,Forbidden[i]);
 		if(i%10 == 0) temp = g_strdup_printf("%s \n",temp);
 	}
-	Message(temp," Error ",TRUE);
+	Message(temp,_("Error"),TRUE);
 	g_free(temp);
 }
 /********************************************************************************/
@@ -2271,7 +2265,7 @@ GtkWidget *Continue_YesNo(void (*func)(GtkWidget*,gpointer data),gpointer data,g
 	GtkWidget *frame, *vboxframe;
 	DialogueMessage = gtk_dialog_new();
 	gtk_window_set_position(GTK_WINDOW(DialogueMessage),GTK_WIN_POS_CENTER);
-	gtk_window_set_title(GTK_WINDOW(DialogueMessage)," Warning ");
+	gtk_window_set_title(GTK_WINDOW(DialogueMessage),_("Warning"));
 	gtk_window_set_transient_for(GTK_WINDOW(DialogueMessage),GTK_WINDOW(Fenetre));
 	gtk_window_set_modal (GTK_WINDOW (DialogueMessage), TRUE);
 
@@ -2287,18 +2281,18 @@ GtkWidget *Continue_YesNo(void (*func)(GtkWidget*,gpointer data),gpointer data,g
 	gtk_widget_show (frame);
 	vboxframe = create_vbox(frame);
 	gtk_widget_realize(DialogueMessage);
-	Label = create_label_with_pixmap(DialogueMessage,message,"Question");  
+	Label = create_label_with_pixmap(DialogueMessage,message,_("Question"));  
 	gtk_box_pack_start(GTK_BOX(vboxframe), Label,TRUE,TRUE,0);
     
 	gtk_widget_realize(DialogueMessage);
 
-	Bouton = create_button(DialogueMessage,"No");
+	Bouton = create_button(DialogueMessage,_("No"));
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(DialogueMessage)->action_area),Bouton,TRUE,TRUE,0);
 	g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(DialogueMessage));
 	GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(Bouton);
 
-	Bouton = create_button(DialogueMessage,"Yes");
+	Bouton = create_button(DialogueMessage,_("Yes"));
 	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(DialogueMessage)->action_area), Bouton,TRUE,TRUE,0);
 	GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 	g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)func,data);
@@ -2314,9 +2308,9 @@ void open_file(GtkWidget *widget, gchar *data)
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
         {
-		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
-		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
-		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
 		Continue_YesNo(charge_doc, NULL,t);
 		g_free(t);
         }
@@ -2333,11 +2327,11 @@ void new_molcas(GtkWidget *widget, gchar *data)
 	gchar t1[BSIZE];
  	if(imodif == DATA_MOD_YES)
         {
-		sprintf(t,"\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
+		sprintf(t,_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
 		sprintf(t1,"%s",t);
-		sprintf(t," %sIf you continue, you lose what you have changed.\n\n",t1);
+		sprintf(t,_(" %sIf you continue, you lose what you have changed.\n\n"),t1);
 		sprintf(t1,"%s",t);
-		sprintf(t," %sYou want to continue?\n",t1);
+		sprintf(t,_(" %sYou want to continue?\n"),t1);
 		Continue_YesNo(new_doc_molcas, NULL,t);
         }
         else
@@ -2353,9 +2347,9 @@ void new_molpro(GtkWidget *widget, gchar *data)
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
         {
-		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
-		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
-		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
 		Continue_YesNo(new_doc_molpro, NULL,t);
 		g_free(t);
         }
@@ -2372,9 +2366,9 @@ void new_mpqc(GtkWidget *widget, gchar *data)
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
         {
-		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
-		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
-		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
 		Continue_YesNo(new_doc_mpqc, NULL,t);
 		g_free(t);
         }
@@ -2386,22 +2380,22 @@ void new_mpqc(GtkWidget *widget, gchar *data)
  	}
 }
 /**********************************************************************************/
-void new_pcgamess(GtkWidget *widget, gchar *data)
+void new_firefly(GtkWidget *widget, gchar *data)
 {
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
         {
-		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
-		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
-		t = g_strdup_printf(" %sYou want to continue?\n",t);
-		Continue_YesNo(new_doc_pcgamess, NULL,t);
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
+		Continue_YesNo(new_doc_firefly, NULL,t);
 		g_free(t);
         }
         else
         {
-		new_doc_pcgamess(NULL, NULL);
-		iprogram = PROG_IS_PCGAMESS;
-		fileopen.command=g_strdup(NameCommandPCGamess);
+		new_doc_firefly(NULL, NULL);
+		iprogram = PROG_IS_FIREFLY;
+		fileopen.command=g_strdup(NameCommandFireFly);
  	}
 }
 /**********************************************************************************/
@@ -2410,9 +2404,9 @@ void new_gamess(GtkWidget *widget, gchar *data)
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
         {
-		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
-		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
-		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
 		Continue_YesNo(new_doc_gamess, NULL,t);
 		g_free(t);
         }
@@ -2429,9 +2423,9 @@ void new_gauss(GtkWidget *widget, gchar *data)
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
         {
-		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
-		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
-		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
 		Continue_YesNo(new_doc_gauss, NULL,t);
 		g_free(t);
         }
@@ -2448,9 +2442,9 @@ void new_orca(GtkWidget *widget, gchar *data)
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
         {
-		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
-		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
-		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
 		Continue_YesNo(new_doc_orca, NULL,t);
 		g_free(t);
         }
@@ -2467,9 +2461,9 @@ void new_qchem(GtkWidget *widget, gchar *data)
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
         {
-		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
-		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
-		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
 		Continue_YesNo(new_doc_qchem, NULL,t);
 		g_free(t);
         }
@@ -2486,9 +2480,9 @@ void new_mopac(GtkWidget *widget, gchar *data)
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
         {
-		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
-		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
-		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
 		Continue_YesNo(new_doc_mopac, NULL,t);
 		g_free(t);
         }
@@ -2500,15 +2494,14 @@ void new_mopac(GtkWidget *widget, gchar *data)
  	}
 }
 /**********************************************************************************/
-/**********************************************************************************/
  void new_other(GtkWidget *widget, gchar *data)
 {
 	gchar *t;
  	if(imodif == DATA_MOD_YES)
         {
-		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
-		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
-		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
 		Continue_YesNo(new_doc_other, NULL,t);
 		g_free(t);
         }
@@ -2667,7 +2660,7 @@ void draw_density_orbitals_gamess_or_gauss_or_molcas_or_molpro(GtkWidget *wid,gp
 	g_free(FileName);
   }
   else
-  if( iprogram == PROG_IS_PCGAMESS)
+  if( iprogram == PROG_IS_FIREFLY)
   {
  	gchar** FileName = g_malloc(2*sizeof(gchar*));
  	FileName[0] = NULL;
@@ -2738,6 +2731,8 @@ void set_last_directory(G_CONST_RETURN gchar* FileName)
 	lastdirectory = g_strdup(localdir);
 	if(temp) g_free(temp);
 	if(localdir) g_free(localdir);
+	if(lastdirectory && gabedit_directory() && strcmp(lastdirectory,gabedit_directory())) 
+		chdir(lastdirectory);
 }
 /*********************************************************************/
 gchar* get_last_directory()
@@ -2772,7 +2767,7 @@ static void open_color_dlg_dipole(GtkWidget *button,gpointer data)
   	GtkWidget *win = g_object_get_data(G_OBJECT (button), "Win");
 	GdkColor* color = g_object_get_data(G_OBJECT (button), "Color");;
 
-	colorDlg = (GtkColorSelectionDialog *)gtk_color_selection_dialog_new("Set Dipole Color");
+	colorDlg = (GtkColorSelectionDialog *)gtk_color_selection_dialog_new(_("Set Dipole Color"));
 	gtk_color_selection_set_current_color (GTK_COLOR_SELECTION (colorDlg->colorsel), color);
 	gtk_color_selection_set_current_color (GTK_COLOR_SELECTION (colorDlg->colorsel), color);
 	gtk_window_set_transient_for(GTK_WINDOW(colorDlg),GTK_WINDOW(win));
@@ -2796,7 +2791,7 @@ static void open_color_dlg_dipole(GtkWidget *button,gpointer data)
   	g_signal_connect_swapped(G_OBJECT(colorDlg->cancel_button), "clicked", (GCallback)destroy_button_windows,GTK_OBJECT(colorDlg));
 	g_signal_connect_swapped(G_OBJECT(colorDlg->cancel_button),"clicked", (GCallback)gtk_widget_destroy,GTK_OBJECT(colorDlg));
 
-  	add_button_windows(" Set Color ",GTK_WIDGET(colorDlg));
+  	add_button_windows(_(" Set Color "),GTK_WIDGET(colorDlg));
 	gtk_widget_show(GTK_WIDGET(colorDlg));
 
 }
@@ -2819,7 +2814,7 @@ GtkWidget* set_dipole_dialog ()
   /* principal Window */
   fp = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_modal(GTK_WINDOW(fp),TRUE);
-  gtk_window_set_title(GTK_WINDOW(fp),"Set Dipole");
+  gtk_window_set_title(GTK_WINDOW(fp),_("Set Dipole"));
   gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
 
   gtk_window_set_position(GTK_WINDOW(fp),GTK_WIN_POS_CENTER);
@@ -2828,7 +2823,7 @@ GtkWidget* set_dipole_dialog ()
   g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)gtk_widget_destroy,NULL);
 
   vboxall = create_vbox(fp);
-  frame = gtk_frame_new ("Set Dipole(Debye)");
+  frame = gtk_frame_new (_("Set Dipole(Debye)"));
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
@@ -2872,7 +2867,7 @@ GtkWidget* set_dipole_dialog ()
   gtk_widget_show (hbox);
   gtk_box_pack_start (GTK_BOX (vboxframe), hbox, FALSE, FALSE, 1);
 
-  label = gtk_label_new ("Color : ");
+  label = gtk_label_new (_("Color : "));
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, FALSE, 0);
   style = gtk_widget_get_style(fp);
@@ -2895,20 +2890,20 @@ GtkWidget* set_dipole_dialog ()
 
   hbox = create_hbox(vboxall);
 
-  button = create_button(Fenetre,"OK");
+  button = create_button(Fenetre,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_object_set_data(G_OBJECT (button), "Color", &color);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(set_dipole),(gpointer)entrys);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_widget_destroy),GTK_OBJECT(fp));
   gtk_widget_show (button);
 
-  button = create_button(Fenetre,"Apply");
+  button = create_button(Fenetre,_("Apply"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_object_set_data(G_OBJECT (button), "Color", &color);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(set_dipole),(gpointer)entrys);
   gtk_widget_show (button);
 
-  button = create_button(Fenetre,"Close");
+  button = create_button(Fenetre,_("Close"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_widget_destroy),GTK_OBJECT(fp));
 

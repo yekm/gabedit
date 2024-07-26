@@ -1,6 +1,6 @@
 /* Cylinder.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -46,11 +46,11 @@ static void create_frame_dipole(GtkWidget *Dialogue,GtkWidget *vboxframe, gdoubl
 	gdouble Module;
 	gchar* textlabel[7][6] = { 
 				{" "," ","  X ","  Y  ","  Z  "," Norm"},
-				{"Nuclear Dipole(Debye)",":"," "," "," "," "},
-				{"Electronic Dipole(Debye)",":"," "," "," "," "},
-				{"Total Dipole(Debye)",":"," "," "," "," "},
-				{"Ne = Number of electrons using grid density",":"," "," "," "," "},
-				{"Nn = Nuclear charge",":"," "," "," "," "},
+				{_("Nuclear Dipole(Debye)"),":"," "," "," "," "},
+				{_("Electronic Dipole(Debye)"),":"," "," "," "," "},
+				{_("Total Dipole(Debye)"),":"," "," "," "," "},
+				{_("Ne = Number of electrons from grid density"),":"," "," "," "," "},
+				{_("Nn = Nuclear charge"),":"," "," "," "," "},
 				{"Nn - Ne",":"," "," "," "," "},
 				};
 	for(i=0;i<3; i++)
@@ -87,7 +87,7 @@ static void create_frame_dipole(GtkWidget *Dialogue,GtkWidget *vboxframe, gdoubl
 	j = 6;
 	textlabel[j][2] = g_strdup_printf("%.8f  ",z-ne);
 
-	Frame = create_frame(Dialogue,vboxframe,"Dipole computed using grid density");
+	Frame = create_frame(Dialogue,vboxframe,_("Dipole computed from grid density"));
 	vbox = create_vbox(Frame);
 	Table = gtk_table_new(7,6,FALSE);
 	gtk_container_add(GTK_CONTAINER(vbox),Table);
@@ -117,7 +117,7 @@ static void create_dipole_window(gdouble DN[], gdouble DE[], gdouble D[], gdoubl
 	GtkWidget *Dialogue = NULL;
 	GtkWidget *Button;
 	GtkWidget *frame, *vboxframe;
-	gchar * title = g_strdup("Dipole Computed using electronic density at the grid");
+	gchar * title = g_strdup(_("Dipole Computed using electronic density at the grid"));
 
 	Dialogue = gtk_dialog_new();
 	gtk_widget_realize(GTK_WIDGET(Dialogue));
@@ -230,7 +230,7 @@ void compute_total_dipole()
 	gdouble z;
 	if(!grid)
 	{
-		GtkWidget* message =Message("Sorry, Grid not defined ","Error",TRUE);
+		GtkWidget* message =Message(_("Sorry, Grid not defined "),_("Error"),TRUE);
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		return;
 	}

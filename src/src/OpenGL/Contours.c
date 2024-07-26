@@ -1,6 +1,6 @@
 /* Contours.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -243,6 +243,249 @@ Contours get_contours(Grid* plansgrid,gdouble value,gint i0,gint i1,gint numplan
 	return contours;
 }
 /********************************************************************************/
+void create_contours_surface_one_plane(gint type, gdouble value)
+{
+	gint i0 = 0;
+	gint i1 = 1;
+	gdouble gap = 0;
+	gint numplane = 0;
+
+	switch(type)
+	{
+		case 0 : i0 = 1;i1 = 2;break; /* plane YZ */
+		case 1 : i0 = 0;i1 = 2;break; /* plane XZ */
+		case 2 : i0 = 0;i1 = 1;break; /* plane XY */
+	}
+	for(numplane=0;numplane<grid->N[type];numplane++)
+	{
+		gdouble* values = g_malloc(sizeof(gdouble));
+		*values = value;
+		set_contours_values(1, values, i0, i1, numplane, gap);
+		glarea_rafresh(GLArea);
+	}
+}
+/********************************************************************************/
+void create_contours_surface(gboolean first, gboolean second, gboolean third, gdouble value)
+{
+	if(first) create_contours_surface_one_plane(0, value);
+	if(second) create_contours_surface_one_plane(1, value);
+	if(third) create_contours_surface_one_plane(2, value);
+}
+/********************************************************************************/
+static void apply_contours_isosurface(GtkWidget *Win,gpointer data)
+{
+	GtkWidget* Entry =(GtkWidget*)g_object_get_data(G_OBJECT (Win), "Entry");
+	gchar* temp;
+	gdouble isovalue;
+	
+	temp = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry))); 
+	delete_first_spaces(temp);
+	delete_last_spaces(temp);
+	if(this_is_a_real(temp)) isovalue = atof(temp);
+	else
+	{
+		GtkWidget* message =Message(_("Error : one entry is not a float "),_("Error"),TRUE);
+  		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+		return;
+	}
+	if(fabs(isovalue)>fabs(limits.MinMax[1][3]) && fabs(isovalue)>fabs(limits.MinMax[0][3]))
+	{
+		gchar buffer[1024];
+		sprintf(buffer,_("Error : The isovalue  value should between %lf and %lf"),fabs(limits.MinMax[1][3]),fabs(limits.MinMax[0][3]));
+		GtkWidget* message = Message(buffer,_("Error"),TRUE);
+  		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+		return;
+	}
+
+	delete_child(Win);
+	create_contours_surface(TRUE, TRUE, FALSE, atof(temp));
+}
+/********************************************************************************/
+static void getiso(GtkWidget *button,gpointer data)
+{
+	GtkWidget* Entry =(GtkWidget*)g_object_get_data(G_OBJECT (button), "Entry");
+	GtkWidget* EntryPercent =(GtkWidget*)g_object_get_data(G_OBJECT (button), "EntryPercent");
+	gchar* temp;
+	gdouble isovalue = 0.1;
+	gdouble percent = 100;
+	gboolean square = TRUE;
+	gdouble precision =1e-6;
+	
+	temp = g_strdup(gtk_entry_get_text(GTK_ENTRY(EntryPercent))); 
+	delete_first_spaces(temp);
+	delete_last_spaces(temp);
+	if(this_is_a_real(temp)) percent = fabs(atof(temp));
+	else
+	{
+		GtkWidget* message =Message(_("Error : one entry is not a float "),_("Error"),TRUE);
+  		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+		if(temp) g_free(temp);
+		return;
+	}
+	if(temp) g_free(temp);
+	if(percent<0) percent = 0;
+	if(percent>100) percent = 100;
+
+	if(
+		   TypeGrid == GABEDIT_TYPEGRID_ELFSAVIN
+		|| TypeGrid == GABEDIT_TYPEGRID_ELFBECKE
+		|| TypeGrid == GABEDIT_TYPEGRID_FEDELECTROPHILIC
+		|| TypeGrid == GABEDIT_TYPEGRID_FEDNUCLEOPHILIC
+		|| TypeGrid == GABEDIT_TYPEGRID_FEDRADICAL
+	) square = FALSE;
+
+	if(!compute_isovalue_percent_from_grid(grid, square, percent, precision, &isovalue)) return;
+	temp = g_strdup_printf("%f",isovalue);
+	gtk_entry_set_text(GTK_ENTRY(Entry),temp); 
+	if(temp) g_free(temp);
+}
+/********************************************************************************/
+static GtkWidget *create_iso_frame( GtkWidget *vboxall,gchar* title)
+{
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	GtkWidget *Entry;
+	GtkWidget *EntryPercent;
+	gushort i;
+	gushort j;
+	GtkWidget *Table;
+	gdouble v;
+  	GtkWidget* button;
+#define NLIGNES   3
+#define NCOLUMNS  3
+	gchar      *strlabels[NLIGNES][NCOLUMNS];
+	
+	strlabels[0][0] = g_strdup(_(" Min "));
+	strlabels[1][0] = g_strdup(_(" Max "));
+	strlabels[2][0] = g_strdup(_(" Value "));
+	strlabels[0][1] = g_strdup(" : ");
+	strlabels[1][1] = g_strdup(" : ");
+	strlabels[2][1] = g_strdup(" : ");
+
+	if(fabs(limits.MinMax[0][3])>1e6) strlabels[0][2] = g_strdup_printf(" %e ",limits.MinMax[0][3]);
+	else strlabels[0][2] = g_strdup_printf(" %lf ",limits.MinMax[0][3]);
+
+	if(fabs(limits.MinMax[1][3])>1e6) strlabels[1][2] = g_strdup_printf(" %e ",limits.MinMax[1][3]);
+	else strlabels[1][2] = g_strdup_printf(" %lf ",limits.MinMax[1][3]);
+	v = limits.MinMax[1][3]/4;
+	if(v>0.2 && fabs(limits.MinMax[1][3])>0.01 && fabs(limits.MinMax[0][3])<0.01) v= 0.01;
+	if(TypeGrid == GABEDIT_TYPEGRID_SAS) v = 0;
+	if(TypeGrid == GABEDIT_TYPEGRID_ELFSAVIN) v = 0.8;
+	if(TypeGrid == GABEDIT_TYPEGRID_ELFBECKE) v = 0.8;
+	if(TypeGrid == GABEDIT_TYPEGRID_FEDELECTROPHILIC) v *= 3;
+	if(TypeGrid == GABEDIT_TYPEGRID_FEDNUCLEOPHILIC) v *= 3;
+	if(TypeGrid == GABEDIT_TYPEGRID_FEDRADICAL) v *= 3;
+		
+	strlabels[2][2] = g_strdup_printf("%lf",v);
+
+	frame = gtk_frame_new (title);
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+	gtk_container_add (GTK_CONTAINER (vboxall), frame);
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	Table = gtk_table_new(3,3,FALSE);
+	gtk_container_add(GTK_CONTAINER(vboxframe),Table);
+
+	for(i=0;i<3;i++)
+		for(j=0;j<3;j++)
+			if(i+j != 4)
+				add_label_at_table(Table,strlabels[i][j],i,(gushort)j,GTK_JUSTIFY_LEFT);
+	Entry= gtk_entry_new ();
+	add_widget_table(Table,Entry,(gushort)2,(gushort)2);
+	gtk_entry_set_text(GTK_ENTRY( Entry),strlabels[2][2]);
+
+	for(i=0;i<3;i++)
+	{
+		for(j=0;j<3;j++)
+			g_free(strlabels[i][j]);
+	}
+	gtk_box_pack_start (GTK_BOX (vboxframe), gtk_hseparator_new (), TRUE, TRUE, 0);
+	Table = gtk_table_new(1,3,FALSE);
+	gtk_box_pack_start (GTK_BOX (vboxframe), Table, TRUE, TRUE, 0);
+	EntryPercent= gtk_entry_new ();
+	gtk_widget_set_size_request(EntryPercent,60,-1);
+	add_widget_table(Table,EntryPercent,0,0);
+	gtk_entry_set_text(GTK_ENTRY( EntryPercent),"99");
+	g_object_set_data(G_OBJECT (frame), "EntryPercent",EntryPercent);
+	add_label_at_table(Table,"%",0,1,GTK_JUSTIFY_LEFT);
+    	button = gtk_button_new_with_label("  Get Isovalue  ");
+	g_object_set_data(G_OBJECT (frame), "ButtonGet",button);
+	gtk_table_attach(GTK_TABLE(Table),button,2,3,0,1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+
+	gtk_widget_show_all(frame);
+	g_object_set_data(G_OBJECT (frame), "Entry",Entry);
+
+	g_object_set_data(G_OBJECT (button), "EntryPercent",EntryPercent);
+	g_object_set_data(G_OBJECT (button), "Entry",Entry);
+  	g_signal_connect(G_OBJECT(button), "clicked",(GCallback)getiso,GTK_OBJECT(Entry));
+  
+  	return frame;
+#undef NLIGNES
+#undef NCOLUMNS
+}
+/********************************************************************************/
+void create_contours_isosurface()
+{
+  GtkWidget *Win;
+  GtkWidget *frame;
+  GtkWidget *hbox;
+  GtkWidget *vboxall;
+  GtkWidget *vboxwin;
+  GtkWidget *button;
+  GtkWidget* Entry;
+
+
+  if(!grid )
+  {
+	  if( !CancelCalcul)
+	  	Message(_("Grid not defined "),_("Error"),TRUE);
+	  return;
+  }
+  /* Principal Window */
+  Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_title(GTK_WINDOW(Win),_("Draw contours for an isosurface"));
+  gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
+  gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
+  gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(PrincipalWindow));
+  gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
+
+  add_glarea_child(Win,"Iso surface ");
+
+  vboxall = create_vbox(Win);
+  vboxwin = vboxall;
+  frame = create_iso_frame(vboxall,_("Iso-Value"));
+  Entry = (GtkWidget*) g_object_get_data(G_OBJECT (frame), "Entry");
+  g_object_set_data(G_OBJECT (Win), "Entry",Entry);
+   
+
+  /* buttons box */
+  hbox = create_hbox_false(vboxwin);
+  gtk_widget_realize(Win);
+
+  button = create_button(Win,_("Cancel"));
+  GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+  gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Win));
+  gtk_widget_show (button);
+
+  button = create_button(Win,_("OK"));
+  gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
+  GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+  gtk_widget_grab_default(button);
+  gtk_widget_show (button);
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_contours_isosurface,GTK_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT (Entry), "activate", (GCallback) gtk_button_clicked, GTK_OBJECT (button));
+  
+
+  /* Show all */
+  gtk_widget_show_all (Win);
+}
+/********************************************************************************/
 void apply_contours(GtkWidget *Win,gpointer data)
 {
 	GtkWidget** Entrys =(GtkWidget**)g_object_get_data(G_OBJECT (Win), "Entrys");
@@ -268,15 +511,15 @@ void apply_contours(GtkWidget *Win,gpointer data)
 	N = get_number_of_point(Entrys[1]);
 	if(N<=0) return;
 
-        if(!get_a_float(Entrys[2],&min, "Error : The minimal value should be float." )) return;
-        if(!get_a_float(Entrys[3],&max,"Error : The maximal value should be float.")) return;
+        if(!get_a_float(Entrys[2],&min, _("Error : The minimal value should be float."))) return;
+        if(!get_a_float(Entrys[3],&max,_("Error : The maximal value should be float."))) return;
 	if( max<=min)
 	{
-		GtkWidget* message = Message("Error :  The minimal value should be smaller than the maximal value ","Error",TRUE);
+		GtkWidget* message = Message(_("Error :  The minimal value should be smaller than the maximal value "),_("Error"),TRUE);
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		return;
 	}
-        if(!get_a_float(Entrys[4],&gap,"Error : The projection value should be float.")) return;
+        if(!get_a_float(Entrys[4],&gap,_("Error : The projection value should be float."))) return;
 	numplane = pvalue-1;
 	if(numplane <0 || numplane>=grid->N[type]) numplane = grid->N[type]/2;
 	switch(type)
@@ -435,7 +678,7 @@ GtkWidget *create_contours_frame( GtkWidget *vboxall,gchar* title,gint type)
 	gchar      *strlabels[NLIGNES][NCOLUMNS];
 	
 	itype = type;
-	strlabels[0][0] = g_strdup(" Plane number ");
+	strlabels[0][0] = g_strdup(_(" Plane number "));
 	listvalues = g_malloc(grid->N[type]*sizeof(gchar*));
 	for(i=0;i<grid->N[type];i++)
 	{
@@ -460,13 +703,13 @@ GtkWidget *create_contours_frame( GtkWidget *vboxall,gchar* title,gint type)
 
 		}
 	}
-	strlabels[1][0] = g_strdup(" Numbre of contours ");
-	strlabels[2][0] = g_strdup(" Min iso-value ");
-	strlabels[3][0] = g_strdup(" Max iso-value ");
+	strlabels[1][0] = g_strdup(_(" Numbre of contours "));
+	strlabels[2][0] = g_strdup(_(" Min iso-value "));
+	strlabels[3][0] = g_strdup(_(" Max iso-value "));
 	strlabels[4][0] = NULL;
 	strlabels[5][0] = NULL;
 	strlabels[6][0] = NULL;
-	strlabels[7][0] = g_strdup(" Projection ");
+	strlabels[7][0] = g_strdup(_(" Projection "));
 
 	strlabels[0][1] = g_strdup(" : ");
 	strlabels[1][1] = g_strdup(" : ");
@@ -493,7 +736,7 @@ GtkWidget *create_contours_frame( GtkWidget *vboxall,gchar* title,gint type)
 	strlabels[4][3] = NULL;
 	strlabels[5][3] = NULL;
 	strlabels[6][3] = NULL;
-	strlabels[7][3] = g_strdup(" left if <0, right if >0. and nothing if 0");
+	strlabels[7][3] = g_strdup(_(" left if <0, right if >0. and nothing if 0"));
 
 	frame = gtk_frame_new (title);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
@@ -546,9 +789,9 @@ GtkWidget *create_contours_frame( GtkWidget *vboxall,gchar* title,gint type)
                   3,3);
 
 	i=5;
-	linearButton = gtk_radio_button_new_with_label( NULL,"Linear scale");
+	linearButton = gtk_radio_button_new_with_label( NULL,_("Linear scale"));
 	add_widget_table(Table, linearButton,i,0);
-	logButton = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (linearButton)), "logarithmic scale"); 
+	logButton = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (linearButton)), _("logarithmic scale")); 
 	gtk_table_attach(GTK_TABLE(Table), logButton,1,3,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -617,8 +860,7 @@ void create_contours(gchar* title,gint type)
 
   if(!grid)
   {
-	  if(!CancelCalcul)
-	  	Message("Grid not defined ","Error",TRUE);
+	  if(!CancelCalcul) Message(_("Grid not defined "),_("Error"),TRUE);
 	  return;
   }
   itype = type;
@@ -675,12 +917,12 @@ void apply_contours_plane(GtkWidget *Win,gpointer data)
 	N = get_number_of_point(Entrys[0]);
 	if(N<=0) return;
 
-        if(!get_a_float(Entrys[1],&minv, "Error : The minimal value should be float." )) return;
-        if(!get_a_float(Entrys[2],&maxv,"Error : The maximal value should be float.")) return;
-        if(!get_a_float(Entrys[3],&gap,"Error : The projection value should be float.")) return;
+        if(!get_a_float(Entrys[1],&minv,_("Error : The minimal value should be float."))) return;
+        if(!get_a_float(Entrys[2],&maxv,_("Error : The maximal value should be float."))) return;
+        if(!get_a_float(Entrys[3],&gap,_("Error : The projection value should be float."))) return;
 	if( maxv<=minv)
 	{
-		GtkWidget* message = Message("Error :  The minimal value should be smaller than the maximal value ","Error",TRUE);
+		GtkWidget* message = Message(_("Error :  The minimal value should be smaller than the maximal value "),_("Error"),TRUE);
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		return;
 	}
@@ -807,9 +1049,9 @@ GtkWidget *create_contours_frame_plane( GtkWidget *vboxall,gchar* title)
                   3,3);
 
 	i=4;
-	linearButton = gtk_radio_button_new_with_label( NULL,"Linear scale");
+	linearButton = gtk_radio_button_new_with_label( NULL,_("Linear scale"));
 	add_widget_table(Table, linearButton,i,0);
-	logButton = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (linearButton)), "logarithmic scale"); 
+	logButton = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (linearButton)), _("logarithmic scale")); 
 	gtk_table_attach(GTK_TABLE(Table), logButton,1,3,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -861,7 +1103,7 @@ void create_contours_plane(gchar* title)
   /* Debug("Creation de la fenetre contour\n");*/
   if(!gridPlaneForContours)
   {
-	  Message("Grid in plane is not defined ","Error",TRUE);
+	  Message(_("Grid in plane is not defined "),_("Error"),TRUE);
 	  return;
   }
   /* Principal Window */
@@ -887,13 +1129,13 @@ void create_contours_plane(gchar* title)
   hbox = create_hbox_false(vboxwin);
   gtk_widget_realize(Win);
 
-  button = create_button(Win,"Cancel");
+  button = create_button(Win,_("Cancel"));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
   gtk_widget_show (button);
 
-  button = create_button(Win,"OK");
+  button = create_button(Win,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);

@@ -1,6 +1,6 @@
 /* MolecularMechanicsDlg.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Constants.h"
 #include "../Geometry/Fragments.h"
 #include "../Geometry/DrawGeom.h"
-#include "../Geometry/Mesure.h"
+#include "../Geometry/Measure.h"
 #include "../Geometry/ResultsAnalise.h"
 #include "../Geometry/GeomGlobal.h"
 #include "../Geometry/GeomXYZ.h"
@@ -92,11 +92,13 @@ typedef enum
 #define NINTEGOPTIONS 3
 #define NTHERMOPTIONS 3
 #define NENTRYTOL 2
+#define NCONSTRAINTS 3
 
 static	GtkWidget* buttonTypesOptions[3];
 static	GtkWidget* buttonMMOptions[NOPTIONS1+NOPTIONS2+NOPTIONS3];
 static	GtkWidget* buttonMinimizeOptions[NGRADOPTIONS];
 static	GtkWidget* buttonMDOptions[NINTEGOPTIONS];
+static	GtkWidget* buttonConstraintsOptions[NCONSTRAINTS];
 static	GtkWidget* buttonMDThermOptions[NTHERMOPTIONS];
 static	GtkWidget* entryMinimizeOptions[NGRADENTRYS];
 static	GtkWidget* frameAmber = NULL;
@@ -122,12 +124,13 @@ static  GtkWidget* buttonCreateGaussian = NULL ;
 static  GtkWidget* entryGaussianKeywords = NULL; 
 static  GtkWidget* buttonCreateMopac = NULL ;
 static  GtkWidget* entryMopacKeywords = NULL; 
-static  GtkWidget* buttonCreatePCGamess = NULL ;
-static  GtkWidget* entryPCGamessKeywords = NULL; 
+static  GtkWidget* buttonCreateFireFly = NULL ;
+static  GtkWidget* entryFireFlyKeywords = NULL; 
 static  GtkWidget* buttonPostNone = NULL ;
+static  GtkWidget* buttonPostMMOpt = NULL ;
 static  GtkWidget* buttonPostPM6Mopac = NULL ;
 static  GtkWidget* buttonPostAM1Mopac = NULL ;
-static  GtkWidget* buttonPostPCGamess = NULL ;
+static  GtkWidget* buttonPostFireFly = NULL ;
 
 static	GtkWidget* entryTolerance[NENTRYTOL];
 static	GtkWidget* buttonTolerance[NENTRYTOL];
@@ -288,7 +291,7 @@ static gboolean createGaussianFiles(gint numberOfGeometries, ForceField** geomet
 
 }
 /*****************************************************************************/
-static gboolean createPCGamessFiles(gint numberOfGeometries, ForceField** geometries, gdouble* energies, gchar* fileNamePrefix, gchar* keyWords)
+static gboolean createFireFlyFiles(gint numberOfGeometries, ForceField** geometries, gdouble* energies, gchar* fileNamePrefix, gchar* keyWords)
 {
 	FILE* file = NULL;
 	FILE* fileSH = NULL;
@@ -315,7 +318,7 @@ static gboolean createPCGamessFiles(gint numberOfGeometries, ForceField** geomet
  	fileSH = fopen(fileNameSH, "w");
 	if(!fileSH) return FALSE;
 #ifdef G_OS_WIN32
-	fprintf(fileSH,"set PATH=%cPATH%c;\"%s\"\n",c,c,pcgamessDirectory);
+	fprintf(fileSH,"set PATH=%cPATH%c;\"%s\"\n",c,c,fireflyDirectory);
 #endif
 
 
@@ -328,7 +331,7 @@ static gboolean createPCGamessFiles(gint numberOfGeometries, ForceField** geomet
  		file = fopen(fileName, "w");
 		if(!file) return FALSE;
 		fprintf(file,"! ======================================================\n");
-		fprintf(file,"!  Input file for PCGamess\n"); 
+		fprintf(file,"!  Input file for FireFly\n"); 
 		fprintf(file,"! ======================================================\n");
 		if(strstr(keyWords,"RUNTYP"))
 		{
@@ -373,32 +376,35 @@ static gboolean createPCGamessFiles(gint numberOfGeometries, ForceField** geomet
 		fclose(file);
 
 #ifndef G_OS_WIN32
-	 	if(!strcmp(NameCommandPCGamess,"pcgamess") || !strcmp(NameCommandPCGamess,"nohup pcgamess"))
+		if(!strcmp(NameCommandFireFly,"pcgamess") || !strcmp(NameCommandFireFly,"nohup pcgamess")||
+		!strcmp(NameCommandFireFly,"firefly") || !strcmp(NameCommandFireFly,"nohup firefly"))
 		{
 			fprintf(fileSH,"mkdir %stmp%d\n",fileNamePrefix,i+1);
 			fprintf(fileSH,"cd %stmp%d\n",fileNamePrefix,i+1);
 			fprintf(fileSH,"cp %s input\n",fileName);
-			fprintf(fileSH,"%s -p -o %sP_%d.log\n",NameCommandPCGamess,fileNamePrefix,i+1);
+			fprintf(fileSH,"%s -p -o %sP_%d.log\n",NameCommandFireFly,fileNamePrefix,i+1);
 			fprintf(fileSH,"cd ..\n");
 			fprintf(fileSH,"mv PUNCH  %sP_%d.pun\n",fileNamePrefix,i+1);
 			fprintf(fileSH,"/bin/rm -r  %stmp%d\n",fileNamePrefix,i+1);
 		}
 		else
-			fprintf(fileSH,"%s %s",NameCommandPCGamess,fileName);
+			fprintf(fileSH,"%s %s",NameCommandFireFly,fileName);
 #else
-	 	if(!strcmp(NameCommandPCGamess,"pcgamess") )
+	 	if(!strcmp(NameCommandFireFly,"pcgamess") ||
+	 	!strcmp(NameCommandFireFly,"firefly") )
 		{
          		fprintf(fileSH,"mkdir %stmp%d\n",fileNamePrefix,i+1);
+			addUnitDisk(fileSH, fileNamePrefix);
 	 		fprintf(fileSH,"cd %stmp%d\n",fileNamePrefix,i+1);
          		fprintf(fileSH,"copy %s input\n",fileName);
-         		fprintf(fileSH,"%s -p -o %sP_%d.log\n",NameCommandPCGamess,fileNamePrefix,i+1);
+         		fprintf(fileSH,"%s -p -o %sP_%d.log\n",NameCommandFireFly,fileNamePrefix,i+1);
 	 		fprintf(fileSH,"cd ..\n");
          		fprintf(fileSH,"move PUNCH  %sP_%d.pun\n",fileNamePrefix,i+1);
          		fprintf(fileSH,"del /Q  %stmp%d\n",fileNamePrefix,i+1);
          		fprintf(fileSH,"rmdir  %stmp%d\n",fileNamePrefix,i+1);
 		}
 		else
-			fprintf(fileSH,"%s %s",NameCommandPCGamess,fileName);
+			fprintf(fileSH,"%s %s",NameCommandFireFly,fileName);
 #endif
 	}
 	fclose(fileSH);
@@ -654,7 +660,7 @@ static gboolean runMopacFiles(gint numberOfGeometries, ForceField** geometries, 
 
 }
 /*****************************************************************************/
-static gboolean getEnergyPCGamess(gchar* fileNameOut, gdouble* energy)
+static gboolean getEnergyFireFly(gchar* fileNameOut, gdouble* energy)
 {
 	FILE* file = NULL;
 	gchar buffer[1024];
@@ -681,7 +687,7 @@ static gboolean getEnergyPCGamess(gchar* fileNameOut, gdouble* energy)
 	return OK;
 }
 /*****************************************************************************/
-static gboolean runOnePCGamess(ForceField* geometry, gdouble* energy, gchar* fileNamePrefix, gchar* keyWords)
+static gboolean runOneFireFly(ForceField* geometry, gdouble* energy, gchar* fileNamePrefix, gchar* keyWords)
 {
 	FILE* file = NULL;
 	FILE* fileSH = NULL;
@@ -704,7 +710,7 @@ static gboolean runOnePCGamess(ForceField* geometry, gdouble* energy, gchar* fil
  	fileSH = fopen(fileNameSH, "w");
 	if(!fileSH) return FALSE;
 #ifdef G_OS_WIN32
-	fprintf(fileSH,"set PATH=%cPATH%c;\"%s\"\n",c,c,pcgamessDirectory);
+	fprintf(fileSH,"set PATH=%cPATH%c;\"%s\"\n",c,c,fireflyDirectory);
 #endif
 
 	getMultiplicityName(spinMultiplicity, multiplicityStr);
@@ -719,7 +725,7 @@ static gboolean runOnePCGamess(ForceField* geometry, gdouble* energy, gchar* fil
 		return FALSE;
 	}
 	fprintf(file,"! ======================================================\n");
-	fprintf(file,"!  Input file for PCGamess\n"); 
+	fprintf(file,"!  Input file for FireFly\n"); 
 	fprintf(file,"! ======================================================\n");
 	if(strstr(keyWords,"RUNTYP"))
 	{
@@ -764,32 +770,35 @@ static gboolean runOnePCGamess(ForceField* geometry, gdouble* energy, gchar* fil
 	fclose(file);
 	fileNameOut = g_strdup_printf("%sOne.out",fileNamePrefix);
 #ifndef G_OS_WIN32
-	if(!strcmp(NameCommandPCGamess,"pcgamess") || !strcmp(NameCommandPCGamess,"nohup pcgamess"))
+	if(!strcmp(NameCommandFireFly,"pcgamess") || !strcmp(NameCommandFireFly,"nohup pcgamess")||
+	!strcmp(NameCommandFireFly,"firefly") || !strcmp(NameCommandFireFly,"nohup firefly"))
 	{
 		fprintf(fileSH,"mkdir %stmp\n",fileNamePrefix);
 		fprintf(fileSH,"cd %stmp\n",fileNamePrefix);
 		fprintf(fileSH,"cp %s input\n",fileNameIn);
-		fprintf(fileSH,"%s -p -o %s\n",NameCommandPCGamess,fileNameOut);
+		fprintf(fileSH,"%s -p -o %s\n",NameCommandFireFly,fileNameOut);
 		fprintf(fileSH,"cd ..\n");
 		fprintf(fileSH,"rm PUNCH\n");
 		fprintf(fileSH,"/bin/rm -r  %stmp\n",fileNamePrefix);
 	}
 	else
-		fprintf(fileSH,"%s %s",NameCommandPCGamess,fileNameIn);
+		fprintf(fileSH,"%s %s",NameCommandFireFly,fileNameIn);
 #else
-	 if(!strcmp(NameCommandPCGamess,"pcgamess") )
+	if(!strcmp(NameCommandFireFly,"pcgamess") ||
+	!strcmp(NameCommandFireFly,"firefly") )
 	{
         	fprintf(fileSH,"mkdir \"%stmp\"\n",fileNamePrefix);
+		addUnitDisk(fileSH, fileNamePrefix);
 	 	fprintf(fileSH,"cd \"%stmp\"\n",fileNamePrefix);
          	fprintf(fileSH,"copy \"%s\" input\n",fileNameIn);
-         	fprintf(fileSH,"%s -p -o \"%s\"\n",NameCommandPCGamess,fileNameOut);
+         	fprintf(fileSH,"%s -p -o \"%s\"\n",NameCommandFireFly,fileNameOut);
 	 	fprintf(fileSH,"cd ..\n");
          	fprintf(fileSH,"del PUNCH\n");
          	fprintf(fileSH,"del /Q  \"%stmp\"\n",fileNamePrefix);
          	fprintf(fileSH,"rmdir  \"%stmp\"\n",fileNamePrefix);
 	}
 	else
-		fprintf(fileSH,"%s %s",NameCommandPCGamess,fileNameIn);
+		fprintf(fileSH,"%s %s",NameCommandFireFly,fileNameIn);
 #endif
 	fclose(fileSH);
 #ifndef G_OS_WIN32
@@ -800,12 +809,12 @@ static gboolean runOnePCGamess(ForceField* geometry, gdouble* energy, gchar* fil
 	sprintf(buffer,"\"%s\"",fileNameSH);
 	system(buffer);
 #endif
-	if(getEnergyPCGamess(fileNameOut,energy))
+	if(getEnergyFireFly(fileNameOut,energy))
 	{
 		gchar* str = NULL;
 
 		read_geom_from_gamess_output_file(fileNameOut, -1);
-		str = g_strdup_printf("Energy by PCGamess = %f", *energy);
+		str = g_strdup_printf("Energy by FireFly = %f", *energy);
 		set_text_to_draw(str);
 		dessine();
     		while( gtk_events_pending() ) gtk_main_iteration();
@@ -826,7 +835,7 @@ static gboolean runOnePCGamess(ForceField* geometry, gdouble* energy, gchar* fil
 	return TRUE;
 }
 /*****************************************************************************/
-static gboolean runPCGamessFiles(gint numberOfGeometries, ForceField** geometries, gdouble* energies, gchar* fileNamePrefix, gchar* keyWords)
+static gboolean runFireFlyFiles(gint numberOfGeometries, ForceField** geometries, gdouble* energies, gchar* fileNamePrefix, gchar* keyWords)
 {
 	gint i;
 	gint nG = 0;
@@ -837,11 +846,11 @@ static gboolean runPCGamessFiles(gint numberOfGeometries, ForceField** geometrie
 		if(!geometries[i]) continue;
 		nG++;
 		if(str) g_free(str);
-		str = g_strdup_printf("Minimization by PCGamess of geometry n = %d... Please wait", i+1);
+		str = g_strdup_printf("Minimization by FireFly of geometry n = %d... Please wait", i+1);
 		set_text_to_draw(str);
 		dessine();
     		while( gtk_events_pending() ) gtk_main_iteration();
-		if(runOnePCGamess(geometries[i], &energies[i], fileNamePrefix, keyWords)) 
+		if(runOneFireFly(geometries[i], &energies[i], fileNamePrefix, keyWords)) 
 		{
 			freeMolecule(&geometries[i]->molecule);
 			geometries[i]->molecule = createMolecule(geometry0,Natoms,TRUE);
@@ -1034,14 +1043,14 @@ static void sortGeometries(gint numberOfGeometries, ForceField** geometries, gdo
 	}
 }
 /*****************************************************************************/
-static void createPostProcessingFiles(gint numberOfGeometries, ForceField** geometries,gdouble* energies,gchar* fileNameGeom, gchar* mopacKeywords, gchar* gaussianKeywords, gchar* pcgamessKeywords, gchar* message)
+static void createPostProcessingFiles(gint numberOfGeometries, ForceField** geometries,gdouble* energies,gchar* fileNameGeom, gchar* mopacKeywords, gchar* gaussianKeywords, gchar* fireflyKeywords, gchar* message)
 {
 	if(!StopCalcul && mopacKeywords)
 	{
 		gchar* fileNamePrefix = get_suffix_name_file(fileNameGeom);
 		createMopacFiles(numberOfGeometries, geometries, energies, fileNamePrefix, mopacKeywords);
 		strcat(message,fileNamePrefix);
-		strcat(message,"_*.mop\n\tFiles for a post processing by Mopac\n\n");
+		strcat(message,_("_*.mop\n\tFiles for a post processing by Mopac\n\n"));
 		if(fileNamePrefix) g_free(fileNamePrefix);
 	}
 	if(!StopCalcul && gaussianKeywords)
@@ -1049,15 +1058,15 @@ static void createPostProcessingFiles(gint numberOfGeometries, ForceField** geom
 		gchar* fileNamePrefix = get_suffix_name_file(fileNameGeom);
 		createGaussianFiles(numberOfGeometries, geometries, energies, fileNamePrefix, gaussianKeywords);
 		strcat(message,fileNamePrefix);
-		strcat(message,"_*.com\n\tFiles for a post processing by Gaussian\n\n");
+		strcat(message,_("_*.com\n\tFiles for a post processing by Gaussian\n\n"));
 		if(fileNamePrefix) g_free(fileNamePrefix);
 	}
-	if(!StopCalcul && pcgamessKeywords)
+	if(!StopCalcul && fireflyKeywords)
 	{
 		gchar* fileNamePrefix = get_suffix_name_file(fileNameGeom);
-		createPCGamessFiles(numberOfGeometries, geometries, energies, fileNamePrefix, pcgamessKeywords);
+		createFireFlyFiles(numberOfGeometries, geometries, energies, fileNamePrefix, fireflyKeywords);
 		strcat(message,fileNamePrefix);
-		strcat(message,"P_*.inp\n\tFiles for a post processing by PCGamess\n\n");
+		strcat(message,_("P_*.inp\n\tFiles for a post processing by FireFly\n\n"));
 		if(fileNamePrefix) g_free(fileNamePrefix);
 	}
 }
@@ -1081,16 +1090,17 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 	gchar* fileNameProp = NULL;
 	gchar* mopacKeywords = NULL;
 	gchar* gaussianKeywords = NULL;
-	gchar* pcgamessKeywords = NULL;
+	gchar* fireflyKeywords = NULL;
 	gdouble friction=40;
 	gdouble collide = 20;
 	MDThermostatType thermostat = NONE;
 	gint numberOfGeometries = 2;
 	ForceField** geometries = NULL; 
 	gdouble* energies = NULL;
+	gboolean optMM = FALSE;
 	gboolean optPM6Mopac = FALSE;
 	gboolean optAM1Mopac = FALSE;
-	gboolean optPCGamess = FALSE;
+	gboolean optFireFly = FALSE;
 
 	QuasiNewton quasiNewton;
 	gboolean useConjugateGradient;
@@ -1117,6 +1127,13 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 	forceFieldOptions.hydrogenBonded = GTK_TOGGLE_BUTTON (buttonMMOptions[MMHBOND])->active;
 	forceFieldOptions.coulomb = GTK_TOGGLE_BUTTON (buttonMMOptions[MMCOULOMB])->active;
 	forceFieldOptions.vanderWals = GTK_TOGGLE_BUTTON (buttonMMOptions[PWVANDERWALS])->active;
+
+	forceFieldOptions.rattleConstraints = NOCONSTRAINTS;
+	if(GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSCONSTRAINTS])->active)
+			forceFieldOptions.rattleConstraints = BONDSCONSTRAINTS;
+	if(GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSANGLESCONSTRAINTS])->active)
+			forceFieldOptions.rattleConstraints = BONDSANGLESCONSTRAINTS;
+
 	if(GTK_TOGGLE_BUTTON (buttonTypesOptions[AMBER])->active )
 		forceFieldOptions.type = AMBER;
 	else
@@ -1167,9 +1184,10 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 	if(stepSize<0) stepSize = 1.0;
 	if(stepSize>5) stepSize = 5.0;
 
+	optMM = GTK_TOGGLE_BUTTON (buttonPostMMOpt)->active;
 	optPM6Mopac = GTK_TOGGLE_BUTTON (buttonPostPM6Mopac)->active;
 	optAM1Mopac = GTK_TOGGLE_BUTTON (buttonPostAM1Mopac)->active;
-	optPCGamess = GTK_TOGGLE_BUTTON (buttonPostPCGamess)->active;
+	optFireFly = GTK_TOGGLE_BUTTON (buttonPostFireFly)->active;
 	/* number for geometries */
 	{
 		gchar* tmp = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryNumberOfGeom)));
@@ -1194,8 +1212,8 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 		gaussianKeywords = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryGaussianKeywords)));
 	if(GTK_TOGGLE_BUTTON (buttonCreateMopac)->active)
 		mopacKeywords = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryMopacKeywords)));
-	if(GTK_TOGGLE_BUTTON (buttonCreatePCGamess)->active)
-		pcgamessKeywords = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryPCGamessKeywords)));
+	if(GTK_TOGGLE_BUTTON (buttonCreateFireFly)->active)
+		fireflyKeywords = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryFireFlyKeywords)));
 
 	if(GTK_TOGGLE_BUTTON (buttonSaveTraj)->active)
 	{
@@ -1285,7 +1303,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 	if(StopCalcul)
 	{
 		set_text_to_draw(" ");
-		set_statubar_operation_str("Calcul Canceled ");
+		set_statubar_operation_str(_("Calculation canceled"));
 		dessine();
 		set_sensitive_stop_button( FALSE);
 		return;
@@ -1302,11 +1320,12 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 	geometries = runMolecularDynamicsConfo(&molecularDynamics, &forceField,
 		updateFrequency, heatTime, equiTime, runTime, heatTemp, equiTemp, runTemp, stepSize, 
 		integrator, thermostat, friction, collide, numberOfGeometries, fileNameTraj, fileNameProp);
+
 	freeForceField(&forceField);
 	if(!StopCalcul && geometries && numberOfGeometries>0)
 		energies = g_malloc(numberOfGeometries*sizeof(gdouble));
 
-	if(!StopCalcul && geometries)
+	if(!StopCalcul && geometries && optMM)
 	for(i=0;i<numberOfGeometries;i++)
 	{
 		gchar* str = NULL;
@@ -1324,7 +1343,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 		if(StopCalcul)
 		{
 			set_text_to_draw(" ");
-			set_statubar_operation_str("Calcul Canceled ");
+			set_statubar_operation_str(_("Calculation canceled"));
 			dessine();
 			set_sensitive_stop_button( FALSE);
 			break;
@@ -1336,7 +1355,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 			if(StopCalcul)
 			{
 				set_text_to_draw(" ");
-				set_statubar_operation_str("Calcul canceled");
+				set_statubar_operation_str(_("Calculation canceled"));
 				dessine();
 			}
 			set_sensitive_stop_button( FALSE);
@@ -1353,7 +1372,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 			if(StopCalcul)
 			{
 				set_text_to_draw(" ");
-				set_statubar_operation_str("Calcul canceled");
+				set_statubar_operation_str(_("Calculation canceled"));
 				dessine();
 			}
 			set_sensitive_stop_button( FALSE);
@@ -1373,7 +1392,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 			if(StopCalcul)
 			{
 				set_text_to_draw(" ");
-				set_statubar_operation_str("Calcul canceled");
+				set_statubar_operation_str(_("Calculation canceled"));
 				dessine();
 			}
 			set_sensitive_stop_button( FALSE);
@@ -1383,11 +1402,22 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 		}
 		set_text_to_draw(" ");
 	}
+	else if(!StopCalcul)
+	{
+		for(i=0;i<numberOfGeometries;i++)
+		{
+			energies[i] = 1e30;
+			if(!geometries[i]) continue;
+			energies[i] = geometries[i]->klass->calculateEnergyTmp
+				(geometries[i], &geometries[i]->molecule );
+		}
+
+	}
 
 	if(StopCalcul)
 	{
 		set_text_to_draw(" ");
-		set_statubar_operation_str("Calcul canceled");
+		set_statubar_operation_str(_("Calculation canceled"));
 		dessine();
 	}
 	set_sensitive_stop_button( FALSE);
@@ -1401,11 +1431,11 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 	/* printf("fileNameGeom = %s\n",fileNameGeom);*/
 	if(!StopCalcul && saveConfoGeometries(numberOfGeometries, geometries, energies, fileNameGeom))
 	{
-		createPostProcessingFiles(numberOfGeometries, geometries,energies,fileNameGeom, mopacKeywords, gaussianKeywords, pcgamessKeywords, message);
+		createPostProcessingFiles(numberOfGeometries, geometries,energies,fileNameGeom, mopacKeywords, gaussianKeywords, fireflyKeywords, message);
 		if(!StopCalcul) read_gabedit_file_add_list(fileNameGeom);
 		strcat(message,fileNameGeom);
-		strcat(message,"\n\tGeometries selected and optimized using your MM potentials");
-		strcat(message,"\n\tTo read this file : 'Read/Gabedit file'\n\n");
+		strcat(message,_("\n\tGeometries selected and optimized using your MM potentials"));
+		strcat(message,_("\n\tTo read this file : 'Read/Gabedit file'\n\n"));
 	}
 	/* minimazation by mopac PM6*/
 	if(!StopCalcul && optPM6Mopac)
@@ -1418,11 +1448,11 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 			removeIdenticalGeometries(&numberOfGeometries, &geometries, &energies,tolEnergy,tolDistance);
 			if(saveConfoGeometries(numberOfGeometries, geometries, energies, fileNameGeomMop))
 			{
-				createPostProcessingFiles(numberOfGeometries, geometries,energies,fileNameGeomMop, mopacKeywords, gaussianKeywords, pcgamessKeywords, message);
+				createPostProcessingFiles(numberOfGeometries, geometries,energies,fileNameGeomMop, mopacKeywords, gaussianKeywords, fireflyKeywords, message);
 				read_gabedit_file_add_list(fileNameGeomMop);
 				strcat(message,fileNameGeomMop);
-				strcat(message,"\n\tGeometries after minimization by PM6/Mopac");
-				strcat(message,"\n\tTo read this file : 'Read/Gabedit file'\n\n");
+				strcat(message,_("\n\tGeometries after minimization by PM6/Mopac"));
+				strcat(message,_("\n\tTo read this file : 'Read/Gabedit file'\n\n"));
 			}
 
 			g_free(fileNameGeomMop);
@@ -1440,36 +1470,36 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 			removeIdenticalGeometries(&numberOfGeometries, &geometries, &energies,tolEnergy,tolDistance);
 			if(saveConfoGeometries(numberOfGeometries, geometries, energies, fileNameGeomMop))
 			{
-				createPostProcessingFiles(numberOfGeometries, geometries,energies,fileNameGeomMop, mopacKeywords, gaussianKeywords, pcgamessKeywords, message);
+				createPostProcessingFiles(numberOfGeometries, geometries,energies,fileNameGeomMop, mopacKeywords, gaussianKeywords, fireflyKeywords, message);
 				read_gabedit_file_add_list(fileNameGeomMop);
 				strcat(message,fileNameGeomMop);
-				strcat(message,"\n\tGeometries after minimization by AM1/Mopac");
-				strcat(message,"\n\tTo read this file : 'Read/Gabedit file'\n\n");
+				strcat(message,_("\n\tGeometries after minimization by AM1/Mopac"));
+				strcat(message,_("\n\tTo read this file : 'Read/Gabedit file'\n\n"));
 			}
 
 			g_free(fileNameGeomMop);
 		}
 		if(fileNamePrefix) g_free(fileNamePrefix);
 	}
-	/* minimazation by PCGamess AM1*/
-	if(!StopCalcul && optPCGamess)
+	/* minimazation by FireFly AM1*/
+	if(!StopCalcul && optFireFly)
 	{
 		gchar* fileNamePrefix = get_suffix_name_file(fileNameGeom);
-		if(runPCGamessFiles(numberOfGeometries, geometries, energies, fileNamePrefix, "RUNTYP=Optimize GBASIS=AM1") && !StopCalcul)
+		if(runFireFlyFiles(numberOfGeometries, geometries, energies, fileNamePrefix, "RUNTYP=Optimize GBASIS=AM1") && !StopCalcul)
 		{
-			gchar* fileNameGeomPCGamess = g_strdup_printf("%sPCGamess.gab",fileNamePrefix);
+			gchar* fileNameGeomFireFly = g_strdup_printf("%sFireFly.gab",fileNamePrefix);
 			sortGeometries(numberOfGeometries, geometries, energies);
 			removeIdenticalGeometries(&numberOfGeometries, &geometries, &energies,tolEnergy,tolDistance);
-			if(saveConfoGeometries(numberOfGeometries, geometries, energies, fileNameGeomPCGamess))
+			if(saveConfoGeometries(numberOfGeometries, geometries, energies, fileNameGeomFireFly))
 			{
-				createPostProcessingFiles(numberOfGeometries, geometries,energies,fileNameGeomPCGamess, mopacKeywords, gaussianKeywords, pcgamessKeywords, message);
-				read_gabedit_file_add_list(fileNameGeomPCGamess);
-				strcat(message,fileNameGeomPCGamess);
-				strcat(message,"\n\tGeometries after minimization by PCGamess");
-				strcat(message,"\n\tTo read this file : 'Read/Gabedit file'\n\n");
+				createPostProcessingFiles(numberOfGeometries, geometries,energies,fileNameGeomFireFly, mopacKeywords, gaussianKeywords, fireflyKeywords, message);
+				read_gabedit_file_add_list(fileNameGeomFireFly);
+				strcat(message,fileNameGeomFireFly);
+				strcat(message,_("\n\tGeometries after minimization by FireFly"));
+				strcat(message,_("\n\tTo read this file : 'Read/Gabedit file'\n\n"));
 			}
 
-			g_free(fileNameGeomPCGamess);
+			g_free(fileNameGeomFireFly);
 		}
 		if(fileNamePrefix) g_free(fileNamePrefix);
 	}
@@ -1481,7 +1511,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 		g_free(geometries);
 	}
 	if(energies) g_free(energies);
-	if(strlen(message)>20 && !StopCalcul ) Message(message,"Info",TRUE);
+	if(strlen(message)>20 && !StopCalcul ) Message(message,_("Info"),TRUE);
 
 }
 /*****************************************************************************/
@@ -1517,6 +1547,11 @@ static void amberMolecularDynamics(GtkWidget* Win, gpointer data)
 	forceFieldOptions.hydrogenBonded = GTK_TOGGLE_BUTTON (buttonMMOptions[MMHBOND])->active;
 	forceFieldOptions.coulomb = GTK_TOGGLE_BUTTON (buttonMMOptions[MMCOULOMB])->active;
 	forceFieldOptions.vanderWals = GTK_TOGGLE_BUTTON (buttonMMOptions[PWVANDERWALS])->active;
+	forceFieldOptions.rattleConstraints = NOCONSTRAINTS;
+	if(GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSCONSTRAINTS])->active)
+			forceFieldOptions.rattleConstraints = BONDSCONSTRAINTS;
+	if(GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSANGLESCONSTRAINTS])->active)
+			forceFieldOptions.rattleConstraints = BONDSANGLESCONSTRAINTS;
 	if(GTK_TOGGLE_BUTTON (buttonTypesOptions[AMBER])->active )
 		forceFieldOptions.type = AMBER;
 	else
@@ -1610,7 +1645,7 @@ static void amberMolecularDynamics(GtkWidget* Win, gpointer data)
 	if(StopCalcul)
 	{
 		set_text_to_draw(" ");
-		set_statubar_operation_str("Calcul Canceled ");
+		set_statubar_operation_str(_("Calculation canceled"));
 		dessine();
 		set_sensitive_stop_button( FALSE);
 		return;
@@ -1631,7 +1666,7 @@ static void amberMolecularDynamics(GtkWidget* Win, gpointer data)
 	if(StopCalcul)
 	{
 		set_text_to_draw(" ");
-		set_statubar_operation_str("Calcul canceled");
+		set_statubar_operation_str(_("Calculation canceled"));
 		dessine();
 	}
 	set_sensitive_stop_button( FALSE);
@@ -1664,7 +1699,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 	gtk_widget_show (vbox);
 	gtk_container_add (GTK_CONTAINER (frame), vbox);
 
-	table = gtk_table_new(16,6,FALSE);
+	table = gtk_table_new(20,6,FALSE);
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
 /*----------------------------------------------------------------------------------*/
@@ -2006,6 +2041,46 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 12;
 	j = 0;
+	buttonConstraintsOptions[NOCONSTRAINTS]= gtk_radio_button_new_with_label( NULL, "No constraints"); 
+	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[NOCONSTRAINTS],
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS]), TRUE);
+/*----------------------------------------------------------------------------------*/
+	i = 13;
+	j = 0;
+	buttonConstraintsOptions[BONDSCONSTRAINTS]= gtk_radio_button_new_with_label(
+			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS])), "Bond constraints"); 
+	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[BONDSCONSTRAINTS],
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSCONSTRAINTS]), FALSE);
+/*----------------------------------------------------------------------------------*/
+	i = 14;
+	j = 0;
+	buttonConstraintsOptions[BONDSANGLESCONSTRAINTS]= gtk_radio_button_new_with_label(
+			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS])), "Bond & Angle constraints"); 
+	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[BONDSANGLESCONSTRAINTS],
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSANGLESCONSTRAINTS]), FALSE);
+/*----------------------------------------------------------------------------------*/
+	i = 15;
+	j = 0;
+	hseparator = gtk_hseparator_new ();
+	gtk_table_attach(GTK_TABLE(table),hseparator, j,j+6,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = 16;
+	j = 0;
 	buttonSaveTraj = gtk_check_button_new_with_label("Save Trajectory in "); 
 	gtk_table_attach(GTK_TABLE(table),buttonSaveTraj,
 			j,j+1,i,i+1,
@@ -2014,7 +2089,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonSaveTraj), FALSE);
 /*----------------------------------------------------------------------------------*/
-	i = 12;
+	i = 16;
 	j = 1;
 	label = gtk_label_new(":");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -2022,7 +2097,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 12;
+	i = 16;
 	j = 2;
 	entryFileNameTraj = gtk_entry_new();
 	gtk_widget_set_size_request(entryFileNameTraj, 60, -1);
@@ -2032,7 +2107,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 13;
+	i = 17;
 	j = 0;
 	buttonSaveProp = gtk_check_button_new_with_label("Save Properties in "); 
 	gtk_table_attach(GTK_TABLE(table),buttonSaveProp,
@@ -2042,7 +2117,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonSaveProp), FALSE);
 /*----------------------------------------------------------------------------------*/
-	i = 13;
+	i = 17;
 	j = 1;
 	label = gtk_label_new(":");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -2050,7 +2125,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 13;
+	i = 17;
 	j = 2;
 	entryFileNameProp = gtk_entry_new();
 	gtk_widget_set_size_request(entryFileNameProp, 60, -1);
@@ -2060,7 +2135,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 14;
+	i = 18;
 	j = 0;
 	label = gtk_label_new("Folder");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -2068,7 +2143,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 14;
+	i = 18;
 	j = 1;
 	label = gtk_label_new(":");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -2076,7 +2151,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 14;
+	i = 18;
 	j = 2;
 	buttonDirSelector =  gtk_file_chooser_button_new("Select your folder", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
 	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
@@ -2296,7 +2371,7 @@ static void createInfoMDFrame(GtkWidget *box)
 	"\n"
 	"If \"Stochastic Dynamics via Verlet velocity Algorithm\" is selected :\n"
 	"        A stochastic dynamic simulation is run using Verlet velocity Algorithm.\n"
-	"        The velocities are scaled (Berendsen méthod)during the Heating, Equilibrium and Cooling steps.\n"
+	"        The velocities are scaled (Berendsen method)during the Heating, Equilibrium and Cooling steps.\n"
 	);
 	gtk_label_set_justify(GTK_LABEL(label),GTK_JUSTIFY_LEFT);
 	gtk_widget_show (label);
@@ -2321,8 +2396,8 @@ static void createInfoConfoFrame(GtkWidget *box)
 	"\nAt the end of the molecular dynamic simulation, each selected geometry is optimized."
 	"\nThe very similar molecular strcutures can be removed."
 	"\nFinally the geometries are sorted by energy and are saved in a file."
-	"\nGabedit can also optimize these geometries, interactively, by Mopac or by PCGamess."
-	"\nGabedit can also creates input files for mopac, PCGamess or Gaussian for a post processing."
+	"\nGabedit can also optimize these geometries, interactively, by Mopac or by FireFly."
+	"\nGabedit can also creates input files for mopac, FireFly or Gaussian for a post processing."
 	"\n\n"
 	"If \"MD Trajectory via Verlet velocity Algorithm\" is selected :\n"
 	"        A molecular dynamic simulation is run using the Verlet velocity Algorithm.\n"
@@ -2336,7 +2411,7 @@ static void createInfoConfoFrame(GtkWidget *box)
 	"\n"
 	"If \"Stochastic Dynamics via Verlet velocity Algorithm\" is selected :\n"
 	"        A stochastic dynamic simulation is run using Verlet velocity Algorithm.\n"
-	"        The velocities are scaled (Berendsen méthod)during the Heating, Equilibrium and Cooling steps.\n"
+	"        The velocities are scaled (Berendsen method)during the Heating, Equilibrium and Cooling steps.\n"
 	);
 	gtk_label_set_justify(GTK_LABEL(label),GTK_JUSTIFY_LEFT);
 	gtk_widget_show (label);
@@ -2358,7 +2433,7 @@ static void createPostProcessingFrame(GtkWidget *box)
 	totalCharge = TotalCharges[0];
 	spinMultiplicity=SpinMultiplicities[0];
 
-	table = gtk_table_new(12,5,FALSE);
+	table = gtk_table_new(14,5,FALSE);
 
 	frame = gtk_frame_new ("Post Processing");
 	gtk_widget_show (frame);
@@ -2442,6 +2517,25 @@ static void createPostProcessingFrame(GtkWidget *box)
 /*----------------------------------------------------------------------------------*/
 	i++;
 	j = 0;
+	buttonPostMMOpt = gtk_check_button_new_with_label("Interactive minimization by MM");
+	gtk_table_attach(GTK_TABLE(table),buttonPostMMOpt,
+			j,j+6,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonPostMMOpt), TRUE);
+	gtk_widget_show (buttonPostMMOpt);
+	i++;
+/*----------------------------------------------------------------------------------*/
+	j = 0;
+	sep = gtk_hseparator_new ();
+	gtk_table_attach(GTK_TABLE(table),sep, j,j+6,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	j = 0;
 	buttonPostNone =gtk_radio_button_new_with_label( NULL,"None inteactive post processing"); 
 	gtk_table_attach(GTK_TABLE(table),buttonPostNone,
 			j,j+6,i,i+1,
@@ -2480,16 +2574,16 @@ static void createPostProcessingFrame(GtkWidget *box)
 /*----------------------------------------------------------------------------------*/
 	i++;
 	j = 0;
-	buttonPostPCGamess = gtk_radio_button_new_with_label(
+	buttonPostFireFly = gtk_radio_button_new_with_label(
 			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonPostNone)),
-			"Interactive minimization by PCGamess(AM1)");
-	gtk_table_attach(GTK_TABLE(table),buttonPostPCGamess,
+			"Interactive minimization by FireFly(AM1)");
+	gtk_table_attach(GTK_TABLE(table),buttonPostFireFly,
 			j,j+6,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonPostPCGamess), FALSE);
-	gtk_widget_show (buttonPostPCGamess);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonPostFireFly), FALSE);
+	gtk_widget_show (buttonPostFireFly);
 /*----------------------------------------------------------------------------------*/
 	i++;
 	j = 0;
@@ -2552,13 +2646,13 @@ static void createPostProcessingFrame(GtkWidget *box)
 /*----------------------------------------------------------------------------------*/
 	i++;
 	j = 0;
-	buttonCreatePCGamess = gtk_check_button_new_with_label("Create PCGamess files.    Keywords "); 
-	gtk_table_attach(GTK_TABLE(table),buttonCreatePCGamess,
+	buttonCreateFireFly = gtk_check_button_new_with_label("Create FireFly files.    Keywords "); 
+	gtk_table_attach(GTK_TABLE(table),buttonCreateFireFly,
 			j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCreatePCGamess), FALSE);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCreateFireFly), FALSE);
 /*----------------------------------------------------------------------------------*/
 	j = 1;
 	label = gtk_label_new(":");
@@ -2568,9 +2662,9 @@ static void createPostProcessingFrame(GtkWidget *box)
                   1,1);
 /*----------------------------------------------------------------------------------*/
 	j = 2;
-	entryPCGamessKeywords = gtk_entry_new();
-	gtk_entry_set_text(GTK_ENTRY(entryPCGamessKeywords),"RUNTYP=Optimize    GBASIS=AM1");
-	gtk_table_attach(GTK_TABLE(table),entryPCGamessKeywords, j,j+4,i,i+1,
+	entryFireFlyKeywords = gtk_entry_new();
+	gtk_entry_set_text(GTK_ENTRY(entryFireFlyKeywords),"RUNTYP=Optimize    GBASIS=AM1");
+	gtk_table_attach(GTK_TABLE(table),entryFireFlyKeywords, j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
@@ -2760,7 +2854,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 	gtk_widget_show (vbox);
 	gtk_container_add (GTK_CONTAINER (frame), vbox);
 
-	table = gtk_table_new(18,6,FALSE);
+	table = gtk_table_new(20,6,FALSE);
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
 /*----------------------------------------------------------------------------------*/
@@ -3073,6 +3167,46 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 12;
 	j = 0;
+	buttonConstraintsOptions[NOCONSTRAINTS]= gtk_radio_button_new_with_label( NULL, "No constraints"); 
+	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[NOCONSTRAINTS],
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS]), TRUE);
+/*----------------------------------------------------------------------------------*/
+	i = 13;
+	j = 0;
+	buttonConstraintsOptions[BONDSCONSTRAINTS]= gtk_radio_button_new_with_label(
+			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS])), "Bond constraints"); 
+	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[BONDSCONSTRAINTS],
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSCONSTRAINTS]), FALSE);
+/*----------------------------------------------------------------------------------*/
+	i = 14;
+	j = 0;
+	buttonConstraintsOptions[BONDSANGLESCONSTRAINTS]= gtk_radio_button_new_with_label(
+			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonConstraintsOptions[NOCONSTRAINTS])), "Bond & Angle constraints"); 
+	gtk_table_attach(GTK_TABLE(table),buttonConstraintsOptions[BONDSANGLESCONSTRAINTS],
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonConstraintsOptions[BONDSANGLESCONSTRAINTS]), FALSE);
+/*----------------------------------------------------------------------------------*/
+	i = 15;
+	j = 0;
+	hseparator = gtk_hseparator_new ();
+	gtk_table_attach(GTK_TABLE(table),hseparator, j,j+6,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = 16;
+	j = 0;
 	buttonSaveTraj = gtk_check_button_new_with_label("Save Trajectory in "); 
 	gtk_table_attach(GTK_TABLE(table),buttonSaveTraj,
 			j,j+1,i,i+1,
@@ -3081,7 +3215,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonSaveTraj), FALSE);
 /*----------------------------------------------------------------------------------*/
-	i = 12;
+	i = 16;
 	j = 1;
 	label = gtk_label_new(":");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -3089,7 +3223,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 12;
+	i = 16;
 	j = 2;
 	entryFileNameTraj = gtk_entry_new();
 	gtk_widget_set_size_request(entryFileNameTraj, 60, -1);
@@ -3099,7 +3233,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 13;
+	i = 17;
 	j = 0;
 	buttonSaveProp = gtk_check_button_new_with_label("Save Properties in "); 
 	gtk_table_attach(GTK_TABLE(table),buttonSaveProp,
@@ -3109,7 +3243,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonSaveProp), FALSE);
 /*----------------------------------------------------------------------------------*/
-	i = 13;
+	i = 17;
 	j = 1;
 	label = gtk_label_new(":");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -3117,7 +3251,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 13;
+	i = 17;
 	j = 2;
 	entryFileNameProp = gtk_entry_new();
 	gtk_widget_set_size_request(entryFileNameProp, 60, -1);
@@ -3155,6 +3289,7 @@ static void amberMinimize(GtkWidget* Win, gpointer data)
 	forceFieldOptions.hydrogenBonded = GTK_TOGGLE_BUTTON (buttonMMOptions[MMHBOND])->active;
 	forceFieldOptions.coulomb = GTK_TOGGLE_BUTTON (buttonMMOptions[MMCOULOMB])->active;
 	forceFieldOptions.vanderWals = GTK_TOGGLE_BUTTON (buttonMMOptions[PWVANDERWALS])->active;
+	forceFieldOptions.rattleConstraints = NOCONSTRAINTS;
 
 	useConjugateGradient = GTK_TOGGLE_BUTTON (buttonMinimizeOptions[GRADCONJUGATE])->active;
 	useQuasiNewton = GTK_TOGGLE_BUTTON (buttonMinimizeOptions[GRADQUASINEWTON])->active;
@@ -3222,7 +3357,7 @@ static void amberMinimize(GtkWidget* Win, gpointer data)
 	if(StopCalcul)
 	{
 		set_text_to_draw(" ");
-		set_statubar_operation_str("Calcul Canceled ");
+		set_statubar_operation_str(_("Calculation canceled"));
 		dessine();
 		set_sensitive_stop_button( FALSE);
 		return;
@@ -3236,7 +3371,7 @@ static void amberMinimize(GtkWidget* Win, gpointer data)
 		if(StopCalcul)
 		{
 			set_text_to_draw(" ");
-			set_statubar_operation_str("Calcul canceled");
+			set_statubar_operation_str(_("Calculation canceled"));
 			dessine();
 		}
 		set_sensitive_stop_button( FALSE);
@@ -3250,7 +3385,7 @@ static void amberMinimize(GtkWidget* Win, gpointer data)
 		if(StopCalcul)
 		{
 			set_text_to_draw(" ");
-			set_statubar_operation_str("Calcul canceled");
+			set_statubar_operation_str(_("Calculation canceled"));
 			dessine();
 		}
 		set_sensitive_stop_button( FALSE);
@@ -3268,7 +3403,7 @@ static void amberMinimize(GtkWidget* Win, gpointer data)
 		if(StopCalcul)
 		{
 			set_text_to_draw(" ");
-			set_statubar_operation_str("Calcul canceled");
+			set_statubar_operation_str(_("Calculation canceled"));
 			dessine();
 		}
 		set_sensitive_stop_button( FALSE);
@@ -3295,6 +3430,7 @@ void amberEnergyCalculation(GtkWidget* Win, gpointer data)
 	forceFieldOptions.hydrogenBonded = GTK_TOGGLE_BUTTON (buttonMMOptions[MMHBOND])->active;
 	forceFieldOptions.coulomb = GTK_TOGGLE_BUTTON (buttonMMOptions[MMCOULOMB])->active;
 	forceFieldOptions.vanderWals = GTK_TOGGLE_BUTTON (buttonMMOptions[PWVANDERWALS])->active;
+	forceFieldOptions.rattleConstraints = NOCONSTRAINTS;
 
 	if(GTK_TOGGLE_BUTTON (buttonTypesOptions[AMBER])->active )
 		forceFieldOptions.type = AMBER;
@@ -3320,7 +3456,7 @@ void amberEnergyCalculation(GtkWidget* Win, gpointer data)
 	if(StopCalcul)
 	{
 		set_text_to_draw(" ");
-		set_statubar_operation_str("Calcul canceled");
+		set_statubar_operation_str(_("Calculation canceled"));
 		dessine();
 		set_sensitive_stop_button( FALSE);
 		return;
@@ -3335,7 +3471,7 @@ void amberEnergyCalculation(GtkWidget* Win, gpointer data)
 			forceField.molecule.gradient[j][i]
 			*forceField.molecule.gradient[j][i]; 
 
-	str = g_strdup_printf("Gradient Norm  = %f energy = %f(KCal/mol)",
+	str = g_strdup_printf(_("Gradient Norm  = %f energy = %f(KCal/mol)"),
 		sqrt(gradientNorm),forceField.molecule.energy); 
 
 	set_text_to_draw(str);
@@ -3439,8 +3575,8 @@ static void AddGradientOptionsDlg(GtkWidget *NoteBook)
 	frame = gtk_frame_new(NULL);
 	gtk_container_set_border_width(GTK_CONTAINER(frame), 5);
 
-	LabelOnglet = gtk_label_new("Gradient");
-	LabelMenu = gtk_label_new("Gradient");
+	LabelOnglet = gtk_label_new(_("Gradient"));
+	LabelMenu = gtk_label_new(_("Gradient"));
 	gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook),
 			  frame,LabelOnglet, LabelMenu);
 	g_object_set_data (G_OBJECT (frame), "frame", frame);

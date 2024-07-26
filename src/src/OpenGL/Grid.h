@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -68,6 +68,14 @@ gboolean compute_coulomb_integrale_iijj_poisson(gint N[],GridLimits limits, gint
 Grid* define_grid_electronic_density(gint N[],GridLimits limits);
 Grid* define_grid_ELFBECKE(gint N[],GridLimits limits);
 Grid* define_grid_ELFSAVIN(gint N[],GridLimits limits);
+Grid* define_grid_FED(gint N[],GridLimits limits, gint n);
+Grid* compute_fed_grid_using_cube_grid(Grid* grid, gint n);
+gboolean compute_transition_matrix_numeric(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
+gdouble* pInteg, gdouble* pNormi, gdouble* pNormj, gdouble* pOverlap);
+gboolean compute_spatial_overlap_numeric(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
+		gdouble* pInteg, gdouble* pNormi, gdouble* pNormj, gdouble* pOverlap);
+gboolean compute_isovalue_percent_from_grid(Grid* grid, gboolean square, gdouble percent, gdouble precision, gdouble* pIsovalue);
+Grid* copyGrid(Grid* grid);
 
 #endif /* __GABEDIT_GRID_H__ */
 

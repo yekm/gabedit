@@ -1,6 +1,6 @@
 /*ConvUtils.c*/
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -762,7 +762,7 @@ static GtkWidget* new_conversion_frame(GtkWidget* Dlg, GtkWidget *notebook, gcha
 	gtk_container_add(GTK_CONTAINER(frame),Table);
   
 	i = 0;
-	Label = gtk_label_new(" Source ");
+	Label = gtk_label_new(_(" Source "));
 	gtk_table_attach(GTK_TABLE(Table),Label,0,1,i,i+1,
 	  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 	  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -781,7 +781,7 @@ static GtkWidget* new_conversion_frame(GtkWidget* Dlg, GtkWidget *notebook, gcha
 	  1,1);
 
 	i = 1;
-	Label = gtk_label_new(" Target ");
+	Label = gtk_label_new(_(" Target "));
 	gtk_table_attach(GTK_TABLE(Table),Label,0,1,i,i+1,
 	  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 	  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -851,7 +851,7 @@ void create_conversion_dlg()
 	GtkWidget *notebook;
   
 	Dlg = gtk_dialog_new();
-	gtk_window_set_title(GTK_WINDOW(Dlg),"Conversion utility");
+	gtk_window_set_title(GTK_WINDOW(Dlg),_("Conversion utility"));
 	gtk_window_set_modal (GTK_WINDOW (Dlg), FALSE);
 	gtk_window_set_transient_for(GTK_WINDOW(Dlg),GTK_WINDOW(Fenetre));
 	gtk_window_set_default_size(GTK_WINDOW(Dlg), ScreenWidth*0.5, -1);
@@ -864,31 +864,31 @@ void create_conversion_dlg()
 	gtk_notebook_set_scrollable(GTK_NOTEBOOK(notebook), TRUE);
 
 	data = get_energy_data();
-	new_conversion_frame(Dlg, notebook, "Energy", data);
+	new_conversion_frame(Dlg, notebook, _("Energy"), data);
 
 	data = get_time_data();
-	new_conversion_frame(Dlg, notebook, "Time", data);
+	new_conversion_frame(Dlg, notebook, _("Time"), data);
 
 	data = get_length_data();
-	new_conversion_frame(Dlg, notebook, "Length", data);
+	new_conversion_frame(Dlg, notebook, _("Length"), data);
 
 	data = get_velocity_data();
-	new_conversion_frame(Dlg, notebook, "Velocity", data);
+	new_conversion_frame(Dlg, notebook, _("Velocity"), data);
 
 	data = get_acceleration_data();
-	new_conversion_frame(Dlg, notebook, "Acceleration", data);
+	new_conversion_frame(Dlg, notebook, _("Acceleration"), data);
 
 	data = get_force_data();
-	new_conversion_frame(Dlg, notebook, "Force", data);
+	new_conversion_frame(Dlg, notebook, _("Force"), data);
 
 	data = get_masse_data();
-	new_conversion_frame(Dlg, notebook, "Masse", data);
+	new_conversion_frame(Dlg, notebook, _("Masse"), data);
 
 	data = get_pressure_data();
-	new_conversion_frame(Dlg, notebook, "Pressure", data);
+	new_conversion_frame(Dlg, notebook, _("Pressure"), data);
 
 	data = get_angularmomentum_data();
-	new_conversion_frame(Dlg, notebook, "Angular momentum(Action)", data);
+	new_conversion_frame(Dlg, notebook, _("Angular momentum(Action)"), data);
 
 
 	notebook = gtk_notebook_new();
@@ -896,52 +896,52 @@ void create_conversion_dlg()
 	gtk_notebook_set_scrollable(GTK_NOTEBOOK(notebook), TRUE);
 
 	data = get_electriccurrent_data();
-	new_conversion_frame(Dlg, notebook, "Electric current", data);
+	new_conversion_frame(Dlg, notebook, _("Electric current"), data);
 
 	data = get_electriccharge_data();
-	new_conversion_frame(Dlg, notebook, "Electric charge", data);
+	new_conversion_frame(Dlg, notebook, _("Electric charge"), data);
 
 	data = get_voltage_data();
-	new_conversion_frame(Dlg, notebook, "Voltage", data);
+	new_conversion_frame(Dlg, notebook, _("Voltage"), data);
 
 	data = get_electricfield_data();
-	new_conversion_frame(Dlg, notebook, "Electric field", data);
+	new_conversion_frame(Dlg, notebook, _("Electric field"), data);
 
 	data = get_electricfieldgradient_data();
-	new_conversion_frame(Dlg, notebook, "Electric field gradient", data);
+	new_conversion_frame(Dlg, notebook, _("Electric field gradient"), data);
 
 
 
 	data = get_electricdipolemoment_data();
-	new_conversion_frame(Dlg, notebook, "Electric dipole moment", data);
+	new_conversion_frame(Dlg, notebook, _("Electric dipole moment"), data);
 
 	data = get_electricquadripolemoment_data();
-	new_conversion_frame(Dlg, notebook, "Electric quadrupole moment", data);
+	new_conversion_frame(Dlg, notebook, _("Electric quadrupole moment"), data);
 
 	data = get_electricdipolepolarizability_data();
-	new_conversion_frame(Dlg, notebook, "Electric dipole polarizability", data);
+	new_conversion_frame(Dlg, notebook, _("Electric dipole polarizability"), data);
 	data = get_firstelectricdipolehyperpolarizability_data();
-	new_conversion_frame(Dlg, notebook, "First electric dipole hyperpolarizability", data);
+	new_conversion_frame(Dlg, notebook, _("First electric dipole hyperpolarizability"), data);
 
 	data = get_secondelectricdipolehyperpolarizability_data();
-	new_conversion_frame(Dlg, notebook, "Second electric dipole hyperpolarizability", data);
+	new_conversion_frame(Dlg, notebook, _("Second electric dipole hyperpolarizability"), data);
 
 	notebook = gtk_notebook_new();
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dlg)->vbox), notebook,TRUE, TRUE, 10);
 	gtk_notebook_set_scrollable(GTK_NOTEBOOK(notebook), TRUE);
 
 	data = get_magneticinduction_data();
-	new_conversion_frame(Dlg, notebook, "Magnetic induction", data);
+	new_conversion_frame(Dlg, notebook, _("Magnetic induction"), data);
 
 	data = get_magneticdipolemoment_data();
-	new_conversion_frame(Dlg, notebook, "Magnetic dipole moment", data);
+	new_conversion_frame(Dlg, notebook, _("Magnetic dipole moment"), data);
 
 	data = get_magnetizability_data();
-	new_conversion_frame(Dlg, notebook, "Magnetizability", data);
+	new_conversion_frame(Dlg, notebook, _("Magnetizability"), data);
 
 	gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(Dlg)->action_area), FALSE);
 	gtk_widget_realize(Dlg);
-	Button = create_button(Dlg,"Close");
+	Button = create_button(Dlg,_("Close"));
 	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Dlg)->action_area), Button, FALSE, TRUE, 5);  
 	g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)destroy_dlg,GTK_OBJECT(Dlg));
 

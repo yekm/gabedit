@@ -1,6 +1,6 @@
 /* FolderChooser.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -36,7 +36,7 @@ GtkWidget* selctionOfDir(gpointer data, gchar* title, GabEditTypeWin typewin)
 	gchar* lastDir = get_last_directory();
 
 	if(title) folderChooser = gabedit_folder_chooser_new(title);
-	else folderChooser = gabedit_folder_chooser_new("Select a folder");
+	else folderChooser = gabedit_folder_chooser_new(_("Select a folder"));
 
 	if(lastDir)
 	{
@@ -44,11 +44,11 @@ GtkWidget* selctionOfDir(gpointer data, gchar* title, GabEditTypeWin typewin)
 	}
   	if(typewin==GABEDIT_TYPEWIN_ORB)
 	{
-  		add_glarea_child(folderChooser,"Dir selector");
+  		add_glarea_child(folderChooser,_("Dir selector"));
 	}
 	else
 	{
-  		add_button_windows(" Dir selector ",folderChooser);
+  		add_button_windows(_(" Dir selector "),folderChooser);
   		g_signal_connect(G_OBJECT(folderChooser), "delete_event",(GCallback)destroy_button_windows,NULL);
   		g_signal_connect(G_OBJECT(folderChooser), "delete_event",G_CALLBACK(gtk_widget_destroy),NULL);
 	}

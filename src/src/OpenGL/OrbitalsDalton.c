@@ -1,6 +1,6 @@
 /* OrbitalsDalton.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -99,16 +99,16 @@ static gboolean read_dalton_geom(gchar *FileName)
  	file = FOpen(FileName, "rb");
  	if(file ==NULL)
  	{
-  		Message("Sorry\nI can not open this file","Error",TRUE);
+  		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
   		return FALSE;
  	}
 
 	free_data_all();
 	tmp = get_name_file(FileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Dalton");
-	set_status_label_info("Geometry","Reading");
+	set_status_label_info(_("File type"),"Dalton");
+	set_status_label_info(_("Geometry"),_("Reading"));
 	natoms = 0;
  	while(!feof(file))
 	{
@@ -131,11 +131,11 @@ static gboolean read_dalton_geom(gchar *FileName)
         }
  	if(natoms<1)
 	{
-  		Message("Sorry\nI can not read geometry in this file","Error",TRUE);
+  		Message(_("Sorry\nI can not read geometry in this file"),_("Error"),TRUE);
  		fclose(file);
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Geometry","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Geometry"),_("Nothing"));
 		return FALSE;
     	}
 	printf("natoms = %d\n",natoms);
@@ -188,7 +188,7 @@ static gboolean read_dalton_geom(gchar *FileName)
 	RebuildGeom = TRUE;
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
 	return TRUE;
 }
 /********************************************************************************/
@@ -205,7 +205,7 @@ static gchar** read_basis_from_a_dalton_output_file(gchar *FileName, gint* nRows
 	
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry No file slected\n","Error",TRUE);
+		Message(_("Sorry No file selected\n"),_("Error"),TRUE);
     		return NULL;
  	}
 
@@ -213,8 +213,8 @@ static gchar** read_basis_from_a_dalton_output_file(gchar *FileName, gint* nRows
  	if(file ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
   		return NULL;
  	}
 
@@ -232,7 +232,7 @@ static gchar** read_basis_from_a_dalton_output_file(gchar *FileName, gint* nRows
 	if(!OK)
 	{
 		g_free(t);
-  		Message("Sorry I can read basis from this file\n","Error",TRUE);
+  		Message(_("Sorry I can read basis from this file\n"),_("Error"),TRUE);
   		return NULL;
 	}
 	fgets(t,BSIZE,file); /* -------- */
@@ -257,16 +257,18 @@ static gchar** read_basis_from_a_dalton_output_file(gchar *FileName, gint* nRows
 	{
 		g_free(t);
 		g_free(strbasis);
-  		Message("Sorry I can read basis from this file\n","Error",TRUE);
+  		Message(_("Sorry I can read basis from this file\n"),_("Error"),TRUE);
   		return NULL;
 	}
 	
+	/*
 	Debug("End of read \n");
 	Debug("Atomic basis nrows = %d \n",nrows);
 	for(i=0;i<nrows;i++)
 	{
 		Debug("%s",strbasis[i]);
 	}
+	*/
 
 	/*
 	for(i=0;i<nrows;i++) g_free(strbasis[i]);
@@ -293,7 +295,7 @@ static OneBasisSymmetry* read_symmetry_basis_from_a_dalton_output_file(gchar *Fi
 	
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry No file slected\n","Error",TRUE);
+		Message(_("Sorry No file selected\n"),_("Error"),TRUE);
     		return NULL;
  	}
 
@@ -301,8 +303,8 @@ static OneBasisSymmetry* read_symmetry_basis_from_a_dalton_output_file(gchar *Fi
  	if(file ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
   		return NULL;
  	}
 
@@ -329,7 +331,7 @@ static OneBasisSymmetry* read_symmetry_basis_from_a_dalton_output_file(gchar *Fi
 	if(nsym==0)
 	{
 		g_free(t);
-  		Message("Sorry I can read basis from this file\n","Error",TRUE);
+  		Message(_("Sorry I can read basis from this file\n"),_("Error"),TRUE);
   		return NULL;
 	}
 	printf("nsym = %d\n", nsym);
@@ -558,9 +560,9 @@ void read_dalton_orbitals(gchar* FileName)
 	gint nSym = 0;
 	gchar** strbasis = NULL;
 
-	set_status_label_info("File Name",FileName);
-	set_status_label_info("File Type","Dalton");
-	set_status_label_info("Mol. Orb.","Nothing");
+	set_status_label_info(_("File name"),FileName);
+	set_status_label_info(_("File type"),"Dalton");
+	set_status_label_info(_("Mol. Orb."),_("Nothing"));
 
 	read_dalton_geom(FileName);
 	strbasis = read_basis_from_a_dalton_output_file(FileName, &nRows);

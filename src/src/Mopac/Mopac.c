@@ -1,6 +1,6 @@
 /* Mopac.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -69,7 +69,7 @@ void destroyWinsMopac(GtkWidget *win)
 /************************************************************************************************************/
 static void toCancelWin(GtkWidget* win,gpointer data)
 {
-	Cancel_YesNo(win, data, destroy_childs);
+	Cancel_YesNo(win, data, destroy_children);
 }
 /************************************************************************************************************/
 void putMopacBeginInTextEditor()
@@ -151,33 +151,34 @@ static void mopacInputFileWindow(gboolean newInputFile)
 	if(mopacMolecule.numberOfAtoms <1)
 	{
 		Message(
+			_(
 			"You must initially define your geometry.\n\n"
 			"From the principal Menu select : Geometry/Draw\n"
-			"and draw (or read) your molecule.",
+			"and draw (or read) your molecule."),
 			"Error",TRUE);
 		return;
 	}
 
-	if(Wins) destroy_childs(Wins);
+	if(Wins) destroy_children(Wins);
 
 	Wins= gtk_dialog_new ();
 	gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER);
 	gtk_window_set_transient_for(GTK_WINDOW(Wins),GTK_WINDOW(Fenetre));
-	gtk_window_set_title(&GTK_DIALOG(Wins)->window,"Mopac input");
+	gtk_window_set_title(&GTK_DIALOG(Wins)->window,_("Mopac input"));
     	gtk_window_set_modal (GTK_WINDOW (Wins), TRUE);
 
-	init_child(Wins, destroyWinsMopac," Mopac input ");
-	g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_childs,NULL);
+	init_child(Wins, destroyWinsMopac,_(" Mopac input "));
+	g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_children,NULL);
 
 	gtk_widget_realize(Wins);
 
-	button = create_button(Wins,"CANCEL");
+	button = create_button(Wins,_("Cancel"));
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, FALSE, TRUE, 5);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK( toCancelWin),GTK_OBJECT(Wins));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_show (button);
 
-	button = create_button(Wins,"OK");
+	button = create_button(Wins,_("OK"));
 
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->vbox), table, FALSE, TRUE, 5);
 
@@ -199,7 +200,7 @@ static void mopacInputFileWindow(gboolean newInputFile)
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(putInfoInTextEditor),GTK_OBJECT(Wins));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_childs),GTK_OBJECT(Wins));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_children),GTK_OBJECT(Wins));
 	
 
 	gtk_widget_show_all(Wins);

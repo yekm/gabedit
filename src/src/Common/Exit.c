@@ -1,6 +1,6 @@
 /* Exit.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -108,15 +108,15 @@ static void AddFrame(GtkWidget *box)
 	GtkWidget *frame;
 	GtkWidget *vbox;
 	gchar *options[NOPTIONS]={
-  		"Save list of recent projects",
-  		"Save list of recent host systems",
-  		"Save the Molecular mechanics parameters",
-  		"Save the PDB Templates parameters",
-  		"Save the Personal Fragments",
-  		"Save the atoms properties",
-  		"Save the list of Molpro basis",
-  		"Save the list of Molcas basis",
-  		"Save the list of MPQC basis"
+  		_("Save list of recent projects"),
+  		_("Save list of recent host systems"),
+  		_("Save the Molecular mechanics parameters"),
+  		_("Save the PDB Templates parameters"),
+  		_("Save the Personal Fragments"),
+  		_("Save the atoms properties"),
+  		_("Save the list of Molpro basis"),
+  		_("Save the list of Molcas basis"),
+  		_("Save the list of MPQC basis")
   		};
 
 	frame = gtk_frame_new("Action");
@@ -163,7 +163,7 @@ void ExitDlg(GtkWidget* w, gpointer data)
 	gtk_box_pack_start(GTK_BOX (GTK_DIALOG(Win)->vbox), vbox,TRUE, TRUE, 0);
 
 	gtk_widget_realize(Win);
-	label = create_label_with_pixmap(Win,"Are you sure you want to exit?","Question");  
+	label = create_label_with_pixmap(Win,_("Are you sure you want to exit?"),_("Question"));  
 	gtk_box_pack_start (GTK_BOX(vbox), label, TRUE, TRUE, 5);
 
 	AddFrame(vbox);

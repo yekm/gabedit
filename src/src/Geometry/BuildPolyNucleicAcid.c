@@ -1,6 +1,6 @@
 /* BuildPolyNucleicAcid.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -948,9 +948,9 @@ static gboolean cap(gboolean fiveToThree, gboolean doubleStranded, gboolean five
 	*/
 	if(lastFrag == -1)
 	{
-		t = g_strdup("There are no residues to cap!\n"
-			     "You must first create a nucleic acid mono-/polymer.");
-		w = Message(t,"Error",TRUE);
+		t = g_strdup(_("There are no residues to cap!\n"
+			     "You must first create a nucleic acid mono-/polymer."));
+		w = Message(t,_("Error"),TRUE);
 		gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   		gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(WinPNADlg));
 		g_free(t);
@@ -958,10 +958,10 @@ static gboolean cap(gboolean fiveToThree, gboolean doubleStranded, gboolean five
 	}
 	else if(lastFrag == 0 && doubleStranded)
 	{
-		t = g_strdup("There are not enough residues to cap!\n"
+		t = g_strdup(_("There are not enough residues to cap!\n"
 			     "There is only one residue in the molecule,"
-			     "yet \"Double Stranded\" has been selected.");
-		w = Message(t,"Error",TRUE);
+			     "yet \"Double Stranded\" has been selected."));
+		w = Message(t,_("Error"),TRUE);
 		gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   		gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(WinPNADlg));
 		g_free(t);
@@ -1025,8 +1025,8 @@ static gboolean cap(gboolean fiveToThree, gboolean doubleStranded, gboolean five
 				C5P = i;
 			else if ( !strcmp(name, "O3T" ) )
 			{
-				t = g_strdup("This residue is already capped(O3T)!");
-				w = Message(t,"Error",TRUE);
+				t = g_strdup(_("This residue is already capped(O3T)!"));
+				w = Message(t,_("Error"),TRUE);
 				gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   				gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(WinPNADlg));
 				g_free(t);
@@ -1036,8 +1036,8 @@ static gboolean cap(gboolean fiveToThree, gboolean doubleStranded, gboolean five
 		if ( ( O5P == -1 ) || ( P == -1 ) || ( C5P == -1 ) || 
 		( O1P == -1 ) || ( O2P == -1 ) )
 		{
-			t = g_strdup("Unable to cap(first) residue.");
-			w = Message(t,"Error",TRUE);
+			t = g_strdup(_("Unable to cap(first) residue."));
+			w = Message(t,_("Error"),TRUE);
 			gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   			gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(WinPNADlg));
 			g_free(t);
@@ -1101,8 +1101,8 @@ static gboolean cap(gboolean fiveToThree, gboolean doubleStranded, gboolean five
 				C4P = i;
 			else if ( !strcmp(name, "HT3" ) )
 			{
-				t = g_strdup("This residue is already capped(HT3)!");
-				w = Message(t,"Error",TRUE);
+				t = g_strdup(_("This residue is already capped(HT3)!"));
+				w = Message(t,_("Error"),TRUE);
 				gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   				gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(WinPNADlg));
 				g_free(t);
@@ -1111,8 +1111,8 @@ static gboolean cap(gboolean fiveToThree, gboolean doubleStranded, gboolean five
 		}
 		if ( ( C3P == -1 ) || ( O3P == -1 ) || ( C4P == -1 ) )
 		{
-			t = g_strdup("Unable to cap residue.");
-			w = Message(t,"Error",TRUE);
+			t = g_strdup(_("Unable to cap residue."));
+			w = Message(t,_("Error"),TRUE);
 			gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   			gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(WinPNADlg));
 			g_free(t);
@@ -1406,13 +1406,13 @@ static void makeBasepair( gchar* sense, gchar* anti, gdouble senseAngle, gdouble
 static gboolean getOneValue(gdouble* value, G_CONST_RETURN gchar* strValue, G_CONST_RETURN gchar* name)
 {
 	gchar* t;
-	gchar* realSuggestion = "Suggestion: See if you put an O ( oh ) in instead of a 0 ( zero ) or l ( ell ) instead of 1 ( one ).";
+	gchar* realSuggestion = N_("Suggestion: See if you put an O ( oh ) in instead of a 0 ( zero ) or l ( ell ) instead of 1 ( one ).");
 	GtkWidget* w;
 
 	if(!isFloat(strValue))
 	{
-		t = g_strdup_printf( "The value for '%s' must be a number.\n%s",name,realSuggestion);
-		w = Message(t,"Error",TRUE);
+		t = g_strdup_printf( _("The value for '%s' must be a number.\n%s"),name,realSuggestion);
+		w = Message(t,_("Error"),TRUE);
 		gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   		gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(WinPNADlg));
 		g_free(t);
@@ -1426,14 +1426,9 @@ static gboolean getOneValue(gdouble* value, G_CONST_RETURN gchar* strValue, G_CO
 static gboolean getParameters()
 {
 	gboolean build53 = GTK_TOGGLE_BUTTON (buttonBuild53)->active;
-	/* gchar* tAlpha = gtk_entry_get_text(GTK_ENTRY(Entrys[E_ALPHA]));*/
 	G_CONST_RETURN gchar* tBeta = gtk_entry_get_text(GTK_ENTRY(Entrys[E_BETA]));
 	G_CONST_RETURN gchar* tGamma = gtk_entry_get_text(GTK_ENTRY(Entrys[E_GAMMA]));
 	G_CONST_RETURN gchar* tDelta = gtk_entry_get_text(GTK_ENTRY(Entrys[E_DELTA]));
-	/*
-	gchar* tEpsilon = gtk_entry_get_text(GTK_ENTRY(Entrys[E_EPSILON]));
-	gchar* tZeta = gtk_entry_get_text(GTK_ENTRY(Entrys[E_ZETA]));
-	*/
 	G_CONST_RETURN gchar* tChi = gtk_entry_get_text(GTK_ENTRY(Entrys[E_CHI]));
 	G_CONST_RETURN gchar* tTip = gtk_entry_get_text(GTK_ENTRY(Entrys[E_TIP]));
 	G_CONST_RETURN gchar* tInclination = gtk_entry_get_text(GTK_ENTRY(Entrys[E_INCLINATION]));
@@ -1477,8 +1472,8 @@ static gboolean getParameters()
 
 	if ( ( capped3End ) && ( build53 ) )
 	{
-		t = g_strdup( "The 3' end of the polynucleotide is already capped.  You cannot add more residues once you have capped the end.\nSuggestion: Don't cap the ends of the polynucleotide until you have finished building the entire sequence." );
-		w = Message(t,"Error",TRUE);
+		t = g_strdup( _("The 3' end of the polynucleotide is already capped.  You cannot add more residues once you have capped the end.\nSuggestion: Don't cap the ends of the polynucleotide until you have finished building the entire sequence.") );
+		w = Message(t,_("Error"),TRUE);
 		gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   		gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(WinPNADlg));
 		g_free(t);
@@ -1486,8 +1481,8 @@ static gboolean getParameters()
 	}
 	if ( ( capped5End ) && ( !build53 ) )
 	{
-		t = g_strdup( "The 5' end of the polynucleotide is already capped.  You cannot add more residues once you have capped the end.\nSuggestion: Don't cap the ends of the polynucleotide until you have finished building the entire sequence." );
-		w = Message(t,"Error",TRUE);
+		t = g_strdup( _("The 5' end of the polynucleotide is already capped.  You cannot add more residues once you have capped the end.\nSuggestion: Don't cap the ends of the polynucleotide until you have finished building the entire sequence.") );
+		w = Message(t,_("Error"),TRUE);
 		gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   		gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(WinPNADlg));
 		g_free(t);
@@ -1496,10 +1491,6 @@ static gboolean getParameters()
 	if(!getOneValue(&beta,tBeta,"beta")) return FALSE;
 	if(!getOneValue(&gammalocal,tGamma,"gamma")) return FALSE;
 	if(!getOneValue(&delta,tDelta,"delta")) return FALSE;
-	/*
-	if(!getOneValue(&epsilon,tEpsilon,"epsilon")) return FALSE;
-	if(!getOneValue(&zeta,tZeta,"zeta")) return FALSE;
-	*/
 	if(!getOneValue(&chi,tChi,"chi")) return FALSE;
 	if(!getOneValue(&tip,tTip,"tip")) return FALSE;
 	if(!getOneValue(&inclination,tInclination,"inclination")) return FALSE;
@@ -1531,8 +1522,8 @@ static gboolean getParameters()
 	}
 	else if ( ( roll != 0 ) && ( roll != tip - previousTip ) )
 	{
-		t = g_strdup( "Your choices for tip and roll do not correlate.  Roll should equal the difference of tip and the previous tip.\nThis check is performed only when tip and roll are both set to nonzero values.  Suggestion:  make either roll = 0 and control the rotation about the y-axis using only tip or make tip = 0 and control the rotation with roll." );
-		w = Message(t,"Error",TRUE);
+		t = g_strdup( _("Your choices for tip and roll do not correlate.  Roll should equal the difference of tip and the previous tip.\nThis check is performed only when tip and roll are both set to nonzero values.  Suggestion:  make either roll = 0 and control the rotation about the y-axis using only tip or make tip = 0 and control the rotation with roll." ));
+		w = Message(t,_("Error"),TRUE);
 		gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   		gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(WinPNADlg));
 		g_free(t);
@@ -1543,8 +1534,8 @@ static gboolean getParameters()
 	}
 	else if ( ( tilt != 0 ) && ( tilt != inclination - previousInclination ) )
 	{
-		t = g_strdup("Your choices for tilt and inclination do not correlate.  Tilt should equal the difference of inclination and the previous inclination.\nThis check is performed only when tilt and inclination are both set to nonzero values.  Suggestion:  make either tilt = 0 and control the rotation about the x-axis using only inclination or make inclination = 0 and control the rotation with tilt." );
-		w = Message(t,"Error",TRUE);
+		t = g_strdup(_("Your choices for tilt and inclination do not correlate.  Tilt should equal the difference of inclination and the previous inclination.\nThis check is performed only when tilt and inclination are both set to nonzero values.  Suggestion:  make either tilt = 0 and control the rotation about the x-axis using only inclination or make inclination = 0 and control the rotation with tilt.") );
+		w = Message(t,_("Error"),TRUE);
 		gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   		gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(WinPNADlg));
 		g_free(t);
@@ -1555,8 +1546,8 @@ static gboolean getParameters()
 	}
 	else if ( ( slide != 0 ) && ( slide != Dy - previousDy ) )
 	{
-		t = g_strdup("Your choices for dy and slide do not correlate.  Slide should equal the difference of dy and the previous dy.\nThis check is performed only when dy and slide are both set to nonzero values.  Suggestion:  make either dy = 0 and control the translation along the y-axis using only slide or make slide = 0 and control the translation with dy." );
-		w = Message(t,"Error",TRUE);
+		t = g_strdup(_("Your choices for dy and slide do not correlate.  Slide should equal the difference of dy and the previous dy.\nThis check is performed only when dy and slide are both set to nonzero values.  Suggestion:  make either dy = 0 and control the translation along the y-axis using only slide or make slide = 0 and control the translation with dy.") );
+		w = Message(t,_("Error"),TRUE);
 		gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   		gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(WinPNADlg));
 		g_free(t);
@@ -1566,8 +1557,8 @@ static gboolean getParameters()
 		Dx = shift + previousDx;	
 	}
 	else if ( ( shift != 0 ) && ( shift != Dx - previousDx ) ){
-		t = g_strdup("Your choices for dx and shift do not correlate.  Shift should equal the difference of dx and the previous dx.\nThis check is performed only when dx and shift are both set to nonzero values.  Suggestion:  make either dx = 0 and control the translation along the x-axis using only shift or make shift = 0 and control the translation with dx." );
-		w = Message(t,"Error",TRUE);
+		t = g_strdup(_("Your choices for dx and shift do not correlate.  Shift should equal the difference of dx and the previous dx.\nThis check is performed only when dx and shift are both set to nonzero values.  Suggestion:  make either dx = 0 and control the translation along the x-axis using only shift or make shift = 0 and control the translation with dx.") );
+		w = Message(t,_("Error"),TRUE);
 		gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   		gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(WinPNADlg));
 		g_free(t);
@@ -2063,7 +2054,6 @@ static void initVariables()
 
 	if(custom3Value) g_free(custom3Value);
 	custom3Value = NULL;
-	/* printf("End initVariable\n");*/
 }
 /*****************************************************************************/
 static void destroyDlg(GtkWidget* Dlg,gpointer data) 
@@ -2101,7 +2091,7 @@ static void addGeneral(GtkWidget* Dlg,GtkWidget *box)
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 3);
 
 
-	buttonDNA = gtk_radio_button_new_with_label(NULL,"DNA      "); 
+	buttonDNA = gtk_radio_button_new_with_label(NULL,_("DNA      ")); 
 	gtk_table_attach(GTK_TABLE(table),buttonDNA,0,1,0,1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonDNA ), TRUE);
 
@@ -2113,7 +2103,7 @@ static void addGeneral(GtkWidget* Dlg,GtkWidget *box)
 
 	gtk_table_attach(GTK_TABLE(table),vseparator1,1,2,0,2,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 
-	buttonBuild35 = gtk_radio_button_new_with_label(NULL,"Build 3' to 5'"); 
+	buttonBuild35 = gtk_radio_button_new_with_label(NULL,_("Build 3' to 5'")); 
 	gtk_table_attach(GTK_TABLE(table),buttonBuild35,2,3,0,1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonBuild35), FALSE);
 
@@ -2125,13 +2115,13 @@ static void addGeneral(GtkWidget* Dlg,GtkWidget *box)
 
 	gtk_table_attach(GTK_TABLE(table),vseparator2,3,4,0,2,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 
-	buttonSingle = gtk_radio_button_new_with_label(NULL,"Single Stranded"); 
+	buttonSingle = gtk_radio_button_new_with_label(NULL,_("Single Stranded")); 
 	gtk_table_attach(GTK_TABLE(table),buttonSingle,4,5,0,1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonSingle), FALSE);
 
 	buttonDouble= gtk_radio_button_new_with_label(
 			   gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonSingle)),
-				"Double Stranded");
+				_("Double Stranded"));
 	gtk_table_attach(GTK_TABLE(table),buttonDouble,4,5,1,2,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonDouble), TRUE);
 
@@ -2140,7 +2130,7 @@ static void addGeneral(GtkWidget* Dlg,GtkWidget *box)
 	table2 = gtk_table_new(1,7,FALSE);
 	gtk_box_pack_start (GTK_BOX (vbox), table2, TRUE, TRUE, 3);
 	
-	label = newLeftLabel("Form");
+	label = newLeftLabel(_("Form"));
     gtk_table_attach(GTK_TABLE(table2),label,0,1,0,1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 	label = newLeftLabel(" : ");
     gtk_table_attach(GTK_TABLE(table2),label,1,2,0,1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
@@ -2153,7 +2143,7 @@ static void addGeneral(GtkWidget* Dlg,GtkWidget *box)
 
 	gtk_table_attach(GTK_TABLE(table2),vseparator,3,4,0,1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),5,1);
 
-	label = newLeftLabel("Sugar Pucker");
+	label = newLeftLabel(_("Sugar Pucker"));
     gtk_table_attach(GTK_TABLE(table2),label,4,5,0,1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 	label = newLeftLabel(" : ");
     gtk_table_attach(GTK_TABLE(table2),label,5,6,0,1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
@@ -2165,7 +2155,7 @@ static void addGeneral(GtkWidget* Dlg,GtkWidget *box)
 	
 	gtk_box_pack_start (GTK_BOX (vbox), hseparator1, TRUE, TRUE, 3);
 
-	buttonCounterIon = gtk_check_button_new_with_label ("Add Counter Ion");
+	buttonCounterIon = gtk_check_button_new_with_label (_("Add Counter Ion"));
 	gtk_box_pack_start (GTK_BOX (vbox), buttonCounterIon, FALSE, TRUE, 1);
 
 	gtk_box_pack_start (GTK_BOX (vbox), hseparator2, TRUE, TRUE, 0);
@@ -2269,7 +2259,7 @@ static void addTorsionAngles(GtkWidget *Dlg,GtkWidget* box)
 #define NLIGNES		7
 #define NCOLONNS	3
 
-	frame = gtk_frame_new ("Torsion Angles");
+	frame = gtk_frame_new (_("Torsion Angles"));
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 1);
 	gtk_box_pack_start(GTK_BOX(box), frame,TRUE,TRUE,0);
@@ -2321,7 +2311,7 @@ static void addTranslationalHelicalParameters(GtkWidget *Dlg,GtkWidget* box)
 #define NLIGNES		8
 #define NCOLONNS	3
 
-	frame = gtk_frame_new ("Translational Helical Parameters");
+	frame = gtk_frame_new (_("Translational Helical Parameters"));
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 1);
 	gtk_box_pack_start(GTK_BOX(box), frame,TRUE,TRUE,0);
@@ -2356,7 +2346,7 @@ static void addRotationalHelicalParameters(GtkWidget *Dlg,GtkWidget* box)
 #define NLIGNES		8
 #define NCOLONNS	3
 
-	frame = gtk_frame_new ("Rotational Helical Parameters");
+	frame = gtk_frame_new (_("Rotational Helical Parameters"));
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 1);
 	gtk_box_pack_start(GTK_BOX(box), frame,TRUE,TRUE,0);
@@ -2441,19 +2431,19 @@ void build_polynucleicacid_dlg()
   
   initVariables();
   Dlg = gtk_dialog_new();
-  gtk_window_set_title(GTK_WINDOW(Dlg),"Build PolyNucleicAcid molecule");
+  gtk_window_set_title(GTK_WINDOW(Dlg),_("Build PolyNucleicAcid molecule"));
   gtk_window_set_modal (GTK_WINDOW (Dlg), TRUE);
   gtk_window_set_transient_for(GTK_WINDOW(Dlg),GTK_WINDOW(GeomDlg));
 
-  add_child(GeomDlg,Dlg,gtk_widget_destroy," Build PolyNuc");
+  add_child(GeomDlg,Dlg,gtk_widget_destroy,_(" Build PolyNuc"));
   g_signal_connect(G_OBJECT(Dlg),"delete_event",(GCallback)destroyDlg,NULL);
 
   NoteBook = gtk_notebook_new();
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dlg)->vbox), NoteBook,TRUE, TRUE, 0);
 
-  AddNoteBookDlg(Dlg,NoteBook,"Build",addGeneralButtons);
+  AddNoteBookDlg(Dlg,NoteBook,_("Build"),addGeneralButtons);
 
-  AddNoteBookDlg(Dlg,NoteBook,"Parameters",addHelicalParametersTorsionAngles);
+  AddNoteBookDlg(Dlg,NoteBook,_("Parameters"),addHelicalParametersTorsionAngles);
 
   g_signal_connect_swapped(G_OBJECT(buttonDNA), "clicked",(GCallback)resetSensitivitieButtons,NULL);
   g_signal_connect_swapped(G_OBJECT(buttonDNA), "clicked",(GCallback)resetFormList,NULL);
@@ -2477,7 +2467,7 @@ void build_polynucleicacid_dlg()
   /* The "Close" button */
   gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(Dlg)->action_area), FALSE);
   gtk_widget_realize(Dlg);
-  Button = create_button(Dlg,"Close");
+  Button = create_button(Dlg,_("Close"));
   gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Dlg)->action_area), Button, FALSE, TRUE, 5);  
   g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)destroyDlg,GTK_OBJECT(Dlg));
 

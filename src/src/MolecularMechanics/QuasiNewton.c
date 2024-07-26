@@ -1,6 +1,6 @@
 /* QuasiNewton.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -77,10 +77,10 @@ void	runQuasiNewton(QuasiNewton* quasiNewton)
 		forceField->klass->calculateGradient(forceField);
 		energy = forceField->klass->calculateEnergyTmp(forceField, &forceField->molecule );
 		/* set x  and g table from coordinates and gradient */
-		if(StopCalcul)
-			break;
-		for(i=0,i3=0;i<nAtoms;i++,i3+=3)
+		if(StopCalcul) break;
+		for(i=0,i3=0;i<nAtoms;i++)
 		{
+			if(!forceField->molecule.atoms[i].variable) continue;
 			x[i3  ] = forceField->molecule.atoms[i].coordinates[0];
 			x[i3+1] = forceField->molecule.atoms[i].coordinates[1];
 			x[i3+2] = forceField->molecule.atoms[i].coordinates[2];
@@ -88,17 +88,28 @@ void	runQuasiNewton(QuasiNewton* quasiNewton)
 			g[i3  ] = forceField->molecule.gradient[0][i];
 			g[i3+1] = forceField->molecule.gradient[1][i];
 			g[i3+2] = forceField->molecule.gradient[2][i];
+			i3 += 3;
 		}
+		lbfgs(i3, i3,x, energy,g,diagco,diag,
+				quasiNewton->epsilon,quasiNewton->tolerence,
+				quasiNewton->maxLines,
+				&iflag);
+		/*
 		lbfgs(nAtomsX3, nAtomsX3,x, energy,g,diagco,diag,
 				quasiNewton->epsilon,quasiNewton->tolerence,
 				quasiNewton->maxLines,
 				&iflag);
+				*/
 		/* set coordinates from x */
-		for(i=0,i3=0;i<nAtoms;i++,i3+=3)
+		for(i=0,i3=0;i<nAtoms;i++)
 		{
-			forceField->molecule.atoms[i].coordinates[0] = x[i3];
-			forceField->molecule.atoms[i].coordinates[1] = x[i3+1];
-			forceField->molecule.atoms[i].coordinates[2] = x[i3+2];
+			if(forceField->molecule.atoms[i].variable) 
+			{
+				forceField->molecule.atoms[i].coordinates[0] = x[i3];
+				forceField->molecule.atoms[i].coordinates[1] = x[i3+1];
+				forceField->molecule.atoms[i].coordinates[2] = x[i3+2];
+				i3+=3;
+			}
 		}
 
 		if ( updateNumber >= quasiNewton->updateFrequency )
@@ -110,7 +121,7 @@ void	runQuasiNewton(QuasiNewton* quasiNewton)
 					forceField->molecule.gradient[j][i]
 					*forceField->molecule.gradient[j][i]; 
 
-			sprintf(str,"Gradient = %f energy = %f ",sqrt(gradientNorm),energy); 
+			sprintf(str,_("Gradient = %f energy = %f "),sqrt(gradientNorm),energy); 
 			redrawMolecule(&forceField->molecule,str);
 			updateNumber = 0;
 		}
@@ -125,7 +136,7 @@ void	runQuasiNewton(QuasiNewton* quasiNewton)
 			forceField->molecule.gradient[j][i]
 			*forceField->molecule.gradient[j][i]; 
 
-	sprintf(str,"Gradient = %f energy = %f ",sqrt(gradientNorm),energy); 
+	sprintf(str,_("Gradient = %f energy = %f "),sqrt(gradientNorm),energy); 
 	redrawMolecule(&forceField->molecule,str);
 	g_free(diag);
 	g_free(x);
@@ -411,7 +422,7 @@ void mcsrch ( gint n , gdouble x[] , gdouble f , gdouble g[] ,
 
 		if ( dginit >= 0 )
 		{
-			printf( "The search direction is not a descent direction." );
+			printf(_("The search direction is not a descent direction."));
 			return;
 		}
 
@@ -752,14 +763,16 @@ static gint lbfgs(
 		if ( n <= 0 || m <= 0 )
 		{
 			iflag[0]= -3;
-			printf("Improper input parameters  (n or m are not positive.)" );
+			printf(_("Improper input parameters  (n or m are not positive.)") );
 		}
 
 		if ( gtol <= 0.0001 )
 		{
 			printf(
+				_(
 				"lbfgs: gtol is less than or equal to 0.0001."
 				"It has been reset to 0.9."
+				)
 			      );
 			gtol= 0.9;
 		}
@@ -775,8 +788,10 @@ static gint lbfgs(
 				{
 					iflag[0]=-2;
 					printf(
+						_(
 						"The %d-th diagonal element of the inverse"
-						" hessian approximation is not positive.",i
+						" hessian approximation is not positive.")
+						,i
 					      );
 				}
 			}
@@ -839,10 +854,11 @@ static gint lbfgs(
 						{
 							iflag[0]=-2;
 							printf(
+							_(
 							"The %d-th diagonal element"
 							" of the inverse hessian approximation"
-							" is not positive.",
-							i);
+							" is not positive.")
+							, i);
 						}
 					}
 				}
@@ -908,11 +924,12 @@ static gint lbfgs(
 		{
 			iflag[0]=-1;
 			printf(
+			_(
 			"Line search failed. See documentation of routine mcsrch.\n"
 			" Error return of line search: info = %d Possible causes:\n"
-			" function or gradient are incorrect, or incorrect tolerances.\n",
-			info[0]
-			);
+			" function or gradient are incorrect, or incorrect tolerances.\n"
+			)
+			,info[0]);
 			return 0;
 		}
 

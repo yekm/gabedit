@@ -1,6 +1,6 @@
 /*ContoursDraw.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Transformation.h"
 #include "../OpenGL/Contours.h"
 #include "../OpenGL/ColorMap.h"
+#include "../OpenGL/TriangleDraw.h"
 
 static gboolean dottedNegtaiveContours = FALSE;
 /**************************************************************************/
@@ -319,13 +320,17 @@ GLuint ContoursPlanGenOneList(Grid* plansgrid,gint Ncontours,gdouble*values,gint
  *      	glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT);
  *	 	glEnable(GL_COLOR_MATERIAL);
 */
- 		PlanDraw(plansgrid,i0,i1,numplan,Gap);
+		if(Ncontours==1 && values[0]>0) get_color_surface(0,Color);
+		if(Ncontours==1 && values[0]<0) get_color_surface(1,Color);
+		if(Ncontours==1 && values[0]==0) get_color_surface(2,Color);
+
+		if(Ncontours>1) PlanDraw(plansgrid,i0,i1,numplan,Gap);
 		/* glDisable(GL_COLOR_MATERIAL);*/
 		glDisable(GL_BLEND);
 		glEnable(GL_LINE_SMOOTH); 
 		for(i=0;i<Ncontours;i++)
 		{
-			set_Color_From_colorMap(colorMap, Color, values[i]);
+			if(Ncontours>1) set_Color_From_colorMap(colorMap, Color, values[i]);
 			/* printf("i = %d vale = %f\n",i,values[i]);*/
 
 			glColor4dv(Color);

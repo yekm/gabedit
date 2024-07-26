@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -29,6 +29,7 @@ void edit_geometry();
 void create_units_option(GtkWidget *,gchar *);
 void selc_all_input_file(gchar *data);
 void create_geomXYZ_interface (GabEditTypeFileGeom readfile);
+void read_geom_any_file_dlg();
 
 #endif /* __GABEDIT_INTERFACEGEOM_H__ */
 

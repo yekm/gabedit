@@ -1,6 +1,6 @@
 /* ConjugateGradient.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -30,7 +30,7 @@ DEALINGS IN THE SOFTWARE.
 #include "ConjugateGradient.h"
 
 
-static float maxarg1,maxarg2;
+static gdouble maxarg1,maxarg2;
 #define FMAX(a,b) (maxarg1=(a),maxarg2=(b),(maxarg1) > (maxarg2) ?\
         (maxarg1) : (maxarg2))
 
@@ -187,7 +187,7 @@ static void fletcherReeves(ConjugateGradient* conjugateGradient)
 		if ( conjugateGradient->updateNumber >= conjugateGradient->updateFrequency )
 		{
 			g_free(str);
-			str = g_strdup_printf("gradient = %f ",sqrt(gradientDotGradient)); 
+			str = g_strdup_printf(_("gradient = %f "),sqrt(gradientDotGradient)); 
 			redrawMolecule(&conjugateGradient->forceField->molecule,str);
 			conjugateGradient->updateNumber = 0;
 		}
@@ -210,7 +210,7 @@ static void fletcherReeves(ConjugateGradient* conjugateGradient)
 		(conjugateGradient->forceField, &conjugateGradient->forceField->molecule );
 
 	g_free(str);
-	str = g_strdup_printf("Gradient = %f  Energy = %f (Kcal/mol) ",
+	str = g_strdup_printf(_("Gradient = %f  Energy = %f (Kcal/mol) "),
 			(gdouble)conjugateGradient->gradientNorm,(gdouble)energy); 
 
 	redrawMolecule(&conjugateGradient->forceField->molecule,str);
@@ -311,7 +311,7 @@ static void polakRibiere(ConjugateGradient* conjugateGradient)
 		(conjugateGradient->forceField, &conjugateGradient->forceField->molecule );
 
 	g_free(str);
-	str = g_strdup_printf("Gradient = %f  Energy = %f (Kcal/mol) ",
+	str = g_strdup_printf(_("Gradient = %f  Energy = %f (Kcal/mol) "),
 			(gdouble)conjugateGradient->gradientNorm,(gdouble)energy); 
 	redrawMolecule(&conjugateGradient->forceField->molecule,str);
 	g_free(str);
@@ -397,7 +397,7 @@ static void hestenesStiefel(ConjugateGradient* conjugateGradient)
 		if ( conjugateGradient->updateNumber >= conjugateGradient->updateFrequency )
 		{
 			g_free(str);
-			str = g_strdup_printf("gradient = %f ",sqrt(gradientDotGradient)); 
+			str = g_strdup_printf(_("gradient = %f "),sqrt(gradientDotGradient)); 
 			redrawMolecule(&conjugateGradient->forceField->molecule,str);
 			conjugateGradient->updateNumber = 0;
 		}
@@ -417,7 +417,7 @@ static void hestenesStiefel(ConjugateGradient* conjugateGradient)
 		(conjugateGradient->forceField, &conjugateGradient->forceField->molecule );
 
 	g_free(str);
-	str = g_strdup_printf("Gradient = %f  Energy = %f (Kcal/mol) ",
+	str = g_strdup_printf(_("Gradient = %f  Energy = %f (Kcal/mol) "),
 			(gdouble)conjugateGradient->gradientNorm,(gdouble)energy); 
 	redrawMolecule(&conjugateGradient->forceField->molecule,str);
 	g_free(str);
@@ -494,7 +494,7 @@ static void wolfPowell(ConjugateGradient* conjugateGradient)
 		if ( conjugateGradient->updateNumber >= conjugateGradient->updateFrequency )
 		{
 			g_free(str);
-			str = g_strdup_printf("gradient = %f ",sqrt(gradientDotGradient)); 
+			str = g_strdup_printf(_("gradient = %f "),sqrt(gradientDotGradient)); 
 			redrawMolecule(&conjugateGradient->forceField->molecule,str);
 			conjugateGradient->updateNumber = 0;
 		}
@@ -514,7 +514,7 @@ static void wolfPowell(ConjugateGradient* conjugateGradient)
 		(conjugateGradient->forceField, &conjugateGradient->forceField->molecule );
 
 	g_free(str);
-	str = g_strdup_printf("Gradient = %f  Energy = %f (Kcal/mol) ",
+	str = g_strdup_printf(_("Gradient = %f  Energy = %f (Kcal/mol) "),
 			(gdouble)conjugateGradient->gradientNorm,(gdouble)energy); 
 	redrawMolecule(&conjugateGradient->forceField->molecule,str);
 	g_free(str);

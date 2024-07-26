@@ -1,6 +1,6 @@
 /* GInterfaceLink.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/UtilsInterface.h"
 #include "GaussGlobal.h"
 
+/*****************************************************************/
 static void gene_one_entry2(GtkWidget *b,gpointer data)
 {
   GtkWidget *entry;
@@ -34,10 +35,7 @@ static void gene_one_entry2(GtkWidget *b,gpointer data)
   gchar *t;
   entry=(GtkWidget *)data;
   entrytext = gtk_entry_get_text(GTK_ENTRY(entry));
-/*
-  gtk_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, entrytext,-1);
-  gtk_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "\n",-1);
-*/
+
   if(!StrLink)
   	StrLink = g_strdup_printf("%s\n",entrytext);
   else
@@ -47,12 +45,10 @@ static void gene_one_entry2(GtkWidget *b,gpointer data)
 	g_free(t);
   }
 }
+/*****************************************************************/
 static void gene_one_entry1(GtkWidget *b,gpointer data)
 {
   gchar *t;
-/*
-  gtk_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, (char*)data,-1);
-*/
   if(!StrLink)
   	StrLink = g_strdup_printf("%s",(char*)data);
   else
@@ -62,6 +58,7 @@ static void gene_one_entry1(GtkWidget *b,gpointer data)
 	g_free(t);
   }
 }
+/*****************************************************************/
 static void c_one_entry (GtkWidget *bframe,gchar *titre,gchar *tlabel,gchar *mode,gchar *set,guint del)
 {
   GtkWidget *fp;
@@ -74,7 +71,7 @@ static void c_one_entry (GtkWidget *bframe,gchar *titre,gchar *tlabel,gchar *mod
   GtkWidget *label;
   GtkWidget *entry;
   GtkWidget *Wins =  GTK_WIDGET(g_object_get_data (G_OBJECT (bframe), "Window"));
-  /* Fenetre principale */
+  
   fp = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_modal(GTK_WINDOW(fp),TRUE);
   gtk_window_set_position(GTK_WINDOW(fp),GTK_WIN_POS_CENTER);
@@ -88,8 +85,6 @@ static void c_one_entry (GtkWidget *bframe,gchar *titre,gchar *tlabel,gchar *mod
 
   vboxall = create_vbox(fp);
   frame = gtk_frame_new (titre);
-  g_object_ref (frame);
-  g_object_set_data_full (G_OBJECT (fp), "frame", frame,(GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
@@ -97,14 +92,10 @@ static void c_one_entry (GtkWidget *bframe,gchar *titre,gchar *tlabel,gchar *mod
   vboxframe = create_vbox(frame);
    hbox1 = create_hbox(vboxframe);
   label = gtk_label_new (tlabel);
-  g_object_ref (label);
-  g_object_set_data_full (G_OBJECT (fp), "label", label,(GDestroyNotify) g_object_unref);
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (hbox1), label, TRUE, FALSE, 0);
 
   entry = gtk_entry_new ();
-  g_object_ref (entry);
-  g_object_set_data_full (G_OBJECT (fp), "entry", entry,(GDestroyNotify) g_object_unref);
   gtk_widget_show (entry);
   gtk_box_pack_start (GTK_BOX (hbox1), entry, FALSE, TRUE, 0);
   gtk_entry_set_text(GTK_ENTRY(entry),set);
@@ -112,17 +103,17 @@ static void c_one_entry (GtkWidget *bframe,gchar *titre,gchar *tlabel,gchar *mod
   hbox2 = create_hbox(vboxall);
   gtk_widget_realize(fp);
 
-  button = create_button(fp,"Cancel");
+  button = create_button(fp,_("Cancel"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(delete_child),GTK_OBJECT(fp));
   gtk_widget_show (button);
 
-  button = create_button(fp,"OK");
+  button = create_button(fp,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox2), button, TRUE, TRUE, 3);
   gtk_widget_show (button);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(gene_one_entry1),(gpointer)mode);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(gene_one_entry2),(gpointer)entry);
-  if (!strcmp((char *)titre,"The checkpoint file") )
+  if (!strcmp((char *)titre,_("The checkpoint file")) )
   {
   	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_widget_show),GTK_OBJECT(CheckButtons[7]));
   	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_widget_show),GTK_OBJECT(CheckButtons[8]));
@@ -133,37 +124,40 @@ static void c_one_entry (GtkWidget *bframe,gchar *titre,gchar *tlabel,gchar *mod
    
   gtk_widget_show_all(fp);
 }
+/*****************************************************************/
 static void sorry(GtkWidget *bframe,gpointer data)
 {
  char *temp;
  temp=g_malloc(100);
-  sprintf(temp,"Sorry, the button of \"%s\" is not active",(char*)data);
+  sprintf(temp,_("Sorry, the button of \"%s\" is not active"),(char*)data);
    Message(temp," Warning ",TRUE);
    gtk_widget_hide(bframe);
  g_free(temp);
 }
+/*****************************************************************/
 static void Traite_Link_Option(GtkWidget *bframe,gpointer data)
 {
-  if (!strcmp((char *)data,"Dynamic memory") )
-   c_one_entry(bframe,(char *)data,"Memory size : ","%Mem=","4MW",1);
+  if (!strcmp((char *)data,_("Dynamic memory")) )
+   c_one_entry(bframe,(char *)data,_("Memory size : "),"%Mem=","4MW",1);
   else
-  if (!strcmp((char *)data,"Read-Write file") )
-   c_one_entry(bframe,(char *)data,"File Name : ", "%RWF=","rwffile",1);
+  if (!strcmp((char *)data,_("Read-Write file")) )
+   c_one_entry(bframe,(char *)data,_("File Name : "), "%RWF=","rwffile",1);
   else 
-  if (!strcmp((char *)data,"2E derivative file") )
-   c_one_entry(bframe,(char *)data,"File Name : ", "%d2I=","d2intfile",1);
+  if (!strcmp((char *)data,_("2E derivative file")) )
+   c_one_entry(bframe,(char *)data,_("File Name : "), "%d2I=","d2intfile",1);
   else 
-  if (!strcmp((char *)data,"The checkpoint file") )
-   c_one_entry(bframe,(char *)data,"File Name : ","%Chk=","chkfile",1);
+  if (!strcmp((char *)data,_("The checkpoint file")) )
+   c_one_entry(bframe,(char *)data,_("File Name : "),"%Chk=","chkfile",1);
   else 
-  if (!strcmp((char *)data,"2E integral file") )
-   c_one_entry(bframe,(char *)data,"File Name : ","%Int=","intfile",1);
+  if (!strcmp((char *)data,_("2E integral file")) )
+   c_one_entry(bframe,(char *)data,_("File Name : "),"%Int=","intfile",1);
   else 
   if (!strcmp((char *)data,"") )
     sorry(bframe,data);
   else 
     sorry(bframe,data);
 }
+/*****************************************************************/
 void create_button_link(GtkWidget *w,GtkWidget *Wins)
 {
 	GtkWidget* Table;
@@ -173,19 +167,18 @@ void create_button_link(GtkWidget *w,GtkWidget *Wins)
         guint ColonneT=3; 
         guint LigneT=2; 
 	char *LabelButton[3][2]={
-        {"Dynamic memory",
-         "Read-Write file",
+        {N_("Dynamic memory"),
+         N_("Read-Write file"),
         },
-        {"The checkpoint file",
-	 "2E derivative file",
+        {N_("The checkpoint file"),
+	 N_("2E derivative file"),
          } ,
-	{"2E integral file",
+	{_("2E integral file"),
          "00"
          }
 	};
 
   StrLink = NULL;
-  /* Création de la fenêtre principale */
 
   Table = gtk_table_new(LigneT,ColonneT,TRUE);
   gtk_container_add(GTK_CONTAINER(w),Table);

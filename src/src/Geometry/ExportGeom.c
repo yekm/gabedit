@@ -1,6 +1,6 @@
 /* ExportGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -29,7 +29,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/AtomsProp.h"
 #include "../Utils/Vector3d.h"
 #include "../Geometry/GeomGlobal.h"
-#include "../Geometry/Mesure.h"
+#include "../Geometry/Measure.h"
 #include "../Geometry/Fragments.h"
 #include "../Geometry/DrawGeom.h"
 #include "../Geometry/ExportGeom.h"
@@ -45,7 +45,7 @@ static void export_geometry_file(GabeditFileChooser *SelecFile, gint response_id
  	fileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     		return ;
  	}
 	export_geometry(fileName, type);

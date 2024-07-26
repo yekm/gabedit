@@ -1,6 +1,6 @@
 /* MolcasVariables.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -54,10 +54,10 @@ static MolcasSystemVariables molcasSystemVariablesTmp;
 /************************************************************************************************************/
 gint molcasMem()
 {
-	if(strstr(molcasSystemVariables.mem,"Default")) 
+	if(strstr(molcasSystemVariables.mem,_("Default"))) 
 		return -1;
 	else
-	if(strstr(molcasSystemVariables.mem,"largest possible")) 
+	if(strstr(molcasSystemVariables.mem,_("largest possible"))) 
 		return 0;
 	else
 	if(atoi(molcasSystemVariables.mem)>0) 
@@ -68,10 +68,10 @@ gint molcasMem()
 /************************************************************************************************************/
 gint molcasDisk()
 {
-	if(strstr(molcasSystemVariables.disk,"Default")) 
+	if(strstr(molcasSystemVariables.disk,_("Default"))) 
 		return -1;
 	else
-	if(strstr(molcasSystemVariables.disk,"Limited to 2 GBytes")) 
+	if(strstr(molcasSystemVariables.disk,_("Limited to 2 GBytes"))) 
 		return 0;
 	else
 	if(atoi(molcasSystemVariables.disk)>0) 
@@ -82,7 +82,7 @@ gint molcasDisk()
 /************************************************************************************************************/
 gint molcasRamd()
 {
-	if(strstr(molcasSystemVariables.ramd,"Default")) 
+	if(strstr(molcasSystemVariables.ramd,_("Default"))) 
 		return -1;
 	else
 	if(atoi(molcasSystemVariables.ramd)>0) 
@@ -106,11 +106,11 @@ void molcasWorkDir(gchar* workDir)
 /************************************************************************************************************/
 static void initMolcasSystemVariables(MolcasSystemVariables* mSystemVariables)
 {
-	sprintf(mSystemVariables->mem,"Default");
-	sprintf(mSystemVariables->disk,"Default");
-	sprintf(mSystemVariables->ramd,"Default");
+	sprintf(mSystemVariables->mem,_("Default"));
+	sprintf(mSystemVariables->disk,_("Default"));
+	sprintf(mSystemVariables->ramd,_("Default"));
 	sprintf(mSystemVariables->trap,"ON");
-	sprintf(mSystemVariables->workDir,"Default");
+	sprintf(mSystemVariables->workDir,_("Default"));
 }
 /************************************************************************************************************/
 static void initMolcasSystemVariablesTmp()
@@ -149,7 +149,7 @@ static void changedEntriesVariable(GtkWidget *entry, gpointer data)
 	switch(*type)
 	{
 		case MOLCAS_TYPE_VARIABLE_MEM : 
-			if(strstr(entrytext,"Default") || strstr(entrytext,"largest possible") )
+			if(strstr(entrytext,_("Default")) || strstr(entrytext,_("largest possible")) )
 			{
 				gtk_widget_set_sensitive(entry, FALSE);
 			}
@@ -158,12 +158,12 @@ static void changedEntriesVariable(GtkWidget *entry, gpointer data)
 				gtk_widget_set_sensitive(entry, TRUE);
 			}
 
-			if(strstr(entrytext,"Default") || strstr(entrytext,"largest possible") || atof(entrytext) != 0)
+			if(strstr(entrytext,_("Default")) || strstr(entrytext,_("largest possible")) || atof(entrytext) != 0)
 				sprintf(molcasSystemVariablesTmp.mem,entrytext);
 
 			break;
 		case MOLCAS_TYPE_VARIABLE_DISK :
-			if(strstr(entrytext,"Default") || strstr(entrytext,"Limited to 2 GBytes") )
+			if(strstr(entrytext,_("Default")) || strstr(entrytext,_("Limited to 2 GBytes")) )
 			{
 				gtk_widget_set_sensitive(entry, FALSE);
 			}
@@ -172,11 +172,11 @@ static void changedEntriesVariable(GtkWidget *entry, gpointer data)
 				gtk_widget_set_sensitive(entry, TRUE);
 			}
 
-			if(strstr(entrytext,"Default") || strstr(entrytext,"Limited to 2 GBytes") || atof(entrytext) != 0)
+			if(strstr(entrytext,_("Default")) || strstr(entrytext,_("Limited to 2 GBytes")) || atof(entrytext) != 0)
 				sprintf(molcasSystemVariablesTmp.disk, entrytext);
 			break;
 		case MOLCAS_TYPE_VARIABLE_RAMD :
-			if(strstr(entrytext,"Default"))
+			if(strstr(entrytext,_("Default")))
 			{
 				gtk_widget_set_sensitive(entry, FALSE);
 			}
@@ -184,7 +184,7 @@ static void changedEntriesVariable(GtkWidget *entry, gpointer data)
 			{
 				gtk_widget_set_sensitive(entry, TRUE);
 			}
-			if(strstr(entrytext,"Default") || atof(entrytext) != 0)
+			if(strstr(entrytext,_("Default")) || atof(entrytext) != 0)
 			sprintf(molcasSystemVariablesTmp.ramd, entrytext);
 			break;
 		case MOLCAS_TYPE_VARIABLE_TRAP :
@@ -192,7 +192,7 @@ static void changedEntriesVariable(GtkWidget *entry, gpointer data)
 			sprintf(molcasSystemVariablesTmp.trap, entrytext);
 			break;
 		case MOLCAS_TYPE_VARIABLE_WORKDIR :
-			if(strstr(entrytext,"Default"))
+			if(strstr(entrytext,_("Default")))
 			{
 				gtk_widget_set_sensitive(entry, FALSE);
 			}
@@ -245,24 +245,24 @@ void createSystemVariablesFrame(GtkWidget *win, GtkWidget *box, GtkWidget *OkBut
 	GtkWidget* labelWorkDir = gtk_label_new("WorkDir : ");
 
 	gint nlistMem = 3;
-	gchar* listMem[]  = { "Default", "The largest possible", "64 MB" };
+	gchar* listMem[]  = { _("Default"), _("The largest possible"), "64 MB" };
 
 	gint nlistDisk = 3;
-	gchar* listDisk[] = { "Default", "Limited to 2 GBytes", "1000 MB" };
+	gchar* listDisk[] = { _("Default"), _("Limited to 2 GBytes"), "1000 MB" };
 
 	gint nlistRamd = 2;
-	gchar* listRamd[] = { "Default", "100 MB" };
+	gchar* listRamd[] = { _("Default"), "100 MB" };
 
 	gint nlistTrap = 2;
 	gchar* listTrap[] = { "ON", "OFF" };
 
 	gint nlistWorkDir = 2;
-	gchar* listWorkDir[] = { "Default", "$HOME/tmp" };
+	gchar* listWorkDir[] = { _("Default"), "$HOME/tmp" };
 
 	initMolcasSystemVariablesTmp();
 	initMolcasSystemVariables(&molcasSystemVariables);
 
-	frame = gtk_frame_new ("Molcas system variables");
+	frame = gtk_frame_new (_("Molcas system variables"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -323,7 +323,7 @@ void putVariablesInTextEditor()
 
 	molcasWorkDir(workDir);
 
-	if( trap && mem <0 && disk <0 && ramd <0 && strcmp(workDir,"Default")==0) return;
+	if( trap && mem <0 && disk <0 && ramd <0 && strcmp(workDir,_("Default"))==0) return;
 
 	sprintf(buffer,"*----------------------------------------------------------------\n");
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer,-1);
@@ -350,7 +350,7 @@ void putVariablesInTextEditor()
 		sprintf(buffer,"*              MOLCASRAMD=%d\n",ramd);
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.program, NULL, buffer,-1);
 	}
-	if(strcmp(workDir,"Default") !=0)
+	if(strcmp(workDir,_("Default")) !=0)
 	{
 		sprintf(buffer,"*              MOLCASWORKDIR=%s\n",workDir);
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &molcasColorFore.program, NULL, buffer,-1);
@@ -370,7 +370,7 @@ static void setOneValue(gchar* t, gchar* value)
 	{
 		i = sscanf(p+1,"%d",&k);
 		if(i<1) 
-			sprintf(value,"Default");
+			sprintf(value,_("Default"));
 		else
 			sprintf(value,"%d",k);
 	}
@@ -402,7 +402,7 @@ static void setWorkDir(gchar* t, gchar* value)
 	if(p)
 	{
 		i = sscanf(p+1,"%s",value);
-		if(i<1) sprintf(value,"Default");
+		if(i<1) sprintf(value,_("Default"));
 	}
 }
 /************************************************************************************************************/
@@ -412,11 +412,11 @@ void setMolcasVariablesFromInputFile(gchar* fileName)
 	guint taille=BSIZE;
 	FILE* file = NULL;
 
-	sprintf(molcasSystemVariables.mem,"Default");
-	sprintf(molcasSystemVariables.disk,"Default");
-	sprintf(molcasSystemVariables.ramd,"Default");
+	sprintf(molcasSystemVariables.mem,_("Default"));
+	sprintf(molcasSystemVariables.disk,_("Default"));
+	sprintf(molcasSystemVariables.ramd,_("Default"));
 	sprintf(molcasSystemVariables.trap,"ON");
-	sprintf(molcasSystemVariables.workDir,"Default");
+	sprintf(molcasSystemVariables.workDir,_("Default"));
 
 	file = FOpen(fileName, "r");
 	if(!file) return;

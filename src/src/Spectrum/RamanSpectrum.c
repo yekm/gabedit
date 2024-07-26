@@ -1,6 +1,6 @@
 /* RamanSpectrum.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -89,7 +89,7 @@ static void check_microm_cmm1_toggled(GtkToggleButton *togglebutton, gpointer us
 /********************************************************************************/
 static GtkWidget* createRamanSpectrumWin(gint numberOfFrequencies, gdouble* frequencies, gdouble* intensities)
 {
-	GtkWidget* window = spectrum_win_new_with_xy("Raman spectrum",  numberOfFrequencies, frequencies, intensities);
+	GtkWidget* window = spectrum_win_new_with_xy(_("Raman spectrum"),  numberOfFrequencies, frequencies, intensities);
 	GtkWidget* hbox = g_object_get_data(G_OBJECT (window), "HBoxData");
 	GtkWidget* xyplot = g_object_get_data(G_OBJECT (window), "XYPLOT");
 	GtkWidget* check_microm_cmm1 = NULL;
@@ -122,15 +122,15 @@ static GtkWidget* createRamanSpectrumWin(gint numberOfFrequencies, gdouble* freq
 static void messageErrorFreq(gchar* fileName)
 {
 	gchar buffer[BSIZE];
-	sprintf(buffer,"Sorry, I can not read frequencies from '%s' file\n",fileName);
-  	Message(buffer,"Error",TRUE);
+	sprintf(buffer,_("Sorry, I can not read frequencies from '%s' file\n"),fileName);
+  	Message(buffer,_("Error"),TRUE);
 }
 /********************************************************************************/
 static void messageErrorInt(gchar* fileName)
 {
 	gchar buffer[BSIZE];
-	sprintf(buffer,"Sorry, I can not read frequencies from '%s' file\n",fileName);
-  	Message(buffer,"Error",TRUE);
+	sprintf(buffer,_("Sorry, I can not read frequencies from '%s' file\n"),fileName);
+  	Message(buffer,_("Error"),TRUE);
 }
 /********************************************************************************/
 static gboolean read_gabedit_molden_file(GabeditFileChooser *SelecFile, gint response_id)
@@ -250,7 +250,7 @@ static void read_gabedit_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_gabedit_molden_file,
-			"Read frequencies and intensities from a Gabedit file",
+			_("Read frequencies and intensities from a Gabedit file"),
 			GABEDIT_TYPEFILE_GABEDIT,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -260,7 +260,7 @@ static void read_molden_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_gabedit_molden_file,
-			"Read frequencies and intensities from a Molden file",
+			_("Read frequencies and intensities from a Molden file"),
 			GABEDIT_TYPEFILE_MOLDEN,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -275,7 +275,7 @@ static void read_mpqc_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_mpqc_file,
-			"Read frequencies and intensities from a MPQC output file",
+			_("Read frequencies and intensities from a MPQC output file"),
 			GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -290,7 +290,7 @@ static void read_molpro_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_molpro_file,
-			"Read frequencies and intensities from a Molpro output file",
+			_("Read frequencies and intensities from a Molpro output file"),
 			GABEDIT_TYPEFILE_MOLPRO,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -319,7 +319,7 @@ static void read_dalton_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_dalton_file,
-			"Read last frequencies and intensities from a Dalton output file",
+			_("Read last frequencies and intensities from a Dalton output file"),
 			GABEDIT_TYPEFILE_DALTON,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -456,7 +456,7 @@ static void read_gamess_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_gamess_file,
-			"Read last frequencies and intensities from a Gamess output file",
+			_("Read last frequencies and intensities from a Gamess output file"),
 			GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -547,7 +547,7 @@ static void read_gaussian_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_gaussian_file,
-			"Read last frequencies and intensities from a Gaussian output file",
+			_("Read last frequencies and intensities from a Gaussian output file"),
 			GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -562,7 +562,7 @@ static void read_adf_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_adf_file,
-			"Read last frequencies and intensities from a ADF output file",
+			_("Read last frequencies and intensities from a ADF output file"),
 			GABEDIT_TYPEFILE_MOLPRO,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -643,7 +643,7 @@ static void read_orca_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_orca_file,
-			"Read last frequencies and intensities from a Orca output file",
+			_("Read last frequencies and intensities from a Orca output file"),
 			GABEDIT_TYPEFILE_QCHEM,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -703,7 +703,7 @@ static void read_sample_2columns_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_sample_2columns_file,
-			"Read frequencies and intensities from a sample file(2columns : first = Energy(cm-1), second = intensity)",
+			_("Read frequencies and intensities from a sample file(2columns : first = Energy(cm-1), second = intensity)"),
 			GABEDIT_TYPEFILE_TXT,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -717,7 +717,7 @@ void createRamanSpectrum(GtkWidget *parentWindow, GabEditTypeFile typeOfFile)
 	if(typeOfFile==GABEDIT_TYPEFILE_MOLPRO) read_molpro_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_ORCA) read_orca_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_GAMESS) read_gamess_file_dlg();
-	if(typeOfFile==GABEDIT_TYPEFILE_PCGAMESS) read_gamess_file_dlg();
+	if(typeOfFile==GABEDIT_TYPEFILE_FIREFLY) read_gamess_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_GAUSSIAN) read_gaussian_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_ADF) read_adf_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_MPQC) read_mpqc_file_dlg();
@@ -732,7 +732,7 @@ void createRamanSpectrumFromVibration(GtkWidget *parentWindow, Vibration ibratio
 	gint j;
 	if(numberOfFrequencies<1)
 	{
-		GtkWidget* mess=Message("Sorry, For draw spectrum, Please read a file before","Error",TRUE);
+		GtkWidget* mess=Message(_("Sorry, For draw spectrum, Please read a file before"),_("Error"),TRUE);
     		gtk_window_set_modal (GTK_WINDOW (mess), TRUE);
 		return;
 	}

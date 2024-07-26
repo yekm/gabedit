@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #include <ctype.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
+#include <glib/gi18n.h>
 #include "../Files/GabeditFileChooser.h"
 #include "../../gtkglarea/gtkglarea.h"
 #include "../../gl2ps/gl2ps.h"
@@ -137,6 +138,7 @@ gint numPOVFile;
 gdouble solventRadius;
 gdouble colorMapColors[3][3];
 gint colorMapType;
+gdouble alphaFED;
 
 
 #endif /* __GABEDIT_GLOBALORB_H__ */

@@ -1,6 +1,6 @@
 /* Vibration.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -34,8 +34,6 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/StockIcons.h"
 #include "../Utils/GabeditTextEdit.h"
 
-#define AMU_TO_AU 1822.88848121
-#define AU_TO_CM1 219474.63
 #define DEBUGFLAG 0
 
 /************************************************************************************************************/
@@ -196,7 +194,7 @@ static void save_result(GabeditFileChooser *SelecFile, gint response_id)
  	fileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     		return ;
  	}
 	textResult = g_object_get_data (G_OBJECT (SelecFile), "TextResult");
@@ -209,7 +207,7 @@ static void save_result(GabeditFileChooser *SelecFile, gint response_id)
 	file = FOpen(fileName, "wb");
 	if(file == NULL)
 	{
-		Message("Sorry, I can not save file","Error",TRUE);
+		Message(_("Sorry, I can not save file"),_("Error"),TRUE);
 		return;
 	}
 	temp=gabedit_text_get_chars(textResult,0,-1);
@@ -222,7 +220,7 @@ static void save_result(GabeditFileChooser *SelecFile, gint response_id)
 /********************************************************************************/
 static void save_result_dlg(GtkWidget *textResult, gpointer data)
 {       
-	GtkWidget* chooser = file_chooser_save(save_result,"Save result",GABEDIT_TYPEFILE_TXT,GABEDIT_TYPEWIN_OTHER);
+	GtkWidget* chooser = file_chooser_save(save_result,_("Save result"),GABEDIT_TYPEFILE_TXT,GABEDIT_TYPEWIN_OTHER);
 	g_object_set_data (G_OBJECT (chooser), "TextResult",textResult);
 	gtk_window_set_modal (GTK_WINDOW (chooser), TRUE);
 }
@@ -243,7 +241,7 @@ static GtkWidget* createResultWindow(gchar* title)
 
 	gtk_widget_realize(resultWindow);
 	init_child(resultWindow,gtk_widget_destroy," Vib. Corr. ");
-	g_signal_connect(G_OBJECT(resultWindow),"delete_event",(GCallback)destroy_childs,NULL);
+	g_signal_connect(G_OBJECT(resultWindow),"delete_event",(GCallback)destroy_children,NULL);
 
 	gtk_container_set_border_width (GTK_CONTAINER (resultWindow), 4);
 	vboxall = create_vbox(resultWindow);
@@ -259,14 +257,14 @@ static GtkWidget* createResultWindow(gchar* title)
 	gtk_box_set_homogeneous(GTK_BOX(hbox), FALSE);
 	gtk_widget_realize(resultWindow);
 
-	button = create_button(resultWindow,"OK");
+	button = create_button(resultWindow,_("OK"));
 	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, FALSE, 1);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,G_OBJECT(resultWindow));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,G_OBJECT(resultWindow));
 	gtk_widget_show (button);
 
-	button = create_button(resultWindow,"Save");
+	button = create_button(resultWindow,_("Save"));
 	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, FALSE, 1);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)save_result_dlg,G_OBJECT(textWidget));
 	gtk_widget_show (button);
@@ -944,7 +942,7 @@ static gboolean read_gaussian_file_geomi(VibCorrectionsGeom* geom, gchar *fileNa
 	/* for calculation with nosym option */
 	if(!read_gaussian_file_geomi_str(geom, fileName,num,"Z-Matrix orientation:"))
 	{
-  		Message("Sorry\nI can not read geometry in this file","Error",TRUE);
+  		Message(_("Sorry\nI can not read geometry in this file"),_("Error"),TRUE);
 		return FALSE;
 	}
 	return TRUE;
@@ -982,6 +980,7 @@ static gboolean readLastShieldingTensors(FILE* file, VibCorrectionsSigma* sigmas
 	for(i=0;i<nAtoms;i++)
 	{
 		if(!fgets(t,BSIZE,file))break;
+		changeDInE(t);
 		Ok =getValueFromLine(t,"Isotropic","=",&sigmas[i].isotropic);
 		if(!Ok) break;
 		Ok =getValueFromLine(t,"Anisotropy","=",&sigmas[i].anisotropy);
@@ -1367,7 +1366,7 @@ void read_vibcorrection_gaussian_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_gaussian_file,
-			"Read the Gaussian output file for a input file created by Gabedit",
+			_("Read the Gaussian output file for a input file created by Gabedit"),
 			GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_OTHER);
 	GtkWidget* entryTemperatureBegin = gtk_entry_new();
 	GtkWidget* entryTemperatureN = gtk_entry_new();
@@ -1375,9 +1374,9 @@ void read_vibcorrection_gaussian_file_dlg()
 	GtkWidget* hbox = gtk_hbox_new(FALSE,1);
 	GtkWidget* hsep1 = gtk_hseparator_new();
 	GtkWidget* hsep2 = gtk_hseparator_new();
-	GtkWidget* labelBegin = gtk_label_new("Temperatures (K) from : ");
-	GtkWidget* labelN = gtk_label_new("       Number of values : ");
-	GtkWidget* labelStep = gtk_label_new("     with a step(K) : ");
+	GtkWidget* labelBegin = gtk_label_new(_("Temperatures (K) from : "));
+	GtkWidget* labelN = gtk_label_new(_("       Number of values : "));
+	GtkWidget* labelStep = gtk_label_new(_("     with a step(K) : "));
 
 	gtk_entry_set_text(GTK_ENTRY(entryTemperatureBegin),"300.0");
 	gtk_entry_set_text(GTK_ENTRY(entryTemperatureStep),"10.0");

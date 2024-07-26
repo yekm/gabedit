@@ -1,6 +1,6 @@
 /* Textures.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -190,18 +190,18 @@ void activate_texture(gint type)
   	case GABEDIT_TYPETEXTURE_2 : 
 /*  if( glIsTexture(Nom) != GL_TRUE)*/
   	{
-  		glGenTextures(1,&Nom);                   /*Génère un n° de texture*/
-  		glBindTexture(GL_TEXTURE_2D,Nom);        /*Sélectionne ce n°*/
+  		glGenTextures(1,&Nom);                   /*new texture #*/
+  		glBindTexture(GL_TEXTURE_2D,Nom);        /*select tis #*/
   		glTexImage2D (
        		GL_TEXTURE_2D,                      /*Type : texture 2D*/
-       		0,                                  /*Mipmap : aucun*/
-       		4,                                  /*Couleurs : 4*/
-       		2,                                  /*Largeur : 2*/
-       		2,                                  /*Hauteur : 2*/
-       		0,                                  /*Largeur du bord : 0*/
+       		0,                                  /*Mipmap : nothing*/
+       		4,                                  /*colors : 4*/
+       		2,                                  /*width : 2*/
+       		2,                                  /*height : 2*/
+       		0,                                  /*width of border : 0*/
        		GL_RGBA,                            /*Format : RGBA*/
-       		GL_UNSIGNED_BYTE,                   /*Type des couleurs*/
-       		Texture                             /*Addresse de l'image*/
+       		GL_UNSIGNED_BYTE,                   /*Type of colors*/
+       		Texture                             /*Address of image*/
   		);
 	}
 		break;

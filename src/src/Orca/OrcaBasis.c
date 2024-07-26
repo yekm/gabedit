@@ -1,6 +1,6 @@
 /* OrcaBasis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1134,7 +1134,7 @@ void addOrcaTypeBasisToTable(GtkWidget *table, gint i, GtkWidget* comboBasis)
 {
 	GtkWidget* combo = NULL;
 
-	add_label_table(table,"Type",(gushort)i,0);
+	add_label_table(table,_("Type"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	combo  = create_list_type_basis(comboBasis);
 	gtk_table_attach(GTK_TABLE(table),combo,2,2+1,i,i+1,
@@ -1151,7 +1151,7 @@ GtkWidget* addOrcaBasisToTable(GtkWidget *table, gint i)
 	gchar* listBasis[] = {" "};
 
 
-	add_label_table(table,"Basis",(gushort)i,0);
+	add_label_table(table,_("Basis"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entryBasis = addComboListToATable(table, listBasis, nlistBasis, i, 2, 1);
 	comboBasis  = g_object_get_data(G_OBJECT (entryBasis), "Combo");
@@ -1167,7 +1167,7 @@ void addOrcaAuxBasisToTable(GtkWidget *table, gint i, GtkWidget* comboMethod, Gt
 	GtkWidget* comboAuxBasis = NULL;
 	GtkWidget* label = NULL;
 
-	label = add_label_table(table,"Auxiliary basis",(gushort)i,0);
+	label = add_label_table(table,_("Auxiliary basis"),(gushort)i,0);
 	if(comboMethod) g_object_set_data(G_OBJECT (comboMethod), "LabelAuxBasis1", label);
 	if(comboExcited) g_object_set_data(G_OBJECT (comboExcited), "LabelAuxBasis1", label);
 	label = add_label_table(table,":",(gushort)i,1);

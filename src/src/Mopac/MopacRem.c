@@ -1,6 +1,6 @@
 /* MopacRem.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -53,7 +53,7 @@ static gchar* listJobReal[] = {
 	"THERMO ROT=1 ",
 	"GRAPH VECTORS ",
 	"1SCF ESP ",
-	"RF",
+	"RP",
 };
 static guint numberOfJobs = G_N_ELEMENTS (listJobView);
 static gchar selectedJob[BSIZE]="1SCF";
@@ -61,6 +61,7 @@ static gchar selectedJob[BSIZE]="1SCF";
 static gchar* listHamiltonianMethodsView[] = 
 { 
 	"PM6", 
+	"PM6-DH2", 
 	"RM1", 
 	"PM3", 
 	"AM1", 
@@ -69,6 +70,7 @@ static gchar* listHamiltonianMethodsView[] =
 static gchar* listHamiltonianMethodsReal[] = 
 { 
 	"PM6", 
+	"PM6-DH2", 
 	"RM1", 
 	"PM3", 
 	"AM1", 
@@ -79,7 +81,7 @@ static gchar selectedHamiltonian[BSIZE]="PM6";
 /*************************************************************************************************************/
 static gchar* listSolventsView[] = 
 { 
-	"Notting", 
+	"Nothing", 
 	"Water [H2O]",
 	"AceticAcid [CH3COOH]",
 	"Acetone [CH3COCH3]",
@@ -183,7 +185,7 @@ static gchar* listSolventsReal[] =
 	"EPS=42.1 RSOLV=3.12",
 };
 static guint numberOfSolvents = G_N_ELEMENTS (listSolventsView);
-static gchar selectedSolvent[BSIZE]="Notting";
+static gchar selectedSolvent[BSIZE]="Nothing";
 /*************************************************************************************************************/
 gchar* getSeletedJobType()
 {
@@ -202,7 +204,7 @@ static gchar* calculWord(gchar* view)
 /*************************************************************************************************************/
 static void putMopacJobTypeInfoInTextEditor()
 {
-	if(!strcmp(selectedJob,"RF")) putMopacReactionPathInTextEditor();
+	if(!strcmp(selectedJob,"RP")) putMopacReactionPathInTextEditor();
 	else gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, selectedJob,-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
 }
@@ -217,7 +219,7 @@ static void putMopacHamiltonianInfoInTextEditor()
 /*************************************************************************************************************/
 static void putMopacSolventInfoInTextEditor()
 {
-	if(strcmp(selectedSolvent,"Notting")==0)return;
+	if(strcmp(selectedSolvent,"Nothing")==0)return;
 
        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, selectedSolvent,-1);
        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
@@ -235,7 +237,7 @@ static void traitementJobType (GtkComboBox *combobox, gpointer d)
 	GtkTreeIter iter;
 	gchar* data = NULL;
 	gchar* res = NULL;
-	GtkWidget* hboxRF = NULL;
+	GtkWidget* hboxRP = NULL;
 	
 	if (gtk_combo_box_get_active_iter (combobox, &iter))
 	{
@@ -246,8 +248,8 @@ static void traitementJobType (GtkComboBox *combobox, gpointer d)
 	res = calculWord(data);
 	if(res) sprintf(selectedJob,"%s",res);
 	else  sprintf(selectedJob,"SP");
-	hboxRF = g_object_get_data(G_OBJECT (combobox), "HboxReactionPath");
-	if(hboxRF && GTK_IS_WIDGET(hboxRF)) gtk_widget_set_sensitive(hboxRF, strstr(data,"Reaction path")!=NULL);
+	hboxRP = g_object_get_data(G_OBJECT (combobox), "HboxReactionPath");
+	if(hboxRP && GTK_IS_WIDGET(hboxRP)) gtk_widget_set_sensitive(hboxRP, strstr(data,"Reaction path")!=NULL);
 
 }
 /********************************************************************************************************/
@@ -360,7 +362,7 @@ static void traitementSolventType (GtkComboBox *combobox, gpointer d)
 		if(strcmp((gchar*)data,listSolventsView[i])==0) res = listSolventsReal[i];
 	}
 	if(res) sprintf(selectedSolvent,"%s",res);
-	else  sprintf(selectedSolvent,"Notting");
+	else  sprintf(selectedSolvent,"Nothing");
 
 }
 /********************************************************************************************************/
@@ -411,7 +413,7 @@ void createMopacRemFrame(GtkWidget *win, GtkWidget *box)
 
 	comboethod = NULL;
 
-	frame = gtk_frame_new ("Job Specification:");
+	frame = gtk_frame_new (_("Job Specification:"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -424,7 +426,7 @@ void createMopacRemFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Job Type -----------------------------------------*/
 	l=0; 
 	c = 0; ncases=1;
-	add_label_table(table,"Job Type",l,c);
+	add_label_table(table,_("Job Type"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_jobtype();
@@ -437,7 +439,7 @@ void createMopacRemFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Hamiltonian Type -----------------------------------------*/
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"Hamiltonian",l,c);
+	add_label_table(table,_("Hamiltonian"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_hamiltonian_methods();
@@ -449,7 +451,7 @@ void createMopacRemFrame(GtkWidget *win, GtkWidget *box)
                   2,2);
 	l++;
 	c = 0; ncases=1;
-	add_label_table(table,"Solvent",l,c);
+	add_label_table(table,_("Solvent"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_solventtype();

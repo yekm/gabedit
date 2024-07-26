@@ -1,6 +1,6 @@
 /* ECDSpectrum.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -94,7 +94,7 @@ static void check_nm_ev_toggled(GtkToggleButton *togglebutton, gpointer user_dat
 /********************************************************************************/
 static void createECDSpectrumWin(gint numberOfStates, gdouble* energies, gdouble* intensities)
 {
-	GtkWidget* window = spectrum_win_new_with_xy("ECD/Visible spectrum",  numberOfStates, energies, intensities);
+	GtkWidget* window = spectrum_win_new_with_xy(_("ECD/Visible spectrum"),  numberOfStates, energies, intensities);
 	GtkWidget* hbox = g_object_get_data(G_OBJECT (window), "HBoxData");
 	GtkWidget* xyplot = g_object_get_data(G_OBJECT (window), "XYPLOT");
 	GtkWidget* check_nm_ev = NULL;
@@ -116,15 +116,15 @@ static void createECDSpectrumWin(gint numberOfStates, gdouble* energies, gdouble
 
 	g_signal_connect(G_OBJECT(check_nm_ev), "toggled", G_CALLBACK(check_nm_ev_toggled), xyplot);
 	spectrum_win_set_xlabel(window, "eV");
-	spectrum_win_set_ylabel(window, "Intensity");
+	spectrum_win_set_ylabel(window, _("Intensity"));
 
 }
 /********************************************************************************/
 static void messageErrorFreq(gchar* fileName)
 {
 	gchar buffer[BSIZE];
-	sprintf(buffer,"Sorry, I can not read energies from '%s' file\n",fileName);
-  	Message(buffer,"Error",TRUE);
+	sprintf(buffer,_("Sorry, I can not read energies from '%s' file\n"),fileName);
+  	Message(buffer,_("Error"),TRUE);
 }
 /********************************************************************************/
 /*
@@ -210,7 +210,7 @@ static void read_gabedit_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_gabedit_molden_file,
-			"Read energies and intensities from a Gabedit file",
+			_("Read energies and intensities from a Gabedit file"),
 			GABEDIT_TYPEFILE_GABEDIT,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -220,7 +220,7 @@ static void read_molden_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_gabedit_molden_file,
-			"Read energies and intensities from a Molden file",
+			_("Read energies and intensities from a Molden file"),
 			GABEDIT_TYPEFILE_MOLDEN,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -235,7 +235,7 @@ static void read_mpqc_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_mpqc_file,
-			"Read energies and intensities from a MPQC output file",
+			_("Read energies and intensities from a MPQC output file"),
 			GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -250,7 +250,7 @@ static void read_molpro_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_molpro_file,
-			"Read energies and intensities from a Molpro output file",
+			_("Read energies and intensities from a Molpro output file"),
 			GABEDIT_TYPEFILE_MOLPRO,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -279,7 +279,7 @@ static void read_dalton_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_dalton_file,
-			"Read energies and intensities from a Dalton output file",
+			_("Read energies and intensities from a Dalton output file"),
 			GABEDIT_TYPEFILE_DALTON,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -294,13 +294,13 @@ static void read_gamess_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_gamess_file,
-			"Read energies and intensities from a Gamess output file",
+			_("Read energies and intensities from a Gamess output file"),
 			GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
 /********************************************************************************/
-static gboolean read_pcgamess_file(GabeditFileChooser *SelecFile, gint response_id)
+static gboolean read_firefly_file(GabeditFileChooser *SelecFile, gint response_id)
 {
  	gchar t[BSIZE];
  	gboolean OK;
@@ -370,12 +370,12 @@ static gboolean read_pcgamess_file(GabeditFileChooser *SelecFile, gint response_
 	return FALSE;
 }
 /********************************************************************************/
-static void read_pcgamess_file_dlg()
+static void read_firefly_file_dlg()
 {
 	GtkWidget* filesel = 
- 	file_chooser_open(read_pcgamess_file,
-			"Read energies and intensities from a PCGamess output file",
-			GABEDIT_TYPEFILE_PCGAMESS,GABEDIT_TYPEWIN_OTHER);
+ 	file_chooser_open(read_firefly_file,
+			_("Read energies and intensities from a FireFly output file"),
+			GABEDIT_TYPEFILE_FIREFLY,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
@@ -488,7 +488,7 @@ static void read_gaussian_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_gaussian_file,
-			"Read energies and intensities from a Gaussian output file",
+			_("Read energies and intensities from a Gaussian output file"),
 			GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -627,7 +627,7 @@ static gboolean read_qchem_file_multiple(gchar* fileName, gint nTypes, gchar** l
 	GtkWidget* combo = NULL;
 	GtkWidget* button = NULL;
 
-	gtk_window_set_title (GTK_WINDOW (window), "Select the type of calculations");
+	gtk_window_set_title (GTK_WINDOW (window), _("Select the type of calculations"));
 	gtk_container_set_border_width (GTK_CONTAINER (window), 10);
 	gtk_window_set_modal (GTK_WINDOW (window), TRUE);
 
@@ -651,8 +651,10 @@ static gboolean read_qchem_file_multiple(gchar* fileName, gint nTypes, gchar** l
 	gtk_widget_show(hbox);
 
 	label=gtk_label_new(
+			_(
 			"More types of excitation energies has been detected\n"
 			"Please select one"
+			)
 			);
 	gtk_label_set_justify(GTK_LABEL(label),GTK_JUSTIFY_CENTER);
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 2);
@@ -752,7 +754,7 @@ static void read_qchem_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_qchem_file,
-			"Read energies and intensities from a Q-Chem output file",
+			_("Read energies and intensities from a Q-Chem output file"),
 			GABEDIT_TYPEFILE_MOLPRO,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -835,7 +837,7 @@ static void read_orca_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_orca_file,
-			"Read energies and intensities from a Orca output file",
+			_("Read energies and intensities from a Orca output file"),
 			GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -850,7 +852,7 @@ static void read_adf_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_adf_file,
-			"Read energies and intensities from a ADF output file",
+			_("Read energies and intensities from a ADF output file"),
 			GABEDIT_TYPEFILE_MOLPRO,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -910,7 +912,7 @@ static void read_sample_2columns_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_sample_2columns_file,
-			"Read energies and intensities from a sample file(2columns : first = Energy(eV), second = intensity)",
+			_("Read energies and intensities from a sample file(2columns : first = Energy(eV), second = intensity)"),
 			GABEDIT_TYPEFILE_TXT,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -927,7 +929,7 @@ void createECDSpectrum(GtkWidget *parentWindow, GabEditTypeFile typeOfFile)
 	if(typeOfFile==GABEDIT_TYPEFILE_ADF) read_adf_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_MPQC) read_mpqc_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_ORCA) read_orca_file_dlg();
-	if(typeOfFile==GABEDIT_TYPEFILE_PCGAMESS) read_pcgamess_file_dlg();
+	if(typeOfFile==GABEDIT_TYPEFILE_FIREFLY) read_firefly_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_QCHEM) read_qchem_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_TXT) read_sample_2columns_file_dlg();
 }

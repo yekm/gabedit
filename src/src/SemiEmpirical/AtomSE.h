@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -28,9 +28,12 @@ typedef struct _AtomSE
 	gchar* pdbType;
 	gchar* residueName;
 	gint residueNumber;
+	gint N;
 
+	gboolean variable;
 	gboolean show;
 	GabEditLayerType layer;
+	gint* typeConnections;
 }AtomSE;
 
 gdouble getAngleSE(AtomSE *a1,AtomSE* a2,AtomSE* a3);

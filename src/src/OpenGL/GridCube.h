@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -34,6 +34,7 @@ void load_cube_molpro_density_gradient_file(GabeditFileChooser *SelecFile, gint 
 void load_cube_molpro_laplacian_density_file(GabeditFileChooser *SelecFile, gint response_id);
 void load_cube_molpro_laplacian_laplacian_file(GabeditFileChooser *SelecFile, gint response_id);
 void load_cube_gabedit_file(GabeditFileChooser *SelecFile, gint response_id);
+void load_dx_grid_file(GabeditFileChooser *selFile, gint response_id);
 void create_scale_dlg();
 void subtract_cube(GabeditFileChooser *SelecFile, gint response_id);
 void mapping_cube(GabeditFileChooser *SelecFile, gint response_id);
@@ -41,6 +42,9 @@ void save_cube_gabedit_file(GabeditFileChooser *SelecFile, gint response_id);
 void mapping_with_mep(gint N[],GridLimits limits, PoissonSolverMethod psMethod);
 void mapping_with_mep_from_multipol(gint lmax);
 void mapping_with_mep_from_charges();
+void mapping_with_fed(gint n);
+gboolean read_dx_grid_file(gchar* filename, gboolean showisowin);
+gboolean read_gauss_molpro_cube_orbitals_file(gchar* filename,gint numorb,gint Norbs,gint typefile, gboolean showisowin);
 
 #endif /* __GABEDIT_GRIDCUBE_H__ */
 

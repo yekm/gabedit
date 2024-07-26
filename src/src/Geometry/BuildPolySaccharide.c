@@ -1,6 +1,6 @@
 /* BuildPolySaccharide.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -589,7 +589,7 @@ void add_fragment(GtkWidget* button)
 		GtkWidget* Dlg = g_object_get_data(G_OBJECT (button),"Dlg");
 		GtkWidget* w;
 		destroy_dlg(Dlg,NULL);
-		w = Message("The O1-C1 bond acts as a cap to the chain.\nSuggestion: Use O1-C1 only for disaccharides or to cap a chain.","Info",TRUE);
+		w = Message(_("The O1-C1 bond acts as a cap to the chain.\nSuggestion: Use O1-C1 only for disaccharides or to cap a chain."),_("Info"),TRUE);
 		gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   		gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(GeomDlg));
 	}
@@ -713,7 +713,7 @@ static GtkWidget* add_connectivity(GtkWidget* Dlg,GtkWidget *box)
 	GtkWidget* frame;
 	GtkWidget* combobox;
 
-	frame = gtk_frame_new ("Connectivity");
+	frame = gtk_frame_new (_("Connectivity"));
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
 
@@ -761,7 +761,7 @@ static void add_isomer(GtkWidget* Dlg,GtkWidget *box)
 	GtkWidget* Table;
 	GtkWidget* frame;
 
-	frame = gtk_frame_new ("Isomer");
+	frame = gtk_frame_new (_("Isomer"));
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
 
@@ -795,7 +795,7 @@ static void add_conformation(GtkWidget* Dlg,GtkWidget *box)
 	gchar* elabel[] = {"180.0","180.0","180.0"};
 	gint i;
 
-	frame = gtk_frame_new ("Conformation");
+	frame = gtk_frame_new (_("Conformation"));
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
 
@@ -885,13 +885,13 @@ void build_polysaccharide_dlg()
   
   init_variables();
   Dlg = gtk_dialog_new();
-  gtk_window_set_title(GTK_WINDOW(Dlg),"Build PolySaccharide molecule");
+  gtk_window_set_title(GTK_WINDOW(Dlg),_("Build PolySaccharide molecule"));
   gtk_window_set_position(GTK_WINDOW(Dlg),GTK_WIN_POS_CENTER);
   gtk_window_set_modal (GTK_WINDOW (Dlg), TRUE);
   gtk_window_set_transient_for(GTK_WINDOW(Dlg),GTK_WINDOW(GeomDlg));
 
 
-  add_child(GeomDlg,Dlg,gtk_widget_destroy," Build PolySacc. mol. ");
+  add_child(GeomDlg,Dlg,gtk_widget_destroy,_(" Build PolySacc. mol. "));
 
 
   g_signal_connect(G_OBJECT(Dlg),"delete_event",(GCallback)destroy_dlg,NULL);
@@ -912,9 +912,6 @@ void build_polysaccharide_dlg()
   gtk_widget_show (vbox);
   combobox = add_connectivity(Dlg,vbox);
   add_conformation(Dlg,vbox);
-  /*
-  traite_conformation(GTK_COMBO_BOX(combobox),"O1 - C4");
-  */
 
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_end (GTK_BOX(vbox), hbox, FALSE, FALSE, 5);  
@@ -926,7 +923,7 @@ void build_polysaccharide_dlg()
   /* The "Close" button */
   gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(Dlg)->action_area), FALSE);
   gtk_widget_realize(Dlg);
-  Button = create_button(Dlg,"Close");
+  Button = create_button(Dlg,_("Close"));
   gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Dlg)->action_area), Button, FALSE, TRUE, 5);  
   g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)destroy_dlg,GTK_OBJECT(Dlg));
 

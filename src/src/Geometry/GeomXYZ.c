@@ -1,6 +1,6 @@
 /* GGeomXYZ.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -101,6 +101,7 @@ static void get_position(guint i,gdouble Pos[]);
 gchar** getListMMTypes(gint* nlist);
 gchar** getListPDBTypes(gchar* residueName, gint* nlist);
 /********************************************************************************/
+static gboolean connected(guint i,guint j);
 static void DialogueAdd();
 static void DialogueEdit();
 static void DialogueDelete();
@@ -128,7 +129,135 @@ static gint get_layer(gchar* layer)
 	else if(strstr(layer,"Medium")) return MEDIUM_LAYER;
 	else return HIGH_LAYER;
 }
-/********************************************************************************/
+/*************************************************************************************/
+static guint get_number_of_electrons(guint type)
+{
+/* 
+   type = 1 : Medium and High
+   type = 2 : High
+   type = other : All
+*/
+   guint i;
+   guint Ne=0;
+   SAtomsProp Atom;
+   for(i=0;i<NcentersXYZ;i++)
+   {
+       Atom = prop_atom_get(GeomXYZ[i].Symb);
+       switch (type)
+       {
+      	case 1 : if(get_layer(GeomXYZ[i].Layer)==HIGH_LAYER ||  
+				 get_layer(GeomXYZ[i].Layer)==MEDIUM_LAYER) Ne += Atom.atomicNumber;
+		 break;
+       	case 2 : if(get_layer(GeomXYZ[i].Layer)==HIGH_LAYER) Ne += Atom.atomicNumber;
+		 break;
+       	default : Ne += Atom.atomicNumber;
+        }
+	g_free(Atom.name);
+	g_free(Atom.symbol);
+   }
+   return Ne;
+} 
+/************************************************************************************************************/
+static gint get_number_of_model_connections()
+{
+	gint i;
+	gint j;
+	gint nc = 0;
+	gint NC = NcentersXYZ;
+	if(NcentersXYZ<1) return 0;	
+    	for(i=0;i<NC;i++)
+	{
+		if(get_layer(GeomXYZ[i].Layer)==MEDIUM_LAYER || get_layer(GeomXYZ[i].Layer)==LOW_LAYER) continue;
+    		for(j=0;j<NC;j++)
+		{
+			gint nj = j;
+			if(i==j) continue;
+			if(get_layer(GeomXYZ[j].Layer)==MEDIUM_LAYER || get_layer(GeomXYZ[j].Layer)==LOW_LAYER) continue;
+			if(GeomXYZ[i].typeConnections[nj]>0) nc++;
+		}
+	}
+	return nc;
+}
+/************************************************************************************************************/
+static gint get_number_of_inter_connections()
+{
+	gint i;
+	gint j;
+	gint nc = 0;
+	gint NC = NcentersXYZ;
+    	for(i=0;i<NC;i++)
+	{
+		if(get_layer(GeomXYZ[i].Layer)==HIGH_LAYER || get_layer(GeomXYZ[i].Layer)==LOW_LAYER) continue;
+    		for(j=0;j<NC;j++)
+		{
+			gint nj = j;
+			if(i==j) continue;
+			if(get_layer(GeomXYZ[j].Layer)==HIGH_LAYER || get_layer(GeomXYZ[j].Layer)==LOW_LAYER) continue;
+			if(GeomXYZ[i].typeConnections[nj]>0) nc++;
+		}
+	}
+	return nc;
+}
+/************************************************************************************************************/
+static void reset_spin_of_electrons()
+{
+        gint i;
+        guint NumberElectrons[3];
+        guint SpinElectrons[3];
+	gint n = 1;
+	gint nL = 0;
+	gint nM = 0;
+	gint nH = 0;
+
+	if(NcentersXYZ<1) return;	
+
+        NumberElectrons[2]= get_number_of_electrons(2);
+        NumberElectrons[1]= get_number_of_electrons(1);
+        NumberElectrons[0]= get_number_of_electrons(0);
+
+
+        for(i=0;i<3;i++)
+		SpinElectrons[i]=0;
+    	for(i=0;i<NcentersXYZ;i++)
+	{
+		if(get_layer(GeomXYZ[i].Layer)==LOW_LAYER) nH =1;
+		if(get_layer(GeomXYZ[i].Layer)==MEDIUM_LAYER) nM =1;
+		if(get_layer(GeomXYZ[i].Layer)==HIGH_LAYER) nH =1;
+	}
+	n = nH + nM + nL;
+        if(n==3)
+	{
+        	NumberElectrons[2] += get_number_of_model_connections();
+        	NumberElectrons[1] += get_number_of_inter_connections();
+	}
+        if(n==2)
+	{
+        	NumberElectrons[1] += get_number_of_model_connections();
+	}
+
+        for(i=0;(guint)i<n;i++)
+        	if((NumberElectrons[i]-TotalCharges[i])%2==0)
+			SpinElectrons[i]=1;
+                else
+			SpinElectrons[i]=2;
+
+        for(i=0;(guint)i<n;i++)
+	{
+		if(SpinMultiplicities[i]%2 != SpinElectrons[i]%2)
+			SpinMultiplicities[i] = SpinElectrons[i];
+	}
+}
+/*****************************************************************************/
+static void reset_charges_multiplicities_XYZ()
+{
+	gint i;
+	if(Natoms<1) return;	
+	for(i=0;i<3;i++)
+		TotalCharges[i] = 0;
+	reset_spin_of_electrons();
+
+}
+/************************************************************************************************************/
 void compute_dipole_using_charges_of_xyz_geom()
 {
 	gdouble charge;
@@ -211,25 +340,27 @@ static void activate_action_xyz_geom (GtkAction *action)
 	else if(!strcmp(name, "Center")) OriginToCenter(); 
 	else if(!strcmp(name, "Sort")) sort_GeomXYZ(); 
 	else if(!strcmp(name, "ToZmat")) conversion_xyz_to_zmat(); 
+	else if(!strcmp(name, "ToZmatConn")) conversion_xyz_to_zmat_using_connections(); 
 }
 /*--------------------------------------------------------------------*/
 static GtkActionEntry gtkActionEntriesXYZGeom[] =
 {
-	{"Edit", NULL, "_Edit", NULL, "Edit", G_CALLBACK (activate_action_xyz_geom) },
-	{"New", GABEDIT_STOCK_NEW, "_New", NULL, "New", G_CALLBACK (activate_action_xyz_geom) },
-	{"Delete", GABEDIT_STOCK_CUT, "_Delete", NULL, "Delete", G_CALLBACK (activate_action_xyz_geom) },
-	{"Draw", GABEDIT_STOCK_DRAW, "D_raw", NULL, "Draw", G_CALLBACK (activate_action_xyz_geom) },
-	{"Save", GABEDIT_STOCK_SAVE, "_Save", NULL, "Save", G_CALLBACK (activate_action_xyz_geom) },
-	{"All", NULL, "_All=>", NULL, "All=>", G_CALLBACK (activate_action_xyz_geom) },
-	{"AllX", NULL, "All _X=>", NULL, "All X=>", G_CALLBACK (activate_action_xyz_geom) },
-	{"AllY", NULL, "All _Y=>", NULL, "All Y=>", G_CALLBACK (activate_action_xyz_geom) },
-	{"AllZ", NULL, "All _Z=>", NULL, "All Z=>", G_CALLBACK (activate_action_xyz_geom) },
-	{"One", NULL, "_One=>", NULL, "One=>", G_CALLBACK (activate_action_xyz_geom) },
-	{"MultiplyBya0", GABEDIT_STOCK_A0P, "M_ultiply by a0", NULL, "Multiply by a0", G_CALLBACK (activate_action_xyz_geom) },
-	{"DivideBya0", GABEDIT_STOCK_A0D, "D_ivide by a0", NULL, "D_ivide by a0", G_CALLBACK (activate_action_xyz_geom) },
-	{"Center", NULL, "_Center", NULL, "Center", G_CALLBACK (activate_action_xyz_geom) },
-	{"Sort", NULL, "_Sort", NULL, "Sort", G_CALLBACK (activate_action_xyz_geom) },
-	{"ToZmat", NULL, "to _Zmat", NULL, "to _Zmat", G_CALLBACK (activate_action_xyz_geom) },
+	{"Edit", NULL, N_("_Edit"), NULL, "Edit", G_CALLBACK (activate_action_xyz_geom) },
+	{"New", GABEDIT_STOCK_NEW, N_("_New"), NULL, "New", G_CALLBACK (activate_action_xyz_geom) },
+	{"Delete", GABEDIT_STOCK_CUT, N_("_Delete"), NULL, "Delete", G_CALLBACK (activate_action_xyz_geom) },
+	{"Draw", GABEDIT_STOCK_DRAW, N_("D_raw"), NULL, "Draw", G_CALLBACK (activate_action_xyz_geom) },
+	{"Save", GABEDIT_STOCK_SAVE, N_("_Save"), NULL, "Save", G_CALLBACK (activate_action_xyz_geom) },
+	{"All", NULL, N_("_All=>"), NULL, "All=>", G_CALLBACK (activate_action_xyz_geom) },
+	{"AllX", NULL,N_("All _X=>"), NULL, "All X=>", G_CALLBACK (activate_action_xyz_geom) },
+	{"AllY", NULL,N_("All _Y=>"), NULL, "All Y=>", G_CALLBACK (activate_action_xyz_geom) },
+	{"AllZ", NULL,N_("All _Z=>"), NULL, "All Z=>", G_CALLBACK (activate_action_xyz_geom) },
+	{"One", NULL,N_("_One=>"), NULL, "One=>", G_CALLBACK (activate_action_xyz_geom) },
+	{"MultiplyBya0", GABEDIT_STOCK_A0P, N_("M_ultiply by a0"), NULL, "Multiply by a0", G_CALLBACK (activate_action_xyz_geom) },
+	{"DivideBya0", GABEDIT_STOCK_A0D, N_("D_ivide by a0"), NULL, "D_ivide by a0", G_CALLBACK (activate_action_xyz_geom) },
+	{"Center", NULL, N_("_Center"), NULL, "Center", G_CALLBACK (activate_action_xyz_geom) },
+	{"Sort", NULL, N_("_Sort"), NULL, "Sort", G_CALLBACK (activate_action_xyz_geom) },
+	{"ToZmat", NULL, N_("to _Zmat"), NULL, "to _Zmat", G_CALLBACK (activate_action_xyz_geom) },
+	{"ToZmatConn", NULL, N_("to _Zmat using connections"), NULL, "to _Zmat using conn.", G_CALLBACK (activate_action_xyz_geom) },
 };
 static guint numberOfGtkActionEntriesXYZGeom = G_N_ELEMENTS (gtkActionEntriesXYZGeom);
 /********************************************************************************/
@@ -261,6 +392,7 @@ static const gchar *uiMenuXYZGeomInfo =
 "    <menuitem name=\"Sort\" action=\"Sort\" />\n"
 "    <separator name=\"sepMenuPopZmat\" />\n"
 "    <menuitem name=\"ToZmat\" action=\"ToZmat\" />\n"
+"    <menuitem name=\"ToZmatConn\" action=\"ToZmatConn\" />\n"
 "  </popup>\n"
 ;
 /*******************************************************************************************************************************/
@@ -275,6 +407,7 @@ static GtkUIManager *newMenuXYZGeom(GtkWidget* win)
   	g_signal_connect_swapped (win, "destroy", G_CALLBACK (g_object_unref), manager);
 
 	actionGroup = gtk_action_group_new ("GabeditListOfProject");
+	gtk_action_group_set_translation_domain(actionGroup,GETTEXT_PACKAGE);
 	gtk_action_group_add_actions (actionGroup, gtkActionEntriesXYZGeom, numberOfGtkActionEntriesXYZGeom, NULL);
 
   	gtk_ui_manager_insert_action_group (manager, actionGroup, 0);
@@ -340,6 +473,7 @@ static GtkUIManager *newMenuXYZVariables(GtkWidget* win)
   	g_signal_connect_swapped (win, "destroy", G_CALLBACK (g_object_unref), manager);
 
 	actionGroup = gtk_action_group_new ("GabeditListOfProject");
+	gtk_action_group_set_translation_domain(actionGroup,GETTEXT_PACKAGE);
 	gtk_action_group_add_actions (actionGroup, gtkActionEntriesXYZVariables, numberOfGtkActionEntriesXYZVariables, NULL);
 
   	gtk_ui_manager_insert_action_group (manager, actionGroup, 0);
@@ -435,7 +569,8 @@ static void row_deleted(GtkTreeModel *model, GtkTreePath *path, gpointer data)
 	g_free(tmp);
 	gtk_tree_selection_select_path  (gtk_tree_view_get_selection (GTK_TREE_VIEW (list)), path);
 	gtk_tree_path_free(path);
-	NSA = LineSelected+1;
+	NSA[0] = LineSelected+1;
+	NSA[1] = NSA[2] = NSA[3] =-1;
  	if(ZoneDessin != NULL) rafresh_drawing();
 }
 /********************************************************************************/
@@ -467,7 +602,8 @@ static void event_dispatcher(GtkWidget *widget, GdkEventButton *event, gpointer 
 	if(strstr(menuName,"Geom"))
 	{
   		LineSelected = row;
-		NSA = LineSelected+1;
+		NSA[0] = LineSelected+1;
+		NSA[1] = NSA[2] = NSA[3] =-1;
 	}
 	else
 	{
@@ -645,6 +781,20 @@ static void set_multiple_bonds()
 	g_free(nBonds);
 }
 /*****************************************************************************/
+void reset_connections_XYZ()
+{
+	gint i,j;
+	for(i=0;i<NcentersXYZ;i++)
+	{
+		if(GeomXYZ[i].typeConnections) g_free(GeomXYZ[i].typeConnections);
+		GeomXYZ[i].typeConnections = g_malloc(NcentersXYZ*sizeof(gint));
+		for(j=0;j<NcentersXYZ;j++) GeomXYZ[i].typeConnections[j] = 0;
+		for(j=0;j<NcentersXYZ;j++) 
+			if(i!=j && connected(i,j)) GeomXYZ[i].typeConnections[j]=1;
+	}
+	set_multiple_bonds();
+}
+/*****************************************************************************/
 gboolean connecteds(guint i,guint j)
 {
   gdouble distance;
@@ -782,7 +932,7 @@ static void editedVariable (GtkCellRendererText *cell, gchar  *path_string,
 	  	Nc = atoi(path_string);
   		if(TestVariablesXYZCreated(new_text,Nc) )
   		{
-			MessageGeom("Sorry a other variable have any Name !\n"," Error ",TRUE);
+			MessageGeom(_("Sorry a other variable have any Name !\n"),_("Error"),TRUE);
       			return;
 		} 
 	}
@@ -790,8 +940,8 @@ static void editedVariable (GtkCellRendererText *cell, gchar  *path_string,
 	{
   		if(!test(new_text))
 		{
-			gchar* message=g_strdup_printf("Sorry %s is not a number \n",new_text);
-			MessageGeom(message," Error ",TRUE);
+			gchar* message=g_strdup_printf(_("Sorry %s is not a number \n"),new_text);
+			MessageGeom(message,_("Error"),TRUE);
 			g_free(message);
 			return;
   		}
@@ -808,12 +958,9 @@ static void editedVariable (GtkCellRendererText *cell, gchar  *path_string,
 	}
 	if(numCol==1)
 	{
-		/*printf("Nc = %d %s %s\n",Nc,VariablesXYZ[Nc].Name,VariablesXYZ[Nc].Value);*/
 		if(VariablesXYZ[Nc].Value) g_free(VariablesXYZ[Nc].Value);
   		VariablesXYZ[Nc].Value=g_strdup(new_text);
 	}
-
-	/* printf("%s\n",path_string);*/
 
 	path = gtk_tree_path_new_from_string (path_string);
 	gtk_tree_model_get_iter (model, &iter, path);
@@ -861,6 +1008,7 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 
    		clearList(list);
 		append_list();
+		if(ZoneDessin != NULL) rafresh_drawing();
 		return;
 	}
 	/* symbol */
@@ -872,8 +1020,8 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 		if(nc>1)new_text[1]=tolower(new_text[1]);
 		if(!test_atom_define(new_text))
 		{
-			gchar* message=g_strdup_printf("Sorry %s is not a symbol for an atom \n",new_text);
-			MessageGeom(message," Error ",TRUE);
+			gchar* message=g_strdup_printf(_("Sorry %s is not a symbol for an atom \n"),new_text);
+			MessageGeom(message,_("Error"),TRUE);
 			g_free(message);
 			return;
 		}
@@ -962,8 +1110,8 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 	  	Nc = atoi(path_string);
 		if(testav(new_text)<-1)
 		{	
-			gchar* message=g_strdup_printf("Sorry\n %s \nis not a number \nand is not a variable ",new_text);
-			MessageGeom(message," Error ",TRUE);
+			gchar* message=g_strdup_printf(_("Sorry\n %s \nis not a number \nand is not a variable "),new_text);
+			MessageGeom(message,_("Error"),TRUE);
 			g_free(message);
         		return;
 		}
@@ -1000,8 +1148,8 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 	  	Nc = atoi(path_string);
   		if(!test(new_text))
 		{
-			gchar* message=g_strdup_printf("Sorry %s is not a number \n",new_text);
-			MessageGeom(message," Error ",TRUE);
+			gchar* message=g_strdup_printf(_("Sorry %s is not a number \n"),new_text);
+			MessageGeom(message,_("Error"),TRUE);
 			g_free(message);
 			return;
   		}
@@ -1033,8 +1181,8 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 			||!strcmp(new_text,"Low")
 			|| !strcmp(new_text," ")))
 		{
-			gchar* message=g_strdup_printf("Sorry  The layer should be High, Medium, Low or one space \n");
-			MessageGeom(message," Error ",TRUE);
+			gchar* message=g_strdup_printf(_("Sorry  The layer should be High, Medium, Low or one space \n"));
+			MessageGeom(message,_("Error"),TRUE);
 			g_free(message);
 			return;
   		}
@@ -1380,8 +1528,8 @@ void save_xyz_file_no_add_list(const gchar* FileName)
 	fd = FOpen(FileName, "w");
 	if(fd == NULL)
 	{
-		gchar* t = g_strdup_printf("Sorry,\n I can not open %s file",FileName);
-		Message(t,"Error",TRUE);
+		gchar* t = g_strdup_printf(_("Sorry,\n I can not open %s file"),FileName);
+		Message(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	}
@@ -1431,8 +1579,8 @@ void save_xyz_file(const gchar* FileName)
  fd = FOpen(FileName, "w");
  if(fd == NULL)
  {
-	gchar* t = g_strdup_printf("Sorry,\n I can not open %s file",FileName);
-	Message(t,"Error",TRUE);
+	gchar* t = g_strdup_printf(_("Sorry,\n I can not open %s file"),FileName);
+	Message(t,_("Error"),TRUE);
 	g_free(t);
 	return;
  }
@@ -1486,7 +1634,7 @@ void save_geometry_xyz_file(GabeditFileChooser *SelecFile, gint response_id)
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     		return ;
  	}
 	 save_xyz_file(FileName);
@@ -1527,8 +1675,8 @@ void save_mol2_file(const gchar* FileName)
  fd = FOpen(FileName, "w");
  if(fd == NULL)
  {
-	gchar* t = g_strdup_printf("Sorry,\n I can not open %s file",FileName);
-	Message(t,"Error",TRUE);
+	gchar* t = g_strdup_printf(_("Sorry,\n I can not open %s file"),FileName);
+	Message(t,_("Error"),TRUE);
 	g_free(t);
 	return;
  }
@@ -1609,7 +1757,7 @@ void save_geometry_mol2_file(GabeditFileChooser *SelecFile, gint response_id)
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     		return ;
  	}
 	 save_mol2_file(FileName);
@@ -1934,21 +2082,21 @@ static void DialogueTransInVar()
 
   if (NcentersXYZ <1)
   {
-    	MessageGeom(" Sorry No Center  !"," Error ",TRUE);
+    	MessageGeom(_(" Sorry No Center  !"),_("Error"),TRUE);
     	return ;
   }
 
   Dialogue = gtk_dialog_new();
-  gtk_window_set_title(GTK_WINDOW(Dialogue),"Tansform all constants in Variables");
+  gtk_window_set_title(GTK_WINDOW(Dialogue),_("Tansform all constants in Variables"));
   gtk_window_set_position(GTK_WINDOW(Dialogue),GTK_WIN_POS_CENTER);
   gtk_window_set_transient_for(GTK_WINDOW(Dialogue),GTK_WINDOW(WindowGeom));
   gtk_window_set_modal (GTK_WINDOW (Dialogue), TRUE);
 
-  add_child(WindowGeom,Dialogue,gtk_widget_destroy," Question ");
+  add_child(WindowGeom,Dialogue,gtk_widget_destroy,_(" Question "));
   g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GCallback)delete_child,NULL);
 
   gtk_widget_realize(Dialogue);
-  Label = create_label_with_pixmap(Dialogue,"\nAre you sure to transform\n all constants in variables? \n"," Question ");
+  Label = create_label_with_pixmap(Dialogue,_("\nAre you sure to transform\n all constants in variables? \n"),_(" Question "));
 
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
@@ -1964,13 +2112,13 @@ static void DialogueTransInVar()
 
   gtk_box_pack_start(GTK_BOX(vboxframe), Label,TRUE,TRUE,0);
 
-  Bouton = create_button(Dialogue,"No");
+  Bouton = create_button(Dialogue,_("No"));
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Bouton);
  
-  Bouton = create_button(Dialogue,"Yes");
+  Bouton = create_button(Dialogue,_("Yes"));
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)trans_allGeomXYZ_to_variables, NULL);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
@@ -1990,7 +2138,7 @@ static void DialogueTransInConst()
 
   if (NcentersXYZ <1)
   {
-    	MessageGeom(" Sorry No Center  !","i Error ",TRUE);
+    	MessageGeom(_(" Sorry No Center  !"),_("Error"),TRUE);
     	return ;
   }
 
@@ -2000,11 +2148,11 @@ static void DialogueTransInConst()
   gtk_window_set_transient_for(GTK_WINDOW(Dialogue),GTK_WINDOW(WindowGeom));
   gtk_window_set_modal (GTK_WINDOW (Dialogue), TRUE);
 
-  add_child(WindowGeom,Dialogue,gtk_widget_destroy," Question ");
+  add_child(WindowGeom,Dialogue,gtk_widget_destroy,_(" Question "));
   g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GCallback)delete_child,NULL);
 
   gtk_widget_realize(Dialogue);
-  Label = create_label_with_pixmap(Dialogue,"\nAre you sure to transform\nall variables in constants? \n"," Question ");
+  Label = create_label_with_pixmap(Dialogue,_("\nAre you sure to transform\nall variables in constants? \n"),_(" Question "));
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
@@ -2020,13 +2168,13 @@ static void DialogueTransInConst()
 
   gtk_box_pack_start(GTK_BOX(vboxframe), Label,TRUE,TRUE,0);
 
-  Bouton = create_button(Dialogue,"No");
+  Bouton = create_button(Dialogue,_("No"));
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Bouton);
  
-  Bouton = create_button(Dialogue,"Yes");
+  Bouton = create_button(Dialogue,_("Yes"));
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)trans_allVariables_to_Constants, NULL);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
@@ -2042,7 +2190,7 @@ static void TransXYZConstVar()
  Nc=LineSelected;
  if(Nc<0)
   {
-	MessageGeom("Sorry No line selected"," Error ",TRUE);
+	MessageGeom(_("Sorry No line selected"),_("Error"),TRUE);
     	return;
   }
   trans_OneGeomXYZ_to_variables((guint)Nc);   
@@ -2095,7 +2243,7 @@ static void TransXYZVarConst()
  Nc=LineSelectedV;
  if(Nc<0)
   {
-	MessageGeom("Sorry\n No variable selected"," Error ",TRUE);
+	MessageGeom(_("Sorry\n No variable selected"),_("Error"),TRUE);
     	return;
   }
  OneVariableToConstXYZ((guint)Nc);
@@ -2186,7 +2334,7 @@ static void SelectAtom(GtkWidget *w,gpointer entry0)
 
   FenetreTable = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_modal(GTK_WINDOW(FenetreTable),TRUE);
-  gtk_window_set_title(GTK_WINDOW(FenetreTable),"Select your atom");
+  gtk_window_set_title(GTK_WINDOW(FenetreTable),_("Select your atom"));
   gtk_window_set_default_size (GTK_WINDOW(FenetreTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
 
   frame = gtk_frame_new (NULL);
@@ -2258,15 +2406,15 @@ static void AddAtom(GtkWidget *w,gpointer Entree)
   	texts[i] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[i])));
   	if (!texts[i] || !strcmp(texts[i], ""))
         {
-		MessageGeom("Sorry a Entry text is void !\n"," Error ",TRUE);
+		MessageGeom(_("Sorry a Entry text is void !\n"),_("Error"),TRUE);
   		DestroyDialog = FALSE;
         	return;
         }
 	k=testav(texts[i]);
 	if(k<-1)
 	{	
-		message=g_strdup_printf("Sorry\n %s \nis not a number \nand is not a variable ",texts[i]);
-		MessageGeom(message," Error ",TRUE);
+		message=g_strdup_printf(_("Sorry\n %s \nis not a number \nand is not a variable "),texts[i]);
+		MessageGeom(message,_("Error"),TRUE);
   		DestroyDialog = FALSE;
         	return;
 	}
@@ -2351,16 +2499,16 @@ static void EditAtom(GtkWidget *w,gpointer Entree)
   	texts[i] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[i])));
   	if (!texts[i] || !strcmp(texts[i], ""))
         {
-		message=g_strdup_printf("Sorry\n a entry is void ");
-		MessageGeom(message," Error ",TRUE);
+		message=g_strdup_printf(_("Sorry\n a entry is void "));
+		MessageGeom(message,_("Error"),TRUE);
   		DestroyDialog = FALSE;
         	return;
         }
 	k=testav(texts[i]);
 	if(k<-1)
 	{	
-		message=g_strdup_printf("Sorry\n %s \nis not a number \nand is not a variable ",texts[i]);
-		MessageGeom(message," Error ",TRUE);
+		message=g_strdup_printf(_("Sorry\n %s \nis not a number \nand is not a variable "),texts[i]);
+		MessageGeom(message,_("Error"),TRUE);
   		DestroyDialog = FALSE;
         return;
 	}
@@ -2427,7 +2575,7 @@ static void EditAtom(GtkWidget *w,gpointer Entree)
  	set_spin_of_electrons();
   }
   else
-	MessageGeom("Sorry No line selected"," Error ",TRUE);
+	MessageGeom(_("Sorry No line selected"),_("Error"),TRUE);
 
   if(iprogram == PROG_IS_GAUSS)
  	set_spin_of_electrons();
@@ -2473,25 +2621,25 @@ static void DialogueAdd(GtkWidget *w,gpointer data)
   GtkWidget *frame, *vboxframe;
   gint nlist;
   gchar *tlabel[]={	" ",	
-	  		"Atom Symbol : ", 
-	  		"MM Type : ",
-	  		"PDB Type : ",
-	  		"Residue Type : ",
+	  		N_("Atom Symbol : "), 
+	  		N_("MM Type : "),
+	  		N_("PDB Type : "),
+	  		N_("Residue Type : "),
 			" X : ", 
 			" Y : ", 
 			" Z : ", 
-			" Charge : "," Layer : "
+			N_(" Charge : "),N_(" Layer : ")
   		};
   gint i;
   gchar **tlist;
   gchar **tlistvar;
   
   Dialogue = gtk_dialog_new();
-  gtk_window_set_title(GTK_WINDOW(Dialogue),"New Center");
+  gtk_window_set_title(GTK_WINDOW(Dialogue),_("New Center"));
   gtk_window_set_position(GTK_WINDOW(Dialogue),GTK_WIN_POS_CENTER);
   gtk_window_set_transient_for(GTK_WINDOW(Dialogue),GTK_WINDOW(WindowGeom));
 
-  add_child(WindowGeom,Dialogue,gtk_widget_destroy," New Center ");
+  add_child(WindowGeom,Dialogue,gtk_widget_destroy,_(" New Center "));
   g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GCallback)delete_child,NULL);
 
   frame = gtk_frame_new (NULL);
@@ -2516,7 +2664,7 @@ static void DialogueAdd(GtkWidget *w,gpointer data)
   	gtk_entry_set_text(GTK_ENTRY(Entry[E_SYMBOL]),GeomXYZ[NcentersXYZ-1].Symb);
   gtk_editable_set_editable((GtkEditable*) Entry[E_SYMBOL],FALSE);
 
-  Bouton = gtk_button_new_with_label(" Set ");
+  Bouton = gtk_button_new_with_label(_(" Set "));
   gtk_box_pack_start (GTK_BOX(hbox), Bouton, TRUE, TRUE, 5);
   g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)SelectAtom,
                      Entry[E_SYMBOL]);
@@ -2617,12 +2765,12 @@ static void DialogueAdd(GtkWidget *w,gpointer data)
 
   gtk_widget_realize(Dialogue);
 
-  Bouton = create_button(Dialogue,"Cancel");
+  Bouton = create_button(Dialogue,_("Cancel"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 
-  Bouton = create_button(Dialogue,"OK");
+  Bouton = create_button(Dialogue,_("OK"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect(G_OBJECT(Bouton), "clicked",(GCallback)AddAtom,Entry[E_SYMBOL]);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)destroy_dialogue,GTK_OBJECT(Dialogue));
@@ -2644,14 +2792,14 @@ static void DialogueEdit()
   gint nlist;
 
   gchar *tlabel[]={	" ",	
-	  		"Atom Symbol : ", 
-	  		"MM Type : ",
-	  		"PDB Type : ",
-	  		"Residue Type : ",
+	  		N_("Atom Symbol : "), 
+	  		N_("MM Type : "),
+	  		N_("PDB Type : "),
+	  		N_("Residue Type : "),
 			" X : ", 
 			" Y : ", 
 			" Z : ", 
-			" Charge : "," Layer : "
+			N_(" Charge : "),N_(" Layer : ")
   		};
   gint i;
   gchar **tlist;
@@ -2660,18 +2808,18 @@ static void DialogueEdit()
   Nc=LineSelected;
   if(Nc<0 ) {
   	if(NcentersXYZ<1 ) 
-   		MessageGeom("Create center before \n"," Error ",TRUE);
+   		MessageGeom(_("Create center before \n"),_("Error"),TRUE);
         else
-   		MessageGeom("Please Select your center \n"," Warning ",TRUE);
+   		MessageGeom(_("Please Select your center \n"),_("Warning"),TRUE);
    return;
   }
 
   Dialogue = gtk_dialog_new();
-  gtk_window_set_title(GTK_WINDOW(Dialogue),"Edit Center");
+  gtk_window_set_title(GTK_WINDOW(Dialogue),_("Edit Center"));
   gtk_window_set_position(GTK_WINDOW(Dialogue),GTK_WIN_POS_CENTER);
   gtk_window_set_transient_for(GTK_WINDOW(Dialogue),GTK_WINDOW(WindowGeom));
 
-  add_child(WindowGeom,Dialogue,gtk_widget_destroy," Edit Center ");
+  add_child(WindowGeom,Dialogue,gtk_widget_destroy,_(" Edit Center "));
   g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GCallback)delete_child,NULL);
 
   frame = gtk_frame_new (NULL);
@@ -2693,7 +2841,7 @@ static void DialogueEdit()
   gtk_entry_set_text(GTK_ENTRY(Entry[E_SYMBOL]),GeomXYZ[Nc].Symb);
   gtk_editable_set_editable((GtkEditable*) Entry[E_SYMBOL],FALSE);
 
-  Bouton = gtk_button_new_with_label(" Set ");
+  Bouton = gtk_button_new_with_label(_(" Set "));
   gtk_box_pack_start (GTK_BOX(hbox), Bouton, TRUE, TRUE, 5);
   g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)SelectAtom,
                      Entry[E_SYMBOL]);
@@ -2782,12 +2930,12 @@ static void DialogueEdit()
   }
   gtk_widget_realize(Dialogue);
 
-  Bouton = create_button(Dialogue,"Cancel");
+  Bouton = create_button(Dialogue,_("Cancel"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 
-  Bouton = create_button(Dialogue,"OK");
+  Bouton = create_button(Dialogue,_("OK"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect(G_OBJECT(Bouton), "clicked",(GCallback)EditAtom,Entry[E_SYMBOL]);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)destroy_dialogue,GTK_OBJECT(Dialogue));
@@ -2809,21 +2957,21 @@ static void DialogueDelete()
 
   if (NcentersXYZ <1)
   {
-    MessageGeom(" No Center to delete !"," Info ",TRUE);
+    MessageGeom(_(" No Center to delete !"),_("Info"),TRUE);
     return ;
   }
 
   Dialogue = gtk_dialog_new();
-  gtk_window_set_title(GTK_WINDOW(Dialogue),"Delete Center");
+  gtk_window_set_title(GTK_WINDOW(Dialogue),_("Delete Center"));
   gtk_window_set_position(GTK_WINDOW(Dialogue),GTK_WIN_POS_CENTER);
   gtk_window_set_transient_for(GTK_WINDOW(Dialogue),GTK_WINDOW(WindowGeom));
   gtk_window_set_modal (GTK_WINDOW (Dialogue), TRUE);
 
-  add_child(WindowGeom,Dialogue,gtk_widget_destroy," Delete Center ");
+  add_child(WindowGeom,Dialogue,gtk_widget_destroy,_(" Delete Center "));
   g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GCallback)delete_child,NULL);
 
   gtk_widget_realize(Dialogue);
-  Label = create_label_with_pixmap(Dialogue,"\nAre you sure to delete \nthe last center?\n"," Question ");
+  Label = create_label_with_pixmap(Dialogue,_("\nAre you sure to delete \nthe last center?\n"),_("Question"));
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
@@ -2839,13 +2987,13 @@ static void DialogueDelete()
 
   gtk_box_pack_start(GTK_BOX(vboxframe), Label,TRUE,TRUE,0);
 
-  Bouton = create_button(Dialogue,"No");
+  Bouton = create_button(Dialogue,_("No"));
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Bouton);
  
-  Bouton = create_button(Dialogue,"Yes");
+  Bouton = create_button(Dialogue,_("Yes"));
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect(G_OBJECT(Bouton), "clicked",(GCallback)DelAtom, NULL);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)delete_child,GTK_OBJECT(Dialogue));
@@ -3005,8 +3153,8 @@ void read_hin_file_no_add_list(gchar *NomFichier)
  	if(fd == NULL)
 	{
 		gchar* t;
-		t = g_strdup_printf("Sorry\n I can not open \"%s\" file",NomFichier);
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\n I can not open \"%s\" file"),NomFichier);
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	}
@@ -3015,8 +3163,8 @@ void read_hin_file_no_add_list(gchar *NomFichier)
 	if(natoms <1)
 	{
 		gchar* t;
-		t = g_strdup_printf("Sorry\n I can read \"%s\" file",NomFichier);
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\n I can read \"%s\" file"),NomFichier);
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	}
@@ -3137,7 +3285,7 @@ void read_hin_file(GabeditFileChooser *SelecFile, gint response_id)
   
 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
 	{
-		MessageGeom("Sorry\n No file selected"," Error ",TRUE);
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
 		return ;
 	}
 
@@ -3188,15 +3336,15 @@ static gint read_gabedit_file_all_geoms(gchar *fileName)
 	gint nG = get_number_geoms_gabedit(fileName);
 	if(nG<0)
 	{
-		gchar* t = g_strdup_printf("Sorry,\n I can not open %s file",fileName);
-		MessageGeom(t,"Error",TRUE);
+		gchar* t = g_strdup_printf(_("Sorry,\n I can not open %s file"),fileName);
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return 1;
 	}
 	if(nG<1)
 	{
-		gchar* t = g_strdup_printf("Sorry,\n No geometry in %s file",fileName);
-		MessageGeom(t,"Error",TRUE);
+		gchar* t = g_strdup_printf(_("Sorry,\n No geometry in %s file"),fileName);
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return 1;
 	}
@@ -3264,7 +3412,7 @@ void read_gabedit_file(GabeditFileChooser *SelecFile, gint response_id)
   
 	if ((!fileName) || (strcmp(fileName,"") == 0))
 	{
-		MessageGeom("Sorry\n No file selected"," Error ",TRUE);
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
 		return ;
 	}
 	read_gabedit_file_add_list(fileName);
@@ -3401,8 +3549,8 @@ gboolean save_hin_file(G_CONST_RETURN gchar* FileName)
 
 	if(fd == NULL)
 	{
-		gchar* t = g_strdup_printf("Sorry,\n I can not open %s file",FileName);
-		Message(t,"Error",TRUE);
+		gchar* t = g_strdup_printf(_("Sorry,\n I can not open %s file"),FileName);
+		Message(t,_("Error"),TRUE);
 		g_free(t);
 		return FALSE;
 	}
@@ -3490,7 +3638,7 @@ void save_geometry_hin_file(GabeditFileChooser *SelecFile, gint response_id)
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     		return ;
  	}
 	 save_hin_file(FileName);
@@ -3594,7 +3742,7 @@ void save_geometry_gabedit_file(GabeditFileChooser *SelecFile, gint response_id)
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     		return ;
  	}
 	 save_gabedit_file(FileName);
@@ -3864,8 +4012,8 @@ void read_pdb_file_no_add_list(gchar *NomFichier)
 	fd = FOpen(NomFichier, "r");
  	if(fd == NULL)
 	{
-		t = g_strdup_printf("Sorry\n I can not open \"%s\" file",NomFichier);
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\n I can not open \"%s\" file"),NomFichier);
+		MessageGeom(t,_("Error"),TRUE);
 		return;
 	}
 	t=g_malloc(taille);
@@ -3974,8 +4122,8 @@ void read_pdb_file_no_add_list(gchar *NomFichier)
 	if(ZoneDessin != NULL) rafresh_drawing();
  	if(NcentersXYZ==0)
 	{
-		t = g_strdup_printf("Sorry\n I can read \"%s\" file",NomFichier);
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\n I can read \"%s\" file"),NomFichier);
+		MessageGeom(t,_("Error"),TRUE);
 		return;
 	}
 }
@@ -4098,8 +4246,8 @@ gboolean save_pdb_file(G_CONST_RETURN gchar* FileName)
 
  if(fd == NULL)
  {
-	gchar* t = g_strdup_printf("Sorry,\n I can not open %s file",FileName);
-	Message(t,"Error",TRUE);
+	gchar* t = g_strdup_printf(_("Sorry,\n I can not open %s file"),FileName);
+	Message(t,_("Error"),TRUE);
 	g_free(t);
 	return FALSE;
  }
@@ -4197,7 +4345,7 @@ void save_geometry_pdb_file(GabeditFileChooser *SelecFile, gint response_id)
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     		return ;
  	}
 	 save_pdb_file(FileName);
@@ -4458,11 +4606,11 @@ static void read_molden_gabedit_geom_conv_file(gchar* fileName, gint geometryNum
 		if(pdest && strstr(t,"ZMAT"))
 		{
 			if(type == GABEDIT_TYPEFILE_MOLDEN)
-				sprintf(t,"Sorry\nMolden file with ZMAT coordinate is not supported by Gabedit");
+				sprintf(t,_("Sorry\nMolden file with ZMAT coordinate is not supported by Gabedit"));
 			if(type == GABEDIT_TYPEFILE_GABEDIT)
-				sprintf(t,"Sorry\nGabedit file with ZMAT coordinate is not supported by Gabedit");
+				sprintf(t,_("Sorry\nGabedit file with ZMAT coordinate is not supported by Gabedit"));
 
-			MessageGeom(t," Error ",TRUE);
+			MessageGeom(t,_("Error"),TRUE);
 			return;
 		}	
  		if (pdest)
@@ -4598,8 +4746,8 @@ static gint read_gabedit_geoms_file(gchar* fileName, gint geometryNumber)
 	fd = FOpen(fileName, "r");
 	if(fd == NULL) 
 	{
-		sprintf(t,"Sorry\nI can not open %s  file ",fileName);
-		MessageGeom(t," Error ",TRUE);
+		sprintf(t,_("Sorry\nI can not open %s  file "),fileName);
+		MessageGeom(t,_("Error"),TRUE);
 		return 1;
 	}
 	OK=FALSE;
@@ -4826,8 +4974,8 @@ void read_geom_from_mpqc_output_file(gchar *fileName, gint numGeometry)
 	if(fd ==NULL)
 	{
 		g_free(t);
-		t = g_strdup_printf("Sorry\nI can not open %s  file ",fileName);
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\nI can not open %s  file "),fileName);
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	}
@@ -4871,8 +5019,8 @@ void read_geom_from_mpqc_output_file(gchar *fileName, gint numGeometry)
 		if(!OK && (numGeom == 0) )
 		{
 	 		g_free(t);
-	 		t = g_strdup_printf("Sorry\nI can read Geometry from %s  file ",fileName);
-	 		MessageGeom(t," Error ",TRUE);
+	 		t = g_strdup_printf(_("Sorry\nI can read Geometry from %s  file "),fileName);
+	 		MessageGeom(t,_("Error"),TRUE);
 	 		g_free(t);
 			for(i=0;i<5;i++) g_free(AtomCoord[i]);
 	 		return;
@@ -4889,8 +5037,8 @@ void read_geom_from_mpqc_output_file(gchar *fileName, gint numGeometry)
 		if(!OK)
 		{
 	 		g_free(t);
-	 		t = g_strdup_printf("Sorry\nI can read Geometry from %s  file ",fileName);
-	 		MessageGeom(t," Error ",TRUE);
+	 		t = g_strdup_printf(_("Sorry\nI can read Geometry from %s  file "),fileName);
+	 		MessageGeom(t,_("Error"),TRUE);
 	 		g_free(t);
 			for(i=0;i<5;i++) g_free(AtomCoord[i]);
 	 		return;
@@ -4995,7 +5143,7 @@ void read_first_mpqc_file(GabeditFileChooser *SelecFile, gint response_id)
   
 	if ((!fileName) || (strcmp(fileName,"") == 0))
 	{
-		MessageGeom("Sorry\n No file selected"," Error ",TRUE);
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
 		return ;
 	}
 	read_geom_from_mpqc_output_file(fileName,1);
@@ -5010,7 +5158,7 @@ void read_last_mpqc_file(GabeditFileChooser *SelecFile, gint response_id)
   
 	if ((!fileName) || (strcmp(fileName,"") == 0))
 	{
-		MessageGeom("Sorry\n No file selected"," Error ",TRUE);
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
 		return ;
 	}
 	read_geom_from_mpqc_output_file(fileName,-1);
@@ -5037,8 +5185,8 @@ void read_geom_conv_from_dalton_output_file(gchar *NomFichier, gint numgeometry)
 	if(fd ==NULL)
 	{
 		g_free(t);
-		t = g_strdup_printf("Sorry\nI can not open %s  file ",NomFichier);
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\nI can not open %s  file "),NomFichier);
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	}
@@ -5059,8 +5207,8 @@ void read_geom_conv_from_dalton_output_file(gchar *NomFichier, gint numgeometry)
 		}
 		if(!OK && (numgeom == 0) ){
 			g_free(t);
-			t = g_strdup_printf("Sorry\nI can not open %s  file ",NomFichier);
-			MessageGeom(t," Error ",TRUE);
+			t = g_strdup_printf(_("Sorry\nI can not open %s  file "),NomFichier);
+			MessageGeom(t,_("Error"),TRUE);
 			g_free(t);
 			return;
 		}
@@ -5153,8 +5301,8 @@ void read_geom_from_dalton_output_file(gchar *NomFichier, gint numgeometry)
 	if(fd ==NULL)
 	{
 		g_free(t);
-		t = g_strdup_printf("Sorry\nI can not open %s  file ",NomFichier);
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\nI can not open %s  file "),NomFichier);
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	}
@@ -5175,8 +5323,8 @@ void read_geom_from_dalton_output_file(gchar *NomFichier, gint numgeometry)
 		}
 		if(!OK && (numgeom == 0) ){
 			g_free(t);
-			t = g_strdup_printf("Sorry\nI can not open %s  file ",NomFichier);
-			MessageGeom(t," Error ",TRUE);
+			t = g_strdup_printf(_("Sorry\nI can not open %s  file "),NomFichier);
+			MessageGeom(t,_("Error"),TRUE);
 			g_free(t);
 			return;
 		}
@@ -5257,7 +5405,7 @@ void read_first_dalton_file(GabeditFileChooser *SelecFile, gint response_id)
   
 	if ((!fileName) || (strcmp(fileName,"") == 0))
 	{
-		MessageGeom("Sorry\n No file selected"," Error ",TRUE);
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
 		return ;
 	}
 	read_geom_from_dalton_output_file(fileName,1);
@@ -5272,7 +5420,7 @@ void read_last_dalton_file(GabeditFileChooser *SelecFile, gint response_id)
   
 	if ((!fileName) || (strcmp(fileName,"") == 0))
 	{
-		MessageGeom("Sorry\n No file selected"," Error ",TRUE);
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
 		return ;
 	}
 	read_geom_from_dalton_output_file(fileName,-1);
@@ -5299,8 +5447,8 @@ void read_geom_conv_from_gamess_output_file(gchar *NomFichier, gint numgeometry)
 	if(fd ==NULL)
 	{
 		g_free(t);
-		t = g_strdup_printf("Sorry\nI can not open %s  file ",NomFichier);
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\nI can not open %s  file "),NomFichier);
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	}
@@ -5322,8 +5470,8 @@ void read_geom_conv_from_gamess_output_file(gchar *NomFichier, gint numgeometry)
 		}
 		if(!OK && (numgeom == 0) ){
 			g_free(t);
-			t = g_strdup_printf("Sorry\nI can not read %s  file ",NomFichier);
-			MessageGeom(t," Error ",TRUE);
+			t = g_strdup_printf(_("Sorry\nI can not open %s  file "),NomFichier);
+			MessageGeom(t,_("Error"),TRUE);
 			g_free(t);
 			return;
 		}
@@ -5453,8 +5601,8 @@ void read_geom_from_gamess_output_file(gchar *NomFichier, gint numgeometry)
 	if(fd ==NULL)
 	{
 		g_free(t);
-		t = g_strdup_printf("Sorry\nI can not open %s  file ",NomFichier);
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\nI can not open %s  file "),NomFichier);
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	}
@@ -5483,8 +5631,8 @@ void read_geom_from_gamess_output_file(gchar *NomFichier, gint numgeometry)
 		}
 		if(!OK && (numgeom == 0) ){
 			g_free(t);
-			t = g_strdup_printf("Sorry\nI can not read %s  file ",NomFichier);
-			MessageGeom(t," Error ",TRUE);
+			t = g_strdup_printf(_("Sorry\nI can not open %s  file "),NomFichier);
+			MessageGeom(t,_("Error"),TRUE);
 			g_free(t);
 			return;
 		}
@@ -5572,6 +5720,139 @@ void read_geom_from_gamess_output_file(gchar *NomFichier, gint numgeometry)
 	if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
 }
 /********************************************************************************/
+void read_geom_from_gamess_irc_file(gchar *NomFichier, gint numgeometry)
+{
+	gchar *t;
+	gboolean OK;
+	gchar *AtomCoord[5];
+	FILE *fd;
+	guint taille=BSIZE;
+	guint i;
+	gint j=0;
+	gint l;
+	guint numgeom;
+	gchar dum[100];
+	gint uni=1;
+ 	long geomposok = 0;
+
+
+
+	for(i=0;i<5;i++) AtomCoord[i]=g_malloc(taille*sizeof(char));
+  
+	t=g_malloc(taille);
+#ifdef G_OS_WIN32 
+ 	fd = FOpen(NomFichier, "rb");
+#else
+	fd = FOpen(NomFichier, "r");
+#endif
+	if(fd ==NULL)
+	{
+		g_free(t);
+		t = g_strdup_printf(_("Sorry\nI can not open %s  file "),NomFichier);
+		MessageGeom(t,_("Error"),TRUE);
+		g_free(t);
+		return;
+	}
+	numgeom = 0;
+	do 
+	{
+		OK=FALSE;
+		while(!feof(fd)){
+			fgets(t,taille,fd);
+			if (strstr(t,"CARTESIAN COORDINATES (BOHR)"))
+			{
+ 				numgeom++;
+				uni=0;
+				if((gint)numgeom == numgeometry ) { OK = TRUE; break; }
+	  		}
+		}
+		if(!OK && (numgeom == 0) ){
+			g_free(t);
+			t = g_strdup_printf(_("Sorry\nI can not open %s  file "),NomFichier);
+			MessageGeom(t,_("Error"),TRUE);
+			g_free(t);
+			return;
+		}
+		if(!OK)break;
+
+		j=-1;
+		while(!feof(fd) )
+		{
+			gdouble rdum = 0;
+			fgets(t,taille,fd);
+			if ( !strcmp(t,"GRADIENT")) break;
+			if(2!=sscanf(t,"%s %lf",AtomCoord[0],&rdum)) break;
+			j++;
+
+			if(GeomXYZ==NULL) GeomXYZ=g_malloc(sizeof(GeomXYZAtomDef));
+			else GeomXYZ=g_realloc(GeomXYZ,(j+1)*sizeof(GeomXYZAtomDef));
+  			GeomXYZ[j].typeConnections = NULL;
+
+			sscanf(t,"%s %s %s %s %s",AtomCoord[0],dum, AtomCoord[1], AtomCoord[2],AtomCoord[3]);
+			{
+				gint k;
+				for(k=0;k<(gint)strlen(AtomCoord[0]);k++) if(isdigit(AtomCoord[0][k])) AtomCoord[0][k] = ' ';
+				delete_all_spaces(AtomCoord[0]);
+			}
+
+			AtomCoord[0][0]=toupper(AtomCoord[0][0]);
+			l=strlen(AtomCoord[0]);
+			if (l==2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+			GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
+			/* GeomXYZ[j].Symb=g_strdup(AtomCoord[0]);*/
+			GeomXYZ[j].Symb=get_symbol_using_z(atoi(dum));
+			GeomXYZ[j].mmType=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].pdbType=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].Residue=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].ResidueNumber=0;
+			if(Units != uni )
+			{
+				if(Units==1)
+				{
+				GeomXYZ[j].X=g_strdup(bohr_to_ang(AtomCoord[1]));
+				GeomXYZ[j].Y=g_strdup(bohr_to_ang(AtomCoord[2]));
+				GeomXYZ[j].Z=g_strdup(bohr_to_ang(AtomCoord[3]));
+				}
+				else
+				{
+				GeomXYZ[j].X=g_strdup(ang_to_bohr(AtomCoord[1]));
+				GeomXYZ[j].Y=g_strdup(ang_to_bohr(AtomCoord[2]));
+				GeomXYZ[j].Z=g_strdup(ang_to_bohr(AtomCoord[3]));
+				}
+			}
+			else
+			{
+				GeomXYZ[j].X=g_strdup(AtomCoord[1]);
+				GeomXYZ[j].Y=g_strdup(AtomCoord[2]);
+				GeomXYZ[j].Z=g_strdup(AtomCoord[3]);
+			}
+			GeomXYZ[j].Charge=g_strdup("0.0");
+			GeomXYZ[j].Layer=g_strdup(" ");
+		}
+
+		NcentersXYZ = j+1;
+		if(OK && numgeometry>=0) break;
+		if(numgeometry<0) geomposok = ftell(fd);
+	}while(!feof(fd));
+	if ( NcentersXYZ >0 )
+	{
+		reset_charges_multiplicities_XYZ();
+	}
+
+	fclose(fd);
+ 	calculMMTypes(FALSE);
+	g_free(t);
+	for(i=0;i<5;i++) g_free(AtomCoord[i]);
+	if(GeomIsOpen && MethodeGeom == GEOM_IS_XYZ)
+	{
+   		clearList(list);
+		append_list();
+	}
+	MethodeGeom = GEOM_IS_XYZ;
+	if(ZoneDessin != NULL) rafresh_drawing();
+	if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
+}
+/********************************************************************************/
 void read_first_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
 {
 	gchar *fileName;
@@ -5581,7 +5862,7 @@ void read_first_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
   
 	if ((!fileName) || (strcmp(fileName,"") == 0))
 	{
-		MessageGeom("Sorry\n No file selected"," Error ",TRUE);
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
 		return ;
 	}
 	read_geom_from_gamess_output_file(fileName,1);
@@ -5596,10 +5877,25 @@ void read_last_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
   
 	if ((!fileName) || (strcmp(fileName,"") == 0))
 	{
-		MessageGeom("Sorry\n No file selected"," Error ",TRUE);
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
 		return ;
 	}
 	read_geom_from_gamess_output_file(fileName,-1);
+}
+/********************************************************************************/
+void read_last_irc_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+	gchar *fileName;
+
+ 	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(SelecFile);
+  
+	if ((!fileName) || (strcmp(fileName,"") == 0))
+	{
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
+		return ;
+	}
+	read_geom_from_gamess_irc_file(fileName,-1);
 }
 /********************************************************************************/
 void read_geom_from_xyz_file(gchar *fileName, gint numGeom)
@@ -5618,8 +5914,8 @@ void read_geom_from_xyz_file(gchar *fileName, gint numGeom)
 	file = FOpen(fileName, "r");
 	if(!file)
 	{
-		t = g_strdup_printf("Sorry\n I can not open %s file",fileName);
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\nI can not open %s  file "),fileName);
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	}
@@ -5640,8 +5936,8 @@ void read_geom_from_xyz_file(gchar *fileName, gint numGeom)
 	if(!OK)
 	{
 		g_free(t);
-		t = g_strdup_printf("Sorry\n I can not read geometry number %d for %s file",numGeom,fileName);
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\n I can not read geometry number %d for %s file"),numGeom,fileName);
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	}
@@ -5733,8 +6029,8 @@ void read_geom_from_gaussian_file(gchar *NomFichier, gint numgeometry)
  if(fd ==NULL)
  {
   g_free(t);
-  t = g_strdup_printf("Sorry\nI can not open %s  file ",NomFichier);
-  MessageGeom(t," Error ",TRUE);
+  t = g_strdup_printf(_("Sorry\nI can not open %s  file "),NomFichier);
+  MessageGeom(t,_("Error"),TRUE);
   g_free(t);
   return;
  }
@@ -5797,8 +6093,8 @@ void read_geom_from_gaussian_file(gchar *NomFichier, gint numgeometry)
  if(!OK && (numgeom == 0) )
  {
   	g_free(t);
-  	t = g_strdup_printf("Sorry\nI can not read geometry in  %s  file ",NomFichier);
-  	MessageGeom(t," Error ",TRUE);
+  	t = g_strdup_printf(_("Sorry\nI can not read geometry in  %s  file "),NomFichier);
+  	MessageGeom(t,_("Error"),TRUE);
   	g_free(t);
   	return;
     }
@@ -5812,10 +6108,10 @@ void read_geom_from_gaussian_file(gchar *NomFichier, gint numgeometry)
     result = pdest - t ;
     if ( result >0 )
     {
-
 	long geomposok = ftell(fd);
+      	get_dipole_from_gaussian_output_file(fd);
+	fseek(fd, geomposok, SEEK_SET);
 	get_charges_from_gaussian_output_file(fd,j+1);
- 	get_dipole_from_gaussian_output_file(fd);
 	get_natural_charges_from_gaussian_output_file(fd,j+1);
 	fseek(fd, geomposok, SEEK_SET);
 	get_esp_charges_from_gaussian_output_file(fd,j+1);
@@ -5904,8 +6200,8 @@ void read_geom_from_molpro_file(gchar *NomFichier, gint numgeometry)
  if(fd ==NULL)
  {
   g_free(t);
-  t = g_strdup_printf("Sorry\nI can not open %s  file ",NomFichier);
-  MessageGeom(t," Error ",TRUE);
+  t = g_strdup_printf(_("Sorry\nI can not open %s  file "),NomFichier);
+  MessageGeom(t,_("Error"),TRUE);
   g_free(t);
   return;
  }
@@ -5930,8 +6226,8 @@ void read_geom_from_molpro_file(gchar *NomFichier, gint numgeometry)
         }
  if(!OK && (numgeom == 0) ){
   	g_free(t);
-  	t = g_strdup_printf("Sorry\nI can not open %s  file ",NomFichier);
-  	MessageGeom(t," Error ",TRUE);
+  	t = g_strdup_printf(_("Sorry\nI can not open %s  file "),NomFichier);
+  	MessageGeom(t,_("Error"),TRUE);
   	g_free(t);
   	return;
     }
@@ -6036,7 +6332,7 @@ void read_last_gaussian_file(GabeditFileChooser *SelecFile , gint response_id)
   
  if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
  {
-	MessageGeom("Sorry\n No file slected"," Error ",TRUE);
+	MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
     	return ;
  }
 
@@ -6044,7 +6340,7 @@ void read_last_gaussian_file(GabeditFileChooser *SelecFile , gint response_id)
  fd = FOpen(NomFichier, "r");
  if(fd ==NULL)
  {
-  	MessageGeom("Sorry\nI can not open this file"," Error ",TRUE);
+  	MessageGeom(_("Sorry\nI can not open this file"),_("Error"),TRUE);
   	return;
  }
  while(!feof(fd)){
@@ -6089,7 +6385,7 @@ void read_last_gaussian_file(GabeditFileChooser *SelecFile , gint response_id)
 	  }
         }
  if(!OK && (numgeom == 1) ){
-  	MessageGeom("Sorry\nI can not read this file"," Error ",TRUE);
+  	MessageGeom(_("Sorry\nI can not read this file"),_("Error"),TRUE);
 	return;
     }
  if(!OK)break;
@@ -6103,8 +6399,9 @@ void read_last_gaussian_file(GabeditFileChooser *SelecFile , gint response_id)
     if ( result >0 )
     {
 	long geomposok = ftell(fd);
-	get_charges_from_gaussian_output_file(fd,j+1);
       	get_dipole_from_gaussian_output_file(fd);
+	fseek(fd, geomposok, SEEK_SET);
+	get_charges_from_gaussian_output_file(fd,j+1);
 	get_natural_charges_from_gaussian_output_file(fd,j+1);
 	fseek(fd, geomposok, SEEK_SET);
 	get_esp_charges_from_gaussian_output_file(fd,j+1);
@@ -6197,7 +6494,7 @@ void read_first_gaussian_file(GabeditFileChooser *SelecFile, gint response_id)
   
  if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
  {
-	MessageGeom("Sorry\n No file selected"," Error ",TRUE);
+	MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
     return ;
  }
 
@@ -6205,7 +6502,7 @@ void read_first_gaussian_file(GabeditFileChooser *SelecFile, gint response_id)
  fd = FOpen(NomFichier, "r");
  if(fd ==NULL)
  {
-  MessageGeom("Sorry\nI can not open this file"," Error ",TRUE);
+  MessageGeom(_("Sorry\nI can not open this file"),_("Error"),TRUE);
   return;
  }
  while(!feof(fd)){
@@ -6247,7 +6544,7 @@ void read_first_gaussian_file(GabeditFileChooser *SelecFile, gint response_id)
 	  }
         }
  if(!OK){
-  	MessageGeom("Sorry\nI can not read this file"," Error ",TRUE);
+  	MessageGeom(_("Sorry\nI can not read this file"),_("Error"),TRUE);
 	return;
     }
 
@@ -6260,8 +6557,9 @@ void read_first_gaussian_file(GabeditFileChooser *SelecFile, gint response_id)
     if ( result >0 )
     {
 	long geomposok = ftell(fd);
-	get_charges_from_gaussian_output_file(fd,j+1);
       	get_dipole_from_gaussian_output_file(fd);
+	fseek(fd, geomposok, SEEK_SET);
+	get_charges_from_gaussian_output_file(fd,j+1);
 	get_natural_charges_from_gaussian_output_file(fd,j+1);
 	fseek(fd, geomposok, SEEK_SET);
 	get_esp_charges_from_gaussian_output_file(fd,j+1);
@@ -6321,6 +6619,141 @@ void read_first_gaussian_file(GabeditFileChooser *SelecFile, gint response_id)
   set_last_directory(NomFichier);
 }
 /********************************************************************************/
+void read_fchk_gaussian_file(GabeditFileChooser *SelecFile , gint response_id)
+{
+	gchar *fileName;
+	FILE *file;
+	gint i,j;
+	gint *z = NULL;
+	gdouble* coords = NULL;
+	gdouble* charges = NULL;
+	gdouble* dipole = NULL;
+	gint n;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+
+	fileName = gabedit_file_chooser_get_current_file(SelecFile);
+	if ((!fileName) || (strcmp(fileName,"") == 0))
+	{
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
+    		return ;
+	}
+	file = FOpen(fileName, "r");
+	if(file ==NULL)
+	{
+  		MessageGeom(_("Sorry\nI can not open this file"),_("Error"),TRUE);
+  		return;
+	}
+
+	i = get_one_int_from_fchk_gaussian_file(file,"Multiplicity ");
+	if(i<1)
+	{
+  		MessageGeom(_("Sorry\nI can not the multiplicity from this file"),_("Error"),TRUE);
+		return;
+	}
+	rewind(file);
+	j = get_one_int_from_fchk_gaussian_file(file,"Number of atoms ");
+	if(j<1)
+	{
+  		MessageGeom(_("Sorry\nI can not the number of atoms from this file"),_("Error"),TRUE);
+		return;
+	}
+
+	SpinMultiplicities[0] = i;
+	rewind(file);
+	z = get_array_int_from_fchk_gaussian_file(file, "Atomic numbers ", &n);
+	if(n!=j)
+	{
+  		MessageGeom(_("Sorry\nI can not read the atomic numbers from this file"),_("Error"),TRUE);
+		return;
+	}
+	rewind(file);
+	coords = get_array_real_from_fchk_gaussian_file(file, "Current cartesian coordinates  ", &n);
+	if(n!=3*j)
+	{
+  		MessageGeom(_("Sorry\nI can not read the current cartesian coordinates from this file"),_("Error"),TRUE);
+		return;
+	}
+	rewind(file);
+	TotalCharges[0] = get_one_int_from_fchk_gaussian_file(file,"Charge ");
+	NcentersXYZ = j;
+
+    	GeomXYZ=g_malloc(NcentersXYZ*sizeof(GeomXYZAtomDef));
+	for(j=0;j<NcentersXYZ;j++)
+	{
+    		GeomXYZ[j].typeConnections = NULL;
+		GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
+		GeomXYZ[j].Symb=g_strdup(symb_atom_get(z[j]));
+		GeomXYZ[j].mmType=g_strdup(GeomXYZ[j].Symb);
+		GeomXYZ[j].pdbType=g_strdup(GeomXYZ[j].Symb);
+		GeomXYZ[j].Residue=g_strdup(GeomXYZ[j].Symb);
+		GeomXYZ[j].ResidueNumber=0;
+		if(Units == 0 )
+		{
+			GeomXYZ[j].X=g_strdup_printf("%0.20lf",coords[j*3]);
+			GeomXYZ[j].Y=g_strdup_printf("%0.20lf",coords[j*3+1]);
+			GeomXYZ[j].Z=g_strdup_printf("%0.20lf",coords[j*3+2]);
+		}
+    		else
+    		{
+			GeomXYZ[j].X=g_strdup_printf("%0.20lf",coords[j*3]*BOHR_TO_ANG);
+			GeomXYZ[j].Y=g_strdup_printf("%0.20lf",coords[j*3+1]*BOHR_TO_ANG);
+			GeomXYZ[j].Z=g_strdup_printf("%0.20lf",coords[j*3+2]*BOHR_TO_ANG);
+    		}
+    		GeomXYZ[j].Charge=g_strdup("0.0");
+    		GeomXYZ[j].Layer=g_strdup(" ");
+	}
+	if(z) g_free(z);
+	if(coords) g_free(coords);
+	z = NULL;
+	coords = NULL;
+	rewind(file);
+	charges = get_array_real_from_fchk_gaussian_file(file, "NPA Charges ", &n);
+	if(n==NcentersXYZ && charges)
+	{
+		for(j=0;j<NcentersXYZ;j++)
+    			GeomXYZ[j].Charge = g_strdup_printf("%14.8f",charges[j]);
+
+	}
+	else
+	{
+		rewind(file);
+		charges = get_array_real_from_fchk_gaussian_file(file, "ESP Charges  ", &n);
+		if(n==NcentersXYZ && charges) 
+		{
+			for(j=0;j<NcentersXYZ;j++)
+    				GeomXYZ[j].Charge = g_strdup_printf("%14.8f",charges[j]);
+		}
+		else
+		{
+			rewind(file);
+			charges = get_array_real_from_fchk_gaussian_file(file, "Mulliken Charges  ", &n);
+			if(n==NcentersXYZ && charges) 
+			{
+				for(j=0;j<NcentersXYZ;j++)
+    					GeomXYZ[j].Charge = g_strdup_printf("%14.8f",charges[j]);
+			}
+			if(charges) g_free(charges);
+		}
+	}
+	rewind(file);
+	dipole = get_array_real_from_fchk_gaussian_file(file, "Dipole Moment  ", &n);
+	Dipole.def = FALSE;
+	if(n==3)
+	{
+		for(i=0;i<3;i++) Dipole.Value[i] = dipole[i] / AUTODEB;
+		Dipole.def = TRUE;
+
+	}
+	if(dipole) g_free(dipole);
+ 	fclose(file);
+ 	calculMMTypes(FALSE);
+	if(GeomIsOpen) append_list();
+	if(ZoneDessin != NULL) rafresh_drawing();
+	if(iprogram == PROG_IS_GAUSS) set_spin_of_electrons();
+	set_last_directory(fileName);
+}
+/********************************************************************************/
 void read_last_molcas_file(GabeditFileChooser *SelecFile , gint response_id)
 {
 	gchar t[BSIZE];
@@ -6342,14 +6775,14 @@ void read_last_molcas_file(GabeditFileChooser *SelecFile , gint response_id)
   
 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
 	{
-		MessageGeom("Sorry\n No file slected"," Error ",TRUE);
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
 		return ;
 	}
 
 	file = FOpen(NomFichier, "r");
 	if(file ==NULL)
 	{
-		MessageGeom("Sorry\nI can not open this file"," Error ",TRUE);
+		MessageGeom(_("Sorry\nI can not open this file"),_("Error"),TRUE);
 		return;
 	}
 	numgeom = 0;
@@ -6370,7 +6803,7 @@ void read_last_molcas_file(GabeditFileChooser *SelecFile , gint response_id)
 	}
 	if(!OK && numgeom==0)
 	{
-  		MessageGeom("Sorry\nI can not read this file"," Error ",TRUE);
+  		MessageGeom(_("Sorry\nI can not read this file"),_("Error"),TRUE);
 		return;
 	}
 	if(!OK) break;
@@ -6459,15 +6892,15 @@ void read_last_molpro_file(GabeditFileChooser *SelecFile , gint response_id)
   
  if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
  {
-	MessageGeom("Sorry\n No file slected"," Error ",TRUE);
-    return ;
+	MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
+	return ;
  }
 
  t=g_malloc(taille);
  fd = FOpen(NomFichier, "r");
  if(fd ==NULL)
  {
-  MessageGeom("Sorry\nI can not open this file"," Error ",TRUE);
+  MessageGeom(_("Sorry\nI can not open this file"),_("Error"),TRUE);
   return;
  }
  numgeom =1;
@@ -6487,7 +6920,7 @@ void read_last_molpro_file(GabeditFileChooser *SelecFile , gint response_id)
 	  }
         }
  if(!OK && (numgeom == 1) ){
-  	MessageGeom("Sorry\nI can not read this file"," Error ",TRUE);
+  	MessageGeom(_("Sorry\nI can not read this file"),_("Error"),TRUE);
 	return;
     }
  if(!OK)break;
@@ -6645,8 +7078,8 @@ void read_geom_from_qchem_file(gchar *NomFichier, gint numgeometry)
 	if(fd ==NULL)
 	{
 	 	g_free(t);
-	 	t = g_strdup_printf("Sorry\nI can not open %s  file ",NomFichier);
-	 	MessageGeom(t," Error ",TRUE);
+	 	t = g_strdup_printf(_("Sorry\nI can not open %s  file "),NomFichier);
+	 	MessageGeom(t,_("Error"),TRUE);
 	 	g_free(t);
 	 	return;
 	}
@@ -6679,8 +7112,8 @@ void read_geom_from_qchem_file(gchar *NomFichier, gint numgeometry)
 	 if(numgeom == 0)
 	 {
 		g_free(t);
-		t = g_strdup_printf("Sorry\nI can not read geometry in	%s file ",NomFichier);
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\nI can not read geometry in	%s file "),NomFichier);
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	  }
@@ -6874,8 +7307,8 @@ void read_geom_from_mopac_output_file(gchar *NomFichier, gint numgeometry)
 	if(fd ==NULL)
 	{
 	 	g_free(t);
-	 	t = g_strdup_printf("Sorry\nI can not open %s  file ",NomFichier);
-	 	MessageGeom(t," Error ",TRUE);
+	 	t = g_strdup_printf(_("Sorry\nI can not open %s  file "),NomFichier);
+	 	MessageGeom(t,_("Error"),TRUE);
 	 	g_free(t);
 	 	return;
 	}
@@ -6909,8 +7342,8 @@ void read_geom_from_mopac_output_file(gchar *NomFichier, gint numgeometry)
 	 if(numgeom == 0)
 	 {
 		g_free(t);
-		t = g_strdup_printf("Sorry\nI can not read geometry in	%s file ",NomFichier);
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\nI can not read geometry in	%s file "),NomFichier);
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	  }
@@ -6989,6 +7422,147 @@ void read_geom_from_mopac_output_file(gchar *NomFichier, gint numgeometry)
 	 if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
 }
 /********************************************************************************/
+void read_XYZ_from_mopac_irc_output_file(gchar *FileName, gint numGeom)
+{
+	gchar *t;
+	gboolean OK;
+	gchar *AtomCoord[10];
+	FILE *fd;
+	guint taille=BSIZE;
+	guint i,l;
+	GeomXYZAtomDef* GeomXYZtemp=NULL;
+	gint Ncent = 0;
+	gint Nvar = 0;
+	VariablesXYZDef* VariablesXYZtemp=NULL;
+	gchar symb[20];
+	gchar type[20];
+	gchar charge[20];
+	gint k1;
+	gint j;
+
+	for(i=0;i<10;i++) AtomCoord[i]=g_malloc(taille*sizeof(gchar));
+	fd = FOpen(FileName, "r");
+	if(fd == NULL)
+	{
+		t = g_strdup_printf(_("Sorry\n I can not open \"%s\" file"),FileName); 
+		MessageGeom(t,_("Error"),TRUE);
+		g_free(t);
+		return;
+	}
+	t=g_malloc(taille);
+	OK = TRUE;
+	i = 0;
+  	while(!feof(fd) )    
+  	{
+ 		if(!fgets(t, taille, fd))break;
+		if(
+			strstr(t,"POTENTIAL") && 
+			strstr(t,"LOST") &&
+			strstr(t,"TOTAL")
+		) 
+		{
+			i++;
+			if(i==numGeom)break;
+		}
+	}
+	if(i==0) OK = FALSE;
+  	while(!feof(fd) && OK )    
+  	{
+ 		if(!fgets(t, taille, fd))OK = FALSE;
+		if(
+		strstr(t,"ATOM")&&
+		strstr(t,"X")&&
+		strstr(t,"Y")&&
+		strstr(t,"Z")) break;
+	}
+	if(!OK)
+	{
+		g_free(t);
+		t = g_strdup_printf(_("Sorry\n I can not read geometry from \"%s\" file"),FileName); 
+		MessageGeom(t,_("Error"),TRUE);
+		g_free(t);
+		return;
+	}
+	Ncent=0;
+	GeomXYZtemp = NULL;
+	
+	j=0;
+	while(!feof(fd) )
+	{
+		if(!fgets(t,taille,fd))break;
+		if(this_is_a_backspace(t)) break;
+                i = sscanf(t,"%d %s %s %s %s",
+				&k1,AtomCoord[0],
+				AtomCoord[1],AtomCoord[2],AtomCoord[3]);
+    		if( i== 5)
+                {
+                        Ncent = j+1;
+			GeomXYZtemp=g_realloc(GeomXYZtemp,Ncent*sizeof(GeomXYZAtomDef));
+    			AtomCoord[0][0]=toupper(AtomCoord[0][0]);
+    			l=strlen(AtomCoord[0]);
+      			if (l>=2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+
+    			GeomXYZtemp[j].Nentry=NUMBER_LIST_XYZ;
+			get_symb_type_charge(AtomCoord[0],symb,type,charge);
+			{
+				gint k;
+				for(k=0;k<(gint)strlen(symb);k++) if(isdigit(symb[k])) symb[k] = ' ';
+				delete_all_spaces(symb);
+			}
+
+    			GeomXYZtemp[j].Symb=g_strdup(symb);
+			GeomXYZtemp[j].mmType=g_strdup(type);
+			GeomXYZtemp[j].pdbType=g_strdup(type);
+			GeomXYZtemp[j].Charge=g_strdup(charge);
+
+    			GeomXYZtemp[j].Residue=g_strdup("DUM");
+    			GeomXYZtemp[j].ResidueNumber=0;
+    			GeomXYZtemp[j].X=g_strdup(AtomCoord[1]);
+    			GeomXYZtemp[j].Y=g_strdup(AtomCoord[2]);
+    			GeomXYZtemp[j].Z=g_strdup(AtomCoord[3]);
+    			GeomXYZtemp[j].Layer=g_strdup(" ");
+    			GeomXYZtemp[j].typeConnections = NULL;
+			j++;
+		}
+        }
+	fseek(fd, 0L, SEEK_SET);
+	if(j==0) OK = FALSE;
+	else get_charge_and_multiplicity_from_mopac_output_file(fd);
+	fclose(fd);
+
+	g_free(t);
+	for(i=0;i<5;i++) g_free(AtomCoord[i]);
+	if( !OK || Ncent <1 )
+	{
+		FreeGeomXYZ(GeomXYZtemp,VariablesXYZtemp,Ncent, Nvar);
+		MessageGeom(_("Sorry\n I can not read geometry in Mopac input file"),_("Error"),TRUE);
+		return;
+	}
+	if(GeomXYZ) freeGeomXYZ(GeomXYZ);
+	if(VariablesXYZ) freeVariablesXYZ(VariablesXYZ);
+	GeomXYZ = GeomXYZtemp;
+	NcentersXYZ = Ncent;
+	NVariablesXYZ = Nvar;
+	VariablesXYZ = VariablesXYZtemp;
+	MethodeGeom = GEOM_IS_XYZ;
+	calculMMTypes(FALSE);
+	if( Units== 0 ) GeomXYZ_Change_Unit(FALSE);
+	if(GeomIsOpen) create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
+
+	if(ZoneDessin != NULL) rafresh_drawing();
+	set_last_directory(FileName);
+}
+/********************************************************************************/
+void read_geom_from_mopac_irc_output_file(gchar *FileName, gint numGeom)
+{
+	if(zmat_mopac_irc_output_file(FileName))
+	{
+		read_Zmat_from_mopac_irc_output_file(FileName, numGeom);
+	}
+	else 
+		read_XYZ_from_mopac_irc_output_file(FileName, numGeom);
+}
+/********************************************************************************/
 void read_XYZ_from_mopac_scan_output_file(gchar *FileName, gint numGeom)
 {
 	gchar *t;
@@ -7011,8 +7585,8 @@ void read_XYZ_from_mopac_scan_output_file(gchar *FileName, gint numGeom)
 	fd = FOpen(FileName, "r");
 	if(fd == NULL)
 	{
-		t = g_strdup_printf("Sorry\n I can not open \"%s\" file",FileName); 
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\n I can not open \"%s\" file"),FileName); 
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	}
@@ -7043,8 +7617,8 @@ void read_XYZ_from_mopac_scan_output_file(gchar *FileName, gint numGeom)
 	if(!OK)
 	{
 		g_free(t);
-		t = g_strdup_printf("Sorry\n I can not read geometry from \"%s\" file",FileName); 
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\n I can not read geometry from \"%s\" file"),FileName); 
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	}
@@ -7130,7 +7704,7 @@ void read_XYZ_from_mopac_scan_output_file(gchar *FileName, gint numGeom)
 	if( !OK || Ncent <1 )
 	{
 		FreeGeomXYZ(GeomXYZtemp,VariablesXYZtemp,Ncent, Nvar);
-		MessageGeom("Sorry\n I can not read geometry in Mopac input file"," Error ",TRUE);
+		MessageGeom(_("Sorry\n I can not read geometry in Mopac input file"),_("Error"),TRUE);
 		return;
 	}
 	if(GeomXYZ) freeGeomXYZ(GeomXYZ);
@@ -7231,8 +7805,8 @@ void read_geom_from_mopac_aux_file(gchar *NomFichier, gint numgeometry)
 	if(fd ==NULL)
 	{
 	 	g_free(t);
-	 	t = g_strdup_printf("Sorry\nI can not open %s  file ",NomFichier);
-	 	MessageGeom(t," Error ",TRUE);
+	 	t = g_strdup_printf(_("Sorry\nI can not open %s  file "),NomFichier);
+	 	MessageGeom(t,_("Error"),TRUE);
 	 	g_free(t);
 	 	return;
 	}
@@ -7243,8 +7817,8 @@ void read_geom_from_mopac_aux_file(gchar *NomFichier, gint numgeometry)
 	 if(!OK) 
 	 {
 	 	g_free(t);
-	 	t = g_strdup_printf("Sorry\nI can not read the atom symbols in %s  file ",NomFichier);
-	 	MessageGeom(t," Error ",TRUE);
+	 	t = g_strdup_printf(_("Sorry\nI can not read the atom symbols in %s  file "),NomFichier);
+	 	MessageGeom(t,_("Error"),TRUE);
 	 	g_free(t);
 	 	return;
 	 }
@@ -7273,8 +7847,8 @@ void read_geom_from_mopac_aux_file(gchar *NomFichier, gint numgeometry)
 	 if(numgeom == 0)
 	 {
 		g_free(t);
-		t = g_strdup_printf("Sorry\nI can not read geometry in	%s file ",NomFichier);
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\nI can not read geometry in	%s file "),NomFichier);
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		free_one_string_table(elements, nElements);
 		return;
@@ -7428,8 +8002,8 @@ void read_geom_from_orca_file(gchar *NomFichier, gint numgeometry)
 	if(fd ==NULL)
 	{
 	 	g_free(t);
-	 	t = g_strdup_printf("Sorry\nI can not open %s  file ",NomFichier);
-	 	MessageGeom(t," Error ",TRUE);
+	 	t = g_strdup_printf(_("Sorry\nI can not open %s  file "),NomFichier);
+	 	MessageGeom(t,_("Error"),TRUE);
 	 	g_free(t);
 	 	return;
 	}
@@ -7462,8 +8036,8 @@ void read_geom_from_orca_file(gchar *NomFichier, gint numgeometry)
 	 if(numgeom == 0)
 	 {
 		g_free(t);
-		t = g_strdup_printf("Sorry\nI can not read geometry in	%s file ",NomFichier);
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\nI can not read geometry in	%s file "),NomFichier);
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	  }
@@ -7540,7 +8114,7 @@ void read_first_orca_file(GabeditFileChooser *SelecFile , gint response_id)
 	
 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
 	{
-		MessageGeom("Sorry\n No file slected"," Error ",TRUE);
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
 		return ;
 	}
 	read_geom_from_orca_file(NomFichier, 1);
@@ -7556,7 +8130,7 @@ void read_last_orca_file(GabeditFileChooser *SelecFile , gint response_id)
 	
 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
 	{
-		MessageGeom("Sorry\n No file slected"," Error ",TRUE);
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
 		return ;
 	}
 	read_geom_from_orca_file(NomFichier, -1);
@@ -7572,7 +8146,7 @@ void read_first_qchem_file(GabeditFileChooser *SelecFile , gint response_id)
 	
 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
 	{
-		MessageGeom("Sorry\n No file slected"," Error ",TRUE);
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
 		return ;
 	}
 	read_geom_from_qchem_file(NomFichier, 1);
@@ -7588,7 +8162,7 @@ void read_last_qchem_file(GabeditFileChooser *SelecFile , gint response_id)
 	
 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
 	{
-		MessageGeom("Sorry\n No file slected"," Error ",TRUE);
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
 		return ;
 	}
 	read_geom_from_qchem_file(NomFichier, -1);
@@ -7604,7 +8178,7 @@ void read_first_mopac_output_file(GabeditFileChooser *SelecFile , gint response_
 	
 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
 	{
-		MessageGeom("Sorry\n No file slected"," Error ",TRUE);
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
 		return ;
 	}
 	read_geom_from_mopac_output_file(NomFichier, 1);
@@ -7620,7 +8194,7 @@ void read_last_mopac_output_file(GabeditFileChooser *SelecFile , gint response_i
 	
 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
 	{
-		MessageGeom("Sorry\n No file slected"," Error ",TRUE);
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
 		return ;
 	}
 	read_geom_from_mopac_output_file(NomFichier, -1);
@@ -7636,7 +8210,7 @@ void read_last_mopac_aux_file(GabeditFileChooser *SelecFile , gint response_id)
 	
 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
 	{
-		MessageGeom("Sorry\n No file slected"," Error ",TRUE);
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
 		return ;
 	}
 	read_geom_from_mopac_aux_file(NomFichier, -1);
@@ -7663,14 +8237,14 @@ void read_first_molcas_file(GabeditFileChooser *SelecFile, gint response_id)
   
 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
 	{
-		MessageGeom("Sorry\n No file slected"," Error ",TRUE);
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
 		return ;
 	}
 
 	file = FOpen(NomFichier, "r");
 	if(file ==NULL)
 	{
-		MessageGeom("Sorry\nI can not open this file"," Error ",TRUE);
+		MessageGeom(_("Sorry\nI can not open this file"),_("Error"),TRUE);
 		return;
 	}
 	OK=FALSE;
@@ -7688,7 +8262,7 @@ void read_first_molcas_file(GabeditFileChooser *SelecFile, gint response_id)
 	}
 	if(!OK)
 	{
-  		MessageGeom("Sorry\nI can not read this file"," Error ",TRUE);
+  		MessageGeom(_("Sorry\nI can not read this file"),_("Error"),TRUE);
 		return;
 	}
 
@@ -7775,7 +8349,7 @@ void read_first_molpro_file(GabeditFileChooser *SelecFile, gint response_id)
   
  if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
  {
-	MessageGeom("Sorry\n No file slected"," Error ",TRUE);
+	MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
     return ;
  }
 
@@ -7783,7 +8357,7 @@ void read_first_molpro_file(GabeditFileChooser *SelecFile, gint response_id)
  fd = FOpen(NomFichier, "r");
  if(fd ==NULL)
  {
-  MessageGeom("Sorry\nI can not open this file"," Error ",TRUE);
+  MessageGeom(_("Sorry\nI can not open this file"),_("Error"),TRUE);
   return;
  }
  OK=FALSE;
@@ -7799,7 +8373,7 @@ void read_first_molpro_file(GabeditFileChooser *SelecFile, gint response_id)
 	  }
         }
  if(!OK){
-  	MessageGeom("Sorry\nI can not read this file"," Error ",TRUE);
+  	MessageGeom(_("Sorry\nI can not read this file"),_("Error"),TRUE);
 	return;
     }
 
@@ -8009,7 +8583,7 @@ void read_XYZ_from_gamess_input_file(gchar *fileName)
 	if( !OK || Ncent <1 )
 	{
    		FreeGeomXYZ(GeomXYZtemp,VariablesXYZtemp,Ncent, 0);
-   		MessageGeom("Sorry\n I can not read geometry from your Gamess input file"," Error ",TRUE);
+   		MessageGeom(_("Sorry\n I can not read geometry from your Gamess input file"),_("Error"),TRUE);
 		return;
 	}
 	if(GeomXYZ) freeGeomXYZ(GeomXYZ);
@@ -8136,7 +8710,7 @@ void read_XYZ_from_mpqc_input_file(gchar *fileName)
 	if( !OK || Ncent <1 )
 	{
    		FreeGeomXYZ(GeomXYZtemp,VariablesXYZtemp,Ncent, 0);
-   		MessageGeom("Sorry\n I can not read geometry from your MPQC input file"," Error ",TRUE);
+   		MessageGeom(_("Sorry\n I can not read geometry from your MPQC input file"),_("Error"),TRUE);
 		return;
 	}
 	if(GeomXYZ) freeGeomXYZ(GeomXYZ);
@@ -8195,7 +8769,7 @@ void read_XYZ_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
   	Ncent=atoi(t);
   	if(Ncent<1)
   	{
-		MessageGeom("Sorry\n i can not read XYZ geometry in molpro input file"," Error ",TRUE);
+		MessageGeom(_("Sorry\n i can not read XYZ geometry in molpro input file"),_("Error"),TRUE);
 		return;
   	}
 	Dipole.def = FALSE;
@@ -8314,7 +8888,7 @@ void read_XYZ_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
  if( !OK || Ncent <1 || Nvar < Kvar)
  {
  	FreeGeomXYZ(GeomXYZtemp,VariablesXYZtemp,Ncent, Nvar);
-   	MessageGeom("Sorry\n I can not read geometry in Molpro input file"," Error ",TRUE);
+   	MessageGeom(_("Sorry\n I can not read geometry in Molpro input file"),_("Error"),TRUE);
    	return;
  }
  if(GeomXYZ)
@@ -8490,7 +9064,7 @@ void read_XYZ_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile 
  if( !OK || Ncent <1 )
  {
    FreeGeomXYZ(GeomXYZtemp,VariablesXYZtemp,Ncent, Nvar);
-   MessageGeom("Sorry\n I can not read geometry in Gaussian input file"," Error ",TRUE);
+   MessageGeom(_("Sorry\n I can not read geometry in Gaussian input file"),_("Error"),TRUE);
    return;
  }
  if(GeomXYZ)
@@ -8542,7 +9116,7 @@ void read_XYZ_from_orca_input_file(gchar *NomFichier)
 	OK=TRUE;
  	if(file==NULL)
 	{
-   		MessageGeom("Sorry\n I can not read geometry in Orca input file"," Error ",TRUE);
+   		MessageGeom(_("Sorry\n I can not read geometry in Orca input file"),_("Error"),TRUE);
    		return;
 	}
 	t=g_malloc(taille*sizeof(gchar));
@@ -8669,7 +9243,7 @@ void read_XYZ_from_orca_input_file(gchar *NomFichier)
 	if( !OK || Ncent <1 )
 	{
    		FreeGeomXYZ(GeomXYZtemp,VariablesXYZtemp,Ncent, Nvar);
-   		MessageGeom("Sorry\n I can not read geometry in Orca input file"," Error ",TRUE);
+   		MessageGeom(_("Sorry\n I can not read geometry in Orca input file"),_("Error"),TRUE);
    		return;
  	}
 	if(GeomXYZ) freeGeomXYZ(GeomXYZ);
@@ -8856,7 +9430,7 @@ void read_XYZ_from_qchem_input_file(gchar *NomFichier)
  if( !OK || Ncent <1 )
  {
    FreeGeomXYZ(GeomXYZtemp,VariablesXYZtemp,Ncent, Nvar);
-   MessageGeom("Sorry\n I can not read geometry in QChem input file"," Error ",TRUE);
+   MessageGeom(_("Sorry\n I can not read geometry in QChem input file"),_("Error"),TRUE);
    return;
  }
  if(GeomXYZ)
@@ -9064,7 +9638,7 @@ void read_XYZ_from_mopac_input_file(gchar *NomFichier)
  if( !OK || Ncent <1 )
  {
    FreeGeomXYZ(GeomXYZtemp,VariablesXYZtemp,Ncent, Nvar);
-   MessageGeom("Sorry\n I can not read geometry in Mopac input file"," Error ",TRUE);
+   MessageGeom(_("Sorry\n I can not read geometry in Mopac input file"),_("Error"),TRUE);
    return;
  }
  if(GeomXYZ) freeGeomXYZ(GeomXYZ);
@@ -9257,8 +9831,8 @@ void read_mol2_tinker_file_no_add_list(gchar *NomFichier,gchar*type)
 	fd = FOpen(NomFichier, "r");
  	if(fd == NULL)
 	{
-		t = g_strdup_printf("Sorry\n I can not open \"%s\" file",NomFichier);
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\n I can not open \"%s\" file"),NomFichier);
+		MessageGeom(t,_("Error"),TRUE);
 		return;
 	}
 	t=g_malloc(taille);
@@ -9286,8 +9860,8 @@ void read_mol2_tinker_file_no_add_list(gchar *NomFichier,gchar*type)
 	if(!OK)
 	{
 		g_free(t);
-		t = g_strdup_printf("Sorry\n \"%s\" is not at MOL2 format",NomFichier);
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\n \"%s\" is not at MOL2 format"),NomFichier);
+		MessageGeom(t,_("Error"),TRUE);
 		if(Type)
 			g_free(Type);
 		return;
@@ -9301,8 +9875,8 @@ void read_mol2_tinker_file_no_add_list(gchar *NomFichier,gchar*type)
 		{
 			OK=FALSE;
 			NcentersXYZ=0;
-			t = g_strdup_printf("Sorry\n \"%s\" is not at Tinker format",NomFichier);
-			MessageGeom(t," Error ",TRUE);
+			t = g_strdup_printf(_("Sorry\n \"%s\" is not at Tinker format"),NomFichier);
+			MessageGeom(t,_("Error"),TRUE);
 			return;
 		}
 		npdb = get_pdbtype_charge_from_tinker_amber_key_file
@@ -9541,8 +10115,8 @@ void save_tinker_file(G_CONST_RETURN gchar* FileName)
  fd = FOpen(FileName, "w");
  if(fd == NULL)
  {
-	gchar* t = g_strdup_printf("Sorry,\n I can not open %s file",FileName);
-	Message(t,"Error",TRUE);
+	gchar* t = g_strdup_printf(_("Sorry,\n I can not open %s file"),FileName);
+	Message(t,_("Error"),TRUE);
 	g_free(t);
 	return;
  }
@@ -9601,7 +10175,7 @@ void save_geometry_tinker_file(GabeditFileChooser *SelecFile, gint response_id)
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     		return ;
  	}
 	 save_tinker_file(FileName);
@@ -9645,7 +10219,7 @@ void read_mol_file_no_add_list(G_CONST_RETURN  gchar *NomFichier)
 		sscanf(t,"%d %d", &nAtoms, &nBonds);
 		if(nAtoms<1)
 		{
-			MessageGeom("Sorry\n this is not a mol file"," Error ",TRUE);
+			MessageGeom(_("Sorry\n this is not a mol file"),_("Error"),TRUE);
 			return;
 		}
 	}
@@ -9696,7 +10270,7 @@ void read_mol_file_no_add_list(G_CONST_RETURN  gchar *NomFichier)
 	}
 	if(j!=nAtoms)
 	{
-		MessageGeom("Sorry\n I cannot read this file"," Error ",TRUE);
+		MessageGeom(_("Sorry\n I cannot read this file"),_("Error"),TRUE);
  		if(GeomXYZ) freeGeomXYZ();
 		fclose(fd);
 		return;
@@ -9759,7 +10333,7 @@ void read_XYZ_file_no_add_list(G_CONST_RETURN  gchar *NomFichier)
   if(Nc<1)
   {
 	OK=FALSE;
-	MessageGeom("Sorry\n this is not a XYZ file"," Error ",TRUE);
+	MessageGeom(_("Sorry\n this is not a XYZ file"),_("Error"),TRUE);
 	return;
   }
   if(OK)
@@ -9849,9 +10423,11 @@ void read_XYZ_file_no_add_list(G_CONST_RETURN  gchar *NomFichier)
 void create_GeomXYZ_from_draw_grometry()
 {
 	gint j;
+	gint jj;
 	gboolean toSort = FALSE;
 	gint iHigh = -1;
 	gint i;
+	gint* numOrd = NULL;
 
  	if(GeomXYZ) freeGeomXYZ();
  	if(VariablesXYZ) freeVariablesXYZ(VariablesXYZ);
@@ -9865,38 +10441,51 @@ void create_GeomXYZ_from_draw_grometry()
 	GeomXYZ=g_malloc(NcentersXYZ*sizeof(GeomXYZAtomDef));
 	*/
 	if(Natoms>0) GeomXYZ=g_malloc(NcentersXYZ*sizeof(GeomXYZAtomDef));
+	if(Natoms>0) numOrd=g_malloc(NcentersXYZ*sizeof(GeomXYZAtomDef));
+	for(i=0;i<(gint)NcentersXYZ;i++)
+	{
+		numOrd[i] = i;
+		for(j=0;j<(gint)NcentersXYZ;j++)
+    		if(geometry0[j].N-1==i)
+		{ 
+			numOrd[i] = j; 
+			break;
+		}
+	}
+
 	copy_connections(geometry0, geometry, Natoms);
 
 	for(j=0;j<(gint)NcentersXYZ;j++)
 	{
+		jj = numOrd[j]; 
     		GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
-    		GeomXYZ[j].Symb=g_strdup(geometry0[j].Prop.symbol);
-    		GeomXYZ[j].mmType=g_strdup(geometry0[j].mmType);
-    		GeomXYZ[j].pdbType=g_strdup(geometry0[j].pdbType);
-    		GeomXYZ[j].Residue=g_strdup(geometry0[j].Residue);
-    		GeomXYZ[j].ResidueNumber=geometry0[j].ResidueNumber;
+    		GeomXYZ[j].Symb=g_strdup(geometry0[jj].Prop.symbol);
+    		GeomXYZ[j].mmType=g_strdup(geometry0[jj].mmType);
+    		GeomXYZ[j].pdbType=g_strdup(geometry0[jj].pdbType);
+    		GeomXYZ[j].Residue=g_strdup(geometry0[jj].Residue);
+    		GeomXYZ[j].ResidueNumber=geometry0[jj].ResidueNumber;
     		GeomXYZ[j].typeConnections = g_malloc(NcentersXYZ*sizeof(gint));
-		for(i=0;i<NcentersXYZ;i++) GeomXYZ[j].typeConnections[i] = get_connection_type(j,i);
+		for(i=0;i<NcentersXYZ;i++) GeomXYZ[j].typeConnections[i] = get_connection_type(jj,numOrd[i]);
     		if(Units==1)
     		{
-    			GeomXYZ[j].X=g_strdup_printf("%0.6f",geometry0[j].X*BOHR_TO_ANG);
-    			GeomXYZ[j].Y=g_strdup_printf("%0.6f",geometry0[j].Y*BOHR_TO_ANG);
-    			GeomXYZ[j].Z=g_strdup_printf("%0.6f",geometry0[j].Z*BOHR_TO_ANG);
+    			GeomXYZ[j].X=g_strdup_printf("%0.6f",geometry0[jj].X*BOHR_TO_ANG);
+    			GeomXYZ[j].Y=g_strdup_printf("%0.6f",geometry0[jj].Y*BOHR_TO_ANG);
+    			GeomXYZ[j].Z=g_strdup_printf("%0.6f",geometry0[jj].Z*BOHR_TO_ANG);
     		}
     		else
     		{
-    			GeomXYZ[j].X=g_strdup_printf("%0.6f",geometry0[j].X);
-    			GeomXYZ[j].Y=g_strdup_printf("%0.6f",geometry0[j].Y);
-    			GeomXYZ[j].Z=g_strdup_printf("%0.6f",geometry0[j].Z);
+    			GeomXYZ[j].X=g_strdup_printf("%0.6f",geometry0[jj].X);
+    			GeomXYZ[j].Y=g_strdup_printf("%0.6f",geometry0[jj].Y);
+    			GeomXYZ[j].Z=g_strdup_printf("%0.6f",geometry0[jj].Z);
 		}
-    		GeomXYZ[j].Charge=g_strdup_printf("%0.6f",geometry0[j].Charge);
-		if(geometry0[j].Variable) set_variable_one_atom_in_GeomXYZ(j);
-		if(geometry0[j].Layer==LOW_LAYER) 
+    		GeomXYZ[j].Charge=g_strdup_printf("%0.6f",geometry0[jj].Charge);
+		if(geometry0[jj].Variable) set_variable_one_atom_in_GeomXYZ(j);
+		if(geometry0[jj].Layer==LOW_LAYER) 
 		{
 			GeomXYZ[j].Layer=g_strdup("Low");
 			toSort = TRUE;
 		}
-		else if(geometry0[j].Layer==MEDIUM_LAYER) 
+		else if(geometry0[jj].Layer==MEDIUM_LAYER) 
 		{
 			GeomXYZ[j].Layer=g_strdup("Medium");
 			toSort = TRUE;
@@ -9906,7 +10495,9 @@ void create_GeomXYZ_from_draw_grometry()
 			if(iHigh<0) iHigh = j;
 			GeomXYZ[j].Layer=g_strdup(" ");
 		}
-    }
+    	}
+	if(numOrd) g_free(numOrd);
+	numOrd = NULL;
 	if(toSort && iHigh>=0)
 	{
 		GeomXYZAtomDef t;
@@ -10002,7 +10593,7 @@ void read_mol2_file(GabeditFileChooser *SelecFile , gint response_id)
 
  if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
  {
-	MessageGeom("Sorry\n No file selected"," Error ",TRUE);
+	MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
     return ;
  }
 
@@ -10039,7 +10630,7 @@ void read_tinker_file(GabeditFileChooser *SelecFile, gint response_id)
   
  if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
  {
-	MessageGeom("Sorry\n No file selected"," Error ",TRUE);
+	MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
     return ;
  }
 
@@ -10079,7 +10670,7 @@ void read_pdb_file(GabeditFileChooser *SelecFile, gint response_id)
   
  if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
  {
-	MessageGeom("Sorry\n No file selected"," Error ",TRUE);
+	MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
     return ;
  }
 
@@ -10118,7 +10709,7 @@ void read_mol_file(GabeditFileChooser *SelecFile, gint  response_id)
   
 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
 	{
-		MessageGeom("Sorry\n No file slected"," Error ",TRUE);
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
 		return ;
 	}
 
@@ -10164,7 +10755,7 @@ void read_mol_file(GabeditFileChooser *SelecFile, gint  response_id)
   
  if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
  {
-	MessageGeom("Sorry\n No file slected"," Error ",TRUE);
+	MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
     return ;
  }
 
@@ -10179,7 +10770,7 @@ void read_mol_file(GabeditFileChooser *SelecFile, gint  response_id)
   {
 	OK=FALSE;
 	NcentersXYZ=0;
-	MessageGeom("Sorry\n this is not a XYZ file"," Error ",TRUE);
+	MessageGeom(_("Sorry\n this is not a XYZ file"),_("Error"),TRUE);
 
 	return;
   }
@@ -10285,124 +10876,134 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   gchar* patternsaux[] = {"*.aux","*",NULL};
   gchar* patternsgab[] = {"*.gab","*",NULL};
   gchar* patternsmol[] = {"*.mol","*",NULL};
+  gchar* patternsirc[] = {"*.irc","*",NULL};
+  gchar* patternsfchk[] = {"*.fchk","*",NULL};
 
 
   switch(itype){
   case GABEDIT_TYPEFILEGEOM_NEW : return;
 	   break;
   case GABEDIT_TYPEFILEGEOM_XYZ :
-	   SelecFile = gabedit_file_chooser_new("Read XYZ file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read XYZ file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsxyz);
 	   break;
   case GABEDIT_TYPEFILEGEOM_MOL :
-	   SelecFile = gabedit_file_chooser_new("Read Mol file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read Mol file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsmol);
 	   break;
   case GABEDIT_TYPEFILEGEOM_DALTONFIRST : 
-	   SelecFile = gabedit_file_chooser_new("Read the first geometry from a dalton output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read the first geometry from a dalton output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
   case GABEDIT_TYPEFILEGEOM_DALTONLAST : 
-	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a dalton output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read the last geometry from a dalton output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
-  case GABEDIT_TYPEFILEGEOM_PCGAMESSFIRST : 
+  case GABEDIT_TYPEFILEGEOM_FIREFLYFIRST : 
   case GABEDIT_TYPEFILEGEOM_GAMESSFIRST : 
-	   SelecFile = gabedit_file_chooser_new("Read the first geometry from a Gamess output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read the first geometry from a Gamess output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternslog);
 	   break;
-  case GABEDIT_TYPEFILEGEOM_PCGAMESSLAST : 
+  case GABEDIT_TYPEFILEGEOM_FIREFLYLAST : 
   case GABEDIT_TYPEFILEGEOM_GAMESSLAST : 
-	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a Gamess output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read the last geometry from a Gamess output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternslog);
+	   break;
+  case GABEDIT_TYPEFILEGEOM_GAMESSIRC : 
+	   SelecFile = gabedit_file_chooser_new(_("Read the last geometry from a Gamess IRC file"), GTK_FILE_CHOOSER_ACTION_OPEN);
+   	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsirc);
 	   break;
   case GABEDIT_TYPEFILEGEOM_GAUSSOUTFIRST : 
-	   SelecFile = gabedit_file_chooser_new("Read the first geometry from a gaussian output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read the first geometry from a gaussian output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternslog);
 	   break;
   case GABEDIT_TYPEFILEGEOM_GAUSSOUTLAST : 
-	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a gaussian output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read the last geometry from a gaussian output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternslog);
 	   break;
+  case GABEDIT_TYPEFILEGEOM_GAUSSIAN_FCHK : 
+	   SelecFile = gabedit_file_chooser_new(_("Read the geometry from a gaussian fchk file"), GTK_FILE_CHOOSER_ACTION_OPEN);
+   	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsfchk);
+	   break;
   case GABEDIT_TYPEFILEGEOM_MOLCASOUTFIRST : 
-	   SelecFile = gabedit_file_chooser_new("Read the first geometry from a molcas output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read the first geometry from a molcas output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
   case GABEDIT_TYPEFILEGEOM_MOLCASOUTLAST : 
-	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a molcas output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read the last geometry from a molcas output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
   case GABEDIT_TYPEFILEGEOM_MOLPROOUTFIRST : 
-	   SelecFile = gabedit_file_chooser_new("Read the first geometry from a molpro output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read the first geometry from a molpro output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
   case GABEDIT_TYPEFILEGEOM_MOLPROOUTLAST : 
-	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a molpro output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read the last geometry from a molpro output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
   case GABEDIT_TYPEFILEGEOM_MOL2 : 
-	   SelecFile = gabedit_file_chooser_new("Read MOL2 file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read MOL2 file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsmol2);
 	   break;
   case GABEDIT_TYPEFILEGEOM_MPQCOUTFIRST : 
-	   SelecFile = gabedit_file_chooser_new("Read the first geometry from a MPQC output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read the first geometry from a MPQC output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
   case GABEDIT_TYPEFILEGEOM_MPQCOUTLAST : 
-	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a MPQC output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read the last geometry from a MPQC output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
   case GABEDIT_TYPEFILEGEOM_ORCAOUTFIRST : 
-	   SelecFile = gabedit_file_chooser_new("Read the first geometry from a ORCA-Chem output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read the first geometry from a ORCA-Chem output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
   case GABEDIT_TYPEFILEGEOM_ORCAOUTLAST : 
-	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a ORCA output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read the last geometry from a ORCA output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
   case GABEDIT_TYPEFILEGEOM_QCHEMOUTFIRST : 
-	   SelecFile = gabedit_file_chooser_new("Read the first geometry from a Q-Chem output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read the first geometry from a Q-Chem output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
   case GABEDIT_TYPEFILEGEOM_QCHEMOUTLAST : 
-	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a Q-Chem output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read the last geometry from a Q-Chem output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
   case GABEDIT_TYPEFILEGEOM_MOPACOUTFIRST : 
-	   SelecFile = gabedit_file_chooser_new("Read the first geometry from a Mopac output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read the first geometry from a Mopac output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
   case GABEDIT_TYPEFILEGEOM_MOPACOUTLAST : 
-	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a Mopac output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read the last geometry from a Mopac output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
   case GABEDIT_TYPEFILEGEOM_MOPACAUX : 
-	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a Mopac aux file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read the last geometry from a Mopac aux file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsaux);
 	   break;
   case GABEDIT_TYPEFILEGEOM_TINKER :
-	   SelecFile = gabedit_file_chooser_new("Read Tinker file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read Tinker file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternstnk);
 	   break;
   case GABEDIT_TYPEFILEGEOM_PDB :
-	   SelecFile = gabedit_file_chooser_new("Read pdb file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read pdb file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternspdb);
 	   break;
   case GABEDIT_TYPEFILEGEOM_HIN :
-	   SelecFile = gabedit_file_chooser_new("Read hyperchem file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read hyperchem file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternshin);
 	   break;
   case GABEDIT_TYPEFILEGEOM_GABEDIT :
-	   SelecFile = gabedit_file_chooser_new("Read Gabedit file", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read Gabedit file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsgab);
 	   break;
   case GABEDIT_TYPEFILEGEOM_MOPACOUTSCAN :
-	   SelecFile = gabedit_file_chooser_new("Read geometries from a Mopac scan output", GTK_FILE_CHOOSER_ACTION_OPEN);
+	   SelecFile = gabedit_file_chooser_new(_("Read geometries from a Mopac scan output"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
   case GABEDIT_TYPEFILEGEOM_MOLDEN : return;
   case GABEDIT_TYPEFILEGEOM_DALTONIN : return;
-  case GABEDIT_TYPEFILEGEOM_PCGAMESSIN : return;
+  case GABEDIT_TYPEFILEGEOM_FIREFLYIN : return;
   case GABEDIT_TYPEFILEGEOM_GAMESSIN : return;
   case GABEDIT_TYPEFILEGEOM_GAUSSIN : return;
   case GABEDIT_TYPEFILEGEOM_MOLCASIN : return;
@@ -10437,16 +11038,20 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_dalton_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_DALTONLAST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_dalton_file), GTK_OBJECT(SelecFile)); break;
-  case GABEDIT_TYPEFILEGEOM_PCGAMESSFIRST :
+  case GABEDIT_TYPEFILEGEOM_FIREFLYFIRST :
   case GABEDIT_TYPEFILEGEOM_GAMESSFIRST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_gamess_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_GAMESSLAST :
-  case GABEDIT_TYPEFILEGEOM_PCGAMESSLAST :
+  case GABEDIT_TYPEFILEGEOM_FIREFLYLAST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_gamess_file), GTK_OBJECT(SelecFile)); break;
+  case GABEDIT_TYPEFILEGEOM_GAMESSIRC :
+	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_irc_gamess_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_GAUSSOUTFIRST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_gaussian_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_GAUSSOUTLAST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_gaussian_file), GTK_OBJECT(SelecFile)); break;
+  case GABEDIT_TYPEFILEGEOM_GAUSSIAN_FCHK :
+	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_fchk_gaussian_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_MOLCASOUTFIRST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_molcas_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_MOLCASOUTLAST :
@@ -10491,7 +11096,7 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   case GABEDIT_TYPEFILEGEOM_MOLDEN : 
   case GABEDIT_TYPEFILEGEOM_GAUSSIN : 
   case GABEDIT_TYPEFILEGEOM_DALTONIN : 
-  case GABEDIT_TYPEFILEGEOM_PCGAMESSIN : 
+  case GABEDIT_TYPEFILEGEOM_FIREFLYIN : 
   case GABEDIT_TYPEFILEGEOM_GAMESSIN : 
   case GABEDIT_TYPEFILEGEOM_MOLCASIN : 
   case GABEDIT_TYPEFILEGEOM_MOLPROIN : 
@@ -10616,7 +11221,7 @@ void create_window_save_xyzmol2tinkerpdbhin()
 
   if(NcentersXYZ<1)
   {
-    MessageGeom(" Sorry No Center  !"," Error ",TRUE);
+    MessageGeom(_(" Sorry No Center  !"),_("Error"),TRUE);
     return;
   }
   if(!Win)
@@ -10628,7 +11233,7 @@ void create_window_save_xyzmol2tinkerpdbhin()
   gtk_window_set_position(GTK_WINDOW(fp),GTK_WIN_POS_CENTER);
   gtk_window_set_transient_for(GTK_WINDOW(fp),GTK_WINDOW(Fenetre));
 
-  add_child(Win,fp,gtk_widget_destroy," Save XYZ ");
+  add_child(Win,fp,gtk_widget_destroy,_(" Save XYZ "));
 
   g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)delete_child,NULL);
   g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)gtk_widget_destroy,NULL);
@@ -10697,7 +11302,7 @@ void create_window_save_xyzmol2tinkerpdbhin()
   gtk_widget_realize(fp);
 
 
-  button = create_button(fp,"OK");
+  button = create_button(fp,_("OK"));
   gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, FALSE, 3);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
@@ -10705,7 +11310,7 @@ void create_window_save_xyzmol2tinkerpdbhin()
   g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(save_xyzmol2tinkerpdbhin_file),GTK_OBJECT(fp));
   g_signal_connect_swapped(G_OBJECT(button),"clicked",(GCallback)delete_child,GTK_OBJECT(fp));
 
-  button = create_button(fp,"Cancel");
+  button = create_button(fp,_("Cancel"));
   gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, FALSE, 3);
   g_signal_connect_swapped(G_OBJECT(button),"clicked",(GCallback)delete_child,GTK_OBJECT(fp));
   gtk_widget_show (button);
@@ -10749,7 +11354,8 @@ void create_geomXYZ_list(GtkWidget *vbox, GabEditTypeFileGeom readfile)
 	if(iprogram == PROG_IS_MOLPRO) NCr = NUMBER_LIST_XYZ-1;
 	else NCr = NUMBER_LIST_XYZ;
 
-	NSA = -1;
+	NSA[0] = -1;
+	NSA[1] = NSA[2] = NSA[3] =-1;
 	MethodeGeom = GEOM_IS_XYZ;
 	if(GeomXYZ!=NULL && readfile != GABEDIT_TYPEFILEGEOM_UNKNOWN)
 	{
@@ -10830,8 +11436,8 @@ static void DelVariable(GtkWidget *w,gpointer data)
         if(LineSelectedV<0)
               LineSelectedV=NVariablesXYZ-1;
 	if(VariablesXYZ[LineSelectedV].Used) {
-        message=g_strdup_printf("Sorry\n %s \n is used in Geometry",VariablesXYZ[LineSelectedV].Name);
-	MessageGeom(message," Error ",TRUE);
+        message=g_strdup_printf(_("Sorry\n %s \n is used in Geometry"),VariablesXYZ[LineSelectedV].Name);
+	MessageGeom(message,_("Error"),TRUE);
         return;
         }
 	if(NVariablesXYZ>0)
@@ -10894,22 +11500,22 @@ static void EditVariable(GtkWidget *w,gpointer Entree)
   }
    else
      {
-	MessageGeom("Sorry a Entry text is void !\n"," Error ",TRUE);
+	MessageGeom(_("Sorry a Entry text is void !\n"),_("Error"),TRUE);
   	DestroyDialog = FALSE;
       	return;
      }
 
   if(TestVariablesXYZCreated(texts[0],Nc) )
   {
-	MessageGeom("Sorry a other variable have any Name !\n"," Error ",TRUE);
+	MessageGeom(_("Sorry a other variable have any Name !\n"),_("Error"),TRUE);
   	DestroyDialog = FALSE;
       	return;
   } 
 
   if(!test(texts[1]))
   {
-	message=g_strdup_printf("Sorry %s is not a number \n",texts[1]);
-	MessageGeom(message," Error ",TRUE);
+	message=g_strdup_printf(_("Sorry %s is not a number \n"),texts[1]);
+	MessageGeom(message,_("Error"),TRUE);
   	DestroyDialog = FALSE;
   }
   else
@@ -10935,15 +11541,15 @@ static void DialogueDeleteV()
 
   if (NVariablesXYZ <1)
   {
-    MessageGeom(" No Variable to delet !"," Error ",TRUE);
+    MessageGeom(_(" No Variable to delet !"),_("Error"),TRUE);
     return ;
   }
     
   if(LineSelectedV<0)
          LineSelectedV=NVariablesXYZ-1;
   if(VariablesXYZ[LineSelectedV].Used) {
-        message=g_strdup_printf("Sorry\n %s \n is used in Geometry",VariablesXYZ[LineSelectedV].Name);
-	MessageGeom(message," Error ",TRUE);
+        message=g_strdup_printf(_("Sorry\n %s \n is used in Geometry"),VariablesXYZ[LineSelectedV].Name);
+	MessageGeom(message,_("Error"),TRUE);
         return;
         }
 
@@ -11001,18 +11607,18 @@ static void DialogueEditV()
   Nc=LineSelectedV;
   if(Nc<0 ) {
   	if(NVariablesXYZ<1)
-   	MessageGeom("Create variable before \n"," Warning ",TRUE);
+   	MessageGeom(_("Create variable before \n"),_("Warning"),TRUE);
        else
-   	MessageGeom("Please Select your variable \n"," Warning ",TRUE);
+   	MessageGeom(_("Please Select your variable \n"),_("Warning"),TRUE);
    return;
   }
   Dialogue = gtk_dialog_new();
-  gtk_window_set_title(GTK_WINDOW(Dialogue),"Edit Variable");
+  gtk_window_set_title(GTK_WINDOW(Dialogue),_("Edit Variable"));
   gtk_window_set_position(GTK_WINDOW(Dialogue),GTK_WIN_POS_CENTER);
   gtk_window_set_transient_for(GTK_WINDOW(Dialogue),GTK_WINDOW(Fenetre));
   gtk_window_set_transient_for(GTK_WINDOW(Dialogue),GTK_WINDOW(WindowGeom));
 
-  add_child(WindowGeom,Dialogue,gtk_widget_destroy," Edit Variable ");
+  add_child(WindowGeom,Dialogue,gtk_widget_destroy,_(" Edit Variable "));
   g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GCallback)delete_child,NULL);
 
     frame = gtk_frame_new (NULL);
@@ -11040,12 +11646,12 @@ static void DialogueEditV()
   gtk_entry_set_text(GTK_ENTRY(EntryV[1]),VariablesXYZ[Nc].Value);
 
   gtk_widget_realize(Dialogue);
-  Bouton = create_button(Dialogue,"Cancel");
+  Bouton = create_button(Dialogue,_("Cancel"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 
-  Bouton = create_button(Dialogue,"OK");
+  Bouton = create_button(Dialogue,_("OK"));
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect(G_OBJECT(Bouton), "clicked",(GCallback)EditVariable,NULL);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)destroy_dialogue,GTK_OBJECT(Dialogue));
@@ -11066,7 +11672,7 @@ static void AddVariable(GtkWidget *w,gpointer Entree)
   DestroyDialog = TRUE;
   if(TestVariablesXYZCreated(texts[0],-1))
   {
-	MessageGeom("Sorry a other variable have any Name !\n"," Error ",TRUE);
+	MessageGeom(_("Sorry a other variable have any Name !\n"),_("Error"),TRUE);
   	DestroyDialog = FALSE;
       	return;
   } 
@@ -11080,7 +11686,7 @@ static void AddVariable(GtkWidget *w,gpointer Entree)
   	NVariablesXYZ++;
    else
      {
-   	MessageGeom("Sorry a Entry text is void !\n"," Error ",TRUE);
+   	MessageGeom(_("Sorry a Entry text is void !\n"),_("Error"),TRUE);
   	DestroyDialog = FALSE;
       	return;
      }
@@ -11096,9 +11702,9 @@ static void AddVariable(GtkWidget *w,gpointer Entree)
   VariablesXYZ[NVariablesXYZ-1].Used=FALSE;
   if(!test(texts[1]))
   {
-	message=g_strdup_printf("Sorry %s is not a number \n",texts[1]);
+	message=g_strdup_printf(_("Sorry %s is not a number \n"),texts[1]);
   	DestroyDialog = FALSE;
-	MessageGeom(message," Error ",TRUE);
+	MessageGeom(message,_("Error"),TRUE);
 	NVariablesXYZ--;
 	if(NVariablesXYZ>0)
 	VariablesXYZ=g_realloc(VariablesXYZ,NVariablesXYZ*sizeof(VariablesXYZDef));
@@ -11146,12 +11752,12 @@ static void DialogueAddV()
 
   gtk_widget_realize(Dialogue);
 
-  Bouton = create_button(Dialogue,"Cancel");
+  Bouton = create_button(Dialogue,_("Cancel"));
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 
-  Bouton = create_button(Dialogue,"OK");
+  Bouton = create_button(Dialogue,_("OK"));
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect(G_OBJECT(Bouton), "clicked",(GCallback)AddVariable,NULL);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)destroy_dialogue,GTK_OBJECT(Dialogue));

@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -34,7 +34,7 @@ gdouble **CalculSm12(gdouble *S,gint n,gint nvec);
 gdouble** CreateTable2(gint N);
 gdouble** FreeTable2(gdouble **T,gint N);
 void PrintAllOrb(gdouble** M);
-gint get_type_file(gchar *fileName);
+gint get_type_file_orb(gchar *fileName);
 gint get_type_basis_in_gamess_file(gchar *fileName);
 gint get_type_basis_in_gaussian_file(gchar *fileName);
 gint get_type_basis_in_qchem_file(gchar *fileName);
@@ -62,6 +62,7 @@ void create_grid_sas(gchar* title);
 void set_scale_ball_stick_dlg();
 void createColorMapOptionsWindow(GtkWidget* win);
 void create_grid_ELF_Dens_analyze(gboolean ongrid);
+GtkWidget* set_alphaFED_dialog ();
 
 #endif /* __GABEDIT_UTILSORB_H__ */
 

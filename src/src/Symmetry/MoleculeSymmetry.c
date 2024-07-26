@@ -1,6 +1,6 @@
 /* MoleculeSymmetry.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -21,6 +21,7 @@ DEALINGS IN THE SOFTWARE.
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
+#include <glib/gi18n.h>
 #include "../Symmetry/MoleculeSymmetryType.h"
 #include "../Symmetry/MoleculeSymmetry.h"
 #include "../Symmetry/PrincipalAxis.h"
@@ -91,7 +92,7 @@ static gdouble getSmallestDistanceBetweenAtoms(MolSymMolecule* mol)
 		atomList++;
 	 }
 	if ((max_dd > 0.0) && (min_dd/max_dd < 1.E-6))
-		printf("Warning: Two atoms on same position\n");
+		printf(_("Warning: Two atoms on same position\n"));
 	if(mol->numberOfAtoms<2) min_dd = 0.1;
 	return sqrt(min_dd);
 }
@@ -359,8 +360,8 @@ static gint determineSymmetry(MolSymMolecule* mol,int* nax, gint numberOfEquival
 		*nax = determineOrderOfZAxis(mol, maximalOrder);
 		if (*nax == 0)   /* error */
 		{
-			sprintf(error,"Nonlinear molecule with symmetry Cinf! Try smaller precision for atom position\n"
-				"Current precision = %0.5f",mol->listOfAtoms[0].eps);
+			sprintf(error,_("Nonlinear molecule with symmetry Cinf! Try smaller precision for atom position\n"
+				"Current precision = %0.5f"),mol->listOfAtoms[0].eps);
 			return 0;
 		}
 		if (*nax == 1)
@@ -411,8 +412,8 @@ static gint determineSymmetry(MolSymMolecule* mol,int* nax, gint numberOfEquival
 		*nax = determineOrderOfZAxis(mol, maximalOrder);
 		if (*nax == 0)   /* error */
 		{
-			sprintf(error,"Nonlinear molecule with symmetry Cinf! Try smaller precision for atom position\n"
-				"Current precision = %0.5f",mol->listOfAtoms[0].eps);
+			sprintf(error,_("Nonlinear molecule with symmetry Cinf! Try smaller precision for atom position\n"
+				"Current precision = %0.5f"),mol->listOfAtoms[0].eps);
 			return 0;
 		}
 		if (*nax == 1)
@@ -448,9 +449,9 @@ static gint determineSymmetry(MolSymMolecule* mol,int* nax, gint numberOfEquival
 		*nax = searchForC3Axes(mol, error);
 		if (*nax<3)
 		{
-			sprintf(error,"Could not find symmetry axis (see tolerance parameters)\n"
+			sprintf(error,_("Could not find symmetry axis (see tolerance parameters)\n"
 				"Current precision for position of atoms = %0.5f\n"
-				"Current tolerance for principal axis = %0.5f",mol->listOfAtoms[0].eps,principalAxisTolerance);
+				"Current tolerance for principal axis = %0.5f"),mol->listOfAtoms[0].eps,principalAxisTolerance);
 			return 0;
 		}
       
@@ -463,7 +464,7 @@ static gint determineSymmetry(MolSymMolecule* mol,int* nax, gint numberOfEquival
 			else if (rotateAroundArbitraryAxes(mol,5,C5X,0.,C5Z, error) ==1) symmetry = SYM_IC;
 			else
 			{
-				sprintf(error,"Irregular 3-fold axis detected\n");
+				sprintf(error,_("Irregular 3-fold axis detected\n"));
 				return 0;
 			}
 		}
@@ -538,7 +539,7 @@ static void getSymmetryFromSymbol(gchar* syml,int* sym,int* nax, gchar* error)
 
 	if (*sym == SYM_U)
 	{
-		sprintf(error,"Unknown symmetry - set to C1");
+		sprintf(error,_("Unknown symmetry - set to C1"));
 		*sym = 0;
 		*nax = 1;
 	}
@@ -671,7 +672,7 @@ int computeSymmetry(
 	if (ret != 0)
 	{
 
-		sprintf(message,"Not enough memory for molecule");
+		sprintf(message,_("Not enough memory for molecule"));
 		return ret;
 	}
 
@@ -854,7 +855,7 @@ int computeAbelianGroup(
 	if (ret != 0)
 	{
 
-		sprintf(message,"Not enough memory for molecule");
+		sprintf(message,_("Not enough memory for molecule"));
 		return ret;
 	}
 

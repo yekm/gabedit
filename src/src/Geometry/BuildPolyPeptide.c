@@ -1,6 +1,6 @@
 /* BuildPolyPeptide.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -342,36 +342,6 @@ static void re_set_angles(gboolean forward)
 		
 }
 /********************************************************************************/
-
-/*
-static int addPDBMMCharge(Fragment* F)
-{
- FILE* fout;
- gint i;
-
- if(!F || F->NAtoms<1) return 1;
- fout = fopen("Fragment.cc","a");
- if(!fout)
- {
-	printf("I can not open Fragment.cc\n");
-	return 1;
- }
- fprintf(fout,"\tfprintf(fout,\"Begin %s Residue\\n\");\n",F->Atoms[0].Residue);
- for(i=0;i<F->NAtoms;i++)
- 	fprintf(fout,"\tfprintf(fout,\"%s \t%s\t%0.6f\\n\");\n",F->Atoms[i].pdbType,F->Atoms[i].mmType,F->Atoms[i].Charge);
- fprintf(fout,"\tfprintf(fout,\"End\\n\");\n");
-
- fclose(fout);
- fout = fopen("Fragment2.cc","a");
- fprintf(fout,"\tfprintf(fout,\"%s\\n\");\n",F->Atoms[0].Residue);
- fclose(fout);
- 
-
- return 0;
-	
-}
-*/
-/********************************************************************************/
 static void add_fragment(gchar* what)
 {
 	gint i;
@@ -393,7 +363,6 @@ static void add_fragment(gchar* what)
 	H = -1;
 
 	if(Frag.NAtoms<1) return;
-	/* addPDBMMCharge(&Frag);*/
 
 	t = gtk_entry_get_text(GTK_ENTRY(Entrys[0]));
 	phi = atof(t);
@@ -401,14 +370,6 @@ static void add_fragment(gchar* what)
 	psi = atof(t);
 	t = gtk_entry_get_text(GTK_ENTRY(Entrys[2]));
 	omega = atof(t);
-	/*
-	for(i=0;i<Frag.NAtoms;i++)
-	{
-		printf("%s %f %f %f\n",
-			Frag.Atoms[i].Name,
-			Frag.Atoms[i].Coord[0],Frag.Atoms[i].Coord[1],Frag.Atoms[i].Coord[2]);
-	}
-	*/
 
 	if(Nb>0) G = g_realloc(G,(Nb+Frag.NAtoms+1)*sizeof(GeomDef));
 	else G = g_malloc((Frag.NAtoms+1)*sizeof(GeomDef));
@@ -560,239 +521,6 @@ static void add_fragment(gchar* what)
 	lastPsi = psi;
 }
 /********************************************************************************/
-/*
-static gchar* getmmType(gchar* pdbtype, gchar* residue)
-{
-	gchar* mmType;
-	gdouble charge;
-
-	mmType = getMMTypeFromPDBTpl(residue,pdbtype,&charge);
-	if(!strcmp(mmType,"UNK"))
-	{
-		g_free(mmType);
-		return g_strdup(pdbtype);
-	}
-	return mmType;
-}
-*/
-/********************************************************************************/
-/*
-static void add_zwitterion()
-{
-	gint firstN = -1, firstH = -1, firstC = -1, firstHA1 = -1, firstCA = -1;
-	gint firstCH3 = -1, firstH1 = -1, firstO = -1;
-	gint i;
-	gdouble originalTorsion = 0.0;
-	gint NbOld = Nb;
-	gint NH1 = -1;
-	gint NH2 = -1;
-	gint NO2 = -1;
-	gint N = -1;
-	for ( i = 0; i < Nb; i++ )
-	{
-		if(G[i].ResidueNumber != 0) continue;
-
-		if(!strcmp(G[i].pdbType,"N")) firstN = i;
-		if(!strcmp(G[i].pdbType,"H")) firstH = i;
-		if(!strcmp(G[i].pdbType,"CA")) firstCA = i;
-		if(!strcmp(G[i].pdbType,"C")) firstC = i;
-		if(!strcmp(G[i].pdbType,"CH3")) firstC = i;
-		if(!strcmp(G[i].pdbType,"HA1")) firstHA1 = i;
-	}
-	if ( ( firstN != -1 ) && ( firstH != -1 ) && ( firstCA != -1 ) )
-	{
-		if(G[firstH].pdbType)
-			g_free(G[firstH].pdbType);
-		G[firstH].pdbType = g_strdup("1H");
-
-		if(Nb>0) G = g_realloc(G,(Nb+2)*sizeof(GeomDef));
-		else G = g_malloc((2)*sizeof(GeomDef));
-
-		G[Nb].X=G[firstH].X;
-		G[Nb].Y=G[firstH].Y;
-		G[Nb].Z=G[firstH].Z;
-
-		G[Nb].Charge = 0.0;
-		G[Nb].Prop = prop_atom_get("H");
-		G[Nb].pdbType = g_strdup("2H");
-		G[Nb].mmType =getmmType(G[Nb].pdbType, G[0].Residue);
-		G[Nb].Residue = g_strdup(G[0].Residue);
-		G[Nb].ResidueNumber = 0;
-		G[Nb].N = Nb+1;
-
-		G[Nb+1].X=G[firstH].X;
-		G[Nb+1].Y=G[firstH].Y;
-		G[Nb+1].Z=G[firstH].Z;
-
-		G[Nb+1].Charge = 0.0;
-		G[Nb+1].Prop = prop_atom_get("H");
-		G[Nb+1].pdbType = g_strdup("3H");
-		G[Nb+1].mmType =getmmType(G[Nb+1].pdbType, G[0].Residue);
-
-		G[Nb+1].Residue = g_strdup(G[0].Residue);
-		G[Nb+1].ResidueNumber = 0;
-		G[Nb+1].N = Nb+2;
-
-		NH1 = Nb;
-		NH2 = Nb+1;
-
-		if ( firstC != -1 )
-		{
-			originalTorsion = getTorsion(G, firstC, firstCA, firstN, firstH);
-			SetTorsion( Nb+2,G, firstC, firstCA, firstN, Nb, 120+ originalTorsion, NULL, 0 );  
-			SetTorsion( Nb+2,G, firstC, firstCA, firstN, Nb+1, 240 + originalTorsion, NULL, 0 );  
-		}
-		else if ( firstHA1 != -1 )
-		{
-			originalTorsion = getTorsion(G,firstHA1, firstCA, firstN, firstH);
-			SetTorsion( Nb+2,G, firstHA1, firstCA, firstN, Nb, 120+ originalTorsion, NULL, 0 );  
-			SetTorsion( Nb+2,G, firstHA1, firstCA, firstN, Nb+1, 240 + originalTorsion, NULL, 0 );  
-		}
-		g_free(G[firstN].mmType);
-		G[firstN].mmType = g_strdup("N3");
-		Nb += 2;
-	}
-	N = firstN;
-	for ( i = 0; i < Nb; i++ )
-	{
-		if(G[i].ResidueNumber != lastFragNumber) continue;
-
-		if(!strcmp(G[i].pdbType,"N")) firstN = i;
-		if(!strcmp(G[i].pdbType,"O")) firstO = i;
-		if(!strcmp(G[i].pdbType,"CA")) firstCA = i;
-		if(!strcmp(G[i].pdbType,"C")) firstC = i;
-		if(!strcmp(G[i].pdbType,"CH3")) firstC = i;
-		if(!strcmp(G[i].pdbType,"HA1")) firstHA1 = i;
-	}
-	if ( ( firstCA != -1 ) && ( firstC != -1 ) && ( firstO != -1 ) )
-	{
-		if(Nb>0) G = g_realloc(G,(Nb+1)*sizeof(GeomDef));
-		else G = g_malloc((1)*sizeof(GeomDef));
-
-		NO2 = Nb;
-		G[Nb].X=G[firstO].X;
-		G[Nb].Y=G[firstO].Y;
-		G[Nb].Z=G[firstO].Z;
-
-		G[Nb].Charge = 0.0;
-		G[Nb].Prop = prop_atom_get("O");
-		G[Nb].pdbType = g_strdup("OXT");
-		{
-			gint k;
-			gint n=0;
-			for(k=0;k<Nb;k++)
-			{
-				if(G[k].ResidueNumber==lastFragNumber)
-				{
-					n = k;
-					break;
-				}
-			}
-			G[Nb].Residue = g_strdup(G[k].Residue);
-		}
-		G[Nb].mmType =getmmType(G[Nb].pdbType, G[Nb].Residue);
-		G[Nb].ResidueNumber = lastFragNumber;
-		G[Nb].N = Nb+1;
-
-		if ( firstN != -1 )
-		{
-			originalTorsion = getTorsion(G,firstN, firstCA, firstC, firstO);
-			SetTorsion( Nb+1,G, firstN, firstCA, firstC, Nb, 180 + originalTorsion, NULL, 0 );  
-		}
-		else if ( ( firstH1 != -1 ) && ( firstCH3 != -1 ) )
-		{
-			originalTorsion = getTorsion(G,firstH1, firstCH3, firstC, firstO);
-			SetTorsion( Nb+1,G, firstH1, firstCH3, firstC, Nb, 180 + originalTorsion, NULL, 0 );  
-		}
-		Nb += 1;
-		g_free(G[firstO].mmType);
-		G[firstO].mmType = g_strdup("O2");
-	}
-
-	set_connections(NbOld,-1,-1);
-	if(N>-1 && NH1>-1) G[N].typeConnections[NH1] = G[NH1].typeConnections[N]=1;
-	if(N>-1 && NH2>-1) G[N].typeConnections[NH2] = G[NH2].typeConnections[N]=1;
-	if(firstC>-1 && NO2>-1) G[firstC].typeConnections[NO2] = G[NO2].typeConnections[firstC]=1;
-
-	define_geometry_to_draw();
-	define_good_factor();
-	create_GeomXYZ_from_draw_grometry();
-	reset_multiple_bonds();
-	reset_charges_multiplicities();
-	dessine();
-}
-*/
-/********************************************************************************/
-/*
-static void delete_zwitterion()
-{
-	gint firstN = -1, firstH1 = -1, firstH2 = -1, firstH3 = -1, firstOXT = -1;
-	gint firstO = -1;
-	gint i;
-	for ( i = 0; i < Nb; i++ )
-	{
-		if(G[i].ResidueNumber != 0) continue;
-
-		if(!strcmp(G[i].pdbType,"N")) firstN = i;
-		if(!strcmp(G[i].pdbType,"1H")) firstH1 = i;
-		if(!strcmp(G[i].pdbType,"2H")) firstH2 = i;
-		if(!strcmp(G[i].pdbType,"3H")) firstH3 = i;
-	}
-	if ( ( firstN != -1 ) && ( firstH1 != -1 ) && ( firstH2 != -1 ) &&( firstH3 != -1 ) )
-	{
-		G[firstH2].N = 0;
-		if(G[firstH2].pdbType) g_free(G[firstH2].pdbType);
-		G[firstH2].pdbType = g_strdup("Unknown");
-
-		if(G[firstH2].mmType) g_free(G[firstH2].mmType);
-		G[firstH2].mmType = g_strdup("Unknown");
-
-		G[firstH3].N = 0;
-		if(G[firstH3].pdbType) g_free(G[firstH3].pdbType);
-		G[firstH3].pdbType = g_strdup("Unknown");
-
-		if(G[firstH3].mmType) g_free(G[firstH3].mmType);
-		G[firstH3].mmType = g_strdup("Unknown");
-
-		if(G[firstH1].pdbType) g_free(G[firstH1].pdbType);
-		G[firstH1].pdbType = g_strdup("H");
-
-		if(G[firstH1].mmType) g_free(G[firstH1].mmType);
-		G[firstH1].mmType = g_strdup("H");
-		if(firstN !=-1)
-		{
-			g_free(G[firstN].mmType);
-			G[firstN].mmType = g_strdup("N");
-		}
-	}
-	for ( i = 0; i < Nb; i++ )
-	{
-		if(G[i].ResidueNumber != lastFragNumber) continue;
-		if(!strcmp(G[i].pdbType,"OXT")) firstOXT = i;
-		if(!strcmp(G[i].pdbType,"O")) firstO = i;
-	}
-	if ( firstOXT != -1 )
-	{
-		G[firstOXT].N = 0;
-		if(G[firstOXT].pdbType) g_free(G[firstOXT].pdbType);
-		G[firstOXT].pdbType = g_strdup("Unknown");
-		if(G[firstOXT].mmType) g_free(G[firstOXT].mmType);
-		G[firstOXT].mmType = g_strdup("Unknown");
-		if(firstO !=-1)
-		{
-			g_free(G[firstO].mmType);
-			G[firstO].mmType = g_strdup("O");
-		}
-	}
-	define_geometry_to_draw();
-	define_good_factor();
-	create_GeomXYZ_from_draw_grometry();
-	reset_multiple_bonds();
-	reset_charges_multiplicities();
-	dessine();
-}
-*/
-/*****************************************************************************************/
 static void delete_last_fragment()
 {
 	if(lastFragNumber >= 0 && Nb>0) 
@@ -926,7 +654,7 @@ static void build_c_capping(GtkWidget *Dlg,gpointer data)
 	frameAminoAcide = g_object_get_data(G_OBJECT (Dlg), "FrameAminoAcide");
 	ccap = (gchar*) g_object_get_data(G_OBJECT (Dlg), "C-CAP");
 	if(!ccap ) return;
-	if(!strcmp(ccap,"Notting")) return;
+	if(!strcmp(ccap,_("Nothing"))) return;
 	if(lastFragNumber < 0) return;
 	if(!strcmp(ccap,"NME")) 
 	{
@@ -996,7 +724,7 @@ static void build_n_capping(GtkWidget *Dlg,gchar* firstResidue)
 		re_set_angles(TRUE);
   		reset_sensitive_build_c_capping(Dlg, TRUE);
 	}
-	else if(!strcmp(ncap,"Notting")) 
+	else if(!strcmp(ncap,_("Nothing"))) 
 	{
 		sprintf(fragName,"%s",firstResidue);
 		lowercase(fragName);
@@ -1634,7 +1362,7 @@ static GtkWidget* add_n_cap(GtkWidget* Dlg,GtkWidget *box)
 	GtkWidget* frame;
 	GtkWidget* button1;
 	GtkWidget* button;
-	static gchar* list[] = {"ACE","NH3+","NH2","Notting"};
+	static gchar* list[] = {"ACE","NH3+","NH2",N_("Nothing")};
 	gint i;
 	gint nOptions = G_N_ELEMENTS (list);
 
@@ -1677,7 +1405,7 @@ static GtkWidget* add_c_cap(GtkWidget* Dlg,GtkWidget *box)
 	GtkWidget* frame;
 	GtkWidget* button1;
 	GtkWidget* button;
-	static gchar* list[] = {"NME","NHE","COO-","COOH","Notting"};
+	static gchar* list[] = {"NME","NHE","COO-","COOH",N_("Nothing")};
 	gint i;
 	gint nOptions = G_N_ELEMENTS (list);
 
@@ -1786,12 +1514,12 @@ void build_polypeptide_dlg()
   
   init_variables();
   Dlg = gtk_dialog_new();
-  gtk_window_set_title(GTK_WINDOW(Dlg),"Build PolyPeptide molecule");
+  gtk_window_set_title(GTK_WINDOW(Dlg),_("Build PolyPeptide molecule"));
   gtk_window_set_modal (GTK_WINDOW (Dlg), TRUE);
   gtk_window_set_transient_for(GTK_WINDOW(Dlg),GTK_WINDOW(GeomDlg));
 
 
-  add_child(GeomDlg,Dlg,gtk_widget_destroy," Build PolyPep. mol. ");
+  add_child(GeomDlg,Dlg,gtk_widget_destroy,_(" Build PolyPep. mol. "));
 
   g_signal_connect(G_OBJECT(Dlg),"delete_event",(GCallback)destroy_dlg,NULL);
 
@@ -1821,14 +1549,15 @@ void build_polypeptide_dlg()
   gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Dlg)->action_area), Button, FALSE, FALSE, 5);  
   g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)undo,GTK_OBJECT(Dlg));
   g_object_set_data(G_OBJECT (Dlg), "UndoButton",Button);
+  reset_sensitive_undo_button(Dlg);
 
-  Button = create_button(Dlg,"Add C-capping");
+  Button = create_button(Dlg,_("Add C-capping"));
   gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Dlg)->action_area), Button, FALSE, FALSE, 5);  
   g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)build_c_capping,GTK_OBJECT(Dlg));
   g_object_set_data(G_OBJECT (Dlg), "BuildCCapping",Button);
   reset_sensitive_build_c_capping(Dlg, FALSE);
 
-  Button = create_button(Dlg,"Close");
+  Button = create_button(Dlg,_("Close"));
   gtk_box_pack_end (GTK_BOX( GTK_DIALOG(Dlg)->action_area), Button, FALSE, TRUE, 2);
   g_signal_connect_swapped(G_OBJECT(Button), "clicked",(GCallback)destroy_dlg,GTK_OBJECT(Dlg));
 

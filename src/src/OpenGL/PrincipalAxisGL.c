@@ -1,6 +1,6 @@
 /* PrincipalAxisGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -268,9 +268,13 @@ static void compute_the_principal_axis()
 	axis.secondVector[1] = v[1][1]; 
 	axis.secondVector[2] = v[2][1]; 
 
+	for(i=0;i<3;i++)
+		axis.thirdVector[i] = v[(i+1)%3][0]*v[(i+2)%3][1]-v[(i+2)%3][0]*v[(i+1)%3][1];
+		/*
 	axis.thirdVector[0] = v[0][2]; 
 	axis.thirdVector[1] = v[1][2]; 
 	axis.thirdVector[2] = v[2][2]; 
+	*/
 
 	axis.inertia[0] = I[0]; 
 	axis.inertia[1] = I[1]; 
@@ -354,7 +358,7 @@ static void open_color_dlg_axis(GtkWidget *button,gpointer data)
 	gdouble* v = g_object_get_data(G_OBJECT (button), "Color");;
 	GdkColor color;
 
-	colorDlg = (GtkColorSelectionDialog *)gtk_color_selection_dialog_new("Set Dipole Color");
+	colorDlg = (GtkColorSelectionDialog *)gtk_color_selection_dialog_new(_("Set Dipole Color"));
 	color.red = (gushort)(v[0]*65535);
 	color.green = (gushort)(v[1]*65535);
 	color.blue = (gushort)(v[2]*65535);
@@ -412,7 +416,7 @@ void set_principal_axisGL_dialog ()
 
   /* principal Window */
   fp = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_title(GTK_WINDOW(fp),"Set the principal axis parameters");
+  gtk_window_set_title(GTK_WINDOW(fp),_("Set the principal axis parameters"));
   gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
 
   gtk_window_set_position(GTK_WINDOW(fp),GTK_WIN_POS_CENTER);
@@ -466,7 +470,7 @@ void set_principal_axisGL_dialog ()
   }
 
   i = 5;
-  add_label_table(table,"Color for the first axis ",(gushort)i,0);
+  add_label_table(table,_("Color for the first axis "),(gushort)i,0);
   add_label_table(table," : ",(gushort)i,1); 
   style = gtk_widget_get_style(fp);
   button = gtk_button_new_with_label(" ");
@@ -494,7 +498,7 @@ void set_principal_axisGL_dialog ()
   add_label_table(table,tmp,(gushort)i,3);
 
   i++;
-  add_label_table(table,"Color for the second axis ",(gushort)i,0);
+  add_label_table(table,_("Color for the second axis "),(gushort)i,0);
   add_label_table(table," : ",(gushort)i,1); 
 
   style = gtk_widget_get_style(fp);
@@ -522,7 +526,7 @@ void set_principal_axisGL_dialog ()
   add_label_table(table,tmp,(gushort)i,3);
 
   i++;
-  add_label_table(table,"Color for the third axis ",(gushort)i,0);
+  add_label_table(table,_("Color for the third axis "),(gushort)i,0);
   add_label_table(table," : ",(gushort)i,1); 
 
   style = gtk_widget_get_style(fp);
@@ -550,7 +554,7 @@ void set_principal_axisGL_dialog ()
   add_label_table(table,tmp,(gushort)i,3);
 
   i++;
-  button = gtk_check_button_new_with_label ("Show the negative part of the axes");
+  button = gtk_check_button_new_with_label (_("Show the negative part of the axes"));
   negative = axis.negative;
   g_object_set_data(G_OBJECT (button), "Negative", &negative);
   gtk_table_attach(GTK_TABLE(table),button,0,3,i,i+1,
@@ -562,7 +566,7 @@ void set_principal_axisGL_dialog ()
 
 
   hbox = create_hbox(vboxall);
-  button = create_button(PrincipalWindow,"OK");
+  button = create_button(PrincipalWindow,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_object_set_data(G_OBJECT (button), "FirstColor", vFirst);
   g_object_set_data(G_OBJECT (button), "SecondColor", vSecond);
@@ -572,7 +576,7 @@ void set_principal_axisGL_dialog ()
   g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_widget_destroy),GTK_OBJECT(fp));
   gtk_widget_show (button);
 
-  button = create_button(PrincipalWindow,"Apply");
+  button = create_button(PrincipalWindow,_("Apply"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_object_set_data(G_OBJECT (button), "FirstColor", vFirst);
   g_object_set_data(G_OBJECT (button), "SecondColor", vSecond);
@@ -581,7 +585,7 @@ void set_principal_axisGL_dialog ()
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(set_axis),(gpointer)entrys);
   gtk_widget_show (button);
 
-  button = create_button(PrincipalWindow,"Close");
+  button = create_button(PrincipalWindow,_("Close"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(gtk_widget_destroy),GTK_OBJECT(fp));
 

@@ -1,6 +1,6 @@
 /* SetMMParameters.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -207,6 +207,7 @@ static GtkUIManager *newMenu(GtkWidget* win)
   	g_signal_connect_swapped (win, "destroy", G_CALLBACK (g_object_unref), manager);
 
 	actionGroup = gtk_action_group_new ("GabeditEditMMLibrary");
+	gtk_action_group_set_translation_domain(actionGroup,GETTEXT_PACKAGE);
 	gtk_action_group_add_actions (actionGroup, gtkActionEntries, numberOfGtkActionEntries, NULL);
 
   	gtk_ui_manager_insert_action_group (manager, actionGroup, 0);
@@ -1380,7 +1381,7 @@ static void editHBond(GtkWidget *win)
 /********************************************************************************/
 static void editHBondDlg(GtkWidget *win,gpointer data)
 {
-	editnewHBondDlg(editHBond,"Edit H-Bond paramters",FALSE);
+	editnewHBondDlg(editHBond,"Edit H-Bond parameters",FALSE);
 }
 /********************************************************************************/
 static void editnewImproperDlg(GabeditSignalFunc f,gchar* title,gboolean sensitive)
@@ -2219,7 +2220,7 @@ static void editBond(GtkWidget* w)
 /********************************************************************************/
 static void editBondDlg(GtkWidget *win,gpointer data)
 {
-	editnewBondDlg(editBond,"Edit Bond paramters",FALSE);
+	editnewBondDlg(editBond,"Edit Bond parameters",FALSE);
 }
 /********************************************************************************/
 static void editType(GtkWidget* w)

@@ -1,35 +1,34 @@
-# DO NOT DELETE
-
-Batch.o: ../../Config.h
-Batch.o: ../Common/Global.h
-Batch.o: ../Files/GabeditFileChooser.h
-Batch.o: ../Common/GabeditType.h ../Utils/Utils.h ../Utils/UtilsInterface.h
-Batch.o: ../Utils/Constants.h ../Utils/GabeditTextEdit.h ../Common/Run.h
-Batch.o: ../Common/Windows.h ../NetWork/Batch.h RemoteCommand.h
-FilesTransfer.o: ../../Config.h ../Common/Global.h
-FilesTransfer.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
-FilesTransfer.o: ../NetWork/Ftp.h ../NetWork/Scp.h
-Ftp.o: ../../Config.h ../Common/Global.h
-Ftp.o: ../Files/GabeditFileChooser.h
-Ftp.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h ../Utils/Utils.h
-Ftp.o: ../Common/Status.h
-Process.o: ../../Config.h
-Process.o: ../Common/Global.h
-Process.o: ../Files/GabeditFileChooser.h
-Process.o: ../Common/GabeditType.h ../Utils/Utils.h ../Utils/UtilsInterface.h
-Process.o: ../Utils/Constants.h ../Utils/GabeditTextEdit.h ../Common/Run.h
-Process.o: ../Common/Windows.h ../NetWork/RemoteCommand.h
-Process.o: ../NetWork/Process.h
-RemoteCommand.o: ../../Config.h ../Common/Global.h
-RemoteCommand.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
-RemoteCommand.o: ../NetWork/Rsh.h ../NetWork/Ssh.h
-Rsh.o: ../../Config.h ../Common/Global.h
-Rsh.o: ../Files/GabeditFileChooser.h
-Rsh.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h ../Utils/Utils.h
-Scp.o: ../../Config.h ../Common/Global.h
-Scp.o: ../Files/GabeditFileChooser.h
-Scp.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h ../Utils/Utils.h
-Scp.o: ../Common/Status.h
-Ssh.o: ../../Config.h ../Common/Global.h
-Ssh.o: ../Files/GabeditFileChooser.h
-Ssh.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h ../Utils/Utils.h
+Ftp.o: Ftp.c ../../Config.h ../Common/Global.h \
+  ../Common/../Files/GabeditFileChooser.h \
+  ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \
+  ../Utils/Utils.h ../Common/Status.h
+Process.o: Process.c ../../Config.h ../Common/Global.h \
+  ../Common/../Files/GabeditFileChooser.h \
+  ../Common/../Common/GabeditType.h ../Utils/Utils.h \
+  ../Utils/UtilsInterface.h ../Utils/Constants.h \
+  ../Utils/GabeditTextEdit.h ../Common/Run.h ../Common/Windows.h \
+  ../NetWork/RemoteCommand.h ../NetWork/Process.h
+Rsh.o: Rsh.c ../../Config.h ../Common/Global.h \
+  ../Common/../Files/GabeditFileChooser.h \
+  ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \
+  ../Utils/Utils.h
+Ssh.o: Ssh.c ../../Config.h ../Common/Global.h \
+  ../Common/../Files/GabeditFileChooser.h \
+  ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \
+  ../Utils/Utils.h
+Scp.o: Scp.c ../../Config.h ../Common/Global.h \
+  ../Common/../Files/GabeditFileChooser.h \
+  ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \
+  ../Utils/Utils.h ../Common/Status.h
+FilesTransfer.o: FilesTransfer.c ../../Config.h ../Common/Global.h \
+  ../Common/../Files/GabeditFileChooser.h \
+  ../Common/../Common/GabeditType.h ../NetWork/Ftp.h ../NetWork/Scp.h
+RemoteCommand.o: RemoteCommand.c ../../Config.h ../Common/Global.h \
+  ../Common/../Files/GabeditFileChooser.h \
+  ../Common/../Common/GabeditType.h ../NetWork/Rsh.h ../NetWork/Ssh.h
+Batch.o: Batch.c ../../Config.h ../Common/Global.h \
+  ../Common/../Files/GabeditFileChooser.h \
+  ../Common/../Common/GabeditType.h ../Utils/Utils.h \
+  ../Utils/UtilsInterface.h ../Utils/Constants.h \
+  ../Utils/GabeditTextEdit.h ../Common/Run.h ../Common/Windows.h \
+  ../NetWork/Batch.h RemoteCommand.h

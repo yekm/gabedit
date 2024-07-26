@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -18,6 +18,7 @@ DEALINGS IN THE SOFTWARE.
 
 #include "../../Config.h"
 #include <stdlib.h>
+#include "../Common/Global.h"
 #include "GlobalOrb.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/Utils.h"
@@ -216,7 +217,7 @@ static GtkWidget *addChargeToTable(GtkWidget *table, gint i)
 	gint nlistCharge = 1;
 	gchar* listCharge[] = {"0"};
 
-	add_label_table(table,"Charge",(gushort)i,0);
+	add_label_table(table,_("Charge"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entryCharge = addComboListToATable(table, listCharge, nlistCharge, i, 2, 1);
 	comboCharge  = g_object_get_data(G_OBJECT (entryCharge), "Combo");
@@ -232,7 +233,7 @@ static GtkWidget *addSpinToTable(GtkWidget *table, gint i)
 	gint nlistspinMultiplicity = 1;
 	gchar* listspinMultiplicity[] = {"0"};
 
-	add_label_table(table,"Spin multiplicity",(gushort)i,0);
+	add_label_table(table,_("Spin multiplicity"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entrySpinMultiplicity = addComboListToATable(table, listspinMultiplicity, nlistspinMultiplicity, i, 2, 1);
 	comboSpinMultiplicity  = g_object_get_data(G_OBJECT (entrySpinMultiplicity), "Combo");
@@ -259,8 +260,8 @@ static void print_gaussian_geometries_link(GtkWidget* Win, gpointer data)
  	file = fopen(fileName, "w");
 	if(!file)
 	{
-		gchar* t = g_strdup_printf("Sorry\n I can not create %s file",fileName); 
-		Message(t,"Error",TRUE);
+		gchar* t = g_strdup_printf(_("Sorry\n I can not create %s file"),fileName); 
+		Message(t,_("Error"),TRUE);
 		if(fileName) g_free(fileName);
 		if(t)g_free(t);
 		return;
@@ -289,8 +290,8 @@ static void print_gaussian_geometries_link(GtkWidget* Win, gpointer data)
 	fclose(file);
 	gtk_widget_destroy(Win);
 	{
-		gchar* t = g_strdup_printf("The %s file was created",fileName); 
-		Message(t,"Error",TRUE);
+		gchar* t = g_strdup_printf(_("The %s file was created"),fileName); 
+		Message(t,_("Error"),TRUE);
 		if(t)g_free(t);
 	}
 }
@@ -377,14 +378,17 @@ static void print_gaussian_geometries(GtkWidget* Win, gpointer data)
 	if(entry) supstr = gtk_entry_get_text(GTK_ENTRY(entry));
 	if(supstr)
 	{
-		gchar* t = g_strdup_printf("In %s directory, the gabmd_* and rungabmd.sh files were created.\n"
+		gchar* t = g_strdup_printf(
+				_(
+				"In %s directory, the gabmd_* and rungabmd.sh files were created.\n"
 				"gabmd_* is input files for gaussian. \n"
-				"rungabmd.sh is a script for run gaussian with gabmd_* input files",
-				inputGaussDirectory); 
+				"rungabmd.sh is a script for run gaussian with gabmd_* input files"
+				)
+				, inputGaussDirectory); 
 		for(g = 0;g<geometriesMD.numberOfGeometries;g++)
 			print_gaussian_one_geometry(g,supstr);
 		print_gaussian_script_run();
-		Message(t,"Error",TRUE);
+		Message(t,_("Error"),TRUE);
 		if(t)g_free(t);
 	}
 	gtk_widget_destroy(Win);
@@ -610,6 +614,87 @@ static void delete_one_geometry()
 	return;
 }
 /********************************************************************************/
+static void delete_geometries_between(gint begin, gint end)
+{
+
+	gint k;
+	gint j;
+
+	if(!geometriesMD.geometries) return;
+	if(begin<0) begin = 0;
+	if(end>=geometriesMD.numberOfGeometries) end = geometriesMD.numberOfGeometries-1;
+	if(end<0) end = geometriesMD.numberOfGeometries-1;
+	if(geometriesMD.numberOfGeometries<1) return;
+	if(end<begin)
+	{
+		k = begin;
+		begin = end;
+		end = k;
+	}
+
+	for(k=begin;k<=end;k++)
+	{
+		if(geometriesMD.geometries[k].listOfAtoms) g_free(geometriesMD.geometries[k].listOfAtoms);
+		if(geometriesMD.geometries[k].comments) g_free(geometriesMD.geometries[k].comments);
+
+	}
+	for(k=begin;k<geometriesMD.numberOfGeometries-1;k++)
+	{
+		j = k+end-begin+1;
+		if(j>=geometriesMD.numberOfGeometries) break;
+		geometriesMD.geometries[k].energy = geometriesMD.geometries[j].energy;
+		geometriesMD.geometries[k].time = geometriesMD.geometries[j].time;
+		geometriesMD.geometries[k].comments = geometriesMD.geometries[j].comments;
+		geometriesMD.geometries[k].listOfAtoms = geometriesMD.geometries[j].listOfAtoms;
+	}
+	geometriesMD.numberOfGeometries -= end-begin+1;
+	if(geometriesMD.numberOfGeometries>0)
+	geometriesMD.geometries = g_realloc(geometriesMD.geometries,geometriesMD.numberOfGeometries*sizeof(GeometryMD));
+	else
+	{
+		if(geometriesMD.geometries ) g_free(geometriesMD.geometries );
+		geometriesMD.numberOfGeometries  = 0;
+	}
+	rafreshList();
+
+	return;
+}
+/********************************************************************************/
+static void delete_before_selected_geometry()
+{
+
+	gint k = rowSelected;
+
+	if(k<=0) return;
+	if(!geometriesMD.geometries) return;
+	if(geometriesMD.numberOfGeometries==1)
+	{
+		freeGeometryMD();
+		rafreshList();
+		return;
+	}
+	delete_geometries_between(0, k-1);
+	return;
+}
+/********************************************************************************/
+static void delete_after_selected_geometry()
+{
+
+	gint k = rowSelected;
+
+	if(k<0) return;
+	if(k>=geometriesMD.numberOfGeometries-1) return;
+	if(!geometriesMD.geometries) return;
+	if(geometriesMD.numberOfGeometries==1)
+	{
+		freeGeometryMD();
+		rafreshList();
+		return;
+	}
+	delete_geometries_between(k+1, geometriesMD.numberOfGeometries-1);
+	return;
+}
+/********************************************************************************/
 static void delete_half_geometries()
 {
 
@@ -727,6 +812,10 @@ static gboolean read_gaussian_file_geomi_str(gchar *FileName, gint num, gchar* s
     			for(i=0;i<3;i++) listOfAtoms[j].C[i]=atof(ang_to_bohr(AtomCoord[i+1]));
 			listOfAtoms[j].partialCharge = 0.0;
 			listOfAtoms[j].nuclearCharge = get_atomic_number_from_symbol(listOfAtoms[j].symbol);
+			sprintf(listOfAtoms[j].mmType,"%s",listOfAtoms[j].symbol);
+			sprintf(listOfAtoms[j].pdbType,"%s",listOfAtoms[j].symbol);
+			sprintf(listOfAtoms[j].resName,"%s",listOfAtoms[j].symbol);
+			listOfAtoms[j].resNumber = j;
 		}
 		if(num >0 && (gint)numgeom-1 == num) break;
  	}while(!feof(file));
@@ -753,13 +842,13 @@ static gboolean read_gaussian_file_geomi(gchar *FileName, gint num, GeometryMD* 
 	FILE* file;
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No file slected","Error",TRUE);
+		Message(_("Sorry\n No file selected"),_("Error"),TRUE);
     		return FALSE;
  	}
  	file = FOpen(FileName, "rb");
  	if(file ==NULL)
  	{
-  		Message("Sorry\nI can not open this file","Error",TRUE);
+  		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
   		return FALSE;
  	}
 	fclose(file);
@@ -770,11 +859,160 @@ static gboolean read_gaussian_file_geomi(gchar *FileName, gint num, GeometryMD* 
 	/* for calculation with nosym option */
 	if(!read_gaussian_file_geomi_str(FileName,num,"Z-Matrix orientation:", geometry))
 	{
-  		Message("Sorry\nI can not read geometry in this file","Error",TRUE);
+  		Message(_("Sorry\nI can not read geometry in this file"),_("Error"),TRUE);
 		return FALSE;
 	}
 	return TRUE;
 
+}
+#define MAXNAME 6
+#define MAXATOMTYPE 4
+#define MAXRESIDUENAME 4
+#define MAXSYMBOL 2
+/******************************************************************************/
+static void save_atom_pdb_file(FILE* file, 
+		gchar*name, gint atomNumber,
+		gchar* atomType, gchar* residueName,
+		gint residueNumber,
+		gdouble x, gdouble y, gdouble z,
+		gdouble occupancy,
+		gdouble temperature,
+		gchar* symbol,
+		gdouble charge
+		)
+{
+	gchar localName[MAXNAME+1];
+	gchar localAtomType[MAXATOMTYPE+1];
+	gchar localResidueName[MAXRESIDUENAME+1];
+	gchar localSymbol[MAXSYMBOL+1];
+
+	localName[MAXNAME] = '\0';
+	localAtomType[MAXATOMTYPE] = '\0';
+	localResidueName[MAXRESIDUENAME] = '\0';
+	localSymbol[MAXSYMBOL] = '\0';
+
+	if(strlen(name)>MAXNAME)
+		strncpy(localName, name, MAXNAME);
+	else
+		strcpy(localName, name);
+	g_strup(localName);
+
+	if(strlen(atomType)>MAXATOMTYPE)
+	{
+		strncpy(localAtomType, atomType, MAXATOMTYPE);
+	}
+	else
+	{
+		if(atomType && isdigit(atomType[0])) strcpy(localAtomType,atomType);
+		else 
+		{
+			sprintf(localAtomType," %s",atomType);
+			if(strlen(localAtomType)>=MAXATOMTYPE)
+			{
+				if(isdigit(localAtomType[MAXATOMTYPE]))
+					localAtomType[0] = localAtomType[MAXATOMTYPE];
+				localAtomType[MAXATOMTYPE] = '\0';
+			}
+		}
+	}
+
+	if(strlen(residueName)>=MAXRESIDUENAME)
+		strncpy(localResidueName, residueName, MAXRESIDUENAME);
+	else
+	{
+		sprintf(localResidueName," %s",residueName);
+		if(strlen(localResidueName)>=MAXRESIDUENAME)
+		{
+			if(isdigit(localResidueName[MAXRESIDUENAME]))
+				localResidueName[0] = localResidueName[MAXRESIDUENAME];
+			localResidueName[MAXRESIDUENAME] = '\0';
+		}
+	}
+	g_strup(localResidueName);
+
+	if(strlen(symbol)>MAXSYMBOL)
+		strncpy(localSymbol, symbol, MAXSYMBOL);
+	else
+		strcpy(localSymbol,symbol);
+	localSymbol[0] = toupper(localSymbol[0]);
+	if(strlen(localSymbol)>1)
+		localSymbol[1] = tolower(localSymbol[1]);
+
+	if(atomNumber>99999)
+		atomNumber = 99999;
+	if(residueNumber>9999)
+		residueNumber = 9999;
+
+
+        fprintf(file,"%-6s",localName); /* Atom or HETATM */
+        fprintf(file,"%-6d",atomNumber); 
+        fprintf(file,"%-4s",localAtomType); 
+        fprintf(file,"%-4s",localResidueName); 
+        fprintf(file,"  "); 
+        fprintf(file,"%-4d",residueNumber); 
+        fprintf(file,"    "); 
+        fprintf(file,"%-8.3f",x); 
+        fprintf(file,"%-8.3f",y); 
+        fprintf(file,"%-8.3f",z); 
+        fprintf(file,"%-6.2f",occupancy); 
+        fprintf(file,"%-6.2f",temperature); 
+        fprintf(file,"      "); 
+        fprintf(file,"    "); 
+        fprintf(file,"%-2s",localSymbol); 
+        fprintf(file,"%-9.4f\n",charge); 
+}
+#undef MAXNAME
+#undef MAXATOMTYPE
+#undef MAXRESIDUENAME
+#undef MAXSYMBOL
+/********************************************************************************/
+static gboolean save_geometry_MD_pdb_format(gchar *FileName)
+{
+ 	FILE *file;
+	gint j;
+	gboolean OK = TRUE;
+	gchar* temp = NULL;
+
+	if(geometriesMD.numberOfGeometries<1) return FALSE;
+ 	file = FOpen(FileName, "w");
+	if(file == NULL)
+	{
+		gchar buffer[BSIZE];
+		sprintf(buffer,_("Sorry, I  can not create '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
+		return FALSE;
+	}
+	fprintf(file,"HEADER    PROTEIN\n");
+	fprintf(file,"COMPND    UNNAMED\n");
+	temp = get_time_str();
+	if(temp) fprintf(file,"AUTHOR    GENERATED BY GABEDIT %d.%d.%d at %s",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION,temp);
+	else fprintf(file,"AUTHOR    GENERATED BY GABEDIT %d.%d.%d\n",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
+	for(j=0;j<geometriesMD.numberOfGeometries;j++)
+	{
+		gint i;
+		gint nAtoms = geometriesMD.geometries[j].numberOfAtoms;
+		AtomMD* listOfAtoms = geometriesMD.geometries[j].listOfAtoms;
+		if(nAtoms<1 || !listOfAtoms) { OK = FALSE; break;}
+		fprintf(file,"TITLE nAtoms=%d Energy=%lf\n", nAtoms, geometriesMD.geometries[j].energy);
+		fprintf(file,"REMARK Times=%lf\n", geometriesMD.geometries[j].time);
+		fprintf(file,"REMARK Check the CRYSTAL PARAMETERS\n");
+		fprintf(file,"CRYST1   20.325   20.325   23.634  90.00  90.00  90.00 P 1           1\n");
+		fprintf(file,"MODEL %d\n", j);
+
+		for(i=0;i<nAtoms;i++)
+		{
+			gdouble X = listOfAtoms[i].C[0]*BOHR_TO_ANG;
+			gdouble Y = listOfAtoms[i].C[1]*BOHR_TO_ANG;
+			gdouble Z = listOfAtoms[i].C[2]*BOHR_TO_ANG;
+			save_atom_pdb_file(file,"ATOM",i+1,listOfAtoms[i].pdbType,listOfAtoms[i].resName,
+			listOfAtoms[i].resNumber+1, X,Y,Z,
+			1.0, 300.0, listOfAtoms[i].symbol, listOfAtoms[i].partialCharge);
+		}
+		fprintf(file,"TER\n");
+		fprintf(file,"ENDMDL\n");
+	}
+	fclose(file);
+	return OK;
 }
 /********************************************************************************/
 static gboolean save_geometry_MD_gabedit_format(gchar *FileName)
@@ -788,8 +1026,8 @@ static gboolean save_geometry_MD_gabedit_format(gchar *FileName)
 	if(file == NULL)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I  can not create '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I  can not create '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 		return FALSE;
 	}
 	fprintf(file,"[Gabedit Format]\n");
@@ -917,6 +1155,10 @@ static gboolean read_MD_gaussian_file_step(gchar* fileName, gint step)
 		listOfAtoms[i].V[2] = 0;
 		listOfAtoms[i].partialCharge = 0.0;
 		listOfAtoms[i].nuclearCharge = get_atomic_number_from_symbol(listOfAtoms[i].symbol);
+		sprintf(listOfAtoms[i].mmType,"%s",listOfAtoms[i].symbol);
+		sprintf(listOfAtoms[i].pdbType,"%s",listOfAtoms[i].symbol);
+		sprintf(listOfAtoms[i].resName,"%s",listOfAtoms[i].symbol);
+		listOfAtoms[i].resNumber = i;
 	}
 	
 	if(geometriesMD.geometries[j].filePos<0) return FALSE;
@@ -1001,16 +1243,16 @@ static gboolean read_gaussian_output(gchar* fileName)
 	gint nG = 0;
         
 	t = get_name_file(fileName);
-	set_status_label_info("File Name",t);
+	set_status_label_info(_("File name"),t);
 	g_free(t);
 	t = NULL;
-	set_status_label_info("File Type","Gaussian output");
+	set_status_label_info(_("File type"),"Gaussian output");
 
 	nG=get_number_of_geomtries_in_gaussian(fileName);
 	if(nG<1) 
 	{
-		t = g_strdup_printf(" Error : I can not read %s file \n",fileName);
-		Message(t," Error ",TRUE);
+		t = g_strdup_printf(_(" Error : I can not read %s file \n"),fileName);
+		Message(t,_(" Error "),TRUE);
 		g_free(t);
 		return FALSE;
 	}
@@ -1030,8 +1272,8 @@ static gboolean read_gaussian_output(gchar* fileName)
 	if(!read_gaussian_file_geomi(fileName, 1, &geometriesMD.geometries[0])) 
 	{
 		freeGeometryMD();
-		t = g_strdup_printf(" Error : I can not read the first geometry from %s file\n",fileName);
-		Message(t," Error ",TRUE);
+		t = g_strdup_printf(_(" Error : I can not read the first geometry from %s file\n"),fileName);
+		Message(t,_("Error"),TRUE);
   		rafreshList();
 		return FALSE;
 	}
@@ -1054,8 +1296,8 @@ static gboolean read_gaussian_output(gchar* fileName)
 		else
 		{
 			freeGeometryMD();
-			t = g_strdup_printf(" Error : I can not read step number %d from %s file\n",j,fileName);
-			Message(t," Error ",TRUE);
+			t = g_strdup_printf(_(" Error : I can not read step number %d from %s file\n"),j,fileName);
+			Message(t,_("Error"),TRUE);
 			g_free(t);
   			rafreshList();
 			return FALSE;
@@ -1114,6 +1356,10 @@ static gboolean read_gamess_trj_first_geometry(gchar *FileName, GeometryMD* geom
 				listOfAtoms[i].C[0] *= ANG_TO_BOHR;
 				listOfAtoms[i].C[1] *= ANG_TO_BOHR;
 				listOfAtoms[i].C[2] *= ANG_TO_BOHR;
+				sprintf(listOfAtoms[i].mmType,"%s",listOfAtoms[i].symbol);
+				sprintf(listOfAtoms[i].pdbType,"%s",listOfAtoms[i].symbol);
+				sprintf(listOfAtoms[i].resName,"%s",listOfAtoms[i].symbol);
+				listOfAtoms[i].resNumber = i;
 			}
 			if(i!=nAtoms)
 			{
@@ -1212,6 +1458,10 @@ static gboolean read_MD_gamess_trj_file_step(gchar* fileName, gint step)
 		listOfAtoms[i].V[2] = 0;
 		listOfAtoms[i].partialCharge = 0.0;
 		listOfAtoms[i].nuclearCharge = get_atomic_number_from_symbol(listOfAtoms[i].symbol);
+		sprintf(listOfAtoms[i].mmType,"%s",listOfAtoms[i].symbol);
+		sprintf(listOfAtoms[i].pdbType,"%s",listOfAtoms[i].symbol);
+		sprintf(listOfAtoms[i].resName,"%s",listOfAtoms[i].symbol);
+		listOfAtoms[i].resNumber = i;
 	}
 	
 	if(geometriesMD.geometries[j].filePos<0) return FALSE;
@@ -1288,16 +1538,16 @@ static gboolean read_gamess_trj(gchar* fileName)
 	gint nG = 0;
         
 	t = get_name_file(fileName);
-	set_status_label_info("File Name",t);
+	set_status_label_info(_("File name"),t);
 	g_free(t);
 	t = NULL;
-	set_status_label_info("File Type","Gaussian output");
+	set_status_label_info(_("File type"),"Gamess/FireFly TRJ file");
 
 	nG=get_number_of_geomtries_in_gamess_trj(fileName);
 	if(nG<1) 
 	{
-		t = g_strdup_printf(" Error : I can not read %s file \n",fileName);
-		Message(t," Error ",TRUE);
+		t = g_strdup_printf(_(" Error : I can not read %s file \n"),fileName);
+		Message(t,_("Error"),TRUE);
 		g_free(t);
 		return FALSE;
 	}
@@ -1317,8 +1567,8 @@ static gboolean read_gamess_trj(gchar* fileName)
 	if(!read_gamess_trj_first_geometry(fileName, &geometriesMD.geometries[0])) 
 	{
 		freeGeometryMD();
-		t = g_strdup_printf(" Error : I can not read the first geometry from %s file\n",fileName);
-		Message(t," Error ",TRUE);
+		t = g_strdup_printf(_(" Error : I can not read the first geometry from %s file\n"),fileName);
+		Message(t,_("Error"),TRUE);
   		rafreshList();
 		return FALSE;
 	}
@@ -1341,8 +1591,8 @@ static gboolean read_gamess_trj(gchar* fileName)
 		else
 		{
 			freeGeometryMD();
-			t = g_strdup_printf(" Error : I can not read step number %d from %s file\n",j,fileName);
-			Message(t," Error ",TRUE);
+			t = g_strdup_printf(_(" Error : I can not read step number %d from %s file\n"),j,fileName);
+			Message(t,_("Error"),TRUE);
 			g_free(t);
   			rafreshList();
 			return FALSE;
@@ -1357,31 +1607,39 @@ static gboolean read_gabedit_MD_file(gchar *fileName)
  	gchar* t;
  	gchar* tmp;
  	gchar* sdum;
+ 	gchar* sdum1;
+ 	gchar* sdum2;
+ 	gchar* sdum3;
  	gchar* pdest;
  	gdouble cdum1, cdum2, cdum3;
  	gdouble vdum1, vdum2, vdum3;
+	gint idum;
  	gboolean OK;
  	FILE *file;
 	gint i;
 	gint j;
 	gint k;
 	gint nG = 0;
+	gdouble pc;
 
 	tmp = get_name_file(fileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Gabedit");
+	set_status_label_info(_("File type"),"Gabedit");
 
  	file = FOpen(fileName, "rb");
 	t = g_malloc(BSIZE*sizeof(gchar));
 	if(file ==NULL)
 	{
-		sprintf(t,"Sorry\nI can not open %s  file ",fileName);
-		Message(t," Error ",TRUE);
+		sprintf(t,_("Sorry\nI can not open %s file "),fileName);
+		Message(t,_("Error"),TRUE);
 		g_free(t);
 		return FALSE;
 	}
 	sdum = g_malloc(BSIZE*sizeof(gchar));
+	sdum1 = g_malloc(BSIZE*sizeof(gchar));
+	sdum2 = g_malloc(BSIZE*sizeof(gchar));
+	sdum3 = g_malloc(BSIZE*sizeof(gchar));
 	OK=FALSE;
 
 	freeGeometryMD();
@@ -1450,6 +1708,29 @@ static gboolean read_gabedit_MD_file(gchar *fileName)
 					geometriesMD.geometries[j].listOfAtoms[i].partialCharge = 0.0;
 					geometriesMD.geometries[j].listOfAtoms[i].nuclearCharge = 
 						get_atomic_number_from_symbol(geometriesMD.geometries[j].listOfAtoms[i].symbol);
+					ncv = sscanf(t,"%s %lf %lf %lf %lf %lf %lf %lf %s %s %s %d",
+								sdum, 
+								&cdum1, &cdum2, &cdum3,
+								&vdum1, &vdum2, &vdum3,
+								&pc,
+								sdum1, sdum2,sdum3,&idum);
+					if(ncv==12)
+					{
+					sprintf(geometriesMD.geometries[j].listOfAtoms[i].mmType,"%s",sdum1);
+					sprintf(geometriesMD.geometries[j].listOfAtoms[i].pdbType,"%s",sdum1);
+					sprintf(geometriesMD.geometries[j].listOfAtoms[i].resName,"%s",sdum1);
+					geometriesMD.geometries[j].listOfAtoms[i].resNumber = idum;
+					}
+					else
+					{
+					sprintf(geometriesMD.geometries[j].listOfAtoms[i].mmType,
+							"%s",geometriesMD.geometries[j].listOfAtoms[i].symbol);
+					sprintf(geometriesMD.geometries[j].listOfAtoms[i].pdbType,
+							"%s",geometriesMD.geometries[j].listOfAtoms[i].symbol);
+					sprintf(geometriesMD.geometries[j].listOfAtoms[i].resName,
+							"%s",geometriesMD.geometries[j].listOfAtoms[i].symbol);
+					geometriesMD.geometries[j].listOfAtoms[i].resNumber = i;
+					}
 				}
 			}
 			nG = j;
@@ -1459,6 +1740,9 @@ static gboolean read_gabedit_MD_file(gchar *fileName)
 	fclose(file);
  	g_free(t);
  	g_free(sdum);
+ 	g_free(sdum1);
+ 	g_free(sdum2);
+ 	g_free(sdum3);
 	if(nG<=0) OK = FALSE;
 	if(nG>0 && nG<geometriesMD.numberOfGeometries)
 	{
@@ -1521,12 +1805,34 @@ static void read_gamess_trj_file(GabeditFileChooser *SelecFile, gint response_id
 	*/
 
 }
+/*************************************************************************/
+static void read_file(GabeditFileChooser *selecFile, gint response_id)
+{
+	gchar *fileName;
+	GabEditTypeFile fileType = GABEDIT_TYPEFILE_UNKNOWN;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(selecFile);
+	gtk_widget_hide(GTK_WIDGET(selecFile));
+	while( gtk_events_pending() ) gtk_main_iteration();
+
+	fileType = get_type_file(fileName);
+	if(fileType == GABEDIT_TYPEFILE_TRJ) read_gamess_trj_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_GAUSSIAN) read_gaussian_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_GABEDIT) read_gabedit_file(selecFile, response_id);
+	else 
+	{
+		Message(
+			_("Sorry, I cannot find the type of your file\n")
+			,_("Error"),TRUE);
+	}
+}
 /********************************************************************************/
 static void read_gabedit_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_gabedit_file,
-			"Read geometries from a Gabedit file",
+			_("Read geometries from a Gabedit file"),
 			GABEDIT_TYPEFILE_GABEDIT,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -1535,7 +1841,7 @@ static void read_gabedit_file_dlg()
 static void read_gaussian_file_dlg()
 {
 	GtkWidget* filesel = 
- 	file_chooser_open(read_gaussian_file, "Read geometries from a Gaussian output file", GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_ORB);
+ 	file_chooser_open(read_gaussian_file, _("Read geometries from a Gaussian output file"), GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
@@ -1543,8 +1849,15 @@ static void read_gaussian_file_dlg()
 static void read_gamess_trj_file_dlg()
 {
 	GtkWidget* filesel = 
- 	file_chooser_open(read_gamess_trj_file, "Read geometries from a Gamess trj file", GABEDIT_TYPEFILE_TRJ,GABEDIT_TYPEWIN_ORB);
+ 	file_chooser_open(read_gamess_trj_file, _("Read geometries from a Gamess trj file"), GABEDIT_TYPEFILE_TRJ,GABEDIT_TYPEWIN_ORB);
 
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+}
+/********************************************************************************/
+static void read_file_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_file, _("Read geometries"), GABEDIT_TYPEFILE_UNKNOWN,GABEDIT_TYPEWIN_ORB);
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
 /********************************************************************************/
@@ -1564,6 +1877,15 @@ static void save_gabedit_file(GabeditFileChooser *SelecFile, gint response_id)
 	if(response_id != GTK_RESPONSE_OK) return;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 	save_geometry_MD_gabedit_format(FileName);
+}
+/********************************************************************************/
+static void save_pdb_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+	gchar *FileName;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+	save_geometry_MD_pdb_format(FileName);
 }
 /********************************************************************************/
 static gboolean set_geometry(gint k)
@@ -1615,7 +1937,7 @@ static void save_velocity_autocorrelation_dlg()
 		return;
 	}
  	filesel = file_chooser_save(save_velocity_autocorrelation,
-			"Save velocity-velocity autocorrelation function",
+			_("Save velocity-velocity autocorrelation function"),
 			GABEDIT_TYPEFILE_UNKNOWN,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -1641,8 +1963,22 @@ static void save_gabedit_file_dlg()
 		return;
 	}
  	filesel = file_chooser_save(save_gabedit_file,
-			"Save geometry convergences in gabedit file format",
+			_("Save geometries in gabedit file format"),
 			GABEDIT_TYPEFILE_GABEDIT,GABEDIT_TYPEWIN_ORB);
+
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+}
+/********************************************************************************/
+static void save_pdb_file_dlg()
+{
+	GtkWidget* filesel;
+	if(geometriesMD.numberOfGeometries<1)
+	{
+		return;
+	}
+ 	filesel = file_chooser_save(save_pdb_file,
+			"Save geometries in pdb file format",
+			GABEDIT_TYPEFILE_PDB,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
@@ -1696,7 +2032,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox,gboole
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
 	i = 0;
-	add_label_table(table," Directory ",i,0);
+	add_label_table(table,_(" Directory "),i,0);
 	add_label_table(table,":",i,1);
   	entry = gtk_entry_new ();
 	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
@@ -1732,7 +2068,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox,gboole
 	g_signal_connect(G_OBJECT(GTK_BIN(comboCharge)->child),"changed", G_CALLBACK(changedEntryCharge),NULL);
 
 	i = 4;
-	add_label_table(table," Keywords ",i,0);
+	add_label_table(table,_(" Keywords "),i,0);
 	add_label_table(table,":",i,1);
   	entry = gtk_entry_new ();
 	g_object_set_data(G_OBJECT(Wins), "EntryKeywords", entry);
@@ -1754,7 +2090,7 @@ static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox,gboole
 
 
 	i = 6;
-	buttonChkgauss = gtk_check_button_new_with_label ("check file");
+	buttonChkgauss = gtk_check_button_new_with_label (_("check file"));
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonChkgauss), FALSE);
 	gtk_table_attach(GTK_TABLE(table),buttonChkgauss,0,0+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
@@ -1900,11 +2236,14 @@ static gboolean show_menu_popup(GtkUIManager *manager, guint button, guint32 tim
 	if (GTK_IS_MENU (menu)) 
 	{
 		set_sensitive_option(manager,"/MenuGeomMD/SaveGabedit");
+		set_sensitive_option(manager,"/MenuGeomMD/SavePDB");
 		set_sensitive_option(manager,"/MenuGeomMD/SaveVelocityAutocorrelation");
 		set_sensitive_option(manager,"/MenuGeomMD/CreateGaussInput");
 		set_sensitive_option(manager,"/MenuGeomMD/CreateGaussInputLink");
 		set_sensitive_option(manager,"/MenuGeomMD/DeleteGeometry");
 		set_sensitive_option(manager,"/MenuGeomMD/DeleteHalfGeometries");
+		set_sensitive_option(manager,"/MenuGeomMD/DeleteBeforeSelectedGeometry");
+		set_sensitive_option(manager,"/MenuGeomMD/DeleteAfterSelectedGeometry");
 		gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, button, time);
 		return TRUE;
 	}
@@ -2053,8 +2392,8 @@ static void showMessageEnd()
 {
 	gchar* format =get_format_image_from_option();
 	gchar* message = messageAnimatedImage(format);
-	gchar* t = g_strdup_printf("\nA series of gab*.%s files was created in \"%s\" directeory.\n\n\n%s" , format, get_last_directory(),message);
-	GtkWidget* winDlg = Message(t,"Info",TRUE);
+	gchar* t = g_strdup_printf(_("\nA series of gab*.%s files was created in \"%s\" directeory.\n\n\n%s") , format, get_last_directory(),message);
+	GtkWidget* winDlg = Message(t,_("Info"),TRUE);
 	g_free(message);
 	gtk_window_set_modal (GTK_WINDOW (winDlg), TRUE);
 	g_free(t);
@@ -2138,7 +2477,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_box_pack_start(GTK_BOX(vboxframe), table,TRUE,TRUE,0);
 
 	i = 0;
-	add_label_table(table," Time step(s) ",(gushort)i,0);
+	add_label_table(table,_(" Time step(s) "),(gushort)i,0);
 	add_label_table(table," : ",(gushort)i,1); 
 	EntryVelocity = gtk_entry_new();
 	gtk_table_attach(GTK_TABLE(table),EntryVelocity,2,2+1,i,i+1,
@@ -2160,7 +2499,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_box_pack_start(GTK_BOX(vboxframe), table,TRUE,TRUE,0);
 
 	i=0;
-	buttonCheckFilm = gtk_check_button_new_with_label ("Create a film");
+	buttonCheckFilm = gtk_check_button_new_with_label (_("Create a film"));
 	createFilm = FALSE;
 	numFileFilm = 0;
 	gtk_table_attach(GTK_TABLE(table),buttonCheckFilm,0,1,i,i+1,
@@ -2285,14 +2624,14 @@ static gboolean createImagesFile()
 		return FALSE;
 	}
 	format =get_format_image_from_option();
-	t = g_strdup_printf("The %s%sgab%d.%s file was created", get_last_directory(),G_DIR_SEPARATOR_S,numFileFilm, format);
+	t = g_strdup_printf(_("The %s%sgab%d.%s file was created"), get_last_directory(),G_DIR_SEPARATOR_S,numFileFilm, format);
 
 	if(!strcmp(formatFilm,"BMP")) message = new_bmp(get_last_directory(), ++numFileFilm);
 	if(!strcmp(formatFilm,"PPM")) message = new_ppm(get_last_directory(), ++numFileFilm);
 	if(!strcmp(formatFilm,"JPEG")) message = new_jpeg(get_last_directory(), ++numFileFilm);
 	if(!strcmp(formatFilm,"PNG")) message = new_png(get_last_directory(), ++numFileFilm);
 	if(!strcmp(formatFilm,"Povray")) message = new_pov(get_last_directory(), ++numFileFilm);
-	if(!strcmp(formatFilm,"PNG transparent")) message = new_png_nobackground(get_last_directory(), ++numFileFilm);
+	if(!strcmp(formatFilm,"PNG transparent")) message = new_png_without_background(get_last_directory(), ++numFileFilm);
 
 	if(message == NULL) setTextInProgress(t);
 	else
@@ -2300,7 +2639,7 @@ static gboolean createImagesFile()
     		GtkWidget* m;
 		createFilm = FALSE;
 		numFileFilm = 0;
-    		m = Message(message,"Error",TRUE);
+    		m = Message(message,_("Error"),TRUE);
 		gtk_window_set_modal (GTK_WINDOW (m), TRUE);
 	}
 	g_free(t);
@@ -2390,11 +2729,14 @@ static void help_supported_format()
 	gchar temp[BSIZE];
 	GtkWidget* win;
 	sprintf(temp,
+		_(
 		" You can read more geometries from :\n"
 	        "     * a Gabedit input file.\n"
+	        "     * a Gamess/FireFly TRJ file.\n"
 	        "     * a Gaussian output file.\n"
+		)
 		 );
-	win = Message(temp," Info ",FALSE);
+	win = Message(temp,_("Info"),FALSE);
 	gtk_window_set_modal (GTK_WINDOW (win), TRUE);
 }
 /***************************************************************************/
@@ -2403,9 +2745,10 @@ static void help_animated_file()
 	GtkWidget* win;
 	gchar* temp = NULL;
 	temp = g_strdup(
+		_(
 		" For create an animated file :\n"
 		" ============================\n"
-	        "   1) Read geometries from a Gaussian or from Gabedit file.\n"
+	        "   1) Read geometries from a Gaussian, Gamess TRJ, FireFly TRJ or from Gabedit file.\n"
 	        "   2) Select \"create a series of BMP (or PPM or POV) images\" button.\n"
 	        "      You can select your favorite directory by clicking to \"Directory\" button.\n"
 	        "   3) Click to Play button.\n"
@@ -2419,8 +2762,9 @@ static void help_animated_file()
 	        "            You can use the xPovAnim script (from utils/povray directory) for create the gif animated file from gab*.pov files.\n\n"
 	        "            convert is a free software. You can download this(for any system) from http://www.imagemagick.org\n"
 	        "            povray is a free software. You can download this(for any system) from http://www.povray.org\n\n"
+		)
 		 );
-	win = Message(temp," Info ",FALSE);
+	win = Message(temp,_("Info"),FALSE);
 	gtk_window_set_modal (GTK_WINDOW (win), TRUE);
 	g_free(temp);
 }
@@ -2434,21 +2778,28 @@ static void activate_action (GtkAction *action)
 	{
 		GtkUIManager *manager = g_object_get_data(G_OBJECT(action), "Manager");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/SaveGabedit");
+		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/SavePDB");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/SaveVelocityAutocorrelation");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGaussInput");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGaussInputLink");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/DeleteGeometry");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/DeleteHalfGeometries");
+		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/DeleteBeforeSelectedGeometry");
+		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/DeleteAfterSelectedGeometry");
 	}
+	else if(!strcmp(name, "ReadAuto")) read_file_dlg();
 	else if(!strcmp(name, "ReadGabedit")) read_gabedit_file_dlg();
 	else if(!strcmp(name, "ReadGaussian")) read_gaussian_file_dlg();
 	else if(!strcmp(name, "ReadGamess")) read_gamess_trj_file_dlg();
 	else if(!strcmp(name, "SaveGabedit")) save_gabedit_file_dlg();
+	else if(!strcmp(name, "SavePDB")) save_pdb_file_dlg();
 	else if(!strcmp(name, "SaveVelocityAutocorrelation")) save_velocity_autocorrelation_dlg();
 	else if(!strcmp(name, "CreateGaussInput")) create_gaussian_file_dlg(FALSE);
 	else if(!strcmp(name, "CreateGaussInputLink")) create_gaussian_file_dlg(TRUE);
 	else if(!strcmp(name, "DeleteGeometry")) delete_one_geometry();
 	else if(!strcmp(name, "DeleteHalfGeometries")) delete_half_geometries();
+	else if(!strcmp(name, "DeleteBeforeSelectedGeometry")) delete_before_selected_geometry();
+	else if(!strcmp(name, "DeleteAfterSelectedGeometry")) delete_after_selected_geometry();
 	else if(!strcmp(name, "Close")) destroyDlg(NULL);
 	else if(!strcmp(name, "HelpSupportedFormat")) help_supported_format();
 	else if(!strcmp(name, "HelpAnimation")) help_animated_file();
@@ -2456,21 +2807,25 @@ static void activate_action (GtkAction *action)
 /*--------------------------------------------------------------------*/
 static GtkActionEntry gtkActionEntries[] =
 {
-	{"File",     NULL, "_File", NULL, NULL, G_CALLBACK (activate_action)},
-	{"Read",     NULL, "_Read"},
-	{"ReadGabedit", GABEDIT_STOCK_GABEDIT, "Read a G_abedit file", NULL, "Read a Gabedit file", G_CALLBACK (activate_action) },
-	{"ReadGaussian", GABEDIT_STOCK_GAUSSIAN, "Read a _Gaussian output file", NULL, "Read a Gaussian output file", G_CALLBACK (activate_action) },
-	{"ReadGamess", GABEDIT_STOCK_GAMESS, "Read a Games_s trj file", NULL, "Read a Gamess trj file", G_CALLBACK (activate_action) },
-	{"SaveGabedit", GABEDIT_STOCK_SAVE, "_Save", NULL, "Save", G_CALLBACK (activate_action) },
-	{"SaveVelocityAutocorrelation", GABEDIT_STOCK_SAVE, "_Save velocity-velocity autocorrelation function", NULL, "Save velocity-velocity autocorrelation function", G_CALLBACK (activate_action) },
-	{"CreateGaussInput", GABEDIT_STOCK_GAUSSIAN, "_Create a serie of single input file for Gaussian", NULL, "Save", G_CALLBACK (activate_action) },
-	{"CreateGaussInputLink", GABEDIT_STOCK_GAUSSIAN, "_Create single input file for Gaussian with more geometries", NULL, "Save", G_CALLBACK (activate_action) },
-	{"DeleteGeometry", GABEDIT_STOCK_CUT, "_Delete selected geometry", NULL, "Delete selected geometry", G_CALLBACK (activate_action) },
-	{"DeleteHalfGeometries", GABEDIT_STOCK_CUT, "remove the _half of the geometries", NULL, "remove the half of the geometries", G_CALLBACK (activate_action) },
-	{"Close", GABEDIT_STOCK_CLOSE, "_Close", NULL, "Close", G_CALLBACK (activate_action) },
-	{"Help",     NULL, "_Help"},
-	{"HelpSupportedFormat", NULL, "_Supported format...", NULL, "Supported format...", G_CALLBACK (activate_action) },
-	{"HelpAnimation", NULL, "Creation of an _animated file...", NULL, "Creation of an animated file...", G_CALLBACK (activate_action) },
+	{"File",     NULL, N_("_File"), NULL, NULL, G_CALLBACK (activate_action)},
+	{"Read",     NULL, N_("_Read")},
+	{"ReadAuto", NULL, N_("Read a file(Auto)"), NULL, "Read a file", G_CALLBACK (activate_action) },
+	{"ReadGabedit", GABEDIT_STOCK_GABEDIT, N_("Read a G_abedit file"), NULL, "Read a Gabedit file", G_CALLBACK (activate_action) },
+	{"ReadGaussian", GABEDIT_STOCK_GAUSSIAN, N_("Read a _Gaussian output file"), NULL, "Read a Gaussian output file", G_CALLBACK (activate_action) },
+	{"ReadGamess", GABEDIT_STOCK_GAMESS, N_("Read a Games_s trj file"), NULL, "Read a Gamess trj file", G_CALLBACK (activate_action) },
+	{"SaveGabedit", GABEDIT_STOCK_SAVE, N_("_Save"), NULL, "Save", G_CALLBACK (activate_action) },
+	{"SavePDB", GABEDIT_STOCK_PDB, N_("_Save as pdb file "), NULL, "Save as pdb", G_CALLBACK (activate_action) },
+	{"SaveVelocityAutocorrelation", GABEDIT_STOCK_SAVE, N_("_Save velocity-velocity autocorrelation function"), NULL, "Save velocity-velocity autocorrelation function", G_CALLBACK (activate_action) },
+	{"CreateGaussInput", GABEDIT_STOCK_GAUSSIAN, N_("_Create a serie of single input file for Gaussian"), NULL, "Save", G_CALLBACK (activate_action) },
+	{"CreateGaussInputLink", GABEDIT_STOCK_GAUSSIAN, N_("_Create single input file for Gaussian with more geometries"), NULL, "Save", G_CALLBACK (activate_action) },
+	{"DeleteGeometry", GABEDIT_STOCK_CUT, N_("_Delete selected geometry"), NULL, "Delete selected geometry", G_CALLBACK (activate_action) },
+	{"DeleteHalfGeometries", GABEDIT_STOCK_CUT, N_("Remove the _half of the geometries"), NULL, "remove the half of the geometries", G_CALLBACK (activate_action) },
+	{"DeleteBeforeSelectedGeometry", GABEDIT_STOCK_CUT, N_("Remove geometries before the selected geometry"), NULL, "remove before", G_CALLBACK (activate_action) },
+	{"DeleteAfterSelectedGeometry", GABEDIT_STOCK_CUT, N_("Remove geometries after the selected geometry"), NULL, "remove before", G_CALLBACK (activate_action) },
+	{"Close", GABEDIT_STOCK_CLOSE, N_("_Close"), NULL, "Close", G_CALLBACK (activate_action) },
+	{"Help",     NULL, N_("_Help")},
+	{"HelpSupportedFormat", NULL, N_("_Supported format..."), NULL, "Supported format...", G_CALLBACK (activate_action) },
+	{"HelpAnimation", NULL, N_("Creation of an _animated file..."), NULL, "Creation of an animated file...", G_CALLBACK (activate_action) },
 };
 static guint numberOfGtkActionEntries = G_N_ELEMENTS (gtkActionEntries);
 /********************************************************************************/
@@ -2479,11 +2834,14 @@ static guint numberOfGtkActionEntries = G_N_ELEMENTS (gtkActionEntries);
 static const gchar *uiMenuInfo =
 "  <popup name=\"MenuGeomMD\">\n"
 "    <separator name=\"sepMenuPopGabedit\" />\n"
+"    <menuitem name=\"ReadAuto\" action=\"ReadAuto\" />\n"
+"    <separator name=\"sepMenuAuto\" />\n"
 "    <menuitem name=\"ReadGabedit\" action=\"ReadGabedit\" />\n"
 "    <menuitem name=\"ReadGaussian\" action=\"ReadGaussian\" />\n"
 "    <menuitem name=\"ReadGamess\" action=\"ReadGamess\" />\n"
 "    <separator name=\"sepMenuPopSave\" />\n"
 "    <menuitem name=\"SaveGabedit\" action=\"SaveGabedit\" />\n"
+"    <menuitem name=\"SavePDB\" action=\"SavePDB\" />\n"
 "    <separator name=\"sepMenuPopSaveVelocityAutocorrelation\" />\n"
 "    <menuitem name=\"SaveVelocityAutocorrelation\" action=\"SaveVelocityAutocorrelation\" />\n"
 "    <separator name=\"sepMenuCreateGauss\" />\n"
@@ -2492,18 +2850,23 @@ static const gchar *uiMenuInfo =
 "    <separator name=\"sepMenuDelete\" />\n"
 "    <menuitem name=\"DeleteGeometry\" action=\"DeleteGeometry\" />\n"
 "    <menuitem name=\"DeleteHalfGeometries\" action=\"DeleteHalfGeometries\" />\n"
+"    <menuitem name=\"DeleteBeforeSelectedGeometry\" action=\"DeleteBeforeSelectedGeometry\" />\n"
+"    <menuitem name=\"DeleteAfterSelectedGeometry\" action=\"DeleteAfterSelectedGeometry\" />\n"
 "    <separator name=\"sepMenuPopClose\" />\n"
 "    <menuitem name=\"Close\" action=\"Close\" />\n"
 "  </popup>\n"
 "  <menubar name = \"MenuBar\">\n"
 "    <menu name=\"File\" action=\"File\">\n"
 "      <menu name=\"Read\" action=\"Read\">\n"
+"        <menuitem name=\"ReadAuto\" action=\"ReadAuto\" />\n"
+"        <separator name=\"sepMenuAuto\" />\n"
 "        <menuitem name=\"ReadGabedit\" action=\"ReadGabedit\" />\n"
 "        <menuitem name=\"ReadGaussian\" action=\"ReadGaussian\" />\n"
 "        <menuitem name=\"ReadGamess\" action=\"ReadGamess\" />\n"
 "      </menu>\n"
 "      <separator name=\"sepMenuSave\" />\n"
 "      <menuitem name=\"SaveGabedit\" action=\"SaveGabedit\" />\n"
+"      <menuitem name=\"SavePDB\" action=\"SavePDB\" />\n"
 "      <separator name=\"sepMenuSaveVelocityAutocorrelation\" />\n"
 "      <menuitem name=\"SaveVelocityAutocorrelation\" action=\"SaveVelocityAutocorrelation\" />\n"
 "      <separator name=\"sepMenuCreateGauss\" />\n"
@@ -2512,6 +2875,8 @@ static const gchar *uiMenuInfo =
 "      <separator name=\"sepMenuDelete\" />\n"
 "      <menuitem name=\"DeleteGeometry\" action=\"DeleteGeometry\" />\n"
 "      <menuitem name=\"DeleteHalfGeometries\" action=\"DeleteHalfGeometries\" />\n"
+"      <menuitem name=\"DeleteBeforeSelectedGeometry\" action=\"DeleteBeforeSelectedGeometry\" />\n"
+"      <menuitem name=\"DeleteAfterSelectedGeometry\" action=\"DeleteAfterSelectedGeometry\" />\n"
 "      <separator name=\"sepMenuClose\" />\n"
 "      <menuitem name=\"Close\" action=\"Close\" />\n"
 "    </menu>\n"
@@ -2549,6 +2914,7 @@ static GtkUIManager *create_menu(GtkWidget* box)
   	g_signal_connect_swapped (PrincipalWindow, "destroy", G_CALLBACK (g_object_unref), manager);
 
 	actionGroup = gtk_action_group_new ("GabeditAnimationGeomConvActions");
+	gtk_action_group_set_translation_domain(actionGroup,GETTEXT_PACKAGE);
 	gtk_action_group_add_actions (actionGroup, gtkActionEntries, numberOfGtkActionEntries, NULL);
 
   	gtk_ui_manager_insert_action_group (manager, actionGroup, 0);
@@ -2557,7 +2923,7 @@ static GtkUIManager *create_menu(GtkWidget* box)
   	gtk_window_add_accel_group (GTK_WINDOW (PrincipalWindow), gtk_ui_manager_get_accel_group (manager));
 	if (!gtk_ui_manager_add_ui_from_string (manager, uiMenuInfo, -1, &error))
 	{
-		g_message ("building menus failed: %s", error->message);
+		g_message (_("building menus failed: %s"), error->message);
 		g_error_free (error);
 	}
 	if(GTK_IS_UI_MANAGER(manager))

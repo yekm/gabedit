@@ -1,6 +1,6 @@
 /* GridMolcas.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -178,13 +178,13 @@ static void get_grid_from_molcasgrid_file(FILE* file,gint numOfGrid)
 	V = g_malloc((nMaxBlock+6)*sizeof(gdouble));
 	if(!set_position_label(file,"Title", buffer, len))
 	{
-		Message("Sorry, I can not read grid from this file","Error",TRUE);
+		Message(_("Sorry, I can not read grid from this file"),_("Error"),TRUE);
 		grid = free_grid(grid);
 		return;
 	}
 	if(!get_values_from_molcasgrid_file(file,V, nMaxBlock, numOfGrid))
 	{
-		Message("Sorry, I can not read grid from this file","Error",TRUE);
+		Message(_("Sorry, I can not read grid from this file"),_("Error"),TRUE);
 		grid = free_grid(grid);
 		return;
 	}
@@ -287,9 +287,9 @@ static void read_density(gint numOfGrid)
 	gchar buffer[BSIZE];
 	if(!file)
 	{
-		sprintf(buffer,"Sorry, i can not open \"%s\" file",molcasgridFileName);
+		sprintf(buffer,_("Sorry, i can not open \"%s\" file"),molcasgridFileName);
 		grid = free_grid(grid);
-		Message(buffer,"Error",TRUE);
+		Message(buffer,_("Error"),TRUE);
 		return;
 	}
 
@@ -299,11 +299,11 @@ static void read_density(gint numOfGrid)
 	{
         	limits = grid->limits;
 		create_iso_orbitals();
-		set_status_label_info("Grid","Ok");
+		set_status_label_info(_("Grid"),_("Ok"));
 	}
 	else
 	{
-		set_status_label_info("Grid","Nothing");
+		set_status_label_info(_("Grid"),_("Nothing"));
 		CancelCalcul = FALSE;
 	}
 
@@ -339,9 +339,9 @@ static void read_orbital(GtkWidget *Win,gpointer user_data)
 
 	if(!file)
 	{
-		sprintf(buffer,"Sorry, i can not open \"%s\" file",molcasgridFileName);
+		sprintf(buffer,_("Sorry, I can not open \"%s\" file"),molcasgridFileName);
 		grid = free_grid(grid);
-		Message(buffer,"Error",TRUE);
+		Message(buffer,_("Error"),TRUE);
 		return;
 	}
 
@@ -360,11 +360,11 @@ static void read_orbital(GtkWidget *Win,gpointer user_data)
 	{
         	limits = grid->limits;
 		create_iso_orbitals();
-		set_status_label_info("Grid","Ok");
+		set_status_label_info(_("Grid"),_("Ok"));
 	}
 	else
 	{
-		set_status_label_info("Grid","Nothing");
+		set_status_label_info(_("Grid"),_("Nothing"));
 		CancelCalcul = FALSE;
 	}
 
@@ -490,7 +490,7 @@ static void create_list_molcasgrid_orbitals()
 
   if(numberOfOrbitals<1)
   {
-	  Message("Sorry, Please load a file before\n","Error",TRUE);
+	  Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
 	  return;
   }
   selectedRow=0;
@@ -871,16 +871,16 @@ static void read_molcasgrid_orbitals_file(gchar* filename)
 	CancelCalcul = FALSE;
 	if(!file)
 	{
-		sprintf(buffer,"I can not open %s file",filename);
-		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("I can not open %s file"),filename);
+		Message(buffer,_("Error"),TRUE);
 		return ;
 	}
 
 	free_data_all();
 	tmp = get_name_file(filename);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Molcas grid Formatted file");
+	set_status_label_info(_("File type"),_("Molcas grid formatted file"));
 	Ncenters = 0;
 	
 	Ok = read_molcasgrid_geometry(file);
@@ -895,13 +895,13 @@ static void read_molcasgrid_orbitals_file(gchar* filename)
 			if(!Ok)
 			{
 				free_data_all();
-				Message("Sorry, I can not grid informations from thi file\n","Error",TRUE);
+				Message(_("Sorry, I can not grid information from thi file\n"),_("Error"),TRUE);
 			}
 		}
 		else
 		{
 			free_data_all();
-			Message("Sorry, No grid available in this file\n","Error",TRUE);
+			Message(_("Sorry, No grid available in this file\n"),_("Error"),TRUE);
 			Ok = FALSE;
 		}
 	}
@@ -911,11 +911,11 @@ static void read_molcasgrid_orbitals_file(gchar* filename)
 	glarea_rafresh(GLArea);
 	if(Ok) init_atomic_orbitals();
 
-	if(Ncenters>0) set_status_label_info("Geometry","Ok");
+	if(Ncenters>0) set_status_label_info(_("Geometry"),_("Ok"));
 	/*printf("N = %d %d %d\n",N[0],N[1],N[2]);*/
 
-	if(Ok) set_status_label_info("Grid","Ok");
-	else set_status_label_info("Grid","Nothing");
+	if(Ok) set_status_label_info(_("Grid"),_("Ok"));
+	else set_status_label_info(_("Grid"),_("Nothing"));
 
 	CancelCalcul = FALSE;
 
@@ -935,16 +935,16 @@ static void read_molcasgrid_density_file(gchar* filename)
 	CancelCalcul = FALSE;
 	if(!file)
 	{
-		sprintf(buffer,"I can not open %s file",filename);
-		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("I can not open %s file"),filename);
+		Message(buffer,_("Error"),TRUE);
 		return ;
 	}
 
 	free_data_all();
 	tmp = get_name_file(filename);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Molcas grid Formatted file");
+	set_status_label_info(_("File type"),_("Molcas grid formatted file"));
 	Ncenters = 0;
 	/* read geometry */
 	Ok = read_molcasgrid_geometry(file);
@@ -962,13 +962,13 @@ static void read_molcasgrid_density_file(gchar* filename)
 			if(!Ok)
 			{
 				free_data_all();
-				Message("Sorry, I can not grid informations from thi file\n","Error",TRUE);
+				Message(_("Sorry, I can not grid information from thi file\n"),_("Error"),TRUE);
 			}
 		}
 		else
 		{
 			free_data_all();
-			Message("Sorry, No grid available in this file\n","Error",TRUE);
+			Message(_("Sorry, No grid available in this file\n"),_("Error"),TRUE);
 			Ok = FALSE;
 		}
 	}
@@ -979,7 +979,7 @@ static void read_molcasgrid_density_file(gchar* filename)
 		if(numGridDensity<1)
 		{
 			free_data_all();
-			Message("Sorry, No density available in this file\n","Error",TRUE);
+			Message(_("Sorry, No density available in this file\n"),_("Error"),TRUE);
         		Ok = FALSE;
 		}
 		
@@ -990,11 +990,11 @@ static void read_molcasgrid_density_file(gchar* filename)
 	glarea_rafresh(GLArea);
 	if(Ok) init_atomic_orbitals();
 
-	if(Ncenters>0) set_status_label_info("Geometry","Ok");
+	if(Ncenters>0) set_status_label_info(_("Geometry"),_("Ok"));
 	/*printf("N = %d %d %d\n",N[0],N[1],N[2]);*/
 
-	if(Ok) set_status_label_info("Grid","Ok");
-	else set_status_label_info("Grid","Nothing");
+	if(Ok) set_status_label_info(_("Grid"),_("Ok"));
+	else set_status_label_info(_("Grid"),_("Nothing"));
 
 	CancelCalcul = FALSE;
 

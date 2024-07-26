@@ -1,6 +1,6 @@
 /* GeomZmatrix.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -99,7 +99,7 @@ static void DialogueTransInVar();
 static void trans_allRGeom_to_variables();
 static void trans_allAngleGeom_to_variables();
 static void trans_allDihedralGeom_to_variables();
-static void TransConstVar();
+static void TransConstVar(gboolean vr, gboolean va, gboolean vd);
 static void MultiByA0();
 static void DivideByA0();
 /********************************************************************************/
@@ -241,7 +241,7 @@ static void editedVariable (GtkCellRendererText *cell, gchar  *path_string,
 	  	Nc = atoi(path_string);
   		if(TestVariablesCreated(new_text,Nc) )
   		{
-			MessageGeom("Sorry a other variable have any Name !\n"," Error ",TRUE);
+			MessageGeom(_("Sorry a other variable have any Name !\n"),_("Error"),TRUE);
       			return;
 		} 
 	}
@@ -249,8 +249,8 @@ static void editedVariable (GtkCellRendererText *cell, gchar  *path_string,
 	{
   		if(!test(new_text))
 		{
-			gchar* message=g_strdup_printf("Sorry %s is not a number \n",new_text);
-			MessageGeom(message," Error ",TRUE);
+			gchar* message=g_strdup_printf(_("Sorry %s is not a number \n"),new_text);
+			MessageGeom(message,_("Error"),TRUE);
 			g_free(message);
 			return;
   		}
@@ -989,6 +989,39 @@ static gboolean reset_dihedral_value(gint Nc, gchar* val)
 	}
 }
 /********************************************************************************/
+static void selectedCell (GtkCellRenderer *renderer, GtkCellEditable *editable, gchar *path_string, gpointer user_data)
+{
+	gint numCol = 0;
+	numCol = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(renderer),"NumColumn"));
+	gint Nc = -1;
+	Nc = atoi(path_string);
+	if(Nc<0) return;
+	if((numCol==E_R || numCol==E_NUMBER_R) && Nc>0)
+	{
+		NSA[0] = Nc+1;
+		NSA[1] = atoi(Geom[Nc].NR);
+		NSA[2] = -1;
+		NSA[3] = -1;
+ 		if(ZoneDessin != NULL) rafresh_drawing();
+	}
+	else if((numCol==E_ANGLE || numCol==E_NUMBER_ANGLE) && Nc>1)
+	{
+		NSA[0] = Nc+1;
+		NSA[1] = atoi(Geom[Nc].NR);
+		NSA[2] = atoi(Geom[Nc].NAngle);
+		NSA[3] = -1;
+ 		if(ZoneDessin != NULL) rafresh_drawing();
+	}
+	else if((numCol==E_DIHEDRAL || numCol==E_NUMBER_DIHEDRAL) && Nc>2)
+	{
+		NSA[0] = Nc+1;
+		NSA[1] = atoi(Geom[Nc].NR);
+		NSA[2] = atoi(Geom[Nc].NAngle);
+		NSA[3] = atoi(Geom[Nc].NDihedral);
+ 		if(ZoneDessin != NULL) rafresh_drawing();
+	}
+}
+/********************************************************************************/
 static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 		    gchar *new_text, gpointer data)
 {
@@ -1009,8 +1042,8 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 		if(nc>1)new_text[1]=tolower(new_text[1]);
 		if(!test_atom_define(new_text))
 		{
-			gchar* message=g_strdup_printf("Sorry %s is not a symbol for an atom \n",new_text);
-			MessageGeom(message," Error ",TRUE);
+			gchar* message=g_strdup_printf(_("Sorry %s is not a symbol for an atom \n"),new_text);
+			MessageGeom(message,_("Error"),TRUE);
 			g_free(message);
 			return;
 		}
@@ -1100,8 +1133,8 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 	  	Nc = atoi(path_string);
 		if(testav(new_text)<-1)
 		{	
-			gchar* message=g_strdup_printf("Sorry\n %s \nis not a number \nand is not a variable ",new_text);
-			MessageGeom(message," Error ",TRUE);
+			gchar* message=g_strdup_printf(_("Sorry\n %s \nis not a number \nand is not a variable "),new_text);
+			MessageGeom(message,_("Error"),TRUE);
 			g_free(message);
         		return;
 		}
@@ -1109,15 +1142,15 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 			new_text=g_strdup_printf("%s.0",new_text);
   		if(test(new_text) && atof(new_text)<0 && numCol==E_R)
 		{
-			gchar* message=g_strdup_printf("Sorry : The distance can not be negative");
-			MessageGeom(message," Error ",TRUE);
+			gchar* message=g_strdup_printf(_("Sorry : The distance can not be negative"));
+			MessageGeom(message,_("Error"),TRUE);
 			g_free(message);
         		return;
 		}
   		if(test(new_text) && fabs(atof(new_text))<0.01 && numCol==E_R)
 		{
-			gchar* message=g_strdup_printf("Sorry : The distance can not be <0.01");
-			MessageGeom(message," Error ",TRUE);
+			gchar* message=g_strdup_printf(_("Sorry : The distance can not be <0.01"));
+			MessageGeom(message,_("Error"),TRUE);
 			g_free(message);
         		return;
 		}
@@ -1156,16 +1189,16 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 	  	Nc = atoi(path_string);
 		if(!isInteger(new_text))
 		{	
-			gchar* message=g_strdup_printf("Sorry\n %s \nis not an integer ",new_text);
-			MessageGeom(message," Error ",TRUE);
+			gchar* message=g_strdup_printf(_("Sorry\n %s \nis not an integer "),new_text);
+			MessageGeom(message,_("Error"),TRUE);
 			g_free(message);
         		return;
 		}
 		N = atoi(new_text);
 		if(N<1 || N>=Nc+1)
 		{	
-			gchar* message=g_strdup_printf("Sorry\n %s \nis not an integer between 1 and %d",new_text,Nc);
-			MessageGeom(message," Error ",TRUE);
+			gchar* message=g_strdup_printf(_("Sorry\n %s \nis not an integer between 1 and %d"),new_text,Nc);
+			MessageGeom(message,_("Error"),TRUE);
 			g_free(message);
         		return;
 		}
@@ -1181,19 +1214,25 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 			{
 				NA = atoi(Geom[Nc].NR);
 				message=g_strdup_printf(
+						_(
 						"Because a multiple references to a center on the same card\n"
-						"I set NA to %d\n",NA
+						"I set NA to %d\n"
+						)
+						,NA
 						);
 			}
 			if(Nc>2 && N==atoi(Geom[Nc].NDihedral))
 			{
 				ND = atoi(Geom[Nc].NR);
 				message=g_strdup_printf(
+						_(
 						"Because a multiple references to a center on the same card\n"
-						"I set ND to %d\n",ND
+						"I set ND to %d\n"
+						)
+						,ND
 						);
 			}
-			MessageGeom(message," Error ",TRUE);
+			MessageGeom(message,_("Error"),TRUE);
 			g_free(message);
 		}
 		if( numCol==E_NUMBER_ANGLE) NA = N;
@@ -1204,8 +1243,11 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 			{
 				NR = atoi(Geom[Nc].NAngle);
 				message=g_strdup_printf(
+						_(
 						"Because a multiple references to a center on the same card\n"
-						"I set NR to %d\n",NR
+						"I set NR to %d\n"
+						)
+						,NR
 						);
 			}
 			if(Nc>2 && N==atoi(Geom[Nc].NDihedral))
@@ -1216,7 +1258,7 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 						"I set ND to %d\n",ND
 						);
 			}
-			MessageGeom(message," Error ",TRUE);
+			MessageGeom(message,_("Error"),TRUE);
 			g_free(message);
 		}
 		if( numCol==E_NUMBER_DIHEDRAL) ND = N;
@@ -1227,19 +1269,25 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 			{
 				NA = atoi(Geom[Nc].NDihedral);
 				message=g_strdup_printf(
+						_(
 						"Because a multiple references to a center on the same card\n"
-						"I set NA to %d\n",NA
+						"I set NA to %d\n"
+						)
+						,NA
 						);
 			}
 			if(Nc>0 && N==atoi(Geom[Nc].NR))
 			{
 				NR = atoi(Geom[Nc].NDihedral);
 				message=g_strdup_printf(
+						_(
 						"Because a multiple references to a center on the same card\n"
-						"I set NR to %d\n",NR
+						"I set NR to %d\n"
+						)
+						,NR
 						);
 			}
-			MessageGeom(message," Error ",TRUE);
+			MessageGeom(message,_("Error"),TRUE);
 			g_free(message);
 		}
 
@@ -1388,8 +1436,8 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 	  	Nc = atoi(path_string);
   		if(!test(new_text))
 		{
-			gchar* message=g_strdup_printf("Sorry %s is not a number \n",new_text);
-			MessageGeom(message," Error ",TRUE);
+			gchar* message=g_strdup_printf(_("Sorry %s is not a number \n"),new_text);
+			MessageGeom(message,_("Error"),TRUE);
 			g_free(message);
 			return;
   		}
@@ -1421,8 +1469,8 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 			||!strcmp(new_text,"Low")
 			|| !strcmp(new_text," ")))
 		{
-			gchar* message=g_strdup_printf("Sorry  The layer should be High, Medium, Low or one space \n");
-			MessageGeom(message," Error ",TRUE);
+			gchar* message=g_strdup_printf(_("Sorry  The layer should be High, Medium, Low or one space \n"));
+			MessageGeom(message,_("Error"),TRUE);
 			g_free(message);
 			return;
   		}
@@ -1467,7 +1515,10 @@ static void activate_action_xyz_geom (GtkAction *action)
 	else if(!strcmp(name, "AllR")) trans_allRGeom_to_variables(); 
 	else if(!strcmp(name, "AllAngles")) trans_allAngleGeom_to_variables(); 
 	else if(!strcmp(name, "AllDihedrals")) trans_allDihedralGeom_to_variables(); 
-	else if(!strcmp(name, "One")) TransConstVar(); 
+	else if(!strcmp(name, "OneAtom")) TransConstVar(TRUE,TRUE,TRUE); 
+	else if(!strcmp(name, "OneR")) TransConstVar(TRUE,FALSE,FALSE); 
+	else if(!strcmp(name, "OneAngle")) TransConstVar(FALSE,TRUE,FALSE); 
+	else if(!strcmp(name, "OneDihedral")) TransConstVar(FALSE,FALSE,TRUE); 
 	else if(!strcmp(name, "MultiplyBya0")) MultiByA0(); 
 	else if(!strcmp(name, "DivideBya0")) DivideByA0(); 
 	else if(!strcmp(name, "ToXYZ")) conversion_zmat_to_xyz(); 
@@ -1484,7 +1535,10 @@ static GtkActionEntry gtkActionEntriesZMatGeom[] =
 	{"AllR", NULL, "All _R =>", NULL, "All R=>", G_CALLBACK (activate_action_xyz_geom) },
 	{"AllAngles", NULL, "All _Angles =>", NULL, "All Angles =>", G_CALLBACK (activate_action_xyz_geom) },
 	{"AllDihedrals", NULL, "All _Dihedral =>", NULL, "All Dihedral =>", G_CALLBACK (activate_action_xyz_geom) },
-	{"One", NULL, "_One=>", NULL, "One=>", G_CALLBACK (activate_action_xyz_geom) },
+	{"OneAtom", NULL, "_One atom=>", NULL, "One atom=>", G_CALLBACK (activate_action_xyz_geom) },
+	{"OneR", NULL, "_One R=>", NULL, "One R=>", G_CALLBACK (activate_action_xyz_geom) },
+	{"OneAngle", NULL, "_One Angle=>", NULL, "One Angle=>", G_CALLBACK (activate_action_xyz_geom) },
+	{"OneDihedral", NULL, "_One Dihedral=>", NULL, "One Dihedral=>", G_CALLBACK (activate_action_xyz_geom) },
 	{"MultiplyBya0", GABEDIT_STOCK_A0P, "M_ultiply by a0", NULL, "Multiply by a0", G_CALLBACK (activate_action_xyz_geom) },
 	{"DivideBya0", GABEDIT_STOCK_A0D, "D_ivide by a0", NULL, "D_ivide by a0", G_CALLBACK (activate_action_xyz_geom) },
 	{"ToXYZ", NULL, "to _XYZ", NULL, "to XYZ", G_CALLBACK (activate_action_xyz_geom) },
@@ -1510,7 +1564,10 @@ static const gchar *uiMenuZMatGeomInfo =
 "    <menuitem name=\"AllR\" action=\"AllR\" />\n"
 "    <menuitem name=\"AllAngles\" action=\"AllAngles\" />\n"
 "    <menuitem name=\"AllDihedrals\" action=\"AllDihedrals\" />\n"
-"    <menuitem name=\"One\" action=\"One\" />\n"
+"    <menuitem name=\"OneAtom\" action=\"OneAtom\" />\n"
+"    <menuitem name=\"OneR\" action=\"OneR\" />\n"
+"    <menuitem name=\"OneAngle\" action=\"OneAngle\" />\n"
+"    <menuitem name=\"OneDihedral\" action=\"OneDihedral\" />\n"
 "    <separator name=\"sepMenuPopMul\" />\n"
 "    <menuitem name=\"MultiplyBya0\" action=\"MultiplyBya0\" />\n"
 "    <menuitem name=\"DivideBya0\" action=\"DivideBya0\" />\n"
@@ -1530,6 +1587,7 @@ static GtkUIManager *newMenuZMatGeom(GtkWidget* win)
   	g_signal_connect_swapped (win, "destroy", G_CALLBACK (g_object_unref), manager);
 
 	actionGroup = gtk_action_group_new ("GabeditListOfProject");
+	gtk_action_group_set_translation_domain(actionGroup,GETTEXT_PACKAGE);
 	gtk_action_group_add_actions (actionGroup, gtkActionEntriesZMatGeom, numberOfGtkActionEntriesZMatGeom, NULL);
 
   	gtk_ui_manager_insert_action_group (manager, actionGroup, 0);
@@ -1560,7 +1618,7 @@ static GtkActionEntry gtkActionEntriesZMatVariables[] =
 	{"New", GABEDIT_STOCK_NEW, "_New", NULL, "New", G_CALLBACK (activate_action_zmat_variables) },
 	{"Delete", GABEDIT_STOCK_CUT, "_Delete", NULL, "Delete", G_CALLBACK (activate_action_zmat_variables) },
 	{"All", NULL, "<=_All", NULL, "<=All", G_CALLBACK (activate_action_zmat_variables) },
-	{"One", NULL, "<=_On", NULL, "<=One", G_CALLBACK (activate_action_zmat_variables) },
+	{"One", NULL, "<=_One", NULL, "<=One", G_CALLBACK (activate_action_zmat_variables) },
 };
 static guint numberOfGtkActionEntriesZMatVariables = G_N_ELEMENTS (gtkActionEntriesZMatVariables);
 /********************************************************************************/
@@ -1589,6 +1647,7 @@ static GtkUIManager *newMenuZMatVariables(GtkWidget* win)
   	g_signal_connect_swapped (win, "destroy", G_CALLBACK (g_object_unref), manager);
 
 	actionGroup = gtk_action_group_new ("GabeditListOfProject");
+	gtk_action_group_set_translation_domain(actionGroup,GETTEXT_PACKAGE);
 	gtk_action_group_add_actions (actionGroup, gtkActionEntriesZMatVariables, numberOfGtkActionEntriesZMatVariables, NULL);
 
   	gtk_ui_manager_insert_action_group (manager, actionGroup, 0);
@@ -1632,7 +1691,8 @@ static void event_dispatcher(GtkWidget *widget, GdkEventButton *event, gpointer 
 	if(strstr(menuName,"Geom"))
 	{
   		LineSelected = row;
-		NSA = LineSelected+1;
+		NSA[0] = LineSelected+1;
+		NSA[1] = NSA[2] = NSA[3] =-1;
 	}
 	else
 	{
@@ -1948,8 +2008,8 @@ void save_gzmatrix_file(G_CONST_RETURN gchar* NameFileZmatrix)
  fd = FOpen(NameFileZmatrix, "w");
  if(fd == NULL)
  {
-	gchar* t = g_strdup_printf("Sorry,\n I can not open %s file",NameFileZmatrix);
-	Message(t,"Error",TRUE);
+	gchar* t = g_strdup_printf(_("Sorry,\n I can not open %s file"),NameFileZmatrix);
+	Message(t,_("Error"),TRUE);
 	g_free(t);
 	return;
  }
@@ -2037,7 +2097,7 @@ void save_geometry_gzmatrix_file(GabeditFileChooser *SelecFile, gint response_id
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     		return ;
  	}
 	 save_gzmatrix_file(FileName);
@@ -2170,8 +2230,8 @@ void save_mzmatrix_file(G_CONST_RETURN gchar* NameFileZmatrix)
  fd = FOpen(NameFileZmatrix, "w");
  if(fd == NULL)
  {
-	gchar* t = g_strdup_printf("Sorry,\n I can not open %s file",NameFileZmatrix);
-	Message(t,"Error",TRUE);
+	gchar* t = g_strdup_printf(_("Sorry,\n I can not open %s file"),NameFileZmatrix);
+	Message(t,_("Error"),TRUE);
 	g_free(t);
 	return;
  }
@@ -2213,7 +2273,7 @@ void save_geometry_mzmatrix_file(GabeditFileChooser *SelecFile, gint response_id
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     		return ;
  	}
 	save_mzmatrix_file(FileName);
@@ -2287,7 +2347,7 @@ void create_window_save_zmat()
 
   if(NcentersZmat<1)
   {
-    MessageGeom(" Sorry No Center  !"," Error ",TRUE);
+    MessageGeom(_(" Sorry No Center  !"),_("Error"),TRUE);
     return;
   }
   if(!Win)
@@ -2356,13 +2416,13 @@ void create_window_save_zmat()
 
 
 
-  button = create_button(fp,"Cancel");
+  button = create_button(fp,_("Cancel"));
   gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, FALSE, 3);
   g_signal_connect_swapped(G_OBJECT(button),"clicked",(GCallback)delete_child,GTK_OBJECT(fp));
   gtk_widget_show (button);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 
-  button = create_button(fp,"OK");
+  button = create_button(fp,_("OK"));
   gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, FALSE, 3);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
@@ -2587,22 +2647,22 @@ static void DialogueTransInVar()
 
   if (NcentersZmat <1)
   {
-    MessageGeom(" Sorry No Center  !"," Warning ",TRUE);
+    MessageGeom(_(" Sorry No Center  !"),_("Warning"),TRUE);
     return ;
   }
 
   Dialogue = gtk_dialog_new();
-  gtk_window_set_title(GTK_WINDOW(Dialogue),"Tansform all constants in Variables");
+  gtk_window_set_title(GTK_WINDOW(Dialogue),_("Tansform all constants in Variables"));
   gtk_window_set_position(GTK_WINDOW(Dialogue),GTK_WIN_POS_CENTER);
   gtk_window_set_transient_for(GTK_WINDOW(Dialogue),GTK_WINDOW(WindowGeom));
   gtk_window_set_modal (GTK_WINDOW (Dialogue), TRUE);
 
-  add_child(WindowGeom,Dialogue,gtk_widget_destroy," Question ");
+  add_child(WindowGeom,Dialogue,gtk_widget_destroy,_(" Question "));
   g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GCallback)delete_child,NULL);
 
   gtk_widget_realize(Dialogue);
   
-  Label = create_label_with_pixmap(Dialogue,"\nAre you sure to transform\n all constants in variables? \n"," Question ");
+  Label = create_label_with_pixmap(Dialogue,_("\nAre you sure to transform\n all constants in variables? \n"),_(" Question "));
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
@@ -2634,16 +2694,16 @@ static void DialogueTransInVar()
   gtk_widget_show_all(Dialogue);
 }
 /********************************************************************************/
-static void TransConstVar()
+static void TransConstVar(gboolean vr, gboolean va, gboolean vd)
 {
  gint Nc;
  Nc=LineSelected;
  if(Nc<0)
   {
-    MessageGeom("Sorry No line selected"," Warning ",TRUE);
+    MessageGeom(_("Sorry No line selected"),_("Warning"),TRUE);
     return;
   }
-  trans_OneGeom_to_variables((guint)Nc, TRUE,TRUE,TRUE);   
+  trans_OneGeom_to_variables((guint)Nc, vr,va,vd);
   if(ZoneDessin != NULL) rafresh_drawing();
 }
 /********************************************************************************/
@@ -2742,7 +2802,7 @@ static void TransVarConst()
  Nc=LineSelectedV;
  if(Nc<0)
   {
-    MessageGeom("Sorry No Variable selected"," Warning ",TRUE);
+    MessageGeom(_("Sorry No Variable selected"),_("Warning"),TRUE);
     return;
   }
  OneVariableToConst((guint)Nc);
@@ -2829,22 +2889,22 @@ static void DialogueTransInConst()
 
   if (NcentersZmat <1)
   {
-    MessageGeom(" Sorry No Center  !"," Warning ",TRUE);
+    MessageGeom(_(" Sorry No Center  !"),_("Warning"),TRUE);
     return ;
   }
 
   Dialogue = gtk_dialog_new();
-  gtk_window_set_title(GTK_WINDOW(Dialogue),"Tansform all variables to constants");
+  gtk_window_set_title(GTK_WINDOW(Dialogue),_("Tansform all variables to constants"));
   gtk_window_set_position(GTK_WINDOW(Dialogue),GTK_WIN_POS_CENTER);
   gtk_window_set_transient_for(GTK_WINDOW(Dialogue),GTK_WINDOW(WindowGeom));
   gtk_window_set_modal (GTK_WINDOW (Dialogue), TRUE);
 
-  add_child(WindowGeom,Dialogue,gtk_widget_destroy," Question ");
+  add_child(WindowGeom,Dialogue,gtk_widget_destroy,_(" Question "));
   g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GCallback)delete_child,NULL);
 
   gtk_widget_realize(Dialogue);
   
-  Label = create_label_with_pixmap(Dialogue,"\n Are you sure to transform\n all variables to constants? \n"," Question ");
+  Label = create_label_with_pixmap(Dialogue,_("\n Are you sure to transform\n all variables to constants? \n"),_(" Question "));
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
@@ -3057,7 +3117,7 @@ static void AddAtom(GtkWidget *w,gpointer Entree)
 
   		if (!texts[E_R] || !strcmp(texts[E_R], ""))
         	{
-			MessageGeom("Sorry a Entry text is void !\n"," Warning ",TRUE);
+			MessageGeom(_("Sorry a Entry text is void !\n"),_("Warning"),TRUE);
   			DestroyDialog=FALSE;
 			false = TRUE;
         	}
@@ -3066,9 +3126,10 @@ static void AddAtom(GtkWidget *w,gpointer Entree)
 		if(i<-1)
 		{
 			message=g_strdup_printf(
-			"Sorry\n %s \nis not a number \nand is not a variable ",texts[E_R]
+			_( "Sorry\n %s \nis not a number \nand is not a variable ")
+			,texts[E_R]
 			);
-			MessageGeom(message," Warning ",TRUE);
+			MessageGeom(message,_("Warning"),TRUE);
 			g_free(message);
   			DestroyDialog=FALSE;
 			false = TRUE;
@@ -3088,7 +3149,7 @@ static void AddAtom(GtkWidget *w,gpointer Entree)
 
   		if (!texts[E_ANGLE] || !strcmp(texts[E_ANGLE], ""))
         	{
-			MessageGeom("Sorry a Entry text is void !\n"," Warning ",TRUE);
+			MessageGeom(_("Sorry a Entry text is void !\n"),_("Warning"),TRUE);
   			DestroyDialog=FALSE;
 			false = TRUE;
         	}
@@ -3097,9 +3158,10 @@ static void AddAtom(GtkWidget *w,gpointer Entree)
 		if(i<-1)
 		{	
 			message=g_strdup_printf(
-			"Sorry\n %s \nis not a number \nand is not a variable ",texts[E_ANGLE]
+			_("Sorry\n %s \nis not a number \nand is not a variable ")
+			,texts[E_ANGLE]
 			);
-			MessageGeom(message," Warning ",TRUE);
+			MessageGeom(message,_("Warning"),TRUE);
 			g_free(message);
   			DestroyDialog=FALSE;
 			false = TRUE;
@@ -3119,7 +3181,7 @@ static void AddAtom(GtkWidget *w,gpointer Entree)
 
   		if (!texts[E_DIHEDRAL] || !strcmp(texts[E_DIHEDRAL], ""))
         	{
-			MessageGeom("Sorry a Entry text is void !\n"," Warning ",TRUE);
+			MessageGeom(_("Sorry a Entry text is void !\n"),_("Warning"),TRUE);
   			DestroyDialog=FALSE;
 			false = TRUE;
         	}
@@ -3129,9 +3191,10 @@ static void AddAtom(GtkWidget *w,gpointer Entree)
 		if(i<-1)
 		{
 			message=g_strdup_printf(
-			"Sorry\n %s \nis not a number \nand is not a variable ",texts[E_DIHEDRAL]
+			_("Sorry\n %s \nis not a number \nand is not a variable ")
+			,texts[E_DIHEDRAL]
 			);
-			MessageGeom(message," Warning ",TRUE);
+			MessageGeom(message,_("Warning"),TRUE);
 			g_free(message);
   			DestroyDialog=FALSE;
 			false = TRUE;
@@ -3182,10 +3245,10 @@ static void EditAtom(GtkWidget *w,gpointer Entree)
   gint Nc;
   gint j;
   gint k;
-  gboolean false;
+  gboolean False;
   GeomAtomDef Gtmp;
 
-  false = FALSE;
+  False = FALSE;
   DestroyDialog=TRUE;
   j=-1;
   Nc=-1; 
@@ -3252,23 +3315,23 @@ static void EditAtom(GtkWidget *w,gpointer Entree)
 			if(k<-1)
                 	{
                         	j=i;
-				false=TRUE;
+				False=TRUE;
                         	break;
                 	}
         	}
   		if (!texts[E_R] || !strcmp(texts[E_R], ""))
         	{
-			MessageGeom("Sorry a Entry text is void !\n"," Warning ",TRUE);
+			MessageGeom(_("Sorry a Entry text is void !\n"),_("Warning"),TRUE);
   			DestroyDialog=FALSE;
    			return;
         	}
 
-		if(false)
+		if(False)
 		{
 			message=g_strdup_printf(
-			"Sorry\n %s \nis not a number \nand is not a variable ",texts[j]
+			_("Sorry\n %s \nis not a number \nand is not a variable "),texts[j]
 			);
-			MessageGeom(message," Warning ",TRUE);
+			MessageGeom(message,_("Warning"),TRUE);
 			g_free(message);
   			DestroyDialog=FALSE;
                 	return;
@@ -3287,22 +3350,23 @@ static void EditAtom(GtkWidget *w,gpointer Entree)
 			if(k<-1)
                 	{
                         	j=i;
-				false=TRUE;
+				False=TRUE;
                         	break;
                 	}
    		}
   		if (!texts[E_ANGLE] || !strcmp(texts[E_ANGLE], ""))
         	{
-			MessageGeom("Sorry a Entry text is void !\n"," Warning ",TRUE);
+			MessageGeom(_("Sorry a Entry text is void !\n"),_("Warning"),TRUE);
   			DestroyDialog=FALSE;
    			return;
         	}
-		if(false)
+		if(False)
 		{
 			message=g_strdup_printf(
-			"Sorry\n %s \nis not a number \nand is not a variable ",texts[j]
+			_("Sorry\n %s \nis not a number \nand is not a variable ")
+			,texts[j]
 			);
-			MessageGeom(message," Warning ",TRUE);
+			MessageGeom(message,_("Warning"),TRUE);
 			g_free(message);
   			DestroyDialog=FALSE;
                 	return;
@@ -3321,22 +3385,23 @@ static void EditAtom(GtkWidget *w,gpointer Entree)
 			if(k<-1)
                 	{
                         	j=i;
-				false=TRUE;
+				False=TRUE;
                         	break;
                 	}
    		}
   		if (!texts[E_DIHEDRAL] || !strcmp(texts[E_DIHEDRAL], ""))
         	{
-			MessageGeom("Sorry a Entry text is void !\n"," Warning ",TRUE);
+			MessageGeom(_("Sorry a Entry text is void !\n"),_("Warning"),TRUE);
   			DestroyDialog=FALSE;
    			return;
         	}
-		if(false)
+		if(False)
 		{
 			message=g_strdup_printf(
-			"Sorry\n %s \nis not a number \nand is not a variable ",texts[j]
+			_("Sorry\n %s \nis not a number \nand is not a variable ")
+			,texts[j]
 			);
-			MessageGeom(message," Warning ",TRUE);
+			MessageGeom(message,_("Warning"),TRUE);
 			g_free(message);
   			DestroyDialog=FALSE;
                 	return;
@@ -3368,7 +3433,7 @@ static void EditAtom(GtkWidget *w,gpointer Entree)
 
   }
   else
-	MessageGeom("Sorry No line selected"," Warning ",TRUE);
+	MessageGeom(_("Sorry No line selected"),_("Warning"),TRUE);
     
    ChangeVariablesUseds();
   
@@ -3407,18 +3472,18 @@ static void DialogueAdd()
   guint nlist;
   gchar *tlabel[]={		
   			" ",
-  			"Atom Symbol : ",
-  			"MM Type : ",
-  			"PDB Type : ",
-  			"Residue : ",
-			"R : ",
-			"Center : ",
-			"Angle : ",
-			"Center : ",
-			"Dihedral : ",
-			"Center : ",
-			"Charge : ",
-			"Layer : "};
+  			N_("Atom Symbol : "),
+  			N_("MM Type : "),
+  			N_("PDB Type : "),
+  			N_("Residue : "),
+			N_("R : "),
+			N_("Center : "),
+			N_("Angle : "),
+			N_("Center : "),
+			N_("Dihedral : "),
+			N_("Center : "),
+			N_("Charge : "),
+			N_("Layer : ")};
   gchar **tlist;
   gchar **tlistvar;
   guint i;
@@ -3573,12 +3638,12 @@ static void DialogueAdd()
 
   gtk_widget_realize(Dialogue);
 
-  Bouton = create_button(Dialogue,"Cancel");
+  Bouton = create_button(Dialogue,_("Cancel"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 
-  Bouton = create_button(Dialogue,"OK");
+  Bouton = create_button(Dialogue,_("OK"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)AddAtom, Entry[E_SYMBOL]);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)destroy_dialogue, GTK_OBJECT(Dialogue));
@@ -3602,18 +3667,18 @@ static void DialogueEdit()
   gint nlist;
   gchar *tlabel[]={		
   			" ",
-  			"Atom Symbol : ",
-  			"MM Type : ",
-  			"PDB Type : ",
-  			"Residue : ",
-			"R : ",
-			"Center : ",
-			"Angle : ",
-			"Center : ",
-			"Dihedral : ",
-			"Center : ",
-			"Charge : ",
-			"Layer : "
+  			N_("Atom Symbol : "),
+  			N_("MM Type : "),
+  			N_("PDB Type : "),
+  			N_("Residue : "),
+			N_("R : "),
+			N_("Center : "),
+			N_("Angle : "),
+			N_("Center : "),
+			N_("Dihedral : "),
+			N_("Center : "),
+			N_("Charge : "),
+			N_("Layer : ")
   		};
   gchar **tlist=NULL;
   gchar **tlistvar;
@@ -3626,9 +3691,9 @@ static void DialogueEdit()
   if(Nc<0 )
   {
 	if(NcentersZmat<1 ) 
-   		MessageGeom("Create center before \n"," Warning ",TRUE);
+   		MessageGeom(_("Create center before \n"),_("Warning"),TRUE);
        	else
-   		MessageGeom("Please Select your center \n"," Warning ",TRUE);
+   		MessageGeom(_("Please Select your center \n"),_("Warning"),TRUE);
    	return;
   }
 
@@ -3640,11 +3705,11 @@ static void DialogueEdit()
   }
   
   Dialogue = gtk_dialog_new();
-  gtk_window_set_title(GTK_WINDOW(Dialogue)," Edit center");
+  gtk_window_set_title(GTK_WINDOW(Dialogue),_(" Edit center"));
   gtk_window_set_position(GTK_WINDOW(Dialogue),GTK_WIN_POS_CENTER);
   gtk_window_set_transient_for(GTK_WINDOW(Dialogue),GTK_WINDOW(WindowGeom));
 
-  add_child(WindowGeom,Dialogue,gtk_widget_destroy," Edit Center ");
+  add_child(WindowGeom,Dialogue,gtk_widget_destroy,_(" Edit Center "));
   g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GCallback)delete_child,NULL);
 
   frame = gtk_frame_new (NULL);
@@ -3772,12 +3837,12 @@ static void DialogueEdit()
   }
   gtk_widget_realize(Dialogue);
 
-  Bouton = create_button(Dialogue,"Cancel");
+  Bouton = create_button(Dialogue,_("Cancel"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 
-  Bouton = create_button(Dialogue,"OK");
+  Bouton = create_button(Dialogue,_("OK"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)EditAtom, Entry[E_SYMBOL]);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)destroy_dialogue, GTK_OBJECT(Dialogue));
@@ -3800,17 +3865,17 @@ static void DialogueDelete()
 
   if (NcentersZmat <1)
   {
-    MessageGeom(" No Center to delet !"," Warning ",TRUE);
+    MessageGeom(_(" No Center to delet !"),_(" Warning "),TRUE);
     return ;
   }
 
   Dialogue = gtk_dialog_new();
-  gtk_window_set_title(GTK_WINDOW(Dialogue),"Delete Center");
+  gtk_window_set_title(GTK_WINDOW(Dialogue),_("Delete Center"));
   gtk_window_set_position(GTK_WINDOW(Dialogue),GTK_WIN_POS_CENTER);
   gtk_window_set_transient_for(GTK_WINDOW(Dialogue),GTK_WINDOW(WindowGeom));
   gtk_window_set_modal (GTK_WINDOW (Dialogue), TRUE);
 
-  add_child(WindowGeom,Dialogue,gtk_widget_destroy," Question ");
+  add_child(WindowGeom,Dialogue,gtk_widget_destroy,_(" Question "));
   g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GCallback)delete_child,NULL);
 
   frame = gtk_frame_new (NULL);
@@ -3828,7 +3893,7 @@ static void DialogueDelete()
 
   gtk_widget_realize(Dialogue);
   /* The Label */
-  Label = create_label_with_pixmap(Dialogue,"\nAre you sure to delete \nthe last center? \n"," Question ");
+  Label = create_label_with_pixmap(Dialogue,_("\nAre you sure to delete \nthe last center? \n"),_(" Question "));
   gtk_box_pack_start(GTK_BOX(vboxframe), Label,TRUE,TRUE,0);
 
   Bouton = create_button(Dialogue,"No");
@@ -3968,10 +4033,9 @@ gint read_Zmat_from_molcas_input_file(gchar *fileName)
 	file = FOpen(fileName, "r");
 	if(file == NULL)
 	{
-   		/*MessageGeom("Sorry\n No ZMatrix geometry available in this molcas input file"," Error ",TRUE);*/
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I cannot open %s file",fileName);
-   		MessageGeom(buffer," Error ",TRUE);
+		sprintf(buffer,_("Sorry, I cannot open %s file"),fileName);
+   		MessageGeom(buffer,_("Error"),TRUE);
 		return -1;
 	}
 	/* search ZMAT */
@@ -3992,8 +4056,8 @@ gint read_Zmat_from_molcas_input_file(gchar *fileName)
 	if(!OK)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I cannot read the Z-Matrix from the  %s file",fileName);
-   		MessageGeom(buffer," Error ",TRUE);
+		sprintf(buffer,_("Sorry, I cannot read the Z-Matrix from the  %s file"),fileName);
+   		MessageGeom(buffer,_("Error"),TRUE);
 		return -1;
 	}
 
@@ -4138,7 +4202,7 @@ gint read_Zmat_from_molcas_input_file(gchar *fileName)
 	for(i=0;i<7;i++) g_free(AtomCoord[i]);
 	if( !OK || Ncent <1 )
 	{
-   		MessageGeom("Sorry\n I can not read geometry from you Molcas input file"," Error ",TRUE);
+   		MessageGeom(_("Sorry\n I can not read geometry from you Molcas input file"),_("Error"),TRUE);
    		return -1;
 	}
 	get_charge_and_multiplicity_from_molcas_input_file(file);
@@ -4411,7 +4475,7 @@ void read_Zmat_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFil
  if( !OK || Ncent <1 || Nvar < Kvar)
  {
  	FreeGeom(Geomtemp,Variablestemp,Ncent,Nvar);
-   	MessageGeom("Sorry\n I can not read geometry in Molpro input file"," Error ",TRUE);
+   	MessageGeom(_("Sorry\n I can not read geometry in Molpro input file"),_("Error"),TRUE);
    	return;
  }
  if(Geom)
@@ -4648,7 +4712,7 @@ void read_Zmat_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
  if( !OK || Ncent <1 )
  {
    FreeGeom(Geomtemp,Variablestemp,Ncent,Nvar);
-   MessageGeom("Sorry\n I can not read geometry in Gaussian input file"," Error ",TRUE);
+   MessageGeom(_("Sorry\n I can not read geometry in Gaussian input file"),_("Error"),TRUE);
    return;
  }
  if(Geom)
@@ -4699,7 +4763,7 @@ void read_Zmat_from_orca_input_file(gchar *NomFichier)
 	OK=TRUE;
  	if(file==NULL)
 	{
-   		MessageGeom("Sorry\n I can not read geometry in Orca input file"," Error ",TRUE);
+   		MessageGeom(_("Sorry\n I can not read geometry in Orca input file"),_("Error"),TRUE);
    		return;
 	}
 	t=g_malloc(taille*sizeof(gchar));
@@ -4902,7 +4966,7 @@ void read_Zmat_from_orca_input_file(gchar *NomFichier)
 	if( !OK || Ncent <1 )
 	{
 		FreeGeom(Geomtemp,Variablestemp,Ncent,Nvar);
-		MessageGeom("Sorry\n I can not read geometry in Q-Chem input file"," Error ",TRUE);
+		MessageGeom(_("Sorry\n I can not read geometry in Q-Chem input file"),_("Error"),TRUE);
 		return;
 	}
 	if(Geom) freeGeom();
@@ -5145,7 +5209,7 @@ void read_Zmat_from_qchem_input_file(gchar *NomFichier)
  if( !OK || Ncent <1 )
  {
    FreeGeom(Geomtemp,Variablestemp,Ncent,Nvar);
-   MessageGeom("Sorry\n I can not read geometry in Q-Chem input file"," Error ",TRUE);
+   MessageGeom(_("Sorry\n I can not read geometry in Q-Chem input file"),_("Error"),TRUE);
    return;
  }
  if(Geom)
@@ -5214,8 +5278,8 @@ void read_Zmat_from_mopac_input_file(gchar *FileName)
 	fd = FOpen(FileName, "r");
 	if(fd == NULL)
 	{
-		t = g_strdup_printf("Sorry\n I can not open \"%s\" file",FileName); 
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\n I can not open \"%s\" file"),FileName); 
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	}
@@ -5232,14 +5296,14 @@ void read_Zmat_from_mopac_input_file(gchar *FileName)
 	if(!OK)
 	{
 		g_free(t);
-		t = g_strdup_printf("Sorry\n I can not read geometry from \"%s\" file",FileName); 
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\n I can not read geometry from \"%s\" file"),FileName); 
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	}
 	if( get_info_one_center(t,AtomCoord) == EOF)
 	{
-		 MessageGeom("Sorry\n I can not read geometry from this file"," Error ",TRUE);
+		 MessageGeom(_("Sorry\n I can not read geometry from this file"),_("Error"),TRUE);
  		 g_free(t);
 		for(i=0;i<10;i++)
 			g_free(AtomCoord[i]);
@@ -5288,7 +5352,7 @@ void read_Zmat_from_mopac_input_file(gchar *FileName)
 		}
 		if(ThisIsNotAnAtom(t))
 		{	 	
-			MessageGeom("Sorry\n This is not a Zmatrix mopac file"," Error ",TRUE);
+			MessageGeom(_("Sorry\n This is not a Zmatrix mopac file"),_("Error"),TRUE);
 			g_free(t);
 			freeGeom();
 			freeVariables();
@@ -5340,6 +5404,138 @@ static void get_charge_and_multiplicity_from_mopac_output_file(FILE* fd)
 	}
 }
 /********************************************************************************/
+void read_Zmat_from_mopac_irc_output_file(gchar *FileName, gint numGeom)
+{
+	gchar *t;
+	gboolean OK;
+	gchar *AtomCoord[10];
+	FILE *fd;
+	guint taille=BSIZE;
+	guint i,l;
+
+	for(i=0;i<10;i++) AtomCoord[i]=g_malloc(taille*sizeof(gchar));
+	fd = FOpen(FileName, "r");
+	if(fd == NULL)
+	{
+		t = g_strdup_printf(_("Sorry\n I can not open \"%s\" file"),FileName); 
+		MessageGeom(t,_("Error"),TRUE);
+		g_free(t);
+		return;
+	}
+	t=g_malloc(taille);
+	OK = TRUE;
+	i = 0;
+  	while(!feof(fd) )    
+  	{
+ 		if(!fgets(t, taille, fd))break;
+		if(
+			strstr(t,"POTENTIAL") && 
+			strstr(t,"LOST") &&
+			strstr(t,"TOTAL")
+		) 
+		{
+			i++;
+			if(i==numGeom)break;
+		}
+	}
+	if(i==0) OK = FALSE;
+  	while(!feof(fd) && OK )    
+  	{
+ 		if(!fgets(t, taille, fd))OK = FALSE;
+		if(strstr(t,"FINAL")&& strstr(t,"GEOMETRY")&& strstr(t,"OBTAINED")) 
+		{
+ 			if(!fgets(t, taille, fd))OK = FALSE;
+ 			if(!fgets(t, taille, fd))OK = FALSE;
+ 			if(!fgets(t, taille, fd))OK = FALSE;
+ 			if(!fgets(t, taille, fd))OK = FALSE;
+			break;
+		}
+	}
+	if(!OK ||1!=sscanf(t,"%s", AtomCoord[0]))
+	{
+		g_free(t);
+		t = g_strdup_printf(_("Sorry\n I can not read geometry from \"%s\" file"),FileName); 
+		MessageGeom(t,_("Error"),TRUE);
+		g_free(t);
+		for(i=0;i<10;i++)
+			g_free(AtomCoord[i]);
+		freeGeom();
+		freeVariables();
+		fclose(fd);
+		return;
+		return;
+	}
+	freeGeom();
+	freeVariables();
+	NcentersZmat=0;
+	NcentersZmat++;
+	Geom=g_malloc(sizeof(GeomAtomDef));
+	set_center(AtomCoord);
+	
+	while(!feof(fd) )
+	{
+		if(!fgets(t,taille,fd))break;
+		if(feof(fd)) break;
+		if(this_is_a_backspace(t)) break;
+		if(1!=sscanf(t,"%s", AtomCoord[0])) break;
+		if(NcentersZmat==1)
+		{
+			if(3!=sscanf(t,"%s %s %s", AtomCoord[0],AtomCoord[1],AtomCoord[2])) break;
+			sprintf(AtomCoord[7],"%d", 1);
+		}
+		else
+		if( get_info_one_center(t,AtomCoord) == EOF) break;
+  		NcentersZmat++;
+		Geom=g_realloc(Geom,NcentersZmat*sizeof(GeomAtomDef));
+		set_center(AtomCoord);
+		i = NcentersZmat-1;
+		if(NcentersZmat>1 && atoi(AtomCoord[2])==1)trans_coord_Zmat('R',i,FALSE);
+		if(NcentersZmat>2 && atoi(AtomCoord[4])==1)trans_coord_Zmat('A',i,FALSE);
+		if(NcentersZmat>3 && atoi(AtomCoord[6])==1)trans_coord_Zmat('D',i,FALSE);
+        }
+	fseek(fd, 0L, SEEK_SET);
+	get_charge_and_multiplicity_from_mopac_output_file(fd);
+ 
+	fclose(fd);
+	for(i=0;i<10;i++)
+		g_free(AtomCoord[i]);
+	for (i=0;i<NcentersZmat;i++)
+	{
+		Geom[i].Symb[0]=toupper(Geom[i].Symb[0]);
+		l=strlen(Geom[i].Symb);
+		if (l==2) Geom[i].Symb[1]=tolower(Geom[i].Symb[1]);
+		if(l<3) t=g_strdup(Geom[i].Symb);
+		else
+		{
+			t[0]=Geom[i].Symb[0];
+			t[1]=Geom[i].Symb[1];
+		}
+		if(ThisIsNotAnAtom(t))
+		{	 	
+			MessageGeom(_("Sorry\n This is not a Zmatrix mopac file"),_("Error"),TRUE);
+			g_free(t);
+			freeGeom();
+			freeVariables();
+			return;
+		}
+	}
+	g_free(t);
+	if(Units==0)
+	for (i=1;i<NcentersZmat;i++)
+			Geom[i].R=ang_to_bohr(Geom[i].R);
+
+	MethodeGeom = GEOM_IS_ZMAT;
+	if(GeomIsOpen)
+	{
+     		create_geom_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
+   		clearList(list);
+		append_list_geom();
+		append_list_variables();
+	}
+	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomIsOpen && iprogram == PROG_IS_GAUSS) set_spin_of_electrons();
+}
+/********************************************************************************/
 void read_Zmat_from_mopac_scan_output_file(gchar *FileName, gint numGeom)
 {
 	gchar *t;
@@ -5353,8 +5549,8 @@ void read_Zmat_from_mopac_scan_output_file(gchar *FileName, gint numGeom)
 	fd = FOpen(FileName, "r");
 	if(fd == NULL)
 	{
-		t = g_strdup_printf("Sorry\n I can not open \"%s\" file",FileName); 
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\n I can not open \"%s\" file"),FileName); 
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	}
@@ -5385,15 +5581,15 @@ void read_Zmat_from_mopac_scan_output_file(gchar *FileName, gint numGeom)
 	if(!OK)
 	{
 		g_free(t);
-		t = g_strdup_printf("Sorry\n I can not read geometry from \"%s\" file",FileName); 
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\n I can not read geometry from \"%s\" file"),FileName); 
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	}
 	if(!fgets(t,taille,fd)) OK = FALSE;
 	if( !OK ||  1!=sscanf(t,"%s", AtomCoord[0]))
 	{
-		 MessageGeom("Sorry\n I can not read geometry from this file"," Error ",TRUE);
+		 MessageGeom(_("Sorry\n I can not read geometry from this file"),_("Error"),TRUE);
  		 g_free(t);
 		for(i=0;i<10;i++)
 			g_free(AtomCoord[i]);
@@ -5448,7 +5644,7 @@ void read_Zmat_from_mopac_scan_output_file(gchar *FileName, gint numGeom)
 		}
 		if(ThisIsNotAnAtom(t))
 		{	 	
-			MessageGeom("Sorry\n This is not a Zmatrix mopac file"," Error ",TRUE);
+			MessageGeom(_("Sorry\n This is not a Zmatrix mopac file"),_("Error"),TRUE);
 			g_free(t);
 			freeGeom();
 			freeVariables();
@@ -5526,7 +5722,7 @@ void read_Zmat_from_mopac_scan_output_file(gchar *FileName, gint numGeom)
         case 2 : 
                 if(sscanf(t,"%s %s %s ",AtomCoord[0],AtomCoord[1],AtomCoord[2]) ==EOF )
                 {
-		 MessageGeom("Sorry\n This is not a Zmatrix file"," Error ",TRUE);
+		 MessageGeom(_("Sorry\n This is not a Zmatrix file"),_("Error"),TRUE);
  		 g_free(t);
  		for(i=0;i<7;i++)
 			g_free(AtomCoord[i]);
@@ -5553,7 +5749,7 @@ void read_Zmat_from_mopac_scan_output_file(gchar *FileName, gint numGeom)
 			) ==EOF
 		  )
                 {
-		 MessageGeom("Sorry\n This is not a Zmatrix file"," Error ",TRUE);
+		 MessageGeom(_("Sorry\n This is not a Zmatrix file"),_("Error"),TRUE);
  		 g_free(t);
  		for(i=0;i<7;i++)
 			g_free(AtomCoord[i]);
@@ -5583,7 +5779,7 @@ void read_Zmat_from_mopac_scan_output_file(gchar *FileName, gint numGeom)
 			 )==EOF
 		   )
                  {
-		 MessageGeom("Sorry\n This is not a Zmatrix file"," Error ",TRUE);
+		 MessageGeom(_("Sorry\n This is not a Zmatrix file"),_("Error"),TRUE);
  		 g_free(t);
  		for(i=0;i<7;i++)
 			g_free(AtomCoord[i]);
@@ -5653,7 +5849,7 @@ void read_Zmat_from_mopac_scan_output_file(gchar *FileName, gint numGeom)
 	 }
 	 if(ThisIsNotAnAtom(t))
 	 {	 	
-		 MessageGeom("Sorry\n This is not a Zmatrix file"," Error ",TRUE);
+		 MessageGeom(_("Sorry\n This is not a Zmatrix file"),_("Error"),TRUE);
  		 g_free(t);
                  freeGeom();
                  freeVariables();
@@ -5717,7 +5913,7 @@ void read_ZMatrix_file(GabeditFileChooser *SelecteurFichier, gint response_id)
  NomFichier = gabedit_file_chooser_get_current_file(SelecteurFichier);
  if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
  {
-	MessageGeom("Sorry\n No file slected"," Warning ",TRUE);
+	MessageGeom(_("Sorry\n No file selected"),_("Warning"),TRUE);
     return ;
  }
 
@@ -5761,7 +5957,7 @@ void read_ZMatrix_file(GabeditFileChooser *SelecteurFichier, gint response_id)
         case 2 :
                 if(sscanf(t,"%s %s %s ",AtomCoord[0],AtomCoord[1],AtomCoord[2]) ==EOF )
                 {
-		 MessageGeom("Sorry\n This is not a Zmatrix file"," Error ",TRUE);
+		 MessageGeom(_("Sorry\n This is not a Zmatrix file"),_("Error"),TRUE);
  		 g_free(t);
  		for(i=0;i<7;i++)
 			g_free(AtomCoord[i]);
@@ -5789,7 +5985,7 @@ void read_ZMatrix_file(GabeditFileChooser *SelecteurFichier, gint response_id)
 			) ==EOF
 		  )
                 {
-		 MessageGeom("Sorry\n This is not a Zmatrix file"," Error ",TRUE);
+		 MessageGeom(_("Sorry\n This is not a Zmatrix file"),_("Error"),TRUE);
  		 g_free(t);
  		for(i=0;i<7;i++)
 			g_free(AtomCoord[i]);
@@ -5819,7 +6015,7 @@ void read_ZMatrix_file(GabeditFileChooser *SelecteurFichier, gint response_id)
 			 )==EOF
 		    )
                  {
-		 MessageGeom("Sorry\n This is not a Zmatrix file"," Error ",TRUE);
+		 MessageGeom(_("Sorry\n This is not a Zmatrix file"),_("Error"),TRUE);
  		 g_free(t);
  		for(i=0;i<7;i++)
 			g_free(AtomCoord[i]);
@@ -5889,7 +6085,7 @@ void read_ZMatrix_file(GabeditFileChooser *SelecteurFichier, gint response_id)
 	 }
 	 if(ThisIsNotAnAtom(t))
 	 {	 	
-		 MessageGeom("Sorry\n This is not a Zmatrix file"," Error ",TRUE);
+		 MessageGeom(_("Sorry\n This is not a Zmatrix file"),_("Error"),TRUE);
  		 g_free(t);
                  freeGeom();
                  freeVariables();
@@ -6070,8 +6266,8 @@ void read_ZMatrix_mopac_file_no_add_list(gchar*FileName)
 	fd = FOpen(FileName, "r");
 	if(fd == NULL)
 	{
-		t = g_strdup_printf("Sorry\n I can not open \"%s\" file",FileName); 
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\n I can not open \"%s\" file"),FileName); 
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	}
@@ -6089,14 +6285,14 @@ void read_ZMatrix_mopac_file_no_add_list(gchar*FileName)
 	if(!OK)
 	{
 		g_free(t);
-		t = g_strdup_printf("Sorry\n I can not read \"%s\" file",FileName); 
-		MessageGeom(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\n I can not read \"%s\" file"),FileName); 
+		MessageGeom(t,_("Error"),TRUE);
 		g_free(t);
 		return;
 	}
 	if( get_info_one_center(t,AtomCoord) == EOF)
 	{
-		 MessageGeom("Sorry\n This is not a Zmatrix mopac file"," Error ",TRUE);
+		 MessageGeom(_("Sorry\n This is not a Zmatrix mopac file"),_("Error"),TRUE);
  		 g_free(t);
 		for(i=0;i<10;i++)
 			g_free(AtomCoord[i]);
@@ -6144,7 +6340,7 @@ void read_ZMatrix_mopac_file_no_add_list(gchar*FileName)
 		}
 		if(ThisIsNotAnAtom(t))
 		{	 	
-			MessageGeom("Sorry\n This is not a Zmatrix mopac file"," Error ",TRUE);
+			MessageGeom(_("Sorry\n This is not a Zmatrix mopac file"),_("Error"),TRUE);
 			g_free(t);
 			freeGeom();
 			freeVariables();
@@ -6211,7 +6407,7 @@ void read_ZMatrix_mopac_file(GabeditFileChooser *SelecteurFichier, gint response
  	FileName = gabedit_file_chooser_get_current_file(SelecteurFichier);
 	if ((!FileName) || (strcmp(FileName,"") == 0))
 	{
-		MessageGeom("Sorry\n No file slected"," Warning ",TRUE);
+		MessageGeom(_("Sorry\n No file selected"),_("Warning"),TRUE);
 		return ;
 	}
 	read_ZMatrix_mopac_file_no_add_list(FileName);
@@ -6291,7 +6487,7 @@ void create_geom_list(GtkWidget *vbox, GabEditTypeFileGeom readfile)
   
 	if(iprogram == PROG_IS_MOLPRO) NCr = NUMBER_LIST_ZMATRIX-1;
 	else NCr = NUMBER_LIST_ZMATRIX;
-	NSA = -1;
+	NSA[0] = NSA[1] = NSA[2] = NSA[3] =-1;
 	MethodeGeom = GEOM_IS_ZMAT;
 
 	if(readfile != GABEDIT_TYPEFILEGEOM_UNKNOWN) freeGeom();
@@ -6338,6 +6534,7 @@ void create_geom_list(GtkWidget *vbox, GabEditTypeFileGeom readfile)
 		gtk_tree_view_append_column (GTK_TREE_VIEW (list), column);
 		g_object_set_data(G_OBJECT(renderer),"NumColumn", GINT_TO_POINTER(i));
 		g_signal_connect (renderer, "edited", G_CALLBACK (editedGeom), model);
+		g_signal_connect (renderer, "editing-started", G_CALLBACK (selectedCell), model);
 	}
 	gtk_container_add(GTK_CONTAINER(scr),list);
 	/* Drag and Drop */
@@ -6368,8 +6565,8 @@ static void DelVariable(GtkWidget *w,gpointer data)
         if(LineSelectedV<0)
               LineSelectedV=NVariables-1;
 	if(Variables[LineSelectedV].Used) {
-        message=g_strdup_printf("Sorry\n %s \n is used in Geometry",Variables[LineSelectedV].Name);
-	MessageGeom(message," Warning ",TRUE);
+        message=g_strdup_printf(_("Sorry\n %s \n is used in Geometry"),Variables[LineSelectedV].Name);
+	MessageGeom(message,_("Warning"),TRUE);
         return;
         }
 	if(NVariables>0)
@@ -6432,21 +6629,21 @@ static void EditVariable(GtkWidget *w,gpointer Entree)
   }
    else
      {
-	MessageGeom("Sorry a Entry text is void !\n"," Warning ",TRUE);
+	MessageGeom(_("Sorry a Entry text is void !\n"),_("Warning"),TRUE);
   	DestroyDialog=FALSE;
       	return;
      }
   if(TestVariablesCreated(texts[0],Nc) )
   {
-	MessageGeom("Sorry a other variable have any Name !\n"," Warning ",TRUE);
+	MessageGeom(_("Sorry a other variable have any Name !\n"),_("Warning"),TRUE);
   	DestroyDialog=FALSE;
       	return;
   } 
 
   if(!test(texts[1]))
   {
-	message=g_strdup_printf("Sorry %s is not a number \n",texts[1]);
-	MessageGeom(message," Warning ",TRUE);
+	message=g_strdup_printf(_("Sorry %s is not a number \n"),texts[1]);
+	MessageGeom(message,_("Warning"),TRUE);
   	DestroyDialog=FALSE;
   }
   else
@@ -6473,15 +6670,15 @@ static void DialogueDeleteV()
 
   if (NVariables <1)
   {
-    MessageGeom(" No Variable to delet !"," Warning ",TRUE);
+    MessageGeom(_(" No Variable to delete !"),_("Warning"),TRUE);
     return ;
   }
     
   if(LineSelectedV<0)
          LineSelectedV=NVariables-1;
   if(Variables[LineSelectedV].Used) {
-        message=g_strdup_printf("Sorry\n %s \n is used in Geometry",Variables[LineSelectedV].Name);
-	MessageGeom(message," Warning ",TRUE);
+        message=g_strdup_printf(_("Sorry\n %s \n is used in Geometry"),Variables[LineSelectedV].Name);
+	MessageGeom(message,_("Warning"),TRUE);
         return;
         }
 
@@ -6543,17 +6740,17 @@ static void DialogueEditV()
   Nc=LineSelectedV;
   if(Nc<0 ) {
   	if(NVariables<1)
-   	MessageGeom("Create variable before \n"," Warning ",TRUE);
+   	MessageGeom(_("Create variable before \n"),_("Warning"),TRUE);
        else
-   	MessageGeom("Please Select your variable \n"," Warning ",TRUE);
+   	MessageGeom(_("Please Select your variable \n"),_("Warning"),TRUE);
    return;
   }
   Dialogue = gtk_dialog_new();
-  gtk_window_set_title(GTK_WINDOW(Dialogue),"Edit Variable");
+  gtk_window_set_title(GTK_WINDOW(Dialogue),_("Edit Variable"));
   gtk_window_set_position(GTK_WINDOW(Dialogue),GTK_WIN_POS_CENTER);
   gtk_window_set_transient_for(GTK_WINDOW(Dialogue),GTK_WINDOW(WindowGeom));
 
-  add_child(WindowGeom,Dialogue,gtk_widget_destroy," Edit variable ");
+  add_child(WindowGeom,Dialogue,gtk_widget_destroy,_(" Edit variable "));
   g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GCallback)delete_child,NULL);
 
   frame = gtk_frame_new (NULL);
@@ -6578,12 +6775,12 @@ static void DialogueEditV()
 
   gtk_widget_realize(Dialogue);
 
-  Bouton = create_button(Dialogue,"Cancel");
+  Bouton = create_button(Dialogue,_("Cancel"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 
-  Bouton = create_button(Dialogue,"OK");
+  Bouton = create_button(Dialogue,_("OK"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)EditVariable, NULL);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)destroy_dialogue, GTK_OBJECT(Dialogue));
@@ -6610,7 +6807,7 @@ static void AddVariable(GtkWidget *w,gpointer Entree)
   } 
   if(TestVariablesCreated(texts[0],-1))
   {
-	MessageGeom("Sorry a other variable have any Name !\n"," Warning ",TRUE);
+	MessageGeom(_("Sorry a other variable have any Name !\n"),_("Warning"),TRUE);
   	DestroyDialog=FALSE;
       	return;
   } 
@@ -6618,7 +6815,7 @@ static void AddVariable(GtkWidget *w,gpointer Entree)
   	NVariables++;
    else
      {
-   	MessageGeom("Sorry a Entry text is void !\n"," Warning ",TRUE);
+   	MessageGeom(_("Sorry a Entry text is void !\n"),_("Warning"),TRUE);
   	DestroyDialog=FALSE;
       	return;
      }
@@ -6634,8 +6831,8 @@ static void AddVariable(GtkWidget *w,gpointer Entree)
   Variables[NVariables-1].Used=FALSE;
   if(!test(texts[1]))
   {
-	message=g_strdup_printf("Sorry %s is not a number \n",texts[1]);
-	MessageGeom(message," Warning ",TRUE);
+	message=g_strdup_printf(_("Sorry %s is not a number \n"),texts[1]);
+	MessageGeom(message,_("Warning"),TRUE);
   	DestroyDialog=FALSE;
 	NVariables--;
 	if(NVariables>0)
@@ -6685,12 +6882,12 @@ static void DialogueAddV()
 
   gtk_widget_realize(Dialogue);
 
-  Bouton = create_button(Dialogue,"Cancel");
+  Bouton = create_button(Dialogue,_("Cancel"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)delete_child,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 
-  Bouton = create_button(Dialogue,"OK");
+  Bouton = create_button(Dialogue,_("OK"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)AddVariable, NULL);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)destroy_dialogue, GTK_OBJECT(Dialogue));

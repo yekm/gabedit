@@ -1,6 +1,6 @@
 /* SteepestDescent.c  */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -156,7 +156,7 @@ static void Minimize(SteepestDescent* steepestDescent)
 		if ( steepestDescent->updateNumber++ >= steepestDescent->updateFrequency )
 		{
 			g_free(str);
-			str = g_strdup_printf("Gradient = %f ",(gdouble)steepestDescent->gradientNorm); 
+			str = g_strdup_printf(_("Gradient = %f "),(gdouble)steepestDescent->gradientNorm); 
 			redrawMolecule(&steepestDescent->forceField->molecule,str);
 			steepestDescent->updateNumber = 0;
 		}
@@ -174,7 +174,7 @@ static void Minimize(SteepestDescent* steepestDescent)
         energy = steepestDescent->forceField->klass->calculateEnergyTmp(
 		      steepestDescent->forceField,&steepestDescent->forceField->molecule);
 	g_free(str);
-	str = g_strdup_printf("Gradient = %f  Energy = %f (Kcal/mol)",
+	str = g_strdup_printf(_("Gradient = %f  Energy = %f (Kcal/mol)"),
 			(gdouble)steepestDescent->gradientNorm,(gdouble)energy); 
 
 	redrawMolecule(&steepestDescent->forceField->molecule,str);

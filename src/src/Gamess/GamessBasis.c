@@ -1,6 +1,6 @@
 /* GamessBasis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -69,7 +69,7 @@ static gchar* listBasisSetReal[] = {
 static guint numberOfBasisSet = G_N_ELEMENTS (listBasisSetView);
 static gchar selectedBasisSet[BSIZE]="MINI";
 /*************************************************************************************************************/
-static gchar* listBasisTypeView[] = {  "Default","Cartezian", "Spherical" };
+static gchar* listBasisTypeView[] = { N_("Default"),"Cartezian", "Spherical" };
 static gchar* listBasisTypeReal[] = { "NONE","ISPHER=0", "ISPHER=1" };
 static guint numberOfBasisType = G_N_ELEMENTS (listBasisTypeView);
 static gchar selectedBasisType[BSIZE]="NONE";
@@ -89,7 +89,7 @@ static gchar* listBasisPPolReal[] = {  "NONE","NPFUNC=1", "NPFUNC=2","NPFUNC=3" 
 static guint numberOfBasisPPol = G_N_ELEMENTS (listBasisPPolView);
 static gchar selectedBasisPPol[BSIZE]="NONE";
 /*************************************************************************************************************/
-static gchar* listBasisPolarView[] = {  "Default","Pople", "Pople N311","Dunning","Huzinaga","Hondo7"};
+static gchar* listBasisPolarView[] = {  N_("Default"),"Pople", "Pople N311","Dunning","Huzinaga","Hondo7"};
 static gchar* listBasisPolarReal[] = {  "NONE","POLAR=POPLE", "POLAR=POPN311","POLAR=DUNNING","POLAR=HUZINAGA","POLAR=HONDO7" };
 static guint numberOfBasisPolar = G_N_ELEMENTS (listBasisPolarView);
 static gchar selectedBasisPolar[BSIZE]="NONE";
@@ -294,7 +294,7 @@ static void traitementBasisType (GtkComboBox *combobox, gpointer d)
 		if(strcmp((gchar*)data,listBasisTypeView[i])==0) res = listBasisTypeReal[i];
 	}
 	if(res) sprintf(selectedBasisType,"%s",res);
-	else  sprintf(selectedBasisType,"Default");
+	else  sprintf(selectedBasisType,"NONE");
 	
 	/* for(s=selectedBasisType;*s != 0;s++) *s = toupper(*s);*/
 }
@@ -577,7 +577,7 @@ void createGamessBasisFrame(GtkWidget *win, GtkWidget *box)
 	buttonDiffuseS = NULL;
 	comboBasisType = NULL;
 
-	frame = gtk_frame_new ("Basis");
+	frame = gtk_frame_new (_("Basis"));
 	basisFrame = frame;
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
@@ -591,7 +591,7 @@ void createGamessBasisFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Basis set -----------------------------------------*/
 	l=0; 
 	c = 0; ncases=1;
-	add_label_table(table,"Basis set",l,c);
+	add_label_table(table,_("Basis set"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_basisset();
@@ -603,7 +603,7 @@ void createGamessBasisFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Basis set -----------------------------------------*/
 	l++; 
 	c = 0; ncases=1;
-	add_label_table(table,"Type",l,c);
+	add_label_table(table,_("Type"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_basistype();
@@ -624,7 +624,7 @@ void createGamessBasisFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ #D heavy atom polarization functions ------------*/
 	l++; 
 	c = 0; ncases=1;
-	add_label_table(table,"#D heavy atom polarization functions",l,c);
+	add_label_table(table,_("#D heavy atom polarization functions"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_BasisDPol();
@@ -636,7 +636,7 @@ void createGamessBasisFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ #F heavy atom polarization functions ------------*/
 	l++; 
 	c = 0; ncases=1;
-	add_label_table(table,"#F heavy atom polarization functions",l,c);
+	add_label_table(table,_("#F heavy atom polarization functions"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_BasisFPol();
@@ -648,7 +648,7 @@ void createGamessBasisFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ ##light atom polarization functions ------------*/
 	l++; 
 	c = 0; ncases=1;
-	add_label_table(table,"#light atom polarization functions",l,c);
+	add_label_table(table,_("#light atom polarization functions"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_BasisPPol();
@@ -660,7 +660,7 @@ void createGamessBasisFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Polar ------------*/
 	l++; 
 	c = 0; ncases=1;
-	add_label_table(table,"Polar",l,c);
+	add_label_table(table,_("Polar"),l,c);
 	c = 1; ncases=1;
 	add_label_table(table,":",l,c);
 	combo = create_list_BasisPolar();
@@ -672,7 +672,7 @@ void createGamessBasisFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Diifuse L ------------*/
 	l++; 
 	c = 0; ncases=3;
-	buttonDiffuseL = gtk_check_button_new_with_label ("Diffuse L-shell on heavy atoms");
+	buttonDiffuseL = gtk_check_button_new_with_label (_("Diffuse L-shell on heavy atoms"));
 	gtk_table_attach(GTK_TABLE(table),buttonDiffuseL,c,c+ncases,l,l+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
@@ -681,7 +681,7 @@ void createGamessBasisFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ Diifuse S ------------*/
 	l++; 
 	c = 0; ncases=3;
-	buttonDiffuseS = gtk_check_button_new_with_label ("Diffuse s-shell on hydrogens ");
+	buttonDiffuseS = gtk_check_button_new_with_label (_("Diffuse s-shell on hydrogens "));
 	gtk_table_attach(GTK_TABLE(table),buttonDiffuseS,c,c+ncases,l,l+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),

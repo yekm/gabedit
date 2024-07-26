@@ -1,6 +1,6 @@
 /* MPQCBasisLibrary.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -33,7 +33,6 @@ static GtkWidget* EntryBasisName;
 
 #define lengthList	2
 
-static gchar *listTitles[]={ "Atom", "Basis Name"};
 
 static	MPQCBasis mpqcBasis={0,NULL};
 
@@ -231,13 +230,13 @@ static void activate_action (GtkAction *action)
 /*--------------------------------------------------------------------*/
 static GtkActionEntry gtkActionEntries[] =
 {
-	{"NewAtom", GABEDIT_STOCK_NEW, "New _atom", NULL, "New atom", G_CALLBACK (activate_action) },
-	{"DeleteAtom", GABEDIT_STOCK_CUT, "_Delete selected atom", NULL, "Delete selected atom", G_CALLBACK (activate_action) },
-	{"NewBasis", GABEDIT_STOCK_NEW, "New _basis", NULL, "New _basis", G_CALLBACK (activate_action) },
-	{"EditBasis", GABEDIT_STOCK_SELECT, "_Edit basis", NULL, "_Edit basis", G_CALLBACK (activate_action) },
-	{"DeleteBasis", GABEDIT_STOCK_CUT, "_Delete selected basis", NULL, "Delete selected basis", G_CALLBACK (activate_action) },
-	{"Save", GABEDIT_STOCK_SAVE, "_Save", NULL, "Save", G_CALLBACK (activate_action) },
-	{"Close", GABEDIT_STOCK_CLOSE, "_Close", NULL, "Close", G_CALLBACK (activate_action) },
+	{"NewAtom", GABEDIT_STOCK_NEW, N_("New _atom"), NULL, "New atom", G_CALLBACK (activate_action) },
+	{"DeleteAtom", GABEDIT_STOCK_CUT, N_("_Delete selected atom"), NULL, "Delete selected atom", G_CALLBACK (activate_action) },
+	{"NewBasis", GABEDIT_STOCK_NEW, N_("New _basis"), NULL, "New _basis", G_CALLBACK (activate_action) },
+	{"EditBasis", GABEDIT_STOCK_SELECT, N_("_Edit basis"), NULL, "_Edit basis", G_CALLBACK (activate_action) },
+	{"DeleteBasis", GABEDIT_STOCK_CUT, N_("_Delete selected basis"), NULL, "Delete selected basis", G_CALLBACK (activate_action) },
+	{"Save", GABEDIT_STOCK_SAVE, N_("_Save"), NULL, "Save", G_CALLBACK (activate_action) },
+	{"Close", GABEDIT_STOCK_CLOSE, N_("_Close"), NULL, "Close", G_CALLBACK (activate_action) },
 };
 static guint numberOfGtkActionEntries = G_N_ELEMENTS (gtkActionEntries);
 /********************************************************************************/
@@ -269,6 +268,7 @@ static GtkUIManager *newMenu(GtkWidget* win)
   	g_signal_connect_swapped (win, "destroy", G_CALLBACK (g_object_unref), manager);
 
 	actionGroup = gtk_action_group_new ("GabeditEditBasisMPQCLibrary");
+	gtk_action_group_set_translation_domain(actionGroup,GETTEXT_PACKAGE);
 	gtk_action_group_add_actions (actionGroup, gtkActionEntries, numberOfGtkActionEntries, NULL);
 
   	gtk_ui_manager_insert_action_group (manager, actionGroup, 0);
@@ -276,7 +276,7 @@ static GtkUIManager *newMenu(GtkWidget* win)
   	gtk_window_add_accel_group (GTK_WINDOW (win), gtk_ui_manager_get_accel_group (manager));
 	if (!gtk_ui_manager_add_ui_from_string (manager, uiMenuInfo, -1, &error))
 	{
-		g_message ("building menus failed: %s", error->message);
+		g_message (_("building menus failed: %s"), error->message);
 		g_error_free (error);
 	}
 	return manager;
@@ -475,7 +475,7 @@ static void deleteOneBasis(GtkWidget *win, gpointer d)
 static void deleteBasisDlg(GtkWidget *win,gpointer d)
 {
 
-	gchar *format ="Do you want to really delete \"%s\" basis for \"%s\" atom ?" ;
+	gchar *format =N_("Do you want to really delete \"%s\" basis for \"%s\" atom ?") ;
 	gchar *t =NULL;
 	gint atomNumber;
 	gint basisNumber;
@@ -570,7 +570,7 @@ static void deleteOneAtom(GtkWidget *win, gpointer d)
 static void deleteAtomDlg(GtkWidget *win,gpointer d)
 {
 
-	gchar *format ="Do you want to really delete \"%s\" atom ?" ;
+	gchar *format =N_("Do you want to really delete \"%s\" atom ?");
 	gchar *t =NULL;
 	gint atomNumber;
 	gint basisNumber;
@@ -635,7 +635,7 @@ static void newAtom()
 	{
 		if(strcmp(symbol,atoms[i].symbol)==0)
 		{
-			GtkWidget* win = Message("Sorry this atom is available","Error",TRUE);
+			GtkWidget* win = Message(_("Sorry this atom is available"),_("Error"),TRUE);
   			gtk_window_set_modal(GTK_WINDOW(win),TRUE);
   			gtk_window_set_transient_for(GTK_WINDOW(win),GTK_WINDOW(SetWinDlg));
 			return;
@@ -687,7 +687,7 @@ static void selectAtom(GtkWidget *w,gpointer entry0)
   
   FenetreTable = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_modal(GTK_WINDOW(FenetreTable),TRUE);
-  gtk_window_set_title(GTK_WINDOW(FenetreTable),"Select your atom");
+  gtk_window_set_title(GTK_WINDOW(FenetreTable),_("Select your atom"));
   gtk_window_set_default_size (GTK_WINDOW(FenetreTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
 
   frame = gtk_frame_new (NULL);
@@ -747,7 +747,7 @@ static void newAtomDlg()
 	atomNumber = data->atomNumber;
 	basisNumber = data->basisNumber;
 
-	sprintf(title,"New Atom");
+	sprintf(title,_("New Atom"));
 
 	WinDlg = gtk_dialog_new();
 	gtk_window_set_title(GTK_WINDOW(WinDlg),title);
@@ -766,21 +766,21 @@ static void newAtomDlg()
 	vboxframe = create_vbox(frame);
 	hbox=create_hbox_false(vboxframe);
 
-	Entry = create_label_entry(hbox," Atom Symbol : ",-1,-1); 
+	Entry = create_label_entry(hbox,_(" Atom Symbol : "),-1,-1); 
 	gtk_entry_set_text(GTK_ENTRY(Entry),"H");
 	gtk_editable_set_editable((GtkEditable*) Entry,FALSE);
-  	Button = gtk_button_new_with_label(" Set ");
+  	Button = gtk_button_new_with_label(_(" Set "));
 	gtk_box_pack_start (GTK_BOX(hbox), Button, TRUE, TRUE, 5);
 	g_signal_connect(G_OBJECT(Button), "clicked", (GCallback)selectAtom,Entry);
 
 	gtk_widget_realize(WinDlg);
 
-	Button = create_button(WinDlg,"Cancel");
+	Button = create_button(WinDlg,_("Cancel"));
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
 	g_signal_connect_swapped(G_OBJECT(Button), "clicked", (GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 
-	Button = create_button(WinDlg,"OK");
+	Button = create_button(WinDlg,_("OK"));
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
 	g_signal_connect_swapped(G_OBJECT(Button), "clicked", (GCallback)newAtom,GTK_OBJECT(WinDlg));
 	g_signal_connect_swapped(G_OBJECT(Button), "clicked", (GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
@@ -825,7 +825,7 @@ static void newBasis()
 	{
 		if(strcmp(basisName,basis[i].basisName)==0)
 		{
-			Message("Sorry this basis is available","Error",TRUE);
+			Message(_("Sorry this basis is already available"),_("Error"),TRUE);
 			return;
 		}
 	}
@@ -882,7 +882,7 @@ static void newBasisDlg()
 	if(atomNumber<0 )
 		return;
 
-	sprintf(title,"New Basis for %s atom :",mpqcBasis.atoms[atomNumber].symbol);
+	sprintf(title,_("New Basis for %s atom :"),mpqcBasis.atoms[atomNumber].symbol);
 
 	WinDlg = gtk_dialog_new();
 	gtk_window_set_title(GTK_WINDOW(WinDlg),title);
@@ -903,7 +903,7 @@ static void newBasisDlg()
 	gtk_box_pack_start (GTK_BOX (vboxframe), table, TRUE, TRUE, 0);
 
 	i = 0;
-	label = gtk_label_new(" Basis Name ");
+	label = gtk_label_new(_(" Basis Name "));
 	add_widget_table(table, label, i, 0);
 	label = gtk_label_new(" : ");
 	add_widget_table(table, label, i, 1);
@@ -912,12 +912,12 @@ static void newBasisDlg()
 
 	gtk_widget_realize(WinDlg);
 
-	Button = create_button(WinDlg,"Cancel");
+	Button = create_button(WinDlg,_("Cancel"));
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
 	g_signal_connect_swapped(G_OBJECT(Button), "clicked", (GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 
-	Button = create_button(WinDlg,"OK");
+	Button = create_button(WinDlg,_("OK"));
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
 	g_signal_connect_swapped(G_OBJECT(Button), "clicked", (GCallback)newBasis,GTK_OBJECT(WinDlg));
 	g_signal_connect_swapped(G_OBJECT(Button), "clicked", (GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
@@ -999,7 +999,7 @@ static void editBasisDlg()
 	if(atomNumber<0 )
 		return;
 
-	sprintf(title,"Edit Basis for %s atom :",mpqcBasis.atoms[atomNumber].symbol);
+	sprintf(title,_("Edit Basis for %s atom :"),mpqcBasis.atoms[atomNumber].symbol);
 
 	WinDlg = gtk_dialog_new();
 	gtk_window_set_title(GTK_WINDOW(WinDlg),title);
@@ -1020,7 +1020,7 @@ static void editBasisDlg()
 	gtk_box_pack_start (GTK_BOX (vboxframe), table, TRUE, TRUE, 0);
 
 	i = 0;
-	label = gtk_label_new(" Basis Name ");
+	label = gtk_label_new(_(" Basis Name "));
 	add_widget_table(table, label, i, 0);
 	label = gtk_label_new(" : ");
 	add_widget_table(table, label, i, 1);
@@ -1031,12 +1031,12 @@ static void editBasisDlg()
 
 	gtk_widget_realize(WinDlg);
 
-	Button = create_button(WinDlg,"Cancel");
+	Button = create_button(WinDlg,_("Cancel"));
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
 	g_signal_connect_swapped(G_OBJECT(Button), "clicked", (GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 
-	Button = create_button(WinDlg,"OK");
+	Button = create_button(WinDlg,_("OK"));
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
 	g_signal_connect_swapped(G_OBJECT(Button), "clicked", (GCallback)editBasis,GTK_OBJECT(WinDlg));
 	g_signal_connect_swapped(G_OBJECT(Button), "clicked", (GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
@@ -1145,6 +1145,7 @@ static void addTreeView(GtkWidget *win, GtkWidget *vbox)
 	GtkTreeModel *model;
 	GtkCellRenderer *renderer;
 	GtkTreeViewColumn *column;
+	gchar *listTitles[]={ _("Atom"), _("Basis Name")};
 
 	scr = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scr), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC); 
@@ -1227,7 +1228,7 @@ void loadMPQCBasis()
 	}
 	if(!file)
 	{
-		printf("Sorry the mpqcbasis is corrupted.\nPlease reinstall gabedit\n");
+		printf(_("Sorry the mpqcbasis is corrupted.\nPlease reinstall gabedit\n"));
 		return;
 	}
 	fgets(t,BSIZE,file); /* number of atoms */
@@ -1251,14 +1252,14 @@ void loadMPQCBasis()
 	{
 		if(!fgets(t,BSIZE,file))
 		{
-			printf("Sorry the mpqcbasis is corrupted.\nPlease reinstall gabedit\n");
+			printf(_("Sorry the mpqcbasis is corrupted.\nPlease reinstall gabedit\n"));
 			freeMPQCBasis();
 			break;
 		}
 		n = sscanf(t,"%s %s",dump,symb);
 		if(n!=2)
 		{
-			printf("Sorry the mpqcbasis is corrupted.\nPlease reinstall gabedit\n");
+			printf(_("Sorry the mpqcbasis is corrupted.\nPlease reinstall gabedit\n"));
 			freeMPQCBasis();
 			return;
 		}
@@ -1274,14 +1275,14 @@ void loadMPQCBasis()
 			gint k;
 			if(!fgets(t,BSIZE,file))
 			{
-				printf("Sorry the mpqcbasis is corrupted.\nPlease reinstall gabedit\n");
+				printf(_("Sorry the mpqcbasis is corrupted.\nPlease reinstall gabedit\n"));
 				freeMPQCBasis();
 				break;
 			}
 			n = sscanf(t,"%s %s",symb, basisName);
 			if(n<2)
 			{
-				printf("Sorry the mpqcbasis is corrupted.\nPlease reinstall gabedit\n");
+				printf(_("Sorry the mpqcbasis is corrupted.\nPlease reinstall gabedit\n"));
 				freeMPQCBasis();
 				return;
 			}
@@ -1304,7 +1305,7 @@ void setMPQCBasisDlg()
 	Win= gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
 	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(parentWindow));
-	gtk_window_set_title(GTK_WINDOW(Win),"Set MPQC Basis");
+	gtk_window_set_title(GTK_WINDOW(Win),_("Set MPQC Basis"));
 	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
 
 	SetWinDlg = Win;

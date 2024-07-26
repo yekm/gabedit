@@ -1,6 +1,6 @@
 /* Basis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -255,7 +255,7 @@ gboolean DefineBasisType(gchar *fileName)
 	/* Debug("debut de DefineBasisType\n");*/
  	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
-		Message("Sorry\n No file slected","Error",TRUE);
+		Message("Sorry\n No file selected","Error",TRUE);
     		return FALSE;
  	}
 
@@ -482,7 +482,7 @@ gboolean DefineGabeditMoldenBasisType(gchar *fileName,gchar* title)
 
  	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
-		Message("Sorry\n No file slected","Error",TRUE);
+		Message("Sorry\n No file selected","Error",TRUE);
     		return FALSE;
  	}
 
@@ -965,5 +965,377 @@ AOrb = temp;
 DefineAtomicNumOrb();
 /* DefineNorb();*/
 }
+/***************************************************************/
+static void getlTable(gint L, gint* nCoefs, gdouble** coefs, gint** l[3])
+{
+	gint m;
+	gint l1,l2,l3;
+	gint n;
+	/* Spehrical D,F, ...*/
+	if(L<-1)
+	{
+		gint klbeg=0, klend=-L, klinc=1;
+		gint inc;
+		gint kl;
+		gint M;
+		gint c;
+ 		Zlm Stemp;
+		L = abs(L);
+		if(L==1)
+		{
+                	klbeg = L;
+                	klend = 0;
+                	klinc = -1;
+		}
+		else
+		{
+                	klbeg = 0;
+                	klend = L;
+                	klinc = +1;
+		}
+		for(kl = klbeg;(klbeg == 0 && kl<=klend) || (klbeg == L && kl>=klend);kl +=klinc)
+		{
+			if(kl!=0) inc = 2*kl;	
+			else inc = 1;
+			for(M=kl;M>=-kl;M -=inc)
+    			{
+				gint m = M+abs(L);
+	 	   		Stemp =  getZlm(L,M);
+				nCoefs[m] = Stemp.numberOfCoefficients;
+	 			for(n=0;n<Stemp.numberOfCoefficients;n++)
+	 			{
+	   				coefs[m][n] = Stemp.lxyz[n].Coef;
+	   				for(c=0;c<3;c++) l[c][m][n] = Stemp.lxyz[n].l[c];
+	 			}
+				if(L==0) break;
+	      		}
+			if(L==0) break;
+	      }
+	      return;
+	}
+	/* Cartesian S,P,D,F,..*/
+	L = abs(L); /* for P */
+	for(m=0;m<(L+1)*(L+2)/2;m++) 
+	{
+		nCoefs[m] = 1;
+		coefs[m][0] = 1.0;
+	}
+	switch(L)
+	{
+	  case 0 :
+		 m=0;
+		 l[0][m][0] = 0;l[1][m][0] = 0;l[2][m][0] = 0;
+	  	 break;
+	  case 1 :
+		 m=0;
+		 l[0][m][0] = 1;l[1][m][0] = 0;l[2][m][0] = 0; /* X */
+		 m++;
+		 l[0][m][0] = 0;l[1][m][0] = 1;l[2][m][0] = 0; /* Y */
+		 m++;
+		 l[0][m][0] = 0;l[1][m][0] = 0;l[2][m][0] = 1; /* Z */
+	  	 break;
+	  case 2 :
+		 m=0;
+		 l[0][m][0] = 2;l[1][m][0] = 0;l[2][m][0] = 0; /* XX */
+		 m++;
+		 l[0][m][0] = 0;l[1][m][0] = 2;l[2][m][0] = 0; /* YY */
+		 m++;
+		 l[0][m][0] = 0;l[1][m][0] = 0;l[2][m][0] = 2; /* ZZ */
+		 m++;
+		 l[0][m][0] = 1;l[1][m][0] = 1;l[2][m][0] = 0; /* XY */
+		 m++;
+		 l[0][m][0] = 1;l[1][m][0] = 0;l[2][m][0] = 1; /* XZ */
+		 m++;
+		 l[0][m][0] = 0;l[1][m][0] = 1;l[2][m][0] = 1; /* YZ */
+		 break;
+	  case 3 :
+		 m=0;
+		 l[0][m][0] = 3;l[1][m][0] = 0;l[2][m][0] = 0; /* XXX */
+		 m++;
+		 l[0][m][0] = 0;l[1][m][0] = 3;l[2][m][0] = 0; /* YYY */
+		 m++;
+		 l[0][m][0] = 0;l[1][m][0] = 0;l[2][m][0] = 3; /* ZZZ */
+		 m++;
+		 l[0][m][0] = 1;l[1][m][0] = 2;l[2][m][0] = 0; /* XYY */
+		 m++;
+		 l[0][m][0] = 2;l[1][m][0] = 1;l[2][m][0] = 0; /* XXY */
+		 m++;
+		 l[0][m][0] = 2;l[1][m][0] = 0;l[2][m][0] = 1; /* XXZ */
+		 m++;
+		 l[0][m][0] = 1;l[1][m][0] = 0;l[2][m][0] = 2; /* XZZ */
+		 m++;
+		 l[0][m][0] = 0;l[1][m][0] = 1;l[2][m][0] = 2; /* YZZ */
+		 m++;
+		 l[0][m][0] = 0;l[1][m][0] = 2;l[2][m][0] = 1; /* YYZ */
+		 m++;
+		 l[0][m][0] = 1;l[1][m][0] = 1;l[2][m][0] = 1; /* XYZ */
+		 break;
+	  default :
+		m=0;
+		for(l3=abs(L);l3>=0;l3--)
+		for(l2=abs(L)-l3;l2>=0;l2--)
+		{
+	 		l1 = abs(L)-l2-l3;
+			l[0][m][0] = l1;
+			l[1][m][0] = l2;
+			l[2][m][0] = l3;
+			m++;
+		}
+	}
+}
+/********************************************************************************/
+gboolean readBasisFromGaussianFChk(gchar *fileName)
+{
+ 	FILE *file;
+	gint n;
+	gint nS;
+	gint c;
+	gint nShells = 0;
+	gint nPrimitives = 0;
+	gint lMax = 0;
+	gint contMax = 0;
+	gint* shellTypes = NULL;
+	gint* nPrimitivesByShell = NULL;
+	gint* numAtoms = NULL;
+	gdouble* primitiveExponents = NULL;
+	gdouble* contractionsCoefs = NULL;
+	gdouble* contractionsCoefsSP = NULL;
+	gdouble* coordinatesForShells = NULL;
+	gint** l[3] = {NULL,NULL,NULL};
+	gdouble** coefs = NULL;
+	gint* nCoefs = NULL;
+	CGTF *temp = NULL;
+	gint kOrb, kPrimitive;
+	gint m;
+	gint nBasis;
+	gboolean sp = FALSE;
+	gint llMax = 0;
 
+	file = FOpen(fileName, "rb");
+	if(file ==NULL)
+	{
+  		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
+  		return FALSE;
+	}
 
+	nBasis = get_one_int_from_fchk_gaussian_file(file,"Number of basis functions  ");
+	if(nBasis<1)
+	{
+  		Message(_("Sorry\nI can not read the number of basis functions"),_("Error"),TRUE);
+		fclose(file);
+  		return FALSE;
+	}
+
+	nShells = get_one_int_from_fchk_gaussian_file(file,"Number of contracted shells ");
+	if(nShells<1)
+	{
+  		Message(_("Sorry\nI can not the number of contracted shells"),_("Error"),TRUE);
+		fclose(file);
+  		return FALSE;
+	}
+	nPrimitives = get_one_int_from_fchk_gaussian_file(file,"Number of primitive shells ");
+	if(nPrimitives<1)
+	{
+  		Message(_("Sorry\nI can not the number of primitive shells"),_("Error"),TRUE);
+		fclose(file);
+  		return FALSE;
+	}
+	lMax = get_one_int_from_fchk_gaussian_file(file,"Highest angular momentum ");
+	if(lMax<0)
+	{
+  		Message(_("Sorry\nI can not the value of the highest angular momentum"),_("Error"),TRUE);
+		fclose(file);
+  		return FALSE;
+	}
+	contMax = get_one_int_from_fchk_gaussian_file(file,"Largest degree of contraction ");
+	if(contMax<1)
+	{
+  		Message(_("Sorry\nI can not the value of the largest degree of contraction"),_("Error"),TRUE);
+		fclose(file);
+  		return FALSE;
+	}
+	shellTypes = get_array_int_from_fchk_gaussian_file(file, "Shell types ", &n);
+	if(!shellTypes || n!=nShells)
+	{
+  		Message(_("Sorry\nI can not read the shell types"),_("Error"),TRUE);
+		if(shellTypes) g_free(shellTypes);
+		fclose(file);
+  		return FALSE;
+	}
+	for(nS = 0;nS<nShells;nS++) if( shellTypes[nS]==-1) { sp = TRUE; break;}
+
+	NOrb = 0;
+	for(nS=0;nS<nShells;nS++) 
+	{
+		if(shellTypes[nS]<-1) NOrb += 2*abs(shellTypes[nS])+1; /* Sperical D, F, G, ...*/
+		else if(shellTypes[nS]==-1) NOrb +=  4; /* This a SP.*/
+		else NOrb +=  (shellTypes[nS]+1)*(shellTypes[nS]+2)/2; /* Cartezian S,P,D,F,G,..*/
+	}
+	if(NOrb != nBasis)
+	{
+  		Message(_("Sorry\nThe number of basis function in fch file is not equal to that computed by Gabedit!"),_("Error"),TRUE);
+		if(shellTypes) g_free(shellTypes);
+		fclose(file);
+		return FALSE;
+	}
+	nPrimitivesByShell = get_array_int_from_fchk_gaussian_file(file, "Number of primitives per shell ", &n);
+	if(!nPrimitivesByShell || n!=nShells)
+	{
+  		Message(_("Sorry\nI can not read the number of primitives per shell"),_("Error"),TRUE);
+		if(nPrimitivesByShell) g_free(nPrimitivesByShell);
+		fclose(file);
+  		return FALSE;
+	}
+	numAtoms = get_array_int_from_fchk_gaussian_file(file, "Shell to atom map ", &n);
+	if(!numAtoms || n!=nShells)
+	{
+  		Message(_("Sorry\nI can not read the atoms number for shell"),_("Error"),TRUE);
+		if(numAtoms) g_free(numAtoms);
+		fclose(file);
+  		return FALSE;
+	}
+	primitiveExponents = get_array_real_from_fchk_gaussian_file(file, "Primitive exponents ", &n);
+	if(!primitiveExponents || n != nPrimitives)
+	{
+  		Message(_("Sorry\nI can not read the primitive exponents "),_("Error"),TRUE);
+		if(primitiveExponents) g_free(primitiveExponents);
+		fclose(file);
+  		return FALSE;
+	}
+	contractionsCoefs = get_array_real_from_fchk_gaussian_file(file, "Contraction coefficients ", &n);
+	if(!contractionsCoefs || n != nPrimitives)
+	{
+  		Message(_("Sorry\nI can not read the contraction coefficients "),_("Error"),TRUE);
+		if(contractionsCoefs) g_free(contractionsCoefs);
+		fclose(file);
+  		return FALSE;
+	}
+	if(sp)
+	{
+		contractionsCoefsSP = get_array_real_from_fchk_gaussian_file(file, "P(S=P) Contraction coefficients ", &n);
+		if(!contractionsCoefsSP || n != nPrimitives)
+		{
+  			Message(_("Sorry\nI can not read the P(S=P) contraction coefficients "),_("Error"),TRUE);
+			if(contractionsCoefsSP) g_free(contractionsCoefsSP);
+			fclose(file);
+  			return FALSE;
+		}
+	}
+	coordinatesForShells = get_array_real_from_fchk_gaussian_file(file, "Coordinates of each shell ", &n);
+	if(!contractionsCoefs || n != nShells*3)
+	{
+  		Message(_("Sorry\nI can not read the coordinates of each shell "),_("Error"),TRUE);
+		if(coordinatesForShells) g_free(coordinatesForShells);
+		fclose(file);
+  		return FALSE;
+	}
+	fclose(file);
+	/* printf("close file\n");*/
+
+	llMax = (lMax+1)*(lMax+2)/2;
+	nCoefs = g_malloc(llMax*sizeof(gint));
+	coefs = g_malloc(llMax*sizeof(gdouble*));
+	for(m=0;m<llMax;m++) coefs[m] = g_malloc(llMax*sizeof(gdouble));
+
+	for(c=0;c<3;c++) 
+	{
+		l[c] = g_malloc(llMax*sizeof(gint*));
+		for(m=0;m<llMax;m++) l[c][m] = g_malloc(llMax*sizeof(gint));
+	}
+
+	temp  = g_malloc(NOrb*sizeof(CGTF));
+	kOrb = 0;
+	kPrimitive = 0;
+	for(nS = 0;nS<nShells; nS++)
+	{
+		gint nM = 0;
+		/* printf("begin primitive nS = %d\n",nS);*/
+		if(shellTypes[nS]<-1) nM = 2*abs(shellTypes[nS])+1; /* Sperical D, F, G, ...*/
+		else if(shellTypes[nS]==-1) nM = 1; /* This a SP. Make S befor */
+		else nM = (shellTypes[nS]+1)*(shellTypes[nS]+2)/2;
+
+		/* printf("nM = %d\n",nM);*/
+		if(shellTypes[nS]==-1) getlTable(0, nCoefs, coefs, l); /* This a SP. Make S befor */
+		else getlTable(shellTypes[nS], nCoefs, coefs, l); 
+		/* printf("end getlTable\n");*/
+		for(m=0;m<nM;m++)
+		{
+			gint ip,j,n;
+	 		temp[kOrb].numberOfFunctions=nCoefs[m]*nPrimitivesByShell[nS];
+			temp[kOrb].NumCenter=numAtoms[nS]-1;
+			/* printf("m = %d nCoef = %d nPrim = %d\n",m,nCoefs[m],nPrimitivesByShell[nS]);*/
+			/*Debug("M=%d N=%d\n",M,temp[k].N);*/
+	 		temp[kOrb].Gtf =g_malloc(temp[kOrb].numberOfFunctions*sizeof(GTF));
+          		j = -1;
+	 		for(ip=0;ip<nPrimitivesByShell[nS];ip++)
+ 			for(n=0;n<nCoefs[m];n++)
+	 		{
+	 		   	j++;
+	   			temp[kOrb].Gtf[j].Ex   = primitiveExponents[kPrimitive+ip];
+	   			temp[kOrb].Gtf[j].Coef = contractionsCoefs[kPrimitive+ip]*coefs[m][n];
+	   			for(c=0;c<3;c++)
+	   			{
+	   				temp[kOrb].Gtf[j].C[c] = coordinatesForShells[c+nS*3];
+	   				temp[kOrb].Gtf[j].l[c] = l[c][m][n];
+	   			}
+	 		}
+			kOrb++;
+		}
+		if(shellTypes[nS]==-1) /* This a SP. Now make P*/
+		{
+			getlTable(-1, nCoefs, coefs, l);
+			nM = 3;
+			for(m=0;m<nM;m++)
+			{
+				gint ip,j,n;
+				/* printf("P : m = %d nCoef = %d nPrim = %d\n",m,nCoefs[m],nPrimitivesByShell[nS]);*/
+	 			temp[kOrb].numberOfFunctions=nCoefs[m]*nPrimitivesByShell[nS];
+				temp[kOrb].NumCenter=numAtoms[nS]-1;
+	 			temp[kOrb].Gtf =g_malloc(temp[kOrb].numberOfFunctions*sizeof(GTF));
+          			j = -1;
+	 			for(ip=0;ip<nPrimitivesByShell[nS];ip++)
+ 				for(n=0;n<nCoefs[m];n++)
+	 			{
+	 		   		j++;
+	   				temp[kOrb].Gtf[j].Ex   = primitiveExponents[kPrimitive+ip];
+	   				temp[kOrb].Gtf[j].Coef = contractionsCoefsSP[kPrimitive+ip]*coefs[m][n];
+	   				for(c=0;c<3;c++)
+	   				{
+	   					temp[kOrb].Gtf[j].C[c] = coordinatesForShells[c+nS*3];
+	   					temp[kOrb].Gtf[j].l[c] = l[c][m][n];
+	   				}
+	 			}
+				kOrb++;
+			}
+		}
+		/* printf("end primitive nS = %d\n",nS);*/
+		kPrimitive += nPrimitivesByShell[nS];
+	}
+	if(nCoefs) g_free(nCoefs);
+	if(coefs)
+	{
+		for(m=0;m<llMax;m++) if(coefs[m]) g_free(coefs[m]);
+		g_free(coefs);
+	}
+	for(c=0;c<3;c++) 
+	if(l[c]) 
+	{
+		for(m=0;m<llMax;m++) if(l[c][m]) g_free(l[c][m]);
+		g_free(l[c]);
+	}
+	if(shellTypes) g_free(shellTypes);
+	if(nPrimitivesByShell) g_free(nPrimitivesByShell);
+	if(numAtoms) g_free(numAtoms);
+	if(primitiveExponents) g_free(primitiveExponents);
+	if(contractionsCoefs) g_free(contractionsCoefs);
+	if(coordinatesForShells) g_free(coordinatesForShells);
+	for(kOrb=0;kOrb<NAOrb;kOrb++) g_free(AOrb[kOrb].Gtf);
+	if(AOrb) g_free(AOrb);
+	NAOrb = NOrb;
+	AOrb = temp;
+	if(SAOrb) g_free(SAOrb);
+	SAOrb = NULL;
+	DefineAtomicNumOrb();
+	/* printf("End all read Basis\n");*/
+	return TRUE;
+}

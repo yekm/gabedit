@@ -1,6 +1,6 @@
 /* Images.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -25,57 +25,111 @@ DEALINGS IN THE SOFTWARE.
 #include "GLArea.h"
 #include <unistd.h>
 
-/**************************************************************************
-*       Save the Frame Buffer in a png (without background) format file
-**************************************************************************/
-static void save_png_no_background(gchar* fileName)
+/**************************************************************************/
+static void snapshot_pixbuf_free (guchar   *pixels, gpointer  data)
+{
+	g_free (pixels);
+}
+/**************************************************************************/
+static GdkPixbuf  *get_pixbuf_gl(guchar* colorTrans)
 {       
-	int width;
-	int height;
-	GError *error = NULL;
+	gint width;
+	gint height;
+      	gint stride;
 	GdkPixbuf  *pixbuf = NULL;
+	GdkPixbuf  *tmp = NULL;
+	GdkPixbuf  *tmp2 = NULL;
+	guchar *data;
 
 	width =  GLArea->allocation.width;
 	height = GLArea->allocation.height;
-	pixbuf = gdk_pixbuf_get_from_drawable(NULL, GLArea->window, NULL, 0, 0, 0, 0, width, height);
-	if(pixbuf)
-	{
-		GdkPixbuf  *pixbufNew = NULL;
-		guchar color[3];
-		gint numCol = get_background_color(color);
+	stride = width*3;
 
-		if(numCol>=0)
+	data = g_malloc0 (sizeof (guchar) * stride * height);
+#ifdef G_OS_WIN32 
+  	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,data);
+#else
+  	glReadBuffer(GL_FRONT);
+  	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,data);
+#endif
+
+	tmp = gdk_pixbuf_new_from_data (data, GDK_COLORSPACE_RGB, FALSE, 
+                                      8, width, height, stride, snapshot_pixbuf_free,
+                                      NULL);
+	tmp2 = gdk_pixbuf_flip (tmp, TRUE); 
+	g_object_unref (tmp);
+
+	pixbuf = gdk_pixbuf_rotate_simple (tmp2, GDK_PIXBUF_ROTATE_UPSIDEDOWN);
+	g_object_unref (tmp2);
+
+	if(colorTrans)
+	{
+		tmp = gdk_pixbuf_add_alpha(pixbuf, TRUE, colorTrans[0], colorTrans[1], colorTrans[2]);
+		if(tmp!=pixbuf)
 		{
-			pixbufNew = gdk_pixbuf_add_alpha(pixbuf, TRUE, color[0], color[1], color[2]);
-			if(pixbufNew) gdk_pixbuf_save(pixbufNew, fileName, "png", &error, NULL);
-			else gdk_pixbuf_save(pixbuf, fileName, "png", &error, NULL);
-	 		g_object_unref (pixbuf);
-	 		g_object_unref (pixbufNew);
-		}
-		else
-		{
-			gdk_pixbuf_save(pixbuf, fileName, "png", &error, NULL);
-	 		g_object_unref (pixbuf);
+ 			g_object_unref (pixbuf);
+			pixbuf = tmp;
 		}
 	}
-} 
-void save_png_no_background_file(GabeditFileChooser *SelecFile, gint response_id)
+	
+	return pixbuf;
+}
+/*************************************************************************/
+static void gabedit_save_image_gl(GtkWidget* widget, gchar *fileName, gchar* type, guchar* colorTrans)
+{       
+	GError *error = NULL;
+	GdkPixbuf  *pixbuf = NULL;
+	pixbuf = get_pixbuf_gl(colorTrans);
+	if(pixbuf)
+	{
+		if(!fileName)
+		{
+			GtkClipboard * clipboard;
+			clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+			if(clipboard)
+			{
+				gtk_clipboard_clear(clipboard);
+				gtk_clipboard_set_image(clipboard, pixbuf);
+			}
+		}
+		else 
+		{
+			if(type && strstr(type,"j") && strstr(type,"g") )
+			gdk_pixbuf_save(pixbuf, fileName, type, &error, "quality", "100", NULL);
+			else if(type && strstr(type,"png"))
+			gdk_pixbuf_save(pixbuf, fileName, type, &error, "compression", "5", NULL);
+			else if(type && (strstr(type,"tif") || strstr(type,"tiff")))
+			gdk_pixbuf_save(pixbuf, fileName, "tiff", &error, "compression", "1", NULL);
+			else
+			gdk_pixbuf_save(pixbuf, fileName, type, &error, NULL);
+		}
+	 	g_object_unref (pixbuf);
+	}
+}
+/*******************************************************************************/
+/*       Save in a png (without background) format file */
+/*******************************************************************************/
+void save_png_without_background_file(GabeditFileChooser *SelecFile, gint response_id)
 {       
  	gchar *fileName;
+	guchar color[3];
+
+	gint numCol = get_background_color(color);
 
 	if(response_id != GTK_RESPONSE_OK) return;
  	fileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     		return ;
  	}
 
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
 	gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);
-	rafresh_window_orb();
+	glarea_rafresh(GLArea);
 	while( gtk_events_pending() ) gtk_main_iteration();
-	save_png_no_background(fileName);
+	if(numCol>=0) gabedit_save_image_gl(GLArea, fileName, "png",color);
+	else gabedit_save_image_gl(GLArea, fileName, "png",NULL);
 } 
 /**************************************************************************
 *       Save the Frame Buffer in a png format file
@@ -88,15 +142,15 @@ void save_png_file(GabeditFileChooser *SelecFile, gint response_id)
  	fileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     		return ;
  	}
 
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
 	gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);
-	rafresh_window_orb();
+	glarea_rafresh(GLArea);
 	while( gtk_events_pending() ) gtk_main_iteration();
-	gabedit_save_image(GLArea, fileName, "png");
+	gabedit_save_image_gl(GLArea, fileName, "png",NULL);
 } 
 /**************************************************************************
 *       Save the Frame Buffer in a jpeg format file
@@ -109,23 +163,33 @@ void save_jpeg_file(GabeditFileChooser *SelecFile, gint response_id)
  	fileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     		return ;
  	}
 
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
 	gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);
-	rafresh_window_orb();
+	glarea_rafresh(GLArea);
 	while( gtk_events_pending() )
 		gtk_main_iteration();
-	gabedit_save_image(GLArea, fileName, "jpeg");
+	gabedit_save_image_gl(GLArea, fileName, "jpeg",NULL);
 } 
 /**************************************************************************/
 void copy_to_clipboard()
 {       
-	rafresh_window_orb();
+	glarea_rafresh(GLArea);
 	while( gtk_events_pending() ) gtk_main_iteration();
-	 gabedit_save_image(GLArea, NULL, NULL);
+	 gabedit_save_image_gl(GLArea, NULL, NULL,NULL);
+} 
+/**************************************************************************/
+void copy_to_clipboard_without_background()
+{       
+	glarea_rafresh(GLArea);
+	guchar color[3];
+	gint numCol = get_background_color(color);
+	while( gtk_events_pending() ) gtk_main_iteration();
+	if(numCol>-1) gabedit_save_image_gl(GLArea, NULL, NULL,color);
+	else gabedit_save_image_gl(GLArea, NULL, NULL,NULL);
 } 
 /**************************************************************************
 *       Save the Frame Buffer in a ppm format file
@@ -143,7 +207,7 @@ static gchar* save_ppm(gchar* fileName)
 
  	if ((!fileName) || (strcmp(fileName,"") == 0))
 	{
-		sprintf(message,"Sorry\n No selected file");
+		sprintf(message,_("Sorry\n No selected file"));
 	       	return message;
 	}
 
@@ -151,7 +215,7 @@ static gchar* save_ppm(gchar* fileName)
 
 	if (!file)
 	{
-		sprintf(message,"Sorry: can't open %s file\n", fileName);
+		sprintf(message,_("Sorry: can't open %s file\n"), fileName);
 		return message;
 	}
   
@@ -164,7 +228,7 @@ static gchar* save_ppm(gchar* fileName)
 	rgbbuf = (GLubyte *) malloc(3*width*height*sizeof(GLubyte));
   	if (!rgbbuf)
 	{
-		sprintf(message,"Sorry: couldn't allocate memory\n");
+		sprintf(message,_("Sorry: couldn't allocate memory\n"));
 	    	fclose(file);
 		return message;
   	}
@@ -203,19 +267,19 @@ void save_ppm_file(GabeditFileChooser *SelecFile, gint response_id)
  	fileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     		return ;
  	}
 
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
 	gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);
-	rafresh_window_orb();
+	glarea_rafresh(GLArea);
 	while( gtk_events_pending() )
 		gtk_main_iteration();
 	message = save_ppm(fileName);
 	if(message != NULL)
 	{
-		Message(message," Error ",TRUE);
+		Message(message,_("Error"),TRUE);
 	}
 } 
 /**************************************************************************
@@ -247,7 +311,7 @@ static gchar* save_bmp(gchar* fileName)
 
  	if ((!fileName) || (strcmp(fileName,"") == 0))
 	{
-		sprintf(message,"Sorry\n No selected file");
+		sprintf(message,_("Sorry\n No selected file"));
 	       	return message;
 	}
 
@@ -255,7 +319,7 @@ static gchar* save_bmp(gchar* fileName)
 
 	if (!file)
 	{
-		sprintf(message,"Sorry: can't open %s file\n", fileName);
+		sprintf(message,_("Sorry: can't open %s file\n"), fileName);
 		return message;
 	}
   
@@ -268,7 +332,7 @@ static gchar* save_bmp(gchar* fileName)
   	rgbbuf = (GLubyte *)malloc(3*width*height*sizeof(GLubyte));
   	if (!rgbbuf)
 	{
-		sprintf(message,"Sorry: couldn't allocate memory\n");
+		sprintf(message,_("Sorry: couldn't allocate memory\n"));
 	    	fclose(file);
 		return message;
   	}
@@ -319,19 +383,19 @@ void save_bmp_file(GabeditFileChooser *SelecFile, gint response_id)
  	fileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     		return ;
  	}
 
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
 	gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);
-	rafresh_window_orb();
+	glarea_rafresh(GLArea);
 	while( gtk_events_pending() )
 		gtk_main_iteration();
 	message = save_bmp(fileName);
 	if(message != NULL)
 	{
-		Message(message," Error ",TRUE);
+		Message(message,_("Error"),TRUE);
 	}
 }
 /**************************************************************************
@@ -422,12 +486,12 @@ void save_ps_file(GabeditFileChooser *SelecFile, gint response_id)
  	fileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     	return ;
  	}
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
 	gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);
-	rafresh_window_orb();
+	glarea_rafresh(GLArea);
 	while( gtk_events_pending() )
 		gtk_main_iteration();
   
@@ -440,7 +504,7 @@ void save_ps_file(GabeditFileChooser *SelecFile, gint response_id)
 
 	rgbbuf = (GLubyte *) malloc(3*width*height*sizeof(GLubyte));
 	if (!rgbbuf) {
-            Message("Sorry: couldn't allocate memory\n","Error",TRUE);
+            Message(_("Sorry: couldn't allocate memory\n"),_("Error"),TRUE);
             return;
 	}
 
@@ -454,7 +518,7 @@ void save_ps_file(GabeditFileChooser *SelecFile, gint response_id)
         file = FOpen(fileName,"w");
 
         if (!file) {
-            Message("Sorry: can't open output file\n","Error",TRUE);
+            Message(_("Sorry: can't open output file\n"),_("Error"),TRUE);
             return;
         }
 
@@ -549,7 +613,7 @@ gchar* new_jpeg(gchar* dirname, int i)
 		}
 	}
 
-	gabedit_save_image(GLArea, fileName, "jpeg");
+	gabedit_save_image_gl(GLArea, fileName, "jpeg",NULL);
 	g_free(fileName);
 	return NULL;
 }
@@ -569,14 +633,17 @@ gchar* new_png(gchar* dirname, int i)
 		}
 	}
 
-	gabedit_save_image(GLArea, fileName, "png");
+	gabedit_save_image_gl(GLArea, fileName, "png",NULL);
 	g_free(fileName);
 	return NULL;
 }
 /**************************************************************************/
-gchar* new_png_nobackground(gchar* dirname, int i)
+gchar* new_png_without_background(gchar* dirname, int i)
 {
 	gchar* fileName = g_strdup_printf("%s%sgab%d.png",dirname,G_DIR_SEPARATOR_S,i);
+	guchar color[3];
+	gint numCol = get_background_color(color);
+
 	if(i==1)
 	{
 		gint j;
@@ -589,7 +656,8 @@ gchar* new_png_nobackground(gchar* dirname, int i)
 		}
 	}
 
-	save_png_no_background(fileName);
+	if(numCol>=0) gabedit_save_image_gl(GLArea, fileName, "png",color);
+	else gabedit_save_image_gl(GLArea, fileName, "png",NULL);
 	g_free(fileName);
 	return NULL;
 }

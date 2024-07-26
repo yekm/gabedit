@@ -1,6 +1,6 @@
 /* PreferencesOrb.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -100,9 +100,9 @@ GtkWidget *create_colorsel_frame(GtkWidget *vboxall,gchar* title,GtkWidget** sel
 			frame = NULL;
 			switch(num)
 			{
-				case 0 : frame = gtk_frame_new ("Positive value");break;
-				case 1 : frame = gtk_frame_new ("Negative value");break;
-				case 2 : frame = gtk_frame_new ("Density");break;
+				case 0 : frame = gtk_frame_new (_("Positive value"));break;
+				case 1 : frame = gtk_frame_new (_("Negative value"));break;
+				case 2 : frame = gtk_frame_new (_("Density"));break;
 				default : break;
 			}
 			add_widget_table(Table,frame,(gushort)i,(gushort)j);
@@ -157,13 +157,13 @@ void set_colors_surfaces(gchar* title)
   hbox = create_hbox_false(vboxwin);
   gtk_widget_realize(Win);
 
-  button = create_button(Win,"Cancel");
+  button = create_button(Win,_("Cancel"));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_selectors_window,GTK_OBJECT(Win));
   gtk_widget_show_all (button);
 
-  button = create_button(Win,"OK");
+  button = create_button(Win,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
@@ -404,7 +404,7 @@ static GtkWidget* create_camera_frame(GtkWidget* Win,GtkWidget *vbox)
 	gtk_box_pack_start (GTK_BOX (vboxframe), table, TRUE, TRUE, 0);
 /* ------------------------------------------------------------------*/
 	i = 4;
-	labelZNear = add_label_table(table," Distance from the viewer to the near clipping plane ",i,0);
+	labelZNear = add_label_table(table,_(" Distance from the viewer to the near clipping plane "),i,0);
 	add_label_table(table," : ",i,1);
 	EntryZNear = gtk_entry_new();
 	add_widget_table(table,EntryZNear,i,2);
@@ -412,7 +412,7 @@ static GtkWidget* create_camera_frame(GtkWidget* Win,GtkWidget *vbox)
 	gtk_entry_set_text (GTK_ENTRY (EntryZNear),g_strdup_printf("%lf",zNear));
 /* ------------------------------------------------------------------*/
 	i = 5;
-	labelZFar = add_label_table(table," Distance from the viewer to the far clipping plane ",i,0);
+	labelZFar = add_label_table(table,_(" Distance from the viewer to the far clipping plane "),i,0);
 	add_label_table(table," : ",i,1);
 	EntryZFar = gtk_entry_new();
 	add_widget_table(table,EntryZFar,i,2);
@@ -420,7 +420,7 @@ static GtkWidget* create_camera_frame(GtkWidget* Win,GtkWidget *vbox)
 	gtk_entry_set_text (GTK_ENTRY (EntryZFar),g_strdup_printf("%lf",zFar));
 /* ------------------------------------------------------------------*/
 	i = 6;
-	add_label_table(table," Zoom factor ",i,0);
+	add_label_table(table,_(" Zoom factor "),i,0);
 	add_label_table(table," : ",i,1);
 	EntryZoom = gtk_entry_new();
 	add_widget_table(table,EntryZoom,i,2);
@@ -428,7 +428,7 @@ static GtkWidget* create_camera_frame(GtkWidget* Win,GtkWidget *vbox)
 	gtk_entry_set_text (GTK_ENTRY (EntryZoom),g_strdup_printf("%lf",1/Zoom*45.0));
 /* ------------------------------------------------------------------*/
 	i=3;
-	buttonOptimal = gtk_button_new_with_label("Get Optimal values" );
+	buttonOptimal = gtk_button_new_with_label(_("Get Optimal values") );
 	add_widget_table(table,buttonOptimal,i,2);
 	gtk_widget_show (buttonOptimal);
 	g_object_set_data(G_OBJECT (frame), "EntryZNear",EntryZNear);
@@ -438,7 +438,7 @@ static GtkWidget* create_camera_frame(GtkWidget* Win,GtkWidget *vbox)
 
 /* ------------------------------------------------------------------*/
 	i = 0;
-  	buttonPerspective = gtk_radio_button_new_with_label(NULL,"Perspective"); 
+  	buttonPerspective = gtk_radio_button_new_with_label(NULL,_("Perspective")); 
 	add_widget_table(table,buttonPerspective,i,0);
 	g_object_set_data(G_OBJECT (buttonPerspective), "EntryZNear",EntryZNear);
 	g_object_set_data(G_OBJECT (buttonPerspective), "EntryZFar",EntryZFar);
@@ -447,7 +447,7 @@ static GtkWidget* create_camera_frame(GtkWidget* Win,GtkWidget *vbox)
 	g_object_set_data(G_OBJECT (buttonPerspective), "LabelZFar",labelZFar);
 
 	i = 1;
-  	buttonNoPerspective = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonPerspective)), "No perspective"); 
+  	buttonNoPerspective = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonPerspective)), _("No perspective")); 
 	add_widget_table(table,buttonNoPerspective,i,0);
 	g_signal_connect(G_OBJECT(buttonPerspective),"clicked",(GCallback)set_sensitive_camera,NULL);
 	if(perspective)
@@ -486,7 +486,7 @@ void set_camera()
 
 
 	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(Win),"Camera");
+	gtk_window_set_title(GTK_WINDOW(Win),_("Camera"));
 	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
 	gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
 	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(PrincipalWindow));
@@ -513,19 +513,19 @@ void set_camera()
 	hbox = create_hbox_false(vboxwin);
 	gtk_widget_realize(Win);
 
-	button = create_button(Win,"Close");
+	button = create_button(Win,_("Close"));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy, GTK_OBJECT(Win));
 	gtk_widget_show (button);
 
-	button = create_button(Win,"Apply");
+	button = create_button(Win,_("Apply"));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_camera, GTK_OBJECT(Win));
 
-	button = create_button(Win,"OK");
+	button = create_button(Win,_("OK"));
 	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
@@ -560,7 +560,7 @@ void set_light_positions(gchar* title)
 
   vboxall = create_vbox(Win);
   vboxwin = vboxall;
-  frame = create_light_positions_frame(vboxall,"Ligth positions");
+  frame = create_light_positions_frame(vboxall,_("Ligth positions"));
   Entrys = (GtkWidget**) g_object_get_data(G_OBJECT (frame), "Entrys");
   g_object_set_data(G_OBJECT (Win), "Entrys",Entrys);
    
@@ -569,13 +569,13 @@ void set_light_positions(gchar* title)
   hbox = create_hbox_false(vboxwin);
   gtk_widget_realize(Win);
 
-  button = create_button(Win,"Cancel");
+  button = create_button(Win,_("Cancel"));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_setlight_window, GTK_OBJECT(Win));
   gtk_widget_show (button);
 
-  button = create_button(Win,"OK");
+  button = create_button(Win,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
@@ -660,7 +660,7 @@ void  create_opengl_frame(GtkWidget* Win,GtkWidget *vbox)
 	gushort i;
 
 
-	frame = gtk_frame_new ("OpenGL Options");
+	frame = gtk_frame_new (_("OpenGL Options"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (vbox), frame, TRUE, TRUE, 0);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -673,7 +673,7 @@ void  create_opengl_frame(GtkWidget* Win,GtkWidget *vbox)
 
 /* ------------------------------------------------------------------*/
 	i = 0;
-	add_label_table(table," number Of Subdivisions for a Cylinder ",i,0);
+	add_label_table(table,_(" Number Of Subdivisions for a Cylinder "),i,0);
 	add_label_table(table," : ",i,1);
 	combo = create_combo_box_entry(values,26,TRUE,-1,-1);
 	EntryCylinder = GTK_BIN(combo)->child;
@@ -683,7 +683,7 @@ void  create_opengl_frame(GtkWidget* Win,GtkWidget *vbox)
 	g_signal_connect (G_OBJECT (EntryCylinder), "changed",(GCallback)setNumberOfSubdivisions,typeEntry[0]);
 /* ------------------------------------------------------------------*/
 	i = 1;
-	add_label_table(table," number Of Subdivisions for a Sphere ",i,0);
+	add_label_table(table,_(" Number Of Subdivisions for a Sphere "),i,0);
 	add_label_table(table," : ",i,1);
 	combo = create_combo_box_entry(values,26,TRUE,-1,-1);
 	EntrySphere = GTK_BIN(combo)->child;

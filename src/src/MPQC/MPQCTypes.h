@@ -49,7 +49,7 @@ typedef struct _MPQCGuessWaveFunction
 	gint spinMultiplicity;
 }MPQCGuessWaveFunction;
 
-typedef struct _MPQCOptimisation
+typedef struct _MPQCOptimization
 {
 	gchar* method;
 	gboolean transitionState;
@@ -59,7 +59,7 @@ typedef struct _MPQCOptimisation
 	gchar* function;
 	gchar* energy;
 	gboolean cartesian;
-}MPQCOptimisation;
+}MPQCOptimization;
 
 typedef struct _MPQCMole
 {

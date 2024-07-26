@@ -1,6 +1,6 @@
 /* CalculTypesAmber.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -772,6 +772,7 @@ static gchar* getAmberTypeOfAtom(Molecule* m, gint atomNumber)
 	}
 	else if ( !strcmp(geom[atomNumber].Prop.symbol,"Cl" ))
 	{
+		if ( !m->connected ) return "CL";
 		if ( m->connected[ atomNumber ][ 0 ] > 0 ) return "CL";
 		else return "IM";
 	}
@@ -882,6 +883,7 @@ static GeomDef* getMyGeomFromFrag(Fragment* F)
 		geom[i].Residue =g_strdup(F->Atoms[i].Residue);
 		geom[i].ResidueNumber= 0;
 		geom[i].show= TRUE;
+		geom[i].Variable= TRUE;
 		geom[i].Charge = F->Atoms[i].Charge;
 		geom[i].N = i+1;
 		geom[i].typeConnections = NULL;

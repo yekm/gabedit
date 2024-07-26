@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -33,6 +33,7 @@ void gl_read_first_gamess_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_last_gamess_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_first_gauss_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_last_gauss_file(GabeditFileChooser *SelecFile, gint response_id);
+gboolean gl_read_fchk_gauss_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_first_molcas_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_last_molcas_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_first_molpro_file(GabeditFileChooser *SelecFile, gint response_id);
@@ -56,6 +57,7 @@ gboolean gl_read_mopac_output_file_geomi(gchar *FileName,gint num);
 gboolean gl_read_mopac_aux_file_geomi(gchar *FileName,gint num);
 gboolean gl_read_molcas_file_geomi(gchar *FileName,gint num);
 gboolean gl_read_gaussn_file_geomi(gchar *FileName,gint num);
+gboolean gl_read_fchk_gaussn_file_geom(gchar *FileName);
 gboolean gl_read_mpqc_file_geomi(gchar *FileName,gint num);
 gboolean gl_read_orca_file_geomi(gchar *FileName,gint num);
 gboolean gl_read_qchem_file_geomi(gchar *FileName,gint num);
@@ -68,6 +70,7 @@ gboolean gl_read_molden_gabedit_geom_conv_file(gchar *fileName, gint geometryNum
 gdouble get_cube_length();
 void reset_grid_limits();
 void gl_get_charges_from_mopac_output_file(FILE* fd);
+void gl_read_geom_any_file_sel(GabeditFileChooser *selecFile, gint response_id);
 
 #endif /* __GABEDIT_GEOMORBXYZ_H__ */
 

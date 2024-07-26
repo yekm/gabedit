@@ -1,6 +1,6 @@
 /* SetPDBTemplate.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -332,7 +332,7 @@ static void newType(GtkWidget* w)
 
 	if(!isFloat(charge))
 	{
-		gchar t[] = "The value for 'charge' must be a number.";
+		gchar* t = _("The value for 'charge' must be a number.");
 		GtkWidget* w = Message(t,"Error",TRUE);
 		gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   		gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(SetWinDlg));
@@ -361,8 +361,8 @@ static void newType(GtkWidget* w)
 	delete_all_spaces(pdbType);
 	if(availableType(residueNumber,pdbType))
 	{
-		gchar* t = g_strdup_printf("Sorry, I can not add this pdb type\n%s is available.",pdbType);
-		GtkWidget* w = Message(t,"Error",TRUE);
+		gchar* t = g_strdup_printf(_("Sorry, I can not add this pdb type\n%s is available."),pdbType);
+		GtkWidget* w = Message(t,_("Error"),TRUE);
 		gtk_window_set_modal(GTK_WINDOW(w),TRUE);
   		gtk_window_set_transient_for(GTK_WINDOW(w),GTK_WINDOW(SetWinDlg));
 		g_free(t);
@@ -440,7 +440,7 @@ static void editnewDlg(GabeditSignalFunc f,gchar* title, gboolean newResidue)
 	vboxframe = create_vbox(frame);
 	hbox=create_hbox_false(vboxframe);
 
-	Entrys[E_RESIDUE] = create_label_entry(hbox,"Residue Name : ",
+	Entrys[E_RESIDUE] = create_label_entry(hbox,_("Residue Name : "),
 		  (gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
 	if(Nc>=0 && !newResidue)
 		gtk_entry_set_text(GTK_ENTRY(Entrys[E_RESIDUE]),
@@ -458,7 +458,7 @@ static void editnewDlg(GabeditSignalFunc f,gchar* title, gboolean newResidue)
 		gint n = 0;
 
 		hbox=create_hbox_false(vboxframe);
-		Entrys[E_PDBTYPE] = create_label_entry(hbox,"PDB Type : ",
+		Entrys[E_PDBTYPE] = create_label_entry(hbox,_("PDB Type : "),
 				(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
 		if(Nc>=0 && typeNumber>=0)
 			gtk_entry_set_text(GTK_ENTRY(Entrys[E_PDBTYPE]),
@@ -473,11 +473,11 @@ static void editnewDlg(GabeditSignalFunc f,gchar* title, gboolean newResidue)
 		hbox=create_hbox_false(vboxframe);
 		if(n!=0)
 		{
-			Entrys[E_MMTYPE] = create_label_combo(hbox,"MM Type :",tlist,n,
+			Entrys[E_MMTYPE] = create_label_combo(hbox,_("MM Type :"),tlist,n,
 			TRUE,(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
 		}
 		else
-			Entrys[E_MMTYPE] = create_label_entry(hbox,"MM Type :",
+			Entrys[E_MMTYPE] = create_label_entry(hbox,_("MM Type :"),
 			(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
 		if(Nc>=0 && typeNumber>=0)
 			gtk_entry_set_text(GTK_ENTRY(Entrys[E_MMTYPE]),
@@ -494,7 +494,7 @@ static void editnewDlg(GabeditSignalFunc f,gchar* title, gboolean newResidue)
 	  		g_free(tlist[i]);
 
 		hbox=create_hbox_false(vboxframe);
-		Entrys[E_CHARGE] = create_label_entry(hbox,"Charge : ",
+		Entrys[E_CHARGE] = create_label_entry(hbox,_("Charge : "),
 				(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
 		if(Nc>=0 && typeNumber>=0)
 		{
@@ -510,12 +510,12 @@ static void editnewDlg(GabeditSignalFunc f,gchar* title, gboolean newResidue)
 
 
 	gtk_widget_realize(WinDlg);
-	Button = create_button(WinDlg,"Cancel");
+	Button = create_button(WinDlg,_("Cancel"));
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
 	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked", (GCallback)gtk_widget_destroy,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
 
-	Button = create_button(WinDlg,"OK");
+	Button = create_button(WinDlg,_("OK"));
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(WinDlg)->action_area), Button,TRUE,TRUE,0);
 	g_signal_connect_swapped(GTK_OBJECT(Button), "clicked",(GCallback)f,GTK_OBJECT(WinDlg));
 	GTK_WIDGET_SET_FLAGS(Button, GTK_CAN_DEFAULT);
@@ -585,7 +585,7 @@ static void deleteOneResidue(GtkWidget *win, gpointer d)
 static void deleteResidueDlg(GtkWidget *win,gpointer d)
 {
 
-	gchar *format ="Do you want to really delete \"%s\" residue ?" ;
+	gchar *format =_("Do you want to really delete \"%s\" residue ?") ;
 	gchar *t =NULL;
 	gint residueNumber;
 	gint typeNumber;
@@ -671,20 +671,20 @@ static void Traitement(guint Operation)
 	switch(Operation)
 	{
 		case MENU_NEW_RESIDUE :
-			editnewDlg(newResidue,"New Residue",TRUE);
+			editnewDlg(newResidue,_("New Residue"),TRUE);
 			gtk_editable_set_editable((GtkEditable*) Entrys[E_RESIDUE],TRUE);
 			break;
 		case MENU_DELETE_RESIDUE :
 			deleteResidueDlg(NULL,NULL);
 			break;
 		case MENU_EDIT_TYPE :
-			editnewDlg(editType,"Edit Type",FALSE);
+			editnewDlg(editType,_("Edit Type"),FALSE);
 			gtk_editable_set_editable((GtkEditable*) Entrys[E_RESIDUE],FALSE);
 			gtk_editable_set_editable((GtkEditable*) Entrys[E_PDBTYPE],FALSE);
 			gtk_editable_set_editable((GtkEditable*) Entrys[E_CHARGE],TRUE);
 			break;
 		case MENU_NEW_TYPE :
-			editnewDlg(newType,"New Type",FALSE);
+			editnewDlg(newType,_("New Type"),FALSE);
 			gtk_editable_set_editable((GtkEditable*) Entrys[E_RESIDUE],FALSE);
 			gtk_editable_set_editable((GtkEditable*) Entrys[E_PDBTYPE],TRUE);
 			gtk_editable_set_editable((GtkEditable*) Entrys[E_CHARGE],TRUE);
@@ -784,13 +784,13 @@ static void activate_action (GtkAction *action)
 /*--------------------------------------------------------------------*/
 static GtkActionEntry gtkActionEntries[] =
 {
-	{"NewResidue", GABEDIT_STOCK_NEW, "New _residue", NULL, "New residue", G_CALLBACK (activate_action) },
-	{"DeleteResidue", GABEDIT_STOCK_CUT, "_Delete selected residue", NULL, "Delete selected residue", G_CALLBACK (activate_action) },
-	{"NewType", GABEDIT_STOCK_NEW, "New _type", NULL, "New type", G_CALLBACK (activate_action) },
-	{"EditType", GABEDIT_STOCK_SELECT, "_Edit type", NULL, "Edit type", G_CALLBACK (activate_action) },
-	{"DeleteType", GABEDIT_STOCK_CUT, "_Delete selected type", NULL, "Delete selected type", G_CALLBACK (activate_action) },
-	{"Save", GABEDIT_STOCK_SAVE, "_Save", NULL, "Save", G_CALLBACK (activate_action) },
-	{"Close", GABEDIT_STOCK_CLOSE, "_Close", NULL, "Close", G_CALLBACK (activate_action) },
+	{"NewResidue", GABEDIT_STOCK_NEW, N_("New _residue"), NULL, "New residue", G_CALLBACK (activate_action) },
+	{"DeleteResidue", GABEDIT_STOCK_CUT, N_("_Delete selected residue"), NULL, "Delete selected residue", G_CALLBACK (activate_action) },
+	{"NewType", GABEDIT_STOCK_NEW, N_("New _type"), NULL, "New type", G_CALLBACK (activate_action) },
+	{"EditType", GABEDIT_STOCK_SELECT, N_("_Edit type"), NULL, "Edit type", G_CALLBACK (activate_action) },
+	{"DeleteType", GABEDIT_STOCK_CUT, N_("_Delete selected type"), NULL, "Delete selected type", G_CALLBACK (activate_action) },
+	{"Save", GABEDIT_STOCK_SAVE, N_("_Save"), NULL, "Save", G_CALLBACK (activate_action) },
+	{"Close", GABEDIT_STOCK_CLOSE, N_("_Close"), NULL, "Close", G_CALLBACK (activate_action) },
 };
 static guint numberOfGtkActionEntries = G_N_ELEMENTS (gtkActionEntries);
 /********************************************************************************/
@@ -822,6 +822,7 @@ static GtkUIManager *newMenu(GtkWidget* win)
   	g_signal_connect_swapped (win, "destroy", G_CALLBACK (g_object_unref), manager);
 
 	actionGroup = gtk_action_group_new ("GabeditEditTypePDBTplLibrary");
+	gtk_action_group_set_translation_domain(actionGroup,GETTEXT_PACKAGE);
 	gtk_action_group_add_actions (actionGroup, gtkActionEntries, numberOfGtkActionEntries, NULL);
 
   	gtk_ui_manager_insert_action_group (manager, actionGroup, 0);
@@ -829,7 +830,7 @@ static GtkUIManager *newMenu(GtkWidget* win)
   	gtk_window_add_accel_group (GTK_WINDOW (win), gtk_ui_manager_get_accel_group (manager));
 	if (!gtk_ui_manager_add_ui_from_string (manager, uiMenuInfo, -1, &error))
 	{
-		g_message ("building menus failed: %s", error->message);
+		g_message (_("building menus failed: %s"), error->message);
 		g_error_free (error);
 	}
 	return manager;
@@ -1033,7 +1034,7 @@ void setPDBTemplateDlg()
 	Win= gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
 	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(parentWindow));
-	gtk_window_set_title(GTK_WINDOW(Win),"Set PDB Template");
+	gtk_window_set_title(GTK_WINDOW(Win),_("Set PDB Template"));
 	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
 
 	SetWinDlg = Win;

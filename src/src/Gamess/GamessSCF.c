@@ -1,6 +1,6 @@
 /* GamessGuess.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -86,7 +86,7 @@ void createGamessSCFFrame(GtkWidget *win, GtkWidget *box)
 	buttonChangeFock = NULL;
 	buttonUHFNO = NULL;
 
-	frame = gtk_frame_new ("SCF options");
+	frame = gtk_frame_new (_("SCF options"));
 	scfFrame = frame;
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
@@ -100,7 +100,7 @@ void createGamessSCFFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ DIrectSCF -----------------------------------------*/
 	l=0; 
 	c = 0; ncases=1;
-	buttonDirectSCF = gtk_check_button_new_with_label ("Direct SCF");
+	buttonDirectSCF = gtk_check_button_new_with_label (_("Direct SCF"));
 	gtk_table_attach(GTK_TABLE(table),buttonDirectSCF,c,c+ncases,l,l+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
@@ -109,7 +109,7 @@ void createGamessSCFFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ ChangeFock ----------------------------------------*/
 	l++; 
 	c = 0; ncases=1;
-	buttonChangeFock = gtk_check_button_new_with_label ("Compute only change in Fock matrix");
+	buttonChangeFock = gtk_check_button_new_with_label (_("Compute only change in Fock matrix"));
 	gtk_table_attach(GTK_TABLE(table),buttonChangeFock,c,c+ncases,l,l+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
@@ -118,7 +118,7 @@ void createGamessSCFFrame(GtkWidget *win, GtkWidget *box)
 	/*------------------ UHFNO ----------------------------------------*/
 	l++; 
 	c = 0; ncases=1;
-	buttonUHFNO = gtk_check_button_new_with_label ("Generate UHF Natural Orbitals");
+	buttonUHFNO = gtk_check_button_new_with_label (_("Generate UHF Natural Orbitals"));
 	gtk_table_attach(GTK_TABLE(table),buttonUHFNO,c,c+ncases,l,l+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),

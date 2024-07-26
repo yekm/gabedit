@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -33,7 +33,7 @@ ADDFRAGMENT,
 EDITOBJECTS, /* insert a atom(s) and or a bond, change a bond */
 ADDATOMSBOND,
 CHANGEBOND,CUTBOND,
-MESURE,SHOWMESURE,
+MEASURE,SHOWMEASURE,
 RENDERSTICK,RENDERBALL,
 LABELNO,LABELSYMB,LABELNUMB,LABELMMTYP,LABELPDBTYP,LABELLAYER,LABELSYMBNUMB,
 LABELCHARGE,LABELSYMBCHARGE,LABELNUMBCHARGE,LABELRESIDUES,LABELCOORDINATES,
@@ -123,6 +123,7 @@ guint Natoms;
 gint *NumFatoms;
 guint NFatoms;
 
+void createIstopeDistributionCalculationFromDrawGeom();
 void add_geometry_to_fifo();
 void get_geometry_from_fifo(gboolean toNext);
 gdouble get_factorstick();
@@ -140,6 +141,7 @@ gboolean StickMode;
 gboolean ShadMode;
 gboolean PersMode;
 gboolean LightMode;
+gboolean OrtepMode;
 gboolean DrawDistance;
 gboolean DrawDipole;
 gboolean ShowDipole;
@@ -168,6 +170,7 @@ void SelectFixedVariableAtoms(gboolean variable);
 void SelectFirstResidue();
 void SelectLastResidue();
 void selectResidueByNameDlg();
+void selectResidueByNumberDlg();
 void selectAtomsByMMTypeDlg();
 void selectAtomsByPDBTypeDlg();
 void selectAtomsBySymbolDlg();
@@ -203,6 +206,7 @@ gboolean stick_mode();
 gboolean pers_mode();
 gboolean shad_mode();
 gboolean light_mode();
+gboolean ortep_mode();
 gboolean cartoon_mode();
 gdouble get_frag_angle();
 void set_frag_angle(gdouble a);
@@ -216,7 +220,7 @@ void draw_geometry(GtkWidget *,gpointer);
 gboolean draw_lines_yes_no(guint i,guint j);
 guint get_num_min_rayonIJ(guint i,guint j);
 void SetRadioPopupMenu(gchar* button);
-void HideShowMesure(gboolean hiding);
+void HideShowMeasure(gboolean hiding);
 void AdjustHydrogensYesNo(gboolean adjust);
 gboolean getAdjustHydrogensYesNo();
 void RebuildConnectionsDuringEditionYesNo(gboolean rebuild);
@@ -246,6 +250,7 @@ void factor_all_default(GtkWidget *win,gpointer d);
 void RenderShad(GtkWidget *,gboolean);
 void RenderPers(GtkWidget *,gboolean);
 void RenderLight(GtkWidget *,gboolean);
+void RenderOrtep(GtkWidget *,gboolean);
 void RenderCartoon(GtkWidget *,gboolean);
 void RenderDipole(GtkWidget *,gboolean);
 void RenderHBonds(GtkWidget *,gboolean);
@@ -262,7 +267,7 @@ void set_back_color_black();
 void open_color_dlg(GtkWidget *win,gpointer *DrawingArea);
 void set_HBonds_dialog_geom(GtkWidget *win, guint data);
 void set_povray_options_geom(GtkWidget *win, guint data);
-void destroy_drawing_and_childs(GtkWidget *win,gpointer data);
+void destroy_drawing_and_children(GtkWidget *win,gpointer data);
 void SetOperation(GtkWidget *,guint);
 void set_dipole_from_charges();
 gdouble get_sum_charges();

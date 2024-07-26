@@ -1,6 +1,6 @@
 /* MolproLib.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -22,6 +22,7 @@ DEALINGS IN THE SOFTWARE.
 #include <string.h>
 #include <stdio.h>
 #include <gtk/gtk.h>
+#include <glib/gi18n.h>
 #include "../Common/GabeditType.h"
 #include "../Utils/Constants.h"
 #include "../Utils/Utils.h"
@@ -70,7 +71,7 @@ void get_basis_list(gchar* Symb,gchar* orb,gchar* outfile,gchar* errfile)
 	}
 	if(!fin)
 	{
-		fprintf(ferr,"Sorry the molprobasis is corrupted.\nPlease reinstall gabedit\n");
+		fprintf(ferr,_("Sorry the molprobasis is corrupted.\nPlease reinstall gabedit\n"));
 		fclose(ferr);
 		fclose(fout);
 		return;

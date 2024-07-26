@@ -1,6 +1,6 @@
 /* PovrayGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -771,16 +771,16 @@ static gchar *get_pov_one_hbond(gint i,gint j)
 
      ibreak = (gint)(poid1*n/poid);
 
-     for(l=0;l<3;l++) K[l] =(Center2.C[l]-Center1.C[l])/(n*5/4);
+     for(l=0;l<3;l++) K[l] =(Center2.C[l]-Center1.C[l])/(n*5/3);
      for(l=0;l<3;l++) A[l] =Center1.C[l];
      temp = NULL;
      for(i=0;i<n;i++)
      {
      	for(l=0;l<3;l++) B[l] = A[l] + K[l];
 	if(i<=ibreak)
-		temp1 =  get_pov_cylingre(A,B,Center1.P.Colors,ep/2);
+		temp1 =  get_pov_cylingre(A,B,Center1.P.Colors,ep/4.0);
 	else
-		temp1 =  get_pov_cylingre(A,B,Center2.P.Colors,ep/2);
+		temp1 =  get_pov_cylingre(A,B,Center2.P.Colors,ep/4.0);
 	dump = temp;
 	if(dump)
 	{
@@ -790,7 +790,7 @@ static gchar *get_pov_one_hbond(gint i,gint j)
 	else temp = g_strdup_printf("%s",temp1);
 	g_free(temp1);
 	temp1 = NULL;
-     	for(l=0;l<3;l++) A[l] = B[l]+K[l]/4;
+     	for(l=0;l<3;l++) A[l] = B[l]+K[l]/2;
      }
 
      if(temp1) g_free(temp1);
@@ -837,10 +837,11 @@ static gchar *get_pov_declare_surface_options()
 
 	temp = g_strdup_printf(
 	 "// transparency coeffition\n"
-	 "#declare surfaceTransCoef = 0.6;\n"
+	 "#declare surfaceTransCoef = %lf;\n"
 	 "// wire frame radius of cylinder\n"
 	 "#declare wireFrameCylinderRadius = %lf;\n"
 	 "\n\n",
+	 get_alpha_opacity(),
 	 ep
 	);
 	return temp;

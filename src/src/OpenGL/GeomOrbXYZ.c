@@ -1,6 +1,6 @@
 /* GeomOrbXYZ.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -116,9 +116,9 @@ gboolean this_is_a_new_geometry()
 void free_geometry()
 {
 	gint i;
-	set_status_label_info("File Name","Nothing");
-	set_status_label_info("File Type","Nothing");
-	set_status_label_info("Geometry","Nothing");
+	set_status_label_info(_("File name"),_("Nothing"));
+	set_status_label_info(_("File type"),_("Nothing"));
+	set_status_label_info(_("Geometry"),_("Nothing"));
 	Dipole.def = FALSE;
 	reset_old_geometry();
 	if(!GeomOrb)
@@ -265,19 +265,19 @@ gboolean gl_read_molden_gabedit_geom_conv_file(gchar *fileName, gint geometryNum
 
 	free_data_all();
 	tmp = get_name_file(fileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	if(type == GABEDIT_TYPEFILE_GABEDIT) set_status_label_info("File Type","Gabedit");
-	if(type == GABEDIT_TYPEFILE_MOLDEN) set_status_label_info("File Type","Molden");
+	if(type == GABEDIT_TYPEFILE_GABEDIT) set_status_label_info(_("File type"),"Gabedit");
+	if(type == GABEDIT_TYPEFILE_MOLDEN) set_status_label_info(_("File type"),"Molden");
 
 	file = FOpen(fileName, "rb");
 
 	if(file ==NULL)
 	{
-		t = g_strdup_printf("Sorry\nI can not open %s  file ",fileName);
-		Message(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\nI can not open %s  file "),fileName);
+		Message(t,_("Error"),TRUE);
 		g_free(t);
-		set_status_label_info("Geometry","Nothing");
+		set_status_label_info(_("Geometry"),_("Nothing"));
 		return FALSE;
 	}
 	t = g_malloc(BSIZE*sizeof(gchar));
@@ -292,13 +292,13 @@ gboolean gl_read_molden_gabedit_geom_conv_file(gchar *fileName, gint geometryNum
 		if(pdest && strstr(t,"ZMAT"))
 		{
 			if(type == GABEDIT_TYPEFILE_MOLDEN)
-				sprintf(t,"Sorry\nMolden file with ZMAT coordinate is not supported by Gabedit");
+				sprintf(t,_("Sorry\nMolden file with ZMAT coordinate is not supported by Gabedit"));
 			if(type == GABEDIT_TYPEFILE_GABEDIT)
-				sprintf(t,"Sorry\nGabedit file with ZMAT coordinate is not supported by Gabedit");
+				sprintf(t,_("Sorry\nGabedit file with ZMAT coordinate is not supported by Gabedit"));
 
-			Message(t," Error ",TRUE);
+			Message(t,_("Error"),TRUE);
 			g_free(t);
-			set_status_label_info("Geometry","Nothing");
+			set_status_label_info(_("Geometry"),_("Nothing"));
 			return FALSE;
 		}	
  		if (pdest)
@@ -358,7 +358,7 @@ gboolean gl_read_molden_gabedit_geom_conv_file(gchar *fileName, gint geometryNum
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),"Ok");
 	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
@@ -381,18 +381,18 @@ gboolean gl_read_xyz_file_geomi(gchar *fileName,gint geometryNumber)
 
 	free_data_all();
 	tmp = get_name_file(fileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","XYZ");
+	set_status_label_info(_("File type"),"XYZ");
 
 	file = FOpen(fileName, "rb");
 
 	if(file ==NULL)
 	{
-		t = g_strdup_printf("Sorry\nI can not open %s  file ",fileName);
-		Message(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\nI can not open %s  file "),fileName);
+		Message(t,_("Error"),TRUE);
 		g_free(t);
-		set_status_label_info("Geometry","Nothing");
+		set_status_label_info(_("Geometry"),_("Nothing"));
 		return FALSE;
 	}
 	t = g_malloc(BSIZE*sizeof(gchar));
@@ -452,7 +452,7 @@ gboolean gl_read_xyz_file_geomi(gchar *fileName,gint geometryNumber)
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),"Ok");
 	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
@@ -479,7 +479,7 @@ gboolean gl_read_xyz_file(gchar* FileName)
  
  if ((!FileName) || (strcmp(FileName,"") == 0))
  {
-	Message("Sorry\n No selected file"," Error ",TRUE);
+	Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     	return FALSE ;
  }
 
@@ -494,17 +494,17 @@ gboolean gl_read_xyz_file(gchar* FileName)
   if(n < 1)
   {
 	OK=FALSE;
-	Message("Sorry\n this is not a XYZ file"," Error ",TRUE);
+	Message(_("Sorry\n this is not a XYZ file"),_("Error"),TRUE);
 	goto end;
   }
   free_data_all();
   /* Ncenters = n;*/
   if(OK) GeomOrb=g_malloc(n*sizeof(TypeGeomOrb));
   tmp = get_name_file(FileName);
-  set_status_label_info("File Name",tmp);
+  set_status_label_info(_("File name"),tmp);
   g_free(tmp);
-  set_status_label_info("File Type","XYZ");
-  set_status_label_info("Geometry","Reading");
+  set_status_label_info(_("File type"),"XYZ");
+  set_status_label_info(_("Geometry"),_("Reading"));
 
   Dipole.def = FALSE;
   progress_orb(0,GABEDIT_PROGORB_READGEOM,TRUE);
@@ -559,7 +559,7 @@ end:
 	glarea_rafresh(GLArea);
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
  }
  return OK;
 }
@@ -712,7 +712,7 @@ gboolean gl_read_pdb_file(gchar* FileName)
 
 	if ((!FileName) || (strcmp(FileName,"") == 0))
 	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     		return FALSE ;
 	}
 
@@ -720,8 +720,8 @@ gboolean gl_read_pdb_file(gchar* FileName)
 	fd = FOpen(FileName, "rb");
 	if(fd==NULL)
 	{
-		gchar* tmp = g_strdup_printf("Sorry\n I can not open %s file", FileName);
-		Message(tmp," Error ",TRUE);
+		gchar* tmp = g_strdup_printf(_("Sorry\n I can not open %s file"), FileName);
+		Message(tmp,_("Error"),TRUE);
 		g_free(tmp);
     		return FALSE ;
 	}
@@ -730,10 +730,10 @@ gboolean gl_read_pdb_file(gchar* FileName)
 	OK=TRUE;
 	free_data_all();
 	tmp = get_name_file(FileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","pdb");
-	set_status_label_info("Geometry","Reading");
+	set_status_label_info(_("File type"),"pdb");
+	set_status_label_info(_("Geometry"),_("Reading"));
   	Dipole.def = FALSE;
 	j=0;
 	GeomOrb= NULL;
@@ -785,7 +785,7 @@ gboolean gl_read_pdb_file(gchar* FileName)
 	else
 	{
 		Ncenters = 0;
-		set_status_label_info("Geometry","Nothing");
+		set_status_label_info(_("Geometry"),_("Nothing"));
 	}
 	g_free(t);
 	for(i=0;i<8;i++) g_free(listFields[i]);
@@ -797,7 +797,7 @@ gboolean gl_read_pdb_file(gchar* FileName)
 		glarea_rafresh(GLArea);
 		reset_grid_limits();
 		init_atomic_orbitals();
-		set_status_label_info("Geometry","Ok");
+		set_status_label_info(_("Geometry"),_("Ok"));
 	}
 	return OK;
 }
@@ -891,7 +891,7 @@ gboolean gl_read_hin_file(gchar* FileName)
 
 	if ((!FileName) || (strcmp(FileName,"") == 0))
 	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     		return FALSE ;
 	}
 
@@ -899,16 +899,16 @@ gboolean gl_read_hin_file(gchar* FileName)
 
 	if(fd==NULL)
 	{
-		gchar* tmp = g_strdup_printf("Sorry\n I can not open %s file", FileName);
-		Message(tmp," Error ",TRUE);
+		gchar* tmp = g_strdup_printf(_("Sorry\n I can not open %s file"), FileName);
+		Message(tmp,_("Error"),TRUE);
 		g_free(tmp);
     		return FALSE ;
 	}
 	read_hin_numbers_of_atoms(fd,&natoms, &nresidues);
 	if(natoms<1)
 	{
-		gchar* tmp = g_strdup_printf("Sorry\n I can not read grometry from %s file", FileName);
-		Message(tmp," Error ",TRUE);
+		gchar* tmp = g_strdup_printf(_("Sorry\n I can not read grometry from %s file"), FileName);
+		Message(tmp,_("Error"),TRUE);
 		g_free(tmp);
     		return FALSE ;
 	}
@@ -919,10 +919,10 @@ gboolean gl_read_hin_file(gchar* FileName)
 
 	free_data_all();
 	tmp = get_name_file(FileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Hyperchem");
-	set_status_label_info("Geometry","Reading");
+	set_status_label_info(_("File type"),"Hyperchem");
+	set_status_label_info(_("Geometry"),_("Reading"));
   	Dipole.def = FALSE;
 	j=0;
 
@@ -973,7 +973,7 @@ gboolean gl_read_hin_file(gchar* FileName)
 	else
 	{
 		Ncenters = 0;
-		set_status_label_info("Geometry","Nothing");
+		set_status_label_info(_("Geometry"),_("Nothing"));
 	}
 	fclose(fd);
 	g_free(t);
@@ -986,7 +986,7 @@ gboolean gl_read_hin_file(gchar* FileName)
 		glarea_rafresh(GLArea);
 		reset_grid_limits();
 		init_atomic_orbitals();
-		set_status_label_info("Geometry","Ok");
+		set_status_label_info(_("Geometry"),_("Ok"));
 	}
 	return OK;
 }
@@ -1043,12 +1043,12 @@ static void conversion_to_hin_and_read(GtkWidget *wid,gpointer data)
 	strerr = cat_file(ferr,FALSE);
   	if(strout)
 	{
- 		Message(strout, "Info", TRUE);
+ 		Message(strout, _("Info"), TRUE);
 		g_free(strout);
 	}
   	if(strerr)
 	{
- 		Message(strerr, "Error", TRUE);
+ 		Message(strerr, _("Error"), TRUE);
 		g_free(strerr);
 	}
 	else
@@ -1108,7 +1108,7 @@ gboolean gl_read_molden_or_gabedit_file_geom(gchar *FileName,gint type)
   
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No selected file","Error",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
  		for(i=0;i<5;i++)
 			g_free(AtomCoord[i]);
     		return FALSE;
@@ -1118,7 +1118,7 @@ gboolean gl_read_molden_or_gabedit_file_geom(gchar *FileName,gint type)
  	fd = FOpen(FileName, "rb");
  	if(fd ==NULL)
  	{
-  		Message("Sorry\nI can not open this file","Error",TRUE);
+  		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
  		g_free(t);
  		for(i=0;i<5;i++)
 			g_free(AtomCoord[i]);
@@ -1133,7 +1133,7 @@ gboolean gl_read_molden_or_gabedit_file_geom(gchar *FileName,gint type)
 
 	if(!strstr(tCap,titleCap))
 	{
-  		Message(message,"Error",TRUE);
+  		Message(message,_("Error"),TRUE);
  		g_free(t);
  		for(i=0;i<5;i++)
 			g_free(AtomCoord[i]);
@@ -1142,13 +1142,13 @@ gboolean gl_read_molden_or_gabedit_file_geom(gchar *FileName,gint type)
 
 	free_data_all();
 	tmp = get_name_file(FileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
 	if(type == 0)
-		set_status_label_info("File Type","Molden");
+		set_status_label_info(_("File type"),"Molden");
 	else
-		set_status_label_info("File Type","Gabedit");	
-	set_status_label_info("Geometry","Reading");
+		set_status_label_info(_("File type"),"Gabedit");	
+	set_status_label_info(_("Geometry"),_("Reading"));
 	j = 0;
  	while(!feof(fd))
 	{
@@ -1208,7 +1208,7 @@ gboolean gl_read_molden_or_gabedit_file_geom(gchar *FileName,gint type)
  	if(Ncenters == 0 )
 	{
 		if(GeomOrb) g_free(GeomOrb);
-		set_status_label_info("Geometry","Notting");
+		set_status_label_info(_("Geometry"),_("Nothing"));
 		return FALSE;
 	}
  	else
@@ -1219,7 +1219,7 @@ gboolean gl_read_molden_or_gabedit_file_geom(gchar *FileName,gint type)
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
 	return TRUE;
 }
 /********************************************************************************/
@@ -1269,7 +1269,7 @@ gboolean gl_read_molpro_file_geom_pos(gchar *FileName,long int pos)
  	fd = FOpen(FileName, "rb");
  	if(fd ==NULL)
  	{
-  		Message("Sorry\nI can not open this file","Error",TRUE);
+  		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
  		for(i=0;i<5;i++)
 			g_free(AtomCoord[i]);
   		return FALSE;
@@ -1277,10 +1277,10 @@ gboolean gl_read_molpro_file_geom_pos(gchar *FileName,long int pos)
 
 	free_data_all();
 	tmp = get_name_file(FileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Molpro");
-	set_status_label_info("Geometry","Reading");
+	set_status_label_info(_("File type"),"Molpro");
+	set_status_label_info(_("Geometry"),_("Reading"));
  	OK=FALSE;
 	n=-1;
  	while(!feof(fd))
@@ -1298,13 +1298,13 @@ gboolean gl_read_molpro_file_geom_pos(gchar *FileName,long int pos)
         }
  	if(!OK)
 	{
-  		Message("Sorry\nI can not read geometry in this file","Error",TRUE);
+  		Message(_("Sorry\nI can not read geometry in this file"),_("Error"),TRUE);
  		fclose(fd);
  		for(i=0;i<5;i++)
 			g_free(AtomCoord[i]);
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Geometry","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Geometry"),_("Nothing"));
 		return FALSE;
     	}
 
@@ -1355,7 +1355,7 @@ gboolean gl_read_molpro_file_geom_pos(gchar *FileName,long int pos)
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
 	return TRUE;
 }
 /********************************************************************************/
@@ -1379,7 +1379,7 @@ gboolean gl_read_dalton_file_geomi(gchar *FileName,gint num)
   
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No file slected","Error",TRUE);
+		Message(_("Sorry\n No file selected"),_("Error"),TRUE);
  		for(i=0;i<5;i++) g_free(AtomCoord[i]);
     		return FALSE ;
  	}
@@ -1388,7 +1388,7 @@ gboolean gl_read_dalton_file_geomi(gchar *FileName,gint num)
  	fd = FOpen(FileName, "rb");
  	if(fd ==NULL)
  	{
-  		Message("Sorry\nI can not open this file","Error",TRUE);
+  		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
  		g_free(t);
  		for(i=0;i<5;i++) g_free(AtomCoord[i]);
   		return FALSE;
@@ -1396,13 +1396,13 @@ gboolean gl_read_dalton_file_geomi(gchar *FileName,gint num)
 
 	free_data_all();
 	tmp = get_name_file(FileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Dalton");
+	set_status_label_info(_("File type"),"Dalton");
  	numgeom =1;
  	do 
  	{
-		set_status_label_info("Geometry","Reading");
+		set_status_label_info(_("Geometry"),_("Reading"));
  		OK=FALSE;
  		while(!feof(fd))
 		{
@@ -1418,13 +1418,13 @@ gboolean gl_read_dalton_file_geomi(gchar *FileName,gint num)
         	}
  		if(!OK && (numgeom == 1) )
 		{
-  			Message("Sorry\nI can not read geometry from this file","Error",TRUE);
+  			Message(_("Sorry\nI can not read geometry from this file"),_("Error"),TRUE);
  			fclose(fd);
  			g_free(t);
  			for(i=0;i<5;i++) g_free(AtomCoord[i]);
-			set_status_label_info("File Name","Nothing");
-			set_status_label_info("File Type","Nothing");
-			set_status_label_info("Geometry","Nothing");
+			set_status_label_info(_("File name"),_("Nothing"));
+			set_status_label_info(_("File type"),_("Nothing"));
+			set_status_label_info(_("Geometry"),_("Nothing"));
 			return FALSE;
     		}
  		if(!OK)break;
@@ -1481,7 +1481,7 @@ gboolean gl_read_dalton_file_geomi(gchar *FileName,gint num)
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
 	return TRUE;
 }
 /********************************************************************************/
@@ -1704,7 +1704,7 @@ gboolean gl_read_gamess_file_geomi(gchar *FileName,gint num)
   
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No file slected","Error",TRUE);
+		Message(_("Sorry\n No file selected"),_("Error"),TRUE);
  		for(i=0;i<5;i++) g_free(AtomCoord[i]);
     		return FALSE ;
  	}
@@ -1719,7 +1719,7 @@ gboolean gl_read_gamess_file_geomi(gchar *FileName,gint num)
 
  	if(fd ==NULL)
  	{
-  		Message("Sorry\nI can not open this file","Error",TRUE);
+  		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
  		g_free(t);
  		for(i=0;i<5;i++) g_free(AtomCoord[i]);
   		return FALSE;
@@ -1728,13 +1728,13 @@ gboolean gl_read_gamess_file_geomi(gchar *FileName,gint num)
   	Dipole.def = FALSE;
 	free_data_all();
 	tmp = get_name_file(FileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Gamess");
+	set_status_label_info(_("File type"),"Gamess");
  	numgeom =1;
  	do 
  	{
-		set_status_label_info("Geometry","Reading");
+		set_status_label_info(_("Geometry"),_("Reading"));
  		OK=FALSE;
  		while(!feof(fd))
 		{
@@ -1759,13 +1759,13 @@ gboolean gl_read_gamess_file_geomi(gchar *FileName,gint num)
         	}
  		if(!OK && (numgeom == 1) )
 		{
-  			Message("Sorry\nI can not read geometry from this file","Error",TRUE);
+  			Message(_("Sorry\nI can not read geometry from this file"),_("Error"),TRUE);
  			fclose(fd);
  			g_free(t);
  			for(i=0;i<5;i++) g_free(AtomCoord[i]);
-			set_status_label_info("File Name","Nothing");
-			set_status_label_info("File Type","Nothing");
-			set_status_label_info("Geometry","Nothing");
+			set_status_label_info(_("File name"),_("Nothing"));
+			set_status_label_info(_("File type"),_("Nothing"));
+			set_status_label_info(_("Geometry"),_("Nothing"));
 			return FALSE;
     		}
  		if(!OK)break;
@@ -1833,7 +1833,7 @@ gboolean gl_read_gamess_file_geomi(gchar *FileName,gint num)
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
 	return TRUE;
 }
 /********************************************************************************/
@@ -1909,9 +1909,9 @@ gboolean gl_read_mpqc_file_geomi(gchar *fileName,gint numGeometry)
 
 	free_data_all();
 	tmp = get_name_file(fileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","MPQC");
+	set_status_label_info(_("File type"),"MPQC");
 
 	t=g_malloc(taille);
 
@@ -1920,7 +1920,7 @@ gboolean gl_read_mpqc_file_geomi(gchar *fileName,gint numGeometry)
 	{
 		gboolean unitOfOutAng = FALSE;
 		OK=FALSE;
-		set_status_label_info("Geometry","Reading");
+		set_status_label_info(_("Geometry"),_("Reading"));
 		while(!feof(fd))
 		{
 			if(!fgets(t,taille,fd)) break;
@@ -1954,8 +1954,8 @@ gboolean gl_read_mpqc_file_geomi(gchar *fileName,gint numGeometry)
 		if(!OK && (numGeom == 0) )
 		{
 	 		g_free(t);
-	 		t = g_strdup_printf("Sorry\nI can read Geometry from %s  file ",fileName);
-	 		Message(t," Error ",TRUE);
+	 		t = g_strdup_printf(_("Sorry\nI can read Geometry from %s  file "),fileName);
+	 		Message(t,_("Error"),TRUE);
 	 		g_free(t);
 			for(i=0;i<5;i++) g_free(AtomCoord[i]);
 	 		return FALSE;
@@ -1972,8 +1972,8 @@ gboolean gl_read_mpqc_file_geomi(gchar *fileName,gint numGeometry)
 		if(!OK)
 		{
 	 		g_free(t);
-	 		t = g_strdup_printf("Sorry\nI can read Geometry from %s  file ",fileName);
-	 		Message(t," Error ",TRUE);
+	 		t = g_strdup_printf(_("Sorry\nI can read Geometry from %s  file "),fileName);
+	 		Message(t,_("Error"),TRUE);
 	 		g_free(t);
 			for(i=0;i<5;i++) g_free(AtomCoord[i]);
 	 		return FALSE;
@@ -2030,7 +2030,7 @@ gboolean gl_read_mpqc_file_geomi(gchar *fileName,gint numGeometry)
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
 	RebuildGeom = TRUE;
 	return TRUE;
 }
@@ -2052,7 +2052,7 @@ gboolean gl_read_molcas_file_geomi(gchar *FileName,gint num)
   
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No file slected","Error",TRUE);
+		Message(_("Sorry\n No file selected"),_("Error"),TRUE);
     		return FALSE ;
  	}
 
@@ -2061,7 +2061,7 @@ gboolean gl_read_molcas_file_geomi(gchar *FileName,gint num)
  	file = FOpen(FileName, "rb");
  	if(file ==NULL)
  	{
-  		Message("Sorry\nI can not open this file","Error",TRUE);
+  		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
  		g_free(t);
   		return FALSE;
  	}
@@ -2070,13 +2070,13 @@ gboolean gl_read_molcas_file_geomi(gchar *FileName,gint num)
 
 	free_data_all();
 	tmp = get_name_file(FileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Molcas");
+	set_status_label_info(_("File type"),"Molcas");
  	numgeom =1;
  	do 
  	{
-		set_status_label_info("Geometry","Reading");
+		set_status_label_info(_("Geometry"),_("Reading"));
  		OK=FALSE;
  		while(!feof(file))
 		{
@@ -2093,13 +2093,13 @@ gboolean gl_read_molcas_file_geomi(gchar *FileName,gint num)
         	}
  		if(!OK && (numgeom == 1) )
 		{
-  			Message("Sorry\nI can not read geometry in this file","Error",TRUE);
+  			Message(_("Sorry\nI can not read geometry in this file"),_("Error"),TRUE);
  			fclose(file);
  			g_free(t);
  			for(i=0;i<5;i++) g_free(AtomCoord[i]);
-			set_status_label_info("File Name","Nothing");
-			set_status_label_info("File Type","Nothing");
-			set_status_label_info("Geometry","Nothing");
+			set_status_label_info(_("File name"),_("Nothing"));
+			set_status_label_info(_("File type"),_("Nothing"));
+			set_status_label_info(_("Geometry"),_("Nothing"));
 			return FALSE;
     		}
  		if(!OK)break;
@@ -2154,7 +2154,7 @@ gboolean gl_read_molcas_file_geomi(gchar *FileName,gint num)
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
 	return TRUE;
 }
 /********************************************************************************/
@@ -2179,7 +2179,7 @@ gboolean gl_read_molpro_file_geomi(gchar *FileName,gint num)
   
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No file slected","Error",TRUE);
+		Message(_("Sorry\n No file selected"),_("Error"),TRUE);
  		for(i=0;i<5;i++)
 			g_free(AtomCoord[i]);
     		return FALSE ;
@@ -2189,7 +2189,7 @@ gboolean gl_read_molpro_file_geomi(gchar *FileName,gint num)
  	fd = FOpen(FileName, "rb");
  	if(fd ==NULL)
  	{
-  		Message("Sorry\nI can not open this file","Error",TRUE);
+  		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
  		g_free(t);
  		for(i=0;i<5;i++)
 			g_free(AtomCoord[i]);
@@ -2198,13 +2198,13 @@ gboolean gl_read_molpro_file_geomi(gchar *FileName,gint num)
 
 	free_data_all();
 	tmp = get_name_file(FileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Molpro");
+	set_status_label_info(_("File type"),"Molpro");
  	numgeom =1;
  	do 
  	{
-		set_status_label_info("Geometry","Reading");
+		set_status_label_info(_("Geometry"),_("Reading"));
  		OK=FALSE;
  		while(!feof(fd))
 		{
@@ -2221,14 +2221,14 @@ gboolean gl_read_molpro_file_geomi(gchar *FileName,gint num)
         	}
  		if(!OK && (numgeom == 1) )
 		{
-  			Message("Sorry\nI can not read geometry in this file","Error",TRUE);
+  			Message(_("Sorry\nI can not read geometry in this file"),_("Error"),TRUE);
  			fclose(fd);
  			g_free(t);
  			for(i=0;i<5;i++)
 				g_free(AtomCoord[i]);
-			set_status_label_info("File Name","Nothing");
-			set_status_label_info("File Type","Nothing");
-			set_status_label_info("Geometry","Nothing");
+			set_status_label_info(_("File name"),_("Nothing"));
+			set_status_label_info(_("File type"),_("Nothing"));
+			set_status_label_info(_("Geometry"),_("Nothing"));
 			return FALSE;
     	}
  		if(!OK)break;
@@ -2285,7 +2285,7 @@ gboolean gl_read_molpro_file_geomi(gchar *FileName,gint num)
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
 	return TRUE;
 }
 
@@ -2315,16 +2315,16 @@ gboolean gl_read_gaussn_file_geomi_str(gchar *FileName,gint num,gchar* str)
 
 	free_data_all();
 	tmp = get_name_file(FileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Gaussian");
+	set_status_label_info(_("File type"),"Gaussian");
 
 	t=g_malloc(taille);
 
 	numgeom =1;
  	do 
  	{
-		set_status_label_info("Geometry","Reading");
+		set_status_label_info(_("Geometry"),_("Reading"));
  		OK=FALSE;
  		while(!feof(fd))
 		{
@@ -2354,9 +2354,9 @@ gboolean gl_read_gaussn_file_geomi_str(gchar *FileName,gint num,gchar* str)
  			g_free(t);
  			for(i=0;i<5;i++)
 				g_free(AtomCoord[i]);
-			set_status_label_info("File Name","Nothing");
-			set_status_label_info("File Type","Nothing");
-			set_status_label_info("Geometry","Nothing");
+			set_status_label_info(_("File name"),_("Nothing"));
+			set_status_label_info(_("File type"),_("Nothing"));
+			set_status_label_info(_("Geometry"),_("Nothing"));
 			return FALSE;
 		}
  		if(!OK)break;
@@ -2424,7 +2424,7 @@ gboolean gl_read_gaussn_file_geomi_str(gchar *FileName,gint num,gchar* str)
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
 	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
@@ -2439,13 +2439,13 @@ gboolean gl_read_gaussn_file_geomi(gchar *FileName,gint num)
 	FILE* fd;
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No file slected","Error",TRUE);
+		Message(_("Sorry\n No file selected"),_("Error"),TRUE);
     		return FALSE;
  	}
  	fd = FOpen(FileName, "rb");
  	if(fd ==NULL)
  	{
-  		Message("Sorry\nI can not open this file","Error",TRUE);
+  		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
   		return FALSE;
  	}
 	fclose(fd);
@@ -2458,11 +2458,134 @@ gboolean gl_read_gaussn_file_geomi(gchar *FileName,gint num)
 	/* for calculation with nosym option */
 	if(!gl_read_gaussn_file_geomi_str(FileName,num,"Z-Matrix orientation:"))
 	{
-  		Message("Sorry\nI can not read geometry in this file","Error",TRUE);
+  		Message(_("Sorry\nI can not read geometry in this file"),_("Error"),TRUE);
 		return FALSE;
 	}
 	return TRUE;
 
+}
+/********************************************************************************/
+gboolean gl_read_fchk_gaussn_file_geom(gchar *fileName)
+{
+ 	FILE *file;
+	gint i,j;
+	gint n;
+	gchar* tmp = NULL;
+	gdouble* coords = NULL;
+	gdouble* charges = NULL;
+	gdouble* dipole = NULL;
+	gint* z = NULL;
+	gdouble* zn = NULL;
+
+	file = FOpen(fileName, "rb");
+	if(file ==NULL)
+	{
+  		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
+  		return FALSE;
+	}
+
+	j = get_one_int_from_fchk_gaussian_file(file,"Number of atoms ");
+	if(j<1)
+	{
+  		Message(_("Sorry\nI can not the number of atoms from this file"),_("Error"),TRUE);
+  		return FALSE;
+	}
+	z = get_array_int_from_fchk_gaussian_file(file, "Atomic numbers ", &n);
+	if(n!=j)
+	{
+  		Message(_("Sorry\nI can not read the atomic numbers from this file"),_("Error"),TRUE);
+  		return FALSE;
+	}
+	coords = get_array_real_from_fchk_gaussian_file(file, "Current cartesian coordinates  ", &n);
+	if(n!=3*j)
+	{
+  		Message(_("Sorry\nI can not read the current cartesian coordinates from this file"),_("Error"),TRUE);
+  		return FALSE;
+	}
+	free_data_all();
+	tmp = get_name_file(fileName);
+	set_status_label_info(_("File name"),tmp);
+	g_free(tmp);
+	set_status_label_info(_("File type"),"Gaussian fchk");
+	set_status_label_info(_("Geometry"),_("Reading"));
+	rewind(file);
+	Ncenters = j;
+
+    	GeomOrb=g_malloc(Ncenters*sizeof(TypeGeomOrb));
+	for(j=0;j<Ncenters;j++)
+	{
+    		GeomOrb[j].Symb=g_strdup(symb_atom_get(z[j]));
+		for(i=0;i<3;i++) GeomOrb[j].C[i]=coords[j*3+i];
+		GeomOrb[j].Prop = prop_atom_get(GeomOrb[j].Symb);
+		GeomOrb[j].partialCharge = 0.0;
+		GeomOrb[j].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[j].Symb);
+	}
+	if(z) g_free(z);
+	if(coords) g_free(coords);
+	z = NULL;
+	coords = NULL;
+	rewind(file);
+	charges = get_array_real_from_fchk_gaussian_file(file, "NPA Charges ", &n);
+	if(n==Ncenters && charges)
+	{
+		for(j=0;j<Ncenters;j++)
+    			GeomOrb[j].partialCharge = charges[j];
+
+	}
+	else
+	{
+		rewind(file);
+		charges = get_array_real_from_fchk_gaussian_file(file, "ESP Charges  ", &n);
+		if(n==Ncenters && charges) 
+		{
+			for(j=0;j<Ncenters;j++)
+    				GeomOrb[j].partialCharge = charges[j];
+		}
+		else
+		{
+			rewind(file);
+			charges = get_array_real_from_fchk_gaussian_file(file, "Mulliken Charges  ", &n);
+			if(n==Ncenters && charges) 
+			{
+				for(j=0;j<Ncenters;j++)
+    					GeomOrb[j].partialCharge = charges[j];
+			}
+			if(charges) g_free(charges);
+		}
+	}
+	rewind(file);
+	zn = get_array_real_from_fchk_gaussian_file(file, "Nuclear charges ", &n);
+	if(zn && n== j)
+	{
+		for(j=0;j<Ncenters;j++)
+    			GeomOrb[j].nuclearCharge = zn[j];
+	}
+	if(zn)g_free(zn);
+	if(n!=j)
+	{
+  		Message(_("Sorry\nI can not read the atomic numbers from this file"),_("Error"),TRUE);
+  		return FALSE;
+	}
+	dipole = get_array_real_from_fchk_gaussian_file(file, "Dipole Moment  ", &n);
+	Dipole.def = FALSE;
+	if(n==3)
+	{
+		for(i=0;i<3;i++) Dipole.Value[i] = dipole[i] / AUTODEB;
+		Dipole.def = TRUE;
+
+	}
+	if(dipole) g_free(dipole);
+ 	fclose(file);
+ 	if(Ncenters == 0 ) g_free(GeomOrb);
+ 	else DefineType();
+	buildBondsOrb();
+	reset_grid_limits();
+	init_atomic_orbitals();
+	set_status_label_info(_("Geometry"),_("Ok"));
+	RebuildGeom = TRUE;
+	if(this_is_a_new_geometry()) free_objects_all();
+	glarea_rafresh(GLArea);
+	return TRUE;
 }
 /********************************************************************************/
 void gl_get_esp_charges_from_mopac_output_file(FILE* fd)
@@ -2558,17 +2681,17 @@ gboolean gl_read_mopac_output_file_geomi(gchar *fileName, gint numgeometry)
 	if(fd ==NULL)
 	{
 	 	g_free(t);
-	 	t = g_strdup_printf("Sorry\nI can not open %s  file ",fileName);
-	 	Message(t," Error ",TRUE);
+	 	t = g_strdup_printf(_("Sorry\nI can not open %s  file "),fileName);
+	 	Message(t,_("Error"),TRUE);
 	 	g_free(t);
 	 	return FALSE;
 	}
 	free_data_all();
 	tmp = get_name_file(fileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Mopac");
-	set_status_label_info("Geometry","Reading");
+	set_status_label_info(_("File type"),"Mopac");
+	set_status_label_info(_("Geometry"),_("Reading"));
 	numgeom =0;
 	OK=FALSE;
 	 while(!feof(fd))
@@ -2599,12 +2722,12 @@ gboolean gl_read_mopac_output_file_geomi(gchar *fileName, gint numgeometry)
 	 if(numgeom == 0)
 	 {
 		g_free(t);
-		t = g_strdup_printf("Sorry\nI can not read geometry in	%s file ",fileName);
-		Message(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\nI can not read geometry in %s file "),fileName);
+		Message(t,_("Error"),TRUE);
 		g_free(t);
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Geometry","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Geometry"),_("Nothing"));
 		return FALSE;
 	  }
 	Dipole.def = FALSE;
@@ -2659,7 +2782,7 @@ gboolean gl_read_mopac_output_file_geomi(gchar *fileName, gint numgeometry)
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
 	g_free(t);
 	for(i=0;i<5;i++) g_free(AtomCoord[i]);
 	return TRUE;
@@ -2693,8 +2816,8 @@ gboolean gl_read_mopac_aux_file_geomi(gchar *fileName, gint numgeometry)
 	if(fd ==NULL)
 	{
 	 	g_free(t);
-	 	t = g_strdup_printf("Sorry\nI can not open %s  file ",fileName);
-	 	Message(t," Error ",TRUE);
+	 	t = g_strdup_printf(_("Sorry\nI can not open %s file "),fileName);
+	 	Message(t,_("Error"),TRUE);
 	 	g_free(t);
 	 	return FALSE;
 	}
@@ -2704,8 +2827,8 @@ gboolean gl_read_mopac_aux_file_geomi(gchar *fileName, gint numgeometry)
 	if(!OK) 
 	{
 	 	g_free(t);
-	 	t = g_strdup_printf("Sorry\nI can not read the atom symbols in %s  file ",fileName);
-	 	Message(t," Error ",TRUE);
+	 	t = g_strdup_printf(_("Sorry\nI can not read the atom symbols in %s file "),fileName);
+	 	Message(t,_("Error"),TRUE);
 	 	g_free(t);
 		fclose(fd);
 	 	return FALSE;
@@ -2717,10 +2840,10 @@ gboolean gl_read_mopac_aux_file_geomi(gchar *fileName, gint numgeometry)
 	numgeom =0;
 	free_data_all();
 	tmp = get_name_file(fileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Mopac");
-	set_status_label_info("Geometry","Reading");
+	set_status_label_info(_("File type"),"Mopac");
+	set_status_label_info(_("Geometry"),_("Reading"));
 	 while(!feof(fd))
 	 {
 		if(!fgets(t,taille,fd))break;
@@ -2747,12 +2870,12 @@ gboolean gl_read_mopac_aux_file_geomi(gchar *fileName, gint numgeometry)
 	 {
 		free_one_string_table(elements, nElements);
 		g_free(t);
-		t = g_strdup_printf("Sorry\nI can not read geometry in	%s file ",fileName);
-		Message(t," Error ",TRUE);
+		t = g_strdup_printf(_("Sorry\nI can not read geometry in %s file "),fileName);
+		Message(t,_("Error"),TRUE);
 		g_free(t);
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Geometry","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Geometry"),_("Nothing"));
 		fclose(fd);
 		return FALSE;
 	  }
@@ -2820,7 +2943,7 @@ gboolean gl_read_mopac_aux_file_geomi(gchar *fileName, gint numgeometry)
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
 	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
@@ -2901,14 +3024,14 @@ gboolean gl_read_orca_file_geomi(gchar *FileName,gint num)
 
 	free_data_all();
 	tmp = get_name_file(FileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Orca");
+	set_status_label_info(_("File type"),"Orca");
 
 	t=g_malloc(taille);
 
 	numgeom =0;
-	set_status_label_info("Geometry","Reading");
+	set_status_label_info(_("Geometry"),_("Reading"));
 	OK=FALSE;
 
 	while(!feof(fd))
@@ -2941,9 +3064,9 @@ gboolean gl_read_orca_file_geomi(gchar *FileName,gint num)
  		fclose(fd);
  		g_free(t);
  		for(i=0;i<5;i++) g_free(AtomCoord[i]);
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Geometry","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Geometry"),_("Nothing"));
 		return FALSE;
 	}
 	j=-1;
@@ -2998,7 +3121,7 @@ gboolean gl_read_orca_file_geomi(gchar *FileName,gint num)
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
 	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
@@ -3084,16 +3207,16 @@ gboolean gl_read_qchem_file_geomi(gchar *FileName,gint num)
 
 	free_data_all();
 	tmp = get_name_file(FileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Q-Chem");
+	set_status_label_info(_("File type"),"Q-Chem");
 
 	t=g_malloc(taille);
 
 	numgeom =1;
  	do 
  	{
-		set_status_label_info("Geometry","Reading");
+		set_status_label_info(_("Geometry"),_("Reading"));
  		OK=FALSE;
  		while(!feof(fd))
 		{
@@ -3116,9 +3239,9 @@ gboolean gl_read_qchem_file_geomi(gchar *FileName,gint num)
  			fclose(fd);
  			g_free(t);
  			for(i=0;i<5;i++) g_free(AtomCoord[i]);
-			set_status_label_info("File Name","Nothing");
-			set_status_label_info("File Type","Nothing");
-			set_status_label_info("Geometry","Nothing");
+			set_status_label_info(_("File name"),_("Nothing"));
+			set_status_label_info(_("File type"),_("Nothing"));
+			set_status_label_info(_("Geometry"),_("Nothing"));
 			return FALSE;
 		}
  		if(!OK)break;
@@ -3175,7 +3298,7 @@ gboolean gl_read_qchem_file_geomi(gchar *FileName,gint num)
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
 	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
@@ -3270,6 +3393,25 @@ void gl_read_last_gauss_file(GabeditFileChooser *SelecFile, gint response_id)
 	RebuildGeom = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
+}
+/********************************************************/
+gboolean gl_read_fchk_gauss_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+ 	gchar *FileName;
+	if(response_id != GTK_RESPONSE_OK) return FALSE;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+	gtk_widget_hide(GTK_WIDGET(SelecFile));
+	while( gtk_events_pending() ) gtk_main_iteration();
+	add_objects_for_new_grid();
+ 	if(gl_read_fchk_gaussn_file_geom(FileName))
+	{
+		RebuildGeom = TRUE;
+		if(this_is_a_new_geometry()) free_objects_all();
+		glarea_rafresh(GLArea);
+		return TRUE;
+	}
+	glarea_rafresh(GLArea);
+	return FALSE;
 }
 /********************************************************/
 void gl_read_first_molcas_file(GabeditFileChooser *SelecFile, gint response_id)
@@ -3504,3 +3646,72 @@ void gl_read_gabedit_file(GabeditFileChooser *SelecFile, gint response_id)
  	gl_read_gabedit_file_geom(FileName);
 } 
 /*******************************************************/
+gboolean gl_read_geom_any_file(gchar* fileName)
+{
+	GabEditTypeFile fileType = get_type_file(fileName);
+	gboolean Ok = FALSE;
+	if(fileType == GABEDIT_TYPEFILE_XYZ) Ok = gl_read_xyz_file(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_PDB) Ok =  gl_read_pdb_file(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_HIN) Ok = gl_read_hin_file(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_DALTON) Ok = gl_read_dalton_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_GAMESS) Ok = gl_read_gamess_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_FIREFLY) Ok = gl_read_gamess_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_GAUSSIAN) Ok = gl_read_gaussn_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_MOLCAS) Ok = gl_read_molcas_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_MOLPRO) Ok = gl_read_molpro_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_MOPAC) Ok = gl_read_mopac_output_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_MOPAC_AUX) Ok = gl_read_mopac_aux_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_MPQC) Ok = gl_read_mpqc_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_ORCA) Ok = gl_read_orca_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_QCHEM) Ok = gl_read_qchem_file_geomi(fileName,-1);
+	else if(fileType == GABEDIT_TYPEFILE_GABEDIT) Ok = gl_read_gabedit_file_geom(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_MOLDEN) Ok = gl_read_molden_file_geom(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_GAUSSIAN_FCHK) Ok = gl_read_fchk_gaussn_file_geom(fileName);
+	else if(
+		fileType ==  GABEDIT_TYPEFILE_ORCAINPUT||
+		fileType ==  GABEDIT_TYPEFILE_FIREFLYINPUT||
+		fileType ==  GABEDIT_TYPEFILE_GAMESSINPUT||
+		fileType ==  GABEDIT_TYPEFILE_QCHEMINPUT||
+		fileType ==  GABEDIT_TYPEFILE_MOPACINPUT||
+		fileType ==  GABEDIT_TYPEFILE_MPQCINPUT||
+		fileType ==  GABEDIT_TYPEFILE_GAUSSIANINPUT||
+		fileType ==  GABEDIT_TYPEFILE_MOLCASINPUT||
+		fileType ==  GABEDIT_TYPEFILE_MOLPROINPUT
+	)
+	{
+		Message(
+			_(
+			"Sorry, I cannot read this file here\n"
+			"You can read it from the 'Draw Geometry' window, save it in hin and read it from this window 'Display window'\n"
+			)
+			,_("Error"),TRUE);
+		return FALSE;
+	}
+	else if(fileType == GABEDIT_TYPEFILE_UNKNOWN) 
+	{
+		Message(
+			_(
+			"Sorry, I cannot find the type of your file\n"
+			" Try to read it using openbabel\n"
+			)
+			,_("Error"),TRUE);
+		return FALSE;
+	}
+	RebuildGeom = TRUE;
+	if(this_is_a_new_geometry()) free_objects_all();
+	glarea_rafresh(GLArea);
+	return Ok;
+}
+/*************************************************************************/
+void gl_read_geom_any_file_sel(GabeditFileChooser *selecFile, gint response_id)
+{
+	gchar *fileName;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(selecFile);
+	gtk_widget_hide(GTK_WIDGET(selecFile));
+	while( gtk_events_pending() ) gtk_main_iteration();
+ 
+	add_objects_for_new_grid();
+ 	gl_read_geom_any_file(fileName);
+}

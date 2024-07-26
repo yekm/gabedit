@@ -1,6 +1,6 @@
 /* GLArea.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -101,6 +101,7 @@ static gboolean animatePlanesMapped = FALSE;
 /*********************************************************************************************/
 static gdouble scaleBall = 1.0;
 static gdouble scaleStick = 1.0;
+static gboolean showOneSurface = TRUE;
 
 /*********************************************************************************************/
 static V4d BackColor[7] =
@@ -124,6 +125,11 @@ gdouble getScaleStick()
 	return scaleStick;
 }
 /*********************************************************************************************/
+gboolean getShowOneSurface()
+{
+	return showOneSurface;
+}
+/*********************************************************************************************/
 void setScaleBall(gdouble a)
 {
 	scaleBall = fabs(a);
@@ -132,6 +138,11 @@ void setScaleBall(gdouble a)
 void setScaleStick(gdouble a)
 {
 	scaleStick = fabs(a);
+}
+/*********************************************************************************************/
+void setShowOneSurface(gboolean a)
+{
+	showOneSurface = a;
 }
 /*********************************************************************************************/
 gint getOptCol()
@@ -641,7 +652,7 @@ void add_objects_for_new_grid()
 	reset_old_geometry();
 	add_void_maps();
 	add_void_contours();
-	add_surface();
+	if(!showOneSurface || numberOfSurfaces<1 ) add_surface();
 }
 /********************************************************/
 void Define_Iso(gdouble isovalue)
@@ -652,7 +663,8 @@ void Define_Iso(gdouble isovalue)
 	/* printf("DefineIso newSUrface = %d\n",newSurface);*/
 	if(grid)
 	{
-		if(newSurface || numberOfSurfaces<1 ) add_surface();
+		if(newSurface || numberOfSurfaces<1 ) 
+			if(!showOneSurface || numberOfSurfaces<1 ) add_surface();
 		newSurface = FALSE;
 		isopositive=define_iso_surface(grid,isovalue, grid->mapped );
 		if(fabs(isovalue)>1e-13)
@@ -673,7 +685,7 @@ void Define_Grid()
 	grid = define_grid(NumPoints,limits);
 	if(grid)
 	{
-		add_surface();
+		if(!showOneSurface || numberOfSurfaces<1 ) add_surface();
 		free_iso_all();
 		limits.MinMax[0][3] = grid->limits.MinMax[0][3];
 		limits.MinMax[1][3] = grid->limits.MinMax[1][3];
@@ -1130,6 +1142,7 @@ gint redraw(GtkWidget *widget, gpointer data)
 	glFlush();
 	gtk_gl_area_swap_buffers(GTK_GL_AREA(widget));
 	createImagesFiles();
+	/* gtk_widget_queue_draw(PrincipalWindow);*/
 
 	return TRUE;
 }

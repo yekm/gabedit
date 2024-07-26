@@ -1,6 +1,6 @@
 /* Windows.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -25,33 +25,20 @@ DEALINGS IN THE SOFTWARE.
 #include "Global.h"
 #include "../Utils/Utils.h"
 #include "../Common/MenuToolBar.h"
+#include <gdk/gdk.h>
 
 /********************************************************************************/
 void create_frame_windows(GtkWidget *box)
 {
   GtkWidget *frame;
   GtkWidget *hbox;
-  frame = gtk_frame_new ("Windows");
+  frame = gtk_frame_new (_("Windows"));
   g_object_ref (frame);
   g_object_set_data_full (G_OBJECT (Fenetre), "frame", frame, (GDestroyNotify) g_object_unref);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
   gtk_box_pack_start (GTK_BOX (box), frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
-#ifdef G_OS_WIN32
-  {
-	gint height;
-  	PangoFontDescription *font_desc = pango_font_description_from_string ("terminal 12");
-	GdkFont* font = NULL;
-	if(font_desc) font = gdk_font_from_description (font_desc);
-	if(font)
-	{
-		height = (gint)( 2.5*gdk_string_height (font,"WINDOWS") );
-		gtk_widget_set_size_request(GTK_WIDGET(frame),-1,height);
-	}
-  }
-#else
   gtk_widget_set_size_request(GTK_WIDGET(frame),-1,(gint)(ScreenHeight*0.05));
-#endif
 /*  gtk_widget_set_size_request(GTK_WIDGET(frame),-1,height);*/
 /*  Debug("height = %d\n",height);*/
   gtk_widget_show (frame);

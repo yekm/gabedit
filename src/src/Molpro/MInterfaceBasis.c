@@ -1,6 +1,6 @@
 /* MInterfaceBasis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -132,9 +132,9 @@ gint progress( gpointer d )
     gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (data), new_val);
 
     if(originbasis == 0)
-    	t = g_strdup_printf(" Get Basis using libmol : %.0f%%",new_val*100);
+    	t = g_strdup_printf(_(" Get Basis using libmol : %.0f%%"),new_val*100);
     else
-    	t = g_strdup_printf(" Get Basis from gabedit basis file : %.0f%%",new_val*100);
+    	t = g_strdup_printf(_(" Get Basis from gabedit basis file : %.0f%%"),new_val*100);
 
     gtk_label_set_text( GTK_LABEL(LabelInfo),t);
     g_free(t);
@@ -525,7 +525,7 @@ GtkWidget *CreateListeBase(char * NomFichier)
   	}
    	else
    	{
-     		temp = g_strdup_printf("    Basis for %s ",OrbSel);
+     		temp = g_strdup_printf(_("    Basis for %s "),OrbSel);
      		if(strstr(OrbSel,"s") || strstr(OrbSel,"p")|| strstr(OrbSel,"d"))
 			nhbox = 2;
      		else
@@ -752,14 +752,14 @@ gchar *CreateOrbitalTypeAll(gboolean fromfile)
 	 if(!terr)
 	 {
     		if(originbasis == 0)
-	 		terr = g_strdup(" Sorry,\nNo basis available for this atom,\nOr libmol is not installed in your system.");
+	 		terr = g_strdup(_(" Sorry,\nNo basis available for this atom,\nOr libmol is not installed in your system."));
 		else
-	 		terr = g_strdup(" Sorry,\nNo basis available for this atom,\nOr gabedit molpro basis file is corrupted.");
+	 		terr = g_strdup(_(" Sorry,\nNo basis available for this atom,\nOr gabedit molpro basis file is corrupted."));
 	  }
          else
 	 {
 		dump = terr;
-	 	terr = g_strdup_printf("Error : %s",dump);
+	 	terr = g_strdup_printf(_("Error : %s"),dump);
 		g_free(dump);
 	 }
   }
@@ -847,7 +847,7 @@ static void DeselectionAnAtom()
   		BoiteHP[i] = NULL;
     	}
 
-    	gtk_label_set_text( GTK_LABEL(LabelInfo),"Please select a atom");
+    	gtk_label_set_text( GTK_LABEL(LabelInfo),_("Please select a atom"));
 
 }
 /********************************************************************************/
@@ -908,7 +908,7 @@ static void selectionAnAtom(GtkTreeSelection *selection, gpointer data)
 	}
 
   	if(terr) gtk_label_set_text( GTK_LABEL(LabelInfo),terr);
-  	else gtk_label_set_text( GTK_LABEL(LabelInfo),"Please select your basis");
+  	else gtk_label_set_text( GTK_LABEL(LabelInfo),_("Please select your basis"));
 
 }
 /********************************************************************************/
@@ -931,28 +931,25 @@ static void DialogueDelete(GtkWidget *w)
 
   if (NRatoms <1)
   {
-    Message(" No Atom to delete !"," Warning ",TRUE);
+    Message(_(" No Atom to delete !"),_("Warning"),TRUE);
     return ;
   }
     if (atoi(pathSelectedAtom) <0)
   {
-    Message(" Please Select Your Atom to delete!"," Warning ",TRUE);
+    Message(_(" Please Select Your Atom to delete!"),_("Warning"),TRUE);
     return ;
   }
 
 
   Dialogue = gtk_dialog_new();
-  gtk_window_set_title(GTK_WINDOW(Dialogue),"Delete Atom");
+  gtk_window_set_title(GTK_WINDOW(Dialogue),_("Delete Atom"));
   gtk_window_set_modal (GTK_WINDOW (Dialogue), TRUE);
   gtk_window_set_position(GTK_WINDOW(Dialogue),GTK_WIN_POS_CENTER);
 
-  Label = gtk_label_new("Are you sure to delete \nthe selected atom? \n");
+  Label = gtk_label_new(_("Are you sure to delete \nthe selected atom? \n"));
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
-  g_object_ref (frame);
-  g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
    gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame,TRUE,TRUE,0);
 
@@ -1027,26 +1024,21 @@ static void DialogueAdd(GtkWidget *w,gpointer data)
 
   FenetreTable = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_modal(GTK_WINDOW(FenetreTable),TRUE);
-  gtk_window_set_title(GTK_WINDOW(FenetreTable),"Select your atom");
+  gtk_window_set_title(GTK_WINDOW(FenetreTable),_("Select your atom"));
   gtk_window_set_position(GTK_WINDOW(FenetreTable),GTK_WIN_POS_CENTER);
   gtk_window_set_transient_for(GTK_WINDOW(FenetreTable),GTK_WINDOW(Wins));
   gtk_window_set_modal (GTK_WINDOW (FenetreTable), TRUE);
   gtk_window_set_default_size (GTK_WINDOW(FenetreTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
 
-  add_child(Wins,FenetreTable,gtk_widget_destroy," Selec. atom ");
+  add_child(Wins,FenetreTable,gtk_widget_destroy,_(" Selec. atom "));
   g_signal_connect(G_OBJECT(FenetreTable),"delete_event",(GCallback)delete_child,NULL);
 
   button_style = gtk_widget_get_style(FenetreTable); 
 
   vbox = gtk_vbox_new (FALSE, 5);
-  g_object_ref (vbox);
-  g_object_set_data_full(G_OBJECT (FenetreTable), "vbox", vbox,(GDestroyNotify) g_object_unref);
   gtk_container_add(GTK_CONTAINER(FenetreTable),vbox);
   
   hbox = gtk_hbox_new (FALSE, 0);
-  g_object_ref (hbox);
-  g_object_set_data_full(G_OBJECT (FenetreTable), "hbox", hbox,
-                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (hbox);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, TRUE, TRUE, 0);
 
@@ -1054,9 +1046,6 @@ static void DialogueAdd(GtkWidget *w,gpointer data)
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
-  g_object_ref (frame);
-  g_object_set_data_full(G_OBJECT (hbox), "frame",
-	  frame,(GDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
   gtk_container_add(GTK_CONTAINER(hbox),frame);  
   gtk_widget_show (frame);
@@ -1085,7 +1074,7 @@ static void DialogueAdd(GtkWidget *w,gpointer data)
 
   hbox = create_hbox(vbox);
   gtk_widget_realize(FenetreTable);
-  button = create_button(FenetreTable,"CANCEL");
+  button = create_button(FenetreTable,_("Cancel"));
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child,GTK_OBJECT(FenetreTable));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
@@ -1102,13 +1091,10 @@ void ButtonBar(GtkWidget *BoiteV)
   GtkWidget *button;
 
   hbox = gtk_hbox_new (FALSE, 0);
-  g_object_ref (hbox);
-  g_object_set_data_full(G_OBJECT (BoiteV), "hbox", hbox,
-                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (hbox);
   gtk_box_pack_start (GTK_BOX (BoiteV), hbox, FALSE, FALSE, 5);
 
-  button = gtk_button_new_with_label (" New Atom ");
+  button = gtk_button_new_with_label (_(" New Atom "));
 
   g_signal_connect(G_OBJECT(button), "clicked",(GCallback)DialogueAdd,Wins);
  
@@ -1116,10 +1102,9 @@ void ButtonBar(GtkWidget *BoiteV)
   gtk_widget_show (button);
 
 
-  button = gtk_button_new_with_label (" Delete Atom ");
+  button = gtk_button_new_with_label (_(" Delete Atom "));
 
-  g_signal_connect(G_OBJECT(button), "clicked",
-                            (GCallback)DialogueDelete,NULL);
+  g_signal_connect(G_OBJECT(button), "clicked", (GCallback)DialogueDelete,NULL);
 
   gtk_box_pack_start (GTK_BOX(hbox), button, FALSE, FALSE, 5);
 
@@ -1136,7 +1121,7 @@ void AjoutePageBasis(GtkWidget *Win,GtkWidget *NoteBook,BaseS *base)
 	GtkWidget *Scr;
 	GtkWidget *window1;
 	GtkWidget *hbox3;
-	gchar *titleForAtoms[] = {"Atoms"};
+	gchar *titleForAtoms[] = {_("Atoms")};
 	gint i;
 
 	GtkListStore *store;
@@ -1153,8 +1138,8 @@ void AjoutePageBasis(GtkWidget *Win,GtkWidget *NoteBook,BaseS *base)
 	gtk_frame_set_shadow_type( GTK_FRAME(Frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_container_set_border_width(GTK_CONTAINER(Frame), 10);
 
-	LabelOnglet = gtk_label_new("Basis");
-	LabelMenu = gtk_label_new("Basis");
+	LabelOnglet = gtk_label_new(_("Basis"));
+	LabelMenu = gtk_label_new(_("Basis"));
 	gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook),Frame,LabelOnglet, LabelMenu);
 
 	BoiteV = gtk_vbox_new(FALSE, 0);
@@ -1175,7 +1160,7 @@ void AjoutePageBasis(GtkWidget *Win,GtkWidget *NoteBook,BaseS *base)
 	gtk_widget_show (hbox3);
 	gtk_box_pack_start (GTK_BOX (BoiteVP), hbox3, FALSE, FALSE, 0);
 
-	LabelInfo = gtk_label_new ("Please select a atom ");
+	LabelInfo = gtk_label_new (_("Please select a atom "));
 	gtk_widget_show (LabelInfo);
 	gtk_box_pack_start (GTK_BOX (BoiteVP), LabelInfo, FALSE, FALSE, 0);
 

@@ -1,6 +1,6 @@
 /* Status.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -152,58 +152,67 @@ gint progress_orb(gdouble scal,GabEditTypeProgressOrb  type,gboolean reset)
 		break;
 
 	case  GABEDIT_PROGORB_READGEOM: 
-		t = g_strdup_printf(" Geometry Reading : %.0f%%",new_val*100);
+		t = g_strdup_printf(_(" Geometry Reading : %.0f%%"),new_val*100);
 		break;
 	case  GABEDIT_PROGORB_SAVEGEOM: 
-		t = g_strdup_printf(" Recording of the geometry : %.0f%%",new_val*100);
+		t = g_strdup_printf(_(" Recording of the geometry : %.0f%%"),new_val*100);
 		break;
 	case  GABEDIT_PROGORB_COMPINTEG: 
-		t = g_strdup_printf(" Computing of an integral : %.0f%%",new_val*100);
+		t = g_strdup_printf(_(" Computing of an integral : %.0f%%"),new_val*100);
 		break;
 	case GABEDIT_PROGORB_COMPGRID :
 		if(TypeGrid == GABEDIT_TYPEGRID_EDENSITY)
-		t = g_strdup_printf(" Computing of the electronic density grid : %.0f%%",new_val*100);
+		t = g_strdup_printf(_(" Computing of the electronic density grid : %.0f%%"),new_val*100);
 		else
 		if(TypeGrid == GABEDIT_TYPEGRID_ORBITAL)
-		t = g_strdup_printf(" Grid coomputing for an orbital : %.0f%%",new_val*100);
+		t = g_strdup_printf(_(" Grid computing for an orbital : %.0f%%"),new_val*100);
 		else
 		if(TypeGrid == GABEDIT_TYPEGRID_ELFBECKE || TypeGrid == GABEDIT_TYPEGRID_ELFSAVIN)
-		t = g_strdup_printf(" Grid computing for the ELF : %.0f%%",new_val*100);
+		t = g_strdup_printf(_(" Grid computing for the ELF : %.0f%%"),new_val*100);
 		else
-		t = g_strdup_printf(" Grid Computing : %.0f%%",new_val*100);
+		if(TypeGrid == GABEDIT_TYPEGRID_FEDELECTROPHILIC)
+		t = g_strdup_printf(_(" Grid computing for the Electro. susceptibility : %.0f%%"),new_val*100);
+		else
+		if(TypeGrid == GABEDIT_TYPEGRID_FEDNUCLEOPHILIC)
+		t = g_strdup_printf(_(" Grid computing for the Nucleo. susceptibility : %.0f%%"),new_val*100);
+		else
+		if(TypeGrid == GABEDIT_TYPEGRID_FEDRADICAL)
+		t = g_strdup_printf(_(" Grid computing for the Radical. susceptibility : %.0f%%"),new_val*100);
+		else
+		t = g_strdup_printf(_(" Grid Computing : %.0f%%"),new_val*100);
 		break;
 	case GABEDIT_PROGORB_SCALEGRID :
-		t = g_strdup_printf(" Scale grid : %.0f%%",new_val*100);
+		t = g_strdup_printf(_(" Scale grid : %.0f%%"),new_val*100);
 		break;
 	case GABEDIT_PROGORB_SUBSGRID :
-		t = g_strdup_printf(" Substract grid : %.0f%%",new_val*100);
+		t = g_strdup_printf(_(" Substract grid : %.0f%%"),new_val*100);
 		break;
 	case GABEDIT_PROGORB_COMPISOSURFACE :
-		t = g_strdup_printf(" Isosurface Computing : %.0f%%",new_val*100);
+		t = g_strdup_printf(_(" Isosurface Computing : %.0f%%"),new_val*100);
 		break;
 	case GABEDIT_PROGORB_SAVEGRID :
-		t = g_strdup_printf(" Save Grid : %.0f%%",new_val*100);
+		t = g_strdup_printf(_(" Save Grid : %.0f%%"),new_val*100);
 		break;
 	case GABEDIT_PROGORB_READGRID :
-		t = g_strdup_printf(" Grid reading : %.0f%%",new_val*100);
+		t = g_strdup_printf(_(" Grid reading : %.0f%%"),new_val*100);
 		break;
 	case GABEDIT_PROGORB_MAPGRID :
-		t = g_strdup_printf(" Grid mapping : %.0f%%",new_val*100);
+		t = g_strdup_printf(_(" Grid mapping : %.0f%%"),new_val*100);
 		break;
 	case GABEDIT_PROGORB_COMPLAPGRID :
-		t = g_strdup_printf(" Computing of the laplacian of the grid : %.0f%%",new_val*100);
+		t = g_strdup_printf(_(" Computing of the laplacian of the grid : %.0f%%"),new_val*100);
 		break;
 	case GABEDIT_PROGORB_COMPGRADGRID :
-		t = g_strdup_printf(" Computing of the gradient of the grid : %.0f%%",new_val*100);
+		t = g_strdup_printf(_(" Computing of the gradient of the grid : %.0f%%"),new_val*100);
 		break;
 	case GABEDIT_PROGORB_SCANFILEGRID :
-		t = g_strdup_printf(" Scan file for get the total orbitals number .....");
+		t = g_strdup_printf(_(" Scan file for get the total orbitals number ....."));
 		break;
 	case GABEDIT_PROGORB_COMPMEPGRID :
-		t = g_strdup_printf(" Computing of the MEP : %.0f%%",new_val*100);
+		t = g_strdup_printf(_(" Computing of the MEP : %.0f%%"),new_val*100);
 		break;
 	case GABEDIT_PROGORB_COMPMULTIPOL :
-		t = g_strdup_printf(" Multipole Computing : %.0f%%",new_val*100);
+		t = g_strdup_printf(_(" Multipole Computing : %.0f%%"),new_val*100);
 		break;
 	}
 	if(type!= GABEDIT_PROGORB_SCANFILEGRID || (type==GABEDIT_PROGORB_SCANFILEGRID && scal==0))
@@ -233,8 +242,8 @@ gint progress_orb(gdouble scal,GabEditTypeProgressOrb  type,gboolean reset)
 /***********************************************************/
 void set_status_label_info(gchar* type,gchar* txt)
 {
-	gchar* tlabels[2][4]={{"File Name","File Type","Geometry","Mol. Orb."},
-			    {"At. Orb.","Grid","IsoSurface"," "}};
+	gchar* tlabels[2][4]={{_("File name"),_("File type"),_("Geometry"),_("Mol. Orb.")},
+			    {_("At. Orb."),_("Grid"),_("IsoSurface")," "}};
 	guint idStatus = 0;
 	gint i;
 	gint j;
@@ -288,7 +297,7 @@ GtkWidget *create_progress_bar_orb(GtkWidget *box)
 	gtk_progress_bar_set_discrete_blocks(GTK_PROGRESS_BAR(pbar),15);
 	*/
 
-  	button = gtk_button_new_with_label(" Cancel ");
+  	button = gtk_button_new_with_label(_("Cancel"));
 	gtk_table_attach(GTK_TABLE(table),button,3,4,0,1,
 			(GtkAttachOptions)(GTK_FILL | GTK_SHRINK),
 			(GtkAttachOptions)(GTK_FILL | GTK_SHRINK),
@@ -305,8 +314,8 @@ void create_status_bar_orb(GtkWidget* box)
 {
   	GtkWidget *handlebox;
 	GtkWidget* table; 
-	gchar* label[2][4]={{" File Name : Nothing"," File Type : Nothing"," Geometry : Nothing"," Mol. Orb. : Nothing"},
-			    {" Atomic Orb. : Nothing"," Grid : Nothing"," Iso Surface : Nothing"," Right mouse button for popup menu."}};
+	gchar* label[2][4]={{_(" File name : Nothing"),_(" File type : Nothing"),_(" Geometry : Nothing"),_(" Mol. Orb. : Nothing")},
+			    {_(" Atomic orb. : Nothing"),_(" Grid : Nothing"),_(" Iso Surface : Nothing"),_(" Right mouse button for popup menu.")}};
 	guint idStatus = 0;
 	gint i;
 	gint j;

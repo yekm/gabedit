@@ -1,6 +1,6 @@
 /* EnergiesCurve.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -42,7 +42,6 @@ void set_point(GtkWidget *widget, gint x,gint y, gint k);
 gint get_coord(gint len,gdouble min, gdouble max,gdouble v,gboolean renv);
 void get_coord_ecran(GtkWidget *widget,gint *tabx,gint *taby);
 static void set_geom(GtkWidget *widget,gpointer data);
-void set_point(GtkWidget *widget, gint x,gint y, gint k);
 
 
 /********************************************************************************************/
@@ -56,57 +55,6 @@ static void draw_geom(GtkWidget *widget,gpointer data)
 	}
 }
 /********************************************************************************************/
-/*
-static void movie_geom(GtkWidget *widget,gpointer data)
-{
-	gint *tabx;
-	gint *taby;
-	gint i;
-	DataGeomConv *GeomConv;
-	GTimer *timer;
-	gdouble elaps;
-	gulong m ;
-	gboolean temp ;
-
-
-	temp = MesureIsHide;
-	if(ZoneDessin)
-		HideShowMesure(TRUE);
-	else
-		MesureIsHide = TRUE;
-
-	draw_geom(widget,data);
-	GeomConv = (DataGeomConv*)(g_object_get_data(G_OBJECT(widget),"Geometry"));	
-
-	tabx = g_malloc(GeomConv->Npoint*sizeof(gint));
-	taby = g_malloc(GeomConv->Npoint*sizeof(gint));
-
-	get_coord_ecran(widget,tabx,taby);
-
-	timer =g_timer_new( );
-	g_timer_start( timer );
-	
-	for( i =0; i<GeomConv->Npoint;i++)
-	{
-		set_point(widget,tabx[i],taby[i],i);
-		set_geom(widget,NULL);
-		g_timer_reset( timer );
-		do{
-		elaps = g_timer_elapsed( timer,&m);
-		}while(elaps<0.5);
-	}
-	g_free(tabx);
-	g_free(taby);
-	g_timer_destroy(timer);
-
-	if(temp != MesureIsHide)
-	{
-		HideShowMesure(temp);
-	}
-
-}
-*/
-/********************************************************************************************/
 static void set_geom(GtkWidget *widget,gpointer data)
 {
 	DataGeomConv *GeomConv  = (DataGeomConv*)(g_object_get_data(G_OBJECT(widget),"Geometry"));	
@@ -117,6 +65,7 @@ static void set_geom(GtkWidget *widget,gpointer data)
 	k = *ki;
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_DALTON) read_geom_conv_from_dalton_output_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_GAMESS) read_geom_conv_from_gamess_output_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
+	if(GeomConv->fileType == GABEDIT_TYPEFILE_GAMESSIRC) read_geom_from_gamess_irc_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_GAUSSIAN) read_geom_from_gaussian_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOLPRO) read_geom_from_molpro_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_QCHEM) read_geom_from_qchem_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
@@ -126,6 +75,7 @@ static void set_geom(GtkWidget *widget,gpointer data)
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MPQC) read_geom_from_mpqc_output_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOPAC) read_geom_from_mopac_aux_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOPAC_SCAN) read_geom_from_mopac_scan_output_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
+	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOPAC_IRC) read_geom_from_mopac_irc_output_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_XYZ) read_geom_from_xyz_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 
 }
@@ -397,7 +347,7 @@ gboolean grille(GtkWidget *dessin,GdkEventConfigure *ev)
         if(GeomConv->Npoint==1)
         {
  		font_desc = pango_font_description_from_string ("times 16");
-		st = g_strdup("Single point");
+		st = g_strdup(_("Single point"));
 		gabedit_draw_string(dessin, pixmap, font_desc, gc, dessin->allocation.width/2, dessin->allocation.height/2, st, TRUE, TRUE);
                 g_free(st);
 		if(font_desc) pango_font_description_free (font_desc);
@@ -405,7 +355,7 @@ gboolean grille(GtkWidget *dessin,GdkEventConfigure *ev)
         if(GeomConv->TypeCalcul && !this_is_a_backspace(GeomConv->TypeCalcul))
         {
  		font_desc = pango_font_description_from_string ("times 14");
-		st = g_strdup_printf("%s Calculation", GeomConv->TypeCalcul);
+		st = g_strdup_printf("%s", GeomConv->TypeCalcul);
 		gabedit_draw_string(dessin, pixmap, font_desc, gc, dessin->allocation.width/2, ymin/2, st, TRUE, TRUE);
 
                 g_free(st);
@@ -465,6 +415,59 @@ gboolean DrawEnergies(GtkWidget *dessin,GdkEventConfigure *ev)
 
 	return TRUE;
 	
+}
+/********************************************************************************/
+static gint set_key_press(GtkWidget* wid, GdkEventKey *event, gpointer data)
+{
+  	GtkWidget *dessin = (GtkWidget*) data;
+	gint *pk = NULL;
+	gint k = 0;
+	gint s = 0;
+	DataGeomConv *GeomConv;
+	gint* tabx = NULL;
+	gint* taby = NULL;
+	if((event->keyval == GDK_rightarrow) ) s=1;
+	else if((event->keyval == GDK_rightarrow) ) s=-1;
+	else if((event->keyval == GDK_downarrow) ) s=2;
+	else if((event->keyval == GDK_uparrow) ) s=-2;
+	else if((event->keyval == GDK_n) ) s=1;
+	else if((event->keyval == GDK_N) ) s=1;
+	else if((event->keyval == GDK_p) ) s=-1;
+	else if((event->keyval == GDK_P) ) s=-1;
+	else if((event->keyval == GDK_f) ) s=-2;
+	else if((event->keyval == GDK_F) ) s=-2;
+	else if((event->keyval == GDK_l) ) s=2;
+	else if((event->keyval == GDK_L) ) s=2;
+
+	if(!dessin) return FALSE;
+
+        pk = (gint*)(g_object_get_data(G_OBJECT(dessin),"Point"));  
+	if(!pk) return FALSE;
+        k = *pk;
+	GeomConv = (DataGeomConv*)(g_object_get_data(G_OBJECT(dessin),"Geometry"));
+	if(!GeomConv) return FALSE;
+	if(GeomConv->Npoint<1) return FALSE;
+
+	tabx = g_malloc(GeomConv->Npoint*sizeof(gint));
+	taby = g_malloc(GeomConv->Npoint*sizeof(gint));
+
+
+	if(s==-2) k = 0;
+	else if(s==2) k = GeomConv->Npoint-1;
+	else if(s==1) k++;
+	else if(s==-1) k--;
+	if(k<0) k = 0;
+	if(k>GeomConv->Npoint-1) k=GeomConv->Npoint-1;
+	*pk = k;
+	get_coord_ecran(dessin,tabx,taby);
+	set_point(dessin,tabx[k],taby[k],k);
+ 	set_geom(dessin,NULL);
+	g_free(tabx);
+	g_free(taby);
+
+	GTK_WIDGET_GET_CLASS(wid)->key_press_event(wid, event);
+	return TRUE;
+
 }
 /********************************************************************************************/
 static gint button_press_event (GtkWidget *widget, GdkEventButton *event)
@@ -571,28 +574,28 @@ GtkWidget *add_energies_curve( GtkWidget *WindowEnergies, DataGeomConv* GeomConv
 		switch(GeomConv->fileType)
 		{
 			case GABEDIT_TYPEFILE_GAUSSIAN :
-				Message("Sorry\n I can not read energies from your gaussian output file\n"," Error ",TRUE); 
+				Message(_("Sorry\n I can not read energies from your gaussian output file\n"),_("Error"),TRUE); 
 				break;
 			case GABEDIT_TYPEFILE_MOLPRO :
-          			Message("Sorry\n I can not read energies from your molpro log file\n"," Error ",TRUE);
+          			Message(_("Sorry\n I can not read energies from your molpro log file\n"),_("Error"),TRUE);
 				break;
 			case GABEDIT_TYPEFILE_QCHEM :
-          			Message("Sorry\n I can not read energies from your molpro log file\n"," Error ",TRUE);
+          			Message(_("Sorry\n I can not read energies from your molpro log file\n"),_("Error"),TRUE);
 				break;
 			case GABEDIT_TYPEFILE_MOLDEN :
-        	  		Message("Sorry\n I can not read energies from your molden file\n"," Error ",TRUE);
+        	  		Message(_("Sorry\n I can not read energies from your molden file\n"),_("Error"),TRUE);
 				break;
 			case GABEDIT_TYPEFILE_GABEDIT :
-        	  		Message("Sorry\n I can not read energies from your gabedit file\n"," Error ",TRUE);
+        	  		Message(_("Sorry\n I can not read energies from your gabedit file\n"),_("Error"),TRUE);
 				break;
 			case GABEDIT_TYPEFILE_MPQC :
-        	  		Message("Sorry\n I can not read energies from your MPQC output file\n"," Error ",TRUE);
+        	  		Message(_("Sorry\n I can not read energies from your MPQC output file\n"),_("Error"),TRUE);
 				break;
 			case GABEDIT_TYPEFILE_XYZ :
-        	  		Message("Sorry\n I can not read your XYZ file\n"," Error ",TRUE);
+        	  		Message(_("Sorry\n I can not read your XYZ file\n"),_("Error"),TRUE);
 				break;
 			default :
-        	  		Message("Sorry\n I can not read energies\n"," Error ",TRUE);
+        	  		Message(_("Sorry\n I can not read energies\n"),_("Error"),TRUE);
 		}
         }
 
@@ -610,7 +613,8 @@ GtkWidget *add_energies_curve( GtkWidget *WindowEnergies, DataGeomConv* GeomConv
         j++; 
 
 	k = g_malloc(sizeof(gint));
-	*k = 0;
+	*k = GeomConv->Npoint -1;
+	if(*k<0) *k = 0;
 
 	Frame = gtk_frame_new (GeomConv->TypeCalcul);
         gtk_frame_set_shadow_type( GTK_FRAME(Frame),GTK_SHADOW_ETCHED_OUT);
@@ -624,8 +628,10 @@ GtkWidget *add_energies_curve( GtkWidget *WindowEnergies, DataGeomConv* GeomConv
 	gtk_container_add(GTK_CONTAINER(Frame),hbox);
 	
 	dessin=gtk_drawing_area_new();
+
 	gtk_widget_set_events (dessin, GDK_EXPOSURE_MASK
                          | GDK_LEAVE_NOTIFY_MASK
+			 | GDK_CONTROL_MASK 
                          | GDK_BUTTON_PRESS_MASK
                          | GDK_POINTER_MOTION_MASK
                          | GDK_POINTER_MOTION_HINT_MASK);
@@ -697,8 +703,8 @@ GtkWidget *add_energies_curve( GtkWidget *WindowEnergies, DataGeomConv* GeomConv
 
 	g_signal_connect(G_OBJECT(dessin),"expose_event", (GCallback)expose_event,NULL);
 	g_signal_connect(G_OBJECT(dessin),"configure_event", (GCallback)configure_event,NULL);
+	g_signal_connect(G_OBJECT (WindowEnergies), "key_press_event", (GCallback) set_key_press, dessin);
 	set_geom(dessin,NULL);
-					   
 	return dessin;
 
 }
@@ -714,7 +720,6 @@ void create_energies_curves(DataGeomConv* GeomConv,gint N)
        
 	 if(!GeomConv)
 	 {
-		Message("Sorry\n This is a single point calculation file\n"," Error ",TRUE); 
 		return;
 	 }
 
@@ -723,31 +728,31 @@ void create_energies_curves(DataGeomConv* GeomConv,gint N)
 	  switch(GeomConv->fileType)
 	  {
 		case GABEDIT_TYPEFILE_GAUSSIAN :
-			Message("Sorry\n I can not read energies from your gaussian output file\n"," Error ",TRUE); 
+			Message(_("Sorry\n I can not read energies from your gaussian output file\n"),_("Error"),TRUE); 
 			break;
 		case GABEDIT_TYPEFILE_MOLPRO :
-          		Message("Sorry\n I can not read energies from your molpro log file\n"," Error ",TRUE);
+          		Message(_("Sorry\n I can not read energies from your molpro log file\n"),_("Error"),TRUE);
 			break;
 		case GABEDIT_TYPEFILE_QCHEM :
-          		Message("Sorry\n I can not read energies from your q-chme output file\n"," Error ",TRUE);
+          		Message(_("Sorry\n I can not read energies from your q-chem output file\n"),_("Error"),TRUE);
 			break;
 		case GABEDIT_TYPEFILE_MOLDEN :
-          		Message("Sorry\n I can not read energies from your molden file\n"," Error ",TRUE);
+          		Message(_("Sorry\n I can not read energies from your molden file\n"),_("Error"),TRUE);
 			break;
 		case GABEDIT_TYPEFILE_GABEDIT :
-          		Message("Sorry\n I can not read energies from your gabedit file\n"," Error ",TRUE);
+          		Message(_("Sorry\n I can not read energies from your gabedit file\n"),_("Error"),TRUE);
 			break;
 		case GABEDIT_TYPEFILE_MPQC :
-          		Message("Sorry\n I can not read energies from your MPQC output file\n"," Error ",TRUE);
+          		Message(_("Sorry\n I can not read energies from your MPQC output file\n"),_("Error"),TRUE);
 			break;
 		case GABEDIT_TYPEFILE_MOPAC :
-          		Message("Sorry\n I can not read energies from your Mopax aux file\n"," Error ",TRUE);
+          		Message(_("Sorry\n I can not read energies from your Mopax aux file\n"),_("Error"),TRUE);
 			break;
 		case GABEDIT_TYPEFILE_XYZ :
-          		Message("Sorry\n I can not read your xyz file\n"," Error ",TRUE);
+          		Message(_("Sorry\n I can not read your xyz file\n"),_("Error"),TRUE);
 			break;
 		default :
-          		Message("Sorry\n I can not read energies\n"," Error ",TRUE);
+          		Message(_("Sorry\n I can not read energies\n"),_("Error"),TRUE);
 	  }
 	  return;
         }
@@ -762,13 +767,11 @@ void create_energies_curves(DataGeomConv* GeomConv,gint N)
 	WindowEnergies = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	g_object_set_data(G_OBJECT (WindowEnergies), "PointerWidget",&WindowEnergies);
 	gtk_container_set_border_width(GTK_CONTAINER(WindowEnergies),0);
-        t = g_strdup_printf("Geometry convergence from file : %s",GeomConv->GeomFile);
+        t = g_strdup_printf(_("Geometry convergence from file : %s"),GeomConv->GeomFile);
     	gtk_window_set_title(GTK_WINDOW(WindowEnergies),t);
         g_free(t);
-	g_signal_connect(G_OBJECT(WindowEnergies),"delete_event",
-					   (GCallback)gtk_widget_destroy,NULL);
-	g_signal_connect(G_OBJECT(WindowEnergies),"destroy",
-					   (GCallback)destroy_widget_null,NULL);
+	g_signal_connect(G_OBJECT(WindowEnergies),"delete_event", (GCallback)gtk_widget_destroy,NULL);
+	g_signal_connect(G_OBJECT(WindowEnergies),"destroy", (GCallback)destroy_widget_null,NULL);
 		
 	Vbox = gtk_vbox_new (FALSE, 0);
 	g_object_ref (Vbox);
@@ -789,7 +792,7 @@ void create_energies_curves(DataGeomConv* GeomConv,gint N)
 		dessin=add_energies_curve(WindowEnergies,&GeomConv[i],FALSE);
 	}
 
-        add_button_windows("Geom. Conv.",WindowEnergies);
+        add_button_windows(_("Geom. Conv."),WindowEnergies);
 	gtk_window_set_transient_for(GTK_WINDOW(WindowEnergies),GTK_WINDOW(Fenetre));
 	gtk_window_move(GTK_WINDOW(WindowEnergies),(gint)(ScreenHeight*0.72),0);
 	gtk_widget_show_all(WindowEnergies);

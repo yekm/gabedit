@@ -4,7 +4,7 @@
 
 GtkWidget* molcasWin;
 MolcasMolecule molcasMolecule;
-MolcasOptimisation molcasOptimisation;
+MolcasOptimization molcasOptimization;
 MolcasSolvation molcasSolvation;
 MolcasScf molcasScf;
 MolcasGridIT molcasGridIT;

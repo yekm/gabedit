@@ -1,6 +1,6 @@
 /* AxisGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -272,7 +272,7 @@ void set_axis_dialog ()
   /* principal Window */
   fp = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_modal(GTK_WINDOW(fp),TRUE);
-  gtk_window_set_title(GTK_WINDOW(fp),"Set the axis parameters");
+  gtk_window_set_title(GTK_WINDOW(fp),_("Set the axis parameters"));
   gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
 
   gtk_window_set_position(GTK_WINDOW(fp),GTK_WIN_POS_CENTER);
@@ -326,7 +326,7 @@ void set_axis_dialog ()
   }
 
   i = 5;
-  add_label_table(table,"Color for the X axis",(gushort)i,0);
+  add_label_table(table,_("Color for the X axis"),(gushort)i,0);
   add_label_table(table," : ",(gushort)i,1); 
   style = gtk_widget_get_style(fp);
   button = gtk_button_new_with_label(" ");
@@ -352,7 +352,7 @@ void set_axis_dialog ()
   g_signal_connect(G_OBJECT(button), "clicked", (GCallback)open_color_dlg_axis, NULL);
 
   i++;
-  add_label_table(table,"Color for the Y axis",(gushort)i,0);
+  add_label_table(table,_("Color for the Y axis"),(gushort)i,0);
   add_label_table(table," : ",(gushort)i,1); 
   style = gtk_widget_get_style(fp);
   button = gtk_button_new_with_label(" ");
@@ -382,7 +382,7 @@ void set_axis_dialog ()
   gtk_box_pack_start (GTK_BOX (vboxframe), hbox, FALSE, FALSE, 1);
 
   i++;
-  add_label_table(table,"Color for the Z axis",(gushort)i,0);
+  add_label_table(table,_("Color for the Z axis"),(gushort)i,0);
   add_label_table(table," : ",(gushort)i,1); 
   style = gtk_widget_get_style(fp);
   button = gtk_button_new_with_label(" ");
@@ -408,7 +408,7 @@ void set_axis_dialog ()
   g_signal_connect(G_OBJECT(button), "clicked", (GCallback)open_color_dlg_axis, NULL);
 
   i++;
-  button = gtk_check_button_new_with_label ("Show the negative part of the axes");
+  button = gtk_check_button_new_with_label (_("Show the negative part of the axes"));
   negative = axis.negative;
   g_object_set_data(G_OBJECT (button), "Negative", &negative);
   gtk_table_attach(GTK_TABLE(table),button,0,3,i,i+1,

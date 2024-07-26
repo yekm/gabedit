@@ -1,6 +1,6 @@
 /* CaptureOrbitals.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -71,7 +71,7 @@ static void export_slides_file(GabeditFileChooser *SelecFile, gint response_id)
  	fileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     		return ;
  	}
 	window = g_object_get_data (G_OBJECT (SelecFile), "Window");
@@ -301,7 +301,7 @@ static void apply_capture_orbitals(GtkWidget *Win,gpointer data)
 			}
 			else
 			{
-				GtkWidget* message = Message("Error : one entry is not a float ","Error",TRUE);
+				GtkWidget* message = Message(_("Error : one entry is not a float "),_("Error"),TRUE);
   				gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 				return;
 			}
@@ -311,7 +311,7 @@ static void apply_capture_orbitals(GtkWidget *Win,gpointer data)
 		NumPointstmp[i] = atoi(temp);
 		if(NumPointstmp[i] <=2)
 		{
-			GtkWidget* message = Message("Error : The number of points should be > 2. ","Error",TRUE);
+			GtkWidget* message = Message(_("Error : The number of points should be > 2. "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -322,7 +322,7 @@ static void apply_capture_orbitals(GtkWidget *Win,gpointer data)
 	{
 		if( limitstmp.MinMax[0][i]> limitstmp.MinMax[1][i])
 		{
-			GtkWidget* message = Message("Error :  The minimal value should be smaller than the maximal value ","Error",TRUE);
+			GtkWidget* message = Message(_("Error :  The minimal value should be smaller than the maximal value "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -347,7 +347,7 @@ static void apply_capture_orbitals(GtkWidget *Win,gpointer data)
 			}
 			else
 			{
-				GtkWidget* message = Message("Error : one entry is not a float ","Error",TRUE);
+				GtkWidget* message = Message(_("Error : one entry is not a float "),_("Error"),TRUE);
   				gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 				return;
 			}
@@ -362,7 +362,7 @@ static void apply_capture_orbitals(GtkWidget *Win,gpointer data)
 			norm += V[i][j]*V[i][j];
 		if(fabs(norm)<1e-8)
 		{
-			GtkWidget* message = Message("Error : the norm is equal to 0 ","Error",TRUE);
+			GtkWidget* message = Message(_("Error : the norm is equal to 0 "),_("Error"),TRUE);
   			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 			return;
 		}
@@ -532,13 +532,13 @@ static void apply_capture_orbitals(GtkWidget *Win,gpointer data)
 	if(nAlpha>0 && iAlpha==nAlpha)
 	{
 		gchar* prefix =  g_strdup_printf("%sgabOrbAlpha",dirName);
-		create_images_window (nAlpha, numAlphaOrbs,prefix,"Alpha orbitals",scale,nCols);
+		create_images_window (nAlpha, numAlphaOrbs,prefix,_("Alpha orbitals"),scale,nCols);
 		g_free(prefix);
 	}
 	if(nBeta>0 && iBeta==nBeta)
 	{
 		gchar* prefix =  g_strdup_printf("%sgabOrbBeta",dirName);
-		create_images_window (nBeta, numBetaOrbs,prefix,"Beta Orbitals",scale,nCols);
+		create_images_window (nBeta, numBetaOrbs,prefix,_("Beta Orbitals"),scale,nCols);
 		g_free(prefix);
 	}
 	set_label_title(NULL,0,0);
@@ -571,7 +571,7 @@ static GtkWidget *create_folder_frame( GtkWidget *vboxall,gchar* title)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 0;
-	label = gtk_label_new("Folder");
+	label = gtk_label_new(_("Folder"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -587,7 +587,7 @@ static GtkWidget *create_folder_frame( GtkWidget *vboxall,gchar* title)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 2;
-	buttonDirSelector =  gtk_file_chooser_button_new("Select your folder", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	buttonDirSelector =  gtk_file_chooser_button_new(_("Select your folder"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
 	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
 			j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND) ,
@@ -621,7 +621,7 @@ static GtkWidget *create_isovalue_frame( GtkWidget *vboxall,gchar* title)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 0;
-	label = gtk_label_new("Isovalue");
+	label = gtk_label_new(_("Isovalue"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -676,7 +676,7 @@ static GtkWidget *create_labels_frame( GtkWidget *vboxall,gchar* title)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 0;
-	numberButton = gtk_check_button_new_with_label ("Number");
+	numberButton = gtk_check_button_new_with_label (_("Number"));
 	gtk_table_attach(GTK_TABLE(table),numberButton, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -684,7 +684,7 @@ static GtkWidget *create_labels_frame( GtkWidget *vboxall,gchar* title)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 1;
-	energyButton = gtk_check_button_new_with_label ("Energy");
+	energyButton = gtk_check_button_new_with_label (_("Energy"));
 	gtk_table_attach(GTK_TABLE(table),energyButton, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -692,7 +692,7 @@ static GtkWidget *create_labels_frame( GtkWidget *vboxall,gchar* title)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 2;
-	symmetryButton = gtk_check_button_new_with_label ("Symbol");
+	symmetryButton = gtk_check_button_new_with_label (_("Symbol"));
 	gtk_table_attach(GTK_TABLE(table),symmetryButton, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -700,7 +700,7 @@ static GtkWidget *create_labels_frame( GtkWidget *vboxall,gchar* title)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 3;
-	homoLumoButton = gtk_check_button_new_with_label ("Homo/Lumo number");
+	homoLumoButton = gtk_check_button_new_with_label (_("Homo/Lumo number"));
 	gtk_table_attach(GTK_TABLE(table),homoLumoButton, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -708,7 +708,7 @@ static GtkWidget *create_labels_frame( GtkWidget *vboxall,gchar* title)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 4;
-	label = gtk_label_new("prefix");
+	label = gtk_label_new(_("prefix"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -769,7 +769,7 @@ static GtkWidget *create_slides_frame( GtkWidget *vboxall,gchar* title)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 0;
-	label = gtk_label_new("Nubmer of slides by row");
+	label = gtk_label_new(_("Nubmer of slides by row"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -795,7 +795,7 @@ static GtkWidget *create_slides_frame( GtkWidget *vboxall,gchar* title)
 /*----------------------------------------------------------------------------------*/
 	i = 0;
 	j = 3;
-	label = gtk_label_new("Slide size/Screen size");
+	label = gtk_label_new(_("Slide size/Screen size"));
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
@@ -929,7 +929,7 @@ static GtkWidget* new_alpha_list(GtkWidget *hboxall)
 
 	gtklist = new_gtk_list_orbitals(N,Energies,Occ,sym,&widall);
 	g_object_set_data(G_OBJECT (gtklist), "Type",&type);
-  	frame = gtk_frame_new ("Alpha Orbitals");
+  	frame = gtk_frame_new (_("Alpha Orbitals"));
   	gtk_container_set_border_width (GTK_CONTAINER (frame), 1);
   	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_box_pack_start (GTK_BOX (hboxall), frame, TRUE, TRUE, 0);
@@ -983,7 +983,7 @@ static GtkWidget* new_beta_list(GtkWidget *hboxall)
 
 	gtklist = new_gtk_list_orbitals(N,Energies,Occ,sym,&widall);
 	g_object_set_data(G_OBJECT (gtklist), "Type",&type);
-  	frame = gtk_frame_new ("Beta Orbitals");
+  	frame = gtk_frame_new (_("Beta Orbitals"));
   	gtk_container_set_border_width (GTK_CONTAINER (frame), 1);
   	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 	gtk_box_pack_start (GTK_BOX (hboxall), frame, TRUE, TRUE, 0);     
@@ -1044,24 +1044,24 @@ void capture_orbitals_dlg()
 
 	if(!GeomOrb)
 	{
-		Message("Sorry, Please load a file before\n","Error",TRUE);
+		Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!CoefAlphaOrbitals)
 	{
-		Message("Sorry, Please load the MO before\n","Error",TRUE);
+		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
 		return;
 	}
 
 	if(!AOAvailable &&(TypeGrid == GABEDIT_TYPEGRID_DDENSITY || TypeGrid == GABEDIT_TYPEGRID_ADENSITY))
 	{
-		Message("Sorry, No atomic orbitals available.\nPlease use a gabedit file for load : \n"
-		  "Geometry, Molecular and Atomic Orbitals\n","Error",TRUE);
+		Message(_("Sorry, No atomic orbitals available.\nPlease use a gabedit file for load : \n"
+		  "Geometry, Molecular and Atomic Orbitals\n"),_("Error"),TRUE);
 		return;
 	}
 	
 	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(Win),"Slideshow orbital");
+	gtk_window_set_title(GTK_WINDOW(Win),_("Slideshow orbital"));
 	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
 	gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
 	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(PrincipalWindow));
@@ -1071,7 +1071,7 @@ void capture_orbitals_dlg()
 
 	vboxall = create_vbox(Win);
 	vboxwin = vboxall;
-	frame = create_grid_frame(vboxall,"Box & Grid");
+	frame = create_grid_frame(vboxall,_("Box & Grid"));
 	entries = (GtkWidget**) g_object_get_data (G_OBJECT (frame), "Entries");
 	g_object_set_data (G_OBJECT (Win), "Entries",entries);
 
@@ -1084,7 +1084,7 @@ void capture_orbitals_dlg()
 	g_object_set_data (G_OBJECT (Win), "EntryIsoValue",entryIsoValue);
 
 
-	frameLabels = create_labels_frame(vboxall,"Labels");
+	frameLabels = create_labels_frame(vboxall,_("Labels"));
 	numberButton = g_object_get_data (G_OBJECT (frameLabels), "NumberButton");
 	energyButton = g_object_get_data (G_OBJECT (frameLabels), "EnergyButton");
 	symmetryButton = g_object_get_data (G_OBJECT (frameLabels), "SymmetryButton");
@@ -1096,7 +1096,7 @@ void capture_orbitals_dlg()
 	g_object_set_data (G_OBJECT (Win), "EntryPrefix",entryPrefix);
 	g_object_set_data (G_OBJECT (Win), "HomoLumoButton",homoLumoButton);
 
-	frameSlides = create_slides_frame(vboxall,"Slides");
+	frameSlides = create_slides_frame(vboxall,_("Slides"));
 	columnSpinButton = g_object_get_data (G_OBJECT (frameSlides), "ColumnSpinButton");
 	scaleSpinButton = g_object_get_data (G_OBJECT (frameSlides), "ScaleSpinButton");
 	g_object_set_data (G_OBJECT (Win), "ColumnSpinButton",columnSpinButton);

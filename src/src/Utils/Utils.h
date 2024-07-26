@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -49,12 +49,14 @@ typedef struct _DataTree
 void timing(double* cpu,double *sys);
 #ifdef G_OS_WIN32
 gboolean winsockCheck(FILE* );
+void addUnitDisk(FILE* file, G_CONST_RETURN gchar* name);
 #endif /* G_OS_WIN32 */
 void free_gaussian_commands();
 void free_molpro_commands();
 void free_mpqc_commands();
 gchar* get_time_str();
 gboolean this_is_a_backspace(gchar *st);
+void changeDInE(gchar *st);
 FILE* FOpen(const gchar *fileutf8, const gchar* type);
 void  set_file_open(gchar* remotehost,gchar* remoteuser,gchar* remotedir, GabEditNetWork netWorkProtocol);
 gboolean  this_is_an_object(GtkObject *obj);
@@ -143,8 +145,19 @@ void gabedit_draw_string(GtkWidget* parent, GdkPixmap* pixmap, PangoFontDescript
 void gabedit_save_image(GtkWidget* widget, gchar *fileName, gchar* type);
 G_CONST_RETURN gchar* get_open_babel_command();
 gchar** get_one_block_from_aux_mopac_file(FILE* file, gchar* blockName,  gint* n);
+gint get_num_orbitals_from_aux_mopac_file(FILE* file, gchar* blockName,  gint* begin, gint* end);
 gchar** free_one_string_table(gchar** table, gint n);
+gboolean zmat_mopac_irc_output_file(gchar *FileName);
 gboolean zmat_mopac_scan_output_file(gchar *FileName);
+GabEditTypeFile get_type_output_file(gchar* fileName);
+GabEditTypeFile get_type_input_file(gchar* fileName);
+GabEditTypeFile get_type_file(gchar* filename);
+gchar * mystrcasestr(G_CONST_RETURN gchar *haystack, G_CONST_RETURN gchar *needle);
+gint get_one_int_from_fchk_gaussian_file(FILE* file, gchar* blockName);
+gdouble get_one_real_from_fchk_gaussian_file(FILE* file, gchar* blockName);
+gint* get_array_int_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* nElements);
+gdouble* get_array_real_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* nElements);
+gchar** get_array_string_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* nElements);
 
 #endif /* __GABEDIT_UTILS_H__ */
 

@@ -1,4 +1,4 @@
-OBJECTS = GabeditTextEdit.o AtomsProp.o Jacobi.o Transformation.o Utils.o UtilsInterface.o Vector3d.o Matrix3D.o HydrogenBond.o PovrayUtils.o UtilsGL.o ConvUtils.o GabeditXYPlot.o UtilsCairo.o Zlm.o MathFunctions.o GTF.o TTables.o
+OBJECTS = GabeditTextEdit.o AtomsProp.o Jacobi.o QL.o Transformation.o Utils.o UtilsInterface.o Vector3d.o Matrix3D.o HydrogenBond.o PovrayUtils.o UtilsGL.o ConvUtils.o GabeditXYPlot.o GabeditContoursPlot.o UtilsCairo.o Zlm.o MathFunctions.o GTF.o TTables.o Interpolation.o
 
 include ../../CONFIG
 CFLAGS =  $(COMMONCFLAGS) $(GTKCFLAGS) $(OGLCFLAGS)
@@ -13,12 +13,10 @@ compiling: $(OBJECTS)
 clean:
 	@$(RM) *.chk p *o gabedit *.com *.out *.log *.test test* *.cpp  *old *.ps .*swp *~ 
 
-include Dep.mk
 #make dependance
+SRCS = $(OBJECTS:%.o=%.c)
 dep :
-	-makedepend -f- *.[ch] 2>/dev/null \
-	| sed 's:/usr[^ ]*/include/[^ ]*h::g' \
-	| sed 's:/usr/include/.*::g' \
-	| sed 's:  *: :g; s: $$::' \
-	| grep -v '.*:$$' >Dep.mk
+	gcc -MM $(SRCS) > Dep.mk
+
+-include Dep.mk
 

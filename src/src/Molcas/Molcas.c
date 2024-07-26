@@ -1,6 +1,6 @@
 /* Molcas.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Molcas/MolcasTypes.h"
 #include "../Molcas/MolcasGlobal.h"
 #include "../Molcas/MolcasVariables.h"
-#include "../Molcas/MolcasOptimisation.h"
+#include "../Molcas/MolcasOptimization.h"
 #include "../Molcas/MolcasGateWay.h"
 #include "../Molcas/MolcasSeward.h"
 #include "../Molcas/MolcasScf.h"
@@ -85,7 +85,7 @@ void destroyWinsMolcas(GtkWidget *win)
 /************************************************************************************************************/
 static void toCancelWin(GtkWidget* win,gpointer data)
 {
-	Cancel_YesNo(win,data, destroy_childs);
+	Cancel_YesNo(win,data, destroy_children);
 }
 /************************************************************************************************************/
 static void putTitleInTextEditor()
@@ -123,14 +123,14 @@ static void putInfoInTextEditor(GtkWidget *button, gpointer data)
 	putTitleInTextEditor();
 	putVariablesInTextEditor();
 
-	putBeginOptimisationInTextEditor();
+	putBeginOptimizationInTextEditor();
 
 	putGateWayInfoInTextEditor();
 	putSewardInfoInTextEditor();
 	putScfInfoInTextEditor();
 
 
-	putEndOptimisationInTextEditor();
+	putEndOptimizationInTextEditor();
 
 	putGridITInfoInTextEditor();
 
@@ -160,31 +160,32 @@ static void molcasInputFileWindow(gboolean newInputFile)
 	fileopen.command=g_strdup(NameCommandMolcas);
 	newFile = newInputFile;
 	setMolcasMolecule();
-	freeMolcasOptimisation();
+	freeMolcasOptimization();
 
 	if(molcasMolecule.numberOfAtoms <1)
 	{
 		Message(
+			_(
 			"You must initially define your geometry.\n\n"
 			"From the principal Menu select : Geometry/Draw\n"
-			"and draw (or read) your molecule.",
-			"Error",TRUE);
+			"and draw (or read) your molecule.")
+			, _("Error"),TRUE);
 		return;
 	}
 
-	if(Wins) destroy_childs(Wins);
+	if(Wins) destroy_children(Wins);
 
 	Wins= gtk_dialog_new ();
 	gtk_window_set_position(GTK_WINDOW(Wins),GTK_WIN_POS_CENTER);
 	gtk_window_set_transient_for(GTK_WINDOW(Wins),GTK_WINDOW(Fenetre));
-	gtk_window_set_title(&GTK_DIALOG(Wins)->window,"Molcas input");
+	gtk_window_set_title(&GTK_DIALOG(Wins)->window,_("Molcas input"));
 
-	init_child(Wins, destroyWinsMolcas," Molcas input ");
-	g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_childs,NULL);
+	init_child(Wins, destroyWinsMolcas,_(" Molcas input "));
+	g_signal_connect(G_OBJECT(Wins),"delete_event",(GCallback)destroy_children,NULL);
 
 	gtk_widget_realize(Wins);
 
-	button = create_button(Wins,"CANCEL");
+	button = create_button(Wins,_("Cancel"));
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->action_area), button, FALSE, TRUE, 5);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK( toCancelWin),GTK_OBJECT(Wins));
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
@@ -192,7 +193,7 @@ static void molcasInputFileWindow(gboolean newInputFile)
 
 
 
-	button = create_button(Wins,"OK");
+	button = create_button(Wins,_("OK"));
 
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Wins)->vbox), table, FALSE, TRUE, 5);
 
@@ -200,7 +201,7 @@ static void molcasInputFileWindow(gboolean newInputFile)
 	createSystemVariablesFrame(Wins, hbox, button);
 
 	hbox =addHboxToTable(table, 0, 1, 1, 1);
-	createOptimisationFrame(Wins,  hbox);
+	createOptimizationFrame(Wins,  hbox);
 
 	hbox =addHboxToTable(table, 1, 1, 1, 1);
 	createSymmetryFrame(Wins, hbox);
@@ -216,7 +217,7 @@ static void molcasInputFileWindow(gboolean newInputFile)
 	gtk_widget_grab_default(button);
 	gtk_widget_show (button);
 	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(putInfoInTextEditor),GTK_OBJECT(Wins));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_childs),GTK_OBJECT(Wins));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(destroy_children),GTK_OBJECT(Wins));
 	
 
 	gtk_widget_show_all(Wins);

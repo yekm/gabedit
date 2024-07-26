@@ -1,6 +1,6 @@
 /* SpectrumWin.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -195,7 +195,7 @@ static void build_data_xyplot_curve_withconv(XYPlotWinData* winData, XYPlotData*
 		}
 
 		dataCurve->size++;
-	}while(xx<winData->xmax && winData->size<n);
+	}while(xx<winData->xmax && dataCurve->size<n);
 
 	if(dataCurve->size>0) 
 	{
@@ -609,7 +609,7 @@ static gboolean xyplot_motion_notify_event(GtkWidget *xyplot, GdkEventMotion *ev
 		gdk_window_get_pointer (xyplot->window, &x, &y, NULL);
 
 	if(gabedit_xyplot_get_point(GABEDIT_XYPLOT(xyplot), x, y, &xv, &yv))
-	snprintf(str, 50, "Mouse position: %lf, %lf", xv, yv);
+	snprintf(str, 50, _("Mouse position: %lf, %lf"), xv, yv);
 	else
 	sprintf(str, " ");
 	context_id=gtk_statusbar_get_context_id (GTK_STATUSBAR(statusbar), "mouse position");
@@ -994,7 +994,7 @@ GtkWidget* spectrum_win_new(gchar* title)
 
 	g_object_set_data (G_OBJECT (window), "XYPLOT",xyplot);
 
-	frame_set_data=gtk_frame_new("Set data");
+	frame_set_data=gtk_frame_new(_("Set data"));
 	gtk_table_attach(GTK_TABLE(table1), frame_set_data, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 0, 5);
 	gtk_widget_show(frame_set_data);
 
@@ -1008,23 +1008,23 @@ GtkWidget* spectrum_win_new(gchar* title)
 
 	first_hbox = hbox_data;
 
-	toggle_no_convolution = gtk_radio_button_new_with_label( NULL,"No convolution" );
+	toggle_no_convolution = gtk_radio_button_new_with_label( NULL,_("No convolution"));
 	gtk_box_pack_start(GTK_BOX(hbox_data), toggle_no_convolution, FALSE, FALSE, 2);
 	gtk_widget_show(toggle_no_convolution); 
 
-	toggle_lorentzian = gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (toggle_no_convolution)),"Lorentzian lineshape" );
+	toggle_lorentzian = gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (toggle_no_convolution)),_("Lorentzian lineshape") );
 	gtk_box_pack_start(GTK_BOX(hbox_data), toggle_lorentzian, FALSE, FALSE, 2);
 	gtk_widget_show(toggle_lorentzian); 
 
-	toggle_gaussian = gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (toggle_no_convolution)),"Gaussian lineshape" );
+	toggle_gaussian = gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (toggle_no_convolution)),_("Gaussian lineshape") );
 	gtk_box_pack_start(GTK_BOX(hbox_data), toggle_gaussian, FALSE, FALSE, 2);
 	gtk_widget_show(toggle_gaussian); 
 
-	toggle_show_peaks = gtk_check_button_new_with_label("Show peaks");
+	toggle_show_peaks = gtk_check_button_new_with_label(_("Show peaks"));
 	gtk_box_pack_start(GTK_BOX(hbox_data), toggle_show_peaks, FALSE, FALSE, 2);
 	gtk_widget_show(toggle_show_peaks);
 
-	toggle_ymax_to_one = gtk_check_button_new_with_label("Set ymax=1");
+	toggle_ymax_to_one = gtk_check_button_new_with_label(_("Set ymax=1"));
 	gtk_box_pack_start(GTK_BOX(hbox_data), toggle_ymax_to_one, FALSE, FALSE, 2);
 	gtk_widget_show(toggle_ymax_to_one);
 
@@ -1032,7 +1032,7 @@ GtkWidget* spectrum_win_new(gchar* title)
 	gtk_table_attach(GTK_TABLE(table2), hbox_data, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 2, 2);
 	gtk_widget_show(hbox_data);
 
-	tmp_label=gtk_label_new("X Min: ");
+	tmp_label=gtk_label_new(_("X Min: "));
 	gtk_box_pack_start(GTK_BOX(hbox_data), tmp_label, FALSE, FALSE, 2);
 	gtk_widget_show(tmp_label); 
 	
@@ -1043,7 +1043,7 @@ GtkWidget* spectrum_win_new(gchar* title)
 	gtk_box_pack_start(GTK_BOX(hbox_data), entry_x_min, FALSE, FALSE, 2);
 	gtk_widget_show(entry_x_min);
 
-	tmp_label=gtk_label_new("X Max: ");
+	tmp_label=gtk_label_new(_("X Max: "));
 	gtk_box_pack_start(GTK_BOX(hbox_data), tmp_label, FALSE, FALSE, 2);
 	gtk_widget_show(tmp_label); 
 	
@@ -1054,7 +1054,7 @@ GtkWidget* spectrum_win_new(gchar* title)
 	gtk_box_pack_start(GTK_BOX(hbox_data), entry_x_max, FALSE, FALSE, 2);
 	gtk_widget_show(entry_x_max);
 
-	tmp_label=gtk_label_new("Half-Width : ");
+	tmp_label=gtk_label_new(_("Half-Width : "));
 	gtk_box_pack_start(GTK_BOX(hbox_data), tmp_label, FALSE, FALSE, 2);
 	gtk_widget_show(tmp_label); 
 
@@ -1064,7 +1064,7 @@ GtkWidget* spectrum_win_new(gchar* title)
 	gtk_box_pack_start(GTK_BOX(hbox_data), entry_half_width, FALSE, FALSE, 2);
 	gtk_widget_show(entry_half_width);
 
-	tmp_label=gtk_label_new("Scale X : ");
+	tmp_label=gtk_label_new(_("Scale X : "));
 	gtk_box_pack_start(GTK_BOX(hbox_data), tmp_label, FALSE, FALSE, 2);
 	gtk_widget_show(tmp_label); 
 
@@ -1074,7 +1074,7 @@ GtkWidget* spectrum_win_new(gchar* title)
 	gtk_box_pack_start(GTK_BOX(hbox_data), entry_scale_x, FALSE, FALSE, 2);
 	gtk_widget_show(entry_scale_x);
 
-	tmp_label=gtk_label_new("Scale Y : ");
+	tmp_label=gtk_label_new(_("Scale Y : "));
 	gtk_box_pack_start(GTK_BOX(hbox_data), tmp_label, FALSE, FALSE, 2);
 	gtk_widget_show(tmp_label); 
 
@@ -1084,7 +1084,7 @@ GtkWidget* spectrum_win_new(gchar* title)
 	gtk_box_pack_start(GTK_BOX(hbox_data), entry_scale_y, FALSE, FALSE, 2);
 	gtk_widget_show(entry_scale_y);
 
-	tmp_label=gtk_label_new("Shift X : ");
+	tmp_label=gtk_label_new(_("Shift X : "));
 	gtk_box_pack_start(GTK_BOX(hbox_data), tmp_label, FALSE, FALSE, 2);
 	gtk_widget_show(tmp_label); 
 

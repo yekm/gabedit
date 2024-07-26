@@ -1,6 +1,6 @@
 /* QChemMolecule.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -531,7 +531,7 @@ static void changedEntryCharge(GtkWidget *entry, gpointer data)
 	{
 		gint ne = qchemMolecule.numberOfValenceElectrons - totalCharge;
 		gchar buffer[BSIZE];
-		sprintf(buffer, "Number of electrons = %d",ne);
+		sprintf(buffer, _("Number of electrons = %d"),ne);
 		gtk_label_set_text(GTK_LABEL(labelNumberOfElectrons),buffer);
 	}
 }
@@ -562,7 +562,7 @@ static GtkWidget *addQChemChargeToTable(GtkWidget *table, gint i)
 	gint nlistCharge = 1;
 	gchar* listCharge[] = {"0"};
 
-	add_label_table(table,"Charge",(gushort)i,0);
+	add_label_table(table,_("Charge"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entryCharge = addComboListToATable(table, listCharge, nlistCharge, i, 2, 1);
 	comboCharge  = g_object_get_data(G_OBJECT (entryCharge), "Combo");
@@ -578,7 +578,7 @@ static GtkWidget *addQChemSpinToTable(GtkWidget *table, gint i)
 	gint nlistspinMultiplicity = 1;
 	gchar* listspinMultiplicity[] = {"0"};
 
-	add_label_table(table,"Spin multiplicity",(gushort)i,0);
+	add_label_table(table,_("Spin multiplicity"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entrySpinMultiplicity = addComboListToATable(table, listspinMultiplicity, nlistspinMultiplicity, i, 2, 1);
 	comboSpinMultiplicity  = g_object_get_data(G_OBJECT (entrySpinMultiplicity), "Combo");
@@ -623,7 +623,7 @@ void createQChemChargeMultiplicityFrame(GtkWidget *box)
 
 	table = gtk_table_new(3,5,FALSE);
 
-	frame = gtk_frame_new ("Charge & Multiplicty");
+	frame = gtk_frame_new (_("Charge & Multiplicty"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -656,7 +656,7 @@ void createQChemChargeMultiplicityFrame(GtkWidget *box)
 	{
 		gint ne = qchemMolecule.numberOfValenceElectrons - totalCharge;
 		gchar buffer[BSIZE];
-		sprintf(buffer, "Number of electrons = %d",ne);
+		sprintf(buffer, _("Number of electrons = %d"),ne);
 		gtk_label_set_text(GTK_LABEL(labelNumberOfElectrons),buffer);
 	}
 

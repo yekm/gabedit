@@ -1,6 +1,6 @@
 /* SemiEmpirical.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -37,8 +37,8 @@ DEALINGS IN THE SOFTWARE.
 
 static void calculateGradientMopac(SemiEmpiricalModel* seModel);
 static void calculateEnergyMopac(SemiEmpiricalModel* seModel);
-static void calculateGradientPCGamess(SemiEmpiricalModel* seModel);
-static void calculateEnergyPCGamess(SemiEmpiricalModel* seModel);
+static void calculateGradientFireFly(SemiEmpiricalModel* seModel);
+static void calculateEnergyFireFly(SemiEmpiricalModel* seModel);
 
 void dessine();
 
@@ -60,7 +60,7 @@ static gboolean getEnergyMopac(gchar* fileNameOut, gdouble* energy)
 	gchar buffer[1024];
 	gchar* pdest = NULL;
 
- 	file = fopen(fileNameOut, "r");
+ 	file = FOpen(fileNameOut, "r");
 	if(!file) return FALSE;
 	 while(!feof(file))
 	 {
@@ -93,7 +93,7 @@ static gboolean getGradientMopac(gchar* fileNameOut, SemiEmpiricalModel *seModel
 	gint i;
 	gint j;
 
- 	file = fopen(fileNameOut, "r");
+ 	file = FOpen(fileNameOut, "r");
 	if(!file) return FALSE;
 	 while(!feof(file))
 	 {
@@ -114,6 +114,34 @@ static gboolean getGradientMopac(gchar* fileNameOut, SemiEmpiricalModel *seModel
 						return FALSE;
 					}
 				}
+			}
+			Ok = TRUE;
+			break;
+	 	}
+		pdest = strstr( buffer, "Cartesian Gradients"); /* MOZYME Keyword */
+		if(pdest) 
+		{
+			gchar td[100];
+			gint d;
+			if(!fgets(buffer,BSIZE,file))break; /*Atom       X  ....*/
+			if(!fgets(buffer,BSIZE,file))break; /* backspace */
+			for(i=0;i<seModel->molecule.nAtoms;i++)
+			{
+				if(!fgets(buffer,BSIZE,file)) /* 1  O    0.000   -4.566    0.027  */
+				{
+					fclose(file);
+					return FALSE;
+				}
+				if(sscanf(buffer,"%d %s %lf %lf %lf",&d, td, 
+						&seModel->molecule.gradient[0][i],
+						&seModel->molecule.gradient[1][i],
+						&seModel->molecule.gradient[2][i]
+					 )
+						!=5)
+					{
+						fclose(file);
+						return FALSE;
+					}
 			}
 			Ok = TRUE;
 			break;
@@ -144,7 +172,7 @@ static gchar* runOneMopac(SemiEmpiricalModel* seModel, gchar* keyWords)
 #else
 	fileNameSH = g_strdup_printf("%s%sMopacOne.bat",seModel->workDir,G_DIR_SEPARATOR_S);
 #endif
- 	fileSH = fopen(fileNameSH, "w");
+ 	fileSH = FOpen(fileNameSH, "w");
 	if(!fileSH) return FALSE;
 #ifdef G_OS_WIN32
 	fprintf(fileSH,"@echo off\n");
@@ -154,7 +182,7 @@ static gchar* runOneMopac(SemiEmpiricalModel* seModel, gchar* keyWords)
 	getMultiplicityName(seModel->molecule.spinMultiplicity, multiplicityStr);
 
 	fileNameIn = g_strdup_printf("%s%sOne.mop",seModel->workDir,G_DIR_SEPARATOR_S);
- 	file = fopen(fileNameIn, "w");
+ 	file = FOpen(fileNameIn, "w");
 	if(!file) 
 	{
  		if(fileNameIn) g_free(fileNameIn);
@@ -206,9 +234,9 @@ static gchar* runOneMopac(SemiEmpiricalModel* seModel, gchar* keyWords)
 	return fileNameOut;
 }
 /**********************************************************************/
-static SemiEmpiricalModel newMopacModel(gchar* method, gchar* dirName)
+static SemiEmpiricalModel newMopacModel(gchar* method, gchar* dirName, SemiEmpiricalModelConstraints constraints)
 {
-	SemiEmpiricalModel seModel = newSemiEmpiricalModel(method, dirName);
+	SemiEmpiricalModel seModel = newSemiEmpiricalModel(method, dirName, constraints);
 
 	seModel.klass->calculateGradient = calculateGradientMopac;
 	seModel.klass->calculateEnergy = calculateEnergyMopac;
@@ -237,8 +265,8 @@ static void calculateGradientMopac(SemiEmpiricalModel* seModel)
 		if(!getGradientMopac(fileOut, seModel))
 		{
 			StopCalcul=TRUE;
-			set_text_to_draw("Problem : I cannot caculate the Gradient... ");
-			set_statubar_operation_str("Calcul Stopped ");
+			set_text_to_draw(_("Problem : I cannot caculate the Gradient... "));
+			set_statubar_operation_str(_("Calculation Stopped "));
 			dessine();
 			gtk_widget_set_sensitive(StopButton, FALSE);
 			Waiting(1);
@@ -267,23 +295,24 @@ static void calculateEnergyMopac(SemiEmpiricalModel* seModel)
 
 }
 /**********************************************************************/
-SemiEmpiricalModel createMopacModel (GeomDef* geom,gint Natoms,gint charge, gint spin, gchar* method, gchar* dirName)
+SemiEmpiricalModel createMopacModel (GeomDef* geom,gint Natoms,gint charge, gint spin, gchar* method, gchar* dirName, SemiEmpiricalModelConstraints constraints)
 {
-	SemiEmpiricalModel seModel = newMopacModel(method, dirName);
+	SemiEmpiricalModel seModel = newMopacModel(method, dirName, constraints);
 
-	seModel.molecule = createMoleculeSE(geom,Natoms, charge, spin);
+	seModel.molecule = createMoleculeSE(geom,Natoms, charge, spin,TRUE);
+	setRattleConstraintsParameters(&seModel);
 	
 	return seModel;
 }
 /**********************************************************************/
-static gboolean getEnergyPCGamess(gchar* fileNameOut, gdouble* energy)
+static gboolean getEnergyFireFly(gchar* fileNameOut, gdouble* energy)
 {
 	FILE* file = NULL;
 	gchar buffer[1024];
 	gchar* pdest = NULL;
 	gboolean OK = FALSE;
 
- 	file = fopen(fileNameOut, "r");
+ 	file = FOpen(fileNameOut, "r");
 	if(!file) return FALSE;
 	 while(!feof(file))
 	 {
@@ -306,7 +335,7 @@ static gboolean getEnergyPCGamess(gchar* fileNameOut, gdouble* energy)
 	return OK;
 }
 /*****************************************************************************/
-static gboolean getGradientPCGamess(gchar* fileNameOut, SemiEmpiricalModel *seModel)
+static gboolean getGradientFireFly(gchar* fileNameOut, SemiEmpiricalModel *seModel)
 {
 	FILE* file = NULL;
 	gchar buffer[1024];
@@ -317,7 +346,7 @@ static gboolean getGradientPCGamess(gchar* fileNameOut, SemiEmpiricalModel *seMo
 	gint i;
 	gint j;
 
- 	file = fopen(fileNameOut, "r");
+ 	file = FOpen(fileNameOut, "r");
 	if(!file) return FALSE;
 	 while(!feof(file))
 	 {
@@ -347,7 +376,7 @@ static gboolean getGradientPCGamess(gchar* fileNameOut, SemiEmpiricalModel *seMo
 	return Ok;
 }
 /*****************************************************************************/
-static gchar* runOnePCGamess(SemiEmpiricalModel* seModel, gchar* keyWords)
+static gchar* runOneFireFly(SemiEmpiricalModel* seModel, gchar* keyWords)
 {
 	FILE* file = NULL;
 	FILE* fileSH = NULL;
@@ -365,15 +394,15 @@ static gchar* runOnePCGamess(SemiEmpiricalModel* seModel, gchar* keyWords)
 
 	if(m.nAtoms<1) return fileNameOut;
 #ifndef G_OS_WIN32
-	fileNameSH = g_strdup_printf("%s%sPCGamessOne.sh",seModel->workDir,G_DIR_SEPARATOR_S);
+	fileNameSH = g_strdup_printf("%s%sFireFlyOne.sh",seModel->workDir,G_DIR_SEPARATOR_S);
 #else
-	fileNameSH = g_strdup_printf("%s%sPCGamessOne.bat",seModel->workDir,G_DIR_SEPARATOR_S);
+	fileNameSH = g_strdup_printf("%s%sFireFlyOne.bat",seModel->workDir,G_DIR_SEPARATOR_S);
 #endif
- 	fileSH = fopen(fileNameSH, "w");
+ 	fileSH = FOpen(fileNameSH, "w");
 	if(!fileSH) return FALSE;
 #ifdef G_OS_WIN32
 	fprintf(fileSH,"@echo off\n");
-	fprintf(fileSH,"set PATH=%cPATH%c;\"%s\"\n",c,c,pcgamessDirectory);
+	fprintf(fileSH,"set PATH=%cPATH%c;\"%s\"\n",c,c,fireflyDirectory);
 #endif
 
 	getMultiplicityName(seModel->molecule.spinMultiplicity, multiplicityStr);
@@ -382,7 +411,7 @@ static gchar* runOnePCGamess(SemiEmpiricalModel* seModel, gchar* keyWords)
 	fileNameOut = g_strdup_printf("%s%sOne.out",seModel->workDir,G_DIR_SEPARATOR_S);
 
 
- 	file = fopen(fileNameIn, "w");
+ 	file = FOpen(fileNameIn, "w");
 	if(!file) 
 	{
  		if(fileNameIn) g_free(fileNameIn);
@@ -391,7 +420,7 @@ static gchar* runOnePCGamess(SemiEmpiricalModel* seModel, gchar* keyWords)
 		return FALSE;
 	}
 	fprintf(file,"! ======================================================\n");
-	fprintf(file,"!  Input file for PCGamess\n"); 
+	fprintf(file,"!  Input file for FireFly\n"); 
 	fprintf(file,"! ======================================================\n");
 	if(strstr(keyWords,"RUNTYP"))
 	{
@@ -434,34 +463,37 @@ static gchar* runOnePCGamess(SemiEmpiricalModel* seModel, gchar* keyWords)
 	}
 	fprintf(file," $END\n");
 	fclose(file);
-	fileNamePrefix = g_strdup_printf("%s%s",seModel->workDir,G_DIR_SEPARATOR_S);
+	fileNamePrefix = g_strdup_printf("%s%sWorkFF",seModel->workDir,G_DIR_SEPARATOR_S);
 #ifndef G_OS_WIN32
-	if(!strcmp(NameCommandPCGamess,"pcgamess") || !strcmp(NameCommandPCGamess,"nohup pcgamess"))
+	if(!strcmp(NameCommandFireFly,"pcgamess") || !strcmp(NameCommandFireFly,"nohup pcgamess")
+	|| !strcmp(NameCommandFireFly,"firefly") || !strcmp(NameCommandFireFly,"nohup firefly"))
 	{
 		fprintf(fileSH,"mkdir %stmp\n",fileNamePrefix);
 		fprintf(fileSH,"cd %stmp\n",fileNamePrefix);
 		fprintf(fileSH,"cp %s input\n",fileNameIn);
-		fprintf(fileSH,"%s -p -o %s\n",NameCommandPCGamess,fileNameOut);
+		fprintf(fileSH,"%s -p -o %s\n",NameCommandFireFly,fileNameOut);
 		fprintf(fileSH,"cd ..\n");
 		fprintf(fileSH,"rm PUNCH\n");
 		fprintf(fileSH,"/bin/rm -r  %stmp\n",fileNamePrefix);
 	}
 	else
-		fprintf(fileSH,"%s %s",NameCommandPCGamess,fileNameIn);
+		fprintf(fileSH,"%s %s",NameCommandFireFly,fileNameIn);
 #else
-	 if(!strcmp(NameCommandPCGamess,"pcgamess") )
+	 if(!strcmp(NameCommandFireFly,"pcgamess") ||
+	 !strcmp(NameCommandFireFly,"firefly") )
 	{
         	fprintf(fileSH,"mkdir \"%stmp\"\n",fileNamePrefix);
+		addUnitDisk(fileSH, fileNamePrefix);
 	 	fprintf(fileSH,"cd \"%stmp\"\n",fileNamePrefix);
          	fprintf(fileSH,"copy \"%s\" input\n",fileNameIn);
-         	fprintf(fileSH,"%s -p -o \"%s\"\n",NameCommandPCGamess,fileNameOut);
+         	fprintf(fileSH,"%s -p -o \"%s\"\n",NameCommandFireFly,fileNameOut);
 	 	fprintf(fileSH,"cd ..\n");
          	fprintf(fileSH,"del PUNCH 2>nul\n");
          	fprintf(fileSH,"del /Q  \"%stmp\"\n",fileNamePrefix);
          	fprintf(fileSH,"rmdir  \"%stmp\"\n",fileNamePrefix);
 	}
 	else
-		fprintf(fileSH,"%s %s",NameCommandPCGamess,fileNameIn);
+		fprintf(fileSH,"%s %s",NameCommandFireFly,fileNameIn);
 #endif
 	fclose(fileSH);
 #ifndef G_OS_WIN32
@@ -480,17 +512,17 @@ static gchar* runOnePCGamess(SemiEmpiricalModel* seModel, gchar* keyWords)
 	return fileNameOut;
 }
 /**********************************************************************/
-static SemiEmpiricalModel newPCGamessModel(gchar* method, gchar* dirName)
+static SemiEmpiricalModel newFireFlyModel(gchar* method, gchar* dirName, SemiEmpiricalModelConstraints constraints)
 {
-	SemiEmpiricalModel seModel = newSemiEmpiricalModel(method, dirName);
+	SemiEmpiricalModel seModel = newSemiEmpiricalModel(method, dirName, constraints);
 
-	seModel.klass->calculateGradient = calculateGradientPCGamess;
-	seModel.klass->calculateEnergy = calculateEnergyPCGamess;
+	seModel.klass->calculateGradient = calculateGradientFireFly;
+	seModel.klass->calculateEnergy = calculateEnergyFireFly;
 
 	return seModel;
 }
 /**********************************************************************/
-static void calculateGradientPCGamess(SemiEmpiricalModel* seModel)
+static void calculateGradientFireFly(SemiEmpiricalModel* seModel)
 {
 	gint i;
 	gint j;
@@ -501,14 +533,14 @@ static void calculateGradientPCGamess(SemiEmpiricalModel* seModel)
 	if(seModel->molecule.nAtoms<1) return;
 	if(!seModel->method) return;
 	keyWords = g_strdup_printf("RUNTYP=GRADIENT GBASIS=%s",seModel->method);
-	fileOut = runOnePCGamess(seModel, keyWords);
+	fileOut = runOneFireFly(seModel, keyWords);
 
 	if(fileOut)
 	{
 		for(j=0;j<3;j++)
 			for( i=0; i<m.nAtoms;i++)
 				m.gradient[j][i] = 0.0;
-		if(!getGradientPCGamess(fileOut, seModel))
+		if(!getGradientFireFly(fileOut, seModel))
 		{
 #ifdef G_OS_WIN32
 			gchar* comm = g_strdup_printf("type %s",fileOut);
@@ -516,8 +548,8 @@ static void calculateGradientPCGamess(SemiEmpiricalModel* seModel)
 			gchar* comm = g_strdup_printf("cat %s",fileOut);
 #endif
 			StopCalcul=TRUE;
-			set_text_to_draw("Problem : I cannot caculate the Gradient... ");
-			set_statubar_operation_str("Calcul Stopped ");
+			set_text_to_draw(_("Problem : I cannot caculate the Gradient... "));
+			set_statubar_operation_str(_("Calculation Stopped "));
 			dessine();
 			gtk_widget_set_sensitive(StopButton, FALSE);
 			Waiting(1);
@@ -526,13 +558,13 @@ static void calculateGradientPCGamess(SemiEmpiricalModel* seModel)
 			g_free(comm);
 			return;
 		}
-		getEnergyPCGamess(fileOut, &seModel->molecule.energy);
+		getEnergyFireFly(fileOut, &seModel->molecule.energy);
 		g_free(fileOut);
 	}
 
 }
 /**********************************************************************/
-static void calculateEnergyPCGamess(SemiEmpiricalModel* seModel)
+static void calculateEnergyFireFly(SemiEmpiricalModel* seModel)
 {
 	gchar* keyWords = NULL;
 	gchar* fileOut = NULL;
@@ -540,20 +572,21 @@ static void calculateEnergyPCGamess(SemiEmpiricalModel* seModel)
 	if(seModel->molecule.nAtoms<1) return;
 	if(!seModel->method) return;
 	keyWords = g_strdup_printf("RUNTYP=Energy GBASIS=%s",seModel->method);
-	fileOut = runOnePCGamess(seModel, keyWords);
+	fileOut = runOneFireFly(seModel, keyWords);
 	if(fileOut)
 	{
-		getEnergyPCGamess(fileOut, &seModel->molecule.energy);
+		getEnergyFireFly(fileOut, &seModel->molecule.energy);
 		g_free(fileOut);
 	}
 
 }
 /**********************************************************************/
-SemiEmpiricalModel createPCGamessModel (GeomDef* geom,gint Natoms,gint charge, gint spin, gchar* method, gchar* dirName)
+SemiEmpiricalModel createFireFlyModel (GeomDef* geom,gint Natoms,gint charge, gint spin, gchar* method, gchar* dirName, SemiEmpiricalModelConstraints constraints)
 {
-	SemiEmpiricalModel seModel = newPCGamessModel(method,dirName);
+	SemiEmpiricalModel seModel = newFireFlyModel(method,dirName, constraints);
 
-	seModel.molecule = createMoleculeSE(geom,Natoms, charge, spin);
+	seModel.molecule = createMoleculeSE(geom,Natoms, charge, spin,TRUE);
+	setRattleConstraintsParameters(&seModel);
 	
 	return seModel;
 }

@@ -1,6 +1,6 @@
 /* OrbitalsGamess.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -109,7 +109,7 @@ static gint* read_geomorb_gamess_file_geom(gchar *FileName)
   
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No file slected","Error",TRUE);
+		Message(_("Sorry\n No file selected"),_("Error"),TRUE);
  		for(i=0;i<5;i++) g_free(AtomCoord[i]);
     		return NULL;
  	}
@@ -118,7 +118,7 @@ static gint* read_geomorb_gamess_file_geom(gchar *FileName)
  	fd = FOpen(FileName, "rb");
  	if(fd ==NULL)
  	{
-  		Message("Sorry\nI can not open this file","Error",TRUE);
+  		Message(_("Sorry\nI can not open this file"),_("Error"),TRUE);
  		g_free(t);
  		for(i=0;i<5;i++) g_free(AtomCoord[i]);
   		return NULL;
@@ -127,13 +127,13 @@ static gint* read_geomorb_gamess_file_geom(gchar *FileName)
   	Dipole.def = FALSE;
 	free_data_all();
 	tmp = get_name_file(FileName);
-	set_status_label_info("File Name",tmp);
+	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info("File Type","Dalton");
+	set_status_label_info(_("File type"),"Dalton");
  	numgeom =1;
  	do 
  	{
-		set_status_label_info("Geometry","Reading");
+		set_status_label_info(_("Geometry"),_("Reading"));
  		OK=FALSE;
  		while(!feof(fd))
 		{
@@ -158,13 +158,13 @@ static gint* read_geomorb_gamess_file_geom(gchar *FileName)
         	}
  		if(!OK && (numgeom == 1) )
 		{
-  			Message("Sorry\nI can not read geometry from this file","Error",TRUE);
+  			Message(_("Sorry\nI can not read geometry from this file"),_("Error"),TRUE);
  			fclose(fd);
  			g_free(t);
  			for(i=0;i<5;i++) g_free(AtomCoord[i]);
-			set_status_label_info("File Name","Nothing");
-			set_status_label_info("File Type","Nothing");
-			set_status_label_info("Geometry","Nothing");
+			set_status_label_info(_("File name"),_("Nothing"));
+			set_status_label_info(_("File type"),_("Nothing"));
+			set_status_label_info(_("Geometry"),_("Nothing"));
 			return NULL;
     		}
  		if(!OK)break;
@@ -374,7 +374,7 @@ static gchar** read_basis_from_a_gamess_output_file(gchar *FileName, gint* nrs)
 	
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry No file slected\n","Error",TRUE);
+		Message(_("Sorry No file selected\n"),_("Error"),TRUE);
     		return NULL;
  	}
 
@@ -382,8 +382,8 @@ static gchar** read_basis_from_a_gamess_output_file(gchar *FileName, gint* nrs)
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
   		return NULL;
  	}
 
@@ -414,7 +414,7 @@ static gchar** read_basis_from_a_gamess_output_file(gchar *FileName, gint* nrs)
 	if(!OK)
 	{
 		g_free(t);
-  		Message("Sorry I can read basis from this file\n","Error",TRUE);
+  		Message(_("Sorry I can read basis from this file\n"),_("Error"),TRUE);
   		return NULL;
 	}
 	fgets(t,taille,fd);
@@ -432,7 +432,7 @@ static gchar** read_basis_from_a_gamess_output_file(gchar *FileName, gint* nrs)
 	{
 		g_free(t);
 		g_free(strbasis);
-  		Message("Sorry I can read basis in this file\n","Error",TRUE);
+  		Message(_("Sorry I can read basis in this file\n"),_("Error"),TRUE);
   		return NULL;
 	}
 	
@@ -758,10 +758,11 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *fileName,GabEditOrbType
 	gdouble *EnerOrbitals;
 	gchar **SymOrbitals;
 	gchar* tmp = NULL;
+	gint ibegin = 0;
 	
  	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
-		Message("Sorry No file slected\n","Error",TRUE);
+		Message(_("Sorry No file selected\n"),_("Error"),TRUE);
     		return FALSE;
  	}
 
@@ -770,8 +771,8 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *fileName,GabEditOrbType
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),fileName);
+  		Message(buffer,_("Error"),TRUE);
   		return FALSE;
  	}
  	for(i=0;i<5;i++) dum[i]=g_malloc(BSIZE*sizeof(gchar));
@@ -862,8 +863,8 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *fileName,GabEditOrbType
   			)
 			{
 				gchar buffer[BSIZE];
-				sprintf(buffer,"Sorry,  I can not read orbitals from '%s' file\n",fileName);
-  				Message(buffer,"Error",TRUE);
+				sprintf(buffer,_("Sorry,  I can not read orbitals from '%s' file\n"),fileName);
+  				Message(buffer,_("Error"),TRUE);
 			}
 			FreeTable2(CoefOrbitals,NOrb);
 			g_free(EnerOrbitals);
@@ -988,8 +989,16 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *fileName,GabEditOrbType
 			case GABEDIT_ORBTYPE_MOLECULAR: 
 			case GABEDIT_ORBTYPE_MCSCF: 
 			case GABEDIT_ORBTYPE_EIGENVECTORS: 
-	  			fgets(t,taille,fd);
-	  			fgets(t,taille,fd);
+				/* error message of version */
+ 				while(!feof(fd))
+				{
+	  				if(!fgets(t,taille,fd))break;
+					{
+						gint d;
+						gint k = sscanf(t,"%d",&d);
+						if(k==1 && d>0) {ibegin=1;break;}
+					}
+				}
 				break;
 			case GABEDIT_ORBTYPE_BOYS: 
 			case GABEDIT_ORBTYPE_EDMISTON: 
@@ -1002,7 +1011,8 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *fileName,GabEditOrbType
 		gint no=0;
 		for(n=0;n<ncart;n++)
 		{
-	  		if(!fgets(t,taille,fd))break;
+			if(ibegin ==0) {if(!fgets(t,taille,fd))break;}
+			else ibegin = 0;
 			k1 = sscanf(t,"%d %d %d %d %d",&NumOrb[0],&NumOrb[1],&NumOrb[2],&NumOrb[3],&NumOrb[4]);
 			for(i=0;i<k1;i++) NumOrb[i]--;
 			for(i=0;i<k1;i++) 
@@ -1106,24 +1116,24 @@ void read_gamess_orbitals(gchar* FileName)
 	GabEditOrbLocalType typeLocal;
 
 
-	typefile =get_type_file(FileName);
+	typefile =get_type_file_orb(FileName);
 	if(typefile==GABEDIT_TYPEFILE_UNKNOWN) return;
 
 
 	if(typefile != GABEDIT_TYPEFILE_GAMESS)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not read this format from '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not read this format from '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 		return ;
 	}
 
 	free_data_all();
 	t = get_name_file(FileName);
-	set_status_label_info("File Name",t);
+	set_status_label_info(_("File name"),t);
 	g_free(t);
-	set_status_label_info("File Type","Gamess");
-	set_status_label_info("Mol. Orb.","Reading");
+	set_status_label_info(_("File type"),"Gamess");
+	set_status_label_info(_("Mol. Orb."),_("Reading"));
 	
 	free_orbitals();	
 
@@ -1135,10 +1145,10 @@ void read_gamess_orbitals(gchar* FileName)
 				"Sorry, Gabedit does not support spherical basis with contaminant cartezian function\n\n"
 				"Use ISPHER=-1 or ISPHER=1 in CONTROL block"
 		       );
-  		Message(buffer,"Error",TRUE);
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Mol. Orb.","Nothing");
+  		Message(buffer,_("Error"),TRUE);
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
 		return;
 	}
 	*/
@@ -1147,9 +1157,9 @@ void read_gamess_orbitals(gchar* FileName)
  	if(znuc==NULL)
 	{
 		free_geometry();
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Mol. Orb.","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
 		return;
 	}
 	strbasis=read_basis_from_a_gamess_output_file(FileName, &nrs);
@@ -1162,30 +1172,30 @@ void read_gamess_orbitals(gchar* FileName)
 			for(i=0;i<Ncenters;i++) GeomOrb[i].Prop = prop_atom_get("H");
 			free_geometry();
 		}
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Mol. Orb.","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
 		return;
 	}
 
-	set_status_label_info("Mol. Orb.","Reading");
+	set_status_label_info(_("Mol. Orb."),_("Reading"));
  	InitializeAll();
  	if(!DefineGamessBasisType(strbasis,nrs))
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not read basis from '%s' file\n",FileName);
-  		Message(buffer,"Error",TRUE);
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Mol. Orb.","Nothing");
+		sprintf(buffer,_("Sorry, I can not read basis from '%s' file\n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
 		return;
 	}
 	for(i=0;i<Ntype;i++)
 	if(Type[i].Ao == NULL)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not read '%s' file, problem with basis set \n",FileName);
-  		Message(buffer,"Error",TRUE);
+		sprintf(buffer,_("Sorry, I can not read '%s' file, problem with basis set \n"),FileName);
+  		Message(buffer,_("Error"),TRUE);
 		return;
 	}
 	/* reset symbol of atoms  */
@@ -1203,7 +1213,7 @@ void read_gamess_orbitals(gchar* FileName)
 	RebuildGeom = TRUE;
 	reset_grid_limits();
 	init_atomic_orbitals();
-	set_status_label_info("Geometry","Ok");
+	set_status_label_info(_("Geometry"),_("Ok"));
 	glarea_rafresh(GLArea); /* for geometry*/
 
 
@@ -1273,7 +1283,7 @@ void read_gamess_orbitals(gchar* FileName)
 	if(Ok)
 	{
 		/*PrintAllOrb(CoefAlphaOrbitals);*/
-		set_status_label_info("Mol. Orb.","Ok");
+		set_status_label_info(_("Mol. Orb."),_("Ok"));
 		glarea_rafresh(GLArea); /* for geometry*/
 		NumSelOrb = NAlphaOcc-1;
 		create_list_orbitals();
@@ -1281,9 +1291,9 @@ void read_gamess_orbitals(gchar* FileName)
 	else
 	{
 		free_orbitals();	
-		set_status_label_info("File Name","Nothing");
-		set_status_label_info("File Type","Nothing");
-		set_status_label_info("Mol. Orb.","Nothing");
+		set_status_label_info(_("File name"),_("Nothing"));
+		set_status_label_info(_("File type"),_("Nothing"));
+		set_status_label_info(_("Mol. Orb."),_("Nothing"));
 	}
 
 } 

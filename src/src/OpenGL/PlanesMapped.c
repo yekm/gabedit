@@ -1,6 +1,6 @@
 /* PlanesMapped.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -45,7 +45,7 @@ static void apply_maps(GtkWidget *Win,gpointer data)
         temp	= gtk_entry_get_text(GTK_ENTRY(Entrys[0])); 
 	pvalue = atoi(temp);
 
-        if(!get_a_float(Entrys[1],&gap,"Error : The projection value should be float.")) return;
+        if(!get_a_float(Entrys[1],&gap,_("Error : The projection value should be float."))) return;
 	numPlane = pvalue-1;
 	if(numPlane<0 || numPlane>grid->N[type]) numPlane = grid->N[type]/2;
 	switch(type)
@@ -74,7 +74,7 @@ static GtkWidget *create_maps_frame( GtkWidget *vboxall,gchar* title,gint type)
 	gchar      *strLabelPlane = NULL;
 	
 	itype = type;
-	strLabelPlane = g_strdup(" Plane number ");
+	strLabelPlane = g_strdup(_(" Plane number "));
 	listvalues = g_malloc(grid->N[type]*sizeof(gchar*));
 	for(i=0;i<grid->N[type];i++)
 	{
@@ -105,11 +105,11 @@ static GtkWidget *create_maps_frame( GtkWidget *vboxall,gchar* title,gint type)
                   3,3);
 
 	i = 2;
-	add_label_at_table(Table, "Projection ",i,(gushort)0,GTK_JUSTIFY_LEFT);
+	add_label_at_table(Table, _("Projection "),i,(gushort)0,GTK_JUSTIFY_LEFT);
 	add_label_at_table(Table," : ",i,(gushort)1,GTK_JUSTIFY_LEFT);
 	Entrys[1] = gtk_entry_new ();
 	add_widget_table(Table,Entrys[1],(gushort)i,(gushort)2);
-	add_label_at_table(Table," left if <0, right if >0. and nothing if 0 ",i,(gushort)3,GTK_JUSTIFY_LEFT);
+	add_label_at_table(Table,_(" left if <0, right if >0. and nothing if 0 "),i,(gushort)3,GTK_JUSTIFY_LEFT);
 
 	g_object_set_data(G_OBJECT (frame), "Entrys",Entrys);
 	g_object_set_data(G_OBJECT (GTK_OBJECT(GTK_COMBO_BOX(combo))), "Entrys",Entrys);
@@ -146,7 +146,7 @@ void create_maps(gchar* title,gint type)
 
   if(!grid)
   {
-	  if(!CancelCalcul) Message("Grid not defined ","Error",TRUE);
+	  if(!CancelCalcul) Message(_("Grid not defined "),_("Error"),TRUE);
 	  return;
   }
   itype = type;
@@ -172,14 +172,14 @@ void create_maps(gchar* title,gint type)
   hbox = create_hbox_false(vboxwin);
   gtk_widget_realize(Win);
 
-  button = create_button(Win,"Cancel");
+  button = create_button(Win,_("Cancel"));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Win));
   gtk_widget_show (button);
 
-  button = create_button(Win,"OK");
+  button = create_button(Win,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
@@ -196,7 +196,7 @@ static void apply_maps_plane(GtkWidget *Win,gpointer data)
 	GtkWidget* entry =(GtkWidget*)g_object_get_data(G_OBJECT (Win), "Entry");
 	gdouble gap;
 	
-        if(!get_a_float(entry, &gap, "Error : The projection value should be float.")) return;
+        if(!get_a_float(entry, &gap, _("Error : The projection value should be float."))) return;
 	add_maps(0, 1, 0,  gap, TRUE);
 	glarea_rafresh(GLArea);
   	delete_child(Win);
@@ -227,11 +227,11 @@ static GtkWidget *create_maps_frame_plane( GtkWidget *vboxall,gchar* title)
 	gtk_container_add(GTK_CONTAINER(vboxframe),Table);
 
 	i = 0;
-	add_label_at_table(Table, "Projection ",i,(gushort)0,GTK_JUSTIFY_LEFT);
+	add_label_at_table(Table, _("Projection "),i,(gushort)0,GTK_JUSTIFY_LEFT);
 	add_label_at_table(Table," : ",i,(gushort)1,GTK_JUSTIFY_LEFT);
 	entry = gtk_entry_new ();
 	add_widget_table(Table, entry, (gushort)i, (gushort)2);
-	add_label_at_table(Table," left if <0, right if >0. and nothing if 0",i,(gushort)3,GTK_JUSTIFY_LEFT);
+	add_label_at_table(Table,_(" left if <0, right if >0. and nothing if 0"),i,(gushort)3,GTK_JUSTIFY_LEFT);
 	gtk_entry_set_text(GTK_ENTRY(entry),"0.0");
 
 	g_object_set_data(G_OBJECT (frame), "Entry",entry);
@@ -253,7 +253,7 @@ void create_maps_plane(gchar* title)
 
   if(!gridPlaneForPlanesMapped)
   {
-	  Message("Grid in plane is not defined ","Error",TRUE);
+	  Message(_("Grid in plane is not defined "),_("Error"),TRUE);
 	  return;
   }
   /* Principal Window */
@@ -278,13 +278,13 @@ void create_maps_plane(gchar* title)
   hbox = create_hbox_false(vboxwin);
   gtk_widget_realize(Win);
 
-  button = create_button(Win,"Cancel");
+  button = create_button(Win,_("Cancel"));
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
   gtk_widget_show (button);
 
-  button = create_button(Win,"OK");
+  button = create_button(Win,_("OK"));
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);

@@ -1,6 +1,6 @@
 /* FileChooser.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -35,8 +35,8 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
   GtkWidget *gabeditFileChooser;
   gchar* patternsfiles[] = {	"*",
 			    	"*.inp","*.com","*.mop",
-	  			"*.log","*.out","*.aux","*.gab","*.xyz","*.mol2","*.tnk","*.pdb","*.hin","*.zmt","*.gzmt",
-	  		    	"*.hf","*.gcube","*.cube","*.CUBE","*.grid","*.M2Msi","*.t41","*.trj","*.txt","*",
+	  			"*.log","*.out","*.fchk", "*.aux","*.gab","*.xyz","*.mol2","*.tnk","*.pdb","*.hin","*.zmt","*.gzmt",
+	  		    	"*.hf","*.gcube","*.cube","*.CUBE","*.grid","*.M2Msi","*.t41","*.dx","*.trj","*.irc","*.txt","*",
 			    	NULL};
   GCallback *func = (GCallback *)data;
   gchar* temp = NULL;
@@ -45,8 +45,8 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
   	gabeditFileChooser = gabedit_file_chooser_new(title, action);
   else
   {
-	  if(action == GTK_FILE_CHOOSER_ACTION_OPEN) gabeditFileChooser = gabedit_file_chooser_new("Open file", action);
-	  else gabeditFileChooser = gabedit_file_chooser_new("Save file", action);
+	  if(action == GTK_FILE_CHOOSER_ACTION_OPEN) gabeditFileChooser = gabedit_file_chooser_new(_("Open file"), action);
+	  else gabeditFileChooser = gabedit_file_chooser_new(_("Save file"), action);
   }
 
   if(type== GABEDIT_TYPEFILE_CUBEMOLPRO)
@@ -69,7 +69,7 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 					   gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.log");
 					   temp = g_strdup_printf("%s.log",fileopen.projectname);
 					   break;
-	   case GABEDIT_TYPEFILE_PCGAMESS : 
+	   case GABEDIT_TYPEFILE_FIREFLY : 
 					   gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.log");
 					   temp = g_strdup_printf("%s.log",fileopen.projectname);
 					   break;
@@ -161,13 +161,17 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.inp");
 					    temp = g_strdup_printf("%s.inp",fileopen.projectname);
 					    break;
-	   case GABEDIT_TYPEFILE_PCGAMESSINPUT : 
+	   case GABEDIT_TYPEFILE_FIREFLYINPUT : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.inp");
 					    temp = g_strdup_printf("%s.inp",fileopen.projectname);
 					    break;
-	   case GABEDIT_TYPEFILE_GAUSIANINPUT : 
+	   case GABEDIT_TYPEFILE_GAUSSIANINPUT : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.com");
 					    temp = g_strdup_printf("%s.com",fileopen.projectname);
+					    break;
+	   case GABEDIT_TYPEFILE_GAUSSIAN_FCHK : 
+					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.fchk");
+					    temp = g_strdup_printf("%s.fchk",fileopen.projectname);
 					    break;
 	   case GABEDIT_TYPEFILE_MOLCASINPUT : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.com");
@@ -205,6 +209,10 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.png");
 					    temp = g_strdup_printf("%s.png",fileopen.projectname);
 					    break;
+	   case GABEDIT_TYPEFILE_TIF : 
+					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.tif");
+					    temp = g_strdup_printf("%s.tif",fileopen.projectname);
+					    break;
 	   case GABEDIT_TYPEFILE_PS : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.ps");
 					    temp = g_strdup_printf("%s.ps",fileopen.projectname);
@@ -237,9 +245,17 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.gcube");
 					    temp = g_strdup_printf("%s.gcube",fileopen.projectname);
 				      	    break;
+	   case GABEDIT_TYPEFILE_CUBEDX : 
+					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.dx");
+					    temp = g_strdup_printf("%s.dx",fileopen.projectname);
+				      	    break;
 	   case GABEDIT_TYPEFILE_TRJ : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.trj");
 					    temp = g_strdup_printf("%s.trj",fileopen.projectname);
+				      	    break;
+	   case GABEDIT_TYPEFILE_GAMESSIRC : 
+					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.irc");
+					    temp = g_strdup_printf("%s.irc",fileopen.projectname);
 				      	    break;
 	   case GABEDIT_TYPEFILE_TXT : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.txt");
@@ -290,12 +306,12 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
   }
   	if(typewin==GABEDIT_TYPEWIN_ORB)
 	{
-	  if(action == GTK_FILE_CHOOSER_ACTION_OPEN) add_glarea_child(gabeditFileChooser,"Open file ");
-	  else add_glarea_child(gabeditFileChooser,"Save file ");
+	  if(action == GTK_FILE_CHOOSER_ACTION_OPEN) add_glarea_child(gabeditFileChooser,_("Open file "));
+	  else add_glarea_child(gabeditFileChooser,_("Save file "));
 	}
 	else
 	{
-  		add_button_windows(" Open file ",gabeditFileChooser);
+  		add_button_windows(_(" Open file "),gabeditFileChooser);
   		g_signal_connect(G_OBJECT(gabeditFileChooser), "delete_event",(GCallback)destroy_button_windows,NULL);
 	}
 
@@ -328,7 +344,7 @@ void choose_file_to_open()
   GtkWidget *gabeditFileChooser;
   gchar* patternsfiles[] = {"*.com","*.mop","*.inp","*.xyz","*.zmt","*.gzmt","*",NULL};
 
-  gabeditFileChooser = gabedit_file_chooser_new("Open file", GTK_FILE_CHOOSER_ACTION_OPEN);
+  gabeditFileChooser = gabedit_file_chooser_new(_("Open file"), GTK_FILE_CHOOSER_ACTION_OPEN);
   gabedit_file_chooser_hide_hidden(GABEDIT_FILE_CHOOSER(gabeditFileChooser));
 
   if(strcmp(fileopen.datafile,"NoName"))
@@ -345,7 +361,7 @@ void choose_file_to_open()
   }
 
    gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(gabeditFileChooser), patternsfiles);
-    if(iprogram == PROG_IS_GAMESS  || iprogram == PROG_IS_PCGAMESS || iprogram == PROG_IS_ORCA  || iprogram == PROG_IS_OTHER)
+    if(iprogram == PROG_IS_GAMESS  || iprogram == PROG_IS_FIREFLY || iprogram == PROG_IS_ORCA  || iprogram == PROG_IS_OTHER)
    	gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.inp");
     if(iprogram == PROG_IS_MOPAC)
    	gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.mop");
@@ -357,7 +373,7 @@ void choose_file_to_open()
   g_signal_connect (gabeditFileChooser, "response", G_CALLBACK (destroy_button_windows), GTK_OBJECT(gabeditFileChooser));
   g_signal_connect (gabeditFileChooser, "response", G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(gabeditFileChooser));
   
-  add_button_windows(" Open file ",gabeditFileChooser);
+  add_button_windows(_(" Open file "),gabeditFileChooser);
   gtk_widget_show(gabeditFileChooser);
 }
 /********************************************************************************/
@@ -365,7 +381,7 @@ void choose_file_to_insert()
 {
   GtkWidget *gabeditFileChooser;
 
-  gabeditFileChooser = gabedit_file_chooser_new("Include file", GTK_FILE_CHOOSER_ACTION_OPEN);
+  gabeditFileChooser = gabedit_file_chooser_new(_("Include file"), GTK_FILE_CHOOSER_ACTION_OPEN);
   gabedit_file_chooser_hide_hidden(GABEDIT_FILE_CHOOSER(gabeditFileChooser));
   g_signal_connect(G_OBJECT(gabeditFileChooser), "delete_event",(GCallback)destroy_button_windows,NULL);
   if(fileopen.localdir)
@@ -380,7 +396,7 @@ void choose_file_to_insert()
   g_signal_connect (gabeditFileChooser, "response",  G_CALLBACK (destroy_button_windows), GTK_OBJECT(gabeditFileChooser));
   g_signal_connect (gabeditFileChooser, "response",  G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(gabeditFileChooser));
   
-  add_button_windows(" Include file ",gabeditFileChooser);
+  add_button_windows(_(" Include file "),gabeditFileChooser);
   gtk_widget_show(gabeditFileChooser);
 }
 /********************************************************************************/
@@ -417,7 +433,7 @@ void choose_file_to_save_end()
 {
   GtkWidget *gabeditFileChooser;
 
-  gabeditFileChooser = gabedit_file_chooser_new("Save file", GTK_FILE_CHOOSER_ACTION_SAVE);
+  gabeditFileChooser = gabedit_file_chooser_new(_("Save file"), GTK_FILE_CHOOSER_ACTION_SAVE);
   gabedit_file_chooser_hide_hidden(GABEDIT_FILE_CHOOSER(gabeditFileChooser));
   gabedit_file_chooser_set_current_file(GABEDIT_FILE_CHOOSER(gabeditFileChooser),fileopen.datafile);
 
@@ -439,7 +455,7 @@ void Save_YesNo()
     DialogueMessage = gtk_dialog_new();
    
 
-    gtk_window_set_title(GTK_WINDOW(DialogueMessage),"Question");
+    gtk_window_set_title(GTK_WINDOW(DialogueMessage),_("Question"));
     gtk_window_set_modal (GTK_WINDOW (DialogueMessage), TRUE);
     gtk_window_set_transient_for(GTK_WINDOW(DialogueMessage),GTK_WINDOW(Fenetre));
     gtk_window_set_position(GTK_WINDOW(DialogueMessage),GTK_WIN_POS_CENTER);
@@ -461,21 +477,21 @@ void Save_YesNo()
       gtk_widget_realize(DialogueMessage);
 
     t=get_name_file(fileopen.datafile);
-    t=g_strdup_printf("\"%s\" has been modified. Do you want to save it ?",t);
-    Label = create_label_with_pixmap(DialogueMessage,t,"Question");
+    t=g_strdup_printf(_("\"%s\" has been modified. Do you want to save it ?"),t);
+    Label = create_label_with_pixmap(DialogueMessage,t,_("Question"));
     g_free(t);
     gtk_box_pack_start( GTK_BOX(vboxframe), Label,TRUE,TRUE,0);
     
     /* the Cancel button */
     gtk_widget_realize(DialogueMessage);
-    Bouton = create_button(DialogueMessage,"Cancel");
+    Bouton = create_button(DialogueMessage,_("Cancel"));
     gtk_box_pack_start( GTK_BOX(GTK_DIALOG(DialogueMessage)->action_area), Bouton,TRUE,TRUE,0);
     g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(DialogueMessage));
     GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
     gtk_widget_grab_default(Bouton);
 
     /* the No button */
-    Bouton = create_button(DialogueMessage,"No");
+    Bouton = create_button(DialogueMessage,_("No"));
     gtk_box_pack_start( GTK_BOX(GTK_DIALOG(DialogueMessage)->action_area), Bouton,TRUE,TRUE,0);
     g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)ExitDlg,NULL);
     GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
@@ -510,11 +526,11 @@ void set_entry_selected_file(GtkWidget* hbox)
   GtkWidget *Win = (GtkWidget*)(g_object_get_data(G_OBJECT(hbox),"Window"));	
   gchar** patterns = (gchar**)(g_object_get_data(G_OBJECT(hbox),"Patterns")); 
   
-  gabeditFileChooser = gabedit_file_chooser_new("File selection ", GTK_FILE_CHOOSER_ACTION_OPEN);
+  gabeditFileChooser = gabedit_file_chooser_new(_("File selection"), GTK_FILE_CHOOSER_ACTION_OPEN);
   gtk_window_set_modal (GTK_WINDOW (gabeditFileChooser), TRUE);
   gabedit_file_chooser_hide_hidden(GABEDIT_FILE_CHOOSER(gabeditFileChooser));
   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(gabeditFileChooser), patterns);
-  add_child(Win,gabeditFileChooser,gtk_widget_destroy," File selction ");
+  add_child(Win,gabeditFileChooser,gtk_widget_destroy,_(" File selction "));
   g_signal_connect(G_OBJECT(gabeditFileChooser),"delete_event",(GCallback)delete_child,NULL);
 
 

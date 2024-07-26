@@ -1,6 +1,6 @@
 /* DOSSpectrum.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -37,7 +37,7 @@ DEALINGS IN THE SOFTWARE.
 /********************************************************************************/
 static void createDOSSpectrumWin(gint numberOfStates, gdouble* energies, gdouble* intensities)
 {
-	GtkWidget* window = spectrum_win_new_with_xy("Density of states",  numberOfStates, energies, intensities);
+	GtkWidget* window = spectrum_win_new_with_xy(_("Density of states"),  numberOfStates, energies, intensities);
 	GtkWidget* hbox = g_object_get_data(G_OBJECT (window), "HBoxData");
 	GabeditXYPlot *xyplot = g_object_get_data(G_OBJECT (window), "XYPLOT");
 
@@ -47,7 +47,7 @@ static void createDOSSpectrumWin(gint numberOfStates, gdouble* energies, gdouble
 	if(!hbox) return;
 
 	spectrum_win_set_xlabel(window, "eV");
-	spectrum_win_set_ylabel(window, "Intensity");
+	spectrum_win_set_ylabel(window, _("Intensity"));
 
 	if(!xyplot || !G_IS_OBJECT(xyplot)) return;
 	gabedit_xyplot_set_autorange(xyplot,NULL);
@@ -57,8 +57,8 @@ static void createDOSSpectrumWin(gint numberOfStates, gdouble* energies, gdouble
 static void messageErrorFreq(gchar* fileName)
 {
 	gchar buffer[BSIZE];
-	sprintf(buffer,"Sorry, I can not read energies from '%s' file\n",fileName);
-  	Message(buffer,"Error",TRUE);
+	sprintf(buffer,_("Sorry, I can not read energies from '%s' file\n"),fileName);
+  	Message(buffer,_("Error"),TRUE);
 }
 /********************************************************************************/
 /*
@@ -144,7 +144,7 @@ static void read_gabedit_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_gabedit_file,
-			"Read energies from a Gabedit file",
+			_("Read energies from a Gabedit file"),
 			GABEDIT_TYPEFILE_GABEDIT,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -204,7 +204,7 @@ static void read_sample_1column_file_dlg()
 {
 	GtkWidget* filesel = 
  	file_chooser_open(read_sample_1column_file,
-			"Read energies from a sample file(1 column : Energy(eV))",
+			_("Read energies from a sample file(1 column : Energy(eV))"),
 			GABEDIT_TYPEFILE_TXT,GABEDIT_TYPEWIN_OTHER);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -224,7 +224,7 @@ void createDOSSpectrumFromEnergiesTable(GtkWidget *parentWindow, gdouble* auEner
 	gint j;
 	if(numberOfStates<1)
 	{
-		GtkWidget* mess=Message("The number of states should be > 0","Error",TRUE);
+		GtkWidget* mess=Message(_("The number of states should be > 0"),_("Error"),TRUE);
     		gtk_window_set_modal (GTK_WINDOW (mess), TRUE);
 		return;
 	}

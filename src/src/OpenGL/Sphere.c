@@ -1,6 +1,6 @@
 /* Sphere.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -100,7 +100,7 @@ void Sphere_Draw_From_List(GLuint sphere,V3d position)
 	if (glIsList(sphere) == GL_TRUE) 
 		glCallList(sphere);
 	else
-		printf("Erreur de list\n");
+		printf("list error Sphere.c file\n");
 
 	
 	glPopMatrix();

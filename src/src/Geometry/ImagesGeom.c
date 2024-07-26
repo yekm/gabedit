@@ -1,6 +1,6 @@
 /* ImagesGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -34,7 +34,7 @@ static void save_geometry_image(GabeditFileChooser *SelecFile, gchar* type)
  	fileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     		return ;
  	}
 
@@ -55,7 +55,7 @@ guchar *get_rgb_image()
 {
  if(!ZoneDessin)
  {
-   Message("Sorry I can not create image file \nbecause Geometry display windows is closed"," Error ",TRUE);
+   Message(_("Sorry I can not create image file \nbecause Geometry display windows is closed"),_("Error"),TRUE);
    return NULL;
  }
   {
@@ -78,7 +78,7 @@ guchar *get_rgb_image()
 		 return NULL;
 	if(!rgbbuf)
 	{
-            Message("Sorry: couldn't allocate memory\n","Error",TRUE);
+            Message(_("Sorry: couldn't allocate memory\n"),_("Error"),TRUE);
 	    return NULL;
 	}
 	/* Debug("End get colormap\n");*/
@@ -140,7 +140,7 @@ guchar *get_rgb_image()
 	      			k += 3;
 			}
 	      break;
-	    default : Message("Unknown visual\n","Error",TRUE);
+	    default : Message(_("Unknown visual\n"),_("Error"),TRUE);
 		      g_free(rgbbuf);
 		      return NULL;
 	}
@@ -174,14 +174,14 @@ void save_geometry_ppm_file(GabeditFileChooser *SelecFile, gint response_id)
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     		return ;
  	}
 
 	file = FOpen(FileName,"wb");
 
         if (!file) {
-            Message("Sorry: can't open output file\n","Error",TRUE);
+            Message(_("Sorry: can't open output file\n"),_("Error"),TRUE);
             return;
         }
 
@@ -249,7 +249,7 @@ void save_geometry_bmp_file(GabeditFileChooser *SelecFile, gint response_id)
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     	return ;
  	}
 
@@ -257,7 +257,7 @@ void save_geometry_bmp_file(GabeditFileChooser *SelecFile, gint response_id)
 
 	if (!file) 
 	{
-		Message("Sorry: can't open output file\n","Error",TRUE);
+		Message(_("Sorry: can't open output file\n"),_("Error"),TRUE);
 		return;
 	}
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
@@ -400,14 +400,14 @@ void save_geometry_ps_file(GabeditFileChooser *SelecFile, gint response_id)
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
  	if ((!FileName) || (strcmp(FileName,"") == 0))
  	{
-		Message("Sorry\n No selected file"," Error ",TRUE);
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     	return ;
  	}
 
         file = FOpen(FileName,"w");
 
         if (!file) {
-            Message("Sorry: can't open output file\n","Error",TRUE);
+            Message(_("Sorry: can't open output file\n"),_("Error"),TRUE);
             return;
         }
 
@@ -469,4 +469,10 @@ void save_geometry_png_file(GabeditFileChooser *SelecFile, gint response_id)
 {       
 	if(response_id != GTK_RESPONSE_OK) return;
 	save_geometry_image(SelecFile, "png");
+}
+/**********************************************************************************************************************************/
+void save_geometry_tiff_file(GabeditFileChooser *SelecFile, gint response_id)
+{       
+	if(response_id != GTK_RESPONSE_OK) return;
+	save_geometry_image(SelecFile, "tiff");
 }

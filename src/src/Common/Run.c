@@ -1,6 +1,6 @@
 /* Run.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -53,7 +53,7 @@ static GtkWidget* ButtonMolcas = NULL;
 static GtkWidget* ButtonMolpro = NULL;
 static GtkWidget* ButtonMPQC = NULL;
 static GtkWidget* ButtonOrca = NULL;
-static GtkWidget* ButtonPCGamess = NULL;
+static GtkWidget* ButtonFireFly = NULL;
 static GtkWidget* ButtonQChem = NULL;
 static GtkWidget* ButtonMopac = NULL;
 static GtkWidget* ButtonOther = NULL;
@@ -250,20 +250,20 @@ void set_default_entrys(GtkWidget *button,gpointer data)
   			iprogram = PROG_IS_MOLPRO;
 		}
 		else
-		if(button == ButtonPCGamess )
+		if(button == ButtonFireFly )
 		{
-  			for(i=0;i<pcgamessCommands.numberOfCommands;i++)
-				glist = g_list_append(glist,pcgamessCommands.commands[i]);
+  			for(i=0;i<fireflyCommands.numberOfCommands;i++)
+				glist = g_list_append(glist,fireflyCommands.commands[i]);
 
   			gtk_combo_box_entry_set_popdown_strings( ComboCommand, glist) ;
 
   			g_list_free(glist);
-			gtk_entry_set_text (GTK_ENTRY (EntryCommand), NameCommandPCGamess);
+			gtk_entry_set_text (GTK_ENTRY (EntryCommand), NameCommandFireFly);
 			if(fileopen.command && !strstr(fileopen.command,"gamess.") && strlen(fileopen.command)>0)
 			       	gtk_entry_set_text (GTK_ENTRY (EntryCommand), fileopen.command);
 			gtk_label_set_text(GTK_LABEL(LabelExtFile), ".inp");
 			gtk_widget_show(LabelDataFile);
-  			iprogram = PROG_IS_PCGAMESS;
+  			iprogram = PROG_IS_FIREFLY;
 		}
 		else
 		if(button == ButtonOrca )
@@ -354,7 +354,7 @@ GtkWidget* create_text_result_command(GtkWidget* Text[],GtkWidget* Frame[],gchar
 
   gtk_widget_realize(Win);
   init_child(Win,gtk_widget_destroy," Run ");
-  g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)destroy_children,NULL);
 
   gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
   vboxall = create_vbox(Win);
@@ -367,11 +367,11 @@ GtkWidget* create_text_result_command(GtkWidget* Text[],GtkWidget* Frame[],gchar
   gtk_widget_show (frame);
   vboxall = create_vbox(frame);
 
-  Text[0] = create_text_widget(vboxall,"Output",&Frame[0]);
+  Text[0] = create_text_widget(vboxall,_("Output"),&Frame[0]);
   set_font (Text[0],FontsStyleResult.fontname);
   set_base_style(Text[0],FontsStyleResult.BaseColor.red ,FontsStyleResult.BaseColor.green ,FontsStyleResult.BaseColor.blue);
   set_text_style(Text[0],FontsStyleResult.TextColor.red ,FontsStyleResult.TextColor.green ,FontsStyleResult.TextColor.blue);
-  Text[1] = create_text_widget(vboxall,"Error",&Frame[1]);
+  Text[1] = create_text_widget(vboxall,_("Error"),&Frame[1]);
   set_font (Text[1],FontsStyleResult.fontname);
   set_base_style(Text[1],FontsStyleResult.BaseColor.red ,FontsStyleResult.BaseColor.green ,FontsStyleResult.BaseColor.blue);
   set_text_style(Text[1],FontsStyleResult.TextColor.red ,0,0);
@@ -380,11 +380,11 @@ GtkWidget* create_text_result_command(GtkWidget* Text[],GtkWidget* Frame[],gchar
   gtk_box_pack_start (GTK_BOX(vboxwin), hbox, FALSE, FALSE, 5);
   gtk_box_set_homogeneous(GTK_BOX(hbox), FALSE);
   gtk_widget_realize(Win);
-  button = create_button(Win,"OK");
+  button = create_button(Win,_("OK"));
   gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, FALSE, 5);
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(button);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,G_OBJECT(Win));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,G_OBJECT(Win));
   gtk_widget_show (button);
   gtk_window_set_default_size (GTK_WINDOW(Win), 3*ScreenWidth/5, 3*ScreenHeight/5);
   gtk_widget_set_size_request(GTK_WIDGET(Text[0]),-1,1*ScreenHeight/5);
@@ -446,7 +446,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
   		fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
 /*	Debug("End get_file\n");*/
 /*	Debug("End Get File frome remote : %s %s %s %s \n",fileopen.remotehost,fileopen.remoteuser,fileopen.remotedir,fileopen.logfile);*/
-	temp = g_strdup_printf("\nGet %s file from remote host :\n",fileopen.logfile);
+	temp = g_strdup_printf(_("\nGet %s file from remote host :\n"),fileopen.logfile);
   	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,temp,-1);   
   	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,temp,-1);   
 	g_free(temp);
@@ -460,7 +460,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
   	get_file(fout,ferr,fileopen.outputfile,fileopen.localdir,fileopen.remotedir,
   		fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
 /*	Debug("End Get File frome remote : %s %s %s %s \n",fileopen.remotehost,fileopen.remoteuser,fileopen.remotedir,fileopen.outputfile);*/
-	temp = g_strdup_printf("\nGet %s file from remote host :\n",fileopen.outputfile);
+	temp = g_strdup_printf(_("\nGet %s file from remote host :\n"),fileopen.outputfile);
   	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,temp,-1);   
   	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,temp,-1);   
 	g_free(temp);
@@ -484,7 +484,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
   			get_file(fout,ferr,filename,fileopen.localdir,fileopen.remotedir,
   				fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
 
-			temp = g_strdup_printf("\nGet %s file from remote host :\n",filename);
+			temp = g_strdup_printf(_("\nGet %s file from remote host :\n"),filename);
   			gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,temp,-1);   
   			gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,temp,-1);
 			g_free(temp);
@@ -495,7 +495,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
 			sprintf(filename,"%s.geo.molden",fileopen.projectname);
   			get_file(fout,ferr,filename,fileopen.localdir,fileopen.remotedir,
   				fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-			temp = g_strdup_printf("\nGet %s file from remote host :\n",filename);
+			temp = g_strdup_printf(_("\nGet %s file from remote host :\n"),filename);
   			gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,temp,-1);   
   			gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,temp,-1);
 			g_free(temp);
@@ -504,7 +504,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
 			sprintf(filename,"%s.freq.molden",fileopen.projectname);
   			get_file(fout,ferr,filename,fileopen.localdir,fileopen.remotedir,
   				fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-			temp = g_strdup_printf("\nGet %s file from remote host :\n",filename);
+			temp = g_strdup_printf(_("\nGet %s file from remote host :\n"),filename);
   			gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,temp,-1);   
   			gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,temp,-1);
 			g_free(temp);
@@ -513,7 +513,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
 			sprintf(filename,"%s.grid",fileopen.projectname);
   			get_file(fout,ferr,filename,fileopen.localdir,fileopen.remotedir,
   				fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-			temp = g_strdup_printf("\nGet %s file from remote host :\n",filename);
+			temp = g_strdup_printf(_("\nGet %s file from remote host :\n"),filename);
   			gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,temp,-1);   
   			gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,temp,-1);
 			g_free(temp);
@@ -527,7 +527,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
 
   			get_file(fout,ferr,fileopen.moldenfile,fileopen.localdir,fileopen.remotedir,
   				fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-			temp = g_strdup_printf("\nGet %s file from remote host :\n",fileopen.moldenfile);
+			temp = g_strdup_printf(_("\nGet %s file from remote host :\n"),fileopen.moldenfile);
   			gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,temp,-1);   
   			gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,temp,-1);
 			g_free(temp);
@@ -536,7 +536,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
 			sprintf(filename,"%s.grid",fileopen.projectname);
   			get_file(fout,ferr,filename,fileopen.localdir,fileopen.remotedir,
   				fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-			temp = g_strdup_printf("\nGet %s file from remote host :\n",filename);
+			temp = g_strdup_printf(_("\nGet %s file from remote host :\n"),filename);
   			gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,temp,-1);   
   			gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,temp,-1);
 			g_free(temp);
@@ -551,7 +551,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
   			get_file(fout,ferr,filename,fileopen.localdir,fileopen.remotedir,
   				fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
 
-			temp = g_strdup_printf("\nGet %s file from remote host :\n",filename);
+			temp = g_strdup_printf(_("\nGet %s file from remote host :\n"),filename);
   			gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,temp,-1);   
   			gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,temp,-1);
 			g_free(temp);
@@ -561,7 +561,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
   			get_file(fout,ferr,filename,fileopen.localdir,fileopen.remotedir,
   				fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
 
-			temp = g_strdup_printf("\nGet %s file from remote host :\n",filename);
+			temp = g_strdup_printf(_("\nGet %s file from remote host :\n"),filename);
 			gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,temp,-1);   
   			gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,temp,-1);
 			g_free(temp);
@@ -571,7 +571,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
 			sprintf(filename,"%s.freq.molden",fileopen.projectname);
   			get_file(fout,ferr,filename,fileopen.localdir,fileopen.remotedir,
   				fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-			temp = g_strdup_printf("\nGet %s file from remote host :\n",filename);
+			temp = g_strdup_printf(_("\nGet %s file from remote host :\n"),filename);
   			gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,temp,-1);   
   			gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,temp,-1);
 			g_free(temp);
@@ -580,7 +580,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
 			sprintf(filename,"%s.grid",fileopen.projectname);
   			get_file(fout,ferr,filename,fileopen.localdir,fileopen.remotedir,
   				fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-			temp = g_strdup_printf("\nGet %s file from remote host :\n",filename);
+			temp = g_strdup_printf(_("\nGet %s file from remote host :\n"),filename);
   			gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,temp,-1);   
   			gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,temp,-1);
 			g_free(temp);
@@ -595,7 +595,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
 		g_strdown(fileopen.moldenfile);
   		get_file(fout,ferr,fileopen.moldenfile,fileopen.localdir,fileopen.remotedir,
   		fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-		temp = g_strdup_printf("\nGet %s file from remote host :\n",fileopen.moldenfile);
+		temp = g_strdup_printf(_("\nGet %s file from remote host :\n"),fileopen.moldenfile);
   		gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,temp,-1);   
   		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,temp,-1);   
 		g_free(temp);
@@ -819,7 +819,7 @@ gboolean createGamessCsh(gchar* filename)
 }
 #endif
 /***********************************************************************************************************/
-static gboolean create_cmd_pcgamess(G_CONST_RETURN gchar* command, gboolean local, gchar* cmddir, gchar* cmdfile, gchar* cmdall)
+static gboolean create_cmd_firefly(G_CONST_RETURN gchar* command, gboolean local, gchar* cmddir, gchar* cmdfile, gchar* cmdall)
 {
 	gchar* commandStr = g_strdup(command);
         FILE* fcmd = NULL;
@@ -849,30 +849,39 @@ static gboolean create_cmd_pcgamess(G_CONST_RETURN gchar* command, gboolean loca
 	if(!fcmd)
 	{
 		if(local)
-  			Message("\nI can not create cmd file\n ","Error",TRUE);   
+  			Message(_("\nI can not create cmd file\n"),_("Error"),TRUE);   
 		return FALSE;
 	}
 #ifndef G_OS_WIN32
 	fprintf(fcmd,"#!/bin/sh\n");
 #endif
 	if(local)
+	{
+#ifdef G_OS_WIN32
+		addUnitDisk(fcmd, fileopen.localdir);
+#endif
 		fprintf(fcmd,"cd %s\n", fileopen.localdir);
+	}
 
 
 #ifdef G_OS_WIN32
 	if(local)
 	{
-		if(!strcmp(commandStr,"pcgamess") || !strcmp(commandStr,"nohup pcgamess"))
+		if(
+			!strcmp(commandStr,"pcgamess") || !strcmp(commandStr,"nohup pcgamess")
+	   	     || !strcmp(commandStr,"firefly") || !strcmp(commandStr,"nohup firefly")
+		)
 		{
 			fprintf(fcmd,"set RND=%cRANDOM%c\n",'%','%');
 			fprintf(fcmd,"mkdir \"%s\\tmp\"\n",g_get_home_dir());
 			fprintf(fcmd,"mkdir \"%s\\tmp\\%cRND%c%s\"\n",g_get_home_dir(),'%','%',fileopen.projectname);
+			addUnitDisk(fcmd, g_get_home_dir());
 			fprintf(fcmd,"cd \"%s\\tmp\\%cRND%c%s\"\n",g_get_home_dir(),'%','%',fileopen.projectname);
 			fprintf(fcmd,"copy \"%s\\%s\" \"%s\\tmp\\%cRND%c%s\\input\"\n",fileopen.localdir,fileopen.datafile,g_get_home_dir(),'%','%',fileopen.projectname);
-/* 			fprintf(fcmd,"pcgamess -o \"%s\\%s.log\"\n",fileopen.localdir,fileopen.projectname);*/
-			fprintf(fcmd,"pcgamess -o \"%s\\%s.log\"\n",fileopen.localdir,fileopen.projectname);
-			fprintf(fcmd,"move \"%s\\tmp\\%cRND%c%s\\PUNCH\" \"%s\\%s.irc\"\n",g_get_home_dir(),'%','%',fileopen.projectname, fileopen.localdir,fileopen.projectname);
+			fprintf(fcmd,"%s -o \"%s\\%s.log\"\n",commandStr,fileopen.localdir,fileopen.projectname);
+			fprintf(fcmd,"move \"%s\\tmp\\%cRND%c%s\\PUNCH\" \"%s\\%s.pun\"\n",g_get_home_dir(),'%','%',fileopen.projectname, fileopen.localdir,fileopen.projectname);
 			fprintf(fcmd,"move \"%s\\tmp\\%cRND%c%s\\IRCDATA\" \"%s\\%s.irc\"\n",g_get_home_dir(),'%','%',fileopen.projectname, fileopen.localdir,fileopen.projectname);
+			addUnitDisk(fcmd, fileopen.localdir);
 			fprintf(fcmd,"cd \"%s\"\n",fileopen.localdir);
 			fprintf(fcmd,"del /Q \"%s\\tmp\\%cRND%c%s\\*\"\n",g_get_home_dir(),'%','%',fileopen.projectname);
 			fprintf(fcmd,"rmdir \"%s\\tmp\\%cRND%c%s\"\n",g_get_home_dir(),'%','%',fileopen.projectname);
@@ -886,7 +895,10 @@ static gboolean create_cmd_pcgamess(G_CONST_RETURN gchar* command, gboolean loca
 	}
 	else
 	{
-		if(!strcmp(commandStr,"pcgamess") || !strcmp(commandStr,"nohup pcgamess"))
+		if(
+			!strcmp(commandStr,"pcgamess") || !strcmp(commandStr,"nohup pcgamess")
+	   	     || !strcmp(commandStr,"firefly") || !strcmp(commandStr,"nohup firefly")
+		)
 		{
 			fprintf(fcmd,"#!/bin/sh\n");
 			if(fileopen.remotedir[0]!='/') 
@@ -896,27 +908,27 @@ static gboolean create_cmd_pcgamess(G_CONST_RETURN gchar* command, gboolean loca
 			fprintf(fcmd,"cd $DEFAULTDIR\n");
 			fprintf(fcmd,"export fileinput=%s\n",fileopen.datafile);
 			fprintf(fcmd,"export filename=%s\n",fileopen.projectname);
-			fprintf(fcmd,"testTMPDIR=\"x$PCGAMESS_TMPDIR\"\n");
+			fprintf(fcmd,"testTMPDIR=\"x$FIREFLY_TMPDIR\"\n");
 			fprintf(fcmd,"if [ $testTMPDIR = \"x\" ]\n");
 			fprintf(fcmd,"then\n");
-			fprintf(fcmd,"export PCGAMESS_TMPDIR=$HOME/tmp\n");
+			fprintf(fcmd,"export FIREFLY_TMPDIR=$HOME/tmp\n");
 			fprintf(fcmd,"fi\n");
-			fprintf(fcmd,"export PCGAMESSDIR=$PCGAMESS_TMPDIR/$RANDOM\n");
-			fprintf(fcmd,"if [ ! -s \"$PCGAMESS_TMPDIR\" ]\n");
+			fprintf(fcmd,"export FIREFLYDIR=$FIREFLY_TMPDIR/$RANDOM\n");
+			fprintf(fcmd,"if [ ! -s \"$FIREFLY_TMPDIR\" ]\n");
 			fprintf(fcmd,"then\n");
-			fprintf(fcmd,"mkdir $PCGAMESS_TMPDIR\n");
+			fprintf(fcmd,"mkdir $FIREFLY_TMPDIR\n");
 			fprintf(fcmd,"fi\n");
-			fprintf(fcmd,"mkdir $PCGAMESSDIR\n");
-			fprintf(fcmd,"cd $PCGAMESSDIR\n");
+			fprintf(fcmd,"mkdir $FIREFLYDIR\n");
+			fprintf(fcmd,"cd $FIREFLYDIR\n");
 			fprintf(fcmd,"cp $DEFAULTDIR/$fileinput input\n");
-			fprintf(fcmd,"pcgamess -o $DEFAULTDIR/$filename.log\n");
-			fprintf(fcmd,"mv -f $PCGAMESSDIR/PUNCH $DEFAULTDIR/$filename.pun\n");
-			fprintf(fcmd,"if [ -s \"$PCGAMESSDIR/IRCDATA\" ]\n");
+			fprintf(fcmd,"%s -o $DEFAULTDIR/$filename.log\n",commandStr);
+			fprintf(fcmd,"mv -f $FIREFLYDIR/PUNCH $DEFAULTDIR/$filename.pun\n");
+			fprintf(fcmd,"if [ -s \"$FIREFLYDIR/IRCDATA\" ]\n");
 			fprintf(fcmd,"then\n");
-			fprintf(fcmd,"mv -f $PCGAMESSDIR/IRCDATA $DEFAULTDIR/$filename.irc\n");
+			fprintf(fcmd,"mv -f $FIREFLYDIR/IRCDATA $DEFAULTDIR/$filename.irc\n");
 			fprintf(fcmd,"fi\n");
 			fprintf(fcmd,"cd $DEFAULTDIR\n");
-			fprintf(fcmd,"/bin/rm -r $PCGAMESSDIR\n");
+			fprintf(fcmd,"/bin/rm -r $FIREFLYDIR\n");
 		}
 		else
 		{
@@ -925,7 +937,10 @@ static gboolean create_cmd_pcgamess(G_CONST_RETURN gchar* command, gboolean loca
 	 	}
 	}
 #else
-	if(!strcmp(commandStr,"pcgamess") || !strcmp(commandStr,"nohup pcgamess"))
+	if(
+		!strcmp(commandStr,"pcgamess") || !strcmp(commandStr,"nohup pcgamess")
+   	     || !strcmp(commandStr,"firefly") || !strcmp(commandStr,"nohup firefly")
+	)
 	{
 		if(local) fprintf(fcmd,"export DEFAULTDIR=%s\n",fileopen.localdir);
 		else
@@ -938,27 +953,27 @@ static gboolean create_cmd_pcgamess(G_CONST_RETURN gchar* command, gboolean loca
 		fprintf(fcmd,"cd $DEFAULTDIR\n");
 		fprintf(fcmd,"export fileinput=%s\n",fileopen.datafile);
 		fprintf(fcmd,"export filename=%s\n",fileopen.projectname);
-		fprintf(fcmd,"testTMPDIR=\"x$PCGAMESS_TMPDIR\"\n");
+		fprintf(fcmd,"testTMPDIR=\"x$FIREFLY_TMPDIR\"\n");
 		fprintf(fcmd,"if [ $testTMPDIR = \"x\" ]\n");
 		fprintf(fcmd,"then\n");
-		fprintf(fcmd,"export PCGAMESS_TMPDIR=$HOME/tmp\n");
+		fprintf(fcmd,"export FIREFLY_TMPDIR=$HOME/tmp\n");
 		fprintf(fcmd,"fi\n");
-		fprintf(fcmd,"export PCGAMESSDIR=$PCGAMESS_TMPDIR/$RANDOM\n");
-		fprintf(fcmd,"if [ ! -s \"$PCGAMESS_TMPDIR\" ]\n");
+		fprintf(fcmd,"export FIREFLYDIR=$FIREFLY_TMPDIR/$RANDOM\n");
+		fprintf(fcmd,"if [ ! -s \"$FIREFLY_TMPDIR\" ]\n");
 		fprintf(fcmd,"then\n");
-		fprintf(fcmd,"mkdir $PCGAMESS_TMPDIR\n");
+		fprintf(fcmd,"mkdir $FIREFLY_TMPDIR\n");
 		fprintf(fcmd,"fi\n");
-		fprintf(fcmd,"mkdir $PCGAMESSDIR\n");
-		fprintf(fcmd,"cd $PCGAMESSDIR\n");
+		fprintf(fcmd,"mkdir $FIREFLYDIR\n");
+		fprintf(fcmd,"cd $FIREFLYDIR\n");
 		fprintf(fcmd,"cp $DEFAULTDIR/$fileinput input\n");
-		fprintf(fcmd,"pcgamess -o $DEFAULTDIR/$filename.log\n");
-		fprintf(fcmd,"mv -f $PCGAMESSDIR/PUNCH $DEFAULTDIR/$filename.pun\n");
-		fprintf(fcmd,"if [ -s \"$PCGAMESSDIR/IRCDATA\" ]\n");
+		fprintf(fcmd,"%s -o $DEFAULTDIR/$filename.log\n",commandStr);
+		fprintf(fcmd,"mv -f $FIREFLYDIR/PUNCH $DEFAULTDIR/$filename.pun\n");
+		fprintf(fcmd,"if [ -s \"$FIREFLYDIR/IRCDATA\" ]\n");
 		fprintf(fcmd,"then\n");
-		fprintf(fcmd,"mv -f $PCGAMESSDIR/IRCDATA $DEFAULTDIR/$filename.irc\n");
+		fprintf(fcmd,"mv -f $FIREFLYDIR/IRCDATA $DEFAULTDIR/$filename.irc\n");
 		fprintf(fcmd,"fi\n");
 		fprintf(fcmd,"cd $DEFAULTDIR\n");
-		fprintf(fcmd,"/bin/rm -r $PCGAMESSDIR\n");
+		fprintf(fcmd,"/bin/rm -r $FIREFLYDIR\n");
 	}
 	else
 	{
@@ -970,7 +985,7 @@ static gboolean create_cmd_pcgamess(G_CONST_RETURN gchar* command, gboolean loca
 	 else
 	 {
 		 fprintf(fcmd,"%s %s\n",command,fileopen.datafile);
-		 fprintf(fcmd,"echo Job %s.inp finished.\n",fileopen.projectname);
+		 fprintf(fcmd,_("echo Job %s.inp finished.\n"),fileopen.projectname);
 	 }
 	}
 
@@ -1010,7 +1025,7 @@ static gboolean create_cmd_orca(G_CONST_RETURN gchar* command, gboolean local, g
   	fcmd = FOpen(cmdall, "w");
 	if(!fcmd)
 	{
-		if(local) Message("\nI can not create cmd file\n ","Error",TRUE);   
+		if(local) Message(_("\nI can not create cmd file\n"),_("Error"),TRUE);   
 		return FALSE;
 	}
 #ifndef G_OS_WIN32
@@ -1023,7 +1038,13 @@ static gboolean create_cmd_orca(G_CONST_RETURN gchar* command, gboolean local, g
 	}
 #endif
 
-	if(local) fprintf(fcmd,"cd %s\n", fileopen.localdir);
+	if(local) 
+	{
+#ifdef G_OS_WIN32
+		addUnitDisk(fcmd, fileopen.localdir);
+#endif
+		fprintf(fcmd,"cd %s\n", fileopen.localdir);
+	}
 	else fprintf(fcmd,"cd %s\n", fileopen.remotedir);
 
 
@@ -1076,7 +1097,7 @@ static gboolean create_cmd_qchem(G_CONST_RETURN gchar* command, gboolean local, 
 	if(!fcmd)
 	{
 		if(local)
-  			Message("\nI can not create cmd file\n ","Error",TRUE);   
+  			Message(_("\nI can not create cmd file\n"),_("Error"),TRUE);   
 		return FALSE;
 	}
 #ifndef G_OS_WIN32
@@ -1084,7 +1105,12 @@ static gboolean create_cmd_qchem(G_CONST_RETURN gchar* command, gboolean local, 
 #endif
 
 	if(local)
+	{
+#ifdef G_OS_WIN32
+		addUnitDisk(fcmd, fileopen.localdir);
+#endif
 		fprintf(fcmd,"cd %s\n", fileopen.localdir);
+	}
 	else
 		fprintf(fcmd,"cd %s\n", fileopen.remotedir);
 
@@ -1125,7 +1151,7 @@ static gboolean create_cmd_qchem(G_CONST_RETURN gchar* command, gboolean local, 
 	 else
 	 {
 		 fprintf(fcmd,"%s %s\n",command,fileopen.datafile);
-		 fprintf(fcmd,"echo Job %s.inp finished.\n",fileopen.projectname);
+		 fprintf(fcmd,_("echo Job %s.inp finished.\n"),fileopen.projectname);
 	 }
 	}
 
@@ -1169,7 +1195,7 @@ static gboolean create_cmd_mopac(G_CONST_RETURN gchar* command, gboolean local, 
 	if(!fcmd)
 	{
 		if(local)
-  			Message("\nI can not create cmd file\n ","Error",TRUE);   
+  			Message(_("\nI can not create cmd file\n"),_("Error"),TRUE);   
 		return FALSE;
 	}
 #ifndef G_OS_WIN32
@@ -1177,7 +1203,12 @@ static gboolean create_cmd_mopac(G_CONST_RETURN gchar* command, gboolean local, 
 #endif
 
 	if(local)
+	{
+#ifdef G_OS_WIN32
+		addUnitDisk(fcmd, fileopen.localdir);
+#endif
 		fprintf(fcmd,"cd %s\n", fileopen.localdir);
+	}
 	else
 		fprintf(fcmd,"cd %s\n", fileopen.remotedir);
 
@@ -1238,7 +1269,7 @@ static gboolean create_cmd_gamess(G_CONST_RETURN gchar* command, gboolean local,
 	if(!fcmd)
 	{
 		if(local)
-  			Message("\nI can not create cmd file\n ","Error",TRUE);   
+  			Message(_("\nI can not create cmd file\n"),_("Error"),TRUE);   
 		return FALSE;
 	}
 
@@ -1264,6 +1295,9 @@ static gboolean create_cmd_gamess(G_CONST_RETURN gchar* command, gboolean local,
 #endif
 	if(local)
 	{
+#ifdef G_OS_WIN32
+		addUnitDisk(fcmd, fileopen.localdir);
+#endif
 		fprintf(fcmd,"cd %s\n", fileopen.localdir);
 	}
 	else
@@ -1344,12 +1378,13 @@ static gboolean create_cmd_gamess(G_CONST_RETURN gchar* command, gboolean local,
 		 winsockCheck(stderr);
   		 gethostname(localhost,100);
 		 fprintf(fcmd,"@echo off\n");
-		 fprintf(fcmd,"echo Running %s.inp ....\n",fileopen.projectname);
+		 fprintf(fcmd,_("echo Running %s.inp ....\n"),fileopen.projectname);
 		 begin = strstr(gamessDirectory,":");
 		 if(begin) fprintf(fcmd,"%c:\n",gamessDirectory[0]);
 		 else fprintf(fcmd,"C:\n");
 		 fprintf(fcmd,"mkdir \"%s\\temp\"\n",gamessDirectory);
 		 fprintf(fcmd,"mkdir \"%s\\scratch\"\n",gamessDirectory);
+		 addUnitDisk(fcmd, gamessDirectory);
 		 fprintf(fcmd,"cd \"%s\\temp\"\n",gamessDirectory);
 		 fprintf(fcmd,"del %s.*\n",fileopen.projectname);
 		 fprintf(fcmd,"cd \"%s\"\n",gamessDirectory);
@@ -1363,7 +1398,7 @@ static gboolean create_cmd_gamess(G_CONST_RETURN gchar* command, gboolean local,
 		 fprintf(fcmd,"copy \"%s\\temp\\%s.dat\" \"%s\\%s.pun\"\n",
 				 gamessDirectory,fileopen.projectname,
 				 fileopen.localdir,fileopen.projectname);
-		 fprintf(fcmd,"echo Job %s.inp finished.\n",fileopen.projectname);
+		 fprintf(fcmd,_("echo Job %s.inp finished.\n"),fileopen.projectname);
 	 }
 
 #endif
@@ -1402,7 +1437,7 @@ static gboolean create_cmd_gaussian(G_CONST_RETURN gchar* command, gboolean loca
 	if(!fcmd)
 	{
 		if(local)
-  			Message("\nI can not create cmd file\n ","Error",TRUE);   
+  			Message(_("\nI can not create cmd file\n"),_("Error"),TRUE);   
 		return FALSE;
 	}
 
@@ -1492,7 +1527,7 @@ static gboolean create_cmd_molcas(G_CONST_RETURN gchar* command, gboolean local,
 	if(!fcmd)
 	{
 		if(local)
-  			Message("\nI can not create cmd file\n ","Error",TRUE);   
+  			Message(_("\nI can not create cmd file\n"),_("Error"),TRUE);   
 		return FALSE;
 	}
 
@@ -1537,7 +1572,9 @@ static gboolean create_cmd_molcas(G_CONST_RETURN gchar* command, gboolean local,
 	fprintf(fcmd,"export Project\n");
 	fprintf(fcmd,"#--------------------------------------------\n");
 	if(local)
+	{
 		fprintf(fcmd,"cd %s\n", fileopen.localdir);
+	}
 	else
 		fprintf(fcmd,"cd %s\n", fileopen.remotedir);
 
@@ -1635,7 +1672,10 @@ static gboolean create_cmd_molcas(G_CONST_RETURN gchar* command, gboolean local,
 		fprintf(fcmd,"set Project=%s\n", fileopen.projectname);
 		fprintf(fcmd,"@rem --------------------------------------------\n");
 		if(local)
+		{
+			addUnitDisk(fcmd, fileopen.localdir);
 			fprintf(fcmd,"cd %s\n", fileopen.localdir);
+		}
 		else
 			fprintf(fcmd,"cd %s\n", fileopen.remotedir);
 
@@ -1677,12 +1717,17 @@ static gboolean create_cmd_molpro(G_CONST_RETURN gchar* command, gboolean local,
 	if(!fcmd)
 	{
 		if(local)
-  			Message("\nI can not create cmd file\n ","Error",TRUE);   
+  			Message(_("\nI can not create cmd file\n"),_("Error"),TRUE);   
 		return FALSE;
 	}
 
 	if(local)
+	{
+#ifdef G_OS_WIN32
+		addUnitDisk(fcmd, fileopen.localdir);
+#endif
 		fprintf(fcmd,"cd %s\n", fileopen.localdir);
+	}
 	else
 		fprintf(fcmd,"cd %s\n", fileopen.remotedir);
 
@@ -1735,12 +1780,17 @@ static gboolean create_cmd_mpqc(G_CONST_RETURN gchar* command, gboolean local, g
 	if(!fcmd)
 	{
 		if(local)
-  			Message("\nI can not create cmd file\n ","Error",TRUE);   
+  			Message(_("\nI can not create cmd file\n"),_("Error"),TRUE);   
 		return FALSE;
 	}
 
 	if(local)
+	{
+#ifdef G_OS_WIN32
+		addUnitDisk(fcmd, fileopen.localdir);
+#endif
 		fprintf(fcmd,"cd %s\n", fileopen.localdir);
+	}
 	else
 		fprintf(fcmd,"cd %s\n", fileopen.remotedir);
 
@@ -1786,12 +1836,17 @@ static gboolean create_cmd_other(G_CONST_RETURN gchar* command, gboolean local, 
 	if(!fcmd)
 	{
 		if(local)
-  			Message("\nI can not create cmd file\n ","Error",TRUE);   
+  			Message(_("\nI can not create cmd file\n"),_("Error"),TRUE);   
 		return FALSE;
 	}
 
 	if(local)
+	{
+#ifdef G_OS_WIN32
+		addUnitDisk(fcmd, fileopen.localdir);
 		fprintf(fcmd,"cd %s\n", fileopen.localdir);
+#endif
+	}
 	else
 		fprintf(fcmd,"cd %s\n", fileopen.remotedir);
 
@@ -1881,7 +1936,7 @@ static void run_remote_orca(GtkWidget *b,gpointer data)
   entry=entryall[1];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
 
-  title = g_strdup_printf("Run Orca at host :%s, Login : %s",fileopen.remotehost,fileopen.remoteuser); 
+  title = g_strdup_printf(_("Run Orca at host :%s, Login : %s"),fileopen.remotehost,fileopen.remoteuser); 
   Win = create_text_result_command(Text,Frame,title);
   g_free(title);
   gtk_widget_show_all(Win);
@@ -1896,8 +1951,8 @@ static void run_remote_orca(GtkWidget *b,gpointer data)
   	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
   	g_free(Command);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -1909,8 +1964,8 @@ static void run_remote_orca(GtkWidget *b,gpointer data)
 	/*  Debug("Put File remote orca : %s %s %s\n",fileopen.remotehost,fileopen.remoteuser,fileopen.remotedir);*/
   	code = put_file(fout,ferr,fileopen.datafile,fileopen.localdir,fileopen.remotedir,
 		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -1919,7 +1974,7 @@ static void run_remote_orca(GtkWidget *b,gpointer data)
   {
         if(!create_cmd_orca(entrytext0, FALSE, cmddir, cmdfile, cmdall))
 	{
-  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL, "\nI can not create cmd file\n ",-1);   
+  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nI can not create cmd file\n"),-1);   
   		gtk_widget_set_sensitive(Win, TRUE);
 		return;
 	}
@@ -1930,8 +1985,8 @@ static void run_remote_orca(GtkWidget *b,gpointer data)
   {
   	code = put_file(fout,ferr,cmdfile,cmddir,"./",
 		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1); 
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1); 
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1);
   	put_text_in_texts_widget(Text,fout,ferr);
 	unlink(cmdall);
   	while( gtk_events_pending() )
@@ -1942,8 +1997,8 @@ static void run_remote_orca(GtkWidget *b,gpointer data)
   	Command = g_strdup_printf("chmod u+x %s",cmdfile);
   	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nchmod for cmd file :\n"),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nchmod for cmd file :\n"),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -1952,8 +2007,8 @@ static void run_remote_orca(GtkWidget *b,gpointer data)
   {
   	Command = g_strdup_printf("./%s>/dev/null&",cmdfile);
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nRun Orca at remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nRun Orca at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nRun Orca at remote host :\n"),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nRun Orca at remote host :\n"),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -1964,7 +2019,7 @@ static void run_remote_orca(GtkWidget *b,gpointer data)
   g_free(ferr);
 }
 /********************************************************************************/
-static void run_remote_pcgamess(GtkWidget *b,gpointer data)
+static void run_remote_firefly(GtkWidget *b,gpointer data)
 {  
   gchar *fout =  g_strdup_printf("%s%stmp%sfout",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
   gchar *ferr =  g_strdup_printf("%s%stmp%sferr",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
@@ -2016,8 +2071,8 @@ static void run_remote_pcgamess(GtkWidget *b,gpointer data)
   /* save file */
    NomFichier = g_strdup_printf("%s%s%s",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.datafile);
   
-  CreeFeuille(treeViewProjects, noeud[GABEDIT_TYPENODE_PCGAMESS],fileopen.projectname,fileopen.datafile,fileopen.localdir,
-			fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir,GABEDIT_TYPENODE_PCGAMESS, fileopen.command, fileopen.netWorkProtocol); 
+  CreeFeuille(treeViewProjects, noeud[GABEDIT_TYPENODE_FIREFLY],fileopen.projectname,fileopen.datafile,fileopen.localdir,
+			fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir,GABEDIT_TYPENODE_FIREFLY, fileopen.command, fileopen.netWorkProtocol); 
   add_host(fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir);
 
 /* Save file in local host */
@@ -2028,7 +2083,7 @@ static void run_remote_pcgamess(GtkWidget *b,gpointer data)
   entry=entryall[1];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
 
-  title = g_strdup_printf("Run PCGamess at host :%s, Login : %s",fileopen.remotehost,fileopen.remoteuser); 
+  title = g_strdup_printf(_("Run FireFly at host :%s, Login : %s"),fileopen.remotehost,fileopen.remoteuser); 
   Win = create_text_result_command(Text,Frame,title);
   g_free(title);
   gtk_widget_show_all(Win);
@@ -2043,8 +2098,8 @@ static void run_remote_pcgamess(GtkWidget *b,gpointer data)
   	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
   	g_free(Command);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2056,17 +2111,17 @@ static void run_remote_pcgamess(GtkWidget *b,gpointer data)
 	/*  Debug("Put File remote pcgamess : %s %s %s\n",fileopen.remotehost,fileopen.remoteuser,fileopen.remotedir);*/
   	code = put_file(fout,ferr,fileopen.datafile,fileopen.localdir,fileopen.remotedir,
 		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
   }
   if( code==0 )
   {
-        if(!create_cmd_pcgamess(entrytext0, FALSE, cmddir, cmdfile, cmdall))
+        if(!create_cmd_firefly(entrytext0, FALSE, cmddir, cmdfile, cmdall))
 	{
-  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL, "\nI can not create cmd file\n ",-1);   
+  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL, _("\nI can not create cmd file\n "),-1);   
   		gtk_widget_set_sensitive(Win, TRUE);
 		return;
 	}
@@ -2077,8 +2132,8 @@ static void run_remote_pcgamess(GtkWidget *b,gpointer data)
   {
   	code = put_file(fout,ferr,cmdfile,cmddir,"./",
 		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1); 
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1); 
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1);
   	put_text_in_texts_widget(Text,fout,ferr);
 	unlink(cmdall);
   	while( gtk_events_pending() )
@@ -2089,8 +2144,8 @@ static void run_remote_pcgamess(GtkWidget *b,gpointer data)
   	Command = g_strdup_printf("chmod u+x %s",cmdfile);
   	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nchmod for cmd file :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nchmod for cmd file :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2099,8 +2154,8 @@ static void run_remote_pcgamess(GtkWidget *b,gpointer data)
   {
   	Command = g_strdup_printf("$HOME/%s>/dev/null&",cmdfile);
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nRun PCGamess at remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nRun PCGamess at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nRun FireFly at remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nRun FireFly at remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2175,7 +2230,7 @@ static void run_remote_qchem(GtkWidget *b,gpointer data)
   entry=entryall[1];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
 
-  title = g_strdup_printf("Run Q-Chem at host :%s, Login : %s",fileopen.remotehost,fileopen.remoteuser); 
+  title = g_strdup_printf(_("Run Q-Chem at host :%s, Login : %s"),fileopen.remotehost,fileopen.remoteuser); 
   Win = create_text_result_command(Text,Frame,title);
   g_free(title);
   gtk_widget_show_all(Win);
@@ -2190,8 +2245,8 @@ static void run_remote_qchem(GtkWidget *b,gpointer data)
   	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
   	g_free(Command);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2203,8 +2258,8 @@ static void run_remote_qchem(GtkWidget *b,gpointer data)
 	/*  Debug("Put File remote qchem : %s %s %s\n",fileopen.remotehost,fileopen.remoteuser,fileopen.remotedir);*/
   	code = put_file(fout,ferr,fileopen.datafile,fileopen.localdir,fileopen.remotedir,
 		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2213,7 +2268,7 @@ static void run_remote_qchem(GtkWidget *b,gpointer data)
   {
         if(!create_cmd_qchem(entrytext0, FALSE, cmddir, cmdfile, cmdall))
 	{
-  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL, "\nI can not create cmd file\n ",-1);   
+  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL, _("\nI can not create cmd file\n "),-1);   
   		gtk_widget_set_sensitive(Win, TRUE);
 		return;
 	}
@@ -2224,8 +2279,8 @@ static void run_remote_qchem(GtkWidget *b,gpointer data)
   {
   	code = put_file(fout,ferr,cmdfile,cmddir,"./",
 		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1); 
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1); 
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1);
   	put_text_in_texts_widget(Text,fout,ferr);
 	unlink(cmdall);
   	while( gtk_events_pending() )
@@ -2236,8 +2291,8 @@ static void run_remote_qchem(GtkWidget *b,gpointer data)
   	Command = g_strdup_printf("chmod u+x %s",cmdfile);
   	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nchmod for cmd file :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nchmod for cmd file :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2246,8 +2301,8 @@ static void run_remote_qchem(GtkWidget *b,gpointer data)
   {
   	Command = g_strdup_printf("./%s>/dev/null&",cmdfile);
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nRun Q-Chem at remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nRun Q-Chem at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nRun Q-Chem at remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nRun Q-Chem at remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2322,7 +2377,7 @@ static void run_remote_mopac(GtkWidget *b,gpointer data)
   entry=entryall[1];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
 
-  title = g_strdup_printf("Run Mopac at host :%s, Login : %s",fileopen.remotehost,fileopen.remoteuser); 
+  title = g_strdup_printf(_("Run Mopac at host :%s, Login : %s"),fileopen.remotehost,fileopen.remoteuser); 
   Win = create_text_result_command(Text,Frame,title);
   g_free(title);
   gtk_widget_show_all(Win);
@@ -2337,8 +2392,8 @@ static void run_remote_mopac(GtkWidget *b,gpointer data)
   	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
   	g_free(Command);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2350,8 +2405,8 @@ static void run_remote_mopac(GtkWidget *b,gpointer data)
 	/*  Debug("Put File remote mopac : %s %s %s\n",fileopen.remotehost,fileopen.remoteuser,fileopen.remotedir);*/
   	code = put_file(fout,ferr,fileopen.datafile,fileopen.localdir,fileopen.remotedir,
 		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2360,7 +2415,7 @@ static void run_remote_mopac(GtkWidget *b,gpointer data)
   {
         if(!create_cmd_mopac(entrytext0, FALSE, cmddir, cmdfile, cmdall))
 	{
-  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL, "\nI can not create cmd file\n ",-1);   
+  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL, _("\nI can not create cmd file\n "),-1);   
   		gtk_widget_set_sensitive(Win, TRUE);
 		return;
 	}
@@ -2371,8 +2426,8 @@ static void run_remote_mopac(GtkWidget *b,gpointer data)
   {
   	code = put_file(fout,ferr,cmdfile,cmddir,"./",
 		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1); 
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1); 
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1);
   	put_text_in_texts_widget(Text,fout,ferr);
 	unlink(cmdall);
   	while( gtk_events_pending() )
@@ -2383,8 +2438,8 @@ static void run_remote_mopac(GtkWidget *b,gpointer data)
   	Command = g_strdup_printf("chmod u+x %s",cmdfile);
   	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nchmod for cmd file :\n"),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nchmod for cmd file :\n"),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2393,8 +2448,8 @@ static void run_remote_mopac(GtkWidget *b,gpointer data)
   {
   	Command = g_strdup_printf("./%s>/dev/null&",cmdfile);
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nRun Mopac at remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nRun Mopac at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nRun Mopac at remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nRun Mopac at remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2469,7 +2524,7 @@ static void run_remote_gamess(GtkWidget *b,gpointer data)
   entry=entryall[1];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
 
-  title = g_strdup_printf("Run Gamess at host :%s, Login : %s",fileopen.remotehost,fileopen.remoteuser); 
+  title = g_strdup_printf(_("Run Gamess at host :%s, Login : %s"),fileopen.remotehost,fileopen.remoteuser); 
   Win = create_text_result_command(Text,Frame,title);
   g_free(title);
   gtk_widget_show_all(Win);
@@ -2484,8 +2539,8 @@ static void run_remote_gamess(GtkWidget *b,gpointer data)
   	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
   	g_free(Command);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2497,8 +2552,8 @@ static void run_remote_gamess(GtkWidget *b,gpointer data)
 	/*  Debug("Put File remote gauss : %s %s %s\n",fileopen.remotehost,fileopen.remoteuser,fileopen.remotedir);*/
   	code = put_file(fout,ferr,fileopen.datafile,fileopen.localdir,fileopen.remotedir,
 		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2507,7 +2562,7 @@ static void run_remote_gamess(GtkWidget *b,gpointer data)
   {
         if(!create_cmd_gamess(entrytext0, FALSE, cmddir, cmdfile, cmdall))
 	{
-  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL, "\nI can not create cmd file\n ",-1);   
+  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nI can not create cmd file\n"),-1);   
   		gtk_widget_set_sensitive(Win, TRUE);
 		return;
 	}
@@ -2518,8 +2573,8 @@ static void run_remote_gamess(GtkWidget *b,gpointer data)
   {
   	code = put_file(fout,ferr,cmdfile,cmddir,"./",
 		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1); 
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1); 
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1);
   	put_text_in_texts_widget(Text,fout,ferr);
 	unlink(cmdall);
   	while( gtk_events_pending() )
@@ -2530,8 +2585,8 @@ static void run_remote_gamess(GtkWidget *b,gpointer data)
   	Command = g_strdup_printf("chmod u+x %s",cmdfile);
   	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nchmod for cmd file :\n"),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nchmod for cmd file :\n"),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2540,8 +2595,8 @@ static void run_remote_gamess(GtkWidget *b,gpointer data)
   {
   	Command = g_strdup_printf("./%s>/dev/null&",cmdfile);
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nRun gamess at remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nRun gamess at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nRun gamess at remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nRun gamess at remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2616,7 +2671,7 @@ static void run_remote_gaussian(GtkWidget *b,gpointer data)
   entry=entryall[1];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
 
-  title = g_strdup_printf("Run Gaussian at host :%s, Login : %s",fileopen.remotehost,fileopen.remoteuser); 
+  title = g_strdup_printf(_("Run Gaussian at host :%s, Login : %s"),fileopen.remotehost,fileopen.remoteuser); 
   Win = create_text_result_command(Text,Frame,title);
   g_free(title);
   gtk_widget_show_all(Win);
@@ -2631,8 +2686,8 @@ static void run_remote_gaussian(GtkWidget *b,gpointer data)
   	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
   	g_free(Command);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2644,8 +2699,8 @@ static void run_remote_gaussian(GtkWidget *b,gpointer data)
 	/*  Debug("Put File remote gauss : %s %s %s\n",fileopen.remotehost,fileopen.remoteuser,fileopen.remotedir);*/
   	code = put_file(fout,ferr,fileopen.datafile,fileopen.localdir,fileopen.remotedir,
 		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2654,7 +2709,7 @@ static void run_remote_gaussian(GtkWidget *b,gpointer data)
   {
         if(!create_cmd_gaussian(entrytext0, FALSE, cmddir, cmdfile, cmdall))
 	{
-  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL, "\nI can not create cmd file\n ",-1);   
+  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nI can not create cmd file\n"),-1);   
   		gtk_widget_set_sensitive(Win, TRUE);
 		return;
 	}
@@ -2665,8 +2720,8 @@ static void run_remote_gaussian(GtkWidget *b,gpointer data)
   {
   	code = put_file(fout,ferr,cmdfile,cmddir,"./",
 		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1); 
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1); 
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1);
   	put_text_in_texts_widget(Text,fout,ferr);
 	unlink(cmdall);
   	while( gtk_events_pending() )
@@ -2677,8 +2732,8 @@ static void run_remote_gaussian(GtkWidget *b,gpointer data)
   	Command = g_strdup_printf("chmod u+x %s",cmdfile);
   	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nchmod for cmd file :\n"),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nchmod for cmd file :\n"),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2687,8 +2742,8 @@ static void run_remote_gaussian(GtkWidget *b,gpointer data)
   {
   	Command = g_strdup_printf("./%s>/dev/null&",cmdfile);
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nRun gaussian at remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nRun gaussian at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nRun gaussian at remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nRun gaussian at remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2764,7 +2819,7 @@ static void run_remote_molcas(GtkWidget *b,gpointer data)
   entry=entryall[1];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
 
-  title = g_strdup_printf("Run molcas at host :%s, Login : %s",fileopen.remotehost,fileopen.remoteuser); 
+  title = g_strdup_printf(_("Run molcas at host :%s, Login : %s"),fileopen.remotehost,fileopen.remoteuser); 
   Win = create_text_result_command(Text,Frame,title);
   g_free(title);
   gtk_widget_show_all(Win);
@@ -2779,8 +2834,8 @@ static void run_remote_molcas(GtkWidget *b,gpointer data)
   	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
   	g_free(Command);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2792,8 +2847,8 @@ static void run_remote_molcas(GtkWidget *b,gpointer data)
 	/*  Debug("Put File remote molcas : %s %s %s\n",fileopen.remotehost,fileopen.remoteuser,fileopen.remotedir);*/
   	code = put_file(fout,ferr,fileopen.datafile,fileopen.localdir,fileopen.remotedir,
 		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2802,7 +2857,7 @@ static void run_remote_molcas(GtkWidget *b,gpointer data)
   {
         if(!create_cmd_molcas(entrytext0, FALSE, cmddir, cmdfile, cmdall))
 	{
-  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL, "\nI can not create cmd file\n ",-1);   
+  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nI can not create cmd file\n"),-1);   
   		gtk_widget_set_sensitive(Win, TRUE);
 		return;
 	}
@@ -2812,8 +2867,8 @@ static void run_remote_molcas(GtkWidget *b,gpointer data)
   {
   	code = put_file(fout,ferr,cmdfile,cmddir,"./",
 		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1); 
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1); 
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1);
   	put_text_in_texts_widget(Text,fout,ferr);
 	unlink(cmdall);
   	while( gtk_events_pending() )
@@ -2824,8 +2879,8 @@ static void run_remote_molcas(GtkWidget *b,gpointer data)
   	Command = g_strdup_printf("chmod u+x %s",cmdfile);
   	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nchmod for cmd file :\n"),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nchmod for cmd file :\n"),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2835,8 +2890,8 @@ static void run_remote_molcas(GtkWidget *b,gpointer data)
   	Command = g_strdup_printf("./%s>/dev/null&",cmdfile);
   	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nRun molcas at remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nRun molcas at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nRun molcas at remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nRun molcas at remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2946,7 +3001,7 @@ static void run_remote_molpro(GtkWidget *b,gpointer data)
   entry=entryall[1];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
 
-  title = g_strdup_printf("Run molpro at host :%s, Login : %s",fileopen.remotehost,fileopen.remoteuser); 
+  title = g_strdup_printf(_("Run molpro at host :%s, Login : %s"),fileopen.remotehost,fileopen.remoteuser); 
   Win = create_text_result_command(Text,Frame,title);
   g_free(title);
   gtk_widget_show_all(Win);
@@ -2961,8 +3016,8 @@ static void run_remote_molpro(GtkWidget *b,gpointer data)
   	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
   	g_free(Command);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2974,8 +3029,8 @@ static void run_remote_molpro(GtkWidget *b,gpointer data)
 	/*  Debug("Put File remote molpro : %s %s %s\n",fileopen.remotehost,fileopen.remoteuser,fileopen.remotedir);*/
   	code = put_file(fout,ferr,fileopen.datafile,fileopen.localdir,fileopen.remotedir,
 		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -2984,7 +3039,7 @@ static void run_remote_molpro(GtkWidget *b,gpointer data)
   {
         if(!create_cmd_molpro(entrytext0, FALSE, cmddir, cmdfile, cmdall))
 	{
-  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL, "\nI can not create cmd file\n ",-1);   
+  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nI can not create cmd file\n"),-1);   
   		gtk_widget_set_sensitive(Win, TRUE);
 		return;
 	}
@@ -2995,8 +3050,8 @@ static void run_remote_molpro(GtkWidget *b,gpointer data)
   {
   	code = put_file(fout,ferr,cmdfile,cmddir,"./",
 		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1); 
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1); 
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1);
   	put_text_in_texts_widget(Text,fout,ferr);
 	unlink(cmdall);
   	while( gtk_events_pending() )
@@ -3007,8 +3062,8 @@ static void run_remote_molpro(GtkWidget *b,gpointer data)
   	Command = g_strdup_printf("chmod u+x %s",cmdfile);
   	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nchmod for cmd file :\n"),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nchmod for cmd file :\n"),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -3018,8 +3073,8 @@ static void run_remote_molpro(GtkWidget *b,gpointer data)
   	Command = g_strdup_printf("./%s>/dev/null&",cmdfile);
   	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nRun molpro at remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nRun molpro at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nRun molpro at remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nRun molpro at remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -3089,7 +3144,7 @@ static void run_remote_mpqc(GtkWidget *b,gpointer data)
   entry=entryall[1];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
 
-  title = g_strdup_printf("Run MPQC at host :%s, Login : %s",fileopen.remotehost,fileopen.remoteuser); 
+  title = g_strdup_printf(_("Run MPQC at host :%s, Login : %s"),fileopen.remotehost,fileopen.remoteuser); 
   Win = create_text_result_command(Text,Frame,title);
   g_free(title);
   gtk_widget_show_all(Win);
@@ -3102,8 +3157,8 @@ static void run_remote_mpqc(GtkWidget *b,gpointer data)
   	Command = g_strdup_printf("mkdir %s",fileopen.remotedir);
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
   	g_free(Command);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -3114,8 +3169,8 @@ static void run_remote_mpqc(GtkWidget *b,gpointer data)
 	/* put file.com */
   	code = put_file(fout,ferr,fileopen.datafile,fileopen.localdir,fileopen.remotedir,
 		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -3124,7 +3179,7 @@ static void run_remote_mpqc(GtkWidget *b,gpointer data)
   {
         if(!create_cmd_mpqc(entrytext0, FALSE, cmddir, cmdfile, cmdall))
 	{
-  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL, "\nI can not create cmd file\n ",-1);   
+  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nI can not create cmd file\n"),-1);   
   		gtk_widget_set_sensitive(Win, TRUE);
 		return;
 	}
@@ -3135,8 +3190,8 @@ static void run_remote_mpqc(GtkWidget *b,gpointer data)
   {
   	code = put_file(fout,ferr,cmdfile,cmddir,"./",
 		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1); 
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1); 
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1);
   	put_text_in_texts_widget(Text,fout,ferr);
 	unlink(cmdall);
   	while( gtk_events_pending() )
@@ -3146,8 +3201,8 @@ static void run_remote_mpqc(GtkWidget *b,gpointer data)
   {
   	Command = g_strdup_printf("chmod u+x %s",cmdfile);
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nchmod for cmd file :\n"),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nchmod for cmd file :\n"),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -3156,8 +3211,8 @@ static void run_remote_mpqc(GtkWidget *b,gpointer data)
   {
   	Command = g_strdup_printf("./%s>/dev/null&",cmdfile);
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nRun MPQC at remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nRun MPQC at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nRun MPQC at remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nRun MPQC at remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -3229,7 +3284,7 @@ static void run_remote_other(GtkWidget *b,gpointer data)
   entry=entryall[1];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
 
-  title = g_strdup_printf("Run \"%s %s\" Command  at host : %s, Login : %s", 
+  title = g_strdup_printf(_("Run \"%s %s\" Command  at host : %s, Login : %s"), 
 		  entrytext0, fileopen.datafile, fileopen.remotehost,fileopen.remoteuser); 
   Win = create_text_result_command(Text,Frame,title);
   g_free(title);
@@ -3243,8 +3298,8 @@ static void run_remote_other(GtkWidget *b,gpointer data)
   	Command = g_strdup_printf("mkdir %s",fileopen.remotedir);
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
   	g_free(Command);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nMake Working Directory remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -3255,8 +3310,8 @@ static void run_remote_other(GtkWidget *b,gpointer data)
 	/* put file.com */
   	code = put_file(fout,ferr,fileopen.datafile,fileopen.localdir,fileopen.remotedir,
 		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut Data File at remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -3265,7 +3320,7 @@ static void run_remote_other(GtkWidget *b,gpointer data)
   {
         if(!create_cmd_other(entrytext0, FALSE, cmddir, cmdfile, cmdall))
 	{
-  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL, "\nI can not create cmd file\n ",-1);   
+  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nI can not create cmd file\n"),-1);   
   		gtk_widget_set_sensitive(Win, TRUE);
 		return;
 	}
@@ -3276,8 +3331,8 @@ static void run_remote_other(GtkWidget *b,gpointer data)
   {
   	code = put_file(fout,ferr,cmdfile,cmddir,"./",
 		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1); 
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1); 
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nPut CMD File at remote host :\n "),-1);
   	put_text_in_texts_widget(Text,fout,ferr);
 	unlink(cmdall);
   	while( gtk_events_pending() )
@@ -3287,8 +3342,8 @@ static void run_remote_other(GtkWidget *b,gpointer data)
   {
   	Command = g_strdup_printf("chmod u+x %s",cmdfile);
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nchmod for cmd file :\n"),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nchmod for cmd file :\n"),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -3297,8 +3352,8 @@ static void run_remote_other(GtkWidget *b,gpointer data)
   {
   	Command = g_strdup_printf("./%s>/dev/null&",cmdfile);
   	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
-  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nRun gaussian at remote host :\n ",-1);   
-  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nRun gaussian at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,_("\nRun gaussian at remote host :\n "),-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,_("\nRun gaussian at remote host :\n "),-1);   
   	put_text_in_texts_widget(Text,fout,ferr);
   	while( gtk_events_pending() )
           gtk_main_iteration();
@@ -3385,13 +3440,13 @@ static void run_local_orca(GtkWidget *b,gpointer data)
 #endif
 
   run_local_command(fout,ferr,Command,TRUE);
-  title = g_strdup_printf("Run Orca in local : %s",Command); 
+  title = g_strdup_printf(_("Run Orca in local : %s"),Command); 
   Win = create_text_result_command(Text,Frame,title);
   g_free(title);
   strout = cat_file(fout,FALSE);
   strerr = cat_file(ferr,FALSE);
   if(!strout && !strerr)
-  	destroy_childs(Win);
+  	destroy_children(Win);
   else
   {
   	if(strout)
@@ -3412,7 +3467,7 @@ static void run_local_orca(GtkWidget *b,gpointer data)
   g_free(ferr);
 }
 /********************************************************************************/
-static void run_local_pcgamess(GtkWidget *b,gpointer data)
+static void run_local_firefly(GtkWidget *b,gpointer data)
 {  
 #ifdef G_OS_WIN32
   gchar *fout =  g_strdup_printf("\"%s%stmp%sfout\"",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
@@ -3469,8 +3524,8 @@ static void run_local_pcgamess(GtkWidget *b,gpointer data)
   fileopen.remotepass = NULL;
   fileopen.remotedir = NULL;
   fileopen.command  = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryall[1])));
-  CreeFeuille(treeViewProjects, noeud[GABEDIT_TYPENODE_PCGAMESS],fileopen.projectname,fileopen.datafile,fileopen.localdir,
-			fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir,GABEDIT_TYPENODE_PCGAMESS, fileopen.command, fileopen.netWorkProtocol); 
+  CreeFeuille(treeViewProjects, noeud[GABEDIT_TYPENODE_FIREFLY],fileopen.projectname,fileopen.datafile,fileopen.localdir,
+			fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir,GABEDIT_TYPENODE_FIREFLY, fileopen.command, fileopen.netWorkProtocol); 
 
 /* Save file in local host */
   if(!save_local_doc(NomFichier)) return;
@@ -3480,7 +3535,7 @@ static void run_local_pcgamess(GtkWidget *b,gpointer data)
   entry=entryall[1];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
 
-  if(!create_cmd_pcgamess(entrytext0, TRUE, cmdDir, cmdFile, cmdFileAllName)) return;
+  if(!create_cmd_firefly(entrytext0, TRUE, cmdDir, cmdFile, cmdFileAllName)) return;
 #ifdef G_OS_WIN32
   sprintf(Command ,"\"%s\"",cmdFileAllName);
 #else
@@ -3488,13 +3543,13 @@ static void run_local_pcgamess(GtkWidget *b,gpointer data)
 #endif
 
   run_local_command(fout,ferr,Command,TRUE);
-  title = g_strdup_printf("Run PCGamess in local : %s",Command); 
+  title = g_strdup_printf(_("Run FireFly in local : %s"),Command); 
   Win = create_text_result_command(Text,Frame,title);
   g_free(title);
   strout = cat_file(fout,FALSE);
   strerr = cat_file(ferr,FALSE);
   if(!strout && !strerr)
-  	destroy_childs(Win);
+  	destroy_children(Win);
   else
   {
   	if(strout)
@@ -3592,13 +3647,13 @@ static void run_local_qchem(GtkWidget *b,gpointer data)
 #endif
 
   run_local_command(fout,ferr,Command,TRUE);
-  title = g_strdup_printf("Run Q-Chem in local : %s",Command); 
+  title = g_strdup_printf(_("Run Q-Chem in local : %s"),Command); 
   Win = create_text_result_command(Text,Frame,title);
   g_free(title);
   strout = cat_file(fout,FALSE);
   strerr = cat_file(ferr,FALSE);
   if(!strout && !strerr)
-  	destroy_childs(Win);
+  	destroy_children(Win);
   else
   {
   	if(strout)
@@ -3696,13 +3751,13 @@ static void run_local_mopac(GtkWidget *b,gpointer data)
 #endif
 
   run_local_command(fout,ferr,Command,TRUE);
-  title = g_strdup_printf("Run Mopac in local : %s",Command); 
+  title = g_strdup_printf(_("Run Mopac in local : %s"),Command); 
   Win = create_text_result_command(Text,Frame,title);
   g_free(title);
   strout = cat_file(fout,FALSE);
   strerr = cat_file(ferr,FALSE);
   if(!strout && !strerr)
-  	destroy_childs(Win);
+  	destroy_children(Win);
   else
   {
   	if(strout)
@@ -3799,13 +3854,13 @@ static void run_local_gamess(GtkWidget *b,gpointer data)
 #endif
 
   run_local_command(fout,ferr,Command,TRUE);
-  title = g_strdup_printf("Run gamess in local : %s",Command); 
+  title = g_strdup_printf(_("Run gamess in local : %s"),Command); 
   Win = create_text_result_command(Text,Frame,title);
   g_free(title);
   strout = cat_file(fout,FALSE);
   strerr = cat_file(ferr,FALSE);
   if(!strout && !strerr)
-  	destroy_childs(Win);
+  	destroy_children(Win);
   else
   {
   	if(strout)
@@ -3898,13 +3953,13 @@ static void run_local_gaussian(GtkWidget *b,gpointer data)
   sprintf(Command ,"%s",cmdFileAllName);
 
   run_local_command(fout,ferr,Command,TRUE);
-  title = g_strdup_printf("Run gaussian in local : %s",Command); 
+  title = g_strdup_printf(_("Run gaussian in local : %s"),Command); 
   Win = create_text_result_command(Text,Frame,title);
   g_free(title);
   strout = cat_file(fout,FALSE);
   strerr = cat_file(ferr,FALSE);
   if(!strout && !strerr)
-  	destroy_childs(Win);
+  	destroy_children(Win);
   else
   {
   	if(strout)
@@ -4001,15 +4056,15 @@ static void run_local_molcas(GtkWidget *b,gpointer data)
  
 
 
-  create_popup_win("\nPlease Wait\n");
+  create_popup_win(_("\nPlease Wait\n"));
   run_local_command(fout,ferr,Command,TRUE);
 
-  title = g_strdup_printf("Run molcas in local : %s",Command); 
+  title = g_strdup_printf(_("Run molcas in local : %s"),Command); 
   Win = create_text_result_command(Text,Frame,title);
   g_free(title);
   strout = cat_file(fout,FALSE);
   strerr = cat_file(ferr,FALSE);
-  if(!strout && !strerr) destroy_childs(Win);
+  if(!strout && !strerr) destroy_children(Win);
   else
   {
   	if(strout)
@@ -4137,15 +4192,15 @@ static void run_local_molpro(GtkWidget *b,gpointer data)
   sprintf(Command ,"%s",cmdFileAllName);
 
 
-  create_popup_win("\nPlease Wait\n");
+  create_popup_win(_("\nPlease Wait\n"));
   run_local_command(fout,ferr,Command,TRUE);
-  title = g_strdup_printf("Run molpro in local : %s",Command); 
+  title = g_strdup_printf(_("Run molpro in local : %s"),Command); 
   Win = create_text_result_command(Text,Frame,title);
   g_free(title);
   strout = cat_file(fout,FALSE);
   strerr = cat_file(ferr,FALSE);
   if(!strout && !strerr)
-  	destroy_childs(Win);
+  	destroy_children(Win);
   else
   {
   	if(strout)
@@ -4242,15 +4297,15 @@ static void run_local_mpqc(GtkWidget *b,gpointer data)
  
 
 
-  create_popup_win("\nPlease Wait\n");
+  create_popup_win(_("\nPlease Wait\n"));
   run_local_command(fout,ferr,Command,TRUE);
 
-  title = g_strdup_printf("Run MPQC in local : %s",Command); 
+  title = g_strdup_printf(_("Run MPQC in local : %s"),Command); 
   Win = create_text_result_command(Text,Frame,title);
   g_free(title);
   strout = cat_file(fout,FALSE);
   strerr = cat_file(ferr,FALSE);
-  if(!strout && !strerr) destroy_childs(Win);
+  if(!strout && !strerr) destroy_children(Win);
   else
   {
   	if(strout)
@@ -4349,13 +4404,13 @@ static void run_local_other(GtkWidget *b,gpointer data)
   
 
   run_local_command(fout,ferr,Command,TRUE);
-  title = g_strdup_printf("Run \"%s %s\" command in local host", entrytext0, fileopen.datafile); 
+  title = g_strdup_printf(_("Run \"%s %s\" command in local host"), entrytext0, fileopen.datafile); 
   Win = create_text_result_command(Text,Frame,title);
   g_free(title);
   strout = cat_file(fout,FALSE);
   strerr = cat_file(ferr,FALSE);
   if(!strout && !strerr)
-  	destroy_childs(Win);
+  	destroy_children(Win);
   else
   {
   	if(strout)
@@ -4400,7 +4455,7 @@ void run_program(GtkWidget *button,gpointer data)
 		else if (GTK_TOGGLE_BUTTON (ButtonMPQC)->active) run_local_mpqc(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonMolpro)->active) run_local_molpro(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonOrca)->active) run_local_orca(NULL,data);
-		else if (GTK_TOGGLE_BUTTON (ButtonPCGamess)->active) run_local_pcgamess(NULL,data);
+		else if (GTK_TOGGLE_BUTTON (ButtonFireFly)->active) run_local_firefly(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonQChem)->active) run_local_qchem(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonMopac)->active) run_local_mopac(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonOther)->active) run_local_other(NULL,data);
@@ -4413,7 +4468,7 @@ void run_program(GtkWidget *button,gpointer data)
 		else if (GTK_TOGGLE_BUTTON (ButtonMPQC)->active) run_remote_mpqc(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonMolpro)->active) run_remote_molpro(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonOrca)->active) run_remote_orca(NULL,data);
-		else if (GTK_TOGGLE_BUTTON (ButtonPCGamess)->active) run_remote_pcgamess(NULL,data);
+		else if (GTK_TOGGLE_BUTTON (ButtonFireFly)->active) run_remote_firefly(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonQChem)->active) run_remote_qchem(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonMopac)->active) run_remote_mopac(NULL,data);
 		else run_remote_other(NULL,data);
@@ -4547,8 +4602,8 @@ GtkWidget* create_programs_frame(GtkWidget *hbox)
   ButtonOrca = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonGauss)), "Orca "); 
   add_widget_table(Table,ButtonOrca,2,0);
 
-  ButtonPCGamess = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonGauss)), "PCGamess "); 
-  add_widget_table(Table,ButtonPCGamess,2,1);
+  ButtonFireFly = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonGauss)), "FireFly "); 
+  add_widget_table(Table,ButtonFireFly,2,1);
 
   ButtonQChem = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonGauss)), "Q-Chem "); 
   add_widget_table(Table,ButtonQChem,2,2);
@@ -4685,7 +4740,7 @@ static void changedEntryFileData(GtkWidget *entry,gpointer data)
 
 		if (ButtonGamess && GTK_TOGGLE_BUTTON (ButtonGamess)->active)
 		sprintf(buffer,"%s.inp",entrytext);
-		else if (ButtonPCGamess && GTK_TOGGLE_BUTTON (ButtonPCGamess)->active)
+		else if (ButtonFireFly && GTK_TOGGLE_BUTTON (ButtonFireFly)->active)
 		sprintf(buffer,"%s.inp",entrytext);
 		else if (ButtonQChem && GTK_TOGGLE_BUTTON (ButtonQChem)->active)
 		sprintf(buffer,"%s.inp",entrytext);
@@ -4902,12 +4957,12 @@ GtkWidget *create_remote_frame( GtkWidget *vboxall,GtkWidget **entry)
   	tlistdir[0] = g_strdup("tmp");
   }
 
-  LabelLeft[0] = g_strdup("Host name");
-  LabelLeft[1] = g_strdup("Login");
-  LabelLeft[2] = g_strdup("Password");
-  LabelLeft[3] = g_strdup("Working Directory");
+  LabelLeft[0] = g_strdup(_("Host name"));
+  LabelLeft[1] = g_strdup(_("Login"));
+  LabelLeft[2] = g_strdup(_("Password"));
+  LabelLeft[3] = g_strdup(_("Working Directory"));
 
-  frame = gtk_frame_new ("Remote host");
+  frame = gtk_frame_new (_("Remote host"));
   FrameRemote = frame;
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
@@ -4994,7 +5049,7 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GCallback func)
   GtkWidget *hbox;
   GtkWidget *button;
   GtkWidget **entry;
-  gchar *title = g_strdup_printf("Run ");
+  gchar *title = g_strdup_printf(_("Run "));
   GtkWidget* ButtonSsh = NULL;
   GtkWidget* ButtonFtpRsh = NULL;
 
@@ -5008,7 +5063,7 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GCallback func)
 
   gtk_widget_realize(fp);
   init_child(fp,gtk_widget_destroy," Run ");
-  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_childs,NULL);
+  g_signal_connect(G_OBJECT(fp),"delete_event",(GCallback)destroy_children,NULL);
 
   gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
   vboxall = create_vbox(fp);
@@ -5055,7 +5110,7 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GCallback func)
   button = create_button(fp,"Cancel");
   GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 5);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,G_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,G_OBJECT(fp));
   gtk_widget_show (button);
 
   button = create_button(fp,"OK");
@@ -5076,7 +5131,7 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GCallback func)
 
 
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(func),(gpointer)entry);
-  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,G_OBJECT(fp));
+  g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,G_OBJECT(fp));
   g_signal_connect_swapped (G_OBJECT (entry[4]), "activate", (GCallback) gtk_button_clicked, G_OBJECT (button));
   
   g_signal_connect(G_OBJECT(ButtonGamess), "clicked",G_CALLBACK(set_default_entrys),NULL);
@@ -5084,7 +5139,7 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GCallback func)
   g_signal_connect(G_OBJECT(ButtonMolcas), "clicked",G_CALLBACK(set_default_entrys),NULL);
   g_signal_connect(G_OBJECT(ButtonMolpro), "clicked",G_CALLBACK(set_default_entrys),NULL);
   g_signal_connect(G_OBJECT(ButtonMPQC), "clicked",G_CALLBACK(set_default_entrys),NULL);
-  g_signal_connect(G_OBJECT(ButtonPCGamess), "clicked",G_CALLBACK(set_default_entrys),NULL);
+  g_signal_connect(G_OBJECT(ButtonFireFly), "clicked",G_CALLBACK(set_default_entrys),NULL);
   g_signal_connect(G_OBJECT(ButtonQChem), "clicked",G_CALLBACK(set_default_entrys),NULL);
   g_signal_connect(G_OBJECT(ButtonOrca), "clicked",G_CALLBACK(set_default_entrys),NULL);
   g_signal_connect(G_OBJECT(ButtonMopac), "clicked",G_CALLBACK(set_default_entrys),NULL);
@@ -5095,13 +5150,13 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GCallback func)
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonGauss), FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMolcas), FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMPQC), FALSE);
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonPCGamess), FALSE);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonFireFly), FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonOrca), FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonQChem), FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMopac), FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonOther), FALSE); 
 
-  if(strstr(type,"PCGamess")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonPCGamess), TRUE);
+  if(strstr(type,"FireFly")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonFireFly), TRUE);
   else if(strstr(type,"Gamess")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonGamess), TRUE);
   else if(strstr(type,"Molpro")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMolpro), TRUE);
   else if(strstr(type,"Gaussian")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonGauss), TRUE);
@@ -5123,7 +5178,7 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GCallback func)
   g_signal_connect(G_OBJECT(ButtonRemote), "clicked",G_CALLBACK(set_frame_remote_visibility),NULL);
   
 #ifdef G_OS_WIN32
-  if(iprogram == PROG_IS_ORCA || iprogram == PROG_IS_GAMESS || iprogram == PROG_IS_PCGAMESS || iprogram == PROG_IS_MOPAC||  iprogram == PROG_IS_GAUSS)
+  if(iprogram == PROG_IS_ORCA || iprogram == PROG_IS_GAMESS || iprogram == PROG_IS_FIREFLY || iprogram == PROG_IS_MOPAC||  iprogram == PROG_IS_GAUSS)
   {
   	if(fileopen.remotedir && !this_is_a_backspace(fileopen.remotedir))
 		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonRemote), TRUE);
@@ -5181,8 +5236,8 @@ void create_run ()
 		case PROG_IS_ORCA :
 		create_run_dialogue_box(NULL,"Orca",(GCallback)run_program);
 		break;
-		case PROG_IS_PCGAMESS :
-		create_run_dialogue_box(NULL,"PCGamess",(GCallback)run_program);
+		case PROG_IS_FIREFLY :
+		create_run_dialogue_box(NULL,"FireFly",(GCallback)run_program);
 		break;
 		case PROG_IS_QCHEM :
 		create_run_dialogue_box(NULL,"Q-Chem",(GCallback)run_program);

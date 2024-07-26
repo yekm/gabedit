@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -23,8 +23,8 @@ void create_popup_win(gchar* label);
 void init_child(GtkWidget *widget, GabeditSignalFunc func,gchar *buttonlabel);
 void add_child(GtkWidget *widget,GtkWidget *childwidget,GabeditSignalFunc func,gchar *buttonlabel);
 void delete_child(GtkWidget *childwidget);
-void delete_all_childs(GtkWidget *widget);
-void destroy_childs(GtkWidget *widget);
+void delete_all_children(GtkWidget *widget);
+void destroy_children(GtkWidget *widget);
 GtkWidget *create_pixmap(GtkWidget *widget, gchar **data);
 GdkPixmap *get_pixmap(GtkWidget  *widget,gushort red,gushort green,gushort blue);
 GtkWidget *create_hbox_pixmap_color(GtkWidget *widget,gushort red,gushort green,gushort blue);
@@ -104,7 +104,7 @@ void new_molpro(GtkWidget *widget, gchar *data);
 void new_mopac(GtkWidget *widget, gchar *data);
 void new_mpqc(GtkWidget *widget, gchar *data);
 void new_gamess(GtkWidget *widget, gchar *data);
-void new_pcgamess(GtkWidget *widget, gchar *data);
+void new_firefly(GtkWidget *widget, gchar *data);
 void new_gauss(GtkWidget *widget, gchar *data);
 void new_orca(GtkWidget *widget, gchar *data);
 void new_qchem(GtkWidget *widget, gchar *data);

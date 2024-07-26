@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -19,12 +19,17 @@ DEALINGS IN THE SOFTWARE.
 #ifndef __GABEDIT_TRIANGLEDRAW_H__
 #define __GABEDIT_TRIANGLEDRAW_H__
 
+#include "../Utils/Vector3d.h"
+#include "../Utils/Transformation.h"
 void get_color_surface(gint num,gdouble v[]);
 void set_color_surface(gint num,gdouble v[]);
 void TriangeShow(V3d V1,V3d V2,V3d V3,V3d N);
 void IsoDraw(	IsoSurface* iso);
 void IsoGenLists(GLuint *positiveSurface, GLuint *negativeSurface, GLuint *nullSurface, IsoSurface* isopositive,IsoSurface* isonegative,IsoSurface* isonull);
 void IsoShowLists(GLuint positiveSurface, GLuint negativeSurface, GLuint nullSurface);
+gdouble get_alpha_opacity();
+void set_alpha_opacity(gdouble a);
+void set_opacity_dlg();
 
 #endif /* __GABEDIT_TRIANGLEDRAW_H__ */
 

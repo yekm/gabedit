@@ -1,6 +1,6 @@
 /* GamessMolecule.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -292,61 +292,6 @@ void setGamessGeometryFromInputFile(gchar* fileName)
 	setGamessMolecule();
 }
 /*************************************************************************************************************/
-/*
-static gdouble getMinDistance()
-{
-	gdouble d=0;
-	gint i;
-	gint k;
-	GamessAtom* atomList = gamessMolecule.listOfAtoms;
-	for(i=0; i<gamessMolecule.numberOfAtoms-1; i++)
-	{
-		gdouble dd = 0;
-		for(k=0;k<3;k++) 
-		{
-			gdouble xx = atomList->position[k]-atomList->position[k+1];
-			dd += xx*xx;
-		}
-		if(i==0) d = dd;
-		else if(d>dd) d= dd;
-		atomList++;
-	}
-	d = sqrt(d);
-
-	return d;
-}
-*/
-/*************************************************************************************************************/
-/*
-static void setFirstAtomToXAxis(gint numberOfAtoms, gdouble* X, gdouble* Y, gdouble*Z)
-{
-	gdouble d;
-	gdouble s;
-	gdouble c;
-	gint i;
-	gdouble positionTolerance = getTolerancePosition();
-
-	if(numberOfAtoms<1) return;
-	d = X[0]*X[0]+Y[0]*Y[0];
-	if(d<1e-10) return;
-	d = sqrt(d);
-	if(positionTolerance<0) positionTolerance= getMinDistance()/50;
-
-	s = -Y[0]/d;
-	c = +X[0]/d;
-
-	for (i=0;i<numberOfAtoms;i++)
-	 {
-		 gdouble x = X[i];
-		 gdouble y = Y[i];
-		X[i] = c*x - s*y;
-		Y[i] = s*x + c*y;
-		if(fabs(Y[i])<positionTolerance) Y[i]=0.0;
-	 }
-
-}
-*/
-/*************************************************************************************************************/
 static gint getRealNumberXYZVariables()
 {
 	gint k=0;
@@ -419,9 +364,9 @@ static gint getRealNumberZmatVariables()
 	gint i;
         for(i=0;i<NcentersZmat;i++)
 	{
-        	if(Geom[i].Nentry>NUMBER_ENTRY_0 && test(Geom[i].R)) k++;
-        	if(Geom[i].Nentry>NUMBER_ENTRY_R && test(Geom[i].Angle)) k++;
-        	if(Geom[i].Nentry>NUMBER_ENTRY_ANGLE && test(Geom[i].Dihedral)) k++;
+        	if(Geom[i].Nentry>NUMBER_ENTRY_0 && !test(Geom[i].R)) k++;
+        	if(Geom[i].Nentry>NUMBER_ENTRY_R && !test(Geom[i].Angle)) k++;
+        	if(Geom[i].Nentry>NUMBER_ENTRY_ANGLE && !test(Geom[i].Dihedral)) k++;
 	}
 	return k;
 }
@@ -445,7 +390,7 @@ static void putGamessMoleculeZMatInTextEditor()
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, &gamessColorFore.keyWord, &gamessColorBack.keyWord, "$END\n",-1);
 
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &gamessColorFore.keyWord, &gamessColorBack.keyWord, "$ZMT\n",-1);
+        gabedit_text_insert (GABEDIT_TEXT(text), NULL, &gamessColorFore.keyWord, &gamessColorBack.keyWord, "$ZMAT\n",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "   IZMAT(1)=\n   ",-1);
         for(i=0;i<NcentersZmat;i++)
 	{
@@ -755,6 +700,7 @@ static void putGamessMoleculeInTextEditor()
 			}
         	}
         	if(NVariables>0 && getRealNumberZmatVariables()>0)
+		{
         	for(i=0;i<NVariables;i++)
         	{
         		if(Variables[i].Used)
@@ -771,6 +717,7 @@ static void putGamessMoleculeInTextEditor()
         			gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,buffer,-1);
 			}
         	}
+		}
 	}
 	for (i=0;i<(gint)numberOfAtoms;i++) g_free( symbols[i]);
 	g_free( symbols);
@@ -1028,7 +975,7 @@ void createGamessSymmetryFrame(GtkWidget *win, GtkWidget *box)
 	if(gamessMolecule.groupSymmetry) g_free(gamessMolecule.groupSymmetry);
 	gamessMolecule.groupSymmetry = g_strdup("C1");
 
-	button = addRadioButtonToATable(table, NULL, "Detected by Gabedit", 0, 0, 1);
+	button = addRadioButtonToATable(table, NULL, _("Detected by Gabedit"), 0, 0, 1);
 	g_object_set_data(G_OBJECT (button), "Label",label);
 	g_object_set_data(G_OBJECT (button), "Type",&typeOfSymmetry[GABEDIT]);
 	g_object_set_data(G_OBJECT (button), "ComboSymmetry",comboSymmetry);
@@ -1037,14 +984,14 @@ void createGamessSymmetryFrame(GtkWidget *win, GtkWidget *box)
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), FALSE);
 	buttonGabedit=button;
 
-	buttonTolerance = create_button(win,"Tolerance");
+	buttonTolerance = create_button(win,_("Tolerance"));
 	add_widget_table(table, buttonTolerance, 0, 2);
 	g_signal_connect(G_OBJECT(buttonTolerance),"clicked", G_CALLBACK(activateToleranceButton),NULL);
 
 	labelSymmetry = label;
 	gtk_widget_set_sensitive(buttonTolerance, FALSE);
 
-	button = addRadioButtonToATable(table, button, "Fixed Symmetry", 1, 0,1);
+	button = addRadioButtonToATable(table, button, _("Fixed Symmetry"), 1, 0,1);
 	g_signal_connect(G_OBJECT(entrySymmetry),"changed", G_CALLBACK(changedEntrySymmetry),NULL);
 	setComboSymmetry(comboSymmetry);
 	gtk_table_attach(GTK_TABLE(table),comboSymmetry,1,1+2,1,1+1,
@@ -1064,7 +1011,7 @@ void createGamessSymmetryFrame(GtkWidget *win, GtkWidget *box)
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
                   2,2);
 
-	buttonSymWithCalc = gtk_check_button_new_with_label ("Symmetry not used during calculation");
+	buttonSymWithCalc = gtk_check_button_new_with_label (_("Symmetry not used during calculation"));
 	gtk_table_attach(GTK_TABLE(table),buttonSymWithCalc,0,0+3,3,3+1,
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
@@ -1153,6 +1100,7 @@ static void setComboCharge(GtkWidget *comboCharge)
 	nlist = gamessMolecule.numberOfValenceElectrons*2-2+1;
 
 	if(nlist<1) return;
+	if(nlist==1) nlist++;
 	list = g_malloc(nlist*sizeof(gchar*));
 	if(!list) return;
 	for(i=0;i<nlist;i++)
@@ -1167,6 +1115,7 @@ static void setComboCharge(GtkWidget *comboCharge)
 		sprintf(list[i+1],"%d",-k);
 		k += 1;
 	}
+	if(nlist==2) sprintf(list[1],"%d",-1);
 
   	for(i=0;i<nlist;i++) glist = g_list_append(glist,list[i]);
 
@@ -1225,7 +1174,7 @@ static void changedEntryCharge(GtkWidget *entry, gpointer data)
 	{
 		gint ne = gamessMolecule.numberOfValenceElectrons - totalCharge;
 		gchar buffer[BSIZE];
-		sprintf(buffer, "Number of electrons = %d",ne);
+		sprintf(buffer, _("Number of electrons = %d"),ne);
 		gtk_label_set_text(GTK_LABEL(labelNumberOfElectrons),buffer);
 	}
 }
@@ -1256,7 +1205,7 @@ static GtkWidget *addGamessChargeToTable(GtkWidget *table, gint i)
 	gint nlistCharge = 1;
 	gchar* listCharge[] = {"0"};
 
-	add_label_table(table,"Charge",(gushort)i,0);
+	add_label_table(table,_("Charge"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entryCharge = addComboListToATable(table, listCharge, nlistCharge, i, 2, 1);
 	comboCharge  = g_object_get_data(G_OBJECT (entryCharge), "Combo");
@@ -1272,7 +1221,7 @@ static GtkWidget *addGamessSpinToTable(GtkWidget *table, gint i)
 	gint nlistspinMultiplicity = 1;
 	gchar* listspinMultiplicity[] = {"0"};
 
-	add_label_table(table,"Spin multiplicity",(gushort)i,0);
+	add_label_table(table,_("Spin multiplicity"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entrySpinMultiplicity = addComboListToATable(table, listspinMultiplicity, nlistspinMultiplicity, i, 2, 1);
 	comboSpinMultiplicity  = g_object_get_data(G_OBJECT (entrySpinMultiplicity), "Combo");
@@ -1317,7 +1266,7 @@ void createGamessChargeMultiplicityFrame(GtkWidget *box)
 
 	table = gtk_table_new(3,5,FALSE);
 
-	frame = gtk_frame_new ("Charge & Multiplicty");
+	frame = gtk_frame_new (_("Charge & Multiplicty"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -1350,15 +1299,10 @@ void createGamessChargeMultiplicityFrame(GtkWidget *box)
 	{
 		gint ne = gamessMolecule.numberOfValenceElectrons - totalCharge;
 		gchar buffer[BSIZE];
-		sprintf(buffer, "Number of electrons = %d",ne);
+		sprintf(buffer, _("Number of electrons = %d"),ne);
 		gtk_label_set_text(GTK_LABEL(labelNumberOfElectrons),buffer);
 	}
 
-	/* activate sensitivity */
-	/*
-	if(GTK_IS_WIDGET(comboMethod)) setComboMethod(comboMethod);
-	g_object_set_data(G_OBJECT (box), "EntryMethod", GTK_BIN(comboMethod)->child);
-	*/
 }
 /************************************************************************************************************/
 void putGamessChargeAndSpinInfoInTextEditor()

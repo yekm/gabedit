@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <glib.h>
+#include <glib/gi18n.h>
 #include "../Files/GabeditFileChooser.h"
 #include "../Common/GabeditType.h"
 
@@ -35,7 +36,7 @@ DEALINGS IN THE SOFTWARE.
 #define PROG_IS_MOLPRO GABEDIT_TYPENODE_MOLPRO
 #define PROG_IS_MPQC  GABEDIT_TYPENODE_MPQC
 #define PROG_IS_ORCA  GABEDIT_TYPENODE_ORCA
-#define PROG_IS_PCGAMESS  GABEDIT_TYPENODE_PCGAMESS
+#define PROG_IS_FIREFLY  GABEDIT_TYPENODE_FIREFLY
 #define PROG_IS_QCHEM  GABEDIT_TYPENODE_QCHEM
 #define PROG_IS_MOPAC  GABEDIT_TYPENODE_MOPAC
 #define PROG_IS_OTHER -1
@@ -48,8 +49,8 @@ DEALINGS IN THE SOFTWARE.
 #define DATA_MOD_NO    0
 
 #define MAJOR_VERSION    2
-#define MINOR_VERSION    2
-#define MICRO_VERSION    6
+#define MINOR_VERSION    3
+#define MICRO_VERSION    0
 
 /**** Structures *********/
 typedef struct _FileOpen
@@ -78,12 +79,12 @@ typedef struct _FontsStyle
  GdkColor TextColor;
 }FontsStyle;
 
-typedef struct _WidgetChilds
+typedef struct _WidgetChildren
 {
- gint nchilds;
- GtkWidget **childs;
- GabeditSignalFunc *destroychilds;
-}WidgetChilds;
+ gint nchildren;
+ GtkWidget **children;
+ GabeditSignalFunc *destroychildren;
+}WidgetChildren;
 
 typedef struct _User
 {
@@ -151,7 +152,7 @@ typedef struct _CommandsBatch
   gchar *NameCommandMolcas;
   gchar *NameCommandMolpro;
   gchar *NameCommandMPQC;
-  gchar *NameCommandPCGamess;
+  gchar *NameCommandFireFly;
   gchar *NameCommandQChem;
   gchar *NameCommandOrca;
   gchar *NameCommandMopac;
@@ -166,7 +167,7 @@ typedef struct _CommandsBatch
   RecentHosts recenthosts;
 
   int iprogram; 
-  gboolean MesureIsHide;
+  gboolean MeasureIsHide;
   FileOpen fileopen;
   gchar* lastdirectory;
   GabEditNetWork defaultNetWorkProtocol;
@@ -175,7 +176,7 @@ typedef struct _CommandsBatch
   gchar* pscpplinkDirectory;
   gchar* babelCommand;
   gchar* gamessDirectory;
-  gchar* pcgamessDirectory;
+  gchar* fireflyDirectory;
   gchar* orcaDirectory;
   gchar* mopacDirectory;
   gchar* gaussDirectory;
@@ -186,7 +187,7 @@ typedef struct _CommandsBatch
   CommandsList molproCommands;
   CommandsList mpqcCommands;
   CommandsList orcaCommands;
-  CommandsList pcgamessCommands;
+  CommandsList fireflyCommands;
   CommandsList qchemCommands;
   CommandsList mopacCommands;
   CommandsList povrayCommands;

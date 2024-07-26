@@ -1,6 +1,6 @@
 /* GInterfaceBasis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -74,7 +74,7 @@ static gchar *get_info_basis()
         if(EntryB[0]!=NULL)
         {
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryB[0]));
-  	if (strcmp(entrytext,"No") )
+  	if (strcmp(entrytext,_("No")) )
            temp=g_strdup_printf("%s%s",temp,entrytext);
         }
   	if (Modify)
@@ -82,9 +82,9 @@ static gchar *get_info_basis()
         if(EntryB[1]!=NULL)
         {
   		entrytext = gtk_entry_get_text(GTK_ENTRY(EntryB[1]));
-  	if (strcmp(entrytext,"No") )
+  	if (strcmp(entrytext,_("No")) )
         {
-  		if (strcmp(entrytext,"Yes") )
+  		if (strcmp(entrytext,_("Yes")) )
            		temp=g_strdup_printf("%s%s",temp,entrytext);
                 else
            		temp=g_strdup_printf("AUG-%s",temp);
@@ -105,13 +105,10 @@ static void  c_basis_presents(gchar *ListAtoms)
   letoile = g_malloc(100);
   sprintf(lwhite,"\n");
   sprintf(letoile,"*******************************************************\n");
-  sprintf(tlabel,"%s%sThis basis is present for %s atoms\n%s"
+  sprintf(tlabel,_("%s%sThis basis is present for %s atoms\n%s")
                 ,lwhite,letoile,ListAtoms,letoile);
   HboxBasis[2] = create_hbox(VboxBasis);
   label = gtk_label_new (tlabel);
-  g_object_ref (label);
-  g_object_set_data_full (G_OBJECT (FrameBasis), "label", label,
-                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (HboxBasis[2]), label, TRUE, TRUE, 2);
   g_free(tlabel);
@@ -122,7 +119,7 @@ static void  c_basis_presents(gchar *ListAtoms)
 static void  c_polarization(guint nliste)
 {
   gchar *liste[20];
-  liste[0]=g_strdup("No");
+  liste[0]=g_strdup(_("No"));
   liste[1]=g_strdup("*");
   liste[2]=g_strdup("(d)");
   liste[3]=g_strdup("**");
@@ -143,17 +140,17 @@ static void  c_polarization(guint nliste)
   liste[18]=g_strdup("(3df,2pd)");
   liste[19]=g_strdup("(3df,3pd)");
   HboxBasis[1] = create_hbox(VboxBasis);
-  EntryB[1]= create_combo_box_entry_liste(FrameBasis,HboxBasis[1]," Polarization function :",liste,nliste);
+  EntryB[1]= create_combo_box_entry_liste(FrameBasis,HboxBasis[1],_(" Polarization function :"),liste,nliste);
 }
 /*************************************************************************************************/
 static void  c_diffuse_pp(guint nliste)
 {
   gchar *liste[3];
-  liste[0]=g_strdup("No");
+  liste[0]=g_strdup(_("No"));
   liste[1]=g_strdup("+");
   liste[2]=g_strdup("++");
   HboxBasis[0] = create_hbox(VboxBasis);
-  EntryB[0]= create_combo_box_entry_liste(FrameBasis,HboxBasis[0]," Diffuse function :",liste,nliste);
+  EntryB[0]= create_combo_box_entry_liste(FrameBasis,HboxBasis[0],_(" Diffuse function :"),liste,nliste);
 }
 /*************************************************************************************************/
 static void  c_diffuse_aug()
@@ -161,10 +158,10 @@ static void  c_diffuse_aug()
   gchar *liste[2];
   int nliste ;
   nliste=2;
-  liste[0]=g_strdup("No");
-  liste[1]=g_strdup("Yes");
+  liste[0]=g_strdup(_("No"));
+  liste[1]=g_strdup(_("Yes"));
   HboxBasis[1] = create_hbox(VboxBasis);
-  EntryB[1]= create_combo_box_entry_liste(FrameBasis,HboxBasis[1]," Diffuse function :",liste,nliste);
+  EntryB[1]= create_combo_box_entry_liste(FrameBasis,HboxBasis[1],_(" Diffuse function :"),liste,nliste);
 }
 /********************************************************************************************************/
 static void traite_basis (GtkComboBox *combobox, gpointer d)
@@ -181,7 +178,7 @@ static void traite_basis (GtkComboBox *combobox, gpointer d)
 	}
 	if(BasisName) g_free(BasisName);
 	BasisName = NULL;
-  	if ( strcmp((char *)data,"None(for DUMMY Center)") ) 
+  	if ( strcmp((char *)data,_("None(for DUMMY Center)")) ) 
 		BasisName =g_strdup((char *)data);
 	else
 		BasisName =g_strdup("Noselect");
@@ -241,7 +238,7 @@ static GtkWidget *create_liste_basis(GtkWidget*win,GtkWidget *frame)
 
 	store = gtk_tree_store_new (1,G_TYPE_STRING);
         gtk_tree_store_append (store, &iter, NULL);
-        gtk_tree_store_set (store, &iter, 0, "None(for DUMMY Center)", -1);
+        gtk_tree_store_set (store, &iter, 0, _("None(for DUMMY Center)"), -1);
         gtk_tree_store_append (store, &iter, NULL);
         gtk_tree_store_set (store, &iter, 0, "STO-3G", -1);
         gtk_tree_store_append (store, &iter, NULL);
@@ -297,7 +294,6 @@ static GtkWidget *create_liste_basis(GtkWidget*win,GtkWidget *frame)
 
         model = GTK_TREE_MODEL (store);
 	combobox = gtk_combo_box_new_with_model (model);
-	/* gtk_combo_box_set_add_tearoffs (GTK_COMBO_BOX (combobox), TRUE); */
 	g_object_unref (model);
 	gtk_box_pack_start (GTK_BOX (hbox), combobox, TRUE, TRUE, 1);
 	g_signal_connect (G_OBJECT(combobox), "changed", G_CALLBACK(traite_basis), NULL);
@@ -394,7 +390,7 @@ void  create_tabs_list()
 
  Tb.BasisName=g_strdup("STO-3G");
  if( (int)Tb.CenterName[0] == (int)'x' || (int)Tb.CenterName[0] == (int)'X' )
-	Tb.BasisName=g_strdup("None");
+	Tb.BasisName=g_strdup(_("None"));
  Tb.Changed=FALSE;
  Tb.Number=i+1;
  if (OK[0] )
@@ -441,7 +437,6 @@ void  create_tabs_list()
   }
 
  }
-/* end of i */ 
 
   create_tab_type();
 
@@ -491,14 +486,14 @@ static void DialogueEditC(GtkWidget *w,gpointer data)
   
   Nc=atoi(selectedRowForCenter);
   if(Nc<0 ) {
-   	Message("Please Select your center\n"," Warning ",TRUE);
+   	Message(_("Please Select your center\n")," Warning ",TRUE);
    return;
   }
   Dialogue = gtk_dialog_new();
   gtk_window_set_modal(GTK_WINDOW(Dialogue),TRUE);
   gtk_window_set_position(GTK_WINDOW(Dialogue),GTK_WIN_POS_CENTER);
-  gtk_window_set_title(GTK_WINDOW(Dialogue),"Basis");
-  frame = create_frame(GTK_WIDGET(Dialogue),GTK_DIALOG(Dialogue)->vbox,"Title");
+  gtk_window_set_title(GTK_WINDOW(Dialogue),_("Basis"));
+  frame = create_frame(GTK_WIDGET(Dialogue),GTK_DIALOG(Dialogue)->vbox,_("Title"));
   for (i=0;i<NHboxBasis;i++)
   {
 	EntryB[i]=NULL;
@@ -508,12 +503,12 @@ static void DialogueEditC(GtkWidget *w,gpointer data)
 
   gtk_widget_realize(Dialogue);
 
-  Bouton = create_button(Dialogue,"Cancel");
+  Bouton = create_button(Dialogue,_("Cancel"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 
-  Bouton = create_button(Dialogue,"OK");
+  Bouton = create_button(Dialogue,_("OK"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)EditBasisC, NULL);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(Dialogue));
@@ -652,15 +647,15 @@ static void DialogueEditT(GtkWidget *w,gpointer data)
   
   Nc=atoi(selectedRowForType);
   if(Nc<0 ) {
-   	Message("Please Select your center \n"," Warning ",TRUE);
+   	Message(_("Please Select your center \n")," Warning ",TRUE);
    return;
   }
   Dialogue = gtk_dialog_new();
   gtk_window_set_modal(GTK_WINDOW(Dialogue),TRUE);
   gtk_window_set_position(GTK_WINDOW(Dialogue),GTK_WIN_POS_CENTER);
-  gtk_window_set_title(GTK_WINDOW(Dialogue),"Basis");
+  gtk_window_set_title(GTK_WINDOW(Dialogue),_("Basis"));
 
-  frame = create_frame(GTK_WIDGET(Dialogue),GTK_DIALOG(Dialogue)->vbox,"Title");
+  frame = create_frame(GTK_WIDGET(Dialogue),GTK_DIALOG(Dialogue)->vbox,_("Title"));
   for (i=0;i<NHboxBasis;i++)
   {
 	EntryB[i]=NULL;
@@ -670,12 +665,12 @@ static void DialogueEditT(GtkWidget *w,gpointer data)
 
   gtk_widget_realize(Dialogue);
 
-  Bouton = create_button(Dialogue,"Cancel");
+  Bouton = create_button(Dialogue,_("Cancel"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
 
-  Bouton = create_button(Dialogue,"OK");
+  Bouton = create_button(Dialogue,_("OK"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
   g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)EditBasisT, NULL);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(Dialogue));
@@ -720,7 +715,7 @@ void create_basis_type_list(GtkWidget *vbox)
   guint i;
   guint Factor=7;
   guint widall=0;
-  gchar *titres[3]={	" Symbol "," Basis ", " Layer "};
+  gchar *titres[3]={	N_(" Symbol "),N_(" Basis "), N_(" Layer ")};
   gint width[3]={6,18,8 };
 
   GtkListStore *store;
@@ -765,7 +760,7 @@ void create_basis_type_list(GtkWidget *vbox)
   gtk_widget_show (listT);
   hbox = create_hbox_false(vbox);
 
-  button = gtk_button_new_with_label ("Edit Basis");
+  button = gtk_button_new_with_label (_("Edit Basis"));
   g_signal_connect(G_OBJECT(button), "clicked", (GCallback)DialogueEditT,NULL);
   gtk_box_pack_start (GTK_BOX(hbox), button, TRUE, TRUE, 0);
 
@@ -808,7 +803,7 @@ void create_basis_center_list(GtkWidget *vbox)
   guint i;
   guint Factor=7;
   guint widall=0;
-  gchar *titres[4]={	" Center Number ", " Symbol "," Basis ", " Layer "};
+  gchar *titres[4]={	N_(" Center Number "), N_(" Symbol "),N_(" Basis "), N_(" Layer ")};
   gint width[4]={12,6,18,8 };
   GtkListStore *store;
   GtkTreeModel *model;
@@ -849,7 +844,7 @@ void create_basis_center_list(GtkWidget *vbox)
 
   hbox = create_hbox_false(vbox);
 
-  button = gtk_button_new_with_label ("Edit Basis");
+  button = gtk_button_new_with_label (_("Edit Basis"));
   g_signal_connect(G_OBJECT(button), "clicked", (GCallback)DialogueEditC,NULL);
   gtk_box_pack_start (GTK_BOX(hbox), button, TRUE, TRUE, 0);
 
@@ -865,26 +860,17 @@ void create_basis_interface (GtkWidget *window,GtkWidget *hbox)
   GtkWidget *vseparator;
   GtkWidget *Frame;
 
-  Frame = create_frame(window,hbox,"Basis");
+  Frame = create_frame(window,hbox,_("Basis"));
 
   hbox = gtk_hbox_new (FALSE, 0);
-  g_object_ref (hbox);
-  g_object_set_data_full (G_OBJECT (Frame), "hbox", hbox,
-                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (hbox);
   gtk_container_add (GTK_CONTAINER (Frame), hbox);
 
   vbox = gtk_vbox_new (FALSE, 0);
-  g_object_ref (vbox);
-  g_object_set_data_full (G_OBJECT (Frame), "vbox", vbox,
-                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (vbox);
   gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 5);
 
-  label = gtk_label_new (" Define basis by type of center ");
-  g_object_ref (label);
-  g_object_set_data_full (G_OBJECT (Frame), "label", label,
-                            (GDestroyNotify) g_object_unref);
+  label = gtk_label_new (_(" Define basis by type of center "));
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (vbox), label, TRUE, TRUE, 2);
 
@@ -894,16 +880,10 @@ void create_basis_interface (GtkWidget *window,GtkWidget *hbox)
   vseparator = create_vseparator (hbox);
 
   vbox = gtk_vbox_new (FALSE, 0);
-  g_object_ref (vbox);
-  g_object_set_data_full (G_OBJECT (Frame), "vbox", vbox,
-                            (GDestroyNotify) g_object_unref);
   gtk_widget_show (vbox);
   gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 5);
 
-  label = gtk_label_new (" Define basis center by center (not recommended) ");
-  g_object_ref (label);
-  g_object_set_data_full (G_OBJECT (Frame), "label", label,
-                            (GDestroyNotify) g_object_unref);
+  label = gtk_label_new (_(" Define basis center by center (not recommended) "));
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (vbox), label, TRUE, TRUE, 2);
 
@@ -935,22 +915,16 @@ void GAjoutePageBasis(GtkWidget *NoteBook)
   Frame = gtk_frame_new(NULL);
   gtk_container_set_border_width(GTK_CONTAINER(Frame), 10);
 
-  LabelOnglet = gtk_label_new("Basis Generated");
-  LabelMenu = gtk_label_new("Basis");
+  LabelOnglet = gtk_label_new(_("Basis Generated"));
+  LabelMenu = gtk_label_new(_("Basis"));
   gtk_notebook_append_page_menu(GTK_NOTEBOOK(NoteBook),
                                 Frame,
                                 LabelOnglet, LabelMenu);
 
   window1 = Frame;
   g_object_set_data(G_OBJECT (window1), "window1", window1);
-
   vbox =create_vbox(window1);
-
   hbox =create_hbox_false(vbox);
-
   create_basis_interface(window1,hbox);
-
-
-
 }
 

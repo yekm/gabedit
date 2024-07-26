@@ -1,6 +1,6 @@
 /* MPQCMole.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -183,7 +183,7 @@ static void changedEntryMethod(GtkWidget *entry, gpointer data)
 	gboolean OPT = FALSE;
 	GtkWidget* entryFunctional = NULL;
 	GtkWidget* buttonSinglePoint = g_object_get_data(G_OBJECT (entry), "ButtonSinglePoint");
-	GtkWidget* buttonOptimisation = g_object_get_data(G_OBJECT (entry), "ButtonOptimisation");
+	GtkWidget* buttonOptimization = g_object_get_data(G_OBJECT (entry), "ButtonOptimization");
 	gboolean OkOptimize = TRUE;
 	 
 	if(!GTK_IS_WIDGET(entry)) return;
@@ -200,13 +200,13 @@ static void changedEntryMethod(GtkWidget *entry, gpointer data)
 	{
 		if(GTK_IS_WIDGET(buttonSinglePoint))
 			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonSinglePoint), TRUE);
-		if(GTK_IS_WIDGET(buttonOptimisation)) gtk_widget_set_sensitive(buttonOptimisation,FALSE);
+		if(GTK_IS_WIDGET(buttonOptimization)) gtk_widget_set_sensitive(buttonOptimization,FALSE);
 	}
 	else
 	{
 		if(GTK_IS_WIDGET(buttonSinglePoint))
 			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonSinglePoint), TRUE);
-		if(GTK_IS_WIDGET(buttonOptimisation)) gtk_widget_set_sensitive(buttonOptimisation,TRUE);
+		if(GTK_IS_WIDGET(buttonOptimization)) gtk_widget_set_sensitive(buttonOptimization,TRUE);
 	}
 
 	if(mpqcMole.method) g_free(mpqcMole.method);
@@ -398,7 +398,7 @@ static void changedEntryCharge(GtkWidget *entry, gpointer data)
 	{
 		gint ne = mpqcMolecule.numberOfValenceElectrons - mpqcMole.totalCharge;
 		gchar buffer[BSIZE];
-		sprintf(buffer, "Number of electrons = %d",ne);
+		sprintf(buffer, _("Number of electrons = %d"),ne);
 		gtk_label_set_text(GTK_LABEL(labelNumberOfElectrons),buffer);
 	}
 }
@@ -410,7 +410,7 @@ static void setComboFunctional(GtkWidget *comboFunctional)
 	gint i;
 	for(i=0;i<n;i++)
   		glist = g_list_append(glist,stdFunctionals[i].name);
-  	glist = g_list_append(glist,"Your functional");
+  	glist = g_list_append(glist,_("Your functional"));
   	gtk_combo_box_entry_set_popdown_strings( comboFunctional, glist) ;
 }
 /************************************************************************************************************/
@@ -427,7 +427,7 @@ static void changedEntryFunctional(GtkWidget *entry, gpointer data)
 
 	if(mpqcMole.functional) g_free(mpqcMole.functional);
 	mpqcMole.functional=g_strdup(entryText);
-	if(strcmp(entryText,"Your functional")==0) sumDen = TRUE;
+	if(strcmp(entryText,_("Your functional"))==0) sumDen = TRUE;
 
 	wid = g_object_get_data(G_OBJECT (entry), "ButtonWhat");
 	if(GTK_IS_WIDGET(wid)) gtk_widget_set_sensitive(wid,!sumDen);
@@ -455,7 +455,7 @@ void whatFunctional(GtkWidget *entry, gpointer data)
 		{
 			gint j;
 			OK = TRUE;
-			sprintf(message,"%s"," This is :\n");
+			sprintf(message,"%s",_(" This is :\n"));
 			for(j=0;j<stdFunctionals[i].n;j++)
 			{
 				MPQCFunctionalType type = stdFunctionals[i].listOfTypes[j];
@@ -480,7 +480,7 @@ void whatFunctional(GtkWidget *entry, gpointer data)
 
 	if(OK) 
 	{
-		GtkWidget* mess = Message(message,"Info",TRUE);
+		GtkWidget* mess = Message(message,_("Info"),TRUE);
     		gtk_window_set_modal (GTK_WINDOW (mess), TRUE);
 	}
 	g_free(message);
@@ -542,7 +542,7 @@ static GtkWidget *addMPQCSpinToTable(GtkWidget *table, gint i)
 	gint nlistspinMultiplicity = 1;
 	gchar* listspinMultiplicity[] = {"0"};
 
-	add_label_table(table,"Spin multiplicity",(gushort)i,0);
+	add_label_table(table,_("Spin multiplicity"),(gushort)i,0);
 	add_label_table(table,":",(gushort)i,1);
 	entrySpinMultiplicity = addComboListToATable(table, listspinMultiplicity, nlistspinMultiplicity, i, 2, 1);
 	comboSpinMultiplicity  = g_object_get_data(G_OBJECT (entrySpinMultiplicity), "Combo");
@@ -565,7 +565,7 @@ static GtkWidget* addMPQCMethodToTable(GtkWidget *table, gint i, GtkWidget *comb
 
 	entrySpinMultiplicity  = GTK_BIN (comboSpinMultiplicity)->child;
 
-	add_label_table(table, "Method", (gushort)i, 0);
+	add_label_table(table, _("Method"), (gushort)i, 0);
 	add_label_table(table, ":", (gushort)i, 1);
 	entryMethod = addComboListToATable(table, listMethod, nlistMethod, i, 2, 1);
 	comboMethod  = g_object_get_data(G_OBJECT (entryMethod), "Combo");
@@ -605,7 +605,7 @@ static void addMPQCFunctionalToTable(GtkWidget *table, gint i, GtkWidget* comboM
 
 	if(GTK_IS_COMBO_BOX(comboMethod)) entryMethod = GTK_BIN(comboMethod)->child;
 
-	label = add_label_table(table, "Functional", (gushort)i, 0);
+	label = add_label_table(table, _("Functional"), (gushort)i, 0);
 	if(entryMethod) g_object_set_data(G_OBJECT (entryMethod), "LabelFunctional1", label);
 	add_label_table(table, ":", (gushort)i, 1);
 	if(entryMethod) g_object_set_data(G_OBJECT (entryMethod), "LabelFunctional2", label);
@@ -615,13 +615,13 @@ static void addMPQCFunctionalToTable(GtkWidget *table, gint i, GtkWidget* comboM
 	gtk_widget_set_sensitive(entryFunctional, FALSE);
 
 
-	what = gtk_button_new_with_label("What this ?");
+	what = gtk_button_new_with_label(_("What this ?"));
 	hbox = gtk_hbox_new(0,FALSE);
 	gtk_box_pack_start (GTK_BOX (hbox), what, FALSE, FALSE, 0);
 	add_widget_table(table,hbox,(gushort)i,3);
 	if(entryMethod) g_object_set_data(G_OBJECT (entryMethod), "ButtonWhat", what);
 
-	sumDenFunctional = gtk_button_new_with_label("Your functional");
+	sumDenFunctional = gtk_button_new_with_label(_("Your functional"));
 	hbox = gtk_hbox_new(0,FALSE);
 	gtk_box_pack_start (GTK_BOX (hbox), sumDenFunctional, TRUE, TRUE, 0);
 	add_widget_table(table,hbox,(gushort)i,4);
@@ -649,7 +649,7 @@ void createMPQCMole(GtkWidget *box)
 
 	table = gtk_table_new(6,5,FALSE);
 
-	frame = gtk_frame_new ("Parameters for computing the molecule's energy");
+	frame = gtk_frame_new (_("Parameters for computing the molecule's energy"));
 	gtk_widget_show (frame);
 	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
 	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
