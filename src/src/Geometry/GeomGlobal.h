@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -120,7 +120,7 @@ guint NcentersZmat;
 guint MethodeGeom;
 guint Nelectrons;
 DipoleDef Dipole;
-GtkWidget *ZoneDessin;
+GtkWidget *GeomDrawingArea;
 GeomInter *geominter;
 GtkWidget *HboxGeom;
 GtkWidget *WindowGeom;
@@ -131,6 +131,7 @@ guint NMethodes;
 gint NSA[4];
 gint TotalCharges[3];
 gint SpinMultiplicities[3];
+gboolean RebuildGeom;
 
 void set_spin_of_electrons();
 

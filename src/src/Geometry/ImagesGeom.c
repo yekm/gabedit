@@ -1,6 +1,6 @@
 /* ImagesGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -26,8 +26,103 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
 
+#ifdef DRAWGEOMGL
+#include <GL/gl.h>
+#include <GL/glu.h>
+/**************************************************************************/
+static void snapshot_pixbuf_free (guchar   *pixels, gpointer  data)
+{
+	g_free (pixels);
+}
+/**************************************************************************/
+static GdkPixbuf  *get_pixbuf_gl(guchar* colorTrans)
+{       
+      	gint stride;
+	GdkPixbuf  *pixbuf = NULL;
+	GdkPixbuf  *tmp = NULL;
+	GdkPixbuf  *tmp2 = NULL;
+	guchar *data;
+  	gint height;
+  	gint width;
+	GLint viewport[4];
+
+	glGetIntegerv(GL_VIEWPORT, viewport);
+  	width  = viewport[2];
+  	height = viewport[3];
+
+	stride = width*4;
+
+	data = g_malloc0 (sizeof (guchar) * stride * height);
+#ifdef G_OS_WIN32 
+  	glReadBuffer(GL_BACK);
+  	glReadPixels(0,0,width,height,GL_RGBA,GL_UNSIGNED_BYTE,data);
+#else
+  	glReadBuffer(GL_FRONT);
+  	glReadPixels(0,0,width,height,GL_RGBA,GL_UNSIGNED_BYTE,data);
+#endif
+
+	tmp = gdk_pixbuf_new_from_data (data, GDK_COLORSPACE_RGB, TRUE, 
+                                      8, width, height, stride, snapshot_pixbuf_free,
+                                      NULL);
+	if(tmp)
+	{
+		tmp2 = gdk_pixbuf_flip (tmp, TRUE); 
+		g_object_unref (tmp);
+	}
+
+	if(tmp2)
+	{
+		pixbuf = gdk_pixbuf_rotate_simple (tmp2, GDK_PIXBUF_ROTATE_UPSIDEDOWN);
+		g_object_unref (tmp2);
+	}
+
+	if(colorTrans)
+	{
+		tmp = gdk_pixbuf_add_alpha(pixbuf, TRUE, colorTrans[0], colorTrans[1], colorTrans[2]);
+		if(tmp!=pixbuf)
+		{
+ 			g_object_unref (pixbuf);
+			pixbuf = tmp;
+		}
+	}
+	
+	return pixbuf;
+}
+/*************************************************************************/
+static void gabedit_save_image_gl(GtkWidget* widget, gchar *fileName, gchar* type, guchar* colorTrans)
+{       
+	GError *error = NULL;
+	GdkPixbuf  *pixbuf = NULL;
+	pixbuf = get_pixbuf_gl(colorTrans);
+	if(pixbuf)
+	{
+		if(!fileName)
+		{
+			GtkClipboard * clipboard;
+			clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+			if(clipboard)
+			{
+				gtk_clipboard_clear(clipboard);
+				gtk_clipboard_set_image(clipboard, pixbuf);
+			}
+		}
+		else 
+		{
+			if(type && strstr(type,"j") && strstr(type,"g") )
+			gdk_pixbuf_save(pixbuf, fileName, type, &error, "quality", "100", NULL);
+			else if(type && strstr(type,"png"))
+			gdk_pixbuf_save(pixbuf, fileName, type, &error, "compression", "5", NULL);
+			else if(type && (strstr(type,"tif") || strstr(type,"tiff")))
+			gdk_pixbuf_save(pixbuf, fileName, "tiff", &error, "compression", "1", NULL);
+			else
+			gdk_pixbuf_save(pixbuf, fileName, type, &error, NULL);
+		}
+	 	g_object_unref (pixbuf);
+	}
+}
+#endif
 /**********************************************************************************************************************************/
-static void save_geometry_image(GabeditFileChooser *SelecFile, gchar* type)
+static void save_geometry_image(GabeditFileChooser *SelecFile, gchar* type, guchar* colorTrans)
 {       
  	gchar *fileName;
 
@@ -40,12 +135,15 @@ static void save_geometry_image(GabeditFileChooser *SelecFile, gchar* type)
 
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
 	while( gtk_events_pending() ) gtk_main_iteration();
-	Waiting(1.0);
 
 	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
 	rafresh_drawing();
 	while( gtk_events_pending() ) gtk_main_iteration();
-	gabedit_save_image(ZoneDessin, fileName, type);
+#ifdef DRAWGEOMGL
+	gabedit_save_image_gl(GeomDrawingArea, fileName, type, colorTrans);
+#else
+	gabedit_save_image(GeomDrawingArea, fileName, type);
+#endif
 
 }
 /**************************************************************************
@@ -53,17 +151,26 @@ static void save_geometry_image(GabeditFileChooser *SelecFile, gchar* type)
 **************************************************************************/
 guchar *get_rgb_image()
 {
- if(!ZoneDessin)
+ if(!GeomDrawingArea)
  {
    Message(_("Sorry I can not create image file \nbecause Geometry display windows is closed"),_("Error"),TRUE);
    return NULL;
  }
+#ifdef DRAWGEOMGL
+{
+	GdkPixbuf*  tmp = get_pixbuf_gl(NULL);
+	guchar *data = NULL;
+	if(tmp) data =gdk_pixbuf_get_pixels(tmp);
+	return data;
+}
+
+#endif
   {
 	gdouble fac=255.0/65535.0;
   	GdkPixmap* pixmap = get_drawing_pixmap();
   	GdkColormap *colormap = get_drawing_colormap();
-  	guint height = ZoneDessin->allocation.height;
-  	guint width = ZoneDessin->allocation.width;
+  	guint height = GeomDrawingArea->allocation.height;
+  	guint width = GeomDrawingArea->allocation.width;
 	guint32 pixel;
   	GdkImage* image = NULL;
 	GdkVisual *v;
@@ -82,7 +189,7 @@ guchar *get_rgb_image()
 	    return NULL;
 	}
 	/* Debug("End get colormap\n");*/
-	image = gdk_drawable_get_image(ZoneDessin->window,0,0,width,height);
+	image = gdk_drawable_get_image(GeomDrawingArea->window,0,0,width,height);
 	/* Debug("End get Image\n");*/
 	v = gdk_colormap_get_visual(colormap);
 	/* Debug("End get visual\n");*/
@@ -146,6 +253,7 @@ guchar *get_rgb_image()
 	}
 	return rgbbuf;
   }
+  return NULL;
 
 }
 /**************************************************************************
@@ -154,14 +262,79 @@ guchar *get_rgb_image()
 void save_geometry_jpeg_file(GabeditFileChooser *SelecFile, gint response_id)
 {       
 	if(response_id != GTK_RESPONSE_OK) return;
-	save_geometry_image(SelecFile, "jpeg");
+	save_geometry_image(SelecFile, "jpeg",NULL);
 } 
 /**************************************************************************
 *       Save the Frame Buffer in a ppm format file
 **************************************************************************/
-void save_geometry_ppm_file(GabeditFileChooser *SelecFile, gint response_id)
+
+#ifdef DRAWGEOMGL
+static gchar* save_ppm(gchar* fileName)
 {       
- 	gchar *FileName;
+	FILE *file;
+	int i;
+	int j;
+	int k;
+	int width;
+	int height;
+	GLubyte *rgbbuf;
+	static gchar message[1024];
+
+ 	if ((!fileName) || (strcmp(fileName,"") == 0))
+	{
+		sprintf(message,_("Sorry\n No selected file"));
+	       	return message;
+	}
+
+	file = FOpen(fileName,"wb");
+
+	if (!file)
+	{
+		sprintf(message,_("Sorry: can't open %s file\n"), fileName);
+		return message;
+	}
+  
+  	height = GeomDrawingArea->allocation.height;
+  	width = GeomDrawingArea->allocation.width;
+
+	glPixelStorei(GL_PACK_ROW_LENGTH,width);
+	glPixelStorei(GL_PACK_ALIGNMENT,1);
+
+	rgbbuf = (GLubyte *) malloc(3*width*height*sizeof(GLubyte));
+  	if (!rgbbuf)
+	{
+		sprintf(message,_("Sorry: couldn't allocate memory\n"));
+	    	fclose(file);
+		return message;
+  	}
+
+#ifdef G_OS_WIN32 
+  	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,rgbbuf);
+#else
+  	glReadBuffer(GL_FRONT);
+  	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,rgbbuf);
+#endif
+
+        fprintf(file,"P6\n");
+        fprintf(file,"#Image rendered with gabedit\n");
+        fprintf(file,"%d\n%d\n255\n", width,height);
+
+	for(i=height-1; i>= 0; i--){
+	   for(j=0; j< width; j++){
+		k = 3*(j + i*width);
+		fwrite( &rgbbuf[k] ,sizeof(*rgbbuf), 1, file);
+		fwrite( &rgbbuf[k+1] ,sizeof(*rgbbuf), 1, file);
+		fwrite( &rgbbuf[k+2] ,sizeof(*rgbbuf), 1, file);
+	   }
+	}
+
+	fclose(file);
+	free(rgbbuf);
+	return NULL;
+} 
+#else
+static gchar* save_ppm(gchar* FileName)
+{       
 	FILE *file;
 	int i;
 	int j;
@@ -169,39 +342,23 @@ void save_geometry_ppm_file(GabeditFileChooser *SelecFile, gint response_id)
 	int width;
 	int height;
 	guchar *rgbbuf;
-
-	if(response_id != GTK_RESPONSE_OK) return;
- 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
- 	if ((!FileName) || (strcmp(FileName,"") == 0))
- 	{
-		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
-    		return ;
- 	}
+	static gchar message[1024];
 
 	file = FOpen(FileName,"wb");
 
         if (!file) {
-            Message(_("Sorry: can't open output file\n"),_("Error"),TRUE);
-            return;
+		sprintf(message,_("Sorry: can't open %s file\n"), FileName);
+		return message;
         }
-
-	gtk_widget_hide(GTK_WIDGET(SelecFile));
-	while( gtk_events_pending() )
-		gtk_main_iteration();
-	Waiting(1.0);
-	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
-	rafresh_drawing();
-	while( gtk_events_pending() )
-		gtk_main_iteration();
-
-
 
 	rgbbuf = get_rgb_image();
 	if (!rgbbuf) {
-            return;
+		sprintf(message,_("Sorry: couldn't allocate memory\n"));
+	    	fclose(file);
+		return message;
 	}
-	width =  ZoneDessin->allocation.width;
-	height = ZoneDessin->allocation.height;
+	width =  GeomDrawingArea->allocation.width;
+	height = GeomDrawingArea->allocation.height;
 
         fprintf(file,"P6\n");
         fprintf(file,"#Image rendered with gabedit\n");
@@ -218,6 +375,33 @@ void save_geometry_ppm_file(GabeditFileChooser *SelecFile, gint response_id)
 
 	fclose(file);
 	g_free(rgbbuf);
+	return NULL;
+} 
+#endif
+/**************************************************************************/
+void save_geometry_ppm_file(GabeditFileChooser *SelecFile, gint response_id)
+{       
+ 	gchar *fileName;
+	gchar* message;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(SelecFile);
+ 	if ((!fileName) || (strcmp(fileName,"") == 0))
+ 	{
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
+    		return ;
+ 	}
+
+	gtk_widget_hide(GTK_WIDGET(SelecFile));
+	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
+	rafresh_drawing();
+	while( gtk_events_pending() )
+		gtk_main_iteration();
+	message = save_ppm(fileName);
+	if(message != NULL)
+	{
+		Message(message,_("Error"),TRUE);
+	}
 } 
 /**************************************************************************
 *       Save the Frame Buffer in a bmp format file
@@ -229,57 +413,57 @@ static void WLSBL(int val,char* arr)
     arr[2] = (char) ((val>>16)&0xff);
     arr[3] = (char) ((val>>24)&0xff);
 }
-void save_geometry_bmp_file(GabeditFileChooser *SelecFile, gint response_id)
+/**************************************************************************/
+#ifdef DRAWGEOMGL
+static gchar* save_bmp(gchar* fileName)
 {       
- 	gchar *FileName;
 	FILE *file;
 	int i;
 	int j;
 	int width;
 	int height;
-  	guchar *rgbbuf;
-  	guchar rgbtmp[3];
+  	GLubyte *rgbbuf;
+  	GLubyte rgbtmp[3];
   	int pad;
+	static gchar message[1024];
 	char bmp_header[]=
 	{ 'B','M', 0,0,0,0, 0,0, 0,0, 54,0,0,0,
   	40,0,0,0, 0,0,0,0, 0,0,0,0, 1,0, 24,0, 0,0,0,0, 0,0,0,0,
   	0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 };
 
-	if(response_id != GTK_RESPONSE_OK) return;
- 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
- 	if ((!FileName) || (strcmp(FileName,"") == 0))
- 	{
-		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
-    	return ;
- 	}
-
-	file = FOpen(FileName,"wb");
-
-	if (!file) 
+ 	if ((!fileName) || (strcmp(fileName,"") == 0))
 	{
-		Message(_("Sorry: can't open output file\n"),_("Error"),TRUE);
-		return;
+		sprintf(message,_("Sorry\n No selected file"));
+	       	return message;
 	}
-	gtk_widget_hide(GTK_WIDGET(SelecFile));
-	while( gtk_events_pending() )
-		gtk_main_iteration();
-	Waiting(1.0);
 
-	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
-	rafresh_drawing();
-	while( gtk_events_pending() )
-		gtk_main_iteration();
+	file = FOpen(fileName,"wb");
 
+	if (!file)
+	{
+		sprintf(message,_("Sorry: can't open %s file\n"), fileName);
+		return message;
+	}
   
+  	height = GeomDrawingArea->allocation.height;
+  	width = GeomDrawingArea->allocation.width;
 
-  	rgbbuf = get_rgb_image();
+	glPixelStorei(GL_PACK_ROW_LENGTH,width);
+	glPixelStorei(GL_PACK_ALIGNMENT,1);
+
+  	rgbbuf = (GLubyte *)malloc(3*width*height*sizeof(GLubyte));
   	if (!rgbbuf)
 	{
+		sprintf(message,_("Sorry: couldn't allocate memory\n"));
 	    	fclose(file);
-		return;
+		return message;
   	}
-	width =  ZoneDessin->allocation.width;
-	height = ZoneDessin->allocation.height;
+#ifdef G_OS_WIN32 
+  	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,rgbbuf);
+#else
+  	glReadBuffer(GL_FRONT);
+  	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,rgbbuf);
+#endif
 
 /* The number of bytes on a screenline should be wholly devisible by 4 */
 
@@ -308,10 +492,108 @@ void save_geometry_bmp_file(GabeditFileChooser *SelecFile, gint response_id)
   	}
 
   	fclose(file);
+  	free(rgbbuf);
+	return NULL;
+}
+#else
+/**************************************************************************/
+static gchar* save_bmp(gchar* fileName)
+{       
+	FILE *file;
+	int i;
+	int j;
+	int width;
+	int height;
+  	guchar *rgbbuf;
+  	guchar rgbtmp[3];
+  	int pad;
+	static gchar message[1024];
+	char bmp_header[]=
+	{ 'B','M', 0,0,0,0, 0,0, 0,0, 54,0,0,0,
+  	40,0,0,0, 0,0,0,0, 0,0,0,0, 1,0, 24,0, 0,0,0,0, 0,0,0,0,
+  	0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 };
+
+ 	if ((!fileName) || (strcmp(fileName,"") == 0))
+	{
+		sprintf(message,_("Sorry\n No selected file"));
+	       	return message;
+	}
+
+	file = FOpen(fileName,"wb");
+
+	if (!file)
+	{
+		sprintf(message,_("Sorry: can't open %s file\n"), fileName);
+		return message;
+	}
+  
+  	height = GeomDrawingArea->allocation.height;
+  	width = GeomDrawingArea->allocation.width;
+
+  	rgbbuf = get_rgb_image();
+  	if (!rgbbuf)
+	{
+		sprintf(message,_("Sorry: couldn't allocate memory\n"));
+	    	fclose(file);
+		return message;
+  	}
+
+  	pad = (width*3)%4;
+  	if (pad) pad = 4 - pad;
+
+  	WLSBL((int) (3*width+pad)*height+54,bmp_header+2);
+  	WLSBL((int) width,bmp_header+18);
+  	WLSBL((int) height,bmp_header+22);
+  	WLSBL((int) 3*width*height,bmp_header+34);
+
+  	fwrite(bmp_header,1,54,file);
+
+  	for (i=0;i<height;i++)
+	{
+    		for (j=0;j<width;j++)
+		{
+			rgbtmp[0] = rgbbuf[(j+width*i)*3+2];
+			rgbtmp[1] = rgbbuf[(j+width*i)*3+1];
+			rgbtmp[2] = rgbbuf[(j+width*i)*3+0];
+			fwrite(rgbtmp,3,1,file);
+    		}
+    	rgbtmp[0] = (char) 0;
+    	for (j=0;j<pad;j++) 
+		fwrite(rgbtmp,1,1,file);
+  	}
+
+  	fclose(file);
   	g_free(rgbbuf);
+	return NULL;
+}
+#endif
+/**************************************************************************/
+void save_geometry_bmp_file(GabeditFileChooser *SelecFile, gint response_id)
+{       
+ 	gchar *fileName;
+	gchar* message;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(SelecFile);
+ 	if ((!fileName) || (strcmp(fileName,"") == 0))
+ 	{
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
+    		return ;
+ 	}
+
+	gtk_widget_hide(GTK_WIDGET(SelecFile));
+	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
+	rafresh_drawing();
+	while( gtk_events_pending() )
+		gtk_main_iteration();
+	message = save_bmp(fileName);
+	if(message != NULL)
+	{
+		Message(message,_("Error"),TRUE);
+	}
 }
 /**************************************************************************
-*       ps header file
+*       Save the Frame Buffer in a ps format file
 **************************************************************************/
 static void ps_header(FILE* file)
 {
@@ -382,54 +664,66 @@ static void ps_header(FILE* file)
    fprintf(file,"} bind def\n");
    fprintf(file,"} if\n");
 }
-/**************************************************************************
-*       Save the Frame Buffer in a ps format file
-**************************************************************************/
+/****************************************************************************************************************/
 void save_geometry_ps_file(GabeditFileChooser *SelecFile, gint response_id)
 {       
- 	gchar *FileName;
+ 	gchar *fileName;
 	FILE *file;
 	int i;
 	int j;
 	int k;
 	int width;
 	int height;
+#ifdef DRAWGEOMGL
+	GLubyte *rgbbuf;
+#else
 	guchar *rgbbuf;
+#endif
 
 	if(response_id != GTK_RESPONSE_OK) return;
- 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
- 	if ((!FileName) || (strcmp(FileName,"") == 0))
+ 	fileName = gabedit_file_chooser_get_current_file(SelecFile);
+ 	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
 		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
     	return ;
  	}
-
-        file = FOpen(FileName,"w");
-
-        if (!file) {
-            Message(_("Sorry: can't open output file\n"),_("Error"),TRUE);
-            return;
-        }
-
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
-	while( gtk_events_pending() )
-		gtk_main_iteration();
-	Waiting(1.0);
-
 	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
 	rafresh_drawing();
 	while( gtk_events_pending() )
 		gtk_main_iteration();
   
+  	height = GeomDrawingArea->allocation.height;
+  	width = GeomDrawingArea->allocation.width;
 
 
+#ifdef DRAWGEOMGL
+	glPixelStorei(GL_PACK_ROW_LENGTH,width);
+	glPixelStorei(GL_PACK_ALIGNMENT,1);
+
+	rgbbuf = (GLubyte *) malloc(3*width*height*sizeof(GLubyte));
+#else
 	rgbbuf = get_rgb_image();
+#endif
 	if (!rgbbuf) {
+            Message(_("Sorry: couldn't allocate memory\n"),_("Error"),TRUE);
             return;
 	}
-	width =  ZoneDessin->allocation.width;
-	height = ZoneDessin->allocation.height;
 
+#ifdef DRAWGEOMGL
+#ifdef G_OS_WIN32 
+  	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,rgbbuf);
+#else
+  	glReadBuffer(GL_FRONT);
+  	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,rgbbuf);
+#endif
+#endif
+        file = FOpen(fileName,"w");
+
+        if (!file) {
+            Message(_("Sorry: can't open output file\n"),_("Error"),TRUE);
+            return;
+        }
 
         fprintf(file,"%%!PS-Adobe-2.0 EPSF-2.0\n");
         fprintf(file,"%%%%BoundingBox: 16 16 %d %d\n",width+16,height+16);
@@ -468,11 +762,11 @@ void save_geometry_ps_file(GabeditFileChooser *SelecFile, gint response_id)
 void save_geometry_png_file(GabeditFileChooser *SelecFile, gint response_id)
 {       
 	if(response_id != GTK_RESPONSE_OK) return;
-	save_geometry_image(SelecFile, "png");
+	save_geometry_image(SelecFile, "png",NULL);
 }
 /**********************************************************************************************************************************/
 void save_geometry_tiff_file(GabeditFileChooser *SelecFile, gint response_id)
 {       
 	if(response_id != GTK_RESPONSE_OK) return;
-	save_geometry_image(SelecFile, "tiff");
+	save_geometry_image(SelecFile, "tiff",NULL);
 }

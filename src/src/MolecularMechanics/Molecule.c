@@ -1,6 +1,6 @@
 /* Molecule.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/Measure.h"
 #include "Atom.h"
 #include "Molecule.h"
-void dessine();
+void rafresh_window_geom();
 void create_GeomXYZ_from_draw_grometry();
 
 static gboolean** bondedMatrix = NULL;
@@ -513,14 +513,14 @@ void setConnections(Molecule* molecule)
 	/* printf("Set Connection\n");*/
 	set_text_to_draw(_("Establishing connectivity : 2 connections..."));
 	set_statubar_operation_str(_("Establishing connectivity : 2 connections..."));
-	dessine();
+	drawGeom();
     	while( gtk_events_pending() )
         	gtk_main_iteration();
 	set2Connections(molecule);
 	set_text_to_draw(_("Establishing connectivity : 3 connections..."));
 	set_statubar_operation_str(_("Establishing connectivity : 3 connections..."));
 
-	dessine();
+	drawGeom();
 	if(StopCalcul)
 		return;
     	while( gtk_events_pending() )
@@ -528,7 +528,7 @@ void setConnections(Molecule* molecule)
 	set3Connections(molecule);
 	set_text_to_draw(_("Establishing connectivity : 4 connections..."));
 	set_statubar_operation_str(_("Establishing connectivity : 4 connections..."));
-	dessine();
+	drawGeom();
 	if(StopCalcul)
 		return;
     	while( gtk_events_pending() )
@@ -537,7 +537,7 @@ void setConnections(Molecule* molecule)
 
 	set_text_to_draw(_("Establishing connectivity : non bonded ..."));
 	set_statubar_operation_str(_("Establishing connectivity : non bonded ..."));
-	dessine();
+	drawGeom();
 	if(StopCalcul)
 		return;
     	while( gtk_events_pending() )
@@ -717,7 +717,7 @@ void redrawMolecule(Molecule* molecule,gchar* str)
 	change_of_center(NULL,NULL);
 
 	create_GeomXYZ_from_draw_grometry();
-	dessine();
+	rafresh_window_geom();
 
     	while( gtk_events_pending() )
         	gtk_main_iteration();

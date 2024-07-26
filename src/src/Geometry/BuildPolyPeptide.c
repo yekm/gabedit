@@ -1,6 +1,6 @@
 /* BuildPolyPeptide.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -41,7 +41,6 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/MenuToolBarGeom.h"
 #include "../MolecularMechanics/PDBTemplate.h"
 
-void dessine();
 void define_good_factor();
 void create_GeomXYZ_from_draw_grometry();
 
@@ -234,6 +233,7 @@ static void define_geometry_to_draw()
 
 	Natoms = Nb;
 	if(Natoms<1) return;
+	reset_origine_molecule_drawgeom();
 	geometry0 = g_malloc((Natoms)*sizeof(GeomDef));
 	geometry  = g_malloc((Natoms)*sizeof(GeomDef));
 	n = 0;
@@ -251,7 +251,7 @@ static void define_geometry_to_draw()
 		geometry0[n].ResidueNumber = G[i].ResidueNumber;
 		geometry0[n].show = TRUE;
 		geometry0[n].Layer = HIGH_LAYER;
-		geometry0[n].Variable = FALSE;
+		geometry0[n].Variable = TRUE;
 
 
 		geometry0[n].N = i+1;
@@ -270,7 +270,7 @@ static void define_geometry_to_draw()
 		geometry[n].N = i+1;
         	geometry[n].typeConnections = NULL;
 		geometry[n].Layer = HIGH_LAYER;
-		geometry[n].Variable = FALSE;
+		geometry[n].Variable = TRUE;
 		C[0] +=  G[i].X;
 		C[1] +=  G[i].Y;
 		C[2] +=  G[i].Z;
@@ -318,6 +318,7 @@ static void define_geometry_to_draw()
 		 geometry[i].N = geometry0[i].N = i+1;
 
 	copy_connections(geometry0,geometry,Natoms);
+	RebuildGeom = TRUE;
 }
 /********************************************************************************/
 static void re_set_angles(gboolean forward)
@@ -505,10 +506,10 @@ static void add_fragment(gchar* what)
 	define_good_factor();
 	unselect_all_atoms();
 
-	reset_multiple_bonds();
+	reset_all_connections();
 
 	reset_charges_multiplicities();
-	dessine();
+	drawGeom();
 	create_GeomXYZ_from_draw_grometry();
 	lastFragNumber++;
 	lastC = C;
@@ -631,9 +632,9 @@ static void undo(GtkWidget *Dlg, gpointer data)
 	define_geometry_to_draw();
 	if(Nb>0) define_good_factor();
 	unselect_all_atoms();
-	reset_multiple_bonds();
+	reset_all_connections();
 	reset_charges_multiplicities();
-	dessine();
+	drawGeom();
 	create_GeomXYZ_from_draw_grometry();
 
 	frameAminoAcide = g_object_get_data(G_OBJECT (Dlg), "FrameAminoAcide");

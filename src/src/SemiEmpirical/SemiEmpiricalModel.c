@@ -1,6 +1,6 @@
 /* SemiEmpiricalModel.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -64,6 +64,7 @@ void setRattleConstraintsParameters(SemiEmpiricalModel* semiEmpiricalModel)
 		if(StopCalcul) break;
 		a1 = m->connected2[0][i];
 		a2 = m->connected2[1][i];
+		if(!m->atoms[a1].variable &&!m->atoms[a2].variable) continue;
 		r2ij = 0;
 		for (k=0;k<3;k++)
 		{
@@ -101,6 +102,7 @@ void setRattleConstraintsParameters(SemiEmpiricalModel* semiEmpiricalModel)
 			a1 = m->connected3[0][i];
 			a2 = m->connected3[1][i];
 			a3 = m->connected3[2][i];
+			if(!m->atoms[a1].variable &&!m->atoms[a3].variable) continue;
 			if(nAngles[a2]>=2*nConnections[a2]-3) continue;
 			for (k=0;k<j;k++)
 			{

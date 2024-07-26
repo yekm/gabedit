@@ -1,6 +1,6 @@
 /* GamessMolecule.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -44,7 +44,7 @@ DEALINGS IN THE SOFTWARE.
 /************************************************************************************************************/
 typedef enum
 {
-	GABEDIT = 0, FIXED
+	GABEDIT = 0, GABFIXED
 }TypeOfSymmetryButton;
 
 
@@ -786,7 +786,7 @@ static void activateRadioButton(GtkWidget *button, gpointer data)
 	{
 		setGamessMolecule();
 
-		if( GTK_TOGGLE_BUTTON (button)->active && *type == FIXED)
+		if( GTK_TOGGLE_BUTTON (button)->active && *type == GABFIXED)
 		{
 			if(gamessMolecule.groupSymmetry) g_free(gamessMolecule.groupSymmetry);
 			gamessMolecule.groupSymmetry = g_strdup("C1");
@@ -953,7 +953,7 @@ void createGamessSymmetryFrame(GtkWidget *win, GtkWidget *box)
 	GtkWidget* entrySymmetry = NULL;
 	GtkWidget* label = gtk_label_new(" ");
 	GtkWidget *table = gtk_table_new(4,3,FALSE);
-	static TypeOfSymmetryButton typeOfSymmetry[] = { GABEDIT, FIXED};
+	static TypeOfSymmetryButton typeOfSymmetry[] = { GABEDIT, GABFIXED};
 	gchar* list[] = {"C1"};
 
 	frame = gtk_frame_new ("Symmetry");
@@ -999,7 +999,7 @@ void createGamessSymmetryFrame(GtkWidget *win, GtkWidget *box)
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
                   2,2);
 	g_object_set_data(G_OBJECT (button), "Label",label);
-	g_object_set_data(G_OBJECT (button), "Type",&typeOfSymmetry[FIXED]);
+	g_object_set_data(G_OBJECT (button), "Type",&typeOfSymmetry[GABFIXED]);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), FALSE);
 	g_object_set_data(G_OBJECT (button), "ComboSymmetry",comboSymmetry);
 	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);

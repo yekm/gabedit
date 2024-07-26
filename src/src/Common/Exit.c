@@ -1,6 +1,6 @@
 /* Exit.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -96,6 +96,9 @@ static void ExitGabedit(GtkWidget *widget, gchar *data)
 	create_drawmolecule_file();
 
 	save_axis_properties();
+#ifdef DRAWGEOMGL
+	save_axes_geom_properties();
+#endif
 	save_principal_axis_properties();
 	save_HBonds_properties();
 	gtk_main_quit();

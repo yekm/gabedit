@@ -1,6 +1,6 @@
 /* Zlm.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -82,6 +82,7 @@ static void deleteEqZlm(Zlm* zlm)
    	      		}
    	   	  	if(ok == 1)
    	   	  	{
+				/* printf("Coef ident l = %d m = %d\n",l,m);*/
    	   	  	 	St.lxyz[Nc].Coef += zlm->lxyz[k].Coef;
    	   	  	 	Ndel[k] = 1;
    	   	  	 }
@@ -111,7 +112,8 @@ static void setCoefZlm(Zlm* zlm)
 	LXYZ* lxyz = zlm->lxyz;
 
 
-	Norm = sqrt((2*l+1)/(4*PI))*sqrt(factorial(l+absm)/factorial(l-absm))*factorial(absm)/doubleFactorial(2*absm); 
+	//Norm = sqrt((2*l+1)/(4*PI))*sqrt(factorial(l+absm)/factorial(l-absm))*factorial(absm)/doubleFactorial(2*absm); 
+	Norm = sqrt((2*l+1)/(4*PI))*sqrt(factorial(l+absm)*factorial(l-absm))/factorial(l)/pow(2.0,absm);
 	if(m != 0) Norm *= sqrt(2.0);
 
 	for (t=0; t <= (l - absm)/2; t++)
@@ -250,3 +252,4 @@ void printZlm(Zlm* zlm)
 		zlm->lxyz[i].l[2]
 		);
 }
+/*********************************************************/

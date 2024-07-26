@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -30,7 +30,8 @@ typedef enum
 {
   NONE = 0,
   ANDERSEN = 1,
-  BERENDSEN = 2
+  BERENDSEN = 2,
+  BUSSI = 3
 } MDThermostatType;
 
 typedef struct _SemiEmpiricalMD  SemiEmpiricalMD;
@@ -70,6 +71,8 @@ struct _SemiEmpiricalMD
 
 	FILE* fileTraj;
 	FILE* fileProp;
+	gint nfree;
+	gint nvariables;
 };
 void	freeSemiEmpiricalMD(SemiEmpiricalMD* seMD);
 void	runSemiEmpiricalMD(

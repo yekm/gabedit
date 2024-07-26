@@ -1,7 +1,60 @@
+20 Junuary 2011 :
+	Read beta orbitals from fchk file : Bug fixed
+	Rotation of a fragment by mouse : bug fixed
+
+22 December 2010 :
+	new tools for select atoms : multiple selection
+
+20 December 2010 :
+	Atoms can be fixed dunring MD
+	Screen capture of geometry drawing window in ppm or bmp : A bug were fixed
+
+02 December 2010 :
+	Multigrid method : multipolaire developpement at the center of charge. Multipole order 3 is now used.
+	Comformational search with semi-emperical : A bug is fixed.
+
+08 November 2010 :
+	add Space Fill option to "Draw Geom"" window.
+
+02 November 2010 :
+	Migration to OpenGL for "Draw Geom" window.
+	Remove DRAWGEOMGL variable from CONFIG file to obtain a "Draw Geom" with old style(Cairo).
+
+25 October 2010 :
+	Bug fixed : Gabedit can now read the partial charges from Gamess (FireFly) output file
+
+18 October 2010 :
+	Bug fixed : conversion from Hartree/Bohr to kcal/Ang for FireFly gradient
+
+9 October 2010 :
+	The center of the molecule is not changed after insertion of atoms.
+
+16 September 2010 :
+	Bussi thermostat implemented( velocity scaling)
+	G. Bussi and M. Parrinello, 
+	"Stochastic Thermostats: Comparison of Local and Global Schemes", Computer Physics Communications, 179, 26-29 (2008)
+
+10 September 2010 :
+	   Andersen thermostat changed. 
+
+11 July 2010 :
+	   Parallelization using OpenMP. 
+	   Parallelized Code : 
+		- Computing of Grid for Orbitals, Electronic density, Electrostatic potential (Multigrid Method)
+		- Computing of AIM charges
+		- Computing of Coulomb integral
+		- Computing of Spatial overlap
+		- Computing of MM potential and its gradients
+		- Computing of NMR spectra
+
+1 July 2010 :
+	   migration from gtkglarea to GtkGLExt
+
 08 Jun 2010 :
 	   Text with rotation in XYPlot and ContoursPlot windows.
 	   One can add margins in XYPlot and ContoursPlot windows.
 	   One can add images (from file or clipboard) in the ContoursPlot window.
+
 06 Jun 2010 :
 	   Read orbitals, geometry and normal modes from a fchk Gaussian file.
 	   Read grid from a openDX file.

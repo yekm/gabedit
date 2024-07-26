@@ -1,6 +1,6 @@
 /* SemiEmpirical.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -40,7 +40,6 @@ static void calculateEnergyMopac(SemiEmpiricalModel* seModel);
 static void calculateGradientFireFly(SemiEmpiricalModel* seModel);
 static void calculateEnergyFireFly(SemiEmpiricalModel* seModel);
 
-void dessine();
 
 /****************************************************************/
 static void getMultiplicityName(gint multiplicity, gchar* buffer)
@@ -267,7 +266,7 @@ static void calculateGradientMopac(SemiEmpiricalModel* seModel)
 			StopCalcul=TRUE;
 			set_text_to_draw(_("Problem : I cannot caculate the Gradient... "));
 			set_statubar_operation_str(_("Calculation Stopped "));
-			dessine();
+			drawGeom();
 			gtk_widget_set_sensitive(StopButton, FALSE);
 			Waiting(1);
 			return;
@@ -366,7 +365,7 @@ static gboolean getGradientFireFly(gchar* fileNameOut, SemiEmpiricalModel *seMod
 					fclose(file);
 					return FALSE;
 				}
-				for(j=0;j<3;j++) seModel->molecule.gradient[j][i] *= 627.50944796*BOHR_TO_ANG;
+				for(j=0;j<3;j++) seModel->molecule.gradient[j][i] *= 627.50944796/BOHR_TO_ANG;
 			}
 			Ok = TRUE;
 			break;
@@ -550,7 +549,7 @@ static void calculateGradientFireFly(SemiEmpiricalModel* seModel)
 			StopCalcul=TRUE;
 			set_text_to_draw(_("Problem : I cannot caculate the Gradient... "));
 			set_statubar_operation_str(_("Calculation Stopped "));
-			dessine();
+			drawGeom();
 			gtk_widget_set_sensitive(StopButton, FALSE);
 			Waiting(1);
 			system(comm);

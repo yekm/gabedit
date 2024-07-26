@@ -1,6 +1,6 @@
 /* Preferences.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -20,16 +20,20 @@ DEALINGS IN THE SOFTWARE.
 
 #include "../../Config.h"
 #include <stdlib.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include "Global.h"
 #include "../Common/Help.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/Utils.h"
+#include "../Utils/Constants.h"
 #include "Windows.h"
 #include "TextEdit.h"
 #include "../Utils/Vector3d.h"
-#include "../OpenGL/PreferencesOrb.h"
-#include "../OpenGL/GLArea.h"
+#include "../Display/PreferencesOrb.h"
+#include "../Display/GLArea.h"
+#include "../Display/UtilsOrb.h"
 #include "../Geometry/ResultsAnalise.h"
 #include "../Geometry/GeomGlobal.h"
 #include "../Files/FolderChooser.h"
@@ -1049,7 +1053,7 @@ static void set_button_font(GtkWidget *button,gpointer *data)
        	if( FontsStyleLabel.fontname )
        		g_free(FontsStyleLabel.fontname);
        	FontsStyleLabel.fontname = g_strdup(FontTemp);
- 	if(ZoneDessin)
+ 	if(GeomDrawingArea)
   		rafresh_drawing();
   }
   else
@@ -1149,7 +1153,7 @@ static void set_button_color(GtkObject *b,gpointer *data)
   else if(strstr(Type,"Label_Fore"))
   {
         FontsStyleLabel.TextColor  = ColorTemp;
- 	if(ZoneDessin)
+ 	if(GeomDrawingArea)
   		rafresh_drawing();
   }
 }
@@ -1354,21 +1358,24 @@ void add_frame_data_result(GtkWidget *hboxall,gchar *tlabel)
 void  create_font_color(GtkWidget *Wins,GtkWidget *Frame)
 {
   GtkWidget *vbox;
+  GtkWidget *hbox;
   GtkWidget *hboxall;
 
   gtk_widget_realize(Wins);
   vbox = create_vbox(Frame);
+  hbox = gtk_hbox_new (FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 1);
 
   hboxall = gtk_hbox_new (FALSE, 0);
-  gtk_box_pack_start (GTK_BOX (vbox), hboxall, FALSE, FALSE, 1);
+  gtk_box_pack_start (GTK_BOX (hbox), hboxall, FALSE, FALSE, 1);
   add_frame_data_result(hboxall,_(" Data "));
 
   hboxall = gtk_hbox_new (FALSE, 0);
-  gtk_box_pack_start (GTK_BOX (vbox), hboxall, FALSE, FALSE, 1);
+  gtk_box_pack_start (GTK_BOX (hbox), hboxall, FALSE, FALSE, 1);
   add_frame_data_result(hboxall,_(" Result "));
 
   hboxall = gtk_hbox_new (FALSE, 0);
-  gtk_box_pack_start (GTK_BOX (vbox), hboxall, FALSE, FALSE, 1);
+  gtk_box_pack_start (GTK_BOX (hbox), hboxall, FALSE, FALSE, 1);
   add_frame_label(hboxall);
 
   /* add_frame_other(hboxall);*/
@@ -1378,6 +1385,7 @@ void  create_font_color(GtkWidget *Wins,GtkWidget *Frame)
 void  create_font_color_in_box(GtkWidget *Win,GtkWidget *Box)
 {
   GtkWidget *vbox;
+  GtkWidget *hbox;
   GtkWidget *Frame;
   GtkWidget *hboxall;
 
@@ -1389,21 +1397,23 @@ void  create_font_color_in_box(GtkWidget *Win,GtkWidget *Box)
   instal = TRUE;
   gtk_widget_realize(Wins);
   vbox = create_vbox(Frame);
+  hbox = gtk_hbox_new (FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 1);
 
   hboxall = gtk_hbox_new (FALSE, 0);
-  gtk_box_pack_start (GTK_BOX (vbox), hboxall, FALSE, FALSE, 1);
+  gtk_box_pack_start (GTK_BOX (hbox), hboxall, FALSE, FALSE, 1);
   add_frame_data_result(hboxall,_(" Data "));
 
   hboxall = gtk_hbox_new (FALSE, 0);
-  gtk_box_pack_start (GTK_BOX (vbox), hboxall, FALSE, FALSE, 1);
+  gtk_box_pack_start (GTK_BOX (hbox), hboxall, FALSE, FALSE, 1);
   add_frame_data_result(hboxall,_(" Result "));
 
   hboxall = gtk_hbox_new (FALSE, 0);
-  gtk_box_pack_start (GTK_BOX (vbox), hboxall, FALSE, FALSE, 1);
+  gtk_box_pack_start (GTK_BOX (hbox), hboxall, FALSE, FALSE, 1);
   add_frame_label(hboxall);
 
   hboxall = gtk_hbox_new (FALSE, 0);
-  gtk_box_pack_start (GTK_BOX (vbox), hboxall, FALSE, FALSE, 1);
+  gtk_box_pack_start (GTK_BOX (hbox), hboxall, FALSE, FALSE, 1);
   /* add_frame_other(hboxall);*/
 
   gtk_widget_show_all(Frame);
@@ -2806,4 +2816,461 @@ void create_preferences()
 
   gtk_widget_show(Wins);
   
+}
+/********************************************************************************/
+static void  setNumberOfSubdivisions(GtkWidget *Entry, gpointer data)
+{
+	static gchar* typeEntry[] = {"CYLINDER","SPHERE"};
+	G_CONST_RETURN gchar* textEntry = gtk_entry_get_text(GTK_ENTRY(Entry)); 
+	gint value = 0;
+	if(textEntry && strlen(textEntry)>0) value = atof(textEntry);
+	if(value<1)return;
+	if(strcmp((gchar*)data,typeEntry[0])==0)
+	{
+		openGLOptions.numberOfSubdivisionsCylindre = value;
+	}
+	else
+	{
+		openGLOptions.numberOfSubdivisionsSphere = value;
+	}
+}
+/********************************************************************************/
+static void  set_opengl(GtkWidget *Button, gpointer data)
+{
+	gchar* typeButton[] = {"RGBA","DOUBLEBUFFER" ,"ALPHASIZE","DEPTHSIZE"};
+	gint i;
+	for(i=0;i<4;i++)
+		if(strcmp((gchar*)data,typeButton[i])==0)
+		{
+			switch(i)
+			{
+				case 0: 
+					if(openGLOptions.rgba==0) 
+						openGLOptions.rgba=1;
+					else 
+						openGLOptions.rgba=0;
+					break;
+				case 1: 
+					if(openGLOptions.doubleBuffer==0)
+						openGLOptions.doubleBuffer = 1;
+					else
+						openGLOptions.doubleBuffer = 0;
+					break;
+				case 2: 
+					if(openGLOptions.alphaSize==0)
+						openGLOptions.alphaSize = 1;
+					else
+						openGLOptions.alphaSize = 0;
+					break;
+				case 3: 
+					if(openGLOptions.depthSize==0)
+						openGLOptions.depthSize = 1;
+					else
+						openGLOptions.depthSize = 0;
+					break;
+			}
+			break;
+		}
+}
+/********************************************************************************/
+void  create_opengl_frame(GtkWidget* Win,GtkWidget *vbox)
+{
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	GtkWidget* buttonRGBA;
+	GtkWidget* buttonALPHASIZE;
+	GtkWidget* buttonDEPTHSIZE;
+	GtkWidget* buttonDOUBLEBUFFER;
+	GtkWidget* EntryCylinder;
+	GtkWidget* EntrySphere;
+	GtkWidget* combo;
+	GtkWidget *table = gtk_table_new(2,5,FALSE);
+	static gchar* typeButton[] = {"RGBA","DOUBLEBUFFER" ,"ALPHASIZE","DEPTHSIZE"};
+	static gchar* values[] = {"5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30"};
+	static gchar* typeEntry[] = {"CYLINDER","SPHERE"};
+	gushort i;
+
+
+	frame = gtk_frame_new (_("OpenGL Options"));
+	gtk_widget_show (frame);
+	gtk_box_pack_start (GTK_BOX (vbox), frame, TRUE, TRUE, 0);
+	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
+
+	vboxframe = gtk_vbox_new (FALSE, 0);
+	gtk_widget_show (vboxframe);
+	gtk_container_add (GTK_CONTAINER (frame), vboxframe);
+
+	gtk_box_pack_start (GTK_BOX (vboxframe), table, TRUE, TRUE, 0);
+
+/* ------------------------------------------------------------------*/
+	i = 0;
+	add_label_table(table,_(" Number Of Subdivisions for a Cylinder "),i,0);
+	add_label_table(table," : ",i,1);
+	combo = create_combo_box_entry(values,26,TRUE,-1,-1);
+	EntryCylinder = GTK_BIN(combo)->child;
+	add_widget_table(table,combo,i,2);
+	gtk_editable_set_editable((GtkEditable*)EntryCylinder,FALSE);
+	gtk_entry_set_text (GTK_ENTRY (EntryCylinder),g_strdup_printf("%d",openGLOptions.numberOfSubdivisionsCylindre));
+	g_signal_connect (G_OBJECT (EntryCylinder), "changed",(GCallback)setNumberOfSubdivisions,typeEntry[0]);
+/* ------------------------------------------------------------------*/
+	i = 1;
+	add_label_table(table,_(" Number Of Subdivisions for a Sphere "),i,0);
+	add_label_table(table," : ",i,1);
+	combo = create_combo_box_entry(values,26,TRUE,-1,-1);
+	EntrySphere = GTK_BIN(combo)->child;
+	add_widget_table(table,combo,i,2);
+	gtk_editable_set_editable((GtkEditable*)EntrySphere,FALSE);
+	gtk_entry_set_text (GTK_ENTRY (EntrySphere),g_strdup_printf("%d",openGLOptions.numberOfSubdivisionsSphere));
+	g_signal_connect (G_OBJECT (EntrySphere), "changed",(GCallback)setNumberOfSubdivisions,typeEntry[1]);
+/* ------------------------------------------------------------------*/
+
+	buttonRGBA = gtk_check_button_new_with_label("RGBA" );
+	add_widget_table(table,buttonRGBA,0,3);
+	gtk_widget_show (buttonRGBA);
+	if(openGLOptions.rgba!=0)
+  		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonRGBA), TRUE);
+	else
+  		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonRGBA), FALSE);
+
+	buttonDOUBLEBUFFER = gtk_check_button_new_with_label("DOUBLEBUFFER" );
+	add_widget_table(table,buttonDOUBLEBUFFER,1,3);
+	gtk_widget_show (buttonDOUBLEBUFFER);
+	if(openGLOptions.doubleBuffer!=0)
+  		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonDOUBLEBUFFER), TRUE);
+	else
+  		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonDOUBLEBUFFER), FALSE);
+
+	buttonALPHASIZE = gtk_check_button_new_with_label("ALPHASIZE=1(0 if not)" );
+	add_widget_table(table,buttonALPHASIZE,0,4);
+	gtk_widget_show (buttonALPHASIZE);
+	if(openGLOptions.alphaSize!=0)
+  		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonALPHASIZE), TRUE);
+	else
+  		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonALPHASIZE), FALSE);
+
+	buttonDEPTHSIZE = gtk_check_button_new_with_label("DEPTHSIZE=1(0 if not)" );
+	add_widget_table(table,buttonDEPTHSIZE,1,4);
+	gtk_widget_show (buttonDEPTHSIZE);
+	if(openGLOptions.depthSize!=0)
+  		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonDEPTHSIZE), TRUE);
+	else
+  		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonDEPTHSIZE), FALSE);
+
+	g_signal_connect (G_OBJECT (buttonRGBA), "clicked", G_CALLBACK(set_opengl), typeButton[0]);
+	g_signal_connect (G_OBJECT (buttonDOUBLEBUFFER), "clicked", G_CALLBACK(set_opengl), typeButton[1]);
+	g_signal_connect (G_OBJECT (buttonALPHASIZE), "clicked", G_CALLBACK(set_opengl), typeButton[2]);
+	g_signal_connect (G_OBJECT (buttonDEPTHSIZE), "clicked", G_CALLBACK(set_opengl), typeButton[3]);
+	gtk_widget_show_all(frame);
+}
+/********************************************************************************/
+static void apply_set_opacity(GtkWidget *Win,gpointer data)
+{
+	GtkWidget* opacitySpinButton = NULL;
+	gdouble a = 0;
+
+	if(!GTK_IS_WIDGET(Win)) return;
+
+	opacitySpinButton = g_object_get_data (G_OBJECT (Win), "OpacitySpinButton");
+
+	a = gtk_spin_button_get_value (GTK_SPIN_BUTTON(opacitySpinButton));
+	if(a>=0 && a<=100) alpha_opacity = a/100;
+	rafresh_window_orb();
+}
+/********************************************************************************/
+static void apply_set_opacity_close(GtkWidget *Win,gpointer data)
+{
+	apply_set_opacity(Win,data);
+	delete_child(Win);
+}
+/********************************************************************************/
+static GtkWidget *add_spin_button( GtkWidget *table, gchar* strLabel, gint il)
+{
+	gushort i;
+	gushort j;
+	GtkWidget *spinButton;
+	GtkWidget *label;
+
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 0;
+	label = gtk_label_new(strLabel);
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 2;
+	spinButton =  gtk_spin_button_new_with_range (0, 100, 1);
+
+	gtk_table_attach(GTK_TABLE(table),spinButton,
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+
+  	return spinButton;
+}
+/********************************************************************************/
+void set_opacity_dlg()
+{
+	GtkWidget *Win;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	GtkWidget *hbox;
+	GtkWidget *table;
+	GtkWidget *vboxall;
+	GtkWidget *opacitySpinButton;
+	GtkWidget *button;
+
+	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(Win),_("Set opacity"));
+	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
+	gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
+	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
+
+	add_glarea_child(Win,"Opacity ");
+
+	vboxall = create_vbox(Win);
+	frame = gtk_frame_new (NULL);
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+	gtk_container_add (GTK_CONTAINER (vboxall), frame);
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	table = gtk_table_new(5,3,FALSE);
+	gtk_container_add(GTK_CONTAINER(vboxframe),table);
+
+	opacitySpinButton = add_spin_button( table, _("Opacity coefficient : "), 1);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(opacitySpinButton),(gint)(alpha_opacity*100));
+	g_object_set_data (G_OBJECT (Win), "OpacitySpinButton",opacitySpinButton);
+
+	hbox = create_hbox_false(vboxall);
+	gtk_widget_realize(Win);
+
+	button = create_button(Win,_("OK"));
+	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+	gtk_widget_show (button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_set_opacity_close,G_OBJECT(Win));
+
+	button = create_button(Win,_("Apply"));
+	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_show (button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_set_opacity,G_OBJECT(Win));
+
+	button = create_button(Win,_("Cancel"));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, G_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,G_OBJECT(Win));
+	gtk_widget_show (button);
+
+	gtk_widget_show_all (Win);
+}
+/*********************************************************************************************************************/
+static void applyColorMapOptions(GtkWidget *dialogWindow, gpointer data)
+{
+	GtkWidget* buttonMultiColor;
+	GtkWidget* button2Colors;
+	GtkWidget* buttonUniColor;
+	GtkWidget* selectorUniColor;
+	GtkWidget* selector2Colors1;
+	GtkWidget* selector2Colors2;
+	 
+	if(!GTK_IS_WIDGET(dialogWindow)) return;
+	buttonMultiColor = g_object_get_data(G_OBJECT (dialogWindow), "ButtonMultiColor");
+	button2Colors = g_object_get_data(G_OBJECT (dialogWindow), "Button2Colors");
+	buttonUniColor = g_object_get_data(G_OBJECT (dialogWindow), "ButtonUniColor");
+	selectorUniColor = g_object_get_data(G_OBJECT (dialogWindow), "SelectorUniColor");
+	selector2Colors1 = g_object_get_data(G_OBJECT (dialogWindow), "Selector2Colors1");
+	selector2Colors2 = g_object_get_data(G_OBJECT (dialogWindow), "Selector2Colors2");
+
+	if(!buttonMultiColor) return;
+	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(buttonMultiColor)))
+	{
+
+		colorMapType = 1;
+	}
+	else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button2Colors)) && selector2Colors1 && selector2Colors2)
+	{
+		GdkColor color;
+		colorMapType = 2;
+		gtk_color_button_get_color (GTK_COLOR_BUTTON(selector2Colors1), &color);
+		colorMapColors[0][0] = color.red/65535.0;
+		colorMapColors[0][1] = color.green/65535.0;
+		colorMapColors[0][2] = color.blue/65535.0;
+		gtk_color_button_get_color (GTK_COLOR_BUTTON(selector2Colors2), &color);
+		colorMapColors[1][0] = color.red/65535.0;
+		colorMapColors[1][1] = color.green/65535.0;
+		colorMapColors[1][2] = color.blue/65535.0;
+
+	}
+	else if(selectorUniColor)
+	{
+		GdkColor color;
+		colorMapType = 3;
+		gtk_color_button_get_color (GTK_COLOR_BUTTON(selectorUniColor), &color);
+		colorMapColors[2][0] = color.red/65535.0;
+		colorMapColors[2][1] = color.green/65535.0;
+		colorMapColors[2][2] = color.blue/65535.0;
+	}
+	resetAllColorMapOrb();
+}
+/*********************************************************************************************************************/
+static GtkWidget* addRadioButtonColorMapToATable(GtkWidget* table, GtkWidget* friendButton, gchar* label, gint i, gint j, gint k)
+{
+	GtkWidget *newButton;
+
+	if(friendButton)
+		newButton = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (friendButton)), label);
+	else
+		newButton = gtk_radio_button_new_with_label( NULL, label);
+
+	gtk_table_attach(GTK_TABLE(table),newButton,j,j+k,i,i+1,
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+                  3,3);
+
+	g_object_set_data(G_OBJECT (newButton), "Type",NULL);
+	return newButton;
+}
+/*********************************************************************************************************************/
+static void createColorMapOptionsFrame(GtkWidget* dialogWindow, GtkWidget *box)
+{
+	GtkWidget* button;
+	GtkWidget* frame;
+	GtkWidget* vboxFrame;
+	GtkWidget *table = gtk_table_new(3,3,TRUE);
+	gint i;
+	GtkWidget *selector;
+	GdkColor color;
+
+
+	color.red = 65535;
+	color.green = 65535;
+	color.blue = 65535;
+	frame = gtk_frame_new (_("Color mapping type"));
+	gtk_widget_show (frame);
+	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
+	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
+
+	vboxFrame = gtk_vbox_new (FALSE, 3);
+	gtk_widget_show (vboxFrame);
+	gtk_container_add (GTK_CONTAINER (frame), vboxFrame);
+
+	gtk_box_pack_start (GTK_BOX (vboxFrame), table, TRUE, TRUE, 0);
+
+	i = 0;
+	button =  NULL;
+	button = addRadioButtonColorMapToATable(table, button, _("Multi color"), i, 0,1);
+	if(colorMapType == 1) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
+	g_object_set_data(G_OBJECT (dialogWindow), "ButtonMultiColor",button);
+
+	i = 1;
+	button = addRadioButtonColorMapToATable(table, button, _("2 colors"), i, 0,1);
+	if(colorMapType == 2) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
+	g_object_set_data(G_OBJECT (dialogWindow), "Button2Colors",button);
+
+	color.red = (gushort)(colorMapColors[0][0]*65535);
+	color.green = (gushort)(colorMapColors[0][1]*65535);
+	color.blue = (gushort)(colorMapColors[0][2]*65535);
+	selector = gtk_color_button_new_with_color (&color);
+	gtk_table_attach(GTK_TABLE(table),selector,1,2,i,i+1,
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+                  3,3);
+	g_object_set_data(G_OBJECT (dialogWindow), "Selector2Colors1",selector);
+
+	color.red = (gushort)(colorMapColors[1][0]*65535);
+	color.green = (gushort)(colorMapColors[1][1]*65535);
+	color.blue = (gushort)(colorMapColors[1][2]*65535);
+	selector = gtk_color_button_new_with_color (&color);
+	gtk_table_attach(GTK_TABLE(table),selector,2,3,i,i+1,
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+                  3,3);
+	g_object_set_data(G_OBJECT (dialogWindow), "Selector2Colors2",selector);
+
+	i = 2;
+	button = addRadioButtonColorMapToATable(table, button, _("Unicolor"), i, 0,1);
+	if(colorMapType == 3) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);
+
+	color.red = (gushort)(colorMapColors[2][0]*65535);
+	color.green = (gushort)(colorMapColors[2][1]*65535);
+	color.blue = (gushort)(colorMapColors[2][2]*65535);
+	selector = gtk_color_button_new_with_color (&color);
+	gtk_table_attach(GTK_TABLE(table),selector,1,2,i,i+1,
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+                  3,3);
+	g_object_set_data(G_OBJECT (dialogWindow), "SelectorUniColor",selector);
+	g_object_set_data(G_OBJECT (dialogWindow), "ButtonUniColor",button);
+
+}
+/****************************************************************************************************/
+void createColorMapOptionsWindow(GtkWidget* win)
+{
+	GtkWidget *dialogWindow = NULL;
+	GtkWidget *button;
+	GtkWidget *frame;
+	GtkWidget *hbox;
+	gchar title[BSIZE];
+	 
+	dialogWindow = gtk_dialog_new();
+	gtk_widget_realize(GTK_WIDGET(dialogWindow));
+	sprintf(title, _("Color Mapping options"));
+	gtk_window_set_title(GTK_WINDOW(dialogWindow),title);
+
+	gtk_window_set_modal (GTK_WINDOW (dialogWindow), TRUE);
+	gtk_window_set_position(GTK_WINDOW(dialogWindow),GTK_WIN_POS_CENTER);
+
+	g_signal_connect(G_OBJECT(dialogWindow), "delete_event", (GCallback)destroy_button_windows, NULL);
+	g_signal_connect(G_OBJECT(dialogWindow), "delete_event", (GCallback)gtk_widget_destroy, NULL);
+
+	frame = gtk_frame_new (NULL);
+	gtk_widget_show (frame);
+	gtk_box_pack_start (GTK_BOX (GTK_WIDGET(GTK_DIALOG(dialogWindow)->vbox)), frame, TRUE, TRUE, 3);
+
+	hbox = gtk_hbox_new (FALSE, 3);
+	gtk_widget_show (hbox);
+	gtk_container_add (GTK_CONTAINER (frame), hbox);
+
+	createColorMapOptionsFrame(dialogWindow,hbox);
+	gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(dialogWindow)->action_area), TRUE);
+
+	button = create_button(dialogWindow,_("Close"));
+	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(dialogWindow)->action_area), button, FALSE, TRUE, 5);	
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)destroy_button_windows, GTK_OBJECT(dialogWindow));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(dialogWindow));
+
+	button = create_button(dialogWindow,_("Apply"));
+	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(dialogWindow)->action_area), button, FALSE, TRUE, 5);	
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)applyColorMapOptions, GTK_OBJECT(dialogWindow));
+
+	button = create_button(dialogWindow,_("OK"));
+	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(dialogWindow)->action_area), button, FALSE, TRUE, 5);	
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)applyColorMapOptions, GTK_OBJECT(dialogWindow));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)destroy_button_windows, GTK_OBJECT(dialogWindow));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(dialogWindow));
+	
+
+	add_button_windows(title,dialogWindow);
+
+	gtk_widget_show_all(dialogWindow);
+	if(GTK_IS_WIDGET(win)) gtk_window_set_transient_for(GTK_WINDOW(dialogWindow),GTK_WINDOW(win));
 }

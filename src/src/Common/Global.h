@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -50,7 +50,7 @@ DEALINGS IN THE SOFTWARE.
 
 #define MAJOR_VERSION    2
 #define MINOR_VERSION    3
-#define MICRO_VERSION    0
+#define MICRO_VERSION    5
 
 /**** Structures *********/
 typedef struct _FileOpen
@@ -198,6 +198,11 @@ typedef struct _CommandsBatch
   gchar *NameCommandBatchKill;
   gchar *NamejobIdTitleBatch;
   CommandsBatch batchCommands;
+  OpenGLOptions openGLOptions;
+  gint colorMapType;
+  gdouble colorMapColors[3][3];
+  gdouble alpha_opacity;
+  gdouble multipole_rank;
 
 #endif /* __GABEDIT_GLOBAL_H__ */
 

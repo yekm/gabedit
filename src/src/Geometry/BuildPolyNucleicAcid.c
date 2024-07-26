@@ -1,6 +1,6 @@
 /* BuildPolyNucleicAcid.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -42,7 +42,6 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Matrix3D.h"
 #include "../MolecularMechanics/PDBTemplate.h"
 
-void dessine();
 void define_good_factor();
 void create_GeomXYZ_from_draw_grometry();
 
@@ -856,6 +855,7 @@ static void defineGeometryToDraw()
 	Natoms = 0;
 	geometry0 = NULL;
 	geometry  = NULL;
+	reset_origine_molecule_drawgeom();
 
 	Natoms = Nb;
 	geometry0 = g_malloc((Natoms)*sizeof(GeomDef));
@@ -876,7 +876,7 @@ static void defineGeometryToDraw()
 		geometry0[n].ResidueNumber = G[i].ResidueNumber;
 		geometry0[n].show = TRUE;
 		geometry0[n].Layer = HIGH_LAYER;
-		geometry0[n].Variable = FALSE;
+		geometry0[n].Variable = TRUE;
 
 		geometry0[n].N = n+1;
 		geometry0[n].typeConnections = NULL;
@@ -894,7 +894,7 @@ static void defineGeometryToDraw()
 		geometry[n].N = n+1;
 		geometry[n].typeConnections = NULL;
 		geometry[n].Layer = HIGH_LAYER;
-		geometry[n].Variable = FALSE;
+		geometry[n].Variable = TRUE;
 		C[0] +=  G[i].X;
 		C[1] +=  G[i].Y;
 		C[2] +=  G[i].Z;
@@ -920,6 +920,7 @@ static void defineGeometryToDraw()
 		geometry0 = g_realloc(geometry0,(Natoms)*sizeof(GeomDef));
 		geometry  = g_realloc(geometry,(Natoms)*sizeof(GeomDef));
 	}
+	RebuildGeom = TRUE;
 
 }
 /*****************************************************************************/
@@ -1681,7 +1682,7 @@ static void buildNucleicAcid(GtkWidget *w,gpointer data)
 		create_GeomXYZ_from_draw_grometry();
 		unselect_all_atoms();
 		reset_charges_multiplicities();
-		dessine();
+		drawGeom();
 	}
 }
 /********************************************************************************/

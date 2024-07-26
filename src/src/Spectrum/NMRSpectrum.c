@@ -1,6 +1,6 @@
 /* NMRSpectrum.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -22,6 +22,9 @@ DEALINGS IN THE SOFTWARE.
 #include <stdlib.h>
 #include <stdio.h>
 #include <gtk/gtk.h>
+#ifdef ENABLE_OMP
+#include <omp.h>
+#endif
 #include "../Common/Global.h"
 #include "../Utils/Constants.h"
 #include "../Utils/UtilsInterface.h"
@@ -31,7 +34,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Files/FileChooser.h"
 #include "../Common/Windows.h"
 #include "../Utils/GabeditXYPlot.h"
-#include "../OpenGL/Vibration.h"
+#include "../Display/Vibration.h"
 #include "SpectrumWin.h"
 
 #define NMAXGROUP 10
@@ -592,7 +595,7 @@ static void buildHamiltonianOneBlock(gint istart, gint size,
 	}
 	/* printf("End calculate diagonal elements of hamiltonian\n");*/
 
-//	calculate off diagonal elements of hamiltonian
+/*	calculate off diagonal elements of hamiltonian*/
 	ii=-1 ;
 	for ( ja=istart+1 ; ja<istart+size ; ja++)
 	{
@@ -677,14 +680,13 @@ static gint addTransitions(gint nBasis,gint nSpins, gint istartPrev, gint istart
 {
 	gint i = 0;
 	gint ja, jb;
-	gint ii, ik;
+	gint ik;
 	gint nfs = 0;
 	gint nDim = sizePrev*size;
 	gint l,m;
 
 	for ( i=0 ; i<nDim ; i++) transProb[i] = 0;
 	/* printf("Begin transition propability calculation\n");*/
-	ii=0 ;
 	nfs = 0;
 	for ( l=istartPrev ; l<istartPrev+sizePrev ; l++)
 		for ( m=istart ; m<istart+size; m++ )
@@ -701,31 +703,35 @@ static gint addTransitions(gint nBasis,gint nSpins, gint istartPrev, gint istart
 			}
 		}
 	/* printf("End lfs/mfs calculation nfs %d\n",nfs);*/
-	ii=0;
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(ja,jb,ik)  
+#endif
 	for ( ja=0 ; ja<sizePrev ; ja++)
 		for ( jb=0 ; jb<size; jb++ )
 		{
 			gdouble dum=0.0;
 			for ( ik=0 ; ik<nfs ; ik++)
          			dum +=   eVectorsPrev[lfs[ik]][ja]*eVectors[mfs[ik]][jb];
-	  		transProb[ii++]=dum*dum ;
+	  		transProb[ja*size+jb]=dum*dum ;
    		}
 	
 	/* printf("End transProb calculations\n");*/
 	/* transition frequencies*/
-	ii=0;
 	ik = ifreqSpec;
 	/* printf("Begin gintensities calculations\n");*/
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(ja,jb)  
+#endif
 	for ( ja=0 ; ja<sizePrev ; ja++)
 		for ( jb=0 ; jb<size; jb++ )
 		{
+			gint ii = jb+ja*size;
 			if ( transProb[ii] > .0001 )
 			{
 				frequenciesSpectrum[ik] = fabs(eValues[jb]-eValuesPrev[ja]);
 				gintensities[ik] = transProb[ii];
 				ik++;
 			}
-			ii++;
 		}
 	/* printf("End gintensities calculations\n");*/
 	return ik;
@@ -925,8 +931,7 @@ void computeNMRSpectrumByBlock(
 		gint size = binomialCoef[i];
 		gdouble* e;
 		gdouble** v;
-		buildHamiltonianOneBlock(istart, size, 
-				nBasis, nSpins, frequencies, ppmJCouplings, basis , hamilt);
+		buildHamiltonianOneBlock(istart, size, nBasis, nSpins, frequencies, ppmJCouplings, basis , hamilt);
 		/* prgintMatInf(0, size, hamilt, "H");*/
 		/*diagonaliseJacobiOneBlock(size, hamilt, eValues, eVectors);*/
 

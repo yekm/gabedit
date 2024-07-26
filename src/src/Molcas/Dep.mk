@@ -13,21 +13,22 @@ MolcasGateWay.o: MolcasGateWay.c ../../Config.h ../Common/Global.h \
   ../Molcas/MolcasGlobal.h ../Molcas/MolcasBasis.h ../Molcas/MolcasScf.h \
   ../Geometry/GeomGlobal.h ../Geometry/GeomConversion.h \
   ../Geometry/GeomXYZ.h ../Geometry/GeomZmatrix.h ../Geometry/Fragments.h \
-  ../Geometry/DrawGeom.h ../Geometry/Fragments.h ../Utils/Utils.h \
-  ../Utils/UtilsInterface.h ../Utils/Constants.h \
-  ../Geometry/InterfaceGeom.h ../Common/Windows.h ../Utils/AtomsProp.h \
-  ../Utils/GabeditTextEdit.h ../Symmetry/MoleculeSymmetry.h \
-  ../Symmetry/MoleculeSymmetryInterface.h
+  ../Geometry/DrawGeom.h ../Geometry/DrawGeomCairo.h \
+  ../Geometry/Fragments.h ../Utils/Utils.h ../Utils/UtilsInterface.h \
+  ../Utils/Constants.h ../Geometry/InterfaceGeom.h ../Common/Windows.h \
+  ../Utils/AtomsProp.h ../Utils/GabeditTextEdit.h \
+  ../Symmetry/MoleculeSymmetry.h ../Symmetry/MoleculeSymmetryInterface.h
 MolcasSeward.o: MolcasSeward.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Molcas/MolcasTypes.h \
   ../Molcas/MolcasGlobal.h ../Molcas/MolcasBasis.h ../Molcas/MolcasScf.h \
   ../Geometry/GeomGlobal.h ../Geometry/GeomConversion.h \
   ../Geometry/GeomXYZ.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h ../Utils/Utils.h ../Utils/UtilsInterface.h \
-  ../Utils/Constants.h ../Geometry/InterfaceGeom.h ../Common/Windows.h \
-  ../Utils/AtomsProp.h ../Utils/GabeditTextEdit.h \
-  ../Symmetry/MoleculeSymmetry.h ../Symmetry/MoleculeSymmetryInterface.h
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Utils/Utils.h \
+  ../Utils/UtilsInterface.h ../Utils/Constants.h \
+  ../Geometry/InterfaceGeom.h ../Common/Windows.h ../Utils/AtomsProp.h \
+  ../Utils/GabeditTextEdit.h ../Symmetry/MoleculeSymmetry.h \
+  ../Symmetry/MoleculeSymmetryInterface.h
 MolcasScf.o: MolcasScf.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Molcas/MolcasTypes.h \

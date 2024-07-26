@@ -1,6 +1,6 @@
 /* FileChooser.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Utils.h"
 #include "../Common/Windows.h"
 #include "../Common/Exit.h"
-#include "../OpenGL/UtilsOrb.h"
+#include "../Display/UtilsOrb.h"
 
 
 /***************************************************************************************************************************/
@@ -35,7 +35,7 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
   GtkWidget *gabeditFileChooser;
   gchar* patternsfiles[] = {	"*",
 			    	"*.inp","*.com","*.mop",
-	  			"*.log","*.out","*.fchk", "*.aux","*.gab","*.xyz","*.mol2","*.tnk","*.pdb","*.hin","*.zmt","*.gzmt",
+	  			"*.log","*.out","*.fchk", "*.aux","*.gab","*.xyz","*.mol2","*.mol","*.tnk","*.pdb","*.hin","*.zmt","*.gzmt",
 	  		    	"*.hf","*.gcube","*.cube","*.CUBE","*.grid","*.M2Msi","*.t41","*.dx","*.trj","*.irc","*.txt","*",
 			    	NULL};
   GCallback *func = (GCallback *)data;
@@ -136,6 +136,10 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 	   case GABEDIT_TYPEFILE_MOL2 : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.mol2");
 					    temp = g_strdup_printf("%s.mol2",fileopen.projectname);
+					    break;
+	   case GABEDIT_TYPEFILE_MOL : 
+					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.mol");
+					    temp = g_strdup_printf("%s.mol",fileopen.projectname);
 					    break;
 	   case GABEDIT_TYPEFILE_TINKER : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.tnk");

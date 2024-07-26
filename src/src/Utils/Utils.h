@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -117,6 +117,7 @@ gint numb_of_string_by_row(gchar *str);
 gint numb_of_reals_by_row(gchar *str);
 gchar** gab_split(gchar *str);
 void get_dipole_from_gamess_output_file(FILE* fd);
+void get_dipole_from_turbomole_output_file(FILE* fd);
 void get_dipole_from_gaussian_output_file(FILE* fd);
 void get_dipole_from_molpro_output_file(FILE* fd);
 void get_dipole_from_dalton_output_file(FILE* fd);
@@ -158,6 +159,10 @@ gdouble get_one_real_from_fchk_gaussian_file(FILE* file, gchar* blockName);
 gint* get_array_int_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* nElements);
 gdouble* get_array_real_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* nElements);
 gchar** get_array_string_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* nElements);
+void getvScaleBond(gdouble r, gdouble Center1[], gdouble Center2[], gdouble vScal[]);
+void getPositionsRadiusBond3(gdouble r, gdouble Center1[], gdouble Center2[], gdouble C11[], gdouble C12[],  gdouble C21[],  gdouble C22[], gdouble C31[],  gdouble C32[], gdouble radius[], gint type);
+void getPositionsRadiusBond2(gdouble r, gdouble Center1[], gdouble Center2[], gdouble C11[], gdouble C12[],  gdouble C21[],  gdouble C22[], gdouble radius[], gint type);
+gdouble get_multipole_rank();
 
 #endif /* __GABEDIT_UTILS_H__ */
 

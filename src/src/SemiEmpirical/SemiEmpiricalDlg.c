@@ -1,6 +1,6 @@
 /* SemiEmpiricalDlg.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -48,7 +48,7 @@ typedef enum
 } TOLptions;
 
 #define NINTEGOPTIONS 3
-#define NTHERMOPTIONS 3
+#define NTHERMOPTIONS 4
 
 #define NENTRYTOL 2
 
@@ -102,8 +102,6 @@ static gint numberOfPointsRP[2] = {10,10};
 static gdouble stepValueRP[2] = {0.1,0.1};
 static gchar typeRP[2][100] = {"Bond","Nothing"};
 static gint atomRP[2] = {1,0};
-
-void dessine();
 
 static  GtkWidget* entryFileName = NULL;
 
@@ -406,11 +404,11 @@ static gboolean runOneMopac(gchar* fileNamePrefix, gchar* keyWords)
 	fprintf(file," %s %f %d %f %d %f %d\n", 
 			geometry0[j].Prop.symbol,
 			geometry0[j].X*BOHR_TO_ANG,
-			1,
+			geometry0[j].Variable,
 			geometry0[j].Y*BOHR_TO_ANG,
-			1,
+			geometry0[j].Variable,
 			geometry0[j].Z*BOHR_TO_ANG,
-			1
+			geometry0[j].Variable
 			);
 	}
 	fclose(file);
@@ -431,7 +429,7 @@ static gboolean runOneMopac(gchar* fileNamePrefix, gchar* keyWords)
 		else str = g_strdup_printf("Computing of energy by AM1/Mopac .... Please wait");
 		set_text_to_draw(str);
 		if(str) g_free(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 	}
 #ifndef G_OS_WIN32
@@ -457,7 +455,7 @@ static gboolean runOneMopac(gchar* fileNamePrefix, gchar* keyWords)
 		read_geom_from_mopac_output_file(fileNameOut, -1);
 		str = g_strdup_printf("Energy by Mopac = %f", energy);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		Waiting(1);
 		if(str) g_free(str);
@@ -474,7 +472,7 @@ static gboolean runOneMopac(gchar* fileNamePrefix, gchar* keyWords)
 				);
 		set_text_to_draw(str);
 		if(str) g_free(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
  		if(fileNameIn) g_free(fileNameIn);
  		if(fileNameOut) g_free(fileNameOut);
@@ -678,7 +676,7 @@ static gboolean runOneFireFly(gchar* fileNamePrefix, gchar* keyWords)
 		else str = g_strdup_printf("Computing of energy by AM1/FireFly .... Please wait");
 		set_text_to_draw(str);
 		if(str) g_free(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 	}
 #ifndef G_OS_WIN32
@@ -695,7 +693,7 @@ static gboolean runOneFireFly(gchar* fileNamePrefix, gchar* keyWords)
 
 		str = g_strdup_printf("Energy by FireFly = %f", energy);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		Waiting(1);
 		if(str) g_free(str);
@@ -712,7 +710,7 @@ static gboolean runOneFireFly(gchar* fileNamePrefix, gchar* keyWords)
 				);
 		set_text_to_draw(str);
 		if(str) g_free(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
  		if(fileNameIn) g_free(fileNameIn);
  		if(fileNameOut) g_free(fileNameOut);
@@ -976,7 +974,7 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
 		else str = g_strdup_printf("Computing of energy by Orca .... Please wait");
 		set_text_to_draw(str);
 		if(str) g_free(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 	}
 #ifndef G_OS_WIN32
@@ -993,7 +991,7 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
 
 		str = g_strdup_printf("Energy by Orca = %f", energy);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		Waiting(1);
 		if(str) g_free(str);
@@ -1010,7 +1008,7 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
 				);
 		set_text_to_draw(str);
 		if(str) g_free(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
  		if(fileNameIn) g_free(fileNameIn);
  		if(fileNameOut) g_free(fileNameOut);
@@ -2496,7 +2494,7 @@ static gboolean saveConfoGeometries(gint numberOfGeometries, SemiEmpiricalModel*
 				);
 	}
 	fprintf(file,"\n");
-	fprintf(file,"[GEOMS]\n");
+	fprintf(file,"[GEOMS] 1\n"); /* for format # 1 */
 	fprintf(file,"%d 2\n",nG);
 	fprintf(file,"energy kcal/mol 1\n");
 	fprintf(file,"deltaE K 1\n");
@@ -2512,6 +2510,33 @@ static gboolean saveConfoGeometries(gint numberOfGeometries, SemiEmpiricalModel*
 		geometries[i]->molecule.totalCharge, geometries[i]->molecule.spinMultiplicity);
 		for(j=0;j<geometries[i]->molecule.nAtoms;j++)
 		{
+                        int nc = 0;
+                        int k;
+                        for(k=0;k<geometries[i]->molecule.nAtoms;k++)
+                                if(geometries[i]->molecule.atoms[j].typeConnections&&geometries[i]->molecule.atoms[j].typeConnections[k]>0) nc++;
+
+                        fprintf(file," %s %s %s %s %d %f %d %d %f %f %f %d ",
+                                geometries[i]->molecule.atoms[j].prop.symbol,
+                                geometries[i]->molecule.atoms[j].mmType,
+                                geometries[i]->molecule.atoms[j].pdbType,
+                                geometries[i]->molecule.atoms[j].residueName,
+                                geometries[i]->molecule.atoms[j].residueNumber,
+                                geometries[i]->molecule.atoms[j].charge,
+                                geometries[i]->molecule.atoms[j].layer,
+                                geometries[i]->molecule.atoms[j].variable,
+                                geometries[i]->molecule.atoms[j].coordinates[0],
+                                geometries[i]->molecule.atoms[j].coordinates[1],
+                                geometries[i]->molecule.atoms[j].coordinates[2],
+                                nc
+                                );
+                        for(k=0;k< geometries[i]->molecule.nAtoms;k++)
+                        {
+                                int nk =  geometries[i]->molecule.atoms[k].N-1;
+                                if(geometries[i]->molecule.atoms[j].typeConnections && geometries[i]->molecule.atoms[j].typeConnections[nk]>0)
+                                        fprintf(file," %d %d", nk+1, geometries[i]->molecule.atoms[j].typeConnections[nk]);
+                        }
+                        fprintf(file,"\n");
+/*
 		fprintf(file," %s %s %s %s %d %f %d %f %f %f\n", 
 				geometries[i]->molecule.atoms[j].prop.symbol,
 				geometries[i]->molecule.atoms[j].mmType,
@@ -2524,6 +2549,7 @@ static gboolean saveConfoGeometries(gint numberOfGeometries, SemiEmpiricalModel*
 				geometries[i]->molecule.atoms[j].coordinates[1],
 				geometries[i]->molecule.atoms[j].coordinates[2]
 				);
+*/
 		}
 	}
 	fclose(file);
@@ -2585,11 +2611,11 @@ static gboolean runOneOptMopac(SemiEmpiricalModel* geom, gdouble* energy, gchar*
 	fprintf(file," %s %f %d %f %d %f %d\n", 
 			geom->molecule.atoms[j].prop.symbol,
 			geom->molecule.atoms[j].coordinates[0],
-			1,
+			geom->molecule.atoms[j].variable,
 			geom->molecule.atoms[j].coordinates[1],
-			1,
+			geom->molecule.atoms[j].variable,
 			geom->molecule.atoms[j].coordinates[2],
-			1
+			geom->molecule.atoms[j].variable
 			);
 	}
 	fclose(file);
@@ -2609,7 +2635,7 @@ static gboolean runOneOptMopac(SemiEmpiricalModel* geom, gdouble* energy, gchar*
 		else str = g_strdup_printf("Computing of energy by AM1/Mopac .... Please wait");
 		set_text_to_draw(str);
 		if(str) g_free(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 	}
 #ifndef G_OS_WIN32
@@ -2633,7 +2659,7 @@ static gboolean runOneOptMopac(SemiEmpiricalModel* geom, gdouble* energy, gchar*
 		read_geom_from_mopac_output_file(fileNameOut, -1);
 		str = g_strdup_printf("Energy by Mopac = %f", *energy);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		Waiting(1);
 		if(str) g_free(str);
@@ -2666,7 +2692,7 @@ static gboolean runMopacFiles(gint numberOfGeometries, SemiEmpiricalModel** geom
 		if(str) g_free(str);
 		str = g_strdup_printf("Minimization by Mopac of geometry n = %d... Please wait", i+1);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		if(runOneOptMopac(geometries[i], &energies[i], fileNamePrefix, keyWords)) 
 		{
@@ -2811,7 +2837,7 @@ static gboolean runOneOptFireFly(SemiEmpiricalModel* geom, gdouble* energy, gcha
 		else str = g_strdup_printf("Computing of energy by AM1/FireFly .... Please wait");
 		set_text_to_draw(str);
 		if(str) g_free(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 	}
 #ifndef G_OS_WIN32
@@ -2829,7 +2855,7 @@ static gboolean runOneOptFireFly(SemiEmpiricalModel* geom, gdouble* energy, gcha
 		read_geom_from_gamess_output_file(fileNameOut, -1);
 		str = g_strdup_printf("Energy by FireFly = %f", *energy);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		Waiting(1);
 		if(str) g_free(str);
@@ -2861,7 +2887,7 @@ static gboolean runFireFlyFiles(gint numberOfGeometries, SemiEmpiricalModel** ge
 		if(str) g_free(str);
 		str = g_strdup_printf("Minimization by FireFly of geometry n = %d... Please wait", i+1);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		if(runOneOptFireFly(geometries[i], &energies[i], fileNamePrefix, keyWords)) 
 		{
@@ -3422,6 +3448,7 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 
 	if(GTK_TOGGLE_BUTTON (buttonMDThermOptions[ANDERSEN])->active) thermostat = ANDERSEN;
 	if(GTK_TOGGLE_BUTTON (buttonMDThermOptions[BERENDSEN])->active) thermostat = BERENDSEN;
+	if(GTK_TOGGLE_BUTTON (buttonMDThermOptions[BUSSI])->active) thermostat = BUSSI;
 
 	if( integrator == STOCHASTIC)
 		friction = atof(gtk_entry_get_text(GTK_ENTRY(entrySDFriction)));
@@ -3506,7 +3533,7 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 	{
 		set_text_to_draw(" ");
 		set_statubar_operation_str(_("Calculation Canceled "));
-		dessine();
+		drawGeom();
 		set_sensitive_stop_button( FALSE);
 		return;
 	}
@@ -3535,7 +3562,7 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 	{
 		set_text_to_draw(" ");
 		set_statubar_operation_str(_("Calculation canceled"));
-		dessine();
+		drawGeom();
 	}
 	set_sensitive_stop_button( FALSE);
 	set_text_to_draw(" ");
@@ -3705,6 +3732,7 @@ static void semiEmpiricalMD(GtkWidget* Win, gpointer data)
 
 	if(GTK_TOGGLE_BUTTON (buttonMDThermOptions[ANDERSEN])->active) thermostat = ANDERSEN;
 	if(GTK_TOGGLE_BUTTON (buttonMDThermOptions[BERENDSEN])->active) thermostat = BERENDSEN;
+	if(GTK_TOGGLE_BUTTON (buttonMDThermOptions[BUSSI])->active) thermostat = BUSSI;
 
 	if( integrator == STOCHASTIC)
 		friction = atof(gtk_entry_get_text(GTK_ENTRY(entrySDFriction)));
@@ -3763,7 +3791,7 @@ static void semiEmpiricalMD(GtkWidget* Win, gpointer data)
 	{
 		set_text_to_draw(" ");
 		set_statubar_operation_str(_("Calculation Canceled "));
-		dessine();
+		drawGeom();
 		set_sensitive_stop_button( FALSE);
 		return;
 	}
@@ -3784,7 +3812,7 @@ static void semiEmpiricalMD(GtkWidget* Win, gpointer data)
 	{
 		set_text_to_draw(" ");
 		set_statubar_operation_str(_("Calculation Canceled "));
-		dessine();
+		drawGeom();
 	}
 	set_sensitive_stop_button(FALSE);
 	set_text_to_draw(" ");
@@ -4109,6 +4137,16 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonMDThermOptions[ANDERSEN]), FALSE);
+/*----------------------------------------------------------------------------------*/
+	i = 6;
+	j = 4;
+	buttonMDThermOptions[BUSSI]= gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonMDThermOptions[NONE])), "Bussi"); 
+	gtk_table_attach(GTK_TABLE(table),buttonMDThermOptions[BUSSI],
+			j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonMDThermOptions[BUSSI]), FALSE);
 /*----------------------------------------------------------------------------------*/
 	i = 7;
 	j = 0;
@@ -5091,6 +5129,16 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonMDThermOptions[ANDERSEN]), FALSE);
+/*----------------------------------------------------------------------------------*/
+	i = 6;
+	j = 4;
+	buttonMDThermOptions[BUSSI]= gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonMDThermOptions[NONE])), "Bussi"); 
+	gtk_table_attach(GTK_TABLE(table),buttonMDThermOptions[BUSSI],
+			j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonMDThermOptions[BUSSI]), FALSE);
 /*----------------------------------------------------------------------------------*/
 	i = 7;
 	j = 0;

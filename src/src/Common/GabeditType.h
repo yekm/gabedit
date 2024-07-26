@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -86,6 +86,7 @@ typedef enum
   GABEDIT_TYPEFILE_MOLPRO,
   GABEDIT_TYPEFILE_DALTON,
   GABEDIT_TYPEFILE_GAMESS,
+  GABEDIT_TYPEFILE_TURBOMOLE,
   GABEDIT_TYPEFILE_MOLPRO_LOG,
   GABEDIT_TYPEFILE_MOLDEN,
   GABEDIT_TYPEFILE_GABEDIT,
@@ -93,6 +94,7 @@ typedef enum
   GABEDIT_TYPEFILE_XYZ,
   GABEDIT_TYPEFILE_GAMESSIRC,
   GABEDIT_TYPEFILE_MOL2,
+  GABEDIT_TYPEFILE_MOL,
   GABEDIT_TYPEFILE_TINKER,
   GABEDIT_TYPEFILE_PDB,
   GABEDIT_TYPEFILE_GZMAT,
@@ -194,6 +196,9 @@ typedef enum
   GABEDIT_TYPEFILEGEOM_FIREFLYLAST,
 
   GABEDIT_TYPEFILEGEOM_GAMESSIRC,
+
+  GABEDIT_TYPEFILEGEOM_TURBOMOLEFIRST,
+  GABEDIT_TYPEFILEGEOM_TURBOMOLELAST,
 
 
   GABEDIT_TYPEFILEGEOM_GAUSSIAN_ZMATRIX,
@@ -333,6 +338,7 @@ typedef struct _TypeGeomOrb
 	gdouble C[3];
 	gdouble partialCharge;
 	gdouble nuclearCharge;
+	gboolean variable;
 	SAtomsProp Prop;
 	guint Sphere;
 	gint N;
@@ -377,6 +383,31 @@ typedef struct _CSTF
  gint L; /* used if spherical basis*/
  gint M; /* used if spherical basis*/
  }CSTF;
+
+typedef struct _OpenGLOptions
+{
+	gint rgba;
+	gint doubleBuffer;
+	gint alphaSize;
+	gint depthSize;
+	gint numberOfSubdivisionsCylindre; 
+	gint numberOfSubdivisionsSphere; 
+}OpenGLOptions;
+typedef enum
+{
+  GABEDIT_BONDTYPE_SINGLE = 0,
+  GABEDIT_BONDTYPE_DOUBLE,
+  GABEDIT_BONDTYPE_TRIPLE,
+  GABEDIT_BONDTYPE_HYDROGEN,
+} GabEditBondType;
+typedef struct _BondType BondType;
+struct _BondType
+{
+	gint n1;
+	gint n2;
+	GabEditBondType bondType;
+};
+
 
 #endif /* __GABEDIT_GABEDITTYPE_H__ */
 

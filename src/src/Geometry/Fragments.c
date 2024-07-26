@@ -1,6 +1,6 @@
 /* Fragments.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -400,18 +400,18 @@ Fragment GetFragment(gchar* Name)
 	}
 	else if ( ( !strcmp(Name, "Methyl" ) ) )
 	{
-		F.NAtoms =4;
+		F.NAtoms =5;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
 		sprintf(T,"GMTL");
-        	SetAtom(&F.Atoms[ 0 ] ,  "C1", 0.0f, 0.0f, 0.0f );
-        	SetAtom(&F.Atoms[ 1 ] ,  "H11", 0.321f, 0.672f, -0.796f );
-        	SetAtom(&F.Atoms[ 2 ] ,  "H12", -0.988f, -0.458f, -0.039f );
-        	SetAtom(&F.Atoms[ 3 ] ,  "H13", 0.669f, -0.218f, 0.832f );
+        	SetAtom(&F.Atoms[ 0 ] ,  "C1", 3.875f, 0.678f, -8.417f );
+        	SetAtom(&F.Atoms[ 1 ] ,  "H11", 3.800f, 1.690f, -8.076f );
+        	SetAtom(&F.Atoms[ 2 ] ,  "H12", 4.907f, 0.410f, -8.516f );
+        	SetAtom(&F.Atoms[ 3 ] ,  "H13", 3.406f, 0.026f, -7.711f );
+        	SetAtom(&F.Atoms[ 4 ] ,  "H14", 3.389f, 0.583f, -9.366f );
 		
-		F.atomToDelete = 3;
+		F.atomToDelete = 4;
 		F.atomToBondTo = 0;
-		F.angleAtom    = 2;
-		
+		F.angleAtom    = 1;
 	}
 	else if (( !strcmp(Name, "Methane" ) ) )
 	{

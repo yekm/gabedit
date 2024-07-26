@@ -3,7 +3,7 @@
 #define __GABEDIT_MENUTOOLBARGEOM_H__
 
 void create_toolbar_and_popup_menu_geom(GtkWidget* box);
-gboolean popuo_menu_geom(guint button, guint32 time);
+gboolean popup_menu_geom(guint button, guint32 time);
 /*
 void add_a_personal_group_to_menu(gchar* groupName);
 void delete_a_personal_group_from_menu(gchar* groupName);

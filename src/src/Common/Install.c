@@ -1,6 +1,6 @@
 /* Install.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -641,7 +641,7 @@ void user_install_dialog_create(UserInstallCallback callback)
 	    "The advanced 'Molecule Builder' allows to rapidly sketch in molecules and examine them in 3D\n"
 	    "Graphics can be exported to various formats, including animations\n"
 	    "\n"
-	    "Gabedit can creates input file for the 8 computational chemistry packages(CCP) cited above.\n"
+	    "Gabedit can creates input file for the computational chemistry packages(CCP) cited above.\n"
 	    "Gabedit can graphically display a variety of the CPP calculation results, including the following\n"
 	    "  - Molecular orbitals\n"
 	    "  - Surfaces from the electron density, electrostatic potential, NMR shielding density.....\n"
@@ -662,7 +662,7 @@ void user_install_dialog_create(UserInstallCallback callback)
 
   add_label(GTK_BOX(page),
 		  _(
-		  "Copyright (c) 2002-2010 Abdul-Rahman Allouche.\n"
+		  "Copyright (c) 2002-2011 Abdul-Rahman Allouche.\n"
 		  "All rights reserved.\n"
 		  "\nGabedit is free.\n"
 		  )
@@ -827,7 +827,8 @@ void user_install_dialog_create(UserInstallCallback callback)
 	    _(
             "To execute Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC, Orca, FireFly and Q-Chem program, "
             "GABEDIT needs to know commands system.\n"
-            "GABEDIT needs to know network protocols."
+            "GABEDIT needs to know network protocols.\n"
+  	    "You can change them after installation (Settings/Preferences)."
 	    )
 	    );
 
@@ -931,7 +932,6 @@ void user_install_verify(UserInstallCallback user_install_callback)
   const gchar *filename;
   struct stat  stat_buf;
 
-  /* giram_directory now always returns something */
  filename = gabedit_directory();
 
   if (stat(filename, &stat_buf) != 0)
@@ -1105,6 +1105,7 @@ static void user_install_prop_done()
 /********************************************************************************/
 static void user_install_commands_network()
 {
+/*
   GtkWidget *hbox;
 
   hbox = gtk_hbox_new(FALSE, 8);
@@ -1125,12 +1126,15 @@ static void user_install_commands_network()
   gtk_box_pack_start(GTK_BOX(commands_network_page), hbox, FALSE, TRUE, 0);
   gtk_widget_show(hbox); 
   create_network_protocols(user_install_dialog,hbox,TRUE);
+*/
 }
 /********************************************************************************/
 static void user_install_commands_network_done()
 {
+/*
   modify_gaussian_command();
   modify_molpro_command();
+*/
   create_commands_file();
   create_network_file();
 }

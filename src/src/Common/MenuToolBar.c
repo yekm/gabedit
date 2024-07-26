@@ -1,6 +1,6 @@
 /* MenuToolBar.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -46,7 +46,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../MolecularMechanics/SetMMParameters.h"
 #include "../MolecularMechanics/SetPDBTemplate.h"
 #include "../Common/StockIcons.h"
-#include "../OpenGL/Vibration.h"
+#include "../Display/Vibration.h"
 #include "../Utils/GabeditXYPlot.h"
 #include "../Utils/GabeditContoursPlot.h"
 #include "../Spectrum/IRSpectrum.h"
@@ -181,7 +181,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"GeometryEdit")) {edit_geometry();}
 	else if(!strcmp(name,"GeometryDraw"))
 	{
-		if(ZoneDessin==NULL) create_window_drawing();
+		if(GeomDrawingArea==NULL) create_window_drawing();
 		else rafresh_drawing();
 	}
 	else if(!strcmp(name,"DisplayDensity")) { draw_density_orbitals_gamess_or_gauss_or_molcas_or_molpro(NULL,NULL); }

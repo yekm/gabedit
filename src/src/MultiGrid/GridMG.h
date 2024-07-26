@@ -51,6 +51,8 @@ void restrictionGridMG(GridMG* g);
 GridMG* grtRestrictionInjectionGridMG(GridMG* g, GridMG* src);
 void restrictionInjectionGridMG(GridMG* g);
 
+void addGaussian(GridMG* g, gdouble Z, gdouble x1, gdouble y1, gdouble z1, gdouble sigma);
+
 
 DomainMG getDomainGridMG(GridMG* g);
 void setOperationGridMG(GridMG* g, const OperationTypeMG);

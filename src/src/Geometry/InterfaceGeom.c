@@ -1,6 +1,6 @@
 /* InterfaceGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -596,7 +596,7 @@ static void traite_units_option(GtkComboBox *combobox, gpointer d)
 	if (!strcmp((char*)data, _("Angstrom"))) Units = 1;
 	else if (!strcmp((char*)data, _("Bohr"))) Units = 0;
 
-	if(ZoneDessin != NULL && OldUnits != Units) rafresh_drawing();
+	if(GeomDrawingArea != NULL && OldUnits != Units) rafresh_drawing();
 }
 /********************************************************************************************************/
 void create_units_option(GtkWidget *hbox,gchar *tlabel)
@@ -659,6 +659,7 @@ static void read_file(GabeditFileChooser *selecFile, gint response_id)
 	else if(fileType == GABEDIT_TYPEFILE_MPQC) read_last_mpqc_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_DALTON) read_last_dalton_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_GAUSSIAN) read_last_gaussian_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_MOLPRO) read_last_molpro_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_GAMESS) read_last_gamess_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_FIREFLY) read_last_gamess_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_MOLCAS) read_last_molcas_file(selecFile, response_id);

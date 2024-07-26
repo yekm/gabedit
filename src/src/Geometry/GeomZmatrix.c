@@ -1,6 +1,6 @@
 /* GeomZmatrix.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -283,7 +283,7 @@ static void editedVariable (GtkCellRendererText *cell, gchar  *path_string,
 		changeNameVariableInGeometry(oldName, new_text);
 		g_free(oldName);
 	}
-	if(numCol==1 && ZoneDessin != NULL) rafresh_drawing();
+	if(numCol==1 && GeomDrawingArea != NULL) rafresh_drawing();
 }
 /*****************************************************************************/
 static gchar* get_distance_zmatrix(gint ai, gint aj)
@@ -1002,7 +1002,7 @@ static void selectedCell (GtkCellRenderer *renderer, GtkCellEditable *editable, 
 		NSA[1] = atoi(Geom[Nc].NR);
 		NSA[2] = -1;
 		NSA[3] = -1;
- 		if(ZoneDessin != NULL) rafresh_drawing();
+ 		if(GeomDrawingArea != NULL) rafresh_drawing();
 	}
 	else if((numCol==E_ANGLE || numCol==E_NUMBER_ANGLE) && Nc>1)
 	{
@@ -1010,7 +1010,7 @@ static void selectedCell (GtkCellRenderer *renderer, GtkCellEditable *editable, 
 		NSA[1] = atoi(Geom[Nc].NR);
 		NSA[2] = atoi(Geom[Nc].NAngle);
 		NSA[3] = -1;
- 		if(ZoneDessin != NULL) rafresh_drawing();
+ 		if(GeomDrawingArea != NULL) rafresh_drawing();
 	}
 	else if((numCol==E_DIHEDRAL || numCol==E_NUMBER_DIHEDRAL) && Nc>2)
 	{
@@ -1018,7 +1018,7 @@ static void selectedCell (GtkCellRenderer *renderer, GtkCellEditable *editable, 
 		NSA[1] = atoi(Geom[Nc].NR);
 		NSA[2] = atoi(Geom[Nc].NAngle);
 		NSA[3] = atoi(Geom[Nc].NDihedral);
- 		if(ZoneDessin != NULL) rafresh_drawing();
+ 		if(GeomDrawingArea != NULL) rafresh_drawing();
 	}
 }
 /********************************************************************************/
@@ -1054,7 +1054,7 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 		gtk_tree_model_get_iter (model, &iter, path);
 		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
 		gtk_tree_path_free (path);
-		if(ZoneDessin != NULL) rafresh_drawing();
+		if(GeomDrawingArea != NULL) rafresh_drawing();
 		return;
 	}
 	/* MM Type */
@@ -1069,7 +1069,7 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 		gtk_tree_model_get_iter (model, &iter, path);
 		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
 		gtk_tree_path_free (path);
-		if(ZoneDessin != NULL) rafresh_drawing();
+		if(GeomDrawingArea != NULL) rafresh_drawing();
 		return;
 	}
 	/* PDB Type */
@@ -1084,7 +1084,7 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 		gtk_tree_model_get_iter (model, &iter, path);
 		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
 		gtk_tree_path_free (path);
-		if(ZoneDessin != NULL) rafresh_drawing();
+		if(GeomDrawingArea != NULL) rafresh_drawing();
 		return;
 	}
 	/* Residue Name  */
@@ -1121,7 +1121,7 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 		gtk_tree_model_get_iter (model, &iter, path);
 		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
 		gtk_tree_path_free (path);
-		if(ZoneDessin != NULL) rafresh_drawing();
+		if(GeomDrawingArea != NULL) rafresh_drawing();
 		return;
 	}
 
@@ -1174,7 +1174,7 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 		gtk_tree_model_get_iter (model, &iter, path);
 		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
 		gtk_tree_path_free (path);
-		if(ZoneDessin != NULL) rafresh_drawing();
+		if(GeomDrawingArea != NULL) rafresh_drawing();
 		return;
 	}
 	/* NR, NAngle, NDihedral  */
@@ -1424,7 +1424,7 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 			}
 		}
 		set_text_column (model , path_string, new_text,2*numCol);
-		if(ZoneDessin != NULL) rafresh_drawing();
+		if(GeomDrawingArea != NULL) rafresh_drawing();
 		return;
 	}
 	/* Charge  */
@@ -1451,7 +1451,7 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 		gtk_tree_model_get_iter (model, &iter, path);
 		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, txt, -1);
 		gtk_tree_path_free (path);
-		if(ZoneDessin != NULL) rafresh_drawing();
+		if(GeomDrawingArea != NULL) rafresh_drawing();
 		if(txt) g_free(txt);
 		return;
 	}
@@ -1480,7 +1480,7 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 		gtk_tree_model_get_iter (model, &iter, path);
 		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
 		gtk_tree_path_free (path);
-		if(ZoneDessin != NULL) rafresh_drawing();
+		if(GeomDrawingArea != NULL) rafresh_drawing();
 		return;
 	}
 }
@@ -1699,7 +1699,7 @@ static void event_dispatcher(GtkWidget *widget, GdkEventButton *event, gpointer 
   		LineSelectedV = row;
 		LineSelectedOld = row;
 	}
- 	if(ZoneDessin != NULL) rafresh_drawing();
+ 	if(GeomDrawingArea != NULL) rafresh_drawing();
     	if (event->type == GDK_2BUTTON_PRESS)
 	{
 
@@ -2606,7 +2606,7 @@ void trans_allGeom_to_variables()
 
   for(i=0;i<NcentersZmat;i++)
      trans_OneGeom_to_variables(i,TRUE,TRUE,TRUE);
-  if(ZoneDessin != NULL) rafresh_drawing();
+  if(GeomDrawingArea != NULL) rafresh_drawing();
 
 }
 /********************************************************************************/
@@ -2616,7 +2616,7 @@ static void trans_allRGeom_to_variables()
 	if(NcentersZmat <1 ) return;
 	for(i=0;i<NcentersZmat;i++)
 		trans_OneGeom_to_variables(i,TRUE,FALSE,FALSE);
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 }
 /********************************************************************************/
 static void trans_allAngleGeom_to_variables()
@@ -2625,7 +2625,7 @@ static void trans_allAngleGeom_to_variables()
 	if(NcentersZmat <1 ) return;
 	for(i=0;i<NcentersZmat;i++)
 		trans_OneGeom_to_variables(i,FALSE,TRUE,FALSE);
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 }
 /********************************************************************************/
 static void trans_allDihedralGeom_to_variables()
@@ -2634,7 +2634,7 @@ static void trans_allDihedralGeom_to_variables()
 	if(NcentersZmat <1 ) return;
 	for(i=0;i<NcentersZmat;i++)
 		trans_OneGeom_to_variables(i,FALSE,FALSE,TRUE);
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 }
 /********************************************************************************/
 static void DialogueTransInVar()
@@ -2704,7 +2704,7 @@ static void TransConstVar(gboolean vr, gboolean va, gboolean vd)
     return;
   }
   trans_OneGeom_to_variables((guint)Nc, vr,va,vd);
-  if(ZoneDessin != NULL) rafresh_drawing();
+  if(GeomDrawingArea != NULL) rafresh_drawing();
 }
 /********************************************************************************/
 static void show_geom_in_list(guint i)
@@ -2806,7 +2806,7 @@ static void TransVarConst()
     return;
   }
  OneVariableToConst((guint)Nc);
- if(ZoneDessin != NULL) rafresh_drawing();
+ if(GeomDrawingArea != NULL) rafresh_drawing();
 }
 /********************************************************************************/
 static void trans_allVariables_to_Constants()
@@ -2876,7 +2876,7 @@ static void trans_allVariables_to_Constants()
    }
    g_free(VZmat);
    g_free(Rem);
-   if(ZoneDessin != NULL) rafresh_drawing();
+   if(GeomDrawingArea != NULL) rafresh_drawing();
 }
 /********************************************************************************/
 static void DialogueTransInConst()
@@ -3053,7 +3053,7 @@ static void DelAtom(GtkWidget *w,gpointer data)
 	{
 		Geom=g_realloc(Geom,NcentersZmat*sizeof(GeomAtomDef));
    		removeFromList(list, NcentersZmat);
-  		if(ZoneDessin != NULL)
+  		if(GeomDrawingArea != NULL)
        			rafresh_drawing();
   		if(iprogram == PROG_IS_GAUSS)
  			set_spin_of_electrons();
@@ -3064,7 +3064,7 @@ static void DelAtom(GtkWidget *w,gpointer data)
  	ChangeVariablesUseds();
 }
 /********************************************************************************/
-static void AddAtom(GtkWidget *w,gpointer Entree)
+static void addAtom(GtkWidget *w,gpointer Entree)
 {
   gchar *texts[NUMBER_LIST_ZMATRIX];
   gchar *message;
@@ -3219,7 +3219,7 @@ static void AddAtom(GtkWidget *w,gpointer Entree)
   	if(!false)
         {
    	appendToList(list, texts, NUMBER_LIST_ZMATRIX);
-  	if(ZoneDessin != NULL)
+  	if(GeomDrawingArea != NULL)
        		rafresh_drawing();
   	if(iprogram == PROG_IS_GAUSS)
  		set_spin_of_electrons();
@@ -3426,7 +3426,7 @@ static void EditAtom(GtkWidget *w,gpointer Entree)
 	
    	removeFromList(list, Nc);
   	insertToList(list, Nc, texts, NUMBER_LIST_ZMATRIX);
-  	if(ZoneDessin != NULL)
+  	if(GeomDrawingArea != NULL)
        		rafresh_drawing();
   	if(iprogram == PROG_IS_GAUSS)
  		set_spin_of_electrons();
@@ -3645,7 +3645,7 @@ static void DialogueAdd()
 
   Bouton = create_button(Dialogue,_("OK"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
-  g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)AddAtom, Entry[E_SYMBOL]);
+  g_signal_connect(G_OBJECT(Bouton), "clicked", (GCallback)addAtom, Entry[E_SYMBOL]);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked", (GCallback)destroy_dialogue, GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Bouton);
@@ -3917,7 +3917,7 @@ void put_geom_in_list()
 
  if(Geom != NULL )
 	append_list_geom();
- if(ZoneDessin != NULL)
+ if(GeomDrawingArea != NULL)
 	rafresh_drawing();
   if(iprogram == PROG_IS_GAUSS)
  	set_spin_of_electrons();
@@ -4217,7 +4217,7 @@ gint read_Zmat_from_molcas_input_file(gchar *fileName)
 	if(Units== 0 ) Geom_Change_Unit(FALSE);
 	if(GeomIsOpen) create_geom_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
 
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 	set_last_directory(fileName);
 	return 0;
 }
@@ -4495,7 +4495,7 @@ void read_Zmat_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFil
  if(GeomIsOpen)
 	create_geom_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
 
- if(ZoneDessin != NULL)
+ if(GeomDrawingArea != NULL)
 	rafresh_drawing();
  set_last_directory(NomFichier);
 }
@@ -4732,7 +4732,7 @@ void read_Zmat_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
  if(GeomIsOpen)
 	create_geom_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
 
- if(ZoneDessin != NULL)
+ if(GeomDrawingArea != NULL)
 	rafresh_drawing();
  set_last_directory(NomFichier);
 }
@@ -4980,7 +4980,7 @@ void read_Zmat_from_orca_input_file(gchar *NomFichier)
 	if(GeomIsOpen)
 		create_geom_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
 
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 	set_last_directory(NomFichier);
 }
 /*************************************************************************************/
@@ -5225,7 +5225,7 @@ void read_Zmat_from_qchem_input_file(gchar *NomFichier)
  if(GeomIsOpen)
 	create_geom_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
 
- if(ZoneDessin != NULL)
+ if(GeomDrawingArea != NULL)
 	rafresh_drawing();
  set_last_directory(NomFichier);
 }
@@ -5372,7 +5372,7 @@ void read_Zmat_from_mopac_input_file(gchar *FileName)
 		append_list_geom();
 		append_list_variables();
 	}
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 	if(GeomIsOpen && iprogram == PROG_IS_GAUSS) set_spin_of_electrons();
 }
 /********************************************************************************/
@@ -5532,7 +5532,7 @@ void read_Zmat_from_mopac_irc_output_file(gchar *FileName, gint numGeom)
 		append_list_geom();
 		append_list_variables();
 	}
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 	if(GeomIsOpen && iprogram == PROG_IS_GAUSS) set_spin_of_electrons();
 }
 /********************************************************************************/
@@ -5664,7 +5664,7 @@ void read_Zmat_from_mopac_scan_output_file(gchar *FileName, gint numGeom)
 		append_list_geom();
 		append_list_variables();
 	}
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 	if(GeomIsOpen && iprogram == PROG_IS_GAUSS) set_spin_of_electrons();
 }
 /*************************************************************************************/
@@ -5885,7 +5885,7 @@ void read_Zmat_from_mopac_scan_output_file(gchar *FileName, gint numGeom)
 			edit_geometry();
         }
  }
- if(ZoneDessin != NULL)
+ if(GeomDrawingArea != NULL)
        rafresh_drawing();
 }
 /********************************************************************************/
@@ -6111,7 +6111,7 @@ void read_ZMatrix_file(GabeditFileChooser *SelecteurFichier, gint response_id)
  	append_list_geom();
  	append_list_variables();
  }
- if(ZoneDessin != NULL)
+ if(GeomDrawingArea != NULL)
        rafresh_drawing();
   if(iprogram == PROG_IS_GAUSS)
  	set_spin_of_electrons();
@@ -6370,7 +6370,7 @@ void read_ZMatrix_mopac_file_no_add_list(gchar*FileName)
 	append_list_variables();
  }
  else
- if(ZoneDessin == NULL)
+ if(GeomDrawingArea == NULL)
  {
         switch(iprogram)
         {
@@ -6384,7 +6384,7 @@ void read_ZMatrix_mopac_file_no_add_list(gchar*FileName)
 			edit_geometry();
         }
  }
- if(ZoneDessin != NULL)
+ if(GeomDrawingArea != NULL)
 		rafresh_drawing();
   if(GeomIsOpen && iprogram == PROG_IS_GAUSS)
 		set_spin_of_electrons();
@@ -6983,7 +6983,7 @@ static void multi_by_factor(gdouble factor)
   clearList(listv);
   append_list_variables();
 
-  if(ZoneDessin != NULL)
+  if(GeomDrawingArea != NULL)
        rafresh_drawing();
   if(iprogram == PROG_IS_GAUSS)
  	set_spin_of_electrons();

@@ -1,6 +1,6 @@
 /* PreviewGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -520,7 +520,7 @@ static void draw_line(GtkWidget* drawingArea, gint x1,gint y1,gint x2,gint y2,Gd
 	gc = prevData->gc;
 	pixmap = prevData->pixmap;
 
-   	colormap  = gdk_drawable_get_colormap(ZoneDessin->window);
+   	colormap  = gdk_drawable_get_colormap(GeomDrawingArea->window);
 
          vis = gdk_colormap_get_visual(colormap);
         {

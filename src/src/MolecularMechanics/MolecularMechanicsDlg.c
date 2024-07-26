@@ -1,6 +1,6 @@
 /* MolecularMechanicsDlg.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -42,8 +42,6 @@ DEALINGS IN THE SOFTWARE.
 #include "../MolecularMechanics/SteepestDescent.h"
 #include "../MolecularMechanics/QuasiNewton.h"
 #include "../MolecularMechanics/MolecularDynamics.h"
-
-void dessine();
 
 typedef enum
 {
@@ -90,7 +88,7 @@ typedef enum
 #define NOPTIONS2 3
 #define NOPTIONS3 2
 #define NINTEGOPTIONS 3
-#define NTHERMOPTIONS 3
+#define NTHERMOPTIONS 4
 #define NENTRYTOL 2
 #define NCONSTRAINTS 3
 
@@ -467,7 +465,7 @@ static gboolean saveConfoGeometries(gint numberOfGeometries, ForceField** geomet
 				);
 	}
 	fprintf(file,"\n");
-	fprintf(file,"[GEOMS]\n");
+	fprintf(file,"[GEOMS]  1 \n");/* 1 for format # 1 */
 	fprintf(file,"%d 2\n",nG);
 	fprintf(file,"energy kcal/mol 1\n");
 	fprintf(file,"deltaE K 1\n");
@@ -482,18 +480,32 @@ static gboolean saveConfoGeometries(gint numberOfGeometries, ForceField** geomet
 		fprintf(file,"%d %d %d\n",geometries[i]->molecule.nAtoms,totalCharge,spinMultiplicity);
 		for(j=0;j<geometries[i]->molecule.nAtoms;j++)
 		{
-		fprintf(file," %s %s %s %s %d %f %d %f %f %f\n", 
-				geometries[i]->molecule.atoms[j].prop.symbol,
-				geometries[i]->molecule.atoms[j].mmType,
-				geometries[i]->molecule.atoms[j].pdbType,
-				geometries[i]->molecule.atoms[j].residueName,
-				geometries[i]->molecule.atoms[j].residueNumber,
-				geometries[i]->molecule.atoms[j].charge,
-				geometries[i]->molecule.atoms[j].layer,
-				geometries[i]->molecule.atoms[j].coordinates[0],
-				geometries[i]->molecule.atoms[j].coordinates[1],
-				geometries[i]->molecule.atoms[j].coordinates[2]
-				);
+                        int nc = 0;
+                        int k;
+                        for(k=0;k<geometries[i]->molecule.nAtoms;k++)
+                                if(geometries[i]->molecule.atoms[j].typeConnections&&geometries[i]->molecule.atoms[j].typeConnections[k]>0) nc++;
+
+                        fprintf(file," %s %s %s %s %d %f %d %d %f %f %f %d ",
+                                geometries[i]->molecule.atoms[j].prop.symbol,
+                                geometries[i]->molecule.atoms[j].mmType,
+                                geometries[i]->molecule.atoms[j].pdbType,
+                                geometries[i]->molecule.atoms[j].residueName,
+                                geometries[i]->molecule.atoms[j].residueNumber,
+                                geometries[i]->molecule.atoms[j].charge,
+                                geometries[i]->molecule.atoms[j].layer,
+                                geometries[i]->molecule.atoms[j].variable,
+                                geometries[i]->molecule.atoms[j].coordinates[0],
+                                geometries[i]->molecule.atoms[j].coordinates[1],
+                                geometries[i]->molecule.atoms[j].coordinates[2],
+                                nc
+                                );
+                        for(k=0;k< geometries[i]->molecule.nAtoms;k++)
+                        {
+                                int nk =  geometries[i]->molecule.atoms[k].N-1;
+                                if(geometries[i]->molecule.atoms[j].typeConnections && geometries[i]->molecule.atoms[j].typeConnections[nk]>0)
+                                        fprintf(file," %d %d", nk+1, geometries[i]->molecule.atoms[j].typeConnections[nk]);
+                        }
+                        fprintf(file,"\n");
 		}
 	}
 	fclose(file);
@@ -609,7 +621,7 @@ static gboolean runOneMopac(ForceField* geometry, gdouble* energy, gchar* fileNa
 		if(strstr(keyWords,"AM1")) str = g_strdup_printf("Energy by AM1/Mopac = %f", *energy);
 		else str = g_strdup_printf("Energy by PM6/Mopac = %f", *energy);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		Waiting(1);
 		if(str) g_free(str);
@@ -644,7 +656,7 @@ static gboolean runMopacFiles(gint numberOfGeometries, ForceField** geometries, 
 		else
 		str = g_strdup_printf("Minimization by PM6/Mopac of geometry n = %d... Please wait", i+1);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		if(runOneMopac(geometries[i], &energies[i], fileNamePrefix, keyWords)) 
 		{
@@ -816,7 +828,7 @@ static gboolean runOneFireFly(ForceField* geometry, gdouble* energy, gchar* file
 		read_geom_from_gamess_output_file(fileNameOut, -1);
 		str = g_strdup_printf("Energy by FireFly = %f", *energy);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		Waiting(1);
 		if(str) g_free(str);
@@ -848,7 +860,7 @@ static gboolean runFireFlyFiles(gint numberOfGeometries, ForceField** geometries
 		if(str) g_free(str);
 		str = g_strdup_printf("Minimization by FireFly of geometry n = %d... Please wait", i+1);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		if(runOneFireFly(geometries[i], &energies[i], fileNamePrefix, keyWords)) 
 		{
@@ -1167,6 +1179,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 
 	if(GTK_TOGGLE_BUTTON (buttonMDThermOptions[ANDERSEN])->active) thermostat = ANDERSEN;
 	if(GTK_TOGGLE_BUTTON (buttonMDThermOptions[BERENDSEN])->active) thermostat = BERENDSEN;
+	if(GTK_TOGGLE_BUTTON (buttonMDThermOptions[BUSSI])->active) thermostat = BUSSI;
 
 	if( integrator == STOCHASTIC)
 		friction = atof(gtk_entry_get_text(GTK_ENTRY(entrySDFriction)));
@@ -1304,7 +1317,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 	{
 		set_text_to_draw(" ");
 		set_statubar_operation_str(_("Calculation canceled"));
-		dessine();
+		drawGeom();
 		set_sensitive_stop_button( FALSE);
 		return;
 	}
@@ -1334,7 +1347,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 		if(str) g_free(str);
 		str = g_strdup_printf("Minimization of geometry number %d ", i+1);
 		set_text_to_draw(str);
-		dessine();
+		drawGeom();
     		while( gtk_events_pending() ) gtk_main_iteration();
 		Waiting(1);
 		if(str) g_free(str);
@@ -1344,7 +1357,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 		{
 			set_text_to_draw(" ");
 			set_statubar_operation_str(_("Calculation canceled"));
-			dessine();
+			drawGeom();
 			set_sensitive_stop_button( FALSE);
 			break;
 		}
@@ -1356,7 +1369,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 			{
 				set_text_to_draw(" ");
 				set_statubar_operation_str(_("Calculation canceled"));
-				dessine();
+				drawGeom();
 			}
 			set_sensitive_stop_button( FALSE);
 			energies[i] = conjugateGradient.forceField->klass->calculateEnergyTmp
@@ -1373,7 +1386,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 			{
 				set_text_to_draw(" ");
 				set_statubar_operation_str(_("Calculation canceled"));
-				dessine();
+				drawGeom();
 			}
 			set_sensitive_stop_button( FALSE);
 			energies[i] = tmpQuasiNewton.forceField->klass->calculateEnergyTmp
@@ -1393,7 +1406,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 			{
 				set_text_to_draw(" ");
 				set_statubar_operation_str(_("Calculation canceled"));
-				dessine();
+				drawGeom();
 			}
 			set_sensitive_stop_button( FALSE);
 			energies[i] = steepestDescent.forceField->klass->calculateEnergyTmp
@@ -1418,7 +1431,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 	{
 		set_text_to_draw(" ");
 		set_statubar_operation_str(_("Calculation canceled"));
-		dessine();
+		drawGeom();
 	}
 	set_sensitive_stop_button( FALSE);
 	set_text_to_draw(" ");
@@ -1583,6 +1596,7 @@ static void amberMolecularDynamics(GtkWidget* Win, gpointer data)
 
 	if(GTK_TOGGLE_BUTTON (buttonMDThermOptions[ANDERSEN])->active) thermostat = ANDERSEN;
 	if(GTK_TOGGLE_BUTTON (buttonMDThermOptions[BERENDSEN])->active) thermostat = BERENDSEN;
+	if(GTK_TOGGLE_BUTTON (buttonMDThermOptions[BUSSI])->active) thermostat = BUSSI;
 
 	if( integrator == STOCHASTIC)
 		friction = atof(gtk_entry_get_text(GTK_ENTRY(entrySDFriction)));
@@ -1646,7 +1660,7 @@ static void amberMolecularDynamics(GtkWidget* Win, gpointer data)
 	{
 		set_text_to_draw(" ");
 		set_statubar_operation_str(_("Calculation canceled"));
-		dessine();
+		drawGeom();
 		set_sensitive_stop_button( FALSE);
 		return;
 	}
@@ -1667,7 +1681,7 @@ static void amberMolecularDynamics(GtkWidget* Win, gpointer data)
 	{
 		set_text_to_draw(" ");
 		set_statubar_operation_str(_("Calculation canceled"));
-		dessine();
+		drawGeom();
 	}
 	set_sensitive_stop_button( FALSE);
 	set_text_to_draw(" ");
@@ -1992,6 +2006,15 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonMDThermOptions[ANDERSEN]), FALSE);
 /*----------------------------------------------------------------------------------*/
+	i = 6;
+	j = 4;
+	buttonMDThermOptions[BUSSI]= gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonMDThermOptions[NONE])), "Bussi"); 
+	gtk_table_attach(GTK_TABLE(table),buttonMDThermOptions[BUSSI],
+			j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonMDThermOptions[BUSSI]), FALSE);
 /*----------------------------------------------------------------------------------*/
 	i = 7;
 	j = 0;
@@ -3119,6 +3142,16 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonMDThermOptions[ANDERSEN]), FALSE);
 /*----------------------------------------------------------------------------------*/
+	i = 6;
+	j = 4;
+	buttonMDThermOptions[BUSSI]= gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonMDThermOptions[NONE])), "Bussi"); 
+	gtk_table_attach(GTK_TABLE(table),buttonMDThermOptions[BUSSI],
+			j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonMDThermOptions[BUSSI]), FALSE);
+/*----------------------------------------------------------------------------------*/
 	i = 7;
 	j = 0;
 	hseparator = gtk_hseparator_new ();
@@ -3358,7 +3391,7 @@ static void amberMinimize(GtkWidget* Win, gpointer data)
 	{
 		set_text_to_draw(" ");
 		set_statubar_operation_str(_("Calculation canceled"));
-		dessine();
+		drawGeom();
 		set_sensitive_stop_button( FALSE);
 		return;
 	}
@@ -3372,7 +3405,7 @@ static void amberMinimize(GtkWidget* Win, gpointer data)
 		{
 			set_text_to_draw(" ");
 			set_statubar_operation_str(_("Calculation canceled"));
-			dessine();
+			drawGeom();
 		}
 		set_sensitive_stop_button( FALSE);
 		freeConjugateGradient(&conjugateGradient);
@@ -3386,7 +3419,7 @@ static void amberMinimize(GtkWidget* Win, gpointer data)
 		{
 			set_text_to_draw(" ");
 			set_statubar_operation_str(_("Calculation canceled"));
-			dessine();
+			drawGeom();
 		}
 		set_sensitive_stop_button( FALSE);
 		freeQuasiNewton(&quasiNewton);
@@ -3404,7 +3437,7 @@ static void amberMinimize(GtkWidget* Win, gpointer data)
 		{
 			set_text_to_draw(" ");
 			set_statubar_operation_str(_("Calculation canceled"));
-			dessine();
+			drawGeom();
 		}
 		set_sensitive_stop_button( FALSE);
 		freeSteepestDescent(&steepestDescent);
@@ -3457,7 +3490,7 @@ void amberEnergyCalculation(GtkWidget* Win, gpointer data)
 	{
 		set_text_to_draw(" ");
 		set_statubar_operation_str(_("Calculation canceled"));
-		dessine();
+		drawGeom();
 		set_sensitive_stop_button( FALSE);
 		return;
 	}
@@ -3476,7 +3509,7 @@ void amberEnergyCalculation(GtkWidget* Win, gpointer data)
 
 	set_text_to_draw(str);
 	set_statubar_operation_str(str);
-	dessine();
+	drawGeom();
 	set_sensitive_stop_button( FALSE);
 	freeForceField(&forceField);
 	set_text_to_draw(" ");

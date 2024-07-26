@@ -1,6 +1,6 @@
 /* CalculTypesAmber.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -35,20 +35,6 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/AtomsProp.h"
 #include "../MolecularMechanics/CalculTypesAmber.h"
 /**********************************************************************************************************/
-typedef enum
-{
-  GABEDIT_BONDTYPE_SINGLE = 0,
-  GABEDIT_BONDTYPE_DOUBLE,
-  GABEDIT_BONDTYPE_TRIPLE,
-  GABEDIT_BONDTYPE_HYDROGEN,
-} GabEditBondType;
-typedef struct _BondType BondType;
-struct _BondType
-{
-	gint n1;
-	gint n2;
-	GabEditBondType bondType;
-};
 typedef struct _Molecule Molecule;
 struct _Molecule
 {
@@ -703,6 +689,7 @@ static gchar* getAmberTypeOfAtom(Molecule* m, gint atomNumber)
 			else if (  isConnectedTo( m, atomNumber, "=O", TRUE ) ) return "C";
 			else if (  isConnectedTo( m, atomNumber, "(=C)(-S)", TRUE ) ) return "CY";
 			/* else if (  isConnectedTo( m, atomNumber, "(=C)", TRUE ) ) return "CX";*/
+			else if (  isConnectedTo( m, atomNumber, "#C", TRUE ) ) return "CZ";
 			else return "CT";
 		}
 	}

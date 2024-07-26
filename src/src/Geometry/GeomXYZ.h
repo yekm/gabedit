@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -62,11 +62,13 @@ void FreeGeomXYZ(GeomXYZAtomDef* GeomXYZtemp, VariablesXYZDef* VariablesXYZtemp,
 void selc_XYZ_file(guint itype);
 void create_babel_save_dialogue();
 void save_geometry_xyz_file(GabeditFileChooser *SelecFile, gint response_id);
+void save_geometry_mol_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_mol2_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_tinker_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_pdb_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_hin_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_gabedit_file(GabeditFileChooser *SelecFile, gint response_id);
+void save_geometry_lascmd_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_xyz_file_no_add_list(const gchar* FileName);
 gboolean connecteds(guint i,guint j);
 
@@ -78,6 +80,8 @@ void read_first_dalton_file(GabeditFileChooser *SelecFile, gint response_id);
 void read_last_dalton_file(GabeditFileChooser *SelecFile, gint response_id);
 void read_first_gamess_file(GabeditFileChooser *SelecFile, gint response_id);
 void read_last_gamess_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_first_turbomole_file(GabeditFileChooser *SelecFile, gint response_id);
+void read_last_turbomole_file(GabeditFileChooser *SelecFile, gint response_id);
 void read_last_gaussian_file(GabeditFileChooser *SelecFile , gint response_id);
 void read_first_gaussian_file(GabeditFileChooser *SelecFile, gint response_id);
 void read_fchk_gaussian_file(GabeditFileChooser *SelecFile , gint response_id);

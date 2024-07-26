@@ -1,6 +1,6 @@
 /* MoleculeSE.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -31,7 +31,6 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Utils.h"
 #include "AtomSE.h"
 #include "MoleculeSE.h"
-void dessine();
 void create_GeomXYZ_from_draw_grometry();
 
 static gboolean** bondedMatrix = NULL;
@@ -52,6 +51,12 @@ MoleculeSE newMoleculeSE()
 
 	for(i=0;i<3;i++)
 		molecule.gradient[i] = NULL;
+	molecule.numberOf2Connections = 0;
+	for(i=0;i<2;i++)
+		molecule.connected2[i] = NULL;
+	molecule.numberOf3Connections = 0;
+	for(i=0;i<3;i++)
+		molecule.connected3[i] = NULL;
 
 	return molecule;
 
@@ -338,14 +343,14 @@ static void setConnections(MoleculeSE* molecule)
 	/* printf("Set Connection\n");*/
 	set_text_to_draw(_("Establishing connectivity : 2 connections..."));
 	set_statubar_operation_str(_("Establishing connectivity : 2 connections..."));
-	dessine();
+	drawGeom();
     	while( gtk_events_pending() )
         	gtk_main_iteration();
 	set2Connections(molecule);
 	set_text_to_draw(_("Establishing connectivity : 3 connections..."));
 	set_statubar_operation_str(_("Establishing connectivity : 3 connections..."));
 
-	dessine();
+	drawGeom();
 	if(StopCalcul) return;
     	while( gtk_events_pending() ) gtk_main_iteration();
 	set3Connections(molecule);
@@ -444,6 +449,7 @@ MoleculeSE createFromGeomXYZMoleculeSE(gint charge, gint spin, gboolean connecti
 			test(GeomXYZ[i].Z)
 		) 
 		molecule.atoms[i].variable = TRUE;
+		molecule.atoms[i].typeConnections = NULL;
 		if(GeomXYZ[i].typeConnections)
 		{
 			gint j;
@@ -546,7 +552,8 @@ void redrawMoleculeSE(MoleculeSE* molecule,gchar* str)
 	change_of_center(NULL,NULL);
 	reset_all_connections();
 	create_GeomXYZ_from_draw_grometry();
-	dessine();
+	RebuildGeom = TRUE;
+	drawGeom();
 
     	while( gtk_events_pending() )
         	gtk_main_iteration();

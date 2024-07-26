@@ -1,6 +1,6 @@
 /*HydrogenBond.c*/
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -32,7 +32,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/Fragments.h"
 #include "../Geometry/DrawGeom.h"
 #include "../Common/Windows.h"
-#include "../OpenGL/GLArea.h"
+#include "../Display/GLArea.h"
 #include "../Common/StockIcons.h"
 
 static gint nAtomsCanConnect = 6;
@@ -167,7 +167,7 @@ static void set_HBonds(GtkWidget* fp,gpointer data)
 
 
 	rafresh_window_orb();
-        if(ZoneDessin != NULL) draw_geometry(NULL,NULL);
+        if(GeomDrawingArea != NULL) draw_geometry(NULL,NULL);
 }
 /******************************************************************/
 static void deleteAnAtomDlg()

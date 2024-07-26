@@ -14,7 +14,7 @@ MOPAC      = src/Mopac/*.o
 MPQC       = src/MPQC/*.o
 MULTIGRID  = src/MultiGrid/*.o
 NETWORK    = src/NetWork/*.o
-OPENGL     = src/OpenGL/*.o
+OPENGL     = src/Display/*.o
 FIREFLY   = src/FireFly/*.o
 ORCA      = src/Orca/*.o
 QCHEM      = src/QChem/*.o
@@ -32,26 +32,19 @@ OBJECTS = \
 	$(SYMMETRY) $(VIBCORR) $(IDC)
 
 SUBDIRS = \
-	src/OpenGL src/Common src/Files src/Gaussian \
+	src/Display src/Common src/Files src/Gaussian \
  	src/Geometry src/Spectrum src/MolecularMechanics src/Molpro src/Molcas \
 	src/MPQC src/Gamess src/Orca src/QChem src/Mopac src/NetWork src/Utils \
 	src/Symmetry src/FireFly src/MultiGrid src/SemiEmpirical \
 	src/VibrationalCorrections src/IsotopeDistribution
 
-ifneq ($(external_gtkglarea),1)
-GTKGL     = gtkglarea/*.o
-OBJECTS  += $(GTKGL)
-SUBDIRS  += gtkglarea
-else
-OBJECTS  += -lgtkgl-2.0
-endif
-
 ifneq ($(external_gl2ps),1)
 GL2PS     = gl2ps/*.o
 OBJECTS  += $(GL2PS)
 SUBDIRS  += gl2ps
+GLTOPS =
 else
-OBJECTS  += -lgl2ps
+GLTOPS = -lgl2ps
 endif
  
 TARGETS = all clean dep
@@ -66,7 +59,12 @@ $(SUBDIRS):
 all: gabedit
 
 gabedit: $(SUBDIRS)
-	$(CC) $(LDFLAGS) $(OBJECTS) -o gabedit $(X11LIB) $(GTKLIB) $(OGLLIB) $(JPEGLIB) $(LIBPTHREAD) $(WIN32LIB) -g
+	mkdir tmp
+	cp $(OBJECTS) tmp
+	$(CC) $(LDFLAGS) tmp/*.o -o gabedit $(GLTOPS) $(X11LIB) $(GTKLIB) $(OGLLIB) $(JPEGLIB) $(LIBPTHREAD) $(WIN32LIB) $(OMPLIB) -g
+	@$(RMTMP) > ptmp
+	rmdir tmp
+	@$(RM) ptmp
  
 clean:
 	@$(RM) gabedit

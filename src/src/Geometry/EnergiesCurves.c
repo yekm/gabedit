@@ -1,6 +1,6 @@
 /* EnergiesCurve.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -47,7 +47,7 @@ static void set_geom(GtkWidget *widget,gpointer data);
 /********************************************************************************************/
 static void draw_geom(GtkWidget *widget,gpointer data)
 {
-        if(ZoneDessin==NULL)
+        if(GeomDrawingArea==NULL)
  	  create_window_drawing(); 
         else
 	{

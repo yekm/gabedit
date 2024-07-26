@@ -9,6 +9,7 @@ GTKCFLAGS = -IZ:/Programs/gtk/include/gtk-2.0 -IZ:/Programs/gtk/lib/gtk-2.0/incl
 
 MAKE = mingw32-make
 RM = del
+RMTMP = del /S/Q tmp
 OGLLIB = -lopengl32 -lglu32
 OGLCFLAGS=-IE:
 GDKGL = gdkgl-win32
@@ -16,5 +17,17 @@ JPEGLIB    =
 WIN32LIB   = -lwsock32 -lcomdlg32
 X11LIB   =
 PTHREADLIB  = 
-COMMONCFLAGS = -Wall -O2
+enable_omp = 0
+ifeq ($(enable_omp),1)
+OMPLIB=-L/usr/lib -lgomp
+OMPCFLAGS=-DENABLE_OMP -fopenmp
+endif
+
+#DRAWGEOMGL= 
+DRAWGEOMGL=-DDRAWGEOMGL
+
+COMMONCFLAGS = -Wall -O2 -DENABLE_DEPRECATED $(OMPCFLAGS) $(DRAWGEOMGL)
+
+
+
 

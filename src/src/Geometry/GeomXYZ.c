@@ -1,6 +1,6 @@
 /* GGeomXYZ.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -47,6 +47,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/GeomXYZ.h"
 #include "../Geometry/ResultsAnalise.h"
 #include "../Geometry/OpenBabel.h"
+#include "../Geometry/SelectionDlg.h"
 #include "../MolecularMechanics/PDBTemplate.h"
 #include "../MolecularMechanics/CalculTypesAmber.h"
 
@@ -571,7 +572,7 @@ static void row_deleted(GtkTreeModel *model, GtkTreePath *path, gpointer data)
 	gtk_tree_path_free(path);
 	NSA[0] = LineSelected+1;
 	NSA[1] = NSA[2] = NSA[3] =-1;
- 	if(ZoneDessin != NULL) rafresh_drawing();
+ 	if(GeomDrawingArea != NULL) rafresh_drawing();
 }
 /********************************************************************************/
 static void event_dispatcher(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
@@ -610,7 +611,7 @@ static void event_dispatcher(GtkWidget *widget, GdkEventButton *event, gpointer 
   		LineSelectedV = row;
 		LineSelectedOld = row;
 	}
- 	if(ZoneDessin != NULL) rafresh_drawing();
+ 	if(GeomDrawingArea != NULL) rafresh_drawing();
     	if (event->type == GDK_2BUTTON_PRESS)
 	{
 
@@ -972,7 +973,7 @@ static void editedVariable (GtkCellRendererText *cell, gchar  *path_string,
 		changeNameVariableInGeometry(oldName, new_text);
 		g_free(oldName);
 	}
-	if(numCol==1 && ZoneDessin != NULL) rafresh_drawing();
+	if(numCol==1 && GeomDrawingArea != NULL) rafresh_drawing();
 }
 /********************************************************************************/
 static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
@@ -1008,7 +1009,7 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 
    		clearList(list);
 		append_list();
-		if(ZoneDessin != NULL) rafresh_drawing();
+		if(GeomDrawingArea != NULL) rafresh_drawing();
 		return;
 	}
 	/* symbol */
@@ -1032,7 +1033,7 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 		gtk_tree_model_get_iter (model, &iter, path);
 		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
 		gtk_tree_path_free (path);
-		if(ZoneDessin != NULL) rafresh_drawing();
+		if(GeomDrawingArea != NULL) rafresh_drawing();
 		return;
 	}
 	/* MM Type */
@@ -1047,7 +1048,7 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 		gtk_tree_model_get_iter (model, &iter, path);
 		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
 		gtk_tree_path_free (path);
-		if(ZoneDessin != NULL) rafresh_drawing();
+		if(GeomDrawingArea != NULL) rafresh_drawing();
 		return;
 	}
 	/* PDB Type */
@@ -1062,7 +1063,7 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 		gtk_tree_model_get_iter (model, &iter, path);
 		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
 		gtk_tree_path_free (path);
-		if(ZoneDessin != NULL) rafresh_drawing();
+		if(GeomDrawingArea != NULL) rafresh_drawing();
 		return;
 	}
 	/* Residue Name  */
@@ -1099,7 +1100,7 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 		gtk_tree_model_get_iter (model, &iter, path);
 		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
 		gtk_tree_path_free (path);
-		if(ZoneDessin != NULL) rafresh_drawing();
+		if(GeomDrawingArea != NULL) rafresh_drawing();
 		return;
 	}
 	/* X, Y or Z  */
@@ -1136,7 +1137,7 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 		gtk_tree_model_get_iter (model, &iter, path);
 		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
 		gtk_tree_path_free (path);
-		if(ZoneDessin != NULL) rafresh_drawing();
+		if(GeomDrawingArea != NULL) rafresh_drawing();
 		return;
 	}
 	/* Charge  */
@@ -1163,7 +1164,7 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 		gtk_tree_model_get_iter (model, &iter, path);
 		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, txt, -1);
 		gtk_tree_path_free (path);
-		if(ZoneDessin != NULL) rafresh_drawing();
+		if(GeomDrawingArea != NULL) rafresh_drawing();
 		if(txt) g_free(txt);
 		return;
 	}
@@ -1192,7 +1193,7 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 		gtk_tree_model_get_iter (model, &iter, path);
 		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
 		gtk_tree_path_free (path);
-		if(ZoneDessin != NULL) rafresh_drawing();
+		if(GeomDrawingArea != NULL) rafresh_drawing();
 		return;
 	}
 }
@@ -1352,7 +1353,7 @@ static void sort_GeomXYZ()
    	clearList(list);
    	append_list();
   }
-   if(ZoneDessin != NULL)
+   if(GeomDrawingArea != NULL)
          draw_geometry(NULL,NULL);
 }
 /*****************************************************************************/
@@ -1401,7 +1402,7 @@ static void sortGeomXYZByResidueNumber()
    	clearList(list);
    	append_list();
   }
-   if(ZoneDessin != NULL)
+   if(GeomDrawingArea != NULL)
          draw_geometry(NULL,NULL);
 }
 /********************************************************************************/
@@ -1649,6 +1650,116 @@ void save_xyz_file_entry(GtkWidget* entry)
 	if ((!FileName) || (strcmp(FileName,"") == 0))
 		return ;
 	 save_xyz_file(FileName);
+}
+/********************************************************************************/
+void save_mol_file(const gchar* FileName)
+{
+ guint i;
+ gint j;
+ gint n;
+ FILE *fd;
+ gdouble X;
+ gdouble Y;
+ gdouble Z;
+ gchar *projectname = NULL;
+ gchar *datafile = NULL;
+ gchar *localdir = NULL;
+/*
+ gchar *remotehost  = NULL;
+ gchar *remoteuser  = NULL;
+ gchar *remotepass  = NULL;
+ gchar *remotedir  = NULL;
+*/
+ gchar *temp  = NULL;
+
+ temp = get_suffix_name_file(FileName);
+ FileName = g_strdup_printf("%s.mol",temp);
+ g_free(temp);
+ fd = FOpen(FileName, "w");
+ if(fd == NULL)
+ {
+	gchar* t = g_strdup_printf(_("Sorry,\n I can not open %s file"),FileName);
+	Message(t,_("Error"),TRUE);
+	g_free(t);
+	return;
+ }
+ n = 0;
+ for(i=0;i<NcentersXYZ;i++)
+        if(GeomXYZ[i].typeConnections)
+ 	for(j=i+1;j<NcentersXYZ;j++)
+        	if(GeomXYZ[i].typeConnections[j]) n++;
+ fprintf(fd," Molecule\n");
+  fprintf(fd," GENERATED BY GABEDIT %d.%d.%d\n",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);
+  temp = get_time_str();
+  if(temp) fprintf(fd," Time = %s",temp);
+  else fprintf(fd,"\n");
+	
+ fprintf(fd," %10d %10d 0     0  0              1 V2000\n",NcentersXYZ,n);
+ for(i=0;i<NcentersXYZ;i++)
+ {
+         if(!test(GeomXYZ[i].X))
+                 X = get_value_variableXYZ(GeomXYZ[i].X);
+         else
+                 X = atof(GeomXYZ[i].X);
+         if(!test(GeomXYZ[i].Y))
+                 Y = get_value_variableXYZ(GeomXYZ[i].Y);
+         else
+                 Y = atof(GeomXYZ[i].Y);
+         if(!test(GeomXYZ[i].Z))
+                 Z = get_value_variableXYZ(GeomXYZ[i].Z);
+         else
+                 Z = atof(GeomXYZ[i].Z);
+         if(Units==0)
+         {
+              X *= BOHR_TO_ANG;
+              Y *= BOHR_TO_ANG;
+              Z *= BOHR_TO_ANG;
+         }
+  	fprintf(fd," %20.10f  %20.10f  %20.10f %s 0  0  0  0  0  0           0  0  0\n",
+		X,Y,Z,GeomXYZ[i].Symb);
+   }
+  n = 0;
+ for(i=0;i<NcentersXYZ;i++)
+ {
+        if(GeomXYZ[i].typeConnections)
+ 	for(j=i+1;j<NcentersXYZ;j++)
+ 	{
+        	if(GeomXYZ[i].typeConnections[j])
+		{
+  			fprintf(fd," %5d  %5d %5d 0     0  0\n", i+1, j+1, GeomXYZ[i].typeConnections[j]);
+			n++;
+		}
+
+ 	}
+ }
+  fprintf(fd,"M  END\n");
+  fclose(fd);
+  datafile = get_name_file(FileName);
+  temp = get_suffix_name_file(FileName);
+  projectname = get_name_file(temp);
+  localdir = get_name_dir(temp);
+  if(lastdirectory)
+	g_free(lastdirectory);
+  lastdirectory = g_strdup(localdir);
+  /* CreeFeuille(treeViewProjects, noeud[GABEDIT_TYPENODE_XYZ],projectname,datafile,localdir,remotehost,remoteuser,remotepass,remotedir,GABEDIT_TYPENODE_XYZ,NULL, defaultNetWorkProtocol);*/
+  g_free(temp);
+  g_free(datafile);
+  g_free(projectname);
+  g_free(localdir);
+}
+/************************************************************************************/
+void save_geometry_mol_file(GabeditFileChooser *SelecFile, gint response_id)
+{       
+ 	gchar *FileName;
+
+ 	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+ 	if ((!FileName) || (strcmp(FileName,"") == 0))
+ 	{
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
+    		return ;
+ 	}
+	 save_mol_file(FileName);
 }
 /********************************************************************************/
 void save_mol2_file(const gchar* FileName)
@@ -1965,7 +2076,7 @@ void trans_allVariables_to_Constants()
    }
    g_free(VXYZ);
    g_free(Rem);
-   if(ZoneDessin != NULL) rafresh_drawing();
+   if(GeomDrawingArea != NULL) rafresh_drawing();
 }
 /********************************************************************************/
 void AddVariableXYZ(gchar *NameV,gchar *ValueV, gboolean rafresh)
@@ -2069,7 +2180,7 @@ void trans_allGeomXYZ_to_variables()
   if(NcentersXYZ <1 ) return;
   for(i=0;i<NcentersXYZ;i++)
 	trans_OneGeomXYZ_to_variables(i);
-  if(ZoneDessin != NULL) rafresh_drawing();
+  if(GeomDrawingArea != NULL) rafresh_drawing();
 }
 /********************************************************************************/
 static void DialogueTransInVar()
@@ -2195,7 +2306,7 @@ static void TransXYZConstVar()
   }
   trans_OneGeomXYZ_to_variables((guint)Nc);   
  LineSelected = -1;
- if(ZoneDessin != NULL) rafresh_drawing();
+ if(GeomDrawingArea != NULL) rafresh_drawing();
 }
 /********************************************************************************/
 static void TransXYZConstXVar()
@@ -2208,7 +2319,7 @@ static void TransXYZConstXVar()
 		show_geom_in_list(i);
 	}
  	ChangeVariablesXYZUseds();
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 }
 /********************************************************************************/
 static void TransXYZConstYVar()
@@ -2221,7 +2332,7 @@ static void TransXYZConstYVar()
 		show_geom_in_list(i);
 	}
  	ChangeVariablesXYZUseds();
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 }
 /********************************************************************************/
 static void TransXYZConstZVar()
@@ -2234,7 +2345,7 @@ static void TransXYZConstZVar()
 		show_geom_in_list(i);
 	}
  	ChangeVariablesXYZUseds();
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 }
 /********************************************************************************/
 static void TransXYZVarConst()
@@ -2248,7 +2359,7 @@ static void TransXYZVarConst()
   }
  OneVariableToConstXYZ((guint)Nc);
  LineSelectedV = -1;
- if(ZoneDessin != NULL) rafresh_drawing();
+ if(GeomDrawingArea != NULL) rafresh_drawing();
 }
 /********************************************************************************/
 static void set_entry_XYZ()
@@ -2382,13 +2493,13 @@ static void DelAtom(GtkWidget *w,gpointer data)
  		freeGeomXYZ();
 
  	ChangeVariablesXYZUseds();
-  if(ZoneDessin != NULL)
+  if(GeomDrawingArea != NULL)
        rafresh_drawing();
   if(iprogram == PROG_IS_GAUSS)
  	set_spin_of_electrons();
 }
 /********************************************************************************/
-static void AddAtom(GtkWidget *w,gpointer Entree)
+static void addAtom(GtkWidget *w,gpointer Entree)
 {
   gchar *texts[NUMBER_LIST_XYZ];
   gchar *message;
@@ -2465,7 +2576,7 @@ static void AddAtom(GtkWidget *w,gpointer Entree)
 
   appendToList(list, texts, NUMBER_LIST_XYZ);
 
-  if(ZoneDessin != NULL)
+  if(GeomDrawingArea != NULL)
        rafresh_drawing();
   if(iprogram == PROG_IS_GAUSS)
  	set_spin_of_electrons();
@@ -2569,7 +2680,7 @@ static void EditAtom(GtkWidget *w,gpointer Entree)
   insertToList(list, Nc, texts, NUMBER_LIST_XYZ);
 
   ChangeVariablesXYZUseds();
-  if(ZoneDessin != NULL)
+  if(GeomDrawingArea != NULL)
        rafresh_drawing();
   if(iprogram == PROG_IS_GAUSS)
  	set_spin_of_electrons();
@@ -2772,7 +2883,7 @@ static void DialogueAdd(GtkWidget *w,gpointer data)
 
   Bouton = create_button(Dialogue,_("OK"));
   gtk_box_pack_start( GTK_BOX(GTK_DIALOG(Dialogue)->action_area), Bouton,TRUE,TRUE,0);
-  g_signal_connect(G_OBJECT(Bouton), "clicked",(GCallback)AddAtom,Entry[E_SYMBOL]);
+  g_signal_connect(G_OBJECT(Bouton), "clicked",(GCallback)addAtom,Entry[E_SYMBOL]);
   g_signal_connect_swapped(G_OBJECT(Bouton), "clicked",(GCallback)destroy_dialogue,GTK_OBJECT(Dialogue));
   GTK_WIDGET_SET_FLAGS(Bouton, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(Bouton);
@@ -3045,26 +3156,27 @@ static gint get_connections_one_atom_hin(gchar* t, gint nAtoms, gint* connection
 	gchar** split = NULL;
 	gint nA = 0;
 	gint type = 1;
+	gint ibeg = 11;
 	for(k=0;k<nAtoms;k++) connections[k] = 0;
 	split = gab_split(t);
 	nA = 0;
 	while(split && split[nA]!=NULL) nA++;
-	if(nA<11)
+	if(nA<ibeg)
 	{
 		g_strfreev(split);
 		return 0;
 	}
-	nc = atoi(split[10]);
+	nc = atoi(split[ibeg-1]);
 	for(k=0;k<2*nc;k+=2) 
 	{
-		if(!split[11+k]) break;
-		if(!split[11+k+1]) break;
-		nj = atoi(split[11+k]);
+		if(!split[ibeg+k]) break;
+		if(!split[ibeg+k+1]) break;
+		nj = atoi(split[ibeg+k]);
 		type = 1;
-		if(strstr(split[11+k+1],"d"))type = 2;
-		if(strstr(split[11+k+1],"D"))type = 2;
-		if(strstr(split[11+k+1],"t"))type = 3;
-		if(strstr(split[11+k+1],"T"))type = 3;
+		if(strstr(split[ibeg+k+1],"d"))type = 2;
+		if(strstr(split[ibeg+k+1],"D"))type = 2;
+		if(strstr(split[ibeg+k+1],"t"))type = 3;
+		if(strstr(split[ibeg+k+1],"T"))type = 3;
 		connections[nj-1] = type;
 	}
 
@@ -3249,7 +3361,7 @@ void read_hin_file_no_add_list(gchar *NomFichier)
 	if(GeomIsOpen)
 		create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
 	else
-	if(ZoneDessin == NULL)
+	if(GeomDrawingArea == NULL)
 	{
 		/*
 		switch(iprogram)
@@ -3263,7 +3375,7 @@ void read_hin_file_no_add_list(gchar *NomFichier)
 		create_window_drawing();
         }
 	
-	if(ZoneDessin != NULL)
+	if(GeomDrawingArea != NULL)
 		rafresh_drawing();
 }
 /********************************************************************************/
@@ -3359,8 +3471,8 @@ static gint read_gabedit_file_all_geoms(gchar *fileName)
 	if(res==0)
 	{
 		if(GeomIsOpen) create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
-		else if(ZoneDessin == NULL) create_window_drawing();
-		if(ZoneDessin != NULL) rafresh_drawing();
+		else if(GeomDrawingArea == NULL) create_window_drawing();
+		if(GeomDrawingArea != NULL) rafresh_drawing();
 	}
 	return res;
 }
@@ -3654,7 +3766,7 @@ void save_hin_file_entry(GtkWidget* entry)
 	 save_hin_file(FileName);
 }
 /*****************************************************************************/
-static gboolean save_gabedit_file(G_CONST_RETURN gchar* fileNameGeom)
+static gboolean save_lascmd_file(G_CONST_RETURN gchar* fileNameGeom)
 {
 	FILE* file = NULL;
 	gint j;
@@ -3671,12 +3783,86 @@ static gboolean save_gabedit_file(G_CONST_RETURN gchar* fileNameGeom)
  	file = fopen(fileNameGeom, "w");
 
 	if(!file) return FALSE;
-
-	fprintf(file,"[Gabedit Format]\n");
-	fprintf(file,"[GEOMS]\n");
-	fprintf(file,"1 1\n");
-	fprintf(file,"ENERGY UNK 1\n");
-	fprintf(file,"0.0\n");
+	fprintf(file,"#RunType = Energy, Optimization, MD, MDConfo, REMDConfo\n");
+	fprintf(file,"RunType=MDConfo\n");
+	fprintf(file,"#Model = MM , Mopac , Orca or FireFly\n");
+	fprintf(file,"Model=MM\n");
+	fprintf(file,"#SEKeys=PM6\n");
+	fprintf(file,"SEKeys=AM1\n");
+	fprintf(file,"mopacCommand=/opt/mopac/MOPAC2009.exe\n");
+	fprintf(file,"orcaCommand=orca\n");
+	fprintf(file,"fireflyCommand=firefly\n");
+	fprintf(file,"\n");
+	fprintf(file,"#Confo\n");
+	fprintf(file,"gaussianCommand=g03\n");
+	fprintf(file,"fireflyCommand=firefly\n");
+	fprintf(file,"numberOfGeometries=500\n");
+	fprintf(file,"tolEnergy=0.1\n");
+	fprintf(file,"tolDistance=0.1\n");
+	fprintf(file,"ConfoOptMM=TRUE\n");
+	fprintf(file,"ConfoOptMopac=TRUE\n");
+	fprintf(file,"ConfoOptMopacMethod=PM6 GNORM=0.001\n");
+	fprintf(file,"ConfoOptFireFly=FALSE\n");
+	fprintf(file,"# remove # if post processing required\n");
+	fprintf(file,"#mopacKeywordsPost=PM6\n");
+	fprintf(file,"gaussianKeywordsPost=B3LYP/6-31G*\n");
+	fprintf(file,"#fireflyKeywordsPost=AM1\n");
+	fprintf(file,"\n");
+	fprintf(file,"#MM\n");
+	fprintf(file,"# AMBER, UFF(not implemented), PAIRWISE\n");
+	fprintf(file,"ForceFieldType=0\n");
+	fprintf(file,"ForceFieldUseBond=TRUE\n");
+	fprintf(file,"ForceFieldUseBend=TRUE\n");
+	fprintf(file,"ForceFieldUseDihedral=TRUE\n");
+	fprintf(file,"ForceFieldUseImproper=FALSE\n");
+	fprintf(file,"ForceFieldUseNonBonded=TRUE\n");
+	fprintf(file,"ForceFieldUseHydrogenBonded=FALSE\n");
+	fprintf(file,"ForceFieldUsecoulomb=TRUE\n");
+	fprintf(file,"ForceFieldUseVanderWals=TRUE\n");
+	fprintf(file,"#  NOCONSTRAINTS = 0, BONDSCONSTRAINTS = 1, BONDSANGLESCONSTRAINTS = 2\n");
+	fprintf(file,"ForceFieldConstraints=1\n");
+	fprintf(file,"\n");
+	fprintf(file,"#MD\n");
+	fprintf(file,"updateFrequency=5\n");
+	fprintf(file,"#Time in ps\n");
+	fprintf(file,"heatTime = 0\n");
+	fprintf(file,"equiTime = 0\n");
+	fprintf(file,"runTime = 2\n");
+	fprintf(file,"coolTime = 0\n");
+	fprintf(file,"timeExchange = 0.01\n");
+	fprintf(file,"heatTemp = 0\n");
+	fprintf(file,"runTemp = 400\n");
+	fprintf(file,"runTempMax = 700\n");
+	fprintf(file,"nTemperatures = 10\n");
+	fprintf(file,"#in fs\n");
+	fprintf(file,"stepSize = 0.5\n");
+	fprintf(file,"#  VERLET = 0, BEEMAN = 1, STOCHASTIC = 2\n");
+	fprintf(file,"integrator = 0\n");
+	fprintf(file,"#  NONE = 0, ANDERSEN = 1, BERENDSEN = 2, BUSSI = 3\n");
+	fprintf(file,"thermostat = 0\n");
+	fprintf(file,"friction=40\n");
+	fprintf(file,"collide = 20\n");
+	fprintf(file,"\n");
+	fprintf(file,"#QuasiNewton\n");
+	fprintf(file,"useQuasiNewton = TRUE\n");
+	fprintf(file,"quasiNewtonMaxIterations = 20000\n");
+	fprintf(file,"quasiNewtonUpdateFrequency = 100\n");
+	fprintf(file,"quasiNewtonEpsilon  = 0.0001\n");
+	fprintf(file,"quasiNewtonTolerence = 1e-16\n");
+	fprintf(file,"quasiNewtonMaxLines =  25\n");
+	fprintf(file,"\n");
+	fprintf(file,"#ConjugateGradient\n");
+	fprintf(file,"useConjugateGradient = FALSE\n");
+	fprintf(file,"conjugateGradientGradientNorm = 1e-3\n");
+	fprintf(file,"conjugateGradientMaxIterations = 100\n");
+	fprintf(file,"conjugateGradientUpdateFrequency = 1\n");
+	fprintf(file,"conjugateGradientMaxLines = 25\n");
+	fprintf(file,"conjugateGradientInitialStep = 0.001\n");
+	fprintf(file,"# 1 : Hestenes Stiefel,  2 : Fletcher Reeves, 3 : Polak Ribiere, 4 : Wolf Powell\n");
+	fprintf(file,"conjugateGradientMethod = 1\n");
+	fprintf(file,"\n");
+	fprintf(file,"#Geometry, nAtoms, charge, spin multiplicity. For each atom : symbol, MMType, pdbType, residueName, numResidue, charge, layer, x(Ang),y,z, nconn, num1, type1, num2, type2,...\n");
+	fprintf(file,"Geometry\n");
 	fprintf(file,"%d %d %d\n",Natoms,TotalCharges[0],SpinMultiplicities[0]);
 
 	connection = g_malloc(NcentersXYZ*sizeof(gint));
@@ -3684,6 +3870,8 @@ static gboolean save_gabedit_file(G_CONST_RETURN gchar* fileNameGeom)
 
 	for(j=0;j<NcentersXYZ;j++)
 	{
+		int variable = 0;
+         	if( !test(GeomXYZ[j].X) || !test(GeomXYZ[j].Y) || !test(GeomXYZ[j].Z) ) variable = 1;
          	if(!test(GeomXYZ[j].X)) X = get_value_variableXYZ(GeomXYZ[j].X);
          	else X = atof(GeomXYZ[j].X);
          	if(!test(GeomXYZ[j].Y)) Y = get_value_variableXYZ(GeomXYZ[j].Y);
@@ -3710,7 +3898,7 @@ static gboolean save_gabedit_file(G_CONST_RETURN gchar* fileNameGeom)
 			}
 		}
 
-		fprintf(file," %s %s %s %s %d %f %d %f %f %f ", 
+		fprintf(file," %s %s %s %s %d %f %d %d %f %f %f ", 
 				GeomXYZ[j].Symb,
 				GeomXYZ[j].mmType,
 				GeomXYZ[j].pdbType,
@@ -3718,6 +3906,90 @@ static gboolean save_gabedit_file(G_CONST_RETURN gchar* fileNameGeom)
 				GeomXYZ[j].ResidueNumber,
 				atof(GeomXYZ[j].Charge),
 				get_layer(GeomXYZ[j].Layer),
+				variable,
+				X,
+				Y,
+				Z
+				);
+		fprintf(file," %d ", nc);
+		for(k=0;k<nc;k++)
+		fprintf(file," %d %d", connection[k], connectionType[k]);
+		fprintf(file,"\n");
+
+	}
+
+	fclose(file);
+	return TRUE;
+}
+/*****************************************************************************/
+static gboolean save_gabedit_file(G_CONST_RETURN gchar* fileNameGeom)
+{
+	FILE* file = NULL;
+	gint j;
+	gint k;
+	gdouble X,Y,Z;
+	gint nc = 0;
+	gint* connection = NULL;
+	gint* connectionType = NULL;
+	gint ct;
+	gint form = 1;
+
+	if(NcentersXYZ<1) return FALSE;
+	if(!GeomXYZ) return FALSE;
+
+ 	file = fopen(fileNameGeom, "w");
+
+	if(!file) return FALSE;
+
+	fprintf(file,"[Gabedit Format]\n");
+	fprintf(file,"[GEOMS] %d\n",form);
+	fprintf(file,"1 1\n");
+	fprintf(file,"ENERGY UNK 1\n");
+	fprintf(file,"0.0\n");
+	fprintf(file,"%d %d %d\n",Natoms,TotalCharges[0],SpinMultiplicities[0]);
+
+	connection = g_malloc(NcentersXYZ*sizeof(gint));
+	connectionType = g_malloc(NcentersXYZ*sizeof(gint));
+
+	for(j=0;j<NcentersXYZ;j++)
+	{
+		int variable = 0;
+         	if(!test(GeomXYZ[j].X)) X = get_value_variableXYZ(GeomXYZ[j].X);
+         	else X = atof(GeomXYZ[j].X);
+         	if(!test(GeomXYZ[j].Y)) Y = get_value_variableXYZ(GeomXYZ[j].Y);
+         	else Y = atof(GeomXYZ[j].Y);
+         	if(!test(GeomXYZ[j].Z)) Z = get_value_variableXYZ(GeomXYZ[j].Z);
+         	else Z = atof(GeomXYZ[j].Z);
+         	if( !test(GeomXYZ[j].X) || !test(GeomXYZ[j].Y) || !test(GeomXYZ[j].Z) ) variable = 1;
+         	if(Units==0)
+         	{
+              		X *= BOHR_TO_ANG;
+              		Y *= BOHR_TO_ANG;
+              		Z *= BOHR_TO_ANG;
+         	}
+		nc = 0;
+		if(GeomXYZ[j].typeConnections)
+		for(k=0;k<(gint)NcentersXYZ;k++)
+		{
+			if(j==k) continue;
+			ct = GeomXYZ[j].typeConnections[k];
+			if( ct!=0)
+			{
+				connection[nc] = k+1;
+				connectionType[nc] = ct;
+				nc++;
+			}
+		}
+
+		fprintf(file," %s %s %s %s %d %f %d %d %f %f %f ", 
+				GeomXYZ[j].Symb,
+				GeomXYZ[j].mmType,
+				GeomXYZ[j].pdbType,
+				GeomXYZ[j].Residue,
+				GeomXYZ[j].ResidueNumber,
+				atof(GeomXYZ[j].Charge),
+				get_layer(GeomXYZ[j].Layer),
+				variable,
 				X,
 				Y,
 				Z
@@ -3746,6 +4018,20 @@ void save_geometry_gabedit_file(GabeditFileChooser *SelecFile, gint response_id)
     		return ;
  	}
 	 save_gabedit_file(FileName);
+}
+/************************************************************************************/
+void save_geometry_lascmd_file(GabeditFileChooser *SelecFile, gint response_id)
+{       
+ 	gchar *FileName;
+
+ 	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+ 	if ((!FileName) || (strcmp(FileName,"") == 0))
+ 	{
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
+    		return ;
+ 	}
+	 save_lascmd_file(FileName);
 }
 /*****************************************************************************************/
 static void conversion_to_xyz_and_read(GtkWidget *wid,gpointer data)
@@ -4102,7 +4388,7 @@ void read_pdb_file_no_add_list(gchar *NomFichier)
 		create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
 	}
 	else
-	if(ZoneDessin == NULL)
+	if(GeomDrawingArea == NULL)
 	{
 		/*
 		switch(iprogram)
@@ -4119,7 +4405,7 @@ void read_pdb_file_no_add_list(gchar *NomFichier)
 		*/
 		create_window_drawing();
         }
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
  	if(NcentersXYZ==0)
 	{
 		t = g_strdup_printf(_("Sorry\n I can read \"%s\" file"),NomFichier);
@@ -4397,6 +4683,103 @@ void get_charges_from_gamess_output_file(FILE* fd,gint N)
 			break;
 		}
 	}
+}
+/********************************************************************************/
+gboolean get_npa_charges_from_turbomole_output_file(FILE* fd,gint N)
+{
+ 	guint taille=BSIZE;
+  	gchar t[BSIZE];
+  	gchar dump[BSIZE];
+  	gchar d[BSIZE];
+  	gchar* pdest;
+	gint i;
+
+
+	/* printf("NAtoms = %d\n",N);*/
+
+  	while(!feof(fd) )
+	{
+    		pdest = NULL;
+    		if(!fgets(t,taille,fd)) break;
+    		pdest = strstr( t, "Summary of Natural Population Analysis:");
+
+		if(pdest)
+		{
+  			while(!feof(fd) )
+			{
+    				if(!fgets(t,taille,fd)) break;
+				if(strstr(t,"Atom") && strstr(t,"Charge") && strstr(t,"Core")) break;
+			}
+			if(!(strstr(t,"Atom") && strstr(t,"Charge") && strstr(t,"Core"))) return FALSE;
+    			if(!fgets(t,taille,fd)) break;
+			for(i=0;i<N;i++)
+			{
+    				if(!fgets(t,taille,fd)) break;
+				if(sscanf(t,"%s %s %s",dump, dump, d)==3)
+				{
+					g_free(GeomXYZ[i].Charge);
+					GeomXYZ[i].Charge = g_strdup(d);
+				}
+				else return FALSE;
+			}
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+/********************************************************************************/
+gboolean get_fit_charges_from_turbomole_output_file(FILE* fd,gint N)
+{
+ 	guint taille=BSIZE;
+  	gchar t[BSIZE];
+  	gchar dump[BSIZE];
+  	gchar d[BSIZE];
+  	gchar* pdest;
+	gint i;
+
+
+	/* printf("NAtoms = %d\n",N);*/
+
+  	while(!feof(fd) )
+	{
+    		pdest = NULL;
+    		if(!fgets(t,taille,fd)) break;
+    		pdest = strstr( t, "charges resulting from fit:");
+
+		if(pdest)
+		{
+  			while(!feof(fd) )
+			{
+    				if(!fgets(t,taille,fd)) break;
+				if(strstr(t,"atom") && strstr(t,"radius/au") && strstr(t,"charge")) break;
+			}
+			if(!(strstr(t,"atom") && strstr(t,"radius/au") && strstr(t,"charge"))) return FALSE;
+    			if(!fgets(t,taille,fd)) break;
+			for(i=0;i<N;i++)
+			{
+    				if(!fgets(t,taille,fd)) break;
+				if(sscanf(t,"%s %s %s %s",dump, dump, dump, d)==4)
+				{
+					g_free(GeomXYZ[i].Charge);
+					GeomXYZ[i].Charge = g_strdup(d);
+				}
+				else return FALSE;
+			}
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+/********************************************************************************/
+void get_charges_from_turbomole_output_file(FILE* fd,gint N)
+{
+	gint i;
+	long long int pos = ftell(fd);
+	for(i=0;i<N;i++) GeomXYZ[i].Charge = g_strdup("0.0");
+	if(get_fit_charges_from_turbomole_output_file(fd,N)) return;
+	fseek(fd, pos, SEEK_SET);
+	if(get_npa_charges_from_turbomole_output_file(fd,N)) return;
+	
 }
 /********************************************************************************/
 void get_charges_from_gaussian_output_file(FILE* fd,gint N)
@@ -4683,35 +5066,36 @@ static void read_molden_gabedit_geom_conv_file(gchar* fileName, gint geometryNum
 		append_list();
 	}
 	MethodeGeom = GEOM_IS_XYZ;
-	if(ZoneDessin != NULL)
+	if(GeomDrawingArea != NULL)
 		rafresh_drawing();
 	if(iprogram == PROG_IS_GAUSS && GeomIsOpen)
 		set_spin_of_electrons();
 }
 /********************************************************************************/
-gint get_connections_one_atom_gabedit(gchar* t, gint nAtoms, gint* connections)
+gint get_connections_one_atom_gabedit(gchar* t, gint nAtoms, gint ibeg, gint* connections)
 {
 	gint k;
 	gint nc;
 	gint nj;
 	gchar** split = NULL;
 	gint nA = 0;
+	/* gint ibeg = 12;*/
 	for(k=0;k<nAtoms;k++) connections[k] = 0;
 	split = gab_split(t);
 	nA = 0;
 	while(split && split[nA]!=NULL) nA++;
-	if(nA<11)
+	if(nA<ibeg)
 	{
 		g_strfreev(split);
 		return 0;
 	}
-	nc = atoi(split[10]);
+	nc = atoi(split[ibeg-1]);
 	for(k=0;k<2*nc;k+=2) 
 	{
-		if(!split[11+k]) break;
-		if(!split[11+k+1]) break;
-		nj = atoi(split[11+k]);
-		connections[nj-1] = atoi(split[11+k+1]);
+		if(!split[ibeg+k]) break;
+		if(!split[ibeg+k+1]) break;
+		nj = atoi(split[ibeg+k]);
+		connections[nj-1] = atoi(split[ibeg+k+1]);
 	}
 
 	g_strfreev(split);
@@ -4728,6 +5112,7 @@ static gint read_gabedit_geoms_file(gchar* fileName, gint geometryNumber)
 	gchar mmType[SZ];
 	gchar pdbType[SZ];
 	gchar residueName[SZ];
+	gchar dum[SZ];
 	gdouble X,Y,Z;
 	gdouble charge;
 	gint layer;
@@ -4742,6 +5127,8 @@ static gint read_gabedit_geoms_file(gchar* fileName, gint geometryNumber)
 	gint nAtoms=0;
 	gint l;
 	gint nc = 0;
+	gint Nvar = 0;
+	gint form = 1;
 
 	fd = FOpen(fileName, "r");
 	if(fd == NULL) 
@@ -4751,12 +5138,14 @@ static gint read_gabedit_geoms_file(gchar* fileName, gint geometryNumber)
 		return 1;
 	}
 	OK=FALSE;
+	Nvar = 0;
 	while(!feof(fd))
 	{
 		if(!fgets(t,taille,fd))break;
 		pdest = strstr( t, "[GEOMS]");
  		if (pdest)
 		{
+			if(sscanf(t,"%s %d",dum,&form)!=2) form = 0;
 			if(!fgets(t,taille,fd))break;
 			sscanf(t,"%d %d",&nGeometries, &nLabels);
 			if(nGeometries<geometryNumber)break;
@@ -4799,12 +5188,25 @@ static gint read_gabedit_geoms_file(gchar* fileName, gint geometryNumber)
 			nc = 0;
 			for(i=0; i<nAtoms; i++)
 			{
+				int variable = 0;
+				gint ibeg = 12;
 				if(!fgets(t,taille,fd))break;
-    				k = sscanf(t,"%s %s %s %s %d %lf %d %lf %lf %lf",
+				if(form==0)
+				{
+    					k = sscanf(t,"%s %s %s %s %d %lf %d %lf %lf %lf",
 						symbol,mmType,pdbType,residueName, 
 						&GeomXYZ[i].ResidueNumber,
 						&charge,&layer,&X,&Y,&Z);
-				if(k!=10) 
+					k++;
+					variable = TRUE;
+					ibeg = 11;
+				}
+				else
+    				k = sscanf(t,"%s %s %s %s %d %lf %d %d %lf %lf %lf",
+						symbol,mmType,pdbType,residueName, 
+						&GeomXYZ[i].ResidueNumber,
+						&charge,&layer,&variable,&X,&Y,&Z);
+				if(k!=11) 
 				{
 					for(j=0; j<i; j++)
 					{
@@ -4817,7 +5219,9 @@ static gint read_gabedit_geoms_file(gchar* fileName, gint geometryNumber)
 					}
 					for(i=0; i<nAtoms; i++) if(GeomXYZ[i].typeConnections)g_free(GeomXYZ[i].typeConnections);
 					if(GeomXYZ) g_free(GeomXYZ);
+  					if(VariablesXYZ) g_free(VariablesXYZ);
  					NcentersXYZ = 0;
+					NVariablesXYZ = 0;
 					fclose(fd);
 					if(GeomIsOpen && MethodeGeom == GEOM_IS_XYZ) clearList(list);
 					return -1;
@@ -4843,12 +5247,23 @@ static gint read_gabedit_geoms_file(gchar* fileName, gint geometryNumber)
 					GeomXYZ[i].Y=g_strdup_printf("%f",Y);
 					GeomXYZ[i].Z=g_strdup_printf("%f",Z);
 				}
+				if(variable!=0)
+				{
+					Nvar +=3;
+  					if(Nvar==3) VariablesXYZ = g_malloc(Nvar*sizeof(VariablesXYZDef));
+  					else VariablesXYZ = g_realloc(VariablesXYZ, Nvar*sizeof(VariablesXYZDef));
+					trans_coordXYZ_geom('X', GeomXYZ, i, VariablesXYZ,  Nvar-3);
+					trans_coordXYZ_geom('Y', GeomXYZ, i, VariablesXYZ,  Nvar-2);
+					trans_coordXYZ_geom('Z', GeomXYZ, i, VariablesXYZ,  Nvar-1);
+				}
 				GeomXYZ[i].Charge=g_strdup_printf("%f",charge);
 				if(layer==0) GeomXYZ[i].Layer=g_strdup("Low");
 				if(layer==1) GeomXYZ[i].Layer=g_strdup("Medium");
 				if(layer==2) GeomXYZ[i].Layer=g_strdup(" ");
-    				nc += get_connections_one_atom_gabedit(t,nAtoms,GeomXYZ[i].typeConnections);
+				//{ int k; for(k=0;k<nAtoms;k++) GeomXYZ[i].typeConnections[k] = 0;}
+    				nc += get_connections_one_atom_gabedit(t, nAtoms, ibeg, GeomXYZ[i].typeConnections);
 			}
+			NVariablesXYZ =Nvar;
  			NcentersXYZ = nAtoms;
 			OK = TRUE;
 			break;
@@ -4874,7 +5289,7 @@ static gint read_gabedit_geoms_file(gchar* fileName, gint geometryNumber)
 		append_list();
 	}
 	MethodeGeom = GEOM_IS_XYZ;
-	if(ZoneDessin != NULL) 
+	if(GeomDrawingArea != NULL) 
 	{
 		rafresh_drawing();
 	}
@@ -5130,7 +5545,7 @@ void read_geom_from_mpqc_output_file(gchar *fileName, gint numGeometry)
 		append_list();
 	}
 	MethodeGeom = GEOM_IS_XYZ;
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 	if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
 }
 /********************************************************************************/
@@ -5276,7 +5691,7 @@ void read_geom_conv_from_dalton_output_file(gchar *NomFichier, gint numgeometry)
 		append_list();
 	}
 	MethodeGeom = GEOM_IS_XYZ;
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 	if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
 }
 /********************************************************************************/
@@ -5392,7 +5807,7 @@ void read_geom_from_dalton_output_file(gchar *NomFichier, gint numgeometry)
 		append_list();
 	}
 	MethodeGeom = GEOM_IS_XYZ;
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 	if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
 }
 /********************************************************************************/
@@ -5548,7 +5963,7 @@ void read_geom_conv_from_gamess_output_file(gchar *NomFichier, gint numgeometry)
 		append_list();
 	}
 	MethodeGeom = GEOM_IS_XYZ;
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 	if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
 }
 /********************************************************************************/
@@ -5716,7 +6131,7 @@ void read_geom_from_gamess_output_file(gchar *NomFichier, gint numgeometry)
 		append_list();
 	}
 	MethodeGeom = GEOM_IS_XYZ;
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 	if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
 }
 /********************************************************************************/
@@ -5849,7 +6264,7 @@ void read_geom_from_gamess_irc_file(gchar *NomFichier, gint numgeometry)
 		append_list();
 	}
 	MethodeGeom = GEOM_IS_XYZ;
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 	if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
 }
 /********************************************************************************/
@@ -5896,6 +6311,176 @@ void read_last_irc_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
 		return ;
 	}
 	read_geom_from_gamess_irc_file(fileName,-1);
+}
+/********************************************************************************/
+void read_geom_from_turbomole_output_file(gchar *fileName, gint numgeometry)
+{
+	gchar *t;
+	gboolean OK;
+	gchar *AtomCoord[5];
+	FILE *fd;
+	guint taille=BSIZE;
+	guint i;
+	gint j=0;
+	gint l;
+	guint numgeom;
+	gint uni=1;
+ 	long geomposok = 0;
+
+
+	for(i=0;i<5;i++) AtomCoord[i]=g_malloc(taille*sizeof(char));
+  
+	t=g_malloc(taille*sizeof(gchar));
+ 	fd = FOpen(fileName, "rb");
+	if(fd ==NULL)
+	{
+		g_free(t);
+		t = g_strdup_printf(_("Sorry\nI can not open %s  file "),fileName);
+		MessageGeom(t,_("Error"),TRUE);
+		g_free(t);
+		return;
+	}
+	numgeom = 0;
+	do 
+	{
+		OK=FALSE;
+		while(!feof(fd)){
+			fgets(t,taille,fd);
+			if ( strstr(t,"Atomic coordinate, charge and isotop information"))
+			{
+				while(!feof(fd)){
+	  			fgets(t,taille,fd);
+				if(strstr(t,"atomic") && strstr(t, "coordinates") && strstr(t,"atom") && strstr(t,"shells") && strstr(t,"charge")) break;
+				}
+				if(!(strstr(t,"atomic") && strstr(t, "coordinates") && strstr(t,"atom") && strstr(t,"shells") && strstr(t,"charge"))) {OK = FALSE; break;}
+ 				numgeom++;
+				uni=0;
+				if((gint)numgeom == numgeometry ) { OK = TRUE; break; }
+				if(numgeometry<0 ) { OK = TRUE; break; }
+	  		}
+		}
+		if(!OK && (numgeom == 0) ){
+			g_free(t);
+			t = g_strdup_printf(_("Sorry\nI can not open %s  file "),fileName);
+			MessageGeom(t,_("Error"),TRUE);
+			g_free(t);
+			return;
+		}
+		if(!OK)break;
+
+		j=-1;
+		while(!feof(fd) )
+		{
+			fgets(t,taille,fd);
+			if ( !strcmp(t,"\n")) break;
+			if ( !strcmp(t,"\r\n")) break;
+			j++;
+
+			if(GeomXYZ==NULL) GeomXYZ=g_malloc(sizeof(GeomXYZAtomDef));
+			else GeomXYZ=g_realloc(GeomXYZ,(j+1)*sizeof(GeomXYZAtomDef));
+  			GeomXYZ[j].typeConnections = NULL;
+
+			sscanf(t,"%s %s %s %s",AtomCoord[1], AtomCoord[2],AtomCoord[3], AtomCoord[0]);
+			{
+				gint k;
+				for(k=0;k<(gint)strlen(AtomCoord[0]);k++) if(isdigit(AtomCoord[0][k])) AtomCoord[0][k] = ' ';
+				delete_all_spaces(AtomCoord[0]);
+			}
+
+			AtomCoord[0][0]=toupper(AtomCoord[0][0]);
+			l=strlen(AtomCoord[0]);
+			if (l==2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+			GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
+			GeomXYZ[j].Symb=g_strdup(AtomCoord[0]);
+			/* GeomXYZ[j].Symb=get_symbol_using_z(atoi(dum));*/
+			GeomXYZ[j].mmType=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].pdbType=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].Residue=g_strdup(AtomCoord[0]);
+			GeomXYZ[j].ResidueNumber=0;
+			if(Units != uni )
+			{
+				if(Units==1)
+				{
+				GeomXYZ[j].X=g_strdup(bohr_to_ang(AtomCoord[1]));
+				GeomXYZ[j].Y=g_strdup(bohr_to_ang(AtomCoord[2]));
+				GeomXYZ[j].Z=g_strdup(bohr_to_ang(AtomCoord[3]));
+				}
+				else
+				{
+				GeomXYZ[j].X=g_strdup(ang_to_bohr(AtomCoord[1]));
+				GeomXYZ[j].Y=g_strdup(ang_to_bohr(AtomCoord[2]));
+				GeomXYZ[j].Z=g_strdup(ang_to_bohr(AtomCoord[3]));
+				}
+			}
+			else
+			{
+				GeomXYZ[j].X=g_strdup(AtomCoord[1]);
+				GeomXYZ[j].Y=g_strdup(AtomCoord[2]);
+				GeomXYZ[j].Z=g_strdup(AtomCoord[3]);
+			}
+			GeomXYZ[j].Charge=g_strdup("0.0");
+			GeomXYZ[j].Layer=g_strdup(" ");
+		}
+
+		NcentersXYZ = j+1;
+		if(OK && numgeometry>=0) break;
+		if(numgeometry<0) geomposok = ftell(fd);
+	}while(!feof(fd));
+	if ( NcentersXYZ >0 )
+	{
+		if(numgeometry<0) fseek(fd, geomposok, SEEK_SET);
+		geomposok = ftell(fd);
+		get_charges_from_turbomole_output_file(fd,NcentersXYZ);
+		fseek(fd, geomposok, SEEK_SET);
+		get_dipole_from_turbomole_output_file(fd);
+		/*
+		fseek(fd, geomposok, SEEK_SET);
+		get_charge_and_multilicity(fd);
+		*/
+	}
+
+	fclose(fd);
+ 	calculMMTypes(FALSE);
+	g_free(t);
+	for(i=0;i<5;i++) g_free(AtomCoord[i]);
+	if(GeomIsOpen && MethodeGeom == GEOM_IS_XYZ)
+	{
+   		clearList(list);
+		append_list();
+	}
+	MethodeGeom = GEOM_IS_XYZ;
+	if(GeomDrawingArea != NULL) rafresh_drawing();
+	if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
+}
+/********************************************************************************/
+void read_first_turbomole_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+	gchar *fileName;
+
+ 	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(SelecFile);
+  
+	if ((!fileName) || (strcmp(fileName,"") == 0))
+	{
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
+		return ;
+	}
+	read_geom_from_turbomole_output_file(fileName,1);
+}
+/********************************************************************************/
+void read_last_turbomole_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+	gchar *fileName;
+
+ 	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(SelecFile);
+  
+	if ((!fileName) || (strcmp(fileName,"") == 0))
+	{
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
+		return ;
+	}
+	read_geom_from_turbomole_output_file(fileName,-1);
 }
 /********************************************************************************/
 void read_geom_from_xyz_file(gchar *fileName, gint numGeom)
@@ -5998,7 +6583,7 @@ void read_geom_from_xyz_file(gchar *fileName, gint numGeom)
 	g_free(t);
 	calculMMTypes(TRUE);
 	if(GeomIsOpen) create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 }
 /********************************************************************************/
 void read_geom_from_gaussian_file(gchar *NomFichier, gint numgeometry)
@@ -6172,7 +6757,7 @@ void read_geom_from_gaussian_file(gchar *NomFichier, gint numgeometry)
 	append_list();
  }
  MethodeGeom = GEOM_IS_XYZ;
- if(ZoneDessin != NULL)
+ if(GeomDrawingArea != NULL)
 	rafresh_drawing();
   if(iprogram == PROG_IS_GAUSS && GeomIsOpen)
  	set_spin_of_electrons();
@@ -6299,7 +6884,7 @@ void read_geom_from_molpro_file(gchar *NomFichier, gint numgeometry)
 	append_list();
  }
  MethodeGeom = GEOM_IS_XYZ;
- if(ZoneDessin != NULL)
+ if(GeomDrawingArea != NULL)
 	rafresh_drawing();
   if(iprogram == PROG_IS_GAUSS && GeomIsOpen)
  	set_spin_of_electrons();
@@ -6460,7 +7045,7 @@ void read_last_gaussian_file(GabeditFileChooser *SelecFile , gint response_id)
  {
  	append_list();
  }
- if(ZoneDessin != NULL)
+ if(GeomDrawingArea != NULL)
 	rafresh_drawing();
   if(iprogram == PROG_IS_GAUSS)
  	set_spin_of_electrons();
@@ -6612,7 +7197,7 @@ void read_first_gaussian_file(GabeditFileChooser *SelecFile, gint response_id)
  	append_list();
  }
 
- if(ZoneDessin != NULL)
+ if(GeomDrawingArea != NULL)
 	rafresh_drawing();
   if(iprogram == PROG_IS_GAUSS)
  	set_spin_of_electrons();
@@ -6749,7 +7334,7 @@ void read_fchk_gaussian_file(GabeditFileChooser *SelecFile , gint response_id)
  	fclose(file);
  	calculMMTypes(FALSE);
 	if(GeomIsOpen) append_list();
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 	if(iprogram == PROG_IS_GAUSS) set_spin_of_electrons();
 	set_last_directory(fileName);
 }
@@ -6866,7 +7451,7 @@ void read_last_molcas_file(GabeditFileChooser *SelecFile , gint response_id)
 	{
 		append_list();
 	}
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 	if(iprogram == PROG_IS_GAUSS) set_spin_of_electrons();
 	set_last_directory(NomFichier);
 }
@@ -6988,7 +7573,7 @@ AtomCoord[2],AtomCoord[3]);
  {
  	append_list();
  }
- if(ZoneDessin != NULL)
+ if(GeomDrawingArea != NULL)
 	rafresh_drawing();
   if(iprogram == PROG_IS_GAUSS)
  	set_spin_of_electrons();
@@ -7177,7 +7762,7 @@ void read_geom_from_qchem_file(gchar *NomFichier, gint numgeometry)
 		append_list();
 	 }
 	 MethodeGeom = GEOM_IS_XYZ;
-	 if(ZoneDessin != NULL) rafresh_drawing();
+	 if(GeomDrawingArea != NULL) rafresh_drawing();
 	 if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
 }
 /********************************************************************************/
@@ -7418,7 +8003,7 @@ void read_geom_from_mopac_output_file(gchar *NomFichier, gint numgeometry)
 		append_list();
 	 }
 	 MethodeGeom = GEOM_IS_XYZ;
-	 if(ZoneDessin != NULL) rafresh_drawing();
+	 if(GeomDrawingArea != NULL) rafresh_drawing();
 	 if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
 }
 /********************************************************************************/
@@ -7549,7 +8134,7 @@ void read_XYZ_from_mopac_irc_output_file(gchar *FileName, gint numGeom)
 	if( Units== 0 ) GeomXYZ_Change_Unit(FALSE);
 	if(GeomIsOpen) create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
 
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 	set_last_directory(FileName);
 }
 /********************************************************************************/
@@ -7718,7 +8303,7 @@ void read_XYZ_from_mopac_scan_output_file(gchar *FileName, gint numGeom)
 	if( Units== 0 ) GeomXYZ_Change_Unit(FALSE);
 	if(GeomIsOpen) create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
 
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 	set_last_directory(FileName);
 }
 /********************************************************************************/
@@ -7928,7 +8513,7 @@ void read_geom_from_mopac_aux_file(gchar *NomFichier, gint numgeometry)
 		append_list();
 	 }
 	 MethodeGeom = GEOM_IS_XYZ;
-	 if(ZoneDessin != NULL) rafresh_drawing();
+	 if(GeomDrawingArea != NULL) rafresh_drawing();
 	 if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
 	free_one_string_table(elements, nElements);
 }
@@ -8101,7 +8686,7 @@ void read_geom_from_orca_file(gchar *NomFichier, gint numgeometry)
 		append_list();
 	 }
 	 MethodeGeom = GEOM_IS_XYZ;
-	 if(ZoneDessin != NULL) rafresh_drawing();
+	 if(GeomDrawingArea != NULL) rafresh_drawing();
 	 if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
 }
 /********************************************************************************/
@@ -8323,7 +8908,7 @@ void read_first_molcas_file(GabeditFileChooser *SelecFile, gint response_id)
 	{
 		append_list();
 	}
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 	if(iprogram == PROG_IS_GAUSS) set_spin_of_electrons();
 	set_last_directory(NomFichier);
 }
@@ -8434,7 +9019,7 @@ void read_first_molpro_file(GabeditFileChooser *SelecFile, gint response_id)
 	g_free(AtomCoord[i]);
  if(GeomIsOpen)
  	append_list();
- if(ZoneDessin != NULL)
+ if(GeomDrawingArea != NULL)
 	rafresh_drawing();
   if(iprogram == PROG_IS_GAUSS)
  	set_spin_of_electrons();
@@ -8601,7 +9186,7 @@ void read_XYZ_from_gamess_input_file(gchar *fileName)
 
 	if(GeomIsOpen) create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
 
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 	set_last_directory(fileName);
 }
 /*************************************************************************************/
@@ -8728,7 +9313,7 @@ void read_XYZ_from_mpqc_input_file(gchar *fileName)
 
 	if(GeomIsOpen) create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
 
-	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 	set_last_directory(fileName);
 }
 /*************************************************************************************/
@@ -8909,7 +9494,7 @@ void read_XYZ_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
  if(GeomIsOpen)
 	create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
 
- if(ZoneDessin != NULL)
+ if(GeomDrawingArea != NULL)
 	rafresh_drawing();
  set_last_directory(NomFichier);
 }
@@ -9084,7 +9669,7 @@ void read_XYZ_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile 
  if(GeomIsOpen)
 	create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
 
- if(ZoneDessin != NULL)
+ if(GeomDrawingArea != NULL)
 	rafresh_drawing();
  set_last_directory(NomFichier);
 }
@@ -9258,7 +9843,7 @@ void read_XYZ_from_orca_input_file(gchar *NomFichier)
  	if(GeomIsOpen)
 		create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
 
- 	if(ZoneDessin != NULL)
+ 	if(GeomDrawingArea != NULL)
 		rafresh_drawing();
  	set_last_directory(NomFichier);
 }
@@ -9447,7 +10032,7 @@ void read_XYZ_from_qchem_input_file(gchar *NomFichier)
  if(GeomIsOpen)
 	create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
 
- if(ZoneDessin != NULL)
+ if(GeomDrawingArea != NULL)
 	rafresh_drawing();
  set_last_directory(NomFichier);
 }
@@ -9652,7 +10237,7 @@ void read_XYZ_from_mopac_input_file(gchar *NomFichier)
  if( Units== 0 ) GeomXYZ_Change_Unit(FALSE);
  if(GeomIsOpen) create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
 
- if(ZoneDessin != NULL) rafresh_drawing();
+ if(GeomDrawingArea != NULL) rafresh_drawing();
  set_last_directory(NomFichier);
 }
 /*************************************************************************************/
@@ -10023,7 +10608,7 @@ void read_mol2_tinker_file_no_add_list(gchar *NomFichier,gchar*type)
 		create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
 	}
 	else
-	if(ZoneDessin == NULL)
+	if(GeomDrawingArea == NULL)
 	{
 		/*
 		switch(iprogram)
@@ -10040,7 +10625,7 @@ void read_mol2_tinker_file_no_add_list(gchar *NomFichier,gchar*type)
 		*/
 		create_window_drawing();
         }
-	if(ZoneDessin != NULL)
+	if(GeomDrawingArea != NULL)
 		rafresh_drawing();
 }
 /*****************************************************************************/
@@ -10304,8 +10889,8 @@ void read_mol_file_no_add_list(G_CONST_RETURN  gchar *NomFichier)
 	calculMMTypes(FALSE);
 	for(i=0;i<5;i++) g_free(AtomCoord[i]);
 	if(GeomIsOpen) create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
-	else if(ZoneDessin == NULL) create_window_drawing();
-	if(ZoneDessin != NULL) rafresh_drawing();
+	else if(GeomDrawingArea == NULL) create_window_drawing();
+	if(GeomDrawingArea != NULL) rafresh_drawing();
 }
 /********************************************************************************/
 void read_XYZ_file_no_add_list(G_CONST_RETURN  gchar *NomFichier)
@@ -10400,7 +10985,7 @@ void read_XYZ_file_no_add_list(G_CONST_RETURN  gchar *NomFichier)
  if(GeomIsOpen)
 	create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
   else
-  if(ZoneDessin == NULL)
+  if(GeomDrawingArea == NULL)
   {
 	/*
 	switch(iprogram)
@@ -10417,7 +11002,7 @@ void read_XYZ_file_no_add_list(G_CONST_RETURN  gchar *NomFichier)
 	*/
 	create_window_drawing();
   }
- if(ZoneDessin != NULL) rafresh_drawing();
+ if(GeomDrawingArea != NULL) rafresh_drawing();
 }
 /*************************************************************************************/
 void create_GeomXYZ_from_draw_grometry()
@@ -10428,9 +11013,13 @@ void create_GeomXYZ_from_draw_grometry()
 	gint iHigh = -1;
 	gint i;
 	gint* numOrd = NULL;
+	gdouble Orig[3];
+	gdouble X,Y,Z;
 
  	if(GeomXYZ) freeGeomXYZ();
  	if(VariablesXYZ) freeVariablesXYZ(VariablesXYZ);
+
+	get_origine_molecule_drawgeom(Orig);
 
 	Dipole.def = FALSE;
 	NcentersXYZ = Natoms;
@@ -10466,17 +11055,20 @@ void create_GeomXYZ_from_draw_grometry()
     		GeomXYZ[j].ResidueNumber=geometry0[jj].ResidueNumber;
     		GeomXYZ[j].typeConnections = g_malloc(NcentersXYZ*sizeof(gint));
 		for(i=0;i<NcentersXYZ;i++) GeomXYZ[j].typeConnections[i] = get_connection_type(jj,numOrd[i]);
+		X = geometry0[jj].X+Orig[0];
+		Y = geometry0[jj].Y+Orig[1];
+		Z = geometry0[jj].Z+Orig[2];
     		if(Units==1)
     		{
-    			GeomXYZ[j].X=g_strdup_printf("%0.6f",geometry0[jj].X*BOHR_TO_ANG);
-    			GeomXYZ[j].Y=g_strdup_printf("%0.6f",geometry0[jj].Y*BOHR_TO_ANG);
-    			GeomXYZ[j].Z=g_strdup_printf("%0.6f",geometry0[jj].Z*BOHR_TO_ANG);
+    			GeomXYZ[j].X=g_strdup_printf("%0.6f",X*BOHR_TO_ANG);
+    			GeomXYZ[j].Y=g_strdup_printf("%0.6f",Y*BOHR_TO_ANG);
+    			GeomXYZ[j].Z=g_strdup_printf("%0.6f",Z*BOHR_TO_ANG);
     		}
     		else
     		{
-    			GeomXYZ[j].X=g_strdup_printf("%0.6f",geometry0[jj].X);
-    			GeomXYZ[j].Y=g_strdup_printf("%0.6f",geometry0[jj].Y);
-    			GeomXYZ[j].Z=g_strdup_printf("%0.6f",geometry0[jj].Z);
+    			GeomXYZ[j].X=g_strdup_printf("%0.6f",X);
+    			GeomXYZ[j].Y=g_strdup_printf("%0.6f",Y);
+    			GeomXYZ[j].Z=g_strdup_printf("%0.6f",Z);
 		}
     		GeomXYZ[j].Charge=g_strdup_printf("%0.6f",geometry0[jj].Charge);
 		if(geometry0[jj].Variable) set_variable_one_atom_in_GeomXYZ(j);
@@ -10698,10 +11290,12 @@ void read_mol_file(GabeditFileChooser *SelecFile, gint  response_id)
 	gchar *projectname = NULL;
 	gchar *datafile = NULL;
 	gchar *localdir = NULL;
+/*
 	gchar *remotehost  = NULL;
 	gchar *remoteuser  = NULL;
 	gchar *remotepass  = NULL;
 	gchar *remotedir  = NULL;
+*/
 	gchar *temp  = NULL;
 
 	if(response_id != GTK_RESPONSE_OK) return;
@@ -10721,7 +11315,7 @@ void read_mol_file(GabeditFileChooser *SelecFile, gint  response_id)
 	localdir = get_name_dir(temp);
 	if(lastdirectory) g_free(lastdirectory);
 	lastdirectory = g_strdup(localdir);
-	CreeFeuille(treeViewProjects, noeud[GABEDIT_TYPENODE_XYZ],projectname,datafile,localdir,remotehost,remoteuser,remotepass,remotedir,GABEDIT_TYPENODE_XYZ, NULL, defaultNetWorkProtocol);
+	/* CreeFeuille(treeViewProjects, noeud[GABEDIT_TYPENODE_XYZ],projectname,datafile,localdir,remotehost,remoteuser,remotepass,remotedir,GABEDIT_TYPENODE_XYZ, NULL, defaultNetWorkProtocol);*/
 	g_free(temp);
 	g_free(datafile);
 	g_free(projectname);
@@ -10831,7 +11425,7 @@ void read_mol_file(GabeditFileChooser *SelecFile, gint  response_id)
 	g_free(AtomCoord[i]);
  if(GeomIsOpen)
  	append_list();
- if(ZoneDessin != NULL)
+ if(GeomDrawingArea != NULL)
 	rafresh_drawing();
   if(iprogram == PROG_IS_GAUSS)
  	set_spin_of_electrons();
@@ -10857,7 +11451,7 @@ void put_geomXYZ_in_list()
 
  if(GeomXYZ != NULL )
 	append_list();
- if(ZoneDessin != NULL)
+ if(GeomDrawingArea != NULL)
 	rafresh_drawing();
   if(iprogram == PROG_IS_GAUSS)
  	set_spin_of_electrons();
@@ -10912,6 +11506,11 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   case GABEDIT_TYPEFILEGEOM_GAMESSIRC : 
 	   SelecFile = gabedit_file_chooser_new(_("Read the last geometry from a Gamess IRC file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsirc);
+	   break;
+  case GABEDIT_TYPEFILEGEOM_TURBOMOLEFIRST : 
+  case GABEDIT_TYPEFILEGEOM_TURBOMOLELAST : 
+	   SelecFile = gabedit_file_chooser_new(_("Read the last geometry from a Turbomole output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
+   	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
   case GABEDIT_TYPEFILEGEOM_GAUSSOUTFIRST : 
 	   SelecFile = gabedit_file_chooser_new(_("Read the first geometry from a gaussian output file"), GTK_FILE_CHOOSER_ACTION_OPEN);
@@ -11050,6 +11649,10 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_gaussian_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_GAUSSOUTLAST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_gaussian_file), GTK_OBJECT(SelecFile)); break;
+  case GABEDIT_TYPEFILEGEOM_TURBOMOLEFIRST :
+	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_turbomole_file), GTK_OBJECT(SelecFile)); break;
+  case GABEDIT_TYPEFILEGEOM_TURBOMOLELAST :
+	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_turbomole_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_GAUSSIAN_FCHK :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_fchk_gaussian_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_MOLCASOUTFIRST :
@@ -11850,7 +12453,7 @@ static void multi_by_factor(gdouble factor)
   clearList(listv);
   append_VariablesXYZ_in_list();
 
-  if(ZoneDessin != NULL)
+  if(GeomDrawingArea != NULL)
        rafresh_drawing();
   if(iprogram == PROG_IS_GAUSS)
  	set_spin_of_electrons();
@@ -11924,7 +12527,7 @@ static void OriginToCenter()
   clearList(listv);
   append_VariablesXYZ_in_list();
 
-  if(ZoneDessin != NULL)
+  if(GeomDrawingArea != NULL)
        rafresh_drawing();
   if(iprogram == PROG_IS_GAUSS)
  	set_spin_of_electrons();

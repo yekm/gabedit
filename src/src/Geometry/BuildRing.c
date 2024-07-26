@@ -1,6 +1,6 @@
 /* BuildRing.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2011 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -103,7 +103,7 @@ static void build_ring_molecule(GtkWidget *w,gpointer data)
 
  	if(GeomIsOpen)
 		create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
-  	if(ZoneDessin != NULL)
+  	if(GeomDrawingArea != NULL)
 		rafresh_drawing();
 
 	activate_rotation();
