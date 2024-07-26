@@ -197,6 +197,21 @@ static ForceField newPairWiseModel()
 
 }
 /**********************************************************************/
+static gboolean isIonic(gchar* mmType)
+{
+	if(!strcmp(mmType,"Li")) return TRUE;
+	if(!strcmp(mmType,"Na")) return TRUE;
+	if(!strcmp(mmType,"K")) return TRUE;
+	if(!strcmp(mmType,"Rb")) return TRUE;
+	if(!strcmp(mmType,"Cs")) return TRUE;
+	if(!strcmp(mmType,"Ca")) return TRUE;
+	if(!strcmp(mmType,"Sr")) return TRUE;
+	if(!strcmp(mmType,"Ba")) return TRUE;
+	if(!strcmp(mmType,"Zn")) return TRUE;
+	if(!strcmp(mmType,"IB")) return TRUE;
+	if(!strcmp(mmType,"Cl")) return TRUE;
+	return FALSE;
+}
 /**********************************************************************/
 static gboolean getStretchParameters(	AmberParameters* amberParameters,
 								gint a1Type, gint a2Type, 
@@ -544,6 +559,10 @@ static void setStretchParameters(AmberParameters* amberParameters,ForceField* fo
 				forceConstant = 490;
 				equilibriumDistance = 1.335;
 			}
+			if(isIonic( m.atoms[a1].mmType) || isIonic( m.atoms[a2].mmType))
+			{
+				forceConstant = 0;
+			}
 			printf( "-> I set  force to %f and equilibrium distance to %f\n",
 					forceConstant,equilibriumDistance);
 
@@ -608,6 +627,10 @@ static void setBendParameters(AmberParameters* amberParameters,ForceField* force
 			{
 				forceConstant = 50.0;
 				equilibriumAngle = 120.0;
+			}
+			if(isIonic( m.atoms[a1].mmType) || isIonic( m.atoms[a2].mmType) ||  isIonic( m.atoms[a3].mmType))
+			{
+				forceConstant = 0;
 			}
 			printf( "-> I set force to %f and equilibrium angle to %f\n",
 					forceConstant, equilibriumAngle);

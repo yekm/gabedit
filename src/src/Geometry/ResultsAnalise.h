@@ -33,11 +33,12 @@ typedef struct _DataGeomConv
 void set_sensitive_remote_frame(gboolean sensitive);
 void create_bar_result(GtkWidget* Vbox);
 DataGeomConv free_geom_conv(DataGeomConv);
-void find_energy_gamess_gauss_molcas_molpro_mpqc_qchem(GtkWidget *wid,gpointer data);
+void find_energy_all(GtkWidget *wid,gpointer data);
 void read_geometries_conv_dalton(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_gamess(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_gaussian(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_molpro(GabeditFileChooser *SelecFile, gint response_id);
+void read_geometries_conv_mopac(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_qchem(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_gabedit(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_molden(GabeditFileChooser *SelecFile, gint response_id);

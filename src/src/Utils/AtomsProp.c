@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 #include "../Common/Global.h"
 #include "../Utils/Constantes.h"
 #include "../Utils/AtomsProp.h"
@@ -135,6 +136,29 @@ gboolean read_atoms_prop()
     OK  = FALSE;
  g_free(t);
  return OK;
+}
+/******************************************************************/
+gdouble get_atomic_number_from_symbol(gchar* symbol)
+{
+	guint i;
+        static gchar symb[5];
+	gint l;
+
+	if(!symbol) return 0.0;
+	l = strlen(symbol);
+	symb[0] = toupper(symbol[0]);
+	if(l>1) symb[1]=tolower(symbol[1]);
+	if(l>2) symb[2]=tolower(symbol[1]);
+	symb[l] = '\0';
+	
+	for(i=0;i<NATOMS;i++)
+	{
+		if (!strcmp(symb,AtomsProp[i].symbol))
+		{
+			return AtomsProp[i].atomicNumber;
+		}
+	}
+	return -1.0;
 }
 /********************************************************************************/
 gchar* get_symbol_using_z(gint z)

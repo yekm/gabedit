@@ -62,9 +62,40 @@
 9 febrary 2007 :
    Gtkplot library has removed.
    New windows for draw IR, Raman and UV/Visible spectrum.
+
 20 febrary 2007 :
    Gabedit can read the output file of PCGAMESS(Orbitals+Vibration+IR+UV)
+
 1 mars 2007 :
    Gabedit can read the output file of Q-Chem(Orbitals+Vibration+IR+UV)
+
 15 mars 2007 :
    Gabedit can create an input output file of Q-Chem
+
+2 september 2007 :
+   Gabedit can read Q-Chem grid file
+   Gabedit can create an input output file of Q-Chem
+
+26 octobre 2007 :
+   Export of XY plot in svg format
+
+7 november 2007 :
+   Cartoon mode fro draw geometry
+   New algorithm  for compute NMR spectrum
+   Export of XY plot in svg format
+
+20 november 2007 :
+   Gabedit can show the SAS
+
+13 december 2007 :
+   The MEP (Molecular electrostatic potential) can be calculated by Gabedit
+   MEP can be calculated by Multipole approximaiton
+   MEP can be calculated by solving the poisson equation 
+   using Multigrid (V-cycle) or Congugate gradient methods
+   The surface for any function can be color mapped by the MEP
+
+21 junary 2008 :
+   Gabedit can read the natural orbitals from Gaussian output file
+
+11 february 2008 :
+   MEP can be calculated from the charges of atoms

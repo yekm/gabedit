@@ -167,6 +167,8 @@ void delete_identique_atomic_standard_orb(TypeBasisBySym BasisBySym[MAXSYM],gint
 	  g_free(AOrb);
  NAOrb = naorbs;
  AOrb = tmp;
+ if(SAOrb) g_free(SAOrb);
+ SAOrb = NULL;
 
 }
 /********************************************************************************/
@@ -309,6 +311,8 @@ void define_standard_spherical_basis_from_molpro_basis(TypeBasisBySym BasisBySym
 	g_free(AOrb);
 	NAOrb  = naorbs;
 	AOrb = temp;
+ 	if(SAOrb) g_free(SAOrb);
+ 	SAOrb = NULL;
 	/* Debug("Begin DefineAtomicNumOrb\n");*/
 	DefineAtomicNumOrb();
 	/* Debug("End standard\n"); */
@@ -571,7 +575,7 @@ OneBasis* read_basis_from_a_molpro_output_file(gchar *FileName,gint* nbasis,long
     		return NULL;
  	}
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
@@ -859,7 +863,7 @@ long int read_orbitals_from_a_molpro_output_file(gchar *FileName,TypeOrbitalsByS
 
 	set_status_label_info("Mol. Orb.","Reading");
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
@@ -1167,7 +1171,7 @@ TypeFileListOrb* scan_orbs_in_molpro_output_file(gchar* FileName,gint *norbtype)
     		return NULL;
  	}
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
  	if(fd ==NULL)
  	{
 		gchar* t = g_strdup_printf("Sorry I can not open \"%s\" file\n",FileName);

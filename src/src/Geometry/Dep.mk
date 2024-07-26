@@ -72,14 +72,16 @@ DrawGeom.o: ../Geometry/Postscript.h ../Geometry/Povray.h ../Common/Windows.h
 DrawGeom.o: ../Utils/Transformation.h ../Geometry/GeomXYZ.h
 DrawGeom.o: ../Geometry/GeomZmatrix.h ../Geometry/Symmetry.h
 DrawGeom.o: ../Files/FileChooser.h ../Geometry/ImagesGeom.h
-DrawGeom.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h
-DrawGeom.o: ../Geometry/RotFragments.h ../Geometry/GeomConversion.h
+DrawGeom.o: ../Geometry/Fragments.h ../Geometry/FragmentsPPD.h
+DrawGeom.o: ../Geometry/DrawGeom.h ../Geometry/RotFragments.h
+DrawGeom.o: ../Geometry/GeomConversion.h ../Geometry/PersonalFragments.h
 DrawGeom.o: ../Geometry/ResultsAnalise.h ../Utils/HydrogenBond.h
 DrawGeom.o: ../MolecularMechanics/PDBTemplate.h
 DrawGeom.o: ../MolecularMechanics/CalculTypesAmber.h
 DrawGeom.o: ../Symmetry/MoleculeSymmetryInterface.h ../Utils/Jacobi.h
 DrawGeom.o: ../Utils/Vector3d.h ../Utils/GabeditTextEdit.h
-DrawGeom.o: ../Geometry/MenuToolBarGeom.h
+DrawGeom.o: ../Geometry/MenuToolBarGeom.h ../Geometry/PreviewGeom.h
+DrawGeom.o: ../Geometry/FragmentsSelector.h
 EnergiesCurves.o: ../../Config.h
 EnergiesCurves.o: ../Common/Global.h
 EnergiesCurves.o: ../Files/GabeditFileChooser.h
@@ -108,6 +110,24 @@ FragmentsPSC.o: ../Common/GabeditType.h
 FragmentsPSC.o: ../Utils/Utils.h ../Geometry/Fragments.h
 FragmentsPSC.o: ../MolecularMechanics/PDBTemplate.h ../Geometry/DrawGeom.h
 FragmentsPSC.o: ../MolecularMechanics/CalculTypesAmber.h
+FragmentsSelector.o: ../../Config.h
+FragmentsSelector.o: ../Common/Global.h
+FragmentsSelector.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
+FragmentsSelector.o: ../Utils/Constantes.h ../Utils/UtilsInterface.h
+FragmentsSelector.o: ../Geometry/InterfaceGeom.h ../Utils/Utils.h
+FragmentsSelector.o: ../Utils/PovrayUtils.h ../Utils/AtomsProp.h
+FragmentsSelector.o: ../Geometry/GeomGlobal.h ../Common/Windows.h
+FragmentsSelector.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h
+FragmentsSelector.o: ../Geometry/PreviewGeom.h ../Geometry/FragmentsTree.h
+FragmentsTree.o: ../../Config.h ../Common/Global.h
+FragmentsTree.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
+FragmentsTree.o: ../Utils/Constantes.h ../Utils/UtilsInterface.h
+FragmentsTree.o: ../Geometry/InterfaceGeom.h ../Utils/Utils.h
+FragmentsTree.o: ../Utils/PovrayUtils.h ../Utils/AtomsProp.h
+FragmentsTree.o: ../Geometry/GeomGlobal.h ../Common/Windows.h
+FragmentsTree.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h
+FragmentsTree.o: ../Geometry/PreviewGeom.h ../Geometry/PersonalFragments.h
+FragmentsTree.o: ../Geometry/LoadPersonalFragments.h
 GeomConversion.o: ../../Config.h
 GeomConversion.o: ../Common/Global.h ../Files/GabeditFileChooser.h
 GeomConversion.o: ../Common/GabeditType.h ../Utils/Constantes.h
@@ -183,7 +203,7 @@ MenuToolBarGeom.o: ../Geometry/BuildNanoTube.h
 MenuToolBarGeom.o: ../Geometry/PersonalFragments.h
 MenuToolBarGeom.o: ../Geometry/ResultsAnalise.h ../Geometry/GeomConversion.h
 MenuToolBarGeom.o: ../Geometry/MenuToolBarGeom.h ../Geometry/OpenBabel.h
-MenuToolBarGeom.o: ../Utils/HydrogenBond.h
+MenuToolBarGeom.o: ../Geometry/FragmentsSelector.h ../Utils/HydrogenBond.h
 MenuToolBarGeom.o: ../Symmetry/MoleculeSymmetryInterface.h
 MenuToolBarGeom.o: ../Common/StockIcons.h
 Mesure.o: ../../Config.h
@@ -209,6 +229,7 @@ PersonalFragments.o: ../Geometry/DrawGeom.h ../Geometry/PersonalFragments.h
 PersonalFragments.o: ../Geometry/SavePersonalFragments.h
 PersonalFragments.o: ../Geometry/LoadPersonalFragments.h
 PersonalFragments.o: ../Geometry/MenuToolBarGeom.h
+PersonalFragments.o: ../Geometry/FragmentsSelector.h
 Postscript.o: ../../Config.h
 Postscript.o: ../Common/Global.h
 Postscript.o: ../Files/GabeditFileChooser.h
@@ -225,6 +246,25 @@ Povray.o: ../Geometry/InterfaceGeom.h ../Utils/Utils.h ../Utils/PovrayUtils.h
 Povray.o: ../Utils/AtomsProp.h ../Utils/Vector3d.h ../Geometry/GeomGlobal.h
 Povray.o: ../Geometry/Mesure.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h
 Povray.o: ../Common/Windows.h
+PreviewGeom.o: ../../Config.h
+PreviewGeom.o: ../Common/Global.h
+PreviewGeom.o: ../Files/GabeditFileChooser.h
+PreviewGeom.o: ../Common/GabeditType.h ../Utils/Constantes.h
+PreviewGeom.o: ../Utils/UtilsInterface.h ../Geometry/InterfaceGeom.h
+PreviewGeom.o: ../Utils/Utils.h ../Utils/PovrayUtils.h ../Utils/AtomsProp.h
+PreviewGeom.o: ../Geometry/GeomGlobal.h ../Geometry/Mesure.h
+PreviewGeom.o: ../Geometry/Postscript.h ../Geometry/Povray.h
+PreviewGeom.o: ../Common/Windows.h ../Utils/Transformation.h
+PreviewGeom.o: ../Geometry/GeomXYZ.h ../Geometry/GeomZmatrix.h
+PreviewGeom.o: ../Geometry/Symmetry.h ../Files/FileChooser.h
+PreviewGeom.o: ../Geometry/ImagesGeom.h ../Geometry/Fragments.h
+PreviewGeom.o: ../Geometry/DrawGeom.h ../Geometry/RotFragments.h
+PreviewGeom.o: ../Geometry/GeomConversion.h ../Geometry/ResultsAnalise.h
+PreviewGeom.o: ../Utils/HydrogenBond.h ../MolecularMechanics/PDBTemplate.h
+PreviewGeom.o: ../MolecularMechanics/CalculTypesAmber.h
+PreviewGeom.o: ../Symmetry/MoleculeSymmetryInterface.h ../Utils/Jacobi.h
+PreviewGeom.o: ../Utils/Vector3d.h ../Utils/GabeditTextEdit.h
+PreviewGeom.o: ../Geometry/MenuToolBarGeom.h
 ResultsAnalise.o: ../../Config.h ../Common/Global.h
 ResultsAnalise.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
 ResultsAnalise.o: ../Utils/UtilsInterface.h ../Utils/Utils.h

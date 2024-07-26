@@ -74,7 +74,9 @@ MolecularMechanicsDlg.o: ../Common/Global.h
 MolecularMechanicsDlg.o: ../Files/GabeditFileChooser.h
 MolecularMechanicsDlg.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
 MolecularMechanicsDlg.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h
-MolecularMechanicsDlg.o: ../Geometry/Mesure.h ../MolecularMechanics/Atom.h
+MolecularMechanicsDlg.o: ../Geometry/Mesure.h ../Files/FolderChooser.h
+MolecularMechanicsDlg.o: ../Files/GabeditFolderChooser.h
+MolecularMechanicsDlg.o: ../MolecularMechanics/Atom.h
 MolecularMechanicsDlg.o: ../MolecularMechanics/Molecule.h
 MolecularMechanicsDlg.o: ../MolecularMechanics/ForceField.h
 MolecularMechanicsDlg.o: ../MolecularMechanics/MolecularMechanics.h

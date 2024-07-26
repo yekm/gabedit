@@ -37,6 +37,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/SavePersonalFragments.h"
 #include "../Geometry/LoadPersonalFragments.h"
 #include "../Geometry/MenuToolBarGeom.h"
+#include "../Geometry/FragmentsSelector.h"
 
 #define NENTRYS 5
 typedef enum
@@ -227,7 +228,7 @@ static void addGroupe(GtkWidget* win, gpointer d)
 	personnalFragments->numberOfGroupes = numberOfGroupes;
 	personnalFragments->personnalGroupes = personnalGroupes;
 
-	add_a_personal_group_to_menu(groupName);
+	/* add_a_personal_group_to_menu(groupName);*/
 
 	g_free(groupName);
 	gtk_widget_destroy(win);
@@ -288,7 +289,7 @@ static void deleteOneGroupe(GtkWidget*win, gpointer data)
 	gchar* groupName;
 
 	groupName = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entrys[E_GROUPE])));
-	delete_a_personal_group_from_menu(groupName);
+	/* delete_a_personal_group_from_menu(groupName);*/
 
 	if(!personnalFragments)
 		return;
@@ -350,6 +351,8 @@ static void deleteOneGroupe(GtkWidget*win, gpointer data)
 	}
 
 	gtk_widget_destroy(win);
+	savePersonalFragments(NULL);
+	rafresh_fragments_selector();
 }
 /*****************************************************************/
 void deleteGroupeDlg(gpointer data, guint Operation,GtkWidget* wid)
@@ -540,7 +543,9 @@ static void addFragment(GtkWidget* win, gpointer data)
 	
 	name = g_strdup_printf("%s/%s",groupName,fragmentName); 
 
-	add_a_personnal_fragement_to_menu(groupName,fragmentName);
+	/* add_a_personnal_fragement_to_menu(groupName,fragmentName);*/
+	savePersonalFragments(NULL);
+	rafresh_fragments_selector();
 	gtk_widget_destroy(win);
 }
 /*****************************************************************/
@@ -750,7 +755,9 @@ static void deleteOneFragment(GtkWidget* win, gpointer data)
 				g_free(groups[i]);
 		}
 	}
-	delete_a_personal_fragment_from_menu(groupName,fragmentName);
+	/* delete_a_personal_fragment_from_menu(groupName,fragmentName);*/
+	savePersonalFragments(NULL);
+	rafresh_fragments_selector();
 	gtk_widget_destroy(win);
 }
 /*****************************************************************/
@@ -927,6 +934,7 @@ void addPersonalFragment(gpointer data, guint Operation,GtkWidget* wid)
 	g_free(fragmentName);
 }
 /*****************************************************************/
+/*
 void addGroupesToMenu()
 {
 	gint i;
@@ -936,7 +944,6 @@ void addGroupesToMenu()
 		add_a_personal_group_to_menu(personnalFragments->personnalGroupes[i].groupName);
 	}
 }
-/*****************************************************************/
 void addFragmentsToMenu()
 {
 	PersonalGroupe* personnalGroupes;
@@ -966,6 +973,7 @@ void addFragmentsToMenu()
 		}
 	}
 }
+*/
 /*****************************************************************/
 void savePersonalFragments(GtkWidget* win)
 {

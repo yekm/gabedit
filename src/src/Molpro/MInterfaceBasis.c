@@ -950,9 +950,9 @@ static void DialogueDelete(GtkWidget *w)
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) gtk_widget_unref);
+	  frame,(GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
    gtk_box_pack_start_defaults(
          GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
@@ -1040,14 +1040,14 @@ static void DialogueAdd(GtkWidget *w,gpointer data)
   button_style = gtk_widget_get_style(FenetreTable); 
 
   vbox = gtk_vbox_new (FALSE, 5);
-  gtk_widget_ref (vbox);
-  g_object_set_data_full(G_OBJECT (FenetreTable), "vbox", vbox,(GtkDestroyNotify) gtk_widget_unref);
+  g_object_ref (vbox);
+  g_object_set_data_full(G_OBJECT (FenetreTable), "vbox", vbox,(GtkDestroyNotify) g_object_unref);
   gtk_container_add(GTK_CONTAINER(FenetreTable),vbox);
   
   hbox = gtk_hbox_new (FALSE, 0);
-  gtk_widget_ref (hbox);
+  g_object_ref (hbox);
   g_object_set_data_full(G_OBJECT (FenetreTable), "hbox", hbox,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (hbox);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, TRUE, TRUE, 0);
 
@@ -1055,9 +1055,9 @@ static void DialogueAdd(GtkWidget *w,gpointer data)
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (hbox), "frame",
-	  frame,(GtkDestroyNotify) gtk_widget_unref);
+	  frame,(GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
   gtk_container_add(GTK_CONTAINER(hbox),frame);  
   gtk_widget_show (frame);
@@ -1103,9 +1103,9 @@ void ButtonBar(GtkWidget *BoiteV)
   GtkWidget *button;
 
   hbox = gtk_hbox_new (FALSE, 0);
-  gtk_widget_ref (hbox);
+  g_object_ref (hbox);
   g_object_set_data_full(G_OBJECT (BoiteV), "hbox", hbox,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (hbox);
   gtk_box_pack_start (GTK_BOX (BoiteV), hbox, FALSE, FALSE, 5);
 

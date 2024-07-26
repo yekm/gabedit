@@ -490,6 +490,7 @@ void add_fragment(GtkWidget* button)
 	define_good_factor();
 	create_GeomXYZ_from_draw_grometry();
 	unselect_all_atoms();
+	reset_all_connections();
 	dessine();
 
 	lastO1 = O1;

@@ -39,6 +39,8 @@ int view_orb(GtkWidget* Parent,int argc, char **argv)
 	GtkWidget* handleBoxColorMapPlanesMapped;
 
 	static gboolean first = TRUE;
+
+
 	Dipole.def = FALSE;
 	if(!first)
 	{
@@ -55,7 +57,7 @@ int view_orb(GtkWidget* Parent,int argc, char **argv)
 
 	/* Create new top level window. */
 	PrincipalWindow = gtk_window_new( GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(PrincipalWindow), "Gabedit : Oritals/Density/Vibration");
+	gtk_window_set_title(GTK_WINDOW(PrincipalWindow), "Gabedit : Orbitals/Density/Vibration");
   	gtk_window_set_default_size (GTK_WINDOW(PrincipalWindow),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.69));
 	gtk_container_set_border_width(GTK_CONTAINER(PrincipalWindow), 1);
 	init_child(PrincipalWindow,gtk_widget_destroy," Draw Dens. Orb. ");
@@ -94,6 +96,8 @@ int view_orb(GtkWidget* Parent,int argc, char **argv)
 	first = FALSE;
 
 	gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);
+	InitializeAll();
+	/*printCoefSlm();*/
 
 	return 0;
 }

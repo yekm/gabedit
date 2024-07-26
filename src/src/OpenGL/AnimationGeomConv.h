@@ -22,6 +22,8 @@ typedef struct _Atom
 {
 	gchar symbol[5];
 	gfloat C[3];
+	gdouble partialCharge;
+	gdouble nuclearCharge;
 }Atom;
 typedef struct _Geometry
 {

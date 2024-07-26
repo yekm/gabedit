@@ -913,7 +913,7 @@ void create_save_povray(GtkWidget* Win)
   gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
   vboxall = create_vbox(fp);
   frame = gtk_frame_new ("Location&Name of file");
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);

@@ -171,6 +171,11 @@ void free_qchem_commands()
 	free_commands_list(&qchemCommands);
 }
 /********************************************************************************/
+void free_mopac_commands()
+{
+	free_commands_list(&mopacCommands);
+}
+/********************************************************************************/
 gchar* get_time_str()
 {
 	gchar* str=NULL;
@@ -1052,6 +1057,21 @@ void create_commands_file()
 	}
 	fprintf(fd,"End\n");
 /*-----------------------------------------------------------------------------*/
+	fprintf(fd,"Begin Mopac\n");
+	str_delete_n(NameCommandMopac);
+	delete_last_spaces(NameCommandMopac);
+	delete_first_spaces(NameCommandMopac);
+ 	fprintf(fd,"%s\n",NameCommandMopac);
+ 	fprintf(fd,"%d\n",mopacCommands.numberOfCommands);
+	for(i=0;i<mopacCommands.numberOfCommands;i++)
+	{
+		str_delete_n(mopacCommands.commands[i]);
+		delete_last_spaces(mopacCommands.commands[i]);
+		delete_first_spaces(mopacCommands.commands[i]);
+		fprintf(fd,"%s\n",mopacCommands.commands[i]);
+	}
+	fprintf(fd,"End\n");
+/*-----------------------------------------------------------------------------*/
 
 	fprintf(fd,"Begin Babel\n");
 	str_delete_n(babelCommand);
@@ -1072,6 +1092,13 @@ void create_commands_file()
 	delete_last_spaces(pcgamessDirectory);
 	delete_first_spaces(pcgamessDirectory);
 	fprintf(fd,"%s\n",pcgamessDirectory);
+	fprintf(fd,"End\n");
+
+	fprintf(fd,"Begin MopacDir\n");
+	str_delete_n(mopacDirectory);
+	delete_last_spaces(mopacDirectory);
+	delete_first_spaces(mopacDirectory);
+	fprintf(fd,"%s\n",mopacDirectory);
 	fprintf(fd,"End\n");
 
 	fclose(fd);
@@ -1784,6 +1811,64 @@ void read_commands_file()
 	}
 /*-----------------------------------------------------------------------------*/
  	if(fgets(t,taille,fd))
+	if(!strstr(t,"Begin Mopac"))
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd))
+	{
+ 		NameCommandMopac= g_strdup(t);
+		str_delete_n(NameCommandMopac);
+		delete_last_spaces(NameCommandMopac);
+		delete_first_spaces(NameCommandMopac);
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd) && atoi(t)>0)
+	{
+		free_mopac_commands();
+		mopacCommands.numberOfCommands = atoi(t);
+		mopacCommands.commands = g_malloc(mopacCommands.numberOfCommands*sizeof(gchar*));
+		for(i=0;i<mopacCommands.numberOfCommands;i++)
+			mopacCommands.commands[i]  = g_strdup(" ");
+		for(i=0;i<mopacCommands.numberOfCommands;i++)
+		{
+			if(!fgets(t,taille,fd) || strstr(t,"End"))
+			{
+				free_mopac_commands();
+  				mopacCommands.numberOfCommands = 1;
+  				mopacCommands.numberOfDefaultCommand = 0;
+  				mopacCommands.commands = g_malloc(sizeof(gchar*));
+  				mopacCommands.commands[0] = g_strdup("nohup mopac");
+
+				fclose(fd);
+				return;
+			}
+			else
+			{
+				mopacCommands.commands[i] = g_strdup(t); 
+				str_delete_n(mopacCommands.commands[i]);
+				delete_last_spaces(mopacCommands.commands[i]);
+				delete_first_spaces(mopacCommands.commands[i]);
+			}
+		}
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(!fgets(t,taille,fd)) /* End of Mopac */
+	{
+		fclose(fd);
+		return;
+	}
+/*-----------------------------------------------------------------------------*/
+ 	if(fgets(t,taille,fd))
 	if(!strstr(t,"Begin Babel"))
 	{
 		fclose(fd);
@@ -1856,6 +1941,32 @@ void read_commands_file()
 		fclose(fd);
 		return;
 	}
+/*-----------------------------------------------------------------------------*/
+ 	if(fgets(t,taille,fd))
+	if(!strstr(t,"Begin MopacDir"))
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd))
+	{
+ 		mopacDirectory= g_strdup(t);
+		str_delete_n(mopacDirectory);
+		delete_last_spaces(mopacDirectory);
+		delete_first_spaces(mopacDirectory);
+#ifdef G_OS_WIN32
+		{
+		gchar t[BSIZE];
+		sprintf(t,"%s;%cPATH%c",mopacDirectory,'%','%');
+		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
+		}
+#endif
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
  	if(fgets(t,taille,fd) && atoi(t)>0)
 
  	fclose(fd);
@@ -1906,6 +2017,21 @@ void read_network_file()
 	}
  	fclose(fd);
  }
+}
+/***********************************************************************/
+void set_path()
+{
+#ifdef G_OS_WIN32
+	{
+		gchar t[BSIZE];
+		sprintf(t,"%s;%s;%s;%cPATH%c",
+		pcgamessDirectory,
+		mopacDirectory,
+		pscpplinkDirectory,
+		'%','%');
+		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
+	}
+#endif
 }
 /*************************************************************************************/
 void read_ressource_file()
@@ -2246,6 +2372,7 @@ void initialise_name_commands()
 	NameCommandMPQC=g_strdup("mpqc");
 	NameCommandPCGamess=g_strdup("pcgamess");
 	NameCommandQChem=g_strdup("qc");
+	NameCommandMopac=g_strdup("MOPAC2007");
 #else
 	NameCommandGamess=g_strdup("gms");
 	NameCommandGaussian=g_strdup("nohup g98");
@@ -2254,6 +2381,7 @@ void initialise_name_commands()
 	NameCommandMPQC=g_strdup("nohup mpqc");
 	NameCommandPCGamess=g_strdup("pcgamess");
 	NameCommandQChem=g_strdup("qchem");
+	NameCommandMopac=g_strdup("/opt/mopac/MOPAC2007.out");
 #endif
 
 
@@ -2261,12 +2389,14 @@ void initialise_name_commands()
 	babelCommand = g_strdup_printf("%s%sobabel.exe",g_get_current_dir(),G_DIR_SEPARATOR_S);
 	gamessDirectory= g_strdup_printf("C:%sWinGAMESS",G_DIR_SEPARATOR_S);
 	pcgamessDirectory= g_strdup_printf("C:%sPCGAMESS",G_DIR_SEPARATOR_S);
-	sprintf(t,"%s;%cPATH%c",pcgamessDirectory,'%','%');
+	mopacDirectory= g_strdup_printf("\"C:%sProgram Files%sMOPAC\"",G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+	sprintf(t,"%s;%s;%cPATH%c",pcgamessDirectory,mopacDirectory,'%','%');
 	g_setenv("PATH",t,TRUE);
 #else
 	babelCommand=g_strdup("babel");
 	gamessDirectory= g_strdup_printf("%s%sGamess",g_get_home_dir(),G_DIR_SEPARATOR_S);
 	pcgamessDirectory= g_strdup_printf("%s%sPCGamess",g_get_home_dir(),G_DIR_SEPARATOR_S);
+	mopacDirectory= g_strdup_printf("/opt/mopac");
 #endif
 }
 /*************************************************************************************/
@@ -2437,6 +2567,18 @@ void initialise_global_variables()
   qchemCommands.commands[1] = g_strdup("submitQChem 1:0:0");
 #ifdef G_OS_WIN32
   qchemCommands.commands[2] = g_strdup("qc");
+#endif
+
+	mopacCommands.numberOfCommands = 2;
+#ifdef G_OS_WIN32
+	mopacCommands.numberOfCommands = 3;
+#endif
+  mopacCommands.numberOfDefaultCommand = 0;
+  mopacCommands.commands = g_malloc(mopacCommands.numberOfCommands*sizeof(gchar*));
+  mopacCommands.commands[0] = g_strdup("mopac");
+  mopacCommands.commands[1] = g_strdup("submitMopac 1:0:0");
+#ifdef G_OS_WIN32
+  mopacCommands.commands[2] = g_strdup("MOPAC2007");
 #endif
 
  
@@ -2984,6 +3126,67 @@ void get_dipole_from_qchem_output_file(FILE* fd)
 	}
 	g_free(t);
 }
+/********************************************************************************/
+void get_dipole_from_mopac_output_file(FILE* fd)
+{
+ 	guint taille=BSIZE;
+  	gchar *t = g_malloc(BSIZE*sizeof(gchar));
+  	gchar* pdest;
+	gint i;
+	gchar dum[100];
+
+	Dipole.def = FALSE;
+
+  	while(!feof(fd) )
+	{
+    		pdest = NULL;
+		Dipole.def = FALSE;
+    		fgets(t,taille,fd);
+    		pdest = strstr( t, "DIPOLE           X         Y         Z");
+
+		if(pdest)
+		{
+    			if(!fgets(t,taille,fd)) break;
+    			if(!fgets(t,taille,fd)) break;
+    			if(!fgets(t,taille,fd)) break;
+			Dipole.def = TRUE;
+    			pdest = strstr( t, "SUM")+2;
+			sscanf(t,"%s %f %f %f",dum,&Dipole.Value[0],&Dipole.Value[1], &Dipole.Value[2]);
+			for(i=0;i<3;i++) Dipole.Value[i] /= AUTODEB;
+			break;
+		}
+	}
+	g_free(t);
+}
+/********************************************************************************/
+void get_dipole_from_mopac_aux_file(FILE* fd)
+{
+  	gchar t[BSIZE];
+  	gchar* pdest;
+	gint i;
+
+	Dipole.def = FALSE;
+
+  	while(!feof(fd) )
+	{
+    		pdest = NULL;
+		Dipole.def = FALSE;
+    		fgets(t,BSIZE,fd);
+    		pdest = strstr( t, "DIPOLE:DEBYE=");
+
+		if(pdest)
+		{
+			Dipole.def = TRUE;
+    			pdest = strstr( t, "=")+1;
+			Dipole.Value[0] = 0;
+			Dipole.Value[1] = 0;
+			Dipole.Value[2] = 0;
+			if(pdest) sscanf(pdest,"%f %f %f",&Dipole.Value[0], &Dipole.Value[1],&Dipole.Value[2]);
+			for(i=0;i<3;i++) Dipole.Value[i] /= AUTODEB;
+			break;
+		}
+	}
+}
 /**********************************************/
 void set_dipole(GtkWidget* fp,gpointer data)
 {
@@ -3306,6 +3509,23 @@ gboolean test_type_program_pcgamess(FILE* file)
 	return FALSE;
 }
 /**********************************************************************************/
+gboolean test_type_program_mopac(FILE* file)
+{
+	gchar t[BSIZE];
+	guint taille=BSIZE;
+	fseek(file, 0L, SEEK_SET);
+	while(!feof(file))
+	{
+		if(!fgets(t, taille, file)) return FALSE;
+		if(t[0] != '*') break;
+		if(t[0] == '*' && strstr(t,"Mopac")) return TRUE;
+	}
+	if(strstr(t,"BONDS") && strstr(t,"CHARGE")) return TRUE;
+	if(!fgets(t, taille, file)) return FALSE;
+	if(strstr(t,"Mopac")) return TRUE;
+	return FALSE;
+}
+/**********************************************************************************/
 gboolean test_type_program_qchem(FILE* file)
 {
 	gchar t[BSIZE];
@@ -3338,6 +3558,11 @@ gint get_type_of_program(FILE* file)
 	{
 		fseek(file, 0L, SEEK_SET);
 		return PROG_IS_QCHEM;
+	}
+	if(test_type_program_mopac(file))
+	{
+		fseek(file, 0L, SEEK_SET);
+		return PROG_IS_MOPAC;
 	}
 	if(test_type_program_mpqc(file))
 	{
@@ -3406,4 +3631,70 @@ void gabedit_save_image(GtkWidget* widget, gchar *fileName, gchar* type)
 G_CONST_RETURN gchar* get_open_babel_command()
 {       
 	return babelCommand;
+}
+/**********************************************************************************************************************************/
+gchar** get_one_block_from_aux_mopac_file(FILE* file, gchar* blockName,  gint* n)
+{
+	gint nElements = 0;
+	gchar** elements = NULL;
+	gchar t[BSIZE];
+	 while(!feof(file))
+	 {
+		if(!fgets(t,BSIZE,file))break;
+		if(strstr( t, blockName))
+		{
+			gchar* pdest = strstr( t, "[")+1;
+			gint i;
+			nElements = atoi(pdest);
+			if(nElements<1) break;
+			else
+			{ 
+				long int geomposok = ftell(file);
+				if(!fgets(t,BSIZE,file))break;
+				if(t && !strstr(t,"# ")) fseek(file, geomposok, SEEK_SET);
+			}
+
+			elements = g_malloc(nElements*sizeof(gchar*));
+			for(i=0;i<nElements;i++)
+			{
+				gint k;
+				elements[i] = g_malloc(100*sizeof(gchar));
+				k = fscanf(file,"%s",elements[i]);
+				if(k<1 || strstr(elements[i],"["))
+				{
+					if(elements)
+					{
+						for(i=0;i<nElements;i++)
+							if(elements[i]) g_free(elements[i]);
+						g_free(elements);
+						elements = NULL;
+					}
+					break;
+				}
+				else
+				{
+					for(k=0;k<strlen(elements[i]);k++)
+					{
+						if(elements[i][k]=='D') elements[i][k]='e';
+						if(elements[i][k]=='d') elements[i][k]='e';
+					}
+				}
+			}
+			break;
+		}
+	 }
+	 *n = nElements;
+	 return elements;
+}
+/**********************************************************************************************************************************/
+gchar** free_one_string_table(gchar** table, gint n)
+{
+	if(table)
+	{
+		gint i;
+		for(i=0;i<n;i++)
+			if(table[i]) g_free(table[i]);
+		g_free(table);
+	}
+	return NULL;
 }

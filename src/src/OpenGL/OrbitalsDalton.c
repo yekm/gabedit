@@ -96,7 +96,7 @@ static gboolean read_dalton_geom(gchar *FileName)
 	gint natoms = 0;
 
   
- 	file = FOpen(FileName, "r");
+ 	file = FOpen(FileName, "rb");
  	if(file ==NULL)
  	{
   		Message("Sorry\nI can not open this file","Error",TRUE);
@@ -156,6 +156,8 @@ static gboolean read_dalton_geom(gchar *FileName)
           	if (l==2) symb[1]=tolower(symb[1]);
     		GeomOrb[j].Symb=g_strdup(symb);
 		GeomOrb[j].Prop = prop_atom_get(GeomOrb[j].Symb);
+		GeomOrb[j].partialCharge = 0.0;
+		GeomOrb[j].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[j].Symb);
 		GeomOrb[j].C[0]=atof(cor);
 
 		if(!fgets(t,taille,file))break;
@@ -206,7 +208,7 @@ static gchar** read_basis_from_a_dalton_output_file(gchar *FileName, gint* nRows
     		return NULL;
  	}
 
- 	file = FOpen(FileName, "r");
+ 	file = FOpen(FileName, "rb");
  	if(file ==NULL)
  	{
 		gchar buffer[BSIZE];
@@ -294,7 +296,7 @@ static OneBasisSymmetry* read_symmetry_basis_from_a_dalton_output_file(gchar *Fi
     		return NULL;
  	}
 
- 	file = FOpen(FileName, "r");
+ 	file = FOpen(FileName, "rb");
  	if(file ==NULL)
  	{
 		gchar buffer[BSIZE];

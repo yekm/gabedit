@@ -36,6 +36,7 @@ DEALINGS IN THE SOFTWARE.
 #include "OrbitalsGamess.h"
 #include "OrbitalsMolpro.h"
 #include "OrbitalsQChem.h"
+#include "OrbitalsMopac.h"
 
 #define WIDTHSCR 0.608
 
@@ -594,10 +595,16 @@ GtkWidget *create_iso_frame( GtkWidget *vboxall,gchar* title)
 	strlabels[0][1] = g_strdup(" : ");
 	strlabels[1][1] = g_strdup(" : ");
 	strlabels[2][1] = g_strdup(" : ");
-	strlabels[0][2] = g_strdup_printf(" %f ",limits.MinMax[0][3]);
-	strlabels[1][2] = g_strdup_printf(" %f ",limits.MinMax[1][3]);
+	if(fabs(limits.MinMax[0][3])>1e6) strlabels[0][2] = g_strdup_printf(" %e ",limits.MinMax[0][3]);
+	else strlabels[0][2] = g_strdup_printf(" %f ",limits.MinMax[0][3]);
+
+	if(fabs(limits.MinMax[1][3])>1e6) strlabels[1][2] = g_strdup_printf(" %e ",limits.MinMax[1][3]);
+	else strlabels[1][2] = g_strdup_printf(" %f ",limits.MinMax[1][3]);
 	v = limits.MinMax[1][3]/4;
 	if(v>0.2 && fabs(limits.MinMax[1][3])>0.01 && fabs(limits.MinMax[2][3])<0.01) v= 0.01;
+	if(TypeGrid == GABEDIT_TYPEGRID_SAS) v = 0;
+	if(TypeGrid == GABEDIT_TYPEGRID_ELFSAVIN) v = 0.8;
+	if(TypeGrid == GABEDIT_TYPEGRID_ELFBECKE) v = 0.8;
 		
 	strlabels[2][2] = g_strdup_printf("%f",v);
 
@@ -908,7 +915,7 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
  	}
 
  	t=g_malloc(taille);
- 	fd = FOpen(NomFichier, "r");
+ 	fd = FOpen(NomFichier, "rb");
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
@@ -941,6 +948,9 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
 			case 3: 
           			pdest = strstr( t, "Molecular Orbital Coefficients" );
 					break;
+			case 4: 
+          			pdest = strstr( t, "Natural Orbital Coefficients" );
+					break;
 			}
 	 		if ( pdest != NULL )
 	  		{
@@ -951,7 +961,7 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
         	}
  		if(!OK && (numorb == 1) )
 		{
-			if(itype!=1)
+			if(itype==2 || itype==4)
 			{
 				gchar buffer[BSIZE];
 				sprintf(buffer,"Sorry,  I can not read orbitals from '%s' file\n",NomFichier);
@@ -1020,6 +1030,25 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
 				NAlphaOrb = NOrb;
 				NBetaOrb = NOrb;
 				break;
+			case 4 : 
+				CoefAlphaOrbitals = CoefOrbitals;
+				EnerAlphaOrbitals = EnerOrbitals;
+				SymAlphaOrbitals = SymOrbitals;
+				OccAlphaOrbitals = g_malloc(NOrb*sizeof(gfloat));
+				for(i=0;i<NOcc;i++)
+					OccAlphaOrbitals[i] = 1.0;
+				for(i=NOcc;i<NOrb;i++)
+					OccAlphaOrbitals[i] = 0.0;
+
+				CoefBetaOrbitals = CoefOrbitals;
+				EnerBetaOrbitals = EnerOrbitals;
+				OccBetaOrbitals = OccAlphaOrbitals;
+				SymBetaOrbitals = SymOrbitals;
+				NAlphaOcc = NOcc;
+				NBetaOcc = NOcc;
+				NAlphaOrb = NOrb;
+				NBetaOrb = NOrb;
+				break;
 			}
 			return TRUE;
     		}
@@ -1033,21 +1062,38 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
 			for(i=0;i<5;i++)
 			   NumOrb[i]--;
 
-	  		fgets(t,taille,fd);
+			if(itype<4)
+			{
+	  			fgets(t,taille,fd);
 			/* Debug("%d %d %d %d %d\n",NumOrb[0],NumOrb[1],NumOrb[2],NumOrb[3],NumOrb[4]);*/
-			sscanf(t,"%s %s %s %s %s",SymOrb[0],SymOrb[1],SymOrb[2],SymOrb[3],SymOrb[4]);
+				sscanf(t,"%s %s %s %s %s",SymOrb[0],SymOrb[1],SymOrb[2],SymOrb[3],SymOrb[4]);
 			/* Debug("%s %s %s %s %s\n",SymOrb[0],SymOrb[1],SymOrb[2],SymOrb[3],SymOrb[4]);*/
-			for(i=0;i<5;i++)
-                	if(strstr(SymOrb[i],"O"))
-					NOcc++;
-			for(i=0;i<5;i++)
-			   SymOrbitals[NumOrb[i]] = get_sym_orb(SymOrb[i]);
+				for(i=0;i<5;i++)
+                			if(strstr(SymOrb[i],"O"))
+						NOcc++;
+				for(i=0;i<5;i++)
+			   		SymOrbitals[NumOrb[i]] = get_sym_orb(SymOrb[i]);
+			}
+			else
+			{
+				for(i=0;i<5;i++)
+			   		SymOrbitals[NumOrb[i]] = g_strdup("UNK");
+			}
+
 			
 	  		fgets(t,taille,fd);
 			sscanf(t,"%s %s %f %f %f %f %f",dump1,dump2,
 				&EnerOrb[0], &EnerOrb[1], &EnerOrb[2], &EnerOrb[3], &EnerOrb[4]);
+
 			for(i=0;i<5;i++)
                         	EnerOrbitals[NumOrb[i]] = EnerOrb[i];
+			if(itype>3)
+			{
+				for(i=0;i<5;i++)
+                			if(EnerOrb[i]>0)
+						NOcc++;
+			}
+
 			for(i=0;i<NOrb;i++)
 			{
 	  			fgets(t,taille,fd);
@@ -1067,15 +1113,26 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
 				sscanf(t,"%d",&NumOrb[0]);
 				for(i=0;i<5;i++)
 					NumOrb[i]--;
+				if(itype<4)
+				{
 	  			fgets(t,taille,fd);
 				sscanf(t,"%s",SymOrb[0]);
 				if(strstr(SymOrb[0],"O"))
 						NOcc++;
 				SymOrbitals[NumOrb[0]] = get_sym_orb(SymOrb[0]);
+				}
+				else
+				SymOrbitals[NumOrb[0]] = g_strdup("UNK");
 
 	  			fgets(t,taille,fd);
 				sscanf(t,"%s %s %f ",dump1,dump2,&EnerOrb[0]);
                         	EnerOrbitals[NumOrb[0]] = EnerOrb[0];
+				if(itype>3)
+				{
+					for(i=0;i<1;i++)
+                				if(EnerOrb[i]>0)
+						NOcc++;
+				}
 				for(i=0;i<NOrb;i++)
 				{
 	  				fgets(t,taille,fd);
@@ -1089,6 +1146,9 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
 				sscanf(t,"%d %d",&NumOrb[0],&NumOrb[1]);
 				for(i=0;i<5;i++)
 					NumOrb[i]--;
+
+				if(itype<4)
+				{
 	  			fgets(t,taille,fd);
 				sscanf(t,"%s %s",SymOrb[0],SymOrb[1]);
 				for(i=0;i<2;i++)
@@ -1096,11 +1156,23 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
 						NOcc++;
 				for(i=0;i<2;i++)
 					SymOrbitals[NumOrb[i]] = get_sym_orb(SymOrb[i]);
+				}
+				else
+				{
+					for(i=0;i<2;i++)
+						SymOrbitals[NumOrb[i]] = g_strup("UNK");
+				}
 
 	  			fgets(t,taille,fd);
 				sscanf(t,"%s %s %f %f",dump1,dump2,&EnerOrb[0], &EnerOrb[1]);
 				for(i=0;i<2;i++)
                         		EnerOrbitals[NumOrb[i]] = EnerOrb[i];
+				if(itype>3)
+				{
+					for(i=0;i<2;i++)
+                				if(EnerOrb[i]>0)
+						NOcc++;
+				}
 				for(i=0;i<NOrb;i++)
 				{
 	  				fgets(t,taille,fd);
@@ -1113,6 +1185,8 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
 				sscanf(t,"%d %d %d",&NumOrb[0],&NumOrb[1],&NumOrb[2]);
 				for(i=0;i<5;i++)
 					NumOrb[i]--;
+				if(itype<4)
+				{
 	  			fgets(t,taille,fd);
 				sscanf(t,"%s %s %s",SymOrb[0],SymOrb[1],SymOrb[2]);
 				for(i=0;i<3;i++)
@@ -1120,11 +1194,23 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
 						NOcc++;
 				for(i=0;i<3;i++)
 					SymOrbitals[NumOrb[i]] = get_sym_orb(SymOrb[i]);
+				}
+				else
+				{
+					for(i=0;i<3;i++)
+						SymOrbitals[NumOrb[i]] = g_strup("UNK");
+				}
 
 	  			fgets(t,taille,fd);
 				sscanf(t,"%s %s %f %f %f ",dump1,dump2,&EnerOrb[0], &EnerOrb[1], &EnerOrb[2]);
 				for(i=0;i<3;i++)
                         		EnerOrbitals[NumOrb[i]] = EnerOrb[i];
+				if(itype>3)
+				{
+					for(i=0;i<3;i++)
+                				if(EnerOrb[i]>0)
+						NOcc++;
+				}
 				for(i=0;i<NOrb;i++)
 				{
 	  				fgets(t,taille,fd);
@@ -1137,6 +1223,8 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
 				sscanf(t,"%d %d %d %d",&NumOrb[0],&NumOrb[1],&NumOrb[2],&NumOrb[3]);
 				for(i=0;i<5;i++)
 					NumOrb[i]--;
+				if(itype<4)
+				{
 	  			fgets(t,taille,fd);
 				sscanf(t,"%s %s %s %s",SymOrb[0],SymOrb[1],SymOrb[2],SymOrb[3]);
 				for(i=0;i<4;i++)
@@ -1144,12 +1232,24 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *NomFichier,gint itype)
 						NOcc++;
 				for(i=0;i<4;i++)
 					SymOrbitals[NumOrb[i]] = get_sym_orb(SymOrb[i]);
+				}
+				else
+				{
+				for(i=0;i<4;i++)
+					SymOrbitals[NumOrb[i]] = g_strdup("UNK");
+				}
 
 	  			fgets(t,taille,fd);
 				sscanf(t,"%s %s %f %f %f %f",dump1,dump2,
 					&EnerOrb[0], &EnerOrb[1], &EnerOrb[2], &EnerOrb[3]);
 				for(i=0;i<4;i++)
                         		EnerOrbitals[NumOrb[i]] = EnerOrb[i];
+				if(itype>3)
+				{
+					for(i=0;i<4;i++)
+                				if(EnerOrb[i]>0)
+						NOcc++;
+				}
 				for(i=0;i<NOrb;i++)
 				{
 	  				fgets(t,taille,fd);
@@ -1200,7 +1300,7 @@ gboolean read_orbitals_in_gabedit_or_molden_file(gchar *NomFichier,gint itype)
  	}
 
  	t=g_malloc(taille);
- 	fd = FOpen(NomFichier, "r");
+ 	fd = FOpen(NomFichier, "rb");
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
@@ -1440,6 +1540,8 @@ void read_gauss_orbitals(gchar* FileName)
 	{
 		Ok = read_last_orbitals_in_gaussian_file(FileName,3);
 	}
+	if(!Ok)
+		Ok = read_last_orbitals_in_gaussian_file(FileName,4); /* Natural Orbitals */
 	if(Ok)
 	{
 		/*PrintAllOrb(CoefAlphaOrbitals);*/
@@ -1705,6 +1807,19 @@ void read_qchem_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
 
 	add_objects_for_new_grid();
  	read_qchem_orbitals(FileName);
+} 
+/********************************************************************************/
+void read_mopac_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
+{
+ 	gchar *FileName;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+	gtk_widget_hide(GTK_WIDGET(SelecFile));
+	while( gtk_events_pending() ) gtk_main_iteration();
+
+	add_objects_for_new_grid();
+ 	read_mopac_orbitals(FileName);
 } 
 /********************************************************************************/
 void read_gauss_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)

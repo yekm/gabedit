@@ -364,9 +364,9 @@ static void create_polar_option (GtkWidget* Wins)
 
   vboxall = create_vbox(fp);
   frame = gtk_frame_new ("Dipole polarizabilities");
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   g_object_set_data_full (G_OBJECT (fp), "frame", frame,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
@@ -506,9 +506,9 @@ static void create_scf_option (GtkWidget* Wins)
 
   vboxall = create_vbox(fp);
   frame = gtk_frame_new ("SCF procedure");
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   g_object_set_data_full (G_OBJECT (fp), "frame", frame,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
@@ -676,9 +676,9 @@ static void create_freq_option ( GtkWidget *Wins)
 
   vboxall = create_vbox(fp);
   frame = gtk_frame_new ("Force constants");
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   g_object_set_data_full (G_OBJECT (fp), "frame", frame,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
@@ -840,18 +840,18 @@ void create_liste_general(GtkWidget*Wins,GtkWidget*win,GtkWidget *frame)
   hbox =create_hbox(vbox);
   checkbutton = gtk_check_button_new_with_label ("Extra print keys for gabedit");
   CheckButtons[0]=checkbutton;
-  gtk_widget_ref (checkbutton);
+  g_object_ref (checkbutton);
   g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbutton), TRUE);
   gtk_widget_show (checkbutton);
   gtk_box_pack_start (GTK_BOX (hbox), checkbutton, TRUE, TRUE, 0);
 
   checkbutton = gtk_check_button_new_with_label ("Full population analysis");
   CheckButtons[1]=checkbutton;
-  gtk_widget_ref (checkbutton);
+  g_object_ref (checkbutton);
   g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbutton), TRUE);
   gtk_widget_show (checkbutton);
   gtk_box_pack_start (GTK_BOX (hbox), checkbutton, TRUE, TRUE, 0);
@@ -859,60 +859,60 @@ void create_liste_general(GtkWidget*Wins,GtkWidget*win,GtkWidget *frame)
   hbox =create_hbox(vbox);
   checkbutton = gtk_check_button_new_with_label ("Archive");
   CheckButtons[2]=checkbutton;
-  gtk_widget_ref (checkbutton);
+  g_object_ref (checkbutton);
   g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (checkbutton);
   gtk_box_pack_start (GTK_BOX (hbox), checkbutton, TRUE, TRUE, 0);
 
   checkbutton = gtk_check_button_new_with_label ("Ignore Symmetry");
   CheckButtons[3]=checkbutton;
-  gtk_widget_ref (checkbutton);
+  g_object_ref (checkbutton);
   g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (checkbutton);
   gtk_box_pack_start (GTK_BOX (hbox), checkbutton, TRUE, TRUE, 0);
 
   hbox =create_hbox(vbox);
   checkbutton = gtk_check_button_new_with_label ("Addtional print");
   CheckButtons[4]=checkbutton;
-  gtk_widget_ref (checkbutton);
+  g_object_ref (checkbutton);
   g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbutton), TRUE);
   gtk_widget_show (checkbutton);
   gtk_box_pack_start (GTK_BOX (hbox), checkbutton, TRUE, TRUE, 0);
 
   checkbutton = gtk_check_button_new_with_label ("Density");
   CheckButtons[5]=checkbutton;
-  gtk_widget_ref (checkbutton);
+  g_object_ref (checkbutton);
   g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbutton), TRUE);
   gtk_widget_show (checkbutton);
   gtk_box_pack_start (GTK_BOX (hbox), checkbutton, TRUE, TRUE, 0);
 
   checkbutton = gtk_check_button_new_with_label ("Mix HOMO & LUMO in initial guess");
   CheckButtons[6]=checkbutton;
-  gtk_widget_ref (checkbutton);
+  g_object_ref (checkbutton);
   g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (checkbutton);
   gtk_box_pack_start (GTK_BOX (vbox), checkbutton, FALSE, FALSE, 0);
 
   checkbutton = gtk_check_button_new_with_label ("Read initial Guess from checkpoint");
   CheckButtons[7]=checkbutton;
-  gtk_widget_ref (checkbutton);
+  g_object_ref (checkbutton);
   g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (checkbutton);
   gtk_box_pack_start (GTK_BOX (vbox), checkbutton, FALSE, FALSE, 0);
 
   checkbutton = gtk_check_button_new_with_label ("Read geometry from checkpoint");
   CheckButtons[8]=checkbutton;
-  gtk_widget_ref (checkbutton);
+  g_object_ref (checkbutton);
   g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (checkbutton);
   gtk_box_pack_start (GTK_BOX (vbox), checkbutton, FALSE, FALSE, 0);
 
@@ -1037,21 +1037,21 @@ GtkWidget *create_add_keyword (GtkWidget* win,GtkWidget *vbox,gchar *tlabel)
   GtkWidget *hbox;
 
   hbox = gtk_hbox_new (FALSE, 0);
-  gtk_widget_ref (hbox);
+  g_object_ref (hbox);
   gtk_widget_show (hbox);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
   label = gtk_label_new (tlabel);
-  gtk_widget_ref (label);
+  g_object_ref (label);
   g_object_set_data_full (G_OBJECT (win), "label", label,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
 
   entry = gtk_entry_new ();
-  gtk_widget_ref (entry);
+  g_object_ref (entry);
   g_object_set_data_full (G_OBJECT (win), "entry", entry,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (entry);
   gtk_box_pack_start (GTK_BOX (hbox), entry, TRUE, TRUE, 0);
   

@@ -27,7 +27,7 @@ void geom_is_not_open();
 void destroy_geometry(GtkWidget *win);
 void edit_geometry();
 void create_units_option(GtkWidget *,gchar *);
-void selc_gauss_molcas_molpro_mpqc_input_file(gchar *data);
+void selc_all_input_file(gchar *data);
 void create_geomXYZ_interface (GabEditTypeFileGeom readfile);
 
 #endif /* __GABEDIT_INTERFACEGEOM_H__ */

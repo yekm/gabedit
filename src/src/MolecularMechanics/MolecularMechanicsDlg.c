@@ -1265,7 +1265,7 @@ static void AddMMOptionsDlg(GtkWidget *NoteBook)
 	gtk_container_add (GTK_CONTAINER (frame1), hbox);
 
 	vbox1 = gtk_vbox_new (FALSE, 0);
-	gtk_widget_ref (vbox1);
+	g_object_ref (vbox1);
 	gtk_box_pack_start (GTK_BOX (hbox), vbox1, TRUE, TRUE, 0);
 
 	for(i=0;i<NOPTIONS1;i++)

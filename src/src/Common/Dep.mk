@@ -109,9 +109,10 @@ StockIcons.o: ../../pixmaps/Geometry.xpm ../../pixmaps/Help.xpm
 StockIcons.o: ../../pixmaps/Hide.xpm ../../pixmaps/Home.xpm
 StockIcons.o: ../../pixmaps/H.xpm ../../pixmaps/Gabedit.xpm
 StockIcons.o: ../../pixmaps/Info.xpm ../../pixmaps/InsertAtom.xpm
-StockIcons.o: ../../pixmaps/Insert.xpm ../../pixmaps/Mesure.xpm
-StockIcons.o: ../../pixmaps/Molcas.xpm ../../pixmaps/Molden.xpm
-StockIcons.o: ../../pixmaps/Molpro.xpm ../../pixmaps/QChem.xpm
+StockIcons.o: ../../pixmaps/InsertFragment.xpm ../../pixmaps/Insert.xpm
+StockIcons.o: ../../pixmaps/Mesure.xpm ../../pixmaps/Molcas.xpm
+StockIcons.o: ../../pixmaps/Molden.xpm ../../pixmaps/Molpro.xpm
+StockIcons.o: ../../pixmaps/QChem.xpm ../../pixmaps/Mopac.xpm
 StockIcons.o: ../../pixmaps/Adf.xpm ../../pixmaps/Dalton.xpm
 StockIcons.o: ../../pixmaps/Gamess.xpm ../../pixmaps/PCGamess.xpm
 StockIcons.o: ../../pixmaps/MoveAtom.xpm ../../pixmaps/MPQC.xpm

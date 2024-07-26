@@ -26,6 +26,8 @@ gint GetTotalNelectrons();
 void DefineNOccs();
 gfloat Dpn(gfloat e,gint n);
 Slm GetCoefSlm(gint l, gint m);
+void printCoefSlm();
+gdouble slmGetValue(Slm* slm, gdouble x, gdouble y, gdouble z);
 char GetSymmetry(gint l);
 gint GetNelectrons(char *symb);
 void printLineChar(char c,gint n);
@@ -70,6 +72,7 @@ void create_color_surfaces_file();
 void read_color_surfaces_file();
 void create_opengl_file();
 void read_opengl_file();
+void create_grid_sas(gchar* title);
 
 #endif /* __GABEDIT_UTILSORB_H__ */
 

@@ -85,9 +85,9 @@ void add_separator_to_hbox(GtkWidget *win,GtkWidget *hbox)
 {
   GtkWidget *vseparator;
   vseparator = gtk_vseparator_new ();
-  gtk_widget_ref (vseparator);
+  g_object_ref (vseparator);
   g_object_set_data_full(G_OBJECT (win), "vseparator", vseparator,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (vseparator);
   gtk_box_pack_start (GTK_BOX (hbox), vseparator, FALSE, FALSE, 10);
 }
@@ -95,9 +95,9 @@ void add_separator_to_vbox(GtkWidget *win,GtkWidget *vbox)
 {
   GtkWidget *hseparator;
   hseparator = gtk_hseparator_new ();
-  gtk_widget_ref (hseparator);
+  g_object_ref (hseparator);
   g_object_set_data_full(G_OBJECT (win), "hseparator", hseparator,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (hseparator);
   gtk_box_pack_start (GTK_BOX (vbox), hseparator, FALSE, FALSE, 0);
 }
@@ -107,17 +107,17 @@ GtkWidget *create_label_and_entry_in_hbox_false(GtkWidget *win,GtkWidget *hbox,g
   GtkWidget *label;
 
   label = gtk_label_new (tlabel);
-  gtk_widget_ref (label);
+  g_object_ref (label);
   g_object_set_data_full(G_OBJECT (win), "label", label,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_set_size_request(GTK_WIDGET(label),len,-1);
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 0);
 
   entry = gtk_entry_new ();
-  gtk_widget_ref (entry);
+  g_object_ref (entry);
   g_object_set_data_full(G_OBJECT (win), "entry", entry,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_entry_set_text(GTK_ENTRY(entry),tset);
   gtk_widget_set_size_request(GTK_WIDGET(entry),60,-1);
   gtk_widget_show (entry);
@@ -131,16 +131,16 @@ GtkWidget *create_label_and_entry_in_hbox(GtkWidget *win,GtkWidget *hbox,gchar *
   GtkWidget *label;
 
   label = gtk_label_new (tlabel);
-  gtk_widget_ref (label);
+  g_object_ref (label);
   g_object_set_data_full(G_OBJECT (win), "label", label,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, FALSE, 0);
 
   entry = gtk_entry_new ();
-  gtk_widget_ref (entry);
+  g_object_ref (entry);
   g_object_set_data_full(G_OBJECT (win), "entry", entry,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_entry_set_text(GTK_ENTRY(entry),tset);
   gtk_widget_show (entry);
   gtk_box_pack_start (GTK_BOX (hbox), entry, FALSE, TRUE, 0);
@@ -151,9 +151,9 @@ GtkWidget *create_hbox_in_Vbox(GtkWidget *win,GtkWidget *vbox)
 {
   GtkWidget *hbox;
   hbox = gtk_hbox_new (FALSE, 0);
-  gtk_widget_ref (hbox);
+  g_object_ref (hbox);
   g_object_set_data_full(G_OBJECT (win), "hbox", hbox,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (hbox);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, TRUE, TRUE, 0);
 
@@ -179,30 +179,30 @@ void  create_epilogue(GtkWidget *Frame)
   GtkWidget *hbox5;
   window1 = Frame;
   vbox1 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_ref (vbox1);
+  g_object_ref (vbox1);
   g_object_set_data_full(G_OBJECT (window1), "vbox1", vbox1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (vbox1);
   gtk_container_add (GTK_CONTAINER (window1), vbox1);
 
   hbox1 = gtk_hbox_new (FALSE, 10);
-  gtk_widget_ref (hbox1);
+  g_object_ref (hbox1);
   g_object_set_data_full(G_OBJECT (window1), "hbox1", hbox1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (hbox1);
   gtk_box_pack_start (GTK_BOX (vbox1), hbox1, FALSE, FALSE, 0);
 
   label1 = gtk_label_new ("Title :");
-  gtk_widget_ref (label1);
+  g_object_ref (label1);
   g_object_set_data_full(G_OBJECT (window1), "Title : ", label1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (label1);
   gtk_box_pack_start (GTK_BOX (hbox1), label1, FALSE, FALSE, 0);
 
   entry20 = gtk_entry_new ();
-  gtk_widget_ref (entry20);
+  g_object_ref (entry20);
   g_object_set_data_full(G_OBJECT (window1), "entry20", entry20,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (entry20);
   gtk_box_pack_start (GTK_BOX (hbox1), entry20, TRUE, TRUE, 0);
   gtk_entry_set_text(GTK_ENTRY(entry20),"Input file generated by gabedit");
@@ -210,22 +210,22 @@ void  create_epilogue(GtkWidget *Frame)
   add_separator_to_vbox( window1,vbox1);
 
   hbox5 = gtk_hbox_new (FALSE, 0);
-  gtk_widget_ref (hbox5);
+  g_object_ref (hbox5);
   g_object_set_data_full(G_OBJECT (window1), "hbox5", hbox5,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (hbox5);
   gtk_box_pack_start (GTK_BOX (vbox1), hbox5, FALSE, FALSE, 0);
   label5 = gtk_label_new ("Memory size(in words) : ");
-  gtk_widget_ref (label5);
+  g_object_ref (label5);
   g_object_set_data_full(G_OBJECT (window1), "label5", label5,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (label5);
   gtk_box_pack_start (GTK_BOX (hbox5), label5, FALSE, FALSE, 0);
 
   entry21 = gtk_entry_new ();
-  gtk_widget_ref (entry21);
+  g_object_ref (entry21);
   g_object_set_data_full(G_OBJECT (window1), "entry21", entry21,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_entry_set_text(GTK_ENTRY(entry21),"4000000");
   gtk_widget_show (entry21);
   gtk_box_pack_start (GTK_BOX (hbox5), entry21, FALSE, TRUE, 0);
@@ -235,25 +235,25 @@ void  create_epilogue(GtkWidget *Frame)
 
   window1 = vbox1;
   frame1 = gtk_frame_new ("Global Thresholds ");
-  gtk_widget_ref (frame1);
+  g_object_ref (frame1);
   g_object_set_data_full(G_OBJECT (window1), "frame1", frame1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (frame1);
   gtk_container_add (GTK_CONTAINER (window1), frame1);
   gtk_frame_set_label_align (GTK_FRAME (frame1), 0.5, 0.5);
 
   hbox1 = gtk_hbox_new (FALSE, 0);
-  gtk_widget_ref (hbox1);
+  g_object_ref (hbox1);
   g_object_set_data_full(G_OBJECT (window1), "hbox1", hbox1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (hbox1);
   gtk_container_add (GTK_CONTAINER (frame1), hbox1);
 
   vboxo = vbox1;
   vbox1 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_ref (vbox1);
+  g_object_ref (vbox1);
   g_object_set_data_full(G_OBJECT (window1), "vbox1", vbox1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (vbox1);
   gtk_box_pack_start (GTK_BOX (hbox1), vbox1, TRUE, TRUE, 0);
 
@@ -264,9 +264,9 @@ void  create_epilogue(GtkWidget *Frame)
   entry5=create_hboxlabelentry(window1,vbox1,"Locali  : ","1.d-8");
 
   vbox1 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_ref (vbox1);
+  g_object_ref (vbox1);
   g_object_set_data_full(G_OBJECT (window1), "vbox1", vbox1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (vbox1);
   gtk_box_pack_start (GTK_BOX (hbox1), vbox1, TRUE, TRUE, 0);
   entry6=create_hboxlabelentry(window1,vbox1,"  Eorder  : ","1.d-4");
@@ -276,9 +276,9 @@ void  create_epilogue(GtkWidget *Frame)
   entry10=create_hboxlabelentry(window1,vbox1,"  Orbital : ","1.d-5");
 
   vbox1 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_ref (vbox1);
+  g_object_ref (vbox1);
   g_object_set_data_full(G_OBJECT (window1), "vbox1", vbox1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (vbox1);
   gtk_box_pack_start (GTK_BOX (hbox1), vbox1, TRUE, TRUE, 0);
 
@@ -317,33 +317,33 @@ void  create_gprint(GtkWidget *Frame)
 
   window1 = Frame;
   vbox1 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_ref (vbox1);
+  g_object_ref (vbox1);
   g_object_set_data_full(G_OBJECT (window1), "vbox1", vbox1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (vbox1);
   gtk_container_add (GTK_CONTAINER (window1), vbox1);
 
 
   window1 = vbox1;
   frame1 = gtk_frame_new ("Global Print Options");
-  gtk_widget_ref (frame1);
+  g_object_ref (frame1);
   g_object_set_data_full(G_OBJECT (window1), "frame1", frame1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (frame1);
   gtk_container_add (GTK_CONTAINER (window1), frame1);
   gtk_frame_set_label_align (GTK_FRAME (frame1), 0.5, 0.5);
 
   hbox1 = gtk_hbox_new (FALSE, 0);
-  gtk_widget_ref (hbox1);
+  g_object_ref (hbox1);
   g_object_set_data_full(G_OBJECT (window1), "hbox1", hbox1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (hbox1);
   gtk_container_add (GTK_CONTAINER (frame1), hbox1);
 
   vbox1 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_ref (vbox1);
+  g_object_ref (vbox1);
   g_object_set_data_full(G_OBJECT (window1), "vbox1", vbox1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (vbox1);
   gtk_box_pack_start (GTK_BOX (hbox1), vbox1, TRUE, TRUE, 0);
 
@@ -358,9 +358,9 @@ void  create_gprint(GtkWidget *Frame)
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbutton[4]), TRUE);
 
   vbox2 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_ref (vbox2);
+  g_object_ref (vbox2);
   g_object_set_data_full(G_OBJECT (window1), "vbox2", vbox2,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (vbox2);
   gtk_box_pack_start (GTK_BOX (hbox1), vbox2, TRUE, TRUE, 0);
 
@@ -402,34 +402,34 @@ void  create_oneop(GtkWidget *Frame)
 
   window1 = Frame;
   vbox1 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_ref (vbox1);
+  g_object_ref (vbox1);
   g_object_set_data_full(G_OBJECT (window1), "vbox1", vbox1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (vbox1);
   gtk_container_add (GTK_CONTAINER (window1), vbox1);
 
   window1 = vbox1;
   frame1 = gtk_frame_new ("One-electron operators and expectation values");
-  gtk_widget_ref (frame1);
+  g_object_ref (frame1);
   g_object_set_data_full(G_OBJECT (window1), "frame1", frame1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (frame1);
   gtk_container_add (GTK_CONTAINER (window1), frame1);
   gtk_frame_set_label_align (GTK_FRAME (frame1), 0.5, 0.5);
 
   vbox1 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_ref (vbox1);
+  g_object_ref (vbox1);
   g_object_set_data_full(G_OBJECT (window1), "vbox1", vbox1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (vbox1);
   gtk_container_add (GTK_CONTAINER (frame1), vbox1);
 
   add_separator_to_vbox( window1,vbox1);
 
   hbox1 = gtk_hbox_new (FALSE, 0);
-  gtk_widget_ref (hbox1);
+  g_object_ref (hbox1);
   g_object_set_data_full(G_OBJECT (window1), "hbox1", hbox1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (hbox1);
   gtk_box_pack_start (GTK_BOX (vbox1), hbox1, FALSE, FALSE, 0);
 
@@ -448,9 +448,9 @@ void  create_oneop(GtkWidget *Frame)
 */
 
   hbox1 = gtk_hbox_new (FALSE, 0);
-  gtk_widget_ref (hbox1);
+  g_object_ref (hbox1);
   g_object_set_data_full(G_OBJECT (window1), "hbox1", hbox1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (hbox1);
   gtk_box_pack_start (GTK_BOX (vbox1), hbox1, FALSE, FALSE, 0);
 
@@ -471,16 +471,16 @@ void  create_oneop(GtkWidget *Frame)
   add_separator_to_vbox( window1,vbox1);
 
   hbox1 = gtk_hbox_new (FALSE, 0);
-  gtk_widget_ref (hbox1);
+  g_object_ref (hbox1);
   g_object_set_data_full(G_OBJECT (window1), "hbox1", hbox1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (hbox1);
   gtk_box_pack_start (GTK_BOX (vbox1), hbox1, TRUE, TRUE, 0);
 
   vbox1 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_ref (vbox1);
+  g_object_ref (vbox1);
   g_object_set_data_full(G_OBJECT (window1), "vbox1", vbox1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (vbox1);
   gtk_box_pack_start (GTK_BOX (hbox1), vbox1, TRUE, TRUE, 0);
 
@@ -488,9 +488,9 @@ void  create_oneop(GtkWidget *Frame)
   	checkbutton[i+14] = create_checkbutton(window1,vbox1,tO1[i]);
 
   vbox2 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_ref (vbox2);
+  g_object_ref (vbox2);
   g_object_set_data_full(G_OBJECT (window1), "vbox2", vbox2,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (vbox2);
   gtk_box_pack_start (GTK_BOX (hbox1), vbox2, TRUE, TRUE, 0);
 
@@ -498,9 +498,9 @@ void  create_oneop(GtkWidget *Frame)
   	checkbutton[i+20] = create_checkbutton(window1,vbox2,tO2[i]);
 
   vbox2 = gtk_vbox_new (FALSE, 0);
-  gtk_widget_ref (vbox2);
+  g_object_ref (vbox2);
   g_object_set_data_full(G_OBJECT (window1), "vbox2", vbox2,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (vbox2);
   gtk_box_pack_start (GTK_BOX (hbox1), vbox2, TRUE, TRUE, 0);
 

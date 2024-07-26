@@ -1,3 +1,4 @@
+/* Vibration.c */
 /**********************************************************************************************************
 Copyright (c) 2002-2007 Abdul-Rahman Allouche. All rights reserved
 
@@ -288,6 +289,8 @@ static void reset_geom_vibration()
     		GeomOrb[j].C[2] = vibration.geometry[j].coordinates[2];
   		GeomOrb[j].Prop = prop_atom_get(GeomOrb[j].Symb);
 		GeomOrb[j].Prop.covalentRadii *=1.2;
+    		GeomOrb[j].partialCharge = vibration.geometry[j].partialCharge;
+    		GeomOrb[j].nuclearCharge = vibration.geometry[j].nuclearCharge;
 	}
 	init_atomic_orbitals();
 }
@@ -311,7 +314,7 @@ static gboolean read_gabedit_molden_geom(gchar *FileName)
 	set_status_label_info("File Type","Gabedit/Molden");
 	set_status_label_info("Geometry","Reading");
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
  	OK=FALSE;
  	while(fd && !feof(fd))
 	{
@@ -356,6 +359,9 @@ static gboolean read_gabedit_molden_geom(gchar *FileName)
 			return FALSE;
 		}
 		GeomOrb[j].Symb = g_strdup(sdum);
+		GeomOrb[j].Symb[0]=toupper(GeomOrb[j].Symb[0]);
+		if(strlen(GeomOrb[j].Symb)>=2) GeomOrb[j].Symb[1]=tolower(GeomOrb[j].Symb[1]);
+
 		GeomOrb[j].Prop = prop_atom_get(GeomOrb[j].Symb);
 		GeomOrb = g_realloc(GeomOrb,(j+2)*sizeof(TypeGeomOrb));
 		j++;
@@ -383,7 +389,7 @@ static gboolean read_gabedit_molden_frequencies(gchar *FileName)
 	gint k;
 	gint ne;
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
  	OK=FALSE;
  	while(fd && !feof(fd))
 	{
@@ -465,7 +471,7 @@ static gboolean read_gabedit_molden_modes(gchar *FileName)
 		return FALSE;
 
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
  	OK=FALSE;
  	while(fd && !feof(fd))
 	{
@@ -545,6 +551,8 @@ static void read_gabedit_molden_file(GabeditFileChooser *SelecFile, gint respons
     			vibration.geometry[j].coordinates[0] = GeomOrb[j].C[0];
     			vibration.geometry[j].coordinates[1] = GeomOrb[j].C[1];
     			vibration.geometry[j].coordinates[2] = GeomOrb[j].C[2];
+    			vibration.geometry[j].partialCharge = GeomOrb[j].partialCharge;
+    			vibration.geometry[j].nuclearCharge = GeomOrb[j].nuclearCharge;
 		}
 		if(read_gabedit_molden_frequencies(FileName))
 		{
@@ -749,6 +757,158 @@ static gboolean read_mpqc_modes(FILE* fd, gchar *FileName)
 	return TRUE;
 }
 /********************************************************************************/
+static gboolean read_mopac_aux_modes(FILE* fd, gchar *FileName)
+{
+	gchar** freqs = NULL;
+	gint nFreqs = 0;
+	gint numberOfFrequencies = 0;
+	gchar** symmetries = NULL;
+	gint nSymmetries = 0;
+	gchar** modes = NULL;
+	gint nModes = 0;
+	gchar** intensities = NULL;
+	gint nIntensities = 0;
+	gint i,k, c, im;
+
+	if(vibration.numberOfAtoms<1) return FALSE;
+
+	fseek(fd, 0, SEEK_SET);
+	freqs = get_one_block_from_aux_mopac_file(fd, "VIB._FREQ:CM(-1)[",  &nFreqs);
+	numberOfFrequencies = nFreqs-6;
+	if(!freqs || numberOfFrequencies <vibration.numberOfAtoms*3-6)
+	{
+		gchar buffer[BSIZE];
+		free_one_string_table(freqs, nFreqs);
+		free_vibration();
+		rafreshList();
+		sprintf(buffer,"Sorry, I can not read the frequencies from '%s' file\n",FileName);
+  		Message(buffer,"Error",TRUE);
+		return FALSE;
+	}
+	fseek(fd, 0, SEEK_SET);
+	symmetries = get_one_block_from_aux_mopac_file(fd, "NORMAL_MODE_SYMMETRY_LABELS[",  &nSymmetries);
+	if(!symmetries || nSymmetries<vibration.numberOfAtoms*3)
+	{
+		nSymmetries = nFreqs;
+		symmetries = g_malloc(nSymmetries*sizeof(gchar*));
+		for(i=0;i<nSymmetries;i++)
+		{
+			symmetries[i] = g_strdup("UNK");
+		}
+	}
+	fseek(fd, 0, SEEK_SET);
+	intensities = get_one_block_from_aux_mopac_file(fd, "VIB._T_DIP:ELECTRONS[",  &nIntensities);
+	if(!intensities || nIntensities<vibration.numberOfAtoms*3)
+	{
+		nIntensities = nFreqs;
+		intensities = g_malloc(nIntensities*sizeof(gchar*));
+		for(i=0;i<nIntensities;i++)
+		{
+			intensities[i] = g_strdup("0.0");
+		}
+	}
+
+	fseek(fd, 0, SEEK_SET);
+	modes = get_one_block_from_aux_mopac_file(fd, "NORMAL_MODES[",  &nModes);
+	if(!modes || nModes<vibration.numberOfAtoms*3*numberOfFrequencies)
+	{
+		gchar buffer[BSIZE];
+		free_one_string_table(freqs, nFreqs);
+		free_one_string_table(symmetries, nSymmetries);
+		free_one_string_table(intensities, nIntensities);
+		free_one_string_table(modes, nModes);
+		free_vibration();
+		rafreshList();
+		sprintf(buffer,"Sorry, I can not read the modes of frequencies from '%s' file\n",FileName);
+  		Message(buffer,"Error",TRUE);
+		return FALSE;
+	}
+
+  	vibration.numberOfFrequences = numberOfFrequencies;
+	vibration.modes = g_malloc((numberOfFrequencies)*sizeof(VibrationMode));
+	im = 0;
+	for(i=0;i<numberOfFrequencies;i++)
+	{
+		vibration.modes[i].frequence = atof(freqs[i]);
+		vibration.modes[i].IRIntensity = atof(intensities[i]);
+		vibration.modes[i].RamanIntensity = 0.0;
+		for(c=0;c<3;c++)
+		{
+			vibration.modes[i].vectors[c]= g_malloc(vibration.numberOfAtoms*sizeof(gdouble));
+			for(k=0;k<vibration.numberOfAtoms;k++) 
+			{
+				vibration.modes[i].vectors[c][k] = 0;
+			}
+		}
+		vibration.modes[i].symmetry = g_strdup(symmetries[i]);
+		for(k=0;k<vibration.numberOfAtoms;k++) 
+		{
+			for(c=0;c<3;c++)
+			{
+				vibration.modes[i].vectors[c][k] = atof(modes[im]);
+				im++;
+			}
+		}
+	}
+	free_one_string_table(freqs, nFreqs);
+	free_one_string_table(symmetries, nSymmetries);
+	free_one_string_table(intensities, nIntensities);
+	free_one_string_table(modes, nModes);
+	rafreshList();
+	return TRUE;
+}
+/********************************************************************************/
+static void read_mopac_aux_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+	gchar *FileName;
+	gint j;
+	FILE* file;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+
+ 	file = FOpen(FileName, "rb");
+	stop_vibration(NULL, NULL);
+	if(!file)
+	{
+		gchar buffer[BSIZE];
+		sprintf(buffer,"Sorry, I can not open '%s' file\n",FileName);
+  		Message(buffer,"Error",TRUE);
+		return;
+	}
+ 	if(gl_read_mopac_aux_file_geomi(FileName,-1))
+	{
+		free_vibration();
+		vibration.numberOfAtoms = Ncenters;
+		vibration.geometry = g_malloc(Ncenters*sizeof(VibrationGeom));
+		for(j=0;j<Ncenters;j++)
+		{
+			vibration.geometry[j].symbol = g_strdup(GeomOrb[j].Symb);
+    			vibration.geometry[j].coordinates[0] = GeomOrb[j].C[0];
+    			vibration.geometry[j].coordinates[1] = GeomOrb[j].C[1];
+    			vibration.geometry[j].coordinates[2] = GeomOrb[j].C[2];
+    			vibration.geometry[j].partialCharge = GeomOrb[j].partialCharge;
+    			vibration.geometry[j].nuclearCharge = GeomOrb[j].nuclearCharge;
+		}
+		if(read_mopac_aux_modes(file,FileName))
+		{
+				rafreshList();
+		}
+	}
+	fclose(file);
+}
+
+/********************************************************************************/
+static void read_mopac_aux_file_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_mopac_aux_file,
+			"Read geometry and frequencies from a Mopac aux file",
+			GABEDIT_TYPEFILE_MOPAC_AUX,GABEDIT_TYPEWIN_ORB);
+
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+}
+/********************************************************************************/
 static void read_mpqc_file(GabeditFileChooser *SelecFile, gint response_id)
 {
 	gchar *FileName;
@@ -758,11 +918,7 @@ static void read_mpqc_file(GabeditFileChooser *SelecFile, gint response_id)
 	if(response_id != GTK_RESPONSE_OK) return;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 
-#ifdef G_OS_WIN32 
  	file = FOpen(FileName, "rb");
-#else
-	file = FOpen(FileName, "r");
-#endif
 	stop_vibration(NULL, NULL);
 	if(!file)
 	{
@@ -782,6 +938,8 @@ static void read_mpqc_file(GabeditFileChooser *SelecFile, gint response_id)
     			vibration.geometry[j].coordinates[0] = GeomOrb[j].C[0];
     			vibration.geometry[j].coordinates[1] = GeomOrb[j].C[1];
     			vibration.geometry[j].coordinates[2] = GeomOrb[j].C[2];
+    			vibration.geometry[j].partialCharge = GeomOrb[j].partialCharge;
+    			vibration.geometry[j].nuclearCharge = GeomOrb[j].nuclearCharge;
 		}
 		if(read_mpqc_modes(file,FileName))
 		{
@@ -1071,11 +1229,7 @@ static void read_molpro_file(GabeditFileChooser *SelecFile, gint response_id)
 	if(response_id != GTK_RESPONSE_OK) return;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 
-#ifdef G_OS_WIN32 
  	file = FOpen(FileName, "rb");
-#else
-	file = FOpen(FileName, "r");
-#endif
 	stop_vibration(NULL, NULL);
 	if(!file)
 	{
@@ -1096,6 +1250,8 @@ static void read_molpro_file(GabeditFileChooser *SelecFile, gint response_id)
     			vibration.geometry[j].coordinates[0] = GeomOrb[j].C[0];
     			vibration.geometry[j].coordinates[1] = GeomOrb[j].C[1];
     			vibration.geometry[j].coordinates[2] = GeomOrb[j].C[2];
+    			vibration.geometry[j].partialCharge = GeomOrb[j].partialCharge;
+    			vibration.geometry[j].nuclearCharge = GeomOrb[j].nuclearCharge;
 		}
 		if(read_molpro_modes(file,FileName))
 		{
@@ -1529,6 +1685,8 @@ static gint read_dalton_modes(FILE* file, gchar *FileName)
     		vibration.geometry[j].coordinates[0] = GeomOrb[j].C[0];
     		vibration.geometry[j].coordinates[1] = GeomOrb[j].C[1];
     		vibration.geometry[j].coordinates[2] = GeomOrb[j].C[2];
+    		vibration.geometry[j].partialCharge = GeomOrb[j].partialCharge;
+    		vibration.geometry[j].nuclearCharge = GeomOrb[j].nuclearCharge;
 	}
 	vibration.modes = g_malloc(sizeof(VibrationMode));
   	vibration.numberOfFrequences = 0;
@@ -1545,6 +1703,8 @@ static gint read_dalton_modes(FILE* file, gchar *FileName)
     		vibration.geometry[j].coordinates[0] = GeomOrb[j].C[0];
     		vibration.geometry[j].coordinates[1] = GeomOrb[j].C[1];
     		vibration.geometry[j].coordinates[2] = GeomOrb[j].C[2];
+    		vibration.geometry[j].partialCharge = GeomOrb[j].partialCharge;
+    		vibration.geometry[j].nuclearCharge = GeomOrb[j].nuclearCharge;
 	}
 	vibration.modes = g_malloc(sizeof(VibrationMode));
   	vibration.numberOfFrequences = 0;
@@ -1676,6 +1836,8 @@ static gint read_gamess_modes(FILE* fd, gchar *FileName)
     		vibration.geometry[j].coordinates[0] = GeomOrb[j].C[0];
     		vibration.geometry[j].coordinates[1] = GeomOrb[j].C[1];
     		vibration.geometry[j].coordinates[2] = GeomOrb[j].C[2];
+    		vibration.geometry[j].partialCharge = GeomOrb[j].partialCharge;
+    		vibration.geometry[j].nuclearCharge = GeomOrb[j].nuclearCharge;
 	}
 	vibration.modes = g_malloc(sizeof(VibrationMode));
   	vibration.numberOfFrequences = 0;
@@ -1837,11 +1999,13 @@ static gboolean read_gaussian_file_frequencies(gchar *FileName)
     		vibration.geometry[j].coordinates[0] = GeomOrb[j].C[0];
     		vibration.geometry[j].coordinates[1] = GeomOrb[j].C[1];
     		vibration.geometry[j].coordinates[2] = GeomOrb[j].C[2];
+    		vibration.geometry[j].partialCharge = GeomOrb[j].partialCharge;
+    		vibration.geometry[j].nuclearCharge = GeomOrb[j].nuclearCharge;
 	}
   	vibration.numberOfFrequences = 0;
 	vibration.modes = g_malloc(sizeof(VibrationMode));
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
 	if(!fd) return FALSE;
 
 	for(j=0;j<3;j++)
@@ -2222,11 +2386,7 @@ static void read_adf_file(GabeditFileChooser *SelecFile, gint response_id)
 	if(response_id != GTK_RESPONSE_OK) return;
  	FileName = gabedit_file_chooser_get_current_file(SelecFile);
 
-#ifdef G_OS_WIN32 
  	file = FOpen(FileName, "rb");
-#else
-	file = FOpen(FileName, "r");
-#endif
 	stop_vibration(NULL, NULL);
 	if(!file)
 	{
@@ -2247,6 +2407,8 @@ static void read_adf_file(GabeditFileChooser *SelecFile, gint response_id)
     			vibration.geometry[j].coordinates[0] = GeomOrb[j].C[0];
     			vibration.geometry[j].coordinates[1] = GeomOrb[j].C[1];
     			vibration.geometry[j].coordinates[2] = GeomOrb[j].C[2];
+    			vibration.geometry[j].partialCharge = GeomOrb[j].partialCharge;
+    			vibration.geometry[j].nuclearCharge = GeomOrb[j].nuclearCharge;
 		}
 		if(read_adf_modes(file,FileName))
 		{
@@ -2270,11 +2432,7 @@ static void read_dalton_file(GabeditFileChooser *SelecFile, gint response_id)
     		return ;
  	}
 
-#ifdef G_OS_WIN32 
  	file = FOpen(FileName, "rb");
-#else
-	file = FOpen(FileName, "r");
-#endif
 	stop_vibration(NULL, NULL);
 	if(!file)
 	{
@@ -2318,11 +2476,7 @@ static void read_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
     		return ;
  	}
 
-#ifdef G_OS_WIN32 
  	file = FOpen(FileName, "rb");
-#else
-	file = FOpen(FileName, "r");
-#endif
 	stop_vibration(NULL, NULL);
 	if(!file)
 	{
@@ -2395,11 +2549,13 @@ static gboolean read_qchem_file_frequencies(gchar *FileName)
     		vibration.geometry[j].coordinates[0] = GeomOrb[j].C[0];
     		vibration.geometry[j].coordinates[1] = GeomOrb[j].C[1];
     		vibration.geometry[j].coordinates[2] = GeomOrb[j].C[2];
+    		vibration.geometry[j].partialCharge = GeomOrb[j].partialCharge;
+    		vibration.geometry[j].nuclearCharge = GeomOrb[j].nuclearCharge;
 	}
   	vibration.numberOfFrequences = 0;
 	vibration.modes = g_malloc(sizeof(VibrationMode));
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
 	if(!fd) return FALSE;
 
 	for(j=0;j<3;j++)
@@ -3129,6 +3285,8 @@ static void animate_vibration()
 
     			GeomOrb[j].Prop = prop_atom_get(GeomOrb[j].Symb);
 			GeomOrb[j].Prop.covalentRadii *=1.2;
+			GeomOrb[j].partialCharge = vibration.geometry[j].partialCharge;
+			GeomOrb[j].nuclearCharge = vibration.geometry[j].nuclearCharge;
 		}
 		init_atomic_orbitals();
 
@@ -3228,6 +3386,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "ReadGamess")) read_gamess_file_dlg();
 	else if(!strcmp(name, "ReadGaussian")) read_gaussian_file_dlg();
 	else if(!strcmp(name, "ReadMolpro")) read_molpro_file_dlg();
+	else if(!strcmp(name, "ReadMopacAux")) read_mopac_aux_file_dlg();
 	else if(!strcmp(name, "ReadMPQC")) read_mpqc_file_dlg();
 	else if(!strcmp(name, "ReadADF")) read_adf_file_dlg();
 	else if(!strcmp(name, "ReadPCGamess")) read_gamess_file_dlg();
@@ -3250,6 +3409,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadGamess", GABEDIT_STOCK_GAMESS, "Read a _Gamess output file", NULL, "Read a Gamess output file", G_CALLBACK (activate_action) },
 	{"ReadGaussian", GABEDIT_STOCK_GAUSSIAN, "Read a _Gaussian output file", NULL, "Read a Gaussian output file", G_CALLBACK (activate_action) },
 	{"ReadMolpro", GABEDIT_STOCK_MOLPRO, "Read a Mol_pro output file", NULL, "Read Molpro output file", G_CALLBACK (activate_action) },
+	{"ReadMopacAux", GABEDIT_STOCK_MOPAC, "Read a _Mopac aux file", NULL, "Read Mopac aux file", G_CALLBACK (activate_action) },
 	{"ReadMPQC", GABEDIT_STOCK_MPQC, "Read a MP_QC output file", NULL, "Read a MPQC output file", G_CALLBACK (activate_action) },
 	{"ReadADF", GABEDIT_STOCK_ADF, "Read a _ADF output file", NULL, "Read a ADF output file", G_CALLBACK (activate_action) },
 	{"ReadPCGamess", GABEDIT_STOCK_PCGAMESS, "Read a _PCGamess output file", NULL, "Read a PCGamess output file", G_CALLBACK (activate_action) },
@@ -3276,6 +3436,7 @@ static const gchar *uiMenuInfo =
 "    <menuitem name=\"ReadGamess\" action=\"ReadGamess\" />\n"
 "    <menuitem name=\"ReadGaussian\" action=\"ReadGaussian\" />\n"
 "    <menuitem name=\"ReadMolpro\" action=\"ReadMolpro\" />\n"
+"    <menuitem name=\"ReadMopacAux\" action=\"ReadMopacAux\" />\n"
 "    <menuitem name=\"ReadMPQC\" action=\"ReadMPQC\" />\n"
 "    <menuitem name=\"ReadADF\" action=\"ReadADF\" />\n"
 "    <menuitem name=\"ReadPCGamess\" action=\"ReadPCGamess\" />\n"
@@ -3297,6 +3458,7 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadGamess\" action=\"ReadGamess\" />\n"
 "        <menuitem name=\"ReadGaussian\" action=\"ReadGaussian\" />\n"
 "        <menuitem name=\"ReadMolpro\" action=\"ReadMolpro\" />\n"
+"        <menuitem name=\"ReadMopacAux\" action=\"ReadMopacAux\" />\n"
 "        <menuitem name=\"ReadMPQC\" action=\"ReadMPQC\" />\n"
 "        <menuitem name=\"ReadADF\" action=\"ReadADF\" />\n"
 "        <menuitem name=\"ReadPCGamess\" action=\"ReadPCGamess\" />\n"
@@ -3325,7 +3487,7 @@ static void add_widget (GtkUIManager *manager, GtkWidget   *widget, GtkContainer
 	GtkWidget *handlebox;
 
 	handlebox =gtk_handle_box_new ();
-	gtk_widget_ref (handlebox);
+	g_object_ref (handlebox);
   	gtk_handle_box_set_handle_position  (GTK_HANDLE_BOX(handlebox),GTK_POS_LEFT);
 	/*   GTK_SHADOW_NONE,  GTK_SHADOW_IN,  GTK_SHADOW_OUT, GTK_SHADOW_ETCHED_IN, GTK_SHADOW_ETCHED_OUT */
 	gtk_handle_box_set_shadow_type(GTK_HANDLE_BOX(handlebox),GTK_SHADOW_OUT);

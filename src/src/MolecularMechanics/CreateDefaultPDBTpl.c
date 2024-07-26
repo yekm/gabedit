@@ -312,8 +312,8 @@ void createAminoResidueTpl(FILE* fout)
 	fprintf(fout,"End\n");
 
 	fprintf(fout,"Begin ACE Residue\n");
-	fprintf(fout,"HH31   HC     0.11230\n");
 	fprintf(fout,"CH3    CT     -0.36620\n");
+	fprintf(fout,"HH31   HC     0.11230\n");
 	fprintf(fout,"HH32   HC     0.11230\n");
 	fprintf(fout,"HH33   HC     0.11230\n");
 	fprintf(fout,"C      C      0.59720\n");

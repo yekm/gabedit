@@ -96,6 +96,7 @@ int main(int argc, char *argv[])
 
   user_install_verify(splash_screen);
   set_default_styles();
+  set_path();
   gtk_main();
  
   return 0;

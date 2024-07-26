@@ -110,6 +110,19 @@ static V4d BackColor[7] =
   {0.7, 0.7, 0.7, 0.0}, /* Grey  */
 };
 /*********************************************************************************************/
+void mYPerspective( GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar )
+{
+	GLdouble xmin, xmax, ymin, ymax;
+
+	ymax = zNear * tan( fovy * PI / 360.0 );
+	ymin = -ymax;
+
+	xmin = ymin * aspect;
+	xmax = ymax * aspect;
+
+	glFrustum( xmin, xmax, ymin, ymax, zNear, zFar );
+}
+/*********************************************************************************************/
 void build_rings(gint size)
 {
 	if(size<3 || size > nMaxListRings-1+3)
@@ -565,6 +578,7 @@ void Define_Iso(gfloat isovalue)
 		if(newSurface || numberOfSurfaces<1 ) add_surface();
 		newSurface = FALSE;
 		isopositive=define_iso_surface(grid,isovalue, grid->mapped );
+		if(fabs(isovalue)>1e-13)
 		isonegative=define_iso_surface(grid,-isovalue, grid->mapped );
 		if(isopositive != NULL || isonegative != NULL) set_status_label_info("IsoSurface","Ok");
 	}
@@ -926,7 +940,7 @@ gint redraw(GtkWidget *widget, gpointer data)
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	set_background_color();
 
-	gluPerspective(45,(GLfloat)widget->allocation.width/(GLfloat)widget->allocation.height,1,100);
+	mYPerspective(45,(GLfloat)widget->allocation.width/(GLfloat)widget->allocation.height,1,100);
     	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	if(optcol==-1) drawChecker();
@@ -934,12 +948,12 @@ gint redraw(GtkWidget *widget, gpointer data)
     	glMatrixMode(GL_PROJECTION);
     	glLoadIdentity();
 	if(perspective)
-		gluPerspective(Zoom,(GLfloat)widget->allocation.width/(GLfloat)widget->allocation.height,zNear,zFar);
+		mYPerspective(Zoom,(GLfloat)widget->allocation.width/(GLfloat)widget->allocation.height,zNear,zFar);
 	else
 	{
 	  	gdouble fw = (GLfloat)widget->allocation.width/(GLfloat)widget->allocation.height;
 	  	gdouble fh = 1.0;
-		gluOrtho2D(-fw,fw,-fh,fh);
+		glOrtho(-fw,fw,-fh,fh,-1,1);
 	}
 
     	glMatrixMode(GL_MODELVIEW);
@@ -960,12 +974,7 @@ gint redraw(GtkWidget *widget, gpointer data)
 	redrawSurfaces();
 	redrawContours();
 	redrawPlanesMapped();
-	if(get_show_symbols() && get_show_numbers()) showLabelSymbolsAndNumbers();
-	else
-	{
-		if(get_show_symbols()) showLabelSymbols();
-		if(get_show_numbers()) showLabelNumbers();
-	}
+	if(get_show_symbols() || get_show_numbers() || get_show_charges()) showLabelSymbolsNumbersCharges();
 	if(get_show_dipole()) showLabelDipole();
 	if(get_show_distances()) showLabelDistances();
 	if(get_show_axes()) showLabelAxes();
@@ -1008,12 +1017,12 @@ gint reshape(GtkWidget *widget, GdkEventConfigure *event)
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		if(perspective)
-			gluPerspective(Zoom,(GLfloat)widget->allocation.width/(GLfloat)widget->allocation.height,zNear,zFar);
+			mYPerspective(Zoom,(GLfloat)widget->allocation.width/(GLfloat)widget->allocation.height,zNear,zFar);
 		else
 		{
 			gdouble fw = (GLfloat)widget->allocation.width/(GLfloat)widget->allocation.height;
 			gdouble fh = 1.0;
-			gluOrtho2D(-fw,fw,-fh,fh);
+			glOrtho(-fw,fw,-fh,fh,-1,1);
 		}
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();

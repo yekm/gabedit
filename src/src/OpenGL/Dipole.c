@@ -212,9 +212,9 @@ gdouble compute_nuclear_dipole(gdouble D[])
 		D[j] = 0.0;
 	for(i=0;i<Ncenters;i++)
 	{
-		z += GeomOrb[i].Prop.atomicNumber;
+		z += GeomOrb[i].nuclearCharge;
    		for(j=0;j<3;j++)
-			D[j] += GeomOrb[i].C[j]*GeomOrb[i].Prop.atomicNumber;
+			D[j] += GeomOrb[i].C[j]*GeomOrb[i].nuclearCharge;
 	}
 	return z;
 }

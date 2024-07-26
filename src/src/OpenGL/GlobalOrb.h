@@ -77,6 +77,8 @@ gfloat CIJ[MAX_FACT][MAX_FACT];
 TYPE *Type;
 CGTF *AOrb;
 
+CSTF *SAOrb;
+
 gint Ncenters;
 gint Ntype;
 gint NAOrb;
@@ -134,6 +136,7 @@ gboolean createPPMFiles;
 gint numPPMFile;
 gboolean createPOVFiles;
 gint numPOVFile;
+gdouble solventRadius;
 
 
 #endif /* __GABEDIT_GLOBALORB_H__ */

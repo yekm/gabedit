@@ -123,6 +123,7 @@ static void set_geom(GtkWidget *widget,gpointer data)
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOLDEN) read_geom_from_molden_geom_conv_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_GABEDIT) read_geom_from_molden_geom_conv_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MPQC) read_geom_from_mpqc_output_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
+	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOPAC) read_geom_from_mopac_aux_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_XYZ) read_geom_from_xyz_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 
 }
@@ -506,13 +507,13 @@ static GtkWidget*add_label(gchar *tlabel,GtkWidget *vbox)
  
         Frame = gtk_frame_new (tlabel);
         gtk_frame_set_shadow_type( GTK_FRAME(Frame),GTK_SHADOW_ETCHED_OUT);
-        gtk_widget_ref (Frame);
+        g_object_ref (Frame);
         gtk_box_pack_start(GTK_BOX(vbox), Frame,FALSE,FALSE,2);
         gtk_widget_show (Frame);
  
         Label = gtk_label_new(" ");
         gtk_label_set_justify(GTK_LABEL(Label),GTK_JUSTIFY_LEFT);
-        gtk_widget_ref (Label);
+        g_object_ref (Label);
         gtk_container_add (GTK_CONTAINER (Frame), Label);
  
   return Label;
@@ -596,9 +597,9 @@ GtkWidget *add_energies_curve( GtkWidget *WindowEnergies, DataGeomConv* GeomConv
         if(j%2 == 0)
         {
                 Hbox = gtk_hbox_new (FALSE, 0);
-                gtk_widget_ref (Hbox);
+                g_object_ref (Hbox);
 		t = g_strdup_printf("Hbox%d",j);
-		g_object_set_data_full(G_OBJECT (Vbox), t, Hbox,(GtkDestroyNotify) gtk_widget_unref);
+		g_object_set_data_full(G_OBJECT (Vbox), t, Hbox,(GtkDestroyNotify) g_object_unref);
 		g_free(t);
                 gtk_widget_show (Hbox);
                 gtk_box_pack_start(GTK_BOX(Vbox), Hbox,TRUE,TRUE,5);
@@ -611,12 +612,12 @@ GtkWidget *add_energies_curve( GtkWidget *WindowEnergies, DataGeomConv* GeomConv
 
 	Frame = gtk_frame_new (GeomConv->TypeCalcul);
         gtk_frame_set_shadow_type( GTK_FRAME(Frame),GTK_SHADOW_ETCHED_OUT);
-        gtk_widget_ref (Frame);
+        g_object_ref (Frame);
         gtk_box_pack_start(GTK_BOX(Hbox), Frame,TRUE,TRUE,10);
         gtk_widget_show (Frame);
 
 	hbox = gtk_hbox_new (FALSE, 0);
-	gtk_widget_ref (hbox);
+	g_object_ref (hbox);
 	gtk_widget_show (hbox);
 	gtk_container_add(GTK_CONTAINER(Frame),hbox);
 	
@@ -639,16 +640,16 @@ GtkWidget *add_energies_curve( GtkWidget *WindowEnergies, DataGeomConv* GeomConv
 
 	Frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(Frame),GTK_SHADOW_ETCHED_OUT);
-	gtk_widget_ref (Frame);
+	g_object_ref (Frame);
 	g_object_set_data_full(G_OBJECT (WindowEnergies), "Frame",
-							   Frame,(GtkDestroyNotify) gtk_widget_unref);
+							   Frame,(GtkDestroyNotify) g_object_unref);
 	gtk_box_pack_start(GTK_BOX(hbox), Frame,FALSE,FALSE,2);
 	gtk_widget_show (Frame);
  
 	vbox = gtk_vbox_new (FALSE, 0);
-	gtk_widget_ref (vbox);
+	g_object_ref (vbox);
 	g_object_set_data_full(G_OBJECT (Frame), "vbox", vbox,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
 	gtk_widget_show (vbox);
 	gtk_container_add(GTK_CONTAINER (Frame), vbox);
 
@@ -656,14 +657,14 @@ GtkWidget *add_energies_curve( GtkWidget *WindowEnergies, DataGeomConv* GeomConv
 
          Label = add_label(GeomConv->TypeData[0],vbox);
          g_object_set_data_full(G_OBJECT (dessin),GeomConv->TypeData[0], Label,
-                            (GtkDestroyNotify) gtk_widget_unref);      
+                            (GtkDestroyNotify) g_object_unref);      
         if(GeomConv->Npoint > 1)
         {
 		for(i=1;i<GeomConv->Ntype ;i++)
 		{
 			Label = add_label(GeomConv->TypeData[i],vbox);
 			g_object_set_data_full(G_OBJECT (dessin), GeomConv->TypeData[i], Label,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
                 }
         }
 
@@ -737,6 +738,9 @@ void create_energies_curves(DataGeomConv* GeomConv,gint N)
 		case GABEDIT_TYPEFILE_MPQC :
           		Message("Sorry\n I can not read energies from your MPQC output file\n"," Error ",TRUE);
 			break;
+		case GABEDIT_TYPEFILE_MOPAC :
+          		Message("Sorry\n I can not read energies from your Mopax aux file\n"," Error ",TRUE);
+			break;
 		case GABEDIT_TYPEFILE_XYZ :
           		Message("Sorry\n I can not read your xyz file\n"," Error ",TRUE);
 			break;
@@ -765,12 +769,12 @@ void create_energies_curves(DataGeomConv* GeomConv,gint N)
 					   (GtkSignalFunc)destroy_widget_null,NULL);
 		
 	Vbox = gtk_vbox_new (FALSE, 0);
-	gtk_widget_ref (Vbox);
+	g_object_ref (Vbox);
 	gtk_widget_show (Vbox);
 	gtk_container_add(GTK_CONTAINER(WindowEnergies),Vbox);
 
          g_object_set_data_full(G_OBJECT (WindowEnergies), "Vbox",
-                                   Vbox,(GtkDestroyNotify) gtk_widget_unref);
+                                   Vbox,(GtkDestroyNotify) g_object_unref);
 	
 	gtk_widget_realize (WindowEnergies);
 

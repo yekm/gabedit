@@ -49,9 +49,9 @@ void  c_basis_presents(gchar *ListAtoms)
                 ,lwhite,letoile,ListAtoms,letoile);
   HboxB[2][NM] = create_hbox(VboxB[NM]);
   label = gtk_label_new (tlabel);
-  gtk_widget_ref (label);
+  g_object_ref (label);
   g_object_set_data_full (G_OBJECT (FrameB[NM]), "label", label,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (HboxB[2][NM]), label, TRUE, TRUE, 2);
   g_free(tlabel);

@@ -30,6 +30,7 @@ DEALINGS IN THE SOFTWARE.
 
 static gboolean showSymbols = FALSE;
 static gboolean showNumbers = FALSE;
+static gboolean showCharges = FALSE;
 static gboolean showDistances = FALSE;
 static gboolean showDipole = FALSE;
 static gboolean showAxes = FALSE;
@@ -62,44 +63,9 @@ void set_show_symbols(gboolean ac)
 	showSymbols=ac;
 }
 /*********************************************************************************************/
-void showLabelSymbols()
+gboolean get_show_charges()
 {
-	gint i;
-	V4d Diffuse  = {0.8,0.8,0.8,0.8};
-	V4d Specular = {0.8,0.8,0.8,0.8 };
-	V4d Ambiant  = {0.8,0.8,0.8,0.8 };
-
-	if(Ncenters<1) return;
-
-	Ambiant[0] = FontsStyleLabel.TextColor.red/65535.0; 
-	Ambiant[1] = FontsStyleLabel.TextColor.green/65535.0; 
-	Ambiant[2] = FontsStyleLabel.TextColor.blue/65535.0; 
-	for(i=0;i<3;i++)
-	{
-		Diffuse[i] = Ambiant[i];
-		Specular[i] = Ambiant[i];
-	}
-
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
-	if(strcmp(fontName,FontsStyleLabel.fontname)!=0)
-	{
-		init_labels_font();
-		glInitFonts();
-	}
-
-	for(i=0;i<(gint)Ncenters;i++)
-	{
-
-		if(ortho)
-			glPrintOrtho(GeomOrb[i].C[0], GeomOrb[i].C[1], GeomOrb[i].C[2], GeomOrb[i].Symb);
-		else
-		{
-		/*	glPrint(GeomOrb[i].C[0], GeomOrb[i].C[1], GeomOrb[i].C[2], GeomOrb[i].Symb);*/
-			glPrintScale(GeomOrb[i].C[0], GeomOrb[i].C[1], GeomOrb[i].C[2], 1.1*GeomOrb[i].Prop.radii,GeomOrb[i].Symb);
-		}
-	}
+	return showCharges;
 }
 /*********************************************************************************************/
 gboolean get_show_numbers()
@@ -112,52 +78,18 @@ void set_show_numbers(gboolean ac)
 	showNumbers=ac;
 }
 /*********************************************************************************************/
-void showLabelNumbers()
+void set_show_charges(gboolean ac)
 {
-	gint i;
-	gchar buffer[BSIZE];
-	V4d Diffuse  = {0.8,0.8,0.8,0.8};
-	V4d Specular = {0.8,0.8,0.8,0.8 };
-	V4d Ambiant  = {0.8,0.8,0.8,0.8 };
-
-	if(Ncenters<1) return;
-
-	Ambiant[0] = FontsStyleLabel.TextColor.red/65535.0; 
-	Ambiant[1] = FontsStyleLabel.TextColor.green/65535.0; 
-	Ambiant[2] = FontsStyleLabel.TextColor.blue/65535.0; 
-	for(i=0;i<3;i++)
-	{
-		Diffuse[i] = Ambiant[i];
-		Specular[i] = Ambiant[i];
-	}
-
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
-	if(strcmp(fontName,FontsStyleLabel.fontname)!=0)
-	{
-		init_labels_font();
-		glInitFonts();
-	}
-
-	for(i=0;i<(gint)Ncenters;i++)
-	{
-
-		sprintf(buffer,"%d",i+1);
-		if(ortho)
-			glPrintOrtho(GeomOrb[i].C[0], GeomOrb[i].C[1], GeomOrb[i].C[2], buffer);
-		else
-		{
-			/*glPrint(GeomOrb[i].C[0], GeomOrb[i].C[1], GeomOrb[i].C[2], buffer);*/
-			glPrintScale(GeomOrb[i].C[0], GeomOrb[i].C[1], GeomOrb[i].C[2], 1.1*GeomOrb[i].Prop.radii,buffer);
-		}
-	}
+	showCharges=ac;
 }
 /*********************************************************************************************/
-void showLabelSymbolsAndNumbers()
+void showLabelSymbolsNumbersCharges()
 {
 	gint i;
 	gchar buffer[BSIZE];
+	gchar bSymbol[10];
+	gchar bNumber[BSIZE];
+	gchar bCharge[10];
 	V4d Diffuse  = {0.8,0.8,0.8,0.8};
 	V4d Specular = {0.8,0.8,0.8,0.8 };
 	V4d Ambiant  = {0.8,0.8,0.8,0.8 };
@@ -185,7 +117,13 @@ void showLabelSymbolsAndNumbers()
 	for(i=0;i<(gint)Ncenters;i++)
 	{
 
-		sprintf(buffer,"%s[%d]",GeomOrb[i].Symb,i+1);
+		if(showSymbols) sprintf(bSymbol,"%s",GeomOrb[i].Symb);
+		else bSymbol[0]='\0';
+		if(showNumbers) sprintf(bNumber,"[%d]",i+1);
+		else bNumber[0]='\0';
+		if(showCharges) sprintf(bCharge,"%0.3f",GeomOrb[i].partialCharge);
+		else bCharge[0]='\0';
+		sprintf(buffer,"%s%s%s",bSymbol,bNumber,bCharge);
 		if(ortho)
 			glPrintOrtho(GeomOrb[i].C[0], GeomOrb[i].C[1], GeomOrb[i].C[2], buffer);
 		else
@@ -248,7 +186,7 @@ void showLabelDistances()
 			continue;
 		for(k=0;k<3;k++)
 			tmp[k] = (GeomOrb[i].C[k] + GeomOrb[j].C[k])/2;
-		sprintf(buffer, "%0.1f",distance);
+		sprintf(buffer, "%0.3f",distance);
 
 		if(ortho)
 			glPrintOrtho(tmp[0], tmp[1], tmp[2], buffer);

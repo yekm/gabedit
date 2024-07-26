@@ -114,7 +114,7 @@ static struct
   {
     FALSE, "commands",
     "The \"commands\" file is used to store commands\n"
-    "for execute Gamess-US, Gaussian, Molcas, Molpro or MPQC program.\n"
+    "for execute Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC, PCGamess or Q-Chem program.\n"
   },
   {
     FALSE, "network",
@@ -603,27 +603,24 @@ void user_install_dialog_create(UserInstallCallback callback)
                                 "Click \"Continue\" to enter the GABEDIT user installation.");
 
   add_label(GTK_BOX(page),
-            "Gabedit is a Graphical User Interface to Gamess-US, Gaussian, Molcas, Molpro, MPQC ,PCGamess and Q-Chem\n"
+            "Gabedit is a Graphical User Interface to Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC ,PCGamess and Q-Chem\n"
             "computational chemistry packages.\n"
 	    "It can display a variety of calculation results including support for most major molecular file formats.\n"
 	    "The advanced 'Molecule Builder' allows to rapidly sketch in molecules and examine them in 3D\n"
 	    "Graphics can be exported to various formats, including animations\n"
 	    "\n"
-	    "Gabedit can creates input file for GAMESS(US), GAUSSIAN, MOLCAS, MOLPRO , MPQC PCGamess and Q-Chem.\n"
-	    "Gabedit can graphically display a variety of Gamess-US, Gaussian, Molcas, Molpro, MPQC, PCGamess, Q-Chem\n"
-	    "and (partially) ADF calculation results, including the following\n"
+	    "Gabedit can creates input file for the 8 computational chemistry packages(CCP) cited above.\n"
+	    "Gabedit can graphically display a variety of the CPP calculation results, including the following\n"
 	    "  - Molecular orbitals\n"
-	    "  - Surfaces from the electron density, electrostatic potential, NMR shielding density, and other properties.\n"
+	    "  - Surfaces from the electron density, electrostatic potential, NMR shielding density.....\n"
 	    "  - Contours (colorcoded), Planes colorcoded, Dipole. XYZ axes and the principal axes of the molecule.\n"
 	    "  - Animation of the normal modes corresponding to vibrational frequencies.\n"
 	    "  - Animation of the rotation of geometry, surfaces, contours, planes colorcoded.\n"
-	    "  - Animation of contours, Animation of planes colorcoded.\n"
 	    "Gabedit can display UV-Vis, IR and Raman computed spectra.\n"
 	    "Gabedit can generate a povray file for geometry (including hydrogen's bond),\n"
 	    "surfaces (including colorcoded surfaces), contours, planes colorcoded.\n"
 	    "Gabedit can save picture in BMP, JPEG, PNG, PPM and PS format.\n"
-	    "Gabedit can generate automatically a series of pictures for animation\n"
-	    "(vibration, geometry convergence, rotation, contours, planes colorcoded).\n"
+	    "Gabedit can generate automatically a series of pictures for animation(vibration, geometry convergence, ....).\n"
             );
 
   sep = gtk_hseparator_new();
@@ -787,7 +784,7 @@ void user_install_dialog_create(UserInstallCallback callback)
                                              "Click \"Continue\" to accept the settings above.");
 
   add_label(GTK_BOX(commands_network_page),
-            "To execute Gamess-US, Gaussian, Molcas, Molpro or MPQC program, "
+            "To execute Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC, PCGamess and Q-Chem program, "
             "GABEDIT needs to know commands system.\n"
             "GABEDIT needs to know network protocols.");
 

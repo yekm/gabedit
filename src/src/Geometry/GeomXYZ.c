@@ -115,11 +115,43 @@ static void insertToList(GtkWidget* myList, gint ligne, gchar* texts[], gint nCo
 static void appendToList(GtkWidget* myList, gchar* texts[], gint nColumns);
 static void append_list();
 /********************************************************************************/
+void compute_dipole_using_charges_of_xyz_geom()
+{
+	gdouble charge;
+	gdouble x;
+	gdouble y;
+	gdouble z;
+	gint i;
+
+	Dipole.def = TRUE;
+	Dipole.Value[0] = 0;
+	Dipole.Value[1] = 0;
+	Dipole.Value[2] = 0;
+	for(i=0;i<NcentersXYZ;i++)
+	{
+		charge = atof(GeomXYZ[i].Charge);
+		if(!test(GeomXYZ[i].X)) x = get_value_variableXYZ(GeomXYZ[i].X);
+		else x = atof(GeomXYZ[i].X);
+		if(!test(GeomXYZ[i].Y)) y = get_value_variableXYZ(GeomXYZ[i].Y);
+		else y = atof(GeomXYZ[i].Y);
+		if(!test(GeomXYZ[i].Z)) z = get_value_variableXYZ(GeomXYZ[i].Z);
+		else z = atof(GeomXYZ[i].Z);
+		Dipole.Value[0] += charge*x;
+		Dipole.Value[1] += charge*y;
+		Dipole.Value[2] += charge*z;
+	}
+	if(Units == 1 ) 
+		for(i=0;i<3;i++) Dipole.Value[i] *= ANG_TO_BOHR;
+	for(i=0;i<3;i++)
+	              Dipole.Value[i] *= AUTODEB;
+}
+/********************************************************************************/
 static void calculMMTypes(gboolean withCharge)
 {
 	gint i;
 	MethodeGeom = GEOM_IS_XYZ;
 	define_geometry();
+	reset_all_connections();
 	calculTypesAmber(geometry,NcentersXYZ);
 	for(i=0;i<(gint)NcentersXYZ;i++)
 	{
@@ -1414,8 +1446,8 @@ static void DialogueTransInVar()
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
-  gtk_widget_ref (frame);
-  g_object_set_data_full(G_OBJECT (Dialogue), "frame",frame,(GtkDestroyNotify) gtk_widget_unref);
+  g_object_ref (frame);
+  g_object_set_data_full(G_OBJECT (Dialogue), "frame",frame,(GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
    gtk_box_pack_start_defaults(GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
 
@@ -1469,9 +1501,9 @@ static void DialogueTransInConst()
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) gtk_widget_unref);
+	  frame,(GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
    gtk_box_pack_start_defaults(
          GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
@@ -1957,9 +1989,9 @@ static void DialogueAdd(GtkWidget *w,gpointer data)
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) gtk_widget_unref);
+	  frame,(GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
    gtk_box_pack_start_defaults(
          GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
@@ -2138,9 +2170,9 @@ static void DialogueEdit()
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) gtk_widget_unref);
+	  frame,(GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
    gtk_box_pack_start_defaults(
          GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
@@ -2289,9 +2321,9 @@ static void DialogueDelete()
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) gtk_widget_unref);
+	  frame,(GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
    gtk_box_pack_start_defaults(
          GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
@@ -4797,6 +4829,7 @@ void read_geom_from_gaussian_file(gchar *NomFichier, gint numgeometry)
     result = pdest - t ;
     if ( result >0 )
     {
+
 	get_charges_from_gaussian_output_file(fd,j+1);
  	get_dipole_from_gaussian_output_file(fd);
 	get_natural_charges_from_gaussian_output_file(fd,j+1);
@@ -5679,6 +5712,340 @@ void read_geom_from_qchem_file(gchar *NomFichier, gint numgeometry)
 	 if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
 }
 /********************************************************************************/
+void get_charges_from_mopac_output_file(FILE* fd,gint N)
+{
+ 	guint taille=BSIZE;
+  	gchar t[BSIZE];
+  	gchar dump[BSIZE];
+  	gchar d[BSIZE];
+  	gchar* pdest;
+	gint i;
+
+
+	/* printf("NAtoms = %d\n",N);*/
+	for(i=0;i<N;i++) GeomXYZ[i].Charge = g_strdup("0.0");
+
+  	while(!feof(fd) )
+	{
+    		pdest = NULL;
+    		if(!fgets(t,taille,fd)) break;
+    		pdest = strstr( t, "NET ATOMIC CHARGES");
+
+		if(pdest)
+		{
+    			if(!fgets(t,taille,fd)) break;
+    			if(!fgets(t,taille,fd)) break;
+			for(i=0;i<N;i++)
+			{
+    				if(!fgets(t,taille,fd)) break;
+				if(sscanf(t,"%s %s %s",dump, dump , d)==3)
+				{
+					g_free(GeomXYZ[i].Charge);
+					GeomXYZ[i].Charge = g_strdup(d);
+				}
+				else break;
+			}
+			break;
+		}
+	}
+}
+/********************************************************************************/
+void read_geom_from_mopac_output_file(gchar *NomFichier, gint numgeometry)
+{
+	gchar *t;
+	gboolean OK;
+	gchar *AtomCoord[5];
+	FILE *fd;
+	guint taille=BSIZE;
+	guint idummy;
+	guint i;
+	gint j=0;
+	gint l;
+	gint numgeom;
+	gchar *pdest;
+	long int geomposok = 0;
+
+	for(i=0;i<5;i++) AtomCoord[i]=g_malloc(taille*sizeof(gchar));
+	 
+	t=g_malloc(taille*sizeof(gchar));
+	fd = FOpen(NomFichier, "r");
+	if(fd ==NULL)
+	{
+	 	g_free(t);
+	 	t = g_strdup_printf("Sorry\nI can not open %s  file ",NomFichier);
+	 	MessageGeom(t," Error ",TRUE);
+	 	g_free(t);
+	 	return;
+	}
+	numgeom =0;
+	OK=FALSE;
+	 while(!feof(fd))
+	 {
+		if(!fgets(t,taille,fd))break;
+		pdest = strstr( t, "CARTESIAN COORDINATES");
+		if(pdest) 
+		{
+			if(!fgets(t,taille,fd)) {pdest=0;break;}
+			if(!fgets(t,taille,fd)) {pdest=0;break;}
+			if(!fgets(t,taille,fd)) {pdest=0;break;}
+		}
+		if ( pdest )
+		{
+			numgeom++;
+			geomposok = ftell(fd);
+			if(numgeom == numgeometry )
+			{
+				OK = TRUE;
+				break;
+			}
+			if(numgeometry<0)
+			{
+				OK = TRUE;
+			}
+		}
+	 }
+	 if(numgeom == 0)
+	 {
+		g_free(t);
+		t = g_strdup_printf("Sorry\nI can not read geometry in	%s file ",NomFichier);
+		MessageGeom(t," Error ",TRUE);
+		g_free(t);
+		return;
+	  }
+	j=-1;
+	fseek(fd, geomposok, SEEK_SET);
+	while(!feof(fd) )
+	{
+		if(!fgets(t,taille,fd))break;
+		if(this_is_a_backspace(t))
+		{
+			if(numgeometry<0)
+			{
+				fseek(fd, 0, SEEK_SET);
+				get_charges_from_mopac_output_file(fd,j+1);
+				fseek(fd, 0, SEEK_SET);
+ 				get_dipole_from_mopac_output_file(fd);
+			}
+			break;
+		}
+		j++;
+		if(GeomXYZ==NULL) GeomXYZ=g_malloc(sizeof(GeomXYZAtomDef));
+		else GeomXYZ=g_realloc(GeomXYZ,(j+1)*sizeof(GeomXYZAtomDef));
+
+		sscanf(t,"%d %s %s %s %s",&idummy,AtomCoord[0],AtomCoord[1],AtomCoord[2],AtomCoord[3]);
+		AtomCoord[0][0]=toupper(AtomCoord[0][0]);
+		l=strlen(AtomCoord[0]); 
+		if(isdigit(AtomCoord[0][1]))l=1;
+		if (l==2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+		if(l==1)sprintf(t,"%c",AtomCoord[0][0]);
+		else sprintf(t,"%c%c",AtomCoord[0][0],AtomCoord[0][1]);
+
+		GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
+		GeomXYZ[j].Symb=g_strdup(t);
+		GeomXYZ[j].mmType=g_strdup(GeomXYZ[j].Symb);
+		GeomXYZ[j].pdbType=g_strdup(GeomXYZ[j].Symb);
+		GeomXYZ[j].Residue=g_strdup(GeomXYZ[j].Symb);
+		GeomXYZ[j].ResidueNumber=0;
+		if(Units == 0 )
+		{
+			GeomXYZ[j].X=g_strdup(ang_to_bohr(AtomCoord[1]));
+			GeomXYZ[j].Y=g_strdup(ang_to_bohr(AtomCoord[2]));
+			GeomXYZ[j].Z=g_strdup(ang_to_bohr(AtomCoord[3]));
+		}
+		else
+		{
+			GeomXYZ[j].X=g_strdup(AtomCoord[1]);
+			GeomXYZ[j].Y=g_strdup(AtomCoord[2]);
+			GeomXYZ[j].Z=g_strdup(AtomCoord[3]);
+		}
+		GeomXYZ[j].Charge=g_strdup("0.0");
+		GeomXYZ[j].Layer=g_strdup(" ");
+	  }
+	NcentersXYZ = j+1;
+
+	 fclose(fd);
+ 	 calculMMTypes(FALSE);
+	 g_free(t);
+	 for(i=0;i<5;i++) g_free(AtomCoord[i]);
+	 if(GeomIsOpen && MethodeGeom == GEOM_IS_XYZ)
+	 {
+	 	clearList(list);
+		append_list();
+	 }
+	 MethodeGeom = GEOM_IS_XYZ;
+	 if(ZoneDessin != NULL) rafresh_drawing();
+	 if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
+}
+/********************************************************************************/
+void get_charges_from_mopac_aux_file(FILE* fd,gint N)
+{
+	gchar** elements = NULL;
+	gint n;
+	gint i;
+
+	for(i=0;i<N;i++)
+		GeomXYZ[i].Charge = g_strdup("0.0");
+	elements = get_one_block_from_aux_mopac_file(fd, "ATOM_CHARGES[",  &n);
+
+	if(!elements) return;
+	if(n<N)
+	{
+		free_one_string_table(elements, n);
+		return;
+	}
+	for(i=0;i<N;i++)
+	{
+		g_free(GeomXYZ[i].Charge);
+		GeomXYZ[i].Charge = g_strdup(elements[i]);
+	}
+	free_one_string_table(elements, n);
+}
+/********************************************************************************/
+void read_geom_from_mopac_aux_file(gchar *NomFichier, gint numgeometry)
+{
+	gchar *t;
+	gboolean OK;
+	gchar *AtomCoord[5];
+	FILE *fd;
+	guint taille=BSIZE;
+	guint i;
+	gint j=0;
+	gint l;
+	gint numgeom;
+	gchar *pdest;
+	long int geomposok = 0;
+	gint nElements = 0;
+	gchar** elements = NULL;
+
+	for(i=0;i<5;i++) AtomCoord[i]=g_malloc(taille*sizeof(gchar));
+	 
+	t=g_malloc(taille*sizeof(gchar));
+	fd = FOpen(NomFichier, "rb");
+	if(fd ==NULL)
+	{
+	 	g_free(t);
+	 	t = g_strdup_printf("Sorry\nI can not open %s  file ",NomFichier);
+	 	MessageGeom(t," Error ",TRUE);
+	 	g_free(t);
+	 	return;
+	}
+	numgeom =0;
+	OK=FALSE;
+	elements = get_one_block_from_aux_mopac_file(fd, "ATOM_EL[",  &nElements);
+	if(elements) OK = TRUE;
+	 if(!OK) 
+	 {
+	 	g_free(t);
+	 	t = g_strdup_printf("Sorry\nI can not read the atom symbols in %s  file ",NomFichier);
+	 	MessageGeom(t," Error ",TRUE);
+	 	g_free(t);
+	 	return;
+	 }
+	 while(!feof(fd))
+	 {
+		if(!fgets(t,taille,fd))break;
+		if(numgeometry<0)
+			pdest = strstr( t, "ATOM_X_OPT:ANGSTROMS");
+		else
+			pdest = strstr( t, "ATOM_X_UPDATED:ANGSTROMS");
+		if ( pdest )
+		{
+			numgeom++;
+			geomposok = ftell(fd);
+			if(numgeom == numgeometry )
+			{
+				OK = TRUE;
+				break;
+			}
+			if(numgeometry<0)
+			{
+				OK = TRUE;
+			}
+		}
+	 }
+	 if(numgeom == 0)
+	 {
+		g_free(t);
+		t = g_strdup_printf("Sorry\nI can not read geometry in	%s file ",NomFichier);
+		MessageGeom(t," Error ",TRUE);
+		g_free(t);
+		free_one_string_table(elements, nElements);
+		return;
+	  }
+	j=-1;
+	fseek(fd, geomposok, SEEK_SET);
+	while(!feof(fd) )
+	{
+		if(!fgets(t,taille,fd))break;
+		if(strstr( t, "[")
+		  || strstr(t,"HEAT_OF_FORM_UPDATED")
+		  || strstr( t, "####################################")
+		  ||this_is_a_backspace(t))
+		{
+			if(numgeometry<0)
+			{
+				fseek(fd, geomposok, SEEK_SET);
+				get_charges_from_mopac_aux_file(fd,j+1);
+				if(j+1>0)
+				{
+					NcentersXYZ = j+1;
+					compute_dipole_using_charges_of_xyz_geom();
+				}
+				/* Only module of dipole is available in aux mopac file*/
+			}
+			break;
+		}
+		if(j+1>nElements)break;
+		j++;
+		if(GeomXYZ==NULL) GeomXYZ=g_malloc(sizeof(GeomXYZAtomDef));
+		else GeomXYZ=g_realloc(GeomXYZ,(j+1)*sizeof(GeomXYZAtomDef));
+
+		sscanf(t,"%s %s %s",AtomCoord[1],AtomCoord[2],AtomCoord[3]);
+		if(j<nElements) sprintf(AtomCoord[0],elements[j]);
+		else sprintf(AtomCoord[0],"X");
+		AtomCoord[0][0]=toupper(AtomCoord[0][0]);
+		l=strlen(AtomCoord[0]); 
+		if (l==2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+		if(l==1)sprintf(t,"%c",AtomCoord[0][0]);
+		else sprintf(t,"%c%c",AtomCoord[0][0],AtomCoord[0][1]);
+
+		GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
+		GeomXYZ[j].Symb=g_strdup(t);
+		GeomXYZ[j].mmType=g_strdup(GeomXYZ[j].Symb);
+		GeomXYZ[j].pdbType=g_strdup(GeomXYZ[j].Symb);
+		GeomXYZ[j].Residue=g_strdup(GeomXYZ[j].Symb);
+		GeomXYZ[j].ResidueNumber=0;
+		if(Units == 0 )
+		{
+			GeomXYZ[j].X=g_strdup(ang_to_bohr(AtomCoord[1]));
+			GeomXYZ[j].Y=g_strdup(ang_to_bohr(AtomCoord[2]));
+			GeomXYZ[j].Z=g_strdup(ang_to_bohr(AtomCoord[3]));
+		}
+		else
+		{
+			GeomXYZ[j].X=g_strdup(AtomCoord[1]);
+			GeomXYZ[j].Y=g_strdup(AtomCoord[2]);
+			GeomXYZ[j].Z=g_strdup(AtomCoord[3]);
+		}
+		GeomXYZ[j].Charge=g_strdup("0.0");
+		GeomXYZ[j].Layer=g_strdup(" ");
+	  }
+	 fclose(fd);
+	 NcentersXYZ = j+1;
+ 	 calculMMTypes(FALSE);
+	 g_free(t);
+	 for(i=0;i<5;i++) g_free(AtomCoord[i]);
+	 if(GeomIsOpen && MethodeGeom == GEOM_IS_XYZ)
+	 {
+	 	clearList(list);
+		append_list();
+	 }
+	 MethodeGeom = GEOM_IS_XYZ;
+	 if(ZoneDessin != NULL) rafresh_drawing();
+	 if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
+	free_one_string_table(elements, nElements);
+}
+/********************************************************************************/
 void read_first_qchem_file(GabeditFileChooser *SelecFile , gint response_id)
 {
 	gchar *NomFichier;
@@ -5711,6 +6078,53 @@ void read_last_qchem_file(GabeditFileChooser *SelecFile , gint response_id)
 	set_last_directory(NomFichier);
 }
 /********************************************************************************/
+void read_first_mopac_output_file(GabeditFileChooser *SelecFile , gint response_id)
+{
+	gchar *NomFichier;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+	NomFichier = gabedit_file_chooser_get_current_file(SelecFile);
+	
+	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
+	{
+		MessageGeom("Sorry\n No file slected"," Error ",TRUE);
+		return ;
+	}
+	read_geom_from_mopac_output_file(NomFichier, 1);
+	set_last_directory(NomFichier);
+}
+/********************************************************************************/
+void read_last_mopac_output_file(GabeditFileChooser *SelecFile , gint response_id)
+{
+	gchar *NomFichier;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+	NomFichier = gabedit_file_chooser_get_current_file(SelecFile);
+	
+	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
+	{
+		MessageGeom("Sorry\n No file slected"," Error ",TRUE);
+		return ;
+	}
+	read_geom_from_mopac_output_file(NomFichier, -1);
+	set_last_directory(NomFichier);
+}
+/********************************************************************************/
+void read_last_mopac_aux_file(GabeditFileChooser *SelecFile , gint response_id)
+{
+	gchar *NomFichier;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+	NomFichier = gabedit_file_chooser_get_current_file(SelecFile);
+	
+	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
+	{
+		MessageGeom("Sorry\n No file slected"," Error ",TRUE);
+		return ;
+	}
+	read_geom_from_mopac_aux_file(NomFichier, -1);
+	set_last_directory(NomFichier);
+}
 /********************************************************************************/
 void read_first_molcas_file(GabeditFileChooser *SelecFile, gint response_id)
 {
@@ -6765,6 +7179,174 @@ void read_XYZ_from_qchem_input_file(gchar *NomFichier)
 	rafresh_drawing();
  set_last_directory(NomFichier);
 }
+/********************************************************************************/
+static void trans_coordXYZ_geom(gchar T, GeomXYZAtomDef* myGeomXYZ, gint i, VariablesXYZDef* myVariablesXYZ, gint iv)
+{
+ gdouble V;
+ gchar *NameV;
+ gchar *ValueV;
+
+ V = atof(myGeomXYZ[i].X);
+ if( T == 'Y' ) V = atof(myGeomXYZ[i].Y);
+ if( T == 'Z' ) V = atof(myGeomXYZ[i].Z);
+ NameV = g_strdup_printf("%c%s%d",T,myGeomXYZ[i].Symb,i+1);
+ ValueV = g_strdup_printf("%f",V);
+ if( T == 'X' ) { g_free(myGeomXYZ[i].X); myGeomXYZ[i].X=g_strdup(NameV);}
+ if( T == 'Y' ) { g_free(myGeomXYZ[i].Y); myGeomXYZ[i].Y=g_strdup(NameV);}
+ if( T == 'Z' ) { g_free(myGeomXYZ[i].Z); myGeomXYZ[i].Z=g_strdup(NameV);}
+ myVariablesXYZ[iv].Name  = g_strdup(NameV);
+ myVariablesXYZ[iv].Value = g_strdup(ValueV);
+}
+/*************************************************************************************/
+void read_XYZ_from_mopac_input_file(gchar *NomFichier)
+{
+ gchar *t;
+ gboolean OK;
+ gchar *AtomCoord[5];
+ FILE *fd;
+ guint taille=BSIZE;
+ gint i;
+ gint j;
+ gint l;
+ gboolean Uvar=FALSE;
+ GeomXYZAtomDef* GeomXYZtemp=NULL;
+ gint Ncent = 0;
+ gint Nvar = 0;
+ VariablesXYZDef* VariablesXYZtemp=NULL;
+ gchar symb[BSIZE];
+ gchar type[BSIZE];
+ gchar charge[BSIZE];
+ gint k1,k2,k3;
+ 
+ for(i=0;i<5;i++)
+	AtomCoord[i]=g_malloc(taille*sizeof(gchar));
+ 
+
+ t=g_malloc(taille);
+ fd = FOpen(NomFichier, "r");
+
+ OK=TRUE;
+ j = -1;
+ if(fd!=NULL)
+ {
+  	while(!feof(fd) )    
+  	{
+ 		if(!fgets(t, taille, fd)) {OK = FALSE; break;}
+		if(t[0] !='*') break;
+	}
+ 	if(!fgets(t, taille, fd)) OK = FALSE; 
+ 	if(!fgets(t, taille, fd)) OK = FALSE; 
+
+	 if(OK) GeomXYZtemp=g_malloc(sizeof(GeomXYZAtomDef));
+  	j=-1;
+  	while(!feof(fd) && OK )
+  	{
+    		j++;
+		if(!fgets(t,taille,fd)) break;
+		if(this_is_a_backspace(t)) break;
+                if(t[0] == '0') break;
+                for(i=0;i<(gint)strlen(t);i++)
+                   if(t[i] != ' ') break;
+                if(i == (gint)strlen(t)-1) break;
+    		i = sscanf(t,"%s ",AtomCoord[0]);
+                if(i != 1)
+		{
+			OK = FALSE;
+			break;
+		}
+                i = sscanf(t,"%s %s %d %s %d %s %d",
+				AtomCoord[0],
+				AtomCoord[1],&k1,AtomCoord[2],&k2,AtomCoord[3],&k3);
+    		if( i== 7)
+                {
+			gint newVar = 0;
+
+                        Ncent = j+1;
+			GeomXYZtemp=g_realloc(GeomXYZtemp,Ncent*sizeof(GeomXYZAtomDef));
+    			AtomCoord[0][0]=toupper(AtomCoord[0][0]);
+    			l=strlen(AtomCoord[0]);
+      			if (l>=2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+
+    			GeomXYZtemp[j].Nentry=NUMBER_LIST_XYZ;
+			get_symb_type_charge(AtomCoord[0],symb,type,charge);
+			{
+				gint k;
+				for(k=0;k<(gint)strlen(symb);k++) if(isdigit(symb[k])) symb[k] = ' ';
+				delete_all_spaces(symb);
+			}
+
+    			GeomXYZtemp[j].Symb=g_strdup(symb);
+			GeomXYZtemp[j].mmType=g_strdup(type);
+			GeomXYZtemp[j].pdbType=g_strdup(type);
+			GeomXYZtemp[j].Charge=g_strdup(charge);
+
+    			GeomXYZtemp[j].Residue=g_strdup("DUM");
+    			GeomXYZtemp[j].ResidueNumber=0;
+    			GeomXYZtemp[j].X=g_strdup(AtomCoord[1]);
+    			GeomXYZtemp[j].Y=g_strdup(AtomCoord[2]);
+    			GeomXYZtemp[j].Z=g_strdup(AtomCoord[3]);
+    			GeomXYZtemp[j].Layer=g_strdup(" ");
+                        if(k1 ==1 || k2 == 1 || k3==1) Uvar = TRUE;
+			if(k1==1) newVar++;
+			if(k2==1) newVar++;
+			if(k3==1) newVar++;
+			if(newVar>0)
+			{
+				gint n = Nvar+newVar;
+  				if(n==1)
+  					VariablesXYZtemp = g_malloc(n*sizeof(VariablesXYZDef));
+  				else
+  					VariablesXYZtemp = g_realloc(VariablesXYZtemp,n*sizeof(VariablesXYZDef));
+			}
+			newVar = 0;
+			if(k1==1)
+			{
+				newVar++;
+				trans_coordXYZ_geom('X', GeomXYZtemp, j, VariablesXYZtemp,  Nvar+newVar-1);
+			}
+			if(k2==1)
+			{
+				newVar++;
+				trans_coordXYZ_geom('Y', GeomXYZtemp, j, VariablesXYZtemp,  Nvar+newVar-1);
+			}
+			if(k3==1)
+			{
+				newVar++;
+				trans_coordXYZ_geom('Z', GeomXYZtemp, j, VariablesXYZtemp,  Nvar+newVar-1);
+			}
+			Nvar += newVar;
+
+		}
+               else
+               {
+                 OK = FALSE;
+               }
+  	}
+ }
+ if(j<0) OK = FALSE;
+
+ g_free(t);
+ for(i=0;i<5;i++) g_free(AtomCoord[i]);
+ if( !OK || Ncent <1 )
+ {
+   FreeGeomXYZ(GeomXYZtemp,VariablesXYZtemp,Ncent, Nvar);
+   MessageGeom("Sorry\n I can not read geometry in Mopac input file"," Error ",TRUE);
+   return;
+ }
+ if(GeomXYZ) freeGeomXYZ(GeomXYZ);
+ if(VariablesXYZ) freeVariablesXYZ(VariablesXYZ);
+ GeomXYZ = GeomXYZtemp;
+ NcentersXYZ = Ncent;
+ NVariablesXYZ = Nvar;
+ VariablesXYZ = VariablesXYZtemp;
+ MethodeGeom = GEOM_IS_XYZ;
+ calculMMTypes(FALSE);
+ if( Units== 0 ) GeomXYZ_Change_Unit(FALSE);
+ if(GeomIsOpen) create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
+
+ if(ZoneDessin != NULL) rafresh_drawing();
+ set_last_directory(NomFichier);
+}
 /*************************************************************************************/
 static gint get_pdbtype_charge_from_tinker_amber_key_file(
 		gchar* NomFichier,
@@ -7712,6 +8294,7 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   gchar* patternstnk[] = {"*.tnk","*",NULL};
   gchar* patternslog[] = {"*.log","*",NULL};
   gchar* patternsout[] = {"*.out","*.log","*",NULL};
+  gchar* patternsaux[] = {"*.aux","*",NULL};
 
 
   switch(itype){
@@ -7783,6 +8366,18 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
 	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a Q-Chem output file", GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
+  case GABEDIT_TYPEFILEGEOM_MOPACOUTFIRST : 
+	   SelecFile = gabedit_file_chooser_new("Read the first geometry from a Mopac output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+   	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
+	   break;
+  case GABEDIT_TYPEFILEGEOM_MOPACOUTLAST : 
+	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a Mopac output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+   	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
+	   break;
+  case GABEDIT_TYPEFILEGEOM_MOPACAUX : 
+	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a Mopac aux file", GTK_FILE_CHOOSER_ACTION_OPEN);
+   	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsaux);
+	   break;
   case GABEDIT_TYPEFILEGEOM_TINKER :
 	   SelecFile = gabedit_file_chooser_new("Read Tinker file", GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternstnk);
@@ -7805,6 +8400,7 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   case GABEDIT_TYPEFILEGEOM_MOLPROIN : return;
   case GABEDIT_TYPEFILEGEOM_MPQCIN : return;
   case GABEDIT_TYPEFILEGEOM_QCHEMIN : return;
+  case GABEDIT_TYPEFILEGEOM_MOPACIN : return;
   case GABEDIT_TYPEFILEGEOM_GAUSSIAN_ZMATRIX : return;
   case GABEDIT_TYPEFILEGEOM_MOPAC_ZMATRIX : return;
   case GABEDIT_TYPEFILEGEOM_UNKNOWN : return;
@@ -7855,6 +8451,13 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_qchem_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_QCHEMOUTLAST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_qchem_file), GTK_OBJECT(SelecFile)); break;
+  case GABEDIT_TYPEFILEGEOM_MOPACOUTFIRST :
+	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_mopac_output_file), GTK_OBJECT(SelecFile)); break;
+  case GABEDIT_TYPEFILEGEOM_MOPACOUTLAST :
+	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_mopac_output_file), GTK_OBJECT(SelecFile)); break;
+  case GABEDIT_TYPEFILEGEOM_MOPACAUX :
+	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_mopac_aux_file), GTK_OBJECT(SelecFile)); break;
+
   case GABEDIT_TYPEFILEGEOM_MOL2 :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_mol2_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_TINKER :
@@ -7874,6 +8477,7 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   case GABEDIT_TYPEFILEGEOM_MOLPROIN : 
   case GABEDIT_TYPEFILEGEOM_MPQCIN : 
   case GABEDIT_TYPEFILEGEOM_QCHEMIN : 
+  case GABEDIT_TYPEFILEGEOM_MOPACIN : 
   case GABEDIT_TYPEFILEGEOM_GAUSSIAN_ZMATRIX : 
   case GABEDIT_TYPEFILEGEOM_MOPAC_ZMATRIX : 
   case GABEDIT_TYPEFILEGEOM_UNKNOWN : return;
@@ -8324,9 +8928,9 @@ static void DialogueDeleteV()
   add_child(WindowGeom,Dialogue,gtk_widget_destroy," Delete Variable ");
   g_signal_connect(G_OBJECT(Dialogue),"delete_event",(GtkSignalFunc)delete_child,NULL);
 
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) gtk_widget_unref);
+	  frame,(GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
    gtk_box_pack_start_defaults(
          GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
@@ -8385,9 +8989,9 @@ static void DialogueEditV()
     frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) gtk_widget_unref);
+	  frame,(GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
    gtk_box_pack_start_defaults(
          GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
@@ -8496,9 +9100,9 @@ static void DialogueAddV()
     frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) gtk_widget_unref);
+	  frame,(GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
    gtk_box_pack_start_defaults(
          GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);

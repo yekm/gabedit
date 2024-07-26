@@ -46,6 +46,8 @@ static GLdouble mvmatrix[16];
 static GLdouble projmatrix[16];
 static gint glFontsize=10;
 static gint fontOffset=-1;
+static gint charWidth=0;
+static gint charHeight=0;
 #ifdef G_OS_WIN32
 PangoFont *
 gdk_gl_font_use_pango_font (const PangoFontDescription *font_desc,
@@ -307,7 +309,10 @@ void glPrintOrtho(gdouble x, gdouble y, gdouble z, gchar *str)
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix(); glLoadIdentity();
 	gluOrtho2D(0, viewport[2], 0, viewport[3]);
+
 	
+	xy[0] -= charWidth*strlen(str)/2;
+	xy[1] += charHeight/4;
 	glPrintWin(xy[0], xy[1], viewport[3], str);
 	
 	glPopMatrix();
@@ -325,9 +330,23 @@ void glInitFonts()
 	if (fontOffset)
 	{ 
 		PangoFontDescription *pfd;
+		PangoFont *pangoFont = NULL;
+		PangoFontMetrics* metrics;
 		pfd = pango_font_description_from_string(FontsStyleLabel.fontname);
-		if (gdk_gl_font_use_pango_font(pfd, 0, 128, fontOffset))
+		pangoFont = gdk_gl_font_use_pango_font(pfd, 0, 128, fontOffset);
+		if (pangoFont)
+		{
 			glFontsize = pango_font_description_get_size(pfd) / PANGO_SCALE;
+			metrics = pango_font_get_metrics(pangoFont, NULL);
+			charWidth = pango_font_metrics_get_approximate_char_width(metrics);
+			charHeight = pango_font_metrics_get_ascent(metrics)
+			 	    +pango_font_metrics_get_descent(metrics);
+			charWidth  /= PANGO_SCALE;
+			charHeight /= PANGO_SCALE;
+			/* printf("width of a char = %d\n", charWidth );*/
+			pango_font_metrics_unref(metrics);
+		}
+
 		pango_font_description_free(pfd); 
 	}
 }

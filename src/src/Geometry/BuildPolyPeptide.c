@@ -449,6 +449,7 @@ static void add_fragment(gchar* what)
 	define_geometry_to_draw();
 	define_good_factor();
 	unselect_all_atoms();
+	reset_all_connections();
 	dessine();
 	create_GeomXYZ_from_draw_grometry();
 	lastFragNumber++;
@@ -628,6 +629,7 @@ static void add_zwitterion()
 	define_geometry_to_draw();
 	define_good_factor();
 	create_GeomXYZ_from_draw_grometry();
+	reset_all_connections();
 	dessine();
 }
 /********************************************************************************/
@@ -698,6 +700,7 @@ static void delete_zwitterion()
 	define_geometry_to_draw();
 	define_good_factor();
 	create_GeomXYZ_from_draw_grometry();
+	reset_all_connections();
 	dessine();
 }
 /********************************************************************************/

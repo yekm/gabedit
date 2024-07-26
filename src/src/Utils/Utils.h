@@ -118,8 +118,12 @@ void get_dipole_from_gaussian_output_file(FILE* fd);
 void get_dipole_from_molpro_output_file(FILE* fd);
 void get_dipole_from_dalton_output_file(FILE* fd);
 void get_dipole_from_qchem_output_file(FILE* fd);
+void get_dipole_from_mopac_output_file(FILE* fd);
+void get_dipole_from_mopac_aux_file(FILE* fd);
 void set_dipole(GtkWidget* fp,gpointer data);
 void read_commands_file();
+void read_network_file();
+void set_path();
 void read_hosts_file();
 void read_fonts_file();
 void delete_last_spaces(gchar* str);
@@ -136,6 +140,8 @@ void gabedit_string_get_pixel_size(GtkWidget* parent, PangoFontDescription *font
 void gabedit_draw_string(GtkWidget* parent, GdkPixmap* pixmap, PangoFontDescription *font_desc, GdkGC* gc , gint x, gint y, G_CONST_RETURN gchar* t, gboolean centerX, gboolean centerY);
 void gabedit_save_image(GtkWidget* widget, gchar *fileName, gchar* type);
 G_CONST_RETURN gchar* get_open_babel_command();
+gchar** get_one_block_from_aux_mopac_file(FILE* file, gchar* blockName,  gint* n);
+gchar** free_one_string_table(gchar** table, gint n);
 
 #endif /* __GABEDIT_UTILS_H__ */
 

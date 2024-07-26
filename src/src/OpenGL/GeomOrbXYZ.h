@@ -39,6 +39,10 @@ void gl_read_first_molpro_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_last_molpro_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_first_mpqc_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_last_mpqc_file(GabeditFileChooser *SelecFile, gint response_id);
+void gl_read_first_mopac_output_file(GabeditFileChooser *SelecFile, gint response_id);
+void gl_read_last_mopac_output_file(GabeditFileChooser *SelecFile, gint response_id);
+void gl_read_first_mopac_aux_file(GabeditFileChooser *SelecFile, gint response_id);
+void gl_read_last_mopac_aux_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_first_qchem_file(GabeditFileChooser *SelecFile, gint response_id);
 void gl_read_last_qchem_file(GabeditFileChooser *SelecFile, gint response_id);
 gboolean gl_read_xyz_file(gchar *FileName);
@@ -46,6 +50,8 @@ gboolean gl_read_molpro_file_geom_pos(gchar *FileName,long int pos);
 gboolean gl_read_dalton_file_geomi(gchar *FileName,gint num);
 gboolean gl_read_gamess_file_geomi(gchar *FileName,gint num);
 gboolean gl_read_molpro_file_geomi(gchar *FileName,gint num);
+gboolean gl_read_mopac_output_file_geomi(gchar *FileName,gint num);
+gboolean gl_read_mopac_aux_file_geomi(gchar *FileName,gint num);
 gboolean gl_read_molcas_file_geomi(gchar *FileName,gint num);
 gboolean gl_read_gaussn_file_geomi(gchar *FileName,gint num);
 gboolean gl_read_mpqc_file_geomi(gchar *FileName,gint num);
@@ -58,6 +64,7 @@ gboolean gl_read_molden_file_geom(gchar* FileName);
 gboolean gl_read_molden_gabedit_geom_conv_file(gchar *fileName, gint geometryNumber, GabEditTypeFile type);
 gfloat get_cube_length();
 void reset_grid_limits();
+void gl_get_charges_from_mopac_output_file(FILE* fd);
 
 #endif /* __GABEDIT_GEOMORBXYZ_H__ */
 

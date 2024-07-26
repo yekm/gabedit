@@ -651,6 +651,7 @@ void redrawMolecule(Molecule* molecule,gchar* str)
 	set_text_to_draw(str);
 	set_statubar_operation_str(str);
 	change_of_center(NULL,NULL);
+	reset_all_connections();
 	dessine();
 
     	while( gtk_events_pending() )

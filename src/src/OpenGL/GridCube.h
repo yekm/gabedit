@@ -36,6 +36,9 @@ void create_scale_dlg();
 void subtract_cube(GabeditFileChooser *SelecFile, gint response_id);
 void mapping_cube(GabeditFileChooser *SelecFile, gint response_id);
 void save_cube_gabedit_file(GabeditFileChooser *SelecFile, gint response_id);
+void mapping_with_mep(gint N[],GridLimits limits, PoissonSolverMethod psMethod);
+void mapping_with_mep_from_multipol(gint lmax);
+void mapping_with_mep_from_charges();
 
 #endif /* __GABEDIT_GRIDCUBE_H__ */
 

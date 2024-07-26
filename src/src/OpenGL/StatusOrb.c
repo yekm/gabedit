@@ -61,9 +61,10 @@ void setTextInProgress(gchar* t)
 	idStatus= gtk_statusbar_get_context_id(GTK_STATUSBAR(StatusProgress),"Testing");
 	gtk_statusbar_pop(GTK_STATUSBAR(StatusProgress),idStatus);
 	gtk_statusbar_push(GTK_STATUSBAR(StatusProgress),idStatus, t);
+    	while( gtk_events_pending() ) gtk_main_iteration();
 }
 /********************************************************************************/
-gint progress_orb(gfloat scal,gint type,gboolean reset)
+gint progress_orb(gfloat scal,GabEditTypeProgressOrb  type,gboolean reset)
 {
 
 	gdouble new_val;
@@ -105,29 +106,76 @@ gint progress_orb(gfloat scal,gint type,gboolean reset)
 	switch(type)
 	{
 
-	case 0 :
+	case GABEDIT_PROGORB_UNK : 
+		break;
+
+	case  GABEDIT_PROGORB_READGEOM: 
 		t = g_strdup_printf(" Geometry Reading : %.0f%%",new_val*100);
 		break;
-	case 1 :
+	case  GABEDIT_PROGORB_SAVEGEOM: 
+		t = g_strdup_printf(" Recording of the geometry : %.0f%%",new_val*100);
+		break;
+	case GABEDIT_PROGORB_COMPGRID :
+		if(TypeGrid == GABEDIT_TYPEGRID_EDENSITY)
+		t = g_strdup_printf(" Compute the electronic density grid : %.0f%%",new_val*100);
+		else
+		if(TypeGrid == GABEDIT_TYPEGRID_ORBITAL)
+		t = g_strdup_printf(" Compute the orbital grid : %.0f%%",new_val*100);
+		else
+		if(TypeGrid == GABEDIT_TYPEGRID_ELFBECKE || TypeGrid == GABEDIT_TYPEGRID_ELFSAVIN)
+		t = g_strdup_printf(" Compute the ELF grid : %.0f%%",new_val*100);
+		else
 		t = g_strdup_printf(" Grid Computing : %.0f%%",new_val*100);
 		break;
-	case 2 :
-		t = g_strdup_printf(" Orbital/Density Computing : %.0f%%",new_val*100);
+	case GABEDIT_PROGORB_SCALEGRID :
+		t = g_strdup_printf(" Scale grid : %.0f%%",new_val*100);
 		break;
-	case 3 :
+	case GABEDIT_PROGORB_SUBSGRID :
+		t = g_strdup_printf(" Substract grid : %.0f%%",new_val*100);
+		break;
+	case GABEDIT_PROGORB_COMPISOSURFACE :
+		t = g_strdup_printf(" Isosurface Computing : %.0f%%",new_val*100);
+		break;
+	case GABEDIT_PROGORB_SAVEGRID :
+		t = g_strdup_printf(" Save Grid : %.0f%%",new_val*100);
+		break;
+	case GABEDIT_PROGORB_READGRID :
 		t = g_strdup_printf(" Grid reading : %.0f%%",new_val*100);
 		break;
-	case 4 :
+	case GABEDIT_PROGORB_MAPGRID :
+		t = g_strdup_printf(" Grid mapping : %.0f%%",new_val*100);
+		break;
+	case GABEDIT_PROGORB_COMPLAPGRID :
+		t = g_strdup_printf(" Computing of the laplacian of the grid : %.0f%%",new_val*100);
+		break;
+	case GABEDIT_PROGORB_COMPGRADGRID :
+		t = g_strdup_printf(" Computing of the gradient of the grid : %.0f%%",new_val*100);
+		break;
+	case GABEDIT_PROGORB_SCANFILEGRID :
 		t = g_strdup_printf(" Scan file for get the total orbitals number .....");
 		break;
+	case GABEDIT_PROGORB_COMPMEPGRID :
+		t = g_strdup_printf(" Computing of the MEP : %.0f%%",new_val*100);
+		break;
+	case GABEDIT_PROGORB_COMPMULTIPOL :
+		t = g_strdup_printf(" Multipole Computing : %.0f%%",new_val*100);
+		break;
 	}
-	if(type!=4 || (type==4 && scal==0))
+	if(type!= GABEDIT_PROGORB_SCANFILEGRID || (type==GABEDIT_PROGORB_SCANFILEGRID && scal==0))
 	{
 		idStatus= gtk_statusbar_get_context_id(GTK_STATUSBAR(StatusProgress),"Testing");
 		gtk_statusbar_pop(GTK_STATUSBAR(StatusProgress),idStatus);
 		gtk_statusbar_push(GTK_STATUSBAR(StatusProgress),idStatus, t);
 	}
-	if(type==1 || type==3 || type == 4)
+	if(
+		type==GABEDIT_PROGORB_READGRID || 
+		type==GABEDIT_PROGORB_COMPGRID || 
+		type == GABEDIT_PROGORB_SCANFILEGRID || 
+		type==GABEDIT_PROGORB_COMPMULTIPOL ||
+		type==GABEDIT_PROGORB_COMPLAPGRID ||
+		type==GABEDIT_PROGORB_COMPGRADGRID ||
+		type==GABEDIT_PROGORB_COMPMEPGRID
+	)
 		gtk_widget_set_sensitive(button, TRUE); 
 
     g_free(t);
@@ -156,7 +204,7 @@ void set_status_label_info(gchar* type,gchar* txt)
 			g_free(t);
 			break;
 		}
-	progress_orb(0,0,TRUE);
+	progress_orb(0,GABEDIT_PROGORB_READGEOM,TRUE);
         while( gtk_events_pending() )
           gtk_main_iteration();
 }

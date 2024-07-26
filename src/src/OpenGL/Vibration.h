@@ -32,6 +32,8 @@ typedef struct _VibrationGeom
 {
 	gchar* symbol;
 	gfloat coordinates[3];
+	gdouble partialCharge;
+	gdouble nuclearCharge;
 }VibrationGeom;
 
 typedef struct _Vibration

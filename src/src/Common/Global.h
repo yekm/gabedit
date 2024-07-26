@@ -36,6 +36,7 @@ DEALINGS IN THE SOFTWARE.
 #define PROG_IS_MPQC  GABEDIT_TYPENODE_MPQC
 #define PROG_IS_PCGAMESS  GABEDIT_TYPENODE_PCGAMESS
 #define PROG_IS_QCHEM  GABEDIT_TYPENODE_QCHEM
+#define PROG_IS_MOPAC  GABEDIT_TYPENODE_MOPAC
 #define PROG_IS_OTHER -1
 
 #define GEOM_IS_XYZ    GABEDIT_TYPENODE_XYZ
@@ -47,7 +48,7 @@ DEALINGS IN THE SOFTWARE.
 
 #define MAJOR_VERSION    2
 #define MINOR_VERSION    1
-#define MICRO_VERSION    0
+#define MICRO_VERSION    4
 
 /**** Structures *********/
 typedef struct _FileOpen
@@ -151,6 +152,7 @@ typedef struct _CommandsBatch
   gchar *NameCommandMPQC;
   gchar *NameCommandPCGamess;
   gchar *NameCommandQChem;
+  gchar *NameCommandMopac;
   gint ScreenWidth;
   gint ScreenHeight;
   FontsStyle FontsStyleData;
@@ -171,6 +173,7 @@ typedef struct _CommandsBatch
   gchar* babelCommand;
   gchar* gamessDirectory;
   gchar* pcgamessDirectory;
+  gchar* mopacDirectory;
   CommandsList gamessCommands;
   CommandsList gaussianCommands;
   CommandsList molcasCommands;
@@ -178,6 +181,7 @@ typedef struct _CommandsBatch
   CommandsList mpqcCommands;
   CommandsList pcgamessCommands;
   CommandsList qchemCommands;
+  CommandsList mopacCommands;
 
   gchar *NameTypeBatch;
   gchar *NameCommandBatchAll;

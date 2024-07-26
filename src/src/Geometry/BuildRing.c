@@ -88,6 +88,7 @@ static void build_ring_molecule(GtkWidget *w,gpointer data)
 		GeomXYZ[j].mmType=g_strdup(Symb);
 		GeomXYZ[j].pdbType=g_strdup(Symb);
 		GeomXYZ[j].Residue=g_strdup(Symb);
+		GeomXYZ[j].ResidueNumber=0;
 		X = Ro*cos(j*angle);
 		Y = Ro*sin(j*angle);
 
@@ -203,9 +204,9 @@ void build_ring_molecule_dlg()
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dlg), "frame",
-	  frame,(GtkDestroyNotify) gtk_widget_unref);
+	  frame,(GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
    gtk_box_pack_start_defaults(
          GTK_BOX(GTK_DIALOG(Dlg)->vbox), frame);

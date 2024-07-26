@@ -31,8 +31,11 @@ DEALINGS IN THE SOFTWARE.
 GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditTypeWin typewin, GtkFileChooserAction action) 
 {
   GtkWidget *gabeditFileChooser;
-  gchar* patternsfiles[] = {"*","*.log","*.out","*.xyz","*.mol2","*.tnk","*.pdb","*.hin","*.zmt","*.gzmt",
-	  		    "*.gcube","*.cube","*.CUBE","*.M2Msi","*.M2MSI","*.t41","*.txt","*",NULL};
+  gchar* patternsfiles[] = {	"*",
+			    	"*.inp","*.com","*.mop",
+	  			"*.log","*.out","*.aux","*.xyz","*.mol2","*.tnk","*.pdb","*.hin","*.zmt","*.gzmt",
+	  		    	"*.hf","*.gcube","*.cube","*.CUBE","*.M2Msi","*.M2MSI","*.t41","*.txt","*",
+			    	NULL};
   GtkSignalFunc *func = (GtkSignalFunc *)data;
   gchar* temp = NULL;
 
@@ -93,6 +96,14 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 		   				gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.out");
 						temp = g_strdup_printf("%s.out",fileopen.projectname);
 					  	break;
+	   case GABEDIT_TYPEFILE_MOPAC : 
+		   				gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.out");
+						temp = g_strdup_printf("%s.out",fileopen.projectname);
+					  	break;
+	   case GABEDIT_TYPEFILE_MOPAC_AUX : 
+		   				gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.aux");
+						temp = g_strdup_printf("%s.aux",fileopen.projectname);
+					  	break;
 	   case GABEDIT_TYPEFILE_ADF : 
 		   				gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.out");
 						temp = g_strdup_printf("%s.out",fileopen.projectname);
@@ -104,6 +115,10 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 	   case GABEDIT_TYPEFILE_GABEDIT : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.gab");
 					    temp = g_strdup_printf("%s.gab",fileopen.projectname);
+					    break;
+	   case GABEDIT_TYPEFILE_MOBCAL : 
+					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.mfj");
+					    temp = g_strdup_printf("%s.mfj",fileopen.projectname);
 					    break;
 	   case GABEDIT_TYPEFILE_MPQC : 
 		   				gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.out");
@@ -161,6 +176,10 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.inp");
 					    temp = g_strdup_printf("%s.inp",fileopen.projectname);
 					    break;
+	   case GABEDIT_TYPEFILE_MOPACINPUT : 
+					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.mop");
+					    temp = g_strdup_printf("%s.mop",fileopen.projectname);
+					    break;
 	   case GABEDIT_TYPEFILE_JPEG : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.jpg");
 					    temp = g_strdup_printf("%s.jpg",fileopen.projectname);
@@ -200,6 +219,10 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 	   case GABEDIT_TYPEFILE_CUBEMOLCAS : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.cub");
 					    temp = g_strdup_printf("%s.cube",fileopen.projectname);
+				      	    break;
+	   case GABEDIT_TYPEFILE_CUBEQCHEM : 
+					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.hf");
+					    temp = g_strdup_printf("%s.hf",fileopen.projectname);
 				      	    break;
 	   case GABEDIT_TYPEFILE_CUBEGABEDIT : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.gcube");
@@ -290,7 +313,7 @@ GtkWidget* file_chooser_save(gpointer data,gchar* title,GabEditTypeFile type,Gab
 void choose_file_to_open()
 {
   GtkWidget *gabeditFileChooser;
-  gchar* patternsfiles[] = {"*.com","*.inp","*.xyz","*.zmt","*.gzmt","*",NULL};
+  gchar* patternsfiles[] = {"*.com","*.mop","*.inp","*.xyz","*.zmt","*.gzmt","*",NULL};
 
   gabeditFileChooser = gabedit_file_chooser_new("Open file", GTK_FILE_CHOOSER_ACTION_OPEN);
   gabedit_file_chooser_hide_hidden(GABEDIT_FILE_CHOOSER(gabeditFileChooser));
@@ -311,6 +334,8 @@ void choose_file_to_open()
    gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(gabeditFileChooser), patternsfiles);
     if(iprogram == PROG_IS_GAMESS  || iprogram == PROG_IS_PCGAMESS || iprogram == PROG_IS_OTHER)
    	gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.inp");
+    if(iprogram == PROG_IS_MOPAC)
+   	gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.mop");
 
 
   g_signal_connect(G_OBJECT(gabeditFileChooser), "delete_event",(GtkSignalFunc)destroy_button_windows,NULL);
@@ -411,8 +436,8 @@ void Save_YesNo()
    frame = gtk_frame_new (NULL);
    gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
-   gtk_widget_ref (frame);
-   g_object_set_data_full (G_OBJECT (DialogueMessage), "frame", frame,(GtkDestroyNotify) gtk_widget_unref);
+   g_object_ref (frame);
+   g_object_set_data_full (G_OBJECT (DialogueMessage), "frame", frame,(GtkDestroyNotify) g_object_unref);
    gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
    gtk_box_pack_start_defaults(
          GTK_BOX(GTK_DIALOG(DialogueMessage)->vbox), frame);

@@ -15,13 +15,16 @@ MPQC       = src/MPQC/*.o
 GAMESS     = src/Gamess/*.o
 PCGAMESS     = src/PCGamess/*.o
 QCHEM     = src/QChem/*.o
+MOPAC     = src/Mopac/*.o
 OPENGL     = src/OpenGL/*.o
+MULTIGRID     = src/MultiGrid/*.o
 
 include CONFIG
  
 SUBDIRS = gtkglarea src/OpenGL src/Common src/Files src/Gaussian \
 	src/Geometry src/Spectrum src/MolecularMechanics src/Molpro src/Molcas \
-	src/MPQC src/Gamess src/QChem src/NetWork src/Utils src/Symmetry  src/PCGamess
+	src/MPQC src/Gamess src/QChem src/Mopac src/NetWork src/Utils src/Symmetry \
+	src/PCGamess src/MultiGrid
  
 TARGETS = all clean dep
  
@@ -35,7 +38,7 @@ $(SUBDIRS):
 all: gabedit
 
 gabedit: $(SUBDIRS)
-	$(CC)  $(X11LIB) $(GTKGL) $(GTKPLOT) $(COMMON) $(FILES) $(GAUSS) $(GEOM) $(CURVE) $(MODELS) $(MOLPRO) $(MOLCAS) $(MPQC) $(GAMESS) $(PCGAMESS) $(QCHEM) $(NETWORK) $(OPENGL) $(UTILS) $(SYMMETRY) -o gabedit $(GTKLIB) $(OGLLIB) $(JPEGLIB) $(PTHREADLIB) $(WIN32LIB) -g
+	$(CC)  $(X11LIB) $(GTKGL) $(GTKPLOT) $(COMMON) $(FILES) $(GAUSS) $(GEOM) $(CURVE) $(MODELS) $(MOLPRO) $(MOLCAS) $(MPQC) $(GAMESS) $(PCGAMESS) $(QCHEM) $(MOPAC) $(NETWORK) $(OPENGL) $(UTILS) $(SYMMETRY) $(MULTIGRID) -o gabedit $(GTKLIB) $(OGLLIB) $(JPEGLIB) $(LIBPTHREAD) $(WIN32LIB) -g
  
 clean:
 	@$(REMOVEFILE) gabedit

@@ -162,8 +162,12 @@ static gchar* save_ppm(gchar* fileName)
 		return message;
   	}
 
-	glReadBuffer(GL_FRONT);
-	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,rgbbuf);
+#ifdef G_OS_WIN32 
+  	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,rgbbuf);
+#else
+  	glReadBuffer(GL_FRONT);
+  	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,rgbbuf);
+#endif
 
         fprintf(file,"P6\n");
         fprintf(file,"#Image rendered with gabedit\n");
@@ -261,8 +265,12 @@ static gchar* save_bmp(gchar* fileName)
 	    	fclose(file);
 		return message;
   	}
+#ifdef G_OS_WIN32 
+  	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,rgbbuf);
+#else
   	glReadBuffer(GL_FRONT);
   	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,rgbbuf);
+#endif
 
 /* The number of bytes on a screenline should be wholly devisible by 4 */
 
@@ -429,8 +437,12 @@ void save_ps_file(GabeditFileChooser *SelecFile, gint response_id)
             return;
 	}
 
-	glReadBuffer(GL_FRONT);
-	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,rgbbuf);
+#ifdef G_OS_WIN32 
+  	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,rgbbuf);
+#else
+  	glReadBuffer(GL_FRONT);
+  	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,rgbbuf);
+#endif
 
         file = FOpen(fileName,"w");
 

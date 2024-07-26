@@ -109,9 +109,9 @@ static void  c_basis_presents(gchar *ListAtoms)
                 ,lwhite,letoile,ListAtoms,letoile);
   HboxBasis[2] = create_hbox(VboxBasis);
   label = gtk_label_new (tlabel);
-  gtk_widget_ref (label);
+  g_object_ref (label);
   g_object_set_data_full (G_OBJECT (FrameBasis), "label", label,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (HboxBasis[2]), label, TRUE, TRUE, 2);
   g_free(tlabel);
@@ -868,23 +868,23 @@ void create_basis_interface (GtkWidget *window,GtkWidget *hbox)
   Frame = create_frame(window,hbox,"Basis");
 
   hbox = gtk_hbox_new (FALSE, 0);
-  gtk_widget_ref (hbox);
+  g_object_ref (hbox);
   g_object_set_data_full (G_OBJECT (Frame), "hbox", hbox,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (hbox);
   gtk_container_add (GTK_CONTAINER (Frame), hbox);
 
   vbox = gtk_vbox_new (FALSE, 0);
-  gtk_widget_ref (vbox);
+  g_object_ref (vbox);
   g_object_set_data_full (G_OBJECT (Frame), "vbox", vbox,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (vbox);
   gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 5);
 
   label = gtk_label_new (" Define basis by type of center ");
-  gtk_widget_ref (label);
+  g_object_ref (label);
   g_object_set_data_full (G_OBJECT (Frame), "label", label,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (vbox), label, TRUE, TRUE, 2);
 
@@ -894,16 +894,16 @@ void create_basis_interface (GtkWidget *window,GtkWidget *hbox)
   vseparator = create_vseparator (hbox);
 
   vbox = gtk_vbox_new (FALSE, 0);
-  gtk_widget_ref (vbox);
+  g_object_ref (vbox);
   g_object_set_data_full (G_OBJECT (Frame), "vbox", vbox,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (vbox);
   gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 5);
 
   label = gtk_label_new (" Define basis center by center (not recommended) ");
-  gtk_widget_ref (label);
+  g_object_ref (label);
   g_object_set_data_full (G_OBJECT (Frame), "label", label,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (vbox), label, TRUE, TRUE, 2);
 

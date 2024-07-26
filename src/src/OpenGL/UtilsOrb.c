@@ -44,6 +44,25 @@ void CalculCIJ();
 gfloat Dpn(gfloat e,gint n);
 gint m1p(gint i);
 gfloat SpqSansNorm(GTF p,GTF q);
+static gint getOptimalN(gint nG)
+{
+	/* 2^n = 16, 32, 64, 128, 256, 512, 1024 */
+	/* 3*2^n = 24, 48, 96, 192, 384, 768 */
+	static gint def[] = {17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769,1025};
+	static gint nd = sizeof(def)/sizeof(gint);
+	gint i;
+	if(nG<17) nG = 17;
+	for(i=0;i<nd-1;i++)
+	{
+		if(nG>def[i] && nG<def[i+1]) 
+		{
+			nG = def[i];
+			break;
+		}
+	}
+	if(nG%2==0) nG++;
+	return nG;
+}
 /**********************************************/
 void InitializeAll()
 {
@@ -148,10 +167,11 @@ gfloat Cklm(gint k,gint l,gint m)
 
 }
 /**********************************************/
-void prinfSlm(Slm S)
+void printSlm(Slm S)
 {
 	gint i,j;
 	char XYZ[4]={'x','y','z'};
+
    	printf("l=%d m =%d N=%d \n",S.l,S.m,S.N);
    	for(i=0;i<S.N;i++)
    	{
@@ -233,6 +253,7 @@ Slm GetCoefSlP(gint l, gint m)
 
 
  Norm = sqrt((2*l+1)/(4*PI))/sqrt(fact[l-m]*fact[l+m])*ffact[l];	
+ if(m!=0) Norm*=sqrt(2.0);
    for(k=0;k<=(l-m)/2;k++)
    	for(i=0;i<=m/2;i++)
    		for(r=0;r<=k;r++)
@@ -264,11 +285,11 @@ Slm GetCoefSlP(gint l, gint m)
    	}
 /*
    	printf("avant elimination\n");
-   	prinfSlm(S);
+   	printSlm(S);
    	*/
    	S = DeleteEqSml(S);
 /*   	printf("apres elimination\n");*/
-/*   	prinfSlm(S);*/
+/*   	printSlm(S);*/
    	return S;
 
 }
@@ -283,6 +304,7 @@ Slm GetCoefSlM(gint l, gint m)
    S.m = -m;
    S.l = l;
    Norm = sqrt((2*l+1)/(4*PI))/sqrt(fact[l-m]*fact[l+m])*ffact[l];	
+   if(m!=0) Norm*=sqrt(2.0);
    for(k=0;k<=(l-m)/2;k++)
    	for(i=0;i<=(m-1)/2;i++)
    		for(r=0;r<=k;r++)
@@ -314,10 +336,10 @@ Slm GetCoefSlM(gint l, gint m)
    	}
 
   /* 	printf("avant elimination\n");*/
-  /*	prinfSlm(S);*/
+  /*	printSlm(S);*/
    	S = DeleteEqSml(S);
  /*  	printf("apres elimination\n");*/
-/*   	prinfSlm(S);*/
+/*   	printSlm(S);*/
    	
    	return S;
 }
@@ -328,6 +350,59 @@ Slm GetCoefSlm(gint l, gint m)
 			return GetCoefSlP(l,m);
 		else
 			return GetCoefSlM(l,-m);
+}
+/*******************************************************/
+void printCoefSlm()
+{
+	gint lMax = 4;
+	gint l;
+	gint m;
+	InitializeAll();
+	for(l=0; l<=lMax; l++)
+	{
+		for(m=-l; m<=l; m++)
+		{
+			Slm slm =GetCoefSlm(l, m);
+			printSlm(slm);
+		}
+
+	}
+}
+/*******************************************************/
+gdouble slmGetValue(Slm* slm, gdouble x, gdouble y, gdouble z)
+{
+	gdouble flm = 0;
+	gint numberOfCoefficients = slm->N;
+	LXYZ* lxyz = slm->lxyz;
+	gint i,r;
+
+	if(numberOfCoefficients>=4)
+	{
+		gdouble flm1 = 0;
+		gdouble flm2 = 0;
+		gdouble flm3 = 0;
+		gdouble flm4 = 0;
+		r = numberOfCoefficients%4;
+		for(i=0; i<r; i++)
+			flm += lxyz[i].Coef* pow(x,lxyz[i].l[0])* pow(y,lxyz[i].l[1])* pow(z,lxyz[i].l[2]);
+
+		for(i=r; i<numberOfCoefficients; i+=4)
+		{
+			flm1 += lxyz[i].Coef* pow(x,lxyz[i].l[0])* pow(y,lxyz[i].l[1])* pow(z,lxyz[i].l[2]);
+			flm2 += lxyz[i+1].Coef* pow(x,lxyz[i+1].l[0])* pow(y,lxyz[i+1].l[1])* pow(z,lxyz[i+1].l[2]);
+			flm3 += lxyz[i+2].Coef* pow(x,lxyz[i+2].l[0])* pow(y,lxyz[i+2].l[1])* pow(z,lxyz[i+2].l[2]);
+			flm4 += lxyz[i+3].Coef* pow(x,lxyz[i+3].l[0])* pow(y,lxyz[i+3].l[1])* pow(z,lxyz[i+3].l[2]);
+		}
+		flm += flm1 + flm2 + flm3 + flm3;
+	}
+	else
+	for(i=0; i<numberOfCoefficients; i++)
+		flm += lxyz[i].Coef*
+			pow(x,lxyz[i].l[0])*
+			pow(y,lxyz[i].l[1])*
+			pow(z,lxyz[i].l[2]);
+
+	return flm;
 }
 /**********************************************/
 char GetSymmetry(gint l)
@@ -546,7 +621,7 @@ gint get_type_file(gchar *NomFichier)
 	gint ktype = GABEDIT_TYPEFILE_UNKNOWN;
 
  	t=g_malloc(taille);
- 	fd = FOpen(NomFichier, "r");
+ 	fd = FOpen(NomFichier, "rb");
 
  	if(fd ==NULL)
  	{
@@ -609,6 +684,13 @@ gint get_type_file(gchar *NomFichier)
 			}
 		}
 	}
+	rewind(fd);
+	if( ktype == GABEDIT_TYPEFILE_UNKNOWN)
+	{
+		fgets(t,taille,fd);
+		if(strstr(t,"START OF MOPAC FILE"))
+			ktype = GABEDIT_TYPEFILE_MOPAC_AUX;
+	}
 
  	fclose(fd);
  	g_free(t);
@@ -635,7 +717,7 @@ gint get_type_basis_in_gamess_file(gchar *NomFichier)
 	gint ktype = -1;
 
  	t=g_malloc(taille);
- 	fd = FOpen(NomFichier, "r");
+ 	fd = FOpen(NomFichier, "rb");
 
  	if(fd ==NULL)
  	{
@@ -679,7 +761,7 @@ gint get_type_basis_in_gaussian_file(gchar *NomFichier)
 	gint ktype = -1;
 
  	t=g_malloc(taille);
- 	fd = FOpen(NomFichier, "r");
+ 	fd = FOpen(NomFichier, "rb");
 
  	if(fd ==NULL)
  	{
@@ -732,7 +814,7 @@ gint get_type_basis_in_qchem_file(gchar *NomFichier)
 	gint kc = 0;
 
  	t=g_malloc(taille);
- 	fd = FOpen(NomFichier, "r");
+ 	fd = FOpen(NomFichier, "rb");
 
  	if(fd ==NULL)
  	{
@@ -785,7 +867,7 @@ gint get_type_basis_in_gabedit_file(gchar *NomFichier)
 	gint ktype = -1;
 
  	t=g_malloc(taille);
- 	fd = FOpen(NomFichier, "r");
+ 	fd = FOpen(NomFichier, "rb");
 
  	if(fd ==NULL)
  	{
@@ -825,7 +907,7 @@ gint get_type_basis_in_molden_file(gchar *NomFichier)
 	gint ktype = -1;
 
  	t=g_malloc(taille);
- 	fd = FOpen(NomFichier, "r");
+ 	fd = FOpen(NomFichier, "rb");
 
  	if(fd ==NULL)
  	{
@@ -1008,8 +1090,7 @@ static void change_entry_value(GtkWidget *Entry, gpointer data)
 	gchar tnG[100]="49";
 	gint nG = (gint)fabs(limits.MinMax[1][1]-limits.MinMax[0][1])*6;
 
-	if(nG<20) nG = 20;
-	if(nG>60) nG = 60;
+	nG = getOptimalN(nG);
 	sprintf(tnG,"%d",nG);
 	if(GTK_IS_WIDGET(Entry))
 	{
@@ -1126,8 +1207,7 @@ static void change_entry_value(GtkWidget *Entry, gpointer data)
 		max = -min;
 
 		nG = (gint)fabs(max-min)*6;
-		if(nG<20) nG = 20;
-		if(nG>60) nG = 60;
+		nG = getOptimalN(nG);
 		sprintf(tnG,"%d",nG);
 
 		temp = g_strdup_printf("%f",max);
@@ -1177,8 +1257,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	gint nG = (gint)fabs(limits.MinMax[1][1]-limits.MinMax[0][1])*6;
 	gchar tnG[100]="49";
 
-	if(nG<20) nG = 20;
-	if(nG>60) nG = 60;
+	nG = getOptimalN(nG);
 	sprintf(tnG,"%d",nG);
 
 	frame = gtk_frame_new (title);
@@ -1566,6 +1645,9 @@ void initialise_global_orbitals_variables()
 	numPPMFile = 0;
 	createPOVFiles = FALSE;
 	numPOVFile = 0;
+	AOrb = NULL;
+	SAOrb = NULL;
+	solventRadius = 1.4;
 }
 /********************************************************************************/
 void close_window_orb(GtkWidget*win, gpointer data)
@@ -1661,7 +1743,7 @@ void read_color_surfaces_file()
 
 	colorsurface = g_strdup_printf("%s/colorssurface",gabedit_directory());
 
-	fd = FOpen(colorsurface, "r");
+	fd = fopen(colorsurface, "rb");
 	if(fd)
 	{
 		fgets(t,len,fd);
@@ -1705,7 +1787,7 @@ void read_opengl_file()
 
 	openglfile = g_strdup_printf("%s%sopengl",gabedit_directory(),G_DIR_SEPARATOR_S);
 
-	fd = FOpen(openglfile, "r");
+	fd = fopen(openglfile, "r");
 	openGLOptions.rgba = 1;
 	openGLOptions.doubleBuffer = 1;
 	openGLOptions.alphaSize = 0;
@@ -1739,4 +1821,434 @@ void read_opengl_file()
 	}
 	g_free(openglfile);
 }
+/********************************************************************************/
+static void applygridsas(GtkWidget *Win,gpointer data)
+{
+	GtkWidget** entriestmp = NULL;
+	G_CONST_RETURN gchar* temp;
+	gchar* dump;
+	gint i;
+	gint j;
+	GridLimits limitstmp;
+	gint NumPointstmp[3];
+	GtkWidget *entries[4][6];
+	gfloat V[3][3];
+
+	if(GTK_IS_WIDGET(Win))
+	{
+		entriestmp = (GtkWidget **)g_object_get_data(G_OBJECT (Win), "Entries");
+	}
+	else return;
+
+	if(entriestmp==NULL) return;
+
+	for(i=0;i<3;i++)
+	for(j=0;j<6;j++)
+		entries[i][j] = entriestmp[i*6+j];
+	entries[3][0] = entriestmp[18];
+	
+	for(i=0;i<3;i++)
+	{
+		for(j=3;j<5;j++)
+		{
+        		temp	= gtk_entry_get_text(GTK_ENTRY(entries[i][j])); 
+			dump = NULL;
+			if(temp && strlen(temp)>0)
+			{
+				dump = g_strdup(temp);
+				delete_first_spaces(dump);
+				delete_last_spaces(dump);
+			}
+
+			if(dump && strlen(dump)>0 && this_is_a_real(dump))
+			{
+				limitstmp.MinMax[j-3][i] = atof(dump);
+			}
+			else
+			{
+				GtkWidget* message = Message("Error : one entry is not a float ","Error",TRUE);
+  				gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+				return;
+			}
+			if(dump) g_free(dump);
+		}
+        	temp	= gtk_entry_get_text(GTK_ENTRY(entries[i][5])); 
+		NumPointstmp[i] = atoi(temp);
+		if(NumPointstmp[i] <=2)
+		{
+			GtkWidget* message = Message("Error : The number of points should be > 2. ","Error",TRUE);
+  			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+			return;
+		}
+		
+	}
+	{
+        	temp	= gtk_entry_get_text(GTK_ENTRY(entries[3][0])); 
+		dump = NULL;
+		if(temp && strlen(temp)>0)
+		{
+			dump = g_strdup(temp);
+			delete_first_spaces(dump);
+			delete_last_spaces(dump);
+		}
+
+		if(dump && strlen(dump)>0 && this_is_a_real(dump))
+		{
+			solventRadius = atof(dump);
+		}
+		else
+		{
+			GtkWidget* message = Message("Error : The solvent radius should be a float ","Error",TRUE);
+  			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+			return;
+		}
+		if(dump) g_free(dump);
+	}
+
+	for(i=0;i<3;i++)
+	{
+		if( limitstmp.MinMax[0][i]> limitstmp.MinMax[1][i])
+		{
+			GtkWidget* message = Message("Error :  The minimal value should be smaller than the maximal value ","Error",TRUE);
+  			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+			return;
+		}
+	}
+	for(i=0;i<3;i++)
+	{
+		for(j=0;j<3;j++)
+		{
+			V[i][j] = 0;
+        		temp	= gtk_entry_get_text(GTK_ENTRY(entries[i][j])); 
+			dump = NULL;
+			if(temp && strlen(temp)>0)
+			{
+				dump = g_strdup(temp);
+				delete_first_spaces(dump);
+				delete_last_spaces(dump);
+			}
+
+			if(dump && strlen(dump)>0 && this_is_a_real(dump))
+			{
+				V[i][j] = atof(dump);
+			}
+			else
+			{
+				GtkWidget* message = Message("Error : one entry is not a float ","Error",TRUE);
+  				gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+				return;
+			}
+			if(dump) g_free(dump);
+		}
+	}
+        
+	for(i=0;i<3;i++)
+	{
+		gdouble norm = 0.0;
+		for(j=0;j<3;j++)
+			norm += V[i][j]*V[i][j];
+		if(fabs(norm)<1e-8)
+		{
+			GtkWidget* message = Message("Error : the norm is equal to 0 ","Error",TRUE);
+  			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+			return;
+		}
+		for(j=0;j<3;j++)
+			V[i][j] /= sqrt(norm);
+	}
+	for(j=0;j<3;j++) originOfCube[j] = 0;
+	for(j=0;j<3;j++) firstDirection[j] = V[0][j];
+	for(j=0;j<3;j++) secondDirection[j] = V[1][j];
+	for(j=0;j<3;j++) thirdDirection[j] = V[2][j];
+
+	for(i=0;i<3;i++)
+	{
+		NumPoints[i] =NumPointstmp[i] ; 
+		for(j=0;j<2;j++)
+			limits.MinMax[j][i] =limitstmp.MinMax[j][i]; 
+	}
+
+
+	delete_child(Win);
+	TypeGrid = GABEDIT_TYPEGRID_SAS;
+	Define_Grid();
+	Define_Iso(0.0);
+	glarea_rafresh(GLArea);
+}
 /*************************************************************************************/
+static GtkWidget *create_grid_sas_frame( GtkWidget *vboxall,gchar* title)
+{
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	gushort i;
+	gushort j;
+	GtkWidget *Table;
+	gchar* temp = NULL;
+	static GtkWidget* entries[4][6];
+	gint nG = (gint)fabs(limits.MinMax[1][1]-limits.MinMax[0][1])*6;
+	gchar tnG[100]="49";
+	gchar sr[100]="1.4";
+
+	nG = getOptimalN(nG);
+	sprintf(tnG,"%d",nG);
+
+	sprintf(sr,"%f",solventRadius);
+
+	frame = gtk_frame_new (title);
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+	gtk_container_add (GTK_CONTAINER (vboxall), frame);
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	Table = gtk_table_new(4,7,FALSE);
+	gtk_container_add(GTK_CONTAINER(vboxframe),Table);
+
+	/* first line , titles */
+	i = 0; j = 0;
+	j++;
+	add_label_at_table(Table, "Vx",(gushort)i,(gushort)j,GTK_JUSTIFY_CENTER);
+	j++;
+	add_label_at_table(Table, "Vy",(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
+	j++;
+	add_label_at_table(Table, "Vz",(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
+	j++;
+	add_label_at_table(Table, "Minimum",(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
+	j++;
+	add_label_at_table(Table, "Maximum",(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
+	j++;
+	add_label_at_table(Table, "Number of points",(gushort)i, (gushort)j,GTK_JUSTIFY_CENTER);
+
+	/* First direction */
+	j = 0;
+	i++;
+	add_label_at_table(Table, "First direction ",(gushort)i,(gushort)j,GTK_JUSTIFY_LEFT);
+
+	j++;
+	entries[i-1][j-1] = gtk_entry_new ();
+    	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),50,-1);
+	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),"1.0");
+
+	j++;
+	entries[i-1][j-1] = gtk_entry_new ();
+    	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),50,-1);
+	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),"0.0");
+
+	j++;
+	entries[i-1][j-1] = gtk_entry_new ();
+    	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),50,-1);
+	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),"0.0");
+
+	j++;
+	entries[i-1][j-1] = gtk_entry_new ();
+    	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
+	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
+	temp = g_strdup_printf("%f",limits.MinMax[0][0]);
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
+	if(temp) g_free(temp);
+
+	j++;
+	entries[i-1][j-1] = gtk_entry_new ();
+    	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
+	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
+	temp = g_strdup_printf("%f",limits.MinMax[1][0]);
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
+	if(temp) g_free(temp);
+
+	j++;
+	entries[i-1][j-1] = gtk_entry_new ();
+    	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
+	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),tnG);
+
+	/* Second direction */
+	j = 0;
+	i++;
+	add_label_at_table(Table, "Second direction ",(gushort)i,(gushort)j,GTK_JUSTIFY_LEFT);
+
+	j++;
+	entries[i-1][j-1] = gtk_entry_new ();
+    	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),50,-1);
+	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),"0.0");
+
+	j++;
+	entries[i-1][j-1] = gtk_entry_new ();
+    	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),50,-1);
+	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),"1.0");
+
+	j++;
+	entries[i-1][j-1] = gtk_entry_new ();
+    	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),50,-1);
+	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),"0.0");
+	gtk_widget_set_sensitive(entries[i-1][j-1], FALSE);
+
+	j++;
+	entries[i-1][j-1] = gtk_entry_new ();
+    	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
+	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
+	temp = g_strdup_printf("%f",limits.MinMax[0][1]);
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
+	if(temp) g_free(temp);
+
+	j++;
+	entries[i-1][j-1] = gtk_entry_new ();
+    	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
+	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
+	temp = g_strdup_printf("%f",limits.MinMax[1][1]);
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
+	if(temp) g_free(temp);
+
+	j++;
+	entries[i-1][j-1] = gtk_entry_new ();
+    	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
+	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),tnG);
+
+	/* Third direction */
+	j = 0;
+	i++;
+	add_label_at_table(Table, "Third direction ",(gushort)i,(gushort)j,GTK_JUSTIFY_LEFT);
+
+	j++;
+	entries[i-1][j-1] = gtk_entry_new ();
+    	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),50,-1);
+	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),"0.0");
+	gtk_widget_set_sensitive(entries[i-1][j-1], FALSE);
+
+	j++;
+	entries[i-1][j-1] = gtk_entry_new ();
+    	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),50,-1);
+	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),"0.0");
+	gtk_widget_set_sensitive(entries[i-1][j-1], FALSE);
+
+	j++;
+	entries[i-1][j-1] = gtk_entry_new ();
+    	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),50,-1);
+	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),"1.0");
+	gtk_widget_set_sensitive(entries[i-1][j-1], FALSE);
+
+	j++;
+	entries[i-1][j-1] = gtk_entry_new ();
+    	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
+	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
+	temp = g_strdup_printf("%f",limits.MinMax[0][2]);
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
+	if(temp) g_free(temp);
+
+	j++;
+	entries[i-1][j-1] = gtk_entry_new ();
+    	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
+	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
+	temp = g_strdup_printf("%f",limits.MinMax[1][2]);
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
+	if(temp) g_free(temp);
+
+	j++;
+	entries[i-1][j-1] = gtk_entry_new ();
+    	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
+	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),tnG);
+
+	/* Slovent radius */
+	j = 0;
+	i++;
+	{
+		GtkWidget *Label;
+		GtkWidget *hbox = gtk_hbox_new(0,FALSE);
+	
+		Label = gtk_label_new ("Solvent radius (Angstrum) ");
+   		gtk_label_set_justify(GTK_LABEL(Label),GTK_JUSTIFY_LEFT);
+		gtk_box_pack_start (GTK_BOX (hbox), Label, FALSE, FALSE, 0);
+		gtk_table_attach(GTK_TABLE(Table),hbox,j,j+2,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_SHRINK),
+                  (GtkAttachOptions)(GTK_FILL | GTK_SHRINK),
+                  3,3);
+	}
+
+	j+=2;
+	entries[i-1][0] = gtk_entry_new ();
+    	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][0]),50,-1);
+	gtk_table_attach(GTK_TABLE(Table),GTK_WIDGET(entries[i-1][0]),j,j+3,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_SHRINK),
+                  (GtkAttachOptions)(GTK_FILL | GTK_SHRINK),
+                  3,3);
+	gtk_entry_set_text(GTK_ENTRY(entries[i-1][0]),sr);
+
+
+	for(i=0;i<3;i++)
+	for(j=0;j<6;j++)
+	{
+		g_object_set_data (G_OBJECT (entries[i][j]), "Entries", &entries);
+	}
+	g_object_set_data (G_OBJECT (entries[3][0]), "Entries", &entries);
+
+	for(i=0;i<3;i++)
+	for(j=0;j<6;j++)
+  		g_signal_connect(G_OBJECT(entries[i][j]), "changed",GTK_SIGNAL_FUNC(change_entry_value),entries[i][j]);
+
+	gtk_widget_show_all(frame);
+	g_object_set_data (G_OBJECT (frame), "Entries",&entries);
+
+  	return frame;
+}
+/********************************************************************************/
+void create_grid_sas(gchar* title)
+{
+	GtkWidget *Win;
+	GtkWidget *frame;
+	GtkWidget *hbox;
+	GtkWidget *vboxall;
+	GtkWidget *vboxwin;
+	GtkWidget *button;
+	GtkWidget** entries;
+
+	if(!GeomOrb)
+	{
+		Message("Sorry, Please load a file before\n","Error",TRUE);
+		return;
+	}
+	
+	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(Win),title);
+	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
+	gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
+	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(PrincipalWindow));
+	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
+
+	add_glarea_child(Win,"Grid ");
+
+	vboxall = create_vbox(Win);
+	vboxwin = vboxall;
+	frame = create_grid_sas_frame(vboxall,"Box & Grid & Solvent radius");
+	entries = (GtkWidget**) g_object_get_data (G_OBJECT (frame), "Entries");
+	g_object_set_data (G_OBJECT (Win), "Entries",entries);
+   
+
+	hbox = create_hbox_false(vboxwin);
+	gtk_widget_realize(Win);
+
+	button = create_button(Win,"Cancel");
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child, G_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)gtk_widget_destroy,G_OBJECT(Win));
+	gtk_widget_show (button);
+
+	button = create_button(Win,"OK");
+	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+	gtk_widget_show (button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)applygridsas,G_OBJECT(Win));
+  
+
+	gtk_widget_show_all (Win);
+}

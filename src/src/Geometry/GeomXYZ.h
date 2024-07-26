@@ -19,6 +19,7 @@ DEALINGS IN THE SOFTWARE.
 #ifndef __GABEDIT_GEOMXYZ_H__
 #define __GABEDIT_GEOMXYZ_H__
 
+void compute_dipole_using_charges_of_xyz_geom();
 void set_variable_one_atom_in_GeomXYZ(gint i);
 void create_geomXYZ_list(GtkWidget *, GabEditTypeFileGeom readfile);
 void create_variablesXYZ_list(GtkWidget *,guint);
@@ -31,6 +32,7 @@ void read_XYZ_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile 
 void read_XYZ_from_gamess_input_file(gchar *NomFichier );
 void read_XYZ_from_mpqc_input_file(gchar *NomFichier );
 void read_XYZ_from_qchem_input_file(gchar *NomFichier );
+void read_XYZ_from_mopac_input_file(gchar *NomFichier );
 void read_geom_conv_from_dalton_output_file(gchar *NomFichier, gint numgeometry);
 void read_geom_conv_from_gamess_output_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_molden_geom_conv_file(gchar *fileName, gint numgeometry);
@@ -40,6 +42,8 @@ void read_geom_from_gaussian_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_mpqc_output_file(gchar *fileName, gint numGeometry);
 void read_geom_from_molpro_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_qchem_file(gchar *NomFichier, gint numgeometry);
+void read_geom_from_mopac_output_file(gchar *NomFichier, gint numgeometry);
+void read_geom_from_mopac_aux_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_xyz_file(gchar *fileName, gint numGeom);
 void read_XYZ_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile);
 void create_GeomXYZ_from_draw_grometry();

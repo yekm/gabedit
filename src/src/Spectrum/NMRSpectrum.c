@@ -33,7 +33,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/Vibration.h"
 #include "SpectrumWin.h"
 
-#define NMAXGROUP 6
+#define NMAXGROUP 10
 
 static void createNMRSpectrumWin(gint numberOfStates, gdouble* energies, gdouble* intensities);
 /********************************************************************************/
@@ -162,12 +162,13 @@ void computeNMRSpectrum(
 	gdouble* ppmJCouplings  = NULL;
 	gint* basis  = NULL;
 	gdouble* transProb  = NULL;
-	gdouble* transFreq  = NULL;
 	gdouble* hamilt  = NULL;
 	gdouble** eVectors  = NULL;
 	gdouble* eValues  = NULL;
-	gboolean** ifs  = NULL;
 	gint nFrequencies = 0;
+	gint nfs = 0;
+	gint* lfs = NULL;
+	gint* mfs = NULL;
 
 	*X = NULL;
 	*Y = NULL;
@@ -354,38 +355,41 @@ void computeNMRSpectrum(
 	*/
 
 	/* transition probability */
-	transFreq = g_malloc(nDim*sizeof(gdouble));
 	transProb = g_malloc(nDim*sizeof(gdouble));
 
-	for ( i=0 ; i<nDim ; i++) transFreq[i] = 0;
 	for ( i=0 ; i<nDim ; i++) transProb[i] = 0;
 
-	ifs  = g_malloc(nBasis*sizeof(gboolean*));
-	for(i=0;i<nBasis;i++) ifs[i] = g_malloc(nBasis*sizeof(gboolean));
+	lfs  = g_malloc(nDim*sizeof(gint));
+	mfs  = g_malloc(nDim*sizeof(gint));
 
+	nfs = 0;
 	for ( l=0 ; l<nBasis ; l++)
-        	for ( m=0 ; m<nBasis ; m++ )
+        	for ( m=0 ; m<l ; m++ )
 		{
-			ifs[l][m] = FALSE;
 	      		is = 0 ;
            		for ( i=0; i<nSpins ; i++ )
 	       			is += basis[l+i*nBasis]*basis[m+i*nBasis] ;
               		if ( is == nSpins-2 ) 
-				ifs[l][m] = TRUE;
+			{
+				lfs[nfs] = l;
+				mfs[nfs] = m;
+				nfs++;
+			}
 		}
+	/* printf("End calculation of lfs and mfs, nfs = %d\n",nfs);*/
 
 	ii=0 ;
 	for ( ja=1 ; ja<nBasis ; ja++)
 		for ( jb=0 ; jb<=ja-1; jb++ )
 		{
-			dum=0.0;
-			for ( l=0 ; l<nBasis ; l++)
+			gdouble dum1=0.0;
+			gdouble dum2=0.0;
+			for ( ik=0 ; ik<nfs ; ik++)
 			{
-        			for ( m=0 ; m<nBasis ; m++ )
-              				if ( ifs[l][m])
-         					dum +=   eVectors[l][ja]*eVectors[m][jb]/2.
-							+eVectors[m][ja]*eVectors[l][jb]/2;
+         			dum1 += eVectors[lfs[ik]][ja]*eVectors[mfs[ik]][jb];
+         			dum2 += eVectors[mfs[ik]][ja]*eVectors[lfs[ik]][jb];
 			}
+			dum = dum1 + dum2;
 	  		transProb[ii++]=dum*dum ;
    		}
 	
@@ -393,9 +397,8 @@ void computeNMRSpectrum(
 	for ( ja=0 ; ja<nBasis ; ja++)
 		if(eVectors[ja]) g_free(eVectors[ja]);
 	if(eVectors) g_free(eVectors);
-	for ( ja=0 ; ja<nBasis ; ja++)
-		if(ifs[ja]) g_free(ifs[ja]);
-	if(ifs) g_free(ifs);
+	if(lfs) g_free(lfs);
+	if(mfs) g_free(mfs);
 
 	/* transition frequencies*/
 	ii=0;
@@ -407,16 +410,15 @@ void computeNMRSpectrum(
 		{
 			if ( transProb[ii] > .0001 )
 			{
-  				transFreq[ii]=fabs(eValues[jb]-eValues[ja]) ;
-				frequencies[ik] = transFreq[ii];
+				frequencies[ik] = fabs(eValues[jb]-eValues[ja]) ;
 				intensities[ik] = transProb[ii];
 				ik++;
 			}
 			ii++;
 		}
+	/* printf("End calculate of intensity\n");*/
 	if(eValues) g_free(eValues);
 	if(transProb) g_free(transProb);
-	if(transFreq) g_free(transFreq);
 	nFrequencies = ik;
 	if(nFrequencies>0)
 	{

@@ -144,6 +144,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"GaussianInput")) new_gauss(NULL, NULL);
 	else if(!strcmp(name,"MolcasInput")) new_molcas(NULL, NULL);
 	else if(!strcmp(name,"MolproInput")) new_molpro(NULL, NULL);
+	else if(!strcmp(name,"MopacInput")) new_mopac(NULL, NULL);
 	else if(!strcmp(name,"MPQCInput")) new_mpqc(NULL, NULL);
 	else if(!strcmp(name,"PCGamessInput")) new_pcgamess(NULL, NULL);
 	else if(!strcmp(name,"QChemInput")) new_qchem(NULL, NULL);
@@ -225,84 +226,27 @@ static void activate_action (GtkAction *action)
 static GtkActionEntry gtkActionEntries[] =
 {
 	{"File",     NULL, "_File"},
-	/* {"FileNew",  GABEDIT_STOCK_NEW, "_New"},*/
 	{"FileNew",  GTK_STOCK_NEW, "_New"},
 	{"GamessInput", GABEDIT_STOCK_GAMESS, "_Gamess input", NULL, "New Gamess input file", G_CALLBACK (activate_action) },
 	{"GaussianInput", GABEDIT_STOCK_GAUSSIAN, "_Gaussian input", NULL, "New Gaussian input file", G_CALLBACK (activate_action) },
 	{"MolcasInput", GABEDIT_STOCK_MOLCAS, "Mol_cas input", NULL, "New Molcas input file", G_CALLBACK (activate_action) },
 	{"MolproInput", GABEDIT_STOCK_MOLPRO, "Mol_pro input", NULL, "New Molpro input file", G_CALLBACK (activate_action) },
+	{"MopacInput", GABEDIT_STOCK_MOPAC, "_Mopac input", NULL, "New Mopac input file", G_CALLBACK (activate_action) },
 	{"MPQCInput", GABEDIT_STOCK_MPQC, "MP_QC input", NULL, "New MPQC input file", G_CALLBACK (activate_action) },
 	{"PCGamessInput", GABEDIT_STOCK_PCGAMESS, "_PCGamess input", NULL, "New PCGamess input file", G_CALLBACK (activate_action) },
 	{"QChemInput", GABEDIT_STOCK_QCHEM, "Q-_Chem input", NULL, "New Q-Chem input file", G_CALLBACK (activate_action) },
 	{"OtherInput", NULL, "_Other", NULL, "New file", G_CALLBACK (activate_action) },
-	/*
-	{"Open", GABEDIT_STOCK_OPEN, "_Open", "<control>O", "open a file", G_CALLBACK (activate_action) },
-	{"Save", GABEDIT_STOCK_SAVE, "_Save", "<control>S", "Save", G_CALLBACK (activate_action) },
-	{"SaveAs", GABEDIT_STOCK_SAVE_AS, "Save _as", "<control>s", "Save as", G_CALLBACK (activate_action) },
-	*/
 	{"Open", GTK_STOCK_OPEN, "_Open", "<control>O", "open a file", G_CALLBACK (activate_action) },
 	{"Save", GTK_STOCK_SAVE, "_Save", "<control>S", "Save", G_CALLBACK (activate_action) },
 	{"SaveAs", GTK_STOCK_SAVE_AS, "Save _as", "<control>s", "Save as", G_CALLBACK (activate_action) },
 	{"Include", GABEDIT_STOCK_INSERT, "_Include", "<control>I", "Include a file", G_CALLBACK (activate_action) },
-	/*
-	{"Print", GABEDIT_STOCK_PRINT, "_Print", "<control>P", "Print", G_CALLBACK (activate_action) },
-	{"Exit", GABEDIT_STOCK_EXIT, "E_xit", "<control>Q", "Exit", G_CALLBACK (activate_action) },
-	*/
 	{"Print", GTK_STOCK_PRINT, "_Print", "<control>P", "Print", G_CALLBACK (activate_action) },
 	{"Exit", GTK_STOCK_QUIT, "E_xit", "<control>Q", "Exit", G_CALLBACK (activate_action) },
 	{"Edit",  NULL, "_Edit"},
-	/*
-	{"Cut", GABEDIT_STOCK_CUT, "C_ut", "<control>X", "Cut the selected text to the clipboard", G_CALLBACK (activate_action) },
-	{"Copy", GABEDIT_STOCK_COPY, "_Copy", "<control>C", "Copy the selected text to the clipboard", G_CALLBACK (activate_action) },
-	{"Paste", GABEDIT_STOCK_PASTE, "_Paste", "<control>V", "Paste the text from the clipboard", G_CALLBACK (activate_action) },
-	{"Find", GABEDIT_STOCK_FIND, "_Find", "<control>F", "Find a string", G_CALLBACK (activate_action) },
-	*/
 	{"Cut", GTK_STOCK_CUT, "C_ut", "<control>X", "Cut the selected text to the clipboard", G_CALLBACK (activate_action) },
 	{"Copy", GTK_STOCK_COPY, "_Copy", "<control>C", "Copy the selected text to the clipboard", G_CALLBACK (activate_action) },
 	{"Paste", GTK_STOCK_PASTE, "_Paste", "<control>V", "Paste the text from the clipboard", G_CALLBACK (activate_action) },
 	{"Find", GTK_STOCK_FIND, "_Find", "<control>F", "Find a string", G_CALLBACK (activate_action) },
-	{"SelectAll",  GABEDIT_STOCK_SELECT_ALL, "Select _all", "<control>A", "Select All", G_CALLBACK (activate_action) },
-
-	{"Insert",  NULL, "_Insert"},
-	{"InsertGaussian",  GABEDIT_STOCK_GAUSSIAN, "_Gaussian"},
-	{"InsertMolcas",  GABEDIT_STOCK_MOLCAS, "Mol_cas"},
-	{"InsertMolpro",  GABEDIT_STOCK_MOLPRO, "Mol_pro"},
-	{"InsertGaussianMultiStep", NULL, "_Add Input File(Multi-Step Job)", NULL, "Add Input File(Multi-Step Job)", G_CALLBACK (activate_action) },
-	{"InsertGaussianGeometry", NULL, "G_eometry", NULL, "Insert Gaussian geometry", G_CALLBACK (activate_action) },
-	{"InsertMolproGeneral", NULL, "_General", NULL, "Insert Molpro general", G_CALLBACK (activate_action) },
-	{"InsertMolproGeometry", NULL, "G_eometry", NULL, "Insert Molpro geometry", G_CALLBACK (activate_action) },
-	{"InsertMolproBasis", NULL, "_Basis", NULL, "Insert Molpro basis", G_CALLBACK (activate_action) },
-	{"InsertMolproCommands", NULL, "_Commands", NULL, "Insert Molpro commands", G_CALLBACK (activate_action) },
-	{"InsertMolcasAddToFile", NULL, "_Add to file", NULL, "Insert Molcas add to file", G_CALLBACK (activate_action) },
-
-	{"View",  NULL, "_View"},
-
-	{"Geometry",  NULL, "_Geometry"},
-	{"GeometryMolpro", GABEDIT_STOCK_MOLPRO, "Mol_pro", NULL, "Edit Molpro geometry", G_CALLBACK (activate_action) },
-	{"GeometryGaussian", GABEDIT_STOCK_GAUSSIAN, "_Gaussian", NULL, "Edit Gaussian geometry", G_CALLBACK (activate_action) },
-	/*
-	{"GeometryEdit", NULL, "_Edit", NULL, "Edit geometry", G_CALLBACK (activate_action) },
-	*/
-	{"GeometryEdit", GTK_STOCK_EDIT, "_Edit", NULL, "Edit geometry", G_CALLBACK (activate_action) },
-	{"GeometryDraw", GABEDIT_STOCK_GEOMETRY, "_Draw", NULL, "Draw geometry", G_CALLBACK (activate_action) },
-
-	{"DisplayDensity", GABEDIT_STOCK_ORBITALS, "_Display", NULL, "Display Geometry/Orbitals/Density/Vibration", G_CALLBACK (activate_action) },
-
-	{"Tools",  NULL, "_Tools"},
-	{"ToolsProcess",  NULL, "_Process"},
-	{"ToolsProcessLocal",  NULL, "_Local"},
-	{"ToolsUnitConversion", GABEDIT_STOCK_CONVERT_UNIT, "Unit _conversion utility", NULL, "Unit conversion utility", G_CALLBACK (activate_action) },
-	{"ToolsProcessLocalAll", NULL, "_All local process", NULL, "All local process", G_CALLBACK (activate_action) },
-	{"ToolsProcessLocalUser", NULL, "_User local process", NULL, "User local process", G_CALLBACK (activate_action) },
-	{"ToolsProcessRemote",  NULL, "_Remote"},
-	{"ToolsProcessRemoteAll", NULL, "_All remote process", NULL, "All remote process", G_CALLBACK (activate_action) },
-	{"ToolsProcessRemoteUser", NULL, "_User remote process", NULL, "User remote process", G_CALLBACK (activate_action) },
-	{"ToolsBatch",  NULL, "_Batch"},
-	{"ToolsBatchLocal",  NULL, "_Local"},
-	{"ToolsBatchLocalAll", NULL, "_All local batch jobs", NULL, "All local batch jobs", G_CALLBACK (activate_action) },
-	{"ToolsBatchLocalUser", NULL, "_User local batch jobs", NULL, "User local batch jobs", G_CALLBACK (activate_action) },
-	{"ToolsBatchRemote",  NULL, "_Remote"},
-	{"ToolsBatchRemoteAll", NULL, "_All remote batch jobs", NULL, "All remote batch jobs", G_CALLBACK (activate_action) },
 	{"SelectAll",  GABEDIT_STOCK_SELECT_ALL, "Select _all", "<control>A", "Select All", G_CALLBACK (activate_action) },
 
 	{"Insert",  NULL, "_Insert"},
@@ -375,9 +319,6 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ToolsNMRSpectrumTxt",  NULL, "NMR Spin-Spin Splitting Simulation", NULL, "Txt", G_CALLBACK (activate_action) },
 
 	{"Run",  NULL, "_Run"},
-	/*
-	{"RunAbinitio", GABEDIT_STOCK_RUN, "_Run a abtinio program",  "<control>R", "Run a abtinio program", G_CALLBACK (activate_action) },
-	*/
 	{"RunAbinitio", GTK_STOCK_EXECUTE, "_Run a abtinio program",  "<control>R", "Run a abtinio program", G_CALLBACK (activate_action) },
 	{"RunViewResult", NULL, "_View result of calculation", NULL, "View result of calculation", G_CALLBACK (activate_action) },
 
@@ -388,22 +329,13 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SettingsBasisMolcas", GABEDIT_STOCK_MOLCAS, "Mol_cas", NULL, "Set molcas basis list", G_CALLBACK (activate_action) },
 	{"SettingsBasisMolpro", GABEDIT_STOCK_MOLPRO, "Mol_pro", NULL, "Set molpro basis list", G_CALLBACK (activate_action) },
 	{"SettingsBasisMPQC", GABEDIT_STOCK_MPQC, "MP_QC", NULL, "Set MPQC basis list", G_CALLBACK (activate_action) },
-	/*
-	{"SettingsPreferences", NULL, "P_references", NULL, "Set preference parameters", G_CALLBACK (activate_action) },
-	*/
 	{"SettingsPreferences", GTK_STOCK_PREFERENCES, "P_references", NULL, "Set preference parameters", G_CALLBACK (activate_action) },
 
 	{"Window",  NULL, "_Window", NULL, NULL, G_CALLBACK (activate_action)},
 
 	{"Help",  NULL, "_Help"},
-	/*
-	{"HelpAbout", GABEDIT_STOCK_ABOUT, "_About...", NULL, "About...", G_CALLBACK (activate_action) },
-	*/
 	{"HelpAbout", GTK_STOCK_ABOUT, "_About...", NULL, "About...", G_CALLBACK (activate_action) },
 	{"HelpVersion", NULL, "_Version...", NULL, "Version...", G_CALLBACK (activate_action) },
-	/*
-	{"HelpHomePage", GABEDIT_STOCK_HOME, "_Home Page...", NULL, "Home page...", G_CALLBACK (activate_action) },
-	*/
 };
 static guint numberOfGtkActionEntries = G_N_ELEMENTS (gtkActionEntries);
 /*********************************************************************************************************************/
@@ -439,6 +371,7 @@ static const gchar *uiInfo =
 "         <menuitem name=\"GaussianInput\" action=\"GaussianInput\" />\n"
 "         <menuitem name=\"MolcasInput\" action=\"MolcasInput\" />\n"
 "         <menuitem name=\"MolproInput\" action=\"MolproInput\" />\n"
+"         <menuitem name=\"MopacInput\" action=\"MopacInput\" />\n"
 "         <menuitem name=\"MPQCInput\" action=\"MPQCInput\" />\n"
 "         <menuitem name=\"PCGamessInput\" action=\"PCGamessInput\" />\n"
 "         <menuitem name=\"QChemInput\" action=\"QChemInput\" />\n"
@@ -578,6 +511,7 @@ static const gchar *uiInfo =
 "      <toolitem name=\"GaussianInput\" action=\"GaussianInput\" />\n"
 "      <toolitem name=\"MolcasInput\" action=\"MolcasInput\" />\n"
 "      <toolitem name=\"MolproInput\" action=\"MolproInput\" />\n"
+"      <toolitem name=\"MopacInput\" action=\"MopacInput\" />\n"
 "      <toolitem name=\"MPQCInput\" action=\"MPQCInput\" />\n"
 "      <toolitem name=\"PCGamessInput\" action=\"PCGamessInput\" />\n"
 "      <toolitem name=\"QChemInput\" action=\"QChemInput\" />\n"
@@ -615,7 +549,7 @@ static void add_widget (GtkUIManager *merge, GtkWidget   *widget, GtkContainer *
 	GtkWidget *handlebox;
 
 	handlebox =gtk_handle_box_new ();
-	gtk_widget_ref (handlebox);
+	g_object_ref (handlebox);
 	gtk_handle_box_set_shadow_type(GTK_HANDLE_BOX(handlebox),GTK_SHADOW_NONE);
 	gtk_box_pack_start (GTK_BOX (container), handlebox, FALSE, FALSE, 0);
 

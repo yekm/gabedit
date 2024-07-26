@@ -62,26 +62,26 @@ UtilsInterface.o: ../Utils/Constantes.h ../Gaussian/GaussGlobal.h
 UtilsInterface.o: ../Files/FileChooser.h ../Gamess/Gamess.h
 UtilsInterface.o: ../PCGamess/PCGamess.h ../Molcas/Molcas.h
 UtilsInterface.o: ../Molpro/Molpro.h ../MPQC/MPQC.h ../QChem/QChem.h
-UtilsInterface.o: ../Gaussian/Gaussian.h ../Geometry/GeomGlobal.h
-UtilsInterface.o: ../Utils/UtilsInterface.h ../Geometry/InterfaceGeom.h
-UtilsInterface.o: ../Utils/Utils.h ../Utils/GabeditTextEdit.h
-UtilsInterface.o: ../Geometry/ResultsAnalise.h ../Geometry/EnergiesCurves.h
-UtilsInterface.o: ../Common/Windows.h ../Files/ListeFiles.h
-UtilsInterface.o: ../Geometry/GeomXYZ.h ../Geometry/GeomZmatrix.h
-UtilsInterface.o: ../Common/SplashScreen.h ../OpenGL/ViewOrb.h
-UtilsInterface.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h
-UtilsInterface.o: ../Common/Exit.h ../Molcas/MolcasVariables.h
-UtilsInterface.o: ../Molcas/MolcasSeward.h ../../pixmaps/Ok.xpm
-UtilsInterface.o: ../../pixmaps/Cancel.xpm ../../pixmaps/Yes.xpm
-UtilsInterface.o: ../../pixmaps/No.xpm ../../pixmaps/SaveMini.xpm
-UtilsInterface.o: ../../pixmaps/Close.xpm ../../pixmaps/Apply.xpm
-UtilsInterface.o: ../../pixmaps/Question.xpm ../../pixmaps/Warning.xpm
-UtilsInterface.o: ../../pixmaps/Error.xpm ../../pixmaps/Info.xpm
-UtilsInterface.o: ../../pixmaps/A0p.xpm ../../pixmaps/A0d.xpm
-UtilsInterface.o: ../../pixmaps/Open.xpm ../../pixmaps/Gabedit.xpm
-UtilsInterface.o: ../../pixmaps/Print.xpm ../../pixmaps/Next.xpm
-UtilsInterface.o: ../../pixmaps/Stop.xpm ../../pixmaps/Play.xpm
-UtilsInterface.o: ../Common/StockIcons.h
+UtilsInterface.o: ../Mopac/Mopac.h ../Gaussian/Gaussian.h
+UtilsInterface.o: ../Geometry/GeomGlobal.h ../Utils/UtilsInterface.h
+UtilsInterface.o: ../Geometry/InterfaceGeom.h ../Utils/Utils.h
+UtilsInterface.o: ../Utils/GabeditTextEdit.h ../Geometry/ResultsAnalise.h
+UtilsInterface.o: ../Geometry/EnergiesCurves.h ../Common/Windows.h
+UtilsInterface.o: ../Files/ListeFiles.h ../Geometry/GeomXYZ.h
+UtilsInterface.o: ../Geometry/GeomZmatrix.h ../Common/SplashScreen.h
+UtilsInterface.o: ../OpenGL/ViewOrb.h ../Geometry/Fragments.h
+UtilsInterface.o: ../Geometry/DrawGeom.h ../Common/Exit.h
+UtilsInterface.o: ../Molcas/MolcasVariables.h ../Molcas/MolcasSeward.h
+UtilsInterface.o: ../../pixmaps/Ok.xpm ../../pixmaps/Cancel.xpm
+UtilsInterface.o: ../../pixmaps/Yes.xpm ../../pixmaps/No.xpm
+UtilsInterface.o: ../../pixmaps/SaveMini.xpm ../../pixmaps/Close.xpm
+UtilsInterface.o: ../../pixmaps/Apply.xpm ../../pixmaps/Question.xpm
+UtilsInterface.o: ../../pixmaps/Warning.xpm ../../pixmaps/Error.xpm
+UtilsInterface.o: ../../pixmaps/Info.xpm ../../pixmaps/A0p.xpm
+UtilsInterface.o: ../../pixmaps/A0d.xpm ../../pixmaps/Open.xpm
+UtilsInterface.o: ../../pixmaps/Gabedit.xpm ../../pixmaps/Print.xpm
+UtilsInterface.o: ../../pixmaps/Next.xpm ../../pixmaps/Stop.xpm
+UtilsInterface.o: ../../pixmaps/Play.xpm ../Common/StockIcons.h
 Vector3d.o: ../../Config.h
 Vector3d.o: ../Common/Global.h
 Vector3d.o: ../Files/GabeditFileChooser.h

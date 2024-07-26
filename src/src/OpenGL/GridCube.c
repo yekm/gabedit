@@ -61,7 +61,7 @@ void scale_cube_file(gdouble factor)
 	gdouble v;
 	gfloat scal;
 
-	progress_orb(0,3,TRUE);
+	progress_orb(0,GABEDIT_PROGORB_SCALEGRID,TRUE);
 	scal = (gfloat)1.01/grid->N[0];
 	for(i=0;i<grid->N[0];i++)
 	{
@@ -88,12 +88,12 @@ void scale_cube_file(gdouble factor)
 		}
 		if(CancelCalcul) 
 		{
-			progress_orb(0,3,TRUE);
+			progress_orb(0,GABEDIT_PROGORB_SCALEGRID,TRUE);
 			break;
 		}
-		progress_orb(scal,3,FALSE);
+		progress_orb(scal,GABEDIT_PROGORB_SCALEGRID,FALSE);
 	}
-	progress_orb(0,3,TRUE);
+	progress_orb(0,GABEDIT_PROGORB_SCALEGRID,TRUE);
 	if(CancelCalcul) grid = free_grid(grid);
 	else
 	{
@@ -196,7 +196,7 @@ void create_scale_dlg()
 /**************************************************************************/
 void subtract_cube_file(gchar* filename)
 {
-	FILE* file = FOpen(filename, "r");
+	FILE* file = FOpen(filename, "rb");
 	gint len = BSIZE;
 	gchar t[BSIZE];
 	gint Natoms;
@@ -360,7 +360,7 @@ void subtract_cube_file(gchar* filename)
 		return;
 	}
 
-	progress_orb(0,3,TRUE);
+	progress_orb(0,GABEDIT_PROGORB_SUBSGRID,TRUE);
 	scal = (gfloat)1.01/grid->N[0];
 	for(i=0;i<grid->N[0];i++)
 	{
@@ -387,21 +387,79 @@ void subtract_cube_file(gchar* filename)
 		}
 		if(CancelCalcul) 
 		{
-			progress_orb(0,3,TRUE);
+			progress_orb(0,GABEDIT_PROGORB_SUBSGRID,TRUE);
 			break;
 		}
-		progress_orb(scal,3,FALSE);
+		progress_orb(scal,GABEDIT_PROGORB_SUBSGRID,FALSE);
 	}
-	progress_orb(0,3,TRUE);
+	progress_orb(0,GABEDIT_PROGORB_SUBSGRID,TRUE);
 	free_grid(tmpGrid);
 	fclose(file);
 	limits = grid->limits;
 	create_iso_orbitals();
 }
 /**************************************************************************/
+void mapping_cube_by_an_other_cube(Grid* tmpGrid)
+{
+	gfloat scal;
+	gint i, j, k;
+	ColorMap* colorMap = NULL;
+
+	if(!tmpGrid) return;
+
+	progress_orb(0,GABEDIT_PROGORB_MAPGRID,TRUE);
+	scal = (gfloat)1.01/grid->N[0];
+	for(i=0;i<grid->N[0];i++)
+	{
+		for(j=0;j<grid->N[1];j++)
+		{
+			for(k=0;k<grid->N[2];k++)
+			{
+				grid->point[i][j][k].C[4] = tmpGrid->point[i][j][k].C[3];
+			}
+		}
+		if(CancelCalcul) 
+		{
+			progress_orb(0,GABEDIT_PROGORB_MAPGRID,TRUE);
+			break;
+		}
+		progress_orb(scal,GABEDIT_PROGORB_MAPGRID,FALSE);
+	}
+	progress_orb(0,GABEDIT_PROGORB_MAPGRID,TRUE);
+	limits = grid->limits;
+	grid->mapped = TRUE;
+	RebuildSurf = TRUE;
+	colorMap = new_colorMap_fromGrid(grid);
+	{
+		GtkWidget* handleBoxColorMapGrid = g_object_get_data(G_OBJECT(PrincipalWindow), "HandleboxColorMapGrid ");
+		if(handleBoxColorMapGrid)
+		{
+			GtkWidget* entryLeft  = g_object_get_data(G_OBJECT(handleBoxColorMapGrid), "EntryLeft");
+			GtkWidget* entryRight = g_object_get_data(G_OBJECT(handleBoxColorMapGrid), "EntryRight");
+			GtkWidget* darea      = g_object_get_data(G_OBJECT(handleBoxColorMapGrid), "DrawingArea");
+
+			g_object_set_data(G_OBJECT(handleBoxColorMapGrid),"ColorMap", colorMap);
+			g_object_set_data(G_OBJECT(entryLeft),"ColorMap", colorMap);
+			g_object_set_data(G_OBJECT(entryRight),"ColorMap", colorMap);
+			g_object_set_data(G_OBJECT(darea),"ColorMap", colorMap);
+			color_map_show(handleBoxColorMapGrid);
+		}
+		else
+		{
+			printf("Error handleBoxColorMapGrid ==NULL\n");
+		}
+	}
+	if(TypeGrid == GABEDIT_TYPEGRID_SAS)
+	{
+		Define_Iso(0.0);
+		glarea_rafresh(GLArea);
+	}
+	else create_iso_orbitals();
+}
+/**************************************************************************/
 void read_mapping_cube_file(gchar* filename)
 {
-	FILE* file = FOpen(filename, "r");
+	FILE* file = FOpen(filename, "rb");
 	gint len = BSIZE;
 	gchar t[BSIZE];
 	gint Natoms;
@@ -412,9 +470,7 @@ void read_mapping_cube_file(gchar* filename)
 	gfloat Z[3];
 	Grid* tmpGrid;
 	gfloat xh, yh, zh;
-	gfloat scal;
-	gint i, j, k;
-	ColorMap* colorMap = NULL;
+	gint i, j;
 
 	if(!file)
 	{
@@ -557,6 +613,7 @@ void read_mapping_cube_file(gchar* filename)
 	}
 
 	tmpGrid = get_grid_from_gauss_molpro_cube_file(0,file,1,1,N,XYZ0,X,Y,Z);
+	fclose(file);
 	if(!tmpGrid)
 	{
 		sprintf(t,"Sorry, tmpGrid=NULL I can not  read cube from %s file",filename);
@@ -564,47 +621,8 @@ void read_mapping_cube_file(gchar* filename)
 		return;
 	}
 
-	progress_orb(0,3,TRUE);
-	scal = (gfloat)1.01/grid->N[0];
-	for(i=0;i<grid->N[0];i++)
-	{
-		for(j=0;j<grid->N[1];j++)
-		{
-			for(k=0;k<grid->N[2];k++)
-			{
-				grid->point[i][j][k].C[4] = tmpGrid->point[i][j][k].C[3];
-			}
-		}
-		if(CancelCalcul) 
-		{
-			progress_orb(0,3,TRUE);
-			break;
-		}
-		progress_orb(scal,3,FALSE);
-	}
-	progress_orb(0,3,TRUE);
+	mapping_cube_by_an_other_cube(tmpGrid);
 	free_grid(tmpGrid);
-	fclose(file);
-	limits = grid->limits;
-	grid->mapped = TRUE;
-	RebuildSurf = TRUE;
-	colorMap = new_colorMap_fromGrid(grid);
-	{
-		GtkWidget* handleBoxColorMapGrid = g_object_get_data(G_OBJECT(PrincipalWindow), "HandleboxColorMapGrid ");
-		if(handleBoxColorMapGrid)
-		{
-			GtkWidget* entryLeft  = g_object_get_data(G_OBJECT(handleBoxColorMapGrid), "EntryLeft");
-			GtkWidget* entryRight = g_object_get_data(G_OBJECT(handleBoxColorMapGrid), "EntryRight");
-			GtkWidget* darea      = g_object_get_data(G_OBJECT(handleBoxColorMapGrid), "DrawingArea");
-
-			g_object_set_data(G_OBJECT(handleBoxColorMapGrid),"ColorMap", colorMap);
-			g_object_set_data(G_OBJECT(entryLeft),"ColorMap", colorMap);
-			g_object_set_data(G_OBJECT(entryRight),"ColorMap", colorMap);
-			g_object_set_data(G_OBJECT(darea),"ColorMap", colorMap);
-			color_map_show(handleBoxColorMapGrid);
-		}
-	}
-	create_iso_orbitals();
 }
 /********************************************************************************/
 void save_grid_gabedit_cube_file(gchar* filename)
@@ -635,18 +653,18 @@ void save_grid_gabedit_cube_file(gchar* filename)
 
 	set_status_label_info("Geometry","Writing...");
 
-	progress_orb(0,0,TRUE);
+	progress_orb(0,GABEDIT_PROGORB_SAVEGEOM,TRUE);
 	scal = (gfloat)1.01/Ncenters;
 
 	dum = 0.0;
 	for(j=0; j<(gint)Ncenters; j++)
 	{
-		progress_orb(scal,0,FALSE);
+		progress_orb(scal,GABEDIT_PROGORB_SAVEGEOM,FALSE);
 		fprintf(file,"%d %f %f %f %f\n",(gint)GeomOrb[j].Prop.atomicNumber,dum,GeomOrb[j].C[0],GeomOrb[j].C[1],GeomOrb[j].C[2]);
 	}
 	set_status_label_info("Geometry","Ok");
 
-	progress_orb(0,3,TRUE);
+	progress_orb(0,GABEDIT_PROGORB_SAVEGRID,TRUE);
 	scal = (gfloat)1.01/grid->N[0];
  
 	set_status_label_info("Grid","Writing...");
@@ -663,13 +681,13 @@ void save_grid_gabedit_cube_file(gchar* filename)
 		}
 		if(CancelCalcul) 
 		{
-			progress_orb(0,3,TRUE);
+			progress_orb(0,GABEDIT_PROGORB_SAVEGRID,TRUE);
 			break;
 		}
 
-		progress_orb(scal,3,FALSE);
+		progress_orb(scal,GABEDIT_PROGORB_SAVEGRID,FALSE);
 	}
-	progress_orb(0,3,TRUE);
+	progress_orb(0,GABEDIT_PROGORB_SAVEGRID,TRUE);
 	set_status_label_info("Grid","Ok");
 	CancelCalcul = FALSE;
 	fclose(file);
@@ -687,8 +705,8 @@ gint get_orbitals_number_from_molpro_cube_file(FILE* file,gint N[])
 	*/
 
 	/*Debug("Begin scan orbitals molpro cube file \n");*/
-	progress_orb(0,4,TRUE);
-	progress_orb(0,4,FALSE);
+	progress_orb(0,GABEDIT_PROGORB_SCANFILEGRID,TRUE);
+	progress_orb(0,GABEDIT_PROGORB_SCANFILEGRID,FALSE);
 	while(!feof(file) && !CancelCalcul)
 	{
 		if(!fgets(t,len,file))  /* Nx, X0,X1,X2 */   
@@ -707,7 +725,7 @@ gint get_orbitals_number_from_molpro_cube_file(FILE* file,gint N[])
 		k += nval;
 		/* Debug("k=%d\n",k);*/
 		if(k%N[2]==0)
-			progress_orb(-0.1,4,FALSE);
+			progress_orb(-0.1,GABEDIT_PROGORB_SCANFILEGRID,FALSE);
 	}
 	if(!CancelCalcul)
 	{
@@ -717,7 +735,7 @@ gint get_orbitals_number_from_molpro_cube_file(FILE* file,gint N[])
 	else
 		norbs = 0;
 
-	progress_orb(0,0,TRUE);
+	progress_orb(0,GABEDIT_PROGORB_SCANFILEGRID,TRUE);
 	return norbs;
 }
 /****************************************************************************************************************/
@@ -843,7 +861,7 @@ Grid* get_grid_from_gauss_molpro_cube_file(gint typefile,FILE* file,gint num,gin
 
 	grid = grid_point_alloc(N,limits);
 
-	progress_orb(0,3,TRUE);
+	progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
 	scal = (gfloat)1.01/grid->N[0];
  
 	V = g_malloc((N[2]+6)*sizeof(gfloat));
@@ -888,11 +906,11 @@ Grid* get_grid_from_gauss_molpro_cube_file(gint typefile,FILE* file,gint num,gin
 		}
 		if(CancelCalcul) 
 		{
-			progress_orb(0,3,TRUE);
+			progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
 			break;
 		}
 
-		progress_orb(scal,3,FALSE);
+		progress_orb(scal,GABEDIT_PROGORB_READGRID,FALSE);
 	}
 
 	if(CancelCalcul)
@@ -900,7 +918,7 @@ Grid* get_grid_from_gauss_molpro_cube_file(gint typefile,FILE* file,gint num,gin
 		grid = free_grid(grid);
 	}
 	g_free(V);
-	progress_orb(0,3,TRUE);
+	progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
 	return grid;
 }
 /**************************************************************/
@@ -925,7 +943,7 @@ gboolean read_geometry_from_gauss_cube_file(FILE* file,gint Natoms)
 
 	set_status_label_info("Geometry","Reading");
 
-	progress_orb(0,0,TRUE);
+	progress_orb(0,GABEDIT_PROGORB_READGEOM,TRUE);
 	scal = (gfloat)1.01/Ncenters;
 
 	j=-1;
@@ -934,7 +952,7 @@ gboolean read_geometry_from_gauss_cube_file(FILE* file,gint Natoms)
 		j++;
 		if(j>=(gint)Ncenters)
 			break;
-		progress_orb(scal,0,FALSE);
+		progress_orb(scal,GABEDIT_PROGORB_READGEOM,FALSE);
 		if(!fgets(t,len,file))
 		{
 			OK = FALSE;
@@ -957,6 +975,8 @@ gboolean read_geometry_from_gauss_cube_file(FILE* file,gint Natoms)
 		}
 		/* Debug("\n");*/
 		 GeomOrb[j].Prop = prop_atom_get(GeomOrb[j].Symb);
+		GeomOrb[j].partialCharge = 0.0;
+		GeomOrb[j].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[j].Symb);
 	}
 
 	for(i=0;i<3;i++)
@@ -1134,7 +1154,7 @@ static GtkWidget *create_orbitals_number_frame( GtkWidget *vboxall,GtkWidget **e
 /**************************************************************************/
 void read_gauss_molpro_cube_orbitals_file(gchar* filename,gint numorb,gint Norbs,gint typefile)
 {
-	FILE* file = FOpen(filename, "r");
+	FILE* file = FOpen(filename, "rb");
 	gchar* tmp;
 	gint len = BSIZE;
 	gchar t[BSIZE];
@@ -1369,7 +1389,7 @@ static void create_window_list_orbitals_numbers(GtkWidget *w,gint norbs,gchar* f
 /**************************************************************/
 void read_gauss_molpro_cube_file(GabEditTypeCube typefile,gchar* filename)
 {
-	FILE* file = FOpen(filename, "r");
+	FILE* file = FOpen(filename, "rb");
 	gchar* tmp;
 	gint len = BSIZE;
 	gchar t[BSIZE];
@@ -1826,7 +1846,8 @@ void mapping_cube(GabeditFileChooser *SelecFile, gint response_id)
 	while( gtk_events_pending() )
 		gtk_main_iteration();
 
-	TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
+	if(TypeGrid != GABEDIT_TYPEGRID_SAS)
+		TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
 	read_mapping_cube_file(FileName);
 }
 /********************************************************************************/
@@ -1846,3 +1867,44 @@ void save_cube_gabedit_file(GabeditFileChooser *SelecFile, gint response_id)
 	save_grid_gabedit_cube_file(FileName);
 }
 /********************************************************************************/
+void mapping_with_mep(gint N[],GridLimits limits, PoissonSolverMethod psMethod)
+{
+	Grid* mep = NULL;
+	GabEditTypeGrid oldTypeGrid = TypeGrid;
+
+	if(psMethod != GABEDIT_UNK)
+		mep = solve_poisson_equation_from_orbitals(N,limits, psMethod);
+	else
+		mep = compute_mep_grid_using_multipol_from_orbitals(N, limits, 2);
+
+	TypeGrid = oldTypeGrid;
+	if(!mep) return;
+	mapping_cube_by_an_other_cube(mep);
+	free_grid(mep);
+}
+/********************************************************************************/
+void mapping_with_mep_from_multipol(gint lmax)
+{
+	Grid* mep = NULL;
+	GabEditTypeGrid oldTypeGrid = TypeGrid;
+
+	mep = compute_mep_grid_using_multipol_from_orbitals(grid->N, grid->limits, lmax);
+
+	TypeGrid = oldTypeGrid;
+	if(!mep) return;
+	mapping_cube_by_an_other_cube(mep);
+	free_grid(mep);
+}
+/********************************************************************************/
+void mapping_with_mep_from_charges()
+{
+	Grid* mep = NULL;
+	GabEditTypeGrid oldTypeGrid = TypeGrid;
+
+	mep = compute_mep_grid_using_partial_charges_cube_grid(grid);
+
+	TypeGrid = oldTypeGrid;
+	if(!mep) return;
+	mapping_cube_by_an_other_cube(mep);
+	free_grid(mep);
+}

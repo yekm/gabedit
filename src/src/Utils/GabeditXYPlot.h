@@ -80,6 +80,9 @@ struct _GabeditXYPlot
   
   PangoLayout **h_legends;
   PangoLayout **v_legends;
+
+  gchar** h_legends_str;
+  gchar** v_legends_str;
   
   gint legends_width;
   gint legends_height;

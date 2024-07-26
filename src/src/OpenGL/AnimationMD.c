@@ -661,7 +661,7 @@ static gboolean read_gaussian_file_geomi_str(gchar *FileName, gint num, gchar* s
 	AtomMD* listOfAtoms = NULL;
 
   
- 	file = FOpen(FileName, "r");
+ 	file = FOpen(FileName, "rb");
 
 	t=g_malloc(BSIZE);
  	for(i=0;i<5;i++) AtomCoord[i]=g_malloc(BSIZE*sizeof(char));
@@ -722,6 +722,8 @@ static gboolean read_gaussian_file_geomi_str(gchar *FileName, gint num, gchar* s
 
     			sprintf(listOfAtoms[j].symbol,"%s",symb_atom_get((guint)atoi(AtomCoord[0])));
     			for(i=0;i<3;i++) listOfAtoms[j].C[i]=atof(ang_to_bohr(AtomCoord[i+1]));
+			listOfAtoms[j].partialCharge = 0.0;
+			listOfAtoms[j].nuclearCharge = get_atomic_number_from_symbol(listOfAtoms[j].symbol);
 		}
 		if(num >0 && (gint)numgeom-1 == num) break;
  	}while(!feof(file));
@@ -751,7 +753,7 @@ static gboolean read_gaussian_file_geomi(gchar *FileName, gint num, GeometryMD* 
 		Message("Sorry\n No file slected","Error",TRUE);
     		return FALSE;
  	}
- 	file = FOpen(FileName, "r");
+ 	file = FOpen(FileName, "rb");
  	if(file ==NULL)
  	{
   		Message("Sorry\nI can not open this file","Error",TRUE);
@@ -841,7 +843,7 @@ static gint get_number_of_geomtries_in_gaussian(gchar *fileName)
  	FILE *file;
 	gint nG = 0;
   
- 	file = FOpen(fileName, "r");
+ 	file = FOpen(fileName, "rb");
 	if(!file) return 0;
 	t = g_malloc(BSIZE*sizeof(gchar));
  	while(!feof(file))
@@ -864,7 +866,7 @@ static void scan_geomtries_position_in_gaussian(gchar *fileName)
 	for(j=0;j<geometriesMD.numberOfGeometries;j++)
 		geometriesMD.geometries[j].filePos = -1;
   
- 	file = FOpen(fileName, "r");
+ 	file = FOpen(fileName, "rb");
 	if(!file) return ;
 	t = g_malloc(BSIZE*sizeof(gchar));
 	j = 0;
@@ -910,11 +912,13 @@ static gboolean read_MD_gaussian_file_step(gchar* fileName, gint step)
 		listOfAtoms[i].V[0] = 0;
 		listOfAtoms[i].V[1] = 0;
 		listOfAtoms[i].V[2] = 0;
+		listOfAtoms[i].partialCharge = 0.0;
+		listOfAtoms[i].nuclearCharge = get_atomic_number_from_symbol(listOfAtoms[i].symbol);
 	}
 	
 	if(geometriesMD.geometries[j].filePos<0) return FALSE;
   
- 	file = FOpen(fileName, "r");
+ 	file = FOpen(fileName, "rb");
 	if(!file) return FALSE;
 	t = g_malloc(BSIZE*sizeof(gchar));
 	OK = FALSE;
@@ -1078,7 +1082,7 @@ static gboolean read_gabedit_MD_file(gchar *fileName)
 	g_free(tmp);
 	set_status_label_info("File Type","Gabedit");
 
- 	file = FOpen(fileName, "r");
+ 	file = FOpen(fileName, "rb");
 	t = g_malloc(BSIZE*sizeof(gchar));
 	if(file ==NULL)
 	{
@@ -1153,6 +1157,9 @@ static gboolean read_gabedit_MD_file(gchar *fileName)
 					geometriesMD.geometries[j].listOfAtoms[i].V[0] = vdum1;
 					geometriesMD.geometries[j].listOfAtoms[i].V[1] = vdum2;
 					geometriesMD.geometries[j].listOfAtoms[i].V[2] = vdum3;
+					geometriesMD.geometries[j].listOfAtoms[i].partialCharge = 0.0;
+					geometriesMD.geometries[j].listOfAtoms[i].nuclearCharge = 
+						get_atomic_number_from_symbol(geometriesMD.geometries[j].listOfAtoms[i].symbol);
 				}
 			}
 			nG = j;
@@ -1269,6 +1276,8 @@ static gboolean set_geometry(gint k)
     		GeomOrb[j].C[2] = listOfAtoms[j].C[2];
   		GeomOrb[j].Prop = prop_atom_get(GeomOrb[j].Symb);
 		GeomOrb[j].Prop.covalentRadii *=1.0;
+		GeomOrb[j].partialCharge = listOfAtoms[j].partialCharge;
+		GeomOrb[j].nuclearCharge = listOfAtoms[j].nuclearCharge;
 	}
 	Ncenters = nAtoms;
 	init_atomic_orbitals();
@@ -2196,7 +2205,7 @@ static void add_widget (GtkUIManager *manager, GtkWidget   *widget, GtkContainer
 	GtkWidget *handlebox;
 
 	handlebox =gtk_handle_box_new ();
-	gtk_widget_ref (handlebox);
+	g_object_ref (handlebox);
   	gtk_handle_box_set_handle_position  (GTK_HANDLE_BOX(handlebox),GTK_POS_LEFT);
 	/*   GTK_SHADOW_NONE,  GTK_SHADOW_IN,  GTK_SHADOW_OUT, GTK_SHADOW_ETCHED_IN, GTK_SHADOW_ETCHED_OUT */
 	gtk_handle_box_set_shadow_type(GTK_HANDLE_BOX(handlebox),GTK_SHADOW_OUT);

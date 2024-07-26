@@ -88,8 +88,8 @@ static void c_one_entry (GtkWidget *bframe,gchar *titre,gchar *tlabel,gchar *mod
 
   vboxall = create_vbox(fp);
   frame = gtk_frame_new (titre);
-  gtk_widget_ref (frame);
-  g_object_set_data_full (G_OBJECT (fp), "frame", frame,(GtkDestroyNotify) gtk_widget_unref);
+  g_object_ref (frame);
+  g_object_set_data_full (G_OBJECT (fp), "frame", frame,(GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
   gtk_container_add (GTK_CONTAINER (vboxall), frame);
   gtk_widget_show (frame);
@@ -97,14 +97,14 @@ static void c_one_entry (GtkWidget *bframe,gchar *titre,gchar *tlabel,gchar *mod
   vboxframe = create_vbox(frame);
    hbox1 = create_hbox(vboxframe);
   label = gtk_label_new (tlabel);
-  gtk_widget_ref (label);
-  g_object_set_data_full (G_OBJECT (fp), "label", label,(GtkDestroyNotify) gtk_widget_unref);
+  g_object_ref (label);
+  g_object_set_data_full (G_OBJECT (fp), "label", label,(GtkDestroyNotify) g_object_unref);
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (hbox1), label, TRUE, FALSE, 0);
 
   entry = gtk_entry_new ();
-  gtk_widget_ref (entry);
-  g_object_set_data_full (G_OBJECT (fp), "entry", entry,(GtkDestroyNotify) gtk_widget_unref);
+  g_object_ref (entry);
+  g_object_set_data_full (G_OBJECT (fp), "entry", entry,(GtkDestroyNotify) g_object_unref);
   gtk_widget_show (entry);
   gtk_box_pack_start (GTK_BOX (hbox1), entry, FALSE, TRUE, 0);
   gtk_entry_set_text(GTK_ENTRY(entry),set);

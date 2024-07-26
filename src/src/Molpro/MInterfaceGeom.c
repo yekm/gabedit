@@ -79,9 +79,9 @@ void AjoutePageGeom(GtkWidget *NoteBook,GeomS *geom)
   window1=Frame;
   vbox1 = BoiteV;
   hbox1 = gtk_hbox_new (FALSE, 0);
-  gtk_widget_ref (hbox1);
+  g_object_ref (hbox1);
   g_object_set_data_full(G_OBJECT (window1), "hbox1", hbox1,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (hbox1);
   gtk_box_pack_start (GTK_BOX (vbox1), hbox1, FALSE, FALSE, 0);
 
@@ -107,23 +107,23 @@ void AjoutePageGeom(GtkWidget *NoteBook,GeomS *geom)
   g_list_free (combo2_items);
 
   combo_entry2 = GTK_BIN (combo2)->child;
-  gtk_widget_ref (combo_entry2);
+  g_object_ref (combo_entry2);
   g_object_set_data_full(G_OBJECT (window1), "combo_entry2", combo_entry2,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (combo_entry2);
 
 
   label3 = gtk_label_new ("         Options :    ");
-  gtk_widget_ref (label3);
+  g_object_ref (label3);
   g_object_set_data_full(G_OBJECT (window1), "label3", label3,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (label3);
   gtk_box_pack_start (GTK_BOX (hbox1), label3, FALSE, FALSE, 0);
 
   combo3 = gtk_combo_box_entry_new_text ();
-  gtk_widget_ref (combo3);
+  g_object_ref (combo3);
   g_object_set_data_full(G_OBJECT (window1), "combo3", combo3,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_set_size_request(GTK_WIDGET(combo3),100,-1);
   gtk_widget_show (combo3);
   gtk_box_pack_start (GTK_BOX (hbox1), combo3, FALSE, FALSE, 0);
@@ -138,9 +138,9 @@ void AjoutePageGeom(GtkWidget *NoteBook,GeomS *geom)
   g_list_free (combo3_items);
 
   combo_entry3 = GTK_BIN (combo3)->child;
-  gtk_widget_ref (combo_entry3);
+  g_object_ref (combo_entry3);
   g_object_set_data_full(G_OBJECT (window1), "combo_entry3", combo_entry3,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
 
   gtk_widget_show (combo_entry3);
 
@@ -149,9 +149,9 @@ void AjoutePageGeom(GtkWidget *NoteBook,GeomS *geom)
 */
 
   hseparator2 = gtk_hseparator_new ();
-  gtk_widget_ref (hseparator2);
+  g_object_ref (hseparator2);
   g_object_set_data_full(G_OBJECT (BoiteV), "hseparator2", hseparator2,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (hseparator2);
   gtk_box_pack_start (GTK_BOX (BoiteV), hseparator2, FALSE, FALSE, 0);
 

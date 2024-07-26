@@ -348,6 +348,7 @@ static gboolean atomInRing(Molecule* m, gint numAtom, gint ringSize)
 	doneRing = FALSE;
 	nBondsRing = 0;
 	initStack(m->numberOfAtoms);
+	if(!m->connected) return FALSE;
 	return inRingRecursive( m, numAtom,  numAtom, ringSize, TRUE);
 }
 /************************************************************************/
@@ -424,9 +425,11 @@ gint sp(Molecule*m, gint atomNumber)
 {
 	gint i;
 	gint spHybridation = 0;
-	gint totalNumberOfBonds = m->connected[ atomNumber ][ 0 ];
+	gint totalNumberOfBonds = 0;
 
 
+	if(!m->connected) return 0;
+	totalNumberOfBonds = m->connected[ atomNumber ][ 0 ];
 	if ( m->numberOfTripleBonds[atomNumber] >= 1 ) return 1;
 	else if ( m->numberOfDoubleBonds[atomNumber] >= 2 ) return 1;
 	else if ( m->numberOfDoubleBonds[atomNumber] == 1 ) spHybridation += 2;
@@ -466,7 +469,10 @@ static gboolean isConnectedTo( Molecule* m, gint atomA, gchar* expression, gbool
 	}
 	inStack[ atomA ] = TRUE;
 	if ( expression == NULL ) return TRUE;
+	if(!m->connected) return FALSE;
 	numberOfConnections = m->connected[ atomA ][ 0 ];
+	/* printf("numberOfConnections = %d\n",numberOfConnections);*/
+
 	rootAtom = g_strdup(expression);
 	restOfExpression = NULL;
 	index = strstr(expression, "(" );
@@ -604,7 +610,7 @@ static gboolean isConnectedTo( Molecule* m, gint atomA, gchar* expression, gbool
 static gchar* getAmberTypeOfAtom(Molecule* m, gint atomNumber)
 {
 	GeomDef* geom = m->geom;
-	/*printf("Atom number = %d symbol = %s\n",atomNumber, geom[atomNumber].Prop.symbol);*/
+	/* printf("Atom number = %d symbol = %s\n",atomNumber, geom[atomNumber].Prop.symbol);*/
 	if ( !strcmp(geom[atomNumber].Prop.symbol,"H" ))
 	{
 		if (  isConnectedTo( m, atomNumber, "N(*4)", TRUE ) ) return "H";
@@ -841,6 +847,7 @@ void calculTypesAmber(GeomDef* geom, gint nAtoms)
 		if (  isConnectedTo( &m, i, "C", TRUE ) ) printf("atom number %d  have %s type \n",i+1,"HC");
 		*/
 
+		/* printf("i = %d\n",i);*/
 		if(geom[i].mmType) g_free(geom[i].mmType);
 		geom[i].mmType = g_strdup(getAmberTypeOfAtom(&m, i));
 	}

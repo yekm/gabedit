@@ -83,6 +83,8 @@ static void clearList(GtkWidget* myList);
 static void removeFromList(GtkWidget* myList, gint ligne);
 static void insertToList(GtkWidget* myList, gint ligne, gchar* texts[], gint nColumns);
 static void appendToList(GtkWidget* myList, gchar* texts[], gint nColumns);
+static gint get_info_one_center(gchar* t, gchar* info[]);
+static void set_center(gchar* info[]);
 /********************************************************************************/
 static void DialogueAdd();
 static void DialogueEdit();
@@ -1313,9 +1315,9 @@ static void DialogueTransInVar()
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) gtk_widget_unref);
+	  frame,(GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
    gtk_box_pack_start_defaults(
          GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
@@ -1556,9 +1558,9 @@ static void DialogueTransInConst()
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) gtk_widget_unref);
+	  frame,(GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
    gtk_box_pack_start_defaults(
          GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
@@ -2147,9 +2149,9 @@ static void DialogueAdd()
 
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) gtk_widget_unref);
+	  frame,(GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
    gtk_box_pack_start_defaults(
          GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
@@ -2360,9 +2362,9 @@ static void DialogueEdit()
 
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) gtk_widget_unref);
+	  frame,(GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
    gtk_box_pack_start_defaults(
          GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
@@ -2528,9 +2530,9 @@ static void DialogueDelete()
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) gtk_widget_unref);
+	  frame,(GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
    gtk_box_pack_start_defaults(
          GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
@@ -3386,6 +3388,116 @@ void read_Zmat_from_qchem_input_file(gchar *NomFichier)
  if(ZoneDessin != NULL)
 	rafresh_drawing();
  set_last_directory(NomFichier);
+}
+/*************************************************************************************/
+void read_Zmat_from_mopac_input_file(gchar *FileName)
+{
+	gchar *t;
+	gboolean OK;
+	gchar *AtomCoord[10];
+	FILE *fd;
+	guint taille=BSIZE;
+	guint i,l;
+
+	for(i=0;i<10;i++)
+		AtomCoord[i]=g_malloc(taille*sizeof(gchar));
+	fd = FOpen(FileName, "r");
+	if(fd == NULL)
+	{
+		t = g_strdup_printf("Sorry\n I can not open \"%s\" file",FileName); 
+		MessageGeom(t," Error ",TRUE);
+		g_free(t);
+		return;
+	}
+	t=g_malloc(taille);
+	OK = TRUE;
+  	while(!feof(fd) )    
+  	{
+ 		if(!fgets(t, taille, fd))break;
+		if(t[0] !='*') break;
+	}
+	if(!fgets(t,taille,fd)) OK = FALSE;
+	if(!fgets(t,taille,fd)) OK = FALSE;
+	if(!fgets(t,taille,fd)) OK = FALSE;
+	if(!OK)
+	{
+		g_free(t);
+		t = g_strdup_printf("Sorry\n I can not read geometry from \"%s\" file",FileName); 
+		MessageGeom(t," Error ",TRUE);
+		g_free(t);
+		return;
+	}
+	if( get_info_one_center(t,AtomCoord) == EOF)
+	{
+		 MessageGeom("Sorry\n I can not read geometry from this file"," Error ",TRUE);
+ 		 g_free(t);
+		for(i=0;i<10;i++)
+			g_free(AtomCoord[i]);
+		freeGeom();
+		freeVariables();
+		fclose(fd);
+		return;
+	}
+	freeGeom();
+	freeVariables();
+	NcentersZmat=0;
+	NcentersZmat++;
+	Geom=g_malloc(sizeof(GeomAtomDef));
+	set_center(AtomCoord);
+	
+	while(!feof(fd) )
+	{
+		fgets(t,taille,fd);
+		if(feof(fd)) break;
+		if(this_is_a_backspace(t)) break;
+		if( get_info_one_center(t,AtomCoord) == EOF) break;
+  		NcentersZmat++;
+		Geom=g_realloc(Geom,NcentersZmat*sizeof(GeomAtomDef));
+		set_center(AtomCoord);
+		i = NcentersZmat-1;
+		if(NcentersZmat>0 && atoi(AtomCoord[2])==1)trans_coord_Zmat('R',i,FALSE);
+		if(NcentersZmat>1 && atoi(AtomCoord[4])==1)trans_coord_Zmat('A',i,FALSE);
+		if(NcentersZmat>2 && atoi(AtomCoord[6])==1)trans_coord_Zmat('D',i,FALSE);
+        }
+ 
+	fclose(fd);
+	for(i=0;i<10;i++)
+		g_free(AtomCoord[i]);
+	for (i=0;i<NcentersZmat;i++)
+	{
+		Geom[i].Symb[0]=toupper(Geom[i].Symb[0]);
+		l=strlen(Geom[i].Symb);
+		if (l==2) Geom[i].Symb[1]=tolower(Geom[i].Symb[1]);
+		if(l<3) t=g_strdup(Geom[i].Symb);
+		else
+		{
+			t[0]=Geom[i].Symb[0];
+			t[1]=Geom[i].Symb[1];
+		}
+		if(ThisIsNotAnAtom(t))
+		{	 	
+			MessageGeom("Sorry\n This is not a Zmatrix mopac file"," Error ",TRUE);
+			g_free(t);
+			freeGeom();
+			freeVariables();
+			return;
+		}
+	}
+	g_free(t);
+	if(Units==0)
+	for (i=1;i<NcentersZmat;i++)
+			Geom[i].R=ang_to_bohr(Geom[i].R);
+
+	MethodeGeom = GEOM_IS_ZMAT;
+	if(GeomIsOpen)
+	{
+     		create_geom_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
+   		clearList(list);
+		append_list_geom();
+		append_list_variables();
+	}
+	if(ZoneDessin != NULL) rafresh_drawing();
+	if(GeomIsOpen && iprogram == PROG_IS_GAUSS) set_spin_of_electrons();
 }
 /*************************************************************************************/
  void read_ZMatrix_file_no_add_list(gchar* NomFichier)
@@ -4402,9 +4514,9 @@ static void DialogueDeleteV()
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) gtk_widget_unref);
+	  frame,(GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
    gtk_box_pack_start_defaults(
          GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
@@ -4464,9 +4576,9 @@ static void DialogueEditV()
 
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) gtk_widget_unref);
+	  frame,(GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
    gtk_box_pack_start_defaults(
          GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);
@@ -4575,9 +4687,9 @@ static void DialogueAddV()
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
 
-  gtk_widget_ref (frame);
+  g_object_ref (frame);
   g_object_set_data_full(G_OBJECT (Dialogue), "frame",
-	  frame,(GtkDestroyNotify) gtk_widget_unref);
+	  frame,(GtkDestroyNotify) g_object_unref);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
    gtk_box_pack_start_defaults(
          GTK_BOX(GTK_DIALOG(Dialogue)->vbox), frame);

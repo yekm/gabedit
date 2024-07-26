@@ -32,6 +32,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Molpro/Molpro.h"
 #include "../MPQC/MPQC.h"
 #include "../QChem/QChem.h"
+#include "../Mopac/Mopac.h"
 #include "../Gaussian/Gaussian.h"
 #include "../Geometry/GeomGlobal.h"
 #include "../Utils/UtilsInterface.h"
@@ -325,7 +326,7 @@ GtkWidget *create_radio_button_pixmap(GtkWidget *widget, gchar **data,gchar *str
   GtkWidget *Label = NULL;
 
   hbox = gtk_hbox_new (TRUE, 0);
-  gtk_widget_ref (hbox);
+  g_object_ref (hbox);
   gtk_widget_show (hbox);
  
  
@@ -400,7 +401,7 @@ GtkWidget *create_label_pixmap(GtkWidget *widget, gchar **data,gchar *string)
   GtkWidget *hbox;
 
   hbox = gtk_hbox_new (FALSE, 0);
-  gtk_widget_ref (hbox);
+  g_object_ref (hbox);
   gtk_widget_show (hbox);
  
   style = gtk_widget_get_style(widget);
@@ -434,7 +435,7 @@ GtkWidget *create_pixmap_label(GtkWidget *widget, gchar **data,gchar *string)
   GtkWidget *hbox;
 
   hbox = gtk_hbox_new (FALSE, 0);
-  gtk_widget_ref (hbox);
+  g_object_ref (hbox);
   gtk_widget_show (hbox);
  
   style = gtk_widget_get_style(widget);
@@ -495,7 +496,7 @@ GtkWidget *create_button_pixmap(GtkWidget *widget, gchar **data,gchar *string)
   GtkWidget *hbox;
 
   hbox = gtk_hbox_new (FALSE, 1);
-  gtk_widget_ref (hbox);
+  g_object_ref (hbox);
   gtk_widget_show (hbox);
  
  
@@ -724,9 +725,9 @@ void Cancel_YesNo(GtkWidget *widget, gpointer   data, GabeditSignalFunc func)
     
 	frame = gtk_frame_new (NULL);
     gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
-    gtk_widget_ref (frame);
+    g_object_ref (frame);
     g_object_set_data_full (G_OBJECT (DialogueMessage), "frame",
-	  frame,(GtkDestroyNotify) gtk_widget_unref);
+	  frame,(GtkDestroyNotify) g_object_unref);
     gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
     gtk_box_pack_start_defaults(
          GTK_BOX(GTK_DIALOG(DialogueMessage)->vbox), frame);
@@ -985,6 +986,60 @@ FilePosTypeGeom get_geometry_type_from_qchem_input_file(gchar *NomFichier)
   return j;
 }
 /**********************************************************************************/
+FilePosTypeGeom get_geometry_type_from_mopac_input_file(gchar *NomFichier)
+{
+ gchar *t;
+ FILE *fd;
+ guint taille=BSIZE;
+ FilePosTypeGeom j;
+ gint k;
+
+ 
+ j.geomtyp=GEOM_IS_OTHER;
+ j.numline=0;
+ j.units=1;
+ t=g_malloc(taille);
+ fd = FOpen(NomFichier, "r");
+ if(fd!=NULL)
+ {
+  	while(!feof(fd) )    
+  	{
+ 		if(!fgets(t, taille, fd))break;
+  		j.numline++;
+		if(t[0] !='*') break;
+	}
+ 	fgets(t, taille, fd);
+  	j.numline++;
+ 	fgets(t, taille, fd);
+  	j.numline++;
+/* First line of geometry */
+  if(!feof(fd) )    
+  {
+ 	if(!fgets(t, taille, fd))
+        {
+  		j.geomtyp = GEOM_IS_OTHER;
+        }
+        else
+        {
+		gchar dump[8][BSIZE];
+ 		j.numline++;
+
+		k = sscanf(t,"%s %s %s %s %s %s %s %s",dump[0],dump[1],dump[2],dump[3],dump[4], dump[5], dump[6], dump[7]);
+		if(k==8)
+			j.geomtyp = GEOM_IS_ZMAT;
+		else
+		if(k==7)
+			j.geomtyp = GEOM_IS_XYZ;
+		else
+			j.geomtyp = GEOM_IS_OTHER;
+        }
+   }
+ }     
+  fclose(fd);
+  g_free(t);
+  return j;
+}
+/**********************************************************************************/
 void read_geom_in_gamess_input(gchar *fileName)
 {
 	gchar* logfile;
@@ -1073,6 +1128,19 @@ void read_geom_in_qchem_input(gchar *NameFile)
     		Message("Sorry\nI can not read gemetry in Q-Chem input file\n"," Warning ",TRUE);
 }
 /**********************************************************************************/
+void read_geom_in_mopac_input(gchar *NameFile)
+{
+	FilePosTypeGeom j;
+ 	j=  get_geometry_type_from_mopac_input_file(NameFile);
+ 	if( j.geomtyp == GEOM_IS_XYZ)
+		read_XYZ_from_mopac_input_file(NameFile);
+      	else
+ 	if( j.geomtyp == GEOM_IS_ZMAT)
+		read_Zmat_from_mopac_input_file(NameFile);
+        else
+    		Message("Sorry\nI can not read gemetry in Mopac input file\n"," Warning ",TRUE);
+}
+/**********************************************************************************/
 void get_doc(gchar *NomFichier)
 {
 	gchar *t;
@@ -1124,6 +1192,7 @@ void get_doc(gchar *NomFichier)
 	else if(iprogram == PROG_IS_MOLCAS) fileopen.command=g_strdup(NameCommandMolcas);
 	else if(iprogram == PROG_IS_MOLPRO) fileopen.command=g_strdup(NameCommandMolpro);
 	else if(iprogram == PROG_IS_QCHEM) fileopen.command=g_strdup(NameCommandQChem);
+	else if(iprogram == PROG_IS_MOPAC) fileopen.command=g_strdup(NameCommandMopac);
      	else fileopen.command=NULL;
 
 	if(iprogram> PROG_IS_OTHER )
@@ -1200,6 +1269,13 @@ void get_doc(gchar *NomFichier)
  		fileopen.logfile=g_strdup_printf("%s.out",fileopen.projectname);
   		fileopen.moldenfile=g_strdup_printf("%s.out",fileopen.projectname);
  	}
+	else if(iprogram == PROG_IS_MOPAC)
+ 	{
+ 		fileopen.datafile = g_strdup_printf("%s.mop",fileopen.projectname);
+ 		fileopen.outputfile=g_strdup_printf("%s.out",fileopen.projectname);
+ 		fileopen.logfile=g_strdup_printf("%s.aux",fileopen.projectname);
+  		fileopen.moldenfile=g_strdup_printf("%s.out",fileopen.projectname);
+ 	}
 	else
 	{
  		fileopen.datafile = g_strdup_printf("%s",fileopen.projectname);
@@ -1213,6 +1289,7 @@ void get_doc(gchar *NomFichier)
 	else if( iprogram == PROG_IS_MOLPRO) read_geom_in_molpro_input(NomFichier);
 	else if( iprogram == PROG_IS_MPQC) read_geom_in_mpqc_input(NomFichier);
 	else if( iprogram == PROG_IS_QCHEM) read_geom_in_qchem_input(NomFichier);
+	else if( iprogram == PROG_IS_MOPAC) read_geom_in_mopac_input(NomFichier);
 	else if(iprogram == PROG_IS_MOLCAS)
 	{
 		setMolcasVariablesFromInputFile(NomFichier);
@@ -1221,7 +1298,7 @@ void get_doc(gchar *NomFichier)
 
 	data_modify(FALSE);
 
-	if(GeomConvIsOpen) find_energy_gamess_gauss_molcas_molpro_mpqc_qchem(NULL,NULL);
+	if(GeomConvIsOpen) find_energy_all(NULL,NULL);
 
 }
 /********************************************************************************/
@@ -1332,6 +1409,9 @@ void enreg_selec_doc(GabeditFileChooser *SelecteurFichier , gint response_id)
 		else
 		if(iprogram==PROG_IS_QCHEM)
 		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
+		else
+		if(iprogram==PROG_IS_MOPAC)
+		fileopen.datafile = g_strdup_printf("%s.mop",fileopen.projectname);
 		else
 		fileopen.datafile = g_strdup_printf("%s.com",fileopen.projectname);
 		if(NomFichier) g_free(NomFichier);
@@ -1479,6 +1559,13 @@ void new_doc_molcas(GtkWidget* wid, gpointer data)
  	newQChem();
 	iprogram = PROG_IS_QCHEM;
 	fileopen.command=g_strdup(NameCommandQChem);
+}
+/********************************************************************************/
+ void new_doc_mopac(GtkWidget* wid, gpointer data)
+{
+ 	newMopac();
+	iprogram = PROG_IS_MOPAC;
+	fileopen.command=g_strdup(NameCommandMopac);
 }
 /********************************************************************************/
 void new_doc_other(GtkWidget* wid, gpointer data)
@@ -1630,17 +1717,17 @@ GtkWidget *create_text(GtkWidget *win,GtkWidget *frame,gboolean editable)
   GtkWidget *Text;
   GtkWidget *scrolledwindow;
   scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
-  gtk_widget_ref (scrolledwindow);
+  g_object_ref (scrolledwindow);
   g_object_set_data_full (G_OBJECT (win), "scrolledwindow", scrolledwindow,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (scrolledwindow);
   gtk_container_add (GTK_CONTAINER (frame), scrolledwindow);
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
 
   Text = gabedit_text_new ();
-  gtk_widget_ref (Text);
+  g_object_ref (Text);
   g_object_set_data_full (G_OBJECT (win), "Text", Text,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (Text);
   gtk_container_add (GTK_CONTAINER (scrolledwindow), Text);
   gabedit_text_set_editable (GABEDIT_TEXT (Text), editable);
@@ -1740,14 +1827,14 @@ GtkWidget *create_label_button(GtkWidget *win,GtkWidget *frame,GtkWidget* Vbox,
   GtkWidget *hbox;
  
   hbox = gtk_hbox_new (FALSE, 2);
-  gtk_widget_ref (hbox);
+  g_object_ref (hbox);
   gtk_widget_show (hbox);
   gtk_box_pack_start (GTK_BOX (Vbox), hbox, FALSE, FALSE, 0);
 
   label = gtk_label_new (tlabel);
-  gtk_widget_ref (label);
+  g_object_ref (label);
   g_object_set_data_full (G_OBJECT (win), "label", label,
-                            (GtkDestroyNotify) gtk_widget_unref);
+                            (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (label);
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 2);
 
@@ -1891,8 +1978,8 @@ GtkWidget * create_hseparator(GtkWidget *vbox)
 {
 	GtkWidget *hseparator;
 	hseparator = gtk_hseparator_new ();
-	gtk_widget_ref (hseparator);
-	g_object_set_data_full (G_OBJECT (vbox), "hseparator", hseparator, (GtkDestroyNotify) gtk_widget_unref);
+	g_object_ref (hseparator);
+	g_object_set_data_full (G_OBJECT (vbox), "hseparator", hseparator, (GtkDestroyNotify) g_object_unref);
 	gtk_widget_show (hseparator);
 	gtk_box_pack_start (GTK_BOX (vbox), hseparator, FALSE, FALSE, 1);
 	return hseparator;
@@ -1902,8 +1989,8 @@ GtkWidget * create_vseparator(GtkWidget *hbox)
 {
 	GtkWidget *vseparator;
 	vseparator = gtk_vseparator_new ();
-	gtk_widget_ref (vseparator);
-	g_object_set_data_full (G_OBJECT (hbox), "vseparator", vseparator, (GtkDestroyNotify) gtk_widget_unref);
+	g_object_ref (vseparator);
+	g_object_set_data_full (G_OBJECT (hbox), "vseparator", vseparator, (GtkDestroyNotify) g_object_unref);
 	gtk_widget_show (vseparator);
 	gtk_box_pack_start (GTK_BOX (hbox), vseparator, FALSE, FALSE, 1);
 	return vseparator;
@@ -2024,8 +2111,8 @@ GtkWidget *create_checkbutton(GtkWidget *win,GtkWidget *box,gchar *tlabel)
 {
 	GtkWidget* checkbutton;
 	checkbutton = gtk_check_button_new_with_label (tlabel);
-	gtk_widget_ref (checkbutton);
-	g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton, (GtkDestroyNotify) gtk_widget_unref);
+	g_object_ref (checkbutton);
+	g_object_set_data_full (G_OBJECT (win), "checkbutton", checkbutton, (GtkDestroyNotify) g_object_unref);
 	gtk_widget_show (checkbutton);
 	gtk_box_pack_start (GTK_BOX (box), checkbutton, FALSE, FALSE, 0);
 	return checkbutton;
@@ -2047,8 +2134,8 @@ GtkWidget *Continue_YesNo(void (*func)(GtkWidget*,gpointer data),gpointer data,g
     
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
-	gtk_widget_ref (frame);
-	g_object_set_data_full (G_OBJECT (DialogueMessage), "frame", frame,(GtkDestroyNotify) gtk_widget_unref);
+	g_object_ref (frame);
+	g_object_set_data_full (G_OBJECT (DialogueMessage), "frame", frame,(GtkDestroyNotify) g_object_unref);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
 	gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(DialogueMessage)->vbox), frame);
 	gtk_widget_show (frame);
@@ -2225,9 +2312,29 @@ void new_qchem(GtkWidget *widget, gchar *data)
         {
 		new_doc_qchem(NULL, NULL);
 		iprogram = PROG_IS_QCHEM;
-		fileopen.command=g_strdup(NameCommandGamess);
+		fileopen.command=g_strdup(NameCommandQChem);
  	}
 }
+/**********************************************************************************/
+void new_mopac(GtkWidget *widget, gchar *data)
+{
+	gchar *t;
+ 	if(imodif == DATA_MOD_YES)
+        {
+		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
+		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
+		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		Continue_YesNo(new_doc_mopac, NULL,t);
+		g_free(t);
+        }
+        else
+        {
+		new_doc_mopac(NULL, NULL);
+		iprogram = PROG_IS_MOPAC;
+		fileopen.command=g_strdup(NameCommandMopac);
+ 	}
+}
+/**********************************************************************************/
 /**********************************************************************************/
  void new_other(GtkWidget *widget, gchar *data)
 {
@@ -2443,6 +2550,15 @@ void draw_density_orbitals_gamess_or_gauss_or_molcas_or_molpro(GtkWidget *wid,gp
   }
   else
   if( iprogram == PROG_IS_QCHEM)
+  {
+ 	gchar** FileName = g_malloc(2*sizeof(gchar*));
+ 	FileName[0] = NULL;
+	FileName[1] = g_strdup_printf("%s%s%s",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.outputfile);
+ 	view_orb(Fenetre,2,FileName);
+	g_free(FileName[1] );
+	g_free(FileName);
+  }
+  if( iprogram == PROG_IS_MOPAC)
   {
  	gchar** FileName = g_malloc(2*sizeof(gchar*));
  	FileName[0] = NULL;

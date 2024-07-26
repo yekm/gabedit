@@ -193,7 +193,7 @@ void find_text_win()
 
   vboxframe = create_vbox(frame);
   hbox1 = gtk_hbox_new (FALSE, 5);
-  gtk_widget_ref (hbox1);
+  g_object_ref (hbox1);
   gtk_widget_show (hbox1);
   gtk_box_pack_start (GTK_BOX (vboxframe), hbox1, FALSE, FALSE, 2);
   entry= create_combo_box_entry_liste_find(fp,hbox1," String to find :",liste,nliste);
@@ -208,7 +208,7 @@ void find_text_win()
   g_object_set_data(G_OBJECT (entry), "Label", label);
 
   hbox2 = gtk_hbox_new (TRUE, 0);
-  gtk_widget_ref (hbox2);
+  g_object_ref (hbox2);
   gtk_widget_show (hbox2);
   gtk_box_pack_start (GTK_BOX (vboxall), hbox2, FALSE, FALSE, 4);
   
@@ -307,8 +307,8 @@ void AjoutePageNotebook(char *label,GtkWidget **TextP)
   GABEDIT_TEXT(*TextP)->default_tab_width=7;
 */
 
-  gtk_widget_ref (*TextP);
-  g_object_set_data_full (G_OBJECT (Frame), "text", *TextP, (GtkDestroyNotify) gtk_widget_unref);
+  g_object_ref (*TextP);
+  g_object_set_data_full (G_OBJECT (Frame), "text", *TextP, (GtkDestroyNotify) g_object_unref);
   gtk_widget_show (*TextP);
   gtk_container_add (GTK_CONTAINER (scrolledwindow), *TextP);
   g_object_set_data(G_OBJECT (*TextP), "LabelOnglet", LabelOnglet);
@@ -360,7 +360,7 @@ void cree_text_notebook()
 
   iedit=1;
   NoteBookText = gtk_notebook_new();
-  g_object_set_data_full (G_OBJECT (NoteBookText), "Fenetre", Fenetre, (GtkDestroyNotify) gtk_widget_unref);
+  g_object_set_data_full (G_OBJECT (NoteBookText), "Fenetre", Fenetre, (GtkDestroyNotify) g_object_unref);
   g_signal_connect(G_OBJECT(NoteBookText),"switch_page", (GtkSignalFunc)view_result_calcul,NULL);
 
   gtk_box_pack_start(GTK_BOX (vboxtexts), NoteBookText,TRUE, TRUE, 0);

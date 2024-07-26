@@ -70,7 +70,7 @@ gint ReadCommandLines()
 /**********************************************/
 gint OpenDataFile(char * NameFile)
 {
- forb = FOpen(NameFile, "r");
+ forb = FOpen(NameFile, "rb");
  if(forb == NULL)
  {
    Debug("\n\nERROR Can not open %s data file\n\n",NameFile);
@@ -257,7 +257,7 @@ gboolean DefineBasisType(gchar *NomFichier)
  	}
 
  	t=g_malloc(taille*sizeof(gchar));
- 	forb = FOpen(NomFichier, "r");
+ 	forb = FOpen(NomFichier, "rb");
  	if(forb == NULL)
  	{
 		gchar buffer[BSIZE];
@@ -408,7 +408,7 @@ gboolean DefineGabeditMoldenBasisType(gchar *NomFichier,gchar* title)
  	}
 
  	t=g_malloc(taille*sizeof(gchar));
- 	forb = FOpen(NomFichier, "r");
+ 	forb = FOpen(NomFichier, "rb");
  	if(forb == NULL)
  	{
 		gchar buffer[BSIZE];
@@ -639,7 +639,8 @@ void DefineAtomicNumOrb()
 
 	for(j=0;j<NAOrb;j++)
 	{
-		i = AOrb[j].NumCenter;
+		if(AOrb) i = AOrb[j].NumCenter;
+		else if(SAOrb) i = SAOrb[j].NumCenter;
 		GeomOrb[i].NAOrb++;
 		if(!GeomOrb[i].NumOrb)
 			GeomOrb[i].NumOrb = g_malloc(GeomOrb[i].NAOrb*sizeof(gint));
@@ -668,6 +669,8 @@ void DefineCartBasis()
  }
 
  AOrb = g_malloc(NAOrb*sizeof(CGTF));
+ if(SAOrb) g_free(SAOrb);
+ SAOrb = NULL;
  
  k=-1;
  for(i=0;i<Ncenters;i++)
@@ -857,6 +860,8 @@ void DefineSphericalBasis()
 g_free(AOrb);
 NAOrb = NOrb;
 AOrb = temp;
+ if(SAOrb) g_free(SAOrb);
+ SAOrb = NULL;
 DefineAtomicNumOrb();
 /* DefineNorb();*/
 }

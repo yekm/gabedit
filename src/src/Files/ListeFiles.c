@@ -49,6 +49,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../../pixmaps/MolcasMini.xpm"
 #include "../../pixmaps/MPQCMini.xpm"
 #include "../../pixmaps/QChemMini.xpm"
+#include "../../pixmaps/MopacMini.xpm"
 #include "../../pixmaps/Book_close.xpm"
 #include "../../pixmaps/Page.xpm"
 
@@ -62,6 +63,7 @@ static GdkPixbuf *molproPixbuf = NULL;
 static GdkPixbuf *mpqcPixbuf = NULL;
 static GdkPixbuf *pcgamessPixbuf = NULL;
 static GdkPixbuf *qchemPixbuf = NULL;
+static GdkPixbuf *mopacPixbuf = NULL;
 static GdkPixbuf *bookPixbuf = NULL;
 static GdkPixbuf *pagePixbuf = NULL;
 
@@ -110,6 +112,7 @@ static void set_pixbuf()
 	if(!molproPixbuf) molproPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) molpro_mini_xpm);
 	if(!mpqcPixbuf) mpqcPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) mpqc_mini_xpm);
 	if(!qchemPixbuf) qchemPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) qchem_mini_xpm);
+	if(!mopacPixbuf) mopacPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) mopac_mini_xpm);
 	if(!pcgamessPixbuf) pcgamessPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) pcgamess_mini_xpm);
 	if(!bookPixbuf) bookPixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) book_close_xpm);
 	if(!pagePixbuf) pagePixbuf = gdk_pixbuf_new_from_xpm_data ((const char **) page_xpm);
@@ -232,6 +235,12 @@ static void set_fileopen(DataTree* data)
 	{
  		fileopen.outputfile = g_strdup_printf("%s.out",fileopen.projectname);
  		fileopen.logfile = g_strdup_printf("%s.out",fileopen.projectname);
+  		fileopen.moldenfile=g_strdup_printf("%s.out",fileopen.projectname);
+	}
+	else if(data->itype == PROG_IS_MOPAC)
+	{
+ 		fileopen.outputfile = g_strdup_printf("%s.out",fileopen.projectname);
+ 		fileopen.logfile = g_strdup_printf("%s.aux",fileopen.projectname);
   		fileopen.moldenfile=g_strdup_printf("%s.out",fileopen.projectname);
 	}
 	else if(data->itype == PROG_IS_PCGAMESS)
@@ -620,6 +629,7 @@ static void create_set_dialogue_window()
 		data->itype == PROG_IS_GAUSS || data->itype == PROG_IS_MOLCAS || 
 		data->itype == PROG_IS_MOLPRO || data->itype == PROG_IS_MPQC
 		|| data->itype == PROG_IS_QCHEM 
+		|| data->itype == PROG_IS_MOPAC 
 		|| data->itype == PROG_IS_GAMESS 
 		|| data->itype == PROG_IS_PCGAMESS 
 		)
@@ -655,6 +665,10 @@ static void create_set_dialogue_window()
 
 			case PROG_IS_QCHEM : 
 			t = g_strdup_printf("%s, %s.out, %s.out, %s.out",data->datafile,data->projectname,data->projectname,data->projectname);
+			break;
+
+			case PROG_IS_MOPAC : 
+			t = g_strdup_printf("%s, %s.out, %s.aux, %s.out",data->datafile,data->projectname,data->projectname,data->projectname);
 			break;
 
 			case GABEDIT_TYPENODE_XYZ :
@@ -922,7 +936,7 @@ static void create_remote_frame_popup(GtkWidget *hbox,DataTree* data)
   LabelLeft[2] = g_strdup("Directory");
 
 
-  if(data->itype == PROG_IS_GAUSS || data->itype == PROG_IS_MOLCAS || data->itype == PROG_IS_MOLPRO || data->itype == PROG_IS_MPQC || data->itype == PROG_IS_GAMESS || data->itype == PROG_IS_PCGAMESS || data->itype == PROG_IS_QCHEM )
+  if(data->itype == PROG_IS_GAUSS || data->itype == PROG_IS_MOLCAS || data->itype == PROG_IS_MOLPRO || data->itype == PROG_IS_MPQC || data->itype == PROG_IS_GAMESS || data->itype == PROG_IS_PCGAMESS || data->itype == PROG_IS_QCHEM ||  data->itype == PROG_IS_MOPAC )
   	LabelLeft[3] = g_strdup("Files");
   else
   	LabelLeft[3] = g_strdup("File");
@@ -992,6 +1006,10 @@ static void create_remote_frame_popup(GtkWidget *hbox,DataTree* data)
 		t = g_strdup_printf("%s, %s.out",data->datafile,data->projectname);
 		break;
 
+	case PROG_IS_MOPAC : 
+		t = g_strdup_printf("%s, %s.out, %s.aux",data->datafile,data->projectname,data->projectname);
+		break;
+
 	case GABEDIT_TYPENODE_XYZ :
 	case GABEDIT_TYPENODE_MOL2 :
 	case GABEDIT_TYPENODE_TINKER :
@@ -1034,7 +1052,7 @@ static void create_local_frame_popup(GtkWidget *hbox,DataTree* data)
   LabelLeft[0] = g_strdup("Host");
   LabelLeft[1] = g_strdup("Login");
   LabelLeft[2] = g_strdup("Directory");
-  if(data->itype == PROG_IS_GAUSS || data->itype == PROG_IS_MOLCAS ||data->itype == PROG_IS_MOLPRO || data->itype == PROG_IS_MPQC  || data->itype == PROG_IS_GAMESS || data->itype == PROG_IS_PCGAMESS || data->itype == PROG_IS_QCHEM)
+  if(data->itype == PROG_IS_GAUSS || data->itype == PROG_IS_MOLCAS ||data->itype == PROG_IS_MOLPRO || data->itype == PROG_IS_MPQC  || data->itype == PROG_IS_GAMESS || data->itype == PROG_IS_PCGAMESS || data->itype == PROG_IS_QCHEM || data->itype == PROG_IS_MOPAC )
   	LabelLeft[3] = g_strdup("Files");
   else
   	LabelLeft[3] = g_strdup("File");
@@ -1088,6 +1106,10 @@ static void create_local_frame_popup(GtkWidget *hbox,DataTree* data)
 
 	case PROG_IS_QCHEM : 
 		t = g_strdup_printf("%s, %s.out",data->datafile,data->projectname);
+		break;
+
+	case PROG_IS_MOPAC : 
+		t = g_strdup_printf("%s, %s.out, %s.aux",data->datafile,data->projectname, data->projectname);
 		break;
 	case GABEDIT_TYPENODE_XYZ :
 	case GABEDIT_TYPENODE_MOL2 :
@@ -1652,10 +1674,11 @@ static void get_doc_no_add_list(GtkWidget *wid, gpointer d)
 	}
 	else if(iprogram == PROG_IS_MPQC) read_geom_in_mpqc_input(NomFichier);
 	else if(iprogram == PROG_IS_QCHEM) read_geom_in_qchem_input(NomFichier);
+	else if(iprogram == PROG_IS_MOPAC) read_geom_in_mopac_input(NomFichier);
 
 	data_modify(FALSE);
 
-	if(GeomConvIsOpen) find_energy_gamess_gauss_molcas_molpro_mpqc_qchem(NULL,NULL);
+	if(GeomConvIsOpen) find_energy_all(NULL,NULL);
 }
 /********************************************************************************/
 static void select_row(DataTree* data)
@@ -1674,6 +1697,7 @@ static void select_row(DataTree* data)
         case GABEDIT_TYPENODE_MPQC:
         case GABEDIT_TYPENODE_PCGAMESS:
         case GABEDIT_TYPENODE_QCHEM:
+        case GABEDIT_TYPENODE_MOPAC:
         case NBNOD-1:
  	        if(imodif == DATA_MOD_YES)
             	{
@@ -1826,6 +1850,7 @@ static void tree_clear_all()
 	noeud[GABEDIT_TYPENODE_GAUSSIAN]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gaussian");
 	noeud[GABEDIT_TYPENODE_MOLCAS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Molcas");
 	noeud[GABEDIT_TYPENODE_MOLPRO]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Molpro");
+	noeud[GABEDIT_TYPENODE_MOPAC]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Mopac");
 	noeud[GABEDIT_TYPENODE_MPQC]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"MPQC");
 	noeud[GABEDIT_TYPENODE_PCGAMESS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"PCGamess");
 	noeud[GABEDIT_TYPENODE_QCHEM]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Q-Chem");
@@ -1937,6 +1962,7 @@ static void tree_clear_one(gint in)
 	noeud[GABEDIT_TYPENODE_GAUSSIAN]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gaussian");
 	noeud[GABEDIT_TYPENODE_MOLCAS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Molcas");
 	noeud[GABEDIT_TYPENODE_MOLPRO]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Molpro");
+	noeud[GABEDIT_TYPENODE_MOPAC]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Mopac");
 	noeud[GABEDIT_TYPENODE_MPQC]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"MPQC");
 	noeud[GABEDIT_TYPENODE_PCGAMESS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"PCGamess");
 	noeud[GABEDIT_TYPENODE_QCHEM]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Q-Chem");
@@ -2005,6 +2031,7 @@ static GtkTreeIter *tree_clear(GtkTreeIter *parent,gint ifile)
 	noeud[GABEDIT_TYPENODE_GAUSSIAN]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gaussian");
 	noeud[GABEDIT_TYPENODE_MOLCAS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Molcas");
 	noeud[GABEDIT_TYPENODE_MOLPRO]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Molpro");
+	noeud[GABEDIT_TYPENODE_MOPAC]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Mopac");
 	noeud[GABEDIT_TYPENODE_MPQC]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"MPQC");
 	noeud[GABEDIT_TYPENODE_PCGAMESS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"PCGamess");
 	noeud[GABEDIT_TYPENODE_QCHEM]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Q-Chem");
@@ -2144,6 +2171,10 @@ static GtkTreeIter* CreeNoeud(GtkTreeView *treeView,gchar *text)
 	if(strstr(t,"MPQC")) gtk_tree_store_set (store, node, LIST_PIXBUF, mpqcPixbuf, -1);
 	else
 	if(strstr(t,"Q-CHEM")) gtk_tree_store_set (store, node, LIST_PIXBUF, qchemPixbuf, -1);
+	else
+	if(strstr(t,"MOPAC Z")) gtk_tree_store_set (store, node, LIST_PIXBUF, bookPixbuf, -1);
+	else
+	if(strstr(t,"MOPAC")) gtk_tree_store_set (store, node, LIST_PIXBUF, mopacPixbuf, -1);
 	else
 		gtk_tree_store_set (store, node, LIST_PIXBUF, bookPixbuf, -1);
 
@@ -2300,6 +2331,7 @@ static void  create_window_list_to_clear()
   		"Gaussian list",
   		"Molcas list",
   		"Molpro list",
+  		"Mopac list",
   		"MPQC list",
   		"PCGamess list",
   		"Q-Chem list",
@@ -2463,6 +2495,7 @@ void ListeFiles(GtkWidget* vbox)
 	noeud[GABEDIT_TYPENODE_GAUSSIAN]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Gaussian");
 	noeud[GABEDIT_TYPENODE_MOLCAS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Molcas");
 	noeud[GABEDIT_TYPENODE_MOLPRO]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Molpro");
+	noeud[GABEDIT_TYPENODE_MOPAC]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Mopac");
 	noeud[GABEDIT_TYPENODE_MPQC]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"MPQC");
 	noeud[GABEDIT_TYPENODE_PCGAMESS]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"PCGamess");
 	noeud[GABEDIT_TYPENODE_QCHEM]=CreeNoeud(GTK_TREE_VIEW(treeViewProjects),"Q-Chem");

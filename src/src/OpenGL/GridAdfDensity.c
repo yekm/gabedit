@@ -147,10 +147,15 @@ static void get_grid_from_adf_file(FILE* file,gchar* label)
 	gfloat* V;
 	gint n;
 
-	progress_orb(0,3,TRUE);
+	/* printf("N = %d %d %d\n",N[0],N[1],N[2]);*/
+	if(!grid) 
+	{
+		Message("Sorry, I can not read density from this file","Error",TRUE);
+		return;
+	}
+	progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
 	scal = (gfloat)1.01/grid->N[0];
 
-	/*printf("N = %d %d %d\n",N[0],N[1],N[2]);*/
  
 	V = g_malloc((N[0]*N[1]*N[2]+6)*sizeof(gfloat));
 	if(!set_position(file,label))
@@ -202,11 +207,11 @@ static void get_grid_from_adf_file(FILE* file,gchar* label)
 		}
 		if(CancelCalcul) 
 		{
-			progress_orb(0,3,TRUE);
+			progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
 			break;
 		}
 
-		progress_orb(scal,3,FALSE);
+		progress_orb(scal,GABEDIT_PROGORB_READGRID,FALSE);
 	}
 
 	if(CancelCalcul)
@@ -214,14 +219,14 @@ static void get_grid_from_adf_file(FILE* file,gchar* label)
 		grid = free_grid(grid);
 	}
 	g_free(V);
-	progress_orb(0,3,TRUE);
+	progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
 	return;
 }
 /********************************************************************************/
 static void read_density()
 {
 	gchar buffer[BSIZE];
-	FILE* file = FOpen(adfFileName, "r");
+	FILE* file = FOpen(adfFileName, "rb");
 	if(!file)
 	{
 		sprintf(buffer,"Sorry, i can not open \"%s\" file",adfFileName);
@@ -231,7 +236,7 @@ static void read_density()
 	}
 
 	sprintf(buffer,"Density");
-	/*printf("str = %s\n",buffer);*/
+	/* printf("str = %s\n",buffer);*/
 	get_grid_from_adf_file(file,buffer);
 	
 	if(grid)
@@ -457,6 +462,8 @@ static gboolean read_atoms_labels(FILE* file)
 		GeomOrb[i].Symb = g_strdup(buffer1);
 		/*printf("%s\n",GeomOrb[i].Symb);*/
 		GeomOrb[i].Prop = prop_atom_get(GeomOrb[i].Symb);
+		GeomOrb[i].partialCharge = 0.0;
+		GeomOrb[i].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[i].Symb);
 	}
 	return TRUE;
 }
@@ -533,7 +540,7 @@ static gboolean read_adf_grid_limits(FILE* file, gint N[],gfloat XYZ0[], gfloat 
 				Ok = FALSE;
 				break;
 			}
-			 /*printf("XYZ0 = %f %f %f\n",XYZ0[0],XYZ0[1],XYZ0[2]);*/
+			 /* printf("XYZ0 = %f %f %f\n",XYZ0[0],XYZ0[1],XYZ0[2]);*/
 		}
 		if (strstr(buffer,"x-vector"))
 		{
@@ -542,7 +549,7 @@ static gboolean read_adf_grid_limits(FILE* file, gint N[],gfloat XYZ0[], gfloat 
 				Ok = FALSE;
 				break;
 			}
-			/*printf("X = %f %f %f\n",X[0],X[1],X[2]);*/
+			/* printf("X = %f %f %f\n",X[0],X[1],X[2]);*/
 		}
 		if (strstr(buffer,"y-vector"))
 		{
@@ -551,7 +558,7 @@ static gboolean read_adf_grid_limits(FILE* file, gint N[],gfloat XYZ0[], gfloat 
 				Ok = FALSE;
 				break;
 			}
-			/*printf("Y = %f %f %f\n",Y[0],Y[1],Y[2]);*/
+			/* printf("Y = %f %f %f\n",Y[0],Y[1],Y[2]);*/
 		}
 		if (strstr(buffer,"z-vector"))
 		{
@@ -560,7 +567,7 @@ static gboolean read_adf_grid_limits(FILE* file, gint N[],gfloat XYZ0[], gfloat 
 				Ok = FALSE;
 				break;
 			}
-			/*printf("Z = %f %f %f\n",Z[0],Z[1],Z[2]);*/
+			/* printf("Z = %f %f %f\n",Z[0],Z[1],Z[2]);*/
 		}
 		if (strstr(buffer,"nr of symmetries"))
 		{
@@ -571,21 +578,21 @@ static gboolean read_adf_grid_limits(FILE* file, gint N[],gfloat XYZ0[], gfloat 
 				Ok = FALSE;
 				break;
 			}
-			/*printf("numberOfSymmetries %d\n",numberOfSymmetries);*/
+			/* printf("numberOfSymmetries %d\n",numberOfSymmetries);*/
 		}
 		if (strstr(buffer,"labels"))
 		{
 			Ok = read_labels_symmetry(file);
 			if(!Ok)
 				break;
-			Ok = read_info_orbitals(file);
+			read_info_orbitals(file);
 		}
 		if(!fgets(buffer,len,file))
 		{
 			Ok = FALSE;
 			break;
 		}
-		/*printf("Buffer = %s\n",buffer);*/
+		printf("Buffer = %s\n",buffer);
 		if(!strstr(buffer,"Grid"))
 			break;
 
@@ -661,7 +668,7 @@ static gboolean read_adf_geometry(FILE* file)
 /**************************************************************/
 static void read_adf_file(gchar* filename)
 {
-	FILE* file = FOpen(filename, "r");
+	FILE* file = FOpen(filename, "rb");
 	gchar* tmp;
 	gint len = BSIZE;
 	gchar buffer[BSIZE];

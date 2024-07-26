@@ -32,8 +32,8 @@ void create_frame_windows(GtkWidget *box)
   GtkWidget *frame;
   GtkWidget *hbox;
   frame = gtk_frame_new ("Windows");
-  gtk_widget_ref (frame);
-  g_object_set_data_full (G_OBJECT (Fenetre), "frame", frame, (GtkDestroyNotify) gtk_widget_unref);
+  g_object_ref (frame);
+  g_object_set_data_full (G_OBJECT (Fenetre), "frame", frame, (GtkDestroyNotify) g_object_unref);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
   gtk_box_pack_start (GTK_BOX (box), frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);

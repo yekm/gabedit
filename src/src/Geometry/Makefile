@@ -1,4 +1,4 @@
-OBJECTS = DrawGeom.o EnergiesCurves.o Fragments.o GeomConversion.o GeomXYZ.o GeomZmatrix.o ImagesGeom.o InterfaceGeom.o Mesure.o Postscript.o Povray.o ResultsAnalise.o Symmetry.o RotFragments.o BuildLinear.o BuildRing.o BuildRoZPhi.o BuildPolyPeptide.o FragmentsPPD.o FragmentsPSC.o FragmentsPNA.o BuildPolySaccharide.o BuildPolyNucleicAcid.o BuildNanoTube.o PersonalFragments.o SavePersonalFragments.o LoadPersonalFragments.o OpenBabel.o MenuToolBarGeom.o
+OBJECTS = DrawGeom.o EnergiesCurves.o Fragments.o GeomConversion.o GeomXYZ.o GeomZmatrix.o ImagesGeom.o InterfaceGeom.o Mesure.o Postscript.o Povray.o ResultsAnalise.o Symmetry.o RotFragments.o BuildLinear.o BuildRing.o BuildRoZPhi.o BuildPolyPeptide.o FragmentsPPD.o FragmentsPSC.o FragmentsPNA.o BuildPolySaccharide.o BuildPolyNucleicAcid.o BuildNanoTube.o PersonalFragments.o SavePersonalFragments.o LoadPersonalFragments.o FragmentsSelector.o OpenBabel.o MenuToolBarGeom.o PreviewGeom.o FragmentsTree.o
 
 include ../../CONFIG
 CFLAGS =  -Wall -O2 $(GTKCFLAGS)

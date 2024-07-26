@@ -114,7 +114,7 @@ static gint* read_geomorb_gamess_file_geom(gchar *FileName)
  	}
 
  	t=g_malloc(taille);
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
  	if(fd ==NULL)
  	{
   		Message("Sorry\nI can not open this file","Error",TRUE);
@@ -242,6 +242,8 @@ static void DefineGamessCartBasis()
  }
 
  AOrb = g_malloc(NAOrb*sizeof(CGTF));
+ if(SAOrb) g_free(SAOrb);
+ SAOrb = NULL;
  
  k=-1;
  for(i=0;i<Ncenters;i++)
@@ -464,7 +466,7 @@ static gchar** read_basis_from_a_gamess_output_file(gchar *FileName, gint* nrs)
     		return NULL;
  	}
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
@@ -773,7 +775,7 @@ static void get_number_of_occuped_orbitals(gchar* FileName, gint* nAlpha, gint* 
  	if ((!FileName) || (strcmp(FileName,"") == 0)) return;
 
  	t=g_malloc(BSIZE*sizeof(gchar));
- 	file = FOpen(FileName, "r");
+ 	file = FOpen(FileName, "rb");
  	if(file ==NULL) return;
 
 	tag=g_strdup_printf("NUMBER OF OCCUPIED ORBITALS ");
@@ -804,7 +806,7 @@ static GabEditOrbLocalType get_local_orbital_type(gchar *NomFichier)
  	if ((!NomFichier) || (strcmp(NomFichier,"") == 0)) return GABEDIT_ORBLOCALTYPE_UNKNOWN;
 
  	t=g_malloc(taille);
- 	file = FOpen(NomFichier, "r");
+ 	file = FOpen(NomFichier, "rb");
  	if(file ==NULL) return GABEDIT_ORBLOCALTYPE_UNKNOWN;
  	while(!feof(file))
 	{
@@ -852,7 +854,7 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *NomFichier,GabEditOrbTy
  	}
 
  	t=g_malloc(taille);
- 	fd = FOpen(NomFichier, "r");
+ 	fd = FOpen(NomFichier, "rb");
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
@@ -1281,6 +1283,8 @@ void read_gamess_orbitals(gchar* FileName)
 		if(GeomOrb[i].Symb) g_free(GeomOrb[i].Symb);
 		GeomOrb[i].Symb=get_symbol_using_z(znuc[i]);
 		GeomOrb[i].Prop = prop_atom_get(GeomOrb[i].Symb);
+		GeomOrb[i].partialCharge = 0.0;
+		GeomOrb[i].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[i].Symb);
 	}
   	/*DefineType();*/
 	RebuildGeom = TRUE;

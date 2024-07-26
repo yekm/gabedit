@@ -90,10 +90,10 @@ Fragment GetFragmentPPD(gchar* Name)
 	if ( !strcmp(Name, "Lace" ) ){
 		F.NAtoms =  6 ;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
-                SetAtom(&F.Atoms[ 0 ], "H1", 0.000f, 0.000f, 0.000f,0.000f );
+                SetAtom(&F.Atoms[ 0 ], "HH31", 0.000f, 0.000f, 0.000f,0.000f );
                 SetAtom(&F.Atoms[ 1 ], "CH3", 0.000f, 1.090f, 0.000f,0.000f );
-                SetAtom(&F.Atoms[ 2 ], "H2", 1.028f, 1.453f, 0.000f,0.000f );
-                SetAtom(&F.Atoms[ 3 ], "H3", -0.514f, 1.453f, -0.890f,0.000f );
+                SetAtom(&F.Atoms[ 2 ], "HH32", 1.028f, 1.453f, 0.000f,0.000f );
+                SetAtom(&F.Atoms[ 3 ], "HH33", -0.514f, 1.453f, -0.890f,0.000f );
                 SetAtom(&F.Atoms[ 4 ], "C", -0.721f, 1.600f, 1.249f, 0.616f );
                 SetAtom(&F.Atoms[ 5 ], "O", -0.839f, 2.806f, 1.453f, -0.504f );
 	}
@@ -437,10 +437,10 @@ Fragment GetFragmentPPD(gchar* Name)
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
                 SetAtom(&F.Atoms[ 0 ], "N", -1.227f, 0.728f, 2.125f, -0.463f );
                 SetAtom(&F.Atoms[ 1 ], "H", -1.124f, -0.261f, 1.947f, 0.252f );
-                SetAtom(&F.Atoms[ 2 ], "CA", -1.918f, 1.159f, 3.323f, 0.03502f );
-                SetAtom(&F.Atoms[ 3 ], "HA1", -1.939f, 2.249f, 3.358f, 0.0586f );
-                SetAtom(&F.Atoms[ 4 ], "HA2", -2.939f, 0.777f, 3.311f, 0.0586f );
-		SetAtom(&F.Atoms[ 5 ], "HA3", -1.398f, 0.777f, 4.201f, 0.0586f );
+                SetAtom(&F.Atoms[ 2 ], "CH3", -1.918f, 1.159f, 3.323f, 0.03502f );
+                SetAtom(&F.Atoms[ 3 ], "HH31", -1.939f, 2.249f, 3.358f, 0.0586f );
+                SetAtom(&F.Atoms[ 4 ], "HH32", -2.939f, 0.777f, 3.311f, 0.0586f );
+		SetAtom(&F.Atoms[ 5 ], "HH33", -1.398f, 0.777f, 4.201f, 0.0586f );
 	}
 	else if ( !strcmp(Name, "Lphe" ) ){
 		F.NAtoms =  20;
@@ -593,10 +593,10 @@ Fragment GetFragmentPPD(gchar* Name)
 	else if ( !strcmp(Name, "Dace" ) ){
 		F.NAtoms =  6;
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
-                SetAtom(&F.Atoms[ 0 ], "H1", 0.000f, 0.000f, 0.000f,0.000f );
+                SetAtom(&F.Atoms[ 0 ], "HH31", 0.000f, 0.000f, 0.000f,0.000f );
                 SetAtom(&F.Atoms[ 1 ], "CH3", 0.000f, 1.090f, 0.000f,0.000f );
-                SetAtom(&F.Atoms[ 2 ], "H2", 1.028f, 1.453f, 0.000f,0.000f );
-                SetAtom(&F.Atoms[ 3 ], "H3", -0.514f, 1.453f, -0.890f ,0.000f);
+                SetAtom(&F.Atoms[ 2 ], "HH32", 1.028f, 1.453f, 0.000f,0.000f );
+                SetAtom(&F.Atoms[ 3 ], "HH33", -0.514f, 1.453f, -0.890f ,0.000f);
                 SetAtom(&F.Atoms[ 4 ], "C", -0.721f, 1.600f, 1.249f, 0.616f);
 		SetAtom(&F.Atoms[ 5 ], "O", -0.839f, 2.806f, 1.453f, -0.504f);
 	}
@@ -940,10 +940,10 @@ Fragment GetFragmentPPD(gchar* Name)
 		F.Atoms = g_malloc(F.NAtoms*sizeof(Atom));
                 SetAtom(&F.Atoms[ 0 ], "N", -1.227f, 0.728f, 2.125f, -0.463f );
                 SetAtom(&F.Atoms[ 1 ], "H", -1.124f, -0.261f, 1.947f, 0.252f );
-                SetAtom(&F.Atoms[ 2 ], "CA", -1.918f, 1.159f, 3.323f, 0.03502f );
-                SetAtom(&F.Atoms[ 3 ], "HA1", -1.939f, 2.249f, 3.358f, 0.0586f );
-                SetAtom(&F.Atoms[ 4 ], "HA2", -2.939f, 0.777f, 3.311f, 0.0586f );
-		SetAtom(&F.Atoms[ 5 ], "HA3", -1.398f, 0.777f, 4.201f, 0.0586f );
+                SetAtom(&F.Atoms[ 2 ], "CH3", -1.918f, 1.159f, 3.323f, 0.03502f );
+                SetAtom(&F.Atoms[ 3 ], "HH31", -1.939f, 2.249f, 3.358f, 0.0586f );
+                SetAtom(&F.Atoms[ 4 ], "HH32", -2.939f, 0.777f, 3.311f, 0.0586f );
+		SetAtom(&F.Atoms[ 5 ], "HH33", -1.398f, 0.777f, 4.201f, 0.0586f );
 	}
 	else if ( !strcmp(Name, "Dphe" ) ){
 		F.NAtoms =  20;

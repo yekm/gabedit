@@ -47,6 +47,20 @@ void MessageGeom(gchar* message,gchar* type,gboolean center)
   		gtk_window_set_transient_for(GTK_WINDOW(Dialogue),GTK_WINDOW(WindowGeom));
 }
 /*************************************************************************/
+void read_mopac_input_file(GabeditFileChooser *gabeditFileChooser, gint response_id)
+{
+	gchar *fileName=NULL;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(gabeditFileChooser);
+	if ((!fileName) || (strcmp(fileName,"") == 0))
+	{
+		Message("Sorry\n No file slected"," Warning ",TRUE);
+		return ;
+	}
+	read_geom_in_mopac_input(fileName);
+}
+/*************************************************************************/
 void read_mpqc_input_file(GabeditFileChooser *gabeditFileChooser, gint response_id)
 {
 	gchar *fileName=NULL;
@@ -104,10 +118,10 @@ void read_molpro_input_file(GabeditFileChooser *gabeditFileChooser, gint respons
 	read_geom_in_molpro_input(NomFichier);
 }
 /*************************************************************************/
-void selc_gauss_molcas_molpro_mpqc_input_file(gchar *data)
+void selc_all_input_file(gchar *data)
 {
 	GtkWidget *gabeditFileChooser;
-	gchar* patternsfiles[] = {"*.com","*",NULL};
+	gchar* patternsfiles[] = {"*.com","*.inp","*.mop","*",NULL};
 	gchar* temp = NULL;
 
 
@@ -118,7 +132,13 @@ void selc_gauss_molcas_molpro_mpqc_input_file(gchar *data)
 	else gtk_window_set_transient_for(GTK_WINDOW(gabeditFileChooser),GTK_WINDOW(Fenetre));
 	gtk_window_set_modal (GTK_WINDOW (gabeditFileChooser), TRUE);
 	gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(gabeditFileChooser),patternsfiles);
-	temp = g_strdup_printf("%s.com",fileopen.projectname);
+	if( !strcmp(data,"Read Geometry from a Mopac input file") )
+	{
+		temp = g_strdup_printf("%s.mop",fileopen.projectname);
+		gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.mop");
+	}
+	else
+		temp = g_strdup_printf("%s.com",fileopen.projectname);
 	if(!temp) temp = g_strdup_printf("dump.com");
 	if(lastdirectory)
 	{
@@ -148,6 +168,9 @@ void selc_gauss_molcas_molpro_mpqc_input_file(gchar *data)
 	else
 	if( !strcmp(data,"Read Geometry from a Molcas input file") )
 		g_signal_connect (gabeditFileChooser, "response",  G_CALLBACK (read_molcas_input_file), GTK_OBJECT(gabeditFileChooser));
+  	else
+	if( !strcmp(data,"Read Geometry from a Mopac input file") )
+		g_signal_connect (gabeditFileChooser, "response",  G_CALLBACK (read_mopac_input_file), GTK_OBJECT(gabeditFileChooser));
   	else
 	if( !strcmp(data,"Read Geometry from a MPQC input file") )
 		g_signal_connect (gabeditFileChooser, "response",  G_CALLBACK (read_mpqc_input_file), GTK_OBJECT(gabeditFileChooser));
@@ -318,22 +341,22 @@ static void traite_geom(GtkComboBox *combobox, gpointer d)
 	else
 	if (!strcmp((char*)data, "Read Geometry from a Gaussian input file"))
 	{
-		selc_gauss_molcas_molpro_mpqc_input_file(data);
+		selc_all_input_file(data);
 	}
 	else
 	if (!strcmp((char*)data, "Read Geometry from a Molpro input file"))
 	{
-		selc_gauss_molcas_molpro_mpqc_input_file(data);
+		selc_all_input_file(data);
 	}
 	else
 	if (!strcmp((char*)data, "Read Geometry from a MPQC input file"))
 	{
-		selc_gauss_molcas_molpro_mpqc_input_file(data);
+		selc_all_input_file(data);
 	}
 	else
 	if (!strcmp((char*)data, "Read Geometry from a Molcas input file"))
 	{
-		selc_gauss_molcas_molpro_mpqc_input_file(data);
+		selc_all_input_file(data);
 	}
 }
 /********************************************************************************************************/

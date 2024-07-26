@@ -26,5 +26,6 @@ ListeFiles.o: ../Molcas/MolcasSeward.h ../../pixmaps/GamessMini.xpm
 ListeFiles.o: ../../pixmaps/PCGamessMini.xpm ../../pixmaps/Gaussian.xpm
 ListeFiles.o: ../../pixmaps/MolproMini.xpm ../../pixmaps/MolcasMini.xpm
 ListeFiles.o: ../../pixmaps/MPQCMini.xpm ../../pixmaps/QChemMini.xpm
-ListeFiles.o: ../../pixmaps/Book_close.xpm ../../pixmaps/Page.xpm
-ListeFiles.o: ../Common/StockIcons.h ../Files/ListeFiles.h
+ListeFiles.o: ../../pixmaps/MopacMini.xpm ../../pixmaps/Book_close.xpm
+ListeFiles.o: ../../pixmaps/Page.xpm ../Common/StockIcons.h
+ListeFiles.o: ../Files/ListeFiles.h

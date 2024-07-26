@@ -90,7 +90,7 @@ void save_axis_properties()
 
 	axesfile = g_strdup_printf("%s%saxes",gabedit_directory(),G_DIR_SEPARATOR_S);
 
-	file = FOpen(axesfile, "w");
+	file = fopen(axesfile, "w");
 
  	fprintf(file,"%d\n",axis.show);
  	fprintf(file,"%d\n",axis.negative);
@@ -115,7 +115,7 @@ void read_axis_properties()
 	initAxis();
 	axesfile = g_strdup_printf("%s%saxes",gabedit_directory(),G_DIR_SEPARATOR_S);
 
-	file = FOpen(axesfile, "r");
+	file = fopen(axesfile, "rb");
 	if(!file) return;
 
  	n = fscanf(file,"%d\n",&axis.show);

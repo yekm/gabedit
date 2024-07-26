@@ -278,7 +278,7 @@ gboolean read_atomic_orbitals_in_gabedit(gchar *NomFichier,gint itype)
  	}
 
  	t=g_malloc(taille);
- 	fd = FOpen(NomFichier, "r");
+ 	fd = FOpen(NomFichier, "rb");
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];

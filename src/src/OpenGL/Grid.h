@@ -18,6 +18,7 @@ DEALINGS IN THE SOFTWARE.
 
 #ifndef __GABEDIT_GRID_H__
 #define __GABEDIT_GRID_H__
+#include "../MultiGrid/PoissonMG.h"
 
 typedef struct _Point5
 {
@@ -41,6 +42,7 @@ gdouble get_value_electronic_density_atomic(gfloat x,gfloat y,gfloat z,gint dump
 gdouble get_value_electronic_density(gfloat x,gfloat y,gfloat z,gint dump);
 gdouble get_value_electronic_density_bonds(gfloat x,gfloat y,gfloat z,gint dump);
 gdouble get_value_spin_density(gfloat x,gfloat y,gfloat z,gint dump);
+gboolean test_grid_all_positive(Grid* grid);
 Grid* grid_point_alloc(gint N[],GridLimits limits);
 Grid* define_grid(gint N[],GridLimits limits);
 Grid* free_grid(Grid* grid);
@@ -52,6 +54,13 @@ gfloat thirdDirection[3];
 gfloat originOfCube[3];
 Grid* get_grid_laplacian(Grid* grid, gint nBoundary);
 Grid* get_grid_norm_gradient(Grid* grid, gint nBoundary);
+Grid* compute_mep_grid_using_multipol_from_density_grid(Grid* grid, gint lmax);
+gdouble** compute_multipol_from_grid(Grid* grid, gint lmax);
+Grid* compute_mep_grid_using_multipol_from_orbitals(gint N[],GridLimits limits, gint lmax);
+Grid* compute_mep_grid_using_partial_charges_cube_grid(Grid* grid);
+Grid* compute_mep_grid_using_partial_charges(gint N[],GridLimits limits);
+Grid* solve_poisson_equation_from_density_grid(Grid* grid, PoissonSolverMethod psMethod);
+Grid* solve_poisson_equation_from_orbitals(gint N[],GridLimits limits, PoissonSolverMethod psMethod);
 
 #endif /* __GABEDIT_GRID_H__ */
 

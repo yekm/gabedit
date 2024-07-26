@@ -338,12 +338,12 @@ IsoSurface* define_iso_surface(Grid* grid, gfloat isolevel, gboolean mapping)
 
 	iso = iso_alloc(grid->N);
 
-	progress_orb(0,2,TRUE);
+	progress_orb(0,GABEDIT_PROGORB_COMPISOSURFACE,TRUE);
 	scal = (gfloat)1.01/(grid->N[0]);
 
 	for(i=1;i<iso->N[0]-2;i++)
 	{
-		progress_orb(scal,2,FALSE);
+		progress_orb(scal,GABEDIT_PROGORB_COMPISOSURFACE,FALSE);
 		for(j=1;j<iso->N[1]-2;j++)
 		{
 			for(k=1;k<iso->N[2]-2;k++)

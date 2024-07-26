@@ -153,7 +153,7 @@ static void get_grid_from_adf_file(FILE* file,gchar* label,gint orbitalNumber)
 	gfloat* V;
 	gint n;
 
-	progress_orb(0,3,TRUE);
+	progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
 	scal = (gfloat)1.01/grid->N[0];
 
 	/*printf("N = %d %d %d\n",N[0],N[1],N[2]);*/
@@ -202,11 +202,11 @@ static void get_grid_from_adf_file(FILE* file,gchar* label,gint orbitalNumber)
 		}
 		if(CancelCalcul) 
 		{
-			progress_orb(0,3,TRUE);
+			progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
 			break;
 		}
 
-		progress_orb(scal,3,FALSE);
+		progress_orb(scal,GABEDIT_PROGORB_READGRID,FALSE);
 	}
 
 	if(CancelCalcul)
@@ -214,7 +214,7 @@ static void get_grid_from_adf_file(FILE* file,gchar* label,gint orbitalNumber)
 		grid = free_grid(grid);
 	}
 	g_free(V);
-	progress_orb(0,3,TRUE);
+	progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
 	return;
 }
 /********************************************************************************/
@@ -223,7 +223,7 @@ static void read_orbital(GtkWidget *Win,gpointer user_data)
 	DataRow* data = NULL;
 	GtkWidget* gtklist = GTK_WIDGET(user_data);
 	gchar buffer[BSIZE];
-	FILE* file = FOpen(adfFileName, "r");
+	FILE* file = FOpen(adfFileName, "rb");
 	GtkTreeIter node;
 	GtkTreeModel *model = NULL;
 	gchar pathString[100];
@@ -661,6 +661,8 @@ static gboolean read_atoms_labels(FILE* file)
 		GeomOrb[i].Symb = g_strdup(buffer1);
 		/*printf("%s\n",GeomOrb[i].Symb);*/
 		GeomOrb[i].Prop = prop_atom_get(GeomOrb[i].Symb);
+		GeomOrb[i].partialCharge = 0.0;
+		GeomOrb[i].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[i].Symb);
 	}
 	return TRUE;
 }
@@ -846,7 +848,7 @@ static gboolean read_adf_geometry(FILE* file)
 /**************************************************************/
 static void read_adf_file(gchar* filename)
 {
-	FILE* file = FOpen(filename, "r");
+	FILE* file = FOpen(filename, "rb");
 	gchar* tmp;
 	gint len = BSIZE;
 	gchar buffer[BSIZE];

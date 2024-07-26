@@ -59,9 +59,9 @@ static void putPCGamessSCFOptionsInfoInTextEditor()
 	if(GTK_TOGGLE_BUTTON (buttonDirectSCF)->active)
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " DIRSCF=.TRUE.",-1);
 	if(GTK_TOGGLE_BUTTON (buttonChangeFock)->active)
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " FDIFF=.TRUE..",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " FDIFF=.TRUE.",-1);
 	if(GTK_TOGGLE_BUTTON (buttonUHFNO)->active)
-        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " UHFNOS=.TRUE",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " UHFNOS=.TRUE.",-1);
 
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);

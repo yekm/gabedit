@@ -44,6 +44,7 @@ static GtkWidget *EntryGamess = NULL;
 static GtkWidget *EntryGaussian = NULL;
 static GtkWidget *EntryMolcas = NULL;
 static GtkWidget *EntryMolpro = NULL;
+static GtkWidget *EntryMopac = NULL;
 static GtkWidget *EntryMPQC = NULL;
 static GtkWidget *EntryPCGamess = NULL;
 static GtkWidget *EntryQChem = NULL;
@@ -52,6 +53,7 @@ static GtkWidget *ComboGamess = NULL;
 static GtkWidget *ComboGaussian = NULL;
 static GtkWidget *ComboMolcas = NULL;
 static GtkWidget *ComboMolpro = NULL;
+static GtkWidget *ComboMopac = NULL;
 static GtkWidget *ComboMPQC = NULL;
 static GtkWidget *ComboPCGamess = NULL;
 static GtkWidget *ComboQChem = NULL;
@@ -60,6 +62,7 @@ static GtkWidget *ButtonGamess = NULL;
 static GtkWidget *ButtonGaussian = NULL;
 static GtkWidget *ButtonMolcas = NULL;
 static GtkWidget *ButtonMolpro = NULL;
+static GtkWidget *ButtonMopac = NULL;
 static GtkWidget *ButtonMPQC = NULL;
 static GtkWidget *ButtonPCGamess = NULL;
 static GtkWidget *ButtonQChem = NULL;
@@ -616,6 +619,92 @@ void  modify_pcgamess_command()
   g_list_free(glist);
   if(pcgamessCommands.numberOfCommands<2) gtk_widget_set_sensitive(ButtonPCGamess, FALSE);
   else gtk_widget_set_sensitive(ButtonPCGamess, TRUE);
+}
+/********************************************************************************/
+static void  remove_mopac_command()
+{
+  G_CONST_RETURN gchar *strcom;
+  GList *glist = NULL;
+  gint i;
+  gint inList = -1;
+
+  if(mopacCommands.numberOfCommands<2)
+	  return;
+
+  strcom = gtk_entry_get_text (GTK_ENTRY (EntryMopac));
+
+  for(i=0;i<mopacCommands.numberOfCommands;i++)
+  {
+	  if(strcmp(strcom,mopacCommands.commands[i])==0)
+	  {
+		  inList = i;
+		  break;
+	  }
+  }
+  if(inList == -1)
+	  return;
+  for(i=inList;i<mopacCommands.numberOfCommands-1;i++)
+	  mopacCommands.commands[i] = mopacCommands.commands[i+1];
+
+  mopacCommands.numberOfCommands--;
+  mopacCommands.commands = g_realloc(
+		   mopacCommands.commands,
+		   mopacCommands.numberOfCommands*sizeof(gchar*));
+
+  for(i=0;i<mopacCommands.numberOfCommands;i++)
+	glist = g_list_append(glist,mopacCommands.commands[i]);
+
+  gtk_combo_box_entry_set_popdown_strings( ComboMopac, glist) ;
+
+  g_list_free(glist);
+
+  if(mopacCommands.numberOfCommands<2)
+  	gtk_widget_set_sensitive(ButtonMopac, FALSE);
+  else
+  	gtk_widget_set_sensitive(ButtonMopac, TRUE);
+
+  NameCommandMopac = g_strdup(mopacCommands.commands[0]);
+
+  str_delete_n(NameCommandMopac);
+  delete_last_spaces(NameCommandMopac);
+  delete_first_spaces(NameCommandMopac);
+}
+/********************************************************************************/
+void  modify_mopac_command()
+{
+  G_CONST_RETURN gchar *strcom;
+  GList *glist = NULL;
+  gint i;
+
+  strcom = gtk_entry_get_text (GTK_ENTRY (EntryMopac));
+  if(strcmp(strcom,""))
+      NameCommandMopac = g_strdup(strcom);
+
+  str_delete_n(NameCommandMopac);
+  delete_last_spaces(NameCommandMopac);
+  delete_first_spaces(NameCommandMopac);
+
+  for(i=0;i<mopacCommands.numberOfCommands;i++)
+  {
+	  if(strcmp(NameCommandMopac,mopacCommands.commands[i])==0)
+		  return;
+  }
+  mopacCommands.numberOfCommands++;
+  mopacCommands.commands = g_realloc(
+		   mopacCommands.commands,
+		   mopacCommands.numberOfCommands*sizeof(gchar*));
+  mopacCommands.commands[mopacCommands.numberOfCommands-1] = g_strdup(NameCommandMopac);
+
+  for(i=mopacCommands.numberOfCommands-1;i>=0;i--)
+	glist = g_list_append(glist,mopacCommands.commands[i]);
+
+  gtk_combo_box_entry_set_popdown_strings( ComboMopac, glist) ;
+
+  g_list_free(glist);
+  if(mopacCommands.numberOfCommands<2)
+  	gtk_widget_set_sensitive(ButtonMopac, FALSE);
+  else
+  	gtk_widget_set_sensitive(ButtonMopac, TRUE);
 }
 /********************************************************************************/
 static void  remove_qchem_command()
@@ -1481,6 +1570,40 @@ static void set_entry_pcgamessDir_selection(GtkWidget* entry)
 
 	gtk_widget_show(dirSelector);
 }
+/********************************************************************************/
+static void set_entry_mopacdir(GtkWidget* dirSelector, gint response_id)
+{
+	gchar* dirname = NULL;
+	gchar* t = NULL;
+	GtkWidget *entry;
+	if(response_id != GTK_RESPONSE_OK) return;
+	dirname = gabedit_folder_chooser_get_current_folder(GABEDIT_FOLDER_CHOOSER(dirSelector));
+
+
+	entry = (GtkWidget*)(g_object_get_data(G_OBJECT(dirSelector),"EntryFile"));	
+	gtk_entry_set_text(GTK_ENTRY(entry),dirname);
+
+	if(mopacDirectory) g_free(mopacDirectory);
+	mopacDirectory = g_strdup(dirname);
+	t = g_strdup_printf("%s;%cPATH%c",mopacDirectory,'%','%');
+	g_setenv("PATH",t,TRUE);
+	g_free(t);
+}
+/********************************************************************************/
+static void set_entry_mopacDir_selection(GtkWidget* entry)
+{
+	GtkWidget *dirSelector;
+	dirSelector = selctionOfDir(set_entry_mopacdir, "Select Mopac folder", GABEDIT_TYPEWIN_ORB); 
+  	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
+  	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GtkSignalFunc)gtk_widget_destroy,NULL);
+
+	g_object_set_data(G_OBJECT (dirSelector), "EntryFile", entry);
+
+	g_signal_connect (dirSelector, "response",  G_CALLBACK (set_entry_mopacdir), GTK_OBJECT(dirSelector));
+	g_signal_connect (dirSelector, "response",  G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(dirSelector));
+
+	gtk_widget_show(dirSelector);
+}
 #endif
 /********************************************************************************/
 void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
@@ -1663,7 +1786,6 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(help_commands),NULL);
 /* ------------------------------------------------------------------*/
-
   create_hseparator(vbox);
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
@@ -1688,7 +1810,30 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(help_commands),NULL);
 /* ------------------------------------------------------------------*/
+  create_hseparator(vbox);
+/* ------------------------------------------------------------------*/
+  hbox = gtk_hbox_new (FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
+  label = gtk_label_new ("Command for execute Mopac    : ");
+  gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
 
+  combo = create_combo_box_entry(mopacCommands.commands,mopacCommands.numberOfCommands,TRUE,-1,-1);
+  ComboMopac = combo;
+  EntryMopac =  GTK_BIN(combo)->child;
+  gtk_box_pack_start (GTK_BOX (hbox), combo, TRUE, TRUE, 3);
+  gtk_entry_set_text (GTK_ENTRY (EntryMopac),NameCommandMopac);
+  g_signal_connect(G_OBJECT (EntryMopac), "activate", (GtkSignalFunc)modify_mopac_command, NULL);
+  button = create_button(Wins,"  Remove from list  ");
+  ButtonMopac = button;
+  gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
+  if(mopacCommands.numberOfCommands<2)
+  	gtk_widget_set_sensitive(button, FALSE);
+  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(remove_mopac_command),NULL);
+
+  button = create_button(Wins,"  Help  ");
+  gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
+  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(help_commands),NULL);
+/* ------------------------------------------------------------------*/
   create_hseparator(vbox);
 
 /*#ifdef G_OS_WIN32*/
@@ -1815,6 +1960,50 @@ void  create_pcgamess_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   gtk_widget_show_all(frame);
 }
 #endif
+#ifdef G_OS_WIN32
+/********************************************************************************/
+void  create_mopac_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
+{
+  GtkWidget *frame;
+  GtkWidget *button;
+
+  frame = gtk_frame_new (NULL);
+  gtk_widget_show (frame);
+  gtk_box_pack_start (GTK_BOX (vbox), frame, expand, expand, 0);
+  gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
+
+  vbox = gtk_vbox_new (FALSE, 0);
+  gtk_container_add (GTK_CONTAINER (frame), vbox);
+
+
+  {
+	GtkWidget* entry;
+  	GtkWidget *table = gtk_table_new(1,3,FALSE);
+
+	if(!mopacDirectory) mopacDirectory = g_strdup_printf("%s",g_get_home_dir());
+
+	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
+
+	add_label_table(table,"Mopac directory                         : ",0,0);
+  	entry = gtk_entry_new ();
+	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
+	gtk_table_attach(GTK_TABLE(table),entry,1,1+1,0,0+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+  	gtk_entry_set_text (GTK_ENTRY (entry),mopacDirectory);
+	gtk_editable_set_editable((GtkEditable*)entry,FALSE);
+	gtk_widget_set_sensitive(entry, FALSE);
+	button = create_button_pixmap(Wins,open_xpm,NULL);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	g_signal_connect_swapped(GTK_OBJECT (button), "clicked",
+                                     GTK_SIGNAL_FUNC(set_entry_mopacDir_selection),
+                                     GTK_OBJECT(entry));
+	add_widget_table(table,button,0,2);
+  }
+  gtk_widget_show_all(frame);
+}
+#endif
 /********************************************************************************/
 void AddPageColorSurf(GtkWidget *NoteBook)
 {
@@ -1890,7 +2079,7 @@ static void set_entry_pscpplinkdir(GtkWidget* dirSelector, gint response_id)
 	entry = (GtkWidget*)(g_object_get_data(G_OBJECT(dirSelector),"EntryFile"));	
 	gtk_entry_set_text(GTK_ENTRY(entry),dirname);
 
-	if(strcmp(dirname,pscpplinkDirectory)!=0)
+	/*if(strcmp(dirname,pscpplinkDirectory)!=0)*/
 	{
 		gchar* t = g_strdup_printf("%s;%cPATH%c",dirname,'%','%');
 		g_setenv("PATH",t,TRUE);
@@ -2036,6 +2225,7 @@ void AddPageOthers(GtkWidget *NoteBook)
 #ifdef G_OS_WIN32
   create_gamess_directory(Wins,vbox,FALSE);
   create_pcgamess_directory(Wins,vbox,FALSE);
+  create_mopac_directory(Wins,vbox,FALSE);
 #endif
 
   create_opengl_frame(Wins,vbox);

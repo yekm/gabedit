@@ -46,7 +46,8 @@ int main(int argc,char* argv[])
 	}
  }
  fgets(t,BSIZE,fin);
- sscanf(t,"%s",name);
+ /* sscanf(t,"%s",name);*/
+ sscanf(filename,"%s",name);
  fout = fopen("Fragment.cc","a");
  if(!fout)
  {

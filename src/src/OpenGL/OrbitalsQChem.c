@@ -113,7 +113,7 @@ static gboolean read_geomorb_qchem_file_geom(gchar *FileName)
  	}
 
  	t=g_malloc(taille);
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
  	if(fd ==NULL)
  	{
   		Message("Sorry\nI can not open this file","Error",TRUE);
@@ -231,6 +231,8 @@ static void DefineQChemCartBasis()
  }
 
  AOrb = g_malloc(NAOrb*sizeof(CGTF));
+ if(SAOrb) g_free(SAOrb);
+ SAOrb = NULL;
  
  k=-1;
  for(i=0;i<Ncenters;i++)
@@ -415,6 +417,8 @@ static void DefineQChemSphericalBasis()
 g_free(AOrb);
 NAOrb = NOrb;
 AOrb = temp;
+ if(SAOrb) g_free(SAOrb);
+ SAOrb = NULL;
 DefineAtomicNumOrb();
 }
 /********************************************************************************/
@@ -433,7 +437,7 @@ static gchar** read_basis_from_a_qchem_output_file(gchar *FileName, gint* nrs)
     		return NULL;
  	}
 
- 	fd = FOpen(FileName, "r");
+ 	fd = FOpen(FileName, "rb");
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
@@ -737,7 +741,7 @@ static void get_number_of_occuped_orbitals(gchar* FileName, gint* nAlpha, gint* 
  	if ((!FileName) || (strcmp(FileName,"") == 0)) return;
 
  	t=g_malloc(BSIZE*sizeof(gchar));
- 	file = FOpen(FileName, "r");
+ 	file = FOpen(FileName, "rb");
  	if(file ==NULL) return;
 
 	while(!feof(file))
@@ -776,7 +780,7 @@ static GabEditOrbLocalType get_local_orbital_type(gchar *NomFichier)
  	if ((!NomFichier) || (strcmp(NomFichier,"") == 0)) return GABEDIT_ORBLOCALTYPE_UNKNOWN;
 
  	t=g_malloc(taille);
- 	file = FOpen(NomFichier, "r");
+ 	file = FOpen(NomFichier, "rb");
  	if(file ==NULL) return GABEDIT_ORBLOCALTYPE_UNKNOWN;
  	while(!feof(file))
 	{
@@ -824,7 +828,7 @@ static gboolean read_last_orbitals_in_qchem_file(gchar *NomFichier,GabEditOrbTyp
  	}
 
  	t=g_malloc(taille);
- 	fd = FOpen(NomFichier, "r");
+ 	fd = FOpen(NomFichier, "rb");
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];

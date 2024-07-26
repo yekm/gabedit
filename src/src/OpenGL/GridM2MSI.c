@@ -116,7 +116,7 @@ static gboolean get_values_from_m2msi_file(FILE* file,gfloat V[], gint nMaxBlock
 	{
 		if(CancelCalcul) 
 		{
-			progress_orb(0,3,TRUE);
+			progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
 			return FALSE;
 		}
 		if(nG==numGrid)
@@ -165,7 +165,7 @@ static void get_grid_from_m2msi_file(FILE* file,gint numOfGrid)
 	gint len = BSIZE;
 	gchar buffer[BSIZE];
 
-	progress_orb(0,3,TRUE);
+	progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
 	scal = (gfloat)101/grid->N[0];
 
  
@@ -217,11 +217,11 @@ static void get_grid_from_m2msi_file(FILE* file,gint numOfGrid)
 		}
 		if(CancelCalcul) 
 		{
-			progress_orb(0,3,TRUE);
+			progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
 			break;
 		}
 
-		progress_orb(scal,3,FALSE);
+		progress_orb(scal,GABEDIT_PROGORB_READGRID,FALSE);
 	}
 
 	if(CancelCalcul)
@@ -229,13 +229,13 @@ static void get_grid_from_m2msi_file(FILE* file,gint numOfGrid)
 		grid = free_grid(grid);
 	}
 	g_free(V);
-	progress_orb(0,3,TRUE);
+	progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
 	return;
 }
 /********************************************************************************/
 static void read_density(gint numOfGrid)
 {
-	FILE* file = FOpen(m2msiFileName, "r");
+	FILE* file = FOpen(m2msiFileName, "rb");
 	gchar buffer[BSIZE];
 	if(!file)
 	{
@@ -284,7 +284,7 @@ static void read_orbital(GtkWidget *Win,gpointer user_data)
 	DataRow* data = NULL;
 	GtkWidget* gtklist = GTK_WIDGET(user_data);
 	gchar buffer[BSIZE];
-	FILE* file = FOpen(m2msiFileName, "r");
+	FILE* file = FOpen(m2msiFileName, "rb");
 	GtkTreeIter node;
 	GtkTreeModel *model = NULL;
 	gchar pathString[100];
@@ -445,6 +445,8 @@ static void create_list_m2msi_orbitals()
 	  Message("Sorry, Please load a file before\n","Error",TRUE);
 	  return;
   }
+  selectedRow=0;
+  /* printf("Norb = %d\n",numberOfOrbitals);*/
 
   /* Principal Window */
   Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -473,6 +475,7 @@ static void create_list_m2msi_orbitals()
   gtk_container_add(GTK_CONTAINER(scr),gtklist);
   set_base_style(gtklist,50000,50000,50000);
 
+  gtk_widget_show_all (vboxall);
   /* buttons box */
   hbox = create_hbox_false(vboxall);
   gtk_widget_realize(Win);
@@ -768,6 +771,8 @@ static gboolean read_m2msi_geometry(FILE* file)
 			delete_all_spaces(buffer1);
 			GeomOrb[i].Symb = g_strdup(buffer1);
 			GeomOrb[i].Prop = prop_atom_get(GeomOrb[i].Symb);
+			GeomOrb[i].partialCharge = 0.0;
+			GeomOrb[i].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[i].Symb);
 		}
 	}
 	return Ok;
@@ -775,7 +780,7 @@ static gboolean read_m2msi_geometry(FILE* file)
 /**************************************************************/
 static void read_m2msi_orbitals_file(gchar* filename)
 {
-	FILE* file = FOpen(filename, "r");
+	FILE* file = FOpen(filename, "rb");
 	gchar* tmp;
 	gchar buffer[BSIZE];
 	gboolean Ok = TRUE;
@@ -835,7 +840,7 @@ static void read_m2msi_orbitals_file(gchar* filename)
 /**************************************************************/
 static void read_m2msi_density_file(gchar* filename)
 {
-	FILE* file = FOpen(filename, "r");
+	FILE* file = FOpen(filename, "rb");
 	gchar* tmp;
 	gint len = BSIZE;
 	gchar buffer[BSIZE];

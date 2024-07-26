@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/GridAdfOrbitals.h"
 #include "../OpenGL/GridAdfDensity.h"
 #include "../OpenGL/GridM2MSI.h"
+#include "../OpenGL/GridQChem.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/HydrogenBond.h"
@@ -102,6 +103,14 @@ static void set_optimal_view()
 			if(max<GeomOrb[i].C[j]) max = GeomOrb[i].C[j];
 		}
 	}
+	if(grid)
+	{
+		for(j=0;j<3;j++)
+		{
+			if(min>grid->limits.MinMax[0][j]) min = grid->limits.MinMax[0][j];
+			if(max<grid->limits.MinMax[1][j]) max = grid->limits.MinMax[1][j];
+		}
+	}
 	get_camera_values(&zn, &zf, &zo, &perspective);
 	zn = 1;
 	zf = fabs(max-min)*5;
@@ -151,6 +160,14 @@ static void activate_action (GtkAction *action)
  		file_chooser_open(gl_read_first_molpro_file,"Read the first geometry in a Molpro output file",GABEDIT_TYPEFILE_MOLPRO,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryMolproLast"))
  		file_chooser_open(gl_read_last_molpro_file,"Read the last geometry in a Molpro output file",GABEDIT_TYPEFILE_MOLPRO,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name ,"GeometryMopacOutFirst"))
+ 		file_chooser_open(gl_read_first_mopac_output_file,"Read the first geometry from a Mopac output file",GABEDIT_TYPEFILE_MOPAC,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name ,"GeometryMopacOutLast"))
+ 		file_chooser_open(gl_read_last_mopac_output_file,"Read the last geometry from a Mopac output file",GABEDIT_TYPEFILE_MOPAC,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name ,"GeometryMopacAuxFirst"))
+ 		file_chooser_open(gl_read_first_mopac_aux_file,"Read the first geometry from a Mopac aux file",GABEDIT_TYPEFILE_MOPAC_AUX,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name ,"GeometryMopacAuxLast"))
+ 		file_chooser_open(gl_read_last_mopac_aux_file,"Read the last geometry from a Mopac aux file",GABEDIT_TYPEFILE_MOPAC_AUX,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryMPQCFirst"))
  		file_chooser_open(gl_read_first_mpqc_file,"Read the first geometry from a MPQC output file",GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryMPQCLast"))
@@ -177,6 +194,8 @@ static void activate_action (GtkAction *action)
  			file_chooser_open(read_gamess_orbitals_sel,"Read Geometry and Orbitals from a PCGamess output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsQChem"))
  			file_chooser_open(read_qchem_orbitals_sel,"Read Geometry and Orbitals from a Q-Chem output file",GABEDIT_TYPEFILE_QCHEM,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name , "OrbitalsMopac"))
+ 			file_chooser_open(read_mopac_orbitals_sel,"Read Geometry and Orbitals from a Mopac output file",GABEDIT_TYPEFILE_MOPAC_AUX,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsGaussian"))
  			file_chooser_open(read_gauss_orbitals_sel,"Read Geometry and Orbitals from a Gaussian output file",GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsMolpro"))
@@ -230,6 +249,8 @@ static void activate_action (GtkAction *action)
  		file_chooser_open(load_cube_gauss_density_file,"Load density from molcas cube file",GABEDIT_TYPEFILE_CUBEMOLCAS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadGabeditRead"))
  		file_chooser_open(load_cube_gabedit_file,"Load Gabedit cube file",GABEDIT_TYPEFILE_CUBEGABEDIT,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name , "CubeLoadQChem"))
+ 		file_chooser_open(load_qchemgrid_file,"Load Q-Chem Grid file",GABEDIT_TYPEFILE_CUBEQCHEM,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadGabeditSave"))
 	{
 		if(!grid) Message("Sorry, you have not a default grid","Error",TRUE);
@@ -279,6 +300,94 @@ static void activate_action (GtkAction *action)
 	{
 		TypeGrid = GABEDIT_TYPEGRID_ELFSAVIN;
 		create_grid("Calculation of Savin ELF");
+	}
+	else if(!strcmp(name , "SASCompute"))
+	{
+		TypeGrid = GABEDIT_TYPEGRID_SAS;
+		create_grid_sas("Compute Solvent Accessible Surface");
+	}
+	else if(!strcmp(name , "MEPOrbitalsMultipol"))
+	{
+		TypeGrid = GABEDIT_TYPEGRID_MEP_MULTIPOL;
+		CancelCalcul = FALSE;
+		create_grid("Calculation of MEP using Molecular Orbitals");
+	}
+	else if(!strcmp(name , "MEPOrbitalsCG"))
+	{
+		TypeGrid = GABEDIT_TYPEGRID_MEP_CG;
+		CancelCalcul = FALSE;
+		create_grid("Calculation of MEP from Molecular Orbitals/Poisson by Congugate Gradient");
+	}
+	else if(!strcmp(name , "MEPOrbitalsMG"))
+	{
+		TypeGrid = GABEDIT_TYPEGRID_MEP_MG;
+		CancelCalcul = FALSE;
+		create_grid("Calculation of MEP from Molecular Orbitals/Poisson by Multigrid");
+	}
+	else if(!strcmp(name , "MEPFromCharges"))
+	{
+		TypeGrid = GABEDIT_TYPEGRID_MEP_CHARGES;
+		CancelCalcul = FALSE;
+		create_grid("Calculation of MEP from partial charges of atoms");
+	}
+	else if(!strcmp(name , "MEPGridMultipol"))
+	{
+		CancelCalcul = FALSE;
+		Grid* esp = compute_mep_grid_using_multipol_from_density_grid(grid, 4);
+		if(esp)
+		{
+			free_grid(grid);
+			grid = esp;
+			TypeGrid = GABEDIT_TYPEGRID_MEP_MULTIPOL;
+			limits = grid->limits;
+			create_iso_orbitals();
+		}
+	}
+	else if(!strcmp(name , "MEPGridCG"))
+	{
+		CancelCalcul = FALSE;
+		Grid* esp = solve_poisson_equation_from_density_grid(grid,GABEDIT_CG);
+		if(esp)
+		{
+			free_grid(grid);
+			grid = esp;
+			TypeGrid = GABEDIT_TYPEGRID_MEP_CG;
+			limits = grid->limits;
+			create_iso_orbitals();
+		}
+	}
+	else if(!strcmp(name , "MEPGridMG"))
+	{
+		CancelCalcul = FALSE;
+		Grid* esp = solve_poisson_equation_from_density_grid(grid,GABEDIT_MG);
+		if(esp)
+		{
+			free_grid(grid);
+			grid = esp;
+			TypeGrid = GABEDIT_TYPEGRID_MEP_MG;
+			limits = grid->limits;
+			create_iso_orbitals();
+		}
+	}
+	else if(!strcmp(name , "MEPMappingCharges"))
+	{
+		CancelCalcul = FALSE;
+		mapping_with_mep_from_charges();
+	}
+	else if(!strcmp(name , "MEPMappingMultipol"))
+	{
+		CancelCalcul = FALSE;
+		mapping_with_mep_from_multipol(2);
+	}
+	else if(!strcmp(name , "MEPMappingCG"))
+	{
+		CancelCalcul = FALSE;
+		mapping_with_mep(grid->N,grid->limits, GABEDIT_CG);
+	}
+	else if(!strcmp(name , "MEPMappingMG"))
+	{
+		CancelCalcul = FALSE;
+		mapping_with_mep(grid->N,grid->limits, GABEDIT_MG);
 	}
 	else if(!strcmp(name , "CubeComputeLaplacian")) 
 	{
@@ -474,34 +583,51 @@ static GtkActionEntry gtkActionEntries[] =
 	{"GeometryPDB", GABEDIT_STOCK_PDB, "Read the geometry from a _pdb file", NULL, "Read the geometry from a pdb file", G_CALLBACK (activate_action) },
 	{"GeometryHIN", NULL, "Read the geometry from a _hyperchem file", NULL, "Read the geometry from a hyperchem file", G_CALLBACK (activate_action) },
 	{"GeometryOpenBabel", GABEDIT_STOCK_OPEN_BABEL, "Other format (using Open _Babel)", NULL, "Other format (using Open _Babel)", G_CALLBACK (activate_action) },
+	{"GeometryDalton",     GABEDIT_STOCK_DALTON, "Geometry _Dalton"},
 	{"GeometryDaltonFirst", GABEDIT_STOCK_DALTON, "Read the _first geometry from a Dalton output log file", 
 		NULL, "Read the first geometry from a Dalton output file", G_CALLBACK (activate_action) },
 	{"GeometryDaltonLast", GABEDIT_STOCK_DALTON, "Read the _last geometry from a Dalton output log file", 
 		NULL, "Read the last geometry from a Dalton output file", G_CALLBACK (activate_action) },
+	{"GeometryGamess",     GABEDIT_STOCK_GAMESS, "Geometry Ga_mess"},
 	{"GeometryGamessFirst", GABEDIT_STOCK_GAMESS, "Read the _first geometry from a Gamess output log file", 
 		NULL, "Read the first geometry from a Gamess output file", G_CALLBACK (activate_action) },
 	{"GeometryGamessLast", GABEDIT_STOCK_GAMESS, "Read the _last geometry from a Gamess output log file", 
 		NULL, "Read the last geometry from a Gamess output file", G_CALLBACK (activate_action) },
+	{"GeometryGaussian",     GABEDIT_STOCK_GAUSSIAN, "Geometry _Gaussian"},
 	{"GeometryGaussianFirst", GABEDIT_STOCK_GAUSSIAN, "Read the _first geometry from a gaussian log file", 
 		NULL, "Read the first geometry from a gaussian log file", G_CALLBACK (activate_action) },
 	{"GeometryGaussianLast", GABEDIT_STOCK_GAUSSIAN, "Read the _last geometry from a gaussian file", 
 		NULL, "Read the last geometry from a gaussian log file", G_CALLBACK (activate_action) },
+	{"GeometryMolcas",     GABEDIT_STOCK_MOLCAS, "Geometry Mol_cas"},
 	{"GeometryMolcasFirst", GABEDIT_STOCK_MOLCAS, "Read the _first geometry from a molcas output file", 
 		NULL, "Read the first geometry from a molcas output file", G_CALLBACK (activate_action) },
 	{"GeometryMolcasLast", GABEDIT_STOCK_MOLCAS, "Read the _last geometry from a molcas output file", 
 		NULL, "Read the last geometry from a molcas output file", G_CALLBACK (activate_action) },
+	{"GeometryMolpro",     GABEDIT_STOCK_MOLPRO, "Geometry Mol_pro"},
 	{"GeometryMolproFirst", GABEDIT_STOCK_MOLPRO, "Read the _first geometry from a molpro output file", 
 		NULL, "Read the first geometry from a molpro output file", G_CALLBACK (activate_action) },
 	{"GeometryMolproLast", GABEDIT_STOCK_MOLPRO, "Read the _last geometry from a molpro output file", 
 		NULL, "Read the last geometry from a molpro output file", G_CALLBACK (activate_action) },
+	{"GeometryMopac",     GABEDIT_STOCK_MOPAC, "Geometry _Mopac"},
+	{"GeometryMopacOutFirst", GABEDIT_STOCK_MOPAC, "Read the _first geometry from a Mopac output file", 
+		NULL, "Read the first geometry from a Mopac output file", G_CALLBACK (activate_action) },
+	{"GeometryMopacOutLast", GABEDIT_STOCK_MOPAC, "Read the _last geometry from a Mopac output file", 
+		NULL, "Read the last geometry from a Mopac-Chem output file", G_CALLBACK (activate_action) },
+	{"GeometryMopacAuxFirst", GABEDIT_STOCK_MOPAC, "Read the _first geometry from a Mopac aux file", 
+		NULL, "Read the first geometry from a Mopac aux file", G_CALLBACK (activate_action) },
+	{"GeometryMopacAuxLast", GABEDIT_STOCK_MOPAC, "Read the _last geometry from a Mopac aux file", 
+		NULL, "Read the last geometry from a Mopac-Chem aux file", G_CALLBACK (activate_action) },
+	{"GeometryMPQC",     GABEDIT_STOCK_MPQC, "Geometry MP_QC"},
 	{"GeometryMPQCFirst", GABEDIT_STOCK_MPQC, "Read the _first geometry from a MPQC output file", 
 		NULL, "Read the first geometry from a MPQC output file", G_CALLBACK (activate_action) },
 	{"GeometryMPQCLast", GABEDIT_STOCK_MPQC, "Read the _last geometry from a MPQC output file", 
 		NULL, "Read the last geometry from a MPQC output file", G_CALLBACK (activate_action) },
+	{"GeometryPCGamess",     GABEDIT_STOCK_PCGAMESS, "Geometry _PCGamess"},
 	{"GeometryPCGamessFirst", GABEDIT_STOCK_PCGAMESS, "Read the _first geometry from a PCGamess output log file", 
 		NULL, "Read the first geometry from a PCGamess output file", G_CALLBACK (activate_action) },
 	{"GeometryPCGamessLast", GABEDIT_STOCK_PCGAMESS, "Read the _last geometry from a PCGamess output log file", 
 		NULL, "Read the last geometry from a PCGamess output file", G_CALLBACK (activate_action) },
+	{"GeometryQChem",     GABEDIT_STOCK_QCHEM, "Geometry Q-_Chem"},
 	{"GeometryQChemFirst", GABEDIT_STOCK_QCHEM, "Read the _first geometry from a Q-Chem output file", 
 		NULL, "Read the first geometry from a Q-Chem output file", G_CALLBACK (activate_action) },
 	{"GeometryQChemLast", GABEDIT_STOCK_QCHEM, "Read the _last geometry from a Q-Chem output file", 
@@ -525,6 +651,8 @@ static GtkActionEntry gtkActionEntries[] =
 		NULL, "Read geometry and orbiatls from a PCGamess output file", G_CALLBACK (activate_action) },
 	{"OrbitalsQChem", GABEDIT_STOCK_QCHEM, "Read geometry and orbiatls from a Q-_Chem output file", 
 		NULL, "Read geometry and orbiatls from a Q-Chem output file", G_CALLBACK (activate_action) },
+	{"OrbitalsMopac", GABEDIT_STOCK_MOPAC, "Read geometry and orbiatls from a _Mopac aux file", 
+		NULL, "Read geometry and orbiatls from a Mopac aux file", G_CALLBACK (activate_action) },
 	{"OrbitalsGabeditRead", GABEDIT_STOCK_GABEDIT, "Read geometry and orbiatls from a G_abedit file", 
 		NULL, "Read geometry and orbiatls from a Gabedit file", G_CALLBACK (activate_action) },
 	{"OrbitalsMolden", GABEDIT_STOCK_MOLDEN, "Read geometry and orbiatls from a Mol_den file", 
@@ -575,6 +703,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"CubeLoadMolcasCubeOrbitals", NULL, "_Orbitals", NULL, "Read the orbitals from a molcas cube file", G_CALLBACK (activate_action) },
 	{"CubeLoadMolcasCubeDensity", NULL, "_Density", NULL, "Read the density from a molcas cube file", G_CALLBACK (activate_action) },
 
+	{"CubeLoadQChem", GABEDIT_STOCK_QCHEM, "Load _Q-Chem grid file", NULL, "Read a Q-Chem cube file", G_CALLBACK (activate_action) },
 	{"CubeLoadGabeditRead", GABEDIT_STOCK_GABEDIT, "Load G_abedit cube file", NULL, "Read a Gabedit cube file", G_CALLBACK (activate_action) },
 	{"CubeLoadGabeditSave", GABEDIT_STOCK_SAVE, "_Save", NULL, "Save in a Gabedit cube file", G_CALLBACK (activate_action) },
 	{"CubeComputeLaplacian", NULL, "Compute _laplacian", NULL, "Compute laplacian", G_CALLBACK (activate_action) },
@@ -592,6 +721,27 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ELF",     NULL, "_ELF"},
 	{"ELFBecke", NULL, "Compute _Becke Electron Localization Function[see JCP,92(1990)5397]", NULL, "Compute Becke Electron Localization Function", G_CALLBACK (activate_action) },
 	{"ELFSavin", NULL, "Compute _Savin Electron Localization Function[see Can.J.Chem.,74(1996)1088]", NULL, "Compute Savin Electron Localization Function", G_CALLBACK (activate_action) },
+
+	{"SAS",     NULL, "_SAS"},
+	{"SASCompute", NULL, "_Solvent Accessible Surface", NULL, "Compute and draw Solvent Accessible Surface", G_CALLBACK (activate_action) },
+	{"MEP",     NULL, "_MEP"},
+	{"MEPMapping",     NULL, "_Mapped the current grid"},
+	{"MEPOrbitals",     NULL, "Using _Molecular Orbitals"},
+	{"MEPGrid",     NULL, "Using Current _Grid"},
+
+	{"MEPMappingMG", NULL, "MEP by solving Poisson Equation using _Multigrid method", NULL, "MEP by solving Poisson Equation using Multigrid method", G_CALLBACK (activate_action) },
+	{"MEPMappingCG", NULL, "MEP by solving Poisson Equation using _Congugate Gradient method", NULL, "MEP by solving Poisson Equation using Congugate Gradient method", G_CALLBACK (activate_action) },
+	{"MEPMappingMultipol", NULL, "MEP using Multipole", NULL, "MEP using Multipole", G_CALLBACK (activate_action) },
+	{"MEPMappingCharges", NULL, "MEP using partial charges", NULL, "MEP using partial charges", G_CALLBACK (activate_action) },
+
+	{"MEPOrbitalsMG", NULL, "MEP by solving Poisson Equation using _Multigrid method", NULL, "MEP by solving Poisson Equation using Multigrid method", G_CALLBACK (activate_action) },
+	{"MEPOrbitalsCG", NULL, "MEP by solving Poisson Equation using _Congugate Gradient method", NULL, "MEP by solving Poisson Equation using Congugate Gradient method", G_CALLBACK (activate_action) },
+	{"MEPOrbitalsMultipol", NULL, "MEP using Multipole", NULL, "MEP using Multipole", G_CALLBACK (activate_action) },
+
+	{"MEPGridMG", NULL, "MEP by solving Poisson Equation using _Multigrid method", NULL, "MEP by solving Poisson Equation using Multigrid method", G_CALLBACK (activate_action) },
+	{"MEPGridCG", NULL, "MEP by solving Poisson Equation using _Congugate Gradient method", NULL, "MEP by solving Poisson Equation using Congugate Gradient method", G_CALLBACK (activate_action) },
+	{"MEPGridMultipol", NULL, "MEP using Multipole", NULL, "MEP using Multipole", G_CALLBACK (activate_action) },
+	{"MEPFromCharges", NULL, "MEP using partial _charges", NULL, "MEP using partial charges", G_CALLBACK (activate_action) },
 
 	{"Contours",     NULL, "Co_ntours"},
 	{"ContoursFirst", NULL, "plane perpendicular to the _first direction", 
@@ -634,7 +784,6 @@ static GtkActionEntry gtkActionEntries[] =
 	{"RenderSurfaceNegative",     NULL, "_Negative surface"},
 	{"RenderBackGround",     NULL, "_BackGround"},
 	{"RenderLight",     NULL, "_Light"},
-	{"RenderOptimal",     NULL, "_Optimal"},
 	{"RenderOptimal", GABEDIT_STOCK_O, "_Optimal", NULL, "Optimal camera", G_CALLBACK (activate_action) },
 	{"Set",     NULL, "_Set"},
 	{"Operation",     NULL, "_Operation"},
@@ -769,6 +918,12 @@ static void toggle_action (GtkAction *action)
 		set_show_numbers(show);
 		glarea_rafresh(GLArea);
 	}
+	else if(!strcmp(name,"RenderLabelCharges"))
+	{
+		gboolean show = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
+		set_show_charges(show);
+		glarea_rafresh(GLArea);
+	}
 	else if(!strcmp(name,"RenderLabelDistances"))
 	{
 		gboolean show = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
@@ -828,6 +983,7 @@ static GtkToggleActionEntry gtkActionToggleEntries[] =
 	{ "ShowProgressBar", NULL, "_show progress bar", NULL, "show progress bar", G_CALLBACK (toggle_action), TRUE},
 	{ "RenderLabelSymbols", NULL, "show symbo_ls", NULL, "show symbols", G_CALLBACK (toggle_action), TRUE},
 	{ "RenderLabelNumbers", NULL, "show _numbers", NULL, "show numbers", G_CALLBACK (toggle_action), TRUE},
+	{ "RenderLabelCharges", NULL, "show _charges", NULL, "show charges", G_CALLBACK (toggle_action), TRUE},
 	{ "RenderLabelDistances", NULL, "show _distances", NULL, "show distances", G_CALLBACK (toggle_action), TRUE},
 	{ "RenderLabelDipole", NULL, "show _dipole value", NULL, "show dipole value", G_CALLBACK (toggle_action), TRUE},
 	{ "RenderLabelAxes", NULL, "show _axis labels", NULL, "show axis labels", G_CALLBACK (toggle_action), TRUE},
@@ -1084,34 +1240,57 @@ static guint numberOfOperationEntries = G_N_ELEMENTS (operationEntries);
  * a subset of the Bonobo UI XML format, and uses GMarkup for parsing */
 static const gchar *uiMenuInfo =
 "  <popup name=\"MenuGL\">\n"
-"    <menu name=\"_Geometry\" action=\"Geometry\">\n"
+"    <menu name=\"Geometry\" action=\"Geometry\">\n"
 "      <menuitem name=\"GeometryXYZ\" action=\"GeometryXYZ\" />\n"
 "      <menuitem name=\"GeometryPDB\" action=\"GeometryPDB\" />\n"
 "      <menuitem name=\"GeometryHIN\" action=\"GeometryHIN\" />\n"
 "      <separator name=\"sepMenuXYZ\" />\n"
-"      <menuitem name=\"GeometryDaltonFirst\" action=\"GeometryDaltonFirst\" />\n"
-"      <menuitem name=\"GeometryDaltonLast\" action=\"GeometryDaltonLast\" />\n"
+"      <menu name=\"GeometryDalton\" action=\"GeometryDalton\">\n"
+"        <menuitem name=\"GeometryDaltonFirst\" action=\"GeometryDaltonFirst\" />\n"
+"        <menuitem name=\"GeometryDaltonLast\" action=\"GeometryDaltonLast\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuDaltonGeom\" />\n"
-"      <menuitem name=\"GeometryGamessFirst\" action=\"GeometryGamessFirst\" />\n"
-"      <menuitem name=\"GeometryGamessLast\" action=\"GeometryGamessLast\" />\n"
+"      <menu name=\"GeometryGamess\" action=\"GeometryGamess\">\n"
+"        <menuitem name=\"GeometryGamessFirst\" action=\"GeometryGamessFirst\" />\n"
+"        <menuitem name=\"GeometryGamessLast\" action=\"GeometryGamessLast\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuGamessGeom\" />\n"
-"      <menuitem name=\"GeometryGaussianFirst\" action=\"GeometryGaussianFirst\" />\n"
-"      <menuitem name=\"GeometryGaussianLast\" action=\"GeometryGaussianLast\" />\n"
+"      <menu name=\"GeometryGaussian\" action=\"GeometryGaussian\">\n"
+"        <menuitem name=\"GeometryGaussianFirst\" action=\"GeometryGaussianFirst\" />\n"
+"        <menuitem name=\"GeometryGaussianLast\" action=\"GeometryGaussianLast\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuGaussianGeom\" />\n"
-"      <menuitem name=\"GeometryMolcasFirst\" action=\"GeometryMolcasFirst\" />\n"
-"      <menuitem name=\"GeometryMolcasLast\" action=\"GeometryMolcasLast\" />\n"
+"      <menu name=\"GeometryMolcas\" action=\"GeometryMolcas\">\n"
+"        <menuitem name=\"GeometryMolcasFirst\" action=\"GeometryMolcasFirst\" />\n"
+"        <menuitem name=\"GeometryMolcasLast\" action=\"GeometryMolcasLast\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuMolcasGeom\" />\n"
-"      <menuitem name=\"GeometryMolproFirst\" action=\"GeometryMolproFirst\" />\n"
-"      <menuitem name=\"GeometryMolproLast\" action=\"GeometryMolproLast\" />\n"
+"      <menu name=\"GeometryMolpro\" action=\"GeometryMolpro\">\n"
+"        <menuitem name=\"GeometryMolproFirst\" action=\"GeometryMolproFirst\" />\n"
+"        <menuitem name=\"GeometryMolproLast\" action=\"GeometryMolproLast\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuMolproGeom\" />\n"
-"      <menuitem name=\"GeometryMPQCFirst\" action=\"GeometryMPQCFirst\" />\n"
-"      <menuitem name=\"GeometryMPQCLast\" action=\"GeometryMPQCLast\" />\n"
+"      <menu name=\"GeometryMopac\" action=\"GeometryMopac\">\n"
+"        <menuitem name=\"GeometryMopacOutFirst\" action=\"GeometryMopacOutFirst\" />\n"
+"        <menuitem name=\"GeometryMopacOutLast\" action=\"GeometryMopacOutLast\" />\n"
+"        <menuitem name=\"GeometryMopacAuxFirst\" action=\"GeometryMopacAuxFirst\" />\n"
+"        <menuitem name=\"GeometryMopacAuxLast\" action=\"GeometryMopacAuxLast\" />\n"
+"      </menu>\n"
+"      <separator name=\"sepMenuMopacGeom\" />\n"
+"      <menu name=\"GeometryMPQC\" action=\"GeometryMPQC\">\n"
+"        <menuitem name=\"GeometryMPQCFirst\" action=\"GeometryMPQCFirst\" />\n"
+"        <menuitem name=\"GeometryMPQCLast\" action=\"GeometryMPQCLast\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuMPQCGeom\" />\n"
-"      <menuitem name=\"GeometryPCGamessFirst\" action=\"GeometryPCGamessFirst\" />\n"
-"      <menuitem name=\"GeometryPCGamessLast\" action=\"GeometryPCGamessLast\" />\n"
+"      <menu name=\"GeometryPCGamess\" action=\"GeometryPCGamess\">\n"
+"        <menuitem name=\"GeometryPCGamessFirst\" action=\"GeometryPCGamessFirst\" />\n"
+"        <menuitem name=\"GeometryPCGamessLast\" action=\"GeometryPCGamessLast\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuPCGamessGeom\" />\n"
-"      <menuitem name=\"GeometryQChemFirst\" action=\"GeometryQChemFirst\" />\n"
-"      <menuitem name=\"GeometryQChemLast\" action=\"GeometryQChemLast\" />\n"
+"      <menu name=\"GeometryQChem\" action=\"GeometryQChem\">\n"
+"        <menuitem name=\"GeometryQChemFirst\" action=\"GeometryQChemFirst\" />\n"
+"        <menuitem name=\"GeometryQChemLast\" action=\"GeometryQChemLast\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuQChemGeom\" />\n"
 "      <menuitem name=\"GeometryGabedit\" action=\"GeometryGabedit\" />\n"
 "      <separator name=\"sepMenuGabeditGeom\" />\n"
@@ -1125,6 +1304,7 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"OrbitalsGamess\" action=\"OrbitalsGamess\" />\n"
 "      <menuitem name=\"OrbitalsGaussian\" action=\"OrbitalsGaussian\" />\n"
 "      <menuitem name=\"OrbitalsMolpro\" action=\"OrbitalsMolpro\" />\n"
+"      <menuitem name=\"OrbitalsMopac\" action=\"OrbitalsMopac\" />\n"
 "      <menuitem name=\"OrbitalsPCGamess\" action=\"OrbitalsPCGamess\" />\n"
 "      <menuitem name=\"OrbitalsQChem\" action=\"OrbitalsQChem\" />\n"
 "      <menuitem name=\"OrbitalsGabeditRead\" action=\"OrbitalsGabeditRead\" />\n"
@@ -1173,6 +1353,8 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"CubeLoadAdfOrbitals\" action=\"CubeLoadAdfOrbitals\" />\n"
 "        <menuitem name=\"CubeLoadAdfDensity\" action=\"CubeLoadAdfDensity\" />\n"
 "      </menu>\n"
+"      <separator name=\"sepMenuCubeLoadQChem\" />\n"
+"      <menuitem name=\"CubeLoadQChem\" action=\"CubeLoadQChem\" />\n"
 "      <separator name=\"sepMenuCubeLoadGabeditRead\" />\n"
 "      <menuitem name=\"CubeLoadGabeditRead\" action=\"CubeLoadGabeditRead\" />\n"
 "      <separator name=\"sepMenuCubeLoadGabeditSave\" />\n"
@@ -1200,6 +1382,32 @@ static const gchar *uiMenuInfo =
 "    <menu name=\"ELF\" action = \"ELF\">\n"
 "        <menuitem name=\"ELFSavin\" action=\"ELFSavin\" />\n"
 "        <menuitem name=\"ELFBecke\" action=\"ELFBecke\" />\n"
+"    </menu>\n"
+
+"    <separator name=\"sepMenuSAS\" />\n"
+"    <menu name=\"SAS\" action = \"SAS\">\n"
+"        <menuitem name=\"SASCompute\" action=\"SASCompute\" />\n"
+"    </menu>\n"
+
+"    <separator name=\"sepMenuMEP\" />\n"
+"    <menu name=\"MEP\" action = \"MEP\">\n"
+"      <menu name=\"MEPMapping\" action = \"MEPMapping\">\n"
+"        <menuitem name=\"MEPMappingMG\" action=\"MEPMappingMG\" />\n"
+"        <menuitem name=\"MEPMappingCG\" action=\"MEPMappingCG\" />\n"
+"        <menuitem name=\"MEPMappingMultipol\" action=\"MEPMappingMultipol\" />\n"
+"        <menuitem name=\"MEPMappingCharges\" action=\"MEPMappingCharges\" />\n"
+"      </menu>\n"
+"      <menu name=\"MEPOrbitals\" action = \"MEPOrbitals\">\n"
+"        <menuitem name=\"MEPOrbitalsMG\" action=\"MEPOrbitalsMG\" />\n"
+"        <menuitem name=\"MEPOrbitalsCG\" action=\"MEPOrbitalsCG\" />\n"
+"        <menuitem name=\"MEPOrbitalsMultipol\" action=\"MEPOrbitalsMultipol\" />\n"
+"      </menu>\n"
+"      <menu name=\"MEPGrid\" action = \"MEPGrid\">\n"
+"        <menuitem name=\"MEPGridMG\" action=\"MEPGridMG\" />\n"
+"        <menuitem name=\"MEPGridCG\" action=\"MEPGridCG\" />\n"
+"        <menuitem name=\"MEPGridMultipol\" action=\"MEPGridMultipol\" />\n"
+"      </menu>\n"
+"        <menuitem name=\"MEPFromCharges\" action=\"MEPFromCharges\" />\n"
 "    </menu>\n"
 
 "    <separator name=\"sepMenuContours\" />\n"
@@ -1295,6 +1503,7 @@ static const gchar *uiMenuInfo =
 "       <menu name=\"RenderLabel\" action = \"RenderLabel\">\n"
 "           <menuitem name=\"RenderLabelSymbols\" action=\"RenderLabelSymbols\" />\n"
 "           <menuitem name=\"RenderLabelNumbers\" action=\"RenderLabelNumbers\" />\n"
+"           <menuitem name=\"RenderLabelCharges\" action=\"RenderLabelCharges\" />\n"
 "           <menuitem name=\"RenderLabelDistances\" action=\"RenderLabelDistances\" />\n"
 "           <menuitem name=\"RenderLabelDipole\" action=\"RenderLabelDipole\" />\n"
 "           <menuitem name=\"RenderLabelAxes\" action=\"RenderLabelAxes\" />\n"
@@ -1423,13 +1632,14 @@ static void set_init_gtkActionToggleEntries()
 	gtkActionToggleEntries[13].is_active = TRUE; /* ShowProgressBar */
 	gtkActionToggleEntries[14].is_active = FALSE; /* RenderLabelSymbols */
 	gtkActionToggleEntries[15].is_active = FALSE; /* RenderLabelNumbers */
-	gtkActionToggleEntries[16].is_active = FALSE; /* RenderLabelDistances */
-	gtkActionToggleEntries[17].is_active = FALSE; /* RenderLabelDipole */
-	gtkActionToggleEntries[18].is_active = FALSE; /* RenderLabelAxes */
-	gtkActionToggleEntries[19].is_active = get_labels_ortho(); /* RenderLabelsOrtho*/
-	gtkActionToggleEntries[20].is_active = !ringsGetNotPlanar(); /* RingsDeleteNotPlaner*/
-	gtkActionToggleEntries[21].is_active = ringsGetRandumColors(); /* RingsRandumColors*/
-	gtkActionToggleEntries[22].is_active = get_dotted_negative_contours(); /* "ContoursNegativeDotted" */
+	gtkActionToggleEntries[16].is_active = FALSE; /* RenderLabelCharges */
+	gtkActionToggleEntries[17].is_active = FALSE; /* RenderLabelDistances */
+	gtkActionToggleEntries[18].is_active = FALSE; /* RenderLabelDipole */
+	gtkActionToggleEntries[19].is_active = FALSE; /* RenderLabelAxes */
+	gtkActionToggleEntries[20].is_active = get_labels_ortho(); /* RenderLabelsOrtho*/
+	gtkActionToggleEntries[21].is_active = !ringsGetNotPlanar(); /* RingsDeleteNotPlaner*/
+	gtkActionToggleEntries[22].is_active = ringsGetRandumColors(); /* RingsRandumColors*/
+	gtkActionToggleEntries[23].is_active = get_dotted_negative_contours(); /* "ContoursNegativeDotted" */
 }
 
 /*******************************************************************************************************************************/
@@ -1440,7 +1650,7 @@ static void add_widget (GtkUIManager *merge, GtkWidget   *widget, GtkContainer *
 	if (!GTK_IS_TOOLBAR (widget))  return;
 
 	handlebox =gtk_handle_box_new ();
-	gtk_widget_ref (handlebox);
+	g_object_ref (handlebox);
   	gtk_handle_box_set_handle_position  (GTK_HANDLE_BOX(handlebox),GTK_POS_TOP);
 	/*   GTK_SHADOW_NONE,  GTK_SHADOW_IN,  GTK_SHADOW_OUT, GTK_SHADOW_ETCHED_IN, GTK_SHADOW_ETCHED_OUT */
 	gtk_handle_box_set_shadow_type(GTK_HANDLE_BOX(handlebox),GTK_SHADOW_OUT);
@@ -1532,7 +1742,29 @@ static void set_sensitive_density()
 	GtkWidget *elf = gtk_ui_manager_get_widget (manager, "/MenuGL/ELF");
 	GtkWidget *atomic = gtk_ui_manager_get_widget (manager, "/MenuGL/Density/DensityAtomics");
 	GtkWidget *bonds = gtk_ui_manager_get_widget (manager, "/MenuGL/Density/DensityBonds");
+	GtkWidget *sas = gtk_ui_manager_get_widget (manager, "/MenuGL/SAS");
+	GtkWidget *esp = gtk_ui_manager_get_widget (manager, "/MenuGL/MEP");
+	GtkWidget *espOrb = gtk_ui_manager_get_widget (manager, "/MenuGL/MEP/MEPOrbitals");
+	GtkWidget *espGrid = gtk_ui_manager_get_widget (manager, "/MenuGL/MEP/MEPGrid");
+	GtkWidget *espMapping = gtk_ui_manager_get_widget (manager, "/MenuGL/MEP/MEPMapping");
 
+	if(GTK_IS_WIDGET(esp)) gtk_widget_set_sensitive(esp, FALSE);
+	if(GTK_IS_WIDGET(espGrid)) gtk_widget_set_sensitive(espGrid, FALSE);
+	if(GTK_IS_WIDGET(espOrb)) gtk_widget_set_sensitive(espOrb, FALSE);
+	if(GTK_IS_WIDGET(espMapping)) gtk_widget_set_sensitive(espMapping, FALSE);
+	if(!GeomOrb)
+	{
+		if(GTK_IS_WIDGET(sas)) gtk_widget_set_sensitive(sas, FALSE);
+		if(GTK_IS_WIDGET(density)) gtk_widget_set_sensitive(density, FALSE);
+		if(GTK_IS_WIDGET(elf)) gtk_widget_set_sensitive(elf, FALSE);
+		return;
+	}
+	if( (grid || (CoefAlphaOrbitals && GeomOrb)) && GTK_IS_WIDGET(esp)) gtk_widget_set_sensitive(esp, TRUE);
+	if( grid && GTK_IS_WIDGET(espGrid)) gtk_widget_set_sensitive(espGrid, TRUE);
+	if( CoefAlphaOrbitals && GeomOrb && GTK_IS_WIDGET(espOrb)) gtk_widget_set_sensitive(espOrb, TRUE);
+	if( grid && CoefAlphaOrbitals && GeomOrb && GTK_IS_WIDGET(espMapping)) gtk_widget_set_sensitive(espMapping, TRUE);
+
+	if(GTK_IS_WIDGET(sas)) gtk_widget_set_sensitive(sas, TRUE);
 	if(!GeomOrb || !CoefAlphaOrbitals)
 	{
 		if(GTK_IS_WIDGET(density)) gtk_widget_set_sensitive(density, FALSE);

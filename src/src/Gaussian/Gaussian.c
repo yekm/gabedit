@@ -558,6 +558,7 @@ static void GetInfoMB(  )
         	gabedit_text_insert (GABEDIT_TEXT(text),NULL,NULL,NULL,"ONIOM(",-1);
         }
 
+        temp=get_info_method(0);
 	if(strcmp(Methodes[0],"Semi-Empirical Methods") && strcmp(Methodes[0],"Molecular Mechanics Methods"))
 	{
         	if (Basis[0]!=NULL) AddWithBasis(temp, get_info_basis(0));

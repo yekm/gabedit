@@ -56,6 +56,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/GeomConversion.h"
 #include "../Geometry/MenuToolBarGeom.h"
 #include "../Geometry/OpenBabel.h"
+#include "../Geometry/FragmentsSelector.h"
 #include "../Utils/HydrogenBond.h"
 #include "../Symmetry/MoleculeSymmetryInterface.h"
 #include "../Common/StockIcons.h"
@@ -103,7 +104,7 @@ static void select_atom()
 	guint i;
 	guint j;
         GtkStyle *button_style;
-          GtkStyle *style;
+        GtkStyle *style;
 
 	gchar*** Symb = get_periodic_table();
 
@@ -158,6 +159,7 @@ enum
 	OPERATION_ROTATION_ATOMS,
 	OPERATION_ROTATION_Z_ATOMS,
 	OPERATION_INSERT_ATOM,
+	OPERATION_INSERT_FRAG,
 	OPERATION_MESURE,
 };
 static void render_operation_radio_action (GtkAction *action)
@@ -186,6 +188,10 @@ static void render_operation_radio_action (GtkAction *action)
 				    SetOperation(NULL, INSERTATOM );
 				    if(GTK_IS_WIDGET(atomToInsert)) gtk_widget_set_sensitive(atomToInsert, TRUE);
 				    break;
+		case   OPERATION_INSERT_FRAG : 
+				    		SetOperation(NULL, ADDFRAGMENT ); 
+						create_window_fragments_selector();
+						break;
 		case   OPERATION_MESURE :
 				    SetOperation(NULL, MESURE );
 				    {
@@ -218,6 +224,7 @@ static GtkRadioActionEntry operationsEntries[] = {
   { "OperationsRotationZAtoms", GABEDIT_STOCK_ROTATION_Z_LOCAL, "Rotation, about _z axis, of selected atoms", NULL, "Rotation, about z axis, of selected atoms", OPERATION_ROTATION_Z_ATOMS },
 
   { "OperationsInsertAtom", GABEDIT_STOCK_DRAW, "_Insert Atom", NULL, "Insert an atom", OPERATION_INSERT_ATOM },
+  { "OperationsInsertFrag", GABEDIT_STOCK_IFRAG, "_Insert a fragment", NULL, "Insert a fragment", OPERATION_INSERT_FRAG},
   { "OperationsMesure", GABEDIT_STOCK_MESURE, "_Mesure", NULL, "Mesure", OPERATION_MESURE },
 };
 static guint numberOfOperationsEntries = G_N_ELEMENTS (operationsEntries);
@@ -301,6 +308,7 @@ static void toggle_action (GtkAction *action)
 	else if(!strcmp(name,"LabelsDipole")) SetLabelDipole(NULL, TRUE);
 	else if(!strcmp(name,"RenderPerspective")) RenderPers(NULL, TRUE);
 	else if(!strcmp(name,"RenderLighting")) RenderLight(NULL, TRUE);
+	else if(!strcmp(name,"RenderCartoon")) RenderCartoon(NULL, TRUE);
 	else if(!strcmp(name,"RenderShad")) RenderShad(NULL, TRUE);
 	else if(!strcmp(name,"RenderShowDipole")) RenderDipole(NULL, TRUE);
 	else if(!strcmp(name,"RenderShowHydrogenBonds")) RenderHBonds(NULL, TRUE);
@@ -331,6 +339,7 @@ static GtkToggleActionEntry gtkActionToggleEntries[] =
 
 	{ "RenderPerspective", NULL, "_Perspective", NULL, "render perspective", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderLighting", NULL, "_Lighting", NULL, "render lighting", G_CALLBACK (toggle_action), FALSE },
+	{ "RenderCartoon", NULL, "_Cartoon", NULL, "render cartoon", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderShad", NULL, "_Shad", NULL, "render shad", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderShowDipole", NULL, "Show _Dipole", NULL, "Show dipole", G_CALLBACK (toggle_action), FALSE },
 	{ "RenderShowHydrogenBonds", NULL, "Show _Hydrogen bonds", NULL, "Show hydrogen bonds", G_CALLBACK (toggle_action), FALSE },
@@ -359,18 +368,24 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ReadDaltonLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_DALTONLAST); }
 	else if(!strcmp(name,"ReadGamessFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_GAMESSFIRST); }
 	else if(!strcmp(name,"ReadGamessLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_GAMESSLAST); }
-	else if(!strcmp(name,"ReadGaussianInput")) { selc_gauss_molcas_molpro_mpqc_input_file("Read Geometry from a Gaussian input file"); }
+	else if(!strcmp(name,"ReadGaussianInput")) { selc_all_input_file("Read Geometry from a Gaussian input file"); }
 	else if(!strcmp(name,"ReadGaussianFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_GAUSSOUTFIRST); }
 	else if(!strcmp(name,"ReadGaussianLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_GAUSSOUTLAST);}
-	else if(!strcmp(name,"ReadMolcasInput")) { selc_gauss_molcas_molpro_mpqc_input_file("Read Geometry from a Molcas input file");}
+	else if(!strcmp(name,"ReadMolcasInput")) { selc_all_input_file("Read Geometry from a Molcas input file");}
 	else if(!strcmp(name,"ReadMolcasFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MOLCASOUTFIRST);}
 	else if(!strcmp(name,"ReadMolcasLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MOLCASOUTLAST);}
-	else if(!strcmp(name,"ReadMolproInput")) { selc_gauss_molcas_molpro_mpqc_input_file("Read Geometry from a Molpro input file");}
+	else if(!strcmp(name,"ReadMolproInput")) { selc_all_input_file("Read Geometry from a Molpro input file");}
 	else if(!strcmp(name,"ReadMolproFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MOLPROOUTFIRST);}
 	else if(!strcmp(name,"ReadMolproLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MOLPROOUTLAST);}
-	else if(!strcmp(name,"ReadMPQCInput")) { selc_gauss_molcas_molpro_mpqc_input_file("Read Geometry from a MPQC input file");}
+	else if(!strcmp(name,"ReadMopacInput")) { selc_all_input_file("Read Geometry from a Mopac input file");}
+	else if(!strcmp(name,"ReadMopacFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MOPACOUTFIRST);}
+	else if(!strcmp(name,"ReadMopacLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MOPACOUTLAST);}
+	else if(!strcmp(name,"ReadMopacAux")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MOPACAUX);}
+	else if(!strcmp(name,"ReadMPQCInput")) { selc_all_input_file("Read Geometry from a MPQC input file");}
 	else if(!strcmp(name,"ReadMPQCFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MPQCOUTFIRST);}
 	else if(!strcmp(name,"ReadMPQCLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MPQCOUTLAST);}
+	else if(!strcmp(name,"ReadPCGamessFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_GAMESSFIRST); }
+	else if(!strcmp(name,"ReadPCGamessLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_GAMESSLAST); }
 	else if(!strcmp(name,"ReadQChemFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_QCHEMOUTFIRST);}
 	else if(!strcmp(name,"ReadQChemLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_QCHEMOUTLAST);}
 	else if(!strcmp(name,"ReadUsingOpenBabel")) { create_babel_read_dialogue(); }
@@ -382,7 +397,8 @@ static void activate_action (GtkAction *action)
  	  file_chooser_open(read_geometries_conv_gaussian,"Load Geom. Conv. From Gaussian Output file", GABEDIT_TYPEFILE_GAUSSIAN,GABEDIT_TYPEWIN_GEOM);
 	else if(!strcmp(name,"ReadGeomConvMolpro"))
    	  file_chooser_open(read_geometries_conv_molpro,"Load Geom. Conv. From Molpro log file", GABEDIT_TYPEFILE_MOLPRO_LOG,GABEDIT_TYPEWIN_GEOM);
-
+	else if(!strcmp(name,"ReadGeomConvMopac"))
+   	  file_chooser_open(read_geometries_conv_mopac,"Load Geom. Conv. From Molpac aux file", GABEDIT_TYPEFILE_MOPAC_AUX,GABEDIT_TYPEWIN_GEOM);
 	else if(!strcmp(name,"ReadGeomConvMPQC"))
    	  file_chooser_open(read_geometries_conv_mpqc,"Load Geom. Conv. From MPQC output file", GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_GEOM);
 	else if(!strcmp(name,"ReadGeomConvQChem"))
@@ -559,10 +575,10 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"BuildPolyPeptide")) build_polypeptide_dlg();
 	else if(!strcmp(name,"BuildPolyNucleicAcid")) build_polynucleicacid_dlg();
 	else if(!strcmp(name,"BuildPolySaccharide")) build_polysaccharide_dlg();
-	else if(!strcmp(name,"AddPersonalEditNewGroup")) newGroupeDlg(NULL, 0, NULL);
-	else if(!strcmp(name,"AddPersonalEditDeleteGroup")) deleteGroupeDlg(NULL, 0, NULL);
-	else if(!strcmp(name,"AddPersonalEditAddMolecule"))  addFragmentDlg(NULL, 0, NULL);
-	else if(!strcmp(name,"AddPersonalEditRemoveFragment")) deleteFragmentDlg(NULL, 0, NULL);
+	else if(!strcmp(name,"PersonalFragmentsNewGroup")) newGroupeDlg(NULL, 0, NULL);
+	else if(!strcmp(name,"PersonalFragmentsDeleteGroup")) deleteGroupeDlg(NULL, 0, NULL);
+	else if(!strcmp(name,"PersonalFragmentsAddMolecule"))  addFragmentDlg(NULL, 0, NULL);
+	else if(!strcmp(name,"PersonalFragmentsRemoveFragment")) deleteFragmentDlg(NULL, 0, NULL);
 	else if(!strcmp(name, "RenderDefaultStick")) factor_stick_default(NULL, NULL);
 	else if(!strcmp(name, "RenderDefaultBall"))factor_ball_default(NULL, NULL);
 	else if(!strcmp(name, "RenderDefaultZoom")) factor_default(NULL, NULL);
@@ -594,6 +610,8 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "SetPDBTypeOfselectedAtoms")) setPDBTypeOfselectedAtomsDlg();
 	else if(!strcmp(name, "SetChargeOfselectedAtoms")) setChargeOfselectedAtomsDlg();
 	else if(!strcmp(name, "scaleChargesOfSelectedAtoms")) scaleChargesOfSelectedAtomsDlg();
+	else if(!strcmp(name, "InsertAFragment")) activate_insert_fragment();
+	else if(!strcmp(name, "AddMaxHydrogensToSelectedAtoms")) addMaxHydrogensToSelectedAtoms();
 	else if(!strcmp(name, "AddHydrogensToSelectedAtoms")) addHydrogensToSelectedAtoms();
 	else if(!strcmp(name, "AddHydrogensToSelectedAtomsTpl")) addHydrogensToSelectedAtomsTpl();
 	else if(!strcmp(name, "AddOneHydrogenToSelectedAtoms")) addOneHydrogenToSelectedAtoms();
@@ -669,25 +687,50 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadPDB", GABEDIT_STOCK_PDB, "_PDB file", NULL, "Read a PDB file", G_CALLBACK (activate_action) },
 	{"ReadHyperchem", NULL, "_Hyperchem file", NULL, "Read a Hyperchem file", G_CALLBACK (activate_action) },
 	{"ReadGaussianZMat", GABEDIT_STOCK_GAUSSIAN, "_Gaussian Z-Matrix file", NULL, "Read a Gaussian Z-Matrix file", G_CALLBACK (activate_action) },
-	{"ReadMopacZMat", NULL, "_Mopac Z-Matrix file", NULL, "Read a Mopac Z-Matrix file", G_CALLBACK (activate_action) },
+	{"ReadMopacZMat", GABEDIT_STOCK_MOPAC, "_Mopac Z-Matrix file", NULL, "Read a Mopac Z-Matrix file", G_CALLBACK (activate_action) },
+
+	{"Dalton", GABEDIT_STOCK_DALTON, "_Dalton"},
 	{"ReadDaltonFirst", GABEDIT_STOCK_DALTON, "F_irst geometry from a Dalton output file", NULL, "Read the first geometry from a Dalton output file", G_CALLBACK (activate_action) },
 	{"ReadDaltonLast", GABEDIT_STOCK_DALTON, "L_ast geometry from a Dalton output file", NULL, "Read the last geometry from a Dalton output file", G_CALLBACK (activate_action) },
+
+	{"Gamess", GABEDIT_STOCK_GAMESS, "Ga_mess"},
 	{"ReadGamessFirst", GABEDIT_STOCK_GAMESS, "F_irst geometry from a Gamess output file", NULL, "Read the first geometry from a Gamess output file", G_CALLBACK (activate_action) },
 	{"ReadGamessLast", GABEDIT_STOCK_GAMESS, "L_ast geometry from a Gamess output file", NULL, "Read the last geometry from a Gamess output file", G_CALLBACK (activate_action) },
+
+	{"Gaussian", GABEDIT_STOCK_GAUSSIAN, "_Gaussian"},
 	{"ReadGaussianInput", GABEDIT_STOCK_GAUSSIAN, "_Gaussian Input file", NULL, "Read a Gaussian Input file", G_CALLBACK (activate_action) },
 	{"ReadGaussianFirst", GABEDIT_STOCK_GAUSSIAN, "F_irst geometry from a Gaussian output file", NULL, "Read the first geometry from a Gaussian output file", G_CALLBACK (activate_action) },
 	{"ReadGaussianLast", GABEDIT_STOCK_GAUSSIAN, "L_ast geometry from a Gaussian output file", NULL, "Read the last geometry from a Gaussian output file", G_CALLBACK (activate_action) },
+
+	{"Molcas", GABEDIT_STOCK_MOLCAS, "Mol_cas"},
 	{"ReadMolcasInput", GABEDIT_STOCK_MOLCAS, "Mol_cas Input file", NULL, "Read a Molcas Input file", G_CALLBACK (activate_action) },
 	{"ReadMolcasFirst", GABEDIT_STOCK_MOLCAS, "F_irst geometry from a Molcas output file", NULL, "Read the first geometry from a Molcas output file", G_CALLBACK (activate_action) },
 	{"ReadMolcasLast", GABEDIT_STOCK_MOLCAS, "L_ast geometry from a Molcas output file", NULL, "Read the last geometry from a Molcas output file", G_CALLBACK (activate_action) },
+
+	{"Molpro", GABEDIT_STOCK_MOLPRO, "Mol_pro"},
 	{"ReadMolproInput", GABEDIT_STOCK_MOLPRO, "Mol_pro Input file", NULL, "Read a Molpro Input file", G_CALLBACK (activate_action) },
 	{"ReadMolproFirst", GABEDIT_STOCK_MOLPRO, "F_irst geometry from a Molpro output file", NULL, "Read the first geometry from a Molpro output file", G_CALLBACK (activate_action) },
 	{"ReadMolproLast", GABEDIT_STOCK_MOLPRO, "L_ast geometry from a Molpro output file", NULL, "Read the last geometry from a Molpro output file", G_CALLBACK (activate_action) },
+
+	{"Mopac", GABEDIT_STOCK_MOPAC, "_Mopac"},
+	{"ReadMopacInput", GABEDIT_STOCK_MOPAC, "_Mopac Input file", NULL, "Read a Mopac Input file", G_CALLBACK (activate_action) },
+	{"ReadMopacFirst", GABEDIT_STOCK_MOPAC, "F_irst geometry from a Mopac output file", NULL, "Read the first geometry from a Mopac output file", G_CALLBACK (activate_action) },
+	{"ReadMopacLast", GABEDIT_STOCK_MOPAC, "L_ast geometry from a Mopac output file", NULL, "Read the last geometry from a Mopac output file", G_CALLBACK (activate_action) },
+	{"ReadMopacAux", GABEDIT_STOCK_MOPAC, "L_ast geometry from a Mopac aux file", NULL, "Read the last geometry from a Mopac aux file", G_CALLBACK (activate_action) },
+
+	{"MPQC", GABEDIT_STOCK_MPQC, "MP_QC"},
 	{"ReadMPQCInput", GABEDIT_STOCK_MPQC, "MP_QC Input file", NULL, "Read a MPQC Input file", G_CALLBACK (activate_action) },
 	{"ReadMPQCFirst", GABEDIT_STOCK_MPQC, "F_irst geometry from a MPQC output file", NULL, "Read the first geometry from a MPQC output file", G_CALLBACK (activate_action) },
 	{"ReadMPQCLast", GABEDIT_STOCK_MPQC, "L_ast geometry from a MPQC output file", NULL, "Read the last geometry from a MPQC output file", G_CALLBACK (activate_action) },
-	{"ReadQChemFirst", GABEDIT_STOCK_QCHEM, "F_irst geometry from a Q-Chem output file", NULL, "Read the first geometry from a MPQC output file", G_CALLBACK (activate_action) },
-	{"ReadQChemLast", GABEDIT_STOCK_QCHEM, "L_ast geometry from a Q-Chem output file", NULL, "Read the last geometry from a MPQC output file", G_CALLBACK (activate_action) },
+
+	{"PCGamess", GABEDIT_STOCK_PCGAMESS, "_PCGamess"},
+	{"ReadPCGamessFirst", GABEDIT_STOCK_PCGAMESS, "F_irst geometry from a PCGamess output file", NULL, "Read the first geometry from a PCGamess output file", G_CALLBACK (activate_action) },
+	{"ReadPCGamessLast", GABEDIT_STOCK_PCGAMESS, "L_ast geometry from a PCGamess output file", NULL, "Read the last geometry from a PCGamess output file", G_CALLBACK (activate_action) },
+
+	{"QChem", GABEDIT_STOCK_QCHEM, "Q-_Chem"},
+	{"ReadQChemFirst", GABEDIT_STOCK_QCHEM, "F_irst geometry from a Q-Chem output file", NULL, "Read the first geometry from a Q-Chem output file", G_CALLBACK (activate_action) },
+	{"ReadQChemLast", GABEDIT_STOCK_QCHEM, "L_ast geometry from a Q-Chem output file", NULL, "Read the last geometry from a Q-Chem output file", G_CALLBACK (activate_action) },
+
 	{"ReadUsingOpenBabel", GABEDIT_STOCK_OPEN_BABEL, "_Other format (using open babel)", NULL, "Other format (using open babel)", G_CALLBACK (activate_action) },
 
 	{"ReadGeomConv", NULL, "Geometries _Convergence"},
@@ -695,6 +738,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadGeomConvGamess", GABEDIT_STOCK_GAMESS, "from a _Gamess output file", NULL, "Read Geometries Convergence from a Gamess output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvGaussian", GABEDIT_STOCK_GAUSSIAN, "from a _Gaussian output file", NULL, "Read Geometries Convergence from a Gaussian output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvMolpro", GABEDIT_STOCK_MOLPRO, "from a Mol_pro log file", NULL, "Read Geometries Convergence from a Molpro log file", G_CALLBACK (activate_action) },
+	{"ReadGeomConvMopac", GABEDIT_STOCK_MOPAC, "from a _Mopac aux file", NULL, "Read Geometries Convergence from a Mopac aux file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvMPQC", GABEDIT_STOCK_MPQC, "from a MP_QC output file", NULL, "Read Geometries Convergence from a MPQC output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvQChem", GABEDIT_STOCK_QCHEM, "from a Q-_Chem output file", NULL, "Read Geometries Convergence from a Q-Chem output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvGabedit", GABEDIT_STOCK_GABEDIT, "from a G_abedit file", NULL, "Read Geometries Convergence from a Gabedit file", G_CALLBACK (activate_action) },
@@ -736,18 +780,21 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SaveUsingOpenBabel", GABEDIT_STOCK_OPEN_BABEL, "_Other format (using open babel)", NULL, "Other format (using open babel)", G_CALLBACK (activate_action) },
 
 	{"Add", NULL, "_Add"},
+/*
 	{"AddAttachFunctionalGroup", NULL, "Attach Functional _Group"},
 	{"AddHydrocarbon", NULL, "_Hydrocarbon"},
 	{"AddRing", NULL, "_Ring"},
 	{"AddDrugs", NULL, "_Drugs"},
 	{"AddFullerene", NULL, "_Fullerene"},
 	{"AddMiscellaneous", NULL, "_Miscellaneous"},
-	{"AddPersonal", NULL, "_Personal"},
-	{"AddPersonalEdit", NULL, "_Edit", NULL, "Personal/Edit", G_CALLBACK (activate_action) },
-	{"AddPersonalEditNewGroup", NULL, "_New Group", NULL, "New Group", G_CALLBACK (activate_action) },
-	{"AddPersonalEditDeleteGroup", NULL, "_Delete a Group", NULL, "Delete a Group", G_CALLBACK (activate_action) },
-	{"AddPersonalEditAddMolecule", NULL, "_Add this molecule to personnal Fragments", NULL, "Add this molecule to personnal Fragments", G_CALLBACK (activate_action) },
-	{"AddPersonalEditRemoveFragment", NULL, "_Remove a Fragment", NULL, "Remove a Fragment", G_CALLBACK (activate_action) },
+*/
+	{"PersonalFragments", NULL, "Personal _fragment"},
+	{"PersonalFragmentsNewGroup", NULL, "_New Group", NULL, "New Group", G_CALLBACK (activate_action) },
+	{"PersonalFragmentsDeleteGroup", NULL, "_Delete a Group", NULL, "Delete a Group", G_CALLBACK (activate_action) },
+	{"PersonalFragmentsAddMolecule", NULL, "_Add this molecule to personnal Fragments", NULL, "Add this molecule to personnal Fragments", G_CALLBACK (activate_action) },
+	{"PersonalFragmentsRemoveFragment", NULL, "_Remove a Fragment", NULL, "Remove a Fragment", G_CALLBACK (activate_action) },
+	{"InsertAFragment", NULL, "Add a _fragment", NULL, "Add a fragment", G_CALLBACK (activate_action) },
+	{"AddMaxHydrogensToSelectedAtoms", NULL, "Add _Max Hydrogens to selected atoms", NULL, "Add Max Hydrogens to selected atoms", G_CALLBACK (activate_action) },
 	{"AddHydrogensToSelectedAtoms", NULL, "Add _Hydrogens to selected atoms", NULL, "Add Hydrogens to selected atoms", G_CALLBACK (activate_action) },
 	{"AddOneHydrogenToSelectedAtoms", NULL, "Add _one Hydrogen to selected atoms", NULL, "Add one Hydrogen to selected atoms", G_CALLBACK (activate_action) },
 	{"AddHydrogensToSelectedAtomsTpl", NULL, "Add _Hydrogens to selected atoms using PDB template", NULL, "Add Hydrogens to selected atoms using PDB template", G_CALLBACK (activate_action) },
@@ -853,34 +900,59 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"ReadTinker\" action=\"ReadTinker\" />\n"
 "      <menuitem name=\"ReadPDB\" action=\"ReadPDB\" />\n"
 "      <menuitem name=\"ReadHyperchem\" action=\"ReadHyperchem\" />\n"
-"      <separator name=\"sepMenuZmat\" />\n"
-"      <menuitem name=\"ReadGaussianZMat\" action=\"ReadGaussianZMat\" />\n"
-"      <menuitem name=\"ReadMopacZMat\" action=\"ReadMopacZMat\" />\n"
 "      <separator name=\"sepMenuReadDalton\" />\n"
-"      <menuitem name=\"ReadDaltonFirst\" action=\"ReadDaltonFirst\" />\n"
-"      <menuitem name=\"ReadDaltonLast\" action=\"ReadDaltonLast\" />\n"
+"      <menu name=\"Dalton\" action=\"Dalton\">\n"
+"        <menuitem name=\"ReadDaltonFirst\" action=\"ReadDaltonFirst\" />\n"
+"        <menuitem name=\"ReadDaltonLast\" action=\"ReadDaltonLast\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuReadGamess\" />\n"
-"      <menuitem name=\"ReadGamessFirst\" action=\"ReadGamessFirst\" />\n"
-"      <menuitem name=\"ReadGamessLast\" action=\"ReadGamessLast\" />\n"
+"      <menu name=\"Gamess\" action=\"Gamess\">\n"
+"        <menuitem name=\"ReadGamessFirst\" action=\"ReadGamessFirst\" />\n"
+"        <menuitem name=\"ReadGamessLast\" action=\"ReadGamessLast\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuReadGaussian\" />\n"
-"      <menuitem name=\"ReadGaussianInput\" action=\"ReadGaussianInput\" />\n"
-"      <menuitem name=\"ReadGaussianFirst\" action=\"ReadGaussianFirst\" />\n"
-"      <menuitem name=\"ReadGaussianLast\" action=\"ReadGaussianLast\" />\n"
+"      <menu name=\"Gaussian\" action=\"Gaussian\">\n"
+"        <menuitem name=\"ReadGaussianInput\" action=\"ReadGaussianInput\" />\n"
+"        <menuitem name=\"ReadGaussianFirst\" action=\"ReadGaussianFirst\" />\n"
+"        <menuitem name=\"ReadGaussianLast\" action=\"ReadGaussianLast\" />\n"
+"        <menuitem name=\"ReadGaussianZMat\" action=\"ReadGaussianZMat\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuReadMolcas\" />\n"
-"      <menuitem name=\"ReadMolcasInput\" action=\"ReadMolcasInput\" />\n"
-"      <menuitem name=\"ReadMolcasFirst\" action=\"ReadMolcasFirst\" />\n"
-"      <menuitem name=\"ReadMolcasLast\" action=\"ReadMolcasLast\" />\n"
+"      <menu name=\"Molcas\" action=\"Molcas\">\n"
+"        <menuitem name=\"ReadMolcasInput\" action=\"ReadMolcasInput\" />\n"
+"        <menuitem name=\"ReadMolcasFirst\" action=\"ReadMolcasFirst\" />\n"
+"        <menuitem name=\"ReadMolcasLast\" action=\"ReadMolcasLast\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuReadMolpro\" />\n"
-"      <menuitem name=\"ReadMolproInput\" action=\"ReadMolproInput\" />\n"
-"      <menuitem name=\"ReadMolproFirst\" action=\"ReadMolproFirst\" />\n"
-"      <menuitem name=\"ReadMolproLast\" action=\"ReadMolproLast\" />\n"
+"      <menu name=\"Molpro\" action=\"Molpro\">\n"
+"        <menuitem name=\"ReadMolproInput\" action=\"ReadMolproInput\" />\n"
+"        <menuitem name=\"ReadMolproFirst\" action=\"ReadMolproFirst\" />\n"
+"        <menuitem name=\"ReadMolproLast\" action=\"ReadMolproLast\" />\n"
+"      </menu>\n"
+"      <separator name=\"sepMenuReadMopac\" />\n"
+"      <menu name=\"Mopac\" action=\"Mopac\">\n"
+"        <menuitem name=\"ReadMopacInput\" action=\"ReadMopacInput\" />\n"
+"        <menuitem name=\"ReadMopacFirst\" action=\"ReadMopacFirst\" />\n"
+"        <menuitem name=\"ReadMopacLast\" action=\"ReadMopacLast\" />\n"
+"        <menuitem name=\"ReadMopacAux\" action=\"ReadMopacAux\" />\n"
+"        <menuitem name=\"ReadMopacZMat\" action=\"ReadMopacZMat\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuReadMPQC\" />\n"
-"      <menuitem name=\"ReadMPQCInput\" action=\"ReadMPQCInput\" />\n"
-"      <menuitem name=\"ReadMPQCFirst\" action=\"ReadMPQCFirst\" />\n"
-"      <menuitem name=\"ReadMPQCLast\" action=\"ReadMPQCLast\" />\n"
+"      <menu name=\"MPQC\" action=\"MPQC\">\n"
+"        <menuitem name=\"ReadMPQCInput\" action=\"ReadMPQCInput\" />\n"
+"        <menuitem name=\"ReadMPQCFirst\" action=\"ReadMPQCFirst\" />\n"
+"        <menuitem name=\"ReadMPQCLast\" action=\"ReadMPQCLast\" />\n"
+"      </menu>\n"
+"      <separator name=\"sepMenuReadPCGamess\" />\n"
+"      <menu name=\"PCGamess\" action=\"PCGamess\">\n"
+"        <menuitem name=\"ReadPCGamessFirst\" action=\"ReadPCGamessFirst\" />\n"
+"        <menuitem name=\"ReadPCGamessLast\" action=\"ReadPCGamessLast\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuReadQChem\" />\n"
-"      <menuitem name=\"ReadQChemFirst\" action=\"ReadQChemFirst\" />\n"
-"      <menuitem name=\"ReadQChemLast\" action=\"ReadQChemLast\" />\n"
+"      <menu name=\"QChem\" action=\"QChem\">\n"
+"        <menuitem name=\"ReadQChemFirst\" action=\"ReadQChemFirst\" />\n"
+"        <menuitem name=\"ReadQChemLast\" action=\"ReadQChemLast\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuReadOpenBabel\" />\n"
 "      <menuitem name=\"ReadUsingOpenBabel\" action=\"ReadUsingOpenBabel\" />\n"
 "      <separator name=\"sepMenuReadGeomConv\" />\n"
@@ -889,6 +961,7 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadGeomConvGamess\" action=\"ReadGeomConvGamess\" />\n"
 "        <menuitem name=\"ReadGeomConvGaussian\" action=\"ReadGeomConvGaussian\" />\n"
 "        <menuitem name=\"ReadGeomConvMolpro\" action=\"ReadGeomConvMolpro\" />\n"
+"        <menuitem name=\"ReadGeomConvMopac\" action=\"ReadGeomConvMopac\" />\n"
 "        <menuitem name=\"ReadGeomConvMPQC\" action=\"ReadGeomConvMPQC\" />\n"
 "        <menuitem name=\"ReadGeomConvQChem\" action=\"ReadGeomConvQChem\" />\n"
 "        <menuitem name=\"ReadGeomConvGabedit\" action=\"ReadGeomConvGabedit\" />\n"
@@ -904,6 +977,14 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"EditDeleteMolecule\" action=\"EditDeleteMolecule\" />\n"
 "        <separator name=\"sepMenuEditOpenGeometryEditor\" />\n"
 "        <menuitem name=\"EditOpenGeometryEditor\" action=\"EditOpenGeometryEditor\" />\n"
+"        <separator name=\"sepMenuPersonalFragments\" />\n"
+"        <menu name=\"PersonalFragments\" action=\"PersonalFragments\">\n"
+"          <menuitem name=\"PersonalFragmentsNewGroup\" action=\"PersonalFragmentsNewGroup\" />\n"
+"          <menuitem name=\"PersonalFragmentsDeleteGroup\" action=\"PersonalFragmentsDeleteGroup\" />\n"
+"          <separator name=\"sepMenuPersonalFragmentsAddMolecule\" />\n"
+"          <menuitem name=\"PersonalFragmentsAddMolecule\" action=\"PersonalFragmentsAddMolecule\" />\n"
+"          <menuitem name=\"PersonalFragmentsRemoveFragment\" action=\"PersonalFragmentsRemoveFragment\" />\n"
+"        </menu>\n"
 "      </menu>\n"
 "      <menu name=\"Selection\" action=\"Selection\">\n"
 "        <menuitem name=\"EditSelectAll\" action=\"EditSelectAll\" />\n"
@@ -939,6 +1020,9 @@ static const gchar *uiMenuInfo =
 "      </menu>\n"
 "      <separator name=\"sepMenuAdd\" />\n"
 "      <menu name=\"Add\" action=\"Add\">\n"
+"        <menuitem name=\"InsertAFragment\" action=\"InsertAFragment\" />\n"
+/*
+"        <separator name=\"sepMenuAddFunctional\" />\n"
 "        <menu name=\"AddAttachFunctionalGroup\" action=\"AddAttachFunctionalGroup\">\n"
 "        </menu>\n"
 "        <separator name=\"sepMenuAddHydrocarbon\" />\n"
@@ -956,18 +1040,9 @@ static const gchar *uiMenuInfo =
 "        <separator name=\"sepMenuAddMiscellaneous\" />\n"
 "        <menu name=\"AddMiscellaneous\" action=\"AddMiscellaneous\">\n"
 "        </menu>\n"
-"        <separator name=\"sepMenuAddPersonal\" />\n"
-"        <menu name=\"AddPersonal\" action=\"AddPersonal\">\n"
-"          <menu name=\"AddPersonalEdit\" action=\"AddPersonalEdit\">\n"
-"              <menuitem name=\"AddPersonalEditNewGroup\" action=\"AddPersonalEditNewGroup\" />\n"
-"              <menuitem name=\"AddPersonalEditDeleteGroup\" action=\"AddPersonalEditDeleteGroup\" />\n"
-"              <separator name=\"sepMenuAddPersonalEditAddMolecule\" />\n"
-"              <menuitem name=\"AddPersonalEditAddMolecule\" action=\"AddPersonalEditAddMolecule\" />\n"
-"              <menuitem name=\"AddPersonalEditRemoveFragment\" action=\"AddPersonalEditRemoveFragment\" />\n"
-"          </menu>\n"
-"          <separator name=\"sepMenuAddPersonalEditEnd\" />\n"
-"        </menu>\n"
+*/
 "          <separator name=\"sepMenuAddEnd\" />\n"
+"          <menuitem name=\"AddMaxHydrogensToSelectedAtoms\" action=\"AddMaxHydrogensToSelectedAtoms\" />\n"
 "          <menuitem name=\"AddHydrogensToSelectedAtoms\" action=\"AddHydrogensToSelectedAtoms\" />\n"
 "          <menuitem name=\"AddOneHydrogenToSelectedAtoms\" action=\"AddOneHydrogenToSelectedAtoms\" />\n"
 "          <separator name=\"sepMenuAddTpl\" />\n"
@@ -1005,6 +1080,7 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"OperationsRotationAtoms\" action=\"OperationsRotationAtoms\" />\n"
 "      <menuitem name=\"OperationsRotationZAtoms\" action=\"OperationsRotationZAtoms\" />\n"
 "      <menuitem name=\"OperationsInsertAtom\" action=\"OperationsInsertAtom\" />\n"
+"      <menuitem name=\"OperationsInsertFrag\" action=\"OperationsInsertFrag\" />\n"
 "      <separator name=\"sepMenuMesure\" />\n"
 "      <menuitem name=\"OperationsMesure\" action=\"OperationsMesure\" />\n"
 "    </menu>\n"
@@ -1031,6 +1107,7 @@ static const gchar *uiMenuInfo =
 "      <separator name=\"sepMenuPerspective\" />\n"
 "      <menuitem name=\"RenderPerspective\" action=\"RenderPerspective\" />\n"
 "      <menuitem name=\"RenderLighting\" action=\"RenderLighting\" />\n"
+"      <menuitem name=\"RenderCartoon\" action=\"RenderCartoon\" />\n"
 "      <menuitem name=\"RenderShad\" action=\"RenderShad\" />\n"
 "      <separator name=\"sepMenuShowDipole\" />\n"
 "      <menuitem name=\"RenderShowDipole\" action=\"RenderShowDipole\" />\n"
@@ -1153,6 +1230,7 @@ static const gchar *uiMenuInfo =
 "      <toolitem name=\"OperationsRotationZAtoms\" action=\"OperationsRotationZAtoms\" />\n"
 "      <toolitem name=\"OperationsInsertAtom\" action=\"OperationsInsertAtom\" />\n"
 "      <toolitem name=\"SetAtomToInsert\" action=\"SetAtomToInsert\" />\n"
+"      <toolitem name=\"OperationsInsertFrag\" action=\"OperationsInsertFrag\" />\n"
 "      <separator name=\"sepToolBarMesure\" />\n"
 "      <separator name=\"sepToolBarMesure1\" />\n"
 "      <toolitem name=\"OperationsMesure\" action=\"OperationsMesure\" />\n"
@@ -1172,13 +1250,14 @@ static void set_init_gtkActionToggleEntries()
 	gtkActionToggleEntries[1].is_active = dipole_draw_mode(); /* LabelsDipole */
 	gtkActionToggleEntries[2].is_active = pers_mode(); /* RenderPerspective */
 	gtkActionToggleEntries[3].is_active = light_mode(); /* RenderLighting */
-	gtkActionToggleEntries[4].is_active = shad_mode(); /* RenderShad */
-	gtkActionToggleEntries[5].is_active = dipole_mode(); /* RenderShowDipole */
-	gtkActionToggleEntries[6].is_active = ShowHBonds; /* RenderShowHydrogenBonds */
-	gtkActionToggleEntries[7].is_active = getShowMultipleBonds(); /* RenderShowDoubleTripleBonds */
-	gtkActionToggleEntries[8].is_active = TRUE; /* ShowToolBar */
-	gtkActionToggleEntries[9].is_active = TRUE; /* ShowStatusBox */
-	gtkActionToggleEntries[10].is_active = !MesureIsHide; /* ShowMesureNoteBook */
+	gtkActionToggleEntries[4].is_active = cartoon_mode(); /* RenderCartoon */
+	gtkActionToggleEntries[5].is_active = shad_mode(); /* RenderShad */
+	gtkActionToggleEntries[6].is_active = dipole_mode(); /* RenderShowDipole */
+	gtkActionToggleEntries[7].is_active = ShowHBonds; /* RenderShowHydrogenBonds */
+	gtkActionToggleEntries[8].is_active = getShowMultipleBonds(); /* RenderShowDoubleTripleBonds */
+	gtkActionToggleEntries[9].is_active = TRUE; /* ShowToolBar */
+	gtkActionToggleEntries[10].is_active = TRUE; /* ShowStatusBox */
+	gtkActionToggleEntries[11].is_active = !MesureIsHide; /* ShowMesureNoteBook */
 }
 /*******************************************************************************************************************************/
 static void add_widget (GtkUIManager *merge, GtkWidget   *widget, GtkContainer *container)
@@ -1188,7 +1267,7 @@ static void add_widget (GtkUIManager *merge, GtkWidget   *widget, GtkContainer *
 	if (!GTK_IS_TOOLBAR (widget))  return;
 
 	handlebox =gtk_handle_box_new ();
-	gtk_widget_ref (handlebox);
+	g_object_ref (handlebox);
   	gtk_handle_box_set_handle_position  (GTK_HANDLE_BOX(handlebox),GTK_POS_TOP);
 	/*   GTK_SHADOW_NONE,  GTK_SHADOW_IN,  GTK_SHADOW_OUT, GTK_SHADOW_ETCHED_IN, GTK_SHADOW_ETCHED_OUT */
 	gtk_handle_box_set_shadow_type(GTK_HANDLE_BOX(handlebox),GTK_SHADOW_OUT);
@@ -1215,12 +1294,16 @@ void activate_rotation()
 	if(GTK_IS_TOGGLE_ACTION(actionRotation)) gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(actionRotation), TRUE);
 }
 /*********************************************************************************************************************/
+void activate_insert_fragment()
+{
+	GtkAction * action = gtk_ui_manager_get_action(manager, "/MenuGeom/Operations/OperationsInsertFrag");
+	if(GTK_IS_TOGGLE_ACTION(action)) gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
+}
+/*********************************************************************************************************************/
+/*
 static void activate_add_fragment (GtkAction *action, gpointer data)
 {
 	gchar* nameFrag = NULL;
-	/*
-	const gchar *name = gtk_action_get_name (action);
-	*/
 
 	if(data) nameFrag = (gchar*) data;
 	if(nameFrag)
@@ -1229,7 +1312,6 @@ static void activate_add_fragment (GtkAction *action, gpointer data)
 	}
 
 }
-/*******************************************************************************************************************************/
 static void delete_dag(GtkWidget* win, GtkActionGroup **dag)
 {
 	if(dag && *dag)
@@ -1238,7 +1320,6 @@ static void delete_dag(GtkWidget* win, GtkActionGroup **dag)
 		*dag = NULL;
 	}
 }
-/*******************************************************************************************************************************/
 static void add_a_fragment_to_menu(GtkUIManager *manager, const gchar* menuBase, const gchar* groupName, const gchar* fragName)
 {
 	guint  merge_id;
@@ -1300,8 +1381,6 @@ static void add_a_fragment_to_menu(GtkUIManager *manager, const gchar* menuBase,
 	g_free(tmp);
 	gtk_ui_manager_ensure_update (manager);
 }
-
-/*******************************************************************************************************************************/
 static void add_attach_functional_to_menu(GtkUIManager* manager)
 {
 	const gchar* groupName = "AddAttachFunctionalGroup";
@@ -1322,7 +1401,6 @@ static void add_attach_functional_to_menu(GtkUIManager* manager)
 	add_a_fragment_to_menu(manager, menuBase, groupName, "Aldehyde");
 	add_a_fragment_to_menu(manager, menuBase, groupName, "Acid Anhydride");
 }
-/*******************************************************************************************************************************/
 static void add_hydrocarbon_to_menu(GtkUIManager* manager)
 {
 	const gchar* groupName = "AddHydrocarbon";
@@ -1354,7 +1432,6 @@ static void add_hydrocarbon_to_menu(GtkUIManager* manager)
 	add_a_fragment_to_menu(manager, menuBase, groupName, "Ethane");
 	add_a_fragment_to_menu(manager, menuBase, groupName, "Methane");
 }
-/*******************************************************************************************************************************/
 static void add_rings_to_menu(GtkUIManager* manager)
 {
 	const gchar* groupName = "AddRing";
@@ -1380,7 +1457,6 @@ static void add_rings_to_menu(GtkUIManager* manager)
 	add_a_fragment_to_menu(manager, menuBase, groupName, "Benzene");
 	add_a_fragment_to_menu(manager, menuBase, groupName, "Acenaphthene");
 }
-/*******************************************************************************************************************************/
 static void add_drugs_to_menu(GtkUIManager* manager)
 {
 	const gchar* groupName = "AddDrugs";
@@ -1396,7 +1472,6 @@ static void add_drugs_to_menu(GtkUIManager* manager)
 	add_a_fragment_to_menu(manager, menuBase, groupName, "Caffeine");
 	add_a_fragment_to_menu(manager, menuBase, groupName, "Aspirin");
 }
-/*******************************************************************************************************************************/
 static void add_miscellaneous_to_menu(GtkUIManager* manager)
 {
 	const gchar* groupName = "AddMiscellaneous";
@@ -1412,7 +1487,6 @@ static void add_miscellaneous_to_menu(GtkUIManager* manager)
 	add_a_fragment_to_menu(manager, menuBase, groupName, "Ammonia");
 	add_a_fragment_to_menu(manager, menuBase, groupName, "Water");
 }
-/*******************************************************************************************************************************/
 static void add_fullerene_to_menu(GtkUIManager* manager)
 {
 	const gchar* groupName = "AddFullerene";
@@ -1426,6 +1500,7 @@ static void add_fullerene_to_menu(GtkUIManager* manager)
 	add_a_fragment_to_menu(manager, menuBase, groupName, "C70");
 	add_a_fragment_to_menu(manager, menuBase, groupName, "C60");
 }
+*/
 /*******************************************************************************************************************************/
 void create_toolbar_and_popup_menu_geom(GtkWidget* box)
 {
@@ -1465,16 +1540,20 @@ void create_toolbar_and_popup_menu_geom(GtkWidget* box)
 	}
 	else
 	{
+		/*
 		add_attach_functional_to_menu(merge);
 		add_hydrocarbon_to_menu(merge);
 		add_rings_to_menu(merge);
 		add_drugs_to_menu(merge);
 		add_miscellaneous_to_menu(merge);
 		add_fullerene_to_menu(merge);
+		*/
 	}
 	manager = merge;
+	/*
 	addGroupesToMenu();
 	addFragmentsToMenu();
+	*/
 }
 /*********************************************************************************************************************/
 static void set_sensitive()
@@ -1523,9 +1602,9 @@ static void set_sensitive()
 	GtkWidget *setPDBTypeOfselectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetPDBTypeOfselectedAtoms");
 	GtkWidget *setChargeOfselectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetChargeOfselectedAtoms");
 	GtkWidget *scaleChargeOfselectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/ScaleChargeOfselectedAtoms");
-	GtkWidget *addPersonnalFragment = gtk_ui_manager_get_widget (manager, "/MenuGeom/Add/AddPersonal/AddPersonalEdit/AddPersonalEditAddMolecule");
-	GtkWidget *removePersonnalFragment = gtk_ui_manager_get_widget (manager, "/MenuGeom/Add/AddPersonal/AddPersonalEdit/AddPersonalEditRemoveFragment");
-	GtkWidget *removeAGroup = gtk_ui_manager_get_widget (manager, "/MenuGeom/Add/AddPersonal/AddPersonalEdit/AddPersonalEditDeleteGroup");
+	GtkWidget *addPersonnalFragment = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/PersonalFragments/PersonalFragmentsAddMolecule");
+	GtkWidget *removePersonnalFragment = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/PersonalFragments/PersonalFragmentsRemoveFragment");
+	GtkWidget *removeAGroup = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/PersonalFragments/PersonalFragmentsDeleteGroup");
 	gboolean sensitive = TRUE;
 
   	if(Natoms<1) sensitive = FALSE;
@@ -1605,17 +1684,15 @@ gboolean popuo_menu_geom(guint button, guint32 time)
 	return FALSE;
 }
 /*******************************************************************************************************************************/
+/*
 static void free_id_list(GObject* win, gchar* groupName)
 {
-	/*
 	GSList* listOfId = NULL;
 	if(!G_IS_OBJECT(manager)) return;
 	listOfId = g_object_get_data(G_OBJECT(manager),groupName);
 	if(!listOfId) return;
 	g_slist_free(listOfId);
-	*/
 }
-/*******************************************************************************************************************************/
 void add_a_personal_group_to_menu(gchar* groupName)
 {
 	guint  merge_id;
@@ -1647,7 +1724,7 @@ void add_a_personal_group_to_menu(gchar* groupName)
 	actionEntry->callback = NULL;
         gtk_action_group_add_actions (dag, actionEntry, 1, NULL);
 
-	tmp = g_strdup_printf("/MenuGeom/Add/AddPersonal");
+	tmp = g_strdup_printf("/MenuGeom/Edit/PersonalFragments");
 	gtk_ui_manager_add_ui(GTK_UI_MANAGER (manager), merge_id, tmp, groupName, groupName, GTK_UI_MANAGER_MENU, FALSE);
 	g_free(tmp);
 
@@ -1659,7 +1736,6 @@ void add_a_personal_group_to_menu(gchar* groupName)
 
 	gtk_ui_manager_ensure_update (manager);
 }
-/*******************************************************************************************************************************/
 void delete_a_personal_group_from_menu(gchar* groupName)
 {
 	GSList* listOfId = NULL;
@@ -1687,17 +1763,12 @@ void delete_a_personal_group_from_menu(gchar* groupName)
 	if(dag)
 	{
 		gtk_ui_manager_remove_action_group (GTK_UI_MANAGER (manager), dag);
-		/* g_object_unref (dag); Fait dans destroy*/
 	}
 	gtk_ui_manager_ensure_update (manager);
 }
-/*********************************************************************************************************************/
 static void activate_add_personal_fragment (GtkAction *action, gpointer data)
 {
 	gchar* nameFrag = NULL;
-	/*
-	const gchar *name = gtk_action_get_name (action);
-	*/
 
 	if(data) nameFrag = (gchar*) data;
 	if(nameFrag)
@@ -1706,10 +1777,9 @@ static void activate_add_personal_fragment (GtkAction *action, gpointer data)
 	}
 
 }
-/*******************************************************************************************************************************/
 void add_a_personnal_fragement_to_menu(gchar* groupName,gchar* fragName)
 {
-	const gchar* menuBase = "Add/AddPersonal";
+	const gchar* menuBase = "Edit/PersonalFragments";
 	guint  merge_id;
 	static GtkActionGroup *dag = NULL;
 	GtkActionEntry *actionEntry;
@@ -1783,7 +1853,6 @@ void add_a_personnal_fragement_to_menu(gchar* groupName,gchar* fragName)
 	gtk_ui_manager_ensure_update (manager);
 
 }
-/*******************************************************************************************************************************/
 void delete_a_personal_fragment_from_menu(gchar* groupName,gchar* fragName)
 {
 	GSList* listOfId = NULL;
@@ -1816,3 +1885,4 @@ void delete_a_personal_fragment_from_menu(gchar* groupName,gchar* fragName)
 	gtk_ui_manager_remove_ui(GTK_UI_MANAGER (manager), myId);
 	gtk_ui_manager_ensure_update (manager);
 }
+*/
