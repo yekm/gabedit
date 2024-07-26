@@ -73,7 +73,7 @@ void set_color_surface(gint num,gdouble v[])
 	}
 }
 /********************************************************************************/
-void TriangleShow(V3d V1,V3d V2,V3d V3,V3d N1,V3d N2,V3d N3)
+void TriangeShow(V3d V1,V3d V2,V3d V3,V3d N1,V3d N2,V3d N3)
 {
 	glBegin(GL_TRIANGLES);
 
@@ -120,7 +120,7 @@ void IsoDrawNoMapped(IsoSurface* iso)
 			{
 				for(n=0;n<iso->cube[i][j][k].Ntriangles;n++)
 				{
-						TriangleShow
+						TriangeShow
 							(
 							iso->cube[i][j][k].triangles[n].vertex[0]->C,
 							iso->cube[i][j][k].triangles[n].vertex[1]->C,
@@ -137,7 +137,7 @@ void IsoDrawNoMapped(IsoSurface* iso)
 /*	glEnd();*/
 }
 /********************************************************************************/
-void TriangleShowColorMap(V3d V1,V3d V2,V3d V3,V3d N1,V3d N2,V3d N3, V4d color1,V4d color2,V4d color3)
+void TriangeShowColorMap(V3d V1,V3d V2,V3d V3,V3d N1,V3d N2,V3d N3, V4d color1,V4d color2,V4d color3)
 {
 	glBegin(GL_TRIANGLES);
 
@@ -202,7 +202,7 @@ void IsoDrawMapped(IsoSurface* iso)
 						set_Color_From_colorMap(colorMap, color2, value);
 						value  = iso->cube[i][j][k].triangles[n].vertex[2]->C[3];
 						set_Color_From_colorMap(colorMap, color3, value);
-						TriangleShowColorMap
+						TriangeShowColorMap
 							(
 							iso->cube[i][j][k].triangles[n].vertex[0]->C,
 							iso->cube[i][j][k].triangles[n].vertex[1]->C,

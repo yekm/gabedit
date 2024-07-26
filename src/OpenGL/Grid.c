@@ -19,10 +19,6 @@ DEALINGS IN THE SOFTWARE.
 
 
 #include "../../Config.h"
-#ifdef ENABLE_OMP
-#include <omp.h>
-
-#endif
 #include "../Utils/Constants.h"
 #include "GlobalOrb.h"
 #include "StatusOrb.h"
@@ -297,21 +293,27 @@ void reset_limits_for_grid(Grid* grid)
 {
 	gint i,j,k;
 	gdouble v;
-
-	v = grid->point[0][0][0].C[3];
-       	grid->limits.MinMax[0][3] =  v;
-       	grid->limits.MinMax[1][3] =  v;
-	if(!CancelCalcul)
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(v,i,j,k)
-#endif
+	gboolean begin = TRUE;
 	for(i=0;i<grid->N[0];i++)
-	for(j=0;j<grid->N[1];j++)
-	for(k=0;k<grid->N[2];k++)
 	{
-		v = grid->point[i][j][k].C[3];
-       		if(grid->limits.MinMax[0][3]>v) grid->limits.MinMax[0][3] =  v;
-       		if(grid->limits.MinMax[1][3]<v) grid->limits.MinMax[1][3] =  v;
+		for(j=0;j<grid->N[1];j++)
+		{
+			for(k=0;k<grid->N[2];k++)
+			{
+				v = grid->point[i][j][k].C[3];
+				if(begin)
+				{
+					begin = FALSE;
+        				grid->limits.MinMax[0][3] =  v;
+        				grid->limits.MinMax[1][3] =  v;
+				}
+                		else
+				{
+        				if(grid->limits.MinMax[0][3]>v) grid->limits.MinMax[0][3] =  v;
+        				if(grid->limits.MinMax[1][3]<v) grid->limits.MinMax[1][3] =  v;
+				}
+			}
+		}
 	}
 }
 /**************************************************************/
@@ -418,6 +420,7 @@ Grid* define_grid_point_fed(gint N[],GridLimits limits,gint n)
 	gdouble y;
 	gdouble z;
 	gdouble v;
+	gboolean beg = TRUE;
 	gdouble scale;
 	gdouble V0[3];
 	gdouble V1[3];
@@ -454,54 +457,44 @@ Grid* define_grid_point_fed(gint N[],GridLimits limits,gint n)
 	scale = (gdouble)1.01/grid->N[0];
 	/* printf("Alpha = %f, n = %d eH = %f eL = %f\n",alpha,n,eHOMO, eLUMO);*/
  
-#ifdef ENABLE_OMP
-	printf("# proc = %d\n", omp_get_num_procs ());
-#ifdef G_OS_WIN32
-	setTextInProgress(_("Computing of grid, pleasse wait..."));
-#endif
-#pragma omp parallel for private(x,y,z,v,i,j,k)
-#endif
 	for(i=0;i<grid->N[0];i++)
 	{
-		if(!CancelCalcul) 
 		for(j=0;j<grid->N[1];j++)
-		for(k=0;k<grid->N[2];k++)
 		{
-			x = firstPoint[0] + i*V0[0] + j*V1[0] +  k*V2[0]; 
-			y = firstPoint[1] + i*V0[1] + j*V1[1] +  k*V2[1]; 
-			z = firstPoint[2] + i*V0[2] + j*V1[2] +  k*V2[2]; 
-			
-			v = get_value_fed( x, y, z, alpha,  n,  eHOMO,  eLUMO);
+			for(k=0;k<grid->N[2];k++)
+			{
+				x = firstPoint[0] + i*V0[0] + j*V1[0] +  k*V2[0]; 
+				y = firstPoint[1] + i*V0[1] + j*V1[1] +  k*V2[1]; 
+				z = firstPoint[2] + i*V0[2] + j*V1[2] +  k*V2[2]; 
+				
+				v = get_value_fed( x, y, z, alpha,  n,  eHOMO,  eLUMO);
 
-			grid->point[i][j][k].C[0] = x;
-			grid->point[i][j][k].C[1] = y;
-			grid->point[i][j][k].C[2] = z;
-			grid->point[i][j][k].C[3] = v;
+				grid->point[i][j][k].C[0] = x;
+				grid->point[i][j][k].C[1] = y;
+				grid->point[i][j][k].C[2] = z;
+				grid->point[i][j][k].C[3] = v;
+				if(beg)
+				{
+					beg = FALSE;
+        				grid->limits.MinMax[0][3] =  v;
+        				grid->limits.MinMax[1][3] =  v;
+				}
+                		else
+				{
+        				if(grid->limits.MinMax[0][3]>v)
+        					grid->limits.MinMax[0][3] =  v;
+        				if(grid->limits.MinMax[1][3]<v)
+        					grid->limits.MinMax[1][3] =  v;
+				}
+			}
 		}
-#ifdef ENABLE_OMP
-#ifndef G_OS_WIN32
-#pragma omp critical
+		if(CancelCalcul) 
+		{
+			progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+			break;
+		}
+
 		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
-#endif
-#else
-		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
-#endif
-	}
-	if(CancelCalcul)  progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
-	v = grid->point[0][0][0].C[3];
-       	grid->limits.MinMax[0][3] =  v;
-       	grid->limits.MinMax[1][3] =  v;
-	if(!CancelCalcul)
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(v,i,j,k)
-#endif
-	for(i=0;i<grid->N[0];i++)
-	for(j=0;j<grid->N[1];j++)
-	for(k=0;k<grid->N[2];k++)
-	{
-		v = grid->point[i][j][k].C[3];
-        	if(grid->limits.MinMax[0][3]>v) grid->limits.MinMax[0][3] =  v;
-  		if(grid->limits.MinMax[1][3]<v) grid->limits.MinMax[1][3] =  v;
 	}
 
 	if(CancelCalcul)
@@ -521,6 +514,7 @@ Grid* define_grid_point(gint N[],GridLimits limits,Func3d func)
 	gdouble y;
 	gdouble z;
 	gdouble v;
+	gboolean beg = TRUE;
 	gdouble scale;
 	gdouble V0[3];
 	gdouble V1[3];
@@ -549,16 +543,8 @@ Grid* define_grid_point(gint N[],GridLimits limits,Func3d func)
 	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 	scale = (gdouble)1.01/grid->N[0];
  
-#ifdef ENABLE_OMP
-	printf("# proc = %d\n", omp_get_num_procs ());
-#ifdef G_OS_WIN32
-	setTextInProgress(_("Computing of grid, pleasse wait..."));
-#endif
-#pragma omp parallel for private(x,y,z,v,i,j,k)
-#endif
 	for(i=0;i<grid->N[0];i++)
 	{
-		if(!CancelCalcul)
 		for(j=0;j<grid->N[1];j++)
 		{
 			for(k=0;k<grid->N[2];k++)
@@ -572,34 +558,30 @@ Grid* define_grid_point(gint N[],GridLimits limits,Func3d func)
 				grid->point[i][j][k].C[1] = y;
 				grid->point[i][j][k].C[2] = z;
 				grid->point[i][j][k].C[3] = v;
+				if(beg)
+				{
+					beg = FALSE;
+        				grid->limits.MinMax[0][3] =  v;
+        				grid->limits.MinMax[1][3] =  v;
+				}
+                		else
+				{
+        				if(grid->limits.MinMax[0][3]>v)
+        					grid->limits.MinMax[0][3] =  v;
+        				if(grid->limits.MinMax[1][3]<v)
+        					grid->limits.MinMax[1][3] =  v;
+				}
 			}
 		}
-#ifdef ENABLE_OMP
-#ifndef G_OS_WIN32
-#pragma omp critical
-		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
-#endif
-#else
-		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
-#endif
+		if(CancelCalcul) 
+		{
+			progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+			break;
+		}
 
+		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
 	}
-	if(CancelCalcul)  progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
-	v = grid->point[0][0][0].C[3];
-       	grid->limits.MinMax[0][3] =  v;
-       	grid->limits.MinMax[1][3] =  v;
-	if(!CancelCalcul)
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(v,i,j,k)
-#endif
-	for(i=0;i<grid->N[0];i++)
-	for(j=0;j<grid->N[1];j++)
-	for(k=0;k<grid->N[2];k++)
-	{
-		v = grid->point[i][j][k].C[3];
-        	if(grid->limits.MinMax[0][3]>v) grid->limits.MinMax[0][3] =  v;
-  		if(grid->limits.MinMax[1][3]<v) grid->limits.MinMax[1][3] =  v;
-	}
+
 	if(CancelCalcul)
 	{
 		grid = free_grid(grid);
@@ -773,7 +755,7 @@ gboolean compute_coulomb_integrale_iijj(gint N[],GridLimits limits, gint typeOrb
 	Grid *gridj = NULL;
 	gint ki,li,mi;
 	gint kj,lj,mj;
-	gdouble scale;
+	gdouble scal;
 	gdouble normi = 0;
 	gdouble normj = 0;
 	gdouble overlap = 0;
@@ -794,18 +776,9 @@ gboolean compute_coulomb_integrale_iijj(gint N[],GridLimits limits, gint typeOrb
 	gridj = define_grid_orb(N, limits, typeOrbj,  j);
 	if(!gridj) return FALSE;
 	set_status_label_info(_("Grid"),_("Comp. phi_i^2 and phi_j^2"));
-	scale = (gdouble)1.01/gridi->N[0];
-	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
-#ifdef ENABLE_OMP
-	printf("# proc = %d\n", omp_get_num_procs ());
-#ifdef G_OS_WIN32
-	setTextInProgress(_("Computing of phi_i and phi_j, pleasse wait..."));
-#endif
-#pragma omp parallel for private(ki,li,mi) reduction(+:overlap)
-#endif
+	scal = (gdouble)1.01/gridi->N[0];
 	for(ki=0;ki<gridi->N[0];ki++)
 	{
-		if(!CancelCalcul) 
 		for(li=0;li<gridi->N[1];li++)
 		{
 			for(mi=0;mi<gridi->N[2];mi++)
@@ -813,64 +786,16 @@ gboolean compute_coulomb_integrale_iijj(gint N[],GridLimits limits, gint typeOrb
 				overlap +=  gridi->point[ki][li][mi].C[3]*gridj->point[ki][li][mi].C[3];
 				gridi->point[ki][li][mi].C[3] = gridi->point[ki][li][mi].C[3]* gridi->point[ki][li][mi].C[3];
 				gridj->point[ki][li][mi].C[3] = gridj->point[ki][li][mi].C[3]* gridj->point[ki][li][mi].C[3];
+				normi += gridi->point[ki][li][mi].C[3];
+				normj += gridj->point[ki][li][mi].C[3];
 			}
 		}
-#ifdef ENABLE_OMP
-#ifndef G_OS_WIN32
-#pragma omp critical
-		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
-#endif
-#else
-		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
-#endif
-	}
-	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
-	set_status_label_info(_("Grid"),_("Comp. <phi_i|phi_i>"));
-	scale = (gdouble)1.01/gridi->N[0];
-#ifdef ENABLE_OMP
-#ifdef G_OS_WIN32
-	setTextInProgress(_("Computing of  <phi_i|phi_i>, please wait..."));
-#endif
-#pragma omp parallel for private(ki,li,mi) reduction(+:normi)
-#endif
-	for(ki=0;ki<gridi->N[0];ki++)
-	{
-		if(!CancelCalcul) 
-		for(li=0;li<gridi->N[1];li++)
-			for(mi=0;mi<gridi->N[2];mi++)
-				normi += gridi->point[ki][li][mi].C[3];
-#ifdef ENABLE_OMP
-#ifndef G_OS_WIN32
-#pragma omp critical
-		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
-#endif
-#else
-		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
-#endif
-	}
-	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
-	set_status_label_info(_("Grid"),_("Comp. <phi_j|phi_j>"));
-	scale = (gdouble)1.01/gridj->N[0];
-#ifdef ENABLE_OMP
-#ifdef G_OS_WIN32
-	setTextInProgress(_("Computing of  <phi_j|phi_j>, please wait..."));
-#endif
-#pragma omp parallel for private(ki,li,mi) reduction(+:normj)
-#endif
-	for(ki=0;ki<gridj->N[0];ki++)
-	{
-		if(!CancelCalcul) 
-		for(li=0;li<gridj->N[1];li++)
-			for(mi=0;mi<gridj->N[2];mi++)
-				normj += gridj->point[ki][li][mi].C[3];
-#ifdef ENABLE_OMP
-#ifndef G_OS_WIN32
-#pragma omp critical
-		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
-#endif
-#else
-		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
-#endif
+		if(CancelCalcul) 
+		{
+			progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+			break;
+		}
+		progress_orb(scal,GABEDIT_PROGORB_COMPGRID,FALSE);
 	}
 	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 	if(CancelCalcul) 
@@ -880,17 +805,10 @@ gboolean compute_coulomb_integrale_iijj(gint N[],GridLimits limits, gint typeOrb
 		return FALSE;
 	}
 	set_status_label_info(_("Grid"),_("Computing of Coulomb int."));
-	scale = (gdouble)1.01/gridi->N[0];
+	scal = (gdouble)1.01/gridi->N[0];
 	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
-#ifdef ENABLE_OMP
-#ifdef G_OS_WIN32
-	setTextInProgress(_("Computing of Coulomb integral, please wait..."));
-#endif
-#pragma omp parallel for private(xx,yy,zz,r12,ki,li,mi,kj,lj,mj) reduction(+:integ)
-#endif
 	for(ki=0;ki<gridi->N[0];ki++)
 	{
-		if(!CancelCalcul) 
 		for(li=0;li<gridi->N[1];li++)
 		for(mi=0;mi<gridi->N[2];mi++)
 			for(kj=0;kj<gridj->N[0];kj++)
@@ -904,14 +822,12 @@ gboolean compute_coulomb_integrale_iijj(gint N[],GridLimits limits, gint typeOrb
 		    		if(r12>PRECISION) 
 					integ += gridi->point[ki][li][mi].C[3]*gridj->point[kj][lj][mj].C[3]/sqrt(r12);
 			}
-#ifdef ENABLE_OMP
-#ifndef G_OS_WIN32
-#pragma omp critical
-		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
-#endif
-#else
-		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
-#endif
+		if(CancelCalcul) 
+		{
+			progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+			break;
+		}
+		progress_orb(scal,GABEDIT_PROGORB_COMPGRID,FALSE);
 	}
 	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 	xx = gridi->point[1][0][0].C[0]-gridi->point[0][0][0].C[0];
@@ -2596,7 +2512,7 @@ gboolean compute_coulomb_integrale_iijj_poisson(gint N[],GridLimits limits, gint
 	Grid *gridj = NULL;
 	Grid *potential = NULL;
 	gint k,l,m;
-	gdouble scale;
+	gdouble scal;
 	gdouble norm = 0;
 	gdouble normj = 0;
 	gdouble overlap = 0;
@@ -2619,7 +2535,7 @@ gboolean compute_coulomb_integrale_iijj_poisson(gint N[],GridLimits limits, gint
 	if(!gridj) return FALSE;
 	if(CancelCalcul) return FALSE;
 	set_status_label_info(_("Grid"),_("Comp. phi_i^2 and phi_j^2"));
-	scale = (gdouble)1.01/gridi->N[0];
+	scal = (gdouble)1.01/gridi->N[0];
 	for(k=0;k<gridi->N[0];k++)
 	{
 		for(l=0;l<gridi->N[1];l++)
@@ -2638,7 +2554,7 @@ gboolean compute_coulomb_integrale_iijj_poisson(gint N[],GridLimits limits, gint
 			progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 			break;
 		}
-		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
+		progress_orb(scal,GABEDIT_PROGORB_COMPGRID,FALSE);
 	}
 	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 	if(CancelCalcul) 
@@ -2658,7 +2574,7 @@ gboolean compute_coulomb_integrale_iijj_poisson(gint N[],GridLimits limits, gint
 		return FALSE;
 	}
 	
-	scale = (gdouble)1.01/gridi->N[0];
+	scal = (gdouble)1.01/gridi->N[0];
 	progress_orb(0,GABEDIT_PROGORB_COMPINTEG,TRUE);
 	for(k=0;k<gridi->N[0];k++)
 	{
@@ -2684,7 +2600,7 @@ gboolean compute_coulomb_integrale_iijj_poisson(gint N[],GridLimits limits, gint
 			progress_orb(0,GABEDIT_PROGORB_COMPINTEG,TRUE);
 			break;
 		}
-		progress_orb(scale,GABEDIT_PROGORB_COMPINTEG,FALSE);
+		progress_orb(scal,GABEDIT_PROGORB_COMPINTEG,FALSE);
 	}
 	progress_orb(0,GABEDIT_PROGORB_COMPINTEG,TRUE);
 	xx = gridi->point[1][0][0].C[0]-gridi->point[0][0][0].C[0];
@@ -2710,7 +2626,7 @@ gboolean compute_transition_matrix_numeric(gint N[],GridLimits limits, gint type
 	Grid *gridi = NULL;
 	Grid *gridj = NULL;
 	gint ki,li,mi;
-	gdouble scale;
+	gdouble scal;
 	gdouble normi = 0;
 	gdouble normj = 0;
 	gdouble overlap = 0;
@@ -2730,7 +2646,7 @@ gboolean compute_transition_matrix_numeric(gint N[],GridLimits limits, gint type
 	gridj = define_grid_orb(N, limits, typeOrbj,  j);
 	if(!gridj) return FALSE;
 	set_status_label_info(_("Grid"),_("Comp. phi_i*phi_j"));
-	scale = (gdouble)1.01/gridi->N[0];
+	scal = (gdouble)1.01/gridi->N[0];
 	for(ki=0;ki<gridi->N[0];ki++)
 	{
 		for(li=0;li<gridi->N[1];li++)
@@ -2748,7 +2664,7 @@ gboolean compute_transition_matrix_numeric(gint N[],GridLimits limits, gint type
 			progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 			break;
 		}
-		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
+		progress_orb(scal,GABEDIT_PROGORB_COMPGRID,FALSE);
 	}
 	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 	if(CancelCalcul) 
@@ -2758,7 +2674,7 @@ gboolean compute_transition_matrix_numeric(gint N[],GridLimits limits, gint type
 		return FALSE;
 	}
 	set_status_label_info(_("Grid"),_("Computing of <i|vec r|j>."));
-	scale = (gdouble)1.01/gridi->N[0];
+	scal = (gdouble)1.01/gridi->N[0];
 	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 	for(ki=0;ki<gridi->N[0];ki++)
 	{
@@ -2777,7 +2693,7 @@ gboolean compute_transition_matrix_numeric(gint N[],GridLimits limits, gint type
 			progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 			break;
 		}
-		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
+		progress_orb(scal,GABEDIT_PROGORB_COMPGRID,FALSE);
 	}
 	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 	xx = gridi->point[1][0][0].C[0]-gridi->point[0][0][0].C[0];
@@ -2804,7 +2720,7 @@ gboolean compute_spatial_overlap_numeric(gint N[],GridLimits limits, gint typeOr
 	Grid *gridi = NULL;
 	Grid *gridj = NULL;
 	gint ki,li,mi;
-	gdouble scale;
+	gdouble scal;
 	gdouble normi = 0;
 	gdouble normj = 0;
 	gdouble overlap = 0;
@@ -2822,7 +2738,7 @@ gboolean compute_spatial_overlap_numeric(gint N[],GridLimits limits, gint typeOr
 	gridj = define_grid_orb(N, limits, typeOrbj,  j);
 	if(!gridj) return FALSE;
 	set_status_label_info(_("Grid"),_("Comp. phi_i*phi_j"));
-	scale = (gdouble)1.01/gridi->N[0];
+	scal = (gdouble)1.01/gridi->N[0];
 	for(ki=0;ki<gridi->N[0];ki++)
 	{
 		for(li=0;li<gridi->N[1];li++)
@@ -2840,7 +2756,7 @@ gboolean compute_spatial_overlap_numeric(gint N[],GridLimits limits, gint typeOr
 			progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 			break;
 		}
-		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
+		progress_orb(scal,GABEDIT_PROGORB_COMPGRID,FALSE);
 	}
 	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 	if(CancelCalcul) 
@@ -2850,7 +2766,7 @@ gboolean compute_spatial_overlap_numeric(gint N[],GridLimits limits, gint typeOr
 		return FALSE;
 	}
 	set_status_label_info(_("Grid"),_("Computing of <i|vec r|j>."));
-	scale = (gdouble)1.01/gridi->N[0];
+	scal = (gdouble)1.01/gridi->N[0];
 	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 	for(ki=0;ki<gridi->N[0];ki++)
 	{
@@ -2864,7 +2780,7 @@ gboolean compute_spatial_overlap_numeric(gint N[],GridLimits limits, gint typeOr
 			progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 			break;
 		}
-		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
+		progress_orb(scal,GABEDIT_PROGORB_COMPGRID,FALSE);
 	}
 	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 	xx = gridi->point[1][0][0].C[0]-gridi->point[0][0][0].C[0];
@@ -2886,7 +2802,7 @@ gboolean compute_spatial_overlap_numeric(gint N[],GridLimits limits, gint typeOr
 gboolean compute_integrale_from_grid(Grid* grid, gboolean square, gdouble* pInteg)
 {
 	gint k,l,m;
-	gdouble scale;
+	gdouble scal;
 	gdouble integ = 0;
 	gdouble dv = 0;
 	gdouble xx,yy,zz;
@@ -2896,7 +2812,7 @@ gboolean compute_integrale_from_grid(Grid* grid, gboolean square, gdouble* pInte
 
 	if(square) set_status_label_info(_("Grid"),_("Comp. integ f^2(x,y,z) dv from grid"));
 	else set_status_label_info(_("Grid"),_("Comp. integ f(,xy,z) dv from grid"));
-	scale = (gdouble)1.01/grid->N[0];
+	scal = (gdouble)1.01/grid->N[0];
 	for(k=0;k<grid->N[0];k++)
 	{
 		for(l=0;l<grid->N[1];l++)
@@ -2912,7 +2828,7 @@ gboolean compute_integrale_from_grid(Grid* grid, gboolean square, gdouble* pInte
 			progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 			break;
 		}
-		progress_orb(scale,GABEDIT_PROGORB_COMPGRID,FALSE);
+		progress_orb(scal,GABEDIT_PROGORB_COMPGRID,FALSE);
 	}
 	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 	if(CancelCalcul) return FALSE;
@@ -2930,7 +2846,7 @@ gboolean compute_integrale_from_grid(Grid* grid, gboolean square, gdouble* pInte
 gboolean compute_integrale_from_grid_foranisovalue(Grid* grid, gboolean square, gdouble isovalue, gdouble* pInteg)
 {
 	gint k,l,m;
-	gdouble scale;
+	gdouble scal;
 	gdouble integ = 0;
 	gdouble dv = 0;
 	gdouble xx,yy,zz;
@@ -2938,7 +2854,7 @@ gboolean compute_integrale_from_grid_foranisovalue(Grid* grid, gboolean square, 
 	if(!grid) return FALSE;
 	if(CancelCalcul) return FALSE;
 
-	scale = (gdouble)1.01/grid->N[0];
+	scal = (gdouble)1.01/grid->N[0];
 	for(k=0;k<grid->N[0];k++)
 	{
 		for(l=0;l<grid->N[1];l++)

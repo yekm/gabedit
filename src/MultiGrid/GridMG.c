@@ -24,9 +24,6 @@ DEALINGS IN THE SOFTWARE.
 #include <stdlib.h>
 #include <ctype.h>
 #include <gtk/gtk.h>
-#ifdef ENABLE_OMP
-#include <omp.h>
-#endif
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
 #include "../Utils/Constants.h"
@@ -108,9 +105,6 @@ GridMG* getNewGridMGUsingDomain(DomainMG* domain)
 	g->domain = *domain;
 	g->operationType = GABEDIT_ALL;
         g->values = g_malloc(g->domain.size*sizeof(gdouble));
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(i)
-#endif
         for(i = 0;i<g->domain.size;i++) g->values[i] = 0.0;
 	return g;
 }
@@ -128,9 +122,6 @@ GridMG* getNewGridMGFromOldGrid(GridMG* src)
 void initAllGridMG(GridMG* g, gdouble value)
 {
 	gint i;
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(i)
-#endif
         for(i = 0;i<g->domain.size;i++) g->values[i] = value;
 }
 /*********************************************************/
@@ -149,9 +140,6 @@ void initInteriorGridMG(GridMG* g, gdouble value)
 	int iZBegin = domain.iZBeginInterior;
 	int iZEnd = domain.iZEndInterior;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
         for(ix = iXBegin;ix <=iXEnd;ix++)
         	for(iy = iYBegin;iy <=iYEnd;iy++)
         		for(iz = iZBegin;iz <=iZEnd;iz++)
@@ -165,39 +153,24 @@ void initBoundaryGridMG(GridMG* g, gdouble value)
 	int iz;
 	DomainMG domain = g->domain;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix=domain.iXBeginBoundaryLeft;ix<=domain.iXEndBoundaryLeft;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				setValGridMG(g,ix,iy,iz, value);
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix=domain.iXBeginBoundaryRight;ix<=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				setValGridMG(g,ix,iy,iz, value);
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
+	{
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryLeft;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				setValGridMG(g,ix,iy,iz, value);
-
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
-	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryRight;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				setValGridMG(g,ix,iy,iz, value);
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
+	}
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 		{
@@ -228,9 +201,6 @@ static void equalAllGridMG(GridMG* g, GridMG* src)
 		g->domain = src->domain;
 		g->operationType = src->operationType;
         	g->values = g_malloc(g->domain.size*sizeof(gdouble));
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(i)
-#endif
         	for(i = 0;i<g->domain.size;i++) g->values[i] = src->values[i];
 	}
 }
@@ -258,9 +228,6 @@ static void equalInteriorGridMG(GridMG* g, GridMG* src)
 	int iZBegin = domain.iZBeginInterior;
 	int iZEnd = domain.iZEndInterior;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
         for(ix = iXBegin ; ix <=iXEnd ; ix++)
         	for(iy = iYBegin ; iy <=iYEnd ; iy++)
 		{
@@ -279,24 +246,15 @@ static void equalBoundaryGridMG(GridMG* g, GridMG* src)
 	int iy;
 	int iz;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix=domain.iXBeginBoundaryLeft;ix<=domain.iXEndBoundaryLeft;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				setValGridMG(g,ix,iy,iz, getValGridMG(src,ix,iy,iz));
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix=domain.iXBeginBoundaryRight;ix<=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				setValGridMG(g,ix,iy,iz, getValGridMG(src,ix,iy,iz));
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 	{
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryLeft;iy++)
@@ -306,9 +264,6 @@ static void equalBoundaryGridMG(GridMG* g, GridMG* src)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				setValGridMG(g,ix,iy,iz, getValGridMG(src,ix,iy,iz));
 	}
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 		{
@@ -338,9 +293,6 @@ static void plusEqualAllGridMG(GridMG* g, GridMG* right)
 {
 	gint i;
 	if(!ifEqualDomainMG(&g->domain, &right->domain)) return;
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(i)
-#endif
         for(i = 0;i<g->domain.size;i++) g->values[i] += right->values[i];
 }
 /*********************************************************/
@@ -358,9 +310,6 @@ static void plusEqualInteriorGridMG(GridMG* g, GridMG* src)
 	int iZEnd = domain.iZEndInterior;
 	if(!ifEqualDomainMG(&g->domain, &src->domain)) return;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
         for(ix = iXBegin;ix <=iXEnd;ix++)
         	for(iy = iYBegin;iy <=iYEnd;iy++)
         		for(iz = iZBegin;iz <=iZEnd;iz++)
@@ -375,24 +324,15 @@ static void plusEqualBoundaryGridMG(GridMG* g, GridMG* src)
 	int iz;
 	if(!ifEqualDomainMG(&g->domain, &src->domain)) return;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix=domain.iXBeginBoundaryLeft;ix<=domain.iXEndBoundaryLeft;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				setValGridMG(g,ix,iy,iz, getValGridMG(g,ix,iy,iz)+getValGridMG(src,ix,iy,iz));
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix=domain.iXBeginBoundaryRight;ix<=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				setValGridMG(g,ix,iy,iz, getValGridMG(g,ix,iy,iz)+getValGridMG(src,ix,iy,iz));
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 	{
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryLeft;iy++)
@@ -402,9 +342,6 @@ static void plusEqualBoundaryGridMG(GridMG* g, GridMG* src)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				setValGridMG(g,ix,iy,iz, getValGridMG(g,ix,iy,iz)+getValGridMG(src,ix,iy,iz));
 	}
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 		{
@@ -429,9 +366,6 @@ static void moinsEqualAllGridMG(GridMG* g, GridMG* src)
 {
 	gint i;
 	if(!ifEqualDomainMG(&g->domain, &src->domain)) return;
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(i)
-#endif
         for(i = 0;i<g->domain.size;i++) g->values[i] -= src->values[i];
 }
 /*********************************************************/
@@ -449,9 +383,6 @@ static void moinsEqualInteriorGridMG(GridMG* g, GridMG* src)
 	int iZEnd = domain.iZEndInterior;
 	if(!ifEqualDomainMG(&g->domain, &src->domain)) return;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
         for(ix = iXBegin;ix <=iXEnd;ix++)
         	for(iy = iYBegin;iy <=iYEnd;iy++)
         		for(iz = iZBegin;iz <=iZEnd;iz++)
@@ -466,24 +397,15 @@ static void moinsEqualBoundaryGridMG(GridMG* g, GridMG* src)
 	int iz;
 	if(!ifEqualDomainMG(&g->domain, &src->domain)) return;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix=domain.iXBeginBoundaryLeft;ix<=domain.iXEndBoundaryLeft;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				setValGridMG(g,ix,iy,iz, getValGridMG(g,ix,iy,iz)-getValGridMG(src,ix,iy,iz));
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix=domain.iXBeginBoundaryRight;ix<=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				setValGridMG(g,ix,iy,iz, getValGridMG(g,ix,iy,iz)-getValGridMG(src,ix,iy,iz));
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 	{
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryLeft;iy++)
@@ -493,9 +415,6 @@ static void moinsEqualBoundaryGridMG(GridMG* g, GridMG* src)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				setValGridMG(g,ix,iy,iz, getValGridMG(g,ix,iy,iz)-getValGridMG(src,ix,iy,iz));
 	}
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 		{
@@ -520,9 +439,6 @@ static void multEqualAllGridMG(GridMG* g, GridMG* src)
 {
 	gint i;
 	if(!ifEqualDomainMG(&g->domain, &src->domain)) return;
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(i)
-#endif
         for(i= 0;i<g->domain.size;i++) g->values[i] *= src->values[i];
 }
 /*********************************************************/
@@ -540,9 +456,6 @@ static void multEqualInteriorGridMG(GridMG* g, GridMG* src)
 	int iZEnd = domain.iZEndInterior;
 	if(!ifEqualDomainMG(&g->domain, &src->domain)) return;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
         for(ix = iXBegin;ix <=iXEnd;ix++)
         	for(iy = iYBegin;iy <=iYEnd;iy++)
         		for(iz = iZBegin;iz <=iZEnd;iz++)
@@ -557,24 +470,15 @@ static void multEqualBoundaryGridMG(GridMG* g, GridMG* src)
 	int iz;
 	if(!ifEqualDomainMG(&g->domain, &src->domain)) return;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix=domain.iXBeginBoundaryLeft;ix<=domain.iXEndBoundaryLeft;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				setValGridMG(g,ix,iy,iz, getValGridMG(g,ix,iy,iz)*getValGridMG(src,ix,iy,iz));
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix=domain.iXBeginBoundaryRight;ix<=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				setValGridMG(g,ix,iy,iz, getValGridMG(g,ix,iy,iz)*getValGridMG(src,ix,iy,iz));
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 	{
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryLeft;iy++)
@@ -584,9 +488,6 @@ static void multEqualBoundaryGridMG(GridMG* g, GridMG* src)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				setValGridMG(g,ix,iy,iz, getValGridMG(g,ix,iy,iz)*getValGridMG(src,ix,iy,iz));
 	}
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 		{
@@ -610,9 +511,6 @@ void multEqualGridMG(GridMG*g, GridMG* src)
 static void multEqualAllRealGridMG(GridMG* g, gdouble a) 
 {
 	gint i;
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(i)
-#endif
         for(i = 0;i<g->domain.size;i++) g->values[i] *= a;
 }
 /*********************************************************/
@@ -629,9 +527,6 @@ static void multEqualInteriorRealGridMG(GridMG* g, gdouble a)
 	int iZBegin = domain.iZBeginInterior;
 	int iZEnd = domain.iZEndInterior;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
         for(ix = iXBegin;ix <=iXEnd;ix++)
         	for(iy = iYBegin;iy <=iYEnd;iy++)
         		for(iz = iZBegin;iz <=iZEnd;iz++)
@@ -645,24 +540,15 @@ static  void multEqualBoundaryRealGridMG(GridMG* g, gdouble a)
 	int iz;
 	DomainMG domain = g->domain;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix=domain.iXBeginBoundaryLeft;ix<=domain.iXEndBoundaryLeft;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				multValGridMG(g,ix,iy,iz,a);
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix=domain.iXBeginBoundaryRight;ix<=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				multValGridMG(g,ix,iy,iz,a);
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 	{
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryLeft;iy++)
@@ -672,9 +558,6 @@ static  void multEqualBoundaryRealGridMG(GridMG* g, gdouble a)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				multValGridMG(g,ix,iy,iz,a);
 	}
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 		{
@@ -716,9 +599,6 @@ static void divEqualInteriorRealGridMG(GridMG* g, gdouble a)
 	int iZEnd = domain.iZEndInterior;
 	if(a==0) return ;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
         for(ix = iXBegin;ix <=iXEnd;ix++)
         	for(iy = iYBegin;iy <=iYEnd;iy++)
         		for(iz = iZBegin;iz <=iZEnd;iz++)
@@ -733,24 +613,15 @@ static void divEqualBoundaryRealGridMG(GridMG* g, gdouble a)
 	DomainMG domain = g->domain;
 	if(a==0) return;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix=domain.iXBeginBoundaryLeft;ix<=domain.iXEndBoundaryLeft;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				setValGridMG(g,ix,iy,iz, getValGridMG(g,ix,iy,iz)/a);
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix=domain.iXBeginBoundaryRight;ix<=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				setValGridMG(g,ix,iy,iz, getValGridMG(g,ix,iy,iz)/a);
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 	{
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryLeft;iy++)
@@ -760,9 +631,6 @@ static void divEqualBoundaryRealGridMG(GridMG* g, gdouble a)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				setValGridMG(g,ix,iy,iz, getValGridMG(g,ix,iy,iz)/a);
 	}
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 		{
@@ -819,15 +687,12 @@ gdouble laplacianGridMG(GridMG* g, GridMG* src)
 	}
 	initBoundaryGridMG(g,0.0);
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz,v)
-#endif
 	for(ix = iXBegin;ix <= iXEnd;ix++)
 		for(iy = iYBegin;iy <= iYEnd;iy++)
 			for(iz = iZBegin;iz <= iZEnd;iz++)
 			{
-			 {
 				v = cc  * getValGridMG(src, ix,iy,iz);
+				
 			     	for(i=1;i<=nBoundary;i++)
 				{
 					v += fcx[i] *(getValGridMG(src, ix-i,iy,iz)+getValGridMG(src, ix+i,iy,iz));
@@ -835,7 +700,6 @@ gdouble laplacianGridMG(GridMG* g, GridMG* src)
 					v += fcz[i] *(getValGridMG(src, ix,iy,iz-i)+getValGridMG(src, ix,iy,iz+i));
 				}
 				setValGridMG(g,ix,iy,iz, v);
-			 }
 			}
 	return diag;
 }
@@ -872,9 +736,6 @@ gdouble plusLaplacianGridMG(GridMG* g, GridMG* src)
 	else
 		initBoundaryGridMG(g, 0.0);
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz,v)
-#endif
 	for(ix = iXBegin;ix <= iXEnd;ix++)
 		for(iy = iYBegin;iy <= iYEnd;iy++)
 			for(iz = iZBegin;iz <= iZEnd;iz++)
@@ -926,9 +787,6 @@ gdouble moinsLaplacianGridMG(GridMG* g, GridMG* src)
 	else
 		initBoundaryGridMG(g, 0.0);
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz,v)
-#endif
 	for(ix = iXBegin;ix <= iXEnd;ix++)
 		for(iy = iYBegin;iy <= iYEnd;iy++)
 			for(iz = iZBegin;iz <= iZEnd;iz++)
@@ -966,9 +824,6 @@ void averageGridMG(GridMG* g)
 
 	GridMG* src = getNewGridMGFromOldGrid(g);
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz,x0,xp,xm,y0,yp,ym,z0,zp,zm,face,corner,edge)
-#endif
 	for(ix = iXBegin ; ix <= iXEnd ; ix++)
 	{
 		x0 = ix;
@@ -1057,20 +912,11 @@ void resetLaplacianOrderGridMG(GridMG* g, LaplacianOrderMG order)
 	int iYBeginNew = newDomain.iYBeginInterior;
 	int iZBeginNew = newDomain.iZBeginInterior;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz,ixNew,iyNew,izNew)
-#endif
-	for(ix = iXBegin ; ix <= iXEnd ; ix++)
-	{
-		ixNew = iXBeginNew+ix-iXBegin;
-		iyNew = iYBeginNew ; 
-		for(iy = iYBegin  ; iy <= iYEnd ; iy++, iyNew++)
-		{
-			izNew = iZBeginNew ;
-			for(iz = iZBegin ; iz <= iZEnd ; iz++, izNew++)
+
+	for(ix = iXBegin, ixNew = iXBeginNew ; ix <= iXEnd ; ix++, ixNew++)
+		for(iy = iYBegin, iyNew = iYBeginNew ; iy <= iYEnd ; iy++, iyNew++)
+			for(iz = iZBegin, izNew = iZBeginNew ; iz <= iZEnd ; iz++, izNew++)
 				setValGridMG(newGrid, ixNew , iyNew , izNew, getValGridMG(g, ix , iy , iz));
-		}
-	}
 
 	equalAllGridMG(g,newGrid); 
 	destroyGridMG(newGrid);
@@ -1082,9 +928,6 @@ void reAllocValuesTableGridMG(GridMG* g)
 	if(g->domain.size <1)  return;
 	if(g->values) g_free(g->values);
         g->values = g_malloc(g->domain.size*sizeof(gdouble));
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(i)
-#endif
         for(i = 0;i<g->domain.size;i++) g->values[i] = 0.0;
 }
 /*********************************************************/
@@ -1112,18 +955,12 @@ void interpolationCubicSrcGridMG(GridMG* g, GridMG* src)
 	/*printf("Je suis dans prolongation de Grid\n");*/
 	/*printf("xSize =%d\n",xSize);*/
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix = src->domain.iXBeginInterior-1;ix <=src->domain.iXEndInterior+1;ix++)
 		for(iy = src->domain.iYBeginInterior-1;iy <=src->domain.iYEndInterior+1;iy++)
 		for(iz = src->domain.iZBeginInterior-1;iz <=src->domain.iZEndInterior+1;iz++)
 				setValGridMG(g,2*ix,2*iy,2*iz, getValGridMG(src,ix,iy,iz));
 
 	/* ginterior center pogints */
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix = domain.iXBeginInterior;ix <=domain.iXEndInterior;ix += 2)
 		for(iy = domain.iYBeginInterior;iy <=domain.iYEndInterior;iy += 2)
 			for(iz = domain.iZBeginInterior;iz <=domain.iZEndInterior;iz += 2)
@@ -1141,9 +978,6 @@ void interpolationCubicSrcGridMG(GridMG* g, GridMG* src)
 				);
 			}
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix = domain.iXBeginInterior;ix <=domain.iXEndInterior;ix += 2)
 		for(iy = domain.iYBeginInterior;iy <=domain.iYEndInterior;iy += 2)
 			for(iz = domain.iZBeginInterior+1;iz <=domain.iZEndInterior;iz += 2)
@@ -1154,9 +988,6 @@ void interpolationCubicSrcGridMG(GridMG* g, GridMG* src)
 				0.5 * getValGridMG(g, ix , iy , iz+1)
 				);
 			}
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix = domain.iXBeginInterior;ix <=domain.iXEndInterior;ix += 2)
 		for(iy = domain.iYBeginInterior+1;iy <=domain.iYEndInterior;iy += 2)
 			for(iz = domain.iZBeginInterior;iz <=domain.iZEndInterior;iz += 2)
@@ -1166,9 +997,7 @@ void interpolationCubicSrcGridMG(GridMG* g, GridMG* src)
 				0.5 * getValGridMG(g, ix , (iy+1) , iz)
 				);
 			}
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
+
 	for(ix = domain.iXBeginInterior+1;ix <=domain.iXEndInterior;ix += 2)
 		for(iy = domain.iYBeginInterior;iy <=domain.iYEndInterior;iy += 2)
 			for(iz = domain.iZBeginInterior;iz <=domain.iZEndInterior;iz += 2)
@@ -1178,9 +1007,6 @@ void interpolationCubicSrcGridMG(GridMG* g, GridMG* src)
 				0.5 * getValGridMG(g, (ix+1) , iy , iz)
 				);
 			}
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix = domain.iXBeginInterior;ix <=domain.iXEndInterior;ix += 2)
 		for(iy = domain.iYBeginInterior+1;iy <=domain.iYEndInterior;iy += 2)
 			for(iz = domain.iZBeginInterior+1;iz <=domain.iZEndInterior;iz += 2)
@@ -1192,9 +1018,6 @@ void interpolationCubicSrcGridMG(GridMG* g, GridMG* src)
 				0.25 * getValGridMG(g, ix , (iy+1) , iz+1)
 				);
 			}
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix = domain.iXBeginInterior+1;ix <=domain.iXEndInterior;ix += 2)
 		for(iy = domain.iYBeginInterior;iy <=domain.iYEndInterior;iy += 2)
 			for(iz = domain.iZBeginInterior+1;iz <=domain.iZEndInterior;iz += 2)
@@ -1206,9 +1029,6 @@ void interpolationCubicSrcGridMG(GridMG* g, GridMG* src)
 				0.25 * getValGridMG(g, (ix+1) , iy , iz+1)
 				);
 			}
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz)
-#endif
 	for(ix = domain.iXBeginInterior+1;ix <=domain.iXEndInterior;ix += 2)
 		for(iy = domain.iYBeginInterior+1;iy <=domain.iYEndInterior;iy += 2)
 			for(iz = domain.iZBeginInterior;iz <=domain.iZEndInterior;iz += 2)
@@ -1249,20 +1069,16 @@ void interpolationTriLinearSrcGridMG(GridMG* g, GridMG* src)
 
 	addValGridMG(g, iXBegin,iYBegin,iZBegin, getValGridMG(src, iXBegin,iYBegin,iZBegin) );
 	/* Interpolation of the first xy-plane where z = 0 */
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix)
-#endif
 	for(ix = iXBegin+1 ; ix <=iXEnd ; ix++)
 	{
-		addValGridMG(g, 2*ix-1, iYBegin, iZBegin, 0.5*( getValGridMG(src, ix-1,iYBegin,  iZBegin) + getValGridMG(src, ix, iYBegin,  iZBegin) ) );
+		addValGridMG(g, 2*ix-1, iYBegin, iZBegin,
+			0.5*( getValGridMG(src, ix-1,iYBegin,  iZBegin) + getValGridMG(src, ix, iYBegin,  iZBegin) ) );
 		addValGridMG(g, 2*ix, iYBegin, iZBegin , getValGridMG(src, ix, iYBegin, iZBegin));
 	}
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,a1,a2)
-#endif
 	for(iy = iYBegin+1 ; iy <=iYEnd ; iy++)
 	{
-		addValGridMG(g, iXBegin, 2*iy-1, iZBegin, 0.5*( getValGridMG(src, iXBegin, iy-1, iZBegin) + getValGridMG(src, iXBegin, iy, iZBegin) ) );
+		addValGridMG(g, iXBegin, 2*iy-1, iZBegin,
+			0.5*( getValGridMG(src, iXBegin, iy-1, iZBegin) + getValGridMG(src, iXBegin, iy, iZBegin) ) );
 		addValGridMG(g, iXBegin, 2*iy, iZBegin, getValGridMG(src, iXBegin,iy, iZBegin));
 		for(ix = iXBegin+1 ; ix <=iXEnd ; ix++)
 		{
@@ -1276,9 +1092,6 @@ void interpolationTriLinearSrcGridMG(GridMG* g, GridMG* src)
 		}
 	}
 	/* Interpolation of other xy-plane where 0<z<xSize */
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz,a1,a2)
-#endif
 	for(iz = iZBegin+1 ; iz <= iZEnd ; iz++)
 	{
 		/* Interpolation on even planes */
@@ -1379,9 +1192,6 @@ void restrictionSrcGridMG(GridMG* g, GridMG* src)
 	gint iZBegin = domain.iZBeginInterior;
 	gint iZEnd = domain.iZEndInterior;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz,x0,xp,xm,y0,yp,ym,z0,zp,zm,face,corner,edge)
-#endif
 	for(ix = iXBegin ; ix <= iXEnd ; ix++)
 	{
 		x0 = 2 * ix;
@@ -1467,9 +1277,6 @@ void restrictionInjectionSrcGridMG(GridMG* g, GridMG* src)
 	gint iZBegin = domain.iZBeginInterior - 1;
 	gint iZEnd = domain.iZEndInterior + 1;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz,x0,y0,z0)
-#endif
 	for(ix = iXBegin ; ix <= iXEnd ; ix++)
 	{
 		x0 = 2 * ix;
@@ -1506,9 +1313,6 @@ static gdouble dotAllGridMG(GridMG* g, GridMG* src)
 		printf(" Error in doAll\n ");
 		return 0.0;
 	}
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(i) reduction(+:p)
-#endif
         for(i = 0 ; i < g->domain.size ; i++)
 		p += g->values[i]*src->values[i];
 
@@ -1538,9 +1342,6 @@ static gdouble dotInteriorGridMG(GridMG* g, GridMG* src)
 		return 0.0;
 	}
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz) reduction(+:p)
-#endif
         for(ix = iXBegin;ix <=iXEnd;ix++)
         	for(iy = iYBegin;iy <=iYEnd;iy++)
         		for(iz = iZBegin;iz <=iZEnd;iz++)
@@ -1557,6 +1358,7 @@ static gdouble dotBoundaryGridMG(GridMG* g, GridMG* src)
 	gint ix;
 	gint iy;
 	gint iz;
+	gdouble v;
 	gdouble p = 0.0;
 	DomainMG domain = g->domain;
 	if(g->domain.size != src->domain.size)
@@ -1565,54 +1367,48 @@ static gdouble dotBoundaryGridMG(GridMG* g, GridMG* src)
 		return 0.0;
 	}
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz) reduction(+:p)
-#endif
 	for(ix=domain.iXBeginBoundaryLeft;ix<=domain.iXEndBoundaryLeft;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 			{
-				p += getValGridMG(g,ix,iy,iz)*getValGridMG(src, ix,iy,iz);
+				v = getValGridMG(g,ix,iy,iz)*getValGridMG(src, ix,iy,iz);
+				p += v;
 			}
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz) reduction(+:p)
-#endif
 	for(ix=domain.iXBeginBoundaryRight;ix<=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 			{
-				p += getValGridMG(g,ix,iy,iz)*getValGridMG(src, ix,iy,iz);
+				v = getValGridMG(g,ix,iy,iz)*getValGridMG(src, ix,iy,iz);
+				p += v;
 			}
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz) reduction(+:p)
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 	{
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryLeft;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 			{
-				p += getValGridMG(g,ix,iy,iz)*getValGridMG(src, ix,iy,iz);
+				v = getValGridMG(g,ix,iy,iz)*getValGridMG(src, ix,iy,iz);
+				p += v;
 			}
 		for(iy = domain.iYBeginBoundaryRight;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 			{
-				p += getValGridMG(g,ix,iy,iz)*getValGridMG(src, ix,iy,iz);
+				v = getValGridMG(g,ix,iy,iz)*getValGridMG(src, ix,iy,iz);
+				p += v;
 			}
 	}
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz) reduction(+:p)
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 		{
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryLeft;iz++)
 			{
-				p += getValGridMG(g,ix,iy,iz)*getValGridMG(src, ix,iy,iz);
+				v = getValGridMG(g,ix,iy,iz)*getValGridMG(src, ix,iy,iz);
+				p += v;
 			}
 			for(iz = domain.iZBeginBoundaryRight;iz <=domain.iZEndBoundaryRight;iz++)
 			{
-				p += getValGridMG(g,ix,iy,iz)*getValGridMG(src, ix,iy,iz);
+				v = getValGridMG(g,ix,iy,iz)*getValGridMG(src, ix,iy,iz);
+				p += v;
 			}
 		}
 	p *= domain.cellVolume;
@@ -1636,9 +1432,6 @@ static gdouble normAllGridMG(GridMG* g)
 	glong i;
 	gdouble n = 0;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(i) reduction(+:n)
-#endif
         for(i = 0;i < g->domain.size ; i++)
 		n += g->values[i]*g->values[i];
 
@@ -1662,9 +1455,6 @@ static gdouble normInteriorGridMG(GridMG* g)
 
 	if(g->domain.size<=0) return 0;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz) reduction(+:n)
-#endif
         for(ix = iXBegin;ix <=iXEnd;ix++)
         	for(iy = iYBegin;iy <=iYEnd;iy++)
         		for(iz = iZBegin;iz <=iZEnd;iz++)
@@ -1681,24 +1471,15 @@ static gdouble normBoundaryGridMG(GridMG* g)
 	gint iy;
 	gint iz;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz) reduction(+:n)
-#endif
 	for(ix=domain.iXBeginBoundaryLeft;ix<=domain.iXEndBoundaryLeft;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				n += getValGridMG(g,ix,iy,iz)*getValGridMG(g,ix,iy,iz);
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz) reduction(+:n)
-#endif
 	for(ix=domain.iXBeginBoundaryRight;ix<=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				n += getValGridMG(g,ix,iy,iz)*getValGridMG(g,ix,iy,iz);
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz) reduction(+:n)
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 	{
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryLeft;iy++)
@@ -1708,9 +1489,6 @@ static gdouble normBoundaryGridMG(GridMG* g)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				n += getValGridMG(g,ix,iy,iz)*getValGridMG(g,ix,iy,iz);
 	}
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz) reduction(+:n)
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 		{
@@ -1740,9 +1518,6 @@ static gdouble normDiffAllGridMG(GridMG* g, GridMG* src)
 	gdouble n = 0;
 	DomainMG domain = g->domain;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(i) reduction(+:n)
-#endif
         for(i = 0;i < domain.size ; i++)
 		n += (g->values[i]-src->values[i])*(g->values[i]-src->values[i]);
 
@@ -1767,9 +1542,6 @@ static gdouble normDiffInteriorGridMG(GridMG* g, GridMG* src)
 	if(domain.size<=0)
 		return 0;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz,v) reduction(+:n)
-#endif
         for(ix = iXBegin;ix <=iXEnd;ix++)
         	for(iy = iYBegin;iy <=iYEnd;iy++)
         		for(iz = iZBegin;iz <=iZEnd;iz++)
@@ -1791,9 +1563,6 @@ static gdouble normDiffBoundaryGridMG(GridMG* g, GridMG* src)
 	gdouble v;
 	DomainMG domain = g->domain;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz,v) reduction(+:n)
-#endif
 	for(ix=domain.iXBeginBoundaryLeft;ix<=domain.iXEndBoundaryLeft;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
@@ -1801,9 +1570,6 @@ static gdouble normDiffBoundaryGridMG(GridMG* g, GridMG* src)
 				v = getValGridMG(g,ix, iy, iz)-getValGridMG(src, ix, iy, iz );
 				n += v*v ;
 			}
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz,v) reduction(+:n)
-#endif
 	for(ix=domain.iXBeginBoundaryRight;ix<=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
@@ -1812,9 +1578,6 @@ static gdouble normDiffBoundaryGridMG(GridMG* g, GridMG* src)
 				n += v*v ;
 			}
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz,v) reduction(+:n)
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 	{
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryLeft;iy++)
@@ -1830,9 +1593,6 @@ static gdouble normDiffBoundaryGridMG(GridMG* g, GridMG* src)
 				n += v*v ;
 			}
 	}
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz,v) reduction(+:n)
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 		{
@@ -1874,9 +1634,6 @@ static gdouble sommeAllGridMG(GridMG* g)
 	gdouble s = 0;
 	DomainMG domain = g->domain;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(i) reduction(+:s)
-#endif
         for(i = 0;i < domain.size ; i++)
 		s += g->values[i];
 
@@ -1902,9 +1659,6 @@ static gdouble sommeInteriorGridMG(GridMG* g)
 
 	if(domain.size<=0) return 0;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz) reduction(+:s)
-#endif
         for(ix = iXBegin;ix <=iXEnd;ix++)
         	for(iy = iYBegin;iy <=iYEnd;iy++)
         		for(iz = iZBegin;iz <=iZEnd;iz++)
@@ -1923,23 +1677,15 @@ static gdouble sommeBoundaryGridMG(GridMG* g)
 	gint iz;
 	DomainMG domain = g->domain;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz) reduction(+:s)
-#endif
 	for(ix=domain.iXBeginBoundaryLeft;ix<=domain.iXEndBoundaryLeft;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				s += getValGridMG(g,ix,iy,iz);
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz) reduction(+:s)
-#endif
 	for(ix=domain.iXBeginBoundaryRight;ix<=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				s += getValGridMG(g,ix,iy,iz);
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz) reduction(+:s)
-#endif
+
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 	{
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryLeft;iy++)
@@ -1949,9 +1695,6 @@ static gdouble sommeBoundaryGridMG(GridMG* g)
 			for(iz = domain.iZBeginBoundaryLeft;iz <=domain.iZEndBoundaryRight;iz++)
 				s += getValGridMG(g,ix,iy,iz);
 	}
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz) reduction(+:s)
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 		{
@@ -2003,35 +1746,18 @@ void tradesBoundaryPeriodicGridMG(GridMG* g)
 	gint j;
 	DomainMG domain = g->domain;
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz,j) 
-#endif
-	for(ix=domain.iXBeginBoundaryLeft ; ix <= domain.iXEndBoundaryLeft ; ix++)
-	{
+	j = domain.iXEndInterior - domain.nBoundary;
+	for(ix=domain.iXBeginBoundaryLeft ; ix <= domain.iXEndBoundaryLeft ; ix++, j++)
 		for(iy = domain.iYBeginBoundaryLeft ; iy <= domain.iYEndBoundaryRight ; iy++)
 			for(iz = domain.iZBeginBoundaryLeft ; iz <= domain.iZEndBoundaryRight ; iz++)
-			{
-				j=  domain.iXEndInterior - domain.nBoundary+ix-domain.iXBeginBoundaryLeft;
 				setValGridMG(g, ix, iy, iz, getValGridMG(g, j, iy, iz));
-			}
-	}
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz,j) 
-#endif
-	for(ix=domain.iXBeginBoundaryRight ; ix <= domain.iXEndBoundaryRight ; ix++)
-	{
+	j = domain.iXBeginInterior;
+	for(ix=domain.iXBeginBoundaryRight ; ix <= domain.iXEndBoundaryRight ; ix++, j++)
 		for(iy = domain.iYBeginBoundaryLeft ; iy <= domain.iYEndBoundaryRight ; iy++)
 			for(iz = domain.iZBeginBoundaryLeft ; iz <= domain.iZEndBoundaryRight ; iz++)
-			{
-				j = domain.iXBeginInterior+ix-domain.iXBeginBoundaryRight;
 				setValGridMG(g, ix, iy, iz, getValGridMG(g, j, iy, iz));
-			}
-	}
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz,j) 
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 	{
 		j = domain.iYEndInterior - domain.nBoundary;
@@ -2044,9 +1770,6 @@ void tradesBoundaryPeriodicGridMG(GridMG* g)
 			for(iz = domain.iZBeginBoundaryLeft; iz <=domain.iZEndBoundaryRight; iz++)
 				setValGridMG(g, ix, iy, iz, getValGridMG(g, ix, j, iz));
 	}
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz,j) 
-#endif
 	for(ix = domain.iXBeginBoundaryLeft;ix <=domain.iXEndBoundaryRight;ix++)
 		for(iy = domain.iYBeginBoundaryLeft;iy <=domain.iYEndBoundaryRight;iy++)
 		{
@@ -2312,9 +2035,6 @@ gdouble getMaxGridMG(GridMG* g)
 	}
 
 
-#ifdef ENABLE_OMP
-#pragma omp parallel for private(ix,iy,iz) 
-#endif
 	for(ix=domain.iXBeginInterior ; ix<=domain.iXEndInterior ; ix++)
 		for(iy = domain.iYBeginInterior ; iy <=domain.iYEndInterior ; iy++)
 			for(iz = domain.iZBeginInterior ; iz <=domain.iZEndInterior ; iz++)

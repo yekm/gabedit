@@ -59,7 +59,6 @@ int view_orb(GtkWidget* Parent,int argc, char **argv)
 	/* Create new top level window. */
 	PrincipalWindow = gtk_window_new( GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(PrincipalWindow), _("Gabedit : Orbitals/Density/Vibration"));
-	 gtk_container_set_reallocate_redraws (GTK_CONTAINER (PrincipalWindow), TRUE);
   	gtk_window_set_default_size (GTK_WINDOW(PrincipalWindow),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.69));
 	gtk_container_set_border_width(GTK_CONTAINER(PrincipalWindow), 1);
 	init_child(PrincipalWindow,gtk_widget_destroy," Draw Dens. Orb. ");

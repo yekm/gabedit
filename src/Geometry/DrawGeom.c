@@ -11236,9 +11236,9 @@ void set_back_color_grey()
 	GdkColor color;
 	GdkColormap *colormap;
 
-	color.red = 80*257;
-	color.green = 80*257;
-	color.blue = 80*257;
+	color.red = 10*257;
+	color.green = 10*257;
+	color.blue = 10*257;
 	colormap  = gdk_drawable_get_colormap(ZoneDessin->window);
 	
         BackColor = gdk_color_copy(&color);

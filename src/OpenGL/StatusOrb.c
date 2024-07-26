@@ -234,7 +234,8 @@ gint progress_orb(gdouble scal,GabEditTypeProgressOrb  type,gboolean reset)
 		gtk_widget_set_sensitive(button, TRUE); 
 
     g_free(t);
-    while( gtk_events_pending() ) gtk_main_iteration();
+    while( gtk_events_pending() )
+          gtk_main_iteration();
 
     return TRUE;
 }

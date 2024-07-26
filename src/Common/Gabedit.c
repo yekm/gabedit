@@ -21,7 +21,6 @@ DEALINGS IN THE SOFTWARE.
 #include "../../Config.h"
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
-#include <gtk/gtkgl.h>
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <stdlib.h>
@@ -66,15 +65,7 @@ int main(int argc, char *argv[])
    bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
    textdomain (GETTEXT_PACKAGE);
 
-   /*
-   if (!g_thread_supported ()){ g_thread_init (NULL); }
-   gdk_threads_init ();
-   gdk_threads_enter ();
-   */
-   
-
   gtk_init(&argc, &argv);
-  gtk_gl_init(&argc, &argv);
   setlocale(LC_NUMERIC,"C");
   gabedit_gtk_stock_init();
   
@@ -120,7 +111,6 @@ int main(int argc, char *argv[])
   set_path();
   chdir(g_get_home_dir());
   gtk_main();
-  /* gdk_threads_leave ();*/
  
   return 0;
 }

@@ -1,21 +1,7 @@
-11 July 2010 :
-	   Parallelization using OpenMP. 
-	   Parallelized Code : 
-		- Computing of Grid for Orbitals, Electronic density, Electrostatic potential (Multigrid Method)
-		- Computing of AIM charges
-		- Computing of Coulomb integral
-		- Computing of Spatial overlap
-		- Computing of MM potential and its gradients
-		- Computing of NMR spectra
-
-1 July 2010 :
-	   migration from gtkglarea to GtkGLExt
-
 08 Jun 2010 :
 	   Text with rotation in XYPlot and ContoursPlot windows.
 	   One can add margins in XYPlot and ContoursPlot windows.
 	   One can add images (from file or clipboard) in the ContoursPlot window.
-
 06 Jun 2010 :
 	   Read orbitals, geometry and normal modes from a fchk Gaussian file.
 	   Read grid from a openDX file.
