@@ -44,10 +44,6 @@ DEALINGS IN THE SOFTWARE.
 #include "../NetWork/FilesTransfer.h"
 #include "../Molcas/MolcasVariables.h"
 
-#ifdef G_OS_WIN32
-#include "../../pixmaps/Open.xpm"
-#endif
-
 static GtkWidget* ButtonLocal = NULL;
 static GtkWidget* ButtonRemote = NULL;
 
@@ -56,6 +52,7 @@ static GtkWidget* ButtonGauss = NULL;
 static GtkWidget* ButtonMolcas = NULL;
 static GtkWidget* ButtonMolpro = NULL;
 static GtkWidget* ButtonMPQC = NULL;
+static GtkWidget* ButtonOrca = NULL;
 static GtkWidget* ButtonPCGamess = NULL;
 static GtkWidget* ButtonQChem = NULL;
 static GtkWidget* ButtonMopac = NULL;
@@ -160,7 +157,7 @@ void set_default_entrys(GtkWidget *button,gpointer data)
 			{
   				for(i=0;i<numberOfLocalGamess;i++)
 					glist = g_list_append(glist,listLocalGamess[i]);
-				if(!strstr(fileopen.command,"exe"))
+				if(fileopen.command && !strstr(fileopen.command,"exe"))
 				{
 					if(fileopen.command) g_free(fileopen.command);
 					fileopen.command = g_strdup("gamess.05.exe");
@@ -186,6 +183,7 @@ void set_default_entrys(GtkWidget *button,gpointer data)
 
 			gtk_label_set_text(GTK_LABEL(LabelExtFile), ".inp");
 			gtk_widget_show(LabelDataFile);
+  			iprogram = PROG_IS_GAMESS;
 		}
 		else
 		if(button == ButtonGauss )
@@ -201,6 +199,7 @@ void set_default_entrys(GtkWidget *button,gpointer data)
 			       	gtk_entry_set_text (GTK_ENTRY (EntryCommand), fileopen.command);
 			gtk_label_set_text(GTK_LABEL(LabelExtFile), ".com");
 			gtk_widget_show(LabelDataFile);
+  			iprogram = PROG_IS_GAUSS;
 		}
 		else
 		if(button == ButtonMPQC)
@@ -216,6 +215,7 @@ void set_default_entrys(GtkWidget *button,gpointer data)
 			       	gtk_entry_set_text (GTK_ENTRY (EntryCommand), fileopen.command);
 			gtk_label_set_text(GTK_LABEL(LabelExtFile), ".com");
 			gtk_widget_show(LabelDataFile);
+  			iprogram = PROG_IS_MPQC;
 		}
 		else
 		if(button == ButtonMolcas)
@@ -231,6 +231,7 @@ void set_default_entrys(GtkWidget *button,gpointer data)
 			       	gtk_entry_set_text (GTK_ENTRY (EntryCommand), fileopen.command);
 			gtk_label_set_text(GTK_LABEL(LabelExtFile), ".com");
 			gtk_widget_show(LabelDataFile);
+  			iprogram = PROG_IS_MOLCAS;
 		}
 		else
 		if(button == ButtonMolpro )
@@ -246,6 +247,7 @@ void set_default_entrys(GtkWidget *button,gpointer data)
 			       	gtk_entry_set_text (GTK_ENTRY (EntryCommand), fileopen.command);
 			gtk_label_set_text(GTK_LABEL(LabelExtFile), ".com");
 			gtk_widget_show(LabelDataFile);
+  			iprogram = PROG_IS_MOLPRO;
 		}
 		else
 		if(button == ButtonPCGamess )
@@ -261,6 +263,23 @@ void set_default_entrys(GtkWidget *button,gpointer data)
 			       	gtk_entry_set_text (GTK_ENTRY (EntryCommand), fileopen.command);
 			gtk_label_set_text(GTK_LABEL(LabelExtFile), ".inp");
 			gtk_widget_show(LabelDataFile);
+  			iprogram = PROG_IS_PCGAMESS;
+		}
+		else
+		if(button == ButtonOrca )
+		{
+  			for(i=0;i<orcaCommands.numberOfCommands;i++)
+				glist = g_list_append(glist,orcaCommands.commands[i]);
+
+  			gtk_combo_box_entry_set_popdown_strings( ComboCommand, glist) ;
+
+  			g_list_free(glist);
+			gtk_entry_set_text (GTK_ENTRY (EntryCommand), NameCommandOrca);
+			if(fileopen.command && !strstr(fileopen.command,"gamess.") && strlen(fileopen.command)>0)
+			       	gtk_entry_set_text (GTK_ENTRY (EntryCommand), fileopen.command);
+			gtk_label_set_text(GTK_LABEL(LabelExtFile), ".inp");
+			gtk_widget_show(LabelDataFile);
+  			iprogram = PROG_IS_ORCA;
 		}
 		else
 		if(button == ButtonQChem )
@@ -276,6 +295,7 @@ void set_default_entrys(GtkWidget *button,gpointer data)
 			       	gtk_entry_set_text (GTK_ENTRY (EntryCommand), fileopen.command);
 			gtk_label_set_text(GTK_LABEL(LabelExtFile), ".inp");
 			gtk_widget_show(LabelDataFile);
+  			iprogram = PROG_IS_QCHEM;
 		}
 		else
 		if(button == ButtonMopac )
@@ -291,6 +311,7 @@ void set_default_entrys(GtkWidget *button,gpointer data)
 			       	gtk_entry_set_text (GTK_ENTRY (EntryCommand), fileopen.command);
 			gtk_label_set_text(GTK_LABEL(LabelExtFile), ".mop");
 			gtk_widget_show(LabelDataFile);
+  			iprogram = PROG_IS_MOPAC;
 		}
 		else
 		{
@@ -306,6 +327,7 @@ void set_default_entrys(GtkWidget *button,gpointer data)
 			if(fileopen.command && strlen(fileopen.command)>0) gtk_entry_set_text (GTK_ENTRY (EntryCommand), fileopen.command);
 			gtk_widget_hide(LabelDataFile);
   			g_list_free(glist);
+  			iprogram = PROG_IS_OTHER;
 		}
 
 	}
@@ -848,8 +870,9 @@ static gboolean create_cmd_pcgamess(G_CONST_RETURN gchar* command, gboolean loca
 			fprintf(fcmd,"cd \"%s\\tmp\\%cRND%c%s\"\n",g_get_home_dir(),'%','%',fileopen.projectname);
 			fprintf(fcmd,"copy \"%s\\%s\" \"%s\\tmp\\%cRND%c%s\\input\"\n",fileopen.localdir,fileopen.datafile,g_get_home_dir(),'%','%',fileopen.projectname);
 /* 			fprintf(fcmd,"pcgamess -o \"%s\\%s.log\"\n",fileopen.localdir,fileopen.projectname);*/
-			fprintf(fcmd,"pcgamess -p -o \"%s\\%s.log\"\n",fileopen.localdir,fileopen.projectname);
-			fprintf(fcmd,"move %s\\PUNCH %s.pun\n",fileopen.localdir,fileopen.projectname);
+			fprintf(fcmd,"pcgamess -o \"%s\\%s.log\"\n",fileopen.localdir,fileopen.projectname);
+			fprintf(fcmd,"move \"%s\\tmp\\%cRND%c%s\\PUNCH\" \"%s\\%s.irc\"\n",g_get_home_dir(),'%','%',fileopen.projectname, fileopen.localdir,fileopen.projectname);
+			fprintf(fcmd,"move \"%s\\tmp\\%cRND%c%s\\IRCDATA\" \"%s\\%s.irc\"\n",g_get_home_dir(),'%','%',fileopen.projectname, fileopen.localdir,fileopen.projectname);
 			fprintf(fcmd,"cd \"%s\"\n",fileopen.localdir);
 			fprintf(fcmd,"del /Q \"%s\\tmp\\%cRND%c%s\\*\"\n",g_get_home_dir(),'%','%',fileopen.projectname);
 			fprintf(fcmd,"rmdir \"%s\\tmp\\%cRND%c%s\"\n",g_get_home_dir(),'%','%',fileopen.projectname);
@@ -886,9 +909,12 @@ static gboolean create_cmd_pcgamess(G_CONST_RETURN gchar* command, gboolean loca
 			fprintf(fcmd,"mkdir $PCGAMESSDIR\n");
 			fprintf(fcmd,"cd $PCGAMESSDIR\n");
 			fprintf(fcmd,"cp $DEFAULTDIR/$fileinput input\n");
-/* 			fprintf(fcmd,"pcgamess -o $DEFAULTDIR/$filename.log\n");*/
-			fprintf(fcmd,"pcgamess -p -o $DEFAULTDIR/$filename.log\n");
-			fprintf(fcmd,"mv -f $DEFAULTDIR/PUNCH $DEFAULTDIR/$filename.pun\n");
+			fprintf(fcmd,"pcgamess -o $DEFAULTDIR/$filename.log\n");
+			fprintf(fcmd,"mv -f $PCGAMESSDIR/PUNCH $DEFAULTDIR/$filename.pun\n");
+			fprintf(fcmd,"if [ -s \"$PCGAMESSDIR/IRCDATA\" ]\n");
+			fprintf(fcmd,"then\n");
+			fprintf(fcmd,"mv -f $PCGAMESSDIR/IRCDATA $DEFAULTDIR/$filename.irc\n");
+			fprintf(fcmd,"fi\n");
 			fprintf(fcmd,"cd $DEFAULTDIR\n");
 			fprintf(fcmd,"/bin/rm -r $PCGAMESSDIR\n");
 		}
@@ -925,9 +951,12 @@ static gboolean create_cmd_pcgamess(G_CONST_RETURN gchar* command, gboolean loca
 		fprintf(fcmd,"mkdir $PCGAMESSDIR\n");
 		fprintf(fcmd,"cd $PCGAMESSDIR\n");
 		fprintf(fcmd,"cp $DEFAULTDIR/$fileinput input\n");
-/*		fprintf(fcmd,"pcgamess -o $DEFAULTDIR/$filename.log\n");*/
-		fprintf(fcmd,"pcgamess -p -o $DEFAULTDIR/$filename.log\n");
-		fprintf(fcmd,"mv -f $DEFAULTDIR/PUNCH $DEFAULTDIR/$filename.pun\n");
+		fprintf(fcmd,"pcgamess -o $DEFAULTDIR/$filename.log\n");
+		fprintf(fcmd,"mv -f $PCGAMESSDIR/PUNCH $DEFAULTDIR/$filename.pun\n");
+		fprintf(fcmd,"if [ -s \"$PCGAMESSDIR/IRCDATA\" ]\n");
+		fprintf(fcmd,"then\n");
+		fprintf(fcmd,"mv -f $PCGAMESSDIR/IRCDATA $DEFAULTDIR/$filename.irc\n");
+		fprintf(fcmd,"fi\n");
 		fprintf(fcmd,"cd $DEFAULTDIR\n");
 		fprintf(fcmd,"/bin/rm -r $PCGAMESSDIR\n");
 	}
@@ -946,6 +975,68 @@ static gboolean create_cmd_pcgamess(G_CONST_RETURN gchar* command, gboolean loca
 	}
 
 #endif
+	fclose(fcmd);
+#ifndef G_OS_WIN32
+  	sprintf(buffer,"chmod u+x %s",cmdall);
+	system(buffer);
+#endif
+	if(commandStr) g_free(commandStr);
+	return TRUE;
+}
+/***********************************************************************************************************/
+static gboolean create_cmd_orca(G_CONST_RETURN gchar* command, gboolean local, gchar* cmddir, gchar* cmdfile, gchar* cmdall)
+{
+        FILE* fcmd = NULL;
+	gchar* commandStr = g_strdup(command);
+#ifndef G_OS_WIN32
+	gchar buffer[BSIZE];
+#endif
+	delete_last_spaces(commandStr);
+	delete_first_spaces(commandStr);
+
+	if(local)
+  		sprintf(cmddir,"%s", fileopen.localdir);
+	else
+		sprintf(cmddir,"%s%stmp", gabedit_directory(), G_DIR_SEPARATOR_S);
+
+#ifndef G_OS_WIN32
+	sprintf(cmdfile,"%s.cmd", fileopen.projectname);
+#else
+	if(!local) sprintf(cmdfile,"%s.cmd", fileopen.projectname);
+	else sprintf(cmdfile,"%s.bat", fileopen.projectname);
+#endif
+  	sprintf(cmdall,"%s%s%s",cmddir,G_DIR_SEPARATOR_S,cmdfile);
+
+  	fcmd = FOpen(cmdall, "w");
+	if(!fcmd)
+	{
+		if(local) Message("\nI can not create cmd file\n ","Error",TRUE);   
+		return FALSE;
+	}
+#ifndef G_OS_WIN32
+	fprintf(fcmd,"#!/bin/sh\n");
+#else
+	if(local)
+	{
+		if(strstr(orcaDirectory,"\"")) fprintf(fcmd,"set PATH=%s;%cPATH%c\n",orcaDirectory,'%','%');
+		else fprintf(fcmd,"set PATH=\"%s\";%cPATH%c\n",orcaDirectory,'%','%');
+	}
+#endif
+
+	if(local) fprintf(fcmd,"cd %s\n", fileopen.localdir);
+	else fprintf(fcmd,"cd %s\n", fileopen.remotedir);
+
+
+	if(!strcmp(commandStr,"orca") || !strcmp(commandStr,"nohup orca"))
+	{
+		fprintf(fcmd,"%s %s > %s.out &\n",command,fileopen.datafile,fileopen.projectname);
+		fprintf(fcmd,"exit\n");
+	}
+	else
+	{
+		 fprintf(fcmd,"%s %s &\n",command,fileopen.datafile);
+		 fprintf(fcmd,"exit\n");
+	}
 	fclose(fcmd);
 #ifndef G_OS_WIN32
   	sprintf(buffer,"chmod u+x %s",cmdall);
@@ -1724,6 +1815,153 @@ static gboolean create_cmd_other(G_CONST_RETURN gchar* command, gboolean local, 
 	}
 #endif
 	return TRUE;
+}
+/********************************************************************************/
+static void run_remote_orca(GtkWidget *b,gpointer data)
+{  
+  gchar *fout =  g_strdup_printf("%s%stmp%sfout",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+  gchar *ferr =  g_strdup_printf("%s%stmp%sferr",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+
+  gchar cmdfile[BSIZE];
+  gchar cmddir[BSIZE];
+  gchar cmdall[BSIZE];
+
+  GtkWidget* Win;
+  GtkWidget* Text[2];
+  GtkWidget* Frame[2];
+  gchar *temp;
+  gchar *NomFichier;
+  gchar *Command;
+  GtkWidget **entryall;
+  GtkWidget *entry;
+  G_CONST_RETURN gchar *entrytext0;
+  gchar *entrytext;
+  gchar* title;
+  gint code = 0;
+  G_CONST_RETURN gchar *localdir;
+
+
+  entryall=(GtkWidget **)data;
+  entry=entryall[0];
+  entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
+  entrytext = get_dir_file_name(localdir,entrytext0);
+
+  temp = get_suffix_name_file(entrytext);
+  fileopen.projectname = get_name_file(temp);
+  fileopen.localdir = get_name_dir(temp);
+  g_free(temp);
+  fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
+  fileopen.outputfile=g_strdup_printf("%s.out",fileopen.projectname);
+  fileopen.logfile=g_strdup_printf("%s.out",fileopen.projectname);
+  fileopen.moldenfile=g_strdup_printf("%s.out",fileopen.projectname);
+
+  fileopen.remotehost = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryall[2])));
+  fileopen.remoteuser = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryall[3])));
+  fileopen.remotepass  = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryall[4])));
+  fileopen.remotedir  = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryall[5])));
+  fileopen.command  = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryall[1])));
+
+  /* fileopen.netWorkProtocol Deja defini dans run_program*/
+  
+/*   Debug("remote orca : %s %s %s\n",fileopen.remotehost,fileopen.remoteuser,fileopen.remotedir);*/
+
+  /* save file */
+   NomFichier = g_strdup_printf("%s%s%s",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.datafile);
+  
+  CreeFeuille(treeViewProjects, noeud[GABEDIT_TYPENODE_ORCA],fileopen.projectname,fileopen.datafile,fileopen.localdir,
+			fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir,GABEDIT_TYPENODE_ORCA, fileopen.command, fileopen.netWorkProtocol); 
+  add_host(fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir);
+
+/* Save file in local host */
+  if(!save_local_doc(NomFichier)) return;
+
+  data_modify(FALSE);
+
+  entry=entryall[1];
+  entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
+
+  title = g_strdup_printf("Run Orca at host :%s, Login : %s",fileopen.remotehost,fileopen.remoteuser); 
+  Win = create_text_result_command(Text,Frame,title);
+  g_free(title);
+  gtk_widget_show_all(Win);
+  while( gtk_events_pending() ) gtk_main_iteration();
+  gtk_widget_set_sensitive(Win, FALSE);
+
+  if(!this_is_a_backspace(fileopen.remotedir))
+  {
+	/* Make Working directory */
+	/*  Debug("Make dir remote orca : %s %s %s\n",fileopen.remotehost,fileopen.remoteuser,fileopen.remotedir);*/
+  	Command = g_strdup_printf("mkdir %s",fileopen.remotedir);
+  	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
+  	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
+  	g_free(Command);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nMake Working  Directory  remote host :\n ",-1);   
+  	put_text_in_texts_widget(Text,fout,ferr);
+  	while( gtk_events_pending() )
+          gtk_main_iteration();
+  }
+
+  if(code == 0)
+  {
+	/* put file.com */
+	/*  Debug("Put File remote orca : %s %s %s\n",fileopen.remotehost,fileopen.remoteuser,fileopen.remotedir);*/
+  	code = put_file(fout,ferr,fileopen.datafile,fileopen.localdir,fileopen.remotedir,
+		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut Data File at remote host :\n ",-1);   
+  	put_text_in_texts_widget(Text,fout,ferr);
+  	while( gtk_events_pending() )
+          gtk_main_iteration();
+  }
+  if( code==0 )
+  {
+        if(!create_cmd_orca(entrytext0, FALSE, cmddir, cmdfile, cmdall))
+	{
+  		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL, "\nI can not create cmd file\n ",-1);   
+  		gtk_widget_set_sensitive(Win, TRUE);
+		return;
+	}
+	code = 0;
+	  
+  }
+  if(code == 0)
+  {
+  	code = put_file(fout,ferr,cmdfile,cmddir,"./",
+		  	fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1); 
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nPut CMD File at remote host :\n ",-1);
+  	put_text_in_texts_widget(Text,fout,ferr);
+	unlink(cmdall);
+  	while( gtk_events_pending() )
+          gtk_main_iteration();
+  }
+  if(code == 0)
+  {
+  	Command = g_strdup_printf("chmod u+x %s",cmdfile);
+  	/*rsh (fout,ferr,Command,fileopen.remoteuser,fileopen.remotehost);*/
+  	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nchmod for cmd file :\n ",-1);   
+  	put_text_in_texts_widget(Text,fout,ferr);
+  	while( gtk_events_pending() )
+          gtk_main_iteration();
+  }
+  if(code == 0)
+  {
+  	Command = g_strdup_printf("./%s>/dev/null&",cmdfile);
+  	remote_command (fout,ferr,Command,fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
+  	gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,"\nRun Orca at remote host :\n ",-1);   
+  	gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,"\nRun Orca at remote host :\n ",-1);   
+  	put_text_in_texts_widget(Text,fout,ferr);
+  	while( gtk_events_pending() )
+          gtk_main_iteration();
+  }
+  gtk_widget_set_sensitive(Win, TRUE);
+
+  g_free(fout);
+  g_free(ferr);
 }
 /********************************************************************************/
 static void run_remote_pcgamess(GtkWidget *b,gpointer data)
@@ -3070,6 +3308,110 @@ static void run_remote_other(GtkWidget *b,gpointer data)
   g_free(ferr);
 }
 /********************************************************************************/
+static void run_local_orca(GtkWidget *b,gpointer data)
+{  
+#ifdef G_OS_WIN32
+  gchar *fout =  g_strdup_printf("\"%s%stmp%sfout\"",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+  gchar *ferr =  g_strdup_printf("\"%s%stmp%sferr\"",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+#else
+  gchar *fout =  g_strdup_printf("%s%stmp%sfout",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+  gchar *ferr =  g_strdup_printf("%s%stmp%sferr",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+#endif
+
+  GtkWidget* Win;
+  GtkWidget* Text[2];
+  GtkWidget* Frame[2];
+  gchar *strout;
+  gchar *strerr;
+  gchar *temp;
+  gchar *NomFichier;
+  gchar Command[BSIZE];
+  GtkWidget **entryall;
+  GtkWidget *entry;
+  G_CONST_RETURN gchar *entrytext0;
+  gchar *entrytext;
+  gchar* title;
+  G_CONST_RETURN gchar *localdir;
+  gchar cmdFileAllName[BSIZE];
+  gchar cmdDir[BSIZE];
+  gchar cmdFile[BSIZE];
+
+
+  unlink(fout);
+  unlink(ferr);
+
+  entryall=(GtkWidget **)data;
+  entry=entryall[0];
+  entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
+  entrytext = get_dir_file_name(localdir,entrytext0);
+
+  temp = get_suffix_name_file(entrytext);
+  fileopen.projectname = get_name_file(temp);
+  fileopen.localdir = get_name_dir(temp);
+  g_free(temp);
+  fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
+  fileopen.outputfile=g_strdup_printf("%s.out",fileopen.projectname);
+  fileopen.logfile=g_strdup_printf("%s.out",fileopen.projectname);
+  fileopen.moldenfile=g_strdup_printf("%s.out",fileopen.projectname);
+  fileopen.remotehost = NULL;
+  fileopen.remoteuser = NULL;
+  fileopen.remotedir = NULL;
+
+  /* save file */
+   NomFichier = g_strdup_printf("%s%s%s",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.datafile);
+  
+  fileopen.remotehost = NULL;
+  fileopen.remoteuser = NULL;
+  fileopen.remotepass = NULL;
+  fileopen.remotedir = NULL;
+  fileopen.command  = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryall[1])));
+  CreeFeuille(treeViewProjects, noeud[GABEDIT_TYPENODE_ORCA],fileopen.projectname,fileopen.datafile,fileopen.localdir,
+			fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass,fileopen.remotedir,GABEDIT_TYPENODE_ORCA, fileopen.command, fileopen.netWorkProtocol); 
+
+/* Save file in local host */
+  if(!save_local_doc(NomFichier)) return;
+
+  data_modify(FALSE);
+
+  entry=entryall[1];
+  entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
+
+  if(!create_cmd_orca(entrytext0, TRUE, cmdDir, cmdFile, cmdFileAllName)) return;
+#ifdef G_OS_WIN32
+  sprintf(Command ,"\"%s\"",cmdFileAllName);
+#else
+  sprintf(Command ,"%s",cmdFileAllName);
+#endif
+
+  run_local_command(fout,ferr,Command,TRUE);
+  title = g_strdup_printf("Run Orca in local : %s",Command); 
+  Win = create_text_result_command(Text,Frame,title);
+  g_free(title);
+  strout = cat_file(fout,FALSE);
+  strerr = cat_file(ferr,FALSE);
+  if(!strout && !strerr)
+  	destroy_childs(Win);
+  else
+  {
+  	if(strout)
+	{
+ 		gabedit_text_insert (GABEDIT_TEXT(Text[0]), NULL, NULL, NULL,strout,-1);   
+		g_free(strout);
+	}
+  	if(strerr)
+	{
+ 		gabedit_text_insert (GABEDIT_TEXT(Text[1]), NULL, NULL, NULL,strerr,-1);   
+		g_free(strerr);
+	}
+  	gtk_widget_show_all(Win);
+  	if(!strout)
+  		gtk_widget_hide(Frame[0]);
+  }
+  g_free(fout);
+  g_free(ferr);
+}
+/********************************************************************************/
 static void run_local_pcgamess(GtkWidget *b,gpointer data)
 {  
 #ifdef G_OS_WIN32
@@ -3098,6 +3440,8 @@ static void run_local_pcgamess(GtkWidget *b,gpointer data)
   gchar cmdDir[BSIZE];
   gchar cmdFile[BSIZE];
 
+  unlink(fout);
+  unlink(ferr);
 
   entryall=(GtkWidget **)data;
   entry=entryall[0];
@@ -3200,6 +3544,9 @@ static void run_local_qchem(GtkWidget *b,gpointer data)
   gchar cmdFile[BSIZE];
 
 
+  unlink(fout);
+  unlink(ferr);
+
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
@@ -3301,6 +3648,9 @@ static void run_local_mopac(GtkWidget *b,gpointer data)
   gchar cmdFile[BSIZE];
 
 
+  unlink(fout);
+  unlink(ferr);
+
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
@@ -3401,6 +3751,8 @@ static void run_local_gamess(GtkWidget *b,gpointer data)
   gchar cmdDir[BSIZE];
   gchar cmdFile[BSIZE];
 
+  unlink(fout);
+  unlink(ferr);
 
   entryall=(GtkWidget **)data;
   entry=entryall[0];
@@ -3502,6 +3854,8 @@ static void run_local_gaussian(GtkWidget *b,gpointer data)
   gchar cmdDir[BSIZE];
   gchar cmdFile[BSIZE];
 
+  unlink(fout);
+  unlink(ferr);
 
   entryall=(GtkWidget **)data;
   entry=entryall[0];
@@ -3598,6 +3952,9 @@ static void run_local_molcas(GtkWidget *b,gpointer data)
   gchar cmdFileAllName[BSIZE];
   gchar cmdDir[BSIZE];
   gchar cmdFile[BSIZE];
+
+  unlink(fout);
+  unlink(ferr);
 
   entryall=(GtkWidget **)data;
   entry=entryall[0];
@@ -3704,6 +4061,8 @@ static void run_local_molpro(GtkWidget *b,gpointer data)
   gchar cmdDir[BSIZE];
   gchar cmdFile[BSIZE];
 
+  unlink(fout);
+  unlink(ferr);
 
   entryall=(GtkWidget **)data;
   entry=entryall[0];
@@ -3835,6 +4194,9 @@ static void run_local_mpqc(GtkWidget *b,gpointer data)
   gchar cmdDir[BSIZE];
   gchar cmdFile[BSIZE];
 
+  unlink(fout);
+  unlink(ferr);
+
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
@@ -3937,6 +4299,8 @@ static void run_local_other(GtkWidget *b,gpointer data)
   gchar cmdDir[BSIZE];
   gchar cmdFile[BSIZE];
 
+  unlink(fout);
+  unlink(ferr);
 
   entryall=(GtkWidget **)data;
   entry=entryall[0];
@@ -4035,6 +4399,7 @@ void run_program(GtkWidget *button,gpointer data)
 		else if (GTK_TOGGLE_BUTTON (ButtonMolcas)->active) run_local_molcas(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonMPQC)->active) run_local_mpqc(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonMolpro)->active) run_local_molpro(NULL,data);
+		else if (GTK_TOGGLE_BUTTON (ButtonOrca)->active) run_local_orca(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonPCGamess)->active) run_local_pcgamess(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonQChem)->active) run_local_qchem(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonMopac)->active) run_local_mopac(NULL,data);
@@ -4047,6 +4412,7 @@ void run_program(GtkWidget *button,gpointer data)
 		else if (GTK_TOGGLE_BUTTON (ButtonMolcas)->active) run_remote_molcas(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonMPQC)->active) run_remote_mpqc(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonMolpro)->active) run_remote_molpro(NULL,data);
+		else if (GTK_TOGGLE_BUTTON (ButtonOrca)->active) run_remote_orca(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonPCGamess)->active) run_remote_pcgamess(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonQChem)->active) run_remote_qchem(NULL,data);
 		else if (GTK_TOGGLE_BUTTON (ButtonMopac)->active) run_remote_mopac(NULL,data);
@@ -4157,7 +4523,7 @@ GtkWidget* create_programs_frame(GtkWidget *hbox)
   gtk_widget_show (frame);
 
   vboxframe = create_vbox(frame);
-  Table = gtk_table_new(3,3,FALSE);
+  Table = gtk_table_new(4,3,FALSE);
   gtk_container_add(GTK_CONTAINER(vboxframe),Table);
 
   ButtonGamess = gtk_radio_button_new_with_label( NULL,"Gamess" );
@@ -4178,14 +4544,17 @@ GtkWidget* create_programs_frame(GtkWidget *hbox)
   ButtonMPQC = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonGauss)), "MPQC "); 
   add_widget_table(Table,ButtonMPQC,1,2);
 
+  ButtonOrca = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonGauss)), "Orca "); 
+  add_widget_table(Table,ButtonOrca,2,0);
+
   ButtonPCGamess = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonGauss)), "PCGamess "); 
-  add_widget_table(Table,ButtonPCGamess,2,0);
+  add_widget_table(Table,ButtonPCGamess,2,1);
 
   ButtonQChem = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonGauss)), "Q-Chem "); 
-  add_widget_table(Table,ButtonQChem,2,1);
+  add_widget_table(Table,ButtonQChem,2,2);
 
   ButtonOther = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonGauss)), "Other "); 
-  add_widget_table(Table,ButtonOther,2,2);
+  add_widget_table(Table,ButtonOther,3,0);
   return frame;
 }
 /********************************************************************************/
@@ -4319,6 +4688,8 @@ static void changedEntryFileData(GtkWidget *entry,gpointer data)
 		else if (ButtonPCGamess && GTK_TOGGLE_BUTTON (ButtonPCGamess)->active)
 		sprintf(buffer,"%s.inp",entrytext);
 		else if (ButtonQChem && GTK_TOGGLE_BUTTON (ButtonQChem)->active)
+		sprintf(buffer,"%s.inp",entrytext);
+		else if (ButtonOrca && GTK_TOGGLE_BUTTON (ButtonOrca)->active)
 		sprintf(buffer,"%s.inp",entrytext);
 		else if (ButtonMopac && GTK_TOGGLE_BUTTON (ButtonMopac)->active)
 		sprintf(buffer,"%s.mop",entrytext);
@@ -4667,6 +5038,7 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GCallback func)
 
   EntryFileData = entry[0];
 
+
   g_signal_connect(G_OBJECT(EntryFileData),"changed", G_CALLBACK(changedEntryFileData),NULL);
   /* pour appeler changedEntryFileData */
   gtk_entry_set_text(GTK_ENTRY(EntryFileData)," ");
@@ -4702,6 +5074,7 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GCallback func)
   else
  	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonSsh), FALSE);
 
+
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(func),(gpointer)entry);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_childs,G_OBJECT(fp));
   g_signal_connect_swapped (G_OBJECT (entry[4]), "activate", (GCallback) gtk_button_clicked, G_OBJECT (button));
@@ -4713,15 +5086,17 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GCallback func)
   g_signal_connect(G_OBJECT(ButtonMPQC), "clicked",G_CALLBACK(set_default_entrys),NULL);
   g_signal_connect(G_OBJECT(ButtonPCGamess), "clicked",G_CALLBACK(set_default_entrys),NULL);
   g_signal_connect(G_OBJECT(ButtonQChem), "clicked",G_CALLBACK(set_default_entrys),NULL);
+  g_signal_connect(G_OBJECT(ButtonOrca), "clicked",G_CALLBACK(set_default_entrys),NULL);
   g_signal_connect(G_OBJECT(ButtonMopac), "clicked",G_CALLBACK(set_default_entrys),NULL);
   g_signal_connect(G_OBJECT(ButtonOther), "clicked",G_CALLBACK(set_default_entrys),NULL);
 
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonGamess), FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMolpro), FALSE);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonGamess), FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonGauss), FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMolcas), FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMPQC), FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonPCGamess), FALSE);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonOrca), FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonQChem), FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMopac), FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonOther), FALSE); 
@@ -4732,9 +5107,11 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GCallback func)
   else if(strstr(type,"Gaussian")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonGauss), TRUE);
   else if(strstr(type,"Molcas")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMolcas), TRUE);
   else if(strstr(type,"MPQC")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMPQC), TRUE);
+  else if(strstr(type,"Orca")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonOrca), TRUE);
   else if(strstr(type,"Q-Chem")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonQChem), TRUE);
   else if(strstr(type,"Mopac")) gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonMopac), TRUE);
   else gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonOther), TRUE); 
+
 
   g_object_set_data (G_OBJECT (ButtonLocal), "TypeButton", &typeButton[0]);
   g_signal_connect(G_OBJECT(ButtonLocal), "clicked",G_CALLBACK(set_frame_remote_visibility),NULL);
@@ -4746,7 +5123,7 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GCallback func)
   g_signal_connect(G_OBJECT(ButtonRemote), "clicked",G_CALLBACK(set_frame_remote_visibility),NULL);
   
 #ifdef G_OS_WIN32
-  if(iprogram == PROG_IS_GAMESS || iprogram == PROG_IS_PCGAMESS || iprogram == PROG_IS_MOPAC||  iprogram == PROG_IS_GAUSS)
+  if(iprogram == PROG_IS_ORCA || iprogram == PROG_IS_GAMESS || iprogram == PROG_IS_PCGAMESS || iprogram == PROG_IS_MOPAC||  iprogram == PROG_IS_GAUSS)
   {
   	if(fileopen.remotedir && !this_is_a_backspace(fileopen.remotedir))
 		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ButtonRemote), TRUE);
@@ -4800,6 +5177,9 @@ void create_run ()
 		break;
 		case PROG_IS_MPQC :
 		create_run_dialogue_box(NULL,"MPQC",(GCallback)run_program);
+		break;
+		case PROG_IS_ORCA :
+		create_run_dialogue_box(NULL,"Orca",(GCallback)run_program);
 		break;
 		case PROG_IS_PCGAMESS :
 		create_run_dialogue_box(NULL,"PCGamess",(GCallback)run_program);

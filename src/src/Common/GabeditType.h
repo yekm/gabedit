@@ -61,6 +61,7 @@ typedef enum
   GABEDIT_TYPENODE_MOLPRO,
   GABEDIT_TYPENODE_MOPAC,
   GABEDIT_TYPENODE_MPQC,
+  GABEDIT_TYPENODE_ORCA,
   GABEDIT_TYPENODE_PCGAMESS,
   GABEDIT_TYPENODE_QCHEM,
   GABEDIT_TYPENODE_GABEDIT,
@@ -96,6 +97,7 @@ typedef enum
   GABEDIT_TYPEFILE_MOLCASINPUT,
   GABEDIT_TYPEFILE_MOLPROINPUT,
   GABEDIT_TYPEFILE_MPQCINPUT,
+  GABEDIT_TYPEFILE_ORCAINPUT,
   GABEDIT_TYPEFILE_PCGAMESSINPUT,
   GABEDIT_TYPEFILE_QCHEMINPUT,
   GABEDIT_TYPEFILE_MOPACINPUT,
@@ -106,6 +108,7 @@ typedef enum
   GABEDIT_TYPEFILE_PNG,
   GABEDIT_TYPEFILE_PS,
   GABEDIT_TYPEFILE_ADF,
+  GABEDIT_TYPEFILE_ORCA,
   GABEDIT_TYPEFILE_PCGAMESS,
   GABEDIT_TYPEFILE_QCHEM,
   GABEDIT_TYPEFILE_MOPAC,
@@ -160,6 +163,10 @@ typedef enum
   GABEDIT_TYPEFILEGEOM_MPQCIN,
   GABEDIT_TYPEFILEGEOM_MPQCOUTFIRST,
   GABEDIT_TYPEFILEGEOM_MPQCOUTLAST,
+
+  GABEDIT_TYPEFILEGEOM_ORCAIN,
+  GABEDIT_TYPEFILEGEOM_ORCAOUTFIRST,
+  GABEDIT_TYPEFILEGEOM_ORCAOUTLAST,
 
   GABEDIT_TYPEFILEGEOM_QCHEMIN,
   GABEDIT_TYPEFILEGEOM_QCHEMOUTFIRST,
@@ -237,6 +244,7 @@ typedef enum
   GABEDIT_PROGORB_SAVEGEOM,
   GABEDIT_PROGORB_COMPISOSURFACE,
   GABEDIT_PROGORB_COMPGRID,
+  GABEDIT_PROGORB_COMPINTEG,
   GABEDIT_PROGORB_SCALEGRID,
   GABEDIT_PROGORB_SUBSGRID,
   GABEDIT_PROGORB_READGRID,
@@ -249,34 +257,36 @@ typedef enum
   GABEDIT_PROGORB_COMPMEPGRID,
 } GabEditTypeProgressOrb;
 
-typedef struct _LXYZ
+typedef struct _LXYZ LXYZ;
+struct _LXYZ
 {
- gfloat Coef;
- gint l[3];
-}LXYZ;
+	gdouble Coef;
+	gint l[3];
+};
 
-typedef struct _Slm
+typedef struct _Zlm Zlm;
+struct _Zlm
 {
- gint l;
- gint m;
- gint N;
- LXYZ *lxyz;
-}Slm;
+	gint l;
+	gint m;
+	gint numberOfCoefficients;
+	LXYZ* lxyz;
+};
 
 typedef struct _GTF
 {
- gfloat Ex;
- gfloat Coef;
+ gdouble Ex;
+ gdouble Coef;
  gint l[3];
- gfloat C[3]; 
+ gdouble C[3]; 
 }GTF;
 
 typedef struct _AO
 {
  gint L;
  gint N;
- gfloat* Ex;
- gfloat* Coef;
+ gdouble* Ex;
+ gdouble* Coef;
  }AO;
 
 typedef struct _TYPE
@@ -289,7 +299,7 @@ typedef struct _TYPE
 
 typedef struct _CGTF
 {
- gint N;
+ gint numberOfFunctions;
  gint NumCenter;
  GTF* Gtf;
  gint L; /* used if spherical basis*/
@@ -304,7 +314,7 @@ typedef struct _RGBColor
 typedef struct _TypeGeomOrb
 {
 	gchar* Symb;
-	gfloat C[3];
+	gdouble C[3];
 	gdouble partialCharge;
 	gdouble nuclearCharge;
 	SAtomsProp Prop;
@@ -316,13 +326,13 @@ typedef struct _TypeGeomOrb
 	gint NOrb;
 	gint NAlphaOrb;
 	gint NBetaOrb;
-	gfloat **CoefAlphaOrbitals;
-	gfloat *OccAlphaOrbitals;
-	gfloat *EnerAlphaOrbitals;
+	gdouble **CoefAlphaOrbitals;
+	gdouble *OccAlphaOrbitals;
+	gdouble *EnerAlphaOrbitals;
 	gchar	**SymAlphaOrbitals;
-	gfloat **CoefBetaOrbitals;
-	gfloat *EnerBetaOrbitals;
-	gfloat *OccBetaOrbitals;
+	gdouble **CoefBetaOrbitals;
+	gdouble *EnerBetaOrbitals;
+	gdouble *OccBetaOrbitals;
 	gchar	**SymBetaOrbitals;
 }TypeGeomOrb;
 
@@ -332,14 +342,14 @@ typedef struct _TypeFontsStyle
  GdkColor BaseColor;
  GdkColor TextColor;
 }TypeFontsStyle;
-typedef gdouble	 (*Func3d)(gfloat ,gfloat,gfloat,gint);
+typedef gdouble	 (*Func3d)(gdouble ,gdouble,gdouble,gint);
 
 typedef struct _STF
 {
- gfloat Ex;
- gfloat Coef;
+ gdouble Ex;
+ gdouble Coef;
  gint l[3];
- gfloat C[3]; 
+ gdouble C[3]; 
  gint pqn;
 }STF;
 

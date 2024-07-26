@@ -19,6 +19,8 @@ DEALINGS IN THE SOFTWARE.
 #ifndef __GABEDIT_GRIDCUBE_H__
 #define __GABEDIT_GRIDCUBE_H__
 
+void square_cube();
+void restriction_cube();
 void load_cube_gauss_orbitals_file(GabeditFileChooser *SelecFile, gint response_id);
 void load_cube_gauss_density_file(GabeditFileChooser *SelecFile, gint response_id);
 void load_cube_gauss_gradient_file(GabeditFileChooser *SelecFile, gint response_id);

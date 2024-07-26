@@ -11,6 +11,7 @@ void add_a_personnal_fragement_to_menu(gchar* groupName,gchar* fragmentName);
 void delete_a_personal_fragment_from_menu(gchar* groupName,gchar* fragmentName);
 */
 void activate_rotation();
+void activate_edit_objects();
 void activate_insert_fragment();
 
 #endif /* __GABEDIT_MENUTOOLBARGEOM_H__ */

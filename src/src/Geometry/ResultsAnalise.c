@@ -1240,6 +1240,150 @@ DataGeomConv init_geom_qchem_conv(gchar* namefile)
  GeomConv.GeomFile = g_strdup(namefile);
  return GeomConv;
 }
+/*********************************************************************/
+DataGeomConv init_geom_orca_conv(gchar* namefile)
+{
+  DataGeomConv GeomConv;
+ gint i;
+  GeomConv.Npoint = 0;
+  GeomConv.Ntype  = 3;
+  GeomConv.TypeData = g_malloc(GeomConv.Ntype*sizeof(gchar*) );
+  GeomConv.fileType = GABEDIT_TYPEFILE_ORCA;
+
+ GeomConv.TypeData[0] = g_strdup(" Energy ");
+ GeomConv.TypeData[1] = g_strdup(" RMS Gradient");
+ GeomConv.TypeData[2] = g_strdup(" MAX Gradient ");
+
+ GeomConv.Data = g_malloc(GeomConv.Ntype*sizeof(gchar**) );
+ for(i = 0;i<GeomConv.Ntype;i++)
+ 	GeomConv.Data[i] = NULL;
+ GeomConv.TypeCalcul = NULL;
+ GeomConv.NumGeom = NULL;
+ GeomConv.GeomFile = g_strdup(namefile);
+ return GeomConv;
+}
+/*********************************************************************/
+void find_energy_orca_output(gchar* NomFichier)
+{
+	gchar *pdest;
+	guint  i=0;
+	guint  j=0;
+	guint  k=0;
+	gchar *temp =  g_malloc(50*sizeof(gchar));	
+	guint taille=BSIZE;
+	gchar *t;
+	FILE *fd;
+        gint Ncalculs = 0;
+  	static DataGeomConv* GeomConv =NULL;
+	gboolean Ok = FALSE;
+
+        
+	t=g_malloc(taille*sizeof(gchar));
+ 	fd = FOpen(NomFichier, "r"); 
+        if(!fd)
+	{
+		t = g_strdup_printf(" Error : I can not open file %s\n",NomFichier);
+		Message(t," Error ",TRUE);
+		if(t) g_free(t);
+		return;
+	}
+        
+	 while(!feof(fd))
+	{
+		 fgets(t,taille,fd);
+                 if(strstr(t,"ORCA OPTIMIZATION COORDINATE SETUP") )
+		 {
+         		Ncalculs++;
+                        if(Ncalculs == 1)
+				GeomConv =  g_malloc(sizeof(DataGeomConv) );
+			else
+				GeomConv =  g_realloc(GeomConv, Ncalculs*sizeof(DataGeomConv) );
+  			GeomConv[Ncalculs-1] = init_geom_orca_conv(NomFichier);
+		 }
+    		 pdest = strstr( t,"GEOMETRY OPTIMIZATION CYCLE");
+
+   		if( pdest != NULL  && Ncalculs>0)
+		{
+		  GeomConv[Ncalculs-1].Npoint++;
+		  if(GeomConv[Ncalculs-1].Npoint == 1 )
+		  {
+			GeomConv[Ncalculs-1].NumGeom =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
+			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
+				GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
+		  }
+		  else
+		  {
+			GeomConv[Ncalculs-1].NumGeom =  g_realloc(GeomConv[Ncalculs-1].NumGeom,GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
+			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
+				GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));
+		  }
+		  for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
+                  {
+		 	GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
+                 	GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1][0] = '\0';
+                  }
+
+		  Ok = TRUE;
+                 while(!feof(fd) && Ok )
+		 {
+		 	if(!fgets(t,taille,fd))
+			{
+				Ok = FALSE;
+				break;
+			}
+			else
+			{
+				if(strstr(t,"FINAL SINGLE POINT ENERGY"))
+				{
+					Ok = TRUE;
+					break;
+				}
+
+			}
+		 }
+		 if(!Ok) break;
+                 sscanf(t,"%s %s %s %s %s",temp,temp,temp,temp,GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1]);
+		 g_strup(t);
+		 GeomConv[Ncalculs-1].TypeCalcul = g_strdup(" ");
+                 do
+                 {
+		 	if(!fgets(t,taille,fd))break;
+                 }while(strstr(t,"RMS gradient")==NULL && !feof(fd) ) ;
+                 if(strstr(t,"RMS gradient")!=NULL)
+		 {
+                 	sscanf(t,"%s %s %s %s", temp,temp,temp,GeomConv[Ncalculs-1].Data[1][GeomConv[Ncalculs-1].Npoint-1]);
+		 	if(!fgets(t,taille,fd))break;
+                 	sscanf(t,"%s %s %s %s", temp,temp,temp,GeomConv[Ncalculs-1].Data[2][GeomConv[Ncalculs-1].Npoint-1]);
+		 }
+		}
+	}
+
+    fclose(fd);
+   
+    if(!Ok && GeomConv && GeomConv[Ncalculs-1].Npoint>0) GeomConv[Ncalculs-1].Npoint--;
+    if( Ncalculs>0 && GeomConv[Ncalculs-1].Npoint == 0)
+    {
+	GeomConv[Ncalculs-1] =  free_geom_conv(GeomConv[Ncalculs-1]);
+	Ncalculs--;
+	if(Ncalculs>0)
+		GeomConv =  g_realloc(GeomConv, Ncalculs*sizeof(DataGeomConv) );
+	else
+	{
+		g_free(GeomConv);
+		GeomConv =  NULL;
+	}
+    }
+   k = 0;
+   for(i=0;(gint)i<Ncalculs;i++)
+   	for(j=0;(gint)j<GeomConv[i].Npoint;j++)
+	{
+	   k++;
+	   GeomConv[i].NumGeom[j] = k;
+	}
+  create_energies_curves(GeomConv,Ncalculs);
+  g_free(t);
+  g_free(temp);
+}
 /*************************************************************************************/
 static DataGeomConv init_geom_molden_gabedit_conv(gchar *fileName, GabEditTypeFile type)
 {
@@ -1334,7 +1478,6 @@ void find_energy_molpro_log(gchar* NomFichier)
 		 	GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(char)); 
                  	GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1][0] = '\0';
                  }
-		 GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(char)); 
 
 		 Ok = TRUE;
                  while(!feof(fd) && Ok )
@@ -1373,8 +1516,6 @@ void find_energy_molpro_log(gchar* NomFichier)
                  }while(strstr(t,"Convergence:")==NULL && !feof(fd) ) ;
                  if(strstr(t,"Convergence:")!=NULL)
                  	sscanf(t,"%s %s %s %s %s ", temp,temp,temp,temp,GeomConv[Ncalculs-1].Data[1][GeomConv[Ncalculs-1].Npoint-1]);
-		else
-		 	GeomConv[Ncalculs-1].Data[1][GeomConv[Ncalculs-1].Npoint-1] = " ";
 		}
 			
 	}
@@ -1465,7 +1606,6 @@ void find_energy_qchem_log(gchar* NomFichier)
 		 	GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
                  	GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1][0] = '\0';
                   }
-		  GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
 
 		  Ok = TRUE;
                  while(!feof(fd) && Ok )
@@ -1500,11 +1640,6 @@ void find_energy_qchem_log(gchar* NomFichier)
 		 	if(!fgets(t,taille,fd))break;
                  	sscanf(t,"%s %s", temp,GeomConv[Ncalculs-1].Data[2][GeomConv[Ncalculs-1].Npoint-1]);
 		 }
-		else
-		{
-		 	GeomConv[Ncalculs-1].Data[1][GeomConv[Ncalculs-1].Npoint-1] = " ";
-		 	GeomConv[Ncalculs-1].Data[2][GeomConv[Ncalculs-1].Npoint-1] = " ";
-		}
 		}
 			
 	}
@@ -1900,6 +2035,7 @@ void find_energy_all(GtkWidget *wid,gpointer data)
 	if( iprogram == PROG_IS_GAUSS) find_energy_gauss_output(fileName);
 	if( iprogram == PROG_IS_MPQC) find_energy_mpqc_output(fileName);
 	if( iprogram == PROG_IS_MOLPRO) find_energy_molpro_log(fileName);
+	if( iprogram == PROG_IS_ORCA) find_energy_orca_output(fileName);
 	if( iprogram == PROG_IS_QCHEM) find_energy_qchem_log(fileName);
 	if( iprogram == PROG_IS_MOPAC) find_energy_mopac_aux(fileName);
 	if( iprogram == PROG_IS_MOLCAS)
@@ -1993,6 +2129,20 @@ void read_geometries_conv_molpro(GabeditFileChooser *SelecFile, gint response_id
     		return ;
  	}
  	find_energy_molpro_log(fileName);
+}
+/************************************************************************************/
+void read_geometries_conv_orca(GabeditFileChooser *SelecFile, gint response_id)
+{       
+ 	gchar *fileName;
+
+ 	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(SelecFile);
+ 	if ((!fileName) || (strcmp(fileName,"") == 0))
+ 	{
+		Message("Sorry\n No selected file"," Error ",TRUE);
+    		return ;
+ 	}
+ 	find_energy_orca_output(fileName);
 }
 /************************************************************************************/
 void read_geometries_conv_qchem(GabeditFileChooser *SelecFile, gint response_id)

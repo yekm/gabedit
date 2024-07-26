@@ -62,7 +62,7 @@ static void SetMMTypes(Fragment* Frag)
 
 }
 /*****************************************************************/
-static void SetAtom(Atom* A,gchar* symb,gfloat x,gfloat y,gfloat z,gfloat charge)
+static void SetAtom(Atom* A,gchar* symb,gdouble x,gdouble y,gdouble z,gdouble charge)
 {
 	A->mmType = g_strdup(symb);
 	A->pdbType = g_strdup(symb);

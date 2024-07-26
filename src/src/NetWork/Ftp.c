@@ -155,7 +155,7 @@ long get_file_from_data(int din,char* filename)
 			bytes++;
 			if(bytes%step == 0)
 			{
-				progress_connection((gfloat)0.01,str,FALSE);
+				progress_connection((gdouble)0.01,str,FALSE);
 			}
 		}
 		fclose(fout);

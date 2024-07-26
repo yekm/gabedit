@@ -1,5 +1,10 @@
 # DO NOT DELETE
 
+DOS.o: ../../Config.h
+DOS.o: ../Common/Global.h ../Files/GabeditFileChooser.h
+DOS.o: ../Common/GabeditType.h ../Utils/Constants.h ../Utils/UtilsInterface.h
+DOS.o: ../Utils/Utils.h ../Files/FileChooser.h ../Common/Windows.h
+DOS.o: ../Utils/GabeditXYPlot.h ../OpenGL/Vibration.h SpectrumWin.h
 ECDSpectrum.o: ../../Config.h
 ECDSpectrum.o: ../Common/Global.h
 ECDSpectrum.o: ../Files/GabeditFileChooser.h

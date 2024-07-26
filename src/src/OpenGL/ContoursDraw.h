@@ -21,8 +21,8 @@ DEALINGS IN THE SOFTWARE.
 
 void set_dotted_negative_contours(gboolean dotted);
 gboolean get_dotted_negative_contours();
-gfloat* GetGapVector(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloat gap);
-GLuint ContoursGenLists(GLuint contourslist,Grid* plansgrid,gint Ncontours,gfloat* values,gint i0,gint i1,gint numplan,gfloat gap);
+gdouble* GetGapVector(Grid* plansgrid,gint i0,gint i1,gint numplan,gdouble gap);
+GLuint ContoursGenLists(GLuint contourslist,Grid* plansgrid,gint Ncontours,gdouble* values,gint i0,gint i1,gint numplan,gdouble gap);
 void ContoursShowLists(GLuint list);
 void showColorMapContours();
 void hideColorMapContours();

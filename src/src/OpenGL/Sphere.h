@@ -20,13 +20,13 @@ DEALINGS IN THE SOFTWARE.
 #define __GABEDIT_SPHERE_H__
 
 
-void Sphere_Draw_Precision(GLfloat radius,V3d position, GLint numberOfSubdivisions);
-void Sphere_Draw_Color_Precision(GLfloat radius,V3d position, V4d Specular,V4d Diffuse,V4d Ambiant, GLint numberOfSubdivisions);
+void Sphere_Draw_Precision(GLdouble radius,V3d position, GLint numberOfSubdivisions);
+void Sphere_Draw_Color_Precision(GLdouble radius,V3d position, V4d Specular,V4d Diffuse,V4d Ambiant, GLint numberOfSubdivisions);
 
-void Sphere_Draw(GLfloat radius,V3d position);
-void Sphere_Draw_Color(GLfloat radius,V3d position, V4d Specular,V4d Diffuse,V4d Ambiant);
+void Sphere_Draw(GLdouble radius,V3d position);
+void Sphere_Draw_Color(GLdouble radius,V3d position, V4d Specular,V4d Diffuse,V4d Ambiant);
 
-GLuint Sphere_Get_List(int i,GLfloat radius,V4d Specular,V4d Diffuse,V4d Ambiant);
+GLuint Sphere_Get_List(int i,GLdouble radius,V4d Specular,V4d Diffuse,V4d Ambiant);
 void Sphere_Draw_From_List(GLuint sphere,V3d position);
 
 #endif /* __GABEDIT_SPHERE_H__ */

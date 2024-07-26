@@ -46,13 +46,13 @@ static void build_ring_molecule(GtkWidget *w,gpointer data)
 {
 	G_CONST_RETURN gchar *t;
 	gint Nc;
-	gfloat Distance;
-	gfloat Ro;
+	gdouble Distance;
+	gdouble Ro;
 	G_CONST_RETURN gchar* Symb;
 	gint j;
-	gfloat angle;
-	gfloat X;
-	gfloat Y;
+	gdouble angle;
+	gdouble X;
+	gdouble Y;
 
 	Symb = gtk_entry_get_text(GTK_ENTRY(Entrys[0]));
 	t = gtk_entry_get_text(GTK_ENTRY(Entrys[1]));

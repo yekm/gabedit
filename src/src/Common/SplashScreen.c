@@ -22,6 +22,8 @@ DEALINGS IN THE SOFTWARE.
 #include <string.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include "../Common/Global.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
@@ -64,7 +66,7 @@ static void read_ressource_files(GtkWidget* MainFrame,GtkWidget* ProgressBar)
  
 	gdouble t[] = {0.20,0.10,0.10,0.10,0.10,0.20,0.20};
 	gint i = 0;
-	static gfloat step = 2;
+	static gdouble step = 2;
 
 	set_statubar_str(" ");
 	define_default_atoms_prop();
@@ -165,7 +167,7 @@ static gint splash_screen_cb(gpointer data)
 /* static gint progress( gpointer data)*/
 static gint progress( gpointer data, gdouble step)
 {
-    gfloat new_val;
+    gdouble new_val;
 
     if(!this_is_an_object((GtkObject*)data))
     {

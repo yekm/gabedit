@@ -112,7 +112,7 @@ typedef struct _MPQCStdFunctional
 	gchar* name;
 	gint n;
 	MPQCFunctionalType* listOfTypes;
-	gfloat* coefficients;
+	gdouble* coefficients;
 }MPQCStdFunctional;
 
 #endif /* __GABEDIT_MPQCTYPES_H__ */

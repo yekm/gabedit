@@ -40,9 +40,12 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/Images.h"
 #include "../OpenGL/PovrayGL.h"
 #include "../OpenGL/BondsOrb.h"
+#include "../OpenGL/UtilsOrb.h"
+
 
 static	GtkWidget *WinDlg = NULL;
 static	GtkWidget *EntryScal = NULL;
+static	GtkWidget *EntryThreshold = NULL;
 static	GtkWidget *EntryVelocity = NULL;
 static	GtkWidget *EntryRadius = NULL;
 static	GtkWidget *EntryNSteps = NULL;
@@ -59,12 +62,650 @@ static gboolean createFilm = FALSE;
 static gint numFileFilm = 0;
 static gchar formatFilm[100] = "BMP";
 
+static gint spinMultiplicity=1;
+static gint totalCharge = 0;
+static GtkWidget* buttonChkgauss = NULL;
 
 /********************************************************************************/
 static void animate_vibration();
 static void rafreshList();
 static void stop_vibration(GtkWidget *win, gpointer data);
 static void play_vibration(GtkWidget *win, gpointer data);
+/************************************************************************************************************/
+static gint getNumberOfValenceElectrons()
+{
+	gint ne = 0;
+	gint a;
+
+	for(a=0;a<vibration.numberOfAtoms;a++)
+	{
+  		SAtomsProp Prop = prop_atom_get(vibration.geometry[a].symbol);
+		ne += Prop.atomicNumber;
+	}
+	return ne;
+}
+/*************************************************************************************************************/
+static void setComboSpinMultiplicity(GtkWidget *comboSpinMultiplicity)
+{
+	GList *glist = NULL;
+	gint i;
+	gint nlist = 0;
+	gchar** list = NULL;
+	gint k;
+	gint kinc;
+	gint ne = getNumberOfValenceElectrons() - totalCharge;
+
+	if(ne%2==0) nlist = ne/2+1;
+	else nlist = (ne+1)/2;
+
+	if(nlist<1) return;
+	list = g_malloc(nlist*sizeof(gchar*));
+	if(!list) return;
+	for(i=0;i<nlist;i++)
+		list[i] = g_malloc(10*sizeof(gchar));
+
+
+	if(GTK_IS_WIDGET(comboSpinMultiplicity)) gtk_widget_set_sensitive(comboSpinMultiplicity, TRUE);
+	if(ne%2==0) k = 1;
+	else k = 2;
+
+	kinc = 2;
+	for(i=0;i<nlist;i++)
+	{
+		sprintf(list[i],"%d",k);
+		k+=kinc;
+	}
+
+  	for(i=0;i<nlist;i++) glist = g_list_append(glist,list[i]);
+
+  	gtk_combo_box_entry_set_popdown_strings( comboSpinMultiplicity, glist) ;
+  	g_list_free(glist);
+	if(list)
+	{
+		for(i=0;i<nlist;i++) if(list[i]) g_free(list[i]);
+		g_free(list);
+	}
+}
+/********************************************************************************/
+static void setComboCharge(GtkWidget *comboCharge)
+{
+	GList *glist = NULL;
+	gint i;
+	gint nlist;
+	gchar** list = NULL;
+	gint k;
+
+	nlist = getNumberOfValenceElectrons(0)*2-2+1;
+
+	if(nlist<1) return;
+	list = g_malloc(nlist*sizeof(gchar*));
+	if(!list) return;
+	for(i=0;i<nlist;i++)
+		list[i] = g_malloc(10*sizeof(gchar));
+
+
+	sprintf(list[0],"0");
+	k = 1;
+	for(i=1;i<nlist-1;i+=2)
+	{
+		sprintf(list[i],"+%d",k);
+		sprintf(list[i+1],"%d",-k);
+		k += 1;
+	}
+
+  	for(i=0;i<nlist;i++) glist = g_list_append(glist,list[i]);
+
+  	gtk_combo_box_entry_set_popdown_strings( comboCharge, glist) ;
+  	g_list_free(glist);
+	if(list)
+	{
+		for(i=0;i<nlist;i++) if(list[i]) g_free(list[i]);
+		g_free(list);
+	}
+}
+/**********************************************************************/
+static void changedEntrySpinMultiplicity(GtkWidget *entry, gpointer data)
+{
+	G_CONST_RETURN gchar* entryText = NULL;
+	 
+	if(!GTK_IS_WIDGET(entry)) return;
+
+	entryText = gtk_entry_get_text(GTK_ENTRY(entry));
+	if(strlen(entryText)<1)return;
+
+	spinMultiplicity=atoi(entryText);
+}
+/**********************************************************************/
+static void changedEntryCharge(GtkWidget *entry, gpointer data)
+{
+	G_CONST_RETURN gchar* entryText = NULL;
+	GtkWidget* comboSpinMultiplicity = NULL;
+	 
+	if(!GTK_IS_WIDGET(entry)) return;
+
+	entryText = gtk_entry_get_text(GTK_ENTRY(entry));
+	if(strlen(entryText)<1)return;
+
+	totalCharge = atoi(entryText);
+
+	comboSpinMultiplicity  = g_object_get_data(G_OBJECT (entry), "ComboSpinMultiplicity");
+	if(GTK_IS_WIDGET(comboSpinMultiplicity)) setComboSpinMultiplicity(comboSpinMultiplicity);
+
+}
+/**********************************************************************/
+static GtkWidget* addComboListToATable(GtkWidget* table,
+		gchar** list, gint nlist, gint i, gint j, gint k)
+{
+	GtkWidget *entry = NULL;
+	GtkWidget *combo = NULL;
+
+	combo = create_combo_box_entry(list, nlist, TRUE, -1, -1);
+
+	gtk_table_attach(GTK_TABLE(table),combo,j,j+k,i,i+1,
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)	(GTK_FILL | GTK_SHRINK),
+                  2,2);
+	entry = GTK_BIN (combo)->child;
+	g_object_set_data(G_OBJECT (entry), "Combo",combo);
+	gtk_widget_set_size_request(GTK_WIDGET(entry),(gint)(ScreenHeight*0.2),-1);
+
+	return entry;
+}
+/***********************************************************************************************/
+static GtkWidget *addChargeToTable(GtkWidget *table, gint i)
+{
+	GtkWidget* entryCharge = NULL;
+	GtkWidget* comboCharge = NULL;
+	gint nlistCharge = 1;
+	gchar* listCharge[] = {"0"};
+
+	add_label_table(table,"Charge",(gushort)i,0);
+	add_label_table(table,":",(gushort)i,1);
+	entryCharge = addComboListToATable(table, listCharge, nlistCharge, i, 2, 1);
+	comboCharge  = g_object_get_data(G_OBJECT (entryCharge), "Combo");
+	gtk_widget_set_sensitive(entryCharge, FALSE);
+
+	return comboCharge;
+}
+/***********************************************************************************************/
+static GtkWidget *addSpinToTable(GtkWidget *table, gint i)
+{
+	GtkWidget* entrySpinMultiplicity = NULL;
+	GtkWidget* comboSpinMultiplicity = NULL;
+	gint nlistspinMultiplicity = 1;
+	gchar* listspinMultiplicity[] = {"0"};
+
+	add_label_table(table,"Spin multiplicity",(gushort)i,0);
+	add_label_table(table,":",(gushort)i,1);
+	entrySpinMultiplicity = addComboListToATable(table, listspinMultiplicity, nlistspinMultiplicity, i, 2, 1);
+	comboSpinMultiplicity  = g_object_get_data(G_OBJECT (entrySpinMultiplicity), "Combo");
+	gtk_widget_set_sensitive(entrySpinMultiplicity, FALSE);
+
+	g_signal_connect(G_OBJECT(entrySpinMultiplicity),"changed", G_CALLBACK(changedEntrySpinMultiplicity),NULL);
+	return comboSpinMultiplicity;
+}
+/********************************************************************************/
+/*  See 
+	Calculation of NMR and EPR parameters: theory and applications
+	By Martin Kaupp, Michael Buhl, Vladimir G. Malkin
+	Published by Wiley-VCH, 2004,    ISBN 3527307796, 9783527307791
+	Page 163, Equation 10.39
+   See also : Toyama et al, J. Mol. Spec. 13,193 (1964), Eq. 7
+ */
+/********************************************************************************/
+static gdouble* get_centrifuge_parameters()
+{
+	gint i;
+	gint j;
+	gint mode;
+	gdouble I[3] = {0,0,0};
+	gdouble alpha = 0;
+	gdouble beta = 0;
+	gdouble* akOverI = NULL;
+	gdouble a = 0;
+
+	if(vibration.numberOfFrequences<1) return NULL;
+	if(vibration.numberOfAtoms<1) return NULL;
+
+	akOverI = g_malloc(vibration.numberOfFrequences*sizeof(gdouble));
+
+	for(i=0;i<vibration.numberOfAtoms;i++)
+	{
+    		gdouble masse = get_masse_from_symbol(vibration.geometry[i].symbol);
+		for(j=0;j<3;j++)
+		{
+			alpha = vibration.geometry[i].coordinates[(j+1)%3];
+			beta = vibration.geometry[i].coordinates[(j+2)%3];
+			I[j] += (alpha*alpha+beta*beta)*masse;
+		}
+	}
+	/* printf("Ix = %lf Iyy = %lf Izz = %lf\n",I[0],I[1],I[2]);*/
+
+	for(mode = 0;mode<vibration.numberOfFrequences;mode++)
+	{
+		akOverI[mode] = 0;
+		for(j=0;j<3;j++)
+		{
+			if(fabs(I[j])<1e-8) continue;
+			a = 0;
+			for(i=0;i<vibration.numberOfAtoms;i++)
+			{
+				a += 
+				vibration.geometry[i].coordinates[(j+1)%3]*vibration.modes[mode].vectors[(j+1)%3][i]
+			       +vibration.geometry[i].coordinates[(j+2)%3]*vibration.modes[mode].vectors[(j+2)%3][i];
+				/*
+				printf ("%lf %lf %lf %lf \n",
+				vibration.geometry[i].coordinates[(j+1)%3],vibration.modes[mode].vectors[(j+1)%3][i],
+				vibration.geometry[i].coordinates[(j+2)%3],vibration.modes[mode].vectors[(j+2)%3][i]
+						);
+						*/
+			}
+			a *=2;
+			a *=sqrt(vibration.modes[mode].effectiveMass);
+			/* printf("k = %d ak = %lf\n",mode+1,a);*/
+			akOverI[mode] += a/I[j];
+		}
+	}
+	return akOverI;
+}
+/********************************************************************************/
+static void print_gaussian_correction_vibration_one_geometry(gchar* fileNameBas, FILE* file, G_CONST_RETURN gchar* keys, gboolean link, gint mode1, gint mode2, gdouble delta1, gdouble delta2, gdouble akOverI1)
+{
+	gint i;
+	gchar p = '%';
+	gchar ad1 = '+';
+	gchar ad2 = '+';
+
+	if(mode1<0) return;
+	if(delta1<0) ad1 = '-';
+	if(delta2<0) ad2 = '-';
+
+	fprintf(file,"--Link1--\n");
+	if(link) fprintf(file,"%cChk=%s\n",p,fileNameBas);
+	fprintf(file,"# %s\n",keys);
+	if(link) fprintf(file,"# Guess(Read)\n");
+	fprintf(file,"# pop=full Test Symm(PG=C1)\n");
+	fprintf(file,"# Units(Ang,Deg)\n");
+	if(mode2<0)
+		fprintf(file,"\nMode: freq=%lf Mass= %lf Q= Qeq %c %lf akI=%lf\n\n",
+				vibration.modes[mode1].frequence,
+				vibration.modes[mode1].effectiveMass,
+				ad1,
+				fabs(delta1),
+				akOverI1
+				);
+	else
+		fprintf(file,"\nMode1: f1=%lf m1=%lf Q1=Qeq%c%lf\nMode2: f2=%lf m2=%lf Q2=Qeq%c%lf \n\n",
+				vibration.modes[mode1].frequence,
+				vibration.modes[mode1].effectiveMass,
+				ad1,
+				fabs(delta1),
+				vibration.modes[mode2].frequence,
+				vibration.modes[mode2].effectiveMass,
+				ad2,
+				fabs(delta2)
+				);
+
+	fprintf(file,"%d  %d\n",totalCharge,spinMultiplicity);
+	for(i=0;i<vibration.numberOfAtoms;i++)
+	{
+		if(mode2<0)
+		fprintf(file,"%s %lf %lf %lf\n",vibration.geometry[i].symbol,
+		(vibration.geometry[i].coordinates[0]+vibration.modes[mode1].vectors[0][i]*delta1)*BOHR_TO_ANG,
+		(vibration.geometry[i].coordinates[1]+vibration.modes[mode1].vectors[1][i]*delta1)*BOHR_TO_ANG,
+		(vibration.geometry[i].coordinates[2]+vibration.modes[mode1].vectors[2][i]*delta1)*BOHR_TO_ANG
+		);
+		else
+		fprintf(file,"%s %lf %lf %lf\n",vibration.geometry[i].symbol,
+		(vibration.geometry[i].coordinates[0]
+		 +vibration.modes[mode1].vectors[0][i]*delta1
+		 +vibration.modes[mode2].vectors[0][i]*delta2)*BOHR_TO_ANG,
+		(vibration.geometry[i].coordinates[1]
+		 +vibration.modes[mode1].vectors[1][i]*delta1
+		 +vibration.modes[mode2].vectors[1][i]*delta2)*BOHR_TO_ANG,
+		(vibration.geometry[i].coordinates[2]
+		 +vibration.modes[mode1].vectors[2][i]*delta1
+		 +vibration.modes[mode2].vectors[2][i]*delta2)*BOHR_TO_ANG
+		);
+	}
+	fprintf(file,"\n");
+}
+/********************************************************************************/
+static void print_gaussian_correction_vibration_geometries_link(GtkWidget* Win, gpointer data)
+{
+	gint i;
+	gint j;
+	gchar* fileName = NULL;
+	FILE* file;
+	gchar p = '%';
+	GtkWidget* entryEnergyKeywords = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"EntryEnergyKeywords"));
+	GtkWidget* entryPropKeywords = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"EntryPropKeywords"));
+	GtkWidget* entryDelta = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"EntryDelta"));
+	GtkWidget* buttonDirSelector = (GtkWidget*)g_object_get_data(G_OBJECT(Win), "ButtonDirSelector");
+	GtkWidget* entryFileName = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"EntryFileName"));
+	G_CONST_RETURN gchar* energyKeys = NULL;
+	G_CONST_RETURN gchar* propKeys = NULL;
+	G_CONST_RETURN gchar* deltastr = NULL;
+	G_CONST_RETURN gchar* fileNameStr = NULL;
+	G_CONST_RETURN gchar* dirNameStr = NULL;
+	gchar* allKeys = NULL;
+	gdouble delta = 1;
+	gboolean link = FALSE;
+	gchar* fileNameBas = NULL;
+	gdouble* akOverI = NULL;
+
+	if(vibration.numberOfFrequences<1) return;
+	if(vibration.numberOfAtoms<1) return;
+	if(buttonDirSelector) dirNameStr = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
+	if(!dirNameStr) return;
+	if(entryFileName) fileNameStr = gtk_entry_get_text(GTK_ENTRY(entryFileName));
+	if(!fileNameStr) return;
+	if(entryEnergyKeywords) energyKeys = gtk_entry_get_text(GTK_ENTRY(entryEnergyKeywords));
+	if(!energyKeys) return;
+	if(entryPropKeywords) propKeys = gtk_entry_get_text(GTK_ENTRY(entryPropKeywords));
+	if(!propKeys) return;
+	if(entryDelta) deltastr = gtk_entry_get_text(GTK_ENTRY(entryDelta));
+	if(!deltastr) return;
+	delta = fabs(atof(deltastr));
+	if(delta==0) return;
+
+	allKeys = g_strdup_printf("%s %s",energyKeys, propKeys);
+
+	fileName = g_strdup_printf("%s%s%s",dirNameStr,G_DIR_SEPARATOR_S,fileNameStr);
+ 	file = fopen(fileName, "w");
+	if(!file)
+	{
+		gchar* t = g_strdup_printf("Sorry\n I can not create %s file",fileName); 
+		Message(t,"Error",TRUE);
+		if(fileName) g_free(fileName);
+		if(t)g_free(t);
+		return;
+	}
+	fileNameBas = g_path_get_basename(fileNameStr);
+	for(i=strlen(fileNameBas);i>0;i--)
+		if(fileNameBas[i]=='.')
+		{
+			fileNameBas[i]='\0';
+			break;
+		}
+	/* Equilibrium geometry */
+	if(GTK_IS_WIDGET(buttonChkgauss)&& GTK_TOGGLE_BUTTON (buttonChkgauss)->active)
+	{
+		fprintf(file,"%cChk=%s\n",p,fileNameBas);
+	}
+	fprintf(file,"# %s\n",allKeys);
+	fprintf(file,"# pop=full Test Symm(PG=C1)\n");
+	fprintf(file,"# Units(Ang,Deg)\n");
+	fprintf(file,"\n Equilibrium geometry, made in Gabedit\n\n");
+	fprintf(file,"%d   %d\n",totalCharge,spinMultiplicity);
+	for(i=0;i<vibration.numberOfAtoms;i++)
+	{
+		fprintf(file,"%s %lf %lf %lf\n",vibration.geometry[i].symbol,
+		vibration.geometry[i].coordinates[0]*BOHR_TO_ANG,
+		vibration.geometry[i].coordinates[1]*BOHR_TO_ANG,
+		vibration.geometry[i].coordinates[2]*BOHR_TO_ANG
+		);
+	}
+	fprintf(file,"\n");
+	akOverI = get_centrifuge_parameters();
+	if(!akOverI) return;
+
+	if(GTK_IS_WIDGET(buttonChkgauss)&& GTK_TOGGLE_BUTTON (buttonChkgauss)->active) link = TRUE;
+	for(j=0;j<vibration.numberOfFrequences;j++)
+	{
+		print_gaussian_correction_vibration_one_geometry(fileNameBas, file, allKeys,link, j, -1, delta, 0,akOverI[j]);
+		print_gaussian_correction_vibration_one_geometry(fileNameBas, file, allKeys,link, j, -1, -delta, 0,akOverI[j]);
+	}
+	if(akOverI) g_free(akOverI);
+	for(j=0;j<vibration.numberOfFrequences;j++)
+	{
+		for(i=0;i<vibration.numberOfFrequences;i++)
+		{
+			print_gaussian_correction_vibration_one_geometry(fileNameBas, file, energyKeys,link, j, i, delta, delta,0);
+			print_gaussian_correction_vibration_one_geometry(fileNameBas, file, energyKeys,link, j, i, delta, -delta,0);
+		}
+		for(i=0;i<vibration.numberOfFrequences;i++)
+		{
+			print_gaussian_correction_vibration_one_geometry(fileNameBas, file, energyKeys,link, j, i, -delta, delta,0);
+			print_gaussian_correction_vibration_one_geometry(fileNameBas, file, energyKeys,link, j, i, -delta, -delta,0);
+		}
+	}
+	fclose(file);
+	if(fileNameBas) g_free(fileNameBas);
+	gtk_widget_destroy(Win);
+	{
+		gchar* t = g_strdup_printf("The %s file was created",fileName); 
+		Message(t,"Error",TRUE);
+		if(t)g_free(t);
+	}
+}
+/********************************************************************************/
+static GtkWidget*   add_inputGauss_entrys(GtkWidget *Wins,GtkWidget *vbox)
+{
+	GtkWidget* entry;
+	GtkWidget* sep;
+  	GtkWidget *table = gtk_table_new(11,4,FALSE);
+	GtkWidget* comboSpinMultiplicity = NULL;
+	GtkWidget* comboCharge = NULL;
+	GtkWidget* buttonDirSelector = NULL;
+	GtkWidget* entryFileName = NULL;
+	GtkWidget* entryDelta = NULL;
+	GtkWidget* label = NULL;
+	gint i;
+	gint j;
+
+	totalCharge = 0;
+	spinMultiplicity=1;
+
+	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
+
+/*----------------------------------------------------------------------------------*/
+	i = 0;
+	j = 0;
+	add_label_table(table,"Working Folder",(gushort)i,(gushort)j);
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	j = 2;
+	buttonDirSelector =  gtk_file_chooser_button_new("Select your folder", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeight*0.2),-1);
+	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	g_object_set_data(G_OBJECT(Wins), "ButtonDirSelector", buttonDirSelector);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	j = 0;
+	add_label_table(table,"File name",(gushort)i,(gushort)j);
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	j = 2;
+	entryFileName = gtk_entry_new();
+	gtk_entry_set_text(GTK_ENTRY(entryFileName),"averVib.com");
+	gtk_widget_set_size_request(GTK_WIDGET(entryFileName),(gint)(ScreenHeight*0.2),-1);
+	gtk_table_attach(GTK_TABLE(table),entryFileName, j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	g_object_set_data(G_OBJECT(Wins), "EntryFileName", entryFileName);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	j = 0;
+	add_label_table(table,"Step",(gushort)i,(gushort)j);
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	j = 2;
+	entryDelta = gtk_entry_new();
+	gtk_entry_set_text(GTK_ENTRY(entryDelta),"0.05");
+	gtk_widget_set_size_request(GTK_WIDGET(entryDelta),(gint)(ScreenHeight*0.2),-1);
+	gtk_table_attach(GTK_TABLE(table),entryDelta, j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	g_object_set_data(G_OBJECT(Wins), "EntryDelta", entryDelta);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	comboCharge = addChargeToTable(table, i);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	comboSpinMultiplicity = addSpinToTable(table, i);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	sep = gtk_hseparator_new ();
+	gtk_table_attach(GTK_TABLE(table),sep,0,0+4,i,i+1,
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+                  2,2);
+
+	if(GTK_IS_COMBO_BOX(comboCharge))
+		g_object_set_data(G_OBJECT (GTK_BIN(comboCharge)->child), "ComboSpinMultiplicity", comboSpinMultiplicity);
+	setComboCharge(comboCharge);
+	setComboSpinMultiplicity(comboSpinMultiplicity);
+	g_signal_connect(G_OBJECT(GTK_BIN(comboCharge)->child),"changed", G_CALLBACK(changedEntryCharge),NULL);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	add_label_table(table," Energy keywords ",i,0);
+	add_label_table(table,":",i,1);
+  	entry = gtk_entry_new ();
+	g_object_set_data(G_OBJECT(Wins), "EntryEnergyKeywords", entry);
+	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
+	gtk_table_attach(GTK_TABLE(table),entry,2,2+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+  	gtk_entry_set_text (GTK_ENTRY (entry),"B3LYP/6-311++G** SCF(Tight)");
+	gtk_editable_set_editable((GtkEditable*)entry,TRUE);
+	gtk_widget_set_sensitive(entry, TRUE);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	add_label_table(table," Prop. keywords ",i,0);
+	add_label_table(table,":",i,1);
+  	entry = gtk_entry_new ();
+	g_object_set_data(G_OBJECT(Wins), "EntryPropKeywords", entry);
+	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
+	gtk_table_attach(GTK_TABLE(table),entry,2,2+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+  	gtk_entry_set_text (GTK_ENTRY (entry),"NMR");
+	gtk_editable_set_editable((GtkEditable*)entry,TRUE);
+	gtk_widget_set_sensitive(entry, TRUE);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	sep = gtk_hseparator_new ();
+	gtk_table_attach(GTK_TABLE(table),sep,0,0+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+/*----------------------------------------------------------------------------------*/
+
+
+	i++;
+	buttonChkgauss = gtk_check_button_new_with_label ("check file");
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonChkgauss), FALSE);
+	gtk_table_attach(GTK_TABLE(table),buttonChkgauss,0,0+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+/*----------------------------------------------------------------------------------*/
+
+	i++;
+	sep = gtk_hseparator_new ();
+	gtk_table_attach(GTK_TABLE(table),sep,0,0+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+/*----------------------------------------------------------------------------------*/
+
+	gtk_widget_show_all(table);
+	return entry;
+}
+/********************************************************************************************************/
+static void  add_cancel_ok_button(GtkWidget *Win,GtkWidget *vbox,GtkWidget *entry, GCallback myFunc)
+{
+	GtkWidget *hbox;
+	GtkWidget *button;
+	/* buttons box */
+	hbox = create_hbox_false(vbox);
+	gtk_widget_realize(Win);
+
+	button = create_button(Win,"Cancel");
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Win));
+	gtk_widget_show (button);
+
+	button = create_button(Win,"OK");
+	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+	gtk_widget_show (button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)myFunc,GTK_OBJECT(Win));
+	if(entry)
+	g_signal_connect_swapped(G_OBJECT (entry), "activate", (GCallback) gtk_button_clicked, GTK_OBJECT (button));
+
+	gtk_widget_show_all(vbox);
+}
+/********************************************************************************/
+static void create_gaussian_correction_vibration_file_dlg()
+{
+	GtkWidget *Win;
+	GtkWidget *frame;
+	GtkWidget *vboxall;
+	GtkWidget* vbox;
+	GtkWidget* entryKeywords;
+
+	if(vibration.numberOfFrequences<1) 
+	{
+		gchar* t = g_strdup_printf("Sorry\n You should read the geometries befor"); 
+		Message(t,"Error",TRUE);
+		return;
+	}
+
+	/* Principal Window */
+	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(Win),"Create multiple input files for Gaussian");
+	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
+	gtk_container_set_border_width (GTK_CONTAINER (Win), 2);
+	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(PrincipalWindow));
+	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
+
+	add_glarea_child(Win,"Input Gaussian");
+	g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)delete_child,NULL);
+
+	vboxall = create_vbox(Win);
+
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 2);
+	gtk_box_pack_start(GTK_BOX(vboxall), frame,TRUE,TRUE,0);
+	gtk_widget_show (frame);
+  	vbox = gtk_vbox_new (FALSE, 0);
+	gtk_container_add (GTK_CONTAINER (frame), vbox);
+
+  	gtk_widget_realize(Win);
+	
+	entryKeywords = add_inputGauss_entrys(Win,vbox);
+	add_cancel_ok_button(Win,vbox,entryKeywords,(GCallback)print_gaussian_correction_vibration_geometries_link);
+
+
+	/* Show all */
+	gtk_widget_show_all (Win);
+}
 /********************************************************************************/
 static void reset_last_directory(GtkWidget *dirSelector, gpointer data)
 {
@@ -107,6 +748,7 @@ void init_vibration()
 	vibration.numberOfFrequences = 0;
 	vibration.modes = NULL;
 	vibration.scal = 0.5;
+	vibration.threshold = 0.001; /* Bohr*/
 	vibration.velocity = 0.1;
 	vibration.radius = 0.1;
 	vibration.nSteps = 4;
@@ -142,6 +784,60 @@ void free_vibration()
 		g_free(vibration.modes);
 	}
 	init_vibration();
+}
+/********************************************************************************/
+static void sort_by_frequences()
+{
+	gint i;
+	gint j;
+	gint k;
+
+	if(vibration.modes)
+	{
+		for(i=0;i<=vibration.numberOfFrequences-1;i++)
+		{
+			k = i;
+			for(j=i+1;j<vibration.numberOfFrequences;j++)
+				if(vibration.modes[k].frequence>vibration.modes[j].frequence) k = j;
+
+			if(k!=i)
+			{
+				VibrationMode v = vibration.modes[i];
+				vibration.modes[i] = vibration.modes[k];
+				vibration.modes[k] = v;
+			}
+		}
+	}
+}
+/********************************************************************************/
+static void remove_modes(gint from, gint to)
+{
+	gint i;
+	gint j;
+	gint d = to - from + 1;
+
+	if(d<1) return;
+	if(vibration.numberOfFrequences == d)
+	{
+		free_vibration();
+		return;
+	}
+	if(vibration.modes)
+	{
+		for(i=from;i<=to;i++)
+		{
+			if(vibration.modes[i].symmetry)
+				g_free(vibration.modes[i].symmetry);
+
+			for(j=0;j<3;j++)
+			if(vibration.modes[i].vectors[j])
+				g_free(vibration.modes[i].vectors[j]);
+		}
+		for(i=from;i<vibration.numberOfFrequences-d;i++)
+			vibration.modes[i] = vibration.modes[i+d];
+		vibration.numberOfFrequences -= d;
+		vibration.modes = g_realloc(vibration.modes, vibration.numberOfFrequences * sizeof(VibrationMode));
+	}
 }
 /********************************************************************************/
 void sort_vibration()
@@ -185,27 +881,31 @@ static gboolean save_vibration_gabedit_format(gchar *FileName)
 	fprintf(fd,"[Atoms] Angs\n");
 	for(j=0;j<Ncenters;j++)
 	{
-		fprintf(fd,"%s %d %d %f %f %f\n",GeomOrb[j].Symb,j+1,(gint)GeomOrb[j].Prop.atomicNumber,
+		fprintf(fd,"%s %d %d %lf %lf %lf\n",GeomOrb[j].Symb,j+1,(gint)GeomOrb[j].Prop.atomicNumber,
 				BOHR_TO_ANG*GeomOrb[j].C[0],BOHR_TO_ANG*GeomOrb[j].C[1],BOHR_TO_ANG*GeomOrb[j].C[2]);
 	}
 
 	fprintf(fd,"[FREQ]\n");
 	for(j=0;j<vibration.numberOfFrequences;j++)
-		fprintf(fd,"%f\n",vibration.modes[j].frequence);
+		fprintf(fd,"%lf\n",vibration.modes[j].frequence);
 
 	fprintf(fd,"[INT]\n");
 	for(j=0;j<vibration.numberOfFrequences;j++)
-		fprintf(fd,"%f %f\n",vibration.modes[j].IRIntensity,vibration.modes[j].RamanIntensity);
+		fprintf(fd,"%lf %lf\n",vibration.modes[j].IRIntensity,vibration.modes[j].RamanIntensity);
+
+	fprintf(fd,"[MASS]\n");
+	for(j=0;j<vibration.numberOfFrequences;j++)
+		fprintf(fd,"%lf %lf\n",vibration.modes[j].effectiveMass,vibration.modes[j].RamanIntensity);
 
 	fprintf(fd,"[FR-COORD]\n");
 	for(j=0;j<Ncenters;j++)
-		fprintf(fd,"%s %f %f %f\n",GeomOrb[j].Symb,GeomOrb[j].C[0],GeomOrb[j].C[1],GeomOrb[j].C[2]);
+		fprintf(fd,"%s %lf %lf %lf\n",GeomOrb[j].Symb,GeomOrb[j].C[0],GeomOrb[j].C[1],GeomOrb[j].C[2]);
 	fprintf(fd,"[FR-NORM-COORD]\n");
 	for(j=0;j<vibration.numberOfFrequences;j++)
 	{
 		fprintf(fd,"vibration %d\n",j+1);
 		for(i=0;i<vibration.numberOfAtoms;i++)
-		fprintf(fd,"%f %f %f\n",vibration.modes[j].vectors[0][i],vibration.modes[j].vectors[1][i],vibration.modes[j].vectors[2][i]);
+		fprintf(fd,"%lf %lf %lf\n",vibration.modes[j].vectors[0][i],vibration.modes[j].vectors[1][i],vibration.modes[j].vectors[2][i]);
 	}
 	fclose(fd);
 	return TRUE;
@@ -213,22 +913,23 @@ static gboolean save_vibration_gabedit_format(gchar *FileName)
 /********************************************************************************/
 static void reset_parameters(GtkWidget *win, gpointer data)
 {
-	gdouble scal     = atof(gtk_entry_get_text(GTK_ENTRY(EntryScal)));
-	gdouble velo     = atof(gtk_entry_get_text(GTK_ENTRY(EntryVelocity)));
-	gdouble radius   = atof(gtk_entry_get_text(GTK_ENTRY(EntryRadius)));
+	gdouble scal      = atof(gtk_entry_get_text(GTK_ENTRY(EntryScal)));
+	gdouble threshold = atof(gtk_entry_get_text(GTK_ENTRY(EntryThreshold)));
+	gdouble velo      = atof(gtk_entry_get_text(GTK_ENTRY(EntryVelocity)));
+	gdouble radius    = atof(gtk_entry_get_text(GTK_ENTRY(EntryRadius)));
 	gint nSteps   = atof(gtk_entry_get_text(GTK_ENTRY(EntryNSteps)));
 	gchar t[BSIZE];
 
-	if(scal<0)
+	if(threshold<0)
 	{
-		scal = -scal;
-		sprintf(t,"%f",scal);
-		gtk_entry_set_text(GTK_ENTRY(EntryScal),t);
+		threshold = -threshold;
+		sprintf(t,"%lf",threshold);
+		gtk_entry_set_text(GTK_ENTRY(EntryThreshold),t);
 	}
 	if(velo<0)
 	{
 		velo = -velo;
-		sprintf(t,"%f",velo);
+		sprintf(t,"%lf",velo);
 		gtk_entry_set_text(GTK_ENTRY(EntryVelocity),t);
 	}
 	if(scal==0)
@@ -237,7 +938,7 @@ static void reset_parameters(GtkWidget *win, gpointer data)
 	if(radius<0)
 	{
 		radius = -radius;
-		sprintf(t,"%f",radius);
+		sprintf(t,"%lf",radius);
 		gtk_entry_set_text(GTK_ENTRY(EntryRadius),t);
 	}
 	if(nSteps<0)
@@ -254,6 +955,7 @@ static void reset_parameters(GtkWidget *win, gpointer data)
 	}
 
 	vibration.scal = scal;
+	vibration.threshold = threshold;
 	vibration.velocity = velo;
 	vibration.radius = radius;
 	vibration.nSteps = nSteps;
@@ -348,7 +1050,7 @@ static gboolean read_gabedit_molden_geom(gchar *FileName)
     		fgets(t,taille,fd);
 		if(strstr(t,"[")) break;
 		if(this_is_a_backspace(t)) break;
-		ne = sscanf(t,"%s %f %f %f",sdum,&GeomOrb[j].C[0],&GeomOrb[j].C[1],&GeomOrb[j].C[2]);
+		ne = sscanf(t,"%s %lf %lf %lf",sdum,&GeomOrb[j].C[0],&GeomOrb[j].C[1],&GeomOrb[j].C[2]);
 		if(ne != 4)
 		{
 			gchar buffer[BSIZE];
@@ -441,16 +1143,34 @@ static gboolean read_gabedit_molden_frequencies(gchar *FileName)
 	}
 
 	for(j=0; j<vibration.numberOfFrequences;j++)
+			vibration.modes[j].effectiveMass = 1.0;
+
+	for(j=0; j<vibration.numberOfFrequences;j++)
 			vibration.modes[j].IRIntensity = vibration.modes[j].RamanIntensity = 0;
 
-	if(strstr(t,"[INT"))
+ 	OK=TRUE;
+	fseek(fd, 0, SEEK_SET);
+ 	while(fd && !feof(fd))
 	{
-		for(j=0; j<vibration.numberOfFrequences;j++)
-		{
-    			if(!fgets(t,taille,fd))break;
-			sscanf(t,"%lf %lf",&vibration.modes[j].IRIntensity,&vibration.modes[j].RamanIntensity);
-		}
-
+		if(!fgets(t,taille,fd))break;
+	 	if ( strstr( t,"[INT]") )
+	  	{
+			for(j=0; j<vibration.numberOfFrequences;j++)
+			{
+    				if(!fgets(t,taille,fd)){ OK = FALSE; break;}
+				sscanf(t,"%lf %lf",&vibration.modes[j].IRIntensity,&vibration.modes[j].RamanIntensity);
+			}
+			if(!OK) break;
+	  	}
+	 	if ( strstr( t,"[MASS]") )
+	  	{
+			for(j=0; j<vibration.numberOfFrequences;j++)
+			{
+    				if(!fgets(t,taille,fd)){ OK = FALSE; break;}
+				sscanf(t,"%lf",&vibration.modes[j].effectiveMass);
+			}
+			if(!OK) break;
+	  	}
 	}
 
 	fclose(fd);
@@ -564,6 +1284,34 @@ static void read_gabedit_molden_file(GabeditFileChooser *SelecFile, gint respons
 	}
 }
 /********************************************************************************/
+static void remove_selected_mode()
+{
+	stop_vibration(NULL, NULL);
+	remove_modes(rowSelected,rowSelected);
+	rafreshList();
+}
+/********************************************************************************/
+static void remove_all_modes_before_selected_mode()
+{
+	stop_vibration(NULL, NULL);
+	remove_modes(0,rowSelected-1);
+	rafreshList();
+}
+/********************************************************************************/
+static void remove_all_modes_after_selected_mode()
+{
+	stop_vibration(NULL, NULL);
+	remove_modes(rowSelected+1,vibration.numberOfFrequences-1);
+	rafreshList();
+}
+/********************************************************************************/
+static void sort_modes()
+{
+	stop_vibration(NULL, NULL);
+	sort_by_frequences();
+	rafreshList();
+}
+/********************************************************************************/
 static void read_gabedit_file_dlg()
 {
 	GtkWidget* filesel = 
@@ -593,7 +1341,7 @@ static gboolean read_mpqc_modes(FILE* fd, gchar *FileName)
 	gint i;
 	gint c;
 	gint nf;
-	gfloat v[4];
+	gdouble v[4];
 	gint numberOfFrequencies = 3*vibration.numberOfAtoms;
 	gint nj[4];
 	gint jm = -1;
@@ -676,17 +1424,18 @@ static gboolean read_mpqc_modes(FILE* fd, gchar *FileName)
   		while(!feof(fd))
   		{
 			gint d;
-			gfloat f;
+			gdouble f;
 
 			if(!fgets(t,taille,fd)) break;
 			if(this_is_a_backspace(t)) break;
-			nf = sscanf(t,"%d %f",&d, &f);
+			nf = sscanf(t,"%d %lf",&d, &f);
 			if(nf!=2) {OK = FALSE; break;}
 			j++;
 			if(j>=numberOfFrequencies) {OK = FALSE; break;}
 			nfs++;
 			vibration.modes[j].frequence = f;
 			vibration.modes[j].IRIntensity = 0.0;
+			vibration.modes[j].effectiveMass = 0.0;
 			vibration.modes[j].RamanIntensity = 0.0;
 			vibration.modes[j].symmetry = g_strdup(sym);
 			for(c=0;c<3;c++)
@@ -730,7 +1479,7 @@ static gboolean read_mpqc_modes(FILE* fd, gchar *FileName)
 			for(c=0;c<3;c++)
 			{
 				if(!fgets(t,taille,fd)) { OK = FALSE;break;}
-				nf = sscanf(t,"%s %f %f %f %f",sdum1,&v[0],&v[1],&v[2],&v[3]);
+				nf = sscanf(t,"%s %lf %lf %lf %lf",sdum1,&v[0],&v[1],&v[2],&v[3]);
 				nf--;
 				if(nf<k) { OK = FALSE; break;}
 				for(kk=0;kk<k;kk++)
@@ -769,7 +1518,9 @@ static gboolean read_mopac_aux_modes(FILE* fd, gchar *FileName)
 	gchar** modes = NULL;
 	gint nModes = 0;
 	gchar** intensities = NULL;
+	gchar** effectiveMass = NULL;
 	gint nIntensities = 0;
+	gint nEffectiveMass = 0;
 	gint i,k, c, im;
 
 	if(vibration.numberOfAtoms<1) return FALSE;
@@ -809,6 +1560,17 @@ static gboolean read_mopac_aux_modes(FILE* fd, gchar *FileName)
 			intensities[i] = g_strdup("0.0");
 		}
 	}
+	fseek(fd, 0, SEEK_SET);
+	effectiveMass = get_one_block_from_aux_mopac_file(fd, "VIB._EFF_MASS:AMU[",  &nEffectiveMass);
+	if(!effectiveMass || nEffectiveMass<vibration.numberOfAtoms*3)
+	{
+		nEffectiveMass = nFreqs;
+		effectiveMass = g_malloc(nEffectiveMass*sizeof(gchar*));
+		for(i=0;i<nEffectiveMass;i++)
+		{
+			effectiveMass[i] = g_strdup("1.0");
+		}
+	}
 
 	fseek(fd, 0, SEEK_SET);
 	modes = get_one_block_from_aux_mopac_file(fd, "NORMAL_MODES[",  &nModes);
@@ -818,6 +1580,7 @@ static gboolean read_mopac_aux_modes(FILE* fd, gchar *FileName)
 		free_one_string_table(freqs, nFreqs);
 		free_one_string_table(symmetries, nSymmetries);
 		free_one_string_table(intensities, nIntensities);
+		free_one_string_table(effectiveMass, nEffectiveMass);
 		free_one_string_table(modes, nModes);
 		free_vibration();
 		rafreshList();
@@ -833,6 +1596,7 @@ static gboolean read_mopac_aux_modes(FILE* fd, gchar *FileName)
 	{
 		vibration.modes[i].frequence = atof(freqs[i]);
 		vibration.modes[i].IRIntensity = atof(intensities[i]);
+		vibration.modes[i].effectiveMass = atof(effectiveMass[i]);
 		vibration.modes[i].RamanIntensity = 0.0;
 		for(c=0;c<3;c++)
 		{
@@ -855,6 +1619,7 @@ static gboolean read_mopac_aux_modes(FILE* fd, gchar *FileName)
 	free_one_string_table(freqs, nFreqs);
 	free_one_string_table(symmetries, nSymmetries);
 	free_one_string_table(intensities, nIntensities);
+	free_one_string_table(effectiveMass, nEffectiveMass);
 	free_one_string_table(modes, nModes);
 	rafreshList();
 	return TRUE;
@@ -1068,7 +1833,7 @@ static gboolean read_molpro_geom(FILE*fd, gchar *FileName)
     		fgets(t,taille,fd);
 		if(this_is_a_backspace(t))
 			break;
-		ne = sscanf(t,"%s %s %s %f %f %f",
+		ne = sscanf(t,"%s %s %s %lf %lf %lf",
 				sdum1,sdum2,sdum3,
 				&GeomOrb[j].C[0],&GeomOrb[j].C[1],&GeomOrb[j].C[2]);
 		if(ne != 6)
@@ -1117,8 +1882,8 @@ static gint read_molpro_modes_str(FILE* fd, gchar *FileName, gchar* str)
 	gint c;
 	gint ne;
 	gint nf;
-	gfloat freq[5];
-	gfloat IRIntensity[5];
+	gdouble freq[5];
+	gdouble IRIntensity[5];
 	gint nfMax = 5;
 
 	if(vibration.numberOfAtoms<1) return FALSE;
@@ -1147,11 +1912,11 @@ static gint read_molpro_modes_str(FILE* fd, gchar *FileName, gchar* str)
 		if(atof(t)==0) if(!fgets(t,taille,fd)) break;
     		if(!fgets(t,taille,fd)) break;
 		if(!strstr(t,"Wavenumbers")) break;
-		nf = sscanf(t,"%s %s %f %f %f %f %f", sdum1,sdum2, &freq[0],&freq[1],&freq[2],&freq[3],&freq[4]);
+		nf = sscanf(t,"%s %s %lf %lf %lf %lf %lf", sdum1,sdum2, &freq[0],&freq[1],&freq[2],&freq[3],&freq[4]);
 		nf -= 2;
 		if(strstr(str,"imaginary")) for(k=0;k<nf;k++) freq[k] = -freq[k];
     		if(!fgets(t,taille,fd)) break;
-		sscanf(t,"%s %s %f %f %f %f %f",
+		sscanf(t,"%s %s %lf %lf %lf %lf %lf",
 				sdum1,sdum2,
 				&IRIntensity[0],&IRIntensity[1],&IRIntensity[2],&IRIntensity[3],&IRIntensity[4]);
 
@@ -1164,6 +1929,7 @@ static gint read_molpro_modes_str(FILE* fd, gchar *FileName, gchar* str)
 			vibration.modes[j+k].frequence = freq[k];
 			vibration.modes[j+k].IRIntensity = IRIntensity[k];
 			vibration.modes[j+k].RamanIntensity = 0.0;
+			vibration.modes[j+k].effectiveMass = 1.0;
 			vibration.modes[j+k].symmetry = g_strdup("Unknown");
 			for(c=0;c<3;c++)
 				vibration.modes[j+k].vectors[c]= 
@@ -1396,7 +2162,7 @@ static gint read_dalton_modes_NMDDRV(FILE* fd, gchar *FileName)
 	gint c;
 	gint ne;
 	gint nf;
-	gfloat freq;
+	gdouble freq;
 	gint nfMax = 6;
 
 	if(vibration.numberOfAtoms<1) return 1;
@@ -1452,6 +2218,7 @@ static gint read_dalton_modes_NMDDRV(FILE* fd, gchar *FileName)
 		vibration.modes = g_realloc(vibration.modes,(j+nfMax)*sizeof(VibrationMode));
 		vibration.modes[j].frequence = freq;
 		vibration.modes[j].IRIntensity = 0.0;
+		vibration.modes[j].effectiveMass = 1.0;
 		vibration.modes[j].RamanIntensity = 0.0;
 		vibration.modes[j].symmetry = g_strdup(sdum1);
 		for(c=0;c<3;c++) vibration.modes[j].vectors[c]= g_malloc(vibration.numberOfAtoms*sizeof(gdouble));
@@ -1527,11 +2294,11 @@ static gint read_dalton_modes_MOLHES(FILE* fd, gchar *FileName)
 	gint ne;
 	gint nf;
 	/* gint nfMax = 5;*/
-	gfloat freq;
+	gdouble freq;
 	gint numModes[5];
 	gint numMode;
 	gchar sym[50];
-	gfloat IR = 0;
+	gdouble IR = 0;
 	gint nModes = vibration.numberOfAtoms*3;
  	gchar sdum[8][50];
 
@@ -1597,6 +2364,7 @@ static gint read_dalton_modes_MOLHES(FILE* fd, gchar *FileName)
 
 		vibration.modes[numMode-1].frequence = freq;
 		vibration.modes[numMode-1].IRIntensity = IR;
+		vibration.modes[numMode-1].effectiveMass = 1.0;
 		vibration.modes[numMode-1].RamanIntensity = 0.0;
 		vibration.modes[numMode-1].symmetry = g_strdup(sym);
 		for(c=0;c<3;c++) vibration.modes[numMode-1].vectors[c]= g_malloc(vibration.numberOfAtoms*sizeof(gdouble));
@@ -1826,9 +2594,12 @@ static gint read_gamess_modes(FILE* fd, gchar *FileName)
 	gint ne;
 	gint nf;
 	gint nir;
+	gint nmass = 0;
 	gint nfMax = 5;
-	gfloat freq[5];
-	gfloat ir[5];
+	gdouble freq[5];
+	gdouble ir[5];
+	gdouble raman[5];
+	gdouble mass[5];
  	gchar* sdum[5*2];
  	gchar* tmp;
 	gint k;
@@ -1898,26 +2669,54 @@ static gint read_gamess_modes(FILE* fd, gchar *FileName)
 			nf++;
 		}
 		nir=-1;
-		if(fgets(t,taille,fd)) /* REDUCED MASS: */
-		if(fgets(t,taille,fd)) /*  IR INTENSITY: */
+		for(i=0;i<nfMax;i++) ir[i] = 0;
+		for(i=0;i<nfMax;i++) raman[i] = 0;
+		while(fgets(t,BSIZE,fd) && strstr(t,":")) /* REDUCED MASS: IR INTENSITY: RAMAN ACTIVITY: Depol,... backspace */
 		{
-			tmp =  strstr(t,":")+1;
-			nir = sscanf(tmp,"%s %s %s %s %s", sdum[0],sdum[1],sdum[2],sdum[3],sdum[4]);
+			if(strstr(t,"MASS:"))
+			{
+				tmp =  strstr(t,":")+1;
+				nmass = sscanf(tmp,"%s %s %s %s %s", sdum[0],sdum[1],sdum[2],sdum[3],sdum[4]);
+				if(nf!=nmass)
+				{
+					vibration.numberOfFrequences = j;
+					for(i=0;i<nfMax*2;i++) g_free(sdum[i]);
+					return 2;
+				}
+				for(i=0;i<nf;i++) mass[i] = atof(sdum[i]);
+			}
+			if(strstr(t,"IR"))
+			{
+				tmp =  strstr(t,":")+1;
+				nir = sscanf(tmp,"%s %s %s %s %s", sdum[0],sdum[1],sdum[2],sdum[3],sdum[4]);
+				if(nf!=nir)
+				{
+					vibration.numberOfFrequences = j;
+					for(i=0;i<nfMax*2;i++) g_free(sdum[i]);
+					return 2;
+				}
+				for(i=0;i<nf;i++) ir[i] = atof(sdum[i]);
+			}
+			if(strstr(t,"RAMAN"))
+			{
+				tmp =  strstr(t,":")+1;
+				nir = sscanf(tmp,"%s %s %s %s %s", sdum[0],sdum[1],sdum[2],sdum[3],sdum[4]);
+				if(nf!=nir)
+				{
+					vibration.numberOfFrequences = j;
+					for(i=0;i<nfMax*2;i++) g_free(sdum[i]);
+					return 2;
+				}
+				for(i=0;i<nf;i++) raman[i] = atof(sdum[i]);
+			}
 		}
-		if(nf!=nir ||!fgets(t,taille,fd) ) /* backspace*/
-		{
-			vibration.numberOfFrequences = j;
-			for(i=0;i<nfMax*2;i++) g_free(sdum[i]);
-			return 2;
-		}
-		for(i=0;i<nf;i++) ir[i] = atof(sdum[i]);
-
 		for(i=0;i<nf;i++)
 		{
 			vibration.modes = g_realloc(vibration.modes,(j+nfMax)*sizeof(VibrationMode));
 			vibration.modes[j].frequence = freq[i];
 			vibration.modes[j].IRIntensity = ir[i];
-			vibration.modes[j].RamanIntensity = 0.0;
+			vibration.modes[j].effectiveMass = mass[i];
+			vibration.modes[j].RamanIntensity = raman[i];
 			vibration.modes[j].symmetry = g_strdup("Unknown");
 			for(c=0;c<3;c++) vibration.modes[j].vectors[c]= g_malloc(vibration.numberOfAtoms*sizeof(gdouble));
 			j++;
@@ -1987,6 +2786,7 @@ static gboolean read_gaussian_file_frequencies(gchar *FileName)
 	gint nf;
 	gdouble freq[3] = {0,0,0};
 	gdouble IRIntensity[3] = {0,0,0};
+	gdouble mass[3] = {1,1,1};
 	gdouble RamanIntensity[3]={ 0,0,0};
 	gdouble v[3][3];
 	gchar sym[3][BSIZE];
@@ -2036,8 +2836,7 @@ static gboolean read_gaussian_file_frequencies(gchar *FileName)
   		while(!feof(fd) )
   		{
     			fgets(t,taille,fd);
-			if(this_is_a_backspace(t))
-				break;
+			if(this_is_a_backspace(t)) break;
 			nf = sscanf(t,"%d %d %d",&idum,&idum,&idum);
 			if(nf<0 || nf>3)
 			{
@@ -2048,6 +2847,15 @@ static gboolean read_gaussian_file_frequencies(gchar *FileName)
 
 			if(!fgets(t,taille,fd)) break;
 			sscanf(t,"%s %s %lf %lf %lf", sdum1,sdum2, &freq[0],&freq[1],&freq[2]);
+			while(!feof(fd))
+			{
+    				fgets(t,taille,fd);
+				if(strstr(t,"Red. masses"))
+				{
+					sscanf(t,"%s %s %s %lf %lf %lf", sdum1,sdum2, sdum3, &mass[0],&mass[1],&mass[2]);
+					break;
+				}
+			}
 			while(!feof(fd))
 			{
     				fgets(t,taille,fd);
@@ -2065,14 +2873,14 @@ static gboolean read_gaussian_file_frequencies(gchar *FileName)
 					sscanf(t,"%s %s %s %lf %lf %lf", sdum1,sdum2, sdum3, &RamanIntensity[0],&RamanIntensity[1],&RamanIntensity[2]);
 					break;
 				}
-				if(strstr(t,"Atom AN")) break;
+				if(strstr(t,"Atom ") && strstr(t," AN")) break;
 			}
 
-			if(!strstr(t,"Atom AN"))
+			if(!(strstr(t,"Atom ") && strstr(t," AN")))
 			while(!feof(fd))
 			{
     				fgets(t,taille,fd);
-				if(strstr(t,"Atom AN")) break;
+				if(strstr(t,"Atom ") && strstr(t," AN")) break;
 			}
 			nfOld = vibration.numberOfFrequences;
   			vibration.numberOfFrequences += nf;
@@ -2084,6 +2892,7 @@ static gboolean read_gaussian_file_frequencies(gchar *FileName)
 			{
 				vibration.modes[k+nfOld].frequence = freq[k];
 				vibration.modes[k+nfOld].IRIntensity = IRIntensity[k];
+				vibration.modes[k+nfOld].effectiveMass = mass[k];
 				vibration.modes[k+nfOld].RamanIntensity = RamanIntensity[k];
 				vibration.modes[k+nfOld].symmetry = g_strdup(sym[k]);
 				vibration.modes[k+nfOld].vectors[0]= 
@@ -2215,7 +3024,7 @@ static gboolean read_adf_geom(FILE*fd, gchar *FileName)
 		if(this_is_a_backspace(t)) break;
 		if(strstr(t,"---------------------")) break;
 
-		ne = sscanf(t,"%s %s %s %f %f %f",
+		ne = sscanf(t,"%s %s %s %lf %lf %lf",
 				sdum1,sdum2,sdum3,
 				&GeomOrb[j].C[0],&GeomOrb[j].C[1],&GeomOrb[j].C[2]);
 		if(ne != 6)
@@ -2265,7 +3074,7 @@ static gboolean read_adf_modes(FILE* fd, gchar *FileName)
 	gint c;
 	gint ne;
 	gint nf;
-	gfloat freq[5];
+	gdouble freq[5];
 	gint nfMax = 3;
 
 	if(vibration.numberOfAtoms<1)
@@ -2317,7 +3126,7 @@ static gboolean read_adf_modes(FILE* fd, gchar *FileName)
 			return FALSE;
 		}
 
-		nf = sscanf(t,"%s %f %f %f", sdum1, &freq[0],&freq[1],&freq[2]);
+		nf = sscanf(t,"%s %lf %lf %lf", sdum1, &freq[0],&freq[1],&freq[2]);
 		nf -= 1;
 		if(nf<1) break;
 
@@ -2329,6 +3138,7 @@ static gboolean read_adf_modes(FILE* fd, gchar *FileName)
 		{
 			vibration.modes[j+k].frequence = freq[k];
 			vibration.modes[j+k].IRIntensity = 0;
+			vibration.modes[j+k].effectiveMass = 1;
 			vibration.modes[j+k].RamanIntensity = 0.0;
 			vibration.modes[j+k].symmetry = g_strdup("Unknown");
 			for(c=0;c<3;c++)
@@ -2538,6 +3348,7 @@ static gboolean read_qchem_file_frequencies(gchar *FileName)
 	gint nf;
 	gdouble freq[3] = {0,0,0};
 	gdouble IRIntensity[3] = {0,0,0};
+	gdouble mass[3] = {1,1,1};
 	gdouble RamanIntensity[3]={ 0,0,0};
 	gdouble v[3][3];
 	gchar sym[3][BSIZE];
@@ -2600,6 +3411,15 @@ static gboolean read_qchem_file_frequencies(gchar *FileName)
 			while(!feof(fd))
 			{
     				fgets(t,taille,fd);
+				if(strstr(t,"Red. masses"))
+				{
+					sscanf(t,"%s %s %lf %lf %lf", sdum1,sdum2, &mass[0],&mass[1],&mass[2]);
+					break;
+				}
+			}
+			while(!feof(fd))
+			{
+    				fgets(t,taille,fd);
 				if(strstr(t,"IR Intens:"))
 				{
 					sscanf(t,"%s %s %lf %lf %lf", sdum1,sdum2, &IRIntensity[0],&IRIntensity[1],&IRIntensity[2]);
@@ -2624,6 +3444,7 @@ static gboolean read_qchem_file_frequencies(gchar *FileName)
 			for(k=0;k<nf;k++)
 			{
 				vibration.modes[k+nfOld].frequence = freq[k];
+				vibration.modes[k+nfOld].effectiveMass = mass[k];
 				vibration.modes[k+nfOld].IRIntensity = IRIntensity[k];
 				vibration.modes[k+nfOld].RamanIntensity = RamanIntensity[k];
 				vibration.modes[k+nfOld].symmetry = g_strdup(sym[k]);
@@ -2682,6 +3503,192 @@ static void read_qchem_file(GabeditFileChooser *SelecFile, gint response_id)
 	read_qchem_file_frequencies(FileName);
 }
 /********************************************************************************/
+static gboolean read_orca_file_frequencies(gchar *FileName)
+{
+ 	gchar t[BSIZE];
+ 	gchar sdum1[BSIZE];
+ 	gboolean OK;
+ 	FILE *fd;
+ 	guint taille=BSIZE;
+	gint nf;
+	gint n;
+	gdouble freq = 0;
+	gdouble v[6] ={0,0,0,0,0,0};
+	gint j;
+	gint k;
+	gint nfOld;
+	gint c;
+	gboolean Begin = TRUE;
+	gint nblock, iblock;
+	gint ix;
+	gdouble dum;
+
+
+	Dipole.def = FALSE;
+	free_vibration();
+	vibration.numberOfAtoms = Ncenters;
+	vibration.geometry = g_malloc(Ncenters*sizeof(VibrationGeom));
+	for(j=0;j<Ncenters;j++)
+	{
+		vibration.geometry[j].symbol = g_strdup(GeomOrb[j].Symb);
+    		vibration.geometry[j].coordinates[0] = GeomOrb[j].C[0];
+    		vibration.geometry[j].coordinates[1] = GeomOrb[j].C[1];
+    		vibration.geometry[j].coordinates[2] = GeomOrb[j].C[2];
+    		vibration.geometry[j].partialCharge = GeomOrb[j].partialCharge;
+    		vibration.geometry[j].nuclearCharge = GeomOrb[j].nuclearCharge;
+	}
+  	vibration.numberOfFrequences = 0;
+	vibration.modes = g_malloc(Ncenters*3*sizeof(VibrationMode));
+	for(k=0;k<Ncenters*3;k++)
+	{
+		vibration.modes[k].symmetry = g_strdup("UNK");
+		vibration.modes[k].IRIntensity = 0;
+		vibration.modes[k].RamanIntensity = 0;
+		vibration.modes[k].frequence = 0;
+		for(c=0;c<3;c++)
+		{
+			vibration.modes[k].vectors[c]= g_malloc(vibration.numberOfAtoms*sizeof(gdouble));
+			for(j=0;j<vibration.numberOfAtoms;j++) vibration.modes[k].vectors[c][j] = 0;
+		}
+	}
+
+ 	fd = FOpen(FileName, "rb");
+	if(!fd) return FALSE;
+
+ 	do 
+ 	{
+ 		OK=FALSE;
+ 		while(!feof(fd))
+		{
+	  		fgets(t,taille,fd);
+	 		if (strstr( t,"VIBRATIONAL FREQUENCIES") ) OK = TRUE;
+	 		if (strstr( t,":") && OK ){ OK = TRUE; break;}
+		}
+		if(!OK) break;
+  		vibration.numberOfFrequences = 0;
+  		while(!feof(fd) )
+  		{
+			if(!strstr(t,":")) break;
+			nf = sscanf(t,"%s %lf",sdum1,&freq);
+			if(nf!=2) { OK = FALSE; break;}
+  			vibration.numberOfFrequences++;
+			k = vibration.numberOfFrequences-1;
+			vibration.modes[k].frequence = freq;
+			vibration.modes[k].effectiveMass = 1.0;
+			vibration.modes[k].IRIntensity = 0;
+			vibration.modes[k].RamanIntensity = 0;
+			vibration.modes[k].symmetry = g_strdup("UNK");
+			if(!fgets(t,taille,fd)) break;
+		}
+		if(!OK) break;
+ 		OK=FALSE;
+ 		while(!feof(fd))
+		{
+	  		fgets(t,taille,fd);
+	 		if (strstr( t,"NORMAL MODES") ) OK = TRUE;
+	 		if (sscanf(t,"%d",&k)==1 && OK ){ OK = TRUE; break;}
+		}
+		if(!OK) break;
+		nblock = vibration.numberOfFrequences/6; 
+		if(vibration.numberOfFrequences%6!=0) nblock++;
+		for(iblock = 0;iblock<nblock;iblock++)
+		{
+			nf = sscanf(t,"%s %lf %lf %lf %lf %lf %lf",
+					sdum1,
+					&v[0],&v[1],&v[2],
+					&v[3],&v[4],&v[5]
+					);
+			ix = 0;
+			for(j=0;j<Ncenters*3 && !feof(fd);j++)
+			{
+				if(!fgets(t,taille,fd)) break;
+				nf = sscanf(t,"%s %lf %lf %lf %lf %lf %lf",
+					sdum1,
+					&v[0],&v[1],&v[2],
+					&v[3],&v[4],&v[5]
+					);
+				nf--;
+				nfOld = iblock*6;
+				for(k=0;k<nf;k++)
+				{
+					vibration.modes[k+nfOld].vectors[ix][j/3]= v[k]; 
+				}
+				ix++;
+				if(ix>2) ix = 0;
+			}
+			if(!fgets(t,taille,fd)) {OK = FALSE;break;};/* new block */
+		}
+		if(!OK) break;
+		Begin = FALSE;
+ 		OK=FALSE;
+ 		while(!feof(fd))
+		{
+	  		fgets(t,taille,fd);
+	 		if (strstr( t,"IR SPECTRUM") ) OK = TRUE;
+	 		if (strstr( t,"TX")  && strstr( t,"TY") && strstr( t,"TZ") && OK ){ OK = TRUE; break;}
+		}
+		if(!OK) {continue;}
+	  	fgets(t,taille,fd);
+  		while(!feof(fd) )
+  		{
+			if(!fgets(t,taille,fd)) break;
+			n = sscanf(t,"%s %lf %lf", sdum1, &freq,&dum);
+			if(n!=3) { break; }
+			k = atoi(t);
+			vibration.modes[k].IRIntensity = dum;
+		}
+		if(!OK) break;
+ 		OK=FALSE;
+ 		while(!feof(fd))
+		{
+	  		fgets(t,taille,fd);
+	 		if (strstr( t,"RAMAN SPECTRUM") ) OK = TRUE;
+	 		if (strstr( t,"Activity")  && strstr( t,"Depolarization") && OK ){ OK = TRUE; break;}
+		}
+		if(!OK) {continue;}
+	  	fgets(t,taille,fd);
+  		while(!feof(fd) )
+  		{
+			if(!fgets(t,taille,fd)) break;
+			n = sscanf(t,"%s %lf %lf", sdum1, &freq,&dum);
+			if(n!=3) { break; }
+			k = atoi(t);
+			vibration.modes[k].RamanIntensity = dum;
+		}
+		if(!OK) break;
+		break;
+ 	}while(!feof(fd));
+	if((Begin && !OK) || vibration.numberOfFrequences<1) 
+	{
+		GtkWidget* w = NULL;
+		gchar buffer[BSIZE];
+
+		vibration.numberOfFrequences = Ncenters*3;
+		free_vibration();
+
+		sprintf(buffer,"Sorry, I can not read frequencies from '%s' file\n",FileName);
+  		w = Message(buffer,"Error",TRUE);
+		gtk_window_set_modal (GTK_WINDOW (w), TRUE);
+		rafreshList();
+		return FALSE;
+	}
+	rafreshList();
+	return TRUE;
+}
+/********************************************************************************/
+static void read_orca_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+	gchar *FileName;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+
+	stop_vibration(NULL, NULL);
+
+ 	gl_read_last_orca_file(SelecFile, response_id);
+	read_orca_file_frequencies(FileName);
+}
+/********************************************************************************/
 static void read_dalton_file_dlg()
 {
 	GtkWidget* filesel = 
@@ -2727,6 +3734,16 @@ static void read_qchem_file_dlg()
 	GtkWidget* filesel = 
  	file_chooser_open(read_qchem_file,
 			"Read last geometry and frequencies from a Q-Chem output file",
+			GABEDIT_TYPEFILE_QCHEM,GABEDIT_TYPEWIN_ORB);
+
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+}
+/********************************************************************************/
+static void read_orca_file_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_orca_file,
+			"Read last geometry and frequencies from a Orca output file",
 			GABEDIT_TYPEFILE_QCHEM,GABEDIT_TYPEWIN_ORB);
 
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
@@ -2838,6 +3855,11 @@ static gboolean show_menu_popup(GtkUIManager *manager, guint button, guint32 tim
 		set_sensitive_option(manager,"/MenuVibration/DrawIRSpectrum");
 		set_sensitive_option(manager,"/MenuVibration/DrawRamanSpectrum");
 		set_sensitive_option(manager,"/MenuVibration/SaveGabedit");
+		set_sensitive_option(manager,"/MenuVibration/CreateGaussInputVibCorrection");
+		set_sensitive_option(manager,"/MenuVibration/RemoveSelectedMode");
+		set_sensitive_option(manager,"/MenuVibration/RemoveBeforeSelectedMode");
+		set_sensitive_option(manager,"/MenuVibration/RemoveAfterSelectedMode");
+		set_sensitive_option(manager,"/MenuVibration/SortModes");
 		gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, button, time);
 		return TRUE;
 	}
@@ -3029,7 +4051,7 @@ static void addEntrysButtons(GtkWidget* box)
 
 	vboxframe = create_vbox(frame);
 
-  	table = gtk_table_new(5,3,FALSE);
+  	table = gtk_table_new(6,3,FALSE);
 	gtk_box_pack_start(GTK_BOX(vboxframe), table,TRUE,TRUE,0);
 
 	i=0;
@@ -3039,10 +4061,22 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_table_attach(GTK_TABLE(table),EntryScal,2,2+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
-		  3,3);
+		  1,1);
 	gtk_editable_set_editable((GtkEditable*) EntryScal,TRUE);
-	sprintf(t,"%f",vibration.scal);
+	sprintf(t,"%lf",vibration.scal);
 	gtk_entry_set_text(GTK_ENTRY(EntryScal),t);
+
+	i++;
+	add_label_table(table," Threshold(Bohr) ",(gushort)i,0);
+	add_label_table(table," : ",(gushort)i,1); 
+	EntryThreshold = gtk_entry_new();
+	gtk_table_attach(GTK_TABLE(table),EntryThreshold,2,2+1,i,i+1,
+		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
+		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+		  1,1);
+	gtk_editable_set_editable((GtkEditable*) EntryThreshold,TRUE);
+	sprintf(t,"%lf",vibration.threshold);
+	gtk_entry_set_text(GTK_ENTRY(EntryThreshold),t);
 
 	i++;
 	add_label_table(table," Time step(s) ",(gushort)i,0);
@@ -3051,9 +4085,9 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_table_attach(GTK_TABLE(table),EntryVelocity,2,2+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
-		  3,3);
+		  1,1);
 	gtk_editable_set_editable((GtkEditable*) EntryVelocity,TRUE);
-	sprintf(t,"%f",vibration.velocity);
+	sprintf(t,"%lf",vibration.velocity);
 	gtk_entry_set_text(GTK_ENTRY(EntryVelocity),t);
 
 	i++;
@@ -3063,9 +4097,9 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_table_attach(GTK_TABLE(table),EntryRadius,2,2+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
-		  3,3);
+		  1,1);
 	gtk_editable_set_editable((GtkEditable*) EntryRadius,TRUE);
-	sprintf(t,"%f",vibration.radius);
+	sprintf(t,"%lf",vibration.radius);
 	gtk_entry_set_text(GTK_ENTRY(EntryRadius),t);
 
 	i++;
@@ -3075,7 +4109,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_table_attach(GTK_TABLE(table),EntryNSteps,2,2+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
-		  3,3);
+		  1,1);
 	gtk_editable_set_editable((GtkEditable*) EntryNSteps,TRUE);
 	sprintf(t,"%d",vibration.nSteps);
 	gtk_entry_set_text(GTK_ENTRY(EntryNSteps),t);
@@ -3085,7 +4119,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_table_attach(GTK_TABLE(table),separator,0,3,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
-		  3,3);
+		  1,1);
 
   	table = gtk_table_new(2,3,FALSE);
 	gtk_box_pack_start(GTK_BOX(vboxframe), table,TRUE,TRUE,0);
@@ -3123,7 +4157,7 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_table_attach(GTK_TABLE(table),separator,0,2,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
-		  3,3);
+		  1,1);
 
 
 
@@ -3134,19 +4168,20 @@ static void addEntrysButtons(GtkWidget* box)
 	gtk_table_attach(GTK_TABLE(table),Button,0,0+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
-		  3,3);
+		  1,1);
 	PlayButton = Button;
 
 	Button = create_button(WinDlg,"Stop");
 	gtk_table_attach(GTK_TABLE(table),Button,1,1+1,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
-		  3,3);
+		  1,1);
 	StopButton = Button;
 
   	g_signal_connect(G_OBJECT(PlayButton), "clicked",(GCallback)play_vibration,NULL);
   	g_signal_connect(G_OBJECT(StopButton), "clicked",(GCallback)stop_vibration,NULL);
   	g_signal_connect_swapped(G_OBJECT (EntryScal), "activate", (GCallback)reset_parameters, NULL);
+  	g_signal_connect_swapped(G_OBJECT (EntryThreshold), "activate", (GCallback)reset_parameters, NULL);
   	g_signal_connect_swapped(G_OBJECT (EntryVelocity), "activate", (GCallback)reset_parameters, NULL);
   	g_signal_connect_swapped(G_OBJECT (EntryRadius), "activate", (GCallback)reset_parameters, NULL);
 }
@@ -3172,7 +4207,7 @@ static GtkTreeView* addList(GtkWidget *vbox, GtkUIManager *manager)
 	widall=widall*Factor+40;
 
 	scr=gtk_scrolled_window_new(NULL,NULL);
-	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeight*0.45));
+	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeight*0.4));
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scr),GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC); 
 	gtk_box_pack_start(GTK_BOX (vbox), scr,TRUE, TRUE, 2);
 
@@ -3281,6 +4316,13 @@ static void animate_vibration()
 		for(j=0;j<Ncenters;j++)
 		{
     			GeomOrb[j].Symb=g_strdup(vibration.geometry[j].symbol);
+			if(
+				vibration.modes[m].vectors[0][j]*vibration.modes[m].vectors[0][j]+
+				vibration.modes[m].vectors[1][j]*vibration.modes[m].vectors[1][j]+
+				vibration.modes[m].vectors[2][j]*vibration.modes[m].vectors[2][j]
+				<vibration.threshold*vibration.threshold
+			)continue;
+
     			GeomOrb[j].C[0] = vibration.geometry[j].coordinates[0]
 				+k*vibration.scal*vibration.modes[m].vectors[0][j];
 
@@ -3382,12 +4424,17 @@ static void activate_action (GtkAction *action)
 	{
 		GtkUIManager *manager = g_object_get_data(G_OBJECT(action), "Manager");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/SaveGabedit");
+		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGaussInputVibCorrection");
 	}
 	else if(!strcmp(name, "Tools"))
 	{
 		GtkUIManager *manager = g_object_get_data(G_OBJECT(action), "Manager");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/Tools/DrawIRSpectrum");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/Tools/DrawRamanSpectrum");
+		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/Tools/RemoveSelectedMode");
+		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/Tools/RemoveBeforeSelectedMode");
+		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/Tools/RemoveAfterSelectedMode");
+		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/Tools/SortModes");
 	}
 	else if(!strcmp(name, "ReadGabedit")) read_gabedit_file_dlg();
 	else if(!strcmp(name, "ReadDalton")) read_dalton_file_dlg();
@@ -3397,15 +4444,21 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "ReadMopacAux")) read_mopac_aux_file_dlg();
 	else if(!strcmp(name, "ReadMPQC")) read_mpqc_file_dlg();
 	else if(!strcmp(name, "ReadADF")) read_adf_file_dlg();
+	else if(!strcmp(name, "ReadOrca")) read_orca_file_dlg();
 	else if(!strcmp(name, "ReadPCGamess")) read_gamess_file_dlg();
 	else if(!strcmp(name, "ReadQChem")) read_qchem_file_dlg();
 	else if(!strcmp(name, "ReadMolden")) read_molden_file_dlg();
+	else if(!strcmp(name, "RemoveSelectedMode")) remove_selected_mode();
+	else if(!strcmp(name, "RemoveBeforeSelectedMode")) remove_all_modes_before_selected_mode();
+	else if(!strcmp(name, "RemoveAfterSelectedMode")) remove_all_modes_after_selected_mode();
+	else if(!strcmp(name, "SortModes")) sort_modes();
 	else if(!strcmp(name, "SaveGabedit")) save_gabedit_file_dlg();
-	else if(!strcmp(name, "Close")) destroyDlg(NULL,NULL);
+	else if(!strcmp(name, "CreateGaussInputVibCorrection")) create_gaussian_correction_vibration_file_dlg();
 	else if(!strcmp(name, "DrawIRSpectrum")) create_window_irspectrum();
 	else if(!strcmp(name, "DrawRamanSpectrum")) create_window_ramanspectrum();
 	else if(!strcmp(name, "HelpSupportedFormat")) help_supported_format();
 	else if(!strcmp(name, "HelpAnimation")) help_animated_file();
+	else if(!strcmp(name, "Close")) destroyDlg(NULL,NULL);
 }
 /*********************************************************************************************************************/
 static GtkActionEntry gtkActionEntries[] =
@@ -3420,10 +4473,16 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadMopacAux", GABEDIT_STOCK_MOPAC, "Read a _Mopac aux file", NULL, "Read Mopac aux file", G_CALLBACK (activate_action) },
 	{"ReadMPQC", GABEDIT_STOCK_MPQC, "Read a MP_QC output file", NULL, "Read a MPQC output file", G_CALLBACK (activate_action) },
 	{"ReadADF", GABEDIT_STOCK_ADF, "Read a _ADF output file", NULL, "Read a ADF output file", G_CALLBACK (activate_action) },
+	{"ReadOrca", GABEDIT_STOCK_ORCA, "Read a _Orca output file", NULL, "Read a Orca output file", G_CALLBACK (activate_action) },
 	{"ReadPCGamess", GABEDIT_STOCK_PCGAMESS, "Read a _PCGamess output file", NULL, "Read a PCGamess output file", G_CALLBACK (activate_action) },
 	{"ReadQChem", GABEDIT_STOCK_QCHEM, "Read a _Q-Chem output file", NULL, "Read a Q-Chem output file", G_CALLBACK (activate_action) },
 	{"ReadMolden", GABEDIT_STOCK_MOLDEN, "Read a Mol_den output file", NULL, "Read a Molden file", G_CALLBACK (activate_action) },
+	{"RemoveSelectedMode", GABEDIT_STOCK_CUT, "_Remove the selected mode", NULL, "Remove selected mode", G_CALLBACK (activate_action) },
+	{"RemoveBeforeSelectedMode", GABEDIT_STOCK_CUT, "Remove all modes _before the selected mode", NULL, "Remove before selected mode", G_CALLBACK (activate_action) },
+	{"RemoveAfterSelectedMode", GABEDIT_STOCK_CUT, "Remove all modes _after the selected mode", NULL, "Remove after selected mode", G_CALLBACK (activate_action) },
+	{"SortModes", GABEDIT_STOCK_CUT, "Sort", NULL, "Sort", G_CALLBACK (activate_action) },
 	{"SaveGabedit", GABEDIT_STOCK_SAVE, "_Save", NULL, "Save", G_CALLBACK (activate_action) },
+	{"CreateGaussInputVibCorrection", GABEDIT_STOCK_SAVE, "_Gaussian input file for compute the vibrational corrections", NULL, "_Gaussian input", G_CALLBACK (activate_action) },
 	{"Close", GABEDIT_STOCK_CLOSE, "_Close", NULL, "Close", G_CALLBACK (activate_action) },
 	{"Tools",     NULL, "_Tools", NULL, NULL, G_CALLBACK (activate_action)},
 	{"DrawIRSpectrum", GABEDIT_STOCK_DRAW, "Draw _IR Spectrum", NULL, "Draw IR Spectrum", G_CALLBACK (activate_action) },
@@ -3447,11 +4506,19 @@ static const gchar *uiMenuInfo =
 "    <menuitem name=\"ReadMopacAux\" action=\"ReadMopacAux\" />\n"
 "    <menuitem name=\"ReadMPQC\" action=\"ReadMPQC\" />\n"
 "    <menuitem name=\"ReadADF\" action=\"ReadADF\" />\n"
+"    <menuitem name=\"ReadOrca\" action=\"ReadOrca\" />\n"
 "    <menuitem name=\"ReadPCGamess\" action=\"ReadPCGamess\" />\n"
 "    <menuitem name=\"ReadQChem\" action=\"ReadQChem\" />\n"
 "    <menuitem name=\"ReadMolden\" action=\"ReadMolden\" />\n"
+"    <separator name=\"sepMenuPopRemove\" />\n"
+"    <menuitem name=\"RemoveSelectedMode\" action=\"RemoveSelectedMode\" />\n"
+"    <menuitem name=\"RemoveBeforeSelectedMode\" action=\"RemoveBeforeSelectedMode\" />\n"
+"    <menuitem name=\"RemoveAfterSelectedMode\" action=\"RemoveAfterSelectedMode\" />\n"
+"    <separator name=\"sepMenuSortModes\" />\n"
+"    <menuitem name=\"SortModes\" action=\"SortModes\" />\n"
 "    <separator name=\"sepMenuPopSave\" />\n"
 "    <menuitem name=\"SaveGabedit\" action=\"SaveGabedit\" />\n"
+"    <menuitem name=\"CreateGaussInputVibCorrection\" action=\"CreateGaussInputVibCorrection\" />\n"
 "    <separator name=\"sepMenuPopDraw\" />\n"
 "    <menuitem name=\"DrawIRSpectrum\" action=\"DrawIRSpectrum\" />\n"
 "    <menuitem name=\"DrawRamanSpectrum\" action=\"DrawRamanSpectrum\" />\n"
@@ -3469,18 +4536,26 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadMopacAux\" action=\"ReadMopacAux\" />\n"
 "        <menuitem name=\"ReadMPQC\" action=\"ReadMPQC\" />\n"
 "        <menuitem name=\"ReadADF\" action=\"ReadADF\" />\n"
+"        <menuitem name=\"ReadOrca\" action=\"ReadOrca\" />\n"
 "        <menuitem name=\"ReadPCGamess\" action=\"ReadPCGamess\" />\n"
 "        <menuitem name=\"ReadQChem\" action=\"ReadQChem\" />\n"
 "        <menuitem name=\"ReadMolden\" action=\"ReadMolden\" />\n"
 "      </menu>\n"
 "      <separator name=\"sepMenuSave\" />\n"
 "      <menuitem name=\"SaveGabedit\" action=\"SaveGabedit\" />\n"
+"      <menuitem name=\"CreateGaussInputVibCorrection\" action=\"CreateGaussInputVibCorrection\" />\n"
 "      <separator name=\"sepMenuClose\" />\n"
 "      <menuitem name=\"Close\" action=\"Close\" />\n"
 "    </menu>\n"
 "      <menu name=\"Tools\" action=\"Tools\">\n"
 "         <menuitem name=\"DrawIRSpectrum\" action=\"DrawIRSpectrum\" />\n"
 "         <menuitem name=\"DrawRamanSpectrum\" action=\"DrawRamanSpectrum\" />\n"
+"         <separator name=\"sepMenuRemove\" />\n"
+"         <menuitem name=\"RemoveSelectedMode\" action=\"RemoveSelectedMode\" />\n"
+"         <menuitem name=\"RemoveBeforeSelectedMode\" action=\"RemoveBeforeSelectedMode\" />\n"
+"         <menuitem name=\"RemoveAfterSelectedMode\" action=\"RemoveAfterSelectedMode\" />\n"
+"         <separator name=\"sepMenuSortModes\" />\n"
+"         <menuitem name=\"SortModes\" action=\"SortModes\" />\n"
 "      </menu>\n"
 "      <menu name=\"Help\" action=\"Help\">\n"
 "         <menuitem name=\"HelpSupportedFormat\" action=\"HelpSupportedFormat\" />\n"

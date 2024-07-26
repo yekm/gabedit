@@ -19,12 +19,12 @@ DEALINGS IN THE SOFTWARE.
 #ifndef __GABEDIT_CYLINDER_H__
 #define __GABEDIT_CYLINDER_H__
 
-void Cylinder_Draw(GLfloat radius,V3d Base1Pos,V3d Base2Pos);
-void Cylinder_Draw_Color(GLfloat radius,V3d Base1Pos,V3d Base2Pos,
+void Cylinder_Draw(GLdouble radius,V3d Base1Pos,V3d Base2Pos);
+void Cylinder_Draw_Color(GLdouble radius,V3d Base1Pos,V3d Base2Pos,
 						 V4d Specular,V4d Diffuse,V4d Ambiant);
-void Cylinder_Draw_Color_Two(GLfloat radius,V3d Base1Pos,V3d Base2Pos,
+void Cylinder_Draw_Color_Two(GLdouble radius,V3d Base1Pos,V3d Base2Pos,
 			 V4d Specular1,V4d Diffuse1,V4d Ambiant1,
 			 V4d Specular2,V4d Diffuse2,V4d Ambiant2,
-			GLfloat p1, GLfloat p2);
+			GLdouble p1, GLdouble p2);
 
 #endif /* __GABEDIT_CYLINDER_H__ */

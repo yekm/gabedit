@@ -7359,6 +7359,210 @@ void read_geom_from_mopac_aux_file(gchar *NomFichier, gint numgeometry)
 	free_one_string_table(elements, nElements);
 }
 /********************************************************************************/
+void get_charges_from_orca_output_file(FILE* fd,gint N)
+{
+ 	guint taille=BSIZE;
+  	gchar t[BSIZE];
+  	gchar dump[BSIZE];
+  	gchar d[BSIZE];
+  	gchar* pdest;
+	gint i;
+
+
+	for(i=0;i<N;i++)
+		GeomXYZ[i].Charge = g_strdup("0.0");
+
+  	while(!feof(fd) )
+	{
+    		pdest = NULL;
+    		fgets(t,taille,fd);
+		if(strstr(t,"GEOMETRY OPTIMIZATION CYCLE")) break;
+    		pdest = strstr( t, "MULLIKEN ATOMIC CHARGES");
+		if(pdest)
+		{
+			gboolean OK = FALSE;
+  			while(!feof(fd) )
+			{
+    				if(!fgets(t,taille,fd)) break;
+				if(strstr(t,"----------------"))
+				{
+					OK = TRUE;
+					break;
+				}
+			}
+			if(!OK) break;
+
+			for(i=0;i<N;i++)
+			{
+    				if(!feof(fd)) fgets(t,taille,fd);
+				else break;
+				if(sscanf(t,"%s %s %s %s",dump,dump,dump,d)==4)
+				{
+					g_free(GeomXYZ[i].Charge);
+					GeomXYZ[i].Charge = g_strdup(d);
+				}
+			}
+			break;
+		}
+	}
+}
+/********************************************************************************/
+void read_geom_from_orca_file(gchar *NomFichier, gint numgeometry)
+{
+	gchar *t;
+	gboolean OK;
+	gchar *AtomCoord[5];
+	FILE *fd;
+	guint taille=BSIZE;
+	guint i;
+	gint j=0;
+	gint l;
+	gint numgeom;
+	gchar *pdest;
+	long int geomposok = 0;
+
+	for(i=0;i<5;i++) AtomCoord[i]=g_malloc(taille*sizeof(gchar));
+	 
+	t=g_malloc(taille*sizeof(gchar));
+	fd = FOpen(NomFichier, "r");
+	if(fd ==NULL)
+	{
+	 	g_free(t);
+	 	t = g_strdup_printf("Sorry\nI can not open %s  file ",NomFichier);
+	 	MessageGeom(t," Error ",TRUE);
+	 	g_free(t);
+	 	return;
+	}
+	numgeom =0;
+	OK=FALSE;
+	 while(!feof(fd))
+	 {
+		if(!fgets(t,taille,fd))break;
+		pdest = strstr( t, "CARTESIAN COORDINATES (ANGSTROEM)");
+		if(pdest) 
+		{
+			if(!fgets(t,taille,fd))break;
+			pdest = strstr( t, "---------------------------------");
+		}
+		if ( pdest )
+		{
+			numgeom++;
+			geomposok = ftell(fd);
+			if(numgeom == numgeometry )
+			{
+				OK = TRUE;
+				break;
+			}
+			if(numgeometry<0)
+			{
+				OK = TRUE;
+			}
+		}
+	 }
+	 if(numgeom == 0)
+	 {
+		g_free(t);
+		t = g_strdup_printf("Sorry\nI can not read geometry in	%s file ",NomFichier);
+		MessageGeom(t," Error ",TRUE);
+		g_free(t);
+		return;
+	  }
+	j=-1;
+	fseek(fd, geomposok, SEEK_SET);
+	while(!feof(fd) )
+	{
+		if(!fgets(t,taille,fd))break;
+		pdest = strstr( t, "----------------------------------" );
+		if (pdest || this_is_a_backspace(t))
+		{
+			geomposok = ftell(fd);
+			get_charges_from_orca_output_file(fd,j+1);
+			fseek(fd, geomposok, SEEK_SET);
+ 			get_dipole_from_orca_output_file(fd);
+			break;
+		}
+		j++;
+		if(GeomXYZ==NULL) GeomXYZ=g_malloc(sizeof(GeomXYZAtomDef));
+		else GeomXYZ=g_realloc(GeomXYZ,(j+1)*sizeof(GeomXYZAtomDef));
+   		GeomXYZ[j].typeConnections = NULL;
+
+		sscanf(t,"%s %s %s %s",AtomCoord[0],AtomCoord[1],AtomCoord[2],AtomCoord[3]);
+		AtomCoord[0][0]=toupper(AtomCoord[0][0]);
+		l=strlen(AtomCoord[0]); 
+		if(isdigit(AtomCoord[0][1]))l=1;
+		if (l==2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+		if(l==1)sprintf(t,"%c",AtomCoord[0][0]);
+		else sprintf(t,"%c%c",AtomCoord[0][0],AtomCoord[0][1]);
+
+		GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
+		GeomXYZ[j].Symb=g_strdup(t);
+		GeomXYZ[j].mmType=g_strdup(GeomXYZ[j].Symb);
+		GeomXYZ[j].pdbType=g_strdup(GeomXYZ[j].Symb);
+		GeomXYZ[j].Residue=g_strdup(GeomXYZ[j].Symb);
+		GeomXYZ[j].ResidueNumber=0;
+		if(Units == 0 )
+		{
+			GeomXYZ[j].X=g_strdup(ang_to_bohr(AtomCoord[1]));
+			GeomXYZ[j].Y=g_strdup(ang_to_bohr(AtomCoord[2]));
+			GeomXYZ[j].Z=g_strdup(ang_to_bohr(AtomCoord[3]));
+		}
+		else
+		{
+			GeomXYZ[j].X=g_strdup(AtomCoord[1]);
+			GeomXYZ[j].Y=g_strdup(AtomCoord[2]);
+			GeomXYZ[j].Z=g_strdup(AtomCoord[3]);
+		}
+		GeomXYZ[j].Charge=g_strdup("0.0");
+		GeomXYZ[j].Layer=g_strdup(" ");
+	  }
+	NcentersXYZ = j+1;
+
+	 fclose(fd);
+ 	 calculMMTypes(FALSE);
+	 g_free(t);
+	 for(i=0;i<5;i++) g_free(AtomCoord[i]);
+	 if(GeomIsOpen && MethodeGeom == GEOM_IS_XYZ)
+	 {
+	 	clearList(list);
+		append_list();
+	 }
+	 MethodeGeom = GEOM_IS_XYZ;
+	 if(ZoneDessin != NULL) rafresh_drawing();
+	 if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
+}
+/********************************************************************************/
+void read_first_orca_file(GabeditFileChooser *SelecFile , gint response_id)
+{
+	gchar *NomFichier;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+	NomFichier = gabedit_file_chooser_get_current_file(SelecFile);
+	
+	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
+	{
+		MessageGeom("Sorry\n No file slected"," Error ",TRUE);
+		return ;
+	}
+	read_geom_from_orca_file(NomFichier, 1);
+	set_last_directory(NomFichier);
+}
+/********************************************************************************/
+void read_last_orca_file(GabeditFileChooser *SelecFile , gint response_id)
+{
+	gchar *NomFichier;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+	NomFichier = gabedit_file_chooser_get_current_file(SelecFile);
+	
+	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
+	{
+		MessageGeom("Sorry\n No file slected"," Error ",TRUE);
+		return ;
+	}
+	read_geom_from_orca_file(NomFichier, -1);
+	set_last_directory(NomFichier);
+}
+/********************************************************************************/
 void read_first_qchem_file(GabeditFileChooser *SelecFile , gint response_id)
 {
 	gchar *NomFichier;
@@ -8309,6 +8513,180 @@ void read_XYZ_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile 
  if(ZoneDessin != NULL)
 	rafresh_drawing();
  set_last_directory(NomFichier);
+}
+/*************************************************************************************/
+void read_XYZ_from_orca_input_file(gchar *NomFichier)
+{
+	gchar *t;
+	gboolean OK;
+	gchar *AtomCoord[5];
+	FILE *file;
+	guint taille=BSIZE;
+	gint i;
+	gint j;
+	gint l;
+	gint k;
+	gboolean Uvar=FALSE;
+	GeomXYZAtomDef* GeomXYZtemp=NULL;
+	gint Ncent = 0;
+	gint Nvar = 0;
+	VariablesXYZDef* VariablesXYZtemp=NULL;
+	gchar symb[BSIZE];
+	gchar type[BSIZE];
+	gchar charge[BSIZE];
+	gint globalCharge, mult;
+ 
+ 
+
+	file = FOpen(NomFichier, "r");
+	OK=TRUE;
+ 	if(file==NULL)
+	{
+   		MessageGeom("Sorry\n I can not read geometry in Orca input file"," Error ",TRUE);
+   		return;
+	}
+	t=g_malloc(taille*sizeof(gchar));
+	for(i=0;i<5;i++)
+		AtomCoord[i]=g_malloc(taille*sizeof(char));
+
+	 while(!feof(file))
+	 {
+		if(!fgets(t,taille,file))
+		{
+			OK = FALSE;
+			break;
+		}
+		g_strup(t);
+		if(strstr(t,"* XYZ") && 4==sscanf(t,"%s %s %d %d",AtomCoord[0],AtomCoord[1],&globalCharge, &mult) )
+		{
+			OK = TRUE;
+			break;
+		}
+	 }
+	 if(OK) GeomXYZtemp=g_malloc(sizeof(GeomXYZAtomDef));
+	j=-1;
+ 	while(!feof(file) && OK )
+  	{
+    		j++;
+    		fgets(t,taille,file);
+                for(i=0;i<(gint)strlen(t);i++) if(t[i] != ' ') break;
+                if(i<=(gint)strlen(t) && t[i] == '*') break;
+		for(k=0;k<(gint)strlen(t);k++) if(t[k]=='{' || t[k]=='}') t[k] = ' ';
+                i = sscanf(t,"%s %s %s %s %s",AtomCoord[0],AtomCoord[4],AtomCoord[1],AtomCoord[2],AtomCoord[3]);
+    		if( i!= 5 ) 
+		{
+                	i = sscanf(t,"%s %s %s %s",AtomCoord[0],AtomCoord[1],AtomCoord[2],AtomCoord[3]);
+		}
+    		if( i== 5 || i== 4)
+                {
+
+                        Ncent = j+1;
+			GeomXYZtemp=g_realloc(GeomXYZtemp,Ncent*sizeof(GeomXYZAtomDef));
+    			AtomCoord[0][0]=toupper(AtomCoord[0][0]);
+    			l=strlen(AtomCoord[0]);
+      			if (l>=2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+
+    			GeomXYZtemp[j].Nentry=NUMBER_LIST_XYZ;
+			get_symb_type_charge(AtomCoord[0],symb,type,charge);
+			{
+				gint k;
+				for(k=0;k<(gint)strlen(symb);k++) if(isdigit(symb[k])) symb[k] = ' ';
+				delete_all_spaces(symb);
+			}
+
+    			GeomXYZtemp[j].Symb=g_strdup(symb);
+			GeomXYZtemp[j].mmType=g_strdup(type);
+			GeomXYZtemp[j].pdbType=g_strdup(type);
+			GeomXYZtemp[j].Charge=g_strdup(charge);
+
+    			GeomXYZtemp[j].Residue=g_strdup("DUM");
+    			GeomXYZtemp[j].ResidueNumber=0;
+                        if(!test(AtomCoord[1]) || !test(AtomCoord[2]) || !test(AtomCoord[3]))
+                              Uvar = TRUE;
+    			GeomXYZtemp[j].X=g_strdup(AtomCoord[1]);
+    			GeomXYZtemp[j].Y=g_strdup(AtomCoord[2]);
+    			GeomXYZtemp[j].Z=g_strdup(AtomCoord[3]);
+
+    			GeomXYZtemp[j].Layer=g_strdup(" ");
+    			GeomXYZtemp[j].typeConnections = NULL;
+		}
+               else
+                 OK = FALSE;
+  	}
+/* Variables */
+	Nvar=0;
+	fseek(file, 0L, SEEK_SET);
+	if(Uvar)
+	{
+		OK =FALSE;
+  		while(!feof(file) && Uvar)
+  		{
+ 			if(!fgets(t,taille,file)) break;
+			g_strup(t);
+			if(strstr(t,"PARAS")) 
+			{
+				OK = TRUE;
+				break;
+			}
+  		}
+  	}
+	while(!feof(file) && Uvar && OK )
+	{
+		g_strup(t);
+		for(k=0;k<(gint)strlen(t);k++) if(t[k]=='=') t[k] = ' ';
+        	for(j=0;j<Ncent;j++)
+		{
+			gchar* co[3] = {GeomXYZtemp[j].X,GeomXYZtemp[j].Y,GeomXYZtemp[j].Z};
+        		for(k=0;k<3;k++)
+			if(!test(co[k]))
+			{
+				gchar* b = strstr(t,co[k]);
+				if(b) 
+				{
+					b = b+strlen(co[k])+1;
+  					Nvar++;
+  					if(Nvar==1) VariablesXYZtemp = g_malloc(Nvar*sizeof(VariablesXYZDef));
+  					else VariablesXYZtemp = g_realloc(VariablesXYZtemp,Nvar*sizeof(VariablesXYZDef));
+  					VariablesXYZtemp[Nvar-1].Name=g_strdup(co[k]);
+  					VariablesXYZtemp[Nvar-1].Value=g_strdup_printf("%f",atof(b));
+  					VariablesXYZtemp[Nvar-1].Used=TRUE;
+				}
+			}
+		}
+		if(strstr(t,"END")) break;
+  		fgets(t,taille,file);
+  	}
+/* end while variables */
+	fclose(file);
+	if(OK)
+ 	{
+		TotalCharges[0] = globalCharge;
+		SpinMultiplicities[0] = mult;
+ 	}
+
+	g_free(t);
+	for(i=0;i<5;i++) g_free(AtomCoord[i]);
+	if( !OK || Ncent <1 )
+	{
+   		FreeGeomXYZ(GeomXYZtemp,VariablesXYZtemp,Ncent, Nvar);
+   		MessageGeom("Sorry\n I can not read geometry in Orca input file"," Error ",TRUE);
+   		return;
+ 	}
+	if(GeomXYZ) freeGeomXYZ(GeomXYZ);
+	if(VariablesXYZ) freeVariablesXYZ(VariablesXYZ);
+	GeomXYZ = GeomXYZtemp;
+ 	NcentersXYZ = Ncent;
+ 	NVariablesXYZ = Nvar;
+ 	VariablesXYZ = VariablesXYZtemp;
+ 	MethodeGeom = GEOM_IS_XYZ;
+ 	calculMMTypes(FALSE);
+ 	if( Units== 0 ) GeomXYZ_Change_Unit(FALSE);
+ 	if(GeomIsOpen)
+		create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
+
+ 	if(ZoneDessin != NULL)
+		rafresh_drawing();
+ 	set_last_directory(NomFichier);
 }
 /*************************************************************************************/
 void read_XYZ_from_qchem_input_file(gchar *NomFichier)
@@ -9974,6 +10352,14 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
 	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a MPQC output file", GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
 	   break;
+  case GABEDIT_TYPEFILEGEOM_ORCAOUTFIRST : 
+	   SelecFile = gabedit_file_chooser_new("Read the first geometry from a ORCA-Chem output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+   	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
+	   break;
+  case GABEDIT_TYPEFILEGEOM_ORCAOUTLAST : 
+	   SelecFile = gabedit_file_chooser_new("Read the last geometry from a ORCA output file", GTK_FILE_CHOOSER_ACTION_OPEN);
+   	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
+	   break;
   case GABEDIT_TYPEFILEGEOM_QCHEMOUTFIRST : 
 	   SelecFile = gabedit_file_chooser_new("Read the first geometry from a Q-Chem output file", GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsout);
@@ -10022,6 +10408,7 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   case GABEDIT_TYPEFILEGEOM_MOLCASIN : return;
   case GABEDIT_TYPEFILEGEOM_MOLPROIN : return;
   case GABEDIT_TYPEFILEGEOM_MPQCIN : return;
+  case GABEDIT_TYPEFILEGEOM_ORCAIN : return;
   case GABEDIT_TYPEFILEGEOM_QCHEMIN : return;
   case GABEDIT_TYPEFILEGEOM_MOPACIN : return;
   case GABEDIT_TYPEFILEGEOM_GAUSSIAN_ZMATRIX : return;
@@ -10072,10 +10459,15 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_mpqc_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_MPQCOUTLAST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_mpqc_file), GTK_OBJECT(SelecFile)); break;
+  case GABEDIT_TYPEFILEGEOM_ORCAOUTFIRST :
+	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_orca_file), GTK_OBJECT(SelecFile)); break;
+  case GABEDIT_TYPEFILEGEOM_ORCAOUTLAST :
+	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_orca_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_QCHEMOUTFIRST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_qchem_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_QCHEMOUTLAST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_qchem_file), GTK_OBJECT(SelecFile)); break;
+
   case GABEDIT_TYPEFILEGEOM_MOPACOUTFIRST :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_first_mopac_output_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_MOPACOUTLAST :
@@ -10104,6 +10496,7 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   case GABEDIT_TYPEFILEGEOM_MOLCASIN : 
   case GABEDIT_TYPEFILEGEOM_MOLPROIN : 
   case GABEDIT_TYPEFILEGEOM_MPQCIN : 
+  case GABEDIT_TYPEFILEGEOM_ORCAIN : 
   case GABEDIT_TYPEFILEGEOM_QCHEMIN : 
   case GABEDIT_TYPEFILEGEOM_MOPACIN : 
   case GABEDIT_TYPEFILEGEOM_GAUSSIAN_ZMATRIX : 

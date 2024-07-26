@@ -63,6 +63,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/StockIcons.h"
 
 
+/* #define EXPERIMENTAL 1*/
 /*********************************************************************************************************************/
 static	GtkUIManager *manager = NULL;
 static GtkWidget* handleBoxToolBar = NULL;
@@ -402,6 +403,8 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ReadMPQCLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MPQCOUTLAST);}
 	else if(!strcmp(name,"ReadPCGamessFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_GAMESSFIRST); }
 	else if(!strcmp(name,"ReadPCGamessLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_GAMESSLAST); }
+	else if(!strcmp(name,"ReadOrcaFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_ORCAOUTFIRST);}
+	else if(!strcmp(name,"ReadOrcaLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_ORCAOUTLAST);}
 	else if(!strcmp(name,"ReadQChemFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_QCHEMOUTFIRST);}
 	else if(!strcmp(name,"ReadQChemLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_QCHEMOUTLAST);}
 	else if(!strcmp(name,"ReadUsingOpenBabel")) { create_babel_read_dialogue(); }
@@ -417,6 +420,9 @@ static void activate_action (GtkAction *action)
    	  file_chooser_open(read_geometries_conv_mopac,"Load Geom. Conv. From Molpac aux file", GABEDIT_TYPEFILE_MOPAC_AUX,GABEDIT_TYPEWIN_GEOM);
 	else if(!strcmp(name,"ReadGeomConvMPQC"))
    	  file_chooser_open(read_geometries_conv_mpqc,"Load Geom. Conv. From MPQC output file", GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_GEOM);
+	else if(!strcmp(name,"ReadGeomConvOrca"))
+   	  file_chooser_open(read_geometries_conv_orca,"Load Geom. Conv. From ORCA output file", GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_GEOM);
+
 	else if(!strcmp(name,"ReadGeomConvQChem"))
    	  file_chooser_open(read_geometries_conv_qchem,"Load Geom. Conv. From Q-Chem output file", GABEDIT_TYPEFILE_QCHEM,GABEDIT_TYPEWIN_GEOM);
 
@@ -430,6 +436,9 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"EditDeleteMolecule")) DeleteMolecule();
 	else if(!strcmp(name,"EditDeleteHydrogenAtoms")) deleteHydrogenAtoms();
 	else if(!strcmp(name,"EditDeleteSelectedAtoms")) deleteSelectedAtoms();
+	else if(!strcmp(name,"EditMoveCenterOfSelectedAtomsToOrigin")) moveCenterOfSelectedAtomsToOrigin();
+	else if(!strcmp(name,"EditAlignPrincipalAxesOfSelectedAtomsToXYZ")) alignPrincipalAxesOfSelectedAtomsToXYZ();
+	else if(!strcmp(name,"EditAlignSelectedAndNotSelectedAtoms")) alignSelectedAndNotSelectedAtoms();
 	else if(!strcmp(name,"EditCopySelectedAtoms")) copySelectedAtoms();
 	else if(!strcmp(name,"EditResetAllConnections")) resetConnections();
 	else if(!strcmp(name,"EditResetConnectionsBetweenSelectedAndNotSelectedAtoms")) resetConnectionsBetweenSelectedAndNotSelectedAtoms();
@@ -661,7 +670,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "SetAtomToInsert")) select_atom();
 	else if(!strcmp(name, "ExportPostscript")) export_geometry_dlg("ps");
 	else if(!strcmp(name, "ExportEPS")) export_geometry_dlg("eps");
-	else if(!strcmp(name, "ExportPovray")) export_geometry_dlg("pov");
+	else if(!strcmp(name, "ExportPovray")) exportPOVGeomDlg(GeomDlg);
 	else if(!strcmp(name, "ExportPDF")) export_geometry_dlg("pdf");
 	else if(!strcmp(name, "ExportSVG")) export_geometry_dlg("svg");
 	else if(!strcmp(name, "ScreenCaptureJPG")) 
@@ -688,6 +697,10 @@ static void activate_action (GtkAction *action)
 	{
  		GtkWidget* chooser = file_chooser_save(save_geometry_ps_file,"Save image in ps file format",GABEDIT_TYPEFILE_PS,GABEDIT_TYPEWIN_GEOM);
 		fit_windows_position(GeomDlg, chooser);
+	}
+	else if(!strcmp(name, "ScreenCaptureCilpBoard")) 
+	{
+		copy_screen_geom_clipboard();
 	}
 
 	else if(!strcmp(name, "MolecularMechanicsEnergy")) 
@@ -774,6 +787,14 @@ static void activate_action (GtkAction *action)
 	{
 		semiEmpiricalDlg("AM1MopacESP");
 	}
+	else if(!strcmp(name, "SemiEmpiricalEnergyOrca"))
+	{
+		semiEmpiricalDlg("OrcaEnergy");
+	}
+	else if(!strcmp(name, "SemiEmpiricalOptimisationOrca"))
+	{
+		semiEmpiricalDlg("OrcaOptimize");
+	}
 
 	else if(!strcmp(name, "Close")) destroy_drawing_and_childs(NULL, 0);
 }
@@ -826,6 +847,11 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadMPQCFirst", GABEDIT_STOCK_MPQC, "F_irst geometry from a MPQC output file", NULL, "Read the first geometry from a MPQC output file", G_CALLBACK (activate_action) },
 	{"ReadMPQCLast", GABEDIT_STOCK_MPQC, "L_ast geometry from a MPQC output file", NULL, "Read the last geometry from a MPQC output file", G_CALLBACK (activate_action) },
 
+	{"Orca", GABEDIT_STOCK_ORCA, "_Orca"},
+	{"ReadOrcaFirst", GABEDIT_STOCK_ORCA, "F_irst geometry from a Orca output file", NULL, "Read the first geometry from a Orca output file", G_CALLBACK (activate_action) },
+	{"ReadOrcaLast", GABEDIT_STOCK_ORCA, "L_ast geometry from a Orca output file", NULL, "Read the last geometry from a Orca output file", G_CALLBACK (activate_action) },
+
+
 	{"PCGamess", GABEDIT_STOCK_PCGAMESS, "_PCGamess"},
 	{"ReadPCGamessFirst", GABEDIT_STOCK_PCGAMESS, "F_irst geometry from a PCGamess output file", NULL, "Read the first geometry from a PCGamess output file", G_CALLBACK (activate_action) },
 	{"ReadPCGamessLast", GABEDIT_STOCK_PCGAMESS, "L_ast geometry from a PCGamess output file", NULL, "Read the last geometry from a PCGamess output file", G_CALLBACK (activate_action) },
@@ -843,6 +869,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadGeomConvMolpro", GABEDIT_STOCK_MOLPRO, "from a Mol_pro log file", NULL, "Read Geometries Convergence from a Molpro log file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvMopac", GABEDIT_STOCK_MOPAC, "from a _Mopac aux file", NULL, "Read Geometries Convergence from a Mopac aux file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvMPQC", GABEDIT_STOCK_MPQC, "from a MP_QC output file", NULL, "Read Geometries Convergence from a MPQC output file", G_CALLBACK (activate_action) },
+	{"ReadGeomConvOrca", GABEDIT_STOCK_ORCA, "from a _Orca output file", NULL, "Read Geometries Convergence from a Orca output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvQChem", GABEDIT_STOCK_QCHEM, "from a Q-_Chem output file", NULL, "Read Geometries Convergence from a Q-Chem output file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvGabedit", GABEDIT_STOCK_GABEDIT, "from a G_abedit file", NULL, "Read Geometries Convergence from a Gabedit file", G_CALLBACK (activate_action) },
 	{"ReadGeomConvMolden", GABEDIT_STOCK_MOLDEN, "from a Mol_den file", NULL, "Read Geometries Convergence from a Molden file", G_CALLBACK (activate_action) },
@@ -858,6 +885,9 @@ static GtkActionEntry gtkActionEntries[] =
 	{"EditCopySelectedAtoms", GABEDIT_STOCK_COPY, "_Copy&Past selected atoms", NULL, "Copy&Past selected atoms", G_CALLBACK (activate_action) },
 	{"EditDeleteHydrogenAtoms", GABEDIT_STOCK_CUT, "_Remove hydrogen atoms", NULL, "Remove hydrogen atoms", G_CALLBACK (activate_action) },
 	{"EditDeleteSelectedAtoms", GABEDIT_STOCK_CUT, "Remove selected atoms", NULL, "Remove selected atoms", G_CALLBACK (activate_action) },
+	{"EditMoveCenterOfSelectedAtomsToOrigin", GABEDIT_STOCK_MOVE_ATOM, "Move the center of selected atoms to origin", NULL, "Move selected atoms to origin", G_CALLBACK (activate_action) },
+	{"EditAlignPrincipalAxesOfSelectedAtomsToXYZ", NULL, "_Align the principal axes selected atoms to XYZ", NULL, "Align the principal axes of selected atoms to XYZ", G_CALLBACK (activate_action) },
+	{"EditAlignSelectedAndNotSelectedAtoms", NULL, "_Align selected and not selected atoms", NULL, "Align selected and not slected atoms to XYZ", G_CALLBACK (activate_action) },
 	{"EditDeleteMolecule", GABEDIT_STOCK_CUT, "_Delete molecule", NULL, "Delete molecule", G_CALLBACK (activate_action) },
 	{"EditOpenGeometryEditor", NULL, "_Open XYZ or GZMAT editor", NULL, "Open XYZ or GZMAT editor", G_CALLBACK (activate_action) },
 	{"Selection", NULL, "_Selection"},
@@ -990,6 +1020,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ScreenCaptureBMP", NULL, "_BMP format", NULL, "create a BMP file", G_CALLBACK (activate_action) },
 	{"ScreenCapturePNG", NULL, "_PNG format", NULL, "create a PNG file", G_CALLBACK (activate_action) },
 	{"ScreenCapturePS", NULL, "_PS format", NULL, "create a PS file", G_CALLBACK (activate_action) },
+	{"ScreenCaptureCilpBoard", NULL, "_Copy to clipboard", NULL, "copy to clipboard", G_CALLBACK (activate_action) },
 
 	{"MolecularMechanics", NULL, "_Molecular Mechanics"},
 	{"MolecularMechanicsEnergy", NULL, "_Energy", NULL, "compute the energy using the MM method", G_CALLBACK (activate_action) },
@@ -1001,10 +1032,10 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SemiEmpiricalEnergyPCGamessAM1", NULL, "PCGamess AM1 _Energy", NULL, "compute the energy using the AM1 method from PCGamess", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalOptimisationPCGamessAM1", NULL, "PCGamess AM1 _Optimization", NULL, "optimize the geometry using the AM1 method from PCGamess", G_CALLBACK (activate_action) },
 
-	{"SemiEmpiricalEnergyMopac", NULL, "Mopac _Energy (Additional Keywords)", NULL, "compute the energy using Mopac", G_CALLBACK (activate_action) },
-	{"SemiEmpiricalOptimisationMopac", NULL, "Mopac _Optimisation (Additional Keywords)", NULL, "optimize the geometry using Mopac", G_CALLBACK (activate_action) },
-	{"SemiEmpiricalESPMopac", NULL, "Mopac _ESP charges (Additional Keywords)", NULL, "ESP Charge using Mopac", G_CALLBACK (activate_action) },
-	{"SemiEmpiricalScanMopac", NULL, "Mopac _Reaction path (Additional Keywords)", NULL, "Mopac Scan calculation", G_CALLBACK (activate_action) },
+	{"SemiEmpiricalEnergyMopac", NULL, "Mopac _Energy", NULL, "compute the energy using Mopac", G_CALLBACK (activate_action) },
+	{"SemiEmpiricalOptimisationMopac", NULL, "Mopac _Optimisation", NULL, "optimize the geometry using Mopac", G_CALLBACK (activate_action) },
+	{"SemiEmpiricalESPMopac", NULL, "Mopac _ESP charges", NULL, "ESP Charge using Mopac", G_CALLBACK (activate_action) },
+	{"SemiEmpiricalScanMopac", NULL, "Mopac _Reaction path", NULL, "Mopac Scan calculation", G_CALLBACK (activate_action) },
 
 	{"SemiEmpiricalEnergyMopacPM6", NULL, "Mopac PM6 _Energy", NULL, "compute the energy using the PM6 method from Mopac", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalOptimisationMopacPM6", NULL, "Mopac PM6 _Optimisation", NULL, "optimize the geometry using the PM6 method from Mopac", G_CALLBACK (activate_action) },
@@ -1014,6 +1045,8 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SemiEmpiricalOptimisationMopacAM1", NULL, "Mopac AM1 _Optimisation", NULL, "optimize the geometry using the AM1 method from Mopac", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalESPMopacAM1", NULL, "Mopac AM1 _ESP charges", NULL, "ESP Charge using the AM1 method from Mopac", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalScanMopacAM1", NULL, "Mopac AM1 _Reaction path", NULL, "Reaction path using the AM1 method from Mopac", G_CALLBACK (activate_action) },
+	{"SemiEmpiricalEnergyOrca", NULL, "Orca _Energy", NULL, "compute the energy using Orca", G_CALLBACK (activate_action) },
+	{"SemiEmpiricalOptimisationOrca", NULL, "Orca _Optimisation", NULL, "optimize the geometry using Orca", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalMD", NULL, "Molcecular _Dynamics", NULL, "Molcecular dynamics using a semi-empirical method", G_CALLBACK (activate_action) },
 	{"SemiEmpiricalMDConfo", NULL, "Molcecular _Dynamics Conformational search", NULL, "Molcecular dynamics conformational search using a semi-empirical  method", G_CALLBACK (activate_action) },
 
@@ -1081,6 +1114,11 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadMPQCFirst\" action=\"ReadMPQCFirst\" />\n"
 "        <menuitem name=\"ReadMPQCLast\" action=\"ReadMPQCLast\" />\n"
 "      </menu>\n"
+"      <separator name=\"sepMenuReadOrca\" />\n"
+"      <menu name=\"Orca\" action=\"Orca\">\n"
+"        <menuitem name=\"ReadOrcaFirst\" action=\"ReadOrcaFirst\" />\n"
+"        <menuitem name=\"ReadOrcaLast\" action=\"ReadOrcaLast\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuReadPCGamess\" />\n"
 "      <menu name=\"PCGamess\" action=\"PCGamess\">\n"
 "        <menuitem name=\"ReadPCGamessFirst\" action=\"ReadPCGamessFirst\" />\n"
@@ -1101,6 +1139,7 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadGeomConvMolpro\" action=\"ReadGeomConvMolpro\" />\n"
 "        <menuitem name=\"ReadGeomConvMopac\" action=\"ReadGeomConvMopac\" />\n"
 "        <menuitem name=\"ReadGeomConvMPQC\" action=\"ReadGeomConvMPQC\" />\n"
+"        <menuitem name=\"ReadGeomConvOrca\" action=\"ReadGeomConvOrca\" />\n"
 "        <menuitem name=\"ReadGeomConvQChem\" action=\"ReadGeomConvQChem\" />\n"
 "        <menuitem name=\"ReadGeomConvGabedit\" action=\"ReadGeomConvGabedit\" />\n"
 "        <menuitem name=\"ReadGeomConvMolden\" action=\"ReadGeomConvMolden\" />\n"
@@ -1118,6 +1157,12 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"EditDeleteHydrogenAtoms\" action=\"EditDeleteHydrogenAtoms\" />\n"
 "        <menuitem name=\"EditDeleteSelectedAtoms\" action=\"EditDeleteSelectedAtoms\" />\n"
 "        <menuitem name=\"EditDeleteMolecule\" action=\"EditDeleteMolecule\" />\n"
+"        <separator name=\"sepMenuEditMove\" />\n"
+"        <menuitem name=\"EditMoveCenterOfSelectedAtomsToOrigin\" action=\"EditMoveCenterOfSelectedAtomsToOrigin\" />\n"
+#ifdef EXPERIMENTAL
+"        <menuitem name=\"EditAlignPrincipalAxesOfSelectedAtomsToXYZ\" action=\"EditAlignPrincipalAxesOfSelectedAtomsToXYZ\" />\n"
+"        <menuitem name=\"EditAlignSelectedAndNotSelectedAtoms\" action=\"EditAlignSelectedAndNotSelectedAtoms\" />\n"
+#endif
 "        <separator name=\"sepMenuEditOpenGeometryEditor\" />\n"
 "        <menuitem name=\"EditOpenGeometryEditor\" action=\"EditOpenGeometryEditor\" />\n"
 "        <separator name=\"sepMenuPersonalFragments\" />\n"
@@ -1316,6 +1361,7 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"ScreenCaptureBMP\" action=\"ScreenCaptureBMP\" />\n"
 "      <menuitem name=\"ScreenCapturePNG\" action=\"ScreenCapturePNG\" />\n"
 "      <menuitem name=\"ScreenCapturePS\" action=\"ScreenCapturePS\" />\n"
+"      <menuitem name=\"ScreenCaptureCilpBoard\" action=\"ScreenCaptureCilpBoard\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepTools\" />\n"
 "    <menu name=\"Tools\" action=\"Tools\">\n"
@@ -1334,6 +1380,7 @@ static const gchar *uiMenuInfo =
 "    </menu>\n"
 "    <separator name=\"sepSemiEmpirical\" />\n"
 "    <menu name=\"SemiEmpirical\" action=\"SemiEmpirical\">\n"
+/*
 "      <menuitem name=\"SemiEmpiricalEnergyMopacPM6\" action=\"SemiEmpiricalEnergyMopacPM6\" />\n"
 "      <menuitem name=\"SemiEmpiricalOptimisationMopacPM6\" action=\"SemiEmpiricalOptimisationMopacPM6\" />\n"
 "      <menuitem name=\"SemiEmpiricalESPMopacPM6\" action=\"SemiEmpiricalESPMopacPM6\" />\n"
@@ -1343,14 +1390,21 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"SemiEmpiricalOptimisationMopacAM1\" action=\"SemiEmpiricalOptimisationMopacAM1\" />\n"
 "      <menuitem name=\"SemiEmpiricalESPMopacAM1\" action=\"SemiEmpiricalESPMopacAM1\" />\n"
 "      <menuitem name=\"SemiEmpiricalScanMopacAM1\" action=\"SemiEmpiricalScanMopacAM1\" />\n"
+*/
 "      <separator name=\"sepSemiEmpiricalMopac\" />\n"
 "      <menuitem name=\"SemiEmpiricalEnergyMopac\" action=\"SemiEmpiricalEnergyMopac\" />\n"
 "      <menuitem name=\"SemiEmpiricalOptimisationMopac\" action=\"SemiEmpiricalOptimisationMopac\" />\n"
 "      <menuitem name=\"SemiEmpiricalESPMopac\" action=\"SemiEmpiricalESPMopac\" />\n"
 "      <menuitem name=\"SemiEmpiricalScanMopac\" action=\"SemiEmpiricalScanMopac\" />\n"
+
+"      <separator name=\"sepSemiEmpiricalOrca\" />\n"
+"      <menuitem name=\"SemiEmpiricalEnergyOrca\" action=\"SemiEmpiricalEnergyOrca\" />\n"
+"      <menuitem name=\"SemiEmpiricalOptimisationOrca\" action=\"SemiEmpiricalOptimisationOrca\" />\n"
+
 "      <separator name=\"sepSemiEmpiricalPCGamess\" />\n"
 "      <menuitem name=\"SemiEmpiricalEnergyPCGamessAM1\" action=\"SemiEmpiricalEnergyPCGamessAM1\" />\n"
 "      <menuitem name=\"SemiEmpiricalOptimisationPCGamessAM1\" action=\"SemiEmpiricalOptimisationPCGamessAM1\" />\n"
+
 "      <separator name=\"sepSemiEmpiricalMD\" />\n"
 "      <menuitem name=\"SemiEmpiricalMD\" action=\"SemiEmpiricalMD\" />\n"
 "      <menuitem name=\"SemiEmpiricalMDConfo\" action=\"SemiEmpiricalMDConfo\" />\n"
@@ -1449,6 +1503,12 @@ void activate_rotation()
 	if(GTK_IS_TOGGLE_ACTION(actionRotation)) gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(actionRotation), TRUE);
 }
 /*********************************************************************************************************************/
+void activate_edit_objects()
+{
+	GtkAction * actionEdition = gtk_ui_manager_get_action(manager, "/MenuGeom/Operations/OperationsEditObjects");
+	if(GTK_IS_TOGGLE_ACTION(actionEdition)) gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(actionEdition), TRUE);
+}
+/*********************************************************************************************************************/
 void activate_insert_fragment()
 {
 	GtkAction * action = gtk_ui_manager_get_action(manager, "/MenuGeom/Operations/OperationsInsertFrag");
@@ -1515,6 +1575,9 @@ static void set_sensitive()
 	GtkWidget *deleteMolecule = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/EditDeleteMolecule");
 	GtkWidget *deleteHydrogenAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/EditDeleteHydrogenAtoms");
 	GtkWidget *deleteSelectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/EditDeleteSelectedAtoms");
+	GtkWidget *moveSelectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/EditMoveCenterOfSelectedAtomsToOrigin");
+	GtkWidget *alignSelectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/EditAlignPrincipalAxesOfSelectedAtomsToXYZ");
+	GtkWidget *alignSelectedAndNotSelectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/EditAlignSelectedAndNotSelectedAtoms");
 	GtkWidget *copySelectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/EditCopySelectedAtoms");
 	GtkWidget *resetAllConnections = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/EditResetAllConnections");
 	GtkWidget *resetMultipleConnections = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/EditResetMultipleConnections");
@@ -1603,6 +1666,9 @@ static void set_sensitive()
 			getOperationType()!=SELECTOBJECTS
 	)sensitive = FALSE;
 	if(GTK_IS_WIDGET(deleteSelectedAtoms)) gtk_widget_set_sensitive(deleteSelectedAtoms, sensitive);
+	if(GTK_IS_WIDGET(moveSelectedAtoms)) gtk_widget_set_sensitive(moveSelectedAtoms, sensitive);
+	if(GTK_IS_WIDGET(alignSelectedAtoms)) gtk_widget_set_sensitive(alignSelectedAtoms, sensitive);
+	if(GTK_IS_WIDGET(alignSelectedAndNotSelectedAtoms)) gtk_widget_set_sensitive(alignSelectedAndNotSelectedAtoms, sensitive);
 	if(GTK_IS_WIDGET(copySelectedAtoms)) gtk_widget_set_sensitive(copySelectedAtoms, sensitive);
 	if(GTK_IS_WIDGET(setMMTypeOfselectedAtoms)) gtk_widget_set_sensitive(setMMTypeOfselectedAtoms, sensitive);
 	if(GTK_IS_WIDGET(setPDBTypeOfselectedAtoms)) gtk_widget_set_sensitive(setPDBTypeOfselectedAtoms, sensitive);

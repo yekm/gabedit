@@ -38,14 +38,29 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/ContoursPov.h"
 #include "../OpenGL/PlanesMappedPov.h"
 #include "../OpenGL/GridCube.h"
+#include "../OpenGL/GridCP.h"
 #include "../OpenGL/ColorMap.h"
 
-void CalculFfact();
-void CalculFact();
-void CalculCIJ();
-gfloat Dpn(gfloat e,gint n);
-gint m1p(gint i);
-gfloat SpqSansNorm(GTF p,GTF q);
+/**********************************************/
+void glMaterialdv(GLenum face, GLenum pname, const GLdouble*  	params)
+{
+	GLfloat p[4] = {params[0],params[1],params[2], params[3]};
+	glMaterialfv(face, pname, p);
+}
+/**********************************************/
+void glLightdv(GLenum face, GLenum pname, const GLdouble* params)
+{
+	GLfloat p[4] = {params[0],params[1],params[2], params[3]};
+	glLightfv(face, pname, p);
+}
+
+/**********************************************/
+void glFogdv(GLenum pname, const GLdouble* params)
+{
+	GLfloat p[4] = {params[0],params[1],params[2], params[3]};
+	glFogfv(pname, p);
+}
+/**********************************************/
 static gint getOptimalN(gint nG)
 {
 	/* 2^n = 16, 32, 64, 128, 256, 512, 1024 */
@@ -73,52 +88,26 @@ void InitializeAll()
  	EnerAlphaOrbitals = NULL;
 	TypeSelOrb = 1; 
 	NumSelOrb = -1;
- 	CalculFact();
- 	CalculFfact();
- 	CalculCIJ();
 }
 /**********************************************/
-gfloat** CreateTable2(gint N)
+gdouble** CreateTable2(gint N)
 {
- gfloat** T;
- gint i;
- T = g_malloc(N*sizeof(gfloat*)) ;
+	gdouble** T;
+	gint i;
+	T = g_malloc(N*sizeof(gdouble*)) ;
 
- for(i=0;i<N;i++)
-   T[i] = g_malloc(N*sizeof(gfloat));
+	for(i=0;i<N;i++)
+		T[i] = g_malloc(N*sizeof(gdouble));
 
- return T;
+	return T;
 }
 /**********************************************/
-gfloat** FreeTable2(gfloat **T,gint N)
+gdouble** FreeTable2(gdouble **T,gint N)
 {
- gint i;
-  for(i=0;i<N;i++)
-   g_free(T[i]);
-
- g_free(T);
-
- return NULL;
-}
-/**********************************************/
-gfloat f(gint i,gint l,gint m,gfloat A,gfloat B)
-{
-  gint j,jmin,jmax;
-  gfloat Som=0.0;
-
-  jmin = 0;
-  if(jmin<i-m)
-    jmin =i-m;
-  jmax = i;
-  if(jmax>l)
-   jmax = l;
-  for( j=jmin;j<=jmax;j++)
-  {
-     Som += CIJ[l][j]*CIJ[m][i-j]*
-          Dpn(-A,l-j)*Dpn(-B,m-i+j);
-
-  }
-  return Som; 
+	gint i;
+	for(i=0;i<N;i++) g_free(T[i]);
+	g_free(T);
+	return NULL;
 }
 /**********************************************/
 gint GetTotalNelectrons()
@@ -150,271 +139,6 @@ void DefineNOccs()
   NTotOcc /=2;
   TypeSelOrb = 1;
   NumSelOrb = NAlphaOcc-1;
-}
-/**********************************************/
-gfloat Dpn(gfloat e,gint n)
-{
- gfloat p=1.0;
- gint k;
- if(fabs(e)<1e-10)
- {
-  if (n==0)
-   return 1.0;
-  else
-   return 0.0;
- }
- for(k=1;k<=n;k++)
-  p *=e;
- return p;
-}
-/**********************************************/
-gfloat Cklm(gint k,gint l,gint m)
-{
-   gfloat p=1.0;
-   gint j;
-   for(j=0;j<=k-1;j++)
-    p *=(gfloat)(l-m-2*j)*(gfloat)(l-m-2*j-1)/( 2*(gfloat)(j+1)*(gfloat)(2*l-2*j-1));
-
-    return p;
-
-}
-/**********************************************/
-void printSlm(Slm S)
-{
-	gint i,j;
-	char XYZ[4]={'x','y','z'};
-
-   	printf("l=%d m =%d N=%d \n",S.l,S.m,S.N);
-   	for(i=0;i<S.N;i++)
-   	{
-   	  printf("%9.6f ",S.lxyz[i].Coef);
-   	  for(j=0;j<3;j++)
-   	  {
-   	   if(S.lxyz[i].l[j] !=0)
-   	   {
-   	   		if(S.lxyz[i].l[j] >1)
-   				printf("%c%d",XYZ[j],S.lxyz[i].l[j]);
-   			else
-   				printf("%c",XYZ[j]);
-   		}
-   	  }
-   	 printf("\n");
-   	}
-}
-/**********************************************/
-Slm DeleteEqSml(Slm S)
-{
-   Slm St;
-   gint Nc;
-   gint ok;
-   gint i,j,k;
-   gint* Ndel= g_malloc(S.N*sizeof(gint));
-
-   St.l=S.l;
-   St.m=S.m;
-   St.N=S.N;
-   for(i=0;i<S.N;i++)
-   	   	Ndel[i] = 0;
-
-   St.lxyz = g_malloc(St.N*sizeof(LXYZ));
-   	Nc=-1;
-   	
-   	
-   	for(i=0;i<S.N;i++)
-   	{
-   	  if(Ndel[i] == 1  )
-   	     continue;
-   	   Nc++;
-   	 	for(j=0;j<3;j++)
-   	   		St.lxyz[Nc].l[j] = S.lxyz[i].l[j];
-   	  	St.lxyz[Nc].Coef = S.lxyz[i].Coef;
-   	
-   		for(k=i+1;k<S.N;k++)
-   		{
-   			ok=1; /* les 2 sont identiques*/
-   	   		for(j=0;j<3;j++)
-   	   		if( St.lxyz[Nc].l[j] != S.lxyz[k].l[j] )
-   	      	{
-   	      		ok =0;
-   	      		break;
-   	      	}
-   	   	  	if(ok == 1)
-   	   	  	{
-   	   	  	 St.lxyz[Nc].Coef += S.lxyz[k].Coef;
-   	   	  	 Ndel[k] = 1;
-   	   	  	 }
-   		}
-   	}
-   	St.N = Nc+1;
-   	g_free(S.lxyz);
-   	g_free(Ndel);
-   	return St;
-   	
-
-}
-/**********************************************/
-Slm GetCoefSlP(gint l, gint m)
-{
-   Slm S;
-   gint k,i,r,s;
-   gint Nc=0;
-   gfloat Norm;
-
-   S.m = m;
-   S.l = l;
-
-
- Norm = sqrt((2*l+1)/(4*PI))/sqrt(fact[l-m]*fact[l+m])*ffact[l];	
- if(m!=0) Norm*=sqrt(2.0);
-   for(k=0;k<=(l-m)/2;k++)
-   	for(i=0;i<=m/2;i++)
-   		for(r=0;r<=k;r++)
-   			for(s=0;s<=k-r;s++)
-   	{
-   	   Nc++;
-   	}
-   	S.N=Nc;
-   	S.lxyz = g_malloc(Nc*sizeof(LXYZ));
-   	Nc=-1;
-   	for(k=0;k<=(l-m)/2;k++)
-   	for(i=0;i<=m/2;i++)
-   		for(r=0;r<=k;r++)
-   			for(s=0;s<=k-r;s++)
-   	{
-   	   Nc++;
-   	  S.lxyz[Nc].Coef =Norm*
-   	  m1p(k+i)*
-   	 Cklm(k,l,m)*
-   	  fact[m]/fact[2*i]/fact[m-2*i]*
-   	  fact[k]/fact[r]/fact[k-r]*
-   	  fact[k-r]/fact[s]/fact[k-r-s];
-   	
-
-   	   S.lxyz[Nc].l[0] =2*r+m-2*i;
-	   S.lxyz[Nc].l[1] =2*s+2*i;   	
-	   S.lxyz[Nc].l[2] =l-m-2*r-2*s;   	
-
-   	}
-/*
-   	printf("avant elimination\n");
-   	printSlm(S);
-   	*/
-   	S = DeleteEqSml(S);
-/*   	printf("apres elimination\n");*/
-/*   	printSlm(S);*/
-   	return S;
-
-}
-/**********************************************/
-Slm GetCoefSlM(gint l, gint m)
-{
-   Slm S;
-   gint k,i,r,s;
-   gint Nc=0;
-   gfloat Norm;
-
-   S.m = -m;
-   S.l = l;
-   Norm = sqrt((2*l+1)/(4*PI))/sqrt(fact[l-m]*fact[l+m])*ffact[l];	
-   if(m!=0) Norm*=sqrt(2.0);
-   for(k=0;k<=(l-m)/2;k++)
-   	for(i=0;i<=(m-1)/2;i++)
-   		for(r=0;r<=k;r++)
-   			for(s=0;s<=k-r;s++)
-   	{
-   	   Nc++;
-   	}
-   	S.N=Nc;
-   	S.lxyz = g_malloc(Nc*sizeof(LXYZ));   	
- 	Nc=-1;
-   for(k=0;k<=(l-m)/2;k++)
-   	for(i=0;i<=(m-1)/2;i++)
-   		for(r=0;r<=k;r++)
-   			for(s=0;s<=k-r;s++)
-   	{
-   	   Nc++;
-   	  S.lxyz[Nc].Coef =Norm*
-   	  m1p(k+i)*
-   	  Cklm(k,l,m)*
-   	  fact[m]/fact[2*i+1]/fact[m-2*i-1]*
-   	  fact[k]/fact[r]/fact[k-r]*
-   	  fact[k-r]/fact[s]/fact[k-r-s];
-   	
-
-   	   S.lxyz[Nc].l[0] =2*r+m-2*i-1;
-	   S.lxyz[Nc].l[1] =2*s+2*i+1;   	
-	   S.lxyz[Nc].l[2] =l-m-2*r-2*s;   	
-
-   	}
-
-  /* 	printf("avant elimination\n");*/
-  /*	printSlm(S);*/
-   	S = DeleteEqSml(S);
- /*  	printf("apres elimination\n");*/
-/*   	printSlm(S);*/
-   	
-   	return S;
-}
-/**********************************************/
-Slm GetCoefSlm(gint l, gint m)
-{
-	if(m>=0)
-			return GetCoefSlP(l,m);
-		else
-			return GetCoefSlM(l,-m);
-}
-/*******************************************************/
-void printCoefSlm()
-{
-	gint lMax = 4;
-	gint l;
-	gint m;
-	InitializeAll();
-	for(l=0; l<=lMax; l++)
-	{
-		for(m=-l; m<=l; m++)
-		{
-			Slm slm =GetCoefSlm(l, m);
-			printSlm(slm);
-		}
-
-	}
-}
-/*******************************************************/
-gdouble slmGetValue(Slm* slm, gdouble x, gdouble y, gdouble z)
-{
-	gdouble flm = 0;
-	gint numberOfCoefficients = slm->N;
-	LXYZ* lxyz = slm->lxyz;
-	gint i,r;
-
-	if(numberOfCoefficients>=4)
-	{
-		gdouble flm1 = 0;
-		gdouble flm2 = 0;
-		gdouble flm3 = 0;
-		gdouble flm4 = 0;
-		r = numberOfCoefficients%4;
-		for(i=0; i<r; i++)
-			flm += lxyz[i].Coef* pow(x,lxyz[i].l[0])* pow(y,lxyz[i].l[1])* pow(z,lxyz[i].l[2]);
-
-		for(i=r; i<numberOfCoefficients; i+=4)
-		{
-			flm1 += lxyz[i].Coef* pow(x,lxyz[i].l[0])* pow(y,lxyz[i].l[1])* pow(z,lxyz[i].l[2]);
-			flm2 += lxyz[i+1].Coef* pow(x,lxyz[i+1].l[0])* pow(y,lxyz[i+1].l[1])* pow(z,lxyz[i+1].l[2]);
-			flm3 += lxyz[i+2].Coef* pow(x,lxyz[i+2].l[0])* pow(y,lxyz[i+2].l[1])* pow(z,lxyz[i+2].l[2]);
-			flm4 += lxyz[i+3].Coef* pow(x,lxyz[i+3].l[0])* pow(y,lxyz[i+3].l[1])* pow(z,lxyz[i+3].l[2]);
-		}
-		flm += flm1 + flm2 + flm3 + flm3;
-	}
-	else
-	for(i=0; i<numberOfCoefficients; i++)
-		flm += lxyz[i].Coef*
-			pow(x,lxyz[i].l[0])*
-			pow(y,lxyz[i].l[1])*
-			pow(z,lxyz[i].l[2]);
-
-	return flm;
 }
 /**********************************************/
 char GetSymmetry(gint l)
@@ -480,152 +204,7 @@ void printLineChar(char c,gint n)
   printf("\n");
 }
 /**********************************************/
-gint m1p(gint i)
-{
- if(i%2==0)
-    return 1;
- else
-    return -1;
-}
-/**********************************************/
-void CalculFact()
-{
- gint i;
- fact[0]=1.0;
- fact[1]=1.0;
-
- for(i=2;i<MAX_FACT;i++)
-	fact[i]=fact[i-1]*i;
-}
-/**********************************************/
-void CalculFfact()
-{
-/* ffact[i] = (2*i-1)!!*/
- gint i;
- ffact[0]=1.0;
- ffact[1]=1.0;
-
- for(i=2;i<MAX_FACT;i++)
-	ffact[i]=ffact[i-1]*(2*i-1);
-}
-/**********************************************/
-void CalculCIJ()
-{
- gint i,j;
-
- for(i=0;i<MAX_FACT;i++)
- {
- 	for(j=0;j<=i;j++)
-		CIJ[i][j]=fact[i]/fact[j]/fact[i-j];
-	for(j=i+1;j<MAX_FACT;j++)
-	 	CIJ[i][j]=CIJ[i][j-i];
- }
-}
-/**********************************************/
-gfloat NormeGTF(GTF p)
-{
- /*
- printf("%f\n",2*p.Ex/Pi);
- printf("%f\n",Dpn(4*p.Ex,p.l[0]+p.l[1]+p.l[2]));
- printf("%d\n",p.l[0]);
- printf("%f\n",ffact[p.l[0]]);
- */
- return sqrt(2*p.Ex/PI*sqrt(2*p.Ex/PI)*Dpn(4*p.Ex,p.l[0]+p.l[1]+p.l[2])
-        /(ffact[p.l[0]]*ffact[p.l[1]]*ffact[p.l[2]]) );
-}
-/**********************************************/
-void NormaliseRadial(GTF*p)
-{
-  	GTF q=*p;
-  	gint l=q.l[0]+q.l[1]+q.l[2];
-  	
-  	q.l[0]=l;
-	q.l[1]=0;
-	q.l[2]=0;
- p->Coef *= NormeGTF(q);
-}
-/**********************************************/
-void Normalise(GTF*p)
-{
- p->Coef *= NormeGTF(*p);
-}
-/**********************************************/
-void NormaliseCGTF(CGTF*p)
-{
- gint n,np;
- gfloat Som=0.0;
- for(n=0;n<p->N;n++)
-   Som += p->Gtf[n].Coef*p->Gtf[n].Coef*SpqSansNorm(p->Gtf[n],p->Gtf[n]);
- for(n=0;n<p->N-1;n++)
-  for(np=n+1;np<p->N;np++)
-   Som +=2*( p->Gtf[n].Coef*p->Gtf[np].Coef*SpqSansNorm(p->Gtf[n],p->Gtf[np]));
-
- if(Som>1.e-20)
- {
- Som = sqrt(Som);
- for(n=0;n<p->N;n++)
-  p->Gtf[n].Coef /= Som;
- }
- else
- {
- printf("Error : a CGTF is nul\n");
- exit(1);
- }
-
-}
-/**********************************************/
-gfloat SpqSansNorm(GTF p,GTF q)
-{
-  gint i,j;
-  gfloat Som[3];
-  gfloat t;
-  gfloat PA[3];
-  gfloat PB[3];
-  gfloat gama=p.Ex+q.Ex;
-  gfloat R2=0.0;
-
-  for(j=0;j<3;j++)
-  {
-    t=(p.Ex*p.C[j]+q.Ex*q.C[j])/gama;
-    PA[j]=p.C[j]-t;
-    PB[j]=q.C[j]-t;
-    R2 += (p.C[j]-q.C[j])*(p.C[j]-q.C[j]);
-  }
-
-
-  for(j=0;j<3;j++)
-  {
-   Som[j]=0.0;
-   for(i=0;i<=(p.l[j]+q.l[j])/2;i++)
-   {
-     Som[j] +=f(2*i,p.l[j],q.l[j],PA[j],PB[j])*ffact[i]
-              /(Dpn(2.0,i)*Dpn(gama,i));
-   }
-  }
-  return  (PI/gama)*sqrt(PI/gama)
-         *exp(-p.Ex*q.Ex/gama*R2)
-         *Som[0]*Som[1]*Som[2];
-}
-/**********************************************/
-gfloat Spq(GTF p,GTF q)
-{
-  return  p.Coef*q.Coef*SpqSansNorm(p,q);
-}
-/**********************************************/
-gfloat SpqCGTF(CGTF p,CGTF q)
-{
-  gint n;
-  gint np;
-  gfloat Som=0.0;
-
-  for(n=0;n<p.N;n++)
-   for(np=0;np<q.N;np++)
-    Som += Spq(p.Gtf[n],q.Gtf[np]); 
-
-  return Som;
-}
-/************************************************/
-gint get_type_file(gchar *NomFichier)
+gint get_type_file(gchar *fileName)
 {
  	gchar *t;
  	FILE *fd;
@@ -633,12 +212,12 @@ gint get_type_file(gchar *NomFichier)
 	gint ktype = GABEDIT_TYPEFILE_UNKNOWN;
 
  	t=g_malloc(taille);
- 	fd = FOpen(NomFichier, "rb");
+ 	fd = FOpen(fileName, "rb");
 
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",NomFichier);
+		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
   		Message(buffer,"Error",TRUE);
  		g_free(t);
   		return ktype;
@@ -687,6 +266,19 @@ gint get_type_file(gchar *NomFichier)
 		while(!feof(fd))
 		{
 			fgets(t,taille,fd);
+			if(strstr(t,"* O   R   C   A *"))
+			{
+				ktype = GABEDIT_TYPEFILE_ORCA;
+				break;
+			}
+		}
+	}
+	rewind(fd);
+	if( ktype == GABEDIT_TYPEFILE_UNKNOWN)
+	{
+		while(!feof(fd))
+		{
+			fgets(t,taille,fd);
 			if(strstr(t,"GAMESS"))
 			{
 				fgets(t,taille,fd);
@@ -709,7 +301,7 @@ gint get_type_file(gchar *NomFichier)
  	if(ktype==GABEDIT_TYPEFILE_UNKNOWN)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry,  I can not determine the type of '%s' file\n",NomFichier);
+		sprintf(buffer,"Sorry,  I can not determine the type of '%s' file\n",fileName);
   		Message(buffer,"Error",TRUE);
  	}
 	return ktype;
@@ -721,7 +313,7 @@ gint get_type_file(gchar *NomFichier)
     0 : cartezian
     1 : Spherical
 */
-gint get_type_basis_in_gamess_file(gchar *NomFichier)
+gint get_type_basis_in_gamess_file(gchar *fileName)
 {
  	gchar *t;
  	FILE *fd;
@@ -729,12 +321,12 @@ gint get_type_basis_in_gamess_file(gchar *NomFichier)
 	gint ktype = -1;
 
  	t=g_malloc(taille);
- 	fd = FOpen(NomFichier, "rb");
+ 	fd = FOpen(fileName, "rb");
 
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",NomFichier);
+		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
   		Message(buffer,"Error",TRUE);
 
  		g_free(t);
@@ -765,7 +357,7 @@ gint get_type_basis_in_gamess_file(gchar *NomFichier)
     0 : cartezian
     1 : Spherical
 */
-gint get_type_basis_in_gaussian_file(gchar *NomFichier)
+gint get_type_basis_in_gaussian_file(gchar *fileName)
 {
  	gchar *t;
  	FILE *fd;
@@ -773,12 +365,12 @@ gint get_type_basis_in_gaussian_file(gchar *NomFichier)
 	gint ktype = -1;
 
  	t=g_malloc(taille);
- 	fd = FOpen(NomFichier, "rb");
+ 	fd = FOpen(fileName, "rb");
 
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",NomFichier);
+		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
   		Message(buffer,"Error",TRUE);
 
  		g_free(t);
@@ -816,7 +408,7 @@ gint get_type_basis_in_gaussian_file(gchar *NomFichier)
     0 : cartezian
     1 : Spherical
 */
-gint get_type_basis_in_qchem_file(gchar *NomFichier)
+gint get_type_basis_in_qchem_file(gchar *fileName)
 {
  	gchar *t;
  	FILE *fd;
@@ -826,12 +418,12 @@ gint get_type_basis_in_qchem_file(gchar *NomFichier)
 	gint kc = 0;
 
  	t=g_malloc(taille);
- 	fd = FOpen(NomFichier, "rb");
+ 	fd = FOpen(fileName, "rb");
 
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",NomFichier);
+		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
   		Message(buffer,"Error",TRUE);
 
  		g_free(t);
@@ -871,7 +463,7 @@ gint get_type_basis_in_qchem_file(gchar *NomFichier)
     0 : cartezian
     1 : Spherical
 */
-gint get_type_basis_in_gabedit_file(gchar *NomFichier)
+gint get_type_basis_in_gabedit_file(gchar *fileName)
 {
  	gchar *t;
  	FILE *fd;
@@ -879,12 +471,12 @@ gint get_type_basis_in_gabedit_file(gchar *NomFichier)
 	gint ktype = -1;
 
  	t=g_malloc(taille);
- 	fd = FOpen(NomFichier, "rb");
+ 	fd = FOpen(fileName, "rb");
 
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",NomFichier);
+		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
   		Message(buffer,"Error",TRUE);
  		g_free(t);
   		return ktype;
@@ -911,7 +503,7 @@ gint get_type_basis_in_gabedit_file(gchar *NomFichier)
     0 : cartezian
     1 : Spherical
 */
-gint get_type_basis_in_molden_file(gchar *NomFichier)
+gint get_type_basis_in_molden_file(gchar *fileName)
 {
  	gchar *t;
  	FILE *fd;
@@ -919,12 +511,12 @@ gint get_type_basis_in_molden_file(gchar *NomFichier)
 	gint ktype = -1;
 
  	t=g_malloc(taille);
- 	fd = FOpen(NomFichier, "rb");
+ 	fd = FOpen(fileName, "rb");
 
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",NomFichier);
+		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
   		Message(buffer,"Error",TRUE);
  		g_free(t);
   		return ktype;
@@ -938,9 +530,8 @@ gint get_type_basis_in_molden_file(gchar *NomFichier)
 		while(!feof(fd))
 		{
 			fgets(t,taille,fd);
-			if(strstr( t, "GTO"))
-				break;
-			if(strstr( t, "[5D]"))
+			g_strup(t);
+			if(strstr( t, "[5D"))
 			{
 				ktype = 1;
 				break;
@@ -953,7 +544,7 @@ gint get_type_basis_in_molden_file(gchar *NomFichier)
 	return ktype;        
 }
 /**********************************************************/
-void PrintAllOrb(gfloat** M)
+void PrintAllOrb(gdouble** M)
 {
  gint i,j;
 
@@ -1170,10 +761,10 @@ static void change_entry_value(GtkWidget *Entry, gpointer data)
 
 		for(i=0;i<3;i++)
 		{
-			temp = g_strdup_printf("%f",C2[i]);
+			temp = g_strdup_printf("%lf",C2[i]);
 		       	gtk_entry_set_text(GTK_ENTRY(entries[1][i]),temp);
 			g_free(temp);
-			temp = g_strdup_printf("%f",C3[i]);
+			temp = g_strdup_printf("%lf",C3[i]);
 		       	gtk_entry_set_text(GTK_ENTRY(entries[2][i]),temp);
 			g_free(temp);
 		}
@@ -1198,13 +789,13 @@ static void change_entry_value(GtkWidget *Entry, gpointer data)
 		}
 		for(i=0;i<3;i++) C3[i] = C1[(i+1)%3]*C2[(i+2)%3] - C2[(i+1)%3]*C1[(i+2)%3];
 
-		temp = g_strdup_printf("%f",C2[k]);
+		temp = g_strdup_printf("%lf",C2[k]);
 		gtk_entry_set_text(GTK_ENTRY(entries[1][k]),temp);
 		g_free(temp);
 
 		for(i=0;i<3;i++)
 		{
-			temp = g_strdup_printf("%f",C3[i]);
+			temp = g_strdup_printf("%lf",C3[i]);
 		       	gtk_entry_set_text(GTK_ENTRY(entries[2][i]),temp);
 			g_free(temp);
 		}
@@ -1222,13 +813,13 @@ static void change_entry_value(GtkWidget *Entry, gpointer data)
 		nG = getOptimalN(nG);
 		sprintf(tnG,"%d",nG);
 
-		temp = g_strdup_printf("%f",max);
+		temp = g_strdup_printf("%lf",max);
 		gtk_entry_set_text(GTK_ENTRY(entries[ii][jj+1]),temp);
 		g_free(temp);
 		gtk_entry_set_text(GTK_ENTRY(entries[ii][jj+2]),tnG);
 		if(ii<2)
 		{
-			temp = g_strdup_printf("%f",min);
+			temp = g_strdup_printf("%lf",min);
 			gtk_entry_set_text(GTK_ENTRY(entries[ii+1][jj]),temp);
 			g_free(temp);
 		}
@@ -1240,7 +831,7 @@ static void change_entry_value(GtkWidget *Entry, gpointer data)
 		gdouble max = 0;
 
 		max = atof(gtk_entry_get_text(GTK_ENTRY(entries[ii][jj])));
-		temp = g_strdup_printf("%f",max);
+		temp = g_strdup_printf("%lf",max);
 		gtk_entry_set_text(GTK_ENTRY(entries[ii+1][jj]),temp);
 		g_free(temp);
 		return;
@@ -1323,7 +914,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[0][0]);
+	temp = g_strdup_printf("%lf",limits.MinMax[0][0]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -1331,7 +922,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[1][0]);
+	temp = g_strdup_printf("%lf",limits.MinMax[1][0]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -1369,7 +960,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[0][1]);
+	temp = g_strdup_printf("%lf",limits.MinMax[0][1]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -1377,7 +968,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[1][1]);
+	temp = g_strdup_printf("%lf",limits.MinMax[1][1]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -1417,7 +1008,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[0][2]);
+	temp = g_strdup_printf("%lf",limits.MinMax[0][2]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -1425,7 +1016,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[1][2]);
+	temp = g_strdup_printf("%lf",limits.MinMax[1][2]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -1524,6 +1115,221 @@ void create_grid(gchar* title)
 	gtk_widget_show_all (Win);
 }
 /********************************************************************************/
+void applyelfdens(GtkWidget *Win,gpointer data)
+{
+	GtkWidget** entriestmp = NULL;
+	G_CONST_RETURN gchar* temp;
+	gchar* dump;
+	gint i;
+	gint j;
+	GridLimits limitstmp;
+	gint NumPointstmp[3];
+	GtkWidget *entries[3][6];
+	gdouble V[3][3];
+	Grid* gridDens = NULL;
+	gboolean ongrid = TRUE;
+
+	if(GTK_IS_WIDGET(Win))
+	{
+		entriestmp = (GtkWidget **)g_object_get_data(G_OBJECT (Win), "Entries");
+		ongrid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT (Win), "OnGrid"));
+	}
+	else return;
+
+	if(entriestmp==NULL) return;
+
+	for(i=0;i<3;i++)
+	for(j=0;j<6;j++)
+		entries[i][j] = entriestmp[i*6+j];
+	
+	for(i=0;i<3;i++)
+	{
+		for(j=3;j<5;j++)
+		{
+        		temp	= gtk_entry_get_text(GTK_ENTRY(entries[i][j])); 
+			dump = NULL;
+			if(temp && strlen(temp)>0)
+			{
+				dump = g_strdup(temp);
+				delete_first_spaces(dump);
+				delete_last_spaces(dump);
+			}
+
+			if(dump && strlen(dump)>0 && this_is_a_real(dump))
+			{
+				limitstmp.MinMax[j-3][i] = atof(dump);
+			}
+			else
+			{
+				GtkWidget* message = Message("Error : one entry is not a float ","Error",TRUE);
+  				gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+				return;
+			}
+			if(dump) g_free(dump);
+		}
+        	temp	= gtk_entry_get_text(GTK_ENTRY(entries[i][5])); 
+		NumPointstmp[i] = atoi(temp);
+		if(NumPointstmp[i] <=2)
+		{
+			GtkWidget* message = Message("Error : The number of points should be > 2. ","Error",TRUE);
+  			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+			return;
+		}
+		
+	}
+
+	for(i=0;i<3;i++)
+	{
+		if( limitstmp.MinMax[0][i]> limitstmp.MinMax[1][i])
+		{
+			GtkWidget* message = Message("Error :  The minimal value should be smaller than the maximal value ","Error",TRUE);
+  			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+			return;
+		}
+	}
+	for(i=0;i<3;i++)
+	{
+		for(j=0;j<3;j++)
+		{
+			V[i][j] = 0;
+        		temp	= gtk_entry_get_text(GTK_ENTRY(entries[i][j])); 
+			dump = NULL;
+			if(temp && strlen(temp)>0)
+			{
+				dump = g_strdup(temp);
+				delete_first_spaces(dump);
+				delete_last_spaces(dump);
+			}
+
+			if(dump && strlen(dump)>0 && this_is_a_real(dump))
+			{
+				V[i][j] = atof(dump);
+			}
+			else
+			{
+				GtkWidget* message = Message("Error : one entry is not a float ","Error",TRUE);
+  				gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+				return;
+			}
+			if(dump) g_free(dump);
+		}
+	}
+        
+	for(i=0;i<3;i++)
+	{
+		gdouble norm = 0.0;
+		for(j=0;j<3;j++)
+			norm += V[i][j]*V[i][j];
+		if(fabs(norm)<1e-8)
+		{
+			GtkWidget* message = Message("Error : the norm is equal to 0 ","Error",TRUE);
+  			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+			return;
+		}
+		for(j=0;j<3;j++)
+			V[i][j] /= sqrt(norm);
+	}
+	for(j=0;j<3;j++) originOfCube[j] = 0;
+	for(j=0;j<3;j++) firstDirection[j] = V[0][j];
+	for(j=0;j<3;j++) secondDirection[j] = V[1][j];
+	for(j=0;j<3;j++) thirdDirection[j] = V[2][j];
+
+	for(i=0;i<3;i++)
+	{
+		NumPoints[i] =NumPointstmp[i] ; 
+		for(j=0;j<2;j++)
+			limits.MinMax[j][i] =limitstmp.MinMax[j][i]; 
+	}
+
+
+	delete_child(Win);
+	free_grid_all();
+	grid = define_grid_ELFSAVIN(NumPoints,limits);
+	if(grid)
+	{
+		add_surface();
+		free_iso_all();
+		limits.MinMax[0][3] = grid->limits.MinMax[0][3];
+		limits.MinMax[1][3] = grid->limits.MinMax[1][3];
+	}
+	gridDens = define_grid_electronic_density(NumPoints,limits);
+	computeELFAttractors(grid, gridDens, ongrid);
+	Define_Iso(0.9);
+	glarea_rafresh(GLArea);
+}
+/********************************************************************************/
+void create_grid_ELF_Dens_analyze(gboolean ongrid)
+{
+	GtkWidget *Win;
+	GtkWidget *frame;
+	GtkWidget *hbox;
+	GtkWidget *vboxall;
+	GtkWidget *vboxwin;
+	GtkWidget *button;
+	GtkWidget** entries;
+
+	if(!GeomOrb)
+	{
+		Message("Sorry, Please load a file before\n","Error",TRUE);
+		return;
+	}
+	if(!CoefAlphaOrbitals && TypeGrid != GABEDIT_TYPEGRID_MEP_CHARGES)
+	{
+		Message("Sorry, Please load the MO before\n","Error",TRUE);
+		return;
+	}
+	if(TypeGrid == GABEDIT_TYPEGRID_MEP_CHARGES)
+	{
+		gdouble s= GetSumAbsCharges();
+		if(s<1e-6) Message("Sorry, All partial charges are null\n","Error",TRUE);
+		return;
+	}
+
+	if(!AOAvailable &&(TypeGrid == GABEDIT_TYPEGRID_DDENSITY || TypeGrid == GABEDIT_TYPEGRID_ADENSITY))
+	{
+		Message("Sorry, No atomic orbitals available.\nPlease use a gabedit file for load : \n"
+		  "Geometry, Molecular and Atomic Orbitals\n","Error",TRUE);
+		return;
+	}
+	
+	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(Win),"ELF Attractors");
+	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
+	gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
+	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(PrincipalWindow));
+	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
+
+	add_glarea_child(Win,"Grid ");
+
+	vboxall = create_vbox(Win);
+	vboxwin = vboxall;
+	frame = create_grid_frame(vboxall,"Box & Grid");
+	entries = (GtkWidget**) g_object_get_data (G_OBJECT (frame), "Entries");
+	g_object_set_data (G_OBJECT (Win), "Entries",entries);
+	g_object_set_data (G_OBJECT (Win), "OnGrid",GINT_TO_POINTER(ongrid));
+   
+
+	hbox = create_hbox_false(vboxwin);
+	gtk_widget_realize(Win);
+
+	button = create_button(Win,"Cancel");
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, G_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,G_OBJECT(Win));
+	gtk_widget_show (button);
+
+	button = create_button(Win,"OK");
+	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+	gtk_widget_show (button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)applyelfdens,G_OBJECT(Win));
+  
+
+	gtk_widget_show_all (Win);
+}
+/********************************************************************************/
 void read_any_file(gchar* FileName)
 {
 	gint filetype = get_type_file(FileName);
@@ -1572,7 +1378,7 @@ gint get_number_of_point(GtkWidget* Entry)
 	return N;
 }
 /********************************************************************************/
-gboolean get_a_float(GtkWidget* Entry,gfloat* value, gchar* errorMessage)
+gboolean get_a_float(GtkWidget* Entry,gdouble* value, gchar* errorMessage)
 {
 	G_CONST_RETURN gchar* temp;
 	gchar* t = NULL;
@@ -1694,28 +1500,6 @@ void close_window_orb(GtkWidget*win, gpointer data)
 	PrincipalWindow = NULL;
 }
 /********************************************************************************/
-gboolean to_cgtf_is_id(CGTF t1,CGTF t2)
-{
-	gint i;
-	gint c;
-	if(t1.N != t2.N)
-		return FALSE;
-	for(i=0;i<3;i++)
-		if(t1.Gtf[0].l[i] != t2.Gtf[0].l[i])
-			return FALSE;
-	for(i=0;i<t1.N;i++)
-	{
-		if(fabs(t1.Gtf[i].Ex-t2.Gtf[i].Ex)>1e-10)
-			return FALSE;
-		if(fabs(t1.Gtf[i].Coef-t2.Gtf[i].Coef)>1e-10)
-			return FALSE;
-		for(c=0;c<3;c++)
-			if(fabs(t1.Gtf[i].C[c]-t2.Gtf[i].C[c])>1e-10)
-				return FALSE;
-	}
-	return TRUE;
-}
-/********************************************************************************/
 void add_glarea_child(GtkWidget* winchild,gchar* title)
 {
   if(GLArea)
@@ -1804,11 +1588,11 @@ void create_opengl_file()
 		fprintf(fd,"%d\n",openGLOptions.numberOfSubdivisionsCylindre);
 		fprintf(fd,"%d\n",openGLOptions.numberOfSubdivisionsSphere);
 		fprintf(fd,"%d\n",getOptCol());
-		fprintf(fd,"%f %f\n",getScaleBall(),getScaleStick());
+		fprintf(fd,"%lf %lf\n",getScaleBall(),getScaleStick());
 		fprintf(fd,"%d\n",colorMapType);
-		fprintf(fd,"%f %f %f\n",colorMapColors[0][0], colorMapColors[0][1],colorMapColors[0][2]);
-		fprintf(fd,"%f %f %f\n",colorMapColors[1][0], colorMapColors[1][1],colorMapColors[1][2]);
-		fprintf(fd,"%f %f %f\n",colorMapColors[2][0], colorMapColors[2][1],colorMapColors[2][2]);
+		fprintf(fd,"%lf %lf %lf\n",colorMapColors[0][0], colorMapColors[0][1],colorMapColors[0][2]);
+		fprintf(fd,"%lf %lf %lf\n",colorMapColors[1][0], colorMapColors[1][1],colorMapColors[1][2]);
+		fprintf(fd,"%lf %lf %lf\n",colorMapColors[2][0], colorMapColors[2][1],colorMapColors[2][2]);
 		fclose(fd);
 	}
 	g_free(openglfile);
@@ -1867,7 +1651,7 @@ void read_opengl_file()
 			if(sscanf(t,"%d",&colorMapType)!=1) colorMapType =1;
  		if(fgets(t,taille,fd))
 		{
-			if(sscanf(t,"%f %f %f",&colorMapColors[0][0], &colorMapColors[0][1],&colorMapColors[0][2])!=3)
+			if(sscanf(t,"%lf %lf %lf",&colorMapColors[0][0], &colorMapColors[0][1],&colorMapColors[0][2])!=3)
 			{
 				colorMapColors[0][0] = 1.0;
 				colorMapColors[0][1] = 1.0;
@@ -1876,7 +1660,7 @@ void read_opengl_file()
 		}
  		if(fgets(t,taille,fd))
 		{
-			if(sscanf(t,"%f %f %f",&colorMapColors[1][0], &colorMapColors[1][1],&colorMapColors[1][2])!=3)
+			if(sscanf(t,"%lf %lf %lf",&colorMapColors[1][0], &colorMapColors[1][1],&colorMapColors[1][2])!=3)
 			{
 				colorMapColors[1][0] = 1.0;
 				colorMapColors[1][1] = 1.0;
@@ -1885,7 +1669,7 @@ void read_opengl_file()
 		}
  		if(fgets(t,taille,fd))
 		{
-			if(sscanf(t,"%f %f %f",&colorMapColors[2][0], &colorMapColors[2][1],&colorMapColors[2][2])!=3)
+			if(sscanf(t,"%lf %lf %lf",&colorMapColors[2][0], &colorMapColors[2][1],&colorMapColors[2][2])!=3)
 			{
 				colorMapColors[2][0] = 1.0;
 				colorMapColors[2][1] = 1.0;
@@ -1908,7 +1692,7 @@ static void applygridsas(GtkWidget *Win,gpointer data)
 	GridLimits limitstmp;
 	gint NumPointstmp[3];
 	GtkWidget *entries[4][6];
-	gfloat V[3][3];
+	gdouble V[3][3];
 
 
 	if(GTK_IS_WIDGET(Win))
@@ -2081,7 +1865,7 @@ static GtkWidget *create_grid_sas_frame( GtkWidget *vboxall,gchar* title)
 	nG = getOptimalN(nG);
 	sprintf(tnG,"%d",nG);
 
-	sprintf(sr,"%f",solventRadius);
+	sprintf(sr,"%lf",solventRadius);
 
 	frame = gtk_frame_new (title);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
@@ -2134,7 +1918,7 @@ static GtkWidget *create_grid_sas_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[0][0]);
+	temp = g_strdup_printf("%lf",limits.MinMax[0][0]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -2142,7 +1926,7 @@ static GtkWidget *create_grid_sas_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[1][0]);
+	temp = g_strdup_printf("%lf",limits.MinMax[1][0]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -2180,7 +1964,7 @@ static GtkWidget *create_grid_sas_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[0][1]);
+	temp = g_strdup_printf("%lf",limits.MinMax[0][1]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -2188,7 +1972,7 @@ static GtkWidget *create_grid_sas_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[1][1]);
+	temp = g_strdup_printf("%lf",limits.MinMax[1][1]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -2228,7 +2012,7 @@ static GtkWidget *create_grid_sas_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[0][2]);
+	temp = g_strdup_printf("%lf",limits.MinMax[0][2]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -2236,7 +2020,7 @@ static GtkWidget *create_grid_sas_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[1][2]);
+	temp = g_strdup_printf("%lf",limits.MinMax[1][2]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -2396,7 +2180,7 @@ static GtkWidget *add_entry_scale(GtkWidget *table, gchar* strLabel, gint il, gd
 	j = 2;
 	entry =  gtk_entry_new();
 	{
-		gchar* v = g_strdup_printf("%f",val);
+		gchar* v = g_strdup_printf("%lf",val);
 		if(v)gtk_entry_set_text(GTK_ENTRY(entry),v);
 		else gtk_entry_set_text(GTK_ENTRY(entry),"1.0");
 		if(v) g_free(v);

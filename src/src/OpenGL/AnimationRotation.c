@@ -108,7 +108,7 @@ static void reset_parameters(GtkWidget *win, gpointer data)
 	if(velo<0)
 	{
 		velo = -velo;
-		sprintf(t,"%f",velo);
+		sprintf(t,"%lf",velo);
 		gtk_entry_set_text(GTK_ENTRY(EntryVelocity),t);
 	}
 	velocity = velo;
@@ -329,7 +329,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  3,3);
 	gtk_editable_set_editable((GtkEditable*) EntryVelocity,TRUE);
-	sprintf(t,"%f",velocity);
+	sprintf(t,"%lf",velocity);
 	gtk_entry_set_text(GTK_ENTRY(EntryVelocity),t);
 
 	i++;
@@ -447,7 +447,7 @@ static gboolean createImagesFile()
 static void animate_rotation()
 {
 
-	gfloat  phi = -360.0/nRotation;
+	gdouble  phi = -360.0/nRotation;
 	gint i = 0;
 
 	reset_parameters(NULL, NULL);

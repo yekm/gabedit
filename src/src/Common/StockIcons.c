@@ -56,6 +56,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../../pixmaps/Molcas.xpm"
 #include "../../pixmaps/Molden.xpm"
 #include "../../pixmaps/Molpro.xpm"
+#include "../../pixmaps/Orca.xpm"
 #include "../../pixmaps/QChem.xpm"
 #include "../../pixmaps/Mopac.xpm"
 #include "../../pixmaps/Adf.xpm"
@@ -170,6 +171,7 @@ void gabedit_gtk_stock_init()
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOLCAS, molcas_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOLDEN, molden_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOLPRO, molpro_xpm);
+	add_one_icon(icon_factory, GABEDIT_STOCK_ORCA, orca_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_QCHEM, qchem_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOPAC, mopac_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_ADF, adf_xpm);

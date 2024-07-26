@@ -39,7 +39,7 @@ static void print_colorMap(ColorMap* colorMap)
 	printf("Number of Color = %d\n",colorMap->numberOfColors);
 	for(i=0; i<colorMap->numberOfColors; i++)
 	{
-		printf("%f %0.2f %0.2f %0.2f\n",colorMap->colorValue[i].value,colorMap->colorValue[i].color[0],colorMap->colorValue[i].color[1],colorMap->colorValue[i].color[2]);
+		printf("%lf %0.2f %0.2f %0.2f\n",colorMap->colorValue[i].value,colorMap->colorValue[i].color[0],colorMap->colorValue[i].color[1],colorMap->colorValue[i].color[2]);
 	}
 	printf("\n");
 }
@@ -68,7 +68,7 @@ static void colormap_alloc(ColorMap* colorMap, gint numberOfColors)
 	colorMap->colorValue = g_malloc(numberOfColors*sizeof(OneColorValue));
 }
 /******************************************************************************************************************************/
-static ColorMap new_colorMap(gfloat color[], gfloat value)
+static ColorMap new_colorMap(gdouble color[], gdouble value)
 {
 	gint c;
 	ColorMap colorMap = {0,NULL};
@@ -79,7 +79,7 @@ static ColorMap new_colorMap(gfloat color[], gfloat value)
 	return colorMap;
 }
 /******************************************************************************************************************************/
-static void add_to_colorMap(ColorMap* colorMap, gfloat color[], gfloat value)
+static void add_to_colorMap(ColorMap* colorMap, gdouble color[], gdouble value)
 {
 	gint i;
 	gint c;
@@ -117,16 +117,16 @@ static void sort_colorMap(ColorMap* colorMap)
 	}
 }
 /******************************************************************************************************************************/
-ColorMap*  new_colorMap_min_max_multicolor(gfloat minValue, gfloat maxValue)
+ColorMap*  new_colorMap_min_max_multicolor(gdouble minValue, gdouble maxValue)
 {
 	gint i;
 	gint j;
 	gint k;
-	gfloat h = 0;
+	gdouble h = 0;
 	gint ns = 4;
 	gint nc = 20;
 	gint n = nc *ns+1;
-	gfloat color[3];
+	gdouble color[3];
 	ColorMap* colorMap;
 
 	h = (maxValue-minValue)/(n-1) ;
@@ -155,15 +155,15 @@ ColorMap*  new_colorMap_fromGrid_multicolor(Grid* grid)
 	gint i;
 	gint j;
 	gint k;
-	gfloat maxValue = 0;
-	gfloat minValue = 0;
+	gdouble maxValue = 0;
+	gdouble minValue = 0;
 	gboolean beg = TRUE;
-	gfloat h = 0;
+	gdouble h = 0;
 	gint ns = 4;
 	gint nc = 20;
 	gint n = nc *ns+1;
-	gfloat color[3];
-	gfloat v;
+	gdouble color[3];
+	gdouble v;
 	ColorMap* colorMap;
 
 	if(!grid)return NULL;
@@ -212,12 +212,12 @@ ColorMap*  new_colorMap_fromGrid_multicolor(Grid* grid)
 	/* print_colorMap(myColorMap);*/
 }
 /******************************************************************************************************************************/
-ColorMap*  new_colorMap_min_max_unicolor(gfloat minValue, gfloat maxValue, gfloat Color[])
+ColorMap*  new_colorMap_min_max_unicolor(gdouble minValue, gdouble maxValue, gdouble Color[])
 {
-	gfloat color[3];
+	gdouble color[3];
 	ColorMap* colorMap;
 
-	gfloat max = color[0];
+	gdouble max = color[0];
 	gint c;
 
 	for(c=0;c<3;c++) color[c] = Color[c];
@@ -241,18 +241,18 @@ ColorMap*  new_colorMap_min_max_unicolor(gfloat minValue, gfloat maxValue, gfloa
 	return colorMap;
 }
 /******************************************************************************************************************************/
-ColorMap*  new_colorMap_fromGrid_unicolor(Grid* grid, gfloat Color[])
+ColorMap*  new_colorMap_fromGrid_unicolor(Grid* grid, gdouble Color[])
 {
 	gint i;
 	gint j;
 	gint k;
-	gfloat maxValue = 0;
-	gfloat minValue = 0;
+	gdouble maxValue = 0;
+	gdouble minValue = 0;
 	gboolean beg = TRUE;
-	gfloat color[3];
-	gfloat v;
+	gdouble color[3];
+	gdouble v;
 	ColorMap* colorMap;
-	gfloat max;
+	gdouble max;
 	gint c;
 
 	if(!grid)return NULL;
@@ -301,16 +301,16 @@ ColorMap*  new_colorMap_fromGrid_unicolor(Grid* grid, gfloat Color[])
 	/* print_colorMap(myColorMap);*/
 }
 /******************************************************************************************************************************/
-ColorMap*  new_colorMap_min_max_2colors(gfloat minValue, gfloat maxValue, gfloat Color1[], gfloat Color2[])
+ColorMap*  new_colorMap_min_max_2colors(gdouble minValue, gdouble maxValue, gdouble Color1[], gdouble Color2[])
 {
-	gfloat color[3];
-	gfloat color1[3];
-	gfloat color2[3];
+	gdouble color[3];
+	gdouble color1[3];
+	gdouble color2[3];
 	ColorMap* colorMap;
 	gint c;
 
-	gfloat max1;
-	gfloat max2;
+	gdouble max1;
+	gdouble max2;
 
 	for(c=0;c<3;c++) color1[c] = Color1[c];
 	for(c=0;c<3;c++) color2[c] = Color2[c];
@@ -348,22 +348,22 @@ ColorMap*  new_colorMap_min_max_2colors(gfloat minValue, gfloat maxValue, gfloat
 	return colorMap;
 }
 /******************************************************************************************************************************/
-ColorMap*  new_colorMap_fromGrid_2colors(Grid* grid, gfloat Color1[], gfloat Color2[])
+ColorMap*  new_colorMap_fromGrid_2colors(Grid* grid, gdouble Color1[], gdouble Color2[])
 {
 	gint i;
 	gint j;
 	gint k;
 	gint c;
-	gfloat maxValue = 0;
-	gfloat minValue = 0;
+	gdouble maxValue = 0;
+	gdouble minValue = 0;
 	gboolean beg = TRUE;
-	gfloat color[3];
-	gfloat color1[3];
-	gfloat color2[3];
-	gfloat v;
+	gdouble color[3];
+	gdouble color1[3];
+	gdouble color2[3];
+	gdouble v;
 	ColorMap* colorMap;
-	gfloat max1;
-	gfloat max2;
+	gdouble max1;
+	gdouble max2;
 
 	for(c=0;c<3;c++) color1[c] = Color1[c];
 	for(c=0;c<3;c++) color2[c] = Color2[c];
@@ -422,7 +422,7 @@ ColorMap*  new_colorMap_fromGrid_2colors(Grid* grid, gfloat Color1[], gfloat Col
 	return colorMap;
 }
 /******************************************************************************************************************************/
-ColorMap*  new_colorMap_min_max(gfloat minValue, gfloat maxValue)
+ColorMap*  new_colorMap_min_max(gdouble minValue, gdouble maxValue)
 {
 	if(colorMapType == 1) 
 		return new_colorMap_min_max_multicolor(minValue,maxValue);
@@ -443,7 +443,7 @@ ColorMap*  new_colorMap_fromGrid(Grid* grid)
 
 }
 /******************************************************************************************************************************/
-void  set_Color_From_colorMap(ColorMap* colorMap, gfloat color[], gfloat value)
+void  set_Color_From_colorMap(ColorMap* colorMap, gdouble color[], gdouble value)
 {
 	gint i = 0;
 	gint k = 0;
@@ -495,8 +495,8 @@ void  set_Color_From_colorMap(ColorMap* colorMap, gfloat color[], gfloat value)
 /******************************************************************************************************************************/
 void  reset_colorMap(GtkWidget* entry, gpointer data)
 {
-	gfloat maxValue = 0;
-	gfloat minValue = 0;
+	gdouble maxValue = 0;
+	gdouble minValue = 0;
 	G_CONST_RETURN gchar* tmp;
 	ColorMap* colorMap = g_object_get_data(G_OBJECT(entry),"ColorMap");
 	ColorMap* newColorMap = NULL;
@@ -585,7 +585,7 @@ static gint configure_event( GtkWidget *widget, GdkEventConfigure *event )
   		for(i=0;i<widget->allocation.width;i++)
   		{
 			gdouble v = i/(gdouble)(widget->allocation.width)*(max-min)+min;
-			gfloat color[3];
+			gdouble color[3];
 
 			set_Color_From_colorMap(myColorMap, color, v);
 			tmpcolor.red = (gushort)(color[0]*65535);
@@ -604,9 +604,10 @@ static gint configure_event( GtkWidget *widget, GdkEventConfigure *event )
 			{
 				gint x = i;
 				gint y = height-height/4;
-				
-				sprintf(t,"%0.3f",v);
 
+				if(fabs(v)>1e-3) sprintf(t,"%0.3f",v);
+				else sprintf(t,"%0.3e",v);
+				
 	 			color.red = 0; 
 	 			color.green = 0; 
 	 			color.blue = 0; 
@@ -776,7 +777,7 @@ void color_map_show(GtkWidget* handlebox)
 			if(fabs(myColorMap->colorValue[0].value)<1e-8)
 				sprintf(tmp,"%0.1e",myColorMap->colorValue[0].value);
 			else
-				sprintf(tmp,"%f",myColorMap->colorValue[0].value);
+				sprintf(tmp,"%lf",myColorMap->colorValue[0].value);
 
 		gtk_entry_set_text(GTK_ENTRY(entryLeft),tmp);
 		if(fabs(myColorMap->colorValue[myColorMap->numberOfColors-1].value)>1e-3)
@@ -785,7 +786,7 @@ void color_map_show(GtkWidget* handlebox)
 			if(fabs(myColorMap->colorValue[myColorMap->numberOfColors-1].value)<1e-8)
 				sprintf(tmp,"%0.1e",myColorMap->colorValue[myColorMap->numberOfColors-1].value);
 			else
-				sprintf(tmp,"%f",myColorMap->colorValue[myColorMap->numberOfColors-1].value);
+				sprintf(tmp,"%lf",myColorMap->colorValue[myColorMap->numberOfColors-1].value);
 		gtk_entry_set_text(GTK_ENTRY(entryRight),tmp);
 	}
 

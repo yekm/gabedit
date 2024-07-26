@@ -11,7 +11,7 @@ QChemGuessWaveFunction qchemGuessWaveFunction;
 
 QChemFunctional* functionals;
 QChemStdFunctional* stdFunctionals;
-gfloat* sumFunctionals;
+gdouble* sumFunctionals;
 
 #endif /* __GABEDIT_QCHEMGLOBAL_H__ */
 

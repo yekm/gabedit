@@ -82,8 +82,8 @@ static void put_geom_in_text_widget(GtkWidget* TextWid)
 /********************************************************************************/
 static void set_geom_principal_axis()
 {
-	gfloat **m0 = g_malloc(3*sizeof(gfloat*));
-	gfloat** minv;
+	gdouble **m0 = g_malloc(3*sizeof(gdouble*));
+	gdouble** minv;
 	gint i,j;
 	guint n;
 
@@ -96,7 +96,7 @@ static void set_geom_principal_axis()
 	geomPAxis = g_malloc(Natoms*sizeof(GeomPAxis));
 
 	for(i=0;i<3;i++)
-		m0[i] = g_malloc(3*sizeof(gfloat));
+		m0[i] = g_malloc(3*sizeof(gdouble));
 
 
 	for(i=0;i<3;i++)
@@ -225,8 +225,8 @@ static void set_rot_matrice(gdouble m[6])
 /********************************************************************************/
 static void set_dipole_to_principal_axis()
 {
-	gfloat **m0 = g_malloc(3*sizeof(gfloat*));
-	gfloat** minv;
+	gdouble **m0 = g_malloc(3*sizeof(gdouble*));
+	gdouble** minv;
 	gint i,j;
 
 	gdouble A[3];
@@ -237,7 +237,7 @@ static void set_dipole_to_principal_axis()
 		return;
 
 	for(i=0;i<3;i++)
-		m0[i] = g_malloc(3*sizeof(gfloat));
+		m0[i] = g_malloc(3*sizeof(gdouble));
 
 
 	for(i=0;i<3;i++)

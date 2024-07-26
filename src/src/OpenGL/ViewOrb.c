@@ -98,7 +98,7 @@ int view_orb(GtkWidget* Parent,int argc, char **argv)
 
 	gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);
 	InitializeAll();
-	/*printCoefSlm();*/
+	/*printCoefZlm();*/
 
 	return 0;
 }

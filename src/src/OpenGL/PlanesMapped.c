@@ -40,7 +40,7 @@ static void apply_maps(GtkWidget *Win,gpointer data)
 	gint i1=1;
 	gint numPlane = -1;
 	gint pvalue = 0;
-	gfloat gap = 0;
+	gdouble gap = 0;
 	
         temp	= gtk_entry_get_text(GTK_ENTRY(Entrys[0])); 
 	pvalue = atoi(temp);
@@ -194,7 +194,7 @@ static void apply_maps_plane(GtkWidget *Win,gpointer data)
 {
 			
 	GtkWidget* entry =(GtkWidget*)g_object_get_data(G_OBJECT (Win), "Entry");
-	gfloat gap;
+	gdouble gap;
 	
         if(!get_a_float(entry, &gap, "Error : The projection value should be float.")) return;
 	add_maps(0, 1, 0,  gap, TRUE);

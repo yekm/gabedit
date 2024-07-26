@@ -46,6 +46,7 @@ typedef struct _DataTree
  GtkTreeIter* noeud;
 }DataTree;
 
+void timing(double* cpu,double *sys);
 #ifdef G_OS_WIN32
 gboolean winsockCheck(FILE* );
 #endif /* G_OS_WIN32 */
@@ -117,6 +118,7 @@ void get_dipole_from_gamess_output_file(FILE* fd);
 void get_dipole_from_gaussian_output_file(FILE* fd);
 void get_dipole_from_molpro_output_file(FILE* fd);
 void get_dipole_from_dalton_output_file(FILE* fd);
+void get_dipole_from_orca_output_file(FILE* fd);
 void get_dipole_from_qchem_output_file(FILE* fd);
 void get_dipole_from_mopac_output_file(FILE* fd);
 void get_dipole_from_mopac_aux_file(FILE* fd);

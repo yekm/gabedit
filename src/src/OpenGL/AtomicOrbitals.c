@@ -40,22 +40,22 @@ void save_ao_orbitals_gabedit_format(FILE* file)
 	for(i=0;i<Ncenters;i++)
 	for(j=0;j<GeomOrb[i].NAlphaOrb;j++)
 	{
-		fprintf(file," Ene= %f\n",GeomOrb[i].EnerAlphaOrbitals[j]);
+		fprintf(file," Ene= %lf\n",GeomOrb[i].EnerAlphaOrbitals[j]);
 		fprintf(file," Spin= Alpha\n");
-		fprintf(file," Occup= %f\n",GeomOrb[i].OccAlphaOrbitals[j]);
+		fprintf(file," Occup= %lf\n",GeomOrb[i].OccAlphaOrbitals[j]);
 		fprintf(file," Atom= %s\n",GeomOrb[i].Symb);
 		for(k=0;k<GeomOrb[i].NAOrb;k++)
-			fprintf(file,"     %d    %f\n",k+1, GeomOrb[i].CoefAlphaOrbitals[j][k]);
+			fprintf(file,"     %d    %lf\n",k+1, GeomOrb[i].CoefAlphaOrbitals[j][k]);
 	}
 	for(i=0;i<Ncenters;i++)
 	for(j=0;j<GeomOrb[i].NBetaOrb;j++)
 	{
-		fprintf(file," Ene= %f\n",GeomOrb[i].EnerBetaOrbitals[j]);
+		fprintf(file," Ene= %lf\n",GeomOrb[i].EnerBetaOrbitals[j]);
 		fprintf(file," Spin= Beta\n");
-		fprintf(file," Occup= %f\n",GeomOrb[i].OccBetaOrbitals[j]);
+		fprintf(file," Occup= %lf\n",GeomOrb[i].OccBetaOrbitals[j]);
 		fprintf(file," Atom= %s\n",GeomOrb[i].Symb);
 		for(k=0;k<GeomOrb[i].NAOrb;k++)
-			fprintf(file,"     %d    %f\n",k+1, GeomOrb[i].CoefBetaOrbitals[j][k]);
+			fprintf(file,"     %d    %lf\n",k+1, GeomOrb[i].CoefBetaOrbitals[j][k]);
 	}
 	fprintf(file,"\n");
 }
@@ -84,8 +84,8 @@ void print_atomic_orbitals()
 }
 /********************************************************************************/
 void free_one_atomic_orbitals(gint AtNOrb, gint AtNAlphaOrb, gint AtNBetaOrb,
-	gfloat* AtEnerAlphaOrbitals,gfloat* AtOccAlphaOrbitals,gchar** AtSymAlphaOrbitals,gfloat**AtCoefAlphaOrbitals,
-	gfloat* AtEnerBetaOrbitals,gfloat* AtOccBetaOrbitals,gchar** AtSymBetaOrbitals,gfloat**AtCoefBetaOrbitals)
+	gdouble* AtEnerAlphaOrbitals,gdouble* AtOccAlphaOrbitals,gchar** AtSymAlphaOrbitals,gdouble**AtCoefAlphaOrbitals,
+	gdouble* AtEnerBetaOrbitals,gdouble* AtOccBetaOrbitals,gchar** AtSymBetaOrbitals,gdouble**AtCoefBetaOrbitals)
 {
 	gint i;
 	if(AtEnerAlphaOrbitals == AtEnerBetaOrbitals)
@@ -214,14 +214,14 @@ void free_atomic_orbitals()
 	gint AtNOrb;
 	gint AtNAlphaOrb;
 	gint AtNBetaOrb;
-	gfloat* AtEnerAlphaOrbitals;
-	gfloat* AtOccAlphaOrbitals;
+	gdouble* AtEnerAlphaOrbitals;
+	gdouble* AtOccAlphaOrbitals;
 	gchar** AtSymAlphaOrbitals;
-	gfloat**AtCoefAlphaOrbitals;
-	gfloat* AtEnerBetaOrbitals;
-	gfloat* AtOccBetaOrbitals;
+	gdouble**AtCoefAlphaOrbitals;
+	gdouble* AtEnerBetaOrbitals;
+	gdouble* AtOccBetaOrbitals;
 	gchar** AtSymBetaOrbitals;
-	gfloat**AtCoefBetaOrbitals;
+	gdouble**AtCoefBetaOrbitals;
 	gint i;
 
 	for(i=0;i<Ncenters;i++)
@@ -248,7 +248,7 @@ void free_atomic_orbitals()
 
 }
 /********************************************************************************/
-gboolean read_atomic_orbitals_in_gabedit(gchar *NomFichier,gint itype)
+gboolean read_atomic_orbitals_in_gabedit(gchar *fileName,gint itype)
 {
  	gchar *t;
  	gboolean OK;
@@ -261,9 +261,9 @@ gboolean read_atomic_orbitals_in_gabedit(gchar *NomFichier,gint itype)
  	gchar *pdest;
 	gint n = 0;
 	gint k;
-	gfloat **CoefOrbitals;
-	gfloat *EnerOrbitals;
-	gfloat *OccOrbitals;
+	gdouble **CoefOrbitals;
+	gdouble *EnerOrbitals;
+	gdouble *OccOrbitals;
 	gchar **SymOrbitals;
 	gchar **AtSymbOrbitals;
 	gint NOcc = 0;
@@ -271,18 +271,18 @@ gboolean read_atomic_orbitals_in_gabedit(gchar *NomFichier,gint itype)
 
 	
 	/*printf("debut de orbital\n");*/
- 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
+ 	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
 		Message("Sorry No file slected\n","Error",TRUE);
     	return FALSE;
  	}
 
  	t=g_malloc(taille);
- 	fd = FOpen(NomFichier, "rb");
+ 	fd = FOpen(fileName, "rb");
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",NomFichier);
+		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
   		Message(buffer,"Error",TRUE);
 		g_free(t);
   		return FALSE;
@@ -292,8 +292,8 @@ gboolean read_atomic_orbitals_in_gabedit(gchar *NomFichier,gint itype)
 		AtomCoord[i]=g_malloc(taille*sizeof(char));
   
 	CoefOrbitals = CreateTable2(NOrb);
-	EnerOrbitals = g_malloc(NOrb*sizeof(gfloat));
-	OccOrbitals = g_malloc(NOrb*sizeof(gfloat));
+	EnerOrbitals = g_malloc(NOrb*sizeof(gdouble));
+	OccOrbitals = g_malloc(NOrb*sizeof(gdouble));
 	SymOrbitals = g_malloc(NOrb*sizeof(gchar*));
 	AtSymbOrbitals = g_malloc(NOrb*sizeof(gchar*));
 
@@ -408,7 +408,7 @@ gboolean read_atomic_orbitals_in_gabedit(gchar *NomFichier,gint itype)
 			/* Debug("atof t  = %d\n",atoi(t));*/ 
 			while(!feof(fd) && atoi(t)!=0)
 			{
-				sscanf(t,"%d %f",&idump,&CoefOrbitals[n][i]);
+				sscanf(t,"%d %lf",&idump,&CoefOrbitals[n][i]);
 	  			fgets(t,taille,fd);
 				i++;
 			}
@@ -433,12 +433,12 @@ end:
 			{
 				/* Debug("Center n %d NAOrb = %d \n",j,GeomOrb[j].NAOrb);*/
 				GeomOrb[j].NAlphaOrb = 0;
-				GeomOrb[j].EnerAlphaOrbitals = g_malloc(GeomOrb[j].NAOrb*sizeof(gfloat));
-				GeomOrb[j].OccAlphaOrbitals  = g_malloc(GeomOrb[j].NAOrb*sizeof(gfloat));
+				GeomOrb[j].EnerAlphaOrbitals = g_malloc(GeomOrb[j].NAOrb*sizeof(gdouble));
+				GeomOrb[j].OccAlphaOrbitals  = g_malloc(GeomOrb[j].NAOrb*sizeof(gdouble));
 				GeomOrb[j].SymAlphaOrbitals  = g_malloc(GeomOrb[j].NAOrb*sizeof(gchar*));
-				GeomOrb[j].CoefAlphaOrbitals = g_malloc(GeomOrb[j].NAOrb*sizeof(gfloat*));
+				GeomOrb[j].CoefAlphaOrbitals = g_malloc(GeomOrb[j].NAOrb*sizeof(gdouble*));
 				for(k=0;k<GeomOrb[j].NAOrb;k++)
-					GeomOrb[j].CoefAlphaOrbitals[k] = g_malloc(GeomOrb[j].NAOrb*sizeof(gfloat));
+					GeomOrb[j].CoefAlphaOrbitals[k] = g_malloc(GeomOrb[j].NAOrb*sizeof(gdouble));
 				/*Debug("End Allocation\n");*/
 				for(i=0;i<=n;i++)
 				{
@@ -458,12 +458,12 @@ end:
 			for(j=0;j<Ncenters;j++)
 			{
 				GeomOrb[j].NBetaOrb = 0;
-				GeomOrb[j].EnerBetaOrbitals = g_malloc(GeomOrb[j].NAOrb*sizeof(gfloat));
-				GeomOrb[j].OccBetaOrbitals  = g_malloc(GeomOrb[j].NAOrb*sizeof(gfloat));
+				GeomOrb[j].EnerBetaOrbitals = g_malloc(GeomOrb[j].NAOrb*sizeof(gdouble));
+				GeomOrb[j].OccBetaOrbitals  = g_malloc(GeomOrb[j].NAOrb*sizeof(gdouble));
 				GeomOrb[j].SymBetaOrbitals  = g_malloc(GeomOrb[j].NAOrb*sizeof(gchar*));
-				GeomOrb[j].CoefBetaOrbitals = g_malloc(GeomOrb[j].NAOrb*sizeof(gfloat*));
+				GeomOrb[j].CoefBetaOrbitals = g_malloc(GeomOrb[j].NAOrb*sizeof(gdouble*));
 				for(k=0;k<GeomOrb[j].NAOrb;k++)
-					GeomOrb[j].CoefBetaOrbitals[k] = g_malloc(GeomOrb[j].NAOrb*sizeof(gfloat));
+					GeomOrb[j].CoefBetaOrbitals[k] = g_malloc(GeomOrb[j].NAOrb*sizeof(gdouble));
 				
 				for(i=0;i<=n;i++)
 				{
@@ -482,12 +482,12 @@ end:
 			for(j=0;j<Ncenters;j++)
 			{
 				GeomOrb[j].NAlphaOrb = 0;
-				GeomOrb[j].EnerAlphaOrbitals = g_malloc(GeomOrb[j].NAOrb*sizeof(gfloat));
-				GeomOrb[j].OccAlphaOrbitals  = g_malloc(GeomOrb[j].NAOrb*sizeof(gfloat));
+				GeomOrb[j].EnerAlphaOrbitals = g_malloc(GeomOrb[j].NAOrb*sizeof(gdouble));
+				GeomOrb[j].OccAlphaOrbitals  = g_malloc(GeomOrb[j].NAOrb*sizeof(gdouble));
 				GeomOrb[j].SymAlphaOrbitals  = g_malloc(GeomOrb[j].NAOrb*sizeof(gchar*));
-				GeomOrb[j].CoefAlphaOrbitals = g_malloc(GeomOrb[j].NAOrb*sizeof(gfloat*));
+				GeomOrb[j].CoefAlphaOrbitals = g_malloc(GeomOrb[j].NAOrb*sizeof(gdouble*));
 				for(k=0;k<GeomOrb[j].NAOrb;k++)
-					GeomOrb[j].CoefAlphaOrbitals[k] = g_malloc(GeomOrb[j].NAOrb*sizeof(gfloat));
+					GeomOrb[j].CoefAlphaOrbitals[k] = g_malloc(GeomOrb[j].NAOrb*sizeof(gdouble));
 				
 				for(i=0;i<=n;i++)
 				{
@@ -504,12 +504,12 @@ end:
 			for(j=0;j<Ncenters;j++)
 			{
 				GeomOrb[j].NBetaOrb = 0;
-				GeomOrb[j].EnerBetaOrbitals = g_malloc(GeomOrb[j].NAOrb*sizeof(gfloat));
-				GeomOrb[j].OccBetaOrbitals  = g_malloc(GeomOrb[j].NAOrb*sizeof(gfloat));
+				GeomOrb[j].EnerBetaOrbitals = g_malloc(GeomOrb[j].NAOrb*sizeof(gdouble));
+				GeomOrb[j].OccBetaOrbitals  = g_malloc(GeomOrb[j].NAOrb*sizeof(gdouble));
 				GeomOrb[j].SymBetaOrbitals  = g_malloc(GeomOrb[j].NAOrb*sizeof(gchar*));
-				GeomOrb[j].CoefBetaOrbitals = g_malloc(GeomOrb[j].NAOrb*sizeof(gfloat*));
+				GeomOrb[j].CoefBetaOrbitals = g_malloc(GeomOrb[j].NAOrb*sizeof(gdouble*));
 				for(k=0;k<GeomOrb[j].NAOrb;k++)
-					GeomOrb[j].CoefBetaOrbitals[k] = g_malloc(GeomOrb[j].NAOrb*sizeof(gfloat));
+					GeomOrb[j].CoefBetaOrbitals[k] = g_malloc(GeomOrb[j].NAOrb*sizeof(gdouble));
 				
 				for(i=0;i<=n;i++)
 				{
@@ -556,7 +556,7 @@ void read_gabedit_atomic_orbitals(gchar *FileName)
 			GeomOrb[j].SymBetaOrbitals = GeomOrb[j].SymAlphaOrbitals;
 			GeomOrb[j].NBetaOrb = GeomOrb[j].NAlphaOrb;
 
-			GeomOrb[j].OccBetaOrbitals = g_malloc(GeomOrb[j].NAOrb*sizeof(gfloat));
+			GeomOrb[j].OccBetaOrbitals = g_malloc(GeomOrb[j].NAOrb*sizeof(gdouble));
 			for(i=0;i<GeomOrb[j].NBetaOrb;i++)
 			{
 				if(GeomOrb[j].OccAlphaOrbitals[i]>1.0)

@@ -29,6 +29,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/Windows.h"
 #include "Cylinder.h"
 #include "GLArea.h"
+#include "../OpenGL/UtilsOrb.h"
 
 #define Deg_Rad 180.0/PI
 
@@ -37,17 +38,17 @@ typedef struct _AxisDef
 {
  gboolean show;
  gboolean negative;
- gfloat origin[3];
- gfloat radius;
- gfloat scal;
- gfloat xColor[3];
- gfloat yColor[3];
- gfloat zColor[3];
+ gdouble origin[3];
+ gdouble radius;
+ gdouble scal;
+ gdouble xColor[3];
+ gdouble yColor[3];
+ gdouble zColor[3];
 }AxisDef;
 
 static AxisDef axis;
 /************************************************************************/
-void getAxisProperties(gboolean* show, gboolean* negative, gfloat origin[], gfloat* radius, gfloat* scal, gfloat xColor[], gfloat yColor[], gfloat zColor[])
+void getAxisProperties(gboolean* show, gboolean* negative, gdouble origin[], gdouble* radius, gdouble* scal, gdouble xColor[], gdouble yColor[], gdouble zColor[])
 {
 	gint i;
 	*show = axis.show;
@@ -94,12 +95,12 @@ void save_axis_properties()
 
  	fprintf(file,"%d\n",axis.show);
  	fprintf(file,"%d\n",axis.negative);
- 	fprintf(file,"%f %f %f\n",axis.origin[0],axis.origin[1],axis.origin[2]);
- 	fprintf(file,"%f\n",axis.radius);
- 	fprintf(file,"%f\n",axis.scal);
- 	fprintf(file,"%f %f %f\n",axis.xColor[0],axis.xColor[1],axis.xColor[2]);
- 	fprintf(file,"%f %f %f\n",axis.yColor[0],axis.yColor[1],axis.yColor[2]);
- 	fprintf(file,"%f %f %f\n",axis.zColor[0],axis.zColor[1],axis.zColor[2]);
+ 	fprintf(file,"%lf %lf %lf\n",axis.origin[0],axis.origin[1],axis.origin[2]);
+ 	fprintf(file,"%lf\n",axis.radius);
+ 	fprintf(file,"%lf\n",axis.scal);
+ 	fprintf(file,"%lf %lf %lf\n",axis.xColor[0],axis.xColor[1],axis.xColor[2]);
+ 	fprintf(file,"%lf %lf %lf\n",axis.yColor[0],axis.yColor[1],axis.yColor[2]);
+ 	fprintf(file,"%lf %lf %lf\n",axis.zColor[0],axis.zColor[1],axis.zColor[2]);
 
 	fclose(file);
 
@@ -122,17 +123,17 @@ void read_axis_properties()
 	if(n != 1) { initAxis(); return ; fclose(file); g_free(axesfile);}
  	n = fscanf(file,"%d\n",&axis.negative);
 	if(n != 1) { initAxis(); return ; fclose(file); g_free(axesfile);}
- 	n = fscanf(file,"%f %f %f\n",&axis.origin[0],&axis.origin[1],&axis.origin[2]);
+ 	n = fscanf(file,"%lf %lf %lf\n",&axis.origin[0],&axis.origin[1],&axis.origin[2]);
 	if(n != 3) { initAxis(); return ; fclose(file); g_free(axesfile);}
- 	n = fscanf(file,"%f\n",&axis.radius);
+ 	n = fscanf(file,"%lf\n",&axis.radius);
 	if(n != 1) { initAxis(); return ; fclose(file); g_free(axesfile);}
- 	n = fscanf(file,"%f\n",&axis.scal);
+ 	n = fscanf(file,"%lf\n",&axis.scal);
 	if(n != 1) { initAxis(); return ; fclose(file); g_free(axesfile);}
- 	n = fscanf(file,"%f %f %f\n",&axis.xColor[0],&axis.xColor[1],&axis.xColor[2]);
+ 	n = fscanf(file,"%lf %lf %lf\n",&axis.xColor[0],&axis.xColor[1],&axis.xColor[2]);
 	if(n != 3) { initAxis(); return ; fclose(file); g_free(axesfile);}
- 	n = fscanf(file,"%f %f %f\n",&axis.yColor[0],&axis.yColor[1],&axis.yColor[2]);
+ 	n = fscanf(file,"%lf %lf %lf\n",&axis.yColor[0],&axis.yColor[1],&axis.yColor[2]);
 	if(n != 3) { initAxis(); return ; fclose(file); g_free(axesfile);}
- 	n = fscanf(file,"%f %f %f\n",&axis.zColor[0],&axis.zColor[1],&axis.zColor[2]);
+ 	n = fscanf(file,"%lf %lf %lf\n",&axis.zColor[0],&axis.zColor[1],&axis.zColor[2]);
 	if(n != 3) { initAxis(); return ; fclose(file); g_free(axesfile);}
 
 	fclose(file);
@@ -305,20 +306,20 @@ void set_axis_dialog ()
 	{
 		if(i==4)
 		{
-			gchar* t = g_strdup_printf("%f",axis.radius*BOHR_TO_ANG);
+			gchar* t = g_strdup_printf("%lf",axis.radius*BOHR_TO_ANG);
 			gtk_entry_set_text(GTK_ENTRY(entrys[i]),t);
 			g_free(t);
 		}
 		else
 		{
-			gchar* t = g_strdup_printf("%f",axis.origin[i-1]*BOHR_TO_ANG);
+			gchar* t = g_strdup_printf("%lf",axis.origin[i-1]*BOHR_TO_ANG);
 			gtk_entry_set_text(GTK_ENTRY(entrys[i]),t);
 			g_free(t);
 		}
 	}
 	else
 	{
-		gchar* t = g_strdup_printf("%f",axis.scal);
+		gchar* t = g_strdup_printf("%lf",axis.scal);
 		gtk_entry_set_text(GTK_ENTRY(entrys[i]),t);
 		g_free(t);
 	}
@@ -467,7 +468,7 @@ static void rotatedVector(V3d v)
 {
 	V3d vz={0.0,0.0,1.0};
 	V3d	vert;
-	gfloat angle;
+	gdouble angle;
 
 
 	v3d_cross(vz,v,vert);
@@ -482,7 +483,7 @@ static void rotatedVector(V3d v)
 
 }
 /************************************************************************/
-static void drawPrism(GLfloat radius,V3d Base1Pos,V3d Base2Pos)
+static void drawPrism(GLdouble radius,V3d Base1Pos,V3d Base2Pos)
 {
 		V3d Direction;
 		double lengt;
@@ -504,20 +505,17 @@ static void drawPrism(GLfloat radius,V3d Base1Pos,V3d Base2Pos)
 }
 
 /***************************************************************************************************************/
-static void drawPrismColor(GLfloat radius,V3d Base1Pos,V3d Base2Pos, V4d Specular,V4d Diffuse,V4d Ambiant)
+static void drawPrismColor(GLdouble radius,V3d Base1Pos,V3d Base2Pos, V4d Specular,V4d Diffuse,V4d Ambiant)
 {
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
 	glMateriali(GL_FRONT_AND_BACK,GL_SHININESS,50);
 	drawPrism(radius,Base1Pos,Base2Pos);
 }
 /***************************************************************************************************************/
-static void drawAxis(V3d vector, GLfloat radius,V3d origin, V4d specular,V4d diffuse,V4d ambiant)
+static void drawAxis(V3d vector, GLdouble radius,V3d origin, V4d specular,V4d diffuse,V4d ambiant)
 {
-	GLfloat p1=90;
-	GLfloat p2=10;
-	GLfloat p = p1 + p2;
 	V3d top;
 	V3d bottom;
 	V3d center;
@@ -545,9 +543,16 @@ static void drawAxis(V3d vector, GLfloat radius,V3d origin, V4d specular,V4d dif
 
 	if(radius<0.1) radius = 0.1;
 
-	center[0] = (bottom[0]*p2 + top[0]*p1)/p;
-	center[1] = (bottom[1]*p2 + top[1]*p1)/p;
-	center[2] = (bottom[2]*p2 + top[2]*p1)/p;
+	if(axis.negative) lengt *=2;
+
+	center[0] = top[0];
+	center[1] = top[1];
+	center[2] = top[2];
+
+	top[0] += (top[0]-bottom[0])/lengt*2*radius;
+	top[1] += (top[1]-bottom[1])/lengt*2*radius;
+	top[2] += (top[2]-bottom[2])/lengt*2*radius;
+
 
 	Cylinder_Draw_Color(radius/2,bottom,center,specular,diffuse,ambiant);
 	for(i=0;i<3;i++)
@@ -558,7 +563,7 @@ static void drawAxis(V3d vector, GLfloat radius,V3d origin, V4d specular,V4d dif
 	diffuseFleche[3] = diffuse[3];
 	ambiantFleche[3] = ambiant[3];
 
-	drawPrismColor(radius,center,top,specular,diffuseFleche,ambiantFleche);
+	drawPrismColor(radius/1.5,center,top,specular,diffuseFleche,ambiantFleche);
 }
 /************************************************************************/
 GLuint axisGenList(GLuint axisList)
@@ -573,7 +578,7 @@ GLuint axisGenList(GLuint axisList)
 	V3d vectorX  = {1,0,0};
 	V3d vectorY  = {0,1,0};
 	V3d vectorZ  = {0,0,1};
-	GLfloat radius = axis.radius;
+	GLdouble radius = axis.radius;
 	gint i;
 
 	for(i=0;i<3;i++)

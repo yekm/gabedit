@@ -758,6 +758,89 @@ static void read_qchem_file_dlg()
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
 /********************************************************************************/
+static gboolean read_orca_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+
+	gchar *FileName;
+ 	gchar t[BSIZE];
+ 	gchar sdum1[BSIZE];
+ 	gboolean OK;
+ 	FILE *fd;
+ 	guint taille=BSIZE;
+	gint n;
+	gdouble ener = 0;
+	gdouble itensity = 0;
+	gint numberOfStates = 0;
+	gdouble *energies = NULL;
+	gdouble *intensities = NULL;
+
+	if(response_id != GTK_RESPONSE_OK) return FALSE;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+
+ 	fd = FOpen(FileName, "r");
+	if(!fd) return FALSE;
+
+ 	do 
+ 	{
+ 		OK=FALSE;
+ 		while(!feof(fd))
+		{
+	  		fgets(t,taille,fd);
+	 		if (strstr( t,"CD SPECTRUM") ) OK = TRUE;
+	 		if (strstr( t,"MX")  && strstr( t,"MY") && strstr( t,"MZ") && OK ){ OK = TRUE; break;}
+		}
+		if(!OK) break;
+		numberOfStates = 0;
+		if(energies) g_free(energies);
+		if(intensities) g_free(intensities);
+		energies = NULL;
+		intensities = NULL;
+	  	fgets(t,taille,fd);
+	  	fgets(t,taille,fd);
+  		while(!feof(fd) )
+  		{
+			if(!fgets(t,taille,fd)) break;
+			if(atoi(t)<=0) break;
+			n = sscanf(t,"%s %lf %s %lf", sdum1, &ener,sdum1, &itensity);
+			if(n==4)
+			{
+				numberOfStates++;
+				energies = g_realloc(energies, numberOfStates*sizeof(gdouble));
+				intensities = g_realloc(intensities, numberOfStates*sizeof(gdouble));
+				ener /=8065.54458086;
+				energies[numberOfStates-1] = ener;
+				intensities[numberOfStates-1] = itensity;
+			}
+		}
+ 	}while(!feof(fd));
+
+	if(numberOfStates>0)
+	{
+		createECDSpectrumWin(numberOfStates, energies, intensities);
+	}
+	else
+	{
+		messageErrorFreq(FileName);
+	}
+
+
+	if(energies) g_free(energies);
+	if(intensities) g_free(intensities);
+	fclose(fd);
+
+	return TRUE;
+}
+/********************************************************************************/
+static void read_orca_file_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_orca_file,
+			"Read energies and intensities from a Orca output file",
+			GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_OTHER);
+
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+}
+/********************************************************************************/
 static gboolean read_adf_file(GabeditFileChooser *SelecFile, gint response_id)
 {
 	return FALSE;
@@ -843,6 +926,7 @@ void createECDSpectrum(GtkWidget *parentWindow, GabEditTypeFile typeOfFile)
 	if(typeOfFile==GABEDIT_TYPEFILE_GAUSSIAN) read_gaussian_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_ADF) read_adf_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_MPQC) read_mpqc_file_dlg();
+	if(typeOfFile==GABEDIT_TYPEFILE_ORCA) read_orca_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_PCGAMESS) read_pcgamess_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_QCHEM) read_qchem_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_TXT) read_sample_2columns_file_dlg();

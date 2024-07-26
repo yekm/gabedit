@@ -120,6 +120,13 @@ void save_jpeg_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	gabedit_save_image(GLArea, fileName, "jpeg");
 } 
+/**************************************************************************/
+void copy_to_clipboard()
+{       
+	rafresh_window_orb();
+	while( gtk_events_pending() ) gtk_main_iteration();
+	 gabedit_save_image(GLArea, NULL, NULL);
+} 
 /**************************************************************************
 *       Save the Frame Buffer in a ppm format file
 **************************************************************************/

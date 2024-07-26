@@ -114,7 +114,7 @@ static struct
   {
     FALSE, "commands",
     "The \"commands\" file is used to store commands\n"
-    "for execute Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC, PCGamess or Q-Chem program.\n"
+    "for execute Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC, Orca, PCGamess or Q-Chem program.\n"
   },
   {
     FALSE, "network",
@@ -610,7 +610,7 @@ void user_install_dialog_create(UserInstallCallback callback)
                                 "Click \"Continue\" to enter the GABEDIT user installation.");
 
   add_label(GTK_BOX(page),
-            "Gabedit is a Graphical User Interface to Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC ,PCGamess and Q-Chem\n"
+            "Gabedit is a Graphical User Interface to Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC ,Orca, PCGamess and Q-Chem\n"
             "computational chemistry packages.\n"
 	    "It can display a variety of calculation results including support for most major molecular file formats.\n"
 	    "The advanced 'Molecule Builder' allows to rapidly sketch in molecules and examine them in 3D\n"
@@ -791,7 +791,7 @@ void user_install_dialog_create(UserInstallCallback callback)
                                              "Click \"Continue\" to accept the settings above.");
 
   add_label(GTK_BOX(commands_network_page),
-            "To execute Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC, PCGamess and Q-Chem program, "
+            "To execute Gamess-US, Gaussian, Molcas, Molpro, \nMopac, MPQC, Orca, PCGamess and Q-Chem program, "
             "GABEDIT needs to know commands system.\n"
             "GABEDIT needs to know network protocols.");
 

@@ -19,7 +19,9 @@ DEALINGS IN THE SOFTWARE.
 
 
 #include "../../Config.h"
+#include "../Common/Global.h"
 #include "GlobalOrb.h"
+#include "../Utils/AtomsProp.h"
 #include "../Geometry/GeomGlobal.h"
 #include "../Files/FileChooser.h"
 #include "../Utils/Vector3d.h"
@@ -37,6 +39,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/ColorMap.h"
 #include "../OpenGL/BondsOrb.h"
 #include "../OpenGL/RingsOrb.h"
+#include "../OpenGL/Vibration.h"
 
 #include <unistd.h>
 
@@ -58,6 +61,16 @@ typedef struct _XYZRC
 	RGB P;
 }XYZRC;
 
+/********************************************************************************/
+static gboolean degenerated_cylinder(gdouble*  v1, gdouble* v2)
+{
+	gdouble d = 0;
+	gint i;
+	for(i=0;i<3;i++)
+		d += (v1[i]-v2[i])*(v1[i]-v2[i]);
+	if(d<PRECISON_CYLINDER) return TRUE;
+	return FALSE;
+}
 /********************************************************************************/
 static XYZRC get_prop_center(gint Num, gdouble scale)
 {
@@ -93,18 +106,23 @@ static XYZRC get_tete_dipole()
 {
         XYZRC PropCenter;
 	gint i;
-	static GLfloat f = 2;
+	static GLdouble f = 2;
 
 	for(i=0;i<3;i++) PropCenter.C[i]= f*Dipole.Value[i];
 	PropCenter.C[3] = Dipole.radius;
-	for(i=0;i<3;i++) PropCenter.P.Colors[i]=Dipole.color[i]/65535.0;
+	for(i=0;i<3;i++) 
+	{
+		PropCenter.P.Colors[i]=Dipole.color[i]/65535.0;
+		PropCenter.P.Colors[i]*=0.6;
+	}
+	PropCenter.P.Colors[1] = PropCenter.P.Colors[2];
 
         return  PropCenter;
 }
 /********************************************************************************/
-static gfloat get_min(gint k)
+static gdouble get_min(gint k)
 {
-     gfloat min;
+     gdouble min;
      gint i=0;
      min = GeomOrb[0].C[k];
      for(i=1;i<(gint)Ncenters;i++)
@@ -121,28 +139,126 @@ static gint get_num_min_rayonIJ(gint i, gint j)
 	return j;
 }
 /********************************************************************************/
+static gchar *get_pov_vibarrow(
+		gdouble x0, gdouble y0, gdouble z0,
+		gdouble x1, gdouble y1, gdouble z1,
+		gdouble radius, gint i
+		)
+
+{
+     XYZRC C1;
+     XYZRC C2;
+     gdouble ep = radius/2;
+     gchar* temp = NULL;
+
+     C1.C[0] = x0;
+     C1.C[1] = y0;
+     C1.C[2] = z0;
+     C1.C[3] = radius/2;
+     C1.P.Colors[0]=0;
+     C1.P.Colors[1]=0;
+     C1.P.Colors[2]=1;
+
+     C2.C[0] = x1;
+     C2.C[1] = y1;
+     C2.C[2] = z1;
+     C2.C[3] = radius/2;
+     C2.P.Colors[0]=0.0;
+     C2.P.Colors[1]=0.9;
+     C2.P.Colors[2]=0.9;
+
+
+     if(!degenerated_cylinder(C1.C,C2.C))
+     temp = g_strdup_printf(
+		"// Vib\n"
+		"#declare CBas1_A%d = <%lf, %lf, %lf>;\n"
+		"#declare CBas2_A%d = <%lf, %lf, %lf>;\n"
+		"#declare Col1_A%d = <%lf, %lf, %lf>;\n"
+		"#declare Col2_A%d = <%lf, %lf, %lf>;\n"
+		"object\n"
+		"{\n"
+		"\tarrow (CBas1_A%d, CBas2_A%d, %lf, Col1_A%d, Col2_A%d)\n"
+		"}\n",
+		i, C1.C[0], C1.C[1], C1.C[2],
+		i, C2.C[0], C2.C[1], C2.C[2],
+		i,C1.P.Colors[0],C1.P.Colors[1],C1.P.Colors[2],
+		i,C2.P.Colors[0],C2.P.Colors[1],C2.P.Colors[2],
+		i,i,ep,i,i
+		);
+     else temp = g_strdup(" ");
+     return temp;
+}
+/********************************************************************************/
+static gchar *get_pov_vibration()
+{
+     	gchar *temp=NULL;
+     	gchar *tempold=NULL;
+     	gchar *t=NULL;
+	gint m = rowSelected;
+	gint j;
+	gdouble x0, y0, z0;
+	gdouble x1, y1, z1;
+
+	if(!ShowVibration || m<0) return g_strdup( " ");
+
+     	temp = g_strdup( "// Vibration arrows \n");
+	for(j=0;j<Ncenters;j++)
+	{
+		if(
+			vibration.modes[m].vectors[0][j]*vibration.modes[m].vectors[0][j]+
+			vibration.modes[m].vectors[1][j]*vibration.modes[m].vectors[1][j]+
+			vibration.modes[m].vectors[2][j]*vibration.modes[m].vectors[2][j]
+			<vibration.threshold*vibration.threshold
+		)continue;
+		x0 = vibration.geometry[j].coordinates[0];
+		x1 = x0 + 2*vibration.scal*vibration.modes[m].vectors[0][j];
+
+		y0 = vibration.geometry[j].coordinates[1];
+		y1 = y0 + 2*vibration.scal*vibration.modes[m].vectors[1][j];
+
+		z0 = vibration.geometry[j].coordinates[2];
+		z1 = z0 + 2*vibration.scal*vibration.modes[m].vectors[2][j];
+		tempold = temp;
+		t = get_pov_vibarrow(x0,y0,z0,x1,y1,z1,vibration.radius,j);
+		if(t)
+		{
+			if(tempold)
+			{
+				temp = g_strdup_printf("%s%s",tempold,t);
+				g_free(tempold);
+			}
+			else temp = g_strdup_printf("%s",t);
+		  	g_free(t);
+		}
+	}
+	return temp;
+}
+/********************************************************************************/
 static gchar *get_pov_dipole()
 {
      XYZRC C1 = get_base_dipole();
      XYZRC C2 = get_tete_dipole();
      gdouble ep = C1.C[3]/2;
+     gchar* temp = NULL;
 
-     gchar* temp = g_strdup_printf(
+     if(!degenerated_cylinder(C1.C,C2.C))
+     temp = g_strdup_printf(
 		"// Dipole\n"
-		"#declare CDipole1 = <%f, %f, %f>;\n"
-		"#declare CDipole2 = <%f, %f, %f>;\n"
-		"#declare ColDipole1 = <%f, %f, %f>;\n"
-		"#declare ColDipole2 = <%f, %f, %f>;\n"
+		"#declare CDipole1 = <%lf, %lf, %lf>;\n"
+		"#declare CDipole2 = <%lf, %lf, %lf>;\n"
+		"#declare ColDipole1 = <%lf, %lf, %lf>;\n"
+		"#declare ColDipole2 = <%lf, %lf, %lf>;\n"
 		"object\n"
 		"{\n"
-		"\tarrow (CDipole1, CDipole2, %f, ColDipole1, ColDipole2)\n"
+		"\tarrow (CDipole1, CDipole2, %lf, ColDipole1, ColDipole2)\n"
 		"}\n",
 		C1.C[0],C1.C[1],C1.C[2],
 		C2.C[0],C2.C[1],C2.C[2],
 		C1.P.Colors[0],C1.P.Colors[1],C1.P.Colors[2],
-		C2.P.Colors[0]/2,C2.P.Colors[1]/2,C2.P.Colors[2]/2,
+		C2.P.Colors[0],C2.P.Colors[1],C2.P.Colors[2],
 		ep
 		);
+     else temp = g_strdup(" ");
      return temp;
 }
 /********************************************************************************/
@@ -150,18 +266,18 @@ static gchar *get_pov_xyz_axes()
 {
 	gboolean show;
 	gboolean negative;
-	gfloat origin[3];
-	gfloat originX[3];
-	gfloat originY[3];
-	gfloat originZ[3];
-	gfloat radius;
-	gfloat scale;
-	gfloat xColor[3];
-	gfloat yColor[3];
-	gfloat zColor[3];
-	gfloat vectorX[3]  = {1,0,0};
-	gfloat vectorY[3]  = {0,1,0};
-	gfloat vectorZ[3]  = {0,0,1};
+	gdouble origin[3];
+	gdouble originX[3];
+	gdouble originY[3];
+	gdouble originZ[3];
+	gdouble radius;
+	gdouble scale;
+	gdouble xColor[3];
+	gdouble yColor[3];
+	gdouble zColor[3];
+	gdouble vectorX[3]  = {1,0,0};
+	gdouble vectorY[3]  = {0,1,0};
+	gdouble vectorZ[3]  = {0,0,1};
 	gint i;
 	gchar* temp; 
 
@@ -196,19 +312,19 @@ static gchar *get_pov_xyz_axes()
 
 	temp = g_strdup_printf(
 		"// XYZ Axes\n"
-		"#declare COriginAxes1 = <%f, %f, %f>;\n"
-		"#declare COriginAxes2 = <%f, %f, %f>;\n"
-		"#declare COriginAxes3 = <%f, %f, %f>;\n"
-		"#declare CTeteAxes1 = <%f, %f, %f>;\n"
-		"#declare CTeteAxes2 = <%f, %f, %f>;\n"
-		"#declare CTeteAxes3 = <%f, %f, %f>;\n"
-		"#declare ColorAxes1 = <%f, %f, %f>;\n"
-		"#declare ColorConeAxes1 = <%f, %f, %f>;\n"
-		"#declare ColorAxes2 = <%f, %f, %f>;\n"
-		"#declare ColorConeAxes2 = <%f, %f, %f>;\n"
-		"#declare ColorAxes3 = <%f, %f, %f>;\n"
-		"#declare ColorConeAxes3 = <%f, %f, %f>;\n"
-		"#declare AxesRadius = %f;\n"
+		"#declare COriginAxes1 = <%lf, %lf, %lf>;\n"
+		"#declare COriginAxes2 = <%lf, %lf, %lf>;\n"
+		"#declare COriginAxes3 = <%lf, %lf, %lf>;\n"
+		"#declare CTeteAxes1 = <%lf, %lf, %lf>;\n"
+		"#declare CTeteAxes2 = <%lf, %lf, %lf>;\n"
+		"#declare CTeteAxes3 = <%lf, %lf, %lf>;\n"
+		"#declare ColorAxes1 = <%lf, %lf, %lf>;\n"
+		"#declare ColorConeAxes1 = <%lf, %lf, %lf>;\n"
+		"#declare ColorAxes2 = <%lf, %lf, %lf>;\n"
+		"#declare ColorConeAxes2 = <%lf, %lf, %lf>;\n"
+		"#declare ColorAxes3 = <%lf, %lf, %lf>;\n"
+		"#declare ColorConeAxes3 = <%lf, %lf, %lf>;\n"
+		"#declare AxesRadius = %lf;\n"
 		"object\n"
 		"{\n"
 		"\tarrow (COriginAxes1, CTeteAxes1, AxesRadius, ColorAxes1, ColorConeAxes1)\n"
@@ -233,7 +349,7 @@ static gchar *get_pov_xyz_axes()
 		yColor[0]/2,yColor[1]/2,yColor[2]/2,
 		zColor[0],zColor[1],zColor[2],
 		zColor[0]/2,zColor[1]/2,zColor[2]/2,
-		radius
+		radius/2
 		);
      return temp;
 }
@@ -243,18 +359,18 @@ static gchar *get_pov_principal_axes()
 	gboolean show;
 	gboolean negative;
 	gboolean def;
-	gfloat origin[3];
-	gfloat firstOrigin[3];
-	gfloat secondOrigin[3];
-	gfloat thirdOrigin[3];
-	gfloat radius;
-	gfloat scale;
-	gfloat firstColor[3];
-	gfloat secondColor[3];
-	gfloat thirdColor[3];
-	gfloat firstVector[3]  = {1,0,0};
-	gfloat secondVector[3]  = {0,1,0};
-	gfloat thirdVector[3]  = {0,0,1};
+	gdouble origin[3];
+	gdouble firstOrigin[3];
+	gdouble secondOrigin[3];
+	gdouble thirdOrigin[3];
+	gdouble radius;
+	gdouble scale;
+	gdouble firstColor[3];
+	gdouble secondColor[3];
+	gdouble thirdColor[3];
+	gdouble firstVector[3]  = {1,0,0};
+	gdouble secondVector[3]  = {0,1,0};
+	gdouble thirdVector[3]  = {0,0,1};
 	gint i;
 	gchar* temp = NULL;
 
@@ -289,19 +405,19 @@ static gchar *get_pov_principal_axes()
 
 	temp = g_strdup_printf(
 		"// Principal Axes\n"
-		"#declare COriginPrincipalAxe1 = <%f, %f, %f>;\n"
-		"#declare COriginPrincipalAxe2 = <%f, %f, %f>;\n"
-		"#declare COriginPrincipalAxe3 = <%f, %f, %f>;\n"
-		"#declare CTetePrincipalAxe1 = <%f, %f, %f>;\n"
-		"#declare CTetePrincipalAxe2 = <%f, %f, %f>;\n"
-		"#declare CTetePrincipalAxe3 = <%f, %f, %f>;\n"
-		"#declare ColorPrincipalAxe1 = <%f, %f, %f>;\n"
-		"#declare ColorConePrincipalAxe1 = <%f, %f, %f>;\n"
-		"#declare ColorPrincipalAxe2 = <%f, %f, %f>;\n"
-		"#declare ColorConePrincipalAxe2 = <%f, %f, %f>;\n"
-		"#declare ColorPrincipalAxe3 = <%f, %f, %f>;\n"
-		"#declare ColorConePrincipalAxe3 = <%f, %f, %f>;\n"
-		"#declare PrincipalAxeRadius = %f;\n"
+		"#declare COriginPrincipalAxe1 = <%lf, %lf, %lf>;\n"
+		"#declare COriginPrincipalAxe2 = <%lf, %lf, %lf>;\n"
+		"#declare COriginPrincipalAxe3 = <%lf, %lf, %lf>;\n"
+		"#declare CTetePrincipalAxe1 = <%lf, %lf, %lf>;\n"
+		"#declare CTetePrincipalAxe2 = <%lf, %lf, %lf>;\n"
+		"#declare CTetePrincipalAxe3 = <%lf, %lf, %lf>;\n"
+		"#declare ColorPrincipalAxe1 = <%lf, %lf, %lf>;\n"
+		"#declare ColorConePrincipalAxe1 = <%lf, %lf, %lf>;\n"
+		"#declare ColorPrincipalAxe2 = <%lf, %lf, %lf>;\n"
+		"#declare ColorConePrincipalAxe2 = <%lf, %lf, %lf>;\n"
+		"#declare ColorPrincipalAxe3 = <%lf, %lf, %lf>;\n"
+		"#declare ColorConePrincipalAxe3 = <%lf, %lf, %lf>;\n"
+		"#declare PrincipalAxeRadius = %lf;\n"
 		"object\n"
 		"{\n"
 		"\tarrow (COriginPrincipalAxe1, CTetePrincipalAxe1, PrincipalAxeRadius, ColorPrincipalAxe1, ColorConePrincipalAxe1)\n"
@@ -331,7 +447,7 @@ static gchar *get_pov_principal_axes()
      return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_ball(gint num, gfloat scale)
+static gchar *get_pov_ball(gint num, gdouble scale)
 {
      gchar *temp;
      XYZRC Center = get_prop_center(num,1.0);
@@ -356,7 +472,7 @@ static gchar *get_pov_cylingre(gdouble C1[],gdouble C2[],gdouble Colors[],gdoubl
 {
      gchar* temp = NULL;
      gint i;
-     gfloat d = 0;
+     gdouble d = 0;
 
      for(i=0;i<3;i++) d += (C1[i]-C2[i])*(C1[i]-C2[i]);
      if(d<1e-8) return g_strdup("\n");
@@ -439,8 +555,8 @@ static gchar *get_pov_one_stick(gint i,gint j, GabEditBondType bondType)
 	V3d cros;
 	V3d sub;
 	V3d CRing;
-	gfloat C10[3];
-	gfloat C20[3];
+	gdouble C10[3];
+	gdouble C20[3];
 	getCentreRing(i,j, CRing);
 	v3d_sub(CRing, CC1, C10);
 	v3d_sub(CRing, CC2, C20);
@@ -480,8 +596,8 @@ static gchar *get_pov_one_stick(gint i,gint j, GabEditBondType bondType)
 	V3d cros;
 	V3d sub;
 	V3d CRing;
-	gfloat C10[3];
-	gfloat C20[3];
+	gdouble C10[3];
+	gdouble C20[3];
 	getCentreRing(i,j, CRing);
 	v3d_sub(CRing, CC1, C10);
 	v3d_sub(CRing, CC2, C20);
@@ -531,8 +647,8 @@ static gchar *get_pov_one_stick(gint i,gint j, GabEditBondType bondType)
 	V3d cros;
 	V3d sub;
 	V3d CRing;
-	gfloat C10[3];
-	gfloat C20[3];
+	gdouble C10[3];
+	gdouble C20[3];
 	getCentreRing(i,j, CRing);
 	v3d_sub(CRing, CC1, C10);
 	v3d_sub(CRing, CC2, C20);
@@ -572,8 +688,8 @@ static gchar *get_pov_one_stick(gint i,gint j, GabEditBondType bondType)
 	V3d cros;
 	V3d sub;
 	V3d CRing;
-	gfloat C10[3];
-	gfloat C20[3];
+	gdouble C10[3];
+	gdouble C20[3];
 	getCentreRing(i,j, CRing);
 	v3d_sub(CRing, CC1, C10);
 	v3d_sub(CRing, CC2, C20);
@@ -711,21 +827,19 @@ static gchar *get_pov_declare_finish_option()
 static gchar *get_pov_declare_surface_options()
 {
 	gchar* temp;
-	gint i;
 	gdouble ep;
 	/* compute the min radius of atoms*/
 	ep = 10000;
-	for(i=0;i<Ncenters;i++)
-	{
-		if(!strstr(GeomOrb[i].Prop.symbol,"X") && ep>GeomOrb[i].Prop.radii) ep = GeomOrb[i].Prop.radii;
-	}
-	ep /= 32;
+	SAtomsProp prop = prop_atom_get("H");
+	ep = prop.radii;
+	ep /= 64;
+	if(ep<1e-3) ep = 1e-3;
 
 	temp = g_strdup_printf(
 	 "// transparency coeffition\n"
 	 "#declare surfaceTransCoef = 0.6;\n"
 	 "// wire frame radius of cylinder\n"
-	 "#declare wireFrameCylinderRadius = %f;\n"
+	 "#declare wireFrameCylinderRadius = %lf;\n"
 	 "\n\n",
 	 ep
 	);
@@ -734,8 +848,8 @@ static gchar *get_pov_declare_surface_options()
 /********************************************************************************/
 static gchar *get_pov_matrix_transformation()
 {
-	gfloat q[4];
-	gfloat m[4][4];
+	gdouble q[4];
+	gdouble m[4][4];
 	gchar* temp;
 
 	getQuat(q);
@@ -743,7 +857,7 @@ static gchar *get_pov_matrix_transformation()
 	temp = g_strdup_printf(
 	 "// Rotation matrix\n"
 	 "#declare myTransforms = transform {\n"
-	 "matrix <%f, %f ,%f, %f, %f, %f, %f, %f, %f, %f, %f ,%f>\n"
+	 "matrix <%lf, %lf ,%lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf ,%lf>\n"
 	 "}\n\n",
 	 m[0][0],m[0][1],m[0][2],
 	 m[1][0],m[1][1],m[1][2],
@@ -762,7 +876,7 @@ static gchar *get_pov_declare_arrow()
 	"\tunion {\n"
 	"\t\tcylinder\n"
 	"\t\t{\n"
-	"\t\t\tP1,P2-(P2-P1)*0.2,r\n"
+	"\t\t\tP1,P2,r\n"
 	"\t\t\ttexture\n"
 	"\t\t\t{\n"
 	"\t\t\t\tpigment { rgb C1}\n"
@@ -771,7 +885,7 @@ static gchar *get_pov_declare_arrow()
 	"\t\t}\n"
 	"\t\tcone\n"
 	"\t\t{\n"
-	"\t\t\tP2-(P2-P1)*0.2,r*2.0,P2,0\n"
+	"\t\t\tP2,r*2.0/1.5,P2+(P2-P1)*4*r/vlength(P2-P1),0\n"
 	"\t\t\ttexture\n"
 	"\t\t\t{\n"
 	"\t\t\t\tpigment { rgb C2}\n"
@@ -835,32 +949,77 @@ static gchar *get_pov_declare_threeCylinders_wireframe_color()
 static gchar *get_pov_camera()
 {
 	gchar *temp;
-	gfloat f = 5;
-	gfloat position = 10;
-	gfloat zn, zf, zo;
+	gdouble f = 5;
+	gdouble position = 10;
+	gdouble zn, zf, angle;
 	gboolean perspective;
-	get_camera_values(&zn, &zf, &zo, &perspective);
+	gdouble aspect = 1.0;
+	gdouble H = 100;
+	gdouble W = 100;
+	gdouble fov = 0;
+	gdouble d = 0;
+	gdouble origin[3];
 
-	position = zf/3;
-	f = position/3;
+	get_camera_values(&zn, &zf, &angle, &aspect, &perspective);
+	get_orgin_molecule(origin);
+	fov = angle;
+
+	position = zf/2;
+	f = 0;
+
+	d = zf-zn;
+	if(d !=0)
+	{
+		H = 2*d*tan(PI/360*angle);
+		W = aspect*H;
+		fov = 360/PI*atan(W/2/d);
+	}
+	if(fov<0) fov = 360+fov;
+	if(fov>180) fov = 179.99;
+
 
      
+	if(perspective)
 	temp = g_strdup_printf(
 	 "// CAMERA\n"
 	 "camera\n"
 	 "{\n"
-	 "\tright      < 0.000000, 1.000000, 0.000000 >\n"
-	  "\tup        < 0.000000, 1.000000, 0.000000 >\n"
-	  "\tdirection < 0.000000, 0.000000, 1.00000 >\n"
-	  "\tlocation  < 0.000000, 0.00000, %14.8f >\n"
-	  "\tlook_at   < 0.000000, 0.00000, %14.8f >\n"
+	 "\tright     %0.14f *x\n"
+	  "\tup        y\n"
+	  "\tdirection -z\n"
+	  "\tangle %0.14f\n"
+	  "\tlocation  < 0.000000, 0.00000, %0.14f >\n"
+	  "\tlook_at   < 0.000000, 0.00000, %0.14f >\n"
+	  "\ttranslate < %0.14f , %0.14f , 0.000000 >\n"
 	  "}\n\n",
-	   position,f
+	   aspect,
+	   fov,
+	   position,f,
+	   -origin[0],
+	   -origin[1]
 	);
+	else
+	temp = g_strdup_printf(
+	 "// CAMERA\n"
+	 "camera\n"
+ 	 "{\torthographic\n"
+	 "\tright     %0.14f *x\n"
+	  "\tup        y\n"
+	  "\tdirection -z\n"
+	  "\tlocation  < 0.000000, 0.00000, %14.8f >\n"
+	 "\t scale     %0.14f\n"
+	  "\ttranslate < %0.14f , %0.14f , 0.000000 >\n"
+	  "}\n\n",
+	   aspect,
+	   position,
+	   angle,
+	   -origin[0],
+	   -origin[1]
+	   );
      return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_light_source(gchar* title,gchar* color,gfloat x,gfloat y, gfloat z)
+static gchar *get_pov_light_source(gchar* title,gchar* color,gdouble x,gdouble y, gdouble z)
 {
 	gchar *temp;
      	temp = g_strdup_printf("%s%s\t<%10.6f,%10.6f,%10.6f>\n\tcolor %s\n}\n",
@@ -874,23 +1033,23 @@ static gchar *get_pov_light_source(gchar* title,gchar* color,gfloat x,gfloat y, 
 static gchar *get_pov_light_sources()
 {
      gchar *temp;
-     gfloat Ymax;
      gchar* dump1;
      gchar* dump2;
-     gint i=0;
+     gchar* dump3;
+     gdouble v[3];
 /* calcul of Ymax*/
 
-     Ymax = GeomOrb[0].C[1];
-     for(i=1;i<(gint)Ncenters;i++)
-		if(Ymax<GeomOrb[i].C[1])
-			Ymax = GeomOrb[i].C[1];
-     
-      Ymax +=10;
-      dump1 = get_pov_light_source("// LIGHT 1\n","0.6*White",Ymax,Ymax,Ymax);
-      dump2 =  get_pov_light_source("// LIGHT 2\n","0.8*White",0,0,Ymax);;
-      temp = g_strdup_printf("%s %s",dump1, dump2);
+      if(get_light(0,v)) dump1 = get_pov_light_source("// LIGHT 1\n","0.6*White",v[0],v[1],v[2]);
+      else dump1 = g_strdup(" ");
+      if(get_light(1,v)) dump2 = get_pov_light_source("// LIGHT 2\n","0.6*White",v[0],v[1],v[2]);
+      else dump2 = g_strdup(" ");
+      if(get_light(2,v)) dump3 = get_pov_light_source("// LIGHT 3\n","0.6*White",v[0],v[1],v[2]);
+      else dump3 = g_strdup(" ");
+
+      temp = g_strdup_printf("%s %s %s",dump1, dump2,dump3);
       g_free(dump1);
       g_free(dump2);
+      g_free(dump3);
 
      return temp;
 }
@@ -935,7 +1094,7 @@ static gchar *get_pov_atoms()
      return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_ball_for_stick(gint num, gfloat radius)
+static gchar *get_pov_ball_for_stick(gint num, gdouble radius)
 {
      gchar *temp;
      XYZRC Center = get_prop_center(num,1.0);
@@ -1236,9 +1395,9 @@ static gchar* create_povray_file(gchar* fileName, gboolean saveCamera, gboolean 
 
 	if(newCamera)
 	{
-		gfloat xmin = get_min(0);
-		gfloat ymin = get_min(1);
-		gfloat zmin = get_min(2);
+		gdouble xmin = get_min(0);
+		gdouble ymin = get_min(1);
+		gdouble zmin = get_min(2);
  		temp = get_pov_background(xmin,ymin,zmin);
 		fprintf(file,"%s",temp);
 		if(saveCamera)
@@ -1253,9 +1412,9 @@ static gchar* create_povray_file(gchar* fileName, gboolean saveCamera, gboolean 
 		if(background) fprintf(file,"%s",background);
 		else
 		{
-			gfloat xmin = get_min(0);
-			gfloat ymin = get_min(1);
-			gfloat zmin = get_min(2);
+			gdouble xmin = get_min(0);
+			gdouble ymin = get_min(1);
+			gdouble zmin = get_min(2);
 			printf("Erreur : No new camera and background =NULL\n");
  			temp = get_pov_background(xmin,ymin,zmin);
 			fprintf(file,"%s",temp);
@@ -1309,6 +1468,13 @@ static gchar* create_povray_file(gchar* fileName, gboolean saveCamera, gboolean 
 		fprintf(file,"%s",temp);
 		g_free(temp);
 	}
+	temp = get_pov_vibration();
+	if(temp)
+	{
+		fprintf(file,"%s",temp);
+		g_free(temp);
+	}
+
 	temp = get_pov_end_molecule();
 	fprintf(file,"%s",temp);
 	g_free(temp);
@@ -1388,4 +1554,337 @@ void create_save_povray_orb(GtkWidget* Win)
 	g_free(title);
 	g_free(fileName);
 	g_free(filter);
+}
+/********************************************************************************/
+static void create_images_window (GtkWidget* parent, gchar* fileName, gint width, gint height)
+{
+	GtkWidget *window;
+	GtkWidget *scrolled_window;
+	GtkWidget *table;
+	GtkWidget *vbox;
+
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	vbox = create_vbox(window);
+	g_signal_connect (window, "destroy", G_CALLBACK (gtk_widget_destroyed), &window);
+
+	gtk_window_set_title (GTK_WINDOW (window), fileName);
+	gtk_container_set_border_width (GTK_CONTAINER (window), 0);
+
+
+	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	gtk_container_set_border_width (GTK_CONTAINER (scrolled_window), 1);
+	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_box_pack_start (GTK_BOX (vbox), scrolled_window, TRUE, TRUE, 0);
+	gtk_widget_show (scrolled_window);
+
+	table = gtk_table_new (1, 1, FALSE);
+	gtk_table_set_row_spacings (GTK_TABLE (table), 1);
+	gtk_table_set_col_spacings (GTK_TABLE (table), 1);
+	gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scrolled_window), table);
+	gtk_container_set_focus_hadjustment (GTK_CONTAINER (table),
+					   gtk_scrolled_window_get_hadjustment (GTK_SCROLLED_WINDOW (scrolled_window)));
+	gtk_container_set_focus_vadjustment (GTK_CONTAINER (table),
+					   gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (scrolled_window)));
+	gtk_widget_show (table);
+
+	{
+		GtkWidget* image = gtk_image_new_from_file (fileName);
+		if(image) gtk_table_attach(GTK_TABLE(table),image, 0,0+1,0,0+1,
+			              (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+			              (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+			              1,1);
+
+		gtk_widget_show (image);
+	}
+	gtk_window_set_default_size (GTK_WINDOW (window), width+30, height+30);
+	gtk_widget_realize(window);
+	gtk_widget_show (window);
+	gtk_window_set_position(GTK_WINDOW(window),GTK_WIN_POS_CENTER);
+	if(parent)
+	{
+		gtk_window_set_transient_for(GTK_WINDOW(window),GTK_WINDOW(parent));
+	}
+}
+/*****************************************************************************/
+static gboolean create_cmd_pov(G_CONST_RETURN gchar* command, gchar* fileNameCMD, gchar* fileNamePov, gchar* fileNameIMG)
+{
+	gchar* commandStr = g_strdup(command);
+        FILE* fcmd = NULL;
+  	fcmd = FOpen(fileNameCMD, "w");
+	if(!fcmd)
+	{
+  		Message("\nI can not create cmd file\n ","Error",TRUE);   
+		return FALSE;
+	}
+#ifndef G_OS_WIN32
+	fprintf(fcmd,"#!/bin/sh\n");
+	fprintf(fcmd,"rm %s\n",fileNameIMG);
+	fprintf(fcmd,"%s +I%s +O%s\n",commandStr, fileNamePov, fileNameIMG);
+#else
+	/* fprintf(fcmd,"setlocal\n");*/
+	fprintf(fcmd,"set PATH=\"%s\";%cPATH%c\n",povrayDirectory,'%','%');
+	fprintf(fcmd,"del %s\n",fileNameIMG);
+	fprintf(fcmd,"%s +I%s +O%s\n",commandStr, fileNamePov, fileNameIMG);
+	/* fprintf(fcmd,"endlocal");*/
+#endif
+	fclose(fcmd);
+#ifndef G_OS_WIN32
+	{
+		gchar buffer[BSIZE];
+  		sprintf(buffer,"chmod u+x %s",fileNameCMD);
+		system(buffer);
+	}
+#endif
+	if(commandStr) g_free(commandStr);
+	return TRUE;
+}
+/*****************************************************************************/
+static void exportPOVRay(GtkWidget* Win, gboolean runPovray)
+{
+	gchar* fileNamePOV = NULL;
+	gchar* fileNameIMG = NULL;
+	gchar* fileNameCMD = NULL;
+	GtkWidget *entryFileName = g_object_get_data(G_OBJECT (Win), "EntryFileName");
+	GtkWidget *buttonDirSelector =g_object_get_data(G_OBJECT (Win), "ButtonDirSelector");
+	GtkWidget *entryCommand = g_object_get_data(G_OBJECT (Win), "EntryCommand");
+	GtkWidget *parent = g_object_get_data(G_OBJECT (Win), "ParentWindow");
+	/* fileName */
+	if(entryFileName && buttonDirSelector )
+	{
+		gchar* dirName = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
+		gchar* tmp = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryFileName)));
+		gint l = 0;
+		gint i;
+		if(tmp) l = strlen(tmp);
+		for(i=l-1;i>=1;i--) if(tmp[i]=='.') tmp[i]='\0';
+		if(dirName[strlen(dirName)-1] != G_DIR_SEPARATOR)
+		{
+			fileNamePOV = g_strdup_printf("%s%s%s.pov",dirName, G_DIR_SEPARATOR_S,tmp);
+			fileNameIMG = g_strdup_printf("%s%s%s.bmp",dirName, G_DIR_SEPARATOR_S,tmp);
+#ifndef G_OS_WIN32
+			fileNameCMD = g_strdup_printf("%s%s%s.cmd",dirName, G_DIR_SEPARATOR_S,tmp);
+#else
+			fileNameCMD = g_strdup_printf("%s%s%s.bat",dirName, G_DIR_SEPARATOR_S,tmp);
+#endif
+		}
+		else
+		{
+			fileNamePOV = g_strdup_printf("%s%s.pov",dirName, tmp);
+			fileNameIMG = g_strdup_printf("%s%s.bmp",dirName, tmp);
+#ifndef G_OS_WIN32
+			fileNameCMD = g_strdup_printf("%s%s.cmd",dirName, tmp);
+#else
+			fileNameCMD = g_strdup_printf("%s%s.bat",dirName, tmp);
+#endif
+		}
+		g_free(tmp);
+		g_free(dirName);
+	}
+	if(fileNamePOV)
+	{
+		applyPovrayOptions(NULL,NULL);
+		gchar* message = create_povray_file(fileNamePOV, FALSE, TRUE);
+		if(message)
+		{
+    			GtkWidget *m = Message(message,"Error",TRUE);
+			gtk_window_set_modal (GTK_WINDOW (m), TRUE);
+		}
+		else
+		{
+			G_CONST_RETURN gchar* command = gtk_entry_get_text(GTK_ENTRY(entryCommand));
+			if(create_cmd_pov(command, fileNameCMD, fileNamePOV, fileNameIMG))
+			{
+				 if(runPovray)
+				{
+					gint width = 500;
+					gint height = 500;
+					if(GLArea)
+					{
+						width =  GLArea->allocation.width;
+						height = GLArea->allocation.height;
+					}
+					gtk_widget_hide(Win);
+					while( gtk_events_pending() ) gtk_main_iteration();
+					system(fileNameCMD);
+					create_images_window (parent,fileNameIMG, width, height);
+				}
+				else
+				{
+					gchar* t = g_strdup_printf(
+						"\n2 files was created :\n"
+						" -\"%s\" a povray input file\n"
+						" -\"%s\" a batch file for run povray\n",
+						fileNamePOV,fileNameCMD);
+					GtkWidget* winDlg = Message(t,"Info",TRUE);
+					gtk_window_set_modal (GTK_WINDOW (winDlg), TRUE);
+					g_free(t);
+				}
+			}
+			else
+			{
+				gchar* t = g_strdup_printf("\nSorry, I cannot create the %s file\n",fileNameCMD);
+				GtkWidget* winDlg = Message(t,"Info",TRUE);
+				gtk_window_set_modal (GTK_WINDOW (winDlg), TRUE);
+				g_free(t);
+			}
+		}
+	}
+	gtk_widget_destroy(Win);
+}
+/*****************************************************************************/
+static void savePOVRay(GtkWidget* Win, gpointer data)
+{
+	gboolean runPovray = FALSE;
+	exportPOVRay(Win, runPovray);
+}
+/*****************************************************************************/
+static void runPOVRay(GtkWidget* Win, gpointer data)
+{
+	gboolean runPovray = TRUE;
+	exportPOVRay(Win, runPovray);
+}
+/**********************************************************************/
+static void AddPOVRayLocationDlg(GtkWidget *box, GtkWidget *Win)
+{
+	gint i = 0;
+	gint j = 0;
+	GtkWidget *label;
+	GtkWidget *buttonDirSelector;
+	GtkWidget *entryFileName;
+	GtkWidget *table;
+
+	table = gtk_table_new(2,3,FALSE);
+	gtk_box_pack_start (GTK_BOX (box), table, TRUE, TRUE, 0);
+
+	i++;
+	j = 0;
+	add_label_table(table,"Folder",(gushort)i,(gushort)j);
+/*----------------------------------------------------------------------------------*/
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	j = 2;
+	buttonDirSelector =  gtk_file_chooser_button_new("Select your folder", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeight*0.2),-1);
+	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
+			j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	j = 0;
+	add_label_table(table,"File name",(gushort)i,(gushort)j);
+/*----------------------------------------------------------------------------------*/
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	j = 2;
+	entryFileName = gtk_entry_new();
+	gtk_table_attach(GTK_TABLE(table),entryFileName,
+			j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_entry_set_text(GTK_ENTRY(entryFileName),"gabeditPOV");
+	g_object_set_data(G_OBJECT (Win), "EntryFileName",entryFileName);
+	g_object_set_data(G_OBJECT (Win), "ButtonDirSelector",buttonDirSelector);
+}
+/************************************************************************************************************/
+static void AddPOVRayRunDlg(GtkWidget *box, GtkWidget *Win)
+{
+	gint i = 0;
+	gint j = 0;
+	GtkWidget *entryCommand;
+	GtkWidget *table;
+	GtkWidget* label;
+	gint width = 500;
+	gint height = 500;
+	gchar* tmp = NULL;
+
+	if(GLArea)
+	{
+		width =  GLArea->allocation.width;
+		height = GLArea->allocation.height;
+	}
+
+	table = gtk_table_new(2,3,FALSE);
+	gtk_box_pack_start (GTK_BOX (box), table, TRUE, TRUE, 0);
+
+	i = 0;
+	j = 0;
+	label = gtk_label_new ("Command for run povray : ");
+	gtk_table_attach(GTK_TABLE(table),label,
+			j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+
+	j++;
+	entryCommand = gtk_entry_new();
+	gtk_table_attach(GTK_TABLE(table),entryCommand,
+			j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
+                  1,1);
+	tmp = g_strdup_printf("%s +W%d +H%d",NameCommandPovray, width,height);
+	gtk_entry_set_text(GTK_ENTRY(entryCommand),tmp);
+	g_free(tmp);
+	g_object_set_data(G_OBJECT (Win), "EntryCommand",entryCommand);
+    	gtk_widget_set_size_request(GTK_WIDGET(entryCommand),400,-1);
+}
+/**********************************************************************/
+void exportPOVDlg(GtkWidget *parentWindow)
+{
+	GtkWidget *button;
+	GtkWidget *Win;
+	gchar* title = "POV Ray export";
+	GtkWidget *hseparator = NULL;
+
+	Win= gtk_dialog_new ();
+	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
+	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(parentWindow));
+	gtk_window_set_title(&GTK_DIALOG(Win)->window,title);
+    	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
+
+	g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)gtk_widget_destroy,NULL);
+ 
+	createPOVBackgroundFrame(GTK_WIDGET (GTK_DIALOG(Win)->vbox));
+	AddPOVRayLocationDlg(GTK_WIDGET (GTK_DIALOG(Win)->vbox), Win);
+
+	hseparator = gtk_hseparator_new ();
+	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Win)->vbox), hseparator, TRUE, TRUE, 0);
+	AddPOVRayRunDlg(GTK_WIDGET (GTK_DIALOG(Win)->vbox), Win);
+  
+
+	gtk_widget_realize(Win);
+
+	button = create_button(Win,"Cancel");
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Win)->action_area), button, TRUE, TRUE, 0);
+	g_signal_connect_swapped(GTK_OBJECT(button), "clicked", G_CALLBACK(gtk_widget_destroy),GTK_OBJECT(Win));
+	gtk_widget_show (button);
+
+	button = create_button(Win,"Save");
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Win)->action_area), button, TRUE, TRUE, 0);
+	g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)savePOVRay,GTK_OBJECT(Win));
+	gtk_widget_show (button);
+
+	button = create_button(Win,"Run PovRay");
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(Win)->action_area), button, TRUE, TRUE, 0);
+	g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runPOVRay,GTK_OBJECT(Win));
+	gtk_widget_show (button);
+
+	gtk_widget_show_all(Win);
+	g_object_set_data(G_OBJECT (Win), "ParentWindow",parentWindow);
 }

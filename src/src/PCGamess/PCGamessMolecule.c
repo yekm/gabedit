@@ -710,7 +710,7 @@ static void putPCGamessMoleculeInTextEditor()
 		{
 			SAtomsProp prop = prop_atom_get(symbols[i]);
 
-			sprintf(buffer,"%s  %f %f %f %f\n",symbols[i], (gfloat)prop.atomicNumber, X[i], Y[i], Z[i]);
+			sprintf(buffer,"%s  %f %f %f %f\n",symbols[i], (gdouble)prop.atomicNumber, X[i], Y[i], Z[i]);
         		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, buffer, -1);
 		}
 	}

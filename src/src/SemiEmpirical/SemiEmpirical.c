@@ -426,7 +426,7 @@ static gchar* runOnePCGamess(SemiEmpiricalModel* seModel, gchar* keyWords)
 		SAtomsProp prop = prop_atom_get(symbol);
 		fprintf(file,"%s %f %f %f %f\n", 
 			symbol,
-			(gfloat)prop.atomicNumber,
+			(gdouble)prop.atomicNumber,
 			m.atoms[j].coordinates[0],
 			m.atoms[j].coordinates[1],
 			m.atoms[j].coordinates[2]

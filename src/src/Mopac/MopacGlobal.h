@@ -9,7 +9,7 @@ MopacColorBack mopacColorBack;
 
 MopacFunctional* functionals;
 MopacStdFunctional* stdFunctionals;
-gfloat* sumFunctionals;
+gdouble* sumFunctionals;
 
 #endif /* __GABEDIT_MOPACGLOBAL_H__ */
 

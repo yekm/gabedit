@@ -82,9 +82,9 @@ typedef struct _GeomXYZAtomDef
 typedef struct _DipoleDef
 {
  gboolean def;
- gfloat Value[3];
- gfloat radius;
- gfloat color[3];
+ gdouble Value[3];
+ gdouble radius;
+ gdouble color[3];
 }DipoleDef;
 
 typedef struct _GeomInter

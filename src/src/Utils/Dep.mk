@@ -12,6 +12,12 @@ ConvUtils.o: ../Common/Global.h
 ConvUtils.o: ../Files/GabeditFileChooser.h
 ConvUtils.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
 ConvUtils.o: ../Utils/Utils.h ../Utils/Constants.h
+GTF.o: ../../Config.h
+GTF.o: ../Common/Global.h
+GTF.o: ../Files/GabeditFileChooser.h
+GTF.o: ../Common/GabeditType.h ../Utils/Vector3d.h ../Utils/Utils.h
+GTF.o: ../Utils/Constants.h ../Utils/MathFunctions.h Zlm.h ../Utils/TTables.h
+GTF.o: TTables.h
 GabeditTextEdit.o: ../../Config.h ../Common/GabeditType.h
 GabeditXYPlot.o: GabeditXYPlot.h
 GabeditXYPlotWin.o: GabeditXYPlot.h GabeditXYPlotWin.h
@@ -27,6 +33,9 @@ HydrogenBond.o: ../Common/Windows.h ../OpenGL/GLArea.h ../Common/StockIcons.h
 Jacobi.o: ../../Config.h ../Common/Global.h
 Jacobi.o: ../Files/GabeditFileChooser.h
 Jacobi.o: ../Common/GabeditType.h
+MathFunctions.o: ../Utils/Constants.h Zlm.h ../Common/GabeditType.h
+MathFunctions.o: MathFunctions.h
+MathFunctions.o: Zlm.h ../Common/GabeditType.h
 Matrix3D.o: ../../Config.h
 Matrix3D.o: ../Common/Global.h
 Matrix3D.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
@@ -36,6 +45,11 @@ PovrayUtils.o: ../Common/Global.h
 PovrayUtils.o: ../Files/GabeditFileChooser.h
 PovrayUtils.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
 PovrayUtils.o: ../Utils/Utils.h ../Utils/Constants.h ../Common/Windows.h
+TTables.o: ../../Config.h
+TTables.o: ../Common/Global.h
+TTables.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
+TTables.o: ../Utils/Constants.h ../Utils/TTables.h ../Utils/MathFunctions.h
+TTables.o: Zlm.h ../Utils/GTF.h TTables.h
 Transformation.o: ../../Config.h
 Transformation.o: ../Common/Global.h
 Transformation.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
@@ -63,8 +77,8 @@ UtilsInterface.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
 UtilsInterface.o: ../Utils/Constants.h ../Gaussian/GaussGlobal.h
 UtilsInterface.o: ../Files/FileChooser.h ../Gamess/Gamess.h
 UtilsInterface.o: ../PCGamess/PCGamess.h ../Molcas/Molcas.h
-UtilsInterface.o: ../Molpro/Molpro.h ../MPQC/MPQC.h ../QChem/QChem.h
-UtilsInterface.o: ../Mopac/Mopac.h ../Gaussian/Gaussian.h
+UtilsInterface.o: ../Molpro/Molpro.h ../MPQC/MPQC.h ../Orca/Orca.h
+UtilsInterface.o: ../QChem/QChem.h ../Mopac/Mopac.h ../Gaussian/Gaussian.h
 UtilsInterface.o: ../Geometry/GeomGlobal.h ../Utils/UtilsInterface.h
 UtilsInterface.o: ../Geometry/InterfaceGeom.h ../Utils/Utils.h
 UtilsInterface.o: ../Utils/GabeditTextEdit.h ../Geometry/ResultsAnalise.h
@@ -88,3 +102,6 @@ UtilsInterface.o: ../Common/StockIcons.h
 Vector3d.o: ../../Config.h
 Vector3d.o: ../Common/Global.h
 Vector3d.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h Vector3d.h
+Zlm.o: ../../Config.h
+Zlm.o: ../Utils/Constants.h Zlm.h ../Common/GabeditType.h MathFunctions.h
+Zlm.o: ../Common/GabeditType.h

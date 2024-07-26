@@ -82,7 +82,7 @@ static void SetMMTypes(Fragment* Frag)
 
 }
 /*****************************************************************/
-static void SetAtom(Atom* A,gchar* symb,gfloat x,gfloat y,gfloat z)
+static void SetAtom(Atom* A,gchar* symb,gdouble x,gdouble y,gdouble z)
 {
 	gchar Forbidden[]={'0','1','2','3','4','5','6','7','8','9'};
 
@@ -211,9 +211,9 @@ gint AddHToAtomPDB(Fragment* Frag, gchar* pdb)
 	Frag->Atoms = g_realloc(Frag->Atoms,Frag->NAtoms*sizeof(Atom));
 	i = Frag->NAtoms-1;
 	SetAtom(&Frag->Atoms[i],"H",
-			(gfloat)(V[0]),
-			(gfloat)(V[1]),
-			(gfloat)(V[2])
+			(gdouble)(V[0]),
+			(gdouble)(V[1]),
+			(gdouble)(V[2])
 			);
 	Frag->Atoms[i].Residue = g_strdup(Frag->Atoms[C].Residue);
 

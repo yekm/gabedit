@@ -105,7 +105,7 @@ static void new_plane(gint numPlane, GabEditPlanes type)
 {
 	gint i0=0;
 	gint i1=1;
-	gfloat gap = 0;
+	gdouble gap = 0;
 	
 	if(numPlane<0) return;
 	switch(type)
@@ -134,7 +134,7 @@ static void first_plane()
 	if(this_is_an_object((GtkObject*)GLArea)) glarea_rafresh(GLArea);
 }
 /********************************************************************************/
-static void setColorMap(gfloat min, gfloat max)
+static void setColorMap(gdouble min, gdouble max)
 {
 	GtkWidget* handleBoxColorMap = g_object_get_data(G_OBJECT(PrincipalWindow), "HandleboxColorMapPlanesMapped");
 	ColorMap* colorMap = NULL;
@@ -145,11 +145,11 @@ static void setColorMap(gfloat min, gfloat max)
 		gchar* t = NULL;
 		GtkWidget* entryLeft  = g_object_get_data(G_OBJECT(handleBoxColorMap), "EntryLeft");
 		GtkWidget* entryRight = g_object_get_data(G_OBJECT(handleBoxColorMap), "EntryRight");
-		t = g_strdup_printf("%f",min);
+		t = g_strdup_printf("%lf",min);
 		gtk_entry_set_text(GTK_ENTRY(entryLeft),t);
 		g_free(t);
 		gtk_widget_activate(entryLeft);
-		t = g_strdup_printf("%f",max);
+		t = g_strdup_printf("%lf",max);
 		gtk_entry_set_text(GTK_ENTRY(entryRight),t);
 		g_free(t);
 		gtk_widget_activate(entryRight);
@@ -168,10 +168,10 @@ static void setColorMap(gfloat min, gfloat max)
 		g_object_set_data(G_OBJECT(entryLeft),"ColorMap", colorMap);
 		g_object_set_data(G_OBJECT(entryRight),"ColorMap", colorMap);
 		g_object_set_data(G_OBJECT(darea),"ColorMap", colorMap);
-		t = g_strdup_printf("%f",min);
+		t = g_strdup_printf("%lf",min);
 		gtk_entry_set_text(GTK_ENTRY(entryLeft),t);
 		g_free(t);
-		t = g_strdup_printf("%f",max);
+		t = g_strdup_printf("%lf",max);
 		gtk_entry_set_text(GTK_ENTRY(entryRight),t);
 		g_free(t);
 	}
@@ -179,8 +179,8 @@ static void setColorMap(gfloat min, gfloat max)
 /********************************************************************************/
 static void setMinMaxIsovalues()
 {
-	gfloat max;
-	gfloat min;
+	gdouble max;
+	gdouble min;
 	gint i;
 	gint j;
 	gint k;
@@ -206,7 +206,7 @@ static void resetVelocity(GtkWidget *win, gpointer data)
 	if(velo<0)
 	{
 		velo = -velo;
-		t = g_strdup_printf("%f",velo);
+		t = g_strdup_printf("%lf",velo);
 		gtk_entry_set_text(GTK_ENTRY(EntryVelocity),t);
 		g_free(t);
 	}
@@ -442,7 +442,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  3,3);
 	gtk_editable_set_editable((GtkEditable*) EntryVelocity,TRUE);
-	sprintf(t,"%f",velocity);
+	sprintf(t,"%lf",velocity);
 	gtk_entry_set_text(GTK_ENTRY(EntryVelocity),t);
 
 	i++;

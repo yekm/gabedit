@@ -30,7 +30,7 @@ void v3d_zero(V3d v)
     v[2] = 0.0;
 }
 /****************************************************/
-void v3d_set(V3d v, gfloat x, gfloat y, gfloat z)
+void v3d_set(V3d v, gdouble x, gdouble y, gdouble z)
 {
     v[0] = x;
     v[1] = y;
@@ -61,12 +61,12 @@ void v3d_cross(V3d v1, V3d v2, V3d cross)
     v3d_copy(temp, cross);
 }
 
-gfloat v3d_length(V3d v)
+gdouble v3d_length(V3d v)
 {
     return sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
 }
 /****************************************************/
-void v3d_scale(V3d v, gfloat div)
+void v3d_scale(V3d v, gdouble div)
 {
     v[0] *= div;
     v[1] *= div;
@@ -78,7 +78,7 @@ void v3d_normal(V3d v)
     v3d_scale(v,1.0/v3d_length(v));
 }
 /****************************************************/
-gfloat v3d_dot(V3d v1, V3d v2)
+gdouble v3d_dot(V3d v1, V3d v2)
 {
     return v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
 }

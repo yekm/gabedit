@@ -23,6 +23,8 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Constants.h"
+#include "../Utils/Zlm.h"
+#include "../Utils/GTF.h"
 
 /********************************************************************************/
 void save_basis_gabedit_format(FILE* file)
@@ -32,6 +34,7 @@ void save_basis_gabedit_format(FILE* file)
 	gint k;
 	gint c;
 	fprintf(file,"[Basis]\n");
+	if(!Type) return;
 	for(c = 0;c<Ncenters; c++)
 	{
 		i = GeomOrb[c].NumType;
@@ -141,16 +144,16 @@ gboolean ReadOneBasis(gint i,gint j,char *t,gint *nsym)
 	/*	Debug("n = %d\n",n);*/
 	Type[i].Ao[j].N=n;
 	/*Debug("N = %d\n",Type[i].Ao[j].N);*/
-	Type[i].Ao[j].Ex=g_malloc(Type[i].Ao[j].N*sizeof(gfloat));
-	Type[i].Ao[j].Coef=g_malloc(Type[i].Ao[j].N*sizeof(gfloat));
+	Type[i].Ao[j].Ex=g_malloc(Type[i].Ao[j].N*sizeof(gdouble));
+	Type[i].Ao[j].Coef=g_malloc(Type[i].Ao[j].N*sizeof(gdouble));
 	/*Debug("avant sym ==\n");*/
 	if(strlen(sym)==2)
 	{
 	 	l=2;
      		Type[i].Ao=g_realloc(Type[i].Ao,(j+2)*sizeof(AO));
         	Type[i].Ao[j+1].N = Type[i].Ao[j].N;
-		Type[i].Ao[j+1].Ex=g_malloc(Type[i].Ao[j].N*sizeof(gfloat));
-		Type[i].Ao[j+1].Coef=g_malloc(Type[i].Ao[j].N*sizeof(gfloat));
+		Type[i].Ao[j+1].Ex=g_malloc(Type[i].Ao[j].N*sizeof(gdouble));
+		Type[i].Ao[j+1].Coef=g_malloc(Type[i].Ao[j].N*sizeof(gdouble));
 	}
 	*nsym = l;
 	/*Debug("nsym = %d\n",l);*/
@@ -163,10 +166,10 @@ gboolean ReadOneBasis(gint i,gint j,char *t,gint *nsym)
 			if(t[n]=='D') t[n] = 'e';
 		/*Debug("t de One = %s\n",t);*/
 		   
-		if(l==1) sscanf(t,"%f %f ",&Type[i].Ao[j].Ex[k],&Type[i].Ao[j].Coef[k]);
+		if(l==1) sscanf(t,"%lf %lf ",&Type[i].Ao[j].Ex[k],&Type[i].Ao[j].Coef[k]);
 		else
 		{
-			sscanf(t,"%f %f %f ",&Type[i].Ao[j].Ex[k],&Type[i].Ao[j].Coef[k],&Type[i].Ao[j+1].Coef[k]);
+			sscanf(t,"%lf %lf %lf ",&Type[i].Ao[j].Ex[k],&Type[i].Ao[j].Coef[k],&Type[i].Ao[j+1].Coef[k]);
 			Type[i].Ao[j+1].Ex[k] = Type[i].Ao[j].Ex[k];
 		}
 	}
@@ -237,7 +240,7 @@ gboolean ReadOneBasis(gint i,gint j,char *t,gint *nsym)
        return TRUE;
 }
 /**********************************************/
-gboolean DefineBasisType(gchar *NomFichier)
+gboolean DefineBasisType(gchar *fileName)
 {
 	gchar *sym;
 	gchar *t;
@@ -250,18 +253,18 @@ gboolean DefineBasisType(gchar *NomFichier)
 	long int geompos =  0;
 
 	/* Debug("debut de DefineBasisType\n");*/
- 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
+ 	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
 		Message("Sorry\n No file slected","Error",TRUE);
     		return FALSE;
  	}
 
  	t=g_malloc(taille*sizeof(gchar));
- 	forb = FOpen(NomFichier, "rb");
+ 	forb = FOpen(fileName, "rb");
  	if(forb == NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",NomFichier);
+		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
   		Message(buffer,"Error",TRUE);
   		return FALSE;
  	}
@@ -284,7 +287,7 @@ gboolean DefineBasisType(gchar *NomFichier)
 					   "the following keywords are required:\n"
 					   "#P  Gfinput  IOP(6/7=3)  Pop=full\n"
 					   "\n",
-					   NomFichier);
+					   fileName);
 		Message(t,"Error",TRUE);
 		g_free(t);
   		return FALSE;
@@ -312,7 +315,7 @@ gboolean DefineBasisType(gchar *NomFichier)
 				if(Type[i].Ao == NULL)
 				{
 					gchar buffer[BSIZE];
-					sprintf(buffer,"Sorry, I can not read '%s' file, problem with basis set\n",NomFichier);
+					sprintf(buffer,"Sorry, I can not read '%s' file, problem with basis set\n",fileName);
   					Message(buffer,"Error",TRUE);
 					return FALSE;
 				}
@@ -368,7 +371,7 @@ gboolean DefineBasisType(gchar *NomFichier)
 						if(Type[i].Ao == NULL)
 						{
 							gchar buffer[BSIZE];
-							sprintf(buffer,"Sorry, I can not read '%s' file, problem with basis set\n",NomFichier);
+							sprintf(buffer,"Sorry, I can not read '%s' file, problem with basis set\n",fileName);
   							Message(buffer,"Error",TRUE);
 							return FALSE;
 						}
@@ -383,7 +386,7 @@ gboolean DefineBasisType(gchar *NomFichier)
 	if(Type[i].Ao == NULL)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not read '%s' file, problem with basis set\n",NomFichier);
+		sprintf(buffer,"Sorry, I can not read '%s' file, problem with basis set\n",fileName);
   		Message(buffer,"Error",TRUE);
 		return FALSE;
 	}
@@ -409,7 +412,61 @@ static void resortAtoms(gint* numAtoms)
 	g_free(newGeom);
 }
 /**********************************************/
-gboolean DefineGabeditMoldenBasisType(gchar *NomFichier,gchar* title)
+static gint getNumberOfBasisCenters(gchar *fileName, gchar* title)
+{
+	gchar t[BSIZE];
+	gint i;
+	gboolean ok;
+	gint nAtoms = 0;
+
+ 	if ((!fileName) || (strcmp(fileName,"") == 0)) return nAtoms;
+
+ 	forb = FOpen(fileName, "rb");
+ 	if(forb == NULL) return nAtoms;
+	ok = FALSE;
+	while(!feof(forb))
+	{
+		fgets(t,BSIZE,forb);
+		if(strstr(t,title) != NULL)
+		{
+			ok = TRUE;
+			break;
+		}
+	}
+	if(!ok) 
+	{
+		fclose(forb);
+		return nAtoms;
+	}
+
+	nAtoms = 0;
+	while(!feof(forb))
+	{
+		fgets(t,BSIZE,forb);
+		if(this_is_a_backspace(t) || strstr(t,"[")) break;
+
+		/* printf("tt = %s\n",t);*/
+		i=atoi(t);
+		if(i>0)
+		{
+			nAtoms++;
+			while(!feof(forb))
+     			{
+     				fgets(t,BSIZE,forb);
+     				if(this_is_a_backspace(t) || strstr(t,"[")) break;
+     			}
+		}
+		else
+		{
+     			if(this_is_a_backspace(t) || strstr(t,"[")) break;
+		}
+		if(strstr(t,"[")) break;
+	}
+	fclose(forb);
+    	return nAtoms;
+}
+/**********************************************/
+gboolean DefineGabeditMoldenBasisType(gchar *fileName,gchar* title)
 {
 	gchar *sym;
 	gchar *t;
@@ -421,19 +478,20 @@ gboolean DefineGabeditMoldenBasisType(gchar *NomFichier,gchar* title)
 	gint nsym;
 	gint* numAtoms = NULL;
 	gint nAtoms = 0;
+	gint nC = getNumberOfBasisCenters(fileName, title);
 
- 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
+ 	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
 		Message("Sorry\n No file slected","Error",TRUE);
     		return FALSE;
  	}
 
  	t=g_malloc(taille*sizeof(gchar));
- 	forb = FOpen(NomFichier, "rb");
+ 	forb = FOpen(fileName, "rb");
  	if(forb == NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",NomFichier);
+		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
   		Message(buffer,"Error",TRUE);
   		return FALSE;
  	}
@@ -451,12 +509,19 @@ gboolean DefineGabeditMoldenBasisType(gchar *NomFichier,gchar* title)
 	if(!ok)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry\nI can not read basis from '%s' file\n",NomFichier);
+		sprintf(buffer,"Sorry\nI can not read basis from '%s' file\n",fileName);
   		Message(buffer,"Error",TRUE);
   		return FALSE;
 	}
 
 	sym=g_malloc(10*sizeof(char));
+	/* printf("nC = %d\n",nC);*/
+	/* basis available for all centers */
+	if(nC==Ncenters)
+	{
+		Ntype = Ncenters;
+ 		for(i=0;i<Ncenters;i++) GeomOrb[i].NumType= i;
+	}
 
 	if(forb !=NULL)
 	{
@@ -484,7 +549,7 @@ gboolean DefineGabeditMoldenBasisType(gchar *NomFichier,gchar* title)
 				if(Type[i].Ao == NULL)
 				{
 					gchar buffer[BSIZE];
-					sprintf(buffer,"Sorry, I can not read '%s' file, problem with basis set (1)\n",NomFichier);
+					sprintf(buffer,"Sorry, I can not read '%s' file, problem with basis set (1)\n",fileName);
   					Message(buffer,"Error",TRUE);
 					printf("AO pour i = %d\n", i);
 					if(numAtoms) g_free(numAtoms);
@@ -564,7 +629,7 @@ gboolean DefineGabeditMoldenBasisType(gchar *NomFichier,gchar* title)
 						if(Type[i].Ao == NULL)
 						{
 							gchar buffer[BSIZE];
-							sprintf(buffer,"Sorry, I can not read '%s' file, problem with basis set (2)\n",NomFichier);
+							sprintf(buffer,"Sorry, I can not read '%s' file, problem with basis set (2)\n",fileName);
   							Message(buffer,"Error",TRUE);
 							if(numAtoms) g_free(numAtoms);
 							return FALSE;
@@ -582,7 +647,7 @@ gboolean DefineGabeditMoldenBasisType(gchar *NomFichier,gchar* title)
 	if(Type[i].Ao == NULL)
 	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not read '%s' file, problem with basis set (3)\n",NomFichier);
+		sprintf(buffer,"Sorry, I can not read '%s' file, problem with basis set (3)\n",fileName);
   		Message(buffer,"Error",TRUE);
 		if(numAtoms) g_free(numAtoms);
 		return FALSE;
@@ -592,16 +657,16 @@ gboolean DefineGabeditMoldenBasisType(gchar *NomFichier,gchar* title)
     	return TRUE;
 }
 /**********************************************/
-gboolean DefineMoldenBasisType(gchar *NomFichier)
+gboolean DefineMoldenBasisType(gchar *fileName)
 {
 	/* Debug("begin of DefineMoldenBasisType\n");*/
-	return DefineGabeditMoldenBasisType(NomFichier,"[GTO]");
+	return DefineGabeditMoldenBasisType(fileName,"[GTO]");
 }
 /**********************************************/
-gboolean DefineGabeditBasisType(gchar *NomFichier)
+gboolean DefineGabeditBasisType(gchar *fileName)
 {
 /*	Debug("begin of DefineGabeditBasisType\n");*/
-	return DefineGabeditMoldenBasisType(NomFichier,"[Basis]");
+	return DefineGabeditMoldenBasisType(fileName,"[Basis]");
 }
 /**********************************************/
 void PrintAllBasis()
@@ -614,7 +679,7 @@ void PrintAllBasis()
  for(k=0;k<NAOrb;k++)
  {
 
-	 for(n=0;n<AOrb[k].N;n++)
+	 for(n=0;n<AOrb[k].numberOfFunctions;n++)
 	 {
 		
 		 l=0;
@@ -643,11 +708,11 @@ void NormaliseAllBasis()
  gint k,n;
 
  for(k=0;k<NAOrb;k++)
-	 for(n=0;n<AOrb[k].N;n++)
-		 NormaliseRadial(&AOrb[k].Gtf[n]);
+	 for(n=0;n<AOrb[k].numberOfFunctions;n++)
+		 normaliseRadialGTF(&AOrb[k].Gtf[n]);
 
  for(k=0;k<NAOrb;k++)
-		 NormaliseCGTF(&AOrb[k]);
+		 normaliseCGTF(&AOrb[k]);
 }
 /**********************************************/
 void DefineAtomicNumOrb()
@@ -783,10 +848,10 @@ void DefineCartBasis()
 			l2 = l[1][m];
 	 		l3 = l[2][m];
 	 		k++;
-	 		AOrb[k].N=Type[GeomOrb[i].NumType].Ao[j].N;
+	 		AOrb[k].numberOfFunctions=Type[GeomOrb[i].NumType].Ao[j].N;
 			AOrb[k].NumCenter = i;
-	 		AOrb[k].Gtf =g_malloc(AOrb[k].N*sizeof(GTF));
-	 		for(n=0;n<AOrb[k].N;n++)
+	 		AOrb[k].Gtf =g_malloc(AOrb[k].numberOfFunctions*sizeof(GTF));
+	 		for(n=0;n<AOrb[k].numberOfFunctions;n++)
 	 		{
 	   			AOrb[k].Gtf[n].Ex   = Type[GeomOrb[i].NumType].Ao[j].Ex[n];
 	   			AOrb[k].Gtf[n].Coef = Type[GeomOrb[i].NumType].Ao[j].Coef[n];
@@ -813,7 +878,7 @@ void DefineSphericalBasis()
  gint kl;
  gint L,M;
  CGTF *temp;
- Slm Stemp;
+ Zlm Stemp;
  gint N,Nc,n;
  gint inc;
  gint  klbeg;
@@ -863,15 +928,15 @@ void DefineSphericalBasis()
     		{
 			/*Debug("L =%d kl=%d M=%d \n",L,kl,M);*/
 	 		k++;
-	 	   	Stemp =  GetCoefSlm(L,M);
+	 	   	Stemp =  getZlm(L,M);
 
-	 		temp[k].N=Stemp.N*Type[GeomOrb[i].NumType].Ao[j].N;
+	 		temp[k].numberOfFunctions=Stemp.numberOfCoefficients*Type[GeomOrb[i].NumType].Ao[j].N;
 		    temp[k].NumCenter=i;
 			/*Debug("M=%d N=%d\n",M,temp[k].N);*/
-	 		temp[k].Gtf =g_malloc(temp[k].N*sizeof(GTF));
+	 		temp[k].Gtf =g_malloc(temp[k].numberOfFunctions*sizeof(GTF));
           		Nc=-1;
 	 		for(N=0;N<Type[GeomOrb[i].NumType].Ao[j].N;N++)
-	 			 for(n=0;n<Stemp.N;n++)
+	 			 for(n=0;n<Stemp.numberOfCoefficients;n++)
 	 			{
 	 			   Nc++;
 	 			

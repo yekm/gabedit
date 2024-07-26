@@ -25,6 +25,7 @@ gchar*** get_periodic_table();
 
 gchar* get_symbol_using_z(gint z);
 gdouble get_atomic_number_from_symbol(gchar* symbol);
+gdouble get_masse_from_symbol(gchar* symbol);
 gboolean test_atom_define(gchar *Symb);
 SAtomsProp prop_atom_get(const gchar *);
 void define_default_atoms_prop();

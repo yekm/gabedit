@@ -213,7 +213,7 @@ gint* getRingTreeMolecule(TreeMolecule* treeMolecule)
 	return ringAtoms;
 }
 /********************************************************************************/
-void getCentreRingTreeMolecule(TreeMolecule* treeMolecule, GeomDef* geom, gint NAtoms, gint i, gint j, gfloat C[])
+void getCentreRingTreeMolecule(TreeMolecule* treeMolecule, GeomDef* geom, gint NAtoms, gint i, gint j, gdouble C[])
 {
 
 	gint k;

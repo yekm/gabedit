@@ -34,6 +34,7 @@ DEALINGS IN THE SOFTWARE.
 #define PROG_IS_MOLCAS GABEDIT_TYPENODE_MOLCAS
 #define PROG_IS_MOLPRO GABEDIT_TYPENODE_MOLPRO
 #define PROG_IS_MPQC  GABEDIT_TYPENODE_MPQC
+#define PROG_IS_ORCA  GABEDIT_TYPENODE_ORCA
 #define PROG_IS_PCGAMESS  GABEDIT_TYPENODE_PCGAMESS
 #define PROG_IS_QCHEM  GABEDIT_TYPENODE_QCHEM
 #define PROG_IS_MOPAC  GABEDIT_TYPENODE_MOPAC
@@ -48,7 +49,7 @@ DEALINGS IN THE SOFTWARE.
 
 #define MAJOR_VERSION    2
 #define MINOR_VERSION    2
-#define MICRO_VERSION    0
+#define MICRO_VERSION    6
 
 /**** Structures *********/
 typedef struct _FileOpen
@@ -152,7 +153,9 @@ typedef struct _CommandsBatch
   gchar *NameCommandMPQC;
   gchar *NameCommandPCGamess;
   gchar *NameCommandQChem;
+  gchar *NameCommandOrca;
   gchar *NameCommandMopac;
+  gchar *NameCommandPovray;
   gint ScreenWidth;
   gint ScreenHeight;
   FontsStyle FontsStyleData;
@@ -173,16 +176,20 @@ typedef struct _CommandsBatch
   gchar* babelCommand;
   gchar* gamessDirectory;
   gchar* pcgamessDirectory;
+  gchar* orcaDirectory;
   gchar* mopacDirectory;
   gchar* gaussDirectory;
+  gchar* povrayDirectory;
   CommandsList gamessCommands;
   CommandsList gaussianCommands;
   CommandsList molcasCommands;
   CommandsList molproCommands;
   CommandsList mpqcCommands;
+  CommandsList orcaCommands;
   CommandsList pcgamessCommands;
   CommandsList qchemCommands;
   CommandsList mopacCommands;
+  CommandsList povrayCommands;
 
   gchar *NameTypeBatch;
   gchar *NameCommandBatchAll;

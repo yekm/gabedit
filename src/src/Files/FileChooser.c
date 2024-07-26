@@ -19,6 +19,8 @@ DEALINGS IN THE SOFTWARE.
 
 
 #include "../../Config.h"
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include "../Common/Global.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
@@ -34,7 +36,7 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
   gchar* patternsfiles[] = {	"*",
 			    	"*.inp","*.com","*.mop",
 	  			"*.log","*.out","*.aux","*.gab","*.xyz","*.mol2","*.tnk","*.pdb","*.hin","*.zmt","*.gzmt",
-	  		    	"*.hf","*.gcube","*.cube","*.CUBE","*.grid","*.grid","*.t41","*.trj","*.txt","*",
+	  		    	"*.hf","*.gcube","*.cube","*.CUBE","*.grid","*.M2Msi","*.t41","*.trj","*.txt","*",
 			    	NULL};
   GCallback *func = (GCallback *)data;
   gchar* temp = NULL;
@@ -92,6 +94,9 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 
 					    temp = g_strdup_printf("%s.log",fileopen.projectname);
 					    break;
+	   case GABEDIT_TYPEFILE_ORCA : 
+		   				gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.out");
+						temp = g_strdup_printf("%s.out",fileopen.projectname);
 	   case GABEDIT_TYPEFILE_QCHEM : 
 		   				gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.out");
 						temp = g_strdup_printf("%s.out",fileopen.projectname);
@@ -171,6 +176,10 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 	   case GABEDIT_TYPEFILE_MOLPROINPUT : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.com");
 					    temp = g_strdup_printf("%s.com",fileopen.projectname);
+					    break;
+	   case GABEDIT_TYPEFILE_ORCAINPUT : 
+					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.inp");
+					    temp = g_strdup_printf("%s.inp",fileopen.projectname);
 					    break;
 	   case GABEDIT_TYPEFILE_QCHEMINPUT : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.inp");
@@ -336,7 +345,7 @@ void choose_file_to_open()
   }
 
    gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(gabeditFileChooser), patternsfiles);
-    if(iprogram == PROG_IS_GAMESS  || iprogram == PROG_IS_PCGAMESS || iprogram == PROG_IS_OTHER)
+    if(iprogram == PROG_IS_GAMESS  || iprogram == PROG_IS_PCGAMESS || iprogram == PROG_IS_ORCA  || iprogram == PROG_IS_OTHER)
    	gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.inp");
     if(iprogram == PROG_IS_MOPAC)
    	gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.mop");

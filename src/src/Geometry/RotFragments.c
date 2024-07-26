@@ -214,7 +214,7 @@ gdouble AngleAboutZAxis(gdouble* coord)
 }
 
 /********************************************************************************/
-void SetBondDistance(GeomDef* geom,gint n1,gint n2,gfloat bondLength,gint list[],gint nlist)
+void SetBondDistance(GeomDef* geom,gint n1,gint n2,gdouble bondLength,gint list[],gint nlist)
 {
 	gdouble a1[]={geom[n1].X,geom[n1].Y,geom[n1].Z};
 	gdouble a2[]={geom[n2].X,geom[n2].Y,geom[n2].Z};
@@ -254,7 +254,7 @@ void SetBondDistance(GeomDef* geom,gint n1,gint n2,gfloat bondLength,gint list[]
 	geom[atomNumber].Z += coord[2];
 }
 /********************************************************************************/
-void SetBondDistanceX(GeomDef* geom,gint n1,gint n2,gfloat bondLength,gint list[],gint nlist)
+void SetBondDistanceX(GeomDef* geom,gint n1,gint n2,gdouble bondLength,gint list[],gint nlist)
 {
 	gdouble a1[]={geom[n1].X,geom[n1].Y,geom[n1].Z};
 	gdouble a2[]={geom[n2].X,geom[n2].Y,geom[n2].Z};

@@ -59,6 +59,7 @@ void contour_point_free(Contours contours)
 	gint i;
 	gint j;
   	
+	if(!contours.pointscontour) return;
 	for(i=0;i<contours.N[0];i++)
 	{
 
@@ -67,7 +68,8 @@ void contour_point_free(Contours contours)
 			for( j = 0; j<contours.N[1];j++)
 			{
 				/* printf("N = %d \n",contours.pointscontour[i][j].N);*/
-				if(contours.pointscontour[i][j].N>0 && contours.pointscontour[i][j].point) g_free(contours.pointscontour[i][j].point);
+				if(contours.pointscontour[i][j].N>0 && contours.pointscontour[i][j].point) 
+					g_free(contours.pointscontour[i][j].point);
 			}
 			g_free(contours.pointscontour[i]);
 		}
@@ -76,17 +78,17 @@ void contour_point_free(Contours contours)
 		
 }
 /**************************************************************/
-void set_contour_point(PointsContour** pointscontour,Grid* plansgrid,gfloat value,gint i0,gint i1,gint numplan)
+void set_contour_point(PointsContour** pointscontour,Grid* plansgrid,gdouble value,gint i0,gint i1,gint numplan)
 {
 	gint i;
 	gint j;
 	gint k;
 	gint c;
 	Point5 t[4];
-	gfloat u1;
-	gfloat u2;
-	gfloat v1;
-	gfloat v2;
+	gdouble u1;
+	gdouble u2;
+	gdouble v1;
+	gdouble v2;
 	gint ip = numplan;
 	gint ix=0,iy=0,iz=0;
 	gint ix1=0,iy1=0,iz1=0;
@@ -218,7 +220,7 @@ void set_contour_point(PointsContour** pointscontour,Grid* plansgrid,gfloat valu
 			pointscontour[i][j].point = NULL;
 			if(pointscontour[i][j].N>0)
 			{
-				pointscontour[i][j].point = g_malloc(pointscontour[i][j].N*sizeof(Point));
+				pointscontour[i][j].point = g_malloc(pointscontour[i][j].N*sizeof(Point5));
 				for(k=0;k<pointscontour[i][j].N;k++)
 				{
 					for(c=0;c<4;c++)
@@ -230,7 +232,7 @@ void set_contour_point(PointsContour** pointscontour,Grid* plansgrid,gfloat valu
 
 }
 /**************************************************************/
-Contours get_contours(Grid* plansgrid,gfloat value,gint i0,gint i1,gint numplan)
+Contours get_contours(Grid* plansgrid,gdouble value,gint i0,gint i1,gint numplan)
 {
 	Contours contours;
 	PointsContour** pointscontour = contour_point_alloc(plansgrid->N,i0,i1);
@@ -250,15 +252,15 @@ void apply_contours(GtkWidget *Win,gpointer data)
 	G_CONST_RETURN gchar* temp;
 	gint i;
 	gint N;
-	gfloat min;
-	gfloat max;
+	gdouble min;
+	gdouble max;
 	gint i0=0;
 	gint i1=1;
 	gint numplane = -1;
-	gfloat* values = NULL;
-	gfloat step = 0;
+	gdouble* values = NULL;
+	gdouble step = 0;
 	gint pvalue = 0;
-	gfloat gap = 0;
+	gdouble gap = 0;
 	
         temp	= gtk_entry_get_text(GTK_ENTRY(Entrys[0])); 
 	pvalue = atoi(temp);
@@ -283,8 +285,9 @@ void apply_contours(GtkWidget *Win,gpointer data)
 		case 1 : i0 = 0;i1 = 2;break; /* plane XZ */
 		case 2 : i0 = 0;i1 = 1;break; /* plane XY */
 	}
+	/* Debug("N = %d\n",N);*/
 
-	values = g_malloc(N*sizeof(gfloat));
+	values = g_malloc(N*sizeof(gdouble));
 
 	if(linear)
 	{
@@ -297,12 +300,14 @@ void apply_contours(GtkWidget *Win,gpointer data)
 		step = (1.0)/(N-1);
 		for(i=0;i<N;i++) values[i] = min+(max-min)*log(step*i*(e-1)+1);
 	}
+	/* Debug("Begin set_contours_values\n");*/
 	set_contours_values(N, values, i0, i1, numplane, gap);
+	/* Debug("End set_contours_values\n");*/
 	
 	g_signal_handler_disconnect(G_OBJECT(Combo), handel_id);
 
   	delete_child(Win);
-  	/*gtk_widget_destroy(Win);*/
+  	/* gtk_widget_destroy(Win);*/
 }
 /********************************************************************************/
 static void reset_limits_values(GtkWidget *Win,gpointer data)
@@ -317,8 +322,8 @@ static void reset_limits_values(GtkWidget *Win,gpointer data)
 	gint i0=0;
 	gint i1=1;
 	gint numplane = -1;
-	gfloat min = 0;
-	gfloat max = 0;
+	gdouble min = 0;
+	gdouble max = 0;
 	gint pvalue = 0;
 	G_CONST_RETURN gchar* temp;
 	
@@ -379,17 +384,17 @@ static void reset_limits_values(GtkWidget *Win,gpointer data)
 
 			}
 		}
-	temp = g_strdup_printf("%f",min);
+	temp = g_strdup_printf("%lf",min);
 	gtk_entry_set_text(GTK_ENTRY(Entrys[2]),temp);
 	/*g_free(temp);*/
-	temp = g_strdup_printf(" >= %f ",min);
+	temp = g_strdup_printf(" >= %lf ",min);
 	gtk_label_set_text(GTK_LABEL(LabelMin),temp);
 	/*g_free(temp);*/
 	if(fabs(max-min)<1e-5) max +=1e-4;
-	temp = g_strdup_printf("%f",max);
+	temp = g_strdup_printf("%lf",max);
 	gtk_entry_set_text(GTK_ENTRY(Entrys[3]),temp);
 	/*g_free(temp);*/
-	temp = g_strdup_printf(" <= %f ",max);
+	temp = g_strdup_printf(" <= %lf ",max);
 	gtk_label_set_text(GTK_LABEL(LabelMax),temp);
 	/*g_free(temp);*/
 }
@@ -424,8 +429,8 @@ GtkWidget *create_contours_frame( GtkWidget *vboxall,gchar* title,gint type)
 	GtkWidget *Table;
 	gchar** listvalues;
 	gint ix=0,iy=0,iz=0;
-	gfloat min = 0;
-	gfloat max = 0;
+	gdouble min = 0;
+	gdouble max = 0;
 	static gint itype = 0;
 	gchar      *strlabels[NLIGNES][NCOLUMNS];
 	
@@ -474,8 +479,8 @@ GtkWidget *create_contours_frame( GtkWidget *vboxall,gchar* title,gint type)
 
 	strlabels[0][2] = g_strdup("  ");
 	strlabels[1][2] = g_strdup("10");
-	strlabels[2][2] = g_strdup_printf("%f",9*min/10);
-	strlabels[3][2] = g_strdup_printf("%f",9*max/10);
+	strlabels[2][2] = g_strdup_printf("%lf",9*min/10);
+	strlabels[3][2] = g_strdup_printf("%lf",9*max/10);
 	strlabels[4][2] = NULL;
 	strlabels[5][2] = NULL;
 	strlabels[6][2] = NULL;
@@ -483,8 +488,8 @@ GtkWidget *create_contours_frame( GtkWidget *vboxall,gchar* title,gint type)
 
 	strlabels[0][3] = g_strdup(" ");
 	strlabels[1][3] = g_strdup(" ");
-	strlabels[2][3] = g_strdup_printf(" >= %f ",min);
-	strlabels[3][3] = g_strdup_printf(" <= %f ",max);
+	strlabels[2][3] = g_strdup_printf(" >= %lf ",min);
+	strlabels[3][3] = g_strdup_printf(" <= %lf ",max);
 	strlabels[4][3] = NULL;
 	strlabels[5][3] = NULL;
 	strlabels[6][3] = NULL;
@@ -663,9 +668,9 @@ void apply_contours_plane(GtkWidget *Win,gpointer data)
 			
 	GtkWidget** Entrys =(GtkWidget**)g_object_get_data(G_OBJECT (Win), "Entrys");
 	gint N;
-	gfloat minv;
-	gfloat maxv;
-	gfloat gap;
+	gdouble minv;
+	gdouble maxv;
+	gdouble gap;
 	
 	N = get_number_of_point(Entrys[0]);
 	if(N<=0) return;
@@ -680,9 +685,9 @@ void apply_contours_plane(GtkWidget *Win,gpointer data)
 		return;
 	}
 
-	/* Debug("N = %d min = %f max = %f\n",N,minv,maxv);*/
+	/* Debug("N = %d min = %lf max = %lf\n",N,minv,maxv);*/
  	set_contours_values_from_plane(minv,maxv,N,gap,linear);
-	/*Debug("N = %d min = %f max = %f\n",N,minv,maxv);*/
+	/*Debug("N = %d min = %lf max = %lf\n",N,minv,maxv);*/
 	glarea_rafresh(GLArea);
   	delete_child(Win);
 }
@@ -707,8 +712,8 @@ GtkWidget *create_contours_frame_plane( GtkWidget *vboxall,gchar* title)
 	gushort i;
 	gushort j;
 	GtkWidget *Table;
-	gfloat min = 0;
-	gfloat max = 0;
+	gdouble min = 0;
+	gdouble max = 0;
 	gchar      *strlabels[NLIGNESP][NCOLUMNSP];
 
 	for(i=0;i<gridPlaneForContours->N[0];i++)
@@ -745,16 +750,16 @@ GtkWidget *create_contours_frame_plane( GtkWidget *vboxall,gchar* title)
 	strlabels[6][1] = g_strdup(" : ");
 
 	strlabels[0][2] = g_strdup("10");
-	strlabels[1][2] = g_strdup_printf("%f",9*min/10);
-	strlabels[2][2] = g_strdup_printf("%f",9*max/10);
+	strlabels[1][2] = g_strdup_printf("%lf",9*min/10);
+	strlabels[2][2] = g_strdup_printf("%lf",9*max/10);
 	strlabels[3][2] = NULL;
 	strlabels[4][2] = NULL;
 	strlabels[5][2] = NULL;
 	strlabels[6][2] = g_strdup("0.0");
 
 	strlabels[0][3] = g_strdup("");
-	strlabels[1][3] = g_strdup_printf(" >= %f ",min);
-	strlabels[2][3] = g_strdup_printf(" <= %f ",max);
+	strlabels[1][3] = g_strdup_printf(" >= %lf ",min);
+	strlabels[2][3] = g_strdup_printf(" <= %lf ",max);
 	strlabels[3][3] = NULL;
 	strlabels[4][3] = NULL;
 	strlabels[5][3] = NULL;

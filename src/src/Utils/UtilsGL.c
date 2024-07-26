@@ -270,14 +270,14 @@ static GLuint gdk_gl_font_use_pango_font2 (const gchar* font_name)
 	if (fontInfo == NULL)
 	{
 		
- 	    // try to load other fonts
+ 	    /* try to load other fonts*/
  		fontInfo = XLoadQueryFont (dpy, "-*-fixed-*-*-*-*-18-*-*-*-*-*-*-*");
 		if(fontInfo == NULL) fontInfo = XLoadQueryFont (dpy, "-*-fixed-*-*-*-*-12-*-*-*-*-*-*-*");
 		if(fontInfo == NULL) fontInfo = XLoadQueryFont (dpy, "-*-fixed-*-*-*-*-10-*-*-*-*-*-*-*");
 		if(fontInfo == NULL) fontInfo = XLoadQueryFont (dpy, "-*-fixed-*-*-*-*-8-*-*-*-*-*-*-*");
 		if(fontInfo == NULL) fontInfo = XLoadQueryFont (dpy, "-*-fixed-*-*-*-*-*-*-*-*-*-*-*-*");
  	
- 	    // any font will do !
+ 	    /* any font will do !*/
  	    if (fontInfo == NULL) fontInfo = XLoadQueryFont(dpy, "-*-*-*-*-*-*-*-*-*-*-*-*-*-*");
  	
  	    if (fontInfo == NULL) return 0;
@@ -446,13 +446,13 @@ void glInitFonts()
 void glGetWorldCoordsFromSceneCoords(gdouble VScene[], gdouble VWorld[])
 {
 	GLdouble mvMatrix[4][4];
-	gfloat** trMatrix;
-	gfloat** invMatrix;
+	gdouble** trMatrix;
+	gdouble** invMatrix;
 	gint i;
 	gint j;
 	glGetDoublev(GL_MODELVIEW_MATRIX, &mvMatrix[0][0]);
-	trMatrix = g_malloc(3*sizeof(gfloat*));
-	for(i=0;i<3;i++) trMatrix[i] = g_malloc(3*sizeof(gfloat));
+	trMatrix = g_malloc(3*sizeof(gdouble*));
+	for(i=0;i<3;i++) trMatrix[i] = g_malloc(3*sizeof(gdouble));
 
 	for(i=0;i<3;i++)
 		for(j=0;j<3;j++)
@@ -497,13 +497,13 @@ void glPrintScale(gdouble x, gdouble y, gdouble z, gdouble scale, gchar *str)
 	gdouble VScene[]={0,0,0};
 	gdouble VWorld[]={x,y,z};
 	GLdouble mvMatrix[4][4];
-	gfloat** trMatrix;
-	gfloat** invMatrix;
+	gdouble** trMatrix;
+	gdouble** invMatrix;
 	gint i;
 	gint j;
 	glGetDoublev(GL_MODELVIEW_MATRIX, &mvMatrix[0][0]);
-	trMatrix = g_malloc(3*sizeof(gfloat*));
-	for(i=0;i<3;i++) trMatrix[i] = g_malloc(3*sizeof(gfloat));
+	trMatrix = g_malloc(3*sizeof(gdouble*));
+	for(i=0;i<3;i++) trMatrix[i] = g_malloc(3*sizeof(gdouble));
 
 	for(i=0;i<3;i++)
 		for(j=0;j<3;j++)

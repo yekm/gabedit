@@ -38,11 +38,11 @@ typedef enum
 } TypeOfBackground;
 static gchar* types[] = {"sky & water", "sky & cheker", "room",  "black", "white" };
 static gint typeOfBackground[] = {SKY_WATER, SKY_CHEKER, ROOM, BALCK, WHITE };
-static gint backgroundType = ROOM;
-static gint tmpBackgoundType = ROOM;
+static gint backgroundType = BALCK;
+static gint tmpBackgoundType = BALCK;
 
 /**************************************************************************************************************************************/
-static void setPovrayOptionsFromTmp(GtkWidget *win, gpointer data)
+void applyPovrayOptions(GtkWidget *win, gpointer data)
 {
 	backgroundType = tmpBackgoundType;
 }
@@ -75,12 +75,12 @@ static GtkWidget* addRadioButtonToATable(GtkWidget* table, GtkWidget* friendButt
 	return newButton;
 }
 /**************************************************************************************************************************************/
-static void createBackgroundFrame(GtkWidget *box)
+void createPOVBackgroundFrame(GtkWidget *box)
 {
 	GtkWidget* button;
 	GtkWidget* frame;
 	GtkWidget* vboxFrame;
-	GtkWidget *table = gtk_table_new(6,2,TRUE);
+	GtkWidget *table = gtk_table_new(5,2,TRUE);
 	gint i;
 
 	frame = gtk_frame_new ("Type of background");
@@ -132,7 +132,7 @@ void createPovrayOptionsWindow(GtkWidget* win)
 	gtk_widget_show (hbox);
 	gtk_container_add (GTK_CONTAINER (frame), hbox);
 
-	createBackgroundFrame(hbox);
+	createPOVBackgroundFrame(hbox);
 	gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(dialogWindow)->action_area), TRUE);
 
 	button = create_button(dialogWindow,"Cancel");
@@ -145,7 +145,7 @@ void createPovrayOptionsWindow(GtkWidget* win)
 	gtk_box_pack_start (GTK_BOX( GTK_DIALOG(dialogWindow)->action_area), button, FALSE, TRUE, 5);	
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	gtk_widget_grab_default(button);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)setPovrayOptionsFromTmp, GTK_OBJECT(dialogWindow));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)applyPovrayOptions, GTK_OBJECT(dialogWindow));
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)destroy_button_windows, GTK_OBJECT(dialogWindow));
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(dialogWindow));
 	
@@ -171,7 +171,7 @@ static gchar *get_pov_sky()
 	 return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_water(gfloat x, gfloat y, gfloat z, gfloat scale)
+static gchar *get_pov_water(gdouble x, gdouble y, gdouble z, gdouble scale)
 {
      gchar *temp;
      temp = g_strdup_printf(
@@ -191,7 +191,7 @@ static gchar *get_pov_water(gfloat x, gfloat y, gfloat z, gfloat scale)
 	 return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_checker(gfloat x, gfloat y, gfloat z, gfloat scale)
+static gchar *get_pov_checker(gdouble x, gdouble y, gdouble z, gdouble scale)
 {
      gchar *temp;
      temp = g_strdup_printf(
@@ -208,7 +208,7 @@ static gchar *get_pov_checker(gfloat x, gfloat y, gfloat z, gfloat scale)
 	 return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_hexagon(gfloat x, gfloat y, gfloat z, gfloat scale)
+static gchar *get_pov_hexagon(gdouble x, gdouble y, gdouble z, gdouble scale)
 {
      gchar *temp;
      temp = g_strdup_printf(
@@ -224,7 +224,7 @@ static gchar *get_pov_hexagon(gfloat x, gfloat y, gfloat z, gfloat scale)
 	 return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_stone(gfloat x, gfloat y, gfloat z, gfloat scale, gint numStone)
+static gchar *get_pov_stone(gdouble x, gdouble y, gdouble z, gdouble scale, gint numStone)
 {
      gchar *temp;
      temp = g_strdup_printf(
@@ -240,7 +240,7 @@ static gchar *get_pov_stone(gfloat x, gfloat y, gfloat z, gfloat scale, gint num
 	 return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_backgrond_unicolor(gfloat red, gfloat green, gfloat blue)
+static gchar *get_pov_backgrond_unicolor(gdouble red, gdouble green, gdouble blue)
 {
      gchar *temp;
      temp = g_strdup_printf(
@@ -254,7 +254,7 @@ static gchar *get_pov_backgrond_unicolor(gfloat red, gfloat green, gfloat blue)
      return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_sky_water(gfloat x, gfloat y, gfloat z, gfloat scale)
+static gchar *get_pov_sky_water(gdouble x, gdouble y, gdouble z, gdouble scale)
 {
 	gchar *temp = NULL;
 	gchar *sky;
@@ -278,7 +278,7 @@ static gchar *get_pov_sky_water(gfloat x, gfloat y, gfloat z, gfloat scale)
 	return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_sky_checker(gfloat x, gfloat y, gfloat z, gfloat scale)
+static gchar *get_pov_sky_checker(gdouble x, gdouble y, gdouble z, gdouble scale)
 {
 	gchar *temp = NULL;
 	gchar *sky;
@@ -302,7 +302,7 @@ static gchar *get_pov_sky_checker(gfloat x, gfloat y, gfloat z, gfloat scale)
 	return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_cube(gfloat xScale, gfloat yScale, gfloat zScale)
+static gchar *get_pov_cube(gdouble xScale, gdouble yScale, gdouble zScale)
 {
 	gchar *temp = NULL;
 	gchar *bottom;
@@ -336,7 +336,7 @@ static gchar *get_pov_cube(gfloat xScale, gfloat yScale, gfloat zScale)
 	return temp;
 }
 /********************************************************************************/
-gchar *get_pov_background(gfloat xScale, gfloat yScale, gfloat zScale)
+gchar *get_pov_background(gdouble xScale, gdouble yScale, gdouble zScale)
 {
 	switch(backgroundType)
 	{

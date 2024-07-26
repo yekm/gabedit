@@ -21,8 +21,8 @@ DEALINGS IN THE SOFTWARE.
 typedef struct _AtomMD
 {
 	gchar symbol[5];
-	gfloat C[3];
-	gfloat V[3];
+	gdouble C[3];
+	gdouble V[3];
 	gdouble partialCharge;
 	gdouble nuclearCharge;
 }AtomMD;

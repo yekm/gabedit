@@ -1,10 +1,13 @@
 # DO NOT DELETE
 
-FileChooser.o: ../../Config.h ../Common/Global.h
-FileChooser.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
-FileChooser.o: ../Utils/UtilsInterface.h ../Utils/Utils.h ../Common/Windows.h
-FileChooser.o: ../Common/Exit.h ../OpenGL/UtilsOrb.h
-FolderChooser.o: ../../Config.h ../Common/Global.h
+FileChooser.o: ../../Config.h
+FileChooser.o: ../Common/Global.h
+FileChooser.o: ../Files/GabeditFileChooser.h
+FileChooser.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
+FileChooser.o: ../Utils/Utils.h ../Common/Windows.h ../Common/Exit.h
+FileChooser.o: ../OpenGL/UtilsOrb.h
+FolderChooser.o: ../../Config.h
+FolderChooser.o: ../Common/Global.h
 FolderChooser.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
 FolderChooser.o: ../Utils/UtilsInterface.h ../Utils/Utils.h
 FolderChooser.o: ../Common/Windows.h ../Common/Exit.h ../OpenGL/UtilsOrb.h
@@ -23,7 +26,7 @@ ListeFiles.o: ../Molcas/MolcasVariables.h ../Molcas/MolcasGateWay.h
 ListeFiles.o: ../../pixmaps/GamessMini.xpm ../../pixmaps/PCGamessMini.xpm
 ListeFiles.o: ../../pixmaps/Gaussian.xpm ../../pixmaps/MolproMini.xpm
 ListeFiles.o: ../../pixmaps/MolcasMini.xpm ../../pixmaps/MPQCMini.xpm
-ListeFiles.o: ../../pixmaps/QChemMini.xpm ../../pixmaps/MopacMini.xpm
-ListeFiles.o: ../../pixmaps/GabeditMini.xpm ../../pixmaps/Book_close.xpm
-ListeFiles.o: ../../pixmaps/Page.xpm ../Common/StockIcons.h
-ListeFiles.o: ../Files/ListeFiles.h
+ListeFiles.o: ../../pixmaps/OrcaMini.xpm ../../pixmaps/QChemMini.xpm
+ListeFiles.o: ../../pixmaps/MopacMini.xpm ../../pixmaps/GabeditMini.xpm
+ListeFiles.o: ../../pixmaps/Book_close.xpm ../../pixmaps/Page.xpm
+ListeFiles.o: ../Common/StockIcons.h ../Files/ListeFiles.h

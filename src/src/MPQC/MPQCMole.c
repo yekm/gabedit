@@ -459,7 +459,7 @@ void whatFunctional(GtkWidget *entry, gpointer data)
 			for(j=0;j<stdFunctionals[i].n;j++)
 			{
 				MPQCFunctionalType type = stdFunctionals[i].listOfTypes[j];
-				gfloat coef = stdFunctionals[i].coefficients[j];
+				gdouble coef = stdFunctionals[i].coefficients[j];
 			 	sprintf(dump,"%s",message);
 				if(j==0)
 				{

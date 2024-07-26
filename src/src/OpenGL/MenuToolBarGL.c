@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/GridAdfDensity.h"
 #include "../OpenGL/GridMolcas.h"
 #include "../OpenGL/GridQChem.h"
+#include "../OpenGL/GridCP.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/HydrogenBond.h"
@@ -56,6 +57,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/RingsOrb.h"
 #include "../OpenGL/ContoursDraw.h"
 #include "../OpenGL/CaptureOrbitals.h"
+#include "../OpenGL/IntegralOrbitals.h"
 #include "../OpenGL/BondsOrb.h"
 #include "../Common/StockIcons.h"
 
@@ -89,10 +91,11 @@ static void view_toolbar ()
 static void set_optimal_view()
 {
 	gint i,j;
-	gfloat min = 0;
-	gfloat max = 0;
+	gdouble min = 0;
+	gdouble max = 0;
   	gboolean perspective = FALSE;
-  	gfloat zn, zf, zo;
+  	gdouble zn, zf, zo;
+  	gdouble aspect;
 
 	if(!GeomOrb || Ncenters<1 ) return;
  
@@ -114,7 +117,7 @@ static void set_optimal_view()
 			if(max<grid->limits.MinMax[1][j]) max = grid->limits.MinMax[1][j];
 		}
 	}
-	get_camera_values(&zn, &zf, &zo, &perspective);
+	get_camera_values(&zn, &zf, &zo, &aspect, &perspective);
 	zn = 1;
 	zf = fabs(max-min)*5;
 	if(Ncenters<2) zf = 100;
@@ -175,10 +178,15 @@ static void activate_action (GtkAction *action)
  		file_chooser_open(gl_read_first_mpqc_file,"Read the first geometry from a MPQC output file",GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryMPQCLast"))
  		file_chooser_open(gl_read_last_mpqc_file,"Read the last geometry from a MPQC output file",GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name,"GeometryOrcaFirst"))
+ 		file_chooser_open(gl_read_first_orca_file,"Read the first geometry in a Orca output file",GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name,"GeometryOrcaLast"))
+ 		file_chooser_open(gl_read_last_orca_file,"Read the last geometry in a Orca output file",GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name,"GeometryPCGamessFirst"))
  		file_chooser_open(gl_read_first_gamess_file,"Read the first geometry in a PCGamess output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name,"GeometryPCGamessLast"))
  		file_chooser_open(gl_read_last_gamess_file,"Read the last geometry in a PCGamess output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
+
 	else if(!strcmp(name ,"GeometryQChemFirst"))
  		file_chooser_open(gl_read_first_qchem_file,"Read the first geometry from a Q-Chem output file",GABEDIT_TYPEFILE_MPQC,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name ,"GeometryQChemLast"))
@@ -193,6 +201,10 @@ static void activate_action (GtkAction *action)
 			*/
 	else if(!strcmp(name , "OrbitalsGamess"))
  			file_chooser_open(read_gamess_orbitals_sel,"Read Geometry and Orbitals from a Gamess output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name , "OrbitalsOrca"))
+ 			file_chooser_open(read_orca_orbitals_sel,"Read Geometry and Orbitals from a Orca files",GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_ORB);
+	else if(!strcmp(name , "OrbitalsOrca2mkl"))
+ 			file_chooser_open(read_orca_orbitals_sel_2mkl,"Read Geometry and Orbitals from a Orca files",GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsPCGamess"))
  			file_chooser_open(read_gamess_orbitals_sel,"Read Geometry and Orbitals from a PCGamess output file",GABEDIT_TYPEFILE_GAMESS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsQChem"))
@@ -208,7 +220,10 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name , "OrbitalsMolden"))
  			file_chooser_open(read_molden_orbitals_sel,"Read Geometry and Orbitals from a Molden file",GABEDIT_TYPEFILE_MOLDEN,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "OrbitalsGabeditSave"))
-			file_chooser_save(save_gabedit_orbitals_sel,"Save Geometry and Orbitals in a Gabedit file",GABEDIT_TYPEFILE_GABEDIT,GABEDIT_TYPEWIN_ORB);
+	{
+		if(Type) file_chooser_save(save_gabedit_orbitals_sel,"Save Geometry and Orbitals in a Gabedit file",GABEDIT_TYPEFILE_GABEDIT,GABEDIT_TYPEWIN_ORB);
+		else Message("Sorry, I cannot save this type of orbitals \n(probably these are molpro or mopac orbitals)","Error",TRUE);
+	}
 	else if(!strcmp(name , "OrbitalsSelection"))
 	{
 			TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
@@ -218,6 +233,16 @@ static void activate_action (GtkAction *action)
 	{
 			TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
 			 capture_orbitals_dlg();
+	}
+	else if(!strcmp(name , "OrbitalsCoulomb"))
+	{
+			TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
+			 coulomb_orbitals_dlg();
+	}
+	else if(!strcmp(name , "OrbitalsOverlap"))
+	{
+			TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
+			 compute_overlap_matrix(1);
 	}
 	else if(!strcmp(name , "CubeLoadGaussianOrbitals" ))
  		file_chooser_open(load_cube_gauss_orbitals_file,"Load Gaussian orbitals cube file",GABEDIT_TYPEFILE_CUBEGAUSS,GABEDIT_TYPEWIN_ORB);
@@ -270,6 +295,26 @@ static void activate_action (GtkAction *action)
 		if(!grid) Message("Sorry, you have not a default grid","Error",TRUE);
 		else create_scale_dlg();
 	}
+	else if(!strcmp(name , "CubeSquare"))
+	{
+		if(!grid) Message("Sorry, you have not a default grid","Error",TRUE);
+		else square_cube();
+	}
+	else if(!strcmp(name , "CubeRestriction"))
+	{
+		if(!grid) Message("Sorry, you have not a default grid","Error",TRUE);
+		else restriction_cube();
+	}
+	else if(!strcmp(name , "CubeAIMChargesNearGrid"))
+	{
+		if(!grid) Message("Sorry, you have not a default grid","Error",TRUE);
+		else computeAIMCharges(grid, FALSE);
+	}
+	else if(!strcmp(name , "CubeAIMChargesOnGrid"))
+	{
+		if(!grid) Message("Sorry, you have not a default grid","Error",TRUE);
+		else computeAIMCharges(grid, TRUE);
+	}
 	else if(!strcmp(name , "CubeColorMapping"))
 	{
 		if(!grid) Message("Sorry, you have not a default grid","Error",TRUE);
@@ -304,6 +349,11 @@ static void activate_action (GtkAction *action)
 	{
 		TypeGrid = GABEDIT_TYPEGRID_ELFSAVIN;
 		create_grid("Calculation of Savin ELF");
+	}
+	else if(!strcmp(name , "ELFSavinAttractors"))
+	{
+		TypeGrid = GABEDIT_TYPEGRID_ELFSAVIN;
+		create_grid_ELF_Dens_analyze(TRUE);
 	}
 	else if(!strcmp(name , "SASCompute"))
 	{
@@ -584,7 +634,15 @@ static void activate_action (GtkAction *action)
  		GtkWidget* chooser = file_chooser_save(save_ps_file,"Save image in ps file format",GABEDIT_TYPEFILE_PS,GABEDIT_TYPEWIN_ORB);
 		fit_windows_position(PrincipalWindow, chooser);
 	}
-	else if(!strcmp(name , "ExportPovray")) create_save_povray_orb(PrincipalWindow);
+	else if(!strcmp(name , "ScreenCaptureClipBoard"))
+	{
+		copy_to_clipboard();
+	}
+	else if(!strcmp(name , "ExportPovray")) 
+	{
+		/* create_save_povray_orb(PrincipalWindow);*/
+		exportPOVDlg(PrincipalWindow);
+	}
 	else if(!strcmp(name , "ExportEPS")) export_scene(PrincipalWindow,"eps");
 	else if(!strcmp(name , "ExportPS")) export_scene(PrincipalWindow,"ps");
 	else if(!strcmp(name , "ExportPDF")) export_scene(PrincipalWindow,"pdf");
@@ -602,6 +660,8 @@ static void activate_action (GtkAction *action)
 		gtk_widget_hide(PrincipalWindow);
 		/* close_window_orb(NULL,NULL);*/
 	}
+	if(strstr(name,"Geometry")) destroy_win_list();
+	if(strstr(name,"CubeLoad")) destroy_win_list();
 }
 /*********************************************************************************************************************/
 static GtkActionEntry gtkActionEntries[] =
@@ -650,6 +710,11 @@ static GtkActionEntry gtkActionEntries[] =
 		NULL, "Read the first geometry from a MPQC output file", G_CALLBACK (activate_action) },
 	{"GeometryMPQCLast", GABEDIT_STOCK_MPQC, "Read the _last geometry from a MPQC output file", 
 		NULL, "Read the last geometry from a MPQC output file", G_CALLBACK (activate_action) },
+	{"GeometryOrca",     GABEDIT_STOCK_ORCA, "Geometry _Orca"},
+	{"GeometryOrcaFirst", GABEDIT_STOCK_ORCA, "Read the _first geometry from a Orca output log file", 
+		NULL, "Read the first geometry from a Orca output file", G_CALLBACK (activate_action) },
+	{"GeometryOrcaLast", GABEDIT_STOCK_ORCA, "Read the _last geometry from a ORCA output log file", 
+		NULL, "Read the last geometry from a Orca output file", G_CALLBACK (activate_action) },
 	{"GeometryPCGamess",     GABEDIT_STOCK_PCGAMESS, "Geometry _PCGamess"},
 	{"GeometryPCGamessFirst", GABEDIT_STOCK_PCGAMESS, "Read the _first geometry from a PCGamess output log file", 
 		NULL, "Read the first geometry from a PCGamess output file", G_CALLBACK (activate_action) },
@@ -675,6 +740,10 @@ static GtkActionEntry gtkActionEntries[] =
 		NULL, "Read geometry and orbiatls from a Gaussian log file", G_CALLBACK (activate_action) },
 	{"OrbitalsMolpro", GABEDIT_STOCK_MOLPRO, "Read geometry and orbiatls from a Mol_pro output file", 
 		NULL, "Read geometry and orbiatls from a Molpro output file", G_CALLBACK (activate_action) },
+	{"OrbitalsOrca", GABEDIT_STOCK_ORCA, "Read geometry and orbiatls from a _Orca output file", 
+		NULL, "Read geometry and orbiatls from a Orca output files", G_CALLBACK (activate_action) },
+	{"OrbitalsOrca2mkl", GABEDIT_STOCK_ORCA, "Read geometry and orbiatls from a _Orca files using orca_2mkl", 
+		NULL, "Read geometry and orbiatls from a Orca output files", G_CALLBACK (activate_action) },
 	{"OrbitalsPCGamess", GABEDIT_STOCK_PCGAMESS, "Read geometry and orbiatls from a _PCGamess output file", 
 		NULL, "Read geometry and orbiatls from a PCGamess output file", G_CALLBACK (activate_action) },
 	{"OrbitalsQChem", GABEDIT_STOCK_QCHEM, "Read geometry and orbiatls from a Q-_Chem output file", 
@@ -689,8 +758,9 @@ static GtkActionEntry gtkActionEntries[] =
 		NULL, "Save in Gabedit file", G_CALLBACK (activate_action) },
 	{"OrbitalsSelection", GABEDIT_STOCK_SELECT_ALL, "_Selection", 
 		NULL, "Select an orbital", G_CALLBACK (activate_action) },
-	{"OrbitalsCapture", GABEDIT_STOCK_SELECT_ALL, "_Slideshow", 
-		NULL, "Slideshow", G_CALLBACK (activate_action) },
+	{"OrbitalsCapture", GABEDIT_STOCK_SELECT_ALL, "_Slideshow", NULL, "Slideshow", G_CALLBACK (activate_action) },
+	{"OrbitalsCoulomb", GABEDIT_STOCK_SELECT_ALL, "_Coulomb integral", NULL, "Coulomb", G_CALLBACK (activate_action) },
+	{"OrbitalsOverlap", GABEDIT_STOCK_SELECT_ALL, "Compute _overlap matrix", NULL, "Overlap", G_CALLBACK (activate_action) },
 	{"Cube",     NULL, "_Cube&Grid"},
 
 	{"CubeLoadGaussian",     GABEDIT_STOCK_GAUSSIAN, "Load _Gaussian cube"},
@@ -735,6 +805,10 @@ static GtkActionEntry gtkActionEntries[] =
 	{"CubeComputeNormGradient", NULL, "Compute the norm of the _gradient", NULL, "Compute the norm of the _gradient", G_CALLBACK (activate_action) },
 	{"CubeSubtract", NULL, "Su_btract", NULL, "Subtract", G_CALLBACK (activate_action) },
 	{"CubeScale", NULL, "Scal_e", NULL, "Scale", G_CALLBACK (activate_action) },
+	{"CubeSquare", NULL, "S_quare", NULL, "Square", G_CALLBACK (activate_action) },
+	{"CubeRestriction", NULL, "_Restriction", NULL, "Restriction", G_CALLBACK (activate_action) },
+	{"CubeAIMChargesNearGrid", NULL, "AIM Charges[W. Tang et al J. Phys. Cond.. Matt. 21, 084204(09)]", NULL, "AIM Charges", G_CALLBACK (activate_action) },
+	{"CubeAIMChargesOnGrid", NULL, "AIM Charges[OnGrid]", NULL, "AIM Charges on grid", G_CALLBACK (activate_action) },
 	{"CubeColorMapping", NULL, "_Color Mapping", NULL, "Color Mapping", G_CALLBACK (activate_action) },
 
 	{"Density",     NULL, "_Density"},
@@ -746,6 +820,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ELF",     NULL, "_ELF"},
 	{"ELFBecke", NULL, "Compute _Becke Electron Localization Function[see JCP,92(1990)5397]", NULL, "Compute Becke Electron Localization Function", G_CALLBACK (activate_action) },
 	{"ELFSavin", NULL, "Compute _Savin Electron Localization Function[see Can.J.Chem.,74(1996)1088]", NULL, "Compute Savin Electron Localization Function", G_CALLBACK (activate_action) },
+	{"ELFSavinAttractors", NULL, "Compute _Savin ELF + Attractors", NULL, "Compute Savin ELF+Attractors", G_CALLBACK (activate_action) },
 
 	{"SAS",     NULL, "_SAS"},
 	{"SASCompute", NULL, "_Solvent Accessible Surface", NULL, "Compute and draw Solvent Accessible Surface", G_CALLBACK (activate_action) },
@@ -835,6 +910,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ScreenCapturePNG", NULL, "_PNG format", NULL, "save image in a PNG file", G_CALLBACK (activate_action) },
 	{"ScreenCapturePNGNoBackGround", NULL, "_PNG format(tansparent background)", NULL, "save image in a PNG file without background", G_CALLBACK (activate_action) },
 	{"ScreenCapturePS", NULL, "P_S format", NULL, "save image in a PS file", G_CALLBACK (activate_action) },
+	{"ScreenCaptureClipBoard", NULL, "_Copy to clipboard (Ctrl C or Alt C)", NULL, "copy to clipboard", G_CALLBACK (activate_action) },
 
 	{"Export",     NULL, "_Export"},
 	{"ExportPovray", NULL, "_Povray", NULL, "export in a povray file", G_CALLBACK (activate_action) },
@@ -925,8 +1001,8 @@ static void toggle_action (GtkAction *action)
 	else if(!strcmp(name,"RenderPerspective"))
 	{
   		gboolean perspective = FALSE;
-  		gfloat zn, zf, zo;
-		get_camera_values(&zn, &zf, &zo, &perspective);
+  		gdouble aspect, zn, zf, zo;
+		get_camera_values(&zn, &zf, &zo, &aspect, &perspective);
 
 		perspective = !perspective;
 		set_camera_values(zn,zf,zo,perspective);
@@ -1318,6 +1394,11 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"GeometryMPQCLast\" action=\"GeometryMPQCLast\" />\n"
 "      </menu>\n"
 "      <separator name=\"sepMenuMPQCGeom\" />\n"
+"      <menu name=\"GeometryOrca\" action=\"GeometryOrca\">\n"
+"        <menuitem name=\"GeometryOrcaFirst\" action=\"GeometryOrcaFirst\" />\n"
+"        <menuitem name=\"GeometryOrcaLast\" action=\"GeometryOrcaLast\" />\n"
+"      </menu>\n"
+"      <separator name=\"sepMenuOrcaGeom\" />\n"
 "      <menu name=\"GeometryPCGamess\" action=\"GeometryPCGamess\">\n"
 "        <menuitem name=\"GeometryPCGamessFirst\" action=\"GeometryPCGamessFirst\" />\n"
 "        <menuitem name=\"GeometryPCGamessLast\" action=\"GeometryPCGamessLast\" />\n"
@@ -1341,6 +1422,8 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"OrbitalsGaussian\" action=\"OrbitalsGaussian\" />\n"
 "      <menuitem name=\"OrbitalsMolpro\" action=\"OrbitalsMolpro\" />\n"
 "      <menuitem name=\"OrbitalsMopac\" action=\"OrbitalsMopac\" />\n"
+"      <menuitem name=\"OrbitalsOrca\" action=\"OrbitalsOrca\" />\n"
+"      <menuitem name=\"OrbitalsOrca2mkl\" action=\"OrbitalsOrca2mkl\" />\n"
 "      <menuitem name=\"OrbitalsPCGamess\" action=\"OrbitalsPCGamess\" />\n"
 "      <menuitem name=\"OrbitalsQChem\" action=\"OrbitalsQChem\" />\n"
 "      <menuitem name=\"OrbitalsGabeditRead\" action=\"OrbitalsGabeditRead\" />\n"
@@ -1351,6 +1434,11 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"OrbitalsSelection\" action=\"OrbitalsSelection\" />\n"
 "      <separator name=\"sepMenuGabeditOrbCap\" />\n"
 "      <menuitem name=\"OrbitalsCapture\" action=\"OrbitalsCapture\" />\n"
+"      <separator name=\"sepMenuGabeditOrbCoul\" />\n"
+"      <menuitem name=\"OrbitalsCoulomb\" action=\"OrbitalsCoulomb\" />\n"
+/*
+"      <menuitem name=\"OrbitalsOverlap\" action=\"OrbitalsOverlap\" />\n"
+*/
 "    </menu>\n"
 "    <separator name=\"sepMenuCube\" />\n"
 "    <menu name=\"Cube\" action = \"Cube\">\n"
@@ -1399,6 +1487,13 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"CubeSubtract\" action=\"CubeSubtract\" />\n"
 "      <separator name=\"sepMenuCubeScale\" />\n"
 "      <menuitem name=\"CubeScale\" action=\"CubeScale\" />\n"
+"      <separator name=\"sepMenuCubeSquare\" />\n"
+"      <menuitem name=\"CubeSquare\" action=\"CubeSquare\" />\n"
+"      <separator name=\"sepMenuCubeRestriction\" />\n"
+"      <menuitem name=\"CubeRestriction\" action=\"CubeRestriction\" />\n"
+"      <separator name=\"sepMenuCubeAIMChargesNearGrid\" />\n"
+"      <menuitem name=\"CubeAIMChargesNearGrid\" action=\"CubeAIMChargesNearGrid\" />\n"
+"      <menuitem name=\"CubeAIMChargesOnGrid\" action=\"CubeAIMChargesOnGrid\" />\n"
 "      <separator name=\"sepMenuCubeColor\" />\n"
 "      <menuitem name=\"CubeColorMapping\" action=\"CubeColorMapping\" />\n"
 "    </menu>\n"
@@ -1414,6 +1509,9 @@ static const gchar *uiMenuInfo =
 "    <menu name=\"ELF\" action = \"ELF\">\n"
 "        <menuitem name=\"ELFSavin\" action=\"ELFSavin\" />\n"
 "        <menuitem name=\"ELFBecke\" action=\"ELFBecke\" />\n"
+/*
+"        <menuitem name=\"ELFSavinAttractors\" action=\"ELFSavinAttractors\" />\n"
+*/
 "    </menu>\n"
 
 "    <separator name=\"sepMenuSAS\" />\n"
@@ -1597,6 +1695,7 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ScreenCaptureJPG\" action=\"ScreenCaptureJPG\" />\n"
 "        <menuitem name=\"ScreenCapturePPM\" action=\"ScreenCapturePPM\" />\n"
 "        <menuitem name=\"ScreenCapturePS\" action=\"ScreenCapturePS\" />\n"
+"        <menuitem name=\"ScreenCaptureClipBoard\" action=\"ScreenCaptureClipBoard\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepMenuExport\" />\n"
 "    <menu name=\"Export\" action = \"Export\">\n"
@@ -1653,7 +1752,7 @@ static const gchar *uiMenuInfo =
 /*********************************************************************************************************************/
 static void set_init_gtkActionToggleEntries()
 {
-  	gfloat zn, zf, zo;
+  	gdouble aspect, zn, zf, zo;
   	gboolean perspective = FALSE;
 
 	if(TypeBlend==GABEDIT_BLEND_YES)
@@ -1671,7 +1770,7 @@ static void set_init_gtkActionToggleEntries()
 	gtkActionToggleEntries[8].is_active = testShowAxis() ; /* RenderXYZAxes */
 	gtkActionToggleEntries[9].is_active = testShowPrincipalAxisGL() ; /* RenderPrincipalAxes */
 
-  	get_camera_values(&zn, &zf, &zo, &perspective);
+  	get_camera_values(&zn, &zf, &zo, &aspect, &perspective);
 	gtkActionToggleEntries[10].is_active = perspective; /* RenderPerspective */
 	gtkActionToggleEntries[11].is_active = TRUE; /* ShowToolBar */
 	gtkActionToggleEntries[12].is_active = TRUE; /* ShowStatusHandleBox */
@@ -1760,11 +1859,15 @@ static void set_sensitive_orbitals()
 	GtkWidget *orbSave = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsGabeditSave");
 	GtkWidget *orbSelection = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsSelection");
 	GtkWidget *orbCapture = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsCapture");
+	GtkWidget *orbCoulomb = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsCoulomb");
+	GtkWidget *orbOverlap = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsOverlap");
 	gboolean sensitive = TRUE;
   	if(NAOrb<1) sensitive = FALSE;
 	if(GTK_IS_WIDGET(orbSave)) gtk_widget_set_sensitive(orbSave, sensitive);
 	if(GTK_IS_WIDGET(orbSelection)) gtk_widget_set_sensitive(orbSelection, sensitive);
 	if(GTK_IS_WIDGET(orbCapture)) gtk_widget_set_sensitive(orbCapture, sensitive);
+	if(GTK_IS_WIDGET(orbCoulomb)) gtk_widget_set_sensitive(orbCoulomb, sensitive);
+	if(GTK_IS_WIDGET(orbOverlap)) gtk_widget_set_sensitive(orbOverlap, sensitive);
 }
 /*********************************************************************************************************************/
 static void set_sensitive_cube()
@@ -1772,6 +1875,10 @@ static void set_sensitive_cube()
 	GtkWidget *cubeSave = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeLoadGabeditSave");
 	GtkWidget *cubeSubtract = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeSubtract");
 	GtkWidget *cubeScale = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeScale");
+	GtkWidget *cubeSquare = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeSquare");
+	GtkWidget *cubeRestriction = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeRestriction");
+	GtkWidget *cubeAUMChargesNear = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeAIMChargesNearGrid");
+	GtkWidget *cubeAUMChargesOn = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeAIMChargesOnGrid");
 	GtkWidget *cubeColor = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeColorMapping");
 	GtkWidget *cubeComputeLap = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeComputeLaplacian");
 	GtkWidget *cubeComputeGard = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeComputeNormGradient");
@@ -1780,6 +1887,10 @@ static void set_sensitive_cube()
 	if(GTK_IS_WIDGET(cubeSave)) gtk_widget_set_sensitive(cubeSave, sensitive);
 	if(GTK_IS_WIDGET(cubeSubtract)) gtk_widget_set_sensitive(cubeSubtract, sensitive);
 	if(GTK_IS_WIDGET(cubeScale)) gtk_widget_set_sensitive(cubeScale, sensitive);
+	if(GTK_IS_WIDGET(cubeSquare)) gtk_widget_set_sensitive(cubeSquare, sensitive);
+	if(GTK_IS_WIDGET(cubeRestriction)) gtk_widget_set_sensitive(cubeRestriction, sensitive);
+	if(GTK_IS_WIDGET(cubeAUMChargesNear)) gtk_widget_set_sensitive(cubeAUMChargesNear, sensitive);
+	if(GTK_IS_WIDGET(cubeAUMChargesOn)) gtk_widget_set_sensitive(cubeAUMChargesOn, sensitive);
 	if(GTK_IS_WIDGET(cubeColor)) gtk_widget_set_sensitive(cubeColor, sensitive);
 	if(GTK_IS_WIDGET(cubeComputeLap)) gtk_widget_set_sensitive(cubeComputeLap, sensitive);
 	if(GTK_IS_WIDGET(cubeComputeGard)) gtk_widget_set_sensitive(cubeComputeGard, sensitive);
@@ -1814,11 +1925,9 @@ static void set_sensitive_density()
 		if(GTK_IS_WIDGET(elf)) gtk_widget_set_sensitive(elf, FALSE);
 		return;
 	}
-	//if( (grid || (CoefAlphaOrbitals && GeomOrb)) && GTK_IS_WIDGET(esp)) gtk_widget_set_sensitive(esp, TRUE);
 	if(GeomOrb && GTK_IS_WIDGET(esp)) gtk_widget_set_sensitive(esp, TRUE);
 	if( grid && GTK_IS_WIDGET(espGrid)) gtk_widget_set_sensitive(espGrid, TRUE);
 	if( CoefAlphaOrbitals && GeomOrb && GTK_IS_WIDGET(espOrb)) gtk_widget_set_sensitive(espOrb, TRUE);
-	//if( grid && CoefAlphaOrbitals && GeomOrb && GTK_IS_WIDGET(espMapping)) gtk_widget_set_sensitive(espMapping, TRUE);
 	if( grid && GeomOrb && GTK_IS_WIDGET(espMapping)) gtk_widget_set_sensitive(espMapping, TRUE);
 	if( grid && CoefAlphaOrbitals && GeomOrb && GTK_IS_WIDGET(espMapping)) 
 	{
@@ -1995,8 +2104,8 @@ void rafresh_perspective_button()
 	if(GTK_IS_TOGGLE_ACTION(action))
 	{
   		gboolean perspective = FALSE;
-  		gfloat zn, zf, zo;
-		get_camera_values(&zn, &zf, &zo, &perspective);
+  		gdouble aspect, zn, zf, zo;
+		get_camera_values(&zn, &zf, &zo, &aspect, &perspective);
 		gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), perspective);
 
 	}

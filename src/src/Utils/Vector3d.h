@@ -19,16 +19,16 @@ DEALINGS IN THE SOFTWARE.
 #ifndef __GABEDIT_VECTOR3D_H__
 #define __GABEDIT_VECTOR3D_H__
 
-typedef gfloat V3d[3];
+typedef gdouble V3d[3];
 void v3d_zero(V3d v);
-void v3d_set(V3d v, gfloat x, gfloat y, gfloat z);
+void v3d_set(V3d v, gdouble x, gdouble y, gdouble z);
 void v3d_sub(V3d src1, V3d src2, V3d dst);
 void v3d_copy(V3d v1, V3d v2);
 void v3d_cross(V3d v1, V3d v2, V3d cross);
-gfloat v3d_length(V3d v);
-void v3d_scale(V3d v, gfloat div);
+gdouble v3d_length(V3d v);
+void v3d_scale(V3d v, gdouble div);
 void v3d_normal(V3d v);
-gfloat v3d_dot(V3d v1, V3d v2);
+gdouble v3d_dot(V3d v1, V3d v2);
 void v3d_add(V3d src1, V3d src2, V3d dst);
 
 #endif /* __GABEDIT_VECTOR3D_H__ */

@@ -21,9 +21,9 @@ DEALINGS IN THE SOFTWARE.
 
 void save_basis_gabedit_format(FILE* file);
 void PrintBasis();
-gboolean DefineBasisType(gchar *NomFichier);
-gboolean DefineGabeditBasisType(gchar *NomFichier);
-gboolean DefineMoldenBasisType(gchar *NomFichier);
+gboolean DefineBasisType(gchar *fileName);
+gboolean DefineGabeditBasisType(gchar *fileName);
+gboolean DefineMoldenBasisType(gchar *fileName);
 char GetSymmetry(int l);
 int  GetNelectrons(char *symb);
 void printLineChar(char c,int n);

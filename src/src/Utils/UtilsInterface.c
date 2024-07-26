@@ -31,6 +31,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Molcas/Molcas.h"
 #include "../Molpro/Molpro.h"
 #include "../MPQC/MPQC.h"
+#include "../Orca/Orca.h"
 #include "../QChem/QChem.h"
 #include "../Mopac/Mopac.h"
 #include "../Gaussian/Gaussian.h"
@@ -663,6 +664,51 @@ GtkWidget* Message(char *message,char *titre,gboolean center)
     return DialogueMessage;
 }
 /********************************************************************************/
+GtkWidget* MessageTxt(gchar *message,gchar *title)
+{
+	GtkWidget *dlgWin = NULL;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	GtkWidget *txtWid;
+	GtkWidget *button;
+
+
+	dlgWin = gtk_dialog_new();
+	gtk_widget_realize(GTK_WIDGET(dlgWin));
+
+	gtk_window_set_title(GTK_WINDOW(dlgWin),title);
+	gtk_window_set_transient_for(GTK_WINDOW(dlgWin),GTK_WINDOW(Fenetre));
+	gtk_window_set_position(GTK_WINDOW(dlgWin),GTK_WIN_POS_CENTER);
+
+	g_signal_connect(G_OBJECT(dlgWin), "delete_event", (GCallback)destroy_button_windows, NULL);
+	g_signal_connect(G_OBJECT(dlgWin), "delete_event", (GCallback)gtk_widget_destroy, NULL);
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(dlgWin)->vbox), frame,TRUE,TRUE,0);
+
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	txtWid = create_text_widget(vboxframe,NULL,&frame);
+	if(message) gabedit_text_insert (GABEDIT_TEXT(txtWid), NULL, NULL, NULL,message,-1);   
+
+	gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(dlgWin)->action_area), FALSE);
+  
+	button = create_button(dlgWin,"OK");
+	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(dlgWin)->action_area), button, FALSE, TRUE, 5);  
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)destroy_button_windows, GTK_OBJECT(dlgWin));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)gtk_widget_destroy, GTK_OBJECT(dlgWin));
+
+	add_button_windows(title,dlgWin);
+	gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeight*0.4), (gint)(ScreenHeight*0.4));
+	gtk_widget_show_all(dlgWin);
+	return dlgWin;
+}
+/********************************************************************************/
 void select_all()
 {
 	
@@ -932,6 +978,41 @@ FilePosTypeGeom get_geometry_type_from_gauss_input_file(gchar *NomFichier)
   return j;
 }
 /**********************************************************************************/
+FilePosTypeGeom get_geometry_type_from_orca_input_file(gchar *NomFichier)
+{
+ gchar *t;
+ FILE *fd;
+ guint taille=BSIZE;
+ FilePosTypeGeom j;
+
+ 
+ j.geomtyp=GEOM_IS_OTHER;
+ j.numline=0;
+ j.units=1;
+ t=g_malloc(taille);
+ fd = FOpen(NomFichier, "r");
+ if(fd==NULL) return j;
+ while(!feof(fd) )    
+ {
+ 	if(!fgets(t, taille, fd)) break;
+	g_strup(t);
+	if(strstr(t,"* XYZ")) 
+	{
+		j.geomtyp = GEOM_IS_XYZ;
+		break;
+	}
+	if(strstr(t,"* INT")) 
+	{
+		j.geomtyp = GEOM_IS_ZMAT;
+		break;
+	}
+  	j.numline++;
+  }
+  fclose(fd);
+  g_free(t);
+  return j;
+}
+/**********************************************************************************/
 FilePosTypeGeom get_geometry_type_from_qchem_input_file(gchar *NomFichier)
 {
  gchar *t;
@@ -1120,6 +1201,19 @@ void read_geom_in_molpro_input(gchar *NameFile)
     		Message("Sorry\nI can not read gemetry in molpro input file\n"," Warning ",TRUE);
 }
 /**********************************************************************************/
+void read_geom_in_orca_input(gchar *NameFile)
+{
+	FilePosTypeGeom j;
+ 	j=  get_geometry_type_from_orca_input_file(NameFile);
+ 	if( j.geomtyp == GEOM_IS_XYZ)
+		read_XYZ_from_orca_input_file(NameFile);
+      	else
+ 	if( j.geomtyp == GEOM_IS_ZMAT)
+		read_Zmat_from_orca_input_file(NameFile);
+        else
+    		Message("Sorry\nI can not read gemetry in Q-Chem input file\n"," Warning ",TRUE);
+}
+/**********************************************************************************/
 void read_geom_in_qchem_input(gchar *NameFile)
 {
 	FilePosTypeGeom j;
@@ -1197,6 +1291,7 @@ void get_doc(gchar *NomFichier)
 	else if(iprogram == PROG_IS_MOLCAS) fileopen.command=g_strdup(NameCommandMolcas);
 	else if(iprogram == PROG_IS_MOLPRO) fileopen.command=g_strdup(NameCommandMolpro);
 	else if(iprogram == PROG_IS_QCHEM) fileopen.command=g_strdup(NameCommandQChem);
+	else if(iprogram == PROG_IS_ORCA) fileopen.command=g_strdup(NameCommandOrca);
 	else if(iprogram == PROG_IS_MOPAC) fileopen.command=g_strdup(NameCommandMopac);
      	else fileopen.command=NULL;
 
@@ -1267,6 +1362,13 @@ void get_doc(gchar *NomFichier)
  		fileopen.logfile=g_strdup_printf("%s.log",fileopen.projectname);
   		fileopen.moldenfile=g_strdup_printf("%s.log",fileopen.projectname);
  	}
+	else if(iprogram == PROG_IS_ORCA)
+ 	{
+ 		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
+ 		fileopen.outputfile=g_strdup_printf("%s.out",fileopen.projectname);
+ 		fileopen.logfile=g_strdup_printf("%s.out",fileopen.projectname);
+  		fileopen.moldenfile=g_strdup_printf("%s.out",fileopen.projectname);
+ 	}
 	else if(iprogram == PROG_IS_QCHEM)
  	{
  		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
@@ -1293,6 +1395,7 @@ void get_doc(gchar *NomFichier)
 	else if( iprogram == PROG_IS_PCGAMESS) read_geom_in_pcgamess_input(NomFichier);
 	else if( iprogram == PROG_IS_MOLPRO) read_geom_in_molpro_input(NomFichier);
 	else if( iprogram == PROG_IS_MPQC) read_geom_in_mpqc_input(NomFichier);
+	else if( iprogram == PROG_IS_ORCA) read_geom_in_orca_input(NomFichier);
 	else if( iprogram == PROG_IS_QCHEM) read_geom_in_qchem_input(NomFichier);
 	else if( iprogram == PROG_IS_MOPAC) read_geom_in_mopac_input(NomFichier);
 	else if(iprogram == PROG_IS_MOLCAS)
@@ -1489,6 +1592,20 @@ void enreg_selec_doc(GabeditFileChooser *SelecteurFichier , gint response_id)
 		fileopen.logfile = g_strdup_printf("%s.log",fileopen.projectname);
 		fileopen.moldenfile = g_strdup_printf("%s.molden",fileopen.projectname);
 	}
+	else if(iprogram == PROG_IS_QCHEM)
+	{
+ 		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
+ 		fileopen.outputfile = g_strdup_printf("%s.out",fileopen.projectname);
+		fileopen.logfile = g_strdup_printf("%s.out",fileopen.projectname);
+		fileopen.moldenfile = g_strdup_printf("%s.molden",fileopen.projectname);
+	}
+	else if(iprogram == PROG_IS_ORCA)
+	{
+ 		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
+ 		fileopen.outputfile = g_strdup_printf("%s.out",fileopen.projectname);
+		fileopen.logfile = g_strdup_printf("%s.out",fileopen.projectname);
+		fileopen.moldenfile = g_strdup_printf("%s.molden",fileopen.projectname);
+	}
      	else
 	{
 		fileopen.datafile = g_strdup(NomFichier);
@@ -1557,6 +1674,13 @@ void new_doc_molcas(GtkWidget* wid, gpointer data)
  void new_doc_gauss(GtkWidget* wid, gpointer data)
 {
  gauss(1);
+}
+/********************************************************************************/
+ void new_doc_orca(GtkWidget* wid, gpointer data)
+{
+ 	newOrca();
+	iprogram = PROG_IS_ORCA;
+	fileopen.command=g_strdup(NameCommandOrca);
 }
 /********************************************************************************/
  void new_doc_qchem(GtkWidget* wid, gpointer data)
@@ -1933,6 +2057,23 @@ GtkWidget *add_label_table(GtkWidget *Table, G_CONST_RETURN gchar *label,gushort
 	return Label;
 }
 /********************************************************************************/
+GtkWidget *add_label_at_table(GtkWidget *Table,gchar *label,gushort line,gushort colonne,GtkJustification just)
+{
+	GtkWidget *Label;
+	GtkWidget *hbox = gtk_hbox_new(0,FALSE);
+	
+	Label = gtk_label_new (label);
+   	gtk_label_set_justify(GTK_LABEL(Label),just);
+	if(just ==GTK_JUSTIFY_CENTER) 
+		gtk_box_pack_start (GTK_BOX (hbox), Label, TRUE, TRUE, 0);
+	else
+		gtk_box_pack_start (GTK_BOX (hbox), Label, FALSE, FALSE, 0);
+	
+	add_widget_table(Table,hbox,line,colonne);
+
+	return Label;
+}
+/********************************************************************************/
 void get_result()
 {
 	char *t;
@@ -2299,6 +2440,25 @@ void new_gauss(GtkWidget *widget, gchar *data)
 		new_doc_gauss(NULL, NULL);
 		iprogram = PROG_IS_GAUSS;
 		fileopen.command=g_strdup(NameCommandGaussian);
+ 	}
+}
+/**********************************************************************************/
+void new_orca(GtkWidget *widget, gchar *data)
+{
+	gchar *t;
+ 	if(imodif == DATA_MOD_YES)
+        {
+		t = g_strdup_printf("\nThe \"%s\" file has been modified.\n\n",get_name_file(fileopen.datafile));
+		t = g_strdup_printf(" %sIf you continue, you lose what you have changed.\n\n",t);
+		t = g_strdup_printf(" %sYou want to continue?\n",t);
+		Continue_YesNo(new_doc_orca, NULL,t);
+		g_free(t);
+        }
+        else
+        {
+		new_doc_orca(NULL, NULL);
+		iprogram = PROG_IS_ORCA;
+		fileopen.command=g_strdup(NameCommandOrca);
  	}
 }
 /**********************************************************************************/

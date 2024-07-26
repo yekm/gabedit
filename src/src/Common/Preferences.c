@@ -45,27 +45,33 @@ static GtkWidget *EntryGaussian = NULL;
 static GtkWidget *EntryMolcas = NULL;
 static GtkWidget *EntryMolpro = NULL;
 static GtkWidget *EntryMopac = NULL;
+static GtkWidget *EntryPovray = NULL;
 static GtkWidget *EntryMPQC = NULL;
 static GtkWidget *EntryPCGamess = NULL;
 static GtkWidget *EntryQChem = NULL;
+static GtkWidget *EntryOrca = NULL;
 
 static GtkWidget *ComboGamess = NULL;
 static GtkWidget *ComboGaussian = NULL;
 static GtkWidget *ComboMolcas = NULL;
 static GtkWidget *ComboMolpro = NULL;
 static GtkWidget *ComboMopac = NULL;
+static GtkWidget *ComboPovray = NULL;
 static GtkWidget *ComboMPQC = NULL;
 static GtkWidget *ComboPCGamess = NULL;
 static GtkWidget *ComboQChem = NULL;
+static GtkWidget *ComboOrca = NULL;
 
 static GtkWidget *ButtonGamess = NULL;
 static GtkWidget *ButtonGaussian = NULL;
 static GtkWidget *ButtonMolcas = NULL;
 static GtkWidget *ButtonMolpro = NULL;
 static GtkWidget *ButtonMopac = NULL;
+static GtkWidget *ButtonPovray = NULL;
 static GtkWidget *ButtonMPQC = NULL;
 static GtkWidget *ButtonPCGamess = NULL;
 static GtkWidget *ButtonQChem = NULL;
+static GtkWidget *ButtonOrca = NULL;
 
 static GtkWidget *EntryBatchType = NULL;
 GtkWidget *selectors[3];
@@ -791,6 +797,178 @@ void  modify_qchem_command()
   	gtk_widget_set_sensitive(ButtonQChem, FALSE);
   else
   	gtk_widget_set_sensitive(ButtonQChem, TRUE);
+}
+/********************************************************************************/
+static void  remove_orca_command()
+{
+  G_CONST_RETURN gchar *strcom;
+  GList *glist = NULL;
+  gint i;
+  gint inList = -1;
+
+  if(orcaCommands.numberOfCommands<2)
+	  return;
+
+  strcom = gtk_entry_get_text (GTK_ENTRY (EntryOrca));
+
+  for(i=0;i<orcaCommands.numberOfCommands;i++)
+  {
+	  if(strcmp(strcom,orcaCommands.commands[i])==0)
+	  {
+		  inList = i;
+		  break;
+	  }
+  }
+  if(inList == -1)
+	  return;
+  for(i=inList;i<orcaCommands.numberOfCommands-1;i++)
+	  orcaCommands.commands[i] = orcaCommands.commands[i+1];
+
+  orcaCommands.numberOfCommands--;
+  orcaCommands.commands = g_realloc(
+		   orcaCommands.commands,
+		   orcaCommands.numberOfCommands*sizeof(gchar*));
+
+  for(i=0;i<orcaCommands.numberOfCommands;i++)
+	glist = g_list_append(glist,orcaCommands.commands[i]);
+
+  gtk_combo_box_entry_set_popdown_strings( ComboOrca, glist) ;
+
+  g_list_free(glist);
+
+  if(orcaCommands.numberOfCommands<2)
+  	gtk_widget_set_sensitive(ButtonOrca, FALSE);
+  else
+  	gtk_widget_set_sensitive(ButtonOrca, TRUE);
+
+  NameCommandOrca = g_strdup(orcaCommands.commands[0]);
+
+  str_delete_n(NameCommandOrca);
+  delete_last_spaces(NameCommandOrca);
+  delete_first_spaces(NameCommandOrca);
+}
+/********************************************************************************/
+void  modify_orca_command()
+{
+  G_CONST_RETURN gchar *strcom;
+  GList *glist = NULL;
+  gint i;
+
+  strcom = gtk_entry_get_text (GTK_ENTRY (EntryOrca));
+  if(strcmp(strcom,""))
+      NameCommandOrca = g_strdup(strcom);
+
+  str_delete_n(NameCommandOrca);
+  delete_last_spaces(NameCommandOrca);
+  delete_first_spaces(NameCommandOrca);
+
+  for(i=0;i<orcaCommands.numberOfCommands;i++)
+  {
+	  if(strcmp(NameCommandOrca,orcaCommands.commands[i])==0)
+		  return;
+  }
+  orcaCommands.numberOfCommands++;
+  orcaCommands.commands = g_realloc(
+		   orcaCommands.commands,
+		   orcaCommands.numberOfCommands*sizeof(gchar*));
+  orcaCommands.commands[orcaCommands.numberOfCommands-1] = g_strdup(NameCommandOrca);
+
+  for(i=orcaCommands.numberOfCommands-1;i>=0;i--)
+	glist = g_list_append(glist,orcaCommands.commands[i]);
+
+  gtk_combo_box_entry_set_popdown_strings( ComboOrca, glist) ;
+
+  g_list_free(glist);
+  if(orcaCommands.numberOfCommands<2)
+  	gtk_widget_set_sensitive(ButtonOrca, FALSE);
+  else
+  	gtk_widget_set_sensitive(ButtonOrca, TRUE);
+}
+/********************************************************************************/
+static void  remove_povray_command()
+{
+  G_CONST_RETURN gchar *strcom;
+  GList *glist = NULL;
+  gint i;
+  gint inList = -1;
+
+  if(povrayCommands.numberOfCommands<2)
+	  return;
+
+  strcom = gtk_entry_get_text (GTK_ENTRY (EntryPovray));
+
+  for(i=0;i<povrayCommands.numberOfCommands;i++)
+  {
+	  if(strcmp(strcom,povrayCommands.commands[i])==0)
+	  {
+		  inList = i;
+		  break;
+	  }
+  }
+  if(inList == -1)
+	  return;
+  for(i=inList;i<povrayCommands.numberOfCommands-1;i++)
+	  povrayCommands.commands[i] = povrayCommands.commands[i+1];
+
+  povrayCommands.numberOfCommands--;
+  povrayCommands.commands = g_realloc(
+		   povrayCommands.commands,
+		   povrayCommands.numberOfCommands*sizeof(gchar*));
+
+  for(i=0;i<povrayCommands.numberOfCommands;i++)
+	glist = g_list_append(glist,povrayCommands.commands[i]);
+
+  gtk_combo_box_entry_set_popdown_strings( ComboPovray, glist) ;
+
+  g_list_free(glist);
+
+  if(povrayCommands.numberOfCommands<2)
+  	gtk_widget_set_sensitive(ButtonPovray, FALSE);
+  else
+  	gtk_widget_set_sensitive(ButtonPovray, TRUE);
+
+  NameCommandPovray = g_strdup(povrayCommands.commands[0]);
+
+  str_delete_n(NameCommandPovray);
+  delete_last_spaces(NameCommandPovray);
+  delete_first_spaces(NameCommandPovray);
+}
+/********************************************************************************/
+void  modify_povray_command()
+{
+  G_CONST_RETURN gchar *strcom;
+  GList *glist = NULL;
+  gint i;
+
+  strcom = gtk_entry_get_text (GTK_ENTRY (EntryPovray));
+  if(strcmp(strcom,""))
+      NameCommandPovray = g_strdup(strcom);
+
+  str_delete_n(NameCommandPovray);
+  delete_last_spaces(NameCommandPovray);
+  delete_first_spaces(NameCommandPovray);
+
+  for(i=0;i<povrayCommands.numberOfCommands;i++)
+  {
+	  if(strcmp(NameCommandPovray,povrayCommands.commands[i])==0)
+		  return;
+  }
+  povrayCommands.numberOfCommands++;
+  povrayCommands.commands = g_realloc(
+		   povrayCommands.commands,
+		   povrayCommands.numberOfCommands*sizeof(gchar*));
+  povrayCommands.commands[povrayCommands.numberOfCommands-1] = g_strdup(NameCommandPovray);
+
+  for(i=povrayCommands.numberOfCommands-1;i>=0;i--)
+	glist = g_list_append(glist,povrayCommands.commands[i]);
+
+  gtk_combo_box_entry_set_popdown_strings( ComboPovray, glist) ;
+
+  g_list_free(glist);
+  if(povrayCommands.numberOfCommands<2)
+  	gtk_widget_set_sensitive(ButtonPovray, FALSE);
+  else
+  	gtk_widget_set_sensitive(ButtonPovray, TRUE);
 }
 /********************************************************************************/
 void apply_all()
@@ -1537,6 +1715,40 @@ static void set_entry_gamessDir_selection(GtkWidget* entry)
 	gtk_widget_show(dirSelector);
 }
 /********************************************************************************/
+static void set_entry_orcadir(GtkWidget* dirSelector, gint response_id)
+{
+	gchar* dirname = NULL;
+	gchar* t = NULL;
+	GtkWidget *entry;
+	if(response_id != GTK_RESPONSE_OK) return;
+	dirname = gabedit_folder_chooser_get_current_folder(GABEDIT_FOLDER_CHOOSER(dirSelector));
+
+
+	entry = (GtkWidget*)(g_object_get_data(G_OBJECT(dirSelector),"EntryFile"));	
+	gtk_entry_set_text(GTK_ENTRY(entry),dirname);
+
+	if(orcaDirectory) g_free(orcaDirectory);
+	orcaDirectory = g_strdup(dirname);
+	t = g_strdup_printf("%s;%cPATH%c",orcaDirectory,'%','%');
+	g_setenv("PATH",t,TRUE);
+	g_free(t);
+}
+/********************************************************************************/
+static void set_entry_orcaDir_selection(GtkWidget* entry)
+{
+	GtkWidget *dirSelector;
+	dirSelector = selctionOfDir(set_entry_orcadir, "Select Orca folder", GABEDIT_TYPEWIN_ORB); 
+  	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
+  	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
+
+	g_object_set_data(G_OBJECT (dirSelector), "EntryFile", entry);
+
+	g_signal_connect (dirSelector, "response",  G_CALLBACK (set_entry_orcadir), GTK_OBJECT(dirSelector));
+	g_signal_connect (dirSelector, "response",  G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(dirSelector));
+
+	gtk_widget_show(dirSelector);
+}
+/********************************************************************************/
 static void set_entry_pcgamessdir(GtkWidget* dirSelector, gint response_id)
 {
 	gchar* dirname = NULL;
@@ -1600,6 +1812,40 @@ static void set_entry_mopacDir_selection(GtkWidget* entry)
 	g_object_set_data(G_OBJECT (dirSelector), "EntryFile", entry);
 
 	g_signal_connect (dirSelector, "response",  G_CALLBACK (set_entry_mopacdir), GTK_OBJECT(dirSelector));
+	g_signal_connect (dirSelector, "response",  G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(dirSelector));
+
+	gtk_widget_show(dirSelector);
+}
+/********************************************************************************/
+static void set_entry_povraydir(GtkWidget* dirSelector, gint response_id)
+{
+	gchar* dirname = NULL;
+	gchar* t = NULL;
+	GtkWidget *entry;
+	if(response_id != GTK_RESPONSE_OK) return;
+	dirname = gabedit_folder_chooser_get_current_folder(GABEDIT_FOLDER_CHOOSER(dirSelector));
+
+
+	entry = (GtkWidget*)(g_object_get_data(G_OBJECT(dirSelector),"EntryFile"));	
+	gtk_entry_set_text(GTK_ENTRY(entry),dirname);
+
+	if(povrayDirectory) g_free(povrayDirectory);
+	povrayDirectory = g_strdup(dirname);
+	t = g_strdup_printf("%s;%cPATH%c",povrayDirectory,'%','%');
+	g_setenv("PATH",t,TRUE);
+	g_free(t);
+}
+/********************************************************************************/
+static void set_entry_povrayDir_selection(GtkWidget* entry)
+{
+	GtkWidget *dirSelector;
+	dirSelector = selctionOfDir(set_entry_povraydir, "Select PovRay folder", GABEDIT_TYPEWIN_ORB); 
+  	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
+  	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
+
+	g_object_set_data(G_OBJECT (dirSelector), "EntryFile", entry);
+
+	g_signal_connect (dirSelector, "response",  G_CALLBACK (set_entry_povraydir), GTK_OBJECT(dirSelector));
 	g_signal_connect (dirSelector, "response",  G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(dirSelector));
 
 	gtk_widget_show(dirSelector);
@@ -1796,6 +2042,31 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(help_commands),NULL);
 
+/* ------------------------------------------------------------------*/
+  create_hseparator(vbox);
+/* ------------------------------------------------------------------*/
+  hbox = gtk_hbox_new (FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
+  label = gtk_label_new ("Command for execute Orca       : ");
+  gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
+
+  combo = create_combo_box_entry(orcaCommands.commands,orcaCommands.numberOfCommands,TRUE,-1,-1);
+  ComboOrca = combo;
+  EntryOrca =  GTK_BIN(combo)->child;
+  gtk_box_pack_start (GTK_BOX (hbox), combo, TRUE, TRUE, 3);
+  gtk_entry_set_text (GTK_ENTRY (EntryOrca),NameCommandOrca);
+  g_signal_connect(G_OBJECT (EntryOrca), "activate", (GCallback)modify_orca_command, NULL);
+  button = create_button(Wins,"  Remove from list  ");
+  ButtonOrca = button;
+  gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
+  if(orcaCommands.numberOfCommands<2)
+  	gtk_widget_set_sensitive(button, FALSE);
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(remove_orca_command),NULL);
+
+  button = create_button(Wins,"  Help  ");
+  gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(help_commands),NULL);
+
   create_hseparator(vbox);
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
@@ -1867,6 +2138,31 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   button = create_button(Wins,"  Help  ");
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
   g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(help_commands),NULL);
+/* ------------------------------------------------------------------*/
+  create_hseparator(vbox);
+/* ------------------------------------------------------------------*/
+  hbox = gtk_hbox_new (FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
+  label = gtk_label_new ("Command for execute Povray    : ");
+  gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
+
+  combo = create_combo_box_entry(povrayCommands.commands,povrayCommands.numberOfCommands,TRUE,-1,-1);
+  ComboPovray = combo;
+  EntryPovray =  GTK_BIN(combo)->child;
+  gtk_box_pack_start (GTK_BOX (hbox), combo, TRUE, TRUE, 3);
+  gtk_entry_set_text (GTK_ENTRY (EntryPovray),NameCommandPovray);
+  g_signal_connect(G_OBJECT (EntryPovray), "activate", (GCallback)modify_povray_command, NULL);
+  button = create_button(Wins,"  Remove from list  ");
+  ButtonPovray = button;
+  gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
+  if(povrayCommands.numberOfCommands<2)
+  	gtk_widget_set_sensitive(button, FALSE);
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(remove_povray_command),NULL);
+
+  button = create_button(Wins,"  Help  ");
+  gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(help_commands),NULL);
+/* ------------------------------------------------------------------*/
 /* ------------------------------------------------------------------*/
   create_hseparator(vbox);
 
@@ -1944,6 +2240,50 @@ void  create_gamess_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	g_signal_connect_swapped(GTK_OBJECT (button), "clicked",
                                      G_CALLBACK(set_entry_gamessDir_selection),
+                                     GTK_OBJECT(entry));
+	add_widget_table(table,button,0,2);
+  }
+  gtk_widget_show_all(frame);
+}
+#endif
+#ifdef G_OS_WIN32
+/********************************************************************************/
+void  create_orca_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
+{
+  GtkWidget *frame;
+  GtkWidget *button;
+
+  frame = gtk_frame_new (NULL);
+  gtk_widget_show (frame);
+  gtk_box_pack_start (GTK_BOX (vbox), frame, expand, expand, 0);
+  gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
+
+  vbox = gtk_vbox_new (FALSE, 0);
+  gtk_container_add (GTK_CONTAINER (frame), vbox);
+
+
+  {
+	GtkWidget* entry;
+  	GtkWidget *table = gtk_table_new(1,3,FALSE);
+
+	if(!orcaDirectory) orcaDirectory = g_strdup_printf("%s",g_get_home_dir());
+
+	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
+
+	add_label_table(table,"Orca directory                        : ",0,0);
+  	entry = gtk_entry_new ();
+	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
+	gtk_table_attach(GTK_TABLE(table),entry,1,1+1,0,0+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+  	gtk_entry_set_text (GTK_ENTRY (entry),orcaDirectory);
+	gtk_editable_set_editable((GtkEditable*)entry,FALSE);
+	gtk_widget_set_sensitive(entry, FALSE);
+	button = create_button_pixmap(Wins,open_xpm,NULL);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	g_signal_connect_swapped(GTK_OBJECT (button), "clicked",
+                                     G_CALLBACK(set_entry_orcaDir_selection),
                                      GTK_OBJECT(entry));
 	add_widget_table(table,button,0,2);
   }
@@ -2032,6 +2372,48 @@ void  create_mopac_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	g_signal_connect_swapped(GTK_OBJECT (button), "clicked",
                                      G_CALLBACK(set_entry_mopacDir_selection),
+                                     GTK_OBJECT(entry));
+	add_widget_table(table,button,0,2);
+  }
+  gtk_widget_show_all(frame);
+}
+/********************************************************************************/
+void  create_povray_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
+{
+  GtkWidget *frame;
+  GtkWidget *button;
+
+  frame = gtk_frame_new (NULL);
+  gtk_widget_show (frame);
+  gtk_box_pack_start (GTK_BOX (vbox), frame, expand, expand, 0);
+  gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
+
+  vbox = gtk_vbox_new (FALSE, 0);
+  gtk_container_add (GTK_CONTAINER (frame), vbox);
+
+
+  {
+	GtkWidget* entry;
+  	GtkWidget *table = gtk_table_new(1,3,FALSE);
+
+	if(!povrayDirectory) povrayDirectory = g_strdup_printf("%s",g_get_home_dir());
+
+	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
+
+	add_label_table(table,"PovRay directory                         : ",0,0);
+  	entry = gtk_entry_new ();
+	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
+	gtk_table_attach(GTK_TABLE(table),entry,1,1+1,0,0+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+  	gtk_entry_set_text (GTK_ENTRY (entry),povrayDirectory);
+	gtk_editable_set_editable((GtkEditable*)entry,FALSE);
+	gtk_widget_set_sensitive(entry, FALSE);
+	button = create_button_pixmap(Wins,open_xpm,NULL);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	g_signal_connect_swapped(GTK_OBJECT (button), "clicked",
+                                     G_CALLBACK(set_entry_povrayDir_selection),
                                      GTK_OBJECT(entry));
 	add_widget_table(table,button,0,2);
   }
@@ -2300,9 +2682,11 @@ void AddPageOthers(GtkWidget *NoteBook)
 
 #ifdef G_OS_WIN32
   create_gamess_directory(Wins,vbox,FALSE);
+  create_orca_directory(Wins,vbox,FALSE);
   create_pcgamess_directory(Wins,vbox,FALSE);
   create_mopac_directory(Wins,vbox,FALSE);
   create_gauss_directory(Wins,vbox,FALSE);
+  create_povray_directory(Wins,vbox,FALSE);
 #endif
 
   create_opengl_frame(Wins,vbox);

@@ -26,11 +26,11 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/ContoursDraw.h"
 #include "../OpenGL/ColorMap.h"
 /********************************************************************************/
-static gchar *get_pov_cylingre(gfloat C1[],gfloat C2[],gfloat Colors[], gfloat coef)
+static gchar *get_pov_cylingre(gdouble C1[],gdouble C2[],gdouble Colors[], gdouble coef)
 {
      gchar* temp = NULL;
      gint i;
-     gfloat d = 0;
+     gdouble d = 0;
      for(i=0;i<3;i++) d += (C1[i]-C2[i])*(C1[i]-C2[i]);
      if(d<1e-8) return g_strdup("\n");
 
@@ -39,7 +39,7 @@ static gchar *get_pov_cylingre(gfloat C1[],gfloat C2[],gfloat Colors[], gfloat c
 		"{\n"
 		"\t<%14.6f,%14.6f,%14.6f>,\n"
 		"\t<%14.6f,%14.6f,%14.6f> \n"
-		"\twireFrameCylinderRadius*%f\n"
+		"\twireFrameCylinderRadius*%lf\n"
 		"\ttexture\n"
 		"\t{\n"
 		"\t\tpigment { rgb<%14.6f,%14.6f,%14.6f> }\n"
@@ -56,7 +56,7 @@ static gchar *get_pov_cylingre(gfloat C1[],gfloat C2[],gfloat Colors[], gfloat c
 
 }
 /********************************************************************************/
-static void addPlanPovRay(FILE* file, Grid* plansgrid,gint i0,gint i1,gint numplan,gfloat Gap[], gfloat Color[])
+static void addPlanPovRay(FILE* file, Grid* plansgrid,gint i0,gint i1,gint numplan,gdouble Gap[], gdouble Color[])
 {
 	gchar* temp;
 	gint ip = numplan;
@@ -66,8 +66,8 @@ static void addPlanPovRay(FILE* file, Grid* plansgrid,gint i0,gint i1,gint numpl
 	gint ix3=0,iy3=0,iz3=0;
 	gint ix4,iy4,iz4;
 	gint i,j,ii,jj;
-	gfloat C1[3];
-	gfloat C2[3];
+	gdouble C1[3];
+	gdouble C2[3];
 
 	i = 0;
 	j = 0;
@@ -151,7 +151,7 @@ static void addPlanPovRay(FILE* file, Grid* plansgrid,gint i0,gint i1,gint numpl
 
 }
 /********************************************************************************/
-static void AddContoursPovRay(FILE* file,Contours contours,gfloat Gap[], gfloat Color[])
+static void AddContoursPovRay(FILE* file,Contours contours,gdouble Gap[], gdouble Color[])
 {
 	gint i;
 	gint j;
@@ -159,8 +159,8 @@ static void AddContoursPovRay(FILE* file,Contours contours,gfloat Gap[], gfloat 
 	gint n=0;
 	gint N[2] = {contours.N[0],contours.N[1]};
 	PointsContour** pointscontour= contours.pointscontour;
-	gfloat C1[3];
-	gfloat C2[3];
+	gdouble C1[3];
+	gdouble C2[3];
 	gchar* temp;
 
 	for(i=1;i<N[0]-2;i++)
@@ -188,12 +188,12 @@ static ColorMap* get_colorMap_contours()
 	return colorMap;
 }
 /*********************************************************************************************************/
-static gint addOneContoursPovRay(FILE* file, Grid* plansgrid,gint Ncontours,gfloat*values,gint i0,gint i1,gint numplan,gfloat gap)
+static gint addOneContoursPovRay(FILE* file, Grid* plansgrid,gint Ncontours,gdouble*values,gint i0,gint i1,gint numplan,gdouble gap)
 {
 	Contours contours;
 	gint i;
-	gfloat *Gap;
-	gfloat Color[3] = {0.7,0.7,0.7};
+	gdouble *Gap;
+	gdouble Color[3] = {0.7,0.7,0.7};
 	ColorMap* colorMap = get_colorMap_contours();
 
 	if(!plansgrid) return 1;
@@ -213,7 +213,7 @@ static gint addOneContoursPovRay(FILE* file, Grid* plansgrid,gint Ncontours,gflo
 
 }
 /********************************************************************************/
-gint addContoursPovRay(Grid* plansgrid,gint Ncontours,gfloat* values,gint i0,gint i1,gint numplan,gfloat gap)
+gint addContoursPovRay(Grid* plansgrid,gint Ncontours,gdouble* values,gint i0,gint i1,gint numplan,gdouble gap)
 {
 	gchar* fileName = g_strdup_printf("%s%stmp%spovrayContours.pov",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
 	FILE* file = fopen(fileName,"a");

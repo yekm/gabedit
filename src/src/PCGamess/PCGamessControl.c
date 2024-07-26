@@ -44,12 +44,12 @@ static GtkWidget* buttonTD = NULL;
 static void setPCGamessCorrType();
 /*************************************************************************************************************/
 static gchar* listRunView[] = {
-        "Single Point Energy", "Equilibrium geometry", "Transition State", "Frequencies",
-        "Gradient", "Trudge", "IRC", "VSCF", "DRC", "GlobOp", "OptFMO", "GradExtr",
+        "Single Point Energy", "Equilibrium geometry", "Equilibrium geometry+Frequencies","Transition State", "Frequencies",
+        "Raman","Gradient", "Trudge", "IRC", "VSCF", "DRC", "GlobOp", "OptFMO", "GradExtr",
         "Surface", "Drop", "Morokuma", "Transitn", "FField", "TDHF"
 };
 static gchar* listRunReal[] = {
-        "Energy", "Optimize", "Sadpoint", "Hessian",
+        "Energy", "Optimize", "OptimizeFreq", "Sadpoint", "Hessian","Raman",
         "Gradient", "Trudge", "IRC", "VSCF", "DRC", "GlobOp", "OptFMO", "GradExtr",
         "Surface", "Drop", "Morokuma", "Transitn", "FField", "TDHF"
 };
@@ -168,9 +168,24 @@ static void putPCGamessRunTypeInfoInTextEditor()
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$CONTRL",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " RUNTYP=",-1);
-        gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, selectedRun,-1);
+	if(!strcmp(selectedRun,"OptimizeFreq"))
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "Optimize",-1);
+	else
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, selectedRun,-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
         gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+	if(!strcmp(selectedRun,"OptimizeFreq"))
+	{
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, " ",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$STATPT",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL, "  HSSEND=.T. ",-1);
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, "$END\n",-1);
+	}
+	if(!strcmp(selectedRun,"Raman"))
+	{
+        	gabedit_text_insert (GABEDIT_TEXT(text), NULL, &pcgamessColorFore.keyWord, &pcgamessColorBack.keyWord, 
+			"----> Put here the $HESS card.\n      You can obtain it from your old frequecncies calculation(.pun or .irc file)\n",-1);
+	}
 }
 /*************************************************************************************************************/
 static void putPCGamessSCFControlInfoInTextEditor()

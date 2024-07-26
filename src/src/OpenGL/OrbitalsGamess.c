@@ -340,10 +340,10 @@ static void DefineGamessCartBasis()
 			l2 = l[1][m];
 	 		l3 = l[2][m];
 	 		k++;
-	 		AOrb[k].N=Type[GeomOrb[i].NumType].Ao[j].N;
+	 		AOrb[k].numberOfFunctions=Type[GeomOrb[i].NumType].Ao[j].N;
 			AOrb[k].NumCenter = i;
-	 		AOrb[k].Gtf =g_malloc(AOrb[k].N*sizeof(GTF));
-	 		for(n=0;n<AOrb[k].N;n++)
+	 		AOrb[k].Gtf =g_malloc(AOrb[k].numberOfFunctions*sizeof(GTF));
+	 		for(n=0;n<AOrb[k].numberOfFunctions;n++)
 	 		{
 	   			AOrb[k].Gtf[n].Ex   = Type[GeomOrb[i].NumType].Ao[j].Ex[n];
 	   			AOrb[k].Gtf[n].Coef = Type[GeomOrb[i].NumType].Ao[j].Coef[n];
@@ -362,96 +362,6 @@ NOrb = NAOrb;
 DefineAtomicNumOrb();
 /* DefineNorb();*/
 }
-/**********************************************/
-/*
-static void DefineGamessSphericalBasis()
-{
- gint i,j,k;
- gint c;
- gint kl;
- gint L,M;
- CGTF *temp;
- Slm Stemp;
- gint N,Nc,n;
- gint inc;
- gint  klbeg;
- gint  klend;
- gint  klinc;
-
-
- NOrb = 0;
- for(i=0;i<Ncenters;i++)
- {
-	 for(j=0;j<Type[GeomOrb[i].NumType].Norb;j++)
-	 {
-		L=Type[GeomOrb[i].NumType].Ao[j].L;
-		NOrb += 2*L+1;
-	 }
- }
-
- temp  = g_malloc(NOrb*sizeof(CGTF));
-
- k=-1;
- for(i=0;i<Ncenters;i++)
-	 for(j=0;j<Type[GeomOrb[i].NumType].Norb;j++)
-	{
-	 	L =Type[GeomOrb[i].NumType].Ao[j].L;
-
-		if(L==1)
-		{
-                	klbeg = L;
-                	klend = 0;
-                	klinc = -1;
-		}
-		else
-		{
-                	klbeg = 0;
-                	klend = L;
-                	klinc = +1;
-		}
-		for(kl = klbeg;(klbeg == 0 && kl<=klend) || (klbeg == L && kl>=klend);kl +=klinc)
-		{
-		if(kl!=0)
-		    inc = 2*kl;	
-		else
-		    inc = 1;
-		for(M=kl;M>=-kl;M -=inc)
-    		{
-	 		k++;
-	 	   	Stemp =  GetCoefSlm(L,M);
-
-	 		temp[k].N=Stemp.N*Type[GeomOrb[i].NumType].Ao[j].N;
-		    temp[k].NumCenter=i;
-	 		temp[k].Gtf =g_malloc(temp[k].N*sizeof(GTF));
-          		Nc=-1;
-	 		for(N=0;N<Type[GeomOrb[i].NumType].Ao[j].N;N++)
-	 			 for(n=0;n<Stemp.N;n++)
-	 			{
-	 			   Nc++;
-	 			
-	   				temp[k].Gtf[Nc].Ex   = Type[GeomOrb[i].NumType].Ao[j].Ex[N];
-	   				temp[k].Gtf[Nc].Coef = Type[GeomOrb[i].NumType].Ao[j].Coef[N]*Stemp.lxyz[n].Coef;
-	   				for(c=0;c<3;c++)
-	   				{
-	   					temp[k].Gtf[Nc].C[c] = GeomOrb[i].C[c];
-	   					temp[k].Gtf[Nc].l[c] = Stemp.lxyz[n].l[c];
-	   				}
-	 			}
-		if(L==0)
-		  break;
-	      }
-		if(L==0)
-		  break;
-	      }
-	}
-	 for(i=0;i<NAOrb;i++)
-		g_free(AOrb[i].Gtf);
-g_free(AOrb);
-NAOrb = NOrb;
-AOrb = temp;
-DefineAtomicNumOrb();
-}
-*/
 /********************************************************************************/
 static gchar** read_basis_from_a_gamess_output_file(gchar *FileName, gint* nrs)
 {
@@ -552,12 +462,12 @@ static gint get_num_type_from_symbol(gchar* symbol)
 	return -1;
 }
 /**********************************************/
-static gboolean addOneBasis(gint i,gint j,gchar *shell,gint ncont, gfloat* ex, gfloat* coef)
+static gboolean addOneBasis(gint i,gint j,gchar *shell,gint ncont, gdouble* ex, gdouble* coef)
 {
 	gint jj;
        	Type[i].Ao[j].N = ncont;
-	Type[i].Ao[j].Ex=g_malloc(Type[i].Ao[j].N*sizeof(gfloat));
-	Type[i].Ao[j].Coef=g_malloc(Type[i].Ao[j].N*sizeof(gfloat));
+	Type[i].Ao[j].Ex=g_malloc(Type[i].Ao[j].N*sizeof(gdouble));
+	Type[i].Ao[j].Coef=g_malloc(Type[i].Ao[j].N*sizeof(gdouble));
 	for(jj=0;jj<Type[i].Ao[j].N;jj++)
 	{
 		Type[i].Ao[j].Ex[jj] = ex[jj];
@@ -601,9 +511,9 @@ static gboolean DefineGamessBasisType(gchar** strbasis, gint nrows)
 	gint j;
 	gint nconts;
 	gint k;
-	gfloat *ex=NULL;
-	gfloat *coef1=NULL;
-	gfloat *coef2=NULL;
+	gdouble *ex=NULL;
+	gdouble *coef1=NULL;
+	gdouble *coef2=NULL;
 	gchar* temp[10];
 	gint ne;
 	gboolean Ok;
@@ -611,9 +521,9 @@ static gboolean DefineGamessBasisType(gchar** strbasis, gint nrows)
 
 	if(Ntype<1) return FALSE;
 	if(nrows<1) return FALSE;
-	ex = g_malloc(nrows*sizeof(gfloat));
-	coef1 = g_malloc(nrows*sizeof(gfloat));
-	coef2 = g_malloc(nrows*sizeof(gfloat));
+	ex = g_malloc(nrows*sizeof(gdouble));
+	coef1 = g_malloc(nrows*sizeof(gdouble));
+	coef2 = g_malloc(nrows*sizeof(gdouble));
 	for(i=0;i<10;i++) temp[i] = g_malloc(BSIZE*sizeof(gchar));
 
 	/*
@@ -799,16 +709,16 @@ static void get_number_of_occuped_orbitals(gchar* FileName, gint* nAlpha, gint* 
 	if(file) fclose(file);
 }
 /********************************************************************************/
-static GabEditOrbLocalType get_local_orbital_type(gchar *NomFichier)
+static GabEditOrbLocalType get_local_orbital_type(gchar *fileName)
 {
  	gchar *t;
  	FILE *file;
  	gint taille=BSIZE;
 	
- 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0)) return GABEDIT_ORBLOCALTYPE_UNKNOWN;
+ 	if ((!fileName) || (strcmp(fileName,"") == 0)) return GABEDIT_ORBLOCALTYPE_UNKNOWN;
 
  	t=g_malloc(taille);
- 	file = FOpen(NomFichier, "rb");
+ 	file = FOpen(fileName, "rb");
  	if(file ==NULL) return GABEDIT_ORBLOCALTYPE_UNKNOWN;
  	while(!feof(file))
 	{
@@ -827,7 +737,7 @@ static GabEditOrbLocalType get_local_orbital_type(gchar *NomFichier)
  	return GABEDIT_ORBLOCALTYPE_UNKNOWN;
 }
 /********************************************************************************/
-static gboolean read_last_orbitals_in_gamess_file(gchar *NomFichier,GabEditOrbType itype, gint nAlpha, gint nBeta)
+static gboolean read_last_orbitals_in_gamess_file(gchar *fileName,GabEditOrbType itype, gint nAlpha, gint nBeta)
 {
  	gchar *t;
  	gboolean OK;
@@ -839,28 +749,28 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *NomFichier,GabEditOrbTy
  	gchar *pdest = NULL;
 	gint NumOrb[5];
 	gchar SymOrb[5][10];
-	gfloat EnerOrb[5];
+	gdouble EnerOrb[5];
 	gint ncart;
 	gint n;
 	gint k,k1,k2,k3;
 	gint j;
-	gfloat **CoefOrbitals;
-	gfloat *EnerOrbitals;
+	gdouble **CoefOrbitals;
+	gdouble *EnerOrbitals;
 	gchar **SymOrbitals;
 	gchar* tmp = NULL;
 	
- 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
+ 	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
 		Message("Sorry No file slected\n","Error",TRUE);
     		return FALSE;
  	}
 
  	t=g_malloc(taille);
- 	fd = FOpen(NomFichier, "rb");
+ 	fd = FOpen(fileName, "rb");
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",NomFichier);
+		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
   		Message(buffer,"Error",TRUE);
   		return FALSE;
  	}
@@ -868,7 +778,7 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *NomFichier,GabEditOrbTy
   
 	/* Debug("Norb = %d\n",NOrb);*/
 	CoefOrbitals = CreateTable2(NOrb);
-	EnerOrbitals = g_malloc(NOrb*sizeof(gfloat));
+	EnerOrbitals = g_malloc(NOrb*sizeof(gdouble));
 	SymOrbitals = g_malloc(NOrb*sizeof(gchar*));
 
  	numorb =1;
@@ -952,7 +862,7 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *NomFichier,GabEditOrbTy
   			)
 			{
 				gchar buffer[BSIZE];
-				sprintf(buffer,"Sorry,  I can not read orbitals from '%s' file\n",NomFichier);
+				sprintf(buffer,"Sorry,  I can not read orbitals from '%s' file\n",fileName);
   				Message(buffer,"Error",TRUE);
 			}
 			FreeTable2(CoefOrbitals,NOrb);
@@ -980,7 +890,7 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *NomFichier,GabEditOrbTy
 				
 				SymAlphaOrbitals = SymOrbitals;
 
-				OccAlphaOrbitals = g_malloc(NOrb*sizeof(gfloat));
+				OccAlphaOrbitals = g_malloc(NOrb*sizeof(gdouble));
 				for(i=0;i<nAlpha;i++) OccAlphaOrbitals[i] = 1.0;
 				for(i=nAlpha;i<NOrb;i++) OccAlphaOrbitals[i] = 0.0;
 
@@ -996,7 +906,7 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *NomFichier,GabEditOrbTy
 				EnerBetaOrbitals = EnerOrbitals;
 				SymBetaOrbitals = SymOrbitals;
 
-				OccBetaOrbitals = g_malloc(NOrb*sizeof(gfloat));
+				OccBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
 				for(i=0;i<nBeta;i++) OccBetaOrbitals[i] = 1.0;
 				for(i=nBeta;i<NOrb;i++) OccBetaOrbitals[i] = 0.0;
 
@@ -1013,7 +923,7 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *NomFichier,GabEditOrbTy
 				CoefAlphaOrbitals = CoefOrbitals;
 				EnerAlphaOrbitals = EnerOrbitals;
 				SymAlphaOrbitals = SymOrbitals;
-				OccAlphaOrbitals = g_malloc(NOrb*sizeof(gfloat));
+				OccAlphaOrbitals = g_malloc(NOrb*sizeof(gdouble));
 				for(i=0;i<nAlpha;i++) OccAlphaOrbitals[i] = 1.0;
 				for(i=nAlpha;i<NOrb;i++) OccAlphaOrbitals[i] = 0.0;
 
@@ -1106,7 +1016,7 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *NomFichier,GabEditOrbTy
 
 			
 	  		fgets(t,taille,fd);
-			k2 = sscanf(t,"%f %f %f %f %f", &EnerOrb[0], &EnerOrb[1], &EnerOrb[2], &EnerOrb[3], &EnerOrb[4]);
+			k2 = sscanf(t,"%lf %lf %lf %lf %lf", &EnerOrb[0], &EnerOrb[1], &EnerOrb[2], &EnerOrb[3], &EnerOrb[4]);
 			for(i=0;i<k2;i++) EnerOrbitals[NumOrb[i]] = EnerOrb[i];
 			if(k2>0)
 			{

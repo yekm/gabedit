@@ -289,8 +289,8 @@ static gboolean read_molpro_file(GabeditFileChooser *SelecFile, gint response_id
  	guint taille=BSIZE;
 	gint k;
 	gint nf;
-	gfloat freq[5];
-	gfloat IRIntensity[5];
+	gdouble freq[5];
+	gdouble IRIntensity[5];
 	gint numberOfFrequencies = 0;
 	gdouble* frequencies = NULL;
 	gdouble* intensities = NULL;
@@ -336,10 +336,10 @@ static gboolean read_molpro_file(GabeditFileChooser *SelecFile, gint response_id
 	 	if(strstr( t,"Normal Modes of imaginary frequencies") ) break;
 	 	if(strstr( t,"Normal Modes of low/zero frequencies") ) break;
 		if(!strstr(t,"Wavenumbers")) continue;
-		nf = sscanf(t,"%s %s %f %f %f %f %f", sdum1,sdum2, &freq[0],&freq[1],&freq[2],&freq[3],&freq[4]);
+		nf = sscanf(t,"%s %s %lf %lf %lf %lf %lf", sdum1,sdum2, &freq[0],&freq[1],&freq[2],&freq[3],&freq[4]);
 		nf -= 2;
     		if(!fgets(t,taille,fd)) break;
-		sscanf(t,"%s %s %f %f %f %f %f",
+		sscanf(t,"%s %s %lf %lf %lf %lf %lf",
 				sdum1,sdum2,
 				&IRIntensity[0],&IRIntensity[1],&IRIntensity[2],&IRIntensity[3],&IRIntensity[4]);
 		for(k=0;k<nf;k++)
@@ -385,10 +385,10 @@ static gint read_dalton_modes_MOLHES(FILE* fd, gchar *FileName)
  	gchar sdum2[100];
  	gboolean OK;
 	gint nf;
-	gfloat freq;
+	gdouble freq;
 	gint numMode;
 	gchar sym[50];
-	gfloat IR = 0;
+	gdouble IR = 0;
 	gint numberOfFrequencies = 0;
 	gdouble* frequencies = NULL;
 	gdouble* intensities = NULL;
@@ -512,8 +512,8 @@ static gboolean read_gamess_file(GabeditFileChooser *SelecFile, gint response_id
 	gint nf;
 	gint nir;
 	gint nfMax = 5;
-	gfloat freq[5];
-	gfloat ir[5];
+	gdouble freq[5];
+	gdouble ir[5];
  	gchar* sdum[5*2];
  	gchar* tmp;
 	gint numberOfFrequencies = 0;
@@ -586,13 +586,15 @@ static gboolean read_gamess_file(GabeditFileChooser *SelecFile, gint response_id
 			nf++;
 		}
 		nir=-1;
-		if(fgets(t,BSIZE,fd)) /* REDUCED MASS: */
-		if(fgets(t,BSIZE,fd)) /*  IR INTENSITY: */
+		while(fgets(t,BSIZE,fd) && strstr(t,":")) /* REDUCED MASS: IR INTENSITY: Raman, Depol,... backspace */
 		{
-			tmp =  strstr(t,":")+1;
-			nir = sscanf(tmp,"%s %s %s %s %s", sdum[0],sdum[1],sdum[2],sdum[3],sdum[4]);
+			if(strstr(t,"IR INTENSITY:"))
+			{
+				tmp =  strstr(t,":")+1;
+				nir = sscanf(tmp,"%s %s %s %s %s", sdum[0],sdum[1],sdum[2],sdum[3],sdum[4]);
+			}
 		}
-		if(nf!=nir ||!fgets(t,BSIZE,fd) ) /* backspace*/
+		if(nf!=nir)
 		{
 			for(i=0;i<nfMax*2;i++) g_free(sdum[i]);
 			messageErrorFreq(FileName);
@@ -838,7 +840,7 @@ static gboolean read_adf_file(GabeditFileChooser *SelecFile, gint response_id)
 	gint k;
 	gint ne;
 	gint nf;
-	gfloat freq[5];
+	gdouble freq[5];
 	gint numberOfFrequencies = 0;
 	gdouble* frequencies = NULL;
 	gdouble* intensities = NULL;
@@ -899,7 +901,7 @@ static gboolean read_adf_file(GabeditFileChooser *SelecFile, gint response_id)
 			return FALSE;
 		}
 
-		nf = sscanf(t,"%s %f %f %f", sdum1, &freq[0],&freq[1],&freq[2]);
+		nf = sscanf(t,"%s %lf %lf %lf", sdum1, &freq[0],&freq[1],&freq[2]);
 		nf -= 1;
 		if(nf<1) break;
 
@@ -975,6 +977,87 @@ static void read_adf_file_dlg()
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
 /********************************************************************************/
+static gboolean read_orca_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+
+	gchar *FileName;
+ 	gchar t[BSIZE];
+ 	gchar sdum1[BSIZE];
+ 	gboolean OK;
+ 	FILE *fd;
+ 	guint taille=BSIZE;
+	gint n;
+	gdouble freq = 0;
+	gdouble IRIntensity = 0;
+	gint numberOfFrequencies = 0;
+	gdouble *frequencies = NULL;
+	gdouble *intensities = NULL;
+
+	if(response_id != GTK_RESPONSE_OK) return FALSE;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+
+ 	fd = FOpen(FileName, "r");
+	if(!fd) return FALSE;
+
+ 	do 
+ 	{
+ 		OK=FALSE;
+ 		while(!feof(fd))
+		{
+	  		fgets(t,taille,fd);
+	 		if (strstr( t,"IR SPECTRUM") ) OK = TRUE;
+	 		if (strstr( t,"TX")  && strstr( t,"TY") && strstr( t,"TZ") && OK ){ OK = TRUE; break;}
+		}
+		if(!OK) break;
+		numberOfFrequencies = 0;
+		if(frequencies) g_free(frequencies);
+		if(intensities) g_free(intensities);
+		frequencies = NULL;
+		intensities = NULL;
+	  	fgets(t,taille,fd);
+  		while(!feof(fd) )
+  		{
+			if(!fgets(t,taille,fd)) break;
+			if(atoi(t)<=0) break;
+			n = sscanf(t,"%s %lf %lf", sdum1, &freq,&IRIntensity);
+			if(n==3)
+			{
+				numberOfFrequencies++;
+				frequencies = g_realloc(frequencies, numberOfFrequencies*sizeof(gdouble));
+				intensities = g_realloc(intensities, numberOfFrequencies*sizeof(gdouble));
+				frequencies[numberOfFrequencies-1] = freq;
+				intensities[numberOfFrequencies-1] = IRIntensity;
+			}
+		}
+ 	}while(!feof(fd));
+
+	if(numberOfFrequencies>0)
+	{
+		createIRSpectrumWin(numberOfFrequencies, frequencies, intensities);
+	}
+	else
+	{
+		messageErrorFreq(FileName);
+	}
+
+
+	if(frequencies) g_free(frequencies);
+	if(intensities) g_free(intensities);
+	fclose(fd);
+
+	return TRUE;
+}
+/********************************************************************************/
+static void read_orca_file_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_orca_file,
+			"Read last frequencies and intensities from a Orca output file",
+			GABEDIT_TYPEFILE_QCHEM,GABEDIT_TYPEWIN_OTHER);
+
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+}
+/********************************************************************************/
 static gboolean read_sample_2columns_file(GabeditFileChooser *SelecFile, gint response_id)
 {
  	gchar t[BSIZE];
@@ -1042,6 +1125,7 @@ void createIRSpectrum(GtkWidget *parentWindow, GabEditTypeFile typeOfFile)
 	if(typeOfFile==GABEDIT_TYPEFILE_MOLPRO) read_molpro_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_DALTON) read_dalton_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_GAMESS) read_gamess_file_dlg();
+	if(typeOfFile==GABEDIT_TYPEFILE_ORCA) read_orca_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_PCGAMESS) read_gamess_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_GAUSSIAN) read_gaussian_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_QCHEM) read_qchem_file_dlg();

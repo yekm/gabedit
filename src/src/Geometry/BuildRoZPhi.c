@@ -47,16 +47,16 @@ static void build_rozphi_molecule(GtkWidget *w,gpointer data)
 {
 	G_CONST_RETURN gchar *t;
 	gint Nc;
-	gfloat Distance;
-	gfloat Ro;
+	gdouble Distance;
+	gdouble Ro;
 	G_CONST_RETURN gchar* Symb;
 	gint j;
-	gfloat angle;
-	gfloat X;
-	gfloat Y;
-	gfloat Z;
+	gdouble angle;
+	gdouble X;
+	gdouble Y;
+	gdouble Z;
 	gint N0=0;
-	gfloat phi=0;
+	gdouble phi=0;
 
 
 	if(First)

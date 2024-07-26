@@ -20,6 +20,7 @@ DEALINGS IN THE SOFTWARE.
 
 #include "../../Config.h"
 #include "GlobalOrb.h"
+#include "../OpenGL/UtilsOrb.h"
 #include "../Geometry/GeomGlobal.h"
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
@@ -175,7 +176,7 @@ gdouble compute_electronic_dipole(gdouble D[])
 	}
 	v3d_cross(vx, vy, vxy);
 	dV = v3d_dot(vxy, vz);
-	/* printf("dV Cross dot=%f\n",dV);*/
+	/* printf("dV Cross dot=%lf\n",dV);*/
 	dV = fabs(dV);
 
 	for(i=0;i<grid->N[0];i++)
@@ -196,8 +197,8 @@ gdouble compute_electronic_dipole(gdouble D[])
 
 	
 	/*
-	printf("s=%f\n",s);
-	printf("dV=%f\n",dV);
+	printf("s=%lf\n",s);
+	printf("dV=%lf\n",dV);
 	*/
 
 	return s;
@@ -232,15 +233,14 @@ void compute_total_dipole()
 		GtkWidget* message =Message("Sorry, Grid not defined ","Error",TRUE);
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		return;
-		return;
 	}
 	z = compute_nuclear_dipole(DN);
-	/* printf("Nuclear    Dipole = %f %f %f\n",DN[0],DN[1],DN[2]);*/
+	/* printf("Nuclear    Dipole = %lf %lf %lf\n",DN[0],DN[1],DN[2]);*/
 	ne = compute_electronic_dipole(DE);
-	/* printf("Electronic Dipole = %f %f %f\n",DE[0],DE[1],DE[2]);*/
+	/* printf("Electronic Dipole = %lf %lf %lf\n",DE[0],DE[1],DE[2]);*/
 	for(c=0;c<3;c++)
 		D[c] = DE[c] + DN[c];
-	/* printf("Total      Dipole = %f %f %f\n",D[0],D[1],D[2]);*/
+	/* printf("Total      Dipole = %lf %lf %lf\n",D[0],D[1],D[2]);*/
 
 	Dipole.def = TRUE;
 	for(c=0;c<3;c++)
@@ -253,7 +253,7 @@ static void rotated_vector(V3d v)
 {
 	V3d vz={0.0,0.0,1.0};
 	V3d	vert;
-	gfloat angle;
+	gdouble angle;
 
 
 	v3d_cross(vz,v,vert);
@@ -268,7 +268,7 @@ static void rotated_vector(V3d v)
 
 }
 /************************************************************************/
-void Prism_Draw(GLfloat radius,V3d Base1Pos,V3d Base2Pos)
+void Prism_Draw(GLdouble radius,V3d Base1Pos,V3d Base2Pos)
 {
 		V3d Direction;
 		double lengt;
@@ -290,12 +290,12 @@ void Prism_Draw(GLfloat radius,V3d Base1Pos,V3d Base2Pos)
 }
 
 /************************************************************************/
-void Prism_Draw_Color(GLfloat radius,V3d Base1Pos,V3d Base2Pos,
+void Prism_Draw_Color(GLdouble radius,V3d Base1Pos,V3d Base2Pos,
 			 V4d Specular,V4d Diffuse,V4d Ambiant)
 {
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
 	glMateriali(GL_FRONT_AND_BACK,GL_SHININESS,50);
 	Prism_Draw(radius,Base1Pos,Base2Pos);
 }
@@ -307,12 +307,9 @@ void Dipole_Draw()
 	V4d Ambiant  = {0.0f,0.0f,0.1f,1.0f};
 	V3d Base1Pos  = {0.0f,0.0f,0.0f};
 	V3d Base2Pos  = {Dipole.Value[0],Dipole.Value[1],Dipole.Value[2]};
-	GLfloat radius = Dipole.radius;
+	GLdouble radius = Dipole.radius;
 	V3d Center;
-	GLfloat p1=90;
-	GLfloat p2=10;
-	GLfloat p = p1 + p2;
-	GLfloat scal = 2;
+	GLdouble scal = 2;
 	V3d Direction;
 	double lengt;
 	gint i;
@@ -327,30 +324,32 @@ void Dipole_Draw()
 	Direction[1] = Base2Pos[1]-Base1Pos[1];
 	Direction[2] = Base2Pos[2]-Base1Pos[2];
 	lengt = v3d_length(Direction);
-	/*
-	radius=lengt/10; 
-	if(radius>0.25)
-		radius = 0.25;
-	*/
-	if(radius<0.1)
-		radius = 0.1;
+	if(radius<0.1) radius = 0.1;
 
+	Direction[0] /= lengt;
+	Direction[1] /= lengt;
+	Direction[2] /= lengt;
 
 	Base2Pos[0] *= scal;
 	Base2Pos[1] *= scal;
 	Base2Pos[2] *= scal;
 
-	Center[0] = (Base1Pos[0]*p2 + Base2Pos[0]*p1)/p;
-	Center[1] = (Base1Pos[1]*p2 + Base2Pos[1]*p1)/p;
-	Center[2] = (Base1Pos[2]*p2 + Base2Pos[2]*p1)/p;
+	Center[0] = Base2Pos[0];
+	Center[1] = Base2Pos[1];
+	Center[2] = Base2Pos[2];
+
+	Base2Pos[0] += Direction[0]*2*radius;
+	Base2Pos[1] += Direction[1]*2*radius;
+	Base2Pos[2] += Direction[2]*2*radius;
+
 	Cylinder_Draw_Color(radius/2,Base1Pos,Center,Specular,Diffuse,Ambiant);
 	for(i=0;i<3;i++)
 	{
 		Diffuse[i] *=0.6;
 		Ambiant[i] *=0.6;
 	}
-
-	Prism_Draw_Color(radius,Center,Base2Pos,Specular,Diffuse,Ambiant);
+	Diffuse[1] = Diffuse[2];
+	Prism_Draw_Color(radius/1.5,Center,Base2Pos,Specular,Diffuse,Ambiant);
 }
 /************************************************************************/
 GLuint DipGenList(GLuint diplist)

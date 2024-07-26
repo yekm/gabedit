@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
 #include "../OpenGL/ColorMap.h"
+#include "../OpenGL/UtilsOrb.h"
 
 static V4d color_positive = {0.0, 0.0,0.8,0.8};
 static V4d color_negative = {0.8, 0.0,0.0,0.8};
@@ -138,17 +139,17 @@ void TriangeShowColorMap(V3d V1,V3d V2,V3d V3,V3d N1,V3d N2,V3d N3, V4d color1,V
 	glBegin(GL_TRIANGLES);
 
 	if(TypeTexture != GABEDIT_TYPETEXTURE_NONE) glTexCoord2f(V1[0],V1[1]);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,color1);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,color1);
 	glNormal3f(N1[0],N1[1],N1[2]);
 	glVertex3f(V1[0],V1[1],V1[2]);
 
 	if(TypeTexture != GABEDIT_TYPETEXTURE_NONE) glTexCoord2f(V2[0],V2[1]);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,color2);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,color2);
 	glNormal3f(N2[0],N2[1],N2[2]);
 	glVertex3f(V2[0],V2[1],V2[2]);
 
 	if(TypeTexture != GABEDIT_TYPETEXTURE_NONE) glTexCoord2f(V3[0],V3[1]);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,color3);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,color3);
 	glNormal3f(N3[0],N3[1],N3[2]);
 	glVertex3f(V3[0],V3[1],V3[2]);
 
@@ -173,15 +174,15 @@ void IsoDrawMapped(IsoSurface* iso)
 	V4d Diffuse  = {0.5,0.5,0.5,1.0};
 	V4d Specular = {0.8,0.8,0.8,1.0 };
 	V4d Ambiant  = {0.2,0.2,0.2,0.8};
-	gfloat value;
+	gdouble value;
 	V4d color1  = {0.5,0.5,0.5,0.8};
 	V4d color2  = {0.5,0.5,0.5,0.8};
 	V4d color3  = {0.5,0.5,0.5,0.8};
 	ColorMap* colorMap = get_colorMap_mapping_cube();
 
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
 	glMateriali(GL_FRONT_AND_BACK,GL_SHININESS,120);
 
 	for(i=1;i<iso->N[0]-2;i++)
@@ -275,13 +276,13 @@ GLuint IsoGenOneList(IsoSurface* isosurface,gint type)
 	{
 		case 0 : /* positive */
 		{
-			gfloat* Diffuse  = color_positive;
+			gdouble* Diffuse  = color_positive;
 			V4d Specular = {0.8,0.8,0.8,0.8};
 			V4d Ambiant  = {0.2,0.2,0.2,0.8};
 
-			glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-			glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
+			glMaterialdv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
+			glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
+			glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
 			glMateriali(GL_FRONT_AND_BACK,GL_SHININESS,120);
 			IsoDraw(isosurface);
 			break;
@@ -289,25 +290,25 @@ GLuint IsoGenOneList(IsoSurface* isosurface,gint type)
 		case 1 :/* negative */
 		{
 		
-			gfloat* Diffuse  = color_negative;
+			gdouble* Diffuse  = color_negative;
 			V4d Specular = {0.8,0.8,0.8,0.8 };
 			V4d Ambiant  = {0.2,0.2,0.2,0.8};
 			
-			glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-			glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
+			glMaterialdv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
+			glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
+			glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
 			glMateriali(GL_FRONT_AND_BACK,GL_SHININESS,120);
 			IsoDraw(isosurface);
 			break;
 		}
 		case 2:
 		{
-			gfloat* Diffuse  = color_density;
+			gdouble* Diffuse  = color_density;
 			V4d Specular = {0.8,0.8,0.8,0.8 };
 			V4d Ambiant  = {0.2,0.2,0.2,0.8};
-			glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-			glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
+			glMaterialdv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
+			glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
+			glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
 			glMateriali(GL_FRONT_AND_BACK,GL_SHININESS,120);
 			IsoDraw(isosurface);
 		}

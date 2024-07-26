@@ -26,11 +26,11 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/PlanesMappedDraw.h"
 #include "../OpenGL/ColorMap.h"
 /********************************************************************************/
-static gchar *get_pov_cylingre(gfloat C1[],gfloat C2[],gfloat Colors[], gfloat coef)
+static gchar *get_pov_cylingre(gdouble C1[],gdouble C2[],gdouble Colors[], gdouble coef)
 {
      gchar* temp = NULL;
      gint i;
-     gfloat d = 0;
+     gdouble d = 0;
      for(i=0;i<3;i++) d += (C1[i]-C2[i])*(C1[i]-C2[i]);
      if(d<1e-8) return g_strdup("\n");
 
@@ -39,7 +39,7 @@ static gchar *get_pov_cylingre(gfloat C1[],gfloat C2[],gfloat Colors[], gfloat c
 		"{\n"
 		"\t<%14.6f,%14.6f,%14.6f>,\n"
 		"\t<%14.6f,%14.6f,%14.6f> \n"
-		"\twireFrameCylinderRadius*%f\n"
+		"\twireFrameCylinderRadius*%lf\n"
 		"\ttexture\n"
 		"\t{\n"
 		"\t\tpigment { rgb<%14.6f,%14.6f,%14.6f> }\n"
@@ -57,14 +57,14 @@ static gchar *get_pov_cylingre(gfloat C1[],gfloat C2[],gfloat Colors[], gfloat c
 }
 /********************************************************************************/
 static gchar *get_pov_mesh2(
-		gfloat C1[],gfloat C2[], gfloat C3[],  gfloat C4[], 
-		gfloat N1[],gfloat N2[], gfloat N3[],  gfloat N4[],
-		gfloat color1[],  gfloat color2[], gfloat color3[], gfloat color4[])
+		gdouble C1[],gdouble C2[], gdouble C3[],  gdouble C4[], 
+		gdouble N1[],gdouble N2[], gdouble N3[],  gdouble N4[],
+		gdouble color1[],  gdouble color2[], gdouble color3[], gdouble color4[])
 {
 	gchar* temp = NULL;
 	gchar* t = NULL;
 	gint i;
-	gfloat d = 0;
+	gdouble d = 0;
 	for(i=0;i<3;i++) d += (C1[i]-C2[i])*(C1[i]-C2[i]);
 	if(d<1e-8) return g_strdup("\n");
 
@@ -87,22 +87,22 @@ static gchar *get_pov_mesh2(
 	  temp = g_strdup_printf("mesh2\n"
 				"{\n"
 			           "\tvertex_vectors{ 4,\n"
-			              "\t\t<%f, %f, %f>\n"
-			              "\t\t<%f, %f, %f>\n"
-			              "\t\t<%f, %f, %f>\n"
-			              "\t\t<%f, %f, %f>\n"
+			              "\t\t<%lf, %lf, %lf>\n"
+			              "\t\t<%lf, %lf, %lf>\n"
+			              "\t\t<%lf, %lf, %lf>\n"
+			              "\t\t<%lf, %lf, %lf>\n"
 				   "\t}\n"
 				   "\tnormal_vectors{ 4,\n"
-			              "\t\t<%f, %f, %f>\n"
-			              "\t\t<%f, %f, %f>\n"
-			              "\t\t<%f, %f, %f>\n"
-			              "\t\t<%f, %f, %f>\n"
+			              "\t\t<%lf, %lf, %lf>\n"
+			              "\t\t<%lf, %lf, %lf>\n"
+			              "\t\t<%lf, %lf, %lf>\n"
+			              "\t\t<%lf, %lf, %lf>\n"
 				   "\t}\n"
 				   "\ttexture_list{ 4,\n"
-				      "\t\ttexture{pigment{rgb<%f,%f,%f> %s} finish {ambient ambientCoef diffuse diffuseCoef specular specularCoef}}\n"
-				      "\t\ttexture{pigment{rgb<%f,%f,%f> %s} finish {ambient ambientCoef diffuse diffuseCoef specular specularCoef}}\n"
-				      "\t\ttexture{pigment{rgb<%f,%f,%f> %s} finish {ambient ambientCoef diffuse diffuseCoef specular specularCoef}}\n"
-				      "\t\ttexture{pigment{rgb<%f,%f,%f> %s} finish {ambient ambientCoef diffuse diffuseCoef specular specularCoef}}\n"
+				      "\t\ttexture{pigment{rgb<%lf,%lf,%lf> %s} finish {ambient ambientCoef diffuse diffuseCoef specular specularCoef}}\n"
+				      "\t\ttexture{pigment{rgb<%lf,%lf,%lf> %s} finish {ambient ambientCoef diffuse diffuseCoef specular specularCoef}}\n"
+				      "\t\ttexture{pigment{rgb<%lf,%lf,%lf> %s} finish {ambient ambientCoef diffuse diffuseCoef specular specularCoef}}\n"
+				      "\t\ttexture{pigment{rgb<%lf,%lf,%lf> %s} finish {ambient ambientCoef diffuse diffuseCoef specular specularCoef}}\n"
 				   "\t}\n"
 			           "\tface_indices{2,<0,1,2> 0, 1, 2 <2,3,0> 2, 3, 0 }\n"
 				    "\ttransform { myTransforms }\n"
@@ -126,7 +126,7 @@ static gchar *get_pov_mesh2(
 
 }
 /********************************************************************************/
-static void addPlanPovRay(FILE* file, Grid* plansgrid,gint i0,gint i1,gint numPlane,gfloat Gap[])
+static void addPlanPovRay(FILE* file, Grid* plansgrid,gint i0,gint i1,gint numPlane,gdouble Gap[])
 {
 	gchar* temp;
 	gint ip = numPlane;
@@ -136,9 +136,9 @@ static void addPlanPovRay(FILE* file, Grid* plansgrid,gint i0,gint i1,gint numPl
 	gint ix3=0,iy3=0,iz3=0;
 	gint ix4,iy4,iz4;
 	gint i,j,ii,jj;
-	gfloat C1[3];
-	gfloat C2[3];
-	gfloat Color[3];
+	gdouble C1[3];
+	gdouble C2[3];
+	gdouble Color[3];
 
 	i = 0;
 	j = 0;
@@ -222,10 +222,10 @@ static void addPlanPovRay(FILE* file, Grid* plansgrid,gint i0,gint i1,gint numPl
 
 }
 /********************************************************************************/
-static gfloat* GetGapVector(Grid* plansgrid,gint i0,gint i1,gint numPlane,gfloat gap)
+static gdouble* GetGapVector(Grid* plansgrid,gint i0,gint i1,gint numPlane,gdouble gap)
 {
-	gfloat x1,y1,z1;
-	gfloat x2,y2,z2;
+	gdouble x1,y1,z1;
+	gdouble x2,y2,z2;
 	gint ip = numPlane;
 	gint ix=0,iy=0,iz=0;
 	gint ix1=0,iy1=0,iz1=0;
@@ -233,8 +233,8 @@ static gfloat* GetGapVector(Grid* plansgrid,gint i0,gint i1,gint numPlane,gfloat
 	gint ix3,iy3,iz3;
 	gint ix4,iy4,iz4;
 	gint i,j,ii,jj;
-	gfloat *Gap = g_malloc(3*sizeof(gfloat));
-	gfloat Module;
+	gdouble *Gap = g_malloc(3*sizeof(gdouble));
+	gdouble Module;
 
 	i = 0;
 	j = 0;
@@ -318,7 +318,7 @@ static ColorMap* get_colorMap()
 	return colorMap;
 }
 /***************************************************************************************************************/
-static void AddOnePlaneMappedPovRay(FILE* file, Grid* plansgrid, gint i0, gint i1, gint numPlane, gfloat gap)
+static void AddOnePlaneMappedPovRay(FILE* file, Grid* plansgrid, gint i0, gint i1, gint numPlane, gdouble gap)
 {
 	gchar* temp = NULL;
 	gint ip = numPlane;
@@ -330,21 +330,21 @@ static void AddOnePlaneMappedPovRay(FILE* file, Grid* plansgrid, gint i0, gint i
 	gint i,j,ii,jj;
 	gint k;
 	ColorMap* colorMap = get_colorMap();
-	gfloat color1[]  = {0.7,0.7,0.7,0.8};
-	gfloat color2[]  = {0.7,0.7,0.7,0.8};
-	gfloat color3[]  = {0.7,0.7,0.7,0.8};
-	gfloat color4[]  = {0.7,0.7,0.7,0.8};
-	gfloat C1[3]; 
-	gfloat C2[3]; 
-	gfloat C3[3]; 
-	gfloat C4[3]; 
+	gdouble color1[]  = {0.7,0.7,0.7,0.8};
+	gdouble color2[]  = {0.7,0.7,0.7,0.8};
+	gdouble color3[]  = {0.7,0.7,0.7,0.8};
+	gdouble color4[]  = {0.7,0.7,0.7,0.8};
+	gdouble C1[3]; 
+	gdouble C2[3]; 
+	gdouble C3[3]; 
+	gdouble C4[3]; 
 
-	gfloat N1[3] = {1,1,1}; 
-	gfloat N2[3] = {1,1,1}; 
-	gfloat N3[3] = {1,1,1}; 
-	gfloat N4[3] = {1,1,1}; 
+	gdouble N1[3] = {1,1,1}; 
+	gdouble N2[3] = {1,1,1}; 
+	gdouble N3[3] = {1,1,1}; 
+	gdouble N4[3] = {1,1,1}; 
 
-	gfloat*Gap;
+	gdouble*Gap;
 	Gap = GetGapVector(plansgrid, i0, i1, numPlane, gap);
 	addPlanPovRay(file, plansgrid, i0, i1, numPlane, Gap);
 
@@ -423,7 +423,7 @@ static void AddOnePlaneMappedPovRay(FILE* file, Grid* plansgrid, gint i0, gint i
 	g_free(Gap);
 }
 /*********************************************************************************************************/
-gint addPlaneMappedPovRay(Grid* plansgrid, gint i0,gint i1,gint numPlane, gfloat gap)
+gint addPlaneMappedPovRay(Grid* plansgrid, gint i0,gint i1,gint numPlane, gdouble gap)
 {
 	gchar* fileName = g_strdup_printf("%s%stmp%spovrayPlanesMapped.pov",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
 	FILE* file = fopen(fileName,"a");

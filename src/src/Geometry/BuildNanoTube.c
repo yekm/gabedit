@@ -49,22 +49,22 @@ static void build_nanotube(GtkWidget *w,gpointer data)
 	
       	gint n=10; /*          First integer of the pair (n,m), which defines the tube chirality.*/
       	gint m=7; /*           Second integer of the pair (n,m), which defines the tube chirality.*/
-	gfloat b = 1.422; /*  Carbon-carbon bond length in graphene sheet, in Angstroms */
+	gdouble b = 1.422; /*  Carbon-carbon bond length in graphene sheet, in Angstroms */
 	gint ncells = 2; /*  Number of unit cells to be generated */
 
 	gint hcd; /* the higher common divisor of both n and m */
 	gint L;
-	gfloat Rm;
-	gfloat radius; /* tube radius */
+	gdouble Rm;
+	gdouble radius; /* tube radius */
 	gint dR; 
 	gint Nc; /* the number of two-atom unit cells in the translational cell */
-	gfloat phi;
+	gdouble phi;
 	gint p1;
-	gfloat t;
+	gdouble t;
 	gint p2;
-	gfloat alpha;
-	gfloat h;
-	gfloat* coord[4];
+	gdouble alpha;
+	gdouble h;
+	gdouble* coord[4];
 	gint i;
 
 	te = gtk_entry_get_text(GTK_ENTRY(Entrys[0]));
@@ -101,15 +101,15 @@ static void build_nanotube(GtkWidget *w,gpointer data)
 	if(Nc<1) return;
 
 	for(i=0;i<4;i++)
-		coord[i] = g_malloc(2*Nc*ncells*sizeof(gfloat));
+		coord[i] = g_malloc(2*Nc*ncells*sizeof(gdouble));
 	phi = (PI*(m+n))/L;
 	t = (b*(m-n)*(m-n))/(2*L);
 	p1 = 0;
 	p2 = 0;
 	for(p1=0; p1<=n; p1++)
 	{
-		gfloat pp2;
-		pp2 = (gfloat)(hcd+p1*m)/n;
+		gdouble pp2;
+		pp2 = (gdouble)(hcd+p1*m)/n;
 		if(fabs(pp2 -(gint)pp2)<1e-10)
 		{
 			p2 = (gint)pp2;

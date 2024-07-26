@@ -21,7 +21,8 @@ DEALINGS IN THE SOFTWARE.
 
 void set_button_sensitive(gboolean sens);
 void setTextInProgress(gchar* t);
-gint progress_orb(gfloat scal, GabEditTypeProgressOrb type,gboolean reset);
+gint progress_orb_txt(gdouble scal,gchar* str,gboolean reset);
+gint progress_orb(gdouble scal, GabEditTypeProgressOrb type,gboolean reset);
 void set_status_label_info(gchar* type,gchar* txt);
 void create_status_bar_orb(GtkWidget* box);
 void create_status_progress_bar_orb(GtkWidget* vbox);

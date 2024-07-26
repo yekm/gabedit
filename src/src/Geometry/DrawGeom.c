@@ -67,14 +67,14 @@ DEALINGS IN THE SOFTWARE.
 #define SCALE(i) (i / 65535.)
 /********************************************************************************/
 
-static gfloat Quat[4] = {0.0,0.0,0.0,1.0};
-static gfloat QuatFrag[4] = {0.0,0.0,0.0,1.0};
-static gfloat QuatAtom[4] = {0.0,0.0,0.0,1.0};
-static gfloat BeginX = 0;
-static gfloat BeginY = 0;
+static gdouble Quat[4] = {0.0,0.0,0.0,1.0};
+static gdouble QuatFrag[4] = {0.0,0.0,0.0,1.0};
+static gdouble QuatAtom[4] = {0.0,0.0,0.0,1.0};
+static gdouble BeginX = 0;
+static gdouble BeginY = 0;
 static Camera camera = { 10,5};
 
-static gfloat CSselectedAtom[3] = {0.0,0.0,0.0};
+static gdouble CSselectedAtom[3] = {0.0,0.0,0.0};
 static gint NumSelectedAtom = -1;
 static gint NumProcheAtom = -1;
 static gboolean ButtonPressed = FALSE;
@@ -83,10 +83,10 @@ static gboolean ControlKeyPressed = FALSE;
 
 gchar* strToDraw = NULL;
 
-static gfloat minDistanceH = 1.50; /* in Agnstrom */
-static gfloat maxDistanceH = 3.15; /* in Agnstrom */ 
-static gfloat minAngleH = 145.0;
-static gfloat maxAngleH = 215.0;
+static gdouble minDistanceH = 1.50; /* in Agnstrom */
+static gdouble maxDistanceH = 3.15; /* in Agnstrom */ 
+static gdouble minAngleH = 145.0;
+static gdouble maxAngleH = 215.0;
 
 static gboolean showMultipleBonds = TRUE;
 static gboolean CartoonMode = TRUE;
@@ -164,6 +164,60 @@ static void stop_calcul(GtkWidget *wi, gpointer data);
 void delete_all_selected_atoms();
 static void reset_connections_between_selected_atoms();
 static void reset_connections_between_selected_and_notselected_atoms();
+/*********************************************************************************************/
+void  copy_screen_geom_clipboard()
+{
+	 while( gtk_events_pending() ) gtk_main_iteration();
+	gabedit_save_image(ZoneDessin, NULL, NULL);
+}
+/*********************************************************************************************/
+void  get_orgin_molecule_drawgeom(gdouble orig[])
+{
+	gdouble Rmax, Cmax;
+	orig[0] = 0;
+	orig[1] = 0;
+	orig[2] = 0.0;
+
+	Rmax = ZoneDessin->allocation.width;
+	if(Rmax<ZoneDessin->allocation.height) Rmax = ZoneDessin->allocation.height;
+
+	if(PersMode) Cmax  = coordmaxmin.Cmax*camera.f/(camera.position);
+	else Cmax = coordmaxmin.Cmax;
+	orig[0] = TransX *2*Cmax/factor/Rmax; 
+	orig[1] = -TransY *2*Cmax/factor/Rmax; 
+}
+/*********************************************************************************************/
+void  get_camera_values_drawgeom(gdouble* zn, gdouble* zf, gdouble* angle, gdouble* aspect, gboolean* persp)
+{
+	gdouble width = 500;
+	gdouble height = 500;
+
+	if(ZoneDessin)
+	{
+		width =  ZoneDessin->allocation.width;
+		height = ZoneDessin->allocation.height;
+	}
+	*aspect = width/height;
+	if(PersMode)
+	{
+		*zf = camera.position;
+		*zn = camera.f;
+		*angle = 45.0*1.2/factor;
+		if(*angle>=180) *angle = 160;
+	}
+	else
+	{
+		gdouble Cmax = coordmaxmin.Cmax;
+		gdouble Rmax = ZoneDessin->allocation.width;
+
+		if(Rmax<ZoneDessin->allocation.height) Rmax = ZoneDessin->allocation.height;
+		*zf = Cmax*Rmax;
+		*zn = 10;
+		*angle = *aspect/factor*45*36*(Cmax/Rmax);
+		if(*angle>=180) *angle = 160;
+	}
+	*persp = PersMode;
+}
 /**********************************************************************************/
 static void free_geometries_from_current_to_end()
 {
@@ -242,7 +296,7 @@ void get_geometry_from_fifo(gboolean toNext)
 		GList* last = g_list_last(fifoGeometries);
 		if(currentFifoGeometries == last) return;
 		list = g_list_next(currentFifoGeometries);
-		//if( list != last ) 
+		/*if( list != last )*/
 			currentFifoGeometries  = list;
 		oldNext = TRUE;
 
@@ -1707,7 +1761,7 @@ gboolean hbond_connections(gint i, gint j)
 	else return FALSE;
 }
 /*****************************************************************************/
-void init_quat(gfloat quat[])
+void init_quat(gdouble quat[])
 {
 	gint i;
 	for(i=0;i<3;i++) quat[i] = 0.0;
@@ -1756,8 +1810,8 @@ void set_origin_to_center_of_fragment()
 /********************************************************************************/
 static void set_geom_to_axes(gdouble axis1[], gdouble axis2[], gdouble axis3[])
 {
-	gfloat **m0 = NULL;
-	gfloat** minv;
+	gdouble **m0 = NULL;
+	gdouble** minv;
 	gint i,j;
 	guint n;
 
@@ -1770,13 +1824,13 @@ static void set_geom_to_axes(gdouble axis1[], gdouble axis2[], gdouble axis3[])
 
 	if(Natoms<1) return;
 
-	m0 = g_malloc(3*sizeof(gfloat*));
+	m0 = g_malloc(3*sizeof(gdouble*));
 	X = g_malloc(Natoms*sizeof(gdouble));
 	Y = g_malloc(Natoms*sizeof(gdouble));
 	Z = g_malloc(Natoms*sizeof(gdouble));
 
 	for(i=0;i<3;i++)
-		m0[i] = g_malloc(3*sizeof(gfloat));
+		m0[i] = g_malloc(3*sizeof(gdouble));
 
 
 	m0[0][0] = axis1[0];
@@ -1831,8 +1885,47 @@ static void set_geom_to_axes(gdouble axis1[], gdouble axis2[], gdouble axis3[])
 	if(Y) g_free(Y);
 	if(Z) g_free(Z);
 }
+/********************************************************************************/
+void move_the_center_of_selected_or_not_selected_atoms_to_origin(gboolean sel)
+{
+
+	gdouble C[3] = {0,0,0};
+	gdouble C0[3] = {0,0,0};
+	gdouble mt = 0;
+	gint i;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(if_selected(i)==sel)
+		{
+			gdouble m = geometry[i].Prop.masse;
+			mt += m;
+			C[0] += m*geometry[i].X;
+			C[1] += m*geometry[i].Y;
+			C[2] += m*geometry[i].Z;
+			C0[0] += m*geometry0[i].X;
+			C0[1] += m*geometry0[i].Y;
+			C0[2] += m*geometry0[i].Z;
+		}
+	}
+	if(mt==0) return;
+	for (i=0;i<3;i++) C[i] /= mt;
+	for (i=0;i<3;i++) C0[i] /= mt;
+	for (i=0;i<(gint)Natoms;i++)
+	{
+		if(if_selected(i)==sel)
+		{
+			geometry[i].X -= C[0];
+			geometry[i].Y -= C[1];
+			geometry[i].Z -= C[2];
+
+			geometry0[i].X -= C0[0];
+			geometry0[i].Y -= C0[1];
+			geometry0[i].Z -= C0[2];
+		}
+	}
+}
 /*****************************************************************************/
-static int set_fragment_rotational_matrix(gdouble m[6], gdouble C[])
+static int set_fragment_rotational_matrix(gdouble m[6], gdouble C[], gboolean sel)
 {
 	gint i;
 	gint ip;
@@ -1854,7 +1947,7 @@ static int set_fragment_rotational_matrix(gdouble m[6], gdouble C[])
 
 	for(j=0;j<(gint)Natoms;j++)
 	{
-		if(if_selected(j))
+		if(if_selected(j)==sel)
 		{
 			numAtoms[nFrag] = j;
 			mt += geometry[j].Prop.masse;
@@ -1899,7 +1992,7 @@ static int set_fragment_rotational_matrix(gdouble m[6], gdouble C[])
 	return nFrag;
 }
 /********************************************************************************/
-static int compute_fragment_principal_axes(gdouble axis1[], gdouble axis2[], gdouble axis3[], gdouble C[])
+static int compute_fragment_principal_axes(gdouble axis1[], gdouble axis2[], gdouble axis3[], gdouble C[], gboolean sel)
 {
 	gdouble m[6];
 	gdouble I[3];
@@ -1911,7 +2004,7 @@ static int compute_fragment_principal_axes(gdouble axis1[], gdouble axis2[], gdo
 
 	if(Natoms<1) return 0;
 
-	nFrag = set_fragment_rotational_matrix(m, C);
+	nFrag = set_fragment_rotational_matrix(m, C,sel);
 	if(nFrag == 0) return 0;
 
 	v = g_malloc(3*sizeof(gdouble*));
@@ -1925,6 +2018,7 @@ static int compute_fragment_principal_axes(gdouble axis1[], gdouble axis2[], gdo
 
 	for(i=0;i<3;i++) g_free(v[i]);
 	g_free(v);
+	printf("I= %f %f %f\n",I[0],I[1],I[2]);
 	return nFrag;
 }
 /********************************************************************************/
@@ -1934,22 +2028,11 @@ void set_xyz_to_principal_axes_of_selected_atoms(gpointer data, guint Operation,
 	gdouble axis2[3] = {0,1,0};
 	gdouble axis3[3] = {0,0,1};
 	gdouble C[3] = {0,0,0};
-	int nFrag = compute_fragment_principal_axes(axis1,axis2,axis3,C);
+	int nFrag = compute_fragment_principal_axes(axis1,axis2,axis3,C,TRUE);
 	if(nFrag <2 ) return;
 	set_origin_to_point(C);
 	if(Operation == 0) set_geom_to_axes(axis1, axis2, axis3);
-	else
-	{
-		gdouble a;
-		gint i;
-		for(i=0;i<3;i++)
-		{
-			a = axis1[i];
-			axis1[i] = axis3[i];
-			axis3[i] = a;
-		}
-		set_geom_to_axes(axis1, axis2, axis3);
-	}
+	else set_geom_to_axes(axis3, axis2, axis1);
 	create_GeomXYZ_from_draw_grometry();
 	init_quat(Quat);
 	dessine();
@@ -2233,11 +2316,11 @@ void draw_text(gchar* str)
 gboolean select_atoms_by_residues()
 {
 	gint i;
-	gfloat x1=0;
-	gfloat y1=0;
-	gfloat xi;
-	gfloat yi;
-	gfloat d = 0;
+	gdouble x1=0;
+	gdouble y1=0;
+	gdouble xi;
+	gdouble yi;
+	gdouble d = 0;
 	gint j;
 	gint k;
 	gboolean del = FALSE;
@@ -2312,15 +2395,15 @@ gboolean select_atoms_by_residues()
 	return OK;
 }
 /*****************************************************************************/
-void select_atoms_by_rectangle(gfloat x,gfloat y)
+void select_atoms_by_rectangle(gdouble x,gdouble y)
 {
 	gint i;
-	gfloat x1=0;
-	gfloat y1=0;
-	gfloat x2=0;
-	gfloat y2=0;
-	gfloat xi;
-	gfloat yi;
+	gdouble x1=0;
+	gdouble y1=0;
+	gdouble x2=0;
+	gdouble y2=0;
+	gdouble xi;
+	gdouble yi;
 
 	if(x>BeginX)
 	{
@@ -2368,12 +2451,12 @@ void select_atoms_by_rectangle(gfloat x,gfloat y)
 	}
 }
 /********************************************************************************/
-void draw_selection_rectangle(gfloat x,gfloat y)
+void draw_selection_rectangle(gdouble x,gdouble y)
 {
-	gfloat xi=0;
-	gfloat yi=0;
-	gfloat xf=0;
-	gfloat yf=0;
+	gdouble xi=0;
+	gdouble yi=0;
+	gdouble xf=0;
+	gdouble yf=0;
         GdkColor color;
 	GdkColormap *colormap;
 
@@ -2414,12 +2497,12 @@ void draw_selection_rectangle(gfloat x,gfloat y)
 #endif
 }
 /********************************************************************************/
-void draw_selection_circle(gfloat x,gfloat y)
+void draw_selection_circle(gdouble x,gdouble y)
 {
-	gfloat xi=0;
-	gfloat yi=0;
-	gfloat xf=0;
-	gfloat yf=0;
+	gdouble xi=0;
+	gdouble yi=0;
+	gdouble xf=0;
+	gdouble yf=0;
         GdkColor color;
 	GdkColormap *colormap;
 
@@ -3719,7 +3802,7 @@ void scaleChargesOfSelectedAtomsDlg()
 	gtk_widget_show_all(winDlg);
 }
 /*****************************************************************************/
-static void set_vect_ij(gint i, gint j, gfloat V[])
+static void set_vect_ij(gint i, gint j, gdouble V[])
 {
 	V[0] = geometry0[j].X-geometry0[i].X;
 	V[1] = geometry0[j].Y-geometry0[i].Y;
@@ -3784,11 +3867,11 @@ static void add_hydrogen_atoms(gint addToI, gint nH, gchar* HType)
 
 	for(i=0;i<nH;i++)
 	{
-		gfloat v1[3];
-		gfloat v2[3];
-		gfloat v3[3];
-		gfloat v4[3];
-		gfloat v5[3];
+		gdouble v1[3];
+		gdouble v2[3];
+		gdouble v3[3];
+		gdouble v4[3];
+		gdouble v5[3];
 		for(k=0;k<3;k++)
 			v1[k] = rand()/(gdouble)RAND_MAX-0.5;
 		v3d_normal(v1);
@@ -4553,11 +4636,11 @@ static void add_hydrogen_atoms_tpl(gint addToI, gint nA)
 
 	for(i=0;i<nH;i++)
 	{
-		gfloat v1[3];
-		gfloat v2[3];
-		gfloat v3[3];
-		gfloat v4[3];
-		gfloat v5[3];
+		gdouble v1[3];
+		gdouble v2[3];
+		gdouble v3[3];
+		gdouble v4[3];
+		gdouble v5[3];
 		for(k=0;k<3;k++)
 			v1[k] = rand()/(gdouble)RAND_MAX-0.5;
 		v3d_normal(v1);
@@ -5117,7 +5200,7 @@ static gint RotationByMouse(GtkWidget *widget, GdkEventMotion *event)
 	int x, y;
 	GdkRectangle area;
 	GdkModifierType state;
-	gfloat spin_quat[4];
+	gdouble spin_quat[4];
 
 	if (event->is_hint)
 	{
@@ -5159,10 +5242,10 @@ static gint RotationZByMouse(GtkWidget *widget, GdkEventMotion *event)
 {
 	int x, y;
 	GdkModifierType state;
-	gfloat spin_quat[4] = {0,0,0,0};
-	gfloat phi = 1.0/180*PI;
-	gfloat width;
-	gfloat height;
+	gdouble spin_quat[4] = {0,0,0,0};
+	gdouble phi = 1.0/180*PI;
+	gdouble width;
+	gdouble height;
 	gint Xi;
 	gint Yi;
 
@@ -5217,7 +5300,7 @@ static gint RotationZByMouse(GtkWidget *widget, GdkEventMotion *event)
 	return TRUE;
 }
 /********************************************************************************/
-static void rotation_fragment_quat(gfloat m[4][4],gdouble C[])
+static void rotation_fragment_quat(gdouble m[4][4],gdouble C[])
 {
 	gdouble A[3];
 	gdouble B[3];
@@ -5262,8 +5345,8 @@ static gint local_zrotate_fragment(GtkWidget *widget, GdkEventMotion *event)
 {
 	int x, y;
 	GdkModifierType state;
-	gfloat spin_quat[4] = {0,0,0,0};
-	gfloat m[4][4];
+	gdouble spin_quat[4] = {0,0,0,0};
+	gdouble m[4][4];
 	gdouble C[3]={0,0,0};/* Center of Fragment */
 	gint i;
 	gint j;
@@ -5274,9 +5357,9 @@ static gint local_zrotate_fragment(GtkWidget *widget, GdkEventMotion *event)
 	gdouble Cmax;
 	gint Xi;
 	gint Yi;
-	gfloat width;
-	gfloat height;
-	gfloat phi = 1.0/180*PI;
+	gdouble width;
+	gdouble height;
+	gdouble phi = 1.0/180*PI;
 
 	if(Natoms>0)
 	{
@@ -5376,8 +5459,8 @@ static gint local_rotate_fragment(GtkWidget *widget, GdkEventMotion *event)
 {
 	int x, y;
 	GdkModifierType state;
-	gfloat spin_quat[4];
-	gfloat m[4][4];
+	gdouble spin_quat[4];
+	gdouble m[4][4];
 	gdouble C[3]={0,0,0};/* Center of Fragment */
 	gint i;
 	gint j;
@@ -5388,8 +5471,8 @@ static gint local_rotate_fragment(GtkWidget *widget, GdkEventMotion *event)
 	gdouble Cmax;
 	gint Xi;
 	gint Yi;
-	gfloat width;
-	gfloat height;
+	gdouble width;
+	gdouble height;
 
 	if(Natoms>0)
 	{
@@ -5479,7 +5562,7 @@ static gint RotationAtomByMouse(GtkWidget *widget, GdkEventMotion *event)
 	int x, y;
 	GdkRectangle area;
 	GdkModifierType state;
-	gfloat spin_quat[4];
+	gdouble spin_quat[4];
 
 	if (event->is_hint)
 	{
@@ -5582,8 +5665,8 @@ static gint move_one_atom(GdkEventMotion *event)
 	if(PersMode) Cmax  = coordmaxmin.Cmax*camera.f/(camera.position);
 	else Cmax = coordmaxmin.Cmax;
 
-	X = (gfloat)(x-Xmax/2-TransX)*2.0*Cmax/(factor*Rmax);
-	Y = -(gfloat)(y-Ymax/2-TransY)*2.0*Cmax/(factor*Rmax);
+	X = (gdouble)(x-Xmax/2-TransX)*2.0*Cmax/(factor*Rmax);
+	Y = -(gdouble)(y-Ymax/2-TransY)*2.0*Cmax/(factor*Rmax);
 	Z = geometry[NumSelectedAtom].Z;
 
 	if(PersMode)
@@ -5592,9 +5675,9 @@ static gint move_one_atom(GdkEventMotion *event)
 		Y = Y/camera.f*(-Z+camera.position);
 	}
 	{
-		gfloat m[4][4];
-		gfloat **m0 = g_malloc(3*sizeof(gfloat*));
-		gfloat** minv;
+		gdouble m[4][4];
+		gdouble **m0 = g_malloc(3*sizeof(gdouble*));
+		gdouble** minv;
 		gint i,j;
 
 		gdouble A[3];
@@ -5602,7 +5685,7 @@ static gint move_one_atom(GdkEventMotion *event)
 		guint k;
 
 		for(i=0;i<3;i++)
-			m0[i] = g_malloc(3*sizeof(gfloat));
+			m0[i] = g_malloc(3*sizeof(gdouble));
 
 		build_rotmatrix(m,Quat);
 
@@ -5691,8 +5774,8 @@ static gint move_all_selected_atoms(GtkWidget *widget, GdkEventMotion *event)
 	else
 		Cmax = coordmaxmin.Cmax;
 
-	X = (gfloat)(x-Xmax/2-TransX)*2.0*Cmax/(factor*Rmax);
-	Y = -(gfloat)(y-Ymax/2-TransY)*2.0*Cmax/(factor*Rmax);
+	X = (gdouble)(x-Xmax/2-TransX)*2.0*Cmax/(factor*Rmax);
+	Y = -(gdouble)(y-Ymax/2-TransY)*2.0*Cmax/(factor*Rmax);
 	Z = geometry[NumSelectedAtom].Z;
 
 	if(PersMode)
@@ -5701,9 +5784,9 @@ static gint move_all_selected_atoms(GtkWidget *widget, GdkEventMotion *event)
 		Y = Y/camera.f*(-Z+camera.position);
 	}
 	{
-		gfloat m[4][4];
-		gfloat **m0 = g_malloc(3*sizeof(gfloat*));
-		gfloat** minv;
+		gdouble m[4][4];
+		gdouble **m0 = g_malloc(3*sizeof(gdouble*));
+		gdouble** minv;
 		gint i,j;
 
 		gdouble A[3];
@@ -5711,7 +5794,7 @@ static gint move_all_selected_atoms(GtkWidget *widget, GdkEventMotion *event)
 		guint k;
 
 		for(i=0;i<3;i++)
-			m0[i] = g_malloc(3*sizeof(gfloat));
+			m0[i] = g_malloc(3*sizeof(gdouble));
 
 		build_rotmatrix(m,Quat);
 
@@ -8032,8 +8115,8 @@ static gint insert_atom(GdkEventButton *bevent)
 		coordmaxmin.Cmax = Cmax;
 	}
 
-	X = (gfloat)(x-Xmax/2-TransX)*2.0*Cmax/(factor*Rmax);
-	Y = -(gfloat)(y-Ymax/2-TransY)*2.0*Cmax/(factor*Rmax);
+	X = (gdouble)(x-Xmax/2-TransX)*2.0*Cmax/(factor*Rmax);
+	Y = -(gdouble)(y-Ymax/2-TransY)*2.0*Cmax/(factor*Rmax);
 	if(Natoms>0)
 		Z = geometry[NumProcheAtom].Z;
 	else
@@ -8045,9 +8128,9 @@ static gint insert_atom(GdkEventButton *bevent)
 		Y = Y/camera.f*(-Z+camera.position);
 	}
 	{
-		gfloat m[4][4];
-		gfloat **m0 = g_malloc(3*sizeof(gfloat*));
-		gfloat** minv;
+		gdouble m[4][4];
+		gdouble **m0 = g_malloc(3*sizeof(gdouble*));
+		gdouble** minv;
 		gint i,j;
 
 		gdouble A[3];
@@ -8055,7 +8138,7 @@ static gint insert_atom(GdkEventButton *bevent)
 		guint k;
 
 		for(i=0;i<3;i++)
-			m0[i] = g_malloc(3*sizeof(gfloat));
+			m0[i] = g_malloc(3*sizeof(gdouble));
 
 		build_rotmatrix(m,Quat);
 
@@ -8258,8 +8341,8 @@ static gint insert_fragment_without_delete_an_atom(GtkWidget *widget,GdkEvent *e
 		coordmaxmin.Cmax = Cmax;
 	}
 
-	X = (gfloat)(x-Xmax/2-TransX)*2.0*Cmax/(factor*Rmax);
-	Y = -(gfloat)(y-Ymax/2-TransY)*2.0*Cmax/(factor*Rmax);
+	X = (gdouble)(x-Xmax/2-TransX)*2.0*Cmax/(factor*Rmax);
+	Y = -(gdouble)(y-Ymax/2-TransY)*2.0*Cmax/(factor*Rmax);
 	if(Natoms>0) Z = geometry[NumProcheAtom].Z;
 	else Z = 0.0;
 
@@ -8269,9 +8352,9 @@ static gint insert_fragment_without_delete_an_atom(GtkWidget *widget,GdkEvent *e
 		Y = Y/camera.f*(-Z+camera.position);
 	}
 	{
-		gfloat m[4][4];
-		gfloat **m0 = g_malloc(3*sizeof(gfloat*));
-		gfloat** minv;
+		gdouble m[4][4];
+		gdouble **m0 = g_malloc(3*sizeof(gdouble*));
+		gdouble** minv;
 		gint i,j;
 
 		gdouble A[3];
@@ -8279,7 +8362,7 @@ static gint insert_fragment_without_delete_an_atom(GtkWidget *widget,GdkEvent *e
 		guint k;
 
 		for(i=0;i<3;i++)
-			m0[i] = g_malloc(3*sizeof(gfloat));
+			m0[i] = g_malloc(3*sizeof(gdouble));
 
 		build_rotmatrix(m,Quat);
 
@@ -8630,6 +8713,7 @@ void deleteHydrogensConnectedTo(gint n, gint nH)
 
 	if(Natoms<1) return;
 
+	add_geometry_to_fifo();
 	for (i=0;i<(gint)Natoms;i++)
 	{
 		ni = geometry[i].N-1;
@@ -8757,12 +8841,146 @@ void delete_all_selected_atoms()
 	Ddef = FALSE;
 	reset_charges_multiplicities();
 }
+/********************************************************************************/
+static void rotate_frag_for_set_its_principal_axes_to_xyz(gboolean sel)
+{
+	gdouble **m0 = NULL;
+	gdouble** minv;
+	gint i,j;
+	guint n;
+
+	gdouble A[3];
+	gdouble B[3];
+	guint k;
+	gdouble* X;
+	gdouble* Y;
+	gdouble* Z;
+	gdouble axis1[3] = {1,0,0};
+	gdouble axis2[3] = {0,1,0};
+	gdouble axis3[3] = {0,0,1};
+	gdouble C[3] = {0,0,0};
+	gint nFrag = 0;
+
+	if(Natoms<1) return;
+	nFrag = compute_fragment_principal_axes(axis1,axis2,axis3,C,sel);
+	if(nFrag <2 ) return;
+	printf("nFrag = %d\n",nFrag);
+
+	m0 = g_malloc(3*sizeof(gdouble*));
+	X = g_malloc(Natoms*sizeof(gdouble));
+	Y = g_malloc(Natoms*sizeof(gdouble));
+	Z = g_malloc(Natoms*sizeof(gdouble));
+
+	for(i=0;i<3;i++) m0[i] = g_malloc(3*sizeof(gdouble));
+
+
+	m0[0][0] = axis1[0];
+	m0[0][1] = axis1[1];
+	m0[0][2] = axis1[2];
+
+	m0[1][0] = axis2[0];
+	m0[1][1] = axis2[1];
+	m0[1][2] = axis2[2];
+
+	m0[2][0] = axis3[0];
+	m0[2][1] = axis3[1];
+	m0[2][2] = axis3[2];
+
+	minv = Inverse(m0,3,1e-7);
+
+	for(n = 0;n<Natoms;n++)
+	{
+		if(if_selected(n)!=sel) continue;
+		A[0] = geometry[n].X-C[0];
+		A[1] = geometry[n].Y-C[1];
+		A[2] = geometry[n].Z-C[2];
+
+		for(j=0;j<3;j++)
+		{
+			B[j] = 0.0;
+			for(k=0;k<3;k++)
+				B[j] += minv[k][j]*A[k];
+		}
+
+		X[n] = B[0]+C[0];
+		Y[n] = B[1]+C[1];
+		Z[n] = B[2]+C[2];
+	}
+	for(n = 0;n<Natoms;n++)
+	{
+		if(if_selected(n)!=sel) 
+		{
+			geometry0[n].X = geometry[n].X;
+			geometry0[n].Y = geometry[n].Y;
+			geometry0[n].Z = geometry[n].Z;
+		}
+		else
+		{
+			geometry0[n].X = X[n];
+			geometry0[n].Y = Y[n];
+			geometry0[n].Z = Z[n];
+
+			geometry[n].X = X[n];
+			geometry[n].Y = Y[n];
+			geometry[n].Z = Z[n];
+		}
+	}
+	
+	if(minv!=m0)
+	{
+	for(i=0;i<3;i++) if(minv[i]) g_free(minv[i]);
+	if(minv) g_free(minv);
+	}
+
+	for(i=0;i<3;i++) if(m0[i]) g_free(m0[i]);
+	if(m0) g_free(m0);
+
+	if(X) g_free(X);
+	if(Y) g_free(Y);
+	if(Z) g_free(Z);
+}
+/*****************************************************************************/
+void alignPrincipalAxesOfSelectedAtomsToXYZ()
+{
+	add_geometry_to_fifo();
+	rotate_frag_for_set_its_principal_axes_to_xyz(TRUE);
+	create_GeomXYZ_from_draw_grometry();
+	init_quat(Quat);
+	dessine();
+	activate_edit_objects();
+}
+/*****************************************************************************/
+void alignSelectedAndNotSelectedAtoms()
+{
+	add_geometry_to_fifo();
+	move_the_center_of_selected_or_not_selected_atoms_to_origin(TRUE);
+	move_the_center_of_selected_or_not_selected_atoms_to_origin(FALSE);
+	/*
+	rotate_frag_for_set_its_principal_axes_to_xyz(TRUE);
+	rotate_frag_for_set_its_principal_axes_to_xyz(FALSE);
+	*/
+	create_GeomXYZ_from_draw_grometry();
+	init_quat(Quat);
+	dessine();
+	activate_edit_objects();
+}
 /*****************************************************************************/
 void deleteSelectedAtoms()
 {
 	add_geometry_to_fifo();
 	delete_all_selected_atoms();
+	create_GeomXYZ_from_draw_grometry();
 	dessine();
+	activate_edit_objects();
+}
+/*****************************************************************************/
+void moveCenterOfSelectedAtomsToOrigin()
+{
+	add_geometry_to_fifo();
+	move_the_center_of_selected_or_not_selected_atoms_to_origin(TRUE);
+	create_GeomXYZ_from_draw_grometry();
+	dessine();
+	activate_edit_objects();
 }
 /*****************************************************************************/
 void delete_hydrogen_atoms()
@@ -8852,6 +9070,7 @@ void delete_hydrogen_atoms()
 	reset_charges_multiplicities();
 	create_GeomXYZ_from_draw_grometry();
 	dessine();
+	activate_edit_objects();
 }
 /********************************************************************************/
 void deleteHydrogenAtoms()
@@ -8873,6 +9092,7 @@ void delete_selected_atoms()
 	if(NumSelectedAtom<0)
 		return;
 
+	add_geometry_to_fifo();
 	for(i=0;i<(gint)Natoms;i++)
 		if((gint)i==NumSelectedAtom)
 		{
@@ -9065,7 +9285,7 @@ void add_bond()
 	NumBatoms[0] = NumBatoms[1] = -1;
 }
 /*****************************************************************************/
-void rotation_geometry_quat(gfloat m[4][4])
+void rotation_geometry_quat(gdouble m[4][4])
 {
 	gdouble A[3];
 	gdouble B[3];
@@ -9120,7 +9340,7 @@ void rotation_geometry_quat(gfloat m[4][4])
 	define_coefs_pers();
 }
 /*****************************************************************************/
-void rotation_atom_quat(gint i,gfloat m[4][4])
+void rotation_atom_quat(gint i,gdouble m[4][4])
 {
 	gdouble A[3];
 	gdouble B[3];
@@ -9295,7 +9515,7 @@ void define_geometry()
 	Ddef = Dipole.def;
 	if(Ddef)
 	{
-		gfloat step[3] ={Dipole.Value[0]/(NDIVDIPOLE-1),Dipole.Value[1]/(NDIVDIPOLE-1),Dipole.Value[2]/(NDIVDIPOLE-1)};
+		gdouble step[3] ={Dipole.Value[0]/(NDIVDIPOLE-1),Dipole.Value[1]/(NDIVDIPOLE-1),Dipole.Value[2]/(NDIVDIPOLE-1)};
 		dipole[0][0] = -X0[0];
 		dipole[0][1] = -X0[1];
 		dipole[0][2] = -X0[2];
@@ -10642,7 +10862,7 @@ void dessine_dipole(gint i)
 /*****************************************************************************/
 void buildRotation()
 {
-	gfloat m[4][4];
+	gdouble m[4][4];
 	build_rotmatrix(m,Quat);
 	rotation_geometry_quat(m);
 }
@@ -11332,12 +11552,6 @@ void export_geometry(gchar* fileName, gchar* fileType)
 		cairo_surface_destroy(surface);
 		cairo_destroy(crExport);
 		crExport = NULL;
-		return;
-	}
-	else
-	if(!strcmp(fileType,"pov"))
-	{
-		export_to_povray(fileName);
 		return;
 	}
 }

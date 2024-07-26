@@ -88,6 +88,8 @@ static  GtkWidget* entryMopacMethod = NULL;
 static  GtkWidget* entryPCGamessMethod = NULL;
 static  GtkWidget* entryMopacHamiltonian = NULL;
 static  GtkWidget* entryAddMopacKeywords = NULL;
+static  GtkWidget* entryOrcaHamiltonian = NULL;
+static  GtkWidget* entryAddOrcaKeywords = NULL;
 static gint totalCharge = 0;
 static gint spinMultiplicity=1;
 
@@ -102,6 +104,7 @@ static  GtkWidget* entryFileName = NULL;
 
 /*********************************************************************************/
 static void addMopacOptions(GtkWidget *box, gchar* type);
+static void addOrcaOptions(GtkWidget *box, gchar* type);
 /*********************************************************************************/
 static void getMultiplicityName(gint multiplicity, gchar* buffer)
 {
@@ -575,7 +578,7 @@ static gboolean runOnePCGamess(gchar* fileNamePrefix, gchar* keyWords)
 		SAtomsProp prop = prop_atom_get(symbol);
 		fprintf(file,"%s %f %f %f %f\n", 
 			symbol,
-			(gfloat)prop.atomicNumber,
+			(gdouble)prop.atomicNumber,
 			geometry0[j].X*BOHR_TO_ANG,
 			geometry0[j].Y*BOHR_TO_ANG,
 			geometry0[j].Z*BOHR_TO_ANG
@@ -647,6 +650,302 @@ static gboolean runOnePCGamess(gchar* fileNamePrefix, gchar* keyWords)
 		str = g_strdup_printf(
 				"Sorry, I cannot read the output file :  %s"
 				" ; Check also the installation of PCGamess...",
+				fileNameOut
+				);
+		set_text_to_draw(str);
+		if(str) g_free(str);
+		dessine();
+    		while( gtk_events_pending() ) gtk_main_iteration();
+ 		if(fileNameIn) g_free(fileNameIn);
+ 		if(fileNameOut) g_free(fileNameOut);
+ 		if(fileNameSH) g_free(fileNameSH);
+		return FALSE;
+	}
+
+ 	if(fileNameIn) g_free(fileNameIn);
+ 	if(fileNameOut) g_free(fileNameOut);
+ 	if(fileNameSH) g_free(fileNameSH);
+	return TRUE;
+}
+/*****************************************************************************/
+static gboolean getEnergyOrca(gchar* fileNameOut, gdouble* energy)
+{
+	FILE* file = NULL;
+	gchar buffer[1024];
+	gchar* pdest = NULL;
+	gchar* energyTag = "FINAL SINGLE POINT ENERGY";
+
+ 	file = fopen(fileNameOut, "r");
+	if(!file) return FALSE;
+	 while(!feof(file))
+	 {
+		if(!fgets(buffer,BSIZE,file))break;
+		pdest = strstr( buffer, energyTag);
+		if(pdest &&sscanf(pdest+strlen(energyTag)+1,"%lf",energy)==1)
+		{
+			fclose(file);
+			*energy *=627.50944796;
+			return TRUE;
+		}
+	 }
+	fclose(file);
+	return FALSE;
+}
+/*****************************************************************************/
+static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
+{
+	FILE* file = NULL;
+	FILE* fileSH = NULL;
+	gchar* fileNameIn = NULL;
+	gchar* fileNameOut = NULL;
+	gchar* fileNameSH = NULL;
+	gchar multiplicityStr[100];
+	gchar buffer[1024];
+	gdouble energy = 0;
+	gint i;
+	gint nV;
+
+	if(!geometry0) return FALSE;
+#ifndef G_OS_WIN32
+	fileNameSH = g_strdup_printf("%sOne.sh",fileNamePrefix);
+#else
+	fileNameSH = g_strdup_printf("%sOne.bat",fileNamePrefix);
+#endif
+ 	fileSH = fopen(fileNameSH, "w");
+	if(!fileSH) return FALSE;
+#ifdef G_OS_WIN32
+	fprintf(fileSH,"@echo off\n");
+#endif
+
+	getMultiplicityName(spinMultiplicity, multiplicityStr);
+
+	fileNameIn = g_strdup_printf("%sOne.inp",fileNamePrefix);
+ 	file = fopen(fileNameIn, "w");
+	if(!file) 
+	{
+ 		if(fileNameIn) g_free(fileNameIn);
+ 		if(fileNameOut) g_free(fileNameOut);
+ 		if(fileNameSH) g_free(fileNameSH);
+		return FALSE;
+	}
+	fprintf(file,"# ======================================================\n");
+	fprintf(file,"#  Orca input file made in Gabedit\n"); 
+	fprintf(file,"# ======================================================\n");
+	fprintf(file,"! %s\n",keyWords);
+	if(MethodeGeom==GEOM_IS_XYZ)
+	{
+		fprintf(file,"* xyz %d   %d\n",totalCharge,spinMultiplicity);
+      		for (i=0;i<NcentersXYZ;i++)
+		{
+			gchar X[100];
+			gchar Y[100];
+			gchar Z[100];
+			sprintf(X,"%s",GeomXYZ[i].X);
+  			if(!test(GeomXYZ[i].X)) sprintf(X,"{%s}",GeomXYZ[i].X);
+			sprintf(Y,"%s",GeomXYZ[i].Y);
+  			if(!test(GeomXYZ[i].Y)) sprintf(Y,"{%s}",GeomXYZ[i].Y);
+			sprintf(Z,"%s",GeomXYZ[i].Z);
+  			if(!test(GeomXYZ[i].Z)) sprintf(Z,"{%s}",GeomXYZ[i].Z);
+
+			fprintf(file," %s  %s %s %s\n",GeomXYZ[i].Symb, X,Y,Z);
+		}
+		fprintf(file,"*\n");
+		nV = 0;
+        	if(NVariablesXYZ>0)
+        	for(i=0;i<NVariablesXYZ;i++)
+        	{
+        		if(VariablesXYZ[i].Used)
+			{
+				fprintf(file,"%cparams \n",'%');
+				nV++;
+				break;
+			}
+        	}
+        	for(i=0;i<NVariablesXYZ;i++)
+        	{
+        		if(VariablesXYZ[i].Used)
+			{
+  				fprintf(file," %s  %s\n",VariablesXYZ[i].Name,VariablesXYZ[i].Value);
+			}
+        	}
+		if(nV>0) fprintf(file," end #params\n");
+		if(nV>0) 
+		{
+			fprintf(file,"%cgeom Constraints\n",'%');
+      			for (i=0;i<NcentersXYZ;i++)
+			{
+  				if(!test(GeomXYZ[i].X) || !test(GeomXYZ[i].Y) || !test(GeomXYZ[i].Z)) 
+				{
+					fprintf(file,"  C {%d} C\n",i);
+				}
+			}
+			fprintf(file," end #Constraints\n");
+			fprintf(file," invertConstraints true\n");
+			fprintf(file," end #geom\n");
+		}
+	}
+	else
+	{
+		fprintf(file,"* int %d   %d\n",totalCharge,spinMultiplicity);
+        	for(i=0;i<NcentersZmat;i++)
+        	{
+        		if(Geom[i].Nentry>NUMBER_ENTRY_ANGLE)
+			{
+				gchar R[100];
+				gchar A[100];
+				gchar D[100];
+				sprintf(R,"%s",Geom[i].R);
+  				if(!test(Geom[i].R)) sprintf(R,"{%s}",Geom[i].R);
+				sprintf(A,"%s",Geom[i].Angle);
+  				if(!test(Geom[i].Angle)) sprintf(A,"{%s}",Geom[i].Angle);
+				sprintf(D,"%s",Geom[i].Dihedral);
+  				if(!test(Geom[i].Dihedral)) sprintf(D,"{%s}",Geom[i].Dihedral);
+
+				fprintf(file," %s  %s %s %s %s %s %s\n",
+						Geom[i].Symb,
+						Geom[i].NR,R,
+						Geom[i].NAngle,A,
+						Geom[i].NDihedral,D);
+			}
+			else
+        		if(Geom[i].Nentry>NUMBER_ENTRY_R)
+			{
+				gchar R[100];
+				gchar A[100];
+				sprintf(R,"%s",Geom[i].R);
+  				if(!test(Geom[i].R)) sprintf(R,"{%s}",Geom[i].R);
+				sprintf(A,"%s",Geom[i].Angle);
+  				if(!test(Geom[i].Angle)) sprintf(A,"{%s}",Geom[i].Angle);
+				fprintf(file," %s  %s %s %s %s\n",
+						Geom[i].Symb,
+						Geom[i].NR,R,
+						Geom[i].NAngle,A
+						);
+			}
+			else
+        		if(Geom[i].Nentry>NUMBER_ENTRY_0)
+			{
+				gchar R[100];
+				sprintf(R,"%s",Geom[i].R);
+  				if(!test(Geom[i].R)) sprintf(R,"{%s}",Geom[i].R);
+				fprintf(file," %s  %s %s\n",
+						Geom[i].Symb,
+						Geom[i].NR,R
+						);
+			}
+			else
+			{
+				fprintf(file," %s \n",
+						Geom[i].Symb
+						);
+			}
+        	}
+		fprintf(file,"*\n");
+		nV = 0;
+        	if(NVariables>0)
+        	for(i=0;i<NVariables;i++)
+        	{
+        		if(Variables[i].Used)
+			{
+				fprintf(file,"%cparams \n",'%');
+				nV++;
+				break;
+			}
+        	}
+        	for(i=0;i<NVariables;i++)
+        	{
+        		if(Variables[i].Used)
+			{
+  				fprintf(file," %s  %s\n",Variables[i].Name,Variables[i].Value);
+			}
+        	}
+		if(nV>0)
+        		fprintf(file," end #params\n");
+		if(nV>0) 
+		{
+			fprintf(file,"%cgeom Constraints\n",'%');
+      			for (i=0;i<NcentersZmat;i++)
+			{
+  				if(Geom[i].Nentry>=NUMBER_ENTRY_R && !test(Geom[i].R)) 
+				{
+					fprintf(file,"  B {%d %d} C\n",atoi(Geom[i].NR)-1,i);
+				}
+  				if(Geom[i].Nentry>=NUMBER_ENTRY_ANGLE && !test(Geom[i].Angle)) 
+				{
+					fprintf(file,"  A {%d %d %d} C\n",
+							atoi(Geom[i].NAngle)-1,
+							atoi(Geom[i].NR)-1,i);
+				}
+  				if(Geom[i].Nentry>NUMBER_ENTRY_ANGLE && !test(Geom[i].Dihedral)) 
+				{
+					fprintf(file,"  D {%d %d %d %d} C\n",
+							atoi(Geom[i].NDihedral)-1, 
+							atoi(Geom[i].NAngle)-1,
+							atoi(Geom[i].NR)-1,i);
+				}
+			}
+			fprintf(file," end #Constraints\n");
+			fprintf(file," invertConstraints true\n");
+			fprintf(file," end #geom\n");
+		}
+	}
+
+	fclose(file);
+	fileNameOut = g_strdup_printf("%sOne.out",fileNamePrefix);
+#ifndef G_OS_WIN32
+	if(!strcmp(NameCommandOrca,"orca") || !strcmp(NameCommandOrca,"nohup orca"))
+	{
+		fprintf(fileSH,"%s %s > %s\n",NameCommandOrca,fileNameIn,fileNameOut);
+		fprintf(fileSH,"exit\n");
+	}
+	else
+		fprintf(fileSH,"%s %s",NameCommandOrca,fileNameIn);
+#else
+	 if(!strcmp(NameCommandOrca,"orca") )
+	{
+		if(strstr(orcaDirectory,"\"")) fprintf(fileSH,"set PATH=%s;%cPATH%c\n",orcaDirectory,'%','%');
+		else fprintf(fileSH,"set PATH=\"%s\";%cPATH%c\n",orcaDirectory,'%','%');
+		fprintf(fileSH,"%s %s > %s\n",NameCommandOrca,fileNameIn,fileNameOut);
+		fprintf(fileSH,"exit\n");
+	}
+	else
+		fprintf(fileSH,"%s %s",NameCommandOrca,fileNameIn);
+#endif
+	fclose(fileSH);
+	{
+		gchar* str = NULL;
+		if(strstr(keyWords,"Opt")) str = g_strdup_printf("Minimization by Orca ... Please wait");
+		else str = g_strdup_printf("Computing of energy by Orca .... Please wait");
+		set_text_to_draw(str);
+		if(str) g_free(str);
+		dessine();
+    		while( gtk_events_pending() ) gtk_main_iteration();
+	}
+#ifndef G_OS_WIN32
+	sprintf(buffer,"chmod u+x %s",fileNameSH);
+	system(buffer);
+	system(fileNameSH);
+#else
+	sprintf(buffer,"\"%s\"",fileNameSH);
+	system(buffer);
+#endif
+	if(getEnergyOrca(fileNameOut,&energy))
+	{
+		gchar* str = NULL;
+
+		str = g_strdup_printf("Energy by Orca = %f", energy);
+		set_text_to_draw(str);
+		dessine();
+    		while( gtk_events_pending() ) gtk_main_iteration();
+		Waiting(1);
+		if(str) g_free(str);
+	}
+	else
+	{
+		gchar* str = NULL;
+		str = g_strdup_printf(
+				"Sorry, I cannot read the output file :  %s"
+				" ; Check also the installation of Orca...",
 				fileNameOut
 				);
 		set_text_to_draw(str);
@@ -792,6 +1091,25 @@ static void runSemiEmpirical(GtkWidget* Win, gpointer data, gchar* type, gchar* 
 		}
 		if(fileNamePrefix) g_free(fileNamePrefix);
 	}
+	else if(!strcmp(type,"OrcaEnergy") && keys)
+	{
+		gchar* fileNamePrefix = get_suffix_name_file(fileName);
+		if(runOneOrca(fileNamePrefix, keys))
+		{
+		}
+		if(fileNamePrefix) g_free(fileNamePrefix);
+	}
+	else if(!strcmp(type,"OrcaOptimize") && keys)
+	{
+		gchar* fileNamePrefix = get_suffix_name_file(fileName);
+		if(runOneOrca(fileNamePrefix, keys))
+		{
+			gchar* fileOut = g_strdup_printf("%sOne.out",fileNamePrefix);
+			find_energy_orca_output(fileOut);
+			if(fileOut) g_free(fileOut);
+		}
+		if(fileNamePrefix) g_free(fileNamePrefix);
+	}
 	else if(!strcmp(type,"AM1PCGamessEnergy"))
 	{
 		gchar* fileNamePrefix = get_suffix_name_file(fileName);
@@ -891,7 +1209,7 @@ static void runMopacEnergy(GtkWidget* Win, gpointer data)
 	G_CONST_RETURN gchar* model = gtk_entry_get_text(GTK_ENTRY(entryMopacHamiltonian));
 	G_CONST_RETURN gchar* addKeys = gtk_entry_get_text(GTK_ENTRY(entryAddMopacKeywords));
 	gchar* keys = g_strdup_printf("%s 1SCF %s",model,addKeys);
-	printf("addKeys = %s\n",addKeys);
+	/* printf("addKeys = %s\n",addKeys);*/
 	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
 	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
 	TotalCharges[0] = totalCharge;
@@ -905,7 +1223,7 @@ static void runMopacOptimize(GtkWidget* Win, gpointer data)
 	G_CONST_RETURN gchar* model = gtk_entry_get_text(GTK_ENTRY(entryMopacHamiltonian));
 	G_CONST_RETURN gchar* addKeys = gtk_entry_get_text(GTK_ENTRY(entryAddMopacKeywords));
 	gchar* keys = g_strdup_printf("%s XYZ AUX %s",model,addKeys);
-	printf("addKeys = %s\n",addKeys);
+	/* printf("addKeys = %s\n",addKeys);*/
 	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
 	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
 	TotalCharges[0] = totalCharge;
@@ -945,6 +1263,35 @@ static void runMopacScan(GtkWidget* Win, gpointer data)
 	TotalCharges[0] = totalCharge;
 	SpinMultiplicities[0] = spinMultiplicity;
 	runSemiEmpirical(Win, data, "MopacScan",keys);
+	if(keys) g_free(keys);
+}
+/*****************************************************************************/
+static void runOrcaEnergy(GtkWidget* Win, gpointer data)
+{
+
+	G_CONST_RETURN gchar* model = gtk_entry_get_text(GTK_ENTRY(entryOrcaHamiltonian));
+	G_CONST_RETURN gchar* addKeys = gtk_entry_get_text(GTK_ENTRY(entryAddOrcaKeywords));
+	gchar* keys = g_strdup_printf("%s %s",model,addKeys);
+	/* printf("addKeys = %s\n",addKeys);*/
+	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
+	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
+	TotalCharges[0] = totalCharge;
+	SpinMultiplicities[0] = spinMultiplicity;
+	runSemiEmpirical(Win, data, "OrcaEnergy", keys);
+	if(keys) g_free(keys);
+}
+/*****************************************************************************/
+static void runOrcaOptimize(GtkWidget* Win, gpointer data)
+{
+	G_CONST_RETURN gchar* model = gtk_entry_get_text(GTK_ENTRY(entryOrcaHamiltonian));
+	G_CONST_RETURN gchar* addKeys = gtk_entry_get_text(GTK_ENTRY(entryAddOrcaKeywords));
+	gchar* keys = g_strdup_printf("%s Opt %s",model,addKeys);
+	/* printf("addKeys = %s\n",addKeys);*/
+	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
+	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
+	TotalCharges[0] = totalCharge;
+	SpinMultiplicities[0] = spinMultiplicity;
+	runSemiEmpirical(Win, data, "OrcaOptimize",keys);
 	if(keys) g_free(keys);
 }
 /********************************************************************************/
@@ -1569,6 +1916,19 @@ static void AddOptionsDlg(GtkWidget *NoteBook, GtkWidget *win,gchar* type)
                   1,1);
 	addChargeSpin(vbox);
 /*----------------------------------------------------------------------------------*/
+	if(strstr(type,"Orca"))
+	{
+	i++;
+	j = 0;
+	vbox = gtk_vbox_new (FALSE, 0);
+	gtk_table_attach(GTK_TABLE(table),vbox,
+			j,j+6,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	addOrcaOptions(vbox, type);
+	}
+	else
 	if(strstr(type,"Mopac") && !strstr(type,"PM6") && !strstr(type,"AM1"))
 	{
 	i++;
@@ -1641,7 +2001,10 @@ static void AddOptionsDlg(GtkWidget *NoteBook, GtkWidget *win,gchar* type)
 	entryFileName = gtk_entry_new();
 	if(strstr(type,"AM1")) gtk_entry_set_text(GTK_ENTRY(entryFileName),"am1");
 	if(strstr(type,"PM6")) gtk_entry_set_text(GTK_ENTRY(entryFileName),"pm6");
-	else gtk_entry_set_text(GTK_ENTRY(entryFileName),"mopacFile");
+	else if(strstr(type,"Mopac")) gtk_entry_set_text(GTK_ENTRY(entryFileName),"mopacFile");
+	else if(strstr(type,"PCGamess")) gtk_entry_set_text(GTK_ENTRY(entryFileName),"pcgamessFile");
+	else if(strstr(type,"Orca")) gtk_entry_set_text(GTK_ENTRY(entryFileName),"orcaFile");
+	else gtk_entry_set_text(GTK_ENTRY(entryFileName),"myFile");
 	gtk_widget_set_size_request(GTK_WIDGET(entryFileName),(gint)(ScreenHeight*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),entryFileName, j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
@@ -1719,6 +2082,71 @@ static void addMopacOptions(GtkWidget *box, gchar* type)
 	if(strstr(type,"MopacScanAM1")) gtk_entry_set_text(GTK_ENTRY(entryMopacHamiltonian),"AM1");
 /*----------------------------------------------------------------------------------*/
 }
+/**********************************************************************/
+static GtkWidget *addOrcaHamiltonianToTable(GtkWidget *table, gint i)
+{
+	GtkWidget* entryOrcaHamiltonian = NULL;
+	GtkWidget* comboOrcaHamiltonian = NULL;
+	gint nlistHamiltonian = 2;
+	gchar* listHamiltonian[] = {"PM3","AM1"};
+
+	add_label_table(table,"Model",(gushort)i,0);
+	add_label_table(table,":",(gushort)i,1);
+	entryOrcaHamiltonian = addComboListToATable(table, listHamiltonian, nlistHamiltonian, i, 2, 1);
+	comboOrcaHamiltonian  = g_object_get_data(G_OBJECT (entryOrcaHamiltonian), "Combo");
+	gtk_widget_set_sensitive(entryOrcaHamiltonian, FALSE);
+
+
+	return comboOrcaHamiltonian;
+}
+/**********************************************************************/
+static void addOrcaOptions(GtkWidget *box, gchar* type)
+{
+	GtkWidget* frame;
+	GtkWidget* vboxFrame;
+	GtkWidget* comboOrcaHamiltonian = NULL;
+	GtkWidget* label = NULL;
+	GtkWidget *table = NULL;
+	gint i;
+	gint j;
+
+	table = gtk_table_new(2,5,FALSE);
+
+	frame = gtk_frame_new (NULL);
+	gtk_widget_show (frame);
+	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
+	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
+
+	vboxFrame = gtk_vbox_new (FALSE, 3);
+	gtk_widget_show (vboxFrame);
+	gtk_container_add (GTK_CONTAINER (frame), vboxFrame);
+	gtk_box_pack_start (GTK_BOX (vboxFrame), table, TRUE, TRUE, 0);
+/*----------------------------------------------------------------------------------*/
+	i = 0;
+	comboOrcaHamiltonian = addOrcaHamiltonianToTable(table, i);
+	entryOrcaHamiltonian = GTK_WIDGET(GTK_BIN(comboOrcaHamiltonian)->child);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	j = 0;
+	add_label_table(table,"Additional keywords",(gushort)i,(gushort)j);
+/*----------------------------------------------------------------------------------*/
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	j = 2;
+	entryAddOrcaKeywords = gtk_entry_new();
+	gtk_widget_set_size_request(GTK_WIDGET(entryAddOrcaKeywords),(gint)(ScreenHeight*0.2),-1);
+	gtk_table_attach(GTK_TABLE(table),entryAddOrcaKeywords, j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_entry_set_text(GTK_ENTRY(entryOrcaHamiltonian),"PM3");
+/*----------------------------------------------------------------------------------*/
+}
 /***********************************************************************/
 void semiEmpiricalDlg(gchar* type)
 {
@@ -1783,6 +2211,11 @@ void semiEmpiricalDlg(gchar* type)
 		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runMopacESP,GTK_OBJECT(Win));
 	else if(strstr(type,"MopacScan")!=NULL)
 		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runMopacScan,GTK_OBJECT(Win));
+	else if(!strcmp(type,"OrcaEnergy"))
+		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runOrcaEnergy,GTK_OBJECT(Win));
+	else if(!strcmp(type,"OrcaOptimize"))
+		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runOrcaOptimize,GTK_OBJECT(Win));
+
 	gtk_widget_show (button);
 
 	gtk_widget_show_all(Win);
@@ -2097,7 +2530,7 @@ static gboolean runOneOptPCGamess(SemiEmpiricalModel* geom, gdouble* energy, gch
 		SAtomsProp prop = prop_atom_get(symbol);
 		fprintf(file,"%s %f %f %f %f\n", 
 			symbol,
-			(gfloat)prop.atomicNumber,
+			(gdouble)prop.atomicNumber,
 			geom->molecule.atoms[j].coordinates[0],
 			geom->molecule.atoms[j].coordinates[1],
 			geom->molecule.atoms[j].coordinates[2]
@@ -2613,7 +3046,7 @@ static gboolean createPCGamessFiles(gint numberOfGeometries, SemiEmpiricalModel*
 			SAtomsProp prop = prop_atom_get(symbol);
 			fprintf(file,"%s %f %f %f %f\n", 
 				symbol,
-				(gfloat)prop.atomicNumber,
+				(gdouble)prop.atomicNumber,
 				geometries[i]->molecule.atoms[j].coordinates[0],
 				geometries[i]->molecule.atoms[j].coordinates[1],
 				geometries[i]->molecule.atoms[j].coordinates[2]

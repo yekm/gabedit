@@ -40,6 +40,7 @@ void read_geometries_conv_gaussian(GabeditFileChooser *SelecFile, gint response_
 void read_geometries_conv_molpro(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_mopac(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_mopac_scan(GabeditFileChooser *SelecFile, gint response_id);
+void read_geometries_conv_orca(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_qchem(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_gabedit(GabeditFileChooser *SelecFile, gint response_id);
 void read_geometries_conv_molden(GabeditFileChooser *SelecFile, gint response_id);
@@ -52,6 +53,7 @@ void find_energy_gamess_output_heat(gchar* fileName);
 void find_energy_gauss_output(gchar* fileName);
 void find_energy_mpqc_output(gchar* fileName);
 void find_energy_molpro_output(gchar* fileName);
+void find_energy_orca_output(gchar* fileName);
 void find_energy_qchem_output(gchar* fileName);
 void find_energy_mopac_aux(gchar* fileName);
 void find_energy_mopac_scan_output(gchar* fileName);

@@ -57,12 +57,12 @@ static void get_grid_from_qchem_file(gchar* fileName, gint numOfGrid)
 	gint i;
 	gint j;
 	gint k;
-	gfloat x;
-	gfloat y;
-	gfloat z;
-	gfloat v;
+	gdouble x;
+	gdouble y;
+	gdouble z;
+	gdouble v;
     	gboolean beg = TRUE;
-	gfloat scal;
+	gdouble scal;
 	gint n;
 	gint len = BSIZE;
 	gchar buffer[BSIZE];
@@ -77,7 +77,7 @@ static void get_grid_from_qchem_file(gchar* fileName, gint numOfGrid)
 	}
 
 	progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
-	scal = (gfloat)101/grid->N[2];
+	scal = (gdouble)101/grid->N[2];
 
  
 	while(!feof(file))
@@ -109,14 +109,14 @@ static void get_grid_from_qchem_file(gchar* fileName, gint numOfGrid)
 					grid = free_grid(grid);
 					return;
 				}
-				if( 3 != sscanf(buffer,"%f %f %f",&x, &y, &z) ) 
+				if( 3 != sscanf(buffer,"%lf %lf %lf",&x, &y, &z) ) 
 				{
 					Message("Sorry, I can not read grid from this file","Error",TRUE);
 					grid = free_grid(grid);
 					return;
 				}
 				v = atof(&buffer[13*3+(numOfGrid-1)*13]);
-				/* printf("x = %f y = %f z = %f v  %e\n",x,y,z,v);*/
+				/* printf("x = %lf y = %lf z = %lf v  %e\n",x,y,z,v);*/
 		
 				n++;
 				grid->point[k][j][i].C[0] = x;
@@ -213,8 +213,8 @@ static gboolean read_qchem_grid_limits(FILE* file)
 	gint i;
 	GridLimits limits;
 	gint N[3];
-	gfloat min[3]; 
-	gfloat max[3];
+	gdouble min[3]; 
+	gdouble max[3];
 
 	Ok = set_position_label(file,"$plots",buffer, len);
 	if(!Ok) Ok = set_position_label(file,"$PLOTS",buffer, len);
@@ -223,13 +223,13 @@ static gboolean read_qchem_grid_limits(FILE* file)
 	if(!fgets(buffer,len,file)) return FALSE;
 	/* x limits */
 	if(!fgets(buffer,len,file)) return FALSE;
-	if( 3!= sscanf(buffer,"%d %f %f",&N[0],&min[0],&max[0]) ) return FALSE;
+	if( 3!= sscanf(buffer,"%d %lf %lf",&N[0],&min[0],&max[0]) ) return FALSE;
 	/* y limits */
 	if(!fgets(buffer,len,file)) return FALSE;
-	if( 3!= sscanf(buffer,"%d %f %f",&N[1],&min[1],&max[1]) ) return FALSE;
+	if( 3!= sscanf(buffer,"%d %lf %lf",&N[1],&min[1],&max[1]) ) return FALSE;
 	/* z limits */
 	if(!fgets(buffer,len,file)) return FALSE;
-	if( 3!= sscanf(buffer,"%d %f %f",&N[2],&min[2],&max[2]) ) return FALSE;
+	if( 3!= sscanf(buffer,"%d %lf %lf",&N[2],&min[2],&max[2]) ) return FALSE;
 
 	if(N[0]<1 || N[1]<1 || N[2]<1 ) return FALSE;
 	
@@ -272,7 +272,7 @@ static gboolean read_qchem_geometry(FILE* file)
     		j++;
     		if(GeomOrb==NULL) GeomOrb=g_malloc(sizeof(TypeGeomOrb));
     		else GeomOrb=g_realloc(GeomOrb,(j+1)*sizeof(TypeGeomOrb));
-		if(5 != sscanf(buffer,"%d %s %f %f %f",&ii,buffer1, &GeomOrb[j-1].C[0], &GeomOrb[j-1].C[1], &GeomOrb[j-1].C[2]))
+		if(5 != sscanf(buffer,"%d %s %lf %lf %lf",&ii,buffer1, &GeomOrb[j-1].C[0], &GeomOrb[j-1].C[1], &GeomOrb[j-1].C[2]))
 		{
 			Ncenters = j;
 			g_free(GeomOrb);

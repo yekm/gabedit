@@ -187,7 +187,7 @@ void apply_ligth_positions(GtkWidget *Win,gpointer data)
 	G_CONST_RETURN gchar* temp;
 	gint i;
 	gint j;
-	gfloat v[3];
+	gdouble v[3];
 	
 	for(i=0;i<3;i++)
 	{
@@ -265,11 +265,11 @@ GtkWidget *create_light_positions_frame( GtkWidget *vboxall,gchar* title)
   	return frame;
 }
 /********************************************************************************/
-static void get_min_max_coord(gfloat* xmin, gfloat* xmax)
+static void get_min_max_coord(gdouble* xmin, gdouble* xmax)
 {
 	gint i,j;
-	gfloat min = 0;
-	gfloat max = 0;
+	gdouble min = 0;
+	gdouble max = 0;
 	if(!GeomOrb || Ncenters<1 )
 	{
 		*xmin = min;
@@ -297,8 +297,8 @@ static void set_camera_optimal(GtkWidget* Win,gpointer data)
 	GtkWidget* EntryZFar = (GtkWidget*)g_object_get_data(G_OBJECT (Win), "EntryZFar");
 	GtkWidget* EntryZoom = (GtkWidget*)g_object_get_data(G_OBJECT (Win), "EntryZoom");
 	gchar* temp;
-	gfloat min = 0;
-	gfloat max = 0;
+	gdouble min = 0;
+	gdouble max = 0;
 
 
 	get_min_max_coord(&min, &max);
@@ -307,7 +307,7 @@ static void set_camera_optimal(GtkWidget* Win,gpointer data)
 
 	temp    = g_strdup("1");
 	gtk_entry_set_text(GTK_ENTRY(EntryZNear),temp);
-	temp    = g_strdup_printf("%f",fabs(max-min)*5);
+	temp    = g_strdup_printf("%lf",fabs(max-min)*5);
 	gtk_entry_set_text(GTK_ENTRY(EntryZFar), temp);
 	temp    = g_strdup("1.0");
 	gtk_entry_set_text(GTK_ENTRY(EntryZoom),temp);
@@ -321,15 +321,16 @@ static void apply_camera(GtkWidget* Win,gpointer data)
 	GtkWidget* buttonPerspective = (GtkWidget*)g_object_get_data(G_OBJECT (Win), "ButtonPerspective");
 	G_CONST_RETURN gchar* temp;
 
-	gfloat zNear = 1;
-	gfloat zFar = 100;
-	gfloat Zoom = 45;
-	gfloat zn;
-	gfloat zf;
-	gfloat zo;
+	gdouble zNear = 1;
+	gdouble zFar = 100;
+	gdouble Zoom = 45;
+	gdouble zn;
+	gdouble zf;
+	gdouble zo;
+	gdouble aspect;
 	gboolean perspective;
 
-	get_camera_values(&zNear, &zFar, &Zoom, &perspective);
+	get_camera_values(&zNear, &zFar, &Zoom, &aspect, &perspective);
 
 	temp    = gtk_entry_get_text(GTK_ENTRY(EntryZNear));
 	zn = atof(temp);
@@ -380,16 +381,17 @@ static GtkWidget* create_camera_frame(GtkWidget* Win,GtkWidget *vbox)
 	GtkWidget *table = gtk_table_new(8,3,FALSE);
 	GtkWidget *hseparator;
 	gushort i;
-	gfloat zNear = 1;
-	gfloat zFar = 100;
-	gfloat Zoom = 45;
+	gdouble zNear = 1;
+	gdouble zFar = 100;
+	gdouble Zoom = 45;
+	gdouble aspect = 1;
 	gboolean perspective = TRUE;
   	GtkWidget* buttonPerspective;
   	GtkWidget* buttonNoPerspective;
 	GtkWidget* labelZFar;
 	GtkWidget* labelZNear;
 
-	get_camera_values(&zNear, &zFar, &Zoom, &perspective);
+	get_camera_values(&zNear, &zFar, &Zoom, &aspect, &perspective);
 
 	frame = gtk_frame_new (NULL);
 	gtk_widget_show (frame);
@@ -407,7 +409,7 @@ static GtkWidget* create_camera_frame(GtkWidget* Win,GtkWidget *vbox)
 	EntryZNear = gtk_entry_new();
 	add_widget_table(table,EntryZNear,i,2);
 	gtk_editable_set_editable((GtkEditable*)EntryZNear,TRUE);
-	gtk_entry_set_text (GTK_ENTRY (EntryZNear),g_strdup_printf("%f",zNear));
+	gtk_entry_set_text (GTK_ENTRY (EntryZNear),g_strdup_printf("%lf",zNear));
 /* ------------------------------------------------------------------*/
 	i = 5;
 	labelZFar = add_label_table(table," Distance from the viewer to the far clipping plane ",i,0);
@@ -415,7 +417,7 @@ static GtkWidget* create_camera_frame(GtkWidget* Win,GtkWidget *vbox)
 	EntryZFar = gtk_entry_new();
 	add_widget_table(table,EntryZFar,i,2);
 	gtk_editable_set_editable((GtkEditable*)EntryZFar,TRUE);
-	gtk_entry_set_text (GTK_ENTRY (EntryZFar),g_strdup_printf("%f",zFar));
+	gtk_entry_set_text (GTK_ENTRY (EntryZFar),g_strdup_printf("%lf",zFar));
 /* ------------------------------------------------------------------*/
 	i = 6;
 	add_label_table(table," Zoom factor ",i,0);
@@ -423,7 +425,7 @@ static GtkWidget* create_camera_frame(GtkWidget* Win,GtkWidget *vbox)
 	EntryZoom = gtk_entry_new();
 	add_widget_table(table,EntryZoom,i,2);
 	gtk_editable_set_editable((GtkEditable*)EntryZoom,TRUE);
-	gtk_entry_set_text (GTK_ENTRY (EntryZoom),g_strdup_printf("%f",1/Zoom*45.0));
+	gtk_entry_set_text (GTK_ENTRY (EntryZoom),g_strdup_printf("%lf",1/Zoom*45.0));
 /* ------------------------------------------------------------------*/
 	i=3;
 	buttonOptimal = gtk_button_new_with_label("Get Optimal values" );

@@ -1095,7 +1095,6 @@ GtkWidget* gabedit_xyplotwin_new(gchar* title)
 	gtk_widget_show(spin_vminor);
 
 
-	// Frame with the buttons to set the grids
 	frame_set_grids=gtk_frame_new("Set grids");
 	gtk_table_attach(GTK_TABLE(table2), frame_set_grids, 1, 2, 0, 1, GTK_FILL, GTK_FILL, 5, 1);
 	gtk_widget_show(frame_set_grids);

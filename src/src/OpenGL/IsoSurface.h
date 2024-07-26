@@ -21,7 +21,7 @@ DEALINGS IN THE SOFTWARE.
 
 typedef struct _Vertex
 {
-	gfloat C[4];
+	gdouble C[4];
 }Vertex;
 typedef struct _Triangle
 {
@@ -43,7 +43,7 @@ typedef struct _IsoSurface
 	Cube ***cube;
 	Grid *grid;
 }IsoSurface;
-IsoSurface* define_iso_surface(Grid* grid,gfloat isolevel, gboolean mapping);
+IsoSurface* define_iso_surface(Grid* grid,gdouble isolevel, gboolean mapping);
 IsoSurface* iso_free(IsoSurface* iso);
 
 #endif /* __GABEDIT_ISOSURFACE_H__ */

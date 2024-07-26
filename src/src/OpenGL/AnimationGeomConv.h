@@ -21,7 +21,7 @@ DEALINGS IN THE SOFTWARE.
 typedef struct _Atom
 {
 	gchar symbol[5];
-	gfloat C[3];
+	gdouble C[3];
 	gdouble partialCharge;
 	gdouble nuclearCharge;
 }Atom;
@@ -37,12 +37,12 @@ typedef struct _GeometryConvergence
 	GabEditTypeFile typeOfFile;
 	gint numberOfGeometries;
 	gint* numGeometry;
-	gfloat* energy;
-	gfloat* maxForce;
-	gfloat* rmsForce;
-	gfloat* maxStep;
-	gfloat* rmsStep;
-	gfloat velocity;
+	gdouble* energy;
+	gdouble* maxForce;
+	gdouble* rmsForce;
+	gdouble* maxStep;
+	gdouble* rmsStep;
+	gdouble velocity;
 	Geometry* geometries;
 	gchar** comments;
 }GeometryConvergence;

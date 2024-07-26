@@ -23,6 +23,8 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
 #include "../Utils/Constants.h"
+#include "../Utils/Zlm.h"
+#include "../Utils/MathFunctions.h"
 #include "../Geometry/GeomGlobal.h"
 #include "GeomDraw.h"
 #include "GLArea.h"
@@ -47,7 +49,7 @@ static void DefineMopacSphericalBasis(gchar** strbasis, gint* nums, gint* pqn, g
  gint i,k;
  gint c;
  CSTF *temp;
- Slm Stemp;
+ Zlm Stemp;
  gint n;
 
  NOrb = nrows;
@@ -56,34 +58,34 @@ static void DefineMopacSphericalBasis(gchar** strbasis, gint* nums, gint* pqn, g
  for(k=0;k<nrows;k++)
  {
 	i = nums[k]-1;
-	Stemp =  GetCoefSlm(0,0);
-	if(!strcmp(strbasis[k],"S")) Stemp =  GetCoefSlm(0,0);
-	else if(!strcmp(strbasis[k],"PZ")) Stemp =  GetCoefSlm(1,0);
-	else if(!strcmp(strbasis[k],"PX")) Stemp =  GetCoefSlm(1,1);
-	else if(!strcmp(strbasis[k],"PY")) Stemp =  GetCoefSlm(1,-1);
-	else if(!strcmp(strbasis[k],"Z2")) Stemp =  GetCoefSlm(2,0);
-	else if(!strcmp(strbasis[k],"XZ")) Stemp =  GetCoefSlm(2,1);
-	else if(!strcmp(strbasis[k],"YZ")) Stemp =  GetCoefSlm(2,-1);
-	else if(!strcmp(strbasis[k],"X2")) Stemp =  GetCoefSlm(2,2);
-	else if(!strcmp(strbasis[k],"XY")) Stemp =  GetCoefSlm(2,-2);
-	else if(!strcmp(strbasis[k],"Z3")) Stemp =  GetCoefSlm(3,0);
-	else if(!strcmp(strbasis[k],"XZ2")) Stemp =  GetCoefSlm(3,1);
-	else if(!strcmp(strbasis[k],"YZ2")) Stemp =  GetCoefSlm(3,-1);
-	else if(!strcmp(strbasis[k],"ZX2")) Stemp =  GetCoefSlm(3,2);
-	else if(!strcmp(strbasis[k],"XYZ")) Stemp =  GetCoefSlm(3,-2);
-	else if(!strcmp(strbasis[k],"X3")) Stemp =  GetCoefSlm(3,3);
-	else if(!strcmp(strbasis[k],"Y3")) Stemp =  GetCoefSlm(3,-3);
+	Stemp =  getZlm(0,0);
+	if(!strcmp(strbasis[k],"S")) Stemp =  getZlm(0,0);
+	else if(!strcmp(strbasis[k],"PZ")) Stemp =  getZlm(1,0);
+	else if(!strcmp(strbasis[k],"PX")) Stemp =  getZlm(1,1);
+	else if(!strcmp(strbasis[k],"PY")) Stemp =  getZlm(1,-1);
+	else if(!strcmp(strbasis[k],"Z2")) Stemp =  getZlm(2,0);
+	else if(!strcmp(strbasis[k],"XZ")) Stemp =  getZlm(2,1);
+	else if(!strcmp(strbasis[k],"YZ")) Stemp =  getZlm(2,-1);
+	else if(!strcmp(strbasis[k],"X2")) Stemp =  getZlm(2,2);
+	else if(!strcmp(strbasis[k],"XY")) Stemp =  getZlm(2,-2);
+	else if(!strcmp(strbasis[k],"Z3")) Stemp =  getZlm(3,0);
+	else if(!strcmp(strbasis[k],"XZ2")) Stemp =  getZlm(3,1);
+	else if(!strcmp(strbasis[k],"YZ2")) Stemp =  getZlm(3,-1);
+	else if(!strcmp(strbasis[k],"ZX2")) Stemp =  getZlm(3,2);
+	else if(!strcmp(strbasis[k],"XYZ")) Stemp =  getZlm(3,-2);
+	else if(!strcmp(strbasis[k],"X3")) Stemp =  getZlm(3,3);
+	else if(!strcmp(strbasis[k],"Y3")) Stemp =  getZlm(3,-3);
 
-	temp[k].N=Stemp.N;
+	temp[k].N=Stemp.numberOfCoefficients;
 	temp[k].NumCenter=i;
 	temp[k].Stf =g_malloc(temp[k].N*sizeof(STF));
-	for(n=0;n<Stemp.N;n++)
+	for(n=0;n<Stemp.numberOfCoefficients;n++)
 	{
 		temp[k].Stf[n].pqn   = pqn[k];
 		temp[k].Stf[n].Ex   = zetas[k];
 	   	temp[k].Stf[n].Coef = Stemp.lxyz[n].Coef;
-		/* printf("Coef Sph = %f l=%d %d %d\n", temp[k].Stf[n].Coef,Stemp.lxyz[n].l[0],Stemp.lxyz[n].l[1],Stemp.lxyz[n].l[2]);*/
-	   	temp[k].Stf[n].Coef *= pow(2*zetas[k],pqn[k]+0.5)/sqrt(fact[2*pqn[k]]);
+		/* printf("Coef Sph = %lf l=%d %d %d\n", temp[k].Stf[n].Coef,Stemp.lxyz[n].l[0],Stemp.lxyz[n].l[1],Stemp.lxyz[n].l[2]);*/
+	   	temp[k].Stf[n].Coef *= pow(2*zetas[k],pqn[k]+0.5)/sqrt(factorial(2*pqn[k]));
 	   	for(c=0;c<3;c++)
 	   	{
 	   		temp[k].Stf[n].C[c] = GeomOrb[i].C[c];
@@ -344,20 +346,20 @@ static gboolean set_ener_orbitals(gchar* FileName)
 	}
 	if(n>0)
 	{
-		EnerAlphaOrbitals = g_malloc(NOrb*sizeof(gfloat));
-		EnerBetaOrbitals = g_malloc(NOrb*sizeof(gfloat));
-		for(i=0;i<NOrb;i++) EnerAlphaOrbitals[i] = atof(str[i]);
-		for(i=0;i<NOrb;i++) EnerBetaOrbitals[i] = atof(str[i]);
+		EnerAlphaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+		EnerBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+		for(i=0;i<NOrb;i++) EnerAlphaOrbitals[i] = atof(str[i])/AUTOEV;
+		for(i=0;i<NOrb;i++) EnerBetaOrbitals[i] = atof(str[i])/AUTOEV;
 	}
 	if(nAlpha>0)
 	{
-		EnerAlphaOrbitals = g_malloc(NOrb*sizeof(gfloat));
-		for(i=0;i<NOrb;i++) EnerAlphaOrbitals[i] = atof(strAlpha[i]);
+		EnerAlphaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+		for(i=0;i<NOrb;i++) EnerAlphaOrbitals[i] = atof(strAlpha[i])/AUTOEV;
 	}
 	if(nBeta>0)
 	{
-		EnerBetaOrbitals = g_malloc(NOrb*sizeof(gfloat));
-		for(i=0;i<NOrb;i++) EnerBetaOrbitals[i] = atof(strBeta[i]);
+		EnerBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+		for(i=0;i<NOrb;i++) EnerBetaOrbitals[i] = atof(strBeta[i])/AUTOEV;
 	}
 
 	if(file) fclose(file);
@@ -368,7 +370,7 @@ static gboolean set_ener_orbitals(gchar* FileName)
 	else return FALSE;
 }
 /********************************************************************************/
-static gboolean normalize_orbitals(gchar* FileName, gfloat**CoefOrbitals)
+static gboolean normalize_orbitals(gchar* FileName, gdouble**CoefOrbitals)
 {
 	gint nn;
 	gint N = NOrb*(NOrb+1)/2;
@@ -427,8 +429,8 @@ static gboolean set_occ_orbitals(gchar* FileName)
 	}
 	if(n>0)
 	{
-		OccAlphaOrbitals = g_malloc(NOrb*sizeof(gfloat));
-		OccBetaOrbitals = g_malloc(NOrb*sizeof(gfloat));
+		OccAlphaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+		OccBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
 		for(i=0;i<NOrb;i++) OccAlphaOrbitals[i] = atof(str[i]);
 		for(i=0;i<NOrb;i++) if(OccAlphaOrbitals[i]>=2) OccAlphaOrbitals[i] = 1;
 		for(i=0;i<NOrb;i++) OccBetaOrbitals[i] = atof(str[i]);
@@ -436,9 +438,9 @@ static gboolean set_occ_orbitals(gchar* FileName)
 	}
 	if(nAlpha>0 && nAlpha==nBeta)
 	{
-		OccAlphaOrbitals = g_malloc(NOrb*sizeof(gfloat));
+		OccAlphaOrbitals = g_malloc(NOrb*sizeof(gdouble));
 		for(i=0;i<NOrb;i++) OccAlphaOrbitals[i] = atof(strAlpha[i]);
-		OccBetaOrbitals = g_malloc(NOrb*sizeof(gfloat));
+		OccBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
 		for(i=0;i<NOrb;i++) OccBetaOrbitals[i] = atof(strBeta[i]);
 	}
 
@@ -534,10 +536,10 @@ static gboolean set_ener_orbitals_localized(gchar* FileName)
 	}
 	if(n>0)
 	{
-		EnerAlphaOrbitals = g_malloc(NOrb*sizeof(gfloat));
-		EnerBetaOrbitals = g_malloc(NOrb*sizeof(gfloat));
-		for(i=0;i<n;i++) EnerAlphaOrbitals[i] = atof(str[i]);
-		for(i=0;i<n;i++) EnerBetaOrbitals[i] = atof(str[i]);
+		EnerAlphaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+		EnerBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+		for(i=0;i<n;i++) EnerAlphaOrbitals[i] = atof(str[i])/AUTOEV;
+		for(i=0;i<n;i++) EnerBetaOrbitals[i] = atof(str[i])/AUTOEV;
 		for(i=n;i<NOrb;i++) EnerAlphaOrbitals[i] = 0.0;
 		for(i=n;i<NOrb;i++) EnerBetaOrbitals[i] = 0.0;
 
@@ -550,8 +552,8 @@ static gboolean set_ener_orbitals_localized(gchar* FileName)
 	}
 	if(nAlpha>0)
 	{
-		EnerAlphaOrbitals = g_malloc(NOrb*sizeof(gfloat));
-		for(i=0;i<nAlpha;i++) EnerAlphaOrbitals[i] = atof(strAlpha[i]);
+		EnerAlphaOrbitals = g_malloc(NOrb*sizeof(gdouble));
+		for(i=0;i<nAlpha;i++) EnerAlphaOrbitals[i] = atof(strAlpha[i])/AUTOEV;
 		for(i=nAlpha;i<NOrb;i++) EnerAlphaOrbitals[i] = 0.0;
 		if(SymAlphaOrbitals)
 		{
@@ -562,7 +564,7 @@ static gboolean set_ener_orbitals_localized(gchar* FileName)
 	}
 	if(nBeta>0)
 	{
-		EnerBetaOrbitals = g_malloc(NOrb*sizeof(gfloat));
+		EnerBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
 		for(i=0;i<nBeta;i++) EnerBetaOrbitals[i] = atof(strBeta[i]);
 		for(i=nBeta;i<NOrb;i++) EnerBetaOrbitals[i] = 0.0;
 		if(SymBetaOrbitals)
@@ -701,6 +703,8 @@ void read_mopac_orbitals(gchar* FileName)
 		set_status_label_info("Mol. Orb.","Nothing");
 		return;
 	}
+	if(Type) g_free(Type);
+	Type = NULL;
 	strbasis=read_basis_types_from_a_mopac_output_file(FileName, &nrs);
 	zetas = read_basis_zeta_from_a_mopac_output_file(FileName, &nZetas);
 	nums = read_basis_atomnums_from_a_mopac_output_file(FileName, &nNums);

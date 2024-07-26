@@ -1,4 +1,4 @@
-OBJECTS = SpectrumWin.o IRSpectrum.o RamanSpectrum.o UVSpectrum.o ECDSpectrum.o NMRSpectrum.o
+OBJECTS = SpectrumWin.o IRSpectrum.o RamanSpectrum.o UVSpectrum.o ECDSpectrum.o NMRSpectrum.o DOS.o
 
 include ../../CONFIG
 CFLAGS =  $(COMMONCFLAGS) $(GTKCFLAGS)

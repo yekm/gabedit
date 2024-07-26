@@ -39,6 +39,24 @@ DEALINGS IN THE SOFTWARE.
 
 
 /********************************************************************************/
+static gboolean degenerated_cylinder(Vertex*  v1, Vertex* v2)
+{
+	gdouble d = 0;
+	gint i;
+	for(i=0;i<3;i++)
+		d += (v1->C[i]-v2->C[i])*(v1->C[i]-v2->C[i]);
+	if(d<PRECISON_CYLINDER) return TRUE;
+	return FALSE;
+}
+/********************************************************************************/
+static gboolean degenerated_triangle(Vertex*  v1, Vertex* v2, Vertex*  v3)
+{
+	if(degenerated_cylinder(v1,v2))return TRUE;
+	if(degenerated_cylinder(v2,v3))return TRUE;
+	if(degenerated_cylinder(v3,v1))return TRUE;
+	return FALSE;
+}
+/********************************************************************************/
 static void save_pov_one_surface_wireframe(FILE* file, IsoSurface* iso, gdouble color[])
 {
 	gint i;
@@ -58,11 +76,17 @@ static void save_pov_one_surface_wireframe(FILE* file, IsoSurface* iso, gdouble 
 			{
 				for(n=0;n<iso->cube[i][j][k].Ntriangles;n++)
 				{
+					if(degenerated_triangle(
+						iso->cube[i][j][k].triangles[n].vertex[0],
+						iso->cube[i][j][k].triangles[n].vertex[1],
+						iso->cube[i][j][k].triangles[n].vertex[2]
+						)
+					) continue;
 						fprintf(file,"threeCylinders\n");
 						fprintf(file,"\t(\n");
 						for(c=0;c<3;c++)
 						{
-							fprintf(file,"\t<%f, %f, %f>,\n",
+							fprintf(file,"\t<%lf, %lf, %lf>,\n",
 								iso->cube[i][j][k].triangles[n].vertex[c]->C[0],
 								iso->cube[i][j][k].triangles[n].vertex[c]->C[1],
 								iso->cube[i][j][k].triangles[n].vertex[c]->C[2]
@@ -98,10 +122,10 @@ static void save_pov_one_surface_wireframe_colorMapped(FILE* file, IsoSurface* i
 	gint k;
 	gint c;
 	gint n;
-	gfloat value;
-	gfloat color[4];
-	gfloat color1[4];
-	gfloat color2[4];
+	gdouble value;
+	gdouble color[4];
+	gdouble color1[4];
+	gdouble color2[4];
 	gint m;
 	ColorMap* colorMap = get_colorMap_mapping_cube();
 	if(!iso) return;
@@ -116,30 +140,36 @@ static void save_pov_one_surface_wireframe_colorMapped(FILE* file, IsoSurface* i
 			{
 				for(n=0;n<iso->cube[i][j][k].Ntriangles;n++)
 				{
-						fprintf(file,"threeCylindersColor\n");
-						fprintf(file,"\t(\n");
-						for(c=0;c<3;c++)
-						{
-							fprintf(file,"\t<%f, %f, %f>,\n",
-								iso->cube[i][j][k].triangles[n].vertex[c]->C[0],
-								iso->cube[i][j][k].triangles[n].vertex[c]->C[1],
-								iso->cube[i][j][k].triangles[n].vertex[c]->C[2]
-						       );
-						}
-						for(c=0;c<3;c++)
-						{
-							value  = iso->cube[i][j][k].triangles[n].vertex[c]->C[3];
-							set_Color_From_colorMap(colorMap, color1, value);
-							value  = iso->cube[i][j][k].triangles[n].vertex[(c+1)%3]->C[3];
-							set_Color_From_colorMap(colorMap, color2, value);
-							for(m=0;m<3;m++) color[m] = (color1[m] + color2[m])/2;
+					if(degenerated_triangle(
+						iso->cube[i][j][k].triangles[n].vertex[0],
+						iso->cube[i][j][k].triangles[n].vertex[1],
+						iso->cube[i][j][k].triangles[n].vertex[2]
+						)
+					) continue;
+					fprintf(file,"threeCylindersColor\n");
+					fprintf(file,"\t(\n");
+					for(c=0;c<3;c++)
+					{
+						fprintf(file,"\t<%lf, %lf, %lf>,\n",
+							iso->cube[i][j][k].triangles[n].vertex[c]->C[0],
+							iso->cube[i][j][k].triangles[n].vertex[c]->C[1],
+							iso->cube[i][j][k].triangles[n].vertex[c]->C[2]
+					       );
+					}
+					for(c=0;c<3;c++)
+					{
+						value  = iso->cube[i][j][k].triangles[n].vertex[c]->C[3];
+						set_Color_From_colorMap(colorMap, color1, value);
+						value  = iso->cube[i][j][k].triangles[n].vertex[(c+1)%3]->C[3];
+						set_Color_From_colorMap(colorMap, color2, value);
+						for(m=0;m<3;m++) color[m] = (color1[m] + color2[m])/2;
 
-							fprintf(file,"\t<%f, %f, %f>,\n",
-								color[0],color[1], color[2]
-						       );
-						}
-						fprintf(file,"\twireFrameCylinderRadius\n");
-						fprintf(file,"\t)\n");
+						fprintf(file,"\t<%lf, %lf, %lf>,\n",
+							color[0],color[1], color[2]
+					       );
+					}
+					fprintf(file,"\twireFrameCylinderRadius\n");
+					fprintf(file,"\t)\n");
 				}
 			}
 		}
@@ -154,8 +184,8 @@ static void save_pov_one_surface_colorMapped(FILE* file, IsoSurface* iso)
 	gint k;
 	gint c;
 	gint n;
-	gfloat color[4];
-	gfloat value;
+	gdouble color[4];
+	gdouble value;
 	ColorMap* colorMap = get_colorMap_mapping_cube();
 	if(!iso) return;
 
@@ -172,7 +202,7 @@ static void save_pov_one_surface_colorMapped(FILE* file, IsoSurface* iso)
 						fprintf(file,"\tvertex_vectors{ 3,\n");
 						for(c=0;c<3;c++)
 						{
-							fprintf(file,"\t\t<%f, %f, %f>",
+							fprintf(file,"\t\t<%lf, %lf, %lf>",
 								iso->cube[i][j][k].triangles[n].vertex[c]->C[0],
 								iso->cube[i][j][k].triangles[n].vertex[c]->C[1],
 								iso->cube[i][j][k].triangles[n].vertex[c]->C[2]
@@ -184,7 +214,7 @@ static void save_pov_one_surface_colorMapped(FILE* file, IsoSurface* iso)
 						fprintf(file,"\tnormal_vectors{ 3,\n");
 						for(c=0;c<3;c++)
 						{
-							fprintf(file,"\t\t<%f, %f, %f>",
+							fprintf(file,"\t\t<%lf, %lf, %lf>",
 								iso->cube[i][j][k].triangles[n].Normal[c].C[0],
 								iso->cube[i][j][k].triangles[n].Normal[c].C[1],
 								iso->cube[i][j][k].triangles[n].Normal[c].C[2]
@@ -200,11 +230,11 @@ static void save_pov_one_surface_colorMapped(FILE* file, IsoSurface* iso)
 							set_Color_From_colorMap(colorMap, color, value);
 							if(TypeBlend == GABEDIT_BLEND_YES)
 							fprintf(file,
-							"\t\ttexture{pigment{rgb<%f,%f,%f> filter surfaceTransCoef} finish {ambient ambientCoef diffuse diffuseCoef specular specularCoef}}\n",
+							"\t\ttexture{pigment{rgb<%lf,%lf,%lf> filter surfaceTransCoef} finish {ambient ambientCoef diffuse diffuseCoef specular specularCoef}}\n",
 							color[0], color[1], color[2]);
 							else
 							fprintf(file,
-							"\t\ttexture{pigment{rgb<%f,%f,%f>} finish {ambient ambientCoef diffuse diffuseCoef specular specularCoef}}\n",
+							"\t\ttexture{pigment{rgb<%lf,%lf,%lf>} finish {ambient ambientCoef diffuse diffuseCoef specular specularCoef}}\n",
 							color[0], color[1], color[2]);
 						}
 						fprintf(file,"\t}\n");
@@ -223,7 +253,17 @@ static void save_pov_one_surface_default(FILE* file, IsoSurface* iso, gdouble co
 	gint k;
 	gint c;
 	gint n;
+	gint nt = 0;
 	if(!iso) return;
+
+	if(iso->N[0]<4) return;
+	if(iso->N[1]<4) return;
+	if(iso->N[2]<4) return;
+	for(i=1;i<iso->N[0]-2;i++)
+		for(j=1;j<iso->N[1]-2;j++)
+			for(k=1;k<iso->N[2]-2;k++)
+				nt += iso->cube[i][j][k].Ntriangles;
+	if(nt<1) return;
 
 	fprintf(file,"mesh{\n");
 
@@ -239,7 +279,7 @@ static void save_pov_one_surface_default(FILE* file, IsoSurface* iso, gdouble co
 						fprintf(file,"\t{\n");
 						for(c=0;c<3;c++)
 						{
-							fprintf(file,"\t<%f, %f, %f>, <%f, %f,%f>",
+							fprintf(file,"\t<%lf, %lf, %lf>, <%lf, %lf,%lf>",
 								iso->cube[i][j][k].triangles[n].vertex[c]->C[0],
 								iso->cube[i][j][k].triangles[n].vertex[c]->C[1],
 								iso->cube[i][j][k].triangles[n].vertex[c]->C[2],

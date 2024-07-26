@@ -19,41 +19,27 @@ DEALINGS IN THE SOFTWARE.
 #ifndef __GABEDIT_UTILSORB_H__
 #define __GABEDIT_UTILSORB_H__
 
+void glMaterialdv(GLenum face, GLenum pname, const GLdouble*  	params);
+void glLightdv(GLenum face, GLenum pname, const GLdouble* params);
+void glFogdv(GLenum pname, const GLdouble* params);
 void InitializeAll();
-gfloat** CreateTable2(gint N);
-gfloat** FreeTable2(gfloat **T,gint N);
 gint GetTotalNelectrons();
 gdouble GetSumAbsCharges();
 void DefineNOccs();
-gfloat Dpn(gfloat e,gint n);
-Slm GetCoefSlm(gint l, gint m);
-void printCoefSlm();
-gdouble slmGetValue(Slm* slm, gdouble x, gdouble y, gdouble z);
+gdouble Dpn(gdouble e,gint n);
 char GetSymmetry(gint l);
 gint GetNelectrons(char *symb);
 void printLineChar(char c,gint n);
-gint m1p(gint i);
-gfloat Norme(GTF p);
-gfloat dpn(gfloat e,gint n);
-void Normalise(GTF* p);
-void NormaliseRadial(GTF*p);
-void NormaliseCGTF(CGTF*p);
-void CalculFact();
-void CalculFfact();
-void CalculFF();
-void CalculCIJ();
-gfloat SpqSansNorm(GTF p,GTF q);
-gfloat Spq(GTF p,GTF q);
-gfloat **CalculSm12(gfloat *S,gint n,gint nvec);
-gfloat** CreateTable2(gint N);
-gfloat** FreeTable2(gfloat **T,gint N);
-void PrintAllOrb(gfloat** M);
-gint get_type_file(gchar *NomFichier);
-gint get_type_basis_in_gamess_file(gchar *NomFichier);
-gint get_type_basis_in_gaussian_file(gchar *NomFichier);
-gint get_type_basis_in_qchem_file(gchar *NomFichier);
-gint get_type_basis_in_gabedit_file(gchar *NomFichier);
-gint get_type_basis_in_molden_file(gchar *NomFichier);
+gdouble **CalculSm12(gdouble *S,gint n,gint nvec);
+gdouble** CreateTable2(gint N);
+gdouble** FreeTable2(gdouble **T,gint N);
+void PrintAllOrb(gdouble** M);
+gint get_type_file(gchar *fileName);
+gint get_type_basis_in_gamess_file(gchar *fileName);
+gint get_type_basis_in_gaussian_file(gchar *fileName);
+gint get_type_basis_in_qchem_file(gchar *fileName);
+gint get_type_basis_in_gabedit_file(gchar *fileName);
+gint get_type_basis_in_molden_file(gchar *fileName);
 gboolean testi(char c);
 gboolean this_is_a_real(gchar *t);
 gboolean this_is_a_integer(gchar *t);
@@ -64,10 +50,9 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar *title);
 void create_grid(gchar* title);
 void read_any_file(gchar* FileName);
 gint get_number_of_point(GtkWidget* Entry);
-gboolean get_a_float(GtkWidget* Entry,gfloat* value, gchar* erroMessage);
+gboolean get_a_float(GtkWidget* Entry,gdouble* value, gchar* erroMessage);
 void initialise_global_orbitals_variables();
 void close_window_orb(GtkWidget*win, gpointer data);
-gboolean to_cgtf_is_id(CGTF t1,CGTF t2);
 void add_glarea_child(GtkWidget* winchild,gchar* title);
 void create_color_surfaces_file();
 void read_color_surfaces_file();
@@ -76,6 +61,7 @@ void read_opengl_file();
 void create_grid_sas(gchar* title);
 void set_scale_ball_stick_dlg();
 void createColorMapOptionsWindow(GtkWidget* win);
+void create_grid_ELF_Dens_analyze(gboolean ongrid);
 
 #endif /* __GABEDIT_UTILSORB_H__ */
 

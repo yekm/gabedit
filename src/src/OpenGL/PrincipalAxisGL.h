@@ -2,10 +2,10 @@
 #ifndef __GABEDIT_PRINCIPALAXISGL_H__
 #define __GABEDIT_PRINCIPALAXISGL_H__
 
-void getPrincipalAxisInertias(gfloat* I);
-void getPrincipalAxisProperties(gboolean* show, gboolean* negative, gboolean* def, gfloat origin[], gfloat* radius, gfloat* scal,
-		gfloat firstVector[],gfloat secondVector[], gfloat thirdVector[],
-		gfloat firstColor[],gfloat secondColor[], gfloat thirdColor[]);
+void getPrincipalAxisInertias(gdouble* I);
+void getPrincipalAxisProperties(gboolean* show, gboolean* negative, gboolean* def, gdouble origin[], gdouble* radius, gdouble* scal,
+		gdouble firstVector[],gdouble secondVector[], gdouble thirdVector[],
+		gdouble firstColor[],gdouble secondColor[], gdouble thirdColor[]);
 void initPrincipalAxisGL();
 void save_principal_axis_properties();
 void read_principal_axis_properties();

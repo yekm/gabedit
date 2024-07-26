@@ -53,9 +53,9 @@ static GtkWidget* ButtonL = NULL;
 static GtkWidget* ButtonD = NULL;
 static int nbuffer = 0;
 static int ibuffer = 0;
-static gfloat phiBuffer[ 4 ];
-static gfloat psiBuffer[ 4 ];
-static gfloat omegaBuffer[ 4 ];
+static gdouble phiBuffer[ 4 ];
+static gdouble psiBuffer[ 4 ];
+static gdouble omegaBuffer[ 4 ];
 
 static gchar conf[30];
 static gint lastFragNumber = -1;

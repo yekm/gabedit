@@ -19,6 +19,7 @@ DEALINGS IN THE SOFTWARE.
 
 
 #include "../../Config.h"
+#include <ctype.h>
 #include "GlobalOrb.h"
 #include "StatusOrb.h"
 #include "UtilsOrb.h"
@@ -41,16 +42,17 @@ typedef struct _DataRow
 static gint numberOfOrbitals = 0;
 static gint totalNumberOfGrids = 0;
 static gchar** labelsSymmetry = NULL;
-static gfloat* occupations = NULL;
-static gfloat* energies = NULL;
+static gdouble* occupations = NULL;
+static gdouble* energies = NULL;
 static gint* numGridOfOrbitals = NULL;
 static gint selectedRow = -1;
 static	gint N[3];
-static	gfloat XYZ0[3]={0.0,0.0,0.0};
-static	gfloat    X[3]={0.0,0.0,0.0};
-static	gfloat    Y[3]={0.0,0.0,0.0};
-static	gfloat    Z[3]={0.0,0.0,0.0};
+static	gdouble XYZ0[3]={0.0,0.0,0.0};
+static	gdouble    X[3]={0.0,0.0,0.0};
+static	gdouble    Y[3]={0.0,0.0,0.0};
+static	gdouble    Z[3]={0.0,0.0,0.0};
 static  gchar molcasgridFileName[2048];
+static gdouble version = 0.0;
 
 /**************************************************************/
 static void free_molcasgrid_orb()
@@ -76,7 +78,7 @@ static void free_molcasgrid_orb()
 
 }
 /**************************************************************/
-static gint read_one_block(FILE* file,gfloat* block, gint nMaxBlocK, gint nOld)
+static gint read_one_block(FILE* file,gdouble* block, gint nMaxBlocK, gint nOld)
 {
 	gint len = BSIZE;
 	gchar buffer[BSIZE];
@@ -87,7 +89,7 @@ static gint read_one_block(FILE* file,gfloat* block, gint nMaxBlocK, gint nOld)
 		if(!fgets(buffer,len,file))return n;
 		/* printf("%s",buffer);*/
 		if(strstr(buffer,"Title")) return n;
-		if(1 != sscanf(buffer,"%f",&block[n])) return 0;
+		if(1 != sscanf(buffer,"%lf",&block[n])) return 0;
 		n++;
 		if(nMaxBlocK<=n)break;
 	}
@@ -107,7 +109,7 @@ static gint advance_one_block(FILE* file)
 	return -1;
 }
 /********************************************************************************/
-static gboolean get_values_from_molcasgrid_file(FILE* file,gfloat V[], gint nMaxBlock, gint numGrid)
+static gboolean get_values_from_molcasgrid_file(FILE* file,gdouble V[], gint nMaxBlock, gint numGrid)
 {
 	gint k = 0;
 	gint kOld = 0;
@@ -156,24 +158,24 @@ static void get_grid_from_molcasgrid_file(FILE* file,gint numOfGrid)
 	gint i;
 	gint j;
 	gint k;
-	gfloat x;
-	gfloat y;
-	gfloat z;
-	gfloat v;
+	gdouble x;
+	gdouble y;
+	gdouble z;
+	gdouble v;
     	gboolean beg = TRUE;
-	gfloat scal;
-	gfloat* V;
+	gdouble scal;
+	gdouble* V;
 	gint n;
 	gint nMaxBlock = 0;
 	gint len = BSIZE;
 	gchar buffer[BSIZE];
 
 	progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
-	scal = (gfloat)101/grid->N[0];
+	scal = (gdouble)101/grid->N[0];
 
  
 	nMaxBlock = N[0]*N[1]*N[2];
-	V = g_malloc((nMaxBlock+6)*sizeof(gfloat));
+	V = g_malloc((nMaxBlock+6)*sizeof(gdouble));
 	if(!set_position_label(file,"Title", buffer, len))
 	{
 		Message("Sorry, I can not read grid from this file","Error",TRUE);
@@ -187,11 +189,54 @@ static void get_grid_from_molcasgrid_file(FILE* file,gint numOfGrid)
 		return;
 	}
 	n = -1;
+	/* Grid Molcas 7 */
+	if(fabs(version)>1e-8)
 	for(i=0;i<grid->N[0];i++)
 	{
 	for(j=0;j<grid->N[1];j++)
 	{
 	for(k=0;k<grid->N[2];k++)
+	{
+				x = XYZ0[0] + i*X[0] + j*X[1] +  k*X[2]; 
+				y = XYZ0[1] + i*Y[0] + j*Y[1] +  k*Y[2]; 
+				z = XYZ0[2] + i*Z[0] + j*Z[1] +  k*Z[2]; 
+		
+				n++;
+				v = V[n];
+				grid->point[i][j][k].C[0] = x;
+				grid->point[i][j][k].C[1] = y;
+				grid->point[i][j][k].C[2] = z;
+				grid->point[i][j][k].C[3] = v;
+				if(beg)
+				{
+					beg = FALSE;
+        				grid->limits.MinMax[0][3] =  v;
+        				grid->limits.MinMax[1][3] =  v;
+				}
+                		else
+				{
+        				if(grid->limits.MinMax[0][3]>v)
+        					grid->limits.MinMax[0][3] =  v;
+        				if(grid->limits.MinMax[1][3]<v)
+        					grid->limits.MinMax[1][3] =  v;
+				}
+			}
+		}
+		if(CancelCalcul) 
+		{
+			progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
+			break;
+		}
+
+		progress_orb(scal,GABEDIT_PROGORB_READGRID,FALSE);
+	}
+	/* M2Msi Molcas 6 */
+	else
+	for(k=0;k<grid->N[2];k++)
+	{
+	for(j=0;j<grid->N[1];j++)
+	{
+	for(i=0;i<grid->N[0];i++)
 	{
 				x = XYZ0[0] + i*X[0] + j*X[1] +  k*X[2]; 
 				y = XYZ0[1] + i*Y[0] + j*Y[1] +  k*Y[2]; 
@@ -417,8 +462,8 @@ static GtkWidget* create_gtk_list_orbitals()
 	{
 		DataRow* data = g_malloc(sizeof(DataRow));
 		List[0] = g_strdup_printf("%i",i+1);
-		List[1] = g_strdup_printf("%f",energies[i]);
-		List[2] = g_strdup_printf("%f",occupations[i]);
+		List[1] = g_strdup_printf("%lf",energies[i]);
+		List[2] = g_strdup_printf("%lf",occupations[i]);
 		List[3] = g_strdup(labelsSymmetry[i]);
 		data->numGrid = numGridOfOrbitals[i];
 		data->totalNumberOfGrids = totalNumberOfGrids;
@@ -539,8 +584,8 @@ static gboolean read_info_orbitals(FILE* file)
 	numberOfOrbitals = read_one_integer(file,"N_of_MO=",buffer,len);
 	if(numberOfOrbitals<1) return FALSE;
 
-	occupations = g_malloc(numberOfOrbitals*sizeof(gfloat));
-	energies = g_malloc(numberOfOrbitals*sizeof(gfloat));
+	occupations = g_malloc(numberOfOrbitals*sizeof(gdouble));
+	energies = g_malloc(numberOfOrbitals*sizeof(gdouble));
 	numGridOfOrbitals =  g_malloc(numberOfOrbitals*sizeof(gint));
 	labelsSymmetry = g_malloc(numberOfOrbitals*sizeof(gchar*));
 
@@ -571,18 +616,18 @@ static gboolean read_info_orbitals(FILE* file)
 		if(strstr(buffer,"GridName="))
 		{
 			gchar* pos = strstr(buffer,"=")+1;
-			gfloat nt, et;
+			gdouble nt, et;
 			gchar st[BSIZE];
 			iGrid++;
 			if(iGrid>totalNumberOfGrids)break;
-			if( pos && 3 == sscanf(pos,"%s %f %f",st, &nt, &et))
+			if( pos && 3 == sscanf(pos,"%s %lf %lf",st, &nt, &et))
 			{
 				i++;
 				labelsSymmetry[i] = g_strdup(st);
 				energies[i] = et;
 				numGridOfOrbitals[i] = iGrid;
 				pos = strstr(buffer,"(")+1;
-				if(pos) sscanf(pos,"%f",&occupations[i]);
+				if(pos) sscanf(pos,"%lf",&occupations[i]);
 				/* this is a orbitals */
 			}
 			if(iGrid>=totalNumberOfGrids)break;
@@ -609,8 +654,8 @@ static gboolean read_info_orbitals(FILE* file)
 		if(i!=numberOfOrbitals)
 		{
 			numberOfOrbitals = i;
-			occupations = g_realloc(occupations, numberOfOrbitals*sizeof(gfloat));
-			energies = g_realloc(energies, numberOfOrbitals*sizeof(gfloat));
+			occupations = g_realloc(occupations, numberOfOrbitals*sizeof(gdouble));
+			energies = g_realloc(energies, numberOfOrbitals*sizeof(gdouble));
 			numGridOfOrbitals =  g_realloc(numGridOfOrbitals,numberOfOrbitals*sizeof(gint));
 			labelsSymmetry = g_realloc(labelsSymmetry,numberOfOrbitals*sizeof(gchar*));
 		}
@@ -619,13 +664,14 @@ static gboolean read_info_orbitals(FILE* file)
 	return TRUE;
 }
 /************************************************************************************************************/
-static gboolean read_molcasgrid_grid_limits(FILE* file, gint N[],gfloat XYZ0[], gfloat X[], gfloat Y[],gfloat Z[])
+static gboolean read_molcasgrid_grid_limits(FILE* file, gint N[],gdouble XYZ0[], gdouble X[], gdouble Y[],gdouble Z[], gdouble*version)
 {
 	gboolean Ok = TRUE;
 	gint len = BSIZE;
 	gchar buffer[BSIZE];
 	gint i;
 	gint nAll = 0;
+	*version = 0;
 
 	while(!feof(file) && Ok)
 	{
@@ -633,6 +679,11 @@ static gboolean read_molcasgrid_grid_limits(FILE* file, gint N[],gfloat XYZ0[], 
 		{
 			Ok = FALSE;
 			break;
+		}
+		if (strstr(buffer,"VERSION="))   
+		{
+			gchar* pos = strstr(buffer,"=")+1;
+			if(pos) *version = atof(pos);
 		}
 		if (strstr(buffer,"Net="))   
 		{
@@ -661,7 +712,7 @@ static gboolean read_molcasgrid_grid_limits(FILE* file, gint N[],gfloat XYZ0[], 
 			gchar* pos = strstr(buffer,"=")+1;
 			if(pos)
 			{
-				sscanf(pos,"%f %f %f",&XYZ0[0],&XYZ0[1],&XYZ0[2]);
+				sscanf(pos,"%lf %lf %lf",&XYZ0[0],&XYZ0[1],&XYZ0[2]);
 				nAll++;
 			}
 			else
@@ -675,7 +726,7 @@ static gboolean read_molcasgrid_grid_limits(FILE* file, gint N[],gfloat XYZ0[], 
 			gchar* pos = strstr(buffer,"=")+1;
 			if(pos)
 			{
-				gint n = sscanf(pos,"%f %f %f",&X[0],&X[1],&X[2]);
+				gint n = sscanf(pos,"%lf %lf %lf",&X[0],&X[1],&X[2]);
 				if(n !=3  || N[0]<2 || N[2]<2 || N[2]<2)
 				{
 				       	Ok = FALSE;
@@ -699,7 +750,7 @@ static gboolean read_molcasgrid_grid_limits(FILE* file, gint N[],gfloat XYZ0[], 
 			gchar* pos = strstr(buffer,"=")+1;
 			if(pos)
 			{
-				gint n = sscanf(pos,"%f %f %f",&Y[0],&Y[1],&Y[2]);
+				gint n = sscanf(pos,"%lf %lf %lf",&Y[0],&Y[1],&Y[2]);
 				if(n !=3  || N[0]<2 || N[2]<2 || N[2]<2)
 				{
 				       	Ok = FALSE;
@@ -723,7 +774,7 @@ static gboolean read_molcasgrid_grid_limits(FILE* file, gint N[],gfloat XYZ0[], 
 			gchar* pos = strstr(buffer,"=")+1;
 			if(pos)
 			{
-				gint n = sscanf(pos,"%f %f %f",&Z[0],&Z[1],&Z[2]);
+				gint n = sscanf(pos,"%lf %lf %lf",&Z[0],&Z[1],&Z[2]);
 				if(n !=3  || N[0]<2 || N[2]<2 || N[2]<2)
 				{
 				       	Ok = FALSE;
@@ -789,7 +840,7 @@ static gboolean read_molcasgrid_geometry(FILE* file)
 		{
 			if(!fgets(buffer,len,file))
 				return FALSE;
-			if(4 != sscanf(buffer,"%s %f %f %f",buffer1, &GeomOrb[i].C[0], &GeomOrb[i].C[1], &GeomOrb[i].C[2]))
+			if(4 != sscanf(buffer,"%s %lf %lf %lf",buffer1, &GeomOrb[i].C[0], &GeomOrb[i].C[1], &GeomOrb[i].C[2]))
 			{
 				g_free(GeomOrb);
 				return FALSE;
@@ -799,6 +850,8 @@ static gboolean read_molcasgrid_geometry(FILE* file)
 				if(testi(buffer1[j])) buffer1[j] =' ';
 			}
 			delete_all_spaces(buffer1);
+			if(strlen(buffer1)>1) buffer1[1] = tolower(buffer1[1]);
+			if(strlen(buffer1)>2) buffer1[2] = tolower(buffer1[2]);
 			GeomOrb[i].Symb = g_strdup(buffer1);
 			GeomOrb[i].Prop = prop_atom_get(GeomOrb[i].Symb);
 			GeomOrb[i].partialCharge = 0.0;
@@ -838,7 +891,7 @@ static void read_molcasgrid_orbitals_file(gchar* filename)
 		if(Ok)
 		{
 			fseek(file, 0L, SEEK_SET);
-			Ok = read_molcasgrid_grid_limits(file, N, XYZ0, X, Y, Z);
+			Ok = read_molcasgrid_grid_limits(file, N, XYZ0, X, Y, Z,&version);
 			if(!Ok)
 			{
 				free_data_all();
@@ -905,7 +958,7 @@ static void read_molcasgrid_density_file(gchar* filename)
 		if(totalNumberOfGrids>1)
 		{
 			fseek(file, 0L, SEEK_SET);
-			Ok = read_molcasgrid_grid_limits(file, N, XYZ0, X, Y, Z);
+			Ok = read_molcasgrid_grid_limits(file, N, XYZ0, X, Y, Z,&version);
 			if(!Ok)
 			{
 				free_data_all();

@@ -19,13 +19,13 @@ DEALINGS IN THE SOFTWARE.
 #ifndef __GABEDIT_ORBITALS_H__
 #define __GABEDIT_ORBITALS_H__
 
-GtkWidget *add_label_at_table(GtkWidget *Table,gchar *label,gushort line,gushort colonne,GtkJustification just);
+void destroy_win_list();
 void free_orbitals();
 void applygrid(GtkWidget *Win,gpointer data);
 void create_iso_orbitals();
 void create_grid_orbitals();
 void create_list_orbitals();
-void read_last_orbitals_in_gaussian_file(gchar *NomFichier);
+gboolean read_last_orbitals_in_gaussian_file(gchar *fileName,gint itype);
 void read_gauss_orbitals(gchar* FileName);
 void read_gabedit_orbitals(gchar* FileName);
 void read_molden_orbitals(gchar* FileName);
@@ -33,6 +33,8 @@ void read_dalton_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_gamess_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_gauss_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_molpro_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
+void read_orca_orbitals_sel_2mkl(GabeditFileChooser *SelecFile, gint response_id);
+void read_orca_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_qchem_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_mopac_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);
 void read_gabedit_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id);

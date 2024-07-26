@@ -52,6 +52,7 @@ DEALINGS IN THE SOFTWARE.
 #include <stdarg.h> 
 #include <pwd.h>
 #include <unistd.h> 
+#include <sys/times.h>
 #endif /* G_OS_WIN32 */
 
 #define DebugFlag 0
@@ -68,6 +69,19 @@ void save_principal_axis_properties();
 void read_principal_axis_properties();
 void initPrincipalAxisGL();
 
+
+/********************************************************************************/
+#ifndef G_OS_WIN32
+#define TIMER_TICK      60
+static clock_t it;
+static struct tms itt;
+void timing(double* cpu,double *sys)
+{
+	it=times(&itt);
+	*cpu=(double) itt.tms_utime / (double) TIMER_TICK;
+	*sys=(double) itt.tms_stime / (double) TIMER_TICK;
+}
+#endif
 #ifdef G_OS_WIN32
 /************************************************************************
 *  error : display an error message and possibly the last Winsock error *
@@ -161,6 +175,11 @@ void free_mpqc_commands()
 	free_commands_list(&mpqcCommands);
 }
 /********************************************************************************/
+void free_orca_commands()
+{
+	free_commands_list(&orcaCommands);
+}
+/********************************************************************************/
 void free_pcgamess_commands()
 {
 	free_commands_list(&pcgamessCommands);
@@ -174,6 +193,11 @@ void free_qchem_commands()
 void free_mopac_commands()
 {
 	free_commands_list(&mopacCommands);
+}
+/********************************************************************************/
+void free_povray_commands()
+{
+	free_commands_list(&povrayCommands);
 }
 /********************************************************************************/
 gchar* get_time_str()
@@ -1027,6 +1051,21 @@ void create_commands_file()
 	}
 	fprintf(fd,"End\n");
 /*-----------------------------------------------------------------------------*/
+	fprintf(fd,"Begin Orca\n");
+	str_delete_n(NameCommandOrca);
+	delete_last_spaces(NameCommandOrca);
+	delete_first_spaces(NameCommandOrca);
+ 	fprintf(fd,"%s\n",NameCommandOrca);
+ 	fprintf(fd,"%d\n",orcaCommands.numberOfCommands);
+	for(i=0;i<orcaCommands.numberOfCommands;i++)
+	{
+		str_delete_n(orcaCommands.commands[i]);
+		delete_last_spaces(orcaCommands.commands[i]);
+		delete_first_spaces(orcaCommands.commands[i]);
+		fprintf(fd,"%s\n",orcaCommands.commands[i]);
+	}
+	fprintf(fd,"End\n");
+/*-----------------------------------------------------------------------------*/
 	fprintf(fd,"Begin PCGamess\n");
 	str_delete_n(NameCommandPCGamess);
 	delete_last_spaces(NameCommandPCGamess);
@@ -1072,7 +1111,21 @@ void create_commands_file()
 	}
 	fprintf(fd,"End\n");
 /*-----------------------------------------------------------------------------*/
-
+	fprintf(fd,"Begin PovRay\n");
+	str_delete_n(NameCommandPovray);
+	delete_last_spaces(NameCommandPovray);
+	delete_first_spaces(NameCommandPovray);
+ 	fprintf(fd,"%s\n",NameCommandPovray);
+ 	fprintf(fd,"%d\n",povrayCommands.numberOfCommands);
+	for(i=0;i<povrayCommands.numberOfCommands;i++)
+	{
+		str_delete_n(povrayCommands.commands[i]);
+		delete_last_spaces(povrayCommands.commands[i]);
+		delete_first_spaces(povrayCommands.commands[i]);
+		fprintf(fd,"%s\n",povrayCommands.commands[i]);
+	}
+	fprintf(fd,"End\n");
+/*-----------------------------------------------------------------------------*/
 	fprintf(fd,"Begin Babel\n");
 	str_delete_n(babelCommand);
 	delete_last_spaces(babelCommand);
@@ -1085,6 +1138,13 @@ void create_commands_file()
 	delete_last_spaces(gamessDirectory);
 	delete_first_spaces(gamessDirectory);
 	fprintf(fd,"%s\n",gamessDirectory);
+	fprintf(fd,"End\n");
+
+	fprintf(fd,"Begin OrcaDir\n");
+	str_delete_n(orcaDirectory);
+	delete_last_spaces(orcaDirectory);
+	delete_first_spaces(orcaDirectory);
+	fprintf(fd,"%s\n",orcaDirectory);
 	fprintf(fd,"End\n");
 
 	fprintf(fd,"Begin PCGamessDir\n");
@@ -1106,6 +1166,13 @@ void create_commands_file()
 	delete_last_spaces(gaussDirectory);
 	delete_first_spaces(gaussDirectory);
 	fprintf(fd,"%s\n",gaussDirectory);
+	fprintf(fd,"End\n");
+
+	fprintf(fd,"Begin PovRayDir\n");
+	str_delete_n(povrayDirectory);
+	delete_last_spaces(povrayDirectory);
+	delete_first_spaces(povrayDirectory);
+	fprintf(fd,"%s\n",povrayDirectory);
 	fprintf(fd,"End\n");
 
 	fclose(fd);
@@ -1703,6 +1770,64 @@ void read_commands_file()
 	}
 /*-----------------------------------------------------------------------------*/
  	if(fgets(t,taille,fd))
+	if(!strstr(t,"Begin Orca"))
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd))
+	{
+ 		NameCommandOrca= g_strdup(t);
+		str_delete_n(NameCommandOrca);
+		delete_last_spaces(NameCommandOrca);
+		delete_first_spaces(NameCommandOrca);
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd) && atoi(t)>0)
+	{
+		free_orca_commands();
+		orcaCommands.numberOfCommands = atoi(t);
+		orcaCommands.commands = g_malloc(orcaCommands.numberOfCommands*sizeof(gchar*));
+		for(i=0;i<orcaCommands.numberOfCommands;i++)
+			orcaCommands.commands[i]  = g_strdup(" ");
+		for(i=0;i<orcaCommands.numberOfCommands;i++)
+		{
+			if(!fgets(t,taille,fd) || strstr(t,"End"))
+			{
+				free_orca_commands();
+  				orcaCommands.numberOfCommands = 1;
+  				orcaCommands.numberOfDefaultCommand = 0;
+  				orcaCommands.commands = g_malloc(sizeof(gchar*));
+  				orcaCommands.commands[0] = g_strdup("nohup orca");
+
+				fclose(fd);
+				return;
+			}
+			else
+			{
+				orcaCommands.commands[i] = g_strdup(t); 
+				str_delete_n(orcaCommands.commands[i]);
+				delete_last_spaces(orcaCommands.commands[i]);
+				delete_first_spaces(orcaCommands.commands[i]);
+			}
+		}
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(!fgets(t,taille,fd)) /* End of Orca */
+	{
+		fclose(fd);
+		return;
+	}
+/*-----------------------------------------------------------------------------*/
+ 	if(fgets(t,taille,fd))
 	if(!strstr(t,"Begin PCGamess"))
 	{
 		fclose(fd);
@@ -1877,6 +2002,64 @@ void read_commands_file()
 	}
 /*-----------------------------------------------------------------------------*/
  	if(fgets(t,taille,fd))
+	if(!strstr(t,"Begin PovRay"))
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd))
+	{
+ 		NameCommandPovray= g_strdup(t);
+		str_delete_n(NameCommandPovray);
+		delete_last_spaces(NameCommandPovray);
+		delete_first_spaces(NameCommandPovray);
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd) && atoi(t)>0)
+	{
+		free_povray_commands();
+		povrayCommands.numberOfCommands = atoi(t);
+		povrayCommands.commands = g_malloc(povrayCommands.numberOfCommands*sizeof(gchar*));
+		for(i=0;i<povrayCommands.numberOfCommands;i++)
+			povrayCommands.commands[i]  = g_strdup(" ");
+		for(i=0;i<povrayCommands.numberOfCommands;i++)
+		{
+			if(!fgets(t,taille,fd) || strstr(t,"End"))
+			{
+				free_povray_commands();
+  				povrayCommands.numberOfCommands = 1;
+  				povrayCommands.numberOfDefaultCommand = 0;
+  				povrayCommands.commands = g_malloc(sizeof(gchar*));
+  				povrayCommands.commands[0] = g_strdup("povray +A0.3 -UV");
+
+				fclose(fd);
+				return;
+			}
+			else
+			{
+				povrayCommands.commands[i] = g_strdup(t); 
+				str_delete_n(povrayCommands.commands[i]);
+				delete_last_spaces(povrayCommands.commands[i]);
+				delete_first_spaces(povrayCommands.commands[i]);
+			}
+		}
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(!fgets(t,taille,fd)) /* End of PovRay */
+	{
+		fclose(fd);
+		return;
+	}
+/*-----------------------------------------------------------------------------*/
+ 	if(fgets(t,taille,fd))
 	if(!strstr(t,"Begin Babel"))
 	{
 		fclose(fd);
@@ -1919,6 +2102,37 @@ void read_commands_file()
 		return;
 	}
  	if(!fgets(t,taille,fd)) /* End of GamessDir */
+	{
+		fclose(fd);
+		return;
+	}
+/*-----------------------------------------------------------------------------*/
+ 	if(fgets(t,taille,fd))
+	if(!strstr(t,"Begin OrcaDir"))
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd))
+	{
+ 		orcaDirectory= g_strdup(t);
+		str_delete_n(orcaDirectory);
+		delete_last_spaces(orcaDirectory);
+		delete_first_spaces(orcaDirectory);
+#ifdef G_OS_WIN32
+		{
+		gchar t[BSIZE];
+		sprintf(t,"%s;%cPATH%c",orcaDirectory,'%','%');
+		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
+		}
+#endif
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(!fgets(t,taille,fd)) /* End of OrcaDir */
 	{
 		fclose(fd);
 		return;
@@ -2016,6 +2230,37 @@ void read_commands_file()
 		fclose(fd);
 		return;
 	}
+/*-----------------------------------------------------------------------------*/
+ 	if(fgets(t,taille,fd))
+	if(!strstr(t,"Begin PovRayDir"))
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd))
+	{
+ 		povrayDirectory= g_strdup(t);
+		str_delete_n(povrayDirectory);
+		delete_last_spaces(povrayDirectory);
+		delete_first_spaces(povrayDirectory);
+#ifdef G_OS_WIN32
+		{
+		gchar t[BSIZE];
+		sprintf(t,"%s;%cPATH%c",povrayDirectory,'%','%');
+		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
+		}
+#endif
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(!fgets(t,taille,fd)) /* End of PovRayDir */
+	{
+		fclose(fd);
+		return;
+	}
  	fclose(fd);
  }
 }
@@ -2071,11 +2316,13 @@ void set_path()
 #ifdef G_OS_WIN32
 	{
 		gchar t[BSIZE];
-		sprintf(t,"%s;%s;%s;%s;%cPATH%c",
+		sprintf(t,"%s;%s;%s;%s;%s;%s;%cPATH%c",
+		orcaDirectory,
 		pcgamessDirectory,
 		mopacDirectory,
 		gaussDirectory,
 		pscpplinkDirectory,
+		povrayDirectory,
 		'%','%');
 		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
 	}
@@ -2423,7 +2670,9 @@ void initialise_name_commands()
 	NameCommandMPQC=g_strdup("mpqc");
 	NameCommandPCGamess=g_strdup("pcgamess");
 	NameCommandQChem=g_strdup("qc");
+	NameCommandOrca=g_strdup("orca");
 	NameCommandMopac=g_strdup("MOPAC2007");
+	NameCommandPovray=g_strdup("start /w pvengine /nr /exit /render +A0.3 -UV");
 #else
 	NameCommandGamess=g_strdup("submitGMS");
 	NameCommandGaussian=g_strdup("nohup g03");
@@ -2432,23 +2681,29 @@ void initialise_name_commands()
 	NameCommandMPQC=g_strdup("nohup mpqc");
 	NameCommandPCGamess=g_strdup("pcgamess");
 	NameCommandQChem=g_strdup("qchem");
+	NameCommandOrca=g_strdup("orca");
 	NameCommandMopac=g_strdup("/opt/mopac/MOPAC2007.out");
+	NameCommandPovray=g_strdup("povray +A0.3 -UV");
 #endif
 
 
 #ifdef G_OS_WIN32
 	babelCommand = g_strdup_printf("%s%sobabel.exe",g_get_current_dir(),G_DIR_SEPARATOR_S);
 	gamessDirectory= g_strdup_printf("C:%sWinGAMESS",G_DIR_SEPARATOR_S);
+	orcaDirectory= g_strdup_printf("C:%sORCA_DevCenter%sorca%sx86_exe%srelease%sOrca",G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
 	pcgamessDirectory= g_strdup_printf("C:%sPCGAMESS",G_DIR_SEPARATOR_S);
 	mopacDirectory= g_strdup_printf("\"C:%sProgram Files%sMOPAC\"",G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+	povrayDirectory= g_strdup_printf("\"C:%sProgram Files%sPovRay%sbin\"",G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
 	gaussDirectory= g_strdup_printf("\"C:%sG03W\"",G_DIR_SEPARATOR_S);
-	sprintf(t,"%s;%s;%s;%cPATH%c",pcgamessDirectory,mopacDirectory,gaussDirectory,'%','%');
+	sprintf(t,"%s;%s;%s;%s;%s;%cPATH%c",orcaDirectory,pcgamessDirectory,mopacDirectory,gaussDirectory,povrayDirectory,'%','%');
 	g_setenv("PATH",t,TRUE);
 #else
 	babelCommand=g_strdup("babel");
 	gamessDirectory= g_strdup_printf("%s%sGamess",g_get_home_dir(),G_DIR_SEPARATOR_S);
+	orcaDirectory= g_strdup_printf("%s%sOrca",g_get_home_dir(),G_DIR_SEPARATOR_S);
 	pcgamessDirectory= g_strdup_printf("%s%sPCGamess",g_get_home_dir(),G_DIR_SEPARATOR_S);
 	mopacDirectory= g_strdup_printf("/opt/mopac");
+	povrayDirectory= g_strdup_printf("/usr/local/bin");
 #endif
 }
 /*************************************************************************************/
@@ -2604,6 +2859,20 @@ void initialise_global_variables()
   mpqcCommands.commands[2] = g_strdup("mpqc");
 #endif
 
+	orcaCommands.numberOfCommands = 2;
+#ifdef G_OS_WIN32
+      orcaCommands.numberOfCommands = 3;
+#endif
+
+  orcaCommands.numberOfDefaultCommand = 0;
+  orcaCommands.commands = g_malloc(orcaCommands.numberOfCommands*sizeof(gchar*));
+  orcaCommands.commands[0] = g_strdup("nohup orca");
+  orcaCommands.commands[1] = g_strdup("submitOrca 1:0:0");
+#ifdef G_OS_WIN32
+  orcaCommands.commands[2] = g_strdup("orca");
+#endif
+
+
 	pcgamessCommands.numberOfCommands = 2;
 #ifdef G_OS_WIN32
       pcgamessCommands.numberOfCommands = 3;
@@ -2641,6 +2910,16 @@ void initialise_global_variables()
 #ifdef G_OS_WIN32
   mopacCommands.commands[2] = g_strdup("MOPAC2007");
 #endif
+
+	povrayCommands.numberOfCommands = 1;
+  povrayCommands.numberOfDefaultCommand = 0;
+  povrayCommands.commands = g_malloc(povrayCommands.numberOfCommands*sizeof(gchar*));
+#ifdef G_OS_WIN32
+  povrayCommands.commands[0] = g_strdup("start /w pvengine /nr /exit /render +A0.3 -UV");
+#else
+  povrayCommands.commands[0] = g_strdup("povray +A0.3 -UV");
+#endif
+
 
  
   initialise_batch_commands();
@@ -2988,7 +3267,7 @@ void get_dipole_from_gamess_output_file(FILE* fd)
 				{
 					gint i;
     					if(!fgets(t,taille,fd))break;
-					sscanf(t,"%f %f %f",&Dipole.Value[0],&Dipole.Value[1],&Dipole.Value[2]);
+					sscanf(t,"%lf %lf %lf",&Dipole.Value[0],&Dipole.Value[1],&Dipole.Value[2]);
 					for(i=0;i<3;i++) Dipole.Value[i] /= AUTODEB;
 					Dipole.def = TRUE;
 					break;
@@ -3030,11 +3309,11 @@ void get_dipole_from_gaussian_output_file(FILE* fd)
 			break;
 		Dipole.def = TRUE;
     		pdest = strstr( t, "X=")+2;
-		sscanf(pdest,"%f",&Dipole.Value[0]);
+		sscanf(pdest,"%lf",&Dipole.Value[0]);
     		pdest = strstr( t, "Y=")+2;
-		sscanf(pdest,"%f",&Dipole.Value[1]);
+		sscanf(pdest,"%lf",&Dipole.Value[1]);
     		pdest = strstr( t, "Z=")+2;
-		sscanf(pdest,"%f",&Dipole.Value[2]);
+		sscanf(pdest,"%lf",&Dipole.Value[2]);
 		/*
 		Debug("t =%s\n",t);
 		Debug("Dipole = %f %f %f\n",Dipole.Value[0],Dipole.Value[1],Dipole.Value[2]);
@@ -3078,7 +3357,7 @@ void get_dipole_from_molpro_output_file(FILE* fd)
 		{
 		Dipole.def = TRUE;
     		t2 = strstr( t1, ":")+2;
-		sscanf(t2,"%f %f %f",&Dipole.Value[0],&Dipole.Value[1],&Dipole.Value[2]);
+		sscanf(t2,"%lf %lf %lf",&Dipole.Value[0],&Dipole.Value[1],&Dipole.Value[2]);
 		/*
 		Debug("t =%s\n",t);
 		Debug("Dipole = %f %f %f\n",Dipole.Value[0],Dipole.Value[1],Dipole.Value[2]);
@@ -3122,11 +3401,11 @@ void get_dipole_from_dalton_output_file(FILE* fd)
     			if(!fgets(t,taille,fd))break;
     			t2 = strstr( t1, ":")+2;
     			if(!fgets(t,taille,fd))break;
-			sscanf(t,"%s %f",dum, &Dipole.Value[0]);
+			sscanf(t,"%s %lf",dum, &Dipole.Value[0]);
     			if(!fgets(t,taille,fd))break;
-			sscanf(t,"%s %f",dum, &Dipole.Value[1]);
+			sscanf(t,"%s %lf",dum, &Dipole.Value[1]);
     			if(!fgets(t,taille,fd))break;
-			sscanf(t,"%s %f",dum, &Dipole.Value[2]);
+			sscanf(t,"%s %lf",dum, &Dipole.Value[2]);
 			Dipole.def = TRUE;
 		/*
 			Debug("t =%s\n",t);
@@ -3139,6 +3418,32 @@ void get_dipole_from_dalton_output_file(FILE* fd)
 			if(strstr( t, ">>>>" )) break;
 		}
 
+	}
+	g_free(t);
+}
+/********************************************************************************/
+void get_dipole_from_orca_output_file(FILE* fd)
+{
+ 	guint taille=BSIZE;
+  	gchar *t = g_malloc(BSIZE*sizeof(gchar));
+  	gchar* pdest;
+
+	Dipole.def = FALSE;
+
+  	while(!feof(fd) )
+	{
+    		pdest = NULL;
+		Dipole.def = FALSE;
+    		fgets(t,taille,fd);
+    		pdest = strstr( t, "Total Dipole Moment");
+
+		if(pdest && strstr( t,":"))
+		{
+			pdest = strstr( t,":")+1;
+			Dipole.def = TRUE;
+			sscanf(pdest,"%lf %lf %lf",&Dipole.Value[0],&Dipole.Value[1],&Dipole.Value[2]);
+			break;
+		}
 	}
 	g_free(t);
 }
@@ -3166,11 +3471,11 @@ void get_dipole_from_qchem_output_file(FILE* fd)
 		else break;
 		Dipole.def = TRUE;
     		pdest = strstr( t, "X")+2;
-		if(pdest) sscanf(pdest,"%f",&Dipole.Value[0]);
+		if(pdest) sscanf(pdest,"%lf",&Dipole.Value[0]);
     		pdest = strstr( t, "Y")+2;
-		if(pdest) sscanf(pdest,"%f",&Dipole.Value[1]);
+		if(pdest) sscanf(pdest,"%lf",&Dipole.Value[1]);
     		pdest = strstr( t, "Z")+2;
-		if(pdest) sscanf(pdest,"%f",&Dipole.Value[2]);
+		if(pdest) sscanf(pdest,"%lf",&Dipole.Value[2]);
 		for(i=0;i<3;i++) Dipole.Value[i] /= AUTODEB;
 		break;
 		}
@@ -3212,7 +3517,7 @@ void get_dipole_from_mopac_output_file(FILE* fd)
     			if(!fgets(t,taille,fd)) break;
 			Dipole.def = TRUE;
     			pdest = strstr( t, "SUM")+2;
-			sscanf(t,"%s %f %f %f",dum,&Dipole.Value[0],&Dipole.Value[1], &Dipole.Value[2]);
+			sscanf(t,"%s %lf %lf %lf",dum,&Dipole.Value[0],&Dipole.Value[1], &Dipole.Value[2]);
 			for(i=0;i<3;i++) Dipole.Value[i] /= AUTODEB;
 			break;
 		}
@@ -3242,7 +3547,7 @@ void get_dipole_from_mopac_aux_file(FILE* fd)
 			Dipole.Value[0] = 0;
 			Dipole.Value[1] = 0;
 			Dipole.Value[2] = 0;
-			if(pdest) sscanf(pdest,"%f %f %f",&Dipole.Value[0], &Dipole.Value[1],&Dipole.Value[2]);
+			if(pdest) sscanf(pdest,"%lf %lf %lf",&Dipole.Value[0], &Dipole.Value[1],&Dipole.Value[2]);
 			for(i=0;i<3;i++) Dipole.Value[i] /= AUTODEB;
 			break;
 		}
@@ -3571,6 +3876,22 @@ gboolean test_type_program_pcgamess(FILE* file)
 	return FALSE;
 }
 /**********************************************************************************/
+gboolean test_type_program_orca(FILE* file)
+{
+	gchar t[BSIZE];
+	guint taille=BSIZE;
+	fseek(file, 0L, SEEK_SET);
+	while(!feof(file))
+	{
+		if(!fgets(t, taille, file)) return FALSE;
+		if(strstr(t,"Orca input") && strstr(t,"#")) return TRUE;
+		g_strup(t);
+		if(strstr(t,"* XYZ")) return TRUE;
+		if(strstr(t,"* INT")) return TRUE;
+	}
+	return FALSE;
+}
+/**********************************************************************************/
 gboolean test_type_program_mopac(FILE* file)
 {
 	gchar t[BSIZE];
@@ -3606,6 +3927,11 @@ gboolean test_type_program_qchem(FILE* file)
 /**********************************************************************************/
 gint get_type_of_program(FILE* file)
 {
+	if(test_type_program_orca(file))
+	{
+		fseek(file, 0L, SEEK_SET);
+		return PROG_IS_ORCA;
+	}
 	if(test_type_program_pcgamess(file))
 	{
 		fseek(file, 0L, SEEK_SET);
@@ -3685,7 +4011,13 @@ void gabedit_save_image(GtkWidget* widget, gchar *fileName, gchar* type)
 	pixbuf = gdk_pixbuf_get_from_drawable(NULL, widget->window, NULL, 0, 0, 0, 0, width, height);
 	if(pixbuf)
 	{
-		gdk_pixbuf_save(pixbuf, fileName, type, &error, NULL);
+		if(!fileName)
+		{
+			GtkClipboard * clipboard;
+			clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+			gtk_clipboard_set_image(clipboard, pixbuf);
+		}
+		else gdk_pixbuf_save(pixbuf, fileName, type, &error, NULL);
 	 	g_object_unref (pixbuf);
 	}
 }

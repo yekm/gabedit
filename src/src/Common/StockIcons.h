@@ -41,6 +41,7 @@
 #define GABEDIT_STOCK_MOLDEN		"gabedit-molden"
 #define GABEDIT_STOCK_MOLPRO		"gabedit-molpro"
 #define GABEDIT_STOCK_QCHEM		"gabedit-qchem"
+#define GABEDIT_STOCK_ORCA		"gabedit-orca"
 #define GABEDIT_STOCK_MOPAC		"gabedit-mopac"
 #define GABEDIT_STOCK_ADF		"gabedit-adf"
 #define GABEDIT_STOCK_DALTON		"gabedit-dalton"

@@ -137,6 +137,17 @@ gboolean read_atoms_prop()
  g_free(t);
  return OK;
 }
+/********************************************************************************/
+gdouble get_masse_from_symbol(gchar* symbol)
+{
+	guint i;
+	for(i=0;i<NATOMS;i++)
+	{
+		if (!strcmp(symbol,AtomsProp[i].symbol))
+			return AtomsProp[i].masse;
+	}
+	return 1.0;
+}
 /******************************************************************/
 gdouble get_atomic_number_from_symbol(gchar* symbol)
 {
@@ -263,8 +274,8 @@ void set_color_atom(GdkColor color,gchar *Symb)
 }
 /******************************************************************/
 void setPropForOneAtom(gchar* name, gchar* symbol, gint atomicNumber, 
-		gfloat covalentRadii, gfloat bondOrderRadii, gfloat vanDerWaalsRadii, 
-		gint maximumBondValence, gfloat masse, gfloat electronegativity, gfloat red, gfloat green, gfloat blue)
+		gdouble covalentRadii, gdouble bondOrderRadii, gdouble vanDerWaalsRadii, 
+		gint maximumBondValence, gdouble masse, gdouble electronegativity, gdouble red, gdouble green, gdouble blue)
 {
 	gint i = (gint)atomicNumber-1;
 	if(strcmp(symbol,"Xx")==0) i = 109;

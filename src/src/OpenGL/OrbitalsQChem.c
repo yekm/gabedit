@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
 #include "../Utils/Constants.h"
+#include "../Utils/Zlm.h"
 #include "../Geometry/GeomGlobal.h"
 #include "GeomDraw.h"
 #include "GLArea.h"
@@ -314,10 +315,10 @@ static void DefineQChemCartBasis()
 			l2 = l[1][m];
 	 		l3 = l[2][m];
 	 		k++;
-	 		AOrb[k].N=Type[GeomOrb[i].NumType].Ao[j].N;
+	 		AOrb[k].numberOfFunctions=Type[GeomOrb[i].NumType].Ao[j].N;
 			AOrb[k].NumCenter = i;
-	 		AOrb[k].Gtf =g_malloc(AOrb[k].N*sizeof(GTF));
-	 		for(n=0;n<AOrb[k].N;n++)
+	 		AOrb[k].Gtf =g_malloc(AOrb[k].numberOfFunctions*sizeof(GTF));
+	 		for(n=0;n<AOrb[k].numberOfFunctions;n++)
 	 		{
 	   			AOrb[k].Gtf[n].Ex   = Type[GeomOrb[i].NumType].Ao[j].Ex[n];
 	   			AOrb[k].Gtf[n].Coef = Type[GeomOrb[i].NumType].Ao[j].Coef[n];
@@ -344,7 +345,7 @@ static void DefineQChemSphericalBasis()
  gint kl;
  gint L,M;
  CGTF *temp;
- Slm Stemp;
+ Zlm Stemp;
  gint N,Nc,n;
  gint  klbeg;
  gint  klend;
@@ -385,14 +386,14 @@ static void DefineQChemSphericalBasis()
 		{
 			M = kl;
 	 		k++;
-	 	   	Stemp =  GetCoefSlm(L,M);
+	 	   	Stemp =  getZlm(L,M);
 
-	 		temp[k].N=Stemp.N*Type[GeomOrb[i].NumType].Ao[j].N;
+	 		temp[k].numberOfFunctions=Stemp.numberOfCoefficients*Type[GeomOrb[i].NumType].Ao[j].N;
 		    	temp[k].NumCenter=i;
-	 		temp[k].Gtf =g_malloc(temp[k].N*sizeof(GTF));
+	 		temp[k].Gtf =g_malloc(temp[k].numberOfFunctions*sizeof(GTF));
           		Nc=-1;
 	 		for(N=0;N<Type[GeomOrb[i].NumType].Ao[j].N;N++)
-	 			 for(n=0;n<Stemp.N;n++)
+	 			 for(n=0;n<Stemp.numberOfCoefficients;n++)
 	 			{
 	 			   Nc++;
 	 			
@@ -512,12 +513,12 @@ static gint get_num_type_from_symbol(gchar* symbol)
 	return -1;
 }
 /**********************************************/
-static gboolean addOneBasis(gint i,gint j,gchar *shell,gint ncont, gfloat* ex, gfloat* coef)
+static gboolean addOneBasis(gint i,gint j,gchar *shell,gint ncont, gdouble* ex, gdouble* coef)
 {
 	gint jj;
        	Type[i].Ao[j].N = ncont;
-	Type[i].Ao[j].Ex=g_malloc(Type[i].Ao[j].N*sizeof(gfloat));
-	Type[i].Ao[j].Coef=g_malloc(Type[i].Ao[j].N*sizeof(gfloat));
+	Type[i].Ao[j].Ex=g_malloc(Type[i].Ao[j].N*sizeof(gdouble));
+	Type[i].Ao[j].Coef=g_malloc(Type[i].Ao[j].N*sizeof(gdouble));
 	for(jj=0;jj<Type[i].Ao[j].N;jj++)
 	{
 		Type[i].Ao[j].Ex[jj] = ex[jj];
@@ -561,9 +562,9 @@ static gboolean DefineQChemBasisType(gchar** strbasis, gint nrows)
 	gint j;
 	gint nconts;
 	gint k;
-	gfloat *ex=NULL;
-	gfloat *coef1=NULL;
-	gfloat *coef2=NULL;
+	gdouble *ex=NULL;
+	gdouble *coef1=NULL;
+	gdouble *coef2=NULL;
 	gchar* temp[10];
 	gint ne;
 	gboolean Ok;
@@ -573,9 +574,9 @@ static gboolean DefineQChemBasisType(gchar** strbasis, gint nrows)
 
 	if(Ntype<1) return FALSE;
 	if(nrows<1) return FALSE;
-	ex = g_malloc(nrows*sizeof(gfloat));
-	coef1 = g_malloc(nrows*sizeof(gfloat));
-	coef2 = g_malloc(nrows*sizeof(gfloat));
+	ex = g_malloc(nrows*sizeof(gdouble));
+	coef1 = g_malloc(nrows*sizeof(gdouble));
+	coef2 = g_malloc(nrows*sizeof(gdouble));
 	for(i=0;i<10;i++) temp[i] = g_malloc(BSIZE*sizeof(gchar));
 
 	/*
@@ -773,16 +774,16 @@ static void get_number_of_occuped_orbitals(gchar* FileName, gint* nAlpha, gint* 
 	if(file) fclose(file);
 }
 /********************************************************************************/
-static GabEditOrbLocalType get_local_orbital_type(gchar *NomFichier)
+static GabEditOrbLocalType get_local_orbital_type(gchar *fileName)
 {
  	gchar *t;
  	FILE *file;
  	gint taille=BSIZE;
 	
- 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0)) return GABEDIT_ORBLOCALTYPE_UNKNOWN;
+ 	if ((!fileName) || (strcmp(fileName,"") == 0)) return GABEDIT_ORBLOCALTYPE_UNKNOWN;
 
  	t=g_malloc(taille);
- 	file = FOpen(NomFichier, "rb");
+ 	file = FOpen(fileName, "rb");
  	if(file ==NULL) return GABEDIT_ORBLOCALTYPE_UNKNOWN;
  	while(!feof(file))
 	{
@@ -801,7 +802,7 @@ static GabEditOrbLocalType get_local_orbital_type(gchar *NomFichier)
  	return GABEDIT_ORBLOCALTYPE_UNKNOWN;
 }
 /********************************************************************************/
-static gboolean read_last_orbitals_in_qchem_file(gchar *NomFichier,GabEditOrbType itype, gint nAlpha, gint nBeta)
+static gboolean read_last_orbitals_in_qchem_file(gchar *fileName,GabEditOrbType itype, gint nAlpha, gint nBeta)
 {
 #define NO   6
  	gchar *t;
@@ -813,28 +814,28 @@ static gboolean read_last_orbitals_in_qchem_file(gchar *NomFichier,GabEditOrbTyp
  	gint numorb;
  	gchar *pdest = NULL;
 	gint NumOrb[NO];
-	gfloat EnerOrb[NO];
+	gdouble EnerOrb[NO];
 	gint ncart;
 	gint n;
 	gint k,k1,k2,k3;
 	gint j;
-	gfloat **CoefOrbitals;
-	gfloat *EnerOrbitals;
+	gdouble **CoefOrbitals;
+	gdouble *EnerOrbitals;
 	gchar **SymOrbitals;
 	gchar* tmp = NULL;
 	
- 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
+ 	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
 		Message("Sorry No file slected\n","Error",TRUE);
     		return FALSE;
  	}
 
  	t=g_malloc(taille);
- 	fd = FOpen(NomFichier, "rb");
+ 	fd = FOpen(fileName, "rb");
  	if(fd ==NULL)
  	{
 		gchar buffer[BSIZE];
-		sprintf(buffer,"Sorry, I can not open '%s' file\n",NomFichier);
+		sprintf(buffer,"Sorry, I can not open '%s' file\n",fileName);
   		Message(buffer,"Error",TRUE);
   		return FALSE;
  	}
@@ -842,7 +843,7 @@ static gboolean read_last_orbitals_in_qchem_file(gchar *NomFichier,GabEditOrbTyp
   
 	/* Debug("Norb = %d\n",NOrb);*/
 	CoefOrbitals = CreateTable2(NOrb);
-	EnerOrbitals = g_malloc(NOrb*sizeof(gfloat));
+	EnerOrbitals = g_malloc(NOrb*sizeof(gdouble));
 	SymOrbitals = g_malloc(NOrb*sizeof(gchar*));
 
  	numorb =1;
@@ -921,7 +922,7 @@ static gboolean read_last_orbitals_in_qchem_file(gchar *NomFichier,GabEditOrbTyp
   			)
 			{
 				gchar buffer[BSIZE];
-				sprintf(buffer,"Sorry,  I can not read orbitals from '%s' file\n",NomFichier);
+				sprintf(buffer,"Sorry,  I can not read orbitals from '%s' file\n",fileName);
   				Message(buffer,"Error",TRUE);
 			}
 			FreeTable2(CoefOrbitals,NOrb);
@@ -949,7 +950,7 @@ static gboolean read_last_orbitals_in_qchem_file(gchar *NomFichier,GabEditOrbTyp
 				
 				SymAlphaOrbitals = SymOrbitals;
 
-				OccAlphaOrbitals = g_malloc(NOrb*sizeof(gfloat));
+				OccAlphaOrbitals = g_malloc(NOrb*sizeof(gdouble));
 				for(i=0;i<nAlpha;i++) OccAlphaOrbitals[i] = 1.0;
 				for(i=nAlpha;i<NOrb;i++) OccAlphaOrbitals[i] = 0.0;
 
@@ -965,7 +966,7 @@ static gboolean read_last_orbitals_in_qchem_file(gchar *NomFichier,GabEditOrbTyp
 				EnerBetaOrbitals = EnerOrbitals;
 				SymBetaOrbitals = SymOrbitals;
 
-				OccBetaOrbitals = g_malloc(NOrb*sizeof(gfloat));
+				OccBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
 				for(i=0;i<nBeta;i++) OccBetaOrbitals[i] = 1.0;
 				for(i=nBeta;i<NOrb;i++) OccBetaOrbitals[i] = 0.0;
 
@@ -982,7 +983,7 @@ static gboolean read_last_orbitals_in_qchem_file(gchar *NomFichier,GabEditOrbTyp
 				CoefAlphaOrbitals = CoefOrbitals;
 				EnerAlphaOrbitals = EnerOrbitals;
 				SymAlphaOrbitals = SymOrbitals;
-				OccAlphaOrbitals = g_malloc(NOrb*sizeof(gfloat));
+				OccAlphaOrbitals = g_malloc(NOrb*sizeof(gdouble));
 				if(itype==GABEDIT_ORBTYPE_RESTRICTED && nBeta==0) nBeta = nAlpha;
 
 				for(i=0;i<nAlpha;i++) OccAlphaOrbitals[i] = 1.0;
@@ -1066,7 +1067,7 @@ static gboolean read_last_orbitals_in_qchem_file(gchar *NomFichier,GabEditOrbTyp
 
 			
 	  		if(!fgets(t,taille,fd))break;
-			k2 = sscanf(t,"%s %f %f %f %f %f %f", dum[0], &EnerOrb[0], &EnerOrb[1], &EnerOrb[2], &EnerOrb[3], &EnerOrb[4], &EnerOrb[5]);
+			k2 = sscanf(t,"%s %lf %lf %lf %lf %lf %lf", dum[0], &EnerOrb[0], &EnerOrb[1], &EnerOrb[2], &EnerOrb[3], &EnerOrb[4], &EnerOrb[5]);
 			k2--;
 			for(i=0;i<k2;i++) EnerOrbitals[NumOrb[i]] = EnerOrb[i];
 			if(k2>0)
@@ -1239,8 +1240,8 @@ void read_qchem_orbitals(gchar* FileName)
 		printf(" L = %d\n",Type[i].Ao[j].L);
 		for(jj=0;jj<Type[i].Ao[j].N;jj++)
 		{
-			printf(" %f ",Type[i].Ao[j].Ex[jj]);
-			printf(" %f ",Type[i].Ao[j].Coef[jj]);
+			printf(" %lf ",Type[i].Ao[j].Ex[jj]);
+			printf(" %lf ",Type[i].Ao[j].Coef[jj]);
 		}
 		printf("\n");
 	}

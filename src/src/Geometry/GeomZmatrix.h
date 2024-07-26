@@ -25,6 +25,7 @@ void create_variables_list(GtkWidget *,guint);
 void read_ZMatrix_file_no_add_list(gchar* );
 void read_ZMatrix_mopac_file_no_add_list(gchar*FileName);
 void read_Zmat_from_gauss_input_file(gchar *, FilePosTypeGeom  );
+void read_Zmat_from_orca_input_file(gchar *NomFichier);
 void read_Zmat_from_qchem_input_file(gchar *NomFichier);
 void read_Zmat_from_mopac_input_file(gchar *NomFichier);
 void read_Zmat_from_mopac_scan_output_file(gchar *FileName, gint numGeom);

@@ -18,6 +18,8 @@ DEALINGS IN THE SOFTWARE.
 ************************************************************************************************************/
 
 #include "../../Config.h"
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include "../Common/Global.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"

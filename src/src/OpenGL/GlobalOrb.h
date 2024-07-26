@@ -34,6 +34,7 @@ DEALINGS IN THE SOFTWARE.
 #include "Grid.h"
 #include "IsoSurface.h"
 
+#define PRECISON_CYLINDER 0.001
 /*
 #define PI   3.14159265358979323846
 #define ANG_TO_BOHR  1.0/0.52917726
@@ -71,10 +72,6 @@ gint ScreenHeight;
 TypeFontsStyle FontStyle;
 gchar *Title;
 
-gfloat ffact[MAX_FACT];
-gfloat fact[MAX_FACT];
-gfloat CIJ[MAX_FACT][MAX_FACT];
-
 TYPE *Type;
 CGTF *AOrb;
 
@@ -92,14 +89,14 @@ gint NBetaOcc;
 gint TypeSelOrb; /* Type of Selected orbital 1 if alpha 2 if beta */
 gint NumSelOrb;  /* Number of Selected orbital : 0,1,2.... */    
 FILE* forb;
-gfloat **CoefAlphaOrbitals;
-gfloat *OccAlphaOrbitals;
-gfloat *EnerAlphaOrbitals;
+gdouble **CoefAlphaOrbitals;
+gdouble *OccAlphaOrbitals;
+gdouble *EnerAlphaOrbitals;
 gchar	**SymAlphaOrbitals;
 
-gfloat **CoefBetaOrbitals;
-gfloat *EnerBetaOrbitals;
-gfloat *OccBetaOrbitals;
+gdouble **CoefBetaOrbitals;
+gdouble *EnerBetaOrbitals;
+gdouble *OccBetaOrbitals;
 gchar	**SymBetaOrbitals;
 
 GabEditTypeGeom TypeGeom;
@@ -137,8 +134,8 @@ gboolean createPPMFiles;
 gint numPPMFile;
 gboolean createPOVFiles;
 gint numPOVFile;
-gfloat solventRadius;
-gfloat colorMapColors[3][3];
+gdouble solventRadius;
+gdouble colorMapColors[3][3];
 gint colorMapType;
 
 

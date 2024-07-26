@@ -34,7 +34,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/GLArea.h"
 
 /**************************************************************/
-Plane get_plane(Point5 C, Point5 V, gfloat *len, gint *N)
+Plane get_plane(Point5 C, Point5 V, gdouble *len, gint *N)
 {
 	Plane plane;
 	gint i;
@@ -77,7 +77,7 @@ void set_vector_plane(Plane *plane)
 {
 	gint i;
 	gint j;
-	gfloat n;
+	gdouble n;
 	/* Normalize Vector */
 	n = 0.0;
 	for(i=0;i<3;i++)
@@ -106,7 +106,7 @@ void set_vector_plane(Plane *plane)
 			plane->V[0].C[i] = 1;
 		plane->V[0].C[(j+1)%3] = 1.0;
 	}
-	/*Debug("Vector plane = %f %f %f \n", plane->V[0].C[0], plane->V[0].C[1] , plane->V[0].C[2]  );*/
+	/*Debug("Vector plane = %lf %lf %lf \n", plane->V[0].C[0], plane->V[0].C[1] , plane->V[0].C[2]  );*/
 	
 	n = 0.0;
 	for(i=0;i<3;i++)
@@ -123,10 +123,10 @@ void set_points_plane(Plane *plane)
 	gint i;
 	gint j;
 	gint k;
-	gfloat step0 = plane->len[0]/(plane->N[0]-1);
-	gfloat step1 = plane->len[1]/(plane->N[1]-1);
-	gfloat pos0 = -plane->len[0]/2;
-	gfloat pos1 = -plane->len[1]/2;
+	gdouble step0 = plane->len[0]/(plane->N[0]-1);
+	gdouble step1 = plane->len[1]/(plane->N[1]-1);
+	gdouble pos0 = -plane->len[0]/2;
+	gdouble pos1 = -plane->len[1]/2;
 
 	for(i=0;i<plane->N[0];i++)
 		for(j=0;j<plane->N[1];j++)
@@ -161,21 +161,21 @@ void print_vector_plane(Plane *plane)
 	printf("Plane properties\n");
 	printf("Center :");
 	for(i=0;i<3;i++)
-		printf(" %f ",plane->Center.C[i]);
+		printf(" %lf ",plane->Center.C[i]);
 	printf("\n ");
 
 	printf("Vector :");
 	for(i=0;i<3;i++)
-		printf(" %f ",plane->Vector.C[i]);
+		printf(" %lf ",plane->Vector.C[i]);
 	printf("\n ");
 
 	printf("V0 :");
 	for(i=0;i<3;i++)
-		printf(" %f ",plane->V[0].C[i]);
+		printf(" %lf ",plane->V[0].C[i]);
 	printf("\n ");
 	printf("V1 :");
 	for(i=0;i<3;i++)
-		printf(" %f ",plane->V[1].C[i]);
+		printf(" %lf ",plane->V[1].C[i]);
 	printf("\n ");
 	printf("Grid :\n");
 	for(i=0;i<plane->N[0];i++)
@@ -183,12 +183,12 @@ void print_vector_plane(Plane *plane)
 		{
 			printf(" %d %d  : ",i,j);
 			for(k=0;k<3;k++)
-				printf(" %f ",plane->point[i][j].C[k]); 
+				printf(" %lf ",plane->point[i][j].C[k]); 
 			printf("\n ");
 		}
-	printf("Xlimits : %f %f\n",plane->limits[0][0],plane->limits[0][1]);
-	printf("Ylimits : %f %f\n",plane->limits[1][0],plane->limits[1][1]);
-	printf("Zlimits : %f %f\n",plane->limits[2][0],plane->limits[2][1]);
+	printf("Xlimits : %lf %lf\n",plane->limits[0][0],plane->limits[0][1]);
+	printf("Ylimits : %lf %lf\n",plane->limits[1][0],plane->limits[1][1]);
+	printf("Zlimits : %lf %lf\n",plane->limits[2][0],plane->limits[2][1]);
 }
 /**************************************************************/
 Grid* plane_grid_point_alloc(Plane *plane,GridLimits limits)
@@ -237,10 +237,10 @@ Grid* define_planegrid_point(Plane *plane,Func3d func)
 	gint i;
 	gint j;
 	gint k;
-	gfloat x;
-	gfloat y;
-	gfloat z;
-	gfloat v;
+	gdouble x;
+	gdouble y;
+	gdouble z;
+	gdouble v;
     gboolean beg = TRUE;
 
 	limits.MinMax[0][0] = plane->limits[0][0];
@@ -291,11 +291,11 @@ Grid* define_planegrid_point(Plane *plane,Func3d func)
 		}
 	}
 
-	/* Debug("Vlimits = %f %f \n", planegrid->limits.MinMax[0][3] , planegrid->limits.MinMax[1][3] ); */
+	/* Debug("Vlimits = %lf %lf \n", planegrid->limits.MinMax[0][3] , planegrid->limits.MinMax[1][3] ); */
 	return planegrid;
 }
 /**************************************************************/
-Grid* define_plane_grid(Point5 C, Point5 V, gfloat *len, gint *N)
+Grid* define_plane_grid(Point5 C, Point5 V, gdouble *len, gint *N)
 {
 	Grid* planegrid;
 	Plane plane;
@@ -357,7 +357,7 @@ void apply_planegrid_center_vector(GtkWidget *Win,gpointer data)
   	gchar* type = g_object_get_data(G_OBJECT (Win), "Type");
 	gint i;
 	gint N[2];
-	gfloat len[2];
+	gdouble len[2];
 	Point5 C;
 	Point5 V;
 	
@@ -390,7 +390,7 @@ void apply_planegrid_center_vector(GtkWidget *Win,gpointer data)
 		Message("Error : The length of normal Vector should be > 1e-6. ","Error",TRUE);
 		return;
 	}
-	/* Debug("V = %f %f %f \n",V.C[0] , V.C[1] , V.C[2]); */
+	/* Debug("V = %lf %lf %lf \n",V.C[0] , V.C[1] , V.C[2]); */
 	if(type)
 	{
 		if(strstr(type,"Maps"))

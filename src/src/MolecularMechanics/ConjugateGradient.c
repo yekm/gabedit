@@ -211,7 +211,7 @@ static void fletcherReeves(ConjugateGradient* conjugateGradient)
 
 	g_free(str);
 	str = g_strdup_printf("Gradient = %f  Energy = %f (Kcal/mol) ",
-			(gfloat)conjugateGradient->gradientNorm,(gfloat)energy); 
+			(gdouble)conjugateGradient->gradientNorm,(gdouble)energy); 
 
 	redrawMolecule(&conjugateGradient->forceField->molecule,str);
 	g_free(str);
@@ -312,7 +312,7 @@ static void polakRibiere(ConjugateGradient* conjugateGradient)
 
 	g_free(str);
 	str = g_strdup_printf("Gradient = %f  Energy = %f (Kcal/mol) ",
-			(gfloat)conjugateGradient->gradientNorm,(gfloat)energy); 
+			(gdouble)conjugateGradient->gradientNorm,(gdouble)energy); 
 	redrawMolecule(&conjugateGradient->forceField->molecule,str);
 	g_free(str);
 }
@@ -418,7 +418,7 @@ static void hestenesStiefel(ConjugateGradient* conjugateGradient)
 
 	g_free(str);
 	str = g_strdup_printf("Gradient = %f  Energy = %f (Kcal/mol) ",
-			(gfloat)conjugateGradient->gradientNorm,(gfloat)energy); 
+			(gdouble)conjugateGradient->gradientNorm,(gdouble)energy); 
 	redrawMolecule(&conjugateGradient->forceField->molecule,str);
 	g_free(str);
 }
@@ -515,7 +515,7 @@ static void wolfPowell(ConjugateGradient* conjugateGradient)
 
 	g_free(str);
 	str = g_strdup_printf("Gradient = %f  Energy = %f (Kcal/mol) ",
-			(gfloat)conjugateGradient->gradientNorm,(gfloat)energy); 
+			(gdouble)conjugateGradient->gradientNorm,(gdouble)energy); 
 	redrawMolecule(&conjugateGradient->forceField->molecule,str);
 	g_free(str);
 } 
