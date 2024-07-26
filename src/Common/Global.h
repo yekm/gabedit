@@ -49,7 +49,7 @@ DEALINGS IN THE SOFTWARE.
 
 #define MAJOR_VERSION    2
 #define MINOR_VERSION    2
-#define MICRO_VERSION    8
+#define MICRO_VERSION    9
 
 /**** Structures *********/
 typedef struct _FileOpen
@@ -166,7 +166,7 @@ typedef struct _CommandsBatch
   RecentHosts recenthosts;
 
   int iprogram; 
-  gboolean MesureIsHide;
+  gboolean MeasureIsHide;
   FileOpen fileopen;
   gchar* lastdirectory;
   GabEditNetWork defaultNetWorkProtocol;

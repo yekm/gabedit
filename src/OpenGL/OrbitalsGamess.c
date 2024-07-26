@@ -758,6 +758,7 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *fileName,GabEditOrbType
 	gdouble *EnerOrbitals;
 	gchar **SymOrbitals;
 	gchar* tmp = NULL;
+	gint ibegin = 0;
 	
  	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
@@ -988,8 +989,16 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *fileName,GabEditOrbType
 			case GABEDIT_ORBTYPE_MOLECULAR: 
 			case GABEDIT_ORBTYPE_MCSCF: 
 			case GABEDIT_ORBTYPE_EIGENVECTORS: 
-	  			fgets(t,taille,fd);
-	  			fgets(t,taille,fd);
+				/* error message of version */
+ 				while(!feof(fd))
+				{
+	  				if(!fgets(t,taille,fd))break;
+					{
+						gint d;
+						gint k = sscanf(t,"%d",&d);
+						if(k==1 && d>0) {ibegin=1;break;}
+					}
+				}
 				break;
 			case GABEDIT_ORBTYPE_BOYS: 
 			case GABEDIT_ORBTYPE_EDMISTON: 
@@ -1002,7 +1011,8 @@ static gboolean read_last_orbitals_in_gamess_file(gchar *fileName,GabEditOrbType
 		gint no=0;
 		for(n=0;n<ncart;n++)
 		{
-	  		if(!fgets(t,taille,fd))break;
+			if(ibegin ==0) {if(!fgets(t,taille,fd))break;}
+			else ibegin = 0;
 			k1 = sscanf(t,"%d %d %d %d %d",&NumOrb[0],&NumOrb[1],&NumOrb[2],&NumOrb[3],&NumOrb[4]);
 			for(i=0;i<k1;i++) NumOrb[i]--;
 			for(i=0;i<k1;i++) 

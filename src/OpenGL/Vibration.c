@@ -325,7 +325,7 @@ static void print_gaussian_correction_vibration_one_geometry(gchar* fileNameBas,
 	if(link) fprintf(file,"%cChk=%s\n",p,fileNameBas);
 	fprintf(file,"# %s\n",keys);
 	if(link) fprintf(file,"# Guess(Read)\n");
-	fprintf(file,"# pop=full Test Symm(PG=C1)\n");
+	fprintf(file,"# Test Symm(PG=C1)\n");
 	fprintf(file,"# Units(Ang,Deg)\n");
 	if(mode2<0)
 		fprintf(file,"\nMode: freq=%lf Mass= %lf Q= Qeq %c %lf akI=%lf\n\n",
@@ -435,7 +435,7 @@ static void print_gaussian_correction_vibration_geometries_link(GtkWidget* Win, 
 		fprintf(file,"%cChk=%s\n",p,fileNameBas);
 	}
 	fprintf(file,"# %s\n",allKeys);
-	fprintf(file,"# pop=full Test Symm(PG=C1)\n");
+	fprintf(file,"# Test Symm(PG=C1)\n");
 	fprintf(file,"# Units(Ang,Deg)\n");
 	fprintf(file,"\n Equilibrium geometry, made in Gabedit\n\n");
 	fprintf(file,"%d   %d\n",totalCharge,spinMultiplicity);
@@ -1528,8 +1528,9 @@ static gboolean read_mopac_aux_modes(FILE* fd, gchar *FileName)
 
 	fseek(fd, 0, SEEK_SET);
 	freqs = get_one_block_from_aux_mopac_file(fd, "VIB._FREQ:CM(-1)[",  &nFreqs);
-	numberOfFrequencies = nFreqs-6;
-	if(!freqs || numberOfFrequencies <vibration.numberOfAtoms*3-6)
+	/* numberOfFrequencies = nFreqs-6;*/
+	numberOfFrequencies = nFreqs;
+	if(!freqs || numberOfFrequencies <vibration.numberOfAtoms*3)
 	{
 		gchar buffer[BSIZE];
 		free_one_string_table(freqs, nFreqs);
@@ -2852,7 +2853,7 @@ static gboolean read_gaussian_file_frequencies(gchar *FileName)
 			while(!feof(fd))
 			{
     				fgets(t,taille,fd);
-				if(strstr(t,"Red. masses"))
+				if(strstr(t,"Red."))
 				{
 					changeDInE(t); 
 					sscanf(t,"%s %s %s %lf %lf %lf", sdum1,sdum2, sdum3, &mass[0],&mass[1],&mass[2]);
@@ -3416,7 +3417,7 @@ static gboolean read_qchem_file_frequencies(gchar *FileName)
 			while(!feof(fd))
 			{
     				fgets(t,taille,fd);
-				if(strstr(t,"Red. masses"))
+				if(strstr(t,"Red."))
 				{
 					sscanf(t,"%s %s %lf %lf %lf", sdum1,sdum2, &mass[0],&mass[1],&mass[2]);
 					break;
@@ -3477,8 +3478,11 @@ static gboolean read_qchem_file_frequencies(gchar *FileName)
 					vibration.modes[k+nfOld].vectors[2][j]= v[k][2]; 
 				}
 			}
-    			if(!fgets(t,taille,fd))break; /* backspace */
-    			if(!fgets(t,taille,fd))break; /* Mode: or END */
+			while(!feof(fd))
+			{
+    				if(!fgets(t,taille,fd))break;
+				if(strstr(t,"Mode:")) break;
+			}
 		}
  	}while(!feof(fd));
 	rafreshList();

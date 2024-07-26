@@ -36,7 +36,7 @@
 #define GABEDIT_STOCK_CUT_BOND		"gabedit-cut-bond"
 #define GABEDIT_STOCK_DELETE_CUT	"gabedit-delete-cut"
 #define GABEDIT_STOCK_ADD_BOND		"gabedit-add-bond"
-#define GABEDIT_STOCK_MESURE		"gabedit-mesure"
+#define GABEDIT_STOCK_MEASURE		"gabedit-measure"
 #define GABEDIT_STOCK_MOLCAS		"gabedit-molcas"
 #define GABEDIT_STOCK_MOLDEN		"gabedit-molden"
 #define GABEDIT_STOCK_MOLPRO		"gabedit-molpro"

@@ -809,9 +809,9 @@ gchar *get_distance_points(Point P1,Point P2,gboolean f3)
 	
    Distance = sqrt(Distance)*BOHR_TO_ANG;
    if(f3)
-   	distance = g_strdup_printf("%7.3f",Distance);
+   	distance = g_strdup_printf("%7.3lf",Distance);
    else
-   	distance = g_strdup_printf("%f",Distance);
+   	distance = g_strdup_printf("%0.20lf",Distance);
   return distance;
 } 
 /*************************************************************************************/
@@ -859,7 +859,7 @@ gchar *get_angle_vectors(Point V1,Point V2)
 
         Angle = acos(Angle)/DEG_TO_RAD;
 /*	Debug("Angle = %f\n",Angle);*/
-        angle = g_strdup_printf("%f",Angle);
+        angle = g_strdup_printf("%0.20lf",Angle);
    }
    else
         angle = g_strdup_printf("ERROR");   
@@ -2368,7 +2368,7 @@ gchar *ang_to_bohr(gchar *angstr)
        
         austr = g_strdup(angstr);
         numb = atof(angstr)*ANG_TO_BOHR;
-        austr = g_strdup_printf("%f",numb);
+        austr = g_strdup_printf("%0.20lf",numb);
 	return austr;
 }
 /*************************************************************************************/
@@ -2379,7 +2379,7 @@ gchar *bohr_to_ang(gchar *angstr)
        
         austr = g_strdup(angstr);
         numb = atof(angstr)*BOHR_TO_ANG;
-        austr = g_strdup_printf("%f",numb);
+        austr = g_strdup_printf("%0.20lf",numb);
 	return austr;
 }
 /*************************************************************************************/
@@ -2778,7 +2778,7 @@ void initialise_global_variables()
 
   GeomXYZ = NULL;
   Geom = NULL;
-  MesureIsHide = TRUE;
+  MeasureIsHide = TRUE;
   VariablesXYZ = NULL;
   Variables = NULL;
   NcentersXYZ =0;
@@ -3312,7 +3312,7 @@ void get_dipole_from_gaussian_output_file(FILE* fd)
     		fgets(t,taille,fd);
     		pdest = strstr( t, "Dipole moment (Debye)");
 
-		if(pdest)
+		if(strstr( t, "Dipole moment") && strstr( t, "Debye")) /* field-independent basis */
 		{
     		if(!feof(fd))
 			fgets(t,taille,fd);

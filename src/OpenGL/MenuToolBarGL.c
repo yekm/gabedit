@@ -1023,6 +1023,11 @@ static void toggle_action (GtkAction *action)
 		ShowDipoleOrb = !ShowDipoleOrb;
 		glarea_rafresh(GLArea);
 	}
+	else if(!strcmp(name,"ShowOnlyOneSurface"))
+	{
+		setShowOneSurface(!getShowOneSurface());
+		glarea_rafresh(GLArea);
+	}
 	else if(!strcmp(name,"RenderHydrogenBonds"))
 	{
 		ShowHBondOrb = !ShowHBondOrb;
@@ -1159,6 +1164,7 @@ static GtkToggleActionEntry gtkActionToggleEntries[] =
 	{ "RingsDeleteNotPlaner", NULL, "Show ring with not co-_planer atoms", NULL, "Show ring with not co-planer atoms", G_CALLBACK (toggle_action), TRUE},
 	{ "RingsRandumColors", NULL, "_randum colors", NULL, "randum colors", G_CALLBACK (toggle_action), TRUE},
 	{ "ContoursNegativeDotted", NULL, "_dotted contours for negative values", NULL, "dotted contours for negative values", G_CALLBACK (toggle_action), FALSE},
+	{ "ShowOnlyOneSurface", NULL, "Show only _one surface", NULL, "Show one surface", G_CALLBACK (toggle_action), FALSE },
 };
 
 static guint numberOfGtkActionToggleEntries = G_N_ELEMENTS (gtkActionToggleEntries);
@@ -1639,6 +1645,8 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"SurfacesResetIsovalue\" action=\"SurfacesResetIsovalue\" />\n"
 "        <menuitem name=\"SurfacesNew\" action=\"SurfacesNew\" />\n"
 "        <menuitem name=\"SurfacesDelete\" action=\"SurfacesDelete\" />\n"
+"        <separator name=\"sepMenuShowOnlyOneSurface\" />\n"
+"        <menuitem name=\"ShowOnlyOneSurface\" action=\"ShowOnlyOneSurface\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepMenuRings\" />\n"
 "    <menu name=\"Rings\" action = \"Rings\">\n"
@@ -1858,8 +1866,8 @@ static void set_init_gtkActionToggleEntries()
 	gtkActionToggleEntries[21].is_active = !ringsGetNotPlanar(); /* RingsDeleteNotPlaner*/
 	gtkActionToggleEntries[22].is_active = ringsGetRandumColors(); /* RingsRandumColors*/
 	gtkActionToggleEntries[23].is_active = get_dotted_negative_contours(); /* "ContoursNegativeDotted" */
+	gtkActionToggleEntries[24].is_active = getShowOneSurface(); /* "ShowOnlyOneSurface" */
 }
-
 /*******************************************************************************************************************************/
 static void add_widget (GtkUIManager *merge, GtkWidget   *widget, GtkContainer *container)
 {

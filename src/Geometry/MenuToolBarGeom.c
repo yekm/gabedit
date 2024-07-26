@@ -28,7 +28,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Utils.h"
 #include "../Utils/AtomsProp.h"
 #include "../Geometry/GeomGlobal.h"
-#include "../Geometry/Mesure.h"
+#include "../Geometry/Measure.h"
 #include "../Geometry/Fragments.h"
 #include "../Geometry/DrawGeom.h"
 #include "../Geometry/Povray.h"
@@ -161,7 +161,7 @@ enum
 	OPERATION_ROTATION_Z_ATOMS,
 	OPERATION_EDIT_OBJECTS,
 	OPERATION_INSERT_FRAG,
-	OPERATION_MESURE,
+	OPERATION_MEASURE,
 };
 static void render_operation_radio_action (GtkAction *action)
 {
@@ -192,19 +192,19 @@ static void render_operation_radio_action (GtkAction *action)
 				    		SetOperation(NULL, ADDFRAGMENT ); 
 						create_window_fragments_selector();
 						break;
-		case   OPERATION_MESURE :
-				    SetOperation(NULL, MESURE );
+		case   OPERATION_MEASURE :
+				    SetOperation(NULL, MEASURE );
 				    {
-					GtkAction * action = gtk_ui_manager_get_action(manager, "/ToolbarGL/ShowMesureNoteBook");
-					GtkWidget *notebook = gtk_ui_manager_get_widget (manager, "/ToolbarGL/ShowMesureNoteBook");
+					GtkAction * action = gtk_ui_manager_get_action(manager, "/ToolbarGL/ShowMeasureNoteBook");
+					GtkWidget *notebook = gtk_ui_manager_get_widget (manager, "/ToolbarGL/ShowMeasureNoteBook");
 					gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
 					gtk_widget_set_sensitive(notebook, FALSE);
 				    }
 				    break;
 	}
-	if(value != OPERATION_MESURE) 
+	if(value != OPERATION_MEASURE) 
 	{
-		GtkWidget *notebook = gtk_ui_manager_get_widget (manager, "/ToolbarGL/ShowMesureNoteBook");
+		GtkWidget *notebook = gtk_ui_manager_get_widget (manager, "/ToolbarGL/ShowMeasureNoteBook");
 		gtk_widget_set_sensitive(notebook, TRUE);
 	}
 }
@@ -224,7 +224,7 @@ static GtkRadioActionEntry operationsEntries[] = {
 
   { "OperationsEditObjects", GABEDIT_STOCK_DRAW, "_Insert/Change atoms or bond", NULL, "Insert/Change atoms or bond", OPERATION_EDIT_OBJECTS },
   { "OperationsInsertFrag", GABEDIT_STOCK_IFRAG, "_Insert a fragment", NULL, "Insert a fragment", OPERATION_INSERT_FRAG},
-  { "OperationsMesure", GABEDIT_STOCK_MESURE, "_Mesure", NULL, "Mesure", OPERATION_MESURE },
+  { "OperationsMeasure", GABEDIT_STOCK_MEASURE, "_Measure", NULL, "Measure", OPERATION_MEASURE },
 };
 static guint numberOfOperationsEntries = G_N_ELEMENTS (operationsEntries);
 /*********************************************************************************************************************/
@@ -324,10 +324,10 @@ static void toggle_action (GtkAction *action)
 		gtk_widget_hide(box);
 		if(show) gtk_widget_show(box);
 	}
-	else if(!strcmp(name,"ShowMesureNoteBook"))
+	else if(!strcmp(name,"ShowMeasureNoteBook"))
 	{
 		gboolean show = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
-		HideShowMesure(!show);
+		HideShowMeasure(!show);
 	}
 	else if(!strcmp(name,"AdjustHydrogens"))
 	{
@@ -357,7 +357,7 @@ static GtkToggleActionEntry gtkActionToggleEntries[] =
 	{ "ShowToolBar", NULL, "_Show toolbar", NULL, "show toolbar", G_CALLBACK (toggle_action), TRUE },
 	{ "ShowStatusBox", NULL, "_show status handlebox", NULL, "show status handlebox", G_CALLBACK (toggle_action), TRUE},
 
-	{ "ShowMesureNoteBook", GABEDIT_STOCK_HIDE, "show the mesure notebook", NULL, "show the mesure notebook", G_CALLBACK (toggle_action), FALSE},
+	{ "ShowMeasureNoteBook", GABEDIT_STOCK_HIDE, "show the measure notebook", NULL, "show the measure notebook", G_CALLBACK (toggle_action), FALSE},
 	{ "AdjustHydrogens", GABEDIT_STOCK_ADJUST_H, "Adjust _hydrogens", NULL, "Adjus hydrogens", G_CALLBACK (toggle_action), FALSE},
 	{ "RebuildConnectionsDuringEdition", GTK_STOCK_DISCONNECT, "Rebuild _connections during a move", NULL, "Rebuild connections during a mov", G_CALLBACK (toggle_action), FALSE},
 
@@ -1255,8 +1255,8 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"OperationsRotationZAtoms\" action=\"OperationsRotationZAtoms\" />\n"
 "      <menuitem name=\"OperationsEditObjects\" action=\"OperationsEditObjects\" />\n"
 "      <menuitem name=\"OperationsInsertFrag\" action=\"OperationsInsertFrag\" />\n"
-"      <separator name=\"sepMenuMesure\" />\n"
-"      <menuitem name=\"OperationsMesure\" action=\"OperationsMesure\" />\n"
+"      <separator name=\"sepMenuMeasure\" />\n"
+"      <menuitem name=\"OperationsMeasure\" action=\"OperationsMeasure\" />\n"
 "    </menu>\n"
 "    <menu name=\"Labels\" action=\"Labels\">\n"
 "      <menuitem name=\"LabelsNothing\" action=\"LabelsNothing\" />\n"
@@ -1446,16 +1446,16 @@ static const gchar *uiMenuInfo =
 "      <toolitem name=\"OperationsRotationAtoms\" action=\"OperationsRotationAtoms\" />\n"
 "      <toolitem name=\"OperationsRotationZAtoms\" action=\"OperationsRotationZAtoms\" />\n"
 "      <toolitem name=\"RebuildConnectionsDuringEdition\" action=\"RebuildConnectionsDuringEdition\" />\n"
-"      <separator name=\"sepToolBarMesure\" />\n"
-"      <separator name=\"sepToolBarMesure1\" />\n"
-"      <toolitem name=\"OperationsMesure\" action=\"OperationsMesure\" />\n"
+"      <separator name=\"sepToolBarMeasure\" />\n"
+"      <separator name=\"sepToolBarMeasure1\" />\n"
+"      <toolitem name=\"OperationsMeasure\" action=\"OperationsMeasure\" />\n"
 "      <separator name=\"sepToolBarGeometryStick\" />\n"
 "      <separator name=\"sepToolBarGeometryStick1\" />\n"
 "      <toolitem name=\"RenderGeometryStick\" action=\"RenderGeometryStick\" />\n"
 "      <toolitem name=\"RenderGeometryBallAndStick\" action=\"RenderGeometryBallAndStick\" />\n"
-"      <separator name=\"sepToolBarShowMesureNoteBook\" />\n"
-"      <separator name=\"sepToolBarShowMesureNoteBook1\" />\n"
-"      <toolitem name=\"ShowMesureNoteBook\" action=\"ShowMesureNoteBook\" />\n"
+"      <separator name=\"sepToolBarShowMeasureNoteBook\" />\n"
+"      <separator name=\"sepToolBarShowMeasureNoteBook1\" />\n"
+"      <toolitem name=\"ShowMeasureNoteBook\" action=\"ShowMeasureNoteBook\" />\n"
 "  </toolbar>\n"
 ;
 /*******************************************************************************************************************************/
@@ -1472,7 +1472,7 @@ static void set_init_gtkActionToggleEntries()
 	gtkActionToggleEntries[8].is_active = getShowMultipleBonds(); /* RenderShowDoubleTripleBonds */
 	gtkActionToggleEntries[9].is_active = TRUE; /* ShowToolBar */
 	gtkActionToggleEntries[10].is_active = TRUE; /* ShowStatusBox */
-	gtkActionToggleEntries[11].is_active = !MesureIsHide; /* ShowMesureNoteBook */
+	gtkActionToggleEntries[11].is_active = !MeasureIsHide; /* ShowMeasureNoteBook */
 	gtkActionToggleEntries[12].is_active = getAdjustHydrogensYesNo(); /* Ajust hydrogens */
 	gtkActionToggleEntries[13].is_active = getRebuildConnectionsDuringEditionYesNo(); /* rebuild connection */
 }

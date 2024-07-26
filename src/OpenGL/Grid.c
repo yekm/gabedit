@@ -2713,3 +2713,127 @@ gboolean compute_transition_matrix_numeric(gint N[],GridLimits limits, gint type
 	
 	return TRUE;
 }
+/**************************************************************/
+gboolean compute_integrale_from_grid(Grid* grid, gboolean square, gdouble* pInteg)
+{
+	gint k,l,m;
+	gdouble scal;
+	gdouble integ = 0;
+	gdouble dv = 0;
+	gdouble xx,yy,zz;
+
+	if(!grid) return FALSE;
+	if(CancelCalcul) return FALSE;
+
+	if(square) set_status_label_info("Grid","Comp. integ f^2(x,y,z) dv from grid");
+	else set_status_label_info("Grid","Comp. integ f(,xy,z) dv from grid");
+	scal = (gdouble)1.01/grid->N[0];
+	for(k=0;k<grid->N[0];k++)
+	{
+		for(l=0;l<grid->N[1];l++)
+		{
+			for(m=0;m<grid->N[2];m++)
+			{
+				if(square) integ +=  grid->point[k][l][m].C[3]*grid->point[k][l][m].C[3];
+				else integ +=  grid->point[k][l][m].C[3];
+			}
+		}
+		if(CancelCalcul) 
+		{
+			progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+			break;
+		}
+		progress_orb(scal,GABEDIT_PROGORB_COMPGRID,FALSE);
+	}
+	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
+	if(CancelCalcul) return FALSE;
+
+	xx = grid->point[1][0][0].C[0]-grid->point[0][0][0].C[0];
+	yy = grid->point[0][1][0].C[1]-grid->point[0][0][0].C[1];
+	zz = grid->point[0][0][1].C[2]-grid->point[0][0][0].C[2];
+	dv = fabs(xx*yy*zz);
+
+	*pInteg = integ*dv;
+	
+	return TRUE;
+}
+/**************************************************************/
+gboolean compute_integrale_from_grid_foranisovalue(Grid* grid, gboolean square, gdouble isovalue, gdouble* pInteg)
+{
+	gint k,l,m;
+	gdouble scal;
+	gdouble integ = 0;
+	gdouble dv = 0;
+	gdouble xx,yy,zz;
+
+	if(!grid) return FALSE;
+	if(CancelCalcul) return FALSE;
+
+	scal = (gdouble)1.01/grid->N[0];
+	for(k=0;k<grid->N[0];k++)
+	{
+		for(l=0;l<grid->N[1];l++)
+		{
+			for(m=0;m<grid->N[2];m++)
+			{
+				if(!square && grid->point[k][l][m].C[3]<isovalue) continue;
+				if(square && fabs(grid->point[k][l][m].C[3])<isovalue) continue;
+				if(square) integ +=  grid->point[k][l][m].C[3]*grid->point[k][l][m].C[3];
+				else integ +=  grid->point[k][l][m].C[3];
+			}
+			if(CancelCalcul) return FALSE;
+		}
+	}
+	if(CancelCalcul) return FALSE;
+
+	xx = grid->point[1][0][0].C[0]-grid->point[0][0][0].C[0];
+	yy = grid->point[0][1][0].C[1]-grid->point[0][0][0].C[1];
+	zz = grid->point[0][0][1].C[2]-grid->point[0][0][0].C[2];
+	dv = fabs(xx*yy*zz);
+
+	*pInteg = integ*dv;
+	return TRUE;
+}
+/**************************************************************/
+gboolean compute_isovalue_percent_from_grid(Grid* grid, gboolean square, gdouble percent, gdouble precision, gdouble* pIsovalue)
+{
+	gdouble integAll = 0;
+	gdouble integ = 0;
+	gdouble isoMin = 0;
+	gdouble isoMax = 0;
+	gdouble iso = 0;
+	gchar tmp[BSIZE];
+
+	if(!grid) return FALSE;
+	if(CancelCalcul) return FALSE;
+	if(percent>100) percent = 100;
+	if(percent<0) percent = 0;
+	if(precision<1e-10) precision = 1e-3;
+
+	if(!compute_integrale_from_grid(grid, square, &integAll)) return FALSE;
+	/* printf("integAll = %f\n",integAll);*/
+	if(integAll<1e-10) return FALSE;
+
+	if(square) set_status_label_info("Grid","Comp. integ f^2(x,y,z) dv from grid");
+	else set_status_label_info("Grid","Comp. integ f(,xy,z) dv from grid");
+
+        isoMax = fabs(limits.MinMax[1][3]);
+	/*
+	printf("isoMin = %f\n",isoMin);
+	printf("isoMax = %f\n",isoMax);
+	*/
+	while(fabs(isoMax-isoMin)>precision)
+	{
+		iso = (isoMax+isoMin)/2;
+		sprintf(tmp,"Computing integrale for isovalue = %f, (IsoMax-IsoMin) = %f, precision = %f",iso, fabs(isoMax-isoMin),precision);
+		set_status_label_info("Grid",tmp);
+		if(!compute_integrale_from_grid_foranisovalue(grid, square, iso, &integ)) return FALSE;
+		/* printf("iso = %f %%=%f\n",iso,integ/integAll*100);*/
+		if(integ/integAll*100<percent) isoMax = iso;
+		else isoMin = iso;
+	}	
+	if(CancelCalcul) return FALSE;
+
+	*pIsovalue = iso;
+	return TRUE;
+}

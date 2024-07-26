@@ -33,7 +33,7 @@ ADDFRAGMENT,
 EDITOBJECTS, /* insert a atom(s) and or a bond, change a bond */
 ADDATOMSBOND,
 CHANGEBOND,CUTBOND,
-MESURE,SHOWMESURE,
+MEASURE,SHOWMEASURE,
 RENDERSTICK,RENDERBALL,
 LABELNO,LABELSYMB,LABELNUMB,LABELMMTYP,LABELPDBTYP,LABELLAYER,LABELSYMBNUMB,
 LABELCHARGE,LABELSYMBCHARGE,LABELNUMBCHARGE,LABELRESIDUES,LABELCOORDINATES,
@@ -217,7 +217,7 @@ void draw_geometry(GtkWidget *,gpointer);
 gboolean draw_lines_yes_no(guint i,guint j);
 guint get_num_min_rayonIJ(guint i,guint j);
 void SetRadioPopupMenu(gchar* button);
-void HideShowMesure(gboolean hiding);
+void HideShowMeasure(gboolean hiding);
 void AdjustHydrogensYesNo(gboolean adjust);
 gboolean getAdjustHydrogensYesNo();
 void RebuildConnectionsDuringEditionYesNo(gboolean rebuild);

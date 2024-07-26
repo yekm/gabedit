@@ -223,3 +223,14 @@
    the n,p, f and l keys can be used for selecting a geometry on the "Geom.Conv" window.
 17 November 2009 :
    Bug fixed for the nucleophilic and radical susceptibilities calculation.
+9 December 2009 :
+   Bug fixed for reading dipole with "field-independent" basis from a gaussian output file
+10 December 2009 :
+   Bug fixed with error message after MOLECULAR ORBITALS from Gamess
+   Bug fixed for CltrZ and u : The geometry in xyz is now apdate after this operation.
+   Bug fixed for change by Measure window : The geometry in xyz is now apdate after this operation.
+   If f key is pressed, the selection is free even if one click on an atom.
+   If g key is pressed, the group attached to cliked atom is selected
+22 December 2009 :
+   In Draw geometry window, numbers of atoms are not changed after editing of atoms. 
+   By default, only one surface is showed in Display Window(this can changed by the users).

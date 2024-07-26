@@ -1594,6 +1594,7 @@ void create_opengl_file()
 		fprintf(fd,"%lf %lf %lf\n",colorMapColors[0][0], colorMapColors[0][1],colorMapColors[0][2]);
 		fprintf(fd,"%lf %lf %lf\n",colorMapColors[1][0], colorMapColors[1][1],colorMapColors[1][2]);
 		fprintf(fd,"%lf %lf %lf\n",colorMapColors[2][0], colorMapColors[2][1],colorMapColors[2][2]);
+		fprintf(fd,"%d\n",getShowOneSurface());
 		fclose(fd);
 	}
 	g_free(openglfile);
@@ -1604,6 +1605,7 @@ void read_opengl_file()
 	gchar *openglfile;
 	FILE *fd;
 	gint optcol = 0;
+	gboolean showOneSurface = TRUE;
 
 	openglfile = g_strdup_printf("%s%sopengl",gabedit_directory(),G_DIR_SEPARATOR_S);
 
@@ -1687,6 +1689,9 @@ void read_opengl_file()
 				colorMapColors[2][2] = 1.0;
 			}
 		}
+ 		if(fgets(t,taille,fd))
+			if(sscanf(t,"%d",&showOneSurface)!=1) showOneSurface = 0;
+		setShowOneSurface(showOneSurface);
 
 		fclose(fd);
 	}

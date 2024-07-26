@@ -68,7 +68,7 @@ DrawGeom.o: ../Files/GabeditFileChooser.h
 DrawGeom.o: ../Common/GabeditType.h ../Utils/Constants.h
 DrawGeom.o: ../Utils/UtilsInterface.h ../Geometry/InterfaceGeom.h
 DrawGeom.o: ../Utils/Utils.h ../Utils/PovrayUtils.h ../Utils/AtomsProp.h
-DrawGeom.o: ../Geometry/GeomGlobal.h ../Geometry/Mesure.h
+DrawGeom.o: ../Geometry/GeomGlobal.h ../Geometry/Measure.h
 DrawGeom.o: ../Geometry/Povray.h ../Common/Windows.h
 DrawGeom.o: ../Utils/Transformation.h ../Geometry/GeomXYZ.h
 DrawGeom.o: ../Geometry/GeomZmatrix.h ../Geometry/Symmetry.h
@@ -101,7 +101,7 @@ ExportGeom.o: ../Files/GabeditFileChooser.h
 ExportGeom.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
 ExportGeom.o: ../Geometry/InterfaceGeom.h ../Utils/Utils.h
 ExportGeom.o: ../Utils/AtomsProp.h ../Utils/Vector3d.h
-ExportGeom.o: ../Geometry/GeomGlobal.h ../Geometry/Mesure.h
+ExportGeom.o: ../Geometry/GeomGlobal.h ../Geometry/Measure.h
 ExportGeom.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h Fragments.h
 ExportGeom.o: ../Geometry/ExportGeom.h ../Common/Windows.h
 ExportGeom.o: ../Files/FileChooser.h
@@ -199,12 +199,20 @@ LoadPersonalFragments.o: ../Files/GabeditFileChooser.h
 LoadPersonalFragments.o: ../Common/GabeditType.h ../Geometry/Fragments.h
 LoadPersonalFragments.o: ../Geometry/PersonalFragments.h ../Utils/Utils.h
 LoadPersonalFragments.o: ../Utils/Constants.h
+Measure.o: ../../Config.h
+Measure.o: ../Common/Global.h
+Measure.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
+Measure.o: ../Utils/Constants.h ../Utils/UtilsInterface.h ../Utils/Utils.h
+Measure.o: ../Utils/AtomsProp.h ../Geometry/GeomGlobal.h
+Measure.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h Fragments.h
+Measure.o: ../Geometry/RotFragments.h ../Geometry/TreeMolecule.h DrawGeom.h
+Measure.o: ../Utils/Matrix3D.h
 MenuToolBarGeom.o: ../../Config.h
 MenuToolBarGeom.o: ../Common/Global.h
 MenuToolBarGeom.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
 MenuToolBarGeom.o: ../Utils/UtilsInterface.h ../Geometry/InterfaceGeom.h
 MenuToolBarGeom.o: ../Utils/Utils.h ../Utils/AtomsProp.h
-MenuToolBarGeom.o: ../Geometry/GeomGlobal.h ../Geometry/Mesure.h
+MenuToolBarGeom.o: ../Geometry/GeomGlobal.h ../Geometry/Measure.h
 MenuToolBarGeom.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h Fragments.h
 MenuToolBarGeom.o: ../Geometry/Povray.h ../Common/Windows.h
 MenuToolBarGeom.o: ../Utils/Transformation.h
@@ -227,14 +235,6 @@ MenuToolBarGeom.o: ../Geometry/FragmentsSelector.h ../Geometry/ExportGeom.h
 MenuToolBarGeom.o: ../Utils/HydrogenBond.h
 MenuToolBarGeom.o: ../Symmetry/MoleculeSymmetryInterface.h
 MenuToolBarGeom.o: ../Common/StockIcons.h
-Mesure.o: ../../Config.h
-Mesure.o: ../Common/Global.h
-Mesure.o: ../Files/GabeditFileChooser.h
-Mesure.o: ../Common/GabeditType.h ../Utils/Constants.h
-Mesure.o: ../Utils/UtilsInterface.h ../Utils/Utils.h ../Utils/AtomsProp.h
-Mesure.o: ../Geometry/GeomGlobal.h ../Geometry/Fragments.h
-Mesure.o: ../Geometry/DrawGeom.h Fragments.h ../Geometry/RotFragments.h
-Mesure.o: ../Geometry/TreeMolecule.h DrawGeom.h ../Utils/Matrix3D.h
 OpenBabel.o: ../../Config.h
 OpenBabel.o: ../Common/Global.h ../Files/GabeditFileChooser.h
 OpenBabel.o: ../Common/GabeditType.h ../Utils/Constants.h
@@ -260,7 +260,7 @@ Povray.o: ../Files/GabeditFileChooser.h
 Povray.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
 Povray.o: ../Geometry/InterfaceGeom.h ../Utils/Utils.h ../Utils/PovrayUtils.h
 Povray.o: ../Utils/AtomsProp.h ../Utils/Vector3d.h ../Utils/Constants.h
-Povray.o: ../Geometry/GeomGlobal.h ../Geometry/Mesure.h
+Povray.o: ../Geometry/GeomGlobal.h ../Geometry/Measure.h
 Povray.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h Fragments.h
 Povray.o: ../Common/Windows.h
 PreviewGeom.o: ../../Config.h
@@ -269,7 +269,7 @@ PreviewGeom.o: ../Files/GabeditFileChooser.h
 PreviewGeom.o: ../Common/GabeditType.h ../Utils/Constants.h
 PreviewGeom.o: ../Utils/UtilsInterface.h ../Geometry/InterfaceGeom.h
 PreviewGeom.o: ../Utils/Utils.h ../Utils/PovrayUtils.h ../Utils/AtomsProp.h
-PreviewGeom.o: ../Geometry/GeomGlobal.h ../Geometry/Mesure.h
+PreviewGeom.o: ../Geometry/GeomGlobal.h ../Geometry/Measure.h
 PreviewGeom.o: ../Geometry/Povray.h ../Common/Windows.h
 PreviewGeom.o: ../Utils/Transformation.h ../Geometry/GeomXYZ.h
 PreviewGeom.o: ../Geometry/GeomZmatrix.h ../Geometry/Symmetry.h

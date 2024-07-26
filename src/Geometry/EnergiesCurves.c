@@ -68,11 +68,11 @@ static void movie_geom(GtkWidget *widget,gpointer data)
 	gboolean temp ;
 
 
-	temp = MesureIsHide;
+	temp = MeasureIsHide;
 	if(ZoneDessin)
-		HideShowMesure(TRUE);
+		HideShowMeasure(TRUE);
 	else
-		MesureIsHide = TRUE;
+		MeasureIsHide = TRUE;
 
 	draw_geom(widget,data);
 	GeomConv = (DataGeomConv*)(g_object_get_data(G_OBJECT(widget),"Geometry"));	
@@ -98,9 +98,9 @@ static void movie_geom(GtkWidget *widget,gpointer data)
 	g_free(taby);
 	g_timer_destroy(timer);
 
-	if(temp != MesureIsHide)
+	if(temp != MeasureIsHide)
 	{
-		HideShowMesure(temp);
+		HideShowMeasure(temp);
 	}
 
 }

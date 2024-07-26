@@ -34,7 +34,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/PovrayUtils.h"
 #include "../Utils/AtomsProp.h"
 #include "../Geometry/GeomGlobal.h"
-#include "../Geometry/Mesure.h"
+#include "../Geometry/Measure.h"
 #include "../Geometry/Povray.h"
 #include "../Common/Windows.h"
 #include "../Utils/Transformation.h"
@@ -62,6 +62,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/PreviewGeom.h"
 #include "../Geometry/FragmentsSelector.h"
 #include "../IsotopeDistribution/IsotopeDistributionCalculatorDlg.h"
+#include "../Geometry/TreeMolecule.h"
 
 
 /********************************************************************************/
@@ -81,6 +82,8 @@ static gint NumProcheAtom = -1;
 static gboolean ButtonPressed = FALSE;
 static gboolean ShiftKeyPressed = FALSE;
 static gboolean ControlKeyPressed = FALSE;
+static gboolean FKeyPressed = FALSE;
+static gboolean GKeyPressed = FALSE;
 
 gchar* strToDraw = NULL;
 
@@ -140,7 +143,7 @@ static	GdkColor* BackColor=NULL;
 static GdkPixmap *pixmap = NULL;
 static cairo_t *cr = NULL;
 static 	GtkWidget *NoteBookDraw;
-static	GtkWidget *vboxmesure;
+static	GtkWidget *vboxmeasure;
 static gdouble TCOS[91],TSIN[91];
 static gdouble CenterCoor[2];
 static GtkWidget *vboxhandle;
@@ -433,6 +436,7 @@ void get_geometry_from_fifo(gboolean toNext)
 	}
 	/* if(!fifoGeometries) printf("fifoGeometries is void\n");*/
 	change_of_center(NULL,NULL);
+	create_GeomXYZ_from_draw_grometry();
 }
 /**********************************************************************************/
 static gint get_indice(gint n)
@@ -2185,6 +2189,14 @@ static gint set_key_press(GtkWidget* wid, GdkEventKey *event, gpointer data)
 	{
 		ControlKeyPressed = TRUE;
 	}
+	else if((event->keyval == GDK_F || event->keyval == GDK_f) )
+	{
+		FKeyPressed = TRUE;
+	}
+	else if((event->keyval == GDK_G || event->keyval == GDK_g) )
+	{
+		GKeyPressed = TRUE;
+	}
 	else if((event->keyval == GDK_A || event->keyval == GDK_a)  && ControlKeyPressed)
 	{
 		SelectAllAtoms();
@@ -2195,7 +2207,7 @@ static gint set_key_press(GtkWidget* wid, GdkEventKey *event, gpointer data)
         	{
 			case MOVEFRAG : 
 			case DELETEOBJECTS : 
-			case MESURE     : 
+			case MEASURE     : 
 			case EDITOBJECTS : 
 			case ADDFRAGMENT : 
 			case ROTLOCFRAG : 
@@ -2212,7 +2224,7 @@ static gint set_key_press(GtkWidget* wid, GdkEventKey *event, gpointer data)
         	{
 			case MOVEFRAG : 
 			case DELETEOBJECTS : 
-			case MESURE     : 
+			case MEASURE     : 
 			case EDITOBJECTS : 
 			case ADDFRAGMENT : 
 			case ROTLOCFRAG : 
@@ -2234,6 +2246,10 @@ static gint set_key_release(GtkWidget* wid, GdkEventKey *event, gpointer data)
 		ShiftKeyPressed = FALSE;
 	else if((event->keyval == GDK_Control_L || event->keyval == GDK_Control_R) )
 		ControlKeyPressed = FALSE;
+	else if((event->keyval == GDK_F || event->keyval == GDK_f) )
+		FKeyPressed = FALSE;
+	else if((event->keyval == GDK_G || event->keyval == GDK_g) )
+		GKeyPressed = FALSE;
 	return TRUE;
 }
 /********************************************************************************/
@@ -2358,6 +2374,60 @@ void draw_text(gchar* str)
 
 	if(font_desc) pango_font_description_free (font_desc);
 
+}
+/*****************************************************************************/
+gboolean select_atoms_by_groupe()
+{
+	gint i;
+	gdouble x1=0;
+	gdouble y1=0;
+	gdouble xi;
+	gdouble yi;
+	gdouble d = 0;
+	gint j;
+	gint k;
+	gboolean OK = FALSE;
+
+	x1 = BeginX;
+	y1 = BeginY;
+
+	for(i=0;i<(gint)Natoms;i++)
+	{
+		xi = geometry[i].Xi;
+		yi = geometry[i].Yi;
+		d = (xi-x1)*(xi-x1) + (yi-y1)*(yi-y1);
+		d = sqrt(d);
+		if(d<=geometry[i].Rayon)
+		{
+			if(NumFatoms == NULL) NumFatoms = g_malloc((NFatoms+1)*sizeof(gint));
+			else NumFatoms = g_realloc(NumFatoms, (NFatoms+1)*sizeof(gint));
+			NumFatoms[NFatoms] = geometry[i].N;
+			NFatoms+=1;
+
+			for(j=0;j<(gint)Natoms;j++)
+			{
+				if(get_connection_type(i,j)>0)
+				{
+
+					gint nGroupAtoms=0;
+					gint * listGroupAtoms = getListGroupe(&nGroupAtoms, geometry0, Natoms, i, j,-1,-1);
+					if(NumFatoms == NULL) NumFatoms = g_malloc((NFatoms+nGroupAtoms+1)*sizeof(gint));
+					else NumFatoms = g_realloc(NumFatoms, (NFatoms+nGroupAtoms+1)*sizeof(gint));
+
+					NumFatoms[NFatoms] = geometry[j].N;
+					for(k=NFatoms+1;k<NFatoms+nGroupAtoms+1;k++)
+						NumFatoms[k] = geometry[listGroupAtoms[k-NFatoms-1]].N;
+					NFatoms+=nGroupAtoms+1;
+					if(listGroupAtoms) g_free(listGroupAtoms);
+					OK = TRUE;
+				}
+			}
+			break;
+
+		}
+	}
+	dessine();
+	return OK;
 }
 /*****************************************************************************/
 gboolean select_atoms_by_residues()
@@ -5129,7 +5199,7 @@ void set_povray_options_geom(GtkWidget *win, guint data)
 	 createPovrayOptionsWindow(GeomDlg);
 }
 /********************************************************************************/  
-void HideShowMesure(gboolean hiding)
+void HideShowMeasure(gboolean hiding)
 {
 	if(hiding)
 	{
@@ -5140,7 +5210,7 @@ void HideShowMesure(gboolean hiding)
 	}
 	else gtk_widget_show(vboxhandle);
 
-   	MesureIsHide=hiding;
+   	MeasureIsHide=hiding;
 }
 /********************************************************************************/  
 void AdjustHydrogensYesNo(gboolean adjust)
@@ -6474,7 +6544,10 @@ gint button_press(GtkWidget *DrawingArea, GdkEvent *event, gpointer Menu)
         			switch(OperationType)
         			{
 					case SELECTOBJECTS :
-						if(select_atoms_by_residues()) 
+						if(GKeyPressed && select_atoms_by_groupe()) 
+							SetOperation(NULL,SELECTRESIDUE); 
+						else
+						if(!FKeyPressed && select_atoms_by_residues()) 
 							SetOperation(NULL,SELECTRESIDUE); 
 						else
 							SetOperation(NULL,SELECTFRAG); 
@@ -6485,7 +6558,7 @@ gint button_press(GtkWidget *DrawingArea, GdkEvent *event, gpointer Menu)
 					case DELETEOBJECTS : 
 						add_geometry_to_fifo();
 						set_selected_atom_or_bond_to_delete(bevent);break;
-					case MESURE     : set_selected_atoms(bevent);break;
+					case MEASURE     : set_selected_atoms(bevent);break;
 					case EDITOBJECTS : 
 							  add_geometry_to_fifo();
 							  set_selected_atom_or_bond_to_edit(bevent); 
@@ -6911,7 +6984,7 @@ void SetOperation (GtkWidget *widget, guint data)
 		case SCALESTICK : temp = g_strdup(" Press the Left mouse button and move your mouse for \"Scale Stick\". ");break;
 		case SCALEBALL  :  temp = g_strdup(" Press the Left mouse button and move your mouse for \"Scale Ball\". ");break;
 		case SCALEDIPOLE:  temp = g_strdup(" Press the Left mouse button and move your mouse for \"Scale Dipole\". ");break;
-		case SELECTOBJECTS :  temp = g_strdup(" Press the Left mouse button and pick an atom for select a residue, Or move your mouse for \"select a fragments\". Use shift key for more selections.");break;
+		case SELECTOBJECTS :  temp = g_strdup("Pick an atom to select a residue, G key + pick an atom to select a group, Or F key + move your mouse to select a fragments. Use shift key for more selections.");break;
 		case SELECTFRAG :  temp = g_strdup(" Press the Left mouse button and move your mouse for \"select a fragments\".Use shift key for more selections. ");break;
 		case SELECTRESIDUE :  temp = g_strdup("  Press the Left mouse button for pick an atom, all atoms for residue of this atom are selected(or unselected).");break;
 		case DELETEFRAG :  temp = g_strdup(" Press the Left mouse button(for pick an atom or all selected atoms) and release for \"Delete selected atom(s)\". ");break;
@@ -6922,8 +6995,8 @@ void SetOperation (GtkWidget *widget, guint data)
 		case ADDATOMSBOND :  temp = g_strdup(" Press and release the Left mouse button for \"Insert atom(s)/bond\".\"Pick an atom for replace it.\"");break;
 		case CHANGEBOND :  temp = g_strdup(" Press the Left mouse button(for pick a bond) and release for \"Change selected bond\". ");break;
 		case CUTBOND :  temp = g_strdup(" Press the Left mouse button(for pick a bond) and release for \"Delete selected bond\". ");break;
-		case MESURE		:  temp = g_strdup(" Press and release the Left mouse button for \"Select your atoms\". ");
-							HideShowMesure(FALSE);
+		case MEASURE		:  temp = g_strdup(" Press and release the Left mouse button for \"Select your atoms\". ");
+							HideShowMeasure(FALSE);
 							change_of_center(NULL,NULL);
 							dessine();
 							break;
@@ -10340,7 +10413,7 @@ void dessine_byLayer()
 			if(NSA[2]>-1 && (gint)geometry[i].N == NSA[2]) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorBlue);
 			if(NSA[3]>-1 && (gint)geometry[i].N == NSA[3]) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorYellow);
 		}
-		if(OperationType == MESURE)
+		if(OperationType == MEASURE)
 		for(j = 0;j<4;j++)
 		if(NumSelAtoms[j] == (gint)geometry[i].N) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorGreen);
         	switch(OperationType)
@@ -10539,7 +10612,7 @@ void dessine_byLayer()
 		if(NSA[2]>-1 && (gint)geometry[i].N == NSA[2] && geometry[i].show) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorBlue);
 		if(NSA[3]>-1 && (gint)geometry[i].N == NSA[2] && geometry[i].show) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorYellow);
 	}
-	if(OperationType == MESURE && geometry[i].show)
+	if(OperationType == MEASURE && geometry[i].show)
 	for(j = 0;j<4;j++)
 		if(NumSelAtoms[j] == (gint)geometry[i].N )
  			draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorGreen);
@@ -10808,7 +10881,7 @@ void dessine_stick()
 			if(NSA[2]>-1 && (gint)geometry[i].N == NSA[2]) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorBlue);
 			if(NSA[3]>-1 && (gint)geometry[i].N == NSA[3]) draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorYellow);
 		}
-		if(OperationType == MESURE)
+		if(OperationType == MEASURE)
 		for(j = 0;j<4;j++)
 		if(NumSelAtoms[j] == (gint)geometry[i].N)
 	 		draw_anneau(geometry[i].Xi,geometry[i].Yi,rayon,colorGreen);
@@ -10971,12 +11044,12 @@ void rafresh_drawing()
 {
   
 	guint i;
-	HideShowMesure(MesureIsHide);
+	HideShowMeasure(MeasureIsHide);
 	i= gtk_notebook_get_current_page(GTK_NOTEBOOK(NoteBookDraw));
 	define_geometry();
 	gtk_notebook_remove_page((GtkNotebook *)NoteBookDraw,0);
-	vboxmesure =AddNoteBookPage(NoteBookDraw,"Mesure");
-	AddMesure(GeomDlg,vboxmesure);
+	vboxmeasure =AddNoteBookPage(NoteBookDraw,"Measure");
+	AddMeasure(GeomDlg,vboxmeasure);
 
 	gtk_widget_hide_all(NoteBookDraw);
 	gtk_widget_show_all(NoteBookDraw);
@@ -11381,7 +11454,7 @@ void create_window_drawing()
 	gtk_widget_show(VboxWin);
 	gtk_window_set_title(GTK_WINDOW(GeomDlg),"Gabedit : Draw Geometry ");
 	gtk_window_set_transient_for(GTK_WINDOW(GeomDlg),GTK_WINDOW(Fenetre));
-	/*gtk_widget_add_events(GeomDlg,GDK_KEY_RELEASE_MASK);*/
+	/* gtk_widget_add_events(GeomDlg,GDK_KEY_RELEASE_MASK);*/
    
 
 	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
@@ -11453,12 +11526,12 @@ void create_window_drawing()
 	NoteBookDraw = NoteBook;
 	gtk_box_pack_start(GTK_BOX (vboxright), NoteBook,TRUE, TRUE, 0);
 
-	vboxmesure =AddNoteBookPage(NoteBook,"Mesure");
+	vboxmeasure =AddNoteBookPage(NoteBook,"Measure");
 	
 
-	AddMesure(GeomDlg,vboxmesure);
+	AddMeasure(GeomDlg,vboxmeasure);
 	gtk_widget_show(NoteBook);
-	gtk_widget_show_all(vboxmesure);
+	gtk_widget_show_all(vboxmeasure);
 	change_of_center(NULL,NULL);
 	gtk_widget_show(vboxright);
 
@@ -11520,7 +11593,7 @@ void create_window_drawing()
 
 	gtk_widget_show(frame);
 
-	if(MesureIsHide)
+	if(MeasureIsHide)
 	{
   		gtk_widget_hide(vboxhandle);
 	}

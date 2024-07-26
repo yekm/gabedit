@@ -113,7 +113,7 @@ StockIcons.o: ../../pixmaps/Gabedit.xpm ../../pixmaps/Info.xpm
 StockIcons.o: ../../pixmaps/InsertAtom.xpm ../../pixmaps/InsertFragment.xpm
 StockIcons.o: ../../pixmaps/ChangeBond.xpm ../../pixmaps/CutBond.xpm
 StockIcons.o: ../../pixmaps/DeleteCut.xpm ../../pixmaps/AddBond.xpm
-StockIcons.o: ../../pixmaps/Insert.xpm ../../pixmaps/Mesure.xpm
+StockIcons.o: ../../pixmaps/Insert.xpm ../../pixmaps/Measure.xpm
 StockIcons.o: ../../pixmaps/Molcas.xpm ../../pixmaps/Molden.xpm
 StockIcons.o: ../../pixmaps/Molpro.xpm ../../pixmaps/Orca.xpm
 StockIcons.o: ../../pixmaps/QChem.xpm ../../pixmaps/Mopac.xpm

@@ -1,5 +1,5 @@
 /* XPM */
-static char * mesure_xpm[] = {
+static char * measure_xpm[] = {
 "24 24 4 1",
 " 	c None",
 ".	c #FF0000",

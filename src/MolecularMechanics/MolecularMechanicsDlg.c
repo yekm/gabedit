@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Constants.h"
 #include "../Geometry/Fragments.h"
 #include "../Geometry/DrawGeom.h"
-#include "../Geometry/Mesure.h"
+#include "../Geometry/Measure.h"
 #include "../Geometry/ResultsAnalise.h"
 #include "../Geometry/GeomGlobal.h"
 #include "../Geometry/GeomXYZ.h"

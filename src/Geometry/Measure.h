@@ -16,11 +16,11 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 DEALINGS IN THE SOFTWARE.
 ************************************************************************************************************/
 
-#ifndef __GABEDIT_MESURE_H__
-#define __GABEDIT_MESURE_H__
+#ifndef __GABEDIT_MEASURE_H__
+#define __GABEDIT_MEASURE_H__
 
 void change_of_center(GtkWidget *entry,gpointer d);
-void AddMesure(GtkWidget *Dialogue,GtkWidget *vboxframe);
+void AddMeasure(GtkWidget *Dialogue,GtkWidget *vboxframe);
 
-#endif /* __GABEDIT_MESURE_H__ */
+#endif /* __GABEDIT_MEASURE_H__ */
 

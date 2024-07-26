@@ -79,7 +79,7 @@ MolecularMechanicsDlg.o: ../Files/GabeditFileChooser.h
 MolecularMechanicsDlg.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
 MolecularMechanicsDlg.o: ../Utils/Constants.h ../Geometry/Fragments.h
 MolecularMechanicsDlg.o: ../Geometry/DrawGeom.h ../Geometry/Fragments.h
-MolecularMechanicsDlg.o: ../Geometry/Mesure.h ../Geometry/ResultsAnalise.h
+MolecularMechanicsDlg.o: ../Geometry/Measure.h ../Geometry/ResultsAnalise.h
 MolecularMechanicsDlg.o: ../Geometry/GeomGlobal.h ../Geometry/GeomXYZ.h
 MolecularMechanicsDlg.o: ../Utils/Utils.h ../Utils/AtomsProp.h
 MolecularMechanicsDlg.o: ../Files/FolderChooser.h
@@ -97,7 +97,7 @@ Molecule.o: ../Common/Global.h
 Molecule.o: ../Files/GabeditFileChooser.h
 Molecule.o: ../Common/GabeditType.h ../Utils/AtomsProp.h
 Molecule.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h
-Molecule.o: ../Geometry/Fragments.h ../Geometry/Mesure.h Atom.h Molecule.h
+Molecule.o: ../Geometry/Fragments.h ../Geometry/Measure.h Atom.h Molecule.h
 PDBTemplate.o: ../../Config.h
 PDBTemplate.o: ../Common/Global.h
 PDBTemplate.o: ../Files/GabeditFileChooser.h

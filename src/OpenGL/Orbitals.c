@@ -849,15 +849,56 @@ GtkWidget* create_alpha_beta_lists(GtkWidget *noteBook, gint Type)
 
 }
 /********************************************************************************/
+static void getiso(GtkWidget *button,gpointer data)
+{
+	GtkWidget* Entry =(GtkWidget*)g_object_get_data(G_OBJECT (button), "Entry");
+	GtkWidget* EntryPercent =(GtkWidget*)g_object_get_data(G_OBJECT (button), "EntryPercent");
+	gchar* temp;
+	gdouble isovalue = 0.1;
+	gdouble percent = 100;
+	gboolean square = TRUE;
+	gdouble precision =1e-6;
+	
+	temp = g_strdup(gtk_entry_get_text(GTK_ENTRY(EntryPercent))); 
+	delete_first_spaces(temp);
+	delete_last_spaces(temp);
+	if(this_is_a_real(temp)) percent = fabs(atof(temp));
+	else
+	{
+		GtkWidget* message =Message("Error : one entry is not a float ","Error",TRUE);
+  		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+		if(temp) g_free(temp);
+		return;
+	}
+	if(temp) g_free(temp);
+	if(percent<0) percent = 0;
+	if(percent>100) percent = 100;
+
+	if(
+		   TypeGrid == GABEDIT_TYPEGRID_ELFSAVIN
+		|| TypeGrid == GABEDIT_TYPEGRID_ELFBECKE
+		|| TypeGrid == GABEDIT_TYPEGRID_FEDELECTROPHILIC
+		|| TypeGrid == GABEDIT_TYPEGRID_FEDNUCLEOPHILIC
+		|| TypeGrid == GABEDIT_TYPEGRID_FEDRADICAL
+	) square = FALSE;
+
+	if(!compute_isovalue_percent_from_grid(grid, square, percent, precision, &isovalue)) return;
+	temp = g_strdup_printf("%f",isovalue);
+	gtk_entry_set_text(GTK_ENTRY(Entry),temp); 
+	if(temp) g_free(temp);
+}
+/********************************************************************************/
 GtkWidget *create_iso_frame( GtkWidget *vboxall,gchar* title)
 {
 	GtkWidget *frame;
 	GtkWidget *vboxframe;
 	GtkWidget *Entry;
+	GtkWidget *EntryPercent;
 	gushort i;
 	gushort j;
 	GtkWidget *Table;
 	gdouble v;
+  	GtkWidget* button;
 #define NLIGNES   3
 #define NCOLUMNS  3
 	gchar      *strlabels[NLIGNES][NCOLUMNS];
@@ -868,13 +909,14 @@ GtkWidget *create_iso_frame( GtkWidget *vboxall,gchar* title)
 	strlabels[0][1] = g_strdup(" : ");
 	strlabels[1][1] = g_strdup(" : ");
 	strlabels[2][1] = g_strdup(" : ");
+
 	if(fabs(limits.MinMax[0][3])>1e6) strlabels[0][2] = g_strdup_printf(" %e ",limits.MinMax[0][3]);
 	else strlabels[0][2] = g_strdup_printf(" %lf ",limits.MinMax[0][3]);
 
 	if(fabs(limits.MinMax[1][3])>1e6) strlabels[1][2] = g_strdup_printf(" %e ",limits.MinMax[1][3]);
 	else strlabels[1][2] = g_strdup_printf(" %lf ",limits.MinMax[1][3]);
 	v = limits.MinMax[1][3]/4;
-	if(v>0.2 && fabs(limits.MinMax[1][3])>0.01 && fabs(limits.MinMax[2][3])<0.01) v= 0.01;
+	if(v>0.2 && fabs(limits.MinMax[1][3])>0.01 && fabs(limits.MinMax[0][3])<0.01) v= 0.01;
 	if(TypeGrid == GABEDIT_TYPEGRID_SAS) v = 0;
 	if(TypeGrid == GABEDIT_TYPEGRID_ELFSAVIN) v = 0.8;
 	if(TypeGrid == GABEDIT_TYPEGRID_ELFBECKE) v = 0.8;
@@ -906,8 +948,28 @@ GtkWidget *create_iso_frame( GtkWidget *vboxall,gchar* title)
 		for(j=0;j<3;j++)
 			g_free(strlabels[i][j]);
 	}
+	gtk_box_pack_start (GTK_BOX (vboxframe), gtk_hseparator_new (), TRUE, TRUE, 0);
+	Table = gtk_table_new(1,3,FALSE);
+	gtk_box_pack_start (GTK_BOX (vboxframe), Table, TRUE, TRUE, 0);
+	EntryPercent= gtk_entry_new ();
+	gtk_widget_set_size_request(EntryPercent,60,-1);
+	add_widget_table(Table,EntryPercent,0,0);
+	gtk_entry_set_text(GTK_ENTRY( EntryPercent),"99");
+	g_object_set_data(G_OBJECT (frame), "EntryPercent",EntryPercent);
+	add_label_at_table(Table,"%",0,1,GTK_JUSTIFY_LEFT);
+    	button = gtk_button_new_with_label("  Get Isovalue  ");
+	g_object_set_data(G_OBJECT (frame), "ButtonGet",button);
+	gtk_table_attach(GTK_TABLE(Table),button,2,3,0,1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+
 	gtk_widget_show_all(frame);
 	g_object_set_data(G_OBJECT (frame), "Entry",Entry);
+
+	g_object_set_data(G_OBJECT (button), "EntryPercent",EntryPercent);
+	g_object_set_data(G_OBJECT (button), "Entry",Entry);
+  	g_signal_connect(G_OBJECT(button), "clicked",(GCallback)getiso,GTK_OBJECT(Entry));
   
   	return frame;
 }

@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/AtomsProp.h"
 #include "../Geometry/Fragments.h"
 #include "../Geometry/DrawGeom.h"
-#include "../Geometry/Mesure.h"
+#include "../Geometry/Measure.h"
 #include "Atom.h"
 #include "Molecule.h"
 void dessine();

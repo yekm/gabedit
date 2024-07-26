@@ -22,8 +22,10 @@ DEALINGS IN THE SOFTWARE.
 void resetBeginNegative();
 gdouble getScaleBall();
 gdouble getScaleStick();
+gboolean getShowOneSurface();
 void setScaleBall(gdouble a);
 void setScaleStick(gdouble a);
+void setShowOneSurface(gboolean a);
 gint getOptCol();
 void setOptCol(gint i);
 void build_rings(gint size);

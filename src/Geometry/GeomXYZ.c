@@ -863,6 +863,7 @@ static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
 
    		clearList(list);
 		append_list();
+		if(ZoneDessin != NULL) rafresh_drawing();
 		return;
 	}
 	/* symbol */
@@ -5814,10 +5815,10 @@ void read_geom_from_gaussian_file(gchar *NomFichier, gint numgeometry)
     result = pdest - t ;
     if ( result >0 )
     {
-
 	long geomposok = ftell(fd);
+      	get_dipole_from_gaussian_output_file(fd);
+	fseek(fd, geomposok, SEEK_SET);
 	get_charges_from_gaussian_output_file(fd,j+1);
- 	get_dipole_from_gaussian_output_file(fd);
 	get_natural_charges_from_gaussian_output_file(fd,j+1);
 	fseek(fd, geomposok, SEEK_SET);
 	get_esp_charges_from_gaussian_output_file(fd,j+1);
@@ -6105,8 +6106,9 @@ void read_last_gaussian_file(GabeditFileChooser *SelecFile , gint response_id)
     if ( result >0 )
     {
 	long geomposok = ftell(fd);
-	get_charges_from_gaussian_output_file(fd,j+1);
       	get_dipole_from_gaussian_output_file(fd);
+	fseek(fd, geomposok, SEEK_SET);
+	get_charges_from_gaussian_output_file(fd,j+1);
 	get_natural_charges_from_gaussian_output_file(fd,j+1);
 	fseek(fd, geomposok, SEEK_SET);
 	get_esp_charges_from_gaussian_output_file(fd,j+1);
@@ -6262,8 +6264,9 @@ void read_first_gaussian_file(GabeditFileChooser *SelecFile, gint response_id)
     if ( result >0 )
     {
 	long geomposok = ftell(fd);
-	get_charges_from_gaussian_output_file(fd,j+1);
       	get_dipole_from_gaussian_output_file(fd);
+	fseek(fd, geomposok, SEEK_SET);
+	get_charges_from_gaussian_output_file(fd,j+1);
 	get_natural_charges_from_gaussian_output_file(fd,j+1);
 	fseek(fd, geomposok, SEEK_SET);
 	get_esp_charges_from_gaussian_output_file(fd,j+1);
@@ -9851,9 +9854,11 @@ void read_XYZ_file_no_add_list(G_CONST_RETURN  gchar *NomFichier)
 void create_GeomXYZ_from_draw_grometry()
 {
 	gint j;
+	gint jj;
 	gboolean toSort = FALSE;
 	gint iHigh = -1;
 	gint i;
+	gint* numOrd = NULL;
 
  	if(GeomXYZ) freeGeomXYZ();
  	if(VariablesXYZ) freeVariablesXYZ(VariablesXYZ);
@@ -9867,38 +9872,51 @@ void create_GeomXYZ_from_draw_grometry()
 	GeomXYZ=g_malloc(NcentersXYZ*sizeof(GeomXYZAtomDef));
 	*/
 	if(Natoms>0) GeomXYZ=g_malloc(NcentersXYZ*sizeof(GeomXYZAtomDef));
+	if(Natoms>0) numOrd=g_malloc(NcentersXYZ*sizeof(GeomXYZAtomDef));
+	for(i=0;i<(gint)NcentersXYZ;i++)
+	{
+		numOrd[i] = i;
+		for(j=0;j<(gint)NcentersXYZ;j++)
+    		if(geometry0[j].N-1==i)
+		{ 
+			numOrd[i] = j; 
+			break;
+		}
+	}
+
 	copy_connections(geometry0, geometry, Natoms);
 
 	for(j=0;j<(gint)NcentersXYZ;j++)
 	{
+		jj = numOrd[j]; 
     		GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
-    		GeomXYZ[j].Symb=g_strdup(geometry0[j].Prop.symbol);
-    		GeomXYZ[j].mmType=g_strdup(geometry0[j].mmType);
-    		GeomXYZ[j].pdbType=g_strdup(geometry0[j].pdbType);
-    		GeomXYZ[j].Residue=g_strdup(geometry0[j].Residue);
-    		GeomXYZ[j].ResidueNumber=geometry0[j].ResidueNumber;
+    		GeomXYZ[j].Symb=g_strdup(geometry0[jj].Prop.symbol);
+    		GeomXYZ[j].mmType=g_strdup(geometry0[jj].mmType);
+    		GeomXYZ[j].pdbType=g_strdup(geometry0[jj].pdbType);
+    		GeomXYZ[j].Residue=g_strdup(geometry0[jj].Residue);
+    		GeomXYZ[j].ResidueNumber=geometry0[jj].ResidueNumber;
     		GeomXYZ[j].typeConnections = g_malloc(NcentersXYZ*sizeof(gint));
-		for(i=0;i<NcentersXYZ;i++) GeomXYZ[j].typeConnections[i] = get_connection_type(j,i);
+		for(i=0;i<NcentersXYZ;i++) GeomXYZ[j].typeConnections[i] = get_connection_type(jj,numOrd[i]);
     		if(Units==1)
     		{
-    			GeomXYZ[j].X=g_strdup_printf("%0.6f",geometry0[j].X*BOHR_TO_ANG);
-    			GeomXYZ[j].Y=g_strdup_printf("%0.6f",geometry0[j].Y*BOHR_TO_ANG);
-    			GeomXYZ[j].Z=g_strdup_printf("%0.6f",geometry0[j].Z*BOHR_TO_ANG);
+    			GeomXYZ[j].X=g_strdup_printf("%0.6f",geometry0[jj].X*BOHR_TO_ANG);
+    			GeomXYZ[j].Y=g_strdup_printf("%0.6f",geometry0[jj].Y*BOHR_TO_ANG);
+    			GeomXYZ[j].Z=g_strdup_printf("%0.6f",geometry0[jj].Z*BOHR_TO_ANG);
     		}
     		else
     		{
-    			GeomXYZ[j].X=g_strdup_printf("%0.6f",geometry0[j].X);
-    			GeomXYZ[j].Y=g_strdup_printf("%0.6f",geometry0[j].Y);
-    			GeomXYZ[j].Z=g_strdup_printf("%0.6f",geometry0[j].Z);
+    			GeomXYZ[j].X=g_strdup_printf("%0.6f",geometry0[jj].X);
+    			GeomXYZ[j].Y=g_strdup_printf("%0.6f",geometry0[jj].Y);
+    			GeomXYZ[j].Z=g_strdup_printf("%0.6f",geometry0[jj].Z);
 		}
-    		GeomXYZ[j].Charge=g_strdup_printf("%0.6f",geometry0[j].Charge);
-		if(geometry0[j].Variable) set_variable_one_atom_in_GeomXYZ(j);
-		if(geometry0[j].Layer==LOW_LAYER) 
+    		GeomXYZ[j].Charge=g_strdup_printf("%0.6f",geometry0[jj].Charge);
+		if(geometry0[jj].Variable) set_variable_one_atom_in_GeomXYZ(j);
+		if(geometry0[jj].Layer==LOW_LAYER) 
 		{
 			GeomXYZ[j].Layer=g_strdup("Low");
 			toSort = TRUE;
 		}
-		else if(geometry0[j].Layer==MEDIUM_LAYER) 
+		else if(geometry0[jj].Layer==MEDIUM_LAYER) 
 		{
 			GeomXYZ[j].Layer=g_strdup("Medium");
 			toSort = TRUE;
@@ -9908,7 +9926,9 @@ void create_GeomXYZ_from_draw_grometry()
 			if(iHigh<0) iHigh = j;
 			GeomXYZ[j].Layer=g_strdup(" ");
 		}
-    }
+    	}
+	if(numOrd) g_free(numOrd);
+	numOrd = NULL;
 	if(toSort && iHigh>=0)
 	{
 		GeomXYZAtomDef t;

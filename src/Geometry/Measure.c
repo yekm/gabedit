@@ -1,4 +1,4 @@
-/* Mesure.c */
+/* Measure.c */
 /**********************************************************************************************************
 Copyright (c) 2002-2009 Abdul-Rahman Allouche. All rights reserved
 
@@ -46,6 +46,7 @@ GtkWidget *LabelAveraged;
 
 /*****************/
 void dessine();
+void create_GeomXYZ_from_draw_grometry();
 /*****************/
 
 
@@ -603,6 +604,7 @@ static void activate_distance_entry(GtkWidget* entry, gchar* data)
 	setDistance(geometry0,i1,i2,newD,listGroupAtoms,nGroupAtoms);
 	if(listGroupAtoms) g_free(listGroupAtoms);
 	dessine();
+	create_GeomXYZ_from_draw_grometry();
 	g_free(oldD);
 
 
@@ -651,6 +653,7 @@ static void activate_angle_entry(GtkWidget* entry, gchar* data)
 	setAngle(Natoms,geometry0,i1,i2,i3,newA,listGroupAtoms,nGroupAtoms);
 	if(listGroupAtoms) g_free(listGroupAtoms);
 	dessine();
+	create_GeomXYZ_from_draw_grometry();
 	g_free(oldA);
 }
 /************************************************************************************************************/
@@ -703,6 +706,7 @@ static void activate_dihedral_entry(GtkWidget* entry, gchar* data)
 	setTorsion(Natoms,geometry0,i1,i2,i3,i4,newA, listGroupAtoms,nGroupAtoms);
 	if(listGroupAtoms) g_free(listGroupAtoms);
 	dessine();
+	create_GeomXYZ_from_draw_grometry();
 	g_free(oldA);
 }
 /********************************************************************************/
@@ -820,7 +824,7 @@ void create_frame_averaged(GtkWidget *Dialogue,GtkWidget *hbox)
   set_averaged_bond();
 }
 /************************************************************************************************************/
-void AddMesure(GtkWidget *Dialogue,GtkWidget *vboxframe)
+void AddMeasure(GtkWidget *Dialogue,GtkWidget *vboxframe)
 {
   GtkWidget *hbox;
   hbox = create_hbox(vboxframe);

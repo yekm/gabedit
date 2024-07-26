@@ -52,7 +52,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../../pixmaps/DeleteCut.xpm"
 #include "../../pixmaps/AddBond.xpm"
 #include "../../pixmaps/Insert.xpm"
-#include "../../pixmaps/Mesure.xpm"
+#include "../../pixmaps/Measure.xpm"
 #include "../../pixmaps/Molcas.xpm"
 #include "../../pixmaps/Molden.xpm"
 #include "../../pixmaps/Molpro.xpm"
@@ -167,7 +167,7 @@ void gabedit_gtk_stock_init()
 	add_one_icon(icon_factory, GABEDIT_STOCK_DELETE_CUT, delete_cut_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_ADD_BOND, add_bond_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_INSERT, insert_xpm);
-	add_one_icon(icon_factory, GABEDIT_STOCK_MESURE, mesure_xpm);
+	add_one_icon(icon_factory, GABEDIT_STOCK_MEASURE, measure_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOLCAS, molcas_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOLDEN, molden_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOLPRO, molpro_xpm);
