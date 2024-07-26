@@ -19,6 +19,8 @@ DEALINGS IN THE SOFTWARE.
 
 #include "../../Config.h"
 #include <gdk/gdkkeysyms.h>
+#include <gtk/gtkgl.h>
+/* #include <pthread.h>*/
 #include "GlobalOrb.h"
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
@@ -52,6 +54,9 @@ DEALINGS IN THE SOFTWARE.
 #include "LabelsGL.h"
 #include "RingsOrb.h"
 #include "RingsPov.h"
+
+
+/* static pthread_mutex_t theRender_mutex = PTHREAD_MUTEX_INITIALIZER;*/
 
 static gint OperationType = OPERATION_ROTATION_FREE;
 
@@ -779,13 +784,18 @@ void	InitGL()
 /*****************************************************************************/
 gint init(GtkWidget *widget)
 {
-	/* OpenGL functions can be called only if make_current returns true */
+	GdkGLContext *glcontext = gtk_widget_get_gl_context (widget);
+	GdkGLDrawable *gldrawable = gtk_widget_get_gl_drawable (widget);
+	
 	if(!GTK_IS_WIDGET(widget)) return TRUE;
 	if(!GTK_WIDGET_REALIZED(widget)) return TRUE;
-	if (gtk_gl_area_make_current(GTK_GL_AREA(widget)))
+
+	if (gdk_gl_drawable_gl_begin (gldrawable, glcontext))
 	{
 		glViewport(0,0, widget->allocation.width, widget->allocation.height);
 		InitGL();
+		gdk_window_invalidate_rect (gtk_widget_get_parent_window (widget), &widget->allocation, TRUE);
+		/* gdk_window_process_updates (gtk_widget_get_parent_window (widget), TRUE);*/
 	}
 	return TRUE;
 }
@@ -1086,10 +1096,13 @@ gint redrawGL2PS()
 /*****************************************************************************/
 gint redraw(GtkWidget *widget, gpointer data)
 {
+	GdkGLContext *glcontext = gtk_widget_get_gl_context (widget);
+	GdkGLDrawable *gldrawable = gtk_widget_get_gl_drawable (widget);
 	GLdouble m[4][4];
 	if(!GTK_IS_WIDGET(widget)) return TRUE;
 	if(!GTK_WIDGET_REALIZED(widget)) return TRUE;
-	if (!gtk_gl_area_make_current(GTK_GL_AREA(widget))) return FALSE;
+
+	if (!gdk_gl_drawable_gl_begin (gldrawable, glcontext)) return FALSE;
 
     	glMatrixMode(GL_PROJECTION);
     	glLoadIdentity();
@@ -1138,9 +1151,13 @@ gint redraw(GtkWidget *widget, gpointer data)
 	if(get_show_axes()) showLabelPrincipalAxes();
 	showLabelTitle(GLArea->allocation.width,GLArea->allocation.height);
 
-	/* Swap backbuffer to front */
-	glFlush();
-	gtk_gl_area_swap_buffers(GTK_GL_AREA(widget));
+	if (gdk_gl_drawable_is_double_buffered (gldrawable))
+		gdk_gl_drawable_swap_buffers (gldrawable);
+	else glFlush ();
+	gdk_gl_drawable_gl_end (gldrawable);
+	
+        while( gtk_events_pending() ) gtk_main_iteration();
+
 	createImagesFiles();
 	/* gtk_widget_queue_draw(PrincipalWindow);*/
 
@@ -1166,12 +1183,15 @@ gint draw(GtkWidget *widget, GdkEventExpose *event)
 /* When GLArea widget size changes, viewport size is set to match the new size */
 gint reshape(GtkWidget *widget, GdkEventConfigure *event)
 {
-	if (!GTK_IS_WIDGET(widget)) return TRUE;
+	GdkGLContext *glcontext = gtk_widget_get_gl_context (widget);
+	GdkGLDrawable *gldrawable = gtk_widget_get_gl_drawable (widget);
+
+	if(!GTK_IS_WIDGET(widget)) return TRUE;
 	if(!GTK_WIDGET_REALIZED(widget)) return TRUE;
 
-	/* OpenGL functions can be called only if make_current returns true */
-	if (gtk_gl_area_make_current(GTK_GL_AREA(widget)))
+	if (gdk_gl_drawable_gl_begin (gldrawable, glcontext))
 	{
+		/* pthread_mutex_lock (&theRender_mutex);*/
 		glViewport(0,0, widget->allocation.width, widget->allocation.height);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -1185,6 +1205,11 @@ gint reshape(GtkWidget *widget, GdkEventConfigure *event)
 		}
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
+		gdk_gl_drawable_gl_end (gldrawable);
+		/* pthread_mutex_unlock (&theRender_mutex);*/
+
+		gdk_window_invalidate_rect (gtk_widget_get_parent_window (widget), &widget->allocation, TRUE);
+		gdk_window_process_updates (gtk_widget_get_parent_window (widget), TRUE);
 	}
 	return TRUE;
 }
@@ -1465,6 +1490,29 @@ void rafresh_window_orb()
 	 }
 }
 /********************************************************************************************/
+/* Configure the OpenGL framebuffer.*/
+static GdkGLConfig *configure_gl()
+{
+	GdkGLConfig *glconfig;
+
+	/* Try double-buffered visual */
+	glconfig = gdk_gl_config_new_by_mode (GDK_GL_MODE_RGB    | GDK_GL_MODE_DEPTH  | GDK_GL_MODE_DOUBLE);
+	if (glconfig == NULL)
+	{
+      		printf ("\n*** Cannot find the double-buffered visual.\n");
+      		printf ("\n*** Trying single-buffered visual.\n");
+
+		/* Try single-buffered visual */
+		glconfig = gdk_gl_config_new_by_mode (GDK_GL_MODE_RGB   | GDK_GL_MODE_DEPTH);
+		if (glconfig == NULL)
+		{
+	  		printf ("*** No appropriate OpenGL-capable visual found.\n");
+	  		exit (1);
+		}
+	}
+	return glconfig;
+}
+/********************************************************************************************/
 gboolean NewGLArea(GtkWidget* vboxwin)
 {
 	GtkWidget* frame;
@@ -1474,37 +1522,12 @@ gboolean NewGLArea(GtkWidget* vboxwin)
 	GtkWidget* table; 
 	GtkWidget* hboxtoolbar; 
 
-  
-/* Attribute list for gtkGLArea widget. Specifies a
-     list of Boolean attributes and enum/integer
-     attribute/value pairs. The last attribute must be
-     GDK_GL_NONE. See glXChooseVisual manpage for further
-     explanation.
-*/
-  
 #define DIMAL 13
-	int attrlist[DIMAL];
 	int k = 0;
-	int attrlist2[] = {
-		GDK_GL_RGBA,
-		GDK_GL_RED_SIZE, 1,
-		GDK_GL_GREEN_SIZE, 1,
-		GDK_GL_BLUE_SIZE, 1,
-		GDK_GL_DEPTH_SIZE, 1,
-		GDK_GL_DOUBLEBUFFER,
-		GDK_GL_NONE
-	};
-	for(k=0;k<DIMAL;k++) attrlist[k] = GDK_GL_NONE;
+	GdkGLConfig *glconfig;
 
 	k = 0;
-	/* attrlist[k++] = GDK_GL_BUFFER_SIZE,24;*/
-	if(openGLOptions.rgba !=0) attrlist[k++] = GDK_GL_RGBA;
-	attrlist[k++] = GDK_GL_RED_SIZE;
-	attrlist[k++] = 1;
-	attrlist[k++] = GDK_GL_GREEN_SIZE;
-	attrlist[k++] = 1;
-	attrlist[k++] = GDK_GL_BLUE_SIZE;
-	attrlist[k++] = 1;
+	/*
 	if(openGLOptions.alphaSize!=0)
 	{
 		attrlist[k++] = GDK_GL_ALPHA_SIZE;
@@ -1516,15 +1539,7 @@ gboolean NewGLArea(GtkWidget* vboxwin)
 		attrlist[k++] = 1;
 	}
 	if(openGLOptions.doubleBuffer!=0) attrlist[k++] = GDK_GL_DOUBLEBUFFER;
-	attrlist[k++] = GDK_GL_NONE;
-
-
-	/* Check if OpenGL is supported. */
-	if (gdk_gl_query() == FALSE)
-	{
-		Message("OpenGL not supported\n","Error",TRUE);
-		return FALSE;
-	}
+	*/
 	set_show_symbols(FALSE);
 	set_show_distances(FALSE);
 	trackball(Quat , 0.0, 0.0, 0.0, 0.0);
@@ -1537,32 +1552,20 @@ gboolean NewGLArea(GtkWidget* vboxwin)
 
 	table = gtk_table_new(2,2,FALSE);
 	gtk_container_add(GTK_CONTAINER(frame),table);
+	gtk_widget_show(GTK_WIDGET(table));
+	hboxtoolbar = gtk_hbox_new (FALSE, 0);
+	gtk_widget_show (hboxtoolbar);
+	gtk_table_attach(GTK_TABLE(table), hboxtoolbar,0,1,0,1, (GtkAttachOptions)(GTK_FILL | GTK_SHRINK  ), (GtkAttachOptions)(GTK_FILL | GTK_EXPAND ), 0,0);
 
-
-  /* You should always delete gtk_gl_area widgets before exit or else
-     GLX contexts are left undeleted, this may cause problems (=core dump)
-     in some systems.
-     Destroy method of objects is not automatically called on exit.
-     You need to manually enable this feature. Do gtk_quit_add_destroy()
-     for all your top level windows unless you are certain that they get
-     destroy signal by other means.
-  */
 	gtk_quit_add_destroy(1, GTK_OBJECT(PrincipalWindow));
 
-
 	/* Create new OpenGL widget. */
-	GLArea = GTK_WIDGET(gtk_gl_area_new(attrlist));
-	if (!GLArea)
-	{
-		GLArea = GTK_WIDGET(gtk_gl_area_new(attrlist2));
-		if(!GLArea)
-		{
-    			Message("Sorry, I can not obtain a visual with default attribute list\nreset the opengl options (Menu/Preferences/Others\n","Error",TRUE);
-    			return FALSE;
-		}
-  	}
+	/* pthread_mutex_init (&theRender_mutex, NULL);*/
+	GLArea = gtk_drawing_area_new ();
+	gtk_drawing_area_size(GTK_DRAWING_AREA(GLArea),(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.2));
+	gtk_table_attach(GTK_TABLE(table),GLArea,1,2,0,1, (GtkAttachOptions)(GTK_FILL | GTK_EXPAND  ), (GtkAttachOptions)(GTK_FILL | GTK_EXPAND ), 0,0);
+	gtk_widget_show(GTK_WIDGET(GLArea));
 	/* Events for widget must be set before X Window is created */
-	g_signal_connect(G_OBJECT(GLArea), "expose_event", G_CALLBACK(draw), NULL);
 	gtk_widget_set_events(GLArea,
 			GDK_EXPOSURE_MASK|
 			GDK_BUTTON_PRESS_MASK|
@@ -1571,19 +1574,18 @@ gboolean NewGLArea(GtkWidget* vboxwin)
 			GDK_POINTER_MOTION_HINT_MASK |
 			GDK_SCROLL_MASK
 			);
+	/* prepare GL */
+	glconfig = configure_gl();
+	if (!glconfig) { g_assert_not_reached (); }
+	if (!gtk_widget_set_gl_capability (GLArea, glconfig, NULL, TRUE, GDK_GL_RGBA_TYPE)) { g_assert_not_reached (); }
 
-
-  
 	g_signal_connect(G_OBJECT(GLArea), "realize", G_CALLBACK(init), NULL);
 	g_signal_connect(G_OBJECT(GLArea), "configure_event", G_CALLBACK(reshape), NULL);
-	gtk_widget_set_size_request(GTK_WIDGET(GLArea ),(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.2));
-		    
-	gtk_table_attach(GTK_TABLE(table),GLArea,1,2,0,1, (GtkAttachOptions)(GTK_FILL | GTK_EXPAND  ), (GtkAttachOptions)(GTK_FILL | GTK_EXPAND ), 0,0);
+	g_signal_connect(G_OBJECT(GLArea), "expose_event", G_CALLBACK(draw), NULL);
+	//gtk_widget_set_size_request(GTK_WIDGET(GLArea ),(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.2));
   
-	gtk_widget_show(GTK_WIDGET(GLArea));
-	gtk_widget_show(GTK_WIDGET(table));
-	gtk_widget_realize(GTK_WIDGET(PrincipalWindow));
 
+	gtk_widget_realize(GTK_WIDGET(PrincipalWindow));
 	/*
 	info_str = gdk_gl_get_info();
 	Debug("%s\n",info_str);
@@ -1595,9 +1597,6 @@ gboolean NewGLArea(GtkWidget* vboxwin)
 	g_signal_connect_after(G_OBJECT(GLArea), "motion_notify_event", G_CALLBACK(glarea_motion_notify), NULL);
 	g_signal_connect (G_OBJECT(GLArea), "button_release_event", G_CALLBACK(glarea_button_release), NULL);
 
-	hboxtoolbar = gtk_hbox_new (FALSE, 0);
-	gtk_widget_show (hboxtoolbar);
-	gtk_table_attach(GTK_TABLE(table), hboxtoolbar,0,1,0,1, (GtkAttachOptions)(GTK_FILL | GTK_SHRINK  ), (GtkAttachOptions)(GTK_FILL | GTK_EXPAND ), 0,0);
 
 	create_toolbar_and_popup_menu_GL(hboxtoolbar);
 	g_signal_connect(G_OBJECT (PrincipalWindow), "key_press_event", (GCallback) set_key_press, GLArea);

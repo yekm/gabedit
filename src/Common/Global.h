@@ -49,8 +49,8 @@ DEALINGS IN THE SOFTWARE.
 #define DATA_MOD_NO    0
 
 #define MAJOR_VERSION    2
-#define MINOR_VERSION    2
-#define MICRO_VERSION    13
+#define MINOR_VERSION    3
+#define MICRO_VERSION    1
 
 /**** Structures *********/
 typedef struct _FileOpen

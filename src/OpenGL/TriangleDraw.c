@@ -73,32 +73,32 @@ void set_color_surface(gint num,gdouble v[])
 	}
 }
 /********************************************************************************/
-void TriangeShow(V3d V1,V3d V2,V3d V3,V3d N1,V3d N2,V3d N3)
+void TriangleShow(V3d V1,V3d V2,V3d V3,V3d N1,V3d N2,V3d N3)
 {
 	glBegin(GL_TRIANGLES);
 
 	if(TypeTexture != GABEDIT_TYPETEXTURE_NONE)
 		glTexCoord2f(V1[0],V1[1]);
-	glNormal3f(N1[0],N1[1],N1[2]);
-	glVertex3f(V1[0],V1[1],V1[2]);
+	glNormal3d(N1[0],N1[1],N1[2]);
+	glVertex3d(V1[0],V1[1],V1[2]);
 
 	if(TypeTexture != GABEDIT_TYPETEXTURE_NONE)
 		glTexCoord2f(V2[0],V2[1]);
-	glNormal3f(N2[0],N2[1],N2[2]);
-	glVertex3f(V2[0],V2[1],V2[2]);
+	glNormal3d(N2[0],N2[1],N2[2]);
+	glVertex3d(V2[0],V2[1],V2[2]);
 
 	if(TypeTexture != GABEDIT_TYPETEXTURE_NONE)
 		glTexCoord2f(V3[0],V3[1]);
-	glNormal3f(N3[0],N3[1],N3[2]);
-	glVertex3f(V3[0],V3[1],V3[2]);
+	glNormal3d(N3[0],N3[1],N3[2]);
+	glVertex3d(V3[0],V3[1],V3[2]);
 
 	/*
-	glNormal3f(-N1[0],-N1[1],-N1[2]);
-	glVertex3f(V1[0],V1[1],V1[2]);
-	glNormal3f(-N2[0],-N2[1],-N2[2]);
-	glVertex3f(V2[0],V2[1],V2[2]);
-	glNormal3f(-N3[0],-N3[1],-N3[2]);
-	glVertex3f(V3[0],V3[1],V3[2]);
+	glNormal3d(-N1[0],-N1[1],-N1[2]);
+	glVertex3d(V1[0],V1[1],V1[2]);
+	glNormal3d(-N2[0],-N2[1],-N2[2]);
+	glVertex3d(V2[0],V2[1],V2[2]);
+	glNormal3d(-N3[0],-N3[1],-N3[2]);
+	glVertex3d(V3[0],V3[1],V3[2]);
 	*/
 	glEnd();
 	
@@ -120,7 +120,7 @@ void IsoDrawNoMapped(IsoSurface* iso)
 			{
 				for(n=0;n<iso->cube[i][j][k].Ntriangles;n++)
 				{
-						TriangeShow
+						TriangleShow
 							(
 							iso->cube[i][j][k].triangles[n].vertex[0]->C,
 							iso->cube[i][j][k].triangles[n].vertex[1]->C,
@@ -137,24 +137,24 @@ void IsoDrawNoMapped(IsoSurface* iso)
 /*	glEnd();*/
 }
 /********************************************************************************/
-void TriangeShowColorMap(V3d V1,V3d V2,V3d V3,V3d N1,V3d N2,V3d N3, V4d color1,V4d color2,V4d color3)
+void TriangleShowColorMap(V3d V1,V3d V2,V3d V3,V3d N1,V3d N2,V3d N3, V4d color1,V4d color2,V4d color3)
 {
 	glBegin(GL_TRIANGLES);
 
 	if(TypeTexture != GABEDIT_TYPETEXTURE_NONE) glTexCoord2f(V1[0],V1[1]);
 	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,color1);
-	glNormal3f(N1[0],N1[1],N1[2]);
-	glVertex3f(V1[0],V1[1],V1[2]);
+	glNormal3d(N1[0],N1[1],N1[2]);
+	glVertex3d(V1[0],V1[1],V1[2]);
 
 	if(TypeTexture != GABEDIT_TYPETEXTURE_NONE) glTexCoord2f(V2[0],V2[1]);
 	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,color2);
-	glNormal3f(N2[0],N2[1],N2[2]);
-	glVertex3f(V2[0],V2[1],V2[2]);
+	glNormal3d(N2[0],N2[1],N2[2]);
+	glVertex3d(V2[0],V2[1],V2[2]);
 
 	if(TypeTexture != GABEDIT_TYPETEXTURE_NONE) glTexCoord2f(V3[0],V3[1]);
 	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,color3);
-	glNormal3f(N3[0],N3[1],N3[2]);
-	glVertex3f(V3[0],V3[1],V3[2]);
+	glNormal3d(N3[0],N3[1],N3[2]);
+	glVertex3d(V3[0],V3[1],V3[2]);
 
 	glEnd();
 	
@@ -202,7 +202,7 @@ void IsoDrawMapped(IsoSurface* iso)
 						set_Color_From_colorMap(colorMap, color2, value);
 						value  = iso->cube[i][j][k].triangles[n].vertex[2]->C[3];
 						set_Color_From_colorMap(colorMap, color3, value);
-						TriangeShowColorMap
+						TriangleShowColorMap
 							(
 							iso->cube[i][j][k].triangles[n].vertex[0]->C,
 							iso->cube[i][j][k].triangles[n].vertex[1]->C,

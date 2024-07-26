@@ -66,6 +66,7 @@ DEALINGS IN THE SOFTWARE.
 
 
 /********************************************************************************/
+#define MAT 30
 #define SCALE(i) (i / 65535.)
 /********************************************************************************/
 
@@ -537,7 +538,7 @@ void read_drawmolecule_file()
 		fclose(fd);
 	}
 	g_free(drawMolecule);
-	if(r==0 && g == 0 && b == 0) r = g = b = 32000;
+	if(r==0 && g == 0 && b == 0) r = g = b = 20000;
 	{
 		BackColor = g_malloc(sizeof(GdkColor));
 		BackColor->red = r;
@@ -10200,7 +10201,7 @@ void draw_line2(gint epaisseur,guint i,guint j,gint x1,gint y1,gint x2,gint y2,
               yp = y1;
         }
 	gdk_gc_set_line_attributes(gc,epaisseur,GDK_LINE_SOLID,GDK_CAP_ROUND,GDK_JOIN_ROUND);
-	if(CartoonMode && !(buttonpress&&Natoms>20)) draw_line(xp,yp,x2,y2,colorblack,epaisseur+2,TRUE);
+	if(CartoonMode && !(buttonpress&&Natoms>MAT)) draw_line(xp,yp,x2,y2,colorblack,epaisseur+2,TRUE);
 
         poid1 = geometry[i].Prop.covalentRadii+geometry[i].Prop.radii;
         poid2 = geometry[j].Prop.covalentRadii+geometry[j].Prop.radii;
@@ -10364,10 +10365,10 @@ void draw_arc(gint xi,gint yi,gint rayoni,gdouble angle1, gdouble angle2, gdoubl
 /*****************************************************************************/
 void draw_ball(gint xi,gint yi,gint rayoni,GdkColor colori)
 {
-	if(!(buttonpress&&Natoms>20)) draw_cercle(xi,yi,rayoni,colori, TRUE, CartoonMode, LightMode);
+	if(!(buttonpress&&Natoms>MAT)) draw_cercle(xi,yi,rayoni,colori, TRUE, CartoonMode, LightMode);
 	else draw_cercle(xi,yi,rayoni,colori, TRUE, FALSE, LightMode);
 
-	if(OrtepMode && !(buttonpress&&Natoms>20))
+	if(OrtepMode && !(buttonpress&&Natoms>MAT))
 	{
     		draw_arc(xi,yi,rayoni,0, M_PI, 1.0, 0.5, colori);
     		draw_arc(xi,yi,rayoni,M_PI/2,3*M_PI/2,0.5,1.0, colori);
@@ -11235,9 +11236,9 @@ void set_back_color_grey()
 	GdkColor color;
 	GdkColormap *colormap;
 
-	color.red = 90*257;
-	color.green = 90*257;
-	color.blue = 90*257;
+	color.red = 80*257;
+	color.green = 80*257;
+	color.blue = 80*257;
 	colormap  = gdk_drawable_get_colormap(ZoneDessin->window);
 	
         BackColor = gdk_color_copy(&color);
