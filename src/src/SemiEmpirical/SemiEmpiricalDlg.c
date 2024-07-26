@@ -1,6 +1,6 @@
 /* SemiEmpiricalDlg.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -84,17 +84,27 @@ static  GtkWidget* buttonCreateMopac = NULL ;
 static  GtkWidget* entryMopacKeywords = NULL; 
 static  GtkWidget* buttonCreateFireFly = NULL ;
 static  GtkWidget* entryFireFlyKeywords = NULL; 
+static  GtkWidget* entryOpenBabelKeywords = NULL; 
+static  GtkWidget* entryOpenBabelPotential = NULL; 
+static  GtkWidget* entryGenericKeywords = NULL; 
+static  GtkWidget* entryGenericPotential = NULL; 
 static  GtkWidget* buttonPostNone = NULL ;
 static  GtkWidget* buttonPostOpt = NULL ;
 static  GtkWidget* buttonMopac = NULL ;
 static  GtkWidget* buttonFireFly = NULL ;
+static  GtkWidget* buttonOpenBabel = NULL ;
+static  GtkWidget* buttonGeneric = NULL ;
 static  GtkWidget* entryMopacMethod = NULL;
 static  GtkWidget* entryFireFlyMethod = NULL;
+static  GtkWidget* entryOpenBabelMethod = NULL;
+static  GtkWidget* entryGenericMethod = NULL;
 static  GtkWidget* entryMopacHamiltonianSparkle = NULL;
 static  GtkWidget* entryMopacHamiltonian = NULL;
 static  GtkWidget* entryAddMopacKeywords = NULL;
 static  GtkWidget* entryOrcaHamiltonian = NULL;
 static  GtkWidget* entryAddOrcaKeywords = NULL;
+static  GtkWidget* entryAddOpenBabelKeywords = NULL;
+static  gchar* genericProgName = NULL;
 static gint totalCharge = 0;
 static gint spinMultiplicity=1;
 
@@ -109,6 +119,8 @@ static  GtkWidget* entryFileName = NULL;
 static void addMopacOptions(GtkWidget *box, gchar* type);
 static void addOrcaOptions(GtkWidget *box, gchar* type);
 static void addMopacSparkleOptions(GtkWidget *box, gchar* type);
+static void addOpenBabelOptions(GtkWidget *box, gchar* type);
+static gboolean runOneGeneric(MoleculeSE* mol, char* fileNamePrefix, char* keyWords, char* genericCommand);
 /*********************************************************************************/
 static void getMultiplicityName(gint multiplicity, gchar* buffer)
 {
@@ -730,6 +742,246 @@ static gboolean runOneFireFly(gchar* fileNamePrefix, gchar* keyWords)
 	return TRUE;
 }
 /*****************************************************************************/
+static gboolean getEnergyOpenBabel(gchar* fileNameOut, gdouble* energy)
+{
+        FILE* file = NULL;
+        char buffer[1024];
+        char* pdest = NULL;
+        char* energyTag = "FINAL ENERGY:";
+
+        file = fopen(fileNameOut, "r");
+        if(!file) return FALSE;
+         while(!feof(file))
+         {
+                if(!fgets(buffer,BSIZE,file))break;
+                pdest = strstr( buffer, energyTag);
+                if(pdest &&sscanf(pdest+strlen(energyTag)+1,"%lf",energy)==1)
+                {
+                        fclose(file);
+                        if(strstr(pdest,"kJ")) *energy /= KCALTOKJ;
+                        return TRUE;
+                }
+         }
+        fclose(file);
+	return FALSE;
+}
+/*****************************************************************************/
+static gboolean saveGeometry(MoleculeSE* molecule, double energy, char* fileNameGeom)
+{
+        gboolean Ok = FALSE;
+        double oldEnergy = molecule->energy;
+        molecule->energy = energy;
+        Ok = saveMoleculeSE(molecule,fileNameGeom);
+        molecule->energy = oldEnergy;
+        return Ok;
+}
+/*************************************************************************************************************/
+static gboolean runOneOpenBabel(MoleculeSE* mol, gchar* fileNamePrefix, gchar* NameCommandOpenBabel)
+{
+	FILE* fileSH = NULL;
+	char* fileNameIn = NULL;
+	char* fileNameOut = NULL;
+	char* fileNameSH = NULL;
+	char buffer[1024];
+	double energy;
+	MoleculeSE molecule;
+	gboolean newMolSE = FALSE;
+#ifdef G_OS_WIN32
+	char c='%';
+#endif
+
+	if(!mol)
+	{
+		molecule = createMoleculeSE(geometry0,(gint)Natoms, totalCharge, spinMultiplicity, TRUE);
+		mol = &molecule;
+		newMolSE = TRUE;
+	}
+	/*
+	else
+	{
+      		gint j;
+		for(j=0;j<mol->nAtoms;j++)
+		{
+		gchar* symbol = mol->atoms[j].prop.symbol;
+		SAtomsProp prop = prop_atom_get(symbol);
+		fprintf(stderr,"%s %s %s %f %f %f %f\n", 
+			symbol,
+			mol->atoms[j].pdbType, mol->atoms[j].mmType,
+			(gdouble)prop.atomicNumber,
+			mol->atoms[j].coordinates[0],
+			mol->atoms[j].coordinates[1],
+			mol->atoms[j].coordinates[2]
+			);
+		}
+	}
+	*/
+
+	if(mol->nAtoms<1) return FALSE;
+#ifndef G_OS_WIN32
+	fileNameSH =g_strdup_printf("%sOne.sh",fileNamePrefix);
+#else
+	fileNameSH =g_strdup_printf("%sOne.bat",fileNamePrefix);
+#endif
+ 	fileSH = fopen(fileNameSH, "w");
+	if(!fileSH) return FALSE;
+#ifdef G_OS_WIN32
+	fprintf(fileSH,"@echo off\n");
+#endif
+
+	fileNameIn =g_strdup_printf("%sOne.hin",fileNamePrefix);
+	fileNameOut =g_strdup_printf("%sOne.out",fileNamePrefix);
+
+	if(!saveMoleculeSEHIN(mol, fileNameIn))
+	{
+ 		if(fileNameIn) free(fileNameIn);
+ 		if(fileNameOut) free(fileNameOut);
+ 		if(fileNameSH) free(fileNameSH);
+		if(mol && newMolSE) freeMoleculeSE(mol);
+		return FALSE;
+	}
+#ifndef G_OS_WIN32
+	fprintf(fileSH,"#!/bin/bash\n");
+	fprintf(fileSH,"export PATH=$PATH:%s\n",openbabelDirectory);
+	fprintf(fileSH,"export BABEL_DATADIR=%s\n",openbabelDirectory);
+	if(!strstr(NameCommandOpenBabel,"obgradient") || !strstr(NameCommandOpenBabel,"obopt"))
+	{
+		fprintf(fileSH,"%s %s > %s\n",NameCommandOpenBabel,fileNameIn,fileNameOut);
+		fprintf(fileSH,"exit\n");
+	}
+	else 
+	{
+		if(!strstr( NameCommandOpenBabel,"obopt")) 
+		{
+			char** ssplit = NULL;
+			int nA = 0;
+			int i;
+			ssplit = gab_split(NameCommandOpenBabel);
+			while(ssplit && ssplit[nA]!=NULL) nA++;
+			fprintf(fileSH,"%s ", "obopt");
+			for(i=1;i<nA;i++) fprintf(fileSH,"%s ",  ssplit[i]);
+			fprintf(fileSH," %s > %s 2>/dev/null", fileNameIn, fileNameOut);
+			gab_strfreev(ssplit);
+		}
+		else fprintf(fileSH,"%s %s > %s 2>/dev/null", NameCommandOpenBabel, fileNameIn, fileNameOut);
+	}
+#else
+	if(strstr(openbabelDirectory,"\"")) 
+	{
+		fprintf(fileSH,"set PATH=%s;%cPATH%c\n",openbabelDirectory,'%','%');
+		fprintf(fileSH,"set BABEL_DATADIR=%s\n",openbabelDirectory);
+	}
+	else 
+	{
+		fprintf(fileSH,"set PATH=\"%s\";%cPATH%c\n",openbabelDirectory,'%','%');
+		fprintf(fileSH,"set BABEL_DATADIR=%s\n",openbabelDirectory);
+	}
+	if(!strstr(NameCommandOpenBabel,"obgradient") || !strstr(NameCommandOpenBabel,"obopt"))
+	{
+		fprintf(fileSH,"%s %s > %s\n",NameCommandOpenBabel,fileNameIn,fileNameOut);
+		fprintf(fileSH,"exit\n");
+	}
+	else
+	{
+		if(!strstr( NameCommandOpenBabel,"obopt")) 
+		{
+			char** ssplit = NULL;
+			int nA = 0;
+			int i;
+			ssplit = gab_split(NameCommandOpenBabel);
+			while(ssplit && ssplit[nA]!=NULL) nA++;
+			fprintf(fileSH,"%s ", "obopt");
+			for(i=1;i<nA;i++) fprintf(fileSH,"%s ",  ssplit[i]);
+			fprintf(fileSH," %s > %s 2>/dev/null", fileNameIn, fileNameOut);
+			gab_strfreev(ssplit);
+		}
+		else fprintf(fileSH,"%s %s > %s", NameCommandOpenBabel, fileNameIn, fileNameOut);
+	}
+#endif
+	fclose(fileSH);
+#ifndef G_OS_WIN32
+	/*
+	sprintf(buffer,"cat %s",fileNameSH);
+	system(buffer);
+	sprintf(buffer,"cat %s",fileNameIn);
+	system(buffer);
+	*/
+
+
+
+	sprintf(buffer,"chmod u+x %s",fileNameSH);
+	system(buffer);
+	system(fileNameSH);
+#else
+	sprintf(buffer,"\"%s\"",fileNameSH);
+	system(buffer);
+#endif
+	if(getEnergyOpenBabel(fileNameOut,&energy))
+	{
+		printf("Energy by OpenBabel = %f\n", energy);
+		readGeomMoleculeSEFromOpenBabelOutputFile(mol, fileNameOut, -1);
+		mol->energy = energy;
+		if(strstr( NameCommandOpenBabel,"obopt"))
+		{
+			char* str =g_strdup_printf("%s.gab",fileNamePrefix);
+			saveGeometry(mol, energy, str);
+			read_geom_from_gabedit_geom_conv_file(str, 1);
+			if(str) free(str);
+			/* str = g_strdup_printf("Energy by OpenBabel = %f", energy);*/
+			str = g_strdup_printf("Gradient = %f Energy by OpenBabel = %f",getGradientNormMoleculeSE(mol), energy);
+			set_text_to_draw(str);
+			drawGeom();
+    			while( gtk_events_pending() ) gtk_main_iteration();
+			Waiting(1);
+			/*
+			printf("----------------------------------------- \n");
+			printf("Optimized geometry saved in %s file\n",str);
+			printf("----------------------------------------- \n");
+			*/
+			if(str) free(str);
+		}
+		else
+		{
+			gchar* str = NULL;
+			str = g_strdup_printf("Energy by OpenBabel = %f", energy);
+			set_text_to_draw(str);
+			drawGeom();
+    			while( gtk_events_pending() ) gtk_main_iteration();
+			Waiting(1);
+			if(str) g_free(str);
+			/*
+			char* str =g_strdup_printf("%s.gab",fileNamePrefix);
+			saveGeometry(mol, energy, str);
+			printf("----------------------------------------- \n");
+			printf("Geometry saved in %s file\n",str);
+			printf("----------------------------------------- \n");
+			if(str) free(str);
+			*/
+		}
+	}
+	else
+	{
+		gchar* str = NULL;
+		str = g_strdup_printf(
+				_(
+				"Sorry, I cannot read the output file :  %s"
+				" ; Check also the installation of OpenBabel...")
+				,
+				fileNameOut
+				);
+		set_text_to_draw(str);
+		if(str) g_free(str);
+		drawGeom();
+    		while( gtk_events_pending() ) gtk_main_iteration();
+		return FALSE;
+	}
+
+ 	if(fileNameIn) free(fileNameIn);
+ 	if(fileNameOut) free(fileNameOut);
+ 	if(fileNameSH) free(fileNameSH);
+	if(mol && newMolSE) freeMoleculeSE(mol);
+	return TRUE;
+}
+/*****************************************************************************/
 static gboolean getEnergyOrca(gchar* fileNameOut, gdouble* energy)
 {
 	FILE* file = NULL;
@@ -1057,6 +1309,18 @@ static gboolean runOneOrca(gchar* fileNamePrefix, gchar* keyWords)
 	return TRUE;
 }
 /*****************************************************************************/
+static void runGeneric(MoleculeSE* mol, char* fileName, char* keys, char* genericCommand)
+{
+	if(keys && genericCommand)
+	{
+		gchar* fileNamePrefix = get_suffix_name_file(fileName);
+		if(runOneGeneric(mol, fileNamePrefix, keys, genericCommand))
+		{
+		}
+		if(fileNamePrefix) free(fileNamePrefix);
+	}
+}
+/*****************************************************************************/
 static void runSemiEmpirical(GtkWidget* Win, gpointer data, gchar* type, gchar* keys)
 {
 	gchar* fileName = NULL;
@@ -1068,7 +1332,6 @@ static void runSemiEmpirical(GtkWidget* Win, gpointer data, gchar* type, gchar* 
 			fileName = g_strdup_printf("%s%s%s",dirName, G_DIR_SEPARATOR_S,tmp);
 		else
 			fileName = g_strdup_printf("%s%s",dirName, tmp);
-
 
 		g_free(tmp);
 		g_free(dirName);
@@ -1325,6 +1588,47 @@ static void runSemiEmpirical(GtkWidget* Win, gpointer data, gchar* type, gchar* 
 		}
 		if(fileNamePrefix) g_free(fileNamePrefix);
 	}
+	else if(!strcmp(type,"OpenBabelEnergy"))
+	{
+		gchar* fileNamePrefix = get_suffix_name_file(fileName);
+		printf("Keys = %s\n",keys);
+		if(runOneOpenBabel(NULL,fileNamePrefix,keys))
+		{
+		}
+		if(fileNamePrefix) g_free(fileNamePrefix);
+	}
+	else if(!strcmp(type,"OpenBabelOptimize"))
+	{
+		gchar* fileNamePrefix = get_suffix_name_file(fileName);
+		if(runOneOpenBabel(NULL,fileNamePrefix, keys))
+		{
+			gchar* fileOut = g_strdup_printf("%sOne.out",fileNamePrefix);
+			find_energy_gamess_output_heat(fileOut);
+			if(fileOut) g_free(fileOut);
+		}
+		if(fileNamePrefix) g_free(fileNamePrefix);
+	}
+	else if(!strcmp(type,"GenericEnergy"))
+	{
+		gchar* fileNamePrefix = get_suffix_name_file(fileName);
+		printf("Keys = %s\n",keys);
+		if(runOneGeneric(NULL,fileNamePrefix,"Energy",keys))
+		{
+		}
+		if(fileNamePrefix) g_free(fileNamePrefix);
+	}
+	else if(!strcmp(type,"GenericOptimize"))
+	{
+		gchar* fileNamePrefix = get_suffix_name_file(fileName);
+		printf("Keys = %s\n",keys);
+		if(runOneGeneric(NULL,fileNamePrefix, "Opt",keys))
+		{
+			gchar* fileOut = g_strdup_printf("%sOne.out",fileNamePrefix);
+			find_energy_gamess_output_heat(fileOut);
+			if(fileOut) g_free(fileOut);
+		}
+		if(fileNamePrefix) g_free(fileNamePrefix);
+	}
 }
 /*****************************************************************************/
 static void runAM1FireFlyEnergy(GtkWidget* Win, gpointer data)
@@ -1343,6 +1647,86 @@ static void runAM1FireFlyOptimize(GtkWidget* Win, gpointer data)
 	TotalCharges[0] = totalCharge;
 	SpinMultiplicities[0] = spinMultiplicity;
 	runSemiEmpirical(Win, data, "AM1FireFlyOptimize",NULL);
+}
+/*****************************************************************************/
+static void runOpenBabelEnergy(GtkWidget* Win, gpointer data)
+{
+	G_CONST_RETURN gchar* potential = gtk_entry_get_text(GTK_ENTRY(entryOpenBabelPotential));
+	G_CONST_RETURN gchar* options   = gtk_entry_get_text(GTK_ENTRY(entryAddOpenBabelKeywords));
+	gchar* keys = NULL;
+	/*
+	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
+	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
+	TotalCharges[0] = totalCharge;
+	SpinMultiplicities[0] = spinMultiplicity;
+	*/
+	TotalCharges[0] = 0;
+	SpinMultiplicities[0] = 1;
+	if(potential && (options && strlen(options) >1) ) keys = g_strdup_printf("obgradient -ff %s %s",potential, options);
+	else if(potential) keys = g_strdup_printf("obgradient -ff %s",potential);
+	else keys = g_strdup_printf("obgradient -ff MMFF94");
+
+	runSemiEmpirical(Win, data, "OpenBabelEnergy",keys);
+	if(keys) g_free(keys);
+}
+/*****************************************************************************/
+static void runOpenBabelOptimize(GtkWidget* Win, gpointer data)
+{
+	G_CONST_RETURN gchar* potential = gtk_entry_get_text(GTK_ENTRY(entryOpenBabelPotential));
+	G_CONST_RETURN gchar* options   = gtk_entry_get_text(GTK_ENTRY(entryAddOpenBabelKeywords));
+	gchar* keys = NULL;
+	/*
+	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
+	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
+	TotalCharges[0] = totalCharge;
+	SpinMultiplicities[0] = spinMultiplicity;
+	*/
+	TotalCharges[0] = 0;
+	SpinMultiplicities[0] = 1;
+	if(potential && (options && strlen(options) >1) ) keys = g_strdup_printf("obopt -ff %s %s",potential, options);
+	else if(potential) keys = g_strdup_printf("obopt -ff %s",potential);
+	else keys = g_strdup_printf("obopt -ff MMFF94");
+	runSemiEmpirical(Win, data, "OpenBabelOptimize",keys);
+	if(keys) g_free(keys);
+}
+/*****************************************************************************/
+static void runGenericEnergy(GtkWidget* Win, gpointer data)
+{
+	G_CONST_RETURN gchar* potential = gtk_entry_get_text(GTK_ENTRY(entryGenericPotential));
+	gchar* keys = NULL;
+	/*
+	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
+	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
+	TotalCharges[0] = totalCharge;
+	SpinMultiplicities[0] = spinMultiplicity;
+	*/
+	TotalCharges[0] = 0;
+	SpinMultiplicities[0] = 1;
+	if(potential) keys = g_strdup_printf("%s",potential);
+	else keys = g_strdup_printf("generic");
+
+	if(genericProgName) g_free(genericProgName);
+	genericProgName = g_strdup(keys);
+	runSemiEmpirical(Win, data, "GenericEnergy",keys);
+	if(keys) g_free(keys);
+}
+/*****************************************************************************/
+static void runGenericOptimize(GtkWidget* Win, gpointer data)
+{
+	G_CONST_RETURN gchar* potential = gtk_entry_get_text(GTK_ENTRY(entryGenericPotential));
+	gchar* keys = NULL;
+	/*
+	totalCharge = atoi(gtk_entry_get_text(GTK_ENTRY(entryCharge)));
+	spinMultiplicity = atoi(gtk_entry_get_text(GTK_ENTRY(entrySpinMultiplicity)));
+	TotalCharges[0] = totalCharge;
+	SpinMultiplicities[0] = spinMultiplicity;
+	*/
+	TotalCharges[0] = 0;
+	SpinMultiplicities[0] = 1;
+	if(potential) keys = g_strdup_printf("%s",potential);
+	else keys = g_strdup_printf("generic");
+	runSemiEmpirical(Win, data, "GenericOptimize",keys);
+	if(keys) g_free(keys);
 }
 /*****************************************************************************/
 static void runPM6DH2MopacEnergy(GtkWidget* Win, gpointer data)
@@ -1478,6 +1862,155 @@ static void runAM1MopacESP(GtkWidget* Win, gpointer data)
 	TotalCharges[0] = totalCharge;
 	SpinMultiplicities[0] = spinMultiplicity;
 	runSemiEmpirical(Win, data, "AM1MopacESP",NULL);
+}
+/*****************************************************************************/
+static gboolean getEnergyGeneric(char* fileNameOut, double* energy)
+{
+	FILE* file = NULL;
+	char buffer[1024];
+	int i;
+ 	file = fopen(fileNameOut, "r");
+	if(!file) return FALSE;
+	if(!fgets(buffer,BSIZE,file)) { fclose(file); return FALSE;}/* first line for energy in Hartree*/
+
+	for(i=0;i<strlen(buffer);i++) if(buffer[i]=='D' || buffer[i]=='d') buffer[i] ='E';
+	if(sscanf(buffer,"%lf",energy)==1)
+	{
+		fclose(file);
+		*energy *=AUTOKCAL;
+		return TRUE;
+	}
+	fclose(file);
+	return FALSE;
+}
+/*****************************************************************************/
+static gboolean runOneGeneric(MoleculeSE* mol, char* fileNamePrefix, char* keyWords, char* genericCommand)
+{
+	FILE* file = NULL;
+	FILE* fileSH = NULL;
+	gchar* fileNameIn = NULL;
+	gchar* fileNameOut = NULL;
+	gchar* fileNameSH = NULL;
+	gchar multiplicityStr[100];
+	gchar buffer[1024];
+	gdouble energy = 0;
+	gint type = 0;
+	gboolean newMolSE = FALSE;
+	MoleculeSE molecule;
+#ifdef OS_WIN32
+	char c='%';
+#endif
+
+	if(!mol)
+	{
+		molecule = createMoleculeSE(geometry0,(gint)Natoms, totalCharge, spinMultiplicity, TRUE);
+		mol = &molecule;
+		newMolSE = TRUE;
+	}
+
+	if(!mol) return FALSE;
+	if(mol->nAtoms<1) return FALSE;
+#ifndef OS_WIN32
+	fileNameSH = g_strdup_printf("%sGenericOne.sh",fileNamePrefix);
+#else
+	fileNameSH = g_strdup_printf("%sGenericOne.bat",fileNamePrefix);
+#endif
+ 	fileSH = fopen(fileNameSH, "w");
+	if(!fileSH) return FALSE;
+#ifdef OS_WIN32
+	fprintf(fileSH,"@echo off\n");
+#endif
+
+	fileNameIn = g_strdup_printf("%sOne.inp",fileNamePrefix);
+	fileNameOut = g_strdup_printf("%sOne.out",fileNamePrefix);
+
+ 	file = fopen(fileNameIn, "w");
+	if(!file) 
+	{
+ 		if(fileNameIn) free(fileNameIn);
+ 		if(fileNameOut) free(fileNameOut);
+ 		if(fileNameSH) free(fileNameSH);
+		return FALSE;
+	}
+	if(strstr(keyWords,"Opt")) type = 2;
+	if(strstr(keyWords,"ENGRAD")) type = 1;
+	fprintf(file,"%d\n",type);
+	addMoleculeSEToFile(mol,file);
+	fclose(file);
+	{
+		char* str = NULL;
+		if(type==2) str = g_strdup_printf("Minimization by Generic/%s ... Please wait",genericCommand);
+		else str = g_strdup_printf("Energy by Generic/%s ... Please wait",genericCommand);
+		/* printf("%s\n",str);*/
+		set_text_to_draw(str);
+		if(str) g_free(str);
+		drawGeom();
+    		while( gtk_events_pending() ) gtk_main_iteration();
+	}
+#ifndef OS_WIN32
+	fprintf(fileSH,"%s %s %s",genericCommand,fileNameIn,fileNameOut);
+	fclose(fileSH);
+	sprintf(buffer,"chmod u+x %s",fileNameSH);
+	system(buffer);
+	system(fileNameSH);
+#else
+	fprintf(fileSH,"\"%s\" \"%s\" \"%s\"",genericCommand,fileNameIn,fileNameOut);
+	fclose(fileSH);
+	sprintf(buffer,"\"%s\"",fileNameSH);
+	system(buffer);
+#endif
+
+	if(getEnergyGeneric(fileNameOut,&energy))
+	{
+		gchar* str = NULL;
+		str = g_strdup_printf("Energy by %s = %f", genericCommand,energy);
+		/* printf("%s\n",str);*/
+		set_text_to_draw(str);
+		drawGeom();
+    		while( gtk_events_pending() ) gtk_main_iteration();
+		if(str) g_free(str);
+		if(strstr(keyWords,"Opt"))
+		{
+			gchar* str = g_strdup_printf("%s.gab",fileNamePrefix);
+			readGeometryFromGenericOutputFile(mol,fileNameOut);
+			saveGeometry(mol, energy, str);
+			read_geom_from_gabedit_geom_conv_file(str, 1);
+			if(str) g_free(str);
+			/* str = g_strdup_printf("Energy by OpenBabel = %f", energy);*/
+			str = g_strdup_printf("Energy by %s = %f", genericCommand,energy);
+			set_text_to_draw(str);
+			drawGeom();
+    			while( gtk_events_pending() ) gtk_main_iteration();
+			Waiting(1);
+		}
+	}
+	else
+	{
+		gchar* str = NULL;
+		str = g_strdup_printf(
+				(
+				"Sorry, I cannot read the output file : %s "
+				" ; Check also the installation of Generic..."
+				),
+				fileNameOut
+				);
+		/* printf(str);*/
+		set_text_to_draw(str);
+		drawGeom();
+    		while( gtk_events_pending() ) gtk_main_iteration();
+		if(str) g_free(str);
+ 		if(fileNameIn) free(fileNameIn);
+ 		if(fileNameOut) free(fileNameOut);
+ 		if(fileNameSH) free(fileNameSH);
+		if(mol && newMolSE) freeMoleculeSE(mol);
+		return FALSE;
+	}
+
+ 	if(fileNameIn) free(fileNameIn);
+ 	if(fileNameOut) free(fileNameOut);
+ 	if(fileNameSH) free(fileNameSH);
+	if(mol && newMolSE) freeMoleculeSE(mol);
+	return TRUE;
 }
 /*****************************************************************************/
 static void runMopacEnergy(GtkWidget* Win, gpointer data)
@@ -2168,8 +2701,52 @@ static void createReactionPathFrame(GtkWidget *box)
 	for(k=0;k<2;k++) setComboReactionPathVariableType(comboVariableType[k],k>0);
 	for(k=0;k<2;k++) setComboReactionPathAtoms(comboAtoms[k]);
 }
+/**********************************************************************/
+static void addGenericOptions(GtkWidget *box, gchar* type)
+{
+	GtkWidget* frame;
+	GtkWidget* vboxFrame;
+	GtkWidget* comboGenericPotential = NULL;
+	GtkWidget* label = NULL;
+	GtkWidget *table = NULL;
+	gint i;
+	gint j;
+
+	table = gtk_table_new(2,5,FALSE);
+
+	frame = gtk_frame_new (NULL);
+	gtk_widget_show (frame);
+	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
+	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
+
+	vboxFrame = gtk_vbox_new (FALSE, 3);
+	gtk_widget_show (vboxFrame);
+	gtk_container_add (GTK_CONTAINER (frame), vboxFrame);
+	gtk_box_pack_start (GTK_BOX (vboxFrame), table, TRUE, TRUE, 0);
+/*----------------------------------------------------------------------------------*/
+	i = 0;
+	j = 0;
+	add_label_table(table,_("Name of your generic program"),(gushort)i,(gushort)j);
+/*----------------------------------------------------------------------------------*/
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	j = 2;
+	entryGenericPotential = gtk_entry_new();
+	gtk_widget_set_size_request(GTK_WIDGET(entryGenericPotential),(gint)(ScreenHeight*0.2),-1);
+	gtk_table_attach(GTK_TABLE(table),entryGenericPotential, j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	if(!genericProgName) genericProgName = g_strdup("myGenericProgram");
+	gtk_entry_set_text(GTK_ENTRY(entryGenericPotential),genericProgName);
+/*----------------------------------------------------------------------------------*/
+}
 /************************************************************************************************************/
-/********************************************************************************/
 static void AddOptionsDlg(GtkWidget *NoteBook, GtkWidget *win,gchar* type)
 {
 	gint i;
@@ -2195,18 +2772,46 @@ static void AddOptionsDlg(GtkWidget *NoteBook, GtkWidget *win,gchar* type)
 	table = gtk_table_new(4,5,FALSE);
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
+	i=-1;
 /*----------------------------------------------------------------------------------*/
-	i = 0;
-	j = 0;
-	vbox = gtk_vbox_new (FALSE, 0);
-	gtk_table_attach(GTK_TABLE(table),vbox,
+	if(!strstr(type,"OpenBabel"))
+	{
+		i++;
+		j = 0;
+		vbox = gtk_vbox_new (FALSE, 0);
+		gtk_table_attach(GTK_TABLE(table),vbox,
 			j,j+6,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
-	addChargeSpin(vbox);
+		addChargeSpin(vbox);
+	}
 /*----------------------------------------------------------------------------------*/
-	if(strstr(type,"Orca"))
+	if(strstr(type,"Generic"))
+	{
+		i++;
+		j = 0;
+		vbox = gtk_vbox_new (FALSE, 0);
+		gtk_table_attach(GTK_TABLE(table),vbox,
+			j,j+6,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+		addGenericOptions(vbox, type);
+	}
+	else if(strstr(type,"OpenBabel"))
+	{
+		i++;
+		j = 0;
+		vbox = gtk_vbox_new (FALSE, 0);
+		gtk_table_attach(GTK_TABLE(table),vbox,
+			j,j+6,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+		addOpenBabelOptions(vbox, type);
+	}
+	else if(strstr(type,"Orca"))
 	{
 		i++;
 		j = 0;
@@ -2279,7 +2884,8 @@ static void AddOptionsDlg(GtkWidget *NoteBook, GtkWidget *win,gchar* type)
                   1,1);
 /*----------------------------------------------------------------------------------*/
 	j = 2;
-	buttonDirSelector =  gtk_file_chooser_button_new(_("Select your folder"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	buttonDirSelector =  gabedit_dir_button();
+	gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER(buttonDirSelector), g_get_current_dir());
 	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeight*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
 			j,j+4,i,i+1,
@@ -2517,6 +3123,70 @@ static void addOrcaOptions(GtkWidget *box, gchar* type)
 	gtk_entry_set_text(GTK_ENTRY(entryOrcaHamiltonian),"PM3");
 /*----------------------------------------------------------------------------------*/
 }
+/**********************************************************************/
+static GtkWidget *addOpenBabelPotentialToTable(GtkWidget *table, gint i)
+{
+	GtkWidget* entryOpenBabelPotential = NULL;
+	GtkWidget* comboOpenBabelPotential = NULL;
+	gint nlistPotential = 4;
+	gchar* listPotential[] = {"MMFF94","MMFF94s","UFF", "GHEMICAL"};
+
+	add_label_table(table,_("Model"),(gushort)i,0);
+	add_label_table(table,":",(gushort)i,1);
+	entryOpenBabelPotential = addComboListToATable(table, listPotential, nlistPotential, i, 2, 1);
+	comboOpenBabelPotential  = g_object_get_data(G_OBJECT (entryOpenBabelPotential), "Combo");
+	gtk_widget_set_sensitive(entryOpenBabelPotential, FALSE);
+
+	return comboOpenBabelPotential;
+}
+/**********************************************************************/
+static void addOpenBabelOptions(GtkWidget *box, gchar* type)
+{
+	GtkWidget* frame;
+	GtkWidget* vboxFrame;
+	GtkWidget* comboOpenBabelPotential = NULL;
+	GtkWidget* label = NULL;
+	GtkWidget *table = NULL;
+	gint i;
+	gint j;
+
+	table = gtk_table_new(2,5,FALSE);
+
+	frame = gtk_frame_new (NULL);
+	gtk_widget_show (frame);
+	gtk_box_pack_start (GTK_BOX (box), frame, TRUE, TRUE, 3);
+	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
+
+	vboxFrame = gtk_vbox_new (FALSE, 3);
+	gtk_widget_show (vboxFrame);
+	gtk_container_add (GTK_CONTAINER (frame), vboxFrame);
+	gtk_box_pack_start (GTK_BOX (vboxFrame), table, TRUE, TRUE, 0);
+/*----------------------------------------------------------------------------------*/
+	i = 0;
+	comboOpenBabelPotential = addOpenBabelPotentialToTable(table, i);
+	entryOpenBabelPotential = GTK_WIDGET(GTK_BIN(comboOpenBabelPotential)->child);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	j = 0;
+	add_label_table(table,_("Additional options"),(gushort)i,(gushort)j);
+/*----------------------------------------------------------------------------------*/
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	j = 2;
+	entryAddOpenBabelKeywords = gtk_entry_new();
+	gtk_widget_set_size_request(GTK_WIDGET(entryAddOpenBabelKeywords),(gint)(ScreenHeight*0.2),-1);
+	gtk_table_attach(GTK_TABLE(table),entryAddOpenBabelKeywords, j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_entry_set_text(GTK_ENTRY(entryOpenBabelPotential),"MMFF94");
+/*----------------------------------------------------------------------------------*/
+}
 /***********************************************************************/
 void semiEmpiricalDlg(gchar* type)
 {
@@ -2532,7 +3202,7 @@ void semiEmpiricalDlg(gchar* type)
 	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(parentWindow));
 	if(type) 
 	{
-		gchar* title = g_strdup_printf(_("Semi-empirical calculation/%s"),type);
+		gchar* title = g_strdup_printf(_("%s calculation"),type);
 		gtk_window_set_title(&GTK_DIALOG(Win)->window,title);
 		g_free(title);
 	}
@@ -2561,6 +3231,17 @@ void semiEmpiricalDlg(gchar* type)
 		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runAM1FireFlyEnergy,GTK_OBJECT(Win));
 	else if(!strcmp(type,"AM1FireFlyOptimize"))
 		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runAM1FireFlyOptimize,GTK_OBJECT(Win));
+
+	else if(!strcmp(type,"OpenBabelEnergy"))
+		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runOpenBabelEnergy,GTK_OBJECT(Win));
+	else if(!strcmp(type,"OpenBabelOptimize"))
+		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runOpenBabelOptimize,GTK_OBJECT(Win));
+
+	else if(!strcmp(type,"GenericEnergy"))
+		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runGenericEnergy,GTK_OBJECT(Win));
+	else if(!strcmp(type,"GenericOptimize"))
+		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runGenericOptimize,GTK_OBJECT(Win));
+
 	else if(!strcmp(type,"PM6DH2MopacEnergy"))
 		g_signal_connect_swapped(GTK_OBJECT(button), "clicked", (GCallback)runPM6DH2MopacEnergy,GTK_OBJECT(Win));
 	else if(!strcmp(type,"PM6DH2MopacOptimize"))
@@ -2887,6 +3568,119 @@ static gboolean runMopacFiles(gint numberOfGeometries, SemiEmpiricalModel** geom
 
 }
 /*****************************************************************************/
+static gboolean runOneOptGeneric(SemiEmpiricalModel* geom, double* energy, char* fileNamePrefix, char* keyWords, char* genericCommand)
+{
+	FILE* file = NULL;
+	FILE* fileSH = NULL;
+	char* fileNameIn = NULL;
+	char* fileNameOut = NULL;
+	char* fileNameSH = NULL;
+	char buffer[1024];
+	int type = 0;
+	MoleculeSE* mol = &geom->molecule;
+	*energy = 0;
+#ifdef OS_WIN32
+	char c='%';
+#endif
+
+	if(!geom) return FALSE;
+	if(geom->molecule.nAtoms<1) return FALSE;
+#ifndef OS_WIN32
+	fileNameSH = g_strdup_printf("%sGeneOne.sh",fileNamePrefix);
+#else
+	fileNameSH = g_strdup_printf("%sGeneOne.bat",fileNamePrefix);
+#endif
+ 	fileSH = fopen(fileNameSH, "w");
+	if(!fileSH) return FALSE;
+
+	fileNameIn = g_strdup_printf("%sOne.inp",fileNamePrefix);
+	fileNameOut = g_strdup_printf("%sOne.out",fileNamePrefix);
+
+ 	file = fopen(fileNameIn, "w");
+	if(!file) 
+	{
+ 		if(fileNameIn) free(fileNameIn);
+ 		if(fileNameOut) free(fileNameOut);
+ 		if(fileNameSH) free(fileNameSH);
+		return FALSE;
+	}
+ 	file = fopen(fileNameIn, "w");
+	if(!file) 
+	{
+ 		if(fileNameIn) free(fileNameIn);
+ 		if(fileNameOut) free(fileNameOut);
+ 		if(fileNameSH) free(fileNameSH);
+		return FALSE;
+	}
+	if(strstr(keyWords,"Opt")) type = 2;
+	if(strstr(keyWords,"ENGRAD")) type = 1;
+	fprintf(file,"%d\n",type);
+	addMoleculeSEToFile(mol,file);
+	fclose(file);
+	{
+		char* str = NULL;
+		if(strstr(keyWords,"OPT")) str = g_strdup_printf("Minimization by Generic/%s ... Please wait",genericCommand);
+		else str = g_strdup_printf("Computing of energy by Generic/%s .... Please wait",genericCommand);
+		/*printf(str);*/
+		set_text_to_draw(str);
+		if(str) g_free(str);
+		drawGeom();
+    		while( gtk_events_pending() ) gtk_main_iteration();
+	}
+#ifndef OS_WIN32
+	fprintf(fileSH,"%s %s %s",genericCommand,fileNameIn,fileNameOut);
+	fclose(fileSH);
+	sprintf(buffer,"chmod u+x %s",fileNameSH);
+	system(buffer);
+	system(fileNameSH);
+#else
+	fprintf(fileSH,"\"%s\" \"%s\" \"%s\"",genericCommand,fileNameIn,fileNameOut);
+	fclose(fileSH);
+	sprintf(buffer,"\"%s\"",fileNameSH);
+	system(buffer);
+#endif
+	if(getEnergyGeneric(fileNameOut,energy))
+	{
+		printf("Energy by Generic = %f\n", *energy);
+		readGeometryFromGenericOutputFile(mol,fileNameOut);
+	}
+	else
+	{
+ 		if(fileNameIn) free(fileNameIn);
+ 		if(fileNameOut) free(fileNameOut);
+ 		if(fileNameSH) free(fileNameSH);
+		return FALSE;
+	}
+
+ 	if(fileNameIn) free(fileNameIn);
+ 	if(fileNameOut) free(fileNameOut);
+ 	if(fileNameSH) free(fileNameSH);
+	return TRUE;
+}
+/*****************************************************************************/
+static gboolean runGenericFiles(int numberOfGeometries, SemiEmpiricalModel** geometries, double* energies, char* fileNamePrefix, char* keyWords, char* genericCommand)
+{
+	int i;
+	int nG = 0;
+	int nM = 0;
+	char* str = NULL;
+	for(i=0;i<numberOfGeometries;i++)
+	{
+		if(!geometries[i]) continue;
+		nG++;
+		if(str) free(str);
+		printf("Minimization by Generic of geometry n = %d... Please wait\n", i+1);
+		if(runOneOptGeneric(geometries[i], &energies[i], fileNamePrefix, keyWords, genericCommand)) 
+		{
+			nM++;
+		}
+	}
+	if(str) free(str);
+	if(nM==nG) return TRUE;
+	return FALSE;
+
+}
+/*****************************************************************************/
 static gboolean runOneOptFireFly(SemiEmpiricalModel* geom, gdouble* energy, gchar* fileNamePrefix, gchar* keyWords)
 {
 	FILE* file = NULL;
@@ -3076,6 +3870,38 @@ static gboolean runFireFlyFiles(gint numberOfGeometries, SemiEmpiricalModel** ge
 		}
 		if(StopCalcul) break;
 	}
+	if(str) g_free(str);
+	if(nM==nG) return TRUE;
+	return FALSE;
+
+}
+/*************************************************************************************************************************************************/
+static gboolean runOpenBabelFiles(gint numberOfGeometries, SemiEmpiricalModel** geometries, gdouble* energies, gchar* fileNamePrefix, gchar* keyWords)
+{
+        int i;
+        int nG = 0;
+        int nM = 0;
+	gchar* str = NULL;
+        if(!geometries) return FALSE;
+        for(i=0;i<numberOfGeometries;i++)
+        {
+                if(!geometries[i]) continue;
+                nG++;
+		if(str) g_free(str);
+		str = g_strdup_printf("Minimization by OpenBabel of geometry n = %d... Please wait", i+1);
+		set_text_to_draw(str);
+		drawGeom();
+    		while( gtk_events_pending() ) gtk_main_iteration();
+		printf("str runOpenBabelFiles = %s\n",str);
+		//setConnectionsMoleculeSE(&geometries[i]->molecule);
+		//printf("End setConnectionsMoleculeSE\n");
+                if(runOneOpenBabel(&geometries[i]->molecule, fileNamePrefix, keyWords))
+                {
+                        energies[i] = geometries[i]->molecule.energy;
+                        nM++;
+                }
+		if(StopCalcul) break;
+        }
 	if(str) g_free(str);
 	if(nM==nG) return TRUE;
 	return FALSE;
@@ -3563,6 +4389,8 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 	gdouble* energies = NULL;
 	gboolean optMopac = FALSE;
 	gboolean optFireFly = FALSE;
+	gboolean optOpenBabel = FALSE;
+	gboolean optGeneric = FALSE;
 	gchar* program = NULL;
 	gchar* method = NULL;
 	gdouble tolEnergy = -1;
@@ -3594,10 +4422,22 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 		program = g_strdup("Mopac");
 		method = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryMopacMethod)));
 	}
-	else
+	else if(GTK_TOGGLE_BUTTON (buttonFireFly)->active) 
 	{
 		program = g_strdup("FireFly");
 		method = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryFireFlyMethod)));
+	}
+	else if(GTK_TOGGLE_BUTTON (buttonOpenBabel)->active) 
+	{
+		program = g_strdup("OpenBabel");
+		method = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryOpenBabelMethod)));
+	}
+	else 
+	{
+		program = g_strdup("Generic");
+		method = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryGenericMethod)));
+		if(!genericProgName) g_free(genericProgName);
+		genericProgName = g_strdup(method);
 	}
 
 	updateFrequency = atoi(gtk_entry_get_text(GTK_ENTRY(entryMDRafresh)));
@@ -3640,6 +4480,8 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 
 	optMopac = GTK_TOGGLE_BUTTON (buttonPostOpt)->active && GTK_TOGGLE_BUTTON (buttonMopac)->active; 
 	optFireFly = GTK_TOGGLE_BUTTON (buttonPostOpt)->active && GTK_TOGGLE_BUTTON (buttonFireFly)->active; 
+	optOpenBabel = GTK_TOGGLE_BUTTON (buttonPostOpt)->active && GTK_TOGGLE_BUTTON (buttonOpenBabel)->active; 
+	optGeneric = GTK_TOGGLE_BUTTON (buttonPostOpt)->active && GTK_TOGGLE_BUTTON (buttonGeneric)->active; 
 	/* number for geometries */
 	{
 		gchar* tmp = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryNumberOfGeom)));
@@ -3695,10 +4537,11 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 	set_sensitive_stop_button( TRUE);
 	StopCalcul = FALSE;
 
-	if(!strcmp(program,"Mopac"))
-		seModel = createMopacModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName, constraints);
-	else
-		seModel = createFireFlyModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName,constraints);
+	if(!strcmp(program,"Mopac")) seModel = createMopacModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName, constraints);
+	else if(!strcmp(program,"FireFly")) seModel = createFireFlyModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName,constraints);
+	else if(!strcmp(program,"OpenBabel")) seModel = createOpenBabelModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName,constraints);
+	else seModel = createGenericModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName,constraints);
+
 	g_free(program);
 
 	if(StopCalcul)
@@ -3779,8 +4622,53 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 		if(fileNamePrefix) g_free(fileNamePrefix);
 		if(keys)g_free(keys);
 	}
+        /* minimazation by OpenBabel*/
+        if(optOpenBabel && !StopCalcul )
+        {
+                gchar* fileNamePrefix = get_suffix_name_file(fileNameGeom);
+		gchar* keys=g_strdup_printf("obopt -ff %s",method);
+                if(runOpenBabelFiles(numberOfGeometries, geometries, energies, fileNamePrefix, keys))
+                {
+                        char* fileNameGeomOpenBabel =g_strdup_printf("%sOpenBabel.gab",fileNamePrefix);
+                        sortGeometries(numberOfGeometries, geometries, energies);
+                        removeIdenticalGeometries(&numberOfGeometries, &geometries, &energies, tolEnergy, tolDistance);
+                        if(saveConfoGeometries(numberOfGeometries, geometries, energies, fileNameGeom))
+                        {
+                                strcat(message,fileNameGeom);
+                                strcat(message,("\n\tGeometries after minimization by OpenBabel"));
+                                strcat(message,("\n\tTo read this file through Gabedit : 'Read/Gabedit file'\n\n"));
+                        }
+                        free(fileNameGeomOpenBabel);
+
+                }
+                if(fileNamePrefix) free(fileNamePrefix);
+                if(keys)free(keys);
+        }
+        /* minimazation by Generic*/
+        if(optGeneric && !StopCalcul )
+        {
+                gchar* fileNamePrefix = get_suffix_name_file(fileNameGeom);
+		gchar* keys=g_strdup_printf("Opt");
+                if(runGenericFiles(numberOfGeometries, geometries, energies, fileNamePrefix, keys, method))
+                {
+                        char* fileNameGeomGeneric =g_strdup_printf("%sGeneric.gab",fileNamePrefix);
+                        sortGeometries(numberOfGeometries, geometries, energies);
+                        removeIdenticalGeometries(&numberOfGeometries, &geometries, &energies, tolEnergy, tolDistance);
+                        if(saveConfoGeometries(numberOfGeometries, geometries, energies, fileNameGeom))
+                        {
+                                strcat(message,fileNameGeom);
+                                strcat(message,("\n\tGeometries after minimization by Generic"));
+                                strcat(message,("\n\tTo read this file through Gabedit : 'Read/Gabedit file'\n\n"));
+                        }
+                        free(fileNameGeomGeneric);
+
+                }
+                if(fileNamePrefix) free(fileNamePrefix);
+                if(keys)free(keys);
+        }
+
 	g_free(method);
-	if(!optMopac && !optFireFly && !StopCalcul)
+	if(!optMopac && !optFireFly && !optGeneric && !optOpenBabel && !StopCalcul)
 	{
 		/*  sort by energies */
 		sortGeometries(numberOfGeometries, geometries, energies);
@@ -3877,10 +4765,22 @@ static void semiEmpiricalMD(GtkWidget* Win, gpointer data)
 		program = g_strdup("Mopac");
 		method = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryMopacMethod)));
 	}
-	else
+	if(GTK_TOGGLE_BUTTON (buttonFireFly)->active) 
 	{
 		program = g_strdup("FireFly");
 		method = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryFireFlyMethod)));
+	}
+	else if(GTK_TOGGLE_BUTTON (buttonOpenBabel)->active) 
+	{
+		program = g_strdup("OpenBabel");
+		method = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryOpenBabelMethod)));
+	}
+	else if(GTK_TOGGLE_BUTTON (buttonGeneric)->active) 
+	{
+		program = g_strdup("Generic");
+		method = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryGenericMethod)));
+		if(!genericProgName) g_free(genericProgName);
+		genericProgName = g_strdup(method);
 	}
 	updateFrequency = atoi(gtk_entry_get_text(GTK_ENTRY(entryMDRafresh)));
 	if(updateFrequency<0) updateFrequency = 0;
@@ -3952,10 +4852,11 @@ static void semiEmpiricalMD(GtkWidget* Win, gpointer data)
 	set_sensitive_stop_button( TRUE);
 	StopCalcul = FALSE;
 
-	if(!strcmp(program,"Mopac"))
-		seModel = createMopacModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName, constraints);
-	else
-		seModel = createFireFlyModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName, constraints);
+	if(!strcmp(program,"Mopac")) seModel = createMopacModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName, constraints);
+	else if(!strcmp(program,"FireFly")) seModel = createFireFlyModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName, constraints);
+	else if(!strcmp(program,"OpenBabel")) seModel = createOpenBabelModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName, constraints);
+	else if(!strcmp(program,"Generic")) seModel = createGenericModel(geometry0,Natoms, totalCharge, spinMultiplicity,method,dirName, constraints);
+
 	g_free(method);
 	g_free(program);
 
@@ -4480,7 +5381,7 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 18;
 	j = 2;
-	buttonDirSelector =  gtk_file_chooser_button_new("Select your folder", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	buttonDirSelector =  gabedit_dir_button();
 	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
 			j,j+4,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
@@ -4794,11 +5695,12 @@ static void AddModelOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 	vbox = gtk_vbox_new (FALSE, 0);
 	gtk_container_add (GTK_CONTAINER (frame), vbox);
 
-	table = gtk_table_new(3,3,FALSE);
+	table = gtk_table_new(5,3,FALSE);
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
-/*----------------------------------------------------------------------------------*/
-	i = 0;
+	i=-1;
+/*==================================================================================*/
+	i++;
 	j = 0;
 	buttonMopac = gtk_radio_button_new_with_label( NULL,_("Use Mopac with method"));
 	gtk_table_attach(GTK_TABLE(table),buttonMopac,
@@ -4809,7 +5711,6 @@ static void AddModelOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonMopac), TRUE);
 	gtk_widget_show (buttonMopac);
 /*----------------------------------------------------------------------------------*/
-	i = 0;
 	j = 1;
 	label = gtk_label_new(":");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -4817,7 +5718,6 @@ static void AddModelOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 0;
 	j = 2;
 	entryMopacMethod = gtk_entry_new();
 	gtk_entry_set_text(GTK_ENTRY(entryMopacMethod),"PM7");
@@ -4825,8 +5725,8 @@ static void AddModelOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
-/*----------------------------------------------------------------------------------*/
-	i = 1;
+/*==================================================================================*/
+	i++;
 	j = 0;
 	buttonFireFly = gtk_radio_button_new_with_label(
 			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonMopac)),
@@ -4839,7 +5739,6 @@ static void AddModelOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonFireFly), FALSE);
 	gtk_widget_show (buttonFireFly);
 /*----------------------------------------------------------------------------------*/
-	i = 1;
 	j = 1;
 	label = gtk_label_new(":");
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
@@ -4847,7 +5746,6 @@ static void AddModelOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 /*----------------------------------------------------------------------------------*/
-	i = 1;
 	j = 2;
 	entryFireFlyMethod = gtk_entry_new();
 	gtk_entry_set_text(GTK_ENTRY(entryFireFlyMethod),"AM1");
@@ -4855,8 +5753,65 @@ static void AddModelOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
+/*==================================================================================*/
+	i++;
+	j = 0;
+	buttonOpenBabel = gtk_radio_button_new_with_label(
+			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonMopac)),
+			_("Use OpenBabel with method"));
+	gtk_table_attach(GTK_TABLE(table),buttonOpenBabel,
+			j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonOpenBabel), FALSE);
+	gtk_widget_show (buttonOpenBabel);
 /*----------------------------------------------------------------------------------*/
-	i = 2;
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	j = 2;
+	entryOpenBabelMethod = gtk_entry_new();
+	gtk_entry_set_text(GTK_ENTRY(entryOpenBabelMethod),"MMFF94");
+	gtk_table_attach(GTK_TABLE(table),entryOpenBabelMethod, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*==================================================================================*/
+	i++;
+	j = 0;
+	buttonGeneric = gtk_radio_button_new_with_label(
+			gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonMopac)),
+			_("Use Generic with command"));
+	gtk_table_attach(GTK_TABLE(table),buttonGeneric,
+			j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonGeneric), FALSE);
+	gtk_widget_show (buttonGeneric);
+/*----------------------------------------------------------------------------------*/
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	j = 2;
+	entryGenericMethod = gtk_entry_new();
+	if(!genericProgName) genericProgName = g_strdup("myGenericProgram");
+	gtk_entry_set_text(GTK_ENTRY(entryGenericMethod),genericProgName);
+	gtk_table_attach(GTK_TABLE(table),entryGenericMethod, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*==================================================================================*/
+	i++;
 	j = 0;
 	vbox = gtk_vbox_new (FALSE, 0);
 	gtk_table_attach(GTK_TABLE(table),vbox,
@@ -4865,7 +5820,7 @@ static void AddModelOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 	addChargeSpin(vbox);
-/*----------------------------------------------------------------------------------*/
+/*==================================================================================*/
 }
 /********************************************************************************/
 static void AddInfoConfo(GtkWidget *NoteBook, GtkWidget *win)
@@ -4993,7 +5948,7 @@ static void AddGeneralConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 /*----------------------------------------------------------------------------------*/
 	i = 2;
 	j = 2;
-	buttonDirSelector =  gtk_file_chooser_button_new("Select your folder", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	buttonDirSelector =  gabedit_dir_button();
 	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeight*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
 			j,j+4,i,i+1,
@@ -5095,7 +6050,7 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
 	j = 3;
 	entryMDTimes[1] = gtk_entry_new();
 	gtk_widget_set_size_request(entryMDTimes[1], 60, -1);
-	gtk_entry_set_text(GTK_ENTRY(entryMDTimes[1]),"0.0");
+	gtk_entry_set_text(GTK_ENTRY(entryMDTimes[1]),"1.0");
 	gtk_table_attach(GTK_TABLE(table),entryMDTimes[1], j,j+1,i,i+1,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),

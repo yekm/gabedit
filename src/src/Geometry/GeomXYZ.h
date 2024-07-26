@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -30,6 +30,7 @@ void read_XYZ_file_no_add_list(G_CONST_RETURN  gchar *);
 void read_mol2_tinker_file_no_add_list(gchar *NomFichier,gchar*type);
 void read_pdb_file_no_add_list(gchar *NomFichier);
 void read_hin_file_no_add_list(gchar *NomFichier);
+void read_XYZ_from_demon_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile );
 void read_XYZ_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile );
 void read_XYZ_from_gamess_input_file(gchar *NomFichier );
 void read_XYZ_from_mpqc_input_file(gchar *NomFichier );
@@ -47,6 +48,8 @@ void read_geom_from_gaussian_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_mpqc_output_file(gchar *fileName, gint numGeometry);
 void read_geom_from_molpro_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_orca_file(gchar *NomFichier, gint numgeometry);
+void read_geom_from_vasp_file(gchar *NomFichier, gint numgeometry);
+void read_geom_from_vasp_xml_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_nwchem_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_psicode_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_qchem_file(gchar *NomFichier, gint numgeometry);
@@ -58,13 +61,15 @@ void read_geom_from_mopac_scan_output_file(gchar *FileName, gint numGeom);
 void read_geom_from_mopac_irc_output_file(gchar *FileName, gint numGeom);
 void read_geom_from_mopac_aux_file(gchar *NomFichier, gint numgeometry);
 void read_geom_from_xyz_file(gchar *fileName, gint numGeom);
+void read_geom_from_poscar_file(gchar *fileName);
 void read_XYZ_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile);
 void create_GeomXYZ_from_draw_grometry();
 void freeGeomXYZ();
 void freeVariablesXYZ();
 void FreeGeomXYZ(GeomXYZAtomDef* GeomXYZtemp, VariablesXYZDef* VariablesXYZtemp, gint Ncent, gint Nvar);
-void selc_XYZ_file(guint itype);
+void selc_XYZ_file(GabEditTypeFileGeom itype);
 void create_babel_save_dialogue();
+void save_geometry_poscar_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_xyz_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_mol_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_mol2_file(GabeditFileChooser *SelecFile, gint response_id);
@@ -72,8 +77,9 @@ void save_geometry_tinker_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_pdb_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_hin_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_gabedit_file(GabeditFileChooser *SelecFile, gint response_id);
-void save_geometry_lascmd_file(GabeditFileChooser *SelecFile, gint response_id);
+void save_geometry_cchemi_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_xyz_file_no_add_list(const gchar* FileName);
+void save_poscar_file_no_add_list(const gchar* FileName);
 gboolean connecteds(guint i,guint j);
 
 void read_hin_file(GabeditFileChooser *SelecFile, gint response_id);
@@ -94,6 +100,8 @@ void read_last_molcas_file(GabeditFileChooser *SelecFile , gint response_id);
 void read_last_molpro_file(GabeditFileChooser *SelecFile , gint response_id);
 void read_first_orca_file(GabeditFileChooser *SelecFile , gint response_id);
 void read_last_orca_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_first_vasp_file(GabeditFileChooser *SelecFile , gint response_id);
+void read_last_vasp_file(GabeditFileChooser *SelecFile , gint response_id);
 void read_first_nwchem_file(GabeditFileChooser *SelecFile , gint response_id);
 void read_first_psicode_file(GabeditFileChooser *SelecFile , gint response_id);
 void read_last_nwchem_file(GabeditFileChooser *SelecFile , gint response_id);
@@ -111,6 +119,7 @@ void read_tinker_file(GabeditFileChooser *SelecFile, gint response_id);
 void read_pdb_file(GabeditFileChooser *SelecFile, gint response_id);
 void read_XYZ_file(GabeditFileChooser *SelecFile, gint  response_id);
 void reset_connections_XYZ();
+GtkWidget* scale_cell_dialog ();
 
 
 #endif /* __GABEDIT_GEOMXYZ_H__ */

@@ -1,6 +1,6 @@
 /* StockIcons.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -57,10 +57,12 @@ DEALINGS IN THE SOFTWARE.
 #include "../../pixmaps/Molden.xpm"
 #include "../../pixmaps/Molpro.xpm"
 #include "../../pixmaps/Orca.xpm"
+#include "../../pixmaps/Vasp.xpm"
 #include "../../pixmaps/QChem.xpm"
 #include "../../pixmaps/Mopac.xpm"
 #include "../../pixmaps/Adf.xpm"
 #include "../../pixmaps/Dalton.xpm"
+#include "../../pixmaps/DeMon.xpm"
 #include "../../pixmaps/Gamess.xpm"
 #include "../../pixmaps/FireFly.xpm"
 #include "../../pixmaps/MoveAtom.xpm"
@@ -175,10 +177,12 @@ void gabedit_gtk_stock_init()
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOLDEN, molden_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOLPRO, molpro_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_ORCA, orca_xpm);
+	add_one_icon(icon_factory, GABEDIT_STOCK_VASP, vasp_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_QCHEM, qchem_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOPAC, mopac_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_ADF, adf_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_DALTON, dalton_xpm);
+	add_one_icon(icon_factory, GABEDIT_STOCK_DEMON, demon_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_GAMESS, gamess_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_NWCHEM, nwchem_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_PSICODE, psicode_xpm);

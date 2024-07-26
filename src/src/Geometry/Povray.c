@@ -1,6 +1,6 @@
 /* Povray.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -476,7 +476,6 @@ static gchar *get_pov_one_stick(gint i,gint j)
      XYZRC Center1;
      XYZRC Center2;
      gint l;
-     gint k;
      gdouble ep;
      gdouble poid1;
      gdouble poid2;
@@ -489,7 +488,7 @@ static gchar *get_pov_one_stick(gint i,gint j)
 
      Center1 = get_prop_center(i);
      Center2 = get_prop_center(j);
-     k =get_num_min_rayonIJ(i,j);
+     get_num_min_rayonIJ(i,j);
  
      ep =get_epaisseur(i,j);
  
@@ -977,6 +976,111 @@ static gchar *get_pov_dipole()
 	g_free(t2);
 	return t;
 }
+/*****************************************************************************/
+static gchar* get_pov_box()
+{	
+	guint i;
+	guint j;
+    	gdouble rayon;
+	gint ni, nj;
+	gchar tmp[BSIZE];
+	gint nTv = 0;
+	gint iTv[3] = {-1,-1,-1};
+	V3d Base1Pos;
+	V3d Base2Pos;
+	V4d Specular = {1.0f,1.0f,1.0f,1.0f};
+        V4d Diffuse  = {1.0f,1.0f,1.0f,1.0f};
+        V4d Ambiant  = {1.0f,1.0f,1.0f,1.0f};
+	gdouble radius = 0.1;
+	gdouble Tv[3][3];
+	gdouble O[3];
+     	gchar *temp;
+     	gchar *temp_all;
+     	XYZRC Center1;
+     	XYZRC Center2;
+	gdouble Orig[3]= {0,0,0};
+	gchar* t;
+
+	if(!testShowBoxGeom()) return g_strdup("\n");
+	for(i=0;i<Natoms;i++)
+	{
+		sprintf(tmp,"%s",geometry[i].Prop.symbol);
+		uppercase(tmp);
+		if(!strcmp(tmp,"TV")) { iTv[nTv]= i; nTv++;}
+	}
+	if(nTv<2) return g_strdup("\n");
+	get_origine_molecule_drawgeom(Orig);
+	for(i=0;i<3;i++) O[i] = -Orig[i];
+	for(i=0;i<nTv;i++)
+	{
+		Tv[i][0] = geometry[iTv[i]].X-O[0];
+		Tv[i][1] = geometry[iTv[i]].Y-O[1];
+		Tv[i][2] = geometry[iTv[i]].Z-O[2];
+	}
+	for(i=0;i<3;i++) Base1Pos[i] = O[i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[0][i];
+        temp_all = get_pov_cylingre(Base1Pos,Base2Pos,Specular,radius);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[1][i];
+        temp = get_pov_cylingre(Base1Pos,Base2Pos,Specular,radius);
+	t = temp_all; temp_all = g_strdup_printf("%s%s",t,temp); g_free(temp); g_free(t);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[0][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[1][i];
+        temp = get_pov_cylingre(Base1Pos,Base2Pos,Specular,radius);
+	t = temp_all; temp_all = g_strdup_printf("%s%s",t,temp); g_free(temp); g_free(t);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[1][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[0][i];
+        temp = get_pov_cylingre(Base1Pos,Base2Pos,Specular,radius);
+	t = temp_all; temp_all = g_strdup_printf("%s%s",t,temp); g_free(temp); g_free(t);
+	if(nTv<3) return temp_all;
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[2][i];
+        temp = get_pov_cylingre(Base1Pos,Base2Pos,Specular,radius);
+	t = temp_all; temp_all = g_strdup_printf("%s%s",t,temp); g_free(temp); g_free(t);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[0][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[2][i];
+        temp = get_pov_cylingre(Base1Pos,Base2Pos,Specular,radius);
+	t = temp_all; temp_all = g_strdup_printf("%s%s",t,temp); g_free(temp); g_free(t);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[2][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[0][i];
+        temp = get_pov_cylingre(Base1Pos,Base2Pos,Specular,radius);
+	t = temp_all; temp_all = g_strdup_printf("%s%s",t,temp); g_free(temp); g_free(t);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[1][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[2][i];
+        temp = get_pov_cylingre(Base1Pos,Base2Pos,Specular,radius);
+	t = temp_all; temp_all = g_strdup_printf("%s%s",t,temp); g_free(temp); g_free(t);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[2][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[1][i];
+        temp = get_pov_cylingre(Base1Pos,Base2Pos,Specular,radius);
+	t = temp_all; temp_all = g_strdup_printf("%s%s",t,temp); g_free(temp); g_free(t);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[0][i]+Tv[2][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[1][i];
+        temp = get_pov_cylingre(Base1Pos,Base2Pos,Specular,radius);
+	t = temp_all; temp_all = g_strdup_printf("%s%s",t,temp); g_free(temp); g_free(t);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[0][i]+Tv[1][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[2][i];
+        temp = get_pov_cylingre(Base1Pos,Base2Pos,Specular,radius);
+	t = temp_all; temp_all = g_strdup_printf("%s%s",t,temp); g_free(temp); g_free(t);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[1][i]+Tv[2][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[0][i];
+        temp = get_pov_cylingre(Base1Pos,Base2Pos,Specular,radius);
+	t = temp_all; temp_all = g_strdup_printf("%s%s",t,temp); g_free(temp); g_free(t);
+
+      return temp_all;
+
+}
+/********************************************************************************/
 	
 /********************************************************************************/
 static gchar* export_to_povray(gchar* fileName)
@@ -1044,6 +1148,11 @@ static gchar* export_to_povray(gchar* fileName)
 		fprintf(fd,"%s",temp);
 		g_free(temp);
 	}
+
+	temp = get_pov_box();
+	fprintf(fd,"%s",temp);
+	g_free(temp);
+
 	temp = get_pov_end_molecule();
 	fprintf(fd,"%s",temp);
 	g_free(temp);
@@ -1161,7 +1270,7 @@ static void exportPOVRay(GtkWidget* Win, gboolean runPovray)
 		if(dirName[strlen(dirName)-1] != G_DIR_SEPARATOR)
 		{
 			fileNamePOV = g_strdup_printf("%s%s%s.pov",dirName, G_DIR_SEPARATOR_S,tmp);
-			fileNameIMG = g_strdup_printf("%s%s%s.bmp",dirName, G_DIR_SEPARATOR_S,tmp);
+			fileNameIMG = g_strdup_printf("%s%s%s.png",dirName, G_DIR_SEPARATOR_S,tmp);
 #ifndef G_OS_WIN32
 			fileNameCMD = g_strdup_printf("%s%s%s.cmd",dirName, G_DIR_SEPARATOR_S,tmp);
 #else
@@ -1171,7 +1280,7 @@ static void exportPOVRay(GtkWidget* Win, gboolean runPovray)
 		else
 		{
 			fileNamePOV = g_strdup_printf("%s%s.pov",dirName, tmp);
-			fileNameIMG = g_strdup_printf("%s%s.bmp",dirName, tmp);
+			fileNameIMG = g_strdup_printf("%s%s.png",dirName, tmp);
 #ifndef G_OS_WIN32
 			fileNameCMD = g_strdup_printf("%s%s.cmd",dirName, tmp);
 #else
@@ -1218,7 +1327,7 @@ static void exportPOVRay(GtkWidget* Win, gboolean runPovray)
 						" -\"%s\" a batch file for run povray\n")
 						,fileNamePOV,fileNameCMD);
 					GtkWidget* winDlg = Message(t,_("Info"),TRUE);
-					gtk_window_set_modal (GTK_WINDOW (winDlg), TRUE);
+					gtk_window_set_modal (GTK_WINDOW (winDlg), FALSE);
 					g_free(t);
 				}
 			}
@@ -1226,7 +1335,7 @@ static void exportPOVRay(GtkWidget* Win, gboolean runPovray)
 			{
 				gchar* t = g_strdup_printf(_("\nSorry, I cannot create the %s file\n"),fileNameCMD);
 				GtkWidget* winDlg = Message(t,_("Info"),TRUE);
-				gtk_window_set_modal (GTK_WINDOW (winDlg), TRUE);
+				gtk_window_set_modal (GTK_WINDOW (winDlg), FALSE);
 				g_free(t);
 			}
 		}
@@ -1270,7 +1379,8 @@ static void AddPOVRayLocationDlg(GtkWidget *box, GtkWidget *Win)
                   1,1);
 /*----------------------------------------------------------------------------------*/
 	j = 2;
-	buttonDirSelector =  gtk_file_chooser_button_new("Select your folder", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	buttonDirSelector =  gabedit_dir_button();
+	gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (buttonDirSelector), g_getenv("PWD"));
 	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeight*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
 			j,j+1,i,i+1,

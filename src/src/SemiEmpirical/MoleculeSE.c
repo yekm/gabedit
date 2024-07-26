@@ -1,6 +1,6 @@
 /* MoleculeSE.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -19,6 +19,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../../Config.h"
 #include <stdlib.h>
 #include <math.h>
+#include <ctype.h>
 
 #include "../Common/Global.h"
 #include "../Utils/AtomsProp.h"
@@ -336,7 +337,7 @@ static void set3Connections(MoleculeSE* molecule)
 
 }
 /*****************************************************************************/
-static void setConnections(MoleculeSE* molecule)
+void setConnectionsMoleculeSE(MoleculeSE* molecule)
 {
 	createBondedMatrix(molecule);
 
@@ -393,12 +394,13 @@ MoleculeSE createMoleculeSE(GeomDef* geom,gint natoms, gint charge, gint spin, g
 			}
 		}
 	}
-	if(connections) setConnections(&molecule);
+	if(connections) setConnectionsMoleculeSE(&molecule);
 	molecule.totalCharge = charge;
 	molecule.spinMultiplicity = spin;
 
 	for(i=0;i<3;i++) /* x, y and z derivatives */
 		molecule.gradient[i] = g_malloc(molecule.nAtoms*sizeof(gdouble));
+	for(i=0;i<3;i++) molecule.dipole[i] = 0.0;
 
 	return molecule;
 }
@@ -461,12 +463,13 @@ MoleculeSE createFromGeomXYZMoleculeSE(gint charge, gint spin, gboolean connecti
 			}
 		}
 	}
-	if(connections) setConnections(&molecule);
+	if(connections) setConnectionsMoleculeSE(&molecule);
 	molecule.totalCharge = charge;
 	molecule.spinMultiplicity = spin;
 
 	for(i=0;i<3;i++) /* x, y and z derivatives */
 		molecule.gradient[i] = g_malloc(molecule.nAtoms*sizeof(gdouble));
+	for(i=0;i<3;i++) molecule.dipole[i] = 0.0;
 
 	return molecule;
 }
@@ -585,6 +588,16 @@ MoleculeSE copyMoleculeSE(MoleculeSE* m)
 		molecule.atoms[i].layer = m->atoms[i].layer;
 		molecule.atoms[i].show = m->atoms[i].show;
 		molecule.atoms[i].variable = m->atoms[i].variable;
+	       if(m->atoms[i].typeConnections)
+                {
+                        gint j;
+                        molecule.atoms[i].typeConnections = g_malloc(molecule.nAtoms*sizeof(gint));
+                        for(j=0;j<molecule.nAtoms;j++)
+                        {
+                                gint nj = m->atoms[j].N-1;
+                                molecule.atoms[i].typeConnections[nj] = m->atoms[i].typeConnections[nj];
+                        }
+                }
 	}
 
 
@@ -595,6 +608,488 @@ MoleculeSE copyMoleculeSE(MoleculeSE* m)
 		for(i=0;i<molecule.nAtoms;i++)
 		molecule.gradient[j][i] = m->gradient[j][i];
 	}
+	for(i=0;i<3;i++) molecule.dipole[i] = m->dipole[i];
 
 	return molecule;
+}
+/******************************************************************************/
+static void save_atom_hin_file(FILE* file, char* name, int atomNumber, char* atomPDBType, char* atomMMType,
+                double x, double y, double z, char* symbol, double charge,
+                int N, int* connection, int* connectionType)
+{
+        int i;
+        fprintf(file,"%s %d ",name,atomNumber);
+        fprintf(file,"%s ",atomPDBType);
+        fprintf(file,"%s ",symbol);
+        fprintf(file,"%s - ",atomMMType);
+        fprintf(file,"%0.14f ",charge);
+        fprintf(file,"%0.14f ",x);
+        fprintf(file,"%0.14f ",y);
+        fprintf(file,"%0.14f ",z);
+        if(N>0)
+        {
+                fprintf(file,"%d ",N);
+                for(i=0;i<N;i++)
+                {
+                        if(connectionType[i]==3) fprintf(file,"%d t ",connection[i]);
+                        else if(connectionType[i]==2) fprintf(file,"%d d ",connection[i]);
+                        else fprintf(file,"%d s ",connection[i]);
+                }
+        }
+        fprintf(file,"\n");
+}
+/******************************************************************************/
+gboolean saveMoleculeSEHIN(MoleculeSE* mol, char* fileName)
+{
+	int i,n,k;
+ 	FILE* file = fopen(fileName, "w");
+	int nAtoms;
+	AtomSE* atoms;
+	int* connection;
+	int* connectionType;
+	if(!file) return FALSE;
+	nAtoms = mol->nAtoms;
+	atoms = mol->atoms;
+
+	fprintf(file,"forcefield Amber99\n");
+	fprintf(file,"sys 0 0 1\n");
+	fprintf(file,"view 40 0.1272 55 15 0.247224 0.3713666 0.8949677 -0.8641704 0.5022867 0.0302929 -0.4382806 -0.7808937 0.4451014 6.191 0.64575 -54.754\n");
+	fprintf(file,"seed -1108\n");
+	fprintf(file,"mol 1\n");
+
+	connection = malloc(nAtoms*sizeof(int));
+	connectionType = malloc(nAtoms*sizeof(int));
+
+	for(i=0;i<nAtoms;i++)
+	{
+		n = 0;
+		if(atoms[i].typeConnections)
+		for(k=0;k<nAtoms;k++)
+		{
+			if(i==k) continue;
+			if(atoms[i].typeConnections[k]>0)
+			{
+				connection[n] = k+1;
+				connectionType[n] = atoms[i].typeConnections[k];
+				n++;
+			}
+		}
+		save_atom_hin_file(file,"ATOM",i+1,atoms[i].pdbType, atoms[i].mmType,
+		atoms[i].coordinates[0], atoms[i].coordinates[1], atoms[i].coordinates[2],
+		atoms[i].prop.symbol, atoms[i].charge,n,connection, connectionType);
+	}
+	fprintf(file,"endmol 1\n");
+	fclose(file);
+	free(connection);
+	free(connectionType);
+	return TRUE;
+}
+
+/*****************************************************************************/
+gboolean saveMoleculeSEMol2(MoleculeSE* mol, char* fileName)
+{
+	int i,n,j;
+ 	FILE* file = fopen(fileName, "w");
+	if(!file) return FALSE;
+	n = 0;
+	for(i=0;i<mol->nAtoms;i++)
+        if(mol->atoms[i].typeConnections)
+        for(j=i+1;j<mol->nAtoms;j++)
+                if(mol->atoms[i].typeConnections[j]) n++;
+
+	fprintf(file,"@<TRIPOS>MOLECULE\n");
+	fprintf(file,"MOL2  : Made in CChemI. mol2 file\n");
+	fprintf(file," %10d %10d %10d\n",mol->nAtoms,n,1);
+	fprintf(file,"SMALL\n");
+	fprintf(file,"GASTEIGER\n");
+	fprintf(file,"\n");
+	fprintf(file,"@<TRIPOS>ATOM\n");
+      	for (i=0;i<mol->nAtoms;i++)
+	{
+       		fprintf(file,"%7d%1s%-6s%12.4f%10.4f%10.4f%1s%-5s%4d%1s%-8s%10.4f\n",
+               		i+1,"",mol->atoms[i].prop.symbol,
+				mol->atoms[i].coordinates[0],
+				mol->atoms[i].coordinates[1],
+				mol->atoms[i].coordinates[2],
+				"",mol->atoms[i].prop.symbol,1," ","LIG111",mol->atoms[i].charge);
+	}
+	fprintf(file,"@<TRIPOS>BOND\n");
+	n = 0;
+	for(i=0;i<mol->nAtoms;i++)
+        if(mol->atoms[i].typeConnections)
+        for(j=i+1;j<mol->nAtoms;j++)
+                if(mol->atoms[i].typeConnections[j]) 
+		{
+			n++;
+			fprintf(file,"%6d%6d%6d%3s%2d\n",n+1, i+1, j+1, "",mol->atoms[i].typeConnections[j]);
+		}
+
+
+	fclose(file);
+	return TRUE;
+}
+/*****************************************************************************/
+void computeMoleculeSEDipole(MoleculeSE* mol)
+{
+        int i,k;
+        for(k=0;k<3;k++) mol->dipole[k] = 0;
+        for(i=0;i<mol->nAtoms;i++)
+        for(k=0;k<3;k++)
+                mol->dipole[k] += mol->atoms[i].charge*mol->atoms[i].coordinates[k];
+        for(k=0;k<3;k++) mol->dipole[k] *= ANG_TO_BOHR*AUTODEB;
+}
+
+/********************************************************************************/
+void readGeomMoleculeSEFromOpenBabelOutputFile(MoleculeSE* mol, char* fileName, int numgeometry)
+{
+	FILE* file = NULL;
+	char buffer[BSIZE];
+	char* pdest = NULL;
+	//char* energyTag = "TOTAL ENERGY =";
+	char* energyTag = "FINAL ENERGY:";
+	char* geomTag = "Geometry";
+	char* gradTag = "Gradients:";
+	double dum;
+
+	printf("Read geom from %s\n",fileName);
+ 	file = fopen(fileName, "r");
+	if(!file) return;
+	 while(!feof(file))
+	 {
+		if(!fgets(buffer,BSIZE,file))break;
+		pdest = strstr( buffer, energyTag);
+		if(pdest &&sscanf(pdest+strlen(energyTag)+1,"%lf",&mol->energy)==1)
+		{
+			if(strstr(pdest,"kJ")) mol->energy /= KCALTOKJ;
+			break;
+		}
+	 }
+	 while(!feof(file))
+	 {
+		if(!fgets(buffer,BSIZE,file))break;
+		if(strstr(buffer, geomTag))
+		{
+			int i;
+			for(i=0;i<mol->nAtoms;i++)
+			{
+				if(!fgets(buffer,BSIZE,file))break;
+				//printf("%s\n",buffer);
+				if(sscanf(buffer,"%lf %lf %lf %lf",
+					&dum,
+					&mol->atoms[i].coordinates[0],
+					&mol->atoms[i].coordinates[1],
+					&mol->atoms[i].coordinates[2]
+					)!=4) break;
+			}
+			break;
+		}
+	 }
+	 while(!feof(file))
+	 {
+		if(!fgets(buffer,BSIZE,file))break;
+		if(strstr(buffer, gradTag))
+		{
+			int i;
+			for(i=0;i<mol->nAtoms;i++)
+			{
+				if(!fgets(buffer,BSIZE,file))break;
+				//printf("%s\n",buffer);
+				if(sscanf(buffer,"%lf %lf %lf",
+					&mol->gradient[0][i],
+					&mol->gradient[1][i],
+					&mol->gradient[2][i]
+					)!=3) break;
+			}
+			break;
+		}
+	 }
+	/*
+	{
+		int i;
+		for(i=0;i<mol->nAtoms;i++) mol->atoms[i].typeConnections = NULL; 
+	}
+	*/
+	fclose(file);
+}
+/********************************************************************************/
+gint get_connections_one_atom(gchar* t, gint nAtoms, gint ibeg, gint* connections)
+{
+        gint k;
+        gint nc;
+        gint nj;
+        gchar** ssplit = NULL;
+        gint nA = 0;
+        /* int ibeg = 12;*/
+        for(k=0;k<nAtoms;k++) connections[k] = 0;
+        ssplit = gab_split(t);
+        nA = 0;
+        while(ssplit && ssplit[nA]!=NULL) nA++;
+        if(nA<ibeg)
+        {
+                gab_strfreev(ssplit);
+                return 0;
+        }
+        nc = atoi(ssplit[ibeg-1]);
+        for(k=0;k<2*nc;k+=2)
+        {
+                if(!ssplit[ibeg+k]) break;
+                if(!ssplit[ibeg+k+1]) break;
+                nj = atoi(ssplit[ibeg+k]);
+                connections[nj-1] = atoi(ssplit[ibeg+k+1]);
+        }
+
+        gab_strfreev(ssplit);
+
+        return 1;
+}
+/********************************************************************************/
+gboolean readGeometryFromGenericOutputFile(MoleculeSE* molecule, char* namefile)
+{
+	FILE* file = NULL;
+	static gchar *t = NULL; 
+	gboolean Ok = FALSE;
+	gint n,ic,is;
+	MoleculeSE mols = newMoleculeSE();
+	MoleculeSE* mol = &mols;
+#define SZ 50
+	gchar symbol[SZ];
+	gchar mmType[SZ];
+	gchar pdbType[SZ];
+	gchar residueName[SZ];
+	gdouble X,Y,Z;
+	gdouble charge;
+	gint layer;
+	gint i,j,l;
+	gchar* pos;
+
+	if(!namefile) 
+	{
+		printf("Sorry I cannot read geometry namefile = NULL\n");
+		exit(1);
+	}
+	if(t==NULL) t = malloc(BSIZE*sizeof(char));
+	file = fopen(namefile,"rb");
+	if(!file)
+	{
+		printf("Sorry I cannot open %s file\n",namefile);
+		exit(1);
+	}
+	rewind(file);
+	while(!feof(file))
+  	{
+    		if(!fgets(t,BSIZE, file)) break;
+		deleteFirstSpaces(t);
+		if(t[0]=='#') continue;
+		uppercase(t);
+		pos = strstr(t,"GEOMETRY");
+		if(pos)
+		{ 
+			while(!feof(file))
+			{
+    				if(!fgets(t,BSIZE, file)) break;
+				deleteFirstSpaces(t);
+				if(t[0]=='#') continue;
+				break;
+			}
+			if(3==sscanf(t,"%d%d%d",&n,&ic,&is) && n>0 && is>0)
+			{
+				/*
+				printf("Mult = %d\n",is);
+				printf("nAtoms = %d\n",n);
+				*/
+				mol->nAtoms = n;
+				mol->spinMultiplicity = is;
+				mol->totalCharge = ic;
+				mol->atoms = g_malloc(mol->nAtoms*sizeof(AtomSE));
+				for(i=0; i<mol->nAtoms; i++) mol->atoms[i].typeConnections = g_malloc(mol->nAtoms*sizeof(gint));
+				Ok = TRUE;
+			}
+			break;
+		}
+	}
+	if(!Ok)
+	{
+		printf("Sorry I cannot read geometry from %s file\n",namefile);
+		exit(1);
+	}
+	for(i=0; i<mol->nAtoms; i++)
+	{
+			int variable = 0;
+			gint ibeg = 12;
+			if(!fgets(t,BSIZE,file))
+			{
+				printf("Sorry I cannot read geometry from %s file.\n",namefile);
+				exit(1);
+			}
+			deleteFirstSpaces(t);
+			if(t[0]=='#') { i--;continue;}
+    			sscanf(t,"%s %s %s %s %d %lf %d %d %lf %lf %lf",
+					symbol,mmType,pdbType,residueName, 
+					&mol->atoms[i].residueNumber,
+					&charge,&layer,&variable,&X,&Y,&Z);
+			symbol[0]=toupper(symbol[0]);
+			l=strlen(symbol);
+			if (l==2) symbol[1]=tolower(symbol[1]);
+
+			mol->atoms[i].prop = prop_atom_get(symbol);
+			mol->atoms[i].mmType=strdup(mmType);
+			mol->atoms[i].pdbType=strdup(pdbType);
+			mol->atoms[i].residueName=strdup(residueName);
+			mol->atoms[i].N=i+1;
+			mol->atoms[i].layer=layer;
+			mol->atoms[i].variable=variable;
+			mol->atoms[i].show=TRUE;
+			mol->atoms[i].coordinates[0] = X;
+			mol->atoms[i].coordinates[1] = Y;
+			mol->atoms[i].coordinates[2] = Z;
+			mol->atoms[i].charge = charge;
+			if(!get_connections_one_atom(t, mol->nAtoms, ibeg, mol->atoms[i].typeConnections))
+			{
+				printf("Sorry I cannot read the connection for atom # %d from the %s file.\n",i+1,namefile);
+				exit(1);
+			}
+	}
+	fclose(file);
+	if(mol->nAtoms>0)
+	for(j=0;j<3;j++) /* x, y and z derivatives */
+	{
+		mol->gradient[j] = g_malloc(mol->nAtoms*sizeof(gdouble));
+		for(i=0;i<mol->nAtoms;i++) mol->gradient[j][i] = 0.0;
+	}
+	for(i=0;i<3;i++) mol->dipole[i] = 0.0;
+	/*
+	printf("Begin copyMol\n");
+	*molecule = copyMoleculeSE(mol);
+	printf("End copyMol\n");
+	*/
+	if(molecule->nAtoms==mol->nAtoms)
+	{
+		for(j=0;j<3;j++) 
+		for(i=0;i<mol->nAtoms;i++) 
+			molecule->atoms[i].coordinates[j] = mol->atoms[i].coordinates[j];
+		
+	}
+	freeMoleculeSE(mol);
+	return TRUE;
+}
+/*****************************************************************************/
+gboolean addGeometryMoleculeSEToGabedit(MoleculeSE* molecule,FILE* file)
+{
+	int j,k;
+	int nc;
+
+	if(!molecule) return FALSE;
+	fprintf(file,"%d %d %d\n",molecule->nAtoms, molecule->totalCharge, molecule->spinMultiplicity);
+	for(j=0;j<molecule->nAtoms;j++)
+	{
+		nc = 0;
+		for(k=0;k<molecule->nAtoms;k++) if(molecule->atoms[j].typeConnections[k]>0) nc++;
+		fprintf(file," %s %s %s %s %d %0.12lf %d %d %0.12lf %0.12lf %0.12lf %d ", 
+				molecule->atoms[j].prop.symbol,
+				molecule->atoms[j].mmType,
+				molecule->atoms[j].pdbType,
+				molecule->atoms[j].residueName,
+				molecule->atoms[j].residueNumber,
+				molecule->atoms[j].charge,
+				molecule->atoms[j].layer,
+				molecule->atoms[j].variable,
+				molecule->atoms[j].coordinates[0],
+				molecule->atoms[j].coordinates[1],
+				molecule->atoms[j].coordinates[2],
+				nc
+				);
+		for(k=0;k<molecule->nAtoms;k++) 
+		{
+	 		int nk = molecule->atoms[k].N-1;
+			if(molecule->atoms[j].typeConnections[nk]>0) 
+			fprintf(file," %d %d", nk+1,molecule->atoms[j].typeConnections[nk]);
+		}
+        	fprintf(file," GRADIENT %0.14f %0.14f %0.14f",molecule->gradient[0][j], molecule->gradient[1][j],molecule->gradient[2][j]);
+		fprintf(file,"\n");
+	}
+	return TRUE;
+
+}
+/*****************************************************************************/
+gboolean addMoleculeSEToFile(MoleculeSE* molecule,FILE* file)
+{
+	int j,k;
+	int nc;
+
+	if(!molecule) return FALSE;
+
+	fprintf(file,"Geometry\n");
+	return addGeometryMoleculeSEToGabedit(molecule,file);
+}
+/*****************************************************************************/
+gboolean saveMoleculeSETypeSave(MoleculeSE* molecule, char* fileName, char* typeSave)
+{
+	FILE* file = NULL;
+	int j;
+	int form = 1;
+
+	printf("Save molecule in %s\n",fileName);
+	if(!molecule) return FALSE;
+
+ 	file = fopen(fileName, typeSave);
+
+	if(!file) return FALSE;
+
+	fprintf(file,"[Gabedit Format]\n");
+	fprintf(file,"[GEOCONV]\n");
+	fprintf(file,"energy\n");
+	fprintf(file,"%f\n",molecule->energy);
+	fprintf(file,"max-force\n");
+	fprintf(file,"%f\n",0.0);
+	fprintf(file,"rms-force\n");
+	fprintf(file,"%f\n",0.0);
+
+	fprintf(file,"\n");
+	fprintf(file,"[GEOMETRIES]\n");
+	{
+		fprintf(file,"%d\n",molecule->nAtoms);
+		fprintf(file,"\n");
+		for(j=0;j<molecule->nAtoms;j++)
+		fprintf(file," %s %0.8f %0.8f %0.8f\n", 
+				molecule->atoms[j].prop.symbol,
+				molecule->atoms[j].coordinates[0],
+				molecule->atoms[j].coordinates[1],
+				molecule->atoms[j].coordinates[2]
+				);
+	}
+	fprintf(file,"\n");
+	fprintf(file,"[GEOMS] %d\n",form);
+	fprintf(file,"%d 3\n",1);
+	fprintf(file,"energy kcal/mol 1\n");
+	fprintf(file,"deltaE K 1\n");
+	fprintf(file,"Dipole Debye 3\n");
+	//molecule->klass->computeDipole(molecule);
+	{
+		fprintf(file,"%0.14f\n",molecule->energy);
+		fprintf(file,"0\n");
+		fprintf(file,"%0.14f %0.14f %0.14f\n",molecule->dipole[0],molecule->dipole[1],molecule->dipole[2]);
+		addGeometryMoleculeSEToGabedit(molecule,file);
+	}
+	//addVibrationToFile(molecule, file);
+	fclose(file);
+	return TRUE;
+
+}
+/*****************************************************************************/
+gboolean saveMoleculeSE(MoleculeSE* molecule, char* fileName)
+{
+	return saveMoleculeSETypeSave(molecule, fileName, "w");
+}
+/*****************************************************************************/
+gdouble getGradientNormMoleculeSE(MoleculeSE* molecule)
+{
+	int j,k;
+	gdouble norm = 0;
+
+	if(!molecule) return -1.0;
+	for(j=0;j<molecule->nAtoms;j++)
+	for(k=0;k<3;k++)
+		norm += molecule->gradient[k][j]*molecule->gradient[k][j];
+	return sqrt(norm);
+
 }

@@ -1,6 +1,6 @@
 /* MenuToolBar.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -56,6 +56,10 @@ DEALINGS IN THE SOFTWARE.
 #include "../Spectrum/NMRSpectrum.h"
 #include "../VibrationalCorrections/GabeditGaussianInput.h"
 #include "../IsotopeDistribution/IsotopeDistributionCalculatorDlg.h"
+#include "../QFF/Gabedit2MRQFF.h"
+#include "../Spectrum/VASPSpectra.h"
+#include "../Spectrum/IGVPT2Spectrum.h"
+#include "../Utils/UtilsVASP.h"
 
 /*********************************************************************************************************************/
 static gboolean ViewWindows = FALSE;
@@ -145,6 +149,7 @@ static void activate_action (GtkAction *action)
 	/* const gchar *typename = G_OBJECT_TYPE_NAME (action);*/
 
 	if(!strcmp(name,"GamessInput")) new_gamess(NULL, NULL);
+	else if(!strcmp(name,"DeMonInput")) new_demon(NULL, NULL);
 	else if(!strcmp(name,"GaussianInput")) new_gauss(NULL, NULL);
 	else if(!strcmp(name,"MolcasInput")) new_molcas(NULL, NULL);
 	else if(!strcmp(name,"MolproInput")) new_molpro(NULL, NULL);
@@ -213,6 +218,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ToolsIRSpectrumQChem")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_QCHEM);}
 	else if(!strcmp(name,"ToolsIRSpectrumAdf")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_ADF);}
 	else if(!strcmp(name,"ToolsIRSpectrumMolden")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_MOLDEN);}
+	else if(!strcmp(name,"ToolsIRSpectrumiGVPT2")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_IGVPT2);}
 	else if(!strcmp(name,"ToolsIRSpectrumTxt")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_TXT);}
 	else if(!strcmp(name,"ToolsRamanSpectrumGabedit")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_GABEDIT);}
 	else if(!strcmp(name,"ToolsRamanSpectrumGamess")) { createRamanSpectrum(Fenetre,GABEDIT_TYPEFILE_GAMESS);}
@@ -244,7 +250,16 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ToolsNMRSpectrumTxt")) { createNMRSpectrum(Fenetre,GABEDIT_TYPEFILE_TXT);}
 	else if(!strcmp(name,"ToolsNMR2SpectrumTxt")) { createNMR2Spectrum(Fenetre,GABEDIT_TYPEFILE_TXT);}
 
+	else if(!strcmp(name,"ToolsVASPOptic")) { read_vasp_xml_file_dlg();}
+	else if(!strcmp(name,"ToolsVASPBands")) { read_bands_vasp_xml_file_dlg();}
+	else if(!strcmp(name,"ToolsVASPDOS")) { read_dos_vasp_xml_file_dlg();}
+
+	else if(!strcmp(name,"ToolsiGVPT2Read")) { createIRSpectrum(Fenetre,GABEDIT_TYPEFILE_IGVPT2);}
+	else if(!strcmp(name,"ToolsiGVPT2Save")) { create_igvpt2_file_dlg(FALSE);}
+	else if(!strcmp(name,"ToolsiGVPT2Run")) { create_igvpt2_file_dlg(TRUE);}
+
 	else if(!strcmp(name,"ToolsVibCorrectionsGaussian")) {read_vibcorrection_gaussian_file_dlg(); }
+	else if(!strcmp(name,"ToolsVib2MRQFF")) {read_2mrqff_file_dlg(); }
 	else if(!strcmp(name,"ToolsAutoCorrelationGaussian")) {read_admp_build_dipole_dipole_autocorrelation_dlg(); }
 	else if(!strcmp(name,"ToolsAutoCorrelationDipole")) {read_dipole_build_dipole_dipole_autocorrelation_dlg(); }
 	else if(!strcmp(name,"ToolsIsotopeDistribution")) { compute_distribution_dlg(Fenetre, NULL); }
@@ -265,6 +280,7 @@ static GtkActionEntry gtkActionEntries[] =
 {
 	{"File",     NULL, N_("_File")},
 	{"FileNew",  GTK_STOCK_NEW, N_("_New")},
+	{"DeMonInput", GABEDIT_STOCK_DEMON, N_("_DeMon input"), NULL, "New DeMon input file", G_CALLBACK (activate_action) },
 	{"GamessInput", GABEDIT_STOCK_GAMESS, N_("_Gamess input"), NULL, "New Gamess input file", G_CALLBACK (activate_action) },
 	{"GaussianInput", GABEDIT_STOCK_GAUSSIAN, N_("_Gaussian input"), NULL, "New Gaussian input file", G_CALLBACK (activate_action) },
 	{"MolcasInput", GABEDIT_STOCK_MOLCAS, N_("Mol_cas input"), NULL, "New Molcas input file", G_CALLBACK (activate_action) },
@@ -347,6 +363,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ToolsIRSpectrumQChem",  GABEDIT_STOCK_QCHEM, N_("Read frequencies and intensities from a _Q-Chem output file"), NULL, "QChem", G_CALLBACK (activate_action) },
 	{"ToolsIRSpectrumAdf",  GABEDIT_STOCK_ADF, N_("Read frequencies and intensities from a _ADF output file"), NULL, "ADF", G_CALLBACK (activate_action) },
 	{"ToolsIRSpectrumMolden",  GABEDIT_STOCK_MOLDEN, N_("Read frequencies and intensities from a Mo_lden file"), NULL, "Molden", G_CALLBACK (activate_action) },
+	{"ToolsIRSpectrumiGVPT2",  GABEDIT_STOCK_GABEDIT, N_("Read frequencies and intensities from a _iGVPT2 output file"), NULL, "iGVPT2", G_CALLBACK (activate_action) },
 	{"ToolsIRSpectrumTxt",  NULL, N_("Read frequencies and intensities from an ASCII XY file(2 columns)"), NULL, "Txt", G_CALLBACK (activate_action) },
 	{"ToolsRamanSpectrum",  NULL, N_("_Raman spectrum")},
 
@@ -385,10 +402,24 @@ static GtkActionEntry gtkActionEntries[] =
 
 	{"ToolsVibCorrections",  NULL, N_("Ro_vibrational corrections")},
 	{"ToolsVibCorrectionsGaussian",  NULL, N_("Read Gaussian output file to compute the ro-vibrational corrections"), NULL, "Gaussian", G_CALLBACK (activate_action) },
+
+	{"ToolsVibQFF",  NULL, N_("_QFF potentials")},
+	{"ToolsVib2MRQFF",  NULL, N_("Read energies and compute the 2MR-QFF constants"), NULL, "Gabedit", G_CALLBACK (activate_action) },
+
 	{"ToolsAutoCorrelation",  NULL, N_("_Auto correlation")},
 	{"ToolsAutoCorrelationGaussian",  NULL, N_("Read Gaussian output file to compute the dipole-dipole auto correlation function"), NULL, "Gaussian", G_CALLBACK (activate_action) },
 	{"ToolsAutoCorrelationDipole",  NULL, N_("Read an assci text file (4 cols: time(fs),mux,muy,muz) to compute the dipole-dipole auto correlation function"), NULL, "TXT", G_CALLBACK (activate_action) },
 	{"ToolsIsotopeDistribution",  NULL, N_("Compute the isotope distribution for a molecule"), NULL, "Isotope distribution", G_CALLBACK (activate_action) },
+
+	{"ToolsVASP",  NULL, N_("_VASP")},
+	{"ToolsVASPOptic",  NULL, N_("Read _dielectric from a VASP xml file and compute optic properties"), NULL,"Txt", G_CALLBACK (activate_action)},
+	{"ToolsVASPBands",  NULL, N_("Read energies from xml file and draw bands structure"),               NULL,"Txt", G_CALLBACK (activate_action)},
+	{"ToolsVASPDOS",  NULL, N_("Read DOS from xml file"),                                               NULL,"Txt", G_CALLBACK (activate_action)},
+
+	{"ToolsiGVPT2",  NULL, N_("_iGVPT2")},
+	{"ToolsiGVPT2Read",  NULL, N_("Read frequencies and intensities from an iGVPT2 output file"), NULL,"out", G_CALLBACK (activate_action)},
+	{"ToolsiGVPT2Save",  NULL, N_("Create an QM/MMFF94 iGVPT2 input file"),               NULL,"ici", G_CALLBACK (activate_action)},
+	{"ToolsiGVPT2Run",  NULL, N_("Create an QM/MMFF94 input file & Run iGVPT2"),          NULL,"ici", G_CALLBACK (activate_action)},
 
 	{"Run",  NULL, N_("_Run")},
 	{"RunAbinitio", GTK_STOCK_EXECUTE, N_("_Run a Computation Chemistry program"),  "<control>R", "Run a program", G_CALLBACK (activate_action) },
@@ -439,6 +470,7 @@ static const gchar *uiInfo =
 "  <menubar>\n"
 "    <menu name=\"File\" action=\"File\">\n"
 "      <menu name=\"New\" action=\"FileNew\">\n"
+"         <menuitem name=\"DeMonInput\" action=\"DeMonInput\" />\n"
 "         <menuitem name=\"GamessInput\" action=\"GamessInput\" />\n"
 "         <menuitem name=\"GaussianInput\" action=\"GaussianInput\" />\n"
 "         <menuitem name=\"MolcasInput\" action=\"MolcasInput\" />\n"
@@ -542,6 +574,7 @@ static const gchar *uiInfo =
 "          <menuitem name=\"ToolsIRSpectrumQChem\" action=\"ToolsIRSpectrumQChem\" />\n"
 "          <menuitem name=\"ToolsIRSpectrumAdf\" action=\"ToolsIRSpectrumAdf\" />\n"
 "          <menuitem name=\"ToolsIRSpectrumMolden\" action=\"ToolsIRSpectrumMolden\" />\n"
+"          <menuitem name=\"ToolsIRSpectrumiGVPT2\" action=\"ToolsIRSpectrumiGVPT2\" />\n"
 "          <menuitem name=\"ToolsIRSpectrumTxt\" action=\"ToolsIRSpectrumTxt\" />\n"
 "      </menu>\n"
 "      <separator name=\"sepRamanSpectrum\" />\n"
@@ -585,16 +618,37 @@ static const gchar *uiInfo =
 "      </menu>\n"
 "      <separator name=\"sepIsotopDistribution\" />\n"
 "      <menuitem name=\"ToolsIsotopeDistribution\" action=\"ToolsIsotopeDistribution\" />\n"
+
 "      <separator name=\"sepVibCorrections\" />\n"
 "      <menu name=\"ToolsVibCorrections\" action=\"ToolsVibCorrections\">\n"
 "          <menuitem name=\"ToolsVibCorrectionsGaussian\" action=\"ToolsVibCorrectionsGaussian\" />\n"
 "      </menu>\n"
+"      <separator name=\"sepVibQFF\" />\n"
+"      <menu name=\"ToolsVibQFF\" action=\"ToolsVibQFF\">\n"
+"          <menuitem name=\"ToolsVib2MRQFF\" action=\"ToolsVib2MRQFF\" />\n"
+"      </menu>\n"
+
 "      <separator name=\"sepAutoCorrelation\" />\n"
 "      <menu name=\"ToolsAutoCorrelation\" action=\"ToolsAutoCorrelation\">\n"
 "          <menuitem name=\"ToolsAutoCorrelationGaussian\" action=\"ToolsAutoCorrelationGaussian\" />\n"
 "          <menuitem name=\"ToolsAutoCorrelationDipole\" action=\"ToolsAutoCorrelationDipole\" />\n"
 "      </menu>\n"
+
+"      <separator name=\"sepVASP\" />\n"
+"      <menu name=\"ToolsVASP\" action=\"ToolsVASP\">\n"
+"          <menuitem name=\"ToolsVASPOptic\" action=\"ToolsVASPOptic\" />\n"
+"          <menuitem name=\"ToolsVASPBands\" action=\"ToolsVASPBands\" />\n"
+"          <menuitem name=\"ToolsVASPDOS\" action=\"ToolsVASPDOS\" />\n"
+"      </menu>\n"
+
+"      <separator name=\"sepiGVPT2\" />\n"
+"      <menu name=\"ToolsiGVPT2\" action=\"ToolsiGVPT2\">\n"
+"          <menuitem name=\"ToolsiGVPT2Read\" action=\"ToolsiGVPT2Read\" />\n"
+"          <menuitem name=\"ToolsiGVPT2Save\" action=\"ToolsiGVPT2Save\" />\n"
+"          <menuitem name=\"ToolsiGVPT2Run\" action=\"ToolsiGVPT2Run\" />\n"
+"      </menu>\n"
 "    </menu>\n"
+
 "    <menu name=\"Run\" action=\"Run\">\n"
 "      <menuitem name=\"RunAbinitio\" action=\"RunAbinitio\" />\n"
 "      <menuitem name=\"RunViewResult\" action=\"RunViewResult\" />\n"
@@ -620,6 +674,7 @@ static const gchar *uiInfo =
 "    </menu>\n"
 "  </menubar>\n"
 "  <toolbar action=\"Toolbar\">\n"
+"      <toolitem name=\"DeMonInput\" action=\"DeMonInput\" />\n"
 "      <toolitem name=\"GamessInput\" action=\"GamessInput\" />\n"
 "      <toolitem name=\"GaussianInput\" action=\"GaussianInput\" />\n"
 "      <toolitem name=\"MolcasInput\" action=\"MolcasInput\" />\n"

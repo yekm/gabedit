@@ -1,6 +1,6 @@
 /* ResultsAnalise.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -18,6 +18,7 @@ DEALINGS IN THE SOFTWARE.
 ************************************************************************************************************/
 
 #include "../../Config.h"
+#include <math.h>
 #include "../Common/Global.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
@@ -1618,6 +1619,303 @@ void find_energy_orca_output(gchar* NomFichier)
   g_free(t);
   g_free(temp);
 }
+/*********************************************************************/
+DataGeomConv init_geom_vasp_conv_outcar(gchar* namefile)
+{
+  DataGeomConv GeomConv;
+ gint i;
+  GeomConv.Npoint = 0;
+  GeomConv.Ntype  = 4;
+  GeomConv.TypeData = g_malloc(GeomConv.Ntype*sizeof(gchar*) );
+  GeomConv.fileType = GABEDIT_TYPEFILE_VASPOUTCAR;
+
+ GeomConv.TypeData[0] = g_strdup(_(" Energy "));
+ GeomConv.TypeData[1] = g_strdup(_(" dX "));
+ GeomConv.TypeData[2] = g_strdup(_(" dY "));
+ GeomConv.TypeData[3] = g_strdup(_(" dZ "));
+
+ GeomConv.Data = g_malloc(GeomConv.Ntype*sizeof(gchar**) );
+ for(i = 0;i<GeomConv.Ntype;i++)
+ 	GeomConv.Data[i] = NULL;
+ GeomConv.TypeCalcul = NULL;
+ GeomConv.NumGeom = NULL;
+ GeomConv.GeomFile = g_strdup(namefile);
+ return GeomConv;
+}
+/*********************************************************************/
+void find_energy_vasp_outcar(gchar* NomFichier)
+{
+	gchar *pdest;
+	guint  i=0;
+	guint  j=0;
+	guint  k=0;
+	gchar *temp =  g_malloc(50*sizeof(gchar));	
+	gchar *temp1 =  g_malloc(50*sizeof(gchar));	
+	gchar *temp2 =  g_malloc(50*sizeof(gchar));	
+	guint taille=BSIZE;
+	gchar* tag = "energy  without entropy=";
+	gchar *t;
+	FILE *fd;
+        gint Ncalculs = 0;
+  	static DataGeomConv* GeomConv =NULL;
+	gboolean Ok = FALSE;
+
+        
+	t=g_malloc(taille*sizeof(gchar));
+ 	fd = FOpen(NomFichier, "rb"); 
+        if(!fd)
+	{
+		t = g_strdup_printf(_(" Error : I can not open file %s\n"),NomFichier);
+		Message(t,_("Error"),TRUE);
+		if(t) g_free(t);
+		return;
+	}
+	 while(!feof(fd))
+	{
+    		 { char* e = fgets(t,taille,fd);}
+                 if(strstr(t,tag) )
+		 {
+         		Ncalculs++;
+                        if(Ncalculs == 1) GeomConv =  g_malloc(sizeof(DataGeomConv) );
+			else GeomConv =  g_realloc(GeomConv, Ncalculs*sizeof(DataGeomConv) );
+  			GeomConv[Ncalculs-1] = init_geom_vasp_conv_outcar(NomFichier);
+			break;
+		 }
+	}
+	rewind(fd);
+        
+	 while(!feof(fd))
+	{
+    		 { char* e = fgets(t,taille,fd);}
+    		 pdest = strstr( t,tag);
+   		if( pdest != NULL  && Ncalculs>0)
+		{
+		  GeomConv[Ncalculs-1].Npoint++;
+		  if(GeomConv[Ncalculs-1].Npoint == 1 )
+		  {
+			GeomConv[Ncalculs-1].NumGeom =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
+			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++) GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
+		  }
+		  else
+		  {
+			GeomConv[Ncalculs-1].NumGeom =  g_realloc(GeomConv[Ncalculs-1].NumGeom,GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
+			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++) GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));
+		  }
+		  for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
+                  {
+		 	GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
+                 	GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1][0] = '\0';
+                  }
+		  pdest = strstr(t,tag)+strlen(tag);
+		  sscanf(pdest,"%s",t);
+		  GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1] = g_strdup_printf("%s",t);
+
+		  Ok = TRUE;
+                 while(!feof(fd) && Ok )
+		 {
+		 	if(!fgets(t,taille,fd))
+			{
+				Ok = FALSE;
+				break;
+			}
+			else
+			{
+				if(strstr(t,"  total drift:"))
+				{
+					Ok = TRUE;
+					break;
+				}
+
+			}
+		 }
+		 if(!Ok) break;
+                 sscanf(t,"%s %s %s %s %s",temp,temp,temp,temp1,temp2);
+		  GeomConv[Ncalculs-1].Data[1][GeomConv[Ncalculs-1].Npoint-1] = g_strdup(temp);
+		  GeomConv[Ncalculs-1].Data[2][GeomConv[Ncalculs-1].Npoint-1] = g_strdup(temp1);
+		  GeomConv[Ncalculs-1].Data[3][GeomConv[Ncalculs-1].Npoint-1] = g_strdup(temp2);
+		}
+	}
+
+    fclose(fd);
+   
+    if(!Ok && GeomConv && GeomConv[Ncalculs-1].Npoint>0) GeomConv[Ncalculs-1].Npoint--;
+    if( Ncalculs>0 && GeomConv[Ncalculs-1].Npoint == 0)
+    {
+	GeomConv[Ncalculs-1] =  free_geom_conv(GeomConv[Ncalculs-1]);
+	Ncalculs--;
+	if(Ncalculs>0)
+		GeomConv =  g_realloc(GeomConv, Ncalculs*sizeof(DataGeomConv) );
+	else
+	{
+		g_free(GeomConv);
+		GeomConv =  NULL;
+	}
+    }
+   k = 0;
+   for(i=0;(gint)i<Ncalculs;i++)
+   	for(j=0;(gint)j<GeomConv[i].Npoint;j++)
+	{
+	   k++;
+	   GeomConv[i].NumGeom[j] = k;
+	}
+  create_energies_curves(GeomConv,Ncalculs);
+  g_free(t);
+  g_free(temp);
+}
+/*********************************************************************/
+DataGeomConv init_geom_vasp_xml_conv(gchar* namefile)
+{
+  DataGeomConv GeomConv;
+ gint i;
+  GeomConv.Npoint = 0;
+  GeomConv.Ntype  = 4;
+  GeomConv.TypeData = g_malloc(GeomConv.Ntype*sizeof(gchar*) );
+  GeomConv.fileType = GABEDIT_TYPEFILE_VASPXML;
+
+ GeomConv.TypeData[0] = g_strdup(_(" Energy "));
+ GeomConv.TypeData[1] = g_strdup(_(" dX "));
+ GeomConv.TypeData[2] = g_strdup(_(" dY "));
+ GeomConv.TypeData[3] = g_strdup(_(" dZ "));
+
+ GeomConv.Data = g_malloc(GeomConv.Ntype*sizeof(gchar**) );
+ for(i = 0;i<GeomConv.Ntype;i++) GeomConv.Data[i] = NULL;
+ GeomConv.TypeCalcul = NULL;
+ GeomConv.NumGeom = NULL;
+ GeomConv.GeomFile = g_strdup(namefile);
+ return GeomConv;
+}
+/*********************************************************************/
+void find_energy_vasp_xml(gchar* NomFichier)
+{
+	gchar *pdest;
+	guint  i=0;
+	guint  j=0;
+	guint  k=0;
+	gchar* tag = "<structure>";
+	gchar *t;
+	FILE *fd;
+        gint Ncalculs = 0;
+  	static DataGeomConv* GeomConv =NULL;
+	gboolean Ok = FALSE;
+	gint nf = 0;
+	gdouble x,y,z;
+	gdouble X,Y,Z;
+	gdouble energy;
+	gchar* pos;
+
+        
+	t=g_malloc(BSIZE*sizeof(gchar));
+ 	fd = FOpen(NomFichier, "rb"); 
+        if(!fd)
+	{
+		t = g_strdup_printf(_(" Error : I can not open file %s\n"),NomFichier);
+		Message(t,_("Error"),TRUE);
+		if(t) g_free(t);
+		return;
+	}
+	 while(!feof(fd))
+	{
+    		 { char* e = fgets(t,BSIZE,fd);}
+                 if(strstr(t,tag) )
+		 {
+         		Ncalculs++;
+                        if(Ncalculs == 1) GeomConv =  g_malloc(sizeof(DataGeomConv) );
+			else GeomConv =  g_realloc(GeomConv, Ncalculs*sizeof(DataGeomConv) );
+  			GeomConv[Ncalculs-1] = init_geom_vasp_xml_conv(NomFichier);
+			break;
+		 }
+	}
+	rewind(fd);
+        
+	 while(!feof(fd))
+	{
+    		{ char* e = fgets(t,BSIZE,fd);}
+    		pdest = strstr( t,tag);
+   		if( pdest != NULL  && Ncalculs>0)
+		{
+			Ok = TRUE;
+		  	GeomConv[Ncalculs-1].Npoint++;
+		  	if(GeomConv[Ncalculs-1].Npoint == 1 )
+		  	{
+				GeomConv[Ncalculs-1].NumGeom =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
+				for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++) GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
+		  	}
+		  	else
+		  	{
+				GeomConv[Ncalculs-1].NumGeom =  g_realloc(GeomConv[Ncalculs-1].NumGeom,GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
+				for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++) GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));
+		  	}
+		  	for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
+                  	{
+		 		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
+                 		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1][0] = '\0';
+                  	}
+                 	while(!feof(fd))
+		 	{
+		 		if(!fgets(t,BSIZE,fd)) { Ok = FALSE; break; }
+                 		if(strstr(t,"varray name") && strstr(t,"forces")) break;
+			}
+			if(!Ok) break;
+			nf = 0;
+			X = Y = Z = 0;
+                 	while(!feof(fd))
+		 	{
+		 		if(!fgets(t,BSIZE,fd)) { Ok = FALSE; break; }
+                 		if(strstr(t,"varray")) break;
+				pos = strstr(t,">");
+				if(!pos) break;
+				if(3!=sscanf(pos+1,"%lf %lf %lf",&x,&y,&z)) { Ok = FALSE; break;}
+				X += x*x; Y += y*y; Z += z*z;
+				nf++;
+			}
+			if(!Ok) break;
+			if(nf<1) { Ok = FALSE; break;}
+			X = sqrt(X/nf);
+			Y = sqrt(Y/nf);
+			Z = sqrt(Z/nf);
+
+                 	while(!feof(fd))
+		 	{
+		 		if(!fgets(t,BSIZE,fd)) { Ok = FALSE; break; }
+                 		if(strstr(t,"/energy")) { Ok = FALSE; break;}
+                 		if(strstr(t,"e_fr_energy")) break;
+			}
+			if(!Ok) break;
+                	if(!strstr(t,"e_fr_energy")) { Ok = FALSE; break;}
+			pos = strstr(t,">");
+			if(!pos) { Ok = FALSE; break;}
+			if(1!=sscanf(pos+1,"%lf",&energy)) { Ok = FALSE; break;}
+			/* printf("energy = %f X = %f Y = %f Z = %f\n",energy,X,Y,Z);*/
+			GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1] = g_strdup_printf("%0.8f",energy);
+			GeomConv[Ncalculs-1].Data[1][GeomConv[Ncalculs-1].Npoint-1] = g_strdup_printf("%0.6f",X);
+			GeomConv[Ncalculs-1].Data[2][GeomConv[Ncalculs-1].Npoint-1] = g_strdup_printf("%0.6f",Y);
+			GeomConv[Ncalculs-1].Data[3][GeomConv[Ncalculs-1].Npoint-1] = g_strdup_printf("%0.6f",Z);
+		}
+	}
+	fclose(fd);
+   
+	if(!Ok && GeomConv && GeomConv[Ncalculs-1].Npoint>0) GeomConv[Ncalculs-1].Npoint--;
+	if( Ncalculs>0 && GeomConv[Ncalculs-1].Npoint == 0)
+	{
+		GeomConv[Ncalculs-1] =  free_geom_conv(GeomConv[Ncalculs-1]);
+		Ncalculs--;
+		if(Ncalculs>0) GeomConv =  g_realloc(GeomConv, Ncalculs*sizeof(DataGeomConv) );
+		else
+		{
+			g_free(GeomConv);
+			GeomConv =  NULL;
+		}
+	}
+	k = 0;
+	for(i=0;(gint)i<Ncalculs;i++)
+   	for(j=0;(gint)j<GeomConv[i].Npoint;j++)
+	{
+		k++;
+		GeomConv[i].NumGeom[j] = k;
+	}
+	create_energies_curves(GeomConv, Ncalculs);
+	g_free(t);
+}
 /*************************************************************************************/
 static DataGeomConv init_geom_molden_gabedit_conv(gchar *fileName, GabEditTypeFile type)
 {
@@ -2221,19 +2519,18 @@ void find_energy_molden_gabedit(gchar* FileName, GabEditTypeFile type)
 		return;
 	}
         
+	{ char* e = fgets(t,taille,fd);}
 	 while(!feof(fd))
 	{
-		if(Ncalculs==0 || !strstr(t,"[GEOCONV]"))
-    		 { char* e = fgets(t,taille,fd);}
 		 uppercase(t);
+		/*fprintf(stderr,"Ncalculs=%d\n",Ncalculs);*/
+		/*fprintf(stderr,"%s\n",t);*/
                  if(strstr(t,"[GEOCONV]") )
 		 {
 		 	/* printf("OK GEOCONV %s\n",t);*/
          		Ncalculs++;
-			if(Ncalculs==1)
-				GeomConv =  g_malloc(sizeof(DataGeomConv) );
-			else
-				GeomConv =  g_realloc(GeomConv, Ncalculs*sizeof(DataGeomConv) );
+			if(Ncalculs==1) GeomConv =  g_malloc(sizeof(DataGeomConv) );
+			else GeomConv =  g_realloc(GeomConv, Ncalculs*sizeof(DataGeomConv) );
   			GeomConv[Ncalculs-1] = init_geom_molden_gabedit_conv(FileName, type);
 			GeomConv[Ncalculs-1].TypeCalcul = g_malloc(100*sizeof(char));
 			GeomConv[Ncalculs-1].fileType = type;
@@ -2245,7 +2542,7 @@ void find_energy_molden_gabedit(gchar* FileName, GabEditTypeFile type)
 
 		 /* printf("%s\n",t);*/
 
-   		if( strstr( t,"ENERGY") != NULL )
+   		if(Ncalculs>0 &&  strstr( t,"ENERGY"))
 		{
 	 		while(!feof(fd))
 			{
@@ -2281,63 +2578,72 @@ void find_energy_molden_gabedit(gchar* FileName, GabEditTypeFile type)
 				sscanf(t,"%s", GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1]);
 			}
 			if(GeomConv[Ncalculs-1].Npoint<1) continue;
+		}
+		else if( Ncalculs>0 && GeomConv[Ncalculs-1].Npoint>0 && strstr( t,"MAX-FORCE"))
+		{
+			i = 0;
 	 		while(!feof(fd))
 			{
-		 		uppercase(t);
-   				if( strstr( t,"MAX-FORCE") != NULL )
-				{
-					for(i=0;(gint)i<GeomConv[Ncalculs-1].Npoint;i++)
-					{
-		 				if(!fgets(t,taille,fd)) break;
-						str_delete_n(t);
-						delete_last_spaces(t);
-						delete_first_spaces(t);
-		 				if(!isFloat(t)) break;
-						sscanf(t,"%s", GeomConv[Ncalculs-1].Data[1][i]);
-					}
-				}
-   				if( strstr( t,"RMS-FORCE") != NULL )
-				{
-					for(i=0;(gint)i<GeomConv[Ncalculs-1].Npoint;i++)
-					{
-		 				if(!fgets(t,taille,fd)) break;
-						str_delete_n(t);
-						delete_last_spaces(t);
-						delete_first_spaces(t);
-		 				if(!isFloat(t)) break;
-						sscanf(t,"%s", GeomConv[Ncalculs-1].Data[2][i]);
-					}
-				}
-   				if( strstr( t,"MAX-STEP") != NULL )
-				{
-					for(i=0;(gint)i<GeomConv[Ncalculs-1].Npoint;i++)
-					{
-		 				if(!fgets(t,taille,fd)) break;
-						str_delete_n(t);
-						delete_last_spaces(t);
-						delete_first_spaces(t);
-		 				if(!isFloat(t)) break;
-						sscanf(t,"%s", GeomConv[Ncalculs-1].Data[3][i]);
-					}
-				}
-   				if( strstr( t,"RMS-STEP") != NULL )
-				{
-					for(i=0;(gint)i<GeomConv[Ncalculs-1].Npoint;i++)
-					{
-		 				if(!fgets(t,taille,fd)) break;
-						str_delete_n(t);
-						delete_last_spaces(t);
-						delete_first_spaces(t);
-		 				if(!isFloat(t)) break;
-						sscanf(t,"%s", GeomConv[Ncalculs-1].Data[4][i]);
-					}
-				}
-                 		if(strstr(t,"[GEOCONV]") ) break;
-		 		if(!fgets(t,taille,fd)) break;
+				if(!fgets(t,taille,fd)) break;
+				if(i==GeomConv[Ncalculs-1].Npoint) break;
+				str_delete_n(t);
+				delete_last_spaces(t);
+				delete_first_spaces(t);
+				if(!isFloat(t)) break;
+				sscanf(t,"%s", GeomConv[Ncalculs-1].Data[1][i]);
+				i++;
 			}
-                 	if(strstr(t,"[GEOCONV]") ) continue;
-		 	if(!fgets(t,taille,fd)) break;
+			GeomConv[Ncalculs-1].Npoint = i;
 		}
+		else if( Ncalculs>0 && GeomConv[Ncalculs-1].Npoint>0 &&  strstr( t,"RMS-FORCE"))
+		{
+			i = 0;
+	 		while(!feof(fd))
+			{
+		 		if(!fgets(t,taille,fd)) break;
+				if(i==GeomConv[Ncalculs-1].Npoint) break;
+				str_delete_n(t);
+				delete_last_spaces(t);
+				delete_first_spaces(t);
+		 		if(!isFloat(t)) break;
+				sscanf(t,"%s", GeomConv[Ncalculs-1].Data[2][i]);
+				i++;
+			}
+			GeomConv[Ncalculs-1].Npoint = i;
+		}
+		else if( Ncalculs>0 && GeomConv[Ncalculs-1].Npoint>0 && strstr( t,"MAX-STEP") )
+		{
+			i = 0;
+	 		while(!feof(fd))
+			{
+				if(!fgets(t,taille,fd)) break;
+				if(i==GeomConv[Ncalculs-1].Npoint) break;
+				str_delete_n(t);
+				delete_last_spaces(t);
+				delete_first_spaces(t);
+				if(!isFloat(t)) break;
+				sscanf(t,"%s", GeomConv[Ncalculs-1].Data[3][i]);
+				i++;
+			}
+			GeomConv[Ncalculs-1].Npoint = i;
+		}
+		else if(  Ncalculs>0 && GeomConv[Ncalculs-1].Npoint>0 && strstr( t,"RMS-STEP"))
+		{
+			i = 0;
+	 		while(!feof(fd))
+			{
+				if(!fgets(t,taille,fd)) break;
+				if(i==GeomConv[Ncalculs-1].Npoint) break;
+				str_delete_n(t);
+				delete_last_spaces(t);
+				delete_first_spaces(t);
+				if(!isFloat(t)) break;
+				sscanf(t,"%s", GeomConv[Ncalculs-1].Data[4][i]);
+				i++;
+			}
+			GeomConv[Ncalculs-1].Npoint = i;
+		}
+		else if(!fgets(t,taille,fd)) break;
 	}
 
 	fclose(fd);
@@ -2569,6 +2875,12 @@ void find_energy_all(GtkWidget *wid,gpointer data)
 	if( iprogram == PROG_IS_QCHEM) find_energy_qchem_log(fileName);
 	if( iprogram == PROG_IS_NWCHEM) find_energy_nwchem_log(fileName);
 	if( iprogram == PROG_IS_PSICODE) find_energy_psicode_log(fileName);
+	if( iprogram == PROG_IS_DEMON) 
+	{
+ 		gchar* fileName = g_strdup_printf("%s%s%s.molden",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.projectname);
+		find_energy_molden(fileName);
+		g_free(fileName);
+	}
 	if( iprogram == PROG_IS_MOPAC) 
 	{
 		GabEditTypeFile fileType = GABEDIT_TYPEFILE_UNKNOWN;
@@ -2719,6 +3031,34 @@ void read_geometries_conv_orca(GabeditFileChooser *SelecFile, gint response_id)
     		return ;
  	}
  	find_energy_orca_output(fileName);
+}
+/************************************************************************************/
+void read_geometries_conv_vasp_outcar(GabeditFileChooser *SelecFile, gint response_id)
+{       
+ 	gchar *fileName;
+
+ 	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(SelecFile);
+ 	if ((!fileName) || (strcmp(fileName,"") == 0))
+ 	{
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
+    		return ;
+ 	}
+ 	find_energy_vasp_outcar(fileName);
+}
+/************************************************************************************/
+void read_geometries_conv_vasp_xml(GabeditFileChooser *SelecFile, gint response_id)
+{       
+ 	gchar *fileName;
+
+ 	if(response_id != GTK_RESPONSE_OK) return;
+ 	fileName = gabedit_file_chooser_get_current_file(SelecFile);
+ 	if ((!fileName) || (strcmp(fileName,"") == 0))
+ 	{
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
+    		return ;
+ 	}
+ 	find_energy_vasp_xml(fileName);
 }
 /************************************************************************************/
 void read_geometries_conv_nwchem(GabeditFileChooser *SelecFile, gint response_id)
@@ -2888,7 +3228,7 @@ void create_bar_result(GtkWidget* Vbox)
     GtkWidget *handlebox;
     GtkWidget *vbox;
     GtkWidget *Table;
-    GtkWidget *Label;
+    /* GtkWidget *Label;*/
     GtkWidget *hseparator;
     static gint log = LOGFILE;
     static gint out = OUTFILE;
@@ -2970,7 +3310,8 @@ void create_bar_result(GtkWidget* Vbox)
   Table = gtk_table_new(3,1,FALSE);
   gtk_container_add(GTK_CONTAINER(vboxframe),Table);
   gtk_widget_show_all(vboxframe);
-  Label = add_label_table(Table,_("Password : "),0,0);
+  /* Label = add_label_table(Table,_("Password : "),0,0);*/
+  add_label_table(Table,_("Password : "),0,0);
   ResultEntryPass = gtk_entry_new(); 
   gtk_entry_set_max_length  (GTK_ENTRY(ResultEntryPass),15);
   gtk_widget_set_size_request (ResultEntryPass,(gint)(ScreenHeight*0.05),-1);

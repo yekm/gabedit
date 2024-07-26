@@ -1,6 +1,6 @@
 /* Vibration.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -57,9 +57,9 @@ typedef struct _VibCorrectionsGeom
 
 typedef struct _VibCorrections
 {
-	gint numberOfFrequences;
+	gint numberOfFrequencies;
 	gdouble* frequences;
-	gdouble* calculatedFrequences;
+	gdouble* calculatedFrequencies;
 	gdouble* mass;
 	gint nTemperatures;
 	gdouble* temperatures;
@@ -79,7 +79,7 @@ typedef struct _VibCorrections
 static void initVibCorrections(VibCorrections* vibCorrections, gint nf, gint nT, gdouble* T)
 {
 	gint i;
-	vibCorrections->numberOfFrequences = nf;
+	vibCorrections->numberOfFrequencies = nf;
 	vibCorrections->frequences = NULL;
 	vibCorrections->mass = NULL;
 	vibCorrections->nTemperatures = 0;
@@ -90,7 +90,7 @@ static void initVibCorrections(VibCorrections* vibCorrections, gint nf, gint nT,
 	vibCorrections->F = NULL;
 	if(nf<=0) return;
 	vibCorrections->frequences = g_malloc(nf*sizeof(gdouble));
-	vibCorrections->calculatedFrequences = g_malloc(nf*sizeof(gdouble));
+	vibCorrections->calculatedFrequencies = g_malloc(nf*sizeof(gdouble));
 	vibCorrections->mass = g_malloc(nf*sizeof(gdouble));
 
 	vibCorrections->nTemperatures = nT;
@@ -121,9 +121,9 @@ static void initVibCorrections(VibCorrections* vibCorrections, gint nf, gint nT,
 static void freeVibCorrections(VibCorrections* vibCorrections)
 {
 	gint i;
-	gint nf = vibCorrections->numberOfFrequences;
+	gint nf = vibCorrections->numberOfFrequencies;
 	if( vibCorrections->frequences) g_free(vibCorrections->frequences);
-	if( vibCorrections->calculatedFrequences) g_free(vibCorrections->calculatedFrequences);
+	if( vibCorrections->calculatedFrequencies) g_free(vibCorrections->calculatedFrequencies);
 	if( vibCorrections->mass) g_free(vibCorrections->mass);
 	if( vibCorrections->temperatures) g_free(vibCorrections->temperatures);
 	if( vibCorrections->akI) g_free(vibCorrections->akI);
@@ -323,7 +323,7 @@ static void showVibCorrections(VibCorrections* vibCorrections)
 {
 	gchar tmp[BSIZE];
 	gint i,j;
-	gint nf = vibCorrections->numberOfFrequences;
+	gint nf = vibCorrections->numberOfFrequencies;
 	GtkWidget* resultWindow = createResultWindow("Vibrational corrections");
 	GtkWidget* textResult = g_object_get_data (G_OBJECT (resultWindow), "TextWiddget");
 	gint t;
@@ -397,7 +397,7 @@ static void showVibCorrections(VibCorrections* vibCorrections)
 	{
 		sprintf(tmp,"%d %f %f %f %f\n",i+1,
 				vibCorrections->frequences[i], 
-				vibCorrections->calculatedFrequences[i], 
+				vibCorrections->calculatedFrequencies[i], 
 				vibCorrections->mass[i], vibCorrections->akI[i]);
 		gabedit_text_insert (GABEDIT_TEXT(textResult), NULL, NULL, NULL,tmp,-1);   
 	}
@@ -568,7 +568,7 @@ static void printVibCorrections(VibCorrections* vibCorrections)
 {
 	gint i,j;
 	gint t;
-	gint nf = vibCorrections->numberOfFrequences;
+	gint nf = vibCorrections->numberOfFrequencies;
 	if(!vibCorrections->centrifugeFlag)
 	{
 		printf("------------------------------------------------------------------------------------\n");
@@ -602,7 +602,7 @@ static void printVibCorrections(VibCorrections* vibCorrections)
 	for(i=0;i<nf;i++) 
 		printf("%d %f %f %f %f\n",i+1,
 				vibCorrections->frequences[i], 
-				vibCorrections->calculatedFrequences[i], 
+				vibCorrections->calculatedFrequencies[i], 
 				vibCorrections->mass[i], vibCorrections->akI[i]);
 	printf("\n");
 	printf("Cubic Force Const.[Hartree*amu(-3/2)*Bohr(-3)]\n");
@@ -747,7 +747,7 @@ gboolean getValueFromLine(gchar* str, gchar* label, gchar* tag, gdouble* value)
 	return FALSE;
 }
 /*************************************************************************************************************/
-gint getNumberOfFrequences(gchar* fileName)
+gint getNumberOfFrequencies(gchar* fileName)
 {
 	gchar t[BSIZE];
 	FILE* file;
@@ -769,7 +769,7 @@ gint getNumberOfFrequences(gchar* fileName)
 	return nf;
 }
 /************************************************************************************************************/
-static gboolean readFrequencesMassDelta(gchar* fileName, VibCorrections* vibCorrections)
+static gboolean readFrequenciesMassDelta(gchar* fileName, VibCorrections* vibCorrections)
 {
 	gchar t[BSIZE];
 	FILE* file;
@@ -805,7 +805,7 @@ static gboolean readFrequencesMassDelta(gchar* fileName, VibCorrections* vibCorr
 					break;
 				}
 				nf++;
-				if(nf>=vibCorrections->numberOfFrequences) break;
+				if(nf>=vibCorrections->numberOfFrequencies) break;
 			}
 		}
 	}
@@ -817,7 +817,7 @@ static gboolean readEnergies(gchar* fileName, VibCorrections* vibCorrections)
 {
 	gchar t[BSIZE];
 	FILE* file;
- 	gint nf = vibCorrections->numberOfFrequences;
+ 	gint nf = vibCorrections->numberOfFrequencies;
  	gint twonf = 2*nf;
  	gint twonfp1 = twonf+1;
 	gboolean Ok = TRUE;
@@ -1020,7 +1020,7 @@ static gboolean readShieldingTensors(gchar* fileName,VibCorrections* vibCorrecti
 	VibCorrectionsSigma* sigmasM;
 	gint nAtoms = vibCorrections->geom.numberOfAtoms;
 	gboolean Ok;
-	gint nf = vibCorrections->numberOfFrequences;
+	gint nf = vibCorrections->numberOfFrequencies;
 	gint i,j;
 	gdouble f  = 2*vibCorrections->delta*sqrt(AMU_TO_AU);
 	gdouble f2 = vibCorrections->delta*vibCorrections->delta*AMU_TO_AU;
@@ -1162,7 +1162,7 @@ static gboolean readSpinSpins(gchar* fileName,VibCorrections* vibCorrections)
 	gdouble** spinspinsM;
 	gint nAtoms = vibCorrections->geom.numberOfAtoms;
 	gboolean Ok;
-	gint nf = vibCorrections->numberOfFrequences;
+	gint nf = vibCorrections->numberOfFrequencies;
 	gint i,j;
 	gdouble f  = 2*vibCorrections->delta*sqrt(AMU_TO_AU);
 	gdouble f2 = vibCorrections->delta*vibCorrections->delta*AMU_TO_AU;
@@ -1241,14 +1241,14 @@ static gboolean readSpinSpins(gchar* fileName,VibCorrections* vibCorrections)
 	return TRUE;
 }
 /************************************************************************************************************/
-static void computeFrequences(VibCorrections* vibCorrections)
+static void computeFrequencies(VibCorrections* vibCorrections)
 {
- 	gint nf = vibCorrections->numberOfFrequences;
+ 	gint nf = vibCorrections->numberOfFrequencies;
 	gdouble f = vibCorrections->delta*vibCorrections->delta*AMU_TO_AU;
 	gint i;
 	for(i=0;i<nf;i++)
 	{
-		vibCorrections->calculatedFrequences[i]=sqrt(fabs((
+		vibCorrections->calculatedFrequencies[i]=sqrt(fabs((
 		vibCorrections->energies[0][2*i+1]+
 		vibCorrections->energies[0][2*i+2]-
 		2*vibCorrections->energies[0][0])/
@@ -1261,7 +1261,7 @@ static void computeCubicForces(VibCorrections* vibCorrections)
 	gdouble deriv0;  /* nul on well */
 	gdouble derivP; 
 	gdouble derivM; 
- 	gint nf = vibCorrections->numberOfFrequences;
+ 	gint nf = vibCorrections->numberOfFrequencies;
 	gdouble f  = 2*vibCorrections->delta*sqrt(AMU_TO_AU);
 	gdouble f2 = vibCorrections->delta*vibCorrections->delta*AMU_TO_AU;
 	gint i,j;
@@ -1283,7 +1283,7 @@ static void computeCubicForces(VibCorrections* vibCorrections)
 /************************************************************************************************************/
 static void computeSumCubicForces(VibCorrections* vibCorrections)
 {
- 	gint nf = vibCorrections->numberOfFrequences;
+ 	gint nf = vibCorrections->numberOfFrequencies;
 	gint i,j,t;
 	for(t=0;t<vibCorrections->nTemperatures;t++)
 	{
@@ -1344,14 +1344,14 @@ static gboolean read_gaussian_file(GabeditFileChooser *filesel, gint response_id
 	for(i=1;i<=nStep;i++)
 		T[i] = TBegin + TStep*(i-1);
 
-	nf = getNumberOfFrequences(fileName);
+	nf = getNumberOfFrequencies(fileName);
 	if(nf<0) return FALSE;
 	initVibCorrections(&vibCorrections,nf, nT,T);
 	g_free(T);
 	Ok = read_gaussian_file_geomi(&vibCorrections.geom, fileName,1);
-	if(Ok) Ok = readFrequencesMassDelta(fileName, &vibCorrections);
+	if(Ok) Ok = readFrequenciesMassDelta(fileName, &vibCorrections);
 	if(Ok) Ok = readEnergies(fileName, &vibCorrections);
-	if(Ok) computeFrequences(&vibCorrections);
+	if(Ok) computeFrequencies(&vibCorrections);
 	if(Ok) computeCubicForces(&vibCorrections);
 	if(Ok) computeSumCubicForces(&vibCorrections);
 	if(Ok) readShieldingTensors(fileName,&vibCorrections);

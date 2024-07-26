@@ -1,6 +1,6 @@
 /* GabeditContoursPlot.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -7825,8 +7825,8 @@ static void draw_colormap(GtkWidget *widget, GabeditContoursPlot *contoursplot)
 	gdouble vmin;
 	gdouble dv;
 	gint x1, y1, x2, y2;
-	gdouble col1[3];
-	gdouble col2[3];
+	gdouble col1[3]={0,0,0};
+	gdouble col2[3]={0,0,0};
 
 
 	if (!contoursplot->show_colormap) return;
@@ -9425,7 +9425,7 @@ static gint gabedit_contoursplot_motion_notify (GtkWidget *widget, GdkEventMotio
   else if (contoursplot->selected_objects_line_num>-1) 
   {
 	gint i = contoursplot->selected_objects_line_num;
-	gdouble x1, y1, x2, y2;
+	gdouble x1=0, y1=0, x2=0, y2=0;
 	ContoursPlotObjectLine* objectLine = &GABEDIT_ContoursPLOT(contoursplot)->objectsLine[i];
 	if(contoursplot->selected_objects_line_type==0)
 	{

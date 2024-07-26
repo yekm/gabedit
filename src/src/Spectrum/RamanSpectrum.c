@@ -1,6 +1,6 @@
 /* RamanSpectrum.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -87,6 +87,36 @@ static void check_microm_cmm1_toggled(GtkToggleButton *togglebutton, gpointer us
 
 }
 /********************************************************************************/
+static void reflectXY(GtkWidget *buttonReflect, gpointer user_data)
+{
+	GtkWidget* xyplot = NULL;
+	GList* data_list = NULL;
+	GList* current = NULL;
+	XYPlotWinData* data;
+	gboolean microm = FALSE;
+	GtkWidget* window = NULL;
+	gdouble xmax = 0;
+	gdouble ymax = 0;
+	gboolean rx;
+	gboolean ry;
+
+	if(!user_data || !G_IS_OBJECT(user_data)) return;
+
+	xyplot = GTK_WIDGET(user_data);
+	data_list = g_object_get_data(G_OBJECT (xyplot), "DataList");
+
+	if(!data_list) return;
+	window = g_object_get_data(G_OBJECT (xyplot), "Window");
+
+	gabedit_xyplot_get_reflects (GABEDIT_XYPLOT (xyplot),&rx, &ry);
+
+	gabedit_xyplot_reflect_x (GABEDIT_XYPLOT(xyplot), !rx);
+        gabedit_xyplot_reflect_y (GABEDIT_XYPLOT(xyplot), !ry);
+
+	gtk_widget_queue_draw(GTK_WIDGET(xyplot));
+
+}
+/********************************************************************************/
 static GtkWidget* createRamanSpectrumWin(gint numberOfFrequencies, gdouble* frequencies, gdouble* intensities)
 {
 	GtkWidget* window = spectrum_win_new_with_xy(_("Raman spectrum"),  numberOfFrequencies, frequencies, intensities);
@@ -94,6 +124,7 @@ static GtkWidget* createRamanSpectrumWin(gint numberOfFrequencies, gdouble* freq
 	GtkWidget* xyplot = g_object_get_data(G_OBJECT (window), "XYPLOT");
 	GtkWidget* check_microm_cmm1 = NULL;
 	GtkWidget* tmp_hbox = NULL;
+	GtkWidget* buttonReflect = NULL;
 
 	spectrum_win_relect_x(window, TRUE);
 	spectrum_win_relect_y(window, TRUE);
@@ -114,6 +145,15 @@ static GtkWidget* createRamanSpectrumWin(gint numberOfFrequencies, gdouble* freq
 
 	g_signal_connect(G_OBJECT(check_microm_cmm1), "toggled", G_CALLBACK(check_microm_cmm1_toggled), xyplot);
 	gabedit_xyplot_set_x_label (GABEDIT_XYPLOT(xyplot), "cm<sup>-1</sup>");
+
+	g_signal_connect(G_OBJECT(check_microm_cmm1), "toggled", G_CALLBACK(check_microm_cmm1_toggled), xyplot);
+	spectrum_win_set_xlabel(window, "cm<sup>-1</sup>");
+	buttonReflect = create_button(window,_("Reflect"));
+	gtk_box_pack_start(GTK_BOX(tmp_hbox), buttonReflect, FALSE, FALSE, 4);
+        g_signal_connect(G_OBJECT(buttonReflect), "clicked", G_CALLBACK(reflectXY), xyplot);
+	gtk_widget_show(buttonReflect);
+
+
 
 
 	return window;
@@ -824,7 +864,7 @@ void createRamanSpectrum(GtkWidget *parentWindow, GabEditTypeFile typeOfFile)
 /********************************************************************************/
 void createRamanSpectrumFromVibration(GtkWidget *parentWindow, Vibration ibration)
 {
-	gint numberOfFrequencies = vibration.numberOfFrequences;
+	gint numberOfFrequencies = vibration.numberOfFrequencies;
 	gdouble* frequencies = NULL;
 	gdouble* intensities = NULL;
 	gint j;
@@ -837,7 +877,7 @@ void createRamanSpectrumFromVibration(GtkWidget *parentWindow, Vibration ibratio
 	frequencies = g_malloc(numberOfFrequencies*sizeof(gdouble));
 	intensities = g_malloc(numberOfFrequencies*sizeof(gdouble));
 
-	for (j=0; j < vibration.numberOfFrequences; j++)
+	for (j=0; j < vibration.numberOfFrequencies; j++)
 	{
 		frequencies[j] = vibration.modes[j].frequence;
 		intensities[j] = vibration.modes[j].RamanIntensity;

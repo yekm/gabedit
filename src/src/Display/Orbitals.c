@@ -1,6 +1,6 @@
 /* Orbitals.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1333,7 +1333,7 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *fileName,gint itype)
 	gchar *dump2= g_malloc(20);
 	gint ncart;
 	gint n;
-	gint k;
+	/* gint k;*/
 	gdouble **CoefOrbitals;
 	gdouble *EnerOrbitals;
 	gchar **SymOrbitals;
@@ -1537,7 +1537,8 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *fileName,gint itype)
 			{
     				{ char* e = fgets(t,taille,fd);}
 				tmp = t + 20;
-				k = sscanf(tmp,"%lf %lf %lf %lf %lf",&CoefOrbitals[NumOrb[0]][i],&CoefOrbitals[NumOrb[1]][i],
+				/* k = sscanf(tmp,"%lf %lf %lf %lf %lf",&CoefOrbitals[NumOrb[0]][i],&CoefOrbitals[NumOrb[1]][i],*/
+				sscanf(tmp,"%lf %lf %lf %lf %lf",&CoefOrbitals[NumOrb[0]][i],&CoefOrbitals[NumOrb[1]][i],
 				&CoefOrbitals[NumOrb[2]][i],&CoefOrbitals[NumOrb[3]][i],&CoefOrbitals[NumOrb[4]][i]);
 			}
 		}
@@ -2417,10 +2418,10 @@ void read_molden_orbitals(gchar* FileName)
 /********************************************************************************/
 void read_dalton_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
 {
- 	gchar *FileName;
+ 	/* gchar *FileName;*/
 
 	if(response_id != GTK_RESPONSE_OK) return;
- 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+ 	/* FileName = gabedit_file_chooser_get_current_file(SelecFile);*/
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
 	while( gtk_events_pending() ) gtk_main_iteration();
 

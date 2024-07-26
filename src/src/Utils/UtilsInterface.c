@@ -1,6 +1,6 @@
 /* UtilsInterface.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -32,6 +32,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Molcas/Molcas.h"
 #include "../Molpro/Molpro.h"
 #include "../MPQC/MPQC.h"
+#include "../DeMon/DeMon.h"
 #include "../Orca/Orca.h"
 #include "../NWChem/NWChem.h"
 #include "../Psicode/Psicode.h"
@@ -78,6 +79,10 @@ DEALINGS IN THE SOFTWARE.
 #include "../../pixmaps/Stop.xpm"
 #include "../../pixmaps/Play.xpm"
 #include "../Common/StockIcons.h"
+
+#include "../Spectrum/IRSpectrum.h"
+#include "../Spectrum/RamanSpectrum.h"
+
 
 /********************************************************************************/
 static gint destroy_popup(gpointer data)
@@ -852,6 +857,79 @@ FilePosTypeGeom get_geometry_type_from_molpro_input_file(gchar *NomFichier)
   return j;
 }
 /**********************************************************************************/
+FilePosTypeGeom get_geometry_type_from_demon_input_file(gchar *NomFichier)
+{
+ gchar *t;
+ FILE *fd;
+ guint taille=BSIZE;
+ gboolean OK=TRUE;
+ gint i;
+ FilePosTypeGeom j;
+ gint k;
+ gchar *t1;
+ gchar *t2;
+ gchar *t3 = NULL;
+ gchar dum[100];
+
+ 
+ sprintf(dum,"NONE");
+ j.geomtyp=GEOM_IS_OTHER;
+ j.numline=0;
+ j.units=1;
+ t=g_malloc(taille);
+ fd = FOpen(NomFichier, "rb");
+ if(fd!=NULL)
+ {
+/* Charge and Spin */
+ k = 0;
+ while(!feof(fd) )    
+ {
+ 	if(!fgets(t, taille, fd)) break;
+	deleteFirstSpaces(t);
+     	if((int)t[0]==(int)'#') continue;
+        uppercase(t);
+	sscanf(t,"%s", dum);
+	if(strstr(dum,"MULTIPLICIT")) 
+	{
+		sscanf(t,"%s %d", dum, &SpinMultiplicities[0]);
+		SpinMultiplicities[1] = SpinMultiplicities[0];
+		SpinMultiplicities[2] = SpinMultiplicities[0];
+		k++;
+	}
+	if(strstr(dum,"CHARGE")) 
+	{
+		sscanf(t,"%s %d", dum, &SpinMultiplicities[0]);
+		SpinMultiplicities[1] = SpinMultiplicities[0];
+		SpinMultiplicities[2] = SpinMultiplicities[0];
+		k++;
+	}
+	if(k==2) break;
+ }
+ fseek(fd, 0L, SEEK_SET);
+/* Geometry, Type and unit */
+ while(!feof(fd) )    
+ {
+ 	if(!fgets(t, taille, fd)) break;
+ 	j.numline++;
+	deleteFirstSpaces(t);
+     	if((int)t[0]==(int)'#' ) continue;
+        uppercase(t);
+	sscanf(t,"%s", dum);
+	if(strstr(dum,"GEOMETRY")) 
+	{
+		if(strstr(t,"CARTES")) j.geomtyp = GEOM_IS_XYZ;
+		else j.geomtyp = GEOM_IS_ZMAT;
+		if(strstr(t,"BOHR")) j.units = 0;
+ 		j.numline++;
+		break;
+	}
+ }
+}
+  fclose(fd);
+  g_free(t);
+  return j;
+}
+/**********************************************************************************/
 FilePosTypeGeom get_geometry_type_from_gauss_input_file(gchar *NomFichier)
 {
  gchar *t;
@@ -1246,6 +1324,20 @@ void read_geom_in_mpqc_input(gchar *fileName)
 	read_XYZ_from_mpqc_input_file(fileName);
 }
 /**********************************************************************************/
+void read_geom_in_demon_input(gchar *NameFile)
+{
+        FilePosTypeGeom j;
+        j=  get_geometry_type_from_demon_input_file(NameFile);
+        if( j.geomtyp == GEOM_IS_XYZ)
+                read_XYZ_from_demon_input_file(NameFile,j);
+        else
+        if( j.geomtyp == GEOM_IS_ZMAT)
+                read_Zmat_from_demon_input_file(NameFile,j);
+        else
+                Message(_("Sorry\nI can not read gemetry in DeMon input file\n"),_("Warning"),TRUE);
+}
+
+/**********************************************************************************/
 void read_geom_in_gauss_input(gchar *NameFile)
 {
 	FilePosTypeGeom j;
@@ -1352,10 +1444,11 @@ void get_doc(gchar *NomFichier)
 
 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0)) return ;
  
-	t=g_malloc(taille);
+	t=g_malloc(taille*sizeof(gchar));
 	fd = FOpen(NomFichier, "rb");
 	if(fd==NULL)
 	{
+		//fprintf(stderr,"Sorry, I can not open\n %s\n file",NomFichier);
 		g_free(t);
 		t = g_strdup_printf(_("Sorry, I can not open\n %s\n file"),NomFichier);
 		Message(t,_("Error"),TRUE);
@@ -1364,6 +1457,7 @@ void get_doc(gchar *NomFichier)
 	}
 
 	iprogram = get_type_of_program(fd);
+	//fprintf(stderr,"iprog=%d",iprogram);
 
 	nchar=gabedit_text_get_length(GABEDIT_TEXT(text));
 	gabedit_text_set_point(GABEDIT_TEXT(text),0);
@@ -1388,6 +1482,7 @@ void get_doc(gchar *NomFichier)
 	fileopen.netWorkProtocol = defaultNetWorkProtocol;
 
 	if(iprogram == PROG_IS_MPQC) fileopen.command=g_strdup(NameCommandMPQC);
+	else if(iprogram == PROG_IS_DEMON) fileopen.command=g_strdup(NameCommandDeMon);
 	else if(iprogram == PROG_IS_GAMESS) fileopen.command=g_strdup(NameCommandGamess);
 	else if(iprogram == PROG_IS_FIREFLY) fileopen.command=g_strdup(NameCommandFireFly);
 	else if(iprogram == PROG_IS_GAUSS) fileopen.command=g_strdup(NameCommandGaussian);
@@ -1432,6 +1527,14 @@ void get_doc(gchar *NomFichier)
  		fileopen.logfile=g_strdup_printf("%s.log",fileopen.projectname);
   		/* fileopen.moldenfile=g_strdup_printf("%s.molden",fileopen.projectname);*/
   		fileopen.moldenfile=g_strdup_printf("%s.log",fileopen.projectname);
+	}
+	else
+	if(iprogram == PROG_IS_DEMON)
+	{
+ 		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
+ 		fileopen.outputfile=g_strdup_printf("%s.out",fileopen.projectname);
+ 		fileopen.logfile=g_strdup_printf("%s.out",fileopen.projectname);
+  		fileopen.moldenfile=g_strdup_printf("%s.molden",fileopen.projectname);
 	}
 	else
 	if(iprogram == PROG_IS_MPQC)
@@ -1501,6 +1604,7 @@ void get_doc(gchar *NomFichier)
 	}
 
 	if( iprogram == PROG_IS_GAUSS) read_geom_in_gauss_input(NomFichier);
+	else if( iprogram == PROG_IS_DEMON) read_geom_in_demon_input(NomFichier);
 	else if( iprogram == PROG_IS_GAMESS) read_geom_in_gamess_input(NomFichier);
 	else if( iprogram == PROG_IS_FIREFLY) read_geom_in_firefly_input(NomFichier);
 	else if( iprogram == PROG_IS_MOLPRO) read_geom_in_molpro_input(NomFichier);
@@ -1598,7 +1702,6 @@ static gboolean enreg_doc(gchar *NomFichier)
 /********************************************************************************/
 void enreg_selec_doc(GabeditFileChooser *SelecteurFichier , gint response_id)
 {
- 
 	gchar *temp;
 	gchar *NomFichier;
   
@@ -1608,6 +1711,7 @@ void enreg_selec_doc(GabeditFileChooser *SelecteurFichier , gint response_id)
 	if ((!NomFichier) || (strcmp(NomFichier,"") == 0)) return ;
   
 	if(iprogram == PROG_IS_MPQC) fileopen.command=g_strdup(NameCommandMPQC);
+	else if(iprogram == PROG_IS_DEMON) fileopen.command=g_strdup(NameCommandDeMon);
 	else if(iprogram == PROG_IS_GAMESS) fileopen.command=g_strdup(NameCommandGamess);
 	else if(iprogram == PROG_IS_FIREFLY) fileopen.command=g_strdup(NameCommandFireFly);
 	else if(iprogram == PROG_IS_GAUSS) fileopen.command=g_strdup(NameCommandGaussian);
@@ -1625,6 +1729,9 @@ void enreg_selec_doc(GabeditFileChooser *SelecteurFichier , gint response_id)
 		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
 		else
 		if(iprogram==PROG_IS_FIREFLY)
+		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
+		else
+		if(iprogram==PROG_IS_DEMON)
 		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
 		else
 		if(iprogram==PROG_IS_QCHEM)
@@ -1681,6 +1788,14 @@ void enreg_selec_doc(GabeditFileChooser *SelecteurFichier , gint response_id)
 	 	fileopen.outputfile = g_strdup_printf("%s.log",fileopen.projectname);
  		fileopen.logfile = g_strdup_printf("%s.log",fileopen.projectname);
  		fileopen.moldenfile = g_strdup_printf("%s.log",fileopen.projectname);
+	}
+	else
+	if(iprogram == PROG_IS_DEMON)
+	{
+		fileopen.datafile = g_strdup_printf("%s.inp",fileopen.projectname);
+	 	fileopen.outputfile = g_strdup_printf("%s.out",fileopen.projectname);
+ 		fileopen.logfile = g_strdup_printf("%s.out",fileopen.projectname);
+ 		fileopen.moldenfile = g_strdup_printf("%s.out",fileopen.projectname);
 	}
 	else
 	if(iprogram == PROG_IS_GAUSS)
@@ -1776,6 +1891,13 @@ void new_doc_molcas(GtkWidget* wid, gpointer data)
 	fileopen.command=g_strdup(NameCommandGamess);
 }
 /********************************************************************************/
+ void new_doc_demon(GtkWidget* wid, gpointer data)
+{
+ 	newDeMon();
+	iprogram = PROG_IS_DEMON;
+	fileopen.command=g_strdup(NameCommandDeMon);
+}
+/********************************************************************************/
  void new_doc_firefly(GtkWidget* wid, gpointer data)
 {
  	newFireFly();
@@ -1852,7 +1974,7 @@ static void show_about_new()
 	};
 
 	static const gchar *copyright =
-		"Copyright \xc2\xa9 2002-2013 Abdul-Rahman Allouche.\n"
+		"Copyright \xc2\xa9 2002-2017 Abdul-Rahman Allouche.\n"
 		"All rights reserved.\n";
 	
 	gchar *license =
@@ -1879,7 +2001,7 @@ static void show_about_new()
 			);
 
 	static const gchar *comments =
-		"Graphical User Interface to FireFly, GAMESS-US, Gaussian, Molcas, Molpro, "
+		"Graphical User Interface to DeMon, FireFly, GAMESS-US, Gaussian, Molcas, Molpro, "
 		"OpenMopac, Orca, MPQC, NWChem and Q-Chem computational chemistry packages.\n\n"
 		"Please use the following citations in any report or publication :\n"
 		"A.R. ALLOUCHE, Gabedit - A graphical user interface for computational chemistry softwares,\n"
@@ -2047,6 +2169,34 @@ GtkWidget *create_combo_box_entry_liste(GtkWidget* Window,GtkWidget* hbox,gchar 
   gtk_entry_set_text (GTK_ENTRY (combo_entry), liste[0]);
   return combo_entry;
  }
+/********************************************************************************/
+GtkWidget*  create_label_combo_in_table(GtkWidget *table,gchar *tlabel,gchar **tlist,gint nlist, gboolean edit,gint llen,gint elen, gint iligne)
+{
+        GtkWidget* combo;
+        GtkWidget* label;
+	GtkWidget *hbox = gtk_hbox_new(0,FALSE);
+        gint i;
+
+
+        label = gtk_label_new(tlabel);
+	gtk_label_set_justify(GTK_LABEL(label),GTK_JUSTIFY_LEFT);
+        gtk_widget_set_size_request(GTK_WIDGET(label),llen,-1);
+        gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
+	gtk_table_attach(GTK_TABLE(table), hbox, 0, 1, iligne, iligne+1, GTK_FILL, GTK_FILL, 1, 1);
+        gtk_widget_show(label);
+        gtk_widget_show(hbox);
+
+        label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table), label, 1, 2, iligne, iligne+1, (GtkAttachOptions)(GTK_FILL|GTK_EXPAND), (GtkAttachOptions)(GTK_FILL|GTK_SHRINK), 1, 1);
+
+        combo = gtk_combo_box_entry_new_text();
+        for (i=0;i<nlist;i++) gtk_combo_box_append_text (GTK_COMBO_BOX (combo), tlist[i]);
+        if(nlist>0) gtk_combo_box_set_active(GTK_COMBO_BOX (combo), 0);
+        gtk_widget_set_size_request(GTK_WIDGET(combo),elen,-1);
+	gtk_table_attach(GTK_TABLE(table), combo, 2, 3, iligne, iligne+1, (GtkAttachOptions)(GTK_FILL|GTK_EXPAND), (GtkAttachOptions)(GTK_FILL|GTK_SHRINK), 1, 1);
+        gtk_widget_set_sensitive(GTK_BIN(combo)->child,edit);
+        return GTK_BIN(combo)->child;
+}
 /********************************************************************************/
 GtkWidget *create_frame(GtkWidget *win,GtkWidget *box,gchar *title)
 {
@@ -2534,6 +2684,25 @@ void new_firefly(GtkWidget *widget, gchar *data)
  	}
 }
 /**********************************************************************************/
+void new_demon(GtkWidget *widget, gchar *data)
+{
+	gchar *t;
+ 	if(imodif == DATA_MOD_YES)
+        {
+		t = g_strdup_printf(_("\nThe \"%s\" file has been modified.\n\n"),get_name_file(fileopen.datafile));
+		t = g_strdup_printf(_(" %sIf you continue, you lose what you have changed.\n\n"),t);
+		t = g_strdup_printf(_(" %sYou want to continue?\n"),t);
+		Continue_YesNo(new_doc_demon, NULL,t);
+		g_free(t);
+        }
+        else
+        {
+		new_doc_demon(NULL, NULL);
+		iprogram = PROG_IS_DEMON;
+		fileopen.command=g_strdup(NameCommandDeMon);
+ 	}
+}
+/**********************************************************************************/
 void new_gamess(GtkWidget *widget, gchar *data)
 {
 	gchar *t;
@@ -2744,7 +2913,7 @@ GtkWidget*  create_table_browser(GtkWidget *Wins,GtkWidget *vbox)
 	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1, (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) , (GtkAttachOptions)(GTK_FILL|GTK_SHRINK), 1,1);
 
 	j = 2;
-	buttonDirSelector =  gtk_file_chooser_button_new(_("Select your folder"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	buttonDirSelector =  gabedit_dir_button();
 	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeight*0.2),-1);
 	gtk_table_attach(GTK_TABLE(table),buttonDirSelector, j,j+4,i,i+1, (GtkAttachOptions)(GTK_FILL|GTK_EXPAND), (GtkAttachOptions)(GTK_FILL|GTK_SHRINK), 1,1);
 	g_object_set_data(G_OBJECT(Wins), "ButtonDirSelector", buttonDirSelector);
@@ -3335,7 +3504,7 @@ void read_admp_build_dipole_dipole_autocorrelation_dlg()
 	GtkWidget* hbox = gtk_hbox_new(FALSE,1);
 	GtkWidget* hsep1 = gtk_hseparator_new();
 	GtkWidget* hsep2 = gtk_hseparator_new();
-	GtkWidget* labelN = gtk_label_new(_("     Number of step to remove : "));
+	GtkWidget* labelN = gtk_label_new(_("     Number of steps to remove : "));
 
 	gtk_entry_set_text(GTK_ENTRY(entryN),"0");
 
@@ -3493,7 +3662,7 @@ void read_dipole_build_dipole_dipole_autocorrelation_dlg()
 	GtkWidget* hbox = gtk_hbox_new(FALSE,1);
 	GtkWidget* hsep1 = gtk_hseparator_new();
 	GtkWidget* hsep2 = gtk_hseparator_new();
-	GtkWidget* labelN = gtk_label_new(_("     Number of step to remove : "));
+	GtkWidget* labelN = gtk_label_new(_("     Number of steps to remove : "));
 
 	gtk_entry_set_text(GTK_ENTRY(entryN),"0");
 
@@ -3510,4 +3679,42 @@ void read_dipole_build_dipole_dipole_autocorrelation_dlg()
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 	gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filesel),TRUE);
 	g_object_set_data (G_OBJECT (filesel), "EntryN",entryN);
+}
+/********************************************************************************/
+GtkWidget* gabedit_dir_button()
+{
+	gboolean ret = FALSE;
+	GtkWidget* buttonDirSelector;
+	gchar* initial_dir = g_get_current_dir ();
+
+	buttonDirSelector =  gtk_file_chooser_button_new(_("Select your folder"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	ret = gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(buttonDirSelector), initial_dir);
+	if( ! ret ) ret = gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(buttonDirSelector), "/");
+	return buttonDirSelector;
+}
+
+/********************************************************************************************************/
+void  add_cancel_ok_buttons(GtkWidget *Win, GtkWidget *vbox, GCallback myFunc)
+{
+	GtkWidget *hbox;
+	GtkWidget *button;
+	/* buttons box */
+	hbox = create_hbox_false(vbox);
+	gtk_widget_realize(Win);
+
+	button = create_button(Win,_("Cancel"));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, GTK_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,GTK_OBJECT(Win));
+	gtk_widget_show (button);
+
+	button = create_button(Win,_("OK"));
+	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+	gtk_widget_show (button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)myFunc,GTK_OBJECT(Win));
+
+	gtk_widget_show_all(vbox);
 }

@@ -1,6 +1,6 @@
 /* AnimationIsoSurface.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -658,7 +658,7 @@ void animationIsoSurfaceDlg()
 {
 	GtkWidget *Win;
 	GtkWidget *vbox;
-	GtkWidget *hbox;
+	/* GtkWidget *hbox;*/
 	GtkWidget *parentWindow = PrincipalWindow;
 
 	if(WinDlg)
@@ -686,7 +686,8 @@ void animationIsoSurfaceDlg()
 	vbox = gtk_vbox_new (FALSE, 0);
 	gtk_widget_show (vbox);
 	gtk_container_add (GTK_CONTAINER (Win), vbox);
-	hbox = create_hbox_false(vbox);
+	/* hbox = create_hbox_false(vbox);*/
+	create_hbox_false(vbox);
 	gtk_widget_realize(Win);
 
 	addEntrysButtons(vbox);

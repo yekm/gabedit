@@ -1,6 +1,6 @@
 /* DrawGeomGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -142,6 +142,8 @@ static int optcol = 0;
 static GLuint GeomList = 0;
 static GLuint SelectionList = 0;
 static GLuint DipoleList = 0;
+
+static gboolean showBox = TRUE;
 static GLuint AxesList = 0;
 
 static GabEditTypeGeom TypeGeom = GABEDIT_TYPEGEOM_STICK;
@@ -199,6 +201,7 @@ static void reset_connections_between_selected_and_notselected_atoms();
 
 static GtkWidget*  NewGeomDrawingArea(GtkWidget* vboxwin, GtkWidget* GeomDlg);
 static void SetLight();
+static void gl_build_box();
 static void gl_build_geometry();
 static void gl_build_selection();
 static void gl_build_labels();
@@ -2496,6 +2499,10 @@ static void set_origin_to_point(gdouble center[])
 			geometry[n].Z -= center[2];
 	}
 	RebuildGeom = TRUE;
+// TO DO
+	reset_origine_molecule_drawgeom();
+	//for (n=0;n<3;n++) Orig[n] += center[n];
+       
 }
 /********************************************************************************/
 void set_origin_to_center_of_fragment()
@@ -2641,6 +2648,9 @@ void move_the_center_of_selected_or_not_selected_atoms_to_origin(gboolean sel)
 		}
 	}
 	RebuildGeom = TRUE;
+	// set Origin to 0 0 0
+	//printf("set Origin to 0 0 0\n");
+	//reset_origine_molecule_drawgeom();
 }
 /*****************************************************************************/
 static int set_fragment_rotational_matrix(gdouble m[6], gdouble C[], gboolean sel)
@@ -5131,7 +5141,10 @@ void SetOriginAtCenter(gpointer data, guint Operation,GtkWidget* wid)
 	Ddef = FALSE;
 	Trans[0] = 0;
 	Trans[0] = 0;
+	//printf("Centre = %f %f %f\n", C[0], C[1], C[2]);
 	reset_origine_molecule_drawgeom();
+	//for (i=0;i<3;i++) Orig[i] = 0.0;
+
 	RebuildGeom=TRUE;
 	drawGeom();
 	set_statubar_pop_sel_atom();
@@ -5619,6 +5632,7 @@ static void rotation_fragment_quat(gdouble m[4][4],gdouble C[])
 	gdouble B[3];
 	guint i,j,k;
 	gdouble M[4][4];
+	gdouble O[3];
 
 	build_rotmatrix(M,Quat);
 	for (i=0;i<Natoms;i++)
@@ -5636,6 +5650,14 @@ static void rotation_fragment_quat(gdouble m[4][4],gdouble C[])
 		geometry[i].Y=B[1];
 		geometry[i].Z=B[2];
 	}
+	for(i=0;i<3;i++) O[i] = Orig[i];
+	for(j=0;j<3;j++)
+	{
+		B[j] = 0.0;
+		for(k=0;k<3;k++)
+			B[j] += M[k][j]*O[k];
+	}
+	for(i=0;i<3;i++) Orig[i] = B[i];
 
 	for (i=0;i<Natoms;i++)
 	{
@@ -7405,8 +7427,8 @@ void SetOperation (GtkWidget *widget, guint data)
 		case SCALESTICK : temp = g_strdup(_(" Press the Left mouse button and move your mouse for \"Scale Stick\". "));break;
 		case SCALEBALL  :  temp = g_strdup(_(" Press the Left mouse button and move your mouse for \"Scale Ball\". "));break;
 		case SCALEDIPOLE:  temp = g_strdup(_(" Press the Left mouse button and move your mouse for \"Scale Dipole\". "));break;
-		case SELECTOBJECTS :  temp = g_strdup(_("Pick an atom to select a residue, G key + pick an atom to select a group, Or F key + move your mouse to select a fragments. Use shift key for more selections."));break;
-		case SELECTFRAG :  temp = g_strdup(_(" Press the Left mouse button and move your mouse for \"select a fragments\".Use shift key for more selections. "));break;
+		case SELECTOBJECTS :  temp = g_strdup(_("Pick an atom to select a residue, G key + pick an atom to select a group, Or F key + move your mouse to select a fragment. Use shift key for more selections."));break;
+		case SELECTFRAG :  temp = g_strdup(_(" Press the Left mouse button and move your mouse for \"select a fragment\".Use shift key for more selections. "));break;
 		case SELECTRESIDUE :  temp = g_strdup(_("  Press the Left mouse button for pick an atom, all atoms for residue of this atom are selected(or unselected)."));break;
 		case DELETEFRAG :  temp = g_strdup(_(" Press the Left mouse button(for pick an atom or all selected atoms) and release for \"Delete selected atom(s)\". "));break;
 		case ROTLOCFRAG :  temp = g_strdup(_(" Press the Left mouse button and move your mouse for \"Rotatation of selected atom(s)[Local Rotation]\". "));break;
@@ -7617,6 +7639,14 @@ void RenderAxes(GtkWidget *win,gboolean YesNo)
 {
 	if(testShowAxesGeom()) hideAxesGeom();
 	else showAxesGeom();
+	drawGeom();
+}
+/*****************************************************************************/
+void RenderBox(GtkWidget *win,gboolean YesNo)
+{
+	if(testShowBoxGeom()) showBox = FALSE;
+	else showBox = TRUE;
+	RebuildGeom = TRUE;
 	drawGeom();
 }
 /*****************************************************************************/
@@ -8395,7 +8425,7 @@ void set_optimal_geom_view()
 	} 
 	RebuildGeom = TRUE;
 
-        for(i=0;i<3;i++) Orig[i] = X0[i];
+        for(i=0;i<3;i++) Orig[i] -= X0[i];
 	drawGeom();
 }
 /********************************************************************************/
@@ -10271,6 +10301,101 @@ static void draw_bond_blend(int i,int j,GLdouble scal, gint connectionType, GdkC
 	glDisable(GL_BLEND);
 }
 /*****************************************************************************/
+gboolean testShowBoxGeom()
+{
+	return showBox;
+}
+/*****************************************************************************/
+static void gl_build_box()
+{	
+	guint i;
+	guint j;
+	GdkColor colorRed;
+	GdkColor colorGreen;
+	GdkColor colorBlue;
+	GdkColor colorYellow;
+	GdkColor colorFrag;
+    	gdouble rayon;
+	gint ni, nj;
+	gchar tmp[BSIZE];
+	gint nTv = 0;
+	gint iTv[3] = {-1,-1,-1};
+	V3d Base1Pos;
+	V3d Base2Pos;
+	V4d Specular = {1.0f,1.0f,1.0f,1.0f};
+        V4d Diffuse  = {1.0f,1.0f,1.0f,1.0f};
+        V4d Ambiant  = {1.0f,1.0f,1.0f,1.0f};
+	gdouble radius = 0.1;
+	gdouble Tv[3][3];
+	gdouble O[3];
+
+	if(!testShowBoxGeom()) return;
+	for(i=0;i<Natoms;i++)
+	{
+		sprintf(tmp,"%s",geometry[i].Prop.symbol);
+		uppercase(tmp);
+		if(!strcmp(tmp,"TV")) { iTv[nTv]= i; nTv++;}
+	}
+	if(nTv<2) return;
+	for(i=0;i<3;i++) O[i] = -Orig[i];
+	for(i=0;i<nTv;i++)
+	{
+		Tv[i][0] = geometry[iTv[i]].X-O[0];
+		Tv[i][1] = geometry[iTv[i]].Y-O[1];
+		Tv[i][2] = geometry[iTv[i]].Z-O[2];
+	}
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[0][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[1][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[0][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[1][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[1][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[0][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+	if(nTv<3) return;
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[2][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[0][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[2][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[2][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[0][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[1][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[2][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[2][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[1][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[0][i]+Tv[2][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[1][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[0][i]+Tv[1][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[2][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[1][i]+Tv[2][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[0][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+}
+/*****************************************************************************/
 static void gl_build_geometry()
 {	
 	guint i;
@@ -10335,6 +10460,7 @@ static void gl_build_geometry()
 			}
 		}
         }
+	gl_build_box();
 /*
 	for(i=0;i<Natoms;i++)
 		for(j=i+1, nj = geometry[j].N-1;j<Natoms;j++, nj = geometry[j].N-1)

@@ -1,6 +1,6 @@
 /* SpectrumWin.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1142,9 +1142,11 @@ GtkWidget* spectrum_win_new(gchar* title)
 	g_object_set_data(G_OBJECT (xyplot), "EntryXMin", entry_x_min);
 	g_object_set_data(G_OBJECT (xyplot), "EntryXMax", entry_x_max);
 	g_object_set_data(G_OBJECT (xyplot), "HBoxData", first_hbox);
+	g_object_set_data(G_OBJECT (xyplot), "HBoxData2", hbox_data);
 	g_object_set_data(G_OBJECT (xyplot), "VBox", vbox);
 	g_object_set_data(G_OBJECT (xyplot), "Window", window);
 	g_object_set_data(G_OBJECT (window), "HBoxData", first_hbox);
+	g_object_set_data(G_OBJECT (window), "HBoxData2", hbox_data);
 	g_object_set_data(G_OBJECT (window), "VBox", vbox);
 	g_object_set_data(G_OBJECT (window), "NoConvolutionButton", toggle_no_convolution);
 

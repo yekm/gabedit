@@ -4,6 +4,7 @@ include CONFIG
 COMMON     = src/Common/*.o
 CURVE      = src/Spectrum/*.o
 FILES      = src/Files/*.o
+DEMON      = src/DeMon/*.o
 GAMESS     = src/Gamess/*.o
 GAUSS      = src/Gaussian/*.o
 GEOM       = src/Geometry/*.o
@@ -24,21 +25,22 @@ SEMIEMP    = src/SemiEmpirical/*.o
 UTILS      = src/Utils/*.o
 SYMMETRY   = src/Symmetry/*.o
 VIBCORR   = src/VibrationalCorrections/*.o
+QFF   = src/QFF/*.o
 IDC   = src/IsotopeDistribution/*.o
 
  
 OBJECTS = \
-	$(COMMON) $(CURVE) $(FILES) $(GAMESS) $(GAUSS) $(GEOM) $(MODELS) \
+	$(COMMON) $(CURVE) $(FILES) $(DEMON) $(GAMESS) $(GAUSS) $(GEOM) $(MODELS) \
 	$(MOLCAS) $(MOLPRO) $(MOPAC) $(MPQC) $(MULTIGRID) $(NETWORK) \
 	$(OPENGL) $(FIREFLY) $(NWCHEM) $(PSICODE) $(ORCA) $(QCHEM) $(SEMIEMP) $(UTILS) \
-	$(SYMMETRY) $(VIBCORR) $(IDC)
+	$(SYMMETRY) $(VIBCORR) $(QFF) $(IDC)
 
 SUBDIRS = \
 	src/Display src/Common src/Files src/Gaussian \
  	src/Geometry src/Spectrum src/MolecularMechanics src/Molpro src/Molcas \
-	src/MPQC src/Gamess src/NWChem  src/Psicode src/Orca src/QChem src/Mopac src/NetWork src/Utils \
+	src/MPQC src/DeMon src/Gamess src/NWChem  src/Psicode src/Orca src/QChem src/Mopac src/NetWork src/Utils \
 	src/Symmetry src/FireFly src/MultiGrid src/SemiEmpirical \
-	src/VibrationalCorrections src/IsotopeDistribution
+	src/VibrationalCorrections src/IsotopeDistribution src/QFF \
 
 ifneq ($(external_gl2ps),1)
 GL2PS     = gl2ps/*.o

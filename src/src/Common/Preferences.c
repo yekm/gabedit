@@ -1,6 +1,6 @@
 /* Preferences.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -45,6 +45,7 @@ static GtkWidget* entrybabel = NULL;
 
 GtkWidget *NoteBook;
 static GtkWidget *Wins = NULL;
+static GtkWidget *EntryDeMon = NULL;
 static GtkWidget *EntryGamess = NULL;
 static GtkWidget *EntryGaussian = NULL;
 static GtkWidget *EntryMolcas = NULL;
@@ -58,6 +59,7 @@ static GtkWidget *EntryOrca = NULL;
 static GtkWidget *EntryNWChem = NULL;
 static GtkWidget *EntryPsicode = NULL;
 
+static GtkWidget *ComboDeMon = NULL;
 static GtkWidget *ComboGamess = NULL;
 static GtkWidget *ComboGaussian = NULL;
 static GtkWidget *ComboMolcas = NULL;
@@ -71,6 +73,7 @@ static GtkWidget *ComboOrca = NULL;
 static GtkWidget *ComboNWChem = NULL;
 static GtkWidget *ComboPsicode = NULL;
 
+static GtkWidget *ButtonDeMon = NULL;
 static GtkWidget *ButtonGamess = NULL;
 static GtkWidget *ButtonGaussian = NULL;
 static GtkWidget *ButtonMolcas = NULL;
@@ -554,6 +557,93 @@ void  modify_molpro_command()
   else
   	gtk_widget_set_sensitive(ButtonMolpro, TRUE);
 }
+/********************************************************************************/
+static void  remove_demon_command()
+{
+  G_CONST_RETURN gchar *strcom;
+  GList *glist = NULL;
+  gint i;
+  gint inList = -1;
+
+  if(demonCommands.numberOfCommands<2)
+	  return;
+
+  strcom = gtk_entry_get_text (GTK_ENTRY (EntryDeMon));
+
+  for(i=0;i<demonCommands.numberOfCommands;i++)
+  {
+	  if(strcmp(strcom,demonCommands.commands[i])==0)
+	  {
+		  inList = i;
+		  break;
+	  }
+  }
+  if(inList == -1)
+	  return;
+  for(i=inList;i<demonCommands.numberOfCommands-1;i++)
+	  demonCommands.commands[i] = demonCommands.commands[i+1];
+
+  demonCommands.numberOfCommands--;
+  demonCommands.commands = g_realloc(
+		   demonCommands.commands,
+		   demonCommands.numberOfCommands*sizeof(gchar*));
+
+  for(i=0;i<demonCommands.numberOfCommands;i++)
+	glist = g_list_append(glist,demonCommands.commands[i]);
+
+  gtk_combo_box_entry_set_popdown_strings( ComboDeMon, glist) ;
+
+  g_list_free(glist);
+
+  if(demonCommands.numberOfCommands<2)
+  	gtk_widget_set_sensitive(ButtonDeMon, FALSE);
+  else
+  	gtk_widget_set_sensitive(ButtonDeMon, TRUE);
+
+  NameCommandDeMon = g_strdup(demonCommands.commands[0]);
+
+  str_delete_n(NameCommandDeMon);
+  delete_last_spaces(NameCommandDeMon);
+  delete_first_spaces(NameCommandDeMon);
+}
+/********************************************************************************/
+void  modify_demon_command()
+{
+  G_CONST_RETURN gchar *strcom;
+  GList *glist = NULL;
+  gint i;
+
+  strcom = gtk_entry_get_text (GTK_ENTRY (EntryDeMon));
+  if(strcmp(strcom,""))
+      NameCommandDeMon = g_strdup(strcom);
+
+  str_delete_n(NameCommandDeMon);
+  delete_last_spaces(NameCommandDeMon);
+  delete_first_spaces(NameCommandDeMon);
+
+  for(i=0;i<demonCommands.numberOfCommands;i++)
+  {
+	  if(strcmp(NameCommandDeMon,demonCommands.commands[i])==0)
+		  return;
+  }
+  demonCommands.numberOfCommands++;
+  demonCommands.commands = g_realloc(
+		   demonCommands.commands,
+		   demonCommands.numberOfCommands*sizeof(gchar*));
+  demonCommands.commands[demonCommands.numberOfCommands-1] = g_strdup(NameCommandDeMon);
+
+  for(i=demonCommands.numberOfCommands-1;i>=0;i--)
+	glist = g_list_append(glist,demonCommands.commands[i]);
+
+  gtk_combo_box_entry_set_popdown_strings( ComboDeMon, glist) ;
+
+  g_list_free(glist);
+  if(demonCommands.numberOfCommands<2)
+  	gtk_widget_set_sensitive(ButtonDeMon, FALSE);
+  else
+  	gtk_widget_set_sensitive(ButtonDeMon, TRUE);
+}
+/********************************************************************************/
 /********************************************************************************/
 static void  remove_firefly_command()
 {
@@ -1157,6 +1247,7 @@ void apply_all()
 {
   modify_gaussian_command();
   modify_molpro_command();
+  modify_demon_command();
   modify_color_surfaces();
 }
 /********************************************************************************/
@@ -1794,12 +1885,12 @@ void  create_batch_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 
 }
 /********************************************************************************/
+/*
 static void changed_babel(GtkWidget* wid)
 {
   	if(babelCommand) g_free(babelCommand);
 	babelCommand = g_strdup(gtk_entry_get_text(GTK_ENTRY(entrybabel)));
 }
-/********************************************************************************/
 static void set_entry_babel(GtkWidget* SelFile, gint response_id)
 {
   GtkWidget *entry = NULL;
@@ -1814,7 +1905,6 @@ static void set_entry_babel(GtkWidget* SelFile, gint response_id)
   babelCommand = g_strdup(gtk_entry_get_text(GTK_ENTRY(entrybabel)));
 
 }
-/********************************************************************************/
 static void set_entry_babel_selction(GtkWidget* entry)
 {
   GtkWidget *SelFile;
@@ -1829,9 +1919,10 @@ static void set_entry_babel_selction(GtkWidget* entry)
   g_signal_connect (SelFile, "response",  G_CALLBACK (set_entry_babel), GTK_OBJECT(SelFile));
   g_signal_connect (SelFile, "response",  G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(SelFile));
 
-  /* g_signal_connect (SelFile, "close",  G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(SelFile));*/
+  // g_signal_connect (SelFile, "close",  G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(SelFile));
   gtk_widget_show(SelFile);
 }
+*/
 /********************************************************************************/
 #ifdef G_OS_WIN32
 static void set_entry_gamessdir(GtkWidget* dirSelector, gint response_id)
@@ -1859,6 +1950,40 @@ static void set_entry_gamessDir_selection(GtkWidget* entry)
 	g_object_set_data(G_OBJECT (dirSelector), "EntryFile", entry);
 
 	g_signal_connect (dirSelector, "response",  G_CALLBACK (set_entry_gamessdir), GTK_OBJECT(dirSelector));
+	g_signal_connect (dirSelector, "response",  G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(dirSelector));
+
+	gtk_widget_show(dirSelector);
+}
+/********************************************************************************/
+static void set_entry_demondir(GtkWidget* dirSelector, gint response_id)
+{
+	gchar* dirname = NULL;
+	gchar* t = NULL;
+	GtkWidget *entry;
+	if(response_id != GTK_RESPONSE_OK) return;
+	dirname = gabedit_folder_chooser_get_current_folder(GABEDIT_FOLDER_CHOOSER(dirSelector));
+
+
+	entry = (GtkWidget*)(g_object_get_data(G_OBJECT(dirSelector),"EntryFile"));	
+	gtk_entry_set_text(GTK_ENTRY(entry),dirname);
+
+	if(demonDirectory) g_free(demonDirectory);
+	demonDirectory = g_strdup(dirname);
+	t = g_strdup_printf("%s;%s",demonDirectory,g_getenv("PATH"));
+	g_setenv("PATH",t,TRUE);
+	g_free(t);
+}
+/********************************************************************************/
+static void set_entry_demonDir_selection(GtkWidget* entry)
+{
+	GtkWidget *dirSelector;
+	dirSelector = selctionOfDir(set_entry_demondir, _("Select Orca folder"), GABEDIT_TYPEWIN_ORB); 
+  	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
+  	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
+
+	g_object_set_data(G_OBJECT (dirSelector), "EntryFile", entry);
+
+	g_signal_connect (dirSelector, "response",  G_CALLBACK (set_entry_demondir), GTK_OBJECT(dirSelector));
 	g_signal_connect (dirSelector, "response",  G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(dirSelector));
 
 	gtk_widget_show(dirSelector);
@@ -2103,6 +2228,42 @@ static void set_entry_gaussDir_selection(GtkWidget* entry)
 }
 #endif
 /********************************************************************************/
+static void set_entry_openbabeldir(GtkWidget* dirSelector, gint response_id)
+{
+	gchar* dirname = NULL;
+	gchar* t = NULL;
+	GtkWidget *entry;
+	if(response_id != GTK_RESPONSE_OK) return;
+	dirname = gabedit_folder_chooser_get_current_folder(GABEDIT_FOLDER_CHOOSER(dirSelector));
+
+
+	entry = (GtkWidget*)(g_object_get_data(G_OBJECT(dirSelector),"EntryFile"));	
+	gtk_entry_set_text(GTK_ENTRY(entry),dirname);
+
+	if(openbabelDirectory) g_free(openbabelDirectory);
+	openbabelDirectory = g_strdup(dirname);
+	t = g_strdup_printf("%s;%s",openbabelDirectory,g_getenv("PATH"));
+	g_setenv("PATH",t,TRUE);
+	g_free(t);
+	if(babelCommand) g_free(babelCommand);
+	babelCommand = g_strdup_printf("%s%sobabel",openbabelDirectory,G_DIR_SEPARATOR_S);
+}
+/********************************************************************************/
+static void set_entry_openbabelDir_selection(GtkWidget* entry)
+{
+	GtkWidget *dirSelector;
+	dirSelector = selctionOfDir(set_entry_openbabeldir, _("Select PovRay folder"), GABEDIT_TYPEWIN_ORB); 
+  	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
+  	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
+
+	g_object_set_data(G_OBJECT (dirSelector), "EntryFile", entry);
+
+	g_signal_connect (dirSelector, "response",  G_CALLBACK (set_entry_openbabeldir), GTK_OBJECT(dirSelector));
+	g_signal_connect (dirSelector, "response",  G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(dirSelector));
+
+	gtk_widget_show(dirSelector);
+}
+/********************************************************************************/
 void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 {
   GtkWidget *hbox;
@@ -2111,7 +2272,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   GtkWidget *combo;
   GtkWidget *button;
 
-  frame = gtk_frame_new (_("Commands for execute Gaussian, Molcas, Molpro, MPQC, FireFly, Q-Chem or Babel"));
+  frame = gtk_frame_new (_("Commands to execute Computational Chemistry Packages"));
   gtk_widget_show (frame);
   gtk_box_pack_start (GTK_BOX (vbox), frame, expand, expand, 0);
   gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
@@ -2149,6 +2310,35 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   gtk_widget_realize(Wins);
 
   create_hseparator(vbox);
+
+/* ------------------------------------------------------------------*/
+  hbox = gtk_hbox_new (FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 3);
+  label = gtk_label_new (_("Command for execute DeMon    : "));
+  gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 3);
+
+  combo = create_combo_box_entry(demonCommands.commands,demonCommands.numberOfCommands,TRUE,-1,-1);
+  ComboDeMon = combo;
+  EntryDeMon =  GTK_BIN(combo)->child;
+  gtk_box_pack_start (GTK_BOX (hbox), combo, TRUE, TRUE, 3);
+  gtk_entry_set_text (GTK_ENTRY (EntryDeMon),NameCommandDeMon);
+  g_signal_connect(G_OBJECT (EntryDeMon), "activate",
+			(GCallback)modify_demon_command,
+			NULL);
+  button = create_button(Wins,_("  Remove from list  "));
+  ButtonDeMon = button;
+  gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
+  if(demonCommands.numberOfCommands<2)
+  	gtk_widget_set_sensitive(button, FALSE);
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(remove_demon_command),NULL);
+
+  button = create_button(Wins,_("  Help  "));
+  gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 3);
+  g_signal_connect(G_OBJECT(button), "clicked",G_CALLBACK(help_commands),NULL);
+/* ------------------------------------------------------------------*/
+
+  create_hseparator(vbox);
+
 
 /* ------------------------------------------------------------------*/
   hbox = gtk_hbox_new (FALSE, 0);
@@ -2432,12 +2622,13 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
   create_hseparator(vbox);
 
 /*#ifdef G_OS_WIN32*/
+/*
+  // Remove it. Now babelCommand=openbabelDirectory/obabel
   {
 	GtkWidget* entry;
   	GtkWidget *table = gtk_table_new(1,3,FALSE);
 
-	if(!babelCommand)
-		babelCommand = g_strdup_printf("%s%sbabel.exe",g_get_current_dir(),G_DIR_SEPARATOR_S);
+	if(!babelCommand) babelCommand = g_strdup_printf("%s%sbabel.exe",g_get_current_dir(),G_DIR_SEPARATOR_S);
 
 	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
@@ -2462,6 +2653,7 @@ void  create_execucte_commands(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 			(GCallback)changed_babel,
 			NULL);
   }
+*/
 /*#endif*/
   create_hseparator(vbox);
   gtk_widget_show_all(frame);
@@ -2505,6 +2697,50 @@ void  create_gamess_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 	g_signal_connect_swapped(GTK_OBJECT (button), "clicked",
                                      G_CALLBACK(set_entry_gamessDir_selection),
+                                     GTK_OBJECT(entry));
+	add_widget_table(table,button,0,2);
+  }
+  gtk_widget_show_all(frame);
+}
+#endif
+#ifdef G_OS_WIN32
+/********************************************************************************/
+void  create_demon_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
+{
+  GtkWidget *frame;
+  GtkWidget *button;
+
+  frame = gtk_frame_new (NULL);
+  gtk_widget_show (frame);
+  gtk_box_pack_start (GTK_BOX (vbox), frame, expand, expand, 0);
+  gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
+
+  vbox = gtk_vbox_new (FALSE, 0);
+  gtk_container_add (GTK_CONTAINER (frame), vbox);
+
+
+  {
+	GtkWidget* entry;
+  	GtkWidget *table = gtk_table_new(1,3,FALSE);
+
+	if(!demonDirectory) demonDirectory = g_strdup_printf("%s",g_get_home_dir());
+
+	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
+
+	add_label_table(table,_("Orca directory                        : "),0,0);
+  	entry = gtk_entry_new ();
+	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
+	gtk_table_attach(GTK_TABLE(table),entry,1,1+1,0,0+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+  	gtk_entry_set_text (GTK_ENTRY (entry),demonDirectory);
+	gtk_editable_set_editable((GtkEditable*)entry,FALSE);
+	gtk_widget_set_sensitive(entry, FALSE);
+	button = create_button_pixmap(Wins,open_xpm,NULL);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	g_signal_connect_swapped(GTK_OBJECT (button), "clicked",
+                                     G_CALLBACK(set_entry_demonDir_selection),
                                      GTK_OBJECT(entry));
 	add_widget_table(table,button,0,2);
   }
@@ -2816,6 +3052,48 @@ void  create_gauss_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
 }
 #endif
 /********************************************************************************/
+void  create_openbabel_directory(GtkWidget *Wins,GtkWidget *vbox,gboolean expand)
+{
+  GtkWidget *frame;
+  GtkWidget *button;
+
+  frame = gtk_frame_new (NULL);
+  gtk_widget_show (frame);
+  gtk_box_pack_start (GTK_BOX (vbox), frame, expand, expand, 0);
+  gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
+
+  vbox = gtk_vbox_new (FALSE, 0);
+  gtk_container_add (GTK_CONTAINER (frame), vbox);
+
+
+  {
+	GtkWidget* entry;
+  	GtkWidget *table = gtk_table_new(1,3,FALSE);
+
+	if(!openbabelDirectory) openbabelDirectory = g_strdup_printf("%s",g_get_home_dir());
+
+	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
+
+	add_label_table(table,_("Open babel directory                         : "),0,0);
+  	entry = gtk_entry_new ();
+	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
+	gtk_table_attach(GTK_TABLE(table),entry,1,1+1,0,0+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+  	gtk_entry_set_text (GTK_ENTRY (entry),openbabelDirectory);
+	gtk_editable_set_editable((GtkEditable*)entry,FALSE);
+	gtk_widget_set_sensitive(entry, FALSE);
+	button = create_button_pixmap(Wins,open_xpm,NULL);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	g_signal_connect_swapped(GTK_OBJECT (button), "clicked",
+                                     G_CALLBACK(set_entry_openbabelDir_selection),
+                                     GTK_OBJECT(entry));
+	add_widget_table(table,button,0,2);
+  }
+  gtk_widget_show_all(frame);
+}
+/********************************************************************************/
 void AddPageColorSurf(GtkWidget *NoteBook)
 {
   GtkWidget *Frame;
@@ -3034,6 +3312,7 @@ void AddPageOthers(GtkWidget *NoteBook)
   gtk_container_add (GTK_CONTAINER (Frame), vbox);
 
 #ifdef G_OS_WIN32
+  create_demon_directory(Wins,vbox,FALSE);
   create_gamess_directory(Wins,vbox,FALSE);
   create_orca_directory(Wins,vbox,FALSE);
   create_nwchem_directory(Wins,vbox,FALSE);
@@ -3043,6 +3322,7 @@ void AddPageOthers(GtkWidget *NoteBook)
   create_gauss_directory(Wins,vbox,FALSE);
   create_povray_directory(Wins,vbox,FALSE);
 #endif
+  create_openbabel_directory(Wins,vbox,FALSE);
 
   create_opengl_frame(Wins,vbox);
   gtk_widget_show_all(Frame);
@@ -3221,9 +3501,9 @@ static void  setNumberOfSubdivisions(GtkWidget *Entry, gpointer data)
 /********************************************************************************/
 static void  set_opengl(GtkWidget *Button, gpointer data)
 {
-	gchar* typeButton[] = {"RGBA","DOUBLEBUFFER" ,"ALPHASIZE","DEPTHSIZE"};
+	gchar* typeButton[] = {"RGBA","DOUBLEBUFFER" ,"ALPHASIZE","DEPTHSIZE","Activate Text"};
 	gint i;
-	for(i=0;i<4;i++)
+	for(i=0;i<5;i++)
 		if(strcmp((gchar*)data,typeButton[i])==0)
 		{
 			switch(i)
@@ -3252,6 +3532,12 @@ static void  set_opengl(GtkWidget *Button, gpointer data)
 					else
 						openGLOptions.depthSize = 0;
 					break;
+				case 4: 
+					if(openGLOptions.activateText==0)
+						openGLOptions.activateText = 1;
+					else
+						openGLOptions.activateText = 0;
+					break;
 			}
 			break;
 		}
@@ -3265,11 +3551,12 @@ void  create_opengl_frame(GtkWidget* Win,GtkWidget *vbox)
 	GtkWidget* buttonALPHASIZE;
 	GtkWidget* buttonDEPTHSIZE;
 	GtkWidget* buttonDOUBLEBUFFER;
+	GtkWidget* buttonActivateText;
 	GtkWidget* EntryCylinder;
 	GtkWidget* EntrySphere;
 	GtkWidget* combo;
-	GtkWidget *table = gtk_table_new(2,5,FALSE);
-	static gchar* typeButton[] = {"RGBA","DOUBLEBUFFER" ,"ALPHASIZE","DEPTHSIZE"};
+	GtkWidget *table = gtk_table_new(2,6,FALSE);
+	static gchar* typeButton[] = {"RGBA","DOUBLEBUFFER" ,"ALPHASIZE","DEPTHSIZE","Activate Text"};
 	static gchar* values[] = {"5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","40","50","60","80","100"};
 	static gchar* typeEntry[] = {"CYLINDER","SPHERE"};
 	gushort i;
@@ -3341,10 +3628,19 @@ void  create_opengl_frame(GtkWidget* Win,GtkWidget *vbox)
 	else
   		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonDEPTHSIZE), FALSE);
 
+	buttonActivateText = gtk_check_button_new_with_label("Activate Text" );
+	add_widget_table(table,buttonActivateText,0,5);
+	gtk_widget_show (buttonActivateText);
+	if(openGLOptions.activateText!=0)
+  		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonActivateText), TRUE);
+	else
+  		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonActivateText), FALSE);
+
 	g_signal_connect (G_OBJECT (buttonRGBA), "clicked", G_CALLBACK(set_opengl), typeButton[0]);
 	g_signal_connect (G_OBJECT (buttonDOUBLEBUFFER), "clicked", G_CALLBACK(set_opengl), typeButton[1]);
 	g_signal_connect (G_OBJECT (buttonALPHASIZE), "clicked", G_CALLBACK(set_opengl), typeButton[2]);
 	g_signal_connect (G_OBJECT (buttonDEPTHSIZE), "clicked", G_CALLBACK(set_opengl), typeButton[3]);
+	g_signal_connect (G_OBJECT (buttonActivateText), "clicked", G_CALLBACK(set_opengl), typeButton[4]);
 	gtk_widget_show_all(frame);
 }
 /********************************************************************************/
@@ -3468,7 +3764,7 @@ static void applyColorMapOptions(GtkWidget *dialogWindow, gpointer data)
 {
 	GtkWidget* buttonMultiColor;
 	GtkWidget* button2Colors;
-	GtkWidget* buttonUniColor;
+	/* GtkWidget* buttonUniColor;*/
 	GtkWidget* selectorUniColor;
 	GtkWidget* selector2Colors1;
 	GtkWidget* selector2Colors2;
@@ -3476,7 +3772,7 @@ static void applyColorMapOptions(GtkWidget *dialogWindow, gpointer data)
 	if(!GTK_IS_WIDGET(dialogWindow)) return;
 	buttonMultiColor = g_object_get_data(G_OBJECT (dialogWindow), "ButtonMultiColor");
 	button2Colors = g_object_get_data(G_OBJECT (dialogWindow), "Button2Colors");
-	buttonUniColor = g_object_get_data(G_OBJECT (dialogWindow), "ButtonUniColor");
+	/* buttonUniColor = g_object_get_data(G_OBJECT (dialogWindow), "ButtonUniColor");*/
 	selectorUniColor = g_object_get_data(G_OBJECT (dialogWindow), "SelectorUniColor");
 	selector2Colors1 = g_object_get_data(G_OBJECT (dialogWindow), "Selector2Colors1");
 	selector2Colors2 = g_object_get_data(G_OBJECT (dialogWindow), "Selector2Colors2");

@@ -1,6 +1,6 @@
 /* TraingleDraw.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -526,12 +526,12 @@ void CubeDraw(Grid* grid)
 	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 }
 /*********************************************************************************************/
-void CellGenLists(GLuint *cell)
+void BoxGenLists(GLuint *box)
 {
 	V4d Color  = {1.0,1.0,1.0,0.8};
-	if (glIsList(*cell) == GL_TRUE) glDeleteLists(*cell,1);
-	*cell = glGenLists(1);
-	glNewList(*cell, GL_COMPILE);
+	if (glIsList(*box) == GL_TRUE) glDeleteLists(*box,1);
+	*box = glGenLists(1);
+	glNewList(*box, GL_COMPILE);
 
 	glDisable ( GL_LIGHTING ) ;
 	glColor4dv(Color);
@@ -540,7 +540,7 @@ void CellGenLists(GLuint *cell)
 	glEndList();
 }
 /********************************************************************************/
-void CellShowLists(GLuint cell)
+void BoxShowLists(GLuint box)
 {
-	if (glIsList(cell) == GL_TRUE) glCallList(cell);
+	if (glIsList(box) == GL_TRUE) glCallList(box);
 }

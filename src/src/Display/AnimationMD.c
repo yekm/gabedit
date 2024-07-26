@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1349,6 +1349,30 @@ static void print_gaussian_geometries(GtkWidget* Win, gpointer data)
 			print_gaussian_one_geometry(g,supstr);
 		print_gaussian_script_run();
 		Message(t,_("Error"),TRUE);
+		if(t)g_free(t);
+	}
+	gtk_widget_destroy(Win);
+}
+/*************************************************************************************************************/
+static void print_gaussian_selected_geometry(GtkWidget* Win, gpointer data)
+{
+	gint j;
+
+	gint g;
+	GtkWidget* entry = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"EntryKeywords"));	
+	G_CONST_RETURN gchar* supstr = NULL;
+	gint k = rowSelected;
+	if(k<0 || k >= geometriesMD.numberOfGeometries) return;
+	if(entry) supstr = gtk_entry_get_text(GTK_ENTRY(entry));
+	if(supstr)
+	{
+		gchar* t = g_strdup_printf(
+				_(
+				"In %s directory, the gabmd_%d.com was created.\n"
+				)
+				, inputGaussDirectory,k); 
+		print_gaussian_one_geometry(k,supstr);
+		Message(t,_("Info"),TRUE);
 		if(t)g_free(t);
 	}
 	gtk_widget_destroy(Win);
@@ -3139,7 +3163,7 @@ void  add_cancel_ok_button(GtkWidget *Win,GtkWidget *vbox,GtkWidget *entry, GCal
 	gtk_widget_show_all(vbox);
 }
 /********************************************************************************/
-static void create_gaussian_file_dlg(gboolean oneFile)
+static void create_gaussian_file_dlg(gint type)
 {
 	GtkWidget *Win;
 	GtkWidget *frame;
@@ -3171,8 +3195,9 @@ static void create_gaussian_file_dlg(gboolean oneFile)
 
   	gtk_widget_realize(Win);
 	entryKeywords = add_inputGauss_entrys(Win,vbox,TRUE);
-	if(oneFile) add_cancel_ok_button(Win,vbox,entryKeywords,(GCallback)print_gaussian_geometries_link);
-	else add_cancel_ok_button(Win,vbox,entryKeywords,(GCallback)print_gaussian_geometries);
+	if(type==1) add_cancel_ok_button(Win,vbox,entryKeywords,(GCallback)print_gaussian_geometries_link);
+	else if(type==2) add_cancel_ok_button(Win,vbox,entryKeywords,(GCallback)print_gaussian_geometries);
+	else add_cancel_ok_button(Win,vbox,entryKeywords,(GCallback)print_gaussian_selected_geometry);
 
 	/* Show all */
 	gtk_widget_show_all (Win);
@@ -3245,6 +3270,7 @@ static gboolean show_menu_popup(GtkUIManager *manager, guint button, guint32 tim
 		set_sensitive_option(manager,"/MenuGeomMD/DisplayVelocityAutocorrelation");
 		set_sensitive_option(manager,"/MenuGeomMD/CreateGaussInput");
 		set_sensitive_option(manager,"/MenuGeomMD/CreateGaussInputLink");
+		set_sensitive_option(manager,"/MenuGeomMD/CreateGaussInputSelected");
 		set_sensitive_option(manager,"/MenuGeomMD/CreateGr");
 		set_sensitive_option(manager,"/MenuGeomMD/ComputeRMSD");
 		set_sensitive_option(manager,"/MenuGeomMD/DeleteGeometry");
@@ -3790,6 +3816,7 @@ static void activate_action (GtkAction *action)
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/DisplayVelocityAutocorrelation");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGaussInput");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGaussInputLink");
+		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGaussInputSelected");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGr");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/ComputeRMSD");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/DeleteGeometry");
@@ -3805,10 +3832,11 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "SavePDB")) save_pdb_file_dlg();
 	else if(!strcmp(name, "SaveVelocityAutocorrelation")) save_velocity_autocorrelation_dlg();
 	else if(!strcmp(name, "DisplayVelocityAutocorrelation")) display_velocity_velocity_correlation_function();
-	else if(!strcmp(name, "CreateGaussInput")) create_gaussian_file_dlg(FALSE);
-	else if(!strcmp(name, "CreateGaussInputLink")) create_gaussian_file_dlg(TRUE);
-	else if(!strcmp(name, "CreateGr")) create_gr_dlg(FALSE);
-	else if(!strcmp(name, "ComputeRMSD")) create_rmsd_dlg(FALSE);
+	else if(!strcmp(name, "CreateGaussInput")) create_gaussian_file_dlg(2);
+	else if(!strcmp(name, "CreateGaussInputLink")) create_gaussian_file_dlg(1);
+	else if(!strcmp(name, "CreateGaussInputSelected")) create_gaussian_file_dlg(3);
+	else if(!strcmp(name, "CreateGr")) create_gr_dlg();
+	else if(!strcmp(name, "ComputeRMSD")) create_rmsd_dlg();
 	else if(!strcmp(name, "DeleteGeometry")) delete_one_geometry();
 	else if(!strcmp(name, "DeleteHalfGeometries")) delete_half_geometries();
 	else if(!strcmp(name, "DeleteBeforeSelectedGeometry")) delete_before_selected_geometry();
@@ -3830,6 +3858,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SavePDB", GABEDIT_STOCK_PDB, N_("_Save as pdb file "), NULL, "Save as pdb", G_CALLBACK (activate_action) },
 	{"SaveVelocityAutocorrelation", GABEDIT_STOCK_SAVE, N_("_Save velocity-velocity autocorrelation function"), NULL, "Save velocity-velocity autocorrelation function", G_CALLBACK (activate_action) },
 	{"DisplayVelocityAutocorrelation", NULL, N_("_Display velocity-velocity autocorrelation function"), NULL, "Display velocity-velocity autocorrelation function", G_CALLBACK (activate_action) },
+	{"CreateGaussInputSelected", GABEDIT_STOCK_GAUSSIAN, N_("_Create a gaussian input file for the selected geometry"), NULL, "Save", G_CALLBACK (activate_action) },
 	{"CreateGaussInput", GABEDIT_STOCK_GAUSSIAN, N_("_Create a serie of single input file for Gaussian"), NULL, "Save", G_CALLBACK (activate_action) },
 	{"CreateGaussInputLink", GABEDIT_STOCK_GAUSSIAN, N_("Create _single input file for Gaussian with more geometries"), NULL, "Save", G_CALLBACK (activate_action) },
 	{"CreateGr", GABEDIT_STOCK_GAUSSIAN, N_("Compute pair _radial distribution"), NULL, "Gr", G_CALLBACK (activate_action) },
@@ -3863,6 +3892,7 @@ static const gchar *uiMenuInfo =
 "    <separator name=\"sepMenuPopDisplayVelocityAutocorrelation\" />\n"
 "    <menuitem name=\"DisplayVelocityAutocorrelation\" action=\"DisplayVelocityAutocorrelation\" />\n"
 "    <separator name=\"sepMenuCreateGauss\" />\n"
+"    <menuitem name=\"CreateGaussInputSelected\" action=\"CreateGaussInputSelected\" />\n"
 "    <menuitem name=\"CreateGaussInput\" action=\"CreateGaussInput\" />\n"
 "    <menuitem name=\"CreateGaussInputLink\" action=\"CreateGaussInputLink\" />\n"
 "    <separator name=\"sepMenuCreateGr\" />\n"
@@ -3894,6 +3924,7 @@ static const gchar *uiMenuInfo =
 "      <separator name=\"sepMenuDisplayVelocityAutocorrelation\" />\n"
 "      <menuitem name=\"DisplayVelocityAutocorrelation\" action=\"DisplayVelocityAutocorrelation\" />\n"
 "      <separator name=\"sepMenuCreateGauss\" />\n"
+"      <menuitem name=\"CreateGaussInputSelected\" action=\"CreateGaussInputSelected\" />\n"
 "      <menuitem name=\"CreateGaussInput\" action=\"CreateGaussInput\" />\n"
 "      <menuitem name=\"CreateGaussInputLink\" action=\"CreateGaussInputLink\" />\n"
 "      <separator name=\"sepMenuCreateGr\" />\n"

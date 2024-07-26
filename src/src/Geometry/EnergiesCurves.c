@@ -1,6 +1,6 @@
 /* EnergiesCurve.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -72,6 +72,7 @@ static void set_geom(GtkWidget *widget,gpointer data)
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_NWCHEM) read_geom_from_nwchem_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_PSICODE) read_geom_from_psicode_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_ORCA) read_geom_from_orca_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
+	if(GeomConv->fileType == GABEDIT_TYPEFILE_VASPOUTCAR) read_geom_from_vasp_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOLDEN) read_geom_from_molden_geom_conv_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_GABEDIT) read_geom_from_gabedit_geom_conv_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MPQC) read_geom_from_mpqc_output_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
@@ -79,6 +80,7 @@ static void set_geom(GtkWidget *widget,gpointer data)
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOPAC_SCAN) read_geom_from_mopac_scan_output_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOPAC_IRC) read_geom_from_mopac_irc_output_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_XYZ) read_geom_from_xyz_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
+	if(GeomConv->fileType == GABEDIT_TYPEFILE_VASPXML) read_geom_from_vasp_xml_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 
 }
 /********************************************************************************************/
@@ -428,18 +430,18 @@ static gint set_key_press(GtkWidget* wid, GdkEventKey *event, gpointer data)
 	DataGeomConv *GeomConv;
 	gint* tabx = NULL;
 	gint* taby = NULL;
-	if((event->keyval == GDK_rightarrow) ) s=1;
-	else if((event->keyval == GDK_rightarrow) ) s=-1;
-	else if((event->keyval == GDK_downarrow) ) s=2;
-	else if((event->keyval == GDK_uparrow) ) s=-2;
-	else if((event->keyval == GDK_n) ) s=1;
-	else if((event->keyval == GDK_N) ) s=1;
-	else if((event->keyval == GDK_p) ) s=-1;
-	else if((event->keyval == GDK_P) ) s=-1;
-	else if((event->keyval == GDK_f) ) s=-2;
-	else if((event->keyval == GDK_F) ) s=-2;
-	else if((event->keyval == GDK_l) ) s=2;
-	else if((event->keyval == GDK_L) ) s=2;
+	if(event->keyval == GDK_rightarrow ) s=1;
+	else if(event->keyval == GDK_leftarrow ) s=-1;
+	else if(event->keyval == GDK_downarrow ) s=2;
+	else if(event->keyval == GDK_uparrow)  s=-2;
+	else if(event->keyval == GDK_n ) s=1;
+	else if(event->keyval == GDK_N ) s=1;
+	else if(event->keyval == GDK_p ) s=-1;
+	else if(event->keyval == GDK_P ) s=-1;
+	else if(event->keyval == GDK_f ) s=-2;
+	else if(event->keyval == GDK_F ) s=-2;
+	else if(event->keyval == GDK_l ) s=2;
+	else if(event->keyval == GDK_L ) s=2;
 
 	if(!dessin) return FALSE;
 
@@ -720,7 +722,7 @@ GtkWidget *add_energies_curve( GtkWidget *WindowEnergies, DataGeomConv* GeomConv
 void create_energies_curves(DataGeomConv* GeomConv,gint N)
 {
 	static GtkWidget *WindowEnergies=NULL;
-	GtkWidget *dessin;
+	/* GtkWidget *dessin;*/
 	GtkWidget *Vbox;
 	gchar *t;
         gint i;
@@ -800,10 +802,10 @@ void create_energies_curves(DataGeomConv* GeomConv,gint N)
 	g_object_set_data(G_OBJECT (WindowEnergies), "GeometryPointer",GeomConv);
 	g_object_set_data(G_OBJECT (WindowEnergies), "GeometryDim",k);
 
-	dessin=add_energies_curve(WindowEnergies,&GeomConv[0],TRUE);
+	add_energies_curve(WindowEnergies,&GeomConv[0],TRUE);
         for(i=1;i<N;i++)
 	{
-		dessin=add_energies_curve(WindowEnergies,&GeomConv[i],FALSE);
+		add_energies_curve(WindowEnergies,&GeomConv[i],FALSE);
 	}
 
         add_button_windows(_("Geom. Conv."),WindowEnergies);

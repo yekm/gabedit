@@ -1,6 +1,6 @@
 /* FileChooser.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -35,8 +35,8 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
   GtkWidget *gabeditFileChooser;
   gchar* patternsfiles[] = {	"*",
 			    	"*.inp","*.com","*.mop","*.nw","*.psi",
-	  			"*.log","*.out","*.fchk", "*.aux","*.gab","*.xyz","*.mol2","*.mol","*.tnk","*.pdb","*.hin","*.zmt","*.gzmt",
-	  		    	"*.hf","*.gcube","*.cube","*.CUBE","*.grid","*.M2Msi","*.t41","*.dx","*.trj","*.irc","*.txt","*",
+	  			"*.log","*.out","*.fchk", "*.aux","*.gab","*.ici","*.xyz","*.mol2","*.mol","*.tnk","*.pdb","*.hin","*.zmt","*.gzmt",
+	  		    	"*.hf","*.gcube","*.cube","*.CUBE","*.grid","*.M2Msi","*.t41","*.dx","*.trj","*.irc","*.txt","*.xml","*",
 			    	NULL};
   GCallback *func = (GCallback *)data;
   gchar* temp = NULL;
@@ -62,6 +62,10 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
    switch(type)
    {
 	   case GABEDIT_TYPEFILE_DALTON : 
+					   gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.out");
+					   temp = g_strdup_printf("%s.out",fileopen.projectname);
+					   break;
+	   case GABEDIT_TYPEFILE_DEMON : 
 					   gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.out");
 					   temp = g_strdup_printf("%s.out",fileopen.projectname);
 					   break;
@@ -97,6 +101,19 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 	   case GABEDIT_TYPEFILE_ORCA : 
 		   				gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.out");
 						temp = g_strdup_printf("%s.out",fileopen.projectname);
+						break;
+	   case GABEDIT_TYPEFILE_VASPOUTCAR : 
+		   				gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*");
+						temp = g_strdup_printf("OUTCAR");
+						break;
+	   case GABEDIT_TYPEFILE_VASPXML : 
+		   				gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.xml");
+						temp = g_strdup_printf("%s.xml",fileopen.projectname);
+						break;
+	   case GABEDIT_TYPEFILE_VASPPOSCAR : 
+		   				gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*");
+						temp = g_strdup_printf("POSCAR");
+						break;
 	   case GABEDIT_TYPEFILE_QCHEM : 
 		   				gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.out");
 						temp = g_strdup_printf("%s.out",fileopen.projectname);
@@ -172,6 +189,14 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 	   case GABEDIT_TYPEFILE_MZMAT : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.zmt");
 					    temp = g_strdup_printf("%s.zmt",fileopen.projectname);
+					    break;
+	   case GABEDIT_TYPEFILE_CCHEMI : 
+					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.ici");
+					    temp = g_strdup_printf("%s.ici",fileopen.projectname);
+					    break;
+	   case GABEDIT_TYPEFILE_DEMONINPUT : 
+					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.inp");
+					    temp = g_strdup_printf("%s.inp",fileopen.projectname);
 					    break;
 	   case GABEDIT_TYPEFILE_GAMESSINPUT : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.inp");
@@ -281,6 +306,10 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.irc");
 					    temp = g_strdup_printf("%s.irc",fileopen.projectname);
 				      	    break;
+	   case GABEDIT_TYPEFILE_XML : 
+					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.xml");
+					    temp = g_strdup_printf("%s.xml",fileopen.projectname);
+				      	    break;
 	   case GABEDIT_TYPEFILE_TXT : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.txt");
 					    temp = g_strdup_printf("%s.txt",fileopen.projectname);
@@ -385,7 +414,7 @@ void choose_file_to_open()
   }
 
    gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(gabeditFileChooser), patternsfiles);
-    if(iprogram == PROG_IS_GAMESS  || iprogram == PROG_IS_FIREFLY || iprogram == PROG_IS_ORCA  || iprogram == PROG_IS_OTHER)
+    if(iprogram == PROG_IS_GAMESS  || iprogram == PROG_IS_FIREFLY || iprogram == PROG_IS_DEMON || iprogram == PROG_IS_ORCA  || iprogram == PROG_IS_OTHER)
    	gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.inp");
     else if(iprogram == PROG_IS_MOPAC) gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.mop");
     else if(iprogram == PROG_IS_PSICODE) gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.psi");

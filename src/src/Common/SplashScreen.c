@@ -1,6 +1,6 @@
 /* SplashScreen.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -142,7 +142,7 @@ static void read_ressource_files(GtkWidget* MainFrame,GtkWidget* ProgressBar)
 static gint show_gabedit(gpointer data)
 {
 	gtk_widget_show_all(Fenetre);
-	gtk_window_move(GTK_WINDOW(Fenetre),0,0);
+	//gtk_window_move(GTK_WINDOW(Fenetre),0,0);
 	hide_progress_connection();
   	gtk_widget_hide (GTK_WIDGET(FrameWins));
 	{
@@ -340,9 +340,9 @@ static gint configure_event( GtkWidget *widget, GdkEventConfigure *event )
 		gdk_colormap_alloc_color(colormap, &tmpcolor, FALSE, TRUE);
 		gdk_gc_set_foreground(gc,&tmpcolor);
 		gdk_draw_arc(pixmap, gc, TRUE,x,0, width, widget->allocation.height, 0, 360*64);
-    		tmpcolor.red = 40000;
-		tmpcolor.green = 40000;
-		tmpcolor.blue = 40000;
+    		tmpcolor.red = 10000;
+		tmpcolor.green = 10000;
+		tmpcolor.blue = 50000;
 		gdk_colormap_alloc_color(colormap, &tmpcolor, FALSE, TRUE);
 		gdk_gc_set_foreground(gc,&tmpcolor);
         	x = *lentxt + 1.0/20*i;
@@ -628,7 +628,7 @@ static void create_copyright_frame_popup(GtkWidget *vbox,GtkWidget *MainFrame)
   gint width = 0;
   gint widthVersion = 0;
   gint heightVersion = 0;
-  gchar* txt = g_strdup("Copyright (c) 2002-2013 Abdul-Rahman Allouche.");
+  gchar* txt = g_strdup("Copyright (c) 2002-2017 Abdul-Rahman Allouche.");
   GdkPixmap *pixmap = NULL;
   GdkColor* color = g_malloc(sizeof(GdkColor));
   gchar* Version_S = g_strdup_printf("%d.%d.%d",MAJOR_VERSION,MINOR_VERSION,MICRO_VERSION);

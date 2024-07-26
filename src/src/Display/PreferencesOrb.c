@@ -1,6 +1,6 @@
 /* PreferencesOrb.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -28,6 +28,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/UtilsInterface.h"
 #include "../Common/Windows.h"
 #include "../Display/MenuToolBarGL.h"
+#include "../Utils/QL.h"
 /********************************************************************************/
 void destroy_selectors_window(GtkWidget* Win,gpointer data)
 {
@@ -122,7 +123,7 @@ GtkWidget *create_colorsel_frame(GtkWidget *vboxall,gchar* title,GtkWidget** sel
 void set_colors_surfaces(gchar* title)
 {
   GtkWidget *Win;
-  GtkWidget *frame;
+  /* GtkWidget *frame;*/
   GtkWidget *hbox;
   GtkWidget *vboxall;
   GtkWidget *vboxwin;
@@ -142,7 +143,8 @@ void set_colors_surfaces(gchar* title)
 
   vboxall = create_vbox(Win);
   vboxwin = vboxall;
-  frame = create_colorsel_frame(vboxall,NULL,selectors);
+  /* frame = create_colorsel_frame(vboxall,NULL,selectors);*/
+  create_colorsel_frame(vboxall,NULL,selectors);
   g_object_set_data(G_OBJECT (Win), "Selectors",selectors);
 
   /* buttons box */

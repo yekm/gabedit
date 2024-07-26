@@ -1,6 +1,6 @@
 /* NCI.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -43,7 +43,7 @@ static gint compute_nci2D_from_density_grid(Grid* grid, gdouble densityCutOff, g
 	gint kn;
 	gdouble xh, yh, zh;
 	gdouble a, b, c;
-	gint N[3] = {0,0,0};
+	/* gint N[3] = {0,0,0};*/
 	gdouble* fcx =  NULL;
 	gdouble* fcy =  NULL;
 	gdouble* fcz =  NULL;
@@ -88,7 +88,7 @@ static gint compute_nci2D_from_density_grid(Grid* grid, gdouble densityCutOff, g
 	if(grid->N[1]<=2*nBoundary) return nPoints;
 	if(grid->N[2]<=2*nBoundary) return nPoints;
 
-	for(n=0;n<3;n++) N[n] = grid->N[n];
+	/* for(n=0;n<3;n++) N[n] = grid->N[n];*/
 
 
 	i = 1; j = 0; k = 0;

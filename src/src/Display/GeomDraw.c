@@ -1,6 +1,6 @@
 /* GeomDraw */
 /**********************************************************************************************************
-Copyright (c) 2002-2013 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -587,14 +587,95 @@ static gint GeomDraw(gdouble scaleBall, gdouble scaleStick)
 	}
   return FALSE;
 }
+/*****************************************************************************/
+static void gl_build_box()
+{	
+	guint i;
+	guint j;
+    	gdouble rayon;
+	gint ni, nj;
+	gchar tmp[BSIZE];
+	gint nTv = 0;
+	gint iTv[3] = {-1,-1,-1};
+	V3d Base1Pos;
+	V3d Base2Pos;
+	V4d Specular = {1.0f,1.0f,1.0f,1.0f};
+        V4d Diffuse  = {1.0f,1.0f,1.0f,1.0f};
+        V4d Ambiant  = {1.0f,1.0f,1.0f,1.0f};
+	gdouble radius = 0.1;
+	gdouble Tv[3][3];
+	gdouble O[3]={0,0,0};
+
+
+	for(i=0;i<Ncenters;i++)
+	{
+		sprintf(tmp,"%s",GeomOrb[i].Symb);
+		uppercase(tmp);
+		if(!strcmp(tmp,"TV")) { iTv[nTv]= i; nTv++;}
+	}
+	if(nTv<2) return;
+	for(i=0;i<nTv;i++)
+		for(j=0;j<3;j++) Tv[i][j]=GeomOrb[iTv[i]].C[j]-O[j];
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[0][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[1][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[0][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[1][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[1][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[0][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+	if(nTv<3) return;
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[2][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[0][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[2][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[2][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[0][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[1][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[2][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[2][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[1][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[0][i]+Tv[2][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[1][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[0][i]+Tv[1][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[2][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+	for(i=0;i<3;i++) Base1Pos[i] = O[i]+Tv[1][i]+Tv[2][i];
+	for(i=0;i<3;i++) Base2Pos[i] = Base1Pos[i]+Tv[0][i];
+	Cylinder_Draw_Color(radius, Base1Pos, Base2Pos, Specular, Diffuse, Ambiant);
+
+}
 /************************************************************************/
-GLuint GeomGenList(GLuint geomlist, gdouble scaleBall, gdouble scaleStick)
+GLuint GeomGenList(GLuint geomlist, gdouble scaleBall, gdouble scaleStick,gboolean showBox)
 {
 	if(!GeomOrb) return 0;
 	if (glIsList(geomlist) == GL_TRUE) glDeleteLists(geomlist,1);
 	geomlist = glGenLists(1);
 	glNewList(geomlist, GL_COMPILE);
 	GeomDraw(scaleBall, scaleStick);
+	if(showBox) gl_build_box();
 	glEndList();
 	return geomlist;
 }
