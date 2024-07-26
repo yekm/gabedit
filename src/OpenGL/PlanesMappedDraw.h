@@ -21,7 +21,7 @@ DEALINGS IN THE SOFTWARE.
 
 void showColorMapPlanesMapped();
 void hideColorMapPlanesMapped();
-GLuint PlanesMappedGenLists(GLuint mapslist,Grid* plansgrid, gint i0,gint i1,gint numplan,gfloat gap);
+GLuint PlanesMappedGenLists(GLuint mapslist,Grid* plansgrid, gint i0,gint i1,gint numplan,gdouble gap);
 void PlanesMappedShowLists(GLuint list);
 
 #endif /* __GABEDIT_PLANESMAPPEDDRAW_H__ */

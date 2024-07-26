@@ -134,8 +134,8 @@ gboolean createPPMFiles;
 gint numPPMFile;
 gboolean createPOVFiles;
 gint numPOVFile;
-gfloat solventRadius;
-gfloat colorMapColors[3][3];
+gdouble solventRadius;
+gdouble colorMapColors[3][3];
 gint colorMapType;
 
 

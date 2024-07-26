@@ -334,8 +334,8 @@ static gboolean read_gamess_file(GabeditFileChooser *SelecFile, gint response_id
 	gint nf;
 	gint nir;
 	gint nfMax = 5;
-	gfloat freq[5];
-	gfloat ir[5];
+	gdouble freq[5];
+	gdouble ir[5];
  	gchar* sdum[5*2];
  	gchar* tmp;
 	gint numberOfFrequencies = 0;

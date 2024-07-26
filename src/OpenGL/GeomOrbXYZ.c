@@ -51,9 +51,9 @@ typedef struct _OldGeometry
 {
 	gint numberOfAtoms;
 	gchar** symbols;
-	gfloat* X;
-	gfloat* Y;
-	gfloat* Z;
+	gdouble* X;
+	gdouble* Y;
+	gdouble* Z;
 }OldGeometry;
 static OldGeometry oldGeometry = {0,NULL,NULL,NULL,NULL};
 
@@ -81,9 +81,9 @@ void reset_old_geometry()
 	free_old_geometry();
 	if(Ncenters<1) return;
 	oldGeometry.numberOfAtoms = Ncenters;
-	oldGeometry.X = g_malloc(oldGeometry.numberOfAtoms*sizeof(gfloat));
-	oldGeometry.Y = g_malloc(oldGeometry.numberOfAtoms*sizeof(gfloat));
-	oldGeometry.Z = g_malloc(oldGeometry.numberOfAtoms*sizeof(gfloat));
+	oldGeometry.X = g_malloc(oldGeometry.numberOfAtoms*sizeof(gdouble));
+	oldGeometry.Y = g_malloc(oldGeometry.numberOfAtoms*sizeof(gdouble));
+	oldGeometry.Z = g_malloc(oldGeometry.numberOfAtoms*sizeof(gdouble));
 	oldGeometry.symbols = g_malloc(oldGeometry.numberOfAtoms*sizeof(gchar*));
 	for(i=0;i<oldGeometry.numberOfAtoms;i++)
 	{
@@ -135,11 +135,11 @@ void free_geometry()
 	Ncenters = 0;
 }
 /*****************************************/
-gfloat get_cube_length()
+gdouble get_cube_length()
 {
  gint i,j;
- gfloat min;
- gfloat max;
+ gdouble min;
+ gdouble max;
  
  min = GeomOrb[0].C[0];
  max = GeomOrb[0].C[0];
@@ -159,7 +159,7 @@ gfloat get_cube_length()
 void reset_grid_limits()
   {
  	gint i;
-	gfloat t = get_cube_length();
+	gdouble t = get_cube_length();
 	if(fabs(t)<1e-10)
 		t = 5.0;
   	for(i=0;i<3;i++)
@@ -178,9 +178,9 @@ void create_xyz_gl_spheres_list()
 	int k;
 	for(i=0;i<Ncenters;i++)
 	{
-		Diffuse[0] = GeomOrb[i].Prop.color.red/(gfloat)65535;
-		Diffuse[1] = GeomOrb[i].Prop.color.green/(gfloat)65535;
-		Diffuse[2] = GeomOrb[i].Prop.color.blue/(gfloat)65535;
+		Diffuse[0] = GeomOrb[i].Prop.color.red/(gdouble)65535;
+		Diffuse[1] = GeomOrb[i].Prop.color.green/(gdouble)65535;
+		Diffuse[2] = GeomOrb[i].Prop.color.blue/(gdouble)65535;
 		for(k=0;k<3;k++)
 			Ambiant[k] = Diffuse[k]*0.8;
 
@@ -470,7 +470,7 @@ gboolean gl_read_xyz_file(gchar* FileName)
  guint i;
  gint j;
  gint l;
- gfloat scal;
+ gdouble scal;
  gint n;
 
  for(i=0;i<5;i++)
@@ -508,7 +508,7 @@ gboolean gl_read_xyz_file(gchar* FileName)
 
   Dipole.def = FALSE;
   progress_orb(0,GABEDIT_PROGORB_READGEOM,TRUE);
-  scal = (gfloat)1.01/n;
+  scal = (gdouble)1.01/n;
   fgets(t,taille,fd);
   j=-1;
   while(!feof(fd) && OK && (j<(gint)n))
@@ -1994,7 +1994,7 @@ gboolean gl_read_mpqc_file_geomi(gchar *fileName,gint numGeometry)
 			for(i=1;i<=3;i++)
 			{
 				tmpReal = atof(AtomCoord[i]);
-				sprintf(AtomCoord[i],"%f",tmpReal);
+				sprintf(AtomCoord[i],"%lf",tmpReal);
 			}
 
 			AtomCoord[0][0]=toupper(AtomCoord[0][0]);
@@ -2402,7 +2402,7 @@ gboolean gl_read_gaussn_file_geomi_str(gchar *FileName,gint num,gchar* str)
 			GeomOrb[j].Prop = prop_atom_get(GeomOrb[j].Symb);
 			GeomOrb[j].partialCharge = 0.0;
 			GeomOrb[j].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[j].Symb);
-			/* Debug("%s %f %f %f \n",GeomOrb[j].Symb,GeomOrb[j].C[0],GeomOrb[j].C[1],GeomOrb[j].C[2]);*/
+			/* Debug("%s %lf %lf %lf \n",GeomOrb[j].Symb,GeomOrb[j].C[0],GeomOrb[j].C[1],GeomOrb[j].C[2]);*/
   		}
 		if(num >0 && (gint)numgeom-1 == num)
 			break;

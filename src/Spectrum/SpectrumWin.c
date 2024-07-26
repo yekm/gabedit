@@ -609,7 +609,7 @@ static gboolean xyplot_motion_notify_event(GtkWidget *xyplot, GdkEventMotion *ev
 		gdk_window_get_pointer (xyplot->window, &x, &y, NULL);
 
 	if(gabedit_xyplot_get_point(GABEDIT_XYPLOT(xyplot), x, y, &xv, &yv))
-	snprintf(str, 50, "Mouse position: %f, %f", xv, yv);
+	snprintf(str, 50, "Mouse position: %lf, %lf", xv, yv);
 	else
 	sprintf(str, " ");
 	context_id=gtk_statusbar_get_context_id (GTK_STATUSBAR(statusbar), "mouse position");

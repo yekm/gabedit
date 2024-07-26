@@ -30,7 +30,7 @@ typedef struct _Contours
       PointsContour** pointscontour;
 }Contours;
 void contour_point_free(Contours contours);
-Contours get_contours(Grid* plansgrid,gfloat value,gint i0,gint i1,gint numplan);
+Contours get_contours(Grid* plansgrid,gdouble value,gint i0,gint i1,gint numplan);
 void create_contours(gchar* title,gint type);
 void create_contours_plane(gchar* title);
 

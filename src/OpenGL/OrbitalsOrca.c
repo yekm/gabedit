@@ -195,16 +195,16 @@ static gboolean ReadOneOrcaBasis(gint i,gint j,char *t,gint *nsym)
 	/*	Debug("n = %d\n",n);*/
 	Type[i].Ao[j].N=n;
 	/*Debug("N = %d\n",Type[i].Ao[j].N);*/
-	Type[i].Ao[j].Ex=g_malloc(Type[i].Ao[j].N*sizeof(gfloat));
-	Type[i].Ao[j].Coef=g_malloc(Type[i].Ao[j].N*sizeof(gfloat));
+	Type[i].Ao[j].Ex=g_malloc(Type[i].Ao[j].N*sizeof(gdouble));
+	Type[i].Ao[j].Coef=g_malloc(Type[i].Ao[j].N*sizeof(gdouble));
 	/*Debug("avant sym ==\n");*/
 	if(strlen(sym)==2)
 	{
 	 	l=2;
      		Type[i].Ao=g_realloc(Type[i].Ao,(j+2)*sizeof(AO));
         	Type[i].Ao[j+1].N = Type[i].Ao[j].N;
-		Type[i].Ao[j+1].Ex=g_malloc(Type[i].Ao[j].N*sizeof(gfloat));
-		Type[i].Ao[j+1].Coef=g_malloc(Type[i].Ao[j].N*sizeof(gfloat));
+		Type[i].Ao[j+1].Ex=g_malloc(Type[i].Ao[j].N*sizeof(gdouble));
+		Type[i].Ao[j+1].Coef=g_malloc(Type[i].Ao[j].N*sizeof(gdouble));
 	}
 	*nsym = l;
 	/*Debug("nsym = %d\n",l);*/
@@ -217,10 +217,10 @@ static gboolean ReadOneOrcaBasis(gint i,gint j,char *t,gint *nsym)
 			if(t[n]=='D') t[n] = 'e';
 		/*Debug("t de One = %s\n",t);*/
 		   
-		if(l==1) sscanf(t,"%d %f %f ",&idum, &Type[i].Ao[j].Ex[k],&Type[i].Ao[j].Coef[k]);
+		if(l==1) sscanf(t,"%d %lf %lf ",&idum, &Type[i].Ao[j].Ex[k],&Type[i].Ao[j].Coef[k]);
 		else
 		{
-			sscanf(t,"%d %f %f %f ",&idum, &Type[i].Ao[j].Ex[k],&Type[i].Ao[j].Coef[k],&Type[i].Ao[j+1].Coef[k]);
+			sscanf(t,"%d %lf %lf %lf ",&idum, &Type[i].Ao[j].Ex[k],&Type[i].Ao[j].Coef[k],&Type[i].Ao[j+1].Coef[k]);
 			Type[i].Ao[j+1].Ex[k] = Type[i].Ao[j].Ex[k];
 		}
 	}
@@ -633,6 +633,7 @@ static gboolean read_last_orbitals_in_orca_output_file(gchar *fileName)
 	}
 	else if(nReadOrb>0)
 	{
+		gint i;
 		CoefAlphaOrbitals = CoefOrbitals;
 		EnerAlphaOrbitals = EnerOrbitals;
 		SymAlphaOrbitals = SymOrbitals;
@@ -643,9 +644,18 @@ static gboolean read_last_orbitals_in_orca_output_file(gchar *fileName)
 		CoefBetaOrbitals = CoefOrbitals;
 		EnerBetaOrbitals = EnerOrbitals;
 		SymBetaOrbitals = SymOrbitals;
-		OccBetaOrbitals = OccOrbitals;
+		OccBetaOrbitals = g_malloc(NOrb*sizeof(gdouble));
 		NBetaOcc = NOcc;
 		NBetaOrb = nReadOrb;
+		for(i=0;i<NOrb;i++)
+		{
+			OccBetaOrbitals[i] = 0;
+			if(OccOrbitals[i]>1)
+			{
+				OccBetaOrbitals[i] = OccOrbitals[i]-1;
+				OccOrbitals[i] = 1;
+			}
+		}
 	}
 	else
 	{

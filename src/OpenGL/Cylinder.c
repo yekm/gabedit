@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
 #include "../Utils/Constants.h"
+#include "../OpenGL/UtilsOrb.h"
 
 #define Deg_Rad 180.0/PI
 
@@ -31,7 +32,7 @@ void rotated_vector(V3d v)
 {
 	V3d vz={0.0,0.0,1.0};
 	V3d	vert;
-	gfloat angle;
+	gdouble angle;
 
 
 	v3d_cross(vz,v,vert);
@@ -46,7 +47,7 @@ void rotated_vector(V3d v)
 
 }
 /************************************************************************/
-void Cylinder_Draw(GLfloat radius,V3d Base1Pos,V3d Base2Pos)
+void Cylinder_Draw(GLdouble radius,V3d Base1Pos,V3d Base2Pos)
 {
 		V3d Direction;
 		GLUquadricObj *obj;
@@ -66,23 +67,23 @@ void Cylinder_Draw(GLfloat radius,V3d Base1Pos,V3d Base2Pos)
 }
 
 /************************************************************************/
-void Cylinder_Draw_Color(GLfloat radius,V3d Base1Pos,V3d Base2Pos,
+void Cylinder_Draw_Color(GLdouble radius,V3d Base1Pos,V3d Base2Pos,
 			 V4d Specular,V4d Diffuse,V4d Ambiant)
 {
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
 	glMateriali(GL_FRONT_AND_BACK,GL_SHININESS,50);
 	Cylinder_Draw(radius,Base1Pos,Base2Pos);
 }
 /************************************************************************/
-void Cylinder_Draw_Color_Two(GLfloat radius,V3d Base1Pos,V3d Base2Pos,
+void Cylinder_Draw_Color_Two(GLdouble radius,V3d Base1Pos,V3d Base2Pos,
 			 V4d Specular1,V4d Diffuse1,V4d Ambiant1,
 			 V4d Specular2,V4d Diffuse2,V4d Ambiant2,
-			GLfloat p1,GLfloat p2)
+			GLdouble p1,GLdouble p2)
 {
 	V3d Center;
-	GLfloat p = p1 + p2;
+	GLdouble p = p1 + p2;
 	Center[0] = (Base1Pos[0]*p2 + Base2Pos[0]*p1)/p;
 	Center[1] = (Base1Pos[1]*p2 + Base2Pos[1]*p1)/p;
 	Center[2] = (Base1Pos[2]*p2 + Base2Pos[2]*p1)/p;

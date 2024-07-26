@@ -74,7 +74,7 @@ typedef struct _OrcaStdFunctional
 	gchar* name;
 	gint n;
 	OrcaFunctionalType* listOfTypes;
-	gfloat* coefficients;
+	gdouble* coefficients;
 }OrcaStdFunctional;
 
 #endif /* __GABEDIT_ORCATYPES_H__ */

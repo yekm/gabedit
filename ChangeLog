@@ -205,3 +205,5 @@
   The vibration vectors are added to the povray file.
 21 August 2009 :
   Compute the <ii|1/r12|jj> coulomb integral, analytically with GTF and numerically with GTF and STF.
+3 September 2009 :
+  Copy images to clipboard.

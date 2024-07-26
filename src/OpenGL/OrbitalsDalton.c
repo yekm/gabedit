@@ -169,7 +169,7 @@ static gboolean read_dalton_geom(gchar *FileName)
 		GeomOrb[j].C[2]=atof(cor);
 
 		if(!fgets(t,taille,file))break; /* backspace */
-		printf("%s %f %f %f\n", GeomOrb[j].Symb, GeomOrb[j].C[0], GeomOrb[j].C[1], GeomOrb[j].C[2]);
+		printf("%s %lf %lf %lf\n", GeomOrb[j].Symb, GeomOrb[j].C[0], GeomOrb[j].C[1], GeomOrb[j].C[2]);
 	}
 	printf("j= %d\n",j);
  	fclose(file);

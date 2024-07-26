@@ -74,7 +74,7 @@ typedef struct _QChemStdFunctional
 	gchar* name;
 	gint n;
 	QChemFunctionalType* listOfTypes;
-	gfloat* coefficients;
+	gdouble* coefficients;
 }QChemStdFunctional;
 
 #endif /* __GABEDIT_QCHEMTYPES_H__ */

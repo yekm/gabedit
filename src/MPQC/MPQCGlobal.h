@@ -13,7 +13,7 @@ MPQCBasis mpqcBasis;
 
 MPQCFunctional* functionals;
 MPQCStdFunctional* stdFunctionals;
-gfloat* sumFunctionals;
+gdouble* sumFunctionals;
 MPQCOptimisation mpqcOptimisation;
 
 #endif /* __GABEDIT_MPQCGLOBAL_H__ */

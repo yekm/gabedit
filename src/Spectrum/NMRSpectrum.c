@@ -45,7 +45,7 @@ static void printInfMatrix(gdouble* M, gint n)
 	for ( i=0 ; i<n ; i++)
 	{
 		for ( j=0 ; j<=i; j++ )
-	   		printf("%f ",M[l++]);
+	   		printf("%lf ",M[l++]);
 		printf("\n");
 	}
 }
@@ -59,7 +59,7 @@ static void printSupMatrix(gdouble* M, gint n)
 	for ( i=0 ; i<n ; i++)
 	{
 		for ( j=i ; j<n; j++ )
-	   		printf("%f ",M[l++]);
+	   		printf("%lf ",M[l++]);
 		printf("\n");
 	}
 }
@@ -203,7 +203,7 @@ void computeNMRSpectrum(
    		for ( k=0 ; k<numberOfSpins[iGroup] ; k++ )
 		{
 			frequencies[nSpins] = chemichalShifts[iGroup] ;
-			/* printf("nSpins = %d f = %f\n",nSpins, frequencies[nSpins]);*/
+			/* printf("nSpins = %d f = %lf\n",nSpins, frequencies[nSpins]);*/
 			nSpins++ ; 
 		   	for ( jGroup=0 ; jGroup<iGroup ; jGroup++ )
 		   	{
@@ -212,7 +212,7 @@ void computeNMRSpectrum(
    					jj++ ; 
 					/* printf("iGroup = %d jGroupe= %d",iGroup, jGroup);*/
 					ppmJCouplings[jj] = JCouplings[iGroup][jGroup]/operatingFrequency ;
-					/* printf("jx = %f ",ppmJCouplings[jj]);*/
+					/* printf("jx = %lf ",ppmJCouplings[jj]);*/
 				}
    			}
 			/* equivalent nucleus */
@@ -220,7 +220,7 @@ void computeNMRSpectrum(
 			{
 				   jj++;
 				   ppmJCouplings[jj]=0 ;
-				/* printf("jx = %f ",ppmJCouplings[jj]);*/
+				/* printf("jx = %lf ",ppmJCouplings[jj]);*/
 			}
 			/* printf("\n");*/
 		}
@@ -271,7 +271,7 @@ void computeNMRSpectrum(
 		}
 		ii=ii+i+1 ;
 		hamilt[ii-1]=dum ;
-		/* printf("hamilt[%d] = %f\n",ii-1, hamilt[ii-1]);*/
+		/* printf("hamilt[%d] = %lf\n",ii-1, hamilt[ii-1]);*/
 	}
 	/* printf("End calculate diagonal elements of hamiltonian\n");*/
 	if(frequencies) g_free(frequencies);
@@ -294,7 +294,7 @@ void computeNMRSpectrum(
 			if ( (dumja != dumjb) || (is != nSpins-4) )
 			{
 			   hamilt[ii]=0.0 ;
-			   /* printf("ii = %d hamilt[ii] = %f\n",ii, hamilt[ii]);*/
+			   /* printf("ii = %d hamilt[ii] = %lf\n",ii, hamilt[ii]);*/
 			   continue ;
 			}
 		 	for ( i=0; i<nSpins-1 ; i++ )
@@ -306,7 +306,7 @@ void computeNMRSpectrum(
 			   if ( basis[ja+j*nBasis] != basis[jb+j*nBasis] ) break ;
 			}
 			hamilt[ii] = 0.5*ppmJCouplings[(j+1)*j/2+i] ;
-			/* printf("ii = %d hamilt[ii] = %f\n",ii, hamilt[ii]);*/
+			/* printf("ii = %d hamilt[ii] = %lf\n",ii, hamilt[ii]);*/
 		}
 	}
 	/* printf("End calculate of off diagonal elements of hamiltonian\n");*/
@@ -340,7 +340,7 @@ void computeNMRSpectrum(
 
 	/*
 	for ( i=0 ; i<nBasis ; i++)
-		printf("Eigen[%d]=%f\n",i,eValues[i]);
+		printf("Eigen[%d]=%lf\n",i,eValues[i]);
 		*/
 
 	/*
@@ -348,7 +348,7 @@ void computeNMRSpectrum(
 	{
 		for ( jb=0 ; jb<nBasis; jb++ )
 		{
-			printf("%f ",eVectors[jb][ja]);
+			printf("%lf ",eVectors[jb][ja]);
 		}
 		printf("\n");
 	}
@@ -488,7 +488,7 @@ void testComputeNMRSpectrum()
 	computeNMRSpectrum(operatingFrequency, nGroups, numberOfSpins, chemichalShifts, JCouplings,&n, &X, &Y);
 	/* spectrum */
 	for ( i=0 ; i<n ; i++ )
-         			printf("%f %f\n",X[i],Y[i]);
+         			printf("%lf %lf\n",X[i],Y[i]);
 	createNMRSpectrumWin(n, X, Y,TRUE);
 	printf("End test\n");
 
@@ -561,18 +561,18 @@ static gboolean read_nmr_data(GtkFileChooser *filesel, gint response_id)
 	entryFrequency = g_object_get_data(G_OBJECT (window), "EntryFrequency");
 
 	if(!entries || !entryFrequency) return FALSE;
-	sprintf(tmp,"%f",operatingFrequency);
+	sprintf(tmp,"%lf",operatingFrequency);
 	gtk_entry_set_text(GTK_ENTRY(entryFrequency),tmp);
 
 	for(i=0;i<nGroups;i++)
 	{
-		sprintf(tmp,"%f",chemichalShifts[i]);
+		sprintf(tmp,"%lf",chemichalShifts[i]);
 		gtk_entry_set_text(GTK_ENTRY(entries[i][0]),tmp);
 		sprintf(tmp,"%d",numberOfSpins[i]);
 		gtk_entry_set_text(GTK_ENTRY(entries[i][1]),tmp);
 		for(j=0;j<i;j++)
 		{
-			sprintf(tmp,"%f",JCouplings[i][j]);
+			sprintf(tmp,"%lf",JCouplings[i][j]);
 			gtk_entry_set_text(GTK_ENTRY(entries[i][j+2]),tmp);
 		}
 	}
@@ -672,12 +672,12 @@ static gboolean save_nmr_data(GtkFileChooser *filesel, gint response_id)
 	}
 	fprintf(file, "[Gabedit Format]\n");
 	fprintf(file, "[NMR Spin-Spin]\n");
-	fprintf(file, "%f\n",operatingFrequency);
+	fprintf(file, "%lf\n",operatingFrequency);
 	for(i=0;i<nGroups;i++)
 	{
-		fprintf(file, "%f %d ",chemichalShifts[i], numberOfSpins[i]);
+		fprintf(file, "%lf %d ",chemichalShifts[i], numberOfSpins[i]);
 		for(j=0;j<i;j++)
-			fprintf(file, "%f ",JCouplings[i][j]);
+			fprintf(file, "%lf ",JCouplings[i][j]);
 		fprintf(file, "\n");
 	}
 	fclose(file);
@@ -770,7 +770,7 @@ static void apply(GtkWidget* window)
 	/* spectrum */
 	/*
 	for ( i=0 ; i<n ; i++ )
-         			printf("%f %f\n",X[i],Y[i]);
+         			printf("%lf %lf\n",X[i],Y[i]);
 				*/
 	spectrum_win_remove_data(window);
 	spectrum_win_add_data(window, n, X, Y);

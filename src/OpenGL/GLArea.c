@@ -18,6 +18,7 @@ DEALINGS IN THE SOFTWARE.
 ************************************************************************************************************/
 
 #include "../../Config.h"
+#include <gdk/gdkkeysyms.h>
 #include "GlobalOrb.h"
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
@@ -77,23 +78,23 @@ static gint i1PlaneMapped = 1;
 static gint numPlaneContours = 0;
 static gint numPlaneMaps = 0;
 static gint numberOfContours = 0;
-static gfloat* values = NULL;
+static gdouble* values = NULL;
 static gint optcol = 0;
 static gint nPlanesContours = 0;
 static gint nPlanesMapped = 0;
 static gboolean newPlaneMapped = FALSE;
 static gint newPlaneGridForContours = FALSE;
 static gint newPlaneGridForPlanesMapped = FALSE;
-static gfloat gapContours = 0.0;
-static gfloat gapPlanesMapped = 0.0;
+static gdouble gapContours = 0.0;
+static gdouble gapPlanesMapped = 0.0;
 static gboolean lightOnOff[3] = { TRUE,FALSE,FALSE};
-static gfloat Trans[3] = { 0,0,-50.0};
+static gdouble Trans[3] = { 0,0,-50.0};
 static V4d light0_position = {0.0, 0.0,50.0,0.0};
 static V4d light1_position = {0.0, 50.0,50.0,0.0};
 static V4d light2_position = {50.0, 0.0,50.0,0.0};
-static gfloat zNear = 1.0;
-static gfloat zFar = 100.0;
-static GLfloat Zoom = 45;
+static gdouble zNear = 1.0;
+static gdouble zFar = 100.0;
+static GLdouble Zoom = 45;
 static gboolean perspective = TRUE;
 static gboolean animateContours = FALSE;
 static gboolean animatePlanesMapped = FALSE;
@@ -190,21 +191,21 @@ gint get_background_color(guchar color[])
 void  addFog()
 {
 	/*
-    GLfloat fog_c[] = {0.7f, 0.7f, 0.7f, 1.0f};
+    GLdouble fog_c[] = {0.7f, 0.7f, 0.7f, 1.0f};
     glFogi(GL_FOG_MODE, GL_LINEAR);
     glFogf(GL_FOG_START, zNear);
     glFogf(GL_FOG_END, zFar);
-    glFogfv(GL_FOG_COLOR, fog_c);
+    glFogdv(GL_FOG_COLOR, fog_c);
     glEnable(GL_FOG);
     */
 
-  GLfloat fogstart =  -0.5;
-  GLfloat fogend = 1.51;
-  GLfloat fogcolor[4] = {0.0, 0.0, 0.0, 1.0};
+  GLdouble fogstart =  -0.5;
+  GLdouble fogend = 1.51;
+  GLdouble fogcolor[4] = {0.0, 0.0, 0.0, 1.0};
   
   glShadeModel(GL_SMOOTH);
   glFogi(GL_FOG_MODE, GL_LINEAR);
-  glFogfv(GL_FOG_COLOR, fogcolor);
+  glFogdv(GL_FOG_COLOR, fogcolor);
   glHint(GL_FOG_HINT, GL_DONT_CARE);
   glFogf(GL_FOG_START, fogstart);
   glFogf(GL_FOG_END, fogend);
@@ -212,18 +213,18 @@ void  addFog()
 /*********************************************************************************************/
 void drawChecker()
 {
-	GLfloat x, y, z;
+	GLdouble x, y, z;
 	GLint i,j;
 	V4d Diffuse1  = {0.0,0.0,0.0,0.8};
 	V4d Diffuse2  = {0.8,0.8,0.8,0.8};
 	V4d Specular = {0.8,0.8,0.8,0.8 };
 	V4d Ambiant  = {0.1,0.1,0.1,0.8};
-	static GLfloat w = 4;
+	static GLdouble w = 4;
 	static GLint n = 50;
-	static GLfloat x0 = -100;
-	static GLfloat y0 = 0;
-	static GLfloat z0 = -100;
-	GLfloat max = 0;
+	static GLdouble x0 = -100;
+	static GLdouble y0 = 0;
+	static GLdouble z0 = -100;
+	GLdouble max = 0;
 
 	if(Ncenters>0) max = fabs(GeomOrb[0].C[0]);
 	else max = 10;
@@ -236,9 +237,9 @@ void drawChecker()
 	/* max *= 45/Zoom;*/
 	if(y0>-5-max) y0 = -5-max;
 
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse1);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse1);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
 	glMateriali(GL_FRONT_AND_BACK,GL_SHININESS,100);
 
 	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
@@ -249,13 +250,13 @@ void drawChecker()
 	{
 		if((i+j)%2==0)
 		{
-			/*glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse1);*/
-			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse1);
+			/*glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse1);*/
+			glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse1);
 		}
 		else
 		{
-			/*glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse2);*/
-			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse2);
+			/*glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse2);*/
+			glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse2);
 		}
 		
 		glBegin(GL_POLYGON);
@@ -360,21 +361,21 @@ gchar**  get_light_position(gint num)
 	{
 		case 0 : 
 			for(i=0;i<3;i++)
-				 t[i] = g_strdup_printf("%f",light0_position[i]);
+				 t[i] = g_strdup_printf("%lf",light0_position[i]);
 			 break;
 		case 1 : 
 			for(i=0;i<3;i++)
-				 t[i] = g_strdup_printf("%f",light1_position[i]);
+				 t[i] = g_strdup_printf("%lf",light1_position[i]);
 			 break;
 		case 2 : 
 			for(i=0;i<3;i++)
-				 t[i] = g_strdup_printf("%f",light2_position[i]);
+				 t[i] = g_strdup_printf("%lf",light2_position[i]);
 			 break;
 	}
 	return t;
 }
 /*********************************************************************************************/
-void set_light_position(gint num,gfloat v[])
+void set_light_position(gint num,gdouble v[])
 {
 	gint i;
 	switch(num)
@@ -423,7 +424,7 @@ void add_surface()
 	addLastSurface();
 }
 /*********************************************************************************************/
-void add_maps(gint ii0, gint ii1, gint inumPlane, gfloat igap, gboolean newGrid)
+void add_maps(gint ii0, gint ii1, gint inumPlane, gdouble igap, gboolean newGrid)
 {
 	i0PlaneMapped = ii0;
 	i1PlaneMapped = ii1;
@@ -492,7 +493,7 @@ void add_void_contours()
 	reDrawContoursPlane = TRUE;
 }
 /*********************************************************************************************/
-void set_contours_values(gint N,gfloat* cvalues,gint ii0,gint ii1,gint inumPlane,gfloat igap)
+void set_contours_values(gint N,gdouble* cvalues,gint ii0,gint ii1,gint inumPlane,gdouble igap)
 {
 	if(values) g_free(values);
 	values = cvalues;
@@ -512,13 +513,13 @@ void set_contours_values(gint N,gfloat* cvalues,gint ii0,gint ii1,gint inumPlane
 	reDrawContoursPlane = TRUE;
 }
 /********************************************************/
-void set_contours_values_from_plane(gfloat minv,gfloat maxv,gint N,gfloat igap, gboolean linear)
+void set_contours_values_from_plane(gdouble minv,gdouble maxv,gint N,gdouble igap, gboolean linear)
 {
 	gint i;
-    	gfloat* cvalues;
-    	gfloat step;
+    	gdouble* cvalues;
+    	gdouble step;
 	
-    	cvalues = g_malloc(N*sizeof(gfloat));
+    	cvalues = g_malloc(N*sizeof(gdouble));
 	if(linear)
 	{
     		if(N==1) step = (maxv+minv)/2;
@@ -643,7 +644,7 @@ void add_objects_for_new_grid()
 	add_surface();
 }
 /********************************************************/
-void Define_Iso(gfloat isovalue)
+void Define_Iso(gdouble isovalue)
 {
 	free_iso_all();
 	set_status_label_info("IsoSurface","Computing");
@@ -680,8 +681,8 @@ void Define_Grid()
 }
 /********************************************************/
 static V4d Quat;
-static GLfloat BeginX = 0;
-static GLfloat BeginY = 0;
+static GLdouble BeginX = 0;
+static GLdouble BeginY = 0;
 /*********************************************************************************************/
 void resetBeginNegative()
 {
@@ -689,7 +690,7 @@ void resetBeginNegative()
 	BeginY = -1;
 }
 /*********************************************************************************************/
-void getQuat(gfloat q[])
+void getQuat(gdouble q[])
 {
 	gint i;
 	for(i=0;i<4;i++) q[i] = Quat[i];
@@ -713,20 +714,20 @@ void SetLight()
 	static V4d light2_diffuse  = {1.0, 1.0, 1.0, 0.0};
 	static V4d light2_specular = {1.0, 1.0, 1.0, 0.0};
 
-	glLightfv(GL_LIGHT0, GL_AMBIENT, light0_ambient);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, light0_diffuse);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, light0_specular);
-	glLightfv(GL_LIGHT0, GL_POSITION, light0_position);
+	glLightdv(GL_LIGHT0, GL_AMBIENT, light0_ambient);
+	glLightdv(GL_LIGHT0, GL_DIFFUSE, light0_diffuse);
+	glLightdv(GL_LIGHT0, GL_SPECULAR, light0_specular);
+	glLightdv(GL_LIGHT0, GL_POSITION, light0_position);
 
-	glLightfv(GL_LIGHT1, GL_AMBIENT, light1_ambient);
-	glLightfv(GL_LIGHT1, GL_DIFFUSE, light1_diffuse);
-	glLightfv(GL_LIGHT1, GL_SPECULAR, light1_specular);
-	glLightfv(GL_LIGHT1, GL_POSITION, light1_position);
+	glLightdv(GL_LIGHT1, GL_AMBIENT, light1_ambient);
+	glLightdv(GL_LIGHT1, GL_DIFFUSE, light1_diffuse);
+	glLightdv(GL_LIGHT1, GL_SPECULAR, light1_specular);
+	glLightdv(GL_LIGHT1, GL_POSITION, light1_position);
 
-	glLightfv(GL_LIGHT2, GL_AMBIENT, light2_ambient);
-	glLightfv(GL_LIGHT2, GL_DIFFUSE, light2_diffuse);
-	glLightfv(GL_LIGHT2, GL_SPECULAR, light2_specular);
-	glLightfv(GL_LIGHT2, GL_POSITION, light2_position);
+	glLightdv(GL_LIGHT2, GL_AMBIENT, light2_ambient);
+	glLightdv(GL_LIGHT2, GL_DIFFUSE, light2_diffuse);
+	glLightdv(GL_LIGHT2, GL_SPECULAR, light2_specular);
+	glLightdv(GL_LIGHT2, GL_POSITION, light2_position);
 
 	glLightModelfv(GL_LIGHT_MODEL_LOCAL_VIEWER, lmodel_local);
 	glLightModelfv(GL_LIGHT_MODEL_TWO_SIDE, lmodel_twoside);
@@ -746,7 +747,7 @@ void SetLight()
 void	InitGL()
 {
 	
-	/* static GLfloat fog_color[4] = { 0.0, 0.0, 0.0, 0.0 };*/
+	/* static GLdouble fog_color[4] = { 0.0, 0.0, 0.0, 0.0 };*/
  	/* remove back faces */
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
@@ -760,7 +761,7 @@ void	InitGL()
 	/*
 	glFogi(GL_FOG_MODE, GL_EXP);
 	glFogf(GL_FOG_DENSITY, 0.15);
-	glFogfv(GL_FOG_COLOR, fog_color);
+	glFogdv(GL_FOG_COLOR, fog_color);
 	*/
 }
 /*****************************************************************************/
@@ -1011,7 +1012,7 @@ static void createImagesFiles()
 /*****************************************************************************/
 gint redrawGL2PS()
 {
-	GLfloat m[4][4];
+	GLdouble m[4][4];
 	GtkWidget *widget = GLArea;
 	if(!GTK_IS_WIDGET(widget)) return TRUE;
 	if(!GTK_WIDGET_REALIZED(widget)) return TRUE;
@@ -1022,7 +1023,7 @@ gint redrawGL2PS()
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	set_background_color();
 
-	mYPerspective(45,(GLfloat)widget->allocation.width/(GLfloat)widget->allocation.height,1,100);
+	mYPerspective(45,(GLdouble)widget->allocation.width/(GLdouble)widget->allocation.height,1,100);
     	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	if(optcol==-1) drawChecker();
@@ -1030,10 +1031,10 @@ gint redrawGL2PS()
     	glMatrixMode(GL_PROJECTION);
     	glLoadIdentity();
 	if(perspective)
-		mYPerspective(Zoom,(GLfloat)widget->allocation.width/(GLfloat)widget->allocation.height,zNear,zFar);
+		mYPerspective(Zoom,(GLdouble)widget->allocation.width/(GLdouble)widget->allocation.height,zNear,zFar);
 	else
 	{
-	  	gdouble fw = (GLfloat)widget->allocation.width/(GLfloat)widget->allocation.height;
+	  	gdouble fw = (GLdouble)widget->allocation.width/(GLdouble)widget->allocation.height;
 	  	gdouble fh = 1.0;
 		glOrtho(-fw,fw,-fh,fh,-1,1);
 	}
@@ -1050,7 +1051,7 @@ gint redrawGL2PS()
 	SetLight();
 
 	build_rotmatrix(m,Quat);
-	glMultMatrixf(&m[0][0]);
+	glMultMatrixd(&m[0][0]);
 
 	redrawGeometry();
 	redrawSurfaces();
@@ -1071,7 +1072,7 @@ gint redrawGL2PS()
 /*****************************************************************************/
 gint redraw(GtkWidget *widget, gpointer data)
 {
-	GLfloat m[4][4];
+	GLdouble m[4][4];
 	if(!GTK_IS_WIDGET(widget)) return TRUE;
 	if(!GTK_WIDGET_REALIZED(widget)) return TRUE;
 	if (!gtk_gl_area_make_current(GTK_GL_AREA(widget))) return FALSE;
@@ -1082,7 +1083,7 @@ gint redraw(GtkWidget *widget, gpointer data)
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	set_background_color();
 
-	mYPerspective(45,(GLfloat)widget->allocation.width/(GLfloat)widget->allocation.height,1,100);
+	mYPerspective(45,(GLdouble)widget->allocation.width/(GLdouble)widget->allocation.height,1,100);
     	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	if(optcol==-1) drawChecker();
@@ -1090,10 +1091,10 @@ gint redraw(GtkWidget *widget, gpointer data)
     	glMatrixMode(GL_PROJECTION);
     	glLoadIdentity();
 	if(perspective)
-		mYPerspective(Zoom,(GLfloat)widget->allocation.width/(GLfloat)widget->allocation.height,zNear,zFar);
+		mYPerspective(Zoom,(GLdouble)widget->allocation.width/(GLdouble)widget->allocation.height,zNear,zFar);
 	else
 	{
-	  	gdouble fw = (GLfloat)widget->allocation.width/(GLfloat)widget->allocation.height;
+	  	gdouble fw = (GLdouble)widget->allocation.width/(GLdouble)widget->allocation.height;
 	  	gdouble fh = 1.0;
 		glOrtho(-fw,fw,-fh,fh,-1,1);
 	}
@@ -1110,7 +1111,7 @@ gint redraw(GtkWidget *widget, gpointer data)
 	SetLight();
 
 	build_rotmatrix(m,Quat);
-	glMultMatrixf(&m[0][0]);
+	glMultMatrixd(&m[0][0]);
 
 	redrawGeometry();
 	redrawSurfaces();
@@ -1160,10 +1161,10 @@ gint reshape(GtkWidget *widget, GdkEventConfigure *event)
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		if(perspective)
-			mYPerspective(Zoom,(GLfloat)widget->allocation.width/(GLfloat)widget->allocation.height,zNear,zFar);
+			mYPerspective(Zoom,(GLdouble)widget->allocation.width/(GLdouble)widget->allocation.height,zNear,zFar);
 		else
 		{
-			gdouble fw = (GLfloat)widget->allocation.width/(GLfloat)widget->allocation.height;
+			gdouble fw = (GLdouble)widget->allocation.width/(GLdouble)widget->allocation.height;
 			gdouble fh = 1.0;
 			glOrtho(-fw,fw,-fh,fh,-1,1);
 		}
@@ -1173,6 +1174,37 @@ gint reshape(GtkWidget *widget, GdkEventConfigure *event)
 	return TRUE;
 }
 
+/********************************************************************************/
+static gint set_key_press(GtkWidget* wid, GdkEventKey *event, gpointer data)
+{
+	if((event->keyval == GDK_Control_L || event->keyval == GDK_Control_R) ) 
+		g_object_set_data(G_OBJECT (wid), "ControlKeyPressed", GINT_TO_POINTER(1));
+	if((event->keyval == GDK_Alt_L || event->keyval == GDK_Alt_R) ) 
+		g_object_set_data(G_OBJECT (wid), "ControlKeyPressed", GINT_TO_POINTER(1));
+
+	if((event->keyval == GDK_c || event->keyval == GDK_C) )
+	{
+		gint ControlKeyPressed = GPOINTER_TO_INT(g_object_get_data(G_OBJECT (wid), "ControlKeyPressed"));
+		if(ControlKeyPressed) 
+		{
+			/* printf("Copy to clipboard\n");*/
+			copy_to_clipboard();
+		}
+
+	}
+	GTK_WIDGET_GET_CLASS(wid)->key_press_event(wid, event);
+	return TRUE;
+
+}
+/********************************************************************************/
+static gint set_key_release(GtkWidget* wid, GdkEventKey *event, gpointer data)
+{
+	if((event->keyval == GDK_Control_L || event->keyval == GDK_Control_R) ) 
+		g_object_set_data(G_OBJECT (wid), "ControlKeyPressed", GINT_TO_POINTER(0));
+	if((event->keyval == GDK_Alt_L || event->keyval == GDK_Alt_R) ) 
+		g_object_set_data(G_OBJECT (wid), "ControlKeyPressed", GINT_TO_POINTER(0));
+	return TRUE;
+}
 /*****************************************************************************
 *  event_dispatcher
 ******************************************************************************/
@@ -1224,12 +1256,12 @@ gint glarea_button_press(GtkWidget *widget, GdkEventButton *event)
 /*****************************************************************/
 static void rotation(GtkWidget *widget, GdkEventMotion *event,gint x, gint y)
 {
-	gfloat width;
-	gfloat height;
+	gdouble width;
+	gdouble height;
 
 	width  = widget->allocation.width;
 	height = widget->allocation.height;
-	GLfloat spin_quat[4];
+	GLdouble spin_quat[4];
   
 	/* drag in progress, simulate trackball */
 	trackball(spin_quat,
@@ -1243,10 +1275,10 @@ static void rotation(GtkWidget *widget, GdkEventMotion *event,gint x, gint y)
 	BeginY = y;
 }
 /*****************************************************************/
-void rotationAboutAnAxis(GtkWidget *widget, gfloat phi, gint axe)
+void rotationAboutAnAxis(GtkWidget *widget, gdouble phi, gint axe)
 {
-	GLfloat spin_quat[4] = {0,0,0,0};
-	gfloat phiRad = phi/180*PI;
+	GLdouble spin_quat[4] = {0,0,0,0};
+	gdouble phiRad = phi/180*PI;
 	if(axe<0 || axe>2) return;
 	spin_quat[axe] = 1.0;
 
@@ -1259,7 +1291,7 @@ void rotationAboutAnAxis(GtkWidget *widget, gfloat phi, gint axe)
 /*****************************************************************/
 static void rotationXYZ(GtkWidget *widget, GdkEventMotion *event,gint x, gint y, gint axe)
 {
-  GLfloat spin_quat[4];
+  GLdouble spin_quat[4];
   gint width = widget->allocation.width;
   gint height = widget->allocation.height;
 
@@ -1274,7 +1306,7 @@ static void rotationXYZ(GtkWidget *widget, GdkEventMotion *event,gint x, gint y,
   }
   if(axe==2)
   {
-	  gfloat phi = 1;
+	  gdouble phi = 1;
 	  if(abs(BeginX-x)>abs(BeginY-y))
 	  {
 		  gdouble sign  = 1.0;
@@ -1312,8 +1344,8 @@ static void rotationXYZ(GtkWidget *widget, GdkEventMotion *event,gint x, gint y,
 static void zoom(GtkWidget *widget, GdkEventMotion *event,gint x,gint y)
 {
   
-	gfloat width;
-	gfloat height;
+	gdouble width;
+	gdouble height;
 
 	width  = widget->allocation.width;
 	height = widget->allocation.height;
@@ -1329,8 +1361,8 @@ static void zoom(GtkWidget *widget, GdkEventMotion *event,gint x,gint y)
 /*****************************************************************/
 static void translate(GtkWidget *widget, GdkEventMotion *event,gint x,gint y)
 {
-	gfloat width;
-	gfloat height;
+	gdouble width;
+	gdouble height;
 
 	width  = widget->allocation.width;
 	height = widget->allocation.height;
@@ -1553,6 +1585,9 @@ gboolean NewGLArea(GtkWidget* vboxwin)
 	gtk_table_attach(GTK_TABLE(table), hboxtoolbar,0,1,0,1, (GtkAttachOptions)(GTK_FILL | GTK_SHRINK  ), (GtkAttachOptions)(GTK_FILL | GTK_EXPAND ), 0,0);
 
 	create_toolbar_and_popup_menu_GL(hboxtoolbar);
+	g_signal_connect(G_OBJECT (PrincipalWindow), "key_press_event", (GCallback) set_key_press, GLArea);
+	g_signal_connect(G_OBJECT (PrincipalWindow), "key_release_event", (GCallback) set_key_release, NULL);
+
  
 	return TRUE;
 }

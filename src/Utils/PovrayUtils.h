@@ -5,7 +5,7 @@
 void createPOVBackgroundFrame(GtkWidget *box);
 void applyPovrayOptions(GtkWidget *win, gpointer data);
 void createPovrayOptionsWindow(GtkWidget* win);
-gchar *get_pov_background(gfloat xScale, gfloat yScale, gfloat zScale);
+gchar *get_pov_background(gdouble xScale, gdouble yScale, gdouble zScale);
 
 #endif /* __GABEDIT_POVRAYUTILS_H__ */
 

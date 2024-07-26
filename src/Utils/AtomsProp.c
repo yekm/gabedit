@@ -274,8 +274,8 @@ void set_color_atom(GdkColor color,gchar *Symb)
 }
 /******************************************************************/
 void setPropForOneAtom(gchar* name, gchar* symbol, gint atomicNumber, 
-		gfloat covalentRadii, gfloat bondOrderRadii, gfloat vanDerWaalsRadii, 
-		gint maximumBondValence, gfloat masse, gfloat electronegativity, gfloat red, gfloat green, gfloat blue)
+		gdouble covalentRadii, gdouble bondOrderRadii, gdouble vanDerWaalsRadii, 
+		gint maximumBondValence, gdouble masse, gdouble electronegativity, gdouble red, gdouble green, gdouble blue)
 {
 	gint i = (gint)atomicNumber-1;
 	if(strcmp(symbol,"Xx")==0) i = 109;

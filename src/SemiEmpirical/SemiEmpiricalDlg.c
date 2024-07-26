@@ -578,7 +578,7 @@ static gboolean runOnePCGamess(gchar* fileNamePrefix, gchar* keyWords)
 		SAtomsProp prop = prop_atom_get(symbol);
 		fprintf(file,"%s %f %f %f %f\n", 
 			symbol,
-			(gfloat)prop.atomicNumber,
+			(gdouble)prop.atomicNumber,
 			geometry0[j].X*BOHR_TO_ANG,
 			geometry0[j].Y*BOHR_TO_ANG,
 			geometry0[j].Z*BOHR_TO_ANG
@@ -2530,7 +2530,7 @@ static gboolean runOneOptPCGamess(SemiEmpiricalModel* geom, gdouble* energy, gch
 		SAtomsProp prop = prop_atom_get(symbol);
 		fprintf(file,"%s %f %f %f %f\n", 
 			symbol,
-			(gfloat)prop.atomicNumber,
+			(gdouble)prop.atomicNumber,
 			geom->molecule.atoms[j].coordinates[0],
 			geom->molecule.atoms[j].coordinates[1],
 			geom->molecule.atoms[j].coordinates[2]
@@ -3046,7 +3046,7 @@ static gboolean createPCGamessFiles(gint numberOfGeometries, SemiEmpiricalModel*
 			SAtomsProp prop = prop_atom_get(symbol);
 			fprintf(file,"%s %f %f %f %f\n", 
 				symbol,
-				(gfloat)prop.atomicNumber,
+				(gdouble)prop.atomicNumber,
 				geometries[i]->molecule.atoms[j].coordinates[0],
 				geometries[i]->molecule.atoms[j].coordinates[1],
 				geometries[i]->molecule.atoms[j].coordinates[2]

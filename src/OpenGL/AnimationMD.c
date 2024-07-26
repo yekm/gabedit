@@ -278,7 +278,7 @@ static void print_gaussian_geometries_link(GtkWidget* Win, gpointer data)
 
 		for(a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
 		{
-			fprintf(file,"%s %f %f %f\n",geometriesMD.geometries[g].listOfAtoms[a].symbol,
+			fprintf(file,"%s %lf %lf %lf\n",geometriesMD.geometries[g].listOfAtoms[a].symbol,
 			geometriesMD.geometries[g].listOfAtoms[a].C[0]*BOHR_TO_ANG,
 			geometriesMD.geometries[g].listOfAtoms[a].C[1]*BOHR_TO_ANG,
 			geometriesMD.geometries[g].listOfAtoms[a].C[2]*BOHR_TO_ANG
@@ -359,7 +359,7 @@ static void print_gaussian_one_geometry(gint g, G_CONST_RETURN gchar* supstr)
 
 	for(a=0;a<geometriesMD.geometries[g].numberOfAtoms;a++)
 	{
-		fprintf(file,"%s %f %f %f\n",geometriesMD.geometries[g].listOfAtoms[a].symbol,
+		fprintf(file,"%s %lf %lf %lf\n",geometriesMD.geometries[g].listOfAtoms[a].symbol,
 				geometriesMD.geometries[g].listOfAtoms[a].C[0]*BOHR_TO_ANG,
 				geometriesMD.geometries[g].listOfAtoms[a].C[1]*BOHR_TO_ANG,
 				geometriesMD.geometries[g].listOfAtoms[a].C[2]*BOHR_TO_ANG
@@ -483,8 +483,8 @@ static void compute_infrared_spectra(gdouble fmin, gdouble fmax, gdouble df)
 		{
 			I += Cvv[i]*cos(2*PI*f*2.99792458e10*i*dt*1e-15)*dt;
 		}
-		printf("%f %f\n",f,I);
-		fprintf(file,"%f %f\n",f,I);
+		printf("%lf %lf\n",f,I);
+		fprintf(file,"%lf %lf\n",f,I);
 	}
 	fclose(file);
 }
@@ -501,7 +501,7 @@ static void print_velocity_velocity_correlation_function(gchar* fileName)
  	file = fopen(fileName, "w");
 	for(g=0;g<n;g++)
 	{
-		fprintf(file,"%f %f\n",geometriesMD.geometries[g].time,Cvv[g]);
+		fprintf(file,"%lf %lf\n",geometriesMD.geometries[g].time,Cvv[g]);
 	}
 	fclose(file);
 }
@@ -802,11 +802,11 @@ static gboolean save_geometry_MD_gabedit_format(gchar *FileName)
 		gint nAtoms = geometriesMD.geometries[j].numberOfAtoms;
 		AtomMD* listOfAtoms = geometriesMD.geometries[j].listOfAtoms;
 		if(nAtoms<1 || !listOfAtoms) { OK = FALSE; break;}
-		fprintf(file," %d %f %f\n", nAtoms,geometriesMD.geometries[j].time, geometriesMD.geometries[j].energy);
+		fprintf(file," %d %lf %lf\n", nAtoms,geometriesMD.geometries[j].time, geometriesMD.geometries[j].energy);
 		fprintf(file," %s\n", geometriesMD.geometries[j].comments);
 		for(i=0;i<nAtoms;i++)
 		{
-			fprintf(file," %s %f %f %f %f %f %f\n", 
+			fprintf(file," %s %lf %lf %lf %lf %lf %lf\n", 
 				listOfAtoms[i].symbol,
 				listOfAtoms[i].C[0]*BOHR_TO_ANG,
 				listOfAtoms[i].C[1]*BOHR_TO_ANG,
@@ -830,7 +830,7 @@ static void reset_parameters(GtkWidget *win, gpointer data)
 	{
 
 		velo = -velo;
-		t = g_strdup_printf("%f",velo);
+		t = g_strdup_printf("%lf",velo);
 		gtk_entry_set_text(GTK_ENTRY(EntryVelocity),t);
 		g_free(t);
 	}
@@ -1104,7 +1104,7 @@ static gboolean read_gamess_trj_first_geometry(gchar *FileName, GeometryMD* geom
 			for(i=0;i<nAtoms;i++)
 			{
   				if(!fgets(t,BSIZE,file))break;
-				if(5!=sscanf(t,"%s %lf %f %f %f",
+				if(5!=sscanf(t,"%s %lf %lf %lf %lf",
 				listOfAtoms[i].symbol,
 				&listOfAtoms[i].nuclearCharge,
 				&listOfAtoms[i].C[0],
@@ -1243,11 +1243,11 @@ static gboolean read_MD_gamess_trj_file_step(gchar* fileName, gint step)
 		if(strstr( t,"QM PARTICLE COORDINATES"))
 		{
 			gchar symb[10];
-			gfloat dum;
+			gdouble dum;
 			for(i=0;i<geometriesMD.geometries[j].numberOfAtoms;i++)
 			{
   				if(!fgets(t,BSIZE,file))break;
-				if(5!=sscanf(t,"%s %f %f %f %f",symb,&dum,
+				if(5!=sscanf(t,"%s %lf %lf %lf %lf",symb,&dum,
 				&listOfAtoms[i].C[0],
 				&listOfAtoms[i].C[1],
 				&listOfAtoms[i].C[2]))break;
@@ -1263,7 +1263,7 @@ static gboolean read_MD_gamess_trj_file_step(gchar* fileName, gint step)
 			for(i=0;i<geometriesMD.geometries[j].numberOfAtoms;i++)
 			{
   				if(!fgets(t,BSIZE,file))break;
-				if(3!=sscanf(t,"%f %f %f",
+				if(3!=sscanf(t,"%lf %lf %lf",
 				&listOfAtoms[i].V[0],
 				&listOfAtoms[i].V[1],
 				&listOfAtoms[i].V[2]))break;
@@ -1358,8 +1358,8 @@ static gboolean read_gabedit_MD_file(gchar *fileName)
  	gchar* tmp;
  	gchar* sdum;
  	gchar* pdest;
- 	gfloat cdum1, cdum2, cdum3;
- 	gfloat vdum1, vdum2, vdum3;
+ 	gdouble cdum1, cdum2, cdum3;
+ 	gdouble vdum1, vdum2, vdum3;
  	gboolean OK;
  	FILE *file;
 	gint i;
@@ -1413,7 +1413,7 @@ static gboolean read_gabedit_MD_file(gchar *fileName)
 				sscanf(t,"%d %lf %lf",&geometriesMD.geometries[j].numberOfAtoms,
 						&geometriesMD.geometries[j].time, &geometriesMD.geometries[j].energy);
 				/*
-			        printf("na = %d time = %f ener = %f\n", geometriesMD.geometries[j].numberOfAtoms,
+			        printf("na = %d time = %lf ener = %lf\n", geometriesMD.geometries[j].numberOfAtoms,
 						geometriesMD.geometries[j].time, geometriesMD.geometries[j].energy);
 						*/
 				if(!fgets(t, BSIZE,file))break;
@@ -1433,7 +1433,7 @@ static gboolean read_gabedit_MD_file(gchar *fileName)
 					if(!fgets(t, BSIZE,file))break;
 					for(k=0;k<strlen(t);k++)
 						if(t[k]=='D' || t[k]=='d') t[k] = 'e';
-					ncv = sscanf(t,"%s %f %f %f %f %f %f",
+					ncv = sscanf(t,"%s %lf %lf %lf %lf %lf %lf",
 								sdum, 
 								&cdum1, &cdum2, &cdum3,
 								&vdum1, &vdum2, &vdum3
@@ -1994,8 +1994,8 @@ static void rafreshList()
   
 	for(i=0;i<geometriesMD.numberOfGeometries;i++)
 	{
-		if(visible[0]) texts[0] = g_strdup_printf("%f",geometriesMD.geometries[i].energy);
-		if(visible[1]) texts[1] = g_strdup_printf("%f",geometriesMD.geometries[i].time);
+		if(visible[0]) texts[0] = g_strdup_printf("%lf",geometriesMD.geometries[i].energy);
+		if(visible[1]) texts[1] = g_strdup_printf("%lf",geometriesMD.geometries[i].time);
 		if(visible[2]) texts[2] = g_strdup_printf("%s",geometriesMD.geometries[i].comments);
         	gtk_tree_store_append (store, &iter, NULL);
 		for(k=0;k<3;k++)
@@ -2146,7 +2146,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  3,3);
 	gtk_editable_set_editable((GtkEditable*) EntryVelocity,TRUE);
-	sprintf(t,"%f",geometriesMD.velocity);
+	sprintf(t,"%lf",geometriesMD.velocity);
 	gtk_entry_set_text(GTK_ENTRY(EntryVelocity),t);
 
 	i++;

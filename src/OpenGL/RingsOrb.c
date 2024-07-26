@@ -28,6 +28,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Constants.h"
 #include "../Utils/HydrogenBond.h"
 #include "../OpenGL/RingsPov.h"
+#include "../OpenGL/UtilsOrb.h"
 
 /************************************************************************/
 static V4d color_r[7] = 
@@ -225,7 +226,7 @@ gint* getRing()
 	return ringAtoms;
 }
 /********************************************************************************/
-void getCentreRing(gint i, gint j, gfloat C[])
+void getCentreRing(gint i, gint j, gdouble C[])
 {
 
 	gint k;
@@ -693,9 +694,9 @@ static void messagesNumberOfRings(gint nRings, GList** rings)
 /********************************************************************************/
 void IsoRingsAllGenLists(GLuint *myList, gint ringSizeMin, gint ringSizeMax)
 {
-	gfloat* Diffuse  = color_r[0];
-	gfloat* Specular = color_r[0];
-	gfloat* Ambiant  = color_r[0];
+	gdouble* Diffuse  = color_r[0];
+	gdouble* Specular = color_r[0];
+	gdouble* Ambiant  = color_r[0];
 	gint k;
 	gint nRings = 0;
 	gint ringSize = 0;
@@ -758,9 +759,9 @@ void IsoRingsAllGenLists(GLuint *myList, gint ringSizeMin, gint ringSizeMax)
 			Specular = color_r[0];
 			Ambiant = color_r[0];
 		}
-		glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-		glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
+		glMaterialdv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
+		glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
+		glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
 		glMateriali(GL_FRONT_AND_BACK,GL_SHININESS,120);
 
 		glBegin(GL_POLYGON);

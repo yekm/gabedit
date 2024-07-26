@@ -106,7 +106,7 @@ static XYZRC get_tete_dipole()
 {
         XYZRC PropCenter;
 	gint i;
-	static GLfloat f = 2;
+	static GLdouble f = 2;
 
 	for(i=0;i<3;i++) PropCenter.C[i]= f*Dipole.Value[i];
 	PropCenter.C[3] = Dipole.radius;
@@ -120,9 +120,9 @@ static XYZRC get_tete_dipole()
         return  PropCenter;
 }
 /********************************************************************************/
-static gfloat get_min(gint k)
+static gdouble get_min(gint k)
 {
-     gfloat min;
+     gdouble min;
      gint i=0;
      min = GeomOrb[0].C[k];
      for(i=1;i<(gint)Ncenters;i++)
@@ -140,9 +140,9 @@ static gint get_num_min_rayonIJ(gint i, gint j)
 }
 /********************************************************************************/
 static gchar *get_pov_vibarrow(
-		gfloat x0, gfloat y0, gfloat z0,
-		gfloat x1, gfloat y1, gfloat z1,
-		gfloat radius, gint i
+		gdouble x0, gdouble y0, gdouble z0,
+		gdouble x1, gdouble y1, gdouble z1,
+		gdouble radius, gint i
 		)
 
 {
@@ -171,13 +171,13 @@ static gchar *get_pov_vibarrow(
      if(!degenerated_cylinder(C1.C,C2.C))
      temp = g_strdup_printf(
 		"// Vib\n"
-		"#declare CBas1_A%d = <%f, %f, %f>;\n"
-		"#declare CBas2_A%d = <%f, %f, %f>;\n"
-		"#declare Col1_A%d = <%f, %f, %f>;\n"
-		"#declare Col2_A%d = <%f, %f, %f>;\n"
+		"#declare CBas1_A%d = <%lf, %lf, %lf>;\n"
+		"#declare CBas2_A%d = <%lf, %lf, %lf>;\n"
+		"#declare Col1_A%d = <%lf, %lf, %lf>;\n"
+		"#declare Col2_A%d = <%lf, %lf, %lf>;\n"
 		"object\n"
 		"{\n"
-		"\tarrow (CBas1_A%d, CBas2_A%d, %f, Col1_A%d, Col2_A%d)\n"
+		"\tarrow (CBas1_A%d, CBas2_A%d, %lf, Col1_A%d, Col2_A%d)\n"
 		"}\n",
 		i, C1.C[0], C1.C[1], C1.C[2],
 		i, C2.C[0], C2.C[1], C2.C[2],
@@ -196,8 +196,8 @@ static gchar *get_pov_vibration()
      	gchar *t=NULL;
 	gint m = rowSelected;
 	gint j;
-	gfloat x0, y0, z0;
-	gfloat x1, y1, z1;
+	gdouble x0, y0, z0;
+	gdouble x1, y1, z1;
 
 	if(!ShowVibration || m<0) return g_strdup( " ");
 
@@ -244,13 +244,13 @@ static gchar *get_pov_dipole()
      if(!degenerated_cylinder(C1.C,C2.C))
      temp = g_strdup_printf(
 		"// Dipole\n"
-		"#declare CDipole1 = <%f, %f, %f>;\n"
-		"#declare CDipole2 = <%f, %f, %f>;\n"
-		"#declare ColDipole1 = <%f, %f, %f>;\n"
-		"#declare ColDipole2 = <%f, %f, %f>;\n"
+		"#declare CDipole1 = <%lf, %lf, %lf>;\n"
+		"#declare CDipole2 = <%lf, %lf, %lf>;\n"
+		"#declare ColDipole1 = <%lf, %lf, %lf>;\n"
+		"#declare ColDipole2 = <%lf, %lf, %lf>;\n"
 		"object\n"
 		"{\n"
-		"\tarrow (CDipole1, CDipole2, %f, ColDipole1, ColDipole2)\n"
+		"\tarrow (CDipole1, CDipole2, %lf, ColDipole1, ColDipole2)\n"
 		"}\n",
 		C1.C[0],C1.C[1],C1.C[2],
 		C2.C[0],C2.C[1],C2.C[2],
@@ -266,18 +266,18 @@ static gchar *get_pov_xyz_axes()
 {
 	gboolean show;
 	gboolean negative;
-	gfloat origin[3];
-	gfloat originX[3];
-	gfloat originY[3];
-	gfloat originZ[3];
-	gfloat radius;
-	gfloat scale;
-	gfloat xColor[3];
-	gfloat yColor[3];
-	gfloat zColor[3];
-	gfloat vectorX[3]  = {1,0,0};
-	gfloat vectorY[3]  = {0,1,0};
-	gfloat vectorZ[3]  = {0,0,1};
+	gdouble origin[3];
+	gdouble originX[3];
+	gdouble originY[3];
+	gdouble originZ[3];
+	gdouble radius;
+	gdouble scale;
+	gdouble xColor[3];
+	gdouble yColor[3];
+	gdouble zColor[3];
+	gdouble vectorX[3]  = {1,0,0};
+	gdouble vectorY[3]  = {0,1,0};
+	gdouble vectorZ[3]  = {0,0,1};
 	gint i;
 	gchar* temp; 
 
@@ -312,19 +312,19 @@ static gchar *get_pov_xyz_axes()
 
 	temp = g_strdup_printf(
 		"// XYZ Axes\n"
-		"#declare COriginAxes1 = <%f, %f, %f>;\n"
-		"#declare COriginAxes2 = <%f, %f, %f>;\n"
-		"#declare COriginAxes3 = <%f, %f, %f>;\n"
-		"#declare CTeteAxes1 = <%f, %f, %f>;\n"
-		"#declare CTeteAxes2 = <%f, %f, %f>;\n"
-		"#declare CTeteAxes3 = <%f, %f, %f>;\n"
-		"#declare ColorAxes1 = <%f, %f, %f>;\n"
-		"#declare ColorConeAxes1 = <%f, %f, %f>;\n"
-		"#declare ColorAxes2 = <%f, %f, %f>;\n"
-		"#declare ColorConeAxes2 = <%f, %f, %f>;\n"
-		"#declare ColorAxes3 = <%f, %f, %f>;\n"
-		"#declare ColorConeAxes3 = <%f, %f, %f>;\n"
-		"#declare AxesRadius = %f;\n"
+		"#declare COriginAxes1 = <%lf, %lf, %lf>;\n"
+		"#declare COriginAxes2 = <%lf, %lf, %lf>;\n"
+		"#declare COriginAxes3 = <%lf, %lf, %lf>;\n"
+		"#declare CTeteAxes1 = <%lf, %lf, %lf>;\n"
+		"#declare CTeteAxes2 = <%lf, %lf, %lf>;\n"
+		"#declare CTeteAxes3 = <%lf, %lf, %lf>;\n"
+		"#declare ColorAxes1 = <%lf, %lf, %lf>;\n"
+		"#declare ColorConeAxes1 = <%lf, %lf, %lf>;\n"
+		"#declare ColorAxes2 = <%lf, %lf, %lf>;\n"
+		"#declare ColorConeAxes2 = <%lf, %lf, %lf>;\n"
+		"#declare ColorAxes3 = <%lf, %lf, %lf>;\n"
+		"#declare ColorConeAxes3 = <%lf, %lf, %lf>;\n"
+		"#declare AxesRadius = %lf;\n"
 		"object\n"
 		"{\n"
 		"\tarrow (COriginAxes1, CTeteAxes1, AxesRadius, ColorAxes1, ColorConeAxes1)\n"
@@ -359,18 +359,18 @@ static gchar *get_pov_principal_axes()
 	gboolean show;
 	gboolean negative;
 	gboolean def;
-	gfloat origin[3];
-	gfloat firstOrigin[3];
-	gfloat secondOrigin[3];
-	gfloat thirdOrigin[3];
-	gfloat radius;
-	gfloat scale;
-	gfloat firstColor[3];
-	gfloat secondColor[3];
-	gfloat thirdColor[3];
-	gfloat firstVector[3]  = {1,0,0};
-	gfloat secondVector[3]  = {0,1,0};
-	gfloat thirdVector[3]  = {0,0,1};
+	gdouble origin[3];
+	gdouble firstOrigin[3];
+	gdouble secondOrigin[3];
+	gdouble thirdOrigin[3];
+	gdouble radius;
+	gdouble scale;
+	gdouble firstColor[3];
+	gdouble secondColor[3];
+	gdouble thirdColor[3];
+	gdouble firstVector[3]  = {1,0,0};
+	gdouble secondVector[3]  = {0,1,0};
+	gdouble thirdVector[3]  = {0,0,1};
 	gint i;
 	gchar* temp = NULL;
 
@@ -405,19 +405,19 @@ static gchar *get_pov_principal_axes()
 
 	temp = g_strdup_printf(
 		"// Principal Axes\n"
-		"#declare COriginPrincipalAxe1 = <%f, %f, %f>;\n"
-		"#declare COriginPrincipalAxe2 = <%f, %f, %f>;\n"
-		"#declare COriginPrincipalAxe3 = <%f, %f, %f>;\n"
-		"#declare CTetePrincipalAxe1 = <%f, %f, %f>;\n"
-		"#declare CTetePrincipalAxe2 = <%f, %f, %f>;\n"
-		"#declare CTetePrincipalAxe3 = <%f, %f, %f>;\n"
-		"#declare ColorPrincipalAxe1 = <%f, %f, %f>;\n"
-		"#declare ColorConePrincipalAxe1 = <%f, %f, %f>;\n"
-		"#declare ColorPrincipalAxe2 = <%f, %f, %f>;\n"
-		"#declare ColorConePrincipalAxe2 = <%f, %f, %f>;\n"
-		"#declare ColorPrincipalAxe3 = <%f, %f, %f>;\n"
-		"#declare ColorConePrincipalAxe3 = <%f, %f, %f>;\n"
-		"#declare PrincipalAxeRadius = %f;\n"
+		"#declare COriginPrincipalAxe1 = <%lf, %lf, %lf>;\n"
+		"#declare COriginPrincipalAxe2 = <%lf, %lf, %lf>;\n"
+		"#declare COriginPrincipalAxe3 = <%lf, %lf, %lf>;\n"
+		"#declare CTetePrincipalAxe1 = <%lf, %lf, %lf>;\n"
+		"#declare CTetePrincipalAxe2 = <%lf, %lf, %lf>;\n"
+		"#declare CTetePrincipalAxe3 = <%lf, %lf, %lf>;\n"
+		"#declare ColorPrincipalAxe1 = <%lf, %lf, %lf>;\n"
+		"#declare ColorConePrincipalAxe1 = <%lf, %lf, %lf>;\n"
+		"#declare ColorPrincipalAxe2 = <%lf, %lf, %lf>;\n"
+		"#declare ColorConePrincipalAxe2 = <%lf, %lf, %lf>;\n"
+		"#declare ColorPrincipalAxe3 = <%lf, %lf, %lf>;\n"
+		"#declare ColorConePrincipalAxe3 = <%lf, %lf, %lf>;\n"
+		"#declare PrincipalAxeRadius = %lf;\n"
 		"object\n"
 		"{\n"
 		"\tarrow (COriginPrincipalAxe1, CTetePrincipalAxe1, PrincipalAxeRadius, ColorPrincipalAxe1, ColorConePrincipalAxe1)\n"
@@ -447,7 +447,7 @@ static gchar *get_pov_principal_axes()
      return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_ball(gint num, gfloat scale)
+static gchar *get_pov_ball(gint num, gdouble scale)
 {
      gchar *temp;
      XYZRC Center = get_prop_center(num,1.0);
@@ -472,7 +472,7 @@ static gchar *get_pov_cylingre(gdouble C1[],gdouble C2[],gdouble Colors[],gdoubl
 {
      gchar* temp = NULL;
      gint i;
-     gfloat d = 0;
+     gdouble d = 0;
 
      for(i=0;i<3;i++) d += (C1[i]-C2[i])*(C1[i]-C2[i]);
      if(d<1e-8) return g_strdup("\n");
@@ -555,8 +555,8 @@ static gchar *get_pov_one_stick(gint i,gint j, GabEditBondType bondType)
 	V3d cros;
 	V3d sub;
 	V3d CRing;
-	gfloat C10[3];
-	gfloat C20[3];
+	gdouble C10[3];
+	gdouble C20[3];
 	getCentreRing(i,j, CRing);
 	v3d_sub(CRing, CC1, C10);
 	v3d_sub(CRing, CC2, C20);
@@ -596,8 +596,8 @@ static gchar *get_pov_one_stick(gint i,gint j, GabEditBondType bondType)
 	V3d cros;
 	V3d sub;
 	V3d CRing;
-	gfloat C10[3];
-	gfloat C20[3];
+	gdouble C10[3];
+	gdouble C20[3];
 	getCentreRing(i,j, CRing);
 	v3d_sub(CRing, CC1, C10);
 	v3d_sub(CRing, CC2, C20);
@@ -647,8 +647,8 @@ static gchar *get_pov_one_stick(gint i,gint j, GabEditBondType bondType)
 	V3d cros;
 	V3d sub;
 	V3d CRing;
-	gfloat C10[3];
-	gfloat C20[3];
+	gdouble C10[3];
+	gdouble C20[3];
 	getCentreRing(i,j, CRing);
 	v3d_sub(CRing, CC1, C10);
 	v3d_sub(CRing, CC2, C20);
@@ -688,8 +688,8 @@ static gchar *get_pov_one_stick(gint i,gint j, GabEditBondType bondType)
 	V3d cros;
 	V3d sub;
 	V3d CRing;
-	gfloat C10[3];
-	gfloat C20[3];
+	gdouble C10[3];
+	gdouble C20[3];
 	getCentreRing(i,j, CRing);
 	v3d_sub(CRing, CC1, C10);
 	v3d_sub(CRing, CC2, C20);
@@ -839,7 +839,7 @@ static gchar *get_pov_declare_surface_options()
 	 "// transparency coeffition\n"
 	 "#declare surfaceTransCoef = 0.6;\n"
 	 "// wire frame radius of cylinder\n"
-	 "#declare wireFrameCylinderRadius = %f;\n"
+	 "#declare wireFrameCylinderRadius = %lf;\n"
 	 "\n\n",
 	 ep
 	);
@@ -848,8 +848,8 @@ static gchar *get_pov_declare_surface_options()
 /********************************************************************************/
 static gchar *get_pov_matrix_transformation()
 {
-	gfloat q[4];
-	gfloat m[4][4];
+	gdouble q[4];
+	gdouble m[4][4];
 	gchar* temp;
 
 	getQuat(q);
@@ -857,7 +857,7 @@ static gchar *get_pov_matrix_transformation()
 	temp = g_strdup_printf(
 	 "// Rotation matrix\n"
 	 "#declare myTransforms = transform {\n"
-	 "matrix <%f, %f ,%f, %f, %f, %f, %f, %f, %f, %f, %f ,%f>\n"
+	 "matrix <%lf, %lf ,%lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf ,%lf>\n"
 	 "}\n\n",
 	 m[0][0],m[0][1],m[0][2],
 	 m[1][0],m[1][1],m[1][2],
@@ -1019,7 +1019,7 @@ static gchar *get_pov_camera()
      return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_light_source(gchar* title,gchar* color,gfloat x,gfloat y, gfloat z)
+static gchar *get_pov_light_source(gchar* title,gchar* color,gdouble x,gdouble y, gdouble z)
 {
 	gchar *temp;
      	temp = g_strdup_printf("%s%s\t<%10.6f,%10.6f,%10.6f>\n\tcolor %s\n}\n",
@@ -1094,7 +1094,7 @@ static gchar *get_pov_atoms()
      return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_ball_for_stick(gint num, gfloat radius)
+static gchar *get_pov_ball_for_stick(gint num, gdouble radius)
 {
      gchar *temp;
      XYZRC Center = get_prop_center(num,1.0);
@@ -1395,9 +1395,9 @@ static gchar* create_povray_file(gchar* fileName, gboolean saveCamera, gboolean 
 
 	if(newCamera)
 	{
-		gfloat xmin = get_min(0);
-		gfloat ymin = get_min(1);
-		gfloat zmin = get_min(2);
+		gdouble xmin = get_min(0);
+		gdouble ymin = get_min(1);
+		gdouble zmin = get_min(2);
  		temp = get_pov_background(xmin,ymin,zmin);
 		fprintf(file,"%s",temp);
 		if(saveCamera)
@@ -1412,9 +1412,9 @@ static gchar* create_povray_file(gchar* fileName, gboolean saveCamera, gboolean 
 		if(background) fprintf(file,"%s",background);
 		else
 		{
-			gfloat xmin = get_min(0);
-			gfloat ymin = get_min(1);
-			gfloat zmin = get_min(2);
+			gdouble xmin = get_min(0);
+			gdouble ymin = get_min(1);
+			gdouble zmin = get_min(2);
 			printf("Erreur : No new camera and background =NULL\n");
  			temp = get_pov_background(xmin,ymin,zmin);
 			fprintf(file,"%s",temp);

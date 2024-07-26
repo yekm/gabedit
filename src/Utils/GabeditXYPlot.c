@@ -2029,6 +2029,16 @@ static void Waiting(gdouble tsecond)
  	g_timer_destroy(timer);
 }
 /**************************************************************************/
+static void copyImageToClipBoard(GtkWidget* xyplot)
+{       
+	if(!GABEDIT_IS_XYPLOT(xyplot)) return;
+	gtk_widget_hide(xyplot);
+	gtk_widget_show(xyplot);
+	while( gtk_events_pending() ) gtk_main_iteration();
+
+	gabedit_xyplot_save(GABEDIT_XYPLOT(xyplot), NULL, NULL);
+}
+/**************************************************************************/
 static void saveImage(GtkFileChooser *SelecFile, gint response_id)
 {       
 	gchar *fileName;
@@ -3152,6 +3162,7 @@ static void activate_action (GtkAction *action)
 	if(!strcmp(name,"ScreenCaptureJPEG")) {  saveImageDlg(xyplot, "jpeg");}
 	if(!strcmp(name,"ScreenCapturePNG")) {  saveImageDlg(xyplot, "png");}
 	if(!strcmp(name,"ScreenCaptureTPNG")) {  saveImageDlg(xyplot, "tpng");}
+	if(!strcmp(name,"ScreenCaptureClipBoard")) {  copyImageToClipBoard(xyplot); }
 	if(!strcmp(name,"ExportSVG")) {  exportImageDlg(xyplot, "svg");}
 	if(!strcmp(name,"ExportPDF")) {  exportImageDlg(xyplot, "pdf");}
 	if(!strcmp(name,"ExportPS")) {  exportImageDlg(xyplot, "ps");}
@@ -3187,6 +3198,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ScreenCaptureJPEG", NULL, "_JPEG format", NULL, "JPEG format", G_CALLBACK (activate_action) },
 	{"ScreenCapturePNG", NULL, "_PNG format", NULL, "PNG format", G_CALLBACK (activate_action) },
 	{"ScreenCaptureTPNG", NULL, "_Transparent PNG format", NULL, "Transparent PNG format", G_CALLBACK (activate_action) },
+	{"ScreenCaptureClipBoard", NULL, "_Copy to clipboard", NULL, "Copy to clipboard", G_CALLBACK (activate_action) },
 	{"Export", NULL, "_Export"},
 	{"ExportSVG", NULL, "Export _SVG format", NULL, "SVG format", G_CALLBACK (activate_action) },
 	{"ExportPDF", NULL, "Export p_df format", NULL, "PDF format", G_CALLBACK (activate_action) },
@@ -3271,6 +3283,8 @@ static void add_data_to_actions(GtkUIManager *manager, GtkWidget   *xyplot)
 	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
 	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/ScreenCapture/ScreenCaptureTPNG");
 	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
+	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/ScreenCapture/ScreenCaptureClipBoard");
+	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
 
 	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Export/ExportSVG");
 	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
@@ -3344,6 +3358,7 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"ScreenCaptureJPEG\" action=\"ScreenCaptureJPEG\" />\n"
 "      <menuitem name=\"ScreenCapturePNG\" action=\"ScreenCapturePNG\" />\n"
 "      <menuitem name=\"ScreenCaptureTPNG\" action=\"ScreenCaptureTPNG\" />\n"
+"      <menuitem name=\"ScreenCaptureClipBoard\" action=\"ScreenCaptureClipBoard\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepExport\" />\n"
 "    <menu name=\"Export\" action=\"Export\">\n"
@@ -3364,6 +3379,7 @@ static const gchar *uiMenuInfo =
 "      <toolitem name=\"ScreenCaptureJPEG\" action=\"ScreenCaptureJPEG\" />\n"
 "      <toolitem name=\"ScreenCapturePNG\" action=\"ScreenCapturePNG\" />\n"
 "      <toolitem name=\"ScreenCaptureTPNG\" action=\"ScreenCaptureTPNG\" />\n"
+"      <toolitem name=\"ScreenCaptureClipBoard\" action=\"ScreenCaptureClipBoard\" />\n"
 "  </toolbar>\n"
 ;
 /*****************************************************************************************/
@@ -5296,7 +5312,7 @@ void gabedit_xyplot_configure_mouse_autorange(GabeditXYPlot *xyplot, gboolean en
 /********************************************************************************/
 static guchar *get_rgb_image(GtkWidget* drawable)
 {
-	gfloat fac=255.0/65535.0;
+	gdouble fac=255.0/65535.0;
 	GdkColormap *colormap;
   	guint height;
   	guint width;
@@ -5486,12 +5502,12 @@ void gabedit_xyplot_save(GabeditXYPlot *xyplot, gchar *fileName, gchar* type)
 	GError *error = NULL;
 	GdkPixbuf  *pixbuf = NULL;
 
-	if(!strcmp(type,"bmp"))
+	if(fileName && type && !strcmp(type,"bmp"))
 	{
 		writeBMP(xyplot, fileName);
 		return;
 	}
-	if(!strcmp(type,"tpng"))
+	if(fileName && type && !strcmp(type,"tpng"))
 	{
 		writeTransparentPNG(xyplot, fileName);
 		return;
@@ -5502,7 +5518,13 @@ void gabedit_xyplot_save(GabeditXYPlot *xyplot, gchar *fileName, gchar* type)
 	pixbuf = gdk_pixbuf_get_from_drawable(NULL, widget->window, NULL, 0, 0, 0, 0, width, height);
 	if(pixbuf)
 	{
-		gdk_pixbuf_save(pixbuf, fileName, type, &error, NULL);
+		if(!fileName)
+		{
+			GtkClipboard * clipboard;
+			clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+			gtk_clipboard_set_image(clipboard, pixbuf);
+		}
+		else gdk_pixbuf_save(pixbuf, fileName, type, &error, NULL);
 	 	g_object_unref (pixbuf);
 	}
 }

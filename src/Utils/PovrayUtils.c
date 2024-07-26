@@ -171,7 +171,7 @@ static gchar *get_pov_sky()
 	 return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_water(gfloat x, gfloat y, gfloat z, gfloat scale)
+static gchar *get_pov_water(gdouble x, gdouble y, gdouble z, gdouble scale)
 {
      gchar *temp;
      temp = g_strdup_printf(
@@ -191,7 +191,7 @@ static gchar *get_pov_water(gfloat x, gfloat y, gfloat z, gfloat scale)
 	 return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_checker(gfloat x, gfloat y, gfloat z, gfloat scale)
+static gchar *get_pov_checker(gdouble x, gdouble y, gdouble z, gdouble scale)
 {
      gchar *temp;
      temp = g_strdup_printf(
@@ -208,7 +208,7 @@ static gchar *get_pov_checker(gfloat x, gfloat y, gfloat z, gfloat scale)
 	 return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_hexagon(gfloat x, gfloat y, gfloat z, gfloat scale)
+static gchar *get_pov_hexagon(gdouble x, gdouble y, gdouble z, gdouble scale)
 {
      gchar *temp;
      temp = g_strdup_printf(
@@ -224,7 +224,7 @@ static gchar *get_pov_hexagon(gfloat x, gfloat y, gfloat z, gfloat scale)
 	 return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_stone(gfloat x, gfloat y, gfloat z, gfloat scale, gint numStone)
+static gchar *get_pov_stone(gdouble x, gdouble y, gdouble z, gdouble scale, gint numStone)
 {
      gchar *temp;
      temp = g_strdup_printf(
@@ -240,7 +240,7 @@ static gchar *get_pov_stone(gfloat x, gfloat y, gfloat z, gfloat scale, gint num
 	 return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_backgrond_unicolor(gfloat red, gfloat green, gfloat blue)
+static gchar *get_pov_backgrond_unicolor(gdouble red, gdouble green, gdouble blue)
 {
      gchar *temp;
      temp = g_strdup_printf(
@@ -254,7 +254,7 @@ static gchar *get_pov_backgrond_unicolor(gfloat red, gfloat green, gfloat blue)
      return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_sky_water(gfloat x, gfloat y, gfloat z, gfloat scale)
+static gchar *get_pov_sky_water(gdouble x, gdouble y, gdouble z, gdouble scale)
 {
 	gchar *temp = NULL;
 	gchar *sky;
@@ -278,7 +278,7 @@ static gchar *get_pov_sky_water(gfloat x, gfloat y, gfloat z, gfloat scale)
 	return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_sky_checker(gfloat x, gfloat y, gfloat z, gfloat scale)
+static gchar *get_pov_sky_checker(gdouble x, gdouble y, gdouble z, gdouble scale)
 {
 	gchar *temp = NULL;
 	gchar *sky;
@@ -302,7 +302,7 @@ static gchar *get_pov_sky_checker(gfloat x, gfloat y, gfloat z, gfloat scale)
 	return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_cube(gfloat xScale, gfloat yScale, gfloat zScale)
+static gchar *get_pov_cube(gdouble xScale, gdouble yScale, gdouble zScale)
 {
 	gchar *temp = NULL;
 	gchar *bottom;
@@ -336,7 +336,7 @@ static gchar *get_pov_cube(gfloat xScale, gfloat yScale, gfloat zScale)
 	return temp;
 }
 /********************************************************************************/
-gchar *get_pov_background(gfloat xScale, gfloat yScale, gfloat zScale)
+gchar *get_pov_background(gdouble xScale, gdouble yScale, gdouble zScale)
 {
 	switch(backgroundType)
 	{

@@ -285,7 +285,7 @@ static void print_gaussian_geometries_link(GtkWidget* Win, gpointer data)
 
 		for(a=0;a<geometryConvergence.geometries[g].numberOfAtoms;a++)
 		{
-			fprintf(file,"%s %f %f %f\n",geometryConvergence.geometries[g].listOfAtoms[a].symbol,
+			fprintf(file,"%s %lf %lf %lf\n",geometryConvergence.geometries[g].listOfAtoms[a].symbol,
 			geometryConvergence.geometries[g].listOfAtoms[a].C[0]*BOHR_TO_ANG,
 			geometryConvergence.geometries[g].listOfAtoms[a].C[1]*BOHR_TO_ANG,
 			geometryConvergence.geometries[g].listOfAtoms[a].C[2]*BOHR_TO_ANG
@@ -396,7 +396,7 @@ static void print_gaussian_one_geometry(gint g, G_CONST_RETURN gchar* supstr)
 
 	for(a=0;a<geometryConvergence.geometries[g].numberOfAtoms;a++)
 	{
-		fprintf(file,"%s %f %f %f\n",geometryConvergence.geometries[g].listOfAtoms[a].symbol,
+		fprintf(file,"%s %lf %lf %lf\n",geometryConvergence.geometries[g].listOfAtoms[a].symbol,
 				geometryConvergence.geometries[g].listOfAtoms[a].C[0]*BOHR_TO_ANG,
 				geometryConvergence.geometries[g].listOfAtoms[a].C[1]*BOHR_TO_ANG,
 				geometryConvergence.geometries[g].listOfAtoms[a].C[2]*BOHR_TO_ANG
@@ -624,15 +624,15 @@ static void delete_one_geometry()
 	}
 	geometryConvergence.numberOfGeometries--;
 	if(geometryConvergence.energy)
-		geometryConvergence.energy = g_realloc(geometryConvergence.energy, geometryConvergence.numberOfGeometries*sizeof(gfloat));
+		geometryConvergence.energy = g_realloc(geometryConvergence.energy, geometryConvergence.numberOfGeometries*sizeof(gdouble));
 	if(geometryConvergence.maxForce)
-		geometryConvergence.maxForce = g_realloc(geometryConvergence.maxForce, geometryConvergence.numberOfGeometries*sizeof(gfloat));
+		geometryConvergence.maxForce = g_realloc(geometryConvergence.maxForce, geometryConvergence.numberOfGeometries*sizeof(gdouble));
 	if(geometryConvergence.rmsForce)
-		geometryConvergence.rmsForce = g_realloc(geometryConvergence.rmsForce, geometryConvergence.numberOfGeometries*sizeof(gfloat));
+		geometryConvergence.rmsForce = g_realloc(geometryConvergence.rmsForce, geometryConvergence.numberOfGeometries*sizeof(gdouble));
 	if(geometryConvergence.maxStep)
-		geometryConvergence.maxStep = g_realloc(geometryConvergence.maxStep, geometryConvergence.numberOfGeometries*sizeof(gfloat));
+		geometryConvergence.maxStep = g_realloc(geometryConvergence.maxStep, geometryConvergence.numberOfGeometries*sizeof(gdouble));
 	if(geometryConvergence.rmsStep)
-		geometryConvergence.rmsStep = g_realloc(geometryConvergence.rmsStep, geometryConvergence.numberOfGeometries*sizeof(gfloat));
+		geometryConvergence.rmsStep = g_realloc(geometryConvergence.rmsStep, geometryConvergence.numberOfGeometries*sizeof(gdouble));
 	if(geometryConvergence.numGeometry)
 		geometryConvergence.numGeometry = g_realloc(geometryConvergence.numGeometry, geometryConvergence.numberOfGeometries*sizeof(gint));
 	if(geometryConvergence.geometries)
@@ -1046,11 +1046,11 @@ static gboolean read_gamess_output(gchar* fileName)
 				geometryConvergence.fileName = g_strdup(fileName);
 				geometryConvergence.numGeometry =  g_malloc(sizeof(gint));	
 				geometryConvergence.numGeometry[0] =  1;
-				geometryConvergence.energy =  g_malloc(sizeof(gfloat));	
+				geometryConvergence.energy =  g_malloc(sizeof(gdouble));	
 				geometryConvergence.energy[0] = atof(tmp);
-				geometryConvergence.maxStep =  g_malloc(sizeof(gfloat));	
+				geometryConvergence.maxStep =  g_malloc(sizeof(gdouble));	
 				geometryConvergence.maxStep[0] = atof(maxGrad);
-				geometryConvergence.rmsStep =  g_malloc(sizeof(gfloat));	
+				geometryConvergence.rmsStep =  g_malloc(sizeof(gdouble));	
 				geometryConvergence.rmsStep[0] = atof(rmsGrad);
 		  	}
 		  	else
@@ -1060,12 +1060,12 @@ static gboolean read_gamess_output(gchar* fileName)
 				k = geometryConvergence.numberOfGeometries-1;
 				geometryConvergence.numGeometry[k] =  k+1;
 				geometryConvergence.energy =  
-				g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+				g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gdouble));	
 				geometryConvergence.energy[k] = atof(tmp);
 
-				geometryConvergence.maxStep =  g_realloc(geometryConvergence.maxStep, geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+				geometryConvergence.maxStep =  g_realloc(geometryConvergence.maxStep, geometryConvergence.numberOfGeometries*sizeof(gdouble));	
 				geometryConvergence.maxStep[k] = atof(maxGrad);
-				geometryConvergence.rmsStep =  g_realloc(geometryConvergence.rmsStep, geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+				geometryConvergence.rmsStep =  g_realloc(geometryConvergence.rmsStep, geometryConvergence.numberOfGeometries*sizeof(gdouble));	
 				geometryConvergence.rmsStep[k] = atof(rmsGrad);
 		  	}
 			OK = TRUE;
@@ -1437,7 +1437,7 @@ static gboolean read_mpqc_file_geomi(gchar *fileName,gint numGeometry, Geometry*
 			for(i=1;i<=3;i++)
 			{
 				tmpReal = atof(AtomCoord[i]);
-				sprintf(AtomCoord[i],"%f",tmpReal);
+				sprintf(AtomCoord[i],"%lf",tmpReal);
 			}
 
 			AtomCoord[0][0]=toupper(AtomCoord[0][0]);
@@ -1818,36 +1818,36 @@ static gboolean save_geometry_convergence_gabedit_format(gchar *FileName)
 	{
 		fprintf(file," energy\n");
 		for(j=0;j<geometryConvergence.numberOfGeometries;j++)
-			fprintf(file," %f\n", geometryConvergence.energy[j]);
+			fprintf(file," %lf\n", geometryConvergence.energy[j]);
 	}
 	else
 	{
 		fprintf(file," energy\n");
-		for(j=0;j<geometryConvergence.numberOfGeometries;j++) fprintf(file," %f\n",j+1.0);
+		for(j=0;j<geometryConvergence.numberOfGeometries;j++) fprintf(file," %lf\n",j+1.0);
 	}
 	if(geometryConvergence.maxForce)
 	{
 		fprintf(file," max-force\n");
 		for(j=0;j<geometryConvergence.numberOfGeometries;j++)
-			fprintf(file," %f\n", geometryConvergence.maxForce[j]);
+			fprintf(file," %lf\n", geometryConvergence.maxForce[j]);
 	}
 	if(geometryConvergence.rmsForce)
 	{
 		fprintf(file," rms-force\n");
 		for(j=0;j<geometryConvergence.numberOfGeometries;j++)
-			fprintf(file," %f\n", geometryConvergence.rmsForce[j]);
+			fprintf(file," %lf\n", geometryConvergence.rmsForce[j]);
 	}
 	if(geometryConvergence.maxStep)
 	{
 		fprintf(file," max-step\n");
 		for(j=0;j<geometryConvergence.numberOfGeometries;j++)
-			fprintf(file," %f\n", geometryConvergence.maxStep[j]);
+			fprintf(file," %lf\n", geometryConvergence.maxStep[j]);
 	}
 	if(geometryConvergence.rmsStep)
 	{
 		fprintf(file," rms-step\n");
 		for(j=0;j<geometryConvergence.numberOfGeometries;j++)
-			fprintf(file," %f\n", geometryConvergence.rmsStep[j]);
+			fprintf(file," %lf\n", geometryConvergence.rmsStep[j]);
 	}
 	fprintf(file,"\n");
 	if(!geometryConvergence.numGeometry) { fclose(file); return FALSE;}
@@ -1862,7 +1862,7 @@ static gboolean save_geometry_convergence_gabedit_format(gchar *FileName)
 		fprintf(file," All coordinates are in Angshtrom\n");
 		for(i=0;i<nAtoms;i++)
 		{
-			fprintf(file," %s %f %f %f\n", 
+			fprintf(file," %s %lf %lf %lf\n", 
 				listOfAtoms[i].symbol,
 				listOfAtoms[i].C[0]*BOHR_TO_ANG,
 				listOfAtoms[i].C[1]*BOHR_TO_ANG,
@@ -1883,7 +1883,7 @@ static void reset_parameters(GtkWidget *win, gpointer data)
 	{
 
 		velo = -velo;
-		t = g_strdup_printf("%f",velo);
+		t = g_strdup_printf("%lf",velo);
 		gtk_entry_set_text(GTK_ENTRY(EntryVelocity),t);
 		g_free(t);
 	}
@@ -1917,7 +1917,7 @@ static gboolean read_gabedit_molden_rms_conv(FILE* file)
 		g_strup(t);
    		if( strstr( t,"ENERGY") != NULL )
 		{
-			geometryConvergence.energy = g_malloc(geometryConvergence.numberOfGeometries*sizeof(gfloat));
+			geometryConvergence.energy = g_malloc(geometryConvergence.numberOfGeometries*sizeof(gdouble));
 			for(i=0;i<geometryConvergence.numberOfGeometries;i++)
 			{
 		 		if(!fgets(t,BSIZE,file)) break;
@@ -1935,7 +1935,7 @@ static gboolean read_gabedit_molden_rms_conv(FILE* file)
 		}
    		if( strstr( t,"MAX-FORCE") != NULL )
 		{
-			geometryConvergence.maxForce = g_malloc(geometryConvergence.numberOfGeometries*sizeof(gfloat));
+			geometryConvergence.maxForce = g_malloc(geometryConvergence.numberOfGeometries*sizeof(gdouble));
 			for(i=0;i<geometryConvergence.numberOfGeometries;i++)
 			{
 		 		if(!fgets(t,BSIZE,file)) break;
@@ -1953,7 +1953,7 @@ static gboolean read_gabedit_molden_rms_conv(FILE* file)
 		}
    		if( strstr( t,"RMS-FORCE") != NULL )
 		{
-			geometryConvergence.rmsForce = g_malloc(geometryConvergence.numberOfGeometries*sizeof(gfloat));
+			geometryConvergence.rmsForce = g_malloc(geometryConvergence.numberOfGeometries*sizeof(gdouble));
 			for(i=0;i<geometryConvergence.numberOfGeometries;i++)
 			{
 		 		if(!fgets(t,BSIZE,file)) break;
@@ -1971,7 +1971,7 @@ static gboolean read_gabedit_molden_rms_conv(FILE* file)
 		}
    		if( strstr( t,"MAX-STEP") != NULL )
 		{
-			geometryConvergence.maxStep = g_malloc(geometryConvergence.numberOfGeometries*sizeof(gfloat));
+			geometryConvergence.maxStep = g_malloc(geometryConvergence.numberOfGeometries*sizeof(gdouble));
 			for(i=0;i<geometryConvergence.numberOfGeometries;i++)
 			{
 		 		if(!fgets(t,BSIZE,file)) break;
@@ -1989,7 +1989,7 @@ static gboolean read_gabedit_molden_rms_conv(FILE* file)
 		}
    		if( strstr( t,"RMS-STEP") != NULL )
 		{
-			geometryConvergence.rmsStep = g_malloc(geometryConvergence.numberOfGeometries*sizeof(gfloat));
+			geometryConvergence.rmsStep = g_malloc(geometryConvergence.numberOfGeometries*sizeof(gdouble));
 			for(i=0;i<geometryConvergence.numberOfGeometries;i++)
 			{
 		 		if(!fgets(t,BSIZE,file)) break;
@@ -2017,7 +2017,7 @@ static gboolean read_gabedit_molden_geom_conv(gchar *fileName, GabEditTypeFile t
  	gchar* tmp;
  	gchar* sdum;
  	gchar* pdest;
- 	gfloat fdum1, fdum2, fdum3;
+ 	gdouble fdum1, fdum2, fdum3;
  	gboolean OK;
  	FILE *file;
 	gint i;
@@ -2084,7 +2084,7 @@ static gboolean read_gabedit_molden_geom_conv(gchar *fileName, GabEditTypeFile t
 				for(i=0; i<ne; i++)
 				{
 					if(!fgets(t,BSIZE,file))break;
-					if(sscanf(t,"%s %f %f %f",sdum, &fdum1, &fdum2, &fdum3)!=4) break;
+					if(sscanf(t,"%s %lf %lf %lf",sdum, &fdum1, &fdum2, &fdum3)!=4) break;
 				}
 				if(i!=ne) { OK = FALSE;break;}
 			}
@@ -2212,9 +2212,9 @@ static gboolean read_dalton_output(gchar* fileName)
 				geometryConvergence.fileName = g_strdup(fileName);
 				geometryConvergence.numGeometry =  g_malloc(sizeof(gint));	
 				geometryConvergence.numGeometry[0] =  1;
-				geometryConvergence.energy =  g_malloc(sizeof(gfloat));	
+				geometryConvergence.energy =  g_malloc(sizeof(gdouble));	
 				geometryConvergence.energy[0] = atof(tmp);
-				geometryConvergence.rmsStep =  g_malloc(sizeof(gfloat));	
+				geometryConvergence.rmsStep =  g_malloc(sizeof(gdouble));	
 				geometryConvergence.rmsStep[0] = atof(temp);
 		  	}
 		  	else
@@ -2224,10 +2224,10 @@ static gboolean read_dalton_output(gchar* fileName)
 				k = geometryConvergence.numberOfGeometries-1;
 				geometryConvergence.numGeometry[k] =  k+1;
 				geometryConvergence.energy =  
-				g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+				g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gdouble));	
 				geometryConvergence.energy[k] = atof(tmp);
 
-				geometryConvergence.rmsStep =  g_realloc(geometryConvergence.rmsStep, geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+				geometryConvergence.rmsStep =  g_realloc(geometryConvergence.rmsStep, geometryConvergence.numberOfGeometries*sizeof(gdouble));	
 				geometryConvergence.rmsStep[k] = atof(temp);
 		  	}
 			OK = TRUE;
@@ -2312,12 +2312,12 @@ static gboolean read_gaussian_output(gchar* fileName)
 				geometryConvergence.fileName = g_strdup(fileName);
 				geometryConvergence.numGeometry =  g_malloc(sizeof(gint));	
 				geometryConvergence.numGeometry[0] =  1;
-				geometryConvergence.energy =  g_malloc(sizeof(gfloat));	
+				geometryConvergence.energy =  g_malloc(sizeof(gdouble));	
 				geometryConvergence.energy[0] = atof(pdest);
-				geometryConvergence.maxForce =  g_malloc(sizeof(gfloat));	
-				geometryConvergence.rmsForce =  g_malloc(sizeof(gfloat));	
-				geometryConvergence.maxStep =  g_malloc(sizeof(gfloat));	
-				geometryConvergence.rmsStep =  g_malloc(sizeof(gfloat));	
+				geometryConvergence.maxForce =  g_malloc(sizeof(gdouble));	
+				geometryConvergence.rmsForce =  g_malloc(sizeof(gdouble));	
+				geometryConvergence.maxStep =  g_malloc(sizeof(gdouble));	
+				geometryConvergence.rmsStep =  g_malloc(sizeof(gdouble));	
 		  	}
 		  	else
 		  	{
@@ -2326,13 +2326,13 @@ static gboolean read_gaussian_output(gchar* fileName)
 				k = geometryConvergence.numberOfGeometries-1;
 				geometryConvergence.numGeometry[k] =  k+1;
 				geometryConvergence.energy =  
-				g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+				g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gdouble));	
 				geometryConvergence.energy[k] = atof(pdest);
 
-				geometryConvergence.maxForce =  g_realloc(geometryConvergence.maxForce,geometryConvergence.numberOfGeometries*sizeof(gfloat));	
-				geometryConvergence.rmsForce =  g_realloc(geometryConvergence.rmsForce, geometryConvergence.numberOfGeometries*sizeof(gfloat));	
-				geometryConvergence.maxStep =  g_realloc(geometryConvergence.maxStep, geometryConvergence.numberOfGeometries*sizeof(gfloat));	
-				geometryConvergence.rmsStep =  g_realloc(geometryConvergence.rmsStep, geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+				geometryConvergence.maxForce =  g_realloc(geometryConvergence.maxForce,geometryConvergence.numberOfGeometries*sizeof(gdouble));	
+				geometryConvergence.rmsForce =  g_realloc(geometryConvergence.rmsForce, geometryConvergence.numberOfGeometries*sizeof(gdouble));	
+				geometryConvergence.maxStep =  g_realloc(geometryConvergence.maxStep, geometryConvergence.numberOfGeometries*sizeof(gdouble));	
+				geometryConvergence.rmsStep =  g_realloc(geometryConvergence.rmsStep, geometryConvergence.numberOfGeometries*sizeof(gdouble));	
 		  	}
 		}
                 pdest = NULL;
@@ -2347,13 +2347,13 @@ static gboolean read_gaussian_output(gchar* fileName)
 			}
 			k = geometryConvergence.numberOfGeometries-1;
 		 	fgets(t,BSIZE,file);
-                 	sscanf(t,"%s %s %f", temp,temp,&geometryConvergence.maxForce[k]);
+                 	sscanf(t,"%s %s %lf", temp,temp,&geometryConvergence.maxForce[k]);
 		 	fgets(t,BSIZE,file);
-                 	sscanf(t,"%s %s %f", temp,temp,&geometryConvergence.rmsForce[k]);
+                 	sscanf(t,"%s %s %lf", temp,temp,&geometryConvergence.rmsForce[k]);
 		 	fgets(t,BSIZE,file);
-                 	sscanf(t,"%s %s %f", temp,temp,&geometryConvergence.maxStep[k]);
+                 	sscanf(t,"%s %s %lf", temp,temp,&geometryConvergence.maxStep[k]);
 		 	fgets(t,BSIZE,file);
-                 	sscanf(t,"%s %s %f", temp,temp,&geometryConvergence.rmsStep[k]);
+                 	sscanf(t,"%s %s %lf", temp,temp,&geometryConvergence.rmsStep[k]);
 		}
 	}
 	if(!OK)
@@ -2371,11 +2371,11 @@ static gboolean read_gaussian_output(gchar* fileName)
 			geometryConvergence.numGeometry =  
 			g_realloc(geometryConvergence.numGeometry,geometryConvergence.numberOfGeometries*sizeof(gint));	
 			geometryConvergence.energy =  
-			g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gfloat));	
-			geometryConvergence.maxForce =  g_realloc(geometryConvergence.maxForce,geometryConvergence.numberOfGeometries*sizeof(gfloat));	
-			geometryConvergence.rmsForce =  g_realloc(geometryConvergence.rmsForce, geometryConvergence.numberOfGeometries*sizeof(gfloat));	
-			geometryConvergence.maxStep =  g_realloc(geometryConvergence.maxStep, geometryConvergence.numberOfGeometries*sizeof(gfloat));	
-				geometryConvergence.rmsStep =  g_realloc(geometryConvergence.rmsStep, geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+			g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gdouble));	
+			geometryConvergence.maxForce =  g_realloc(geometryConvergence.maxForce,geometryConvergence.numberOfGeometries*sizeof(gdouble));	
+			geometryConvergence.rmsForce =  g_realloc(geometryConvergence.rmsForce, geometryConvergence.numberOfGeometries*sizeof(gdouble));	
+			geometryConvergence.maxStep =  g_realloc(geometryConvergence.maxStep, geometryConvergence.numberOfGeometries*sizeof(gdouble));	
+				geometryConvergence.rmsStep =  g_realloc(geometryConvergence.rmsStep, geometryConvergence.numberOfGeometries*sizeof(gdouble));	
 
 		}
 		else
@@ -2469,9 +2469,9 @@ static gboolean read_molpro_log(gchar* fileName)
 				geometryConvergence.fileName = g_strdup(fileName);
 				geometryConvergence.numGeometry =  g_malloc(sizeof(gint));	
 				geometryConvergence.numGeometry[0] =  1;
-				geometryConvergence.energy =  g_malloc(sizeof(gfloat));	
+				geometryConvergence.energy =  g_malloc(sizeof(gdouble));	
 				geometryConvergence.energy[0] = atof(tmp);
-				geometryConvergence.rmsStep =  g_malloc(sizeof(gfloat));	
+				geometryConvergence.rmsStep =  g_malloc(sizeof(gdouble));	
 		  	}
 		  	else
 		  	{
@@ -2480,10 +2480,10 @@ static gboolean read_molpro_log(gchar* fileName)
 				k = geometryConvergence.numberOfGeometries-1;
 				geometryConvergence.numGeometry[k] =  k+1;
 				geometryConvergence.energy =  
-				g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+				g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gdouble));	
 				geometryConvergence.energy[k] = atof(tmp);
 
-				geometryConvergence.rmsStep =  g_realloc(geometryConvergence.rmsStep, geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+				geometryConvergence.rmsStep =  g_realloc(geometryConvergence.rmsStep, geometryConvergence.numberOfGeometries*sizeof(gdouble));	
 		  	}
 			OK = TRUE;
                  	do
@@ -2515,8 +2515,8 @@ static gboolean read_molpro_log(gchar* fileName)
 			geometryConvergence.numGeometry =  
 			g_realloc(geometryConvergence.numGeometry,geometryConvergence.numberOfGeometries*sizeof(gint));	
 			geometryConvergence.energy =  
-			g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gfloat));	
-			geometryConvergence.rmsStep =  g_realloc(geometryConvergence.rmsStep, geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+			g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gdouble));	
+			geometryConvergence.rmsStep =  g_realloc(geometryConvergence.rmsStep, geometryConvergence.numberOfGeometries*sizeof(gdouble));	
 
 		}
 		else
@@ -2618,9 +2618,9 @@ static gboolean read_mpqc_output(gchar* fileName)
 				geometryConvergence.fileName = g_strdup(fileName);
 				geometryConvergence.numGeometry =  g_malloc(sizeof(gint));	
 				geometryConvergence.numGeometry[0] =  1;
-				geometryConvergence.energy =  g_malloc(sizeof(gfloat));	
+				geometryConvergence.energy =  g_malloc(sizeof(gdouble));	
 				geometryConvergence.energy[0] = atof(pdest);
-				geometryConvergence.maxStep =  g_malloc(sizeof(gfloat));	
+				geometryConvergence.maxStep =  g_malloc(sizeof(gdouble));	
 		  	}
 		  	else
 		  	{
@@ -2629,10 +2629,10 @@ static gboolean read_mpqc_output(gchar* fileName)
 				k = geometryConvergence.numberOfGeometries-1;
 				geometryConvergence.numGeometry[k] =  k+1;
 				geometryConvergence.energy =  
-				g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+				g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gdouble));	
 				geometryConvergence.energy[k] = atof(pdest);
 
-				geometryConvergence.maxStep =  g_realloc(geometryConvergence.maxStep, geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+				geometryConvergence.maxStep =  g_realloc(geometryConvergence.maxStep, geometryConvergence.numberOfGeometries*sizeof(gdouble));	
 		  	}
 		}
                 pdest = NULL;
@@ -2645,7 +2645,7 @@ static gboolean read_mpqc_output(gchar* fileName)
 				pdest++;
 				nSF++;
 				k = geometryConvergence.numberOfGeometries-1;
-                 		sscanf(pdest,"%f",&geometryConvergence.maxStep[k]);
+                 		sscanf(pdest,"%lf",&geometryConvergence.maxStep[k]);
 			}
 		 }
 	}
@@ -2664,8 +2664,8 @@ static gboolean read_mpqc_output(gchar* fileName)
 			geometryConvergence.numGeometry =  
 			g_realloc(geometryConvergence.numGeometry,geometryConvergence.numberOfGeometries*sizeof(gint));	
 			geometryConvergence.energy =  
-			g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gfloat));	
-			geometryConvergence.maxStep =  g_realloc(geometryConvergence.maxStep, geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+			g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gdouble));	
+			geometryConvergence.maxStep =  g_realloc(geometryConvergence.maxStep, geometryConvergence.numberOfGeometries*sizeof(gdouble));	
 
 		}
 		else
@@ -2795,9 +2795,9 @@ static gboolean read_mopac_aux(gchar* fileName)
 			geometryConvergence.fileName = g_strdup(fileName);
 			geometryConvergence.numGeometry =  g_malloc(sizeof(gint));	
 			geometryConvergence.numGeometry[0] =  1;
-			geometryConvergence.energy =  g_malloc(sizeof(gfloat));	
+			geometryConvergence.energy =  g_malloc(sizeof(gdouble));	
 			geometryConvergence.energy[0] = atof(tmp);
-			geometryConvergence.rmsStep =  g_malloc(sizeof(gfloat));	
+			geometryConvergence.rmsStep =  g_malloc(sizeof(gdouble));	
 			geometryConvergence.rmsStep[0] = atof(temp);
 	  	}
 		else
@@ -2807,10 +2807,10 @@ static gboolean read_mopac_aux(gchar* fileName)
 			k = geometryConvergence.numberOfGeometries-1;
 			geometryConvergence.numGeometry[k] =  k+1;
 			geometryConvergence.energy =  
-			g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+			g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gdouble));	
 			geometryConvergence.energy[k] = atof(tmp);
 
-			geometryConvergence.rmsStep =  g_realloc(geometryConvergence.rmsStep, geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+			geometryConvergence.rmsStep =  g_realloc(geometryConvergence.rmsStep, geometryConvergence.numberOfGeometries*sizeof(gdouble));	
 			geometryConvergence.rmsStep[k] = atof(temp);
 	  	}
 	}
@@ -2905,9 +2905,9 @@ static gboolean read_qchem_output(gchar* fileName)
 				geometryConvergence.fileName = g_strdup(fileName);
 				geometryConvergence.numGeometry =  g_malloc(sizeof(gint));	
 				geometryConvergence.numGeometry[0] =  1;
-				geometryConvergence.energy =  g_malloc(sizeof(gfloat));	
+				geometryConvergence.energy =  g_malloc(sizeof(gdouble));	
 				geometryConvergence.energy[0] = atof(tmp);
-				geometryConvergence.maxForce =  g_malloc(sizeof(gfloat));	
+				geometryConvergence.maxForce =  g_malloc(sizeof(gdouble));	
 		  	}
 		  	else
 		  	{
@@ -2916,10 +2916,10 @@ static gboolean read_qchem_output(gchar* fileName)
 				k = geometryConvergence.numberOfGeometries-1;
 				geometryConvergence.numGeometry[k] =  k+1;
 				geometryConvergence.energy =  
-				g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+				g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gdouble));	
 				geometryConvergence.energy[k] = atof(tmp);
 
-				geometryConvergence.maxForce =  g_realloc(geometryConvergence.maxForce, geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+				geometryConvergence.maxForce =  g_realloc(geometryConvergence.maxForce, geometryConvergence.numberOfGeometries*sizeof(gdouble));	
 				geometryConvergence.maxForce[k] = -1;
 		  	}
 			OK = TRUE;
@@ -2953,8 +2953,8 @@ static gboolean read_qchem_output(gchar* fileName)
 			geometryConvergence.numGeometry =  
 			g_realloc(geometryConvergence.numGeometry,geometryConvergence.numberOfGeometries*sizeof(gint));	
 			geometryConvergence.energy =  
-			g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gfloat));	
-			geometryConvergence.maxForce =  g_realloc(geometryConvergence.maxForce, geometryConvergence.numberOfGeometries*sizeof(gfloat));	
+			g_realloc(geometryConvergence.energy,geometryConvergence.numberOfGeometries*sizeof(gdouble));	
+			geometryConvergence.maxForce =  g_realloc(geometryConvergence.maxForce, geometryConvergence.numberOfGeometries*sizeof(gdouble));	
 
 		}
 		else
@@ -2995,9 +2995,9 @@ static gboolean read_xyz_multi(gchar* fileName)
 	gint nGeom = 0;
 	gboolean OK;
 	gchar *sdum = NULL;
-	gfloat fdum1;
-	gfloat fdum2;
-	gfloat fdum3;
+	gdouble fdum1;
+	gdouble fdum2;
+	gdouble fdum3;
 	gint ne;
 	gint nAtoms;
 	gchar** comments = NULL;
@@ -3035,7 +3035,7 @@ static gboolean read_xyz_multi(gchar* fileName)
 			for(i=0;i<nAtoms;i++)
 			{
 				if(!fgets(t, BSIZE,file)) { OK = FALSE; break;};
-				ne = sscanf(t,"%s %f %f %f",sdum,&fdum1, &fdum2, &fdum3);
+				ne = sscanf(t,"%s %lf %lf %lf",sdum,&fdum1, &fdum2, &fdum3);
 				if(ne != 4) { OK = FALSE; break;};
 			}
 			if(!OK) break;
@@ -3752,11 +3752,11 @@ static void rafreshList()
   
 	for(i=0;i<geometryConvergence.numberOfGeometries;i++)
 	{
-		if(visible[0]) texts[0] = g_strdup_printf("%f",geometryConvergence.energy[i]);
-		if(visible[1]) texts[1] = g_strdup_printf("%f",geometryConvergence.maxStep[i]);
-		if(visible[2]) texts[2] = g_strdup_printf("%f",geometryConvergence.rmsStep[i]);
-		if(visible[3]) texts[3] = g_strdup_printf("%f",geometryConvergence.maxForce[i]);
-		if(visible[4]) texts[4] = g_strdup_printf("%f",geometryConvergence.rmsForce[i]);
+		if(visible[0]) texts[0] = g_strdup_printf("%lf",geometryConvergence.energy[i]);
+		if(visible[1]) texts[1] = g_strdup_printf("%lf",geometryConvergence.maxStep[i]);
+		if(visible[2]) texts[2] = g_strdup_printf("%lf",geometryConvergence.rmsStep[i]);
+		if(visible[3]) texts[3] = g_strdup_printf("%lf",geometryConvergence.maxForce[i]);
+		if(visible[4]) texts[4] = g_strdup_printf("%lf",geometryConvergence.rmsForce[i]);
 		if(visible[5]) texts[5] = g_strdup_printf("%d",geometryConvergence.numGeometry[i]);
 		if(visible[6]) texts[6] = g_strdup_printf("%s",geometryConvergence.comments[i]);
         	gtk_tree_store_append (store, &iter, NULL);
@@ -3908,7 +3908,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  3,3);
 	gtk_editable_set_editable((GtkEditable*) EntryVelocity,TRUE);
-	sprintf(t,"%f",geometryConvergence.velocity);
+	sprintf(t,"%lf",geometryConvergence.velocity);
 	gtk_entry_set_text(GTK_ENTRY(EntryVelocity),t);
 
 	i++;

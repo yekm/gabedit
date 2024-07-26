@@ -275,18 +275,18 @@ struct _Zlm
 
 typedef struct _GTF
 {
- gfloat Ex;
- gfloat Coef;
+ gdouble Ex;
+ gdouble Coef;
  gint l[3];
- gfloat C[3]; 
+ gdouble C[3]; 
 }GTF;
 
 typedef struct _AO
 {
  gint L;
  gint N;
- gfloat* Ex;
- gfloat* Coef;
+ gdouble* Ex;
+ gdouble* Coef;
  }AO;
 
 typedef struct _TYPE
@@ -314,7 +314,7 @@ typedef struct _RGBColor
 typedef struct _TypeGeomOrb
 {
 	gchar* Symb;
-	gfloat C[3];
+	gdouble C[3];
 	gdouble partialCharge;
 	gdouble nuclearCharge;
 	SAtomsProp Prop;
@@ -342,14 +342,14 @@ typedef struct _TypeFontsStyle
  GdkColor BaseColor;
  GdkColor TextColor;
 }TypeFontsStyle;
-typedef gdouble	 (*Func3d)(gfloat ,gfloat,gfloat,gint);
+typedef gdouble	 (*Func3d)(gdouble ,gdouble,gdouble,gint);
 
 typedef struct _STF
 {
- gfloat Ex;
- gfloat Coef;
+ gdouble Ex;
+ gdouble Coef;
  gint l[3];
- gfloat C[3]; 
+ gdouble C[3]; 
  gint pqn;
 }STF;
 

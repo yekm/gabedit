@@ -125,7 +125,7 @@ static gchar *get_pov_cone_dipole()
      return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_ball(gint num, gfloat scale)
+static gchar *get_pov_ball(gint num, gdouble scale)
 {
      gchar *temp;
      XYZRC Center = get_prop_center(num);
@@ -142,7 +142,7 @@ static gchar *get_pov_ball(gint num, gfloat scale)
      return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_ball_for_stick(gint num, gfloat scale)
+static gchar *get_pov_ball_for_stick(gint num, gdouble scale)
 {
      gchar *temp;
      XYZRC Center = get_prop_center(num);
@@ -159,9 +159,9 @@ static gchar *get_pov_ball_for_stick(gint num, gfloat scale)
      return temp;
 }
 /********************************************************************************/
-static gfloat get_min(gint k)
+static gdouble get_min(gint k)
 {
-     gfloat min;
+     gdouble min;
      gint i=0;
 
      if(k==0)
@@ -267,10 +267,10 @@ static gchar *get_pov_one_stick_for_ball(gint i,gint j)
 	V3d cros;
 	V3d sub;
 	V3d C0={0,0,0};
-	gfloat C10[3];
-	gfloat C20[3];
-	gfloat CC1[3];
-	gfloat CC2[3];
+	gdouble C10[3];
+	gdouble C20[3];
+	gdouble CC1[3];
+	gdouble CC2[3];
 	for(l=0;l<3;l++) CC1[l] = Center1.C[l];
 	for(l=0;l<3;l++) CC2[l] = Center2.C[l];
 	v3d_sub(C0, CC1, C10);
@@ -325,10 +325,10 @@ static gchar *get_pov_one_stick_for_ball(gint i,gint j)
 	V3d cros;
 	V3d sub;
 	V3d C0={0,0,0};
-	gfloat C10[3];
-	gfloat C20[3];
-	gfloat CC1[3];
-	gfloat CC2[3];
+	gdouble C10[3];
+	gdouble C20[3];
+	gdouble CC1[3];
+	gdouble CC2[3];
 	for(l=0;l<3;l++) CC1[l] = Center1.C[l];
 	for(l=0;l<3;l++) CC2[l] = Center2.C[l];
 	v3d_sub(C0, CC1, C10);
@@ -414,14 +414,14 @@ static gchar *get_pov_one_stick(gint i,gint j)
   	V3d vScal = {ep,ep,ep};
 	gdouble C1[3];
 	gdouble C2[3];
-	gfloat C12[3];
+	gdouble C12[3];
 	V3d cros;
 	V3d sub;
 	V3d C0={0,0,0};
-	gfloat C10[3];
-	gfloat C20[3];
-	gfloat CC1[3];
-	gfloat CC2[3];
+	gdouble C10[3];
+	gdouble C20[3];
+	gdouble CC1[3];
+	gdouble CC2[3];
 	for(l=0;l<3;l++) CC1[l] = Center1.C[l];
 	for(l=0;l<3;l++) CC2[l] = Center2.C[l];
 	v3d_sub(C0, CC1, C10);
@@ -490,11 +490,11 @@ static gchar *get_pov_one_stick(gint i,gint j)
 	V3d cros;
 	V3d sub;
 	V3d C0={0,0,0};
-	gfloat C10[3];
-	gfloat C20[3];
-	gfloat CC1[3];
-	gfloat CC2[3];
-	gfloat C12[3];
+	gdouble C10[3];
+	gdouble C20[3];
+	gdouble CC1[3];
+	gdouble CC2[3];
+	gdouble C12[3];
 	for(l=0;l<3;l++) CC1[l] = Center1.C[l];
 	for(l=0;l<3;l++) CC2[l] = Center2.C[l];
 	v3d_sub(C0, CC1, C10);
@@ -701,7 +701,7 @@ static gchar *get_pov_camera()
      return temp;
 }
 /********************************************************************************/
-static gchar *get_pov_light_source(gchar* title,gchar* color,gfloat x,gfloat y, gfloat z)
+static gchar *get_pov_light_source(gchar* title,gchar* color,gdouble x,gdouble y, gdouble z)
 {
 	gchar *temp;
      	temp = g_strdup_printf("%s%s\t<%10.6f,%10.6f,%10.6f>\n\tcolor %s\n}\n",
@@ -717,7 +717,7 @@ static gchar *get_pov_light_sources()
      gchar *temp;
      gchar *dum1;
      gchar *dum2;
-     gfloat Ymax;
+     gdouble Ymax;
      gint i=0;
 /* calcul of Ymax*/
 
@@ -877,9 +877,9 @@ static gchar *get_pov_dipole()
 static gchar* export_to_povray(gchar* fileName)
 {
   gchar *temp;
-  gfloat xmin;
-  gfloat ymin;
-  gfloat zmin;
+  gdouble xmin;
+  gdouble ymin;
+  gdouble zmin;
   FILE *fd=NULL;
   gchar* message = NULL;
 

@@ -40,13 +40,13 @@ typedef struct _DataRow
 static gint numberOfSymmetries = 0;
 static gchar** labelsSymmetry = NULL;
 static gint* numberOfOrbitalsBySymmetry = NULL;
-static gfloat** occupationsBySymmetry = NULL;
-static gfloat** energiesBySymmetry = NULL;
+static gdouble** occupationsBySymmetry = NULL;
+static gdouble** energiesBySymmetry = NULL;
 static	gint N[3];
-static	gfloat XYZ0[3]={0.0,0.0,0.0};
-static	gfloat    X[3]={0.0,0.0,0.0};
-static	gfloat    Y[3]={0.0,0.0,0.0};
-static	gfloat    Z[3]={0.0,0.0,0.0};
+static	gdouble XYZ0[3]={0.0,0.0,0.0};
+static	gdouble    X[3]={0.0,0.0,0.0};
+static	gdouble    Y[3]={0.0,0.0,0.0};
+static	gdouble    Z[3]={0.0,0.0,0.0};
 static  gchar adfFileName[2048];
 
 /**************************************************************/
@@ -94,7 +94,7 @@ static void free_adf_orb()
 
 }
 /********************************************************************************/
-static gboolean get_values_from_adf_file(FILE* file,gfloat V[])
+static gboolean get_values_from_adf_file(FILE* file,gdouble V[])
 {
 	gint len = BSIZE;
 	gchar t[BSIZE];
@@ -108,7 +108,7 @@ static gboolean get_values_from_adf_file(FILE* file,gfloat V[])
 			g_free(V);
 			return FALSE;
 		}
-		if(sscanf(t,"%f %f %f", &V[k], &V[k+1], &V[k+2])!=3)
+		if(sscanf(t,"%lf %lf %lf", &V[k], &V[k+1], &V[k+2])!=3)
 		{
 	                break;
 		}
@@ -139,13 +139,13 @@ static void get_grid_from_adf_file(FILE* file,gchar* label)
 	gint i;
 	gint j;
 	gint k;
-	gfloat x;
-	gfloat y;
-	gfloat z;
-	gfloat v;
+	gdouble x;
+	gdouble y;
+	gdouble z;
+	gdouble v;
     	gboolean beg = TRUE;
-	gfloat scal;
-	gfloat* V;
+	gdouble scal;
+	gdouble* V;
 	gint n;
 
 	/* printf("N = %d %d %d\n",N[0],N[1],N[2]);*/
@@ -155,10 +155,10 @@ static void get_grid_from_adf_file(FILE* file,gchar* label)
 		return;
 	}
 	progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
-	scal = (gfloat)1.01/grid->N[0];
+	scal = (gdouble)1.01/grid->N[0];
 
  
-	V = g_malloc((N[0]*N[1]*N[2]+6)*sizeof(gfloat));
+	V = g_malloc((N[0]*N[1]*N[2]+6)*sizeof(gdouble));
 	if(!set_position(file,label))
 	{
 		Message("Sorry, I can not read density from this file","Error",TRUE);
@@ -190,7 +190,7 @@ static void get_grid_from_adf_file(FILE* file,gchar* label)
 				grid->point[i][j][k].C[1] = y;
 				grid->point[i][j][k].C[2] = z;
 				grid->point[i][j][k].C[3] = v;
-				/*printf("%f %f %f %f\n",x,y,z,v);*/
+				/*printf("%lf %lf %lf %lf\n",x,y,z,v);*/
 				if(beg)
 				{
 					beg = FALSE;
@@ -255,12 +255,12 @@ static void read_density()
 	fclose(file);
 }
 /********************************************************************************/
-static gfloat* read_one_table(FILE* file,gint* n)
+static gdouble* read_one_table(FILE* file,gint* n)
 {
 	gint len = BSIZE;
 	gchar buffer[BSIZE];
-	gfloat* table = NULL;
-	gfloat V[3];
+	gdouble* table = NULL;
+	gdouble V[3];
 	gint i,k,l,krest;
 
 	*n = -1;
@@ -275,7 +275,7 @@ static gfloat* read_one_table(FILE* file,gint* n)
 	if(*n<1)
 		return NULL;
 	/*printf("*n = %d\n",*n);*/
-	table  = g_malloc(*n* sizeof(gfloat));
+	table  = g_malloc(*n* sizeof(gdouble));
 
 	k = *n/3;
 	krest = *n % 3;
@@ -283,7 +283,7 @@ static gfloat* read_one_table(FILE* file,gint* n)
 	for(l=0;l<k;l++)
 	{
 		if(!fgets(buffer,len,file))return table;
-		if(3 != sscanf(buffer,"%f %f %f",&V[0],&V[1],&V[2]))
+		if(3 != sscanf(buffer,"%lf %lf %lf",&V[0],&V[1],&V[2]))
 		{
 			g_free(table);
 			return NULL;
@@ -296,7 +296,7 @@ static gfloat* read_one_table(FILE* file,gint* n)
 	if(krest>0)
 	{
 		if(!fgets(buffer,len,file))return table;
-		l = sscanf(buffer,"%f %f %f",&V[0],&V[1],&V[2]);
+		l = sscanf(buffer,"%lf %lf %lf",&V[0],&V[1],&V[2]);
 		if(l != krest)
 		{
 			*n = -1;
@@ -310,7 +310,7 @@ static gfloat* read_one_table(FILE* file,gint* n)
 	/*printf("Table = \n ");*/
 	/*
 	for(l=0;l<*n;l++)
-		printf("%f  ",table[l]);
+		printf("%lf  ",table[l]);
 	printf("\n");
 	*/
 
@@ -327,8 +327,8 @@ static gboolean read_info_orbitals(FILE* file)
 	gint nOcc, nEner;
 
 	numberOfOrbitalsBySymmetry = g_malloc(numberOfSymmetries*sizeof(gint));
-	occupationsBySymmetry = g_malloc(numberOfSymmetries*sizeof(gfloat*));
-	energiesBySymmetry = g_malloc(numberOfSymmetries*sizeof(gfloat*));
+	occupationsBySymmetry = g_malloc(numberOfSymmetries*sizeof(gdouble*));
+	energiesBySymmetry = g_malloc(numberOfSymmetries*sizeof(gdouble*));
 	for(i=0;i<numberOfSymmetries;i++)
 	{
 		numberOfOrbitalsBySymmetry[i] = 0;
@@ -400,13 +400,13 @@ static gboolean read_labels_symmetry(FILE* file)
 	return TRUE;
 }
 /**************************************************************/
-static gboolean read_vector(FILE* file,gfloat V[])
+static gboolean read_vector(FILE* file,gdouble V[])
 {
 	gint len = BSIZE;
 	gchar buffer[BSIZE];
 	if(!fgets(buffer,len,file))return FALSE;
 	if(!fgets(buffer,len,file))return FALSE;
-	if(3 != sscanf(buffer,"%f %f %f",&V[0],&V[1],&V[2]))
+	if(3 != sscanf(buffer,"%lf %lf %lf",&V[0],&V[1],&V[2]))
 		return FALSE;
 	return TRUE;
 }
@@ -484,14 +484,14 @@ static gboolean read_atoms_coordinates(FILE* file)
 	for(i=0;i<Ncenters;i++)
 	{
 		if(!fgets(buffer,len,file))return FALSE;
-		if(3 != sscanf(buffer,"%f %f %f",&GeomOrb[i].C[0],&GeomOrb[i].C[1],&GeomOrb[i].C[2]))
+		if(3 != sscanf(buffer,"%lf %lf %lf",&GeomOrb[i].C[0],&GeomOrb[i].C[1],&GeomOrb[i].C[2]))
 			return FALSE;
-		/* printf("%f %f %f\n",GeomOrb[i].C[0],GeomOrb[i].C[1],GeomOrb[i].C[2]);*/
+		/* printf("%lf %lf %lf\n",GeomOrb[i].C[0],GeomOrb[i].C[1],GeomOrb[i].C[2]);*/
 	}
 	return TRUE;
 }
 /**************************************************************/
-static gboolean read_adf_grid_limits(FILE* file, gint N[],gfloat XYZ0[], gfloat X[], gfloat Y[],gfloat Z[])
+static gboolean read_adf_grid_limits(FILE* file, gint N[],gdouble XYZ0[], gdouble X[], gdouble Y[],gdouble Z[])
 {
 	gboolean Ok = TRUE;
 	gint len = BSIZE;
@@ -541,7 +541,7 @@ static gboolean read_adf_grid_limits(FILE* file, gint N[],gfloat XYZ0[], gfloat 
 				Ok = FALSE;
 				break;
 			}
-			 /* printf("XYZ0 = %f %f %f\n",XYZ0[0],XYZ0[1],XYZ0[2]);*/
+			 /* printf("XYZ0 = %lf %lf %lf\n",XYZ0[0],XYZ0[1],XYZ0[2]);*/
 		}
 		if (strstr(buffer,"x-vector"))
 		{
@@ -550,7 +550,7 @@ static gboolean read_adf_grid_limits(FILE* file, gint N[],gfloat XYZ0[], gfloat 
 				Ok = FALSE;
 				break;
 			}
-			/* printf("X = %f %f %f\n",X[0],X[1],X[2]);*/
+			/* printf("X = %lf %lf %lf\n",X[0],X[1],X[2]);*/
 		}
 		if (strstr(buffer,"y-vector"))
 		{
@@ -559,7 +559,7 @@ static gboolean read_adf_grid_limits(FILE* file, gint N[],gfloat XYZ0[], gfloat 
 				Ok = FALSE;
 				break;
 			}
-			/* printf("Y = %f %f %f\n",Y[0],Y[1],Y[2]);*/
+			/* printf("Y = %lf %lf %lf\n",Y[0],Y[1],Y[2]);*/
 		}
 		if (strstr(buffer,"z-vector"))
 		{
@@ -568,7 +568,7 @@ static gboolean read_adf_grid_limits(FILE* file, gint N[],gfloat XYZ0[], gfloat 
 				Ok = FALSE;
 				break;
 			}
-			/* printf("Z = %f %f %f\n",Z[0],Z[1],Z[2]);*/
+			/* printf("Z = %lf %lf %lf\n",Z[0],Z[1],Z[2]);*/
 		}
 		if (strstr(buffer,"nr of symmetries"))
 		{
@@ -676,10 +676,10 @@ static void read_adf_file(gchar* filename)
 	gboolean Ok = TRUE;
 	/*
 	gint N[3];
-	gfloat XYZ0[3];
-	gfloat X[3];
-	gfloat Y[3];
-	gfloat Z[3];
+	gdouble XYZ0[3];
+	gdouble X[3];
+	gdouble Y[3];
+	gdouble Z[3];
 	*/
 
 	CancelCalcul = FALSE;

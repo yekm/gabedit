@@ -156,6 +156,7 @@ gchar* AtomToInsert;
 gint NumSelAtoms[4];
 gboolean Ddef;
 
+void  copy_screen_geom_clipboard();
 void  get_orgin_molecule_drawgeom(gdouble orig[]);
 void  get_camera_values_drawgeom(gdouble* zn, gdouble* zf, gdouble* angle, gdouble* aspect, gboolean* persp);
 void create_drawmolecule_file();

@@ -104,12 +104,12 @@ static void set_directory(GtkWidget *win, gpointer data)
 	gtk_window_set_transient_for(GTK_WINDOW(dirSelector),GTK_WINDOW(WinDlg));
 }
 /**************************************************************************/
-static void setColorsSurfaces(gfloat value)
+static void setColorsSurfaces(gdouble value)
 {
 	GtkWidget* handleBoxColorMap = g_object_get_data(G_OBJECT(WinDlg), "HandleboxColorMapIsoSurface");
 	ColorMap* colorMap = g_object_get_data(G_OBJECT(handleBoxColorMap),"ColorMap");
 	gdouble v;
-	gfloat color[3];
+	gdouble color[3];
 	gdouble C[3];
 	gint i;
 
@@ -125,7 +125,7 @@ static void setColorsSurfaces(gfloat value)
 	set_color_surface(1,C);
 }
 /********************************************************************************/
-static void setColorMap(gfloat min, gfloat max)
+static void setColorMap(gdouble min, gdouble max)
 {
 	GtkWidget* handleBoxColorMap = g_object_get_data(G_OBJECT(WinDlg), "HandleboxColorMapIsoSurface");
 	ColorMap* colorMap = g_object_get_data(G_OBJECT( handleBoxColorMap),"ColorMap");
@@ -135,11 +135,11 @@ static void setColorMap(gfloat min, gfloat max)
 		gchar* t = NULL;
 		GtkWidget* entryLeft  = g_object_get_data(G_OBJECT(handleBoxColorMap), "EntryLeft");
 		GtkWidget* entryRight = g_object_get_data(G_OBJECT(handleBoxColorMap), "EntryRight");
-		t = g_strdup_printf("%f",min);
+		t = g_strdup_printf("%lf",min);
 		gtk_entry_set_text(GTK_ENTRY(entryLeft),t);
 		g_free(t);
 		gtk_widget_activate(entryLeft);
-		t = g_strdup_printf("%f",max);
+		t = g_strdup_printf("%lf",max);
 		gtk_entry_set_text(GTK_ENTRY(entryRight),t);
 		g_free(t);
 		gtk_widget_activate(entryRight);
@@ -158,10 +158,10 @@ static void setColorMap(gfloat min, gfloat max)
 		g_object_set_data(G_OBJECT(entryLeft),"ColorMap", colorMap);
 		g_object_set_data(G_OBJECT(entryRight),"ColorMap", colorMap);
 		g_object_set_data(G_OBJECT(darea),"ColorMap", colorMap);
-		t = g_strdup_printf("%f",min);
+		t = g_strdup_printf("%lf",min);
 		gtk_entry_set_text(GTK_ENTRY(entryLeft),t);
 		g_free(t);
-		t = g_strdup_printf("%f",max);
+		t = g_strdup_printf("%lf",max);
 		gtk_entry_set_text(GTK_ENTRY(entryRight),t);
 		g_free(t);
 	}
@@ -179,7 +179,7 @@ static void reset_parameters(GtkWidget *win, gpointer data)
 	if(velo<0)
 	{
 		velo = -velo;
-		sprintf(t,"%f",velo);
+		sprintf(t,"%lf",velo);
 		gtk_entry_set_text(GTK_ENTRY(EntryVelocity),t);
 	}
 	velocity = velo;
@@ -201,7 +201,7 @@ static void reset_parameters(GtkWidget *win, gpointer data)
 	{
 		minIso = -minIso;
 		if(minIso==0) minIso = 0.01;
-		sprintf(t,"%f",minIso);
+		sprintf(t,"%lf",minIso);
 		gtk_entry_set_text(GTK_ENTRY(EntryMinIsoValue),t);
 	}
 	minIsoValue = minIso;
@@ -209,7 +209,7 @@ static void reset_parameters(GtkWidget *win, gpointer data)
 	{
 		maxIso = -maxIso;
 		if(maxIso==0) maxIso = 0.05;
-		sprintf(t,"%f",maxIso);
+		sprintf(t,"%lf",maxIso);
 		gtk_entry_set_text(GTK_ENTRY(EntryMaxIsoValue),t);
 	}
 	maxIsoValue = maxIso;
@@ -397,7 +397,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  3,3);
 	gtk_editable_set_editable((GtkEditable*) EntryMinIsoValue,TRUE);
-	sprintf(t,"%f",minIsoValue);
+	sprintf(t,"%lf",minIsoValue);
 	gtk_entry_set_text(GTK_ENTRY(EntryMinIsoValue),t);
 
 	i++;
@@ -409,7 +409,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  3,3);
 	gtk_editable_set_editable((GtkEditable*) EntryMaxIsoValue,TRUE);
-	sprintf(t,"%f",maxIsoValue);
+	sprintf(t,"%lf",maxIsoValue);
 	gtk_entry_set_text(GTK_ENTRY(EntryMaxIsoValue),t);
 
 	i++;
@@ -421,7 +421,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  3,3);
 	gtk_editable_set_editable((GtkEditable*) EntryVelocity,TRUE);
-	sprintf(t,"%f",velocity);
+	sprintf(t,"%lf",velocity);
 	gtk_entry_set_text(GTK_ENTRY(EntryVelocity),t);
 
 	i++;

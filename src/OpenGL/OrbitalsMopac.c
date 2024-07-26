@@ -84,7 +84,7 @@ static void DefineMopacSphericalBasis(gchar** strbasis, gint* nums, gint* pqn, g
 		temp[k].Stf[n].pqn   = pqn[k];
 		temp[k].Stf[n].Ex   = zetas[k];
 	   	temp[k].Stf[n].Coef = Stemp.lxyz[n].Coef;
-		/* printf("Coef Sph = %f l=%d %d %d\n", temp[k].Stf[n].Coef,Stemp.lxyz[n].l[0],Stemp.lxyz[n].l[1],Stemp.lxyz[n].l[2]);*/
+		/* printf("Coef Sph = %lf l=%d %d %d\n", temp[k].Stf[n].Coef,Stemp.lxyz[n].l[0],Stemp.lxyz[n].l[1],Stemp.lxyz[n].l[2]);*/
 	   	temp[k].Stf[n].Coef *= pow(2*zetas[k],pqn[k]+0.5)/sqrt(factorial(2*pqn[k]));
 	   	for(c=0;c<3;c++)
 	   	{

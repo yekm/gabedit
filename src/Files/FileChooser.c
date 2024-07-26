@@ -19,6 +19,8 @@ DEALINGS IN THE SOFTWARE.
 
 
 #include "../../Config.h"
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include "../Common/Global.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
@@ -34,7 +36,7 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
   gchar* patternsfiles[] = {	"*",
 			    	"*.inp","*.com","*.mop",
 	  			"*.log","*.out","*.aux","*.gab","*.xyz","*.mol2","*.tnk","*.pdb","*.hin","*.zmt","*.gzmt",
-	  		    	"*.hf","*.gcube","*.cube","*.CUBE","*.grid","*.grid","*.t41","*.trj","*.txt","*",
+	  		    	"*.hf","*.gcube","*.cube","*.CUBE","*.grid","*.M2Msi","*.t41","*.trj","*.txt","*",
 			    	NULL};
   GCallback *func = (GCallback *)data;
   gchar* temp = NULL;

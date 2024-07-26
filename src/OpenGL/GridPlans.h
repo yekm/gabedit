@@ -23,13 +23,13 @@ typedef struct _Plane
 {
 	Point5 Center;
 	Point5 Vector;
-	gfloat len[2];
+	gdouble len[2];
 	Point5 V[2]; /* Vectors in plans calculeted from Center and Vector*/
 	gint N[2];
 	Point5 **point;
-	gfloat limits[3][2]; /* xmin,xmax,ymin,ymax,zmin and zmax */
+	gdouble limits[3][2]; /* xmin,xmax,ymin,ymax,zmin and zmax */
 }Plane;
-Grid* define_plane_grid(Point5 C, Point5 V, gfloat *len, gint *N);
+Grid* define_plane_grid(Point5 C, Point5 V, gdouble *len, gint *N);
 void create_planeGrid_center_vector();
 
 #endif /* __GABEDIT_GRIDPLANS_H__ */

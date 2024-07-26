@@ -29,8 +29,8 @@ typedef enum
 
 typedef struct _OneColorValue
 {
-	gfloat color[3];
-	gfloat value;
+	gdouble color[3];
+	gdouble value;
 }OneColorValue;
 
 typedef struct _ColorMap
@@ -41,12 +41,12 @@ typedef struct _ColorMap
 
 void colormap_free(ColorMap* colorMap);
 ColorMap*  new_colorMap_fromGrid_multicolor(Grid* grid);
-ColorMap*  new_colorMap_min_max_multicolor(gfloat minValue, gfloat maxValue);
-ColorMap*  new_colorMap_min_max_unicolor(gfloat minValue, gfloat maxValue, gfloat color[]);
-ColorMap*  new_colorMap_fromGrid_unicolor(Grid* grid, gfloat color[]);
+ColorMap*  new_colorMap_min_max_multicolor(gdouble minValue, gdouble maxValue);
+ColorMap*  new_colorMap_min_max_unicolor(gdouble minValue, gdouble maxValue, gdouble color[]);
+ColorMap*  new_colorMap_fromGrid_unicolor(Grid* grid, gdouble color[]);
 ColorMap*  new_colorMap_fromGrid(Grid* grid);
-ColorMap*  new_colorMap_min_max(gfloat minValue, gfloat maxValue);
-void  set_Color_From_colorMap(ColorMap* colorMap, gfloat color[], gfloat value);
+ColorMap*  new_colorMap_min_max(gdouble minValue, gdouble maxValue);
+void  set_Color_From_colorMap(ColorMap* colorMap, gdouble color[], gdouble value);
 GtkWidget* create_color_map_show(GtkWidget* box, ColorMap* colorMap, gchar* label);
 void color_map_show(GtkWidget* handlebox);
 void color_map_refresh(GtkWidget* handlebox);

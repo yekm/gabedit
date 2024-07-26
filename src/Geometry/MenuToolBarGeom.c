@@ -698,6 +698,10 @@ static void activate_action (GtkAction *action)
  		GtkWidget* chooser = file_chooser_save(save_geometry_ps_file,"Save image in ps file format",GABEDIT_TYPEFILE_PS,GABEDIT_TYPEWIN_GEOM);
 		fit_windows_position(GeomDlg, chooser);
 	}
+	else if(!strcmp(name, "ScreenCaptureCilpBoard")) 
+	{
+		copy_screen_geom_clipboard();
+	}
 
 	else if(!strcmp(name, "MolecularMechanicsEnergy")) 
 	{
@@ -1016,6 +1020,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ScreenCaptureBMP", NULL, "_BMP format", NULL, "create a BMP file", G_CALLBACK (activate_action) },
 	{"ScreenCapturePNG", NULL, "_PNG format", NULL, "create a PNG file", G_CALLBACK (activate_action) },
 	{"ScreenCapturePS", NULL, "_PS format", NULL, "create a PS file", G_CALLBACK (activate_action) },
+	{"ScreenCaptureCilpBoard", NULL, "_Copy to clipboard", NULL, "copy to clipboard", G_CALLBACK (activate_action) },
 
 	{"MolecularMechanics", NULL, "_Molecular Mechanics"},
 	{"MolecularMechanicsEnergy", NULL, "_Energy", NULL, "compute the energy using the MM method", G_CALLBACK (activate_action) },
@@ -1356,6 +1361,7 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"ScreenCaptureBMP\" action=\"ScreenCaptureBMP\" />\n"
 "      <menuitem name=\"ScreenCapturePNG\" action=\"ScreenCapturePNG\" />\n"
 "      <menuitem name=\"ScreenCapturePS\" action=\"ScreenCapturePS\" />\n"
+"      <menuitem name=\"ScreenCaptureCilpBoard\" action=\"ScreenCaptureCilpBoard\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepTools\" />\n"
 "    <menu name=\"Tools\" action=\"Tools\">\n"

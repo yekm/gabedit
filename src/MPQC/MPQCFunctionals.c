@@ -33,7 +33,7 @@ void initMPQCFunctionals()
 	gint n = G96X+1;
 	gint i;
 	functionals = g_malloc(n*sizeof(MPQCFunctional));
-	sumFunctionals = g_malloc(n*sizeof(gfloat));;
+	sumFunctionals = g_malloc(n*sizeof(gdouble));;
 	for(i=0;i<n;i++)
 		sumFunctionals[i] = 0.0;
 	sumFunctionals[SlaterX] = 1.0;
@@ -164,7 +164,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[XALPHA].n = 1;
 	stdFunctionals[XALPHA].listOfTypes = g_malloc(stdFunctionals[XALPHA].n*sizeof(MPQCFunctionalType));
 	stdFunctionals[XALPHA].listOfTypes[0]= Xalpha;
-	stdFunctionals[XALPHA].coefficients = g_malloc(stdFunctionals[XALPHA].n*sizeof(gfloat));
+	stdFunctionals[XALPHA].coefficients = g_malloc(stdFunctionals[XALPHA].n*sizeof(gdouble));
 	stdFunctionals[XALPHA].coefficients[0]= 1.0;
 
 	stdFunctionals[HFS].type = HFS;
@@ -172,7 +172,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[HFS].n = 1;
 	stdFunctionals[HFS].listOfTypes = g_malloc(stdFunctionals[HFS].n*sizeof(MPQCFunctionalType));
 	stdFunctionals[HFS].listOfTypes[0]= SlaterX;
-	stdFunctionals[HFS].coefficients = g_malloc(stdFunctionals[HFS].n*sizeof(gfloat));
+	stdFunctionals[HFS].coefficients = g_malloc(stdFunctionals[HFS].n*sizeof(gdouble));
 	stdFunctionals[HFS].coefficients[0]= 1.0;
 
 	stdFunctionals[HFB].type = HFB;
@@ -180,7 +180,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[HFB].n = 1;
 	stdFunctionals[HFB].listOfTypes = g_malloc(stdFunctionals[HFB].n*sizeof(MPQCFunctionalType));
 	stdFunctionals[HFB].listOfTypes[0]= Becke88X;
-	stdFunctionals[HFB].coefficients = g_malloc(stdFunctionals[HFB].n*sizeof(gfloat));
+	stdFunctionals[HFB].coefficients = g_malloc(stdFunctionals[HFB].n*sizeof(gdouble));
 	stdFunctionals[HFB].coefficients[0]= 1.0;
 
 	stdFunctionals[HFG96].type = HFG96;
@@ -188,7 +188,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[HFG96].n = 1;
 	stdFunctionals[HFG96].listOfTypes = g_malloc(stdFunctionals[HFG96].n*sizeof(MPQCFunctionalType));
 	stdFunctionals[HFG96].listOfTypes[0]= G96X;
-	stdFunctionals[HFG96].coefficients = g_malloc(stdFunctionals[HFG96].n*sizeof(gfloat));
+	stdFunctionals[HFG96].coefficients = g_malloc(stdFunctionals[HFG96].n*sizeof(gdouble));
 	stdFunctionals[HFG96].coefficients[0]= 1.0;
 
 	stdFunctionals[G96LYP].type = G96LYP;
@@ -197,7 +197,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[G96LYP].listOfTypes = g_malloc(stdFunctionals[G96LYP].n*sizeof(MPQCFunctionalType));
 	stdFunctionals[G96LYP].listOfTypes[0]= G96X;
 	stdFunctionals[G96LYP].listOfTypes[1]= LYPC;
-	stdFunctionals[G96LYP].coefficients = g_malloc(stdFunctionals[G96LYP].n*sizeof(gfloat));
+	stdFunctionals[G96LYP].coefficients = g_malloc(stdFunctionals[G96LYP].n*sizeof(gdouble));
 	stdFunctionals[G96LYP].coefficients[0]= 1.0;
 	stdFunctionals[G96LYP].coefficients[1]= 1.0;
 
@@ -209,7 +209,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[BLYP].listOfTypes[0]= SlaterX;
 	stdFunctionals[BLYP].listOfTypes[1]= Becke88X;
 	stdFunctionals[BLYP].listOfTypes[2]= LYPC;
-	stdFunctionals[BLYP].coefficients = g_malloc(stdFunctionals[BLYP].n*sizeof(gfloat));
+	stdFunctionals[BLYP].coefficients = g_malloc(stdFunctionals[BLYP].n*sizeof(gdouble));
 	stdFunctionals[BLYP].coefficients[0]= 1.0;
 	stdFunctionals[BLYP].coefficients[1]= 1.0;
 	stdFunctionals[BLYP].coefficients[2]= 1.0;
@@ -220,7 +220,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[SVWN1].listOfTypes = g_malloc(stdFunctionals[SVWN1].n*sizeof(MPQCFunctionalType));
 	stdFunctionals[SVWN1].listOfTypes[0]= SlaterX;
 	stdFunctionals[SVWN1].listOfTypes[1]= VWN1LC;
-	stdFunctionals[SVWN1].coefficients = g_malloc(stdFunctionals[SVWN1].n*sizeof(gfloat));
+	stdFunctionals[SVWN1].coefficients = g_malloc(stdFunctionals[SVWN1].n*sizeof(gdouble));
 	stdFunctionals[SVWN1].coefficients[0]= 1.0;
 	stdFunctionals[SVWN1].coefficients[1]= 1.0;
 
@@ -231,7 +231,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[SVWN1RPA].listOfTypes = g_malloc(stdFunctionals[SVWN1RPA].n*sizeof(MPQCFunctionalType));
 	stdFunctionals[SVWN1RPA].listOfTypes[0]= SlaterX;
 	stdFunctionals[SVWN1RPA].listOfTypes[1]= VWN1LCRPA;
-	stdFunctionals[SVWN1RPA].coefficients = g_malloc(stdFunctionals[SVWN1RPA].n*sizeof(gfloat));
+	stdFunctionals[SVWN1RPA].coefficients = g_malloc(stdFunctionals[SVWN1RPA].n*sizeof(gdouble));
 	stdFunctionals[SVWN1RPA].coefficients[0]= 1.0;
 	stdFunctionals[SVWN1RPA].coefficients[1]= 1.0;
 
@@ -241,7 +241,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[SVWN2].listOfTypes = g_malloc(stdFunctionals[SVWN2].n*sizeof(MPQCFunctionalType));
 	stdFunctionals[SVWN2].listOfTypes[0]= SlaterX;
 	stdFunctionals[SVWN2].listOfTypes[1]= VWN2LC;
-	stdFunctionals[SVWN2].coefficients = g_malloc(stdFunctionals[SVWN2].n*sizeof(gfloat));
+	stdFunctionals[SVWN2].coefficients = g_malloc(stdFunctionals[SVWN2].n*sizeof(gdouble));
 	stdFunctionals[SVWN2].coefficients[0]= 1.0;
 	stdFunctionals[SVWN2].coefficients[1]= 1.0;
 
@@ -251,7 +251,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[SVWN3].listOfTypes = g_malloc(stdFunctionals[SVWN3].n*sizeof(MPQCFunctionalType));
 	stdFunctionals[SVWN3].listOfTypes[0]= SlaterX;
 	stdFunctionals[SVWN3].listOfTypes[1]= VWN3LC;
-	stdFunctionals[SVWN3].coefficients = g_malloc(stdFunctionals[SVWN3].n*sizeof(gfloat));
+	stdFunctionals[SVWN3].coefficients = g_malloc(stdFunctionals[SVWN3].n*sizeof(gdouble));
 	stdFunctionals[SVWN3].coefficients[0]= 1.0;
 	stdFunctionals[SVWN3].coefficients[1]= 1.0;
 
@@ -261,7 +261,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[SVWN4].listOfTypes = g_malloc(stdFunctionals[SVWN4].n*sizeof(MPQCFunctionalType));
 	stdFunctionals[SVWN4].listOfTypes[0]= SlaterX;
 	stdFunctionals[SVWN4].listOfTypes[1]= VWN4LC;
-	stdFunctionals[SVWN4].coefficients = g_malloc(stdFunctionals[SVWN4].n*sizeof(gfloat));
+	stdFunctionals[SVWN4].coefficients = g_malloc(stdFunctionals[SVWN4].n*sizeof(gdouble));
 	stdFunctionals[SVWN4].coefficients[0]= 1.0;
 	stdFunctionals[SVWN4].coefficients[1]= 1.0;
 
@@ -271,7 +271,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[SVWN5].listOfTypes = g_malloc(stdFunctionals[SVWN5].n*sizeof(MPQCFunctionalType));
 	stdFunctionals[SVWN5].listOfTypes[0]= SlaterX;
 	stdFunctionals[SVWN5].listOfTypes[1]= VWN5LC;
-	stdFunctionals[SVWN5].coefficients = g_malloc(stdFunctionals[SVWN5].n*sizeof(gfloat));
+	stdFunctionals[SVWN5].coefficients = g_malloc(stdFunctionals[SVWN5].n*sizeof(gdouble));
 	stdFunctionals[SVWN5].coefficients[0]= 1.0;
 	stdFunctionals[SVWN5].coefficients[1]= 1.0;
 
@@ -281,7 +281,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[SPZ81].listOfTypes = g_malloc(stdFunctionals[SPZ81].n*sizeof(MPQCFunctionalType));
 	stdFunctionals[SPZ81].listOfTypes[0]= SlaterX;
 	stdFunctionals[SPZ81].listOfTypes[1]= PZ81LC;
-	stdFunctionals[SPZ81].coefficients = g_malloc(stdFunctionals[SPZ81].n*sizeof(gfloat));
+	stdFunctionals[SPZ81].coefficients = g_malloc(stdFunctionals[SPZ81].n*sizeof(gdouble));
 	stdFunctionals[SPZ81].coefficients[0]= 1.0;
 	stdFunctionals[SPZ81].coefficients[1]= 1.0;
 
@@ -291,7 +291,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[SPW92].listOfTypes = g_malloc(stdFunctionals[SPW92].n*sizeof(MPQCFunctionalType));
 	stdFunctionals[SPW92].listOfTypes[0]= SlaterX;
 	stdFunctionals[SPW92].listOfTypes[1]= PW92LC;
-	stdFunctionals[SPW92].coefficients = g_malloc(stdFunctionals[SPW92].n*sizeof(gfloat));
+	stdFunctionals[SPW92].coefficients = g_malloc(stdFunctionals[SPW92].n*sizeof(gdouble));
 	stdFunctionals[SPW92].coefficients[0]= 1.0;
 	stdFunctionals[SPW92].coefficients[1]= 1.0;
 
@@ -302,7 +302,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[BPW91].listOfTypes[0]= SlaterX;
 	stdFunctionals[BPW91].listOfTypes[1]= Becke88X;
 	stdFunctionals[BPW91].listOfTypes[2]= PW91C;
-	stdFunctionals[BPW91].coefficients = g_malloc(stdFunctionals[BPW91].n*sizeof(gfloat));
+	stdFunctionals[BPW91].coefficients = g_malloc(stdFunctionals[BPW91].n*sizeof(gdouble));
 	stdFunctionals[BPW91].coefficients[0]= 1.0;
 	stdFunctionals[BPW91].coefficients[1]= 1.0;
 	stdFunctionals[BPW91].coefficients[2]= 1.0;
@@ -315,7 +315,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[BP86].listOfTypes[1]= Becke88X;
 	stdFunctionals[BP86].listOfTypes[2]= P86C;
 	stdFunctionals[BP86].listOfTypes[3]= PZ81LC;
-	stdFunctionals[BP86].coefficients = g_malloc(stdFunctionals[BP86].n*sizeof(gfloat));
+	stdFunctionals[BP86].coefficients = g_malloc(stdFunctionals[BP86].n*sizeof(gdouble));
 	stdFunctionals[BP86].coefficients[0]= 1.0;
 	stdFunctionals[BP86].coefficients[1]= 1.0;
 	stdFunctionals[BP86].coefficients[2]= 1.0;
@@ -330,7 +330,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[B3LYP].listOfTypes[2]= Becke88X;
 	stdFunctionals[B3LYP].listOfTypes[3]= VWN1LCRPA;
 	stdFunctionals[B3LYP].listOfTypes[4]=  LYPC;
-	stdFunctionals[B3LYP].coefficients = g_malloc(stdFunctionals[B3LYP].n*sizeof(gfloat));
+	stdFunctionals[B3LYP].coefficients = g_malloc(stdFunctionals[B3LYP].n*sizeof(gdouble));
 	stdFunctionals[B3LYP].coefficients[0]= 0.2;
 	stdFunctionals[B3LYP].coefficients[1]= 0.8;
 	stdFunctionals[B3LYP].coefficients[2]= 0.72;
@@ -346,7 +346,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[B3PW91].listOfTypes[2]= Becke88X;
 	stdFunctionals[B3PW91].listOfTypes[3]= PW91C;
 	stdFunctionals[B3PW91].listOfTypes[4]= PW92LC;
-	stdFunctionals[B3PW91].coefficients = g_malloc(stdFunctionals[B3PW91].n*sizeof(gfloat));
+	stdFunctionals[B3PW91].coefficients = g_malloc(stdFunctionals[B3PW91].n*sizeof(gdouble));
 	stdFunctionals[B3PW91].coefficients[0]= 0.2;
 	stdFunctionals[B3PW91].coefficients[1]= 0.8;
 	stdFunctionals[B3PW91].coefficients[2]= 0.72;
@@ -362,7 +362,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[B3P86].listOfTypes[2]= Becke88X;
 	stdFunctionals[B3P86].listOfTypes[3]= P86C;
 	stdFunctionals[B3P86].listOfTypes[4]= VWN1LCRPA;
-	stdFunctionals[B3P86].coefficients = g_malloc(stdFunctionals[B3P86].n*sizeof(gfloat));
+	stdFunctionals[B3P86].coefficients = g_malloc(stdFunctionals[B3P86].n*sizeof(gdouble));
 	stdFunctionals[B3P86].coefficients[0]= 0.2;
 	stdFunctionals[B3P86].coefficients[1]= 0.8;
 	stdFunctionals[B3P86].coefficients[2]= 0.72;
@@ -375,7 +375,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[PW91].listOfTypes = g_malloc(stdFunctionals[PW91].n*sizeof(MPQCFunctionalType));
 	stdFunctionals[PW91].listOfTypes[0]= PW91X;
 	stdFunctionals[PW91].listOfTypes[1]= PW91C;
-	stdFunctionals[PW91].coefficients = g_malloc(stdFunctionals[PW91].n*sizeof(gfloat));
+	stdFunctionals[PW91].coefficients = g_malloc(stdFunctionals[PW91].n*sizeof(gdouble));
 	stdFunctionals[PW91].coefficients[0]= 1.0;
 	stdFunctionals[PW91].coefficients[1]= 1.0;
 
@@ -385,7 +385,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[PBE].listOfTypes = g_malloc(stdFunctionals[PBE].n*sizeof(MPQCFunctionalType));
 	stdFunctionals[PBE].listOfTypes[0]= PBEX;
 	stdFunctionals[PBE].listOfTypes[1]= PBEC;
-	stdFunctionals[PBE].coefficients = g_malloc(stdFunctionals[PBE].n*sizeof(gfloat));
+	stdFunctionals[PBE].coefficients = g_malloc(stdFunctionals[PBE].n*sizeof(gdouble));
 	stdFunctionals[PBE].coefficients[0]= 1.0;
 	stdFunctionals[PBE].coefficients[1]= 1.0;
 
@@ -396,7 +396,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[mPW_PW91_PW91].listOfTypes = g_malloc(stdFunctionals[mPW_PW91_PW91].n*sizeof(MPQCFunctionalType));
 	stdFunctionals[mPW_PW91_PW91].listOfTypes[0]= mPW91_PW91X;
 	stdFunctionals[mPW_PW91_PW91].listOfTypes[1]= PW91C;
-	stdFunctionals[mPW_PW91_PW91].coefficients = g_malloc(stdFunctionals[mPW_PW91_PW91].n*sizeof(gfloat));
+	stdFunctionals[mPW_PW91_PW91].coefficients = g_malloc(stdFunctionals[mPW_PW91_PW91].n*sizeof(gdouble));
 	stdFunctionals[mPW_PW91_PW91].coefficients[0]= 1.0;
 	stdFunctionals[mPW_PW91_PW91].coefficients[1]= 1.0;
 
@@ -406,7 +406,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[mPWPW91].listOfTypes = g_malloc(stdFunctionals[mPWPW91].n*sizeof(MPQCFunctionalType));
 	stdFunctionals[mPWPW91].listOfTypes[0]= mPW91_mPW91X;
 	stdFunctionals[mPWPW91].listOfTypes[1]= PW91C;
-	stdFunctionals[mPWPW91].coefficients = g_malloc(stdFunctionals[mPWPW91].n*sizeof(gfloat));
+	stdFunctionals[mPWPW91].coefficients = g_malloc(stdFunctionals[mPWPW91].n*sizeof(gdouble));
 	stdFunctionals[mPWPW91].coefficients[0]= 1.0;
 	stdFunctionals[mPWPW91].coefficients[1]= 1.0;
 
@@ -417,7 +417,7 @@ void initMPQCStdFunctionals()
 	stdFunctionals[mPW1PW91].listOfTypes[0]= HFX;
 	stdFunctionals[mPW1PW91].listOfTypes[1]= mPW91_mPW91X;
 	stdFunctionals[mPW1PW91].listOfTypes[2]= PW91C;
-	stdFunctionals[mPW1PW91].coefficients = g_malloc(stdFunctionals[mPW1PW91].n*sizeof(gfloat));
+	stdFunctionals[mPW1PW91].coefficients = g_malloc(stdFunctionals[mPW1PW91].n*sizeof(gdouble));
 	stdFunctionals[mPW1PW91].coefficients[0]= 0.16;
 	stdFunctionals[mPW1PW91].coefficients[1]= 0.84;
 	stdFunctionals[mPW1PW91].coefficients[2]= 1.0;
@@ -452,7 +452,7 @@ static void changedEntrySumDensityFunctional(GtkWidget *entry, gpointer data)
 {
 	G_CONST_RETURN gchar* entryText = NULL;
 	gint* numFunctionals;
-	gfloat* coefficients;
+	gdouble* coefficients;
 	 
 	if(!GTK_IS_WIDGET(entry)) return;
 	entryText = gtk_entry_get_text(GTK_ENTRY(entry));
@@ -471,7 +471,7 @@ static void changedEntrySumDensityFunctional(GtkWidget *entry, gpointer data)
 	}
 }
 /***********************************************************************************************/
-void createXCFunctionalsFrame(GtkWidget *box, gchar* title, gfloat* coefficients)
+void createXCFunctionalsFrame(GtkWidget *box, gchar* title, gdouble* coefficients)
 {
 	GtkWidget* frame;
 	GtkWidget* vboxFrame;
@@ -522,14 +522,14 @@ void createXCFunctionalsFrame(GtkWidget *box, gchar* title, gfloat* coefficients
 /************************************************************************************************************/
 static void destroyWindow(GtkWidget *win)
 {
-	gfloat* coefficients = g_object_get_data(G_OBJECT (win), "Coefficients");
+	gdouble* coefficients = g_object_get_data(G_OBJECT (win), "Coefficients");
 	if(coefficients) g_free(coefficients);
 	gtk_widget_destroy(win);
 }
 /************************************************************************************************************/
 static void setSumDensityFunctionals(GtkWidget *win,gpointer data)
 {
-	gfloat* coefficients = g_object_get_data(G_OBJECT (win), "Coefficients");
+	gdouble* coefficients = g_object_get_data(G_OBJECT (win), "Coefficients");
 	if(coefficients)
 	{
 		gint n = G96X+1;
@@ -545,10 +545,10 @@ void mpqcSumDensityFunctionalWindow()
 	GtkWidget *win = NULL;
 	GtkWidget *table = gtk_table_new(1,2,FALSE);
 	gint n = G96X+1;
-	gfloat* coefficients = NULL;
+	gdouble* coefficients = NULL;
 	gint i;
 
-	coefficients = g_malloc(n*sizeof(gfloat));;
+	coefficients = g_malloc(n*sizeof(gdouble));;
 	for(i=0;i<n;i++)
 		coefficients[i] = sumFunctionals[i];
 

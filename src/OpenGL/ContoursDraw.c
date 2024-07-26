@@ -44,10 +44,10 @@ static ColorMap* get_colorMap_contours()
 	return colorMap;
 }
 /********************************************************************************/
-gfloat* GetGapVector(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloat gap)
+gdouble* GetGapVector(Grid* plansgrid,gint i0,gint i1,gint numplan,gdouble gap)
 {
-	gfloat x1,y1,z1;
-	gfloat x2,y2,z2;
+	gdouble x1,y1,z1;
+	gdouble x2,y2,z2;
 	gint ip = numplan;
 	gint ix=0,iy=0,iz=0;
 	gint ix1=0,iy1=0,iz1=0;
@@ -55,8 +55,8 @@ gfloat* GetGapVector(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloat gap)
 	gint ix3,iy3,iz3;
 	gint ix4,iy4,iz4;
 	gint i,j,ii,jj;
-	gfloat *Gap = g_malloc(3*sizeof(gfloat));
-	gfloat Module;
+	gdouble *Gap = g_malloc(3*sizeof(gdouble));
+	gdouble Module;
 
 	i = 0;
 	j = 0;
@@ -132,11 +132,11 @@ gfloat* GetGapVector(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloat gap)
 	return Gap;
 }
 /*********************************************************************************************************/
-void PlanDraw(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloat Gap[])
+void PlanDraw(Grid* plansgrid,gint i0,gint i1,gint numplan,gdouble Gap[])
 {
-	gfloat x;
-	gfloat y;
-	gfloat z;
+	gdouble x;
+	gdouble y;
+	gdouble z;
 	gint ip = numplan;
 	gint ix=0,iy=0,iz=0;
 	gint ix1=0,iy1=0,iz1=0;
@@ -225,7 +225,7 @@ void PlanDraw(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloat Gap[])
 	glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
 }
 /*********************************************************************************************************/
-static void ContoursDraw(Contours contours,gfloat Gap[], gfloat value)
+static void ContoursDraw(Contours contours,gdouble Gap[], gdouble value)
 {
 	gint i;
 	gint j;
@@ -233,7 +233,7 @@ static void ContoursDraw(Contours contours,gfloat Gap[], gfloat value)
 	gint n=0;
 	gint N[2] = {contours.N[0],contours.N[1]};
 	PointsContour** pointscontour= contours.pointscontour;
-	gfloat x, y, z;
+	gdouble x, y, z;
 
 	glLineWidth(0.5);
 	/*for(i=1;i<N[0]-2;i++)*/
@@ -282,19 +282,19 @@ static void ContoursDraw(Contours contours,gfloat Gap[], gfloat value)
 	*/
 }
 /*********************************************************************************************************/
-GLuint ContoursPlanGenOneList(Grid* plansgrid,gint Ncontours,gfloat*values,gint i0,gint i1,gint numplan,gfloat gap)
+GLuint ContoursPlanGenOneList(Grid* plansgrid,gint Ncontours,gdouble*values,gint i0,gint i1,gint numplan,gdouble gap)
 {
 	GLuint contourslist;
 	Contours contours;
 	gint i;
-	gfloat *Gap;
+	gdouble *Gap;
 	ColorMap* colorMap = get_colorMap_contours();
 
 	if(!plansgrid)
 		return 0;
 	Gap = GetGapVector(plansgrid,i0,i1,numplan,gap);
 
-/*	Debug("Gap  = %f %f %f \n",Gap[0],Gap[1],Gap[2]);*/
+/*	Debug("Gap  = %lf %lf %lf \n",Gap[0],Gap[1],Gap[2]);*/
     contourslist = glGenLists(1);
 	glNewList(contourslist, GL_COMPILE);
 
@@ -327,7 +327,7 @@ GLuint ContoursPlanGenOneList(Grid* plansgrid,gint Ncontours,gfloat*values,gint 
 		{
 			set_Color_From_colorMap(colorMap, Color, values[i]);
 
-			glColor4fv(Color);
+			glColor4dv(Color);
 			contours = get_contours(plansgrid,values[i],i0,i1,numplan);
 			ContoursDraw(contours,Gap,values[i]);
 			contour_point_free(contours);				
@@ -384,7 +384,7 @@ void hideColorMapContours()
 	color_map_hide(handleBoxColorMapContours);
 }
 /********************************************************************************/
-GLuint ContoursGenLists(GLuint contourslist,Grid* plansgrid,gint Ncontours,gfloat* values,gint i0,gint i1,gint numplan,gfloat gap)
+GLuint ContoursGenLists(GLuint contourslist,Grid* plansgrid,gint Ncontours,gdouble* values,gint i0,gint i1,gint numplan,gdouble gap)
 {
 	if (glIsList(contourslist) == GL_TRUE)
 			glDeleteLists(contourslist,1);

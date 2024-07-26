@@ -20,6 +20,7 @@ DEALINGS IN THE SOFTWARE.
 
 #include "../../Config.h"
 #include "GlobalOrb.h"
+#include "../OpenGL/UtilsOrb.h"
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
 #include "../Utils/Utils.h"
@@ -38,9 +39,9 @@ static void draw_space(int i, gdouble g)
 	V4d Diffuse  = {0.0f,0.0f,0.0f,1.0f};
 	V4d Ambiant  = {0.2f,0.2f,0.2f,1.0f};
 	  
-	Specular[0] = GeomOrb[i].Prop.color.red/(gfloat)65535;
-	Specular[1] = GeomOrb[i].Prop.color.green/(gfloat)65535;
-	Specular[2] = GeomOrb[i].Prop.color.blue/(gfloat)65535;
+	Specular[0] = GeomOrb[i].Prop.color.red/(gdouble)65535;
+	Specular[1] = GeomOrb[i].Prop.color.green/(gdouble)65535;
+	Specular[2] = GeomOrb[i].Prop.color.blue/(gdouble)65535;
 	for(k=0;k<3;k++) Diffuse[k] = Specular[k]*0.8;
 	for(k=0;k<3;k++) Ambiant[k] = Specular[k]*0.8;
 	for(k=0;k<3;k++) Specular[k] = 1.0;
@@ -49,17 +50,17 @@ static void draw_space(int i, gdouble g)
 
 }
 /************************************************************************/
-static void draw_ball(int i,GLfloat scal)
+static void draw_ball(int i,GLdouble scal)
 {
 	int k;
 	V4d Specular = {1.0f,1.0f,1.0f,1.0f};
 	V4d Diffuse  = {0.0f,0.0f,0.0f,1.0f};
 	V4d Ambiant  = {0.0f,0.0f,0.0f,1.0f};
-	GLfloat g = scal*GeomOrb[i].Prop.radii;
+	GLdouble g = scal*GeomOrb[i].Prop.radii;
 	  
-	Specular[0] = GeomOrb[i].Prop.color.red/(gfloat)65535;
-	Specular[1] = GeomOrb[i].Prop.color.green/(gfloat)65535;
-	Specular[2] = GeomOrb[i].Prop.color.blue/(gfloat)65535;
+	Specular[0] = GeomOrb[i].Prop.color.red/(gdouble)65535;
+	Specular[1] = GeomOrb[i].Prop.color.green/(gdouble)65535;
+	Specular[2] = GeomOrb[i].Prop.color.blue/(gdouble)65535;
 	for(k=0;k<3;k++) Diffuse[k] = Specular[k]*0.8;
 	for(k=0;k<3;k++) Ambiant[k] = Specular[k]*0.5;
 	for(k=0;k<3;k++) Specular[k] = 0.8;
@@ -69,36 +70,36 @@ static void draw_ball(int i,GLfloat scal)
 
 }
 /************************************************************************/
-static void draw_hbond(int i,int j,GLfloat scal)
+static void draw_hbond(int i,int j,GLdouble scal)
 {
 	
 	int k;
-	GLfloat g;
+	GLdouble g;
 	V4d Specular1 = {1.0f,1.0f,1.0f,1.0f};
 	V4d Diffuse1  = {0.0f,0.0f,0.0f,1.0f};
 	V4d Ambiant1  = {0.0f,0.0f,0.0f,1.0f};
 	V4d Specular2 = {1.0f,1.0f,1.0f,1.0f};
 	V4d Diffuse2  = {0.0f,0.0f,0.0f,1.0f};
 	V4d Ambiant2  = {0.0f,0.0f,0.0f,1.0f};
-	GLfloat aspect = scal;
-	GLfloat p1;
-	GLfloat p2;
-     	gfloat A[3];
-     	gfloat B[3];
-     	gfloat K[3];
+	GLdouble aspect = scal;
+	GLdouble p1;
+	GLdouble p2;
+     	gdouble A[3];
+     	gdouble B[3];
+     	gdouble K[3];
      	static gint n = 10;
 	gint kbreak;
 	
 	if(GeomOrb[i].Prop.radii<GeomOrb[j].Prop.radii) g = GeomOrb[i].Prop.radii*aspect;
 	else g = GeomOrb[j].Prop.radii*aspect;
 	  
-	Specular1[0] = GeomOrb[i].Prop.color.red/(gfloat)65535;
-	Specular1[1] = GeomOrb[i].Prop.color.green/(gfloat)65535;
-	Specular1[2] = GeomOrb[i].Prop.color.blue/(gfloat)65535;
+	Specular1[0] = GeomOrb[i].Prop.color.red/(gdouble)65535;
+	Specular1[1] = GeomOrb[i].Prop.color.green/(gdouble)65535;
+	Specular1[2] = GeomOrb[i].Prop.color.blue/(gdouble)65535;
 
-	Specular2[0] = GeomOrb[j].Prop.color.red/(gfloat)65535;
-	Specular2[1] = GeomOrb[j].Prop.color.green/(gfloat)65535;
-	Specular2[2] = GeomOrb[j].Prop.color.blue/(gfloat)65535;
+	Specular2[0] = GeomOrb[j].Prop.color.red/(gdouble)65535;
+	Specular2[1] = GeomOrb[j].Prop.color.green/(gdouble)65535;
+	Specular2[2] = GeomOrb[j].Prop.color.blue/(gdouble)65535;
 
 	for(k=0;k<3;k++)
 	{
@@ -138,18 +139,18 @@ static void draw_wireframe(int i,int j, int line)
 	V4d Diffuse2  = {0.0f,0.0f,0.0f,1.0f};
 	V4d Ambiant2  = {0.0f,0.0f,0.0f,1.0f};
 	V3d Center;
-	GLfloat p1;
-	GLfloat p2;
-	GLfloat p;
+	GLdouble p1;
+	GLdouble p2;
+	GLdouble p;
 		  
 	glLineWidth(line);
-	Specular1[0] = GeomOrb[i].Prop.color.red/(gfloat)65535;
-	Specular1[1] = GeomOrb[i].Prop.color.green/(gfloat)65535;
-	Specular1[2] = GeomOrb[i].Prop.color.blue/(gfloat)65535;
+	Specular1[0] = GeomOrb[i].Prop.color.red/(gdouble)65535;
+	Specular1[1] = GeomOrb[i].Prop.color.green/(gdouble)65535;
+	Specular1[2] = GeomOrb[i].Prop.color.blue/(gdouble)65535;
 
-	Specular2[0] = GeomOrb[j].Prop.color.red/(gfloat)65535;
-	Specular2[1] = GeomOrb[j].Prop.color.green/(gfloat)65535;
-	Specular2[2] = GeomOrb[j].Prop.color.blue/(gfloat)65535;
+	Specular2[0] = GeomOrb[j].Prop.color.red/(gdouble)65535;
+	Specular2[1] = GeomOrb[j].Prop.color.green/(gdouble)65535;
+	Specular2[2] = GeomOrb[j].Prop.color.blue/(gdouble)65535;
 
 	for(k=0;k<3;k++)
 	{
@@ -180,9 +181,9 @@ static void draw_wireframe(int i,int j, int line)
 	Center[2] = (GeomOrb[i].C[2]*p2 + GeomOrb[j].C[2]*p1)/p;
 
 
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular1);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse1);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant1);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular1);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse1);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant1);
 	glMateriali(GL_FRONT_AND_BACK,GL_SHININESS,50);
 	
 	glBegin(GL_LINES);
@@ -191,9 +192,9 @@ static void draw_wireframe(int i,int j, int line)
 	glEnd();
 
 
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular2);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse2);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant2);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular2);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse2);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant2);
 	glMateriali(GL_FRONT_AND_BACK,GL_SHININESS,50);
 
 	glBegin(GL_LINES);
@@ -204,20 +205,20 @@ static void draw_wireframe(int i,int j, int line)
 
 }
 /************************************************************************/
-static void draw_bond(int i,int j,GLfloat scal, GabEditBondType bondType)
+static void draw_bond(int i,int j,GLdouble scal, GabEditBondType bondType)
 {
 	
 	int k;
-	GLfloat g;
+	GLdouble g;
 	V4d Specular1 = {1.0f,1.0f,1.0f,1.0f};
 	V4d Diffuse1  = {0.0f,0.0f,0.0f,1.0f};
 	V4d Ambiant1  = {0.0f,0.0f,0.0f,1.0f};
 	V4d Specular2 = {1.0f,1.0f,1.0f,1.0f};
 	V4d Diffuse2  = {0.0f,0.0f,0.0f,1.0f};
 	V4d Ambiant2  = {0.0f,0.0f,0.0f,1.0f};
-	GLfloat aspect = scal;
-	GLfloat p1;
-	GLfloat p2;
+	GLdouble aspect = scal;
+	GLdouble p1;
+	GLdouble p2;
 	
 	/*
 	if(GeomOrb[i].Prop.radii<GeomOrb[j].Prop.radii) g = GeomOrb[i].Prop.radii*aspect;
@@ -225,13 +226,13 @@ static void draw_bond(int i,int j,GLfloat scal, GabEditBondType bondType)
 	*/
 	g = 0.8*aspect;
 	  
-	Specular1[0] = GeomOrb[i].Prop.color.red/(gfloat)65535;
-	Specular1[1] = GeomOrb[i].Prop.color.green/(gfloat)65535;
-	Specular1[2] = GeomOrb[i].Prop.color.blue/(gfloat)65535;
+	Specular1[0] = GeomOrb[i].Prop.color.red/(gdouble)65535;
+	Specular1[1] = GeomOrb[i].Prop.color.green/(gdouble)65535;
+	Specular1[2] = GeomOrb[i].Prop.color.blue/(gdouble)65535;
 
-	Specular2[0] = GeomOrb[j].Prop.color.red/(gfloat)65535;
-	Specular2[1] = GeomOrb[j].Prop.color.green/(gfloat)65535;
-	Specular2[2] = GeomOrb[j].Prop.color.blue/(gfloat)65535;
+	Specular2[0] = GeomOrb[j].Prop.color.red/(gdouble)65535;
+	Specular2[1] = GeomOrb[j].Prop.color.green/(gdouble)65535;
+	Specular2[2] = GeomOrb[j].Prop.color.blue/(gdouble)65535;
 
 	for(k=0;k<3;k++)
 	{
@@ -365,16 +366,16 @@ static gint GeomDrawSpaceFill(gdouble scaleBall)
   return TRUE;
 }
 /************************************************************************/
-static void draw_ball_for_stick(int i, GLfloat g)
+static void draw_ball_for_stick(int i, GLdouble g)
 {
 	int k;
 	V4d Specular = {1.0f,1.0f,1.0f,1.0f};
 	V4d Diffuse  = {0.0f,0.0f,0.0f,1.0f};
 	V4d Ambiant  = {0.0f,0.0f,0.0f,1.0f};
 	  
-	Specular[0] = GeomOrb[i].Prop.color.red/(gfloat)65535;
-	Specular[1] = GeomOrb[i].Prop.color.green/(gfloat)65535;
-	Specular[2] = GeomOrb[i].Prop.color.blue/(gfloat)65535;
+	Specular[0] = GeomOrb[i].Prop.color.red/(gdouble)65535;
+	Specular[1] = GeomOrb[i].Prop.color.green/(gdouble)65535;
+	Specular[2] = GeomOrb[i].Prop.color.blue/(gdouble)65535;
 	for(k=0;k<3;k++) Diffuse[k] = Specular[k]*0.8;
 	for(k=0;k<3;k++) Ambiant[k] = Specular[k]*0.5;
 	for(k=0;k<3;k++) Specular[k] = 0.8;
@@ -385,7 +386,7 @@ static void draw_ball_for_stick(int i, GLfloat g)
 
 }
 /************************************************************************/
-static void draw_bond_for_stick(int i,int j,GLfloat g, GabEditBondType bondType)
+static void draw_bond_for_stick(int i,int j,GLdouble g, GabEditBondType bondType)
 {
 	
 	int k;
@@ -395,18 +396,18 @@ static void draw_bond_for_stick(int i,int j,GLfloat g, GabEditBondType bondType)
 	V4d Specular2 = {1.0f,1.0f,1.0f,1.0f};
 	V4d Diffuse2  = {0.0f,0.0f,0.0f,1.0f};
 	V4d Ambiant2  = {0.0f,0.0f,0.0f,1.0f};
-	GLfloat p1;
-	GLfloat p2;
-	GLfloat aspect = g;
+	GLdouble p1;
+	GLdouble p2;
+	GLdouble aspect = g;
 	
 	  
-	Specular1[0] = GeomOrb[i].Prop.color.red/(gfloat)65535;
-	Specular1[1] = GeomOrb[i].Prop.color.green/(gfloat)65535;
-	Specular1[2] = GeomOrb[i].Prop.color.blue/(gfloat)65535;
+	Specular1[0] = GeomOrb[i].Prop.color.red/(gdouble)65535;
+	Specular1[1] = GeomOrb[i].Prop.color.green/(gdouble)65535;
+	Specular1[2] = GeomOrb[i].Prop.color.blue/(gdouble)65535;
 
-	Specular2[0] = GeomOrb[j].Prop.color.red/(gfloat)65535;
-	Specular2[1] = GeomOrb[j].Prop.color.green/(gfloat)65535;
-	Specular2[2] = GeomOrb[j].Prop.color.blue/(gfloat)65535;
+	Specular2[0] = GeomOrb[j].Prop.color.red/(gdouble)65535;
+	Specular2[1] = GeomOrb[j].Prop.color.green/(gdouble)65535;
+	Specular2[2] = GeomOrb[j].Prop.color.blue/(gdouble)65535;
 
 	for(k=0;k<3;k++)
 	{
@@ -511,7 +512,7 @@ static gint GeomDrawStick(gdouble scaleStick)
 {
 	int i;
 	int j;
-	GLfloat g = 0.2;
+	GLdouble g = 0.2;
 	GList* list = NULL;
 	for(i = 0;i<Ncenters;i++) 
 	{

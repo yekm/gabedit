@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/RingsOrb.h"
 #include <unistd.h>
 /********************************************************************************/
-static void v_cross(gfloat* p1, gfloat* p2, gfloat* p3, gfloat* cross)
+static void v_cross(gdouble* p1, gdouble* p2, gdouble* p3, gdouble* cross)
 {
     gdouble v1[] = { p2[0]-p1[0], p2[1]-p1[1],p2[2]-p1[2] };
     gdouble v2[] = { p3[0]-p1[0], p3[1]-p1[1],p3[2]-p1[2] };
@@ -34,7 +34,7 @@ static void v_cross(gfloat* p1, gfloat* p2, gfloat* p3, gfloat* cross)
     cross[2] = (v1[0] * v2[1]) - (v1[1] * v2[0]);
 }
 /********************************************************************************/
-static gchar *get_pov_polygon(GList* polygon, gint size, gfloat Colors[])
+static gchar *get_pov_polygon(GList* polygon, gint size, gdouble Colors[])
 {
 	gchar* temp = NULL;
 	gchar* t1 = NULL;
@@ -43,10 +43,10 @@ static gchar *get_pov_polygon(GList* polygon, gint size, gfloat Colors[])
 	gint j;
 	gint c;
 	GList* l = NULL;
-	gfloat C[3] = {0,0,0};
-	gfloat N1[3] = {0,0,1};
-	gfloat N2[3] = {0,0,1};
-	gfloat N3[3] = {0,0,1};
+	gdouble C[3] = {0,0,0};
+	gdouble N1[3] = {0,0,1};
+	gdouble N2[3] = {0,0,1};
+	gdouble N3[3] = {0,0,1};
 	if(size<3) return g_strdup("\n");
 	if(!polygon) return g_strdup("\n");
 	for(l=polygon; l != NULL; l=l->next)
@@ -122,8 +122,8 @@ void AddRingsPovRay(GList** rings, gint nRings, gint* ringsSize, V4d colors[])
 {
 	gint i;
 	gchar* temp;
-	gfloat* color= NULL;
-	gfloat randumC[3]={0,0,0};
+	gdouble* color= NULL;
+	gdouble randumC[3]={0,0,0};
 	gchar* fileName = g_strdup_printf("%s%stmp%spovrayRings.pov",gabedit_directory(),G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
 	FILE* file = fopen(fileName,"a");
 	g_free(fileName);

@@ -270,7 +270,7 @@ ForceField**    runMolecularDynamicsConfo(
         gradientNorm = sqrt( gradientNorm );
 	if(str) g_free(str);
 	str = g_strdup_printf("End of MD Simulation. Gradient = %f Ekin = %f (Kcal/mol) EPot =  %0.4f ETot =  %0.4f T(t) = %0.2f",
-			(gfloat)gradientNorm,
+			(gdouble)gradientNorm,
 			molecularDynamics->kineticEnergy,
 			molecularDynamics->potentialEnergy,
 			molecularDynamics->totalEnergy,
@@ -487,7 +487,7 @@ void	runMolecularDynamics(
         gradientNorm = sqrt( gradientNorm );
 	if(str) g_free(str);
 	str = g_strdup_printf("End of MD Simulation. Gradient = %f Ekin = %f (Kcal/mol) EPot =  %0.4f ETot =  %0.4f T(t) = %0.2f",
-			(gfloat)gradientNorm,
+			(gdouble)gradientNorm,
 			molecularDynamics->kineticEnergy,
 			molecularDynamics->potentialEnergy,
 			molecularDynamics->totalEnergy,

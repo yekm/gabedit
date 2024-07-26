@@ -23,6 +23,7 @@ void save_bmp_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_png_no_background_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_png_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_jpeg_file(GabeditFileChooser *SelecFile, gint response_id);
+void copy_to_clipboard();
 void save_ppm_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_ps_file(GabeditFileChooser *SelecFile, gint response_id);
 gchar* new_bmp(gchar* dirname, int i);

@@ -23,7 +23,7 @@ gboolean stopDownLoad;
 void stop_download();
 void show_progress_connection();
 void hide_progress_connection();
-gint progress_connection(gfloat scal,gchar* str,gboolean reset);
+gint progress_connection(gdouble scal,gchar* str,gboolean reset);
 void create_status_progress_connection_bar(GtkWidget* vbox);
 
 #endif /* __GABEDIT_STATUS_H__ */

@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/GridAdfDensity.h"
 #include "../OpenGL/GridMolcas.h"
 #include "../OpenGL/GridQChem.h"
+#include "../OpenGL/GridCP.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/HydrogenBond.h"
@@ -294,7 +295,7 @@ static void activate_action (GtkAction *action)
 		if(!grid) Message("Sorry, you have not a default grid","Error",TRUE);
 		else create_scale_dlg();
 	}
-	else if(!strcmp(name , "CubeQuare"))
+	else if(!strcmp(name , "CubeSquare"))
 	{
 		if(!grid) Message("Sorry, you have not a default grid","Error",TRUE);
 		else square_cube();
@@ -303,6 +304,16 @@ static void activate_action (GtkAction *action)
 	{
 		if(!grid) Message("Sorry, you have not a default grid","Error",TRUE);
 		else restriction_cube();
+	}
+	else if(!strcmp(name , "CubeAIMChargesNearGrid"))
+	{
+		if(!grid) Message("Sorry, you have not a default grid","Error",TRUE);
+		else computeAIMCharges(grid, FALSE);
+	}
+	else if(!strcmp(name , "CubeAIMChargesOnGrid"))
+	{
+		if(!grid) Message("Sorry, you have not a default grid","Error",TRUE);
+		else computeAIMCharges(grid, TRUE);
 	}
 	else if(!strcmp(name , "CubeColorMapping"))
 	{
@@ -338,6 +349,11 @@ static void activate_action (GtkAction *action)
 	{
 		TypeGrid = GABEDIT_TYPEGRID_ELFSAVIN;
 		create_grid("Calculation of Savin ELF");
+	}
+	else if(!strcmp(name , "ELFSavinAttractors"))
+	{
+		TypeGrid = GABEDIT_TYPEGRID_ELFSAVIN;
+		create_grid_ELF_Dens_analyze(TRUE);
 	}
 	else if(!strcmp(name , "SASCompute"))
 	{
@@ -618,6 +634,10 @@ static void activate_action (GtkAction *action)
  		GtkWidget* chooser = file_chooser_save(save_ps_file,"Save image in ps file format",GABEDIT_TYPEFILE_PS,GABEDIT_TYPEWIN_ORB);
 		fit_windows_position(PrincipalWindow, chooser);
 	}
+	else if(!strcmp(name , "ScreenCaptureClipBoard"))
+	{
+		copy_to_clipboard();
+	}
 	else if(!strcmp(name , "ExportPovray")) 
 	{
 		/* create_save_povray_orb(PrincipalWindow);*/
@@ -785,8 +805,10 @@ static GtkActionEntry gtkActionEntries[] =
 	{"CubeComputeNormGradient", NULL, "Compute the norm of the _gradient", NULL, "Compute the norm of the _gradient", G_CALLBACK (activate_action) },
 	{"CubeSubtract", NULL, "Su_btract", NULL, "Subtract", G_CALLBACK (activate_action) },
 	{"CubeScale", NULL, "Scal_e", NULL, "Scale", G_CALLBACK (activate_action) },
-	{"CubeQuare", NULL, "S_quare", NULL, "Square", G_CALLBACK (activate_action) },
+	{"CubeSquare", NULL, "S_quare", NULL, "Square", G_CALLBACK (activate_action) },
 	{"CubeRestriction", NULL, "_Restriction", NULL, "Restriction", G_CALLBACK (activate_action) },
+	{"CubeAIMChargesNearGrid", NULL, "AIM Charges[W. Tang et al J. Phys. Cond.. Matt. 21, 084204(09)]", NULL, "AIM Charges", G_CALLBACK (activate_action) },
+	{"CubeAIMChargesOnGrid", NULL, "AIM Charges[OnGrid]", NULL, "AIM Charges on grid", G_CALLBACK (activate_action) },
 	{"CubeColorMapping", NULL, "_Color Mapping", NULL, "Color Mapping", G_CALLBACK (activate_action) },
 
 	{"Density",     NULL, "_Density"},
@@ -798,6 +820,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ELF",     NULL, "_ELF"},
 	{"ELFBecke", NULL, "Compute _Becke Electron Localization Function[see JCP,92(1990)5397]", NULL, "Compute Becke Electron Localization Function", G_CALLBACK (activate_action) },
 	{"ELFSavin", NULL, "Compute _Savin Electron Localization Function[see Can.J.Chem.,74(1996)1088]", NULL, "Compute Savin Electron Localization Function", G_CALLBACK (activate_action) },
+	{"ELFSavinAttractors", NULL, "Compute _Savin ELF + Attractors", NULL, "Compute Savin ELF+Attractors", G_CALLBACK (activate_action) },
 
 	{"SAS",     NULL, "_SAS"},
 	{"SASCompute", NULL, "_Solvent Accessible Surface", NULL, "Compute and draw Solvent Accessible Surface", G_CALLBACK (activate_action) },
@@ -887,6 +910,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ScreenCapturePNG", NULL, "_PNG format", NULL, "save image in a PNG file", G_CALLBACK (activate_action) },
 	{"ScreenCapturePNGNoBackGround", NULL, "_PNG format(tansparent background)", NULL, "save image in a PNG file without background", G_CALLBACK (activate_action) },
 	{"ScreenCapturePS", NULL, "P_S format", NULL, "save image in a PS file", G_CALLBACK (activate_action) },
+	{"ScreenCaptureClipBoard", NULL, "_Copy to clipboard (Ctrl C or Alt C)", NULL, "copy to clipboard", G_CALLBACK (activate_action) },
 
 	{"Export",     NULL, "_Export"},
 	{"ExportPovray", NULL, "_Povray", NULL, "export in a povray file", G_CALLBACK (activate_action) },
@@ -1412,7 +1436,9 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"OrbitalsCapture\" action=\"OrbitalsCapture\" />\n"
 "      <separator name=\"sepMenuGabeditOrbCoul\" />\n"
 "      <menuitem name=\"OrbitalsCoulomb\" action=\"OrbitalsCoulomb\" />\n"
+/*
 "      <menuitem name=\"OrbitalsOverlap\" action=\"OrbitalsOverlap\" />\n"
+*/
 "    </menu>\n"
 "    <separator name=\"sepMenuCube\" />\n"
 "    <menu name=\"Cube\" action = \"Cube\">\n"
@@ -1461,10 +1487,13 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"CubeSubtract\" action=\"CubeSubtract\" />\n"
 "      <separator name=\"sepMenuCubeScale\" />\n"
 "      <menuitem name=\"CubeScale\" action=\"CubeScale\" />\n"
-"      <separator name=\"sepMenuCubeQuare\" />\n"
-"      <menuitem name=\"CubeQuare\" action=\"CubeQuare\" />\n"
+"      <separator name=\"sepMenuCubeSquare\" />\n"
+"      <menuitem name=\"CubeSquare\" action=\"CubeSquare\" />\n"
 "      <separator name=\"sepMenuCubeRestriction\" />\n"
 "      <menuitem name=\"CubeRestriction\" action=\"CubeRestriction\" />\n"
+"      <separator name=\"sepMenuCubeAIMChargesNearGrid\" />\n"
+"      <menuitem name=\"CubeAIMChargesNearGrid\" action=\"CubeAIMChargesNearGrid\" />\n"
+"      <menuitem name=\"CubeAIMChargesOnGrid\" action=\"CubeAIMChargesOnGrid\" />\n"
 "      <separator name=\"sepMenuCubeColor\" />\n"
 "      <menuitem name=\"CubeColorMapping\" action=\"CubeColorMapping\" />\n"
 "    </menu>\n"
@@ -1480,6 +1509,9 @@ static const gchar *uiMenuInfo =
 "    <menu name=\"ELF\" action = \"ELF\">\n"
 "        <menuitem name=\"ELFSavin\" action=\"ELFSavin\" />\n"
 "        <menuitem name=\"ELFBecke\" action=\"ELFBecke\" />\n"
+/*
+"        <menuitem name=\"ELFSavinAttractors\" action=\"ELFSavinAttractors\" />\n"
+*/
 "    </menu>\n"
 
 "    <separator name=\"sepMenuSAS\" />\n"
@@ -1663,6 +1695,7 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ScreenCaptureJPG\" action=\"ScreenCaptureJPG\" />\n"
 "        <menuitem name=\"ScreenCapturePPM\" action=\"ScreenCapturePPM\" />\n"
 "        <menuitem name=\"ScreenCapturePS\" action=\"ScreenCapturePS\" />\n"
+"        <menuitem name=\"ScreenCaptureClipBoard\" action=\"ScreenCaptureClipBoard\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepMenuExport\" />\n"
 "    <menu name=\"Export\" action = \"Export\">\n"
@@ -1842,8 +1875,10 @@ static void set_sensitive_cube()
 	GtkWidget *cubeSave = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeLoadGabeditSave");
 	GtkWidget *cubeSubtract = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeSubtract");
 	GtkWidget *cubeScale = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeScale");
-	GtkWidget *cubeSquare = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeQuare");
+	GtkWidget *cubeSquare = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeSquare");
 	GtkWidget *cubeRestriction = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeRestriction");
+	GtkWidget *cubeAUMChargesNear = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeAIMChargesNearGrid");
+	GtkWidget *cubeAUMChargesOn = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeAIMChargesOnGrid");
 	GtkWidget *cubeColor = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeColorMapping");
 	GtkWidget *cubeComputeLap = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeComputeLaplacian");
 	GtkWidget *cubeComputeGard = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeComputeNormGradient");
@@ -1854,6 +1889,8 @@ static void set_sensitive_cube()
 	if(GTK_IS_WIDGET(cubeScale)) gtk_widget_set_sensitive(cubeScale, sensitive);
 	if(GTK_IS_WIDGET(cubeSquare)) gtk_widget_set_sensitive(cubeSquare, sensitive);
 	if(GTK_IS_WIDGET(cubeRestriction)) gtk_widget_set_sensitive(cubeRestriction, sensitive);
+	if(GTK_IS_WIDGET(cubeAUMChargesNear)) gtk_widget_set_sensitive(cubeAUMChargesNear, sensitive);
+	if(GTK_IS_WIDGET(cubeAUMChargesOn)) gtk_widget_set_sensitive(cubeAUMChargesOn, sensitive);
 	if(GTK_IS_WIDGET(cubeColor)) gtk_widget_set_sensitive(cubeColor, sensitive);
 	if(GTK_IS_WIDGET(cubeComputeLap)) gtk_widget_set_sensitive(cubeComputeLap, sensitive);
 	if(GTK_IS_WIDGET(cubeComputeGard)) gtk_widget_set_sensitive(cubeComputeGard, sensitive);

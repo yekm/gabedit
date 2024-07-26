@@ -59,7 +59,7 @@ guchar *get_rgb_image()
    return NULL;
  }
   {
-	gfloat fac=255.0/65535.0;
+	gdouble fac=255.0/65535.0;
   	GdkPixmap* pixmap = get_drawing_pixmap();
   	GdkColormap *colormap = get_drawing_colormap();
   	guint height = ZoneDessin->allocation.height;

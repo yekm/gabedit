@@ -16,15 +16,45 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 DEALINGS IN THE SOFTWARE.
 ************************************************************************************************************/
 
-#ifndef __GABEDIT_CYLINDER_H__
-#define __GABEDIT_CYLINDER_H__
+/* See W Tang et al J. Phys. Condens. Matter 21 (2009) 084204 */
+#ifndef __GABEDIT_GRIDCP_H__
+#define __GABEDIT_GRIDCP_H__
 
-void Cylinder_Draw(GLdouble radius,V3d Base1Pos,V3d Base2Pos);
-void Cylinder_Draw_Color(GLdouble radius,V3d Base1Pos,V3d Base2Pos,
-						 V4d Specular,V4d Diffuse,V4d Ambiant);
-void Cylinder_Draw_Color_Two(GLdouble radius,V3d Base1Pos,V3d Base2Pos,
-			 V4d Specular1,V4d Diffuse1,V4d Ambiant1,
-			 V4d Specular2,V4d Diffuse2,V4d Ambiant2,
-			GLdouble p1, GLdouble p2);
+typedef struct _PointIndex
+{
+	gint i; 
+	gint j;
+	gint k;
+}PointIndex;
+typedef struct _CriticalPoint
+{
+	gint index[3];
+	gint rank;
+	gint signature;
+	gdouble lambda[3];
+	gdouble integral;
+	gdouble nuclearCharge;
+	gint numVolume;
+	gint numCenter;
+	gdouble volume;
+}CriticalPoint;
+typedef struct _GridCP
+{
+	Grid* grid; /* eletronic density or ELF */
+	Grid* gridAux; /* electronic density if grid = ELF */
+	gint*** volumeNumberOfPoints;
+	gint*** known;
+	GList* criticalPoints;
+	gdouble integral;
+	gdouble nuclearCharge;
+	gdouble dv;
+	gdouble*** grad[3];/* x, y, z */
+}GridCP;
 
-#endif /* __GABEDIT_CYLINDER_H__ */
+void destroyGridCP(GridCP* gridCP);
+void computeAIMCharges(Grid* grid, gboolean ongrid);
+void computeELFAttractors(Grid* gridELF, Grid* gridDens, gboolean ongrid);
+
+
+#endif /* __GABEDIT_GRIDCP_H__ */
+

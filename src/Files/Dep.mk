@@ -1,10 +1,13 @@
 # DO NOT DELETE
 
-FileChooser.o: ../../Config.h ../Common/Global.h
-FileChooser.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
-FileChooser.o: ../Utils/UtilsInterface.h ../Utils/Utils.h ../Common/Windows.h
-FileChooser.o: ../Common/Exit.h ../OpenGL/UtilsOrb.h
-FolderChooser.o: ../../Config.h ../Common/Global.h
+FileChooser.o: ../../Config.h
+FileChooser.o: ../Common/Global.h
+FileChooser.o: ../Files/GabeditFileChooser.h
+FileChooser.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
+FileChooser.o: ../Utils/Utils.h ../Common/Windows.h ../Common/Exit.h
+FileChooser.o: ../OpenGL/UtilsOrb.h
+FolderChooser.o: ../../Config.h
+FolderChooser.o: ../Common/Global.h
 FolderChooser.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
 FolderChooser.o: ../Utils/UtilsInterface.h ../Utils/Utils.h
 FolderChooser.o: ../Common/Windows.h ../Common/Exit.h ../OpenGL/UtilsOrb.h

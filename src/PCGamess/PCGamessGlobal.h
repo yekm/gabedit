@@ -10,7 +10,7 @@ PCGamessBasis pcgamessBasis;
 
 PCGamessFunctional* functionals;
 PCGamessStdFunctional* stdFunctionals;
-gfloat* sumFunctionals;
+gdouble* sumFunctionals;
 
 #endif /* __GABEDIT_PCGAMESSGLOBAL_H__ */
 

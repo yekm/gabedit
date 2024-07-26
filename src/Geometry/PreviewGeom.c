@@ -75,9 +75,9 @@ typedef struct _PrevData
 	PrevGeom* geom;
 	PrevGeom* geom0;
 	gint** connections;
-	gfloat quat[4];
-	gfloat beginX;
-	gfloat beginY;
+	gdouble quat[4];
+	gdouble beginX;
+	gdouble beginY;
 	Camera camera;
 	GdkGC* gc;
 	GdkPixmap* pixmap;
@@ -506,7 +506,7 @@ static void define_coord_ecran(GtkWidget* drawingArea)
 }
 /*****************************************************************************/
 static void draw_line(GtkWidget* drawingArea, gint x1,gint y1,gint x2,gint y2,GdkColor colori,gint epaisseuri,
-		gfloat *vxp,gfloat *vyp,gint* epaisseurip,gboolean newbond)
+		gdouble *vxp,gdouble *vyp,gint* epaisseurip,gboolean newbond)
 {
 	GdkColormap *colormap;
         gint epaisseur=epaisseuri;
@@ -524,9 +524,9 @@ static void draw_line(GtkWidget* drawingArea, gint x1,gint y1,gint x2,gint y2,Gd
 
          vis = gdk_colormap_get_visual(colormap);
         {
-	    	gfloat vx = (y2 - y1);
-	    	gfloat vy = (x1 - x2);
-	    	gfloat v2 = sqrt(vx*vx + vy*vy);
+	    	gdouble vx = (y2 - y1);
+	    	gdouble vy = (x1 - x2);
+	    	gdouble v2 = sqrt(vx*vx + vy*vy);
         	GdkColor colorgray;
 
         	if(vis->depth >15)
@@ -572,7 +572,7 @@ static void draw_line2(GtkWidget* drawingArea, gint epaisseur,guint i,guint j,gi
         gint xp;
         gint yp;
         gdouble k;
-	gfloat vx,vy;
+	gdouble vx,vy;
 	gint ep;
 
 	xp = x1;
@@ -671,14 +671,14 @@ static guint get_num_min_rayon(PrevGeom* geom, guint i,guint j)
 	else return i;
 }
 /*****************************************************************************/
-static void init_quat(gfloat quat[])
+static void init_quat(gdouble quat[])
 {
 	gint i;
 	for(i=0;i<3;i++) quat[i] = 0.0;
 	quat[3] = 1.0;
 }
 /*****************************************************************************/
-static void rotation_geometry_quat(PrevGeom* geom, gint nAtoms, gfloat m[4][4])
+static void rotation_geometry_quat(PrevGeom* geom, gint nAtoms, gdouble m[4][4])
 {
 	gdouble* A[3];
 	gdouble B[3];
@@ -752,7 +752,7 @@ static gboolean draw_molecule( GtkWidget *drawingArea)
 	gboolean* FreeAtoms = NULL;
 	PrevData* prevData = (PrevData*)g_object_get_data(G_OBJECT (drawingArea), "PrevData");
 	PrevGeom* geom = NULL;
-	gfloat m[4][4];
+	gdouble m[4][4];
 
 	if(!prevData)return FALSE;
 	geom = prevData->geom;
@@ -1074,7 +1074,7 @@ static gboolean RotationByMouse(GtkWidget *widget, GdkEventMotion *event)
 	int x, y;
 	GdkRectangle area;
 	GdkModifierType state;
-	gfloat spin_quat[4];
+	gdouble spin_quat[4];
 	gint BeginX = 0;
 	gint BeginY = 0;
 

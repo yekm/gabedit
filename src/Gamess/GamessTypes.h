@@ -62,7 +62,7 @@ typedef struct _GamessStdFunctional
 	gchar* name;
 	gint n;
 	GamessFunctionalType* listOfTypes;
-	gfloat* coefficients;
+	gdouble* coefficients;
 }GamessStdFunctional;
 
 #endif /* __GABEDIT_GAMESSTYPES_H__ */

@@ -289,8 +289,8 @@ static gboolean read_molpro_file(GabeditFileChooser *SelecFile, gint response_id
  	guint taille=BSIZE;
 	gint k;
 	gint nf;
-	gfloat freq[5];
-	gfloat IRIntensity[5];
+	gdouble freq[5];
+	gdouble IRIntensity[5];
 	gint numberOfFrequencies = 0;
 	gdouble* frequencies = NULL;
 	gdouble* intensities = NULL;
@@ -336,10 +336,10 @@ static gboolean read_molpro_file(GabeditFileChooser *SelecFile, gint response_id
 	 	if(strstr( t,"Normal Modes of imaginary frequencies") ) break;
 	 	if(strstr( t,"Normal Modes of low/zero frequencies") ) break;
 		if(!strstr(t,"Wavenumbers")) continue;
-		nf = sscanf(t,"%s %s %f %f %f %f %f", sdum1,sdum2, &freq[0],&freq[1],&freq[2],&freq[3],&freq[4]);
+		nf = sscanf(t,"%s %s %lf %lf %lf %lf %lf", sdum1,sdum2, &freq[0],&freq[1],&freq[2],&freq[3],&freq[4]);
 		nf -= 2;
     		if(!fgets(t,taille,fd)) break;
-		sscanf(t,"%s %s %f %f %f %f %f",
+		sscanf(t,"%s %s %lf %lf %lf %lf %lf",
 				sdum1,sdum2,
 				&IRIntensity[0],&IRIntensity[1],&IRIntensity[2],&IRIntensity[3],&IRIntensity[4]);
 		for(k=0;k<nf;k++)
@@ -385,10 +385,10 @@ static gint read_dalton_modes_MOLHES(FILE* fd, gchar *FileName)
  	gchar sdum2[100];
  	gboolean OK;
 	gint nf;
-	gfloat freq;
+	gdouble freq;
 	gint numMode;
 	gchar sym[50];
-	gfloat IR = 0;
+	gdouble IR = 0;
 	gint numberOfFrequencies = 0;
 	gdouble* frequencies = NULL;
 	gdouble* intensities = NULL;
@@ -512,8 +512,8 @@ static gboolean read_gamess_file(GabeditFileChooser *SelecFile, gint response_id
 	gint nf;
 	gint nir;
 	gint nfMax = 5;
-	gfloat freq[5];
-	gfloat ir[5];
+	gdouble freq[5];
+	gdouble ir[5];
  	gchar* sdum[5*2];
  	gchar* tmp;
 	gint numberOfFrequencies = 0;
@@ -840,7 +840,7 @@ static gboolean read_adf_file(GabeditFileChooser *SelecFile, gint response_id)
 	gint k;
 	gint ne;
 	gint nf;
-	gfloat freq[5];
+	gdouble freq[5];
 	gint numberOfFrequencies = 0;
 	gdouble* frequencies = NULL;
 	gdouble* intensities = NULL;
@@ -901,7 +901,7 @@ static gboolean read_adf_file(GabeditFileChooser *SelecFile, gint response_id)
 			return FALSE;
 		}
 
-		nf = sscanf(t,"%s %f %f %f", sdum1, &freq[0],&freq[1],&freq[2]);
+		nf = sscanf(t,"%s %lf %lf %lf", sdum1, &freq[0],&freq[1],&freq[2]);
 		nf -= 1;
 		if(nf<1) break;
 

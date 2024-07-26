@@ -54,7 +54,7 @@ typedef struct _MopacStdFunctional
 	gchar* name;
 	gint n;
 	MopacFunctionalType* listOfTypes;
-	gfloat* coefficients;
+	gdouble* coefficients;
 }MopacStdFunctional;
 
 #endif /* __GABEDIT_MOPACTYPES_H__ */

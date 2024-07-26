@@ -271,7 +271,7 @@ SemiEmpiricalModel**    runSemiEmpiricalMDConfo(
         gradientNorm = sqrt( gradientNorm );
 	if(str) g_free(str);
 	str = g_strdup_printf("End of MD Simulation. Gradient = %f Ekin = %f (Kcal/mol) EPot =  %0.4f ETot =  %0.4f T(t) = %0.2f",
-			(gfloat)gradientNorm,
+			(gdouble)gradientNorm,
 			seMD->kineticEnergy,
 			seMD->potentialEnergy,
 			seMD->totalEnergy,
@@ -488,7 +488,7 @@ void	runSemiEmpiricalMD(
         gradientNorm = sqrt( gradientNorm );
 	if(str) g_free(str);
 	str = g_strdup_printf("End of MD Simulation. Gradient = %f Ekin = %f (Kcal/mol) EPot =  %0.4f ETot =  %0.4f T(t) = %0.2f",
-			(gfloat)gradientNorm,
+			(gdouble)gradientNorm,
 			seMD->kineticEnergy,
 			seMD->potentialEnergy,
 			seMD->totalEnergy,

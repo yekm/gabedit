@@ -34,7 +34,7 @@ typedef struct _TreeMolecule
 void initTreeMolecule(TreeMolecule* treeMolecule, GeomDef*  geom, gint NAtoms, gint ringSize);
 gboolean inRingTreeMolecule(TreeMolecule* treeMolecule, gint currentAtom, gint rootAtom);
 gint* getRingTreeMolecule(TreeMolecule* treeMolecule);
-void getCentreRingTreeMolecule(TreeMolecule* treeMolecule, GeomDef* geom, gint NAtoms, gint i, gint j, gfloat C[]);
+void getCentreRingTreeMolecule(TreeMolecule* treeMolecule, GeomDef* geom, gint NAtoms, gint i, gint j, gdouble C[]);
 gint* getListGroupe(gint* nGroupAtoms, GeomDef*  geom, gint NAtoms, gint i1, gint i2, gint i3, gint i4);
 #endif /* __GABEDIT_TREEMOLECULE_H__*/
 

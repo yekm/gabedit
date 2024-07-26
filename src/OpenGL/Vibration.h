@@ -32,7 +32,7 @@ typedef struct _VibrationMode
 typedef struct _VibrationGeom
 {
 	gchar* symbol;
-	gfloat coordinates[3];
+	gdouble coordinates[3];
 	gdouble partialCharge;
 	gdouble nuclearCharge;
 }VibrationGeom;
@@ -45,10 +45,10 @@ typedef struct _Vibration
 	gint numberOfFrequences;
 	VibrationMode* modes;
 
-	gfloat scal;
-	gfloat velocity;
-	gfloat radius;
-	gfloat threshold;
+	gdouble scal;
+	gdouble velocity;
+	gdouble radius;
+	gdouble threshold;
 	gint nSteps;
 }Vibration;
 Vibration vibration;

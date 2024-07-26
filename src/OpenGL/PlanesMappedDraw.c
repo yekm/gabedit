@@ -19,6 +19,7 @@ DEALINGS IN THE SOFTWARE.
 
 #include "../../Config.h"
 #include "../OpenGL/GlobalOrb.h"
+#include "../OpenGL/UtilsOrb.h"
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
 #include "../OpenGL/ColorMap.h"
@@ -32,10 +33,10 @@ static ColorMap* get_colorMap()
 	return colorMap;
 }
 /********************************************************************************/
-static gfloat* GetGapVector(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloat gap)
+static gdouble* GetGapVector(Grid* plansgrid,gint i0,gint i1,gint numplan,gdouble gap)
 {
-	gfloat x1,y1,z1;
-	gfloat x2,y2,z2;
+	gdouble x1,y1,z1;
+	gdouble x2,y2,z2;
 	gint ip = numplan;
 	gint ix=0,iy=0,iz=0;
 	gint ix1=0,iy1=0,iz1=0;
@@ -43,8 +44,8 @@ static gfloat* GetGapVector(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloat 
 	gint ix3,iy3,iz3;
 	gint ix4,iy4,iz4;
 	gint i,j,ii,jj;
-	gfloat *Gap = g_malloc(3*sizeof(gfloat));
-	gfloat Module;
+	gdouble *Gap = g_malloc(3*sizeof(gdouble));
+	gdouble Module;
 
 	i = 0;
 	j = 0;
@@ -120,11 +121,11 @@ static gfloat* GetGapVector(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloat 
 	return Gap;
 }
 /*********************************************************************************************************/
-static void PlanDraw(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloat Gap[])
+static void PlanDraw(Grid* plansgrid,gint i0,gint i1,gint numplan,gdouble Gap[])
 {
-	gfloat x;
-	gfloat y;
-	gfloat z;
+	gdouble x;
+	gdouble y;
+	gdouble z;
 	gint ip = numplan;
 	gint ix=0,iy=0,iz=0;
 	gint ix1=0,iy1=0,iz1=0;
@@ -213,11 +214,11 @@ static void PlanDraw(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloat Gap[])
 	glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
 }
 /*********************************************************************************************************/
-static void drawAllRectangles(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloat Gap[])
+static void drawAllRectangles(Grid* plansgrid,gint i0,gint i1,gint numplan,gdouble Gap[])
 {
-	gfloat x;
-	gfloat y;
-	gfloat z;
+	gdouble x;
+	gdouble y;
+	gdouble z;
 	gint ip = numplan;
 	gint ix=0,iy=0,iz=0;
 	gint ix1=0,iy1=0,iz1=0;
@@ -230,8 +231,8 @@ static void drawAllRectangles(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloa
 	V4d Specular = {0.8,0.8,0.8,0.8 };
 	V4d Ambiant  = {1.0,1.0,1.0,0.8};
 
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
 	glMateriali(GL_FRONT_AND_BACK,GL_SHININESS,120);
 	glDisable ( GL_LIGHTING ) ;
 
@@ -296,34 +297,34 @@ static void drawAllRectangles(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloa
 
 
 	set_Color_From_colorMap(colorMap, Diffuse, plansgrid->point[ix][iy][iz].C[3]);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
-	glColor4fv(Diffuse);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
+	glColor4dv(Diffuse);
 	x = plansgrid->point[ix][iy][iz].C[0] + Gap[0];
 	y = plansgrid->point[ix][iy][iz].C[1] + Gap[1];
 	z = plansgrid->point[ix][iy][iz].C[2] + Gap[2];
 	glVertex3f(x,y,z);
 
 	set_Color_From_colorMap(colorMap, Diffuse, plansgrid->point[ix1][iy1][iz1].C[3]);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
-	glColor4fv(Diffuse);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
+	glColor4dv(Diffuse);
 	x = plansgrid->point[ix1][iy1][iz1].C[0] + Gap[0];
 	y = plansgrid->point[ix1][iy1][iz1].C[1] + Gap[1];
 	z = plansgrid->point[ix1][iy1][iz1].C[2] + Gap[2];
 	glVertex3f(x,y,z);
 	set_Color_From_colorMap(colorMap, Diffuse, plansgrid->point[ix2][iy2][iz2].C[3]);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
-	glColor4fv(Diffuse);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
+	glColor4dv(Diffuse);
 	x = plansgrid->point[ix2][iy2][iz2].C[0] + Gap[0];
 	y = plansgrid->point[ix2][iy2][iz2].C[1] + Gap[1];
 	z = plansgrid->point[ix2][iy2][iz2].C[2] + Gap[2];
 	glVertex3f(x,y,z);
 	set_Color_From_colorMap(colorMap, Diffuse, plansgrid->point[ix3][iy3][iz3].C[3]);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
-	glColor4fv(Diffuse);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
+	glColor4dv(Diffuse);
 	x = plansgrid->point[ix3][iy3][iz3].C[0] + Gap[0];
 	y = plansgrid->point[ix3][iy3][iz3].C[1] + Gap[1];
 	z = plansgrid->point[ix3][iy3][iz3].C[2] + Gap[2];
@@ -334,10 +335,10 @@ static void drawAllRectangles(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloa
 	glEnable ( GL_LIGHTING ) ;
 }
 /*********************************************************************************************************/
-GLuint PlanesMappedGenOneList(Grid* plansgrid,gint i0,gint i1,gint numplan,gfloat gap)
+GLuint PlanesMappedGenOneList(Grid* plansgrid,gint i0,gint i1,gint numplan,gdouble gap)
 {
 	GLuint mapslist;
-	gfloat *Gap;
+	gdouble *Gap;
 
 	if(!plansgrid) return 0;
 	Gap = GetGapVector(plansgrid,i0,i1,numplan,gap);
@@ -401,7 +402,7 @@ void hideColorMapPlanesMapped()
 	color_map_hide(handleBoxColorMapPlanesMapped);
 }
 /********************************************************************************/
-GLuint PlanesMappedGenLists(GLuint mapslist,Grid* plansgrid, gint i0,gint i1,gint numplan,gfloat gap)
+GLuint PlanesMappedGenLists(GLuint mapslist,Grid* plansgrid, gint i0,gint i1,gint numplan,gdouble gap)
 {
 	if (glIsList(mapslist) == GL_TRUE)
 			glDeleteLists(mapslist,1);

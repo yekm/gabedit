@@ -61,7 +61,7 @@ static gint getBondType(gint ia,gint ja)
 /************************************************************************/
 static gboolean bonded(gint i,gint j)
 {
-	GLfloat distance;
+	GLdouble distance;
 	V3d dif;
 	gint k;
 	
@@ -78,14 +78,14 @@ static gboolean bonded(gint i,gint j)
 /************************************************************************/
 static gboolean hbonded(gint i,gint j)
 {
-	gfloat minDistanceH;
-	gfloat maxDistanceH;
-	gfloat minDistanceH2;
-	gfloat maxDistanceH2;
-	gfloat minAngleH;
-	gfloat maxAngleH;
-	gfloat distance2;
-	gfloat angle;
+	gdouble minDistanceH;
+	gdouble maxDistanceH;
+	gdouble minDistanceH2;
+	gdouble maxDistanceH2;
+	gdouble minAngleH;
+	gdouble maxAngleH;
+	gdouble distance2;
+	gdouble angle;
 	gchar* strAngle;
 	Point A;
 	Point B;
@@ -238,7 +238,7 @@ void buildBondsOrb()
 	if(Ncenters<1) return ;
 	for(i = 0;i<Ncenters;i++)
 	{
-		/* printf("%s %f\n",GeomOrb[i].Prop.symbol,GeomOrb[i].Prop.covalentRadii);*/
+		/* printf("%s %lf\n",GeomOrb[i].Prop.symbol,GeomOrb[i].Prop.covalentRadii);*/
 		for(j=i+1;j<Ncenters;j++)
 			if(bonded(i,j))
 			{

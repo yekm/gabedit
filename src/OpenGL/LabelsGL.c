@@ -114,7 +114,7 @@ void showLabelSymbolsNumbersCharges()
 	color[1] = FontsStyleLabel.TextColor.green/65535.0; 
 	color[2] = FontsStyleLabel.TextColor.blue/65535.0; 
 	glDisable ( GL_LIGHTING ) ;
-	glColor4fv(color);
+	glColor4dv(color);
 
 	for(i=0;i<(gint)Ncenters;i++)
 	{
@@ -153,7 +153,7 @@ void showLabelDistances()
 	gint k;
 	gint j;
 	gdouble distance;
-	gfloat tmp[3];
+	gdouble tmp[3];
 	gchar buffer[BSIZE];
 	V4d color  = {0.8,0.8,0.8,1.0 };
 
@@ -168,7 +168,7 @@ void showLabelDistances()
 		glInitFonts();
 	}
 	glDisable ( GL_LIGHTING ) ;
-	glColor4fv(color);
+	glColor4dv(color);
 
 	for(i=0;i<(gint)Ncenters;i++)
 	for(j=i+1;j<(gint)Ncenters;j++)
@@ -211,12 +211,12 @@ void showLabelDipole()
 	V4d color  = {0.8,0.8,0.8,1.0 };
 	V3d Base1Pos  = {0.0f,0.0f,0.0f};
 	V3d Base2Pos  = {Dipole.Value[0],Dipole.Value[1],Dipole.Value[2]};
-	GLfloat radius = Dipole.radius;
+	GLdouble radius = Dipole.radius;
 	V3d Center;
-	GLfloat p1=90;
-	GLfloat p2=10;
-	GLfloat p = p1 + p2;
-	GLfloat scal = 2;
+	GLdouble p1=90;
+	GLdouble p2=10;
+	GLdouble p = p1 + p2;
+	GLdouble scal = 2;
 	gdouble module;
 	gchar buffer[BSIZE];
 
@@ -234,7 +234,7 @@ void showLabelDipole()
 		glInitFonts();
 	}
 	glDisable ( GL_LIGHTING ) ;
-	glColor4fv(color);
+	glColor4dv(color);
 
 	if(radius<0.1) radius = 0.1;
 
@@ -280,15 +280,15 @@ void showLabelAxes()
 	gchar buffer[BSIZE];
 	gboolean show;
 	gboolean negative;
-	gfloat origin[3];
-	gfloat radius;
-	gfloat scal;
-	gfloat xColor[3];
-	gfloat yColor[3];
-	gfloat zColor[3];
-	gfloat vectorX[]  = {1,0,0};
-	gfloat vectorY[]  = {0,1,0};
-	gfloat vectorZ[]  = {0,0,1};
+	gdouble origin[3];
+	gdouble radius;
+	gdouble scal;
+	gdouble xColor[3];
+	gdouble yColor[3];
+	gdouble zColor[3];
+	gdouble vectorX[]  = {1,0,0};
+	gdouble vectorY[]  = {0,1,0};
+	gdouble vectorZ[]  = {0,0,1};
 
 	if(!showAxes) return;
 	if(!testShowAxis()) return;
@@ -321,7 +321,7 @@ void showLabelAxes()
 
 	if(radius<0.1) radius = 0.1;
 	glDisable ( GL_LIGHTING ) ;
-	glColor4fv(color);
+	glColor4dv(color);
 
 
 	if(ortho)
@@ -361,16 +361,16 @@ void showLabelPrincipalAxes()
 	gboolean show;
 	gboolean negative;
 	gboolean def;
-	gfloat origin[3];
-	gfloat radius;
-	gfloat scal;
-	gfloat c1[3];
-	gfloat c2[3];
-	gfloat c3[3];
-	gfloat v1[]  = {1,0,0};
-	gfloat v2[]  = {0,1,0};
-	gfloat v3[]  = {0,0,1};
-	gfloat I[]  = {1,1,1};
+	gdouble origin[3];
+	gdouble radius;
+	gdouble scal;
+	gdouble c1[3];
+	gdouble c2[3];
+	gdouble c3[3];
+	gdouble v1[]  = {1,0,0};
+	gdouble v2[]  = {0,1,0};
+	gdouble v3[]  = {0,0,1};
+	gdouble I[]  = {1,1,1};
 
 	if(!showAxes) return;
 	if(!testShowPrincipalAxisGL()) return;
@@ -405,7 +405,7 @@ void showLabelPrincipalAxes()
 
 	if(radius<0.1) radius = 0.1;
 	glDisable ( GL_LIGHTING ) ;
-	glColor4fv(color);
+	glColor4dv(color);
 
 
 	if(ortho)
@@ -458,7 +458,7 @@ void showLabelTitle(gint width, gint height)
 	color[2] = colorTitle.blue/65535.0; 
 
 	glDisable ( GL_LIGHTING ) ;
-	glColor4fv(color);
+	glColor4dv(color);
 	glInitFontsUsing(fontNameTitle);
 
 	glLoadIdentity();

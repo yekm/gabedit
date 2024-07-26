@@ -144,16 +144,16 @@ gboolean ReadOneBasis(gint i,gint j,char *t,gint *nsym)
 	/*	Debug("n = %d\n",n);*/
 	Type[i].Ao[j].N=n;
 	/*Debug("N = %d\n",Type[i].Ao[j].N);*/
-	Type[i].Ao[j].Ex=g_malloc(Type[i].Ao[j].N*sizeof(gfloat));
-	Type[i].Ao[j].Coef=g_malloc(Type[i].Ao[j].N*sizeof(gfloat));
+	Type[i].Ao[j].Ex=g_malloc(Type[i].Ao[j].N*sizeof(gdouble));
+	Type[i].Ao[j].Coef=g_malloc(Type[i].Ao[j].N*sizeof(gdouble));
 	/*Debug("avant sym ==\n");*/
 	if(strlen(sym)==2)
 	{
 	 	l=2;
      		Type[i].Ao=g_realloc(Type[i].Ao,(j+2)*sizeof(AO));
         	Type[i].Ao[j+1].N = Type[i].Ao[j].N;
-		Type[i].Ao[j+1].Ex=g_malloc(Type[i].Ao[j].N*sizeof(gfloat));
-		Type[i].Ao[j+1].Coef=g_malloc(Type[i].Ao[j].N*sizeof(gfloat));
+		Type[i].Ao[j+1].Ex=g_malloc(Type[i].Ao[j].N*sizeof(gdouble));
+		Type[i].Ao[j+1].Coef=g_malloc(Type[i].Ao[j].N*sizeof(gdouble));
 	}
 	*nsym = l;
 	/*Debug("nsym = %d\n",l);*/
@@ -166,10 +166,10 @@ gboolean ReadOneBasis(gint i,gint j,char *t,gint *nsym)
 			if(t[n]=='D') t[n] = 'e';
 		/*Debug("t de One = %s\n",t);*/
 		   
-		if(l==1) sscanf(t,"%f %f ",&Type[i].Ao[j].Ex[k],&Type[i].Ao[j].Coef[k]);
+		if(l==1) sscanf(t,"%lf %lf ",&Type[i].Ao[j].Ex[k],&Type[i].Ao[j].Coef[k]);
 		else
 		{
-			sscanf(t,"%f %f %f ",&Type[i].Ao[j].Ex[k],&Type[i].Ao[j].Coef[k],&Type[i].Ao[j+1].Coef[k]);
+			sscanf(t,"%lf %lf %lf ",&Type[i].Ao[j].Ex[k],&Type[i].Ao[j].Coef[k],&Type[i].Ao[j+1].Coef[k]);
 			Type[i].Ao[j+1].Ex[k] = Type[i].Ao[j].Ex[k];
 		}
 	}
@@ -412,6 +412,60 @@ static void resortAtoms(gint* numAtoms)
 	g_free(newGeom);
 }
 /**********************************************/
+static gint getNumberOfBasisCenters(gchar *fileName, gchar* title)
+{
+	gchar t[BSIZE];
+	gint i;
+	gboolean ok;
+	gint nAtoms = 0;
+
+ 	if ((!fileName) || (strcmp(fileName,"") == 0)) return nAtoms;
+
+ 	forb = FOpen(fileName, "rb");
+ 	if(forb == NULL) return nAtoms;
+	ok = FALSE;
+	while(!feof(forb))
+	{
+		fgets(t,BSIZE,forb);
+		if(strstr(t,title) != NULL)
+		{
+			ok = TRUE;
+			break;
+		}
+	}
+	if(!ok) 
+	{
+		fclose(forb);
+		return nAtoms;
+	}
+
+	nAtoms = 0;
+	while(!feof(forb))
+	{
+		fgets(t,BSIZE,forb);
+		if(this_is_a_backspace(t) || strstr(t,"[")) break;
+
+		/* printf("tt = %s\n",t);*/
+		i=atoi(t);
+		if(i>0)
+		{
+			nAtoms++;
+			while(!feof(forb))
+     			{
+     				fgets(t,BSIZE,forb);
+     				if(this_is_a_backspace(t) || strstr(t,"[")) break;
+     			}
+		}
+		else
+		{
+     			if(this_is_a_backspace(t) || strstr(t,"[")) break;
+		}
+		if(strstr(t,"[")) break;
+	}
+	fclose(forb);
+    	return nAtoms;
+}
+/**********************************************/
 gboolean DefineGabeditMoldenBasisType(gchar *fileName,gchar* title)
 {
 	gchar *sym;
@@ -424,6 +478,7 @@ gboolean DefineGabeditMoldenBasisType(gchar *fileName,gchar* title)
 	gint nsym;
 	gint* numAtoms = NULL;
 	gint nAtoms = 0;
+	gint nC = getNumberOfBasisCenters(fileName, title);
 
  	if ((!fileName) || (strcmp(fileName,"") == 0))
  	{
@@ -460,6 +515,13 @@ gboolean DefineGabeditMoldenBasisType(gchar *fileName,gchar* title)
 	}
 
 	sym=g_malloc(10*sizeof(char));
+	/* printf("nC = %d\n",nC);*/
+	/* basis available for all centers */
+	if(nC==Ncenters)
+	{
+		Ntype = Ncenters;
+ 		for(i=0;i<Ncenters;i++) GeomOrb[i].NumType= i;
+	}
 
 	if(forb !=NULL)
 	{

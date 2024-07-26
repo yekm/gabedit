@@ -462,12 +462,12 @@ static gint get_num_type_from_symbol(gchar* symbol)
 	return -1;
 }
 /**********************************************/
-static gboolean addOneBasis(gint i,gint j,gchar *shell,gint ncont, gfloat* ex, gfloat* coef)
+static gboolean addOneBasis(gint i,gint j,gchar *shell,gint ncont, gdouble* ex, gdouble* coef)
 {
 	gint jj;
        	Type[i].Ao[j].N = ncont;
-	Type[i].Ao[j].Ex=g_malloc(Type[i].Ao[j].N*sizeof(gfloat));
-	Type[i].Ao[j].Coef=g_malloc(Type[i].Ao[j].N*sizeof(gfloat));
+	Type[i].Ao[j].Ex=g_malloc(Type[i].Ao[j].N*sizeof(gdouble));
+	Type[i].Ao[j].Coef=g_malloc(Type[i].Ao[j].N*sizeof(gdouble));
 	for(jj=0;jj<Type[i].Ao[j].N;jj++)
 	{
 		Type[i].Ao[j].Ex[jj] = ex[jj];
@@ -511,9 +511,9 @@ static gboolean DefineGamessBasisType(gchar** strbasis, gint nrows)
 	gint j;
 	gint nconts;
 	gint k;
-	gfloat *ex=NULL;
-	gfloat *coef1=NULL;
-	gfloat *coef2=NULL;
+	gdouble *ex=NULL;
+	gdouble *coef1=NULL;
+	gdouble *coef2=NULL;
 	gchar* temp[10];
 	gint ne;
 	gboolean Ok;
@@ -521,9 +521,9 @@ static gboolean DefineGamessBasisType(gchar** strbasis, gint nrows)
 
 	if(Ntype<1) return FALSE;
 	if(nrows<1) return FALSE;
-	ex = g_malloc(nrows*sizeof(gfloat));
-	coef1 = g_malloc(nrows*sizeof(gfloat));
-	coef2 = g_malloc(nrows*sizeof(gfloat));
+	ex = g_malloc(nrows*sizeof(gdouble));
+	coef1 = g_malloc(nrows*sizeof(gdouble));
+	coef2 = g_malloc(nrows*sizeof(gdouble));
 	for(i=0;i<10;i++) temp[i] = g_malloc(BSIZE*sizeof(gchar));
 
 	/*

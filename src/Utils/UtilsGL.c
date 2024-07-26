@@ -446,13 +446,13 @@ void glInitFonts()
 void glGetWorldCoordsFromSceneCoords(gdouble VScene[], gdouble VWorld[])
 {
 	GLdouble mvMatrix[4][4];
-	gfloat** trMatrix;
-	gfloat** invMatrix;
+	gdouble** trMatrix;
+	gdouble** invMatrix;
 	gint i;
 	gint j;
 	glGetDoublev(GL_MODELVIEW_MATRIX, &mvMatrix[0][0]);
-	trMatrix = g_malloc(3*sizeof(gfloat*));
-	for(i=0;i<3;i++) trMatrix[i] = g_malloc(3*sizeof(gfloat));
+	trMatrix = g_malloc(3*sizeof(gdouble*));
+	for(i=0;i<3;i++) trMatrix[i] = g_malloc(3*sizeof(gdouble));
 
 	for(i=0;i<3;i++)
 		for(j=0;j<3;j++)
@@ -497,13 +497,13 @@ void glPrintScale(gdouble x, gdouble y, gdouble z, gdouble scale, gchar *str)
 	gdouble VScene[]={0,0,0};
 	gdouble VWorld[]={x,y,z};
 	GLdouble mvMatrix[4][4];
-	gfloat** trMatrix;
-	gfloat** invMatrix;
+	gdouble** trMatrix;
+	gdouble** invMatrix;
 	gint i;
 	gint j;
 	glGetDoublev(GL_MODELVIEW_MATRIX, &mvMatrix[0][0]);
-	trMatrix = g_malloc(3*sizeof(gfloat*));
-	for(i=0;i<3;i++) trMatrix[i] = g_malloc(3*sizeof(gfloat));
+	trMatrix = g_malloc(3*sizeof(gdouble*));
+	for(i=0;i<3;i++) trMatrix[i] = g_malloc(3*sizeof(gdouble));
 
 	for(i=0;i<3;i++)
 		for(j=0;j<3;j++)

@@ -20,12 +20,13 @@ DEALINGS IN THE SOFTWARE.
 
 #include "../../Config.h"
 #include "GlobalOrb.h"
+#include "../OpenGL/UtilsOrb.h"
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
 
-static GLfloat emission[] = { 0.0, 0.0, 0.0, 1.0 };
+static GLdouble emission[] = { 0.0, 0.0, 0.0, 1.0 };
 /************************************************************************************************************/
-void Sphere_Draw_Precision(GLfloat radius,V3d position, GLint numberOfSubdivisions)
+void Sphere_Draw_Precision(GLdouble radius,V3d position, GLint numberOfSubdivisions)
 {
 	GLUquadricObj *obj;
 	
@@ -41,17 +42,17 @@ void Sphere_Draw_Precision(GLfloat radius,V3d position, GLint numberOfSubdivisio
 	glPopMatrix(); 
 }
 /************************************************************************************************************/
-void Sphere_Draw_Color_Precision(GLfloat radius,V3d position, V4d Specular,V4d Diffuse,V4d Ambiant, GLint numberOfSubdivisions)
+void Sphere_Draw_Color_Precision(GLdouble radius,V3d position, V4d Specular,V4d Diffuse,V4d Ambiant, GLint numberOfSubdivisions)
 {
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
-	glMaterialfv(GL_FRONT, GL_EMISSION, emission);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
+	glMaterialdv(GL_FRONT, GL_EMISSION, emission);
 	glMateriali(GL_FRONT_AND_BACK,GL_SHININESS,100);
 	Sphere_Draw_Precision(radius,position, numberOfSubdivisions);
 }
 /************************************************************************************************************/
-void Sphere_Draw(GLfloat radius,V3d position)
+void Sphere_Draw(GLdouble radius,V3d position)
 {
 	GLUquadricObj *obj;
 	
@@ -67,18 +68,18 @@ void Sphere_Draw(GLfloat radius,V3d position)
 	glPopMatrix(); 
 }
 /************************************************************************************************************/
-void Sphere_Draw_Color(GLfloat radius,V3d position, V4d Specular,V4d Diffuse,V4d Ambiant)
+void Sphere_Draw_Color(GLdouble radius,V3d position, V4d Specular,V4d Diffuse,V4d Ambiant)
 {
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
-	glMaterialfv(GL_FRONT, GL_EMISSION, emission);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
+	glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
+	glMaterialdv(GL_FRONT, GL_EMISSION, emission);
 	glMateriali(GL_FRONT_AND_BACK,GL_SHININESS,100);
 	Sphere_Draw(radius,position);
 
 }
 /************************************************************************************************************/
-GLuint Sphere_Get_List(int i,GLfloat radius,V4d Specular,V4d Diffuse,V4d Ambiant)
+GLuint Sphere_Get_List(int i,GLdouble radius,V4d Specular,V4d Diffuse,V4d Ambiant)
 {
 	
 	GLuint sphere;

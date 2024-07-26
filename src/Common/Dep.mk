@@ -77,13 +77,13 @@ Run.o: ../Files/ListeFiles.h ../Files/FileChooser.h
 Run.o: ../Files/GabeditFolderChooser.h ../NetWork/RemoteCommand.h
 Run.o: ../NetWork/FilesTransfer.h ../Molcas/MolcasVariables.h
 SplashScreen.o: ../../Config.h
-SplashScreen.o: ../Common/Global.h
-SplashScreen.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
-SplashScreen.o: ../Utils/UtilsInterface.h ../Utils/Utils.h
-SplashScreen.o: ../Utils/AtomsProp.h ../Common/Status.h ../Common/Windows.h
-SplashScreen.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h
-SplashScreen.o: ../Geometry/Fragments.h ../Geometry/PersonalFragments.h
-SplashScreen.o: ../MolecularMechanics/Atom.h ../MolecularMechanics/Molecule.h
+SplashScreen.o: ../Common/Global.h ../Files/GabeditFileChooser.h
+SplashScreen.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
+SplashScreen.o: ../Utils/Utils.h ../Utils/AtomsProp.h ../Common/Status.h
+SplashScreen.o: ../Common/Windows.h ../Geometry/Fragments.h
+SplashScreen.o: ../Geometry/DrawGeom.h ../Geometry/Fragments.h
+SplashScreen.o: ../Geometry/PersonalFragments.h ../MolecularMechanics/Atom.h
+SplashScreen.o: ../MolecularMechanics/Molecule.h
 SplashScreen.o: ../MolecularMechanics/ForceField.h
 SplashScreen.o: ../MolecularMechanics/MolecularMechanics.h
 SplashScreen.o: ../MolecularMechanics/PDBTemplate.h

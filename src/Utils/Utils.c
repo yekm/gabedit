@@ -3267,7 +3267,7 @@ void get_dipole_from_gamess_output_file(FILE* fd)
 				{
 					gint i;
     					if(!fgets(t,taille,fd))break;
-					sscanf(t,"%f %f %f",&Dipole.Value[0],&Dipole.Value[1],&Dipole.Value[2]);
+					sscanf(t,"%lf %lf %lf",&Dipole.Value[0],&Dipole.Value[1],&Dipole.Value[2]);
 					for(i=0;i<3;i++) Dipole.Value[i] /= AUTODEB;
 					Dipole.def = TRUE;
 					break;
@@ -3309,11 +3309,11 @@ void get_dipole_from_gaussian_output_file(FILE* fd)
 			break;
 		Dipole.def = TRUE;
     		pdest = strstr( t, "X=")+2;
-		sscanf(pdest,"%f",&Dipole.Value[0]);
+		sscanf(pdest,"%lf",&Dipole.Value[0]);
     		pdest = strstr( t, "Y=")+2;
-		sscanf(pdest,"%f",&Dipole.Value[1]);
+		sscanf(pdest,"%lf",&Dipole.Value[1]);
     		pdest = strstr( t, "Z=")+2;
-		sscanf(pdest,"%f",&Dipole.Value[2]);
+		sscanf(pdest,"%lf",&Dipole.Value[2]);
 		/*
 		Debug("t =%s\n",t);
 		Debug("Dipole = %f %f %f\n",Dipole.Value[0],Dipole.Value[1],Dipole.Value[2]);
@@ -3357,7 +3357,7 @@ void get_dipole_from_molpro_output_file(FILE* fd)
 		{
 		Dipole.def = TRUE;
     		t2 = strstr( t1, ":")+2;
-		sscanf(t2,"%f %f %f",&Dipole.Value[0],&Dipole.Value[1],&Dipole.Value[2]);
+		sscanf(t2,"%lf %lf %lf",&Dipole.Value[0],&Dipole.Value[1],&Dipole.Value[2]);
 		/*
 		Debug("t =%s\n",t);
 		Debug("Dipole = %f %f %f\n",Dipole.Value[0],Dipole.Value[1],Dipole.Value[2]);
@@ -3401,11 +3401,11 @@ void get_dipole_from_dalton_output_file(FILE* fd)
     			if(!fgets(t,taille,fd))break;
     			t2 = strstr( t1, ":")+2;
     			if(!fgets(t,taille,fd))break;
-			sscanf(t,"%s %f",dum, &Dipole.Value[0]);
+			sscanf(t,"%s %lf",dum, &Dipole.Value[0]);
     			if(!fgets(t,taille,fd))break;
-			sscanf(t,"%s %f",dum, &Dipole.Value[1]);
+			sscanf(t,"%s %lf",dum, &Dipole.Value[1]);
     			if(!fgets(t,taille,fd))break;
-			sscanf(t,"%s %f",dum, &Dipole.Value[2]);
+			sscanf(t,"%s %lf",dum, &Dipole.Value[2]);
 			Dipole.def = TRUE;
 		/*
 			Debug("t =%s\n",t);
@@ -3441,7 +3441,7 @@ void get_dipole_from_orca_output_file(FILE* fd)
 		{
 			pdest = strstr( t,":")+1;
 			Dipole.def = TRUE;
-			sscanf(pdest,"%f %f %f",&Dipole.Value[0],&Dipole.Value[1],&Dipole.Value[2]);
+			sscanf(pdest,"%lf %lf %lf",&Dipole.Value[0],&Dipole.Value[1],&Dipole.Value[2]);
 			break;
 		}
 	}
@@ -3471,11 +3471,11 @@ void get_dipole_from_qchem_output_file(FILE* fd)
 		else break;
 		Dipole.def = TRUE;
     		pdest = strstr( t, "X")+2;
-		if(pdest) sscanf(pdest,"%f",&Dipole.Value[0]);
+		if(pdest) sscanf(pdest,"%lf",&Dipole.Value[0]);
     		pdest = strstr( t, "Y")+2;
-		if(pdest) sscanf(pdest,"%f",&Dipole.Value[1]);
+		if(pdest) sscanf(pdest,"%lf",&Dipole.Value[1]);
     		pdest = strstr( t, "Z")+2;
-		if(pdest) sscanf(pdest,"%f",&Dipole.Value[2]);
+		if(pdest) sscanf(pdest,"%lf",&Dipole.Value[2]);
 		for(i=0;i<3;i++) Dipole.Value[i] /= AUTODEB;
 		break;
 		}
@@ -3517,7 +3517,7 @@ void get_dipole_from_mopac_output_file(FILE* fd)
     			if(!fgets(t,taille,fd)) break;
 			Dipole.def = TRUE;
     			pdest = strstr( t, "SUM")+2;
-			sscanf(t,"%s %f %f %f",dum,&Dipole.Value[0],&Dipole.Value[1], &Dipole.Value[2]);
+			sscanf(t,"%s %lf %lf %lf",dum,&Dipole.Value[0],&Dipole.Value[1], &Dipole.Value[2]);
 			for(i=0;i<3;i++) Dipole.Value[i] /= AUTODEB;
 			break;
 		}
@@ -3547,7 +3547,7 @@ void get_dipole_from_mopac_aux_file(FILE* fd)
 			Dipole.Value[0] = 0;
 			Dipole.Value[1] = 0;
 			Dipole.Value[2] = 0;
-			if(pdest) sscanf(pdest,"%f %f %f",&Dipole.Value[0], &Dipole.Value[1],&Dipole.Value[2]);
+			if(pdest) sscanf(pdest,"%lf %lf %lf",&Dipole.Value[0], &Dipole.Value[1],&Dipole.Value[2]);
 			for(i=0;i<3;i++) Dipole.Value[i] /= AUTODEB;
 			break;
 		}
@@ -4011,7 +4011,13 @@ void gabedit_save_image(GtkWidget* widget, gchar *fileName, gchar* type)
 	pixbuf = gdk_pixbuf_get_from_drawable(NULL, widget->window, NULL, 0, 0, 0, 0, width, height);
 	if(pixbuf)
 	{
-		gdk_pixbuf_save(pixbuf, fileName, type, &error, NULL);
+		if(!fileName)
+		{
+			GtkClipboard * clipboard;
+			clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+			gtk_clipboard_set_image(clipboard, pixbuf);
+		}
+		else gdk_pixbuf_save(pixbuf, fileName, type, &error, NULL);
 	 	g_object_unref (pixbuf);
 	}
 }

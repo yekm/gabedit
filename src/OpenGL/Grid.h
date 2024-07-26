@@ -22,11 +22,11 @@ DEALINGS IN THE SOFTWARE.
 
 typedef struct _Point5
 {
-	gfloat C[5];
+	gdouble C[5];
 }Point5;
 typedef struct _GridLimits
 {
-	gfloat MinMax[2][4];
+	gdouble MinMax[2][4];
 }GridLimits;
 
 typedef struct _Grid
@@ -36,22 +36,22 @@ typedef struct _Grid
 	GridLimits limits;
 	gboolean mapped;
 }Grid;
-gdouble get_value_orbital(gfloat x,gfloat y,gfloat z,gint k);
-gdouble get_value_electronic_density_on_atom(gfloat x,gfloat y,gfloat z,gint n);
-gdouble get_value_electronic_density_atomic(gfloat x,gfloat y,gfloat z,gint dump);
-gdouble get_value_electronic_density(gfloat x,gfloat y,gfloat z,gint dump);
-gdouble get_value_electronic_density_bonds(gfloat x,gfloat y,gfloat z,gint dump);
-gdouble get_value_spin_density(gfloat x,gfloat y,gfloat z,gint dump);
+gdouble get_value_orbital(gdouble x,gdouble y,gdouble z,gint k);
+gdouble get_value_electronic_density_on_atom(gdouble x,gdouble y,gdouble z,gint n);
+gdouble get_value_electronic_density_atomic(gdouble x,gdouble y,gdouble z,gint dump);
+gdouble get_value_electronic_density(gdouble x,gdouble y,gdouble z,gint dump);
+gdouble get_value_electronic_density_bonds(gdouble x,gdouble y,gdouble z,gint dump);
+gdouble get_value_spin_density(gdouble x,gdouble y,gdouble z,gint dump);
 gboolean test_grid_all_positive(Grid* grid);
 Grid* grid_point_alloc(gint N[],GridLimits limits);
 Grid* define_grid(gint N[],GridLimits limits);
 Grid* free_grid(Grid* grid);
 GridLimits limits;
 gint NumPoints[3];
-gfloat firstDirection[3];
-gfloat secondDirection[3];
-gfloat thirdDirection[3];
-gfloat originOfCube[3];
+gdouble firstDirection[3];
+gdouble secondDirection[3];
+gdouble thirdDirection[3];
+gdouble originOfCube[3];
 Grid* get_grid_laplacian(Grid* grid, gint nBoundary);
 Grid* get_grid_norm_gradient(Grid* grid, gint nBoundary);
 Grid* compute_mep_grid_using_multipol_from_density_grid(Grid* grid, gint lmax);
@@ -65,6 +65,9 @@ gboolean compute_coulomb_integrale_iijj(gint N[],GridLimits limits, gint typeOrb
 		gdouble* pInteg, gdouble* pNormi, gdouble* pNormj, gdouble* pOverlap);
 gboolean compute_coulomb_integrale_iijj_poisson(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
 		gdouble* pInteg, gdouble* pNorm, gdouble* pNormj, gdouble* pOverlap);
+Grid* define_grid_electronic_density(gint N[],GridLimits limits);
+Grid* define_grid_ELFBECKE(gint N[],GridLimits limits);
+Grid* define_grid_ELFSAVIN(gint N[],GridLimits limits);
 
 #endif /* __GABEDIT_GRID_H__ */
 

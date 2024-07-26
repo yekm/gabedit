@@ -40,22 +40,22 @@ void save_ao_orbitals_gabedit_format(FILE* file)
 	for(i=0;i<Ncenters;i++)
 	for(j=0;j<GeomOrb[i].NAlphaOrb;j++)
 	{
-		fprintf(file," Ene= %f\n",GeomOrb[i].EnerAlphaOrbitals[j]);
+		fprintf(file," Ene= %lf\n",GeomOrb[i].EnerAlphaOrbitals[j]);
 		fprintf(file," Spin= Alpha\n");
-		fprintf(file," Occup= %f\n",GeomOrb[i].OccAlphaOrbitals[j]);
+		fprintf(file," Occup= %lf\n",GeomOrb[i].OccAlphaOrbitals[j]);
 		fprintf(file," Atom= %s\n",GeomOrb[i].Symb);
 		for(k=0;k<GeomOrb[i].NAOrb;k++)
-			fprintf(file,"     %d    %f\n",k+1, GeomOrb[i].CoefAlphaOrbitals[j][k]);
+			fprintf(file,"     %d    %lf\n",k+1, GeomOrb[i].CoefAlphaOrbitals[j][k]);
 	}
 	for(i=0;i<Ncenters;i++)
 	for(j=0;j<GeomOrb[i].NBetaOrb;j++)
 	{
-		fprintf(file," Ene= %f\n",GeomOrb[i].EnerBetaOrbitals[j]);
+		fprintf(file," Ene= %lf\n",GeomOrb[i].EnerBetaOrbitals[j]);
 		fprintf(file," Spin= Beta\n");
-		fprintf(file," Occup= %f\n",GeomOrb[i].OccBetaOrbitals[j]);
+		fprintf(file," Occup= %lf\n",GeomOrb[i].OccBetaOrbitals[j]);
 		fprintf(file," Atom= %s\n",GeomOrb[i].Symb);
 		for(k=0;k<GeomOrb[i].NAOrb;k++)
-			fprintf(file,"     %d    %f\n",k+1, GeomOrb[i].CoefBetaOrbitals[j][k]);
+			fprintf(file,"     %d    %lf\n",k+1, GeomOrb[i].CoefBetaOrbitals[j][k]);
 	}
 	fprintf(file,"\n");
 }

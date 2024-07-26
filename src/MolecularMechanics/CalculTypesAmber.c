@@ -65,7 +65,7 @@ static gint nBondsRing = 0;
 /************************************************************************/
 static gboolean bonded(GeomDef* geom, gint i,gint j)
 {
-	gfloat distance;
+	gdouble distance;
 	V3d dif;
 	
 	dif[0] = geom[i].X - geom[j].X;
@@ -80,14 +80,14 @@ static gboolean bonded(GeomDef* geom, gint i,gint j)
 /************************************************************************/
 static gboolean hbonded(GeomDef* geom, gint nAtoms, gint i,gint j)
 {
-	gfloat minDistanceH;
-	gfloat maxDistanceH;
-	gfloat minDistanceH2;
-	gfloat maxDistanceH2;
-	gfloat minAngleH;
-	gfloat maxAngleH;
-	gfloat distance2;
-	gfloat angle;
+	gdouble minDistanceH;
+	gdouble maxDistanceH;
+	gdouble minDistanceH2;
+	gdouble maxDistanceH2;
+	gdouble minAngleH;
+	gdouble maxAngleH;
+	gdouble distance2;
+	gdouble angle;
 	gchar* strAngle;
 	Point A;
 	Point B;

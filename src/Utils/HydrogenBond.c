@@ -37,10 +37,10 @@ DEALINGS IN THE SOFTWARE.
 
 static gint nAtomsCanConnect = 6;
 static gchar** atomsCanConnect = NULL;
-static gfloat minDistance = 1.50; /* in Agnstrom */
-static gfloat maxDistance = 3.15; /* in Agnstrom */ 
-static gfloat minAngle = 145.0;
-static gfloat maxAngle = 215.0;
+static gdouble minDistance = 1.50; /* in Agnstrom */
+static gdouble maxDistance = 3.15; /* in Agnstrom */ 
+static gdouble minAngle = 145.0;
+static gdouble maxAngle = 215.0;
 static gint rowSelected = -1;
 static	GtkTreeView *treeViewOfAtoms = NULL;
 
@@ -97,15 +97,15 @@ void read_HBonds_properties()
 	file = FOpen(hbondsfile, "r");
 	if(!file) return;
 
- 	n = fscanf(file,"%f\n",&minDistance);
+ 	n = fscanf(file,"%lf\n",&minDistance);
 	if(n != 1) { initHBonds(); return ; fclose(file); g_free(hbondsfile);}
 
- 	n = fscanf(file,"%f\n",&maxDistance);
+ 	n = fscanf(file,"%lf\n",&maxDistance);
 	if(n != 1) { initHBonds(); return ; fclose(file); g_free(hbondsfile);}
 
- 	n = fscanf(file,"%f\n",&minAngle);
+ 	n = fscanf(file,"%lf\n",&minAngle);
 	if(n != 1) { initHBonds(); return ; fclose(file); g_free(hbondsfile);}
- 	n = fscanf(file,"%f\n",&maxAngle);
+ 	n = fscanf(file,"%lf\n",&maxAngle);
 	if(n != 1) { initHBonds(); return ; fclose(file); g_free(hbondsfile);}
 
  	n = fscanf(file,"%d\n",&nAtomsCanConnect);
@@ -591,22 +591,22 @@ void set_HBonds_dialog (GtkWidget* winParent)
 	gtk_widget_show_all(fp);
 }
 /************************************************************************/
-gfloat getMinDistanceHBonds()
+gdouble getMinDistanceHBonds()
 {
 	return minDistance;
 }
 /************************************************************************/
-gfloat getMaxDistanceHBonds()
+gdouble getMaxDistanceHBonds()
 {
 	return maxDistance;
 }
 /************************************************************************/
-gfloat getMinAngleHBonds()
+gdouble getMinAngleHBonds()
 {
 	return minAngle;
 }
 /************************************************************************/
-gfloat getMaxAngleHBonds()
+gdouble getMaxAngleHBonds()
 {
 	return maxAngle;
 }

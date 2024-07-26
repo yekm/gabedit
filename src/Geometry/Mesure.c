@@ -103,7 +103,7 @@ static gint get_indice(gint n)
 	return -1;
 }
 /********************************************************************************/
-static void setDistance(GeomDef* geom,gint n1,gint n2,gfloat bondLength,gint list[],gint nlist)
+static void setDistance(GeomDef* geom,gint n1,gint n2,gdouble bondLength,gint list[],gint nlist)
 {
 	gdouble a1[]={geom[n1].X,geom[n1].Y,geom[n1].Z};
 	gdouble a2[]={geom[n2].X,geom[n2].Y,geom[n2].Z};
@@ -281,7 +281,7 @@ void set_averaged_bond()
 	gint i;
 	gint k;
 	gint j;
-	gfloat averaged_value = 0.0;
+	gdouble averaged_value = 0.0;
 
 	k=0;
 	for(i=0;i<(gint)Natoms-1;i++)

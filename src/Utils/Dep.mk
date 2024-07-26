@@ -16,7 +16,8 @@ GTF.o: ../../Config.h
 GTF.o: ../Common/Global.h
 GTF.o: ../Files/GabeditFileChooser.h
 GTF.o: ../Common/GabeditType.h ../Utils/Vector3d.h ../Utils/Utils.h
-GTF.o: ../Utils/Constants.h ../Utils/MathFunctions.h Zlm.h
+GTF.o: ../Utils/Constants.h ../Utils/MathFunctions.h Zlm.h ../Utils/TTables.h
+GTF.o: TTables.h
 GabeditTextEdit.o: ../../Config.h ../Common/GabeditType.h
 GabeditXYPlot.o: GabeditXYPlot.h
 GabeditXYPlotWin.o: GabeditXYPlot.h GabeditXYPlotWin.h
@@ -44,6 +45,11 @@ PovrayUtils.o: ../Common/Global.h
 PovrayUtils.o: ../Files/GabeditFileChooser.h
 PovrayUtils.o: ../Common/GabeditType.h ../Utils/UtilsInterface.h
 PovrayUtils.o: ../Utils/Utils.h ../Utils/Constants.h ../Common/Windows.h
+TTables.o: ../../Config.h
+TTables.o: ../Common/Global.h
+TTables.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
+TTables.o: ../Utils/Constants.h ../Utils/TTables.h ../Utils/MathFunctions.h
+TTables.o: Zlm.h ../Utils/GTF.h TTables.h
 Transformation.o: ../../Config.h
 Transformation.o: ../Common/Global.h
 Transformation.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h

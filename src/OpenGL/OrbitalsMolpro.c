@@ -61,8 +61,8 @@ typedef struct _OneBasis
  gchar *type;
 
  gint nexps;
- gfloat* exps;
- gfloat* coefs;
+ gdouble* exps;
+ gdouble* coefs;
 
  gint* numstandards;
 }OneBasis;
@@ -77,11 +77,11 @@ typedef struct _OneOrbital
 {
  gint numorb;
  gint numsym;
- gfloat energy;
- gfloat occ;
+ gdouble energy;
+ gdouble occ;
 
  gint ncoefs;
- gfloat* coefs;
+ gdouble* coefs;
 }OneOrbital;
 /********************************************************************************/
 typedef struct _TypeOrbitalsBySym
@@ -104,7 +104,7 @@ void PrintMolproOneBasis(OneBasis bas)
 	Debug("Nexp = : %d\n ",bas.nexps);
 	for(i=0;i<bas.nexps;i++)
 	{
-		Debug(" %f %f \n",bas.exps[i],bas.coefs[i]);
+		Debug(" %lf %lf \n",bas.exps[i],bas.coefs[i]);
 	}
 }
 /*****************************************************************************************************/
@@ -390,8 +390,8 @@ OneBasis get_one_basis_from_strbasis(gchar **strbasis,gint begin,gint end,gint n
  		g_free(bas.signe);
  		bas.signe = NULL;
 	}
- 	bas.exps = g_malloc(sizeof(gfloat));
- 	bas.coefs = g_malloc(sizeof(gfloat));
+ 	bas.exps = g_malloc(sizeof(gdouble));
+ 	bas.coefs = g_malloc(sizeof(gdouble));
 	bas.nexps = 0;
 	for(i=begin;i<=end;i++)
 	{
@@ -420,8 +420,8 @@ OneBasis get_one_basis_from_strbasis(gchar **strbasis,gint begin,gint end,gint n
 					Debug("%s ",allreals [j]); 
 				Debug("\n");
 			*/
-			bas.exps = g_realloc(bas.exps,(bas.nexps+1)*sizeof(gfloat));
-			bas.coefs = g_realloc(bas.coefs,(bas.nexps+1)*sizeof(gfloat));
+			bas.exps = g_realloc(bas.exps,(bas.nexps+1)*sizeof(gdouble));
+			bas.coefs = g_realloc(bas.coefs,(bas.nexps+1)*sizeof(gdouble));
 			bas.exps[bas.nexps] = atof(allreals [0]);
 			bas.coefs[bas.nexps] = atof(allreals [numorb]);
 			g_strfreev(allreals);
@@ -453,8 +453,8 @@ OneBasis get_one_basis_from_strbasis(gchar **strbasis,gint begin,gint end,gint n
  			/*	allreals =g_strsplit (temp," ",norb+1);*/
 			/*	Debug("temp : %s\n",temp); */
  				allreals =gab_split (temp);
-				bas.exps = g_realloc(bas.exps,(bas.nexps+1)*sizeof(gfloat));
-				bas.coefs = g_realloc(bas.coefs,(bas.nexps+1)*sizeof(gfloat));
+				bas.exps = g_realloc(bas.exps,(bas.nexps+1)*sizeof(gdouble));
+				bas.coefs = g_realloc(bas.coefs,(bas.nexps+1)*sizeof(gdouble));
 			/*
 				Debug("temp : %s\n",temp); 
 				Debug("allreal : ");
@@ -698,7 +698,7 @@ OneOrbital get_one_orbital_from_strorbs(gchar **strorbs,gint begin,gint end,gint
 	else
 		orb.energy = 0.0;
 
-	orb.coefs = g_malloc(orb.ncoefs *sizeof(gfloat));
+	orb.coefs = g_malloc(orb.ncoefs *sizeof(gdouble));
 	for(i=0;i<orb.ncoefs;i++)
 		orb.coefs[i] = atof(allreals[b+i]);
 
@@ -709,7 +709,7 @@ OneOrbital get_one_orbital_from_strorbs(gchar **strorbs,gint begin,gint end,gint
 		n = numb_of_string_by_row(strorbs[j]);
 		k =  orb.ncoefs ;
 		orb.ncoefs += n;
-		orb.coefs = g_realloc( orb.coefs ,orb.ncoefs *sizeof(gfloat));
+		orb.coefs = g_realloc( orb.coefs ,orb.ncoefs *sizeof(gdouble));
 		for(i=0;i<n;i++)
 			orb.coefs[k+i] = atof(allreals[i]);
 		g_strfreev(allreals);
@@ -764,11 +764,11 @@ gint sort_basis_by_sym(OneBasis* Basis,gint nbasis,TypeBasisBySym BasisBySym[MAX
 void PrintMolproOneOrb(OneOrbital orb)
 {
 	gint i=0;
-	Debug(" %d %d %f %f \n",orb.numorb,orb.numsym,orb.occ,orb.energy);
+	Debug(" %d %d %lf %lf \n",orb.numorb,orb.numsym,orb.occ,orb.energy);
 	Debug("Ncoefs = : %d\n ",orb.ncoefs);
 	for(i=0;i<orb.ncoefs;i++)
 	{
-		Debug(" %f ",orb.coefs[i]);
+		Debug(" %lf ",orb.coefs[i]);
 	}
 	Debug("\n\n");
 }
@@ -852,7 +852,7 @@ long int read_orbitals_from_a_molpro_output_file(gchar *FileName,TypeOrbitalsByS
  	gint nrows=0;
  	gint i=0;
 	gboolean endreading;
-	gfloat val;
+	gdouble val;
 	gint norbitals;
 	OneOrbital *orbs;
 	long int n = -1;
@@ -959,7 +959,7 @@ long int read_orbitals_from_a_molpro_output_file(gchar *FileName,TypeOrbitalsByS
 				break;
 			}
 			val = 0;
-			sscanf(t,"%f",&val);
+			sscanf(t,"%lf",&val);
 			if(fabs(val-(gint)val)<1e-6&& fabs(val)>1e-6)
 				break;
 			nrows++;
@@ -1006,7 +1006,7 @@ void define_standard_orbitlas_from_molpro_orbitals(TypeBasisBySym BasisBySym[MAX
 	gint kp;
 	gint n;
 	gint ic;
-	gfloat c;
+	gdouble c;
 	gint numsym;
 
 	gdouble **CoefOrbitals;
@@ -1139,11 +1139,11 @@ void define_standard_orbitlas_from_molpro_orbitals(TypeBasisBySym BasisBySym[MAX
 	{
 		switch(itype)
 		{
-			case 0 : Debug("Orb n %d Occ = %f OccA = %f OccB = %f \n",i+1,OccOrbitals[i],OccAlphaOrbitals[i],OccBetaOrbitals[i]);
+			case 0 : Debug("Orb n %d Occ = %lf OccA = %lf OccB = %lf \n",i+1,OccOrbitals[i],OccAlphaOrbitals[i],OccBetaOrbitals[i]);
 				 break;
-			case 1 : Debug("Orb n %d Occ = %f OccA = %f\n",i+1,OccOrbitals[i],OccAlphaOrbitals[i]);
+			case 1 : Debug("Orb n %d Occ = %lf OccA = %lf\n",i+1,OccOrbitals[i],OccAlphaOrbitals[i]);
 				 break;
-			case 2 : Debug("Orb n %d Occ = %f OccB = %f \n",i+1,OccOrbitals[i],OccBetaOrbitals[i]);
+			case 2 : Debug("Orb n %d Occ = %lf OccB = %lf \n",i+1,OccOrbitals[i],OccBetaOrbitals[i]);
 				 break;
 		}
 	}

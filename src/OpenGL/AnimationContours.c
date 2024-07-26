@@ -82,8 +82,8 @@ static void play_animation(GtkWidget *win, gpointer data);
 /********************************************************************************/
 static void setMinMaxIsovalues()
 {
-	gfloat max;
-	gfloat min;
+	gdouble max;
+	gdouble min;
 	gint i;
 	gint j;
 	gint k;
@@ -137,14 +137,14 @@ static void set_directory(GtkWidget *win, gpointer data)
 	gtk_window_set_transient_for(GTK_WINDOW(dirSelector),GTK_WINDOW(WinDlg));
 }
 /**********************************************************************************************************/
-static void new_plane(gint numPlane, gint numberOfContours, gfloat min, gfloat max, GabEditPlanes type)
+static void new_plane(gint numPlane, gint numberOfContours, gdouble min, gdouble max, GabEditPlanes type)
 {
 	gint i;
 	gint i0=0;
 	gint i1=1;
-	gfloat* values = NULL;
-	gfloat step = 0;
-	gfloat gap = 0;
+	gdouble* values = NULL;
+	gdouble step = 0;
+	gdouble gap = 0;
 	
 	if(numPlane<0) return;
 	if(numberOfContours<1) return;
@@ -155,7 +155,7 @@ static void new_plane(gint numPlane, gint numberOfContours, gfloat min, gfloat m
 		case XYPLANES : i0 = 0;i1 = 1;break; /* plane XY */
 	}
 
-	values = g_malloc(numberOfContours*sizeof(gfloat));
+	values = g_malloc(numberOfContours*sizeof(gdouble));
 
 	if(linear)
 	{
@@ -204,7 +204,7 @@ static void first_plane()
 	if(this_is_an_object((GtkObject*)GLArea)) glarea_rafresh(GLArea);
 }
 /********************************************************************************/
-static void setColorMap(gfloat min, gfloat max)
+static void setColorMap(gdouble min, gdouble max)
 {
 	GtkWidget* handleBoxColorMap = g_object_get_data(G_OBJECT(PrincipalWindow), "HandleboxColorMapContours");
 	ColorMap* colorMap = NULL;
@@ -215,11 +215,11 @@ static void setColorMap(gfloat min, gfloat max)
 		gchar* t = NULL;
 		GtkWidget* entryLeft  = g_object_get_data(G_OBJECT(handleBoxColorMap), "EntryLeft");
 		GtkWidget* entryRight = g_object_get_data(G_OBJECT(handleBoxColorMap), "EntryRight");
-		t = g_strdup_printf("%f",min);
+		t = g_strdup_printf("%lf",min);
 		gtk_entry_set_text(GTK_ENTRY(entryLeft),t);
 		g_free(t);
 		gtk_widget_activate(entryLeft);
-		t = g_strdup_printf("%f",max);
+		t = g_strdup_printf("%lf",max);
 		gtk_entry_set_text(GTK_ENTRY(entryRight),t);
 		g_free(t);
 		gtk_widget_activate(entryRight);
@@ -238,10 +238,10 @@ static void setColorMap(gfloat min, gfloat max)
 		g_object_set_data(G_OBJECT(entryLeft),"ColorMap", colorMap);
 		g_object_set_data(G_OBJECT(entryRight),"ColorMap", colorMap);
 		g_object_set_data(G_OBJECT(darea),"ColorMap", colorMap);
-		t = g_strdup_printf("%f",min);
+		t = g_strdup_printf("%lf",min);
 		gtk_entry_set_text(GTK_ENTRY(entryLeft),t);
 		g_free(t);
-		t = g_strdup_printf("%f",max);
+		t = g_strdup_printf("%lf",max);
 		gtk_entry_set_text(GTK_ENTRY(entryRight),t);
 		g_free(t);
 	}
@@ -257,7 +257,7 @@ static void resetVelocity(GtkWidget *win, gpointer data)
 	if(velo<0)
 	{
 		velo = -velo;
-		t = g_strdup_printf("%f",velo);
+		t = g_strdup_printf("%lf",velo);
 		gtk_entry_set_text(GTK_ENTRY(EntryVelocity),t);
 		g_free(t);
 	}
@@ -313,7 +313,7 @@ static void resetIsoValues(GtkWidget *win, gpointer data)
 	if(minIso<0)
 	{
 		minIso = 0;
-		sprintf(t,"%f",minIso);
+		sprintf(t,"%lf",minIso);
 		gtk_entry_set_text(GTK_ENTRY(EntryMinIsoValue),t);
 	}
 	if(minIsoValue != minIso) reBuild = TRUE;
@@ -322,7 +322,7 @@ static void resetIsoValues(GtkWidget *win, gpointer data)
 	if(maxIso<minIsoValue)
 	{
 		maxIso = minIso + 2*fabs(minIso);
-		sprintf(t,"%f",maxIso);
+		sprintf(t,"%lf",maxIso);
 		gtk_entry_set_text(GTK_ENTRY(EntryMaxIsoValue),t);
 	}
 	if(maxIsoValue != maxIso) reBuild = TRUE;
@@ -598,7 +598,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  3,3);
 	gtk_editable_set_editable((GtkEditable*) EntryMinIsoValue,TRUE);
-	sprintf(t,"%f",minIsoValue);
+	sprintf(t,"%lf",minIsoValue);
 	gtk_entry_set_text(GTK_ENTRY(EntryMinIsoValue),t);
 
 	i++;
@@ -610,7 +610,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  3,3);
 	gtk_editable_set_editable((GtkEditable*) EntryMaxIsoValue,TRUE);
-	sprintf(t,"%f",maxIsoValue);
+	sprintf(t,"%lf",maxIsoValue);
 	gtk_entry_set_text(GTK_ENTRY(EntryMaxIsoValue),t);
 
 	i++;
@@ -622,7 +622,7 @@ static void addEntrysButtons(GtkWidget* box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  3,3);
 	gtk_editable_set_editable((GtkEditable*) EntryVelocity,TRUE);
-	sprintf(t,"%f",velocity);
+	sprintf(t,"%lf",velocity);
 	gtk_entry_set_text(GTK_ENTRY(EntryVelocity),t);
 
 	i++;

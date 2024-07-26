@@ -24,23 +24,23 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Utils.h"
 
 /******************************************************************************************************************************/
-gfloat Norme(Vertex *Vect)
+gdouble Norme(Vertex *Vect)
 {
 	return sqrt( (Vect->C[0])* (Vect->C[0]) + (Vect->C[1])* (Vect->C[1]) + (Vect->C[2])* (Vect->C[2])  );
 }
 /******************************************************************************************************************************/
 void Normalize(Vertex *Vect)
 {
-	gfloat inv = Norme(Vect);
+	gdouble inv = Norme(Vect);
 	if(inv>0)  inv = 1.0/inv;
 	Vect->C[0] = -  Vect->C[0] *inv;
 	Vect->C[1] = -  Vect->C[1] *inv;
 	Vect->C[2] = -  Vect->C[2] *inv;
 }
 /******************************************************************************************************************************/
-gfloat InterpVal(gfloat val1,gfloat val2,gfloat valc1,gfloat valc2,gfloat isolevel)
+gdouble InterpVal(gdouble val1,gdouble val2,gdouble valc1,gdouble valc2,gdouble isolevel)
 {
-	gfloat factor;
+	gdouble factor;
 	
 	if(fabs(isolevel-val1)<1e-6)
 		return valc1;
@@ -52,7 +52,7 @@ gfloat InterpVal(gfloat val1,gfloat val2,gfloat valc1,gfloat valc2,gfloat isolev
 		return valc1 + factor *(valc2-valc1);
 }
 /******************************************************************************************************************************/
-void NormalX(gint i,gint j,gint k,gfloat isolevel,Grid *grid,Vertex *Normal)
+void NormalX(gint i,gint j,gint k,gdouble isolevel,Grid *grid,Vertex *Normal)
 {
 	Normal->C[0] = InterpVal(grid->point[i+1][j][k].C[3],grid->point[i][j][k].C[3],
 			grid->point[i+2][j][k].C[3]-grid->point[i][j][k].C[3],
@@ -67,7 +67,7 @@ void NormalX(gint i,gint j,gint k,gfloat isolevel,Grid *grid,Vertex *Normal)
 				grid->point[i][j][k-1].C[3],grid->point[i+1][j][k-1].C[3],isolevel);
 }
 /******************************************************************************************************************************/
-void NormalY(gint i,gint j,gint k,gfloat isolevel,Grid *grid,Vertex *Normal)
+void NormalY(gint i,gint j,gint k,gdouble isolevel,Grid *grid,Vertex *Normal)
 {
 	Normal->C[1] = InterpVal(grid->point[i][j+1][k].C[3],grid->point[i][j][k].C[3],
 			grid->point[i][j+2][k].C[3]-grid->point[i][j][k].C[3],
@@ -82,7 +82,7 @@ void NormalY(gint i,gint j,gint k,gfloat isolevel,Grid *grid,Vertex *Normal)
 				grid->point[i][j][k-1].C[3],grid->point[i][j+1][k-1].C[3],isolevel);
 }
 /******************************************************************************************************************************/
-void NormalZ(gint i,gint j,gint k,gfloat isolevel,Grid *grid,Vertex *Normal)
+void NormalZ(gint i,gint j,gint k,gdouble isolevel,Grid *grid,Vertex *Normal)
 {
 	Normal->C[2] = InterpVal(grid->point[i][j][k+1].C[3],grid->point[i][j][k].C[3],
 			grid->point[i][j][k+2].C[3]-grid->point[i][j][k].C[3],
@@ -147,12 +147,12 @@ IsoSurface* iso_free(IsoSurface* iso)
 	return iso;
 }
 /**************************************************************/
-void Interpolate(gint i,gint j,gint k,gint ip,gint jp,gint kp,gfloat isolevel,Grid *grid, Vertex *vertex, gboolean mapping)
+void Interpolate(gint i,gint j,gint k,gint ip,gint jp,gint kp,gdouble isolevel,Grid *grid, Vertex *vertex, gboolean mapping)
 {
 	gint c;
-	gfloat val1 = grid->point[i][j][k].C[3];
-	gfloat val2 = grid->point[ip][jp][kp].C[3];
-	gfloat coef;
+	gdouble val1 = grid->point[i][j][k].C[3];
+	gdouble val2 = grid->point[ip][jp][kp].C[3];
+	gdouble coef;
 
 	if( fabs(isolevel-val1)<1e-6 )
 	{
@@ -176,7 +176,7 @@ void Interpolate(gint i,gint j,gint k,gint ip,gint jp,gint kp,gfloat isolevel,Gr
 		return;
 	}
 	coef = (isolevel-val1)/(val2-val1);
-	/* Debug("%d %d %d %d %d %d coef=%f val1 = %f val2 = %f \n",i,j,k,ip,jp,kp,coef,val1,val2);*/
+	/* Debug("%d %d %d %d %d %d coef=%lf val1 = %lf val2 = %lf \n",i,j,k,ip,jp,kp,coef,val1,val2);*/
 	for(c=0;c<3;c++)
 		vertex->C[c] = grid->point[i][j][k].C[c]+coef*(grid->point[ip][jp][kp].C[c]-grid->point[i][j][k].C[c]);
 	if(mapping)
@@ -186,7 +186,7 @@ void Interpolate(gint i,gint j,gint k,gint ip,gint jp,gint kp,gfloat isolevel,Gr
 	return;
 }
 /**************************************************************/
-Cube get_cube(gint i,gint j, gint k,gfloat isolevel,Grid* grid, gboolean mapping)
+Cube get_cube(gint i,gint j, gint k,gdouble isolevel,Grid* grid, gboolean mapping)
 {
 	Cube cube;
 	gint index = 0;
@@ -311,35 +311,35 @@ void print_cube(Cube cube)
 		printf("\n");
 		for(c=0;c<3;c++)
 		{
-			printf("(%f,  ", cube.triangles[n].vertex[c]->C[0]);
-			printf(" %f,  ", cube.triangles[n].vertex[c]->C[1]);
-			printf(" %f)  ", cube.triangles[n].vertex[c]->C[2]);
+			printf("(%lf,  ", cube.triangles[n].vertex[c]->C[0]);
+			printf(" %lf,  ", cube.triangles[n].vertex[c]->C[1]);
+			printf(" %lf)  ", cube.triangles[n].vertex[c]->C[2]);
 		}
 	printf("\nNormals: ");
 		for(c=0;c<3;c++)
 		{			
-			printf("(%f, ", cube.triangles[n].Normal[c].C[0]);
-			printf("%f,  ", cube.triangles[n].Normal[c].C[1]);
-			printf("%f)  ", cube.triangles[n].Normal[c].C[2]);
+			printf("(%lf, ", cube.triangles[n].Normal[c].C[0]);
+			printf("%lf,  ", cube.triangles[n].Normal[c].C[1]);
+			printf("%lf)  ", cube.triangles[n].Normal[c].C[2]);
 			printf("\n");
 		}
 	printf("\n");
 	}
 }
 /**************************************************************/
-IsoSurface* define_iso_surface(Grid* grid, gfloat isolevel, gboolean mapping)
+IsoSurface* define_iso_surface(Grid* grid, gdouble isolevel, gboolean mapping)
 {
 	IsoSurface* iso;
 	gint i;
 	gint j;
 	gint k;
 	gint n=0;
-	gfloat scal;
+	gdouble scal;
 
 	iso = iso_alloc(grid->N);
 
 	progress_orb(0,GABEDIT_PROGORB_COMPISOSURFACE,TRUE);
-	scal = (gfloat)1.01/(grid->N[0]);
+	scal = (gdouble)1.01/(grid->N[0]);
 
 	for(i=1;i<iso->N[0]-2;i++)
 	{

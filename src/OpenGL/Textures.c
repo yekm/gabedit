@@ -102,7 +102,7 @@ float noise(float s,float t)
 	return((1+PerlinNoise_2D(s,t))/2.0F) ; 
 }
 /*********************************************************************************************/
-void granite(float s, float t, float Kd,GLfloat Col[])
+void granite(float s, float t, float Kd,GLdouble Col[])
 {
 	float sum = 0;
 	float freq = 1.0;
@@ -121,7 +121,7 @@ void granite(float s, float t, float Kd,GLfloat Col[])
 /*********************************************************************************************/
 void create_image_granite()
 {
-	GLfloat Col[3];
+	GLdouble Col[3];
 	float t = gl_max*gl_max*3 ;
 	float s;
 	int i;

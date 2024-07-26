@@ -19,15 +19,18 @@ DEALINGS IN THE SOFTWARE.
 #ifndef __GABEDIT_UTILSORB_H__
 #define __GABEDIT_UTILSORB_H__
 
+void glMaterialdv(GLenum face, GLenum pname, const GLdouble*  	params);
+void glLightdv(GLenum face, GLenum pname, const GLdouble* params);
+void glFogdv(GLenum pname, const GLdouble* params);
 void InitializeAll();
 gint GetTotalNelectrons();
 gdouble GetSumAbsCharges();
 void DefineNOccs();
-gfloat Dpn(gfloat e,gint n);
+gdouble Dpn(gdouble e,gint n);
 char GetSymmetry(gint l);
 gint GetNelectrons(char *symb);
 void printLineChar(char c,gint n);
-gfloat **CalculSm12(gfloat *S,gint n,gint nvec);
+gdouble **CalculSm12(gdouble *S,gint n,gint nvec);
 gdouble** CreateTable2(gint N);
 gdouble** FreeTable2(gdouble **T,gint N);
 void PrintAllOrb(gdouble** M);
@@ -47,7 +50,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar *title);
 void create_grid(gchar* title);
 void read_any_file(gchar* FileName);
 gint get_number_of_point(GtkWidget* Entry);
-gboolean get_a_float(GtkWidget* Entry,gfloat* value, gchar* erroMessage);
+gboolean get_a_float(GtkWidget* Entry,gdouble* value, gchar* erroMessage);
 void initialise_global_orbitals_variables();
 void close_window_orb(GtkWidget*win, gpointer data);
 void add_glarea_child(GtkWidget* winchild,gchar* title);
@@ -58,6 +61,7 @@ void read_opengl_file();
 void create_grid_sas(gchar* title);
 void set_scale_ball_stick_dlg();
 void createColorMapOptionsWindow(GtkWidget* win);
+void create_grid_ELF_Dens_analyze(gboolean ongrid);
 
 #endif /* __GABEDIT_UTILSORB_H__ */
 

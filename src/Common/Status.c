@@ -56,7 +56,7 @@ void hide_progress_connection()
 	set_sensitive_remote_frame(TRUE);
 }
 /********************************************************************************/
-gint progress_connection(gfloat scal,gchar* str,gboolean reset)
+gint progress_connection(gdouble scal,gchar* str,gboolean reset)
 {
 
 	gdouble new_val;

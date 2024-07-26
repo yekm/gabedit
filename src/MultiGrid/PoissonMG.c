@@ -651,7 +651,7 @@ void solveCGPoissonMG(PoissonMG* ps, int max, gdouble acc)
 	gdouble beta;
 	gdouble rms;
 	gint i;
-	gfloat scale = 0;
+	gdouble scale = 0;
 	gchar tmp[100];
 
 	setOperationGridMG(d,GABEDIT_INTERIOR);
@@ -672,7 +672,7 @@ void solveCGPoissonMG(PoissonMG* ps, int max, gdouble acc)
 	tradesBoundaryPoissonMG(ps);
 	copyGridMG(q,r); /* for allocation */
 	copyGridMG(t,r); /* for allocation */
-	scale = (gfloat)1.01/max;
+	scale = (gdouble)1.01/max;
 	progress_orb(0,GABEDIT_PROGORB_COMPMEPGRID,TRUE);
 	for(i=0; i<max && rms>acc ;i++)
 	{
@@ -844,7 +844,7 @@ void solveMGPoissonMG3(PoissonMG* ps, int levelMax, int nIter, gdouble acc, int 
 {
 	gdouble rms = -1;
 	gint i;
-	gfloat scale = 0;
+	gdouble scale = 0;
 	gchar tmp[100];
 	if(verbose>=4)
 	{
@@ -854,7 +854,7 @@ void solveMGPoissonMG3(PoissonMG* ps, int levelMax, int nIter, gdouble acc, int 
 	}
 	progress_orb(0,GABEDIT_PROGORB_COMPGRID,TRUE);
 	setTextInProgress("Solve Poisson equation by MultiGrid method, please wait");
-	scale = (gfloat)1.01/nIter;
+	scale = (gdouble)1.01/nIter;
 
 
 	for(i=0;i<nIter;i++)

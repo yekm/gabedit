@@ -242,7 +242,7 @@ static void apply_capture_orbitals(GtkWidget *Win,gpointer data)
 	GridLimits limitstmp;
 	gint NumPointstmp[3];
 	GtkWidget *entries[3][6];
-	gfloat V[3][3];
+	gdouble V[3][3];
 	GtkWidget* buttonDirSelector = g_object_get_data (G_OBJECT (Win), "ButtonDirSelector");
 	gchar* dirName = NULL;
 	GtkWidget* entryIsoValue = g_object_get_data (G_OBJECT (Win), "EntryIsoValue");
@@ -827,7 +827,7 @@ static GtkWidget *create_slides_frame( GtkWidget *vboxall,gchar* title)
   	return frame;
 }
 /********************************************************************************/
-static GtkWidget* new_gtk_list_orbitals(gint N,gfloat* Energies,gfloat* Occ,gchar** sym, gint* widall)
+static GtkWidget* new_gtk_list_orbitals(gint N,gdouble* Energies,gdouble* Occ,gchar** sym, gint* widall)
 {
 	gint i;
 	gint j;
@@ -888,8 +888,8 @@ static GtkWidget* new_gtk_list_orbitals(gint N,gfloat* Energies,gfloat* Occ,gcha
 	{
 		if(strcmp(sym[i],"DELETED")==0)continue;
 		List[0] = g_strdup_printf("%i",i+1);
-		List[1] = g_strdup_printf("%f",Energies[i]);
-		List[2] = g_strdup_printf("%f",Occ[i]);
+		List[1] = g_strdup_printf("%lf",Energies[i]);
+		List[2] = g_strdup_printf("%lf",Occ[i]);
 		List[3] = g_strdup(sym[i]);
 
 		gtk_list_store_append(store, &iter);
@@ -909,15 +909,15 @@ static GtkWidget* new_alpha_list(GtkWidget *hboxall)
 	GtkWidget *gtklist;
 	gint i;
 	gint N;
-	gfloat* Energies;
-	gfloat* Occ;
+	gdouble* Energies;
+	gdouble* Occ;
 	gchar** sym;
 	static gint type = 1;
 	gint widall = 0;
 
 	N = NAlphaOrb;
-	Energies = g_malloc(N*sizeof(gfloat));
-	Occ = g_malloc(N*sizeof(gfloat));
+	Energies = g_malloc(N*sizeof(gdouble));
+	Occ = g_malloc(N*sizeof(gdouble));
 	sym = g_malloc(N*sizeof(gchar*));
 
 	for(i=0;i<N;i++)
@@ -963,15 +963,15 @@ static GtkWidget* new_beta_list(GtkWidget *hboxall)
 	GtkWidget *gtklist;
 	gint i;
 	gint N;
-	gfloat* Energies;
-	gfloat* Occ;
+	gdouble* Energies;
+	gdouble* Occ;
 	gchar** sym;
 	static gint type = 2;
 	gint widall = 0;
 
 	N = NBetaOrb;
-	Energies = g_malloc(N*sizeof(gfloat));
-	Occ = g_malloc(N*sizeof(gfloat));
+	Energies = g_malloc(N*sizeof(gdouble));
+	Occ = g_malloc(N*sizeof(gdouble));
 	sym = g_malloc(N*sizeof(gchar*));
 
 	for(i=0;i<N;i++)

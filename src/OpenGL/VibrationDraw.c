@@ -21,6 +21,7 @@ DEALINGS IN THE SOFTWARE.
 
 #include "../../Config.h"
 #include "../OpenGL/GlobalOrb.h"
+#include "../OpenGL/UtilsOrb.h"
 #include "../OpenGL/GeomDraw.h"
 #include "../Geometry/GeomGlobal.h"
 #include "../Utils/Vector3d.h"
@@ -38,7 +39,7 @@ static void rotated_vector(V3d v)
 {
 	V3d vz={0.0,0.0,1.0};
 	V3d	vert;
-	gfloat angle;
+	gdouble angle;
 
 
 	v3d_cross(vz,v,vert);
@@ -53,16 +54,16 @@ static void rotated_vector(V3d v)
 
 }
 /************************************************************************/
-static void draw_prism(GLfloat radius,V3d Base1Pos,V3d Base2Pos,
+static void draw_prism(GLdouble radius,V3d Base1Pos,V3d Base2Pos,
 		V4d Specular,V4d Diffuse,V4d Ambiant)
 {
 		V3d Direction;
 		double lengt;
 		GLUquadricObj *obj;
 
-		glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-		glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
+		glMaterialdv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
+		glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
+		glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
 		glMateriali(GL_FRONT_AND_BACK,GL_SHININESS,50);
 
 		glPushMatrix();
@@ -83,9 +84,9 @@ static void draw_prism(GLfloat radius,V3d Base1Pos,V3d Base2Pos,
 
 /************************************************************************/
 static void draw_vector(
-		gfloat x0, gfloat y0, gfloat z0,
-		gfloat x1, gfloat y1, gfloat z1,
-		gfloat radius 
+		gdouble x0, gdouble y0, gdouble z0,
+		gdouble x1, gdouble y1, gdouble z1,
+		gdouble radius 
 		)
 {
 	V4d Specular = {1.0f,1.0f,1.0f,1.0f};
@@ -150,8 +151,8 @@ static void draw_vectors()
 {
 	gint m = rowSelected;
 	gint j;
-	gfloat x0, y0, z0;
-	gfloat x1, y1, z1;
+	gdouble x0, y0, z0;
+	gdouble x1, y1, z1;
 
 	if(m<0) return;
 

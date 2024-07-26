@@ -11,7 +11,7 @@ OrcaGuessWaveFunction orcaGuessWaveFunction;
 
 OrcaFunctional* functionals;
 OrcaStdFunctional* stdFunctionals;
-gfloat* sumFunctionals;
+gdouble* sumFunctionals;
 
 #endif /* __GABEDIT_ORCAGLOBAL_H__ */
 

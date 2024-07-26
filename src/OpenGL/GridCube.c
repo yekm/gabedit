@@ -50,10 +50,10 @@ typedef enum
   GABEDIT_CUBE_MOLPRO_LAPLAP
 } GabEditTypeCube;
 
-typedef gboolean  (*FuncGetVal)(FILE*,gint,gint,gint,gfloat []);
+typedef gboolean  (*FuncGetVal)(FILE*,gint,gint,gint,gdouble []);
 
 Grid* get_grid_from_gauss_molpro_cube_file(gint typefile,FILE* file,gint num,gint n,gint N[],
-		gfloat XYZ0[3],gfloat X[3],gfloat Y[3],gfloat Z[3]);
+		gdouble XYZ0[3],gdouble X[3],gdouble Y[3],gdouble Z[3]);
 
 /**************************************************************************/
 static void applyRestrictionCube()
@@ -61,7 +61,7 @@ static void applyRestrictionCube()
 	gint i, j, k;
 	gboolean beg = TRUE;
 	gdouble v;
-	gfloat scal;
+	gdouble scal;
 	gint N[3];
 	Grid* newGrid;
 	GridLimits newLimits;
@@ -90,7 +90,7 @@ static void applyRestrictionCube()
 	newGrid = grid_point_alloc(N,newLimits);
 
 	progress_orb(0,GABEDIT_PROGORB_SCALEGRID,TRUE);
-	scal = (gfloat)1.01/grid->N[0]*2;
+	scal = (gdouble)1.01/grid->N[0]*2;
 	for(i=0;i<grid->N[0];i+=2)
 	{
 		ii = i/2;
@@ -139,11 +139,11 @@ static void applySquareCube()
 	gint i, j, k;
 	gboolean beg = TRUE;
 	gdouble v;
-	gfloat scal;
+	gdouble scal;
 
 	TypeGrid = GABEDIT_TYPEGRID_EDENSITY;
 	progress_orb(0,GABEDIT_PROGORB_SCALEGRID,TRUE);
-	scal = (gfloat)1.01/grid->N[0];
+	scal = (gdouble)1.01/grid->N[0];
 	for(i=0;i<grid->N[0];i++)
 	{
 		for(j=0;j<grid->N[1];j++)
@@ -199,10 +199,10 @@ void scale_cube_file(gdouble factor)
 	gint i, j, k;
 	gboolean beg = TRUE;
 	gdouble v;
-	gfloat scal;
+	gdouble scal;
 
 	progress_orb(0,GABEDIT_PROGORB_SCALEGRID,TRUE);
-	scal = (gfloat)1.01/grid->N[0];
+	scal = (gdouble)1.01/grid->N[0];
 	for(i=0;i<grid->N[0];i++)
 	{
 		for(j=0;j<grid->N[1];j++)
@@ -340,14 +340,14 @@ void subtract_cube_file(gchar* filename)
 	gint len = BSIZE;
 	gchar t[BSIZE];
 	gint Natoms;
-	gfloat XYZ0[3];
+	gdouble XYZ0[3];
 	gint N[3];
-	gfloat X[3];
-	gfloat Y[3];
-	gfloat Z[3];
+	gdouble X[3];
+	gdouble Y[3];
+	gdouble Z[3];
 	Grid* tmpGrid;
-	gfloat xh, yh, zh;
-	gfloat scal;
+	gdouble xh, yh, zh;
+	gdouble scal;
 	gint i, j, k;
 	gboolean beg = TRUE;
 	gdouble v;
@@ -380,7 +380,7 @@ void subtract_cube_file(gchar* filename)
 		fclose(file);
 		return;
 	}
-	if(sscanf(t,"%d %f %f %f",&Natoms,&XYZ0[0],&XYZ0[1],&XYZ0[2])!=4)
+	if(sscanf(t,"%d %lf %lf %lf",&Natoms,&XYZ0[0],&XYZ0[1],&XYZ0[2])!=4)
 	{
 		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
 		Message(t,"Error",TRUE);
@@ -404,7 +404,7 @@ void subtract_cube_file(gchar* filename)
 		fclose(file);
 		return;
 	}
-	if(sscanf(t,"%d %f %f %f",&N[0],&X[0],&Y[0],&Z[0])!=4)
+	if(sscanf(t,"%d %lf %lf %lf",&N[0],&X[0],&Y[0],&Z[0])!=4)
 	{
 		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
 		Message(t,"Error",TRUE);
@@ -432,7 +432,7 @@ void subtract_cube_file(gchar* filename)
 		fclose(file);
 		return;
 	}
-	if(sscanf(t,"%d %f %f %f",&N[1],&X[1],&Y[1],&Z[1])!=4)
+	if(sscanf(t,"%d %lf %lf %lf",&N[1],&X[1],&Y[1],&Z[1])!=4)
 	{
 		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
 		Message(t,"Error",TRUE);
@@ -459,7 +459,7 @@ void subtract_cube_file(gchar* filename)
 		fclose(file);
 		return;
 	}
-	if(sscanf(t,"%d %f %f %f",&N[2],&X[2],&Y[2],&Z[2])!=4)
+	if(sscanf(t,"%d %lf %lf %lf",&N[2],&X[2],&Y[2],&Z[2])!=4)
 	{
 		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
 		Message(t,"Error",TRUE);
@@ -501,7 +501,7 @@ void subtract_cube_file(gchar* filename)
 	}
 
 	progress_orb(0,GABEDIT_PROGORB_SUBSGRID,TRUE);
-	scal = (gfloat)1.01/grid->N[0];
+	scal = (gdouble)1.01/grid->N[0];
 	for(i=0;i<grid->N[0];i++)
 	{
 		for(j=0;j<grid->N[1];j++)
@@ -541,14 +541,14 @@ void subtract_cube_file(gchar* filename)
 /**************************************************************************/
 void mapping_cube_by_an_other_cube(Grid* tmpGrid)
 {
-	gfloat scal;
+	gdouble scal;
 	gint i, j, k;
 	ColorMap* colorMap = NULL;
 
 	if(!tmpGrid) return;
 
 	progress_orb(0,GABEDIT_PROGORB_MAPGRID,TRUE);
-	scal = (gfloat)1.01/grid->N[0];
+	scal = (gdouble)1.01/grid->N[0];
 	for(i=0;i<grid->N[0];i++)
 	{
 		for(j=0;j<grid->N[1];j++)
@@ -603,13 +603,13 @@ void read_mapping_cube_file(gchar* filename)
 	gint len = BSIZE;
 	gchar t[BSIZE];
 	gint Natoms;
-	gfloat XYZ0[3];
+	gdouble XYZ0[3];
 	gint N[3];
-	gfloat X[3];
-	gfloat Y[3];
-	gfloat Z[3];
+	gdouble X[3];
+	gdouble Y[3];
+	gdouble Z[3];
 	Grid* tmpGrid;
-	gfloat xh, yh, zh;
+	gdouble xh, yh, zh;
 	gint i, j;
 
 	if(!file)
@@ -640,7 +640,7 @@ void read_mapping_cube_file(gchar* filename)
 		fclose(file);
 		return;
 	}
-	if(sscanf(t,"%d %f %f %f",&Natoms,&XYZ0[0],&XYZ0[1],&XYZ0[2])!=4)
+	if(sscanf(t,"%d %lf %lf %lf",&Natoms,&XYZ0[0],&XYZ0[1],&XYZ0[2])!=4)
 	{
 		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
 		Message(t,"Error",TRUE);
@@ -664,7 +664,7 @@ void read_mapping_cube_file(gchar* filename)
 		fclose(file);
 		return;
 	}
-	if(sscanf(t,"%d %f %f %f",&N[0],&X[0],&Y[0],&Z[0])!=4)
+	if(sscanf(t,"%d %lf %lf %lf",&N[0],&X[0],&Y[0],&Z[0])!=4)
 	{
 		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
 		Message(t,"Error",TRUE);
@@ -692,7 +692,7 @@ void read_mapping_cube_file(gchar* filename)
 		fclose(file);
 		return;
 	}
-	if(sscanf(t,"%d %f %f %f",&N[1],&X[1],&Y[1],&Z[1])!=4)
+	if(sscanf(t,"%d %lf %lf %lf",&N[1],&X[1],&Y[1],&Z[1])!=4)
 	{
 		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
 		Message(t,"Error",TRUE);
@@ -719,7 +719,7 @@ void read_mapping_cube_file(gchar* filename)
 		fclose(file);
 		return;
 	}
-	if(sscanf(t,"%d %f %f %f",&N[2],&X[2],&Y[2],&Z[2])!=4)
+	if(sscanf(t,"%d %lf %lf %lf",&N[2],&X[2],&Y[2],&Z[2])!=4)
 	{
 		sprintf(t,"Sorry, I can not  read cube from %s file",filename);
 		Message(t,"Error",TRUE);
@@ -769,43 +769,43 @@ void save_grid_gabedit_cube_file(gchar* filename)
 {
 	FILE* file = FOpen(filename, "w");
 	gint i, j, k;
-	gfloat scal;
-	gfloat dum;
-	gfloat xh, yh, zh;
+	gdouble scal;
+	gdouble dum;
+	gdouble xh, yh, zh;
 
 	fprintf(file,"Grid file generated by Gabedit\n");
 	fprintf(file,"Density\n");
-	fprintf(file,"%d %f %f %f\n",Ncenters,grid->point[0][0][0].C[0],grid->point[0][0][0].C[1],grid->point[0][0][0].C[2]);
+	fprintf(file,"%d %lf %lf %lf\n",Ncenters,grid->point[0][0][0].C[0],grid->point[0][0][0].C[1],grid->point[0][0][0].C[2]);
 	xh = grid->point[1][0][0].C[0]-grid->point[0][0][0].C[0];
 	yh = grid->point[0][1][0].C[0]-grid->point[0][0][0].C[0];
 	zh = grid->point[0][0][1].C[0]-grid->point[0][0][0].C[0];
-	fprintf(file,"%d %f %f %f\n",grid->N[0],xh, yh, zh);
+	fprintf(file,"%d %lf %lf %lf\n",grid->N[0],xh, yh, zh);
 
 	xh = grid->point[1][0][0].C[1]-grid->point[0][0][0].C[1];
 	yh = grid->point[0][1][0].C[1]-grid->point[0][0][0].C[1];
 	zh = grid->point[0][0][1].C[1]-grid->point[0][0][0].C[1];
-	fprintf(file,"%d %f %f %f\n",grid->N[1],xh, yh, zh);
+	fprintf(file,"%d %lf %lf %lf\n",grid->N[1],xh, yh, zh);
 
 	xh = grid->point[1][0][0].C[2]-grid->point[0][0][0].C[2];
 	yh = grid->point[0][1][0].C[2]-grid->point[0][0][0].C[2];
 	zh = grid->point[0][0][1].C[2]-grid->point[0][0][0].C[2];
-	fprintf(file,"%d %f %f %f\n",grid->N[2],xh, yh, zh);
+	fprintf(file,"%d %lf %lf %lf\n",grid->N[2],xh, yh, zh);
 
 	set_status_label_info("Geometry","Writing...");
 
 	progress_orb(0,GABEDIT_PROGORB_SAVEGEOM,TRUE);
-	scal = (gfloat)1.01/Ncenters;
+	scal = (gdouble)1.01/Ncenters;
 
 	dum = 0.0;
 	for(j=0; j<(gint)Ncenters; j++)
 	{
 		progress_orb(scal,GABEDIT_PROGORB_SAVEGEOM,FALSE);
-		fprintf(file,"%d %f %f %f %f\n",(gint)GeomOrb[j].Prop.atomicNumber,dum,GeomOrb[j].C[0],GeomOrb[j].C[1],GeomOrb[j].C[2]);
+		fprintf(file,"%d %lf %lf %lf %lf\n",(gint)GeomOrb[j].Prop.atomicNumber,dum,GeomOrb[j].C[0],GeomOrb[j].C[1],GeomOrb[j].C[2]);
 	}
 	set_status_label_info("Geometry","Ok");
 
 	progress_orb(0,GABEDIT_PROGORB_SAVEGRID,TRUE);
-	scal = (gfloat)1.01/grid->N[0];
+	scal = (gdouble)1.01/grid->N[0];
  
 	set_status_label_info("Grid","Writing...");
 	for(i=0;i<grid->N[0];i++)
@@ -814,7 +814,7 @@ void save_grid_gabedit_cube_file(gchar* filename)
 		{
 			for(k=0;k<grid->N[2];k++)
 			{
-				fprintf(file,"%f ",grid->point[i][j][k].C[3]);
+				fprintf(file,"%lf ",grid->point[i][j][k].C[3]);
 				if((k+1)%6==0) fprintf(file,"\n");
 			}
 			if(grid->N[2]%6 !=0) fprintf(file,"\n");
@@ -841,7 +841,7 @@ gint get_orbitals_number_from_molpro_cube_file(FILE* file,gint N[])
 	gint norbs;
 	gint nval = 6;
 	/*
-	gfloat V[6];
+	gdouble V[6];
 	*/
 
 	/*Debug("Begin scan orbitals molpro cube file \n");*/
@@ -857,7 +857,7 @@ gint get_orbitals_number_from_molpro_cube_file(FILE* file,gint N[])
 		nval = (strlen(t)+1)/13;
 		/* nval = numb_of_string_by_row(t);*/
 		/*
-		nval =sscanf(t,"%f %f %f %f %f %f",
+		nval =sscanf(t,"%lf %lf %lf %lf %lf %lf",
 			&V[0], &V[1], &V[2],
 			&V[3], &V[4], &V[5]
 			);
@@ -879,14 +879,14 @@ gint get_orbitals_number_from_molpro_cube_file(FILE* file,gint N[])
 	return norbs;
 }
 /****************************************************************************************************************/
-gboolean get_values_from_gauss_molpro_cube_density_file(FILE* file,gint numblock,gint nblocks,gint N2,gfloat V[])
+gboolean get_values_from_gauss_molpro_cube_density_file(FILE* file,gint numblock,gint nblocks,gint N2,gdouble V[])
 {
 	gint len = BSIZE;
 	gchar t[BSIZE];
 	gint k = 0;
 	gint i;
 	gint n = nblocks*N2;
-	gfloat* tmpV = g_malloc((nblocks*N2+6)*sizeof(gfloat));
+	gdouble* tmpV = g_malloc((nblocks*N2+6)*sizeof(gdouble));
 	gint nval = 6;
 
 	/*Debug("Begin read den n = %d\n",n);*/
@@ -899,7 +899,7 @@ gboolean get_values_from_gauss_molpro_cube_density_file(FILE* file,gint numblock
 			return FALSE;
 		}
 		/* Debug("t = %s",t);*/
-		nval =sscanf(t,"%f %f %f %f %f %f",
+		nval =sscanf(t,"%lf %lf %lf %lf %lf %lf",
 			&tmpV[k], &tmpV[k+1], &tmpV[k+2],
 			&tmpV[k+3], &tmpV[k+4], &tmpV[k+5]
 			);
@@ -919,14 +919,14 @@ gboolean get_values_from_gauss_molpro_cube_density_file(FILE* file,gint numblock
 	return TRUE;
 }
 /********************************************************************************/
-gboolean get_values_from_gauss_molpro_cube_orbitals_file(FILE* file,gint numorb,gint norbs,gint N2,gfloat V[])
+gboolean get_values_from_gauss_molpro_cube_orbitals_file(FILE* file,gint numorb,gint norbs,gint N2,gdouble V[])
 {
 	gint len = BSIZE;
 	gchar t[BSIZE];
 	gint k = 0;
 	gint i;
 	gint n = norbs*N2;
-	gfloat* tmpV = g_malloc((norbs*N2+6)*sizeof(gfloat));
+	gdouble* tmpV = g_malloc((norbs*N2+6)*sizeof(gdouble));
 
 	/* Debug("Begin read orb n = %d\n",n);*/
 	while(!feof(file))
@@ -938,7 +938,7 @@ gboolean get_values_from_gauss_molpro_cube_orbitals_file(FILE* file,gint numorb,
 			return FALSE;
 		}
 		/* Debug("t = %s",t);*/
-		if(sscanf(t,"%f %f %f %f %f %f",
+		if(sscanf(t,"%lf %lf %lf %lf %lf %lf",
 			&tmpV[k], &tmpV[k+1], &tmpV[k+2],
 			&tmpV[k+3], &tmpV[k+4], &tmpV[k+5]
 			)!=6)
@@ -971,20 +971,20 @@ gboolean get_values_from_gauss_molpro_cube_orbitals_file(FILE* file,gint numorb,
  * typefile = 1 =>  cube density file 
 */
 Grid* get_grid_from_gauss_molpro_cube_file(gint typefile,FILE* file,gint num,gint n,gint N[],
-		gfloat XYZ0[3],gfloat X[3],gfloat Y[3],gfloat Z[3])
+		gdouble XYZ0[3],gdouble X[3],gdouble Y[3],gdouble Z[3])
 {
 	Grid* grid;
 	gint i;
 	gint j;
 	gint k;
-	gfloat x;
-	gfloat y;
-	gfloat z;
-	gfloat v;
+	gdouble x;
+	gdouble y;
+	gdouble z;
+	gdouble v;
     	gboolean beg = TRUE;
-	gfloat scal;
+	gdouble scal;
 	GridLimits limits;
-	gfloat* V;
+	gdouble* V;
 	FuncGetVal Func;
 
 	if(typefile==0)
@@ -1002,9 +1002,9 @@ Grid* get_grid_from_gauss_molpro_cube_file(gint typefile,FILE* file,gint num,gin
 	grid = grid_point_alloc(N,limits);
 
 	progress_orb(0,GABEDIT_PROGORB_READGRID,TRUE);
-	scal = (gfloat)1.01/grid->N[0];
+	scal = (gdouble)1.01/grid->N[0];
  
-	V = g_malloc((N[2]+6)*sizeof(gfloat));
+	V = g_malloc((N[2]+6)*sizeof(gdouble));
 	for(i=0;i<grid->N[0];i++)
 	{
 		for(j=0;j<grid->N[1];j++)
@@ -1024,7 +1024,7 @@ Grid* get_grid_from_gauss_molpro_cube_file(gint typefile,FILE* file,gint num,gin
 				z = XYZ0[2] + i*Z[0] + j*Z[1] +  k*Z[2]; 
 
 				v = V[k];
-				/* Debug("%f %f %f %f \n",x,y,z,v);*/
+				/* Debug("%lf %lf %lf %lf \n",x,y,z,v);*/
 				grid->point[i][j][k].C[0] = x;
 				grid->point[i][j][k].C[1] = y;
 				grid->point[i][j][k].C[2] = z;
@@ -1070,8 +1070,8 @@ gboolean read_geometry_from_gauss_cube_file(FILE* file,gint Natoms)
 	gint i;
 	gint j;
 	gint N;
-	gfloat dum;
-	gfloat scal;
+	gdouble dum;
+	gdouble scal;
 	gboolean OK = TRUE;
 
 	for(i=0;i<3;i++)
@@ -1084,7 +1084,7 @@ gboolean read_geometry_from_gauss_cube_file(FILE* file,gint Natoms)
 	set_status_label_info("Geometry","Reading");
 
 	progress_orb(0,GABEDIT_PROGORB_READGEOM,TRUE);
-	scal = (gfloat)1.01/Ncenters;
+	scal = (gdouble)1.01/Ncenters;
 
 	j=-1;
 	while(!feof(file) && (j<(gint)Ncenters))
@@ -1098,7 +1098,7 @@ gboolean read_geometry_from_gauss_cube_file(FILE* file,gint Natoms)
 			OK = FALSE;
 			break;
 		}
-		if(5 != sscanf(t,"%d %f %s %s %s",&N,&dum,AtomCoord[0],AtomCoord[1],AtomCoord[2]))
+		if(5 != sscanf(t,"%d %lf %s %s %s",&N,&dum,AtomCoord[0],AtomCoord[1],AtomCoord[2]))
 		{
 			OK = FALSE;
 			break;
@@ -1111,7 +1111,7 @@ gboolean read_geometry_from_gauss_cube_file(FILE* file,gint Natoms)
 		{
 			/* GeomOrb[j].C[i] = atof(ang_to_bohr(AtomCoord[i]));*/
 			GeomOrb[j].C[i] = atof(AtomCoord[i]);
-			/* Debug("%f  ", GeomOrb[j].C[i]);*/
+			/* Debug("%lf  ", GeomOrb[j].C[i]);*/
 		}
 		/* Debug("\n");*/
 		 GeomOrb[j].Prop = prop_atom_get(GeomOrb[j].Symb);
@@ -1138,7 +1138,7 @@ gboolean read_geometry_from_gauss_cube_file(FILE* file,gint Natoms)
 	return OK;
 }
 /**************************************************************/
-gboolean read_grid_limits_from_gauss_cube_file(FILE* file,gint N[],gfloat X[3],gfloat Y[3],gfloat Z[3])
+gboolean read_grid_limits_from_gauss_cube_file(FILE* file,gint N[],gdouble X[3],gdouble Y[3],gdouble Z[3])
 {
 	gint len = BSIZE;
 	gchar t[BSIZE];
@@ -1148,7 +1148,7 @@ gboolean read_grid_limits_from_gauss_cube_file(FILE* file,gint N[],gfloat X[3],g
 		fclose(file);
 		return FALSE;
 	}
-	if(sscanf(t,"%d %f %f %f",&N[0],&X[0],&Y[0],&Z[0])!=4)
+	if(sscanf(t,"%d %lf %lf %lf",&N[0],&X[0],&Y[0],&Z[0])!=4)
 	{
 		Message("I can not read cube from this file\n","Error",TRUE);
 		fclose(file);
@@ -1160,7 +1160,7 @@ gboolean read_grid_limits_from_gauss_cube_file(FILE* file,gint N[],gfloat X[3],g
 		fclose(file);
 		return FALSE;
 	}
-	if(sscanf(t,"%d %f %f %f",&N[1],&X[1],&Y[1],&Z[1])!=4)
+	if(sscanf(t,"%d %lf %lf %lf",&N[1],&X[1],&Y[1],&Z[1])!=4)
 	{
 		Message("I can not read cube from this file\n","Error",TRUE);
 		fclose(file);
@@ -1172,7 +1172,7 @@ gboolean read_grid_limits_from_gauss_cube_file(FILE* file,gint N[],gfloat X[3],g
 		fclose(file);
 		return FALSE;
 	}
-	if(sscanf(t,"%d %f %f %f",&N[2],&X[2],&Y[2],&Z[2])!=4)
+	if(sscanf(t,"%d %lf %lf %lf",&N[2],&X[2],&Y[2],&Z[2])!=4)
 	{
 		Message("I can not read cube from this file\n","Error",TRUE);
 		fclose(file);
@@ -1300,12 +1300,12 @@ void read_gauss_molpro_cube_orbitals_file(gchar* filename,gint numorb,gint Norbs
 	gint len = BSIZE;
 	gchar t[BSIZE];
 	gint Natoms;
-	gfloat XYZ0[3];
+	gdouble XYZ0[3];
 	gint type;
 	gint N[3];
-	gfloat X[3];
-	gfloat Y[3];
-	gfloat Z[3];
+	gdouble X[3];
+	gdouble Y[3];
+	gdouble Z[3];
 	gint* numorbs = NULL;
 	gint norbs = Norbs;
 
@@ -1349,7 +1349,7 @@ void read_gauss_molpro_cube_orbitals_file(gchar* filename,gint numorb,gint Norbs
 		return;
 	}
 	/* Debug("t = %s\n",t);*/
-	if(sscanf(t,"%d %f %f %f",&Natoms,&XYZ0[0],&XYZ0[1],&XYZ0[2])!=4)
+	if(sscanf(t,"%d %lf %lf %lf",&Natoms,&XYZ0[0],&XYZ0[1],&XYZ0[2])!=4)
 	{
 		Message("I can not read cube from this file\n","Error",TRUE);
 		set_status_label_info("File Name","Nothing");
@@ -1380,9 +1380,9 @@ void read_gauss_molpro_cube_orbitals_file(gchar* filename,gint numorb,gint Norbs
 		return;
 	}
 	/* Debug("Natoms = %d\n",Natoms);*/
-	/* Debug("X = %f %f %f \n",X[0],X[1],X[2]);*/
-	/* Debug("Y = %f %f %f \n",Y[0],Y[1],Y[2]);*/
-	/* Debug("Z = %f %f %f \n",Z[0],Z[1],Z[2]);*/
+	/* Debug("X = %lf %lf %lf \n",X[0],X[1],X[2]);*/
+	/* Debug("Y = %lf %lf %lf \n",Y[0],Y[1],Y[2]);*/
+	/* Debug("Z = %lf %lf %lf \n",Z[0],Z[1],Z[2]);*/
 
 	if(typefile==0)
 	{
@@ -1535,12 +1535,12 @@ void read_gauss_molpro_cube_file(GabEditTypeCube typefile,gchar* filename)
 	gint len = BSIZE;
 	gchar t[BSIZE];
 	gint Natoms;
-	gfloat XYZ0[3];
+	gdouble XYZ0[3];
 	gint type;
 	gint N[3];
-	gfloat X[3];
-	gfloat Y[3];
-	gfloat Z[3];
+	gdouble X[3];
+	gdouble Y[3];
+	gdouble Z[3];
 	gint* numorbs = NULL;
 	gint norbs = 1;
 
@@ -1606,7 +1606,7 @@ void read_gauss_molpro_cube_file(GabEditTypeCube typefile,gchar* filename)
 		return;
 	}
 	/* Debug("t = %s\n",t);*/
-	if(sscanf(t,"%d %f %f %f",&Natoms,&XYZ0[0],&XYZ0[1],&XYZ0[2])!=4)
+	if(sscanf(t,"%d %lf %lf %lf",&Natoms,&XYZ0[0],&XYZ0[1],&XYZ0[2])!=4)
 	{
 		Message("I can not read cube from this file\n","Error",TRUE);
 		set_status_label_info("File Name","Nothing");
@@ -1637,9 +1637,9 @@ void read_gauss_molpro_cube_file(GabEditTypeCube typefile,gchar* filename)
 		return;
 	}
 	/* Debug("Natoms = %d\n",Natoms);*/
-	/* Debug("X = %f %f %f \n",X[0],X[1],X[2]);*/
-	/* Debug("Y = %f %f %f \n",Y[0],Y[1],Y[2]);*/
-	/* Debug("Z = %f %f %f \n",Z[0],Z[1],Z[2]);*/
+	/* Debug("X = %lf %lf %lf \n",X[0],X[1],X[2]);*/
+	/* Debug("Y = %lf %lf %lf \n",Y[0],Y[1],Y[2]);*/
+	/* Debug("Z = %lf %lf %lf \n",Z[0],Z[1],Z[2]);*/
 	if(type==0 && typefile ==GABEDIT_CUBE_GAUSS_ORB)
 	{
 		if(typefile !=  GABEDIT_CUBE_GAUSS_ORB)

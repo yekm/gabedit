@@ -75,7 +75,7 @@ gdouble get_coulomb_analytic(gint typeOrbi, gint i, gint typeOrbj, gint j)
 	gdouble** CoefI = CoefAlphaOrbitals;
 	gdouble** CoefJ = CoefAlphaOrbitals;
 	gdouble d,eri;
-	gfloat scal;
+	gdouble scal;
 
 	gint N = NAOrb*(NAOrb+1)/2;
 	gint* p = g_malloc(N*sizeof(gint));
@@ -87,7 +87,7 @@ gdouble get_coulomb_analytic(gint typeOrbi, gint i, gint typeOrbj, gint j)
 	gint ll;
 	gint dkkll;
 
-	scal = (gfloat)1.01/N;
+	scal = (gdouble)1.01/N;
 
 	if(typeOrbi == 2) CoefI = CoefBetaOrbitals;
 	if(typeOrbj == 2) CoefJ = CoefBetaOrbitals;
@@ -149,8 +149,8 @@ gdouble get_coulomb_analytic(gint typeOrbi, gint i, gint typeOrbj, gint j)
 	gdouble** CoefI = CoefAlphaOrbitals;
 	gdouble** CoefJ = CoefAlphaOrbitals;
 	gdouble a,b,eri;
-	gfloat scal;
-	scal = (gfloat)2.02/NAOrb/(NAOrb+1);
+	gdouble scal;
+	scal = (gdouble)2.02/NAOrb/(NAOrb+1);
 	gdouble cci = 0;
 	gdouble ccj = 0;
 
@@ -196,7 +196,7 @@ gdouble get_coulomb_analytic(gint typeOrbi, gint i, gint typeOrbj, gint j, gdoub
 	gdouble** CoefI = CoefAlphaOrbitals;
 	gdouble** CoefJ = CoefAlphaOrbitals;
 	gdouble eri = 0;
-	gfloat scal;
+	gdouble scal;
 	gchar tmp[BSIZE];
 
 	gint N = NAOrb*(NAOrb+1)/2;
@@ -358,7 +358,7 @@ static void apply_coulomb_orbitals(GtkWidget *Win,gpointer data)
 	GridLimits limitstmp;
 	gint NumPointstmp[3];
 	GtkWidget *entries[3][6];
-	gfloat V[3][3];
+	gdouble V[3][3];
 	GtkWidget* alphaList = g_object_get_data (G_OBJECT (Win), "AlphaList");
 	GtkWidget* betaList = g_object_get_data (G_OBJECT (Win), "BetaList");
 	GtkWidget* numericButton = g_object_get_data (G_OBJECT (Win), "NumericButton");
@@ -531,8 +531,8 @@ static void apply_coulomb_orbitals(GtkWidget *Win,gpointer data)
 					&integ, &normi, &normj, &overlap)
 			  	)
 					result = g_strdup_printf(
-							"<%d|%d> = %f\n"
-							"<%d %d|1/r12|%d %d> = %f Hartree\n",
+							"<%d|%d> = %lf\n"
+							"<%d %d|1/r12|%d %d> = %lf Hartree\n",
 						ii,ii,normi,
 						ii,ii,ii,ii,integ);
 				else
@@ -544,8 +544,8 @@ static void apply_coulomb_orbitals(GtkWidget *Win,gpointer data)
 				integ = get_coulomb_analytic(typeOrb, i, typeOrb,  i, schwarzCutOff);
 				normi = get_overlap_analytic(typeOrb, i, typeOrb, i);
 				result = g_strdup_printf(
-							"<%d|%d> = %f\n"
-							"<%d %d|1/r12|%d %d> = %f Hartree\n",
+							"<%d|%d> = %lf\n"
+							"<%d %d|1/r12|%d %d> = %lf Hartree\n",
 						ii,ii,normi,
 						ii,ii,ii,ii,integ);
 			}
@@ -573,10 +573,10 @@ static void apply_coulomb_orbitals(GtkWidget *Win,gpointer data)
 				ii++;
 				jj++;
 				tmp = g_strdup_printf(
-						"<%d|%d> = %f\n"
-						"<%d|%d> = %f\n"
-						"<%d|%d> = %f\n"
-						"<%d %d|1/r12|%d %d> = %f Hartree\n",
+						"<%d|%d> = %lf\n"
+						"<%d|%d> = %lf\n"
+						"<%d|%d> = %lf\n"
+						"<%d %d|1/r12|%d %d> = %lf Hartree\n",
 						ii,ii,normi,
 						jj,jj,normj,
 						ii,jj,overlap,
@@ -593,10 +593,10 @@ static void apply_coulomb_orbitals(GtkWidget *Win,gpointer data)
 				ii++;
 				jj++;
 				tmp = g_strdup_printf(
-						"<%d|%d> = %f\n"
-						"<%d|%d> = %f\n"
-						"<%d|%d> = %f\n"
-						"<%d %d|1/r12|%d %d> = %f Hartree\n",
+						"<%d|%d> = %lf\n"
+						"<%d|%d> = %lf\n"
+						"<%d|%d> = %lf\n"
+						"<%d %d|1/r12|%d %d> = %lf Hartree\n",
 						ii,ii,normi,
 						jj,jj,normj,
 						ii,jj,overlap,
@@ -634,10 +634,10 @@ static void apply_coulomb_orbitals(GtkWidget *Win,gpointer data)
 				ii++;
 				jj++;
 				tmp = g_strdup_printf(
-						"<%d|%d> = %f\n"
-						"<%d|%d> = %f\n"
-						"<%d|%d> = %f\n"
-						"<%d %d|1/r12|%d %d> = %f Hartree\n",
+						"<%d|%d> = %lf\n"
+						"<%d|%d> = %lf\n"
+						"<%d|%d> = %lf\n"
+						"<%d %d|1/r12|%d %d> = %lf Hartree\n",
 						ii,ii,normi,
 						jj,jj,normj,
 						ii,jj,overlap,
@@ -654,10 +654,10 @@ static void apply_coulomb_orbitals(GtkWidget *Win,gpointer data)
 				ii++;
 				jj++;
 				tmp = g_strdup_printf(
-						"<%d|%d> = %f\n"
-						"<%d|%d> = %f\n"
-						"<%d|%d> = %f\n"
-						"<%d %d|1/r12|%d %d> = %f Hartree\n",
+						"<%d|%d> = %lf\n"
+						"<%d|%d> = %lf\n"
+						"<%d|%d> = %lf\n"
+						"<%d %d|1/r12|%d %d> = %lf Hartree\n",
 						ii,ii,normi,
 						jj,jj,normj,
 						ii,jj,overlap,
@@ -695,10 +695,10 @@ static void apply_coulomb_orbitals(GtkWidget *Win,gpointer data)
 				ii++;
 				jj++;
 				tmp = g_strdup_printf(
-						"<%d|%d> = %f\n"
-						"<%d|%d> = %f\n"
-						"<%d|%d> = %f\n"
-						"<%d %d|1/r12|%d %d> = %f Hartree\n",
+						"<%d|%d> = %lf\n"
+						"<%d|%d> = %lf\n"
+						"<%d|%d> = %lf\n"
+						"<%d %d|1/r12|%d %d> = %lf Hartree\n",
 						ii,ii,normi,
 						jj,jj,normj,
 						ii,jj,overlap,
@@ -715,10 +715,10 @@ static void apply_coulomb_orbitals(GtkWidget *Win,gpointer data)
 				ii++;
 				jj++;
 				tmp = g_strdup_printf(
-						"<%d|%d> = %f\n"
-						"<%d|%d> = %f\n"
-						"<%d|%d> = %f\n"
-						"<%d %d|1/r12|%d %d> = %f Hartree\n",
+						"<%d|%d> = %lf\n"
+						"<%d|%d> = %lf\n"
+						"<%d|%d> = %lf\n"
+						"<%d %d|1/r12|%d %d> = %lf Hartree\n",
 						ii,ii,normi,
 						jj,jj,normj,
 						ii,jj,overlap,
@@ -775,7 +775,7 @@ static void select_row(GtkWidget* list, gint row)
 	gtk_tree_path_free(path);
 }
 /********************************************************************************/
-static GtkWidget* new_gtk_list_orbitals(gint N,gfloat* Energies,gfloat* Occ,gchar** sym, gint* widall)
+static GtkWidget* new_gtk_list_orbitals(gint N,gdouble* Energies,gdouble* Occ,gchar** sym, gint* widall)
 {
 	gint i;
 	gint j;
@@ -836,8 +836,8 @@ static GtkWidget* new_gtk_list_orbitals(gint N,gfloat* Energies,gfloat* Occ,gcha
 	{
 		if(strcmp(sym[i],"DELETED")==0)continue;
 		List[0] = g_strdup_printf("%i",i+1);
-		List[1] = g_strdup_printf("%f",Energies[i]);
-		List[2] = g_strdup_printf("%f",Occ[i]);
+		List[1] = g_strdup_printf("%lf",Energies[i]);
+		List[2] = g_strdup_printf("%lf",Occ[i]);
 		List[3] = g_strdup(sym[i]);
 
 		gtk_list_store_append(store, &iter);
@@ -857,15 +857,15 @@ static GtkWidget* new_alpha_list(GtkWidget *hboxall)
 	GtkWidget *gtklist;
 	gint i;
 	gint N;
-	gfloat* Energies;
-	gfloat* Occ;
+	gdouble* Energies;
+	gdouble* Occ;
 	gchar** sym;
 	static gint type = 1;
 	gint widall = 0;
 
 	N = NAlphaOrb;
-	Energies = g_malloc(N*sizeof(gfloat));
-	Occ = g_malloc(N*sizeof(gfloat));
+	Energies = g_malloc(N*sizeof(gdouble));
+	Occ = g_malloc(N*sizeof(gdouble));
 	sym = g_malloc(N*sizeof(gchar*));
 
 	for(i=0;i<N;i++)
@@ -911,15 +911,15 @@ static GtkWidget* new_beta_list(GtkWidget *hboxall)
 	GtkWidget *gtklist;
 	gint i;
 	gint N;
-	gfloat* Energies;
-	gfloat* Occ;
+	gdouble* Energies;
+	gdouble* Occ;
 	gchar** sym;
 	static gint type = 2;
 	gint widall = 0;
 
 	N = NBetaOrb;
-	Energies = g_malloc(N*sizeof(gfloat));
-	Occ = g_malloc(N*sizeof(gfloat));
+	Energies = g_malloc(N*sizeof(gdouble));
+	Occ = g_malloc(N*sizeof(gdouble));
 	sym = g_malloc(N*sizeof(gchar*));
 
 	for(i=0;i<N;i++)
@@ -1122,7 +1122,7 @@ void compute_overlap_matrix(gint typeOrb)
 	gint nAll = 0;
 	gint delta = 0;
 	gint pos = 0;
-	gfloat scal;
+	gdouble scal;
 	gchar str[BSIZE];
 	if(typeOrb != 1) 
 	{
@@ -1169,7 +1169,7 @@ void compute_overlap_matrix(gint typeOrb)
 		if(CancelCalcul) break;
 		o = overlapCGTF(&AOrb[k],&AOrb[k]);
 		nAll++;
-		/* printf("k=%d o = %f\n",k,o);*/
+		/* printf("k=%d o = %lf\n",k,o);*/
 		for(i=0;i<NAOrb;i++)
 		for(j=0;j<=i;j++)
 			matrix[i][j] += CoefI[i][k]*CoefJ[j][k]*o;
@@ -1211,7 +1211,7 @@ void compute_overlap_matrix(gint typeOrb)
 	for(j=0;j<=i;j++)
 	{
 		if(CancelCalcul) break;
-		sprintf(tmp,"<%d|%d> = %f\n",i+1,j+1,matrix[i][j]);
+		sprintf(tmp,"<%d|%d> = %lf\n",i+1,j+1,matrix[i][j]);
 		strcat(result,tmp);
 		if(CancelCalcul) break;
 	}

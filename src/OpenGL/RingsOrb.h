@@ -26,7 +26,7 @@ void ringsSetNotPlanar(gboolean ac);
 void buildConnectionsForRings();
 gboolean inRing(gint currentAtom, gint rootAtom, gint ringSize, gboolean initialize);
 gint* getRing();
-void getCentreRing(gint i, gint j, gfloat C[]);
+void getCentreRing(gint i, gint j, gdouble C[]);
 gint** getRings(gint ringSize, gint* nRings);
 void findAllRingsForOneAtom(gint numAtom);
 void IsoRingsAllGenLists(GLuint *myList, gint ringSizeMin, gint ringSizeMax);

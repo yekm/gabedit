@@ -64,7 +64,7 @@ void setTextInProgress(gchar* t)
     	while( gtk_events_pending() ) gtk_main_iteration();
 }
 /********************************************************************************/
-gint progress_orb_txt(gfloat scal,gchar* str,gboolean reset)
+gint progress_orb_txt(gdouble scal,gchar* str,gboolean reset)
 {
 
 	gdouble new_val;
@@ -77,6 +77,13 @@ gint progress_orb_txt(gfloat scal,gchar* str,gboolean reset)
 	{
 		gtk_widget_show(ProgressBar);
 		new_val = 0;
+		gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (ProgressBar), new_val);
+		gtk_widget_set_sensitive(button, FALSE); 
+
+		gtk_statusbar_pop(GTK_STATUSBAR(StatusProgress),idStatus);
+		gtk_statusbar_push(GTK_STATUSBAR(StatusProgress),idStatus, str);
+		while( gtk_events_pending() ) gtk_main_iteration();
+		return TRUE;
 	}
 	else if(scal>0)
 	{
@@ -99,7 +106,7 @@ gint progress_orb_txt(gfloat scal,gchar* str,gboolean reset)
 	return TRUE;
 }
 /********************************************************************************/
-gint progress_orb(gfloat scal,GabEditTypeProgressOrb  type,gboolean reset)
+gint progress_orb(gdouble scal,GabEditTypeProgressOrb  type,gboolean reset)
 {
 
 	gdouble new_val;
@@ -158,10 +165,10 @@ gint progress_orb(gfloat scal,GabEditTypeProgressOrb  type,gboolean reset)
 		t = g_strdup_printf(" Computing of the electronic density grid : %.0f%%",new_val*100);
 		else
 		if(TypeGrid == GABEDIT_TYPEGRID_ORBITAL)
-		t = g_strdup_printf(" Compute the orbital grid : %.0f%%",new_val*100);
+		t = g_strdup_printf(" Grid coomputing for an orbital : %.0f%%",new_val*100);
 		else
 		if(TypeGrid == GABEDIT_TYPEGRID_ELFBECKE || TypeGrid == GABEDIT_TYPEGRID_ELFSAVIN)
-		t = g_strdup_printf(" Compute the ELF grid : %.0f%%",new_val*100);
+		t = g_strdup_printf(" Grid computing for the ELF : %.0f%%",new_val*100);
 		else
 		t = g_strdup_printf(" Grid Computing : %.0f%%",new_val*100);
 		break;

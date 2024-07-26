@@ -35,7 +35,7 @@ DEALINGS IN THE SOFTWARE.
 
 #define ANG_TO_BOHR  1.0/0.52917726
 /*****************************************************************************/
-static void set_vect_ij(Fragment* F, gint i, gint j, gfloat V[])
+static void set_vect_ij(Fragment* F, gint i, gint j, gdouble V[])
 {
 	gint c;
 	for(c=0;c<3;c++)
@@ -70,7 +70,7 @@ static void SetMMTypes(Fragment* Frag)
 
 }
 /********************************************************************************/
-static void SetAtom(Atom* A,gchar* symb,gfloat x,gfloat y,gfloat z,gfloat charge)
+static void SetAtom(Atom* A,gchar* symb,gdouble x,gdouble y,gdouble z,gdouble charge)
 {
 	A->mmType = g_strdup(symb);
 	A->pdbType = g_strdup(symb);
@@ -1535,11 +1535,11 @@ Fragment GetFragmentPPDNTerminal(gchar* Name)
 	gchar T[100]="UNK";
 	gint j;
 	gdouble dNH = 0;
-	gfloat v1[3];
-	gfloat v2[3];
-	gfloat v3[3];
-	gfloat v4[3];
-	gfloat v5[3];
+	gdouble v1[3];
+	gdouble v2[3];
+	gdouble v3[3];
+	gdouble v4[3];
+	gdouble v5[3];
 
 	initFragment(&F);
 	if(!Name || strlen(Name)!=5 || toupper(Name[1])!='N') return F;

@@ -10,7 +10,7 @@ GamessBasis gamessBasis;
 
 GamessFunctional* functionals;
 GamessStdFunctional* stdFunctionals;
-gfloat* sumFunctionals;
+gdouble* sumFunctionals;
 
 #endif /* __GABEDIT_GAMESSGLOBAL_H__ */
 

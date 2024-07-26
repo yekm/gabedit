@@ -38,8 +38,29 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/ContoursPov.h"
 #include "../OpenGL/PlanesMappedPov.h"
 #include "../OpenGL/GridCube.h"
+#include "../OpenGL/GridCP.h"
 #include "../OpenGL/ColorMap.h"
 
+/**********************************************/
+void glMaterialdv(GLenum face, GLenum pname, const GLdouble*  	params)
+{
+	GLfloat p[4] = {params[0],params[1],params[2], params[3]};
+	glMaterialfv(face, pname, p);
+}
+/**********************************************/
+void glLightdv(GLenum face, GLenum pname, const GLdouble* params)
+{
+	GLfloat p[4] = {params[0],params[1],params[2], params[3]};
+	glLightfv(face, pname, p);
+}
+
+/**********************************************/
+void glFogdv(GLenum pname, const GLdouble* params)
+{
+	GLfloat p[4] = {params[0],params[1],params[2], params[3]};
+	glFogfv(pname, p);
+}
+/**********************************************/
 static gint getOptimalN(gint nG)
 {
 	/* 2^n = 16, 32, 64, 128, 256, 512, 1024 */
@@ -509,7 +530,8 @@ gint get_type_basis_in_molden_file(gchar *fileName)
 		while(!feof(fd))
 		{
 			fgets(t,taille,fd);
-			if(strstr( t, "[5D]"))
+			g_strup(t);
+			if(strstr( t, "[5D"))
 			{
 				ktype = 1;
 				break;
@@ -739,10 +761,10 @@ static void change_entry_value(GtkWidget *Entry, gpointer data)
 
 		for(i=0;i<3;i++)
 		{
-			temp = g_strdup_printf("%f",C2[i]);
+			temp = g_strdup_printf("%lf",C2[i]);
 		       	gtk_entry_set_text(GTK_ENTRY(entries[1][i]),temp);
 			g_free(temp);
-			temp = g_strdup_printf("%f",C3[i]);
+			temp = g_strdup_printf("%lf",C3[i]);
 		       	gtk_entry_set_text(GTK_ENTRY(entries[2][i]),temp);
 			g_free(temp);
 		}
@@ -767,13 +789,13 @@ static void change_entry_value(GtkWidget *Entry, gpointer data)
 		}
 		for(i=0;i<3;i++) C3[i] = C1[(i+1)%3]*C2[(i+2)%3] - C2[(i+1)%3]*C1[(i+2)%3];
 
-		temp = g_strdup_printf("%f",C2[k]);
+		temp = g_strdup_printf("%lf",C2[k]);
 		gtk_entry_set_text(GTK_ENTRY(entries[1][k]),temp);
 		g_free(temp);
 
 		for(i=0;i<3;i++)
 		{
-			temp = g_strdup_printf("%f",C3[i]);
+			temp = g_strdup_printf("%lf",C3[i]);
 		       	gtk_entry_set_text(GTK_ENTRY(entries[2][i]),temp);
 			g_free(temp);
 		}
@@ -791,13 +813,13 @@ static void change_entry_value(GtkWidget *Entry, gpointer data)
 		nG = getOptimalN(nG);
 		sprintf(tnG,"%d",nG);
 
-		temp = g_strdup_printf("%f",max);
+		temp = g_strdup_printf("%lf",max);
 		gtk_entry_set_text(GTK_ENTRY(entries[ii][jj+1]),temp);
 		g_free(temp);
 		gtk_entry_set_text(GTK_ENTRY(entries[ii][jj+2]),tnG);
 		if(ii<2)
 		{
-			temp = g_strdup_printf("%f",min);
+			temp = g_strdup_printf("%lf",min);
 			gtk_entry_set_text(GTK_ENTRY(entries[ii+1][jj]),temp);
 			g_free(temp);
 		}
@@ -809,7 +831,7 @@ static void change_entry_value(GtkWidget *Entry, gpointer data)
 		gdouble max = 0;
 
 		max = atof(gtk_entry_get_text(GTK_ENTRY(entries[ii][jj])));
-		temp = g_strdup_printf("%f",max);
+		temp = g_strdup_printf("%lf",max);
 		gtk_entry_set_text(GTK_ENTRY(entries[ii+1][jj]),temp);
 		g_free(temp);
 		return;
@@ -892,7 +914,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[0][0]);
+	temp = g_strdup_printf("%lf",limits.MinMax[0][0]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -900,7 +922,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[1][0]);
+	temp = g_strdup_printf("%lf",limits.MinMax[1][0]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -938,7 +960,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[0][1]);
+	temp = g_strdup_printf("%lf",limits.MinMax[0][1]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -946,7 +968,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[1][1]);
+	temp = g_strdup_printf("%lf",limits.MinMax[1][1]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -986,7 +1008,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[0][2]);
+	temp = g_strdup_printf("%lf",limits.MinMax[0][2]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -994,7 +1016,7 @@ GtkWidget *create_grid_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[1][2]);
+	temp = g_strdup_printf("%lf",limits.MinMax[1][2]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -1093,6 +1115,221 @@ void create_grid(gchar* title)
 	gtk_widget_show_all (Win);
 }
 /********************************************************************************/
+void applyelfdens(GtkWidget *Win,gpointer data)
+{
+	GtkWidget** entriestmp = NULL;
+	G_CONST_RETURN gchar* temp;
+	gchar* dump;
+	gint i;
+	gint j;
+	GridLimits limitstmp;
+	gint NumPointstmp[3];
+	GtkWidget *entries[3][6];
+	gdouble V[3][3];
+	Grid* gridDens = NULL;
+	gboolean ongrid = TRUE;
+
+	if(GTK_IS_WIDGET(Win))
+	{
+		entriestmp = (GtkWidget **)g_object_get_data(G_OBJECT (Win), "Entries");
+		ongrid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT (Win), "OnGrid"));
+	}
+	else return;
+
+	if(entriestmp==NULL) return;
+
+	for(i=0;i<3;i++)
+	for(j=0;j<6;j++)
+		entries[i][j] = entriestmp[i*6+j];
+	
+	for(i=0;i<3;i++)
+	{
+		for(j=3;j<5;j++)
+		{
+        		temp	= gtk_entry_get_text(GTK_ENTRY(entries[i][j])); 
+			dump = NULL;
+			if(temp && strlen(temp)>0)
+			{
+				dump = g_strdup(temp);
+				delete_first_spaces(dump);
+				delete_last_spaces(dump);
+			}
+
+			if(dump && strlen(dump)>0 && this_is_a_real(dump))
+			{
+				limitstmp.MinMax[j-3][i] = atof(dump);
+			}
+			else
+			{
+				GtkWidget* message = Message("Error : one entry is not a float ","Error",TRUE);
+  				gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+				return;
+			}
+			if(dump) g_free(dump);
+		}
+        	temp	= gtk_entry_get_text(GTK_ENTRY(entries[i][5])); 
+		NumPointstmp[i] = atoi(temp);
+		if(NumPointstmp[i] <=2)
+		{
+			GtkWidget* message = Message("Error : The number of points should be > 2. ","Error",TRUE);
+  			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+			return;
+		}
+		
+	}
+
+	for(i=0;i<3;i++)
+	{
+		if( limitstmp.MinMax[0][i]> limitstmp.MinMax[1][i])
+		{
+			GtkWidget* message = Message("Error :  The minimal value should be smaller than the maximal value ","Error",TRUE);
+  			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+			return;
+		}
+	}
+	for(i=0;i<3;i++)
+	{
+		for(j=0;j<3;j++)
+		{
+			V[i][j] = 0;
+        		temp	= gtk_entry_get_text(GTK_ENTRY(entries[i][j])); 
+			dump = NULL;
+			if(temp && strlen(temp)>0)
+			{
+				dump = g_strdup(temp);
+				delete_first_spaces(dump);
+				delete_last_spaces(dump);
+			}
+
+			if(dump && strlen(dump)>0 && this_is_a_real(dump))
+			{
+				V[i][j] = atof(dump);
+			}
+			else
+			{
+				GtkWidget* message = Message("Error : one entry is not a float ","Error",TRUE);
+  				gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+				return;
+			}
+			if(dump) g_free(dump);
+		}
+	}
+        
+	for(i=0;i<3;i++)
+	{
+		gdouble norm = 0.0;
+		for(j=0;j<3;j++)
+			norm += V[i][j]*V[i][j];
+		if(fabs(norm)<1e-8)
+		{
+			GtkWidget* message = Message("Error : the norm is equal to 0 ","Error",TRUE);
+  			gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+			return;
+		}
+		for(j=0;j<3;j++)
+			V[i][j] /= sqrt(norm);
+	}
+	for(j=0;j<3;j++) originOfCube[j] = 0;
+	for(j=0;j<3;j++) firstDirection[j] = V[0][j];
+	for(j=0;j<3;j++) secondDirection[j] = V[1][j];
+	for(j=0;j<3;j++) thirdDirection[j] = V[2][j];
+
+	for(i=0;i<3;i++)
+	{
+		NumPoints[i] =NumPointstmp[i] ; 
+		for(j=0;j<2;j++)
+			limits.MinMax[j][i] =limitstmp.MinMax[j][i]; 
+	}
+
+
+	delete_child(Win);
+	free_grid_all();
+	grid = define_grid_ELFSAVIN(NumPoints,limits);
+	if(grid)
+	{
+		add_surface();
+		free_iso_all();
+		limits.MinMax[0][3] = grid->limits.MinMax[0][3];
+		limits.MinMax[1][3] = grid->limits.MinMax[1][3];
+	}
+	gridDens = define_grid_electronic_density(NumPoints,limits);
+	computeELFAttractors(grid, gridDens, ongrid);
+	Define_Iso(0.9);
+	glarea_rafresh(GLArea);
+}
+/********************************************************************************/
+void create_grid_ELF_Dens_analyze(gboolean ongrid)
+{
+	GtkWidget *Win;
+	GtkWidget *frame;
+	GtkWidget *hbox;
+	GtkWidget *vboxall;
+	GtkWidget *vboxwin;
+	GtkWidget *button;
+	GtkWidget** entries;
+
+	if(!GeomOrb)
+	{
+		Message("Sorry, Please load a file before\n","Error",TRUE);
+		return;
+	}
+	if(!CoefAlphaOrbitals && TypeGrid != GABEDIT_TYPEGRID_MEP_CHARGES)
+	{
+		Message("Sorry, Please load the MO before\n","Error",TRUE);
+		return;
+	}
+	if(TypeGrid == GABEDIT_TYPEGRID_MEP_CHARGES)
+	{
+		gdouble s= GetSumAbsCharges();
+		if(s<1e-6) Message("Sorry, All partial charges are null\n","Error",TRUE);
+		return;
+	}
+
+	if(!AOAvailable &&(TypeGrid == GABEDIT_TYPEGRID_DDENSITY || TypeGrid == GABEDIT_TYPEGRID_ADENSITY))
+	{
+		Message("Sorry, No atomic orbitals available.\nPlease use a gabedit file for load : \n"
+		  "Geometry, Molecular and Atomic Orbitals\n","Error",TRUE);
+		return;
+	}
+	
+	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(Win),"ELF Attractors");
+	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
+	gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
+	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(PrincipalWindow));
+	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
+
+	add_glarea_child(Win,"Grid ");
+
+	vboxall = create_vbox(Win);
+	vboxwin = vboxall;
+	frame = create_grid_frame(vboxall,"Box & Grid");
+	entries = (GtkWidget**) g_object_get_data (G_OBJECT (frame), "Entries");
+	g_object_set_data (G_OBJECT (Win), "Entries",entries);
+	g_object_set_data (G_OBJECT (Win), "OnGrid",GINT_TO_POINTER(ongrid));
+   
+
+	hbox = create_hbox_false(vboxwin);
+	gtk_widget_realize(Win);
+
+	button = create_button(Win,"Cancel");
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, G_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,G_OBJECT(Win));
+	gtk_widget_show (button);
+
+	button = create_button(Win,"OK");
+	gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+	gtk_widget_show (button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)applyelfdens,G_OBJECT(Win));
+  
+
+	gtk_widget_show_all (Win);
+}
+/********************************************************************************/
 void read_any_file(gchar* FileName)
 {
 	gint filetype = get_type_file(FileName);
@@ -1141,7 +1378,7 @@ gint get_number_of_point(GtkWidget* Entry)
 	return N;
 }
 /********************************************************************************/
-gboolean get_a_float(GtkWidget* Entry,gfloat* value, gchar* errorMessage)
+gboolean get_a_float(GtkWidget* Entry,gdouble* value, gchar* errorMessage)
 {
 	G_CONST_RETURN gchar* temp;
 	gchar* t = NULL;
@@ -1351,11 +1588,11 @@ void create_opengl_file()
 		fprintf(fd,"%d\n",openGLOptions.numberOfSubdivisionsCylindre);
 		fprintf(fd,"%d\n",openGLOptions.numberOfSubdivisionsSphere);
 		fprintf(fd,"%d\n",getOptCol());
-		fprintf(fd,"%f %f\n",getScaleBall(),getScaleStick());
+		fprintf(fd,"%lf %lf\n",getScaleBall(),getScaleStick());
 		fprintf(fd,"%d\n",colorMapType);
-		fprintf(fd,"%f %f %f\n",colorMapColors[0][0], colorMapColors[0][1],colorMapColors[0][2]);
-		fprintf(fd,"%f %f %f\n",colorMapColors[1][0], colorMapColors[1][1],colorMapColors[1][2]);
-		fprintf(fd,"%f %f %f\n",colorMapColors[2][0], colorMapColors[2][1],colorMapColors[2][2]);
+		fprintf(fd,"%lf %lf %lf\n",colorMapColors[0][0], colorMapColors[0][1],colorMapColors[0][2]);
+		fprintf(fd,"%lf %lf %lf\n",colorMapColors[1][0], colorMapColors[1][1],colorMapColors[1][2]);
+		fprintf(fd,"%lf %lf %lf\n",colorMapColors[2][0], colorMapColors[2][1],colorMapColors[2][2]);
 		fclose(fd);
 	}
 	g_free(openglfile);
@@ -1414,7 +1651,7 @@ void read_opengl_file()
 			if(sscanf(t,"%d",&colorMapType)!=1) colorMapType =1;
  		if(fgets(t,taille,fd))
 		{
-			if(sscanf(t,"%f %f %f",&colorMapColors[0][0], &colorMapColors[0][1],&colorMapColors[0][2])!=3)
+			if(sscanf(t,"%lf %lf %lf",&colorMapColors[0][0], &colorMapColors[0][1],&colorMapColors[0][2])!=3)
 			{
 				colorMapColors[0][0] = 1.0;
 				colorMapColors[0][1] = 1.0;
@@ -1423,7 +1660,7 @@ void read_opengl_file()
 		}
  		if(fgets(t,taille,fd))
 		{
-			if(sscanf(t,"%f %f %f",&colorMapColors[1][0], &colorMapColors[1][1],&colorMapColors[1][2])!=3)
+			if(sscanf(t,"%lf %lf %lf",&colorMapColors[1][0], &colorMapColors[1][1],&colorMapColors[1][2])!=3)
 			{
 				colorMapColors[1][0] = 1.0;
 				colorMapColors[1][1] = 1.0;
@@ -1432,7 +1669,7 @@ void read_opengl_file()
 		}
  		if(fgets(t,taille,fd))
 		{
-			if(sscanf(t,"%f %f %f",&colorMapColors[2][0], &colorMapColors[2][1],&colorMapColors[2][2])!=3)
+			if(sscanf(t,"%lf %lf %lf",&colorMapColors[2][0], &colorMapColors[2][1],&colorMapColors[2][2])!=3)
 			{
 				colorMapColors[2][0] = 1.0;
 				colorMapColors[2][1] = 1.0;
@@ -1455,7 +1692,7 @@ static void applygridsas(GtkWidget *Win,gpointer data)
 	GridLimits limitstmp;
 	gint NumPointstmp[3];
 	GtkWidget *entries[4][6];
-	gfloat V[3][3];
+	gdouble V[3][3];
 
 
 	if(GTK_IS_WIDGET(Win))
@@ -1628,7 +1865,7 @@ static GtkWidget *create_grid_sas_frame( GtkWidget *vboxall,gchar* title)
 	nG = getOptimalN(nG);
 	sprintf(tnG,"%d",nG);
 
-	sprintf(sr,"%f",solventRadius);
+	sprintf(sr,"%lf",solventRadius);
 
 	frame = gtk_frame_new (title);
 	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
@@ -1681,7 +1918,7 @@ static GtkWidget *create_grid_sas_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[0][0]);
+	temp = g_strdup_printf("%lf",limits.MinMax[0][0]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -1689,7 +1926,7 @@ static GtkWidget *create_grid_sas_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[1][0]);
+	temp = g_strdup_printf("%lf",limits.MinMax[1][0]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -1727,7 +1964,7 @@ static GtkWidget *create_grid_sas_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[0][1]);
+	temp = g_strdup_printf("%lf",limits.MinMax[0][1]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -1735,7 +1972,7 @@ static GtkWidget *create_grid_sas_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[1][1]);
+	temp = g_strdup_printf("%lf",limits.MinMax[1][1]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -1775,7 +2012,7 @@ static GtkWidget *create_grid_sas_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[0][2]);
+	temp = g_strdup_printf("%lf",limits.MinMax[0][2]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -1783,7 +2020,7 @@ static GtkWidget *create_grid_sas_frame( GtkWidget *vboxall,gchar* title)
 	entries[i-1][j-1] = gtk_entry_new ();
     	gtk_widget_set_size_request(GTK_WIDGET(entries[i-1][j-1]),100,-1);
 	add_widget_table(Table,entries[i-1][j-1],(gushort)i,(gushort)j);
-	temp = g_strdup_printf("%f",limits.MinMax[1][2]);
+	temp = g_strdup_printf("%lf",limits.MinMax[1][2]);
 	gtk_entry_set_text(GTK_ENTRY(entries[i-1][j-1]),temp);
 	if(temp) g_free(temp);
 
@@ -1943,7 +2180,7 @@ static GtkWidget *add_entry_scale(GtkWidget *table, gchar* strLabel, gint il, gd
 	j = 2;
 	entry =  gtk_entry_new();
 	{
-		gchar* v = g_strdup_printf("%f",val);
+		gchar* v = g_strdup_printf("%lf",val);
 		if(v)gtk_entry_set_text(GTK_ENTRY(entry),v);
 		else gtk_entry_set_text(GTK_ENTRY(entry),"1.0");
 		if(v) g_free(v);

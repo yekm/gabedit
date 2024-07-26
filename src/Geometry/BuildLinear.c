@@ -46,7 +46,7 @@ static void build_linear_molecule(GtkWidget *w,gpointer data)
 {
 	G_CONST_RETURN gchar *t;
 	gint Nc;
-	gfloat Distance;
+	gdouble Distance;
 	G_CONST_RETURN gchar* Symb;
 	gint j;
 
