@@ -2,7 +2,7 @@ OBJECTS = ZlmMG.o MathFunctions.o DomainMG.o GridMG.o  PoissonMG.o
 
 include ../../CONFIG
 
-CFLAGS =  -Wall -O2 $(GTKCFLAGS) $(OGLCFLAGS)
+CFLAGS =  $(COMMONCFLAGS)  $(GTKCFLAGS) $(OGLCFLAGS)
 
 all: compiling
 
@@ -12,7 +12,7 @@ all: compiling
 compiling: $(OBJECTS)
 
 clean:
-	@$(REMOVEFILE) *.chk p *o gabedit *.com *.out *.log *.test test* *.cpp  *old *.ps .*swp *~ 
+	@$(RM) *.chk p *o gabedit *.com *.out *.log *.test test* *.cpp  *old *.ps .*swp *~ 
 
 include Dep.mk
 #make dependance

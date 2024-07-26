@@ -2769,3 +2769,4 @@ void fit_windows_position(GtkWidget* parent, GtkWidget* child)
 	gdk_window_get_size(child->window,&wChild,&hChild);
 	if(wParent+wChild+10<ScreenWidth) gtk_window_move(GTK_WINDOW(child),wParent+10,0);
 }
+/********************************************************************************/

@@ -1,11 +1,12 @@
 # DO NOT DELETE
 
 AtomsProp.o: ../../Config.h
-AtomsProp.o: ../Common/Global.h ../Files/GabeditFileChooser.h
-AtomsProp.o: ../Common/GabeditType.h ../Utils/Constantes.h
-AtomsProp.o: ../Utils/AtomsProp.h ../Utils/UtilsInterface.h
-AtomsProp.o: ../Geometry/Fragments.h ../Geometry/DrawGeom.h ../Utils/Utils.h
-AtomsProp.o: ../Geometry/GeomGlobal.h ../OpenGL/GLArea.h ../Common/Windows.h
+AtomsProp.o: ../Common/Global.h
+AtomsProp.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
+AtomsProp.o: ../Utils/Constantes.h ../Utils/AtomsProp.h
+AtomsProp.o: ../Utils/UtilsInterface.h ../Geometry/Fragments.h
+AtomsProp.o: ../Geometry/DrawGeom.h ../Utils/Utils.h ../Geometry/GeomGlobal.h
+AtomsProp.o: ../OpenGL/GLArea.h ../Common/Windows.h
 ConvUtils.o: ../../Config.h
 ConvUtils.o: ../Common/Global.h
 ConvUtils.o: ../Files/GabeditFileChooser.h
@@ -54,7 +55,7 @@ UtilsGL.o: ../../Config.h
 UtilsGL.o: ../Common/Global.h
 UtilsGL.o: ../Files/GabeditFileChooser.h
 UtilsGL.o: ../Common/GabeditType.h ../Utils/Vector3d.h
-UtilsGL.o: ../Utils/Transformation.h UtilsGL.h
+UtilsGL.o: ../Utils/Transformation.h UtilsGL.h ../../gl2ps/gl2ps.h
 UtilsInterface.o: ../../Config.h
 UtilsInterface.o: ../Common/Global.h
 UtilsInterface.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h

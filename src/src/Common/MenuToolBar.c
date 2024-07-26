@@ -51,6 +51,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Spectrum/IRSpectrum.h"
 #include "../Spectrum/RamanSpectrum.h"
 #include "../Spectrum/UVSpectrum.h"
+#include "../Spectrum/ECDSpectrum.h"
 #include "../Spectrum/NMRSpectrum.h"
 
 /*********************************************************************************************************************/
@@ -210,7 +211,13 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ToolsUVSpectrumPCGamess")) { createUVSpectrum(Fenetre,GABEDIT_TYPEFILE_PCGAMESS);}
 	else if(!strcmp(name,"ToolsUVSpectrumQChem")) { createUVSpectrum(Fenetre,GABEDIT_TYPEFILE_QCHEM);}
 	else if(!strcmp(name,"ToolsUVSpectrumTxt")) { createUVSpectrum(Fenetre,GABEDIT_TYPEFILE_TXT);}
+
+	else if(!strcmp(name,"ToolsECDSpectrumGabedit")) { createECDSpectrum(Fenetre,GABEDIT_TYPEFILE_GABEDIT);}
+	else if(!strcmp(name,"ToolsECDSpectrumGaussian")) { createECDSpectrum(Fenetre,GABEDIT_TYPEFILE_GAUSSIAN);}
+	else if(!strcmp(name,"ToolsECDSpectrumTxt")) { createECDSpectrum(Fenetre,GABEDIT_TYPEFILE_TXT);}
+
 	else if(!strcmp(name,"ToolsNMRSpectrumTxt")) { createNMRSpectrum(Fenetre,GABEDIT_TYPEFILE_TXT);}
+	else if(!strcmp(name,"ToolsNMR2SpectrumTxt")) { createNMR2Spectrum(Fenetre,GABEDIT_TYPEFILE_TXT);}
 	else if(!strcmp(name,"RunAbinitio")) {create_run();}
 	else if(!strcmp(name,"RunViewResult")) {view_result();}
 	else if(!strcmp(name,"SettingsMolecularMechanicsParameters")) {setMMParamatersDlg();}
@@ -308,15 +315,20 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ToolsRamanSpectrumMolden",  GABEDIT_STOCK_MOLDEN, "Read frequencies and intensities from a Mo_lden file", NULL, "Molden", G_CALLBACK (activate_action) },
 	{"ToolsRamanSpectrumTxt",  NULL, "Read frequencies and intensities from an ASCII XY file(2 columns)", NULL, "Txt", G_CALLBACK (activate_action) },
 	{"ToolsUVSpectrum",  NULL, "_UV spectrum"},
-
 	{"ToolsUVSpectrumGabedit",  GABEDIT_STOCK_GABEDIT, "Read energies and intensities from a _Gabedit file", NULL, "Gabedit", G_CALLBACK (activate_action) },
 	{"ToolsUVSpectrumGaussian",  GABEDIT_STOCK_GAUSSIAN, "Read energies and intensities from a _Gaussian output file", NULL, "Gaussian", G_CALLBACK (activate_action) },
 	{"ToolsUVSpectrumPCGamess",  GABEDIT_STOCK_PCGAMESS, "Read energies and intensities from a _PCGamess output file", NULL, "PCGamess", G_CALLBACK (activate_action) },
 	{"ToolsUVSpectrumQChem",  GABEDIT_STOCK_QCHEM, "Read energies and intensities from a Q_Chem output file", NULL, "QChem", G_CALLBACK (activate_action) },
 	{"ToolsUVSpectrumTxt",  NULL, "Read energies and intensities from an ASCII XY file(2 columns)", NULL, "Txt", G_CALLBACK (activate_action) },
 
+	{"ToolsECDSpectrum",  NULL, "_ECD spectrum"},
+	{"ToolsECDSpectrumGabedit",  GABEDIT_STOCK_GABEDIT, "Read energies and intensities from a _Gabedit file", NULL, "Gabedit", G_CALLBACK (activate_action) },
+	{"ToolsECDSpectrumGaussian",  GABEDIT_STOCK_GAUSSIAN, "Read energies and intensities from a _Gaussian output file", NULL, "Gaussian", G_CALLBACK (activate_action) },
+	{"ToolsECDSpectrumTxt",  NULL, "Read energies and intensities from an ASCII XY file(2 columns)", NULL, "Txt", G_CALLBACK (activate_action) },
+
 	{"ToolsNMRSpectrum",  NULL, "_NMR spectrum"},
 	{"ToolsNMRSpectrumTxt",  NULL, "NMR Spin-Spin Splitting Simulation", NULL, "Txt", G_CALLBACK (activate_action) },
+	{"ToolsNMR2SpectrumTxt",  NULL, "Read NMR frequencies and intensities from an ASCII XY file(2 columns)", NULL, "Txt", G_CALLBACK (activate_action) },
 
 	{"Run",  NULL, "_Run"},
 	{"RunAbinitio", GTK_STOCK_EXECUTE, "_Run a abtinio program",  "<control>R", "Run a abtinio program", G_CALLBACK (activate_action) },
@@ -477,9 +489,16 @@ static const gchar *uiInfo =
 "          <menuitem name=\"ToolsUVSpectrumQChem\" action=\"ToolsUVSpectrumQChem\" />\n"
 "          <menuitem name=\"ToolsUVSpectrumTxt\" action=\"ToolsUVSpectrumTxt\" />\n"
 "      </menu>\n"
+"      <separator name=\"sepECDSpectrum\" />\n"
+"      <menu name=\"ToolsECDSpectrum\" action=\"ToolsECDSpectrum\">\n"
+"          <menuitem name=\"ToolsECDSpectrumGabedit\" action=\"ToolsECDSpectrumGabedit\" />\n"
+"          <menuitem name=\"ToolsECDSpectrumGaussian\" action=\"ToolsECDSpectrumGaussian\" />\n"
+"          <menuitem name=\"ToolsECDSpectrumTxt\" action=\"ToolsECDSpectrumTxt\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepNMRSpectrum\" />\n"
 "      <menu name=\"ToolsNMRSpectrum\" action=\"ToolsNMRSpectrum\">\n"
 "          <menuitem name=\"ToolsNMRSpectrumTxt\" action=\"ToolsNMRSpectrumTxt\" />\n"
+"          <menuitem name=\"ToolsNMR2SpectrumTxt\" action=\"ToolsNMR2SpectrumTxt\" />\n"
 "      </menu>\n"
 "    </menu>\n"
 "    <menu name=\"_Run\" action=\"Run\">\n"

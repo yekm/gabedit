@@ -28,6 +28,7 @@ void choose_file_to_save();
 void choose_file_to_save_end();
 void Save_YesNo();
 void set_entry_selected_file(GtkWidget* hbox);
+GtkWidget* choose_file_to_create(gchar* title, GtkSignalFunc applyFunc);
 
 #endif /* __GABEDIT_FILECHOOSER_H__ */
 

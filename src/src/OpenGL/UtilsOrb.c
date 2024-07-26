@@ -37,6 +37,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/Vibration.h"
 #include "../OpenGL/ContoursPov.h"
 #include "../OpenGL/PlanesMappedPov.h"
+#include "../OpenGL/GridCube.h"
 
 void CalculFfact();
 void CalculFact();
@@ -61,6 +62,7 @@ static gint getOptimalN(gint nG)
 		}
 	}
 	if(nG%2==0) nG++;
+	if(nG>65) nG = 65;
 	return nG;
 }
 /**********************************************/
@@ -128,6 +130,15 @@ gint GetTotalNelectrons()
               N +=Type[GeomOrb[i].NumType].N;
  }
  return N;
+}
+/**********************************************/
+gdouble GetSumAbsCharges()
+{
+	gdouble s = 0;
+	gint i;
+	for(i=0;i<Ncenters;i++)
+		s += fabs(GeomOrb[i].partialCharge);
+	return s;
 }
 /**********************************************/
 void DefineNOccs()
@@ -1456,9 +1467,15 @@ void create_grid(gchar* title)
 		Message("Sorry, Please load a file before\n","Error",TRUE);
 		return;
 	}
-	if(!CoefAlphaOrbitals)
+	if(!CoefAlphaOrbitals && TypeGrid != GABEDIT_TYPEGRID_MEP_CHARGES)
 	{
 		Message("Sorry, Please load the MO before\n","Error",TRUE);
+		return;
+	}
+	if(TypeGrid == GABEDIT_TYPEGRID_MEP_CHARGES)
+	{
+		gdouble s= GetSumAbsCharges();
+		if(s<1e-6) Message("Sorry, All partial charges are null\n","Error",TRUE);
 		return;
 	}
 
@@ -1834,6 +1851,7 @@ static void applygridsas(GtkWidget *Win,gpointer data)
 	GtkWidget *entries[4][6];
 	gfloat V[3][3];
 
+
 	if(GTK_IS_WIDGET(Win))
 	{
 		entriestmp = (GtkWidget **)g_object_get_data(G_OBJECT (Win), "Entries");
@@ -1970,9 +1988,21 @@ static void applygridsas(GtkWidget *Win,gpointer data)
 
 
 	delete_child(Win);
-	TypeGrid = GABEDIT_TYPEGRID_SAS;
-	Define_Grid();
-	Define_Iso(0.0);
+	if(TypeGrid == GABEDIT_TYPEGRID_SAS)
+	{
+		TypeGrid = GABEDIT_TYPEGRID_SAS;
+		Define_Grid();
+		Define_Iso(0.0);
+	}
+	if(TypeGrid == GABEDIT_TYPEGRID_SASMAP)
+	{
+		TypeGrid = GABEDIT_TYPEGRID_SAS;
+		Define_Grid();
+		Define_Iso(0.0);
+		CancelCalcul = FALSE;
+		mapping_with_mep_from_charges();
+	}
+	
 	glarea_rafresh(GLArea);
 }
 /*************************************************************************************/

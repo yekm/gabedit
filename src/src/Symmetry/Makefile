@@ -1,7 +1,7 @@
 OBJECTS = MoleculeSymmetry.o MoleculeSymmetryInterface.o PolyHedralOperators.o ReducePolyHedralMolecule.o PrincipalAxis.o ReduceMolecule.o SymmetryOperators.o GenerateMolecule.o
 
 include ../../CONFIG
-CFLAGS =  -Wall -O2 $(GTKCFLAGS)
+CFLAGS =  $(COMMONCFLAGS) $(GTKCFLAGS)
 
 all: compiling 
 
@@ -11,7 +11,7 @@ all: compiling
 compiling: $(OBJECTS)
 
 clean:
-	@$(REMOVEFILE) *.chk p *o gabedit *.com *.out *.log *.test test* *.cpp  *old *.ps .*swp *~ 
+	@$(RM) *.chk p *o gabedit *.com *.out *.log *.test test* *.cpp  *old *.ps .*swp *~ 
 
 include Dep.mk
 #make dependance

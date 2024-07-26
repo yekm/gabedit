@@ -50,10 +50,12 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/AxisGL.h"
 #include "../OpenGL/PrincipalAxisGL.h"
 #include "../OpenGL/PovrayGL.h"
+#include "../OpenGL/ExportGL.h"
 #include "../OpenGL/StatusOrb.h"
 #include "../OpenGL/LabelsGL.h"
 #include "../OpenGL/RingsOrb.h"
 #include "../OpenGL/ContoursDraw.h"
+#include "../OpenGL/CaptureOrbitals.h"
 #include "../Common/StockIcons.h"
 
 enum 
@@ -211,6 +213,11 @@ static void activate_action (GtkAction *action)
 			TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
 			create_list_orbitals();
 	}
+	else if(!strcmp(name , "OrbitalsCapture"))
+	{
+			TypeGrid = GABEDIT_TYPEGRID_ORBITAL;
+			 capture_orbitals_dlg();
+	}
 	else if(!strcmp(name , "CubeLoadGaussianOrbitals" ))
  		file_chooser_open(load_cube_gauss_orbitals_file,"Load Gaussian orbitals cube file",GABEDIT_TYPEFILE_CUBEGAUSS,GABEDIT_TYPEWIN_ORB);
 	else if(!strcmp(name , "CubeLoadGaussianDensity"))
@@ -304,6 +311,11 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name , "SASCompute"))
 	{
 		TypeGrid = GABEDIT_TYPEGRID_SAS;
+		create_grid_sas("Compute Solvent Accessible Surface");
+	}
+	else if(!strcmp(name , "SASMappCompute"))
+	{
+		TypeGrid = GABEDIT_TYPEGRID_SASMAP;
 		create_grid_sas("Compute Solvent Accessible Surface");
 	}
 	else if(!strcmp(name , "MEPOrbitalsMultipol"))
@@ -530,6 +542,7 @@ static void activate_action (GtkAction *action)
 		set_principal_axisGL_dialog();
 	}
 	else if(!strcmp(name , "SetPovrayBackGround")) createPovrayOptionsWindow(PrincipalWindow);
+	else if(!strcmp(name , "SetTitle")) set_title_dlg();
 	else if(!strcmp(name , "ScreenCaptureJPG"))
 	{
  		GtkWidget* chooser = file_chooser_save(save_jpeg_file,"Save image in jpg file format",GABEDIT_TYPEFILE_JPEG,GABEDIT_TYPEWIN_ORB);
@@ -561,6 +574,10 @@ static void activate_action (GtkAction *action)
 		fit_windows_position(PrincipalWindow, chooser);
 	}
 	else if(!strcmp(name , "ExportPovray")) create_save_povray_orb(PrincipalWindow);
+	else if(!strcmp(name , "ExportEPS")) export_scene(PrincipalWindow,"eps");
+	else if(!strcmp(name , "ExportPS")) export_scene(PrincipalWindow,"ps");
+	else if(!strcmp(name , "ExportPDF")) export_scene(PrincipalWindow,"pdf");
+	else if(!strcmp(name , "ExportSVG")) export_scene(PrincipalWindow,"svg");
 	else if(!strcmp(name , "AnimationVibration")) vibrationDlg();
 	else if(!strcmp(name , "AnimationGeometryConvergence")) geometryConvergenceDlg();
 	else if(!strcmp(name , "AnimationMD")) geometriesMDDlg();
@@ -661,6 +678,8 @@ static GtkActionEntry gtkActionEntries[] =
 		NULL, "Save in Gabedit file", G_CALLBACK (activate_action) },
 	{"OrbitalsSelection", GABEDIT_STOCK_SELECT_ALL, "_Selection", 
 		NULL, "Select an orbital", G_CALLBACK (activate_action) },
+	{"OrbitalsCapture", GABEDIT_STOCK_SELECT_ALL, "_Slideshow", 
+		NULL, "Slideshow", G_CALLBACK (activate_action) },
 	{"Cube",     NULL, "_Cube"},
 
 	{"CubeLoadGaussian",     GABEDIT_STOCK_GAUSSIAN, "Load _Gaussian cube"},
@@ -724,6 +743,7 @@ static GtkActionEntry gtkActionEntries[] =
 
 	{"SAS",     NULL, "_SAS"},
 	{"SASCompute", NULL, "_Solvent Accessible Surface", NULL, "Compute and draw Solvent Accessible Surface", G_CALLBACK (activate_action) },
+	{"SASMappCompute", NULL, "Solvent Accessible Surface _mapped by MEP from charges", NULL, "Compute and draw Solvent Accessible Surface  mapped by MEP from charges", G_CALLBACK (activate_action) },
 	{"MEP",     NULL, "_MEP"},
 	{"MEPMapping",     NULL, "_Mapped the current grid"},
 	{"MEPOrbitals",     NULL, "Using _Molecular Orbitals"},
@@ -797,6 +817,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SetXYZAxesProperties", NULL, "XYZ _Axes properties", NULL, "set the properties of the XYZ Axes", G_CALLBACK (activate_action) },
 	{"SetPrincipalAxesProperties", NULL, "_Principal Axes properties", NULL, "set the properties of the principal Axes", G_CALLBACK (activate_action) },
 	{"SetPovrayBackGround", NULL, "_Povray background", NULL, "set the background for the Povray file", G_CALLBACK (activate_action) },
+	{"SetTitle", NULL, "_Title", NULL, "Set title", G_CALLBACK (activate_action) },
 	{"ScreenCapture",     NULL, "Screen Ca_pture"},
 	{"ScreenCaptureJPG", NULL, "_JPG format", NULL, "save image in a JPG file", G_CALLBACK (activate_action) },
 	{"ScreenCapturePPM", NULL, "_PPM format", NULL, "save image in a PPM file", G_CALLBACK (activate_action) },
@@ -806,7 +827,11 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ScreenCapturePS", NULL, "P_S format", NULL, "save image in a PS file", G_CALLBACK (activate_action) },
 
 	{"Export",     NULL, "_Export"},
-	{"ExportPovray", NULL, "_Povray", NULL, "create a povray file", G_CALLBACK (activate_action) },
+	{"ExportPovray", NULL, "_Povray", NULL, "export in a povray file", G_CALLBACK (activate_action) },
+	{"ExportEPS", NULL, "_EPS", NULL, "export in a eps file", G_CALLBACK (activate_action) },
+	{"ExportPS", NULL, "_PS", NULL, "export in a ps file", G_CALLBACK (activate_action) },
+	{"ExportPDF", NULL, "_PDF", NULL, "export in a pdf file", G_CALLBACK (activate_action) },
+	{"ExportSVG", NULL, "_SVG", NULL, "export in a svg file", G_CALLBACK (activate_action) },
 
 	{"Animation",     NULL, "_Animation"},
 	{"AnimationVibration", NULL, "_Vibration", NULL, "Vibration", G_CALLBACK (activate_action) },
@@ -1313,6 +1338,8 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"OrbitalsGabeditSave\" action=\"OrbitalsGabeditSave\" />\n"
 "      <separator name=\"sepMenuGabeditOrbSel\" />\n"
 "      <menuitem name=\"OrbitalsSelection\" action=\"OrbitalsSelection\" />\n"
+"      <separator name=\"sepMenuGabeditOrbCap\" />\n"
+"      <menuitem name=\"OrbitalsCapture\" action=\"OrbitalsCapture\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepMenuCube\" />\n"
 "    <menu name=\"Cube\" action = \"Cube\">\n"
@@ -1387,6 +1414,7 @@ static const gchar *uiMenuInfo =
 "    <separator name=\"sepMenuSAS\" />\n"
 "    <menu name=\"SAS\" action = \"SAS\">\n"
 "        <menuitem name=\"SASCompute\" action=\"SASCompute\" />\n"
+"        <menuitem name=\"SASMappCompute\" action=\"SASMappCompute\" />\n"
 "    </menu>\n"
 
 "    <separator name=\"sepMenuMEP\" />\n"
@@ -1537,6 +1565,8 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"SetPrincipalAxesProperties\" action=\"SetPrincipalAxesProperties\" />\n"
 "        <separator name=\"sepMenuSetPovRay\" />\n"
 "        <menuitem name=\"SetPovrayBackGround\" action=\"SetPovrayBackGround\" />\n"
+"        <separator name=\"sepMenuSetTitle\" />\n"
+"        <menuitem name=\"SetTitle\" action=\"SetTitle\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepMenuOperation\" />\n"
 "    <menu name=\"Operation\" action = \"Operation\">\n"
@@ -1559,6 +1589,10 @@ static const gchar *uiMenuInfo =
 "    <separator name=\"sepMenuExport\" />\n"
 "    <menu name=\"Export\" action = \"Export\">\n"
 "        <menuitem name=\"ExportPovray\" action=\"ExportPovray\" />\n"
+"        <menuitem name=\"ExportEPS\" action=\"ExportEPS\" />\n"
+"        <menuitem name=\"ExportPS\" action=\"ExportPS\" />\n"
+"        <menuitem name=\"ExportPDF\" action=\"ExportPDF\" />\n"
+"        <menuitem name=\"ExportSVG\" action=\"ExportSVG\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepMenuAnimation\" />\n"
 "    <menu name=\"Animation\" action = \"Animation\">\n"
@@ -1712,10 +1746,12 @@ static void set_sensitive_orbitals()
 {
 	GtkWidget *orbSave = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsGabeditSave");
 	GtkWidget *orbSelection = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsSelection");
+	GtkWidget *orbCapture = gtk_ui_manager_get_widget (manager, "/MenuGL/Orbitals/OrbitalsCapture");
 	gboolean sensitive = TRUE;
   	if(NAOrb<1) sensitive = FALSE;
 	if(GTK_IS_WIDGET(orbSave)) gtk_widget_set_sensitive(orbSave, sensitive);
 	if(GTK_IS_WIDGET(orbSelection)) gtk_widget_set_sensitive(orbSelection, sensitive);
+	if(GTK_IS_WIDGET(orbCapture)) gtk_widget_set_sensitive(orbCapture, sensitive);
 }
 /*********************************************************************************************************************/
 static void set_sensitive_cube()
@@ -1747,11 +1783,17 @@ static void set_sensitive_density()
 	GtkWidget *espOrb = gtk_ui_manager_get_widget (manager, "/MenuGL/MEP/MEPOrbitals");
 	GtkWidget *espGrid = gtk_ui_manager_get_widget (manager, "/MenuGL/MEP/MEPGrid");
 	GtkWidget *espMapping = gtk_ui_manager_get_widget (manager, "/MenuGL/MEP/MEPMapping");
+	GtkWidget *espMappingMG = gtk_ui_manager_get_widget (manager, "/MenuGL/MEP/MEPMapping/MEPMappingMG");
+	GtkWidget *espMappingCG = gtk_ui_manager_get_widget (manager, "/MenuGL/MEP/MEPMapping/MEPMappingCG");
+	GtkWidget *espMappingMP = gtk_ui_manager_get_widget (manager, "/MenuGL/MEP/MEPMapping/MEPMappingMultipol");
 
 	if(GTK_IS_WIDGET(esp)) gtk_widget_set_sensitive(esp, FALSE);
 	if(GTK_IS_WIDGET(espGrid)) gtk_widget_set_sensitive(espGrid, FALSE);
 	if(GTK_IS_WIDGET(espOrb)) gtk_widget_set_sensitive(espOrb, FALSE);
 	if(GTK_IS_WIDGET(espMapping)) gtk_widget_set_sensitive(espMapping, FALSE);
+	if(GTK_IS_WIDGET(espMappingMG)) gtk_widget_set_sensitive(espMappingMG, FALSE);
+	if(GTK_IS_WIDGET(espMappingCG)) gtk_widget_set_sensitive(espMappingCG, FALSE);
+	if(GTK_IS_WIDGET(espMappingMP)) gtk_widget_set_sensitive(espMappingMP, FALSE);
 	if(!GeomOrb)
 	{
 		if(GTK_IS_WIDGET(sas)) gtk_widget_set_sensitive(sas, FALSE);
@@ -1759,10 +1801,18 @@ static void set_sensitive_density()
 		if(GTK_IS_WIDGET(elf)) gtk_widget_set_sensitive(elf, FALSE);
 		return;
 	}
-	if( (grid || (CoefAlphaOrbitals && GeomOrb)) && GTK_IS_WIDGET(esp)) gtk_widget_set_sensitive(esp, TRUE);
+	//if( (grid || (CoefAlphaOrbitals && GeomOrb)) && GTK_IS_WIDGET(esp)) gtk_widget_set_sensitive(esp, TRUE);
+	if(GeomOrb && GTK_IS_WIDGET(esp)) gtk_widget_set_sensitive(esp, TRUE);
 	if( grid && GTK_IS_WIDGET(espGrid)) gtk_widget_set_sensitive(espGrid, TRUE);
 	if( CoefAlphaOrbitals && GeomOrb && GTK_IS_WIDGET(espOrb)) gtk_widget_set_sensitive(espOrb, TRUE);
-	if( grid && CoefAlphaOrbitals && GeomOrb && GTK_IS_WIDGET(espMapping)) gtk_widget_set_sensitive(espMapping, TRUE);
+	//if( grid && CoefAlphaOrbitals && GeomOrb && GTK_IS_WIDGET(espMapping)) gtk_widget_set_sensitive(espMapping, TRUE);
+	if( grid && GeomOrb && GTK_IS_WIDGET(espMapping)) gtk_widget_set_sensitive(espMapping, TRUE);
+	if( grid && CoefAlphaOrbitals && GeomOrb && GTK_IS_WIDGET(espMapping)) 
+	{
+		if(GTK_IS_WIDGET(espMappingMG)) gtk_widget_set_sensitive(espMappingMG, TRUE);
+		if(GTK_IS_WIDGET(espMappingCG)) gtk_widget_set_sensitive(espMappingCG, TRUE);
+		if(GTK_IS_WIDGET(espMappingMP)) gtk_widget_set_sensitive(espMappingMP, TRUE);
+	}
 
 	if(GTK_IS_WIDGET(sas)) gtk_widget_set_sensitive(sas, TRUE);
 	if(!GeomOrb || !CoefAlphaOrbitals)
@@ -1859,9 +1909,9 @@ static void set_sensitive_set()
 	if(GTK_IS_WIDGET(computeDipole)) gtk_widget_set_sensitive(computeDipole, sensitive);
 }
 /*********************************************************************************************************************/
-static void set_sensitive_povray()
+static void set_sensitive_export()
 {
-	GtkWidget *povray = gtk_ui_manager_get_widget (manager, "/MenuGL/Export/ExportPovray");
+	GtkWidget *povray = gtk_ui_manager_get_widget (manager, "/MenuGL/Export");
 	gboolean sensitive = TRUE;
   	if(!GeomOrb) sensitive = FALSE;
 	if(GTK_IS_WIDGET(povray)) gtk_widget_set_sensitive(povray, sensitive);
@@ -1915,7 +1965,7 @@ gboolean popuo_menu_GL(guint button, guint32 time)
 		set_sensitive_colorcoded_planes();
 		set_sensitive_surfaces();
 		set_sensitive_set();
-		set_sensitive_povray();
+		set_sensitive_export();
 		set_sensitive_animation();
 		set_sensitive_png_background();
 		gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, button, time);

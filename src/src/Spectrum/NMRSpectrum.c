@@ -35,7 +35,7 @@ DEALINGS IN THE SOFTWARE.
 
 #define NMAXGROUP 10
 
-static void createNMRSpectrumWin(gint numberOfStates, gdouble* energies, gdouble* intensities);
+static void createNMRSpectrumWin(gint numberOfStates, gdouble* energies, gdouble* intensities,gboolean showButtonParms);
 /********************************************************************************/
 /*
 static void printInfMatrix(gdouble* M, gint n)
@@ -489,7 +489,7 @@ void testComputeNMRSpectrum()
 	/* spectrum */
 	for ( i=0 ; i<n ; i++ )
          			printf("%f %f\n",X[i],Y[i]);
-	createNMRSpectrumWin(n, X, Y);
+	createNMRSpectrumWin(n, X, Y,TRUE);
 	printf("End test\n");
 
 }
@@ -776,7 +776,7 @@ static void apply(GtkWidget* window)
 	spectrum_win_add_data(window, n, X, Y);
 	spectrum_win_autorange(window);
 	spectrum_win_relect_x(window, TRUE);
-	spectrum_win_set_half_width(window, 0.005);
+	spectrum_win_set_half_width(window, 0.002);
 	spectrum_win_set_xmin(window, 0.0);
 	spectrum_win_set_ymin(window, 0.0);
 	gabedit_xyplot_set_autorange(GABEDIT_XYPLOT(xyplot), NULL);
@@ -888,7 +888,7 @@ GtkWidget* new_parameters_window(GtkWidget* parent)
 	return window;
 }
 /********************************************************************************/
-static void createNMRSpectrumWin(gint numberOfStates, gdouble* energies, gdouble* intensities)
+static void createNMRSpectrumWin(gint numberOfStates, gdouble* energies, gdouble* intensities,gboolean showButtonParams)
 {
 	GtkWidget* window = NULL;
 	GtkWidget* hbox = NULL;
@@ -908,7 +908,7 @@ static void createNMRSpectrumWin(gint numberOfStates, gdouble* energies, gdouble
 
 
 	spectrum_win_relect_x(window, TRUE);
-	spectrum_win_set_half_width(window, 0.005);
+	spectrum_win_set_half_width(window, 0.002);
 	spectrum_win_set_xmin(window, 0.0);
 	spectrum_win_set_ymin(window, 0.0);
 	if(xyplot)
@@ -923,11 +923,14 @@ static void createNMRSpectrumWin(gint numberOfStates, gdouble* energies, gdouble
 	spectrum_win_set_ylabel(window, "Intensity");
 	
 	parametersWindow = new_parameters_window(window);
-	button = create_button(window,"Set parameters");
-	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 2);
-	gtk_widget_show_all (button);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(gtk_window_present),parametersWindow);
-	apply(window);
+	if(showButtonParams)
+	{
+		button = create_button(window,"Set parameters");
+		gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 2);
+		gtk_widget_show_all (button);
+		g_signal_connect_swapped(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(gtk_window_present),parametersWindow);
+		apply(window);
+	}
 	
 	toggle_no_convolution = g_object_get_data(G_OBJECT (window), "NoConvolutionButton");
 	if(toggle_no_convolution) gtk_widget_hide(toggle_no_convolution);
@@ -936,6 +939,78 @@ static void createNMRSpectrumWin(gint numberOfStates, gdouble* energies, gdouble
 /********************************************************************************/
 void createNMRSpectrum(GtkWidget *parentWindow, GabEditTypeFile typeOfFile)
 {
-	createNMRSpectrumWin(0, NULL, NULL);
+	createNMRSpectrumWin(0, NULL, NULL,TRUE);
+}
+/********************************************************************************/
+static void messageErrorFreq(gchar* fileName)
+{
+	gchar buffer[BSIZE];
+	sprintf(buffer,"Sorry, I can not read energies from '%s' file\n",fileName);
+  	Message(buffer,"Error",TRUE);
+}
+/********************************************************************************/
+static gboolean read_sample_2columns_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+ 	gchar t[BSIZE];
+ 	gboolean OK = TRUE;
+	gint numberOfStates = 0;
+	gdouble* energies = NULL;
+	gdouble* intensities = NULL;
+	gchar *FileName;
+ 	FILE *fd;
+	gdouble a;
+	gdouble b;
+	int ne = 0;
+
+	if(response_id != GTK_RESPONSE_OK) return FALSE;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+
+ 	fd = FOpen(FileName, "r");
+	if(!fd) return FALSE;
+
+ 	while(!feof(fd))
+	{
+	 	if(!fgets(t,BSIZE,fd))break;
+		ne = sscanf(t,"%lf %lf",&a,&b);
+		if(ne==2)
+		{
+			numberOfStates++;
+			energies = g_realloc(energies, numberOfStates*sizeof(gdouble));
+			intensities = g_realloc(intensities, numberOfStates*sizeof(gdouble));
+			energies[numberOfStates-1] = a;
+			intensities[numberOfStates-1] = b;
+		}
+ 	}
+
+	if(numberOfStates>0)
+	{
+		createNMRSpectrumWin(numberOfStates, energies, intensities,FALSE);
+	}
+	else
+	{
+		OK = FALSE;
+		messageErrorFreq(FileName);
+	}
+
+
+	if(energies) g_free(energies);
+	if(intensities) g_free(intensities);
+	fclose(fd);
+	return OK;
+}
+/********************************************************************************/
+static void read_sample_2columns_file_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_sample_2columns_file,
+			"Read energies and intensities from a sample file(2columns : first = Energy(eV), second = intensity)",
+			GABEDIT_TYPEFILE_TXT,GABEDIT_TYPEWIN_OTHER);
+
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+}
+/********************************************************************************/
+void createNMR2Spectrum(GtkWidget *parentWindow, GabEditTypeFile typeOfFile)
+{
+	if(typeOfFile==GABEDIT_TYPEFILE_TXT) read_sample_2columns_file_dlg();
 }
 /********************************************************************************/

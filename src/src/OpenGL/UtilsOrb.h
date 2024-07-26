@@ -23,6 +23,7 @@ void InitializeAll();
 gfloat** CreateTable2(gint N);
 gfloat** FreeTable2(gfloat **T,gint N);
 gint GetTotalNelectrons();
+gdouble GetSumAbsCharges();
 void DefineNOccs();
 gfloat Dpn(gfloat e,gint n);
 Slm GetCoefSlm(gint l, gint m);

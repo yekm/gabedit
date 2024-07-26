@@ -518,6 +518,9 @@ Grid* define_grid(gint N[],GridLimits limits)
 		case GABEDIT_TYPEGRID_SAS :
 			grid = define_grid_point(N,limits,get_value_sas);
 			break;
+		case GABEDIT_TYPEGRID_SASMAP :
+			grid = define_grid_point(N,limits,get_value_sas);
+			break;
 		case GABEDIT_TYPEGRID_MEP_CHARGES :
 			grid = compute_mep_grid_using_partial_charges(N, limits);
 			break;

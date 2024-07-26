@@ -39,4 +39,8 @@ gboolean get_show_axes();
 void set_show_axes(gboolean ac);
 void showLabelAxes();
 void showLabelPrincipalAxes();
+void showLabelTitle(gint width,gint height);
+gchar* get_label_title();
+void set_label_title(gchar* str, gint x, gint y);
+void set_title_dlg();
 #endif /*   __GABEDIT_LABELS_H__ */

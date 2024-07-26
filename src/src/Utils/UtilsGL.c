@@ -40,6 +40,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
 #include "UtilsGL.h"
+#include "../../gl2ps/gl2ps.h"
 /* transformation/projection matrices */
 static GLint viewport[4];
 static GLdouble mvmatrix[16];
@@ -276,6 +277,12 @@ gint glTextWidth(gchar *str)
 	return(strlen(str) * glFontsize);
 }
 /*********************************************************************************************/
+gint glTextHeight()
+{
+	if(charHeight>0) return charHeight;
+	return(glFontsize);
+}
+/*********************************************************************************************/
 /* print at a window position */
 void glPrintWin(gint x, gint y, gint height, gchar *str)
 {
@@ -283,6 +290,7 @@ void glPrintWin(gint x, gint y, gint height, gchar *str)
 
 	glGetWorldCoords(x, y, height, w);
 	glRasterPos3f(w[0], w[1], w[2]); 
+	gl2psText(str, "Times-Roman", glFontsize);
 
 	glListBase(fontOffset);
 	glCallLists(strlen(str), GL_UNSIGNED_BYTE, str);
@@ -292,6 +300,7 @@ void glPrintWin(gint x, gint y, gint height, gchar *str)
 void glPrint(gdouble x, gdouble y, gdouble z, gchar *str)
 {
 	glRasterPos3f(x,y,z); 
+	gl2psText(str, "Times-Roman", glFontsize);
 
 	glListBase(fontOffset);
 	glCallLists(strlen(str), GL_UNSIGNED_BYTE, str);
@@ -322,7 +331,7 @@ void glPrintOrtho(gdouble x, gdouble y, gdouble z, gchar *str)
 }
 /*********************************************************************************************/
 /* pango fonts for OpenGL  */
-void glInitFonts()
+void glInitFontsUsing(gchar* fontname)
 {
 	/*if (fontOffset >=0) return;*/
 
@@ -332,7 +341,7 @@ void glInitFonts()
 		PangoFontDescription *pfd;
 		PangoFont *pangoFont = NULL;
 		PangoFontMetrics* metrics;
-		pfd = pango_font_description_from_string(FontsStyleLabel.fontname);
+		pfd = pango_font_description_from_string(fontname);
 		pangoFont = gdk_gl_font_use_pango_font(pfd, 0, 128, fontOffset);
 		if (pangoFont)
 		{
@@ -349,6 +358,13 @@ void glInitFonts()
 
 		pango_font_description_free(pfd); 
 	}
+}
+/*********************************************************************************************/
+/* pango fonts for OpenGL  */
+void glInitFonts()
+{
+	/*if (fontOffset >=0) return;*/
+	glInitFontsUsing(FontsStyleLabel.fontname);
 }
 /*********************************************************************************************/
 /* get a World coordinates from scene coordinates */
@@ -452,6 +468,7 @@ void glPrintScale(gdouble x, gdouble y, gdouble z, gdouble scale, gchar *str)
 		VWorld[2] = z;
 	}
 	glRasterPos3f(VWorld[0],VWorld[1],VWorld[2]); 
+	gl2psText(str, "Times-Roman", glFontsize);
 	glListBase(fontOffset);
 	glCallLists(strlen(str), GL_UNSIGNED_BYTE, str);
 }

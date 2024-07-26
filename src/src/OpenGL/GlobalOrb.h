@@ -28,6 +28,7 @@ DEALINGS IN THE SOFTWARE.
 #include <gdk/gdk.h>
 #include "../Files/GabeditFileChooser.h"
 #include "../../gtkglarea/gtkglarea.h"
+#include "../../gl2ps/gl2ps.h"
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include "Grid.h"

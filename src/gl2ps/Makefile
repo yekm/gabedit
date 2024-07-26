@@ -1,10 +1,10 @@
 include ../CONFIG
 
-OBJECTS = $(GDKGL).o gtkglarea.o
+OBJECTS = gl2ps.o
 
 all: compiling
 
-CFLAGS =  $(COMMONCFLAGS) $(GTKCFLAGS) $(OGLCFLAGS) 
+CFLAGS =  $(COMMONCFLAGS) $(OGLCFLAGS) 
 
 %.o : %.c
 	$(CC) -c $(CFLAGS) $< -o $@

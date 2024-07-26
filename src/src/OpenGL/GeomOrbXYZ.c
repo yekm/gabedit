@@ -2390,6 +2390,42 @@ gboolean gl_read_gaussn_file_geomi(gchar *FileName,gint num)
 
 }
 /********************************************************************************/
+void gl_get_esp_charges_from_mopac_output_file(FILE* fd)
+{
+ 	guint taille=BSIZE;
+  	gchar *t = g_malloc(BSIZE*sizeof(gchar));
+  	gchar* pdest;
+
+	Dipole.def = FALSE;
+
+  	while(!feof(fd) )
+	{
+    		pdest = NULL;
+		Dipole.def = FALSE;
+		if(!fgets(t,taille,fd)) break;
+    		pdest = strstr( t, "ELECTROSTATIC POTENTIAL CHARGES");
+
+		if(pdest)
+		{
+			gint j;
+			gchar dum1[100];
+			gchar dum2[100];
+			gchar dum3[100];
+
+			if(!fgets(t,taille,fd)) break;
+			if(!fgets(t,taille,fd)) break;
+			for(j=0;j<Ncenters;j++)
+			{
+    				if(!fgets(t,taille,fd)) break;
+				sscanf(t,"%s %s %s",dum1,dum2,dum3);
+				GeomOrb[j].partialCharge=atof(dum3);
+			}
+			break;
+		}
+	}
+	g_free(t);
+}
+/********************************************************************************/
 void gl_get_charges_from_mopac_output_file(FILE* fd)
 {
  	guint taille=BSIZE;
@@ -2510,6 +2546,8 @@ gboolean gl_read_mopac_output_file_geomi(gchar *fileName, gint numgeometry)
 				Ncenters = j+1;
 				fseek(fd, 0, SEEK_SET);
 				gl_get_charges_from_mopac_output_file(fd);
+				fseek(fd, 0, SEEK_SET);
+				gl_get_esp_charges_from_mopac_output_file(fd);
 				fseek(fd, 0, SEEK_SET);
  				get_dipole_from_mopac_output_file(fd);
 			}

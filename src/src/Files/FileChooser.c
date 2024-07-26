@@ -515,3 +515,32 @@ void set_entry_selected_file(GtkWidget* hbox)
   gtk_widget_show(gabeditFileChooser);
 }
 /********************************************************************************/
+GtkWidget* choose_file_to_create(gchar* title, GtkSignalFunc applyFunc)
+{
+  GtkWidget *gabeditFileChooser;
+
+  gabeditFileChooser = gabedit_file_chooser_new(title, GTK_FILE_CHOOSER_ACTION_SAVE);
+  gabedit_file_chooser_hide_hidden(GABEDIT_FILE_CHOOSER(gabeditFileChooser));
+
+  if(strcmp(fileopen.datafile,"NoName"))
+  {
+	  if(fileopen.localdir)
+	  {
+		gchar* t = g_strdup_printf("%s%s%s",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.datafile);
+		gabedit_file_chooser_set_current_file(GABEDIT_FILE_CHOOSER(gabeditFileChooser),t);
+		g_free(t);
+
+	  }
+	  else
+		gabedit_file_chooser_set_current_file(GABEDIT_FILE_CHOOSER(gabeditFileChooser),fileopen.datafile);
+  }
+  g_signal_connect(G_OBJECT(gabeditFileChooser), "delete_event",(GtkSignalFunc)destroy_button_windows,NULL);
+
+  g_signal_connect (gabeditFileChooser, "response", G_CALLBACK(applyFunc) , GTK_OBJECT(gabeditFileChooser));
+  g_signal_connect (gabeditFileChooser, "response",  G_CALLBACK (destroy_button_windows), GTK_OBJECT(gabeditFileChooser));
+  g_signal_connect (gabeditFileChooser, "response",  G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(gabeditFileChooser));
+  
+  add_button_windows(title,gabeditFileChooser);
+  gtk_widget_show(gabeditFileChooser);
+  return gabeditFileChooser;
+}

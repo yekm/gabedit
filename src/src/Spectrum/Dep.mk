@@ -1,5 +1,11 @@
 # DO NOT DELETE
 
+ECDSpectrum.o: ../../Config.h
+ECDSpectrum.o: ../Common/Global.h
+ECDSpectrum.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h
+ECDSpectrum.o: ../Utils/Constantes.h ../Utils/UtilsInterface.h
+ECDSpectrum.o: ../Utils/Utils.h ../Files/FileChooser.h ../Common/Windows.h
+ECDSpectrum.o: ../Utils/GabeditXYPlot.h ../OpenGL/Vibration.h SpectrumWin.h
 IRSpectrum.o: ../../Config.h
 IRSpectrum.o: ../Common/Global.h
 IRSpectrum.o: ../Files/GabeditFileChooser.h ../Common/GabeditType.h

@@ -746,7 +746,11 @@ static gchar* getAmberTypeOfAtom(Molecule* m, gint atomNumber)
 	}
 	else if ( !strcmp(geom[atomNumber].Prop.symbol,"O" ))
 	{
-		if (  isConnectedTo( m, atomNumber, "~C(~O2)", TRUE ) ) return "O2";
+		if (  isConnectedTo( m, atomNumber, "~C(~O2)", TRUE ) ) 
+		{
+			if (  isConnectedTo( m, atomNumber, "H", TRUE ) ) return "OH";
+			else return "O2";
+		}
 		else if (  isConnectedTo( m, atomNumber, "H2", TRUE ) ) return "OW";
 		else if (  isConnectedTo( m, atomNumber, "H", TRUE ) ) return "OH";
 		else if (  isConnectedTo( m, atomNumber, "=C", TRUE ) ) return "O";

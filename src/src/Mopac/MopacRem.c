@@ -42,6 +42,7 @@ static gchar* listJobView[] = {
 	"Transition structure search", 
         "Theromochemical Calculations",
         "Molecular Orbitals",
+        "Atomic charges from ElectroStatic Potential",
 };
 static gchar* listJobReal[] = {
         "1SCF ", 
@@ -50,6 +51,7 @@ static gchar* listJobReal[] = {
 	"TS ", 
 	"THERMO ROT=1 ",
 	"GRAPH VECTORS ",
+	"1SCF ESP ",
 };
 static guint numberOfJobs = G_N_ELEMENTS (listJobView);
 static gchar selectedJob[BSIZE]="1SCF";

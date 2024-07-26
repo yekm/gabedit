@@ -27,6 +27,9 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/GeomGlobal.h"
 #include "../OpenGL/AxisGL.h"
 #include "../OpenGL/PrincipalAxisGL.h"
+#include "../OpenGL/UtilsOrb.h"
+#include "../OpenGL/GLArea.h"
+#include "../Utils/UtilsInterface.h"
 
 static gboolean showSymbols = FALSE;
 static gboolean showNumbers = FALSE;
@@ -34,8 +37,14 @@ static gboolean showCharges = FALSE;
 static gboolean showDistances = FALSE;
 static gboolean showDipole = FALSE;
 static gboolean showAxes = FALSE;
-static gchar fontName[BSIZE] = "Sans 14";
+static gchar fontName[BSIZE] = "sans 14";
+static gchar fontNameTitle[BSIZE] = "sans bold 48";
 static gboolean ortho = FALSE;
+static gchar* strTitle = NULL;
+static gint xTitle = 0;
+static gint yTitle = 0;
+static GdkColor colorTitle = {65535,0,0};
+static gboolean initColor = TRUE;
 
 /*********************************************************************************************/
 void init_labels_font()
@@ -186,7 +195,7 @@ void showLabelDistances()
 			continue;
 		for(k=0;k<3;k++)
 			tmp[k] = (GeomOrb[i].C[k] + GeomOrb[j].C[k])/2;
-		sprintf(buffer, "%0.3f",distance);
+		sprintf(buffer, "%0.3f",distance*BOHR_TO_ANG);
 
 		if(ortho)
 			glPrintOrtho(tmp[0], tmp[1], tmp[2], buffer);
@@ -461,4 +470,343 @@ void showLabelPrincipalAxes()
 		sprintf(buffer,"I=%0.3f",I[2]);
 		glPrintScale(v3[0], v3[1], v3[2], 1.1*radius, buffer);
 	}
+}
+/*********************************************************************************************/
+void showLabelTitle(gint width, gint height)
+{
+	V4d Diffuse = {0.0,0.0,0.0,0.0 };
+	V4d Specular = {0.0,0.0,0.0,0.0 };
+	V4d Ambiant  = {1.0,1.0,1.0,1.0 };
+
+	if(Ncenters<1) return;
+	if(!strTitle) return;
+	if(xTitle<0) return;
+	if(yTitle<0) return;
+
+	if(initColor) 
+	{
+		colorTitle.red = FontsStyleLabel.TextColor.red; 
+		colorTitle.green = FontsStyleLabel.TextColor.green; 
+		colorTitle.blue = FontsStyleLabel.TextColor.blue; 
+		initColor = FALSE;
+	}
+	Ambiant[0] = colorTitle.red/65535.0; 
+	Ambiant[1] = colorTitle.green/65535.0; 
+	Ambiant[2] = colorTitle.blue/65535.0; 
+	/*
+	for(i=0;i<3;i++)
+	{
+		Diffuse[i] = Ambiant[i];
+		Specular[i] = Ambiant[i];
+	}
+	*/
+
+	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
+	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
+	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
+	glInitFontsUsing(fontNameTitle);
+
+	glLoadIdentity();
+	
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix(); glLoadIdentity();
+	gluOrtho2D(0, width, 0, height);
+
+	
+	glPrintWin(xTitle/100.0*width,(yTitle)/100.0*height+glTextHeight(),height, strTitle);
+	
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	
+	glPopMatrix();
+	glInitFonts();
+}
+/*********************************************************************************************/
+gchar* get_label_title()
+{
+	return strTitle;
+}
+/*********************************************************************************************/
+void set_label_title(gchar* str, gint x, gint y)
+{
+	if(strTitle) g_free(strTitle);
+	strTitle = NULL;
+	if(str) strTitle = g_strdup(str);
+	if(x>=0) xTitle = x;
+	if(y>=0) yTitle = y;
+}
+/********************************************************************************/
+static void apply_set_title(GtkWidget *Win,gpointer data)
+{
+	GtkWidget* entry = NULL;
+	GtkWidget* xSpinButton = NULL;
+	GtkWidget* ySpinButton = NULL;
+	GtkWidget* fontButton = NULL;
+	GtkWidget* colorButton = NULL;
+	gdouble xValue = 0;
+	gdouble yValue = 0;
+	G_CONST_RETURN gchar* fontStr = NULL;
+	G_CONST_RETURN gchar* str = NULL;
+
+	if(!GTK_IS_WIDGET(Win)) return;
+
+	entry = g_object_get_data (G_OBJECT (Win), "Entry");
+	xSpinButton = g_object_get_data (G_OBJECT (Win), "XSpinButton");
+	ySpinButton = g_object_get_data (G_OBJECT (Win), "YSpinButton");
+	fontButton = g_object_get_data (G_OBJECT (Win), "FontButton");
+	colorButton = g_object_get_data (G_OBJECT (Win), "ColorButton");
+
+	str = gtk_entry_get_text(GTK_ENTRY(entry));
+	fontStr = gtk_font_button_get_font_name(GTK_FONT_BUTTON(fontButton));
+	xValue = gtk_spin_button_get_value (GTK_SPIN_BUTTON(xSpinButton));
+	yValue = gtk_spin_button_get_value (GTK_SPIN_BUTTON(ySpinButton));
+	if(xValue>=0 && xValue<=100) xTitle = xValue;
+	if(yValue>=0 && yValue<=100) yTitle = yValue;
+	if(fontStr) sprintf(fontNameTitle,fontStr);
+	if(str && strlen(str)>1)
+	{
+		if(strTitle) g_free(strTitle);
+		strTitle = g_strdup(str);
+	} 
+	if(colorButton) gtk_color_button_get_color (GTK_COLOR_BUTTON(colorButton), &colorTitle);
+	glarea_rafresh(GLArea);
+
+}
+/********************************************************************************/
+static void apply_set_title_close(GtkWidget *Win,gpointer data)
+{
+	apply_set_title(Win,data);
+	delete_child(Win);
+}
+/********************************************************************************/
+static GtkWidget *add_entry_title( GtkWidget *table, gchar* strLabel, gint il)
+{
+	gushort i;
+	gushort j;
+	GtkWidget *entry;
+	GtkWidget *label;
+
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 0;
+	label = gtk_label_new(strLabel);
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 2;
+	entry =  gtk_entry_new();
+	if(strTitle) gtk_entry_set_text(GTK_ENTRY(entry),strTitle);
+	else gtk_entry_set_text(GTK_ENTRY(entry),"");
+
+	gtk_table_attach(GTK_TABLE(table),entry,
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+
+  	return entry;
+}
+/********************************************************************************/
+static GtkWidget *add_font_button( GtkWidget *table, gchar* strLabel, gint il)
+{
+	gushort i;
+	gushort j;
+	GtkWidget *fontButton;
+	GtkWidget *label;
+
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 0;
+	label = gtk_label_new(strLabel);
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 2;
+	fontButton =  gtk_font_button_new_with_font   (fontNameTitle);
+
+	gtk_table_attach(GTK_TABLE(table),fontButton,
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+
+  	return fontButton;
+}
+/********************************************************************************/
+static GtkWidget *add_spin_button( GtkWidget *table, gchar* strLabel, gint il)
+{
+	gushort i;
+	gushort j;
+	GtkWidget *spinButton;
+	GtkWidget *label;
+
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 0;
+	label = gtk_label_new(strLabel);
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 2;
+	spinButton =  gtk_spin_button_new_with_range (0, 100, 1);
+
+	gtk_table_attach(GTK_TABLE(table),spinButton,
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+
+  	return spinButton;
+}
+/********************************************************************************/
+static GtkWidget *add_color_button( GtkWidget *table, gchar* strLabel, gint il)
+{
+	gushort i;
+	gushort j;
+	GtkWidget *colorButton;
+	GtkWidget *label;
+
+	if(initColor) 
+	{
+		colorTitle.red = FontsStyleLabel.TextColor.red; 
+		colorTitle.green = FontsStyleLabel.TextColor.green; 
+		colorTitle.blue = FontsStyleLabel.TextColor.blue; 
+		initColor = FALSE;
+	}
+
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 0;
+	label = gtk_label_new(strLabel);
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 2;
+
+	colorButton =  gtk_color_button_new_with_color(&colorTitle);
+
+	gtk_table_attach(GTK_TABLE(table),colorButton,
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+
+  	return colorButton;
+}
+/********************************************************************************/
+void set_title_dlg()
+{
+	GtkWidget *Win;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	GtkWidget *hbox;
+	GtkWidget *table;
+	GtkWidget *vboxall;
+	GtkWidget *xSpinButton;
+	GtkWidget *ySpinButton;
+	GtkWidget *fontButton;
+	GtkWidget *button;
+	GtkWidget *entry;
+	GtkWidget *colorButton;
+
+	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(Win),"Set title");
+	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
+	gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
+	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
+
+	add_glarea_child(Win,"Title ");
+
+	vboxall = create_vbox(Win);
+	frame = gtk_frame_new ("Set title");
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+	gtk_container_add (GTK_CONTAINER (vboxall), frame);
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	table = gtk_table_new(5,3,FALSE);
+	gtk_container_add(GTK_CONTAINER(vboxframe),table);
+
+	entry = add_entry_title(table, "Title", 0);
+	xSpinButton = add_spin_button( table, "X position(%)", 1);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(xSpinButton),xTitle);
+	ySpinButton = add_spin_button( table, "Y position(%)", 2);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(ySpinButton),yTitle);
+	fontButton =  add_font_button(table, "Font",  3);
+	colorButton =  add_color_button(table, "Color",  4);
+
+	g_object_set_data (G_OBJECT (Win), "Entry",entry);
+	g_object_set_data (G_OBJECT (Win), "XSpinButton",xSpinButton);
+	g_object_set_data (G_OBJECT (Win), "YSpinButton",ySpinButton);
+	g_object_set_data (G_OBJECT (Win), "FontButton",fontButton);
+	g_object_set_data (G_OBJECT (Win), "ColorButton",colorButton);
+
+	hbox = create_hbox_false(vboxall);
+	gtk_widget_realize(Win);
+
+	button = create_button(Win,"OK");
+	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+	gtk_widget_show (button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)apply_set_title_close,G_OBJECT(Win));
+
+	button = create_button(Win,"Apply");
+	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_show (button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)apply_set_title,G_OBJECT(Win));
+
+	button = create_button(Win,"Cancel");
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)delete_child, G_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GtkSignalFunc)gtk_widget_destroy,G_OBJECT(Win));
+	gtk_widget_show (button);
+
+	gtk_widget_show_all (Win);
 }

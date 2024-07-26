@@ -57,6 +57,7 @@ void free_contours_all();
 void free_objects_all();
 void rafresh_window_orb();
 void rotationAboutAnAxis(GtkWidget *widget, gfloat phi, gint axe);
+gint redrawGL2PS();
 
 #endif /* __GABEDIT_GLAREA_H__ */
 

@@ -99,3 +99,26 @@
 
 11 february 2008 :
    MEP can be calculated from the charges of atoms
+
+28 april  2008 :
+   New windows for ECD spectrum.
+   New windows for read NMR spectrum from a text file.
+
+6 may 2008 :
+   Gabedit can export the opengl window in eps, ps, pdf, svg file.
+19 may    2008 :
+   The bug due to not ordering atoms in a molden (from molpro) file has been
+   corrected.
+25 may 2008 :
+   The user can change the coordinates of atoms directly from the list of atoms.
+   The user can change bond, angles and dihedral in the Z-matrix editor of atoms directly from the list of atoms.
+   Gabedit recalculate the bond, angle and diedral angle value considering the new atomic connectivity index.
+18 june  2008 :
+   The user can set a title for the openGL window (Set/Title)
+   Gabedit can create   slides for several orbitals by  one
+   click(Orbitals/Slideshow).
+24 june  2008 :
+   Under unix, the user can run gamess without any changes to the scripts of gamess.
+25 june  2008 :
+   Gabedit load the eps charges from a mopac output file(last geometry) if
+   these is available

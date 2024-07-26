@@ -21,6 +21,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../../Config.h"
 #include "GlobalOrb.h"
 #include "../Geometry/GeomGlobal.h"
+#include "../Files/FileChooser.h"
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
 #include "../Utils/Utils.h"
@@ -1310,20 +1311,15 @@ static gchar* create_povray_file(gchar* fileName, gboolean saveCamera, gboolean 
 	return NULL;
 }
 /********************************************************************************/
-static void save_povray_file(GtkWidget *w,gpointer data)
+static void save_povray_file(GabeditFileChooser *w , gint response_id)
 {
-	GtkWidget **entryall;
-	GtkWidget *entry;
-	G_CONST_RETURN gchar *entrytext;
 	gchar *fileName;
 	gchar* message = NULL;
     	GtkWidget* m;
 
+ 	if(response_id != GTK_RESPONSE_OK) return;
 	if(!GLArea) return;
-	entryall=(GtkWidget **)data;
-	entry=entryall[0];
-	entrytext = gtk_entry_get_text(GTK_ENTRY(entry));
-	fileName = g_strdup_printf("%s.pov",get_suffix_name_file(entrytext));
+ 	fileName = gabedit_file_chooser_get_current_file(w);
 	message = create_povray_file(fileName, FALSE, TRUE);
 	if(message)
 	{
@@ -1357,61 +1353,16 @@ gchar* new_pov(gchar* dirname, int i)
 /********************************************************************************/
 void create_save_povray_orb(GtkWidget* Win)
 {
-  GtkWidget *fp;
-  GtkWidget *frame;
-  GtkWidget *vboxall;
-  GtkWidget *vboxframe;
-  GtkWidget *hbox;
-  GtkWidget *button;
-  GtkWidget **entry;
-  gchar      *labelt = g_strdup(" File  : ");
-  gchar      *liste=g_strdup("gabedit.pov");
-  gchar      *titre=g_strdup("Create a pov-ray file");
-  static gchar* patterns[] = {"*.pov","*",NULL};
-  entry=g_malloc(2*sizeof(GtkWidget *));
+	gchar* title = g_strdup_printf("Create a povray file");
+  	gchar* patternsfiles[] = {"*","*.pov",NULL};
+	gchar* fileName = g_strdup_printf("gabedit.pov");
+	gchar* filter = g_strdup_printf("*.pov");
 
-  liste  = g_strdup_printf("%s%sgabedit.pov",get_last_directory(),G_DIR_SEPARATOR_S);
-  fp = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_title(GTK_WINDOW(fp),titre);
-  gtk_window_set_position(GTK_WINDOW(fp),GTK_WIN_POS_CENTER);
-  gtk_window_set_transient_for(GTK_WINDOW(fp),GTK_WINDOW(Win));
-
-  add_child(Win,fp,gtk_widget_destroy," Povray ");
-
-  g_signal_connect(G_OBJECT(fp),"delete_event",(GtkSignalFunc)delete_child,NULL);
-  g_signal_connect(G_OBJECT(fp),"delete_event",(GtkSignalFunc)gtk_widget_destroy,NULL);
-
-  gtk_container_set_border_width (GTK_CONTAINER (fp), 5);
-  vboxall = create_vbox(fp);
-  frame = gtk_frame_new ("Location&Name of file");
-  g_object_ref (frame);
-  gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
-  gtk_container_add (GTK_CONTAINER (vboxall), frame);
-  gtk_widget_show (frame);
-
-  vboxframe = create_vbox(frame);
-
-  hbox = create_hbox_browser(Win,vboxframe,labelt,liste,patterns);
-  entry[0] = (GtkWidget*)(g_object_get_data(G_OBJECT(hbox),"Entry"));	
-
-  /* buttons */
-  hbox = create_hbox(vboxall);
-  gtk_widget_realize(fp);
-
-  button = create_button(fp,"Cancel");
-  gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  g_signal_connect_swapped(G_OBJECT(button),"clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(fp));
-  gtk_widget_show (button);
-
-  button = create_button(fp,"OK");
-  gtk_box_pack_start (GTK_BOX( hbox), button, TRUE, TRUE, 3);
-  gtk_widget_show (button);
-  g_signal_connect(G_OBJECT(button), "clicked",GTK_SIGNAL_FUNC(save_povray_file),(gpointer)entry);
-  g_signal_connect_swapped(G_OBJECT(button),"clicked",(GtkSignalFunc)delete_child,GTK_OBJECT(fp));
-
-
-  g_free(labelt);
-  g_free(liste);
-   
-  gtk_widget_show_all(fp);
+	GtkWidget* win = choose_file_to_create(title, GTK_SIGNAL_FUNC(save_povray_file));
+	gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(win), patternsfiles);
+	gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(win),filter);
+	gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(win),fileName);
+	g_free(title);
+	g_free(fileName);
+	g_free(filter);
 }

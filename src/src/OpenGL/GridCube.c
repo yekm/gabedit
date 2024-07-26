@@ -1900,6 +1900,13 @@ void mapping_with_mep_from_charges()
 {
 	Grid* mep = NULL;
 	GabEditTypeGrid oldTypeGrid = TypeGrid;
+	gdouble s= GetSumAbsCharges();
+
+	if(s<1e-6) 
+	{
+		Message("Sorry, All partial charges are null\n","Error",TRUE);
+		return;
+	}
 
 	mep = compute_mep_grid_using_partial_charges_cube_grid(grid);
 

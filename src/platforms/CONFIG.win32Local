@@ -7,7 +7,8 @@ GTKLIB = -LE:/allouche/Programs/gtk/lib -lgtk-win32-2.0 -lgdk-win32-2.0 -latk-1.
 #GTKCFLAGS =  `pkg-config gtk+-2.0 --cflags` 
 GTKCFLAGS = -IE:/allouche/Programs/gtk/include/gtk-2.0 -IE:/allouche/Programs/gtk/lib/gtk-2.0/include -IE:/allouche/Programs/gtk/include/atk-1.0 -IE:/allouche/Programs/gtk/include/pango-1.0 -IE:/allouche/Programs/gtk/include/glib-2.0 -IE:/allouche/Programs/gtk/lib/glib-2.0/include  IE:/allouche/Programs/gtk/include/cairo
 
-MAKENAME = mingw32-make
+MAKE = mingw32-make
+RM = del
 OGLLIB = -lopengl32 -lglu32
 OGLCFLAGS=-IE:
 GDKGL = gdkgl-win32
@@ -15,4 +16,5 @@ JPEGLIB    =
 WIN32LIB   = -lwsock32 -lcomdlg32
 X11LIB   =
 PTHREADLIB  = 
-REMOVEFILE = del
+COMMONCFLAGS = -Wall -O2
+

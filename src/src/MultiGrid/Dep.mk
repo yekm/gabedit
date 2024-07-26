@@ -15,6 +15,7 @@ PoissonMG.o: ../Utils/Constantes.h ZlmMG.h MathFunctions.h PoissonMG.h
 PoissonMG.o: GridMG.h DomainMG.h TypesMG.h ../Common/GabeditType.h
 PoissonMG.o: ../OpenGL/GlobalOrb.h ../Files/GabeditFileChooser.h
 PoissonMG.o: ../../gtkglarea/gtkglarea.h ../../gtkglarea/gdkgl.h
+PoissonMG.o: ../../gl2ps/gl2ps.h
 PoissonMG.o: ../OpenGL/Grid.h ../MultiGrid/PoissonMG.h
 PoissonMG.o: ../OpenGL/IsoSurface.h ../OpenGL/StatusOrb.h
 PoissonMG.o: GridMG.h DomainMG.h TypesMG.h

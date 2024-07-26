@@ -1,7 +1,7 @@
-OBJECTS = SpectrumWin.o IRSpectrum.o RamanSpectrum.o UVSpectrum.o NMRSpectrum.o
+OBJECTS = SpectrumWin.o IRSpectrum.o RamanSpectrum.o UVSpectrum.o ECDSpectrum.o NMRSpectrum.o
 
 include ../../CONFIG
-CFLAGS =  -Wall -O2 $(GTKCFLAGS)
+CFLAGS =  $(COMMONCFLAGS) $(GTKCFLAGS)
 
 all: compiling 
 
@@ -11,7 +11,7 @@ all: compiling
 compiling: $(OBJECTS)
 
 clean:
-	@$(REMOVEFILE) *.chk p *o gabedit *.com *.out *.log *.test test* *.cpp  *old *.ps .*swp *~ 
+	@$(RM) *.chk p *o gabedit *.com *.out *.log *.test test* *.cpp  *old *.ps .*swp *~ 
 
 include Dep.mk
 #make dependance

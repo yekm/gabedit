@@ -16,20 +16,10 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 DEALINGS IN THE SOFTWARE.
 ************************************************************************************************************/
 
-#ifndef __GABEDIT_UTILSGL_H__
-#define __GABEDIT_UTILSGL_H__
+#ifndef __GABEDIT_CAPTUREORBITALS_H__
+#define __GABEDIT_CAPTUREORBITALS_H__
 
-void glGetWorldCoords(gint x, gint y, gint height, gdouble *w);
-void glGetWindowCoords(gdouble *w, gint height, gint *x);
-gint glTextWidth(gchar *str);
-gint glTextHeight();
-void glPrintWin(gint x, gint y, gint height, gchar *str);
-void glPrint(gdouble x, gdouble y, gdouble z, gchar *str);
-void glPrintOrtho(gdouble x, gdouble y, gdouble z, gchar *str);
-void glInitFontsUsing(gchar* fontname);
-void glInitFonts();
-void getNormalPlanWindow(gdouble N[]);
-void glPrintScale(gdouble x, gdouble y, gdouble z, gdouble scale, gchar *str);
+void capture_orbitals_dlg();
 
-#endif /* __GABEDIT_UTILSGL_H__ */
+#endif /* __GABEDIT_CAPTUREORBITALS_H__ */
 

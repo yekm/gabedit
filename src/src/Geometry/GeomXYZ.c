@@ -114,6 +114,8 @@ static void removeFromList(GtkWidget* myList, gint ligne);
 static void insertToList(GtkWidget* myList, gint ligne, gchar* texts[], gint nColumns);
 static void appendToList(GtkWidget* myList, gchar* texts[], gint nColumns);
 static void append_list();
+static gboolean TestVariablesXYZCreated(gchar *NewName,gint j);
+static gint testav(gchar *t);
 /********************************************************************************/
 void compute_dipole_using_charges_of_xyz_geom()
 {
@@ -630,6 +632,303 @@ static void removeFromList(GtkWidget* myList, gint ligne)
 
 }
 /********************************************************************************/
+static void changeNameVariableInGeometry(gchar* oldName, gchar* newName)
+{
+	gint i;
+	gint k=-1;
+	for(i=0;i<NcentersXYZ;i++)
+	{
+  		if(!strcmp(GeomXYZ[i].X,oldName))
+		{
+			if(GeomXYZ[i].X) g_free(GeomXYZ[i].X);
+			GeomXYZ[i].X =  g_strdup(newName);
+			k = 0;
+		}
+  		if(!strcmp(GeomXYZ[i].Y,oldName))
+		{
+			if(GeomXYZ[i].Y) g_free(GeomXYZ[i].Y);
+			GeomXYZ[i].Y =  g_strdup(newName);
+			k = 0;
+		}
+  		if(!strcmp(GeomXYZ[i].Z,oldName))
+		{
+			if(GeomXYZ[i].Z) g_free(GeomXYZ[i].Z);
+			GeomXYZ[i].Z =  g_strdup(newName);
+			k=0;
+		}
+	}
+	if(k==0)
+	{
+		clearList(list);
+		append_list();
+	}
+}
+/********************************************************************************/
+static void editedVariable (GtkCellRendererText *cell, gchar  *path_string,
+		    gchar *new_text, gpointer data)
+{
+	GtkTreeModel *model = GTK_TREE_MODEL (data);
+	GtkTreeIter iter;
+	GtkTreePath *path = NULL;
+	gint numCol = 0;
+	gint Nc = -1;
+	numCol = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(cell),"NumColumn"));
+	gchar* oldName = NULL;
+	if(numCol==0)
+	{
+		Nc = -1;
+  		if(!variable_name_valid(new_text))
+  		{
+			show_forbidden_characters();
+      			return;
+  		} 
+        	if ( !strcmp(new_text, "")) return;
+	  	Nc = atoi(path_string);
+  		if(TestVariablesXYZCreated(new_text,Nc) )
+  		{
+			MessageGeom("Sorry a other variable have any Name !\n"," Error ",TRUE);
+      			return;
+		} 
+	}
+	if(numCol==1)
+	{
+  		if(!test(new_text))
+		{
+			gchar* message=g_strdup_printf("Sorry %s is not a number \n",new_text);
+			MessageGeom(message," Error ",TRUE);
+			g_free(message);
+			return;
+  		}
+        	if ( !strcmp(new_text, "")) return;
+	  	Nc = atoi(path_string);
+  		if(test(new_text) && !testpointeE(new_text) )
+			new_text=g_strdup_printf("%s.0",new_text);
+	}
+	if(Nc<0)return;
+	if(numCol==0)
+	{
+		oldName = VariablesXYZ[Nc].Name;
+  		VariablesXYZ[Nc].Name=g_strdup(new_text);
+	}
+	if(numCol==1)
+	{
+		/*printf("Nc = %d %s %s\n",Nc,VariablesXYZ[Nc].Name,VariablesXYZ[Nc].Value);*/
+		if(VariablesXYZ[Nc].Value) g_free(VariablesXYZ[Nc].Value);
+  		VariablesXYZ[Nc].Value=g_strdup(new_text);
+	}
+
+	/* printf("%s\n",path_string);*/
+
+	path = gtk_tree_path_new_from_string (path_string);
+	gtk_tree_model_get_iter (model, &iter, path);
+	gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
+
+	gtk_tree_path_free (path);
+	if(numCol==0 && oldName) 
+	{
+		changeNameVariableInGeometry(oldName, new_text);
+		g_free(oldName);
+	}
+	if(numCol==1 && ZoneDessin != NULL) rafresh_drawing();
+}
+/********************************************************************************/
+static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
+		    gchar *new_text, gpointer data)
+{
+	GtkTreeModel *model = GTK_TREE_MODEL (data);
+	GtkTreeIter iter;
+	GtkTreePath *path = NULL;
+	gint numCol = 0;
+	gint Nc = -1;
+	numCol = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(cell),"NumColumn"));
+	if(numCol==0) return;
+	if(!new_text) return;
+	/* symbol */
+	if(numCol==1)
+	{
+		gint nc = strlen(new_text);
+		if(nc<1)return;
+		new_text[0]=toupper(new_text[0]);
+		if(nc>1)new_text[1]=tolower(new_text[1]);
+		if(!test_atom_define(new_text))
+		{
+			gchar* message=g_strdup_printf("Sorry %s is not a symbol for an atom \n",new_text);
+			MessageGeom(message," Error ",TRUE);
+			g_free(message);
+			return;
+		}
+	  	Nc = atoi(path_string);
+  		if(GeomXYZ[Nc].Symb) g_free(GeomXYZ[Nc].Symb);
+		GeomXYZ[Nc].Symb = g_strdup(new_text);
+		path = gtk_tree_path_new_from_string (path_string);
+		gtk_tree_model_get_iter (model, &iter, path);
+		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
+		gtk_tree_path_free (path);
+		if(ZoneDessin != NULL) rafresh_drawing();
+		return;
+	}
+	/* MM Type */
+	if(numCol==2)
+	{
+		gint nc = strlen(new_text);
+		if(nc<1)return;
+	  	Nc = atoi(path_string);
+  		if(GeomXYZ[Nc].mmType) g_free(GeomXYZ[Nc].mmType);
+		GeomXYZ[Nc].mmType = g_strdup(new_text);
+		path = gtk_tree_path_new_from_string (path_string);
+		gtk_tree_model_get_iter (model, &iter, path);
+		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
+		gtk_tree_path_free (path);
+		if(ZoneDessin != NULL) rafresh_drawing();
+		return;
+	}
+	/* PDB Type */
+	if(numCol==3)
+	{
+		gint nc = strlen(new_text);
+		if(nc<1)return;
+	  	Nc = atoi(path_string);
+  		if(GeomXYZ[Nc].pdbType) g_free(GeomXYZ[Nc].pdbType);
+		GeomXYZ[Nc].pdbType = g_strdup(new_text);
+		path = gtk_tree_path_new_from_string (path_string);
+		gtk_tree_model_get_iter (model, &iter, path);
+		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
+		gtk_tree_path_free (path);
+		if(ZoneDessin != NULL) rafresh_drawing();
+		return;
+	}
+	/* Residue Name  */
+	if(numCol==4)
+	{
+		gint nc = strlen(new_text);
+		if(nc<1)return;
+	  	Nc = atoi(path_string);
+  		if(strcmp(GeomXYZ[Nc].Residue,new_text))
+  		{
+  			if(GeomXYZ[Nc].Residue) g_free(GeomXYZ[Nc].Residue);
+			GeomXYZ[Nc].Residue = g_strdup(new_text);
+	  		gint k;
+	  		GeomXYZ[Nc].ResidueNumber = -1; 
+	  		for(k=0;k<(gint)NcentersXYZ;k++)
+	  		{
+		  		if(Nc != k && !strcmp(GeomXYZ[Nc].Residue,GeomXYZ[k].Residue))
+		  		{
+			  		GeomXYZ[Nc].ResidueNumber = GeomXYZ[k].ResidueNumber;
+			  		break;
+		  		}
+	  		}
+	  		if(GeomXYZ[Nc].ResidueNumber == -1)
+	  		{
+	  			for(k=0;k<(gint)NcentersXYZ;k++)
+	  			{
+		  			if(GeomXYZ[Nc].ResidueNumber<GeomXYZ[k].ResidueNumber)
+			  			GeomXYZ[Nc].ResidueNumber = GeomXYZ[k].ResidueNumber;
+	  			}
+	  			GeomXYZ[Nc].ResidueNumber += 1;
+	  		}
+  		}
+		path = gtk_tree_path_new_from_string (path_string);
+		gtk_tree_model_get_iter (model, &iter, path);
+		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
+		gtk_tree_path_free (path);
+		if(ZoneDessin != NULL) rafresh_drawing();
+		return;
+	}
+	/* X, Y or Z  */
+	if(numCol==5 || numCol==6 || numCol==7)
+	{
+		gint nc = strlen(new_text);
+		if(nc<1)return;
+	  	Nc = atoi(path_string);
+		if(testav(new_text)<-1)
+		{	
+			gchar* message=g_strdup_printf("Sorry\n %s \nis not a number \nand is not a variable ",new_text);
+			MessageGeom(message," Error ",TRUE);
+			g_free(message);
+        		return;
+		}
+  		if(test(new_text) && !testpointeE(new_text) )
+			new_text=g_strdup_printf("%s.0",new_text);
+		if(numCol==5)
+		{
+  			if(GeomXYZ[Nc].X) g_free(GeomXYZ[Nc].X);
+			GeomXYZ[Nc].X = g_strdup(new_text);
+		}
+		if(numCol==6)
+		{
+  			if(GeomXYZ[Nc].Y) g_free(GeomXYZ[Nc].Y);
+			GeomXYZ[Nc].Y = g_strdup(new_text);
+		}
+		if(numCol==7)
+		{
+  			if(GeomXYZ[Nc].Z) g_free(GeomXYZ[Nc].Z);
+			GeomXYZ[Nc].Z = g_strdup(new_text);
+		}
+		path = gtk_tree_path_new_from_string (path_string);
+		gtk_tree_model_get_iter (model, &iter, path);
+		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
+		gtk_tree_path_free (path);
+		if(ZoneDessin != NULL) rafresh_drawing();
+		return;
+	}
+	/* Charge  */
+	if(numCol==8)
+	{
+		gint nc = strlen(new_text);
+		gchar* txt = NULL;
+		if(nc<1)return;
+	  	Nc = atoi(path_string);
+  		if(!test(new_text))
+		{
+			gchar* message=g_strdup_printf("Sorry %s is not a number \n",new_text);
+			MessageGeom(message," Error ",TRUE);
+			g_free(message);
+			return;
+  		}
+  		if(test(new_text) && !testpointeE(new_text) )
+			txt=g_strdup_printf("%s.0",new_text);
+		else
+			txt=g_strdup_printf("%s",new_text);
+  		if(GeomXYZ[Nc].Charge) g_free(GeomXYZ[Nc].Charge);
+		GeomXYZ[Nc].Charge = g_strdup(new_text);
+		path = gtk_tree_path_new_from_string (path_string);
+		gtk_tree_model_get_iter (model, &iter, path);
+		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, txt, -1);
+		gtk_tree_path_free (path);
+		if(ZoneDessin != NULL) rafresh_drawing();
+		if(txt) g_free(txt);
+		return;
+	}
+	/* Layer  */
+	if(numCol==9)
+	{
+		gint nc = strlen(new_text);
+		gint i;
+		if(nc<1)return;
+		new_text[0] = toupper(new_text[0]);
+		for(i=1;i<nc;i++) new_text[i] = tolower(new_text[i]);
+	  	Nc = atoi(path_string);
+  		if(!(!strcmp(new_text,"High") 
+			|| !strcmp(new_text,"Medium")
+			||!strcmp(new_text,"Low")
+			|| !strcmp(new_text," ")))
+		{
+			gchar* message=g_strdup_printf("Sorry  The layer should be High, Medium, Low or one space \n");
+			MessageGeom(message," Error ",TRUE);
+			g_free(message);
+			return;
+  		}
+  		if(GeomXYZ[Nc].Layer) g_free(GeomXYZ[Nc].Layer);
+		GeomXYZ[Nc].Layer = g_strdup(new_text);
+		path = gtk_tree_path_new_from_string (path_string);
+		gtk_tree_model_get_iter (model, &iter, path);
+		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
+		gtk_tree_path_free (path);
+		if(ZoneDessin != NULL) rafresh_drawing();
+		return;
+	}
+}
+/********************************************************************************/
 static void insertToList(GtkWidget* myList, gint ligne, gchar* texts[], gint nColumns)
 {
 	GtkTreeModel *model;
@@ -646,7 +945,9 @@ static void insertToList(GtkWidget* myList, gint ligne, gchar* texts[], gint nCo
 	gtk_list_store_insert(store, &iter, ligne);
 	for(k=0;k<nColumns;k++)
 	{
-       		gtk_list_store_set (store, &iter, k, texts[k], -1);
+		gboolean ed = TRUE;
+		if(k==0 && myList == list) ed=FALSE;
+       		gtk_list_store_set (store, &iter, k+k, texts[k],k+k+1,ed, -1);
 		g_free(texts[k]);
 	}
 	if(myList == list) g_signal_connect_after(G_OBJECT (model), "row_inserted", G_CALLBACK(row_inserted), NULL);      
@@ -666,7 +967,9 @@ static void appendToList(GtkWidget* myList, gchar* texts[], gint nColumns)
 	gtk_list_store_append(store, &iter);
 	for(k=0;k<nColumns;k++)
 	{
-       		gtk_list_store_set (store, &iter, k, texts[k], -1);
+		gboolean ed = TRUE;
+		if(k==0 && myList == list) ed=FALSE;
+       		gtk_list_store_set (store, &iter, k+k, texts[k],k+k+1,ed, -1);
 		g_free(texts[k]);
 	}
 	if(myList == list) g_signal_connect_after(G_OBJECT (model), "row_inserted", G_CALLBACK(row_inserted), NULL);      
@@ -700,7 +1003,9 @@ static void append_list()
         	gtk_list_store_append (store, &iter);
 		for(k=0;k<NUMBER_LIST_XYZ;k++)
 		{
-        		gtk_list_store_set (store, &iter, k, texts[k], -1);
+			gboolean ed = TRUE;
+			if(k==0) ed=FALSE;
+       			gtk_list_store_set (store, &iter, k+k, texts[k],k+k+1,ed, -1);
 			g_free(texts[k]);
 		}
 	}
@@ -812,7 +1117,7 @@ void append_VariablesXYZ_in_list()
         	gtk_list_store_append (store, &iter);
 		for(k=0;k<2;k++)
 		{
-        		gtk_list_store_set (store, &iter, k, texts[k], -1);
+        		gtk_list_store_set (store, &iter, k+k, texts[k],k+k+1,TRUE, -1);
 			g_free(texts[k]);
 		}
 	}
@@ -1344,6 +1649,24 @@ void AddVariableXYZ(gchar *NameV,gchar *ValueV, gboolean rafresh)
    if(rafresh) appendToList(listv, texts, 2);
 }
 /********************************************************************************/
+static gboolean reset_variableXYZ_value(gchar *NameV,gchar *ValueV, gboolean rafresh)
+{
+	gint i=testav(NameV);
+	if(i>=0)
+	{
+   		if(VariablesXYZ[i].Value) g_free(VariablesXYZ[i].Value);
+		VariablesXYZ[i].Value = g_strdup(ValueV);
+		if(rafresh) 
+		{
+			gchar* texts[2] = { VariablesXYZ[i].Name, VariablesXYZ[i].Value};
+  			removeFromList(listv, i);
+  			insertToList(listv, i, texts, 2);
+		}
+		return TRUE;
+	}
+	return FALSE;
+}
+/********************************************************************************/
 void trans_coordXYZ(gchar T,guint i, gboolean rafresh)
 {
  gdouble V;
@@ -1376,7 +1699,8 @@ void trans_coordXYZ(gchar T,guint i, gboolean rafresh)
  	}
  }
  ValueV = g_strdup_printf("%f",V);
- AddVariableXYZ(NameV,ValueV,rafresh);
+ if(!reset_variableXYZ_value(NameV,ValueV,  rafresh))
+ 	AddVariableXYZ(NameV,ValueV,rafresh);
  if( T == 'X' )
     GeomXYZ[i].X=g_strdup(NameV);
  if( T == 'Y' )
@@ -5712,6 +6036,44 @@ void read_geom_from_qchem_file(gchar *NomFichier, gint numgeometry)
 	 if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
 }
 /********************************************************************************/
+void get_esp_charges_from_mopac_output_file(FILE* fd,gint N)
+{
+ 	guint taille=BSIZE;
+  	gchar t[BSIZE];
+  	gchar dump[BSIZE];
+  	gchar d[BSIZE];
+  	gchar* pdest;
+	gint i;
+
+
+	/* printf("NAtoms = %d\n",N);*/
+	/* for(i=0;i<N;i++) GeomXYZ[i].Charge = g_strdup("0.0");*/
+
+  	while(!feof(fd) )
+	{
+    		pdest = NULL;
+    		if(!fgets(t,taille,fd)) break;
+    		pdest = strstr( t, "ELECTROSTATIC POTENTIAL CHARGES");
+
+		if(pdest)
+		{
+    			if(!fgets(t,taille,fd)) break;
+    			if(!fgets(t,taille,fd)) break;
+			for(i=0;i<N;i++)
+			{
+    				if(!fgets(t,taille,fd)) break;
+				if(sscanf(t,"%s %s %s",dump, dump , d)==3)
+				{
+					if(GeomXYZ[i].Charge) g_free(GeomXYZ[i].Charge);
+					GeomXYZ[i].Charge = g_strdup(d);
+				}
+				else break;
+			}
+			break;
+		}
+	}
+}
+/********************************************************************************/
 void get_charges_from_mopac_output_file(FILE* fd,gint N)
 {
  	guint taille=BSIZE;
@@ -5823,6 +6185,8 @@ void read_geom_from_mopac_output_file(gchar *NomFichier, gint numgeometry)
 			{
 				fseek(fd, 0, SEEK_SET);
 				get_charges_from_mopac_output_file(fd,j+1);
+				fseek(fd, 0, SEEK_SET);
+				get_esp_charges_from_mopac_output_file(fd,j+1);
 				fseek(fd, 0, SEEK_SET);
  				get_dipole_from_mopac_output_file(fd);
 			}
@@ -8747,10 +9111,17 @@ void create_geomXYZ_list(GtkWidget *vbox, GabEditTypeFileGeom readfile)
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scr),GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC); 
 	gtk_box_pack_start(GTK_BOX (vbox), scr,TRUE, TRUE, 2);
 
-	store = gtk_list_store_new (NUMBER_LIST_XYZ,
-		       	G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-		       	G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-		       	G_TYPE_STRING, G_TYPE_STRING
+	store = gtk_list_store_new (NUMBER_LIST_XYZ*2,
+		       	G_TYPE_STRING, G_TYPE_BOOLEAN,
+			G_TYPE_STRING, G_TYPE_BOOLEAN, 
+			G_TYPE_STRING, G_TYPE_BOOLEAN, 
+			G_TYPE_STRING, G_TYPE_BOOLEAN,
+		       	G_TYPE_STRING, G_TYPE_BOOLEAN,
+			G_TYPE_STRING, G_TYPE_BOOLEAN,
+			G_TYPE_STRING, G_TYPE_BOOLEAN,
+			G_TYPE_STRING, G_TYPE_BOOLEAN,
+		       	G_TYPE_STRING, G_TYPE_BOOLEAN,
+			G_TYPE_STRING, G_TYPE_BOOLEAN
 			);
         model = GTK_TREE_MODEL (store);
 
@@ -8766,8 +9137,10 @@ void create_geomXYZ_list(GtkWidget *vbox, GabEditTypeFileGeom readfile)
 		gtk_tree_view_column_set_reorderable(column, TRUE);
 		renderer = gtk_cell_renderer_text_new ();
 		gtk_tree_view_column_pack_start (column, renderer, TRUE);
-		gtk_tree_view_column_set_attributes (column, renderer, "text", i, NULL);
+		gtk_tree_view_column_set_attributes (column, renderer, "text", i+i, "editable",i+i+1,NULL);
 		gtk_tree_view_append_column (GTK_TREE_VIEW (list), column);
+		g_object_set_data(G_OBJECT(renderer),"NumColumn", GINT_TO_POINTER(i));
+		g_signal_connect (renderer, "edited", G_CALLBACK (editedGeom), model);
 	}
 	gtk_container_add(GTK_CONTAINER(scr),list);
 	/* Drag and Drop */
@@ -9161,7 +9534,7 @@ void create_variablesXYZ_list(GtkWidget *vbox,guint itype)
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scr),GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC); 
 	gtk_box_pack_start(GTK_BOX (vbox), scr,TRUE, TRUE, 2);
 
-	store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_STRING);
+	store = gtk_list_store_new (4, G_TYPE_STRING, G_TYPE_BOOLEAN,G_TYPE_STRING,G_TYPE_BOOLEAN);
         model = GTK_TREE_MODEL (store);
 
 	listv = gtk_tree_view_new_with_model (model);
@@ -9176,8 +9549,10 @@ void create_variablesXYZ_list(GtkWidget *vbox,guint itype)
 		gtk_tree_view_column_set_reorderable(column, TRUE);
 		renderer = gtk_cell_renderer_text_new ();
 		gtk_tree_view_column_pack_start (column, renderer, TRUE);
-		gtk_tree_view_column_set_attributes (column, renderer, "text", i, NULL);
+		gtk_tree_view_column_set_attributes (column, renderer, "text", i+i, "editable",i+i+1,NULL);
 		gtk_tree_view_append_column (GTK_TREE_VIEW (listv), column);
+		g_object_set_data(G_OBJECT(renderer),"NumColumn", GINT_TO_POINTER(i));
+		g_signal_connect (renderer, "edited", G_CALLBACK (editedVariable), model);
 	}
 	gtk_container_add(GTK_CONTAINER(scr),listv);
 

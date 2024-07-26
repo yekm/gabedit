@@ -390,6 +390,25 @@ gboolean DefineBasisType(gchar *NomFichier)
 	return TRUE;
 }
 /**********************************************/
+static void resortAtoms(gint* numAtoms)
+{
+	TypeGeomOrb* newGeom = NULL;
+	gint i;
+	/* printf("begin resortAtoms\n  ");*/
+	if(!numAtoms)return;
+	if(Ncenters<1)return;
+	/*
+	printf("Sorting  ");
+	for(i=0;i<Ncenters;i++) printf("%d ",numAtoms[i]);
+	printf("\n");
+	*/
+	for(i=0;i<Ncenters;i++) if(numAtoms[i] == -1) return;
+	newGeom = g_malloc(Ncenters*sizeof(TypeGeomOrb));
+	for(i=0;i<Ncenters;i++) newGeom[i] = GeomOrb[numAtoms[i]];
+	for(i=0;i<Ncenters;i++) GeomOrb[i] = newGeom[i];
+	g_free(newGeom);
+}
+/**********************************************/
 gboolean DefineGabeditMoldenBasisType(gchar *NomFichier,gchar* title)
 {
 	gchar *sym;
@@ -400,6 +419,8 @@ gboolean DefineGabeditMoldenBasisType(gchar *NomFichier,gchar* title)
 	gint j;
 	gboolean ok;
 	gint nsym;
+	gint* numAtoms = NULL;
+	gint nAtoms = 0;
 
  	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
  	{
@@ -440,6 +461,9 @@ gboolean DefineGabeditMoldenBasisType(gchar *NomFichier,gchar* title)
 	if(forb !=NULL)
 	{
 		/* Debug("Ntype = %d\n",Ntype);*/
+		numAtoms = g_malloc(Ncenters*sizeof(gint));
+		for(i=0;i<Ncenters;i++) numAtoms[i] = -1;
+		nAtoms = 0;
 		Type = g_malloc(Ntype*sizeof(TYPE));
 		for(i=0;i<Ntype;i++)
 		{
@@ -463,8 +487,11 @@ gboolean DefineGabeditMoldenBasisType(gchar *NomFichier,gchar* title)
 					sprintf(buffer,"Sorry, I can not read '%s' file, problem with basis set (1)\n",NomFichier);
   					Message(buffer,"Error",TRUE);
 					printf("AO pour i = %d\n", i);
+					if(numAtoms) g_free(numAtoms);
 					return FALSE;
 				}
+				resortAtoms(numAtoms);
+				if(numAtoms) g_free(numAtoms);
        				return TRUE;
 			}
 
@@ -472,6 +499,8 @@ gboolean DefineGabeditMoldenBasisType(gchar *NomFichier,gchar* title)
 			{
 				/*Debug("tap = %s\n",t);*/
 				i=atoi(t)-1;
+				if(i>-1 && i<Ncenters) numAtoms[nAtoms] = i;
+				nAtoms++;
 				/*Debug("i1 = %d \n",i);*/
 				if(i>-1)
 				{
@@ -537,8 +566,11 @@ gboolean DefineGabeditMoldenBasisType(gchar *NomFichier,gchar* title)
 							gchar buffer[BSIZE];
 							sprintf(buffer,"Sorry, I can not read '%s' file, problem with basis set (2)\n",NomFichier);
   							Message(buffer,"Error",TRUE);
+							if(numAtoms) g_free(numAtoms);
 							return FALSE;
 						}
+						resortAtoms(numAtoms);
+						if(numAtoms) g_free(numAtoms);
        						return TRUE;
      					}
         				break;
@@ -552,8 +584,11 @@ gboolean DefineGabeditMoldenBasisType(gchar *NomFichier,gchar* title)
 		gchar buffer[BSIZE];
 		sprintf(buffer,"Sorry, I can not read '%s' file, problem with basis set (3)\n",NomFichier);
   		Message(buffer,"Error",TRUE);
+		if(numAtoms) g_free(numAtoms);
 		return FALSE;
 	}
+	resortAtoms(numAtoms);
+	if(numAtoms) g_free(numAtoms);
     	return TRUE;
 }
 /**********************************************/

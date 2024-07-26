@@ -293,6 +293,7 @@ gboolean getShowMultipleBonds()
 void RenderMultipleBonds(GtkWidget *win,gboolean show)
 {
 	showMultipleBonds = show;
+	reset_all_connections();
 	dessine();
 }
 /*****************************************************************************/

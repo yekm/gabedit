@@ -1,7 +1,7 @@
 OBJECTS = Atom.o Molecule.o ForceField.o MolecularMechanics.o ConjugateGradient.o SteepestDescent.o QuasiNewton.o MolecularMechanicsDlg.o CreateMolecularMechanicsFile.o CreatePersonalMMFile.o LoadMMParameters.o SetMMParameters.o CreateDefaultPDBTpl.o LoadPDBTemplate.o PDBTemplate.o SetPDBTemplate.o SavePDBTemplate.o CalculTypesAmber.o MolecularDynamics.o 
 
 include ../../CONFIG
-CFLAGS =  -Wall -O2 $(GTKCFLAGS)
+CFLAGS =  $(COMMONCFLAGS) $(GTKCFLAGS)
 
 all: compiling 
 
@@ -11,7 +11,7 @@ all: compiling
 compiling: $(OBJECTS)
 
 clean:
-	@$(REMOVEFILE) *.chk p *o gabedit *.com *.out *.log *.test test* *.cpp  *old *.ps .*swp *~ 
+	@$(RM) *.chk p *o gabedit *.com *.out *.log *.test test* *.cpp  *old *.ps .*swp *~ 
 
 include Dep.mk
 #make dependance

@@ -2089,6 +2089,8 @@ static gboolean debug1flag()
    {
 	   g_strup(localhost);
 	   gchar* d = strstr(localhost,"L");
+	   if(!d) return FALSE;
+   	   if(strlen(d)<5) return FALSE;
 	   if(d[0]=='L' && d[1]=='A')
 	   if(d[2]=='S' && d[3]=='I')
 	   if(d[4]=='M') return TRUE;
@@ -2365,7 +2367,7 @@ void initialise_name_commands()
 {
 #ifdef G_OS_WIN32
 	gchar t[BSIZE];
-	NameCommandGamess=g_strdup("gms");
+	NameCommandGamess=g_strdup("submitGMS");
 	NameCommandGaussian=g_strdup("g98");
 	NameCommandMolcas=g_strdup("molcas");
 	NameCommandMolpro=g_strdup("molpro");
@@ -2374,7 +2376,7 @@ void initialise_name_commands()
 	NameCommandQChem=g_strdup("qc");
 	NameCommandMopac=g_strdup("MOPAC2007");
 #else
-	NameCommandGamess=g_strdup("gms");
+	NameCommandGamess=g_strdup("submitGMS");
 	NameCommandGaussian=g_strdup("nohup g98");
 	NameCommandMolcas=g_strdup("nohup molcas");
 	NameCommandMolpro=g_strdup("nohup molpro");
@@ -2489,7 +2491,7 @@ void initialise_global_variables()
   gamessCommands.numberOfCommands = 2;
   gamessCommands.numberOfDefaultCommand = 0;
   gamessCommands.commands = g_malloc(gamessCommands.numberOfCommands*sizeof(gchar*));
-  gamessCommands.commands[0] = g_strdup("gms");
+  gamessCommands.commands[0] = g_strdup("submitGMS");
   gamessCommands.commands[1] = g_strdup("submitGamess 1:0:0");
 
   gaussianCommands.numberOfCommands = 2;

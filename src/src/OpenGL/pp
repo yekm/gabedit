@@ -1,0 +1,3173 @@
+Dans le fichier inclus à partir de MutiCaptureOrbitals.cpp:22:
+../OpenGL/GlobalOrb.h:27:21: gtk/gtk.h : Aucun fichier ou répertoire de ce type
+../OpenGL/GlobalOrb.h:28:21: gdk/gdk.h : Aucun fichier ou répertoire de ce type
+In file included from ../OpenGL/GlobalOrb.h:29,
+                 from MutiCaptureOrbitals.cpp:22:
+../Files/GabeditFileChooser.h:32: error: erreur de syntaxe before `*' token
+../Files/GabeditFileChooser.h:33: error: erreur d'analyse syntaxique before `*' 
+   token
+../Files/GabeditFileChooser.h:34: error: erreur de syntaxe before `*' token
+../Files/GabeditFileChooser.h:35: error: type specifier omitted for parameter `
+   gchar'
+../Files/GabeditFileChooser.h:35: error: erreur d'analyse syntaxique before `*' 
+   token
+../Files/GabeditFileChooser.h:36: error: erreur d'analyse syntaxique before `*' 
+   token
+Dans le fichier inclus à partir de ../OpenGL/GlobalOrb.h:30,
+          à partir de MutiCaptureOrbitals.cpp:22:
+../../gtkglarea/gtkglarea.h:23:21: gdk/gdk.h : Aucun fichier ou répertoire de ce type
+Dans le fichier inclus à partir de ../../gtkglarea/gtkglarea.h:24,
+          à partir de ../OpenGL/GlobalOrb.h:30,
+          à partir de MutiCaptureOrbitals.cpp:22:
+../../gtkglarea/gdkgl.h:22:18: glib.h : Aucun fichier ou répertoire de ce type
+../../gtkglarea/gdkgl.h:31:21: gdk/gdk.h : Aucun fichier ou répertoire de ce type
+In file included from ../../gtkglarea/gtkglarea.h:24,
+                 from ../OpenGL/GlobalOrb.h:30,
+                 from MutiCaptureOrbitals.cpp:22:
+../../gtkglarea/gdkgl.h:41: error: erreur de syntaxe before `enum'
+../../gtkglarea/gdkgl.h:82: error: erreur d'analyse syntaxique before `)' token
+../../gtkglarea/gdkgl.h:83: error: erreur de syntaxe before `*' token
+../../gtkglarea/gdkgl.h:85: error: erreur de syntaxe before `*' token
+../../gtkglarea/gdkgl.h:86: error: `GdkVisual' was not declared in this scope
+../../gtkglarea/gdkgl.h:86: error: `visual' was not declared in this scope
+../../gtkglarea/gdkgl.h:86: error: erreur d'analyse syntaxique before `)' token
+../../gtkglarea/gdkgl.h:88: error: erreur d'analyse syntaxique before `)' token
+../../gtkglarea/gdkgl.h:89: error: `GdkVisual' was not declared in this scope
+../../gtkglarea/gdkgl.h:89: error: `visual' was not declared in this scope
+../../gtkglarea/gdkgl.h:90: error: `GdkVisual' was not declared in this scope
+../../gtkglarea/gdkgl.h:90: error: `visual' was not declared in this scope
+../../gtkglarea/gdkgl.h:90: error: erreur d'analyse syntaxique before `*' token
+../../gtkglarea/gdkgl.h:91: error: type specifier omitted for parameter `gint'
+../../gtkglarea/gdkgl.h:91: error: erreur d'analyse syntaxique before `)' token
+../../gtkglarea/gdkgl.h:93: error: `GdkDrawable' was not declared in this scope
+../../gtkglarea/gdkgl.h:93: error: `drawable' was not declared in this scope
+../../gtkglarea/gdkgl.h:93: error: erreur d'analyse syntaxique before `*' token
+../../gtkglarea/gdkgl.h:94: error: `GdkDrawable' was not declared in this scope
+../../gtkglarea/gdkgl.h:94: error: `drawable' was not declared in this scope
+../../gtkglarea/gdkgl.h:94: error: variable or field `gdk_gl_swap_buffers' 
+   declared void
+../../gtkglarea/gdkgl.h:112: error: erreur d'analyse syntaxique before `)' 
+   token
+../../gtkglarea/gdkgl.h:113: error: `GdkVisual' was not declared in this scope
+../../gtkglarea/gdkgl.h:113: error: `visual' was not declared in this scope
+../../gtkglarea/gdkgl.h:113: error: `GdkPixmap' was not declared in this scope
+../../gtkglarea/gdkgl.h:113: error: `pixmap' was not declared in this scope
+../../gtkglarea/gdkgl.h:113: error: liste d'initaliseurs a été traité comme une 
+   expression composée
+../../gtkglarea/gdkgl.h:115: error: erreur d'analyse syntaxique before `*' 
+   token
+../../gtkglarea/gdkgl.h:119: error: `GdkFont' was not declared in this scope
+../../gtkglarea/gdkgl.h:119: error: `font' was not declared in this scope
+../../gtkglarea/gdkgl.h:119: error: erreur d'analyse syntaxique before `,' 
+   token
+Dans le fichier inclus à partir de ../OpenGL/GlobalOrb.h:30,
+          à partir de MutiCaptureOrbitals.cpp:22:
+../../gtkglarea/gtkglarea.h:25:32: gtk/gtkdrawingarea.h : Aucun fichier ou répertoire de ce type
+In file included from ../OpenGL/GlobalOrb.h:30,
+                 from MutiCaptureOrbitals.cpp:22:
+../../gtkglarea/gtkglarea.h:38: error: erreur d'analyse syntaxique before `
+   typedef'
+../../gtkglarea/gtkglarea.h:44: error: 'GtkDrawingArea' is used as a type, but 
+   is not defined as a type.
+../../gtkglarea/gtkglarea.h:50: error: 'GtkDrawingAreaClass' is used as a type, 
+   but is not defined as a type.
+../../gtkglarea/gtkglarea.h:53: error: erreur d'analyse syntaxique before `)' 
+   token
+../../gtkglarea/gtkglarea.h:54: error: erreur de syntaxe before `*' token
+../../gtkglarea/gtkglarea.h:55: error: erreur de syntaxe before `*' token
+../../gtkglarea/gtkglarea.h:57: error: erreur de syntaxe before `*' token
+../../gtkglarea/gtkglarea.h:61: error: `GtkGLArea' was not declared in this 
+   scope
+../../gtkglarea/gtkglarea.h:61: error: `glarea' was not declared in this scope
+../../gtkglarea/gtkglarea.h:61: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../../gtkglarea/gtkglarea.h:63: error: `GtkGLArea' was not declared in this 
+   scope
+../../gtkglarea/gtkglarea.h:63: error: `glarea' was not declared in this scope
+../../gtkglarea/gtkglarea.h:63: error: variable or field `gtk_gl_area_endgl' 
+   declared void
+../../gtkglarea/gtkglarea.h:65: error: `GtkGLArea' was not declared in this 
+   scope
+../../gtkglarea/gtkglarea.h:65: error: `glarea' was not declared in this scope
+../../gtkglarea/gtkglarea.h:65: error: variable or field `
+   gtk_gl_area_swap_buffers' declared void
+In file included from ../../gl2ps/gl2ps.h:64,
+                 from ../OpenGL/GlobalOrb.h:31,
+                 from MutiCaptureOrbitals.cpp:22:
+/usr/include/GL/gl.h:84: error: erreur de syntaxe before string constant
+/usr/include/GL/gl.h:983: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:983: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:985: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:985: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:987: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:987: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:989: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:989: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:991: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:991: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:999: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:999: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1013: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1013: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1015: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1015: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1017: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1017: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:1019: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1019: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:1021: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1021: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:1023: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1023: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:1025: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1025: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:1028: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1028: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:1030: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1030: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:1033: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1033: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1035: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1035: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1037: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1037: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1039: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1039: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1052: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1052: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:1054: error: erreur de syntaxe before `(' token
+/usr/include/GL/gl.h:1056: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1056: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:1062: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1062: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1072: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1072: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:1085: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1085: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1093: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1093: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:1141: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/gl.h:1141: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:1147: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/gl.h:1147: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1158: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1158: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:1354: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/gl.h:1354: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1357: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1357: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1360: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/gl.h:1360: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1363: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1363: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1366: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/gl.h:1366: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1371: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1371: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1375: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1375: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1377: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1377: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1380: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1380: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1388: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1388: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:1390: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1390: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1391: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1391: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1392: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1392: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1394: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1394: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1397: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1397: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1399: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1399: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1402: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1402: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1403: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1403: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1404: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1404: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1405: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1405: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1407: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1407: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1408: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1408: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1409: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1409: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1410: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1410: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1412: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1412: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1413: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1413: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1415: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1415: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1426: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1426: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1427: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1427: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1429: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1429: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1430: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1430: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1432: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1432: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1434: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1434: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1436: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1436: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1439: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1439: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1440: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1440: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1441: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1441: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1450: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/gl.h:1450: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1454: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/gl.h:1454: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1459: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/gl.h:1459: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:1467: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1467: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1471: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1471: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1481: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1481: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1482: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1482: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1483: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1483: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1485: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1485: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1486: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1486: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1487: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1487: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1489: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1489: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1490: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1490: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1491: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1491: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1494: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1494: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1495: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1495: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1497: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1497: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1498: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1498: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1500: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1500: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1501: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1501: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1504: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1504: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1505: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1505: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1507: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1507: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1509: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1509: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1512: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1512: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1514: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1514: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1517: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1517: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1519: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1519: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1523: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1523: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1529: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1529: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1535: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1535: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1547: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1547: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1560: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1560: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1566: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1566: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1573: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1573: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1579: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1579: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1586: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1586: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1591: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1591: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1603: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1603: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1606: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1606: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1610: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1610: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1614: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1614: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1619: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1619: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1620: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1620: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1621: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1621: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1647: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1647: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1649: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1649: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1657: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1657: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1659: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1659: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1661: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1661: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1663: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1663: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1671: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/gl.h:1671: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1688: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1688: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1691: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1691: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1698: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1698: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1705: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1705: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1714: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1714: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1718: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1718: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1723: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1723: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1726: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1726: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1729: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1729: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1732: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1732: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1735: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1735: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1738: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1738: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1741: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1741: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1744: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1744: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:1749: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1749: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1752: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1752: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:1754: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1754: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1758: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1758: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1761: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1761: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1764: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1764: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1767: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1767: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:1769: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1769: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1773: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1773: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1776: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1776: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1779: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1779: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1783: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1783: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1787: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1787: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1790: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1790: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1793: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1793: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1796: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1796: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1799: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1799: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1802: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1802: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1806: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1806: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1809: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1809: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1812: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1812: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1815: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1815: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1819: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1819: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1826: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1826: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:1828: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1828: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/gl.h:1830: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1830: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1832: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1832: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1834: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1834: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1836: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1836: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1838: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1838: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1840: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1840: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1842: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1842: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1844: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1844: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1846: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1846: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1848: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1848: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1850: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1850: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1852: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1852: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1854: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1854: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1856: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1856: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1858: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1858: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1860: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1860: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1862: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1862: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1864: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1864: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1866: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1866: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1868: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1868: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1870: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1870: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1872: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1872: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1874: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1874: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1876: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1876: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1878: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1878: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1880: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1880: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1882: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1882: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1884: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1884: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1886: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1886: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1888: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1888: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1890: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1890: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1892: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1892: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1894: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1894: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1896: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1896: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1898: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1898: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1900: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1900: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1902: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1902: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1904: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1904: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/gl.h:1906: error: `GLenum' was not declared in this scope
+/usr/include/GL/gl.h:1906: error: erreur d'analyse syntaxique before `,' token
+In file included from /usr/include/GL/gl.h:2472,
+                 from ../../gl2ps/gl2ps.h:64,
+                 from ../OpenGL/GlobalOrb.h:31,
+                 from MutiCaptureOrbitals.cpp:22:
+/usr/include/GL/glext.h:2658: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2658: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2663: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2663: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2664: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2664: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2665: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2665: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2666: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2666: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2667: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2667: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2668: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2668: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2669: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2669: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2686: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:2686: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2743: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2743: error: erreur d'analyse syntaxique before `)' 
+   token
+/usr/include/GL/glext.h:2744: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2744: error: erreur d'analyse syntaxique before `)' 
+   token
+/usr/include/GL/glext.h:2745: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2745: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2746: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2746: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2747: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2747: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2748: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2748: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2749: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2749: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2750: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2750: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2751: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2751: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2752: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2752: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2753: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2753: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2754: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2754: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2755: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2755: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2756: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2756: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2757: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2757: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2758: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2758: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2759: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2759: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2760: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2760: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2761: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2761: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2762: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2762: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2763: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2763: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2764: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2764: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2765: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2765: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2766: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2766: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2767: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2767: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2768: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2768: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2769: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2769: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2770: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2770: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2771: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2771: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2772: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2772: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2773: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2773: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2774: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2774: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2775: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2775: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2776: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2776: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2820: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2820: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2821: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2821: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2822: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2822: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2823: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2823: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2824: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2824: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2825: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2825: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2826: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2826: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2839: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2839: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2840: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:2840: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2865: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:2865: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:2882: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:2882: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3053: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:3053: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3056: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3056: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3057: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3057: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3060: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3060: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3061: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3061: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3062: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3062: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3063: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3063: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3064: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3064: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3065: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3065: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3066: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3066: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3067: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3067: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3068: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3068: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3069: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3069: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3070: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3070: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3071: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3071: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3072: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3072: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3073: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3073: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3074: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:3074: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3075: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:3075: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3076: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:3076: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3077: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:3077: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3111: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3111: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3112: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3112: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3121: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3121: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3122: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3122: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3131: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3131: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3132: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3132: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3144: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3144: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3145: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3145: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3146: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3146: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3147: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3147: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3148: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3148: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3165: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3165: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3166: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3166: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3167: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3167: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3168: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3168: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3169: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3169: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3170: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3170: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3171: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3171: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3172: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3172: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3173: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3173: error: erreur d'analyse syntaxique before `)' 
+   token
+/usr/include/GL/glext.h:3174: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3174: error: erreur d'analyse syntaxique before `)' 
+   token
+/usr/include/GL/glext.h:3194: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3194: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3195: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3195: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3196: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3196: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3197: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3197: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3198: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3198: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3199: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3199: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3200: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3200: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3201: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3201: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3202: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3202: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3203: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3203: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3204: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3204: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3205: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3205: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3206: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3206: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3224: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3224: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3225: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3225: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3226: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3226: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3227: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3227: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3228: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3228: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3229: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3229: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3230: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3230: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3238: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3238: error: erreur d'analyse syntaxique before `)' 
+   token
+/usr/include/GL/glext.h:3251: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3251: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3252: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3252: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3253: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3253: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3254: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3254: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3255: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3255: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3256: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3256: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3265: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3265: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3266: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3266: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3288: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3288: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3301: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3301: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3302: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3302: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3311: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3311: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3312: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3312: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3330: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3330: error: erreur d'analyse syntaxique before `)' 
+   token
+/usr/include/GL/glext.h:3351: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:3351: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3352: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3352: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3354: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3354: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3355: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3355: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3356: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3356: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3357: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:3357: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3358: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:3358: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3390: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3390: error: erreur d'analyse syntaxique before `)' 
+   token
+/usr/include/GL/glext.h:3421: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3421: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3422: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3422: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3423: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3423: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3424: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3424: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3437: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3437: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3438: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3438: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3447: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3447: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3448: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3448: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3497: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3497: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3498: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3498: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3547: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3547: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3548: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3548: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3549: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3549: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3550: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3550: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3551: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3551: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3552: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3552: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3569: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3569: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3570: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3570: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3582: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3582: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3593: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3593: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3594: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3594: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3595: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3595: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3596: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3596: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3613: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:3613: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3614: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:3614: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3615: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:3615: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3616: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:3616: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3617: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:3617: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3618: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:3618: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3646: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3646: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3654: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3654: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3677: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3677: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3678: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3678: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3707: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3707: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3708: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3708: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3709: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3709: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3710: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3710: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3711: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3711: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3712: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3712: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3713: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3713: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3714: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3714: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3715: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3715: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3716: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3716: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3717: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3717: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3718: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3718: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3719: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3719: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3720: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3720: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3721: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3721: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3722: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3722: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3723: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3723: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3724: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3724: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3740: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3740: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3758: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3758: error: erreur d'analyse syntaxique before `)' 
+   token
+/usr/include/GL/glext.h:3759: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3759: error: erreur d'analyse syntaxique before `)' 
+   token
+/usr/include/GL/glext.h:3760: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3760: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3805: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:3805: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3806: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3806: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3807: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:3807: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3808: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:3808: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3823: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3823: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3824: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3824: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3825: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3825: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3826: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3826: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3878: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:3878: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3886: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3886: error: erreur d'analyse syntaxique before `)' 
+   token
+/usr/include/GL/glext.h:3895: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3895: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3896: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3896: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3912: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3912: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3965: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3965: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:3966: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:3966: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4032: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4032: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4126: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4126: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4134: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4134: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4182: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4182: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4216: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4216: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4217: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4217: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4218: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4218: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4219: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4219: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4220: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4220: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4221: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4221: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4222: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4222: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4223: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4223: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4224: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4224: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4225: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4225: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4226: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4226: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4227: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4227: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4228: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4228: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4319: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4319: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4320: error: erreur d'analyse syntaxique before `*' 
+   token
+/usr/include/GL/glext.h:4335: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4335: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4336: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4336: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4338: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4338: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4339: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4339: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4340: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4340: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4341: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4341: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4342: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4342: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4384: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4384: error: erreur d'analyse syntaxique before `)' 
+   token
+/usr/include/GL/glext.h:4416: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4416: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4442: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4442: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4444: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4444: error: erreur d'analyse syntaxique before `)' 
+   token
+/usr/include/GL/glext.h:4460: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4460: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4461: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4461: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4462: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4462: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4463: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4463: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4464: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4464: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4465: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4465: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4466: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4466: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4467: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4467: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4468: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4468: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4481: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4481: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4482: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4482: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4574: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4574: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4576: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4576: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4578: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4578: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4579: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4579: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4580: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4580: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4581: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4581: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4582: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4582: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4583: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4583: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4584: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4584: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4585: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4585: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4586: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4586: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4588: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4588: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4589: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4589: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4590: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4590: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4591: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4591: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4592: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4592: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4593: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4593: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4594: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4594: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4596: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4596: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4597: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4597: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4671: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4671: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4672: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4672: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4673: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4673: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4674: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4674: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4700: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4700: error: erreur d'analyse syntaxique before `)' 
+   token
+/usr/include/GL/glext.h:4701: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4701: error: erreur d'analyse syntaxique before `)' 
+   token
+/usr/include/GL/glext.h:4702: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4702: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4703: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4703: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4704: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4704: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4705: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4705: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4706: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4706: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4707: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4707: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4717: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4717: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4718: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4718: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4737: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4737: error: erreur d'analyse syntaxique before `)' 
+   token
+/usr/include/GL/glext.h:4739: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4739: error: erreur d'analyse syntaxique before `)' 
+   token
+/usr/include/GL/glext.h:4740: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4740: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4741: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4741: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4743: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4743: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4744: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4744: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4745: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4745: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4746: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4746: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4747: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4747: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4748: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4748: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4802: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4802: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4803: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4803: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4804: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4804: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4805: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4805: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4806: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4806: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4809: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4809: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4810: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4810: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4811: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4811: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4820: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4820: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4823: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4823: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4824: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4824: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4825: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4825: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4826: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4826: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4827: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4827: error: erreur d'analyse syntaxique before `)' 
+   token
+/usr/include/GL/glext.h:4828: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4828: error: erreur d'analyse syntaxique before `)' 
+   token
+/usr/include/GL/glext.h:4829: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4829: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4830: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4830: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4831: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4831: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4832: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4832: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4833: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4833: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4834: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4834: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4835: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4835: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4836: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4836: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4837: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4837: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4838: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4838: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4890: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4890: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4891: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4891: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4892: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4892: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4893: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4893: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4894: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4894: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4895: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4895: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4896: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4896: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4897: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4897: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4898: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4898: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4899: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4899: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4900: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4900: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4901: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4901: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4902: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4902: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4903: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4903: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4904: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4904: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4905: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4905: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4906: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4906: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4907: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4907: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4908: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4908: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4909: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4909: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4910: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4910: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4911: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4911: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4912: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4912: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4913: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4913: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4914: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4914: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4915: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4915: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4916: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4916: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4917: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4917: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4918: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4918: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4919: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4919: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4920: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4920: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4921: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4921: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4922: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4922: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4923: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4923: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4924: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4924: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4925: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4925: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4926: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4926: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4927: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4927: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4928: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4928: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4929: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4929: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4930: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4930: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4931: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4931: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4932: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4932: error: erreur d'analyse syntaxique before `)' 
+   token
+/usr/include/GL/glext.h:4933: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4933: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4934: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4934: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4944: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4944: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4945: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4945: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4946: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4946: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4954: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4954: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4985: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4985: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4986: error: type specifier omitted for parameter `
+   GLenum'
+/usr/include/GL/glext.h:4986: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4995: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4995: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:4996: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:4996: error: erreur d'analyse syntaxique before `,' 
+   token
+/usr/include/GL/glext.h:5016: error: `GLenum' was not declared in this scope
+/usr/include/GL/glext.h:5016: error: erreur d'analyse syntaxique before `)' 
+   token
+In file included from ../../gl2ps/gl2ps.h:64,
+                 from ../OpenGL/GlobalOrb.h:31,
+                 from MutiCaptureOrbitals.cpp:22:
+/usr/include/GL/gl.h:2581: error: erreur d'analyse syntaxique before `}' token
+In file included from ../OpenGL/GlobalOrb.h:31,
+                 from MutiCaptureOrbitals.cpp:22:
+../../gl2ps/gl2ps.h:178: error: type specifier omitted for parameter `GLenum'
+../../gl2ps/gl2ps.h:178: error: erreur d'analyse syntaxique before `,' token
+../../gl2ps/gl2ps.h:183: error: `GLenum' was not declared in this scope
+../../gl2ps/gl2ps.h:183: error: erreur d'analyse syntaxique before `,' token
+In file included from ../OpenGL/GlobalOrb.h:33,
+                 from MutiCaptureOrbitals.cpp:22:
+/usr/include/GL/glu.h:265: error: `GLenum' was not declared in this scope
+/usr/include/GL/glu.h:265: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/glu.h:266: error: `GLenum' was not declared in this scope
+/usr/include/GL/glu.h:266: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/glu.h:267: error: `GLenum' was not declared in this scope
+/usr/include/GL/glu.h:267: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/glu.h:268: error: `GLenum' was not declared in this scope
+/usr/include/GL/glu.h:268: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/glu.h:269: error: `GLenum' was not declared in this scope
+/usr/include/GL/glu.h:269: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/glu.h:270: error: `GLenum' was not declared in this scope
+/usr/include/GL/glu.h:270: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/glu.h:281: error: `GLenum' was not declared in this scope
+/usr/include/GL/glu.h:281: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/glu.h:282: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/glu.h:282: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/glu.h:283: error: `GLenum' was not declared in this scope
+/usr/include/GL/glu.h:283: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/glu.h:284: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/glu.h:284: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/glu.h:290: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/glu.h:290: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/glu.h:291: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/glu.h:291: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/glu.h:294: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/glu.h:294: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/glu.h:295: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/glu.h:295: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/glu.h:296: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/glu.h:296: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/glu.h:302: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/glu.h:302: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/glu.h:303: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/glu.h:303: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/glu.h:304: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/glu.h:304: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/glu.h:305: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/glu.h:305: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/glu.h:306: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/glu.h:306: error: erreur d'analyse syntaxique before `)' token
+/usr/include/GL/glu.h:308: error: `GLenum' was not declared in this scope
+/usr/include/GL/glu.h:308: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/glu.h:312: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/glu.h:312: error: erreur d'analyse syntaxique before `,' token
+/usr/include/GL/glu.h:316: error: type specifier omitted for parameter `GLenum'
+/usr/include/GL/glu.h:316: error: erreur d'analyse syntaxique before `,' token
+In file included from ../MultiGrid/GridMG.h:3,
+                 from ../MultiGrid/PoissonMG.h:3,
+                 from ../OpenGL/Grid.h:21,
+                 from ../OpenGL/GlobalOrb.h:34,
+                 from MutiCaptureOrbitals.cpp:22:
+../MultiGrid/DomainMG.h:12: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:13: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:14: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:15: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:16: error: 'gdouble' is used as a type, but is not 
+   defined as a type.
+../MultiGrid/DomainMG.h:17: error: 'gdouble' is used as a type, but is not 
+   defined as a type.
+../MultiGrid/DomainMG.h:18: error: 'gdouble' is used as a type, but is not 
+   defined as a type.
+../MultiGrid/DomainMG.h:19: error: 'gdouble' is used as a type, but is not 
+   defined as a type.
+../MultiGrid/DomainMG.h:20: error: 'gdouble' is used as a type, but is not 
+   defined as a type.
+../MultiGrid/DomainMG.h:21: error: erreur d'analyse syntaxique before `[' token
+../MultiGrid/DomainMG.h:22: error: erreur d'analyse syntaxique before `[' token
+../MultiGrid/DomainMG.h:23: error: erreur d'analyse syntaxique before `[' token
+../MultiGrid/DomainMG.h:25: error: erreur d'analyse syntaxique before `[' token
+../MultiGrid/DomainMG.h:26: error: erreur d'analyse syntaxique before `[' token
+../MultiGrid/DomainMG.h:27: error: erreur d'analyse syntaxique before `[' token
+../MultiGrid/DomainMG.h:28: error: 'gdouble' is used as a type, but is not 
+   defined as a type.
+../MultiGrid/DomainMG.h:29: error: 'gdouble' is used as a type, but is not 
+   defined as a type.
+../MultiGrid/DomainMG.h:30: error: 'gdouble' is used as a type, but is not 
+   defined as a type.
+../MultiGrid/DomainMG.h:31: error: 'gdouble' is used as a type, but is not 
+   defined as a type.
+../MultiGrid/DomainMG.h:32: error: 'gdouble' is used as a type, but is not 
+   defined as a type.
+../MultiGrid/DomainMG.h:33: error: 'gdouble' is used as a type, but is not 
+   defined as a type.
+../MultiGrid/DomainMG.h:34: error: 'gdouble' is used as a type, but is not 
+   defined as a type.
+../MultiGrid/DomainMG.h:35: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:38: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:39: error: 'glong' is used as a type, but is not 
+   defined as a type.
+../MultiGrid/DomainMG.h:40: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:41: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:42: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:44: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:45: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:46: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:47: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:49: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:50: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:51: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:52: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:54: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:55: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:56: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:57: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:59: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:60: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:62: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:63: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:65: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:66: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../MultiGrid/DomainMG.h:71: error: erreur d'analyse syntaxique before `*' token
+../MultiGrid/DomainMG.h:72: error: erreur d'analyse syntaxique before `*' token
+../MultiGrid/DomainMG.h:81: error: `gint' was not declared in this scope
+../MultiGrid/DomainMG.h:81: error: `gint' was not declared in this scope
+../MultiGrid/DomainMG.h:81: error: `gint' was not declared in this scope
+../MultiGrid/DomainMG.h:81: error: `gdouble' was not declared in this scope
+../MultiGrid/DomainMG.h:81: error: `gdouble' was not declared in this scope
+../MultiGrid/DomainMG.h:81: error: `gdouble' was not declared in this scope
+../MultiGrid/DomainMG.h:81: error: `gdouble' was not declared in this scope
+../MultiGrid/DomainMG.h:81: error: `gdouble' was not declared in this scope
+../MultiGrid/DomainMG.h:81: error: `gdouble' was not declared in this scope
+../MultiGrid/DomainMG.h:81: error: erreur d'analyse syntaxique before `)' token
+In file included from ../MultiGrid/PoissonMG.h:3,
+                 from ../OpenGL/Grid.h:21,
+                 from ../OpenGL/GlobalOrb.h:34,
+                 from MutiCaptureOrbitals.cpp:22:
+../MultiGrid/GridMG.h:9: error: erreur de syntaxe before `*' token
+../MultiGrid/GridMG.h:15: error: type specifier omitted for parameter `gdouble'
+../MultiGrid/GridMG.h:21: error: type specifier omitted for parameter `gdouble'
+../MultiGrid/GridMG.h:21: error: erreur d'analyse syntaxique before `)' token
+../MultiGrid/GridMG.h:22: error: type specifier omitted for parameter `gdouble'
+../MultiGrid/GridMG.h:22: error: erreur d'analyse syntaxique before `)' token
+../MultiGrid/GridMG.h:23: error: erreur d'analyse syntaxique before `*' token
+../MultiGrid/GridMG.h:24: error: erreur d'analyse syntaxique before `*' token
+../MultiGrid/GridMG.h:25: error: erreur d'analyse syntaxique before `*' token
+../MultiGrid/GridMG.h:26: error: erreur d'analyse syntaxique before `*' token
+../MultiGrid/GridMG.h:27: error: erreur d'analyse syntaxique before `*' token
+../MultiGrid/GridMG.h:31: error: erreur de syntaxe before `*' token
+../MultiGrid/GridMG.h:32: error: erreur d'analyse syntaxique before `*' token
+../MultiGrid/GridMG.h:33: error: erreur d'analyse syntaxique before `*' token
+../MultiGrid/GridMG.h:34: error: erreur d'analyse syntaxique before `*' token
+../MultiGrid/GridMG.h:35: error: erreur d'analyse syntaxique before `*' token
+../MultiGrid/GridMG.h:58: error: erreur d'analyse syntaxique before `*' token
+../MultiGrid/GridMG.h:59: error: type specifier omitted for parameter `gdouble'
+../MultiGrid/GridMG.h:59: error: erreur d'analyse syntaxique before `)' token
+../MultiGrid/GridMG.h:60: error: type specifier omitted for parameter `gint'
+../MultiGrid/GridMG.h:60: error: erreur d'analyse syntaxique before `,' token
+../MultiGrid/GridMG.h:61: error: type specifier omitted for parameter `gint'
+../MultiGrid/GridMG.h:61: error: erreur d'analyse syntaxique before `,' token
+../MultiGrid/GridMG.h:62: error: erreur d'analyse syntaxique before `,' token
+In file included from ../OpenGL/Grid.h:21,
+                 from ../OpenGL/GlobalOrb.h:34,
+                 from MutiCaptureOrbitals.cpp:22:
+../MultiGrid/PoissonMG.h:9: error: 'gdouble' is used as a type, but is not 
+   defined as a type.
+../MultiGrid/PoissonMG.h:23: error: erreur d'analyse syntaxique before `*' 
+   token
+../MultiGrid/PoissonMG.h:32: error: erreur d'analyse syntaxique before `*' 
+   token
+../MultiGrid/PoissonMG.h:34: error: type specifier omitted for parameter `gint'
+../MultiGrid/PoissonMG.h:34: error: erreur d'analyse syntaxique before `)' 
+   token
+../MultiGrid/PoissonMG.h:36: error: type specifier omitted for parameter `gchar
+   '
+../MultiGrid/PoissonMG.h:36: error: erreur d'analyse syntaxique before `*' 
+   token
+../MultiGrid/PoissonMG.h:40: error: type specifier omitted for parameter `gint'
+../MultiGrid/PoissonMG.h:40: error: erreur d'analyse syntaxique before `,' 
+   token
+../MultiGrid/PoissonMG.h:44: error: type specifier omitted for parameter `gint'
+../MultiGrid/PoissonMG.h:44: error: erreur d'analyse syntaxique before `,' 
+   token
+../MultiGrid/PoissonMG.h:45: error: erreur d'analyse syntaxique before `*' 
+   token
+../MultiGrid/PoissonMG.h:46: error: type specifier omitted for parameter `gint'
+../MultiGrid/PoissonMG.h:46: error: erreur d'analyse syntaxique before `,' 
+   token
+../MultiGrid/PoissonMG.h:47: error: type specifier omitted for parameter `
+   gdouble'
+../MultiGrid/PoissonMG.h:47: error: erreur d'analyse syntaxique before `,' 
+   token
+../MultiGrid/PoissonMG.h:48: error: type specifier omitted for parameter `gint'
+../MultiGrid/PoissonMG.h:48: error: erreur d'analyse syntaxique before `,' 
+   token
+../MultiGrid/PoissonMG.h:49: error: type specifier omitted for parameter `gint'
+../MultiGrid/PoissonMG.h:49: error: erreur d'analyse syntaxique before `,' 
+   token
+In file included from ../OpenGL/GlobalOrb.h:34,
+                 from MutiCaptureOrbitals.cpp:22:
+../OpenGL/Grid.h:25: error: erreur d'analyse syntaxique before `[' token
+../OpenGL/Grid.h:29: error: erreur d'analyse syntaxique before `[' token
+../OpenGL/Grid.h:34: error: erreur d'analyse syntaxique before `[' token
+../OpenGL/Grid.h:37: error: 'gboolean' is used as a type, but is not defined as 
+   a type.
+../OpenGL/Grid.h:39: error: `gfloat' was not declared in this scope
+../OpenGL/Grid.h:39: error: erreur d'analyse syntaxique before `,' token
+../OpenGL/Grid.h:40: error: `gfloat' was not declared in this scope
+../OpenGL/Grid.h:40: error: erreur d'analyse syntaxique before `,' token
+../OpenGL/Grid.h:41: error: `gfloat' was not declared in this scope
+../OpenGL/Grid.h:41: error: erreur d'analyse syntaxique before `,' token
+../OpenGL/Grid.h:42: error: `gfloat' was not declared in this scope
+../OpenGL/Grid.h:42: error: erreur d'analyse syntaxique before `,' token
+../OpenGL/Grid.h:43: error: `gfloat' was not declared in this scope
+../OpenGL/Grid.h:43: error: erreur d'analyse syntaxique before `,' token
+../OpenGL/Grid.h:44: error: `gfloat' was not declared in this scope
+../OpenGL/Grid.h:44: error: erreur d'analyse syntaxique before `,' token
+../OpenGL/Grid.h:45: error: erreur d'analyse syntaxique before `*' token
+../OpenGL/Grid.h:46: error: `gint' was not declared in this scope
+../OpenGL/Grid.h:46: error: erreur d'analyse syntaxique before `[' token
+../OpenGL/Grid.h:47: error: `gint' was not declared in this scope
+../OpenGL/Grid.h:47: error: erreur d'analyse syntaxique before `[' token
+../OpenGL/Grid.h:50: error: erreur d'analyse syntaxique before `[' token
+../OpenGL/Grid.h:51: error: erreur d'analyse syntaxique before `[' token
+../OpenGL/Grid.h:52: error: erreur d'analyse syntaxique before `[' token
+../OpenGL/Grid.h:53: error: erreur d'analyse syntaxique before `[' token
+../OpenGL/Grid.h:54: error: erreur d'analyse syntaxique before `[' token
+../OpenGL/Grid.h:55: error: type specifier omitted for parameter `gint'
+../OpenGL/Grid.h:55: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/Grid.h:56: error: type specifier omitted for parameter `gint'
+../OpenGL/Grid.h:56: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/Grid.h:57: error: type specifier omitted for parameter `gint'
+../OpenGL/Grid.h:57: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/Grid.h:58: error: erreur de syntaxe before `*' token
+../OpenGL/Grid.h:59: error: `gint' was not declared in this scope
+../OpenGL/Grid.h:59: error: erreur d'analyse syntaxique before `[' token
+../OpenGL/Grid.h:61: error: `gint' was not declared in this scope
+../OpenGL/Grid.h:61: error: erreur d'analyse syntaxique before `[' token
+../OpenGL/Grid.h:63: error: `gint' was not declared in this scope
+../OpenGL/Grid.h:63: error: erreur d'analyse syntaxique before `[' token
+In file included from ../OpenGL/GlobalOrb.h:35,
+                 from MutiCaptureOrbitals.cpp:22:
+../OpenGL/IsoSurface.h:24: error: erreur d'analyse syntaxique before `[' token
+../OpenGL/IsoSurface.h:29: error: erreur d'analyse syntaxique before `[' token
+../OpenGL/IsoSurface.h:35: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/IsoSurface.h:37: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/IsoSurface.h:42: error: erreur d'analyse syntaxique before `[' token
+../OpenGL/IsoSurface.h:46: error: type specifier omitted for parameter `gfloat'
+../OpenGL/IsoSurface.h:46: error: erreur d'analyse syntaxique before `,' token
+In file included from ../OpenGL/GlobalOrb.h:50,
+                 from MutiCaptureOrbitals.cpp:22:
+../Common/GabeditType.h:22: error: `GtkWidget' was not declared in this scope
+../Common/GabeditType.h:22: error: erreur d'analyse syntaxique before `)' token
+../Common/GabeditType.h:31: error: erreur de syntaxe before `*' token
+../Common/GabeditType.h:32: error: erreur de syntaxe before `*' token
+../Common/GabeditType.h:33: error: 'guint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:34: error: 'gdouble' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:35: error: 'gdouble' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:36: error: 'gdouble' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:37: error: 'gdouble' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:38: error: 'guint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:39: error: 'gdouble' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:40: error: 'gdouble' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:41: error: 'GdkColor' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:248: error: 'gfloat' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:249: error: erreur d'analyse syntaxique before `[' 
+   token
+../Common/GabeditType.h:254: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:255: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:256: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:262: error: 'gfloat' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:263: error: 'gfloat' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:264: error: erreur d'analyse syntaxique before `[' 
+   token
+../Common/GabeditType.h:265: error: erreur d'analyse syntaxique before `[' 
+   token
+../Common/GabeditType.h:270: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:271: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:272: error: erreur de syntaxe before `*' token
+../Common/GabeditType.h:273: error: erreur de syntaxe before `*' token
+../Common/GabeditType.h:279: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:280: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:286: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:287: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:289: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:290: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:294: error: erreur d'analyse syntaxique before `[' 
+   token
+../Common/GabeditType.h:300: error: erreur de syntaxe before `*' token
+../Common/GabeditType.h:301: error: erreur d'analyse syntaxique before `[' 
+   token
+../Common/GabeditType.h:302: error: 'gdouble' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:303: error: 'gdouble' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:305: error: 'guint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:306: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:307: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:308: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:309: error: erreur de syntaxe before `*' token
+../Common/GabeditType.h:310: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:311: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:312: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:313: error: erreur de syntaxe before `*' token
+../Common/GabeditType.h:314: error: erreur de syntaxe before `*' token
+../Common/GabeditType.h:315: error: erreur de syntaxe before `*' token
+../Common/GabeditType.h:316: error: erreur de syntaxe before `*' token
+../Common/GabeditType.h:317: error: erreur de syntaxe before `*' token
+../Common/GabeditType.h:318: error: erreur de syntaxe before `*' token
+../Common/GabeditType.h:319: error: erreur de syntaxe before `*' token
+../Common/GabeditType.h:320: error: erreur de syntaxe before `*' token
+../Common/GabeditType.h:325: error: erreur de syntaxe before `*' token
+../Common/GabeditType.h:326: error: 'GdkColor' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:327: error: 'GdkColor' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:329: error: `Func3d' was not declared in this scope
+../Common/GabeditType.h:329: error: `gfloat' was not declared in this scope
+../Common/GabeditType.h:329: error: `gfloat' was not declared in this scope
+../Common/GabeditType.h:329: error: `gfloat' was not declared in this scope
+../Common/GabeditType.h:329: error: `gint' was not declared in this scope
+../Common/GabeditType.h:329: error: le C++ ISO interdit la déclaration de « 
+   gdouble » sans type
+../Common/GabeditType.h:329: error: typedef `gdouble' is initialized (use 
+   __typeof__ instead)
+../Common/GabeditType.h:329: error: invalid declarator
+../Common/GabeditType.h:333: error: 'gfloat' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:334: error: 'gfloat' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:335: error: erreur d'analyse syntaxique before `[' 
+   token
+../Common/GabeditType.h:336: error: erreur d'analyse syntaxique before `[' 
+   token
+../Common/GabeditType.h:337: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:342: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:343: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:345: error: 'gint' is used as a type, but is not 
+   defined as a type.
+../Common/GabeditType.h:346: error: 'gint' is used as a type, but is not 
+   defined as a type.
+In file included from MutiCaptureOrbitals.cpp:22:
+../OpenGL/GlobalOrb.h:55: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GlobalOrb.h:56: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GlobalOrb.h:57: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GlobalOrb.h:58: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GlobalOrb.h:59: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GlobalOrb.h:60: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GlobalOrb.h:65: error: erreur de syntaxe before `*' token
+../OpenGL/GlobalOrb.h:66: error: erreur de syntaxe before `*' token
+../OpenGL/GlobalOrb.h:69: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GlobalOrb.h:70: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GlobalOrb.h:72: error: erreur de syntaxe before `*' token
+../OpenGL/GlobalOrb.h:74: error: erreur d'analyse syntaxique before `[' token
+../OpenGL/GlobalOrb.h:75: error: erreur d'analyse syntaxique before `[' token
+../OpenGL/GlobalOrb.h:76: error: erreur d'analyse syntaxique before `[' token
+../OpenGL/GlobalOrb.h:83: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GlobalOrb.h:84: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GlobalOrb.h:85: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GlobalOrb.h:86: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GlobalOrb.h:87: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GlobalOrb.h:88: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GlobalOrb.h:89: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GlobalOrb.h:90: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GlobalOrb.h:91: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GlobalOrb.h:92: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GlobalOrb.h:93: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GlobalOrb.h:95: error: erreur de syntaxe before `*' token
+../OpenGL/GlobalOrb.h:96: error: erreur de syntaxe before `*' token
+../OpenGL/GlobalOrb.h:97: error: erreur de syntaxe before `*' token
+../OpenGL/GlobalOrb.h:98: error: erreur de syntaxe before `*' token
+../OpenGL/GlobalOrb.h:100: error: erreur de syntaxe before `*' token
+../OpenGL/GlobalOrb.h:101: error: erreur de syntaxe before `*' token
+../OpenGL/GlobalOrb.h:102: error: erreur de syntaxe before `*' token
+../OpenGL/GlobalOrb.h:103: error: erreur de syntaxe before `*' token
+../OpenGL/GlobalOrb.h:112: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/GlobalOrb.h:118: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/GlobalOrb.h:120: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/GlobalOrb.h:121: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/GlobalOrb.h:122: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/GlobalOrb.h:123: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/GlobalOrb.h:124: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/GlobalOrb.h:125: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/GlobalOrb.h:126: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/GlobalOrb.h:127: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/GlobalOrb.h:128: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/GlobalOrb.h:129: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/GlobalOrb.h:130: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/GlobalOrb.h:131: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/GlobalOrb.h:132: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/GlobalOrb.h:134: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/GlobalOrb.h:135: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GlobalOrb.h:136: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/GlobalOrb.h:137: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GlobalOrb.h:138: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/GlobalOrb.h:139: error: 'gint' is used as a type, but is not defined 
+   as a type.
+In file included from MutiCaptureOrbitals.cpp:23:
+../Utils/Vector3d.h:22: error: erreur de syntaxe before `[' token
+../Utils/Vector3d.h:23: error: `V3d' was not declared in this scope
+../Utils/Vector3d.h:23: error: erreur d'analyse syntaxique before `)' token
+../Utils/Vector3d.h:24: error: `V3d' was not declared in this scope
+../Utils/Vector3d.h:24: error: erreur d'analyse syntaxique before `,' token
+../Utils/Vector3d.h:25: error: `V3d' was not declared in this scope
+../Utils/Vector3d.h:25: error: erreur d'analyse syntaxique before `,' token
+../Utils/Vector3d.h:26: error: `V3d' was not declared in this scope
+../Utils/Vector3d.h:26: error: erreur d'analyse syntaxique before `,' token
+../Utils/Vector3d.h:27: error: `V3d' was not declared in this scope
+../Utils/Vector3d.h:27: error: erreur d'analyse syntaxique before `,' token
+../Utils/Vector3d.h:28: error: `V3d' was not declared in this scope
+../Utils/Vector3d.h:28: error: erreur d'analyse syntaxique before `)' token
+../Utils/Vector3d.h:29: error: `V3d' was not declared in this scope
+../Utils/Vector3d.h:29: error: erreur d'analyse syntaxique before `,' token
+../Utils/Vector3d.h:30: error: `V3d' was not declared in this scope
+../Utils/Vector3d.h:30: error: erreur d'analyse syntaxique before `)' token
+../Utils/Vector3d.h:31: error: `V3d' was not declared in this scope
+../Utils/Vector3d.h:31: error: erreur d'analyse syntaxique before `,' token
+../Utils/Vector3d.h:32: error: `V3d' was not declared in this scope
+../Utils/Vector3d.h:32: error: erreur d'analyse syntaxique before `,' token
+In file included from MutiCaptureOrbitals.cpp:24:
+../OpenGL/GLArea.h:22: error: `gint' was not declared in this scope
+../OpenGL/GLArea.h:22: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GLArea.h:24: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GLArea.h:25: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GLArea.h:26: error: `gboolean' was not declared in this scope
+../OpenGL/GLArea.h:26: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GLArea.h:27: error: `gboolean' was not declared in this scope
+../OpenGL/GLArea.h:27: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GLArea.h:28: error: `guchar' was not declared in this scope
+../OpenGL/GLArea.h:28: error: erreur d'analyse syntaxique before `[' token
+../OpenGL/GLArea.h:29: error: `gfloat' was not declared in this scope
+../OpenGL/GLArea.h:29: error: erreur d'analyse syntaxique before `[' token
+../OpenGL/GLArea.h:30: error: `gint' was not declared in this scope
+../OpenGL/GLArea.h:30: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GLArea.h:31: error: `gboolean' was not declared in this scope
+../OpenGL/GLArea.h:31: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GLArea.h:32: error: `gboolean' was not declared in this scope
+../OpenGL/GLArea.h:32: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GLArea.h:33: error: `gfloat' was not declared in this scope
+../OpenGL/GLArea.h:33: error: `zn' was not declared in this scope
+../OpenGL/GLArea.h:33: error: `gfloat' was not declared in this scope
+../OpenGL/GLArea.h:33: error: `zf' was not declared in this scope
+../OpenGL/GLArea.h:33: error: `gfloat' was not declared in this scope
+../OpenGL/GLArea.h:33: error: `zo' was not declared in this scope
+../OpenGL/GLArea.h:33: error: `gboolean' was not declared in this scope
+../OpenGL/GLArea.h:33: error: `persp' was not declared in this scope
+../OpenGL/GLArea.h:33: error: variable or field `get_camera_values' declared 
+   void
+../OpenGL/GLArea.h:33: error: liste d'initaliseurs a été traité comme une 
+   expression composée
+../OpenGL/GLArea.h:34: error: `gfloat' was not declared in this scope
+../OpenGL/GLArea.h:34: error: erreur d'analyse syntaxique before `,' token
+../OpenGL/GLArea.h:35: error: erreur de syntaxe before `*' token
+../OpenGL/GLArea.h:36: error: `gint' was not declared in this scope
+../OpenGL/GLArea.h:36: error: erreur d'analyse syntaxique before `,' token
+../OpenGL/GLArea.h:38: error: `gint' was not declared in this scope
+../OpenGL/GLArea.h:38: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GLArea.h:39: error: `gint' was not declared in this scope
+../OpenGL/GLArea.h:39: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GLArea.h:41: error: `gint' was not declared in this scope
+../OpenGL/GLArea.h:41: error: erreur d'analyse syntaxique before `,' token
+../OpenGL/GLArea.h:42: error: `gfloat' was not declared in this scope
+../OpenGL/GLArea.h:42: error: erreur d'analyse syntaxique before `,' token
+../OpenGL/GLArea.h:44: error: `gint' was not declared in this scope
+../OpenGL/GLArea.h:44: error: erreur d'analyse syntaxique before `,' token
+../OpenGL/GLArea.h:47: error: `gint' was not declared in this scope
+../OpenGL/GLArea.h:47: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GLArea.h:48: error: `GtkWidget' was not declared in this scope
+../OpenGL/GLArea.h:48: error: `widget' was not declared in this scope
+../OpenGL/GLArea.h:48: error: 'gboolean' is used as a type, but is not defined 
+   as a type.
+../OpenGL/GLArea.h:49: error: `gfloat' was not declared in this scope
+../OpenGL/GLArea.h:49: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GLArea.h:51: error: `GtkWidget' was not declared in this scope
+../OpenGL/GLArea.h:51: error: `widget' was not declared in this scope
+../OpenGL/GLArea.h:51: error: 'gint' is used as a type, but is not defined as a 
+   type.
+../OpenGL/GLArea.h:59: error: `GtkWidget' was not declared in this scope
+../OpenGL/GLArea.h:59: error: `widget' was not declared in this scope
+../OpenGL/GLArea.h:59: error: `gfloat' was not declared in this scope
+../OpenGL/GLArea.h:59: error: erreur d'analyse syntaxique before `,' token
+../OpenGL/GLArea.h:60: error: erreur d'analyse syntaxique before `)' token
+In file included from MutiCaptureOrbitals.cpp:25:
+../OpenGL/Orbitals.h:22: error: erreur de syntaxe before `*' token
+../OpenGL/Orbitals.h:24: error: `GtkWidget' was not declared in this scope
+../OpenGL/Orbitals.h:24: error: `Win' was not declared in this scope
+../OpenGL/Orbitals.h:24: error: `gpointer' was not declared in this scope
+../OpenGL/Orbitals.h:24: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/Orbitals.h:28: error: `gchar' was not declared in this scope
+../OpenGL/Orbitals.h:28: error: `NomFichier' was not declared in this scope
+../OpenGL/Orbitals.h:28: error: variable or field `
+   read_last_orbitals_in_gaussian_file' declared void
+../OpenGL/Orbitals.h:29: error: `gchar' was not declared in this scope
+../OpenGL/Orbitals.h:29: error: `FileName' was not declared in this scope
+../OpenGL/Orbitals.h:29: error: variable or field `read_gauss_orbitals' 
+   declared void
+../OpenGL/Orbitals.h:30: error: `gchar' was not declared in this scope
+../OpenGL/Orbitals.h:30: error: `FileName' was not declared in this scope
+../OpenGL/Orbitals.h:30: error: variable or field `read_gabedit_orbitals' 
+   declared void
+../OpenGL/Orbitals.h:31: error: `gchar' was not declared in this scope
+../OpenGL/Orbitals.h:31: error: `FileName' was not declared in this scope
+../OpenGL/Orbitals.h:31: error: variable or field `read_molden_orbitals' 
+   declared void
+../OpenGL/Orbitals.h:32: error: type specifier omitted for parameter `gint'
+../OpenGL/Orbitals.h:32: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/Orbitals.h:33: error: type specifier omitted for parameter `gint'
+../OpenGL/Orbitals.h:33: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/Orbitals.h:34: error: type specifier omitted for parameter `gint'
+../OpenGL/Orbitals.h:34: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/Orbitals.h:35: error: type specifier omitted for parameter `gint'
+../OpenGL/Orbitals.h:35: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/Orbitals.h:36: error: type specifier omitted for parameter `gint'
+../OpenGL/Orbitals.h:36: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/Orbitals.h:37: error: type specifier omitted for parameter `gint'
+../OpenGL/Orbitals.h:37: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/Orbitals.h:38: error: type specifier omitted for parameter `gint'
+../OpenGL/Orbitals.h:38: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/Orbitals.h:39: error: type specifier omitted for parameter `gint'
+../OpenGL/Orbitals.h:39: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/Orbitals.h:40: error: type specifier omitted for parameter `gint'
+../OpenGL/Orbitals.h:40: error: erreur d'analyse syntaxique before `)' token
+In file included from MutiCaptureOrbitals.cpp:26:
+../OpenGL/OrbitalsMolpro.h:22: error: `gchar' was not declared in this scope
+../OpenGL/OrbitalsMolpro.h:22: error: `FileName' was not declared in this scope
+../OpenGL/OrbitalsMolpro.h:22: error: variable or field `read_molpro_orbitals' 
+   declared void
+In file included from MutiCaptureOrbitals.cpp:27:
+../OpenGL/OrbitalsGamess.h:22: error: `gchar' was not declared in this scope
+../OpenGL/OrbitalsGamess.h:22: error: `FileName' was not declared in this scope
+../OpenGL/OrbitalsGamess.h:22: error: variable or field `read_gamess_orbitals' 
+   declared void
+In file included from MutiCaptureOrbitals.cpp:28:
+../OpenGL/OrbitalsQChem.h:22: error: `gchar' was not declared in this scope
+../OpenGL/OrbitalsQChem.h:22: error: `FileName' was not declared in this scope
+../OpenGL/OrbitalsQChem.h:22: error: variable or field `read_qchem_orbitals' 
+   declared void
+In file included from MutiCaptureOrbitals.cpp:29:
+../OpenGL/GeomOrbXYZ.h:24: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:27: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:27: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:28: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:28: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:29: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:29: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:30: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:30: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:31: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:31: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:32: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:32: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:33: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:33: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:34: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:34: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:35: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:35: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:36: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:36: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:37: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:37: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:38: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:38: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:39: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:39: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:40: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:40: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:41: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:41: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:42: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:42: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:43: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:43: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:44: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:44: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:45: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:45: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:46: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:46: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:47: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:47: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:48: error: `gchar' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:48: error: `FileName' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:48: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/GeomOrbXYZ.h:49: error: `gchar' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:49: error: `FileName' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:49: error: erreur d'analyse syntaxique before `int'
+../OpenGL/GeomOrbXYZ.h:50: error: `gchar' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:50: error: `FileName' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:50: error: `gint' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:50: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:51: error: `gchar' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:51: error: `FileName' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:51: error: `gint' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:51: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:52: error: `gchar' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:52: error: `FileName' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:52: error: `gint' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:52: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:53: error: `gchar' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:53: error: `FileName' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:53: error: `gint' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:53: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:54: error: `gchar' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:54: error: `FileName' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:54: error: `gint' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:54: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:55: error: `gchar' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:55: error: `FileName' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:55: error: `gint' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:55: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:56: error: `gchar' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:56: error: `FileName' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:56: error: `gint' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:56: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:57: error: `gchar' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:57: error: `FileName' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:57: error: `gint' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:57: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:58: error: `gchar' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:58: error: `FileName' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:58: error: `gint' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:58: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:59: error: `gchar' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:59: error: `FileName' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:59: error: `gint' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:59: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:60: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:60: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:61: error: `gchar' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:61: error: `FileName' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:61: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/GeomOrbXYZ.h:62: error: type specifier omitted for parameter `gint'
+../OpenGL/GeomOrbXYZ.h:62: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/GeomOrbXYZ.h:63: error: `gchar' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:63: error: `FileName' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:63: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/GeomOrbXYZ.h:64: error: `gchar' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:64: error: `fileName' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:64: error: `gint' was not declared in this scope
+../OpenGL/GeomOrbXYZ.h:64: error: erreur d'analyse syntaxique before `,' token
+../OpenGL/GeomOrbXYZ.h:65: error: erreur d'analyse syntaxique before `)' token
+In file included from MutiCaptureOrbitals.cpp:30:
+../OpenGL/BondsOrb.h:32: error: 'gint' is used as a type, but is not defined as 
+   a type.
+../OpenGL/BondsOrb.h:33: error: 'gint' is used as a type, but is not defined as 
+   a type.
+../OpenGL/BondsOrb.h:36: error: erreur de syntaxe before `*' token
+In file included from MutiCaptureOrbitals.cpp:31:
+../OpenGL/UtilsOrb.h:23: error: erreur de syntaxe before `*' token
+../OpenGL/UtilsOrb.h:24: error: erreur de syntaxe before `*' token
+../OpenGL/UtilsOrb.h:25: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/UtilsOrb.h:27: error: `gfloat' was not declared in this scope
+../OpenGL/UtilsOrb.h:27: error: erreur d'analyse syntaxique before `,' token
+../OpenGL/UtilsOrb.h:28: error: `gint' was not declared in this scope
+../OpenGL/UtilsOrb.h:28: error: erreur d'analyse syntaxique before `,' token
+../OpenGL/UtilsOrb.h:31: error: `gint' was not declared in this scope
+../OpenGL/UtilsOrb.h:31: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/UtilsOrb.h:32: error: erreur d'analyse syntaxique before `*' token
+../OpenGL/UtilsOrb.h:33: error: type specifier omitted for parameter `gint'
+../OpenGL/UtilsOrb.h:33: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/UtilsOrb.h:34: error: `gint' was not declared in this scope
+../OpenGL/UtilsOrb.h:34: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/UtilsOrb.h:35: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/UtilsOrb.h:36: error: `gfloat' was not declared in this scope
+../OpenGL/UtilsOrb.h:36: error: erreur d'analyse syntaxique before `,' token
+../OpenGL/UtilsOrb.h:44: error: erreur d'analyse syntaxique before `,' token
+../OpenGL/UtilsOrb.h:45: error: erreur d'analyse syntaxique before `,' token
+../OpenGL/UtilsOrb.h:46: error: erreur de syntaxe before `*' token
+../OpenGL/UtilsOrb.h:47: error: erreur de syntaxe before `*' token
+../OpenGL/UtilsOrb.h:48: error: erreur de syntaxe before `*' token
+../OpenGL/UtilsOrb.h:49: error: `gfloat' was not declared in this scope
+../OpenGL/UtilsOrb.h:49: error: `M' was not declared in this scope
+../OpenGL/UtilsOrb.h:49: error: variable or field `PrintAllOrb' declared void
+../OpenGL/UtilsOrb.h:50: error: `gchar' was not declared in this scope
+../OpenGL/UtilsOrb.h:50: error: `NomFichier' was not declared in this scope
+../OpenGL/UtilsOrb.h:50: error: 'gint' is used as a type, but is not defined as 
+   a type.
+../OpenGL/UtilsOrb.h:51: error: `gchar' was not declared in this scope
+../OpenGL/UtilsOrb.h:51: error: `NomFichier' was not declared in this scope
+../OpenGL/UtilsOrb.h:51: error: 'gint' is used as a type, but is not defined as 
+   a type.
+../OpenGL/UtilsOrb.h:52: error: `gchar' was not declared in this scope
+../OpenGL/UtilsOrb.h:52: error: `NomFichier' was not declared in this scope
+../OpenGL/UtilsOrb.h:52: error: 'gint' is used as a type, but is not defined as 
+   a type.
+../OpenGL/UtilsOrb.h:53: error: `gchar' was not declared in this scope
+../OpenGL/UtilsOrb.h:53: error: `NomFichier' was not declared in this scope
+../OpenGL/UtilsOrb.h:53: error: 'gint' is used as a type, but is not defined as 
+   a type.
+../OpenGL/UtilsOrb.h:54: error: `gchar' was not declared in this scope
+../OpenGL/UtilsOrb.h:54: error: `NomFichier' was not declared in this scope
+../OpenGL/UtilsOrb.h:54: error: 'gint' is used as a type, but is not defined as 
+   a type.
+../OpenGL/UtilsOrb.h:55: error: `gchar' was not declared in this scope
+../OpenGL/UtilsOrb.h:55: error: `NomFichier' was not declared in this scope
+../OpenGL/UtilsOrb.h:55: error: 'gint' is used as a type, but is not defined as 
+   a type.
+../OpenGL/UtilsOrb.h:56: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/UtilsOrb.h:57: error: `gchar' was not declared in this scope
+../OpenGL/UtilsOrb.h:57: error: `t' was not declared in this scope
+../OpenGL/UtilsOrb.h:57: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/UtilsOrb.h:58: error: `gchar' was not declared in this scope
+../OpenGL/UtilsOrb.h:58: error: `t' was not declared in this scope
+../OpenGL/UtilsOrb.h:58: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/UtilsOrb.h:59: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/UtilsOrb.h:60: error: erreur d'analyse syntaxique before `*' token
+../OpenGL/UtilsOrb.h:62: error: erreur de syntaxe before `*' token
+../OpenGL/UtilsOrb.h:63: error: `gchar' was not declared in this scope
+../OpenGL/UtilsOrb.h:63: error: `title' was not declared in this scope
+../OpenGL/UtilsOrb.h:63: error: variable or field `create_grid' declared void
+../OpenGL/UtilsOrb.h:64: error: `gchar' was not declared in this scope
+../OpenGL/UtilsOrb.h:64: error: `FileName' was not declared in this scope
+../OpenGL/UtilsOrb.h:64: error: variable or field `read_any_file' declared void
+../OpenGL/UtilsOrb.h:65: error: `GtkWidget' was not declared in this scope
+../OpenGL/UtilsOrb.h:65: error: `Entry' was not declared in this scope
+../OpenGL/UtilsOrb.h:65: error: 'gint' is used as a type, but is not defined as 
+   a type.
+../OpenGL/UtilsOrb.h:66: error: `GtkWidget' was not declared in this scope
+../OpenGL/UtilsOrb.h:66: error: `Entry' was not declared in this scope
+../OpenGL/UtilsOrb.h:66: error: `gfloat' was not declared in this scope
+../OpenGL/UtilsOrb.h:66: error: `value' was not declared in this scope
+../OpenGL/UtilsOrb.h:66: error: `gchar' was not declared in this scope
+../OpenGL/UtilsOrb.h:66: error: `erroMessage' was not declared in this scope
+../OpenGL/UtilsOrb.h:66: error: 'gboolean' is used as a type, but is not 
+   defined as a type.
+../OpenGL/UtilsOrb.h:68: error: `GtkWidget' was not declared in this scope
+../OpenGL/UtilsOrb.h:68: error: `win' was not declared in this scope
+../OpenGL/UtilsOrb.h:68: error: `gpointer' was not declared in this scope
+../OpenGL/UtilsOrb.h:68: error: erreur d'analyse syntaxique before `)' token
+../OpenGL/UtilsOrb.h:69: error: erreur d'analyse syntaxique before `,' token
+../OpenGL/UtilsOrb.h:70: error: `GtkWidget' was not declared in this scope
+../OpenGL/UtilsOrb.h:70: error: `winchild' was not declared in this scope
+../OpenGL/UtilsOrb.h:70: error: `gchar' was not declared in this scope
+../OpenGL/UtilsOrb.h:70: error: `title' was not declared in this scope
+../OpenGL/UtilsOrb.h:70: error: variable or field `add_glarea_child' declared 
+   void
+../OpenGL/UtilsOrb.h:70: error: liste d'initaliseurs a été traité comme une 
+   expression composée
+../OpenGL/UtilsOrb.h:75: error: `gchar' was not declared in this scope
+../OpenGL/UtilsOrb.h:75: error: `title' was not declared in this scope
+../OpenGL/UtilsOrb.h:75: error: variable or field `create_grid_sas' declared 
+   void
+In file included from MutiCaptureOrbitals.cpp:32:
+../OpenGL/TriangleDraw.h:22: error: `gint' was not declared in this scope
+../OpenGL/TriangleDraw.h:22: error: erreur d'analyse syntaxique before `,' 
+   token
+../OpenGL/TriangleDraw.h:23: error: `gint' was not declared in this scope
+../OpenGL/TriangleDraw.h:23: error: erreur d'analyse syntaxique before `,' 
+   token
+../OpenGL/TriangleDraw.h:24: error: `V3d' was not declared in this scope
+../OpenGL/TriangleDraw.h:24: error: erreur d'analyse syntaxique before `,' 
+   token
+In file included from MutiCaptureOrbitals.cpp:33:
+../Utils/Utils.h:34: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:35: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:36: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:38: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:39: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:40: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:41: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:44: error: 'gint' is used as a type, but is not defined as a 
+   type.
+../Utils/Utils.h:45: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:46: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:55: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:56: error: `gchar' was not declared in this scope
+../Utils/Utils.h:56: error: `st' was not declared in this scope
+../Utils/Utils.h:56: error: 'gboolean' is used as a type, but is not defined as 
+   a type.
+../Utils/Utils.h:57: error: erreur d'analyse syntaxique before `*' token
+../Utils/Utils.h:58: error: `gchar' was not declared in this scope
+../Utils/Utils.h:58: error: `remotehost' was not declared in this scope
+../Utils/Utils.h:58: error: `gchar' was not declared in this scope
+../Utils/Utils.h:58: error: `remoteuser' was not declared in this scope
+../Utils/Utils.h:58: error: `gchar' was not declared in this scope
+../Utils/Utils.h:58: error: `remotedir' was not declared in this scope
+../Utils/Utils.h:58: error: erreur d'analyse syntaxique before `)' token
+../Utils/Utils.h:59: error: `GtkObject' was not declared in this scope
+../Utils/Utils.h:59: error: `obj' was not declared in this scope
+../Utils/Utils.h:59: error: 'gboolean' is used as a type, but is not defined as 
+   a type.
+../Utils/Utils.h:60: error: erreur d'analyse syntaxique before `*' token
+../Utils/Utils.h:63: error: erreur d'analyse syntaxique before `*' token
+../Utils/Utils.h:64: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:65: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:66: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:67: error: `gchar' was not declared in this scope
+../Utils/Utils.h:67: error: `outfile' was not declared in this scope
+../Utils/Utils.h:67: error: `gchar' was not declared in this scope
+../Utils/Utils.h:67: error: `errfile' was not declared in this scope
+../Utils/Utils.h:67: error: `gchar' was not declared in this scope
+../Utils/Utils.h:67: error: `command' was not declared in this scope
+../Utils/Utils.h:67: error: `gboolean' was not declared in this scope
+../Utils/Utils.h:67: error: erreur d'analyse syntaxique before `)' token
+../Utils/Utils.h:68: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:69: error: `gchar' was not declared in this scope
+../Utils/Utils.h:69: error: erreur d'analyse syntaxique before `)' token
+../Utils/Utils.h:70: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:71: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:72: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:73: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:75: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:78: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:82: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:83: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:84: error: `guint' was not declared in this scope
+../Utils/Utils.h:84: error: 'guint' is used as a type, but is not defined as a 
+   type.
+../Utils/Utils.h:85: error: `gchar' was not declared in this scope
+../Utils/Utils.h:85: error: erreur d'analyse syntaxique before `)' token
+../Utils/Utils.h:86: error: `gchar' was not declared in this scope
+../Utils/Utils.h:86: error: erreur d'analyse syntaxique before `)' token
+../Utils/Utils.h:87: error: `gchar' was not declared in this scope
+../Utils/Utils.h:87: error: erreur d'analyse syntaxique before `)' token
+../Utils/Utils.h:88: error: `gchar' was not declared in this scope
+../Utils/Utils.h:88: error: erreur d'analyse syntaxique before `)' token
+../Utils/Utils.h:89: error: erreur d'analyse syntaxique before `)' token
+../Utils/Utils.h:90: error: erreur d'analyse syntaxique before `)' token
+../Utils/Utils.h:91: error: `gchar' was not declared in this scope
+../Utils/Utils.h:91: error: erreur d'analyse syntaxique before `)' token
+../Utils/Utils.h:92: error: `gchar' was not declared in this scope
+../Utils/Utils.h:92: error: erreur d'analyse syntaxique before `)' token
+../Utils/Utils.h:97: error: `gchar' was not declared in this scope
+../Utils/Utils.h:97: error: erreur d'analyse syntaxique before `)' token
+../Utils/Utils.h:98: error: `gchar' was not declared in this scope
+../Utils/Utils.h:98: error: erreur d'analyse syntaxique before `)' token
+../Utils/Utils.h:99: error: erreur d'analyse syntaxique before `)' token
+../Utils/Utils.h:100: error: erreur d'analyse syntaxique before `*' token
+../Utils/Utils.h:101: error: erreur d'analyse syntaxique before `)' token
+../Utils/Utils.h:102: error: erreur d'analyse syntaxique before `*' token
+../Utils/Utils.h:106: error: `GtkWidget' was not declared in this scope
+../Utils/Utils.h:106: error: `view' was not declared in this scope
+../Utils/Utils.h:106: error: `gint' was not declared in this scope
+../Utils/Utils.h:106: error: erreur d'analyse syntaxique before `)' token
+../Utils/Utils.h:107: error: `GtkWidget' was not declared in this scope
+../Utils/Utils.h:107: error: `view' was not declared in this scope
+../Utils/Utils.h:107: error: `gchar' was not declared in this scope
+../Utils/Utils.h:107: error: `fontname' was not declared in this scope
+../Utils/Utils.h:107: error: variable or field `set_font' declared void
+../Utils/Utils.h:107: error: liste d'initaliseurs a été traité comme une 
+   expression composée
+../Utils/Utils.h:108: error: `GtkStyle' was not declared in this scope
+../Utils/Utils.h:108: error: `style' was not declared in this scope
+../Utils/Utils.h:108: error: `gchar' was not declared in this scope
+../Utils/Utils.h:108: error: `fontname' was not declared in this scope
+../Utils/Utils.h:108: error: variable or field `set_font_style' declared void
+../Utils/Utils.h:108: error: liste d'initaliseurs a été traité comme une 
+   expression composée
+../Utils/Utils.h:109: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:110: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:111: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:112: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:113: error: `gchar' was not declared in this scope
+../Utils/Utils.h:113: error: `str' was not declared in this scope
+../Utils/Utils.h:113: error: 'gint' is used as a type, but is not defined as a 
+   type.
+../Utils/Utils.h:114: error: `gchar' was not declared in this scope
+../Utils/Utils.h:114: error: `str' was not declared in this scope
+../Utils/Utils.h:114: error: 'gint' is used as a type, but is not defined as a 
+   type.
+../Utils/Utils.h:115: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:123: error: `GtkWidget' was not declared in this scope
+../Utils/Utils.h:123: error: `fp' was not declared in this scope
+../Utils/Utils.h:123: error: `gpointer' was not declared in this scope
+../Utils/Utils.h:123: error: erreur d'analyse syntaxique before `)' token
+../Utils/Utils.h:129: error: `gchar' was not declared in this scope
+../Utils/Utils.h:129: error: `str' was not declared in this scope
+../Utils/Utils.h:129: error: variable or field `delete_last_spaces' declared 
+   void
+../Utils/Utils.h:130: error: `gchar' was not declared in this scope
+../Utils/Utils.h:130: error: `str' was not declared in this scope
+../Utils/Utils.h:130: error: variable or field `delete_first_spaces' declared 
+   void
+../Utils/Utils.h:131: error: `gchar' was not declared in this scope
+../Utils/Utils.h:131: error: `str' was not declared in this scope
+../Utils/Utils.h:131: error: variable or field `delete_all_spaces' declared 
+   void
+../Utils/Utils.h:132: error: `gchar' was not declared in this scope
+../Utils/Utils.h:132: error: `str' was not declared in this scope
+../Utils/Utils.h:132: error: variable or field `str_delete_n' declared void
+../Utils/Utils.h:133: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:134: error: `gchar' was not declared in this scope
+../Utils/Utils.h:134: error: `t' was not declared in this scope
+../Utils/Utils.h:134: error: 'gboolean' is used as a type, but is not defined 
+   as a type.
+../Utils/Utils.h:135: error: erreur d'analyse syntaxique before `*' token
+../Utils/Utils.h:136: error: `gchar' was not declared in this scope
+../Utils/Utils.h:136: error: `str' was not declared in this scope
+../Utils/Utils.h:136: error: `gchar' was not declared in this scope
+../Utils/Utils.h:136: error: erreur d'analyse syntaxique before `[' token
+../Utils/Utils.h:137: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:138: error: erreur d'analyse syntaxique before `*' token
+../Utils/Utils.h:139: error: `GtkWidget' was not declared in this scope
+../Utils/Utils.h:139: error: `parent' was not declared in this scope
+../Utils/Utils.h:139: error: `PangoFontDescription' was not declared in this 
+   scope
+../Utils/Utils.h:139: error: `font_desc' was not declared in this scope
+../Utils/Utils.h:139: error: `G_CONST_RETURN' was not declared in this scope
+../Utils/Utils.h:139: error: erreur d'analyse syntaxique before `*' token
+../Utils/Utils.h:140: error: `GtkWidget' was not declared in this scope
+../Utils/Utils.h:140: error: `parent' was not declared in this scope
+../Utils/Utils.h:140: error: `GdkPixmap' was not declared in this scope
+../Utils/Utils.h:140: error: `pixmap' was not declared in this scope
+../Utils/Utils.h:140: error: `PangoFontDescription' was not declared in this 
+   scope
+../Utils/Utils.h:140: error: `font_desc' was not declared in this scope
+../Utils/Utils.h:140: error: `GdkGC' was not declared in this scope
+../Utils/Utils.h:140: error: `gc' was not declared in this scope
+../Utils/Utils.h:140: error: `gint' was not declared in this scope
+../Utils/Utils.h:140: error: erreur d'analyse syntaxique before `,' token
+../Utils/Utils.h:141: error: `GtkWidget' was not declared in this scope
+../Utils/Utils.h:141: error: `widget' was not declared in this scope
+../Utils/Utils.h:141: error: `gchar' was not declared in this scope
+../Utils/Utils.h:141: error: `fileName' was not declared in this scope
+../Utils/Utils.h:141: error: `gchar' was not declared in this scope
+../Utils/Utils.h:141: error: `type' was not declared in this scope
+../Utils/Utils.h:141: error: variable or field `gabedit_save_image' declared 
+   void
+../Utils/Utils.h:141: error: liste d'initaliseurs a été traité comme une 
+   expression composée
+../Utils/Utils.h:142: error: erreur d'analyse syntaxique before `*' token
+../Utils/Utils.h:143: error: erreur de syntaxe before `*' token
+../Utils/Utils.h:144: error: erreur de syntaxe before `*' token
+In file included from MutiCaptureOrbitals.cpp:34:
+../Utils/UtilsInterface.h:22: error: `gchar' was not declared in this scope
+../Utils/UtilsInterface.h:22: error: `label' was not declared in this scope
+../Utils/UtilsInterface.h:22: error: variable or field `create_popup_win' 
+   declared void
+../Utils/UtilsInterface.h:23: error: `GtkWidget' was not declared in this scope
+../Utils/UtilsInterface.h:23: error: `widget' was not declared in this scope
+../Utils/UtilsInterface.h:23: error: erreur d'analyse syntaxique before `,' 
+   token
+../Utils/UtilsInterface.h:24: error: `GtkWidget' was not declared in this scope
+../Utils/UtilsInterface.h:24: error: `widget' was not declared in this scope
+../Utils/UtilsInterface.h:24: error: `GtkWidget' was not declared in this scope
+../Utils/UtilsInterface.h:24: error: `childwidget' was not declared in this 
+   scope
+../Utils/UtilsInterface.h:24: error: erreur d'analyse syntaxique before `,' 
+   token
+../Utils/UtilsInterface.h:25: error: `GtkWidget' was not declared in this scope
+../Utils/UtilsInterface.h:25: error: `childwidget' was not declared in this 
+   scope
+../Utils/UtilsInterface.h:25: error: variable or field `delete_child' declared 
+   void
+../Utils/UtilsInterface.h:26: error: `GtkWidget' was not declared in this scope
+../Utils/UtilsInterface.h:26: error: `widget' was not declared in this scope
+../Utils/UtilsInterface.h:26: error: variable or field `delete_all_childs' 
+   declared void
+../Utils/UtilsInterface.h:27: error: `GtkWidget' was not declared in this scope
+../Utils/UtilsInterface.h:27: error: `widget' was not declared in this scope
+../Utils/UtilsInterface.h:27: error: variable or field `destroy_childs' 
+   declared void
+../Utils/UtilsInterface.h:28: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:29: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:30: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:31: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:32: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:34: error: `GtkWidget' was not declared in this scope
+../Utils/UtilsInterface.h:34: error: `widget' was not declared in this scope
+../Utils/UtilsInterface.h:34: error: variable or field `set_icone' declared 
+   void
+../Utils/UtilsInterface.h:35: error: `gboolean' was not declared in this scope
+../Utils/UtilsInterface.h:35: error: erreur d'analyse syntaxique before `)' 
+   token
+../Utils/UtilsInterface.h:36: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:37: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:38: error: `GtkWidget' was not declared in this scope
+../Utils/UtilsInterface.h:38: error: `widget' was not declared in this scope
+../Utils/UtilsInterface.h:38: error: `gchar' was not declared in this scope
+../Utils/UtilsInterface.h:38: error: `data' was not declared in this scope
+../Utils/UtilsInterface.h:38: error: variable or field `exit_all' declared void
+../Utils/UtilsInterface.h:38: error: liste d'initaliseurs a été traité comme 
+   une expression composée
+../Utils/UtilsInterface.h:42: error: `GtkWidget' was not declared in this scope
+../Utils/UtilsInterface.h:42: error: erreur d'analyse syntaxique before `,' 
+   token
+../Utils/UtilsInterface.h:43: error: `GtkWidget' was not declared in this scope
+../Utils/UtilsInterface.h:43: error: `widget' was not declared in this scope
+../Utils/UtilsInterface.h:43: error: `gpointer' was not declared in this scope
+../Utils/UtilsInterface.h:43: error: erreur d'analyse syntaxique before `,' 
+   token
+../Utils/UtilsInterface.h:44: error: `gchar' was not declared in this scope
+../Utils/UtilsInterface.h:44: error: erreur d'analyse syntaxique before `)' 
+   token
+../Utils/UtilsInterface.h:45: error: `GtkWidget' was not declared in this scope
+../Utils/UtilsInterface.h:45: error: `wid' was not declared in this scope
+../Utils/UtilsInterface.h:45: error: `gpointer' was not declared in this scope
+../Utils/UtilsInterface.h:45: error: erreur d'analyse syntaxique before `)' 
+   token
+../Utils/UtilsInterface.h:47: error: type specifier omitted for parameter `gint
+   '
+../Utils/UtilsInterface.h:47: error: erreur d'analyse syntaxique before `)' 
+   token
+../Utils/UtilsInterface.h:48: error: type specifier omitted for parameter `gint
+   '
+../Utils/UtilsInterface.h:48: error: erreur d'analyse syntaxique before `)' 
+   token
+../Utils/UtilsInterface.h:51: error: type specifier omitted for parameter `gint
+   '
+../Utils/UtilsInterface.h:51: error: erreur d'analyse syntaxique before `)' 
+   token
+../Utils/UtilsInterface.h:58: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:62: error: `GtkWidget' was not declared in this scope
+../Utils/UtilsInterface.h:62: error: erreur d'analyse syntaxique before `,' 
+   token
+../Utils/UtilsInterface.h:63: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:64: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:65: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:66: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:67: error: `GtkWidget' was not declared in this scope
+../Utils/UtilsInterface.h:67: error: `comboBoxEntry' was not declared in this 
+   scope
+../Utils/UtilsInterface.h:67: error: `GList' was not declared in this scope
+../Utils/UtilsInterface.h:67: error: `list' was not declared in this scope
+../Utils/UtilsInterface.h:67: error: variable or field `
+   gtk_combo_box_entry_set_popdown_strings' declared void
+../Utils/UtilsInterface.h:67: error: liste d'initaliseurs a été traité comme 
+   une expression composée
+../Utils/UtilsInterface.h:68: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:69: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:73: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:74: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:75: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:76: error: `GtkWidget' was not declared in this scope
+../Utils/UtilsInterface.h:76: error: erreur d'analyse syntaxique before `)' 
+   token
+../Utils/UtilsInterface.h:77: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:78: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:79: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:80: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:81: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:82: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:84: error: `gchar' was not declared in this scope
+../Utils/UtilsInterface.h:84: error: erreur d'analyse syntaxique before `)' 
+   token
+../Utils/UtilsInterface.h:86: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:88: error: `GtkWidget' was not declared in this scope
+../Utils/UtilsInterface.h:88: error: `current' was not declared in this scope
+../Utils/UtilsInterface.h:88: error: `gpointer' was not declared in this scope
+../Utils/UtilsInterface.h:88: error: erreur d'analyse syntaxique before `)' 
+   token
+../Utils/UtilsInterface.h:89: error: `GtkWidget' was not declared in this scope
+../Utils/UtilsInterface.h:89: error: `win' was not declared in this scope
+../Utils/UtilsInterface.h:89: error: `gpointer' was not declared in this scope
+../Utils/UtilsInterface.h:89: error: erreur d'analyse syntaxique before `)' 
+   token
+../Utils/UtilsInterface.h:90: error: `gchar' was not declared in this scope
+../Utils/UtilsInterface.h:90: error: erreur d'analyse syntaxique before `)' 
+   token
+../Utils/UtilsInterface.h:91: error: `gchar' was not declared in this scope
+../Utils/UtilsInterface.h:91: error: erreur d'analyse syntaxique before `)' 
+   token
+../Utils/UtilsInterface.h:92: error: `gchar' was not declared in this scope
+../Utils/UtilsInterface.h:92: error: erreur d'analyse syntaxique before `)' 
+   token
+../Utils/UtilsInterface.h:93: error: `gchar' was not declared in this scope
+../Utils/UtilsInterface.h:93: error: erreur d'analyse syntaxique before `)' 
+   token
+../Utils/UtilsInterface.h:94: error: `gchar' was not declared in this scope
+../Utils/UtilsInterface.h:94: error: erreur d'analyse syntaxique before `)' 
+   token
+../Utils/UtilsInterface.h:95: error: `gchar' was not declared in this scope
+../Utils/UtilsInterface.h:95: error: erreur d'analyse syntaxique before `)' 
+   token
+../Utils/UtilsInterface.h:96: error: `gchar' was not declared in this scope
+../Utils/UtilsInterface.h:96: error: erreur d'analyse syntaxique before `)' 
+   token
+../Utils/UtilsInterface.h:97: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:98: error: `GtkWidget' was not declared in this scope
+../Utils/UtilsInterface.h:98: error: `widget' was not declared in this scope
+../Utils/UtilsInterface.h:98: error: `gchar' was not declared in this scope
+../Utils/UtilsInterface.h:98: error: `data' was not declared in this scope
+../Utils/UtilsInterface.h:98: error: variable or field `open_file' declared 
+   void
+../Utils/UtilsInterface.h:98: error: liste d'initaliseurs a été traité comme 
+   une expression composée
+../Utils/UtilsInterface.h:99: error: `GtkWidget' was not declared in this scope
+../Utils/UtilsInterface.h:99: error: `widget' was not declared in this scope
+../Utils/UtilsInterface.h:99: error: `gchar' was not declared in this scope
+../Utils/UtilsInterface.h:99: error: `data' was not declared in this scope
+../Utils/UtilsInterface.h:99: error: variable or field `new_molcas' declared 
+   void
+../Utils/UtilsInterface.h:99: error: liste d'initaliseurs a été traité comme 
+   une expression composée
+../Utils/UtilsInterface.h:100: error: `GtkWidget' was not declared in this 
+   scope
+../Utils/UtilsInterface.h:100: error: `widget' was not declared in this scope
+../Utils/UtilsInterface.h:100: error: `gchar' was not declared in this scope
+../Utils/UtilsInterface.h:100: error: `data' was not declared in this scope
+../Utils/UtilsInterface.h:100: error: variable or field `new_molpro' declared 
+   void
+../Utils/UtilsInterface.h:100: error: liste d'initaliseurs a été traité comme 
+   une expression composée
+../Utils/UtilsInterface.h:101: error: `GtkWidget' was not declared in this 
+   scope
+../Utils/UtilsInterface.h:101: error: `widget' was not declared in this scope
+../Utils/UtilsInterface.h:101: error: `gchar' was not declared in this scope
+../Utils/UtilsInterface.h:101: error: `data' was not declared in this scope
+../Utils/UtilsInterface.h:101: error: variable or field `new_mopac' declared 
+   void
+../Utils/UtilsInterface.h:101: error: liste d'initaliseurs a été traité comme 
+   une expression composée
+../Utils/UtilsInterface.h:102: error: `GtkWidget' was not declared in this 
+   scope
+../Utils/UtilsInterface.h:102: error: `widget' was not declared in this scope
+../Utils/UtilsInterface.h:102: error: `gchar' was not declared in this scope
+../Utils/UtilsInterface.h:102: error: `data' was not declared in this scope
+../Utils/UtilsInterface.h:102: error: variable or field `new_mpqc' declared 
+   void
+../Utils/UtilsInterface.h:102: error: liste d'initaliseurs a été traité comme 
+   une expression composée
+../Utils/UtilsInterface.h:103: error: `GtkWidget' was not declared in this 
+   scope
+../Utils/UtilsInterface.h:103: error: `widget' was not declared in this scope
+../Utils/UtilsInterface.h:103: error: `gchar' was not declared in this scope
+../Utils/UtilsInterface.h:103: error: `data' was not declared in this scope
+../Utils/UtilsInterface.h:103: error: variable or field `new_gamess' declared 
+   void
+../Utils/UtilsInterface.h:103: error: liste d'initaliseurs a été traité comme 
+   une expression composée
+../Utils/UtilsInterface.h:104: error: `GtkWidget' was not declared in this 
+   scope
+../Utils/UtilsInterface.h:104: error: `widget' was not declared in this scope
+../Utils/UtilsInterface.h:104: error: `gchar' was not declared in this scope
+../Utils/UtilsInterface.h:104: error: `data' was not declared in this scope
+../Utils/UtilsInterface.h:104: error: variable or field `new_pcgamess' declared 
+   void
+../Utils/UtilsInterface.h:104: error: liste d'initaliseurs a été traité comme 
+   une expression composée
+../Utils/UtilsInterface.h:105: error: `GtkWidget' was not declared in this 
+   scope
+../Utils/UtilsInterface.h:105: error: `widget' was not declared in this scope
+../Utils/UtilsInterface.h:105: error: `gchar' was not declared in this scope
+../Utils/UtilsInterface.h:105: error: `data' was not declared in this scope
+../Utils/UtilsInterface.h:105: error: variable or field `new_gauss' declared 
+   void
+../Utils/UtilsInterface.h:105: error: liste d'initaliseurs a été traité comme 
+   une expression composée
+../Utils/UtilsInterface.h:106: error: `GtkWidget' was not declared in this 
+   scope
+../Utils/UtilsInterface.h:106: error: `widget' was not declared in this scope
+../Utils/UtilsInterface.h:106: error: `gchar' was not declared in this scope
+../Utils/UtilsInterface.h:106: error: `data' was not declared in this scope
+../Utils/UtilsInterface.h:106: error: variable or field `new_qchem' declared 
+   void
+../Utils/UtilsInterface.h:106: error: liste d'initaliseurs a été traité comme 
+   une expression composée
+../Utils/UtilsInterface.h:107: error: `GtkWidget' was not declared in this 
+   scope
+../Utils/UtilsInterface.h:107: error: `widget' was not declared in this scope
+../Utils/UtilsInterface.h:107: error: `gchar' was not declared in this scope
+../Utils/UtilsInterface.h:107: error: `data' was not declared in this scope
+../Utils/UtilsInterface.h:107: error: variable or field `new_other' declared 
+   void
+../Utils/UtilsInterface.h:107: error: liste d'initaliseurs a été traité comme 
+   une expression composée
+../Utils/UtilsInterface.h:108: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:109: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:110: error: `GtkWidget' was not declared in this 
+   scope
+../Utils/UtilsInterface.h:110: error: `Table' was not declared in this scope
+../Utils/UtilsInterface.h:110: error: `GtkWidget' was not declared in this 
+   scope
+../Utils/UtilsInterface.h:110: error: `wid' was not declared in this scope
+../Utils/UtilsInterface.h:110: error: `gushort' was not declared in this scope
+../Utils/UtilsInterface.h:110: error: erreur d'analyse syntaxique before `,' 
+   token
+../Utils/UtilsInterface.h:111: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:113: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:114: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:115: error: `GtkWidget' was not declared in this 
+   scope
+../Utils/UtilsInterface.h:115: error: `wid' was not declared in this scope
+../Utils/UtilsInterface.h:115: error: `gpointer' was not declared in this scope
+../Utils/UtilsInterface.h:115: error: erreur d'analyse syntaxique before `)' 
+   token
+../Utils/UtilsInterface.h:116: error: `G_CONST_RETURN' was not declared in this 
+   scope
+../Utils/UtilsInterface.h:116: error: erreur d'analyse syntaxique before `*' 
+   token
+../Utils/UtilsInterface.h:117: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:118: error: erreur de syntaxe before `*' token
+../Utils/UtilsInterface.h:119: error: `GtkWidget' was not declared in this 
+   scope
+../Utils/UtilsInterface.h:119: error: `parent' was not declared in this scope
+../Utils/UtilsInterface.h:119: error: `GtkWidget' was not declared in this 
+   scope
+../Utils/UtilsInterface.h:119: error: `child' was not declared in this scope
+../Utils/UtilsInterface.h:119: error: variable or field `fit_windows_position' 
+   declared void
+../Utils/UtilsInterface.h:119: error: liste d'initaliseurs a été traité comme 
+   une expression composée
+In file included from MutiCaptureOrbitals.cpp:36:
+../Common/Windows.h:22: error: `GtkWidget' was not declared in this scope
+../Common/Windows.h:22: error: `box' was not declared in this scope
+../Common/Windows.h:22: error: variable or field `create_frame_windows' 
+   declared void
+../Common/Windows.h:23: error: `GtkWidget' was not declared in this scope
+../Common/Windows.h:23: error: `Win' was not declared in this scope
+../Common/Windows.h:23: error: variable or field `destroy_button_windows' 
+   declared void
+../Common/Windows.h:24: error: erreur de syntaxe before `*' token
+In file included from MutiCaptureOrbitals.cpp:37:
+../OpenGL/Vibration.h:27: error: erreur de syntaxe before `*' token
+../OpenGL/Vibration.h:33: error: erreur de syntaxe before `*' token
+../OpenGL/Vibration.h:34: error: erreur d'analyse syntaxique before `[' token
+../OpenGL/Vibration.h:41: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/Vibration.h:44: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/Vibration.h:47: error: 'gfloat' is used as a type, but is not defined 
+   as a type.
+../OpenGL/Vibration.h:48: error: 'gfloat' is used as a type, but is not defined 
+   as a type.
+../OpenGL/Vibration.h:49: error: 'gfloat' is used as a type, but is not defined 
+   as a type.
+../OpenGL/Vibration.h:50: error: 'gint' is used as a type, but is not defined 
+   as a type.
+../OpenGL/Vibration.h:53: error: 'gint' is used as a type, but is not defined 
+   as a type.
+In file included from MutiCaptureOrbitals.cpp:38:
+../OpenGL/ContoursPov.h:5: error: erreur d'analyse syntaxique before `*' token
+In file included from MutiCaptureOrbitals.cpp:39:
+../OpenGL/PlanesMappedPov.h:5: error: erreur d'analyse syntaxique before `*' 
+   token
+MutiCaptureOrbitals.cpp:42: error: `GtkWidget' was not declared in this scope
+MutiCaptureOrbitals.cpp:42: error: `Win' was not declared in this scope
+MutiCaptureOrbitals.cpp:42: error: `gpointer' was not declared in this scope
+MutiCaptureOrbitals.cpp:42: error: erreur d'analyse syntaxique before `)' token
+MutiCaptureOrbitals.cpp: Dans function « void applyMultiCapture(...) »:
+MutiCaptureOrbitals.cpp:44: error: `GtkWidget' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:44: error: (Each undeclared identifier is reported only 
+   once for each function it appears in.)
+MutiCaptureOrbitals.cpp:44: error: `entriestmp' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:45: error: `G_CONST_RETURN' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:45: error: erreur d'analyse syntaxique before `*' token
+MutiCaptureOrbitals.cpp:46: error: `gchar' undeclared (first use this function)
+MutiCaptureOrbitals.cpp:46: error: `dump' undeclared (first use this function)
+MutiCaptureOrbitals.cpp:47: error: `gint' undeclared (first use this function)
+MutiCaptureOrbitals.cpp:47: error: erreur d'analyse syntaxique before `;' token
+MutiCaptureOrbitals.cpp:50: error: erreur d'analyse syntaxique before `[' token
+MutiCaptureOrbitals.cpp:51: error: `entries' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:52: error: `gfloat' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:52: error: erreur d'analyse syntaxique before `[' token
+MutiCaptureOrbitals.cpp:54: error: `Win' undeclared (first use this function)
+MutiCaptureOrbitals.cpp:54: error: `GTK_IS_WIDGET' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:56: error: erreur d'analyse syntaxique before `)' token
+MutiCaptureOrbitals.cpp:62: error: `i' undeclared (first use this function)
+MutiCaptureOrbitals.cpp:63: error: `j' undeclared (first use this function)
+MutiCaptureOrbitals.cpp:70: error: `temp' undeclared (first use this function)
+MutiCaptureOrbitals.cpp:70: error: `GTK_ENTRY' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:70: error: `gtk_entry_get_text' undeclared (first use 
+   this function)
+MutiCaptureOrbitals.cpp:74: error: `g_strdup' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:75: error: `delete_first_spaces' cannot be used as a 
+   function
+MutiCaptureOrbitals.cpp:76: error: `delete_last_spaces' cannot be used as a 
+   function
+MutiCaptureOrbitals.cpp:79: error: `this_is_a_real' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:81: error: 'struct GridLimits' has no member named '
+   MinMax'
+MutiCaptureOrbitals.cpp:85: error: `message' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:85: error: `TRUE' undeclared (first use this function)
+MutiCaptureOrbitals.cpp:85: error: `Message' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:86: error: `GTK_WINDOW' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:86: error: `gtk_window_set_modal' undeclared (first use 
+   this function)
+MutiCaptureOrbitals.cpp:89: error: `g_free' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:92: error: `NumPointstmp' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:104: error: 'struct GridLimits' has no member named '
+   MinMax'
+MutiCaptureOrbitals.cpp:104: error: 'struct GridLimits' has no member named '
+   MinMax'
+MutiCaptureOrbitals.cpp:115: error: `V' undeclared (first use this function)
+MutiCaptureOrbitals.cpp:121: error: `delete_first_spaces' cannot be used as a 
+   function
+MutiCaptureOrbitals.cpp:122: error: `delete_last_spaces' cannot be used as a 
+   function
+MutiCaptureOrbitals.cpp:141: attention : converting to `int' from `double'
+MutiCaptureOrbitals.cpp:153: error: `originOfCube' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:154: error: `firstDirection' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:155: error: `secondDirection' undeclared (first use 
+   this function)
+MutiCaptureOrbitals.cpp:156: error: `thirdDirection' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:160: error: `NumPoints' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:162: error: 'struct GridLimits' has no member named '
+   MinMax'
+MutiCaptureOrbitals.cpp:162: error: 'struct GridLimits' has no member named '
+   MinMax'
+MutiCaptureOrbitals.cpp:166: error: `delete_child' cannot be used as a function
+MutiCaptureOrbitals.cpp:167: error: `TypeSelOrb' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:167: error: `TypeSelOrbtmp' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:168: error: `NumSelOrb' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:168: error: `NumSelOrbtmp' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp: Dans function « void mutlicapture_orbitals_dlg() »:
+MutiCaptureOrbitals.cpp:176: error: `frame' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:177: error: `hbox' undeclared (first use this function)
+MutiCaptureOrbitals.cpp:178: error: `vboxall' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:179: error: `vboxwin' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:180: error: `button' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:185: error: `Message' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:188: error: `CoefAlphaOrbitals' undeclared (first use 
+   this function)
+MutiCaptureOrbitals.cpp:194: error: `GTK_WINDOW_TOPLEVEL' undeclared (first use 
+   this function)
+MutiCaptureOrbitals.cpp:194: error: `gtk_window_new' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:195: error: `GTK_WINDOW' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:195: error: `gtk_window_set_title' undeclared (first 
+   use this function)
+MutiCaptureOrbitals.cpp:196: error: `GTK_WIN_POS_CENTER' undeclared (first use 
+   this function)
+MutiCaptureOrbitals.cpp:196: error: `gtk_window_set_position' undeclared (first 
+   use this function)
+MutiCaptureOrbitals.cpp:197: error: `GTK_CONTAINER' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:197: error: `gtk_container_set_border_width' undeclared 
+   (first use this function)
+MutiCaptureOrbitals.cpp:198: error: `PrincipalWindow' undeclared (first use 
+   this function)
+MutiCaptureOrbitals.cpp:198: error: `gtk_window_set_transient_for' undeclared 
+   (first use this function)
+MutiCaptureOrbitals.cpp:199: error: `gtk_window_set_modal' undeclared (first 
+   use this function)
+MutiCaptureOrbitals.cpp:201: error: `add_glarea_child' cannot be used as a 
+   function
+MutiCaptureOrbitals.cpp:203: error: `create_vbox' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:205: error: `create_grid_frame' undeclared (first use 
+   this function)
+MutiCaptureOrbitals.cpp:206: error: erreur d'analyse syntaxique before `)' 
+   token
+MutiCaptureOrbitals.cpp:207: error: `G_OBJECT' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:207: error: `g_object_set_data' undeclared (first use 
+   this function)
+MutiCaptureOrbitals.cpp:210: error: `create_hbox_false' undeclared (first use 
+   this function)
+MutiCaptureOrbitals.cpp:211: error: `gtk_widget_realize' undeclared (first use 
+   this function)
+MutiCaptureOrbitals.cpp:213: error: `create_button' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:214: error: `GTK_CAN_DEFAULT' undeclared (first use 
+   this function)
+MutiCaptureOrbitals.cpp:214: error: `GTK_WIDGET_SET_FLAGS' undeclared (first 
+   use this function)
+MutiCaptureOrbitals.cpp:215: error: `GTK_BOX' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:215: error: `gtk_box_pack_start' undeclared (first use 
+   this function)
+MutiCaptureOrbitals.cpp:216: error: `GtkSignalFunc' undeclared (first use this 
+   function)
+MutiCaptureOrbitals.cpp:216: error: erreur d'analyse syntaxique before `,' 
+   token
+MutiCaptureOrbitals.cpp:217: error: erreur d'analyse syntaxique before `,' 
+   token
+MutiCaptureOrbitals.cpp:218: error: `gtk_widget_show' undeclared (first use 
+   this function)
+MutiCaptureOrbitals.cpp:223: error: `gtk_widget_grab_default' undeclared (first 
+   use this function)
+MutiCaptureOrbitals.cpp:225: error: erreur d'analyse syntaxique before `,' 
+   token
+MutiCaptureOrbitals.cpp:228: error: `gtk_widget_show_all' undeclared (first use 
+   this function)
+make: *** [MutiCaptureOrbitals.o] Erreur 1

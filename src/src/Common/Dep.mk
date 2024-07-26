@@ -53,7 +53,8 @@ MenuToolBar.o: ../MolecularMechanics/SetMMParameters.h
 MenuToolBar.o: ../MolecularMechanics/SetPDBTemplate.h ../Common/StockIcons.h
 MenuToolBar.o: ../OpenGL/Vibration.h ../Utils/GabeditXYPlot.h
 MenuToolBar.o: ../Spectrum/IRSpectrum.h ../Spectrum/RamanSpectrum.h
-MenuToolBar.o: ../Spectrum/UVSpectrum.h ../Spectrum/NMRSpectrum.h
+MenuToolBar.o: ../Spectrum/UVSpectrum.h ../Spectrum/ECDSpectrum.h
+MenuToolBar.o: ../Spectrum/NMRSpectrum.h
 Preferences.o: ../../Config.h Global.h
 Preferences.o: ../Files/GabeditFileChooser.h
 Preferences.o: ../Common/GabeditType.h ../Common/Help.h

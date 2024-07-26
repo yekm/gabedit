@@ -275,20 +275,24 @@ static void build_data_xyplot_peaks(XYPlotWinData* winData, XYPlotData* dataPeak
 	
      
 	dataPeaks->x[0]=winData->xmin;
-	dataPeaks->y[0]=winData->ymin;
+	/* dataPeaks->y[0]=winData->ymin;*/
+	dataPeaks->y[0]=0;
 	dataPeaks->x[dataPeaks->size-1]=winData->xmax;
-	dataPeaks->y[dataPeaks->size-1]=winData->ymin;
+	/* dataPeaks->y[dataPeaks->size-1]=winData->ymin;*/
+	dataPeaks->y[dataPeaks->size-1]=0;
 	for (loop=0; loop<winData->size; loop++){
 		gint iold = loop*3+1;
 		gdouble xx = winData->x[loop]*winData->scaleX;
 		dataPeaks->x[iold]=xx;
-		dataPeaks->y[iold]=winData->ymin;
+		/* dataPeaks->y[iold]=winData->ymin;*/
+		dataPeaks->y[iold]=0;
 
 		dataPeaks->x[iold+1]=xx;
 		dataPeaks->y[iold+1]=winData->y[loop]*winData->scaleY;
 
 		dataPeaks->x[iold+2]=xx;
-		dataPeaks->y[iold+2]=winData->ymin;
+		/* dataPeaks->y[iold+2]=winData->ymin;*/
+		dataPeaks->y[iold+2]=0;
 	}
 
 	sprintf(dataPeaks->point_str,"+");

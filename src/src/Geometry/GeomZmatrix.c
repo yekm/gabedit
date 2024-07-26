@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <math.h>
 
 #include "../Common/Global.h"
 #include "../Utils/Constantes.h"
@@ -85,6 +86,10 @@ static void insertToList(GtkWidget* myList, gint ligne, gchar* texts[], gint nCo
 static void appendToList(GtkWidget* myList, gchar* texts[], gint nColumns);
 static gint get_info_one_center(gchar* t, gchar* info[]);
 static void set_center(gchar* info[]);
+static gboolean TestVariablesCreated(gchar *NewName,gint j);
+static void append_list_geom();
+static gint testav(gchar *t);
+static void append_list_variables();
 /********************************************************************************/
 static void DialogueAdd();
 static void DialogueEdit();
@@ -138,6 +143,7 @@ static void insertToList(GtkWidget* myList, gint ligne, gchar* texts[], gint nCo
         GtkListStore *store;
 	GtkTreeIter  iter;
 	gint k;
+	gint Nc = ligne;
 
 	if(ligne<0) ligne = 0;
 
@@ -147,7 +153,12 @@ static void insertToList(GtkWidget* myList, gint ligne, gchar* texts[], gint nCo
 	gtk_list_store_insert(store, &iter, ligne);
 	for(k=0;k<nColumns;k++)
 	{
-       		gtk_list_store_set (store, &iter, k, texts[k], -1);
+		gboolean ed = TRUE;
+		if(myList == list && k==0 ) ed=FALSE;
+		if(myList == list && Nc<1 && k>4 && k<11) ed=FALSE;
+		if(myList == list && Nc<2 && k>6 && k<11) ed=FALSE;
+		if(myList == list && Nc<3 && k>8 && k<11) ed=FALSE;
+       		gtk_list_store_set (store, &iter, k+k, texts[k],k+k+1,ed, -1);
 		g_free(texts[k]);
 	}
 }
@@ -158,6 +169,7 @@ static void appendToList(GtkWidget* myList, gchar* texts[], gint nColumns)
         GtkListStore *store;
 	GtkTreeIter  iter;
 	gint k;
+	gint Nc = NcentersZmat -1;
 
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(myList));
         store = GTK_LIST_STORE (model);
@@ -165,8 +177,1263 @@ static void appendToList(GtkWidget* myList, gchar* texts[], gint nColumns)
 	gtk_list_store_append(store, &iter);
 	for(k=0;k<nColumns;k++)
 	{
-       		gtk_list_store_set (store, &iter, k, texts[k], -1);
+		gboolean ed = TRUE;
+		if(myList == list && k==0 ) ed=FALSE;
+		if(myList == list && Nc<1 && k>4 && k<11) ed=FALSE;
+		if(myList == list && Nc<2 && k>6 && k<11) ed=FALSE;
+		if(myList == list && Nc<3 && k>8 && k<11) ed=FALSE;
+       		gtk_list_store_set (store, &iter, k+k, texts[k],k+k+1,ed, -1);
 		g_free(texts[k]);
+	}
+}
+/********************************************************************************/
+static void changeNameVariableInGeometry(gchar* oldName, gchar* newName)
+{
+	gint i;
+	gint k=-1;
+	for(i=0;i<NcentersZmat;i++)
+	{
+  		if(i>0 && !strcmp(Geom[i].R,oldName))
+		{
+			if(Geom[i].R) g_free(Geom[i].R);
+			Geom[i].R =  g_strdup(newName);
+			k = 0;
+		}
+  		if(i>1 && !strcmp(Geom[i].Angle,oldName))
+		{
+			if(Geom[i].Angle) g_free(Geom[i].Angle);
+			Geom[i].Angle =  g_strdup(newName);
+			k = 0;
+		}
+  		if(i>2 && !strcmp(Geom[i].Dihedral,oldName))
+		{
+			if(Geom[i].Dihedral) g_free(Geom[i].Dihedral);
+			Geom[i].Dihedral =  g_strdup(newName);
+			k=0;
+		}
+	}
+	if(k==0)
+	{
+		clearList(list);
+		append_list_geom();
+	}
+}
+/********************************************************************************/
+static void editedVariable (GtkCellRendererText *cell, gchar  *path_string,
+		    gchar *new_text, gpointer data)
+{
+	GtkTreeModel *model = GTK_TREE_MODEL (data);
+	GtkTreeIter iter;
+	GtkTreePath *path = NULL;
+	gint numCol = 0;
+	gint Nc = -1;
+	numCol = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(cell),"NumColumn"));
+	gchar* oldName = NULL;
+	if(numCol==0)
+	{
+		Nc = -1;
+  		if(!variable_name_valid(new_text))
+  		{
+			show_forbidden_characters();
+      			return;
+  		} 
+        	if ( !strcmp(new_text, "")) return;
+	  	Nc = atoi(path_string);
+  		if(TestVariablesCreated(new_text,Nc) )
+  		{
+			MessageGeom("Sorry a other variable have any Name !\n"," Error ",TRUE);
+      			return;
+		} 
+	}
+	if(numCol==1)
+	{
+  		if(!test(new_text))
+		{
+			gchar* message=g_strdup_printf("Sorry %s is not a number \n",new_text);
+			MessageGeom(message," Error ",TRUE);
+			g_free(message);
+			return;
+  		}
+        	if ( !strcmp(new_text, "")) return;
+	  	Nc = atoi(path_string);
+  		if(test(new_text) && !testpointeE(new_text) )
+			new_text=g_strdup_printf("%s.0",new_text);
+	}
+	if(Nc<0)return;
+	if(numCol==0)
+	{
+		oldName = Variables[Nc].Name;
+  		Variables[Nc].Name=g_strdup(new_text);
+	}
+	if(numCol==1)
+	{
+		if(Variables[Nc].Value) g_free(Variables[Nc].Value);
+  		Variables[Nc].Value=g_strdup(new_text);
+	}
+
+	/* printf("%s\n",path_string);*/
+
+	path = gtk_tree_path_new_from_string (path_string);
+	gtk_tree_model_get_iter (model, &iter, path);
+	gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
+
+	gtk_tree_path_free (path);
+	if(numCol==0 && oldName) 
+	{
+		changeNameVariableInGeometry(oldName, new_text);
+		g_free(oldName);
+	}
+	if(numCol==1 && ZoneDessin != NULL) rafresh_drawing();
+}
+/*****************************************************************************/
+static gchar* get_distance_zmatrix(gint ai, gint aj)
+{
+	gdouble cosph,sinph,costh,sinth,coskh,sinkh;
+	gdouble cosa,sina,cosd,sind;
+	gdouble dist,angle,dihed;
+	gdouble xpd,ypd,zpd,xqd,yqd,zqd;
+	gdouble xa,ya,za,xb,yb,zb;
+	gdouble rbc,xyb,yza,temp;
+	gdouble xpa,ypa,zqa;
+	gdouble xd,yd,zd;
+	gboolean flag;
+	gint i, na, nb, nc;
+	gdouble *X = NULL;
+	gdouble *Y = NULL;
+	gdouble *Z = NULL;
+	gint amax = aj;
+
+	if (NcentersZmat <= 1) return NULL;
+	if (ai < 0) return NULL;
+	if (aj < 0) return NULL;
+	if (ai > aj) amax = ai;
+	if (amax > NcentersZmat-1) return NULL;
+
+
+	X = g_malloc(NcentersZmat*sizeof(gdouble));
+	Y = g_malloc(NcentersZmat*sizeof(gdouble));
+	Z = g_malloc(NcentersZmat*sizeof(gdouble));
+
+	for (i = 0; i <(gint)NcentersZmat; i++) X[i] = Y[i] = Z[i] = 0; 
+
+	/* Atom #1 */
+	X[0] = 0;
+	Y[0] = 0;
+	Z[0] = 0;
+	
+	/* Atom #2 */
+	if(!test(Geom[1].R)) X[1] = get_value_variableZmat(Geom[1].R);
+	else X[1] = atof(Geom[1].R);
+	Y[1] = 0;
+	Z[1] = 0;
+	if (NcentersZmat == 2 && amax<2) 
+	{
+		gdouble r = X[1];
+		g_free(X);
+		g_free(Y);
+		g_free(Z);
+		return g_strdup_printf("%f",r);
+	}
+
+	/* Atom #3 */
+	if(!test(Geom[2].R)) dist = get_value_variableZmat(Geom[2].R);
+	else dist = atof(Geom[2].R);
+
+	if(!test(Geom[2].Angle)) angle = get_value_variableZmat(Geom[2].Angle);
+	else angle = atof(Geom[2].Angle);
+
+	angle *=	DEG_TO_RAD;
+
+	cosa = cos(angle);
+	sina = sin(angle);
+	if( atoi (Geom[2].NAngle) == 2 ) X[2] =	X[0] + cosa*dist;
+	else X[2] = X[1] - cosa*dist;
+	
+	Y[2] =	sina*dist;
+	Z[2] = 0.0;
+	
+	if(amax<3)
+	{
+		gdouble r = (X[ai]-X[aj])*(X[ai]-X[aj])+(Y[ai]-Y[aj])*(Y[ai]-Y[aj])+(Z[ai]-Z[aj])*(Z[ai]-Z[aj]);
+		r = sqrt(r);
+		g_free(X);
+		g_free(Y);
+		g_free(Z);
+		return g_strdup_printf("%f",r);
+	}
+	for (i = 3; i <(gint)NcentersZmat; i++)
+	{	 
+		if(i>amax)break;
+		if(!test(Geom[i].R)) dist = get_value_variableZmat(Geom[i].R);
+		else dist = atof(Geom[i].R);
+
+		if(!test(Geom[i].Angle)) angle = get_value_variableZmat(Geom[i].Angle);
+		else angle = atof(Geom[i].Angle) ;
+
+		if(!test(Geom[i].Dihedral)) dihed = get_value_variableZmat(Geom[i].Dihedral);
+		else dihed = atof(Geom[i].Dihedral) ;
+
+		angle *= DEG_TO_RAD;
+		dihed *= DEG_TO_RAD;
+
+		na = atoi(Geom[i].NR)-1;
+		nb = atoi(Geom[i].NAngle)-1;
+		nc = atoi(Geom[i].NDihedral)-1;
+		
+		xb = X[nb] - X[na];
+		yb = Y[nb] - Y[na];
+		zb = Z[nb] - Z[na];
+		
+		rbc = xb*xb + yb*yb + zb*zb;
+		if( rbc < 0.0001 )
+		{
+			g_free(X);
+			g_free(Y);
+			g_free(Z);
+			printf("Warning : rbc < 0.0001 in get_distance_zmatrix\n");
+			return NULL;
+		}
+		rbc = 1.0/sqrt(rbc);
+		
+		cosa = cos(angle);
+		sina = sin(angle);
+		
+		
+		if( fabs(cosa) >= 0.999999 )
+		{ 
+			/* Colinear */
+			temp = dist*rbc*cosa;
+			X[i]	= X[na] + temp*xb;
+			Y[i]	= Y[na] + temp*yb;
+			Z[i]	= Z[na] + temp*zb;
+		} 
+		else
+		{
+			xa = X[nc] - X[na];
+			ya = Y[nc] - Y[na];
+			za = Z[nc] - Z[na];
+			
+			sind = -sin(dihed);
+			cosd = cos(dihed);
+			
+			xd = dist*cosa;
+			yd = dist*sina*cosd;
+			zd = dist*sina*sind;
+			
+			xyb = sqrt(xb*xb + yb*yb);
+			if( xyb < 0.1 )
+			{	
+				/* Rotate about y-axis! */
+				temp = za; za = -xa; xa = temp;
+				temp = zb; zb = -xb; xb = temp;
+				xyb = sqrt(xb*xb + yb*yb);
+				flag = TRUE;
+			}
+			else flag = FALSE;
+			
+			costh = xb/xyb;
+			sinth = yb/xyb;
+			xpa = costh*xa + sinth*ya;
+			ypa = costh*ya - sinth*xa;
+			
+			sinph = zb*rbc;
+			cosph = sqrt(1.0 - sinph*sinph);
+			zqa = cosph*za	- sinph*xpa;
+			
+			yza = sqrt(ypa*ypa + zqa*zqa);
+			
+			if( yza > 1.0E-10 )
+			{	 
+				coskh = ypa/yza;
+				sinkh = zqa/yza;
+	
+				ypd = coskh*yd - sinkh*zd;
+				zpd = coskh*zd + sinkh*yd;
+			} 
+			else
+			{ 
+				/* coskh = 1.0; */
+				/* sinkh = 0.0; */
+				ypd = yd;
+				zpd = zd;
+			}
+			
+			xpd = cosph*xd	- sinph*zpd;
+			zqd = cosph*zpd + sinph*xd;
+			xqd = costh*xpd - sinth*ypd;
+			yqd = costh*ypd + sinth*xpd;
+			
+			if( flag )
+			{ 
+				/* Rotate about y-axis! */
+				X[i] = X[na] - zqd;
+				Y[i] = Y[na] + yqd;
+				Z[i] = Z[na] + xqd;
+			} 
+			else
+			{	
+				X[i] =X[na] + xqd;
+				Y[i] =Y[na] + yqd;
+				Z[i] =Z[na] + zqd;
+			}
+		}
+	}
+	{
+		gdouble r = (X[ai]-X[aj])*(X[ai]-X[aj])+(Y[ai]-Y[aj])*(Y[ai]-Y[aj])+(Z[ai]-Z[aj])*(Z[ai]-Z[aj]);
+		r = sqrt(r);
+		g_free(X);
+		g_free(Y);
+		g_free(Z);
+		return g_strdup_printf("%f",r);
+	}
+}
+/*****************************************************************************/
+static gchar* get_angle_zmatrix(gint ai, gint aj, gint ak)
+{
+	gdouble cosph,sinph,costh,sinth,coskh,sinkh;
+	gdouble cosa,sina,cosd,sind;
+	gdouble dist,angle,dihed;
+	gdouble xpd,ypd,zpd,xqd,yqd,zqd;
+	gdouble xa,ya,za,xb,yb,zb;
+	gdouble rbc,xyb,yza,temp;
+	gdouble xpa,ypa,zqa;
+	gdouble xd,yd,zd;
+	gboolean flag;
+	gint i, na, nb, nc;
+	gdouble *X = NULL;
+	gdouble *Y = NULL;
+	gdouble *Z = NULL;
+	gint amax = ak;
+
+	if (NcentersZmat <= 1) return NULL;
+	if (ai < 0) return NULL;
+	if (aj < 0) return NULL;
+	if (ak < 0) return NULL;
+	if (ai > amax) amax = ai;
+	if (aj > amax) amax = aj;
+	if (amax > NcentersZmat-1) return NULL;
+
+
+	X = g_malloc(NcentersZmat*sizeof(gdouble));
+	Y = g_malloc(NcentersZmat*sizeof(gdouble));
+	Z = g_malloc(NcentersZmat*sizeof(gdouble));
+
+	for (i = 0; i <(gint)NcentersZmat; i++) X[i] = Y[i] = Z[i] = 0; 
+
+	/* Atom #1 */
+	X[0] = 0;
+	Y[0] = 0;
+	Z[0] = 0;
+	
+	/* Atom #2 */
+	if(!test(Geom[1].R)) X[1] = get_value_variableZmat(Geom[1].R);
+	else X[1] = atof(Geom[1].R);
+	Y[1] = 0;
+	Z[1] = 0;
+
+	/* Atom #3 */
+	if(!test(Geom[2].R)) dist = get_value_variableZmat(Geom[2].R);
+	else dist = atof(Geom[2].R);
+
+	if(!test(Geom[2].Angle)) angle = get_value_variableZmat(Geom[2].Angle);
+	else angle = atof(Geom[2].Angle);
+
+	angle *=	DEG_TO_RAD;
+
+	cosa = cos(angle);
+	sina = sin(angle);
+	if( atoi (Geom[2].NAngle) == 2 ) X[2] =	X[0] + cosa*dist;
+	else X[2] = X[1] - cosa*dist;
+	
+	Y[2] =	sina*dist;
+	Z[2] = 0.0;
+	
+	if(amax<3)
+	{
+        	Point A;
+        	Point B;
+
+		A.C[0]=X[ai]-X[aj];
+		A.C[1]=Y[ai]-Y[aj];
+		A.C[2]=Z[ai]-Z[aj];
+        
+		B.C[0]=X[ak]-X[aj];
+		B.C[1]=Y[ak]-Y[aj];
+		B.C[2]=Z[ak]-Z[aj];
+
+		g_free(X);
+		g_free(Y);
+		g_free(Z);
+        	return get_angle_vectors(A,B);
+	}
+	for (i = 3; i <(gint)NcentersZmat; i++)
+	{	 
+		if(i>amax)break;
+		if(!test(Geom[i].R)) dist = get_value_variableZmat(Geom[i].R);
+		else dist = atof(Geom[i].R);
+
+		if(!test(Geom[i].Angle)) angle = get_value_variableZmat(Geom[i].Angle);
+		else angle = atof(Geom[i].Angle) ;
+
+		if(!test(Geom[i].Dihedral)) dihed = get_value_variableZmat(Geom[i].Dihedral);
+		else dihed = atof(Geom[i].Dihedral) ;
+
+		angle *= DEG_TO_RAD;
+		dihed *= DEG_TO_RAD;
+
+		na = atoi(Geom[i].NR)-1;
+		nb = atoi(Geom[i].NAngle)-1;
+		nc = atoi(Geom[i].NDihedral)-1;
+		
+		xb = X[nb] - X[na];
+		yb = Y[nb] - Y[na];
+		zb = Z[nb] - Z[na];
+		
+		rbc = xb*xb + yb*yb + zb*zb;
+		if( rbc < 0.0001 )
+		{
+			g_free(X);
+			g_free(Y);
+			g_free(Z);
+			printf("Warning : rbc < 0.0001 in get_distance_zmatrix\n");
+			return NULL;
+		}
+		rbc = 1.0/sqrt(rbc);
+		
+		cosa = cos(angle);
+		sina = sin(angle);
+		
+		
+		if( fabs(cosa) >= 0.999999 )
+		{ 
+			/* Colinear */
+			temp = dist*rbc*cosa;
+			X[i]	= X[na] + temp*xb;
+			Y[i]	= Y[na] + temp*yb;
+			Z[i]	= Z[na] + temp*zb;
+		} 
+		else
+		{
+			xa = X[nc] - X[na];
+			ya = Y[nc] - Y[na];
+			za = Z[nc] - Z[na];
+			
+			sind = -sin(dihed);
+			cosd = cos(dihed);
+			
+			xd = dist*cosa;
+			yd = dist*sina*cosd;
+			zd = dist*sina*sind;
+			
+			xyb = sqrt(xb*xb + yb*yb);
+			if( xyb < 0.1 )
+			{	
+				/* Rotate about y-axis! */
+				temp = za; za = -xa; xa = temp;
+				temp = zb; zb = -xb; xb = temp;
+				xyb = sqrt(xb*xb + yb*yb);
+				flag = TRUE;
+			}
+			else flag = FALSE;
+			
+			costh = xb/xyb;
+			sinth = yb/xyb;
+			xpa = costh*xa + sinth*ya;
+			ypa = costh*ya - sinth*xa;
+			
+			sinph = zb*rbc;
+			cosph = sqrt(1.0 - sinph*sinph);
+			zqa = cosph*za	- sinph*xpa;
+			
+			yza = sqrt(ypa*ypa + zqa*zqa);
+			
+			if( yza > 1.0E-10 )
+			{	 
+				coskh = ypa/yza;
+				sinkh = zqa/yza;
+	
+				ypd = coskh*yd - sinkh*zd;
+				zpd = coskh*zd + sinkh*yd;
+			} 
+			else
+			{ 
+				/* coskh = 1.0; */
+				/* sinkh = 0.0; */
+				ypd = yd;
+				zpd = zd;
+			}
+			
+			xpd = cosph*xd	- sinph*zpd;
+			zqd = cosph*zpd + sinph*xd;
+			xqd = costh*xpd - sinth*ypd;
+			yqd = costh*ypd + sinth*xpd;
+			
+			if( flag )
+			{ 
+				/* Rotate about y-axis! */
+				X[i] = X[na] - zqd;
+				Y[i] = Y[na] + yqd;
+				Z[i] = Z[na] + xqd;
+			} 
+			else
+			{	
+				X[i] =X[na] + xqd;
+				Y[i] =Y[na] + yqd;
+				Z[i] =Z[na] + zqd;
+			}
+		}
+	}
+	{
+        	Point A;
+        	Point B;
+
+		A.C[0]=X[ai]-X[aj];
+		A.C[1]=Y[ai]-Y[aj];
+		A.C[2]=Z[ai]-Z[aj];
+        
+		B.C[0]=X[ak]-X[aj];
+		B.C[1]=Y[ak]-Y[aj];
+		B.C[2]=Z[ak]-Z[aj];
+
+		g_free(X);
+		g_free(Y);
+		g_free(Z);
+        	return get_angle_vectors(A,B);
+	}
+}
+/*****************************************************************************/
+static gchar* get_dihedral_zmatrix(gint ai, gint aj, gint ak, gint al)
+{
+	gdouble cosph,sinph,costh,sinth,coskh,sinkh;
+	gdouble cosa,sina,cosd,sind;
+	gdouble dist,angle,dihed;
+	gdouble xpd,ypd,zpd,xqd,yqd,zqd;
+	gdouble xa,ya,za,xb,yb,zb;
+	gdouble rbc,xyb,yza,temp;
+	gdouble xpa,ypa,zqa;
+	gdouble xd,yd,zd;
+	gboolean flag;
+	gint i, na, nb, nc;
+	gdouble *X = NULL;
+	gdouble *Y = NULL;
+	gdouble *Z = NULL;
+	gint amax = al;
+
+	if (NcentersZmat <= 1) return NULL;
+	if (ai < 0) return NULL;
+	if (aj < 0) return NULL;
+	if (ak < 0) return NULL;
+	if (al < 0) return NULL;
+	if (ai > amax) amax = ai;
+	if (aj > amax) amax = aj;
+	if (ak > amax) amax = ak;
+	if (amax > NcentersZmat-1) return NULL;
+
+
+	X = g_malloc(NcentersZmat*sizeof(gdouble));
+	Y = g_malloc(NcentersZmat*sizeof(gdouble));
+	Z = g_malloc(NcentersZmat*sizeof(gdouble));
+
+	for (i = 0; i <(gint)NcentersZmat; i++) X[i] = Y[i] = Z[i] = 0; 
+
+	/* Atom #1 */
+	X[0] = 0;
+	Y[0] = 0;
+	Z[0] = 0;
+	
+	/* Atom #2 */
+	if(!test(Geom[1].R)) X[1] = get_value_variableZmat(Geom[1].R);
+	else X[1] = atof(Geom[1].R);
+	Y[1] = 0;
+	Z[1] = 0;
+
+	/* Atom #3 */
+	if(!test(Geom[2].R)) dist = get_value_variableZmat(Geom[2].R);
+	else dist = atof(Geom[2].R);
+
+	if(!test(Geom[2].Angle)) angle = get_value_variableZmat(Geom[2].Angle);
+	else angle = atof(Geom[2].Angle);
+
+	angle *=	DEG_TO_RAD;
+
+	cosa = cos(angle);
+	sina = sin(angle);
+	if( atoi (Geom[2].NAngle) == 2 ) X[2] =	X[0] + cosa*dist;
+	else X[2] = X[1] - cosa*dist;
+	
+	Y[2] =	sina*dist;
+	Z[2] = 0.0;
+	
+	for (i = 3; i <(gint)NcentersZmat; i++)
+	{	 
+		if(i>amax)break;
+		if(!test(Geom[i].R)) dist = get_value_variableZmat(Geom[i].R);
+		else dist = atof(Geom[i].R);
+
+		if(!test(Geom[i].Angle)) angle = get_value_variableZmat(Geom[i].Angle);
+		else angle = atof(Geom[i].Angle) ;
+
+		if(!test(Geom[i].Dihedral)) dihed = get_value_variableZmat(Geom[i].Dihedral);
+		else dihed = atof(Geom[i].Dihedral) ;
+
+		angle *= DEG_TO_RAD;
+		dihed *= DEG_TO_RAD;
+
+		na = atoi(Geom[i].NR)-1;
+		nb = atoi(Geom[i].NAngle)-1;
+		nc = atoi(Geom[i].NDihedral)-1;
+		
+		xb = X[nb] - X[na];
+		yb = Y[nb] - Y[na];
+		zb = Z[nb] - Z[na];
+		
+		rbc = xb*xb + yb*yb + zb*zb;
+		if( rbc < 0.0001 )
+		{
+			g_free(X);
+			g_free(Y);
+			g_free(Z);
+			printf("Warning : rbc < 0.0001 in get_distance_zmatrix\n");
+			return NULL;
+		}
+		rbc = 1.0/sqrt(rbc);
+		
+		cosa = cos(angle);
+		sina = sin(angle);
+		
+		
+		if( fabs(cosa) >= 0.999999 )
+		{ 
+			/* Colinear */
+			temp = dist*rbc*cosa;
+			X[i]	= X[na] + temp*xb;
+			Y[i]	= Y[na] + temp*yb;
+			Z[i]	= Z[na] + temp*zb;
+		} 
+		else
+		{
+			xa = X[nc] - X[na];
+			ya = Y[nc] - Y[na];
+			za = Z[nc] - Z[na];
+			
+			sind = -sin(dihed);
+			cosd = cos(dihed);
+			
+			xd = dist*cosa;
+			yd = dist*sina*cosd;
+			zd = dist*sina*sind;
+			
+			xyb = sqrt(xb*xb + yb*yb);
+			if( xyb < 0.1 )
+			{	
+				/* Rotate about y-axis! */
+				temp = za; za = -xa; xa = temp;
+				temp = zb; zb = -xb; xb = temp;
+				xyb = sqrt(xb*xb + yb*yb);
+				flag = TRUE;
+			}
+			else flag = FALSE;
+			
+			costh = xb/xyb;
+			sinth = yb/xyb;
+			xpa = costh*xa + sinth*ya;
+			ypa = costh*ya - sinth*xa;
+			
+			sinph = zb*rbc;
+			cosph = sqrt(1.0 - sinph*sinph);
+			zqa = cosph*za	- sinph*xpa;
+			
+			yza = sqrt(ypa*ypa + zqa*zqa);
+			
+			if( yza > 1.0E-10 )
+			{	 
+				coskh = ypa/yza;
+				sinkh = zqa/yza;
+	
+				ypd = coskh*yd - sinkh*zd;
+				zpd = coskh*zd + sinkh*yd;
+			} 
+			else
+			{ 
+				/* coskh = 1.0; */
+				/* sinkh = 0.0; */
+				ypd = yd;
+				zpd = zd;
+			}
+			
+			xpd = cosph*xd	- sinph*zpd;
+			zqd = cosph*zpd + sinph*xd;
+			xqd = costh*xpd - sinth*ypd;
+			yqd = costh*ypd + sinth*xpd;
+			
+			if( flag )
+			{ 
+				/* Rotate about y-axis! */
+				X[i] = X[na] - zqd;
+				Y[i] = Y[na] + yqd;
+				Z[i] = Z[na] + xqd;
+			} 
+			else
+			{	
+				X[i] =X[na] + xqd;
+				Y[i] =Y[na] + yqd;
+				Z[i] =Z[na] + zqd;
+			}
+		}
+	}
+	{
+		Point A;
+		Point B;
+		Point V1;
+		Point V2;
+		Point W1;
+		gdouble angle;
+		gdouble dihsgn;
+
+		V1.C[0]=X[ai]-X[aj];
+		V1.C[1]=Y[ai]-Y[aj];
+		V1.C[2]=Z[ai]-Z[aj];
+
+		V2.C[0]=X[ak]-X[aj];
+		V2.C[1]=Y[ak]-Y[aj];
+		V2.C[2]=Z[ak]-Z[aj];
+
+		A = get_produit_vectoriel(V1,V2);
+
+		V1.C[0]=X[al]-X[ak];
+		V1.C[1]=Y[al]-Y[ak];
+		V1.C[2]=Z[al]-Z[ak];
+
+		V2.C[0]=X[aj]-X[ak];
+		V2.C[1]=Y[aj]-Y[ak];
+		V2.C[2]=Z[aj]-Z[ak];
+
+		B = get_produit_vectoriel(V2,V1);
+
+		angle = atof(get_angle_vectors(A,B));
+
+		W1 = get_produit_vectoriel(A,B);
+		if (get_module(W1)<1e-5 ) dihsgn = 1.0e0;
+		else
+		{
+			dihsgn = get_scalaire(W1,V2);
+			if (dihsgn>0) dihsgn = -1.0e0;
+			else dihsgn = 1.0e0;
+		}
+		angle *=dihsgn;
+		return g_strdup_printf("%f",angle);
+	}
+}
+/********************************************************************************/
+static void set_text_column (GtkTreeModel *model , gchar  *path_string, gchar *text, gint n)
+{
+	GtkTreeIter iter;
+	GtkTreePath *path = NULL;
+	path = gtk_tree_path_new_from_string (path_string);
+	gtk_tree_model_get_iter (model, &iter, path);
+	gtk_list_store_set (GTK_LIST_STORE (model), &iter, n, text, -1);
+	gtk_tree_path_free (path);
+}
+/********************************************************************************/
+static gboolean reset_r_value(gint Nc, gchar* val)
+{
+	gint numvar = testav(Geom[Nc].R);
+	if(numvar>=0){
+  		if(Variables[numvar].Value) g_free(Variables[numvar].Value);
+		Variables[numvar].Value = val;
+   		clearList(listv);
+   		append_list_variables();
+		return FALSE;
+	}
+	else
+	{
+  		if(Geom[Nc].R) g_free(Geom[Nc].R);
+		Geom[Nc].R = val;
+		return TRUE;
+	}
+}
+/********************************************************************************/
+static gboolean reset_angle_value(gint Nc, gchar* val)
+{
+	gint numvar = testav(Geom[Nc].Angle);
+	if(numvar>=0){
+  		if(Variables[numvar].Value) g_free(Variables[numvar].Value);
+		Variables[numvar].Value = val;
+   		clearList(listv);
+   		append_list_variables();
+		return FALSE;
+	}
+	else
+	{
+  		if(Geom[Nc].Angle) g_free(Geom[Nc].Angle);
+		Geom[Nc].Angle = val;
+		return TRUE;
+	}
+}
+/********************************************************************************/
+static gboolean reset_dihedral_value(gint Nc, gchar* val)
+{
+	gint numvar = testav(Geom[Nc].Dihedral);
+	if(numvar>=0){
+  		if(Variables[numvar].Value) g_free(Variables[numvar].Value);
+		Variables[numvar].Value = val;
+   		clearList(listv);
+   		append_list_variables();
+		return FALSE;
+	}
+	else
+	{
+  		if(Geom[Nc].Dihedral) g_free(Geom[Nc].Dihedral);
+		Geom[Nc].Dihedral = val;
+		return TRUE;
+	}
+}
+/********************************************************************************/
+static void editedGeom (GtkCellRendererText *cell, gchar  *path_string,
+		    gchar *new_text, gpointer data)
+{
+	GtkTreeModel *model = GTK_TREE_MODEL (data);
+	GtkTreeIter iter;
+	GtkTreePath *path = NULL;
+	gint numCol = 0;
+	gint Nc = -1;
+	numCol = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(cell),"NumColumn"));
+	if(numCol==E_NUMBER) return;
+	if(!new_text) return;
+	/* symbol */
+	if(numCol==E_SYMBOL)
+	{
+		gint nc = strlen(new_text);
+		if(nc<1)return;
+		new_text[0]=toupper(new_text[0]);
+		if(nc>1)new_text[1]=tolower(new_text[1]);
+		if(!test_atom_define(new_text))
+		{
+			gchar* message=g_strdup_printf("Sorry %s is not a symbol for an atom \n",new_text);
+			MessageGeom(message," Error ",TRUE);
+			g_free(message);
+			return;
+		}
+	  	Nc = atoi(path_string);
+  		if(Geom[Nc].Symb) g_free(Geom[Nc].Symb);
+		Geom[Nc].Symb = g_strdup(new_text);
+		path = gtk_tree_path_new_from_string (path_string);
+		gtk_tree_model_get_iter (model, &iter, path);
+		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
+		gtk_tree_path_free (path);
+		if(ZoneDessin != NULL) rafresh_drawing();
+		return;
+	}
+	/* MM Type */
+	if(numCol==E_MMTYPE)
+	{
+		gint nc = strlen(new_text);
+		if(nc<1)return;
+	  	Nc = atoi(path_string);
+  		if(Geom[Nc].mmType) g_free(Geom[Nc].mmType);
+		Geom[Nc].mmType = g_strdup(new_text);
+		path = gtk_tree_path_new_from_string (path_string);
+		gtk_tree_model_get_iter (model, &iter, path);
+		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
+		gtk_tree_path_free (path);
+		if(ZoneDessin != NULL) rafresh_drawing();
+		return;
+	}
+	/* PDB Type */
+	if(numCol==E_PDBTYPE)
+	{
+		gint nc = strlen(new_text);
+		if(nc<1)return;
+	  	Nc = atoi(path_string);
+  		if(Geom[Nc].pdbType) g_free(Geom[Nc].pdbType);
+		Geom[Nc].pdbType = g_strdup(new_text);
+		path = gtk_tree_path_new_from_string (path_string);
+		gtk_tree_model_get_iter (model, &iter, path);
+		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
+		gtk_tree_path_free (path);
+		if(ZoneDessin != NULL) rafresh_drawing();
+		return;
+	}
+	/* Residue Name  */
+	if(numCol==E_RESIDUE)
+	{
+		gint nc = strlen(new_text);
+		if(nc<1)return;
+	  	Nc = atoi(path_string);
+  		if(strcmp(Geom[Nc].Residue,new_text))
+  		{
+  			if(Geom[Nc].Residue) g_free(Geom[Nc].Residue);
+			Geom[Nc].Residue = g_strdup(new_text);
+	  		gint k;
+	  		Geom[Nc].ResidueNumber = -1; 
+	  		for(k=0;k<(gint)NcentersZmat;k++)
+	  		{
+		  		if(Nc != k && !strcmp(Geom[Nc].Residue,Geom[k].Residue))
+		  		{
+			  		Geom[Nc].ResidueNumber = Geom[k].ResidueNumber;
+			  		break;
+		  		}
+	  		}
+	  		if(Geom[Nc].ResidueNumber == -1)
+	  		{
+	  			for(k=0;k<(gint)NcentersZmat;k++)
+	  			{
+		  			if(Geom[Nc].ResidueNumber<Geom[k].ResidueNumber)
+			  			Geom[Nc].ResidueNumber = Geom[k].ResidueNumber;
+	  			}
+	  			Geom[Nc].ResidueNumber += 1;
+	  		}
+  		}
+		path = gtk_tree_path_new_from_string (path_string);
+		gtk_tree_model_get_iter (model, &iter, path);
+		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
+		gtk_tree_path_free (path);
+		if(ZoneDessin != NULL) rafresh_drawing();
+		return;
+	}
+
+	/* R, Angle or Dihedral  */
+	if(numCol==E_R || numCol==E_ANGLE || numCol==E_DIHEDRAL)
+	{
+		gint nc = strlen(new_text);
+		if(nc<1)return;
+	  	Nc = atoi(path_string);
+		if(testav(new_text)<-1)
+		{	
+			gchar* message=g_strdup_printf("Sorry\n %s \nis not a number \nand is not a variable ",new_text);
+			MessageGeom(message," Error ",TRUE);
+			g_free(message);
+        		return;
+		}
+  		if(test(new_text) && !testpointeE(new_text) )
+			new_text=g_strdup_printf("%s.0",new_text);
+  		if(test(new_text) && atof(new_text)<0 && numCol==E_R)
+		{
+			gchar* message=g_strdup_printf("Sorry : The distance can not be negative");
+			MessageGeom(message," Error ",TRUE);
+			g_free(message);
+        		return;
+		}
+  		if(test(new_text) && fabs(atof(new_text))<0.01 && numCol==E_R)
+		{
+			gchar* message=g_strdup_printf("Sorry : The distance can not be <0.01");
+			MessageGeom(message," Error ",TRUE);
+			g_free(message);
+        		return;
+		}
+
+		if(numCol==E_R)
+		{
+  			if(Geom[Nc].R) g_free(Geom[Nc].R);
+			Geom[Nc].R = g_strdup(new_text);
+		}
+		if(numCol==E_ANGLE)
+		{
+  			if(Geom[Nc].Angle) g_free(Geom[Nc].Angle);
+			Geom[Nc].Angle = g_strdup(new_text);
+		}
+		if(numCol==E_DIHEDRAL)
+		{
+  			if(Geom[Nc].Dihedral) g_free(Geom[Nc].Dihedral);
+			Geom[Nc].Dihedral = g_strdup(new_text);
+		}
+		path = gtk_tree_path_new_from_string (path_string);
+		gtk_tree_model_get_iter (model, &iter, path);
+		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
+		gtk_tree_path_free (path);
+		if(ZoneDessin != NULL) rafresh_drawing();
+		return;
+	}
+	/* NR, NAngle, NDihedral  */
+	if(numCol==E_NUMBER_R || numCol==E_NUMBER_ANGLE || numCol==E_NUMBER_DIHEDRAL)
+	{
+		gint nc = strlen(new_text);
+		gint N = -1;
+		gint NR = -1;
+		gint NA = -1;
+		gint ND = -1;
+		if(nc<1)return;
+	  	Nc = atoi(path_string);
+		if(!isInteger(new_text))
+		{	
+			gchar* message=g_strdup_printf("Sorry\n %s \nis not an integer ",new_text);
+			MessageGeom(message," Error ",TRUE);
+			g_free(message);
+        		return;
+		}
+		N = atoi(new_text);
+		if(N<1 || N>=Nc+1)
+		{	
+			gchar* message=g_strdup_printf("Sorry\n %s \nis not an integer between 1 and %d",new_text,Nc);
+			MessageGeom(message," Error ",TRUE);
+			g_free(message);
+        		return;
+		}
+		if( numCol==E_NUMBER_R && N == atoi(Geom[Nc].NR)) return;
+		if( numCol==E_NUMBER_ANGLE && N == atoi(Geom[Nc].NAngle)) return;
+		if( numCol==E_NUMBER_DIHEDRAL && N == atoi(Geom[Nc].NDihedral)) return;
+
+		if( numCol==E_NUMBER_R) NR = N;
+		if( numCol==E_NUMBER_R && ((Nc>1 && N==atoi(Geom[Nc].NAngle)) || (Nc>2 && N==atoi(Geom[Nc].NDihedral))))
+		{	
+			gchar* message=NULL;
+			if((Nc>1 && N==atoi(Geom[Nc].NAngle)))
+			{
+				NA = atoi(Geom[Nc].NR);
+				message=g_strdup_printf(
+						"Because a multiple references to a center on the same card\n"
+						"I set NA to %d\n",NA
+						);
+			}
+			if(Nc>2 && N==atoi(Geom[Nc].NDihedral))
+			{
+				ND = atoi(Geom[Nc].NR);
+				message=g_strdup_printf(
+						"Because a multiple references to a center on the same card\n"
+						"I set ND to %d\n",ND
+						);
+			}
+			MessageGeom(message," Error ",TRUE);
+			g_free(message);
+		}
+		if( numCol==E_NUMBER_ANGLE) NA = N;
+		if( numCol==E_NUMBER_ANGLE && ((Nc>0 && N==atoi(Geom[Nc].NR)) || (Nc>2 && N==atoi(Geom[Nc].NDihedral))))
+		{	
+			gchar* message= NULL;
+			if(Nc>0 && N==atoi(Geom[Nc].NR))
+			{
+				NR = atoi(Geom[Nc].NAngle);
+				message=g_strdup_printf(
+						"Because a multiple references to a center on the same card\n"
+						"I set NR to %d\n",NR
+						);
+			}
+			if(Nc>2 && N==atoi(Geom[Nc].NDihedral))
+			{
+				ND = atoi(Geom[Nc].NAngle);
+				message=g_strdup_printf(
+						"Because a multiple references to a center on the same card\n"
+						"I set ND to %d\n",ND
+						);
+			}
+			MessageGeom(message," Error ",TRUE);
+			g_free(message);
+		}
+		if( numCol==E_NUMBER_DIHEDRAL) ND = N;
+		if( numCol==E_NUMBER_DIHEDRAL && ( (Nc>1 && N==atoi(Geom[Nc].NAngle)) || (Nc>0 && N==atoi(Geom[Nc].NR))))
+		{	
+			gchar* message=NULL;
+			if(Nc>1 && N==atoi(Geom[Nc].NAngle))
+			{
+				NA = atoi(Geom[Nc].NDihedral);
+				message=g_strdup_printf(
+						"Because a multiple references to a center on the same card\n"
+						"I set NA to %d\n",NA
+						);
+			}
+			if(Nc>0 && N==atoi(Geom[Nc].NR))
+			{
+				NR = atoi(Geom[Nc].NDihedral);
+				message=g_strdup_printf(
+						"Because a multiple references to a center on the same card\n"
+						"I set NR to %d\n",NR
+						);
+			}
+			MessageGeom(message," Error ",TRUE);
+			g_free(message);
+		}
+
+		if( numCol==E_NUMBER_R)
+		{
+			gchar* dist = NULL;
+			gchar* angle = NULL;
+			gchar* dih = NULL;
+			dist = get_distance_zmatrix(NR-1, Nc);
+			if(NA>0) angle = get_angle_zmatrix(NA-1,NR-1, Nc);
+			else if(Nc>=2) angle = get_angle_zmatrix(atoi(Geom[Nc].NAngle)-1,NR-1, Nc);
+			if(ND>0) dih = get_dihedral_zmatrix(ND-1,atoi(Geom[Nc].NAngle)-1,NR-1,Nc);
+			else if(Nc>=3) dih = get_dihedral_zmatrix(atoi(Geom[Nc].NDihedral)-1,atoi(Geom[Nc].NAngle)-1, NR-1, Nc);
+
+			if(dist) 
+			{
+				if(reset_r_value(Nc, dist))
+					set_text_column (model , path_string, dist,2*(numCol-1));
+			}
+			if(angle) 
+			{
+				if(reset_angle_value(Nc, angle))
+					set_text_column (model , path_string, angle,2*(numCol+1));
+			}
+			if(dih) 
+			{
+				if(reset_dihedral_value(Nc, dih))
+					set_text_column (model , path_string, dih,2*(numCol+3));
+			}
+
+  			if(Geom[Nc].NR) g_free(Geom[Nc].NR);
+			Geom[Nc].NR = g_strdup(new_text);
+			if(NA>0)
+			{
+  				if(Geom[Nc].NAngle) g_free(Geom[Nc].NAngle);
+				Geom[Nc].NAngle = g_strdup_printf("%d",NA);
+				set_text_column (model , path_string, Geom[Nc].NAngle,2*(numCol+2));
+			}
+			if(ND>0)
+			{
+  				if(Geom[Nc].NDihedral) g_free(Geom[Nc].NDihedral);
+				Geom[Nc].NDihedral = g_strdup_printf("%d",ND);
+				set_text_column (model , path_string, Geom[Nc].NDihedral,2*(numCol+4));
+			}
+		}
+		if( numCol==E_NUMBER_ANGLE)
+		{
+			gchar* dist = NULL;
+			gchar* angle = NULL;
+			gchar* dih = NULL;
+			if(NR>0) dist = get_distance_zmatrix(NR-1, Nc);
+			if(NR>0) angle = get_angle_zmatrix (NA-1, NR-1, Nc);
+			else angle = get_angle_zmatrix (NA-1, atoi(Geom[Nc].NR)-1, Nc);
+			if(ND>0) dih = get_dihedral_zmatrix(ND-1,NA-1,atoi(Geom[Nc].NR)-1, Nc);
+			else
+			if(Nc>=3)
+			{
+				if(NR>0) dih = get_dihedral_zmatrix(atoi(Geom[Nc].NDihedral)-1, NA-1,NR-1, Nc);
+				else dih = get_dihedral_zmatrix(atoi(Geom[Nc].NDihedral)-1, NA-1,atoi(Geom[Nc].NR)-1, Nc);
+			}
+
+			if(dist) 
+			{
+				if(reset_r_value(Nc, dist))
+					set_text_column (model , path_string, dist,2*(numCol-3));
+			}
+			if(angle) 
+			{
+				if(reset_angle_value(Nc, angle))
+					set_text_column (model , path_string, angle,2*(numCol-1));
+			}
+			if(dih) 
+			{
+				if(reset_dihedral_value(Nc, dih))
+					set_text_column (model , path_string, dih,2*(numCol+1));
+			}
+
+  			if(Geom[Nc].NAngle) g_free(Geom[Nc].NAngle);
+			Geom[Nc].NAngle = g_strdup(new_text);
+			if(NR>0)
+			{
+  				if(Geom[Nc].NR) g_free(Geom[Nc].NR);
+				Geom[Nc].NR = g_strdup_printf("%d",NR);
+				set_text_column (model , path_string, Geom[Nc].NR,2*(numCol-2));
+			}
+			if(ND>0)
+			{
+  				if(Geom[Nc].NDihedral) g_free(Geom[Nc].NDihedral);
+				Geom[Nc].NDihedral = g_strdup_printf("%d",ND);
+				set_text_column (model , path_string, Geom[Nc].NDihedral,2*(numCol+2));
+			}
+		}
+		if( numCol==E_NUMBER_DIHEDRAL)
+		{
+			gchar* dist = NULL;
+			gchar* angle = NULL;
+			gchar* dih = NULL;
+			if(NR>0) dist = get_distance_zmatrix(NR-1, Nc);
+			if(NR>0) angle = get_angle_zmatrix (atoi(Geom[Nc].NAngle)-1, NR-1, Nc);
+			if(NA>0 && NR<0) angle = get_angle_zmatrix (NA-1, atoi(Geom[Nc].NR)-1, Nc);
+			if(NA>0) dih = get_dihedral_zmatrix(ND-1,NA-1,atoi(Geom[Nc].NR)-1, Nc);
+			if(NR>0) dih = get_dihedral_zmatrix(ND-1,atoi(Geom[Nc].NAngle)-1,NR-1,Nc);
+			if(NR<0 && NA<0) dih = get_dihedral_zmatrix(ND-1,atoi(Geom[Nc].NAngle)-1,atoi(Geom[Nc].NR)-1,Nc);
+
+			if(dist) 
+			{
+				if(reset_r_value(Nc, dist))
+					set_text_column (model , path_string, dist,2*(numCol-5));
+			}
+			if(angle) 
+			{
+				if(reset_angle_value(Nc, angle))
+					set_text_column (model , path_string, angle,2*(numCol-3));
+			}
+			if(dih) 
+			{
+				if(reset_dihedral_value(Nc, dih))
+					set_text_column (model , path_string, dih,2*(numCol-1));
+			}
+
+  			if(Geom[Nc].NDihedral) g_free(Geom[Nc].NDihedral);
+			Geom[Nc].NDihedral = g_strdup(new_text);
+			if(NA>0)
+			{
+  				if(Geom[Nc].NAngle) g_free(Geom[Nc].NAngle);
+				Geom[Nc].NAngle = g_strdup_printf("%d",NA);
+				set_text_column (model , path_string, Geom[Nc].NAngle,2*(numCol-2));
+			}
+			if(NR>0)
+			{
+  				if(Geom[Nc].NR) g_free(Geom[Nc].NR);
+				Geom[Nc].NR = g_strdup_printf("%d",NR);
+				set_text_column (model , path_string, Geom[Nc].NR,2*(numCol-4));
+			}
+		}
+		set_text_column (model , path_string, new_text,2*numCol);
+		if(ZoneDessin != NULL) rafresh_drawing();
+		return;
+	}
+	/* Charge  */
+	if(numCol==E_CHARGE)
+	{
+		gint nc = strlen(new_text);
+		gchar* txt = NULL;
+		if(nc<1)return;
+	  	Nc = atoi(path_string);
+  		if(!test(new_text))
+		{
+			gchar* message=g_strdup_printf("Sorry %s is not a number \n",new_text);
+			MessageGeom(message," Error ",TRUE);
+			g_free(message);
+			return;
+  		}
+  		if(test(new_text) && !testpointeE(new_text) )
+			txt=g_strdup_printf("%s.0",new_text);
+		else
+			txt=g_strdup_printf("%s",new_text);
+  		if(Geom[Nc].Charge) g_free(Geom[Nc].Charge);
+		Geom[Nc].Charge = g_strdup(txt);
+		path = gtk_tree_path_new_from_string (path_string);
+		gtk_tree_model_get_iter (model, &iter, path);
+		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, txt, -1);
+		gtk_tree_path_free (path);
+		if(ZoneDessin != NULL) rafresh_drawing();
+		if(txt) g_free(txt);
+		return;
+	}
+	/* Layer  */
+	if(numCol==E_LAYER)
+	{
+		gint nc = strlen(new_text);
+		gint i;
+		if(nc<1)return;
+		new_text[0] = toupper(new_text[0]);
+		for(i=1;i<nc;i++) new_text[i] = tolower(new_text[i]);
+	  	Nc = atoi(path_string);
+  		if(!(!strcmp(new_text,"High") 
+			|| !strcmp(new_text,"Medium")
+			||!strcmp(new_text,"Low")
+			|| !strcmp(new_text," ")))
+		{
+			gchar* message=g_strdup_printf("Sorry  The layer should be High, Medium, Low or one space \n");
+			MessageGeom(message," Error ",TRUE);
+			g_free(message);
+			return;
+  		}
+  		if(Geom[Nc].Layer) g_free(Geom[Nc].Layer);
+		Geom[Nc].Layer = g_strdup(new_text);
+		path = gtk_tree_path_new_from_string (path_string);
+		gtk_tree_model_get_iter (model, &iter, path);
+		gtk_list_store_set (GTK_LIST_STORE (model), &iter, 2*numCol, new_text, -1);
+		gtk_tree_path_free (path);
+		if(ZoneDessin != NULL) rafresh_drawing();
+		return;
 	}
 }
 /********************************************************************************/
@@ -471,7 +1738,7 @@ static void append_list_variables()
         	gtk_list_store_append (store, &iter);
 		for(k=0;k<2;k++)
 		{
-        		gtk_list_store_set (store, &iter, k, texts[k], -1);
+        		gtk_list_store_set (store, &iter, k+k, texts[k],k+k+1,TRUE, -1);
 			g_free(texts[k]);
 		}
 	}
@@ -539,7 +1806,12 @@ static void append_list_geom()
         	gtk_list_store_append (store, &iter);
 		for(k=0;k<NUMBER_LIST_ZMATRIX;k++)
 		{
-        		gtk_list_store_set (store, &iter, k, texts[k], -1);
+			gboolean ed = TRUE;
+			if(k==0) ed=FALSE;
+			if(Nc<1 && k>4 && k<11) ed=FALSE;
+			if(Nc<2 && k>6 && k<11) ed=FALSE;
+			if(Nc<3 && k>8 && k<11) ed=FALSE;
+       			gtk_list_store_set (store, &iter, k+k, texts[k],k+k+1,ed, -1);
 			g_free(texts[k]);
 		}
 	}
@@ -1172,6 +2444,24 @@ void AddVariableZmat(gchar *NameV,gchar *ValueV, gboolean rafresh)
    if(rafresh) appendToList(listv, texts, 2);
 }
 /********************************************************************************/
+static gboolean reset_variable_value(gchar *NameV,gchar *ValueV, gboolean rafresh)
+{
+	gint i=testav(NameV);
+	if(i>=0)
+	{
+   		if(Variables[i].Value) g_free(Variables[i].Value);
+		Variables[i].Value = g_strdup(ValueV);
+		if(rafresh) 
+		{
+			gchar* texts[2] = { Variables[i].Name, Variables[i].Value};
+  			removeFromList(listv, i);
+  			insertToList(listv, i, texts, 2);
+		}
+		return TRUE;
+	}
+	return FALSE;
+}
+/********************************************************************************/
 static void trans_coord_Zmat(gchar T,guint i, gboolean rafresh)
 {
  gdouble V;
@@ -1185,7 +2475,8 @@ static void trans_coord_Zmat(gchar T,guint i, gboolean rafresh)
     V = atof(Geom[i].Dihedral);
  NameV = g_strdup_printf("%c%s%d",T,Geom[i].Symb,i+1);
  ValueV = g_strdup_printf("%f",V);
- AddVariableZmat(NameV,ValueV, rafresh);
+ if(!reset_variable_value(NameV,ValueV, rafresh))
+ 	AddVariableZmat(NameV,ValueV, rafresh);
  if( T == 'R' )
     Geom[i].R=g_strdup(NameV);
  if( T == 'A' )
@@ -1991,7 +3282,6 @@ static void EditAtom(GtkWidget *w,gpointer Entree)
   	}
   	if(Nc>1)
   	{
-		/* HERE */
   		for (i=E_ANGLE;i<=E_NUMBER_ANGLE;i++)
   		{
 			texts[i] = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entry[i])));
@@ -4301,9 +5591,9 @@ void create_geom_list(GtkWidget *vbox, GabEditTypeFileGeom readfile)
 	gchar *titres[NUMBER_LIST_ZMATRIX]={	
 			"N ","Symbol","MM Type","PDB Type",
 			"Residue",
-			"R          "," N ",
-			"Angle      "," N ",
-			"Dihedral   "," N ",
+			"R          "," NR ",
+			"Angle      "," NA ",
+			"Dihedral   "," ND ",
 			"Charge",
 			"Layer"
 	           };
@@ -4333,11 +5623,20 @@ void create_geom_list(GtkWidget *vbox, GabEditTypeFileGeom readfile)
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scr),GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC); 
 	gtk_box_pack_start(GTK_BOX (vbox), scr,TRUE, TRUE, 2);
 
-	store = gtk_list_store_new (NUMBER_LIST_ZMATRIX,
-		       	G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-		       	G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-		       	G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-			G_TYPE_STRING
+	store = gtk_list_store_new (2*NUMBER_LIST_ZMATRIX,
+		       	G_TYPE_STRING, G_TYPE_BOOLEAN,
+			G_TYPE_STRING, G_TYPE_BOOLEAN,
+			G_TYPE_STRING, G_TYPE_BOOLEAN,
+			G_TYPE_STRING, G_TYPE_BOOLEAN,
+		       	G_TYPE_STRING, G_TYPE_BOOLEAN,
+			G_TYPE_STRING, G_TYPE_BOOLEAN,
+			G_TYPE_STRING, G_TYPE_BOOLEAN,
+			G_TYPE_STRING, G_TYPE_BOOLEAN,
+		       	G_TYPE_STRING, G_TYPE_BOOLEAN,
+			G_TYPE_STRING, G_TYPE_BOOLEAN,
+			G_TYPE_STRING, G_TYPE_BOOLEAN,
+			G_TYPE_STRING, G_TYPE_BOOLEAN,
+			G_TYPE_STRING, G_TYPE_BOOLEAN
 			);
         model = GTK_TREE_MODEL (store);
 
@@ -4353,8 +5652,10 @@ void create_geom_list(GtkWidget *vbox, GabEditTypeFileGeom readfile)
 		gtk_tree_view_column_set_reorderable(column, TRUE);
 		renderer = gtk_cell_renderer_text_new ();
 		gtk_tree_view_column_pack_start (column, renderer, TRUE);
-		gtk_tree_view_column_set_attributes (column, renderer, "text", i, NULL);
+		gtk_tree_view_column_set_attributes (column, renderer, "text", i+i, "editable",i+i+1,NULL);
 		gtk_tree_view_append_column (GTK_TREE_VIEW (list), column);
+		g_object_set_data(G_OBJECT(renderer),"NumColumn", GINT_TO_POINTER(i));
+		g_signal_connect (renderer, "edited", G_CALLBACK (editedGeom), model);
 	}
 	gtk_container_add(GTK_CONTAINER(scr),list);
 	/* Drag and Drop */
@@ -4749,7 +6050,7 @@ void create_variables_list(GtkWidget *vbox,GabEditTypeFileGeom itype)
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scr),GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC); 
 	gtk_box_pack_start(GTK_BOX (vbox), scr,TRUE, TRUE, 2);
 
-	store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_STRING);
+	store = gtk_list_store_new (4, G_TYPE_STRING, G_TYPE_BOOLEAN,G_TYPE_STRING,G_TYPE_BOOLEAN);
         model = GTK_TREE_MODEL (store);
 
 	listv = gtk_tree_view_new_with_model (model);
@@ -4764,7 +6065,9 @@ void create_variables_list(GtkWidget *vbox,GabEditTypeFileGeom itype)
 		gtk_tree_view_column_set_reorderable(column, TRUE);
 		renderer = gtk_cell_renderer_text_new ();
 		gtk_tree_view_column_pack_start (column, renderer, TRUE);
-		gtk_tree_view_column_set_attributes (column, renderer, "text", i, NULL);
+		gtk_tree_view_column_set_attributes (column, renderer, "text", i+i, "editable",i+i+1,NULL);
+		g_object_set_data(G_OBJECT(renderer),"NumColumn", GINT_TO_POINTER(i));
+		g_signal_connect (renderer, "edited", G_CALLBACK (editedVariable), model);
 		gtk_tree_view_append_column (GTK_TREE_VIEW (listv), column);
 	}
 	gtk_container_add(GTK_CONTAINER(scr),listv);

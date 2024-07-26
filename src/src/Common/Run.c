@@ -65,7 +65,7 @@ static GtkWidget* FrameRemote = NULL;
 static GtkWidget* FrameNetWork = NULL;
 static GtkWidget* LabelDataFile = NULL;
 static GtkWidget* LabelExtFile = NULL;
-static GtkWidget* EntryLocalDir = NULL;
+static GtkWidget *buttonDirSelector = NULL;
 static GtkWidget* LabelPassWord1 = NULL;
 static GtkWidget* LabelPassWord2 = NULL;
 static GtkWidget* EntryPassWord = NULL;
@@ -1149,18 +1149,68 @@ static gboolean create_cmd_gamess(G_CONST_RETURN gchar* command, gboolean local,
 		return FALSE;
 	}
 
+#ifndef G_OS_WIN32
+	if(strcmp(command,"submitGMS")==0) 
+	{
+		fprintf(fcmd,"#!/bin/sh\n");
+		if(local)
+		{
+			if(fileopen.localdir[0]!='/') 
+				fprintf(fcmd,"export DEFAULTDIR=$HOME/%s\n",fileopen.localdir);
+			else 
+				fprintf(fcmd,"export DEFAULTDIR=%s\n",fileopen.localdir);
+		}
+		else
+		{
+			if(fileopen.remotedir[0]!='/') 
+				fprintf(fcmd,"export DEFAULTDIR=$HOME/%s\n",fileopen.remotedir);
+			else 
+				fprintf(fcmd,"export DEFAULTDIR=%s\n",fileopen.remotedir);
+		}
+	}
+#endif
 	if(local)
+	{
 		fprintf(fcmd,"cd %s\n", fileopen.localdir);
+	}
 	else
 		fprintf(fcmd,"cd %s\n", fileopen.remotedir);
 
 
 #ifndef G_OS_WIN32
-	fprintf(fcmd,"rm %s.dat\n",fileopen.projectname);
-	if(strcmp(command,"gms")==0)
+	if(strcmp(command,"submitGMS")==0)
 	{
-		fprintf(fcmd,"%s -l %s %s &\n",command,fileopen.logfile, fileopen.projectname);
-		/* printf("%s -l %s %s &\n",command,fileopen.logfile, fileopen.projectname);*/
+			fprintf(fcmd,"export fileinput=%s\n",fileopen.datafile);
+			fprintf(fcmd,"export filename=%s\n",fileopen.projectname);
+			fprintf(fcmd,"export RUNGAMESSDIR=`which rungms`\n");
+			fprintf(fcmd,"if [ x$RUNGAMESSDIR = \"x\" ]\n");
+			fprintf(fcmd,"then\n");
+			fprintf(fcmd,"   echo 'Sorry, the Gamess directory is not in you path'>$DEFAULTDIR/$filename.log\n");
+			fprintf(fcmd,"   echo 'You should add the gamess directory to you path (.login or .cshrc or .basshrc)'>>$DEFAULTDIR/$filename.log\n");
+			fprintf(fcmd,"exit\n");
+			fprintf(fcmd,"fi\n");
+			fprintf(fcmd,"export GAMESSDIR=`dirname $RUNGAMESSDIR`\n");
+			fprintf(fcmd,"testTMPDIR=\"x$TGAMESSUS_TMPDIR\"\n");
+			fprintf(fcmd,"if [ $testTMPDIR = \"x\" ]\n");
+			fprintf(fcmd,"then\n");
+			fprintf(fcmd,"export TGAMESSUS_TMPDIR=$HOME/tmp\n");
+			fprintf(fcmd,"fi\n");
+			fprintf(fcmd,"export TGAMESSUSDIR=$TGAMESSUS_TMPDIR/$RANDOM\n");
+			fprintf(fcmd,"if [ ! -s \"$TGAMESSUS_TMPDIR\" ]\n");
+			fprintf(fcmd,"then\n");
+			fprintf(fcmd,"mkdir $TGAMESSUS_TMPDIR\n");
+			fprintf(fcmd,"fi\n");
+
+			fprintf(fcmd,"mkdir $TGAMESSUSDIR\n");
+			fprintf(fcmd,"cd $TGAMESSUSDIR\n");
+			fprintf(fcmd,"cp $DEFAULTDIR/$fileinput .\n");
+			fprintf(fcmd,"cp -r $GAMESSDIR/* .\n");
+			fprintf(fcmd,"mv gamess.*.x gamess.00.x\n");
+			fprintf(fcmd,"VERNO=00\n");
+			fprintf(fcmd,"NNODES=1\n");
+			fprintf(fcmd,"sh -c './rungms $filename $VERNO $NNODES > $DEFAULTDIR/$filename.log' 2>err.log\n");
+			fprintf(fcmd,"cd $DEFAULTDIR\n");
+			fprintf(fcmd,"/bin/rm -r $TGAMESSUSDIR\n");
 	}
 	else
 		fprintf(fcmd,"%s %s &\n",command,fileopen.projectname);
@@ -1659,7 +1709,7 @@ static void run_remote_pcgamess(GtkWidget *b,gpointer data)
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
-  localdir = gtk_entry_get_text(GTK_ENTRY(EntryLocalDir));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
   entrytext = get_dir_file_name(localdir,entrytext0);
 
   temp = get_suffix_name_file(entrytext);
@@ -1806,7 +1856,7 @@ static void run_remote_qchem(GtkWidget *b,gpointer data)
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
-  localdir = gtk_entry_get_text(GTK_ENTRY(EntryLocalDir));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
   entrytext = get_dir_file_name(localdir,entrytext0);
 
   temp = get_suffix_name_file(entrytext);
@@ -1953,7 +2003,7 @@ static void run_remote_mopac(GtkWidget *b,gpointer data)
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
-  localdir = gtk_entry_get_text(GTK_ENTRY(EntryLocalDir));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
   entrytext = get_dir_file_name(localdir,entrytext0);
 
   temp = get_suffix_name_file(entrytext);
@@ -2100,7 +2150,7 @@ static void run_remote_gamess(GtkWidget *b,gpointer data)
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
-  localdir = gtk_entry_get_text(GTK_ENTRY(EntryLocalDir));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
   entrytext = get_dir_file_name(localdir,entrytext0);
 
   temp = get_suffix_name_file(entrytext);
@@ -2247,7 +2297,7 @@ static void run_remote_gaussian(GtkWidget *b,gpointer data)
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
-  localdir = gtk_entry_get_text(GTK_ENTRY(EntryLocalDir));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
   entrytext = get_dir_file_name(localdir,entrytext0);
 
   temp = get_suffix_name_file(entrytext);
@@ -2394,7 +2444,7 @@ static void run_remote_molcas(GtkWidget *b,gpointer data)
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
-  localdir = gtk_entry_get_text(GTK_ENTRY(EntryLocalDir));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
   entrytext = get_dir_file_name(localdir,entrytext0);
 
   temp = get_suffix_name_file(entrytext);
@@ -2545,7 +2595,7 @@ static void run_remote_molpro(GtkWidget *b,gpointer data)
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
-  localdir = gtk_entry_get_text(GTK_ENTRY(EntryLocalDir));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
   entrytext = get_dir_file_name(localdir,entrytext0);
 
   temp = get_suffix_name_file(entrytext);
@@ -2725,7 +2775,7 @@ static void run_remote_mpqc(GtkWidget *b,gpointer data)
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
-  localdir = gtk_entry_get_text(GTK_ENTRY(EntryLocalDir));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
   entrytext = get_dir_file_name(localdir,entrytext0);
 
   temp = get_suffix_name_file(entrytext);
@@ -2862,7 +2912,7 @@ static void run_remote_other(GtkWidget *b,gpointer data)
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
-  localdir = gtk_entry_get_text(GTK_ENTRY(EntryLocalDir));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
   entrytext = get_dir_file_name(localdir,entrytext0);
 
   temp = get_suffix_name_file(entrytext);
@@ -3008,7 +3058,7 @@ static void run_local_pcgamess(GtkWidget *b,gpointer data)
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
-  localdir = gtk_entry_get_text(GTK_ENTRY(EntryLocalDir));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
   entrytext = get_dir_file_name(localdir,entrytext0);
 
   temp = get_suffix_name_file(entrytext);
@@ -3109,7 +3159,7 @@ static void run_local_qchem(GtkWidget *b,gpointer data)
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
-  localdir = gtk_entry_get_text(GTK_ENTRY(EntryLocalDir));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
   entrytext = get_dir_file_name(localdir,entrytext0);
 
   temp = get_suffix_name_file(entrytext);
@@ -3210,7 +3260,7 @@ static void run_local_mopac(GtkWidget *b,gpointer data)
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
-  localdir = gtk_entry_get_text(GTK_ENTRY(EntryLocalDir));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
   entrytext = get_dir_file_name(localdir,entrytext0);
 
   temp = get_suffix_name_file(entrytext);
@@ -3311,7 +3361,7 @@ static void run_local_gamess(GtkWidget *b,gpointer data)
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
-  localdir = gtk_entry_get_text(GTK_ENTRY(EntryLocalDir));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
   entrytext = get_dir_file_name(localdir,entrytext0);
 
   temp = get_suffix_name_file(entrytext);
@@ -3349,7 +3399,7 @@ static void run_local_gamess(GtkWidget *b,gpointer data)
 #ifdef G_OS_WIN32
   sprintf(Command ,"\"%s\"",cmdFileAllName);
 #else
-  sprintf(Command ,"%s",cmdFileAllName);
+  sprintf(Command ,"%s&",cmdFileAllName);
 #endif
 
   run_local_command(fout,ferr,Command,TRUE);
@@ -3412,7 +3462,7 @@ static void run_local_gaussian(GtkWidget *b,gpointer data)
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
-  localdir = gtk_entry_get_text(GTK_ENTRY(EntryLocalDir));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
   entrytext = get_dir_file_name(localdir,entrytext0);
 
   temp = get_suffix_name_file(entrytext);
@@ -3508,7 +3558,7 @@ static void run_local_molcas(GtkWidget *b,gpointer data)
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
-  localdir = gtk_entry_get_text(GTK_ENTRY(EntryLocalDir));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
   entrytext = get_dir_file_name(localdir,entrytext0);
 
 
@@ -3614,7 +3664,7 @@ static void run_local_molpro(GtkWidget *b,gpointer data)
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
-  localdir = gtk_entry_get_text(GTK_ENTRY(EntryLocalDir));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
   entrytext = get_dir_file_name(localdir,entrytext0);
 
 
@@ -3744,7 +3794,7 @@ static void run_local_mpqc(GtkWidget *b,gpointer data)
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
-  localdir = gtk_entry_get_text(GTK_ENTRY(EntryLocalDir));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
   entrytext = get_dir_file_name(localdir,entrytext0);
 
 
@@ -3847,7 +3897,7 @@ static void run_local_other(GtkWidget *b,gpointer data)
   entryall=(GtkWidget **)data;
   entry=entryall[0];
   entrytext0 = gtk_entry_get_text(GTK_ENTRY(entry));
-  localdir = gtk_entry_get_text(GTK_ENTRY(EntryLocalDir));
+  localdir = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
   entrytext = get_dir_file_name(localdir,entrytext0);
 
   temp = get_suffix_name_file(entrytext);
@@ -4091,43 +4141,57 @@ GtkWidget* create_programs_frame(GtkWidget *hbox)
   return frame;
 }
 /********************************************************************************/
-GtkWidget *create_local_frame(GtkWidget *Window, GtkWidget *vboxall)
+static GtkWidget *create_local_frame( GtkWidget *vboxall)
 {
-	GtkWidget* frame;
-	GtkWidget* vboxframe;
-	GtkWidget* Table;
-	GtkWidget* button;
-        gchar* DefLocalDir = NULL;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	gushort i;
+	gushort j;
+	GtkWidget *table;
+	GtkWidget *label;
+	gchar* title = "Local";
 
-  	DefLocalDir  = g_strdup(fileopen.localdir);
-  	frame = gtk_frame_new ("Local");
-  	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
-  	gtk_container_add (GTK_CONTAINER (vboxall), frame);
-  	gtk_widget_show (frame);
+	frame = gtk_frame_new (title);
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+	gtk_container_add (GTK_CONTAINER (vboxall), frame);
+	gtk_widget_show (frame);
 
-  	vboxframe = create_vbox(frame);
-  	Table = gtk_table_new(1,5,FALSE);
-  	gtk_container_add(GTK_CONTAINER(vboxframe),Table);
+	vboxframe = create_vbox(frame);
+	table = gtk_table_new(1,3,FALSE);
+	gtk_container_add(GTK_CONTAINER(vboxframe),table);
 
-	add_label_table(Table,"Local Directory ",0,0);
-	add_label_table(Table,":",0,1);
-  	EntryLocalDir = gtk_entry_new ();
-	gtk_entry_set_text (GTK_ENTRY (EntryLocalDir), DefLocalDir);
-  	gtk_table_attach(GTK_TABLE(Table),EntryLocalDir,2,3,0,1,
-                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
-                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+/*----------------------------------------------------------------------------------*/
+	i = 0;
+	j = 0;
+	label = gtk_label_new("Folder");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
+/*----------------------------------------------------------------------------------*/
+	i = 0;
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = 0;
+	j = 2;
+	buttonDirSelector =  gtk_file_chooser_button_new("Select your folder", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	if(fileopen.localdir && strcmp(fileopen.localdir,"NoName")!=0) gtk_file_chooser_set_current_folder(
+			GTK_FILE_CHOOSER(buttonDirSelector),
+			fileopen.localdir);
+	gtk_widget_show_all(frame);
+	g_object_set_data (G_OBJECT (frame), "ButtonDirSelector",buttonDirSelector);
 
-	button = create_button_pixmap(Window,open_xpm,NULL);
-	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
-	g_signal_connect_swapped(G_OBJECT (button), "clicked", G_CALLBACK(set_entry_directory_selection), G_OBJECT(Table));
-	add_widget_table(Table,button,0,4);
-	g_object_set_data (G_OBJECT (Table), "Button", button);
-	g_object_set_data (G_OBJECT (Table), "Window", Window);
-	g_object_set_data (G_OBJECT (Table), "Entry", EntryLocalDir);
-
-        g_free(DefLocalDir);
-	return frame;
+  	return frame;
 }
 /********************************************************************************/
 GtkWidget *create_local_remote_frame(GtkWidget *Window, GtkWidget *vboxall,GtkWidget **entry,gchar* type)
@@ -4545,7 +4609,7 @@ void create_run_dialogue_box(GtkWidget *w,gchar *type,GtkSignalFunc func)
 
   frame = create_server_frame(hbox);
 
-  frame = create_local_frame(fp,vboxall);
+  frame = create_local_frame(vboxall);
 
   frame = create_local_remote_frame(fp,vboxall,entry,type);
 
