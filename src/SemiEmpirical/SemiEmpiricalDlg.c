@@ -406,11 +406,11 @@ static gboolean runOneMopac(gchar* fileNamePrefix, gchar* keyWords)
 	fprintf(file," %s %f %d %f %d %f %d\n", 
 			geometry0[j].Prop.symbol,
 			geometry0[j].X*BOHR_TO_ANG,
-			1,
+			geometry0[j].Variable,
 			geometry0[j].Y*BOHR_TO_ANG,
-			1,
+			geometry0[j].Variable,
 			geometry0[j].Z*BOHR_TO_ANG,
-			1
+			geometry0[j].Variable
 			);
 	}
 	fclose(file);
@@ -2517,7 +2517,7 @@ static gboolean saveConfoGeometries(gint numberOfGeometries, SemiEmpiricalModel*
                         for(k=0;k<geometries[i]->molecule.nAtoms;k++)
                                 if(geometries[i]->molecule.atoms[j].typeConnections&&geometries[i]->molecule.atoms[j].typeConnections[k]>0) nc++;
 
-                        fprintf(file," %s %s %s %s %d %f %d %f %f %f %d ",
+                        fprintf(file," %s %s %s %s %d %f %d %d %f %f %f %d ",
                                 geometries[i]->molecule.atoms[j].prop.symbol,
                                 geometries[i]->molecule.atoms[j].mmType,
                                 geometries[i]->molecule.atoms[j].pdbType,
@@ -2525,6 +2525,7 @@ static gboolean saveConfoGeometries(gint numberOfGeometries, SemiEmpiricalModel*
                                 geometries[i]->molecule.atoms[j].residueNumber,
                                 geometries[i]->molecule.atoms[j].charge,
                                 geometries[i]->molecule.atoms[j].layer,
+                                geometries[i]->molecule.atoms[j].variable,
                                 geometries[i]->molecule.atoms[j].coordinates[0],
                                 geometries[i]->molecule.atoms[j].coordinates[1],
                                 geometries[i]->molecule.atoms[j].coordinates[2],
@@ -2612,11 +2613,11 @@ static gboolean runOneOptMopac(SemiEmpiricalModel* geom, gdouble* energy, gchar*
 	fprintf(file," %s %f %d %f %d %f %d\n", 
 			geom->molecule.atoms[j].prop.symbol,
 			geom->molecule.atoms[j].coordinates[0],
-			1,
+			geom->molecule.atoms[j].variable,
 			geom->molecule.atoms[j].coordinates[1],
-			1,
+			geom->molecule.atoms[j].variable,
 			geom->molecule.atoms[j].coordinates[2],
-			1
+			geom->molecule.atoms[j].variable
 			);
 	}
 	fclose(file);

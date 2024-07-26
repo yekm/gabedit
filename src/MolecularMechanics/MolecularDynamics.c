@@ -844,12 +844,39 @@ static void initMD(MolecularDynamics* molecularDynamics, gdouble temperature, gd
 	else
 	for ( i = 0; i < molecularDynamics->numberOfAtoms; i++)
 	{
-		gdouble speed = maxwel(molecularDynamics->forceField->molecule.atoms[i].prop.masse,temperature);
-		getRandVect(speed, molecularDynamics->velocity[i]);
+		if(molecularDynamics->forceField->molecule.atoms[i].variable)
+		{
+			gdouble speed = maxwel(molecularDynamics->forceField->molecule.atoms[i].prop.masse,temperature);
+			getRandVect(speed, molecularDynamics->velocity[i]);
+		}
+		else
+			for( j = 0; j < 3; j++) molecularDynamics->velocity[i][j] = 0.0;
 	}
-        molecularDynamics->nfree = 3* molecularDynamics->numberOfAtoms-molecularDynamics->forceField->numberOfRattleConstraintsTerms;
+        molecularDynamics->nvariables = 0;
+	for ( i = 0; i < molecularDynamics->numberOfAtoms; i++)
+		if(molecularDynamics->forceField->molecule.atoms[i].variable) molecularDynamics->nvariables +=1;
+        if(molecularDynamics->nvariables==0)
+	{
+        	molecularDynamics->nvariables= molecularDynamics->numberOfAtoms;
+		for ( i = 0; i < molecularDynamics->numberOfAtoms; i++)
+		{
+			molecularDynamics->forceField->molecule.atoms[i].variable = TRUE;
+			if(temperature>0)
+			{
+				gdouble speed = maxwel(molecularDynamics->forceField->molecule.atoms[i].prop.masse,temperature);
+				getRandVect(speed, molecularDynamics->velocity[i]);
+			}
+		}
+	}
+        molecularDynamics->nfree = 3* molecularDynamics->nvariables-molecularDynamics->forceField->numberOfRattleConstraintsTerms;
         removeTranslationAndRotation(molecularDynamics);
-        molecularDynamics->nfree -=6;
+        if(molecularDynamics->nvariables==molecularDynamics->numberOfAtoms) molecularDynamics->nfree -=6;
+        if(molecularDynamics->nvariables==molecularDynamics->numberOfAtoms-1) molecularDynamics->nfree -=3;
+        if(molecularDynamics->nvariables==molecularDynamics->numberOfAtoms-2) molecularDynamics->nfree -=1;
+	printf("nfree =%d\n",molecularDynamics->nfree);
+	if( molecularDynamics->nfree<1)  { 
+		StopCalcul=TRUE;
+	}
         if( molecularDynamics->nfree<1)  molecularDynamics->nfree = 1;
 
 	removeTranslationAndRotation(molecularDynamics);
@@ -891,8 +918,11 @@ static void berendsen(MolecularDynamics* molecularDynamics)
 	scale = sqrt(1.0 + (dt/tautemp)*(molecularDynamics->temperature/kelvin-1.0));
 	/* printf("temp = %f kelvin = %f scale = %f\n",molecularDynamics->temperature, kelvin, scale);*/
 	for ( i = 0; i < molecularDynamics->numberOfAtoms; i++)
+	{
+		if(molecularDynamics->forceField->molecule.atoms[i].variable)
 		for ( j = 0; j < 3; j++)
 			molecularDynamics->velocity[i][j] *= scale;
+	}
 	removeTranslationAndRotation(molecularDynamics);
 }
 /*********************************************************************************/
@@ -908,11 +938,12 @@ static void andersen(MolecularDynamics* molecularDynamics)
 	if(molecularDynamics->numberOfAtoms<1) return;
 
 	rate = molecularDynamics->dt / tau;
-	rate /= pow(molecularDynamics->numberOfAtoms,2.0/3.0);
+	rate /= pow(molecularDynamics->nvariables,2.0/3.0);
 
 	for ( i = 0; i < molecularDynamics->numberOfAtoms; i++)
 	{
 		gdouble trial = drandom();
+		if(molecularDynamics->forceField->molecule.atoms[i].variable)
 		if(trial<rate)
 		{
 /*
@@ -960,6 +991,7 @@ static void bussi(MolecularDynamics* molecularDynamics)
         scale = sqrt(scale);
         if (r+sqrt(c/d)<0)  scale = -scale;
 	for ( i = 0; i < molecularDynamics->numberOfAtoms; i++)
+		if(molecularDynamics->forceField->molecule.atoms[i].variable)
 		for ( j = 0; j < 3; j++)
 			molecularDynamics->velocity[i][j] *= scale;
 	removeTranslationAndRotation(molecularDynamics);
@@ -1025,8 +1057,8 @@ static void applyRattleFirstPortion(MolecularDynamics* molecularDynamics)
 	if(forceField->options.rattleConstraints==NOCONSTRAINTS) return;
 	for (i = 0; i < molecularDynamics->numberOfAtoms; i++)
 	{
-			molecularDynamics->moved[i] = TRUE;
-			molecularDynamics->update[i] = FALSE;
+		molecularDynamics->moved[i] = molecularDynamics->forceField->molecule.atoms[i].variable;
+		molecularDynamics->update[i] = FALSE;
 	}
 	/* maxIter *= molecularDynamics->forceField->numberOfRattleConstraintsTerms;*/
 	do{
@@ -1114,6 +1146,12 @@ static void applyRattleFirstPortion(MolecularDynamics* molecularDynamics)
 		}
 		StopCalcul=TRUE;
 	}
+	for (i = 0; i < molecularDynamics->numberOfAtoms; i++)
+		if(!m->atoms[i].variable) 
+		{
+			for (k=0;k<3;k++) m->atoms[i].coordinates[k] =  molecularDynamics->coordinatesOld[i][k];
+			for (k=0;k<3;k++) molecularDynamics->velocity[i][k] = 0;
+		}
 
 }
 /*********************************************************************************/
@@ -1143,8 +1181,8 @@ static void applyRattleSecondPortion(MolecularDynamics* molecularDynamics)
 	tolerance /= molecularDynamics->dt;
 	for (i = 0; i < molecularDynamics->numberOfAtoms; i++)
 	{
-			molecularDynamics->moved[i] = TRUE;
-			molecularDynamics->update[i] = FALSE;
+		molecularDynamics->moved[i] = molecularDynamics->forceField->molecule.atoms[i].variable;
+		molecularDynamics->update[i] = FALSE;
 	}
 	/* maxIter *= molecularDynamics->forceField->numberOfRattleConstraintsTerms;*/
 	do{
@@ -1220,6 +1258,8 @@ static void applyRattleSecondPortion(MolecularDynamics* molecularDynamics)
 		}
 		StopCalcul=TRUE;
 	}
+	for (i = 0; i < molecularDynamics->numberOfAtoms; i++)
+		if(!m->atoms[i].variable) for (k=0;k<3;k++) molecularDynamics->velocity[i][k] = 0;
 }
 /*********************************************************************************/
 static void applyVerlet(MolecularDynamics* molecularDynamics)
@@ -1227,11 +1267,14 @@ static void applyVerlet(MolecularDynamics* molecularDynamics)
 	gint i;
 	gint j;
 
+	if(molecularDynamics->forceField->options.rattleConstraints!=NOCONSTRAINTS)
 	for (i = 0; i < molecularDynamics->numberOfAtoms; i++)
-	{
-		if(molecularDynamics->forceField->options.rattleConstraints!=NOCONSTRAINTS)
 		for ( j = 0; j < 3; j++)
 				molecularDynamics->coordinatesOld[i][j]= molecularDynamics->forceField->molecule.atoms[i].coordinates[j];
+
+	for (i = 0; i < molecularDynamics->numberOfAtoms; i++)
+	{
+		if(!molecularDynamics->forceField->molecule.atoms[i].variable) continue;
 
 		for ( j = 0; j < 3; j++)
 		{
@@ -1248,8 +1291,11 @@ static void applyVerlet(MolecularDynamics* molecularDynamics)
 	newAccelaration(molecularDynamics);
 
 	for (i = 0; i < molecularDynamics->numberOfAtoms; i++)
+	{
+		if(!molecularDynamics->forceField->molecule.atoms[i].variable) continue;
 		for ( j = 0; j < 3; j++)
 			molecularDynamics->velocity[i][j] += molecularDynamics->a[i][j] * molecularDynamics->dt_2;
+	}
 	if(molecularDynamics->forceField->options.rattleConstraints!=NOCONSTRAINTS) applyRattleSecondPortion(molecularDynamics);
 }
 /*********************************************************************************/
@@ -1259,14 +1305,17 @@ static void applyBeeman(MolecularDynamics* molecularDynamics)
 	gint j;
 	gdouble terms[3];
 
+	if(molecularDynamics->forceField->options.rattleConstraints!=NOCONSTRAINTS)
+	for (i = 0; i < molecularDynamics->numberOfAtoms; i++)
+		for ( j = 0; j < 3; j++)
+				molecularDynamics->coordinatesOld[i][j]= molecularDynamics->forceField->molecule.atoms[i].coordinates[j];
+
+
 	for (i = 0; i < molecularDynamics->numberOfAtoms; i++)
 	{
+		if(!molecularDynamics->forceField->molecule.atoms[i].variable) continue;
 		for ( j = 0; j < 3; j++)
 			terms[j] = 5.0*molecularDynamics->a[i][j]-molecularDynamics->aold[i][j];
-
-		if(molecularDynamics->forceField->options.rattleConstraints!=NOCONSTRAINTS)
-		for ( j = 0; j < 3; j++)
-			molecularDynamics->coordinatesOld[i][j]= molecularDynamics->forceField->molecule.atoms[i].coordinates[j];
 
 		for ( j = 0; j < 3; j++)
 		{
@@ -1283,8 +1332,11 @@ static void applyBeeman(MolecularDynamics* molecularDynamics)
 	newAccelaration(molecularDynamics);
 
 	for (i = 0; i < molecularDynamics->numberOfAtoms; i++)
+	{
+		if(!molecularDynamics->forceField->molecule.atoms[i].variable) continue;
 		for ( j = 0; j < 3; j++)
 			molecularDynamics->velocity[i][j] += (3.0*molecularDynamics->a[i][j]+molecularDynamics->aold[i][j]) * molecularDynamics->dt_8;
+	}
 
 	if(molecularDynamics->forceField->options.rattleConstraints!=NOCONSTRAINTS) applyRattleSecondPortion(molecularDynamics);
 }
@@ -1434,7 +1486,7 @@ static void saveTrajectory(MolecularDynamics* molecularDynamics, gint iStep)
 
 	for (i = 0; i < molecularDynamics->numberOfAtoms; i++)
 	{
-		fprintf(molecularDynamics->fileTraj," %s %f %f %f %f %f %f %f %s %s %s %d\n", 
+		fprintf(molecularDynamics->fileTraj," %s %f %f %f %f %f %f %f %s %s %s %d %d\n", 
 				molecularDynamics->forceField->molecule.atoms[i].prop.symbol,
 				molecularDynamics->forceField->molecule.atoms[i].coordinates[0],
 				molecularDynamics->forceField->molecule.atoms[i].coordinates[1],
@@ -1446,7 +1498,8 @@ static void saveTrajectory(MolecularDynamics* molecularDynamics, gint iStep)
 				molecularDynamics->forceField->molecule.atoms[i].mmType,
 				molecularDynamics->forceField->molecule.atoms[i].pdbType,
 				molecularDynamics->forceField->molecule.atoms[i].residueName,
-				molecularDynamics->forceField->molecule.atoms[i].residueNumber
+				molecularDynamics->forceField->molecule.atoms[i].residueNumber,
+				molecularDynamics->forceField->molecule.atoms[i].variable
 				);
 	}
 }
@@ -1508,7 +1561,7 @@ static gdouble getEKin(MolecularDynamics* molecularDynamics)
 /********************************************************************************/
 static gdouble getKelvin(MolecularDynamics* molecularDynamics)
 {
-	gint nfree = 3*molecularDynamics->numberOfAtoms -3;
+        gint nfree = molecularDynamics->nfree;
 	static gdouble Kb = 1.9871914e-3;
 	if(nfree<1) return 0;
 	return 2*getEKin(molecularDynamics) / ( nfree * Kb);
@@ -1648,11 +1701,15 @@ static void applyStochastic(MolecularDynamics* molecularDynamics)
 
 	getsFrictionalAndRandomForce(molecularDynamics);
 
+	if(molecularDynamics->forceField->options.rattleConstraints!=NOCONSTRAINTS)
+	for (i = 0; i < n; i++)
+		for ( j = 0; j < 3; j++)
+				molecularDynamics->coordinatesOld[i][j]= molecularDynamics->forceField->molecule.atoms[i].coordinates[j];
+
+
 	for(i=0;i<n;i++)
 	{
-		if(molecularDynamics->forceField->options.rattleConstraints!=NOCONSTRAINTS)
-		for(j=0;j<3;j++)
-			molecularDynamics->coordinatesOld[i][j]= molecularDynamics->forceField->molecule.atoms[i].coordinates[j];
+		if(!molecularDynamics->forceField->molecule.atoms[i].variable) continue;
 		for(j=0;j<3;j++)
 			atoms[i].coordinates[j] += v[i][j]*velocityFriction[i] + a[i][j]*accelarationFriction[i] + positionRandom[i][j];
 		for(j=0;j<3;j++)
@@ -1662,8 +1719,11 @@ static void applyStochastic(MolecularDynamics* molecularDynamics)
 	newAccelaration(molecularDynamics);
 
 	for (i = 0; i < n; i++)
+	{
+		if(!molecularDynamics->forceField->molecule.atoms[i].variable) continue;
 		for ( j = 0; j < 3; j++)
 			v[i][j] += 0.5*a[i][j]*velocityFriction[i] + velocityRandom[i][j];
+	}
 	if(molecularDynamics->forceField->options.rattleConstraints!=NOCONSTRAINTS) applyRattleSecondPortion(molecularDynamics);
 	computeEnergies(molecularDynamics);
 }

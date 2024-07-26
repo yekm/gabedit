@@ -39,7 +39,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/TextEdit.h"
 #include "../Common/Preferences.h"
 #include "../Common/Run.h"
-#include "../OpenGL/GLArea.h"
+#include "../Display/GLArea.h"
 #include "../Geometry/Fragments.h"
 #include "../Geometry/DrawGeom.h"
 #include "../Geometry/AxesGeomGL.h"

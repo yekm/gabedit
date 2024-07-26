@@ -64,6 +64,7 @@ void setRattleConstraintsParameters(SemiEmpiricalModel* semiEmpiricalModel)
 		if(StopCalcul) break;
 		a1 = m->connected2[0][i];
 		a2 = m->connected2[1][i];
+		if(!m->atoms[a1].variable &&!m->atoms[a2].variable) continue;
 		r2ij = 0;
 		for (k=0;k<3;k++)
 		{
@@ -101,6 +102,7 @@ void setRattleConstraintsParameters(SemiEmpiricalModel* semiEmpiricalModel)
 			a1 = m->connected3[0][i];
 			a2 = m->connected3[1][i];
 			a3 = m->connected3[2][i];
+			if(!m->atoms[a1].variable &&!m->atoms[a3].variable) continue;
 			if(nAngles[a2]>=2*nConnections[a2]-3) continue;
 			for (k=0;k<j;k++)
 			{

@@ -251,7 +251,7 @@ static void define_geometry_to_draw()
 			geometry0[Natoms].N = i+1;
 			geometry0[Natoms].typeConnections = NULL;
 			geometry0[Natoms].Layer = HIGH_LAYER;
-			geometry0[Natoms].Variable = FALSE;
+			geometry0[Natoms].Variable = TRUE;
 
 			geometry[Natoms].X = G[i].X;
 			geometry[Natoms].Y = G[i].Y;
@@ -266,7 +266,7 @@ static void define_geometry_to_draw()
 			geometry[Natoms].N = i+1;
 			geometry[Natoms].typeConnections = NULL;
 			geometry[Natoms].Layer = HIGH_LAYER;
-			geometry[Natoms].Variable = FALSE;
+			geometry[Natoms].Variable = TRUE;
 			Natoms++;
 			C[0] +=  G[i].X;
 			C[1] +=  G[i].Y;

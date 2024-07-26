@@ -11,6 +11,7 @@ OGLLIB=-L/usr/lib -lGL -L/usr/lib -lGLU
 OGLCFLAGS=-I/usr/include  
 LIBPTHREAD    = -lpthread
 RM = rm -f
+RMTMP = rm -f tmp/*
 MAKE = make
 WIN32LIB   = 
 X11LIB   = -lX11

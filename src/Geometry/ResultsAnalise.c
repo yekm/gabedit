@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/ResultsAnalise.h"
 #include "../Geometry/EnergiesCurves.h"
 #include "../Common/Run.h"
-#include "../OpenGL/ViewOrb.h"
+#include "../Display/ViewOrb.h"
 
 /*********************************************************************/
 DataGeomConv free_geom_conv(DataGeomConv GeomConv)

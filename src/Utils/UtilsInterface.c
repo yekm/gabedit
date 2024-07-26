@@ -48,7 +48,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/GeomXYZ.h"
 #include "../Geometry/GeomZmatrix.h"
 #include "../Common/SplashScreen.h"
-#include "../OpenGL/ViewOrb.h"
+#include "../Display/ViewOrb.h"
 #include "../Geometry/Fragments.h"
 #include "../Geometry/DrawGeom.h"
 #include "../Common/Exit.h"

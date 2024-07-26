@@ -11,6 +11,7 @@ GTKCFLAGS = -I$(GTKDIR)/include -I$(GTKDIR)/include/gtk-2.0 -I$(GTKDIR)/lib/gtk-
 
 MAKE = mingw32-make
 RM = del
+RMTMP = del /S/Q tmp
 OGLLIB = -lopengl32 -lglu32
 OGLCFLAGS=-IE:
 GDKGL = gdkgl-win32

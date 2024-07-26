@@ -40,7 +40,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Molpro/MolproBasisLibrary.h"
 #include "../Molcas/MolcasBasisLibrary.h"
 #include "../MPQC/MPQCBasisLibrary.h"
-#include "../OpenGL/UtilsOrb.h"
+#include "../Display/UtilsOrb.h"
 
 static GdkGC *gc = NULL;
 /*static guint IdTimer = 0;*/

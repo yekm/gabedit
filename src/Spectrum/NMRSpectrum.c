@@ -34,7 +34,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Files/FileChooser.h"
 #include "../Common/Windows.h"
 #include "../Utils/GabeditXYPlot.h"
-#include "../OpenGL/Vibration.h"
+#include "../Display/Vibration.h"
 #include "SpectrumWin.h"
 
 #define NMAXGROUP 10

@@ -72,6 +72,7 @@ struct _SemiEmpiricalMD
 	FILE* fileTraj;
 	FILE* fileProp;
 	gint nfree;
+	gint nvariables;
 };
 void	freeSemiEmpiricalMD(SemiEmpiricalMD* seMD);
 void	runSemiEmpiricalMD(

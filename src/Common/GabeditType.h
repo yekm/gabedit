@@ -338,6 +338,7 @@ typedef struct _TypeGeomOrb
 	gdouble C[3];
 	gdouble partialCharge;
 	gdouble nuclearCharge;
+	gboolean variable;
 	SAtomsProp Prop;
 	guint Sphere;
 	gint N;

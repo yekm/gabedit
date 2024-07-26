@@ -1,3 +1,7 @@
+20 December 2010 :
+	Atoms can be fixed dunring MD
+	Screen capture of geometry drawing window in ppm or bmp : A bug were fixed
+
 02 December 2010 :
 	Multigrid method : multipolaire developpement at the center of charge. Multipole order 3 is now used.
 	Comformational search with semi-emperical : A bug is fixed.

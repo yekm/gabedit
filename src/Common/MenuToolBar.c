@@ -46,7 +46,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../MolecularMechanics/SetMMParameters.h"
 #include "../MolecularMechanics/SetPDBTemplate.h"
 #include "../Common/StockIcons.h"
-#include "../OpenGL/Vibration.h"
+#include "../Display/Vibration.h"
 #include "../Utils/GabeditXYPlot.h"
 #include "../Utils/GabeditContoursPlot.h"
 #include "../Spectrum/IRSpectrum.h"

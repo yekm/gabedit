@@ -252,7 +252,7 @@ static void define_geometry_to_draw()
 		geometry0[n].ResidueNumber = G[i].ResidueNumber;
 		geometry0[n].show = TRUE;
 		geometry0[n].Layer = HIGH_LAYER;
-		geometry0[n].Variable = FALSE;
+		geometry0[n].Variable = TRUE;
 
 
 		geometry0[n].N = i+1;
@@ -271,7 +271,7 @@ static void define_geometry_to_draw()
 		geometry[n].N = i+1;
         	geometry[n].typeConnections = NULL;
 		geometry[n].Layer = HIGH_LAYER;
-		geometry[n].Variable = FALSE;
+		geometry[n].Variable = TRUE;
 		C[0] +=  G[i].X;
 		C[1] +=  G[i].Y;
 		C[2] +=  G[i].Z;

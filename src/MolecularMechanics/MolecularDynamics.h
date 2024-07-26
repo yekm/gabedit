@@ -72,6 +72,7 @@ struct _MolecularDynamics
 	FILE* fileTraj;
 	FILE* fileProp;
 	gint nfree;
+	gint nvariables;
 };
 void	freeMolecularDynamics(MolecularDynamics* molecularDynamics);
 void	runMolecularDynamics(

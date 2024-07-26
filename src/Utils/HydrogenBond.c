@@ -32,7 +32,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/Fragments.h"
 #include "../Geometry/DrawGeom.h"
 #include "../Common/Windows.h"
-#include "../OpenGL/GLArea.h"
+#include "../Display/GLArea.h"
 #include "../Common/StockIcons.h"
 
 static gint nAtomsCanConnect = 6;

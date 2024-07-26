@@ -3155,26 +3155,27 @@ static gint get_connections_one_atom_hin(gchar* t, gint nAtoms, gint* connection
 	gchar** split = NULL;
 	gint nA = 0;
 	gint type = 1;
+	gint ibeg = 11;
 	for(k=0;k<nAtoms;k++) connections[k] = 0;
 	split = gab_split(t);
 	nA = 0;
 	while(split && split[nA]!=NULL) nA++;
-	if(nA<11)
+	if(nA<ibeg)
 	{
 		g_strfreev(split);
 		return 0;
 	}
-	nc = atoi(split[10]);
+	nc = atoi(split[ibeg-1]);
 	for(k=0;k<2*nc;k+=2) 
 	{
-		if(!split[11+k]) break;
-		if(!split[11+k+1]) break;
-		nj = atoi(split[11+k]);
+		if(!split[ibeg+k]) break;
+		if(!split[ibeg+k+1]) break;
+		nj = atoi(split[ibeg+k]);
 		type = 1;
-		if(strstr(split[11+k+1],"d"))type = 2;
-		if(strstr(split[11+k+1],"D"))type = 2;
-		if(strstr(split[11+k+1],"t"))type = 3;
-		if(strstr(split[11+k+1],"T"))type = 3;
+		if(strstr(split[ibeg+k+1],"d"))type = 2;
+		if(strstr(split[ibeg+k+1],"D"))type = 2;
+		if(strstr(split[ibeg+k+1],"t"))type = 3;
+		if(strstr(split[ibeg+k+1],"T"))type = 3;
 		connections[nj-1] = type;
 	}
 
@@ -3868,6 +3869,8 @@ static gboolean save_lascmd_file(G_CONST_RETURN gchar* fileNameGeom)
 
 	for(j=0;j<NcentersXYZ;j++)
 	{
+		int variable = 0;
+         	if( !test(GeomXYZ[j].X) || !test(GeomXYZ[j].Y) || !test(GeomXYZ[j].Z) ) variable = 1;
          	if(!test(GeomXYZ[j].X)) X = get_value_variableXYZ(GeomXYZ[j].X);
          	else X = atof(GeomXYZ[j].X);
          	if(!test(GeomXYZ[j].Y)) Y = get_value_variableXYZ(GeomXYZ[j].Y);
@@ -3894,7 +3897,7 @@ static gboolean save_lascmd_file(G_CONST_RETURN gchar* fileNameGeom)
 			}
 		}
 
-		fprintf(file," %s %s %s %s %d %f %d %f %f %f ", 
+		fprintf(file," %s %s %s %s %d %f %d %d %f %f %f ", 
 				GeomXYZ[j].Symb,
 				GeomXYZ[j].mmType,
 				GeomXYZ[j].pdbType,
@@ -3902,6 +3905,7 @@ static gboolean save_lascmd_file(G_CONST_RETURN gchar* fileNameGeom)
 				GeomXYZ[j].ResidueNumber,
 				atof(GeomXYZ[j].Charge),
 				get_layer(GeomXYZ[j].Layer),
+				variable,
 				X,
 				Y,
 				Z
@@ -3927,6 +3931,7 @@ static gboolean save_gabedit_file(G_CONST_RETURN gchar* fileNameGeom)
 	gint* connection = NULL;
 	gint* connectionType = NULL;
 	gint ct;
+	gint form = 1;
 
 	if(NcentersXYZ<1) return FALSE;
 	if(!GeomXYZ) return FALSE;
@@ -3936,7 +3941,7 @@ static gboolean save_gabedit_file(G_CONST_RETURN gchar* fileNameGeom)
 	if(!file) return FALSE;
 
 	fprintf(file,"[Gabedit Format]\n");
-	fprintf(file,"[GEOMS]\n");
+	fprintf(file,"[GEOMS] %d\n",form);
 	fprintf(file,"1 1\n");
 	fprintf(file,"ENERGY UNK 1\n");
 	fprintf(file,"0.0\n");
@@ -3947,12 +3952,14 @@ static gboolean save_gabedit_file(G_CONST_RETURN gchar* fileNameGeom)
 
 	for(j=0;j<NcentersXYZ;j++)
 	{
+		int variable = 0;
          	if(!test(GeomXYZ[j].X)) X = get_value_variableXYZ(GeomXYZ[j].X);
          	else X = atof(GeomXYZ[j].X);
          	if(!test(GeomXYZ[j].Y)) Y = get_value_variableXYZ(GeomXYZ[j].Y);
          	else Y = atof(GeomXYZ[j].Y);
          	if(!test(GeomXYZ[j].Z)) Z = get_value_variableXYZ(GeomXYZ[j].Z);
          	else Z = atof(GeomXYZ[j].Z);
+         	if( !test(GeomXYZ[j].X) || !test(GeomXYZ[j].Y) || !test(GeomXYZ[j].Z) ) variable = 1;
          	if(Units==0)
          	{
               		X *= BOHR_TO_ANG;
@@ -3973,7 +3980,7 @@ static gboolean save_gabedit_file(G_CONST_RETURN gchar* fileNameGeom)
 			}
 		}
 
-		fprintf(file," %s %s %s %s %d %f %d %f %f %f ", 
+		fprintf(file," %s %s %s %s %d %f %d %d %f %f %f ", 
 				GeomXYZ[j].Symb,
 				GeomXYZ[j].mmType,
 				GeomXYZ[j].pdbType,
@@ -3981,6 +3988,7 @@ static gboolean save_gabedit_file(G_CONST_RETURN gchar* fileNameGeom)
 				GeomXYZ[j].ResidueNumber,
 				atof(GeomXYZ[j].Charge),
 				get_layer(GeomXYZ[j].Layer),
+				variable,
 				X,
 				Y,
 				Z
@@ -5063,29 +5071,30 @@ static void read_molden_gabedit_geom_conv_file(gchar* fileName, gint geometryNum
 		set_spin_of_electrons();
 }
 /********************************************************************************/
-gint get_connections_one_atom_gabedit(gchar* t, gint nAtoms, gint* connections)
+gint get_connections_one_atom_gabedit(gchar* t, gint nAtoms, gint ibeg, gint* connections)
 {
 	gint k;
 	gint nc;
 	gint nj;
 	gchar** split = NULL;
 	gint nA = 0;
+	/* gint ibeg = 12;*/
 	for(k=0;k<nAtoms;k++) connections[k] = 0;
 	split = gab_split(t);
 	nA = 0;
 	while(split && split[nA]!=NULL) nA++;
-	if(nA<11)
+	if(nA<ibeg)
 	{
 		g_strfreev(split);
 		return 0;
 	}
-	nc = atoi(split[10]);
+	nc = atoi(split[ibeg-1]);
 	for(k=0;k<2*nc;k+=2) 
 	{
-		if(!split[11+k]) break;
-		if(!split[11+k+1]) break;
-		nj = atoi(split[11+k]);
-		connections[nj-1] = atoi(split[11+k+1]);
+		if(!split[ibeg+k]) break;
+		if(!split[ibeg+k+1]) break;
+		nj = atoi(split[ibeg+k]);
+		connections[nj-1] = atoi(split[ibeg+k+1]);
 	}
 
 	g_strfreev(split);
@@ -5102,6 +5111,7 @@ static gint read_gabedit_geoms_file(gchar* fileName, gint geometryNumber)
 	gchar mmType[SZ];
 	gchar pdbType[SZ];
 	gchar residueName[SZ];
+	gchar dum[SZ];
 	gdouble X,Y,Z;
 	gdouble charge;
 	gint layer;
@@ -5116,6 +5126,8 @@ static gint read_gabedit_geoms_file(gchar* fileName, gint geometryNumber)
 	gint nAtoms=0;
 	gint l;
 	gint nc = 0;
+	gint Nvar = 0;
+	gint form = 1;
 
 	fd = FOpen(fileName, "r");
 	if(fd == NULL) 
@@ -5125,12 +5137,14 @@ static gint read_gabedit_geoms_file(gchar* fileName, gint geometryNumber)
 		return 1;
 	}
 	OK=FALSE;
+	Nvar = 0;
 	while(!feof(fd))
 	{
 		if(!fgets(t,taille,fd))break;
 		pdest = strstr( t, "[GEOMS]");
  		if (pdest)
 		{
+			if(sscanf(t,"%s %d",dum,&form)!=2) form = 0;
 			if(!fgets(t,taille,fd))break;
 			sscanf(t,"%d %d",&nGeometries, &nLabels);
 			if(nGeometries<geometryNumber)break;
@@ -5173,12 +5187,25 @@ static gint read_gabedit_geoms_file(gchar* fileName, gint geometryNumber)
 			nc = 0;
 			for(i=0; i<nAtoms; i++)
 			{
+				int variable = 0;
+				gint ibeg = 12;
 				if(!fgets(t,taille,fd))break;
-    				k = sscanf(t,"%s %s %s %s %d %lf %d %lf %lf %lf",
+				if(form==0)
+				{
+    					k = sscanf(t,"%s %s %s %s %d %lf %d %lf %lf %lf",
 						symbol,mmType,pdbType,residueName, 
 						&GeomXYZ[i].ResidueNumber,
 						&charge,&layer,&X,&Y,&Z);
-				if(k!=10) 
+					k++;
+					variable = TRUE;
+					ibeg = 11;
+				}
+				else
+    				k = sscanf(t,"%s %s %s %s %d %lf %d %d %lf %lf %lf",
+						symbol,mmType,pdbType,residueName, 
+						&GeomXYZ[i].ResidueNumber,
+						&charge,&layer,&variable,&X,&Y,&Z);
+				if(k!=11) 
 				{
 					for(j=0; j<i; j++)
 					{
@@ -5191,7 +5218,9 @@ static gint read_gabedit_geoms_file(gchar* fileName, gint geometryNumber)
 					}
 					for(i=0; i<nAtoms; i++) if(GeomXYZ[i].typeConnections)g_free(GeomXYZ[i].typeConnections);
 					if(GeomXYZ) g_free(GeomXYZ);
+  					if(VariablesXYZ) g_free(VariablesXYZ);
  					NcentersXYZ = 0;
+					NVariablesXYZ = 0;
 					fclose(fd);
 					if(GeomIsOpen && MethodeGeom == GEOM_IS_XYZ) clearList(list);
 					return -1;
@@ -5217,12 +5246,23 @@ static gint read_gabedit_geoms_file(gchar* fileName, gint geometryNumber)
 					GeomXYZ[i].Y=g_strdup_printf("%f",Y);
 					GeomXYZ[i].Z=g_strdup_printf("%f",Z);
 				}
+				if(variable!=0)
+				{
+					Nvar +=3;
+  					if(Nvar==3) VariablesXYZ = g_malloc(Nvar*sizeof(VariablesXYZDef));
+  					else VariablesXYZ = g_realloc(VariablesXYZ, Nvar*sizeof(VariablesXYZDef));
+					trans_coordXYZ_geom('X', GeomXYZ, i, VariablesXYZ,  Nvar-3);
+					trans_coordXYZ_geom('Y', GeomXYZ, i, VariablesXYZ,  Nvar-2);
+					trans_coordXYZ_geom('Z', GeomXYZ, i, VariablesXYZ,  Nvar-1);
+				}
 				GeomXYZ[i].Charge=g_strdup_printf("%f",charge);
 				if(layer==0) GeomXYZ[i].Layer=g_strdup("Low");
 				if(layer==1) GeomXYZ[i].Layer=g_strdup("Medium");
 				if(layer==2) GeomXYZ[i].Layer=g_strdup(" ");
-    				nc += get_connections_one_atom_gabedit(t,nAtoms,GeomXYZ[i].typeConnections);
+				//{ int k; for(k=0;k<nAtoms;k++) GeomXYZ[i].typeConnections[k] = 0;}
+    				nc += get_connections_one_atom_gabedit(t, nAtoms, ibeg, GeomXYZ[i].typeConnections);
 			}
+			NVariablesXYZ =Nvar;
  			NcentersXYZ = nAtoms;
 			OK = TRUE;
 			break;

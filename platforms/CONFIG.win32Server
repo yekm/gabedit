@@ -9,6 +9,7 @@ GTKCFLAGS = -IZ:/Programs/gtk/include/gtk-2.0 -IZ:/Programs/gtk/lib/gtk-2.0/incl
 
 MAKE = mingw32-make
 RM = del
+RMTMP = del /S/Q tmp
 OGLLIB = -lopengl32 -lglu32
 OGLCFLAGS=-IE:
 GDKGL = gdkgl-win32

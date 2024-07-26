@@ -34,7 +34,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/DrawGeom.h"
 #include "../Utils/Utils.h"
 #include "../Geometry/GeomGlobal.h"
-#include "../OpenGL/GLArea.h"
+#include "../Display/GLArea.h"
 #include "../Common/Windows.h"
 
 #define NATOMS 111

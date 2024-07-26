@@ -26,7 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Utils.h"
 #include "../Common/Windows.h"
 #include "../Common/Exit.h"
-#include "../OpenGL/UtilsOrb.h"
+#include "../Display/UtilsOrb.h"
 
 
 /***************************************************************************************************************************/

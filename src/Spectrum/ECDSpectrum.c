@@ -31,7 +31,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Files/FileChooser.h"
 #include "../Common/Windows.h"
 #include "../Utils/GabeditXYPlot.h"
-#include "../OpenGL/Vibration.h"
+#include "../Display/Vibration.h"
 #include "SpectrumWin.h"
 
 /********************************************************************************/
@@ -410,7 +410,7 @@ static gboolean read_gaussian_file(GabeditFileChooser *SelecFile, gint response_
 				numberOfStates = 0;
 			}
 			if(strstr(t,"Excited State")&& strstr(t,"eV")) numberOfStates++;
-	 		if ( strstr( t,"state          X           Y           Z     R(length)") )
+	 		if ( strstr( t,"state") && strstr( t,"R(length)") )
 	  		{
 				posRotatoryStrengths = ftell(file);
 				numberOfStatesRotatoryStrengths = 0;

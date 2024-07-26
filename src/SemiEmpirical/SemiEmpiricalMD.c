@@ -956,13 +956,42 @@ static void initMD(SemiEmpiricalMD* seMD, gdouble temperature, gdouble stepSize,
 	else
 	for ( i = 0; i < seMD->numberOfAtoms; i++)
 	{
-		gdouble speed = maxwel(seMD->seModel->molecule.atoms[i].prop.masse,temperature);
-		getRandVect(speed, seMD->velocity[i]);
+		if(seMD->seModel->molecule.atoms[i].variable)
+		{
+			gdouble speed = maxwel(seMD->seModel->molecule.atoms[i].prop.masse,temperature);
+			getRandVect(speed, seMD->velocity[i]);
+		}
+		else
+		{
+			for ( j = 0; j < 3; j++)
+				seMD->velocity[i][j] = 0.0;
+		}
 	}
-        seMD->nfree = 3* seMD->numberOfAtoms-seMD->seModel->numberOfRattleConstraintsTerms;
+        seMD->nvariables = 0;
+	for ( i = 0; i < seMD->numberOfAtoms; i++)
+		if(seMD->seModel->molecule.atoms[i].variable) seMD->nvariables +=1;
+        if(seMD->nvariables==0) 
+	{
+		seMD->nvariables= seMD->numberOfAtoms;
+		for ( i = 0; i < seMD->numberOfAtoms; i++)
+			seMD->seModel->molecule.atoms[i].variable = TRUE;
+		if(temperature>0)
+		for ( i = 0; i < seMD->numberOfAtoms; i++)
+		{
+			gdouble speed = maxwel(seMD->seModel->molecule.atoms[i].prop.masse,temperature);
+			getRandVect(speed, seMD->velocity[i]);
+		}
+	}
+        seMD->nfree = 3* seMD->nvariables-seMD->seModel->numberOfRattleConstraintsTerms;
         removeTranslationAndRotation(seMD);
-        seMD->nfree -=6;
-        if( seMD->nfree<1)  seMD->nfree = 1;
+        if(seMD->nvariables==seMD->numberOfAtoms) seMD->nfree -=6;
+        if(seMD->nvariables==seMD->numberOfAtoms-1) seMD->nfree -=3;
+        if(seMD->nvariables==seMD->numberOfAtoms-2) seMD->nfree -=1;
+        if( seMD->nfree<1)
+	{ 
+		StopCalcul = TRUE;
+        	seMD->nfree = 1;
+	}
 
 	removeTranslationAndRotation(seMD);
 }
@@ -1003,6 +1032,7 @@ static void berendsen(SemiEmpiricalMD* seMD)
 	scale = sqrt(1.0 + (dt/tautemp)*(seMD->temperature/kelvin-1.0));
 	/* printf("temp = %f kelvin = %f scale = %f\n",seMD->temperature, kelvin, scale);*/
 	for ( i = 0; i < seMD->numberOfAtoms; i++)
+		if(seMD->seModel->molecule.atoms[i].variable)
 		for ( j = 0; j < 3; j++)
 			seMD->velocity[i][j] *= scale;
 	removeTranslationAndRotation(seMD);
@@ -1020,11 +1050,12 @@ static void andersen(SemiEmpiricalMD* seMD)
 	if(seMD->numberOfAtoms<1) return;
 
 	rate = seMD->dt / tau;
-	rate /= pow(seMD->numberOfAtoms,2.0/3.0);
+	rate /= pow(seMD->nvariables,2.0/3.0);
 
 	for ( i = 0; i < seMD->numberOfAtoms; i++)
 	{
 		gdouble trial = drandom();
+		if(seMD->seModel->molecule.atoms[i].variable)
 		if(trial<rate)
 		{
 /*
@@ -1072,6 +1103,7 @@ static void bussi(SemiEmpiricalMD* seMD)
         scale = sqrt(scale);
         if (r+sqrt(c/d)<0)  scale = -scale;
         for ( i = 0; i < seMD->numberOfAtoms; i++)
+		if(seMD->seModel->molecule.atoms[i].variable)
                 for ( j = 0; j < 3; j++)
                         seMD->velocity[i][j] *= scale;
         removeTranslationAndRotation(seMD);
@@ -1142,7 +1174,7 @@ static void applyRattleFirstPortion(SemiEmpiricalMD* semiEmpiricalMD)
 	if(seModel->constraints==NOCONSTRAINTS) return;
 	for (i = 0; i < semiEmpiricalMD->numberOfAtoms; i++)
 	{
-			semiEmpiricalMD->moved[i] = TRUE;
+			semiEmpiricalMD->moved[i] = semiEmpiricalMD->seModel->molecule.atoms[i].variable;
 			semiEmpiricalMD->update[i] = FALSE;
 	}
 	maxIter *= semiEmpiricalMD->seModel->numberOfRattleConstraintsTerms;
@@ -1199,6 +1231,12 @@ static void applyRattleFirstPortion(SemiEmpiricalMD* semiEmpiricalMD)
 	{
 		printf(_("Rattle first portion : Warning, distance constraints not satisfied\n"));
 	}
+	for (i = 0; i < semiEmpiricalMD->numberOfAtoms; i++)
+		if(!m->atoms[i].variable) 
+		{
+			for (k=0;k<3;k++) m->atoms[i].coordinates[k] =  semiEmpiricalMD->coordinatesOld[i][k];
+			for (k=0;k<3;k++) semiEmpiricalMD->velocity[i][k] = 0;
+		}
 
 }
 /*********************************************************************************/
@@ -1228,7 +1266,7 @@ static void applyRattleSecondPortion(SemiEmpiricalMD* semiEmpiricalMD)
 	tolerance /= semiEmpiricalMD->dt;
 	for (i = 0; i < semiEmpiricalMD->numberOfAtoms; i++)
 	{
-			semiEmpiricalMD->moved[i] = TRUE;
+			semiEmpiricalMD->moved[i] = semiEmpiricalMD->seModel->molecule.atoms[i].variable;
 			semiEmpiricalMD->update[i] = FALSE;
 	}
 	maxIter *= semiEmpiricalMD->seModel->numberOfRattleConstraintsTerms;
@@ -1277,6 +1315,8 @@ static void applyRattleSecondPortion(SemiEmpiricalMD* semiEmpiricalMD)
 	{
 		printf(_("Rattle second portion : Warning, velocity constraints not satisfied\n"));
 	}
+	for (i = 0; i < semiEmpiricalMD->numberOfAtoms; i++)
+			if(!m->atoms[i].variable) for (k=0;k<3;k++) semiEmpiricalMD->velocity[i][k] = 0.0;
 }
 /*********************************************************************************/
 static void applyVerlet(SemiEmpiricalMD* seMD)
@@ -1284,12 +1324,14 @@ static void applyVerlet(SemiEmpiricalMD* seMD)
 	gint i;
 	gint j;
 
+	if(seMD->seModel->constraints!=NOCONSTRAINTS)
 	for (i = 0; i < seMD->numberOfAtoms; i++)
-	{
-		if(seMD->seModel->constraints!=NOCONSTRAINTS)
 		for ( j = 0; j < 3; j++)
 				seMD->coordinatesOld[i][j]= seMD->seModel->molecule.atoms[i].coordinates[j];
 
+	for (i = 0; i < seMD->numberOfAtoms; i++)
+	{
+		if(!seMD->seModel->molecule.atoms[i].variable) continue;
 		for ( j = 0; j < 3; j++)
 		{
 			seMD->seModel->molecule.atoms[i].coordinates[j] += 
@@ -1305,6 +1347,7 @@ static void applyVerlet(SemiEmpiricalMD* seMD)
 	newAccelaration(seMD);
 
 	for (i = 0; i < seMD->numberOfAtoms; i++)
+		if(seMD->seModel->molecule.atoms[i].variable)
 		for ( j = 0; j < 3; j++)
 			seMD->velocity[i][j] += seMD->a[i][j] * seMD->dt_2;
 	if(seMD->seModel->constraints!=NOCONSTRAINTS) applyRattleSecondPortion(seMD);
@@ -1316,11 +1359,14 @@ static void applyBeeman(SemiEmpiricalMD* seMD)
 	gint j;
 	gdouble terms[3];
 
+	if(seMD->seModel->constraints!=NOCONSTRAINTS)
 	for (i = 0; i < seMD->numberOfAtoms; i++)
-	{
-		if(seMD->seModel->constraints!=NOCONSTRAINTS)
 		for ( j = 0; j < 3; j++)
 				seMD->coordinatesOld[i][j]= seMD->seModel->molecule.atoms[i].coordinates[j];
+
+	for (i = 0; i < seMD->numberOfAtoms; i++)
+	{
+		if(!seMD->seModel->molecule.atoms[i].variable) continue;
 
 		for ( j = 0; j < 3; j++)
 			terms[j] = 5.0*seMD->a[i][j]-seMD->aold[i][j];
@@ -1340,6 +1386,7 @@ static void applyBeeman(SemiEmpiricalMD* seMD)
 	newAccelaration(seMD);
 
 	for (i = 0; i < seMD->numberOfAtoms; i++)
+		if(seMD->seModel->molecule.atoms[i].variable)
 		for ( j = 0; j < 3; j++)
 			seMD->velocity[i][j] += (3.0*seMD->a[i][j]+seMD->aold[i][j]) * seMD->dt_8;
 	if(seMD->seModel->constraints!=NOCONSTRAINTS) applyRattleSecondPortion(seMD);
@@ -1490,7 +1537,7 @@ static void saveTrajectory(SemiEmpiricalMD* seMD, gint iStep)
 
 	for (i = 0; i < seMD->numberOfAtoms; i++)
 	{
-		fprintf(seMD->fileTraj," %s %f %f %f %f %f %f %f %s %s %s %d\n", 
+		fprintf(seMD->fileTraj," %s %f %f %f %f %f %f %f %s %s %s %d %d\n", 
 				seMD->seModel->molecule.atoms[i].prop.symbol,
 				seMD->seModel->molecule.atoms[i].coordinates[0],
 				seMD->seModel->molecule.atoms[i].coordinates[1],
@@ -1502,7 +1549,8 @@ static void saveTrajectory(SemiEmpiricalMD* seMD, gint iStep)
 				seMD->seModel->molecule.atoms[i].mmType,
 				seMD->seModel->molecule.atoms[i].pdbType,
 				seMD->seModel->molecule.atoms[i].residueName,
-				seMD->seModel->molecule.atoms[i].residueNumber
+				seMD->seModel->molecule.atoms[i].residueNumber,
+				seMD->seModel->molecule.atoms[i].variable
 				);
 	}
 }
@@ -1695,11 +1743,14 @@ static void applyStochastic(SemiEmpiricalMD* seMD)
 
 	getsFrictionalAndRandomForce(seMD);
 
+	if(seMD->seModel->constraints!=NOCONSTRAINTS)
+	for (i = 0; i < seMD->numberOfAtoms; i++)
+		for ( j = 0; j < 3; j++)
+				seMD->coordinatesOld[i][j]= seMD->seModel->molecule.atoms[i].coordinates[j];
+
 	for(i=0;i<n;i++)
 	{
-		for ( j = 0; j < 3; j++)
-			if(seMD->seModel->constraints!=NOCONSTRAINTS)
-				seMD->coordinatesOld[i][j]= seMD->seModel->molecule.atoms[i].coordinates[j];
+		if(!seMD->seModel->molecule.atoms[i].variable) continue;
 		for(j=0;j<3;j++)
 			atoms[i].coordinates[j] += v[i][j]*velocityFriction[i] + a[i][j]*accelarationFriction[i] + positionRandom[i][j];
 		for(j=0;j<3;j++)
@@ -1711,6 +1762,7 @@ static void applyStochastic(SemiEmpiricalMD* seMD)
 	newAccelaration(seMD);
 
 	for (i = 0; i < n; i++)
+		if(seMD->seModel->molecule.atoms[i].variable)
 		for ( j = 0; j < 3; j++)
 			v[i][j] += 0.5*a[i][j]*velocityFriction[i] + velocityRandom[i][j];
 	if(seMD->seModel->constraints!=NOCONSTRAINTS) applyRattleSecondPortion(seMD);

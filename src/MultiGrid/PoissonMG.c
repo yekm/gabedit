@@ -32,8 +32,8 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/MathFunctions.h"
 #include "PoissonMG.h"
 #include "../Common/GabeditType.h"
-#include "../OpenGL/GlobalOrb.h"
-#include "../OpenGL/StatusOrb.h"
+#include "../Display/GlobalOrb.h"
+#include "../Display/StatusOrb.h"
 
 /*********************************************************/
 PoissonMG* getPoissonUsingDomain(DomainMG* domain)

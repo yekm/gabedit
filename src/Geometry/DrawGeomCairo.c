@@ -4304,7 +4304,7 @@ static void add_hydrogen_atoms(gint addToI, gint nH, gchar* HType)
 		geometry[Natoms].N = Natoms+1;
 		geometry[Natoms].typeConnections = NULL;
 		geometry[Natoms].Charge = 0.0;
-		geometry[Natoms].Variable = FALSE;
+		geometry[Natoms].Variable = TRUE;
 		geometry[Natoms].show = ShowHydrogenAtoms;
 
 		geometry0[Natoms].X = geometry[Natoms].X;
@@ -4317,7 +4317,7 @@ static void add_hydrogen_atoms(gint addToI, gint nH, gchar* HType)
 		geometry0[Natoms].Residue = g_strdup(geometry[Natoms].Residue);
 		geometry0[Natoms].ResidueNumber = geometry[Natoms].ResidueNumber;
 		geometry0[Natoms].Charge = 0.0;
-		geometry0[Natoms].Variable = FALSE;
+		geometry0[Natoms].Variable = TRUE;
 		geometry0[Natoms].N = geometry[Natoms].N;
 		geometry0[Natoms].show = geometry[Natoms].show;
 		geometry0[Natoms].typeConnections = NULL;
@@ -5033,7 +5033,7 @@ static void add_hydrogen_atoms_tpl(gint addToI, gint nA)
 			geometry[Natoms].ResidueNumber = geometry[addToI].ResidueNumber;
 		}
 		geometry[Natoms].Charge = 0.0;
-		geometry[Natoms].Variable = FALSE;
+		geometry[Natoms].Variable = TRUE;
 		geometry[Natoms].show = ShowHydrogenAtoms;
 
 		geometry0[Natoms].X = geometry[Natoms].X;
@@ -5046,7 +5046,7 @@ static void add_hydrogen_atoms_tpl(gint addToI, gint nA)
 		geometry0[Natoms].Residue = g_strdup(geometry[Natoms].Residue);
 		geometry0[Natoms].ResidueNumber = geometry[Natoms].ResidueNumber;
 		geometry0[Natoms].Charge = 0.0;
-		geometry0[Natoms].Variable = FALSE;
+		geometry0[Natoms].Variable = TRUE;
 		geometry0[Natoms].N = geometry[Natoms].N;
 		geometry0[Natoms].show = geometry[Natoms].show;
 		geometry0[Natoms].typeConnections = NULL;
@@ -8502,7 +8502,7 @@ static gint insert_atom(GdkEventButton *bevent)
 			geometry0[Natoms].mmType = g_strdup(AtomToInsert);
 			geometry0[Natoms].pdbType = g_strdup(AtomToInsert);
 			geometry0[Natoms].Layer = HIGH_LAYER;
-			geometry0[Natoms].Variable = FALSE;
+			geometry0[Natoms].Variable = TRUE;
 			geometry0[Natoms].Residue = g_strdup(geometry[Natoms].Residue);
 			geometry0[Natoms].ResidueNumber = geometry[Natoms].ResidueNumber;
 			geometry0[Natoms].show = geometry[Natoms].show;
@@ -8696,7 +8696,7 @@ static gint insert_fragment_without_delete_an_atom(GtkWidget *widget,GdkEvent *e
 				geometry0[Natoms+j].mmType =g_strdup(Frag.Atoms[i].mmType);
 				geometry0[Natoms+j].pdbType =g_strdup(Frag.Atoms[i].pdbType);
 				geometry0[Natoms+j].Layer = HIGH_LAYER;
-				geometry0[Natoms+j].Variable = FALSE;
+				geometry0[Natoms+j].Variable = TRUE;
 				geometry0[Natoms+j].Residue =g_strdup(Frag.Atoms[i].Residue);
 				geometry0[Natoms+j].ResidueNumber= get_number_new_residue();
 				geometry0[Natoms+j].show= TRUE;
@@ -8822,7 +8822,7 @@ static gint insert_fragment_connected_to_an_atom(gint toD, gint toB, gint toA)
 		geometry0[Natoms+j].mmType =g_strdup(Frag.Atoms[i].mmType);
 		geometry0[Natoms+j].pdbType =g_strdup(Frag.Atoms[i].pdbType);
 		geometry0[Natoms+j].Layer = HIGH_LAYER;
-		geometry0[Natoms+j].Variable = FALSE;
+		geometry0[Natoms+j].Variable = TRUE;
 		geometry0[Natoms+j].Residue =g_strdup(Frag.Atoms[i].Residue);
 		geometry0[Natoms+j].ResidueNumber= get_number_new_residue();
 		geometry0[Natoms+j].show= TRUE;

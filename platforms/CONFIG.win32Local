@@ -9,6 +9,7 @@ GTKCFLAGS = -IE:/allouche/Programs/gtk/include/gtk-2.0 -IE:/allouche/Programs/gt
 
 MAKE = mingw32-make
 RM = del
+RMTMP = del /S/Q tmp
 OGLLIB = -lopengl32 -lglu32
 OGLCFLAGS=-IE:
 GDKGL = gdkgl-win32

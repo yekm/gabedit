@@ -10,6 +10,7 @@ OGLCFLAGS=-I/usr/X11R6/include
 GDKGL=gdkgl
 LIBPTHREAD    = -lpthread
 RM = rm -f
+RMTMP = rm -f tmp/*
 MAKE = make
 WIN32LIB   = 
 X11LIB   = -lX11
