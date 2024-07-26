@@ -23,11 +23,9 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/UtilsOrb.h"
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
-#include "../Utils/Utils.h"
+#include "../Utils/UtilsGL.h"
 #include "../Utils/Constants.h"
 #include "../Utils/HydrogenBond.h"
-#include "Sphere.h"
-#include "Cylinder.h"
 #include "BondsOrb.h"
 #include "RingsOrb.h"
 
@@ -38,6 +36,7 @@ static void draw_space(int i, gdouble g)
 	V4d Specular = {1.0f,1.0f,1.0f,1.0f};
 	V4d Diffuse  = {0.0f,0.0f,0.0f,1.0f};
 	V4d Ambiant  = {0.2f,0.2f,0.2f,1.0f};
+	OpenGLOptions openGLOptions = get_opengl_options();
 	  
 	Specular[0] = GeomOrb[i].Prop.color.red/(gdouble)65535;
 	Specular[1] = GeomOrb[i].Prop.color.green/(gdouble)65535;
@@ -372,6 +371,7 @@ static void draw_ball_for_stick(int i, GLdouble g)
 	V4d Specular = {1.0f,1.0f,1.0f,1.0f};
 	V4d Diffuse  = {0.0f,0.0f,0.0f,1.0f};
 	V4d Ambiant  = {0.0f,0.0f,0.0f,1.0f};
+	OpenGLOptions openGLOptions = get_opengl_options();
 	  
 	Specular[0] = GeomOrb[i].Prop.color.red/(gdouble)65535;
 	Specular[1] = GeomOrb[i].Prop.color.green/(gdouble)65535;

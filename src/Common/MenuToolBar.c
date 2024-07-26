@@ -181,7 +181,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"GeometryEdit")) {edit_geometry();}
 	else if(!strcmp(name,"GeometryDraw"))
 	{
-		if(ZoneDessin==NULL) create_window_drawing();
+		if(GeomDrawingArea==NULL) create_window_drawing();
 		else rafresh_drawing();
 	}
 	else if(!strcmp(name,"DisplayDensity")) { draw_density_orbitals_gamess_or_gauss_or_molcas_or_molpro(NULL,NULL); }

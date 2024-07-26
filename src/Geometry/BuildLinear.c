@@ -90,7 +90,7 @@ static void build_linear_molecule(GtkWidget *w,gpointer data)
         MethodeGeom = GEOM_IS_XYZ;
 
  	if(GeomIsOpen) create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
-  	if(ZoneDessin != NULL) rafresh_drawing();
+  	if(GeomDrawingArea != NULL) rafresh_drawing();
 	activate_rotation();
 }
 /********************************************************************************/

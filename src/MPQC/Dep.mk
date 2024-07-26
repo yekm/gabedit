@@ -12,8 +12,9 @@ MPQCMolecule.o: MPQCMolecule.c ../../Config.h ../Common/Global.h \
   ../Common/../Common/GabeditType.h ../MPQC/MPQCTypes.h \
   ../MPQC/MPQCGlobal.h ../Geometry/GeomGlobal.h \
   ../Geometry/GeomConversion.h ../Geometry/GeomXYZ.h \
-  ../Geometry/Fragments.h ../Geometry/DrawGeom.h ../Geometry/Fragments.h \
-  ../Utils/Utils.h ../Utils/UtilsInterface.h ../Utils/Constants.h \
+  ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Utils/Utils.h \
+  ../Utils/UtilsInterface.h ../Utils/Constants.h \
   ../Utils/GabeditTextEdit.h ../Geometry/InterfaceGeom.h \
   ../Common/Windows.h ../Utils/AtomsProp.h ../Symmetry/MoleculeSymmetry.h \
   ../Symmetry/MoleculeSymmetryInterface.h
@@ -23,17 +24,19 @@ MPQCMole.o: MPQCMole.c ../../Config.h ../Common/Global.h \
   ../MPQC/MPQCGlobal.h ../MPQC/MPQCBasis.h ../MPQC/MPQCFunctionals.h \
   ../Geometry/GeomGlobal.h ../Geometry/GeomConversion.h \
   ../Geometry/GeomXYZ.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h ../Utils/Utils.h ../Utils/UtilsInterface.h \
-  ../Utils/Constants.h ../Geometry/InterfaceGeom.h ../Common/Windows.h \
-  ../Utils/AtomsProp.h ../Utils/GabeditTextEdit.h \
-  ../Symmetry/MoleculeSymmetry.h ../Symmetry/MoleculeSymmetryInterface.h
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Utils/Utils.h \
+  ../Utils/UtilsInterface.h ../Utils/Constants.h \
+  ../Geometry/InterfaceGeom.h ../Common/Windows.h ../Utils/AtomsProp.h \
+  ../Utils/GabeditTextEdit.h ../Symmetry/MoleculeSymmetry.h \
+  ../Symmetry/MoleculeSymmetryInterface.h
 MPQCGuessWaveFunction.o: MPQCGuessWaveFunction.c ../../Config.h \
   ../Common/Global.h ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../MPQC/MPQCTypes.h \
   ../MPQC/MPQCGlobal.h ../MPQC/MPQCBasis.h ../Geometry/GeomGlobal.h \
   ../Geometry/GeomConversion.h ../Geometry/GeomXYZ.h \
-  ../Geometry/Fragments.h ../Geometry/DrawGeom.h ../Geometry/Fragments.h \
-  ../Utils/Utils.h ../Utils/UtilsInterface.h ../Utils/Constants.h \
+  ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Utils/Utils.h \
+  ../Utils/UtilsInterface.h ../Utils/Constants.h \
   ../Geometry/InterfaceGeom.h ../Common/Windows.h ../Utils/AtomsProp.h \
   ../Utils/GabeditTextEdit.h ../Symmetry/MoleculeSymmetry.h \
   ../Symmetry/MoleculeSymmetryInterface.h
@@ -42,8 +45,9 @@ MPQCMpqc.o: MPQCMpqc.c ../../Config.h ../Common/Global.h \
   ../Common/../Common/GabeditType.h ../MPQC/MPQCTypes.h \
   ../MPQC/MPQCGlobal.h ../MPQC/MPQCProperties.h ../Geometry/GeomGlobal.h \
   ../Geometry/GeomConversion.h ../Geometry/GeomXYZ.h \
-  ../Geometry/Fragments.h ../Geometry/DrawGeom.h ../Geometry/Fragments.h \
-  ../Utils/Utils.h ../Utils/UtilsInterface.h ../Utils/Constants.h \
+  ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Utils/Utils.h \
+  ../Utils/UtilsInterface.h ../Utils/Constants.h \
   ../Geometry/InterfaceGeom.h ../Common/Windows.h ../Utils/AtomsProp.h \
   ../Utils/GabeditTextEdit.h ../Symmetry/MoleculeSymmetry.h \
   ../Symmetry/MoleculeSymmetryInterface.h
@@ -52,8 +56,9 @@ MPQCBasis.o: MPQCBasis.c ../../Config.h ../Common/Global.h \
   ../Common/../Common/GabeditType.h ../MPQC/MPQCTypes.h \
   ../MPQC/MPQCGlobal.h ../MPQC/MPQCLib.h ../Geometry/GeomGlobal.h \
   ../Geometry/GeomConversion.h ../Geometry/GeomXYZ.h \
-  ../Geometry/Fragments.h ../Geometry/DrawGeom.h ../Geometry/Fragments.h \
-  ../Utils/Utils.h ../Utils/UtilsInterface.h ../Utils/Constants.h \
+  ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Utils/Utils.h \
+  ../Utils/UtilsInterface.h ../Utils/Constants.h \
   ../Geometry/InterfaceGeom.h ../Common/Windows.h ../Utils/AtomsProp.h \
   ../Utils/GabeditTextEdit.h ../Symmetry/MoleculeSymmetry.h \
   ../Symmetry/MoleculeSymmetryInterface.h

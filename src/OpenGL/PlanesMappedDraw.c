@@ -22,6 +22,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/UtilsOrb.h"
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
+#include "../Utils/UtilsGL.h"
 #include "../OpenGL/ColorMap.h"
 
 /**************************************************************************/

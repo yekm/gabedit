@@ -1395,6 +1395,7 @@ static void delete_first_spaces(gchar* str)
 	str[strlen(str)-lenSpace] = '\0';
 }
 /**********************************************/
+/*
 static void delete_all_spaces(gchar* str)
 {
 	gint i;
@@ -1420,6 +1421,7 @@ static void delete_all_spaces(gchar* str)
 		}
 	}
 }
+*/
 /*************************************************************************************/
 static gboolean testascii(char c)
 {
@@ -7628,6 +7630,7 @@ static void draw_rectangle_gradient(GabeditContoursPlot *contoursplot, cairo_t* 
 	cairo_pattern_destroy (pat);
 }
 /****************************************************************************************/
+/*
 static void draw_rectangle_bilinear(GabeditContoursPlot *contoursplot, 
 		gint x1, gint y1, 
 		gint x2, gint y2, 
@@ -7635,16 +7638,12 @@ static void draw_rectangle_bilinear(GabeditContoursPlot *contoursplot,
 		gdouble c3[], gdouble c4[]
 		)
 {
-	/* x1, y1 : c1
-	 * x1, y2 : c2
-	 * x2, y2 : c3
-	 * x2, y1 : c4
-	 */
 	draw_rectangle_gradient(contoursplot, contoursplot->cairo_area, x1, y1, x2, y2, c1, c2, FALSE, 1.0);
 	draw_rectangle_gradient(contoursplot, contoursplot->cairo_area, x1, y1, x2, y2, c2, c3, TRUE, 0.5);
 	draw_rectangle_gradient(contoursplot, contoursplot->cairo_area, x1, y1, x2, y2, c3, c4, FALSE, 0.5);
 	draw_rectangle_gradient(contoursplot, contoursplot->cairo_area, x1, y1, x2, y2, c1, c4, TRUE, 0.5);
 }
+*/
 /****************************************************************************************/
 static void draw_lines(GtkWidget *widget, GabeditContoursPlot *contoursplot, ContoursPlotData* data)
 {
@@ -8423,6 +8422,7 @@ static void draw_label_contours(GtkWidget *widget, GabeditContoursPlot *contours
 	}
 }
 /**************************************************************/
+/*
 static void draw_plan_color_coded(GtkWidget* contoursplot, ContoursPlotData *data)
 {
 	gint i;
@@ -8490,6 +8490,7 @@ static void draw_plan_color_coded(GtkWidget* contoursplot, ContoursPlotData *dat
 		}
 	}
 }
+*/
 /****************************************************************************************/
 static void draw_data(GtkWidget *widget, GabeditContoursPlot *contoursplot)
 {
@@ -8921,7 +8922,7 @@ static gint gabedit_contoursplot_button_press (GtkWidget *widget, GdkEventButton
     
       contoursplot->zoom_point.x=event->x;
       contoursplot->zoom_point.y=event->y;
-	//set_old_area(widget, contoursplot);
+	/*set_old_area(widget, contoursplot);*/
   }
   if (contoursplot->mouse_distance_enabled && (event->button == contoursplot->mouse_distance_button && contoursplot->shift_key_pressed ) )
     if ( (event->x > contoursplot->plotting_rect.x) && 
@@ -8932,7 +8933,7 @@ static gint gabedit_contoursplot_button_press (GtkWidget *widget, GdkEventButton
     
       contoursplot->distance_point.x=event->x;
       contoursplot->distance_point.y=event->y;
-	//set_old_area(widget, contoursplot);
+	/*set_old_area(widget, contoursplot);*/
   }
 
   if (contoursplot->mouse_displace_enabled && (event->button == contoursplot->mouse_displace_button))
@@ -9133,7 +9134,7 @@ static gint gabedit_contoursplot_button_press (GtkWidget *widget, GdkEventButton
 	else contoursplot->selected_objects_text_num = -1;
 	if(contoursplot->selected_objects_text_num>-1) 
 	{
-		//set_old_area(widget, contoursplot);
+		/*set_old_area(widget, contoursplot);*/
     		gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 	}
 	if(contoursplot->selected_objects_text_num<0)
@@ -9156,7 +9157,7 @@ static gint gabedit_contoursplot_button_press (GtkWidget *widget, GdkEventButton
 			xx = event->x-contoursplot->objectsLine[i].x2i;
 			yy = event->y-contoursplot->objectsLine[i].y2i;
 			if(d<xx*xx+yy*yy) contoursplot->selected_objects_line_type = 1;
-			//set_old_area(widget, contoursplot);
+			/*set_old_area(widget, contoursplot);*/
     			gtk_widget_queue_draw(GTK_WIDGET(contoursplot));
 		}
 		
@@ -9220,7 +9221,7 @@ static gint gabedit_contoursplot_button_press (GtkWidget *widget, GdkEventButton
 	 */
     {
 
-	//set_old_area(widget, contoursplot);
+	/*set_old_area(widget, contoursplot);*/
 	contoursplot->l_key_pressed = FALSE;
       	contoursplot->object_begin_point.x=event->x;
       	contoursplot->object_begin_point.y=event->y;

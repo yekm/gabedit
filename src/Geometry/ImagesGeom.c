@@ -26,8 +26,103 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Utils.h"
 
+#ifdef DRAWGEOMGL
+#include <GL/gl.h>
+#include <GL/glu.h>
+/**************************************************************************/
+static void snapshot_pixbuf_free (guchar   *pixels, gpointer  data)
+{
+	g_free (pixels);
+}
+/**************************************************************************/
+static GdkPixbuf  *get_pixbuf_gl(guchar* colorTrans)
+{       
+      	gint stride;
+	GdkPixbuf  *pixbuf = NULL;
+	GdkPixbuf  *tmp = NULL;
+	GdkPixbuf  *tmp2 = NULL;
+	guchar *data;
+  	gint height;
+  	gint width;
+	GLint viewport[4];
+
+	glGetIntegerv(GL_VIEWPORT, viewport);
+  	width  = viewport[2];
+  	height = viewport[3];
+
+	stride = width*4;
+
+	data = g_malloc0 (sizeof (guchar) * stride * height);
+#ifdef G_OS_WIN32 
+  	glReadBuffer(GL_BACK);
+  	glReadPixels(0,0,width,height,GL_RGBA,GL_UNSIGNED_BYTE,data);
+#else
+  	glReadBuffer(GL_FRONT);
+  	glReadPixels(0,0,width,height,GL_RGBA,GL_UNSIGNED_BYTE,data);
+#endif
+
+	tmp = gdk_pixbuf_new_from_data (data, GDK_COLORSPACE_RGB, TRUE, 
+                                      8, width, height, stride, snapshot_pixbuf_free,
+                                      NULL);
+	if(tmp)
+	{
+		tmp2 = gdk_pixbuf_flip (tmp, TRUE); 
+		g_object_unref (tmp);
+	}
+
+	if(tmp2)
+	{
+		pixbuf = gdk_pixbuf_rotate_simple (tmp2, GDK_PIXBUF_ROTATE_UPSIDEDOWN);
+		g_object_unref (tmp2);
+	}
+
+	if(colorTrans)
+	{
+		tmp = gdk_pixbuf_add_alpha(pixbuf, TRUE, colorTrans[0], colorTrans[1], colorTrans[2]);
+		if(tmp!=pixbuf)
+		{
+ 			g_object_unref (pixbuf);
+			pixbuf = tmp;
+		}
+	}
+	
+	return pixbuf;
+}
+/*************************************************************************/
+static void gabedit_save_image_gl(GtkWidget* widget, gchar *fileName, gchar* type, guchar* colorTrans)
+{       
+	GError *error = NULL;
+	GdkPixbuf  *pixbuf = NULL;
+	pixbuf = get_pixbuf_gl(colorTrans);
+	if(pixbuf)
+	{
+		if(!fileName)
+		{
+			GtkClipboard * clipboard;
+			clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+			if(clipboard)
+			{
+				gtk_clipboard_clear(clipboard);
+				gtk_clipboard_set_image(clipboard, pixbuf);
+			}
+		}
+		else 
+		{
+			if(type && strstr(type,"j") && strstr(type,"g") )
+			gdk_pixbuf_save(pixbuf, fileName, type, &error, "quality", "100", NULL);
+			else if(type && strstr(type,"png"))
+			gdk_pixbuf_save(pixbuf, fileName, type, &error, "compression", "5", NULL);
+			else if(type && (strstr(type,"tif") || strstr(type,"tiff")))
+			gdk_pixbuf_save(pixbuf, fileName, "tiff", &error, "compression", "1", NULL);
+			else
+			gdk_pixbuf_save(pixbuf, fileName, type, &error, NULL);
+		}
+	 	g_object_unref (pixbuf);
+	}
+}
+#endif
 /**********************************************************************************************************************************/
-static void save_geometry_image(GabeditFileChooser *SelecFile, gchar* type)
+static void save_geometry_image(GabeditFileChooser *SelecFile, gchar* type, guchar* colorTrans)
 {       
  	gchar *fileName;
 
@@ -40,12 +135,15 @@ static void save_geometry_image(GabeditFileChooser *SelecFile, gchar* type)
 
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
 	while( gtk_events_pending() ) gtk_main_iteration();
-	Waiting(1.0);
 
 	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
 	rafresh_drawing();
 	while( gtk_events_pending() ) gtk_main_iteration();
-	gabedit_save_image(ZoneDessin, fileName, type);
+#ifdef DRAWGEOMGL
+	gabedit_save_image_gl(GeomDrawingArea, fileName, type, colorTrans);
+#else
+	gabedit_save_image(GeomDrawingArea, fileName, type);
+#endif
 
 }
 /**************************************************************************
@@ -53,17 +151,37 @@ static void save_geometry_image(GabeditFileChooser *SelecFile, gchar* type)
 **************************************************************************/
 guchar *get_rgb_image()
 {
- if(!ZoneDessin)
+ if(!GeomDrawingArea)
  {
    Message(_("Sorry I can not create image file \nbecause Geometry display windows is closed"),_("Error"),TRUE);
    return NULL;
  }
+#ifdef DRAWGEOMGL
+{
+      	gint stride;
+	guchar *data;
+  	gint height = GeomDrawingArea->allocation.height;
+  	gint width = GeomDrawingArea->allocation.width;
+
+	stride = width*3;
+
+	data = g_malloc0 (sizeof (guchar) * stride * height);
+#ifdef G_OS_WIN32 
+  	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,data);
+#else
+  	glReadBuffer(GL_FRONT);
+  	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,data);
+#endif
+	return data;
+}
+
+#endif
   {
 	gdouble fac=255.0/65535.0;
   	GdkPixmap* pixmap = get_drawing_pixmap();
   	GdkColormap *colormap = get_drawing_colormap();
-  	guint height = ZoneDessin->allocation.height;
-  	guint width = ZoneDessin->allocation.width;
+  	guint height = GeomDrawingArea->allocation.height;
+  	guint width = GeomDrawingArea->allocation.width;
 	guint32 pixel;
   	GdkImage* image = NULL;
 	GdkVisual *v;
@@ -82,7 +200,7 @@ guchar *get_rgb_image()
 	    return NULL;
 	}
 	/* Debug("End get colormap\n");*/
-	image = gdk_drawable_get_image(ZoneDessin->window,0,0,width,height);
+	image = gdk_drawable_get_image(GeomDrawingArea->window,0,0,width,height);
 	/* Debug("End get Image\n");*/
 	v = gdk_colormap_get_visual(colormap);
 	/* Debug("End get visual\n");*/
@@ -154,7 +272,7 @@ guchar *get_rgb_image()
 void save_geometry_jpeg_file(GabeditFileChooser *SelecFile, gint response_id)
 {       
 	if(response_id != GTK_RESPONSE_OK) return;
-	save_geometry_image(SelecFile, "jpeg");
+	save_geometry_image(SelecFile, "jpeg",NULL);
 } 
 /**************************************************************************
 *       Save the Frame Buffer in a ppm format file
@@ -188,11 +306,9 @@ void save_geometry_ppm_file(GabeditFileChooser *SelecFile, gint response_id)
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
 	while( gtk_events_pending() )
 		gtk_main_iteration();
-	Waiting(1.0);
 	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
 	rafresh_drawing();
-	while( gtk_events_pending() )
-		gtk_main_iteration();
+	while( gtk_events_pending() ) gtk_main_iteration();
 
 
 
@@ -200,8 +316,8 @@ void save_geometry_ppm_file(GabeditFileChooser *SelecFile, gint response_id)
 	if (!rgbbuf) {
             return;
 	}
-	width =  ZoneDessin->allocation.width;
-	height = ZoneDessin->allocation.height;
+	width =  GeomDrawingArea->allocation.width;
+	height = GeomDrawingArea->allocation.height;
 
         fprintf(file,"P6\n");
         fprintf(file,"#Image rendered with gabedit\n");
@@ -263,14 +379,10 @@ void save_geometry_bmp_file(GabeditFileChooser *SelecFile, gint response_id)
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
 	while( gtk_events_pending() )
 		gtk_main_iteration();
-	Waiting(1.0);
 
 	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
 	rafresh_drawing();
-	while( gtk_events_pending() )
-		gtk_main_iteration();
-
-  
+	while( gtk_events_pending() ) gtk_main_iteration();
 
   	rgbbuf = get_rgb_image();
   	if (!rgbbuf)
@@ -278,8 +390,8 @@ void save_geometry_bmp_file(GabeditFileChooser *SelecFile, gint response_id)
 	    	fclose(file);
 		return;
   	}
-	width =  ZoneDessin->allocation.width;
-	height = ZoneDessin->allocation.height;
+	width =  GeomDrawingArea->allocation.width;
+	height = GeomDrawingArea->allocation.height;
 
 /* The number of bytes on a screenline should be wholly devisible by 4 */
 
@@ -414,21 +526,17 @@ void save_geometry_ps_file(GabeditFileChooser *SelecFile, gint response_id)
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
 	while( gtk_events_pending() )
 		gtk_main_iteration();
-	Waiting(1.0);
 
 	gtk_window_move(GTK_WINDOW(GeomDlg),0,0);
 	rafresh_drawing();
-	while( gtk_events_pending() )
-		gtk_main_iteration();
-  
-
+	while( gtk_events_pending() ) gtk_main_iteration();
 
 	rgbbuf = get_rgb_image();
 	if (!rgbbuf) {
             return;
 	}
-	width =  ZoneDessin->allocation.width;
-	height = ZoneDessin->allocation.height;
+	width =  GeomDrawingArea->allocation.width;
+	height = GeomDrawingArea->allocation.height;
 
 
         fprintf(file,"%%!PS-Adobe-2.0 EPSF-2.0\n");
@@ -468,11 +576,11 @@ void save_geometry_ps_file(GabeditFileChooser *SelecFile, gint response_id)
 void save_geometry_png_file(GabeditFileChooser *SelecFile, gint response_id)
 {       
 	if(response_id != GTK_RESPONSE_OK) return;
-	save_geometry_image(SelecFile, "png");
+	save_geometry_image(SelecFile, "png",NULL);
 }
 /**********************************************************************************************************************************/
 void save_geometry_tiff_file(GabeditFileChooser *SelecFile, gint response_id)
 {       
 	if(response_id != GTK_RESPONSE_OK) return;
-	save_geometry_image(SelecFile, "tiff");
+	save_geometry_image(SelecFile, "tiff",NULL);
 }

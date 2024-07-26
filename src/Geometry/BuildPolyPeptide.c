@@ -234,6 +234,7 @@ static void define_geometry_to_draw()
 
 	Natoms = Nb;
 	if(Natoms<1) return;
+	reset_origine_molecule_drawgeom();
 	geometry0 = g_malloc((Natoms)*sizeof(GeomDef));
 	geometry  = g_malloc((Natoms)*sizeof(GeomDef));
 	n = 0;
@@ -318,6 +319,7 @@ static void define_geometry_to_draw()
 		 geometry[i].N = geometry0[i].N = i+1;
 
 	copy_connections(geometry0,geometry,Natoms);
+	RebuildGeom = TRUE;
 }
 /********************************************************************************/
 static void re_set_angles(gboolean forward)
@@ -505,7 +507,7 @@ static void add_fragment(gchar* what)
 	define_good_factor();
 	unselect_all_atoms();
 
-	reset_multiple_bonds();
+	reset_all_connections();
 
 	reset_charges_multiplicities();
 	dessine();
@@ -631,7 +633,7 @@ static void undo(GtkWidget *Dlg, gpointer data)
 	define_geometry_to_draw();
 	if(Nb>0) define_good_factor();
 	unselect_all_atoms();
-	reset_multiple_bonds();
+	reset_all_connections();
 	reset_charges_multiplicities();
 	dessine();
 	create_GeomXYZ_from_draw_grometry();

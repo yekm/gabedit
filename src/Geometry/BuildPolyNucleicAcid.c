@@ -856,6 +856,7 @@ static void defineGeometryToDraw()
 	Natoms = 0;
 	geometry0 = NULL;
 	geometry  = NULL;
+	reset_origine_molecule_drawgeom();
 
 	Natoms = Nb;
 	geometry0 = g_malloc((Natoms)*sizeof(GeomDef));
@@ -920,6 +921,7 @@ static void defineGeometryToDraw()
 		geometry0 = g_realloc(geometry0,(Natoms)*sizeof(GeomDef));
 		geometry  = g_realloc(geometry,(Natoms)*sizeof(GeomDef));
 	}
+	RebuildGeom = TRUE;
 
 }
 /*****************************************************************************/

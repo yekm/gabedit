@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/Measure.h"
 #include "Atom.h"
 #include "Molecule.h"
+void rafresh_window_geom();
 void dessine();
 void create_GeomXYZ_from_draw_grometry();
 
@@ -717,7 +718,7 @@ void redrawMolecule(Molecule* molecule,gchar* str)
 	change_of_center(NULL,NULL);
 
 	create_GeomXYZ_from_draw_grometry();
-	dessine();
+	rafresh_window_geom();
 
     	while( gtk_events_pending() )
         	gtk_main_iteration();

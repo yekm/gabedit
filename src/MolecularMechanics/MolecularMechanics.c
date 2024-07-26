@@ -20,6 +20,9 @@ DEALINGS IN THE SOFTWARE.
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#ifdef ENABLE_OMP
+#include <omp.h>
+#endif
 
 #include "../Common/Global.h"
 #include "../Utils/AtomsProp.h"
@@ -1414,6 +1417,9 @@ static void calculateGradientBondAmber(ForceField* forceField)
 	for( i=0; i<STRETCHDIM;i++)
        		bondStretchTerms[i] = forceField->bondStretchTerms[i];
 
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(i,ai,aj,forceConstant, equilibriumDistance,atomi,atomj,rijx,rijy,rijz,bondLength,term,forceix,forceiy,forceiz) 
+#endif
 	for ( i = 0; i < numberOfStretchTerms; i++ )
 	{
 		ai = (gint)bondStretchTerms[0][i];
@@ -1436,43 +1442,24 @@ static void calculateGradientBondAmber(ForceField* forceField)
 		forceix = term * rijx;
 		forceiy = term * rijy;
 		forceiz = term * rijz;
-		
-		if(m->atoms[ai].variable)
+#ifdef ENABLE_OMP
+#pragma omp critical
+#endif
 		{
-			m->gradient[0][ai] -= forceix;
-			m->gradient[1][ai] -= forceiy;
-			m->gradient[2][ai] -= forceiz;
-		}
+		m->gradient[0][ai] -= forceix;
+		m->gradient[1][ai] -= forceiy;
+		m->gradient[2][ai] -= forceiz;
 		
 		m->gradient[0][aj] += forceix;
 		m->gradient[1][aj] += forceiy;
 		m->gradient[2][aj] += forceiz;
+		}
 	} 
 }
 /**********************************************************************/
 static void calculateGradientBendAmber(ForceField* forceField)
 {
 	gint i;
-	gint ai, aj, ak;
-	AtomMol atomi,atomj,atomk;
-	gdouble term;
-	gdouble thetaDeg, thetaRad, cosTheta;
-	gdouble denominator, absTheta;
-	gdouble delta = 1e-10;
-
-	gdouble rijx, rijy, rijz;
-	gdouble rkjx, rkjy, rkjz;
-	gdouble rij2, rij, rkj2, rkj,rij3, rkj3;
-	gdouble denominatori, denominatork;
-
-	gdouble forceix, forceiy, forceiz;
-	gdouble forcejx, forcejy, forcejz;
-	gdouble forcekx, forceky, forcekz;
-
-	gdouble rijDotrkj;
-	gdouble term2ix, term2iy, term2iz;
-	gdouble term2jx, term2jy, term2jz;
-	gdouble term2kx, term2ky, term2kz;
 
 	Molecule* m = &forceField->molecule;
 	gdouble* angleBendTerms[BENDDIM];
@@ -1482,8 +1469,32 @@ static void calculateGradientBendAmber(ForceField* forceField)
 	for( i=0; i<BENDDIM;i++)
 		angleBendTerms[i] = forceField->angleBendTerms[i]; 
 
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(i)
+#endif
 	for ( i = 0; i < numberOfBendTerms; i++ )
 	{
+		gint ai, aj, ak;
+		AtomMol atomi,atomj,atomk;
+		gdouble term;
+		gdouble thetaDeg, thetaRad, cosTheta;
+		gdouble denominator, absTheta;
+		gdouble delta = 1e-10;
+
+		gdouble rijx, rijy, rijz;
+		gdouble rkjx, rkjy, rkjz;
+		gdouble rij2, rij, rkj2, rkj,rij3, rkj3;
+		gdouble denominatori, denominatork;
+
+		gdouble forceix, forceiy, forceiz;
+		gdouble forcejx, forcejy, forcejz;
+		gdouble forcekx, forceky, forcekz;
+
+		gdouble rijDotrkj;
+		gdouble term2ix, term2iy, term2iz;
+		gdouble term2jx, term2jy, term2jz;
+		gdouble term2kx, term2ky, term2kz;
+
 		ai = (gint)angleBendTerms[0][i];
 		aj = (gint)angleBendTerms[1][i];
 		ak = (gint)angleBendTerms[2][i];
@@ -1567,6 +1578,10 @@ static void calculateGradientBendAmber(ForceField* forceField)
 			forceky = term * term2ky;
 			forcekz = term * term2kz;
 			
+#ifdef ENABLE_OMP
+#pragma omp critical
+#endif
+			{
 			m->gradient[0][ai] -= forceix;
 			m->gradient[1][ai] -= forceiy;
 			m->gradient[2][ai] -= forceiz;
@@ -1578,6 +1593,7 @@ static void calculateGradientBendAmber(ForceField* forceField)
 			m->gradient[0][ak] -= forcekx;
 			m->gradient[1][ak] -= forceky;
 			m->gradient[2][ak] -= forcekz;
+			}
 		}
 	} 
 }
@@ -1586,33 +1602,6 @@ static void calculateGradientDihedralAmber(ForceField* forceField)
 {
 
 	gint i;
-	gint j;
-	gint ai, aj, ak, al;
-	AtomMol atomi,atomj,atomk,atoml;
-
-	gdouble rjix, rjiy, rjiz;
-	gdouble rkjx, rkjy, rkjz;
-	gdouble rkix, rkiy, rkiz;
-	gdouble rljx, rljy, rljz;
-	gdouble rlkx, rlky, rlkz;
-
-	gdouble forceix, forceiy, forceiz;
-	gdouble forcejx, forcejy, forcejz;
-	gdouble forcekx, forceky, forcekz;
-	gdouble forcelx, forcely, forcelz;
-
-	gdouble rkj;
-	gdouble xt, yt, zt;
-	gdouble xu, yu, zu;
-	gdouble xtu, ytu, ztu;
-	gdouble rt2, ru2, rtru;
-	gdouble cosine1, sine1, cosineN, sineN, cosold, sinold;
-	gdouble cosPhase, sinPhase;
-	gdouble dedxt, dedyt, dedzt;
-	gdouble dedxu, dedyu, dedzu;
-	gdouble dedphi;
-	gint n;
-	gdouble vn;
 
 	Molecule* m = &forceField->molecule;
 	gdouble* dihedralAngleTerms[DIHEDRALDIM];
@@ -1622,8 +1611,39 @@ static void calculateGradientDihedralAmber(ForceField* forceField)
 	for(i=0;i<DIHEDRALDIM;i++)
 		dihedralAngleTerms[i] = forceField->dihedralAngleTerms[i];
 
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(i) 
+#endif
 	for (  i = 0; i < numberOfDihedralTerms; i++ )
 	{
+		gint ai, aj, ak, al;
+		AtomMol atomi,atomj,atomk,atoml;
+		gint j;
+
+		gdouble rjix, rjiy, rjiz;
+		gdouble rkjx, rkjy, rkjz;
+		gdouble rkix, rkiy, rkiz;
+		gdouble rljx, rljy, rljz;
+		gdouble rlkx, rlky, rlkz;
+
+		gdouble forceix, forceiy, forceiz;
+		gdouble forcejx, forcejy, forcejz;
+		gdouble forcekx, forceky, forcekz;
+		gdouble forcelx, forcely, forcelz;
+
+		gdouble rkj;
+		gdouble xt, yt, zt;
+		gdouble xu, yu, zu;
+		gdouble xtu, ytu, ztu;
+		gdouble rt2, ru2, rtru;
+		gdouble cosine1, sine1, cosineN, sineN, cosold, sinold;
+		gdouble cosPhase, sinPhase;
+		gdouble dedxt, dedyt, dedzt;
+		gdouble dedxu, dedyu, dedzu;
+		gdouble dedphi;
+		gint n;
+		gdouble vn;
+
 		ai = (gint)dihedralAngleTerms[0][i];
 		aj = (gint)dihedralAngleTerms[1][i];
 		ak = (gint)dihedralAngleTerms[2][i];
@@ -1737,6 +1757,10 @@ static void calculateGradientDihedralAmber(ForceField* forceField)
 		forcely = rkjx*dedzu - rkjz*dedxu;
 		forcelz = rkjy*dedxu - rkjx*dedyu;
 
+#ifdef ENABLE_OMP
+#pragma omp critical
+#endif
+		{
 		m->gradient[0][ai] += forceix;
 		m->gradient[1][ai] += forceiy;
 		m->gradient[2][ai] += forceiz;
@@ -1752,6 +1776,7 @@ static void calculateGradientDihedralAmber(ForceField* forceField)
 		m->gradient[0][al] += forcelx;
 		m->gradient[1][al] += forcely;
 		m->gradient[2][al] += forcelz;
+		}
 	}
 }
 /**********************************************************************/
@@ -1762,21 +1787,6 @@ static void calculateGradientImproperTorsion(ForceField* forceField)
 static void calculateGradientNonBondedAmber(ForceField* forceField)
 {
 	gint i;
-	gint ai, aj;
-	AtomMol atomi,atomj;
-
-	gdouble rijx, rijy, rijz;
-
-	gdouble forceix, forceiy, forceiz;
-	gdouble forcejx, forcejy, forcejz;
-
-	gdouble permittivityScale = 1, permittivity = 1;
-	gdouble coulombFactor, factorNonBonded;
-	gdouble rij2, rij;
-	gdouble rij3;
-	gdouble chargei, chargej, coulombTerm;
-	gdouble Aij, Bij, rij6, rij7, rij14, rij8;
-	gdouble  term1, term2, term3;
 
 	gboolean useCoulomb = forceField->options.coulomb;
 	Molecule* m = &forceField->molecule;
@@ -1787,9 +1797,29 @@ static void calculateGradientNonBondedAmber(ForceField* forceField)
 		nonBondedTerms[i] = forceField->nonBondedTerms[i];
 
 	/* non-bonded part */
-	coulombFactor = 332.05382 / ( permittivity * permittivityScale );
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(i) 
+#endif
 	for (  i = 0; i < numberOfNonBonded; i++ )
 	{
+		gint ai, aj;
+		AtomMol atomi,atomj;
+
+		gdouble rijx, rijy, rijz;
+
+		gdouble forceix, forceiy, forceiz;
+		gdouble forcejx, forcejy, forcejz;
+
+		gdouble permittivityScale = 1, permittivity = 1;
+		gdouble coulombFactor, factorNonBonded;
+		gdouble rij2, rij;
+		gdouble rij3;
+		gdouble chargei, chargej, coulombTerm;
+		gdouble Aij, Bij, rij6, rij7, rij14, rij8;
+		gdouble  term1, term2, term3;
+
+		coulombFactor = 332.05382 / ( permittivity * permittivityScale );
+
 		ai       = (gint)nonBondedTerms[0][i];
 		aj       = (gint)nonBondedTerms[1][i];
 		Aij      = nonBondedTerms[2][i];
@@ -1834,28 +1864,23 @@ static void calculateGradientNonBondedAmber(ForceField* forceField)
 		forcejx = - forceix;
 		forcejy = - forceiy;
 		forcejz = - forceiz;
+#ifdef ENABLE_OMP
+#pragma omp critical
+#endif
+		{
 		m->gradient[0][ai] -= forceix;
 		m->gradient[1][ai] -= forceiy;
 		m->gradient[2][ai] -= forceiz;
 		m->gradient[0][aj] -= forcejx;
 		m->gradient[1][aj] -= forcejy;
 		m->gradient[2][aj] -= forcejz;
+		}
 	}  
 }
 /*********************************************************************/
 static void calculateGradientHydrogenBondedAmber(ForceField* forceField)
 {
 	gint i;
-	gint ai, aj;
-	AtomMol atomi,atomj;
-
-	gdouble rijx, rijy, rijz;
-
-	gdouble forceix, forceiy, forceiz;
-	gdouble forcejx, forcejy, forcejz;
-
-	gdouble Cij, Dij, rij2,  rij4, rij8, rij12, rij14;
-	gdouble  term1, term2, term3;
 
 
 	Molecule* m = &forceField->molecule;
@@ -1866,8 +1891,22 @@ static void calculateGradientHydrogenBondedAmber(ForceField* forceField)
 		hydrogenBondedTerms[i] = forceField->hydrogenBondedTerms[i];
 
 	/* Hydrogen-bonded part */
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(i) 
+#endif
 	for (  i = 0; i < numberOfHydrogenBonded; i++ )
 	{
+		gint ai, aj;
+		AtomMol atomi,atomj;
+
+		gdouble rijx, rijy, rijz;
+
+		gdouble forceix, forceiy, forceiz;
+		gdouble forcejx, forcejy, forcejz;
+
+		gdouble Cij, Dij, rij2,  rij4, rij8, rij12, rij14;
+		gdouble  term1, term2, term3;
+
 		ai = (gint)hydrogenBondedTerms[0][i];
 		aj = (gint)hydrogenBondedTerms[1][i];
 		Cij = hydrogenBondedTerms[2][i];
@@ -1898,12 +1937,17 @@ static void calculateGradientHydrogenBondedAmber(ForceField* forceField)
 		forcejx = - forceix;
 		forcejy = - forceiy;
 		forcejz = - forceiz;
+#ifdef ENABLE_OMP
+#pragma omp critical
+#endif
+		{
 		m->gradient[0][ai] -= forceix;
 		m->gradient[1][ai] -= forceiy;
 		m->gradient[2][ai] -= forceiz;
 		m->gradient[0][aj] -= forcejx;
 		m->gradient[1][aj] -= forcejy;
 		m->gradient[2][aj] -= forcejz;
+		}
 	}
 }
 /**********************************************************************/
@@ -2061,12 +2105,17 @@ static void calculateGradientPairWise(ForceField* forceField)
 		forcejx = - forceix;
 		forcejy = - forceiy;
 		forcejz = - forceiz;
+#ifdef ENABLE_OMP
+#pragma omp critical
+#endif
+		{
 		m->gradient[0][ai] -= forceix;
 		m->gradient[1][ai] -= forceiy;
 		m->gradient[2][ai] -= forceiz;
 		m->gradient[0][aj] -= forcejx;
 		m->gradient[1][aj] -= forcejy;
 		m->gradient[2][aj] -= forcejz;
+		}
 	}  
 }
 /**********************************************************************/
@@ -2156,6 +2205,9 @@ static gdouble calculateEnergyBondAmber(ForceField* forceField,Molecule* molecul
        		bondStretchTerms[i] = forceField->bondStretchTerms[i];
 
 
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(i,ai,aj,forceConstant, equilibriumDistance,atomi,atomj,rijx,rijy,rijz,bondLength,term) reduction(+:energy)
+#endif
 	for (  i = 0; i < numberOfStretchTerms; i++ )
 	{
 		ai = (gint)bondStretchTerms[0][i];
@@ -2196,6 +2248,9 @@ static gdouble calculateEnergyBendAmber(ForceField* forceField,Molecule* molecul
 	for( i=0; i<BENDDIM;i++)
 		angleBendTerms[i] = forceField->angleBendTerms[i]; 
 
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(i,ai,aj,ak,atomi,atomj,atomk,thetaDeg,term) reduction(+:energy)
+#endif
 	for (  i = 0; i < numberOfBendTerms; i++ )
 	{
 		ai = (gint)angleBendTerms[0][i];
@@ -2241,6 +2296,9 @@ static gdouble calculateEnergyDihedralAmber(ForceField* forceField,Molecule* mol
 	for(i=0;i<DIHEDRALDIM;i++)
 		dihedralAngleTerms[i] = forceField->dihedralAngleTerms[i];
 
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(i,ai,aj,ak,al,atomi,atomj,atomk,atoml,phiDeg) reduction(+:energy)
+#endif
 	for (  i = 0; i < numberOfDihedralTerms; i++ )
 	{
 		ai = (gint)dihedralAngleTerms[0][i];
@@ -2288,6 +2346,9 @@ static gdouble calculateEnergyfNonBondedAmber(ForceField* forceField,Molecule* m
 	/* now for non-bonded term */
 	coulombFactor = 332.05382 / ( permittivity * permittivityScale );
 	/*printf("number of Non Bonded terms = %d\n",numberOfNonBonded);*/
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(i,ai,aj,Aij,Bij,factorNonBonded,atomi,atomj,chargei,chargej,rijx,rijy,rijz,rij2,rij,rij6,rij12,coulombTerm) reduction(+:energy)
+#endif
 	for (  i = 0; i < numberOfNonBonded; i++ )
 	{
 		ai     = (gint)nonBondedTerms[0][i];
@@ -2347,6 +2408,9 @@ static gdouble calculateEnergyHydrogenBondedAmber(ForceField* forceField,Molecul
 		hydrogenBondedTerms[i] = forceField->hydrogenBondedTerms[i];
 
 	/* Hydrogen-bonded term */
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(i,ai,aj,Cij,Dij,atomi,atomj,rijx,rijy,rijz,rij2,rij4,rij6,rij10,rij12) reduction(+:energy)
+#endif
 	for (  i = 0; i < numberOfHydrogenBonded; i++ )
 	{
 		ai = (gint)hydrogenBondedTerms[0][i];
@@ -2410,6 +2474,9 @@ static gdouble calculateEnergyPairWise(ForceField* forceField,Molecule* molecule
 	/* now for non-bonded term */
 	coulombFactor = 332.05382/ ( permittivity * permittivityScale );
 	/* printf("number of Non Bonded terms = %d\n",numberOfPairWise);*/
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(i,A,Beta,c6,b,atomi,atomj,chargei,chargej,rijx,rijy,rijz,rij2,rij,rij6,rij8,rij10,coulombTerm,B6,B8,B10) reduction(+:energy)
+#endif
 	for (  i = 0; i < numberOfPairWise; i++ )
 	{
 		ai     = (gint)pairWiseTerms[0][i];

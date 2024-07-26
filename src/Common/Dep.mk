@@ -16,10 +16,11 @@ Install.o: Install.c ../../Config.h Global.h \
 Preferences.o: Preferences.c ../../Config.h Global.h \
   ../Files/GabeditFileChooser.h ../Common/GabeditType.h ../Common/Help.h \
   ../Utils/UtilsInterface.h ../Utils/AtomsProp.h ../Utils/Utils.h \
-  Windows.h TextEdit.h ../Utils/Vector3d.h ../OpenGL/PreferencesOrb.h \
-  ../OpenGL/GLArea.h ../Geometry/ResultsAnalise.h \
-  ../Geometry/GeomGlobal.h ../Files/FolderChooser.h \
-  ../Files/GabeditFolderChooser.h ../../pixmaps/Open.xpm
+  ../Utils/Constants.h Windows.h TextEdit.h ../Utils/Vector3d.h \
+  ../OpenGL/PreferencesOrb.h ../OpenGL/GLArea.h ../OpenGL/UtilsOrb.h \
+  ../Geometry/ResultsAnalise.h ../Geometry/GeomGlobal.h \
+  ../Files/FolderChooser.h ../Files/GabeditFolderChooser.h \
+  ../../pixmaps/Open.xpm
 Printer.o: Printer.c ../../Config.h Global.h \
   ../Files/GabeditFileChooser.h ../Common/GabeditType.h \
   ../Utils/UtilsInterface.h ../Utils/Utils.h ../Utils/GabeditTextEdit.h \
@@ -36,9 +37,9 @@ SplashScreen.o: SplashScreen.c ../../Config.h ../Common/Global.h \
   ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \
   ../Utils/Utils.h ../Utils/AtomsProp.h ../Common/Status.h \
   ../Common/Windows.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h ../Geometry/PersonalFragments.h \
-  ../MolecularMechanics/Atom.h ../MolecularMechanics/Molecule.h \
-  ../MolecularMechanics/ForceField.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
+  ../Geometry/PersonalFragments.h ../MolecularMechanics/Atom.h \
+  ../MolecularMechanics/Molecule.h ../MolecularMechanics/ForceField.h \
   ../MolecularMechanics/MolecularMechanics.h \
   ../MolecularMechanics/PDBTemplate.h ../Molpro/MolproBasisLibrary.h \
   ../Molcas/MolcasBasisLibrary.h ../MPQC/MPQCBasisLibrary.h \
@@ -58,9 +59,10 @@ Exit.o: Exit.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/Utils.h \
   ../Utils/UtilsInterface.h ../Geometry/Fragments.h \
-  ../Geometry/DrawGeom.h ../Geometry/Fragments.h ../Utils/HydrogenBond.h \
-  ../Files/ListeFiles.h ../MolecularMechanics/Atom.h \
-  ../MolecularMechanics/Molecule.h ../MolecularMechanics/ForceField.h \
+  ../Geometry/DrawGeom.h ../Geometry/DrawGeomCairo.h \
+  ../Geometry/Fragments.h ../Utils/HydrogenBond.h ../Files/ListeFiles.h \
+  ../MolecularMechanics/Atom.h ../MolecularMechanics/Molecule.h \
+  ../MolecularMechanics/ForceField.h \
   ../MolecularMechanics/MolecularMechanics.h \
   ../MolecularMechanics/PDBTemplate.h ../Geometry/PersonalFragments.h \
   ../Utils/AtomsProp.h ../Molpro/MolproBasisLibrary.h \
@@ -74,7 +76,8 @@ MenuToolBar.o: MenuToolBar.c ../../Config.h ../Common/Global.h \
   ../MPQC/MPQCBasisLibrary.h ../Molpro/Molpro.h \
   ../Molpro/MolproBasisLibrary.h ../Gaussian/Gaussian.h \
   ../Utils/AtomsProp.h ../Utils/GabeditTextEdit.h ../Utils/ConvUtils.h \
-  ../Geometry/Fragments.h ../Geometry/DrawGeom.h ../Geometry/Fragments.h \
+  ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
   ../Geometry/GeomGlobal.h ../Geometry/OpenBabel.h ../Common/Printer.h \
   ../NetWork/Process.h ../NetWork/Batch.h \
   ../MolecularMechanics/SetMMParameters.h \

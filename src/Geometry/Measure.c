@@ -45,7 +45,7 @@ GtkWidget *LabelAveraged;
 
 
 /*****************/
-void dessine();
+void rafresh_window_geom();
 void create_GeomXYZ_from_draw_grometry();
 /*****************/
 
@@ -560,7 +560,7 @@ void change_of_center(GtkWidget *entry,gpointer d)
 {
 	gint k;
 	for(k=0;k<6;k++) if(EntryDistances[k]) gtk_widget_hide(GTK_WIDGET(EntryDistances[k]));
-	if(!ZoneDessin) return;
+	if(!GeomDrawingArea) return;
 	set_distances();
 	set_angles();
 	set_dihedral();
@@ -603,7 +603,7 @@ static void activate_distance_entry(GtkWidget* entry, gchar* data)
 		listGroupAtoms = getListGroupe(&nGroupAtoms, geometry0, Natoms, i1, i2,-1,-1);
 	setDistance(geometry0,i1,i2,newD,listGroupAtoms,nGroupAtoms);
 	if(listGroupAtoms) g_free(listGroupAtoms);
-	dessine();
+	rafresh_window_geom();
 	create_GeomXYZ_from_draw_grometry();
 	g_free(oldD);
 
@@ -652,7 +652,7 @@ static void activate_angle_entry(GtkWidget* entry, gchar* data)
 		listGroupAtoms = getListGroupe(&nGroupAtoms, geometry0, Natoms, i1, i2,i3,-1);
 	setAngle(Natoms,geometry0,i1,i2,i3,newA,listGroupAtoms,nGroupAtoms);
 	if(listGroupAtoms) g_free(listGroupAtoms);
-	dessine();
+	rafresh_window_geom();
 	create_GeomXYZ_from_draw_grometry();
 	g_free(oldA);
 }
@@ -705,7 +705,7 @@ static void activate_dihedral_entry(GtkWidget* entry, gchar* data)
 		listGroupAtoms = getListGroupe(&nGroupAtoms, geometry0, Natoms, i1, i2,i3,i4);
 	setTorsion(Natoms,geometry0,i1,i2,i3,i4,newA, listGroupAtoms,nGroupAtoms);
 	if(listGroupAtoms) g_free(listGroupAtoms);
-	dessine();
+	rafresh_window_geom();
 	create_GeomXYZ_from_draw_grometry();
 	g_free(oldA);
 }

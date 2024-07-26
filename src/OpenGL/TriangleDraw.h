@@ -27,8 +27,6 @@ void TriangeShow(V3d V1,V3d V2,V3d V3,V3d N);
 void IsoDraw(	IsoSurface* iso);
 void IsoGenLists(GLuint *positiveSurface, GLuint *negativeSurface, GLuint *nullSurface, IsoSurface* isopositive,IsoSurface* isonegative,IsoSurface* isonull);
 void IsoShowLists(GLuint positiveSurface, GLuint negativeSurface, GLuint nullSurface);
-gdouble get_alpha_opacity();
-void set_alpha_opacity(gdouble a);
 void set_opacity_dlg();
 
 #endif /* __GABEDIT_TRIANGLEDRAW_H__ */

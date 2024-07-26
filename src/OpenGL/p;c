@@ -1,0 +1,117 @@
+/********************************************************************************/
+static void apply_set_opacity(GtkWidget *Win,gpointer data)
+{
+	GtkWidget* opacitySpinButton = NULL;
+	gdouble a = 0;
+
+	if(!GTK_IS_WIDGET(Win)) return;
+
+	opacitySpinButton = g_object_get_data (G_OBJECT (Win), "OpacitySpinButton");
+
+	a = gtk_spin_button_get_value (GTK_SPIN_BUTTON(opacitySpinButton));
+	if(a>=0 && a<=100) alpha = a/100;
+	RebuildSurf = TRUE;
+	glarea_rafresh(GLArea);
+}
+/********************************************************************************/
+static void apply_set_opacity_close(GtkWidget *Win,gpointer data)
+{
+	apply_set_opacity(Win,data);
+	delete_child(Win);
+}
+/********************************************************************************/
+static GtkWidget *add_spin_button( GtkWidget *table, gchar* strLabel, gint il)
+{
+	gushort i;
+	gushort j;
+	GtkWidget *spinButton;
+	GtkWidget *label;
+
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 0;
+	label = gtk_label_new(strLabel);
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+/*----------------------------------------------------------------------------------*/
+	i = il;
+	j = 2;
+	spinButton =  gtk_spin_button_new_with_range (0, 100, 1);
+
+	gtk_table_attach(GTK_TABLE(table),spinButton,
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+
+  	return spinButton;
+}
+/********************************************************************************/
+void set_opacity_dlg()
+{
+	GtkWidget *Win;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	GtkWidget *hbox;
+	GtkWidget *table;
+	GtkWidget *vboxall;
+	GtkWidget *opacitySpinButton;
+	GtkWidget *button;
+
+	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(Win),_("Set opacity"));
+	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
+	gtk_container_set_border_width (GTK_CONTAINER (Win), 5);
+	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
+
+	add_glarea_child(Win,"Opacity ");
+
+	vboxall = create_vbox(Win);
+	frame = gtk_frame_new (NULL);
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+	gtk_container_add (GTK_CONTAINER (vboxall), frame);
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	table = gtk_table_new(5,3,FALSE);
+	gtk_container_add(GTK_CONTAINER(vboxframe),table);
+
+	opacitySpinButton = add_spin_button( table, _("Opacity coefficient : "), 1);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(opacitySpinButton),(gint)(alpha*100));
+	g_object_set_data (G_OBJECT (Win), "OpacitySpinButton",opacitySpinButton);
+
+	hbox = create_hbox_false(vboxall);
+	gtk_widget_realize(Win);
+
+	button = create_button(Win,_("OK"));
+	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+	gtk_widget_show (button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_set_opacity_close,G_OBJECT(Win));
+
+	button = create_button(Win,_("Apply"));
+	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_show (button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)apply_set_opacity,G_OBJECT(Win));
+
+	button = create_button(Win,_("Cancel"));
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, TRUE, 3);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)delete_child, G_OBJECT(Win));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)gtk_widget_destroy,G_OBJECT(Win));
+	gtk_widget_show (button);
+
+	gtk_widget_show_all (Win);
+}

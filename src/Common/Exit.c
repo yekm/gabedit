@@ -96,6 +96,9 @@ static void ExitGabedit(GtkWidget *widget, gchar *data)
 	create_drawmolecule_file();
 
 	save_axis_properties();
+#ifdef DRAWGEOMGL
+	save_axes_geom_properties();
+#endif
 	save_principal_axis_properties();
 	save_HBonds_properties();
 	gtk_main_quit();

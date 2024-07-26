@@ -229,6 +229,7 @@ static void define_geometry_to_draw()
 	Natoms = 0;
 	geometry0 = NULL;
 	geometry  = NULL;
+	reset_origine_molecule_drawgeom();
 
 	geometry0 = g_malloc((Nb)*sizeof(GeomDef));
 	geometry  = g_malloc((Nb)*sizeof(GeomDef));
@@ -314,6 +315,7 @@ static void define_geometry_to_draw()
 		 geometry[i].N = geometry0[i].N = i+1;
 
 	copy_connections(geometry0,geometry,Natoms);
+	RebuildGeom = TRUE;
 
 }
 /********************************************************************************/
@@ -572,6 +574,7 @@ void add_fragment(GtkWidget* button)
 	create_GeomXYZ_from_draw_grometry();
 	unselect_all_atoms();
 	reset_multiple_bonds();
+	reset_hydrogen_bonds();
 	reset_charges_multiplicities();
 	dessine();
 

@@ -62,11 +62,13 @@ void FreeGeomXYZ(GeomXYZAtomDef* GeomXYZtemp, VariablesXYZDef* VariablesXYZtemp,
 void selc_XYZ_file(guint itype);
 void create_babel_save_dialogue();
 void save_geometry_xyz_file(GabeditFileChooser *SelecFile, gint response_id);
+void save_geometry_mol_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_mol2_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_tinker_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_pdb_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_hin_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_gabedit_file(GabeditFileChooser *SelecFile, gint response_id);
+void save_geometry_lascmd_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_xyz_file_no_add_list(const gchar* FileName);
 gboolean connecteds(guint i,guint j);
 

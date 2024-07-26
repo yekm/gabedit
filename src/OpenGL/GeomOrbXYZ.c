@@ -28,8 +28,8 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Constants.h"
 #include "../Geometry/GeomGlobal.h"
 #include "../Geometry/OpenBabel.h"
-#include "Sphere.h"
 #include "../Utils/Utils.h"
+#include "../Utils/UtilsGL.h"
 #include "GLArea.h"
 #include "StatusOrb.h"
 #include "AtomicOrbitals.h"
@@ -1808,11 +1808,13 @@ gboolean gl_read_gamess_file_geomi(gchar *FileName,gint num)
  	}while(!feof(fd));
 
  	Ncenters = j+1;
+	printf("Ncenters=%d\n",Ncenters);
 
 	if ( Ncenters >0)
 	{
 		long int gp = 0;
 		if(num<0) fseek(fd, geompos, SEEK_SET);
+		fseek(fd, geompos, SEEK_SET);
 		gp = ftell(fd);
 		get_dipole_from_gamess_output_file(fd);
 		fseek(fd, gp, SEEK_SET);

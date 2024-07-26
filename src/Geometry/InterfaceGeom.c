@@ -596,7 +596,7 @@ static void traite_units_option(GtkComboBox *combobox, gpointer d)
 	if (!strcmp((char*)data, _("Angstrom"))) Units = 1;
 	else if (!strcmp((char*)data, _("Bohr"))) Units = 0;
 
-	if(ZoneDessin != NULL && OldUnits != Units) rafresh_drawing();
+	if(GeomDrawingArea != NULL && OldUnits != Units) rafresh_drawing();
 }
 /********************************************************************************************************/
 void create_units_option(GtkWidget *hbox,gchar *tlabel)

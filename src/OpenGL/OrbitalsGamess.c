@@ -89,6 +89,39 @@ static gchar* titlesOrb[GABEDIT_ORBTYPE_PIPEK+1]=
 /********************************************************************************/
 static gboolean sphericalBasis = FALSE;
 /********************************************************************************/
+static void get_charges_from_gamess_output_file(FILE* fd,gint N)
+{
+ 	guint taille=BSIZE;
+  	gchar t[BSIZE];
+  	gchar dump[BSIZE];
+  	gchar d[BSIZE];
+  	gchar* pdest;
+	gint i;
+
+
+  	while(!feof(fd) )
+	{
+    		pdest = NULL;
+    		if(!fgets(t,taille,fd)) break;
+    		pdest = strstr( t, "TOTAL MULLIKEN AND LOWDIN ATOMIC POPULATIONS");
+
+		if(pdest)
+		{
+    			if(!fgets(t,taille,fd)) break;
+			for(i=0;i<N;i++)
+			{
+    				if(!fgets(t,taille,fd)) break;
+				if(sscanf(t,"%s %s %s %s %s %s",dump, dump ,dump, dump, dump, d)==6)
+				{
+					GeomOrb[i].partialCharge = atof(d);
+				}
+				else break;
+			}
+			break;
+		}
+	}
+}
+/********************************************************************************/
 static gint* read_geomorb_gamess_file_geom(gchar *FileName)
 {
  	gchar *t;
@@ -205,6 +238,8 @@ static gint* read_geomorb_gamess_file_geom(gchar *FileName)
 	{
 		fseek(fd, geompos, SEEK_SET);
 		get_dipole_from_gamess_output_file(fd);
+		fseek(fd, geompos, SEEK_SET);
+		get_charges_from_gamess_output_file(fd,Ncenters);
 	}
  	fclose(fd);
  	g_free(t);
@@ -1205,8 +1240,9 @@ void read_gamess_orbitals(gchar* FileName)
 		if(GeomOrb[i].Symb) g_free(GeomOrb[i].Symb);
 		GeomOrb[i].Symb=get_symbol_using_z(znuc[i]);
 		GeomOrb[i].Prop = prop_atom_get(GeomOrb[i].Symb);
-		GeomOrb[i].partialCharge = 0.0;
+		//GeomOrb[i].partialCharge = 0.0;
 		GeomOrb[i].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[i].Symb);
+		printf("%s %i %f\n",GeomOrb[i].Symb,i,GeomOrb[i].nuclearCharge);
 	}
   	/*DefineType();*/
 	buildBondsOrb();

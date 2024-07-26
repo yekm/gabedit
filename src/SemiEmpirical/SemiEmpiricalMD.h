@@ -30,7 +30,8 @@ typedef enum
 {
   NONE = 0,
   ANDERSEN = 1,
-  BERENDSEN = 2
+  BERENDSEN = 2,
+  BUSSI = 3
 } MDThermostatType;
 
 typedef struct _SemiEmpiricalMD  SemiEmpiricalMD;
@@ -70,6 +71,7 @@ struct _SemiEmpiricalMD
 
 	FILE* fileTraj;
 	FILE* fileProp;
+	gint nfree;
 };
 void	freeSemiEmpiricalMD(SemiEmpiricalMD* seMD);
 void	runSemiEmpiricalMD(

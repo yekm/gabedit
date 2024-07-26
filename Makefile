@@ -38,14 +38,6 @@ SUBDIRS = \
 	src/Symmetry src/FireFly src/MultiGrid src/SemiEmpirical \
 	src/VibrationalCorrections src/IsotopeDistribution
 
-ifneq ($(external_gtkglarea),1)
-GTKGL     = gtkglarea/*.o
-OBJECTS  += $(GTKGL)
-SUBDIRS  += gtkglarea
-else
-OBJECTS  += -lgtkgl-2.0
-endif
-
 ifneq ($(external_gl2ps),1)
 GL2PS     = gl2ps/*.o
 OBJECTS  += $(GL2PS)
@@ -66,7 +58,7 @@ $(SUBDIRS):
 all: gabedit
 
 gabedit: $(SUBDIRS)
-	$(CC) $(LDFLAGS) $(OBJECTS) -o gabedit $(X11LIB) $(GTKLIB) $(OGLLIB) $(JPEGLIB) $(LIBPTHREAD) $(WIN32LIB) -g
+	$(CC) $(LDFLAGS) $(OBJECTS) -o gabedit $(X11LIB) $(GTKLIB) $(OGLLIB) $(JPEGLIB) $(LIBPTHREAD) $(WIN32LIB) $(OMPLIB) -g
  
 clean:
 	@$(RM) gabedit

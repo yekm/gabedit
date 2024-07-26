@@ -36,6 +36,7 @@ DEALINGS IN THE SOFTWARE.
 static void initMD(MolecularDynamics* molecularDynamics, gdouble temperature, gdouble stepSize, MDIntegratorType integratorType, MDThermostatType thermostat, gdouble friction, gdouble collide, gchar* fileNameTraj, gchar* fileNameProp, gint numberOfRunSteps);
 static void berendsen(MolecularDynamics* molecularDynamics);
 static void andersen(MolecularDynamics* molecularDynamics);
+static void bussi(MolecularDynamics* molecularDynamics);
 static void rescaleVelocities(MolecularDynamics* molecularDynamics);
 static void computeEnergies(MolecularDynamics* molecularDynamics);
 static void applyOneStep(MolecularDynamics* molecularDynamics);
@@ -218,6 +219,7 @@ ForceField**    runMolecularDynamicsConfo(
 		applyOneStep(molecularDynamics);
 		if(molecularDynamics->thermostat == ANDERSEN) andersen(molecularDynamics);
 		if(molecularDynamics->thermostat == BERENDSEN) berendsen(molecularDynamics);
+		if(molecularDynamics->thermostat == BUSSI) bussi(molecularDynamics);
 		if(StopCalcul) break;
 		if (++updateNumber >= molecularDynamics->updateFrequency )
 		{
@@ -430,6 +432,7 @@ void	runMolecularDynamics(
 		applyOneStep(molecularDynamics);
 		if(molecularDynamics->thermostat == ANDERSEN) andersen(molecularDynamics);
 		if(molecularDynamics->thermostat == BERENDSEN) berendsen(molecularDynamics);
+		if(molecularDynamics->thermostat == BUSSI) bussi(molecularDynamics);
 		if(StopCalcul) break;
 		if (++updateNumber >= molecularDynamics->updateFrequency )
 		{
@@ -837,13 +840,18 @@ static void initMD(MolecularDynamics* molecularDynamics, gdouble temperature, gd
 		for ( i = 0; i < molecularDynamics->numberOfAtoms; i++)
 			for ( j = 0; j < 3; j++)
 				molecularDynamics->velocity[i][j] = 0.0;
-		return;
 	}
+	else
 	for ( i = 0; i < molecularDynamics->numberOfAtoms; i++)
 	{
 		gdouble speed = maxwel(molecularDynamics->forceField->molecule.atoms[i].prop.masse,temperature);
 		getRandVect(speed, molecularDynamics->velocity[i]);
 	}
+        molecularDynamics->nfree = 3* molecularDynamics->numberOfAtoms-molecularDynamics->forceField->numberOfRattleConstraintsTerms;
+        removeTranslationAndRotation(molecularDynamics);
+        molecularDynamics->nfree -=6;
+        if( molecularDynamics->nfree<1)  molecularDynamics->nfree = 1;
+
 	removeTranslationAndRotation(molecularDynamics);
 }
 /*********************************************************************************/
@@ -859,7 +867,7 @@ static void berendsen(MolecularDynamics* molecularDynamics)
 	static gdouble fsInAKMA = 0.020454828110640;
 	gdouble ekin = 0;
 	gdouble kelvin = 0;
-	gint nfree = 3*molecularDynamics->numberOfAtoms -3;
+        gint nfree = molecularDynamics->nfree;
 	static gdouble Kb = 1.9871914e-3;
 	gdouble scale = 1.0;
 	gdouble dt = molecularDynamics->dt;
@@ -895,6 +903,7 @@ static void andersen(MolecularDynamics* molecularDynamics)
 	static gdouble fsInAKMA = 0.020454828110640;
 	gdouble tau = 1.0/molecularDynamics->collide*1000*fsInAKMA; /* in fs */
 	gdouble rate;
+	static gdouble Kb = 1.9871914e-3;
 	if(molecularDynamics->temperature<=0) return;
 	if(molecularDynamics->numberOfAtoms<1) return;
 
@@ -906,13 +915,54 @@ static void andersen(MolecularDynamics* molecularDynamics)
 		gdouble trial = drandom();
 		if(trial<rate)
 		{
+/*
 			gdouble speed = maxwel(
 					molecularDynamics->forceField->molecule.atoms[i].prop.masse,
 					molecularDynamics->temperature
 					);
 			getRandVect(speed, molecularDynamics->velocity[i]);
+*/
+			double speed = sqrt(Kb* molecularDynamics->temperature/molecularDynamics->forceField->molecule.atoms[i].prop.masse);
+                	double pnorm = normal();
+			molecularDynamics->velocity[i][0] = pnorm*speed;
+                	pnorm = normal();
+			molecularDynamics->velocity[i][1] = pnorm*speed;
+                	pnorm = normal();
+			molecularDynamics->velocity[i][2] = pnorm*speed;
 		}
 	}
+}
+/*********************************************************************************/
+static void bussi(MolecularDynamics* molecularDynamics)
+{
+        static gdouble fsInAKMA = 0.020454828110640;
+        gint nfree = molecularDynamics->nfree;
+        static gdouble Kb = 1.9871914e-3;
+        gdouble scale = 1.0;
+        gdouble dt = molecularDynamics->dt;
+        gdouble tautemp = 1.0/(molecularDynamics->collide)*1000*fsInAKMA;
+        gdouble c = exp(-dt/tautemp);
+        gdouble ekin = getEKin(molecularDynamics);
+        gdouble kelvin = 2*ekin / ( nfree * Kb);
+        gdouble d = (1.0-c) * (molecularDynamics->temperature/kelvin) / (nfree);
+        gdouble r = normal ();
+        gdouble si = 0.0;
+        gdouble s = 0.0;
+        gint i,j;
+        if(molecularDynamics->temperature<=0) return;
+        if(nfree<1) return;
+        for(i=0;i<nfree-1;i++)
+        {
+            si = normal ();
+            s += si*si;
+        }
+        scale = c + (s+r*r)*d + 2.0*r*sqrt(c*d);
+        scale = sqrt(scale);
+        if (r+sqrt(c/d)<0)  scale = -scale;
+	for ( i = 0; i < molecularDynamics->numberOfAtoms; i++)
+		for ( j = 0; j < 3; j++)
+			molecularDynamics->velocity[i][j] *= scale;
+	removeTranslationAndRotation(molecularDynamics);
 }
 /*********************************************************************************/
 static void newAccelaration(MolecularDynamics* molecularDynamics)

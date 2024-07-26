@@ -366,7 +366,7 @@ static gboolean getGradientFireFly(gchar* fileNameOut, SemiEmpiricalModel *seMod
 					fclose(file);
 					return FALSE;
 				}
-				for(j=0;j<3;j++) seModel->molecule.gradient[j][i] *= 627.50944796*BOHR_TO_ANG;
+				for(j=0;j<3;j++) seModel->molecule.gradient[j][i] *= 627.50944796/BOHR_TO_ANG;
 			}
 			Ok = TRUE;
 			break;

@@ -104,11 +104,7 @@ void showLabelSymbolsNumbersCharges()
 
 	if(Ncenters<1) return;
 
-	if(strcmp(fontName,FontsStyleLabel.fontname)!=0)
-	{
-		init_labels_font();
-		glInitFonts();
-	}
+	glInitFontsUsing(FontsStyleLabel.fontname);
 
 	color[0] = FontsStyleLabel.TextColor.red/65535.0; 
 	color[1] = FontsStyleLabel.TextColor.green/65535.0; 
@@ -127,7 +123,7 @@ void showLabelSymbolsNumbersCharges()
 		else bCharge[0]='\0';
 		sprintf(buffer,"%s%s%s",bSymbol,bNumber,bCharge);
 		if(ortho)
-			glPrintOrtho(GeomOrb[i].C[0], GeomOrb[i].C[1], GeomOrb[i].C[2], buffer);
+			glPrintOrtho(GeomOrb[i].C[0], GeomOrb[i].C[1], GeomOrb[i].C[2], buffer , TRUE, TRUE);
 		else
 		{
 			/* glPrint(GeomOrb[i].C[0], GeomOrb[i].C[1], GeomOrb[i].C[2], buffer);*/
@@ -135,6 +131,7 @@ void showLabelSymbolsNumbersCharges()
 		}
 	}
 	glEnable ( GL_LIGHTING ) ;
+	glDeleteFontsList();
 }
 /*********************************************************************************************/
 gboolean get_show_distances()
@@ -162,11 +159,7 @@ void showLabelDistances()
 	color[1] = FontsStyleLabel.TextColor.green/65535.0; 
 	color[2] = FontsStyleLabel.TextColor.blue/65535.0; 
 
-	if(strcmp(fontName,FontsStyleLabel.fontname)!=0)
-	{
-		init_labels_font();
-		glInitFonts();
-	}
+	glInitFontsUsing(FontsStyleLabel.fontname);
 	glDisable ( GL_LIGHTING ) ;
 	glColor4dv(color);
 
@@ -183,7 +176,7 @@ void showLabelDistances()
 		sprintf(buffer, "%0.3f",distance*BOHR_TO_ANG);
 
 		if(ortho)
-			glPrintOrtho(tmp[0], tmp[1], tmp[2], buffer);
+			glPrintOrtho(tmp[0], tmp[1], tmp[2], buffer, TRUE, TRUE);
 		else
 		{
 			/* glPrint(tmp[0], tmp[1], tmp[2], buffer);*/
@@ -193,6 +186,7 @@ void showLabelDistances()
 		}
 	}
 	glEnable ( GL_LIGHTING ) ;
+	glDeleteFontsList();
 }
 /*********************************************************************************************/
 gboolean get_show_dipole()
@@ -228,11 +222,7 @@ void showLabelDipole()
 	color[1] = FontsStyleLabel.TextColor.green/65535.0; 
 	color[2] = FontsStyleLabel.TextColor.blue/65535.0; 
 
-	if(strcmp(fontName,FontsStyleLabel.fontname)!=0)
-	{
-		init_labels_font();
-		glInitFonts();
-	}
+	glInitFontsUsing(FontsStyleLabel.fontname);
 	glDisable ( GL_LIGHTING ) ;
 	glColor4dv(color);
 
@@ -254,13 +244,14 @@ void showLabelDipole()
 	sprintf(buffer,"%0.3f D",module);
 
 	if(ortho)
-		glPrintOrtho(Center[0], Center[1], Center[2], buffer);
+		glPrintOrtho(Center[0], Center[1], Center[2], buffer, TRUE, TRUE);
 	else
 	{
 	/*	glPrint(Center[0], Center[1], Center[2], buffer); */
 		glPrintScale(Center[0], Center[1], Center[2], 1.1*radius,buffer);
 	}
 	glEnable ( GL_LIGHTING ) ;
+	glDeleteFontsList();
 }
 /*********************************************************************************************/
 gboolean get_show_axes()
@@ -313,11 +304,7 @@ void showLabelAxes()
 	color[1] = FontsStyleLabel.TextColor.green/65535.0; 
 	color[2] = FontsStyleLabel.TextColor.blue/65535.0; 
 
-	if(strcmp(fontName,FontsStyleLabel.fontname)!=0)
-	{
-		init_labels_font();
-		glInitFonts();
-	}
+	glInitFontsUsing(FontsStyleLabel.fontname);
 
 	if(radius<0.1) radius = 0.1;
 	glDisable ( GL_LIGHTING ) ;
@@ -327,11 +314,11 @@ void showLabelAxes()
 	if(ortho)
 	{
 		sprintf(buffer,"X");
-		glPrintOrtho(vectorX[0], vectorX[1], vectorX[2], buffer);
+		glPrintOrtho(vectorX[0], vectorX[1], vectorX[2], buffer, TRUE, TRUE);
 		sprintf(buffer,"Y");
-		glPrintOrtho(vectorY[0], vectorY[1], vectorY[2], buffer);
+		glPrintOrtho(vectorY[0], vectorY[1], vectorY[2], buffer, TRUE, TRUE);
 		sprintf(buffer,"Z");
-		glPrintOrtho(vectorZ[0], vectorZ[1], vectorZ[2], buffer);
+		glPrintOrtho(vectorZ[0], vectorZ[1], vectorZ[2], buffer, TRUE, TRUE);
 	}
 	else
 	{
@@ -351,6 +338,7 @@ void showLabelAxes()
 		glPrintScale(vectorZ[0], vectorZ[1], vectorZ[2], 1.1*radius, buffer);
 	}
 	glEnable ( GL_LIGHTING ) ;
+	glDeleteFontsList();
 }
 /*********************************************************************************************/
 void showLabelPrincipalAxes()
@@ -397,11 +385,7 @@ void showLabelPrincipalAxes()
 	color[1] = FontsStyleLabel.TextColor.green/65535.0; 
 	color[2] = FontsStyleLabel.TextColor.blue/65535.0; 
 
-	if(strcmp(fontName,FontsStyleLabel.fontname)!=0)
-	{
-		init_labels_font();
-		glInitFonts();
-	}
+	glInitFontsUsing(FontsStyleLabel.fontname);
 
 	if(radius<0.1) radius = 0.1;
 	glDisable ( GL_LIGHTING ) ;
@@ -411,11 +395,11 @@ void showLabelPrincipalAxes()
 	if(ortho)
 	{
 		sprintf(buffer,"I=%0.3f",I[0]);
-		glPrintOrtho(v1[0], v1[1], v1[2], buffer);
+		glPrintOrtho(v1[0], v1[1], v1[2], buffer, TRUE, TRUE);
 		sprintf(buffer,"I=%0.3f",I[1]);
-		glPrintOrtho(v2[0], v2[1], v2[2], buffer);
+		glPrintOrtho(v2[0], v2[1], v2[2], buffer, TRUE, TRUE);
 		sprintf(buffer,"I=%0.3f",I[2]);
-		glPrintOrtho(v3[0], v3[1], v3[2], buffer);
+		glPrintOrtho(v3[0], v3[1], v3[2], buffer, TRUE, TRUE);
 	}
 	else
 	{
@@ -435,6 +419,7 @@ void showLabelPrincipalAxes()
 		glPrintScale(v3[0], v3[1], v3[2], 1.1*radius, buffer);
 	}
 	glEnable ( GL_LIGHTING ) ;
+	glDeleteFontsList();
 }
 /*********************************************************************************************/
 void showLabelTitle(gint width, gint height)
@@ -474,8 +459,8 @@ void showLabelTitle(gint width, gint height)
 	glMatrixMode(GL_MODELVIEW);
 	
 	glPopMatrix();
-	glInitFonts();
 	glEnable ( GL_LIGHTING ) ;
+	glDeleteFontsList();
 }
 /*********************************************************************************************/
 gchar* get_label_title()

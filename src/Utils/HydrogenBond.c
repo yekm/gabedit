@@ -167,7 +167,7 @@ static void set_HBonds(GtkWidget* fp,gpointer data)
 
 
 	rafresh_window_orb();
-        if(ZoneDessin != NULL) draw_geometry(NULL,NULL);
+        if(GeomDrawingArea != NULL) draw_geometry(NULL,NULL);
 }
 /******************************************************************/
 static void deleteAnAtomDlg()

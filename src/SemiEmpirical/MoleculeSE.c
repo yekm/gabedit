@@ -546,6 +546,7 @@ void redrawMoleculeSE(MoleculeSE* molecule,gchar* str)
 	change_of_center(NULL,NULL);
 	reset_all_connections();
 	create_GeomXYZ_from_draw_grometry();
+	RebuildGeom = TRUE;
 	dessine();
 
     	while( gtk_events_pending() )

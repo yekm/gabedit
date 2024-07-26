@@ -50,7 +50,7 @@ DEALINGS IN THE SOFTWARE.
 
 #define MAJOR_VERSION    2
 #define MINOR_VERSION    3
-#define MICRO_VERSION    0
+#define MICRO_VERSION    2
 
 /**** Structures *********/
 typedef struct _FileOpen
@@ -198,6 +198,10 @@ typedef struct _CommandsBatch
   gchar *NameCommandBatchKill;
   gchar *NamejobIdTitleBatch;
   CommandsBatch batchCommands;
+  OpenGLOptions openGLOptions;
+  gint colorMapType;
+  gdouble colorMapColors[3][3];
+  gdouble alpha_opacity;
 
 #endif /* __GABEDIT_GLOBAL_H__ */
 

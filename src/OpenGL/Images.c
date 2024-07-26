@@ -40,27 +40,37 @@ static GdkPixbuf  *get_pixbuf_gl(guchar* colorTrans)
 	GdkPixbuf  *tmp = NULL;
 	GdkPixbuf  *tmp2 = NULL;
 	guchar *data;
+	GLint viewport[4];
 
-	width =  GLArea->allocation.width;
-	height = GLArea->allocation.height;
-	stride = width*3;
+	glGetIntegerv(GL_VIEWPORT, viewport);
+  	width  = viewport[2];
+  	height = viewport[3];
+
+	stride = width*4;
 
 	data = g_malloc0 (sizeof (guchar) * stride * height);
 #ifdef G_OS_WIN32 
-  	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,data);
+  	glReadBuffer(GL_BACK);
+  	glReadPixels(0,0,width,height,GL_RGBA,GL_UNSIGNED_BYTE,data);
 #else
   	glReadBuffer(GL_FRONT);
-  	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,data);
+  	glReadPixels(0,0,width,height,GL_RGBA,GL_UNSIGNED_BYTE,data);
 #endif
 
-	tmp = gdk_pixbuf_new_from_data (data, GDK_COLORSPACE_RGB, FALSE, 
+	tmp = gdk_pixbuf_new_from_data (data, GDK_COLORSPACE_RGB, TRUE, 
                                       8, width, height, stride, snapshot_pixbuf_free,
                                       NULL);
-	tmp2 = gdk_pixbuf_flip (tmp, TRUE); 
-	g_object_unref (tmp);
+	if(tmp)
+	{
+		tmp2 = gdk_pixbuf_flip (tmp, TRUE); 
+		g_object_unref (tmp);
+	}
 
-	pixbuf = gdk_pixbuf_rotate_simple (tmp2, GDK_PIXBUF_ROTATE_UPSIDEDOWN);
-	g_object_unref (tmp2);
+	if(tmp2)
+	{
+		pixbuf = gdk_pixbuf_rotate_simple (tmp2, GDK_PIXBUF_ROTATE_UPSIDEDOWN);
+		g_object_unref (tmp2);
+	}
 
 	if(colorTrans)
 	{

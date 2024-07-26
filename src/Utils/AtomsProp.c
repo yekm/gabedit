@@ -999,7 +999,7 @@ static void set_atom_prop(GtkWidget *w,gpointer data)
 
 
 
-		if(ZoneDessin != NULL) rafresh_drawing();
+		if(GeomDrawingArea != NULL) rafresh_drawing();
 		rafresh_window_orb();
 		return; 
 	}

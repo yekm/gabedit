@@ -20,6 +20,9 @@ DEALINGS IN THE SOFTWARE.
 
 #include "../../Config.h"
 #include "../OpenGL/GlobalOrb.h"
+#ifdef ENABLE_OMP
+#include <omp.h>
+#endif
 #include "../Utils/Vector3d.h"
 #include "../Utils/GTF.h"
 #include "../OpenGL/GLArea.h"
@@ -41,6 +44,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/PlanesMappedPov.h"
 #include "../OpenGL/LabelsGL.h"
 #include "../OpenGL/StatusOrb.h"
+
 
 #define WIDTHSCR 0.3
 typedef gboolean         (*FuncCompCoulomb)(gint N[],GridLimits limits, gint typeOrbi, gint i, gint typeOrbj, gint j,
@@ -115,6 +119,12 @@ gdouble compute_spatial_overlap_analytic(gint typeOrbi, gint i, gint typeOrbj, g
 	progress_orb_txt(0,"tmp",TRUE);
 
 	/* For do a Schwarz screening */
+#ifdef ENABLE_OMP
+#ifdef G_OS_WIN32
+	setTextInProgress(_("Computing of spatial integrale, pleasse wait..."));
+#endif
+#pragma omp parallel for private(k,kp,kk,pqrs) reduction(+:integ,nAll,nComp,pos)
+#endif
 	for(kk=0;kk<N;kk++)
 	{
 		k = p[kk];
@@ -127,33 +137,54 @@ gdouble compute_spatial_overlap_analytic(gint typeOrbi, gint i, gint typeOrbj, g
 		if(nAll>=pos)
 		{
 			pos += delta;
+#ifdef ENABLE_OMP
+#ifndef G_OS_WIN32
+#pragma omp critical
 			progress_orb_txt(scal,tmp,FALSE);
+#endif
+#else
+			progress_orb_txt(scal,tmp,FALSE);
+#endif
 		}
 	}
+#ifdef ENABLE_OMP
+#ifdef G_OS_WIN32
+	setTextInProgress(_("Computing of spatial integrale, pleasse wait..."));
+#endif
+#pragma omp parallel for private(k,kp,l,lp,kk,ll,pqrs,cc) reduction(+:integ,nAll,nComp,pos)
+#endif
 	for(kk=0;kk<N;kk++)
 	{
 		k = p[kk];
 		kp = q[kk];
-		if(CancelCalcul) break;
+		if(!CancelCalcul)
 		for(ll=0;ll<kk;ll++)
 		{
-			if(CancelCalcul) break;
+			if(!CancelCalcul)
+			{
 			l = p[ll];
 			lp = q[ll];
 			nAll++;
 			if(nAll>=pos)
 			{
 				pos += delta;
+#ifdef ENABLE_OMP
+#ifndef G_OS_WIN32
+#pragma omp critical
 				progress_orb_txt(scal,tmp,FALSE);
+#endif
+#else
+				progress_orb_txt(scal,tmp,FALSE);
+#endif
 			}
 			cc = (cci[kk]*ccj[ll]+cci[ll]*ccj[kk]);
-			if(fabs(cc*mnmn[kk]*mnmn[ll])<schwarzCutOff)
+			if(fabs(cc*mnmn[kk]*mnmn[ll])>=schwarzCutOff)
 			{
-				continue;
+				pqrs = overlap4CGTF(&AOrb[k],&AOrb[kp],&AOrb[l],&AOrb[lp]);
+				integ += cc*pqrs;
+				nComp++;
 			}
-			pqrs = overlap4CGTF(&AOrb[k],&AOrb[kp],&AOrb[l],&AOrb[lp]);
-			integ += cc*pqrs;
-			nComp++;
+			}
 		}
 	}
 	sprintf(tmp,"# of all <pq|rs> = %ld, # of computed <pq|rs> %ld\n",nAll, nComp);
@@ -172,6 +203,7 @@ void compute_transition_matrix_analytic(gint typeOrbi, gint i, gint typeOrbj, gi
 	gint l;
 	gdouble** CoefI = CoefAlphaOrbitals;
 	gdouble** CoefJ = CoefAlphaOrbitals;
+	gdouble s = 0;
 
 	integ[0] = 0;
 	integ[1] = 0;
@@ -180,19 +212,55 @@ void compute_transition_matrix_analytic(gint typeOrbi, gint i, gint typeOrbj, gi
 	if(typeOrbi != typeOrbj ) return;
 	if(typeOrbi == 2) CoefI = CoefBetaOrbitals;
 	if(typeOrbj == 2) CoefJ = CoefBetaOrbitals;
+	s = 0;
+#ifdef ENABLE_OMP
+	printf("# proc = %d\n", omp_get_num_procs ());
+#pragma omp parallel for private(k) reduction(+:s)
+#endif
 	for(k=0;k<NAOrb;k++)
-	{
-		integ[0] += CoefI[i][k]*CoefJ[j][k]*CGTFxyzCGTF(&AOrb[k],&AOrb[k],1,0,0);
-		integ[1] += CoefI[i][k]*CoefJ[j][k]*CGTFxyzCGTF(&AOrb[k],&AOrb[k],0,1,0);
-		integ[2] += CoefI[i][k]*CoefJ[j][k]*CGTFxyzCGTF(&AOrb[k],&AOrb[k],0,0,1);
-	}
+		s += CoefI[i][k]*CoefJ[j][k]*CGTFxyzCGTF(&AOrb[k],&AOrb[k],1,0,0);
+	s = 0;
+	integ[0] += s;
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(k) reduction(+:s)
+#endif
+	for(k=0;k<NAOrb;k++)
+		s += CoefI[i][k]*CoefJ[j][k]*CGTFxyzCGTF(&AOrb[k],&AOrb[k],0,1,0);
+	integ[1] += s;
+	s = 0;
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(k) reduction(+:s)
+#endif
+	for(k=0;k<NAOrb;k++)
+		s  += CoefI[i][k]*CoefJ[j][k]*CGTFxyzCGTF(&AOrb[k],&AOrb[k],0,0,1);
+	integ[2] += s;
+
+	s = 0;
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(k,l) reduction(+:s)
+#endif
 	for(k=0;k<NAOrb;k++)
 	for(l=k+1;l<NAOrb;l++)
-	{
-		integ[0] += (CoefI[i][k]*CoefJ[j][l]+CoefI[i][l]*CoefJ[j][k])*CGTFxyzCGTF(&AOrb[k],&AOrb[l],1,0,0);
-		integ[1] += (CoefI[i][k]*CoefJ[j][l]+CoefI[i][l]*CoefJ[j][k])*CGTFxyzCGTF(&AOrb[k],&AOrb[l],0,1,0);
-		integ[2] += (CoefI[i][k]*CoefJ[j][l]+CoefI[i][l]*CoefJ[j][k])*CGTFxyzCGTF(&AOrb[k],&AOrb[l],0,0,1);
-	}
+		s  += (CoefI[i][k]*CoefJ[j][l]+CoefI[i][l]*CoefJ[j][k])*CGTFxyzCGTF(&AOrb[k],&AOrb[l],1,0,0);
+	integ[0] += s;
+
+	s = 0;
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(k,l) reduction(+:s)
+#endif
+	for(k=0;k<NAOrb;k++)
+	for(l=k+1;l<NAOrb;l++)
+		s  += (CoefI[i][k]*CoefJ[j][l]+CoefI[i][l]*CoefJ[j][k])*CGTFxyzCGTF(&AOrb[k],&AOrb[l],0,1,0);
+	integ[1] += s;
+
+	s = 0;
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(k,l) reduction(+:s)
+#endif
+	for(k=0;k<NAOrb;k++)
+	for(l=k+1;l<NAOrb;l++)
+		s  += (CoefI[i][k]*CoefJ[j][l]+CoefI[i][l]*CoefJ[j][k])*CGTFxyzCGTF(&AOrb[k],&AOrb[l],0,0,1);
+	integ[2] += s;
 }
 /********************************************************************************/
 gdouble get_overlap_analytic(gint typeOrbi, gint i, gint typeOrbj, gint j)
@@ -206,8 +274,14 @@ gdouble get_overlap_analytic(gint typeOrbi, gint i, gint typeOrbj, gint j)
 	if(typeOrbi != typeOrbj ) return 0.0;
 	if(typeOrbi == 2) CoefI = CoefBetaOrbitals;
 	if(typeOrbj == 2) CoefJ = CoefBetaOrbitals;
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(k) reduction(+:v)
+#endif
 	for(k=0;k<NAOrb;k++)
 			v += CoefI[i][k]*CoefJ[j][k]*overlapCGTF(&AOrb[k],&AOrb[k]);
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(k,l) reduction(+:v)
+#endif
 	for(k=0;k<NAOrb;k++)
 		for(l=k+1;l<NAOrb;l++)
 			v += (CoefI[i][k]*CoefJ[j][l]+CoefI[i][l]*CoefJ[j][k])*overlapCGTF(&AOrb[k],&AOrb[l]);
@@ -386,6 +460,7 @@ gdouble get_coulomb_analytic(gint typeOrbi, gint i, gint typeOrbj, gint j, gdoub
 		mnmn[kk] = 0.0;
 		kk++;
 	}
+
 	scal = 0.01;
 	delta = (gint)(N*(N+1.0)/2.0*scal);
 	if(delta<1) delta = N*(N+1)/20;
@@ -395,6 +470,12 @@ gdouble get_coulomb_analytic(gint typeOrbi, gint i, gint typeOrbj, gint j, gdoub
 	progress_orb_txt(0,_("Computing of 2 centers Coulomb integrals... Please wait"),TRUE);
 
 	/* For do a Schwarz screening */
+#ifdef ENABLE_OMP
+#ifdef G_OS_WIN32
+	setTextInProgress(_("Computing of eri, pleasse wait..."));
+#endif
+#pragma omp parallel for private(k,kp,kk,eri) reduction(+:v,nAll,nComp,pos)
+#endif
 	for(kk=0;kk<N;kk++)
 	{
 		k = p[kk];
@@ -407,36 +488,57 @@ gdouble get_coulomb_analytic(gint typeOrbi, gint i, gint typeOrbj, gint j, gdoub
 		if(nAll>=pos)
 		{
 			pos += delta;
+#ifdef ENABLE_OMP
+#ifndef G_OS_WIN32
+#pragma omp critical
 			progress_orb_txt(scal,tmp,FALSE);
+#endif
+#else
+			progress_orb_txt(scal,tmp,FALSE);
+#endif
 		}
 	}
+#ifdef ENABLE_OMP
+#ifdef G_OS_WIN32
+	setTextInProgress(_("Computing of eri, pleasse wait..."));
+#endif
+#pragma omp parallel for private(k,kp,l,lp,kk,ll,eri,cc,ccmn) reduction(+:v,nAll,nComp,pos)
+#endif
 	for(kk=0;kk<N;kk++)
 	{
 		k = p[kk];
 		kp = q[kk];
-		if(CancelCalcul) break;
+		if(!CancelCalcul)
 		for(ll=0;ll<kk;ll++)
 		{
-			if(CancelCalcul) break;
+			if(!CancelCalcul)
+			{
 			l = p[ll];
 			lp = q[ll];
 			nAll++;
 			if(nAll>=pos)
 			{
 				pos += delta;
+#ifdef ENABLE_OMP
+#ifndef G_OS_WIN32
+#pragma omp critical
 				progress_orb_txt(scal,tmp,FALSE);
+#endif
+#else
+				progress_orb_txt(scal,tmp,FALSE);
+#endif
 			}
 			cc = (cci[kk]*ccj[ll]+cci[ll]*ccj[kk]);
 			/* Schwarz screening */
 			ccmn = cc*mnmn[kk]*mnmn[ll];
 			if(fabs(ccmn)<schwarzCutOff)
 			{
-				/* v += ccmn/2;*/
 				continue;
 			}
 			eri = ERICTABLES(k,kp,l,lp,Ttables);
 			v += cc*eri;
 			nComp++;
+			}
 		}
 	}
 	sprintf(tmp,_("# of all ERI = %ld, # of computed ERI = %ld"),nAll, nComp);

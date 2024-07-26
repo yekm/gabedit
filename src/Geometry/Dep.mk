@@ -1,52 +1,33 @@
-DrawGeom.o: DrawGeom.c ../../Config.h ../Common/Global.h \
-  ../Common/../Files/GabeditFileChooser.h \
-  ../Common/../Common/GabeditType.h ../Utils/Constants.h \
-  ../Utils/UtilsInterface.h ../Geometry/InterfaceGeom.h ../Utils/Utils.h \
-  ../Utils/PovrayUtils.h ../Utils/AtomsProp.h ../Geometry/GeomGlobal.h \
-  ../Geometry/Measure.h ../Geometry/Povray.h ../Common/Windows.h \
-  ../Utils/Transformation.h ../Geometry/GeomXYZ.h \
-  ../Geometry/GeomZmatrix.h ../Geometry/Symmetry.h ../Files/FileChooser.h \
-  ../Geometry/ImagesGeom.h ../Geometry/Fragments.h \
-  ../Geometry/FragmentsPPD.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h ../Geometry/RotFragments.h \
-  ../Geometry/GeomConversion.h ../Geometry/PersonalFragments.h \
-  ../Geometry/ResultsAnalise.h ../Utils/HydrogenBond.h \
-  ../MolecularMechanics/PDBTemplate.h \
-  ../MolecularMechanics/CalculTypesAmber.h \
-  ../Symmetry/MoleculeSymmetryInterface.h ../Utils/Jacobi.h \
-  ../Utils/Vector3d.h ../Utils/GabeditTextEdit.h ../Utils/UtilsCairo.h \
-  ../Geometry/MenuToolBarGeom.h ../Geometry/PreviewGeom.h \
-  ../Geometry/FragmentsSelector.h \
-  ../IsotopeDistribution/IsotopeDistributionCalculatorDlg.h \
-  ../IsotopeDistribution/../IsotopeDistribution/IsotopeDistributionCalculator.h \
-  ../Geometry/TreeMolecule.h ../Geometry/DrawGeom.h
 EnergiesCurves.o: EnergiesCurves.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ResultsAnalise.h \
   ../Utils/UtilsInterface.h ../Geometry/GeomGlobal.h ../Utils/AtomsProp.h \
   ../Utils/Utils.h ../Geometry/EnergiesCurves.h ../Geometry/GeomXYZ.h \
   ../Common/Windows.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h
 Fragments.o: Fragments.c ../../Config.h ../Common/GabeditType.h \
   ../Geometry/Fragments.h ../Utils/Utils.h ../Utils/AtomsProp.h \
   ../MolecularMechanics/PDBTemplate.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h ../MolecularMechanics/CalculTypesAmber.h
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
+  ../MolecularMechanics/CalculTypesAmber.h
 GeomConversion.o: GeomConversion.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/Constants.h ../Common/Help.h \
   ../Utils/UtilsInterface.h ../Utils/Utils.h ../Geometry/GeomGlobal.h \
   ../Utils/AtomsProp.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h ../Files/ListeFiles.h ../Common/Windows.h \
-  ../Geometry/InterfaceGeom.h ../Gaussian/Gaussian.h ../Molpro/Molpro.h \
-  ../Geometry/GeomXYZ.h ../Geometry/GeomZmatrix.h
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
+  ../Files/ListeFiles.h ../Common/Windows.h ../Geometry/InterfaceGeom.h \
+  ../Gaussian/Gaussian.h ../Molpro/Molpro.h ../Geometry/GeomXYZ.h \
+  ../Geometry/GeomZmatrix.h
 GeomXYZ.o: GeomXYZ.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/Constants.h ../Common/Help.h \
   ../Utils/UtilsInterface.h ../Utils/Utils.h ../Geometry/GeomGlobal.h \
   ../Utils/AtomsProp.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h ../Geometry/GeomZmatrix.h ../Files/ListeFiles.h \
-  ../Common/Windows.h ../Geometry/InterfaceGeom.h ../Gaussian/Gaussian.h \
-  ../Molpro/Molpro.h ../Geometry/GeomConversion.h ../Common/StockIcons.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
+  ../Geometry/GeomZmatrix.h ../Files/ListeFiles.h ../Common/Windows.h \
+  ../Geometry/InterfaceGeom.h ../Gaussian/Gaussian.h ../Molpro/Molpro.h \
+  ../Geometry/GeomConversion.h ../Common/StockIcons.h \
   ../Geometry/GeomXYZ.h ../Geometry/ResultsAnalise.h \
   ../Geometry/OpenBabel.h ../MolecularMechanics/PDBTemplate.h \
   ../MolecularMechanics/CalculTypesAmber.h
@@ -55,13 +36,15 @@ GeomZmatrix.o: GeomZmatrix.c ../../Config.h ../Common/Global.h \
   ../Common/../Common/GabeditType.h ../Utils/Constants.h ../Common/Help.h \
   ../Utils/UtilsInterface.h ../Utils/Utils.h ../Geometry/GeomGlobal.h \
   ../Utils/AtomsProp.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h ../Files/ListeFiles.h ../Common/Windows.h \
-  ../Geometry/InterfaceGeom.h ../Gaussian/Gaussian.h ../Molpro/Molpro.h \
-  ../Geometry/GeomConversion.h ../Common/StockIcons.h
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
+  ../Files/ListeFiles.h ../Common/Windows.h ../Geometry/InterfaceGeom.h \
+  ../Gaussian/Gaussian.h ../Molpro/Molpro.h ../Geometry/GeomConversion.h \
+  ../Common/StockIcons.h
 ImagesGeom.o: ImagesGeom.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Geometry/GeomGlobal.h \
-  ../Geometry/Fragments.h ../Geometry/DrawGeom.h ../Geometry/Fragments.h \
+  ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
   ../Utils/UtilsInterface.h ../Utils/Utils.h
 InterfaceGeom.o: InterfaceGeom.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
@@ -70,21 +53,24 @@ InterfaceGeom.o: InterfaceGeom.c ../../Config.h ../Common/Global.h \
   ../Geometry/GeomXYZ.h ../Geometry/GeomZmatrix.h \
   ../Geometry/ResultsAnalise.h ../Utils/UtilsInterface.h ../Utils/Utils.h \
   ../Utils/AtomsProp.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h ../Common/Windows.h ../Files/FileChooser.h
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Common/Windows.h \
+  ../Files/FileChooser.h
 Measure.o: Measure.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/Constants.h \
   ../Utils/UtilsInterface.h ../Utils/Utils.h ../Utils/AtomsProp.h \
   ../Geometry/GeomGlobal.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h ../Geometry/RotFragments.h \
-  ../Geometry/TreeMolecule.h ../Geometry/DrawGeom.h ../Utils/Matrix3D.h
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
+  ../Geometry/RotFragments.h ../Geometry/TreeMolecule.h \
+  ../Geometry/DrawGeom.h ../Utils/Matrix3D.h
 Povray.o: Povray.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \
   ../Geometry/InterfaceGeom.h ../Utils/Utils.h ../Utils/PovrayUtils.h \
   ../Utils/AtomsProp.h ../Utils/Vector3d.h ../Utils/Constants.h \
   ../Geometry/GeomGlobal.h ../Geometry/Measure.h ../Geometry/Fragments.h \
-  ../Geometry/DrawGeom.h ../Geometry/Fragments.h ../Common/Windows.h
+  ../Geometry/DrawGeom.h ../Geometry/DrawGeomCairo.h \
+  ../Geometry/Fragments.h ../Common/Windows.h
 ResultsAnalise.o: ResultsAnalise.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \
@@ -95,25 +81,29 @@ Symmetry.o: Symmetry.c ../../Config.h ../Common/Global.h \
   ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \
   ../Utils/Utils.h ../Utils/Constants.h ../Utils/AtomsProp.h \
   ../Utils/GabeditTextEdit.h ../Geometry/GeomGlobal.h \
-  ../Geometry/Fragments.h ../Geometry/DrawGeom.h ../Geometry/Fragments.h \
-  ../Utils/Jacobi.h ../Utils/Transformation.h ../Common/Windows.h
+  ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Utils/Jacobi.h \
+  ../Utils/Transformation.h ../Common/Windows.h
 RotFragments.o: RotFragments.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/Matrix3D.h \
   ../Utils/Constants.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h ../Utils/AtomsProp.h
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
+  ../Utils/AtomsProp.h
 BuildLinear.o: BuildLinear.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/Utils.h ../Utils/Constants.h \
   ../Utils/UtilsInterface.h ../Utils/AtomsProp.h ../Geometry/GeomGlobal.h \
-  ../Geometry/Fragments.h ../Geometry/DrawGeom.h ../Geometry/Fragments.h \
+  ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
   ../Geometry/GeomXYZ.h ../Geometry/InterfaceGeom.h \
   ../Geometry/MenuToolBarGeom.h
 BuildRing.o: BuildRing.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/Constants.h ../Utils/Utils.h \
   ../Utils/UtilsInterface.h ../Utils/AtomsProp.h ../Geometry/GeomGlobal.h \
-  ../Geometry/Fragments.h ../Geometry/DrawGeom.h ../Geometry/Fragments.h \
+  ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
   ../Geometry/GeomXYZ.h ../Geometry/InterfaceGeom.h \
   ../Geometry/MenuToolBarGeom.h
 BuildRoZPhi.o: BuildRoZPhi.c ../../Config.h ../Common/Global.h \
@@ -121,34 +111,39 @@ BuildRoZPhi.o: BuildRoZPhi.c ../../Config.h ../Common/Global.h \
   ../Common/../Common/GabeditType.h ../Utils/Utils.h \
   ../Utils/UtilsInterface.h ../Utils/Constants.h ../Utils/AtomsProp.h \
   ../Geometry/GeomGlobal.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h ../Geometry/GeomXYZ.h \
-  ../Geometry/InterfaceGeom.h ../Geometry/MenuToolBarGeom.h
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
+  ../Geometry/GeomXYZ.h ../Geometry/InterfaceGeom.h \
+  ../Geometry/MenuToolBarGeom.h
 BuildPolyPeptide.o: BuildPolyPeptide.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/Utils.h \
   ../Utils/UtilsInterface.h ../Utils/AtomsProp.h ../Utils/Constants.h \
   ../Geometry/GeomGlobal.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h ../Geometry/GeomXYZ.h \
-  ../Geometry/InterfaceGeom.h ../Geometry/FragmentsPPD.h \
-  ../Geometry/RotFragments.h ../Geometry/MenuToolBarGeom.h \
-  ../MolecularMechanics/PDBTemplate.h
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
+  ../Geometry/GeomXYZ.h ../Geometry/InterfaceGeom.h \
+  ../Geometry/FragmentsPPD.h ../Geometry/RotFragments.h \
+  ../Geometry/MenuToolBarGeom.h ../MolecularMechanics/PDBTemplate.h
 FragmentsPPD.o: FragmentsPPD.c ../../Config.h ../Common/GabeditType.h \
   ../Utils/Utils.h ../Utils/Vector3d.h ../Geometry/Fragments.h \
   ../MolecularMechanics/PDBTemplate.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h ../MolecularMechanics/CalculTypesAmber.h
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
+  ../MolecularMechanics/CalculTypesAmber.h
 FragmentsPSC.o: FragmentsPSC.c ../../Config.h ../Common/GabeditType.h \
   ../Utils/Utils.h ../Geometry/Fragments.h \
   ../MolecularMechanics/PDBTemplate.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h ../MolecularMechanics/CalculTypesAmber.h
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
+  ../MolecularMechanics/CalculTypesAmber.h
 FragmentsPNA.o: FragmentsPNA.c ../../Config.h ../Common/GabeditType.h \
   ../Utils/Utils.h ../Geometry/Fragments.h \
   ../MolecularMechanics/PDBTemplate.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h ../MolecularMechanics/CalculTypesAmber.h
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
+  ../MolecularMechanics/CalculTypesAmber.h
 BuildPolySaccharide.o: BuildPolySaccharide.c ../../Config.h \
   ../Common/Global.h ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/Utils.h \
   ../Utils/UtilsInterface.h ../Utils/AtomsProp.h ../Geometry/GeomGlobal.h \
-  ../Geometry/Fragments.h ../Geometry/DrawGeom.h ../Geometry/Fragments.h \
+  ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
   ../Geometry/GeomXYZ.h ../Geometry/InterfaceGeom.h \
   ../Geometry/FragmentsPSC.h ../Geometry/RotFragments.h \
   ../Geometry/MenuToolBarGeom.h
@@ -156,7 +151,8 @@ BuildPolyNucleicAcid.o: BuildPolyNucleicAcid.c ../../Config.h \
   ../Common/Global.h ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/Constants.h ../Utils/Utils.h \
   ../Utils/UtilsInterface.h ../Utils/AtomsProp.h ../Geometry/GeomGlobal.h \
-  ../Geometry/Fragments.h ../Geometry/DrawGeom.h ../Geometry/Fragments.h \
+  ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
   ../Geometry/GeomXYZ.h ../Geometry/InterfaceGeom.h \
   ../Geometry/FragmentsPNA.h ../Geometry/RotFragments.h \
   ../Geometry/MenuToolBarGeom.h ../Utils/Matrix3D.h \
@@ -165,7 +161,8 @@ BuildNanoTube.o: BuildNanoTube.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/Utils.h ../Utils/Constants.h \
   ../Utils/UtilsInterface.h ../Utils/AtomsProp.h ../Geometry/GeomGlobal.h \
-  ../Geometry/Fragments.h ../Geometry/DrawGeom.h ../Geometry/Fragments.h \
+  ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
   ../Geometry/GeomXYZ.h ../Geometry/InterfaceGeom.h \
   ../Geometry/MenuToolBarGeom.h
 PersonalFragments.o: PersonalFragments.c ../../Config.h \
@@ -173,7 +170,8 @@ PersonalFragments.o: PersonalFragments.c ../../Config.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \
   ../Geometry/InterfaceGeom.h ../Utils/Utils.h ../Utils/AtomsProp.h \
-  ../Geometry/GeomGlobal.h ../Geometry/DrawGeom.h ../Geometry/Fragments.h \
+  ../Geometry/GeomGlobal.h ../Geometry/DrawGeom.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
   ../Geometry/PersonalFragments.h ../Geometry/SavePersonalFragments.h \
   ../Geometry/LoadPersonalFragments.h ../Geometry/MenuToolBarGeom.h \
   ../Geometry/FragmentsSelector.h
@@ -191,8 +189,8 @@ FragmentsSelector.o: FragmentsSelector.c ../../Config.h \
   ../Utils/UtilsInterface.h ../Geometry/InterfaceGeom.h ../Utils/Utils.h \
   ../Utils/PovrayUtils.h ../Utils/AtomsProp.h ../Geometry/GeomGlobal.h \
   ../Common/Windows.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h ../Geometry/PreviewGeom.h \
-  ../Geometry/FragmentsTree.h
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
+  ../Geometry/PreviewGeom.h ../Geometry/FragmentsTree.h
 OpenBabel.o: OpenBabel.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/Constants.h \
@@ -204,9 +202,9 @@ MenuToolBarGeom.o: MenuToolBarGeom.c ../../Config.h ../Common/Global.h \
   ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \
   ../Geometry/InterfaceGeom.h ../Utils/Utils.h ../Utils/AtomsProp.h \
   ../Geometry/GeomGlobal.h ../Geometry/Measure.h ../Geometry/Fragments.h \
-  ../Geometry/DrawGeom.h ../Geometry/Fragments.h ../Geometry/Povray.h \
-  ../Common/Windows.h ../Utils/Transformation.h \
-  ../MolecularMechanics/MolecularMechanicsDlg.h \
+  ../Geometry/DrawGeom.h ../Geometry/DrawGeomCairo.h \
+  ../Geometry/Fragments.h ../Geometry/Povray.h ../Common/Windows.h \
+  ../Utils/Transformation.h ../MolecularMechanics/MolecularMechanicsDlg.h \
   ../MolecularMechanics/SetMMParameters.h \
   ../MolecularMechanics/SetPDBTemplate.h \
   ../SemiEmpirical/SemiEmpiricalDlg.h ../Geometry/GeomXYZ.h \
@@ -220,7 +218,7 @@ MenuToolBarGeom.o: MenuToolBarGeom.c ../../Config.h ../Common/Global.h \
   ../Geometry/MenuToolBarGeom.h ../Geometry/OpenBabel.h \
   ../Geometry/FragmentsSelector.h ../Geometry/ExportGeom.h \
   ../Utils/HydrogenBond.h ../Symmetry/MoleculeSymmetryInterface.h \
-  ../Common/StockIcons.h
+  ../Common/StockIcons.h ../Geometry/AxesGeomGL.h
 PreviewGeom.o: PreviewGeom.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/Constants.h \
@@ -230,9 +228,10 @@ PreviewGeom.o: PreviewGeom.c ../../Config.h ../Common/Global.h \
   ../Utils/Transformation.h ../Geometry/GeomXYZ.h \
   ../Geometry/GeomZmatrix.h ../Geometry/Symmetry.h ../Files/FileChooser.h \
   ../Geometry/ImagesGeom.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h ../Geometry/RotFragments.h \
-  ../Geometry/GeomConversion.h ../Geometry/ResultsAnalise.h \
-  ../Utils/HydrogenBond.h ../MolecularMechanics/PDBTemplate.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
+  ../Geometry/RotFragments.h ../Geometry/GeomConversion.h \
+  ../Geometry/ResultsAnalise.h ../Utils/HydrogenBond.h \
+  ../MolecularMechanics/PDBTemplate.h \
   ../MolecularMechanics/CalculTypesAmber.h \
   ../Symmetry/MoleculeSymmetryInterface.h ../Utils/Jacobi.h \
   ../Utils/Vector3d.h ../Utils/GabeditTextEdit.h \
@@ -243,18 +242,45 @@ FragmentsTree.o: FragmentsTree.c ../../Config.h ../Common/Global.h \
   ../Utils/UtilsInterface.h ../Geometry/InterfaceGeom.h ../Utils/Utils.h \
   ../Utils/PovrayUtils.h ../Utils/AtomsProp.h ../Geometry/GeomGlobal.h \
   ../Common/Windows.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h ../Geometry/PreviewGeom.h \
-  ../Geometry/PersonalFragments.h ../Geometry/LoadPersonalFragments.h
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
+  ../Geometry/PreviewGeom.h ../Geometry/PersonalFragments.h \
+  ../Geometry/LoadPersonalFragments.h
 ExportGeom.o: ExportGeom.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \
   ../Geometry/InterfaceGeom.h ../Utils/Utils.h ../Utils/AtomsProp.h \
   ../Utils/Vector3d.h ../Geometry/GeomGlobal.h ../Geometry/Measure.h \
-  ../Geometry/Fragments.h ../Geometry/DrawGeom.h ../Geometry/Fragments.h \
+  ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
   ../Geometry/ExportGeom.h ../Common/Windows.h ../Files/FileChooser.h
 TreeMolecule.o: TreeMolecule.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/Constants.h \
   ../Geometry/GeomGlobal.h ../Utils/Vector3d.h ../Utils/Transformation.h \
   ../Utils/Utils.h ../Utils/UtilsInterface.h ../Geometry/TreeMolecule.h \
-  ../Geometry/DrawGeom.h ../Geometry/Fragments.h
+  ../Geometry/DrawGeom.h ../Geometry/DrawGeomCairo.h \
+  ../Geometry/Fragments.h
+DrawGeomGL.o: DrawGeomGL.c
+AxesGeomGL.o: AxesGeomGL.c ../../Config.h
+DrawGeomCairo.o: DrawGeomCairo.c ../../Config.h ../Common/Global.h \
+  ../Common/../Files/GabeditFileChooser.h \
+  ../Common/../Common/GabeditType.h ../Utils/Constants.h \
+  ../Utils/UtilsInterface.h ../Geometry/InterfaceGeom.h ../Utils/Utils.h \
+  ../Utils/PovrayUtils.h ../Utils/AtomsProp.h ../Geometry/GeomGlobal.h \
+  ../Geometry/Measure.h ../Geometry/Povray.h ../Common/Windows.h \
+  ../Utils/Transformation.h ../Geometry/GeomXYZ.h \
+  ../Geometry/GeomZmatrix.h ../Geometry/Symmetry.h ../Files/FileChooser.h \
+  ../Geometry/ImagesGeom.h ../Geometry/Fragments.h \
+  ../Geometry/FragmentsPPD.h ../Geometry/DrawGeom.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
+  ../Geometry/RotFragments.h ../Geometry/GeomConversion.h \
+  ../Geometry/PersonalFragments.h ../Geometry/ResultsAnalise.h \
+  ../Utils/HydrogenBond.h ../MolecularMechanics/PDBTemplate.h \
+  ../MolecularMechanics/CalculTypesAmber.h \
+  ../Symmetry/MoleculeSymmetryInterface.h ../Utils/Jacobi.h \
+  ../Utils/Vector3d.h ../Utils/GabeditTextEdit.h ../Utils/UtilsCairo.h \
+  ../Geometry/MenuToolBarGeom.h ../Geometry/PreviewGeom.h \
+  ../Geometry/FragmentsSelector.h \
+  ../IsotopeDistribution/IsotopeDistributionCalculatorDlg.h \
+  ../IsotopeDistribution/../IsotopeDistribution/IsotopeDistributionCalculator.h \
+  ../Geometry/TreeMolecule.h ../Geometry/DrawGeom.h

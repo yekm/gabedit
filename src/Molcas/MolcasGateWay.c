@@ -629,7 +629,7 @@ static gboolean setGeomXYZFromSXYZ(gint numberOfAtoms, gchar** symbols, gdouble*
 	{
 		create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
 	}
-	if(ZoneDessin != NULL)
+	if(GeomDrawingArea != NULL)
 		rafresh_drawing();
 
 	return TRUE;
@@ -679,7 +679,7 @@ static gboolean setGeomXYZFromMolcasMolecule()
 	{
 		create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
 	}
-	if(ZoneDessin != NULL)
+	if(GeomDrawingArea != NULL)
 		rafresh_drawing();
 
 	return TRUE;

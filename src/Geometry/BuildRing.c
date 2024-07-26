@@ -103,7 +103,7 @@ static void build_ring_molecule(GtkWidget *w,gpointer data)
 
  	if(GeomIsOpen)
 		create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
-  	if(ZoneDessin != NULL)
+  	if(GeomDrawingArea != NULL)
 		rafresh_drawing();
 
 	activate_rotation();

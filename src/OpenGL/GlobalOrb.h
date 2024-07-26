@@ -28,7 +28,6 @@ DEALINGS IN THE SOFTWARE.
 #include <gdk/gdk.h>
 #include <glib/gi18n.h>
 #include "../Files/GabeditFileChooser.h"
-#include "../../gtkglarea/gtkglarea.h"
 #include "../../gl2ps/gl2ps.h"
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -51,18 +50,6 @@ DEALINGS IN THE SOFTWARE.
 
 #include "../Common/GabeditType.h"
 /*#include "GabEditType.h"*/
-
-typedef struct _OpenGLOptions
-{
-	gint rgba;
-	gint doubleBuffer;
-	gint alphaSize;
-	gint depthSize;
-	gint numberOfSubdivisionsCylindre; 
-	gint numberOfSubdivisionsSphere; 
-}OpenGLOptions;
-
-
 
 GtkWidget* PrincipalWindow;
 GtkWidget* GLArea;
@@ -128,7 +115,6 @@ gboolean ShowHBondOrb;
 gboolean ShowHAtomOrb;
 gboolean ShowMultiBondsOrb;
 gboolean ShowVibration;
-OpenGLOptions openGLOptions;
 gboolean createBMPFiles;
 gint numBMPFile;
 gboolean createPPMFiles;
@@ -136,8 +122,6 @@ gint numPPMFile;
 gboolean createPOVFiles;
 gint numPOVFile;
 gdouble solventRadius;
-gdouble colorMapColors[3][3];
-gint colorMapType;
 gdouble alphaFED;
 
 

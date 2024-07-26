@@ -47,7 +47,7 @@ static void set_geom(GtkWidget *widget,gpointer data);
 /********************************************************************************************/
 static void draw_geom(GtkWidget *widget,gpointer data)
 {
-        if(ZoneDessin==NULL)
+        if(GeomDrawingArea==NULL)
  	  create_window_drawing(); 
         else
 	{

@@ -42,7 +42,7 @@ DEALINGS IN THE SOFTWARE.
 /************************************************************************************************************/
 typedef enum
 {
-	AUTO = 0, GABEDIT, FIXED
+	AUTO = 0, GABEDIT, GABFIXED
 }TypeOfSymmetryButton;
 
 
@@ -332,7 +332,7 @@ static void activateRadioButton(GtkWidget *button, gpointer data)
 	{
 		setMPQCMolecule();
 
-		if( GTK_TOGGLE_BUTTON (button)->active && *type == FIXED)
+		if( GTK_TOGGLE_BUTTON (button)->active && *type == GABFIXED)
 		{
 			if(mpqcMolecule.groupSymmetry) g_free(mpqcMolecule.groupSymmetry);
 			mpqcMolecule.groupSymmetry = g_strdup("C1");
@@ -448,7 +448,7 @@ void createMPQCSymmetryFrame(GtkWidget *win, GtkWidget *box)
 	GtkWidget* entrySymmetry = NULL;
 	GtkWidget* label = gtk_label_new(" ");
 	GtkWidget *table = gtk_table_new(3,3,FALSE);
-	static TypeOfSymmetryButton typeOfSymmetry[] = { AUTO,GABEDIT, FIXED};
+	static TypeOfSymmetryButton typeOfSymmetry[] = { AUTO,GABEDIT, GABFIXED};
 	gchar* list[] = {"C1"};
 
 	frame = gtk_frame_new (_("Symmetry"));
@@ -500,7 +500,7 @@ void createMPQCSymmetryFrame(GtkWidget *win, GtkWidget *box)
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
                   3,3);
 	g_object_set_data(G_OBJECT (button), "Label",label);
-	g_object_set_data(G_OBJECT (button), "Type",&typeOfSymmetry[FIXED]);
+	g_object_set_data(G_OBJECT (button), "Type",&typeOfSymmetry[GABFIXED]);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), FALSE);
 	g_object_set_data(G_OBJECT (button), "ComboSymmetry",comboSymmetry);
 	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);

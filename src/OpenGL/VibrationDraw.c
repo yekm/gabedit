@@ -1,4 +1,4 @@
-/* Cylinder.c */
+/* VibrationDraw.c */
 /**********************************************************************************************************
 Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
 #include "../Utils/Constants.h"
-#include "Cylinder.h"
+#include "../Utils/UtilsGL.h"
 
 #define Deg_Rad 180.0/PI
 #include "../OpenGL/Vibration.h"

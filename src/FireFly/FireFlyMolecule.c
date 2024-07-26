@@ -45,7 +45,7 @@ DEALINGS IN THE SOFTWARE.
 /************************************************************************************************************/
 typedef enum
 {
-	GABEDIT = 0, FIXED
+	GABEDIT = 0, GABFIXED
 }TypeOfSymmetryButton;
 
 
@@ -842,7 +842,7 @@ static void activateRadioButton(GtkWidget *button, gpointer data)
 	{
 		setFireFlyMolecule();
 
-		if( GTK_TOGGLE_BUTTON (button)->active && *type == FIXED)
+		if( GTK_TOGGLE_BUTTON (button)->active && *type == GABFIXED)
 		{
 			if(fireflyMolecule.groupSymmetry) g_free(fireflyMolecule.groupSymmetry);
 			fireflyMolecule.groupSymmetry = g_strdup("C1");
@@ -1009,7 +1009,7 @@ void createFireFlySymmetryFrame(GtkWidget *win, GtkWidget *box)
 	GtkWidget* entrySymmetry = NULL;
 	GtkWidget* label = gtk_label_new(" ");
 	GtkWidget *table = gtk_table_new(4,3,FALSE);
-	static TypeOfSymmetryButton typeOfSymmetry[] = { GABEDIT, FIXED};
+	static TypeOfSymmetryButton typeOfSymmetry[] = { GABEDIT, GABFIXED};
 	gchar* list[] = {"C1"};
 
 	frame = gtk_frame_new ("Symmetry");
@@ -1055,7 +1055,7 @@ void createFireFlySymmetryFrame(GtkWidget *win, GtkWidget *box)
 		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
                   2,2);
 	g_object_set_data(G_OBJECT (button), "Label",label);
-	g_object_set_data(G_OBJECT (button), "Type",&typeOfSymmetry[FIXED]);
+	g_object_set_data(G_OBJECT (button), "Type",&typeOfSymmetry[GABFIXED]);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), FALSE);
 	g_object_set_data(G_OBJECT (button), "ComboSymmetry",comboSymmetry);
 	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(activateRadioButton),NULL);

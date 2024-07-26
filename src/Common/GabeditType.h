@@ -93,6 +93,7 @@ typedef enum
   GABEDIT_TYPEFILE_XYZ,
   GABEDIT_TYPEFILE_GAMESSIRC,
   GABEDIT_TYPEFILE_MOL2,
+  GABEDIT_TYPEFILE_MOL,
   GABEDIT_TYPEFILE_TINKER,
   GABEDIT_TYPEFILE_PDB,
   GABEDIT_TYPEFILE_GZMAT,
@@ -377,6 +378,31 @@ typedef struct _CSTF
  gint L; /* used if spherical basis*/
  gint M; /* used if spherical basis*/
  }CSTF;
+
+typedef struct _OpenGLOptions
+{
+	gint rgba;
+	gint doubleBuffer;
+	gint alphaSize;
+	gint depthSize;
+	gint numberOfSubdivisionsCylindre; 
+	gint numberOfSubdivisionsSphere; 
+}OpenGLOptions;
+typedef enum
+{
+  GABEDIT_BONDTYPE_SINGLE = 0,
+  GABEDIT_BONDTYPE_DOUBLE,
+  GABEDIT_BONDTYPE_TRIPLE,
+  GABEDIT_BONDTYPE_HYDROGEN,
+} GabEditBondType;
+typedef struct _BondType BondType;
+struct _BondType
+{
+	gint n1;
+	gint n2;
+	GabEditBondType bondType;
+};
+
 
 #endif /* __GABEDIT_GABEDITTYPE_H__ */
 

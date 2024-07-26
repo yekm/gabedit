@@ -36,6 +36,65 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/Windows.h"
 #include "../Files/FileChooser.h"
 
+#ifdef DRAWGEOMGL
+/********************************************************************************/
+static void export_file(GabeditFileChooser *SelecteurFichier , gint response_id)
+{
+ 
+
+  
+	gchar *fileName;
+	FILE* file;
+	gint buffsize = 0;
+	gint state = GL2PS_OVERFLOW;
+  	gchar* type = NULL;
+	gint gl2ps_type = GL2PS_PS;
+
+ 	if(response_id != GTK_RESPONSE_OK) return;
+
+	if(!GeomDrawingArea) return;
+	if(!SelecteurFichier) return;
+	type = (gchar*)g_object_get_data(G_OBJECT (SelecteurFichier), "Type");
+	if(!type) type = g_strdup("eps");
+ 	fileName = gabedit_file_chooser_get_current_file(SelecteurFichier);
+	if(strstr(type,"eps")) gl2ps_type = GL2PS_EPS;
+	if(strstr(type,"tex")) gl2ps_type = GL2PS_TEX;
+	if(strstr(type,"pdf")) gl2ps_type = GL2PS_PDF;
+	if(strstr(type,"svg")) gl2ps_type = GL2PS_SVG;
+	if(strstr(type,"pgf")) gl2ps_type = GL2PS_PGF;
+
+    	file = FOpen(fileName, "wb");
+	printf("Writing '%s file'. Please wait... \n",type);
+	while(state == GL2PS_OVERFLOW)
+	{
+		buffsize += 1024*1024;
+      		gl2psBeginPage("Gabedit", "Gabedit", NULL, gl2ps_type, GL2PS_BSP_SORT, 
+                     GL2PS_OCCLUSION_CULL | GL2PS_USE_CURRENT_VIEWPORT | GL2PS_NO_BLENDING, 
+                     GL_RGBA, 0, NULL, 0, 0, 0, buffsize, file,fileName);
+		redrawGeomGL2PS();
+		state = gl2psEndPage();
+	}
+    	fclose(file);
+	printf("End Writing '%s file'... \n",type);
+}
+/********************************************************************************/
+void export_geometry_dlg(gchar* type)
+{
+	gchar* title = g_strdup_printf("Create a %s file",type);
+  	gchar* patternsfiles[] = {"*","*.eps","*.ps","*.pdf","*.svg",NULL};
+	gchar* fileName = g_strdup_printf("gabedit.%s",type);
+	gchar* filter = g_strdup_printf("*.%s",type);
+
+	GtkWidget* win = choose_file_to_create(title, G_CALLBACK(export_file));
+	g_object_set_data(G_OBJECT (win), "Type",type);
+	gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(win), patternsfiles);
+	gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(win),filter);
+	gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(win),fileName);
+	g_free(title);
+	g_free(fileName);
+	g_free(filter);
+}
+#else
 /*****************************************************************************/
 static void export_geometry_file(GabeditFileChooser *SelecFile, gint response_id)
 {       
@@ -68,3 +127,4 @@ void export_geometry_dlg(gchar* type)
 	g_free(fileName);
 	g_free(filter);
 }
+#endif

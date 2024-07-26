@@ -19,20 +19,6 @@ DEALINGS IN THE SOFTWARE.
 #ifndef __GABEDIT_BONDS_H__
 #define __GABEDIT_BONDS_H__
 
-typedef enum
-{
-  GABEDIT_BONDTYPE_SINGLE = 0,
-  GABEDIT_BONDTYPE_DOUBLE,
-  GABEDIT_BONDTYPE_TRIPLE,
-  GABEDIT_BONDTYPE_HYDROGEN,
-} GabEditBondType;
-typedef struct _BondType BondType;
-struct _BondType
-{
-	gint n1;
-	gint n2;
-	GabEditBondType bondType;
-};
 GList *BondsOrb;
 void buildBondsOrb();
 void buildMultipleBonds();

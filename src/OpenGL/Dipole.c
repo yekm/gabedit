@@ -1,4 +1,4 @@
-/* Cylinder.c */
+/* Dipole.c */
 /**********************************************************************************************************
 Copyright (c) 2002-2010 Abdul-Rahman Allouche. All rights reserved
 
@@ -26,11 +26,9 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Transformation.h"
 #include "../Utils/Constants.h"
 #include "../Utils/UtilsInterface.h"
+#include "../Utils/UtilsGL.h"
 #include "../Utils/Utils.h"
 #include "../Common/Windows.h"
-#include "Cylinder.h"
-
-#define Deg_Rad 180.0/PI
 
 /********************************************************************************/
 static void create_frame_dipole(GtkWidget *Dialogue,GtkWidget *vboxframe, gdouble DN[], gdouble DE[], gdouble D[], gdouble ne, gdouble z)
@@ -247,57 +245,6 @@ void compute_total_dipole()
 		Dipole.Value[c] = D[c];
 
 	create_dipole_window(DN,DE,D,ne,z);
-}
-/************************************************************************/
-static void rotated_vector(V3d v)
-{
-	V3d vz={0.0,0.0,1.0};
-	V3d	vert;
-	gdouble angle;
-
-
-	v3d_cross(vz,v,vert);
-	angle = acos(v3d_dot(vz,v)/v3d_length(v))*Deg_Rad;
-	  
-	if(fabs(angle)<1e-6)
-		return;
-	if(fabs(angle-180)<1e-6)
-		glRotated(angle, 1.0, 0.0, 0.0);
-	else
-	glRotated(angle, vert[0],vert[1],vert[2]);
-
-}
-/************************************************************************/
-void Prism_Draw(GLdouble radius,V3d Base1Pos,V3d Base2Pos)
-{
-		V3d Direction;
-		double lengt;
-		GLUquadricObj *obj;
-		glPushMatrix();
-		glTranslated(Base1Pos[0],Base1Pos[1],Base1Pos[2]);
-		Direction[0] = Base2Pos[0]-Base1Pos[0];
-		Direction[1] = Base2Pos[1]-Base1Pos[1];
-		Direction[2] = Base2Pos[2]-Base1Pos[2];
-		lengt = v3d_length(Direction);
-
-		rotated_vector(Direction);
-		obj = gluNewQuadric();
-		gluQuadricNormals(obj, GL_SMOOTH);
-		gluQuadricDrawStyle(obj, GLU_FILL);
-		gluCylinder (obj,radius,radius/5,lengt,10,10);
-		gluDeleteQuadric(obj);
-		glPopMatrix(); 
-}
-
-/************************************************************************/
-void Prism_Draw_Color(GLdouble radius,V3d Base1Pos,V3d Base2Pos,
-			 V4d Specular,V4d Diffuse,V4d Ambiant)
-{
-	glMaterialdv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
-	glMateriali(GL_FRONT_AND_BACK,GL_SHININESS,50);
-	Prism_Draw(radius,Base1Pos,Base2Pos);
 }
 /************************************************************************/
 void Dipole_Draw()

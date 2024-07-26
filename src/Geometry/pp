@@ -1,0 +1,21 @@
+/*****************************************************************************/
+static void gl_build_labels()
+{	
+	guint i,j;
+	V4d color  = {0.8,0.8,0.8,1.0 };
+    	if (LabelOption == 0) return;
+        
+	glInitFontsUsing(FontsStyleLabel.fontname);
+	color[0] = FontsStyleLabel.TextColor.red/65535.0; 
+	color[1] = FontsStyleLabel.TextColor.green/65535.0; 
+	color[2] = FontsStyleLabel.TextColor.blue/65535.0; 
+	glDisable ( GL_LIGHTING ) ;
+	glColor4dv(color);
+	for(i=0;i<Natoms;i++) draw_label(i);
+
+	if(DrawDistance)
+	for(i=0;i<Natoms;i++) 
+		for(j=i+1;j<Natoms;j++) 
+                	if(geometry[i].typeConnections[geometry[j].N-1]>0) draw_distance(i,j);
+	glEnable ( GL_LIGHTING ) ;
+}

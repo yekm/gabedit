@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Files/FileChooser.h"
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
+#include "../Utils/UtilsGL.h"
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Constants.h"

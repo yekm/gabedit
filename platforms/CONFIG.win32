@@ -16,5 +16,17 @@ JPEGLIB    =
 WIN32LIB   = -lwsock32 -lcomdlg32
 X11LIB   =
 PTHREADLIB  = 
-COMMONCFLAGS = -Wall -O2
+enable_omp = 0
+ifeq ($(enable_omp),1)
+OMPLIB=-L/usr/lib -lgomp
+OMPCFLAGS=-DENABLE_OMP -fopenmp
+endif
+
+#DRAWGEOMGL= 
+DRAWGEOMGL=-DDRAWGEOMGL
+
+COMMONCFLAGS = -Wall -O2 -DENABLE_DEPRECATED $(OMPCFLAGS) $(DRAWGEOMGL)
+
+
+
 

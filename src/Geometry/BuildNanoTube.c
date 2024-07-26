@@ -175,7 +175,7 @@ static void build_nanotube(GtkWidget *w,gpointer data)
 		g_free(coord[i]);
 
  	if(GeomIsOpen) create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
-  	if(ZoneDessin != NULL) rafresh_drawing();
+  	if(GeomDrawingArea != NULL) rafresh_drawing();
 	activate_rotation();
 }
 /********************************************************************************/

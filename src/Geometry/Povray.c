@@ -30,13 +30,13 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/AtomsProp.h"
 #include "../Utils/Vector3d.h"
 #include "../Utils/Constants.h"
+#include "../Utils/Transformation.h"
 #include "../Geometry/GeomGlobal.h"
 #include "../Geometry/Measure.h"
 #include "../Geometry/Fragments.h"
 #include "../Geometry/DrawGeom.h"
 #include "../Common/Windows.h"
 
-#define STICKSIZE 0.1
 #define PRECISON_CYLINDER 0.001
 
 typedef struct _RGB
@@ -53,6 +53,74 @@ typedef struct _XYZRC
 	RGB P;
 }XYZRC;
 
+/********************************************************************************/
+static gchar *get_pov_matrix_transformation()
+{
+	gdouble q[4];
+	gdouble m[4][4];
+	gchar* temp;
+
+	getQuatGeom(q);
+	build_rotmatrix(m,q);
+	temp = g_strdup_printf(
+	 "// Rotation matrix\n"
+	 "#declare myTransforms = transform {\n"
+	 "matrix <%lf, %lf ,%lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf ,%lf>\n"
+	 "}\n\n",
+	 m[0][0],m[0][1],m[0][2],
+	 m[1][0],m[1][1],m[1][2],
+	 m[2][0],m[2][1],m[2][2],
+	 m[3][0],m[3][1],m[3][2]
+	);
+	return temp;
+}
+/********************************************************************************/
+static gchar *get_pov_begin_molecule()
+{
+     gchar *temp;
+     temp = g_strdup( "\n# declare molecule = union {\n");
+     return temp;
+}
+/********************************************************************************/
+static gchar *get_pov_end_molecule()
+{
+     gchar *temp;
+     temp = g_strdup("transform { myTransforms }\n}\n\nobject {molecule}");
+     return temp;
+}
+/*****************************************************************************/
+static gdouble get_epaisseur(gint i, gint j)
+{
+	gdouble factorstick = get_factorstick();
+        gdouble ei = 1.0/3.0*factorstick;
+        gdouble ej = 1.0/3.0*factorstick;
+        gdouble e = 1.0/3.0*factorstick;
+	gdouble sl = 4.5;
+	gdouble sm = 2;
+	if(geometry[i].Layer == LOW_LAYER) ei /= sl;
+	if(geometry[i].Layer == MEDIUM_LAYER) ei /= sm;
+	if(geometry[j].Layer == LOW_LAYER) ej /= sl;
+	if(geometry[j].Layer == MEDIUM_LAYER) ej /= sm;
+	e = (ei<ej)?ei:ej;
+	return e;
+}
+/*****************************************************************************/
+static gdouble get_rayon(gint i)
+{
+        gdouble rayon;
+	gdouble factorball = get_factorball();
+	gdouble sl = 4.5;
+	gdouble sm = 2;
+        if ( !StickMode && geometry[i].Layer != LOW_LAYER )
+        { 
+                rayon =(geometry[i].Prop.radii*factorball);
+		if(geometry[i].Layer == LOW_LAYER) rayon /= sl;
+		if(geometry[i].Layer == MEDIUM_LAYER) rayon /= sm;
+	}
+	else rayon = get_epaisseur(i,i);
+	if(rayon<0.01) rayon = 0.01;
+	return rayon;
+}
 /********************************************************************************/
 static gboolean degenerated_cylinder(gdouble*  v1, gdouble* v2)
 {
@@ -153,7 +221,7 @@ static gchar *get_pov_ball_for_stick(gint num, gdouble scale)
 		"\ttexture { finish { Dull } }\n"
 		"\tpigment { rgb<%14.6f,%14.6f,%14.6f> }\n}\n"
 		,
-		Center.C[0],Center.C[1],Center.C[2],STICKSIZE*scale,
+		Center.C[0],Center.C[1],Center.C[2],scale*get_rayon(num),
 		Center.P.Colors[0], Center.P.Colors[1], Center.P.Colors[2]
 		);
      return temp;
@@ -231,7 +299,6 @@ static gchar *get_pov_one_stick_for_ball(gint i,gint j)
      XYZRC Center1;
      XYZRC Center2;
      gint l;
-     gint k;
      gdouble ep;
      gdouble poid1;
      gdouble poid2;
@@ -244,28 +311,11 @@ static gchar *get_pov_one_stick_for_ball(gint i,gint j)
      Center1 = get_prop_center(i);
      Center2 = get_prop_center(j);
  
-     if(
-	    geometry[i].Layer == LOW_LAYER || geometry[j].Layer == LOW_LAYER 
-	 || geometry[i].Layer == MEDIUM_LAYER || geometry[j].Layer == MEDIUM_LAYER 
-       )
-     {
-     	k =get_num_min_rayonIJ(i,j);
-     	if(k==i) ep = Center1.C[3]*get_factorstick();
-     	else ep = Center2.C[3]*get_factorstick();
-     }
-     else ep =STICKSIZE*5*get_factorstick();
-
-     if(stick_mode()) ep =STICKSIZE*get_factorstick();
-     else ep/=2;
-
-     if(geometry[i].Layer == LOW_LAYER || geometry[j].Layer == LOW_LAYER ) ep /= 6;
-     else if(geometry[i].Layer == MEDIUM_LAYER || geometry[j].Layer == MEDIUM_LAYER ) ep /= 2;
+     ep =get_epaisseur(i,j);
  
      poid1 = geometry[i].Prop.covalentRadii+geometry[i].Prop.radii;
      poid2 = geometry[j].Prop.covalentRadii+geometry[j].Prop.radii;
      poid = poid1 + poid2 ;
-     if(nc==2 && ep<STICKSIZE/3) ep = STICKSIZE/3;
-     if(nc==3 && ep<STICKSIZE/2) ep = STICKSIZE/2;
 
      if(nc==3)
      {
@@ -328,42 +378,27 @@ static gchar *get_pov_one_stick_for_ball(gint i,gint j)
      if(nc==2)
      {
 	gchar* t;
-  	V3d vScal = {ep*0.5,ep*0.5,ep*0.5};
-	gdouble C1[3];
-	gdouble C2[3];
-	V3d cros;
-	V3d sub;
-	V3d C0={0,0,0};
-	gdouble C10[3];
-	gdouble C20[3];
-	gdouble CC1[3];
-	gdouble CC2[3];
-	for(l=0;l<3;l++) CC1[l] = Center1.C[l];
-	for(l=0;l<3;l++) CC2[l] = Center2.C[l];
-	v3d_sub(C0, CC1, C10);
-	v3d_sub(C0, CC2, C20);
-	v3d_cross(C10, C20, cros);
-	v3d_sub(CC1, CC2, sub);
-	v3d_cross(cros, sub, vScal);
-	if(v3d_dot(vScal,vScal)!=0)
-	{
-		v3d_normal(vScal);
-		v3d_scale(vScal, ep*0.5);
-	}
-	for(l=0;l<3;l++) C1[l] = Center1.C[l]-vScal[l];
-	for(l=0;l<3;l++) C2[l] = Center2.C[l]-vScal[l];
-     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
-      	temp1 = get_pov_cylingre(C1,C,Center1.P.Colors,ep/3);
-      	temp2 = get_pov_cylingre(C,C2,Center2.P.Colors,ep/3);
+	gdouble r = ep;
+	gdouble C11[3];
+	gdouble C12[3];
+	gdouble C21[3];
+	gdouble C22[3];
+	gdouble C[3];
+	gdouble rs[3];
+	gint type = 1;
+	if(geometry[i].Layer == LOW_LAYER || geometry[j].Layer == LOW_LAYER) type = 0;
+	getPositionsRadiusBond2(r, Center1.C, Center2.C, C11, C12,  C21,  C22, rs, type);
+
+     	for(l=0;l<3;l++) C[l] =(C11[l]*poid2+C12[l]*poid1)/poid;
+      	temp1 = get_pov_cylingre(C11,C,Center1.P.Colors,rs[0]);
+      	temp2 = get_pov_cylingre(C,C12,Center2.P.Colors,rs[0]);
       	temp = g_strdup_printf("%s%s",temp1,temp2);
       	g_free(temp1);
       	g_free(temp2);
 
-	for(l=0;l<3;l++) C1[l] = Center1.C[l]+vScal[l];
-	for(l=0;l<3;l++) C2[l] = Center2.C[l]+vScal[l];
-     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
-      	temp1 = get_pov_cylingre(C1,C,Center1.P.Colors,ep/3);
-      	temp2 = get_pov_cylingre(C,C2,Center2.P.Colors,ep/3);
+     	for(l=0;l<3;l++) C[l] =(C21[l]*poid2+C22[l]*poid1)/poid;
+      	temp1 = get_pov_cylingre(C21,C,Center1.P.Colors,rs[1]);
+      	temp2 = get_pov_cylingre(C,C22,Center2.P.Colors,rs[1]);
 	t = temp;
       	temp = g_strdup_printf("%s%s%s",t,temp1,temp2);
       	g_free(temp1);
@@ -406,12 +441,7 @@ static gchar *get_pov_one_stick(gint i,gint j)
      Center2 = get_prop_center(j);
      k =get_num_min_rayonIJ(i,j);
  
-     if(k==i) ep = Center1.C[3]*get_factorstick();
-     else ep = Center2.C[3]*get_factorstick();
-
-     if(stick_mode()) ep =STICKSIZE*get_factorstick();
-     else ep/=2;
-
+     ep =get_epaisseur(i,j);
  
      poid1 = geometry[i].Prop.covalentRadii+geometry[i].Prop.radii;
      poid2 = geometry[j].Prop.covalentRadii+geometry[j].Prop.radii;
@@ -493,58 +523,31 @@ static gchar *get_pov_one_stick(gint i,gint j)
      if(nc==2)
      {
 	gchar* t;
-  	V3d vScal = {ep,ep,ep};
-	gdouble C1[3];
-	gdouble C2[3];
-	V3d cros;
-	V3d sub;
-	V3d C0={0,0,0};
-	gdouble C10[3];
-	gdouble C20[3];
-	gdouble CC1[3];
-	gdouble CC2[3];
+	gdouble r = ep;
+	gdouble C11[3];
 	gdouble C12[3];
-	for(l=0;l<3;l++) CC1[l] = Center1.C[l];
-	for(l=0;l<3;l++) CC2[l] = Center2.C[l];
-	v3d_sub(C0, CC1, C10);
-	v3d_sub(C0, CC2, C20);
-	v3d_cross(C10, C20, cros);
-	v3d_sub(CC1, CC2, sub);
-	v3d_cross(cros, sub, vScal);
-	if(v3d_dot(vScal,vScal)!=0)
-	{
-		v3d_normal(vScal);
-		v3d_scale(vScal, ep*2);
-	}
-	for(l=0;l<3;l++) C1[l] = Center1.C[l]-vScal[l];
-	for(l=0;l<3;l++) C2[l] = Center2.C[l]-vScal[l];
-     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
+	gdouble C21[3];
+	gdouble C22[3];
+	gdouble C[3];
+	gdouble rs[3];
+	gint type = 0;
+	getPositionsRadiusBond2(r, Center1.C, Center2.C, C11, C12,  C21,  C22, rs, type);
 
-	v3d_sub(CC1, CC2, C12);
-	if(v3d_dot(C12,C12)!=0)
-	{
-		v3d_normal(C12);
-	}
-	for(l=0;l<3;l++) C1[l] -= C12[l]*ep;
-	for(l=0;l<3;l++) C2[l] += C12[l]*ep;
-
-      	temp1 = get_pov_cylingre(C1,C,Center1.P.Colors,ep/2);
-      	temp2 = get_pov_cylingre(C,C2,Center2.P.Colors,ep/2);
+     	for(l=0;l<3;l++) C[l] =(C11[l]*poid2+C12[l]*poid1)/poid;
+      	temp1 = get_pov_cylingre(C11,C,Center1.P.Colors,rs[0]);
+      	temp2 = get_pov_cylingre(C,C12,Center2.P.Colors,rs[0]);
       	temp = g_strdup_printf("%s%s",temp1,temp2);
       	g_free(temp1);
       	g_free(temp2);
 
-	for(l=0;l<3;l++) C1[l] = Center1.C[l];
-	for(l=0;l<3;l++) C2[l] = Center2.C[l];
-     	for(l=0;l<3;l++) C[l] =(C1[l]*poid2+C2[l]*poid1)/poid;
-      	temp1 = get_pov_cylingre(C1,C,Center1.P.Colors,ep);
-      	temp2 = get_pov_cylingre(C,C2,Center2.P.Colors,ep);
+     	for(l=0;l<3;l++) C[l] =(C21[l]*poid2+C22[l]*poid1)/poid;
+      	temp1 = get_pov_cylingre(C21,C,Center1.P.Colors,rs[1]);
+      	temp2 = get_pov_cylingre(C,C22,Center2.P.Colors,rs[1]);
 	t = temp;
       	temp = g_strdup_printf("%s%s%s",t,temp1,temp2);
       	g_free(temp1);
       	g_free(temp2);
       	g_free(t);
-
      }
      else
      {
@@ -565,7 +568,6 @@ static gchar *get_pov_one_hbond(gint i,gint j)
      XYZRC Center1;
      XYZRC Center2;
      gint l;
-     gint k;
      gdouble ep;
      gdouble poid1;
      gdouble poid2;
@@ -577,17 +579,15 @@ static gchar *get_pov_one_hbond(gint i,gint j)
      gchar *dump;
      gchar *temp1;
      gint ibreak;
+     gdouble aspect = 0.3;
 
      if( !hbond_connections(i,j)) return " ";
 
      Center1 = get_prop_center(i);
      Center2 = get_prop_center(j);
-     k =get_num_min_rayonIJ(i,j);
  
-     if(k==i) ep = Center1.C[3]*get_factorstick();
-     else ep = Center2.C[3]*get_factorstick();
-     if(stick_mode()) ep /=4;
-     else ep /=2;
+     if(geometry[i].Prop.radii<geometry[j].Prop.radii) ep = geometry[i].Prop.radii*aspect;
+     else ep = geometry[j].Prop.radii*aspect;
 
  
      poid1 = geometry[i].Prop.covalentRadii+geometry[i].Prop.radii;
@@ -595,27 +595,29 @@ static gchar *get_pov_one_hbond(gint i,gint j)
      poid = poid1 + poid2 ;
 
      ibreak = (gint)(poid1*n/poid);
+     ibreak = n/2;
 
-     for(l=0;l<3;l++) K[l] =(Center2.C[l]-Center1.C[l])/(n*5/4);
+     for(l=0;l<3;l++) K[l] =(Center2.C[l]-Center1.C[l])/(n);
      for(l=0;l<3;l++) A[l] =Center1.C[l];
      temp = NULL;
      for(i=0;i<n;i++)
      {
      	for(l=0;l<3;l++) B[l] = A[l] + K[l];
-	if(i<=ibreak)
-		temp1 =  get_pov_cylingre(A,B,Center1.P.Colors,ep/2);
-	else
-		temp1 =  get_pov_cylingre(A,B,Center2.P.Colors,ep/2);
-	dump = temp;
-	if(dump)
+	if(i%2==0)
 	{
-     		temp = g_strdup_printf("%s%s",dump,temp1);
-		g_free(dump);
+		if(i<=ibreak) temp1 =  get_pov_cylingre(A,B,Center1.P.Colors,ep/2);
+		else temp1 =  get_pov_cylingre(A,B,Center2.P.Colors,ep/2);
+		dump = temp;
+		if(dump)
+		{
+     			temp = g_strdup_printf("%s%s",dump,temp1);
+			g_free(dump);
+		}
+		else temp = g_strdup_printf("%s",temp1);
+		g_free(temp1);
+		temp1 = NULL;
 	}
-	else temp = g_strdup_printf("%s",temp1);
-	g_free(temp1);
-	temp1 = NULL;
-     	for(l=0;l<3;l++) A[l] = B[l]+K[l]/4;
+     	for(l=0;l<3;l++) A[l] = B[l];
      }
 
      if(temp1) g_free(temp1);
@@ -748,6 +750,7 @@ static gchar *get_pov_light_sources()
 /********************************************************************************/
 static gchar *get_pov_atoms(gdouble scal)
 {
+	gdouble factorball = get_factorball();
      	gchar *temp=NULL;
      	gchar *tempold=NULL;
      	gchar *t=NULL;
@@ -755,11 +758,10 @@ static gchar *get_pov_atoms(gdouble scal)
      	temp = g_strdup( "// ATOMS \n");
 	for(i=0;i<(gint)Natoms;i++)
 	{
+ 		gdouble r = scal*get_rayon(i)/(geometry[i].Prop.radii*factorball);
 		if(!geometry[i].show) continue;
 		tempold = temp;
-		if(geometry[i].Layer == MEDIUM_LAYER) t =get_pov_ball(i,scal/2);
-		else if(geometry[i].Layer == LOW_LAYER) t =get_pov_ball(i,scal/6);
-		else t =get_pov_ball(i,scal);
+		t =get_pov_ball(i,r);
 		if(tempold)
 		{
 			temp = g_strdup_printf("%s%s",tempold,t);
@@ -898,6 +900,11 @@ static gchar* export_to_povray(gchar* fileName)
 	temp =get_pov_epilogue();
 	fprintf(fd,"%s",temp);
 	g_free(temp);
+
+	temp = get_pov_matrix_transformation();
+	fprintf(fd,"%s",temp);
+	g_free(temp);
+
 	temp =get_pov_camera();
 	fprintf(fd,"%s",temp);
 	g_free(temp);
@@ -918,6 +925,10 @@ static gchar* export_to_povray(gchar* fileName)
 	 	message = g_strdup_printf(_("\nSorry, The number of atoms should be >0\n"));
 		return message;
 	}
+	temp = get_pov_begin_molecule();
+	fprintf(fd,"%s",temp);
+	g_free(temp);
+
 	if( !stick_mode())
 	{
 		temp = get_pov_atoms(1.0); 
@@ -939,6 +950,9 @@ static gchar* export_to_povray(gchar* fileName)
 		fprintf(fd,"%s",temp);
 		g_free(temp);
 	}
+	temp = get_pov_end_molecule();
+	fprintf(fd,"%s",temp);
+	g_free(temp);
 	
  	fclose(fd);
  }
@@ -1091,10 +1105,10 @@ static void exportPOVRay(GtkWidget* Win, gboolean runPovray)
 				{
 					gint width = 500;
 					gint height = 500;
-					if(ZoneDessin->allocation.width)
+					if(GeomDrawingArea->allocation.width)
 					{
-						width =  ZoneDessin->allocation.width;
-						height = ZoneDessin->allocation.height;
+						width =  GeomDrawingArea->allocation.width;
+						height = GeomDrawingArea->allocation.height;
 					}
 					gtk_widget_hide(Win);
 					while( gtk_events_pending() ) gtk_main_iteration();
@@ -1204,10 +1218,10 @@ static void AddPOVRayRunDlg(GtkWidget *box, GtkWidget *Win)
 	gint height = 500;
 	gchar* tmp = NULL;
 
-	if(ZoneDessin)
+	if(GeomDrawingArea)
 	{
-		width =  ZoneDessin->allocation.width;
-		height = ZoneDessin->allocation.height;
+		width =  GeomDrawingArea->allocation.width;
+		height = GeomDrawingArea->allocation.height;
 	}
 
 	table = gtk_table_new(2,3,FALSE);

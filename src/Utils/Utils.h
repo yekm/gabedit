@@ -158,6 +158,9 @@ gdouble get_one_real_from_fchk_gaussian_file(FILE* file, gchar* blockName);
 gint* get_array_int_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* nElements);
 gdouble* get_array_real_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* nElements);
 gchar** get_array_string_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* nElements);
+void getvScaleBond(gdouble r, gdouble Center1[], gdouble Center2[], gdouble vScal[]);
+void getPositionsRadiusBond3(gdouble r, gdouble Center1[], gdouble Center2[], gdouble C11[], gdouble C12[],  gdouble C21[],  gdouble C22[], gdouble C31[],  gdouble C32[], gdouble radius[], gint type);
+void getPositionsRadiusBond2(gdouble r, gdouble Center1[], gdouble Center2[], gdouble C11[], gdouble C12[],  gdouble C21[],  gdouble C22[], gdouble radius[], gint type);
 
 #endif /* __GABEDIT_UTILS_H__ */
 

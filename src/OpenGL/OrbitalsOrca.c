@@ -566,6 +566,7 @@ static gboolean read_last_orbitals_in_orca_output_file(gchar *fileName)
 	{
 		if(!fgets(t,BSIZE,file))break;
 		if(strstr( t, "SPIN CONTAMINATION"))UHF = TRUE;
+		if(strstr( t, " SPIN DOWN ORBITALS"))UHF = TRUE;
           	if(strstr( t, title))
 		{
 			if(!fgets(t,BSIZE,file))break;

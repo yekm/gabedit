@@ -23,9 +23,12 @@ DEALINGS IN THE SOFTWARE.
 #include <ctype.h>
 #include <math.h>
 #include <time.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 
 #include "../Common/Global.h"
 #include "../Utils/Constants.h"
+#include "../Utils/Vector3d.h"
 #include "../Geometry/GeomGlobal.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/UtilsInterface.h"
@@ -39,6 +42,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../OpenGL/GLArea.h"
 #include "../Geometry/Fragments.h"
 #include "../Geometry/DrawGeom.h"
+#include "../Geometry/AxesGeomGL.h"
 #include "../Utils/HydrogenBond.h"
 #ifdef G_OS_WIN32
 #include <windows.h>
@@ -60,8 +64,6 @@ DEALINGS IN THE SOFTWARE.
 
 void create_color_surfaces_file();
 void read_color_surfaces_file();
-void create_opengl_file();
-void read_opengl_file();
 void initAxis();
 void save_axis_properties();
 void read_axis_properties();
@@ -1215,6 +1217,150 @@ void create_network_file()
 
  g_free(networkfile);
 }
+/*********************************************************************************************/
+gdouble get_alpha_opacity()
+{
+	return alpha_opacity;
+}
+/*********************************************************************************************/
+void set_alpha_opacity(gdouble a)
+{
+	alpha_opacity = a;
+	if(alpha_opacity>1) alpha_opacity = 1;
+	if(alpha_opacity<0) alpha_opacity = 0;
+}
+/*************************************************************************************/
+void create_opengl_file()
+{
+	gchar *openglfile;
+	FILE *fd;
+
+	openglfile = g_strdup_printf("%s%sopengl",gabedit_directory(),G_DIR_SEPARATOR_S);
+
+	fd = FOpen(openglfile, "w");
+	if(fd !=NULL)
+	{
+		fprintf(fd,"%d\n",openGLOptions.rgba);
+		fprintf(fd,"%d\n",openGLOptions.doubleBuffer);
+		fprintf(fd,"%d\n",openGLOptions.alphaSize);
+		fprintf(fd,"%d\n",openGLOptions.depthSize);
+		fprintf(fd,"%d\n",openGLOptions.numberOfSubdivisionsCylindre);
+		fprintf(fd,"%d\n",openGLOptions.numberOfSubdivisionsSphere);
+		fprintf(fd,"%d\n",getOptCol());
+		fprintf(fd,"%lf %lf\n",getScaleBall(),getScaleStick());
+		fprintf(fd,"%d\n",colorMapType);
+		fprintf(fd,"%lf %lf %lf\n",colorMapColors[0][0], colorMapColors[0][1],colorMapColors[0][2]);
+		fprintf(fd,"%lf %lf %lf\n",colorMapColors[1][0], colorMapColors[1][1],colorMapColors[1][2]);
+		fprintf(fd,"%lf %lf %lf\n",colorMapColors[2][0], colorMapColors[2][1],colorMapColors[2][2]);
+		fprintf(fd,"%d\n",getShowOneSurface());
+		fprintf(fd,"%lf\n",get_alpha_opacity());
+		fclose(fd);
+	}
+	g_free(openglfile);
+}
+/*************************************************************************************/
+void read_opengl_file()
+{
+	gchar *openglfile;
+	FILE *fd;
+	gint optcol = 0;
+	gboolean showOneSurface = TRUE;
+
+	openglfile = g_strdup_printf("%s%sopengl",gabedit_directory(),G_DIR_SEPARATOR_S);
+
+	fd = fopen(openglfile, "r");
+	openGLOptions.rgba = 1;
+	openGLOptions.doubleBuffer = 1;
+	openGLOptions.alphaSize = 0;
+	openGLOptions.depthSize = 1;
+	openGLOptions.numberOfSubdivisionsCylindre = 10; 
+	openGLOptions.numberOfSubdivisionsSphere = 15; 
+	colorMapType =1;
+	colorMapColors[0][0] = 1;
+	colorMapColors[0][1] = 1;
+	colorMapColors[0][2] = 1;
+	colorMapColors[1][0] = 1;
+	colorMapColors[1][1] = 1;
+	colorMapColors[1][2] = 1;
+	colorMapColors[2][0] = 1;
+	colorMapColors[2][1] = 1;
+	colorMapColors[2][2] = 1;
+	if(fd !=NULL)
+	{
+ 		guint taille = BSIZE;
+ 		gchar t[BSIZE];
+ 		if(fgets(t,taille,fd))
+			if(sscanf(t,"%d",&openGLOptions.rgba)!=1)
+				openGLOptions.rgba = 1;
+ 		if(fgets(t,taille,fd))
+			if(sscanf(t,"%d",&openGLOptions.doubleBuffer)!=1)
+				openGLOptions.doubleBuffer = 1;
+ 		if(fgets(t,taille,fd))
+			if(sscanf(t,"%d",&openGLOptions.alphaSize)!=1)
+				openGLOptions.alphaSize = 1;
+ 		if(fgets(t,taille,fd))
+			if(sscanf(t,"%d",&openGLOptions.depthSize)!=1)
+				openGLOptions.depthSize = 1;
+ 		if(fgets(t,taille,fd))
+			if(sscanf(t,"%d",&openGLOptions.numberOfSubdivisionsCylindre)!=1)
+				openGLOptions.numberOfSubdivisionsCylindre = 10;
+ 		if(fgets(t,taille,fd))
+			if(sscanf(t,"%d",&openGLOptions.numberOfSubdivisionsSphere)!=1)
+				openGLOptions.numberOfSubdivisionsSphere = 10;
+ 		if(fgets(t,taille,fd))
+			if(sscanf(t,"%d",&optcol)!=1) optcol = 0;
+		setOptCol(optcol);
+ 		if(fgets(t,taille,fd))
+		{
+			gdouble b,s;
+			if(sscanf(t,"%lf %lf",&b,&s)==2)
+			{
+				setScaleBall(b);
+				setScaleStick(b);
+			}
+		}
+ 		if(fgets(t,taille,fd))
+			if(sscanf(t,"%d",&colorMapType)!=1) colorMapType =1;
+ 		if(fgets(t,taille,fd))
+		{
+			if(sscanf(t,"%lf %lf %lf",&colorMapColors[0][0], &colorMapColors[0][1],&colorMapColors[0][2])!=3)
+			{
+				colorMapColors[0][0] = 1.0;
+				colorMapColors[0][1] = 1.0;
+				colorMapColors[0][2] = 1.0;
+			}
+		}
+ 		if(fgets(t,taille,fd))
+		{
+			if(sscanf(t,"%lf %lf %lf",&colorMapColors[1][0], &colorMapColors[1][1],&colorMapColors[1][2])!=3)
+			{
+				colorMapColors[1][0] = 1.0;
+				colorMapColors[1][1] = 1.0;
+				colorMapColors[1][2] = 1.0;
+			}
+		}
+ 		if(fgets(t,taille,fd))
+		{
+			if(sscanf(t,"%lf %lf %lf",&colorMapColors[2][0], &colorMapColors[2][1],&colorMapColors[2][2])!=3)
+			{
+				colorMapColors[2][0] = 1.0;
+				colorMapColors[2][1] = 1.0;
+				colorMapColors[2][2] = 1.0;
+			}
+		}
+ 		if(fgets(t,taille,fd))
+			if(sscanf(t,"%d",&showOneSurface)!=1) showOneSurface = 0;
+		setShowOneSurface(showOneSurface);
+ 		if(fgets(t,taille,fd))
+		{
+			gdouble alpha;
+			if(sscanf(t,"%lf",&alpha)==1) set_alpha_opacity(alpha);
+		}
+
+		fclose(fd);
+	}
+	g_free(openglfile);
+}
 /*************************************************************************************/
 void create_ressource_file()
 {
@@ -1225,6 +1371,9 @@ void create_ressource_file()
  create_color_surfaces_file();
  create_opengl_file();
  save_axis_properties();
+#ifdef DRAWGEOMGL
+ save_axes_geom_properties();
+#endif
  save_principal_axis_properties();
  save_HBonds_properties();
  create_drawmolecule_file();
@@ -2363,6 +2512,9 @@ void read_ressource_file()
  read_opengl_file();
  fileopen.netWorkProtocol= defaultNetWorkProtocol;
  read_axis_properties();
+#ifdef DRAWGEOMGL
+ read_axes_geom_properties();
+#endif
  read_principal_axis_properties();
  read_HBonds_properties();
  read_drawmolecule_file();
@@ -2777,7 +2929,7 @@ void initialise_global_variables()
   }
 
   ResultEntryPass = NULL;
-  ZoneDessin = NULL;
+  GeomDrawingArea = NULL;
   FrameWins = NULL;
   FrameList = NULL;
   Hpaned  = NULL;
@@ -2948,6 +3100,19 @@ void initialise_global_variables()
   Dipole.color[2] = 65535;
   initAxis();
   initPrincipalAxisGL();
+	colorMapColors[0][0] = 1;
+	colorMapColors[0][1] = 1;
+	colorMapColors[0][2] = 1;
+	colorMapColors[1][0] = 1;
+	colorMapColors[1][1] = 1;
+	colorMapColors[1][2] = 1;
+	colorMapColors[2][0] = 1;
+	colorMapColors[2][1] = 1;
+	colorMapColors[2][2] = 1;
+	colorMapType = 1;
+#ifdef DRAWGEOMGL
+  initAxesGeom();
+#endif
 }
 /*************************************************************************************/
 void run_molden (gchar *titre)
@@ -3600,7 +3765,7 @@ void set_dipole(GtkWidget* fp,gpointer data)
 	Dipole.color[2] = color->blue;
 	rafresh_window_orb();
 
-        if(ZoneDessin != NULL)
+        if(GeomDrawingArea != NULL)
 		 draw_geometry(NULL,NULL);
 }
 /**********************************************/
@@ -4591,4 +4756,91 @@ gchar** get_array_string_from_fchk_gaussian_file(FILE* file, gchar* blockName, g
 		}
 	 }
 	 return elements;
+}
+/*************************************************************************************/
+void getvScaleBond(gdouble r, gdouble Center1[], gdouble Center2[], gdouble vScal[])
+{
+	gint l;
+	V3d cros;
+	V3d sub;
+	V3d C0={0,0,0};
+	gdouble C10[3];
+	gdouble C20[3];
+	gdouble CC1[3];
+	gdouble CC2[3];
+  	for(l=0;l<3;l++) vScal[l] = r*0.5;
+	for(l=0;l<3;l++) CC1[l] = Center1[l];
+	for(l=0;l<3;l++) CC2[l] = Center2[l];
+	v3d_sub(C0, CC1, C10);
+	v3d_sub(C0, CC2, C20);
+	v3d_cross(C10, C20, cros);
+	v3d_sub(CC1, CC2, sub);
+	v3d_cross(cros, sub, vScal);
+	if(v3d_dot(vScal,vScal)!=0)
+	{
+		v3d_normal(vScal);
+		v3d_scale(vScal, r*0.5);
+	}
+}
+/*************************************************************************************/
+void getPositionsRadiusBond3(gdouble r, gdouble Ci[], gdouble Cj[], gdouble C11[], gdouble C12[],  gdouble C21[],  gdouble C22[], gdouble C31[],  gdouble C32[], gdouble radius[], gint type)
+{
+	gdouble s = 1.8;
+	V3d vScal;
+	gint k;
+
+	getvScaleBond(r, Ci, Cj, vScal);
+	if(type==0)
+	{
+		s = 2.8;
+		radius[0] = r/4;
+		radius[1] = r;
+		radius[2] = r/4;
+	}
+	else
+	{
+		s = 2;
+		radius[0] = r/2;
+		radius[1] = r/2;
+		radius[2] = r/2;
+	}
+	for(k=0;k<3;k++) C11[k] = Ci[k]-s*vScal[k];
+	for(k=0;k<3;k++) C12[k] = Cj[k]-s*vScal[k];
+	for(k=0;k<3;k++) C21[k] = Ci[k];
+	for(k=0;k<3;k++) C22[k] = Cj[k];
+	for(k=0;k<3;k++) C31[k] = Ci[k]+s*vScal[k];
+	for(k=0;k<3;k++) C32[k] = Cj[k]+s*vScal[k];
+
+}
+/*************************************************************************************/
+void getPositionsRadiusBond2(gdouble r, gdouble Ci[], gdouble Cj[], gdouble C11[], gdouble C12[],  gdouble C21[],  gdouble C22[], gdouble radius[], gint type)
+{
+/* type=0=>stick, type=1=>ball&stick */
+	gdouble s = 1.5;
+	V3d vScal;
+	gint k;
+
+	getvScaleBond(r, Ci, Cj, vScal);
+		
+	radius[2] = 0;
+	if(type==0)
+	{
+		s = 2.8;
+		radius[0] = r/4;
+		radius[1] = r;
+		for(k=0;k<3;k++) C11[k] = Ci[k]-s*vScal[k];
+		for(k=0;k<3;k++) C12[k] = Cj[k]-s*vScal[k];
+		for(k=0;k<3;k++) C21[k] = Ci[k];
+		for(k=0;k<3;k++) C22[k] = Cj[k];
+	}
+	else
+	{
+		s = 1.5;
+		radius[0] = r/1.5;
+		radius[1] = r/1.5;
+		for(k=0;k<3;k++) C11[k] = Ci[k]-s*vScal[k];
+		for(k=0;k<3;k++) C12[k] = Cj[k]-s*vScal[k];
+		for(k=0;k<3;k++) C21[k] = Ci[k]+s*vScal[k];
+		for(k=0;k<3;k++) C22[k] = Cj[k]+s*vScal[k];
+	}
 }

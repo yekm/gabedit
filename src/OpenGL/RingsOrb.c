@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Vector3d.h"
 #include "../Utils/Transformation.h"
 #include "../Utils/Utils.h"
+#include "../Utils/UtilsGL.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Constants.h"
 #include "../Utils/HydrogenBond.h"

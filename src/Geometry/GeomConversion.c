@@ -744,7 +744,7 @@ static void rafresh_interface()
 				edit_geometry();
 		}
         }
-	if(ZoneDessin != NULL)
+	if(GeomDrawingArea != NULL)
 		rafresh_drawing();
 }
 /*****************************************************************************/

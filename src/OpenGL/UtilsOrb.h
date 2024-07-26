@@ -19,9 +19,6 @@ DEALINGS IN THE SOFTWARE.
 #ifndef __GABEDIT_UTILSORB_H__
 #define __GABEDIT_UTILSORB_H__
 
-void glMaterialdv(GLenum face, GLenum pname, const GLdouble*  	params);
-void glLightdv(GLenum face, GLenum pname, const GLdouble* params);
-void glFogdv(GLenum pname, const GLdouble* params);
 void InitializeAll();
 gint GetTotalNelectrons();
 gdouble GetSumAbsCharges();
@@ -63,6 +60,7 @@ void set_scale_ball_stick_dlg();
 void createColorMapOptionsWindow(GtkWidget* win);
 void create_grid_ELF_Dens_analyze(gboolean ongrid);
 GtkWidget* set_alphaFED_dialog ();
+void resetAllColorMapOrb();
 
 #endif /* __GABEDIT_UTILSORB_H__ */
 

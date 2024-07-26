@@ -1,0 +1,80 @@
+#RunType = Energy, Optimization, MD, MDConfo
+RunType=MDConfo
+#Model = MM , Mopac , Orca or FireFly
+Model=Mopac
+#SEKeys=PM6
+SEKeys=AM1
+mopacCommand=/opt/mopac/MOPAC2009.exe
+orcaCommand=orca
+fireflyCommand=firefly
+
+#Confo
+gaussianCommand=g03
+fireflyCommand=firefly
+numberOfGeometries=20
+tolEnergy=0.01
+tolDistance=0.1
+#ConfoOptMM=FALSE
+ConfoOptMopac=TRUE
+ConfoOptMopacMethod=PM6 GNORM=0.001
+ConfoOptFireFly=FALSE
+# remove # if post processing required
+#mopacKeywordsPost=PM6
+gaussianKeywordsPost=B3LYP/6-31G*
+#fireflyKeywordsPost=AM1
+
+#MM
+# AMBER, UFF(not implemented), PAIRWISE
+ForceFieldType=0
+ForceFieldUseBond=TRUE
+ForceFieldUseBend=TRUE
+ForceFieldUseDihedral=TRUE
+ForceFieldUseImproper=FALSE
+ForceFieldUseNonBonded=TRUE
+ForceFieldUseHydrogenBonded=FALSE
+ForceFieldUsecoulomb=TRUE
+ForceFieldUseVanderWals=TRUE
+#  NOCONSTRAINTS = 0, BONDSCONSTRAINTS = 1, BONDSANGLESCONSTRAINTS = 2
+ForceFieldConstraints=0
+
+#MD
+updateFrequency=5
+heatTime = 0
+equiTime = 0
+runTime = 1
+coolTime = 0
+heatTemp = 0
+runTemp = 300
+stepSize = 0.5
+#  VERLET = 0, BEEMAN = 1, STOCHASTIC = 2
+integrator = 0
+#  NONE = 0, ANDERSEN = 1, BERENDSEN = 2
+thermostat = 0
+friction=40
+collide = 20
+
+#QuasiNewton
+useQuasiNewton = TRUE
+quasiNewtonMaxIterations = 100
+quasiNewtonUpdateFrequency = 1
+quasiNewtonEpsilon  = 0.001
+quasiNewtonTolerence = 1e-16  
+quasiNewtonMaxLines =  25
+
+#ConjugateGradient
+useConjugateGradient = FALSE
+conjugateGradientGradientNorm = 1e-3
+conjugateGradientMaxIterations = 100
+conjugateGradientUpdateFrequency = 1
+conjugateGradientMaxLines = 25
+conjugateGradientInitialStep = 0.001
+# 1 : Hestenes Stiefel,  2 : Fletcher Reeves, 3 : Polak Ribiere, 4 : Wolf Powell
+conjugateGradientMethod = 1
+
+#Geometry, nAtoms, charge, spin multiplicity. For each atom : symbol, MMType, pdbType, residueName, numResidue, charge, layer, x(Ang),y,z, nconn, num1, type1, num2, type2,...
+Geometry
+3 0 1
+O OW OW HOH 0 -0.834000 2 -0.000000 -0.388000 0.000000  2  2 1 3 1
+H HW HW1 HOH 0 0.417000 2 0.751000 0.194000 0.000000  1  1 1
+H HW HW2 HOH 0 0.417000 2 -0.751000 0.194000 0.000000  1  1 1
+

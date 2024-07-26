@@ -35,6 +35,7 @@ DEALINGS IN THE SOFTWARE.
 /*********************************************************************************/
 static void initMD(SemiEmpiricalMD* seMD, gdouble temperature, gdouble stepSize, MDIntegratorType integratorType, MDThermostatType thermostat, gdouble friction, gdouble collide, gchar* fileNameTraj, gchar* fileNameProp, gint numberOfRunSteps);
 static void berendsen(SemiEmpiricalMD* seMD);
+static void bussi(SemiEmpiricalMD* seMD);
 static void andersen(SemiEmpiricalMD* seMD);
 static void rescaleVelocities(SemiEmpiricalMD* seMD);
 static void computeEnergies(SemiEmpiricalMD* seMD);
@@ -219,6 +220,7 @@ SemiEmpiricalModel**    runSemiEmpiricalMDConfo(
 		applyOneStep(seMD);
 		if(seMD->thermostat == ANDERSEN) andersen(seMD);
 		if(seMD->thermostat == BERENDSEN) berendsen(seMD);
+		if(seMD->thermostat == BUSSI) bussi(seMD);
 		if(StopCalcul) break;
 		if (++updateNumber >= seMD->updateFrequency )
 		{
@@ -431,6 +433,7 @@ void	runSemiEmpiricalMD(
 		applyOneStep(seMD);
 		if(seMD->thermostat == ANDERSEN) andersen(seMD);
 		if(seMD->thermostat == BERENDSEN) berendsen(seMD);
+		if(seMD->thermostat == BUSSI) bussi(seMD);
 		if(StopCalcul) break;
 		if (++updateNumber >= seMD->updateFrequency )
 		{
@@ -949,13 +952,18 @@ static void initMD(SemiEmpiricalMD* seMD, gdouble temperature, gdouble stepSize,
 		for ( i = 0; i < seMD->numberOfAtoms; i++)
 			for ( j = 0; j < 3; j++)
 				seMD->velocity[i][j] = 0.0;
-		return;
 	}
+	else
 	for ( i = 0; i < seMD->numberOfAtoms; i++)
 	{
 		gdouble speed = maxwel(seMD->seModel->molecule.atoms[i].prop.masse,temperature);
 		getRandVect(speed, seMD->velocity[i]);
 	}
+        seMD->nfree = 3* seMD->numberOfAtoms-seMD->seModel->numberOfRattleConstraintsTerms;
+        removeTranslationAndRotation(seMD);
+        seMD->nfree -=6;
+        if( seMD->nfree<1)  seMD->nfree = 1;
+
 	removeTranslationAndRotation(seMD);
 }
 /*********************************************************************************/
@@ -971,7 +979,7 @@ static void berendsen(SemiEmpiricalMD* seMD)
 	static gdouble fsInAKMA = 0.020454828110640;
 	gdouble ekin = 0;
 	gdouble kelvin = 0;
-	gint nfree = 3*seMD->numberOfAtoms -3;
+	gint nfree = seMD->nfree;
 	static gdouble Kb = 1.9871914e-3;
 	gdouble scale = 1.0;
 	gdouble dt = seMD->dt;
@@ -1007,6 +1015,7 @@ static void andersen(SemiEmpiricalMD* seMD)
 	static gdouble fsInAKMA = 0.020454828110640;
 	gdouble tau = 1.0/seMD->collide*1000*fsInAKMA; /* in fs */
 	gdouble rate;
+	static gdouble Kb = 1.9871914e-3;
 	if(seMD->temperature<=0) return;
 	if(seMD->numberOfAtoms<1) return;
 
@@ -1018,13 +1027,54 @@ static void andersen(SemiEmpiricalMD* seMD)
 		gdouble trial = drandom();
 		if(trial<rate)
 		{
+/*
 			gdouble speed = maxwel(
 					seMD->seModel->molecule.atoms[i].prop.masse,
 					seMD->temperature
 					);
 			getRandVect(speed, seMD->velocity[i]);
+*/
+			double speed = sqrt(Kb* seMD->temperature/seMD->seModel->molecule.atoms[i].prop.masse);
+                	double pnorm = normal();
+			seMD->velocity[i][0] = pnorm*speed;
+                	pnorm = normal();
+			seMD->velocity[i][1] = pnorm*speed;
+                	pnorm = normal();
+			seMD->velocity[i][2] = pnorm*speed;
 		}
 	}
+}
+/*********************************************************************************/
+static void bussi(SemiEmpiricalMD* seMD)
+{
+        static gdouble fsInAKMA = 0.020454828110640;
+        gint nfree = seMD->nfree;
+        static gdouble Kb = 1.9871914e-3;
+        gdouble scale = 1.0;
+        gdouble dt = seMD->dt;
+        gdouble tautemp = 1.0/(seMD->collide)*1000*fsInAKMA;
+        gdouble c = exp(-dt/tautemp);
+        gdouble ekin = getEKin(seMD);
+        gdouble kelvin = 2*ekin / ( nfree * Kb);
+        gdouble d = (1.0-c) * (seMD->temperature/kelvin) / (nfree);
+        gdouble r = normal ();
+        gdouble si = 0.0;
+        gdouble s = 0.0;
+        gint i,j;
+        if(seMD->temperature<=0) return;
+        if(nfree<1) return;
+        for(i=0;i<nfree-1;i++)
+        {
+            si = normal ();
+            s += si*si;
+        }
+        scale = c + (s+r*r)*d + 2.0*r*sqrt(c*d);
+        scale = sqrt(scale);
+        if (r+sqrt(c/d)<0)  scale = -scale;
+        for ( i = 0; i < seMD->numberOfAtoms; i++)
+                for ( j = 0; j < 3; j++)
+                        seMD->velocity[i][j] *= scale;
+        removeTranslationAndRotation(seMD);
 }
 /*********************************************************************************/
 static void newAccelaration(SemiEmpiricalMD* seMD)
@@ -1505,7 +1555,7 @@ static gdouble getEKin(SemiEmpiricalMD* seMD)
 /********************************************************************************/
 static gdouble getKelvin(SemiEmpiricalMD* seMD)
 {
-	gint nfree = 3*seMD->numberOfAtoms -3;
+	gint nfree = seMD->nfree;
 	static gdouble Kb = 1.9871914e-3;
 	if(nfree<1) return 0;
 	return 2*getEKin(seMD) / ( nfree * Kb);

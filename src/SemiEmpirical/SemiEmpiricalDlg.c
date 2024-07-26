@@ -48,7 +48,7 @@ typedef enum
 } TOLptions;
 
 #define NINTEGOPTIONS 3
-#define NTHERMOPTIONS 3
+#define NTHERMOPTIONS 4
 
 #define NENTRYTOL 2
 
@@ -3422,6 +3422,7 @@ static void semiEmpiricalMDConfo(GtkWidget* Win, gpointer data)
 
 	if(GTK_TOGGLE_BUTTON (buttonMDThermOptions[ANDERSEN])->active) thermostat = ANDERSEN;
 	if(GTK_TOGGLE_BUTTON (buttonMDThermOptions[BERENDSEN])->active) thermostat = BERENDSEN;
+	if(GTK_TOGGLE_BUTTON (buttonMDThermOptions[BUSSI])->active) thermostat = BUSSI;
 
 	if( integrator == STOCHASTIC)
 		friction = atof(gtk_entry_get_text(GTK_ENTRY(entrySDFriction)));
@@ -3705,6 +3706,7 @@ static void semiEmpiricalMD(GtkWidget* Win, gpointer data)
 
 	if(GTK_TOGGLE_BUTTON (buttonMDThermOptions[ANDERSEN])->active) thermostat = ANDERSEN;
 	if(GTK_TOGGLE_BUTTON (buttonMDThermOptions[BERENDSEN])->active) thermostat = BERENDSEN;
+	if(GTK_TOGGLE_BUTTON (buttonMDThermOptions[BUSSI])->active) thermostat = BUSSI;
 
 	if( integrator == STOCHASTIC)
 		friction = atof(gtk_entry_get_text(GTK_ENTRY(entrySDFriction)));
@@ -4109,6 +4111,16 @@ static void AddDynamicsOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonMDThermOptions[ANDERSEN]), FALSE);
+/*----------------------------------------------------------------------------------*/
+	i = 6;
+	j = 4;
+	buttonMDThermOptions[BUSSI]= gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonMDThermOptions[NONE])), "Bussi"); 
+	gtk_table_attach(GTK_TABLE(table),buttonMDThermOptions[BUSSI],
+			j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonMDThermOptions[BUSSI]), FALSE);
 /*----------------------------------------------------------------------------------*/
 	i = 7;
 	j = 0;
@@ -5091,6 +5103,16 @@ static void AddDynamicsConfoOptionsDlg(GtkWidget *NoteBook, GtkWidget *win)
                   (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
                   1,1);
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonMDThermOptions[ANDERSEN]), FALSE);
+/*----------------------------------------------------------------------------------*/
+	i = 6;
+	j = 4;
+	buttonMDThermOptions[BUSSI]= gtk_radio_button_new_with_label(gtk_radio_button_get_group (GTK_RADIO_BUTTON (buttonMDThermOptions[NONE])), "Bussi"); 
+	gtk_table_attach(GTK_TABLE(table),buttonMDThermOptions[BUSSI],
+			j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonMDThermOptions[BUSSI]), FALSE);
 /*----------------------------------------------------------------------------------*/
 	i = 7;
 	j = 0;

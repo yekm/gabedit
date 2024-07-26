@@ -35,7 +35,7 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
   GtkWidget *gabeditFileChooser;
   gchar* patternsfiles[] = {	"*",
 			    	"*.inp","*.com","*.mop",
-	  			"*.log","*.out","*.fchk", "*.aux","*.gab","*.xyz","*.mol2","*.tnk","*.pdb","*.hin","*.zmt","*.gzmt",
+	  			"*.log","*.out","*.fchk", "*.aux","*.gab","*.xyz","*.mol2","*.mol","*.tnk","*.pdb","*.hin","*.zmt","*.gzmt",
 	  		    	"*.hf","*.gcube","*.cube","*.CUBE","*.grid","*.M2Msi","*.t41","*.dx","*.trj","*.irc","*.txt","*",
 			    	NULL};
   GCallback *func = (GCallback *)data;
@@ -136,6 +136,10 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 	   case GABEDIT_TYPEFILE_MOL2 : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.mol2");
 					    temp = g_strdup_printf("%s.mol2",fileopen.projectname);
+					    break;
+	   case GABEDIT_TYPEFILE_MOL : 
+					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.mol");
+					    temp = g_strdup_printf("%s.mol",fileopen.projectname);
 					    break;
 	   case GABEDIT_TYPEFILE_TINKER : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.tnk");

@@ -29,7 +29,8 @@ typedef enum
 {
   NONE = 0,
   ANDERSEN = 1,
-  BERENDSEN = 2
+  BERENDSEN = 2,
+  BUSSI = 3
 } MDThermostatType;
 
 typedef struct _MolecularDynamics  MolecularDynamics;
@@ -70,6 +71,7 @@ struct _MolecularDynamics
 
 	FILE* fileTraj;
 	FILE* fileProp;
+	gint nfree;
 };
 void	freeMolecularDynamics(MolecularDynamics* molecularDynamics);
 void	runMolecularDynamics(

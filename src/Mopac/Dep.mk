@@ -10,8 +10,9 @@ MopacMolecule.o: MopacMolecule.c ../../Config.h ../Common/Global.h \
   ../Common/../Common/GabeditType.h ../Mopac/MopacTypes.h \
   ../Mopac/MopacGlobal.h ../Mopac/MopacRem.h ../Geometry/GeomGlobal.h \
   ../Geometry/GeomConversion.h ../Geometry/GeomXYZ.h \
-  ../Geometry/Fragments.h ../Geometry/DrawGeom.h ../Geometry/Fragments.h \
-  ../Utils/Utils.h ../Utils/UtilsInterface.h ../Utils/Constants.h \
+  ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Utils/Utils.h \
+  ../Utils/UtilsInterface.h ../Utils/Constants.h \
   ../Utils/GabeditTextEdit.h ../Geometry/InterfaceGeom.h \
   ../Common/Windows.h ../Utils/AtomsProp.h
 MopacRem.o: MopacRem.c ../../Config.h ../Common/Global.h \

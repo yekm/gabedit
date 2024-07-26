@@ -10,8 +10,9 @@ OrcaMolecule.o: OrcaMolecule.c ../../Config.h ../Common/Global.h \
   ../Common/../Common/GabeditType.h ../Orca/OrcaTypes.h \
   ../Orca/OrcaGlobal.h ../Orca/OrcaKeywords.h ../Geometry/GeomGlobal.h \
   ../Geometry/GeomConversion.h ../Geometry/GeomXYZ.h \
-  ../Geometry/Fragments.h ../Geometry/DrawGeom.h ../Geometry/Fragments.h \
-  ../Utils/Utils.h ../Utils/UtilsInterface.h ../Utils/Constants.h \
+  ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Utils/Utils.h \
+  ../Utils/UtilsInterface.h ../Utils/Constants.h \
   ../Utils/GabeditTextEdit.h ../Geometry/InterfaceGeom.h \
   ../Common/Windows.h ../Utils/AtomsProp.h
 OrcaKeywords.o: OrcaKeywords.c ../../Config.h ../Common/Global.h \
@@ -31,8 +32,9 @@ OrcaBasis.o: OrcaBasis.c ../../Config.h ../Common/Global.h \
   ../Common/../Common/GabeditType.h ../Orca/OrcaTypes.h \
   ../Orca/OrcaGlobal.h ../Geometry/GeomGlobal.h \
   ../Geometry/GeomConversion.h ../Geometry/GeomXYZ.h \
-  ../Geometry/Fragments.h ../Geometry/DrawGeom.h ../Geometry/Fragments.h \
-  ../Utils/Utils.h ../Utils/UtilsInterface.h ../Utils/Constants.h \
+  ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Utils/Utils.h \
+  ../Utils/UtilsInterface.h ../Utils/Constants.h \
   ../Geometry/InterfaceGeom.h ../Common/Windows.h ../Utils/AtomsProp.h \
   ../Utils/GabeditTextEdit.h ../Symmetry/MoleculeSymmetry.h \
   ../Symmetry/MoleculeSymmetryInterface.h

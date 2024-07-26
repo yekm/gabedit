@@ -12,10 +12,11 @@ GamessMolecule.o: GamessMolecule.c ../../Config.h ../Common/Global.h \
   ../Gamess/GamessGlobal.h ../Gamess/GamessControl.h \
   ../Geometry/GeomGlobal.h ../Geometry/GeomConversion.h \
   ../Geometry/GeomXYZ.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h ../Utils/Utils.h ../Utils/UtilsInterface.h \
-  ../Utils/Constants.h ../Utils/GabeditTextEdit.h \
-  ../Geometry/InterfaceGeom.h ../Common/Windows.h ../Utils/AtomsProp.h \
-  ../Symmetry/MoleculeSymmetry.h ../Symmetry/MoleculeSymmetryInterface.h
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Utils/Utils.h \
+  ../Utils/UtilsInterface.h ../Utils/Constants.h \
+  ../Utils/GabeditTextEdit.h ../Geometry/InterfaceGeom.h \
+  ../Common/Windows.h ../Utils/AtomsProp.h ../Symmetry/MoleculeSymmetry.h \
+  ../Symmetry/MoleculeSymmetryInterface.h
 GamessControl.o: GamessControl.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Gamess/GamessTypes.h \

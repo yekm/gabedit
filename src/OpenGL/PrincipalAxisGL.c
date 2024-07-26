@@ -25,10 +25,10 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Transformation.h"
 #include "../Utils/Constants.h"
 #include "../Utils/UtilsInterface.h"
+#include "../Utils/UtilsGL.h"
 #include "../Utils/Utils.h"
 #include "../Utils/Jacobi.h"
 #include "../Common/Windows.h"
-#include "Cylinder.h"
 #include "GLArea.h"
 #include "../OpenGL/UtilsOrb.h"
 

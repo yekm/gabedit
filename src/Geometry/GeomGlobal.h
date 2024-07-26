@@ -120,7 +120,7 @@ guint NcentersZmat;
 guint MethodeGeom;
 guint Nelectrons;
 DipoleDef Dipole;
-GtkWidget *ZoneDessin;
+GtkWidget *GeomDrawingArea;
 GeomInter *geominter;
 GtkWidget *HboxGeom;
 GtkWidget *WindowGeom;
@@ -131,6 +131,7 @@ guint NMethodes;
 gint NSA[4];
 gint TotalCharges[3];
 gint SpinMultiplicities[3];
+gboolean RebuildGeom;
 
 void set_spin_of_electrons();
 

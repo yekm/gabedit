@@ -73,8 +73,6 @@ GtkWidget *create_colorsel_frame(GtkWidget *vboxall,gchar* title,GtkWidget** sel
 	GtkWidget *Frame;
 	GtkWidget *vboxframe;
 	GtkWidget *selector;
-	gushort i;
-	gushort j;
 	GtkWidget *Table;
 	gint num = -1;
 	gdouble v[3];
@@ -89,36 +87,30 @@ GtkWidget *create_colorsel_frame(GtkWidget *vboxall,gchar* title,GtkWidget** sel
 	Table = gtk_table_new(2,2,FALSE);
 	gtk_container_add(GTK_CONTAINER(vboxframe),Table);
 
-	for(i=0;i<2;i++)
+	for(num=0;num<3;num++)
 	{
-		for(j=0;j<2;j++)
+		get_color_surface(num,v);
+		frame = NULL;
+		switch(num)
 		{
-			num++;
-			if(num==3) break;
-
-			get_color_surface(num,v);
-			frame = NULL;
-			switch(num)
-			{
-				case 0 : frame = gtk_frame_new (_("Positive value"));break;
-				case 1 : frame = gtk_frame_new (_("Negative value"));break;
-				case 2 : frame = gtk_frame_new (_("Density"));break;
-				default : break;
-			}
-			add_widget_table(Table,frame,(gushort)i,(gushort)j);
-			vboxframe = create_vbox(frame);
-
-			color.red = (gushort)(v[0]*65535);
-			color.green = (gushort)(v[1]*65535);
-			color.blue = (gushort)(v[2]*65535);
-
-			selector = gtk_color_button_new_with_color (&color);
-
-			gtk_widget_show(selector);
-			gtk_widget_show(frame);
-			gtk_container_add(GTK_CONTAINER(vboxframe),selector);
-			selectors[num] = selector;
+			case 0 : frame = gtk_frame_new (_("Positive value"));break;
+			case 1 : frame = gtk_frame_new (_("Negative value"));break;
+			case 2 : frame = gtk_frame_new (_("Density"));break;
+			default : break;
 		}
+		add_widget_table(Table,frame,(gushort)0,(gushort)num);
+		vboxframe = create_vbox(frame);
+
+		color.red = (gushort)(v[0]*65535);
+		color.green = (gushort)(v[1]*65535);
+		color.blue = (gushort)(v[2]*65535);
+
+		selector = gtk_color_button_new_with_color (&color);
+
+		gtk_widget_show(selector);
+		gtk_widget_show(frame);
+		gtk_container_add(GTK_CONTAINER(vboxframe),selector);
+		selectors[num] = selector;
 	}
 
 	gtk_widget_show(Table);
@@ -587,147 +579,3 @@ void set_light_positions(gchar* title)
   gtk_widget_show_all (Win);
 }
 /********************************************************************************/
-static void  setNumberOfSubdivisions(GtkWidget *Entry, gpointer data)
-{
-	static gchar* typeEntry[] = {"CYLINDER","SPHERE"};
-	G_CONST_RETURN gchar* textEntry = gtk_entry_get_text(GTK_ENTRY(Entry)); 
-	gint value = 0;
-	if(textEntry && strlen(textEntry)>0) value = atof(textEntry);
-	if(value<1)return;
-	if(strcmp((gchar*)data,typeEntry[0])==0)
-	{
-		openGLOptions.numberOfSubdivisionsCylindre = value;
-	}
-	else
-	{
-		openGLOptions.numberOfSubdivisionsSphere = value;
-	}
-}
-/********************************************************************************/
-static void  set_opengl(GtkWidget *Button, gpointer data)
-{
-	gchar* typeButton[] = {"RGBA","DOUBLEBUFFER" ,"ALPHASIZE","DEPTHSIZE"};
-	gint i;
-	for(i=0;i<4;i++)
-		if(strcmp((gchar*)data,typeButton[i])==0)
-		{
-			switch(i)
-			{
-				case 0: 
-					if(openGLOptions.rgba==0) 
-						openGLOptions.rgba=1;
-					else 
-						openGLOptions.rgba=0;
-					break;
-				case 1: 
-					if(openGLOptions.doubleBuffer==0)
-						openGLOptions.doubleBuffer = 1;
-					else
-						openGLOptions.doubleBuffer = 0;
-					break;
-				case 2: 
-					if(openGLOptions.alphaSize==0)
-						openGLOptions.alphaSize = 1;
-					else
-						openGLOptions.alphaSize = 0;
-					break;
-				case 3: 
-					if(openGLOptions.depthSize==0)
-						openGLOptions.depthSize = 1;
-					else
-						openGLOptions.depthSize = 0;
-					break;
-			}
-			break;
-		}
-}
-/********************************************************************************/
-void  create_opengl_frame(GtkWidget* Win,GtkWidget *vbox)
-{
-	GtkWidget *frame;
-	GtkWidget *vboxframe;
-	GtkWidget* buttonRGBA;
-	GtkWidget* buttonALPHASIZE;
-	GtkWidget* buttonDEPTHSIZE;
-	GtkWidget* buttonDOUBLEBUFFER;
-	GtkWidget* EntryCylinder;
-	GtkWidget* EntrySphere;
-	GtkWidget* combo;
-	GtkWidget *table = gtk_table_new(2,5,FALSE);
-	static gchar* typeButton[] = {"RGBA","DOUBLEBUFFER" ,"ALPHASIZE","DEPTHSIZE"};
-	static gchar* values[] = {"5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30"};
-	static gchar* typeEntry[] = {"CYLINDER","SPHERE"};
-	gushort i;
-
-
-	frame = gtk_frame_new (_("OpenGL Options"));
-	gtk_widget_show (frame);
-	gtk_box_pack_start (GTK_BOX (vbox), frame, TRUE, TRUE, 0);
-	gtk_frame_set_label_align (GTK_FRAME (frame), 0.5, 0.5);
-
-	vboxframe = gtk_vbox_new (FALSE, 0);
-	gtk_widget_show (vboxframe);
-	gtk_container_add (GTK_CONTAINER (frame), vboxframe);
-
-	gtk_box_pack_start (GTK_BOX (vboxframe), table, TRUE, TRUE, 0);
-
-/* ------------------------------------------------------------------*/
-	i = 0;
-	add_label_table(table,_(" Number Of Subdivisions for a Cylinder "),i,0);
-	add_label_table(table," : ",i,1);
-	combo = create_combo_box_entry(values,26,TRUE,-1,-1);
-	EntryCylinder = GTK_BIN(combo)->child;
-	add_widget_table(table,combo,i,2);
-	gtk_editable_set_editable((GtkEditable*)EntryCylinder,FALSE);
-	gtk_entry_set_text (GTK_ENTRY (EntryCylinder),g_strdup_printf("%d",openGLOptions.numberOfSubdivisionsCylindre));
-	g_signal_connect (G_OBJECT (EntryCylinder), "changed",(GCallback)setNumberOfSubdivisions,typeEntry[0]);
-/* ------------------------------------------------------------------*/
-	i = 1;
-	add_label_table(table,_(" Number Of Subdivisions for a Sphere "),i,0);
-	add_label_table(table," : ",i,1);
-	combo = create_combo_box_entry(values,26,TRUE,-1,-1);
-	EntrySphere = GTK_BIN(combo)->child;
-	add_widget_table(table,combo,i,2);
-	gtk_editable_set_editable((GtkEditable*)EntrySphere,FALSE);
-	gtk_entry_set_text (GTK_ENTRY (EntrySphere),g_strdup_printf("%d",openGLOptions.numberOfSubdivisionsSphere));
-	g_signal_connect (G_OBJECT (EntrySphere), "changed",(GCallback)setNumberOfSubdivisions,typeEntry[1]);
-/* ------------------------------------------------------------------*/
-
-	buttonRGBA = gtk_check_button_new_with_label("RGBA" );
-	add_widget_table(table,buttonRGBA,0,3);
-	gtk_widget_show (buttonRGBA);
-	if(openGLOptions.rgba!=0)
-  		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonRGBA), TRUE);
-	else
-  		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonRGBA), FALSE);
-
-	buttonDOUBLEBUFFER = gtk_check_button_new_with_label("DOUBLEBUFFER" );
-	add_widget_table(table,buttonDOUBLEBUFFER,1,3);
-	gtk_widget_show (buttonDOUBLEBUFFER);
-	if(openGLOptions.doubleBuffer!=0)
-  		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonDOUBLEBUFFER), TRUE);
-	else
-  		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonDOUBLEBUFFER), FALSE);
-
-	buttonALPHASIZE = gtk_check_button_new_with_label("ALPHASIZE=1(0 if not)" );
-	add_widget_table(table,buttonALPHASIZE,0,4);
-	gtk_widget_show (buttonALPHASIZE);
-	if(openGLOptions.alphaSize!=0)
-  		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonALPHASIZE), TRUE);
-	else
-  		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonALPHASIZE), FALSE);
-
-	buttonDEPTHSIZE = gtk_check_button_new_with_label("DEPTHSIZE=1(0 if not)" );
-	add_widget_table(table,buttonDEPTHSIZE,1,4);
-	gtk_widget_show (buttonDEPTHSIZE);
-	if(openGLOptions.depthSize!=0)
-  		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonDEPTHSIZE), TRUE);
-	else
-  		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonDEPTHSIZE), FALSE);
-
-	g_signal_connect (G_OBJECT (buttonRGBA), "clicked", G_CALLBACK(set_opengl), typeButton[0]);
-	g_signal_connect (G_OBJECT (buttonDOUBLEBUFFER), "clicked", G_CALLBACK(set_opengl), typeButton[1]);
-	g_signal_connect (G_OBJECT (buttonALPHASIZE), "clicked", G_CALLBACK(set_opengl), typeButton[2]);
-	g_signal_connect (G_OBJECT (buttonDEPTHSIZE), "clicked", G_CALLBACK(set_opengl), typeButton[3]);
-	gtk_widget_show_all(frame);
-}

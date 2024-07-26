@@ -20,6 +20,9 @@ DEALINGS IN THE SOFTWARE.
 /* See W. Tang et al J. Phys. Condens. Matter 21 (2009) 084204 */
 
 #include "../../Config.h"
+#ifdef ENABLE_OMP
+#include <omp.h>
+#endif
 #include "../OpenGL/GlobalOrb.h"
 #include "../OpenGL/StatusOrb.h"
 #include "../OpenGL/UtilsOrb.h"
@@ -43,17 +46,69 @@ DEALINGS IN THE SOFTWARE.
  * i= : point not yet assigned
  */
 #define TOL 1e-12
+
+/* the g_list_remove use thread */
+/**************************************************************************/
+GList* myg_list_remove (GList *list, gconstpointer  data)
+{
+	GList *l;
+
+	l = list;
+	while (l)
+	{
+		if (l->data != data) l = l->next;
+		else
+		{
+			if (l->prev) l->prev->next = l->next;
+			if (l->next) l->next->prev = l->prev;
+			if (list == l) list = list->next;
+          		g_free (l);
+          		break;
+        	}
+	}
+	return list;
+}
+/* the g_list_prepend use thread */
+/**************************************************************************/
+GList* myg_list_prepend (GList    *list, gpointer  data)
+{
+	GList *new_list;
+
+	new_list = g_malloc(sizeof(GList));
+	new_list->data = data;
+	new_list->next = list;
+
+	if (list)
+	{
+		new_list->prev = list->prev;
+		if (list->prev) list->prev->next = new_list;
+		list->prev = new_list;
+	}
+	else new_list->prev = NULL;
+
+	return new_list;
+}
+/**************************************************************************/
+void myg_list_free (GList *list)
+{
+	GList* l = NULL;
+	GList* next = NULL;
+	for(l=list;l!=NULL;l=next)
+	{
+		next =  l->next;
+		if(l) g_free(l);
+	}
+}
 /**************************************************************************/
 void destroyListOfPointIndex(GList* listPointIndex)
 {
 	GList* list = NULL;
-
 	for(list=listPointIndex;list!=NULL;list=list->next)
 	{
 		PointIndex* data=(PointIndex*)list->data;
 		if(data) g_free(data);
 	}
-	g_list_free(listPointIndex);
+	myg_list_free(listPointIndex);
 }
 /**************************************************************************/
 PointIndex*  newPointIndex(gint i, gint j, gint k)
@@ -74,7 +129,7 @@ void destroyListOfCriticalPoints(GList* listCriticalPoint)
 		CriticalPoint* data=(CriticalPoint*)list->data;
 		if(data) g_free(data);
 	}
-	g_list_free(listCriticalPoint);
+	myg_list_free(listCriticalPoint);
 }
 /**************************************************************************/
 CriticalPoint*  newCriticalPoint(gint i, gint j, gint k, gint numV)
@@ -583,14 +638,14 @@ static void nextPointOnGrid(GridCP* gridCP, gint current[3], gint next[3])
 	im = 1;
 	jm = 1;
 	km = 1;
-	//printf("%d %d %d rho = %lf\n",I[im],J[jm],K[km],points[I[im]][J[jm]][K[km]].C[3]);
+	/*printf("%d %d %d rho = %lf\n",I[im],J[jm],K[km],points[I[im]][J[jm]][K[km]].C[3]);*/
 	rhoCenter = points[I[1]][J[1]][K[1]].C[3];
 	rhoMax = rhoCenter;
 	for(ic=0;ic<3;ic++)
 	for(jc=0;jc<3;jc++)
 	for(kc=0;kc<3;kc++)
 	{
-		//printf("%d %d %d rho = %lf\n",I[ic],J[jc],K[kc],points[I[ic]][J[jc]][K[kc]].C[3]);
+		/*printf("%d %d %d rho = %lf\n",I[ic],J[jc],K[kc],points[I[ic]][J[jc]][K[kc]].C[3]);*/
 		if(ic==1 && jc==1 && kc==1) continue;
 		if(gridCP->known[I[ic]][J[jc]][K[kc]] >1) continue;
 		rho =points[I[ic]][J[jc]][K[kc]].C[3];
@@ -608,7 +663,7 @@ static void nextPointOnGrid(GridCP* gridCP, gint current[3], gint next[3])
 			km = kc;
 		}
 	}
-	//printf("indexNEW = %d %d %d\n", IM, JM, KM);
+	/*printf("indexNEW = %d %d %d\n", IM, JM, KM);*/
 
 	next[0] = I[im];
 	next[1] = J[jm];
@@ -730,7 +785,7 @@ static GList* addSurroundingEqualPoints(GridCP* gridCP, gint current[3], GList* 
 		if(fabs(dRho)<TOL)
 		{
 			PointIndex*  data = newPointIndex( I[ic], J[jc], K[kc]);
-			listOfVisitedPoints = g_list_append(listOfVisitedPoints,data);
+			listOfVisitedPoints = myg_list_prepend(listOfVisitedPoints,data);
 			gridCP->known[I[ic]][J[jc]][K[kc]] = 1;
 		}
 	}
@@ -739,12 +794,12 @@ static GList* addSurroundingEqualPoints(GridCP* gridCP, gint current[3], GList* 
 /**************************************************************************/
 static GList* assentTrajectory(GridCP* gridCP, gint current[3], gboolean ongrid)
 {
+	GList* listOfVisitedPoints = NULL;
 	Point5 ***points = NULL;
 	gint next[3];
 	gdouble deltaR[3] = {0,0,0};
 	gint l;
 	gint imax;
-	GList* listOfVisitedPoints = NULL;
 	PointIndex*  data;
 	gint c;
 
@@ -755,7 +810,7 @@ static GList* assentTrajectory(GridCP* gridCP, gint current[3], gboolean ongrid)
 	for(c=0;c<3;c++) if(grid->N[c]<1) return listOfVisitedPoints;
 
 	data = newPointIndex(current[0], current[1], current[2]);
-	listOfVisitedPoints = g_list_append(listOfVisitedPoints,data);
+	listOfVisitedPoints = myg_list_prepend(listOfVisitedPoints,data);
 
 	imax = grid->N[0]* grid->N[1]* grid->N[2];
 	for(l=0;l<imax;l++)
@@ -764,29 +819,30 @@ static GList* assentTrajectory(GridCP* gridCP, gint current[3], gboolean ongrid)
 		if(ongrid) nextPointOnGrid(gridCP, current, next);
 		else nextPoint(gridCP, deltaR, current, next);
 		data = newPointIndex( next[0], next[1], next[2]);
-		listOfVisitedPoints = g_list_append(listOfVisitedPoints,data);
+		listOfVisitedPoints = myg_list_prepend(listOfVisitedPoints,data);
 
 		if(CancelCalcul) break;
 		if(next[0] == current[0] && next[1] == current[1] && next[2] == current[2])
 		{
 			/* new critical point */
-			//printf("New critical point, index = %d %d %d\n",next[0] , next[1] , next[2] );
+			/*printf("New critical point, index = %d %d %d\n",next[0] , next[1] , next[2] );*/
 			listOfVisitedPoints =addSurroundingEqualPoints(gridCP, current, listOfVisitedPoints);
 			break;
 		}
 		else
 		{
-			//printf("cur = %d %d %d\n",next[0], next[1], next[2]);
+			/*printf("cur = %d %d %d\n",next[0], next[1], next[2]);*/
 		}
-		//if(vP[next[0]][next[1]][next[2]] != 0)
-		//{
-			/* found a point from an old detected volume */
+		/*if(vP[next[0]][next[1]][next[2]] != 0)
+		{
+			 found a point from an old detected volume 
 
-			/* printf("found a point from an old detected volume\n");*/
-			//for(c=0;c<3;c++)current[c] = next[c];
-			//if(isVolumeEdge(gridCP,current)) continue;
-			//break;
-		//}
+			printf("found a point from an old detected volume\n");
+			for(c=0;c<3;c++)current[c] = next[c];
+			if(isVolumeEdge(gridCP,current)) continue;
+			break;
+		}
+		*/	
 		for(c=0;c<3;c++)current[c] = next[c];
 	}
 	return listOfVisitedPoints;
@@ -798,14 +854,12 @@ static GList* assentTrajectory(GridCP* gridCP, gint current[3], gboolean ongrid)
 /**************************************************************************/
 static void assignGridCP(GridCP* gridCP, gboolean ongrid)
 {
-	gint i,j,k;
+	gint i;
 	gint*** vP = NULL;
 	Point5 ***points = NULL;
-	GList* listOfVisitedPoints = NULL;
 	gint numberOfCriticalPoints = 0;
 	gchar* str =_("Assignation of points to volumes... Please wait");
 	gdouble scal;
-	gint current[3];
 
 	if(!gridCP) return;
 	if(!gridCP->grid) return;
@@ -830,27 +884,41 @@ static void assignGridCP(GridCP* gridCP, gboolean ongrid)
 
 
 	scal = 1.1/(grid->N[0]-1);
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(i)
+#endif
 	for(i=0;i<grid->N[0];i++)
 	{
+		gint j,k;
+		gint current[3];
+#ifdef ENABLE_OMP
+#ifndef G_OS_WIN32
+#pragma omp critical
 		progress_orb_txt(scal,str,FALSE);
-		if(CancelCalcul) break;
+#endif
+#else
+		progress_orb_txt(scal,str,FALSE);
+#endif
+		if(!CancelCalcul)
 		for(j=0;j<grid->N[1];j++)
 		{
-			if(CancelCalcul) break;
+			if(!CancelCalcul)
 			for(k=0;k<grid->N[2];k++)
 			{
+				GList* listOfVisitedPoints = NULL;
 				current[0] = i;
 				current[1] = j;
 				current[2] = k;
 				if(vP[i][j][k] != 0) continue;
-				//if(gridCP->known[i][j][k]!=0) continue;
+				/*if(gridCP->known[i][j][k]!=0) continue;*/
 				if(points[i][j][k].C[3]<TOL) continue;
-
 
 				if(CancelCalcul) break;
 				listOfVisitedPoints = assentTrajectory(gridCP, current, ongrid);
-				//resetKnown(gridCP);
 
+#ifdef ENABLE_OMP
+#pragma omp critical
+#endif
 				if(vP[current[0]][current[1]][current[2]] != 0)
 				{
 					GList* list=NULL;
@@ -878,7 +946,7 @@ static void assignGridCP(GridCP* gridCP, gboolean ongrid)
 					listOfVisitedPoints = NULL;
 					vP[current[0]][current[1]][current[2]] = -icp;
 					data = newCriticalPoint(current[0], current[1], current[2],numberOfCriticalPoints);
-					gridCP->criticalPoints = g_list_append(gridCP->criticalPoints,data);
+					gridCP->criticalPoints = myg_list_prepend(gridCP->criticalPoints,data);
 				}
 
 			}
@@ -894,7 +962,6 @@ static gint refineEdge(GridCP* gridCP, gboolean ongrid)
 	gint*** vP = NULL;
 	Point5 ***points = NULL;
 	gboolean ***known = NULL;
-	GList* listOfVisitedPoints = NULL;
 	gchar* str ="Refine grid points adjacent to Bader surface... Please wait";
 	gdouble scal;
 	gint current[3];
@@ -952,10 +1019,23 @@ static gint refineEdge(GridCP* gridCP, gboolean ongrid)
 	}
 
 	scal = 1.1/(grid->N[0]-1);
+#ifdef ENABLE_OMP
+#pragma omp parallel for private(i)
+#endif
 	for(i=0;i<grid->N[0];i++)
 	{
+		gint current[3];
+		gint j,k;
+		GList* listOfVisitedPoints = NULL;
+#ifdef ENABLE_OMP
+#ifndef G_OS_WIN32
+#pragma omp critical
 		progress_orb_txt(scal,str,FALSE);
-		if(CancelCalcul) break;
+#endif
+#else
+		progress_orb_txt(scal,str,FALSE);
+#endif
+		if(!CancelCalcul)
 		for(j=0;j<grid->N[1];j++)
 		{
 			if(CancelCalcul) break;
@@ -970,6 +1050,9 @@ static gint refineEdge(GridCP* gridCP, gboolean ongrid)
 				if(CancelCalcul) break;
 				listOfVisitedPoints = assentTrajectory(gridCP, current, ongrid);
 				vP[i][j][k] = abs(vP[current[0]][current[1]][current[2]]);
+#ifdef ENABLE_OMP
+#pragma omp critical
+#endif
 				for(list=listOfVisitedPoints;list!=NULL;list=list->next)
 				{
 					PointIndex* data=(PointIndex*)list->data;
@@ -1066,7 +1149,7 @@ static void removeAttractor0(GridCP* gridCP)
 		if(gridCP->grid->point[i][j][k].C[3]<TOL)
 		{
 			vP[i][j][k] = 0;
-			gridCP->criticalPoints=g_list_remove(gridCP->criticalPoints, data);
+			gridCP->criticalPoints=myg_list_remove(gridCP->criticalPoints, data);
 			g_free(data);
 		}
 	}
@@ -1084,7 +1167,7 @@ static void removeNonSignificantAttractor(GridCP* gridCP)
 		if(data->volume/gridCP->dv<n) 
 		{
 			/* printf("n = %d\n",(gint)(data->volume/gridCP->dv));*/
-			gridCP->criticalPoints=g_list_remove(gridCP->criticalPoints, data);
+			gridCP->criticalPoints=myg_list_remove(gridCP->criticalPoints, data);
 			g_free(data);
 		}
 	}

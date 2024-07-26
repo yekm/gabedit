@@ -4,8 +4,9 @@ AtomsProp.o: AtomsProp.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/Constants.h \
   ../Utils/AtomsProp.h ../Utils/UtilsInterface.h ../Geometry/Fragments.h \
-  ../Geometry/DrawGeom.h ../Geometry/Fragments.h ../Utils/Utils.h \
-  ../Geometry/GeomGlobal.h ../OpenGL/GLArea.h ../Common/Windows.h
+  ../Geometry/DrawGeom.h ../Geometry/DrawGeomCairo.h \
+  ../Geometry/Fragments.h ../Utils/Utils.h ../Geometry/GeomGlobal.h \
+  ../OpenGL/GLArea.h ../Common/Windows.h
 Jacobi.o: Jacobi.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h
@@ -23,7 +24,8 @@ Utils.o: Utils.c ../../Config.h ../Common/Global.h \
   ../Geometry/ResultsAnalise.h ../Geometry/EnergiesCurves.h \
   ../Common/TextEdit.h ../Common/Preferences.h ../Common/Run.h \
   ../OpenGL/GLArea.h ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
-  ../Geometry/Fragments.h ../Utils/HydrogenBond.h
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h \
+  ../Geometry/AxesGeomGL.h ../Utils/HydrogenBond.h
 UtilsInterface.o: UtilsInterface.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/Constants.h \
@@ -36,14 +38,14 @@ UtilsInterface.o: UtilsInterface.c ../../Config.h ../Common/Global.h \
   ../Geometry/EnergiesCurves.h ../Common/Windows.h ../Files/ListeFiles.h \
   ../Geometry/GeomXYZ.h ../Geometry/GeomZmatrix.h \
   ../Common/SplashScreen.h ../OpenGL/ViewOrb.h ../Geometry/Fragments.h \
-  ../Geometry/DrawGeom.h ../Geometry/Fragments.h ../Common/Exit.h \
-  ../Molcas/MolcasVariables.h ../Molcas/MolcasGateWay.h \
-  ../../pixmaps/Ok.xpm ../../pixmaps/Cancel.xpm ../../pixmaps/Yes.xpm \
-  ../../pixmaps/No.xpm ../../pixmaps/SaveMini.xpm ../../pixmaps/Close.xpm \
-  ../../pixmaps/Apply.xpm ../../pixmaps/Question.xpm \
-  ../../pixmaps/Warning.xpm ../../pixmaps/Error.xpm \
-  ../../pixmaps/Info.xpm ../../pixmaps/A0p.xpm ../../pixmaps/A0d.xpm \
-  ../../pixmaps/Open.xpm ../../pixmaps/Gabedit.xpm \
+  ../Geometry/DrawGeom.h ../Geometry/DrawGeomCairo.h \
+  ../Geometry/Fragments.h ../Common/Exit.h ../Molcas/MolcasVariables.h \
+  ../Molcas/MolcasGateWay.h ../../pixmaps/Ok.xpm ../../pixmaps/Cancel.xpm \
+  ../../pixmaps/Yes.xpm ../../pixmaps/No.xpm ../../pixmaps/SaveMini.xpm \
+  ../../pixmaps/Close.xpm ../../pixmaps/Apply.xpm \
+  ../../pixmaps/Question.xpm ../../pixmaps/Warning.xpm \
+  ../../pixmaps/Error.xpm ../../pixmaps/Info.xpm ../../pixmaps/A0p.xpm \
+  ../../pixmaps/A0d.xpm ../../pixmaps/Open.xpm ../../pixmaps/Gabedit.xpm \
   ../../pixmaps/Print.xpm ../../pixmaps/Next.xpm ../../pixmaps/Stop.xpm \
   ../../pixmaps/Play.xpm ../Common/StockIcons.h
 Vector3d.o: Vector3d.c ../../Config.h ../Common/Global.h \
@@ -56,8 +58,9 @@ HydrogenBond.o: HydrogenBond.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \
   ../Utils/Utils.h ../Utils/AtomsProp.h ../Geometry/GeomGlobal.h \
-  ../Geometry/Fragments.h ../Geometry/DrawGeom.h ../Geometry/Fragments.h \
-  ../Common/Windows.h ../OpenGL/GLArea.h ../Common/StockIcons.h
+  ../Geometry/Fragments.h ../Geometry/DrawGeom.h \
+  ../Geometry/DrawGeomCairo.h ../Geometry/Fragments.h ../Common/Windows.h \
+  ../OpenGL/GLArea.h ../Common/StockIcons.h
 PovrayUtils.o: PovrayUtils.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \
@@ -65,7 +68,8 @@ PovrayUtils.o: PovrayUtils.c ../../Config.h ../Common/Global.h \
 UtilsGL.o: UtilsGL.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/Vector3d.h \
-  ../Utils/Transformation.h UtilsGL.h ../../gl2ps/gl2ps.h
+  ../Utils/Transformation.h ../Utils/Constants.h UtilsGL.h Vector3d.h \
+  Transformation.h ../../gl2ps/gl2ps.h
 ConvUtils.o: ConvUtils.c ../../Config.h ../Common/Global.h \
   ../Common/../Files/GabeditFileChooser.h \
   ../Common/../Common/GabeditType.h ../Utils/UtilsInterface.h \

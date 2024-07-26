@@ -520,7 +520,7 @@ static void draw_line(GtkWidget* drawingArea, gint x1,gint y1,gint x2,gint y2,Gd
 	gc = prevData->gc;
 	pixmap = prevData->pixmap;
 
-   	colormap  = gdk_drawable_get_colormap(ZoneDessin->window);
+   	colormap  = gdk_drawable_get_colormap(GeomDrawingArea->window);
 
          vis = gdk_colormap_get_visual(colormap);
         {

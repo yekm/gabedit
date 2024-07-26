@@ -18,6 +18,7 @@ DEALINGS IN THE SOFTWARE.
 ************************************************************************************************************/
 
 #include "../../Config.h"
+#include "../Common/Global.h"
 #include "GlobalOrb.h"
 #include <gdk/gdkkeysyms.h>
 #include "../Utils/Utils.h"

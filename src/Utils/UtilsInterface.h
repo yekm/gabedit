@@ -122,6 +122,7 @@ void set_last_directory(G_CONST_RETURN gchar* FileName);
 GtkWidget* set_dipole_dialog ();
 gchar* get_last_directory();
 void fit_windows_position(GtkWidget* parent, GtkWidget* child);
+void  create_opengl_frame(GtkWidget* Win,GtkWidget *vbox);
 
 #endif /* __GABEDIT_UTILSINTERFACE_H__ */
 
