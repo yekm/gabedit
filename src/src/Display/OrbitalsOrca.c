@@ -290,6 +290,7 @@ static gboolean ReadOneOrcaBasis(gint i,gint j,char *t,gint *nsym)
        return TRUE;
 }
 /**********************************************/
+/*
 static void resortAtoms(gint* numAtoms)
 {
 	TypeGeomOrb* newGeom = NULL;
@@ -302,6 +303,7 @@ static void resortAtoms(gint* numAtoms)
 	for(i=0;i<Ncenters;i++) GeomOrb[i] = newGeom[i];
 	g_free(newGeom);
 }
+*/
 /**********************************************/
 static gboolean DefineOrcaBasisType(gchar *fileName)
 {
@@ -312,7 +314,7 @@ static gboolean DefineOrcaBasisType(gchar *fileName)
 	gint j;
 	gboolean ok;
 	gint nsym;
-	gint* numAtoms = NULL;
+	/* gint* numAtoms = NULL;*/
 	gint nAtoms = 0;
 	gchar* title = "BASIS SET IN INPUT FORMAT";
 	gint nGroups = 0;
@@ -363,8 +365,8 @@ static gboolean DefineOrcaBasisType(gchar *fileName)
 	}
 
 	/* Debug("Ntype = %d\n",Ntype);*/
-	numAtoms = g_malloc(Ncenters*sizeof(gint));
-	for(i=0;i<Ncenters;i++) numAtoms[i] = -1;
+	/* numAtoms = g_malloc(Ncenters*sizeof(gint));*/
+	/* for(i=0;i<Ncenters;i++) numAtoms[i] = -1;*/
 	nAtoms = 0;
 	Type = g_malloc(Ntype*sizeof(TYPE));
 	for(i=0;i<Ntype;i++)
@@ -383,7 +385,7 @@ static gboolean DefineOrcaBasisType(gchar *fileName)
 			/* Debug("sym = %s\n",sym);*/
 			i = -1;
 			for(j=0;j<Ncenters;j++) if(!strcmp(sym,GeomOrb[j].Symb)) {i = j;break;}
-			if(i>-1 && i<Ncenters) numAtoms[nAtoms] = i;
+			/* if(i>-1 && i<Ncenters) numAtoms[nAtoms] = i;*/
 			nAtoms++;
 			/* Debug("i1 = %d \n",i);*/
 			if(i>-1)
@@ -436,11 +438,11 @@ static gboolean DefineOrcaBasisType(gchar *fileName)
 		gchar buffer[BSIZE];
 		sprintf(buffer,_("Sorry, I can not read '%s' file, problem with basis set\n"),fileName);
   		Message(buffer,_("Error"),TRUE);
-		if(numAtoms) g_free(numAtoms);
+		/* if(numAtoms) g_free(numAtoms);*/
 		return FALSE;
 	}
-	resortAtoms(numAtoms);
-	if(numAtoms) g_free(numAtoms);
+	/*resortAtoms(numAtoms);*/
+	/* if(numAtoms) g_free(numAtoms);*/
     	return TRUE;
 }
 #define NCOLS 6

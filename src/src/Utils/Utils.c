@@ -72,6 +72,7 @@ void read_principal_axis_properties();
 void initPrincipalAxisGL();
 
 
+#define BBSIZE 10240
 /********************************************************************************/
 #ifndef G_OS_WIN32
 #define TIMER_TICK      60
@@ -184,6 +185,11 @@ void free_mpqc_commands()
 	free_commands_list(&mpqcCommands);
 }
 /********************************************************************************/
+void free_nwchem_commands()
+{
+	free_commands_list(&nwchemCommands);
+}
+/********************************************************************************/
 void free_orca_commands()
 {
 	free_commands_list(&orcaCommands);
@@ -275,8 +281,8 @@ void  set_file_open(gchar* remotehost,gchar* remoteuser,gchar* remotedir, GabEdi
 /********************************************************************************/
 void filegets(gchar *temp,FILE* fd)
 {
-	gchar t[BSIZE];
-        gint taille = BSIZE;
+	gchar t[BBSIZE];
+        gint taille = BBSIZE;
  	gint k = 0;
  	gint i;
  
@@ -498,14 +504,14 @@ gchar* cat_file(gchar* namefile,gboolean tabulation)
  gchar *dump = NULL;
 
 
- t=g_malloc(BSIZE*sizeof(gchar));
+ t=g_malloc(BBSIZE*sizeof(gchar));
 
  fd = FOpen(namefile, "r");
  if(fd)
  {
   	while(!feof(fd))
   	{
-    		if(!fgets(t,BSIZE, fd)) break;
+    		if(!fgets(t,BBSIZE, fd)) break;
                 dump = tsrt;
 		if(!tsrt)
 		{
@@ -552,7 +558,7 @@ gchar *run_command(gchar *command)
  gchar *outfile= g_strdup_printf("%s%stmp%soutfile",gabedit_directory(), G_DIR_SEPARATOR_S, G_DIR_SEPARATOR_S);
  gchar *errfile= g_strdup_printf("%s%stmp%serrfile",gabedit_directory(), G_DIR_SEPARATOR_S, G_DIR_SEPARATOR_S);
  gchar *dump;
- gint taille = BSIZE;
+ gint taille = BBSIZE;
 
  temp = g_strdup_printf("sh -c '%s >%s 2>%s'",command,outfile,errfile);
  system(temp);
@@ -620,7 +626,7 @@ void createProcessWin32(char* myChildProcess)
 	                  &pi )         /* Pointer to PROCESS_INFORMATION structure.*/
                         ) 
 	{
-		gchar buffer[BSIZE];
+		gchar buffer[BBSIZE];
 		sprintf(buffer,_("CreateProcess failed (%d)"),(int)GetLastError());
         	Message(buffer, _("Error"), TRUE);
 		return;
@@ -737,6 +743,31 @@ gchar *get_name_dir(const gchar* allname)
 	   name = g_strdup(g_get_current_dir());
    }
    
+  return name;
+}
+/*************************************************************************************/
+gchar *get_filename_without_ext(const gchar* allname)
+{
+   gchar *filename= NULL;
+   gchar *temp= NULL;
+   gint len=0;
+   gint i;
+   gchar* name = NULL;
+
+   if(!allname || strlen(allname)<1) return g_strdup("error");
+   temp = g_strdup(allname);
+   filename= g_strdup(allname);
+   len=strlen(filename);
+
+   for(i=len;i>0;i--)
+	if(temp[i]=='.')
+	{
+		temp[i] = '\0';
+		break;
+	}
+   name = g_strdup_printf("%s",temp);
+   if(temp) g_free(temp);
+   if(filename) g_free(filename);
   return name;
 }
 /*************************************************************************************/
@@ -1076,6 +1107,21 @@ void create_commands_file()
 	}
 	fprintf(fd,"End\n");
 /*-----------------------------------------------------------------------------*/
+	fprintf(fd,"Begin NWChem\n");
+	str_delete_n(NameCommandNWChem);
+	delete_last_spaces(NameCommandNWChem);
+	delete_first_spaces(NameCommandNWChem);
+ 	fprintf(fd,"%s\n",NameCommandNWChem);
+ 	fprintf(fd,"%d\n",nwchemCommands.numberOfCommands);
+	for(i=0;i<nwchemCommands.numberOfCommands;i++)
+	{
+		str_delete_n(nwchemCommands.commands[i]);
+		delete_last_spaces(nwchemCommands.commands[i]);
+		delete_first_spaces(nwchemCommands.commands[i]);
+		fprintf(fd,"%s\n",nwchemCommands.commands[i]);
+	}
+	fprintf(fd,"End\n");
+/*-----------------------------------------------------------------------------*/
 	fprintf(fd,"Begin Orca\n");
 	str_delete_n(NameCommandOrca);
 	delete_last_spaces(NameCommandOrca);
@@ -1163,6 +1209,13 @@ void create_commands_file()
 	delete_last_spaces(gamessDirectory);
 	delete_first_spaces(gamessDirectory);
 	fprintf(fd,"%s\n",gamessDirectory);
+	fprintf(fd,"End\n");
+
+	fprintf(fd,"Begin NWChemDir\n");
+	str_delete_n(nwchemDirectory);
+	delete_last_spaces(nwchemDirectory);
+	delete_first_spaces(nwchemDirectory);
+	fprintf(fd,"%s\n",nwchemDirectory);
 	fprintf(fd,"End\n");
 
 	fprintf(fd,"Begin OrcaDir\n");
@@ -1278,8 +1331,8 @@ void read_opengl_file()
 	openGLOptions.doubleBuffer = 1;
 	openGLOptions.alphaSize = 0;
 	openGLOptions.depthSize = 1;
-	openGLOptions.numberOfSubdivisionsCylindre = 10; 
-	openGLOptions.numberOfSubdivisionsSphere = 15; 
+	openGLOptions.numberOfSubdivisionsCylindre = 20; 
+	openGLOptions.numberOfSubdivisionsSphere = 30; 
 	colorMapType =1;
 	colorMapColors[0][0] = 1;
 	colorMapColors[0][1] = 1;
@@ -1292,8 +1345,8 @@ void read_opengl_file()
 	colorMapColors[2][2] = 1;
 	if(fd !=NULL)
 	{
- 		guint taille = BSIZE;
- 		gchar t[BSIZE];
+ 		guint taille = BBSIZE;
+ 		gchar t[BBSIZE];
  		if(fgets(t,taille,fd))
 			if(sscanf(t,"%d",&openGLOptions.rgba)!=1)
 				openGLOptions.rgba = 1;
@@ -1391,8 +1444,8 @@ void read_hosts_file()
  gint i;
  gint j;
  gint k;
- gchar t[BSIZE];
- gint len = BSIZE;
+ gchar t[BBSIZE];
+ gint len = BBSIZE;
 
  hostsfile = g_strdup_printf("%s%shosts",gabedit_directory(),G_DIR_SEPARATOR_S);
 
@@ -1427,7 +1480,7 @@ void read_hosts_file()
 /*************************************************************************************/
 void read_fonts_in_file(FILE *fd,FontsStyle* fontsstyle)
 {
-	guint taille = BSIZE;
+	guint taille = BBSIZE;
 	gchar *t = NULL;
 	gchar *temp = NULL;
 	gint i;
@@ -1534,8 +1587,8 @@ void free_batch_commands()
 /*************************************************************************************/
 void read_commands_file()
 {
- guint taille = BSIZE;
- gchar t[BSIZE];
+ guint taille = BBSIZE;
+ gchar t[BBSIZE];
  gchar *commandsfile;
  FILE *fd;
  gint i;
@@ -1942,6 +1995,64 @@ void read_commands_file()
 	}
 /*-----------------------------------------------------------------------------*/
  	if(fgets(t,taille,fd))
+	if(!strstr(t,"Begin NWChem"))
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd))
+	{
+ 		NameCommandNWChem= g_strdup(t);
+		str_delete_n(NameCommandNWChem);
+		delete_last_spaces(NameCommandNWChem);
+		delete_first_spaces(NameCommandNWChem);
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd) && atoi(t)>0)
+	{
+		free_nwchem_commands();
+		nwchemCommands.numberOfCommands = atoi(t);
+		nwchemCommands.commands = g_malloc(nwchemCommands.numberOfCommands*sizeof(gchar*));
+		for(i=0;i<nwchemCommands.numberOfCommands;i++)
+			nwchemCommands.commands[i]  = g_strdup(" ");
+		for(i=0;i<nwchemCommands.numberOfCommands;i++)
+		{
+			if(!fgets(t,taille,fd) || strstr(t,"End"))
+			{
+				free_nwchem_commands();
+  				nwchemCommands.numberOfCommands = 1;
+  				nwchemCommands.numberOfDefaultCommand = 0;
+  				nwchemCommands.commands = g_malloc(sizeof(gchar*));
+  				nwchemCommands.commands[0] = g_strdup("nohup nwchem");
+
+				fclose(fd);
+				return;
+			}
+			else
+			{
+				nwchemCommands.commands[i] = g_strdup(t); 
+				str_delete_n(nwchemCommands.commands[i]);
+				delete_last_spaces(nwchemCommands.commands[i]);
+				delete_first_spaces(nwchemCommands.commands[i]);
+			}
+		}
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(!fgets(t,taille,fd)) /* End of NWChem */
+	{
+		fclose(fd);
+		return;
+	}
+/*-----------------------------------------------------------------------------*/
+ 	if(fgets(t,taille,fd))
 	if(!strstr(t,"Begin Orca"))
 	{
 		fclose(fd);
@@ -2280,6 +2391,37 @@ void read_commands_file()
 	}
 /*-----------------------------------------------------------------------------*/
  	if(fgets(t,taille,fd))
+	if(!strstr(t,"Begin NWChemDir"))
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(fgets(t,taille,fd))
+	{
+ 		nwchemDirectory= g_strdup(t);
+		str_delete_n(nwchemDirectory);
+		delete_last_spaces(nwchemDirectory);
+		delete_first_spaces(nwchemDirectory);
+#ifdef G_OS_WIN32
+		{
+		gchar t[BBSIZE];
+		sprintf(t,"%s;%s",nwchemDirectory,g_getenv("PATH"));
+		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
+		}
+#endif
+	}
+	else
+	{
+		fclose(fd);
+		return;
+	}
+ 	if(!fgets(t,taille,fd)) /* End of NWChemDir */
+	{
+		fclose(fd);
+		return;
+	}
+/*-----------------------------------------------------------------------------*/
+ 	if(fgets(t,taille,fd))
 	if(!strstr(t,"Begin OrcaDir"))
 	{
 		fclose(fd);
@@ -2293,8 +2435,8 @@ void read_commands_file()
 		delete_first_spaces(orcaDirectory);
 #ifdef G_OS_WIN32
 		{
-		gchar t[BSIZE];
-		sprintf(t,"%s;%cPATH%c",orcaDirectory,'%','%');
+		gchar t[BBSIZE];
+		sprintf(t,"%s;%s",orcaDirectory,g_getenv("PATH"));
 		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
 		}
 #endif
@@ -2324,8 +2466,8 @@ void read_commands_file()
 		delete_first_spaces(fireflyDirectory);
 #ifdef G_OS_WIN32
 		{
-		gchar t[BSIZE];
-		sprintf(t,"%s;%cPATH%c",fireflyDirectory,'%','%');
+		gchar t[BBSIZE];
+		sprintf(t,"%s;%s",fireflyDirectory,g_getenv("PATH"));
 		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
 		}
 #endif
@@ -2355,8 +2497,8 @@ void read_commands_file()
 		delete_first_spaces(mopacDirectory);
 #ifdef G_OS_WIN32
 		{
-		gchar t[BSIZE];
-		sprintf(t,"%s;%cPATH%c",mopacDirectory,'%','%');
+		gchar t[BBSIZE];
+		sprintf(t,"%s;%s",mopacDirectory,g_getenv("PATH"));
 		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
 		}
 #endif
@@ -2386,8 +2528,8 @@ void read_commands_file()
 		delete_first_spaces(gaussDirectory);
 #ifdef G_OS_WIN32
 		{
-		gchar t[BSIZE];
-		sprintf(t,"%s;%cPATH%c",gaussDirectory,'%','%');
+		gchar t[BBSIZE];
+		sprintf(t,"%s;%s",gaussDirectory,g_getenv("PATH"));
 		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
 		}
 #endif
@@ -2417,8 +2559,8 @@ void read_commands_file()
 		delete_first_spaces(povrayDirectory);
 #ifdef G_OS_WIN32
 		{
-		gchar t[BSIZE];
-		sprintf(t,"%s;%cPATH%c",povrayDirectory,'%','%');
+		gchar t[BBSIZE];
+		sprintf(t,"%s;%s",povrayDirectory,g_getenv("PATH"));
 		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
 		}
 #endif
@@ -2447,8 +2589,8 @@ void read_network_file()
  fd = FOpen(networkfile, "r");
  if(fd !=NULL)
  {
- 	guint taille = BSIZE;
- 	gchar t[BSIZE];
+ 	guint taille = BBSIZE;
+ 	gchar t[BBSIZE];
 	gint i;
  	if(fgets(t,taille,fd))
 	{
@@ -2474,7 +2616,7 @@ void read_network_file()
 		str_delete_n(pscpplinkDirectory);
 		delete_last_spaces(pscpplinkDirectory);
 		delete_first_spaces(pscpplinkDirectory);
-		sprintf(t,"%s;%cPATH%c",pscpplinkDirectory,'%','%');
+		sprintf(t,"%s;%s",pscpplinkDirectory,g_getenv("PATH"));
 #ifdef G_OS_WIN32
 		g_setenv("PATH",t,TRUE);
 #endif
@@ -2487,15 +2629,15 @@ void set_path()
 {
 #ifdef G_OS_WIN32
 	{
-		gchar t[BSIZE];
-		sprintf(t,"%s;%s;%s;%s;%s;%s;%cPATH%c",
+		gchar t[BBSIZE];
+		sprintf(t,"%s;%s;%s;%s;%s;%s;%s",
 		orcaDirectory,
 		fireflyDirectory,
 		mopacDirectory,
 		gaussDirectory,
 		pscpplinkDirectory,
 		povrayDirectory,
-		'%','%');
+		g_getenv("PATH"));
 		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
 	}
 #endif
@@ -2837,7 +2979,7 @@ void initialise_name_file()
 void initialise_name_commands()
 {
 #ifdef G_OS_WIN32
-	gchar t[BSIZE];
+	gchar t[BBSIZE];
 	NameCommandGamess=g_strdup("submitGMS");
 	NameCommandGaussian=g_strdup("g03.exe");
 	NameCommandMolcas=g_strdup("molcas");
@@ -2846,6 +2988,7 @@ void initialise_name_commands()
 	NameCommandFireFly=g_strdup("firefly");
 	NameCommandQChem=g_strdup("qc");
 	NameCommandOrca=g_strdup("orca");
+	NameCommandNWChem=g_strdup("nwchem");
 	NameCommandMopac=g_strdup("MOPAC2009");
 	NameCommandPovray=g_strdup("start /w pvengine /nr /exit /render +A0.3 -UV");
 #else
@@ -2857,6 +3000,7 @@ void initialise_name_commands()
 	NameCommandFireFly=g_strdup("firefly");
 	NameCommandQChem=g_strdup("qchem");
 	NameCommandOrca=g_strdup("orca");
+	NameCommandNWChem=g_strdup("nwchem");
 	NameCommandMopac=g_strdup("/opt/mopac/MOPAC2009.exe");
 	NameCommandPovray=g_strdup("povray +A0.3 -UV");
 #endif
@@ -2866,16 +3010,18 @@ void initialise_name_commands()
 	babelCommand = g_strdup_printf("%s%sobabel.exe",g_get_current_dir(),G_DIR_SEPARATOR_S);
 	gamessDirectory= g_strdup_printf("C:%sWinGAMESS",G_DIR_SEPARATOR_S);
 	orcaDirectory= g_strdup_printf("C:%sORCA_DevCenter%sorca%sx86_exe%srelease%sOrca",G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
+	nwchemDirectory= g_strdup_printf("C:%sNWChem",G_DIR_SEPARATOR_S);
 	fireflyDirectory= g_strdup_printf("C:%sFIREFLY",G_DIR_SEPARATOR_S);
 	mopacDirectory= g_strdup_printf("\"C:%sProgram Files%sMOPAC\"",G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
 	povrayDirectory= g_strdup_printf("\"C:%sProgram Files%sPovRay%sbin\"",G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
 	gaussDirectory= g_strdup_printf("\"C:%sG03W\"",G_DIR_SEPARATOR_S);
-	sprintf(t,"%s;%s;%s;%s;%s;%cPATH%c",orcaDirectory,fireflyDirectory,mopacDirectory,gaussDirectory,povrayDirectory,'%','%');
+	sprintf(t,"%s;%s;%s;%s;%s;%s",orcaDirectory,fireflyDirectory,mopacDirectory,gaussDirectory,povrayDirectory,g_getenv("PATH"));
 	g_setenv("PATH",t,TRUE);
 #else
 	babelCommand=g_strdup("babel");
 	gamessDirectory= g_strdup_printf("%s%sGamess",g_get_home_dir(),G_DIR_SEPARATOR_S);
 	orcaDirectory= g_strdup_printf("%s%sOrca",g_get_home_dir(),G_DIR_SEPARATOR_S);
+	nwchemDirectory= g_strdup_printf("%s%sNWChem",g_get_home_dir(),G_DIR_SEPARATOR_S);
 	fireflyDirectory= g_strdup_printf("%s%sFireFly",g_get_home_dir(),G_DIR_SEPARATOR_S);
 	mopacDirectory= g_strdup_printf("/opt/mopac");
 	povrayDirectory= g_strdup_printf("/usr/local/bin");
@@ -2971,7 +3117,7 @@ void initialise_global_variables()
 
 #ifdef G_OS_WIN32
   {
-	gchar* t = g_strdup_printf("%s;%cPATH%c",pscpplinkDirectory,'%','%');
+	gchar* t = g_strdup_printf("%s;%s",pscpplinkDirectory,g_getenv("PATH"));
 	g_setenv("PATH",t,TRUE);
 	g_free(t);
   }
@@ -3046,7 +3192,18 @@ void initialise_global_variables()
 #ifdef G_OS_WIN32
   orcaCommands.commands[2] = g_strdup("orca");
 #endif
+	nwchemCommands.numberOfCommands = 2;
+#ifdef G_OS_WIN32
+      nwchemCommands.numberOfCommands = 3;
+#endif
 
+  nwchemCommands.numberOfDefaultCommand = 0;
+  nwchemCommands.commands = g_malloc(nwchemCommands.numberOfCommands*sizeof(gchar*));
+  nwchemCommands.commands[0] = g_strdup("nohup nwchem");
+  nwchemCommands.commands[1] = g_strdup("submitNWChem 1:0:0");
+#ifdef G_OS_WIN32
+  nwchemCommands.commands[2] = g_strdup("nwchem");
+#endif
 
 	fireflyCommands.numberOfCommands = 2;
 #ifdef G_OS_WIN32
@@ -3368,7 +3525,7 @@ gint numb_of_reals_by_row(gchar *str)
 {
 	gint n=0;
 	gchar* t=str;
-	gchar p[BSIZE];
+	gchar p[BBSIZE];
 	while(*t!='\n' && *t !='\0')
 	{
 		if(*t =='\t') *t =' ';
@@ -3403,7 +3560,7 @@ gchar** gab_split(gchar *str)
 	gchar** strsplit= g_malloc(sizeof(gchar*));
 	gint n=0;
 	gchar* t=str;
-	gchar p[BSIZE];
+	gchar p[BBSIZE];
 	while(*t!='\n' && *t !='\0')
 	{
 		if(*t!=' ')
@@ -3436,8 +3593,8 @@ gchar** gab_split(gchar *str)
 /********************************************************************************/
 void get_dipole_from_gamess_output_file(FILE* fd)
 {
- 	guint taille=BSIZE;
-  	gchar *t = g_malloc(BSIZE*sizeof(gchar));
+ 	guint taille=BBSIZE;
+  	gchar *t = g_malloc(BBSIZE*sizeof(gchar));
   	gchar* t1;
 
 	Dipole.def = FALSE;
@@ -3476,8 +3633,8 @@ void get_dipole_from_gamess_output_file(FILE* fd)
 /********************************************************************************/
 void get_dipole_from_turbomole_output_file(FILE* fd)
 {
- 	guint taille=BSIZE;
-  	gchar *t = g_malloc(BSIZE*sizeof(gchar));
+ 	guint taille=BBSIZE;
+  	gchar *t = g_malloc(BBSIZE*sizeof(gchar));
   	gchar dum[100];
 
 
@@ -3513,8 +3670,8 @@ void get_dipole_from_turbomole_output_file(FILE* fd)
 /********************************************************************************/
 void get_dipole_from_gaussian_output_file(FILE* fd)
 {
- 	guint taille=BSIZE;
-  	gchar *t = g_malloc(BSIZE*sizeof(gchar));
+ 	guint taille=BBSIZE;
+  	gchar *t = g_malloc(BBSIZE*sizeof(gchar));
   	gchar* pdest;
 	gint ngrad = 0;
 	gint i;
@@ -3567,8 +3724,8 @@ void get_dipole_from_gaussian_output_file(FILE* fd)
 /********************************************************************************/
 void get_dipole_from_molpro_output_file(FILE* fd)
 {
- 	guint taille=BSIZE;
-  	gchar *t = g_malloc(BSIZE*sizeof(gchar));
+ 	guint taille=BBSIZE;
+  	gchar *t = g_malloc(BBSIZE*sizeof(gchar));
   	gchar* t1;
   	gchar* t2;
 
@@ -3607,8 +3764,8 @@ void get_dipole_from_molpro_output_file(FILE* fd)
 /********************************************************************************/
 void get_dipole_from_dalton_output_file(FILE* fd)
 {
- 	guint taille=BSIZE;
-  	gchar *t = g_malloc(BSIZE*sizeof(gchar));
+ 	guint taille=BBSIZE;
+  	gchar *t = g_malloc(BBSIZE*sizeof(gchar));
   	gchar* t1;
   	gchar* t2;
 	gchar dum[100];
@@ -3651,8 +3808,8 @@ void get_dipole_from_dalton_output_file(FILE* fd)
 /********************************************************************************/
 void get_dipole_from_orca_output_file(FILE* fd)
 {
- 	guint taille=BSIZE;
-  	gchar *t = g_malloc(BSIZE*sizeof(gchar));
+ 	guint taille=BBSIZE;
+  	gchar *t = g_malloc(BBSIZE*sizeof(gchar));
   	gchar* pdest;
 
 	Dipole.def = FALSE;
@@ -3675,10 +3832,46 @@ void get_dipole_from_orca_output_file(FILE* fd)
 	g_free(t);
 }
 /********************************************************************************/
+void get_dipole_from_nwchem_output_file(FILE* fd)
+{
+ 	guint taille=BBSIZE;
+  	gchar *t = g_malloc(BBSIZE*sizeof(gchar));
+  	gchar* pdest;
+
+	Dipole.def = FALSE;
+
+  	while(!feof(fd) )
+	{
+    		pdest = NULL;
+		Dipole.def = FALSE;
+    		fgets(t,taille,fd);
+    		pdest = strstr( t, "Nuclear Dipole moment");
+		if(pdest)
+		{
+			gboolean OK = FALSE;
+  			while(!feof(fd) )
+			{
+    				if(!fgets(t,taille,fd)) break;
+				if(strstr(t,"---------------- ---------------- ----------------"))
+				{
+					OK = TRUE;
+					break;
+				}
+			}
+			if(!OK) break;
+    			if(!fgets(t,taille,fd)) break;
+			Dipole.def = TRUE;
+			sscanf(pdest,"%lf %lf %lf",&Dipole.Value[0],&Dipole.Value[1],&Dipole.Value[2]);
+			break;
+		}
+	}
+	g_free(t);
+}
+/********************************************************************************/
 void get_dipole_from_qchem_output_file(FILE* fd)
 {
- 	guint taille=BSIZE;
-  	gchar *t = g_malloc(BSIZE*sizeof(gchar));
+ 	guint taille=BBSIZE;
+  	gchar *t = g_malloc(BBSIZE*sizeof(gchar));
   	gchar* pdest;
 	gint ngrad = 0;
 	gint i;
@@ -3722,8 +3915,8 @@ void get_dipole_from_qchem_output_file(FILE* fd)
 /********************************************************************************/
 void get_dipole_from_mopac_output_file(FILE* fd)
 {
- 	guint taille=BSIZE;
-  	gchar *t = g_malloc(BSIZE*sizeof(gchar));
+ 	guint taille=BBSIZE;
+  	gchar *t = g_malloc(BBSIZE*sizeof(gchar));
   	gchar* pdest;
 	gint i;
 	gchar dum[100];
@@ -3754,7 +3947,7 @@ void get_dipole_from_mopac_output_file(FILE* fd)
 /********************************************************************************/
 void get_dipole_from_mopac_aux_file(FILE* fd)
 {
-  	gchar t[BSIZE];
+  	gchar t[BBSIZE];
   	gchar* pdest;
 	gint i;
 
@@ -3764,7 +3957,7 @@ void get_dipole_from_mopac_aux_file(FILE* fd)
 	{
     		pdest = NULL;
 		Dipole.def = FALSE;
-    		fgets(t,BSIZE,fd);
+    		fgets(t,BBSIZE,fd);
     		pdest = strstr( t, "DIPOLE:DEBYE=");
 
 		if(pdest)
@@ -4017,8 +4210,8 @@ gchar* get_font_label_name()
 /*************************************************************************************/
 gboolean test_type_program_gaussian(FILE* file)
 {
-	gchar t[BSIZE];
-	guint taille=BSIZE;
+	gchar t[BBSIZE];
+	guint taille=BBSIZE;
 	fseek(file, 0L, SEEK_SET);
 	if(!fgets(t, taille, file)) return FALSE;
 	if((int)t[0]==(int)'#' || (int)t[0]==(int)'%' ) return TRUE;
@@ -4027,8 +4220,8 @@ gboolean test_type_program_gaussian(FILE* file)
 /**********************************************************************************/
 gboolean test_type_program_molcas(FILE* file)
 {
-	gchar t[BSIZE];
-	guint taille=BSIZE;
+	gchar t[BBSIZE];
+	guint taille=BBSIZE;
 	fseek(file, 0L, SEEK_SET);
 	while(!feof(file))
 	{
@@ -4042,8 +4235,8 @@ gboolean test_type_program_molcas(FILE* file)
 /**********************************************************************************/
 gboolean test_type_program_molpro(FILE* file)
 {
-	gchar t[BSIZE];
-	guint taille=BSIZE;
+	gchar t[BBSIZE];
+	guint taille=BBSIZE;
 	fseek(file, 0L, SEEK_SET);
 	while(!feof(file))
 	{
@@ -4057,8 +4250,8 @@ gboolean test_type_program_molpro(FILE* file)
 /**********************************************************************************/
 gboolean test_type_program_mpqc(FILE* file)
 {
-	gchar t[BSIZE];
-	guint taille=BSIZE;
+	gchar t[BBSIZE];
+	guint taille=BBSIZE;
 	fseek(file, 0L, SEEK_SET);
 	while(!feof(file))
 	{
@@ -4074,8 +4267,8 @@ gboolean test_type_program_mpqc(FILE* file)
 /**********************************************************************************/
 gboolean test_type_program_gamess(FILE* file)
 {
-	gchar t[BSIZE];
-	guint taille=BSIZE;
+	gchar t[BBSIZE];
+	guint taille=BBSIZE;
 	fseek(file, 0L, SEEK_SET);
 	while(!feof(file))
 	{
@@ -4092,8 +4285,8 @@ gboolean test_type_program_gamess(FILE* file)
 /**********************************************************************************/
 gboolean test_type_program_firefly(FILE* file)
 {
-	gchar t[BSIZE];
-	guint taille=BSIZE;
+	gchar t[BBSIZE];
+	guint taille=BBSIZE;
 	fseek(file, 0L, SEEK_SET);
 	while(!feof(file))
 	{
@@ -4103,10 +4296,26 @@ gboolean test_type_program_firefly(FILE* file)
 	return FALSE;
 }
 /**********************************************************************************/
+gboolean test_type_program_nwchem(FILE* file)
+{
+	gchar t[BBSIZE];
+	guint taille=BBSIZE;
+	fseek(file, 0L, SEEK_SET);
+	while(!feof(file))
+	{
+		if(!fgets(t, taille, file)) return FALSE;
+		if(strstr(t,"NWChem input") && strstr(t,"#")) return TRUE;
+		g_strup(t);
+		if(strstr(t,"GEOMETRY")) return TRUE;
+		if(strstr(t,"ZMATRIX")) return TRUE;
+	}
+	return FALSE;
+}
+/**********************************************************************************/
 gboolean test_type_program_orca(FILE* file)
 {
-	gchar t[BSIZE];
-	guint taille=BSIZE;
+	gchar t[BBSIZE];
+	guint taille=BBSIZE;
 	fseek(file, 0L, SEEK_SET);
 	while(!feof(file))
 	{
@@ -4121,8 +4330,8 @@ gboolean test_type_program_orca(FILE* file)
 /**********************************************************************************/
 gboolean test_type_program_mopac(FILE* file)
 {
-	gchar t[BSIZE];
-	guint taille=BSIZE;
+	gchar t[BBSIZE];
+	guint taille=BBSIZE;
 	fseek(file, 0L, SEEK_SET);
 	while(!feof(file))
 	{
@@ -4138,8 +4347,8 @@ gboolean test_type_program_mopac(FILE* file)
 /**********************************************************************************/
 gboolean test_type_program_qchem(FILE* file)
 {
-	gchar t[BSIZE];
-	guint taille=BSIZE;
+	gchar t[BBSIZE];
+	guint taille=BBSIZE;
 	fseek(file, 0L, SEEK_SET);
 	while(!feof(file))
 	{
@@ -4183,6 +4392,11 @@ gint get_type_of_program(FILE* file)
 	{
 		fseek(file, 0L, SEEK_SET);
 		return PROG_IS_MPQC;
+	}
+	if(test_type_program_nwchem(file))
+	{
+		fseek(file, 0L, SEEK_SET);
+		return PROG_IS_NWCHEM;
 	}
 	if(test_type_program_gaussian(file))
 	{
@@ -4272,12 +4486,12 @@ G_CONST_RETURN gchar* get_open_babel_command()
 /**********************************************************************************************************************************/
 gint get_num_orbitals_from_aux_mopac_file(FILE* file, gchar* blockName,  gint* begin, gint* end)
 {
-	gchar t[BSIZE];
+	gchar t[BBSIZE];
 	*begin = 0;
 	*end = 0;
 	 while(!feof(file))
 	 {
-		if(!fgets(t,BSIZE,file))break;
+		if(!fgets(t,BBSIZE,file))break;
 		if(strstr( t, blockName))
 		{
 			gchar* pdest = strstr( t, "=")+1;
@@ -4292,10 +4506,10 @@ gchar** get_one_block_from_aux_mopac_file(FILE* file, gchar* blockName,  gint* n
 {
 	gint nElements = 0;
 	gchar** elements = NULL;
-	gchar t[BSIZE];
+	gchar t[BBSIZE];
 	 while(!feof(file))
 	 {
-		if(!fgets(t,BSIZE,file))break;
+		if(!fgets(t,BBSIZE,file))break;
 		if(strstr( t, blockName))
 		{
 			gchar* pdest = strstr( t, "[")+1;
@@ -4305,7 +4519,7 @@ gchar** get_one_block_from_aux_mopac_file(FILE* file, gchar* blockName,  gint* n
 			else
 			{ 
 				long int geomposok = ftell(file);
-				if(!fgets(t,BSIZE,file))break;
+				if(!fgets(t,BBSIZE,file))break;
 				if(!strstr(t,"# ")) fseek(file, geomposok, SEEK_SET);
 			}
 
@@ -4357,8 +4571,8 @@ gchar** free_one_string_table(gchar** table, gint n)
 /********************************************************************************/
 gboolean zmat_mopac_irc_output_file(gchar *FileName)
 {
- 	guint taille=BSIZE;
-  	gchar t[BSIZE];
+ 	guint taille=BBSIZE;
+  	gchar t[BBSIZE];
  	FILE* fd = FOpen(FileName, "r");
 
 	if(!fd) return FALSE;
@@ -4375,8 +4589,8 @@ gboolean zmat_mopac_irc_output_file(gchar *FileName)
 /********************************************************************************/
 gboolean zmat_mopac_scan_output_file(gchar *FileName)
 {
- 	guint taille=BSIZE;
-  	gchar t[BSIZE];
+ 	guint taille=BBSIZE;
+  	gchar t[BBSIZE];
  	FILE* fd = FOpen(FileName, "r");
 
 	if(!fd) return FALSE;
@@ -4426,7 +4640,7 @@ gchar *get_extenssion_file(const gchar* filename)
 GabEditTypeFile get_type_output_file(gchar* fileName)
 {
  	gchar *t;
- 	guint taille=BSIZE;
+ 	guint taille=BBSIZE;
 	GabEditTypeFile ktype = GABEDIT_TYPEFILE_UNKNOWN;
 	FILE* file = FOpen(fileName, "rb");
 
@@ -4462,9 +4676,20 @@ GabEditTypeFile get_type_output_file(gchar* fileName)
 				ktype = GABEDIT_TYPEFILE_QCHEM;
 				break;
 			}
+			if(strstr(t,"Northwest Computational Chemistry Package"))
+			{
+				ktype = GABEDIT_TYPEFILE_NWCHEM;
+				break;
+			}
 			if(strstr(t,"TURBOMOLE GmbH"))
 			{
 				ktype = GABEDIT_TYPEFILE_TURBOMOLE;
+				break;
+			}
+			g_strup(t);
+        		if(strstr(t, "ENTERING GAUSSIAN" ))
+			{
+				ktype = GABEDIT_TYPEFILE_GAUSSIAN;
 				break;
 			}
 		}
@@ -4666,10 +4891,10 @@ gchar * mystrcasestr(G_CONST_RETURN gchar *haystack, G_CONST_RETURN gchar *needl
 gint get_one_int_from_fchk_gaussian_file(FILE* file, gchar* blockName)
 {
 	gint ipos = 47;
-	gchar t[BSIZE];
+	gchar t[BBSIZE];
 	 while(!feof(file))
 	 {
-		if(!fgets(t,BSIZE,file))break;
+		if(!fgets(t,BBSIZE,file))break;
 		if(strstr( t, blockName))
 		{
 			if(strlen(t)>ipos+1) return atoi(t+ipos);
@@ -4682,10 +4907,10 @@ gint get_one_int_from_fchk_gaussian_file(FILE* file, gchar* blockName)
 gdouble get_one_real_from_fchk_gaussian_file(FILE* file, gchar* blockName)
 {
 	gint ipos = 47;
-	gchar t[BSIZE];
+	gchar t[BBSIZE];
 	 while(!feof(file))
 	 {
-		if(!fgets(t,BSIZE,file))break;
+		if(!fgets(t,BBSIZE,file))break;
 		if(strstr( t, blockName))
 		{
 			if(strlen(t)>ipos+1) return atof(t+ipos);
@@ -4699,12 +4924,12 @@ gint* get_array_int_from_fchk_gaussian_file(FILE* file, gchar* blockName, gint* 
 {
 	gint ipos = 43;
 	gint i;
-	gchar t[BSIZE];
+	gchar t[BBSIZE];
 	gint* elements = NULL;
 	*nElements = 0;
 	 while(!feof(file))
 	 {
-		if(!fgets(t,BSIZE,file))break;
+		if(!fgets(t,BBSIZE,file))break;
 		if(strstr( t, blockName))
 		{
 			if(!(strstr( t, blockName) && strstr(t,"N=") && strlen(strstr(t,"N="))>2)) return elements;
@@ -4732,13 +4957,13 @@ gdouble* get_array_real_from_fchk_gaussian_file(FILE* file, gchar* blockName, gi
 {
 	gint ipos = 43;
 	gint i;
-	gchar t[BSIZE];
+	gchar t[BBSIZE];
 	gdouble* elements = NULL;
 
 	*nElements = 0;
 	 while(!feof(file))
 	 {
-		if(!fgets(t,BSIZE,file))break;
+		if(!fgets(t,BBSIZE,file))break;
 		if(strstr( t, blockName))
 		{
 			if(!(strstr( t, blockName) && strstr(t,"N=") && strlen(strstr(t,"N="))>2)) return elements;
@@ -4764,14 +4989,14 @@ gchar** get_array_string_from_fchk_gaussian_file(FILE* file, gchar* blockName, g
 {
 	gint ipos = 43;
 	gint i;
-	gchar t[BSIZE];
+	gchar t[BBSIZE];
 	gchar** elements = NULL;
 	gchar type = ' ';
 
 	*nElements = 0;
 	 while(!feof(file))
 	 {
-		if(!fgets(t,BSIZE,file))break;
+		if(!fgets(t,BBSIZE,file))break;
 		if(strstr( t, blockName))
 		{
 			if(!(strstr( t, blockName) && strstr(t,"N=") && strlen(strstr(t,"N="))>2)) return elements;

@@ -69,6 +69,7 @@ static void set_geom(GtkWidget *widget,gpointer data)
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_GAUSSIAN) read_geom_from_gaussian_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOLPRO) read_geom_from_molpro_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_QCHEM) read_geom_from_qchem_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
+	if(GeomConv->fileType == GABEDIT_TYPEFILE_NWCHEM) read_geom_from_nwchem_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_ORCA) read_geom_from_orca_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_MOLDEN) read_geom_from_molden_geom_conv_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
 	if(GeomConv->fileType == GABEDIT_TYPEFILE_GABEDIT) read_geom_from_gabedit_geom_conv_file(GeomConv->GeomFile,GeomConv->NumGeom[k]);
@@ -580,7 +581,10 @@ GtkWidget *add_energies_curve( GtkWidget *WindowEnergies, DataGeomConv* GeomConv
           			Message(_("Sorry\n I can not read energies from your molpro log file\n"),_("Error"),TRUE);
 				break;
 			case GABEDIT_TYPEFILE_QCHEM :
-          			Message(_("Sorry\n I can not read energies from your molpro log file\n"),_("Error"),TRUE);
+          			Message(_("Sorry\n I can not read energies from your qchem output file\n"),_("Error"),TRUE);
+				break;
+			case GABEDIT_TYPEFILE_NWCHEM :
+          			Message(_("Sorry\n I can not read energies from your nwchem output file\n"),_("Error"),TRUE);
 				break;
 			case GABEDIT_TYPEFILE_MOLDEN :
         	  		Message(_("Sorry\n I can not read energies from your molden file\n"),_("Error"),TRUE);
@@ -735,6 +739,9 @@ void create_energies_curves(DataGeomConv* GeomConv,gint N)
 			break;
 		case GABEDIT_TYPEFILE_QCHEM :
           		Message(_("Sorry\n I can not read energies from your q-chem output file\n"),_("Error"),TRUE);
+			break;
+		case GABEDIT_TYPEFILE_NWCHEM :
+          		Message(_("Sorry\n I can not read energies from your nwchem output file\n"),_("Error"),TRUE);
 			break;
 		case GABEDIT_TYPEFILE_MOLDEN :
           		Message(_("Sorry\n I can not read energies from your molden file\n"),_("Error"),TRUE);

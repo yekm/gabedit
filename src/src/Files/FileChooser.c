@@ -34,7 +34,7 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 {
   GtkWidget *gabeditFileChooser;
   gchar* patternsfiles[] = {	"*",
-			    	"*.inp","*.com","*.mop",
+			    	"*.inp","*.com","*.mop","*.nw",
 	  			"*.log","*.out","*.fchk", "*.aux","*.gab","*.xyz","*.mol2","*.mol","*.tnk","*.pdb","*.hin","*.zmt","*.gzmt",
 	  		    	"*.hf","*.gcube","*.cube","*.CUBE","*.grid","*.M2Msi","*.t41","*.dx","*.trj","*.irc","*.txt","*",
 			    	NULL};
@@ -101,6 +101,10 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 		   				gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.out");
 						temp = g_strdup_printf("%s.out",fileopen.projectname);
 					  	break;
+	   case GABEDIT_TYPEFILE_NWCHEM : 
+		   				gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.out");
+						temp = g_strdup_printf("%s.out",fileopen.projectname);
+					  	break;
 	   case GABEDIT_TYPEFILE_MOPAC : 
 		   				gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.out");
 						temp = g_strdup_printf("%s.out",fileopen.projectname);
@@ -153,6 +157,10 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.hin");
 					    temp = g_strdup_printf("%s.hin",fileopen.projectname);
 					    break;
+	   case GABEDIT_TYPEFILE_AIMALL : 
+					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.sum");
+					    temp = g_strdup_printf("%s.sum",fileopen.projectname);
+					    break;
 	   case GABEDIT_TYPEFILE_GZMAT : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.gzmt");
 					    temp = g_strdup_printf("%s.gzmt",fileopen.projectname);
@@ -192,6 +200,10 @@ GtkWidget* file_chooser(gpointer data,gchar* title,GabEditTypeFile type,GabEditT
 	   case GABEDIT_TYPEFILE_QCHEMINPUT : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.inp");
 					    temp = g_strdup_printf("%s.inp",fileopen.projectname);
+					    break;
+	   case GABEDIT_TYPEFILE_NWCHEMINPUT : 
+					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.nw");
+					    temp = g_strdup_printf("%s.nw",fileopen.projectname);
 					    break;
 	   case GABEDIT_TYPEFILE_MOPACINPUT : 
 					    gabedit_file_chooser_set_filter(GABEDIT_FILE_CHOOSER(gabeditFileChooser),"*.mop");
@@ -346,7 +358,7 @@ GtkWidget* file_chooser_save(gpointer data,gchar* title,GabEditTypeFile type,Gab
 void choose_file_to_open()
 {
   GtkWidget *gabeditFileChooser;
-  gchar* patternsfiles[] = {"*.com","*.mop","*.inp","*.xyz","*.zmt","*.gzmt","*",NULL};
+  gchar* patternsfiles[] = {"*.com","*.mop","*.inp","*.nw","*.xyz","*.zmt","*.gzmt","*",NULL};
 
   gabeditFileChooser = gabedit_file_chooser_new(_("Open file"), GTK_FILE_CHOOSER_ACTION_OPEN);
   gabedit_file_chooser_hide_hidden(GABEDIT_FILE_CHOOSER(gabeditFileChooser));

@@ -39,6 +39,7 @@ static GtkWidget *LabelDistances[6] = {NULL,NULL,NULL,NULL,NULL,NULL};
 static GtkWidget *EntryAngles[2] = {NULL,NULL};
 static GtkWidget *LabelAngles[2] = {NULL,NULL};
 static GtkWidget *MoveGroupButton = NULL;
+static GtkWidget *Move23Button = NULL;
 GtkWidget *EntryDihedral = NULL;
 GtkWidget *LabelDihedral = NULL;
 GtkWidget *LabelAveraged;
@@ -701,8 +702,14 @@ static void activate_dihedral_entry(GtkWidget* entry, gchar* data)
 		g_free(oldA);
 		return;
 	}
+//HERE
         if (GTK_TOGGLE_BUTTON (MoveGroupButton)->active) 
+	{
+        	if (GTK_TOGGLE_BUTTON (Move23Button)->active) 
+		listGroupAtoms = getListGroupe(&nGroupAtoms, geometry0, Natoms, i1, i2,i3,i4+Natoms);
+		else
 		listGroupAtoms = getListGroupe(&nGroupAtoms, geometry0, Natoms, i1, i2,i3,i4);
+	}
 	setTorsion(Natoms,geometry0,i1,i2,i3,i4,newA, listGroupAtoms,nGroupAtoms);
 	if(listGroupAtoms) g_free(listGroupAtoms);
 	rafresh_window_geom();
@@ -736,7 +743,7 @@ void create_frame_distances_angles_dihedral(GtkWidget *Dialogue,GtkWidget *vboxf
 
   Frame = create_frame(Dialogue,vboxframe,NULL);  
   vbox = create_vbox(Frame);
-  Table = gtk_table_new(16,2,FALSE);
+  Table = gtk_table_new(17,2,FALSE);
   gtk_container_add(GTK_CONTAINER(vbox),Table);
 
   i = 0;
@@ -802,11 +809,18 @@ void create_frame_distances_angles_dihedral(GtkWidget *Dialogue,GtkWidget *vboxf
   i = 15;
   hseparator = gtk_hseparator_new ();
   gtk_table_attach(GTK_TABLE(Table),hseparator,0,3,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),3,3);
+
   i = 16;
   MoveGroupButton = gtk_check_button_new_with_label (_("Move group"));
   gtk_widget_show (MoveGroupButton);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (MoveGroupButton), TRUE);
   gtk_table_attach(GTK_TABLE(Table),MoveGroupButton,0,1,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),3,3);
+
+  i = 17;
+  Move23Button = gtk_check_button_new_with_label (_("Move 2-3 group"));
+  gtk_widget_show (Move23Button);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (Move23Button), TRUE);
+  gtk_table_attach(GTK_TABLE(Table),Move23Button,0,1,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),3,3);
 }
 /************************************************************************************************************/
 void create_frame_averaged(GtkWidget *Dialogue,GtkWidget *hbox)

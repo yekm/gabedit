@@ -37,6 +37,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Utils.h"
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/Constants.h"
+#include "../Utils/GabeditTextEdit.h"
 #include "../Files/FileChooser.h"
 #include "../Common/Windows.h"
 #include "../Display/Vibration.h"
@@ -2422,4 +2423,449 @@ void spatial_overlap_orbitals_dlg()
 		select_row(alphaList,0);
 		if(2<=NOrb) select_row(alphaList,1);
 	}
+}
+/************************************************************************************************************/
+static void setPartialChargesToCalculated(GtkWidget *win)
+{
+	gint i;
+	gdouble* charges = NULL;
+	if(GTK_IS_WIDGET(win)) charges = g_object_get_data(G_OBJECT (win), "Charges");
+	if(!charges)  return;
+	for(i=0;i<Ncenters;i++)
+		GeomOrb[i].partialCharge = charges[i];
+	glarea_rafresh(GLArea);
+}
+/************************************************************************************************************/
+static void destroyCalculatedChargesDlg(GtkWidget *win)
+{
+	gdouble* charges = NULL;
+	if(GTK_IS_WIDGET(win)) charges = g_object_get_data(G_OBJECT (win), "Charges");
+	if(charges) 
+		g_free(charges);
+	if(GTK_IS_WIDGET(win)) delete_child(win);
+	if(GTK_IS_WIDGET(win)) gtk_widget_destroy(win);
+}
+/********************************************************************************/
+static GtkWidget* showCalculatedChargesDlg(gchar *message,gchar *title,gdouble* charges)
+{
+	GtkWidget *dlgWin = NULL;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	GtkWidget *txtWid;
+	GtkWidget *button;
+
+
+	dlgWin = gtk_dialog_new();
+	gtk_widget_realize(GTK_WIDGET(dlgWin));
+
+	gtk_window_set_title(GTK_WINDOW(dlgWin),title);
+	gtk_window_set_position(GTK_WINDOW(dlgWin),GTK_WIN_POS_CENTER);
+  	gtk_window_set_modal (GTK_WINDOW (dlgWin), TRUE);
+	gtk_window_set_transient_for(GTK_WINDOW(dlgWin),GTK_WINDOW(PrincipalWindow));
+
+	g_signal_connect(G_OBJECT(dlgWin), "delete_event", (GCallback)destroyCalculatedChargesDlg, NULL);
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(dlgWin)->vbox), frame,TRUE,TRUE,0);
+
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	txtWid = create_text_widget(vboxframe,NULL,&frame);
+	if(message) gabedit_text_insert (GABEDIT_TEXT(txtWid), NULL, NULL, NULL,message,-1);   
+
+	gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(dlgWin)->action_area), FALSE);
+  
+	button = create_button(dlgWin,_("Partial charges of molecule <= Calculated charges"));
+	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(dlgWin)->action_area), button, FALSE, TRUE, 5);  
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)setPartialChargesToCalculated, GTK_OBJECT(dlgWin));
+
+	button = create_button(dlgWin,"Close");
+	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(dlgWin)->action_area), button, FALSE, TRUE, 5);  
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)destroyCalculatedChargesDlg, GTK_OBJECT(dlgWin));
+
+	add_button_windows(title,dlgWin);
+	gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeight*0.6), (gint)(ScreenHeight*0.5));
+	gtk_widget_show_all(dlgWin);
+  	g_object_set_data(G_OBJECT (dlgWin), "Charges",charges);
+	return dlgWin;
+}
+/********************************************************************************/
+void compute_mulliken_charges()
+{
+	gint i,k,l;
+	gchar* result = NULL;
+	gdouble* charges = NULL;
+	gchar* tmp = NULL;
+	gdouble o;
+	gint nAll = 0;
+	gint delta = 0;
+	gint pos = 0;
+	gdouble scal;
+	gchar str[BSIZE];
+	gint kk=0;
+
+	if(Ncenters<1) return;
+	if(!AOrb && (!SAOrb || !SOverlaps)) return;
+
+	destroy_win_list();
+	sprintf(str,_("Computing of mulliken charges... Please wait"));
+	setTextInProgress(str);
+
+	scal = 0.01;
+	delta = (gint)(NAOrb*(NAOrb+1)/2*scal);
+	if(delta<1) delta = 1;
+	pos = delta;
+
+	charges = g_malloc(Ncenters*sizeof(gdouble));
+	for(i=0;i<Ncenters;i++) charges[i] = GeomOrb[i].nuclearCharge;
+	progress_orb_txt(0,str,TRUE);
+	kk = 0;
+	for(k=0;k<NAOrb;k++)
+	{
+		gint ic = (AOrb)?AOrb[k].NumCenter:SAOrb[k].NumCenter;
+		for(l=0;l<=k;l++)
+		{
+			gint jc = (AOrb)?AOrb[l].NumCenter:SAOrb[l].NumCenter;
+			//gint fact = (k==l)?1:2;
+			gint fact = 1;
+			if(CancelCalcul) break;
+			if(AOrb) o = overlapCGTF(&AOrb[k],&AOrb[l])*fact;
+			else o = SOverlaps[kk++]*fact;
+		/* printf("k=%d o = %lf\n",k,o);*/
+			for(i=0;i<NAlphaOcc;i++) charges[ic] -= OccAlphaOrbitals[i]*CoefAlphaOrbitals[i][k]*CoefAlphaOrbitals[i][l]*o;
+			for(i=0;i<NBetaOcc;i++)  charges[ic] -= OccBetaOrbitals[i]*CoefBetaOrbitals[i][k]*CoefBetaOrbitals[i][l]*o;
+			//if(ic!=jc)
+			if(k!=l)
+			{
+			for(i=0;i<NAlphaOcc;i++) charges[jc] -= OccAlphaOrbitals[i]*CoefAlphaOrbitals[i][k]*CoefAlphaOrbitals[i][l]*o;
+			for(i=0;i<NBetaOcc;i++)  charges[jc] -= OccBetaOrbitals[i]*CoefBetaOrbitals[i][k]*CoefBetaOrbitals[i][l]*o;
+			}
+			nAll++;
+			if(nAll>=pos)
+			{
+				pos += delta;
+				progress_orb_txt(scal,str,FALSE);
+			}
+		}
+	}
+	progress_orb_txt(0," ",TRUE);
+
+	result = g_malloc(Ncenters*100*sizeof(gchar));
+	tmp = g_malloc(BSIZE*sizeof(gchar));
+	sprintf(result," Mulliken charges\n");
+
+	setTextInProgress(_("Preparation of text to show... Please wait"));
+	for(i=0;i<Ncenters;i++)
+	{
+		if(CancelCalcul) break;
+		sprintf(tmp,"Atom# %d : %lf\n",i+1,charges[i]);
+		strcat(result,tmp);
+		if(CancelCalcul) break;
+	}
+	g_free(tmp);
+	progress_orb_txt(0," ",TRUE);
+	if(result && !CancelCalcul)
+	{
+		GtkWidget* message = showCalculatedChargesDlg(result,"Mulliken charges",charges);
+  		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+		gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));
+	}
+	g_free(result);
+}
+/************************************************************************************************************/
+static void setBondOrdersToCalculated(GtkWidget *win)
+{
+	//gint i;
+	gint i;
+	gint j;
+	gdouble* bondOrders = NULL;
+	if(GTK_IS_WIDGET(win)) bondOrders = g_object_get_data(G_OBJECT (win), "BondOrders");
+	if(!bondOrders)  return;
+	freeBondsOrb();
+	if(Ncenters<1) return ;
+	for(i = 0;i<Ncenters;i++)
+	{
+		for(j=i+1;j<Ncenters;j++)
+		{
+			gint ii    = i*Ncenters + j - i*(i+1)/2;
+			if(i>j) ii = j*Ncenters + i - j*(j+1)/2;
+			if((gint)(bondOrders[ii]+0.5)==1)
+			{
+				BondType* A=g_malloc(sizeof(BondType));
+				A->n1 = i;
+				A->n2 = j;
+				A->bondType = GABEDIT_BONDTYPE_SINGLE;
+				BondsOrb = g_list_append(BondsOrb,A);
+			}
+			else if((gint)(bondOrders[ii]+0.5)==2)
+			{
+				BondType* A=g_malloc(sizeof(BondType));
+				A->n1 = i;
+				A->n2 = j;
+				A->bondType = GABEDIT_BONDTYPE_DOUBLE;
+				BondsOrb = g_list_append(BondsOrb,A);
+			}
+			else if((gint)(bondOrders[ii]+0.5)==3)
+			{
+				BondType* A=g_malloc(sizeof(BondType));
+				A->n1 = i;
+				A->n2 = j;
+				A->bondType = GABEDIT_BONDTYPE_TRIPLE;
+				BondsOrb = g_list_append(BondsOrb,A);
+			}
+		        else
+			if(ShowHBondOrb && hbonded(i,j))
+			{
+				BondType* A=g_malloc(sizeof(BondType));
+				A->n1 = i;
+				A->n2 = j;
+				A->bondType = GABEDIT_BONDTYPE_HYDROGEN;
+				BondsOrb = g_list_append(BondsOrb,A);
+			}
+		}
+	  }
+	RebuildGeom = TRUE;
+	glarea_rafresh(GLArea);
+}
+/************************************************************************************************************/
+static void destroyCalculatedBondOrdersDlg(GtkWidget *win)
+{
+	gdouble* bondOrders = NULL;
+	if(GTK_IS_WIDGET(win)) bondOrders = g_object_get_data(G_OBJECT (win), "BondOrders");
+	if(bondOrders) g_free(bondOrders);
+	if(GTK_IS_WIDGET(win)) delete_child(win);
+	if(GTK_IS_WIDGET(win)) gtk_widget_destroy(win);
+}
+/********************************************************************************/
+static GtkWidget* showCalculatedBondOrdersDlg(gchar *message,gchar *title,gdouble* bondOrders)
+{
+	GtkWidget *dlgWin = NULL;
+	GtkWidget *frame;
+	GtkWidget *vboxframe;
+	GtkWidget *txtWid;
+	GtkWidget *button;
+
+
+	dlgWin = gtk_dialog_new();
+	gtk_widget_realize(GTK_WIDGET(dlgWin));
+
+	gtk_window_set_title(GTK_WINDOW(dlgWin),title);
+	gtk_window_set_position(GTK_WINDOW(dlgWin),GTK_WIN_POS_CENTER);
+  	gtk_window_set_modal (GTK_WINDOW (dlgWin), TRUE);
+	gtk_window_set_transient_for(GTK_WINDOW(dlgWin),GTK_WINDOW(PrincipalWindow));
+
+	g_signal_connect(G_OBJECT(dlgWin), "delete_event", (GCallback)destroyCalculatedBondOrdersDlg, NULL);
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
+	gtk_box_pack_start( GTK_BOX(GTK_DIALOG(dlgWin)->vbox), frame,TRUE,TRUE,0);
+
+	gtk_widget_show (frame);
+
+	vboxframe = create_vbox(frame);
+	txtWid = create_text_widget(vboxframe,NULL,&frame);
+	if(message) gabedit_text_insert (GABEDIT_TEXT(txtWid), NULL, NULL, NULL,message,-1);   
+
+	gtk_box_set_homogeneous (GTK_BOX( GTK_DIALOG(dlgWin)->action_area), FALSE);
+  
+	button = create_button(dlgWin,_("Multiple bonds <= Calculated bondOrders"));
+	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(dlgWin)->action_area), button, FALSE, TRUE, 5);  
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)setBondOrdersToCalculated, GTK_OBJECT(dlgWin));
+
+	button = create_button(dlgWin,"Close");
+	gtk_box_pack_end (GTK_BOX( GTK_DIALOG(dlgWin)->action_area), button, FALSE, TRUE, 5);  
+	GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+	gtk_widget_grab_default(button);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)destroyCalculatedBondOrdersDlg, GTK_OBJECT(dlgWin));
+
+	add_button_windows(title,dlgWin);
+	gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeight*0.6), (gint)(ScreenHeight*0.5));
+	gtk_widget_show_all(dlgWin);
+  	g_object_set_data(G_OBJECT (dlgWin), "BondOrders",bondOrders);
+	return dlgWin;
+}
+/********************************************************************************/
+void compute_bondOrders()
+{
+	gint i,j,k,l,m;
+	gchar* result = NULL;
+	gdouble* bondOrders = NULL;
+	gchar* tmp = NULL;
+	gdouble o;
+	gint nAll = 0;
+	gint delta = 0;
+	gint pos = 0;
+	gdouble scal;
+	gchar str[BSIZE];
+	gdouble** S = NULL;
+	gdouble** Pa = NULL;
+	gdouble** Pb = NULL;
+	gdouble** PS = NULL;
+	gint n2 = Ncenters*(Ncenters+1)/2;
+	gint kk;
+
+	if(Ncenters<1) return;
+	if(!AOrb && (!SAOrb || !SOverlaps)) return;
+
+	destroy_win_list();
+	sprintf(str,_("Computing of bond order matrix... Please wait"));
+	setTextInProgress(str);
+
+	scal = 0.01;
+	delta = (gint)(NAOrb*(NAOrb+1)/2*scal);
+	if(delta<1) delta = 1;
+	pos = delta;
+
+	bondOrders = g_malloc(n2*sizeof(gdouble));
+	for(i=0;i<n2;i++) bondOrders[i] = 0;
+
+	S = g_malloc(NAOrb*sizeof(gdouble*));
+	for(i=0;i<NAOrb;i++) S[i] = g_malloc(NAOrb*sizeof(gdouble));
+	for(i=0;i<NAOrb;i++) 
+	for(j=0;j<NAOrb;j++) S[i][j] = 0;
+
+	Pa = g_malloc(NAOrb*sizeof(gdouble*));
+	for(i=0;i<NAOrb;i++) Pa[i] = g_malloc(NAOrb*sizeof(gdouble));
+	for(i=0;i<NAOrb;i++) 
+	for(j=0;j<NAOrb;j++) Pa[i][j] = 0;
+
+	Pb = g_malloc(NAOrb*sizeof(gdouble*));
+	for(i=0;i<NAOrb;i++) Pb[i] = g_malloc(NAOrb*sizeof(gdouble));
+	for(i=0;i<NAOrb;i++) 
+	for(j=0;j<NAOrb;j++) Pb[i][j] = 0;
+
+	PS = g_malloc(NAOrb*sizeof(gdouble*));
+	for(i=0;i<NAOrb;i++) PS[i] = g_malloc(NAOrb*sizeof(gdouble));
+	for(i=0;i<NAOrb;i++) 
+	for(j=0;j<NAOrb;j++) PS[i][j] = 0;
+
+	progress_orb_txt(0,str,TRUE);
+	kk = 0;
+	for(k=0;k<NAOrb;k++)
+	{
+		for(l=0;l<=k;l++)
+		{
+			double s = 0;
+			if(CancelCalcul) break;
+			if(AOrb) o = overlapCGTF(&AOrb[k],&AOrb[l]);
+			else o = SOverlaps[kk++];
+			S[k][l] = o;
+			if(k!=l) S[l][k] = S[k][l];
+
+			s = 0;
+			for(i=0;i<NAOrb;i++) 
+				s += OccAlphaOrbitals[i]*CoefAlphaOrbitals[i][k]*CoefAlphaOrbitals[i][l];
+			Pa[k][l] += s;
+			if(k!=l) Pa[l][k] += s;
+			s = 0;
+			for(i=0;i<NAOrb;i++) 
+				s += OccBetaOrbitals[i]*CoefBetaOrbitals[i][k]*CoefBetaOrbitals[i][l];
+			Pb[k][l] += s;
+			if(k!=l) Pb[l][k] += s;
+			nAll++;
+			if(nAll>=pos)
+			{
+				pos += delta;
+				progress_orb_txt(scal,str,FALSE);
+			}
+		}
+	}
+	for(k=0;k<NAOrb;k++)
+		for(l=0;l<NAOrb;l++)
+		{
+			PS[k][l] = 0;
+			for(m=0;m<NAOrb;m++) PS[k][l] += Pa[k][m]*S[m][l];
+		}
+
+	/*
+	printf("Density matrix alpha\n");
+	for(k=0;k<NAOrb;k++) {for(l=0;l<=k;l++) printf("%f ",PS[k][l]); printf("\n");}
+	*/
+
+	double s1 = 0;
+	for(k=0;k<NAOrb;k++)
+	{
+		gint i = (AOrb)?AOrb[k].NumCenter:SAOrb[k].NumCenter;
+		for(l=0;l<NAOrb;l++)
+		{
+			gint j = (AOrb)?AOrb[l].NumCenter:SAOrb[l].NumCenter;
+			gint ii =  i*Ncenters + j - i*(i+1)/2;
+			if(i>j) ii = j*Ncenters + i - j*(j+1)/2;
+			bondOrders[ii] += PS[k][l]*PS[l][k];
+		}
+		/* printf(" k %d  %f\n",i,  PS[k][k]);*/
+		s1 += PS[k][k];
+	}
+	/* printf(" s1 = %f\n",s1);*/
+	for(k=0;k<NAOrb;k++)
+	for(l=0;l<NAOrb;l++)
+	{
+		PS[k][l] = 0;
+		for(m=0;m<NAOrb;m++) PS[k][l] += Pb[k][m]*S[m][l];
+	}
+
+	/*
+	printf("Density matrix beta\n");
+	for(k=0;k<NAOrb;k++) {for(l=0;l<=k;l++) printf("%f ",2*PS[k][l]); printf("\n");}
+	*/
+
+	double s2 = 0;
+	for(k=0;k<NAOrb;k++)
+	{
+		gint i = (AOrb)?AOrb[k].NumCenter:SAOrb[k].NumCenter;
+		for(l=0;l<NAOrb;l++)
+		{
+			gint j = (AOrb)?AOrb[l].NumCenter:SAOrb[l].NumCenter;
+			gint ii =  i*Ncenters + j - i*(i+1)/2;
+			if(i>j) ii = j*Ncenters + i - j*(j+1)/2;
+			bondOrders[ii] += PS[k][l]*PS[l][k];
+		}
+		/* printf(" k %d  %f\n",i,  PS[k][k]);*/
+		s2 += PS[k][k];
+	}
+	/* printf(" s2 = %f\n",s2);*/
+	progress_orb_txt(0," ",TRUE);
+	for(i=0;i<NAOrb;i++) g_free(S[i]);
+	g_free(S);
+	for(i=0;i<NAOrb;i++) g_free(Pa[i]);
+	g_free(Pa);
+	for(i=0;i<NAOrb;i++) g_free(Pb[i]);
+	g_free(Pb);
+	for(i=0;i<NAOrb;i++) g_free(PS[i]);
+	g_free(PS);
+
+	result = g_malloc(n2*100*sizeof(gchar));
+	tmp = g_malloc(BSIZE*sizeof(gchar));
+	sprintf(result," BondOrders\n");
+
+	setTextInProgress(_("Preparation of text to show... Please wait"));
+	for(i=0;i<Ncenters;i++)
+	for(j=i+1;j<Ncenters;j++)
+	{
+		gint ii =  i*Ncenters + j - i*(i+1)/2;
+		if(i>j) ii = j*Ncenters + i - j*(j+1)/2;
+		if(CancelCalcul) break;
+		sprintf(tmp,"Bond %d-%d : %lf\n",i+1,j+1,bondOrders[ii]);
+		strcat(result,tmp);
+		if(CancelCalcul) break;
+	}
+	g_free(tmp);
+	progress_orb_txt(0," ",TRUE);
+	if(result && !CancelCalcul)
+	{
+		GtkWidget* message = showCalculatedBondOrdersDlg(result,"Bond orders ",bondOrders);
+  		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+		gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));
+	}
+	g_free(result);
 }

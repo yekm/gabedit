@@ -36,6 +36,7 @@ static  GtkWidget *Window;
 static  GtkWidget *VboxOption;
 static  GtkWidget *FrameShow;
 static  GtkWidget *Wins;
+static int begin = 1;
 
 /********************************************************************************************************/
 static void gene_ref(GtkWidget *b,gpointer data)
@@ -47,7 +48,7 @@ static void gene_ref(GtkWidget *b,gpointer data)
   entrytext = gtk_entry_get_text(GTK_ENTRY(entry));
   gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, ",",-1);
   gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, entrytext,-1);
-  gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, ";\n",-1);
+  gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, "; ",-1);
 }
 /********************************************************************************************************/
 static void gene_nstate(GtkWidget *b,gpointer data)
@@ -59,7 +60,7 @@ static void gene_nstate(GtkWidget *b,gpointer data)
   entrytext = gtk_entry_get_text(GTK_ENTRY(entry));
   gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, ",",-1);
   gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, entrytext,-1);
-  gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, ";\n",-1);
+  gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, "; ",-1);
 }
 /********************************************************************************************************/
 static void gene_guess(GtkWidget *b,gpointer data)
@@ -71,7 +72,7 @@ static void gene_guess(GtkWidget *b,gpointer data)
   entrytext = gtk_entry_get_text(GTK_ENTRY(entry));
   gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, ",",-1);
   gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, entrytext,-1);
-  gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, ";\n",-1);
+  gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, "; ",-1);
 }
 /********************************************************************************************************/
 static void gene_entry(GtkWidget *b,gpointer data)
@@ -81,7 +82,7 @@ static void gene_entry(GtkWidget *b,gpointer data)
   entry=(GtkWidget *)data;
   entrytext = gtk_entry_get_text(GTK_ENTRY(entry));
   gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, entrytext,-1);
-  gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, ";\n",-1);
+  gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, "; ",-1);
 }
 /********************************************************************************************************/
 static void c_restrictexcitation(GtkWidget *bframe,guint del)
@@ -411,7 +412,7 @@ static void gene_S_orb_num(GtkWidget *b,gpointer data)
   entry=entryall[0];
   entrytext = gtk_entry_get_text(GTK_ENTRY(entry));
   gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, entrytext,-1);
-  gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, ";\n",-1);
+  gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, "; ",-1);
 }
 /********************************************************************************************************/
 static void gene_orb_mode(GtkWidget *b,gpointer data)
@@ -433,7 +434,7 @@ static void gene_orb_num(GtkWidget *b,gpointer data)
   gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, ",",-1);
   gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, entrytext,-1);
   }
-  gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, ";\n",-1);
+  gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, "; ",-1);
 }
 /********************************************************************************************************/
 static void gene_one_entry2(GtkWidget *b,gpointer data)
@@ -443,7 +444,7 @@ static void gene_one_entry2(GtkWidget *b,gpointer data)
   entry=(GtkWidget *)data;
   entrytext = gtk_entry_get_text(GTK_ENTRY(entry));
   gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, entrytext,-1);
-  gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, ";\n",-1);
+  gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, "; ",-1);
 }
 /********************************************************************************************************/
 static void gene_one_entry1(GtkWidget *b,gpointer data)
@@ -675,7 +676,7 @@ static void gene_wf(GtkWidget *b,gpointer data)
   gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, ",",-1);
   gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, entrytext,-1);
   }
-  gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, ";\n",-1);
+  gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, "; ",-1);
 }
 /********************************************************************************************************/
 static void cw_wave (GtkWidget *bframe,guint del)
@@ -1098,8 +1099,11 @@ static void command_select(GtkComboBox *combobox, gpointer d)
  
 	if (strcmp((char *)data,_("Please select the type of calculation")) )
 	{
+		if(!begin) gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, "}\n",-1);
+		gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, "{ ",-1);
 		gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, (char *)data,-1);
-		gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, ";\n",-1);
+		gabedit_text_insert (GABEDIT_TEXT(text2), NULL, NULL, NULL, "; ",-1);
+		begin = 0;
 	}
 }
 /********************************************************************************************************/
@@ -1193,6 +1197,7 @@ void AjoutePageComm(GtkWidget* Win,GtkWidget *NoteBook,CommS *comm)
   GtkWidget *combobox;
   Wins = Win;
 
+  begin = 1;
 
   Frame = gtk_frame_new(NULL);
   gtk_widget_set_size_request(GTK_WIDGET(Frame), 600, 400);

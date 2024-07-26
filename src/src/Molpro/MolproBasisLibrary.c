@@ -122,8 +122,8 @@ void get_molpro_basis_list(gchar* Symb,gchar* orb,gchar* outfile,gchar* errfile)
 {
  	gchar *allorb[21] = {"ECP", "s","p","d","f","g","h","i","j","k","l",
 				 "S","P","D","F","G","H","I","J","K","L"};
-	FILE* fout=FOpen(outfile,"w");  
-	FILE* ferr=FOpen(errfile,"w");  
+	FILE* fout=fopen(outfile,"w");  
+	FILE* ferr=fopen(errfile,"w");  
 	gint numorb1=-1;
 	gint numorb2=-1;
 	gchar bas[BSIZE];
@@ -1168,7 +1168,7 @@ void saveMolproBasis()
 
 	if(molproBasis.numberOfAtoms<0)
 		return;
-	file = FOpen(filename,"w");
+	file = fopen(filename,"w");
 	fprintf(file,"Natoms =  %d\n",molproBasis.numberOfAtoms);
 	for(i=0;i<molproBasis.numberOfAtoms;i++)
 	{
@@ -1191,7 +1191,7 @@ void saveMolproBasis()
 void loadMolproBasis()
 {
         gchar *filename =  g_strdup_printf("%s/molprobasis",gabedit_directory());  
-	FILE* file = FOpen(filename,"r");
+	FILE* file = fopen(filename,"r");
 	gchar t[BSIZE];
 	gchar symb[BSIZE];
 	gchar bas[BSIZE];
@@ -1205,7 +1205,7 @@ void loadMolproBasis()
 	if(!file)
 	{
 		create_molpro_basis_file();
-		file = FOpen(filename,"r");
+		file = fopen(filename,"r");
 	}
 	if(!file)
 	{

@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Utils.h"
 #include "../Utils/Constants.h"
 #include "../Utils/Zlm.h"
+#include "../Utils/QL.h"
 #include "../Utils/MathFunctions.h"
 #include "../Geometry/GeomGlobal.h"
 #include "GeomDraw.h"
@@ -690,7 +691,285 @@ static gboolean normalize_orbitals(gchar* FileName, gdouble**CoefOrbitals)
 		for(k=0;k<NOrb;k++)
 			CoefOrbitals[i][k] *= ovOM;
 	}
+	if(S) g_free(S);
 	return TRUE;
+}
+/********************************************************************************/
+static gdouble overlapOM(gdouble* Ci, gdouble* Cj, gdouble* S)
+{
+	gdouble ovOM = 0;
+	gint k,l;
+	gint kk =0;
+	for(k=0;k<NOrb;k++)
+	{
+		for(l=0;l<=k;l++)
+		{
+			if(l!=k)
+				ovOM += (Ci[k]*Cj[l]+ Ci[l]*Cj[k])*S[kk++];
+			else
+				ovOM +=   Ci[k]*Cj[l]*S[kk++];
+		}
+	}
+	return ovOM;
+}
+/********************************************************************************/
+static void addScaleVect(gint n, gdouble* Ci, gdouble* Cj, gdouble s)
+{
+	gint k;
+	for(k=0;k<n;k++) Ci[k] += Cj[k]*s;
+}
+/********************************************************************************/
+static gboolean orthonormalize_orbitals_schmidt(gchar* FileName, gdouble**CoefOrbitals, gint nb, gint ne)
+{
+	gint nn;
+	gint N = NOrb*(NOrb+1)/2;
+	gdouble* S = read_overlap_matrix_from_a_mopac_output_file(FileName, &nn);
+	gint i;
+	gint k;
+	gdouble PRECISION = 1e-10;
+	gdouble r;
+	gint j;
+	/* printf("nn=%d N = %d\n",nn,N);*/
+	if(nn != N) return FALSE;
+	for(i=nb;i<ne;i++) 
+	{
+	
+		for(j=nb;j<i;j++) 
+		{
+			r =  -overlapOM(CoefOrbitals[i], CoefOrbitals[j], S);
+			addScaleVect(NOrb,CoefOrbitals[i], CoefOrbitals[j],r);
+		}
+		r = overlapOM(CoefOrbitals[i], CoefOrbitals[i], S);
+		if(r<PRECISION)
+		{
+			printf("Error in orthonormalization : vectors almost lineary dependent\n");
+			if(S) g_free(S);
+                        return FALSE;
+		}
+		r = sqrt(fabs(r)+1e-20);
+		r = 1/r;
+		for(k=0;k<NOrb;k++) CoefOrbitals[i][k] *= r;
+	}
+	/* Check */
+	/*
+	{
+		for(i=0;i<NOrb;i++) 
+		{
+			for(j=0;j<=i;j++) 
+			{
+				printf("% f ",  overlapOM(CoefOrbitals[i], CoefOrbitals[j], S));
+			}
+			printf("\n");
+		}
+	
+		
+	}
+	*/
+	if(S) g_free(S);
+	return TRUE;
+}
+/********************************************************************************/
+static gboolean orthonormalize_orbitals_diag(gchar* FileName, gdouble**CoefOrbitals, gint nb, gint ne)
+{
+	gint nn;
+	gint N = NOrb*(NOrb+1)/2;
+	gdouble* S = read_overlap_matrix_from_a_mopac_output_file(FileName, &nn);
+	gint i;
+	gint k;
+	gint l;
+	gdouble PRECISION = 1e-10;
+	gint j;
+	gdouble* e;
+	gdouble** V;
+	gdouble* Smol;
+	gdouble** Sm12;
+	gint success = 1;
+	gint kk;
+	gint no = ne - nb ;
+	/* printf("nn=%d N = %d\n",nn,N);*/
+	if(nn != N) return FALSE;
+	e = g_malloc(NOrb*sizeof(gdouble));
+	V = g_malloc(NOrb*sizeof(gdouble*));
+	for(i=0;i<NOrb;i++) V[i] = g_malloc(NOrb*sizeof(gdouble));
+
+	Sm12 = g_malloc(NOrb*sizeof(gdouble*));
+	for(i=0;i<NOrb;i++) Sm12[i] = g_malloc(NOrb*sizeof(gdouble));
+
+	Smol = g_malloc(N*sizeof(gdouble));
+	kk = 0;
+	for(i=nb;i<ne;i++) 
+		for(j=nb;j<=i;j++) 
+		{
+			/* printf("i=%d j = %d\n",i,j);*/
+			Smol[kk++] = overlapOM(CoefOrbitals[i], CoefOrbitals[j], S);
+		}
+	/* Check */
+	/*
+	{
+		printf("Atomic overlap matrix\n");
+		kk =0;
+		for(i=0;i<NOrb;i++) 
+		{
+			for(j=0;j<=i;j++) 
+			{
+				printf("% f ",  S[kk++]);
+			}
+			printf("\n");
+		}
+	
+		
+	}
+	*/
+	/* Check */
+	/*
+	{
+		printf("Molecular overlap matrix\n");
+		kk =0;
+		for(i=nb;i<ne;i++) 
+		{
+			for(j=nb;j<=i;j++) 
+			{
+				printf("% f ",  Smol[kk++]);
+			}
+			printf("\n");
+		}
+	}
+	*/
+	/* Check */
+	/*
+	{
+		printf("orbital 1 and 2\n");
+		kk =0;
+		for(i=0;i<NOrb;i++) 
+		{
+			printf("%f %f\n", CoefOrbitals[0][i], CoefOrbitals[1][i]);
+		}
+		printf("\n");
+	
+		
+	}
+	*/
+
+	success = eigen(Smol, no, e, V);
+	if(!success)
+	{
+		for(i=0;i<NOrb;i++) g_free(V[i]);
+		g_free(V);
+		g_free(e);
+		return success;
+	}
+	/*
+	printf("Eigenvalues for S MO\n");
+	for(i=0;i<no;i++)  printf("%f ", e[i]);
+	printf("\n");
+	*/
+	/* Check V */
+	/*
+	{
+		printf("eigenvectors for S\n");
+		for(i=0;i<no;i++) 
+		{
+			for(j=0;j<no;j++) 
+			{
+				printf("% f ",  V[i][j]);
+			}
+			printf("\n");
+		}
+	
+		
+	}
+	*/
+	for(i=0;i<no;i++)  
+	if(e[i]<PRECISION)
+	{
+		printf("Warning in orthonormalization : vectors almost lineary dependent\n");
+	}
+	for(i=0;i<no;i++)  e[i] = 1.0/sqrt(fabs(e[i])+1e-20);
+	for(i=0;i<no;i++) 
+	{
+		for(j=0;j<no;j++) 
+		{
+			double s = 0;
+			for(l=0;l<no;l++) s += V[i][l]*e[l]*V[j][l];
+			Sm12[i][j] = s;
+		}
+	}
+	/* Check VsV */
+	/*
+	{
+		printf("Sm12\n");
+		for(i=0;i<no;i++) 
+		{
+			for(j=0;j<no;j++) 
+			{
+				printf("%f ",  Sm12[i][j]);
+			}
+			printf("\n");
+		}
+	}
+	*/
+	/* check Sm12SmolSm12 */
+	/*
+	{
+		printf("Sm12SmolSm12\n");
+		for(i=0;i<no;i++) 
+		for(j=0;j<no;j++) 
+		{
+			V[i][j] = 0;
+			for(k=0;k<no;k++) V[i][j] += Sm12[i][k]*Smol[(j<k)?k*(k+1)/2+j:j*(j+1)/2+k];
+		}
+		kk = 0;
+		for(i=0;i<no;i++) 
+		{
+			for(j=0;j<=i;j++) 
+			{
+				double s = 0;
+				for(k=0;k<NOrb;k++) s += V[i][k]*Sm12[k][j];
+				printf("%f ",  s);
+			}
+			printf("\n");
+		}
+	}
+	*/
+
+	for(i=0;i<no;i++) 
+	{
+		for(j=0;j<NOrb;j++) 
+		{
+			V[i][j] = 0;
+			for(k=0;k<no;k++) V[i][j] += Sm12[k][i]*CoefOrbitals[k+nb][j];
+		}
+	}
+	for(i=0;i<no;i++) 
+		for(k=0;k<NOrb;k++) 
+			CoefOrbitals[nb+i][k] = V[i][k];
+
+	for(i=0;i<NOrb;i++) g_free(V[i]);
+	g_free(V);
+	if(e) g_free(e);
+	/* Check */
+	{
+		printf("Overlap OM matrix after orthonormalisation : Psi S^-1/2\n");
+		for(i=nb;i<ne;i++) 
+		{
+			for(j=nb;j<=i;j++) 
+			{
+				printf("%f ",  overlapOM(CoefOrbitals[i], CoefOrbitals[j], S));
+			}
+			printf("\n");
+		}
+	
+		
+	}
+	if(Smol) g_free(Smol);
+	if(S) g_free(S);
+	return TRUE;
+}
+/********************************************************************************/
+static gboolean orthonormalize_orbitals(gchar* FileName, gdouble**CoefOrbitals, gint nb, gint ne)
+{
+	//return orthonormalize_orbitals_schmidt(FileName, CoefOrbitals, no);
+	return orthonormalize_orbitals_diag(FileName, CoefOrbitals, nb, ne);
 }
 /********************************************************************************/
 static gint get_num_electrons(FILE* file)
@@ -986,7 +1265,8 @@ static gboolean set_coef_orbitals_nocomp(gchar* FileName)
 		for(i=nBegin-1;i<nEnd;i++) 
 			for(j=0;j<NOrb;j++)
 				CoefAlphaOrbitals[i][j]=atof(str[k++]);
-		normalize_orbitals(FileName, CoefAlphaOrbitals);
+		orthonormalize_orbitals(FileName, CoefAlphaOrbitals, nBegin-1, nEnd);
+		/*normalize_orbitals(FileName, CoefAlphaOrbitals);*/
 	}
 	if(nAlpha>0 && nAlpha==nBeta)
 	{
@@ -1001,8 +1281,10 @@ static gboolean set_coef_orbitals_nocomp(gchar* FileName)
 			for(j=0;j<NOrb;j++)
 				CoefBetaOrbitals[i][j]=atof(strBeta[k++]);
 
-		normalize_orbitals(FileName, CoefAlphaOrbitals);
-		normalize_orbitals(FileName, CoefBetaOrbitals);
+		orthonormalize_orbitals(FileName, CoefAlphaOrbitals, nBeginAlpha-1, nEndAlpha);
+		orthonormalize_orbitals(FileName, CoefBetaOrbitals, nBeginBeta-1, nEndBeta);
+		/*normalize_orbitals(FileName, CoefAlphaOrbitals);*/
+		/*normalize_orbitals(FileName, CoefBetaOrbitals);*/
 	}
 	if(file) fclose(file);
 	free_one_string_table(strAlpha, nAlpha);
@@ -1271,6 +1553,13 @@ void read_mopac_orbitals(gchar* FileName)
 			if(Ok) Ok = set_coef_orbitals(FileName);
 			/* printf("Ok coef = %d\n",Ok);*/
 		}
+	}
+	if(Ok)
+	{
+		gint nrs = 0;
+		if(SOverlaps) g_free(SOverlaps);
+		SOverlaps = read_overlap_matrix_from_a_mopac_output_file(FileName, &nrs);
+		if(!SOverlaps) Ok = FALSE;
 	}
 
 	if(Ok)

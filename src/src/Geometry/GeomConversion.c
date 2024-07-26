@@ -186,7 +186,7 @@ static gdouble get_dihedral_xyz(gint i,gint j,gint l,gint m)
         guint k;
 	gdouble angle;
 	gdouble dihsgn;
-	static gdouble precision = 1e-6;
+	static gdouble precision = 1e-4;
 
 	W1 = gxyz[i].P;
 	W2 = gxyz[j].P;
@@ -371,10 +371,11 @@ void insert_dummy_atoms_gxyz()
 	    k = i-1;
     if(k!=-1)
     {
-	    A = get_X_position(k,k+1);
-	    insert_dummy_atom_gxyz(k,A);
-	    Ok = TRUE;
-	    break;
+    	printf("Warning : insert dummy atom  : %d %d %d %d are linear\n",i-2,i-1,i,i+1);
+	A = get_X_position(k,k+1);
+	insert_dummy_atom_gxyz(k,A);
+	Ok = TRUE;
+	break;
     }
   }
   }

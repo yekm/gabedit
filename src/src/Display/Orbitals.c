@@ -39,6 +39,7 @@ DEALINGS IN THE SOFTWARE.
 #include "OrbitalsGamess.h"
 #include "OrbitalsMolpro.h"
 #include "OrbitalsQChem.h"
+#include "OrbitalsNWChem.h"
 #include "OrbitalsMopac.h"
 #include "OrbitalsOrca.h"
 
@@ -380,7 +381,9 @@ void applygrid(GtkWidget *Win,gpointer data)
 	delete_child(Win);
 	TypeSelOrb = TypeSelOrbtmp;
  	NumSelOrb = NumSelOrbtmp;
+	/* printf("Define_Grid\n");*/
 	Define_Grid();
+	/* printf("create_iso_orbitals\n");*/
 	create_iso_orbitals();
 }
 /********************************************************************************/
@@ -1021,6 +1024,7 @@ void create_iso_orbitals()
   GtkWidget* Entry;
 
 
+  /* printf("Begin create_iso_orbitals\n"); */
   if(!grid )
   {
 	  if( !CancelCalcul)
@@ -2471,6 +2475,19 @@ void read_qchem_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
  	read_qchem_orbitals(FileName);
 } 
 /********************************************************************************/
+void read_nwchem_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
+{
+ 	gchar *FileName;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+	gtk_widget_hide(GTK_WIDGET(SelecFile));
+	while( gtk_events_pending() ) gtk_main_iteration();
+
+	add_objects_for_new_grid();
+ 	read_nwchem_orbitals(FileName);
+} 
+/********************************************************************************/
 void read_mopac_orbitals_sel(GabeditFileChooser *SelecFile, gint response_id)
 {
  	gchar *FileName;
@@ -2579,6 +2596,7 @@ gboolean read_orbitals(gchar* fileName)
 	else if(fileType == GABEDIT_TYPEFILE_MOPAC) read_mopac_orbitals(fileName);
 	else if(fileType == GABEDIT_TYPEFILE_MOPAC_AUX) read_mopac_orbitals(fileName);
 	else if(fileType == GABEDIT_TYPEFILE_ORCA) read_orca_orbitals_from_output_file(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_NWCHEM) read_nwchem_orbitals(fileName);
 	else if(fileType == GABEDIT_TYPEFILE_QCHEM) read_qchem_orbitals(fileName);
 	else if(fileType == GABEDIT_TYPEFILE_GABEDIT) read_gabedit_orbitals(fileName);
 	else if(fileType == GABEDIT_TYPEFILE_MOLDEN) read_molden_orbitals(fileName);

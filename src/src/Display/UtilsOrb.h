@@ -35,6 +35,7 @@ gint get_type_file_orb(gchar *fileName);
 gint get_type_basis_in_gamess_file(gchar *fileName);
 gint get_type_basis_in_gaussian_file(gchar *fileName);
 gint get_type_basis_in_qchem_file(gchar *fileName);
+gint get_type_basis_in_nwchem_file(gchar *fileName);
 gint get_type_basis_in_gabedit_file(gchar *fileName);
 gint get_type_basis_in_molden_file(gchar *fileName);
 gboolean testi(char c);

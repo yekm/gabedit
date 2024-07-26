@@ -7,6 +7,7 @@ GTKLIB = -LE:/allouche/Programs/gtk/lib -lgtk-win32-2.0 -lgdk-win32-2.0 -latk-1.
 #GTKCFLAGS =  `pkg-config gtk+-2.0 --cflags` 
 GTKCFLAGS = -IE:/allouche/Programs/gtk/include/gtk-2.0 -IE:/allouche/Programs/gtk/lib/gtk-2.0/include -IE:/allouche/Programs/gtk/include/atk-1.0 -IE:/allouche/Programs/gtk/include/pango-1.0 -IE:/allouche/Programs/gtk/include/glib-2.0 -IE:/allouche/Programs/gtk/lib/glib-2.0/include  IE:/allouche/Programs/gtk/include/cairo
 
+MKDIR = mkdir 
 MAKE = mingw32-make
 RM = del
 RMTMP = del /S/Q tmp

@@ -31,6 +31,7 @@ static void snapshot_pixbuf_free (guchar   *pixels, gpointer  data)
 	g_free (pixels);
 }
 /**************************************************************************/
+/*
 static GdkPixbuf  *get_pixbuf_gl(guchar* colorTrans)
 {       
 	gint width;
@@ -40,6 +41,68 @@ static GdkPixbuf  *get_pixbuf_gl(guchar* colorTrans)
 	GdkPixbuf  *tmp = NULL;
 	GdkPixbuf  *tmp2 = NULL;
 	guchar *data;
+	GLint viewport[4];
+
+	glGetIntegerv(GL_VIEWPORT, viewport);
+  	width  = viewport[2];
+  	height = viewport[3];
+
+#ifdef G_OS_WIN32 
+	stride = width*3;
+
+	data = g_malloc0 (sizeof (guchar) * stride * height);
+  	//glReadBuffer(GL_BACK);
+  	glReadPixels(0,0,width,height,GL_RGB,GL_UNSIGNED_BYTE,data);
+	tmp = gdk_pixbuf_new_from_data (data, GDK_COLORSPACE_RGB, FALSE, 
+                                      8, width, height, stride, snapshot_pixbuf_free,
+                                      NULL);
+#else
+	stride = width*4;
+
+	data = g_malloc0 (sizeof (guchar) * stride * height);
+  	glReadBuffer(GL_FRONT);
+  	glReadPixels(0,0,width,height,GL_RGBA,GL_UNSIGNED_BYTE,data);
+	tmp = gdk_pixbuf_new_from_data (data, GDK_COLORSPACE_RGB, TRUE, 
+                                      8, width, height, stride, snapshot_pixbuf_free,
+                                      NULL);
+#endif
+
+	if(tmp)
+	{
+		tmp2 = gdk_pixbuf_flip (tmp, TRUE); 
+		g_object_unref (tmp);
+	}
+
+	if(tmp2)
+	{
+		pixbuf = gdk_pixbuf_rotate_simple (tmp2, GDK_PIXBUF_ROTATE_UPSIDEDOWN);
+		g_object_unref (tmp2);
+	}
+
+	if(colorTrans)
+	{
+		tmp = gdk_pixbuf_add_alpha(pixbuf, TRUE, colorTrans[0], colorTrans[1], colorTrans[2]);
+		if(tmp!=pixbuf)
+		{
+ 			g_object_unref (pixbuf);
+			pixbuf = tmp;
+		}
+	}
+	
+	return pixbuf;
+}
+*/
+
+/**************************************************************************/
+static GdkPixbuf  *get_pixbuf_gl(guchar* colorTrans)
+{       
+      	gint stride;
+	GdkPixbuf  *pixbuf = NULL;
+	GdkPixbuf  *tmp = NULL;
+	GdkPixbuf  *tmp2 = NULL;
+	guchar *data;
+  	gint height;
+  	gint width;
 	GLint viewport[4];
 
 	glGetIntegerv(GL_VIEWPORT, viewport);
@@ -85,7 +148,7 @@ static GdkPixbuf  *get_pixbuf_gl(guchar* colorTrans)
 	return pixbuf;
 }
 /*************************************************************************/
-static void gabedit_save_image_gl(GtkWidget* widget, gchar *fileName, gchar* type, guchar* colorTrans)
+void gabedit_save_image_gl(GtkWidget* widget, gchar *fileName, gchar* type, guchar* colorTrans)
 {       
 	GError *error = NULL;
 	GdkPixbuf  *pixbuf = NULL;
@@ -107,7 +170,7 @@ static void gabedit_save_image_gl(GtkWidget* widget, gchar *fileName, gchar* typ
 			if(type && strstr(type,"j") && strstr(type,"g") )
 			gdk_pixbuf_save(pixbuf, fileName, type, &error, "quality", "100", NULL);
 			else if(type && strstr(type,"png"))
-			gdk_pixbuf_save(pixbuf, fileName, type, &error, "compression", "5", NULL);
+			gdk_pixbuf_save(pixbuf, fileName, type, &error, "compression", "9", NULL);
 			else if(type && (strstr(type,"tif") || strstr(type,"tiff")))
 			gdk_pixbuf_save(pixbuf, fileName, "tiff", &error, "compression", "1", NULL);
 			else
@@ -158,6 +221,7 @@ void save_png_file(GabeditFileChooser *SelecFile, gint response_id)
 
 	gtk_widget_hide(GTK_WIDGET(SelecFile));
 	gtk_window_move(GTK_WINDOW(PrincipalWindow),0,0);
+	while( gtk_events_pending() ) gtk_main_iteration();
 	glarea_rafresh(GLArea);
 	while( gtk_events_pending() ) gtk_main_iteration();
 	gabedit_save_image_gl(GLArea, fileName, "png",NULL);

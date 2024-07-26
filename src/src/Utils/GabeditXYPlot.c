@@ -102,7 +102,35 @@ static void xyplot_build_legends(GabeditXYPlot *xyplot);
 static void xyplot_free_legends(GabeditXYPlot *xyplot);
 static void xyplot_build_points_data(GabeditXYPlot *xyplot, XYPlotData *data);
 static PangoLayout* get_pango_str(GabeditXYPlot *xyplot, G_CONST_RETURN gchar* txt);
+static void xyplot_curve_noconv(GabeditXYPlot *xyplot, gint numberOfPoints, gdouble* X,  gdouble* Y, GdkColor* color);
 
+/****************************************************************************************/
+static void build_linear_x(gdouble* x0, gdouble* y0, gint n, gdouble**X, gdouble** Y, gint N)
+{
+	
+	gdouble dx = 0;
+	gdouble* x = NULL;
+	gdouble* y = NULL;
+	gint i,j;
+	*X= x;
+	*Y= y;
+	if(n<1||N<2) return;
+	x =  g_malloc(N*sizeof(gdouble)); 
+	y =  g_malloc(N*sizeof(gdouble)); 
+	dx = (x0[n-1]-x0[0])/(N-1);
+
+	x[0] = x0[0];
+	for(i=1;i<N; i++)  x[i] = x[i-1]+dx;
+	y[0] = y0[0];
+	for(i=1;i<N; i++)  
+	{
+		for(j=n-1;j>=0; j--)  if(x[i]>x0[j]) break;
+		if(j==n-1) y[i] = y0[j];
+		else y[i] = (y0[j+1]-y0[j])/(x0[j+1]-x0[j])*(x[i]-x0[j])+y0[j];
+	}
+	*X = x;
+	*Y = y;
+}
 /****************************************************************************************/
 static void xyplot_message(gchar* message)
 {
@@ -1935,6 +1963,98 @@ static gboolean this_is_a_backspace(gchar *st)
         return TRUE;
 }   
 /********************************************************************************/
+static gboolean read_data_1column(GtkFileChooser *filesel, gint response_id)
+{
+	gchar *fileName;
+ 	gchar t[BSIZE];
+ 	gboolean OK;
+ 	FILE *fd;
+	gint ne;
+	gint numberOfPoints = 0;
+	gdouble* X = NULL;
+	gdouble* Y = NULL;
+	gdouble a;
+	gdouble b;
+	GtkWidget* xyplot = NULL;
+	gint nData= 0;
+	gboolean doPeaks = FALSE;
+
+	if(response_id != GTK_RESPONSE_OK) return FALSE;
+ 	fileName = gtk_file_chooser_get_filename(filesel);
+	xyplot = g_object_get_data(G_OBJECT (filesel), "XYPLOT");
+	doPeaks = GPOINTER_TO_INT(g_object_get_data(G_OBJECT (filesel), "DoPeaks"));
+
+ 	fd = fopen(fileName, "rb");
+ 	OK=FALSE;
+
+  	while(!feof(fd))
+  	{
+    		if(!fgets(t,BSIZE,fd)) break;
+		if(this_is_a_backspace(t))
+		{
+			if(numberOfPoints==0) continue;
+			add_new_data(xyplot, numberOfPoints, X,  Y);
+			numberOfPoints = 0;
+			if(X) g_free(X);
+			if(Y) g_free(Y);
+			X = NULL;
+			Y = NULL;
+			nData ++;
+		}
+		ne = sscanf(t,"%lf",&b);
+		if(ne==1)
+		{
+			numberOfPoints++;
+			a = numberOfPoints;
+			X = g_realloc(X, numberOfPoints*sizeof(gdouble));
+			Y = g_realloc(Y, numberOfPoints*sizeof(gdouble));
+			X[numberOfPoints-1] = a;
+			Y[numberOfPoints-1] = b;
+		}
+	}
+	if(numberOfPoints>0)
+	{
+		if(doPeaks) add_new_data_peaks(xyplot, numberOfPoints, X,  Y);
+		else add_new_data(xyplot, numberOfPoints, X,  Y);
+	}
+	else if(nData == 0)
+	{
+		GtkWidget* parentWidget = get_parent_window(GTK_WIDGET(xyplot));
+		GtkWindow* parentWindow = NULL;
+		if(parentWidget) parentWindow = GTK_WINDOW(parentWidget);
+		GtkWidget* dialog = gtk_message_dialog_new (GTK_WINDOW(parentWindow),
+				GTK_DIALOG_DESTROY_WITH_PARENT,
+				GTK_MESSAGE_ERROR,
+				GTK_BUTTONS_CLOSE,
+			       _("Error reading file '%s'"),
+				fileName);
+		gtk_dialog_run (GTK_DIALOG (dialog));
+		gtk_widget_destroy (dialog);
+	}
+
+	if(X) g_free(X);
+	if(Y) g_free(Y);
+	fclose(fd);
+	return TRUE;
+
+}
+/********************************************************************************/
+static void read_data_1column_dlg(GtkWidget* xyplot, gboolean doPeaks)
+{
+	GtkWidget* parentWindow = NULL;
+	gchar* patternsfiles[] = {"*.txt","*",NULL}; 
+	GtkWidget* filesel= NULL;
+
+	parentWindow = get_parent_window(GTK_WIDGET(xyplot));
+	filesel= new_file_chooser_open(parentWindow, 
+			(GCallback *)read_data_1column, 
+			_("Read data from an ASCII Y file(1 column(Y), X=#ligne)"), 
+			patternsfiles);
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+	g_object_set_data(G_OBJECT (filesel), "XYPLOT", xyplot);
+	g_object_set_data(G_OBJECT (filesel), "DoPeaks",  GINT_TO_POINTER(doPeaks));
+}
+/********************************************************************************/
 static gboolean read_data_2columns(GtkFileChooser *filesel, gint response_id)
 {
 	gchar *fileName;
@@ -2381,6 +2501,176 @@ static void read_data_jdx_dlg(GtkWidget* xyplot)
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 	g_object_set_data(G_OBJECT (filesel), "XYPLOT", xyplot);
 }
+/*************************************************************************************/
+static void set_font (GtkWidget *view, gchar *fontname)
+{
+        GtkStyle *style;
+  	PangoFontDescription *font_desc;
+ 
+	if(!GTK_IS_WIDGET(view)) return;
+        style = gtk_style_copy (gtk_widget_get_style (view));
+  	font_desc = pango_font_description_from_string (fontname);
+
+	if (font_desc)
+	{
+		/*
+		pango_font_description_free (style->font_desc);
+		*/
+		style->font_desc = font_desc;
+	}
+ 
+        gtk_widget_set_style (GTK_WIDGET(view), style);
+ 
+        g_object_unref (style);
+}         
+/********************************************************************************/
+static GtkWidget* create_popup_win(gchar* label)
+{
+	GtkWidget *MainFrame;
+	GtkWidget *Label;
+	GtkWidget *hbox = gtk_hbox_new(0,FALSE);
+	
+
+	MainFrame = gtk_window_new (GTK_WINDOW_POPUP);
+
+	/* center it on the screen*/
+        gtk_window_set_position(GTK_WINDOW (MainFrame), GTK_WIN_POS_MOUSE);
+
+	/* set up key and mound button press to hide splash screen*/
+
+        gtk_widget_add_events(MainFrame,
+                              GDK_BUTTON_PRESS_MASK|
+                              GDK_BUTTON_RELEASE_MASK|
+                              GDK_KEY_PRESS_MASK);
+
+        gtk_widget_realize(MainFrame);
+	Label = gtk_label_new(label);
+   	gtk_label_set_justify(GTK_LABEL(Label),GTK_JUSTIFY_LEFT);
+ 	set_font (Label,"helvetica bold 24");  
+	gtk_box_pack_start (GTK_BOX (hbox), Label, FALSE, FALSE, 0);
+        gtk_widget_show(Label);
+        gtk_widget_show(hbox);
+        gtk_container_add (GTK_CONTAINER (MainFrame), hbox);
+        gtk_widget_show(MainFrame);
+
+	/* force it to draw now.*/
+	gdk_flush();
+
+	/* go into main loop, processing events.*/
+        while(gtk_events_pending()) gtk_main_iteration();
+	return MainFrame;
+}
+/****************************************************************************************/
+static void build_fourier(GtkWidget* buttonDFT, gpointer user_data)
+{
+	if(user_data && G_IS_OBJECT(user_data))
+	{
+		gdouble scale = 1.0;
+		gdouble temperature = 1.0;
+		gdouble xmax = 6000.0;
+		G_CONST_RETURN gchar* t;
+		GtkWidget* xyplot = GTK_WIDGET(user_data);
+		XYPlotData* data = g_object_get_data(G_OBJECT (xyplot), "CurentData");
+		GtkWidget* parentWindow = ( GtkWidget*) g_object_get_data(G_OBJECT (buttonDFT), "ParentWindow");
+		GtkWidget* entry_scale = ( GtkWidget*) g_object_get_data(G_OBJECT (xyplot), "Entry_scale");
+		GtkWidget* entry_temperature = ( GtkWidget*) g_object_get_data(G_OBJECT (xyplot), "Entry_temperature");
+		GtkWidget* entry_xmax = ( GtkWidget*) g_object_get_data(G_OBJECT (xyplot), "Entry_xmax");
+		GtkWidget* popup = NULL;
+		GtkComboBox *combo_correction = ( GtkComboBox*) g_object_get_data(G_OBJECT (xyplot), "ComboCorrection");
+		GtkTreeIter iter;
+		gchar* correction = NULL;
+
+  		g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+  		g_return_if_fail (GTK_IS_ENTRY (entry_scale));
+  		g_return_if_fail (GTK_IS_ENTRY (entry_temperature));
+  		g_return_if_fail (GTK_IS_ENTRY (entry_xmax));
+
+		if(parentWindow) gtk_widget_hide (GTK_WIDGET(parentWindow));
+        	while(gtk_events_pending()) gtk_main_iteration();
+		popup = create_popup_win(_("Please wait"));
+
+		t= gtk_entry_get_text(GTK_ENTRY(entry_scale));
+		scale = atof(t);
+		if(scale<1e-10) { printf("Warning I set scale to %f\n",1.0); scale = 1.0;}
+		t= gtk_entry_get_text(GTK_ENTRY(entry_temperature));
+		temperature = atof(t);
+		if(temperature<1e-10) { printf("Warning I set temperature to %f\n",300.0); temperature = 300.0;}
+		t= gtk_entry_get_text(GTK_ENTRY(entry_xmax));
+		xmax = atof(t);
+
+		if (gtk_combo_box_get_active_iter (combo_correction, &iter))
+		{
+			GtkTreeModel* model = gtk_combo_box_get_model(combo_correction);
+			gtk_tree_model_get (model, &iter, 0, &correction, -1);
+		}
+
+		if(data && data->size>2)
+		{
+			gdouble* X = g_malloc(data->size*sizeof(gdouble)); 
+			gdouble* Y = g_malloc(data->size*sizeof(gdouble)); 
+			gint i;
+		        GtkWidget* window = NULL;
+        		GtkWidget* xyplot = NULL;
+			int n = 0;
+			gint N = data->size;
+			gdouble* x = NULL;
+			gdouble* y = NULL;
+
+			x = data->x;
+			y = data->y;
+			/*
+			printf("dx1 %f\n", fabs((x[N-1]-x[0])/(N-1)));
+			printf("dx2 %f\n", fabs(x[1]-x[0]));
+			*/
+			if(fabs(fabs((x[N-1]-x[0])/(N-1))-fabs(x[1]-x[0]))>1e-10)
+			{
+				printf("x values are not linear. Linearisation of x\n");
+				build_linear_x(data->x, data->y, data->size, &x, &y, N);
+			}
+	
+			for(i=0;i<N; i++) 
+			{
+				gint k;
+				double arg;
+      				X[i] = 0;
+      				Y[i] = 0;
+      				arg = 2.0 * M_PI * (double)i / (double)N;
+				if(xmax>0 && i*1.0/N*scale/fabs((x[N-1]-x[0])/(N-1))>xmax) break;
+      				for (k=0;k<N;k++)
+				{
+         				gdouble cosarg = cos(k * arg);
+         				gdouble sinarg = sin(k * arg);
+         				X[i] += (y[k] * cosarg);
+         				Y[i] += (y[k] * sinarg);
+      				}
+				n++;
+   			}
+			for(i=0;i<n; i++)  Y[i] = sqrt( X[i]* X[i]+Y[i]*Y[i]);
+			/* time in fs, freq in cm-1 */
+			for(i=0;i<n; i++)  X[i] = i*1.0/N*scale/fabs((x[N-1]-x[0])/(N-1));
+			if(x && x!= data->x) g_free(x);
+			if(y && y!=data->y) g_free(y);
+			if(n>0) { X = g_realloc(X,n*sizeof(gdouble));  Y = g_realloc(Y,n*sizeof(gdouble));}
+			if(correction)
+			{
+				gdouble conv = 1/scale*47992.36961128;/* 10^15Hz->Kelvin*/
+				if(strstr(correction,"Classic")) for(i=0;i<n; i++)  Y[i] *= X[i]*(1-exp(-X[i]*conv/temperature));
+				else if(strstr(correction,"Kubo")) for(i=0;i<n; i++)  Y[i] *= X[i]*tanh(X[i]*conv/temperature/2);
+				else if(strstr(correction,"Harmonic")) for(i=0;i<n; i++)  Y[i] *= X[i]*(X[i]*conv/temperature);
+				else if(strstr(correction,"Schofield")) for(i=0;i<n; i++)  Y[i] *=  X[i]*(1-exp(-X[i]*conv/temperature))*exp(X[i]*conv/temperature/2);
+			}
+			
+
+			window = gabedit_xyplot_new_window(_("DFT"),NULL);
+			xyplot = g_object_get_data(G_OBJECT (window), "XYPLOT");
+			xyplot_curve_noconv(GABEDIT_XYPLOT(xyplot), n, X,  Y, NULL);
+			gabedit_xyplot_set_range_xmin (GABEDIT_XYPLOT(xyplot), 0.0);
+			gabedit_xyplot_set_x_label (GABEDIT_XYPLOT(xyplot), "cm<sup>-1</sup>");
+		}
+		if(parentWindow) gtk_object_destroy (GTK_OBJECT(parentWindow));
+		if(popup) gtk_object_destroy(GTK_OBJECT(popup));
+	}
+}
 /********************************************************************************/
 static gboolean get_one_data_jMRUI(FILE*fd, gint idata, gint numberOfPoints, gdouble*Y)
 {
@@ -2515,6 +2805,31 @@ static void auto_range_activate(GtkWidget* buttonAutoRange, GtkWidget* xyplot)
 	XYPlotData* data = NULL;
 	data = g_object_get_data(G_OBJECT (buttonAutoRange), "CurentData");
 	if(xyplot) gabedit_xyplot_set_autorange(GABEDIT_XYPLOT(xyplot), data);
+}
+/********************************************************************************/
+static void set_max_1_activate(GtkWidget* buttonMax1, GtkWidget* xyplot)
+{
+	XYPlotData* data = NULL;
+	gdouble max = 1;
+	gint i;
+	if(!buttonMax1) return;
+	data = g_object_get_data(G_OBJECT (buttonMax1), "CurentData");
+	if(!data || data->size<1) return;
+	max = fabs(data->y[0]);
+	for(i=1;i<data->size;i++) if(max< fabs(data->y[i])) max =  fabs(data->y[i]);
+	for(i=0;i<data->size;i++) data->y[i] /= max;
+	if(xyplot) 
+	{
+		gdouble max = (data->y[0]);
+		gdouble min = (data->y[0]);
+		for(i=1;i<data->size;i++) if(max< (data->y[i])) max =  (data->y[i]);
+		for(i=1;i<data->size;i++) if(min> (data->y[i])) min =  (data->y[i]);
+
+		gabedit_xyplot_set_range_ymax (GABEDIT_XYPLOT(xyplot), max);
+		gabedit_xyplot_set_range_ymin (GABEDIT_XYPLOT(xyplot), min);
+	}
+	if(xyplot) gtk_widget_queue_draw(GTK_WIDGET(xyplot));
+	
 }
 /********************************************************************************/
 static void save_data_2columns_dlg(GtkWidget* buttonSave, GtkWidget* xyplot)
@@ -3580,6 +3895,318 @@ static void add_grid_frame(GtkWidget* hbox, GtkWidget* xyplot)
 	g_signal_connect (G_OBJECT (h_minor), "toggled", (GCallback)h_minor_grids_toggled, xyplot);
 	g_signal_connect (G_OBJECT (v_major), "toggled", (GCallback)v_major_grids_toggled, xyplot);
 	g_signal_connect (G_OBJECT (v_minor), "toggled", (GCallback)v_minor_grids_toggled, xyplot);
+}
+/********************************************************************************/
+static void activate_entry_xmincut(GtkWidget *entry, gpointer user_data)
+{
+	if(user_data && G_IS_OBJECT(user_data))
+	{
+		GtkWidget* xyplot = GTK_WIDGET(user_data);
+		XYPlotData* data = g_object_get_data(G_OBJECT (entry), "CurentData");
+		gint loop;
+		gdouble a;
+		G_CONST_RETURN gchar* t;
+  		g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+		t= gtk_entry_get_text(GTK_ENTRY(entry));
+		if(!t) return;
+		a = atof(t);
+		if(data)
+		{
+			int n = 0;
+			for(loop=0;loop<data->size; loop++) if(data->x[loop]>=a) n++;
+			if(n!=data->size && n>0)
+			{
+				gdouble* X = g_malloc(n*sizeof(gdouble));
+				gdouble* Y = g_malloc(n*sizeof(gdouble));
+				n= 0;
+				for(loop=0;loop<data->size; loop++) 
+				if(data->x[loop]>=a)
+				{ 
+					X[n] = data->x[loop]; 
+					Y[n] = data->y[loop]; 
+					n++;
+				}
+				if(data->x) g_free(data->x);
+				if(data->y) g_free(data->y);
+				data->x = X;
+				data->y = Y;
+				data->size  = n;
+			}
+		}
+		gtk_widget_queue_draw(GTK_WIDGET(xyplot));
+	}
+}
+/********************************************************************************/
+static void activate_entry_xmaxcut(GtkWidget *entry, gpointer user_data)
+{
+	if(user_data && G_IS_OBJECT(user_data))
+	{
+		GtkWidget* xyplot = GTK_WIDGET(user_data);
+		XYPlotData* data = g_object_get_data(G_OBJECT (entry), "CurentData");
+		gint loop;
+		gdouble a;
+		G_CONST_RETURN gchar* t;
+  		g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+		t= gtk_entry_get_text(GTK_ENTRY(entry));
+		if(!t) return;
+		a = atof(t);
+		if(data)
+		{
+			int n = 0;
+			for(loop=0;loop<data->size; loop++) if(data->x[loop]<=a) n++;
+			if(n!=data->size && n>0)
+			{
+				gdouble* X = g_malloc(n*sizeof(gdouble));
+				gdouble* Y = g_malloc(n*sizeof(gdouble));
+				n= 0;
+				for(loop=0;loop<data->size; loop++) 
+				if(data->x[loop]<=a)
+				{ 
+					X[n] = data->x[loop]; 
+					Y[n] = data->y[loop]; 
+					n++;
+				}
+				if(data->x) g_free(data->x);
+				if(data->y) g_free(data->y);
+				data->x = X;
+				data->y = Y;
+				data->size  = n;
+			}
+		}
+		gtk_widget_queue_draw(GTK_WIDGET(xyplot));
+	}
+}
+/********************************************************************************/
+static void add_cut_data_frame(GtkWidget* hbox, GtkWidget* xyplot, XYPlotData *data)
+{
+	GtkWidget* frame = NULL;
+	GtkWidget* hbox_frame = NULL;
+	GtkWidget* label = NULL;
+	GtkWidget* entry_x_min = NULL;
+	GtkWidget* entry_x_max = NULL;
+	gchar tmp[100];
+
+	frame=gtk_frame_new(_("Cut data"));
+	gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 2);
+	gtk_widget_show(frame);
+
+	hbox_frame=gtk_hbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(frame), hbox_frame);
+	gtk_widget_show(hbox_frame);
+
+	label=gtk_label_new(_("X Min: "));
+	gtk_box_pack_start(GTK_BOX(hbox_frame), label, FALSE, FALSE, 2);
+	gtk_widget_show(label); 
+
+	entry_x_min = gtk_entry_new();
+	gtk_widget_set_size_request(entry_x_min,80,-1);
+	sprintf(tmp,"%0.3f",GABEDIT_XYPLOT(xyplot)->xmin);
+	gtk_entry_set_text(GTK_ENTRY(entry_x_min),tmp);
+	gtk_box_pack_start(GTK_BOX(hbox_frame), entry_x_min, TRUE, FALSE, 2);
+	gtk_widget_show(entry_x_min);
+
+	label=gtk_label_new(_(" X Max: "));
+	gtk_box_pack_start(GTK_BOX(hbox_frame), label, FALSE, FALSE, 2);
+	gtk_widget_show(label); 
+	
+	entry_x_max = gtk_entry_new();
+	gtk_widget_set_size_request(entry_x_max,80,-1);
+	sprintf(tmp,"%0.3f",GABEDIT_XYPLOT(xyplot)->xmax);
+	gtk_entry_set_text(GTK_ENTRY(entry_x_max),tmp);
+	gtk_box_pack_start(GTK_BOX(hbox_frame), entry_x_max, TRUE, FALSE, 2);
+	gtk_widget_show(entry_x_max);
+
+	g_object_set_data(G_OBJECT (entry_x_min), "CurentData", data);
+	g_object_set_data(G_OBJECT (entry_x_max), "CurentData", data);
+	g_signal_connect (G_OBJECT (entry_x_min), "activate", (GCallback)activate_entry_xmincut, xyplot);
+	g_signal_connect (G_OBJECT (entry_x_max), "activate", (GCallback)activate_entry_xmaxcut, xyplot);
+}
+/********************************************************************************/
+static void activate_entry_x_linear(GtkWidget *entry, gpointer user_data)
+{
+	if(user_data && G_IS_OBJECT(user_data))
+	{
+		GtkWidget* xyplot = GTK_WIDGET(user_data);
+		XYPlotData* data = g_object_get_data(G_OBJECT (entry), "CurentData");
+		gint N;
+		G_CONST_RETURN gchar* t;
+  		g_return_if_fail (GABEDIT_IS_XYPLOT (xyplot));
+		t= gtk_entry_get_text(GTK_ENTRY(entry));
+		if(!t) return;
+		N = atoi(t);
+		if(data && N>1)
+		{
+			gdouble* x  = NULL;
+			gdouble* y  = NULL;
+			build_linear_x(data->x, data->y, data->size, &x, &y, N);
+			g_free(data->x);
+			g_free(data->y);
+			data->x = x;
+			data->y = y;
+			data->size = N;
+		}
+		gtk_widget_queue_draw(GTK_WIDGET(xyplot));
+	}
+}
+/********************************************************************************/
+static void add_x_linear_data_frame(GtkWidget* hbox, GtkWidget* xyplot, XYPlotData *data)
+{
+	GtkWidget* frame = NULL;
+	GtkWidget* hbox_frame = NULL;
+	GtkWidget* label = NULL;
+	GtkWidget* entry_x_linear = NULL;
+	gchar tmp[100];
+
+	frame=gtk_frame_new(_("X Linearization"));
+	gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 2);
+	gtk_widget_show(frame);
+
+	hbox_frame=gtk_hbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(frame), hbox_frame);
+	gtk_widget_show(hbox_frame);
+
+	label=gtk_label_new(_("N points : "));
+	gtk_box_pack_start(GTK_BOX(hbox_frame), label, FALSE, FALSE, 2);
+	gtk_widget_show(label); 
+
+	entry_x_linear = gtk_entry_new();
+	gtk_widget_set_size_request(entry_x_linear,80,-1);
+
+	if(data) sprintf(tmp,"%d", 2*data->size);
+	else sprintf(tmp,"%d",100);
+
+	gtk_entry_set_text(GTK_ENTRY(entry_x_linear),tmp);
+	gtk_box_pack_start(GTK_BOX(hbox_frame), entry_x_linear, TRUE, FALSE, 2);
+	gtk_widget_show(entry_x_linear);
+
+	g_object_set_data(G_OBJECT (entry_x_linear), "CurentData", data);
+	g_signal_connect (G_OBJECT (entry_x_linear), "activate", (GCallback)activate_entry_x_linear, xyplot);
+}
+/********************************************************************************************************/
+static GtkWidget *add_combo_correction(GtkWidget *hbox)
+{
+        GtkTreeIter iter;
+        GtkTreeStore *store;
+	GtkTreeModel *model;
+	GtkWidget *combobox;
+	GtkCellRenderer *renderer;
+
+	store = gtk_tree_store_new (1,G_TYPE_STRING);
+
+        gtk_tree_store_append (store, &iter, NULL);
+        gtk_tree_store_set (store, &iter, 0, "Fourier : no correction", -1);
+        gtk_tree_store_append (store, &iter, NULL);
+        gtk_tree_store_set (store, &iter, 0, "Harmonic (w*beta hbar w)", -1);
+        gtk_tree_store_append (store, &iter, NULL);
+        gtk_tree_store_set (store, &iter, 0, "Classic : w ( 1 - exp(-beta hbar w) )", -1);
+        gtk_tree_store_append (store, &iter, NULL);
+        gtk_tree_store_set (store, &iter, 0, "Kubo : w tanh(beta hbar w/2) ", -1);
+        gtk_tree_store_append (store, &iter, NULL);
+        gtk_tree_store_set (store, &iter, 0, "Schofield : w ( 1 - exp(-beta hbar w) ) exp(beta hbar w/2)", -1);
+
+        model = GTK_TREE_MODEL (store);
+	combobox = gtk_combo_box_new_with_model (model);
+	g_object_unref (model);
+	gtk_box_pack_start (GTK_BOX (hbox), combobox, TRUE, TRUE, 1);
+	renderer = gtk_cell_renderer_text_new ();
+	gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (combobox), renderer, TRUE);
+	gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (combobox), renderer, "text", 0, NULL);
+
+	return combobox;
+}
+/********************************************************************************/
+static void add_fourier_data_frame(GtkWidget* hbox, GtkWidget* xyplot, XYPlotData *data, GtkWidget* parentWindow)
+{
+	GtkWidget* frame = NULL;
+	GtkWidget* vbox_frame = NULL;
+	GtkWidget* hbox_frame = NULL;
+	GtkWidget* label = NULL;
+	GtkWidget* entry_scale = NULL;
+	GtkWidget* entry_xmax = NULL;
+	GtkWidget* entry_temperature = NULL;
+	GtkWidget* buttonDFT = NULL;
+	GtkWidget* combo = NULL;
+	gchar tmp[100];
+
+	frame=gtk_frame_new(_("Fourier transformation"));
+	gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, TRUE, 2);
+	gtk_widget_show(frame);
+
+	vbox_frame=gtk_vbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(frame), vbox_frame);
+	gtk_widget_show(vbox_frame);
+
+	hbox_frame=gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox_frame), hbox_frame, FALSE, FALSE, 2);
+	gtk_widget_show(hbox_frame);
+
+	label=gtk_label_new(_("Scale X : "));
+	gtk_box_pack_start(GTK_BOX(hbox_frame), label, FALSE, FALSE, 2);
+	gtk_widget_show(label); 
+
+	entry_scale = gtk_entry_new();
+	gtk_widget_set_size_request(entry_scale,100,-1);
+	sprintf(tmp,"%0.3f",33356.40951982);
+	gtk_entry_set_text(GTK_ENTRY(entry_scale),tmp);
+	gtk_box_pack_start(GTK_BOX(hbox_frame), entry_scale, FALSE, FALSE, 2);
+	gtk_widget_show(entry_scale);
+	g_object_set_data(G_OBJECT ( xyplot), "Entry_scale", entry_scale);
+
+	label=gtk_label_new(_("X max : "));
+	gtk_box_pack_start(GTK_BOX(hbox_frame), label, FALSE, FALSE, 2);
+	gtk_widget_show(label); 
+
+	entry_xmax = gtk_entry_new();
+	gtk_widget_set_size_request(entry_xmax,100,-1);
+	sprintf(tmp,"%0.3f",6000.0);
+	gtk_entry_set_text(GTK_ENTRY(entry_xmax),tmp);
+	gtk_box_pack_start(GTK_BOX(hbox_frame), entry_xmax, FALSE, FALSE, 2);
+	gtk_widget_show(entry_xmax);
+	g_object_set_data(G_OBJECT ( xyplot), "Entry_xmax", entry_xmax);
+
+
+	hbox_frame=gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox_frame), hbox_frame, FALSE, FALSE, 2);
+	gtk_widget_show(hbox_frame);
+
+	label=gtk_label_new(_("Correction :"));
+	gtk_box_pack_start(GTK_BOX(hbox_frame), label, TRUE, FALSE, 2);
+	gtk_widget_show(label); 
+
+	combo = add_combo_correction(hbox_frame);
+	gtk_combo_box_set_active (GTK_COMBO_BOX (combo), 0);
+	gtk_widget_show(combo); 
+	g_object_set_data(G_OBJECT (xyplot), "ComboCorrection", combo);
+
+	hbox_frame=gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox_frame), hbox_frame, FALSE, FALSE, 2);
+	gtk_widget_show(hbox_frame);
+
+	label=gtk_label_new(_(" Temperature (K) : "));
+	gtk_box_pack_start(GTK_BOX(hbox_frame), label, FALSE, FALSE, 2);
+	gtk_widget_show(label); 
+	
+	entry_temperature = gtk_entry_new();
+	gtk_widget_set_size_request(entry_temperature,100,-1);
+	sprintf(tmp,"%0.3f",300.0);
+	gtk_entry_set_text(GTK_ENTRY(entry_temperature),tmp);
+	gtk_box_pack_start(GTK_BOX(hbox_frame), entry_temperature, FALSE, FALSE, 2);
+	gtk_widget_show(entry_temperature);
+	g_object_set_data(G_OBJECT ( xyplot), "Entry_temperature", entry_temperature);
+
+
+	hbox_frame=gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox_frame), hbox_frame, FALSE, FALSE, 2);
+	gtk_widget_show(hbox_frame);
+	buttonDFT = gtk_button_new_with_label (_("DFT"));
+	gtk_box_pack_start(GTK_BOX(hbox_frame), buttonDFT, TRUE, TRUE, 4);
+	gtk_widget_show (buttonDFT);
+
+	g_object_set_data(G_OBJECT ( xyplot), "CurentData", data);
+	g_object_set_data(G_OBJECT (buttonDFT), "ParentWindow", parentWindow);
+
+        g_signal_connect(G_OBJECT(buttonDFT), "clicked", G_CALLBACK(build_fourier), xyplot);
+
 }
 /****************************************************************************************/
 static void set_all_dialog(GtkWidget* xyplot)
@@ -4909,6 +5536,7 @@ static void set_data_dialog(GabeditXYPlot* xyplot, XYPlotData* data)
 	GtkWidget* button_point = NULL;
 	GtkWidget* buttonSave = NULL;
 	GtkWidget* buttonRemove = NULL;
+	GtkWidget* buttonMax1 = NULL;
 	GtkWidget* buttonAutoRanges = NULL;
 	GtkWidget* buttonAutoRangesAll = NULL;
 	GtkWidget* parentWindow = NULL;
@@ -5078,6 +5706,10 @@ static void set_data_dialog(GabeditXYPlot* xyplot, XYPlotData* data)
 	gtk_box_pack_start(GTK_BOX(hbox), buttonSave, TRUE, TRUE, 4);
 	gtk_widget_show (buttonSave);
 
+	buttonMax1 = gtk_button_new_with_label (_("Max=1"));
+	gtk_box_pack_start(GTK_BOX(hbox), buttonMax1, TRUE, TRUE, 4);
+	gtk_widget_show (buttonMax1);
+
 	buttonRemove = gtk_button_new_with_label (_("Remove"));
 	gtk_box_pack_start(GTK_BOX(hbox), buttonRemove, TRUE, TRUE, 4);
 	gtk_widget_show (buttonRemove);
@@ -5111,6 +5743,9 @@ static void set_data_dialog(GabeditXYPlot* xyplot, XYPlotData* data)
 	g_object_set_data(G_OBJECT (buttonAutoRanges), "CurentData", data);
 	g_signal_connect(G_OBJECT(buttonAutoRanges), "clicked", G_CALLBACK(auto_range_activate), xyplot);
 
+	g_object_set_data(G_OBJECT (buttonMax1), "CurentData", data);
+	g_signal_connect(G_OBJECT(buttonMax1), "clicked", G_CALLBACK(set_max_1_activate), xyplot);
+
 	g_object_set_data(G_OBJECT (buttonAutoRangesAll), "CurentData", NULL);
 	g_signal_connect(G_OBJECT(buttonAutoRangesAll), "clicked", G_CALLBACK(auto_range_activate), xyplot);
 
@@ -5122,6 +5757,18 @@ static void set_data_dialog(GabeditXYPlot* xyplot, XYPlotData* data)
 	g_signal_connect (G_OBJECT (entry_scale_y), "activate", (GCallback)activate_entry_scale_y, xyplot);
 	g_signal_connect (G_OBJECT (entry_shift_x), "activate", (GCallback)activate_entry_shift_x, xyplot);
 	g_signal_connect (G_OBJECT (entry_shift_y), "activate", (GCallback)activate_entry_shift_y, xyplot);
+
+	hbox=gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox_window), hbox, TRUE, FALSE, 2);
+	gtk_widget_show(hbox);
+	add_cut_data_frame(hbox, GTK_WIDGET(xyplot), data);
+
+	add_x_linear_data_frame(hbox, GTK_WIDGET(xyplot), data);
+
+	hbox=gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox_window), hbox, TRUE, FALSE, 2);
+	gtk_widget_show(hbox);
+	add_fourier_data_frame(hbox, GTK_WIDGET(xyplot), data, window);
 
 	parentWindow = get_parent_window(GTK_WIDGET(xyplot));
 	if(parentWindow)
@@ -5433,6 +6080,8 @@ static void activate_action (GtkAction *action)
 	if(!strcmp(name,"SetAutoRanges")) { gabedit_xyplot_set_autorange(GABEDIT_XYPLOT(xyplot), NULL); }
 	if(!strcmp(name,"DataRead2Columns")) { read_data_2columns_dlg(xyplot,FALSE); }
 	if(!strcmp(name,"DataRead2ColumnsPeaks")) { read_data_2columns_dlg(xyplot,TRUE); }
+	if(!strcmp(name,"DataRead1Column")) { read_data_1column_dlg(xyplot,FALSE); }
+	if(!strcmp(name,"DataRead1ColumnPeaks")) { read_data_1column_dlg(xyplot,TRUE); }
 	if(!strcmp(name,"DataReadXY1YnColumns")) { read_data_xy1yncolumns_dlg(xyplot,FALSE); }
 	if(!strcmp(name,"DataReadXY1YnColumnsPeaks")) { read_data_xy1yncolumns_dlg(xyplot,TRUE); }
 	if(!strcmp(name,"DataReadJDX")) { read_data_jdx_dlg(xyplot); }
@@ -5484,10 +6133,12 @@ static GtkActionEntry gtkActionEntries[] =
 	{"Data", NULL, N_("_Data")},
 	{"DataAdd", NULL, N_("_Add Data")},
 	{"DataRead2Columns", NULL, N_("_Read data from an ASCII XY file(2 columns)"), NULL, "Read data from an ASCII XY file(2 columns)", G_CALLBACK (activate_action) },
+	{"DataRead1Column", NULL, N_("_Read data from an ASCII Y file(1 column)"), NULL, "Read data from an ASCII Y file(1 column)", G_CALLBACK (activate_action) },
 	{"DataReadXY1YnColumns", NULL, N_("_Read data from an ASCII X.Y1..Yn file(x, y1, y2,...,yn)"), NULL, "Read data from an ASCII XY file(2 columns)", G_CALLBACK (activate_action) },
 	{"DataReadJDX", NULL, N_("_Read data from a JDX file"), NULL, "Read data from a JDX file", G_CALLBACK (activate_action) },
 	{"DataReadJMRUI", NULL, N_("_Read data from a jMRUI text file"), NULL, "Read data from a jMRUI text file", G_CALLBACK (activate_action) },
 	{"DataRead2ColumnsPeaks", NULL, N_("_Read data from an ASCII XY file(2 columns) and draw peaks"), NULL, "Read data from an ASCII XY file(2 columns) and draw peaks", G_CALLBACK (activate_action) },
+	{"DataRead1ColumnPeaks", NULL, N_("_Read data from an ASCII Y file(1 column) and draw peaks"), NULL, "Read data from an ASCII Y file(1 column) and draw peaks", G_CALLBACK (activate_action) },
 	{"DataReadXY1YnColumnsPeaks", NULL, N_("_Read data from an ASCII X.Y1..Yn file(x, y1, y2,...,yn) and draw peaks"), NULL, "Read data from an ASCII XY file(2 columns) and draw peaks", G_CALLBACK (activate_action) },
 	{"DataSaveAll", NULL, N_("_Save all data in an ascii XY file(2columns)"), NULL, "Save all data in an ascii file(2columns)", G_CALLBACK (activate_action) },
 	{"DataRemoveAll", NULL, N_("_Remove all data"), NULL, "Remove all data", G_CALLBACK (activate_action) },
@@ -5580,6 +6231,12 @@ static void add_data_to_actions(GtkUIManager *manager, GtkWidget   *xyplot)
 	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
 
 	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Data/DataAdd/DataRead2ColumnsPeaks");
+	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
+
+	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Data/DataAdd/DataRead1Column");
+	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
+
+	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Data/DataAdd/DataRead1ColumnPeaks");
 	if(action) g_object_set_data(G_OBJECT (action), "XYPLOT", xyplot);
 
 	action = gtk_ui_manager_get_action (manager, "/MenuXYPlot/Data/DataAdd/DataReadXY1YnColumns");
@@ -5710,10 +6367,12 @@ static const gchar *uiMenuInfo =
 "      <menu name=\"DataAdd\" action=\"DataAdd\">\n"
 "        <menuitem name=\"DataRead2Columns\" action=\"DataRead2Columns\" />\n"
 "        <menuitem name=\"DataReadXY1YnColumns\" action=\"DataReadXY1YnColumns\" />\n"
+"        <menuitem name=\"DataRead1Column\" action=\"DataRead1Column\" />\n"
 "        <menuitem name=\"DataReadJDX\" action=\"DataReadJDX\" />\n"
 "        <menuitem name=\"DataReadJMRUI\" action=\"DataReadJMRUI\" />\n"
 "        <separator name=\"sepPeaks\" />\n"
 "        <menuitem name=\"DataRead2ColumnsPeaks\" action=\"DataRead2ColumnsPeaks\" />\n"
+"        <menuitem name=\"DataRead1ColumnPeaks\" action=\"DataRead1ColumnPeaks\" />\n"
 "        <menuitem name=\"DataReadXY1YnColumnsPeaks\" action=\"DataReadXY1YnColumnsPeaks\" />\n"
 "      </menu>\n"
 "        <separator name=\"sepDataSaveAll\" />\n"

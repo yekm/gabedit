@@ -707,6 +707,290 @@ static void create_gaussian_correction_vibration_file_dlg()
 	/* Show all */
 	gtk_widget_show_all (Win);
 }
+//HERE
+/********************************************************************************/
+static void print_gaussian_along_vibration_one_geometry(gchar* fileNameBas, FILE* file, G_CONST_RETURN gchar* keys, gint mode, gdouble delta)
+{
+	gint i;
+	gchar ad = '+';
+	if(delta<0) ad ='-';
+
+	fprintf(file,"# %s\n",keys);
+	fprintf(file,"# Test Symm(PG=C1)\n");
+	fprintf(file,"# Units(Ang,Deg)\n");
+	fprintf(file,"\nMode: freq=%lf Mass= %lf Q= Qeq %c %lf\n\n",
+				vibration.modes[mode].frequence,
+				vibration.modes[mode].effectiveMass,
+				ad,
+				fabs(delta)*BOHR_TO_ANG
+				);
+
+	fprintf(file,"%d %d\n", totalCharge, spinMultiplicity);
+	for(i=0;i<vibration.numberOfAtoms;i++)
+	{
+		fprintf(file,"%s %0.8lf %0.8lf %0.8lf\n",vibration.geometry[i].symbol,
+		(vibration.geometry[i].coordinates[0]+vibration.modes[mode].vectors[0][i]*delta)*BOHR_TO_ANG,
+		(vibration.geometry[i].coordinates[1]+vibration.modes[mode].vectors[1][i]*delta)*BOHR_TO_ANG,
+		(vibration.geometry[i].coordinates[2]+vibration.modes[mode].vectors[2][i]*delta)*BOHR_TO_ANG
+		);
+	}
+	fprintf(file,"\n");
+}
+/********************************************************************************/
+static void print_gaussian_along_vibration_geometries(GtkWidget* Win, gpointer data)
+{
+	gint i;
+	gint j;
+	gchar* fileName = NULL;
+	FILE* file;
+	GtkWidget* entryEnergyKeywords = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"EntryEnergyKeywords"));
+	GtkWidget* entryPropKeywords = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"EntryPropKeywords"));
+	GtkWidget* entryDelta = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"EntryDelta"));
+	GtkWidget* buttonDirSelector = (GtkWidget*)g_object_get_data(G_OBJECT(Win), "ButtonDirSelector");
+	GtkWidget* entryFileName = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"EntryFileName"));
+	G_CONST_RETURN gchar* energyKeys = NULL;
+	G_CONST_RETURN gchar* propKeys = NULL;
+	G_CONST_RETURN gchar* deltastr = NULL;
+	G_CONST_RETURN gchar* fileNameStr = NULL;
+	G_CONST_RETURN gchar* dirNameStr = NULL;
+	gchar* allKeys = NULL;
+	gdouble delta = 1;
+	gchar* fileNameBas = NULL;
+
+	if(vibration.numberOfFrequences<1) return;
+	if(vibration.numberOfAtoms<1) return;
+	if(buttonDirSelector) dirNameStr = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
+	if(!dirNameStr) return;
+	if(entryFileName) fileNameStr = gtk_entry_get_text(GTK_ENTRY(entryFileName));
+	if(!fileNameStr) return;
+	if(entryEnergyKeywords) energyKeys = gtk_entry_get_text(GTK_ENTRY(entryEnergyKeywords));
+	if(!energyKeys) return;
+	if(entryPropKeywords) propKeys = gtk_entry_get_text(GTK_ENTRY(entryPropKeywords));
+	if(!propKeys) return;
+	if(entryDelta) deltastr = gtk_entry_get_text(GTK_ENTRY(entryDelta));
+	if(!deltastr) return;
+	delta = atof(deltastr)*ANG_TO_BOHR;
+	if(delta==0) return;
+
+	allKeys = g_strdup_printf("%s %s",energyKeys, propKeys);
+
+	fileName = g_strdup_printf("%s%s%s",dirNameStr,G_DIR_SEPARATOR_S,fileNameStr);
+ 	file = fopen(fileName, "w");
+	if(!file)
+	{
+		gchar* t = g_strdup_printf(_("Sorry\n I can not create %s file"),fileName); 
+		Message(t,_("Error"),TRUE);
+		if(fileName) g_free(fileName);
+		if(t)g_free(t);
+		return;
+	}
+	fileNameBas = g_path_get_basename(fileNameStr);
+	for(i=strlen(fileNameBas);i>0;i--)
+	if(fileNameBas[i]=='.')
+	{
+		fileNameBas[i]='\0';
+		break;
+	}
+
+	j = rowSelected;
+	print_gaussian_along_vibration_one_geometry(fileNameBas, file, allKeys, j, delta);
+	fclose(file);
+	if(fileNameBas) g_free(fileNameBas);
+	gtk_widget_destroy(Win);
+	{
+		gchar* t = g_strdup_printf(_("The %s file was created"),fileName); 
+		Message(t,_("Error"),TRUE);
+		if(t)g_free(t);
+	}
+}
+/********************************************************************************/
+static GtkWidget*   add_inputGauss_entrys_along_one_frequency(GtkWidget *Wins,GtkWidget *vbox)
+{
+	GtkWidget* entry;
+	GtkWidget* sep;
+  	GtkWidget *table = gtk_table_new(11,4,FALSE);
+	GtkWidget* comboSpinMultiplicity = NULL;
+	GtkWidget* comboCharge = NULL;
+	GtkWidget* buttonDirSelector = NULL;
+	GtkWidget* entryFileName = NULL;
+	GtkWidget* entryDelta = NULL;
+	GtkWidget* label = NULL;
+	gint i;
+	gint j;
+
+	totalCharge = 0;
+	spinMultiplicity=1;
+
+	gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
+
+/*----------------------------------------------------------------------------------*/
+	i = 0;
+	j = 0;
+	add_label_table(table,_("Working Folder"),(gushort)i,(gushort)j);
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	j = 2;
+	buttonDirSelector =  gtk_file_chooser_button_new(_("Select your folder"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	gtk_widget_set_size_request(GTK_WIDGET(buttonDirSelector),(gint)(ScreenHeight*0.2),-1);
+	gtk_table_attach(GTK_TABLE(table),buttonDirSelector,
+			j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	g_object_set_data(G_OBJECT(Wins), "ButtonDirSelector", buttonDirSelector);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	j = 0;
+	add_label_table(table,_("File name"),(gushort)i,(gushort)j);
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	j = 2;
+	entryFileName = gtk_entry_new();
+	gtk_entry_set_text(GTK_ENTRY(entryFileName),"freq.com");
+	gtk_widget_set_size_request(GTK_WIDGET(entryFileName),(gint)(ScreenHeight*0.2),-1);
+	gtk_table_attach(GTK_TABLE(table),entryFileName, j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	g_object_set_data(G_OBJECT(Wins), "EntryFileName", entryFileName);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	j = 0;
+	add_label_table(table,_("Step (Ang)"),(gushort)i,(gushort)j);
+	j = 1;
+	label = gtk_label_new(":");
+	gtk_table_attach(GTK_TABLE(table),label, j,j+1,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	j = 2;
+	entryDelta = gtk_entry_new();
+	gtk_entry_set_text(GTK_ENTRY(entryDelta),"0.1");
+	gtk_widget_set_size_request(GTK_WIDGET(entryDelta),(gint)(ScreenHeight*0.2),-1);
+	gtk_table_attach(GTK_TABLE(table),entryDelta, j,j+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL|GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL|GTK_SHRINK),
+                  1,1);
+	g_object_set_data(G_OBJECT(Wins), "EntryDelta", entryDelta);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	comboCharge = addChargeToTable(table, i);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	comboSpinMultiplicity = addSpinToTable(table, i);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	sep = gtk_hseparator_new ();
+	gtk_table_attach(GTK_TABLE(table),sep,0,0+4,i,i+1,
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+		(GtkAttachOptions)	(GTK_FILL | GTK_EXPAND),
+                  2,2);
+
+	if(GTK_IS_COMBO_BOX(comboCharge))
+		g_object_set_data(G_OBJECT (GTK_BIN(comboCharge)->child), "ComboSpinMultiplicity", comboSpinMultiplicity);
+	setComboCharge(comboCharge);
+	setComboSpinMultiplicity(comboSpinMultiplicity);
+	g_signal_connect(G_OBJECT(GTK_BIN(comboCharge)->child),"changed", G_CALLBACK(changedEntryCharge),NULL);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	add_label_table(table,_(" Energy keywords "),i,0);
+	add_label_table(table,":",i,1);
+  	entry = gtk_entry_new ();
+	g_object_set_data(G_OBJECT(Wins), "EntryEnergyKeywords", entry);
+	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
+	gtk_table_attach(GTK_TABLE(table),entry,2,2+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+  	gtk_entry_set_text (GTK_ENTRY (entry),"B3LYP/6-311++G** SCF(Tight) Int=UltraFine");
+	gtk_editable_set_editable((GtkEditable*)entry,TRUE);
+	gtk_widget_set_sensitive(entry, TRUE);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	add_label_table(table,_(" Prop. keywords "),i,0);
+	add_label_table(table,":",i,1);
+  	entry = gtk_entry_new ();
+	g_object_set_data(G_OBJECT(Wins), "EntryPropKeywords", entry);
+	gtk_widget_set_size_request(GTK_WIDGET(entry),-1,32);
+	gtk_table_attach(GTK_TABLE(table),entry,2,2+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+  	gtk_entry_set_text (GTK_ENTRY (entry),"NMR");
+	gtk_editable_set_editable((GtkEditable*)entry,TRUE);
+	gtk_widget_set_sensitive(entry, TRUE);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	sep = gtk_hseparator_new ();
+	gtk_table_attach(GTK_TABLE(table),sep,0,0+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+/*----------------------------------------------------------------------------------*/
+	i++;
+	sep = gtk_hseparator_new ();
+	gtk_table_attach(GTK_TABLE(table),sep,0,0+4,i,i+1,
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+                  3,3);
+/*----------------------------------------------------------------------------------*/
+
+	gtk_widget_show_all(table);
+	return entry;
+}
+/********************************************************************************************************/
+static void create_gaussian_along_vibration_file_dlg()
+{
+	GtkWidget *Win;
+	GtkWidget *frame;
+	GtkWidget *vboxall;
+	GtkWidget* vbox;
+	GtkWidget* entryKeywords;
+
+	if(vibration.numberOfFrequences<1) 
+	{
+		gchar* t = g_strdup_printf(_("Sorry\n You should read the geometries befor")); 
+		Message(t,_("Error"),TRUE);
+		return;
+	}
+
+	/* Principal Window */
+	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(Win),"Create a Gaussian input file along the selected mode");
+	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
+	gtk_container_set_border_width (GTK_CONTAINER (Win), 2);
+	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(PrincipalWindow));
+	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
+
+	add_glarea_child(Win,"Input Gaussian");
+	g_signal_connect(G_OBJECT(Win),"delete_event",(GCallback)delete_child,NULL);
+
+	vboxall = create_vbox(Win);
+
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 2);
+	gtk_box_pack_start(GTK_BOX(vboxall), frame,TRUE,TRUE,0);
+	gtk_widget_show (frame);
+  	vbox = gtk_vbox_new (FALSE, 0);
+	gtk_container_add (GTK_CONTAINER (frame), vbox);
+
+  	gtk_widget_realize(Win);
+	
+	entryKeywords = add_inputGauss_entrys_along_one_frequency(Win,vbox);
+	add_cancel_ok_button(Win,vbox,entryKeywords,(GCallback)print_gaussian_along_vibration_geometries);
+
+	/* Show all */
+	gtk_widget_show_all (Win);
+}
 /********************************************************************************/
 static void reset_last_directory(GtkWidget *dirSelector, gpointer data)
 {
@@ -3625,6 +3909,159 @@ static void read_qchem_file(GabeditFileChooser *SelecFile, gint response_id)
 	read_qchem_file_frequencies(FileName);
 }
 /********************************************************************************/
+static gboolean read_nwchem_file_frequencies(gchar *FileName)
+{
+ 	gchar t[BSIZE];
+ 	gchar sdum1[BSIZE];
+ 	gboolean OK;
+ 	FILE *fd;
+ 	guint taille=BSIZE;
+	gint idum;
+	gint nf;
+
+	gdouble freq[6] = {0,0,0,0,0,0};
+	gdouble IRIntensity[6] = {0,0,0,0,0,0};
+	gdouble mass[6] = {1,1,1,1,1,1};
+	gdouble RamanIntensity[6]={0,0,0,0,0,0};
+	gdouble v[6][3];
+	gchar sym[6][BSIZE];
+	gint i;
+	gint j;
+	gint k;
+	gint nfOld;
+
+
+	Dipole.def = FALSE;
+	free_vibration();
+	vibration.numberOfAtoms = Ncenters;
+	vibration.geometry = g_malloc(Ncenters*sizeof(VibrationGeom));
+	for(j=0;j<Ncenters;j++)
+	{
+		vibration.geometry[j].symbol = g_strdup(GeomOrb[j].Symb);
+    		vibration.geometry[j].coordinates[0] = GeomOrb[j].C[0];
+    		vibration.geometry[j].coordinates[1] = GeomOrb[j].C[1];
+    		vibration.geometry[j].coordinates[2] = GeomOrb[j].C[2];
+    		vibration.geometry[j].partialCharge = GeomOrb[j].partialCharge;
+    		vibration.geometry[j].variable = GeomOrb[j].variable;
+    		vibration.geometry[j].nuclearCharge = GeomOrb[j].nuclearCharge;
+	}
+  	vibration.numberOfFrequences = 0;
+	vibration.modes = g_malloc(sizeof(VibrationMode));
+
+ 	fd = FOpen(FileName, "rb");
+	if(!fd) return FALSE;
+
+	for(j=0;j<6;j++)
+	{
+		sprintf(sym[j]," ");
+		for(k=0;k<3;k++) v[j][k] = 0;
+	}
+
+ 	do 
+ 	{
+ 		OK=FALSE;
+		gint ns = 0;
+ 		while(!feof(fd))
+		{
+	  		fgets(t,taille,fd);
+	 		if (strstr( t,"NWChem Nuclear Hessian and Frequency Analysis") ) ns++;
+	 		if (strstr( t,"via the Eckart algorithm") ) ns++;
+	 		if (strstr( t,"NORMAL MODE EIGENVECTORS IN CARTESIAN COORDINATES") && ns>=2 )
+			{
+	  			fgets(t,taille,fd);
+	  			fgets(t,taille,fd);
+	  			fgets(t,taille,fd);
+	  			fgets(t,taille,fd);
+				OK = TRUE; 
+				break;
+			}
+		}
+		if(!OK) break;
+  		while(!feof(fd) )
+  		{
+			nf = sscanf(t,"%d %d %d %d %d %d",&idum,&idum,&idum,&idum,&idum,&idum);
+			if(nf<1) break;
+			for(i=0;i<6;i++) sprintf(sym[i],"UNKNOWN");
+
+			if(!fgets(t,taille,fd)) break;/* back space line */
+			if(!fgets(t,taille,fd)) break;
+			sscanf(t,"%s %lf %lf %lf %lf %lf %lf", sdum1,&freq[0],&freq[1],&freq[2],&freq[3],&freq[4],&freq[5]);
+			if(!fgets(t,taille,fd)) break;/* back space line */
+
+			for(i=0;i<6;i++) RamanIntensity[i] = 0;
+
+			nfOld = vibration.numberOfFrequences;
+  			vibration.numberOfFrequences += nf;
+			vibration.modes = g_realloc( vibration.modes, vibration.numberOfFrequences*sizeof(VibrationMode));
+
+			for(k=0;k<nf;k++)
+			{
+				vibration.modes[k+nfOld].frequence = freq[k];
+				vibration.modes[k+nfOld].effectiveMass = mass[k];
+				vibration.modes[k+nfOld].IRIntensity = IRIntensity[k];
+				vibration.modes[k+nfOld].RamanIntensity = RamanIntensity[k];
+				vibration.modes[k+nfOld].symmetry = g_strdup(sym[k]);
+				for(i=0;i<3;i++) 
+					vibration.modes[k+nfOld].vectors[i]= g_malloc(vibration.numberOfAtoms*sizeof(gdouble));
+			}
+
+			for(j=0;j<Ncenters && !feof(fd);j++)
+			{
+				for(k=0;k<3;k++)
+				{
+				if(!fgets(t,taille,fd)) break;
+				sscanf(t,"%s %lf %lf %lf %lf %lf %lf", sdum1, &v[0][k], &v[1][k], &v[2][k], &v[3][k], &v[4][k], &v[5][k]);
+				}
+				for(k=0;k<nf;k++)
+				{
+					for(i=0;i<3;i++) vibration.modes[k+nfOld].vectors[i][j]= v[k][i]; 
+				}
+			}
+			if(!fgets(t,taille,fd)) break;
+			if(!fgets(t,taille,fd)) break;
+		}
+  		while(!feof(fd) )
+  		{
+			if(!fgets(t,taille,fd)) break;
+			if(strstr(t,"Projected Infra Red Intensities"))
+			{
+				if(!fgets(t,taille,fd)) break;
+				if(!fgets(t,taille,fd)) break;
+				for(j=0;j<3*Ncenters && !feof(fd);j++)
+				{
+					if(!fgets(t,taille,fd)) break;
+					sscanf(t,"%s %s %s %s %s %lf", sdum1,sdum1,sdum1,sdum1,sdum1, &vibration.modes[j].IRIntensity);
+				}
+			}
+		}
+ 	}while(!feof(fd));
+	rafreshList();
+	if(vibration.numberOfFrequences<1)
+	{
+		GtkWidget* w = NULL;
+		gchar buffer[BSIZE];
+		sprintf(buffer,_("Sorry, I can not read frequencies from '%s' file\n"),FileName);
+  		w = Message(buffer,_("Error"),TRUE);
+		gtk_window_set_modal (GTK_WINDOW (w), TRUE);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+/********************************************************************************/
+static void read_nwchem_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+	gchar *FileName;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+
+	stop_vibration(NULL, NULL);
+
+ 	gl_read_last_nwchem_file(SelecFile, response_id);
+	read_nwchem_file_frequencies(FileName);
+}
+/********************************************************************************/
 static gboolean read_orca_file_frequencies(gchar *FileName)
 {
  	gchar t[BSIZE];
@@ -3872,6 +4309,16 @@ static void read_qchem_file_dlg()
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
 /********************************************************************************/
+static void read_nwchem_file_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_nwchem_file,
+			"Read last geometry and frequencies from a NWChem output file",
+			GABEDIT_TYPEFILE_NWCHEM,GABEDIT_TYPEWIN_ORB);
+
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+}
+/********************************************************************************/
 static void read_orca_file_dlg()
 {
 	GtkWidget* filesel = 
@@ -3920,19 +4367,16 @@ static void play_vibration(GtkWidget *win, gpointer data)
 static void stop_vibration(GtkWidget *win, gpointer data)
 {
 	play = FALSE;
-	if(GTK_IS_WIDGET(PlayButton))
-		gtk_widget_set_sensitive(PlayButton, TRUE); 
+	if(GTK_IS_WIDGET(PlayButton)) gtk_widget_set_sensitive(PlayButton, TRUE); 
 
-	if(GTK_IS_WIDGET(StopButton))
-		gtk_widget_set_sensitive(StopButton, FALSE); 
+	if(GTK_IS_WIDGET(StopButton)) gtk_widget_set_sensitive(StopButton, FALSE); 
 
-	if(GTK_IS_WIDGET(WinDlg))
-		gtk_window_set_modal (GTK_WINDOW (WinDlg), FALSE);
+	if(GTK_IS_WIDGET(WinDlg)) gtk_window_set_modal (GTK_WINDOW (WinDlg), FALSE);
 
-	while( gtk_events_pending() )
-		gtk_main_iteration();
+	while( gtk_events_pending() ) gtk_main_iteration();
 
 	reset_geom_vibration();
+	buildBondsOrb();
 	RebuildGeom = TRUE;
 	ShowVibration = TRUE;
 	Dipole.def = FALSE;
@@ -3989,6 +4433,7 @@ static gboolean show_menu_popup(GtkUIManager *manager, guint button, guint32 tim
 		set_sensitive_option(manager,"/MenuVibration/DrawRamanSpectrum");
 		set_sensitive_option(manager,"/MenuVibration/SaveGabedit");
 		set_sensitive_option(manager,"/MenuVibration/CreateGaussInputVibCorrection");
+		set_sensitive_option(manager,"/MenuVibration/CreateGaussInputVibOneMode");
 		set_sensitive_option(manager,"/MenuVibration/RemoveSelectedMode");
 		set_sensitive_option(manager,"/MenuVibration/RemoveBeforeSelectedMode");
 		set_sensitive_option(manager,"/MenuVibration/RemoveAfterSelectedMode");
@@ -4449,6 +4894,9 @@ static void animate_vibration()
 		for(j=0;j<Ncenters;j++)
 		{
     			GeomOrb[j].Symb=g_strdup(vibration.geometry[j].symbol);
+    			GeomOrb[j].C[0] = vibration.geometry[j].coordinates[0];
+    			GeomOrb[j].C[1] = vibration.geometry[j].coordinates[1];
+    			GeomOrb[j].C[2] = vibration.geometry[j].coordinates[2];
 			if(
 				vibration.modes[m].vectors[0][j]*vibration.modes[m].vectors[0][j]+
 				vibration.modes[m].vectors[1][j]*vibration.modes[m].vectors[1][j]+
@@ -4456,14 +4904,9 @@ static void animate_vibration()
 				<vibration.threshold*vibration.threshold
 			)continue;
 
-    			GeomOrb[j].C[0] = vibration.geometry[j].coordinates[0]
-				+k*vibration.scal*vibration.modes[m].vectors[0][j];
-
-    			GeomOrb[j].C[1] = vibration.geometry[j].coordinates[1]
-				+k*vibration.scal*vibration.modes[m].vectors[1][j];
-
-    			GeomOrb[j].C[2] = vibration.geometry[j].coordinates[2]
-				+k*vibration.scal*vibration.modes[m].vectors[2][j];
+    			GeomOrb[j].C[0] = vibration.geometry[j].coordinates[0] +k*vibration.scal*vibration.modes[m].vectors[0][j];
+    			GeomOrb[j].C[1] = vibration.geometry[j].coordinates[1] +k*vibration.scal*vibration.modes[m].vectors[1][j];
+    			GeomOrb[j].C[2] = vibration.geometry[j].coordinates[2] +k*vibration.scal*vibration.modes[m].vectors[2][j];
 
     			GeomOrb[j].Prop = prop_atom_get(GeomOrb[j].Symb);
 			GeomOrb[j].Prop.covalentRadii *=1.2;
@@ -4563,6 +5006,7 @@ static void activate_action (GtkAction *action)
 		GtkUIManager *manager = g_object_get_data(G_OBJECT(action), "Manager");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/SaveGabedit");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGaussInputVibCorrection");
+		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGaussInputVibOneMode");
 	}
 	else if(!strcmp(name, "Tools"))
 	{
@@ -4587,6 +5031,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "ReadOrca")) read_orca_file_dlg();
 	else if(!strcmp(name, "ReadFireFly")) read_gamess_file_dlg();
 	else if(!strcmp(name, "ReadQChem")) read_qchem_file_dlg();
+	else if(!strcmp(name, "ReadNWChem")) read_nwchem_file_dlg();
 	else if(!strcmp(name, "ReadMolden")) read_molden_file_dlg();
 	else if(!strcmp(name, "RemoveSelectedMode")) remove_selected_mode();
 	else if(!strcmp(name, "RemoveBeforeSelectedMode")) remove_all_modes_before_selected_mode();
@@ -4594,6 +5039,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "SortModes")) sort_modes();
 	else if(!strcmp(name, "SaveGabedit")) save_gabedit_file_dlg();
 	else if(!strcmp(name, "CreateGaussInputVibCorrection")) create_gaussian_correction_vibration_file_dlg();
+	else if(!strcmp(name, "CreateGaussInputVibOneMode")) create_gaussian_along_vibration_file_dlg();
 	else if(!strcmp(name, "DrawIRSpectrum")) create_window_irspectrum();
 	else if(!strcmp(name, "DrawRamanSpectrum")) create_window_ramanspectrum();
 	else if(!strcmp(name, "HelpSupportedFormat")) help_supported_format();
@@ -4617,6 +5063,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadADF", GABEDIT_STOCK_ADF, "Read a _ADF output file", NULL, "Read a ADF output file", G_CALLBACK (activate_action) },
 	{"ReadOrca", GABEDIT_STOCK_ORCA, "Read a _Orca output file", NULL, "Read a Orca output file", G_CALLBACK (activate_action) },
 	{"ReadFireFly", GABEDIT_STOCK_FIREFLY, "Read a _FireFly output file", NULL, "Read a FireFly output file", G_CALLBACK (activate_action) },
+	{"ReadNWChem", GABEDIT_STOCK_NWCHEM, "Read a _NWChem output file", NULL, "Read a NWChem output file", G_CALLBACK (activate_action) },
 	{"ReadQChem", GABEDIT_STOCK_QCHEM, "Read a _Q-Chem output file", NULL, "Read a Q-Chem output file", G_CALLBACK (activate_action) },
 	{"ReadMolden", GABEDIT_STOCK_MOLDEN, "Read a Mol_den output file", NULL, "Read a Molden file", G_CALLBACK (activate_action) },
 	{"RemoveSelectedMode", GABEDIT_STOCK_CUT, "_Remove the selected mode", NULL, "Remove selected mode", G_CALLBACK (activate_action) },
@@ -4625,6 +5072,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SortModes", GABEDIT_STOCK_CUT, "Sort", NULL, "Sort", G_CALLBACK (activate_action) },
 	{"SaveGabedit", GABEDIT_STOCK_SAVE, "_Save", NULL, "Save", G_CALLBACK (activate_action) },
 	{"CreateGaussInputVibCorrection", GABEDIT_STOCK_SAVE, "_Gaussian input file for compute the vibrational corrections", NULL, "_Gaussian input", G_CALLBACK (activate_action) },
+	{"CreateGaussInputVibOneMode", GABEDIT_STOCK_SAVE, "_Gaussian input file using a geometry along the selected mode", NULL, "_Gaussian input", G_CALLBACK (activate_action) },
 	{"Close", GABEDIT_STOCK_CLOSE, "_Close", NULL, "Close", G_CALLBACK (activate_action) },
 	{"Tools",     NULL, "_Tools", NULL, NULL, G_CALLBACK (activate_action)},
 	{"DrawIRSpectrum", GABEDIT_STOCK_DRAW, "Draw _IR Spectrum", NULL, "Draw IR Spectrum", G_CALLBACK (activate_action) },
@@ -4654,6 +5102,7 @@ static const gchar *uiMenuInfo =
 "    <menuitem name=\"ReadADF\" action=\"ReadADF\" />\n"
 "    <menuitem name=\"ReadOrca\" action=\"ReadOrca\" />\n"
 "    <menuitem name=\"ReadQChem\" action=\"ReadQChem\" />\n"
+"    <menuitem name=\"ReadNWChem\" action=\"ReadNWChem\" />\n"
 "    <menuitem name=\"ReadMolden\" action=\"ReadMolden\" />\n"
 "    <separator name=\"sepMenuPopRemove\" />\n"
 "    <menuitem name=\"RemoveSelectedMode\" action=\"RemoveSelectedMode\" />\n"
@@ -4664,6 +5113,7 @@ static const gchar *uiMenuInfo =
 "    <separator name=\"sepMenuPopSave\" />\n"
 "    <menuitem name=\"SaveGabedit\" action=\"SaveGabedit\" />\n"
 "    <menuitem name=\"CreateGaussInputVibCorrection\" action=\"CreateGaussInputVibCorrection\" />\n"
+"    <menuitem name=\"CreateGaussInputVibOneMode\" action=\"CreateGaussInputVibOneMode\" />\n"
 "    <separator name=\"sepMenuPopDraw\" />\n"
 "    <menuitem name=\"DrawIRSpectrum\" action=\"DrawIRSpectrum\" />\n"
 "    <menuitem name=\"DrawRamanSpectrum\" action=\"DrawRamanSpectrum\" />\n"
@@ -4686,11 +5136,13 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"ReadADF\" action=\"ReadADF\" />\n"
 "        <menuitem name=\"ReadOrca\" action=\"ReadOrca\" />\n"
 "        <menuitem name=\"ReadQChem\" action=\"ReadQChem\" />\n"
+"        <menuitem name=\"ReadNWChem\" action=\"ReadNWChem\" />\n"
 "        <menuitem name=\"ReadMolden\" action=\"ReadMolden\" />\n"
 "      </menu>\n"
 "      <separator name=\"sepMenuSave\" />\n"
 "      <menuitem name=\"SaveGabedit\" action=\"SaveGabedit\" />\n"
 "      <menuitem name=\"CreateGaussInputVibCorrection\" action=\"CreateGaussInputVibCorrection\" />\n"
+"      <menuitem name=\"CreateGaussInputVibOneMode\" action=\"CreateGaussInputVibOneMode\" />\n"
 "      <separator name=\"sepMenuClose\" />\n"
 "      <menuitem name=\"Close\" action=\"Close\" />\n"
 "    </menu>\n"
@@ -4829,6 +5281,7 @@ void read_modes(GabeditFileChooser *selecFile, gint response_id)
 	else if(fileType == GABEDIT_TYPEFILE_MOPAC_AUX) read_mopac_aux_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_ORCA) read_orca_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_QCHEM) read_qchem_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_NWCHEM) read_nwchem_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_GABEDIT) read_gabedit_molden_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_MOLDEN) read_gabedit_molden_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_UNKNOWN) 

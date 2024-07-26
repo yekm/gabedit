@@ -28,6 +28,8 @@ void IsoDraw(	IsoSurface* iso);
 void IsoGenLists(GLuint *positiveSurface, GLuint *negativeSurface, GLuint *nullSurface, IsoSurface* isopositive,IsoSurface* isonegative,IsoSurface* isonull);
 void IsoShowLists(GLuint positiveSurface, GLuint negativeSurface, GLuint nullSurface);
 void set_opacity_dlg();
+void CellGenLists(GLuint *cell);
+void CellShowLists(GLuint cell);
 
 #endif /* __GABEDIT_TRIANGLEDRAW_H__ */
 

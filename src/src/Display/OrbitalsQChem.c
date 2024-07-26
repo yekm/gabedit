@@ -129,7 +129,7 @@ static gboolean read_geomorb_qchem_file_geom(gchar *FileName)
 	tmp = get_name_file(FileName);
 	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
-	set_status_label_info(_("File type"),"Dalton");
+	set_status_label_info(_("File type"),"Q-Chem");
  	numgeom =1;
  	do 
  	{

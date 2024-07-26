@@ -236,20 +236,21 @@ static void drawAllRectangles(Grid* plansgrid,gint i0,gint i1,gint numplan,gdoub
 	glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
 	glMateriali(GL_FRONT_AND_BACK,GL_SHININESS,120);
 	glDisable ( GL_LIGHTING ) ;
+	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 
 	for(i=0;i<plansgrid->N[i0]-1;i++)
 	for(j=0;j<plansgrid->N[i1]-1;j++)
 	{
-	ii = i+1;
-	jj = j+1;
-	switch(i0)
-	{
-	case 0: 
-		ix = i;
-		ix1 = ix2 = ii;
-		ix4 = ix3 = ix;
-		switch(i1)
+		ii = i+1;
+		jj = j+1;
+		switch(i0)
 		{
+		case 0: 
+			ix = i;
+			ix1 = ix2 = ii;
+			ix4 = ix3 = ix;
+			switch(i1)
+			{
 			case 1 : iy = j; iz = ip; 
 				 iy1 = iy4 =  iy; iy2 = iy3 = jj ;
 				 iz1 = iz2 = iz3 = iz4 = iz;
@@ -258,13 +259,14 @@ static void drawAllRectangles(Grid* plansgrid,gint i0,gint i1,gint numplan,gdoub
 				 iy1 = iy2 = iy3 = iy4 = iy;
 				 iz1 = iz4 = iz; iz2 = iz3 =  jj ; 
 				 break;
-		}
-		break;
-	case 1: iy = i;
-		iy1 = iy2 =  ii;
-		iy3 = iy4 = iy ;
-		switch(i1)
-		{
+			}
+			break;
+		case 1: 
+			iy = i;
+			iy1 = iy2 =  ii;
+			iy3 = iy4 = iy ;
+			switch(i1)
+			{
 			case 0 : ix = j; iz = ip;
 				 iz1 = iz2 = iz3 = iz4 = iz;
 				 ix1 = ix4 =  ix; ix2 = ix3 = jj ;
@@ -273,8 +275,8 @@ static void drawAllRectangles(Grid* plansgrid,gint i0,gint i1,gint numplan,gdoub
 				 ix1 = ix2 = ix3 = ix4 = ix;
 				 iz1 = iz4 =  iz; iz2 = iz3 = jj ;
 				 break;
-		}
-		break;
+			}
+			break;
 		case 2: iz = i;
 			iz1 = iz2 =  ii;
 			iz3 = iz4 = iz ;
@@ -284,55 +286,53 @@ static void drawAllRectangles(Grid* plansgrid,gint i0,gint i1,gint numplan,gdoub
 				 iy1 = iy2 = iy3 = iy4 = iy;
 				 ix1 = ix4 =  ix; ix2 = ix3 = jj ;
 				 break;
-			case 1 : ix = ip;iy = j;
+				case 1 : ix = ip;iy = j;
 				 ix1 = ix2 = ix3 = ix4 = ix;
 				 iy1 = iy4 =  iy; iy2 = iy3 = jj ;
 				 break;
 			}
 			break;
+		}
+
+		glBegin(GL_POLYGON);
+		set_Color_From_colorMap(colorMap, Diffuse, plansgrid->point[ix][iy][iz].C[3]);
+		glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
+		glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
+		glColor4dv(Diffuse);
+		x = plansgrid->point[ix][iy][iz].C[0] + Gap[0];
+		y = plansgrid->point[ix][iy][iz].C[1] + Gap[1];
+		z = plansgrid->point[ix][iy][iz].C[2] + Gap[2];
+		glVertex3f(x,y,z);
+
+		set_Color_From_colorMap(colorMap, Diffuse, plansgrid->point[ix1][iy1][iz1].C[3]);
+		glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
+		glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
+		glColor4dv(Diffuse);
+		x = plansgrid->point[ix1][iy1][iz1].C[0] + Gap[0];
+		y = plansgrid->point[ix1][iy1][iz1].C[1] + Gap[1];
+		z = plansgrid->point[ix1][iy1][iz1].C[2] + Gap[2];
+		glVertex3f(x,y,z);
+
+		set_Color_From_colorMap(colorMap, Diffuse, plansgrid->point[ix2][iy2][iz2].C[3]);
+		glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
+		glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
+		glColor4dv(Diffuse);
+		x = plansgrid->point[ix2][iy2][iz2].C[0] + Gap[0];
+		y = plansgrid->point[ix2][iy2][iz2].C[1] + Gap[1];
+		z = plansgrid->point[ix2][iy2][iz2].C[2] + Gap[2];
+		glVertex3f(x,y,z);
+
+		set_Color_From_colorMap(colorMap, Diffuse, plansgrid->point[ix3][iy3][iz3].C[3]);
+		glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
+		glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
+		glColor4dv(Diffuse);
+		x = plansgrid->point[ix3][iy3][iz3].C[0] + Gap[0];
+		y = plansgrid->point[ix3][iy3][iz3].C[1] + Gap[1];
+		z = plansgrid->point[ix3][iy3][iz3].C[2] + Gap[2];
+		glVertex3f(x,y,z);
+		glEnd();
 	}
-        
-
-	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-	glBegin(GL_POLYGON);
-
-
-	set_Color_From_colorMap(colorMap, Diffuse, plansgrid->point[ix][iy][iz].C[3]);
-	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
-	glColor4dv(Diffuse);
-	x = plansgrid->point[ix][iy][iz].C[0] + Gap[0];
-	y = plansgrid->point[ix][iy][iz].C[1] + Gap[1];
-	z = plansgrid->point[ix][iy][iz].C[2] + Gap[2];
-	glVertex3f(x,y,z);
-
-	set_Color_From_colorMap(colorMap, Diffuse, plansgrid->point[ix1][iy1][iz1].C[3]);
-	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
-	glColor4dv(Diffuse);
-	x = plansgrid->point[ix1][iy1][iz1].C[0] + Gap[0];
-	y = plansgrid->point[ix1][iy1][iz1].C[1] + Gap[1];
-	z = plansgrid->point[ix1][iy1][iz1].C[2] + Gap[2];
-	glVertex3f(x,y,z);
-	set_Color_From_colorMap(colorMap, Diffuse, plansgrid->point[ix2][iy2][iz2].C[3]);
-	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
-	glColor4dv(Diffuse);
-	x = plansgrid->point[ix2][iy2][iz2].C[0] + Gap[0];
-	y = plansgrid->point[ix2][iy2][iz2].C[1] + Gap[1];
-	z = plansgrid->point[ix2][iy2][iz2].C[2] + Gap[2];
-	glVertex3f(x,y,z);
-	set_Color_From_colorMap(colorMap, Diffuse, plansgrid->point[ix3][iy3][iz3].C[3]);
-	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
-	glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Diffuse);
-	glColor4dv(Diffuse);
-	x = plansgrid->point[ix3][iy3][iz3].C[0] + Gap[0];
-	y = plansgrid->point[ix3][iy3][iz3].C[1] + Gap[1];
-	z = plansgrid->point[ix3][iy3][iz3].C[2] + Gap[2];
-	glVertex3f(x,y,z);
 	glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-	glEnd();
-	}
 	glEnable ( GL_LIGHTING ) ;
 }
 /*********************************************************************************************************/

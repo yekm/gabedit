@@ -76,6 +76,8 @@ gboolean compute_spatial_overlap_numeric(gint N[],GridLimits limits, gint typeOr
 		gdouble* pInteg, gdouble* pNormi, gdouble* pNormj, gdouble* pOverlap);
 gboolean compute_isovalue_percent_from_grid(Grid* grid, gboolean square, gdouble percent, gdouble precision, gdouble* pIsovalue);
 Grid* copyGrid(Grid* grid);
+Grid* compute_mep_grid_exact(gint N[],GridLimits limits);
+Grid* compute_mep_grid_using_orbitals(gint N[],GridLimits limits);
 
 #endif /* __GABEDIT_GRID_H__ */
 

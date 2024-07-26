@@ -213,6 +213,7 @@ gint get_type_file_orb(gchar *fileName)
 		ktype = GABEDIT_TYPEFILE_GAUSSIAN_FCHK;
  		g_free(t);
 		fclose(fd);
+		printf("GABEDIT_TYPEFILE_GAUSSIAN_FCHK\n");
 		return ktype;
 	}
 	rewind(fd);
@@ -250,6 +251,17 @@ gint get_type_file_orb(gchar *fileName)
 			if(strstr(t,"Welcome to Q-Chem"))
 			{
 				ktype = GABEDIT_TYPEFILE_QCHEM;
+				break;
+			}
+			if(strstr(t,"Northwest Computational Chemistry Package"))
+			{
+				ktype = GABEDIT_TYPEFILE_NWCHEM;
+				break;
+			}
+			g_strup(t);
+        		if(strstr(t, "ENTERING GAUSSIAN" ))
+			{
+				ktype = GABEDIT_TYPEFILE_GAUSSIAN;
 				break;
 			}
 		}
@@ -397,6 +409,43 @@ gint get_type_basis_in_gaussian_file(gchar *fileName)
 		}
 	}
 
+ 	fclose(fd);
+ 	g_free(t);
+	return ktype;
+        
+}
+/**********************************************************/
+/* return 
+   -1 : undefined
+    0 : cartezian
+    1 : Spherical
+*/
+gint get_type_basis_in_nwchem_file(gchar *fileName)
+{
+ 	gchar *t;
+ 	FILE *fd;
+ 	guint taille=BSIZE;
+	gint ktype = -1;
+
+ 	t=g_malloc(taille);
+ 	fd = FOpen(fileName, "rb");
+
+ 	if(fd ==NULL)
+ 	{
+		gchar buffer[BSIZE];
+		sprintf(buffer,_("Sorry, I can not open '%s' file\n"),fileName);
+  		Message(buffer,_("Error"),TRUE);
+
+ 		g_free(t);
+  		return ktype;
+ 	}
+	ktype = 0;
+	while(!feof(fd))
+	{
+		fgets(t,taille,fd);
+        	if(strstr( t, "ao basis") && strstr( t, "spherical")) {ktype=1;break;}
+        	if(strstr( t, "ao basis") && strstr( t, "cart")) {ktype=0;break;}
+	}
  	fclose(fd);
  	g_free(t);
 	return ktype;
@@ -1471,6 +1520,7 @@ void initialise_global_orbitals_variables()
 	numPOVFile = 0;
 	AOrb = NULL;
 	SAOrb = NULL;
+	SOverlaps = NULL;
 	solventRadius = 1.4;
 	alphaFED = 3.0; /* eV^-1 */
 }

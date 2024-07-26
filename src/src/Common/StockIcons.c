@@ -65,6 +65,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../../pixmaps/FireFly.xpm"
 #include "../../pixmaps/MoveAtom.xpm"
 #include "../../pixmaps/MPQC.xpm"
+#include "../../pixmaps/NWChem.xpm"
 #include "../../pixmaps/New.xpm"
 #include "../../pixmaps/Next.xpm"
 #include "../../pixmaps/No.xpm"
@@ -177,6 +178,7 @@ void gabedit_gtk_stock_init()
 	add_one_icon(icon_factory, GABEDIT_STOCK_ADF, adf_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_DALTON, dalton_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_GAMESS, gamess_xpm);
+	add_one_icon(icon_factory, GABEDIT_STOCK_NWCHEM, nwchem_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_FIREFLY, firefly_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MOVE_ATOM, move_atom_xpm);
 	add_one_icon(icon_factory, GABEDIT_STOCK_MPQC, mpqc_xpm);

@@ -35,5 +35,6 @@ typedef enum
 	GABEDIT_UNK = 0,
 	GABEDIT_CG = 1,
 	GABEDIT_MG = 2,
+	GABEDIT_EXACT = 3,
 } PoissonSolverMethod;
 #endif /* __GABEDIT_TYPESMG_H__*/

@@ -67,7 +67,7 @@ static gchar selectedSCF[BSIZE]="DEF";
 /*************************************************************************************************************/
 static gchar* listTypeMethodsView[] = 
 { 
-	"Hatree-Fock", 
+	"Hartree-Fock", 
 	"Local and gradient corrected functionals", 
 	"Hybrid functionals",
 	"Meta-GGA and hybrid meta-GGA's",

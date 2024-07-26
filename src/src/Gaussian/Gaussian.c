@@ -744,7 +744,7 @@ static void GetInfoZMatrix( )
         {
         	if(Variables[i].Used)
 		{
-        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,_("Variables :\n"),-1);
+        		gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"Variables :\n",-1);
 			break;
 		}
         }

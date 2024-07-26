@@ -866,6 +866,205 @@ static void read_orca_file_dlg()
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
 /********************************************************************************/
+static gboolean read_nwchem_tddft_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+
+	gchar *FileName;
+ 	gchar t[BSIZE];
+ 	gboolean OK;
+ 	FILE *fd;
+ 	guint taille=BSIZE;
+	gint n;
+	gdouble ener = 0;
+	gdouble intensity = 0;
+	gint numberOfStates = 0;
+	gdouble *energies = NULL;
+	gdouble *intensities = NULL;
+
+	if(response_id != GTK_RESPONSE_OK) return FALSE;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+
+ 	fd = FOpen(FileName, "r");
+	if(!fd) return FALSE;
+
+ 	do 
+ 	{
+ 		OK=FALSE;
+ 		while(!feof(fd))
+		{
+	  		fgets(t,taille,fd);
+	 		if (strstr( t,"NWChem TDDFT Module") ) {OK = TRUE; break;}
+		}
+		if(!OK) break;
+		numberOfStates = 0;
+		if(energies) g_free(energies);
+		if(intensities) g_free(intensities);
+		energies = NULL;
+		intensities = NULL;
+  		while(!feof(fd) )
+  		{
+			if(!fgets(t,taille,fd)) break;
+	 		if (!(strstr( t,"Root") && strstr( t,"eV") && strstr( t,"(") && strstr( t,")")) ) continue;
+			n = sscanf( strstr( t,"(")+1,"%lf",&ener);
+			if(n==1)
+			{
+				 while(!feof(fd) )
+				{
+					if(!fgets(t,taille,fd)) break;
+					if(strstr(t,"Dipole Oscillator Strength"))
+					{
+						intensity=0.0;
+						 if(strstr(t,"Spin forbidden") || 1==sscanf( strstr(t,"Dipole Oscillator Strength")+strlen("Dipole Oscillator Strength"),"%lf",&intensity))
+						{
+							numberOfStates++;
+							energies = g_realloc(energies, numberOfStates*sizeof(gdouble));
+							intensities = g_realloc(intensities, numberOfStates*sizeof(gdouble));
+							energies[numberOfStates-1] = ener;
+							intensities[numberOfStates-1] = intensity;
+						}
+						break;
+						
+					}
+				}
+			}
+		}
+ 	}while(!feof(fd));
+
+	if(numberOfStates>0)
+	{
+		OK = TRUE;
+		createUVSpectrumWin(numberOfStates, energies, intensities);
+	}
+	else
+	{
+		OK = FALSE;
+	}
+
+
+	if(energies) g_free(energies);
+	if(intensities) g_free(intensities);
+	fclose(fd);
+
+	return OK;
+}
+/********************************************************************************/
+static gboolean read_nwchem_eom_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+
+	gchar *FileName;
+ 	gchar t[BSIZE];
+ 	gboolean OK;
+ 	FILE *fd;
+ 	guint taille=BSIZE;
+	gint n;
+	gdouble ener = 0;
+	gdouble intensity = 0;
+	gint numberOfStates = 0;
+	gdouble *energies = NULL;
+	gdouble *intensities = NULL;
+
+	if(response_id != GTK_RESPONSE_OK) return FALSE;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+
+ 	fd = FOpen(FileName, "r");
+	if(!fd) return FALSE;
+
+ 	do 
+ 	{
+ 		OK=FALSE;
+ 		while(!feof(fd))
+		{
+	  		fgets(t,taille,fd);
+	 		if (strstr( t,"Dim. of EOMCC iter. space") ) {OK = TRUE; break;}
+		}
+		if(!OK) break;
+		numberOfStates = 0;
+		if(energies) g_free(energies);
+		if(intensities) g_free(intensities);
+		energies = NULL;
+		intensities = NULL;
+  		while(!feof(fd) )
+  		{
+			if(!fgets(t,taille,fd)) break;
+	 		if (!(strstr( t,"/ eV      ="))) continue;
+			n = sscanf( strstr( t,"=")+1,"%lf",&ener);
+			if(n==1)
+			{
+				 while(!feof(fd) )
+				{
+					if(!fgets(t,taille,fd)) break;
+					if(strstr(t,"Oscillator Strength              "))
+					{
+						intensity=0.0;
+						 if(strstr(t,"Spin forbidden") || 1==sscanf( strstr(t,"Oscillator Strength              ")+strlen("Oscillator Strength              "),"%lf",&intensity))
+						{
+							numberOfStates++;
+							energies = g_realloc(energies, numberOfStates*sizeof(gdouble));
+							intensities = g_realloc(intensities, numberOfStates*sizeof(gdouble));
+							energies[numberOfStates-1] = ener;
+							intensities[numberOfStates-1] = intensity;
+						}
+						break;
+						
+					}
+				}
+			}
+		}
+ 	}while(!feof(fd));
+
+	if(numberOfStates>0)
+	{
+		OK = TRUE;
+		createUVSpectrumWin(numberOfStates, energies, intensities);
+	}
+	else
+	{
+		OK = FALSE;
+	}
+
+
+	if(energies) g_free(energies);
+	if(intensities) g_free(intensities);
+	fclose(fd);
+
+	return OK;
+}
+/********************************************************************************/
+static gboolean read_nwchem_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+
+	if(response_id != GTK_RESPONSE_OK) return FALSE;
+	if(!read_nwchem_tddft_file(SelecFile, response_id)&& !read_nwchem_eom_file(SelecFile, response_id))
+	{
+ 		gchar* FileName = gabedit_file_chooser_get_current_file(SelecFile);
+ 		FILE* fd = FOpen(FileName, "r");
+		if(!fd)
+		{
+			gchar buffer[BSIZE];
+			sprintf(buffer,_("Sorry, I cannot open '%s' file\n"),FileName);
+  			Message(buffer,_("Error"),TRUE);
+		}
+		else
+		{
+			messageErrorFreq(FileName);
+			fclose(fd);
+		}
+		return FALSE;
+	}
+
+	return TRUE;
+}
+/********************************************************************************/
+static void read_nwchem_file_dlg()
+{
+	GtkWidget* filesel = 
+ 	file_chooser_open(read_nwchem_file,
+			_("Read energies and intensities from a NWChem output file"),
+			GABEDIT_TYPEFILE_ORCA,GABEDIT_TYPEWIN_OTHER);
+
+	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
+}
+/********************************************************************************/
 static gboolean read_adf_file(GabeditFileChooser *SelecFile, gint response_id)
 {
 	return FALSE;
@@ -954,6 +1153,7 @@ void createUVSpectrum(GtkWidget *parentWindow, GabEditTypeFile typeOfFile)
 	if(typeOfFile==GABEDIT_TYPEFILE_ORCA) read_orca_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_FIREFLY) read_firefly_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_QCHEM) read_qchem_file_dlg();
+	if(typeOfFile==GABEDIT_TYPEFILE_NWCHEM) read_nwchem_file_dlg();
 	if(typeOfFile==GABEDIT_TYPEFILE_TXT) read_sample_2columns_file_dlg();
 }
 /********************************************************************************/

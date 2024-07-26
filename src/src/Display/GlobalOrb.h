@@ -64,6 +64,7 @@ TYPE *Type;
 CGTF *AOrb;
 
 CSTF *SAOrb;
+gdouble* SOverlaps;
 
 gint Ncenters;
 gint Ntype;

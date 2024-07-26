@@ -28,9 +28,9 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/UtilsInterface.h"
 #include "../Utils/UtilsGL.h"
 
-static V4d color_positive = {0.0, 0.0,0.8,0.6};
-static V4d color_negative = {0.8, 0.0,0.0,0.6};
-static V4d color_density  = {0.0, 0.8,0.8,0.6};
+static V4d color_positive = {0.0, 0.0,0.8,1.0};
+static V4d color_negative = {0.8, 0.0,0.0,1.0};
+static V4d color_density  = {0.0, 0.8,0.8,1.0};
 
 /*********************************************************************************************/
 void get_color_surface(gint num,gdouble v[])
@@ -184,6 +184,8 @@ void IsoDrawMapped(IsoSurface* iso)
 	V4d color3  = {0.5,0.5,0.5,alpha};
 	ColorMap* colorMap = get_colorMap_mapping_cube();
 
+	if(TypeBlend == GABEDIT_BLEND_NO)  alpha = 1.0;
+
 	glMaterialdv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
 	glMaterialdv(GL_FRONT_AND_BACK,GL_DIFFUSE,Diffuse);
 	glMaterialdv(GL_FRONT_AND_BACK,GL_AMBIENT,Ambiant);
@@ -234,6 +236,7 @@ GLuint IsoGenOneList(IsoSurface* isosurface,gint type)
 	GLdouble alpha = get_alpha_opacity();
 
 	if(!isosurface) return 0;
+	if(TypeBlend == GABEDIT_BLEND_NO)  alpha = 1.0;
 
 	isolist = glGenLists(1);
 	glNewList(isolist, GL_COMPILE);
@@ -368,3 +371,175 @@ void IsoShowLists(GLuint positiveSurface, GLuint negativeSurface, GLuint nullSur
 
 }
 /*********************************************************************************************/
+void CubeDraw(Grid* grid)
+{
+	gint ix,iy,iz;
+	gint ix1,iy1,iz1;
+	gdouble x,y,z;
+	if(!grid) return;
+
+	glLineWidth(3);
+	ix1 = grid->N[0]-1;
+	iy1 = grid->N[1]-1;
+	iz1 = grid->N[2]-1; 
+	glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+	glBegin(GL_POLYGON);
+	ix = 0; iy = 0; iz = 0;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	ix = ix1; iy = 0; iz = 0;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	ix = ix1; iy = iy1; iz = 0;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	ix = 0; iy = iy1; iz = 0;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	ix = 0; iy = 0; iz = 0;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	glEnd();
+
+	glBegin(GL_POLYGON);
+	ix = 0; iy = 0; iz = 0;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	ix = ix1; iy = 0; iz = 0;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	ix = ix1; iy = 0; iz = iz1;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	ix = 0; iy = 0; iz = iz1;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	ix = 0; iy = 0; iz = 0;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	glEnd();
+
+	glBegin(GL_POLYGON);
+	ix = 0; iy = 0; iz = 0;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	ix = 0; iy = iy1; iz = 0;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	ix = 0; iy = iy1; iz = iz1;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	ix = 0; iy = 0; iz = iz1;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	ix = 0; iy = 0; iz = 0;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	glEnd();
+	glBegin(GL_POLYGON);
+	ix = ix1; iy = iy1; iz = iz1;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	ix = 0; iy = iy1; iz = iz1;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	ix = 0; iy = 0; iz = iz1;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	ix = ix1; iy = 0; iz = iz1;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	ix = ix1; iy = iy1; iz = iz1;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	glEnd();
+	glBegin(GL_POLYGON);
+	ix = ix1; iy = iy1; iz = iz1;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	ix = ix1; iy = iy1; iz = 0;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	ix = ix1; iy = 0; iz = 0;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	ix = ix1; iy = 0; iz = iz1;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	ix = ix1; iy = iy1; iz = iz1;
+	x = grid->point[ix][iy][iz].C[0];
+	y = grid->point[ix][iy][iz].C[1];
+	z = grid->point[ix][iy][iz].C[2];
+	glVertex3f(x,y,z);
+	glEnd();
+
+	glLineWidth(1.5);
+	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+}
+/*********************************************************************************************/
+void CellGenLists(GLuint *cell)
+{
+	V4d Color  = {1.0,1.0,1.0,0.8};
+	if (glIsList(*cell) == GL_TRUE) glDeleteLists(*cell,1);
+	*cell = glGenLists(1);
+	glNewList(*cell, GL_COMPILE);
+
+	glDisable ( GL_LIGHTING ) ;
+	glColor4dv(Color);
+	CubeDraw(grid);
+	glEnable ( GL_LIGHTING ) ;
+	glEndList();
+}
+/********************************************************************************/
+void CellShowLists(GLuint cell)
+{
+	if (glIsList(cell) == GL_TRUE) glCallList(cell);
+}

@@ -666,6 +666,7 @@ static void read_file(GabeditFileChooser *selecFile, gint response_id)
 	else if(fileType == GABEDIT_TYPEFILE_MOLPRO) read_last_molpro_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_ORCA) read_last_orca_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_QCHEM) read_last_qchem_file(selecFile, response_id);
+	else if(fileType == GABEDIT_TYPEFILE_NWCHEM) read_last_nwchem_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_MOPAC) read_last_mopac_output_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_MOPAC_AUX) read_last_mopac_aux_file(selecFile, response_id);
 	else if(fileType == GABEDIT_TYPEFILE_MOPAC_SCAN) read_geometries_conv_mopac_scan(selecFile, response_id);

@@ -504,6 +504,7 @@ static gchar* get_angle_zmatrix(gint ai, gint aj, gint ak)
 	gdouble *Y = NULL;
 	gdouble *Z = NULL;
 	gint amax = ak;
+	gchar* t = NULL;
 
 	if (NcentersZmat <= 1) return NULL;
 	if (ai < 0) return NULL;
@@ -564,7 +565,14 @@ static gchar* get_angle_zmatrix(gint ai, gint aj, gint ak)
 		g_free(X);
 		g_free(Y);
 		g_free(Z);
-        	return get_angle_vectors(A,B);
+        	t = get_angle_vectors(A,B);
+		if(t) 
+		{
+			gchar* a = g_strdup_printf("%0.6lf",atof(t));
+			g_free(t);
+			return a;
+		}
+		return NULL;
 	}
 	for (i = 3; i <(gint)NcentersZmat; i++)
 	{	 
@@ -698,7 +706,14 @@ static gchar* get_angle_zmatrix(gint ai, gint aj, gint ak)
 		g_free(X);
 		g_free(Y);
 		g_free(Z);
-        	return get_angle_vectors(A,B);
+        	t = get_angle_vectors(A,B);
+		if(t) 
+		{
+			gchar* a = g_strdup_printf("%0.6lf",atof(t));
+			g_free(t);
+			return a;
+		}
+		return NULL;
 	}
 }
 /*****************************************************************************/
@@ -2294,38 +2309,43 @@ void save_gmzmatrix_file(GtkWidget* win,gpointer data)
 {
 	GtkWidget * ButtonGZmat = g_object_get_data(G_OBJECT(win),"ButtonGZmat");
 	GtkWidget * entry = g_object_get_data(G_OBJECT(win),"Entry");
+	GtkWidget * buttonDirSelector = g_object_get_data(G_OBJECT(win),"ButtonDirSelector");
+	G_CONST_RETURN gchar *entrytext;
+	gchar *dirName;
+	gchar *fileName;
+
+  	entrytext = gtk_entry_get_text(GTK_ENTRY(entry));
+  	dirName = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
+  	fileName = get_dir_file_name(dirName,entrytext);
 	 if (GTK_TOGGLE_BUTTON (ButtonGZmat)->active)
 	 {
-		 /*Debug("Gaussian zmatrix file\n");*/
-		 save_gzmatrix_file_entry(entry);
+		 save_gzmatrix_file(fileName);
 	 }
 	 else
 	 {
-		 /*Debug("Mopac zmatrix file\n");*/
-		 save_mzmatrix_file_entry(entry);
+		 save_mzmatrix_file(fileName);
 	 }
+}
+/********************************************************************************/
+static void reset_extended_file(gpointer data,G_CONST_RETURN gchar* ext)
+{
+	GtkWidget* entry = GTK_WIDGET(data);
+	G_CONST_RETURN gchar* entrytext = gtk_entry_get_text(GTK_ENTRY(entry)); 
+	gchar*	temp = get_filename_without_ext(entrytext);
+	gchar*	t = g_strdup_printf("%s.%s",temp,ext);
+	gtk_entry_set_text(GTK_ENTRY(entry),t);
+	g_free(t);
+	g_free(temp);
 }
 /********************************************************************************/
 void reset_extended_gzmat_file(GtkWidget* b,gpointer data)
 {
-	GtkWidget* entry = GTK_WIDGET(data);
-	G_CONST_RETURN gchar* entrytext = gtk_entry_get_text(GTK_ENTRY(entry)); 
-	gchar*	temp = get_suffix_name_file(entrytext);
-	gchar*	t = g_strdup_printf("%s.gzmt",temp);
-	gtk_entry_set_text(GTK_ENTRY(entry),t);
-	g_free(t);
-	g_free(temp);
+	reset_extended_file(data,"gzmt");
 }
 /********************************************************************************/
 void reset_extended_mzmat_file(GtkWidget* b,gpointer data)
 {
-	GtkWidget* entry = GTK_WIDGET(data);
-	G_CONST_RETURN gchar* entrytext = gtk_entry_get_text(GTK_ENTRY(entry)); 
-	gchar*	temp = get_suffix_name_file(entrytext);
-	gchar*	t = g_strdup_printf("%s.zmt",temp);
-	gtk_entry_set_text(GTK_ENTRY(entry),t);
-	g_free(t);
-	g_free(temp);
+	reset_extended_file(data,"zmt");
 }
 /********************************************************************************/
 void create_window_save_zmat()
@@ -2341,9 +2361,9 @@ void create_window_save_zmat()
   GtkWidget *entry;
   GtkWidget *Win = WindowGeom;
   gchar      *labelt = g_strdup(" File  : ");
-  gchar      *liste;
+  gchar      *fileName;
   gchar      *titre=g_strdup("Save in Z-matrix file");
-  static gchar* patterns[] = {"*.gzmt *.zmt","*.gzmt","*.zmt","*",NULL};
+  GtkWidget* buttonDirSelector;
 
   if(NcentersZmat<1)
   {
@@ -2352,7 +2372,7 @@ void create_window_save_zmat()
   }
   if(!Win)
 	  Win = Fenetre;
-  liste  = g_strdup_printf("%s%s%s.gzmt",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.projectname);
+  fileName  = g_strdup_printf("%s.gzmt",fileopen.projectname);
   /* Fenetre principale */
   fp = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title(GTK_WINDOW(fp),titre);
@@ -2381,26 +2401,19 @@ void create_window_save_zmat()
   ButtonGZmat = gtk_radio_button_new_with_label( NULL,"Gaussian Z-matrix " );
   gtk_box_pack_start (GTK_BOX (hbox), ButtonGZmat, FALSE, FALSE, 5);
   gtk_widget_show (ButtonGZmat);
-  ButtonMZmat = gtk_radio_button_new_with_label(
-                       gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonGZmat)),
-                       "Mopac Z-matrix"); 
+  ButtonMZmat = gtk_radio_button_new_with_label( gtk_radio_button_get_group (GTK_RADIO_BUTTON (ButtonGZmat)), "Mopac Z-matrix"); 
    gtk_box_pack_start (GTK_BOX (hbox), ButtonMZmat, FALSE, FALSE, 5);
    gtk_widget_show (ButtonMZmat);
    create_hseparator(vboxframe); 
  
 
 
-   /*
-  frame = gtk_frame_new ("Location&Name of file");
-  gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
-  gtk_container_add (GTK_CONTAINER (vboxall), frame);
-  gtk_widget_show (frame);
+  create_table_browser(Win,vboxframe);
+  entry = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"EntryFileName"));
+  gtk_entry_set_text(GTK_ENTRY(entry),fileName);
+  buttonDirSelector = (GtkWidget*)(g_object_get_data(G_OBJECT(Win),"ButtonDirSelector"));
+  if(fileopen.localdir && strcmp(fileopen.localdir,"NoName")!=0) gtk_file_chooser_set_current_folder( GTK_FILE_CHOOSER(buttonDirSelector), fileopen.localdir);
 
-  vboxframe = create_vbox(frame);
-  */
-
-  hbox = create_hbox_browser(Win,vboxframe,labelt,liste,patterns);
-  entry = (GtkWidget*)(g_object_get_data(G_OBJECT(hbox),"Entry"));
   create_hseparator(vboxframe); 
   g_signal_connect(G_OBJECT(ButtonGZmat),"clicked",(GCallback)reset_extended_gzmat_file,(gpointer)(entry));
   g_signal_connect(G_OBJECT(ButtonMZmat),"clicked",(GCallback)reset_extended_mzmat_file,(gpointer)(entry));
@@ -2408,6 +2421,7 @@ void create_window_save_zmat()
   g_object_set_data(G_OBJECT (fp), "ButtonGZmat",ButtonGZmat);
   g_object_set_data(G_OBJECT (fp), "ButtonMZmat",ButtonMZmat);
   g_object_set_data(G_OBJECT (fp), "Entry",entry);
+  g_object_set_data(G_OBJECT (fp), "ButtonDirSelector",buttonDirSelector);
   /* buttons */
   create_hseparator(vboxall); 
   hbox = gtk_hbox_new(FALSE, 0);
@@ -2416,11 +2430,6 @@ void create_window_save_zmat()
 
 
 
-  button = create_button(fp,_("Cancel"));
-  gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, FALSE, 3);
-  g_signal_connect_swapped(G_OBJECT(button),"clicked",(GCallback)delete_child,GTK_OBJECT(fp));
-  gtk_widget_show (button);
-  GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
 
   button = create_button(fp,_("OK"));
   gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, FALSE, 3);
@@ -2430,8 +2439,14 @@ void create_window_save_zmat()
   g_signal_connect_swapped(G_OBJECT(button), "clicked",G_CALLBACK(save_gmzmatrix_file),GTK_OBJECT(fp));
   g_signal_connect_swapped(G_OBJECT(button),"clicked",(GCallback)delete_child,GTK_OBJECT(fp));
 
+  button = create_button(fp,_("Cancel"));
+  gtk_box_pack_end (GTK_BOX( hbox), button, FALSE, FALSE, 3);
+  g_signal_connect_swapped(G_OBJECT(button),"clicked",(GCallback)delete_child,GTK_OBJECT(fp));
+  gtk_widget_show (button);
+  GTK_WIDGET_SET_FLAGS(button, GTK_CAN_DEFAULT);
+
   g_free(labelt);
-  g_free(liste);
+  g_free(fileName);
    
   gtk_widget_show_all(fp);
 }
@@ -4735,6 +4750,253 @@ void read_Zmat_from_gauss_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
  if(GeomDrawingArea != NULL)
 	rafresh_drawing();
  set_last_directory(NomFichier);
+}
+/*************************************************************************************/
+void read_Zmat_from_nwchem_input_file(gchar *NomFichier)
+{
+	gchar *t;
+ 	gboolean OK;
+ 	gchar *AtomCoord[7];
+ 	FILE *file;
+ 	guint taille=BSIZE;
+ 	guint i;
+ 	gint j;
+	gint k;
+ 	gboolean Uvar=FALSE;
+ 	GeomAtomDef* Geomtemp=NULL;
+ 	gint Ncent = 0;
+ 	gint Nvar = 0;
+ 	VariablesDef* Variablestemp=NULL;
+ 	gchar symb[BSIZE];
+ 	gchar type[BSIZE];
+ 	gchar charge[BSIZE];
+	gint globalCharge, mult;
+ 
+ 	if ( strcmp(NomFichier,"") == 0 ) return;
+
+	file = FOpen(NomFichier, "r");
+	OK=TRUE;
+ 	if(file==NULL)
+	{
+   		MessageGeom(_("Sorry\n I can not read geometry in NWChem input file"),_("Error"),TRUE);
+   		return;
+	}
+	t=g_malloc(taille*sizeof(gchar));
+	for(i=0;i<5;i++)
+		AtomCoord[i]=g_malloc(taille*sizeof(char));
+
+	 while(!feof(file))
+	 {
+		if(!fgets(t,taille,file))
+		{
+			OK = FALSE;
+			break;
+		}
+		g_strup(t);
+		if(strstr(t,"* INT") && 4==sscanf(t,"%s %s %d %d",AtomCoord[0],AtomCoord[1],&globalCharge, &mult) )
+		{
+			OK = TRUE;
+			break;
+		}
+	 }
+
+ 	for(i=0;i<7;i++)
+		AtomCoord[i]=g_malloc(taille*sizeof(gchar));
+ 
+
+  	Ncent = 0;
+  	while(!feof(file) && OK )
+  	{
+    		fgets(t,taille,file);
+                for(i=0;i<(gint)strlen(t);i++) if(t[i] != ' ') break;
+                if(i<=(gint)strlen(t) && t[i] == '*') break;
+		for(k=0;k<(gint)strlen(t);k++) if(t[k]=='{' || t[k]=='}') t[k] = ' ';
+
+    		i = sscanf(t,"%s ",AtomCoord[0]);
+                if(i != 1)
+		{
+			OK = FALSE;
+			break;
+		}
+  		Ncent++;
+		if(Ncent==1) Geomtemp=g_malloc(Ncent*sizeof(GeomAtomDef));
+		else Geomtemp=g_realloc(Geomtemp,Ncent*sizeof(GeomAtomDef));
+        	switch( Ncent ){
+        	case 1 : 
+  			Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_0;
+
+			get_symb_type_charge(AtomCoord[0],symb,type,charge);
+    			Geomtemp[Ncent-1].Symb = g_strdup(symb);
+    			Geomtemp[Ncent-1].mmType = g_strdup(type);
+    			Geomtemp[Ncent-1].pdbType = g_strdup(type);
+  			Geomtemp[Ncent-1].Charge=g_strdup(charge);
+
+  			Geomtemp[Ncent-1].Residue=g_strdup("DUM");
+			Geomtemp[Ncent-1].ResidueNumber=0;
+  			Geomtemp[Ncent-1].Layer=g_strdup(" ");
+			break;
+        	case 2 : 
+                 	i =  sscanf(
+				t,"%s %s %s %s %s",
+				AtomCoord[0],AtomCoord[1],AtomCoord[2],
+				AtomCoord[3],AtomCoord[4]
+				);
+                	if( i != 5 )
+                	{
+				Ncent--;
+  				Geomtemp=g_realloc(Geomtemp,Ncent*sizeof(GeomAtomDef));
+				OK = FALSE;
+                	}
+                        if( !test(AtomCoord[4]) ) Uvar = TRUE;
+  			Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_R;
+
+			get_symb_type_charge(AtomCoord[0],symb,type,charge);
+    			Geomtemp[Ncent-1].Symb = g_strdup(symb);
+    			Geomtemp[Ncent-1].mmType = g_strdup(type);
+    			Geomtemp[Ncent-1].pdbType = g_strdup(type);
+  			Geomtemp[Ncent-1].Charge=g_strdup(charge);
+
+  			Geomtemp[Ncent-1].Residue=g_strdup("DUM");
+			Geomtemp[Ncent-1].ResidueNumber=0;
+  			Geomtemp[Ncent-1].NR=g_strdup(AtomCoord[1]);
+  			Geomtemp[Ncent-1].R=g_strdup(AtomCoord[4]);
+  			Geomtemp[Ncent-1].Layer=g_strdup(" ");
+			break;
+   		case 3 : 
+                 	i =  sscanf(
+				t,"%s %s %s %s %s %s",
+				AtomCoord[0],AtomCoord[1],AtomCoord[2],
+				AtomCoord[3],AtomCoord[4],AtomCoord[5]
+				);
+			if(i != 6) 
+                	{
+				Ncent--;
+  				Geomtemp=g_realloc(Geomtemp,Ncent*sizeof(GeomAtomDef));
+				OK = FALSE;
+                	}
+                        if(!test(AtomCoord[4]) || !test(AtomCoord[5]) )
+                              Uvar = TRUE;
+  			Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_ANGLE;
+
+			get_symb_type_charge(AtomCoord[0],symb,type,charge);
+    			Geomtemp[Ncent-1].Symb = g_strdup(symb);
+    			Geomtemp[Ncent-1].mmType = g_strdup(type);
+    			Geomtemp[Ncent-1].pdbType = g_strdup(type);
+  			Geomtemp[Ncent-1].Charge=g_strdup(charge);
+
+  			Geomtemp[Ncent-1].Residue=g_strdup("DUM");
+			Geomtemp[Ncent-1].ResidueNumber=0;
+  			Geomtemp[Ncent-1].NR=g_strdup(AtomCoord[1]);
+  			Geomtemp[Ncent-1].R=g_strdup(AtomCoord[4]);
+  			Geomtemp[Ncent-1].NAngle=g_strdup(AtomCoord[2]);
+  			Geomtemp[Ncent-1].Angle=g_strdup(AtomCoord[5]);
+  			Geomtemp[Ncent-1].Layer=g_strdup(" ");
+			break;
+        	default :
+                 	i =  sscanf(
+				t,"%s %s %s %s %s %s %s",
+				AtomCoord[0],AtomCoord[1],AtomCoord[2],
+				AtomCoord[3],AtomCoord[4],AtomCoord[5],AtomCoord[6]
+				);
+			if( i!= 7)
+                 	{
+				Ncent--;
+  				Geomtemp=g_realloc(Geomtemp,Ncent*sizeof(GeomAtomDef));
+				OK = FALSE;
+                 	}
+                        if(!test(AtomCoord[4]) || !test(AtomCoord[5]) || !test(AtomCoord[6]))
+                              Uvar = TRUE;
+  			Geomtemp[Ncent-1].Nentry=NUMBER_ENTRY_DIHEDRAL;
+
+			get_symb_type_charge(AtomCoord[0],symb,type,charge);
+    			Geomtemp[Ncent-1].Symb = g_strdup(symb);
+    			Geomtemp[Ncent-1].mmType = g_strdup(type);
+    			Geomtemp[Ncent-1].pdbType = g_strdup(type);
+  			Geomtemp[Ncent-1].Charge=g_strdup(charge);
+
+  			Geomtemp[Ncent-1].Residue=g_strdup("DUM");
+			Geomtemp[Ncent-1].ResidueNumber=0;
+  			Geomtemp[Ncent-1].NR=g_strdup(AtomCoord[1]);
+  			Geomtemp[Ncent-1].R=g_strdup(AtomCoord[4]);
+  			Geomtemp[Ncent-1].NAngle=g_strdup(AtomCoord[2]);
+  			Geomtemp[Ncent-1].Angle=g_strdup(AtomCoord[5]);
+  			Geomtemp[Ncent-1].NDihedral=g_strdup(AtomCoord[3]);
+  			Geomtemp[Ncent-1].Dihedral=g_strdup(AtomCoord[6]);
+  			Geomtemp[Ncent-1].Layer=g_strdup(" ");
+	}/*end switch*/
+  	}/*end while*/
+/* Variables */
+	Nvar=0;
+	fseek(file, 0L, SEEK_SET);
+	if(Uvar)
+	{
+		OK =FALSE;
+  		while(!feof(file) && Uvar)
+  		{
+ 			if(!fgets(t,taille,file)) break;
+			g_strup(t);
+			if(strstr(t,"PARAS")) 
+			{
+				OK = TRUE;
+				break;
+			}
+  		}
+  	}
+	while(!feof(file) && Uvar && OK )
+	{
+		g_strup(t);
+		for(k=0;k<(gint)strlen(t);k++) if(t[k]=='=') t[k] = ' ';
+        	for(j=0;j<Ncent;j++)
+		{
+			gchar* co[3] = {Geomtemp[j].R,Geomtemp[j].Angle,Geomtemp[j].Dihedral};
+        		for(k=0;k<3;k++)
+			if(!test(co[k]))
+			{
+				gchar* b = strstr(t,co[k]);
+				if(b) 
+				{
+					b = b+strlen(co[k])+1;
+  					Nvar++;
+  					if(Nvar==1) Variablestemp = g_malloc(Nvar*sizeof(VariablesDef));
+  					else Variablestemp = g_realloc(Variablestemp,Nvar*sizeof(VariablesDef));
+  					Variablestemp[Nvar-1].Name=g_strdup(co[k]);
+  					Variablestemp[Nvar-1].Value=g_strdup_printf("%f",atof(b));
+  					Variablestemp[Nvar-1].Used=TRUE;
+				}
+			}
+		}
+		if(strstr(t,"END")) break;
+  		fgets(t,taille,file);
+  	}
+/* end while variables */
+	fclose(file);
+	if(OK)
+ 	{
+		TotalCharges[0] = globalCharge;
+		SpinMultiplicities[0] = mult;
+ 	}
+
+	g_free(t);
+	for(i=0;i<7;i++) g_free(AtomCoord[i]);
+	if( !OK || Ncent <1 )
+	{
+		FreeGeom(Geomtemp,Variablestemp,Ncent,Nvar);
+		MessageGeom(_("Sorry\n I can not read geometry in Q-Chem input file"),_("Error"),TRUE);
+		return;
+	}
+	if(Geom) freeGeom();
+	if(Variables) freeVariables(Variables);
+	Geom = Geomtemp;
+	NcentersZmat = Ncent;
+	NVariables = Nvar;
+	Variables = Variablestemp;
+	MethodeGeom = GEOM_IS_ZMAT;
+	if( Units== 0 ) Geom_Change_Unit(FALSE);
+	if(GeomIsOpen)
+		create_geom_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
+
+	if(GeomDrawingArea != NULL) rafresh_drawing();
+	set_last_directory(NomFichier);
 }
 /*************************************************************************************/
 void read_Zmat_from_orca_input_file(gchar *NomFichier)

@@ -25,5 +25,7 @@ void buildMultipleBonds();
 void buildHBonds();
 void readBondsPDB(FILE* file);
 void readBondsHIN(FILE* file);
+gboolean hbonded(gint i,gint j);
+void freeBondsOrb();
 #endif /* __GABEDIT_BONDS_H__ */
 

@@ -13,6 +13,7 @@ LIBPTHREAD    = -lpthread
 RM = rm -f
 RMTMP = rm -f tmp/*
 MAKE = make
+MKDIR = mkdir -p
 WIN32LIB   = 
 X11LIB   = -lX11
 CC = gcc 

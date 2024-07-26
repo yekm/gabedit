@@ -76,7 +76,7 @@ static gboolean bonded(gint i,gint j)
 		return FALSE;
 }
 /************************************************************************/
-static gboolean hbonded(gint i,gint j)
+gboolean hbonded(gint i,gint j)
 {
 	gdouble minDistanceH;
 	gdouble maxDistanceH;

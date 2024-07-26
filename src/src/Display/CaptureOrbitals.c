@@ -39,6 +39,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Display/ContoursPov.h"
 #include "../Display/PlanesMappedPov.h"
 #include "../Display/LabelsGL.h"
+#include "../Display/Images.h"
 
 #define WIDTHSCR 0.3
 
@@ -465,7 +466,8 @@ static void apply_capture_orbitals(GtkWidget *Win,gpointer data)
 		Define_Iso(fabs(isovalue));
 		set_label_title(title,0,0);
 		glarea_rafresh(GLArea);
-		gabedit_save_image(GLArea, fileName, "png");
+		while( gtk_events_pending() ) gtk_main_iteration();
+		gabedit_save_image_gl(GLArea, fileName, "png",NULL);
 		g_free(fileName);
 		g_free(title);
 		g_free(pLabel);
@@ -519,7 +521,8 @@ static void apply_capture_orbitals(GtkWidget *Win,gpointer data)
 		Define_Iso(fabs(isovalue));
 		set_label_title(title,0,0);
 		glarea_rafresh(GLArea);
-		gabedit_save_image(GLArea, fileName, "png");
+		while( gtk_events_pending() ) gtk_main_iteration();
+		gabedit_save_image_gl(GLArea, fileName, "png",NULL);
 		g_free(fileName);
 		g_free(title);
 		g_free(pLabel);

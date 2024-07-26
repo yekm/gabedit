@@ -32,6 +32,7 @@ gchar* new_ppm(gchar* dirname, int i);
 gchar* new_jpeg(gchar* dirname, int i);
 gchar* new_png(gchar* dirname, int i);
 gchar* new_png_without_background(gchar* dirname, int i);
+void gabedit_save_image_gl(GtkWidget* widget, gchar *fileName, gchar* type, guchar* colorTrans);
 
 #endif /* __GABEDIT_IMAGES_H__ */
 

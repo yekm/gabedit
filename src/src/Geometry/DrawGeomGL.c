@@ -104,6 +104,7 @@ static gdouble BeginY = 0;
 static gdouble CSselectedAtom[3] = {0.0,0.0,0.0};
 static gint NumSelectedAtom = -1;
 static gint NumProcheAtom = -1;
+static gint NumPointedAtom = -1;
 static gboolean ButtonPressed = FALSE;
 static gboolean ShiftKeyPressed = FALSE;
 static gboolean ControlKeyPressed = FALSE;
@@ -5328,28 +5329,43 @@ static void rotation_fragment_quat(gdouble m[4][4],gdouble C[])
 	gdouble A[3];
 	gdouble B[3];
 	guint i,j,k;
+	gdouble M[4][4];
+
+	build_rotmatrix(M,Quat);
+	for (i=0;i<Natoms;i++)
+	{
+		A[0] = geometry[i].X;
+		A[1] = geometry[i].Y;
+		A[2] = geometry[i].Z;
+		for(j=0;j<3;j++)
+		{
+			B[j] = 0.0;
+			for(k=0;k<3;k++)
+				B[j] += M[k][j]*A[k];
+		}
+		geometry[i].X=B[0];
+		geometry[i].Y=B[1];
+		geometry[i].Z=B[2];
+	}
 
 	for (i=0;i<Natoms;i++)
 	{
-		A[0] = geometry[i].X-C[0];
-		A[1] = geometry[i].Y-C[1];
-		A[2] = geometry[i].Z-C[2];
 		if(if_selected(i))
 		{
+			A[0] = geometry[i].X-C[0];
+			A[1] = geometry[i].Y-C[1];
+			A[2] = geometry[i].Z-C[2];
 			for(j=0;j<3;j++)
 			{
 				B[j] = 0.0;
 				for(k=0;k<3;k++)
 					B[j] += m[k][j]*A[k];
 			}
+			geometry[i].X=C[0]+B[0];
+			geometry[i].Y=C[1]+B[1];
+			geometry[i].Z=C[2]+B[2];
 		}
-		else
-			for(k=0;k<3;k++)
-				B[k] = A[k];
 
-		geometry[i].X=C[0]+B[0];
-		geometry[i].Y=C[1]+B[1];
-		geometry[i].Z=C[2]+B[2];
 	}
 	Ddef = FALSE;
 	for (i=0;i<Natoms;i++)
@@ -5358,7 +5374,7 @@ static void rotation_fragment_quat(gdouble m[4][4],gdouble C[])
 		geometry0[i].Y=geometry[i].Y;
 		geometry0[i].Z=geometry[i].Z;
 	}
-	/*init_quat(Quat);*/
+	init_quat(Quat);
 
 }
 /********************************************************************************/
@@ -5417,6 +5433,7 @@ static gint local_zrotate_fragment(GtkWidget *widget, GdkEventMotion *event)
 		x = event->x;
 		y = event->y;
 		state = event->state;
+		gdk_window_get_pointer(event->window, &x, &y, &state);
 #endif
 	}
 	else
@@ -5444,6 +5461,8 @@ static gint local_zrotate_fragment(GtkWidget *widget, GdkEventMotion *event)
 		  phi = sign* fabs(BeginY-y)/height*PI;
 	  }
 	spin_quat[2] = 1.0;
+
+	phi /=10;
 
 	spin_quat[2]= sin(phi/2);
 	spin_quat[3] = cos(phi/2);
@@ -5674,6 +5693,12 @@ static gint move_all_selected_atoms(GtkWidget *widget, GdkEventMotion *event)
 				geometry[i].Y += B[1];
 				geometry[i].Z += B[2];
 			}
+	}
+	for (i=0;i<Natoms;i++)
+	{
+		geometry0[i].X=geometry[i].X;
+		geometry0[i].Y=geometry[i].Y;
+		geometry0[i].Z=geometry[i].Z;
 	}
 	Ddef = FALSE;
 	if(RebuildConnectionsDuringEdition)
@@ -6053,7 +6078,7 @@ gint set_selected_atom_bond(GdkEventButton *bevent)
 	return NBatoms;
 }
 /*****************************************************************************/
-gint get_atom_to_select(GdkEventButton *bevent)
+gint get_atom_to_select(GdkEventButton *bevent, gdouble f)
 {
 	gdouble xi,yi,xii,yii,zii;
 	gint i;
@@ -6075,7 +6100,7 @@ gint get_atom_to_select(GdkEventButton *bevent)
 		yii = w[1]-geometry[i].Y;
 		zii = w[2]-geometry[i].Z;
 		d1 = xii*xii+yii*yii+zii*zii;
-		rayon = get_rayon_selection(i);
+		rayon = f*get_rayon_selection(i);
 		d2 = d1-rayon*rayon;
 		if(d2<0) return i;
 	}
@@ -6085,7 +6110,7 @@ gint get_atom_to_select(GdkEventButton *bevent)
 gint set_selected_atom_or_bond_to_delete(GdkEventButton *bevent)
 {
 	NumSelectedAtom = -1;
-	if(get_atom_to_select(bevent)>=0)
+	if(get_atom_to_select(bevent,1.0)>=0)
 	{
 		OperationType = DELETEFRAG;
 		return set_selected_atom(bevent);
@@ -6135,7 +6160,7 @@ gint set_selected_atom_or_bond_to_edit(GdkEventButton *bevent)
 {
 	gint res = -1;
 	NumSelectedAtom = -1;
-	res = get_atom_to_select(bevent);
+	res = get_atom_to_select(bevent,1.0);
 	/* printf("res = %d\n",res);*/
 	if(res==-1)
 	{
@@ -6194,7 +6219,7 @@ gint set_selected_atoms_for_insert_frag(GdkEventButton *bevent)
 	atomToBondTo = -1;
 	NumSelectedAtom = -1;
 
-	i = get_atom_to_select(bevent);
+	i = get_atom_to_select(bevent,1.0);
 	if(i<0)  return i;
 	atomToDelete = geometry[i].N;
 
@@ -6377,7 +6402,7 @@ gint button_release(GtkWidget *DrawingArea, GdkEvent *event, gpointer Menu)
 		}
 		else if(NumBatoms[0]>0)
 		{
-			gint res = get_atom_to_select((GdkEventButton *)event);
+			gint res = get_atom_to_select((GdkEventButton *)event,scaleAnneau*1.2);
 			if(res != -1)
 			{
 				delete_one_atom(NumSelectedAtom);
@@ -6393,7 +6418,7 @@ gint button_release(GtkWidget *DrawingArea, GdkEvent *event, gpointer Menu)
 		{
 			gint res = -1;
 			NumBatoms[0] = -NumBatoms[0]-Natoms;
-			res = get_atom_to_select((GdkEventButton *)event);
+			res = get_atom_to_select((GdkEventButton *)event,1.0);
 			if(res != -1)
 			{
 				delete_one_atom(NumSelectedAtom);
@@ -6409,6 +6434,7 @@ gint button_release(GtkWidget *DrawingArea, GdkEvent *event, gpointer Menu)
 		SetOperation (NULL,EDITOBJECTS);
 		change_of_center(NULL,NULL);
 		NumProcheAtom = -1;
+		NumPointedAtom = -1;
 		NumSelectedAtom = -1;
 		free_text_to_draw();
 		NBatoms = 0;
@@ -6420,6 +6446,7 @@ gint button_release(GtkWidget *DrawingArea, GdkEvent *event, gpointer Menu)
 		insert_fragment(DrawingArea,event);
 		create_GeomXYZ_from_draw_grometry();
 		NumProcheAtom = -1;
+		NumPointedAtom = -1;
 		atomToDelete = -1;
 		atomToBondTo = -1;
 		angleTo = -1;
@@ -6505,6 +6532,11 @@ gint motion_notify(GtkWidget *widget, GdkEventMotion *event)
 			return TRUE;
 		}
 	}
+	if(OperationType==EDITOBJECTS && !(state & GDK_BUTTON2_MASK))
+	{
+		NumPointedAtom = get_atom_to_select((GdkEventButton*)event,1.0);
+		drawGeom();
+	}
 	if (state & GDK_BUTTON1_MASK)
 	{
 		switch(OperationType)
@@ -6579,7 +6611,7 @@ gint motion_notify(GtkWidget *widget, GdkEventMotion *event)
 					  RebuildGeom = TRUE;
 					  if(atomToDelete>-1)
 					  {
-						gint j = get_atom_to_select((GdkEventButton *)event);
+						gint j = get_atom_to_select((GdkEventButton *)event,1.0);
 						if(j>=0 && geometry[j].N != atomToDelete && geometry[j].N != atomToBondTo && 
 							fabs(atof(get_angle(atomToDelete,atomToBondTo,geometry[j].N))-180)>0.1)
 						{
@@ -9938,13 +9970,14 @@ static void gl_build_selection()
 			}
 		}
 		if((gint)i==NumSelectedAtom) draw_anneau(geometry[i].X, geometry[i].Y, geometry[i].Z, rayon,&colorRed);
-		else
+		else if(GeomIsOpen)
 		{
 			if(NSA[0]>-1 && (gint)geometry[i].N == NSA[0]) draw_anneau(geometry[i].X, geometry[i].Y, geometry[i].Z, rayon,&colorRed);
 			if(NSA[1]>-1 && (gint)geometry[i].N == NSA[1]) draw_anneau(geometry[i].X, geometry[i].Y, geometry[i].Z, rayon,&colorGreen);
 			if(NSA[2]>-1 && (gint)geometry[i].N == NSA[2]) draw_anneau(geometry[i].X, geometry[i].Y, geometry[i].Z, rayon,&colorBlue);
 			if(NSA[3]>-1 && (gint)geometry[i].N == NSA[3]) draw_anneau(geometry[i].X, geometry[i].Y, geometry[i].Z, rayon,&colorYellow); 
 		}
+		if(EDITOBJECTS==OperationType &&(gint)i==NumPointedAtom) draw_anneau(geometry[i].X, geometry[i].Y, geometry[i].Z, rayon,&colorRed);
 		if(OperationType == MEASURE)
 		for(j = 0;j<4;j++)
 			if(NumSelAtoms[j] == (gint)geometry[i].N) draw_anneau(geometry[i].X, geometry[i].Y, geometry[i].Z, rayon,&colorGreen);
@@ -10069,6 +10102,7 @@ void buildRotation()
 void drawGeom()
 {
 	if(!GeomDrawingArea) return;
+	if(!GTK_IS_WIDGET(GeomDrawingArea)) return;
 	redraw(GeomDrawingArea);
 }
 /*****************************************************************************/
@@ -10919,7 +10953,7 @@ void create_window_drawing()
 	StatusRotation = Status;
 	gtk_statusbar_pop(GTK_STATUSBAR(StatusRotation),idStatusRotation);
 	gtk_statusbar_push(GTK_STATUSBAR(StatusRotation),idStatusRotation,
-		_(" Press the Midle mouse button and move your mouse for a \"Rotation\". "));
+		_(" Press the Middle mouse button and move your mouse for a \"Rotation\". "));
 
 
 	/* Mode Status */
