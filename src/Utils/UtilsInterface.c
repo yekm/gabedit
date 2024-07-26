@@ -822,8 +822,8 @@ FilePosTypeGeom get_geometry_type_from_molpro_input_file(gchar *NomFichier)
  		k++; 
                 t1 = g_strdup(t);
                 t2= g_strdup("Geometry={");
-                g_strup(t1);
-                g_strup(t2);
+                uppercase(t1);
+                uppercase(t2);
                 t3 = NULL;
                 t3 = strstr(t1,t2);
                 if(t3 != NULL)
@@ -836,7 +836,7 @@ FilePosTypeGeom get_geometry_type_from_molpro_input_file(gchar *NomFichier)
  			j.units=1;
                 g_free(t2); 
                 t2= g_strdup("geomtyp=xyz");
-                g_strup(t2);
+                uppercase(t2);
                 t3 = NULL;
                 t3 = strstr(t1,t2);
                 if(t3 != NULL)
@@ -883,8 +883,8 @@ FilePosTypeGeom get_geometry_type_from_gauss_input_file(gchar *NomFichier)
         {
                 t1 = g_strdup(t);
                 t2= g_strdup("Units(Au");
-                g_strup(t1);
-                g_strup(t2);
+                uppercase(t1);
+                uppercase(t2);
                 t3 = strstr(t1,t2);
                 if(t3 != NULL)
  			j.units=0;
@@ -987,12 +987,12 @@ FilePosTypeGeom get_geometry_type_from_nwchem_input_file(gchar *NomFichier)
  while(!feof(fd) )    
  {
  	if(!fgets(t, taille, fd)) break;
-	g_strup(t);
+	uppercase(t);
 	if(strstr(t,"GEOMETRY")) 
 	{
 		j.geomtyp = GEOM_IS_XYZ;
  		if(!fgets(t, taille, fd)) break;
-		g_strup(t);
+		uppercase(t);
 		if(strstr(t,"ZMATRIX")) j.geomtyp = GEOM_IS_ZMAT;
 		break;
 	}
@@ -1021,7 +1021,7 @@ FilePosTypeGeom get_geometry_type_from_psicode_input_file(gchar *NomFichier)
  while(!feof(fd) )    
  {
  	if(!fgets(t, taille, fd)) break;
-	g_strup(t);
+	uppercase(t);
 		/* printf("t=%s\n",t);*/
 	if(strstr(t,"MOLECULE")) 
 	{
@@ -1072,7 +1072,7 @@ FilePosTypeGeom get_geometry_type_from_orca_input_file(gchar *NomFichier)
  while(!feof(fd) )    
  {
  	if(!fgets(t, taille, fd)) break;
-	g_strup(t);
+	uppercase(t);
 	if(strstr(t,"* XYZ")) 
 	{
 		j.geomtyp = GEOM_IS_XYZ;

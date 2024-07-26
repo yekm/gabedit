@@ -114,6 +114,17 @@ static void set_theme_dialog(GtkWidget* widget);
 static PangoLayout* get_pango_str(GabeditContoursPlot *contoursplot, G_CONST_RETURN gchar* txt);
 
 /****************************************************************************************/
+static void uppercase(gchar *str)
+{
+  while( *str != '\0')
+  {
+    if (isalpha((gint)*str))
+      if (islower((gint)*str))
+        *str = toupper((gint)*str);
+    str ++;
+  }
+}
+/****************************************************************************************/
 static void contoursplot_message(gchar* message)
 {
 	GtkWidget* dialog = NULL;
@@ -4809,7 +4820,7 @@ static gboolean gabedit_contoursplot_read_gabedit(GtkWidget* contoursplot, gchar
  	FILE* file = fopen(fileName, "rb");
 	if(!file) return FALSE;
     	if(!fgets(t,BSIZE,file)) return FALSE;
-	g_strup(t);
+	uppercase(t);
 	if(!strstr(t,"[GABEDIT FORMAT]"))
 	{
 		contoursplot_message(_("This is not a Gabedit file\n"));

@@ -1079,6 +1079,7 @@ static void read_nwchem_file_dlg()
 	gtk_window_set_modal (GTK_WINDOW (filesel), TRUE);
 }
 /********************************************************************************/
+/*
 static gboolean read_psicode_tddft_file(GabeditFileChooser *SelecFile, gint response_id)
 {
 
@@ -1160,6 +1161,7 @@ static gboolean read_psicode_tddft_file(GabeditFileChooser *SelecFile, gint resp
 
 	return OK;
 }
+*/
 /********************************************************************************/
 static gboolean read_psicode_eom_file(GabeditFileChooser *SelecFile, gint response_id)
 {

@@ -1,3 +1,17 @@
+25 October 2013
+	new tool to remove half cube grid
+	remove implicit declaration warning
+
+24 October 2013
+	new tool to compute the integral of the function on the grid
+
+30 September 2013
+	run orca from Draw geometry : bug fixe (new input format with orca, without params)
+
+19 August 2013
+	read fchk file with d,f,.. orbitals bug fixed (There was no bug for reading  from a .log file)
+	PM7 added to list of Mopac hamiltonian 
+
 24 July 2013
 	Gabedit can now calculate the lambda diagnostic for CT (see Peach et al. J. Chem. Phys. 128, 044118 (2008))
 

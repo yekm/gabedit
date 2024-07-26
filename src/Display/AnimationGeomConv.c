@@ -1441,7 +1441,7 @@ static gboolean read_gamess_file_geomi(gchar *FileName, gint num, Geometry* geom
           		if (l==2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
 
 
-			sprintf(AtomCoord[0],get_symbol_using_z(atoi(dum)));
+			sprintf(AtomCoord[0],"%s",get_symbol_using_z(atoi(dum)));
     			sprintf(listOfAtoms[j].symbol,"%s",AtomCoord[0]);
     			sprintf(listOfAtoms[j].mmType,"%s",AtomCoord[0]);
     			sprintf(listOfAtoms[j].pdbType,"%s",AtomCoord[0]);
@@ -2668,7 +2668,7 @@ static gboolean read_gabedit_molden_rms_conv(FILE* file)
  	while(!feof(file))
 	{
 		if(!fgets(t, BSIZE,file)) break;
-		g_strup(t);
+		uppercase(t);
    		if( strstr( t,"ENERGY") != NULL )
 		{
 			geometryConvergence.energy = g_malloc(geometryConvergence.numberOfGeometries*sizeof(gdouble));
@@ -3213,7 +3213,7 @@ static gboolean read_gaussian_output(gchar* fileName)
 	while(!feof(file))
 	{
 		if(!fgets(t,BSIZE,file)) break;
-		g_strup(t);
+		uppercase(t);
     		pdest = strstr( t,"SCF DONE");
    		if( pdest != NULL ) pdest = strstr( t,"=");
          	if(!pdest)
@@ -4163,7 +4163,7 @@ static void read_hin_numbers_of_atoms(FILE* file, int* natoms, int* nresidues)
 	{
     		if(!fgets(t,taille,file)) break;
     		sscanf(t,"%s",dump);
-		g_strdown(dump);
+		lowercase(dump);
 		if(!strcmp(dump,"atom")) (*natoms)++;
 		if(!strcmp(dump,"res")) (*nresidues)++;
 	}
@@ -4178,7 +4178,7 @@ static gboolean read_atom_hin_file(FILE* file,gchar* listFields[])
 
     	if(!fgets(t,taille,file)) return FALSE;
     	sscanf(t,"%s",dump);
-	g_strdown(dump);
+	lowercase(dump);
 	if(strcmp(dump,"atom")!=0)
 	{
 		if(strcmp(dump,"res")==0)

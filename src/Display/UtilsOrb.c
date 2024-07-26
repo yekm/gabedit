@@ -219,7 +219,7 @@ gint get_type_file_orb(gchar *fileName)
 	}
 	rewind(fd);
     	{ char* e = fgets(t,taille,fd);}
-	g_strup(t);
+	uppercase(t);
         if(strstr(t, "ENTERING" ))
 		ktype = GABEDIT_TYPEFILE_GAUSSIAN;
 	else
@@ -259,7 +259,7 @@ gint get_type_file_orb(gchar *fileName)
 				ktype = GABEDIT_TYPEFILE_NWCHEM;
 				break;
 			}
-			g_strup(t);
+			uppercase(t);
         		if(strstr(t, "ENTERING GAUSSIAN" ))
 			{
 				ktype = GABEDIT_TYPEFILE_GAUSSIAN;
@@ -548,7 +548,7 @@ gint get_type_basis_in_gabedit_file(gchar *fileName)
  	}
 	ktype = -1;
     	{ char* e = fgets(t,taille,fd);}
-	g_strup(t);
+	uppercase(t);
 	if(strstr( t, "[GABEDIT FORMAT]"))
 	{
 		if(strstr( t, "SPHE"))
@@ -588,14 +588,14 @@ gint get_type_basis_in_molden_file(gchar *fileName)
  	}
 	ktype = -1;
     	{ char* e = fgets(t,taille,fd);}
-	g_strup(t);
+	uppercase(t);
 	if(strstr( t, "[MOLDEN FORMAT]"))
 	{
 		ktype = 0;
 		while(!feof(fd))
 		{
     			{ char* e = fgets(t,taille,fd);}
-			g_strup(t);
+			uppercase(t);
 			if(strstr( t, "[5D"))
 			{
 				ktype = 1;

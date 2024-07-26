@@ -34,6 +34,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Zlm.h"
 #include "../Utils/MathFunctions.h"
 #include "../Utils/GTF.h"
+#include "../Utils/QL.h"
 
 /************************************************************************/
 static gdouble get_value_elf_becke(gdouble x,gdouble y,gdouble z,gint dump);
@@ -495,7 +496,8 @@ Grid* define_grid_point_fed(gint N[],GridLimits limits,gint n)
 	for(i=0;i<3;i++)
 	{
 		firstPoint[i] = V0[i] + V1[i] + V2[i];
-		firstPoint[i] = originOfCube[i] - firstPoint[i]/2;
+		/* firstPoint[i] = originOfCube[i] - firstPoint[i]/2;*/
+		firstPoint[i] = limits.MinMax[0][i];
 	}
 	for(i=0;i<3;i++)
 	{
@@ -591,7 +593,8 @@ Grid* define_grid_point(gint N[],GridLimits limits,Func3d func)
 	for(i=0;i<3;i++)
 	{
 		firstPoint[i] = V0[i] + V1[i] + V2[i];
-		firstPoint[i] = originOfCube[i] - firstPoint[i]/2;
+		/*firstPoint[i] = originOfCube[i] - firstPoint[i]/2;*/
+		firstPoint[i] = limits.MinMax[0][i];
 	}
 	for(i=0;i<3;i++)
 	{
@@ -722,6 +725,8 @@ Grid* define_grid(gint N[],GridLimits limits)
 			break;
 		case GABEDIT_TYPEGRID_MEP_EXACT :
 			grid = compute_mep_grid_exact(N,limits);
+			break;
+		case GABEDIT_TYPEGRID_NCI :
 			break;
 
 	}
@@ -2179,7 +2184,8 @@ static void define_xyz_grid(Grid*grid)
 	for(i=0;i<3;i++)
 	{
 		firstPoint[i] = V0[i] + V1[i] + V2[i];
-		firstPoint[i] = originOfCube[i] - firstPoint[i]/2;
+		/* firstPoint[i] = originOfCube[i] - firstPoint[i]/2;*/
+		firstPoint[i] = limits.MinMax[0][i];
 	}
 	for(i=0;i<3;i++)
 	{
@@ -2713,7 +2719,8 @@ Grid* compute_mep_grid_exact(gint N[],GridLimits limits)
 	for(i=0;i<3;i++)
 	{
 		firstPoint[i] = V0[i] + V1[i] + V2[i];
-		firstPoint[i] = originOfCube[i] - firstPoint[i]/2;
+		/* firstPoint[i] = originOfCube[i] - firstPoint[i]/2;*/
+		firstPoint[i] = limits.MinMax[0][i];
 	}
 	for(i=0;i<3;i++)
 	{
@@ -3244,6 +3251,38 @@ gboolean compute_integrale_from_grid(Grid* grid, gboolean square, gdouble* pInte
 
 	*pInteg = integ*dv;
 	
+	return TRUE;
+}
+/*************************************************************************************/
+gboolean compute_integrale_from_grid_all_space(Grid* grid, gdouble* pInteg)
+{
+	gint k,l,m;
+	gdouble integ = 0;
+	gdouble dv = 0;
+	gdouble xx,yy,zz;
+
+	if(!grid) return FALSE;
+	if(CancelCalcul) return FALSE;
+
+	for(k=0;k<grid->N[0];k++)
+	{
+		for(l=0;l<grid->N[1];l++)
+		{
+			for(m=0;m<grid->N[2];m++)
+			{
+				integ +=  grid->point[k][l][m].C[3];
+			}
+			if(CancelCalcul) return FALSE;
+		}
+	}
+	if(CancelCalcul) return FALSE;
+
+	xx = grid->point[1][0][0].C[0]-grid->point[0][0][0].C[0];
+	yy = grid->point[0][1][0].C[1]-grid->point[0][0][0].C[1];
+	zz = grid->point[0][0][1].C[2]-grid->point[0][0][0].C[2];
+	dv = fabs(xx*yy*zz);
+
+	*pInteg = integ*dv;
 	return TRUE;
 }
 /**************************************************************/

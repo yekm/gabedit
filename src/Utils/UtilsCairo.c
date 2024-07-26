@@ -62,6 +62,10 @@ void gabedit_cairo_string(cairo_t* cr, GtkWidget* parent, PangoFontDescription *
 	}
 	switch(weight)
 	{
+		case PANGO_WEIGHT_THIN: 
+		case PANGO_WEIGHT_BOOK : 
+		case PANGO_WEIGHT_MEDIUM: 
+		case PANGO_WEIGHT_ULTRAHEAVY: 
 		case PANGO_WEIGHT_ULTRALIGHT: 
 		case PANGO_WEIGHT_LIGHT: 
 		case PANGO_WEIGHT_NORMAL: 

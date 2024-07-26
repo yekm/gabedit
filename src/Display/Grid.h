@@ -84,6 +84,7 @@ Grid* compute_mep_grid_using_orbitals(gint N[],GridLimits limits);
 void reset_boundary(Grid* grid, gint nBoundary);
 gdouble getLambda2(Grid* grid, gint i, gint j, gint k, gdouble* fcx, gdouble* fcy, gdouble* fcz, gdouble* lfcx, gdouble* lfcy, gdouble* lfcz, gint nBoundary);
 gboolean get_charge_transfer_centers(Grid* grid, gdouble* CN, gdouble* CP, gdouble *qn, gdouble* qp, gdouble* H);
+gboolean compute_integrale_from_grid_all_space(Grid* grid, gdouble* pInteg);
 
 #endif /* __GABEDIT_GRID_H__ */
 

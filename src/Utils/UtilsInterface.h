@@ -96,6 +96,7 @@ void read_geom_in_molcas_input(gchar *);
 void read_geom_in_molpro_input(gchar *);
 void read_geom_in_mpqc_input(gchar *);
 void read_geom_in_nwchem_input(gchar *);
+void read_geom_in_psicode_input(gchar *);
 void read_geom_in_orca_input(gchar *);
 void read_geom_in_qchem_input(gchar *);
 void read_geom_in_mopac_input(gchar *);

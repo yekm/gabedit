@@ -127,12 +127,14 @@ static gint applyReflectionOneAtom(gdouble point[], gdouble normal[], gdouble ol
 	return 0;
 }
 /************************************************************************************************************/
+/*
 static gint applyImproperRotationOneAtom(gdouble point[], gdouble axis[], gdouble angle, gdouble oldAtom[], gdouble newAtom[])
 {
  	gint res = applyProperRotationOneAtom(point, axis, angle, oldAtom, newAtom);
  	if(res==0) res = applyReflectionOneAtom(point, axis, oldAtom, newAtom);
 	return res;
 }
+*/
 /************************************************************************************************************/
 static gint freeAMolecule(MolSymMolecule* mol)
 {
@@ -745,6 +747,7 @@ static gint AddProperRotationMolecule(MolSymMolecule* mol, gint nax, gdouble x, 
 	return 0;
 }
 /************************************************************************************************************/
+/*
 static gint AddImproperRotationMolecule(MolSymMolecule* mol, gint nax, gdouble x, gdouble y, gdouble z)
 {
 	gint n;
@@ -775,7 +778,7 @@ static gint AddImproperRotationMolecule(MolSymMolecule* mol, gint nax, gdouble x
 	atomList = mol->listOfAtoms;
 	tmpAtomList = tmpMol.listOfAtoms;
 
-	/* copy molecule */
+	// copy molecule 
 	numberOfAtoms = 0;
 	for (n=0;n<mol->numberOfAtoms;n++)
 	{
@@ -812,7 +815,7 @@ static gint AddImproperRotationMolecule(MolSymMolecule* mol, gint nax, gdouble x
 	for(n=0; n<tmpMol.numberOfAtoms; n++)
 	{
 		i = 0;
-      		for (i=0;i<tmpMol.numberOfDifferentKindsOfAtoms;i++) /* search symbol */
+      		for (i=0;i<tmpMol.numberOfDifferentKindsOfAtoms;i++) // search symbol 
 		{
 	  		if ((strcmp(symbols[n],tmpMol.symbol[i]))==0)
 	    		{
@@ -831,9 +834,9 @@ static gint AddImproperRotationMolecule(MolSymMolecule* mol, gint nax, gdouble x
 		tmpAtomList++;
 	}
 
-	/* printf("Avant remove\n"); printAMolecule(&tmpMol);*/
+	// printf("Avant remove\n"); printAMolecule(&tmpMol);
 	removeEquivAtoms(&tmpMol);
-	/* printf("Apres remove\n"); printAMolecule(&tmpMol);*/
+	// printf("Apres remove\n"); printAMolecule(&tmpMol);
 	copyAMolecule(mol, &tmpMol);
 	freeAMolecule(&tmpMol);
 
@@ -847,6 +850,7 @@ static gint AddImproperRotationMolecule(MolSymMolecule* mol, gint nax, gdouble x
  
 	return 0;
 }
+*/
 /************************************************************************************************************/
 void generateMoleculeFromTheBasisSetOfAtoms(MolSymMolecule* mol, gint numberOfElements, gchar** elements)
 {

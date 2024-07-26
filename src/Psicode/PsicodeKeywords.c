@@ -668,6 +668,7 @@ static gchar* calculWord(gchar* view)
 	return NULL;
 }
 /************************************************************************************************************/
+/*
 static void getMultiplicityName(gint multiplicity, gchar* buffer)
 {
 	if(multiplicity==1) sprintf(buffer,"Singlet");
@@ -680,6 +681,7 @@ static void getMultiplicityName(gint multiplicity, gchar* buffer)
 	else if(multiplicity==8) sprintf(buffer,"Octet");
 	else sprintf(buffer,"NOpen %d",multiplicity/2);
 }
+*/
 /*************************************************************************************************************/
 static void putPsicodeSCFKeywordsInfoInTextEditor()
 {

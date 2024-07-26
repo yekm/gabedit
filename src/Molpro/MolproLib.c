@@ -61,8 +61,8 @@ void get_basis_list(gchar* Symb,gchar* orb,gchar* outfile,gchar* errfile)
 	gchar* orbdown = g_strdup(orb);
 	gchar* orbup = g_strdup(orb);
 
-	g_strdown(orbdown);
-	g_strup(orbup);
+	lowercase(orbdown);
+	uppercase(orbup);
 
 	if(!fin)
 	{

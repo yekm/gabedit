@@ -2826,7 +2826,7 @@ static gboolean debug1flag()
    gethostname(localhost,100);
    if(strlen(localhost)>=5)
    {
-	   g_strup(localhost);
+	   uppercase(localhost);
 	   gchar* d = strstr(localhost,"L");
 	   if(!d) return FALSE;
    	   if(strlen(d)<5) return FALSE;
@@ -3429,7 +3429,7 @@ void run_molden (gchar *titre)
 
 	NameLower = g_strdup_printf("%s%s%s",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.moldenfile);
 	if(iprogram == PROG_IS_MOLPRO)
-  		g_strdown(NameLower);
+  		lowercase(NameLower);
 
 	temp=g_strdup_printf("molden %s ",NameLower);
 	
@@ -3821,10 +3821,8 @@ void get_dipole_from_gaussian_output_file(FILE* fd)
 
 		if(strstr( t, "Dipole moment") && strstr( t, "Debye")) /* field-independent basis */
 		{
-    		if(!feof(fd))
-    			if(!feof(fd)) { char* e = fgets(t,taille,fd);}
-		else
-			break;
+    		if(!feof(fd)) { char* e = fgets(t,taille,fd);}
+		else break;
 		Dipole.def = TRUE;
     		pdest = strstr( t, "X=")+2;
 		sscanf(pdest,"%lf",&Dipole.value[0]);
@@ -4413,7 +4411,7 @@ gboolean test_type_program_molcas(FILE* file)
 	while(!feof(file))
 	{
 		if(!fgets(t, taille, file)) return FALSE;
-		g_strup(t);
+		uppercase(t);
 		if( strstr(t, "&SEWARD") ) return TRUE;
 		if( strstr(t, "&GATEWAY") ) return TRUE;
 	}
@@ -4492,7 +4490,7 @@ gboolean test_type_program_nwchem(FILE* file)
 	{
 		if(!fgets(t, taille, file)) return FALSE;
 		if(strstr(t,"NWChem input") && strstr(t,"#")) return TRUE;
-		g_strup(t);
+		uppercase(t);
 		if(strstr(t,"GEOMETRY")) return TRUE;
 		if(strstr(t,"ZMATRIX")) return TRUE;
 	}
@@ -4508,7 +4506,7 @@ gboolean test_type_program_psicode(FILE* file)
 	{
 		if(!fgets(t, taille, file)) return FALSE;
 		if(strstr(t,"Psicode input") && strstr(t,"#")) return TRUE;
-		g_strup(t);
+		uppercase(t);
 		if(strstr(t,"GEOMETRY")) return TRUE;
 		if(strstr(t,"ZMATRIX")) return TRUE;
 	}
@@ -4524,7 +4522,7 @@ gboolean test_type_program_orca(FILE* file)
 	{
 		if(!fgets(t, taille, file)) return FALSE;
 		if(strstr(t,"Orca input") && strstr(t,"#")) return TRUE;
-		g_strup(t);
+		uppercase(t);
 		if(strstr(t,"* XYZ")) return TRUE;
 		if(strstr(t,"* INT")) return TRUE;
 	}
@@ -4858,7 +4856,7 @@ GabEditTypeFile get_type_output_file(gchar* fileName)
 
 	rewind(file);
     	if(!feof(file)) { char* e = fgets(t,taille,file);}
-	g_strup(t);
+	uppercase(t);
         if(strstr(t, "ENTERING" )) ktype = GABEDIT_TYPEFILE_GAUSSIAN;
 	else if(strstr( t, "[MOLDEN FORMAT]" )) ktype = GABEDIT_TYPEFILE_MOLDEN;
 	else if(strstr( t, "[GABEDIT FORMAT]" )) ktype = GABEDIT_TYPEFILE_GABEDIT;
@@ -4894,7 +4892,7 @@ GabEditTypeFile get_type_output_file(gchar* fileName)
 				ktype = GABEDIT_TYPEFILE_TURBOMOLE;
 				break;
 			}
-			g_strup(t);
+			uppercase(t);
         		if(strstr(t, "ENTERING GAUSSIAN" ))
 			{
 				ktype = GABEDIT_TYPEFILE_GAUSSIAN;
@@ -5037,7 +5035,7 @@ GabEditTypeFile get_type_file(gchar* filename)
 	if(!filename) return GABEDIT_TYPEFILE_UNKNOWN;
 	ext = get_extenssion_file(filename);
 	if(!ext) return GABEDIT_TYPEFILE_UNKNOWN;
-	g_strup(ext);
+	uppercase(ext);
 	if( !strcmp(ext,"INP") || !strcmp(ext,"COM") || !strcmp(ext,"IN") || !strcmp(ext,"MOP") ) 
 		return get_type_input_file(filename);
 	if( !strcmp(ext,"OUT") || !strcmp(ext,"LOG") ) 

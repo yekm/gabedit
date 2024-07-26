@@ -132,8 +132,8 @@ void get_molpro_basis_list(gchar* Symb,gchar* orb,gchar* outfile,gchar* errfile)
 	gint atomNumber = -1;
 	gint i;
 
-	g_strdown(orbdown);
-	g_strup(orbup);
+	lowercase(orbdown);
+	uppercase(orbup);
 
 	if(molproBasis.numberOfAtoms<1)
 	{

@@ -628,7 +628,7 @@ void get_file_frome_remote_host(GtkWidget* wid,gpointer data)
 	else
 	if(iprogram == PROG_IS_MOLPRO)
 	{
-		g_strdown(fileopen.moldenfile);
+		lowercase(fileopen.moldenfile);
   		get_file(fout,ferr,fileopen.moldenfile,fileopen.localdir,fileopen.remotedir,
   		fileopen.remotehost,fileopen.remoteuser,fileopen.remotepass);
 		temp = g_strdup_printf(_("\nGet %s file from remote host :\n"),fileopen.moldenfile);
@@ -3480,7 +3480,7 @@ static void run_remote_molpro(GtkWidget *b,gpointer data)
   fileopen.outputfile=g_strdup_printf("%s.out",fileopen.projectname);
   fileopen.logfile=g_strdup_printf("%s.log",fileopen.projectname);
   fileopen.moldenfile=g_strdup_printf("%s.molden",fileopen.projectname);
-  g_strdown(fileopen.moldenfile);
+  lowercase(fileopen.moldenfile);
 
   fileopen.remotehost = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryall[2])));
   fileopen.remoteuser = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryall[3])));

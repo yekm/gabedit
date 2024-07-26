@@ -1106,7 +1106,7 @@ gboolean gl_read_molden_or_gabedit_file_geom(gchar *FileName,gint type)
 		sprintf(message,"Sorry\nThis file is not a gabedit type file");
 	}
 	sprintf(titleCap,"%s",title);
-	g_strup(titleCap);
+	uppercase(titleCap);
 
  	for(i=0;i<5;i++)
 		AtomCoord[i]=g_malloc(taille*sizeof(char));
@@ -1133,7 +1133,7 @@ gboolean gl_read_molden_or_gabedit_file_geom(gchar *FileName,gint type)
     	if(!feof(fd)) { char* e = fgets(t,taille,fd);}
 
 	sprintf(tCap,"%s",t);
-	g_strup(tCap);
+	uppercase(tCap);
 
 	if(!strstr(tCap,titleCap))
 	{
@@ -1157,7 +1157,7 @@ gboolean gl_read_molden_or_gabedit_file_geom(gchar *FileName,gint type)
  	while(!feof(fd))
 	{
     		{ char* e = fgets(t,taille,fd);}
-		g_strup(t);
+		uppercase(t);
 		if( !strstr( t, "[ATOMS" ) )
 			continue;
 		if( strstr( t, "ANGS" ))
@@ -3472,6 +3472,9 @@ gulong gl_read_nwchem_file_geomi(gchar *FileName,gint num)
 			if(l==1)sprintf(t,"%c",AtomCoord[0][0]);
 		         else sprintf(t,"%c%c",AtomCoord[0][0],AtomCoord[0][1]);
 
+			/* HERE 
+    			GeomOrb[j].Symb=get_symbol_using_z((int)(atof(AtomCoord[4])+0.5));
+			*/
     			GeomOrb[j].Symb=g_strdup(t);
 			if(ang)
     			for(i=0;i<3;i++) GeomOrb[j].C[i]=atof(ang_to_bohr(AtomCoord[i+1]));

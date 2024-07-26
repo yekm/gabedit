@@ -85,7 +85,7 @@ static void applyRestrictionCube()
 	j = (grid->N[1]-1)-(grid->N[1]-1)%2;
 	k = (grid->N[2]-1)-(grid->N[2]-1)%2;
   	for(c=0;c<3;c++)
-   		newLimits.MinMax[1][c] = grid->point[i][j][j].C[c];
+   		newLimits.MinMax[1][c] = grid->point[i][j][k].C[c];
 
 	newGrid = grid_point_alloc(N,newLimits);
 
@@ -2293,3 +2293,152 @@ void load_dx_grid_file(GabeditFileChooser *selFile, gint response_id)
 	add_objects_for_new_grid();
 	read_dx_grid_file(fileName,TRUE);
 }
+/********************************************************************************/
+void compute_integral_all_space()
+{
+	gdouble integ;
+	gchar* result = NULL;
+
+	if(compute_integrale_from_grid_all_space(grid,&integ))
+	result = g_strdup_printf("Integral = %0.12lf",integ);
+	else
+	result = g_strdup_printf("Canceled? !\n If not see your terminal ");
+
+	if(result && !CancelCalcul)
+	{
+		GtkWidget* message = MessageTxt(result,_("Result"));
+  		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
+		gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));
+	}
+	if(CancelCalcul) CancelCalcul = FALSE;
+}
+/********************************************************************************/
+void cut_cube(gint dir, gboolean left)
+{
+	gint i, j, k;
+	gboolean beg = TRUE;
+	gdouble v;
+	gdouble scal;
+	gint N[3];
+	Grid* newGrid;
+	GridLimits newLimits;
+	gint c;
+	gint ii, jj, kk;
+	gint min[3];
+	gint max[3];
+
+	if(grid->N[0]<3) return;
+	if(grid->N[1]<3) return;
+	if(grid->N[2]<3) return;
+
+	for(i=0;i<=2;i++) N[i] = grid->N[i];
+	N[dir] = (grid->N[dir]+1)/2;
+
+	newLimits = grid->limits;
+
+	for(i=0;i<=2;i++)
+	{
+        	min[i] = 0;
+		max[i] = N[i]-1;
+		if(left && dir==i)
+		{
+        		min[i] = N[i]-1;
+			if(grid->N[i]%2==0) min[i]++;
+			max[i] = grid->N[i]-1;
+		}
+	}
+
+  	for(c=0;c<3;c++) newLimits.MinMax[0][c] = grid->point[min[0]][min[1]][min[2]].C[c];
+  	for(c=0;c<3;c++) newLimits.MinMax[1][c] = grid->point[max[0]][max[1]][max[2]].C[c];
+
+	newGrid = grid_point_alloc(N,newLimits);
+
+	progress_orb(0,GABEDIT_PROGORB_SCALEGRID,TRUE);
+
+
+	scal = (gdouble)1.01/(max[0]-min[0]+1);
+	for(i=min[0];i<=max[0];i++)
+	{
+		ii=i-min[0];
+		for(j=min[1];j<=max[1];j++)
+		{
+			jj=j-min[1];
+			for(k=min[2];k<=max[2];k++)
+			{
+				kk=k-min[2];
+				for( c=0;c<4;c++) newGrid->point[ii][jj][kk].C[c] = grid->point[i][j][k].C[c];
+				v = grid->point[i][j][k].C[3];
+				if(beg)
+				{
+					beg = FALSE;
+        				newGrid->limits.MinMax[0][3] =  v;
+        				newGrid->limits.MinMax[1][3] =  v;
+				}
+                		else
+				{
+        				if(newGrid->limits.MinMax[0][3]>v)
+        					newGrid->limits.MinMax[0][3] =  v;
+        				if(newGrid->limits.MinMax[1][3]<v)
+        					newGrid->limits.MinMax[1][3] =  v;
+				}
+			}
+		}
+		if(CancelCalcul) 
+		{
+			progress_orb(0,GABEDIT_PROGORB_SCALEGRID,TRUE);
+			break;
+		}
+		progress_orb(scal,GABEDIT_PROGORB_SCALEGRID,FALSE);
+	}
+	progress_orb(0,GABEDIT_PROGORB_SCALEGRID,TRUE);
+	if(CancelCalcul) newGrid = free_grid(newGrid);
+	else
+	{
+		grid = free_grid(grid);
+		grid = newGrid;
+		limits = grid->limits;
+	}
+}
+/********************************************************************************/
+void applyCutLeft0(GtkWidget *Win,gpointer data)
+{
+	cut_cube(0,TRUE);
+	create_iso_orbitals();
+	glarea_rafresh(GLArea);
+}
+/********************************************************************************/
+void applyCutRight0(GtkWidget *Win,gpointer data)
+{
+	cut_cube(0,FALSE);
+	create_iso_orbitals();
+	glarea_rafresh(GLArea);
+}
+/********************************************************************************/
+void applyCutLeft1(GtkWidget *Win,gpointer data)
+{
+	cut_cube(1,TRUE);
+	create_iso_orbitals();
+	glarea_rafresh(GLArea);
+}
+/********************************************************************************/
+void applyCutRight1(GtkWidget *Win,gpointer data)
+{
+	cut_cube(1,FALSE);
+	create_iso_orbitals();
+	glarea_rafresh(GLArea);
+}
+/********************************************************************************/
+void applyCutLeft2(GtkWidget *Win,gpointer data)
+{
+	cut_cube(2,TRUE);
+	create_iso_orbitals();
+	glarea_rafresh(GLArea);
+}
+/********************************************************************************/
+void applyCutRight2(GtkWidget *Win,gpointer data)
+{
+	cut_cube(2,FALSE);
+	create_iso_orbitals();
+	glarea_rafresh(GLArea);
+}
+/********************************************************************************/

@@ -3259,6 +3259,7 @@ static void messageErrorTrans(gchar* fileName)
         Message(buffer,_("Error"),TRUE);
 }
 /********************************************************************************/
+/*
 static gboolean read_tansition_properties(GabeditFileChooser *SelecFile, gint response_id)
 {
  	gchar t[BSIZE];
@@ -3336,6 +3337,7 @@ static gboolean read_tansition_properties(GabeditFileChooser *SelecFile, gint re
 	fclose(fd);
 	return OK;
 }
+*/
 /********************************************************************************/
 /*
 void lambda_diagnostic_dlg()

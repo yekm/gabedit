@@ -989,6 +989,7 @@ static void getlTable(gint L, gint* nCoefs, gdouble** coefs, gint** l[3])
 		gint M;
 		gint c;
  		Zlm Stemp;
+		gint m = -1;
 		L = abs(L);
 		if(L==1)
 		{
@@ -1008,7 +1009,8 @@ static void getlTable(gint L, gint* nCoefs, gdouble** coefs, gint** l[3])
 			else inc = 1;
 			for(M=kl;M>=-kl;M -=inc)
     			{
-				gint m = M+abs(L);
+				if(L==1) m = M+abs(L);
+				else m++;
 	 	   		Stemp =  getZlm(L,M);
 				nCoefs[m] = Stemp.numberOfCoefficients;
 	 			for(n=0;n<Stemp.numberOfCoefficients;n++)

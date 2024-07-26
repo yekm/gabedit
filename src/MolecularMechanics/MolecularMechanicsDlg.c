@@ -20,6 +20,7 @@ DEALINGS IN THE SOFTWARE.
 
 #include <stdlib.h>
 #include <math.h>
+#include <glib.h>
 #include "../../Config.h"
 #include "../Common/Global.h"
 #include "../Utils/UtilsInterface.h"
@@ -320,7 +321,7 @@ static gboolean createFireFlyFiles(gint numberOfGeometries, ForceField** geometr
 #endif
 
 
-	g_strup(keyWords);
+	uppercase(keyWords);
 	for(i=0;i<numberOfGeometries;i++)
 	{
 		if(!geometries[i]) continue;
@@ -1212,6 +1213,7 @@ static void amberMolecularDynamicsConfo(GtkWidget* Win, gpointer data)
 	{
 		gchar* dirName = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(buttonDirSelector));
 		gchar* tmp = g_strdup(gtk_entry_get_text(GTK_ENTRY(entryFileNameGeom)));
+		if(!dirName) dirName = g_strdup(g_get_home_dir());
 		if(dirName[strlen(dirName)-1] != G_DIR_SEPARATOR)
 			fileNameGeom = g_strdup_printf("%s%s%s",dirName, G_DIR_SEPARATOR_S,tmp);
 		else

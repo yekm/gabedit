@@ -72,16 +72,16 @@ static void GetLink1()
  gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"--Link1--\n",-1);
 
  t1=gabedit_text_get_chars(text,0,-1);
- g_strup(t1);
+ uppercase(t1);
 
  t= g_strdup("%Chk=");  
- g_strup(t); 
+ uppercase(t); 
  DestOrig = strstr( t1,t);
  DestStrLink = NULL;
  if(StrLink != NULL)
  {
   	t2= g_strdup(StrLink);  
- 	g_strup(t2); 
+ 	uppercase(t2); 
  	DestStrLink = strstr( t2,t);
  }
  if(DestStrLink == NULL)
@@ -948,9 +948,9 @@ void GetInfoUnits()
  Destdiez = NULL;
 
  t = g_strdup("Units");
- g_strup(t);
+ uppercase(t);
  t1= g_strdup(Tompon);  
- g_strup(t1); 
+ uppercase(t1); 
  Destdiez = strstr( t1,t);
 
  if(Destdiez != NULL)

@@ -717,11 +717,11 @@ static gint get_number_of_ecp_core_electrons(gchar* FileName)
  	FILE *file;
 	gint ne = 0;
 
- 	if ((!FileName) || (strcmp(FileName,"") == 0)) return;
+ 	if ((!FileName) || (strcmp(FileName,"") == 0)) return ne;
 
  	t=g_malloc(BSIZE*sizeof(gchar));
  	file = FOpen(FileName, "rb");
- 	if(file ==NULL) return;
+ 	if(file ==NULL) return ne;
 
 	while(!feof(file))
 	{

@@ -42,6 +42,7 @@ DEALINGS IN THE SOFTWARE.
 #include "OrbitalsNWChem.h"
 #include "OrbitalsMopac.h"
 #include "OrbitalsOrca.h"
+#include "OrbitalsNBO.h"
 
 #define WIDTHSCR 0.56
 
@@ -376,6 +377,7 @@ void applygrid(GtkWidget *Win,gpointer data)
 		for(j=0;j<2;j++)
 			limits.MinMax[j][i] =limitstmp.MinMax[j][i]; 
 	}
+	/* for(i=0;i<3;i++) printf("%f %f %d\n",limits.MinMax[0][i], limits.MinMax[1][i], NumPoints[i]); */
 
 
 	delete_child(Win);
@@ -912,6 +914,7 @@ static void getiso(GtkWidget *button,gpointer data)
 		|| TypeGrid == GABEDIT_TYPEGRID_FEDELECTROPHILIC
 		|| TypeGrid == GABEDIT_TYPEGRID_FEDNUCLEOPHILIC
 		|| TypeGrid == GABEDIT_TYPEGRID_FEDRADICAL
+		|| TypeGrid == GABEDIT_TYPEGRID_EDENSITY
 	) square = FALSE;
 
 	if(!compute_isovalue_percent_from_grid(grid, square, percent, precision, &isovalue)) return;
@@ -1606,7 +1609,7 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *fileName,gint itype)
 				else
 				{
 					for(i=0;i<2;i++)
-						SymOrbitals[NumOrb[i]] = g_strup("UNK");
+						SymOrbitals[NumOrb[i]] = g_utf8_strup("UNK");
 				}
 
 	  			fgets(t,taille,fd);
@@ -1644,7 +1647,7 @@ gboolean read_last_orbitals_in_gaussian_file(gchar *fileName,gint itype)
 				else
 				{
 					for(i=0;i<3;i++)
-						SymOrbitals[NumOrb[i]] = g_strup("UNK");
+						SymOrbitals[NumOrb[i]] = g_utf8_strup("UNK");
 				}
 
 	  			fgets(t,taille,fd);

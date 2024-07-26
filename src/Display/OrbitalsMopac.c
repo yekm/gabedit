@@ -713,12 +713,15 @@ static gdouble overlapOM(gdouble* Ci, gdouble* Cj, gdouble* S)
 	return ovOM;
 }
 /********************************************************************************/
+/*
 static void addScaleVect(gint n, gdouble* Ci, gdouble* Cj, gdouble s)
 {
 	gint k;
 	for(k=0;k<n;k++) Ci[k] += Cj[k]*s;
 }
+*/
 /********************************************************************************/
+/*
 static gboolean orthonormalize_orbitals_schmidt(gchar* FileName, gdouble**CoefOrbitals, gint nb, gint ne)
 {
 	gint nn;
@@ -729,7 +732,6 @@ static gboolean orthonormalize_orbitals_schmidt(gchar* FileName, gdouble**CoefOr
 	gdouble PRECISION = 1e-10;
 	gdouble r;
 	gint j;
-	/* printf("nn=%d N = %d\n",nn,N);*/
 	if(nn != N) return FALSE;
 	for(i=nb;i<ne;i++) 
 	{
@@ -750,8 +752,6 @@ static gboolean orthonormalize_orbitals_schmidt(gchar* FileName, gdouble**CoefOr
 		r = 1/r;
 		for(k=0;k<NOrb;k++) CoefOrbitals[i][k] *= r;
 	}
-	/* Check */
-	/*
 	{
 		for(i=0;i<NOrb;i++) 
 		{
@@ -764,10 +764,10 @@ static gboolean orthonormalize_orbitals_schmidt(gchar* FileName, gdouble**CoefOr
 	
 		
 	}
-	*/
 	if(S) g_free(S);
 	return TRUE;
 }
+*/
 /********************************************************************************/
 static gboolean orthonormalize_orbitals_diag(gchar* FileName, gdouble**CoefOrbitals, gint nb, gint ne)
 {

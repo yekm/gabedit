@@ -3202,7 +3202,7 @@ static void read_hin_numbers_of_atoms(FILE* file, int* natoms, int* nresidues)
 	{
     		if(!fgets(t,taille,file)) break;
     		sscanf(t,"%s",dump);
-		g_strup(dump);
+		uppercase(dump);
 		if(!strcmp(dump,"ATOM")) (*natoms)++;
 		if(!strcmp(dump,"RES")) (*nresidues)++;
 	}
@@ -3217,7 +3217,7 @@ static gboolean read_atom_hin_file(FILE* file,gchar* listFields[], gint nAtoms, 
 
     	if(!fgets(t,taille,file)) return FALSE;
     	sscanf(t,"%s",dump);
-	g_strup(dump);
+	uppercase(dump);
 	if(strcmp(dump,"ATOM")!=0)
 	{
 		if(strcmp(dump,"RES")==0)
@@ -4441,7 +4441,7 @@ static void save_atom_pdb_file(FILE* file,
 		strncpy(localName, name, MAXNAME);
 	else
 		strcpy(localName, name);
-	g_strup(localName);
+	uppercase(localName);
 
 	if(strlen(atomType)>MAXATOMTYPE)
 	{
@@ -4474,7 +4474,7 @@ static void save_atom_pdb_file(FILE* file,
 			localResidueName[MAXRESIDUENAME] = '\0';
 		}
 	}
-	g_strup(localResidueName);
+	uppercase(localResidueName);
 
 	if(strlen(symbol)>MAXSYMBOL)
 		strncpy(localSymbol, symbol, MAXSYMBOL);
@@ -10029,12 +10029,12 @@ void read_XYZ_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFile
  	if(fd!=NULL)
  	{
                	t2= g_strdup("Variables");
-               	g_strup(t2);
+               	uppercase(t2);
 		while( !feof(fd) )
 		{
     			{ char* e = fgets(t,taille,fd);}
                 	t1 = g_strdup(t);
-               		g_strup(t1);
+               		uppercase(t1);
 			t3 = strstr(t1,t2);
 			if(t3 != NULL)
 				break;
@@ -10313,7 +10313,7 @@ void read_XYZ_from_nwchem_input_file(gchar *NomFichier)
 			OK = FALSE;
 			break;
 		}
-		g_strup(t);
+		uppercase(t);
 		if(strstr(t,"GEOMETRY"))
 		{
 			OK = TRUE;
@@ -10326,7 +10326,7 @@ void read_XYZ_from_nwchem_input_file(gchar *NomFichier)
   	{
     		j++;
     		if(!fgets(t,taille,file))break;
-		g_strup(t);
+		uppercase(t);
 		if(strstr(t,"ZMATRIX"))
 		{
 			g_free(GeomXYZtemp);
@@ -10384,7 +10384,7 @@ void read_XYZ_from_nwchem_input_file(gchar *NomFichier)
   		while(!feof(file) && Uvar)
   		{
  			if(!fgets(t,taille,file)) break;
-			g_strup(t);
+			uppercase(t);
 			if(strstr(t,"VARIABLE")) 
 			{
 				OK = TRUE;
@@ -10394,7 +10394,7 @@ void read_XYZ_from_nwchem_input_file(gchar *NomFichier)
   	}
 	while(!feof(file) && Uvar && OK )
 	{
-		g_strup(t);
+		uppercase(t);
 		for(k=0;k<(gint)strlen(t);k++) if(t[k]=='=') t[k] = ' ';
         	for(j=0;j<Ncent;j++)
 		{
@@ -10426,7 +10426,7 @@ void read_XYZ_from_nwchem_input_file(gchar *NomFichier)
 	while(OK && !feof(file))
 	{
 		if(!fgets(t,taille,file)) break;
-		g_strup(t);
+		uppercase(t);
 		if(strstr(t,"CHARGE") && 2==sscanf(t,"%s %d",AtomCoord[0],&globalCharge) )
 		{
 			icharge = TRUE;
@@ -10522,7 +10522,7 @@ void read_XYZ_from_psicode_input_file(gchar *NomFichier)
 			OK = FALSE;
 			break;
 		}
-		g_strup(t);
+		uppercase(t);
 		/*printf("t=%s\n", t);*/
 		if(strstr(t,"MOLECULE"))
 		{
@@ -10540,7 +10540,7 @@ void read_XYZ_from_psicode_input_file(gchar *NomFichier)
   	{
     		j++;
     		if(!fgets(t,taille,file))break;
-		g_strup(t);
+		uppercase(t);
                 if(strstr(t,"SYMMETRY")) continue;
 		if(strstr(t,"ZMATRIX"))
 		{
@@ -10594,7 +10594,7 @@ void read_XYZ_from_psicode_input_file(gchar *NomFichier)
 	Nvar=0;
 	while(!feof(file) && Uvar && OK )
 	{
-		g_strup(t);
+		uppercase(t);
 		for(k=0;k<(gint)strlen(t);k++) if(t[k]=='=') t[k] = ' ';
         	for(j=0;j<Ncent;j++)
 		{
@@ -10688,7 +10688,7 @@ void read_XYZ_from_orca_input_file(gchar *NomFichier)
 			OK = FALSE;
 			break;
 		}
-		g_strup(t);
+		uppercase(t);
 		if(strstr(t,"* XYZ") && 4==sscanf(t,"%s %s %d %d",AtomCoord[0],AtomCoord[1],&globalCharge, &mult) )
 		{
 			OK = TRUE;
@@ -10755,7 +10755,7 @@ void read_XYZ_from_orca_input_file(gchar *NomFichier)
   		while(!feof(file) && Uvar)
   		{
  			if(!fgets(t,taille,file)) break;
-			g_strup(t);
+			uppercase(t);
 			if(strstr(t,"PARAS")) 
 			{
 				OK = TRUE;
@@ -10765,7 +10765,7 @@ void read_XYZ_from_orca_input_file(gchar *NomFichier)
   	}
 	while(!feof(file) && Uvar && OK )
 	{
-		g_strup(t);
+		uppercase(t);
 		for(k=0;k<(gint)strlen(t);k++) if(t[k]=='=') t[k] = ' ';
         	for(j=0;j<Ncent;j++)
 		{
@@ -10858,7 +10858,7 @@ void read_XYZ_from_qchem_input_file(gchar *NomFichier)
 			OK = FALSE;
 			break;
 		}
-		g_strup(t);
+		uppercase(t);
 		if(strstr(t,"$MOLECULE"))
 		{
     			{ char* e = fgets(t,taille,fd);} /* charge and spin */
@@ -11046,7 +11046,7 @@ static void get_charge_and_multiplicity_from_mopac_input_file(FILE* fd)
 	}
   	for(i=0;i<2;i++)
 	{
-		g_strup(t);
+		uppercase(t);
 		if ( strstr(t,"CHARGE") && strstr(t,"="))
 		{
 			gchar* p = strstr(t,"=")+1;
@@ -12611,6 +12611,7 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   case GABEDIT_TYPEFILEGEOM_GAUSSIAN_ZMATRIX : return;
   case GABEDIT_TYPEFILEGEOM_MOPAC_ZMATRIX : return;
   case GABEDIT_TYPEFILEGEOM_UNKNOWN : return;
+  case GABEDIT_TYPEFILEGEOM_PSICODEIN : return;
   }
   if(lastdirectory)
   {
@@ -12720,6 +12721,7 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   case GABEDIT_TYPEFILEGEOM_MOPACIN : 
   case GABEDIT_TYPEFILEGEOM_GAUSSIAN_ZMATRIX : 
   case GABEDIT_TYPEFILEGEOM_MOPAC_ZMATRIX : 
+  case GABEDIT_TYPEFILEGEOM_PSICODEIN : 
   case GABEDIT_TYPEFILEGEOM_UNKNOWN : return;
   }
   g_signal_connect_swapped(SelecFile, "response", G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(SelecFile));

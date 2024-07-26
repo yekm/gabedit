@@ -370,6 +370,36 @@ static void activate_action (GtkAction *action)
 		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
 		else restriction_cube();
 	}
+	else if(!strcmp(name , "CubeCutLeft0"))
+	{
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
+		else applyCutLeft0(NULL,NULL);
+	}
+	else if(!strcmp(name , "CubeCutLeft1"))
+	{
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
+		else applyCutLeft1(NULL,NULL);
+	}
+	else if(!strcmp(name , "CubeCutLeft2"))
+	{
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
+		else applyCutLeft2(NULL,NULL);
+	}
+	else if(!strcmp(name , "CubeCutRight0"))
+	{
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
+		else applyCutRight0(NULL,NULL);
+	}
+	else if(!strcmp(name , "CubeCutRight1"))
+	{
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
+		else applyCutRight1(NULL,NULL);
+	}
+	else if(!strcmp(name , "CubeCutRight2"))
+	{
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
+		else applyCutRight2(NULL,NULL);
+	}
 	else if(!strcmp(name , "CubeAIMChargesNearGrid"))
 	{
 		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
@@ -384,6 +414,11 @@ static void activate_action (GtkAction *action)
 	{
 		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
 		else file_chooser_open(mapping_cube,"Color Mapping",GABEDIT_TYPEFILE_CUBEGABEDIT,GABEDIT_TYPEWIN_ORB);
+	}
+	else if(!strcmp(name , "ComputeIntegralSpace"))
+	{
+		if(!grid) Message(_("Sorry, you have not a default grid"),_("Error"),TRUE);
+		else compute_integral_all_space();
 	}
 	else if(!strcmp(name , "DensityElectronic"))
 	{
@@ -1007,9 +1042,17 @@ static GtkActionEntry gtkActionEntries[] =
 	{"CubeScale", NULL, N_("Scal_e"), NULL, "Scale", G_CALLBACK (activate_action) },
 	{"CubeSquare", NULL, N_("S_quare"), NULL, "Square", G_CALLBACK (activate_action) },
 	{"CubeRestriction", NULL, N_("_Restriction"), NULL, "Restriction", G_CALLBACK (activate_action) },
+	{"CubeCut",     NULL, N_("Remove half space")},
+	{"CubeCutLeft0", NULL, N_("_left, direction 1"), NULL, "CubeCutLeft0", G_CALLBACK (activate_action) },
+	{"CubeCutLeft1", NULL, N_("_left, direction 2"), NULL, "CubeCutLeft1", G_CALLBACK (activate_action) },
+	{"CubeCutLeft2", NULL, N_("_left, direction 3"), NULL, "CubeCutLeft2", G_CALLBACK (activate_action) },
+	{"CubeCutRight0", NULL, N_("right, ditection _1"), NULL, "CubeCutRight0", G_CALLBACK (activate_action) },
+	{"CubeCutRight1", NULL, N_("right, ditection _2"), NULL, "CubeCutRight1", G_CALLBACK (activate_action) },
+	{"CubeCutRight2", NULL, N_("right, ditection _3"), NULL, "CubeCutRight2", G_CALLBACK (activate_action) },
 	{"CubeAIMChargesNearGrid", NULL, N_("AIM Charges[W. Tang et al J. Phys. Cond.. Matt. 21, 084204(09)]"), NULL, "AIM Charges", G_CALLBACK (activate_action) },
 	{"CubeAIMChargesOnGrid", NULL, N_("AIM Charges[OnGrid]"), NULL, "AIM Charges on grid", G_CALLBACK (activate_action) },
 	{"CubeColorMapping", NULL, N_("_Color Mapping"), NULL, "Color Mapping", G_CALLBACK (activate_action) },
+	{"ComputeIntegralSpace", NULL, N_("_Compute integral in all space"), NULL, "ComputeIntegralSpace", G_CALLBACK (activate_action) },
 
 	{"Density",     NULL, N_("_Density")},
 	{"DensityElectronic", NULL, N_("_Electronic"), NULL, "Compute and draw electronic density", G_CALLBACK (activate_action) },
@@ -1761,11 +1804,22 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"CubeSquare\" action=\"CubeSquare\" />\n"
 "      <separator name=\"sepMenuCubeRestriction\" />\n"
 "      <menuitem name=\"CubeRestriction\" action=\"CubeRestriction\" />\n"
+"      <separator name=\"sepMenuCubeCut\" />\n"
+"      <menu name=\"CubeCut\" action = \"CubeCut\">\n"
+"        <menuitem name=\"CubeCutLeft0\" action=\"CubeCutLeft0\" />\n"
+"        <menuitem name=\"CubeCutLeft1\" action=\"CubeCutLeft1\" />\n"
+"        <menuitem name=\"CubeCutLeft2\" action=\"CubeCutLeft2\" />\n"
+"        <menuitem name=\"CubeCutRight0\" action=\"CubeCutRight0\" />\n"
+"        <menuitem name=\"CubeCutRight1\" action=\"CubeCutRight1\" />\n"
+"        <menuitem name=\"CubeCutRight2\" action=\"CubeCutRight2\" />\n"
+"      </menu>\n"
 "      <separator name=\"sepMenuCubeAIMChargesNearGrid\" />\n"
 "      <menuitem name=\"CubeAIMChargesNearGrid\" action=\"CubeAIMChargesNearGrid\" />\n"
 "      <menuitem name=\"CubeAIMChargesOnGrid\" action=\"CubeAIMChargesOnGrid\" />\n"
 "      <separator name=\"sepMenuCubeColor\" />\n"
 "      <menuitem name=\"CubeColorMapping\" action=\"CubeColorMapping\" />\n"
+"      <separator name=\"sepMenuComputeIntegralSpace\" />\n"
+"      <menuitem name=\"ComputeIntegralSpace\" action=\"ComputeIntegralSpace\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepMenuDensity\" />\n"
 "    <menu name=\"Density\" action = \"Density\">\n"
@@ -2200,9 +2254,11 @@ static void set_sensitive_cube()
 	GtkWidget *cubeScale = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeScale");
 	GtkWidget *cubeSquare = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeSquare");
 	GtkWidget *cubeRestriction = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeRestriction");
+	GtkWidget *cubeCut = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeCut");
 	GtkWidget *cubeAUMChargesNear = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeAIMChargesNearGrid");
 	GtkWidget *cubeAUMChargesOn = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeAIMChargesOnGrid");
 	GtkWidget *cubeColor = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeColorMapping");
+	GtkWidget *cubeIntegral = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/ComputeIntegralSpace");
 	GtkWidget *cubeComputeLap = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeComputeLaplacian");
 	GtkWidget *cubeComputeGard = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeComputeNormGradient");
 	GtkWidget *cubesl2Gard = gtk_ui_manager_get_widget (manager, "/MenuGL/Cube/CubeSignLambda2Density");
@@ -2213,9 +2269,11 @@ static void set_sensitive_cube()
 	if(GTK_IS_WIDGET(cubeScale)) gtk_widget_set_sensitive(cubeScale, sensitive);
 	if(GTK_IS_WIDGET(cubeSquare)) gtk_widget_set_sensitive(cubeSquare, sensitive);
 	if(GTK_IS_WIDGET(cubeRestriction)) gtk_widget_set_sensitive(cubeRestriction, sensitive);
+	if(GTK_IS_WIDGET(cubeCut)) gtk_widget_set_sensitive(cubeCut, sensitive);
 	if(GTK_IS_WIDGET(cubeAUMChargesNear)) gtk_widget_set_sensitive(cubeAUMChargesNear, sensitive);
 	if(GTK_IS_WIDGET(cubeAUMChargesOn)) gtk_widget_set_sensitive(cubeAUMChargesOn, sensitive);
 	if(GTK_IS_WIDGET(cubeColor)) gtk_widget_set_sensitive(cubeColor, sensitive);
+	if(GTK_IS_WIDGET(cubeIntegral)) gtk_widget_set_sensitive(cubeIntegral, sensitive);
 	if(GTK_IS_WIDGET(cubeComputeLap)) gtk_widget_set_sensitive(cubeComputeLap, sensitive);
 	if(GTK_IS_WIDGET(cubeComputeGard)) gtk_widget_set_sensitive(cubeComputeGard, sensitive);
 	if(GTK_IS_WIDGET(cubesl2Gard)) gtk_widget_set_sensitive(cubesl2Gard, sensitive);

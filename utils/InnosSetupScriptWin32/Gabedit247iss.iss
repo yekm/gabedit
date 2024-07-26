@@ -10,9 +10,9 @@ AppSupportURL=http://gabedit.sf.net
 AppUpdatesURL=http://gabedit.sf.net
 DefaultDirName=C:\Gabedit247
 DefaultGroupName=Gabedit
-LicenseFile=C:\Users\abdulrahman\GabeditSrc\Gabedit247\License
-SetupIconFile=C:\Users\abdulrahman\GabeditSrc\Gabedit247\Gabedit48.ico
-OutputDir=C:\Users\abdulrahman\GabeditSrc
+LicenseFile=C:\Users\abdulrahman\Documents\Gabedit247\License
+SetupIconFile=C:\Users\abdulrahman\Documents\Gabedit247\Gabedit48.ico
+OutputDir=C:\Users\abdulrahman\Documents
 OutputBaseFilename=setupGabedit247
 Compression=lzma
 SolidCompression=yes
@@ -22,8 +22,8 @@ PrivilegesRequired=none
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\abdulrahman\GabeditSrc\Gabedit247\gabedit.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\abdulrahman\GabeditSrc\Gabedit247\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\abdulrahman\Documents\Gabedit247\gabedit.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\abdulrahman\Documents\Gabedit247\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

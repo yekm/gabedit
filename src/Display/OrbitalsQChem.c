@@ -651,7 +651,7 @@ static gboolean DefineQChemBasisType(gchar** strbasis, gint nrows)
 		if(nconts != 0)
 		{
 			gint j = Type[i].Norb;
-			g_strup(shell);
+			uppercase(shell);
 			if(strcmp(shell,"SP")==0) Type[i].Norb+=2;
 			else Type[i].Norb++;
      			if(Type[i].Ao == NULL) 

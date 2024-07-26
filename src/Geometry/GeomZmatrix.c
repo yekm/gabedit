@@ -4020,7 +4020,7 @@ static void get_charge_and_multiplicity_from_molcas_input_file(FILE* fd)
   	while(!feof(fd) )    
   	{
  		if(!fgets(t, taille, fd)) return;
-		g_strup(t);
+		uppercase(t);
 		if ( strstr(t,"CHARGE") && strstr(t,"="))
 		{
 			gchar* p = strstr(t,"=")+1;
@@ -4059,7 +4059,7 @@ gint read_Zmat_from_molcas_input_file(gchar *fileName)
 	while(!feof(file))
 	{
     		if(!fgets(t,BSIZE,file))break;
-		g_strup(t);
+		uppercase(t);
 		if(strstr(t,"ZMAT")) i++;
 		if(strstr(t,"END") && strstr(t,"BASIS"))
 		{
@@ -4110,7 +4110,7 @@ gint read_Zmat_from_molcas_input_file(gchar *fileName)
         {
 		j++;
     		{ char* e = fgets(t,BSIZE,file);}
-		g_strup(t);
+		uppercase(t);
 		if(strstr(t,"END") && strstr(t,"MATRIX")) break;
 		if(strstr(t,"VARIABLE")) break;
 		Ncent++;
@@ -4449,12 +4449,12 @@ void read_Zmat_from_molpro_input_file(gchar *NomFichier, FilePosTypeGeom InfoFil
  	if(fd!=NULL)
  	{
                	t2= g_strdup("Variables");
-               	g_strup(t2);
+               	uppercase(t2);
 		while( !feof(fd) )
 		{
     			{ char* e = fgets(t,taille,fd);}
                 	t1 = g_strdup(t);
-               		g_strup(t1);
+               		uppercase(t1);
 			t3 = strstr(t1,t2);
 			if(t3 != NULL)
 				break;
@@ -4792,7 +4792,7 @@ void read_Zmat_from_nwchem_input_file(gchar *NomFichier)
 			OK = FALSE;
 			break;
 		}
-		g_strup(t);
+		uppercase(t);
 		if(strstr(t,"* INT") && 4==sscanf(t,"%s %s %d %d",AtomCoord[0],AtomCoord[1],&globalCharge, &mult) )
 		{
 			OK = TRUE;
@@ -4934,7 +4934,7 @@ void read_Zmat_from_nwchem_input_file(gchar *NomFichier)
   		while(!feof(file) && Uvar)
   		{
  			if(!fgets(t,taille,file)) break;
-			g_strup(t);
+			uppercase(t);
 			if(strstr(t,"PARAS")) 
 			{
 				OK = TRUE;
@@ -4944,7 +4944,7 @@ void read_Zmat_from_nwchem_input_file(gchar *NomFichier)
   	}
 	while(!feof(file) && Uvar && OK )
 	{
-		g_strup(t);
+		uppercase(t);
 		for(k=0;k<(gint)strlen(t);k++) if(t[k]=='=') t[k] = ' ';
         	for(j=0;j<Ncent;j++)
 		{
@@ -5039,7 +5039,7 @@ void read_Zmat_from_psicode_input_file(gchar *NomFichier)
 			OK = FALSE;
 			break;
 		}
-		g_strup(t);
+		uppercase(t);
 		if(strstr(t,"MOLECULE"))
 		{
 			OK = TRUE;
@@ -5186,7 +5186,7 @@ void read_Zmat_from_psicode_input_file(gchar *NomFichier)
 	while(!feof(file) && Uvar && OK )
 	{
     		{ char* e = fgets(t,taille,file);}
-		g_strup(t);
+		uppercase(t);
 /* printf("t=%s\n",t);*/
 		for(k=0;k<(gint)strlen(t);k++) if(t[k]=='=') t[k] = ' ';
 			/* printf("Ncent = %d\n",Ncent);*/
@@ -5288,7 +5288,7 @@ void read_Zmat_from_orca_input_file(gchar *NomFichier)
 			OK = FALSE;
 			break;
 		}
-		g_strup(t);
+		uppercase(t);
 		if(strstr(t,"* INT") && 4==sscanf(t,"%s %s %d %d",AtomCoord[0],AtomCoord[1],&globalCharge, &mult) )
 		{
 			OK = TRUE;
@@ -5442,7 +5442,7 @@ void read_Zmat_from_orca_input_file(gchar *NomFichier)
   		while(!feof(file) && Uvar)
   		{
  			if(!fgets(t,taille,file)) break;
-			g_strup(t);
+			uppercase(t);
 			if(strstr(t,"PARAS")) 
 			{
 				OK = TRUE;
@@ -5452,7 +5452,7 @@ void read_Zmat_from_orca_input_file(gchar *NomFichier)
   	}
 	while(!feof(file) && Uvar && OK )
 	{
-		g_strup(t);
+		uppercase(t);
 		for(k=0;k<(gint)strlen(t);k++) if(t[k]=='=') t[k] = ' ';
         	for(j=0;j<Ncent;j++)
 		{
@@ -5543,7 +5543,7 @@ void read_Zmat_from_qchem_input_file(gchar *NomFichier)
 			OK = FALSE;
 			break;
 		}
-		g_strup(t);
+		uppercase(t);
 		if(strstr(t,"$MOLECULE"))
 		{
     			{ char* e = fgets(t,taille,fd);} /* charge and spin */
@@ -5770,7 +5770,7 @@ static void get_charge_and_multiplicity_from_mopac_input_file(FILE* fd)
 	}
   	for(i=0;i<2;i++)
 	{
-		g_strup(t);
+		uppercase(t);
 		if ( strstr(t,"CHARGE") && strstr(t,"="))
 		{
 			gchar* tt = strstr(t,"CHARGE");

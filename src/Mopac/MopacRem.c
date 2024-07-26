@@ -60,7 +60,9 @@ static gchar selectedJob[BSIZE]="1SCF";
 /*************************************************************************************************************/
 static gchar* listHamiltonianMethodsView[] = 
 { 
+	"PM7", 
 	"PM6", 
+	"PM6-DH+", 
 	"PM6-DH2", 
 	"RM1", 
 	"PM3", 
@@ -69,7 +71,9 @@ static gchar* listHamiltonianMethodsView[] =
 };
 static gchar* listHamiltonianMethodsReal[] = 
 { 
+	"PM7", 
 	"PM6", 
+	"PM6-DH+", 
 	"PM6-DH2", 
 	"RM1", 
 	"PM3", 
@@ -77,7 +81,7 @@ static gchar* listHamiltonianMethodsReal[] =
 	"MNDO", 
 };
 static guint numberOfHamiltonianMethods = G_N_ELEMENTS (listHamiltonianMethodsView);
-static gchar selectedHamiltonian[BSIZE]="PM6";
+static gchar selectedHamiltonian[BSIZE]="PM7";
 /*************************************************************************************************************/
 static gchar* listSolventsView[] = 
 { 

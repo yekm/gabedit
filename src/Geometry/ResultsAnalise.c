@@ -1355,7 +1355,7 @@ void find_energy_gauss_output(gchar* NomFichier)
 			GeomConv =  g_realloc(GeomConv, Ncalculs*sizeof(DataGeomConv) );
   			GeomConv[Ncalculs-1] = init_geom_gauss_conv(NomFichier);
 		 }
-		 g_strup(t);
+		 uppercase(t);
                  if( strlen(t)>2 && t[1] == '#' && !GeomConv[Ncalculs-1].TypeCalcul)
 		 {
 			GeomConv[Ncalculs-1].TypeCalcul = g_malloc(100*sizeof(char));
@@ -1577,7 +1577,7 @@ void find_energy_orca_output(gchar* NomFichier)
 		 }
 		 if(!Ok) break;
                  sscanf(t,"%s %s %s %s %s",temp,temp,temp,temp,GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1]);
-		 g_strup(t);
+		 uppercase(t);
 		 GeomConv[Ncalculs-1].TypeCalcul = g_strdup(" ");
                  do
                  {
@@ -1733,7 +1733,7 @@ void find_energy_molpro_log(gchar* NomFichier)
 		 }
 		 if(!Ok) break;
                  sscanf(t,"%s %s %s %s %s",temp,temp,temp,temp,GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1]);
-		 g_strup(t);
+		 uppercase(t);
 		 GeomConv[Ncalculs-1].TypeCalcul = g_malloc(100*sizeof(char));
     		 pdest = strstr( t,"(");
                  pdest++;
@@ -1861,7 +1861,7 @@ void find_energy_qchem_log(gchar* NomFichier)
 		 }
 		 if(!Ok) break;
                  sscanf(t,"%s %s %s",temp,temp,GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1]);
-		 g_strup(t);
+		 uppercase(t);
 		 GeomConv[Ncalculs-1].TypeCalcul = g_strdup(" ");
                  do
                  {
@@ -2225,7 +2225,7 @@ void find_energy_molden_gabedit(gchar* FileName, GabEditTypeFile type)
 	{
 		if(Ncalculs==0 || !strstr(t,"[GEOCONV]"))
     		 { char* e = fgets(t,taille,fd);}
-		 g_strup(t);
+		 uppercase(t);
                  if(strstr(t,"[GEOCONV]") )
 		 {
 		 	/* printf("OK GEOCONV %s\n",t);*/
@@ -2240,7 +2240,7 @@ void find_energy_molden_gabedit(gchar* FileName, GabEditTypeFile type)
                  	nn = sscanf(t,"%s %s", temp, GeomConv[Ncalculs-1].TypeCalcul);
 			if(nn<2) sprintf(GeomConv[Ncalculs-1].TypeCalcul," ");
 		 	if(!fgets(t,taille,fd)) break;
-		 	g_strup(t);
+		 	uppercase(t);
 		 }
 
 		 /* printf("%s\n",t);*/
@@ -2283,7 +2283,7 @@ void find_energy_molden_gabedit(gchar* FileName, GabEditTypeFile type)
 			if(GeomConv[Ncalculs-1].Npoint<1) continue;
 	 		while(!feof(fd))
 			{
-		 		g_strup(t);
+		 		uppercase(t);
    				if( strstr( t,"MAX-FORCE") != NULL )
 				{
 					for(i=0;(gint)i<GeomConv[Ncalculs-1].Npoint;i++)
@@ -2453,7 +2453,7 @@ static gint find_energy_gabedit_geoms(gchar* FileName)
 				break;
 			}
 			sscanf(labels[0],"%s",t);
-			g_strup(t);
+			uppercase(t);
 			if(!strstr(t,"ENERG"))
 			{
 				for(i=0;i<nLabels;i++) if(labels[i]) g_free(labels[i]);

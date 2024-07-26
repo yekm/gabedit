@@ -1879,7 +1879,7 @@ static void save_atom_pdb_file(FILE* file,
 		strncpy(localName, name, MAXNAME);
 	else
 		strcpy(localName, name);
-	g_strup(localName);
+	uppercase(localName);
 
 	if(strlen(atomType)>MAXATOMTYPE)
 	{
@@ -1912,7 +1912,7 @@ static void save_atom_pdb_file(FILE* file,
 			localResidueName[MAXRESIDUENAME] = '\0';
 		}
 	}
-	g_strup(localResidueName);
+	uppercase(localResidueName);
 
 	if(strlen(symbol)>MAXSYMBOL)
 		strncpy(localSymbol, symbol, MAXSYMBOL);

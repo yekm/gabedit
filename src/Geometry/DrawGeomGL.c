@@ -62,6 +62,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../MolecularMechanics/PDBTemplate.h"
 #include "../MolecularMechanics/CalculTypesAmber.h"
 #include "../Symmetry/MoleculeSymmetryInterface.h"
+#include "../Symmetry/MoleculeSymmetry.h"
 #include "../Utils/Jacobi.h"
 #include "../Utils/Vector3d.h"
 #include "../Utils/GabeditTextEdit.h"

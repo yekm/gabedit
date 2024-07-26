@@ -26,6 +26,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/UtilsGL.h"
 #include "../Utils/Constants.h"
 #include "../Utils/HydrogenBond.h"
+#include "../Utils/Utils.h"
 #include "BondsOrb.h"
 #include "RingsOrb.h"
 

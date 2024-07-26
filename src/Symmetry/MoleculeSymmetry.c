@@ -32,6 +32,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Common/GabeditType.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/Constants.h"
+#include "../Utils/Utils.h"
 #include "../Symmetry/Symmetry.h"
 
 #include <stdio.h>
@@ -68,11 +69,12 @@ static gint freeAMolecule(MolSymMolecule* mol)
 }
 
 /************************************************************************************************************/
+/*
 static void printMolSymMolecules(MolSymMolecule* mol)
 {
 	gint i;
 	MolSymAtom *atomList;
-	gint deleted = mol->numberOfDifferentKindsOfAtoms;     /* tag for deleted atom */
+	gint deleted = mol->numberOfDifferentKindsOfAtoms;     // tag for deleted atom 
  
 	atomList = mol->listOfAtoms;
 	
@@ -88,6 +90,7 @@ static void printMolSymMolecules(MolSymMolecule* mol)
 		atomList++;
 	 }
 }
+*/
 /************************************************************************************************************/
 static gdouble getSmallestDistanceBetweenAtoms(MolSymMolecule* mol)
 {
@@ -128,7 +131,7 @@ void setGeneratorsAbelianGroup(gchar* groupName,
 
 	gchar group[BSIZE];
 	sprintf(group,"%s",groupName);
-	g_strup(group);
+	uppercase(group);
 
 	if(!strcmp(group,"D2H"))
 	{
@@ -909,8 +912,8 @@ int computeSymmetryOld(
 		gint naxOld = nax;
 		symmetry =determineSymmetry(&mol,&nax,numberOfEquivalentAxes, maximalOrder, principalAxisTolerance, message);
 		getPointGroupSymbol(symmetry, nax, ns);
-		g_strup(pointGroupSymbol);
-		g_strup(ns);
+		uppercase(pointGroupSymbol);
+		uppercase(ns);
 		if(strcmp(ns,pointGroupSymbol)!=0) 
 		{
 			nax = naxOld;
@@ -995,7 +998,7 @@ int computeSymmetry(
 	sym.setMaxDegree(&sym,maximalOrder);
 	sym.setMomentTolerance(&sym,principalAxisTolerance);
 	sym.findAllPointGroups(&sym);
-	sprintf(pointGroupSymbol,sym.findSinglePointGroup(&sym));
+	sprintf(pointGroupSymbol,"%s",sym.findSinglePointGroup(&sym));
 	printf("group=%s\n",pointGroupSymbol);
        	sym.printElementResults(&sym);
 	g_free(mass);
@@ -1044,7 +1047,7 @@ int computeSymmetrization(
 	sym.setMomentTolerance(&sym,principalAxisTolerance);
 	sym.findAllPointGroups(&sym);
 	gn =sym.getGroupName(&sym);
-	sprintf(pointGroupSymbol,gn);
+	sprintf(pointGroupSymbol,"%s",gn);
 	g_free(gn);
 	if(!strcmp(pointGroupSymbol,"C1")) return 0;
        	sym.printElementResults(&sym);

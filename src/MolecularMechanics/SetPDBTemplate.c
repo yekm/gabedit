@@ -921,7 +921,7 @@ static GtkTreeIter addNode(gchar *text,gint residueNumber)
 	texts[2] = g_strdup(" ");
 	texts[3] = g_strdup(" ");
 
-	g_strup(texts[0]);
+	uppercase(texts[0]);
 	dataTplTree = newDataTplTree(residueNumber,-1);
 
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(pdbTreeView));

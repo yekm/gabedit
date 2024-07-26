@@ -200,7 +200,7 @@ gint get_num_orb(gchar *nameorb)
 {
   gchar *orb = g_strdup(nameorb);
   gint k=-1;
-  g_strup(orb);
+  uppercase(orb);
   if(strcmp(orb,"ECP")==0)
 	return -1;
   switch(orb[0])

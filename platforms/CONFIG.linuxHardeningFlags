@@ -26,7 +26,7 @@ endif
 DRAWGEOMGL=-DDRAWGEOMGL
 
 #COMMONCFLAGS = -Wall -O2 -DENABLE_DEPRECATED $(OMPCFLAGS) $(DRAWGEOMGL)
-COMMONCFLAGS = -Wformat  -fstack-protector --param=ssp-buffer-size=4  -Werror=format-security -D_FORTIFY_SOURCE=2 -O2 -DENABLE_DEPRECATED $(OMPCFLAGS) $(DRAWGEOMGL)
+COMMONCFLAGS = -Wformat  -fstack-protector --param=ssp-buffer-size=4  -Werror=format-security -D_FORTIFY_SOURCE=2 -O2 -DENABLE_DEPRECATED $(OMPCFLAGS) $(DRAWGEOMGL) -Wformat-security -Wno-unused-variable 
 LDFLAGS = -Wl,-z,relro
 
 

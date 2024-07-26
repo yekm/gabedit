@@ -105,6 +105,17 @@ static PangoLayout* get_pango_str(GabeditXYPlot *xyplot, G_CONST_RETURN gchar* t
 static void xyplot_curve_noconv(GabeditXYPlot *xyplot, gint numberOfPoints, gdouble* X,  gdouble* Y, GdkColor* color);
 
 /****************************************************************************************/
+static void uppercase(gchar *str)
+{
+  while( *str != '\0')
+  {
+    if (isalpha((gint)*str))
+      if (islower((gint)*str))
+        *str = toupper((gint)*str);
+    str ++;
+  }
+}
+/****************************************************************************************/
 static void build_linear_x(gdouble* x0, gdouble* y0, gint n, gdouble**X, gdouble** Y, gint N)
 {
 	
@@ -4868,7 +4879,7 @@ static gboolean gabedit_xyplot_read_gabedit(GtkWidget* xyplot, gchar* fileName)
 		return FALSE;
 	}
     	if(!fgets(t,BSIZE,file)) return FALSE;
-	g_strup(t);
+	uppercase(t);
 	if(!strstr(t,"[GABEDIT FORMAT]"))
 	{
 		xyplot_message(_("This is not a Gabedit file\n"));

@@ -728,9 +728,9 @@ gboolean getValueFromLine(gchar* str, gchar* label, gchar* tag, gdouble* value)
 	capStr = g_strdup(str);
 	capLabel = g_strdup(label);
 	capTag = g_strdup(tag);
-	g_strup(capStr);
-	g_strup(capLabel);
-	g_strup(capTag);
+	uppercase(capStr);
+	uppercase(capLabel);
+	uppercase(capTag);
 	posLabel = strstr(capStr,capLabel);
 	if(posLabel && strstr(posLabel,capTag))
 	{
@@ -761,7 +761,7 @@ gint getNumberOfFrequences(gchar* fileName)
 		if(strstr(t,"------------------------------------------"))
 		{
 			if(!fgets(t,BSIZE,file))break;
-			g_strup(t);
+			uppercase(t);
 			if(strstr(t,"MODE") && strstr(t,"MASS") && strstr(t,"QEQ +")) nf++;
 		}
 	}
@@ -786,7 +786,7 @@ static gboolean readFrequencesMassDelta(gchar* fileName, VibCorrections* vibCorr
 		if(strstr(t,"------------------------------------------"))
 		{
 			if(!fgets(t,BSIZE,file))break;
-			g_strup(t);
+			uppercase(t);
 			if(strstr(t,"MODE") && strstr(t,"MASS") && strstr(t,"QEQ +")) 
 			{
 				Ok =getValueFromLine(t,"AKI","=",&d);

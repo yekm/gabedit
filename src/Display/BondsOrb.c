@@ -337,7 +337,7 @@ void readBondsPDB(FILE* file)
 		gint res = 0;
     		if(!fgets(t,taille,file)) break;
     		sscanf(t,"%s",tmp);
-		g_strup(tmp);
+		uppercase(tmp);
 		if(strcmp(tmp,"CONECT")!=0) continue;
 		if(!strcmp(t,"END")) break;
 		res = get_connections_one_connect_pdb(t);
@@ -412,7 +412,7 @@ void readBondsHIN(FILE* file)
 		gint res = 0;
     		if(!fgets(t,taille,file)) break;
     		sscanf(t,"%s",tmp);
-		g_strup(tmp);
+		uppercase(tmp);
 		if(strcmp(tmp,"ATOM")!=0) continue;
 		res = get_connections_one_atom_hin(t, i);
 		if(res==0) break;

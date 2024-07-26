@@ -2260,7 +2260,7 @@ static GtkTreeIter* CreeNoeud(GtkTreeView *treeView,gchar *text)
         store = GTK_TREE_STORE (model);
 
 	gtk_tree_store_append(store, node, NULL);
-    	g_strup(t);
+    	uppercase(t);
        	gtk_tree_store_set (store, node, LIST_NAME, t, -1);
 	if(strstr(t,"FIREFLY")) gtk_tree_store_set (store, node, LIST_PIXBUF, fireflyPixbuf, -1);
 	else
