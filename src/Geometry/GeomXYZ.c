@@ -1,6 +1,6 @@
 /* GGeomXYZ.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -35,6 +35,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/GeomGlobal.h"
 #include "../Utils/AtomsProp.h"
 #include "../Utils/UtilsVASP.h"
+#include "../Crystallography/UtilsCIF.h"
 #include "../Geometry/Fragments.h"
 #include "../Geometry/DrawGeom.h"
 #include "../Geometry/GeomZmatrix.h"
@@ -123,6 +124,7 @@ static gboolean TestVariablesXYZCreated(gchar *NewName,gint j);
 static gint testav(gchar *t);
 static gint read_gabedit_geoms_file(gchar* fileName, gint geometryNumber);
 void read_geom_from_vasp_xml_file(gchar *fileName, gint numgeom);
+void read_geom_from_cif_file(gchar *fileName, gboolean applySymOp);
 static void trans_coordXYZ_geom(gchar T, GeomXYZAtomDef* myGeomXYZ, gint i, VariablesXYZDef* myVariablesXYZ, gint iv);
 static void GeomXYZ_Change_Unit(gboolean toang);
 /********************************************************************************/
@@ -1516,6 +1518,342 @@ static void destroy_dialogue(GtkWidget *win,gpointer d)
  }
 }
 /********************************************************************************/
+void compute_volume_molecule()
+{
+	gint i,j;
+	gdouble X;
+	gdouble Y;
+	gdouble Z;
+	gdouble vol = 0;
+	gdouble r =0;
+	gdouble rmax =0;
+	gdouble C[3]={0,0,0};
+	gint nAtoms = 0;
+	gdouble volNonH = 18.0;
+	gint nAtomsNonH = 0;
+
+
+	if(NcentersXYZ>1)
+	/*
+	for(i=0;i<NcentersXYZ;i++) 
+	{
+		if(!strcmp(GeomXYZ[i].Symb, "TV") || !strcmp(GeomXYZ[i].Symb, "Tv")) continue;
+         	if(!test(GeomXYZ[i].X)) X = get_value_variableXYZ(GeomXYZ[i].X); else X = atof(GeomXYZ[i].X);
+		if(!test(GeomXYZ[i].Y)) Y = get_value_variableXYZ(GeomXYZ[i].Y); else Y = atof(GeomXYZ[i].Y);
+		if(!test(GeomXYZ[i].Z)) Z = get_value_variableXYZ(GeomXYZ[i].Z); else Z = atof(GeomXYZ[i].Z);
+		C[0] = X;
+		C[1] = Y;
+		C[2] = Z;
+		nAtoms++;
+		if(strcmp(GeomXYZ[i].Symb, "H"))  nAtomsNonH++;
+		for(j=i+1;j<NcentersXYZ;j++) 
+		{
+			if(!strcmp(GeomXYZ[j].Symb, "TV") || !strcmp(GeomXYZ[j].Symb, "Tv")) continue;
+         		if(!test(GeomXYZ[j].X)) X = get_value_variableXYZ(GeomXYZ[j].X); else X = atof(GeomXYZ[j].X);
+			if(!test(GeomXYZ[j].Y)) Y = get_value_variableXYZ(GeomXYZ[j].Y); else Y = atof(GeomXYZ[j].Y);
+			if(!test(GeomXYZ[j].Z)) Z = get_value_variableXYZ(GeomXYZ[j].Z); else Z = atof(GeomXYZ[j].Z);
+			r = (C[0]-X)*(C[0]-X)+(C[1]-Y)*(C[1]-Y)+(C[2]-Z)*(C[2]-Z);
+			if(r>rmax) rmax = r;
+		}
+	}
+	rmax = sqrt(rmax)/2;
+	*/
+	for(i=0;i<NcentersXYZ;i++) 
+	{
+		if(!strcmp(GeomXYZ[i].Symb, "TV") || !strcmp(GeomXYZ[i].Symb, "Tv")) continue;
+         	if(!test(GeomXYZ[i].X)) X = get_value_variableXYZ(GeomXYZ[i].X); else X = atof(GeomXYZ[i].X);
+		if(!test(GeomXYZ[i].Y)) Y = get_value_variableXYZ(GeomXYZ[i].Y); else Y = atof(GeomXYZ[i].Y);
+		if(!test(GeomXYZ[i].Z)) Z = get_value_variableXYZ(GeomXYZ[i].Z); else Z = atof(GeomXYZ[i].Z);
+		C[0] += X;
+		C[1] += Y;
+		C[2] += Z;
+		nAtoms++;
+		if(strcmp(GeomXYZ[i].Symb, "H"))  nAtomsNonH++;
+	}
+	if(nAtoms>1)
+	{
+		for(i=0;i<3;i++) C[i] /= nAtoms;
+		for(i=0;i<NcentersXYZ;i++) 
+		{
+			if(!strcmp(GeomXYZ[i].Symb, "TV") || !strcmp(GeomXYZ[i].Symb, "Tv")) continue;
+         		if(!test(GeomXYZ[i].X)) X = get_value_variableXYZ(GeomXYZ[i].X); else X = atof(GeomXYZ[i].X);
+			if(!test(GeomXYZ[i].Y)) Y = get_value_variableXYZ(GeomXYZ[i].Y); else Y = atof(GeomXYZ[i].Y);
+			if(!test(GeomXYZ[i].Z)) Z = get_value_variableXYZ(GeomXYZ[i].Z); else Z = atof(GeomXYZ[i].Z);
+			r = (C[0]-X)*(C[0]-X)+(C[1]-Y)*(C[1]-Y)+(C[2]-Z)*(C[2]-Z);
+			if(r>rmax) rmax = r;
+		}
+		rmax = sqrt(rmax);
+	}
+
+	if(nAtoms<2)
+	{
+		gchar* t = g_strdup_printf(_("Sorry,\nI cannot compute volume with only %d atoms"),nAtoms);
+		Message(t,_("Error"),TRUE);
+		g_free(t);
+		return;
+	}
+	if(Units==0) rmax *= BOHR_TO_ANG;
+
+	{
+		gchar* t = g_strdup_printf(_(
+		"rmax = %lf Angstrom\nVolume = 4/3 pi rmax^3 = %0.6lf Angstrom^3\n\n"
+		"Volume by Crystallographers (18 ang^3 by # of a non H atom) = %0.6lf Angstrom^3\n\n"
+		" 18 ang^3 * # of atoms = %0.6lf Angstrom^3\n"
+		),
+		rmax,4*M_PI*rmax*rmax*rmax/3.0,
+		volNonH*nAtomsNonH,
+		volNonH*nAtoms
+		);
+		Message(t,_("Info"),TRUE);
+		g_free(t);
+		return;
+	}
+}
+/********************************************************************************/
+void compute_volume_cell()
+{
+	gint i;
+	gdouble X;
+	gdouble Y;
+	gdouble Z;
+	gdouble TV[3][3];
+	gdouble cross[3];
+	gdouble vol = 0;
+	gint nTV = 0;
+
+	if(NcentersXYZ<1) return;
+	for(i=0;i<NcentersXYZ;i++) 
+		if(!strcmp(GeomXYZ[i].Symb, "TV") || !strcmp(GeomXYZ[i].Symb, "Tv")) 
+		{
+        	 	if(!test(GeomXYZ[i].X)) X = get_value_variableXYZ(GeomXYZ[i].X); else X = atof(GeomXYZ[i].X);
+			if(!test(GeomXYZ[i].Y)) Y = get_value_variableXYZ(GeomXYZ[i].Y); else Y = atof(GeomXYZ[i].Y);
+			if(!test(GeomXYZ[i].Z)) Z = get_value_variableXYZ(GeomXYZ[i].Z); else Z = atof(GeomXYZ[i].Z);
+			if(Units==0) { X *= BOHR_TO_ANG; Y *= BOHR_TO_ANG; Z *= BOHR_TO_ANG; }
+			TV[nTV][0] = X;
+			TV[nTV][1] = Y;
+			TV[nTV][2] = Z;
+			nTV++;
+		}
+	if(nTV<3)
+	{
+		gchar* t = g_strdup_printf(_("Sorry,\nI cannot compute volume with only %d Tv vectors"),nTV);
+		Message(t,_("Error"),TRUE);
+		g_free(t);
+		return;
+	}
+
+	for(i=0;i<3;i++) cross[i] = TV[0][(i+1)%3]*TV[1][(i+2)%3]-TV[0][(i+2)%3]*TV[1][(i+1)%3];
+	for(i=0;i<3;i++) vol += cross[i]*TV[2][i];
+	{
+		gchar* t = g_strdup_printf(_("Volume = %0.8lf Angstrom^3"),fabs(vol));
+		Message(t,_("Info"),TRUE);
+		g_free(t);
+		return;
+	}
+	
+}
+/********************************************************************************/
+Crystal* get_crystal_from_GeomXYZ()
+{ 
+	Crystal* crystal = g_malloc(sizeof(Crystal));
+	gint i;
+	gint nAtoms = NcentersXYZ;
+
+	initCrystal(crystal);
+
+	if(nAtoms<1) return crystal;
+
+	/* fprintf(stderr,"Units=%d\n",Units);*/
+	for(i=0;i<nAtoms;i++)
+	{
+		gdouble X,Y,Z;
+		CrystalloAtom* a = g_malloc(sizeof(CrystalloAtom));
+
+        	if(!test(GeomXYZ[i].X)) X = get_value_variableXYZ(GeomXYZ[i].X); else X = atof(GeomXYZ[i].X);
+		if(!test(GeomXYZ[i].Y)) Y = get_value_variableXYZ(GeomXYZ[i].Y); else Y = atof(GeomXYZ[i].Y);
+		if(!test(GeomXYZ[i].Z)) Z = get_value_variableXYZ(GeomXYZ[i].Z); else Z = atof(GeomXYZ[i].Z);
+		if(Units==0) { X *= (BOHR_TO_ANG); Y *= (BOHR_TO_ANG); Z *= (BOHR_TO_ANG); }
+		a->C[0] = X;
+		a->C[1] = Y;
+		a->C[2] = Z;
+
+
+		a->charge = atof(GeomXYZ[i].Charge);
+		a->residueNumber = GeomXYZ[i].ResidueNumber;
+
+		sprintf(a->symbol,"%s",GeomXYZ[i].Symb);
+		sprintf(a->mmType,"%s",GeomXYZ[i].mmType);
+		sprintf(a->pdbType,"%s",GeomXYZ[i].pdbType);
+		sprintf(a->residueName,"%s",GeomXYZ[i].Residue);
+
+		crystal->atoms=g_list_append(crystal->atoms, (gpointer) a);
+	}
+	return crystal;
+}
+/********************************************************************************/
+void save_cif_file_no_add_list(const gchar* FileName, gboolean allAtoms)
+{
+	FILE *file;
+	Crystal* crystal = NULL;
+	gint nAtoms = NcentersXYZ;
+	gchar* tmp = NULL;
+	gdouble symprec = 1e-4;
+	gint i;
+	gint nTv=0;
+
+	if(nAtoms<1) return;
+	for(i=0;i<nAtoms;i++) if(!strcmp(GeomXYZ[i].Symb, "TV") || !strcmp(GeomXYZ[i].Symb, "Tv")) nTv++;
+	if(nTv<3)
+	{
+		gchar* t = g_strdup_printf(_("Sorry,\nI cannot create the cif file, only %d Tv vectors are available"),nTv);
+		Message(t,_("Error"),TRUE);
+		g_free(t);
+		return;
+	}
+	crystal = get_crystal_from_GeomXYZ();
+	if(!crystal) return;
+
+	file = FOpen(FileName, "w");
+	if(file == NULL)
+	{
+		gchar* t = g_strdup_printf(_("Sorry,\n I can not open %s file"),FileName);
+		Message(t,_("Error"),TRUE);
+		g_free(t);
+		return;
+	}
+	tmp = crystalloGetCIF(crystal, symprec, !allAtoms);
+	if(tmp)
+	{
+		fprintf(file,"%s",tmp);
+		g_free(tmp);
+	}
+	fclose(file);
+	freeCrystal(crystal);
+	g_free(crystal);
+}
+/********************************************************************************/
+void save_poscar_direct_file_no_add_list(const gchar* FileName)
+{
+	gint i;
+	gint j;
+	FILE *fd;
+	gdouble X;
+	gdouble Y;
+	gdouble Z;
+	gchar *temp  = NULL;
+	gint nTV = 0;
+	gint nTypes = 0;
+	gint* types = NULL;
+	gboolean ok;
+	gchar** listTypes = NULL;
+	gint* nListTypes = NULL;
+	Crystal* crystal = NULL;
+	gint nAtoms = NcentersXYZ;
+
+	if(nAtoms<1) return;
+	for(i=0;i<nAtoms;i++) if(!strcmp(GeomXYZ[i].Symb, "TV") || !strcmp(GeomXYZ[i].Symb, "Tv")) nTV++;
+	if(nTV<3)
+	{
+		gchar* t = g_strdup_printf(_("Sorry,\nI cannot create the poscar file, only %d Tv vectors are available"),nTV);
+		Message(t,_("Error"),TRUE);
+		g_free(t);
+		return;
+	}
+	crystal = get_crystal_from_GeomXYZ();
+	if(!crystal) return;
+	crystalloCartnToFract(crystal->atoms);
+
+	//printf("nTv = %d\n",nTV);
+	types = g_malloc(nAtoms*sizeof(gint));
+	for(i=0;i<nAtoms;i++) types[i] = -1;
+
+	nTypes = 0;
+	for(i=0;i<nAtoms;i++)
+	{
+		if(!strcmp(GeomXYZ[i].Symb, "TV") || !strcmp(GeomXYZ[i].Symb, "Tv")) continue;
+		ok = TRUE;
+		for(j=0;j<i;j++)
+		{
+			if(!strcmp(GeomXYZ[i].Symb,GeomXYZ[j].Symb))
+			{
+				types[i]= types[j];
+				ok = FALSE;
+				break;
+			}
+		}
+		if(ok)
+		{
+			types[i]= nTypes;
+			nTypes++;
+		}
+	}
+	if(nTypes<1) return;
+	//printf("nTypes = %d\n",nTypes);
+	listTypes = g_malloc(nTypes*sizeof(gchar*));
+	nListTypes = g_malloc(nTypes*sizeof(gint));
+	for(i=0;i<nTypes;i++) listTypes[i] = NULL;
+	for(i=0;i<nTypes;i++) nListTypes[i] = 0;
+	for(i=0;i<nAtoms;i++)
+	{
+		if(types[i]==-1) continue;
+		nListTypes[types[i]]++;
+		if(!listTypes[types[i]]) listTypes[types[i]] = g_strdup(GeomXYZ[i].Symb);
+	}
+
+	temp = get_suffix_name_file(FileName);
+	FileName = g_strdup_printf("%s",temp);
+	g_free(temp);
+	fd = FOpen(FileName, "w");
+	if(fd == NULL)
+	{
+		gchar* t = g_strdup_printf(_("Sorry,\n I can not open %s file"),FileName);
+		Message(t,_("Error"),TRUE);
+		g_free(t);
+		return;
+	}
+	for(i=0;i<nTypes;i++) fprintf(fd,"%s%d ",listTypes[i],nListTypes[i]);
+	fprintf(fd," : POSCAR (Direct) generated by Gabedit\n");
+	fprintf(fd,"%6s %0.10lf\n"," ",1.0);
+	for(i=0;i<NcentersXYZ;i++)
+	{
+		if(types[i]!=-1) continue;
+        	if(!test(GeomXYZ[i].X)) X = get_value_variableXYZ(GeomXYZ[i].X); else X = atof(GeomXYZ[i].X);
+		if(!test(GeomXYZ[i].Y)) Y = get_value_variableXYZ(GeomXYZ[i].Y); else Y = atof(GeomXYZ[i].Y);
+		if(!test(GeomXYZ[i].Z)) Z = get_value_variableXYZ(GeomXYZ[i].Z); else Z = atof(GeomXYZ[i].Z);
+		if(Units==0) { X *= BOHR_TO_ANG; Y *= BOHR_TO_ANG; Z *= BOHR_TO_ANG; }
+		fprintf(fd,"     %20.10f  %20.10f  %20.10f\n",X,Y,Z);
+	}
+	fprintf(fd,"%6s"," ");
+	for(i=0;i<nTypes;i++) fprintf(fd,"%6s ",listTypes[i]);
+	fprintf(fd,"\n");
+	fprintf(fd,"%6s"," ");
+	for(i=0;i<nTypes;i++) fprintf(fd,"%6d ",nListTypes[i]);
+	fprintf(fd,"\n");
+	fprintf(fd,"Direct\n");
+	for(j=0;j<nTypes;j++) 
+	{
+	      	GList *l = NULL;
+		i=-1;
+        	for(l = g_list_first(crystal->atoms); l != NULL; l = l->next)
+        	{
+			i++;
+                	CrystalloAtom* crystalloAtom = (CrystalloAtom*)l->data;
+                	if(strstr(crystalloAtom->symbol,"Tv") || strstr(crystalloAtom->symbol,"TV")) continue;
+			if(types[i]==-1) continue;
+			if(strcmp(crystalloAtom->symbol,listTypes[j]))continue;
+			fprintf(fd,"%6s  %20.10f  %20.10f  %20.10f %s\n"," ",crystalloAtom->C[0], crystalloAtom->C[1],crystalloAtom->C[2], crystalloAtom->symbol);
+        	}
+	}
+		
+	fclose(fd);
+	for(i=0;i<nTypes;i++) if(listTypes[i]) g_free(listTypes[i]);
+	if(listTypes) g_free(listTypes);
+	if(nListTypes) g_free(nListTypes);
+	if(types) g_free(types);
+	freeCrystal(crystal);
+	g_free(crystal);
+}
+/********************************************************************************/
 void save_poscar_file_no_add_list(const gchar* FileName)
 {
 	gint i;
@@ -1753,6 +2091,34 @@ void save_xyz_file(const gchar* FileName)
   g_free(localdir);
 }
 /************************************************************************************/
+void save_geometry_cif_allatoms_file(GabeditFileChooser *SelecFile, gint response_id)
+{       
+ 	gchar *FileName;
+
+ 	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+ 	if ((!FileName) || (strcmp(FileName,"") == 0))
+ 	{
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
+    		return ;
+ 	}
+	save_cif_file_no_add_list(FileName,TRUE);
+}
+/************************************************************************************/
+void save_geometry_cif_file(GabeditFileChooser *SelecFile, gint response_id)
+{       
+ 	gchar *FileName;
+
+ 	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+ 	if ((!FileName) || (strcmp(FileName,"") == 0))
+ 	{
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
+    		return ;
+ 	}
+	save_cif_file_no_add_list(FileName,FALSE);
+}
+/************************************************************************************/
 void save_geometry_poscar_file(GabeditFileChooser *SelecFile, gint response_id)
 {       
  	gchar *FileName;
@@ -1765,6 +2131,20 @@ void save_geometry_poscar_file(GabeditFileChooser *SelecFile, gint response_id)
     		return ;
  	}
 	save_poscar_file_no_add_list(FileName);
+}
+/************************************************************************************/
+void save_geometry_poscar_direct_file(GabeditFileChooser *SelecFile, gint response_id)
+{       
+ 	gchar *FileName;
+
+ 	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+ 	if ((!FileName) || (strcmp(FileName,"") == 0))
+ 	{
+		Message(_("Sorry\n No selected file"),_("Error"),TRUE);
+    		return ;
+ 	}
+	save_poscar_direct_file_no_add_list(FileName);
 }
 /************************************************************************************/
 void save_geometry_xyz_file(GabeditFileChooser *SelecFile, gint response_id)
@@ -2588,7 +2968,7 @@ static void SelectAtom(GtkWidget *w,gpointer entry0)
   FenetreTable = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_modal(GTK_WINDOW(FenetreTable),TRUE);
   gtk_window_set_title(GTK_WINDOW(FenetreTable),_("Select your atom"));
-  gtk_window_set_default_size (GTK_WINDOW(FenetreTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
+  //gtk_window_set_default_size (GTK_WINDOW(FenetreTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
 
   frame = gtk_frame_new (NULL);
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
@@ -3058,7 +3438,7 @@ static void DialogueEdit()
   Nc=LineSelected;
   if(Nc<0 ) {
   	if(NcentersXYZ<1 ) 
-   		MessageGeom(_("Create center before \n"),_("Error"),TRUE);
+   		MessageGeom(_("Create center beforee \n"),_("Error"),TRUE);
         else
    		MessageGeom(_("Please Select your center \n"),_("Warning"),TRUE);
    return;
@@ -3682,6 +4062,38 @@ void read_poscar_file(GabeditFileChooser *SelecFile, gint response_id)
 		return ;
 	}
 	read_geom_from_poscar_file(fileName);
+}
+/********************************************************************************/
+void read_cif_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+	gboolean applySymOp = TRUE;
+	gchar* fileName = NULL;
+ 	if(response_id != GTK_RESPONSE_OK) return;
+
+ 	fileName = gabedit_file_chooser_get_current_file(SelecFile);
+  
+	if ((!fileName) || (strcmp(fileName,"") == 0))
+	{
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
+		return ;
+	}
+	read_geom_from_cif_file(fileName, applySymOp);
+}
+/********************************************************************************/
+void read_cif_file_nosym(GabeditFileChooser *SelecFile, gint response_id)
+{
+	gboolean applySymOp = FALSE;
+	gchar* fileName = NULL;
+ 	if(response_id != GTK_RESPONSE_OK) return;
+
+ 	fileName = gabedit_file_chooser_get_current_file(SelecFile);
+  
+	if ((!fileName) || (strcmp(fileName,"") == 0))
+	{
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
+		return ;
+	}
+	read_geom_from_cif_file(fileName, applySymOp);
 }
 /********************************************************************************/
 static void save_in_xyz_and_conversion(GtkWidget *wid,gpointer data)
@@ -4532,7 +4944,7 @@ void read_pdb_file_no_add_list(gchar *NomFichier)
 	{
     		if(!fgets(t,taille,fd)) break;
     		sscanf(t,"%s",listFields[0]);
-		if(strcmp(listFields[0],"CONECT")!=0) continue;
+		if(strcmp(listFields[0],"CONNECT")!=0) continue;
 		if(!strcmp(t,"END")) break;
 		if(!read_atom_pdb_file(t,listFields)) continue;
 		get_connections_one_connect_pdb(t);
@@ -4752,7 +5164,7 @@ gboolean save_pdb_file(G_CONST_RETURN gchar* FileName)
 	if(N>0)
 	{
 		gint len = 0;
-		fprintf(fd,"CONECT %4d ",i+1);
+		fprintf(fd,"CONNECT %4d ",i+1);
 		len +=  6 + 1 +4;
 		fprintf(fd,"%4d",connection[0]);
 		len +=  4;
@@ -5743,6 +6155,127 @@ void read_last_mpqc_file(GabeditFileChooser *SelecFile, gint response_id)
 		return ;
 	}
 	read_geom_from_mpqc_output_file(fileName,-1);
+}
+/********************************************************************************/
+void read_geom_from_wfx_file(gchar *fileName)
+{
+	gint k;
+	gint j;
+	gchar t[BSIZE];
+	gchar* C[3] ={ NULL, NULL,NULL};
+	gchar** symbols = NULL;
+	gdouble* coordinates = NULL;
+	gint nSymbols,nCoordinates;
+	FILE* file = FOpen(fileName, "rb");
+	if(file ==NULL)
+	{
+		sprintf(t,"Sorry\nI can not open %s  file ",fileName);
+		MessageGeom(t," Error ",TRUE);
+		return;
+	}
+	symbols = get_one_block_from_wfx_file(file,"Nuclear Name",&nSymbols);
+	//fprintf(stderr,"nSymb = %d\n",nSymbols);
+	if(!symbols || nSymbols<1)
+	{
+		sprintf(t,"Sorry\nI cannot read symbol from %s  file ",fileName);
+		MessageGeom(t," Error ",TRUE);
+		fclose(file);
+		if(symbols) free_one_string_table(symbols, nSymbols);
+		return;
+	}
+	rewind(file);
+	coordinates = get_one_block_real_from_wfx_file(file,"Nuclear Cartesian Coordinates",&nCoordinates);
+	//fprintf(stderr,"nC = %d\n",nCoordinates);
+	if(!coordinates || nCoordinates<3)
+	{
+		sprintf(t,"Sorry\nI cannot read coordinates from %s  file ",fileName);
+		MessageGeom(t," Error ",TRUE);
+		fclose(file);
+		if(symbols) free_one_string_table(symbols, nSymbols);
+		if(coordinates) g_free(coordinates);
+		return;
+	}
+	if(nCoordinates!=3*nSymbols)
+	{
+		sprintf(t,"Sorry\nI cannot read geometry from %s  file",fileName);
+		MessageGeom(t," Error ",TRUE);
+		fclose(file);
+		if(symbols) free_one_string_table(symbols, nSymbols);
+		if(coordinates) g_free(coordinates);
+		return;
+	}
+	if(GeomXYZ==NULL) GeomXYZ=g_malloc(nSymbols*sizeof(GeomXYZAtomDef));
+	else GeomXYZ=g_realloc(GeomXYZ,nSymbols*sizeof(GeomXYZAtomDef));
+	for(k=0;k<3;k++) C[k] = g_malloc(BSIZE*sizeof(gchar));
+	for(j=0;j<nSymbols;j++)
+	{
+		gint l;
+   		GeomXYZ[j].typeConnections = NULL;
+		for(k=0;k<3;k++) sprintf(C[k],"%0.10e",coordinates[3*j+k]);
+		//fprintf(stderr,"%s %s %s\n", C[0], C[1], C[2]); 
+
+		for(k=0;k<(gint)strlen(symbols[j]);k++) if(isdigit(symbols[j][k])) symbols[j][k] = ' ';
+		delete_all_spaces(symbols[j]);
+
+		symbols[j][0]=toupper(symbols[j][0]);
+		l=strlen(symbols[j]); 
+		if (l==2) symbols[j][1]=tolower(symbols[j][1]);
+		if(l==1)sprintf(t,"%c",symbols[j][0]);
+		else sprintf(t,"%c%c",symbols[j][0],symbols[j][1]);
+		//fprintf(stderr,"t=%s\n", t);
+
+		GeomXYZ[j].Nentry=NUMBER_LIST_XYZ;
+		GeomXYZ[j].Symb=g_strdup(t);
+		GeomXYZ[j].mmType=g_strdup(GeomXYZ[j].Symb);
+		GeomXYZ[j].pdbType=g_strdup(GeomXYZ[j].Symb);
+		GeomXYZ[j].Residue=g_strdup(GeomXYZ[j].Symb);
+		GeomXYZ[j].ResidueNumber=0;
+		if(Units == 0 )
+		{
+			GeomXYZ[j].X=g_strdup(C[0]);
+			GeomXYZ[j].Y=g_strdup(C[1]);
+			GeomXYZ[j].Z=g_strdup(C[2]);
+		}
+		else
+		{
+			GeomXYZ[j].X=g_strdup(bohr_to_ang(C[0]));
+			GeomXYZ[j].Y=g_strdup(bohr_to_ang(C[1]));
+			GeomXYZ[j].Z=g_strdup(bohr_to_ang(C[2]));
+		}
+		GeomXYZ[j].Charge=g_strdup("0.0");
+		GeomXYZ[j].Layer=g_strdup(" ");
+		//fprintf(stderr,"%s %s %s %s\n", GeomXYZ[j].Symb, GeomXYZ[j].X, GeomXYZ[j].Y, GeomXYZ[j].Z);
+	}
+	NcentersXYZ = nSymbols;
+	for(k=0;k<3;k++) if(C[k]) g_free(C[k]);
+	fclose(file);
+	if(symbols) free_one_string_table(symbols, nSymbols);
+	if(coordinates) g_free(coordinates);
+ 	calculMMTypes(FALSE);
+	if(GeomIsOpen && MethodeGeom == GEOM_IS_XYZ)
+	{
+		clearList(list);
+		append_list();
+	}
+	MethodeGeom = GEOM_IS_XYZ;
+	if(GeomDrawingArea != NULL) rafresh_drawing();
+	if(iprogram == PROG_IS_GAUSS && GeomIsOpen) set_spin_of_electrons();
+}
+/********************************************************************************/
+void read_wfx_file(GabeditFileChooser *SelecFile , gint response_id)
+{
+	gchar *NomFichier;
+
+	if(response_id != GTK_RESPONSE_OK) return;
+	NomFichier = gabedit_file_chooser_get_current_file(SelecFile);
+	
+	if ((!NomFichier) || (strcmp(NomFichier,"") == 0))
+	{
+		MessageGeom(_("Sorry\n No file selected"),_("Error"),TRUE);
+		return ;
+	}
+	read_geom_from_wfx_file(NomFichier);
+	set_last_directory(NomFichier);
 }
 /********************************************************************************/
 void read_first_vasp_xml_file(GabeditFileChooser *SelecFile, gint response_id)
@@ -6834,6 +7367,71 @@ void read_last_turbomole_file(GabeditFileChooser *SelecFile, gint response_id)
 	read_geom_from_turbomole_output_file(fileName,-1);
 }
 /********************************************************************************/
+void read_geom_from_cif_file(gchar *fileName, gboolean applySymOp)
+{
+	gint k;
+	gchar* error = NULL;
+	Crystal crystal;
+	gint nAtoms = 0;
+	GList* l;
+
+	error = read_geometry_from_cif_file(&crystal, fileName, applySymOp);
+        if(!error) for(l = g_list_first(crystal.atoms); l != NULL; l = l->next) nAtoms++;
+	if(error || nAtoms<1)
+	{
+		gchar* t = g_strdup_printf(_("Sorry\nI cannot read the geometry from %s file "),fileName);
+		if(error)
+		{
+			gchar* tmp = t;
+			t = g_strdup_printf(_("%s\n%s\n"),tmp, error);
+			g_free(tmp);
+		}
+		MessageGeom(t,_("Error"),TRUE);
+		g_free(t);
+		freeCrystal(&crystal);
+		return;
+	}
+	init_dipole();
+	if(GeomXYZ) freeGeomXYZ();
+	if(VariablesXYZ) freeVariablesXYZ();
+
+
+	NcentersXYZ = nAtoms;
+	GeomXYZ = g_malloc(NcentersXYZ*sizeof(GeomXYZAtomDef));
+
+	k=0;
+	/* fprintf(stderr,"read cif Units=%d\n",Units);*/
+        for(l = g_list_first(crystal.atoms); l != NULL; l = l->next)
+	{
+		CrystalloAtom* a = (CrystalloAtom*)l->data;
+		gdouble X,Y,Z;
+
+    		GeomXYZ[k].Nentry=NUMBER_LIST_XYZ;
+    		GeomXYZ[k].Symb=g_strdup(a->symbol);
+    		GeomXYZ[k].mmType=g_strdup(a->mmType);
+    		GeomXYZ[k].pdbType=g_strdup(a->pdbType);
+    		GeomXYZ[k].Residue=g_strdup(a->residueName);
+    		GeomXYZ[k].ResidueNumber=0;
+    		X=a->C[0];
+    		Y=a->C[1];
+    		Z=a->C[2];
+		if(Units==0) { X /= (BOHR_TO_ANG); Y /= (BOHR_TO_ANG); Z /= (BOHR_TO_ANG); }
+    		GeomXYZ[k].X=g_strdup_printf("%0.10lf",X);
+    		GeomXYZ[k].Y=g_strdup_printf("%0.10lf",Y);
+    		GeomXYZ[k].Z=g_strdup_printf("%0.10lf",Z);
+    		GeomXYZ[k].Charge=g_strdup_printf("%0.5lf",a->charge);
+    		GeomXYZ[k].Layer=g_strdup(" ");
+    		GeomXYZ[k].typeConnections=NULL;
+		k++;
+	}
+	reset_origine_molecule_drawgeom();
+	//calculMMTypes(TRUE);
+	if(GeomIsOpen) create_geomXYZ_interface (GABEDIT_TYPEFILEGEOM_UNKNOWN);
+	if(GeomDrawingArea != NULL) rafresh_drawing();
+
+	freeCrystal(&crystal);
+}
+/********************************************************************************/
 void read_geom_from_vasp_xml_file(gchar *fileName, gint numgeom)
 {
 	gchar** symbols = NULL;
@@ -6943,7 +7541,7 @@ void read_geom_from_poscar_file(gchar *fileName)
 		if(nmax<1 || nmax != nmax2)
 		{
 			if(t)g_free(t);
-			t = g_strdup_printf(_("Sorry\nI can not the symbol of atoms from %s file,\nadd these after the cell definition before the number of each type"),fileName);
+			t = g_strdup_printf(_("Sorry\nI can not the symbol of atoms from %s file,\nadd these after the cell definition beforee the number of each type"),fileName);
 			MessageGeom(t,_("Error"),TRUE);
 			g_free(t);
 			if(strsplit1) g_strfreev(strsplit1);
@@ -7015,6 +7613,19 @@ void read_geom_from_poscar_file(gchar *fileName)
 		for(k=0;k<nAtoms-3;k++)  nX[k] =  0.0;
 		for(k=0;k<nAtoms-3;k++)  nY[k] =  0.0;
 		for(k=0;k<nAtoms-3;k++)  nZ[k] =  0.0;
+
+		for(k=0;k<nAtoms-3;k++) 
+		{
+			while(X[k]<0) X[k]+=1;
+			while(Y[k]<0) Y[k]+=1;
+			while(Z[k]<0) Z[k]+=1;
+			while(X[k]>=1) X[k]-=1;
+			while(Y[k]>=1) Y[k]-=1;
+			while(Z[k]>=1) Z[k]-=1;
+			if(fabs(X[k]-1.0)<1e-10)  X[k]=0;
+			if(fabs(Y[k]-1.0)<1e-10)  Y[k]=0;
+			if(fabs(Z[k]-1.0)<1e-10)  Z[k]=0;
+		}
 
 		for(k=0;k<nAtoms-3;k++) 
 		{
@@ -7194,17 +7805,18 @@ void read_geom_from_gaussian_file(gchar *NomFichier, gint numgeometry)
  gint l;
  gint numgeom;
  gchar *pdest;
- gint result;
  guint itype=0;
  gchar* strStandard = "Standard orientation:";
  gchar* strInput = "Input orientation:";
  gchar* strOther = "orientation:";
  gchar* strSearch = strOther;
 
+	/* fprintf(stderr,"DEBUG numGeom = %d\n",numgeometry);*/
+
  for(i=0;i<5;i++)
-	AtomCoord[i]=g_malloc(taille*sizeof(char));
+	AtomCoord[i]=g_malloc(taille*sizeof(gchar));
   
- t=g_malloc(taille);
+ t=g_malloc(taille*sizeof(gchar));
  fd = FOpen(NomFichier, "rb");
  if(fd ==NULL)
  {
@@ -7225,7 +7837,7 @@ void read_geom_from_gaussian_file(gchar *NomFichier, gint numgeometry)
           if(strstr( t, strInput))
 		  strSearch = strInput;
  }
- fseek(fd, 0L, SEEK_SET);
+ rewind(fd);
  numgeom =0;
  do 
  {
@@ -7239,25 +7851,12 @@ void read_geom_from_gaussian_file(gchar *NomFichier, gint numgeometry)
 		  p = strstr(t,"Multiplicity =")+14;
 		  SpinMultiplicities[0] = atoi(p);
 	  }
-          pdest = strstr( t, strSearch);
-          result = pdest - t ;
-	  /*
-          pdest = strstr( t, "Input orientation:" );
-          result = pdest - t ;
-	 if ( result <0 )
-         {
-          	pdest = strstr( t, "Z-Matrix orientation:" );
-          	result = pdest - t ;
-	 }
-	 */
-	 if ( result >0 )
+	 if ( strstr( t, strSearch))
 	  {
     		{ char* e = fgets(t,taille,fd);}
     		{ char* e = fgets(t,taille,fd);}
     		{ char* e = fgets(t,taille,fd);}
-                pdest = strstr( t, "Type" );
-                result = pdest - t ;
-                if(result>0)
+                if(strstr( t, "Type" ))
 			itype=1;
                 else
 			itype=0;
@@ -7284,9 +7883,7 @@ void read_geom_from_gaussian_file(gchar *NomFichier, gint numgeometry)
   while(!feof(fd) )
   {
     { char* e = fgets(t,taille,fd);}
-    pdest = strstr( t, "----------------------------------" );
-    result = pdest - t ;
-    if ( result >0 )
+    if ( strstr( t, "----------------------------------" ))
     {
 	long geomposok = ftell(fd);
       	get_dipole_from_gaussian_output_file(fd);
@@ -7337,6 +7934,7 @@ void read_geom_from_gaussian_file(gchar *NomFichier, gint numgeometry)
   }
 
  NcentersXYZ = j+1;
+	/* fprintf(stderr,"DEBUG Ncenters = %d\n",NcentersXYZ);*/
  if(OK)
    break;
  }while(!feof(fd));
@@ -7499,7 +8097,6 @@ void read_last_gaussian_file(GabeditFileChooser *SelecFile , gint response_id)
  gint l;
  guint numgeom;
  gchar *pdest;
- gint result;
  guint itype=0;
  gchar* strInput = "Input orientation:";
  gchar* strStand = "Standard orientation:";
@@ -7545,16 +8142,12 @@ void read_last_gaussian_file(GabeditFileChooser *SelecFile , gint response_id)
 		  p = strstr(t,"Multiplicity =")+14;
 		  SpinMultiplicities[0] = atoi(p);
 	  }
-          pdest = strstr( t, strSearch);
-          result = pdest - t ;
-	 if ( result >0 )
+	 if ( strstr( t, strSearch))
 	  {
     		{ char* e = fgets(t,taille,fd);}
     		{ char* e = fgets(t,taille,fd);}
     		{ char* e = fgets(t,taille,fd);}
-                pdest = strstr( t, "Type" );
-                result = pdest - t ;
-                if(result>0)
+                if(strstr( t, "Type" ))
 			itype=1;
                 else
 			itype=0;
@@ -7574,9 +8167,7 @@ void read_last_gaussian_file(GabeditFileChooser *SelecFile , gint response_id)
   while(!feof(fd) )
   {
    { char* e = fgets(t,taille,fd);}
-    pdest = strstr( t, "----------------------------------" );
-    result = pdest - t ;
-    if ( result >0 )
+    if (strstr( t, "----------------------------------" ))
     {
 	long geomposok = ftell(fd);
       	get_dipole_from_gaussian_output_file(fd);
@@ -7660,7 +8251,6 @@ void read_first_gaussian_file(GabeditFileChooser *SelecFile, gint response_id)
  gint j=0;
  gint l;
  gchar *pdest;
- gint result;
  guint itype=0;
  gchar* strInput = "Input orientation:";
  gchar* strStand = "Standard orientation:";
@@ -7704,16 +8294,12 @@ void read_first_gaussian_file(GabeditFileChooser *SelecFile, gint response_id)
 		  p = strstr(t,"Multiplicity =")+14;
 		  SpinMultiplicities[0] = atoi(p);
 	  }
-          pdest = strstr( t, strSearch );
-          result = pdest - t ;
-	 if ( result >0 )
+	 if (strstr( t, strSearch ) )
 	  {
    		{ char* e = fgets(t,taille,fd);}
    		{ char* e = fgets(t,taille,fd);}
    		{ char* e = fgets(t,taille,fd);}
-                pdest = strstr( t, "Type" );
-                result = pdest - t ;
-                if(result>0)
+                if(strstr( t, "Type" ))
 			itype=1;
                 else
 			itype=0;
@@ -7732,9 +8318,7 @@ void read_first_gaussian_file(GabeditFileChooser *SelecFile, gint response_id)
   while(!feof(fd) )
   {
     { char* e = fgets(t,taille,fd);}
-    pdest = strstr( t, "----------------------------------" );
-    result = pdest - t ;
-    if ( result >0 )
+    if (strstr( t, "----------------------------------" ))
     {
 	long geomposok = ftell(fd);
       	get_dipole_from_gaussian_output_file(fd);
@@ -12972,6 +13556,7 @@ void create_GeomXYZ_from_draw_grometry()
 	gint* numOrd = NULL;
 	gdouble Orig[3];
 	gdouble X,Y,Z;
+	gint nMaxCentersToVar = 500;
 
  	if(GeomXYZ) freeGeomXYZ();
  	if(VariablesXYZ) freeVariablesXYZ();
@@ -13028,7 +13613,8 @@ void create_GeomXYZ_from_draw_grometry()
     			GeomXYZ[j].Z=g_strdup_printf("%0.6f",Z);
 		}
     		GeomXYZ[j].Charge=g_strdup_printf("%0.6f",geometry0[jj].Charge);
-		if(geometry0[jj].Variable) set_variable_one_atom_in_GeomXYZ(j);
+		/* this part is very consomming if Ncentres > nMaxCentersToVar */
+		if(NcentersXYZ<nMaxCentersToVar && geometry0[jj].Variable) set_variable_one_atom_in_GeomXYZ(j);
 		if(geometry0[jj].Layer==LOW_LAYER) 
 		{
 			GeomXYZ[j].Layer=g_strdup("Low");
@@ -13044,6 +13630,7 @@ void create_GeomXYZ_from_draw_grometry()
 			if(iHigh<0) iHigh = j;
 			GeomXYZ[j].Layer=g_strdup(" ");
 		}
+		/* if(j%50==0) fprintf(stderr,"DEBUG j=%d\n",j);*/
     	}
 	if(numOrd) g_free(numOrd);
 	numOrd = NULL;
@@ -13414,6 +14001,33 @@ void put_geomXYZ_in_list()
  	set_spin_of_electrons();
 }
 /********************************************************************************/
+void selc_cif_file_nosym()
+{
+  GtkWidget *SelecFile=NULL;
+  gchar* patternscif[] = {"*.cif","*.mmcif","*",NULL};
+
+  SelecFile = gabedit_file_chooser_new(_("Read geometry from a CIF file (don\'t apply symm)"), GTK_FILE_CHOOSER_ACTION_OPEN);
+  gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternscif);
+
+  if(lastdirectory)
+  {
+	gchar* t = g_strdup_printf("%s%sdump.xyz",lastdirectory,G_DIR_SEPARATOR_S);
+	gabedit_file_chooser_set_current_file(GABEDIT_FILE_CHOOSER(SelecFile),t);
+	g_free(t);
+  }
+
+  gabedit_file_chooser_hide_hidden(GABEDIT_FILE_CHOOSER(SelecFile));
+  if(WindowGeom) gtk_window_set_transient_for(GTK_WINDOW(SelecFile),GTK_WINDOW(WindowGeom));
+  else gtk_window_set_transient_for(GTK_WINDOW(SelecFile),GTK_WINDOW(Fenetre));
+  gtk_window_set_modal (GTK_WINDOW (SelecFile), TRUE);
+
+  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_cif_file_nosym), GTK_OBJECT(SelecFile));
+
+  g_signal_connect_swapped(SelecFile, "response", G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(SelecFile));
+  g_signal_connect_swapped(SelecFile, "close", G_CALLBACK (gtk_widget_destroy), GTK_OBJECT(SelecFile));
+  gtk_widget_show(SelecFile);
+}
+/********************************************************************************/
 void selc_XYZ_file(GabEditTypeFileGeom itype)
 {
   GtkWidget *SelecFile=NULL;
@@ -13433,6 +14047,8 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   gchar* patternsposcar[] = {"POS*","*",NULL};
   gchar* patternsxml[] = {"*.xml","*",NULL};
   gchar* patternsall[] = {"*",NULL};
+  gchar* patternscif[] = {"*.cif","*",NULL};
+  gchar* patternswfx[] = {"*.wfx","*",NULL};
 
 
   switch(itype){
@@ -13576,6 +14192,10 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
 	   SelecFile = gabedit_file_chooser_new(_("Read the last geometry from a Mopac aux file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsaux);
 	   break;
+  case GABEDIT_TYPEFILEGEOM_WFX : 
+	   SelecFile = gabedit_file_chooser_new(_("Read the geometry from a WFX file"), GTK_FILE_CHOOSER_ACTION_OPEN);
+   	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternswfx);
+	   break;
   case GABEDIT_TYPEFILEGEOM_TINKER :
 	   SelecFile = gabedit_file_chooser_new(_("Read Tinker file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternstnk);
@@ -13603,6 +14223,10 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
   case GABEDIT_TYPEFILEGEOM_VASPPOSCAR :
 	   SelecFile = gabedit_file_chooser_new(_("Read geometries from a POSCAR/VASP file"), GTK_FILE_CHOOSER_ACTION_OPEN);
    	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternsposcar);
+	   break;
+  case GABEDIT_TYPEFILEGEOM_CIF :
+	   SelecFile = gabedit_file_chooser_new(_("Read geometries from a CIF file"), GTK_FILE_CHOOSER_ACTION_OPEN);
+   	   gabedit_file_chooser_set_filters(GABEDIT_FILE_CHOOSER(SelecFile),patternscif);
 	   break;
   case GABEDIT_TYPEFILEGEOM_MOLDEN : return;
   case GABEDIT_TYPEFILEGEOM_DALTONIN : return;
@@ -13712,6 +14336,8 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_mopac_output_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_MOPACAUX :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_last_mopac_aux_file), GTK_OBJECT(SelecFile)); break;
+  case GABEDIT_TYPEFILEGEOM_WFX :
+	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_wfx_file), GTK_OBJECT(SelecFile)); break;
 
   case GABEDIT_TYPEFILEGEOM_MOL2 :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_mol2_file), GTK_OBJECT(SelecFile)); break;
@@ -13729,6 +14355,8 @@ void selc_XYZ_file(GabEditTypeFileGeom itype)
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_geometries_conv_mopac_scan), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_VASPPOSCAR :
 	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_poscar_file), GTK_OBJECT(SelecFile)); break;
+  case GABEDIT_TYPEFILEGEOM_CIF :
+	  g_signal_connect (SelecFile, "response",  G_CALLBACK (read_cif_file), GTK_OBJECT(SelecFile)); break;
   case GABEDIT_TYPEFILEGEOM_NEW : 
   case GABEDIT_TYPEFILEGEOM_MOLDEN : 
   case GABEDIT_TYPEFILEGEOM_GAUSSIN : 
@@ -14238,7 +14866,7 @@ static void DialogueEditV()
   Nc=LineSelectedV;
   if(Nc<0 ) {
   	if(NVariablesXYZ<1)
-   	MessageGeom(_("Create variable before \n"),_("Warning"),TRUE);
+   	MessageGeom(_("Create variable beforee \n"),_("Warning"),TRUE);
        else
    	MessageGeom(_("Please Select your variable \n"),_("Warning"),TRUE);
    return;

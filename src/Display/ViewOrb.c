@@ -1,6 +1,6 @@
 /* ViewOrb.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -60,7 +60,7 @@ int view_orb(GtkWidget* Parent,int argc, char **argv)
 	PrincipalWindow = gtk_window_new( GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(PrincipalWindow), _("Gabedit : Orbitals/Density/Vibration"));
 	 gtk_container_set_reallocate_redraws (GTK_CONTAINER (PrincipalWindow), TRUE);
-  	gtk_window_set_default_size (GTK_WINDOW(PrincipalWindow),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.69));
+  	//gtk_window_set_default_size (GTK_WINDOW(PrincipalWindow),(gint)(ScreenWidthD*0.5),(gint)(ScreenHeightD*0.69));
 	gtk_container_set_border_width(GTK_CONTAINER(PrincipalWindow), 1);
 	init_child(PrincipalWindow,gtk_widget_destroy," Draw Dens. Orb. ");
 	/* g_signal_connect(G_OBJECT(PrincipalWindow),"delete_event",(GCallback)close_window_orb,NULL);*/

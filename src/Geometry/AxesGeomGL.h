@@ -12,7 +12,7 @@ gboolean testShowAxesGeom();
 void showAxesGeom();
 void hideAxesGeom();
 void gl_build_axes(gdouble* position);
-void showLabelAxesGeom(gboolean ortho, gdouble* position);
+void showLabelAxesGeom(gboolean ortho, gdouble* position, PangoContext *ft2_context);
 #endif
 
 #endif /* __GABEDIT_AXISGEOMGL_H__ */

@@ -1,6 +1,6 @@
 /* BondsOrb.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -26,6 +26,9 @@ DEALINGS IN THE SOFTWARE.
 #include "../Utils/Utils.h"
 #include "../Utils/Constants.h"
 #include "../Utils/HydrogenBond.h"
+
+/* extern GList *BondsOrb of BondsOrb.h*/
+GList *BondsOrb;
 
 /************************************************************************/
 static gboolean append_to_bonds_list(BondType* newData)
@@ -126,7 +129,7 @@ gboolean hbonded(gint i,gint j)
 	distance2 = (dx*dx+dy*dy+dz*dz);
 	if(distance2<minDistanceH2 || distance2>maxDistanceH2) return FALSE;
 
-	for(k=0;k<Ncenters;k++)
+	for(k=0;k<nCenters;k++)
 	{
 		if(k==kH) continue;
 		if(k==kO) continue;
@@ -168,9 +171,9 @@ void buildMultipleBonds()
 	gint i;
 	gint* nBonds = NULL;
 	if(!BondsOrb) return;
-	if(Ncenters<2) return ;
-	nBonds =g_malloc(Ncenters*sizeof(gint));
-	for(i = 0;i<Ncenters;i++) nBonds[i] = 0;
+	if(nCenters<2) return ;
+	nBonds =g_malloc(nCenters*sizeof(gint));
+	for(i = 0;i<nCenters;i++) nBonds[i] = 0;
 	for(list=BondsOrb;list!=NULL;list=list->next)
 	{
 		BondType* data=(BondType*)list->data;
@@ -180,8 +183,8 @@ void buildMultipleBonds()
 		if(data->bondType == GABEDIT_BONDTYPE_SINGLE) k = 1;
 		if(data->bondType == GABEDIT_BONDTYPE_DOUBLE) k = 2;
 		if(data->bondType == GABEDIT_BONDTYPE_TRIPLE) k = 3;
-		if(i>=0 && i<Ncenters ) nBonds[i]  += k;
-		if(j>=0 && j<Ncenters ) nBonds[j]  += k;
+		if(i>=0 && i<nCenters ) nBonds[i]  += k;
+		if(j>=0 && j<nCenters ) nBonds[j]  += k;
 	}
 	for(list=BondsOrb;list!=NULL;list=list->next)
 	{
@@ -191,14 +194,14 @@ void buildMultipleBonds()
 		gint j = data->n2;
 		gint ij=0;
 
-		if(i>=0 && i<Ncenters  && j>=0 && j<Ncenters) ij = nBonds[i]+ nBonds[j];
+		if(i>=0 && i<nCenters  && j>=0 && j<nCenters) ij = nBonds[i]+ nBonds[j];
 
 		for(list2=list->next;list2!=NULL;list2=list2->next)
 		{
 			BondType* data2=(BondType*)list2->data;
 			gint i = data2->n1;
 			gint j = data2->n2;
-			if(i>=0 && i<Ncenters  && j>=0 && j<Ncenters && nBonds[i]+ nBonds[j]<ij)
+			if(i>=0 && i<nCenters  && j>=0 && j<nCenters && nBonds[i]+ nBonds[j]<ij)
 			{
 				BondType* t = list->data;
 				list->data = list2->data;
@@ -239,8 +242,8 @@ void buildHBonds()
 {
 	gint i;
 	gint j;
-	for(i = 0;i<Ncenters;i++)
-	for(j=i+1;j<Ncenters;j++)
+	for(i = 0;i<nCenters;i++)
+	for(j=i+1;j<nCenters;j++)
 	{
 		if(-1==getBondType(i,j) && hbonded(i,j))
 		{
@@ -258,11 +261,11 @@ void buildBondsOrb()
 	gint i;
 	gint j;
 	freeBondsOrb();
-	if(Ncenters<1) return ;
-	for(i = 0;i<Ncenters;i++)
+	if(nCenters<1) return ;
+	for(i = 0;i<nCenters;i++)
 	{
 		/* printf("%s %lf\n",GeomOrb[i].Prop.symbol,GeomOrb[i].Prop.covalentRadii);*/
-		for(j=i+1;j<Ncenters;j++)
+		for(j=i+1;j<nCenters;j++)
 			if(bonded(i,j))
 			{
 				BondType* A=g_malloc(sizeof(BondType));
@@ -300,7 +303,7 @@ static gint get_connections_one_connect_pdb(gchar* t)
 		return 0;
 	}
 	ni = atoi(split[1])-1;
-	if(ni<0 || ni>Ncenters-1) 
+	if(ni<0 || ni>nCenters-1) 
 	{
 		g_strfreev(split);
 		return 0;
@@ -311,7 +314,7 @@ static gint get_connections_one_connect_pdb(gchar* t)
 		BondType* A=NULL;
 		if(!split[2+k]) break;
 		nj = atoi(split[2+k])-1;
-		if(nj<0 || nj>Ncenters-1) continue;
+		if(nj<0 || nj>nCenters-1) continue;
 		A=g_malloc(sizeof(BondType));
 		A->n1 = ni;
 		A->n2 = nj;
@@ -338,7 +341,7 @@ void readBondsPDB(FILE* file)
     		if(!fgets(t,taille,file)) break;
     		sscanf(t,"%s",tmp);
 		uppercase(tmp);
-		if(strcmp(tmp,"CONECT")!=0) continue;
+		if(strcmp(tmp,"CONNECT")!=0) continue;
 		if(!strcmp(t,"END")) break;
 		res = get_connections_one_connect_pdb(t);
 		if(res==0) break;
@@ -375,7 +378,7 @@ static gint get_connections_one_atom_hin(gchar* t, gint ni)
 		if(!split[11+k]) break;
 		if(!split[11+k+1]) break;
 		nj = atoi(split[11+k])-1;
-		if(nj<0 || nj>Ncenters-1) continue;
+		if(nj<0 || nj>nCenters-1) continue;
 		type = 1;
 		if(strstr(split[11+k+1],"d"))type = 2;
 		if(strstr(split[11+k+1],"D"))type = 2;
@@ -403,7 +406,7 @@ void readBondsHIN(FILE* file)
 	gint n = 0;
 	gint i=0;
 	t=g_malloc(taille*sizeof(gchar));
-	if(Ncenters<1) return;
+	if(nCenters<1) return;
 	freeBondsOrb();
 	i=0;
 	fseek(file, 0L, SEEK_SET);

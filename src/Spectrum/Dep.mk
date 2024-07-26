@@ -6,7 +6,8 @@ IRSpectrum.o: IRSpectrum.c ../../Config.h ../Common/Global.h \
  ../Common/../Common/GabeditType.h ../Utils/Constants.h \
  ../Utils/UtilsInterface.h ../Utils/Utils.h ../Files/FileChooser.h \
  ../Common/Windows.h ../Utils/GabeditXYPlot.h ../Display/Vibration.h \
- SpectrumWin.h
+ ../Spectrum/SpectrumWin.h ../Spectrum/../Utils/GabeditXYPlot.h \
+ ../Spectrum/IGVPT2Spectrum.h
 RamanSpectrum.o: RamanSpectrum.c ../../Config.h ../Common/Global.h \
  ../Common/../Files/GabeditFileChooser.h \
  ../Common/../Common/GabeditType.h ../Utils/Constants.h \

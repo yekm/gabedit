@@ -1,6 +1,6 @@
 /* Run.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -140,8 +140,8 @@ void set_frame_remote_visibility(GtkWidget *button,gpointer data)
 #ifdef G_OS_WIN32
 /*************************************************************************************************************/
 static gchar* listLocalGamess[] = {
-        "gamess.11-32.exe 1",
         "gamess.11-64.exe 1",
+        "gamess.11-32.exe 1",
 	"gamess.00.exe", "gamess.01.exe", "gamess.02.exe", "gamess.03.exe", "gamess.04.exe", "gamess.05.exe",
 	"gamess.06.exe", "gamess.07.exe", "gamess.08.exe", "gamess.09.exe"
 };
@@ -165,7 +165,7 @@ void set_default_entrys(GtkWidget *button,gpointer data)
 				if(fileopen.command && !strstr(fileopen.command,"exe"))
 				{
 					if(fileopen.command) g_free(fileopen.command);
-					fileopen.command = g_strdup("gamess.11-32.exe");
+					fileopen.command = g_strdup("gamess.11-64.exe 1");
 				}
 			}
 			else
@@ -439,7 +439,7 @@ GtkWidget* create_text_result_command(GtkWidget* Text[],GtkWidget* Frame[],gchar
   gtk_widget_grab_default(button);
   g_signal_connect_swapped(G_OBJECT(button), "clicked",(GCallback)destroy_children,G_OBJECT(Win));
   gtk_widget_show (button);
-  gtk_window_set_default_size (GTK_WINDOW(Win), 3*ScreenWidth/5, 3*ScreenHeight/5);
+  //gtk_window_set_default_size (GTK_WINDOW(Win), 3*ScreenWidth/5, 3*ScreenHeight/5);
   gtk_widget_set_size_request(GTK_WIDGET(Text[0]),-1,1*ScreenHeight/5);
   return Win;
 }
@@ -891,11 +891,11 @@ gboolean createGamessBat(gchar* filename, gchar* command, gint nproc)
 	fprintf(file,"set RESTARTDIR=%cWDIR%c\\scr%cnameFile%c\n",'%','%','%','%');
 	fprintf(file,"set SCRATCHDIR=%cWDIR%c\\tmp%cnameFile%c\n",'%','%','%','%');
 	fprintf(file,"cd %cDIR%c\n",'%','%');
-	fprintf(file,"del parameters.gms\n");
-	fprintf(file,"echo GAMESSDIR=%cGAMESSDIR%c> parameters.gms\n",'%','%');
-	fprintf(file,"echo AUXDATADIR=%cAUXDATADIR%c>> parameters.gms\n",'%','%');
-	fprintf(file,"echo RESTARTDIR=%cRESTARTDIR%c>> parameters.gms\n",'%','%');
-	fprintf(file,"echo SCRARTCHDIR=%cSCRATCHDIR%c>> parameters.gms\n",'%','%');
+	fprintf(file,"del rungms.gms\n");
+	fprintf(file,"echo GAMESSDIR=%cGAMESSDIR%c> rungms.gms\n",'%','%');
+	fprintf(file,"echo AUXDATADIR=%cAUXDATADIR%c>> rungms.gms\n",'%','%');
+	fprintf(file,"echo RESTARTDIR=%cRESTARTDIR%c>> rungms.gms\n",'%','%');
+	fprintf(file,"echo SCRARTCHDIR=%cSCRATCHDIR%c>> rungms.gms\n",'%','%');
 	fflush(file);
 
 	fprintf(file,"mkdir %cRESTARTDIR%c\n",'%','%');
@@ -1695,7 +1695,7 @@ static gboolean create_cmd_gamess(G_CONST_RETURN gchar* command, gboolean local,
 			fprintf(fcmd,"then\n");
 			fprintf(fcmd,"export TGAMESSUS_TMPDIR=$HOME/tmp\n");
 			fprintf(fcmd,"fi\n");
-			fprintf(fcmd,"export TGAMESSUSDIR=$TGAMESSUS_TMPDIR/$RANDOM\n");
+			fprintf(fcmd,"export TGAMESSUSDIR=$TGAMESSUS_TMPDIR/tmpGamess_$$\n");
 			fprintf(fcmd,"if [ ! -s \"$TGAMESSUS_TMPDIR\" ]\n");
 			fprintf(fcmd,"then\n");
 			fprintf(fcmd,"mkdir $TGAMESSUS_TMPDIR\n");

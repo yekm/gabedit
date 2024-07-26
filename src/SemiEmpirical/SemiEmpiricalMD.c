@@ -1,6 +1,6 @@
 /* SemiEmpiricalMD.c  */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1679,7 +1679,7 @@ static void getsFrictionalAndRandomForce(SemiEmpiricalMD* seMD)
                   		vterm = 1.0 - egdt*egdt;
                   		rho = (1.0-egdt)*(1.0-egdt) / sqrt(pterm*vterm);
 			}
-			/* use series expansions when friction coefficient is small */
+			/* use seriess expansions when friction coefficient is small */
 			else
 			{
                   		gdouble gdt2 = gdt * gdt;

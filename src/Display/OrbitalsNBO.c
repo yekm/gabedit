@@ -1,6 +1,6 @@
 /* OrbitalsNBO.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -154,11 +154,11 @@ static gboolean read_geomorb_nbo_file_geom(gchar *fileName)
 		j++;
 		
 	}
-	Ncenters = 0;
-	if(k==nAtoms) Ncenters = nAtoms;
-	if(Ncenters !=0) get_charges_from_nbo_output_file(file,Ncenters);
+	nCenters = 0;
+	if(k==nAtoms) nCenters = nAtoms;
+	if(nCenters !=0) get_charges_from_nbo_output_file(file,nCenters);
  	fclose(file);
- 	if(Ncenters == 0 )
+ 	if(nCenters == 0 )
 	{
 		g_free(GeomOrb);
 		sprintf(t,_("Sorry, I can not read this format from '%s' file\n"),fileName);
@@ -166,7 +166,7 @@ static gboolean read_geomorb_nbo_file_geom(gchar *fileName)
 		set_status_label_info(_("File name"),_("Nothing"));
 		set_status_label_info(_("File type"),_("Nothing"));
 		set_status_label_info(_("Mol. Orb."),_("Nothing"));
-		RebuildGeom = TRUE;
+		RebuildGeomD = TRUE;
 		return FALSE;
 	}
  	else
@@ -187,9 +187,9 @@ static gboolean read_geomorb_nbo_file_geom(gchar *fileName)
 			}
 		}
 		if(Type) g_free(Type);
- 		Ntype =Ncenters;
+ 		Ntype =nCenters;
 		Type = g_malloc(Ntype*sizeof(TYPE));
-		for(i=0;i<Ncenters;i++) 
+		for(i=0;i<nCenters;i++) 
 		{
 			GeomOrb[i].NumType = i;
      			Type[i].Symb=g_strdup(GeomOrb[i].Symb);
@@ -198,7 +198,7 @@ static gboolean read_geomorb_nbo_file_geom(gchar *fileName)
 			Type[i].Ao = NULL;
 		}
 		buildBondsOrb();
-		RebuildGeom = TRUE;
+		RebuildGeomD = TRUE;
 		return TRUE;
 	}
 	return TRUE;
@@ -220,7 +220,7 @@ static void DefineNBOSphericalBasis()
 
 
 	NOrb = 0;
-	for(i=0;i<Ncenters;i++)
+	for(i=0;i<nCenters;i++)
 	{
 	 	for(j=0;j<Type[GeomOrb[i].NumType].Norb;j++)
 	 	{
@@ -232,7 +232,7 @@ static void DefineNBOSphericalBasis()
 	temp  = g_malloc(NOrb*sizeof(CGTF));
 
 	k=-1;
-	for(i=0;i<Ncenters;i++)
+	for(i=0;i<nCenters;i++)
 	for(j=0;j<Type[GeomOrb[i].NumType].Norb;j++)
 	{
 	 	L =Type[GeomOrb[i].NumType].Ao[j].L;
@@ -302,7 +302,7 @@ static void DefineNBOCartBasis()
  gint m;
 
  NAOrb = 0;
- for(i=0;i<Ncenters;i++)
+ for(i=0;i<nCenters;i++)
  {
 	 for(j=0;j<Type[GeomOrb[i].NumType].Norb;j++)
 	 {
@@ -316,7 +316,7 @@ static void DefineNBOCartBasis()
  SAOrb = NULL;
  
  k=-1;
- for(i=0;i<Ncenters;i++)
+ for(i=0;i<nCenters;i++)
 	 for(j=0;j<Type[GeomOrb[i].NumType].Norb;j++)
  {
 	L = Type[GeomOrb[i].NumType].Ao[j].L;
@@ -469,7 +469,7 @@ static gboolean read_basis_from_a_nbo_output_file(gchar *fileName)
 	if(!goToLine(file,"--------")) return FALSE;
 	if(!fgets(t,BSIZE,file)) return FALSE;
 	sscanf(t,"%d %d %d",&nAtoms,&nShell,&nExp);
-	if(nAtoms!=Ncenters || nAtoms <= 0 || nShell <= 0 || nExp <= 0) return FALSE;
+	if(nAtoms!=nCenters || nAtoms <= 0 || nShell <= 0 || nExp <= 0) return FALSE;
 	if(!goToLine(file,"--------")) return FALSE;
 	if(!goToLine(file,"--------")) return FALSE;
 
@@ -551,7 +551,7 @@ static gboolean read_basis_from_a_nbo_output_file(gchar *fileName)
 			if(1!=fscanf(file,"%lf",&coefs[i][ie])) break;
 		if(!fgets(t,BSIZE,file)) break; /* f orb is not always available */
 	}
-	for(i=0;i<Ncenters;i++) 
+	for(i=0;i<nCenters;i++) 
 	{
 		Type[i].Norb = 0;
 		Type[i].Ao = NULL;
@@ -565,7 +565,7 @@ static gboolean read_basis_from_a_nbo_output_file(gchar *fileName)
         		if(numTypes[is][k]/100 != numTypes[is][k-1]/100) Type[i].Norb++;
 	}
 
-	for(i=0;i<Ncenters;i++) 
+	for(i=0;i<nCenters;i++) 
 	{
 		Type[i].Ao=g_malloc(Type[i].Norb*sizeof(AO));
 		for(j=0;j< Type[i].Norb;j++)
@@ -865,7 +865,7 @@ void read_nbo_orbitals(gchar* fileName)
 		if(GeomOrb)
 		{
 			init_atomic_orbitals();
-			for(i=0;i<Ncenters;i++) GeomOrb[i].Prop = prop_atom_get("H");
+			for(i=0;i<nCenters;i++) GeomOrb[i].Prop = prop_atom_get("H");
 			free_geometry();
 		}
 		set_status_label_info(_("File name"),_("Nothing"));
@@ -882,7 +882,7 @@ void read_nbo_orbitals(gchar* fileName)
 	set_status_label_info(_("Mol. Orb."),_("Reading"));
  	InitializeAll();
 	buildBondsOrb();
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	reset_grid_limits();
 	init_atomic_orbitals();
 

@@ -15,6 +15,7 @@ void showPrincipalAxisGL();
 void hidePrincipalAxisGL();
 GLuint principalAxisGenList(GLuint axisList);
 void principalAxisShowList(GLuint axisList);
+void compute_the_principal_axis();
 
 #endif /* __GABEDIT_PRINCIPALAXISGL_H__ */
 

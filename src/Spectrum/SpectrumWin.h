@@ -1,6 +1,6 @@
 /* SpectrumWin.h */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -72,5 +72,6 @@ void spectrum_win_set_ymax(GtkWidget* winSpectrum, gdouble value);
 void spectrum_win_reset_ymin_ymax(GtkWidget *xyplot);
 void spectrum_win_set_xlabel(GtkWidget* winSpectrum, gchar* label);
 void spectrum_win_set_ylabel(GtkWidget* winSpectrum, gchar* label);
+XYPlotData* spectrum_win_get_dataCurve(GtkWidget *winSpectrum);
 
 #endif /* __GABEDIT_SPECTRUMWIN_H__ */

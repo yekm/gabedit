@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -38,8 +38,13 @@ DEALINGS IN THE SOFTWARE.
 #include "../Display/Images.h"
 #include "../Display/UtilsOrb.h"
 #include "../Display/BondsOrb.h"
+#include "../Display/RingsOrb.h"
 #include "../Utils/GabeditXYPlot.h"
 #include "../../pixmaps/Open.xpm"
+
+/* extern nimationGeomConv.h */
+GeometryConvergence geometryConvergence;
+/****************************************/
 
 static	GtkWidget *WinDlg = NULL;
 static	GtkWidget *EntryVelocity = NULL;
@@ -76,10 +81,11 @@ static void setComboMethod(GtkWidget *comboMethod)
 {
 	GList *glist = NULL;
 
-  	glist = g_list_append(glist,"Number");
+  	glist = g_list_append(glist,"All");
   	glist = g_list_append(glist,"Symbol");
   	glist = g_list_append(glist,"MM Type");
   	glist = g_list_append(glist,"PDB Type");
+  	glist = g_list_append(glist,"Number");
 
   	gtk_combo_box_entry_set_popdown_strings(comboMethod, glist) ;
 
@@ -96,6 +102,17 @@ static void setComboVal(GtkWidget *comboVal)
 	gchar** list = NULL;
 	gint n = 0;
 
+	if(entryText && strstr(entryText,"All")&&geometryConvergence.numberOfGeometries>0)
+	{
+		gint i;
+                gint nAtoms = geometryConvergence.geometries[0].numberOfAtoms;
+		list = g_malloc(nAtoms*sizeof(gchar*));
+		n = nAtoms;
+  		for(i=0;i<nAtoms;i++) 
+			list[i] = g_strdup_printf("%d",i+1);
+  		for(i=0;i<n;i++) 
+			glist = g_list_append(glist,list[i]);
+	}
 	if(entryText && strstr(entryText,"Number")&&geometryConvergence.numberOfGeometries>0)
 	{
 		gint i;
@@ -285,6 +302,32 @@ static GtkWidget*   add_inputgr_entrys(GtkWidget *Wins,GtkWidget *vbox)
 	return entry;
 }
 /*************************************************************************************************************/
+static void getLattice(gdouble boxLength[], gdouble maxr, gint g)
+{
+	gint nTv = 0;
+	gdouble Tv[3][3];
+	gchar tmp[BSIZE];
+	for(gint a=0;a<geometryConvergence.geometries[g].numberOfAtoms;a++)
+	{
+		sprintf(tmp,"%s", geometryConvergence.geometries[g].listOfAtoms[a].symbol);
+		uppercase(tmp);
+		if(!strcmp(tmp,"TV")) { 
+			for(gint j=0;j<3;j++) Tv[nTv][j]= geometryConvergence.geometries[g].listOfAtoms[a].C[j];
+			nTv++;
+		}
+	}
+	if(nTv<3) 
+		for(gint i=0;i<3;i++) boxLength[i] = 2*maxr/BOHR_TO_ANG;
+	else
+	for(gint i=0;i<nTv;i++)
+	{
+		gdouble r = 0;
+		for(gint j=0;j<3;j++) r+= Tv[i][j]* Tv[i][j];
+		boxLength[i]=sqrt(r);	
+	}
+
+}
+/*************************************************************************************************************/
 static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
 {
 	gint g;
@@ -298,7 +341,9 @@ static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
 	gint n1,n2;
 	gdouble* X = NULL;
 	gdouble* Y = NULL;
+	gdouble* Ymol = NULL;
 	gint i;
+	gint j;
 	G_CONST_RETURN gchar* str = NULL;
 	GtkWidget* xyplot;
 	GtkWidget* window;
@@ -318,8 +363,54 @@ static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
 	if(!str) return;
 	X = g_malloc(N*sizeof(gdouble));
 	Y = g_malloc(N*sizeof(gdouble));
+	Ymol = g_malloc(N*sizeof(gdouble));
 	for(i=0;i<N;i++) X[i] = dr*i;
 	for(i=0;i<N;i++) Y[i] = 0;
+	gdouble rmin = dr/2;
+	gdouble dr3 = 4.0/3.0*M_PI*dr*dr*dr;
+	gdouble boxLength[3];
+
+
+
+	if(strstr(str,"All"))
+	{
+		for(g = 0;g<geometryConvergence.numberOfGeometries;g++)
+		{
+			gint a;
+			gint b;
+			gint na = geometryConvergence.geometries[g].numberOfAtoms;
+			gint nb = geometryConvergence.geometries[g].numberOfAtoms;
+
+			for(i=0;i<N;i++) Ymol[i] = 0;
+			getLattice(boxLength,  maxr, g);
+
+			for(a=0;a<geometryConvergence.geometries[g].numberOfAtoms;a++)
+			for(b=0;b<geometryConvergence.geometries[g].numberOfAtoms;b++)
+			{
+				if(a==b) continue;
+				gdouble d = 0;
+				gdouble xx = 0;
+				gint j;
+				for(j=0;j<3;j++) 
+				{
+					xx = geometryConvergence.geometries[g].listOfAtoms[a].C[j]-geometryConvergence.geometries[g].listOfAtoms[b].C[j];
+					if (xx>boxLength[j]/2)  xx -= boxLength[i];
+					if (xx<-boxLength[j]/2) xx += boxLength[i];
+					d+= xx*xx;
+				}
+				d = sqrt(d)*BOHR_TO_ANG;
+				if(d>maxr) continue;
+				Ymol[(gint)(d/dr)]+=1;
+			}
+			for(j=0;j<3;j++)  boxLength[i] *= BOHR_TO_ANG;
+			gdouble rho=na*nb/(boxLength[0]*boxLength[1]*boxLength[2]);
+			gdouble norm = rho*dr3;
+			for(i=0;i<N;i++) Ymol[i] /= ((i+1.0)*(i+1.0)*(i+1.0)-1.0*i*i*i)*norm;
+			for(i=0;i<N;i++) Y[i] += Ymol[i];
+		}
+		for(i=0;i<N;i++) Y[i] /= geometryConvergence.numberOfGeometries;
+	}
+	else 
 	if(strstr(str,"Number"))
 	{
 		if(entryVal1) str = gtk_entry_get_text(GTK_ENTRY(entryVal1));
@@ -339,15 +430,29 @@ static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
 			gdouble d = 0;
 			gdouble xx = 0;
 			gint j;
+
+			for(i=0;i<N;i++) Ymol[i] = 0;
+			getLattice(boxLength,  maxr, g);
+
+			gint na=1;
+			gint nb=1;
 			for(j=0;j<3;j++) 
 			{
 				xx = geometryConvergence.geometries[g].listOfAtoms[a].C[j]-geometryConvergence.geometries[g].listOfAtoms[b].C[j];
+				if (xx>boxLength[j]/2)  xx -= boxLength[i];
+				if (xx<-boxLength[j]/2) xx += boxLength[i];
 				d+= xx*xx;
 			}
 			d = sqrt(d)*BOHR_TO_ANG;
 			if(d>maxr) continue;
-			Y[(gint)(d/dr)]++;
+			Ymol[(gint)(d/dr)]++;
+			for(j=0;j<3;j++)  boxLength[i] *= BOHR_TO_ANG;
+			gdouble rho=na*nb/(boxLength[0]*boxLength[1]*boxLength[2]);
+			gdouble norm = rho*dr3;
+			for(i=0;i<N;i++) Ymol[i] /= ((i+1.0)*(i+1.0)*(i+1.0)-1.0*i*i*i)*norm;
+			for(i=0;i<N;i++) Y[i] += Ymol[i];
 		}
+		for(i=0;i<N;i++) Y[i] /= geometryConvergence.numberOfGeometries;
 	}
 	else if(strstr(str,"Symbol"))
 	{
@@ -364,30 +469,52 @@ static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
 		{
 			gint a;
 			gint b;
+			gint na=0;
+			gint nb=0;
+			getLattice(boxLength,  maxr, g);
 			for(a=0;a<geometryConvergence.geometries[g].numberOfAtoms;a++)
-			for(b=0;b<a;b++)
-			{
-				if(
-				(!strcmp(geometryConvergence.geometries[g].listOfAtoms[a].symbol,s1) && !strcmp(geometryConvergence.geometries[g].listOfAtoms[b].symbol,s2))
-				||
-				(!strcmp(geometryConvergence.geometries[g].listOfAtoms[a].symbol,s2) && !strcmp(geometryConvergence.geometries[g].listOfAtoms[b].symbol,s1))
-				)
-				{
-					gdouble d = 0;
-					gdouble xx = 0;
-					gint j;
-					for(j=0;j<3;j++) 
-					{
-						xx = geometryConvergence.geometries[g].listOfAtoms[a].C[j]-geometryConvergence.geometries[g].listOfAtoms[b].C[j];
-						d+= xx*xx;
-					}
-					d = sqrt(d)*BOHR_TO_ANG;
-					if(d>maxr) continue;
-					Y[(gint)(d/dr)]++;
-				}
+				if(!strcmp(geometryConvergence.geometries[g].listOfAtoms[a].symbol,s1)) na++;
+			for(b=0;b<geometryConvergence.geometries[g].numberOfAtoms;b++)
+				if(!strcmp(geometryConvergence.geometries[g].listOfAtoms[b].symbol,s2)) nb++;
 
+			for(i=0;i<N;i++) Ymol[i] = 0;
+			if(na>0 && nb>0)
+			for(a=0;a<geometryConvergence.geometries[g].numberOfAtoms;a++)
+			{
+				for(b=0;b<geometryConvergence.geometries[g].numberOfAtoms;b++)
+				{
+					if(a==b) continue;
+					if(
+					(!strcmp(geometryConvergence.geometries[g].listOfAtoms[a].symbol,s1) && !strcmp(geometryConvergence.geometries[g].listOfAtoms[b].symbol,s2))
+					||
+					(!strcmp(geometryConvergence.geometries[g].listOfAtoms[a].symbol,s2) && !strcmp(geometryConvergence.geometries[g].listOfAtoms[b].symbol,s1))
+					)
+					{
+						gdouble d = 0;
+						gdouble xx = 0;
+						gint j;
+						for(j=0;j<3;j++) 
+						{
+							xx = geometryConvergence.geometries[g].listOfAtoms[a].C[j]-geometryConvergence.geometries[g].listOfAtoms[b].C[j];
+							if (xx>boxLength[j]/2)  xx -= boxLength[i];
+							if (xx<-boxLength[j]/2) xx += boxLength[i];
+							d+= xx*xx;
+						}
+						d = sqrt(d)*BOHR_TO_ANG;
+						if(d>maxr) continue;
+						//Y[(gint)(d/dr)]++;
+						Ymol[(gint)((d)/dr)] += 1;
+					}
+
+				}
 			}
+			for(j=0;j<3;j++)  boxLength[i] *= BOHR_TO_ANG;
+			gdouble rho=na*nb/(boxLength[0]*boxLength[1]*boxLength[2]);
+			gdouble norm = rho*dr3;
+			for(i=0;i<N;i++) Ymol[i] /= ((i+1.0)*(i+1.0)*(i+1.0)-1.0*i*i*i)*norm;
+			for(i=0;i<N;i++) Y[i] += Ymol[i];
 		}
+		for(i=0;i<N;i++) Y[i] /= geometryConvergence.numberOfGeometries;
 	}
 	else if(strstr(str,"MM Type"))
 	{
@@ -404,9 +531,19 @@ static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
 		{
 			gint a;
 			gint b;
+			gint na=0;
+			gint nb=0;
 			for(a=0;a<geometryConvergence.geometries[g].numberOfAtoms;a++)
-			for(b=0;b<a;b++)
+				if(!strcmp(geometryConvergence.geometries[g].listOfAtoms[a].mmType,s1)) na++;
+			for(b=0;b<geometryConvergence.geometries[g].numberOfAtoms;b++)
+				if(!strcmp(geometryConvergence.geometries[g].listOfAtoms[b].mmType,s2)) nb++;
+			for(i=0;i<N;i++) Ymol[i] = 0;
+			getLattice(boxLength,  maxr, g);
+
+			for(a=0;a<geometryConvergence.geometries[g].numberOfAtoms;a++)
+			for(b=0;b<geometryConvergence.geometries[g].numberOfAtoms;b++)
 			{
+				if(a==b) continue;
 				if(
 				(!strcmp(geometryConvergence.geometries[g].listOfAtoms[a].mmType,s1) && !strcmp(geometryConvergence.geometries[g].listOfAtoms[b].mmType,s2))
 				||
@@ -419,15 +556,23 @@ static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
 					for(j=0;j<3;j++) 
 					{
 						xx = geometryConvergence.geometries[g].listOfAtoms[a].C[j]-geometryConvergence.geometries[g].listOfAtoms[b].C[j];
+						if (xx>boxLength[j]/2)  xx -= boxLength[i];
+						if (xx<-boxLength[j]/2) xx += boxLength[i];
 						d+= xx*xx;
 					}
 					d = sqrt(d)*BOHR_TO_ANG;
 					if(d>maxr) continue;
-					Y[(gint)(d/dr)]++;
+					Ymol[(gint)(d/dr)]++;
 				}
 
 			}
+			for(j=0;j<3;j++)  boxLength[i] *= BOHR_TO_ANG;
+			gdouble rho=na*nb/(boxLength[0]*boxLength[1]*boxLength[2]);
+			gdouble norm = rho*dr3;
+			for(i=0;i<N;i++) Ymol[i] /= ((i+1.0)*(i+1.0)*(i+1.0)-1.0*i*i*i)*norm;
+			for(i=0;i<N;i++) Y[i] += Ymol[i];
 		}
+		for(i=0;i<N;i++) Y[i] /= geometryConvergence.numberOfGeometries;
 	}
 	else if(strstr(str,"PDB Type"))
 	{
@@ -444,9 +589,18 @@ static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
 		{
 			gint a;
 			gint b;
+			gint na=0;
+			gint nb=0;
 			for(a=0;a<geometryConvergence.geometries[g].numberOfAtoms;a++)
-			for(b=0;b<a;b++)
+				if(!strcmp(geometryConvergence.geometries[g].listOfAtoms[a].pdbType,s1)) na++;
+			for(b=0;b<geometryConvergence.geometries[g].numberOfAtoms;b++)
+				if(!strcmp(geometryConvergence.geometries[g].listOfAtoms[b].pdbType,s2)) nb++;
+			for(i=0;i<N;i++) Ymol[i] = 0;
+			getLattice(boxLength,  maxr, g);
+			for(a=0;a<geometryConvergence.geometries[g].numberOfAtoms;a++)
+			for(b=0;b<geometryConvergence.geometries[g].numberOfAtoms;b++)
 			{
+				if(a==b) continue;
 				if(
 				(!strcmp(geometryConvergence.geometries[g].listOfAtoms[a].pdbType,s1) && !strcmp(geometryConvergence.geometries[g].listOfAtoms[b].pdbType,s2))
 				||
@@ -459,15 +613,23 @@ static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
 					for(j=0;j<3;j++) 
 					{
 						xx = geometryConvergence.geometries[g].listOfAtoms[a].C[j]-geometryConvergence.geometries[g].listOfAtoms[b].C[j];
+						if (xx>boxLength[j]/2)  xx -= boxLength[i];
+						if (xx<-boxLength[j]/2) xx += boxLength[i];
 						d+= xx*xx;
 					}
 					d = sqrt(d)*BOHR_TO_ANG;
 					if(d>maxr) continue;
-					Y[(gint)(d/dr)]++;
+					Ymol[(gint)(d/dr)]++;
 				}
 
 			}
+			for(j=0;j<3;j++)  boxLength[i] *= BOHR_TO_ANG;
+			gdouble rho=na*nb/(boxLength[0]*boxLength[1]*boxLength[2]);
+			gdouble norm = rho*dr3;
+			for(i=0;i<N;i++) Ymol[i] /= ((i+1.0)*(i+1.0)*(i+1.0)-1.0*i*i*i)*norm;
+			for(i=0;i<N;i++) Y[i] += Ymol[i];
 		}
+		for(i=0;i<N;i++) Y[i] /= geometryConvergence.numberOfGeometries;
 	}
 
 	gtk_widget_destroy(Win);
@@ -480,6 +642,7 @@ static void build_pair_radial_distribution(GtkWidget* Win, gpointer data)
 	gabedit_xyplot_set_y_label (GABEDIT_XYPLOT(xyplot), "g(r)");
 	g_free(X); 
 	g_free(Y);
+	g_free(Ymol);
 }
 /********************************************************************************************************/
 static void create_gr_dlg()
@@ -655,7 +818,7 @@ static GtkWidget* addComboListToATable(GtkWidget* table,
                   2,2);
 	entry = GTK_BIN (combo)->child;
 	g_object_set_data(G_OBJECT (entry), "Combo",combo);
-	gtk_widget_set_size_request(GTK_WIDGET(entry),(gint)(ScreenHeight*0.2),-1);
+	gtk_widget_set_size_request(GTK_WIDGET(entry),(gint)(ScreenHeightD*0.2),-1);
 
 	return entry;
 }
@@ -724,7 +887,7 @@ static void print_gaussian_geometries_link(GtkWidget* Win, gpointer data)
 		if(GTK_IS_WIDGET(buttonChkgauss)&& GTK_TOGGLE_BUTTON (buttonChkgauss)->active)
 			fprintf(file,"%cChk=gabmg\n",p);
 
-			fprintf(file,"# %s\n",supstr);
+		fprintf(file,"# %s\n",supstr);
 
 		fprintf(file,"# Test\n");
 		fprintf(file,"# Units(Ang,Deg)\n");
@@ -1036,7 +1199,7 @@ static void reset_last_directory(GtkWidget *dirSelector, gpointer data)
 static void set_directory(GtkWidget *win, gpointer data)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(reset_last_directory, _("Set folder"), GABEDIT_TYPEWIN_ORB);
+	dirSelector = selectionOfDir(reset_last_directory, _("Set folder"), GABEDIT_TYPEWIN_ORB);
 	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
 	gtk_window_set_transient_for(GTK_WINDOW(dirSelector),GTK_WINDOW(PrincipalWindow));
 	gtk_window_set_transient_for(GTK_WINDOW(dirSelector),GTK_WINDOW(WinDlg));
@@ -1852,17 +2015,13 @@ static gboolean read_gaussian_file_geomi_str(gchar *FileName, gint num, gchar* s
  		while(!feof(file))
 		{
 			{char* e = fgets(t,BSIZE,file);}
-			pdest = strstr( t,str);
-			result = pdest - t ;
-	 		if ( result >0 )
+	 		if ( strstr( t,str))
 	  		{
 				{char* e = fgets(t,BSIZE,file);}
 				{char* e = fgets(t,BSIZE,file);}
 				{char* e = fgets(t,BSIZE,file);}
 
-				pdest = strstr( t, "Type" );
-				result = pdest - t ;
-				if(result>0) itype=1;
+				if(strstr( t, "Type" )) itype=1;
 				else itype=0;
 				{char* e = fgets(t,BSIZE,file);}
                 		numgeom++;
@@ -1883,9 +2042,7 @@ static gboolean read_gaussian_file_geomi_str(gchar *FileName, gint num, gchar* s
   		while(!feof(file) )
   		{
 			{char* e = fgets(t,BSIZE,file);}
-    			pdest = strstr( t, "----------------------------------" );
-    			result = pdest - t ;
-    			if ( result >0 )
+    			if (strstr( t, "----------------------------------" ) >0 )
     			{
       				break;
     			}
@@ -4522,7 +4679,7 @@ static gboolean set_geometry(gint k)
 	if(GeomOrb)
 	{
 		free_atomic_orbitals();
-		for(j=0;j<Ncenters;j++) if(GeomOrb[j].Symb) g_free(GeomOrb[j].Symb);
+		for(j=0;j<nCenters;j++) if(GeomOrb[j].Symb) g_free(GeomOrb[j].Symb);
 		g_free(GeomOrb);
 		GeomOrb = NULL;
 	}
@@ -4542,11 +4699,11 @@ static gboolean set_geometry(gint k)
 		GeomOrb[j].nuclearCharge = listOfAtoms[j].nuclearCharge;
 		GeomOrb[j].variable = listOfAtoms[j].variable;
 	}
-	Ncenters = nAtoms;
+	nCenters = nAtoms;
 	init_atomic_orbitals();
 	init_dipole();
 	buildBondsOrb();
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	glarea_rafresh(GLArea);
 
 	return TRUE;
@@ -4599,7 +4756,7 @@ static void stopAnimation(GtkWidget *win, gpointer data)
 	while( gtk_events_pending() ) gtk_main_iteration();
 
 	buildBondsOrb();
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	init_dipole();
 	init_atomic_orbitals();
 	free_iso_all();
@@ -4646,6 +4803,7 @@ static gboolean show_menu_popup(GtkUIManager *manager, guint button, guint32 tim
 		set_sensitive_option(manager,"/MenuGeomConv/CreateGaussInput");
 		set_sensitive_option(manager,"/MenuGeomConv/CreateGaussInputLink");
 		set_sensitive_option(manager,"/MenuGeomConv/CreateGr");
+		set_sensitive_option(manager,"/MenuGeomConv/ComputeConformerTpes");
 		gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, button, time);
 		return TRUE;
 	}
@@ -4808,7 +4966,7 @@ static void showMessageEnd()
 	gchar* format =get_format_image_from_option();
 	gchar* message = messageAnimatedImage(format);
 	gchar* t = g_strdup_printf(
-			_("\nA series of gab*.%s files was created in \"%s\" directeory.\n\n\n%s")
+			_("\nA seriess of gab*.%s files was created in \"%s\" directeory.\n\n\n%s")
 			, format, get_last_directory(),message);
 	GtkWidget* winDlg = Message(t,_("Info"),TRUE);
 	g_free(message);
@@ -4871,7 +5029,7 @@ static GtkWidget *create_list_of_formats()
 	return combobox;
 }
 /********************************************************************************************************/
-static void addEntrysButtons(GtkWidget* box)
+static void addEntriesButtons(GtkWidget* box)
 {
 	GtkWidget *Button;
 	GtkWidget *frame;
@@ -4996,7 +5154,7 @@ static GtkTreeView* addList(GtkWidget *vbox, GtkUIManager *manager)
 	widall=widall*Factor+40;
 
 	scr=gtk_scrolled_window_new(NULL,NULL);
-	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeight*0.53));
+	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeightD*0.53));
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scr),GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC); 
 	gtk_box_pack_start(GTK_BOX (vbox), scr,TRUE, TRUE, 2);
 
@@ -5061,6 +5219,109 @@ static gboolean createImagesFile()
 	}
 	g_free(t);
 	return TRUE;
+}
+/********************************************************************************/
+static void computeConformerTypes()
+{
+
+	gint i;
+	gchar* old = NULL;
+	gchar* results5 = NULL;
+	gchar* results6 = NULL;
+	gint nRings5 = 0;
+	gint nRings6 = 0;
+	gint n = 0;
+	GList** rings = NULL;
+	gint k5=0;
+	gint k6=0;
+
+	play = TRUE;
+        gtk_widget_set_sensitive(PlayButton, FALSE);
+        gtk_widget_set_sensitive(StopButton, TRUE);
+
+
+	for(i=0;i<geometryConvergence.numberOfGeometries;i++)
+	{
+		gchar* energy = geometryConvergence.energy?g_strdup_printf("%15.7f",geometryConvergence.energy[i]):g_strdup("0.0");
+		set_geometry(i);
+
+		nRings5 = getNumberOfRing5();
+		nRings6 = getNumberOfRing6();
+		if(nRings5<1 && nRings6<1) continue;
+		if(nRings5>0) { 
+
+			gchar* result = computeConformerTypeRing5MinInfo(energy, k5==0);
+			if(result)
+			{
+				printf("%5d/%-5d : %s\n",i+1,geometryConvergence.numberOfGeometries,result);
+				k5++;
+				if(results5)
+				{
+					old = results5;
+					results5 = g_strdup_printf("%s%s\n",old, result);
+                			if(old) g_free(old);
+				}
+				else results5 = g_strdup_printf("%s\n",result);
+				if(result) g_free(result);
+			}
+		}
+		if(nRings6>0) { 
+			gchar* result = computeConformerTypeRing6MinInfo(energy, k6==0);
+			if(result)
+			{
+				printf("%5d/%-5d : %s\n",i+1,geometryConvergence.numberOfGeometries,result);
+				k6++;
+				if(results6)
+				{
+					old = results6;
+					results6 = g_strdup_printf("%s%s\n",old, result);
+                			if(old) g_free(old);
+				}
+				else results6 = g_strdup_printf("%s\n", result);
+				if(result) g_free(result);
+			}
+		}
+		if(energy) g_free(energy);
+		if(!play) break;
+	}
+	//if(results5) printf("%s\n",results5);
+	//if(results6) printf("%s\n",results6);
+	if(results5)
+        {
+                GtkWidget* message = NULL;
+		old = results5;
+		results5 = g_strdup_printf("%s%s\n",
+		"==============================================================================================================\n"
+		"Type of conformation calculated using the method given in\n"
+		"C. Altona and M. Sundaralingam, Journal of the American Chemical Society, 94:23 (1972) 8205–8212\n"
+		"==============================================================================================================\n"
+		,old 
+		);
+               	if(old) g_free(old);
+                message = MessageTxt(results5,"Pentagons");
+                //gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidthD*0.8),-1);
+                gtk_widget_set_size_request(message,(gint)(ScreenWidthD*0.45),-1);
+        }
+	if(results6)
+        {
+                GtkWidget* message = NULL;
+		old = results6;
+		results6 = g_strdup_printf("%s%s\n",
+		"============================================================================\n"
+		"Type of conformation calculated using the method given in\n"
+		"Anthony D Hill and Peter J. Reilly J. Chem. Inf. Model, 47 (2007) 1031-1035\n"
+		"============================================================================\n"
+		,old 
+		);
+               	if(old) g_free(old);
+                message = MessageTxt(results6,"Hexagons");
+                //gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidthD*0.8),-1);
+                gtk_widget_set_size_request(message,(gint)(ScreenWidthD*0.45),-1);
+        }
+	play = FALSE;
+        gtk_widget_set_sensitive(PlayButton, TRUE);
+        gtk_widget_set_sensitive(StopButton, FALSE);
+
 }
 /********************************************************************************/
 static void animate()
@@ -5185,7 +5446,7 @@ static void set_entry_inputGaussDir(GtkWidget* dirSelector, gint response_id)
 static void set_entry_inputGaussDir_selection(GtkWidget* entry)
 {
 	GtkWidget *dirSelector;
-	dirSelector = selctionOfDir(set_entry_inputGaussDir, "Select folder for the input Gaussian files", GABEDIT_TYPEWIN_ORB); 
+	dirSelector = selectionOfDir(set_entry_inputGaussDir, "Select folder for the input Gaussian files", GABEDIT_TYPEWIN_ORB); 
   	gtk_window_set_modal (GTK_WINDOW (dirSelector), TRUE);
   	g_signal_connect(G_OBJECT(dirSelector),"delete_event", (GCallback)gtk_widget_destroy,NULL);
 
@@ -5329,7 +5590,7 @@ static void create_gaussian_file_dlg(gboolean oneFile)
 
 	if(geometryConvergence.numberOfGeometries<1) 
 	{
-		gchar* t = g_strdup_printf(_("Sorry\n You should read the geometries befor")); 
+		gchar* t = g_strdup_printf(_("Sorry\n You should read the geometries before")); 
 		Message(t,_("Error"),TRUE);
 		return;
 	}
@@ -5375,10 +5636,10 @@ static void help_animated_file()
 		" For create an animated file :\n"
 		" ============================\n"
 	        "   1) Read geometries from a Dalton, Gaussian, Molpro, Gabedit, Molden, MPQC or from XYZ file.\n"
-	        "   2) Select \"create a series of BMP (or PPM or POV) images\" button.\n"
+	        "   2) Select \"create a seriess of BMP (or PPM or POV) images\" button.\n"
 	        "      You can select your favorite directory by clicking to \"Directory\" button.\n"
 	        "   3) Click to Play button.\n"
-	        "   4) After on cycle Gabedit create a series of BMP(gab*.bmp) or PPM (gab*.ppm)  or POV(gab*.pov) files.\n"
+	        "   4) After on cycle Gabedit create a seriess of BMP(gab*.bmp) or PPM (gab*.ppm)  or POV(gab*.pov) files.\n"
 	        "      From these files, you can create a gif or a png animated file using convert software.\n"
 	        "              with \"convert -delay 10 -loop 1000 gab*.bmp imageAnim.gif\" command you can create a gif animated file.\n"
 	        "              with \"convert -delay 10 -loop 1000 gab*.bmp imageAnim.mng\" command you can create a png animated file.\n\n"
@@ -5409,6 +5670,7 @@ static void activate_action (GtkAction *action)
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGaussInput");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGaussInputLink");
 		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/CreateGr");
+		if(GTK_IS_UI_MANAGER(manager)) set_sensitive_option(manager,"/MenuBar/File/ComputeConformerTpes");
 	}
 	else if(!strcmp(name, "ReadAuto")) read_file_dlg();
 	else if(!strcmp(name, "ReadGabedit")) read_gabedit_file_dlg();
@@ -5434,6 +5696,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "CreateGaussInput")) create_gaussian_file_dlg(FALSE);
 	else if(!strcmp(name, "CreateGaussInputLink")) create_gaussian_file_dlg(TRUE);
 	else if(!strcmp(name, "CreateGr")) create_gr_dlg(TRUE);
+	else if(!strcmp(name, "ComputeConformerTpes")) computeConformerTypes();
 }
 /*--------------------------------------------------------------------*/
 static GtkActionEntry gtkActionEntries[] =
@@ -5456,6 +5719,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"CreateGaussInput", GABEDIT_STOCK_GAUSSIAN, N_("_Create multiple input file for Gaussian"), NULL, "Save", G_CALLBACK (activate_action) },
 	{"CreateGaussInputLink", GABEDIT_STOCK_GAUSSIAN, N_("_Create single input file for Gaussian with more geometries"), NULL, "Save", G_CALLBACK (activate_action) },
 	{"CreateGr", GABEDIT_STOCK_GAUSSIAN, N_("_Compute pair radial distribution"), NULL, "gr", G_CALLBACK (activate_action) },
+	{"ComputeConformerTpes", GABEDIT_STOCK_GAUSSIAN, N_("Compute conformer _Types"), NULL, "gr", G_CALLBACK (activate_action) },
 	{"ReadXYZ", NULL, N_("Read a _xyz file"), NULL, "Read a xyz file", G_CALLBACK (activate_action) },
 	{"ReadHIN", NULL, N_("Read a _Hyperchem files"), NULL, "Read a hyperchem files", G_CALLBACK (activate_action) },
 	{"SaveGabedit", GABEDIT_STOCK_SAVE, N_("_Save in Gabedit format"), NULL, "Save", G_CALLBACK (activate_action) },
@@ -5499,6 +5763,8 @@ static const gchar *uiMenuInfo =
 "    <menuitem name=\"CreateGaussInputLink\" action=\"CreateGaussInputLink\" />\n"
 "    <separator name=\"sepMenuCreateGr\" />\n"
 "    <menuitem name=\"CreateGr\" action=\"CreateGr\" />\n"
+"    <separator name=\"sepMenuComputeConformerTpes\" />\n"
+"    <menuitem name=\"ComputeConformerTpes\" action=\"ComputeConformerTpes\" />\n"
 "    <separator name=\"sepMenuPopClose\" />\n"
 "    <menuitem name=\"Close\" action=\"Close\" />\n"
 "  </popup>\n"
@@ -5530,6 +5796,7 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"CreateGaussInput\" action=\"CreateGaussInput\" />\n"
 "      <menuitem name=\"CreateGaussInputLink\" action=\"CreateGaussInputLink\" />\n"
 "      <menuitem name=\"CreateGr\" action=\"CreateGr\" />\n"
+"      <menuitem name=\"ComputeConformerTpes\" action=\"ComputeConformerTpes\" />\n"
 "      <separator name=\"sepMenuClose\" />\n"
 "      <menuitem name=\"Close\" action=\"Close\" />\n"
 "    </menu>\n"
@@ -5603,7 +5870,7 @@ void geometryConvergenceDlg()
 	Win= gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_position(GTK_WINDOW(Win),GTK_WIN_POS_CENTER);
 	gtk_window_set_transient_for(GTK_WINDOW(Win),GTK_WINDOW(parentWindow));
-	gtk_window_set_default_size (GTK_WINDOW(Win),-1,(gint)(ScreenHeight*0.69));
+	//gtk_window_set_default_size (GTK_WINDOW(Win),-1,(gint)(ScreenHeightD*0.69));
 	gtk_window_set_title(GTK_WINDOW(Win),"Multiple Geometries");
 	gtk_window_set_modal (GTK_WINDOW (Win), TRUE);
 
@@ -5623,12 +5890,12 @@ void geometryConvergenceDlg()
 	gtk_widget_realize(Win);
 
 	treeView = addList(hbox, manager);
-	addEntrysButtons(vbox);
+	addEntriesButtons(vbox);
 	gtk_widget_show_all(vbox);
 
 	gtk_widget_show_now(Win);
 
-	fit_windows_position(PrincipalWindow, Win);
+	/* fit_windows_position(PrincipalWindow, Win);*/
 
   	rafreshList();
 	stopAnimation(NULL, NULL);

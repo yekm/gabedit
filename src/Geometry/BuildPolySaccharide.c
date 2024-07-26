@@ -1,6 +1,6 @@
 /* BuildPolySaccharide.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -45,7 +45,7 @@ void create_GeomXYZ_from_draw_grometry();
 #define LigneT 7
 #define ColonneT 2
 
-static GtkWidget* Entrys[3];
+static GtkWidget* Entries[3];
 static GtkWidget* ButtonAlpha = NULL;
 static GtkWidget* ButtonBeta = NULL;
 static GtkWidget* ButtonL = NULL;
@@ -382,11 +382,11 @@ void add_fragment(GtkWidget* button)
 	gint* omegaArray=NULL;
 
 
-	t = gtk_entry_get_text(GTK_ENTRY(Entrys[0]));
+	t = gtk_entry_get_text(GTK_ENTRY(Entries[0]));
 	phi = atof(t);
-	t = gtk_entry_get_text(GTK_ENTRY(Entrys[1]));
+	t = gtk_entry_get_text(GTK_ENTRY(Entries[1]));
 	psi = atof(t);
-	t = gtk_entry_get_text(GTK_ENTRY(Entrys[2]));
+	t = gtk_entry_get_text(GTK_ENTRY(Entries[2]));
 	omega = atof(t);
 
 	if(Nb>0)
@@ -626,8 +626,8 @@ static void traite_conformation(GtkComboBox *combobox, gpointer d)
 	}
 
 	sprintf(conf,"%s",option);
-	if(!strcmp(option,"O1 - C5") || !strcmp(option,"O1 - C6")) gtk_editable_set_editable((GtkEditable*) Entrys[2],TRUE);
-	else gtk_editable_set_editable((GtkEditable*) Entrys[2],FALSE);
+	if(!strcmp(option,"O1 - C5") || !strcmp(option,"O1 - C6")) gtk_editable_set_editable((GtkEditable*) Entries[2],TRUE);
+	else gtk_editable_set_editable((GtkEditable*) Entries[2],FALSE);
 	if(!strcmp(option,"O1 - C5"))
 	{
 		for(i=0;i<LigneT;i++)
@@ -814,17 +814,17 @@ static void add_conformation(GtkWidget* Dlg,GtkWidget *box)
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  1,1);
-		Entrys[i] = gtk_entry_new();
-		gtk_table_attach(GTK_TABLE(Table),Entrys[i],1,2,i,i+1,
+		Entries[i] = gtk_entry_new();
+		gtk_table_attach(GTK_TABLE(Table),Entries[i],1,2,i,i+1,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
 		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
 		  1,1);
 
 		if(i==2)
-  			gtk_editable_set_editable((GtkEditable*) Entrys[i],FALSE);
+  			gtk_editable_set_editable((GtkEditable*) Entries[i],FALSE);
 		else
-  			gtk_editable_set_editable((GtkEditable*) Entrys[i],TRUE);
-  		gtk_entry_set_text(GTK_ENTRY(Entrys[i]),elabel[i]);
+  			gtk_editable_set_editable((GtkEditable*) Entries[i],TRUE);
+  		gtk_entry_set_text(GTK_ENTRY(Entries[i]),elabel[i]);
 	}
 }
 /******************************************************************************/
@@ -935,7 +935,7 @@ void build_polysaccharide_dlg()
   gtk_widget_show_all(GTK_DIALOG(Dlg)->action_area);
   gtk_widget_show_now(Dlg);
 
-  fit_windows_position(GeomDlg, Dlg);
+  /*fit_windows_position(GeomDlg, Dlg);*/
 
   gtk_combo_box_set_active (GTK_COMBO_BOX (combobox), 3);
 }

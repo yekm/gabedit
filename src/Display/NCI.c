@@ -1,6 +1,6 @@
 /* NCI.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -79,8 +79,8 @@ static gint compute_nci2D_from_density_grid(Grid* grid, gdouble densityCutOff, g
 	*pY = NULL;
 	if(!test_grid_all_positive(grid))
 	{
-		Message(_("Sorry\n The current grid is not a grid for electronic density"),_("Error"),TRUE);
-		return nPoints;
+		Message(_("Sorry\n The current grid is not a grid for electronic density"),_("Warning"),TRUE);
+		//return nPoints;
 	}
 	if(grid==NULL) return nPoints;
 	if(nBoundary<1) return nPoints;
@@ -217,8 +217,8 @@ static Grid* compute_nci_from_density_grid(Grid* grid, gdouble densityCutOffMin,
 
 	if(!test_grid_all_positive(grid))
 	{
-		Message(_("Sorry\n The current grid is not a grid for electronic density"),_("Error"),TRUE);
-		return NULL;
+		Message(_("Sorry\n The current grid is not a grid for electronic density"),_("Warning"),TRUE);
+		//return NULL;
 	}
 	if(grid==NULL) return NULL;
 	if(nBoundary<1) return NULL;
@@ -420,8 +420,8 @@ void nci2D_analysis_dlg(gchar* title)
 
 	if(!test_grid_all_positive(grid))
 	{
-		Message(_("Sorry\n The current grid is not a grid for electronic density"),_("Error"),TRUE);
-		return; 
+		Message(_("Sorry\n The current grid is not a grid for electronic density"),_("Warning"),TRUE);
+		//return; 
 	}
 	if(grid==NULL) return;
 	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -539,8 +539,8 @@ void nci_surface_dlg(gchar* title)
 
 	if(!test_grid_all_positive(grid))
 	{
-		Message(_("Sorry\n The current grid is not a grid for electronic density"),_("Error"),TRUE);
-		return; 
+		Message(_("Sorry\n The current grid is not a grid for electronic density"),_("Warning"),TRUE);
+		//return; 
 	}
 	if(grid==NULL) return;
 	Win = gtk_window_new(GTK_WINDOW_TOPLEVEL);

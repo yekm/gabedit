@@ -1,6 +1,6 @@
 /* DrawGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -65,6 +65,46 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/SelectionDlg.h"
 #include "../IsotopeDistribution/IsotopeDistributionCalculatorDlg.h"
 #include "../Geometry/TreeMolecule.h"
+#include "../Geometry/BuildCrystal.h"
+
+/* extern of .h */
+FragmentsItems *FragItems;
+gint NFrags;
+
+CoordMaxMin coordmaxmin;
+
+GeomDef *geometry;
+GeomDef *geometry0;
+guint Natoms;
+
+gint *NumFatoms;
+guint NFatoms;
+
+gint TransX;
+gint TransY;
+GtkWidget *GeomDlg;
+GtkWidget *StopButton;
+gboolean StopCalcul;
+
+gboolean ShadMode;
+gboolean PersMode;
+gboolean LightMode;
+gboolean OrtepMode;
+gboolean DrawDistance;
+gboolean DrawDipole;
+gboolean ShowDipole;
+gboolean ShowHBonds;
+
+gdouble dipole[NDIVDIPOLE][3];
+gdouble dipole0[NDIVDIPOLE][3];
+gdouble dipole00[NDIVDIPOLE][3];
+gint DXi[NDIVDIPOLE];
+gint DYi[NDIVDIPOLE];
+gint Ndipole[NDIVDIPOLE];
+gchar* AtomToInsert;
+gint NumSelAtoms[4];
+gboolean Ddef;
+
 
 
 /********************************************************************************/
@@ -203,7 +243,14 @@ void  get_origine_molecule_drawgeom(gdouble orig[])
 	orig[1] = Orig[1];
 	orig[2] = Orig[2];
 }
-
+/*********************************************************************************************/
+gdouble  get_symprec_from_geomdlg()
+{
+	gdouble symprec = 1e-4;
+	gchar* tmp = g_object_get_data(G_OBJECT(GeomDlg), "SymPrecision");
+	if(tmp) symprec = atof(tmp);
+	return symprec;
+}
 /**********************************************************************************/
 static gchar* getFormulaOfTheMolecule()
 {
@@ -8214,6 +8261,7 @@ static gint insert_fragment_connected_to_an_atom(gint toD, gint toB, gint toA)
 	gdouble B[3];
 	gint j;
 	gint iBegin;
+	gdouble bondLength;
 
 	if(toD <0 || toB <0 || Frag.atomToDelete<0 || Frag.atomToBondTo<0) return 0;
 	if(toD >= Natoms || toB>= Natoms || Frag.atomToDelete>= Frag.NAtoms || Frag.atomToBondTo>= Frag.NAtoms) return 0;
@@ -8281,6 +8329,12 @@ static gint insert_fragment_connected_to_an_atom(gint toD, gint toB, gint toA)
 	}
 
 	Natoms +=Frag.NAtoms;
+	/* Set Distance toB-toD to radius toB + radius Frag.atomToBondTo */
+	bondLength = geometry[toB].Prop.covalentRadii + geometry[toBond].Prop.covalentRadii; 
+	bondLength /= (ANG_TO_BOHR);
+	bondLength *= 0.85;
+	SetBondDistance(geometry,toB, toBond, bondLength,atomlist, Frag.NAtoms);
+			
 			
 	SetAngle(Natoms,geometry0,toD, toB, toBond,0.0,atomlist, Frag.NAtoms);
 
@@ -11426,7 +11480,7 @@ void create_window_drawing()
 	else
 		gtk_widget_show(vboxhandle);
 
-	gtk_window_set_default_size (GTK_WINDOW(GeomDlg), (gint)(ScreenHeight*0.85), (gint)(ScreenHeight*0.85));
+	//gtk_window_set_default_size (GTK_WINDOW(GeomDlg), (gint)(ScreenHeight*0.85), (gint)(ScreenHeight*0.85));
 
 
 	g_object_set_data(G_OBJECT(GeomDlg), "StatusBox",handlebox);
@@ -11451,6 +11505,7 @@ void create_window_drawing()
 	set_icone(GeomDlg);
 	if(Natoms == 0) SetOperation(NULL,EDITOBJECTS);
 	/*define_good_trans();*/
+	setSymmetryPrecision(GeomDlg,"1e-4");
 }
 /*****************************************************************************/
 void draw_geometry(GtkWidget *w,gpointer d)
@@ -11526,5 +11581,82 @@ void export_geometry(gchar* fileName, gchar* fileType)
 		crExport = NULL;
 		return;
 	}
+}
+/********************************************************************************/
+static void setSymbolOfselectedAtoms(GtkWidget *button,gpointer data)
+{
+	GtkWidget* winDlg  = (GtkWidget*) g_object_get_data(G_OBJECT (button), "WinDlg");
+	gchar* symbol = NULL;
+	if(data && (gchar*) data) symbol = (gchar*) data;
+	/* fprintf(stderr,"%s\n",symbol);*/
+	if(symbol && Natoms>0 && NFatoms>0 && NumFatoms)
+	{
+		gint k,i;
+		for (k=0;k<(gint)NFatoms;k++)
+		for (i=0;i<(gint)Natoms;i++)
+		{
+			if(geometry[i].N== NumFatoms[k])
+			{
+				if(geometry0[i].Prop.name) g_free(geometry0[i].Prop.name);
+				if(geometry0[i].Prop.symbol) g_free(geometry0[i].Prop.symbol);
+				geometry0[i].Prop = prop_atom_get(symbol);
+				if(geometry[i].Prop.name) g_free(geometry[i].Prop.name);
+				if(geometry[i].Prop.symbol) g_free(geometry[i].Prop.symbol);
+				geometry[i].Prop = prop_atom_get(symbol);
+			}
+		}
+		reset_all_connections();
+        	reset_charges_multiplicities();
+        	drawGeom();
+        	set_optimal_geom_view();
+        	create_GeomXYZ_from_draw_grometry();
+	}
+	gtk_widget_destroy(winDlg);
+}
+/********************************************************************************/
+void setSymbolOfselectedAtomsDlg()
+{
+	GtkWidget* Table;
+	GtkWidget* button;
+	GtkWidget* frame;
+	guint i;
+	guint j;
+        GtkStyle *button_style;
+        GtkStyle *style;
+
+	gchar*** Symb = get_periodic_table();
+	GtkWidget* winDlg = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_modal(GTK_WINDOW(winDlg),TRUE);
+	gtk_window_set_title(GTK_WINDOW(winDlg),_("Select your atom"));
+	//gtk_window_set_default_size (GTK_WINDOW(winDlg),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
+
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
+	gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
+
+	gtk_container_add(GTK_CONTAINER(winDlg),frame);  
+	gtk_widget_show (frame);
+
+	Table = gtk_table_new(PERIODIC_TABLE_N_ROWS-1,PERIODIC_TABLE_N_COLUMNS,TRUE);
+	gtk_container_add(GTK_CONTAINER(frame),Table);
+	 button_style = gtk_widget_get_style(winDlg); 
+  
+	for ( i = 0;i<PERIODIC_TABLE_N_ROWS-1;i++)
+	for ( j = 0;j<PERIODIC_TABLE_N_COLUMNS;j++)
+	{
+	  if(strcmp(Symb[j][i],"00"))
+	  {
+	  	button = gtk_button_new_with_label(Symb[j][i]);
+          	style=set_button_style(button_style,button,Symb[j][i]);
+		g_object_set_data(G_OBJECT (button), "WinDlg",winDlg);
+          	g_signal_connect(G_OBJECT(button), "clicked", (GCallback)setSymbolOfselectedAtoms,(gpointer )Symb[j][i]);
+	  	gtk_table_attach(GTK_TABLE(Table),button,j,j+1,i,i+1,
+		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND) ,
+		  (GtkAttachOptions)(GTK_FILL | GTK_EXPAND),
+		  1,1);
+	  }
+	}
+ 	
+	gtk_widget_show_all(winDlg);
 }
 #endif /* DRAWGEOMGL */

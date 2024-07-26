@@ -1,6 +1,6 @@
 /* CoulombOrbitals.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1136,7 +1136,7 @@ static GtkWidget* new_alpha_list(GtkWidget *hboxall)
   	gtk_widget_show (frame);
   	vbox = create_vbox(frame);
   	scr=gtk_scrolled_window_new(NULL,NULL);
-	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeight*WIDTHSCR));
+	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeightD*WIDTHSCR));
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scr),GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   	gtk_box_pack_start(GTK_BOX (vbox), scr,TRUE, TRUE, 1);
   	gtk_container_add(GTK_CONTAINER(scr),gtklist);
@@ -1191,7 +1191,7 @@ static GtkWidget* new_beta_list(GtkWidget *hboxall)
   	vbox = create_vbox(frame);
   	scr=gtk_scrolled_window_new(NULL,NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scr),GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeight*WIDTHSCR));
+	gtk_widget_set_size_request(scr,widall,(gint)(ScreenHeightD*WIDTHSCR));
   	gtk_box_pack_start(GTK_BOX (vbox), scr,TRUE, TRUE, 1);
   	gtk_container_add(GTK_CONTAINER(scr),gtklist);
 	set_base_style(gtklist,55000,55000,55000);
@@ -1236,17 +1236,17 @@ void coulomb_orbitals_dlg()
 
 	if(!GeomOrb)
 	{
-		Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load a file beforee\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!CoefAlphaOrbitals)
 	{
-		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load the MO beforee\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!AOrb && !SAOrb)
 	{
-		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load the MO beforee\n"),_("Error"),TRUE);
 		return;
 	}
 
@@ -1390,7 +1390,7 @@ void compute_overlap_matrix(gint typeOrb)
 	}
 	if(!AOrb && !SAOrb)
 	{
-		GtkWidget* message = Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
+		GtkWidget* message = Message(_("Sorry, Please load the MO beforee\n"),_("Error"),TRUE);
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		return;
 	}
@@ -1794,8 +1794,8 @@ static void apply_transition_matrix(GtkWidget *Win,gpointer data)
 	if(result && !CancelCalcul)
 	{
 		GtkWidget* message = MessageTxt(result,_("Result"));
-		gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidth*0.8),-1);
-		gtk_widget_set_size_request(message,(gint)(ScreenWidth*0.45),-1);
+		//gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidthD*0.8),-1);
+		gtk_widget_set_size_request(message,(gint)(ScreenWidthD*0.45),-1);
   		/* gtk_window_set_modal (GTK_WINDOW (message), TRUE);*/
 		gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));
 	}
@@ -1835,17 +1835,17 @@ void transition_matrix_orbitals_dlg()
 
 	if(!GeomOrb)
 	{
-		Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load a file beforee\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!CoefAlphaOrbitals)
 	{
-		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load the MO beforee\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!AOrb && !SAOrb)
 	{
-		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load the MO beforee\n"),_("Error"),TRUE);
 		return;
 	}
 
@@ -2258,8 +2258,8 @@ static void apply_spatial_overlapiijj(GtkWidget *Win,gpointer data)
 	if(result && !CancelCalcul)
 	{
 		GtkWidget* message = MessageTxt(result,_("Result"));
-		gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidth*0.8),-1);
-		gtk_widget_set_size_request(message,(gint)(ScreenWidth*0.45),-1);
+		//gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidthD*0.8),-1);
+		gtk_widget_set_size_request(message,(gint)(ScreenWidthD*0.45),-1);
   		/* gtk_window_set_modal (GTK_WINDOW (message), TRUE);*/
 		gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));
 	}
@@ -2300,17 +2300,17 @@ void spatial_overlapiijj_orbitals_dlg()
 
 	if(!GeomOrb)
 	{
-		Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load a file beforee\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!CoefAlphaOrbitals)
 	{
-		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load the MO beforee\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!AOrb && !SAOrb)
 	{
-		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load the MO beforee\n"),_("Error"),TRUE);
 		return;
 	}
 
@@ -2689,8 +2689,8 @@ static void apply_spatial_overlapij(GtkWidget *Win,gpointer data)
 	if(result && !CancelCalcul)
 	{
 		GtkWidget* message = MessageTxt(result,_("Result"));
-		gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidth*0.8),-1);
-		gtk_widget_set_size_request(message,(gint)(ScreenWidth*0.45),-1);
+		//gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidthD*0.8),-1);
+		gtk_widget_set_size_request(message,(gint)(ScreenWidthD*0.45),-1);
   		/* gtk_window_set_modal (GTK_WINDOW (message), TRUE);*/
 		gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));
 	}
@@ -2726,17 +2726,17 @@ void spatial_overlapij_orbitals_dlg()
 
 	if(!GeomOrb)
 	{
-		Message(_("Sorry, Please load a file before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load a file beforee\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!CoefAlphaOrbitals)
 	{
-		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load the MO beforee\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!AOrb && !SAOrb)
 	{
-		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load the MO beforee\n"),_("Error"),TRUE);
 		return;
 	}
 
@@ -2816,7 +2816,7 @@ static void setPartialChargesToCalculated(GtkWidget *win)
 	gdouble* charges = NULL;
 	if(GTK_IS_WIDGET(win)) charges = g_object_get_data(G_OBJECT (win), "Charges");
 	if(!charges)  return;
-	for(i=0;i<Ncenters;i++)
+	for(i=0;i<nCenters;i++)
 		GeomOrb[i].partialCharge = charges[i];
 	glarea_rafresh(GLArea);
 }
@@ -2876,7 +2876,7 @@ static GtkWidget* showCalculatedChargesDlg(gchar *message,gchar *title,gdouble* 
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)destroyCalculatedChargesDlg, GTK_OBJECT(dlgWin));
 
 	add_button_windows(title,dlgWin);
-	gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeight*0.6), (gint)(ScreenHeight*0.5));
+	//gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeightD*0.6), (gint)(ScreenHeightD*0.5));
 	gtk_widget_show_all(dlgWin);
   	g_object_set_data(G_OBJECT (dlgWin), "Charges",charges);
 	return dlgWin;
@@ -2896,7 +2896,7 @@ void compute_mulliken_charges()
 	gchar str[BSIZE];
 	gint kk=0;
 
-	if(Ncenters<1) return;
+	if(nCenters<1) return;
 	if(!AOrb && (!SAOrb || !SOverlaps)) return;
 
 	destroy_win_list();
@@ -2908,8 +2908,8 @@ void compute_mulliken_charges()
 	if(delta<1) delta = 1;
 	pos = delta;
 
-	charges = g_malloc(Ncenters*sizeof(gdouble));
-	for(i=0;i<Ncenters;i++) charges[i] = GeomOrb[i].nuclearCharge;
+	charges = g_malloc(nCenters*sizeof(gdouble));
+	for(i=0;i<nCenters;i++) charges[i] = GeomOrb[i].nuclearCharge;
 	progress_orb_txt(0,str,TRUE);
 	kk = 0;
 	for(k=0;k<NAOrb;k++)
@@ -2940,12 +2940,12 @@ void compute_mulliken_charges()
 	}
 	progress_orb_txt(0," ",TRUE);
 
-	result = g_malloc(Ncenters*100*sizeof(gchar));
+	result = g_malloc(nCenters*100*sizeof(gchar));
 	tmp = g_malloc(BSIZE*sizeof(gchar));
 	sprintf(result," Mulliken charges\n");
 
 	setTextInProgress(_("Preparation of text to show... Please wait"));
-	for(i=0;i<Ncenters;i++)
+	for(i=0;i<nCenters;i++)
 	{
 		if(CancelCalcul) break;
 		sprintf(tmp,"Atom# %d : %lf\n",i+1,charges[i]);
@@ -2971,13 +2971,13 @@ static void setBondOrdersToCalculated(GtkWidget *win)
 	if(GTK_IS_WIDGET(win)) bondOrders = g_object_get_data(G_OBJECT (win), "BondOrders");
 	if(!bondOrders)  return;
 	freeBondsOrb();
-	if(Ncenters<1) return ;
-	for(i = 0;i<Ncenters;i++)
+	if(nCenters<1) return ;
+	for(i = 0;i<nCenters;i++)
 	{
-		for(j=i+1;j<Ncenters;j++)
+		for(j=i+1;j<nCenters;j++)
 		{
-			gint ii    = i*Ncenters + j - i*(i+1)/2;
-			if(i>j) ii = j*Ncenters + i - j*(j+1)/2;
+			gint ii    = i*nCenters + j - i*(i+1)/2;
+			if(i>j) ii = j*nCenters + i - j*(j+1)/2;
 			if((gint)(bondOrders[ii]+0.5)==1)
 			{
 				BondType* A=g_malloc(sizeof(BondType));
@@ -3013,7 +3013,7 @@ static void setBondOrdersToCalculated(GtkWidget *win)
 			}
 		}
 	  }
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	glarea_rafresh(GLArea);
 }
 /************************************************************************************************************/
@@ -3071,7 +3071,7 @@ static GtkWidget* showCalculatedBondOrdersDlg(gchar *message,gchar *title,gdoubl
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)destroyCalculatedBondOrdersDlg, GTK_OBJECT(dlgWin));
 
 	add_button_windows(title,dlgWin);
-	gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeight*0.6), (gint)(ScreenHeight*0.5));
+	//gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeightD*0.6), (gint)(ScreenHeightD*0.5));
 	gtk_widget_show_all(dlgWin);
   	g_object_set_data(G_OBJECT (dlgWin), "BondOrders",bondOrders);
 	return dlgWin;
@@ -3093,10 +3093,10 @@ void compute_bondOrders()
 	gdouble** Pa = NULL;
 	gdouble** Pb = NULL;
 	gdouble** PS = NULL;
-	gint n2 = Ncenters*(Ncenters+1)/2;
+	gint n2 = nCenters*(nCenters+1)/2;
 	gint kk;
 
-	if(Ncenters<1) return;
+	if(nCenters<1) return;
 	if(!AOrb && (!SAOrb || !SOverlaps)) return;
 
 	destroy_win_list();
@@ -3181,8 +3181,8 @@ void compute_bondOrders()
 		for(l=0;l<NAOrb;l++)
 		{
 			gint j = (AOrb)?AOrb[l].NumCenter:SAOrb[l].NumCenter;
-			gint ii =  i*Ncenters + j - i*(i+1)/2;
-			if(i>j) ii = j*Ncenters + i - j*(j+1)/2;
+			gint ii =  i*nCenters + j - i*(i+1)/2;
+			if(i>j) ii = j*nCenters + i - j*(j+1)/2;
 			bondOrders[ii] += PS[k][l]*PS[l][k];
 		}
 		/* printf(" k %d  %f\n",i,  PS[k][k]);*/
@@ -3208,8 +3208,8 @@ void compute_bondOrders()
 		for(l=0;l<NAOrb;l++)
 		{
 			gint j = (AOrb)?AOrb[l].NumCenter:SAOrb[l].NumCenter;
-			gint ii =  i*Ncenters + j - i*(i+1)/2;
-			if(i>j) ii = j*Ncenters + i - j*(j+1)/2;
+			gint ii =  i*nCenters + j - i*(i+1)/2;
+			if(i>j) ii = j*nCenters + i - j*(j+1)/2;
 			bondOrders[ii] += PS[k][l]*PS[l][k];
 		}
 		/* printf(" k %d  %f\n",i,  PS[k][k]);*/
@@ -3231,11 +3231,11 @@ void compute_bondOrders()
 	sprintf(result," BondOrders\n");
 
 	setTextInProgress(_("Preparation of text to show... Please wait"));
-	for(i=0;i<Ncenters;i++)
-	for(j=i+1;j<Ncenters;j++)
+	for(i=0;i<nCenters;i++)
+	for(j=i+1;j<nCenters;j++)
 	{
-		gint ii =  i*Ncenters + j - i*(i+1)/2;
-		if(i>j) ii = j*Ncenters + i - j*(j+1)/2;
+		gint ii =  i*nCenters + j - i*(i+1)/2;
+		if(i>j) ii = j*nCenters + i - j*(j+1)/2;
 		if(CancelCalcul) break;
 		sprintf(tmp,"Bond %d-%d : %lf\n",i+1,j+1,bondOrders[ii]);
 		strcat(result,tmp);
@@ -3593,8 +3593,8 @@ static void apply_lambda_diagnostic(GtkWidget *Win,gpointer data)
 	if(result && !CancelCalcul)
 	{
 		GtkWidget* message = MessageTxt(result,_("Result"));
-		gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidth*0.8),-1);
-		gtk_widget_set_size_request(message,(gint)(ScreenWidth*0.45),-1);
+		//gtk_window_set_default_size (GTK_WINDOW(message),(gint)(ScreenWidthD*0.8),-1);
+		gtk_widget_set_size_request(message,(gint)(ScreenWidthD*0.45),-1);
   		/* gtk_window_set_modal (GTK_WINDOW (message), TRUE);*/
 		gtk_window_set_transient_for(GTK_WINDOW(message),GTK_WINDOW(PrincipalWindow));
 	}
@@ -3617,11 +3617,11 @@ static void help_trans_prop()
 		_("   Lambda is calculated as in M.J.G. Peach et al. J. Chem. Phys. 128, 044118 (2008).\n\n"
 		"       You must select the file containing the transition properties. \n\n"
 	        "       The text file must contain 5 columns by line.\n"
-		"       First line  : an integer. The electron is excited from this orbital.\n"
-		"       second line : a character B or A. The spin of electron.\n"
-		"       Third line  : an integer. The electron is excited to this orbital.\n"
-		"       Forth line  : a character B or A. The spin of electron.\n"
-		"       Fifth line  : a float. The largest coefficients in the CI expansion.\n\n"
+		"       First column  : an integer. The electron is excited from this orbital.\n"
+		"       second column : a character B or A. The spin of electron.\n"
+		"       Third column  : an integer. The electron is excited to this orbital.\n"
+		"       Forth column  : a character B or A. The spin of electron.\n"
+		"       Fifth column  : a float. The largest coefficients in the CI expansion.\n\n"
 		"       Example :\n"
 		"       5 B 6 B 0.401\n"
 		"       4 A 7 B 0.205\n\n"
@@ -3651,17 +3651,17 @@ void lambda_diagnostic_dlg()
 
 	if(!GeomOrb)
 	{
-		Message(_("Sorry, Please read the MO before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please read the MO beforee\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!CoefAlphaOrbitals)
 	{
-		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load the MO beforee\n"),_("Error"),TRUE);
 		return;
 	}
 	if(!AOrb && !SAOrb)
 	{
-		Message(_("Sorry, Please load the MO before\n"),_("Error"),TRUE);
+		Message(_("Sorry, Please load the MO beforee\n"),_("Error"),TRUE);
 		return;
 	}
 

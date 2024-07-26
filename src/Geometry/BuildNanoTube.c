@@ -1,6 +1,6 @@
 /* BuildNanoTube.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -38,7 +38,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/InterfaceGeom.h"
 #include "../Geometry/MenuToolBarGeom.h"
 
-static GtkWidget* Entrys[4];
+static GtkWidget* Entries[4];
 static gint entryWidth = 40;
 
 /********************************************************************************/
@@ -67,16 +67,16 @@ static void build_nanotube(GtkWidget *w,gpointer data)
 	gdouble* coord[4];
 	gint i;
 
-	te = gtk_entry_get_text(GTK_ENTRY(Entrys[0]));
+	te = gtk_entry_get_text(GTK_ENTRY(Entries[0]));
 	n = atoi(te);
 	if(n<=0) n = 10;
-	te = gtk_entry_get_text(GTK_ENTRY(Entrys[1]));
+	te = gtk_entry_get_text(GTK_ENTRY(Entries[1]));
 	m = atoi(te);
 	if(m<0) m = 0;
-	te = gtk_entry_get_text(GTK_ENTRY(Entrys[2]));
+	te = gtk_entry_get_text(GTK_ENTRY(Entries[2]));
 	b = atof(te);
 	if(b<=0) b = 1.422;
-	te = gtk_entry_get_text(GTK_ENTRY(Entrys[3]));
+	te = gtk_entry_get_text(GTK_ENTRY(Entries[3]));
 	ncells = atoi(te);
 	if(ncells<1) ncells = 1;
 
@@ -219,18 +219,18 @@ void build_nanotube_dlg()
    label = gtk_label_new("(");
    gtk_table_attach(GTK_TABLE(table),label,2,3,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 
-   Entrys[0] = gtk_entry_new();
-   gtk_widget_set_size_request(GTK_WIDGET(Entrys[0]),entryWidth,-1);
-   gtk_entry_set_text(GTK_ENTRY(Entrys[0]),"10");
-   gtk_table_attach(GTK_TABLE(table),Entrys[0],3,4,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
+   Entries[0] = gtk_entry_new();
+   gtk_widget_set_size_request(GTK_WIDGET(Entries[0]),entryWidth,-1);
+   gtk_entry_set_text(GTK_ENTRY(Entries[0]),"10");
+   gtk_table_attach(GTK_TABLE(table),Entries[0],3,4,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 
    label = gtk_label_new(",");
    gtk_table_attach(GTK_TABLE(table),label,4,5,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 
-   Entrys[1] = gtk_entry_new();
-   gtk_widget_set_size_request(GTK_WIDGET(Entrys[1]),entryWidth,-1);
-   gtk_entry_set_text(GTK_ENTRY(Entrys[1]),"0");
-   gtk_table_attach(GTK_TABLE(table),Entrys[1],5,6,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
+   Entries[1] = gtk_entry_new();
+   gtk_widget_set_size_request(GTK_WIDGET(Entries[1]),entryWidth,-1);
+   gtk_entry_set_text(GTK_ENTRY(Entries[1]),"0");
+   gtk_table_attach(GTK_TABLE(table),Entries[1],5,6,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 
    label = gtk_label_new(")");
    gtk_table_attach(GTK_TABLE(table),label,6,7,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
@@ -244,10 +244,10 @@ void build_nanotube_dlg()
    label = gtk_label_new(":");
    gtk_table_attach(GTK_TABLE(table),label,1,2,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 
-   Entrys[2] = gtk_entry_new();
-   gtk_widget_set_size_request(GTK_WIDGET(Entrys[2]),entryWidth*2,-1);
-   gtk_entry_set_text(GTK_ENTRY(Entrys[2]),"1.422");
-   gtk_table_attach(GTK_TABLE(table),Entrys[2],2,7,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
+   Entries[2] = gtk_entry_new();
+   gtk_widget_set_size_request(GTK_WIDGET(Entries[2]),entryWidth*2,-1);
+   gtk_entry_set_text(GTK_ENTRY(Entries[2]),"1.422");
+   gtk_table_attach(GTK_TABLE(table),Entries[2],2,7,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 
    label = gtk_label_new(_("Angstroms"));
    gtk_table_attach(GTK_TABLE(table),label,7,8,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
@@ -258,10 +258,10 @@ void build_nanotube_dlg()
    label = gtk_label_new(":");
    gtk_table_attach(GTK_TABLE(table),label,1,2,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 
-   Entrys[3] = gtk_entry_new();
-   gtk_widget_set_size_request(GTK_WIDGET(Entrys[3]),entryWidth,-1);
-   gtk_entry_set_text(GTK_ENTRY(Entrys[3]),"1");
-   gtk_table_attach(GTK_TABLE(table),Entrys[3],2,8,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
+   Entries[3] = gtk_entry_new();
+   gtk_widget_set_size_request(GTK_WIDGET(Entries[3]),entryWidth,-1);
+   gtk_entry_set_text(GTK_ENTRY(Entries[3]),"1");
+   gtk_table_attach(GTK_TABLE(table),Entries[3],2,8,i,i+1,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK) ,(GtkAttachOptions)(GTK_FILL|GTK_SHRINK),1,1);
 
   gtk_widget_realize(Dlg);
   /* The "Cancel" button */
@@ -282,6 +282,6 @@ void build_nanotube_dlg()
   gtk_widget_show_all(GTK_DIALOG(Dlg)->action_area);
   gtk_widget_show_now(Dlg);
 
-  fit_windows_position(GeomDlg, Dlg);
+  /* fit_windows_position(GeomDlg, Dlg);*/
 }
 

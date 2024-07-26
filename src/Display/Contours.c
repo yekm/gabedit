@@ -1,6 +1,6 @@
 /* Contours.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -488,10 +488,10 @@ void create_contours_isosurface()
 /********************************************************************************/
 void apply_contours(GtkWidget *Win,gpointer data)
 {
-	GtkWidget** Entrys =(GtkWidget**)g_object_get_data(G_OBJECT (Win), "Entrys");
+	GtkWidget** Entries =(GtkWidget**)g_object_get_data(G_OBJECT (Win), "Entries");
 	gint type = *((gint*)g_object_get_data(G_OBJECT (Win), "Type"));
-	guint handel_id = *((guint*)g_object_get_data(G_OBJECT (Entrys[0]), "HandelId"));
-	GtkObject* Combo =(GtkObject*)g_object_get_data(G_OBJECT (Entrys[0]), "ComboList");
+	guint handel_id = *((guint*)g_object_get_data(G_OBJECT (Entries[0]), "HandelId"));
+	GtkObject* Combo =(GtkObject*)g_object_get_data(G_OBJECT (Entries[0]), "ComboList");
 	G_CONST_RETURN gchar* temp;
 	gint i;
 	gint N;
@@ -505,21 +505,21 @@ void apply_contours(GtkWidget *Win,gpointer data)
 	gint pvalue = 0;
 	gdouble gap = 0;
 	
-        temp	= gtk_entry_get_text(GTK_ENTRY(Entrys[0])); 
+        temp	= gtk_entry_get_text(GTK_ENTRY(Entries[0])); 
 	pvalue = atoi(temp);
 
-	N = get_number_of_point(Entrys[1]);
+	N = get_number_of_point(Entries[1]);
 	if(N<=0) return;
 
-        if(!get_a_float(Entrys[2],&min, _("Error : The minimal value should be float."))) return;
-        if(!get_a_float(Entrys[3],&max,_("Error : The maximal value should be float."))) return;
+        if(!get_a_float(Entries[2],&min, _("Error : The minimal value should be float."))) return;
+        if(!get_a_float(Entries[3],&max,_("Error : The maximal value should be float."))) return;
 	if( max<=min)
 	{
 		GtkWidget* message = Message(_("Error :  The minimal value should be smaller than the maximal value "),_("Error"),TRUE);
   		gtk_window_set_modal (GTK_WINDOW (message), TRUE);
 		return;
 	}
-        if(!get_a_float(Entrys[4],&gap,_("Error : The projection value should be float."))) return;
+        if(!get_a_float(Entries[4],&gap,_("Error : The projection value should be float."))) return;
 	numplane = pvalue-1;
 	if(numplane <0 || numplane>=grid->N[type]) numplane = grid->N[type]/2;
 	switch(type)
@@ -556,7 +556,7 @@ void apply_contours(GtkWidget *Win,gpointer data)
 static void reset_limits_values(GtkWidget *Win,gpointer data)
 {
 
-	GtkWidget** Entrys;
+	GtkWidget** Entries;
 	GtkWidget* LabelMin;
 	GtkWidget* LabelMax;
 	gint type;
@@ -573,13 +573,13 @@ static void reset_limits_values(GtkWidget *Win,gpointer data)
 	if(!this_is_an_object((GtkObject*)Win))
 		return; 
 
-	Entrys =(GtkWidget**)g_object_get_data(G_OBJECT (Win), "Entrys");
+	Entries =(GtkWidget**)g_object_get_data(G_OBJECT (Win), "Entries");
 	type = *((gint*)g_object_get_data(G_OBJECT (Win), "Type"));
-	if(!Entrys)
+	if(!Entries)
 		return; 
 	
 	for(i=0;i<4;i++)
-		if(!this_is_an_object((GtkObject*)Entrys[i]))
+		if(!this_is_an_object((GtkObject*)Entries[i]))
 			return; 
 	    
 	LabelMin =(GtkWidget*)g_object_get_data(G_OBJECT (Win), "LabelMin");
@@ -593,7 +593,7 @@ static void reset_limits_values(GtkWidget *Win,gpointer data)
 	
 
 
-	temp = gtk_entry_get_text(GTK_ENTRY(Entrys[0])); 
+	temp = gtk_entry_get_text(GTK_ENTRY(Entries[0])); 
 	pvalue = atoi(temp);
 
 	switch(type)
@@ -628,14 +628,14 @@ static void reset_limits_values(GtkWidget *Win,gpointer data)
 			}
 		}
 	temp = g_strdup_printf("%lf",min);
-	gtk_entry_set_text(GTK_ENTRY(Entrys[2]),temp);
+	gtk_entry_set_text(GTK_ENTRY(Entries[2]),temp);
 	/*g_free(temp);*/
 	temp = g_strdup_printf(" >= %lf ",min);
 	gtk_label_set_text(GTK_LABEL(LabelMin),temp);
 	/*g_free(temp);*/
 	if(fabs(max-min)<1e-5) max +=1e-4;
 	temp = g_strdup_printf("%lf",max);
-	gtk_entry_set_text(GTK_ENTRY(Entrys[3]),temp);
+	gtk_entry_set_text(GTK_ENTRY(Entries[3]),temp);
 	/*g_free(temp);*/
 	temp = g_strdup_printf(" <= %lf ",max);
 	gtk_label_set_text(GTK_LABEL(LabelMax),temp);
@@ -666,7 +666,7 @@ GtkWidget *create_contours_frame( GtkWidget *vboxall,gchar* title,gint type)
 	GtkWidget *linearButton;
 	GtkWidget *logButton;
 	static guint handel_id = 0;
-	GtkWidget **Entrys = (GtkWidget **)g_malloc(5*sizeof(GtkWidget *));
+	GtkWidget **Entries = (GtkWidget **)g_malloc(5*sizeof(GtkWidget *));
 	gushort i;
 	gushort j;
 	GtkWidget *Table;
@@ -764,21 +764,21 @@ GtkWidget *create_contours_frame( GtkWidget *vboxall,gchar* title,gint type)
 				Label =	add_label_at_table(Table,strlabels[i][j],i,(gushort)j,GTK_JUSTIFY_LEFT);
 
 	combo = create_combo_box_entry(listvalues,grid->N[type], FALSE,-1,-1);
-	Entrys[0] = GTK_BIN(combo)->child;
+	Entries[0] = GTK_BIN(combo)->child;
 	add_widget_table(Table,combo,(gushort)0,(gushort)2);
-	Entrys[1] = gtk_entry_new ();
-	add_widget_table(Table,Entrys[1],(gushort)1,(gushort)2);
-	gtk_entry_set_text(GTK_ENTRY(Entrys[1]),strlabels[1][2]);
-	Entrys[2] = gtk_entry_new ();
-	add_widget_table(Table,Entrys[2],(gushort)2,(gushort)2);
-	gtk_entry_set_text(GTK_ENTRY(Entrys[2]),strlabels[2][2]);
-	Entrys[3] = gtk_entry_new ();
-	add_widget_table(Table,Entrys[3],(gushort)3,(gushort)2);
-	gtk_entry_set_text(GTK_ENTRY(Entrys[3]),strlabels[3][2]);
+	Entries[1] = gtk_entry_new ();
+	add_widget_table(Table,Entries[1],(gushort)1,(gushort)2);
+	gtk_entry_set_text(GTK_ENTRY(Entries[1]),strlabels[1][2]);
+	Entries[2] = gtk_entry_new ();
+	add_widget_table(Table,Entries[2],(gushort)2,(gushort)2);
+	gtk_entry_set_text(GTK_ENTRY(Entries[2]),strlabels[2][2]);
+	Entries[3] = gtk_entry_new ();
+	add_widget_table(Table,Entries[3],(gushort)3,(gushort)2);
+	gtk_entry_set_text(GTK_ENTRY(Entries[3]),strlabels[3][2]);
 	
-	Entrys[4] = gtk_entry_new ();
-	add_widget_table(Table,Entrys[4],(gushort)7,(gushort)2);
-	gtk_entry_set_text(GTK_ENTRY(Entrys[4]),strlabels[7][2]);
+	Entries[4] = gtk_entry_new ();
+	add_widget_table(Table,Entries[4],(gushort)7,(gushort)2);
+	gtk_entry_set_text(GTK_ENTRY(Entries[4]),strlabels[7][2]);
 
 	
 	i=4;
@@ -817,15 +817,15 @@ GtkWidget *create_contours_frame( GtkWidget *vboxall,gchar* title,gint type)
                   (GtkAttachOptions)(GTK_FILL | GTK_SHRINK),
                   3,3);
 
-	g_object_set_data(G_OBJECT (frame), "Entrys",Entrys);
-	g_object_set_data(G_OBJECT (GTK_OBJECT(GTK_COMBO_BOX(combo))), "Entrys",Entrys);
+	g_object_set_data(G_OBJECT (frame), "Entries",Entries);
+	g_object_set_data(G_OBJECT (GTK_OBJECT(GTK_COMBO_BOX(combo))), "Entries",Entries);
 	g_object_set_data(G_OBJECT (GTK_OBJECT(GTK_COMBO_BOX(combo))), "LabelMin",LabelMin);
 	g_object_set_data(G_OBJECT (GTK_OBJECT(GTK_COMBO_BOX(combo))), "LabelMax",LabelMax);
 	g_object_set_data(G_OBJECT (GTK_OBJECT(GTK_COMBO_BOX(combo))), "Type",&itype);
 	handel_id = g_signal_connect(G_OBJECT(GTK_COMBO_BOX(combo)), "changed",G_CALLBACK(reset_limits_values),NULL);
-	g_object_set_data(G_OBJECT(Entrys[0]), "HandelId",&handel_id);
-	g_object_set_data(G_OBJECT(Entrys[0]), "ComboList",GTK_OBJECT(GTK_COMBO_BOX(combo)));
-	gtk_entry_set_text(GTK_ENTRY(Entrys[0]),listvalues[grid->N[type]/2]);
+	g_object_set_data(G_OBJECT(Entries[0]), "HandelId",&handel_id);
+	g_object_set_data(G_OBJECT(Entries[0]), "ComboList",GTK_OBJECT(GTK_COMBO_BOX(combo)));
+	gtk_entry_set_text(GTK_ENTRY(Entries[0]),listvalues[grid->N[type]/2]);
 
 	for(i=0;i<NLIGNES;i++)
 	{
@@ -854,7 +854,7 @@ void create_contours(gchar* title,gint type)
   GtkWidget *vboxall;
   GtkWidget *vboxwin;
   GtkWidget *button;
-  GtkWidget** Entrys;
+  GtkWidget** Entries;
   static gint itype;
 
 
@@ -878,8 +878,8 @@ void create_contours(gchar* title,gint type)
   vboxwin = vboxall;
 
   frame = create_contours_frame(vboxall,"Contours",type);
-  Entrys = (GtkWidget**) g_object_get_data(G_OBJECT (frame), "Entrys");
-  g_object_set_data(G_OBJECT (Win), "Entrys",Entrys);
+  Entries = (GtkWidget**) g_object_get_data(G_OBJECT (frame), "Entries");
+  g_object_set_data(G_OBJECT (Win), "Entries",Entries);
   g_object_set_data(G_OBJECT (Win), "Type",&itype);
 
   /* buttons box */
@@ -908,18 +908,18 @@ void create_contours(gchar* title,gint type)
 void apply_contours_plane(GtkWidget *Win,gpointer data)
 {
 			
-	GtkWidget** Entrys =(GtkWidget**)g_object_get_data(G_OBJECT (Win), "Entrys");
+	GtkWidget** Entries =(GtkWidget**)g_object_get_data(G_OBJECT (Win), "Entries");
 	gint N;
 	gdouble minv;
 	gdouble maxv;
 	gdouble gap;
 	
-	N = get_number_of_point(Entrys[0]);
+	N = get_number_of_point(Entries[0]);
 	if(N<=0) return;
 
-        if(!get_a_float(Entrys[1],&minv,_("Error : The minimal value should be float."))) return;
-        if(!get_a_float(Entrys[2],&maxv,_("Error : The maximal value should be float."))) return;
-        if(!get_a_float(Entrys[3],&gap,_("Error : The projection value should be float."))) return;
+        if(!get_a_float(Entries[1],&minv,_("Error : The minimal value should be float."))) return;
+        if(!get_a_float(Entries[2],&maxv,_("Error : The maximal value should be float."))) return;
+        if(!get_a_float(Entries[3],&gap,_("Error : The projection value should be float."))) return;
 	if( maxv<=minv)
 	{
 		GtkWidget* message = Message(_("Error :  The minimal value should be smaller than the maximal value "),_("Error"),TRUE);
@@ -950,7 +950,7 @@ GtkWidget *create_contours_frame_plane( GtkWidget *vboxall,gchar* title)
 	GtkWidget *hseparator;
 	GtkWidget *linearButton;
 	GtkWidget *logButton;
-	GtkWidget **Entrys = (GtkWidget **)g_malloc(4*sizeof(GtkWidget *));
+	GtkWidget **Entries = (GtkWidget **)g_malloc(4*sizeof(GtkWidget *));
 	gushort i;
 	gushort j;
 	GtkWidget *Table;
@@ -1032,14 +1032,14 @@ GtkWidget *create_contours_frame_plane( GtkWidget *vboxall,gchar* title)
 		}
 	for(i=0;i<3;i++)
 	{
-		Entrys[i] = gtk_entry_new ();
-		add_widget_table(Table,Entrys[i],(gushort)i,(gushort)2);
-		gtk_entry_set_text(GTK_ENTRY(Entrys[i]),strlabels[i][2]);
+		Entries[i] = gtk_entry_new ();
+		add_widget_table(Table,Entries[i],(gushort)i,(gushort)2);
+		gtk_entry_set_text(GTK_ENTRY(Entries[i]),strlabels[i][2]);
 	}
 	i = 6;
-	Entrys[i-3] = gtk_entry_new ();
-	add_widget_table(Table,Entrys[i-3],(gushort)i,(gushort)2);
-	gtk_entry_set_text(GTK_ENTRY(Entrys[i-3]),strlabels[i][2]);
+	Entries[i-3] = gtk_entry_new ();
+	add_widget_table(Table,Entries[i-3],(gushort)i,(gushort)2);
+	gtk_entry_set_text(GTK_ENTRY(Entries[i-3]),strlabels[i][2]);
 
 	i= 3;
 	hseparator = gtk_hseparator_new ();
@@ -1077,7 +1077,7 @@ GtkWidget *create_contours_frame_plane( GtkWidget *vboxall,gchar* title)
                   (GtkAttachOptions)(GTK_FILL | GTK_SHRINK),
                   3,3);
 	
-	g_object_set_data(G_OBJECT (frame), "Entrys",Entrys);
+	g_object_set_data(G_OBJECT (frame), "Entries",Entries);
 	for(i=0;i<NLIGNESP;i++)
 	{
 		for(j=0;j<NCOLUMNSP;j++)
@@ -1097,7 +1097,7 @@ void create_contours_plane(gchar* title)
   GtkWidget *vboxall;
   GtkWidget *vboxwin;
   GtkWidget *button;
-  GtkWidget** Entrys;
+  GtkWidget** Entries;
 
 
   /* Debug("Creation de la fenetre contour\n");*/
@@ -1122,8 +1122,8 @@ void create_contours_plane(gchar* title)
   vboxwin = vboxall;
 
   frame = create_contours_frame_plane(vboxall,"Contours");
-  Entrys = (GtkWidget**) g_object_get_data(G_OBJECT (frame), "Entrys");
-  g_object_set_data(G_OBJECT (Win), "Entrys",Entrys);
+  Entries = (GtkWidget**) g_object_get_data(G_OBJECT (frame), "Entries");
+  g_object_set_data(G_OBJECT (Win), "Entries",Entries);
 
   /* buttons box */
   hbox = create_hbox_false(vboxwin);

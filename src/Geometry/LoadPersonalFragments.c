@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -92,36 +92,36 @@ static gchar** getOneList(FILE* file,gint* nl, gchar* str, gboolean reading)
 	return t;
 }
 /************************************************************/
-static void loadGroupesList(PersonalFragments* personnalFragments, FILE* file)
+static void loadGroupesList(PersonalFragments* personalFragments, FILE* file)
 {
 	gint i;
 	gint numberOfGroupes;
 	gchar** groupes = getOneList(file,&numberOfGroupes,"Begin Groupes List",TRUE);
 
-	personnalFragments->numberOfGroupes = numberOfGroupes;
-	personnalFragments->personnalGroupes= NULL;
+	personalFragments->numberOfGroupes = numberOfGroupes;
+	personalFragments->personalGroupes= NULL;
 
 	if(numberOfGroupes<1)
 		return;
 
-	personnalFragments->personnalGroupes = g_malloc(numberOfGroupes*sizeof(PersonalGroupe));
-	for(i=0;i<personnalFragments->numberOfGroupes;i++)
+	personalFragments->personalGroupes = g_malloc(numberOfGroupes*sizeof(PersonalGroupe));
+	for(i=0;i<personalFragments->numberOfGroupes;i++)
 	{
-		personnalFragments->personnalGroupes[i].groupName = g_strdup(groupes[i]);
-		personnalFragments->personnalGroupes[i].numberOfFragments = 0;
-		personnalFragments->personnalGroupes[i].fragments = NULL;
+		personalFragments->personalGroupes[i].groupName = g_strdup(groupes[i]);
+		personalFragments->personalGroupes[i].numberOfFragments = 0;
+		personalFragments->personalGroupes[i].fragments = NULL;
 	}
 	freeOneList(groupes,numberOfGroupes);
 
 }
 /**********************************************************************/
-static void loadOneFragmentsList(PersonalFragments* personnalFragments, FILE* file,gint groupeNumber)
+static void loadOneFragmentsList(PersonalFragments* personalFragments, FILE* file,gint groupeNumber)
 {
-	PersonalGroupe* personnalGroupes = personnalFragments->personnalGroupes;
+	PersonalGroupe* personalGroupes = personalFragments->personalGroupes;
 	gint numberOfFragments = 0;
 	OnePersonalFragment* fragments = NULL;
 	gint i;
-	gchar* str = g_strdup_printf("Begin %s Groupe",personnalGroupes[groupeNumber].groupName);
+	gchar* str = g_strdup_printf("Begin %s Groupe",personalGroupes[groupeNumber].groupName);
 	gchar** fragmentsList = getOneList(file,&numberOfFragments,str,TRUE);
 
 	if(numberOfFragments<1)
@@ -137,31 +137,31 @@ static void loadOneFragmentsList(PersonalFragments* personnalFragments, FILE* fi
 		fragments[i].name = g_strdup(fragmentsList[i]);
 	}
 
-	personnalGroupes[groupeNumber].numberOfFragments = numberOfFragments;
-	personnalGroupes[groupeNumber].fragments = fragments;
+	personalGroupes[groupeNumber].numberOfFragments = numberOfFragments;
+	personalGroupes[groupeNumber].fragments = fragments;
 
 	freeOneList(fragmentsList,numberOfFragments);
 	g_free(str);
 }
 /**********************************************************************/
-static void loadAllFragmentsList(PersonalFragments* personnalFragments, FILE* file)
+static void loadAllFragmentsList(PersonalFragments* personalFragments, FILE* file)
 {
-	gint numberOfGroupes =  personnalFragments->numberOfGroupes;
+	gint numberOfGroupes =  personalFragments->numberOfGroupes;
 	gint i;
 
 	for(i=0;i<numberOfGroupes;i++)
-		loadOneFragmentsList(personnalFragments,file,i);
+		loadOneFragmentsList(personalFragments,file,i);
 }
 /**********************************************************************/
-static void loadOneFragment(PersonalFragments* personnalFragments, FILE* file,
+static void loadOneFragment(PersonalFragments* personalFragments, FILE* file,
 		gint groupeNumber, gint fragmentNumber)
 {
-	PersonalGroupe* personnalGroupes = personnalFragments->personnalGroupes;
-	OnePersonalFragment* fragments = personnalGroupes[groupeNumber].fragments;
+	PersonalGroupe* personalGroupes = personalFragments->personalGroupes;
+	OnePersonalFragment* fragments = personalGroupes[groupeNumber].fragments;
 	Fragment f = fragments[fragmentNumber].f;
 	gint i;
 	gchar* str = g_strdup_printf("Begin %s %s Fragment",
-			personnalGroupes[groupeNumber].groupName,
+			personalGroupes[groupeNumber].groupName,
 			fragments[fragmentNumber].name
 			);
 	gint nlines;
@@ -221,49 +221,49 @@ static void loadOneFragment(PersonalFragments* personnalFragments, FILE* file,
 	g_free(str);
 }
 /**********************************************************************/
-static void loadAllFragments(PersonalFragments* personnalFragments, FILE* file)
+static void loadAllFragments(PersonalFragments* personalFragments, FILE* file)
 {
-	gint numberOfGroupes =  personnalFragments->numberOfGroupes;
+	gint numberOfGroupes =  personalFragments->numberOfGroupes;
 	gint numberOfFragments;
 	gint i;
 	gint j;
 
 	for(i=0;i<numberOfGroupes;i++)
 	{
-		numberOfFragments = personnalFragments->personnalGroupes[i].numberOfFragments;
+		numberOfFragments = personalFragments->personalGroupes[i].numberOfFragments;
 		for(j=0;j<numberOfFragments;j++)
-			loadOneFragment(personnalFragments,file,i,j);
+			loadOneFragment(personalFragments,file,i,j);
 	}
 }
 /**********************************************************************/
 PersonalFragments* loadAllPersonalFragments(gchar* filename)
 {
 	FILE* file;
-	PersonalFragments* personnalFragments;
+	PersonalFragments* personalFragments;
 
 	file = FOpen(filename,"rb");
 
 	if(file == NULL)
 		return NULL;
 
-	personnalFragments = g_malloc(sizeof(PersonalFragments));
-	personnalFragments->numberOfGroupes = 0;
-	personnalFragments->personnalGroupes= NULL;
+	personalFragments = g_malloc(sizeof(PersonalFragments));
+	personalFragments->numberOfGroupes = 0;
+	personalFragments->personalGroupes= NULL;
 
-	loadGroupesList(personnalFragments,file);
+	loadGroupesList(personalFragments,file);
 	
-	if(personnalFragments->numberOfGroupes == 0)
+	if(personalFragments->numberOfGroupes == 0)
 	{
-		g_free(personnalFragments);
-		personnalFragments = NULL;
+		g_free(personalFragments);
+		personalFragments = NULL;
 		if(file)
 			fclose(file);
 		return NULL;
 	}
-	loadAllFragmentsList(personnalFragments,file);
-	loadAllFragments(personnalFragments,file);
+	loadAllFragmentsList(personalFragments,file);
+	loadAllFragments(personalFragments,file);
 	fclose(file);
 
-	return personnalFragments;
+	return personalFragments;
 }
 /**********************************************************************/

@@ -1,6 +1,6 @@
 /* GeomDraw */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -339,7 +339,7 @@ static gint GeomDrawBallStick(gdouble scaleBall, gdouble scaleStick)
 	gint i;
 	gint j;
 	GList* list = NULL;
-	for(i = 0;i<Ncenters;i++) 
+	for(i = 0;i<nCenters;i++) 
 	{
 		if(!ShowHAtomOrb && strcmp("H",GeomOrb[i].Symb)==0) continue;
 		draw_ball(i,scaleBall);
@@ -361,7 +361,7 @@ static gint GeomDrawBallStick(gdouble scaleBall, gdouble scaleStick)
 static gint GeomDrawSpaceFill(gdouble scaleBall)
 {
 	int i;
-	  for(i = 0;i<Ncenters;i++)
+	  for(i = 0;i<nCenters;i++)
 	  {
 		if(!ShowHAtomOrb && strcmp("H",GeomOrb[i].Symb)==0) continue;
 		draw_space(i,scaleBall);
@@ -521,7 +521,7 @@ static gint GeomDrawStick(gdouble scaleStick)
 	int j;
 	GLdouble g = 0.2;
 	GList* list = NULL;
-	for(i = 0;i<Ncenters;i++) 
+	for(i = 0;i<nCenters;i++) 
 	{
 		if(!ShowHAtomOrb && strcmp("H",GeomOrb[i].Symb)==0) continue;
 		draw_ball_for_stick(i, g*scaleStick);
@@ -548,8 +548,8 @@ static gint GeomDrawWireFrame(gdouble scaleBall)
 	gboolean* Ok = NULL;
 	GList* list = NULL;
 
-	if(Ncenters>0) Ok = g_malloc(Ncenters*sizeof(gboolean));
-	for(i = 0;i<Ncenters;i++) Ok[i] = FALSE;
+	if(nCenters>0) Ok = g_malloc(nCenters*sizeof(gboolean));
+	for(i = 0;i<nCenters;i++) Ok[i] = FALSE;
 
 	for(list=BondsOrb;list!=NULL;list=list->next)
 	{
@@ -564,7 +564,7 @@ static gint GeomDrawWireFrame(gdouble scaleBall)
 		Ok[i] = TRUE;
 		Ok[j] = TRUE;
 	}
-	for(i = 0;i<Ncenters;i++) 
+	for(i = 0;i<nCenters;i++) 
 	{
 		if(!ShowHAtomOrb && strcmp("H",GeomOrb[i].Symb)==0) continue;
 		if(!Ok[i]) draw_ball(i,0.2*scaleBall);
@@ -607,7 +607,7 @@ static void gl_build_box()
 	gdouble O[3]={0,0,0};
 
 
-	for(i=0;i<Ncenters;i++)
+	for(i=0;i<nCenters;i++)
 	{
 		sprintf(tmp,"%s",GeomOrb[i].Symb);
 		uppercase(tmp);

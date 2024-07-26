@@ -1,6 +1,6 @@
 /* Windows.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -38,7 +38,7 @@ void create_frame_windows(GtkWidget *box)
   gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
   gtk_box_pack_start (GTK_BOX (box), frame, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 5);
-  gtk_widget_set_size_request(GTK_WIDGET(frame),-1,(gint)(ScreenHeight*0.05));
+  //gtk_widget_set_size_request(GTK_WIDGET(frame),-1,(gint)(ScreenHeight*0.05));
 /*  gtk_widget_set_size_request(GTK_WIDGET(frame),-1,height);*/
 /*  Debug("height = %d\n",height);*/
   gtk_widget_show (frame);

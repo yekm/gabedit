@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -67,9 +67,13 @@ void create_GeomXYZ_from_draw_grometry();
 void freeGeomXYZ();
 void freeVariablesXYZ();
 void FreeGeomXYZ(GeomXYZAtomDef* GeomXYZtemp, VariablesXYZDef* VariablesXYZtemp, gint Ncent, gint Nvar);
+void selc_cif_file_nosym();
 void selc_XYZ_file(GabEditTypeFileGeom itype);
 void create_babel_save_dialogue();
 void save_geometry_poscar_file(GabeditFileChooser *SelecFile, gint response_id);
+void save_geometry_poscar_direct_file(GabeditFileChooser *SelecFile, gint response_id);
+void save_geometry_cif_allatoms_file(GabeditFileChooser *SelecFile, gint response_id);
+void save_geometry_cif_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_xyz_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_mol_file(GabeditFileChooser *SelecFile, gint response_id);
 void save_geometry_mol2_file(GabeditFileChooser *SelecFile, gint response_id);
@@ -119,6 +123,8 @@ void read_tinker_file(GabeditFileChooser *SelecFile, gint response_id);
 void read_pdb_file(GabeditFileChooser *SelecFile, gint response_id);
 void read_XYZ_file(GabeditFileChooser *SelecFile, gint  response_id);
 void reset_connections_XYZ();
+void compute_volume_cell();
+void compute_volume_molecule();
 GtkWidget* scale_cell_dialog ();
 
 

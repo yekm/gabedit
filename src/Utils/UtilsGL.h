@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -26,13 +26,15 @@ void glGetWorldCoords(gint x, gint y, gint height, gdouble *w);
 void glGetWindowCoords(gdouble *w, gint height, gint *x);
 gint glTextWidth(gchar *str);
 gint glTextHeight();
-void glPrintWin(gint x, gint y, gint height, gchar *str);
-void glPrint(gdouble x, gdouble y, gdouble z, gchar *str);
-void glPrintOrtho(gdouble x, gdouble y, gdouble z, gchar *str, gboolean centerX, gboolean centerY);
-void glInitFontsUsing(gchar* fontname);
-void glInitFonts();
+/*
+void glPrintWinOld(gint x, gint y, gint height, gchar *str);
+void glPrintOld(gdouble x, gdouble y, gdouble z, gchar *str);
+void glPrintOrthoOld(gdouble x, gdouble y, gdouble z, gchar *str, gboolean centerX, gboolean centerY);
+void glInitFontsUsingOld(gchar* fontname);
+void glInitFontsOld();
+void glPrintScaleOld(gdouble x, gdouble y, gdouble z, gdouble scale, gchar *str);
+*/
 void getNormalPlanWindow(gdouble N[]);
-void glPrintScale(gdouble x, gdouble y, gdouble z, gdouble scale, gchar *str);
 gdouble get_alpha_opacity();
 void set_alpha_opacity(gdouble a);
 OpenGLOptions get_opengl_options();
@@ -58,6 +60,13 @@ void Prism_Draw(GLdouble radius,V3d Base1Pos,V3d Base2Pos);
 void Prism_Draw_Color(GLdouble radius,V3d Base1Pos,V3d Base2Pos, V4d Specular,V4d Diffuse,V4d Ambiant);
 void Draw_Arrow(V3d vector, GLdouble radius,V3d origin, V4d specular,V4d diffuse,V4d ambiant, gboolean negative);
 void glDeleteFontsList();
+
+void glInitFontsUsing(gchar* fontname, PangoContext* *pft2_context);
+void glInitFonts(PangoContext* *pft2_context);
+void glPrintWin(gint x, gint y, gint height, gchar *str, PangoContext* ft2_context);
+void glPrint(gdouble x, gdouble y, gdouble z, gchar *str, PangoContext* ft2_context);
+void glPrintOrtho(gdouble x, gdouble y, gdouble z, gchar *str, gboolean centerX, gboolean centerY, PangoContext *ft2_context);
+void glPrintScale(gdouble x, gdouble y, gdouble z, gdouble scale, gchar *str, PangoContext *ft2_context);
 
 
 #endif /* __GABEDIT_UTILSGL_H__ */

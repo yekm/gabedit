@@ -1,6 +1,6 @@
 /* FragmentsTree.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -181,6 +181,202 @@ static void addMiscellaneous(FragmentsList* fragList)
 	if(!fragList) return;
 	addOneGroup(fragList, "Miscellaneous",  G_N_ELEMENTS (names), names);
 }
+#ifdef DRAWGEOMGL
+/********************************************************************************/
+static void addElementCrystals(FragmentsList* fragList)
+{
+	static gchar *names[]={
+	"Ac-Actinium",
+	"Ag-Silver",
+	"Al-Aluminum",
+	"Am-Americium",
+	"Ar-Argon",
+	"As-Arsenic",
+	"As-Arsenolamprite",
+	"Au-Gold",
+	"Ba-Barium",
+	"B-Boron",
+	"Be-Beryllium",
+	"Bi-Bismuth",
+	"Br-Bromine",
+	"Ca-Calcium-alpha",
+	"Ca-Calcium-beta",
+	"Ca-Calcium-gamma",
+	"Cd-Cadmium",
+	"C-Diamond",
+	"Ce-Cerium",
+	"C-Graphite",
+	"Cl-Chlorine",
+	"C-Lonsdaleite",
+	"Co-Cobalt",
+	"Cr-Chromium",
+	"Cs-Cesium",
+	"Cu-Copper",
+	"Dy-Dysprosium",
+	"Er-Erbium",
+	"Eu-Europium",
+	"Fe-Iron-alpha",
+	"Fe-Iron-beta",
+	"Fe-Iron-delta",
+	"Fe-Iron-gamma",
+	"Ga-Gallium",
+	"Gd-Gadolinium",
+	"Ge-Germanium",
+	"He-Helium",
+	"Hf-Hafnium",
+	"Ho-Holmium",
+	"I-Iodine",
+	"In-Indium",
+	"Ir-Iridium",
+	"K-Potassium",
+	"Kr-Krypton",
+	"La-Lanthanum",
+	"Li-Lithium",
+	"Lu-Lutetium",
+	"Mg-Magnesium",
+	"Mn-Manganese-alpha",
+	"Mn-Manganese-delta",
+	"Mn-Manganese-gamma",
+	"Mo-Molybdenum",
+	"Na-Sodium",
+	"Nb-Niobium",
+	"Nd-Neodymium",
+	"Ne-Neon",
+	"Ni-Nickel",
+	"N-Nitrogen",
+	"Np-Neptunium-alpha",
+	"Np-Neptunium-beta",
+	"Np-Neptunium-gamma",
+	"Os-Osmium",
+	"Pb-Lead",
+	"Pd-Palladium",
+	"P-Phosphorus-black",
+	"P-Phosphorus",
+	"Pr-Praseodymium",
+	"Pt-Platinum",
+	"Pu-Plutonium-alpha",
+	"Pu-Plutonium-epsilon",
+	"Pu-Plutonium-gamma",
+	"Rb-Rubidium",
+	"Re-Rhenium",
+	"Rh-Rhodium",
+	"Ru-Ruthenium",
+	"S6-Sulfur",
+	"S8-Sulfur-alpha",
+	"S8-Sulfur-beta",
+	"S8-Sulfur-gamma",
+	"Sb-Antimony",
+	"Sc-Scandium",
+	"Se-Selenium",
+	"Si-Silicon",
+	"Sm-Samarium",
+	"Sn-Tin-alpha",
+	"Sn-Tin-beta",
+	"Sr-Strontium",
+	"Ta-Tantalum",
+	"Tb-Terbium",
+	"Te-Tellurium",
+	"Th-Thorium",
+	"Ti-Titanium-alpha",
+	"Ti-Titanium-beta",
+	"Tl-Thallium",
+	"Tm-Thulium",
+	"U-Uranium-alpha",
+	"U-Uranium-gamma",
+	"V-Vanadium",
+	"W-Tungsten",
+	"Xe-Xenon",
+	"Yb-Ytterbium",
+	"Y-Yttrium",
+	"Zn-Zinc",
+	"Zr-Zirconium",
+		};
+
+	if(!fragList) return;
+	addOneGroup(fragList, "Element crystals",  G_N_ELEMENTS (names), names);
+}
+/********************************************************************************/
+static void addPrototypeCrystals(FragmentsList* fragList)
+{
+	static gchar *names[]={
+	"Fe23Zr6_cF116_Fm-3m_225",
+	"CaF2_cF12_Fm-3m_225",
+	"AlCu2Mn_cF16_Fm-3m_225",
+	"BiF3_cF16_Fm-3m_225",
+	"Cu2Mg_cF24_Fd-3m_227",
+	"H2O_Ic_cF24_Fd-3m_227",
+	"Cu_cF4_Fm-3m_225",
+	"MgAl2O4_cF25_Fd3m_227",
+	"C_cF8_Fs-3m_227",
+	"NaCl_cF8_Fm-3m_225",
+	"ZnS_cF8_F-43m_216",
+	"Al2Co3O12Si3_cI160_Ia-3d_230",
+	"Mg32AlZn48_cI162_Im-3_204",
+	"W_cI2_Im-3m_229",
+	"Mn_cI58_I-43m_217",
+	"CO2_Cubic_cP12_Pa-3_205",
+	"Alpha-Al-Mn_c138_Pm-3_200",
+	"Mn_cP20_P4_132_213",
+	"CsCl_cP2_Pm-3m_221",
+	"AuCu3_cP4_PM-3m_221",
+	"CaTiO3_cP5_Pm-3m_221",
+	"Cr3Si_cP8_Pm-3n_223",
+	"Na4Al3Si3ClO12_cP9_P-43n_218",
+	"H2OIh_hP12_P6_3/mmc_194",
+	"MgZn2_hP12_P6-3/mmc_194",
+	"MgNi2_hP24_P6_3/mmc_194",
+	"Mg_hP2_p6_3/mmc_194",
+	"Se_hP3_P3_121_152",
+	"Be3Al2Si6O18_hP40_P6/mmc_192",
+	"NaAlSi2O6_hP40_C2/c_15",
+	"alpha-La_hP4_P6_3mmc_194",
+	"C_hP4_P6_3mmc_194",
+	"NiAs_hP4_P6_3mmc_194",
+	"ZnS_hP4_P6_3mc_186",
+	"CdI2_hP5_P-3m1_164",
+	"BaFe12O19_hP64_P6_3/mmc_194",
+	"Ni3Sn_hP8_P6_3mmc_194",
+	"Ti2CS_hP8_P6_3/mmc_194",
+	"SiO2AlphaQuartz_hP9_P3_221_154",
+	"SiO2BetaQuartz_hP9_P6_2_171",
+	"W6Fe7_hR13_R-3m_166",
+	"Hg_hR1_R-3m_166",
+	"As_hR2_R-3m_166",
+	"Al2O3_hR30_R-3c_167",
+	"Ca2H2Mg5O24Si8_mC78_C3/m_12",
+	"ZnWO4_mP12_P2/c_13",
+	"CaMgO6Si2Diopside_mP16_C2/c_15",
+	"Bi2Nb2O9Pb_oA56_A2_1am_36",
+	"Ga_oC8_Cmca_64",
+	"AuCu_tP2_P4/mmm_123",
+	"U_oC4_Cmcm_63",
+	"B2CoW2_oI10_Immm_71",
+	"Fe3C_oP16_Pnma_62",
+	"Mg2SiO4_oP28_Pbnm_62",
+	"Al2SiO5Sillimanite_oP32_Pbnm_62",
+	"Goethite_AlphaFeO(OH)_oP40_Pnma_62",
+	"Fe3H6KO14S2Jarosite_R60_R-3m_166",
+	"Al2Si2O9H4_Kaolinite_tC26_C1_1",
+	"CaSiO3_tC40_C-1_2",
+	"Fe2B_tI12_I4/mcm_140",
+	"CuFeS2_tI16_I-42d_122",
+	"ZrSiO4_tI24_I4_1/amd_141",
+	"In_tI2_I4/mmm_139",
+	"beta-Sn_tI4_I4_1_141",
+	"La2CuO4_tI5_I4/mmm_139",
+	"Nd2CuO4_tI5_I4/mmm_139",
+	"Al3Ti_tI8_I4/mmm_139",
+	"Al2SiO5Kyanite_tP16_P-1_2",
+	"Al2Zr3_tP20_P4_2/mnmc_136",
+	"AuCu_tP2_P4/mmm_123",
+	"CrFe_tP30_P4_2/mnm_136",
+	"TiO2_tP6_P4_2/mnm_136",
+		};
+
+	if(!fragList) return;
+	addOneGroup(fragList, "Prototype crystals",  G_N_ELEMENTS (names), names);
+}
+#endif
 /********************************************************************************/
 static void addAminoAcidsL(FragmentsList* fragList)
 {
@@ -282,26 +478,26 @@ static void addPersonnalFragments(FragmentsList* fragList)
 	gchar* fileName = g_strdup_printf("%s%sPersonalFragments.frg",
 			gabedit_directory(), G_DIR_SEPARATOR_S);
 	gint numberOfGroupes = 0;
-	PersonalFragments* personnalFragments = NULL;
-	PersonalGroupe* personnalGroupes = NULL;
+	PersonalFragments* personalFragments = NULL;
+	PersonalGroupe* personalGroupes = NULL;
 	gint i;
 	gint j;
 
-	personnalFragments = loadAllPersonalFragments(fileName);
-	if(personnalFragments) numberOfGroupes = personnalFragments->numberOfGroupes;
-	if(personnalFragments) personnalGroupes = personnalFragments->personnalGroupes;
+	personalFragments = loadAllPersonalFragments(fileName);
+	if(personalFragments) numberOfGroupes = personalFragments->numberOfGroupes;
+	if(personalFragments) personalGroupes = personalFragments->personalGroupes;
 
-	if(fragList && personnalFragments)
+	if(fragList && personalFragments)
 	for(i=0;i<numberOfGroupes;i++)
 	{
-		if(personnalGroupes[i].numberOfFragments<1) continue;
-		names = g_malloc( personnalGroupes[i].numberOfFragments*sizeof(gchar*));
-		for(j=0;j<personnalGroupes[i].numberOfFragments;j++)
-			names[j] = personnalGroupes[i].fragments[j].name;
+		if(personalGroupes[i].numberOfFragments<1) continue;
+		names = g_malloc( personalGroupes[i].numberOfFragments*sizeof(gchar*));
+		for(j=0;j<personalGroupes[i].numberOfFragments;j++)
+			names[j] = personalGroupes[i].fragments[j].name;
 
 		addOneGroup(fragList, 
-				personnalFragments->personnalGroupes[i].groupName,
-				personnalGroupes[i].numberOfFragments,
+				personalFragments->personalGroupes[i].groupName,
+				personalGroupes[i].numberOfFragments,
 				names);
 		g_free(names);
 	}
@@ -323,6 +519,10 @@ static FragmentsList* getFragmentsList()
 	addAminoAcidsD(fragList);
 	addAntivirals(fragList);
 	addMiscellaneous(fragList);
+#ifdef DRAWGEOMGL
+	addPrototypeCrystals(fragList);
+	addElementCrystals(fragList);
+#endif
 	addPersonnalFragments(fragList);
 	return fragList;
 }
@@ -505,6 +705,53 @@ static void setExpandeds(GtkWidget* treeView, gboolean* expandeds, gchar* select
 	}
 }
 */
+static void expandNode(GtkWidget* treeView, gint i, gchar* selected_row)
+{
+	gchar* pathString = NULL;
+	GtkTreeIter iter;
+	GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(treeView));
+
+	pathString = g_strdup_printf("%d", i);
+	if (gtk_tree_model_get_iter_from_string (model, &iter, pathString) == TRUE)
+	{
+		{
+			GtkTreePath *path = gtk_tree_path_new_from_string  (pathString);
+			gtk_tree_view_expand_to_path(GTK_TREE_VIEW(treeView), path);
+			gtk_tree_path_free(path);
+		}
+		g_free(pathString);
+	}
+	if(selected_row)
+	{
+			GtkTreePath *path = gtk_tree_path_new_from_string  (selected_row);
+			gtk_tree_selection_select_path  (gtk_tree_view_get_selection (GTK_TREE_VIEW (treeView)), path);
+			gtk_tree_path_free(path);
+	}
+}
+/********************************************************************************/
+void expandNodeStr(GtkWidget *treeView, gchar* nodeName)
+{
+	GtkTreePath *path;
+	GtkTreeIter iter;
+	GtkTreeModel *model;
+	FragmentsList* fragList = NULL;
+
+	fragList = g_object_get_data(G_OBJECT(treeView), "FramentsList");
+	if(fragList)
+	{
+		gint nG = fragList->numberOfGroups;
+		gint i;
+		for(i=0;i<nG;i++)
+		{
+			if(!strcmp(fragList->groups[i].name,nodeName))
+			{
+				gtk_tree_selection_unselect_all (gtk_tree_view_get_selection (GTK_TREE_VIEW (treeView)));
+				expandNode(treeView,i,NULL);
+				break;
+			}
+		}
+	}
+}
 /*******************************************************************************************************/
 static void addFeuille(GtkWidget* treeView, GtkTreeIter *parent, gchar* fragName, gint groupNumber, gint fragNumber)
 {

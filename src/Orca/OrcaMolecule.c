@@ -1,6 +1,6 @@
 /* OrcaMolecule.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -293,26 +293,23 @@ static void putOrcaMoleculeInTextEditor()
         	if(NVariablesXYZ>0)
         	for(i=0;i<NVariablesXYZ;i++)
         	{
-        		if(VariablesXYZ[i].Used)
-			{
-				nV++;
-				break;
-			}
+        		if(VariablesXYZ[i].Used) nV++;
         	}
+		/* printf("nV=%d\n",nV);*/
 		if(nV>0 && nV!= 3*orcaMolecule.numberOfAtoms) 
 		{
 			sprintf(buffer,"%cgeom Constraints\n",'%');
         		gabedit_text_insert (GABEDIT_TEXT(text), NULL, &orcaColorFore.keyWord, &orcaColorBack.keyWord, buffer, -1);
       			for (i=0;i<orcaMolecule.numberOfAtoms;i++)
 			{
-  				if(!test(GeomXYZ[i].X) || !test(GeomXYZ[i].Y) || !test(GeomXYZ[i].Z)) 
+  				if( !(!test(GeomXYZ[i].X) || !test(GeomXYZ[i].Y) || !test(GeomXYZ[i].Z)) )
 				{
 					sprintf(buffer,"  {C %d C}\n",i);
         				gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,buffer,-1);
 				}
 			}
 			gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," end #Constraints\n",-1);
-			gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," invertConstraints true\n",-1);
+			/* gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL," invertConstraints true\n",-1);*/
 			gabedit_text_insert (GABEDIT_TEXT(text), NULL, &orcaColorFore.keyWord, &orcaColorBack.keyWord," end #geom\n",-1);
 		}
 	}

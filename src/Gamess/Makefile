@@ -1,4 +1,4 @@
-OBJECTS = Gamess.o GamessMolecule.o GamessControl.o GamessBasis.o GamessGuess.o GamessSCF.o
+OBJECTS = Gamess.o GamessMolecule.o GamessControl.o GamessBasis.o GamessGuess.o GamessSCF.o GamessGlobal.o
 
 include ../../CONFIG
 CFLAGS =  $(COMMONCFLAGS) $(GTKCFLAGS)

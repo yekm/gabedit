@@ -1,6 +1,6 @@
 /* GeomOrbXYZ.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -79,8 +79,8 @@ void reset_old_geometry()
 {
 	gint i;
 	free_old_geometry();
-	if(Ncenters<1) return;
-	oldGeometry.numberOfAtoms = Ncenters;
+	if(nCenters<1) return;
+	oldGeometry.numberOfAtoms = nCenters;
 	oldGeometry.X = g_malloc(oldGeometry.numberOfAtoms*sizeof(gdouble));
 	oldGeometry.Y = g_malloc(oldGeometry.numberOfAtoms*sizeof(gdouble));
 	oldGeometry.Z = g_malloc(oldGeometry.numberOfAtoms*sizeof(gdouble));
@@ -99,7 +99,7 @@ gboolean this_is_a_new_geometry()
 {
 	gint i;
 	if(oldGeometry.numberOfAtoms<1) return TRUE;
-	if(oldGeometry.numberOfAtoms != Ncenters) return TRUE;
+	if(oldGeometry.numberOfAtoms != nCenters) return TRUE;
 	for(i=0;i<oldGeometry.numberOfAtoms;i++)
 		if(strcmp(GeomOrb[i].Symb,oldGeometry.symbols[i]) != 0) return TRUE;
 
@@ -123,16 +123,16 @@ void free_geometry()
 	reset_old_geometry();
 	if(!GeomOrb)
 	{
-		Ncenters = 0;
+		nCenters = 0;
 		return;
 	}
 	free_atomic_orbitals();
-	for(i=0;i<Ncenters;i++)
+	for(i=0;i<nCenters;i++)
 		if(GeomOrb[i].Symb)
 			g_free(GeomOrb[i].Symb);
 	g_free(GeomOrb);
 	GeomOrb = NULL;
-	Ncenters = 0;
+	nCenters = 0;
 }
 /*****************************************/
 gdouble get_cube_length()
@@ -143,7 +143,7 @@ gdouble get_cube_length()
  
  min = GeomOrb[0].C[0];
  max = GeomOrb[0].C[0];
- for(i=0;i<Ncenters;i++)
+ for(i=0;i<nCenters;i++)
  {
    for(j=0;j<3;j++)
    {
@@ -176,7 +176,7 @@ void create_xyz_gl_spheres_list()
 	V4d Ambiant  = {0.0f,0.0f,0.0f,1.0f};
 	int i;
 	int k;
-	for(i=0;i<Ncenters;i++)
+	for(i=0;i<nCenters;i++)
 	{
 		Diffuse[0] = GeomOrb[i].Prop.color.red/(gdouble)65535;
 		Diffuse[1] = GeomOrb[i].Prop.color.green/(gdouble)65535;
@@ -194,7 +194,7 @@ void create_xyz_gl_spheres_list()
 gint GetNumType(char *Symb)
 {
  gint i;
- for(i=0;i<Ncenters;i++)
+ for(i=0;i<nCenters;i++)
  {
    	if(!strcmp(Symb,GeomOrb[i].Symb)) 
            return GeomOrb[i].NumType;
@@ -208,7 +208,7 @@ void DefineType()
  gint OK;
  Ntype =1;
  GeomOrb[0].NumType=0;
- for(i=1;i<Ncenters;i++)
+ for(i=1;i<nCenters;i++)
  {
    OK =1;
    for(j=0;j<i;j++)
@@ -228,7 +228,7 @@ void DefineType()
  }
  /*
  Debug("Types = ");
- for(i=0;i<Ncenters;i++)
+ for(i=0;i<nCenters;i++)
 	 Debug("%d ", GeomOrb[i].NumType);
  Debug("\n");
  */
@@ -239,7 +239,7 @@ void PrintGeomOrb()
  gint i,j;
  Debug("Geometry(in au)\n");
  Debug("===============\n\n");
- for(i=0;i<Ncenters;i++)
+ for(i=0;i<nCenters;i++)
  {
    Debug("%3s ",GeomOrb[i].Symb);
    for(j=0;j<3;j++)
@@ -332,7 +332,7 @@ gboolean gl_read_molden_gabedit_geom_conv_file(gchar *fileName, gint geometryNum
 						GeomOrb[j].variable = TRUE;
 						GeomOrb[j].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[j].Symb);
 					}
- 					Ncenters = nn;
+ 					nCenters = nn;
 					OK = TRUE;
 					break;
 				}
@@ -353,14 +353,14 @@ gboolean gl_read_molden_gabedit_geom_conv_file(gchar *fileName, gint geometryNum
 	fclose(file);
  	g_free(t);
  	for(i=0;i<5;i++) g_free(AtomCoord[i]);
- 	if(Ncenters == 0 ) { if(GeomOrb) g_free(GeomOrb); }
+ 	if(nCenters == 0 ) { if(GeomOrb) g_free(GeomOrb); }
  	else DefineType();
 
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),"Ok");
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 	return TRUE;
@@ -430,7 +430,7 @@ gboolean gl_read_xyz_file_geomi(gchar *fileName,gint geometryNumber)
 				GeomOrb[j].variable = TRUE;
 				GeomOrb[j].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[j].Symb);
 			}
- 			Ncenters = nn;
+ 			nCenters = nn;
 			OK = TRUE;
 			break;
 		}
@@ -448,14 +448,14 @@ gboolean gl_read_xyz_file_geomi(gchar *fileName,gint geometryNumber)
 	fclose(file);
  	g_free(t);
  	for(i=0;i<5;i++) g_free(AtomCoord[i]);
- 	if(Ncenters == 0 ) { if(GeomOrb) g_free(GeomOrb); }
+ 	if(nCenters == 0 ) { if(GeomOrb) g_free(GeomOrb); }
  	else DefineType();
 
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),"Ok");
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 	return TRUE;
@@ -500,7 +500,7 @@ gboolean gl_read_xyz_file(gchar* FileName)
 	goto end;
   }
   free_data_all();
-  /* Ncenters = n;*/
+  /* nCenters = n;*/
   if(OK) GeomOrb=g_malloc(n*sizeof(TypeGeomOrb));
   tmp = get_name_file(FileName);
   set_status_label_info(_("File name"),tmp);
@@ -516,34 +516,31 @@ gboolean gl_read_xyz_file(gchar* FileName)
   while(!feof(fd) && OK && (j<(gint)n))
   {
 	  
-    j++;
-    if(j>=(gint)n)
-	break;
+	j++;
+	if(j>=(gint)n) break;
 	progress_orb(scal,GABEDIT_PROGORB_READGEOM,FALSE);
-   { char* e = fgets(t,taille,fd);}
-    sscanf(t,"%s %s %s %s",AtomCoord[0],AtomCoord[1],AtomCoord[2],AtomCoord[3]);
+	{ char* e = fgets(t,taille,fd);}
+	sscanf(t,"%s %s %s %s",AtomCoord[0],AtomCoord[1],AtomCoord[2],AtomCoord[3]);
 	AtomCoord[0][0]=toupper(AtomCoord[0][0]);
 	l=strlen(AtomCoord[0]);
-    if (l==2)
-	 	AtomCoord[0][1]=tolower(AtomCoord[0][1]);
-    
-    GeomOrb[j].Symb=g_strdup(AtomCoord[0]);
+	if (l==2) AtomCoord[0][1]=tolower(AtomCoord[0][1]);
+	GeomOrb[j].Symb=g_strdup(AtomCoord[0]);
 
-    GeomOrb[j].C[0] = atof(ang_to_bohr(AtomCoord[1]));
-    GeomOrb[j].C[1] = atof(ang_to_bohr(AtomCoord[2]));
-    GeomOrb[j].C[2] = atof(ang_to_bohr(AtomCoord[3]));
-    GeomOrb[j].Prop = prop_atom_get(GeomOrb[j].Symb);
-    GeomOrb[j].partialCharge = 0.0;
-    GeomOrb[j].variable = TRUE;
-    GeomOrb[j].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[j].Symb);
+	GeomOrb[j].C[0] = atof(ang_to_bohr(AtomCoord[1]));
+	GeomOrb[j].C[1] = atof(ang_to_bohr(AtomCoord[2]));
+	GeomOrb[j].C[2] = atof(ang_to_bohr(AtomCoord[3]));
+	GeomOrb[j].Prop = prop_atom_get(GeomOrb[j].Symb);
+	GeomOrb[j].partialCharge = 0.0;
+	GeomOrb[j].variable = TRUE;
+	GeomOrb[j].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[j].Symb);
   }
   fclose(fd);
 
-  Ncenters = n;
-  if(Ncenters>10000)
+  nCenters = n;
+  if(nCenters>10000)
   {
   	TypeGeom = GABEDIT_TYPEGEOM_WIREFRAME;
-  	RebuildGeom = TRUE;
+  	RebuildGeomD = TRUE;
   }
   else
   {
@@ -556,7 +553,7 @@ end:
 	g_free(AtomCoord[i]);
  if(OK)
  {
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	buildBondsOrb();
 	glarea_rafresh(GLArea);
@@ -769,7 +766,7 @@ gboolean gl_read_pdb_file(gchar* FileName)
 	}
 	if(j!=0)
 	{
-		Ncenters = j;
+		nCenters = j;
 		readBondsPDB(fd);
 	}
 	fclose(fd);
@@ -779,23 +776,23 @@ gboolean gl_read_pdb_file(gchar* FileName)
 
 	if(OK)
 	{
-		Ncenters = j;
-		if(Ncenters>1000)
+		nCenters = j;
+		if(nCenters>1000)
 		{
   			TypeGeom = GABEDIT_TYPEGEOM_WIREFRAME;
-  			RebuildGeom = TRUE;
+  			RebuildGeomD = TRUE;
 		}
 	}
 	else
 	{
-		Ncenters = 0;
+		nCenters = 0;
 		set_status_label_info(_("Geometry"),_("Nothing"));
 	}
 	g_free(t);
 	for(i=0;i<8;i++) g_free(listFields[i]);
 	if(OK)
 	{
-		RebuildGeom = TRUE;
+		RebuildGeomD = TRUE;
 		if(this_is_a_new_geometry()) free_objects_all();
 		/* buildBondsOrb();*/
 		glarea_rafresh(GLArea);
@@ -967,17 +964,17 @@ gboolean gl_read_hin_file(gchar* FileName)
 
 	if(OK)
 	{
-		Ncenters = natoms;
-		if(Ncenters>10000)
+		nCenters = natoms;
+		if(nCenters>10000)
 		{
   			TypeGeom = GABEDIT_TYPEGEOM_WIREFRAME;
-  			RebuildGeom = TRUE;
+  			RebuildGeomD = TRUE;
 		}
 		readBondsHIN(fd);
 	}
 	else
 	{
-		Ncenters = 0;
+		nCenters = 0;
 		set_status_label_info(_("Geometry"),_("Nothing"));
 	}
 	fclose(fd);
@@ -985,7 +982,7 @@ gboolean gl_read_hin_file(gchar* FileName)
 	for(i=0;i<8;i++) g_free(listFields[i]);
 	if(OK)
 	{
-		RebuildGeom = TRUE;
+		RebuildGeomD = TRUE;
 		if(this_is_a_new_geometry()) free_objects_all();
 		/* buildBondsOrb();*/
 		glarea_rafresh(GLArea);
@@ -1214,17 +1211,17 @@ gboolean gl_read_molden_or_gabedit_file_geom(gchar *FileName,gint type)
 		break;
 	}
 
- 	Ncenters = j;
+ 	nCenters = j;
  	fclose(fd);
  	g_free(t);
  	for(i=0;i<5;i++)
 		g_free(AtomCoord[i]);
 	if(Angs)
-	for(j=0;j<Ncenters;j++)
+	for(j=0;j<nCenters;j++)
 		for(i=0;i<3;i++)
 			GeomOrb[j].C[i] *=ANG_TO_BOHR;
 
- 	if(Ncenters == 0 )
+ 	if(nCenters == 0 )
 	{
 		if(GeomOrb) g_free(GeomOrb);
 		set_status_label_info(_("Geometry"),_("Nothing"));
@@ -1246,7 +1243,7 @@ gboolean gl_read_molden_file_geom(gchar *FileName)
 {
 	if( gl_read_molden_or_gabedit_file_geom(FileName,0))
 	{
-		RebuildGeom = TRUE;
+		RebuildGeomD = TRUE;
 		if(this_is_a_new_geometry()) free_objects_all();
 		glarea_rafresh(GLArea);
 		return TRUE;
@@ -1258,7 +1255,7 @@ gboolean  gl_read_gabedit_file_geom(gchar *FileName)
 {
 	if(gl_read_molden_or_gabedit_file_geom(FileName,1))
 	{
-		RebuildGeom = TRUE;
+		RebuildGeomD = TRUE;
 		if(this_is_a_new_geometry()) free_objects_all();
 		glarea_rafresh(GLArea);
 		return TRUE;
@@ -1368,18 +1365,18 @@ gboolean gl_read_molpro_file_geom_pos(gchar *FileName,long int pos)
 		GeomOrb[j].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[j].Symb);
   	}
 
- 	Ncenters = j+1;
+ 	nCenters = j+1;
  	fclose(fd);
  	for(i=0;i<5;i++)
 		g_free(AtomCoord[i]);
- 	if(Ncenters == 0 )
+ 	if(nCenters == 0 )
   		g_free(GeomOrb);
  	else
 	{
   		DefineType();
   		/* PrintGeomOrb();*/
 	}
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
@@ -1496,17 +1493,17 @@ gboolean gl_read_dalton_file_geomi(gchar *FileName,gint num)
 			
  	}while(!feof(fd));
 
- 	Ncenters = j+1;
+ 	nCenters = j+1;
  	fclose(fd);
  	g_free(t);
  	for(i=0;i<5;i++) g_free(AtomCoord[i]);
- 	if(Ncenters == 0 ) g_free(GeomOrb);
+ 	if(nCenters == 0 ) g_free(GeomOrb);
  	else
 	{
   		DefineType();
   		/* PrintGeomOrb();*/
 	}
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
@@ -1840,10 +1837,10 @@ gboolean gl_read_gamess_file_geomi(gchar *FileName,gint num)
 		if(num<0) geompos = ftell(fd);
  	}while(!feof(fd));
 
- 	Ncenters = j+1;
-	printf("Ncenters=%d\n",Ncenters);
+ 	nCenters = j+1;
+	printf("nCenters=%d\n",nCenters);
 
-	if ( Ncenters >0)
+	if ( nCenters >0)
 	{
 		long int gp = 0;
 		if(num<0) fseek(fd, geompos, SEEK_SET);
@@ -1851,20 +1848,20 @@ gboolean gl_read_gamess_file_geomi(gchar *FileName,gint num)
 		gp = ftell(fd);
 		get_dipole_from_gamess_output_file(fd);
 		fseek(fd, gp, SEEK_SET);
-		gl_get_charges_from_gamess_output_file(fd,Ncenters);
+		gl_get_charges_from_gamess_output_file(fd,nCenters);
 		/* PrintGeomOrb();*/
 	}
 
  	fclose(fd);
  	g_free(t);
  	for(i=0;i<5;i++) g_free(AtomCoord[i]);
- 	if(Ncenters == 0 ) g_free(GeomOrb);
+ 	if(nCenters == 0 ) g_free(GeomOrb);
  	else
 	{
   		DefineType();
   		/* PrintGeomOrb();*/
 	}
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
@@ -2055,19 +2052,19 @@ gboolean gl_read_mpqc_file_geomi(gchar *fileName,gint numGeometry)
 		if(OK) break;
 	}while(!feof(fd));
 
- 	Ncenters = j+1;
-	if(numGeometry<0) gl_get_charges_from_mpqc_output_file(fd,Ncenters);
+ 	nCenters = j+1;
+	if(numGeometry<0) gl_get_charges_from_mpqc_output_file(fd,nCenters);
  	fclose(fd);
  	g_free(t);
  	for(i=0;i<5;i++) g_free(AtomCoord[i]);
- 	if(Ncenters == 0 ) g_free(GeomOrb);
+ 	if(nCenters == 0 ) g_free(GeomOrb);
  	else DefineType();
 
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	return TRUE;
 }
 /********************************************************************************/
@@ -2177,17 +2174,17 @@ gboolean gl_read_molcas_file_geomi(gchar *FileName,gint num)
 			
  	}while(!feof(file));
 
- 	Ncenters = j+1;
+ 	nCenters = j+1;
  	fclose(file);
  	g_free(t);
  	for(i=0;i<5;i++) g_free(AtomCoord[i]);
- 	if(Ncenters == 0 ) g_free(GeomOrb);
+ 	if(nCenters == 0 ) g_free(GeomOrb);
  	else
 	{
   		DefineType();
   		/* PrintGeomOrb();*/
 	}
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
@@ -2314,19 +2311,19 @@ gboolean gl_read_molpro_file_geomi(gchar *FileName,gint num)
 			
  	}while(!feof(fd));
 
- 	Ncenters = j+1;
+ 	nCenters = j+1;
  	fclose(fd);
  	g_free(t);
  	for(i=0;i<5;i++)
 		g_free(AtomCoord[i]);
- 	if(Ncenters == 0 )
+ 	if(nCenters == 0 )
   		g_free(GeomOrb);
  	else
 	{
   		DefineType();
   		/* PrintGeomOrb();*/
 	}
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
@@ -2349,7 +2346,6 @@ gboolean gl_read_gaussn_file_geomi_str(gchar *FileName,gint num,gchar* str)
  	gint l;
  	guint numgeom;
  	gchar *pdest;
- 	gint result;
  	guint itype=0;
 	long int geompos = 0;
 
@@ -2374,17 +2370,13 @@ gboolean gl_read_gaussn_file_geomi_str(gchar *FileName,gint num,gchar* str)
  		while(!feof(fd))
 		{
     			{ char* e = fgets(t,taille,fd);}
-			pdest = strstr( t,str);
-			result = pdest - t ;
-	 		if ( result >0 )
+	 		if (strstr( t,str))
 	  		{
     				{ char* e = fgets(t,taille,fd);}
     				{ char* e = fgets(t,taille,fd);}
     				{ char* e = fgets(t,taille,fd);}
 
-				pdest = strstr( t, "Type" );
-				result = pdest - t ;
-				if(result>0)
+				if(strstr( t, "Type" ))
 					itype=1;
 				else
 					itype=0;
@@ -2411,9 +2403,7 @@ gboolean gl_read_gaussn_file_geomi_str(gchar *FileName,gint num,gchar* str)
   		while(!feof(fd) )
   		{
     			{ char* e = fgets(t,taille,fd);}
-    			pdest = strstr( t, "----------------------------------" );
-    			result = pdest - t ;
-    			if ( result >0 )
+    			if (strstr( t, "----------------------------------" ) )
     			{
 				geompos = ftell(fd);
  				get_dipole_from_gaussian_output_file(fd);
@@ -2456,12 +2446,12 @@ gboolean gl_read_gaussn_file_geomi_str(gchar *FileName,gint num,gchar* str)
 			
  	}while(!feof(fd));
 
- 	Ncenters = j+1;
+ 	nCenters = j+1;
  	fclose(fd);
  	g_free(t);
  	for(i=0;i<5;i++)
 		g_free(AtomCoord[i]);
- 	if(Ncenters == 0 )
+ 	if(nCenters == 0 )
   		g_free(GeomOrb);
  	else
 	{
@@ -2472,7 +2462,7 @@ gboolean gl_read_gaussn_file_geomi_str(gchar *FileName,gint num,gchar* str)
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 	return TRUE;
@@ -2556,10 +2546,10 @@ gboolean gl_read_fchk_gaussn_file_geom(gchar *fileName)
 	set_status_label_info(_("File type"),"Gaussian fchk");
 	set_status_label_info(_("Geometry"),_("Reading"));
 	rewind(file);
-	Ncenters = j;
+	nCenters = j;
 
-    	GeomOrb=g_malloc(Ncenters*sizeof(TypeGeomOrb));
-	for(j=0;j<Ncenters;j++)
+    	GeomOrb=g_malloc(nCenters*sizeof(TypeGeomOrb));
+	for(j=0;j<nCenters;j++)
 	{
     		GeomOrb[j].Symb=g_strdup(symb_atom_get(z[j]));
 		for(i=0;i<3;i++) GeomOrb[j].C[i]=coords[j*3+i];
@@ -2574,9 +2564,9 @@ gboolean gl_read_fchk_gaussn_file_geom(gchar *fileName)
 	coords = NULL;
 	rewind(file);
 	charges = get_array_real_from_fchk_gaussian_file(file, "NPA Charges ", &n);
-	if(n==Ncenters && charges)
+	if(n==nCenters && charges)
 	{
-		for(j=0;j<Ncenters;j++)
+		for(j=0;j<nCenters;j++)
     			GeomOrb[j].partialCharge = charges[j];
 
 	}
@@ -2584,18 +2574,18 @@ gboolean gl_read_fchk_gaussn_file_geom(gchar *fileName)
 	{
 		rewind(file);
 		charges = get_array_real_from_fchk_gaussian_file(file, "ESP Charges  ", &n);
-		if(n==Ncenters && charges) 
+		if(n==nCenters && charges) 
 		{
-			for(j=0;j<Ncenters;j++)
+			for(j=0;j<nCenters;j++)
     				GeomOrb[j].partialCharge = charges[j];
 		}
 		else
 		{
 			rewind(file);
 			charges = get_array_real_from_fchk_gaussian_file(file, "Mulliken Charges  ", &n);
-			if(n==Ncenters && charges) 
+			if(n==nCenters && charges) 
 			{
-				for(j=0;j<Ncenters;j++)
+				for(j=0;j<nCenters;j++)
     					GeomOrb[j].partialCharge = charges[j];
 			}
 			if(charges) g_free(charges);
@@ -2605,7 +2595,7 @@ gboolean gl_read_fchk_gaussn_file_geom(gchar *fileName)
 	zn = get_array_real_from_fchk_gaussian_file(file, "Nuclear charges ", &n);
 	if(zn && n== j)
 	{
-		for(j=0;j<Ncenters;j++)
+		for(j=0;j<nCenters;j++)
     			GeomOrb[j].nuclearCharge = zn[j];
 	}
 	if(zn)g_free(zn);
@@ -2624,13 +2614,13 @@ gboolean gl_read_fchk_gaussn_file_geom(gchar *fileName)
 	}
 	if(dipole) g_free(dipole);
  	fclose(file);
- 	if(Ncenters == 0 ) g_free(GeomOrb);
+ 	if(nCenters == 0 ) g_free(GeomOrb);
  	else DefineType();
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 	return TRUE;
@@ -2660,7 +2650,7 @@ void gl_get_esp_charges_from_mopac_output_file(FILE* fd)
 
 			if(!fgets(t,taille,fd)) break;
 			if(!fgets(t,taille,fd)) break;
-			for(j=0;j<Ncenters;j++)
+			for(j=0;j<nCenters;j++)
 			{
     				if(!fgets(t,taille,fd)) break;
 				sscanf(t,"%s %s %s",dum1,dum2,dum3);
@@ -2694,7 +2684,7 @@ void gl_get_charges_from_mopac_output_file(FILE* fd)
 			gchar dum2[100];
 			gchar dum3[100];
 
-			for(j=0;j<Ncenters;j++)
+			for(j=0;j<nCenters;j++)
 			{
     				if(!fgets(t,taille,fd)) break;
 				sscanf(t,"%s %s %s",dum1,dum2,dum3);
@@ -2794,7 +2784,7 @@ gboolean gl_read_mopac_output_file_geomi(gchar *fileName, gint numgeometry)
 		{
 			if(numgeometry<0)
 			{
-				Ncenters = j+1;
+				nCenters = j+1;
 				fseek(fd, 0, SEEK_SET);
 				gl_get_charges_from_mopac_output_file(fd);
 				fseek(fd, 0, SEEK_SET);
@@ -2828,11 +2818,11 @@ gboolean gl_read_mopac_output_file_geomi(gchar *fileName, gint numgeometry)
 		GeomOrb[j].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[j].Symb);
 	  }
 	fclose(fd);
-	Ncenters = j+1;
-	if(Ncenters >0)
+	nCenters = j+1;
+	if(nCenters >0)
   		DefineType();
 
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
@@ -2973,8 +2963,8 @@ gboolean gl_read_mopac_aux_file_geomi(gchar *fileName, gint numgeometry)
 		if(nuclearCharges && nNuclearCharges>j) GeomOrb[j].nuclearCharge = atof(nuclearCharges[j]);
 		else GeomOrb[j].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[j].Symb);
 	  }
-	Ncenters = j+1;
-	if(Ncenters >0)
+	nCenters = j+1;
+	if(nCenters >0)
   		DefineType();
 
 	if(numgeometry<0)
@@ -2983,7 +2973,7 @@ gboolean gl_read_mopac_aux_file_geomi(gchar *fileName, gint numgeometry)
 		partialCharges = get_one_block_from_aux_mopac_file(fd, "ATOM_CHARGES[",  &nPartialCharges);
 		if(partialCharges)
 		{
-    			for(j=0;j<Ncenters;j++) 
+    			for(j=0;j<nCenters;j++) 
 				if(j<nPartialCharges) GeomOrb[j].partialCharge=atof(partialCharges[j]);
 			free_one_string_table(partialCharges, nPartialCharges);
 		}
@@ -2998,7 +2988,116 @@ gboolean gl_read_mopac_aux_file_geomi(gchar *fileName, gint numgeometry)
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
+	if(this_is_a_new_geometry()) free_objects_all();
+	glarea_rafresh(GLArea);
+	return TRUE;
+}
+/********************************************************************************/
+gboolean gl_read_wfx_file_geom(gchar *fileName)
+{
+	gint k;
+	gint j;
+	gchar t[BSIZE];
+	gchar** symbols = NULL;
+	gdouble* coordinates = NULL;
+	gint nSymbols,nCoordinates;
+	FILE* file = FOpen(fileName, "rb");
+	gdouble* nuclearCharges = NULL;
+	gint nNuclearCharges;
+	gchar* tmp = NULL;
+
+	if(file ==NULL)
+	{
+		sprintf(t,"Sorry\nI can not open %s  file ",fileName);
+		Message(t,_("Error"),TRUE);
+		return FALSE;
+	}
+	symbols = get_one_block_from_wfx_file(file,"Nuclear Name",&nSymbols);
+	//fprintf(stderr,"nSymb = %d\n",nSymbols);
+	if(!symbols || nSymbols<1)
+	{
+		sprintf(t,"Sorry\nI cannot read symbol from %s  file ",fileName);
+		Message(t,_("Error"),TRUE);
+		fclose(file);
+		if(symbols) free_one_string_table(symbols, nSymbols);
+		return FALSE;
+	}
+	rewind(file);
+	coordinates = get_one_block_real_from_wfx_file(file,"Nuclear Cartesian Coordinates",&nCoordinates);
+	//fprintf(stderr,"nC = %d\n",nCoordinates);
+	if(!coordinates || nCoordinates<3)
+	{
+		sprintf(t,"Sorry\nI cannot read coordinates from %s  file ",fileName);
+		Message(t,_("Error"),TRUE);
+		fclose(file);
+		if(symbols) free_one_string_table(symbols, nSymbols);
+		if(coordinates) g_free(coordinates);
+		return FALSE;
+	}
+	if(nCoordinates!=3*nSymbols)
+	{
+		sprintf(t,"Sorry\nI cannot read geometry from %s  file",fileName);
+		Message(t,_("Error"),TRUE);
+		fclose(file);
+		if(symbols) free_one_string_table(symbols, nSymbols);
+		if(coordinates) g_free(coordinates);
+		return FALSE;
+	}
+
+	rewind(file);
+	nuclearCharges = get_one_block_real_from_wfx_file(file,"Nuclear Charges",&nNuclearCharges);
+	fclose(file);
+
+	free_data_all();
+	tmp = get_name_file(fileName);
+	set_status_label_info(_("File name"),tmp);
+	g_free(tmp);
+	set_status_label_info(_("File type"),"WFX");
+	set_status_label_info(_("Geometry"),_("Reading"));
+
+	if(GeomOrb==NULL) GeomOrb=g_malloc(nSymbols*sizeof(TypeGeomOrb));
+        else GeomOrb=g_realloc(GeomOrb,nSymbols*sizeof(TypeGeomOrb));
+
+	for(j=0;j<nSymbols;j++)
+	{
+		gint i,l;
+
+		for(k=0;k<(gint)strlen(symbols[j]);k++) if(isdigit(symbols[j][k])) symbols[j][k] = ' ';
+		delete_all_spaces(symbols[j]);
+
+		symbols[j][0]=toupper(symbols[j][0]);
+		l=strlen(symbols[j]); 
+		if (l==2) symbols[j][1]=tolower(symbols[j][1]);
+		if(l==1)sprintf(t,"%c",symbols[j][0]);
+		else sprintf(t,"%c%c",symbols[j][0],symbols[j][1]);
+		//fprintf(stderr,"t=%s\n", t);
+
+		GeomOrb[j].Symb=g_strdup(t);
+    		for(i=0;i<3;i++) GeomOrb[j].C[i]=coordinates[3*j+i];
+		//fprintf(stderr,"XYZ0 = %f %f %f\n", GeomOrb[j].C[0], GeomOrb[j].C[1], GeomOrb[j].C[2]);
+		GeomOrb[j].Prop = prop_atom_get(GeomOrb[j].Symb);
+		GeomOrb[j].partialCharge = 0.0;
+		GeomOrb[j].nuclearCharge = get_atomic_number_from_symbol(GeomOrb[j].Symb);
+		if(nuclearCharges && nNuclearCharges>j) GeomOrb[j].nuclearCharge = nuclearCharges[j];
+		//fprintf(stderr,"XYZ = %f %f %f\n", GeomOrb[j].C[0], GeomOrb[j].C[1], GeomOrb[j].C[2]);
+	}
+	nCenters = nSymbols;
+	if(nCenters >0) DefineType();
+	if(symbols) free_one_string_table(symbols, nSymbols);
+	//fprintf(stderr,"End free symbols");
+	if(coordinates) g_free(coordinates);
+	//fprintf(stderr,"End free coordinates");
+	if(nuclearCharges) g_free(nuclearCharges);
+	//fprintf(stderr,"End free nuclearCharges");
+	init_dipole();
+	Dipole.value[0] = Dipole.value[1] = Dipole.value[2] = 0;
+
+	buildBondsOrb();
+	reset_grid_limits();
+	init_atomic_orbitals();
+	set_status_label_info(_("Geometry"),_("Ok"));
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 	return TRUE;
@@ -3171,11 +3270,11 @@ gboolean gl_read_orca_file_geomi(gchar *FileName,gint num)
 		GeomOrb[j].nuclearCharge = nucCharge;
   	}
 
- 	Ncenters = j+1;
+ 	nCenters = j+1;
  	fclose(fd);
  	g_free(t);
  	for(i=0;i<5;i++) g_free(AtomCoord[i]);
- 	if(Ncenters == 0 ) g_free(GeomOrb);
+ 	if(nCenters == 0 ) g_free(GeomOrb);
  	else
 	{
   		DefineType();
@@ -3184,7 +3283,7 @@ gboolean gl_read_orca_file_geomi(gchar *FileName,gint num)
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 	return TRUE;
@@ -3279,9 +3378,9 @@ gboolean gl_read_orca_file_hessian(gchar *FileName)
 	fseek(fd, geompos, SEEK_SET);
  	fclose(fd);
  	g_free(t);
-	Ncenters = nAtoms;
+	nCenters = nAtoms;
  	for(i=0;i<5;i++) g_free(AtomCoord[i]);
- 	if(Ncenters == 0 ) g_free(GeomOrb);
+ 	if(nCenters == 0 ) g_free(GeomOrb);
  	else
 	{
   		DefineType();
@@ -3291,7 +3390,7 @@ gboolean gl_read_orca_file_hessian(gchar *FileName)
 	//printf("end reset_grid_limits\n");
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	//printf("end free_objects_all\n");
 	glarea_rafresh(GLArea);
@@ -3457,11 +3556,11 @@ gboolean gl_read_qchem_file_geomi(gchar *FileName,gint num)
 		if(num >0 && (gint)numgeom-1 == num) break;
  	}while(!feof(fd));
 
- 	Ncenters = j+1;
+ 	nCenters = j+1;
  	fclose(fd);
  	g_free(t);
  	for(i=0;i<5;i++) g_free(AtomCoord[i]);
- 	if(Ncenters == 0 ) g_free(GeomOrb);
+ 	if(nCenters == 0 ) g_free(GeomOrb);
  	else
 	{
   		DefineType();
@@ -3470,7 +3569,7 @@ gboolean gl_read_qchem_file_geomi(gchar *FileName,gint num)
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 	return TRUE;
@@ -3641,11 +3740,11 @@ gulong gl_read_nwchem_file_geomi(gchar *FileName,gint num)
 		if(num >0 && (gint)numgeom-1 == num) break;
  	}while(!feof(fd));
 
- 	Ncenters = j+1;
+ 	nCenters = j+1;
  	fclose(fd);
  	g_free(t);
  	for(i=0;i<5;i++) g_free(AtomCoord[i]);
- 	if(Ncenters == 0 ) g_free(GeomOrb);
+ 	if(nCenters == 0 ) g_free(GeomOrb);
  	else
 	{
   		DefineType();
@@ -3654,7 +3753,7 @@ gulong gl_read_nwchem_file_geomi(gchar *FileName,gint num)
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 	return lineg;
@@ -3826,11 +3925,11 @@ gulong gl_read_psicode_file_geomi(gchar *FileName,gint num)
 		if(num >0 && (gint)numgeom-1 == num) break;
  	}while(!feof(fd));
 
- 	Ncenters = j+1;
+ 	nCenters = j+1;
  	fclose(fd);
  	g_free(t);
  	for(i=0;i<5;i++) g_free(AtomCoord[i]);
- 	if(Ncenters == 0 ) g_free(GeomOrb);
+ 	if(nCenters == 0 ) g_free(GeomOrb);
  	else
 	{
   		DefineType();
@@ -3839,7 +3938,7 @@ gulong gl_read_psicode_file_geomi(gchar *FileName,gint num)
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 	return lineg;
@@ -3917,10 +4016,10 @@ static gboolean gl_read_geom_nbo_file(gchar *fileName)
 		
 	}
 	nAtoms -= ix;
-	Ncenters = 0;
-	if(k==nAtoms+ix) Ncenters = nAtoms;
+	nCenters = 0;
+	if(k==nAtoms+ix) nCenters = nAtoms;
  	fclose(file);
- 	if(Ncenters == 0 )
+ 	if(nCenters == 0 )
 	{
 		g_free(GeomOrb);
 		sprintf(t,_("Sorry, I can not read this format from '%s' file\n"),fileName);
@@ -3928,15 +4027,15 @@ static gboolean gl_read_geom_nbo_file(gchar *fileName)
 		set_status_label_info(_("File name"),_("Nothing"));
 		set_status_label_info(_("File type"),_("Nothing"));
 		set_status_label_info(_("Mol. Orb."),_("Nothing"));
-		RebuildGeom = TRUE;
+		RebuildGeomD = TRUE;
 		return FALSE;
 	}
  	else
 	{
   		/* DefineType();*/
  		gint i;
- 		Ntype =Ncenters;
-		for(i=0;i<Ncenters;i++) 
+ 		Ntype =nCenters;
+		for(i=0;i<nCenters;i++) 
 		{
 			GeomOrb[i].NumType = i;
 			/*
@@ -3945,7 +4044,7 @@ static gboolean gl_read_geom_nbo_file(gchar *fileName)
 			*/
 		}
 		buildBondsOrb();
-		RebuildGeom = TRUE;
+		RebuildGeomD = TRUE;
 		reset_grid_limits();
 		init_atomic_orbitals();
 		return TRUE;
@@ -4059,24 +4158,24 @@ static gboolean gl_read_aimall_file(gchar *fileName)
 	}
 
 
- 	Ncenters = j+1;
+ 	nCenters = j+1;
 
-	if ( Ncenters >0)
+	if ( nCenters >0)
 	{
-		gl_get_charges_from_aimall_file(fd,Ncenters);
+		gl_get_charges_from_aimall_file(fd,nCenters);
 		/* PrintGeomOrb();*/
 	}
 
  	fclose(fd);
  	g_free(t);
  	for(i=0;i<5;i++) g_free(AtomCoord[i]);
- 	if(Ncenters == 0 ) g_free(GeomOrb);
+ 	if(nCenters == 0 ) g_free(GeomOrb);
  	else
 	{
   		DefineType();
   		/* PrintGeomOrb();*/
 	}
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	buildBondsOrb();
 	reset_grid_limits();
 	init_atomic_orbitals();
@@ -4107,7 +4206,7 @@ void gl_read_first_dalton_file(GabeditFileChooser *SelecFile, gint response_id)
 
 	add_objects_for_new_grid();
  	gl_read_dalton_file_geomi(FileName,1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4122,7 +4221,7 @@ void gl_read_last_dalton_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_dalton_file_geomi(FileName,-1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
@@ -4137,7 +4236,7 @@ void gl_read_first_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
 
 	add_objects_for_new_grid();
  	gl_read_gamess_file_geomi(FileName,1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4152,7 +4251,7 @@ void gl_read_last_gamess_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_gamess_file_geomi(FileName,-1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
@@ -4167,7 +4266,7 @@ void gl_read_first_gauss_file(GabeditFileChooser *SelecFile, gint response_id)
 
 	add_objects_for_new_grid();
  	gl_read_gaussn_file_geomi(FileName,1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4182,7 +4281,7 @@ void gl_read_last_gauss_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_gaussn_file_geomi(FileName,-1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
@@ -4197,7 +4296,7 @@ gboolean gl_read_fchk_gauss_file(GabeditFileChooser *SelecFile, gint response_id
 	add_objects_for_new_grid();
  	if(gl_read_fchk_gaussn_file_geom(FileName))
 	{
-		RebuildGeom = TRUE;
+		RebuildGeomD = TRUE;
 		if(this_is_a_new_geometry()) free_objects_all();
 		glarea_rafresh(GLArea);
 		return TRUE;
@@ -4215,7 +4314,7 @@ void gl_read_first_molcas_file(GabeditFileChooser *SelecFile, gint response_id)
 	while( gtk_events_pending() ) gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_molcas_file_geomi(FileName,1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4229,7 +4328,7 @@ void gl_read_last_molcas_file(GabeditFileChooser *SelecFile, gint response_id)
 	while( gtk_events_pending() ) gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_molcas_file_geomi(FileName,-1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }  
@@ -4244,7 +4343,7 @@ void gl_read_first_molpro_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_molpro_file_geomi(FileName,1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4259,7 +4358,7 @@ void gl_read_last_molpro_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_molpro_file_geomi(FileName,-1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }  
@@ -4274,7 +4373,7 @@ void gl_read_first_mpqc_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_mpqc_file_geomi(fileName,1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4289,7 +4388,7 @@ void gl_read_last_mpqc_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_mpqc_file_geomi(fileName,-1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
@@ -4304,7 +4403,7 @@ void gl_read_first_mopac_output_file(GabeditFileChooser *SelecFile, gint respons
 
 	add_objects_for_new_grid();
  	gl_read_mopac_output_file_geomi(FileName,1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4319,7 +4418,7 @@ void gl_read_last_mopac_output_file(GabeditFileChooser *SelecFile, gint response
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_mopac_output_file_geomi(FileName,-1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
@@ -4334,7 +4433,7 @@ void gl_read_first_mopac_aux_file(GabeditFileChooser *SelecFile, gint response_i
 
 	add_objects_for_new_grid();
  	gl_read_mopac_aux_file_geomi(FileName,1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4349,10 +4448,25 @@ void gl_read_last_mopac_aux_file(GabeditFileChooser *SelecFile, gint response_id
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_mopac_aux_file_geomi(FileName,-1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
+/********************************************************/
+void gl_read_wfx_file(GabeditFileChooser *SelecFile, gint response_id)
+{
+ 	gchar *FileName;
+	if(response_id != GTK_RESPONSE_OK) return;
+ 	FileName = gabedit_file_chooser_get_current_file(SelecFile);
+	gtk_widget_hide(GTK_WIDGET(SelecFile));
+	while( gtk_events_pending() ) gtk_main_iteration();
+
+	add_objects_for_new_grid();
+ 	gl_read_wfx_file_geom(FileName);
+	RebuildGeomD = TRUE;
+	if(this_is_a_new_geometry()) free_objects_all();
+	glarea_rafresh(GLArea);
+} 
 /********************************************************/
 void gl_read_first_orca_file(GabeditFileChooser *SelecFile, gint response_id)
 {
@@ -4364,7 +4478,7 @@ void gl_read_first_orca_file(GabeditFileChooser *SelecFile, gint response_id)
 
 	add_objects_for_new_grid();
  	gl_read_orca_file_geomi(FileName,1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4379,7 +4493,7 @@ void gl_read_last_orca_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_orca_file_geomi(FileName,-1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
@@ -4394,7 +4508,7 @@ void gl_read_hessian_orca_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_orca_file_hessian(FileName);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
@@ -4409,7 +4523,7 @@ void gl_read_first_qchem_file(GabeditFileChooser *SelecFile, gint response_id)
 
 	add_objects_for_new_grid();
  	gl_read_qchem_file_geomi(FileName,1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4424,7 +4538,7 @@ void gl_read_last_qchem_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_qchem_file_geomi(FileName,-1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
@@ -4439,7 +4553,7 @@ void gl_read_first_nwchem_file(GabeditFileChooser *SelecFile, gint response_id)
 
 	add_objects_for_new_grid();
  	gl_read_nwchem_file_geomi(FileName,1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4454,7 +4568,7 @@ void gl_read_nbo_file(GabeditFileChooser *SelecFile, gint response_id)
 
 	add_objects_for_new_grid();
  	gl_read_geom_nbo_file(FileName);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4469,7 +4583,7 @@ void gl_read_last_nwchem_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_nwchem_file_geomi(FileName,-1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
@@ -4484,7 +4598,7 @@ void gl_read_last_psicode_file(GabeditFileChooser *SelecFile, gint response_id)
 		gtk_main_iteration();
 	add_objects_for_new_grid();
  	gl_read_psicode_file_geomi(FileName,-1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 }
@@ -4499,7 +4613,7 @@ void gl_read_first_psicode_file(GabeditFileChooser *SelecFile, gint response_id)
 
 	add_objects_for_new_grid();
  	gl_read_psicode_file_geomi(FileName,1);
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 } 
@@ -4550,6 +4664,7 @@ gboolean gl_read_geom_any_file(gchar* fileName)
 	else if(fileType == GABEDIT_TYPEFILE_NWCHEM) Ok = (0!=gl_read_nwchem_file_geomi(fileName,-1));
 	else if(fileType == GABEDIT_TYPEFILE_GABEDIT) Ok = gl_read_gabedit_file_geom(fileName);
 	else if(fileType == GABEDIT_TYPEFILE_MOLDEN) Ok = gl_read_molden_file_geom(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_WFX) Ok = gl_read_wfx_file_geom(fileName);
 	else if(fileType == GABEDIT_TYPEFILE_GAUSSIAN_FCHK) Ok = gl_read_fchk_gaussn_file_geom(fileName);
 	else if(
 		fileType ==  GABEDIT_TYPEFILE_ORCAINPUT||
@@ -4582,7 +4697,7 @@ gboolean gl_read_geom_any_file(gchar* fileName)
 			,_("Error"),TRUE);
 		return FALSE;
 	}
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	if(this_is_a_new_geometry()) free_objects_all();
 	glarea_rafresh(GLArea);
 	return Ok;

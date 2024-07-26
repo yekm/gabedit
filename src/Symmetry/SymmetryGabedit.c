@@ -1,6 +1,6 @@
 /* Symmetry.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -22,7 +22,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../../Config.h"
 #include <math.h>
 #include "../Common/Global.h"
-#include "../Symmetry/Symmetry.h"
+#include "../Symmetry/SymmetryGabedit.h"
 
 /************************************************************************************************************/
 static Elements getElements(Symmetry* symmetry);
@@ -483,8 +483,8 @@ static gdouble testSymmetryElement(Symmetry* symmetry, Element* elem)
 		gint j;
 		for(j = 0; j<mol->size(mol); j++)
 		{
-			SAtom* before = mol->get(mol,j);
-			SAtom after = elem->doOperationSAtom(elem,before);
+			SAtom* beforee = mol->get(mol,j);
+			SAtom after = elem->doOperationSAtom(elem,beforee);
 			SAtom closestAtom = after.findClosestAtom(&after, atoms);
 			gdouble shortestDist = after.distance(&after,&closestAtom);
 			gdouble dist = 1.0;

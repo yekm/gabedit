@@ -2,16 +2,16 @@
 #ifndef __GABEDIT_ORCAGLOBAL_H__
 #define __GABEDIT_ORCAGLOBAL_H__
 
-GtkWidget* orcaWin;
-OrcaMolecule orcaMolecule;
-OrcaColorFore orcaColorFore;
-OrcaColorBack orcaColorBack;
-OrcaBasis orcaBasis;
-OrcaGuessWaveFunction orcaGuessWaveFunction;
+extern GtkWidget* orcaWin;
+extern OrcaMolecule orcaMolecule;
+extern OrcaColorFore orcaColorFore;
+extern OrcaColorBack orcaColorBack;
+extern OrcaBasis orcaBasis;
+extern OrcaGuessWaveFunction orcaGuessWaveFunction;
 
-OrcaFunctional* functionals;
-OrcaStdFunctional* stdFunctionals;
-gdouble* sumFunctionals;
+extern OrcaFunctional* functionalsOrca;
+extern OrcaStdFunctional* stdFunctionalsOrca;
+extern gdouble* sumFunctionalsOrca;
 
 #endif /* __GABEDIT_ORCAGLOBAL_H__ */
 

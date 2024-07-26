@@ -1,6 +1,6 @@
 /*PersonalFragments.c  */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -49,15 +49,15 @@ typedef enum
   E_ANGLE
 } SetEntryType;
 
-static GtkWidget* Entrys[NENTRYS];
+static GtkWidget* Entries[NENTRYS];
 static gdouble labelWidth = 0.15;
 static gdouble entryWidth = 0.15;
 
-static PersonalFragments* personnalFragments = NULL;
+static PersonalFragments* personalFragments = NULL;
 /*****************************************************************************/
 gint getNumberOfGroups()
 {
-	if(personnalFragments) return personnalFragments->numberOfGroupes;
+	if(personalFragments) return personalFragments->numberOfGroupes;
 	else return 0;
 }
 /*****************************************************************************/
@@ -76,9 +76,9 @@ static gint numGroupe(gchar* groupName)
 {
 	gint i;
 	
-	for(i=0;i<personnalFragments->numberOfGroupes;i++)
+	for(i=0;i<personalFragments->numberOfGroupes;i++)
 	{
-		if(!strcmp(groupName,personnalFragments->personnalGroupes[i].groupName))
+		if(!strcmp(groupName,personalFragments->personalGroupes[i].groupName))
 			return i;
 	}
 	return -1;
@@ -89,18 +89,18 @@ static gchar** getListGroupes(gint*n)
 	gchar**t = NULL;
 	gint i;
 
-	if(!personnalFragments) 
+	if(!personalFragments) 
 	{
 		*n = 0;
 		return NULL;
 	}
-	*n = personnalFragments->numberOfGroupes;
+	*n = personalFragments->numberOfGroupes;
 	if(*n<1)
 		return t;
 
 	t = g_malloc((*n)*sizeof(gchar*));
-	for(i=0;i<personnalFragments->numberOfGroupes;i++)
-		t[i] = g_strdup(personnalFragments->personnalGroupes[i].groupName);
+	for(i=0;i<personalFragments->numberOfGroupes;i++)
+		t[i] = g_strdup(personalFragments->personalGroupes[i].groupName);
 
 	return t;
 }
@@ -110,7 +110,7 @@ static gchar** getListFragments(gint*n, gchar* groupName)
 	gchar**t = NULL;
 	gint i;
 	gint k;
-	PersonalGroupe* personnalGroupes = NULL;
+	PersonalGroupe* personalGroupes = NULL;
 
 	k = numGroupe(groupName);
 	if(k<0)
@@ -119,13 +119,13 @@ static gchar** getListFragments(gint*n, gchar* groupName)
 		return NULL;
 	}
 
-	personnalGroupes = personnalFragments->personnalGroupes;
+	personalGroupes = personalFragments->personalGroupes;
 
-	*n = personnalGroupes[k].numberOfFragments;
+	*n = personalGroupes[k].numberOfFragments;
 	t = g_malloc((*n)*sizeof(gchar*));
 
-	for(i=0;i<personnalGroupes[k].numberOfFragments;i++)
-		t[i] = g_strdup(personnalGroupes[k].fragments[i].name);
+	for(i=0;i<personalGroupes[k].numberOfFragments;i++)
+		t[i] = g_strdup(personalGroupes[k].fragments[i].name);
 
 	return t;
 }
@@ -176,11 +176,11 @@ static gchar** getListGroupesWithFragments(gint*n)
 static void addGroupe(GtkWidget* win, gpointer d)
 {
 	gchar *groupName;
-	PersonalGroupe* personnalGroupes = NULL;
+	PersonalGroupe* personalGroupes = NULL;
 	gint numberOfGroupes = 0;
 	gint i;
 
-	groupName = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entrys[E_GROUPE])));
+	groupName = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entries[E_GROUPE])));
 
 	if(strlen(groupName)<1)
 		return;
@@ -194,11 +194,11 @@ static void addGroupe(GtkWidget* win, gpointer d)
 	if(strlen(groupName)<1)
 		return;
 
-	if(!personnalFragments)
+	if(!personalFragments)
 	{
-		personnalFragments = g_malloc(sizeof(PersonalFragments));
-		personnalFragments->numberOfGroupes = 0;
-		personnalFragments->personnalGroupes = NULL;
+		personalFragments = g_malloc(sizeof(PersonalFragments));
+		personalFragments->numberOfGroupes = 0;
+		personalFragments->personalGroupes = NULL;
 	}
 
 	if(numGroupe(groupName)!=-1)
@@ -211,22 +211,22 @@ static void addGroupe(GtkWidget* win, gpointer d)
 		g_free(t);
 		return;
 	}
-	numberOfGroupes = personnalFragments->numberOfGroupes;
-	personnalGroupes = personnalFragments->personnalGroupes;
+	numberOfGroupes = personalFragments->numberOfGroupes;
+	personalGroupes = personalFragments->personalGroupes;
 
 	numberOfGroupes++;
-	if(!personnalGroupes)
-		personnalGroupes = g_malloc(sizeof(PersonalGroupe));
+	if(!personalGroupes)
+		personalGroupes = g_malloc(sizeof(PersonalGroupe));
 	else
-		personnalGroupes = 
-			g_realloc(personnalGroupes,numberOfGroupes*sizeof(PersonalGroupe));
+		personalGroupes = 
+			g_realloc(personalGroupes,numberOfGroupes*sizeof(PersonalGroupe));
 
-	personnalGroupes[numberOfGroupes-1].groupName = g_strdup(groupName);
-	personnalGroupes[numberOfGroupes-1].numberOfFragments = 0;
-	personnalGroupes[numberOfGroupes-1].fragments = NULL;
+	personalGroupes[numberOfGroupes-1].groupName = g_strdup(groupName);
+	personalGroupes[numberOfGroupes-1].numberOfFragments = 0;
+	personalGroupes[numberOfGroupes-1].fragments = NULL;
 
-	personnalFragments->numberOfGroupes = numberOfGroupes;
-	personnalFragments->personnalGroupes = personnalGroupes;
+	personalFragments->numberOfGroupes = numberOfGroupes;
+	personalFragments->personalGroupes = personalGroupes;
 
 	/* add_a_personal_group_to_menu(groupName);*/
 
@@ -260,7 +260,7 @@ void newGroupeDlg(gpointer data, guint Operation,GtkWidget* wid)
 	vboxframe = create_vbox(frame);
 	hbox=create_hbox_false(vboxframe);
 
-	Entrys[E_GROUPE] = create_label_entry(hbox,_("Group Name : "),
+	Entries[E_GROUPE] = create_label_entry(hbox,_("Group Name : "),
 		  (gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
 
 	gtk_widget_realize(WinDlg);
@@ -282,56 +282,56 @@ void newGroupeDlg(gpointer data, guint Operation,GtkWidget* wid)
 /*****************************************************************/
 static void deleteOneGroupe(GtkWidget*win, gpointer data)
 {
-	PersonalGroupe* personnalGroupes = NULL;
+	PersonalGroupe* personalGroupes = NULL;
 	gint numberOfGroupes = 0;
 	gint i;
 	gint k;
 	gchar* groupName;
 
-	groupName = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entrys[E_GROUPE])));
+	groupName = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entries[E_GROUPE])));
 	/* delete_a_personal_group_from_menu(groupName);*/
 
-	if(!personnalFragments)
+	if(!personalFragments)
 		return;
 
 	k = numGroupe(groupName);
 	if(k<0)
 		return;
 
-	numberOfGroupes = personnalFragments->numberOfGroupes;
-	personnalGroupes = personnalFragments->personnalGroupes;
+	numberOfGroupes = personalFragments->numberOfGroupes;
+	personalGroupes = personalFragments->personalGroupes;
 
-	if(personnalGroupes[k].groupName)
+	if(personalGroupes[k].groupName)
 	{
-		g_free(personnalGroupes[k].groupName);
-		if(personnalGroupes[k].fragments)
+		g_free(personalGroupes[k].groupName);
+		if(personalGroupes[k].fragments)
 		{
-			for(i=0;i<personnalGroupes[k].numberOfFragments;i++)
+			for(i=0;i<personalGroupes[k].numberOfFragments;i++)
 			{
-				if(personnalGroupes[k].fragments[i].name)
-					g_free(personnalGroupes[k].fragments[i].name);
-				FreeFragment(&personnalGroupes[k].fragments[i].f);
+				if(personalGroupes[k].fragments[i].name)
+					g_free(personalGroupes[k].fragments[i].name);
+				FreeFragment(&personalGroupes[k].fragments[i].f);
 			}
-			g_free(personnalGroupes[k].fragments);
+			g_free(personalGroupes[k].fragments);
 		}
 	}
 	for(i=k;i<numberOfGroupes-1;i++)
-		personnalGroupes[i] = personnalGroupes[i+1];
+		personalGroupes[i] = personalGroupes[i+1];
 	
 
 	numberOfGroupes--;
 	if(numberOfGroupes>0)
-		personnalGroupes = g_realloc(personnalGroupes,numberOfGroupes*sizeof(PersonalGroupe));
+		personalGroupes = g_realloc(personalGroupes,numberOfGroupes*sizeof(PersonalGroupe));
 
-	personnalFragments->numberOfGroupes = numberOfGroupes;
-	personnalFragments->personnalGroupes = personnalGroupes;
+	personalFragments->numberOfGroupes = numberOfGroupes;
+	personalFragments->personalGroupes = personalGroupes;
 	g_free(groupName);
 	if(numberOfGroupes <1)
 	{
 		/*
-		set_sensitive_personnal("/Add/Personal/Edit/Delete a Groupe",FALSE);
-		set_sensitive_personnal("/Add/Personal/Edit/Add this molecule to personnal Fragments",FALSE);
-		set_sensitive_personnal("/Add/Personal/Edit/Remove a Fragment",FALSE);
+		set_sensitive_personal("/Add/Personal/Edit/Delete a Groupe",FALSE);
+		set_sensitive_personal("/Add/Personal/Edit/Add this molecule to personal Fragments",FALSE);
+		set_sensitive_personal("/Add/Personal/Edit/Remove a Fragment",FALSE);
 		*/
 	}
 	{
@@ -340,7 +340,7 @@ static void deleteOneGroupe(GtkWidget*win, gpointer data)
 		if(ng==0)
 		{
 			/*
-			set_sensitive_personnal("/Add/Personal/Edit/Remove a Fragment", FALSE);
+			set_sensitive_personal("/Add/Personal/Edit/Remove a Fragment", FALSE);
 			*/
 		}
 		else
@@ -395,9 +395,9 @@ void deleteGroupeDlg(gpointer data, guint Operation,GtkWidget* wid)
 
 
 	hbox=create_hbox_false(vboxframe);
-	Entrys[E_GROUPE] = create_label_combo(hbox,_("Group to delete  : "),tlist,n,
+	Entries[E_GROUPE] = create_label_combo(hbox,_("Group to delete  : "),tlist,n,
 			TRUE,(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_GROUPE],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_GROUPE],FALSE);
 
   	for(i=0;i<n;i++)
 	  	g_free(tlist[i]);
@@ -422,16 +422,16 @@ void deleteGroupeDlg(gpointer data, guint Operation,GtkWidget* wid)
 static void addFragment(GtkWidget* win, gpointer data)
 {
 	gchar* name;
-	gchar* groupName = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entrys[E_GROUPE])));
-	gchar* fragmentName = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entrys[E_FRAGMENT])));
-	G_CONST_RETURN gchar* todelete = gtk_entry_get_text(GTK_ENTRY(Entrys[E_TODELETE]));
-	G_CONST_RETURN gchar* tobondto = gtk_entry_get_text(GTK_ENTRY(Entrys[E_TOBONDTO]));
-	G_CONST_RETURN gchar* angle    = gtk_entry_get_text(GTK_ENTRY(Entrys[E_ANGLE]));
+	gchar* groupName = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entries[E_GROUPE])));
+	gchar* fragmentName = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entries[E_FRAGMENT])));
+	G_CONST_RETURN gchar* todelete = gtk_entry_get_text(GTK_ENTRY(Entries[E_TODELETE]));
+	G_CONST_RETURN gchar* tobondto = gtk_entry_get_text(GTK_ENTRY(Entries[E_TOBONDTO]));
+	G_CONST_RETURN gchar* angle    = gtk_entry_get_text(GTK_ENTRY(Entries[E_ANGLE]));
 	gint i;
 	gint itodelete = atoi(todelete);
 	gint itobondto = atoi(tobondto);
 	gint iangle = atoi(angle);
-	PersonalGroupe* personnalGroupes = personnalFragments->personnalGroupes;
+	PersonalGroupe* personalGroupes = personalFragments->personalGroupes;
 	gint numberOfFragments = 0;
 	OnePersonalFragment* fragments = NULL;
 	gint k;
@@ -501,8 +501,8 @@ static void addFragment(GtkWidget* win, gpointer data)
 	if(k<0)
 		return;
 	
-	numberOfFragments = personnalGroupes[k].numberOfFragments;
-	fragments = personnalGroupes[k].fragments;
+	numberOfFragments = personalGroupes[k].numberOfFragments;
+	fragments = personalGroupes[k].fragments;
 
 	numberOfFragments++;
 	if(numberOfFragments==1)
@@ -537,13 +537,13 @@ static void addFragment(GtkWidget* win, gpointer data)
 
 
 
-	personnalGroupes[k].fragments = fragments;
-	personnalGroupes[k].numberOfFragments = numberOfFragments;
+	personalGroupes[k].fragments = fragments;
+	personalGroupes[k].numberOfFragments = numberOfFragments;
 
 	
 	name = g_strdup_printf("%s/%s",groupName,fragmentName); 
 
-	/* add_a_personnal_fragement_to_menu(groupName,fragmentName);*/
+	/* add_a_personal_fragement_to_menu(groupName,fragmentName);*/
 	savePersonalFragments(NULL);
 	rafresh_fragments_selector();
 	gtk_widget_destroy(win);
@@ -627,14 +627,14 @@ void addFragmentDlg(gpointer data, guint Operation,GtkWidget* wid)
 	add_label_table(table," : ",(gushort)i,1); 
 	combo = create_combo_box_entry(groups,ng,FALSE,-1,-1);
 	add_widget_table(table,combo,(gushort)i,2);
-	Entrys[E_GROUPE] = GTK_BIN (combo)->child;
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_GROUPE],FALSE);
+	Entries[E_GROUPE] = GTK_BIN (combo)->child;
+	gtk_editable_set_editable((GtkEditable*) Entries[E_GROUPE],FALSE);
 
 	i=1;
 	add_label_table(table,_(" Fragment Name "),(gushort)i,0); 
 	add_label_table(table," : ",(gushort)i,1); 
-	Entrys[E_FRAGMENT] = gtk_entry_new();
-	add_widget_table(table,Entrys[E_FRAGMENT],(gushort)i,2);
+	Entries[E_FRAGMENT] = gtk_entry_new();
+	add_widget_table(table,Entries[E_FRAGMENT],(gushort)i,2);
 
 	numbers=getListNumbers(&nn);
 
@@ -642,25 +642,25 @@ void addFragmentDlg(gpointer data, guint Operation,GtkWidget* wid)
 	add_label_table(table,_(" Number of atoms to delete "),(gushort)i,0); 
 	add_label_table(table," : ",(gushort)i,1); 
 	combo = create_combo_box_entry(numbers,nn,FALSE,-1,-1);
-	Entrys[E_TODELETE] = GTK_BIN (combo)->child;
+	Entries[E_TODELETE] = GTK_BIN (combo)->child;
 	add_widget_table(table,combo,(gushort)i,2);
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_TODELETE],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_TODELETE],FALSE);
 
 	i=3;
 	add_label_table(table,_(" Number of atoms to bond to "),(gushort)i,0); 
 	add_label_table(table," : ",(gushort)i,1); 
 	combo = create_combo_box_entry(numbers,nn,FALSE,-1,-1);
-	Entrys[E_TOBONDTO] = GTK_BIN (combo)->child;
+	Entries[E_TOBONDTO] = GTK_BIN (combo)->child;
 	add_widget_table(table,combo,(gushort)i,2);
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_TOBONDTO],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_TOBONDTO],FALSE);
 
 	i=4;
 	add_label_table(table,_(" Number of atoms for set angle "),(gushort)i,0); 
 	add_label_table(table," : ",(gushort)i,1); 
 	combo = create_combo_box_entry(numbers,nn,FALSE,-1,-1);
-	Entrys[E_ANGLE] = GTK_BIN (combo)->child;
+	Entries[E_ANGLE] = GTK_BIN (combo)->child;
 	add_widget_table(table,combo,(gushort)i,2);
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_ANGLE],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_ANGLE],FALSE);
 
 
   	for(i=0;i<nn;i++)
@@ -690,9 +690,9 @@ void addFragmentDlg(gpointer data, guint Operation,GtkWidget* wid)
 /*****************************************************************/
 static void deleteOneFragment(GtkWidget* win, gpointer data)
 {
-	gchar* groupName = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entrys[E_GROUPE])));
-	gchar* fragmentName = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entrys[E_FRAGMENT])));
-	PersonalGroupe* personnalGroupes = personnalFragments->personnalGroupes;
+	gchar* groupName = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entries[E_GROUPE])));
+	gchar* fragmentName = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entries[E_FRAGMENT])));
+	PersonalGroupe* personalGroupes = personalFragments->personalGroupes;
 	gint numberOfFragments = 0;
 	OnePersonalFragment* fragments = NULL;
 	gint k;
@@ -704,12 +704,12 @@ static void deleteOneFragment(GtkWidget* win, gpointer data)
 	if(k<0)
 		return;
 	
-	numberOfFragments = personnalGroupes[k].numberOfFragments;
+	numberOfFragments = personalGroupes[k].numberOfFragments;
 
 	if(numberOfFragments<1)
 		return;
 
-	fragments = personnalGroupes[k].fragments;
+	fragments = personalGroupes[k].fragments;
 
 	for(i=0;i<numberOfFragments;i++)
 	{
@@ -737,8 +737,8 @@ static void deleteOneFragment(GtkWidget* win, gpointer data)
 		}
 	}
 
-	personnalGroupes[k].fragments = fragments;
-	personnalGroupes[k].numberOfFragments = numberOfFragments;
+	personalGroupes[k].fragments = fragments;
+	personalGroupes[k].numberOfFragments = numberOfFragments;
 
 	{
 		gint ng;
@@ -746,7 +746,7 @@ static void deleteOneFragment(GtkWidget* win, gpointer data)
 		if(ng==0)
 		{
 			/*
-			set_sensitive_personnal("/Add/Personal/Edit/Remove a Fragment", FALSE);
+			set_sensitive_personal("/Add/Personal/Edit/Remove a Fragment", FALSE);
 			*/
 		}
 		else
@@ -763,7 +763,7 @@ static void deleteOneFragment(GtkWidget* win, gpointer data)
 /*****************************************************************/
 static void resetFragmentCombo(GtkWidget* combo,gpointer data)
 {
-	gchar* groupName = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entrys[E_GROUPE])));
+	gchar* groupName = g_strdup(gtk_entry_get_text(GTK_ENTRY(Entries[E_GROUPE])));
 	gchar** fragments = NULL;
   	GList *list=NULL;
 	gint i;
@@ -837,9 +837,9 @@ void deleteFragmentDlg(gpointer data, guint Operation,GtkWidget* wid)
 	vboxframe = create_vbox(frame);
 
 	hbox=create_hbox_false(vboxframe);
-	Entrys[E_GROUPE] = create_label_combo(hbox,_("Group Name  : "),groups,ng,
+	Entries[E_GROUPE] = create_label_combo(hbox,_("Group Name  : "),groups,ng,
 			TRUE,(gint)(ScreenHeight*labelWidth),(gint)(ScreenHeight*entryWidth));
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_GROUPE],FALSE);
+	gtk_editable_set_editable((GtkEditable*) Entries[E_GROUPE],FALSE);
 
 	hbox=create_hbox_false(vboxframe);
 
@@ -854,9 +854,9 @@ void deleteFragmentDlg(gpointer data, guint Operation,GtkWidget* wid)
 	gtk_widget_set_size_request(GTK_WIDGET(combo),(gint)(ScreenHeight*entryWidth),-1);
 	gtk_box_pack_start (GTK_BOX(hbox), combo, TRUE, TRUE, 1);
 
-	Entrys[E_FRAGMENT] = GTK_BIN (combo)->child;
-	gtk_editable_set_editable((GtkEditable*) Entrys[E_FRAGMENT],FALSE);
-	g_signal_connect_swapped(G_OBJECT(Entrys[E_GROUPE]), "changed",
+	Entries[E_FRAGMENT] = GTK_BIN (combo)->child;
+	gtk_editable_set_editable((GtkEditable*) Entries[E_FRAGMENT],FALSE);
+	g_signal_connect_swapped(G_OBJECT(Entries[E_GROUPE]), "changed",
 			G_CALLBACK(resetFragmentCombo),GTK_OBJECT(combo));
 
   	for(i=0;i<ng;i++)
@@ -892,9 +892,9 @@ void addPersonalFragment(gpointer data, guint Operation,GtkWidget* wid)
 	gint k;
 	OnePersonalFragment* fragments;
 	gint numberOfFragments;
-	PersonalGroupe* personnalGroupes = NULL;
+	PersonalGroupe* personalGroupes = NULL;
 
-	personnalGroupes = personnalFragments->personnalGroupes;
+	personalGroupes = personalFragments->personalGroupes;
 	
 	if(slash == NULL)
 	{
@@ -920,8 +920,8 @@ void addPersonalFragment(gpointer data, guint Operation,GtkWidget* wid)
 	if(k<0)
 		return;
 	
-	numberOfFragments = personnalGroupes[k].numberOfFragments;
-	fragments = personnalGroupes[k].fragments;
+	numberOfFragments = personalGroupes[k].numberOfFragments;
+	fragments = personalGroupes[k].fragments;
 	for(i=0;i<numberOfFragments;i++)
 	{
 		if(!strcmp(fragments[i].name,fragmentName))
@@ -938,35 +938,35 @@ void addPersonalFragment(gpointer data, guint Operation,GtkWidget* wid)
 void addGroupesToMenu()
 {
 	gint i;
-	if(personnalFragments)
-	for(i=0;i<personnalFragments->numberOfGroupes;i++)
+	if(personalFragments)
+	for(i=0;i<personalFragments->numberOfGroupes;i++)
 	{
-		add_a_personal_group_to_menu(personnalFragments->personnalGroupes[i].groupName);
+		add_a_personal_group_to_menu(personalFragments->personalGroupes[i].groupName);
 	}
 }
 void addFragmentsToMenu()
 {
-	PersonalGroupe* personnalGroupes;
+	PersonalGroupe* personalGroupes;
 	gint numberOfGroupes;
 	gint i;
 	gint j;
 	gchar* name;
 
-	if(!personnalFragments)
+	if(!personalFragments)
 		return;
 
-	personnalGroupes = personnalFragments->personnalGroupes;
-	numberOfGroupes = personnalFragments->numberOfGroupes;
+	personalGroupes = personalFragments->personalGroupes;
+	numberOfGroupes = personalFragments->numberOfGroupes;
 	
 	for(i=0;i<numberOfGroupes;i++)
 	{
-		for(j=0;j<personnalGroupes[i].numberOfFragments;j++)
+		for(j=0;j<personalGroupes[i].numberOfFragments;j++)
 		{
 			name = g_strdup_printf("%s/%s",
-					personnalGroupes[i].groupName,
-					personnalGroupes[i].fragments[j].name
+					personalGroupes[i].groupName,
+					personalGroupes[i].fragments[j].name
 					);
-			add_a_personnal_fragement_to_menu(personnalGroupes[i].groupName, personnalGroupes[i].fragments[j].name);
+			add_a_personal_fragement_to_menu(personalGroupes[i].groupName, personalGroupes[i].fragments[j].name);
 			g_free(name);
 
 
@@ -981,7 +981,7 @@ void savePersonalFragments(GtkWidget* win)
 			gabedit_directory(), G_DIR_SEPARATOR_S);
 
 
-	if(!saveAllPersonalFragments(personnalFragments,filename) && win)
+	if(!saveAllPersonalFragments(personalFragments,filename) && win)
 	{
 		gchar* t = g_strdup_printf(_("Sorry, I can not create \"%s\" file"),filename);
 		GtkWidget* w = Message(t,_("Error"),TRUE);
@@ -998,8 +998,8 @@ void loadPersonalFragments(GtkWidget* win)
 	gchar* filename = g_strdup_printf("%s%sPersonalFragments.frg",
 			gabedit_directory(), G_DIR_SEPARATOR_S);
 
-	personnalFragments = loadAllPersonalFragments(filename);
-	if(!personnalFragments && win)
+	personalFragments = loadAllPersonalFragments(filename);
+	if(!personalFragments && win)
 	{
 		gchar* t = g_strdup_printf(_("Sorry, I can not read \"%s\" file"),filename);
 		GtkWidget* w = Message(t,_("Error"),TRUE);

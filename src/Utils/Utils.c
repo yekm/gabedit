@@ -1,6 +1,6 @@
 /* Utils.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -991,6 +991,87 @@ void create_fonts_file()
  g_free(fontsfile);
 }
 /*************************************************************************************/
+static gboolean readOneDir(FILE* file, char* tag, char** pDirectory)
+{
+	gboolean ok=FALSE;
+	gchar t[BSIZE];
+	rewind(file);
+	while(!feof(file))
+	{
+ 		if(!fgets(t,BSIZE,file)) break;
+		if(strstr(t,tag)) { ok = TRUE; break;}
+	}
+	if(ok)
+ 	if(fgets(t,BSIZE,file))
+	{
+ 		*pDirectory = g_strdup(t);
+		str_delete_n(*pDirectory);
+		delete_last_spaces(*pDirectory);
+		delete_first_spaces(*pDirectory);
+#ifdef G_OS_WIN32
+		{
+		gchar t[BBSIZE];
+		sprintf(t,"%s;%s",*pDirectory,g_getenv("PATH"));
+		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
+		}
+#endif
+ 		if(!fgets(t,BSIZE,file)) ok=FALSE;
+	}
+	return ok;
+}
+/*************************************************************************************/
+static gboolean readCommandsOneSoft(FILE* file, char* tag, char** pCommand, CommandsList* commandsList, void (*free_func)(), char* defCommand)
+{
+	int i;
+	gboolean ok=FALSE;
+	gchar t[BSIZE];
+	rewind(file);
+	while(!feof(file))
+	{
+ 		if(!fgets(t,BSIZE,file)) break;
+		if(strstr(t,tag)) { ok = TRUE; break;}
+	}
+	if(!ok) return ok;
+
+ 	if(fgets(t,BSIZE,file))
+	{
+ 		*pCommand = g_strdup(t);
+		str_delete_n(*pCommand);
+		delete_last_spaces(*pCommand);
+		delete_first_spaces(*pCommand);
+	}
+	if(commandsList==NULL) return ok;
+
+ 	if(fgets(t,BSIZE,file) && atoi(t)>0)
+	{
+		if(free_func) free_func();
+		commandsList->numberOfCommands = atoi(t);
+		commandsList->commands = g_malloc(commandsList->numberOfCommands*sizeof(gchar*));
+		for(i=0;i<commandsList->numberOfCommands;i++) commandsList->commands[i]  = g_strdup(" ");
+		for(i=0;i<commandsList->numberOfCommands;i++)
+		{
+			if(!fgets(t,BSIZE,file) || strstr(t,"End"))
+			{
+				free_func();
+  				commandsList->numberOfCommands = 1;
+  				commandsList->numberOfDefaultCommand = 0;
+  				commandsList->commands = g_malloc(sizeof(gchar*));
+  				commandsList->commands[0] = g_strdup(defCommand);
+				return FALSE;
+			}
+			else
+			{
+				commandsList->commands[i] = g_strdup(t); 
+				str_delete_n(commandsList->commands[i]);
+				delete_last_spaces(commandsList->commands[i]);
+				delete_first_spaces(commandsList->commands[i]);
+			}
+		}
+	}
+ 	if(!fgets(t,BSIZE,file)) ok=FALSE; /* End of tag */
+	return ok;
+}
+/*************************************************************************************/
 void create_commands_file()
 {
 	gchar *commandsfile;
@@ -1243,7 +1324,7 @@ void create_commands_file()
 	fprintf(fd,"%s\n",babelCommand);
 	fprintf(fd,"End\n");
 
-	fprintf(fd,"Begin demonDir\n");
+	fprintf(fd,"Begin DemonDir\n");
 	str_delete_n(demonDirectory);
 	delete_last_spaces(demonDirectory);
 	delete_first_spaces(demonDirectory);
@@ -1488,19 +1569,19 @@ void read_opengl_file()
 /*************************************************************************************/
 void create_ressource_file()
 {
- save_atoms_prop();
- create_commands_file();
- create_network_file();
- create_fonts_file();
- create_color_surfaces_file();
- create_opengl_file();
- save_axis_properties();
+	save_atoms_prop();
+	create_commands_file();
+	create_network_file();
+	create_fonts_file();
+	create_color_surfaces_file();
+	create_opengl_file();
+	save_axis_properties();
 #ifdef DRAWGEOMGL
- save_axes_geom_properties();
+	save_axes_geom_properties();
 #endif
- save_principal_axis_properties();
- save_HBonds_properties();
- create_drawmolecule_file();
+	save_principal_axis_properties();
+	save_HBonds_properties();
+	create_drawmolecule_file();
 }
 /*************************************************************************************/
 void read_hosts_file()
@@ -1779,1090 +1860,32 @@ void read_commands_file()
 		return;
 	}
 /*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin DeMon"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		NameCommandDeMon= g_strdup(t);
-		str_delete_n(NameCommandDeMon);
-		delete_last_spaces(NameCommandDeMon);
-		delete_first_spaces(NameCommandDeMon);
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd) && atoi(t)>0)
-	{
-		free_demon_commands();
-		demonCommands.numberOfCommands = atoi(t);
-		demonCommands.commands = g_malloc(demonCommands.numberOfCommands*sizeof(gchar*));
-		for(i=0;i<demonCommands.numberOfCommands;i++)
-			demonCommands.commands[i]  = g_strdup(" ");
-		for(i=0;i<demonCommands.numberOfCommands;i++)
-		{
-			if(!fgets(t,taille,fd) || strstr(t,"End"))
-			{
-				free_demon_commands();
-  				demonCommands.numberOfCommands = 1;
-  				demonCommands.numberOfDefaultCommand = 0;
-  				demonCommands.commands = g_malloc(sizeof(gchar*));
-  				demonCommands.commands[0] = g_strdup("default");
-
-				fclose(fd);
-				return;
-			}
-			else
-			{
-				demonCommands.commands[i] = g_strdup(t); 
-				str_delete_n(demonCommands.commands[i]);
-				delete_last_spaces(demonCommands.commands[i]);
-				delete_first_spaces(demonCommands.commands[i]);
-			}
-		}
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of DeMon */
-	{
-		fclose(fd);
-		return;
-	}
+	readCommandsOneSoft(fd, "Begin DeMon", &NameCommandDeMon, &demonCommands, free_demon_commands, "default");
+	readCommandsOneSoft(fd, "Begin Gamess", &NameCommandGamess, &gamessCommands, free_gamess_commands, "nohup runGamess");
+	readCommandsOneSoft(fd, "Begin Gaussian", &NameCommandGaussian, &gaussianCommands, free_gaussian_commands, "nohup g09");
+	readCommandsOneSoft(fd, "Begin Molcas", &NameCommandMolcas, &molcasCommands, free_molcas_commands, "nohup runMolcas");
+	readCommandsOneSoft(fd, "Begin Molpro", &NameCommandMolpro, &molproCommands, free_molpro_commands, "nohup runMolpro");
+	readCommandsOneSoft(fd, "Begin MPQC", &NameCommandMPQC, &mpqcCommands, free_mpqc_commands, "nohup mpqc");
+	readCommandsOneSoft(fd, "Begin NWChem", &NameCommandNWChem, &nwchemCommands, free_nwchem_commands, "nohup nwchem");
+	readCommandsOneSoft(fd, "Begin Psicode", &NameCommandPsicode, &psicodeCommands, free_psicode_commands, "nohup psicode");
+	readCommandsOneSoft(fd, "Begin Orca", &NameCommandOrca, &orcaCommands, free_orca_commands, "nohup orca");
+	readCommandsOneSoft(fd, "Begin FireFly", &NameCommandFireFly, &fireflyCommands, free_firefly_commands, "nohup firefly");
+	readCommandsOneSoft(fd, "Begin QChem", &NameCommandQChem, &qchemCommands, free_qchem_commands, "nohup qchem");
+	readCommandsOneSoft(fd, "Begin Mopac", &NameCommandMopac, &mopacCommands, free_mopac_commands, "nohup mopac");
+	readCommandsOneSoft(fd, "Begin PovRay", &NameCommandPovray, &povrayCommands, free_povray_commands, "povray +A0.3 -UV");
+	readCommandsOneSoft(fd, "Begin Babel", &babelCommand, NULL, NULL, "NULL");
 /*-----------------------------------------------------------------------------*/
+	readOneDir(fd, "Begin DemonDir", &demonDirectory);
+	readOneDir(fd, "Begin GamessDir", &gamessDirectory);
+	readOneDir(fd, "Begin NWChemDir", &nwchemDirectory);
+	readOneDir(fd, "Begin PsicodeDir", &psicodeDirectory);
+	readOneDir(fd, "Begin OrcaDir", &orcaDirectory);
+	readOneDir(fd, "Begin FireFlyDir", &fireflyDirectory);
+	readOneDir(fd, "Begin MopacDir", &mopacDirectory);
+	readOneDir(fd, "Begin GaussDir", &gaussDirectory);
+	readOneDir(fd, "Begin PovRayDir", &povrayDirectory);
+	readOneDir(fd, "Begin OpenBabelDir", &openbabelDirectory);
 /*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin Gamess"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		NameCommandGamess= g_strdup(t);
-		str_delete_n(NameCommandGamess);
-		delete_last_spaces(NameCommandGamess);
-		delete_first_spaces(NameCommandGamess);
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd) && atoi(t)>0)
-	{
-		free_gamess_commands();
-		gamessCommands.numberOfCommands = atoi(t);
-		gamessCommands.commands = g_malloc(gamessCommands.numberOfCommands*sizeof(gchar*));
-		for(i=0;i<gamessCommands.numberOfCommands;i++)
-			gamessCommands.commands[i]  = g_strdup(" ");
-		for(i=0;i<gamessCommands.numberOfCommands;i++)
-		{
-			if(!fgets(t,taille,fd) || strstr(t,"End"))
-			{
-				free_gamess_commands();
-  				gamessCommands.numberOfCommands = 1;
-  				gamessCommands.numberOfDefaultCommand = 0;
-  				gamessCommands.commands = g_malloc(sizeof(gchar*));
-  				gamessCommands.commands[0] = g_strdup("nohup g03");
-
-				fclose(fd);
-				return;
-			}
-			else
-			{
-				gamessCommands.commands[i] = g_strdup(t); 
-				str_delete_n(gamessCommands.commands[i]);
-				delete_last_spaces(gamessCommands.commands[i]);
-				delete_first_spaces(gamessCommands.commands[i]);
-			}
-		}
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of gamess */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin Gaussian"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		NameCommandGaussian= g_strdup(t);
-		str_delete_n(NameCommandGaussian);
-		delete_last_spaces(NameCommandGaussian);
-		delete_first_spaces(NameCommandGaussian);
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd) && atoi(t)>0)
-	{
-		free_gaussian_commands();
-		gaussianCommands.numberOfCommands = atoi(t);
-		gaussianCommands.commands = g_malloc(gaussianCommands.numberOfCommands*sizeof(gchar*));
-		for(i=0;i<gaussianCommands.numberOfCommands;i++)
-			gaussianCommands.commands[i]  = g_strdup(" ");
-		for(i=0;i<gaussianCommands.numberOfCommands;i++)
-		{
-			if(!fgets(t,taille,fd) || strstr(t,"End"))
-			{
-				free_gaussian_commands();
-  				gaussianCommands.numberOfCommands = 1;
-  				gaussianCommands.numberOfDefaultCommand = 0;
-  				gaussianCommands.commands = g_malloc(sizeof(gchar*));
-  				gaussianCommands.commands[0] = g_strdup("nohup g03");
-
-				fclose(fd);
-				return;
-			}
-			else
-			{
-				gaussianCommands.commands[i] = g_strdup(t); 
-				str_delete_n(gaussianCommands.commands[i]);
-				delete_last_spaces(gaussianCommands.commands[i]);
-				delete_first_spaces(gaussianCommands.commands[i]);
-			}
-		}
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of gaussian */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin Molcas"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		NameCommandMolcas= g_strdup(t);
-		str_delete_n(NameCommandMolcas);
-		delete_last_spaces(NameCommandMolcas);
-		delete_first_spaces(NameCommandMolcas);
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd) && atoi(t)>0)
-	{
-		free_molcas_commands();
-		molcasCommands.numberOfCommands = atoi(t);
-		molcasCommands.commands = g_malloc(molcasCommands.numberOfCommands*sizeof(gchar*));
-		for(i=0;i<molcasCommands.numberOfCommands;i++)
-			molcasCommands.commands[i]  = g_strdup(" ");
-		for(i=0;i<molcasCommands.numberOfCommands;i++)
-		{
-			if(!fgets(t,taille,fd) || strstr(t,"End"))
-			{
-				free_molcas_commands();
-  				molcasCommands.numberOfCommands = 1;
-  				molcasCommands.numberOfDefaultCommand = 0;
-  				molcasCommands.commands = g_malloc(sizeof(gchar*));
-  				molcasCommands.commands[0] = g_strdup("nohup g03");
-
-				fclose(fd);
-				return;
-			}
-			else
-			{
-				molcasCommands.commands[i] = g_strdup(t); 
-				str_delete_n(molcasCommands.commands[i]);
-				delete_last_spaces(molcasCommands.commands[i]);
-				delete_first_spaces(molcasCommands.commands[i]);
-			}
-		}
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of Molcas */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin Molpro"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		NameCommandMolpro= g_strdup(t);
-		str_delete_n(NameCommandMolpro);
-		delete_last_spaces(NameCommandMolpro);
-		delete_first_spaces(NameCommandMolpro);
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd) && atoi(t)>0)
-	{
-		free_molpro_commands();
-		molproCommands.numberOfCommands = atoi(t);
-		molproCommands.commands = g_malloc(molproCommands.numberOfCommands*sizeof(gchar*));
-		for(i=0;i<molproCommands.numberOfCommands;i++)
-			molproCommands.commands[i]  = g_strdup(" ");
-		for(i=0;i<molproCommands.numberOfCommands;i++)
-		{
-			if(!fgets(t,taille,fd) || strstr(t,"End"))
-			{
-				free_molpro_commands();
-  				molproCommands.numberOfCommands = 1;
-  				molproCommands.numberOfDefaultCommand = 0;
-  				molproCommands.commands = g_malloc(sizeof(gchar*));
-  				molproCommands.commands[0] = g_strdup("nohup g03");
-
-				fclose(fd);
-				return;
-			}
-			else
-			{
-				molproCommands.commands[i] = g_strdup(t); 
-				str_delete_n(molproCommands.commands[i]);
-				delete_last_spaces(molproCommands.commands[i]);
-				delete_first_spaces(molproCommands.commands[i]);
-			}
-		}
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of Molpro */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin MPQC"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		NameCommandMPQC= g_strdup(t);
-		str_delete_n(NameCommandMPQC);
-		delete_last_spaces(NameCommandMPQC);
-		delete_first_spaces(NameCommandMPQC);
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd) && atoi(t)>0)
-	{
-		free_mpqc_commands();
-		mpqcCommands.numberOfCommands = atoi(t);
-		mpqcCommands.commands = g_malloc(mpqcCommands.numberOfCommands*sizeof(gchar*));
-		for(i=0;i<mpqcCommands.numberOfCommands;i++)
-			mpqcCommands.commands[i]  = g_strdup(" ");
-		for(i=0;i<mpqcCommands.numberOfCommands;i++)
-		{
-			if(!fgets(t,taille,fd) || strstr(t,"End"))
-			{
-				free_mpqc_commands();
-  				mpqcCommands.numberOfCommands = 1;
-  				mpqcCommands.numberOfDefaultCommand = 0;
-  				mpqcCommands.commands = g_malloc(sizeof(gchar*));
-  				mpqcCommands.commands[0] = g_strdup("nohup mpqc");
-
-				fclose(fd);
-				return;
-			}
-			else
-			{
-				mpqcCommands.commands[i] = g_strdup(t); 
-				str_delete_n(mpqcCommands.commands[i]);
-				delete_last_spaces(mpqcCommands.commands[i]);
-				delete_first_spaces(mpqcCommands.commands[i]);
-			}
-		}
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of MPQC */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin NWChem"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		NameCommandNWChem= g_strdup(t);
-		str_delete_n(NameCommandNWChem);
-		delete_last_spaces(NameCommandNWChem);
-		delete_first_spaces(NameCommandNWChem);
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd) && atoi(t)>0)
-	{
-		free_nwchem_commands();
-		nwchemCommands.numberOfCommands = atoi(t);
-		nwchemCommands.commands = g_malloc(nwchemCommands.numberOfCommands*sizeof(gchar*));
-		for(i=0;i<nwchemCommands.numberOfCommands;i++)
-			nwchemCommands.commands[i]  = g_strdup(" ");
-		for(i=0;i<nwchemCommands.numberOfCommands;i++)
-		{
-			if(!fgets(t,taille,fd) || strstr(t,"End"))
-			{
-				free_nwchem_commands();
-  				nwchemCommands.numberOfCommands = 1;
-  				nwchemCommands.numberOfDefaultCommand = 0;
-  				nwchemCommands.commands = g_malloc(sizeof(gchar*));
-  				nwchemCommands.commands[0] = g_strdup("nohup nwchem");
-
-				fclose(fd);
-				return;
-			}
-			else
-			{
-				nwchemCommands.commands[i] = g_strdup(t); 
-				str_delete_n(nwchemCommands.commands[i]);
-				delete_last_spaces(nwchemCommands.commands[i]);
-				delete_first_spaces(nwchemCommands.commands[i]);
-			}
-		}
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of NWChem */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin Psicode"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		NameCommandPsicode= g_strdup(t);
-		str_delete_n(NameCommandPsicode);
-		delete_last_spaces(NameCommandPsicode);
-		delete_first_spaces(NameCommandPsicode);
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd) && atoi(t)>0)
-	{
-		free_psicode_commands();
-		psicodeCommands.numberOfCommands = atoi(t);
-		psicodeCommands.commands = g_malloc(psicodeCommands.numberOfCommands*sizeof(gchar*));
-		for(i=0;i<psicodeCommands.numberOfCommands;i++)
-			psicodeCommands.commands[i]  = g_strdup(" ");
-		for(i=0;i<psicodeCommands.numberOfCommands;i++)
-		{
-			if(!fgets(t,taille,fd) || strstr(t,"End"))
-			{
-				free_psicode_commands();
-  				psicodeCommands.numberOfCommands = 1;
-  				psicodeCommands.numberOfDefaultCommand = 0;
-  				psicodeCommands.commands = g_malloc(sizeof(gchar*));
-  				psicodeCommands.commands[0] = g_strdup("nohup psicode");
-
-				fclose(fd);
-				return;
-			}
-			else
-			{
-				psicodeCommands.commands[i] = g_strdup(t); 
-				str_delete_n(psicodeCommands.commands[i]);
-				delete_last_spaces(psicodeCommands.commands[i]);
-				delete_first_spaces(psicodeCommands.commands[i]);
-			}
-		}
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of Psicode */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin Orca"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		NameCommandOrca= g_strdup(t);
-		str_delete_n(NameCommandOrca);
-		delete_last_spaces(NameCommandOrca);
-		delete_first_spaces(NameCommandOrca);
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd) && atoi(t)>0)
-	{
-		free_orca_commands();
-		orcaCommands.numberOfCommands = atoi(t);
-		orcaCommands.commands = g_malloc(orcaCommands.numberOfCommands*sizeof(gchar*));
-		for(i=0;i<orcaCommands.numberOfCommands;i++)
-			orcaCommands.commands[i]  = g_strdup(" ");
-		for(i=0;i<orcaCommands.numberOfCommands;i++)
-		{
-			if(!fgets(t,taille,fd) || strstr(t,"End"))
-			{
-				free_orca_commands();
-  				orcaCommands.numberOfCommands = 1;
-  				orcaCommands.numberOfDefaultCommand = 0;
-  				orcaCommands.commands = g_malloc(sizeof(gchar*));
-  				orcaCommands.commands[0] = g_strdup("nohup orca");
-
-				fclose(fd);
-				return;
-			}
-			else
-			{
-				orcaCommands.commands[i] = g_strdup(t); 
-				str_delete_n(orcaCommands.commands[i]);
-				delete_last_spaces(orcaCommands.commands[i]);
-				delete_first_spaces(orcaCommands.commands[i]);
-			}
-		}
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of Orca */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin FireFly"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		NameCommandFireFly= g_strdup(t);
-		str_delete_n(NameCommandFireFly);
-		delete_last_spaces(NameCommandFireFly);
-		delete_first_spaces(NameCommandFireFly);
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd) && atoi(t)>0)
-	{
-		free_firefly_commands();
-		fireflyCommands.numberOfCommands = atoi(t);
-		fireflyCommands.commands = g_malloc(fireflyCommands.numberOfCommands*sizeof(gchar*));
-		for(i=0;i<fireflyCommands.numberOfCommands;i++)
-			fireflyCommands.commands[i]  = g_strdup(" ");
-		for(i=0;i<fireflyCommands.numberOfCommands;i++)
-		{
-			if(!fgets(t,taille,fd) || strstr(t,"End"))
-			{
-				free_firefly_commands();
-  				fireflyCommands.numberOfCommands = 1;
-  				fireflyCommands.numberOfDefaultCommand = 0;
-  				fireflyCommands.commands = g_malloc(sizeof(gchar*));
-  				fireflyCommands.commands[0] = g_strdup("nohup firefly");
-
-				fclose(fd);
-				return;
-			}
-			else
-			{
-				fireflyCommands.commands[i] = g_strdup(t); 
-				str_delete_n(fireflyCommands.commands[i]);
-				delete_last_spaces(fireflyCommands.commands[i]);
-				delete_first_spaces(fireflyCommands.commands[i]);
-			}
-		}
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of FireFly */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin QChem"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		NameCommandQChem= g_strdup(t);
-		str_delete_n(NameCommandQChem);
-		delete_last_spaces(NameCommandQChem);
-		delete_first_spaces(NameCommandQChem);
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd) && atoi(t)>0)
-	{
-		free_qchem_commands();
-		qchemCommands.numberOfCommands = atoi(t);
-		qchemCommands.commands = g_malloc(qchemCommands.numberOfCommands*sizeof(gchar*));
-		for(i=0;i<qchemCommands.numberOfCommands;i++)
-			qchemCommands.commands[i]  = g_strdup(" ");
-		for(i=0;i<qchemCommands.numberOfCommands;i++)
-		{
-			if(!fgets(t,taille,fd) || strstr(t,"End"))
-			{
-				free_qchem_commands();
-  				qchemCommands.numberOfCommands = 1;
-  				qchemCommands.numberOfDefaultCommand = 0;
-  				qchemCommands.commands = g_malloc(sizeof(gchar*));
-  				qchemCommands.commands[0] = g_strdup("nohup qchem");
-
-				fclose(fd);
-				return;
-			}
-			else
-			{
-				qchemCommands.commands[i] = g_strdup(t); 
-				str_delete_n(qchemCommands.commands[i]);
-				delete_last_spaces(qchemCommands.commands[i]);
-				delete_first_spaces(qchemCommands.commands[i]);
-			}
-		}
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of QChem */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin Mopac"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		NameCommandMopac= g_strdup(t);
-		str_delete_n(NameCommandMopac);
-		delete_last_spaces(NameCommandMopac);
-		delete_first_spaces(NameCommandMopac);
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd) && atoi(t)>0)
-	{
-		free_mopac_commands();
-		mopacCommands.numberOfCommands = atoi(t);
-		mopacCommands.commands = g_malloc(mopacCommands.numberOfCommands*sizeof(gchar*));
-		for(i=0;i<mopacCommands.numberOfCommands;i++)
-			mopacCommands.commands[i]  = g_strdup(" ");
-		for(i=0;i<mopacCommands.numberOfCommands;i++)
-		{
-			if(!fgets(t,taille,fd) || strstr(t,"End"))
-			{
-				free_mopac_commands();
-  				mopacCommands.numberOfCommands = 1;
-  				mopacCommands.numberOfDefaultCommand = 0;
-  				mopacCommands.commands = g_malloc(sizeof(gchar*));
-  				mopacCommands.commands[0] = g_strdup("nohup mopac");
-
-				fclose(fd);
-				return;
-			}
-			else
-			{
-				mopacCommands.commands[i] = g_strdup(t); 
-				str_delete_n(mopacCommands.commands[i]);
-				delete_last_spaces(mopacCommands.commands[i]);
-				delete_first_spaces(mopacCommands.commands[i]);
-			}
-		}
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of Mopac */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin PovRay"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		NameCommandPovray= g_strdup(t);
-		str_delete_n(NameCommandPovray);
-		delete_last_spaces(NameCommandPovray);
-		delete_first_spaces(NameCommandPovray);
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd) && atoi(t)>0)
-	{
-		free_povray_commands();
-		povrayCommands.numberOfCommands = atoi(t);
-		povrayCommands.commands = g_malloc(povrayCommands.numberOfCommands*sizeof(gchar*));
-		for(i=0;i<povrayCommands.numberOfCommands;i++)
-			povrayCommands.commands[i]  = g_strdup(" ");
-		for(i=0;i<povrayCommands.numberOfCommands;i++)
-		{
-			if(!fgets(t,taille,fd) || strstr(t,"End"))
-			{
-				free_povray_commands();
-  				povrayCommands.numberOfCommands = 1;
-  				povrayCommands.numberOfDefaultCommand = 0;
-  				povrayCommands.commands = g_malloc(sizeof(gchar*));
-  				povrayCommands.commands[0] = g_strdup("povray +A0.3 -UV");
-
-				fclose(fd);
-				return;
-			}
-			else
-			{
-				povrayCommands.commands[i] = g_strdup(t); 
-				str_delete_n(povrayCommands.commands[i]);
-				delete_last_spaces(povrayCommands.commands[i]);
-				delete_first_spaces(povrayCommands.commands[i]);
-			}
-		}
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of PovRay */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin Babel"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		babelCommand= g_strdup(t);
-		str_delete_n(babelCommand);
-		delete_last_spaces(babelCommand);
-		delete_first_spaces(babelCommand);
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of Babel */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin OrcaDir"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		demonDirectory= g_strdup(t);
-		str_delete_n(demonDirectory);
-		delete_last_spaces(demonDirectory);
-		delete_first_spaces(demonDirectory);
-#ifdef G_OS_WIN32
-		{
-		gchar t[BBSIZE];
-		sprintf(t,"%s;%s",demonDirectory,g_getenv("PATH"));
-		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
-		}
-#endif
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of OrcaDir */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin GamessDir"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		gamessDirectory= g_strdup(t);
-		str_delete_n(gamessDirectory);
-		delete_last_spaces(gamessDirectory);
-		delete_first_spaces(gamessDirectory);
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of GamessDir */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin NWChemDir"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		nwchemDirectory= g_strdup(t);
-		str_delete_n(nwchemDirectory);
-		delete_last_spaces(nwchemDirectory);
-		delete_first_spaces(nwchemDirectory);
-#ifdef G_OS_WIN32
-		{
-		gchar t[BBSIZE];
-		sprintf(t,"%s;%s",nwchemDirectory,g_getenv("PATH"));
-		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
-		}
-#endif
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of NWChemDir */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin PsicodeDir"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		psicodeDirectory= g_strdup(t);
-		str_delete_n(psicodeDirectory);
-		delete_last_spaces(psicodeDirectory);
-		delete_first_spaces(psicodeDirectory);
-#ifdef G_OS_WIN32
-		{
-		gchar t[BBSIZE];
-		sprintf(t,"%s;%s",psicodeDirectory,g_getenv("PATH"));
-		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
-		}
-#endif
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of PsicodeDir */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin OrcaDir"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		orcaDirectory= g_strdup(t);
-		str_delete_n(orcaDirectory);
-		delete_last_spaces(orcaDirectory);
-		delete_first_spaces(orcaDirectory);
-#ifdef G_OS_WIN32
-		{
-		gchar t[BBSIZE];
-		sprintf(t,"%s;%s",orcaDirectory,g_getenv("PATH"));
-		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
-		}
-#endif
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of OrcaDir */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin FireFlyDir"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		fireflyDirectory= g_strdup(t);
-		str_delete_n(fireflyDirectory);
-		delete_last_spaces(fireflyDirectory);
-		delete_first_spaces(fireflyDirectory);
-#ifdef G_OS_WIN32
-		{
-		gchar t[BBSIZE];
-		sprintf(t,"%s;%s",fireflyDirectory,g_getenv("PATH"));
-		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
-		}
-#endif
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of FireFlyDir */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin MopacDir"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		mopacDirectory= g_strdup(t);
-		str_delete_n(mopacDirectory);
-		delete_last_spaces(mopacDirectory);
-		delete_first_spaces(mopacDirectory);
-#ifdef G_OS_WIN32
-		{
-		gchar t[BBSIZE];
-		sprintf(t,"%s;%s",mopacDirectory,g_getenv("PATH"));
-		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
-		}
-#endif
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of MopacDir */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin GaussDir"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		gaussDirectory= g_strdup(t);
-		str_delete_n(gaussDirectory);
-		delete_last_spaces(gaussDirectory);
-		delete_first_spaces(gaussDirectory);
-#ifdef G_OS_WIN32
-		{
-		gchar t[BBSIZE];
-		sprintf(t,"%s;%s",gaussDirectory,g_getenv("PATH"));
-		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
-		}
-#endif
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of GaussDir */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin PovRayDir"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		povrayDirectory= g_strdup(t);
-		str_delete_n(povrayDirectory);
-		delete_last_spaces(povrayDirectory);
-		delete_first_spaces(povrayDirectory);
-#ifdef G_OS_WIN32
-		{
-		gchar t[BBSIZE];
-		sprintf(t,"%s;%s",povrayDirectory,g_getenv("PATH"));
-		if(strlen(t)>1) g_setenv("PATH",t,TRUE);
-		}
-#endif
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of PovRayDir */
-	{
-		fclose(fd);
-		return;
-	}
-/*-----------------------------------------------------------------------------*/
- 	if(fgets(t,taille,fd))
-	if(!strstr(t,"Begin OpenBabelDir"))
-	{
-		fclose(fd);
-		return;
-	}
- 	if(fgets(t,taille,fd))
-	{
- 		openbabelDirectory= g_strdup(t);
-		str_delete_n(openbabelDirectory);
-		delete_last_spaces(openbabelDirectory);
-		delete_first_spaces(openbabelDirectory);
-#ifdef G_OS_WIN32
-		{
-			gchar t[BBSIZE];
-			sprintf(t,"%s;%s",openbabelDirectory,g_getenv("PATH"));
-			if(strlen(t)>1) g_setenv("PATH",t,TRUE);
-		}
-#endif
-	}
-	else
-	{
-		fclose(fd);
-		return;
-	}
- 	if(!fgets(t,taille,fd)) /* End of OpenBabelDir */
-	{
-		fclose(fd);
-		return;
-	}
- 	fclose(fd);
  }
 }
 /*************************************************************************************/
@@ -3292,7 +2315,7 @@ void initialise_name_commands()
 
 #ifdef G_OS_WIN32
 	demonDirectory= g_strdup_printf("C:%sDeMon",G_DIR_SEPARATOR_S);
-	gamessDirectory= g_strdup_printf("C:%sWinGAMESS",G_DIR_SEPARATOR_S);
+	gamessDirectory= g_strdup_printf("C:%sUsers%sPublic%sgamess-64",G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
 	orcaDirectory= g_strdup_printf("C:%sORCA_DevCenter%sorca%sx86_exe%srelease%sOrca",G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S,G_DIR_SEPARATOR_S);
 	nwchemDirectory= g_strdup_printf("C:%sNWChem",G_DIR_SEPARATOR_S);
 	psicodeDirectory= g_strdup_printf("C:%sPsicode",G_DIR_SEPARATOR_S);
@@ -5136,6 +4159,58 @@ GabEditTypeFile get_type_output_file(gchar* fileName)
 				ktype = GABEDIT_TYPEFILE_MOLDEN;
 				break;
 			}
+			if(mystrcasestr( t, "<Title>"))
+			{ 
+				ktype = GABEDIT_TYPEFILE_WFX;
+				break;
+			}
+		}
+	}
+	rewind(file);
+	if( ktype == GABEDIT_TYPEFILE_GAUSSIAN)
+	{
+		gint iGrad = 0;
+  		while(!feof(file) )    
+  		{
+ 			if(!fgets(t, taille, file))break;
+			/* fprintf(stderr,"%s\n",t);*/
+			
+                 	if(strstr(t,"GradGradGradGradGradGradGradGradGrad") )
+			{
+				iGrad++;
+				if(iGrad>1) break;
+			}
+                 	if(strstr(t,"Scan        ") )
+			{
+				if(iGrad==1) ktype = GABEDIT_TYPEFILE_GAUSSIAN_SCANOPT;
+				/* if(ktype==GABEDIT_TYPEFILE_GAUSSIAN_SCANOPT) fprintf(stderr,"GABEDIT_TYPEFILE_GAUSSIAN_SCANOPT\n");*/
+				break;
+			}
+                 	if(strstr(t,"IRC-IRC-IRC-IRC-IRC-IRC-IRC-IRC-IRC-IRC-IRC-IRC") )
+			{
+				ktype = GABEDIT_TYPEFILE_GAUSSIAN_IRCOPT;
+				break;
+			}
+                 	if(strstr(t," orientation:") ) break;
+		}
+	}
+	if( ktype != GABEDIT_TYPEFILE_UNKNOWN)
+	{
+ 		g_free(t);
+		fclose(file);
+		return ktype;
+	}
+	if( ktype == GABEDIT_TYPEFILE_UNKNOWN)
+	{
+		rewind	(file);
+		while(!feof(file))
+		{
+    			if(!feof(file)) { char* e = fgets(t,taille,file);}
+			if(mystrcasestr( t, "<Title>"))
+			{ 
+				ktype = GABEDIT_TYPEFILE_WFX;
+				break;
+			}
 		}
 	}
 	rewind(file);
@@ -5302,6 +4377,7 @@ GabEditTypeFile get_type_file(gchar* filename)
 	if( !strcmp(ext,"MOLDEN")) return GABEDIT_TYPEFILE_MOLDEN;
 	if( !strcmp(ext,"MFJ")) return GABEDIT_TYPEFILE_MOBCAL;
 	if( !strcmp(ext,"AUX")) return GABEDIT_TYPEFILE_MOPAC_AUX;
+	if( !strcmp(ext,"WFX")) return GABEDIT_TYPEFILE_WFX;
 	if( !strcmp(ext,"JPG")) return GABEDIT_TYPEFILE_JPEG;
 	if( !strcmp(ext,"JPEG")) return GABEDIT_TYPEFILE_JPEG;
 	if( !strcmp(ext,"PPM")) return GABEDIT_TYPEFILE_PPM;
@@ -6563,4 +5639,251 @@ gboolean goToStr(FILE* file, gchar* tag)
         }
 	return pos != NULL;
 }
+/**********************************************************************************************************************************/
+gchar** get_one_block_from_wfx_file(FILE* file, gchar* blockName,  gint* n)
+{
+	gint nElements = 0;
+	gchar** elements = NULL;
+	gchar t[BBSIZE];
+	long int geomposok = 0;
+	gboolean ok = FALSE;
+	gint i;
+	 while(!feof(file))
+	 {
+		if(!fgets(t,BBSIZE,file))break;
+		if(mystrcasestr( t, blockName))
+		{
+			geomposok = ftell(file);
+			ok= TRUE;
+			break;
+		}
+	}
+	if(!ok) return NULL;
+	nElements = 0;
+	 while(!feof(file))
+	 {
+		if(!fgets(t,BBSIZE,file)) break;
+		if(mystrcasestr( t, blockName)) break;
+		nElements++;
+	}
+	if(nElements<1) return NULL;
+	elements = g_malloc(nElements*sizeof(gchar*));
+	fseek(file, geomposok, SEEK_SET);
+	for(i=0;i<nElements;i++)
+	{
+			gint k;
+			if(!fgets(t,BBSIZE,file))break;
+			for(k=0;k<strlen(t);k++) if(t[k]=='\n') t[k]='\0';
+			elements[i] = strdup(t);
+	}
+	*n = nElements;
+	return elements;
+}
+/**********************************************************************************************************************************/
+gint* get_one_block_int_from_wfx_file(FILE* file, gchar* blockName,  gint* n)
+{
+	gint nElements = 0;
+	gint* elements = NULL;
+	gchar t[BBSIZE];
+	long int geomposok = 0;
+	gboolean ok = FALSE;
+	gchar** allstrs = NULL;
+	gint i;
+	gint nLines = 0;
+	gint k;
+	 while(!feof(file))
+	 {
+		if(!fgets(t,BBSIZE,file))break;
+		if(mystrcasestr( t, blockName))
+		{
+			geomposok = ftell(file);
+			ok= TRUE;
+			break;
+		}
+	}
+	if(!ok) return NULL;
+	nLines = 0;
+	 while(!feof(file))
+	 {
+		if(!fgets(t,BBSIZE,file)) break;
+		if(mystrcasestr( t, blockName)) break;
+		nLines++;
+		allstrs =gab_split (t);
+                if(allstrs) for(k=0; allstrs[k]!=NULL; k++) nElements++;
+                g_strfreev(allstrs);
+                allstrs = NULL;
+	}
+	if(nLines<1) return NULL;
+	if(nElements<1) return NULL;
+	elements = g_malloc(nElements*sizeof(gint));
+	fseek(file, geomposok, SEEK_SET);
+	nElements = 0;
+	for(i=0;i<nLines;i++)
+	{
+		if(!fgets(t,BBSIZE,file))break;
+		if(mystrcasestr( t, blockName)) break;
+		allstrs =gab_split (t);
+                if(allstrs) for(k=0; allstrs[k]!=NULL; k++) 
+		{
+			elements[nElements] = atof(allstrs[k]);
+			nElements++;
+		}
+                g_strfreev(allstrs);
+                allstrs = NULL;
+	}
+	*n = nElements;
+	return elements;
+}
+/**********************************************************************************************************************************/
+gdouble* get_one_block_real_from_wfx_file(FILE* file, gchar* blockName,  gint* n)
+{
+	gint nElements = 0;
+	gdouble* elements = NULL;
+	gchar t[BBSIZE];
+	long int geomposok = 0;
+	gboolean ok = FALSE;
+	gchar** allstrs = NULL;
+	gint i;
+	gint nLines = 0;
+	gint k;
+	 while(!feof(file))
+	 {
+		if(!fgets(t,BBSIZE,file))break;
+		if(mystrcasestr( t, blockName))
+		{
+			geomposok = ftell(file);
+			ok= TRUE;
+			break;
+		}
+	}
+	if(!ok) return NULL;
+	nLines = 0;
+	 while(!feof(file))
+	 {
+		if(!fgets(t,BBSIZE,file)) break;
+		if(mystrcasestr( t, blockName)) break;
+		nLines++;
+		allstrs =gab_split (t);
+                if(allstrs) for(k=0; allstrs[k]!=NULL; k++) nElements++;
+                g_strfreev(allstrs);
+                allstrs = NULL;
+	}
+	if(nLines<1) return NULL;
+	if(nElements<1) return NULL;
+	elements = g_malloc(nElements*sizeof(gdouble));
+	fseek(file, geomposok, SEEK_SET);
+	nElements = 0;
+	for(i=0;i<nLines;i++)
+	{
+		if(!fgets(t,BBSIZE,file))break;
+		if(mystrcasestr( t, blockName)) break;
+		for(k=0;k<strlen(t);k++) if(t[k]=='\n') t[k]='\0';
+		for(k=0;k<strlen(t);k++) if(t[k]=='D') t[k]='E';
+		for(k=0;k<strlen(t);k++) if(t[k]=='d') t[k]='E';
+		allstrs =gab_split (t);
+                if(allstrs) for(k=0; allstrs[k]!=NULL; k++) 
+		{
+			elements[nElements] = atof(allstrs[k]);
+			nElements++;
+		}
+                g_strfreev(allstrs);
+                allstrs = NULL;
+	}
+	*n = nElements;
+	return elements;
+}
+/**********************************************************************************************************************************/
+gboolean get_one_int_from_wfx_file(FILE* file, gchar* blockName, gint* n)
+{
+	gchar t[BBSIZE];
+	 while(!feof(file))
+	 {
+		if(!fgets(t,BBSIZE,file))break;
+		if(mystrcasestr( t, blockName))
+		{
+			if(!fgets(t,BBSIZE,file))break;
+			*n = atoi(t);
+			return TRUE;
+		}
+	}
+	return FALSE; 
+}
+/**********************************************************************************************************************************/
+gdouble* get_one_orbital_from_wfx_file(FILE* file, gint* n, gint*numOrb)
+{
+	gint nElements = 0;
+	gdouble* elements = NULL;
+	gchar t[BBSIZE];
+	long int geomposok = 0;
+	gboolean ok = FALSE;
+	gchar** allstrs = NULL;
+	gint i;
+	gint nLines = 0;
+	gint k;
+	if(!get_one_int_from_wfx_file(file, "MO Number", numOrb))
+	{
+		*n = 0;
+		return NULL;
+	}
+	fgets(t,BBSIZE,file); // <MO Number>
+	geomposok = ftell(file);
+	nLines = 0;
+	 while(!feof(file))
+	 {
+		if(!fgets(t,BBSIZE,file)) break;
+		//fprintf(stderr,"t = %s",t);
+		
+		if(strstr(t, "<")) break;
+		nLines++;
+		allstrs =gab_split (t);
+                if(allstrs) for(k=0; allstrs[k]!=NULL; k++) nElements++;
+                g_strfreev(allstrs);
+                allstrs = NULL;
+	}
+	//fprintf(stderr,"nLines = %d\n",nLines);
+	fseek(file, geomposok, SEEK_SET);
+	if(nLines<1) return NULL;
+	if(nElements<1) return NULL;
+	elements = g_malloc(nElements*sizeof(gdouble));
+	fseek(file, geomposok, SEEK_SET);
+	nElements = 0;
+	for(i=0;i<nLines;i++)
+	{
+		if(!fgets(t,BBSIZE,file))break;
+		if(strstr( t, "<")) break;
+		for(k=0;k<strlen(t);k++) if(t[k]=='\n') t[k]='\0';
+		for(k=0;k<strlen(t);k++) if(t[k]=='D') t[k]='E';
+		for(k=0;k<strlen(t);k++) if(t[k]=='d') t[k]='E';
+		allstrs =gab_split (t);
+                if(allstrs) for(k=0; allstrs[k]!=NULL; k++) 
+		{
+			elements[nElements] = atof(allstrs[k]);
+			nElements++;
+		}
+                g_strfreev(allstrs);
+                allstrs = NULL;
+	}
+	fseek(file, geomposok, SEEK_SET);
 
+	*n = nElements;
+	return elements;
+}
+/* read all chars from file */
+gchar *readFile(gchar *filename)
+{
+    gchar *fcontent = NULL;
+    gint fsize = 0;
+    FILE *fp;
+
+    fp = fopen(filename, "rb");
+    if(fp) {
+        fseek(fp, 0, SEEK_END);
+        fsize = ftell(fp);
+        rewind(fp);
+
+        fcontent = (gchar*) malloc(sizeof(gchar) * fsize);
+        fread(fcontent, 1, fsize, fp);
+        fclose(fp);
+    }
+    return fcontent;
+}

@@ -1,6 +1,6 @@
 /* GLArea.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -107,6 +107,8 @@ static gdouble scaleStick = 1.0;
 static gboolean showOneSurface = TRUE;
 static gboolean showBox = TRUE;
 
+static PangoContext *ft2_context = NULL;
+
 /*********************************************************************************************/
 static V4d BackColor[7] =
 {
@@ -170,12 +172,12 @@ void setOptCol(gint i)
 	if(optcol<-1 || optcol>6) optcol = 0;
 }
 /*********************************************************************************************/
-void build_rings(gint size)
+void build_rings(gint size, gboolean showMessage)
 {
 	if(size<3 || size > nMaxListRings-1+3)
 		return ;
 	selectedListRings[size-3] = TRUE;
-	IsoRingsAllGenLists(&listRings[size-3], size,size);
+	IsoRingsAllGenLists(&listRings[size-3], size,size, showMessage);
 }
 /*********************************************************************************************/
 void delete_rings_all()
@@ -238,9 +240,9 @@ void drawChecker()
 	static GLdouble z0 = -100;
 	GLdouble max = 0;
 
-	if(Ncenters>0) max = fabs(GeomOrb[0].C[0]);
+	if(nCenters>0) max = fabs(GeomOrb[0].C[0]);
 	else max = 10;
-	for(i=0;i<(gint)Ncenters;i++)
+	for(i=0;i<(gint)nCenters;i++)
 	{
 		if(max<fabs(GeomOrb[i].C[0])) max = fabs(GeomOrb[i].C[0]);
 		if(max<fabs(GeomOrb[i].C[1])) max = fabs(GeomOrb[i].C[1]);
@@ -770,7 +772,10 @@ void	InitGL()
 	glShadeModel(GL_SMOOTH);
 	SetLight();
 	init_labels_font();
-	glInitFonts();
+	/*
+	glInitFontsOld();
+	*/
+	glInitFonts(&ft2_context);
 	/*
 	glFogi(GL_FOG_MODE, GL_EXP);
 	glFogf(GL_FOG_DENSITY, 0.15);
@@ -799,7 +804,7 @@ gint init(GtkWidget *widget)
 static void redrawGeometry()
 {
 	gint i;
-	if (RebuildGeom || glIsList(GeomList) != GL_TRUE )
+	if (RebuildGeomD || glIsList(GeomList) != GL_TRUE )
 	{
 		/* Debug("Re Gen Geom List\n");*/
 		GeomList = GeomGenList(GeomList, scaleBall, scaleStick, getShowBox());
@@ -815,7 +820,7 @@ static void redrawGeometry()
 
 		VibList = VibGenList(VibList);
 		VibShowList(VibList);
-		RebuildGeom = FALSE;
+		RebuildGeomD = FALSE;
 
 		delete_rings_all();
 	}
@@ -1086,12 +1091,12 @@ gint redrawGL2PS()
 	redrawBox();
 	redrawContours();
 	redrawPlanesMapped();
-	if(get_show_symbols() || get_show_numbers() || get_show_charges()) showLabelSymbolsNumbersCharges();
-	if(get_show_dipole()) showLabelDipole();
-	if(get_show_distances()) showLabelDistances();
-	if(get_show_axes()) showLabelAxes();
-	if(get_show_axes()) showLabelPrincipalAxes();
-	showLabelTitle(GLArea->allocation.width,GLArea->allocation.height);
+	if(get_show_symbols() || get_show_numbers() || get_show_charges()) showLabelSymbolsNumbersCharges(ft2_context);
+	if(get_show_dipole()) showLabelDipole(ft2_context);
+	if(get_show_distances()) showLabelDistances(ft2_context);
+	if(get_show_axes()) showLabelAxes(ft2_context);
+	if(get_show_axes()) showLabelPrincipalAxes(ft2_context);
+	showLabelTitle(GLArea->allocation.width,GLArea->allocation.height, ft2_context);
 
 	/* Swap backbuffer to front */
 	glFlush();
@@ -1150,12 +1155,12 @@ static gint redraw(GtkWidget *widget, gpointer data)
 	redrawBox();
 	redrawContours();
 	redrawPlanesMapped();
-	if(get_show_symbols() || get_show_numbers() || get_show_charges()) showLabelSymbolsNumbersCharges();
-	if(get_show_dipole()) showLabelDipole();
-	if(get_show_distances()) showLabelDistances();
-	if(get_show_axes()) showLabelAxes();
-	if(get_show_axes()) showLabelPrincipalAxes();
-	showLabelTitle(GLArea->allocation.width,GLArea->allocation.height);
+	if(get_show_symbols() || get_show_numbers() || get_show_charges()) showLabelSymbolsNumbersCharges(ft2_context);
+	if(get_show_dipole()) showLabelDipole(ft2_context);
+	if(get_show_distances()) showLabelDistances(ft2_context);
+	if(get_show_axes()) showLabelAxes(ft2_context);
+	if(get_show_axes()) showLabelPrincipalAxes(ft2_context);
+	showLabelTitle(GLArea->allocation.width,GLArea->allocation.height, ft2_context);
 
 	/*
 	glEnable(GL_DEPTH_TEST);	
@@ -1493,9 +1498,9 @@ void rafresh_window_orb()
 	 {
 		 gint j;
 
-		 RebuildGeom = TRUE;
+		 RebuildGeomD = TRUE;
 		 RebuildSurf = TRUE;
-		 for(j=0;j<Ncenters;j++)
+		 for(j=0;j<nCenters;j++)
 			GeomOrb[j].Prop = prop_atom_get(GeomOrb[j].Symb);
 
 		 redraw(GLArea,NULL);
@@ -1617,10 +1622,11 @@ gboolean NewGLArea(GtkWidget* vboxwin)
 	/* Create new OpenGL widget. */
 	/* pthread_mutex_init (&theRender_mutex, NULL);*/
 	GLArea = gtk_drawing_area_new ();
-	gtk_drawing_area_size(GTK_DRAWING_AREA(GLArea),(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.2));
+	//gtk_drawing_area_size(GTK_DRAWING_AREA(GLArea),(gint)(ScreenHeightD*0.2),(gint)(ScreenHeightD*0.2));
+	gtk_drawing_area_size(GTK_DRAWING_AREA(GLArea),(gint)(ScreenHeightD*0.5),(gint)(ScreenHeightD*0.45));
 	gtk_table_attach(GTK_TABLE(table),GLArea,1,2,0,1, (GtkAttachOptions)(GTK_FILL | GTK_EXPAND  ), (GtkAttachOptions)(GTK_FILL | GTK_EXPAND ), 0,0);
 	gtk_widget_show(GTK_WIDGET(GLArea));
-	/* Events for widget must be set before X Window is created */
+	/* Events for widget must be set beforee X Window is created */
 	gtk_widget_set_events(GLArea,
 			GDK_EXPOSURE_MASK|
 			GDK_BUTTON_PRESS_MASK|
@@ -1634,10 +1640,11 @@ gboolean NewGLArea(GtkWidget* vboxwin)
 	if (!glconfig) { g_assert_not_reached (); }
 	if (!gtk_widget_set_gl_capability (GLArea, glconfig, NULL, TRUE, GDK_GL_RGBA_TYPE)) { g_assert_not_reached (); }
 
+
 	g_signal_connect(G_OBJECT(GLArea), "realize", G_CALLBACK(init), NULL);
 	g_signal_connect(G_OBJECT(GLArea), "configure_event", G_CALLBACK(reshape), NULL);
 	g_signal_connect(G_OBJECT(GLArea), "expose_event", G_CALLBACK(draw), NULL);
-	/*gtk_widget_set_size_request(GTK_WIDGET(GLArea ),(gint)(ScreenHeight*0.2),(gint)(ScreenHeight*0.2));*/
+	/*gtk_widget_set_size_request(GTK_WIDGET(GLArea ),(gint)(ScreenHeightD*0.2),(gint)(ScreenHeightD*0.2));*/
   
 
 	gtk_widget_realize(GTK_WIDGET(PrincipalWindow));

@@ -1,6 +1,6 @@
 /* GridAdf.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -429,11 +429,11 @@ static gboolean read_atoms_number(FILE* file)
 	gchar buffer[BSIZE];
 	if(!fgets(buffer,len,file))return FALSE;
 	if(!fgets(buffer,len,file))return FALSE;
-	Ncenters = atoi(buffer);
-	/*printf("Ncenters=%d\n",Ncenters);*/
-	if(Ncenters>0)
+	nCenters = atoi(buffer);
+	/*printf("nCenters=%d\n",nCenters);*/
+	if(nCenters>0)
 	{
-		GeomOrb=g_malloc(Ncenters*sizeof(TypeGeomOrb));
+		GeomOrb=g_malloc(nCenters*sizeof(TypeGeomOrb));
 		return TRUE;
 	}
 	return FALSE;
@@ -449,10 +449,10 @@ static gboolean read_atoms_labels(FILE* file)
 	/*printf("je suis dans read atoms labels\n");*/
 	if(!fgets(buffer,len,file))return FALSE;
 
-	if(Ncenters<1)
+	if(nCenters<1)
 		return FALSE;
 
-	for(i=0;i<Ncenters;i++)
+	for(i=0;i<nCenters;i++)
 	{
 
 		if(!fgets(buffer,len,file))return FALSE;
@@ -479,10 +479,10 @@ static gboolean read_atoms_coordinates(FILE* file)
 	/*printf("je suis dans read atoms\n");*/
 	if(!fgets(buffer,len,file))return FALSE;
 
-	if(Ncenters<1)
+	if(nCenters<1)
 		return FALSE;
 
-	for(i=0;i<Ncenters;i++)
+	for(i=0;i<nCenters;i++)
 	{
 		if(!fgets(buffer,len,file))return FALSE;
 		if(3 != sscanf(buffer,"%lf %lf %lf",&GeomOrb[i].C[0],&GeomOrb[i].C[1],&GeomOrb[i].C[2]))
@@ -695,7 +695,7 @@ static void read_adf_file(gchar* filename)
 	set_status_label_info(_("File name"),tmp);
 	g_free(tmp);
 	set_status_label_info(_("File type"),_("ADF Formatted file(41)"));
-	Ncenters = 0;
+	nCenters = 0;
 	/* read geometry */
 	while(!feof(file) && Ok)
 	{
@@ -732,11 +732,11 @@ static void read_adf_file(gchar* filename)
 
 	}
 
-	if(Ncenters>0)
+	if(nCenters>0)
 	{
 		/*printf("C'est OK\n");*/
 		buildBondsOrb();
-		RebuildGeom = TRUE;
+		RebuildGeomD = TRUE;
 		glarea_rafresh(GLArea);
 		init_atomic_orbitals();
 		set_status_label_info(_("Geometry"),_("Ok"));

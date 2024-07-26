@@ -1,8 +1,8 @@
 /* ResultsAnalise.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+Permission is hereby granted, free of gcharge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
 the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
 and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -119,8 +119,8 @@ gint find_energy_mopac_aux(gchar* NomFichier)
 	guint  i=0;
 	guint  j=0;
 	guint  k=0;
-	gchar *temp =  g_malloc(50*sizeof(char));	
-	gchar *tmp =  g_malloc(50*sizeof(char));	
+	gchar *temp =  g_malloc(50*sizeof(gchar));	
+	gchar *tmp =  g_malloc(50*sizeof(gchar));	
 	guint taille=BSIZE;
 	gchar *t;
 	FILE *fd;
@@ -142,7 +142,7 @@ gint find_energy_mopac_aux(gchar* NomFichier)
 	OK = TRUE;
 	while(!feof(fd))
 	{
-    		 { char* e = fgets(t,taille,fd);}
+    		 { gchar* e = fgets(t,taille,fd);}
                  if(strstr(t,"Geometry optimization") && strstr(t,"#") && Ncalculs <1)
 		 {
          		Ncalculs = 1;
@@ -201,20 +201,20 @@ gint find_energy_mopac_aux(gchar* NomFichier)
 		  	if(GeomConv[Ncalculs-1].Npoint == 1 )
 		  	{
 				GeomConv[Ncalculs-1].NumGeom =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
-				for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++) GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(char*));	
+				for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++) GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
 		  	}
 		  	else
 		  	{
 				GeomConv[Ncalculs-1].NumGeom =  g_realloc(GeomConv[Ncalculs-1].NumGeom,GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
 				for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
-				GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(char*));	
+				GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
 		  	}
 			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
                  	{
-		 		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(char)); 
+		 		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
                  		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1][0] = '\0';
                  	}
-		 	GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(char)); 
+		 	GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
 		 	GeomConv[Ncalculs-1].TypeCalcul = g_strdup(" ");
                  	sprintf(GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1], "%s",tmp);
                  	sprintf(GeomConv[Ncalculs-1].Data[1][GeomConv[Ncalculs-1].Npoint-1], "%s",temp);
@@ -534,7 +534,7 @@ void find_energy_mpqc_output(gchar* NomFichier)
 	guint  i=0;
 	guint  j=0;
 	guint  k=0;
-	gchar *temp =  g_malloc(50*sizeof(char));	
+	gchar *temp =  g_malloc(50*sizeof(gchar));	
 	guint taille=BSIZE;
 	gchar *t;
 	FILE *fd;
@@ -562,20 +562,20 @@ void find_energy_mpqc_output(gchar* NomFichier)
 	 while(!feof(fd))
 	{
 		pdest = NULL;
-    		 { char* e = fgets(t,taille,fd);}
+    		 { gchar* e = fgets(t,taille,fd);}
 		 /*
                  if( strlen(t)>2 && strstr(t,"changing atomic coordinates:") )
 		 {
          		Ncalculs++;
 			GeomConv =  g_realloc(GeomConv, Ncalculs*sizeof(DataGeomConv) );
   			GeomConv[Ncalculs-1] = init_geom_mpqc_conv(NomFichier);
-			GeomConv[Ncalculs-1].TypeCalcul = g_malloc(100*sizeof(char));
+			GeomConv[Ncalculs-1].TypeCalcul = g_malloc(100*sizeof(gchar));
                  	sscanf(t,"%s",GeomConv[Ncalculs-1].TypeCalcul);
 		 }
 		 */
                  if(strstr(t,"changing atomic coordinates:"))
 		 {
-			GeomConv[Ncalculs-1].TypeCalcul = g_malloc(100*sizeof(char));
+			GeomConv[Ncalculs-1].TypeCalcul = g_malloc(100*sizeof(gchar));
                  	sscanf(t,"%s",GeomConv[Ncalculs-1].TypeCalcul);
 			newGeom = TRUE;
 			if(strstr(t,"MBPT2")) mp2 = TRUE;
@@ -607,20 +607,20 @@ void find_energy_mpqc_output(gchar* NomFichier)
 			{
 				GeomConv[Ncalculs-1].NumGeom =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
 				for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
-					GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(char*));	
+					GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
 			}
 		  	else
 		  	{
 				GeomConv[Ncalculs-1].NumGeom =  g_realloc(GeomConv[Ncalculs-1].NumGeom,GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
 				for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
-					GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(char*));	
+					GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
 		  	}
 			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
             		{
-		 		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(char)); 
+		 		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
                  		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1][0] = '\0';
                  	}
-		 	GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(char)); 
+		 	GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
                  	sscanf(pdest,"%s", GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1]);
 		}
 			
@@ -716,6 +716,8 @@ static void find_energy_xyz(gchar* fileName)
   	static DataGeomConv* GeomConv =NULL;
 	gint ne;
 	gint nAtoms;
+	gdouble* energies=NULL;
+	gint nEnergies = 0;
 
 	GeomConv = NULL;
         
@@ -738,8 +740,33 @@ static void find_energy_xyz(gchar* fileName)
 				Ncalculs = 1;
 				GeomConv =  g_malloc(sizeof(DataGeomConv) );
   				GeomConv[0] = init_geom_xyz_conv(fileName);
+				energies =  g_malloc(sizeof(gdouble) );
 			}
 		 	if(!fgets(t,taille,file)) break; /* title */
+			/* try to read energy. Accepted format : 
+                           E value
+                           E value
+			   Energy=value
+			   Energy value
+			*/
+			for(i=0;i<strlen(t);i++) if(t[i]=='=') t[i]=' ';/* remove = */
+			int pos=-1;
+			char*spos = NULL;
+			double energy=0;
+		 	uppercase(t);
+			spos=strstr(t," E ");
+			if(spos) pos = sscanf(spos+strlen(" E "),"%lf",&energy);
+			if(pos!=1) {
+				spos=strstr(t," ENERGY ");
+				if(spos) pos = sscanf(spos+strlen(" ENERGY "),"%lf",&energy);
+			}
+			if(pos==1)/* Ok energy detected */
+			{
+				energies[nEnergies] = energy;
+				nEnergies++;
+				energies =  g_realloc(energies, (nEnergies+1)*sizeof(gdouble));
+			}
+			
 			GeomConv[0].Npoint++;
 			for(i=0;i<nAtoms;i++)
 				if(!fgets(t,taille,file))break;
@@ -749,6 +776,7 @@ static void find_energy_xyz(gchar* fileName)
 	}
 
 	fclose(file);
+	/* printf("Npoint = %d nEner = %d\n",GeomConv[0].Npoint, nEnergies);*/
    
 	if(GeomConv)
 	{
@@ -766,10 +794,12 @@ static void find_energy_xyz(gchar* fileName)
 			for(j=0;(gint)j<GeomConv[0].Npoint;j++)
 			{
 				GeomConv[0].NumGeom[j] = j+1;
-		 		GeomConv[0].Data[0][j] = g_strdup_printf("%d",j+1);
+				if(nEnergies==GeomConv[0].Npoint) GeomConv[0].Data[0][j] = g_strdup_printf("%lf",energies[j]);
+				else GeomConv[0].Data[0][j] = g_strdup_printf("%d",j+1);
 			}
 		}
 	}
+	if(energies) g_free(energies);
 	create_energies_curves(GeomConv,Ncalculs);
 }
 /*********************************************************************/
@@ -820,8 +850,8 @@ void find_energy_dalton_output(gchar* NomFichier)
 	guint  i=0;
 	guint  j=0;
 	guint  k=0;
-	gchar *temp =  g_malloc(50*sizeof(char));	
-	gchar *tmp =  g_malloc(50*sizeof(char));	
+	gchar *temp =  g_malloc(50*sizeof(gchar));	
+	gchar *tmp =  g_malloc(50*sizeof(gchar));	
 	guint taille=BSIZE;
 	gchar *t;
 	FILE *fd;
@@ -843,7 +873,7 @@ void find_energy_dalton_output(gchar* NomFichier)
         
 	while(!feof(fd))
 	{
-    		 { char* e = fgets(t,taille,fd);}
+    		 { gchar* e = fgets(t,taille,fd);}
                  if(strstr(t,"Optimization Control Center") && Ncalculs <1)
 		 {
          		Ncalculs = 1;
@@ -899,20 +929,20 @@ void find_energy_dalton_output(gchar* NomFichier)
 		  	if(GeomConv[Ncalculs-1].Npoint == 1 )
 		  	{
 				GeomConv[Ncalculs-1].NumGeom =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
-				for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++) GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(char*));	
+				for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++) GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
 		  	}
 		  	else
 		  	{
 				GeomConv[Ncalculs-1].NumGeom =  g_realloc(GeomConv[Ncalculs-1].NumGeom,GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
 				for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
-				GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(char*));	
+				GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
 		  	}
 			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
                  	{
-		 		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(char)); 
+		 		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
                  		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1][0] = '\0';
                  	}
-		 	GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(char)); 
+		 	GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
 		 	GeomConv[Ncalculs-1].TypeCalcul = g_strdup(" ");
                  	sprintf(GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1], "%s", tmp);
                  	sprintf(GeomConv[Ncalculs-1].Data[1][GeomConv[Ncalculs-1].Npoint-1], "%s", temp);
@@ -969,9 +999,9 @@ void find_energy_gamess_output(gchar* NomFichier)
 	guint  i=0;
 	guint  j=0;
 	guint  k=0;
-	gchar *maxgrad =  g_malloc(50*sizeof(char));	
-	gchar *rmsgrad =  g_malloc(50*sizeof(char));	
-	gchar *tmp =  g_malloc(50*sizeof(char));	
+	gchar *maxgrad =  g_malloc(50*sizeof(gchar));	
+	gchar *rmsgrad =  g_malloc(50*sizeof(gchar));	
+	gchar *tmp =  g_malloc(50*sizeof(gchar));	
 	guint taille=BSIZE;
 	gchar *t;
 	FILE *fd;
@@ -993,7 +1023,7 @@ void find_energy_gamess_output(gchar* NomFichier)
         
 	while(!feof(fd))
 	{
-    		 { char* e = fgets(t,taille,fd);}
+    		 { gchar* e = fgets(t,taille,fd);}
                  if(strstr(t,"NSERCH=   0") && Ncalculs <1)
 		 {
          		Ncalculs = 1;
@@ -1038,20 +1068,20 @@ void find_energy_gamess_output(gchar* NomFichier)
 		  	if(GeomConv[Ncalculs-1].Npoint == 1 )
 		  	{
 				GeomConv[Ncalculs-1].NumGeom =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
-				for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++) GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(char*));	
+				for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++) GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
 		  	}
 		  	else
 		  	{
 				GeomConv[Ncalculs-1].NumGeom =  g_realloc(GeomConv[Ncalculs-1].NumGeom,GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
 				for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
-				GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(char*));	
+				GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
 		  	}
 			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
                  	{
-		 		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(char)); 
+		 		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
                  		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1][0] = '\0';
                  	}
-		 	GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(char)); 
+		 	GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
 		 	GeomConv[Ncalculs-1].TypeCalcul = g_strdup(" ");
                  	sprintf(GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1], "%s", tmp);
                  	sprintf(GeomConv[Ncalculs-1].Data[1][GeomConv[Ncalculs-1].Npoint-1], "%s", maxgrad);
@@ -1090,9 +1120,9 @@ void find_energy_gamess_output_heat(gchar* NomFichier)
 	guint  i=0;
 	guint  j=0;
 	guint  k=0;
-	gchar *maxgrad =  g_malloc(50*sizeof(char));	
-	gchar *rmsgrad =  g_malloc(50*sizeof(char));	
-	gchar *tmp =  g_malloc(50*sizeof(char));	
+	gchar *maxgrad =  g_malloc(50*sizeof(gchar));	
+	gchar *rmsgrad =  g_malloc(50*sizeof(gchar));	
+	gchar *tmp =  g_malloc(50*sizeof(gchar));	
 	guint taille=BSIZE;
 	gchar *t;
 	FILE *fd;
@@ -1116,7 +1146,7 @@ void find_energy_gamess_output_heat(gchar* NomFichier)
         
 	while(!feof(fd))
 	{
-    		 { char* e = fgets(t,taille,fd);}
+    		 { gchar* e = fgets(t,taille,fd);}
                  if(strstr(t,"NSERCH=   0") && Ncalculs <1)
 		 {
          		Ncalculs = 1;
@@ -1161,20 +1191,20 @@ void find_energy_gamess_output_heat(gchar* NomFichier)
 		  	if(GeomConv[Ncalculs-1].Npoint == 1 )
 		  	{
 				GeomConv[Ncalculs-1].NumGeom =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
-				for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++) GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(char*));	
+				for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++) GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
 		  	}
 		  	else
 		  	{
 				GeomConv[Ncalculs-1].NumGeom =  g_realloc(GeomConv[Ncalculs-1].NumGeom,GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
 				for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
-				GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(char*));	
+				GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
 		  	}
 			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
                  	{
-		 		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(char)); 
+		 		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
                  		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1][0] = '\0';
                  	}
-		 	GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(char)); 
+		 	GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
 		 	GeomConv[Ncalculs-1].TypeCalcul = g_strdup(" ");
                  	sprintf(GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1], "%s", tmp);
                  	sprintf(GeomConv[Ncalculs-1].Data[1][GeomConv[Ncalculs-1].Npoint-1], "%s", maxgrad);
@@ -1270,20 +1300,20 @@ void find_energy_gamess_irc(gchar* NomFichier)
 	  	if(GeomConv[Ncalculs-1].Npoint == 1 )
 	  	{
 			GeomConv[Ncalculs-1].NumGeom =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
-			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++) GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(char*));	
+			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++) GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
 	  	}
 	  	else
 	  	{
 			GeomConv[Ncalculs-1].NumGeom =  g_realloc(GeomConv[Ncalculs-1].NumGeom,GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
 			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
-			GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(char*));	
+			GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
 	  	}
 		for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
                	{
 	 		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
                		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1][0] = '\0';
                	}
-	 	GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(char)); 
+	 	GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
 	 	GeomConv[Ncalculs-1].TypeCalcul = g_strdup(" ");
                	sprintf(GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1], "%s", tmp);
 	}
@@ -1312,13 +1342,13 @@ void find_energy_gamess_irc(gchar* NomFichier)
 	g_free(tmp);
 }
 /*********************************************************************/
-void find_energy_gauss_output(gchar* NomFichier)
+void find_energy_gauss_standard_output(gchar* NomFichier)
 {
 	gchar* pdest = NULL;
 	guint  i=0;
 	guint  j=0;
 	guint  k=0;
-	gchar *temp =  g_malloc(50*sizeof(char));	
+	gchar *temp =  g_malloc(50*sizeof(gchar));	
 	guint taille=BSIZE;
 	gchar *t;
 	FILE *fd;
@@ -1349,7 +1379,7 @@ void find_energy_gauss_output(gchar* NomFichier)
         
 	 while(!feof(fd))
 	{
-    		 { char* e = fgets(t,taille,fd);}
+    		 { gchar* e = fgets(t,taille,fd);}
                  if( strlen(t)>2 && strstr(t,"Normal termination of Gaussian") )
 		 {
          		Ncalculs++;
@@ -1359,7 +1389,7 @@ void find_energy_gauss_output(gchar* NomFichier)
 		 uppercase(t);
                  if( strlen(t)>2 && t[1] == '#' && !GeomConv[Ncalculs-1].TypeCalcul)
 		 {
-			GeomConv[Ncalculs-1].TypeCalcul = g_malloc(100*sizeof(char));
+			GeomConv[Ncalculs-1].TypeCalcul = g_malloc(100*sizeof(gchar));
                  	sscanf(t,"%s %s", temp, GeomConv[Ncalculs-1].TypeCalcul);
 		 }
     		 pdest = strstr( t,"SCF DONE");
@@ -1385,20 +1415,20 @@ void find_energy_gauss_output(gchar* NomFichier)
 		  {
 			GeomConv[Ncalculs-1].NumGeom =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
 			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
-				GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(char*));	
+				GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
 		  }
 		  else
 		  {
 			GeomConv[Ncalculs-1].NumGeom =  g_realloc(GeomConv[Ncalculs-1].NumGeom,GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
 			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
-				GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(char*));	
+				GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
 		  }
 			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
             {
-		 	GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(char)); 
+		 	GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
                  	GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1][0] = '\0';
                  }
-		 GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(char)); 
+		 GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
                  sscanf(pdest,"%s", GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1]);
 		}
 			
@@ -1408,7 +1438,7 @@ void find_energy_gauss_output(gchar* NomFichier)
 		 {
 			for(i=1;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
 			{
-    		 		{ char* e = fgets(t,taille,fd);}
+    		 		{ gchar* e = fgets(t,taille,fd);}
                  		sscanf(t,"%s %s %s", temp,temp,GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1]);
 			}
 		 }
@@ -1525,7 +1555,7 @@ void find_energy_orca_output(gchar* NomFichier)
         
 	 while(!feof(fd))
 	{
-    		 { char* e = fgets(t,taille,fd);}
+    		 { gchar* e = fgets(t,taille,fd);}
                  if(strstr(t,"ORCA OPTIMIZATION COORDINATE SETUP") )
 		 {
          		Ncalculs++;
@@ -1672,7 +1702,7 @@ void find_energy_vasp_outcar(gchar* NomFichier)
 	}
 	 while(!feof(fd))
 	{
-    		 { char* e = fgets(t,taille,fd);}
+    		 { gchar* e = fgets(t,taille,fd);}
                  if(strstr(t,tag) )
 		 {
          		Ncalculs++;
@@ -1686,7 +1716,7 @@ void find_energy_vasp_outcar(gchar* NomFichier)
         
 	 while(!feof(fd))
 	{
-    		 { char* e = fgets(t,taille,fd);}
+    		 { gchar* e = fgets(t,taille,fd);}
     		 pdest = strstr( t,tag);
    		if( pdest != NULL  && Ncalculs>0)
 		{
@@ -1815,7 +1845,7 @@ void find_energy_vasp_xml(gchar* NomFichier)
 	}
 	 while(!feof(fd))
 	{
-    		 { char* e = fgets(t,BSIZE,fd);}
+    		 { gchar* e = fgets(t,BSIZE,fd);}
                  if(strstr(t,tag) )
 		 {
          		Ncalculs++;
@@ -1829,7 +1859,7 @@ void find_energy_vasp_xml(gchar* NomFichier)
         
 	 while(!feof(fd))
 	{
-    		{ char* e = fgets(t,BSIZE,fd);}
+    		{ gchar* e = fgets(t,BSIZE,fd);}
     		pdest = strstr( t,tag);
    		if( pdest != NULL  && Ncalculs>0)
 		{
@@ -1946,7 +1976,7 @@ void find_energy_molpro_log(gchar* NomFichier)
 	guint  i=0;
 	guint  j=0;
 	guint  k=0;
-	gchar *temp =  g_malloc(50*sizeof(char));	
+	gchar *temp =  g_malloc(50*sizeof(gchar));	
 	guint taille=BSIZE;
 	gchar *t;
 	FILE *fd;
@@ -1968,7 +1998,7 @@ void find_energy_molpro_log(gchar* NomFichier)
         
 	 while(!feof(fd))
 	{
-    		 { char* e = fgets(t,taille,fd);}
+    		 { gchar* e = fgets(t,taille,fd);}
                  if( strlen(t)>2 && strstr(t,"GEOMETRY OPTIMIZATION STEP  1") )
 		 {
          		Ncalculs++;
@@ -1997,17 +2027,17 @@ void find_energy_molpro_log(gchar* NomFichier)
 		  {
 			GeomConv[Ncalculs-1].NumGeom =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
 			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
-				GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(char*));	
+				GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
 		  }
 		  else
 		  {
 			GeomConv[Ncalculs-1].NumGeom =  g_realloc(GeomConv[Ncalculs-1].NumGeom,GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
 			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
-				GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(char*));	
+				GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
 		  }
 			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
                  {
-		 	GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(char)); 
+		 	GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
                  	GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1][0] = '\0';
                  }
 
@@ -2032,7 +2062,7 @@ void find_energy_molpro_log(gchar* NomFichier)
 		 if(!Ok) break;
                  sscanf(t,"%s %s %s %s %s",temp,temp,temp,temp,GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1]);
 		 uppercase(t);
-		 GeomConv[Ncalculs-1].TypeCalcul = g_malloc(100*sizeof(char));
+		 GeomConv[Ncalculs-1].TypeCalcul = g_malloc(100*sizeof(gchar));
     		 pdest = strstr( t,"(");
                  pdest++;
                  sscanf(pdest,"%s)",GeomConv[Ncalculs-1].TypeCalcul);
@@ -2044,7 +2074,7 @@ void find_energy_molpro_log(gchar* NomFichier)
 
                  do
                  {
-    		 { char* e = fgets(t,taille,fd);}
+    		 { gchar* e = fgets(t,taille,fd);}
                  }while(strstr(t,"Convergence:")==NULL && !feof(fd) ) ;
                  if(strstr(t,"Convergence:")!=NULL)
                  	sscanf(t,"%s %s %s %s %s ", temp,temp,temp,temp,GeomConv[Ncalculs-1].Data[1][GeomConv[Ncalculs-1].Npoint-1]);
@@ -2084,7 +2114,7 @@ void find_energy_qchem_log(gchar* NomFichier)
 	guint  i=0;
 	guint  j=0;
 	guint  k=0;
-	gchar *temp =  g_malloc(50*sizeof(char));	
+	gchar *temp =  g_malloc(50*sizeof(gchar));	
 	guint taille=BSIZE;
 	gchar *t;
 	FILE *fd;
@@ -2106,7 +2136,7 @@ void find_energy_qchem_log(gchar* NomFichier)
         
 	 while(!feof(fd))
 	{
-    		 { char* e = fgets(t,taille,fd);}
+    		 { gchar* e = fgets(t,taille,fd);}
                  if( strlen(t)>2 && strstr(t,"Optimization Cycle:   1") )
 		 {
          		Ncalculs++;
@@ -2131,7 +2161,7 @@ void find_energy_qchem_log(gchar* NomFichier)
 		  {
 			GeomConv[Ncalculs-1].NumGeom =  g_realloc(GeomConv[Ncalculs-1].NumGeom,GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
 			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
-				GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(char*));	
+				GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
 		  }
 		  for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
                   {
@@ -2230,7 +2260,7 @@ void find_energy_nwchem_log(gchar* NomFichier)
 	guint  i=0;
 	guint  j=0;
 	guint  k=0;
-	gchar *temp =  g_malloc(50*sizeof(char));	
+	gchar *temp =  g_malloc(50*sizeof(gchar));	
 	guint taille=BSIZE;
 	gchar *t;
 	FILE *fd;
@@ -2252,7 +2282,7 @@ void find_energy_nwchem_log(gchar* NomFichier)
         
 	 while(!feof(fd))
 	{
-    		 { char* e = fgets(t,taille,fd);}
+    		 { gchar* e = fgets(t,taille,fd);}
                  if(strstr(t,"Step   0") )
 		 {
          		Ncalculs++;
@@ -2278,7 +2308,7 @@ void find_energy_nwchem_log(gchar* NomFichier)
 		  {
 			GeomConv[Ncalculs-1].NumGeom =  g_realloc(GeomConv[Ncalculs-1].NumGeom,GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
 			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
-				GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(char*));	
+				GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
 		  }
 		  for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
                   {
@@ -2370,7 +2400,7 @@ void find_energy_psicode_log(gchar* NomFichier)
 	guint  c=0;
 	guint  j=0;
 	guint  k=0;
-	gchar *temp =  g_malloc(50*sizeof(char));	
+	gchar *temp =  g_malloc(50*sizeof(gchar));	
 	guint taille=BSIZE;
 	gchar *t;
 	FILE *fd;
@@ -2392,7 +2422,7 @@ void find_energy_psicode_log(gchar* NomFichier)
         
 	 while(!feof(fd))
 	{
-    		 { char* e = fgets(t,taille,fd);}
+    		 { gchar* e = fgets(t,taille,fd);}
                  if(strstr(t,"OPTKING")  && Ncalculs == 0)
 		 {
          		Ncalculs++;
@@ -2428,7 +2458,7 @@ void find_energy_psicode_log(gchar* NomFichier)
 		  {
 			GeomConv[Ncalculs-1].NumGeom =  g_realloc(GeomConv[Ncalculs-1].NumGeom,GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
 			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
-				GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(char*));	
+				GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
 		  }
 		  for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
                   {
@@ -2498,6 +2528,346 @@ void find_energy_psicode_log(gchar* NomFichier)
   g_free(temp);
 }
 /*********************************************************************/
+DataGeomConv init_geom_gauss_scanOpt_conv(gchar *namefile)
+{
+	DataGeomConv GeomConv;
+	gint i;
+	GeomConv.Npoint = 0;
+	GeomConv.Ntype  = 5;
+	GeomConv.TypeData = g_malloc(GeomConv.Ntype*sizeof(gchar*) );
+	GeomConv.fileType = GABEDIT_TYPEFILE_GAUSSIAN;
+	GeomConv.TypeData[0] = g_strdup(_(" Energy "));
+	GeomConv.TypeData[1] = g_strdup(_(" Force Max "));
+	GeomConv.TypeData[2] = g_strdup(_(" Force RMS "));
+	GeomConv.TypeData[3] = g_strdup(_(" Dep. Max "));
+	GeomConv.TypeData[4] = g_strdup(_(" Dep. RMS "));
+	GeomConv.Data = g_malloc(GeomConv.Ntype*sizeof(gchar**) );
+	for(i = 0;i<GeomConv.Ntype;i++) GeomConv.Data[i] = NULL;
+	GeomConv.TypeCalcul = NULL;
+	GeomConv.NumGeom = NULL;
+	GeomConv.GeomFile = g_strdup(namefile);
+	return GeomConv;
+}
+/*********************************************************************/
+void find_energy_gauss_scanOpt_output(gchar* NomFichier)
+{
+	gchar* pdest = NULL;
+	guint  i=0;
+	guint  j=0;
+	guint  k=0;
+	gchar *temp =  g_malloc(100*sizeof(gchar));	
+	gchar *t;
+	FILE *fd;
+        gint Ncalculs = 0;
+  	static DataGeomConv* GeomConv =NULL;
+	gint numGeom = 0;
+	gchar** props = NULL;
+	gint nTypes = 0;
+
+        
+        Ncalculs++;
+	GeomConv =  g_malloc(sizeof(DataGeomConv) );
+  	GeomConv[Ncalculs-1] = init_geom_gauss_scanOpt_conv(NomFichier);
+	props = g_malloc(GeomConv[Ncalculs-1].Ntype*sizeof(gchar*));
+	nTypes = GeomConv[Ncalculs-1].Ntype;
+	for(i=0;(gint)i<nTypes;i++) props[i] =  g_malloc(100*sizeof(gchar));
+
+	t=g_malloc(BSIZE*sizeof(gchar));
+ 	fd = FOpen(NomFichier, "rb"); 
+        if(!fd)
+	{
+		t = g_strdup_printf(_(" Error : I can not open file %s\n"),NomFichier);
+		Message(t,_("Error"),TRUE);
+		if(t) g_free(t);
+		return;
+	}
+        
+	 while(!feof(fd))
+	{
+    		 { gchar* e = fgets(t,BSIZE,fd);}
+                 if( strlen(t)>2 && strstr(t,"Normal termination of Gaussian") )
+		 {
+         		Ncalculs++;
+			GeomConv =  g_realloc(GeomConv, Ncalculs*sizeof(DataGeomConv) );
+  			GeomConv[Ncalculs-1] = init_geom_gauss_scanOpt_conv(NomFichier);
+			continue;
+		 }
+		 uppercase(t);
+                 if( strlen(t)>2 && t[1] == '#' && !GeomConv[Ncalculs-1].TypeCalcul)
+		 {
+			GeomConv[Ncalculs-1].TypeCalcul = g_malloc(100*sizeof(gchar));
+                 	sscanf(t,"%s %s", temp, GeomConv[Ncalculs-1].TypeCalcul);
+		 }
+    		 pdest = strstr( t,"SCF DONE");
+   		if( pdest != NULL ) pdest = strstr( t,"=");
+          	if(!pdest)
+		{
+    		 	pdest = strstr( t,"ENERGY=");
+          	 	if(pdest && t[1] == 'E' ) pdest = strstr( t,"=");
+                 	else pdest = NULL;
+			
+		}
+   		if( pdest != NULL )
+		{
+			numGeom++;
+                 	sscanf(pdest+1,"%s", props[0]);
+			/*
+			fprintf(stderr,"%s\n",t);
+			fprintf(stderr,"%s\n",props[0]);
+			*/
+		}
+                pdest = NULL;
+    		pdest = strstr( t,"CONVERGED?");
+                if( pdest != NULL)
+		{
+			for(i=1;(gint)i<nTypes;i++)
+			{
+    		 		{ gchar* e = fgets(t,BSIZE,fd);}
+                 		sscanf(t,"%s %s %s", temp,temp,props[i]);
+			}
+		}
+                pdest = NULL;
+    		pdest = strstr( t," STATIONARY POINT FOUND");
+   		if( pdest != NULL )
+		{
+			pdest++;
+		  	GeomConv[Ncalculs-1].Npoint++;
+		  	if(GeomConv[Ncalculs-1].Npoint == 1 )
+		  	{
+				GeomConv[Ncalculs-1].NumGeom =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
+				for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
+					GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
+		  	}
+		  	else
+		  	{
+				GeomConv[Ncalculs-1].NumGeom =  g_realloc(GeomConv[Ncalculs-1].NumGeom,GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
+				for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
+					GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));
+		  	}
+		  	for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
+                  	{
+		 		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(100*sizeof(gchar)); 
+                 		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1][0] = '\0';
+                 	}
+			GeomConv[Ncalculs-1].NumGeom[GeomConv[Ncalculs-1].Npoint-1] = numGeom;
+			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
+                 		sprintf( GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1], "%s", props[i]);
+		}
+	}
+	fclose(fd);
+	if( Ncalculs>0 && GeomConv[Ncalculs-1].Npoint == 0)
+	{
+		GeomConv[Ncalculs-1] =  free_geom_conv(GeomConv[Ncalculs-1]);
+		Ncalculs--;
+		if(Ncalculs>0) GeomConv =  g_realloc(GeomConv, Ncalculs*sizeof(DataGeomConv) );
+		else
+		{
+			g_free(GeomConv);
+			GeomConv =  NULL;
+		}
+	}
+	/*
+	{
+		gint j;
+		for( j=0;j<Ncalculs;j++)
+		{
+			gint np=GeomConv[j].Npoint;
+			fprintf(stderr,"DEBUG Npoint = %d\n",np);
+			gint i;
+			for(i=0;i<np;i++)
+				fprintf(stderr,"numGeom = %d\n",GeomConv[j].NumGeom[i]);
+		}
+	}
+	*/
+	create_energies_curves(GeomConv,Ncalculs);
+	g_free(t);
+	g_free(temp);
+	for(i=0;(gint)i<nTypes;i++) if(props[i]) g_free(props[i]);
+}
+/*********************************************************************/
+DataGeomConv init_geom_gauss_ircOpt_conv(gchar *namefile)
+{
+	/* fprintf(stderr,"DEBUG init_geom_gauss_ircOpt_conv\n");*/
+	DataGeomConv GeomConv;
+	gint i;
+	GeomConv.Npoint = 0;
+	GeomConv.Ntype  = 3;
+	GeomConv.TypeData = g_malloc(GeomConv.Ntype*sizeof(gchar*) );
+	GeomConv.fileType = GABEDIT_TYPEFILE_GAUSSIAN;
+	GeomConv.TypeData[0] = g_strdup(_(" Energy "));
+	GeomConv.TypeData[1] = g_strdup(_(" Force Max "));
+	GeomConv.TypeData[2] = g_strdup(_(" Force RMS "));
+	GeomConv.Data = g_malloc(GeomConv.Ntype*sizeof(gchar**) );
+	for(i = 0;i<GeomConv.Ntype;i++) GeomConv.Data[i] = NULL;
+	GeomConv.TypeCalcul = NULL;
+	GeomConv.NumGeom = NULL;
+	GeomConv.GeomFile = g_strdup(namefile);
+	return GeomConv;
+}
+/*********************************************************************/
+void find_energy_gauss_ircOpt_output(gchar* NomFichier)
+{
+	gchar* pdest = NULL;
+	guint  i=0;
+	guint  j=0;
+	guint  k=0;
+	gchar *temp =  g_malloc(100*sizeof(gchar));	
+	gchar *t;
+	FILE *fd;
+        gint Ncalculs = 0;
+  	static DataGeomConv* GeomConv =NULL;
+	gint numGeom = 0;
+	gchar** props = NULL;
+	gint nTypes = 0;
+	gint oneDir = 0;
+
+        Ncalculs++;
+	GeomConv =  g_malloc(sizeof(DataGeomConv) );
+  	GeomConv[Ncalculs-1] = init_geom_gauss_ircOpt_conv(NomFichier);
+	props = g_malloc(GeomConv[Ncalculs-1].Ntype*sizeof(gchar*));
+	nTypes = GeomConv[Ncalculs-1].Ntype;
+	for(i=0;(gint)i<nTypes;i++) props[i] =  g_malloc(100*sizeof(gchar));
+
+	t=g_malloc(BSIZE*sizeof(gchar));
+ 	fd = FOpen(NomFichier, "rb"); 
+        if(!fd)
+	{
+		t = g_strdup_printf(_(" Error : I can not open file %s\n"),NomFichier);
+		Message(t,_("Error"),TRUE);
+		if(t)
+			g_free(t);
+		return;
+	}
+        
+	 while(!feof(fd))
+	{
+    		 { gchar* e = fgets(t,BSIZE,fd);}
+                 if( strlen(t)>2 && strstr(t,"Normal termination of Gaussian") )
+		 {
+         		Ncalculs++;
+			GeomConv =  g_realloc(GeomConv, Ncalculs*sizeof(DataGeomConv) );
+  			GeomConv[Ncalculs-1] = init_geom_gauss_conv(NomFichier);
+		 }
+		if(strstr(t,"path following direction ")) oneDir = 1;
+		 uppercase(t);
+                 if( strlen(t)>2 && t[1] == '#' && !GeomConv[Ncalculs-1].TypeCalcul)
+		 {
+			GeomConv[Ncalculs-1].TypeCalcul = g_malloc(100*sizeof(gchar));
+                 	sscanf(t,"%s %s", temp, GeomConv[Ncalculs-1].TypeCalcul);
+		 }
+    		 pdest = strstr( t,"SCF DONE");
+   		if( pdest != NULL ) pdest = strstr( t,"=");
+          	if(!pdest)
+		{
+    		 	pdest = strstr( t,"ENERGY=");
+          	 	if(pdest && t[1] == 'E' ) pdest = strstr( t,"=");
+                 	else pdest = NULL;
+			
+		}
+   		if( pdest != NULL )
+		{
+			numGeom++;
+                 	sscanf(pdest+1,"%s", props[0]);
+			/*
+			fprintf(stderr,"%s\n",t);
+			fprintf(stderr,"%s\n",props[0]);
+			*/
+		}
+                pdest = NULL;
+    		if(strstr( t,"MAX ") && strstr( t,"RMS "))
+		{
+    			pdest = strstr( t,"MAX ") + strlen("MAX ");
+                 	sscanf(pdest,"%s", props[1]);
+    			pdest = strstr( t,"RMS ") + strlen("RMS ");
+                 	sscanf(pdest,"%s", props[2]);
+		}
+                pdest = NULL;
+    		/*pdest = strstr( t," CONVERGENCE MET");*/
+		pdest = strstr( t,"CARTESIAN FORCES:  MAX"); 
+   		if( pdest != NULL )
+		{
+		  	GeomConv[Ncalculs-1].Npoint++;
+		  	if(GeomConv[Ncalculs-1].Npoint == 1 )
+		  	{
+				GeomConv[Ncalculs-1].NumGeom =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
+				for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
+					GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
+		  	}
+		  	else
+		  	{
+				GeomConv[Ncalculs-1].NumGeom =  g_realloc(GeomConv[Ncalculs-1].NumGeom,GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
+				for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
+					GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));
+		  	}
+		  	for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
+                  	{
+		 		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(100*sizeof(gchar)); 
+                 		GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1][0] = '\0';
+                 	}
+			GeomConv[Ncalculs-1].NumGeom[GeomConv[Ncalculs-1].Npoint-1] = numGeom;
+			for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
+                 		sprintf( GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1], "%s", props[i]);
+		}
+	}
+	fclose(fd);
+	if( Ncalculs>0 && GeomConv[Ncalculs-1].Npoint == 0)
+	{
+		GeomConv[Ncalculs-1] =  free_geom_conv(GeomConv[Ncalculs-1]);
+		Ncalculs--;
+		if(Ncalculs>0) GeomConv =  g_realloc(GeomConv, Ncalculs*sizeof(DataGeomConv) );
+		else
+		{
+			g_free(GeomConv);
+			GeomConv =  NULL;
+		}
+	}
+	if(oneDir==0)
+	{
+		/* sort */
+		gint j;
+		/*
+		fprintf(stderr,"DEBUG sorting IRC\n");
+		fprintf(stderr,"DEBUG Ncalculs %d\n", Ncalculs);
+		*/
+		for( j=0;j<Ncalculs;j++)
+		{
+			gint n=GeomConv[j].Npoint/2;
+			
+			/*
+			fprintf(stderr,"DEBUG n = %d\n",n);
+			fprintf(stderr,"DEBUG Npoint = %d\n",GeomConv[j].Npoint);
+			*/
+		
+			gint i;
+			gint k;
+			for(i=0;(gint)i<GeomConv[j].Ntype;i++)
+			for(k=0;k<n;k++)
+			{
+				gchar* data = GeomConv[j].Data[i][k];
+				GeomConv[j].Data[i][k] = GeomConv[j].Data[i][n+k];
+				GeomConv[j].Data[i][n+k] = data;
+				gint numGeom = GeomConv[j].NumGeom[k];
+				GeomConv[j].NumGeom[k] = GeomConv[j].NumGeom[n+k];
+				GeomConv[j].NumGeom[n+k] = numGeom;
+			}
+			for(i=0;(gint)i<GeomConv[j].Ntype;i++)
+			for(k=0;k<n/2;k++)
+			{
+				gchar* data = GeomConv[j].Data[i][k];
+				GeomConv[j].Data[i][k] = GeomConv[j].Data[i][n-k-1];
+				GeomConv[j].Data[i][n-k-1] = data;
+				gint numGeom = GeomConv[j].NumGeom[k];
+				GeomConv[j].NumGeom[k] = GeomConv[j].NumGeom[n-k-1];
+				GeomConv[j].NumGeom[n-k-1] = numGeom;
+			}
+		}
+	}
+	create_energies_curves(GeomConv,Ncalculs);
+	g_free(t);
+	g_free(temp);
+	for(i=0;(gint)i<nTypes;i++) if(props[i]) g_free(props[i]);
+}
+/*********************************************************************/
 void find_energy_molden_gabedit(gchar* FileName, GabEditTypeFile type)
 {
 	guint  i=0;
@@ -2519,7 +2889,7 @@ void find_energy_molden_gabedit(gchar* FileName, GabEditTypeFile type)
 		return;
 	}
         
-	{ char* e = fgets(t,taille,fd);}
+	{ gchar* e = fgets(t,taille,fd);}
 	 while(!feof(fd))
 	{
 		 uppercase(t);
@@ -2532,7 +2902,7 @@ void find_energy_molden_gabedit(gchar* FileName, GabEditTypeFile type)
 			if(Ncalculs==1) GeomConv =  g_malloc(sizeof(DataGeomConv) );
 			else GeomConv =  g_realloc(GeomConv, Ncalculs*sizeof(DataGeomConv) );
   			GeomConv[Ncalculs-1] = init_geom_molden_gabedit_conv(FileName, type);
-			GeomConv[Ncalculs-1].TypeCalcul = g_malloc(100*sizeof(char));
+			GeomConv[Ncalculs-1].TypeCalcul = g_malloc(100*sizeof(gchar));
 			GeomConv[Ncalculs-1].fileType = type;
                  	nn = sscanf(t,"%s %s", temp, GeomConv[Ncalculs-1].TypeCalcul);
 			if(nn<2) sprintf(GeomConv[Ncalculs-1].TypeCalcul," ");
@@ -2561,20 +2931,20 @@ void find_energy_molden_gabedit(gchar* FileName, GabEditTypeFile type)
 				{
 					GeomConv[Ncalculs-1].NumGeom =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
 					for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
-						GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(char*));	
+						GeomConv[Ncalculs-1].Data[i] =  g_malloc(GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
 				}
 				else
 				{
 					GeomConv[Ncalculs-1].NumGeom =  g_realloc(GeomConv[Ncalculs-1].NumGeom,GeomConv[Ncalculs-1].Npoint*sizeof(gint));	
 					for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
-						GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(char*));	
+						GeomConv[Ncalculs-1].Data[i] =  g_realloc(GeomConv[Ncalculs-1].Data[i],GeomConv[Ncalculs-1].Npoint*sizeof(gchar*));	
 				}
 				for(i=0;(gint)i<GeomConv[Ncalculs-1].Ntype;i++)
 				{
-					GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(char)); 
+					GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
 					GeomConv[Ncalculs-1].Data[i][GeomConv[Ncalculs-1].Npoint-1][0] = '\0';
 				}
-				GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(char)); 
+				GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1] = g_malloc(50*sizeof(gchar)); 
 				sscanf(t,"%s", GeomConv[Ncalculs-1].Data[0][GeomConv[Ncalculs-1].Npoint-1]);
 			}
 			if(GeomConv[Ncalculs-1].Npoint<1) continue;
@@ -2863,12 +3233,20 @@ void find_energy_gabedit(gchar* fileName)
 	find_energy_molden_gabedit(fileName,GABEDIT_TYPEFILE_GABEDIT);
 }
 /*********************************************************************/
+void find_energy_gauss_output(gchar* fileName)
+{
+	GabEditTypeFile fileType = get_type_file(fileName);
+	/* fprintf(stderr,"DEBUG : ktype = %d\n", fileType);*/
+	if(fileType == GABEDIT_TYPEFILE_GAUSSIAN_SCANOPT) find_energy_gauss_scanOpt_output(fileName);
+	else if(fileType == GABEDIT_TYPEFILE_GAUSSIAN_IRCOPT) find_energy_gauss_ircOpt_output(fileName);
+	else find_energy_gauss_standard_output(fileName);
+}
+/*********************************************************************/
 void find_energy_all(GtkWidget *wid,gpointer data)
 {
  	gchar* fileName = g_strdup_printf("%s%s%s",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.logfile);
 	if( iprogram == PROG_IS_GAMESS) find_energy_gamess_output(fileName);
 	if( iprogram == PROG_IS_FIREFLY) find_energy_gamess_output(fileName);
-	if( iprogram == PROG_IS_GAUSS) find_energy_gauss_output(fileName);
 	if( iprogram == PROG_IS_MPQC) find_energy_mpqc_output(fileName);
 	if( iprogram == PROG_IS_MOLPRO) find_energy_molpro_log(fileName);
 	if( iprogram == PROG_IS_ORCA) find_energy_orca_output(fileName);
@@ -2902,6 +3280,10 @@ void find_energy_all(GtkWidget *wid,gpointer data)
  		gchar* fileName = g_strdup_printf("%s%s%s.geo.molden",fileopen.localdir,G_DIR_SEPARATOR_S,fileopen.projectname);
 		find_energy_molden(fileName);
 		g_free(fileName);
+	}
+	if( iprogram == PROG_IS_GAUSS) 
+	{
+		find_energy_gauss_output(fileName);
 	}
 	g_free(fileName);
 }
@@ -2989,7 +3371,6 @@ void read_geometries_irc_gamess(GabeditFileChooser *SelecFile, gint response_id)
  	}
  	find_energy_gamess_irc(fileName);
 }
-/************************************************************************************/
 /************************************************************************************/
 void read_geometries_conv_gaussian(GabeditFileChooser *SelecFile, gint response_id)
 {       

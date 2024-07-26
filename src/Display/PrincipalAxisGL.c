@@ -1,6 +1,6 @@
 /* PrincipalAxisGL.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -194,12 +194,12 @@ static void set_rot_matrice(gdouble m[6])
 
 	for(i=0;i<3;i++)
 	{
-		XYZ[i] = g_malloc(Ncenters*sizeof(gdouble));
+		XYZ[i] = g_malloc(nCenters*sizeof(gdouble));
 		C[i] = 0.0;
 	}
 
 
-	for(j=0;j<(guint)Ncenters;j++)
+	for(j=0;j<(guint)nCenters;j++)
 	{
 		mt += GeomOrb[j].Prop.masse;
 		XYZ[0][j] = GeomOrb[j].C[0];
@@ -207,12 +207,12 @@ static void set_rot_matrice(gdouble m[6])
 		XYZ[2][j] = GeomOrb[j].C[2];
 	}
 	for(i=0;i<3;i++)
-		for(j=0;j<(guint)Ncenters;j++)
+		for(j=0;j<(guint)nCenters;j++)
 			C[i] += GeomOrb[j].Prop.masse*XYZ[i][j];
 	for(i=0;i<3;i++)
 		C[i] /= mt;
 
-	for(j=0;j<(guint)Ncenters;j++)
+	for(j=0;j<(guint)nCenters;j++)
 		for(i=0;i<3;i++)
 			XYZ[i][j] -= C[i];
 	
@@ -222,7 +222,7 @@ static void set_rot_matrice(gdouble m[6])
 	{
 		m[k] = 0.0;
 
-		for(j=0;j<(guint)Ncenters;j++)
+		for(j=0;j<(guint)nCenters;j++)
 		{
 			if(i==ip)
 			a = XYZ[(i+1)%3][j]*XYZ[(ip+1)%3][j]
@@ -240,7 +240,7 @@ static void set_rot_matrice(gdouble m[6])
 		g_free(XYZ[i]);
 }
 /********************************************************************************/
-static void compute_the_principal_axis()
+void compute_the_principal_axis()
 {
 	gdouble m[6];
 	gdouble** v = g_malloc(3*sizeof(gdouble*));
@@ -252,7 +252,7 @@ static void compute_the_principal_axis()
 	axis.inertia[0] = 1.0;
 	axis.inertia[1] = 1.0;
 	axis.inertia[2] = 1.0;
-	if(Ncenters<1) return;
+	if(nCenters<1) return;
 
 	for(i=0;i<3;i++)
 	 v[i] = g_malloc(3*sizeof(gdouble));

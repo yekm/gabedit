@@ -1,6 +1,6 @@
 /* Povray.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1206,7 +1206,7 @@ static void create_images_window (GtkWidget* parent, gchar* fileName, gint width
 
 		gtk_widget_show (image);
 	}
-	gtk_window_set_default_size (GTK_WINDOW (window), width+30, height+30);
+	//gtk_window_set_default_size (GTK_WINDOW (window), width+30, height+30);
 	gtk_widget_realize(window);
 	gtk_widget_show (window);
 	gtk_window_set_position(GTK_WINDOW(window),GTK_WIN_POS_CENTER);

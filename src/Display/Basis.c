@@ -1,6 +1,6 @@
 /* Basis.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -35,7 +35,7 @@ void save_basis_gabedit_format(FILE* file)
 	gint c;
 	fprintf(file,"[Basis]\n");
 	if(!Type) return;
-	for(c = 0;c<Ncenters; c++)
+	for(c = 0;c<nCenters; c++)
 	{
 		i = GeomOrb[c].NumType;
 		fprintf(file,"   %d 0\n", c+1);
@@ -64,7 +64,7 @@ gint ReadCommandLines()
         return 1; 
    if( t[0] != '#' )
    {
-     Debug("\n\nERROR : theyre firsts lines is not a commads lines\n\n");
+     Debug("\n\nERROR : the firsts lines is not a commands lines\n\n");
      return 0;
    }
   }
@@ -399,16 +399,16 @@ static void resortAtoms(gint* numAtoms)
 	gint i;
 	/* printf("begin resortAtoms\n  ");*/
 	if(!numAtoms)return;
-	if(Ncenters<1)return;
+	if(nCenters<1)return;
 	/*
 	printf("Sorting  ");
-	for(i=0;i<Ncenters;i++) printf("%d ",numAtoms[i]);
+	for(i=0;i<nCenters;i++) printf("%d ",numAtoms[i]);
 	printf("\n");
 	*/
-	for(i=0;i<Ncenters;i++) if(numAtoms[i] == -1) return;
-	newGeom = g_malloc(Ncenters*sizeof(TypeGeomOrb));
-	for(i=0;i<Ncenters;i++) newGeom[i] = GeomOrb[numAtoms[i]];
-	for(i=0;i<Ncenters;i++) GeomOrb[i] = newGeom[i];
+	for(i=0;i<nCenters;i++) if(numAtoms[i] == -1) return;
+	newGeom = g_malloc(nCenters*sizeof(TypeGeomOrb));
+	for(i=0;i<nCenters;i++) newGeom[i] = GeomOrb[numAtoms[i]];
+	for(i=0;i<nCenters;i++) GeomOrb[i] = newGeom[i];
 	g_free(newGeom);
 }
 /**********************************************/
@@ -517,17 +517,17 @@ gboolean DefineGabeditMoldenBasisType(gchar *fileName,gchar* title)
 	sym=g_malloc(10*sizeof(char));
 	/* printf("nC = %d\n",nC);*/
 	/* basis available for all centers */
-	if(nC==Ncenters)
+	if(nC==nCenters)
 	{
-		Ntype = Ncenters;
- 		for(i=0;i<Ncenters;i++) GeomOrb[i].NumType= i;
+		Ntype = nCenters;
+ 		for(i=0;i<nCenters;i++) GeomOrb[i].NumType= i;
 	}
 
 	if(forb !=NULL)
 	{
 		/* Debug("Ntype = %d\n",Ntype);*/
-		numAtoms = g_malloc(Ncenters*sizeof(gint));
-		for(i=0;i<Ncenters;i++) numAtoms[i] = -1;
+		numAtoms = g_malloc(nCenters*sizeof(gint));
+		for(i=0;i<nCenters;i++) numAtoms[i] = -1;
 		nAtoms = 0;
 		Type = g_malloc(Ntype*sizeof(TYPE));
 		for(i=0;i<Ntype;i++)
@@ -564,7 +564,7 @@ gboolean DefineGabeditMoldenBasisType(gchar *fileName,gchar* title)
 			{
 				/*Debug("tap = %s\n",t);*/
 				i=atoi(t)-1;
-				if(i>-1 && i<Ncenters) numAtoms[nAtoms] = i;
+				if(i>-1 && i<nCenters) numAtoms[nAtoms] = i;
 				nAtoms++;
 				/*Debug("i1 = %d \n",i);*/
 				if(i>-1)
@@ -728,7 +728,7 @@ void DefineAtomicNumOrb()
 {
 	gint i;
 	gint j;
-	for(i=0;i<Ncenters;i++)
+	for(i=0;i<nCenters;i++)
 	{
 	/*	Debug("i= %d \n",i);*/
 		GeomOrb[i].NAOrb = 0;
@@ -768,7 +768,7 @@ void DefineCartBasis()
  gint m;
 
  NAOrb = 0;
- for(i=0;i<Ncenters;i++)
+ for(i=0;i<nCenters;i++)
  {
 	 for(j=0;j<Type[GeomOrb[i].NumType].Norb;j++)
 	 {
@@ -782,7 +782,7 @@ void DefineCartBasis()
  SAOrb = NULL;
  
  k=-1;
- for(i=0;i<Ncenters;i++)
+ for(i=0;i<nCenters;i++)
 	 for(j=0;j<Type[GeomOrb[i].NumType].Norb;j++)
  {
 	L = Type[GeomOrb[i].NumType].Ao[j].L;
@@ -896,7 +896,7 @@ void DefineSphericalBasis()
 
 
  NOrb = 0;
- for(i=0;i<Ncenters;i++)
+ for(i=0;i<nCenters;i++)
  {
 	 for(j=0;j<Type[GeomOrb[i].NumType].Norb;j++)
 	 {
@@ -908,7 +908,7 @@ void DefineSphericalBasis()
  temp  = g_malloc(NOrb*sizeof(CGTF));
 
  k=-1;
- for(i=0;i<Ncenters;i++)
+ for(i=0;i<nCenters;i++)
 	 for(j=0;j<Type[GeomOrb[i].NumType].Norb;j++)
 	{
 	 	L =Type[GeomOrb[i].NumType].Ao[j].L;
@@ -1265,11 +1265,11 @@ gboolean readBasisFromGaussianFChk(gchar *fileName)
 		gint nM = 0;
 		/* printf("begin primitive nS = %d\n",nS);*/
 		if(shellTypes[nS]<-1) nM = 2*abs(shellTypes[nS])+1; /* Sperical D, F, G, ...*/
-		else if(shellTypes[nS]==-1) nM = 1; /* This a SP. Make S befor */
+		else if(shellTypes[nS]==-1) nM = 1; /* This a SP. Make S before */
 		else nM = (shellTypes[nS]+1)*(shellTypes[nS]+2)/2;
 
 		/* printf("nM = %d\n",nM);*/
-		if(shellTypes[nS]==-1) getlTable(0, nCoefs, coefs, l); /* This a SP. Make S befor */
+		if(shellTypes[nS]==-1) getlTable(0, nCoefs, coefs, l); /* This a SP. Make S before */
 		else getlTable(shellTypes[nS], nCoefs, coefs, l); 
 		/* printf("end getlTable\n");*/
 		for(m=0;m<nM;m++)

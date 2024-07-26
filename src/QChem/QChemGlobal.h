@@ -2,16 +2,15 @@
 #ifndef __GABEDIT_QCHEMGLOBAL_H__
 #define __GABEDIT_QCHEMGLOBAL_H__
 
-GtkWidget* qchemWin;
-QChemMolecule qchemMolecule;
-QChemColorFore qchemColorFore;
-QChemColorBack qchemColorBack;
-QChemBasis qchemBasis;
-QChemGuessWaveFunction qchemGuessWaveFunction;
+extern GtkWidget* qchemWin;
+extern QChemMolecule qchemMolecule;
+extern QChemColorFore qchemColorFore;
+extern QChemColorBack qchemColorBack;
+extern QChemBasis qchemBasis;
+extern QChemGuessWaveFunction qchemGuessWaveFunction;
 
-QChemFunctional* functionals;
-QChemStdFunctional* stdFunctionals;
-gdouble* sumFunctionals;
-
+extern QChemFunctional* functionalsQC;
+extern QChemStdFunctional* stdFunctionalsQC;
+extern gdouble* sumFunctionalsQC;
 #endif /* __GABEDIT_QCHEMGLOBAL_H__ */
 

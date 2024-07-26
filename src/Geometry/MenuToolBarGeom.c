@@ -1,6 +1,6 @@
 /* MenuToolBarGeom.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -48,7 +48,7 @@ DEALINGS IN THE SOFTWARE.
 #include "../Geometry/BuildRing.h"
 #include "../Geometry/BuildRoZPhi.h"
 #include "../Geometry/BuildPolyPeptide.h"
-#include "../Geometry/BuildPeriodic.h"
+#include "../Geometry/BuildCrystal.h"
 #include "../Geometry/BuildPolySaccharide.h"
 #include "../Geometry/BuildPolyNucleicAcid.h"
 #include "../Geometry/BuildNanoTube.h"
@@ -68,6 +68,7 @@ DEALINGS IN THE SOFTWARE.
 
 /* #define EXPERIMENTAL 1*/
 /*********************************************************************************************************************/
+void activate_insert_crystal();
 static	GtkUIManager *manager = NULL;
 static GtkWidget* handleBoxToolBar = NULL;
 static gboolean ViewToolBar = TRUE;
@@ -116,7 +117,7 @@ static void select_atom()
 	WinTable = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_modal(GTK_WINDOW(WinTable),TRUE);
 	gtk_window_set_title(GTK_WINDOW(WinTable),_("Select your atom"));
-	gtk_window_set_default_size (GTK_WINDOW(WinTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
+	//gtk_window_set_default_size (GTK_WINDOW(WinTable),(gint)(ScreenWidth*0.5),(gint)(ScreenHeight*0.4));
 
 	frame = gtk_frame_new (NULL);
 	gtk_frame_set_shadow_type( GTK_FRAME(frame),GTK_SHADOW_ETCHED_OUT);
@@ -195,7 +196,7 @@ static void render_operation_radio_action (GtkAction *action)
 			    break;
 		case   OPERATION_INSERT_FRAG : 
 				    		SetOperation(NULL, ADDFRAGMENT ); 
-						create_window_fragments_selector();
+						create_window_fragments_selector("Functionals","Amine");
 						break;
 		case   OPERATION_MEASURE :
 				    SetOperation(NULL, MEASURE );
@@ -415,6 +416,8 @@ static void activate_action (GtkAction *action)
 	if(!strcmp(name,"ReadAuto")) read_geom_any_file_dlg();
 	if(!strcmp(name,"ReadXYZ")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_XYZ); }
 	else if(!strcmp(name,"ReadPOSCAR")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_VASPPOSCAR); }
+	else if(!strcmp(name,"ReadCIF")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_CIF); }
+	else if(!strcmp(name,"ReadCIFNoSym")) { MethodeGeom = GEOM_IS_XYZ;selc_cif_file_nosym(); }
 	else if(!strcmp(name,"ReadMol2")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MOL2); }
 	else if(!strcmp(name,"ReadTinker")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_TINKER); }
 	else if(!strcmp(name,"ReadPDB")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_PDB); }
@@ -444,6 +447,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"ReadMopacFirst")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MOPACOUTFIRST);}
 	else if(!strcmp(name,"ReadMopacLast")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MOPACOUTLAST);}
 	else if(!strcmp(name,"ReadMopacAux")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_MOPACAUX);}
+	else if(!strcmp(name,"ReadWFX")) { MethodeGeom = GEOM_IS_XYZ;selc_XYZ_file(GABEDIT_TYPEFILEGEOM_WFX);}
 	else if(!strcmp(name,"ReadMopacScan")) 
  	  	file_chooser_open(read_geometries_conv_mopac_scan,_("Read Geomtries From Mopac Scan Output file"), GABEDIT_TYPEFILE_MOPAC,GABEDIT_TYPEWIN_GEOM);
 	else if(!strcmp(name,"ReadMopacIRC")) 
@@ -645,10 +649,25 @@ static void activate_action (GtkAction *action)
 		create_GeomXYZ_from_draw_grometry();
  	  	file_chooser_save(save_geometry_xyz_file,_("Save geometry in xyz file"), GABEDIT_TYPEFILE_XYZ,GABEDIT_TYPEWIN_GEOM);
 	}
-	else if(!strcmp(name,"SaveAsPOSCAR"))
+	else if(!strcmp(name,"SaveAsPOSCARCartn"))
 	{
 		create_GeomXYZ_from_draw_grometry();
  	  	file_chooser_save(save_geometry_poscar_file,_("Save geometry in POSCAR file (for VASP)"), GABEDIT_TYPEFILE_VASPPOSCAR,GABEDIT_TYPEWIN_GEOM);
+	}
+	else if(!strcmp(name,"SaveAsPOSCARDirect"))
+	{
+		create_GeomXYZ_from_draw_grometry();
+ 	  	file_chooser_save(save_geometry_poscar_direct_file,_("Save geometry in POSCAR file (for VASP)"), GABEDIT_TYPEFILE_VASPPOSCAR,GABEDIT_TYPEWIN_GEOM);
+	}
+	else if(!strcmp(name,"SaveAsCIFAllAtoms"))
+	{
+		create_GeomXYZ_from_draw_grometry();
+ 	  	file_chooser_save(save_geometry_cif_allatoms_file,_("Save geometry in CIF file (All atoms)"), GABEDIT_TYPEFILE_CIF,GABEDIT_TYPEWIN_GEOM);
+	}
+	else if(!strcmp(name,"SaveAsCIF"))
+	{
+		create_GeomXYZ_from_draw_grometry();
+ 	  	file_chooser_save(save_geometry_cif_file,_("Save geometry in CIF file (With sym operators)"), GABEDIT_TYPEFILE_CIF,GABEDIT_TYPEWIN_GEOM);
 	}
 	else if(!strcmp(name,"SaveAsGabedit"))
 	{
@@ -717,7 +736,26 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name,"BuildRingMolecule")) build_ring_molecule_dlg();
 	else if(!strcmp(name,"BuildMoleculeWithSymmetry")) build_rozphi_molecule_dlg();
 	else if(!strcmp(name,"BuildPolyPeptide")) build_polypeptide_dlg();
-	else if(!strcmp(name,"BuildPeriodic")) build_periodic_dlg();
+#ifdef DRAWGEOMGL
+	else if(!strcmp(name,"BuildCrystalGen")) build_crystal_dlg();
+	else if(!strcmp(name,"BuildSuperCellSimple")) build_supercell_simple_dlg();
+	else if(!strcmp(name,"BuildSuperCell")) build_supercell_dlg();
+	else if(!strcmp(name,"BuildWulff")) build_wulff_dlg();
+	else if(!strcmp(name,"BuildSlab")) build_slab_dlg();
+	else if(!strcmp(name,"WrapAtomsToCell")) wrap_atoms_to_cell();
+	else if(!strcmp(name,"ComputeSpaceGroupSym")) compute_space_symmetry_group();
+	else if(!strcmp(name,"ComputeSymmetryInfo")) compute_symmetry_info();
+	else if(!strcmp(name,"ComputeKPointsPath")) compute_kpoints_path();
+	else if(!strcmp(name,"ReductionNiggli")) reduce_cell_niggli();
+	else if(!strcmp(name,"ReductionDelaunay")) reduce_cell_delaunay();
+	else if(!strcmp(name,"ReductionPrimitive")) reduce_cell_primitive();
+	else if(!strcmp(name,"StandardizeCellPrimitive")) standardize_cell_primitive();
+	else if(!strcmp(name,"StandardizeCellConv")) standardize_cell_conventional();
+	else if(!strcmp(name,"HelpCrystal")) help_references_crystallography();
+	else if(!strcmp(name,"PrototypeCrystal")) activate_insert_crystal();
+	else if(!strcmp(name,"SetSymPrec")) setSymPrecDlg();
+	else if(!strcmp(name,"ComputeVolume")) compute_volume_cell();
+#endif
 	else if(!strcmp(name,"BuildPolyNucleicAcid")) build_polynucleicacid_dlg();
 	else if(!strcmp(name,"BuildPolySaccharide")) build_polysaccharide_dlg();
 	else if(!strcmp(name,"PersonalFragmentsNewGroup")) newGroupeDlg(NULL, 0, NULL);
@@ -758,6 +796,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "SetMMTypeOfselectedAtoms")) setMMTypeOfselectedAtomsDlg();
 	else if(!strcmp(name, "SetPDBTypeOfselectedAtoms")) setPDBTypeOfselectedAtomsDlg();
 	else if(!strcmp(name, "SetResidueNameOfselectedAtoms")) setResidueNameOfselectedAtomsDlg();
+	else if(!strcmp(name, "SetSymbolOfselectedAtoms")) setSymbolOfselectedAtomsDlg();
 	else if(!strcmp(name, "SetChargeOfselectedAtoms")) setChargeOfselectedAtomsDlg();
 	else if(!strcmp(name, "scaleChargesOfSelectedAtoms")) scaleChargesOfSelectedAtomsDlg();
 	else if(!strcmp(name, "InsertAFragment")) activate_insert_fragment();
@@ -771,6 +810,7 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "ComputeDipoleFormCharges")) compute_dipole_from_charges();
 	else if(!strcmp(name, "ComputeIsotopeDistribution")) createIstopeDistributionCalculationFromDrawGeom();
 	else if(!strcmp(name, "ComputeTotalCharge")) compute_total_charge();
+	else if(!strcmp(name, "ComputeVolumeMolecule")) compute_volume_molecule();
 	else if(!strcmp(name, "ComputeChargeForResidues")) compute_charge_by_residue();
 	else if(!strcmp(name, "ComputeChargeOfSelectedsAtoms")) compute_charge_of_selected_atoms();
 	else if(!strcmp(name, "SetHydrogenBonds"))set_HBonds_dialog_geom(NULL, 0);
@@ -799,32 +839,32 @@ static void activate_action (GtkAction *action)
 	else if(!strcmp(name, "ScreenCaptureJPG")) 
 	{
  		GtkWidget* chooser = file_chooser_save(save_geometry_jpeg_file,_("Save image in jpeg file format"),GABEDIT_TYPEFILE_JPEG,GABEDIT_TYPEWIN_GEOM);
-		fit_windows_position(GeomDlg, chooser);
+		/* fit_windows_position(GeomDlg, chooser);*/
 	}
 	else if(!strcmp(name, "ScreenCapturePPM"))
 	{
  		GtkWidget* chooser = file_chooser_save(save_geometry_ppm_file,_("Save image in ppm file format"),GABEDIT_TYPEFILE_PPM,GABEDIT_TYPEWIN_GEOM);
-		fit_windows_position(GeomDlg, chooser);
+		/* fit_windows_position(GeomDlg, chooser);*/
 	}
 	else if(!strcmp(name, "ScreenCaptureBMP"))
 	{
  		GtkWidget* chooser = file_chooser_save(save_geometry_bmp_file,_("Save image in bmp file format"),GABEDIT_TYPEFILE_BMP,GABEDIT_TYPEWIN_GEOM);
-		fit_windows_position(GeomDlg, chooser);
+		/* fit_windows_position(GeomDlg, chooser);*/
 	}
 	else if(!strcmp(name, "ScreenCapturePNG"))
 	{
  		GtkWidget* chooser = file_chooser_save(save_geometry_png_file,_("Save image in png file format"),GABEDIT_TYPEFILE_PNG,GABEDIT_TYPEWIN_GEOM);
-		fit_windows_position(GeomDlg, chooser);
+		/* fit_windows_position(GeomDlg, chooser);*/
 	}
 	else if(!strcmp(name, "ScreenCaptureTIF"))
 	{
  		GtkWidget* chooser = file_chooser_save(save_geometry_tiff_file,_("Save image in tif file format"),GABEDIT_TYPEFILE_TIF,GABEDIT_TYPEWIN_GEOM);
-		fit_windows_position(GeomDlg, chooser);
+		/* fit_windows_position(GeomDlg, chooser);*/
 	}
 	else if(!strcmp(name, "ScreenCapturePS"))
 	{
  		GtkWidget* chooser = file_chooser_save(save_geometry_ps_file,_("Save image in ps file format"),GABEDIT_TYPEFILE_PS,GABEDIT_TYPEWIN_GEOM);
-		fit_windows_position(GeomDlg, chooser);
+		/* fit_windows_position(GeomDlg, chooser);*/
 	}
 	else if(!strcmp(name, "ScreenCaptureCilpBoard")) 
 	{
@@ -993,6 +1033,9 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ReadMol", NULL, N_("_Mol file"), NULL, "Read a Mol file", G_CALLBACK (activate_action) },
 	{"ReadGabedit", GABEDIT_STOCK_GABEDIT, N_("_Gabedit file"), NULL, "Read a Gabedit file", G_CALLBACK (activate_action) },
 	{"ReadPOSCAR", NULL, N_("_POSCAR file"), NULL, "Read a POSCAR file", G_CALLBACK (activate_action) },
+	{"ReadWFX", NULL, N_("_WFX file"), NULL, "Read a WFX file", G_CALLBACK (activate_action) },
+	{"ReadCIF", NULL, N_("_CIF file"), NULL, "Read a cif file", G_CALLBACK (activate_action) },
+	{"ReadCIFNoSym", NULL, N_("_CIF file without symmetry"), NULL, "Read a cif file without apply symmetry operators", G_CALLBACK (activate_action) },
 	{"ReadGaussianZMat", GABEDIT_STOCK_GAUSSIAN, N_("_Gaussian Z-Matrix file"), NULL, "Read a Gaussian Z-Matrix file", G_CALLBACK (activate_action) },
 	{"ReadMopacZMat", GABEDIT_STOCK_MOPAC, N_("_Mopac Z-Matrix file"), NULL, "Read a Mopac Z-Matrix file", G_CALLBACK (activate_action) },
 
@@ -1129,7 +1172,10 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SaveAsMol", NULL, N_("_Mol file"), NULL, "Save geometry in a Mol file", G_CALLBACK (activate_action) },
 	{"SaveAsTinker", NULL, N_("_Tinker file"), NULL, "Save geometry in a Tinker file", G_CALLBACK (activate_action) },
 	{"SaveAsPDB", GABEDIT_STOCK_PDB, N_("_pdb file"), NULL, "Save geometry in a pdb file", G_CALLBACK (activate_action) },
-	{"SaveAsPOSCAR", NULL, N_("_POSCAR file"), NULL, "Save geometry in a POSCAR file", G_CALLBACK (activate_action) },
+	{"SaveAsPOSCARCartn", NULL, N_("_POSCAR (Cartesian) file"), NULL, "Save geometry in a POSCAR file", G_CALLBACK (activate_action) },
+	{"SaveAsPOSCARDirect", NULL, N_("_POSCAR (Direct) file"), NULL, "Save geometry in a POSCAR file", G_CALLBACK (activate_action) },
+	{"SaveAsCIFAllAtoms", NULL, N_("_CIF file with all atoms"), NULL, "Save geometry in a CIF file", G_CALLBACK (activate_action) },
+	{"SaveAsCIF", NULL, N_("_CIF file with symmetry operators"), NULL, "Save geometry in a CIF file", G_CALLBACK (activate_action) },
 	{"SaveAsHyperchem", NULL, N_("_Hyperchem file"), NULL, "Save geometry in a Hyperchem file", G_CALLBACK (activate_action) },
 	{"SaveAsCChemI", NULL, N_("_CChemI file"), NULL, "Save geometry in a CChemI file", G_CALLBACK (activate_action) },
 	{"SaveAsMopacZMat", NULL, N_("_Mopac Zmatrix file"), NULL, "Save geometry in a Mopac Zmatrix file", G_CALLBACK (activate_action) },
@@ -1140,7 +1186,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"PersonalFragments", NULL, N_("Personal _fragment")},
 	{"PersonalFragmentsNewGroup", NULL, N_("_New Group"), NULL, "New Group", G_CALLBACK (activate_action) },
 	{"PersonalFragmentsDeleteGroup", NULL, N_("_Delete a Group"), NULL, "Delete a Group", G_CALLBACK (activate_action) },
-	{"PersonalFragmentsAddMolecule", NULL, N_("_Add this molecule to personnal Fragments"), NULL, "Add this molecule to personnal Fragments", G_CALLBACK (activate_action) },
+	{"PersonalFragmentsAddMolecule", NULL, N_("_Add this molecule to personal Fragments"), NULL, "Add this molecule to personal Fragments", G_CALLBACK (activate_action) },
 	{"PersonalFragmentsRemoveFragment", NULL, N_("_Remove a Fragment"), NULL, "Remove a Fragment", G_CALLBACK (activate_action) },
 	{"InsertAFragment", NULL, N_("Add a _fragment"), NULL, "Add a fragment", G_CALLBACK (activate_action) },
 	{"AddMaxHydrogens", NULL, N_("Add _Max Hydrogens"), NULL, "Add Max Hydrogens", G_CALLBACK (activate_action) },
@@ -1153,10 +1199,36 @@ static GtkActionEntry gtkActionEntries[] =
 	{"BuildRingMolecule", NULL, N_("_Ring Molecule"), NULL, "build a ring molecule", G_CALLBACK (activate_action) },
 	{"BuildMoleculeWithSymmetry", NULL, N_("_Molecule with a symmetry axis of rotation"), NULL, "build a molecule with a symmetry axis of rotation", G_CALLBACK (activate_action) },
 	{"BuildPolyPeptide", NULL, N_("Poly_Peptide"), NULL, "build a polypeptide", G_CALLBACK (activate_action) },
-	{"BuildPeriodic", NULL, N_("_Periodic"), NULL, "build  periodic ", G_CALLBACK (activate_action) },
 	{"BuildPolySaccharide", NULL, N_("Poly_Saccharide"), NULL, "build a Polysaccharide", G_CALLBACK (activate_action) },
 	{"BuildPolyNucleicAcid", NULL, N_("Poly_Nucleic Acid"), NULL, "build a polynucleic acid", G_CALLBACK (activate_action) },
 	{"BuildNanoTube", NULL, N_("Nano_tube"), NULL, "nanotube", G_CALLBACK (activate_action) },
+
+#ifdef DRAWGEOMGL
+	{"Crystallography", NULL, N_("_Crystallography")},
+	{"StandardizeCellPrimitive", NULL, N_("_Standardize cell with reduction to primitive"), NULL, "Standardize Cell Primitive", G_CALLBACK (activate_action) },
+	{"StandardizeCellConv", NULL, N_("_Standardize conventional cell"), NULL, "Standardize Cell", G_CALLBACK (activate_action) },
+	{"WrapAtomsToCell", NULL, N_("_Wrap atoms to Cell"), NULL, "Wrap", G_CALLBACK (activate_action) },
+	{"PrototypeCrystal", NULL, N_("Get a _Prototype crystal"), NULL, "Prototype crystal", G_CALLBACK (activate_action) },
+	{"ComputeVolume", NULL, N_("Compute _volume of cell"), NULL, "Volume", G_CALLBACK (activate_action) },
+	{"ComputeSpaceGroupSym", NULL, N_("Get Space _Group symmetry"), NULL, "SpaceGroupe", G_CALLBACK (activate_action) },
+	{"ComputeSymmetryInfo", NULL, N_("Get _symmetry info"), NULL, "Symmetry Info", G_CALLBACK (activate_action) },
+	{"ComputeKPointsPath", NULL, N_("Get k-points for band structure calculation"), NULL, "kpoints path primitive", G_CALLBACK (activate_action) },
+	{"SetSymPrec", NULL, N_("Set symmetry precision"), NULL, "Set symprec", G_CALLBACK (activate_action) },
+	{"HelpCrystal", NULL, N_("Help & _references"), NULL, "Help", G_CALLBACK (activate_action) },
+
+	{"BuildCrystalsDeriv", NULL, "_Build"},
+	{"BuildSuperCellSimple", NULL, N_("_SuperCell (simple)"), NULL, "Super cell (simple) ", G_CALLBACK (activate_action) },
+	{"BuildSuperCell", NULL, N_("_SuperCell"), NULL, "Super cell ", G_CALLBACK (activate_action) },
+	{"BuildWulff", NULL, N_("Cluster using _Wulff construction"), NULL, "Wulff", G_CALLBACK (activate_action) },
+	{"BuildSlab", NULL, N_("_Slab"), NULL, "Slab", G_CALLBACK (activate_action) },
+	{"BuildCrystalGen", NULL, N_("_Crystal"), NULL, "build  crystal", G_CALLBACK (activate_action) },
+
+
+	{"Reduction", NULL, "_Reduction"},
+	{"ReductionNiggli", NULL, N_("Reduce to _Niggli cell"), NULL, "Niggli", G_CALLBACK (activate_action) },
+	{"ReductionDelaunay", NULL, N_("Reduction using _Delaunay method"), NULL, "Delaunay", G_CALLBACK (activate_action) },
+	{"ReductionPrimitive", NULL, N_("Reduction to _primitive"), NULL, "Primitive", G_CALLBACK (activate_action) },
+#endif
 
 	{"Operations", NULL, N_("_Operations")},
 	{"Labels", NULL, N_("_Labels")},
@@ -1203,6 +1275,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"SetMMTypeOfselectedAtoms", NULL, N_("Set the _MM type of selected atoms"), NULL, "Set the MM type of selected atoms", G_CALLBACK (activate_action) },
 	{"SetPDBTypeOfselectedAtoms", NULL, N_("Set the _PDB type of selected atoms"), NULL, "Set the PDB type of selected atoms", G_CALLBACK (activate_action) },
 	{"SetResidueNameOfselectedAtoms", NULL, N_("Set the Residue _Name of selected atoms"), NULL, "Set the Residue name of selected atoms", G_CALLBACK (activate_action) },
+	{"SetSymbolOfselectedAtoms", NULL, N_("Set the symbol of selected atoms"), NULL, "Set the symbol of selected atoms", G_CALLBACK (activate_action) },
 	{"SetChargeOfselectedAtoms", NULL, N_("Set the _Charge of selected atoms"), NULL, "Set the charge of selected atoms", G_CALLBACK (activate_action) },
 	{"scaleChargesOfSelectedAtoms", NULL, N_("scale the _Charge of selected atoms"), NULL, "scale the charge of selected atoms", G_CALLBACK (activate_action) },
 	{"SetDipole", NULL, N_("_Dipole"), NULL, "Set dipole", G_CALLBACK (activate_action) },
@@ -1238,6 +1311,7 @@ static GtkActionEntry gtkActionEntries[] =
 	{"ComputeChargeOfSelectedsAtoms", NULL, N_("Compute charge of _selected atoms"), NULL, "Compute charge of selected atoms", G_CALLBACK (activate_action) },
 	{"ComputeDipoleFormCharges", NULL, N_("_Compute dipole from charges"), NULL, "Compute dipole from charges", G_CALLBACK (activate_action) },
 	{"ComputeIsotopeDistribution", NULL, N_("_Isotope distribution calculator"), NULL, "Isotope distribution calculator", G_CALLBACK (activate_action) },
+	{"ComputeVolumeMolecule", NULL, N_("_Compute volume of molecule"), NULL, "Compute volume of molecule", G_CALLBACK (activate_action) },
 
 	{"ScreenCapture", NULL, N_("Screen Ca_pture")},
 	{"ScreenCaptureJPG", NULL, N_("_JPG format"), NULL, "create a JPEG file", G_CALLBACK (activate_action) },
@@ -1316,6 +1390,9 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"ReadPDB\" action=\"ReadPDB\" />\n"
 "      <menuitem name=\"ReadHyperchem\" action=\"ReadHyperchem\" />\n"
 "      <menuitem name=\"ReadPOSCAR\" action=\"ReadPOSCAR\" />\n"
+"      <menuitem name=\"ReadWFX\" action=\"ReadWFX\" />\n"
+"      <menuitem name=\"ReadCIF\" action=\"ReadCIF\" />\n"
+"      <menuitem name=\"ReadCIFNoSym\" action=\"ReadCIFNoSym\" />\n"
 "      <menuitem name=\"ReadAIMAll\" action=\"ReadAIMAll\" />\n"
 "      <separator name=\"sepMenuReadFireFly\" />\n"
 "      <menu name=\"FireFly\" action=\"FireFly\">\n"
@@ -1484,7 +1561,10 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"SaveAsMol\" action=\"SaveAsMol\" />\n"
 "        <menuitem name=\"SaveAsTinker\" action=\"SaveAsTinker\" />\n"
 "        <menuitem name=\"SaveAsPDB\" action=\"SaveAsPDB\" />\n"
-"        <menuitem name=\"SaveAsPOSCAR\" action=\"SaveAsPOSCAR\" />\n"
+"        <menuitem name=\"SaveAsPOSCARCartn\" action=\"SaveAsPOSCARCartn\" />\n"
+"        <menuitem name=\"SaveAsPOSCARDirect\" action=\"SaveAsPOSCARDirect\" />\n"
+"        <menuitem name=\"SaveAsCIFAllAtoms\" action=\"SaveAsCIFAllAtoms\" />\n"
+"        <menuitem name=\"SaveAsCIF\" action=\"SaveAsCIF\" />\n"
 "        <menuitem name=\"SaveAsHyperchem\" action=\"SaveAsHyperchem\" />\n"
 "        <menuitem name=\"SaveAsCChemI\" action=\"SaveAsCChemI\" />\n"
 "        <separator name=\"sepMenuSaveAsZmat\" />\n"
@@ -1517,9 +1597,43 @@ static const gchar *uiMenuInfo =
 "        <menuitem name=\"BuildPolySaccharide\" action=\"BuildPolySaccharide\" />\n"
 "        <separator name=\"sepBuildBuildNanoTube\" />\n"
 "        <menuitem name=\"BuildNanoTube\" action=\"BuildNanoTube\" />\n"
-"        <separator name=\"sepBuildPeriodic\" />\n"
-"        <menuitem name=\"BuildPeriodic\" action=\"BuildPeriodic\" />\n"
 "      </menu>\n"
+#ifdef DRAWGEOMGL
+"    <separator name=\"sepMenuCrystallography\" />\n"
+"      <menu name=\"Crystallography\" action=\"Crystallography\">\n"
+"        <menuitem name=\"PrototypeCrystal\" action=\"PrototypeCrystal\" />\n"
+"        <separator name=\"sepPrototypeCrystal\" />\n"
+"        <menuitem name=\"StandardizeCellPrimitive\" action=\"StandardizeCellPrimitive\" />\n"
+"        <menuitem name=\"StandardizeCellConv\" action=\"StandardizeCellConv\" />\n"
+"        <menuitem name=\"WrapAtomsToCell\" action=\"WrapAtomsToCell\" />\n"
+"        <separator name=\"sepStandardizeCell\" />\n"
+"      <menu name=\"Reduction\" action=\"Reduction\">\n"
+"        <menuitem name=\"ReductionPrimitive\" action=\"ReductionPrimitive\" />\n"
+"        <menuitem name=\"ReductionNiggli\" action=\"ReductionNiggli\" />\n"
+"        <menuitem name=\"ReductionDelaunay\" action=\"ReductionDelaunay\" />\n"
+"      </menu>\n"
+"        <separator name=\"sepreduction\" />\n"
+"        <menuitem name=\"ComputeSpaceGroupSym\" action=\"ComputeSpaceGroupSym\" />\n"
+"        <menuitem name=\"ComputeSymmetryInfo\" action=\"ComputeSymmetryInfo\" />\n"
+"        <menuitem name=\"ComputeKPointsPath\" action=\"ComputeKPointsPath\" />\n"
+"        <separator name=\"sepComputeCrystal\" />\n"
+"      <menu name=\"BuildCrystalsDeriv\" action=\"BuildCrystalsDeriv\">\n"
+"        <menuitem name=\"BuildSuperCellSimple\" action=\"BuildSuperCellSimple\" />\n"
+"        <menuitem name=\"BuildSuperCell\" action=\"BuildSuperCell\" />\n"
+"        <menuitem name=\"BuildSlab\" action=\"BuildSlab\" />\n"
+"        <menuitem name=\"BuildWulff\" action=\"BuildWulff\" />\n"
+"        <separator name=\"sepBuildCrystal\" />\n"
+"        <menuitem name=\"BuildCrystalGen\" action=\"BuildCrystalGen\" />\n"
+"      </menu>\n"
+"        <separator name=\"sepBuildCrystalAll\" />\n"
+"        <menuitem name=\"ComputeVolume\" action=\"ComputeVolume\" />\n"
+"        <separator name=\"sepComputeVolume\" />\n"
+"        <menuitem name=\"SetSymPrec\" action=\"SetSymPrec\" />\n"
+"        <separator name=\"sepSetSymPrec\" />\n"
+"        <menuitem name=\"HelpCrystal\" action=\"HelpCrystal\" />\n"
+"        <separator name=\"sepHelpCrystal\" />\n"
+"      </menu>\n"
+#endif
 "    <separator name=\"sepMenuOperations\" />\n"
 "    <menu name=\"Operations\" action=\"Operations\">\n"
 "      <menuitem name=\"OperationsTranslate\" action=\"OperationsTranslate\" />\n"
@@ -1637,6 +1751,7 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"SetSelectedAtomsToFixed\" action=\"SetSelectedAtomsToFixed\" />\n"
 "      <menuitem name=\"SetSelectedAtomsToVariable\" action=\"SetSelectedAtomsToVariable\" />\n"
 "      <separator name=\"sepMenuSetType\" />\n"
+"      <menuitem name=\"SetSymbolOfselectedAtoms\" action=\"SetSymbolOfselectedAtoms\" />\n"
 "      <menuitem name=\"SetMMTypeOfselectedAtoms\" action=\"SetMMTypeOfselectedAtoms\" />\n"
 "      <menuitem name=\"SetPDBTypeOfselectedAtoms\" action=\"SetPDBTypeOfselectedAtoms\" />\n"
 "      <menuitem name=\"SetResidueNameOfselectedAtoms\" action=\"SetResidueNameOfselectedAtoms\" />\n"
@@ -1698,6 +1813,8 @@ static const gchar *uiMenuInfo =
 "      <menuitem name=\"ComputeChargeOfSelectedsAtoms\" action=\"ComputeChargeOfSelectedsAtoms\" />\n"
 "      <separator name=\"sepIsotope\" />\n"
 "      <menuitem name=\"ComputeIsotopeDistribution\" action=\"ComputeIsotopeDistribution\" />\n"
+"      <separator name=\"sepVolMolecule\" />\n"
+"      <menuitem name=\"ComputeVolumeMolecule\" action=\"ComputeVolumeMolecule\" />\n"
 "    </menu>\n"
 "    <separator name=\"sepMolecularMechanics\" />\n"
 "    <menu name=\"MolecularMechanics\" action=\"MolecularMechanics\">\n"
@@ -1845,6 +1962,13 @@ void activate_insert_fragment()
 	GtkAction * action = gtk_ui_manager_get_action(manager, "/MenuGeom/Operations/OperationsInsertFrag");
 	if(GTK_IS_TOGGLE_ACTION(action)) gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
 }
+/*********************************************************************************************************************/
+void activate_insert_crystal()
+{
+	GtkAction * action = gtk_ui_manager_get_action(manager, "/MenuGeom/Operations/OperationsInsertFrag");
+	if(GTK_IS_TOGGLE_ACTION(action)) gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
+	create_window_fragments_selector("Prototype crystals","Prototype crystals/CaF2_cF12_Fm-3m_225");
+}
 /*******************************************************************************************************************************/
 void create_toolbar_and_popup_menu_geom(GtkWidget* box)
 {
@@ -1959,6 +2083,7 @@ static void set_sensitive()
 	GtkWidget *setMMTypeOfselectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetMMTypeOfselectedAtoms");
 	GtkWidget *setPDBTypeOfselectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetPDBTypeOfselectedAtoms");
 	GtkWidget *setResidueNameOfselectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetResidueNameOfselectedAtoms");
+	GtkWidget *setSymbolOfselectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetSymbolOfselectedAtoms");
 	GtkWidget *setChargeOfselectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/SetChargeOfselectedAtoms");
 	GtkWidget *scaleChargeOfselectedAtoms = gtk_ui_manager_get_widget (manager, "/MenuGeom/Set/ScaleChargeOfselectedAtoms");
 	GtkWidget *addPersonnalFragment = gtk_ui_manager_get_widget (manager, "/MenuGeom/Edit/PersonalFragments/PersonalFragmentsAddMolecule");
@@ -2013,6 +2138,7 @@ static void set_sensitive()
 	if(GTK_IS_WIDGET(setMMTypeOfselectedAtoms)) gtk_widget_set_sensitive(setMMTypeOfselectedAtoms, sensitive);
 	if(GTK_IS_WIDGET(setPDBTypeOfselectedAtoms)) gtk_widget_set_sensitive(setPDBTypeOfselectedAtoms, sensitive);
 	if(GTK_IS_WIDGET(setResidueNameOfselectedAtoms)) gtk_widget_set_sensitive(setResidueNameOfselectedAtoms, sensitive);
+	if(GTK_IS_WIDGET(setSymbolOfselectedAtoms)) gtk_widget_set_sensitive(setSymbolOfselectedAtoms, sensitive);
 	if(GTK_IS_WIDGET(setChargeOfselectedAtoms)) gtk_widget_set_sensitive(setChargeOfselectedAtoms, sensitive);
 	if(GTK_IS_WIDGET(scaleChargeOfselectedAtoms)) gtk_widget_set_sensitive(scaleChargeOfselectedAtoms, sensitive);
 	if(GTK_IS_WIDGET(resetSelectedConnections)) gtk_widget_set_sensitive(resetSelectedConnections, sensitive);
@@ -2025,9 +2151,13 @@ static void set_sensitive()
 	if(GTK_IS_WIDGET(resetMultipleConnections)) gtk_widget_set_sensitive(resetMultipleConnections, sensitive);
 	if(GTK_IS_WIDGET(so)) gtk_widget_set_sensitive(so, sensitive);
 
+	sensitive = TRUE;
 	if(NFatoms<2) sensitive = FALSE;
 	if(GTK_IS_WIDGET(pax)) gtk_widget_set_sensitive(pax, sensitive);
 	if(GTK_IS_WIDGET(paz)) gtk_widget_set_sensitive(paz, sensitive);
+
+	sensitive = TRUE;
+	if(NFatoms<1) sensitive = FALSE;
 	if(GTK_IS_WIDGET(fixedAtoms)) gtk_widget_set_sensitive(fixedAtoms, sensitive);
 	if(GTK_IS_WIDGET(variableAtoms)) gtk_widget_set_sensitive(variableAtoms, sensitive);
 
@@ -2157,7 +2287,7 @@ static void activate_add_personal_fragment (GtkAction *action, gpointer data)
 	}
 
 }
-void add_a_personnal_fragement_to_menu(gchar* groupName,gchar* fragName)
+void add_a_personal_fragement_to_menu(gchar* groupName,gchar* fragName)
 {
 	const gchar* menuBase = "Edit/PersonalFragments";
 	guint  merge_id;

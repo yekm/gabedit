@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -29,8 +29,14 @@ gint* getRing();
 void getCentreRing(gint i, gint j, gdouble C[]);
 gint** getRings(gint ringSize, gint* nRings);
 void findAllRingsForOneAtom(gint numAtom);
-void IsoRingsAllGenLists(GLuint *myList, gint ringSizeMin, gint ringSizeMax);
+void IsoRingsAllGenLists(GLuint *myList, gint ringSizeMin, gint ringSizeMax, gboolean showMessage);
 void IsoRingsAllShowLists(GLuint myList);
+void computeConformerTypeRing6();
+void computeConformerTypeRing5();
 void computeConformerType();
+gchar* computeConformerTypeRing5MinInfo(gchar* energy, gboolean withTitle);
+gchar* computeConformerTypeRing6MinInfo(gchar* energy, gboolean withTitle);
+gint getNumberOfRing5();
+gint getNumberOfRing6();
 #endif /* __GABEDIT_RINGSORB_H__ */
 

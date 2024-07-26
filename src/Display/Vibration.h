@@ -1,5 +1,5 @@
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -29,19 +29,19 @@ typedef struct _VibrationMode
 	gdouble* vectors[3];
 }VibrationMode;
 
-typedef struct _VibrationGeom
+typedef struct _VibrationAtom
 {
 	gchar* symbol;
 	gdouble coordinates[3];
 	gdouble partialCharge;
 	gboolean variable;
 	gdouble nuclearCharge;
-}VibrationGeom;
+}VibrationAtom;
 
 typedef struct _Vibration
 {
 	gint numberOfAtoms;
-	VibrationGeom* geometry;
+	VibrationAtom* geometry;
 
 	gint numberOfFrequencies;
 	VibrationMode* modes;
@@ -52,8 +52,9 @@ typedef struct _Vibration
 	gdouble threshold;
 	gint nSteps;
 }Vibration;
-Vibration vibration;
-gint rowSelected;
+
+extern Vibration vibration;
+extern gint rowSelected;
 void init_vibration();
 void vibrationDlg();
 

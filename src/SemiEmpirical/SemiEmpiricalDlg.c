@@ -1,6 +1,6 @@
 /* SemiEmpiricalDlg.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -2160,13 +2160,15 @@ static void setComboSpinMultiplicity(GtkWidget *comboSpinMultiplicity)
 		k+=kinc;
 	}
 
-  	for(i=nlist-1;i>=0;i--) glist = g_list_append(glist,list[i]);
+  	//for(i=nlist-1;i>=0;i--) glist = g_list_append(glist,list[i]);
+  	for(i=0;i<nlist;i++) glist = g_list_append(glist,list[i]);
 
   	gtk_combo_box_entry_set_popdown_strings( comboSpinMultiplicity, glist) ;
 	gtk_combo_box_set_active(GTK_COMBO_BOX(comboSpinMultiplicity), nlist-1);
   	g_list_free(glist);
+	SpinMultiplicities[0] = atoi(list[0]);
 	if( SpinMultiplicities[0]%2 == atoi(list[0])%2) setSpinMultiplicityComboSpinMultiplicity(comboSpinMultiplicity, SpinMultiplicities[0]);
-	else SpinMultiplicities[0] = atoi(list[0]);
+
 	if(list)
 	{
 		for(i=0;i<nlist;i++) if(list[i]) g_free(list[i]);
@@ -2217,7 +2219,8 @@ static void setComboCharge(GtkWidget *comboCharge)
 		k += 1;
 	}
 
-  	for(i=nlist-1;i>=0;i--) glist = g_list_append(glist,list[i]);
+  	//for(i=nlist-1;i>=0;i--) glist = g_list_append(glist,list[i]);
+  	for(i=0;i<nlist;i++) glist = g_list_append(glist,list[i]);
 
   	gtk_combo_box_entry_set_popdown_strings( comboCharge, glist) ;
 	gtk_combo_box_set_active(GTK_COMBO_BOX(comboCharge), nlist-ic-1);
@@ -5443,7 +5446,7 @@ static void createInfoConfoFrame(GtkWidget *box)
 	"\nAt the end of the molecular dynamic simulation,"
 	"\nthe geometries are sorted by energy and are saved in a file."
 	"\nGabedit can also optimize these geometries, interactively."
-	"\nThe very similar molecular strcutures can be removed."
+	"\nThe very similar molecular structures can be removed."
 	"\nGabedit can also creates input files for mopac, FireFly or Gaussian for a post processing."
 	"\n\n"
 	"If \"MD Trajectory via Verlet velocity Algorithm\" is selected :\n"

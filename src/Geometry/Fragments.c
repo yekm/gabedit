@@ -1,6 +1,6 @@
 /* Fragments.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -36,6 +36,18 @@ DEALINGS IN THE SOFTWARE.
 #define ANG_TO_BOHR  1.0/0.52917726
 #define BOHR_TO_ANG  0.52917726
 
+/*****************************************************************/
+gboolean isItACrystalFragment(Fragment* F)
+{
+	gint i=0;
+	if(F->NAtoms==0) return FALSE;
+	for(i=0;i<F->NAtoms;i++)
+	{
+		if(!strcmp(F->Atoms[i].Symb,"Tv")) return TRUE;
+		if(!strcmp(F->Atoms[i].Symb,"TV")) return TRUE;
+	}
+	return FALSE;
+}
 /*****************************************************************/
 void FreeFragment(Fragment* F)
 {

@@ -1,6 +1,6 @@
 /* GridCP.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1246,7 +1246,7 @@ static GtkWidget* showResultDlg(gchar *message,gchar *title,GridCP* gridCP)
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", (GCallback)destroyResultDlg, GTK_OBJECT(dlgWin));
 
 	add_button_windows(title,dlgWin);
-	gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeight*0.6), (gint)(ScreenHeight*0.5));
+	//gtk_window_set_default_size (GTK_WINDOW(dlgWin), (gint)(ScreenHeightD*0.6), (gint)(ScreenHeightD*0.5));
 	gtk_widget_show_all(dlgWin);
   	g_object_set_data(G_OBJECT (dlgWin), "GridCP",gridCP);
 	return dlgWin;
@@ -1266,7 +1266,7 @@ static void showGridCP(GridCP* gridCP)
 
 	result = addToResult(result, _("Geometry (Ang)\n"));
 	result = addToResult(result, "==============\n");
-	for(j=0; j<(gint)Ncenters; j++)
+	for(j=0; j<(gint)nCenters; j++)
 	{
 		tmp = g_strdup_printf("%s[%d] %lf %lf %lf\n",
 				GeomOrb[j].Prop.symbol,
@@ -1449,7 +1449,7 @@ static void computeNumCenters(GridCP* gridCP)
 		gint j = data->index[1];
 		gint k = data->index[2];
 		data->numCenter = 0;
-		for(c=0; c<(gint)Ncenters; c++)
+		for(c=0; c<(gint)nCenters; c++)
 		{
 			dx = GeomOrb[c].C[0]-gridCP->grid->point[i][j][k].C[0];
 			dy = GeomOrb[c].C[1]-gridCP->grid->point[i][j][k].C[1];
@@ -1536,7 +1536,7 @@ void computeCharges(GridCP* gridCP)
 		gridCP->integral += points[i][j][k].C[3];
 	gridCP->integral  *= gridCP->dv;
 
-	for(j=0; j<(gint)Ncenters; j++)
+	for(j=0; j<(gint)nCenters; j++)
 		gridCP->nuclearCharge += GeomOrb[j].nuclearCharge;
 	progress_orb_txt(0," ",TRUE);
 }
@@ -1612,7 +1612,7 @@ void computeELFEletrons(GridCP* gridCP)
 		gridCP->integral += points[i][j][k].C[3];
 	gridCP->integral  *= gridCP->dv;
 
-	for(j=0; j<(gint)Ncenters; j++)
+	for(j=0; j<(gint)nCenters; j++)
 		gridCP->nuclearCharge += GeomOrb[j].nuclearCharge;
 	progress_orb_txt(0," ",TRUE);
 }
@@ -1631,7 +1631,7 @@ static void showELFGridCP(GridCP* gridCP)
 
 	result = addToResult(result, _("Geometry (Ang)\n"));
 	result = addToResult(result, "==============\n");
-	for(j=0; j<(gint)Ncenters; j++)
+	for(j=0; j<(gint)nCenters; j++)
 	{
 		tmp = g_strdup_printf("%s[%d] %lf %lf %lf\n",
 				GeomOrb[j].Prop.symbol,

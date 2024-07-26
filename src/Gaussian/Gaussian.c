@@ -1,6 +1,6 @@
 /* Gaussian.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -774,6 +774,8 @@ static void GetInfoXYZ( )
 	gboolean lower = geometry_with_lower_layer();
 	gboolean redundant = TRUE;
   	G_CONST_RETURN gchar *entrytext =  NULL;
+	gint nV = 0;
+	gint ivar0 = -1;
 
   	if(Types && strcmp(Types,_("Single Point"))) entrytext =  gtk_entry_get_text(GTK_ENTRY(EntryTypes[0]));
 	if(entrytext && !strstr(entrytext,"Redundant") && !strstr(entrytext,"Default") && !strstr(entrytext,"default")) redundant = FALSE;
@@ -786,21 +788,21 @@ static void GetInfoXYZ( )
         	gabedit_text_insert (GABEDIT_TEXT(text), NULL, NULL, NULL,"\n",-1);
 		return;
 	}
-
+        if(VariablesXYZ && NVariablesXYZ>0)
+        for(i=0;i<NVariablesXYZ;i++) if(VariablesXYZ[i].Used) nV++;
+        if(nV<1 || nV== 3*NcentersXYZ) ivar0=0;
          
         for(i=0;i<NcentersXYZ;i++)
         {
 		if(!amber)
 		{
-			if(!redundant)
-  			line=g_strdup_printf("%s\t0\t%s\t%s\t%s",
-				GeomXYZ[i].Symb,GeomXYZ[i].X,GeomXYZ[i].Y,GeomXYZ[i].Z);
+			if(!redundant) line=g_strdup_printf("%s\t0\t%s\t%s\t%s", GeomXYZ[i].Symb,GeomXYZ[i].X,GeomXYZ[i].Y,GeomXYZ[i].Z);
 			else
 			{
 				gchar X[100];
 				gchar Y[100];
 				gchar Z[100];
-				gint ivar = -1;
+				gint ivar=ivar0;
 				sprintf(X,"%s",GeomXYZ[i].X);
 				sprintf(Y,"%s",GeomXYZ[i].Y);
 				sprintf(Z,"%s",GeomXYZ[i].Z);
@@ -1078,7 +1080,6 @@ static void putInfoAll( GtkWidget *Wins, gpointer   data )
 void insert_gaussian(gint itype)
 {
   GtkWidget *button;
-  gboolean OK;
   gint i;
 
   gtk_notebook_set_current_page((GtkNotebook*)NoteBookText,0);
@@ -1101,7 +1102,6 @@ void insert_gaussian(gint itype)
   switch(iframe)
          {
           case 2: 
-		OK=TRUE;
                 i=iframe;
                 if(GeomIsOpen && TypeGeomOpen !=0 )
                 {
@@ -1114,7 +1114,6 @@ void insert_gaussian(gint itype)
                 TypeGeomOpen = 2;
                   break;
           case 3: 
-		OK=TRUE;
 		GAjoutePageBasis(NoteBook); 
                 if(TypeGeomOpen == 2)
                 {

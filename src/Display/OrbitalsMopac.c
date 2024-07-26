@@ -1,6 +1,6 @@
 /* OrbitalsMopac.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1505,7 +1505,7 @@ void read_mopac_orbitals(gchar* FileName)
 		if(GeomOrb)
 		{
 			init_atomic_orbitals();
-			for(i=0;i<Ncenters;i++) GeomOrb[i].Prop = prop_atom_get("H");
+			for(i=0;i<nCenters;i++) GeomOrb[i].Prop = prop_atom_get("H");
 			free_geometry();
 		}
 		set_status_label_info(_("File name"),_("Nothing"));
@@ -1521,7 +1521,7 @@ void read_mopac_orbitals(gchar* FileName)
 	set_status_label_info(_("Mol. Orb."),"Reading");
  	InitializeAll();
 	buildBondsOrb();
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));

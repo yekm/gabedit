@@ -1,6 +1,6 @@
 /* OrbitalsDalton.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -53,7 +53,7 @@ static void DefineType()
  gint OK;
  Ntype =1;
  GeomOrb[0].NumType=0;
- for(i=1;i<Ncenters;i++)
+ for(i=1;i<nCenters;i++)
  {
    OK =1;
    for(j=0;j<i;j++)
@@ -73,7 +73,7 @@ static void DefineType()
  }
  /*
  Debug("Types = ");
- for(i=0;i<Ncenters;i++)
+ for(i=0;i<nCenters;i++)
 	 Debug("%d ", GeomOrb[i].NumType);
  Debug("\n");
  */
@@ -178,15 +178,15 @@ static gboolean read_dalton_geom(gchar *FileName)
 	{
   		g_free(GeomOrb);
 		GeomOrb = 0;
-		Ncenters = 0;
+		nCenters = 0;
 	}
  	else
 	{
- 		Ncenters = natoms;
+ 		nCenters = natoms;
   		DefineType();
 	}
 	buildBondsOrb();
-	RebuildGeom = TRUE;
+	RebuildGeomD = TRUE;
 	reset_grid_limits();
 	init_atomic_orbitals();
 	set_status_label_info(_("Geometry"),_("Ok"));

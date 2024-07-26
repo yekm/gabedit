@@ -1,6 +1,6 @@
 /* SpectrumWin.c */
 /**********************************************************************************************************
-Copyright (c) 2002-2017 Abdul-Rahman Allouche. All rights reserved
+Copyright (c) 2002-2021 Abdul-Rahman Allouche. All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the Gabedit), to deal in the Software without restriction, including without limitation
@@ -1274,4 +1274,20 @@ GtkWidget* spectrum_win_new_with_xy(gchar* title,  gint size, gdouble* x, gdoubl
 	spectrum_win_add_data(winSpectrum, size, x, y);
 	spectrum_win_autorange(winSpectrum);
 	return winSpectrum;
+}
+/****************************************************************************************/
+XYPlotData* spectrum_win_get_dataCurve(GtkWidget *winSpectrum)
+{
+	GtkWidget* xyplot = g_object_get_data(G_OBJECT (winSpectrum), "XYPLOT");
+	GList* data_list = g_object_get_data(G_OBJECT (xyplot), "DataList");
+	GList* current = NULL;
+	XYPlotWinData* data = NULL;
+	if(!data_list) return NULL;
+	current=g_list_first(data_list);
+	for(; current != NULL; current = current->next)
+	{
+		data = (XYPlotWinData*)current->data;
+		if(data && data->dataCurve) return data->dataCurve;
+	}
+	return NULL;
 }

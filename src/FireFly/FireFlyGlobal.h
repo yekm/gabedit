@@ -2,15 +2,15 @@
 #ifndef __GABEDIT_FIREFLYGLOBAL_H__
 #define __GABEDIT_FIREFLYGLOBAL_H__
 
-GtkWidget* fireflyWin;
-FireFlyMolecule fireflyMolecule;
-FireFlyColorFore fireflyColorFore;
-FireFlyColorBack fireflyColorBack;
-FireFlyBasis fireflyBasis;
+extern GtkWidget* fireflyWin;
+extern FireFlyMolecule fireflyMolecule;
+extern FireFlyColorFore fireflyColorFore;
+extern FireFlyColorBack fireflyColorBack;
+extern FireFlyBasis fireflyBasis;
 
-FireFlyFunctional* functionals;
-FireFlyStdFunctional* stdFunctionals;
-gdouble* sumFunctionals;
+extern FireFlyFunctional* functionalsFF;
+extern FireFlyStdFunctional* stdFunctionalsFF;
+extern gdouble* sumFunctionalsFF;
 
 #endif /* __GABEDIT_FIREFLYGLOBAL_H__ */
 
