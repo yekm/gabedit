@@ -1745,8 +1745,10 @@ static void show_about_new()
 		"Graphical User Interface to FireFly, GAMESS-US, Gaussian, Molcas, Molpro, "
 		"OpenMopac, Orca, MPQC and Q-Chem computational chemistry packages.\n\n"
 		"Please use the following citations in any report or publication :\n"
-		"A.R. Allouche, Journal of Computational Chemistry....,.... (2010)\n"
-		"DOI 10.1002/jcc.21600\n"
+		"A.R. ALLOUCHE, Gabedit is a free Graphical User Interface for computational chemistry packages.\n"
+                "It is available from http://gabedit.sourceforge.net/\n"
+		/* "A.R. Allouche, Journal of Computational Chemistry....,.... (2010)\n"*/
+		/*"DOI 10.1002/jcc.21600\n"*/
 		;
 	
 	gchar *GABEDIT_VERSION =
